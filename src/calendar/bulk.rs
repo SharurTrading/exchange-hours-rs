@@ -13,8 +13,49 @@
 
 use std::collections::BTreeMap;
 
-use super::exchange::{EU_EQUITY_EXCHANGES, US_EQUITY_EXCHANGES};
 use super::{Exchange, MarketHours, hours_for_exchange};
+
+/// The lit US equities venues plus the equity ATSes with modeled hours —
+/// the built-in input for the `*_us_equities` builders below. The FINRA TRFs
+/// are reporting facilities, not matching venues, so they are not in the set.
+const US_EQUITY_EXCHANGES: &[Exchange] = &[
+    Exchange::Nasdaq,
+    Exchange::NasdaqBx,
+    Exchange::NasdaqPsx,
+    Exchange::CboeBzx,
+    Exchange::CboeByx,
+    Exchange::CboeEdga,
+    Exchange::CboeEdgx,
+    Exchange::Nyse,
+    Exchange::NyseArca,
+    Exchange::NyseAmerican,
+    Exchange::NyseNational,
+    Exchange::NyseTexas,
+    Exchange::MemxEq,
+    Exchange::MiaxPearlEq,
+    Exchange::Iex,
+    Exchange::IntelligentcrossIqx,
+    Exchange::BlueOceanAts,
+];
+
+/// The EU equities venues — the built-in input for the `*_eu_equities`
+/// builders below.
+const EU_EQUITY_EXCHANGES: &[Exchange] = &[
+    Exchange::Lse,
+    Exchange::Xetra,
+    Exchange::Six,
+    Exchange::EuronextParis,
+    Exchange::EuronextAmsterdam,
+    Exchange::EuronextBrussels,
+    Exchange::EuronextLisbon,
+    Exchange::EuronextDublin,
+    Exchange::EuronextMilan,
+    Exchange::Bme,
+    Exchange::NasdaqStockholm,
+    Exchange::NasdaqHelsinki,
+    Exchange::NasdaqCopenhagen,
+    Exchange::Vienna,
+];
 
 /// Builds the current [`MarketHours`] for each exchange, preserving input order.
 #[must_use]

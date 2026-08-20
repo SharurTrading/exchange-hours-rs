@@ -4,9 +4,12 @@
 //!
 //! Intraday bars step by their interval from `max(t, session_open)` and are
 //! **clamped** to the enclosing session close, so a bar never spans a closed
-//! period. One exception is deliberate: when a bar would end exactly at a
-//! venue's daily close and a maintenance gap follows, the end snaps forward to
-//! the next session open — a bar must not terminate at the *start* of the break.
+//! period. That clamp is the whole rule: the day's last bar ends at the daily
+//! close itself (CME 16:00 CT), not at the reopen after the maintenance break —
+//! closes are end-exclusive boundaries everywhere in this crate, and a bar
+//! whose end sat past the break would claim closed time as bar time. (Until
+//! 0.2.0 such a bar snapped its end to the next session open; that V1-inherited
+//! exception contradicted the clamp and was removed.)
 //! [`CalendarResolution::Seconds`] is the one unclamped variant: it is a pure
 //! `t + s` offset, by contract.
 //!
@@ -36,9 +39,9 @@ use super::{CalendarResolution, MarketHours, SessionKind};
 ///
 /// - `Seconds`: a pure `t + interval` step (no session clamping).
 /// - `Minutes`/`Hours`: steps from `max(t, session_open)` by the interval,
-///   clamped to the enclosing session close. If that close coincides with the
-///   venue's daily close and a maintenance gap follows, the end snaps forward to
-///   the next session open so bars do not terminate at the maintenance start.
+///   clamped to the enclosing session close — including the daily close, so the
+///   last bar of a CME trading day ends at 16:00 CT, not at the 17:00 reopen.
+///   A query from inside a closed period anchors at the next session open.
 /// - `Daily`: the next day-close after `t` (latest close on a local calendar day).
 /// - `Weekly`: the last day-close in `t`'s ISO week.
 /// - `Monthly`: the last day-close in `t`'s exchange-local calendar month.
@@ -86,10 +89,10 @@ fn is_zero_interval(res: CalendarResolution) -> bool {
 /// Shared body of the `Minutes`/`Hours` arms: step by `step` from
 /// `max(t, session_open)`, clamped to the enclosing session close.
 ///
-/// If the computed end lands exactly on the session close and that close is the
-/// exchange's daily close (e.g., CME 16:00 CT), skip short “maintenance” gaps by
-/// snapping to the next session open. This prevents intraday bars from closing
-/// at the maintenance start and instead closes them after the break.
+/// The clamp applies at the daily close too: the last bar of the day ends at
+/// the close itself, never at the reopen after a maintenance break. A close is
+/// an end-exclusive boundary throughout this crate, and it is the same
+/// boundary here.
 fn fixed_grid_end(
     hours: &MarketHours,
     t: DateTime<Utc>,
@@ -98,20 +101,7 @@ fn fixed_grid_end(
 ) -> Option<DateTime<Utc>> {
     let (open, close) = session_bounds_with(hours, t, kind)?;
     let anchor = if t < open { open } else { t };
-    let mut end = (anchor + step).min(close);
-
-    if end == close {
-        let close_day = close.with_timezone(&hours.tz).date_naive();
-        if let Some(dc) = daily_close_for_local_day(hours, close_day, kind)
-            && dc == close
-            && hours.is_maintenance(close)
-            && let Some((next_open, _next_close)) = next_session_after_with(hours, close, kind)
-        {
-            end = next_open;
-        }
-    }
-
-    Some(end)
+    Some((anchor + step).min(close))
 }
 
 /// Returns [`candle_end_with`] over [`SessionKind::Both`] (regular + extended).

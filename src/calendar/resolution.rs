@@ -13,8 +13,8 @@ use serde::{Deserialize, Serialize};
 /// Bar resolution / time interval for candle-boundary computations.
 ///
 /// Intraday variants carry a positive interval count; [`candle_end`](super::candle_end)
-/// steps by that interval, clamped to the enclosing session and snapped past
-/// maintenance gaps. [`CalendarResolution::Daily`], [`CalendarResolution::Weekly`],
+/// steps by that interval, clamped to the enclosing session close.
+/// [`CalendarResolution::Daily`], [`CalendarResolution::Weekly`],
 /// and [`CalendarResolution::Monthly`] resolve to canonical session-period
 /// boundaries instead of a fixed grid.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]

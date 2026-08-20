@@ -3,7 +3,7 @@
 # exchange-hours
 
 [![CI](https://github.com/SharurTrading/exchange-hours-rs/actions/workflows/ci.yml/badge.svg)](https://github.com/SharurTrading/exchange-hours-rs/actions/workflows/ci.yml)
-![Version](https://img.shields.io/badge/version-0.1.0-blue)
+![Version](https://img.shields.io/badge/version-0.2.0-blue)
 ![Edition](https://img.shields.io/badge/edition-2024-orange)
 ![MSRV](https://img.shields.io/badge/MSRV-1.95-informational)
 ![Unsafe](https://img.shields.io/badge/unsafe-forbidden-success)
@@ -30,9 +30,8 @@ UTC — each exchange's local time zone, including its DST quirks, is handled in
   crypto — with point-in-time historical revisions for 10 of them.
 - **Session queries** — open/closed by regular/extended/both, session bounds, next open, gaps.
 - **Calendar-aware bar boundaries** — intraday bars clamp to the session close so no bar
-  spans a closed period, and a bar that lands exactly on a daily close followed by a
-  maintenance gap ends at the next session *open* (CME's last bar of the day ends 17:00 CT,
-  not at the 16:00 break start); daily/weekly/monthly bars close at real session closes,
+  spans a closed period; the day's last bar ends at the daily close itself (CME 16:00 CT,
+  never the 17:00 reopen), and daily/weekly/monthly bars close at real session closes,
   not midnight.
 - **DST correctness by construction** — local seconds-since-midnight rules, resolved to
   instants with an explicit, asymmetric bias (opens earliest, closes latest).
@@ -157,13 +156,20 @@ reaches every consumer at once.
 - **Calendar bar starts come from sessions, not durations.** `candle_start` pairs a
   daily/weekly/monthly close with the first session open in that period, so a start can fall
   on the preceding civil day, month, or year. Probe a provider close marker at `close - 1ns`.
-- **The `Exchange` match is exhaustive.** `hours_for_exchange` has no catch-all arm, so a new
-  variant forces a profile decision instead of silently inheriting a default.
+- **The `Exchange` matches are exhaustive inside the crate.** `hours_for_exchange` and
+  `Exchange::as_str` have no catch-all arms, so a new variant forces a profile decision and
+  a canonical name instead of silently inheriting defaults. The enum itself is
+  `#[non_exhaustive]` (like `MarketHoursKey`), so venue additions are not breaking changes
+  for dependents — match it with a wildcard arm, and enumerate via `Exchange::ALL`.
 - **Always-open venues stay categorically separate.** A 24×7 venue is a single `0..86400`
   rule on all seven days with `has_daily_close` / `has_weekend_close` both `false`; it is
   never folded into the CME-style daily-break profiles.
-- **Serde wire format is stable.** `Exchange` and `MarketHoursKey` serialize as `snake_case`
-  strings; a rename that changes a serialized string breaks persisted data.
+- **One canonical name per venue, and it is stable.** `Exchange` and `MarketHoursKey`
+  serialize as `snake_case` strings, and `Exchange` exposes the same names directly:
+  `as_str`, `Display`, and `FromStr` (`"nyse_arca".parse::<Exchange>()`), so string-keyed
+  callers parse instead of pattern-matching. An unrecognized name is a `ParseExchangeError`,
+  never a silent `Exchange::Unknown`. A rename that changes one of these strings breaks
+  persisted data.
 - **Normal week only.** Holidays, early closes, half-days, and product-level variations are
   absent — `is_holiday` is a stub returning `false`, though every query path already routes
   through it under one session-existence contract. Verify contract specs before trading on

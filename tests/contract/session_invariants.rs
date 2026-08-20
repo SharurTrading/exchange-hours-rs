@@ -416,14 +416,20 @@ fn dst_transition_queries_are_stable_and_total() {
 // no rules contains nothing, which is the correct `false`.
 // ---------------------------------------------------------------------------
 
-/// Number of [`Exchange`] variants. The compiler forces a new `is_listed`
-/// match arm when a variant is added; this count is the companion fence that
-/// makes a stale `ALL_EXCHANGES` fail loudly instead of silently shrinking
-/// the grid. Bump all three together.
+/// Number of [`Exchange`] variants. `Exchange`, `Exchange::ALL`, and
+/// `Exchange::as_str` are generated from one table by the library's
+/// `exchanges!` macro, so `ALL` is complete by construction; this count and
+/// the independent list below are the *expectation* side:
+/// `all_exchanges_matches_the_crates_own_list` compares them against the
+/// generated `ALL`, so a row accidentally dropped from (or mis-ordered in)
+/// the library's table fails here instead of silently shrinking the grids.
+/// A new venue bumps this count and adds one entry below.
 const EXCHANGE_VARIANT_COUNT: usize = 69;
 
-/// Every [`Exchange`] variant. Kept exhaustive by
-/// `all_exchanges_covers_every_variant` below.
+/// Every [`Exchange`] variant, maintained by hand and on purpose
+/// independently of the generated `Exchange::ALL`: this list is the test's
+/// own expectation of what the library's table contains, compared element by
+/// element below.
 const ALL_EXCHANGES: &[Exchange] = &[
     Exchange::Unknown,
     Exchange::Nasdaq,
@@ -497,96 +503,78 @@ const ALL_EXCHANGES: &[Exchange] = &[
 ];
 
 #[test]
-fn all_exchanges_covers_every_variant() {
-    // No catch-all arm: adding an `Exchange` variant stops this file compiling
-    // until the variant is also added to `ALL_EXCHANGES`, so the grid below can
-    // never silently skip a venue.
-    fn is_listed(exchange: Exchange) -> bool {
-        match exchange {
-            Exchange::Unknown
-            | Exchange::Nasdaq
-            | Exchange::NasdaqBx
-            | Exchange::NasdaqPsx
-            | Exchange::CboeBzx
-            | Exchange::CboeByx
-            | Exchange::CboeEdga
-            | Exchange::CboeEdgx
-            | Exchange::Nyse
-            | Exchange::NyseArca
-            | Exchange::NyseAmerican
-            | Exchange::NyseNational
-            | Exchange::NyseTexas
-            | Exchange::MemxEq
-            | Exchange::MiaxPearlEq
-            | Exchange::Iex
-            | Exchange::IntelligentcrossIqx
-            | Exchange::BlueOceanAts
-            | Exchange::FinraTrfCarteret
-            | Exchange::FinraTrfChicago
-            | Exchange::FinraTrfNyse
-            | Exchange::CboeOptionsC1
-            | Exchange::CboeC2Options
-            | Exchange::CboeBzxOptions
-            | Exchange::CboeEdgxOptions
-            | Exchange::NyseArcaOptions
-            | Exchange::NyseAmericanOptions
-            | Exchange::NasdaqPhlx
-            | Exchange::NasdaqIse
-            | Exchange::NasdaqNom
-            | Exchange::NasdaqMrx
-            | Exchange::NasdaqGemx
-            | Exchange::NasdaqBxOptions
-            | Exchange::MiaxOptions
-            | Exchange::MiaxEmeraldOptions
-            | Exchange::MiaxPearlOptions
-            | Exchange::MiaxSapphireOptions
-            | Exchange::BoxOptions
-            | Exchange::MemxOptions
-            | Exchange::Cme
-            | Exchange::Cbot
-            | Exchange::Comex
-            | Exchange::Nymex
-            | Exchange::Cfe
-            | Exchange::Eurex
-            | Exchange::Eex
-            | Exchange::Iceus
-            | Exchange::Iceeu
-            | Exchange::IceEuropeCommodities
-            | Exchange::IceEuropeFinancials
-            | Exchange::IceEndex
-            | Exchange::IceAbuDhabi
-            | Exchange::IceCanada
-            | Exchange::Sgx
-            | Exchange::Lse
-            | Exchange::Xetra
-            | Exchange::Six
-            | Exchange::EuronextParis
-            | Exchange::EuronextAmsterdam
-            | Exchange::EuronextBrussels
-            | Exchange::EuronextLisbon
-            | Exchange::EuronextDublin
-            | Exchange::EuronextMilan
-            | Exchange::Bme
-            | Exchange::NasdaqStockholm
-            | Exchange::NasdaqHelsinki
-            | Exchange::NasdaqCopenhagen
-            | Exchange::Vienna
-            | Exchange::BinanceFutures => true,
-        }
-    }
-
-    for &exchange in ALL_EXCHANGES {
-        assert!(
-            is_listed(exchange),
-            "{exchange:?} missing from ALL_EXCHANGES"
-        );
-    }
+fn all_exchanges_matches_the_crates_own_list() {
+    // `Exchange` is `#[non_exhaustive]`, so this crate cannot hold an
+    // exhaustive match as a coverage fence. It does not need one: the
+    // library's `exchanges!` macro generates the enum, `Exchange::ALL`, and
+    // `as_str` from one table, so a variant cannot exist while missing from
+    // `ALL`. What this test pins is the expectation side: the hand-maintained
+    // list above agrees element-by-element (and in order) with the generated
+    // `ALL`, and both carry the declared count — catching a row dropped from
+    // or reordered in the library's table.
+    assert_eq!(
+        ALL_EXCHANGES,
+        Exchange::ALL,
+        "the test's independent list and Exchange::ALL disagree; a new \
+         variant was added to one but not the other"
+    );
     assert_eq!(
         ALL_EXCHANGES.len(),
         EXCHANGE_VARIANT_COUNT,
         "ALL_EXCHANGES lost or gained an entry; update it together with \
-         `is_listed` and EXCHANGE_VARIANT_COUNT or the grids skip a venue"
+         Exchange::ALL, Exchange::as_str, and EXCHANGE_VARIANT_COUNT or the \
+         grids skip a venue"
     );
+    assert!(
+        Exchange::ALL.windows(2).all(|pair| pair[0] < pair[1]),
+        "Exchange::ALL must stay in declaration (Ord) order with no duplicates"
+    );
+}
+
+#[test]
+fn every_exchange_name_round_trips_through_serde_display_and_from_str() {
+    // One venue has exactly one snake_case name, shared by serde, `as_str`,
+    // `Display`, and `FromStr`. `as_str` is a hand-written second copy of the
+    // serde rename table, so every variant is checked both ways; `FromStr`
+    // searches `Exchange::ALL` by `as_str`, so its agreement is implied but
+    // pinned anyway.
+    for &exchange in Exchange::ALL {
+        let name = exchange.as_str();
+        let serde_form = serde_json::to_value(exchange).expect("serializes");
+        assert_eq!(
+            serde_form,
+            serde_json::Value::String(name.to_owned()),
+            "{exchange:?}: as_str and the serde wire form disagree"
+        );
+        assert_eq!(
+            exchange.to_string(),
+            name,
+            "{exchange:?}: Display and as_str disagree"
+        );
+        assert_eq!(
+            name.parse::<Exchange>(),
+            Ok(exchange),
+            "{exchange:?}: FromStr does not round-trip its own name"
+        );
+    }
+}
+
+#[test]
+fn from_str_rejects_unrecognized_names_instead_of_defaulting() {
+    // A typo must surface as an error a caller can see — never silently
+    // become `Exchange::Unknown`. `"unknown"` itself parses, because that is
+    // the canonical name a caller uses to *choose* the fallback explicitly.
+    for bad in ["", "CME", "nyse-arca", "cme ", "totally_made_up"] {
+        let parsed = bad.parse::<Exchange>();
+        assert!(parsed.is_err(), "{bad:?} must not parse, got {parsed:?}");
+        let error = parsed.expect_err("checked above");
+        assert_eq!(error.input(), bad, "the error must carry the bad input");
+        assert!(
+            !error.to_string().is_empty(),
+            "the error must render a message"
+        );
+    }
+    assert_eq!("unknown".parse::<Exchange>(), Ok(Exchange::Unknown));
 }
 
 /// Builds the UTC instant for `ssm` seconds after local midnight on `day` in

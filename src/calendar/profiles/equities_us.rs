@@ -9,10 +9,13 @@
 //!
 //! Reg NMS gives every lit US equities venue the same 09:30–16:00 ET regular
 //! session, so [`US_EQUITY_REGULAR`] is shared and the venues differ only in
-//! their extended windows. The exceptions are the ones worth knowing: NYSE Texas
-//! opens its pre-market at 07:00 rather than 04:00, IntelligentCross accepts
-//! orders from 09:00 without executing, and Blue Ocean ATS is overnight-only —
-//! its single rule wraps past midnight (`open_ssm > close_ssm`).
+//! their extended windows — which genuinely differ: the Nasdaq markets, NYSE
+//! Arca, Cboe BZX/EDGX, MEMX, and MIAX Pearl open their early session at
+//! 04:00 ET, while NYSE American, NYSE National, NYSE Texas, and Cboe
+//! BYX/EDGA open at 07:00, NYSE itself trades the core session only, IEX runs
+//! System Hours 08:00–17:00, IntelligentCross accepts orders from 09:00
+//! without executing, and Blue Ocean ATS is overnight-only — its single rule
+//! wraps past midnight (`open_ssm > close_ssm`).
 //!
 //! `*_PRE*` / `*_POST*` pairs exist where a venue changed its published hours;
 //! only [`super::super::hours_for_exchange_as_of`] selects between them, and
@@ -82,11 +85,63 @@ pub static BLUE_OCEAN_EXTENDED: &[SessionRule] = &[
     },
 ];
 
-// US equities (Reg NMS): RTH + pre/post
+// US equities, 04:00 ET early group: RTH + 04:00–09:30 / 16:00–20:00 extended.
+// Applies to the venues whose early session actually starts 04:00 ET: the
+// Nasdaq markets (Nasdaq/BX/PSX), NYSE Arca ("Early Trading Session 4:00 a.m.
+// to 9:30 a.m. ET" — nyse.com, "Trading Hours"), Cboe BZX and EDGX ("Early
+// Trading Session: 4:00 a.m. to 8:00 a.m. … Post-Market Session: 4:00 p.m. to
+// 8:00 p.m." — cboe.com, "Hours & Holidays"; the 8:00–9:30 window is Cboe's
+// separately named Pre-Market Session, also continuous trading), MEMX (memx.com
+// insights: "MEMX began trading at 4:00 a.m. ET"), and MIAX Pearl Equities
+// ("members are able to trade beginning at 4:00 AM ET … until 8:00 PM ET" —
+// MIAX alert 2024-11-13 and Pearl Equities trade-hours page).
 pub(crate) static US_EQUITIES_PROFILE: StaticHoursProfile = StaticHoursProfile {
     tz: America::New_York,
     regular: US_EQUITY_REGULAR,
     extended: US_EQUITY_EXTENDED,
+    has_daily_close: true,
+    has_weekend_close: true,
+};
+
+/// Early-at-07:00 extended set: 07:00–09:30 ET early session and 16:00–20:00 ET
+/// late session. NYSE American and NYSE National run "Early Trading Session
+/// 7:00 a.m. to 9:30 a.m. ET / Late Trading Session 4:00 p.m. to 8:00 p.m. ET"
+/// (nyse.com, "Trading Hours"); Cboe BYX and EDGA run "Early Trading Session:
+/// 7:00 a.m. to 8:00 a.m." followed by the continuous Pre-Market Session to
+/// 9:30 (cboe.com, "Hours & Holidays").
+static EXT_EARLY_0700: &[SessionRule] = &[
+    // Early 07:00–09:30 ET
+    SessionRule {
+        days: MON_FRI,
+        open_ssm: 7 * 3600,
+        close_ssm: 9 * 3600 + 30 * 60,
+    },
+    // Late 16:00–20:00 ET
+    SessionRule {
+        days: MON_FRI,
+        open_ssm: 16 * 3600,
+        close_ssm: 20 * 3600,
+    },
+];
+
+// NYSE American / NYSE National / Cboe BYX / Cboe EDGA: early opens 07:00 ET.
+pub(crate) static US_EQUITY_EARLY_0700_PROFILE: StaticHoursProfile = StaticHoursProfile {
+    tz: America::New_York,
+    regular: US_EQUITY_REGULAR,
+    extended: EXT_EARLY_0700,
+    has_daily_close: true,
+    has_weekend_close: true,
+};
+
+// NYSE (XNYS) itself trades the core session only: "Core: 9:30 a.m. to
+// 4:00 p.m. ET" with no early and no late session (nyse.com, "Trading
+// Hours" — early/late trading on NYSE Group venues happens on Arca, American,
+// National, and Texas). The 6:30 a.m. pre-opening is order queuing for the
+// opening auction, not a trading session, so it is deliberately not modeled.
+pub(crate) static NYSE_PROFILE: StaticHoursProfile = StaticHoursProfile {
+    tz: America::New_York,
+    regular: US_EQUITY_REGULAR,
+    extended: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };

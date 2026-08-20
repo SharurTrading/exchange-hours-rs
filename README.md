@@ -18,7 +18,7 @@ over a `MarketHours` value: no state, no I/O, no clocks, no floats, no secrets, 
 `#![forbid(unsafe_code)]`.
 
 - **69 venues** — US equities/options, US and international futures, EU equities, always-open
-  crypto — with point-in-time historical revisions for 8 of them.
+  crypto — with point-in-time historical revisions for 10 of them.
 - **Session queries** — open/closed by regular/extended/both, session bounds, next open, gaps.
 - **Calendar-aware bar boundaries** — intraday bars clamp to the session and step over
   maintenance breaks; daily/weekly/monthly bars close at real session closes, not midnight.
@@ -75,12 +75,12 @@ assert_eq!(daily_close, ct(2026, 4, 20, 16, 0));
 
 | Family | Variants | Local zone | Session shape |
 |---|---|---|---|
-| US equities (Reg NMS) | 17 | `America/New_York` | 09:30–16:00 regular; 04:00–09:30 and 16:00–20:00 extended. IEX (08:00–17:00 System Hours), NYSE Texas, IntelligentCross, and the overnight-only Blue Ocean ATS each differ. |
+| US equities (Reg NMS) | 17 | `America/New_York` | 09:30–16:00 regular everywhere; extended hours differ by venue — early opens 04:00 (Nasdaq×3, NYSE Arca, Cboe BZX/EDGX, MEMX, MIAX Pearl) or 07:00 (NYSE American/National/Texas, Cboe BYX/EDGA), NYSE itself is core-only, IEX runs 08:00–17:00 System Hours, IntelligentCross accepts orders from 09:00, and Blue Ocean ATS is overnight-only. |
 | FINRA TRFs | 3 | `America/New_York` | 08:00–20:00; no extended session. |
 | US options | 18 | `America/New_York` | 09:30–16:00; Cboe C1 adds a 20:15→09:25 GTH wrap and a 16:15–17:00 curb. |
 | CME Globex futures | 4 | `US/Central` | 17:00→16:00 wrap with a 60-minute daily break; CBOT grains keep their own day session. |
 | Cboe Futures (CFE) | 1 | `US/Central` | RTH 08:30–15:00 flowing seamlessly into post-settlement 15:00–16:00, plus a 17:00→08:30 overnight wrap. |
-| EU equities | 14 | 11 European zones | 09:00–17:30 continuous plus auction windows; LSE 08:00–16:30; SIX 09:00–17:20 with a closing auction and Trading-At-Last to 17:40. |
+| EU equities | 14 | 11 European zones | 09:00–17:30 continuous as the continental default, with real divergence: LSE 08:00–16:30 (+ Closing Price Crossing to 16:40), SIX to 17:20, Euronext Dublin to 17:28, Nasdaq Stockholm to 17:25, Copenhagen to 16:55, Helsinki 10:00–18:25 EET; post-close trading-at-last windows on Euronext, Xetra, BME, Vienna, and SIX. |
 | ICE complex & European energy | 9 | London / Amsterdam / Berlin / Dubai / New York | 01:00–23:00 local, or the ICE 20:00→18:00 ET wrap. |
 | Asia-Pacific futures (SGX) | 1 | `Asia/Singapore` | 07:10–20:00 day session plus a T+1 wrap to 05:15. |
 | Always-open venues, and the `Exchange::Unknown` fallback | 2 | `UTC` | 24×7; no daily close, no weekend close. `Unknown` also logs a one-shot `tracing::warn!`. |
@@ -123,8 +123,17 @@ reaches every consumer at once.
 - **Serde wire format is stable.** `Exchange` and `MarketHoursKey` serialize as `snake_case`
   strings; a rename that changes a serialized string breaks persisted data.
 - **Normal week only.** Holidays, early closes, half-days, and product-level variations are
-  absent — `is_holiday` is a stub returning `false`, though the wrap and daily-close paths
-  already route through it. Verify contract specs before trading on these defaults.
+  absent — `is_holiday` is a stub returning `false`, though every query path already routes
+  through it under one session-existence contract. Verify contract specs before trading on
+  these defaults.
+- **No panics, and a stated no-session contract.** The public surface is total: a profile
+  with no sessions in the bounded search horizon (a venue before its go-live date) returns
+  the degenerate value — `(t, t)` bounds, `end == t` candles — and predicates report
+  closed/not-in-maintenance. Callers that need progress must treat the degenerate value as
+  "no session".
+- **`SessionRule` has a stated domain.** `SessionRule::new` / `validate` enforce
+  `open_ssm < 86_400`, `close_ssm <= 86_400`, a non-empty interval, and at least one
+  enabled weekday; every shipped table is fence-checked against the same domain.
 
 ## Testing
 
@@ -134,7 +143,11 @@ that callers do not also get (TEST-LAYOUT).
 
 - `tests/venue_sessions.rs` — the per-venue baseline: published opens, the minute before, the
   end-exclusive close, overnight wraps, maintenance gaps, weekend boundaries (including SGX's
-  Friday T+1 wrap into Saturday), always-open venues, bounds, and the `snake_case` serde forms.
+  Friday T+1 wrap into Saturday), always-open venues, bounds, the `snake_case` serde forms,
+  and source-cited pins for the venue-data corrections (NYSE-family and Cboe early sessions,
+  Nordic closes, European post-close windows).
+- `tests/no_session_contract.rs` — the degenerate contract for profiles with no rules.
+- `tests/rule_validation.rs` — the `SessionRule` domain: what `new`/`validate` accept and reject.
 - `tests/contract/session_invariants.rs` — properties that must hold for **every** venue and
   instant. A `splitmix64` PRNG on a fixed seed set plus a pinned DST fixture cover totality and
   determinism, maintenance implies closed, ordered bounds, and a strictly-advancing

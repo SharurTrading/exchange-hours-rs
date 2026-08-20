@@ -773,6 +773,8 @@ const CUTOVER_EPOCHS: &[(Exchange, &[Ymd])] = &[
     (Exchange::NyseTexas, &[(2024, 6, 1), (2025, 6, 1)]),
     (Exchange::BlueOceanAts, &[(2021, 6, 1), (2022, 6, 1)]),
     (Exchange::Cbot, &[(2012, 6, 1), (2014, 6, 1)]),
+    (Exchange::CboeEdgx, &[(2020, 6, 1), (2022, 6, 1)]),
+    (Exchange::CboeBzx, &[(2024, 6, 1), (2026, 6, 1)]),
 ];
 
 #[test]
@@ -844,6 +846,16 @@ fn cutovers_flip_exactly_at_the_venue_local_midnight() {
             chrono_tz::America::New_York,
         ),
         (Exchange::Cbot, (2013, 4, 8), chrono_tz::US::Central),
+        (
+            Exchange::CboeEdgx,
+            (2021, 3, 8),
+            chrono_tz::America::New_York,
+        ),
+        (
+            Exchange::CboeBzx,
+            (2025, 5, 1),
+            chrono_tz::America::New_York,
+        ),
     ];
 
     for &(exchange, (year, month, day), tz) in cutovers {

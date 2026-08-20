@@ -22,7 +22,7 @@ use crate::calendar::profiles::{
     CBOT_PROFILE_POST2013, CBOT_PROFILE_PRE2013, CFE_PROFILE, CFE_PROFILE_PRE_2021_12_06,
     CFE_PROFILE_PRE2014, CME_PROFILE_POST2016, CME_PROFILE_PRE2016, EUREX_PROFILE_NO_ASIAN,
     EUREX_PROFILE_WITH_ASIAN, IEX_PROFILE_POST2015, IEX_PROFILE_PRE2015, NYSE_TEXAS_PROFILE,
-    from_profile,
+    US_EQUITIES_PROFILE, US_EQUITY_EARLY_0700_PROFILE, from_profile,
 };
 use crate::calendar::{Exchange, MarketHours};
 
@@ -56,6 +56,10 @@ const NYSE_TEXAS_GO_LIVE: NaiveDate = cutover(2025, 3, 31);
 const BLUE_OCEAN_GO_LIVE: NaiveDate = cutover(2021, 10, 5);
 /// CBOT: grain trading hours reduced.
 const CBOT_CUTOVER: NaiveDate = cutover(2013, 4, 8);
+/// Cboe EDGX Equities: early trading session moved 07:00 -> 04:00 ET.
+const EDGX_EARLY_CUTOVER: NaiveDate = cutover(2021, 3, 8);
+/// Cboe BZX Equities: early trading session moved 07:00 -> 04:00 ET.
+const BZX_EARLY_CUTOVER: NaiveDate = cutover(2025, 5, 1);
 
 /// Time-aware market hours: returns the exchange-level `MarketHours` profile appropriate
 /// for the provided `as_of` timestamp. Defaults to the latest profile if no historical
@@ -69,6 +73,36 @@ const CBOT_CUTOVER: NaiveDate = cutover(2013, 4, 8);
 #[must_use]
 pub fn hours_for_exchange_as_of(exch: Exchange, as_of: DateTime<Utc>) -> MarketHours {
     match exch {
+        // Cboe EDGX Equities: the 04:00 ET early session began 2021-03-08;
+        // before that the early session opened 07:00 ET.
+        // Source: Cboe press release, "Cboe EDGX Equities Exchange To
+        // Introduce Early Trading Hours, Beginning March 8" (2021-02-08) —
+        // early trading from 4:00 a.m. ET with order acceptance from
+        // 3:30 a.m. ET, effective Monday, March 8, 2021.
+        Exchange::CboeEdgx => {
+            let d = as_of.with_timezone(&America::New_York).date_naive();
+            if d < EDGX_EARLY_CUTOVER {
+                from_profile(Exchange::CboeEdgx, &US_EQUITY_EARLY_0700_PROFILE)
+            } else {
+                from_profile(Exchange::CboeEdgx, &US_EQUITIES_PROFILE)
+            }
+        }
+
+        // Cboe BZX Equities: the 04:00 ET early session began 2025-05-01.
+        // Source: Cboe release notice #54236 — "Effective May 1, 2025, Cboe
+        // BZX Equities Exchange (BZX) will begin accepting orders at 2:30
+        // a.m. ET and will commence the Early Trading Session at 4:00 a.m.
+        // ET. … Currently, BZX begins accepting orders at 6:00 a.m. ET and
+        // commences the Early Trading Session at 7:00 a.m. ET."
+        Exchange::CboeBzx => {
+            let d = as_of.with_timezone(&America::New_York).date_naive();
+            if d < BZX_EARLY_CUTOVER {
+                from_profile(Exchange::CboeBzx, &US_EQUITY_EARLY_0700_PROFILE)
+            } else {
+                from_profile(Exchange::CboeBzx, &US_EQUITIES_PROFILE)
+            }
+        }
+
         // Cboe Options (C1): GTH end extended from 09:15 → 09:25 ET on 2024-08-26.
         Exchange::CboeOptionsC1 => {
             let d = as_of.with_timezone(&America::New_York).date_naive();

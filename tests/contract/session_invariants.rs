@@ -171,9 +171,11 @@ fn assert_instant_invariants(
     // containing bounds.
     let bounds = session_bounds(hours, instant);
     if let Some((b_open, b_close)) = bounds {
+        // Strict: a present session has positive width — `None` is the only
+        // representation of absence, never a zero-width pair.
         assert!(
-            b_close >= b_open,
-            "session close {b_close} precedes open {b_open} ({ctx})"
+            b_close > b_open,
+            "session close {b_close} does not exceed open {b_open} ({ctx})"
         );
     }
     if open_now {
@@ -193,8 +195,8 @@ fn assert_instant_invariants(
             "next session open {n_open} precedes query instant {instant} ({ctx})"
         );
         assert!(
-            n_close >= n_open,
-            "next session close {n_close} precedes open {n_open} ({ctx})"
+            n_close > n_open,
+            "next session close {n_close} does not exceed open {n_open} ({ctx})"
         );
     }
     assert_eq!(
@@ -635,7 +637,18 @@ fn probe_instants(hours: &MarketHours) -> Vec<DateTime<Utc>> {
         };
         for rule in hours.regular.iter().chain(hours.extended.iter()) {
             for ssm in [rule.open_ssm, rule.close_ssm] {
-                let Some(boundary) = local_sample(hours.tz, day, ssm) else {
+                // The end-exclusive `close_ssm == 86_400` sentinel is local
+                // midnight of the next day; probe it there so full-day rules
+                // get their close boundary +/-1s like every other rule.
+                let (boundary_day, boundary_ssm) = if ssm == 86_400 {
+                    let Some(next_day) = day.checked_add_signed(Duration::days(1)) else {
+                        continue;
+                    };
+                    (next_day, 0)
+                } else {
+                    (day, ssm)
+                };
+                let Some(boundary) = local_sample(hours.tz, boundary_day, boundary_ssm) else {
                     continue;
                 };
                 instants.push(boundary - Duration::seconds(1));

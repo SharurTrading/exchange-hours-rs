@@ -1839,10 +1839,11 @@ fn euronext_trading_at_last_runs_to_1740() {
 }
 
 #[test]
-fn euronext_lisbon_trading_at_last_runs_to_1740_local_wet() {
-    // Lisbon shares the Euronext schedule but trades in WET, so the TAL
-    // window must be probed in Europe/Lisbon local time — 17:37 CET is 16:37
-    // in Lisbon, outside the window.
+fn euronext_lisbon_trading_at_last_runs_to_1740_local_time() {
+    // Lisbon shares the Euronext schedule but keeps its own zone, one hour
+    // behind the continental venues year-round, so the TAL window must be
+    // probed in Europe/Lisbon local time — 17:37 on the continental clock is
+    // 16:37 in Lisbon, outside the window.
     let hours = hours_for_exchange(Exchange::EuronextLisbon);
     let lis = |h: u32, m: u32| {
         Europe::Lisbon

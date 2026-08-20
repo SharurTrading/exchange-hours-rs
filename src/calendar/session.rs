@@ -1,9 +1,4 @@
-// Copyright (C) 2026 Kevin Monaghan. All rights reserved.
-//
-// This file is proprietary and confidential.
-// Unauthorized copying, use, modification, distribution, or disclosure of this file,
-// via any medium, is strictly prohibited except under a written agreement with the
-// copyright owner.
+// SPDX-License-Identifier: MIT-0
 
 //! Session bounds: which `[open, close)` window an instant sits in, and which
 //! one comes next.

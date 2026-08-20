@@ -1,0 +1,31 @@
+# SPDX-License-Identifier: MIT-0
+
+# This file IS the dependency-license policy. cargo-deny has no deny-list, so
+# the allow-list below is exhaustive: anything not named here — GPL/LGPL/AGPL
+# included — fails the gate.
+
+[licenses]
+allow = [
+    "MIT",
+    "MIT-0",
+    "Apache-2.0",
+    "Apache-2.0 WITH LLVM-exception",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "ISC",
+    "Zlib",
+    "Unicode-3.0", # unicode-ident (proc-macro2 tree) is "(MIT OR Apache-2.0) AND Unicode-3.0"
+    "CC0-1.0",
+]
+
+[bans]
+wildcards = "deny"
+multiple-versions = "warn"
+
+[advisories]
+unmaintained = "workspace"
+yanked = "deny"
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"

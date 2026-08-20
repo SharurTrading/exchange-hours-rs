@@ -1,9 +1,4 @@
-// Copyright (C) 2026 Kevin Monaghan. All rights reserved.
-//
-// This file is proprietary and confidential.
-// Unauthorized copying, use, modification, distribution, or disclosure of this file,
-// via any medium, is strictly prohibited except under a written agreement with the
-// copyright owner.
+// SPDX-License-Identifier: MIT-0
 
 //! Deterministic property + workload coverage for the `exchange-hours` public
 //! schedule contract.
@@ -43,6 +38,11 @@
 //! Failures print the seed, iteration/step index, the enabled venue/resolution
 //! operation space, the venue, and the offending UTC instant
 //! (`TEST-DETERMINISM-01`).
+
+#![expect(
+    clippy::expect_used,
+    reason = "fixture constructors assert their own literals; a bad literal must fail the test"
+)]
 
 use chrono::{DateTime, Datelike, Duration, NaiveDate, TimeZone, Utc};
 use exchange_hours::{

@@ -1,31 +1,58 @@
-# Copyright (C) 2026 Kevin Monaghan. All rights reserved.
-#
-# This file is proprietary and confidential.
-# Unauthorized copying, use, modification, distribution, or disclosure of this file,
-# via any medium, is strictly prohibited except under a written agreement with the
-# copyright owner.
+# SPDX-License-Identifier: MIT-0
 
 [package]
 name = "exchange-hours"
 version = "0.1.0"
 edition = "2024"
+# Deliberately conservative: the language floor is 1.88 (the `let`-chains this
+# crate uses) but 1.95 is what consumers are expected to be on. Verified by the
+# `msrv` CI job, which builds on exactly this version.
+rust-version = "1.95"
+license = "MIT-0"
 publish = false
 description = "Exchange trading hours, session-boundary, and candle-boundary contracts."
+repository = "https://github.com/SharurTrading/exchange-hours-rs"
 
 [lib]
 name = "exchange_hours"
 
+# Gates, in the same shape the consuming platform uses. CI promotes every
+# warning to an error with `-D warnings`, so `warn` here means "fails CI".
+[lints.rust]
+missing_docs = "deny"
+unsafe_code = "forbid"
+
+[lints.clippy]
+pedantic = { level = "warn", priority = -1 }
+# LAW-PANIC — the public surface is total; nothing here may panic. Tests are
+# exempt via the `allow-*-in-tests` switches in clippy.toml.
+unwrap_used = "deny"
+expect_used = "deny"
+panic = "deny"
+todo = "deny"
+unreachable = "deny"
+# STYLE-LOG — a library observes through `tracing`, never through stdio.
+print_stdout = "deny"
+print_stderr = "deny"
+dbg_macro = "deny"
+# LAW-DETERMINISM — enforced by the disallowed lists in clippy.toml.
+disallowed_methods = "deny"
+disallowed_types = "deny"
+disallowed_macros = "deny"
+
 [dependencies]
-# `default-features = false`: the crate never reads a clock (LAW-DETERMINISM) —
-# disabling the default `clock` feature makes `Utc::now()` a compile error here.
+# `default-features = false`: the crate never reads a clock (LAW-DETERMINISM,
+# see AGENTS.md) — disabling the default `clock` feature makes `Utc::now()` a
+# compile error here.
 # No `chrono` type is (de)serialized, so its `serde` feature is not needed.
-chrono = { version = "0.4.42", default-features = false, features = ["std"] }
-chrono-tz = "0.10"
-serde = { version = "1.0.228", features = ["derive"] }
-tracing = "0.1"
+chrono = { version = "0.4.45", default-features = false, features = ["std"] }
+# 0.10.4 carries the fix for tz transitions specified in UTC and mid-2025 tzdb.
+chrono-tz = "0.10.4"
+serde = { version = "1.0.229", features = ["derive"] }
+tracing = "0.1.44"
 
 [dev-dependencies]
-serde_json = "1.0.145"
+serde_json = "1.0.151"
 
 # Subdirectory test files are not auto-discovered, so targets are declared explicitly.
 [[test]]

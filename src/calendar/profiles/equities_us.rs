@@ -1,9 +1,4 @@
-// Copyright (C) 2026 Kevin Monaghan. All rights reserved.
-//
-// This file is proprietary and confidential.
-// Unauthorized copying, use, modification, distribution, or disclosure of this file,
-// via any medium, is strictly prohibited except under a written agreement with the
-// copyright owner.
+// SPDX-License-Identifier: MIT-0
 
 //! US equities and US options venue tables (all `America/New_York`).
 //!
@@ -13,7 +8,7 @@
 //! Arca, Cboe BZX/EDGX, MEMX, and MIAX Pearl open their early session at
 //! 04:00 ET, while NYSE American, NYSE National, NYSE Texas, and Cboe
 //! BYX/EDGA open at 07:00, NYSE itself trades the core session only, IEX runs
-//! System Hours 08:00–17:00, IntelligentCross accepts orders from 09:00
+//! System Hours 08:00–17:00, `IntelligentCross` accepts orders from 09:00
 //! without executing, and Blue Ocean ATS is overnight-only — its single rule
 //! wraps past midnight (`open_ssm > close_ssm`).
 //!

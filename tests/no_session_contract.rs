@@ -1,9 +1,4 @@
-// Copyright (C) 2026 Kevin Monaghan. All rights reserved.
-//
-// This file is proprietary and confidential.
-// Unauthorized copying, use, modification, distribution, or disclosure of this file,
-// via any medium, is strictly prohibited except under a written agreement with the
-// copyright owner.
+// SPDX-License-Identifier: MIT-0
 
 //! The no-session contract: what every query returns for a profile with no
 //! rules at all.
@@ -23,6 +18,11 @@
 //! reported `true` forever because the then-degenerate `(t, t)` next-session
 //! pair sits zero minutes away — the silent-default trap that motivated the
 //! `Option` surface.
+
+#![expect(
+    clippy::expect_used,
+    reason = "fixture constructors assert their own literals; a bad literal must fail the test"
+)]
 
 use chrono::{TimeZone, Utc};
 use exchange_hours::{

@@ -1,0 +1,26 @@
+# SPDX-License-Identifier: MIT-0
+
+# `msrv` is deliberately not set here: clippy reads it from `rust-version` in
+# Cargo.toml (1.95), so the two cannot drift.
+avoid-breaking-exported-api = false
+
+# LAW-PANIC: tests are exempt from the panic-family lints.
+allow-unwrap-in-tests = true
+allow-expect-in-tests = true
+allow-panic-in-tests = true
+# STYLE-LOG: tests may print.
+allow-print-in-tests = true
+allow-dbg-in-tests = true
+
+# LAW-DETERMINISM — this crate never reads a clock. `chrono`'s `clock` feature
+# is off, so `Utc::now` does not exist to call; the entries below are the guard
+# that makes re-enabling it a lint failure rather than a silent regression.
+disallowed-methods = [
+    { path = "std::time::SystemTime::now", reason = "LAW-DETERMINISM: the caller supplies the instant" },
+    { path = "std::time::Instant::now", reason = "LAW-DETERMINISM: the caller supplies the instant" },
+    { path = "chrono::Utc::now", reason = "LAW-DETERMINISM: the caller supplies the instant", allow-invalid = true },
+    { path = "chrono::Local::now", reason = "LAW-DETERMINISM / UTC-only: no clock, no local time", allow-invalid = true },
+]
+
+disallowed-types = []
+disallowed-macros = []

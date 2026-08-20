@@ -1,20 +1,20 @@
-// Copyright (C) 2026 Kevin Monaghan. All rights reserved.
-//
-// This file is proprietary and confidential.
-// Unauthorized copying, use, modification, distribution, or disclosure of this file,
-// via any medium, is strictly prohibited except under a written agreement with the
-// copyright owner.
+// SPDX-License-Identifier: MIT-0
 
-// Normal-week baseline tests for futures venues: open/closed flags, session
-// bounds, weekend/holiday-window checks, and serde wire-format stability.
-//
-// Deliberately not covered here (and out of scope for the normal-week model):
-//
-//   - product-level hour variations (e.g. CME wheat vs equity index)
-//   - holiday calendars (the `is_holiday` stub always returns false)
-//   - early-close / half-day schedules
-//   - DST-transition edge cases (covered separately by the bias-aware helpers)
-//   - Binance quarterly-expiry pauses
+//! Normal-week baseline tests for futures venues: open/closed flags, session
+//! bounds, weekend/holiday-window checks, and serde wire-format stability.
+//!
+//! Deliberately not covered here (and out of scope for the normal-week model):
+//!
+//!   - product-level hour variations (e.g. CME wheat vs equity index)
+//!   - holiday calendars (the `is_holiday` stub always returns false)
+//!   - early-close / half-day schedules
+//!   - DST-transition edge cases (covered separately by the bias-aware helpers)
+//!   - Binance quarterly-expiry pauses
+
+#![expect(
+    clippy::expect_used,
+    reason = "fixture constructors assert their own literals; a bad literal must fail the test"
+)]
 
 use chrono::{DateTime, Datelike, TimeZone, Utc};
 use chrono_tz::{America, Asia, Europe, US};
@@ -537,6 +537,28 @@ fn eurex_before_asian_hours() {
     let h = hours_for_exchange_as_of(Exchange::Eurex, utc((2026, 4, 20), (0, 30, 0)));
     let t = cet((2026, 4, 20), (0, 30, 0));
     assert!(!h.is_open(t), "EUREX closed before 01:00 CET");
+}
+
+#[test]
+fn eurex_had_no_asian_session_before_2018_12_10() {
+    // The 01:00-08:00 CET Asian window was added 2018-12-10; before that the
+    // venue opened at 08:00. Pins both sides of the cutover so the arm in
+    // `hours_for_exchange_as_of` cannot be inverted unnoticed.
+    let before = hours_for_exchange_as_of(Exchange::Eurex, cet((2018, 12, 7), (12, 0, 0)));
+    assert!(
+        !before.is_open(cet((2018, 12, 7), (5, 0, 0))),
+        "no Asian session on a Friday before the cutover"
+    );
+    assert!(
+        before.is_open_regular(cet((2018, 12, 7), (10, 0, 0))),
+        "the regular session is unaffected by the cutover"
+    );
+
+    let after = hours_for_exchange_as_of(Exchange::Eurex, cet((2018, 12, 10), (12, 0, 0)));
+    assert!(
+        after.is_open_extended(cet((2018, 12, 10), (5, 0, 0))),
+        "the Asian session is live from the cutover date"
+    );
 }
 
 // ---------------------------------------------------------------------------
@@ -1408,6 +1430,33 @@ fn iex_postmarket_closes_at_1700_not_2000() {
     assert!(
         !h.is_open(et((2026, 4, 20), (19, 0, 0))),
         "IEX closed 19:00 ET; it runs no 20:00 post-market"
+    );
+}
+
+#[test]
+fn iex_had_no_extended_sessions_before_2015_08_21() {
+    // IEX Trading Alert #2015-015: "Effective Friday, August 21, 2015, IEX will
+    // begin to rollout extended hours trading with Pre-Market and Post-Market
+    // Sessions." Pins both sides of the cutover so the arm in
+    // `hours_for_exchange_as_of` cannot be inverted unnoticed.
+    let before = hours_for_exchange_as_of(Exchange::Iex, et((2015, 8, 20), (12, 0, 0)));
+    assert!(
+        !before.is_open(et((2015, 8, 20), (8, 30, 0))),
+        "no pre-market before the rollout"
+    );
+    assert!(
+        !before.is_open(et((2015, 8, 20), (16, 30, 0))),
+        "no post-market before the rollout"
+    );
+    assert!(
+        before.is_open_regular(et((2015, 8, 20), (10, 0, 0))),
+        "the regular session is unaffected by the cutover"
+    );
+
+    let after = hours_for_exchange_as_of(Exchange::Iex, et((2015, 8, 21), (12, 0, 0)));
+    assert!(
+        after.is_open_extended(et((2015, 8, 21), (8, 30, 0))),
+        "pre-market is live from the rollout date"
     );
 }
 

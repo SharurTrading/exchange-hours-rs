@@ -1,9 +1,4 @@
-// Copyright (C) 2026 Kevin Monaghan. All rights reserved.
-//
-// This file is proprietary and confidential.
-// Unauthorized copying, use, modification, distribution, or disclosure of this file,
-// via any medium, is strictly prohibited except under a written agreement with the
-// copyright owner.
+// SPDX-License-Identifier: MIT-0
 
 //! The Deutsche Börse and SIX Group venues: Xetra, SIX Swiss Exchange,
 //! Vienna (Wiener Börse, a Xetra/T7 market), and BME (Spain, SIX Group).

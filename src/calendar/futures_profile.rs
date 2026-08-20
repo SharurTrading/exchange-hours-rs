@@ -1,9 +1,4 @@
-// Copyright (C) 2026 Kevin Monaghan. All rights reserved.
-//
-// This file is proprietary and confidential.
-// Unauthorized copying, use, modification, distribution, or disclosure of this file,
-// via any medium, is strictly prohibited except under a written agreement with the
-// copyright owner.
+// SPDX-License-Identifier: MIT-0
 
 //! Named futures profiles, addressed by [`MarketHoursKey`] instead of by venue.
 //!
@@ -68,7 +63,7 @@ impl FuturesSessionProfile {
     /// back several venues — [`hours_for_market_hours_key`] tags with
     /// [`Exchange::Unknown`] since the key, not a venue, identifies the profile.
     #[must_use]
-    pub fn to_market_hours(&self, exchange: Exchange) -> MarketHours {
+    pub fn to_market_hours(self, exchange: Exchange) -> MarketHours {
         MarketHours {
             exchange,
             tz: self.tz,

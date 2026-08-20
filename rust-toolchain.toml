@@ -1,0 +1,10 @@
+# SPDX-License-Identifier: MIT-0
+
+# Pinned to the toolchain the consuming platform builds with, so a change that
+# compiles here cannot break downstream. This is the *build* toolchain; the
+# crate's minimum supported version is `rust-version` in Cargo.toml, verified
+# separately by the `msrv` CI job.
+[toolchain]
+channel = "1.97.1"
+components = ["rustfmt", "clippy"]
+profile = "minimal"

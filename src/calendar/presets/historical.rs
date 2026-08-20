@@ -1,9 +1,4 @@
-// Copyright (C) 2026 Kevin Monaghan. All rights reserved.
-//
-// This file is proprietary and confidential.
-// Unauthorized copying, use, modification, distribution, or disclosure of this file,
-// via any medium, is strictly prohibited except under a written agreement with the
-// copyright owner.
+// SPDX-License-Identifier: MIT-0
 
 //! Point-in-time hours: the profile a venue actually published at an instant.
 //!
@@ -24,8 +19,10 @@
 //! more pre-market than the venue actually ran. The match arm below marks
 //! where the cutovers land once an effective date is sourced.
 
+use std::borrow::Cow;
+
 use chrono::{DateTime, NaiveDate, Utc};
-use chrono_tz::{America, Europe, US};
+use chrono_tz::{America, Europe, Tz, US};
 
 use crate::calendar::profiles::{
     BLUE_OCEAN_PROFILE, C1_PROFILE_POST_2024_08_26, C1_PROFILE_PRE_2024_08_26,
@@ -41,10 +38,43 @@ use super::hours_for_exchange;
 /// Builds a cutover date at compile time. Used only to initialise the `const`
 /// cutover items below: an invalid literal fails the build during constant
 /// evaluation, so no panic path exists at runtime.
+#[expect(
+    clippy::panic,
+    reason = "const-eval only: this arm is how an invalid date literal becomes a \
+              build failure, and a `const` item cannot reach it at runtime"
+)]
 const fn cutover(year: i32, month: u32, day: u32) -> NaiveDate {
     match NaiveDate::from_ymd_opt(year, month, day) {
         Some(date) => date,
         None => panic!("invalid hard-coded cutover date"),
+    }
+}
+
+/// True when `as_of`, read as a calendar date in the venue's **own** zone,
+/// falls before `cutover`.
+///
+/// Every arm of [`hours_for_exchange_as_of`] compares dates this way: a rule
+/// change announced for a date took effect on that *venue-local* date, so
+/// comparing in UTC would shift the boundary by hours.
+fn is_before(as_of: DateTime<Utc>, tz: Tz, cutover: NaiveDate) -> bool {
+    as_of.with_timezone(&tz).date_naive() < cutover
+}
+
+/// A profile with no sessions at all: what a venue's hours were before it went
+/// live. Every boundary query over these hours returns `None`, which is the
+/// no-session contract rather than a zero-length trading day.
+///
+/// The rule sets borrow a static empty slice rather than owning an empty
+/// `Vec`, matching how every other profile is built. Neither allocates; the
+/// point is that one construction shape covers all of them.
+fn no_sessions(exchange: Exchange, tz: Tz) -> MarketHours {
+    MarketHours {
+        exchange,
+        tz,
+        regular: Cow::Borrowed(&[]),
+        extended: Cow::Borrowed(&[]),
+        has_daily_close: true,
+        has_weekend_close: true,
     }
 }
 
@@ -95,8 +125,7 @@ pub fn hours_for_exchange_as_of(exch: Exchange, as_of: DateTime<Utc>) -> MarketH
         // early trading from 4:00 a.m. ET with order acceptance from
         // 3:30 a.m. ET, effective Monday, March 8, 2021.
         Exchange::CboeEdgx => {
-            let d = as_of.with_timezone(&America::New_York).date_naive();
-            if d < EDGX_EARLY_CUTOVER {
+            if is_before(as_of, America::New_York, EDGX_EARLY_CUTOVER) {
                 from_profile(Exchange::CboeEdgx, &US_EQUITY_EARLY_0700_PROFILE)
             } else {
                 from_profile(Exchange::CboeEdgx, &US_EQUITIES_PROFILE)
@@ -110,8 +139,7 @@ pub fn hours_for_exchange_as_of(exch: Exchange, as_of: DateTime<Utc>) -> MarketH
         // ET. … Currently, BZX begins accepting orders at 6:00 a.m. ET and
         // commences the Early Trading Session at 7:00 a.m. ET."
         Exchange::CboeBzx => {
-            let d = as_of.with_timezone(&America::New_York).date_naive();
-            if d < BZX_EARLY_CUTOVER {
+            if is_before(as_of, America::New_York, BZX_EARLY_CUTOVER) {
                 from_profile(Exchange::CboeBzx, &US_EQUITY_EARLY_0700_PROFILE)
             } else {
                 from_profile(Exchange::CboeBzx, &US_EQUITIES_PROFILE)
@@ -120,8 +148,7 @@ pub fn hours_for_exchange_as_of(exch: Exchange, as_of: DateTime<Utc>) -> MarketH
 
         // Cboe Options (C1): GTH end extended from 09:15 → 09:25 ET on 2024-08-26.
         Exchange::CboeOptionsC1 => {
-            let d = as_of.with_timezone(&America::New_York).date_naive();
-            if d < C1_GTH_CUTOVER {
+            if is_before(as_of, America::New_York, C1_GTH_CUTOVER) {
                 from_profile(Exchange::CboeOptionsC1, &C1_PROFILE_PRE_2024_08_26)
             } else {
                 from_profile(Exchange::CboeOptionsC1, &C1_PROFILE_POST_2024_08_26)
@@ -132,8 +159,7 @@ pub fn hours_for_exchange_as_of(exch: Exchange, as_of: DateTime<Utc>) -> MarketH
         //  - < 2016-03-04: RTH 08:30–15:15; short window 15:30–16:15
         //  - >= 2016-03-04: RTH 08:30–15:15; short window 15:30–16:00
         Exchange::Cme => {
-            let d = as_of.with_timezone(&US::Central).date_naive();
-            if d < CME_CUTOVER {
+            if is_before(as_of, US::Central, CME_CUTOVER) {
                 from_profile(Exchange::Cme, &CME_PROFILE_PRE2016)
             } else {
                 from_profile(Exchange::Cme, &CME_PROFILE_POST2016)
@@ -142,12 +168,10 @@ pub fn hours_for_exchange_as_of(exch: Exchange, as_of: DateTime<Utc>) -> MarketH
 
         // EUREX: Asian hours added 2018-12-10. Before that, omit the 01:00–08:00 slice.
         Exchange::Eurex => {
-            let d = as_of.with_timezone(&Europe::Berlin).date_naive();
-            let asian = d >= EUREX_ASIAN_CUTOVER;
-            if asian {
-                from_profile(Exchange::Eurex, &EUREX_PROFILE_WITH_ASIAN)
-            } else {
+            if is_before(as_of, Europe::Berlin, EUREX_ASIAN_CUTOVER) {
                 from_profile(Exchange::Eurex, &EUREX_PROFILE_NO_ASIAN)
+            } else {
+                from_profile(Exchange::Eurex, &EUREX_PROFILE_WITH_ASIAN)
             }
         }
 
@@ -157,12 +181,10 @@ pub fn hours_for_exchange_as_of(exch: Exchange, as_of: DateTime<Utc>) -> MarketH
         // Pre-Market and Post-Market Sessions."
         // (https://iextrading.com/trading/alerts/2015/015/)
         Exchange::Iex => {
-            let d = as_of.with_timezone(&America::New_York).date_naive();
-            let has_ext = d >= IEX_EXTENDED_CUTOVER;
-            if has_ext {
-                from_profile(Exchange::Iex, &IEX_PROFILE_POST2015)
-            } else {
+            if is_before(as_of, America::New_York, IEX_EXTENDED_CUTOVER) {
                 from_profile(Exchange::Iex, &IEX_PROFILE_PRE2015)
+            } else {
+                from_profile(Exchange::Iex, &IEX_PROFILE_POST2015)
             }
         }
 
@@ -180,10 +202,9 @@ pub fn hours_for_exchange_as_of(exch: Exchange, as_of: DateTime<Utc>) -> MarketH
         // which stamps Rule 1202 and seven other rules "December 6, 2021
         // (21-028)". Rule filing CFE-2021-028 (2021-11-04) carries the redline.
         Exchange::Cfe => {
-            let d = as_of.with_timezone(&US::Central).date_naive();
-            if d < CFE_ETH_CUTOVER {
+            if is_before(as_of, US::Central, CFE_ETH_CUTOVER) {
                 from_profile(Exchange::Cfe, &CFE_PROFILE_PRE2014)
-            } else if d < CFE_QUEUING_CUTOVER {
+            } else if is_before(as_of, US::Central, CFE_QUEUING_CUTOVER) {
                 from_profile(Exchange::Cfe, &CFE_PROFILE_PRE_2021_12_06)
             } else {
                 from_profile(Exchange::Cfe, &CFE_PROFILE)
@@ -192,16 +213,8 @@ pub fn hours_for_exchange_as_of(exch: Exchange, as_of: DateTime<Utc>) -> MarketH
 
         // NYSE Texas: go-live 2025-03-31; before that, no trading sessions.
         Exchange::NyseTexas => {
-            let d = as_of.with_timezone(&America::New_York).date_naive();
-            if d < NYSE_TEXAS_GO_LIVE {
-                MarketHours {
-                    exchange: Exchange::NyseTexas,
-                    tz: America::New_York,
-                    regular: Vec::new().into(),
-                    extended: Vec::new().into(),
-                    has_daily_close: true,
-                    has_weekend_close: true,
-                }
+            if is_before(as_of, America::New_York, NYSE_TEXAS_GO_LIVE) {
+                no_sessions(Exchange::NyseTexas, America::New_York)
             } else {
                 from_profile(Exchange::NyseTexas, &NYSE_TEXAS_PROFILE)
             }
@@ -218,16 +231,8 @@ pub fn hours_for_exchange_as_of(exch: Exchange, as_of: DateTime<Utc>) -> MarketH
         // ATS-N, which also explains the missing Friday session (the NYSE TRF is
         // unavailable to report Saturday).
         Exchange::BlueOceanAts => {
-            let d = as_of.with_timezone(&America::New_York).date_naive();
-            if d < BLUE_OCEAN_GO_LIVE {
-                MarketHours {
-                    exchange: Exchange::BlueOceanAts,
-                    tz: America::New_York,
-                    regular: Vec::new().into(),
-                    extended: Vec::new().into(),
-                    has_daily_close: true,
-                    has_weekend_close: true,
-                }
+            if is_before(as_of, America::New_York, BLUE_OCEAN_GO_LIVE) {
+                no_sessions(Exchange::BlueOceanAts, America::New_York)
             } else {
                 from_profile(Exchange::BlueOceanAts, &BLUE_OCEAN_PROFILE)
             }
@@ -235,8 +240,7 @@ pub fn hours_for_exchange_as_of(exch: Exchange, as_of: DateTime<Utc>) -> MarketH
 
         // CBOT: reduced hours effective 2013-04-08; before that, use 17:00–07:45 overnight and 08:30–13:15 day.
         Exchange::Cbot => {
-            let d = as_of.with_timezone(&US::Central).date_naive();
-            if d < CBOT_CUTOVER {
+            if is_before(as_of, US::Central, CBOT_CUTOVER) {
                 from_profile(Exchange::Cbot, &CBOT_PROFILE_PRE2013)
             } else {
                 from_profile(Exchange::Cbot, &CBOT_PROFILE_POST2013)
@@ -249,6 +253,11 @@ pub fn hours_for_exchange_as_of(exch: Exchange, as_of: DateTime<Utc>) -> MarketH
         // boundary (see the module doc). When a primary source with an
         // effective date is found, replace this arm with the dated
         // pre/post-profile selection, mirroring the CboeBzx arm above.
+        #[expect(
+            clippy::match_same_arms,
+            reason = "identical to the default arm today, but kept separate as the \
+                      documented marker for where the sourced cutovers land"
+        )]
         Exchange::MemxEq | Exchange::MiaxPearlEq => hours_for_exchange(exch),
 
         // Default: return the current exchange profile.

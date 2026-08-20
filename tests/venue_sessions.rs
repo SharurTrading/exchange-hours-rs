@@ -16,9 +16,9 @@
 //   - DST-transition edge cases (covered separately by the bias-aware helpers)
 //   - Binance quarterly-expiry pauses
 
-use super::*;
 use chrono::{DateTime, Datelike, TimeZone, Utc};
 use chrono_tz::{America, Asia, Europe, US};
+use exchange_hours::*;
 
 fn utc(date: (i32, u32, u32), time: (u32, u32, u32)) -> DateTime<Utc> {
     Utc.with_ymd_and_hms(date.0, date.1, date.2, time.0, time.1, time.2)
@@ -1264,4 +1264,93 @@ fn market_hours_derives_eq() {
         hours_for_exchange(Exchange::Eurex),
         "distinct exchanges yield unequal hours"
     );
+}
+
+// ---------------------------------------------------------------------------
+// Overnight-wrap open-side regression
+//
+// A wrap rule (`open_ssm > close_ssm`) that is enabled on a given weekday
+// contributes only its OPEN side on that day. Its close belongs to the previous
+// day's instance of the same rule, so a venue whose previous local day ran no
+// session must read closed right up to today's open.
+//
+// COMEX/NYMEX (17:00→16:00 CT) and ICE US (20:00→18:00 ET) are the venues that
+// expose this: their wrap close falls late in the day, so every Sunday instant
+// before that close previously reported open even though Saturday never opened
+// a session. CME is pinned alongside them because its wrap closes at 08:30,
+// which makes it insensitive to the same defect — its behaviour must not move.
+// ---------------------------------------------------------------------------
+
+#[test]
+fn comex_sunday_morning_closed_before_globex_open() {
+    let h = hours_for_exchange(Exchange::Comex);
+    let t = ct((2026, 4, 19), (10, 0, 0));
+    assert!(
+        !h.is_open(t),
+        "COMEX closed Sun 10:00 CT: Saturday opened no session to wrap into Sunday"
+    );
+}
+
+#[test]
+fn nymex_sunday_morning_closed_before_globex_open() {
+    let h = hours_for_exchange(Exchange::Nymex);
+    let t = ct((2026, 4, 19), (10, 0, 0));
+    assert!(
+        !h.is_open(t),
+        "NYMEX closed Sun 10:00 CT: Saturday opened no session to wrap into Sunday"
+    );
+}
+
+#[test]
+fn iceus_sunday_morning_closed_before_open() {
+    let h = hours_for_exchange(Exchange::Iceus);
+    let t = et((2026, 4, 19), (10, 0, 0));
+    assert!(
+        !h.is_open(t),
+        "ICE US closed Sun 10:00 ET: Saturday opened no session to wrap into Sunday"
+    );
+}
+
+#[test]
+fn cme_sunday_morning_closed_before_globex_open() {
+    let h = hours_for_exchange(Exchange::Cme);
+    let t = ct((2026, 4, 19), (10, 0, 0));
+    assert!(!h.is_open(t), "CME closed Sun 10:00 CT");
+}
+
+#[test]
+fn sunday_morning_is_open_agrees_with_session_bounds() {
+    // The defect showed up as two public queries disagreeing: `is_open` said
+    // open while `session_bounds` returned a session starting hours later.
+    for (exchange, instant) in [
+        (Exchange::Comex, ct((2026, 4, 19), (10, 0, 0))),
+        (Exchange::Nymex, ct((2026, 4, 19), (10, 0, 0))),
+        (Exchange::Iceus, et((2026, 4, 19), (10, 0, 0))),
+        (Exchange::Cme, ct((2026, 4, 19), (10, 0, 0))),
+    ] {
+        let h = hours_for_exchange(exchange);
+        let (open, close) = session_bounds(&h, instant);
+        let contained = open <= instant && instant < close;
+        assert_eq!(
+            h.is_open(instant),
+            contained,
+            "{exchange:?}: is_open disagrees with session_bounds at {instant} \
+             (bounds {open}..{close})"
+        );
+    }
+}
+
+#[test]
+fn wrap_venues_reopen_at_their_published_sunday_open() {
+    // The fix must not close a venue that genuinely is open: each of these is
+    // the first instant of the Sunday-evening session.
+    for (exchange, instant) in [
+        (Exchange::Comex, ct((2026, 4, 19), (17, 0, 0))),
+        (Exchange::Nymex, ct((2026, 4, 19), (17, 0, 0))),
+        (Exchange::Iceus, et((2026, 4, 19), (20, 0, 0))),
+        (Exchange::Cme, ct((2026, 4, 19), (17, 0, 0))),
+    ] {
+        let h = hours_for_exchange(exchange);
+        assert!(h.is_open(instant), "{exchange:?} open at its Sunday open");
+    }
 }

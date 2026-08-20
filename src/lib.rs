@@ -97,7 +97,3 @@
 mod calendar;
 
 pub use calendar::*;
-
-#[cfg(test)]
-#[path = "../tests/unit/market_hours.rs"]
-mod tests;

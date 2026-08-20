@@ -129,19 +129,21 @@ reaches every consumer at once.
 ## Testing
 
 Pure and stateless, so the validation class is property/deterministic-fixture, not workload.
+Every test is an integration test over the public surface: the crate exposes nothing to tests
+that callers do not also get (TEST-LAYOUT).
 
-- `tests/unit/market_hours.rs` (98) — bridged into the lib via `#[cfg(test)] #[path = …] mod
-  tests;` in `lib.rs`, a v1 layout artifact: the suite reaches no crate-private item, so it
-  would also compile unchanged as an integration test. Pins the normal-week baseline per venue
-  family: published opens, the minute before, the end-exclusive close, overnight wraps,
-  maintenance gaps, weekend boundaries (including SGX's Friday T+1 wrap into Saturday), the
-  always-open contract, session bounds, and the `snake_case` serde forms.
-- `tests/contract/session_invariants.rs` (4) — public-surface invariants over a self-contained
-  `splitmix64` PRNG on a fixed seed set plus a pinned DST fixture: totality and determinism of
-  every public query, `is_open == is_open_with(Both)`, maintenance implies closed, ordered
-  bounds, candle ends never preceding their start, and a strictly-advancing
-  `next_session_after` walk. Failures print seed and instant, so they are reproducible.
-- `src/lib.rs` doctest (1) — the Quick start example above.
+- `tests/venue_sessions.rs` — the per-venue baseline: published opens, the minute before, the
+  end-exclusive close, overnight wraps, maintenance gaps, weekend boundaries (including SGX's
+  Friday T+1 wrap into Saturday), always-open venues, bounds, and the `snake_case` serde forms.
+- `tests/contract/session_invariants.rs` — properties that must hold for **every** venue and
+  instant. A `splitmix64` PRNG on a fixed seed set plus a pinned DST fixture cover totality and
+  determinism, maintenance implies closed, ordered bounds, and a strictly-advancing
+  `next_session_after` walk. A grid sweep — every `Exchange`, every `SessionKind`, an hourly
+  reference week, every rule boundary ±1s, and four DST transitions — pins the cross-query
+  fence: `is_open_with(t, kind)` always agrees with whether `session_bounds_with(kind, t)`
+  contains `t`, and a closed instant's bounds are exactly its next session. Failures print
+  venue, kind, and instant in UTC and venue-local time.
+- `src/lib.rs` doctest — the Quick start example above.
 
 ```bash
 cargo fmt --check && cargo clippy --all-targets -- -D warnings && cargo test

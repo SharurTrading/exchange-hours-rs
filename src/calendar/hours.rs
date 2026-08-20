@@ -123,8 +123,12 @@ impl MarketHours {
             if r.open_ssm <= r.close_ssm {
                 ssm >= r.open_ssm && ssm < r.close_ssm
             } else {
-                // wrap (open today, close next day)
-                ssm >= r.open_ssm || ssm < r.close_ssm
+                // Wrap: today's instance of the rule contributes only its open
+                // side. The close belongs to *yesterday's* instance, which the
+                // scan below evaluates against yesterday's weekday — testing
+                // `ssm < close_ssm` here would report the venue open before its
+                // own open on any day whose predecessor ran no session.
+                ssm >= r.open_ssm
             }
         }) {
             return true;

@@ -44,10 +44,11 @@
 //! operation space, the venue, and the offending UTC instant
 //! (`TEST-DETERMINISM-01`).
 
-use chrono::{DateTime, Duration, Utc};
+use chrono::{DateTime, Datelike, Duration, NaiveDate, TimeZone, Utc};
 use exchange_hours::{
     CalendarResolution, Exchange, MarketHours, SessionKind, candle_end, candle_end_with,
-    hours_for_exchange, next_session_after, next_session_open_after, session_bounds,
+    hours_for_exchange, next_session_after, next_session_after_with, next_session_open_after,
+    session_bounds, session_bounds_with,
 };
 
 // ---------------------------------------------------------------------------
@@ -358,5 +359,321 @@ fn dst_transition_queries_are_stable_and_total() {
             instant,
             "[pinned DST stability fixture]",
         );
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Cross-query consistency fence
+//
+// `is_open_with` and `session_bounds_with` are two views of one fact: whether a
+// session covers an instant. They are computed by separate code paths, so they
+// can drift — and they did. A wrap rule enabled on a weekday used to contribute
+// its *close* side that day as well as its open side, which reported venues
+// whose wrap closes late in the day (COMEX/NYMEX 17:00→16:00 CT, ICE US
+// 20:00→18:00 ET) open all Sunday morning while `session_bounds` correctly
+// returned the Sunday-evening session. `is_open` said yes, the bounds said no.
+//
+// The invariant below is the fence: for every venue, every session kind, and
+// every instant in the grid, `is_open_with(t, kind)` must equal
+// "`session_bounds_with(kind, t)` contains t". A degenerate `(t, t)` pair from a
+// venue with no rules contains nothing, which is the correct `false`.
+// ---------------------------------------------------------------------------
+
+/// Every [`Exchange`] variant. Kept exhaustive by
+/// `all_exchanges_covers_every_variant` below.
+const ALL_EXCHANGES: &[Exchange] = &[
+    Exchange::Unknown,
+    Exchange::Nasdaq,
+    Exchange::NasdaqBx,
+    Exchange::NasdaqPsx,
+    Exchange::CboeBzx,
+    Exchange::CboeByx,
+    Exchange::CboeEdga,
+    Exchange::CboeEdgx,
+    Exchange::Nyse,
+    Exchange::NyseArca,
+    Exchange::NyseAmerican,
+    Exchange::NyseNational,
+    Exchange::NyseTexas,
+    Exchange::MemxEq,
+    Exchange::MiaxPearlEq,
+    Exchange::Iex,
+    Exchange::IntelligentcrossIqx,
+    Exchange::BlueOceanAts,
+    Exchange::FinraTrfCarteret,
+    Exchange::FinraTrfChicago,
+    Exchange::FinraTrfNyse,
+    Exchange::CboeOptionsC1,
+    Exchange::CboeC2Options,
+    Exchange::CboeBzxOptions,
+    Exchange::CboeEdgxOptions,
+    Exchange::NyseArcaOptions,
+    Exchange::NyseAmericanOptions,
+    Exchange::NasdaqPhlx,
+    Exchange::NasdaqIse,
+    Exchange::NasdaqNom,
+    Exchange::NasdaqMrx,
+    Exchange::NasdaqGemx,
+    Exchange::NasdaqBxOptions,
+    Exchange::MiaxOptions,
+    Exchange::MiaxEmeraldOptions,
+    Exchange::MiaxPearlOptions,
+    Exchange::MiaxSapphireOptions,
+    Exchange::BoxOptions,
+    Exchange::MemxOptions,
+    Exchange::Cme,
+    Exchange::Cbot,
+    Exchange::Comex,
+    Exchange::Nymex,
+    Exchange::Cfe,
+    Exchange::Eurex,
+    Exchange::Eex,
+    Exchange::Iceus,
+    Exchange::Iceeu,
+    Exchange::IceEuropeCommodities,
+    Exchange::IceEuropeFinancials,
+    Exchange::IceEndex,
+    Exchange::IceAbuDhabi,
+    Exchange::IceCanada,
+    Exchange::Sgx,
+    Exchange::Lse,
+    Exchange::Xetra,
+    Exchange::Six,
+    Exchange::EuronextParis,
+    Exchange::EuronextAmsterdam,
+    Exchange::EuronextBrussels,
+    Exchange::EuronextLisbon,
+    Exchange::EuronextDublin,
+    Exchange::EuronextMilan,
+    Exchange::Bme,
+    Exchange::NasdaqStockholm,
+    Exchange::NasdaqHelsinki,
+    Exchange::NasdaqCopenhagen,
+    Exchange::Vienna,
+    Exchange::BinanceFutures,
+];
+
+#[test]
+fn all_exchanges_covers_every_variant() {
+    // No catch-all arm: adding an `Exchange` variant stops this file compiling
+    // until the variant is also added to `ALL_EXCHANGES`, so the grid below can
+    // never silently skip a venue.
+    fn is_listed(exchange: Exchange) -> bool {
+        match exchange {
+            Exchange::Unknown
+            | Exchange::Nasdaq
+            | Exchange::NasdaqBx
+            | Exchange::NasdaqPsx
+            | Exchange::CboeBzx
+            | Exchange::CboeByx
+            | Exchange::CboeEdga
+            | Exchange::CboeEdgx
+            | Exchange::Nyse
+            | Exchange::NyseArca
+            | Exchange::NyseAmerican
+            | Exchange::NyseNational
+            | Exchange::NyseTexas
+            | Exchange::MemxEq
+            | Exchange::MiaxPearlEq
+            | Exchange::Iex
+            | Exchange::IntelligentcrossIqx
+            | Exchange::BlueOceanAts
+            | Exchange::FinraTrfCarteret
+            | Exchange::FinraTrfChicago
+            | Exchange::FinraTrfNyse
+            | Exchange::CboeOptionsC1
+            | Exchange::CboeC2Options
+            | Exchange::CboeBzxOptions
+            | Exchange::CboeEdgxOptions
+            | Exchange::NyseArcaOptions
+            | Exchange::NyseAmericanOptions
+            | Exchange::NasdaqPhlx
+            | Exchange::NasdaqIse
+            | Exchange::NasdaqNom
+            | Exchange::NasdaqMrx
+            | Exchange::NasdaqGemx
+            | Exchange::NasdaqBxOptions
+            | Exchange::MiaxOptions
+            | Exchange::MiaxEmeraldOptions
+            | Exchange::MiaxPearlOptions
+            | Exchange::MiaxSapphireOptions
+            | Exchange::BoxOptions
+            | Exchange::MemxOptions
+            | Exchange::Cme
+            | Exchange::Cbot
+            | Exchange::Comex
+            | Exchange::Nymex
+            | Exchange::Cfe
+            | Exchange::Eurex
+            | Exchange::Eex
+            | Exchange::Iceus
+            | Exchange::Iceeu
+            | Exchange::IceEuropeCommodities
+            | Exchange::IceEuropeFinancials
+            | Exchange::IceEndex
+            | Exchange::IceAbuDhabi
+            | Exchange::IceCanada
+            | Exchange::Sgx
+            | Exchange::Lse
+            | Exchange::Xetra
+            | Exchange::Six
+            | Exchange::EuronextParis
+            | Exchange::EuronextAmsterdam
+            | Exchange::EuronextBrussels
+            | Exchange::EuronextLisbon
+            | Exchange::EuronextDublin
+            | Exchange::EuronextMilan
+            | Exchange::Bme
+            | Exchange::NasdaqStockholm
+            | Exchange::NasdaqHelsinki
+            | Exchange::NasdaqCopenhagen
+            | Exchange::Vienna
+            | Exchange::BinanceFutures => true,
+        }
+    }
+
+    for &exchange in ALL_EXCHANGES {
+        assert!(
+            is_listed(exchange),
+            "{exchange:?} missing from ALL_EXCHANGES"
+        );
+    }
+}
+
+/// Builds the UTC instant for `ssm` seconds after local midnight on `day` in
+/// `tz`, biased earliest across a fall-back hour. Returns `None` for a
+/// wall-clock that does not exist (spring-forward gap) or for the end-of-day
+/// sentinel `86_400`, neither of which is a usable grid sample.
+fn local_sample(tz: chrono_tz::Tz, day: NaiveDate, ssm: u32) -> Option<DateTime<Utc>> {
+    if ssm >= 86_400 {
+        return None;
+    }
+    tz.with_ymd_and_hms(
+        day.year(),
+        day.month(),
+        day.day(),
+        ssm / 3600,
+        (ssm % 3600) / 60,
+        ssm % 60,
+    )
+    .earliest()
+    .map(|local| local.with_timezone(&Utc))
+}
+
+/// The instants each venue is probed at.
+///
+/// Three overlapping layers, because each catches a different failure shape:
+/// an hourly sweep of a full reference week (weekends, overnight sessions, and
+/// maintenance gaps); the exact open and close instant of every rule on every
+/// weekday it is enabled, plus one second either side (off-by-one at a boundary,
+/// and the wrap open/close sides); and hourly sweeps across four DST transitions
+/// covering the US and EU shift dates, which fall on different days.
+fn probe_instants(hours: &MarketHours) -> Vec<DateTime<Utc>> {
+    // Sunday 2026-04-19 through Monday 2026-04-27, the reference week the
+    // per-venue suite pins.
+    let week_start = Utc
+        .with_ymd_and_hms(2026, 4, 19, 0, 0, 0)
+        .single()
+        .expect("valid reference week start");
+
+    let mut instants: Vec<DateTime<Utc>> = (0..8 * 24)
+        .map(|hour| week_start + Duration::hours(hour))
+        .collect();
+
+    // Rule-derived boundaries across the reference week.
+    let first_day = week_start.with_timezone(&hours.tz).date_naive();
+    for offset in 0..9 {
+        let Some(day) = first_day.checked_add_signed(Duration::days(offset)) else {
+            continue;
+        };
+        for rule in hours.regular.iter().chain(hours.extended.iter()) {
+            for ssm in [rule.open_ssm, rule.close_ssm] {
+                let Some(boundary) = local_sample(hours.tz, day, ssm) else {
+                    continue;
+                };
+                instants.push(boundary - Duration::seconds(1));
+                instants.push(boundary);
+                instants.push(boundary + Duration::seconds(1));
+            }
+        }
+    }
+
+    // DST transitions: US spring-forward / fall-back and the EU equivalents,
+    // which land on different dates. Swept hourly across the whole local day.
+    for (year, month, day) in [(2026, 3, 8), (2026, 11, 1), (2026, 3, 29), (2026, 10, 25)] {
+        let Some(midnight) = Utc.with_ymd_and_hms(year, month, day, 0, 0, 0).single() else {
+            continue;
+        };
+        for hour in -6..30 {
+            instants.push(midnight + Duration::hours(hour));
+        }
+    }
+
+    instants
+}
+
+#[test]
+fn is_open_agrees_with_session_bounds_for_every_venue_and_instant() {
+    let kinds = [
+        SessionKind::Regular,
+        SessionKind::Extended,
+        SessionKind::Both,
+    ];
+    let mut checked = 0_u32;
+
+    for &exchange in ALL_EXCHANGES {
+        let hours = hours_for_exchange(exchange);
+        for instant in probe_instants(&hours) {
+            for kind in kinds {
+                let (open, close) = session_bounds_with(kind, &hours, instant);
+                let contained = open <= instant && instant < close;
+                assert_eq!(
+                    hours.is_open_with(instant, kind),
+                    contained,
+                    "{exchange:?} / {kind:?}: is_open_with disagrees with \
+                     session_bounds_with at {instant} (bounds {open}..{close}, \
+                     venue-local {})",
+                    instant.with_timezone(&hours.tz),
+                );
+                checked += 1;
+            }
+        }
+    }
+
+    assert!(
+        checked > 50_000,
+        "grid collapsed to {checked} checks; the probe set is no longer covering the venues"
+    );
+}
+
+#[test]
+fn closed_instants_agree_with_the_next_session_for_every_venue() {
+    // The other half of the contract: when a venue is closed, the bounds it
+    // reports are the *next* session, which must be exactly what
+    // `next_session_after_with` reports and must not start in the past.
+    for &exchange in ALL_EXCHANGES {
+        let hours = hours_for_exchange(exchange);
+        for instant in probe_instants(&hours) {
+            for kind in [
+                SessionKind::Regular,
+                SessionKind::Extended,
+                SessionKind::Both,
+            ] {
+                if hours.is_open_with(instant, kind) {
+                    continue;
+                }
+                let (bounds_open, _) = session_bounds_with(kind, &hours, instant);
+                let (next_open, _) = next_session_after_with(kind, &hours, instant);
+                assert_eq!(
+                    bounds_open, next_open,
+                    "{exchange:?} / {kind:?}: closed at {instant} but session_bounds_with \
+                     and next_session_after_with disagree on the next open"
+                );
+                assert!(
+                    next_open >= instant,
+                    "{exchange:?} / {kind:?}: next session at {next_open} precedes {instant}"
+                );
+            }
+        }
     }
 }

@@ -131,7 +131,8 @@ reaches every consumer at once.
 Pure and stateless, so the validation class is property/deterministic-fixture, not workload.
 
 - `tests/unit/market_hours.rs` (98) — bridged into the lib via `#[cfg(test)] #[path = …] mod
-  tests;` in `lib.rs` so it can reach crate internals. Pins the normal-week baseline per venue
+  tests;` in `lib.rs`, a v1 layout artifact: the suite reaches no crate-private item, so it
+  would also compile unchanged as an integration test. Pins the normal-week baseline per venue
   family: published opens, the minute before, the end-exclusive close, overnight wraps,
   maintenance gaps, weekend boundaries (including SGX's Friday T+1 wrap into Saturday), the
   always-open contract, session bounds, and the `snake_case` serde forms.

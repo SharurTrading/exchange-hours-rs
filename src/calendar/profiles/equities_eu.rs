@@ -7,6 +7,13 @@
 
 //! EU equities venue tables.
 //!
+//! **File size.** This module exceeds the 300-line target (hard limit 500).
+//! It is pure data — per-venue rule tables plus the primary-source citations
+//! the venue-data policy requires — and the EU equities family is the axis
+//! along which these venues change together (MiFID hours moves, auction
+//! reforms). Splitting it would scatter the shared tables and the FESE
+//! citation context across files without removing a line of data.
+//!
 //! The continental default is a 09:00–17:30 local continuous session
 //! ([`REG_0900_1730`]), but the venues genuinely diverge around it: London
 //! runs 08:00–16:30, SIX ends continuous trading at 17:20, Euronext Dublin at

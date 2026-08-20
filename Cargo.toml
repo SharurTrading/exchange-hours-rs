@@ -6,14 +6,14 @@
 # copyright owner.
 
 [package]
-name = "market-hours"
+name = "exchange-hours"
 version = "0.1.0"
 edition = "2024"
 publish = false
-description = "Market-hours, session-boundary, and candle-boundary contracts."
+description = "Exchange trading hours, session-boundary, and candle-boundary contracts."
 
 [lib]
-name = "market_hours"
+name = "exchange_hours"
 
 [dependencies]
 chrono = { version = "0.4.42", features = ["clock", "serde"] }

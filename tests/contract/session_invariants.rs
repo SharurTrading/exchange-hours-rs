@@ -45,7 +45,7 @@
 //! (`TEST-DETERMINISM-01`).
 
 use chrono::{DateTime, Duration, Utc};
-use market_hours::{
+use exchange_hours::{
     CalendarResolution, Exchange, MarketHours, SessionKind, candle_end, candle_end_with,
     hours_for_exchange, next_session_after, next_session_open_after, session_bounds,
 };

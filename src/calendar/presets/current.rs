@@ -1,0 +1,357 @@
+// Copyright (C) 2026 Kevin Monaghan. All rights reserved.
+//
+// This file is proprietary and confidential.
+// Unauthorized copying, use, modification, distribution, or disclosure of this file,
+// via any medium, is strictly prohibited except under a written agreement with the
+// copyright owner.
+
+//! Current published hours for every [`Exchange`] variant.
+//!
+//! **File size.** This module exceeds the 300-line target and is capped by the
+//! 500-line hard limit instead. The bulk of it is one exhaustive `match` over
+//! `Exchange`, which is load-bearing: there is no catch-all arm, so adding a
+//! venue is a compile error until someone decides its hours. Splitting the match
+//! across modules would replace that guarantee with a runtime fallthrough, so
+//! the arms stay together. The *data* the arms name already lives in
+//! [`super::super::profiles`], grouped by product family.
+
+use std::borrow::Cow;
+use std::sync::Once;
+
+use chrono_tz::UTC;
+use tracing::warn;
+
+use crate::calendar::profiles::{
+    ABU_DHABI_01_23_PROFILE, BLUE_OCEAN_PROFILE, BME_PROFILE, C1_PROFILE_POST_2024_08_26,
+    EEX_PROFILE, ENDEX_01_23_PROFILE, EURONEXT_AMS_PROFILE, EURONEXT_BRU_PROFILE,
+    EURONEXT_DUB_PROFILE, EURONEXT_LIS_PROFILE, EURONEXT_MIL_PROFILE, EURONEXT_PARIS_PROFILE,
+    FINRA_TRF_PROFILE, ICE_CANADA_PROFILE, ICE_EU_LONDON_01_23_PROFILE, IQX_PROFILE, LSE_PROFILE,
+    NASDAQ_CPH_PROFILE, NASDAQ_HEL_PROFILE, NASDAQ_STO_PROFILE, NYSE_TEXAS_PROFILE, SIX_PROFILE,
+    US_EQUITIES_PROFILE, US_OPTIONS_DEFAULT_PROFILE, VIENNA_PROFILE, XETRA_PROFILE, from_profile,
+};
+use crate::calendar::{Exchange, MarketHours, MarketHoursKey, SessionRule, session_profile};
+
+/// Build default futures trading hours per exchange.
+/// NOTE: These are exchange-level defaults. Product-level variations may differ.
+#[expect(
+    clippy::too_many_lines,
+    reason = "exhaustive match over all Exchange variants; splitting would add indirection without clarity"
+)]
+pub fn hours_for_exchange(exch: Exchange) -> MarketHours {
+    match exch {
+        Exchange::Unknown => {
+            static ONCE: Once = Once::new();
+            ONCE.call_once(|| {
+                warn!("hours_for_exchange: Unknown exchange encountered; using 24x7 UTC fallback");
+            });
+            default_24x7(exch)
+        }
+        // ==============================
+        // US EQUITIES (ET)
+        // ==============================
+        Exchange::Nasdaq
+        | Exchange::NasdaqBx
+        | Exchange::NasdaqPsx
+        | Exchange::CboeBzx
+        | Exchange::CboeByx
+        | Exchange::CboeEdga
+        | Exchange::CboeEdgx
+        | Exchange::Nyse
+        | Exchange::NyseArca
+        | Exchange::NyseAmerican
+        | Exchange::NyseNational
+        | Exchange::MemxEq
+        | Exchange::MiaxPearlEq => from_profile(exch, &US_EQUITIES_PROFILE),
+
+        // IEX (executes only RTH; keep pre for uniformity if you prefer)
+        Exchange::Iex => from_profile(Exchange::Iex, &US_EQUITIES_PROFILE),
+
+        // NYSE Texas — opening 07:00–09:30, core 09:30–16:00, late 16:00–20:00 ET.
+        Exchange::NyseTexas => from_profile(Exchange::NyseTexas, &NYSE_TEXAS_PROFILE),
+
+        // FINRA TRFs — facility open 08:00–20:00 ET.
+        Exchange::FinraTrfCarteret | Exchange::FinraTrfChicago | Exchange::FinraTrfNyse => {
+            from_profile(exch, &FINRA_TRF_PROFILE)
+        }
+
+        // IntelligentCross — executes RTH 09:30–16:00; accepts orders from 09:00.
+        Exchange::IntelligentcrossIqx => from_profile(Exchange::IntelligentcrossIqx, &IQX_PROFILE),
+
+        // Blue Ocean ATS — 20:00–04:00 ET Sun + Mon–Thu (overnight).
+        Exchange::BlueOceanAts => from_profile(Exchange::BlueOceanAts, &BLUE_OCEAN_PROFILE),
+
+        // ==============================
+        // US OPTIONS (ET)
+        // ==============================
+        // Cboe Options (C1) — handled in as_of cutover below
+        Exchange::CboeOptionsC1 => {
+            from_profile(Exchange::CboeOptionsC1, &C1_PROFILE_POST_2024_08_26)
+        }
+
+        // Other options venues — pragmatic default RTH 09:30–16:00 ET.
+        Exchange::CboeC2Options
+        | Exchange::CboeBzxOptions
+        | Exchange::CboeEdgxOptions
+        | Exchange::NyseArcaOptions
+        | Exchange::NyseAmericanOptions
+        | Exchange::NasdaqPhlx
+        | Exchange::NasdaqIse
+        | Exchange::NasdaqNom
+        | Exchange::NasdaqMrx
+        | Exchange::NasdaqGemx
+        | Exchange::NasdaqBxOptions
+        | Exchange::MiaxOptions
+        | Exchange::MiaxEmeraldOptions
+        | Exchange::MiaxPearlOptions
+        | Exchange::MiaxSapphireOptions
+        | Exchange::BoxOptions
+        | Exchange::MemxOptions => from_profile(exch, &US_OPTIONS_DEFAULT_PROFILE),
+
+        // ==============================
+        // FUTURES / ENERGY (EU/INTL)
+        // ==============================
+        // ICE Europe Commodities — many contracts 01:00–23:00 London
+        Exchange::IceEuropeCommodities => {
+            from_profile(Exchange::IceEuropeCommodities, &ICE_EU_LONDON_01_23_PROFILE)
+        }
+        // ICE Europe Financials — same broad window. (Individual products vary; override if needed.)
+        Exchange::IceEuropeFinancials => {
+            from_profile(Exchange::IceEuropeFinancials, &ICE_EU_LONDON_01_23_PROFILE)
+        }
+        // ICE Endex (Amsterdam) — pragmatic default 01:00–23:00 local.
+        Exchange::IceEndex => from_profile(Exchange::IceEndex, &ENDEX_01_23_PROFILE),
+        // ICE Abu Dhabi (IFAD) — nearly 24×5 (22–24h); default to 01:00–23:00 GST.
+        Exchange::IceAbuDhabi => from_profile(Exchange::IceAbuDhabi, &ABU_DHABI_01_23_PROFILE),
+        // ICE Canada — default to 20:00→18:00 ET wrap (ICE pattern).
+        Exchange::IceCanada => from_profile(Exchange::IceCanada, &ICE_CANADA_PROFILE),
+        // EEX — exchange trading generally 08:00–18:00 CET.
+        Exchange::Eex => from_profile(Exchange::Eex, &EEX_PROFILE),
+
+        // ----------------------- EU Equities -----------------------
+        // LSE (UK): 08:00–16:30; pre-open auction 07:50–08:00; closing auction 16:30–16:35
+        Exchange::Lse => from_profile(Exchange::Lse, &LSE_PROFILE),
+
+        // Xetra / Frankfurt: 09:00–17:30; auctions 08:50–09:00 and 17:30–17:35
+        Exchange::Xetra => from_profile(Exchange::Xetra, &XETRA_PROFILE),
+
+        // SIX Swiss: 09:00–17:30; small auctions modeled similarly
+        Exchange::Six => from_profile(Exchange::Six, &SIX_PROFILE),
+
+        // Euronext venues (typical): 09:00–17:30, auctions 08:45–09:00 & 17:30–17:35
+        Exchange::EuronextParis => from_profile(Exchange::EuronextParis, &EURONEXT_PARIS_PROFILE),
+        Exchange::EuronextAmsterdam => {
+            from_profile(Exchange::EuronextAmsterdam, &EURONEXT_AMS_PROFILE)
+        }
+        Exchange::EuronextBrussels => {
+            from_profile(Exchange::EuronextBrussels, &EURONEXT_BRU_PROFILE)
+        }
+        Exchange::EuronextLisbon => from_profile(Exchange::EuronextLisbon, &EURONEXT_LIS_PROFILE),
+        Exchange::EuronextDublin => from_profile(Exchange::EuronextDublin, &EURONEXT_DUB_PROFILE),
+        Exchange::EuronextMilan => from_profile(Exchange::EuronextMilan, &EURONEXT_MIL_PROFILE),
+
+        // Spain (BME): 09:00–17:30; pre-open 08:30–09:00; closing auction 17:30–17:35
+        Exchange::Bme => from_profile(Exchange::Bme, &BME_PROFILE),
+
+        // Nasdaq Nordic (stockholm/helsinki/copenhagen): 09:00–17:30; auctions 08:45–09:00 & 17:30–17:35
+        Exchange::NasdaqStockholm => from_profile(Exchange::NasdaqStockholm, &NASDAQ_STO_PROFILE),
+        Exchange::NasdaqHelsinki => from_profile(Exchange::NasdaqHelsinki, &NASDAQ_HEL_PROFILE),
+        Exchange::NasdaqCopenhagen => from_profile(Exchange::NasdaqCopenhagen, &NASDAQ_CPH_PROFILE),
+
+        // Vienna: 09:00–17:30; auctions like Euronext pattern
+        Exchange::Vienna => from_profile(Exchange::Vienna, &VIENNA_PROFILE),
+        // ------------------------------------------------------------
+        // CME (CME Globex, Equity Index default)
+        // Shared GlobexEquityIndex profile (see `session_profile`).
+        // Sun 17:00 – Fri 16:00 CT with daily 60-min break at 16:00;
+        // RTH 08:30–15:15 CT; short window 15:30–16:00 CT; no Fri overnight.
+        // ------------------------------------------------------------
+        Exchange::Cme => {
+            let p = session_profile(MarketHoursKey::GlobexEquityIndex);
+            MarketHours {
+                exchange: Exchange::Cme,
+                tz: p.tz,
+                regular: Cow::Borrowed(p.regular),
+                extended: Cow::Borrowed(p.extended),
+                has_daily_close: p.has_daily_close,
+                has_weekend_close: p.has_weekend_close,
+            }
+        }
+
+        // ------------------------------------------------------------
+        // CBOT (Grains/Oilseeds default)
+        // Shared GlobexGrains profile (see `session_profile`).
+        // Sun–Thu overnight 19:00–07:45 CT, day 08:30–13:20 CT; no Fri overnight.
+        // ------------------------------------------------------------
+        Exchange::Cbot => {
+            let p = session_profile(MarketHoursKey::GlobexGrains);
+            MarketHours {
+                exchange: Exchange::Cbot,
+                tz: p.tz,
+                regular: Cow::Borrowed(p.regular),
+                extended: Cow::Borrowed(p.extended),
+                has_daily_close: p.has_daily_close,
+                has_weekend_close: p.has_weekend_close,
+            }
+        }
+
+        // ------------------------------------------------------------
+        // COMEX (Metals default)
+        // Shared GlobexEnergy profile (see `session_profile`).
+        // 17:00–16:00 CT, daily maintenance 16:00–17:00; no Fri overnight.
+        // ------------------------------------------------------------
+        Exchange::Comex => {
+            let p = session_profile(MarketHoursKey::GlobexEnergy);
+            MarketHours {
+                exchange: Exchange::Comex,
+                tz: p.tz,
+                regular: Cow::Borrowed(p.regular),
+                extended: Cow::Borrowed(p.extended),
+                has_daily_close: p.has_daily_close,
+                has_weekend_close: p.has_weekend_close,
+            }
+        }
+
+        // ------------------------------------------------------------
+        // NYMEX (Energy default)
+        // Shared GlobexEnergy profile (see `session_profile`); identical to COMEX.
+        // Same “17:00–16:00 CT, daily break at 16:00–17:00”; no Fri overnight.
+        // ------------------------------------------------------------
+        Exchange::Nymex => {
+            let p = session_profile(MarketHoursKey::GlobexEnergy);
+            MarketHours {
+                exchange: Exchange::Nymex,
+                tz: p.tz,
+                regular: Cow::Borrowed(p.regular),
+                extended: Cow::Borrowed(p.extended),
+                has_daily_close: p.has_daily_close,
+                has_weekend_close: p.has_weekend_close,
+            }
+        }
+
+        // ------------------------------------------------------------
+        // EUREX (generic index/IR default)
+        // Shared Eurex profile (see `session_profile`).
+        // Asian hours 01:00–08:00 CET/CEST, then regular 08:00–22:00 CET/CEST (Mon–Fri).
+        // ------------------------------------------------------------
+        Exchange::Eurex => {
+            let p = session_profile(MarketHoursKey::Eurex);
+            MarketHours {
+                exchange: Exchange::Eurex,
+                tz: p.tz,
+                regular: Cow::Borrowed(p.regular),
+                extended: Cow::Borrowed(p.extended),
+                has_daily_close: p.has_daily_close,
+                has_weekend_close: p.has_weekend_close,
+            }
+        }
+
+        // ------------------------------------------------------------
+        // ICE Futures U.S. (common profile)
+        // Shared IceUs profile (see `session_profile`).
+        // Many contracts follow ~20:00–18:00 ET (22h) with daily 2h break; no Fri overnight.
+        // ------------------------------------------------------------
+        Exchange::Iceus => {
+            let p = session_profile(MarketHoursKey::IceUs);
+            MarketHours {
+                exchange: Exchange::Iceus,
+                tz: p.tz,
+                regular: Cow::Borrowed(p.regular),
+                extended: Cow::Borrowed(p.extended),
+                has_daily_close: p.has_daily_close,
+                has_weekend_close: p.has_weekend_close,
+            }
+        }
+
+        // ------------------------------------------------------------
+        // ICE Futures Europe (common profile)
+        // Typical 01:00–23:00 London (Mon–Fri). Equity-only profile remains GUI-local.
+        // ------------------------------------------------------------
+        Exchange::Iceeu => from_profile(Exchange::Iceeu, &ICE_EU_LONDON_01_23_PROFILE),
+
+        // ------------------------------------------------------------
+        // SGX Derivatives (generic)
+        // Shared Sgx profile (see `session_profile`).
+        // T session ~07:10–20:00 SGT, T+1 ~20:00–05:15 SGT (Mon–Fri).
+        // ------------------------------------------------------------
+        Exchange::Sgx => {
+            let p = session_profile(MarketHoursKey::Sgx);
+            MarketHours {
+                exchange: Exchange::Sgx,
+                tz: p.tz,
+                regular: Cow::Borrowed(p.regular),
+                extended: Cow::Borrowed(p.extended),
+                has_daily_close: p.has_daily_close,
+                has_weekend_close: p.has_weekend_close,
+            }
+        }
+
+        // ------------------------------------------------------------
+        // CFE (Cboe Futures – VIX default profile)
+        // Shared CfeVix profile (see `session_profile`).
+        // RTH 08:30–15:15; curb 15:30–16:00; overnight wrap Sun+Mon–Thu 17:00→08:30.
+        // ------------------------------------------------------------
+        Exchange::Cfe => {
+            let p = session_profile(MarketHoursKey::CfeVix);
+            MarketHours {
+                exchange: Exchange::Cfe,
+                tz: p.tz,
+                regular: Cow::Borrowed(p.regular),
+                extended: Cow::Borrowed(p.extended),
+                has_daily_close: p.has_daily_close,
+                has_weekend_close: p.has_weekend_close,
+            }
+        }
+
+        // ------------------------------------------------------------
+        // Crypto / always-open venues
+        //
+        // Shared AlwaysOpen profile (see `session_profile`).
+        // 24×7 UTC, no maintenance break, no weekend close, midnight UTC boundaries.
+        // Deliberately NOT modeled as futures-session venues; the always-open
+        // contract is kept explicit and separate from CME-style daily-break calendars.
+        //
+        // Note: Product-level nuances such as Binance quarterly expiry pauses are
+        // deferred to a later product-level calendar layer.
+        // ------------------------------------------------------------
+        Exchange::BinanceFutures => {
+            let p = session_profile(MarketHoursKey::AlwaysOpen);
+            MarketHours {
+                exchange: Exchange::BinanceFutures,
+                tz: p.tz,
+                regular: Cow::Borrowed(p.regular),
+                extended: Cow::Borrowed(p.extended),
+                has_daily_close: p.has_daily_close,
+                has_weekend_close: p.has_weekend_close,
+            }
+        } // All known exchanges covered; no default arm.
+    }
+}
+
+/// Build a 24×7 UTC profile for always-open venues (crypto perpetuals, etc.).
+///
+/// This profile models a market that never closes: every day of the week is
+/// active, the session spans the full 24-hour day, and the daily boundary
+/// falls at midnight UTC.  It is intentionally **not** used for futures venues
+/// that have daily maintenance breaks (CME, COMEX, NYMEX) or weekend gaps;
+/// those use venue-specific session rules instead.
+///
+/// The always-open contract is kept explicit and separate from futures-session
+/// rules so that callers can distinguish the two categories by inspecting the
+/// session rules (an always-open venue has a single `0..86400` same-day rule
+/// active on all seven days, while futures venues use multi-rule wrap patterns).
+fn default_24x7(ex: Exchange) -> MarketHours {
+    let days_all = [true, true, true, true, true, true, true];
+    let full_day = SessionRule {
+        days: days_all,
+        open_ssm: 0,
+        close_ssm: 24 * 3600,
+    };
+    MarketHours {
+        exchange: ex,
+        tz: UTC,
+        regular: vec![full_day].into(),
+        extended: Vec::new().into(),
+        has_daily_close: false,
+        has_weekend_close: false,
+    }
+}

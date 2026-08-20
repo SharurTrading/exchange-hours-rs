@@ -14,6 +14,12 @@ on:
   push:
     branches: [main]
 
+# One live run per ref. Pushing again to a PR supersedes the previous run, so
+# cancel it; runs on `main` are kept, since each one is the record for a commit.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 # Read-only by default; no job here writes to the repository.
 permissions:
   contents: read
@@ -31,7 +37,13 @@ jobs:
           # Do not leave the job token in .git/config for later steps to reuse.
           persist-credentials: false
 
-      # Toolchain comes from rust-toolchain.toml.
+      # This step only bootstraps rustup; the version is NOT pinned here on
+      # purpose. rust-toolchain.toml is the single source of truth and rustup
+      # honours it for every cargo invocation in the workspace, installing that
+      # toolchain and its components on demand — the run log confirms it with
+      # "the toolchain '1.97.1-...' is currently in use (overridden by
+      # .../rust-toolchain.toml)". Naming a version here too would duplicate the
+      # pin in a second file for no gain.
       - uses: dtolnay/rust-toolchain@4360b52568e2003a75bf9bc1d59f33a8e3fc893c # stable
         with:
           components: rustfmt, clippy

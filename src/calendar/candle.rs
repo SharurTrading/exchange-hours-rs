@@ -57,52 +57,46 @@ pub fn candle_end_with(
     match res {
         CalendarResolution::Seconds(s) => t + Duration::seconds(i64::from(s)),
         CalendarResolution::Minutes(m) => {
-            let step = Duration::minutes(i64::from(m));
-            let (open, close) = session_bounds_with(kind, hours, t);
-            let anchor = if t < open { open } else { t };
-            let mut end = (anchor + step).min(close);
-
-            // If the computed end lands exactly on the session close and that close is the
-            // exchange's daily close (e.g., CME 16:00 CT), skip short “maintenance” gaps by
-            // snapping to the next session open. This prevents intraday bars from closing
-            // at the maintenance start and instead closes them after the break.
-            if end == close {
-                let close_day = close.with_timezone(&hours.tz).date_naive();
-                if let Some(dc) = daily_close_for_local_day(hours, close_day, kind)
-                    && dc == close
-                    && hours.is_maintenance(close)
-                {
-                    let (next_open, _next_close) = next_session_after_with(kind, hours, close);
-                    end = next_open;
-                }
-            }
-
-            end
+            fixed_grid_end(hours, t, Duration::minutes(i64::from(m)), kind)
         }
         CalendarResolution::Hours(h) => {
-            let step = Duration::hours(i64::from(h));
-            let (open, close) = session_bounds_with(kind, hours, t);
-            let anchor = if t < open { open } else { t };
-            let mut end = (anchor + step).min(close);
-
-            // Apply the same maintenance-gap skip logic as for minute bars.
-            if end == close {
-                let close_day = close.with_timezone(&hours.tz).date_naive();
-                if let Some(dc) = daily_close_for_local_day(hours, close_day, kind)
-                    && dc == close
-                    && hours.is_maintenance(close)
-                {
-                    let (next_open, _next_close) = next_session_after_with(kind, hours, close);
-                    end = next_open;
-                }
-            }
-
-            end
+            fixed_grid_end(hours, t, Duration::hours(i64::from(h)), kind)
         }
         CalendarResolution::Daily => next_daily_close_after_with(hours, t, kind),
         CalendarResolution::Weekly => next_weekly_close_after_with(hours, t, kind),
         CalendarResolution::Monthly => next_monthly_close_after_with(hours, t, kind),
     }
+}
+
+/// Shared body of the `Minutes`/`Hours` arms: step by `step` from
+/// `max(t, session_open)`, clamped to the enclosing session close.
+///
+/// If the computed end lands exactly on the session close and that close is the
+/// exchange's daily close (e.g., CME 16:00 CT), skip short “maintenance” gaps by
+/// snapping to the next session open. This prevents intraday bars from closing
+/// at the maintenance start and instead closes them after the break.
+fn fixed_grid_end(
+    hours: &MarketHours,
+    t: DateTime<Utc>,
+    step: Duration,
+    kind: SessionKind,
+) -> DateTime<Utc> {
+    let (open, close) = session_bounds_with(kind, hours, t);
+    let anchor = if t < open { open } else { t };
+    let mut end = (anchor + step).min(close);
+
+    if end == close {
+        let close_day = close.with_timezone(&hours.tz).date_naive();
+        if let Some(dc) = daily_close_for_local_day(hours, close_day, kind)
+            && dc == close
+            && hours.is_maintenance(close)
+        {
+            let (next_open, _next_close) = next_session_after_with(kind, hours, close);
+            end = next_open;
+        }
+    }
+
+    end
 }
 
 /// Returns [`candle_end_with`] over [`SessionKind::Both`] (regular + extended).
@@ -228,10 +222,6 @@ fn calendar_period_start(
 ///
 /// Panics only on a malformed calendar; see [`candle_end_with`].
 #[inline]
-#[allow(
-    dead_code,
-    reason = "retained in the test-only market-hours harness as a compatibility alias"
-)]
 #[must_use]
 pub fn time_end_of_day(hours: &MarketHours, t: DateTime<Utc>) -> DateTime<Utc> {
     candle_end(hours, t, CalendarResolution::Daily)

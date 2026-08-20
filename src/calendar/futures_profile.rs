@@ -37,6 +37,7 @@ use super::{Exchange, MarketHours, SessionRule};
 /// `regular` carries primary trading sessions; `extended` carries electronic,
 /// overnight, and other non-regular sessions. Holiday and special-session
 /// overlays are deliberately modeled outside this normal-week profile.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct FuturesSessionProfile {
     /// Exchange local timezone used to interpret `SessionRule` SSM values.
     pub tz: Tz,
@@ -54,15 +55,28 @@ impl FuturesSessionProfile {
     /// Returns `true` when any regular or extended normal-week session is active.
     #[must_use]
     pub fn is_open(&self, t: DateTime<Utc>) -> bool {
-        let hours = MarketHours {
-            exchange: Exchange::Unknown,
+        self.to_market_hours(Exchange::Unknown).is_open(t)
+    }
+
+    /// Converts this profile into the [`MarketHours`] value the calendar query
+    /// surface ([`candle_end`](super::candle_end),
+    /// [`session_bounds`](super::session_bounds), …) consumes, tagged with
+    /// `exchange`.
+    ///
+    /// The rule slices are borrowed (`Cow::Borrowed`), so this allocates
+    /// nothing. The tag is passed by the caller because one shared profile can
+    /// back several venues — [`hours_for_market_hours_key`] tags with
+    /// [`Exchange::Unknown`] since the key, not a venue, identifies the profile.
+    #[must_use]
+    pub fn to_market_hours(&self, exchange: Exchange) -> MarketHours {
+        MarketHours {
+            exchange,
             tz: self.tz,
             regular: Cow::Borrowed(self.regular),
             extended: Cow::Borrowed(self.extended),
             has_daily_close: self.has_daily_close,
             has_weekend_close: self.has_weekend_close,
-        };
-        hours.is_open(t)
+        }
     }
 }
 
@@ -180,20 +194,11 @@ pub fn session_profile(key: MarketHoursKey) -> &'static FuturesSessionProfile {
 /// surface ([`candle_end`](super::candle_end), [`session_bounds`](super::session_bounds), …)
 /// consumes.
 ///
-/// This is a field copy of the same static [`FuturesSessionProfile`] table
-/// [`session_profile`] returns — not a second source of truth — mirroring the
-/// inline construction in [`FuturesSessionProfile::is_open`]. The `exchange` tag
-/// is [`Exchange::Unknown`] because the key, not a venue enum, identifies these
-/// shared futures profiles.
+/// This borrows the same static [`FuturesSessionProfile`] table
+/// [`session_profile`] returns — not a second source of truth. The `exchange`
+/// tag is [`Exchange::Unknown`] because the key, not a venue enum, identifies
+/// these shared futures profiles.
 #[must_use]
 pub fn hours_for_market_hours_key(key: MarketHoursKey) -> MarketHours {
-    let profile = session_profile(key);
-    MarketHours {
-        exchange: Exchange::Unknown,
-        tz: profile.tz,
-        regular: Cow::Borrowed(profile.regular),
-        extended: Cow::Borrowed(profile.extended),
-        has_daily_close: profile.has_daily_close,
-        has_weekend_close: profile.has_weekend_close,
-    }
+    session_profile(key).to_market_hours(Exchange::Unknown)
 }

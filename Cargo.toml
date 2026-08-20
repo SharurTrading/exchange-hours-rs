@@ -16,7 +16,10 @@ description = "Exchange trading hours, session-boundary, and candle-boundary con
 name = "exchange_hours"
 
 [dependencies]
-chrono = { version = "0.4.42", features = ["clock", "serde"] }
+# `default-features = false`: the crate never reads a clock (LAW-DETERMINISM) —
+# disabling the default `clock` feature makes `Utc::now()` a compile error here.
+# No `chrono` type is (de)serialized, so its `serde` feature is not needed.
+chrono = { version = "0.4.42", default-features = false, features = ["std"] }
 chrono-tz = "0.10"
 serde = { version = "1.0.228", features = ["derive"] }
 tracing = "0.1"

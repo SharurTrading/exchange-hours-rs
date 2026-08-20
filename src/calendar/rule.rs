@@ -53,7 +53,7 @@ pub struct SessionRule {
 ///
 /// `MarketHours` keeps `regular` and `extended` rule sets separately; every
 /// open/closed and boundary query takes a `SessionKind` to choose between them.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum SessionKind {
     /// Consult only primary/RTH (`regular`) sessions.
     Regular,

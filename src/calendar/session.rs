@@ -199,10 +199,6 @@ pub fn next_session_after(
 ///
 /// Panics only on a malformed calendar; see [`next_session_after_with`].
 #[inline]
-#[allow(
-    dead_code,
-    reason = "retained in the test-only market-hours harness; no test exercises this entry point directly"
-)]
 #[must_use]
 pub fn next_session_open_after(mh: &MarketHours, after_utc: DateTime<Utc>) -> DateTime<Utc> {
     next_session_after(mh, after_utc).0

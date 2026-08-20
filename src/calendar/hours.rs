@@ -35,10 +35,6 @@ use super::{Exchange, SessionKind, SessionRule};
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct MarketHours {
     /// Which exchange these hours represent.
-    #[allow(
-        dead_code,
-        reason = "retained in the test-only market-hours harness; tests inspect session rules, not the tag"
-    )]
     pub exchange: Exchange,
     /// Exchange’s local time zone (used to interpret `SessionRule`s and handle DST).
     pub tz: Tz,
@@ -60,13 +56,12 @@ impl MarketHours {
     /// tests all rules or takes a min/max over them.
     #[inline]
     pub(crate) fn iter_rules(&self, kind: SessionKind) -> impl Iterator<Item = &SessionRule> + '_ {
-        let reg = self.regular.iter();
-        let ext = self.extended.iter();
-        match kind {
-            SessionKind::Regular => reg.take(usize::MAX).chain(ext.take(0)),
-            SessionKind::Extended => reg.take(0).chain(ext.take(usize::MAX)),
-            SessionKind::Both => reg.take(usize::MAX).chain(ext.take(usize::MAX)),
-        }
+        let (regular, extended): (&[SessionRule], &[SessionRule]) = match kind {
+            SessionKind::Regular => (&self.regular, &[]),
+            SessionKind::Extended => (&[], &self.extended),
+            SessionKind::Both => (&self.regular, &self.extended),
+        };
+        regular.iter().chain(extended.iter())
     }
 
     /// Returns the number of distinct scheduled open seconds in this profile's
@@ -245,10 +240,6 @@ impl MarketHours {
 
     /// Convenience: starting from a UTC timestamp, use a chosen calendar TZ to define “the day”.
     #[inline]
-    #[allow(
-        dead_code,
-        reason = "retained in the test-only market-hours harness for scheduled calendar checks"
-    )]
     #[must_use]
     pub fn is_closed_all_day_at(
         &self,

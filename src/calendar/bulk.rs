@@ -28,20 +28,12 @@ pub fn hours_for_all(exchanges: &[Exchange]) -> Vec<MarketHours> {
 }
 
 /// Builds the current [`MarketHours`] for the built-in US-equities exchange set.
-#[allow(
-    dead_code,
-    reason = "retained in the test-only market-hours harness as a bulk-hours builder"
-)]
 #[must_use]
 pub fn hours_for_us_equities() -> Vec<MarketHours> {
     hours_for_all(US_EQUITY_EXCHANGES)
 }
 
 /// Builds the current [`MarketHours`] for the built-in EU-equities exchange set.
-#[allow(
-    dead_code,
-    reason = "retained in the test-only market-hours harness as a bulk-hours builder"
-)]
 #[must_use]
 pub fn hours_for_eu_equities() -> Vec<MarketHours> {
     hours_for_all(EU_EQUITY_EXCHANGES)
@@ -61,20 +53,12 @@ pub fn hours_map_for(exchanges: &[Exchange]) -> BTreeMap<Exchange, MarketHours> 
 }
 
 /// Builds an [`Exchange`]-keyed [`BTreeMap`] for the built-in US-equities set.
-#[allow(
-    dead_code,
-    reason = "retained in the test-only market-hours harness as a bulk-hours builder"
-)]
 #[must_use]
 pub fn hours_map_us_equities() -> BTreeMap<Exchange, MarketHours> {
     hours_map_for(US_EQUITY_EXCHANGES)
 }
 
 /// Builds an [`Exchange`]-keyed [`BTreeMap`] for the built-in EU-equities set.
-#[allow(
-    dead_code,
-    reason = "retained in the test-only market-hours harness as a bulk-hours builder"
-)]
 #[must_use]
 pub fn hours_map_eu_equities() -> BTreeMap<Exchange, MarketHours> {
     hours_map_for(EU_EQUITY_EXCHANGES)

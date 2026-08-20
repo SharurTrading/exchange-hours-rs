@@ -7,18 +7,15 @@
 
 //! Current published hours for every [`Exchange`] variant.
 //!
-//! **File size.** This module exceeds the 300-line target and is capped by the
-//! 500-line hard limit instead. The bulk of it is one exhaustive `match` over
-//! `Exchange`, which is load-bearing: there is no catch-all arm, so adding a
-//! venue is a compile error until someone decides its hours. Splitting the match
-//! across modules would replace that guarantee with a runtime fallthrough, so
-//! the arms stay together. The *data* the arms name already lives in
+//! The bulk of this module is one exhaustive `match` over `Exchange`, which is
+//! load-bearing: there is no catch-all arm, so adding a venue is a compile
+//! error until someone decides its hours. Splitting the match across modules
+//! would replace that guarantee with a runtime fallthrough, so the arms stay
+//! together. The *data* the arms name already lives in
 //! [`super::super::profiles`], grouped by product family.
 
-use std::borrow::Cow;
 use std::sync::Once;
 
-use chrono_tz::UTC;
 use tracing::warn;
 
 use crate::calendar::profiles::{
@@ -30,14 +27,10 @@ use crate::calendar::profiles::{
     NYSE_TEXAS_PROFILE, SIX_PROFILE, US_EQUITIES_PROFILE, US_OPTIONS_DEFAULT_PROFILE,
     VIENNA_PROFILE, XETRA_PROFILE, from_profile,
 };
-use crate::calendar::{Exchange, MarketHours, MarketHoursKey, SessionRule, session_profile};
+use crate::calendar::{Exchange, MarketHours, MarketHoursKey, session_profile};
 
 /// Build default futures trading hours per exchange.
 /// NOTE: These are exchange-level defaults. Product-level variations may differ.
-#[expect(
-    clippy::too_many_lines,
-    reason = "exhaustive match over all Exchange variants; splitting would add indirection without clarity"
-)]
 pub fn hours_for_exchange(exch: Exchange) -> MarketHours {
     match exch {
         Exchange::Unknown => {
@@ -172,15 +165,7 @@ pub fn hours_for_exchange(exch: Exchange) -> MarketHours {
         // RTH 08:30–15:15 CT; short window 15:30–16:00 CT; no Fri overnight.
         // ------------------------------------------------------------
         Exchange::Cme => {
-            let p = session_profile(MarketHoursKey::GlobexEquityIndex);
-            MarketHours {
-                exchange: Exchange::Cme,
-                tz: p.tz,
-                regular: Cow::Borrowed(p.regular),
-                extended: Cow::Borrowed(p.extended),
-                has_daily_close: p.has_daily_close,
-                has_weekend_close: p.has_weekend_close,
-            }
+            session_profile(MarketHoursKey::GlobexEquityIndex).to_market_hours(Exchange::Cme)
         }
 
         // ------------------------------------------------------------
@@ -189,15 +174,7 @@ pub fn hours_for_exchange(exch: Exchange) -> MarketHours {
         // Sun–Thu overnight 19:00–07:45 CT, day 08:30–13:20 CT; no Fri overnight.
         // ------------------------------------------------------------
         Exchange::Cbot => {
-            let p = session_profile(MarketHoursKey::GlobexGrains);
-            MarketHours {
-                exchange: Exchange::Cbot,
-                tz: p.tz,
-                regular: Cow::Borrowed(p.regular),
-                extended: Cow::Borrowed(p.extended),
-                has_daily_close: p.has_daily_close,
-                has_weekend_close: p.has_weekend_close,
-            }
+            session_profile(MarketHoursKey::GlobexGrains).to_market_hours(Exchange::Cbot)
         }
 
         // ------------------------------------------------------------
@@ -206,15 +183,7 @@ pub fn hours_for_exchange(exch: Exchange) -> MarketHours {
         // 17:00–16:00 CT, daily maintenance 16:00–17:00; no Fri overnight.
         // ------------------------------------------------------------
         Exchange::Comex => {
-            let p = session_profile(MarketHoursKey::GlobexEnergy);
-            MarketHours {
-                exchange: Exchange::Comex,
-                tz: p.tz,
-                regular: Cow::Borrowed(p.regular),
-                extended: Cow::Borrowed(p.extended),
-                has_daily_close: p.has_daily_close,
-                has_weekend_close: p.has_weekend_close,
-            }
+            session_profile(MarketHoursKey::GlobexEnergy).to_market_hours(Exchange::Comex)
         }
 
         // ------------------------------------------------------------
@@ -223,15 +192,7 @@ pub fn hours_for_exchange(exch: Exchange) -> MarketHours {
         // Same “17:00–16:00 CT, daily break at 16:00–17:00”; no Fri overnight.
         // ------------------------------------------------------------
         Exchange::Nymex => {
-            let p = session_profile(MarketHoursKey::GlobexEnergy);
-            MarketHours {
-                exchange: Exchange::Nymex,
-                tz: p.tz,
-                regular: Cow::Borrowed(p.regular),
-                extended: Cow::Borrowed(p.extended),
-                has_daily_close: p.has_daily_close,
-                has_weekend_close: p.has_weekend_close,
-            }
+            session_profile(MarketHoursKey::GlobexEnergy).to_market_hours(Exchange::Nymex)
         }
 
         // ------------------------------------------------------------
@@ -239,34 +200,14 @@ pub fn hours_for_exchange(exch: Exchange) -> MarketHours {
         // Shared Eurex profile (see `session_profile`).
         // Asian hours 01:00–08:00 CET/CEST, then regular 08:00–22:00 CET/CEST (Mon–Fri).
         // ------------------------------------------------------------
-        Exchange::Eurex => {
-            let p = session_profile(MarketHoursKey::Eurex);
-            MarketHours {
-                exchange: Exchange::Eurex,
-                tz: p.tz,
-                regular: Cow::Borrowed(p.regular),
-                extended: Cow::Borrowed(p.extended),
-                has_daily_close: p.has_daily_close,
-                has_weekend_close: p.has_weekend_close,
-            }
-        }
+        Exchange::Eurex => session_profile(MarketHoursKey::Eurex).to_market_hours(Exchange::Eurex),
 
         // ------------------------------------------------------------
         // ICE Futures U.S. (common profile)
         // Shared IceUs profile (see `session_profile`).
         // Many contracts follow ~20:00–18:00 ET (22h) with daily 2h break; no Fri overnight.
         // ------------------------------------------------------------
-        Exchange::Iceus => {
-            let p = session_profile(MarketHoursKey::IceUs);
-            MarketHours {
-                exchange: Exchange::Iceus,
-                tz: p.tz,
-                regular: Cow::Borrowed(p.regular),
-                extended: Cow::Borrowed(p.extended),
-                has_daily_close: p.has_daily_close,
-                has_weekend_close: p.has_weekend_close,
-            }
-        }
+        Exchange::Iceus => session_profile(MarketHoursKey::IceUs).to_market_hours(Exchange::Iceus),
 
         // ------------------------------------------------------------
         // ICE Futures Europe (common profile)
@@ -279,34 +220,15 @@ pub fn hours_for_exchange(exch: Exchange) -> MarketHours {
         // Shared Sgx profile (see `session_profile`).
         // T session ~07:10–20:00 SGT, T+1 ~20:00–05:15 SGT (Mon–Fri).
         // ------------------------------------------------------------
-        Exchange::Sgx => {
-            let p = session_profile(MarketHoursKey::Sgx);
-            MarketHours {
-                exchange: Exchange::Sgx,
-                tz: p.tz,
-                regular: Cow::Borrowed(p.regular),
-                extended: Cow::Borrowed(p.extended),
-                has_daily_close: p.has_daily_close,
-                has_weekend_close: p.has_weekend_close,
-            }
-        }
+        Exchange::Sgx => session_profile(MarketHoursKey::Sgx).to_market_hours(Exchange::Sgx),
 
         // ------------------------------------------------------------
         // CFE (Cboe Futures – VIX default profile)
         // Shared CfeVix profile (see `session_profile`).
-        // RTH 08:30–15:15; curb 15:30–16:00; overnight wrap Sun+Mon–Thu 17:00→08:30.
+        // RTH 08:30–15:00 flowing seamlessly into post-settlement ETH 15:00–16:00
+        // (effective 2021-12-06); overnight wrap Sun+Mon–Thu 17:00→08:30.
         // ------------------------------------------------------------
-        Exchange::Cfe => {
-            let p = session_profile(MarketHoursKey::CfeVix);
-            MarketHours {
-                exchange: Exchange::Cfe,
-                tz: p.tz,
-                regular: Cow::Borrowed(p.regular),
-                extended: Cow::Borrowed(p.extended),
-                has_daily_close: p.has_daily_close,
-                has_weekend_close: p.has_weekend_close,
-            }
-        }
+        Exchange::Cfe => session_profile(MarketHoursKey::CfeVix).to_market_hours(Exchange::Cfe),
 
         // ------------------------------------------------------------
         // Crypto / always-open venues
@@ -320,15 +242,7 @@ pub fn hours_for_exchange(exch: Exchange) -> MarketHours {
         // deferred to a later product-level calendar layer.
         // ------------------------------------------------------------
         Exchange::BinanceFutures => {
-            let p = session_profile(MarketHoursKey::AlwaysOpen);
-            MarketHours {
-                exchange: Exchange::BinanceFutures,
-                tz: p.tz,
-                regular: Cow::Borrowed(p.regular),
-                extended: Cow::Borrowed(p.extended),
-                has_daily_close: p.has_daily_close,
-                has_weekend_close: p.has_weekend_close,
-            }
+            session_profile(MarketHoursKey::AlwaysOpen).to_market_hours(Exchange::BinanceFutures)
         } // All known exchanges covered; no default arm.
     }
 }
@@ -345,19 +259,9 @@ pub fn hours_for_exchange(exch: Exchange) -> MarketHours {
 /// rules so that callers can distinguish the two categories by inspecting the
 /// session rules (an always-open venue has a single `0..86400` same-day rule
 /// active on all seven days, while futures venues use multi-rule wrap patterns).
+///
+/// The rule data is the shared [`MarketHoursKey::AlwaysOpen`] static — one
+/// source of truth for the 24×7 profile, addressed here by venue tag.
 fn default_24x7(ex: Exchange) -> MarketHours {
-    let days_all = [true, true, true, true, true, true, true];
-    let full_day = SessionRule {
-        days: days_all,
-        open_ssm: 0,
-        close_ssm: 24 * 3600,
-    };
-    MarketHours {
-        exchange: ex,
-        tz: UTC,
-        regular: vec![full_day].into(),
-        extended: Vec::new().into(),
-        has_daily_close: false,
-        has_weekend_close: false,
-    }
+    session_profile(MarketHoursKey::AlwaysOpen).to_market_hours(ex)
 }

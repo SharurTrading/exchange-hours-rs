@@ -108,8 +108,11 @@ impl SessionRule {
     }
 }
 
-/// `SECONDS_PER_NORMAL_DAY` in the `u32` domain of [`SessionRule`] fields.
+/// [`SECONDS_PER_NORMAL_DAY`] in the `u32` domain of [`SessionRule`] fields.
 const SECONDS_PER_NORMAL_DAY_U32: u32 = 86_400;
+// Compile-time tie to the u64 source so the two constants cannot drift.
+// Evaluated during constant evaluation only — this is not a runtime assert.
+const _: () = assert!(SECONDS_PER_NORMAL_DAY_U32 as u64 == SECONDS_PER_NORMAL_DAY);
 
 /// A [`SessionRule`] domain-invariant violation, reported by
 /// [`SessionRule::new`] and [`SessionRule::validate`].

@@ -24,7 +24,7 @@ use std::borrow::Cow;
 use chrono::{DateTime, Datelike, Duration, NaiveDate, Timelike, Utc};
 use chrono_tz::Tz;
 
-use super::local_time::mk_local_open;
+use super::local_time::{is_holiday, mk_local_open};
 use super::rule::{SECONDS_PER_NORMAL_WEEK, normal_week_rule_intervals};
 use super::session::{next_session_after, next_session_after_with};
 use super::{Exchange, SessionKind, SessionRule};
@@ -104,34 +104,50 @@ impl MarketHours {
     }
 
     /// True if a session of the requested kind is open at `t`.
+    ///
+    /// Session existence follows the crate-wide contract (stated on the
+    /// internal holiday hook in `local_time`): a same-day session on local day `D` exists iff
+    /// `D` is not a holiday, and a wrap session opening on `D` exists iff
+    /// neither `D` nor `D+1` is one. The gates below mirror
+    /// [`session_bounds_with`](super::session_bounds_with) and
+    /// [`next_session_after_with`](super::next_session_after_with) so the two
+    /// code paths cannot drift once a real holiday calendar lands (today the
+    /// hook is a stub returning `false`).
     #[must_use]
     pub fn is_open_with(&self, t: DateTime<Utc>, kind: SessionKind) -> bool {
         let local = t.with_timezone(&self.tz);
-        // Holidays are modeled via status; exchange-level defaults do not gate by holidays.
+        let today = local.date_naive();
         let w_today = local.weekday().num_days_from_monday() as usize;
         let ssm = local.num_seconds_from_midnight();
 
-        // Direct rule evaluation (no exchange-specific hard gates; breaks are modeled as rules)
-        if self.iter_rules(kind).any(|r| {
-            if !r.days[w_today] {
-                return false;
-            }
-            if r.open_ssm <= r.close_ssm {
-                ssm >= r.open_ssm && ssm < r.close_ssm
-            } else {
-                // Wrap: today's instance of the rule contributes only its open
-                // side. The close belongs to *yesterday's* instance, which the
-                // scan below evaluates against yesterday's weekday — testing
-                // `ssm < close_ssm` here would report the venue open before its
-                // own open on any day whose predecessor ran no session.
-                ssm >= r.open_ssm
-            }
-        }) {
+        // Today's rules (breaks are modeled as gaps between rules, not gates).
+        if !is_holiday(self, today)
+            && self.iter_rules(kind).any(|r| {
+                if !r.days[w_today] {
+                    return false;
+                }
+                if r.open_ssm <= r.close_ssm {
+                    ssm >= r.open_ssm && ssm < r.close_ssm
+                } else {
+                    // Wrap: today's instance of the rule contributes only its
+                    // open side, and only if the close day exists (no wrap
+                    // into a holiday). The close side belongs to *yesterday's*
+                    // instance, which the scan below evaluates against
+                    // yesterday's weekday — testing `ssm < close_ssm` here
+                    // would report the venue open before its own open on any
+                    // day whose predecessor ran no session.
+                    ssm >= r.open_ssm && !is_holiday(self, today + Duration::days(1))
+                }
+            })
+        {
             return true;
         }
 
-        // Yesterday's wrap may spill into today unless yesterday was a holiday.
-        let yday_date = local.date_naive() - Duration::days(1);
+        // Yesterday's wrap may spill into today unless either day is a holiday.
+        let yday_date = today - Duration::days(1);
+        if is_holiday(self, yday_date) || is_holiday(self, today) {
+            return false;
+        }
         let yday = yday_date.weekday().num_days_from_monday() as usize;
         self.iter_rules(kind).any(|r| {
             if r.open_ssm <= r.close_ssm {

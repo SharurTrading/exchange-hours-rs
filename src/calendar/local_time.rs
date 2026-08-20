@@ -28,9 +28,15 @@ use super::MarketHours;
 /// Holiday hook. Always `false` today: the crate ships normal-week,
 /// exchange-level defaults and deliberately owns no holiday calendar.
 ///
-/// Every wrap-session and daily-close path already routes its
-/// "may this session exist on this local date?" question through here, so
-/// landing a real calendar is a body change, not a control-flow change.
+/// Every query path routes its "may this session exist on this local date?"
+/// question through here, so landing a real calendar is a body change, not a
+/// control-flow change. The session-existence contract every caller
+/// implements: a **same-day** session on local day `D` exists iff `D` is not
+/// a holiday, and a **wrap** session opening on `D` and closing on `D+1`
+/// exists iff neither `D` nor `D+1` is a holiday. `is_open_with`,
+/// `session_bounds_with`, `next_session_after_with`, and the daily-close
+/// finder all apply these gates identically — the cross-query fence in
+/// `tests/contract/session_invariants.rs` is what keeps them from drifting.
 pub(crate) fn is_holiday(_hours: &MarketHours, _d: chrono::NaiveDate) -> bool {
     false
 }

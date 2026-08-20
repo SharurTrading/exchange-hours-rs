@@ -47,31 +47,37 @@ pub fn session_bounds_with(
     let yday_date = day - chrono::Duration::days(1);
     let yday = yday_date.weekday().num_days_from_monday() as usize;
 
-    // 1) Try all of TODAY's rules.
-    for r in hours.iter_rules(kind).filter(|r| r.days[w_today]) {
-        if (i64::from(r.open_ssm)) <= (i64::from(r.close_ssm)) {
-            // same-day
-            if ssm >= i64::from(r.open_ssm) && ssm < i64::from(r.close_ssm) {
-                let open = mk_local_open(hours.tz, day, r.open_ssm);
-                let close = mk_local_close(hours.tz, day, r.close_ssm);
-                return (open.with_timezone(&Utc), close.with_timezone(&Utc));
-            }
-        } else {
-            // wrap (open today, close tomorrow)
-            if ssm >= i64::from(r.open_ssm) {
-                // ensure tomorrow isn't a holiday (no wrap bleed into holiday)
-                if is_holiday(hours, day + chrono::Duration::days(1)) {
-                    continue;
+    // 1) Try all of TODAY's rules — none exist if today is a holiday
+    //    (mirrors the day-skip in `next_session_after_with`).
+    if !is_holiday(hours, day) {
+        for r in hours.iter_rules(kind).filter(|r| r.days[w_today]) {
+            if (i64::from(r.open_ssm)) <= (i64::from(r.close_ssm)) {
+                // same-day
+                if ssm >= i64::from(r.open_ssm) && ssm < i64::from(r.close_ssm) {
+                    let open = mk_local_open(hours.tz, day, r.open_ssm);
+                    let close = mk_local_close(hours.tz, day, r.close_ssm);
+                    return (open.with_timezone(&Utc), close.with_timezone(&Utc));
                 }
-                let open = mk_local_open(hours.tz, day, r.open_ssm);
-                let close = mk_local_close(hours.tz, day + chrono::Duration::days(1), r.close_ssm);
-                return (open.with_timezone(&Utc), close.with_timezone(&Utc));
+            } else {
+                // wrap (open today, close tomorrow)
+                if ssm >= i64::from(r.open_ssm) {
+                    // ensure tomorrow isn't a holiday (no wrap bleed into holiday)
+                    if is_holiday(hours, day + chrono::Duration::days(1)) {
+                        continue;
+                    }
+                    let open = mk_local_open(hours.tz, day, r.open_ssm);
+                    let close =
+                        mk_local_close(hours.tz, day + chrono::Duration::days(1), r.close_ssm);
+                    return (open.with_timezone(&Utc), close.with_timezone(&Utc));
+                }
             }
         }
     }
 
-    // 2) Try all of YESTERDAY's WRAP rules that spill into today (unless yesterday was a holiday).
-    if !is_holiday(hours, yday_date) {
+    // 2) Try all of YESTERDAY's WRAP rules that spill into today — the wrap
+    //    exists only if neither its open day nor its close day (today) is a
+    //    holiday.
+    if !is_holiday(hours, yday_date) && !is_holiday(hours, day) {
         for r in hours.iter_rules(kind).filter(|r| r.days[yday]) {
             if r.open_ssm > r.close_ssm {
                 // yesterday had a wrap; if we're before today's wrap close, we are inside it

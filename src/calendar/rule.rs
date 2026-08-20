@@ -39,15 +39,123 @@ pub(crate) const ALL_DAYS: [bool; 7] = [true, true, true, true, true, true, true
 ///   the session wraps into the next local day and closes at `close_ssm` there.
 /// - Close comparisons are end-exclusive: an instant exactly equal to `close_ssm`
 ///   is considered closed.
+///
+/// # Domain invariants
+///
+/// A well-formed rule has `open_ssm < 86_400`, `close_ssm <= 86_400` (the
+/// `86_400` sentinel closes a same-day session exactly at next local
+/// midnight), `open_ssm != close_ssm` (a zero-length session matches no
+/// instant), and at least one enabled weekday. [`SessionRule::new`] enforces
+/// all four; construction by struct literal or via `Deserialize` bypasses them,
+/// so validate untrusted input with [`SessionRule::validate`]. Queries stay
+/// total for out-of-domain values but their answers are unspecified — an
+/// out-of-range `open_ssm` silently degrades the rule.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub struct SessionRule {
     /// Weekday activation mask (Mon=0 .. Sun=6).
     pub days: [bool; 7],
-    /// Open time in seconds since local midnight.
+    /// Open time in seconds since local midnight, in `0..86_400`.
     pub open_ssm: u32,
-    /// Close time in seconds since local midnight, end-exclusive.
+    /// Close time in seconds since local midnight, end-exclusive, in
+    /// `0..=86_400`.
     pub close_ssm: u32,
 }
+
+impl SessionRule {
+    /// Builds a rule after checking the domain invariants listed on
+    /// [`SessionRule`].
+    ///
+    /// # Errors
+    ///
+    /// Returns the first violated invariant: an out-of-range `open_ssm` or
+    /// `close_ssm`, a zero-length interval (`open_ssm == close_ssm`), or an
+    /// all-`false` weekday mask.
+    pub fn new(days: [bool; 7], open_ssm: u32, close_ssm: u32) -> Result<Self, SessionRuleError> {
+        let rule = Self {
+            days,
+            open_ssm,
+            close_ssm,
+        };
+        rule.validate()?;
+        Ok(rule)
+    }
+
+    /// Checks the domain invariants listed on [`SessionRule`] without
+    /// consuming the rule — the check for rules that arrived by struct
+    /// literal or `Deserialize` rather than through [`SessionRule::new`].
+    ///
+    /// # Errors
+    ///
+    /// Returns the first violated invariant; see [`SessionRule::new`].
+    pub fn validate(&self) -> Result<(), SessionRuleError> {
+        if self.open_ssm >= SECONDS_PER_NORMAL_DAY_U32 {
+            return Err(SessionRuleError::OpenOutOfRange {
+                open_ssm: self.open_ssm,
+            });
+        }
+        if self.close_ssm > SECONDS_PER_NORMAL_DAY_U32 {
+            return Err(SessionRuleError::CloseOutOfRange {
+                close_ssm: self.close_ssm,
+            });
+        }
+        if self.open_ssm == self.close_ssm {
+            return Err(SessionRuleError::EmptyInterval { ssm: self.open_ssm });
+        }
+        if !self.days.iter().any(|&enabled| enabled) {
+            return Err(SessionRuleError::NoEnabledDays);
+        }
+        Ok(())
+    }
+}
+
+/// `SECONDS_PER_NORMAL_DAY` in the `u32` domain of [`SessionRule`] fields.
+const SECONDS_PER_NORMAL_DAY_U32: u32 = 86_400;
+
+/// A [`SessionRule`] domain-invariant violation, reported by
+/// [`SessionRule::new`] and [`SessionRule::validate`].
+#[non_exhaustive]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum SessionRuleError {
+    /// `open_ssm` is not inside `0..86_400`.
+    OpenOutOfRange {
+        /// The rejected open value.
+        open_ssm: u32,
+    },
+    /// `close_ssm` is not inside `0..=86_400`.
+    CloseOutOfRange {
+        /// The rejected close value.
+        close_ssm: u32,
+    },
+    /// `open_ssm == close_ssm`: a zero-length session matches no instant.
+    EmptyInterval {
+        /// The shared open/close value.
+        ssm: u32,
+    },
+    /// Every weekday is disabled, so the rule can never apply.
+    NoEnabledDays,
+}
+
+impl core::fmt::Display for SessionRuleError {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        match self {
+            Self::OpenOutOfRange { open_ssm } => {
+                write!(f, "open_ssm {open_ssm} is outside 0..86400")
+            }
+            Self::CloseOutOfRange { close_ssm } => {
+                write!(f, "close_ssm {close_ssm} is outside 0..=86400")
+            }
+            Self::EmptyInterval { ssm } => {
+                write!(
+                    f,
+                    "open_ssm and close_ssm are both {ssm}; the session is empty"
+                )
+            }
+            Self::NoEnabledDays => write!(f, "no weekday is enabled"),
+        }
+    }
+}
+
+impl std::error::Error for SessionRuleError {}
 
 /// Selects which session set a query consults.
 ///

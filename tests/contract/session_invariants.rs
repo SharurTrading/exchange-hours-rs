@@ -625,7 +625,7 @@ fn is_open_agrees_with_session_bounds_for_every_venue_and_instant() {
         let hours = hours_for_exchange(exchange);
         for instant in probe_instants(&hours) {
             for kind in kinds {
-                let (open, close) = session_bounds_with(kind, &hours, instant);
+                let (open, close) = session_bounds_with(&hours, instant, kind);
                 let contained = open <= instant && instant < close;
                 assert_eq!(
                     hours.is_open_with(instant, kind),
@@ -662,8 +662,8 @@ fn closed_instants_agree_with_the_next_session_for_every_venue() {
                 if hours.is_open_with(instant, kind) {
                     continue;
                 }
-                let (bounds_open, _) = session_bounds_with(kind, &hours, instant);
-                let (next_open, _) = next_session_after_with(kind, &hours, instant);
+                let (bounds_open, _) = session_bounds_with(&hours, instant, kind);
+                let (next_open, _) = next_session_after_with(&hours, instant, kind);
                 assert_eq!(
                     bounds_open, next_open,
                     "{exchange:?} / {kind:?}: closed at {instant} but session_bounds_with \
@@ -674,6 +674,68 @@ fn closed_instants_agree_with_the_next_session_for_every_venue() {
                     "{exchange:?} / {kind:?}: next session at {next_open} precedes {instant}"
                 );
             }
+        }
+    }
+}
+
+#[test]
+fn every_shipped_rule_table_satisfies_the_session_rule_domain() {
+    use chrono::TimeZone;
+    use exchange_hours::{MarketHoursKey, hours_for_exchange_as_of, session_profile};
+
+    // Epochs on both sides of every recorded cutover, so the historical
+    // profiles (including pre-go-live empties) are validated too.
+    let epochs = [
+        Utc.with_ymd_and_hms(2012, 6, 1, 12, 0, 0)
+            .single()
+            .expect("valid UTC instant"),
+        Utc.with_ymd_and_hms(2015, 6, 1, 12, 0, 0)
+            .single()
+            .expect("valid UTC instant"),
+        Utc.with_ymd_and_hms(2020, 6, 1, 12, 0, 0)
+            .single()
+            .expect("valid UTC instant"),
+        Utc.with_ymd_and_hms(2026, 6, 1, 12, 0, 0)
+            .single()
+            .expect("valid UTC instant"),
+    ];
+
+    let validate_all = |hours: &MarketHours, source: &str| {
+        for rule in hours.regular.iter().chain(hours.extended.iter()) {
+            rule.validate().unwrap_or_else(|violation| {
+                panic!("{source}: shipped rule {rule:?} violates the domain: {violation}")
+            });
+        }
+    };
+
+    for &exchange in ALL_EXCHANGES {
+        validate_all(&hours_for_exchange(exchange), &format!("{exchange:?}"));
+        for epoch in epochs {
+            validate_all(
+                &hours_for_exchange_as_of(exchange, epoch),
+                &format!("{exchange:?} as of {epoch}"),
+            );
+        }
+    }
+
+    // The shared futures profiles addressed by key. `MarketHoursKey` is
+    // non_exhaustive for downstream code; this in-repo list tracks the enum.
+    for key in [
+        MarketHoursKey::GlobexEquityIndex,
+        MarketHoursKey::GlobexEnergy,
+        MarketHoursKey::GlobexGrains,
+        MarketHoursKey::GlobexFx,
+        MarketHoursKey::CfeVix,
+        MarketHoursKey::Eurex,
+        MarketHoursKey::IceUs,
+        MarketHoursKey::Sgx,
+        MarketHoursKey::AlwaysOpen,
+    ] {
+        let profile = session_profile(key);
+        for rule in profile.regular.iter().chain(profile.extended.iter()) {
+            rule.validate().unwrap_or_else(|violation| {
+                panic!("{key:?}: shipped rule {rule:?} violates the domain: {violation}")
+            });
         }
     }
 }

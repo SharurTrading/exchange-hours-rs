@@ -241,7 +241,7 @@ impl MarketHours {
         // before the window ends, the day is not fully closed. The degenerate
         // `open == close` pair means no session exists in the search horizon at
         // all, so the day is fully closed.
-        let (next_open, next_close) = next_session_after_with(kind, self, start_utc);
+        let (next_open, next_close) = next_session_after_with(self, start_utc, kind);
         next_open == next_close || next_open >= end_utc
     }
 

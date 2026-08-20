@@ -1585,3 +1585,55 @@ fn six_does_not_share_the_xetra_schedule() {
         "Xetra still trades continuously at 17:25, so the contrast is real"
     );
 }
+
+// ---------------------------------------------------------------------------
+// candle_start_with — kind-aware period starts
+// ---------------------------------------------------------------------------
+
+#[test]
+fn candle_start_with_regular_kind_anchors_the_trading_day_at_rth() {
+    let hours = hours_for_market_hours_key(MarketHoursKey::GlobexEquityIndex);
+    let monday_mid_rth = ct((2026, 4, 20), (10, 0, 0));
+
+    // Consulting only regular sessions, the Monday trading day runs
+    // 08:30–15:15 CT; the overnight wrap belongs to the extended set.
+    assert_eq!(
+        candle_start_with(
+            &hours,
+            monday_mid_rth,
+            CalendarResolution::Daily,
+            SessionKind::Regular
+        ),
+        ct((2026, 4, 20), (8, 30, 0)),
+        "Regular-kind daily start is the RTH open, not the Globex overnight open"
+    );
+    assert_eq!(
+        candle_end_with(
+            &hours,
+            monday_mid_rth,
+            CalendarResolution::Daily,
+            SessionKind::Regular
+        ),
+        ct((2026, 4, 20), (15, 15, 0)),
+        "Regular-kind daily end is the RTH close"
+    );
+}
+
+#[test]
+fn candle_start_with_both_matches_candle_start() {
+    let hours = hours_for_market_hours_key(MarketHoursKey::GlobexEquityIndex);
+    for (res, t) in [
+        (CalendarResolution::Daily, ct((2026, 1, 29), (18, 0, 0))),
+        (
+            CalendarResolution::Minutes(5),
+            ct((2026, 4, 20), (10, 0, 0)),
+        ),
+        (CalendarResolution::Weekly, ct((2026, 4, 20), (10, 0, 0))),
+    ] {
+        assert_eq!(
+            candle_start_with(&hours, t, res, SessionKind::Both),
+            candle_start(&hours, t, res),
+            "candle_start must be exactly candle_start_with over Both ({res:?})"
+        );
+    }
+}

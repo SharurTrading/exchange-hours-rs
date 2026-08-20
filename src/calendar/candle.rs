@@ -28,9 +28,7 @@ use super::period::{
     daily_close_for_local_day, next_daily_close_after_with, next_monthly_close_after_with,
     next_weekly_close_after_with,
 };
-use super::session::{
-    next_session_after, next_session_after_with, session_bounds, session_bounds_with,
-};
+use super::session::{next_session_after_with, session_bounds_with};
 use super::{CalendarResolution, MarketHours, SessionKind};
 
 /// Returns the session-aware bar close after `t` for `res` and `kind`.
@@ -84,7 +82,7 @@ fn fixed_grid_end(
     step: Duration,
     kind: SessionKind,
 ) -> DateTime<Utc> {
-    let (open, close) = session_bounds_with(kind, hours, t);
+    let (open, close) = session_bounds_with(hours, t, kind);
     let anchor = if t < open { open } else { t };
     let mut end = (anchor + step).min(close);
 
@@ -94,7 +92,7 @@ fn fixed_grid_end(
             && dc == close
             && hours.is_maintenance(close)
         {
-            let (next_open, _next_close) = next_session_after_with(kind, hours, close);
+            let (next_open, _next_close) = next_session_after_with(hours, close, kind);
             end = next_open;
         }
     }
@@ -133,33 +131,36 @@ pub fn candle_end(
 /// example a venue queried before its go-live date), calendar starts return
 /// the same degenerate `t` as [`candle_end`], so the pair reads as a
 /// zero-width "no bar".
+#[inline]
 #[must_use]
 pub fn candle_start(
     hours: &MarketHours,
     t: DateTime<Utc>,
     interval: CalendarResolution,
 ) -> DateTime<Utc> {
-    match interval {
-        CalendarResolution::Seconds(_) => t,
-        CalendarResolution::Minutes(_) | CalendarResolution::Hours(_) => {
-            let (session_open, _) = session_bounds(hours, t);
-            t.max(session_open)
-        }
-        CalendarResolution::Daily | CalendarResolution::Weekly | CalendarResolution::Monthly => {
-            calendar_period_start(hours, t, interval)
-        }
-    }
+    candle_start_with(hours, t, interval, SessionKind::Both)
 }
 
-/// Total wrapper over [`period_start_of`]: a calendar with no resolvable
-/// period start degenerates to `t`, matching [`candle_end_with`]'s degenerate
-/// contract, so the `(start, end)` pair reads as a zero-width "no bar".
-fn calendar_period_start(
+/// Returns the opening instant paired with [`candle_end_with`] for the same
+/// `kind`: the kind-aware form of [`candle_start`], consulting only the
+/// selected session set for anchors and period boundaries.
+#[must_use]
+pub fn candle_start_with(
     hours: &MarketHours,
     t: DateTime<Utc>,
     interval: CalendarResolution,
+    kind: SessionKind,
 ) -> DateTime<Utc> {
-    period_start_of(hours, t, interval).unwrap_or(t)
+    match interval {
+        CalendarResolution::Seconds(_) => t,
+        CalendarResolution::Minutes(_) | CalendarResolution::Hours(_) => {
+            let (session_open, _) = session_bounds_with(hours, t, kind);
+            t.max(session_open)
+        }
+        CalendarResolution::Daily | CalendarResolution::Weekly | CalendarResolution::Monthly => {
+            period_start_of(hours, t, interval, kind).unwrap_or(t)
+        }
+    }
 }
 
 /// Finds the open instant of the daily/weekly/monthly period containing (or
@@ -173,11 +174,12 @@ fn period_start_of(
     hours: &MarketHours,
     t: DateTime<Utc>,
     interval: CalendarResolution,
+    kind: SessionKind,
 ) -> Option<DateTime<Utc>> {
     let period_end = match interval {
-        CalendarResolution::Daily => next_daily_close_after_with(hours, t, SessionKind::Both)?,
-        CalendarResolution::Weekly => next_weekly_close_after_with(hours, t, SessionKind::Both)?,
-        CalendarResolution::Monthly => next_monthly_close_after_with(hours, t, SessionKind::Both)?,
+        CalendarResolution::Daily => next_daily_close_after_with(hours, t, kind)?,
+        CalendarResolution::Weekly => next_weekly_close_after_with(hours, t, kind)?,
+        CalendarResolution::Monthly => next_monthly_close_after_with(hours, t, kind)?,
         CalendarResolution::Seconds(_)
         | CalendarResolution::Minutes(_)
         | CalendarResolution::Hours(_) => return None,
@@ -203,7 +205,7 @@ fn period_start_of(
             if !same_period {
                 break;
             }
-            if let Some(close) = daily_close_for_local_day(hours, day, SessionKind::Both) {
+            if let Some(close) = daily_close_for_local_day(hours, day, kind) {
                 first_close = close;
             }
             day -= Duration::days(1);
@@ -217,7 +219,7 @@ fn period_start_of(
     let mut day = first_close.with_timezone(&hours.tz).date_naive() - Duration::days(1);
     let mut previous_close = None;
     for _ in 0..21 {
-        if let Some(close) = daily_close_for_local_day(hours, day, SessionKind::Both)
+        if let Some(close) = daily_close_for_local_day(hours, day, kind)
             && close < first_close
         {
             previous_close = Some(close);
@@ -230,7 +232,7 @@ fn period_start_of(
     // Probe just before the previous close so a continuous session whose next
     // open equals that close (for example a 24×7 UTC profile) is included.
     let open_probe = previous_close.checked_sub_signed(Duration::nanoseconds(1))?;
-    let period_start = next_session_after(hours, open_probe).0;
+    let period_start = next_session_after_with(hours, open_probe, kind).0;
     (period_start < first_close).then_some(period_start)
 }
 

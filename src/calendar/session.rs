@@ -35,9 +35,9 @@ use super::{MarketHours, SessionKind};
 /// closes to the latest.
 #[must_use]
 pub fn session_bounds_with(
-    kind: SessionKind,
     hours: &MarketHours,
     t: DateTime<Utc>,
+    kind: SessionKind,
 ) -> (DateTime<Utc>, DateTime<Utc>) {
     let local = t.with_timezone(&hours.tz);
     let day = local.date_naive();
@@ -91,13 +91,13 @@ pub fn session_bounds_with(
     }
 
     // 3) Otherwise, fall forward to the next session after t.
-    next_session_after_with(kind, hours, t)
+    next_session_after_with(hours, t, kind)
 }
 
 /// Returns [`session_bounds_with`] over [`SessionKind::Both`] (regular + extended).
 #[must_use]
 pub fn session_bounds(hours: &MarketHours, t: DateTime<Utc>) -> (DateTime<Utc>, DateTime<Utc>) {
-    session_bounds_with(SessionKind::Both, hours, t)
+    session_bounds_with(hours, t, SessionKind::Both)
 }
 
 /// Returns the `[open, close)` UTC bounds of the next session of `kind` that
@@ -109,9 +109,9 @@ pub fn session_bounds(hours: &MarketHours, t: DateTime<Utc>) -> (DateTime<Utc>, 
 /// degenerate `(end_excl, end_excl)`.
 #[must_use]
 pub fn next_session_after_with(
-    kind: SessionKind,
     hours: &MarketHours,
     end_excl: DateTime<Utc>,
+    kind: SessionKind,
 ) -> (DateTime<Utc>, DateTime<Utc>) {
     let local = end_excl.with_timezone(&hours.tz);
     let base_day = local.date_naive();
@@ -174,7 +174,7 @@ pub fn next_session_after(
     hours: &MarketHours,
     end_excl: DateTime<Utc>,
 ) -> (DateTime<Utc>, DateTime<Utc>) {
-    next_session_after_with(SessionKind::Both, hours, end_excl)
+    next_session_after_with(hours, end_excl, SessionKind::Both)
 }
 
 /// Returns only the open instant of the next session after `after_utc`.

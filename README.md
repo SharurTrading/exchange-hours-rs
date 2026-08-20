@@ -101,7 +101,7 @@ reaches every consumer at once.
 
 ## Boundaries & invariants
 
-- **UTC in, UTC out.** Every argument and result is `DateTime<Utc>`; the exchange `Tz` is an
+- **UTC in, UTC out.** Every timestamp argument and timestamp result is `DateTime<Utc>`; the exchange `Tz` is an
   internal detail and callers never pass or receive local times.
 - **Closes are end-exclusive.** An instant equal to a close is *closed*. Relaxing this makes
   adjacent sessions overlap and every duration double-count at its boundary.

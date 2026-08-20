@@ -12,16 +12,17 @@
 //! [`hours_for_exchange_as_of`] returns one for a venue queried before its
 //! go-live date (Blue Ocean ATS before 2021-10-05, NYSE Texas before
 //! 2025-03-31). The contract these tests pin: every query stays total and
-//! terminates, boundary queries return their **degenerate** value (the query
-//! instant itself, i.e. `open == close` / `end == t`), and no query invents
-//! state — a venue with no sessions is never "open", never "in maintenance",
-//! and closed all day on every day.
+//! terminates, boundary queries return **`None`** — absence of a session is a
+//! fact, never a fabricated pair — and no query invents state: a venue with
+//! no sessions is never "open", never "in maintenance", and closed all day on
+//! every day.
 //!
 //! Before this contract existed, `candle_end(…, Weekly)` looped effectively
 //! forever (advancing 1 ns per iteration), `candle_start(…, Daily)` panicked
 //! ("calendar period has no preceding daily close"), and `is_maintenance`
-//! reported `true` forever because the degenerate next-session pair sits zero
-//! minutes away.
+//! reported `true` forever because the then-degenerate `(t, t)` next-session
+//! pair sits zero minutes away — the silent-default trap that motivated the
+//! `Option` surface.
 
 use chrono::{TimeZone, Utc};
 use exchange_hours::{
@@ -66,50 +67,50 @@ fn no_session_profile_is_closed_and_never_in_maintenance() {
 }
 
 #[test]
-fn no_session_bounds_and_next_session_are_degenerate() {
+fn no_session_bounds_and_next_session_are_none() {
     let hours = no_session_hours();
     let t = probe();
     assert_eq!(
         session_bounds(&hours, t),
-        (t, t),
-        "bounds must be the documented degenerate (t, t) pair"
+        None,
+        "a profile with no rules has no session bounds"
     );
     assert_eq!(
         next_session_after(&hours, t),
-        (t, t),
-        "next session must be the documented degenerate (t, t) pair"
+        None,
+        "a profile with no rules has no next session"
     );
 }
 
 #[test]
-fn no_session_daily_candle_end_returns_its_input() {
+fn no_session_daily_candle_end_is_none() {
     let hours = no_session_hours();
     let t = probe();
     assert_eq!(
         candle_end(&hours, t, CalendarResolution::Daily),
-        t,
-        "Daily candle end must degenerate to t when no close exists in the horizon"
+        None,
+        "no daily close exists in the horizon, so there is no bar"
     );
 }
 
 #[test]
-fn no_session_weekly_and_monthly_candle_end_terminate_and_return_their_input() {
+fn no_session_weekly_and_monthly_candle_end_terminate_with_none() {
     let hours = no_session_hours();
     let t = probe();
     assert_eq!(
         candle_end(&hours, t, CalendarResolution::Weekly),
-        t,
-        "Weekly candle end must degenerate to t, not loop"
+        None,
+        "Weekly candle end must be None, not loop"
     );
     assert_eq!(
         candle_end(&hours, t, CalendarResolution::Monthly),
-        t,
-        "Monthly candle end must degenerate to t, not loop"
+        None,
+        "Monthly candle end must be None, not loop"
     );
 }
 
 #[test]
-fn no_session_candle_start_is_degenerate_not_a_panic() {
+fn no_session_candle_start_is_none_not_a_panic() {
     let hours = no_session_hours();
     let t = probe();
     for res in [
@@ -119,22 +120,42 @@ fn no_session_candle_start_is_degenerate_not_a_panic() {
     ] {
         assert_eq!(
             candle_start(&hours, t, res),
-            t,
-            "{res:?} candle start must degenerate to t for a no-session profile"
+            None,
+            "{res:?} candle start must be None for a no-session profile"
         );
     }
 }
 
 #[test]
-fn no_session_intraday_candles_stay_degenerate() {
+fn no_session_intraday_candles_are_none_but_seconds_stays_an_offset() {
     let hours = no_session_hours();
     let t = probe();
-    // Fixed-grid bars clamp to the (degenerate) enclosing session, so the end
-    // never advances; Seconds stays a pure offset by contract.
-    assert_eq!(candle_end(&hours, t, CalendarResolution::Minutes(5)), t);
-    assert_eq!(candle_end(&hours, t, CalendarResolution::Hours(1)), t);
+    // Fixed-grid bars need an enclosing session; none exists. Seconds stays a
+    // pure offset by contract — it never consults the calendar.
+    assert_eq!(candle_end(&hours, t, CalendarResolution::Minutes(5)), None);
+    assert_eq!(candle_end(&hours, t, CalendarResolution::Hours(1)), None);
     assert_eq!(
         candle_end(&hours, t, CalendarResolution::Seconds(30)),
-        t + chrono::Duration::seconds(30)
+        Some(t + chrono::Duration::seconds(30))
     );
+}
+
+#[test]
+fn zero_intervals_have_no_bar_on_any_profile() {
+    // A zero interval could never advance, so both ends of the bar are None —
+    // on a no-session profile and on a normal venue alike.
+    use exchange_hours::{candle_end_with, candle_start_with, hours_for_exchange};
+    let cme = hours_for_exchange(Exchange::Cme);
+    let empty = no_session_hours();
+    let t = probe();
+    for res in [
+        CalendarResolution::Seconds(0),
+        CalendarResolution::Minutes(0),
+        CalendarResolution::Hours(0),
+    ] {
+        for hours in [&cme, &empty] {
+            assert_eq!(candle_end_with(hours, t, res, SessionKind::Both), None);
+            assert_eq!(candle_start_with(hours, t, res, SessionKind::Both), None);
+        }
+    }
 }

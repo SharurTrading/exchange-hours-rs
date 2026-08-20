@@ -48,10 +48,11 @@ let ct = |y, m, d, hh, mm| {
 
 let hours = hours_for_exchange(Exchange::Cme);
 
-// Monday mid-morning sits inside the regular session.
+// Monday mid-morning sits inside the regular session. Boundary queries
+// return `Option`: `None` means the profile runs no such session at all.
 let monday_10am = ct(2026, 4, 20, 10, 0);
 assert!(hours.is_open_regular(monday_10am));
-let (open, close) = session_bounds(&hours, monday_10am);
+let (open, close) = session_bounds(&hours, monday_10am).expect("CME trades this week");
 assert_eq!(open, ct(2026, 4, 20, 8, 30));
 assert_eq!(close, ct(2026, 4, 20, 15, 15)); // end-exclusive
 
@@ -62,13 +63,13 @@ assert!(hours.is_maintenance(monday_evening));
 
 // After Friday's close the next session is Sunday evening, not Saturday.
 let friday_after_close = ct(2026, 4, 24, 16, 30);
-let (next_open, _) = next_session_after(&hours, friday_after_close);
+let (next_open, _) = next_session_after(&hours, friday_after_close).expect("reopens Sunday");
 assert_eq!(next_open, ct(2026, 4, 26, 17, 0));
 
 // Bar boundaries follow the same rules: a daily bar closes at the venue's
 // session close, not at midnight.
 let daily_close = candle_end(&hours, monday_10am, CalendarResolution::Daily);
-assert_eq!(daily_close, ct(2026, 4, 20, 16, 0));
+assert_eq!(daily_close, Some(ct(2026, 4, 20, 16, 0)));
 ```
 
 ## Coverage
@@ -126,11 +127,12 @@ reaches every consumer at once.
   absent — `is_holiday` is a stub returning `false`, though every query path already routes
   through it under one session-existence contract. Verify contract specs before trading on
   these defaults.
-- **No panics, and a stated no-session contract.** The public surface is total: a profile
-  with no sessions in the bounded search horizon (a venue before its go-live date) returns
-  the degenerate value — `(t, t)` bounds, `end == t` candles — and predicates report
-  closed/not-in-maintenance. Callers that need progress must treat the degenerate value as
-  "no session".
+- **No panics, and absence is `None`.** The public surface is total, and boundary queries
+  (`session_bounds*`, `next_session_after*`, `candle_start*`/`candle_end*`,
+  `time_end_of_day`) return `Option`: a profile with no session of the requested kind in
+  the bounded search horizon (a venue before its go-live date), or a zero intraday
+  interval, is `None` — never a fabricated degenerate pair that could leak downstream as a
+  real session. Predicates report closed/not-in-maintenance/closed-all-day.
 - **`SessionRule` has a stated domain.** `SessionRule::new` / `validate` enforce
   `open_ssm < 86_400`, `close_ssm <= 86_400`, a non-empty interval, and at least one
   enabled weekday; every shipped table is fence-checked against the same domain.

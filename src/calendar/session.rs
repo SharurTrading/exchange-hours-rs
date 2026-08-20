@@ -8,24 +8,27 @@
 //! Session bounds: which `[open, close)` window an instant sits in, and which
 //! one comes next.
 //!
-//! Every function here returns a half-open UTC pair — the close is exclusive, so
-//! `close` is the first instant *not* in the session. The search order is
-//! deliberate: today's rules, then yesterday's wrap rules (an overnight session
-//! that has not closed yet), then forward to the next session. Skipping the
-//! second step is how an instant at 02:00 inside a 17:00→16:00 Globex session
-//! would be misreported as belonging to the *next* session.
+//! Every function here returns an `Option` of a half-open UTC pair — the close
+//! is exclusive, so `close` is the first instant *not* in the session. The
+//! search order is deliberate: today's rules, then yesterday's wrap rules (an
+//! overnight session that has not closed yet), then forward to the next
+//! session. Skipping the second step is how an instant at 02:00 inside a
+//! 17:00→16:00 Globex session would be misreported as belonging to the *next*
+//! session.
 //!
-//! Forward scans are bounded at 14 local days. A profile with no rule at all
-//! (for example a venue queried before its go-live date) therefore returns the
-//! degenerate `(end_excl, end_excl)` pair rather than looping; callers that need
-//! progress must treat `open == close` as "no session".
+//! Forward scans are bounded at 14 local days. A profile with no session of
+//! the requested kind inside that horizon (for example a venue queried before
+//! its go-live date) returns `None` — absence of a session is a fact, not an
+//! error, and never a fabricated pair.
 
 use chrono::{DateTime, Datelike, Duration, Timelike, Utc};
 
 use super::local_time::{is_holiday, mk_local_close, mk_local_open};
 use super::{MarketHours, SessionKind};
 
-/// Returns the `[open, close)` UTC bounds of the session of `kind` that contains `t`.
+/// Returns the `[open, close)` UTC bounds of the session of `kind` that
+/// contains `t`, or `None` when the profile has no session of that kind within
+/// the bounded search horizon.
 ///
 /// When `t` lies inside a session, that session's bounds are returned. Otherwise
 /// the search falls back, in order, to: (1) a previous-day wrap session that
@@ -38,7 +41,7 @@ pub fn session_bounds_with(
     hours: &MarketHours,
     t: DateTime<Utc>,
     kind: SessionKind,
-) -> (DateTime<Utc>, DateTime<Utc>) {
+) -> Option<(DateTime<Utc>, DateTime<Utc>)> {
     let local = t.with_timezone(&hours.tz);
     let day = local.date_naive();
     let ssm = i64::from(local.num_seconds_from_midnight());
@@ -56,7 +59,7 @@ pub fn session_bounds_with(
                 if ssm >= i64::from(r.open_ssm) && ssm < i64::from(r.close_ssm) {
                     let open = mk_local_open(hours.tz, day, r.open_ssm);
                     let close = mk_local_close(hours.tz, day, r.close_ssm);
-                    return (open.with_timezone(&Utc), close.with_timezone(&Utc));
+                    return Some((open.with_timezone(&Utc), close.with_timezone(&Utc)));
                 }
             } else {
                 // wrap (open today, close tomorrow)
@@ -68,7 +71,7 @@ pub fn session_bounds_with(
                     let open = mk_local_open(hours.tz, day, r.open_ssm);
                     let close =
                         mk_local_close(hours.tz, day + chrono::Duration::days(1), r.close_ssm);
-                    return (open.with_timezone(&Utc), close.with_timezone(&Utc));
+                    return Some((open.with_timezone(&Utc), close.with_timezone(&Utc)));
                 }
             }
         }
@@ -84,7 +87,7 @@ pub fn session_bounds_with(
                 if ssm < i64::from(r.close_ssm) {
                     let open = mk_local_open(hours.tz, day - chrono::Duration::days(1), r.open_ssm);
                     let close = mk_local_close(hours.tz, day, r.close_ssm);
-                    return (open.with_timezone(&Utc), close.with_timezone(&Utc));
+                    return Some((open.with_timezone(&Utc), close.with_timezone(&Utc)));
                 }
             }
         }
@@ -96,23 +99,26 @@ pub fn session_bounds_with(
 
 /// Returns [`session_bounds_with`] over [`SessionKind::Both`] (regular + extended).
 #[must_use]
-pub fn session_bounds(hours: &MarketHours, t: DateTime<Utc>) -> (DateTime<Utc>, DateTime<Utc>) {
+pub fn session_bounds(
+    hours: &MarketHours,
+    t: DateTime<Utc>,
+) -> Option<(DateTime<Utc>, DateTime<Utc>)> {
     session_bounds_with(hours, t, SessionKind::Both)
 }
 
 /// Returns the `[open, close)` UTC bounds of the next session of `kind` that
-/// opens strictly after `end_excl`.
+/// opens strictly after `end_excl`, or `None` when no session of that kind
+/// exists within the bounded search horizon.
 ///
 /// Scans up to 14 local days forward, skipping holidays and refusing wrap
 /// sessions whose close day is a holiday; within a day it picks the earliest
-/// qualifying open. If no session is found in that horizon it returns the
-/// degenerate `(end_excl, end_excl)`.
+/// qualifying open.
 #[must_use]
 pub fn next_session_after_with(
     hours: &MarketHours,
     end_excl: DateTime<Utc>,
     kind: SessionKind,
-) -> (DateTime<Utc>, DateTime<Utc>) {
+) -> Option<(DateTime<Utc>, DateTime<Utc>)> {
     let local = end_excl.with_timezone(&hours.tz);
     let base_day = local.date_naive();
 
@@ -161,11 +167,12 @@ pub fn next_session_after_with(
         }
 
         if let Some(b) = best_open {
-            return b;
+            return Some(b);
         }
     }
-    // Fallback: if nothing found within 14 days, return a degenerate bound.
-    (end_excl, end_excl)
+    // Nothing within the 14-day horizon: the profile runs no session of this
+    // kind at all (a normal-week schedule repeats within 7 days).
+    None
 }
 
 /// Returns [`next_session_after_with`] over [`SessionKind::Both`] (regular + extended).
@@ -173,15 +180,19 @@ pub fn next_session_after_with(
 pub fn next_session_after(
     hours: &MarketHours,
     end_excl: DateTime<Utc>,
-) -> (DateTime<Utc>, DateTime<Utc>) {
+) -> Option<(DateTime<Utc>, DateTime<Utc>)> {
     next_session_after_with(hours, end_excl, SessionKind::Both)
 }
 
-/// Returns only the open instant of the next session after `after_utc`.
+/// Returns only the open instant of the next session after `after_utc`, or
+/// `None` when no session exists within the bounded search horizon.
 ///
-/// Thin projection of [`next_session_after`], returning only its `.0` field.
+/// Thin projection of [`next_session_after`], returning only the open.
 #[inline]
 #[must_use]
-pub fn next_session_open_after(mh: &MarketHours, after_utc: DateTime<Utc>) -> DateTime<Utc> {
-    next_session_after(mh, after_utc).0
+pub fn next_session_open_after(
+    mh: &MarketHours,
+    after_utc: DateTime<Utc>,
+) -> Option<DateTime<Utc>> {
+    next_session_after(mh, after_utc).map(|(open, _close)| open)
 }

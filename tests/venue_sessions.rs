@@ -950,7 +950,7 @@ fn futures_venues_sunday_has_sessions() {
 fn cme_session_bounds_monday_rth() {
     let h = hours_for_exchange(Exchange::Cme);
     let t = ct((2026, 4, 20), (10, 0, 0));
-    let (open, close) = session_bounds(&h, t);
+    let (open, close) = session_bounds(&h, t).expect("a session contains or follows t");
     assert_eq!(
         open,
         ct((2026, 4, 20), (8, 30, 0)),
@@ -967,7 +967,7 @@ fn cme_session_bounds_monday_rth() {
 fn cme_next_session_after_friday_close() {
     let h = hours_for_exchange(Exchange::Cme);
     let t = ct((2026, 4, 24), (16, 30, 0));
-    let (open, _close) = next_session_after(&h, t);
+    let (open, _close) = next_session_after(&h, t).expect("the next session exists");
     assert_eq!(
         open,
         ct((2026, 4, 26), (17, 0, 0)),
@@ -979,7 +979,7 @@ fn cme_next_session_after_friday_close() {
 fn cbot_session_bounds_day_session() {
     let h = hours_for_exchange(Exchange::Cbot);
     let t = ct((2026, 4, 20), (10, 0, 0));
-    let (open, close) = session_bounds(&h, t);
+    let (open, close) = session_bounds(&h, t).expect("a session contains or follows t");
     assert_eq!(open, ct((2026, 4, 20), (8, 30, 0)));
     assert_eq!(close, ct((2026, 4, 20), (13, 20, 0)));
 }
@@ -1038,7 +1038,8 @@ fn candle_end_monthly_returns_last_close_of_month() {
     let h = hours_for_exchange(Exchange::Cme);
     let mid_jan = ct((2026, 1, 15), (12, 0, 0));
 
-    let close = candle_end(&h, mid_jan, CalendarResolution::Monthly);
+    let close =
+        candle_end(&h, mid_jan, CalendarResolution::Monthly).expect("January has daily closes");
     assert!(
         close > mid_jan,
         "monthly close must be after the input instant"
@@ -1049,7 +1050,8 @@ fn candle_end_monthly_returns_last_close_of_month() {
         "monthly close stays in January (exchange-local)"
     );
 
-    let next = candle_end(&h, close, CalendarResolution::Daily);
+    let next =
+        candle_end(&h, close, CalendarResolution::Daily).expect("trading continues in February");
     assert_eq!(
         next.with_timezone(&US::Central).month(),
         2,
@@ -1085,12 +1087,14 @@ fn candle_end_monthly_year_boundary() {
     let h = hours_for_exchange(Exchange::Cme);
     let late_dec = ct((2026, 12, 20), (12, 0, 0));
 
-    let close = candle_end(&h, late_dec, CalendarResolution::Monthly);
+    let close =
+        candle_end(&h, late_dec, CalendarResolution::Monthly).expect("December has daily closes");
     let local = close.with_timezone(&US::Central);
     assert_eq!(local.month(), 12, "boundary stays in December");
     assert_eq!(local.year(), 2026, "boundary stays in 2026");
 
-    let next = candle_end(&h, close, CalendarResolution::Daily);
+    let next =
+        candle_end(&h, close, CalendarResolution::Daily).expect("trading continues in February");
     let next_local = next.with_timezone(&US::Central);
     assert_eq!(next_local.month(), 1, "next close rolls into January");
     assert_eq!(next_local.year(), 2027, "next close rolls into 2027");
@@ -1116,12 +1120,12 @@ fn candle_start_daily_uses_the_overnight_session_open() {
 
     assert_eq!(
         candle_start(&hours, first_trade, CalendarResolution::Daily),
-        ct((2026, 1, 29), (17, 0, 0)),
+        Some(ct((2026, 1, 29), (17, 0, 0))),
         "the trading-day candle starts at the catalog session open, not its first trade"
     );
     assert_eq!(
         candle_end(&hours, first_trade, CalendarResolution::Daily),
-        ct((2026, 1, 30), (16, 0, 0)),
+        Some(ct((2026, 1, 30), (16, 0, 0))),
         "the paired daily close remains the following civil day"
     );
 }
@@ -1130,7 +1134,8 @@ fn candle_start_daily_uses_the_overnight_session_open() {
 fn candle_start_resolves_the_post_dst_globex_open() {
     let hours = hours_for_market_hours_key(MarketHoursKey::GlobexEquityIndex);
     let post_spring_forward_trade = ct((2026, 3, 8), (18, 0, 0));
-    let start = candle_start(&hours, post_spring_forward_trade, CalendarResolution::Daily);
+    let start = candle_start(&hours, post_spring_forward_trade, CalendarResolution::Daily)
+        .expect("the Globex week is open");
 
     assert_eq!(start, ct((2026, 3, 8), (17, 0, 0)));
     assert_eq!(
@@ -1151,7 +1156,7 @@ fn candle_start_monthly_can_open_in_the_preceding_civil_month() {
             first_june_session_trade,
             CalendarResolution::Monthly,
         ),
-        ct((2026, 5, 31), (17, 0, 0)),
+        Some(ct((2026, 5, 31), (17, 0, 0))),
         "June's first trading session opens on the final civil day of May"
     );
     assert_eq!(
@@ -1160,7 +1165,7 @@ fn candle_start_monthly_can_open_in_the_preceding_civil_month() {
             ct((2026, 6, 30), (12, 0, 0)),
             CalendarResolution::Monthly,
         ),
-        ct((2026, 5, 31), (17, 0, 0)),
+        Some(ct((2026, 5, 31), (17, 0, 0))),
         "every instant in the same trading month shares one canonical start"
     );
 }
@@ -1202,12 +1207,13 @@ fn hours_for_market_hours_key_drives_calendar_boundaries() {
     // Daily: a weekday instant resolves to a strictly-later close.
     let wed = ct((2026, 1, 7), (9, 0, 0));
     assert!(
-        candle_end(&hours, wed, CalendarResolution::Daily) > wed,
+        candle_end(&hours, wed, CalendarResolution::Daily).expect("mid-week close exists") > wed,
         "daily close must be after the input instant"
     );
 
     // Weekly: idempotent within an ISO week, distinct across weeks.
     let wed_weekly = candle_end(&hours, wed, CalendarResolution::Weekly);
+    assert!(wed_weekly.is_some(), "the trading week has a weekly close");
     let thu = ct((2026, 1, 8), (9, 0, 0));
     assert_eq!(
         candle_end(&hours, thu, CalendarResolution::Weekly),
@@ -1224,7 +1230,8 @@ fn hours_for_market_hours_key_drives_calendar_boundaries() {
     // Monthly: a mid-January instant resolves to a January close whose next daily
     // close rolls into February.
     let mid_jan = ct((2026, 1, 15), (12, 0, 0));
-    let monthly = candle_end(&hours, mid_jan, CalendarResolution::Monthly);
+    let monthly =
+        candle_end(&hours, mid_jan, CalendarResolution::Monthly).expect("January has daily closes");
     assert_eq!(
         monthly.with_timezone(&US::Central).month(),
         1,
@@ -1232,6 +1239,7 @@ fn hours_for_market_hours_key_drives_calendar_boundaries() {
     );
     assert_eq!(
         candle_end(&hours, monthly, CalendarResolution::Daily)
+            .expect("trading continues in February")
             .with_timezone(&US::Central)
             .month(),
         2,
@@ -1334,7 +1342,7 @@ fn sunday_morning_is_open_agrees_with_session_bounds() {
         (Exchange::Cme, ct((2026, 4, 19), (10, 0, 0))),
     ] {
         let h = hours_for_exchange(exchange);
-        let (open, close) = session_bounds(&h, instant);
+        let (open, close) = session_bounds(&h, instant).expect("a session follows the weekend");
         let contained = open <= instant && instant < close;
         assert_eq!(
             h.is_open(instant),
@@ -1604,7 +1612,7 @@ fn candle_start_with_regular_kind_anchors_the_trading_day_at_rth() {
             CalendarResolution::Daily,
             SessionKind::Regular
         ),
-        ct((2026, 4, 20), (8, 30, 0)),
+        Some(ct((2026, 4, 20), (8, 30, 0))),
         "Regular-kind daily start is the RTH open, not the Globex overnight open"
     );
     assert_eq!(
@@ -1614,7 +1622,7 @@ fn candle_start_with_regular_kind_anchors_the_trading_day_at_rth() {
             CalendarResolution::Daily,
             SessionKind::Regular
         ),
-        ct((2026, 4, 20), (15, 15, 0)),
+        Some(ct((2026, 4, 20), (15, 15, 0))),
         "Regular-kind daily end is the RTH close"
     );
 }

@@ -192,10 +192,12 @@ impl MarketHours {
         if self.is_open(t) {
             return false;
         }
-        let (open, close) = next_session_after(self, t);
-        // `open == close` is the documented degenerate "no session in horizon"
-        // pair; a venue that never reopens is not in maintenance.
-        open < close && (open - t) <= chrono::Duration::minutes(90)
+        match next_session_after(self, t) {
+            Some((open, _close)) => (open - t) <= chrono::Duration::minutes(90),
+            // No session in the horizon: nothing reopens, so nothing is
+            // "about to reopen".
+            None => false,
+        }
     }
 
     /// Return true iff the market is closed for the entire **calendar day** `day`
@@ -238,11 +240,13 @@ impl MarketHours {
         }
 
         // Otherwise, check the *next* session after the window start; if it opens
-        // before the window ends, the day is not fully closed. The degenerate
-        // `open == close` pair means no session exists in the search horizon at
-        // all, so the day is fully closed.
-        let (next_open, next_close) = next_session_after_with(self, start_utc, kind);
-        next_open == next_close || next_open >= end_utc
+        // before the window ends, the day is not fully closed. `None` means no
+        // session exists in the search horizon at all, so the day is fully
+        // closed.
+        match next_session_after_with(self, start_utc, kind) {
+            Some((next_open, _next_close)) => next_open >= end_utc,
+            None => true,
+        }
     }
 
     /// Convenience: interpret the date in the **exchange TZ** (what your old

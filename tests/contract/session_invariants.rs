@@ -167,55 +167,82 @@ fn assert_instant_invariants(
         "venue reported maintenance while open ({ctx})"
     );
 
-    // Session bounds are ordered.
+    // Session bounds, when they exist, are ordered; an open venue always has
+    // containing bounds.
     let bounds = session_bounds(hours, instant);
-    let (b_open, b_close) = bounds;
-    assert!(
-        b_close >= b_open,
-        "session close {b_close} precedes open {b_open} ({ctx})"
-    );
+    if let Some((b_open, b_close)) = bounds {
+        assert!(
+            b_close >= b_open,
+            "session close {b_close} precedes open {b_open} ({ctx})"
+        );
+    }
+    if open_now {
+        let (b_open, b_close) = bounds.expect("an open venue must report session bounds");
+        assert!(
+            b_open <= instant && instant < b_close,
+            "open venue's bounds {b_open}..{b_close} do not contain {instant} ({ctx})"
+        );
+    }
 
-    // Next session is never in the past and is ordered; the open-only
-    // projection agrees with the full bounds.
+    // The next session, when it exists, is never in the past and is ordered;
+    // the open-only projection agrees with the full bounds.
     let next = next_session_after(hours, instant);
-    let (n_open, n_close) = next;
-    assert!(
-        n_open >= instant,
-        "next session open {n_open} precedes query instant {instant} ({ctx})"
-    );
-    assert!(
-        n_close >= n_open,
-        "next session close {n_close} precedes open {n_open} ({ctx})"
-    );
+    if let Some((n_open, n_close)) = next {
+        assert!(
+            n_open >= instant,
+            "next session open {n_open} precedes query instant {instant} ({ctx})"
+        );
+        assert!(
+            n_close >= n_open,
+            "next session close {n_close} precedes open {n_open} ({ctx})"
+        );
+    }
     assert_eq!(
-        n_open,
+        next.map(|(open, _)| open),
         next_session_open_after(hours, instant),
         "next_session_open_after disagrees with next_session_after().open ({ctx})"
     );
 
-    // Candle ends never precede the bar start; seconds is a pure offset.
+    // Candle ends, when they exist, never precede the bar start; seconds is a
+    // pure offset and always exists (the probed intervals are non-zero).
     for res in RESOLUTIONS {
         let end = candle_end(hours, instant, res);
-        assert!(
-            end >= instant,
-            "candle_end({res:?})={end} precedes bar start {instant} ({ctx})"
-        );
+        if let Some(end) = end {
+            assert!(
+                end >= instant,
+                "candle_end({res:?})={end} precedes bar start {instant} ({ctx})"
+            );
+        }
         if let CalendarResolution::Seconds(secs) = res {
             assert_eq!(
                 end,
-                instant + Duration::seconds(i64::from(secs)),
+                Some(instant + Duration::seconds(i64::from(secs))),
                 "Seconds({secs}) candle is not a pure offset ({ctx})"
+            );
+        }
+        // A bar's start exists exactly when its end does, and never after it.
+        let start = exchange_hours::candle_start(hours, instant, res);
+        assert_eq!(
+            start.is_some(),
+            end.is_some(),
+            "candle_start and candle_end disagree on bar existence for {res:?} ({ctx})"
+        );
+        if let (Some(start), Some(end)) = (start, end) {
+            assert!(
+                start <= end,
+                "candle_start {start} exceeds candle_end {end} for {res:?} ({ctx})"
             );
         }
     }
 
     // candle_end_with path coverage across every session kind.
     for kind in KINDS {
-        let end = candle_end_with(hours, instant, CalendarResolution::Daily, kind);
-        assert!(
-            end >= instant,
-            "candle_end_with(Daily, {kind:?})={end} precedes bar start {instant} ({ctx})"
-        );
+        if let Some(end) = candle_end_with(hours, instant, CalendarResolution::Daily, kind) {
+            assert!(
+                end >= instant,
+                "candle_end_with(Daily, {kind:?})={end} precedes bar start {instant} ({ctx})"
+            );
+        }
     }
 
     // is_closed_all_day_on is total for the venue-local day and coherent with
@@ -276,15 +303,15 @@ fn next_session_after_walk_strictly_advances_opens() {
             let hours = hours_for_exchange(exch);
             let mut cursor = random_instant(&mut state);
             for step in 0..STEPS {
-                let (open, close) = next_session_after(&hours, cursor);
+                let (open, close) = next_session_after(&hours, cursor)
+                    .expect("walk venues run sessions every week");
                 let ctx = format!(
                     "[strictly-advancing session walk] seed={seed:#018x} venue={exch:?} \
                      step={step}/{STEPS} cursor={cursor} open={open} close={close}"
                 );
                 // Advancing by the previous open guarantees strict progress: the
-                // next session must open strictly after the cursor, so a stall or
-                // backward move (including the degenerate no-session fallback)
-                // fails here.
+                // next session must open strictly after the cursor, so a stall
+                // or backward move fails here.
                 assert!(
                     open > cursor,
                     "session walk stalled or moved backward ({ctx})"
@@ -383,8 +410,8 @@ fn dst_transition_queries_are_stable_and_total() {
 //
 // The invariant below is the fence: for every venue, every session kind, and
 // every instant in the grid, `is_open_with(t, kind)` must equal
-// "`session_bounds_with(kind, t)` contains t". A degenerate `(t, t)` pair from a
-// venue with no rules contains nothing, which is the correct `false`.
+// "`session_bounds_with(hours, t, kind)` contains t". `None` from a venue with
+// no rules contains nothing, which is the correct `false`.
 // ---------------------------------------------------------------------------
 
 /// Every [`Exchange`] variant. Kept exhaustive by
@@ -633,13 +660,14 @@ fn is_open_agrees_with_session_bounds_for_every_venue_and_instant() {
         let hours = hours_for_exchange(exchange);
         for instant in probe_instants(&hours) {
             for kind in kinds {
-                let (open, close) = session_bounds_with(&hours, instant, kind);
-                let contained = open <= instant && instant < close;
+                let bounds = session_bounds_with(&hours, instant, kind);
+                let contained =
+                    bounds.is_some_and(|(open, close)| open <= instant && instant < close);
                 assert_eq!(
                     hours.is_open_with(instant, kind),
                     contained,
                     "{exchange:?} / {kind:?}: is_open_with disagrees with \
-                     session_bounds_with at {instant} (bounds {open}..{close}, \
+                     session_bounds_with at {instant} (bounds {bounds:?}, \
                      venue-local {})",
                     instant.with_timezone(&hours.tz),
                 );
@@ -670,17 +698,20 @@ fn closed_instants_agree_with_the_next_session_for_every_venue() {
                 if hours.is_open_with(instant, kind) {
                     continue;
                 }
-                let (bounds_open, _) = session_bounds_with(&hours, instant, kind);
-                let (next_open, _) = next_session_after_with(&hours, instant, kind);
+                let bounds = session_bounds_with(&hours, instant, kind);
+                let next = next_session_after_with(&hours, instant, kind);
                 assert_eq!(
-                    bounds_open, next_open,
+                    bounds.map(|(open, _)| open),
+                    next.map(|(open, _)| open),
                     "{exchange:?} / {kind:?}: closed at {instant} but session_bounds_with \
                      and next_session_after_with disagree on the next open"
                 );
-                assert!(
-                    next_open >= instant,
-                    "{exchange:?} / {kind:?}: next session at {next_open} precedes {instant}"
-                );
+                if let Some((next_open, _)) = next {
+                    assert!(
+                        next_open >= instant,
+                        "{exchange:?} / {kind:?}: next session at {next_open} precedes {instant}"
+                    );
+                }
             }
         }
     }
@@ -795,13 +826,14 @@ fn historical_profiles_hold_the_cross_query_fence() {
             let hours = hours_for_exchange_as_of(exchange, epoch);
             for instant in probe_instants(&hours) {
                 for kind in kinds {
-                    let (open, close) = session_bounds_with(&hours, instant, kind);
-                    let contained = open <= instant && instant < close;
+                    let bounds = session_bounds_with(&hours, instant, kind);
+                    let contained =
+                        bounds.is_some_and(|(open, close)| open <= instant && instant < close);
                     assert_eq!(
                         hours.is_open_with(instant, kind),
                         contained,
                         "{exchange:?} as of {epoch} / {kind:?}: is_open_with disagrees with \
-                         session_bounds_with at {instant} (bounds {open}..{close}, \
+                         session_bounds_with at {instant} (bounds {bounds:?}, \
                          venue-local {})",
                         instant.with_timezone(&hours.tz),
                     );

@@ -1053,6 +1053,64 @@ fn exchange_serde_snake_case_intelligentcross_iqx() {
 // ---------------------------------------------------------------------------
 
 #[test]
+fn intraday_bar_ends_at_the_daily_close_not_the_reopen() {
+    // CME (Both): the electronic day closes 16:00 CT with a maintenance break
+    // to 17:00. The day's last intraday bar clamps to the 16:00 close itself —
+    // closes are end-exclusive boundaries, and a bar whose end sat at the
+    // 17:00 reopen would claim the closed hour as bar time. (V1 snapped this
+    // end to the reopen; removed in 0.2.0.)
+    let h = hours_for_exchange(Exchange::Cme);
+    assert_eq!(
+        candle_end(
+            &h,
+            ct((2026, 4, 20), (15, 58, 0)),
+            CalendarResolution::Minutes(5)
+        ),
+        Some(ct((2026, 4, 20), (16, 0, 0))),
+        "last bar of the day ends at the 16:00 CT close"
+    );
+    // A large interval clamps the same way: at 14:00 CT the enclosing session
+    // (for Both) is RTH, so a 4h bar truncates at its 15:15 CT close rather
+    // than running to 18:00.
+    assert_eq!(
+        candle_end(
+            &h,
+            ct((2026, 4, 20), (14, 0, 0)),
+            CalendarResolution::Hours(4)
+        ),
+        Some(ct((2026, 4, 20), (15, 15, 0))),
+        "a 4h bar is truncated at the enclosing session close"
+    );
+    // From inside the 15:30-16:00 short window the same 4h bar clamps at the
+    // 16:00 daily close — never at the 17:00 reopen.
+    assert_eq!(
+        candle_end(
+            &h,
+            ct((2026, 4, 20), (15, 40, 0)),
+            CalendarResolution::Hours(4)
+        ),
+        Some(ct((2026, 4, 20), (16, 0, 0))),
+        "a bar in the short window ends at the daily close, not the reopen"
+    );
+}
+
+#[test]
+fn intraday_bar_queried_inside_maintenance_anchors_at_the_reopen() {
+    // From inside the 16:00-17:00 CT break the containing session is the next
+    // one, so the bar anchors at the 17:00 reopen and steps from there.
+    let h = hours_for_exchange(Exchange::Cme);
+    assert_eq!(
+        candle_end(
+            &h,
+            ct((2026, 4, 20), (16, 30, 0)),
+            CalendarResolution::Minutes(5)
+        ),
+        Some(ct((2026, 4, 20), (17, 5, 0))),
+        "a query inside the break belongs to the next session's first bar"
+    );
+}
+
+#[test]
 fn candle_end_monthly_returns_last_close_of_month() {
     // A mid-January instant resolves to January's final daily close: the
     // returned instant is in January (exchange-local) and the very next daily

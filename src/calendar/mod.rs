@@ -44,6 +44,7 @@
 mod bulk;
 mod candle;
 mod exchange;
+mod exchange_name;
 mod futures_profile;
 mod hours;
 mod local_time;
@@ -60,6 +61,7 @@ pub use bulk::{
 };
 pub use candle::{candle_end, candle_end_with, candle_start, candle_start_with, time_end_of_day};
 pub use exchange::Exchange;
+pub use exchange_name::ParseExchangeError;
 pub use futures_profile::{
     FuturesSessionProfile, MarketHoursKey, hours_for_market_hours_key, session_profile,
 };

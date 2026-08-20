@@ -11,6 +11,34 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-08-20
+
+Pre-publication API corrections, made while nothing had yet been published to
+crates.io. `0.1.0` exists as a git tag only.
+
+### Changed
+
+- **Breaking:** `Exchange` is `#[non_exhaustive]`, mirroring `MarketHoursKey`.
+  Dependents must match it with a wildcard arm; in exchange, future venue
+  additions are minor releases instead of breaking ones. Enumerate the
+  variants of the compiled version via the new `Exchange::ALL`.
+- **Breaking (behavioral):** the day's last intraday bar now ends at the daily
+  close itself. Previously, when a `Minutes`/`Hours` bar ended exactly at a
+  daily close followed by a maintenance break, `candle_end` snapped the end to
+  the next session open (CME's last bar reported 17:00 CT instead of 16:00) —
+  a V1-inherited exception that contradicted the crate's own end-exclusive
+  close convention by counting closed time as bar time. Intraday bars now
+  simply clamp to the enclosing session close, everywhere.
+
+### Added
+
+- `Exchange::ALL` — every variant, in declaration (`Ord`) order.
+- `Exchange::as_str`, `Display`, and `FromStr` — one canonical `snake_case`
+  name per venue, identical to the serde wire form, so string-keyed callers
+  parse (`"nyse_arca".parse::<Exchange>()`) instead of pattern-matching. An
+  unrecognized name is a `ParseExchangeError` (new public type) carrying the
+  offending input, never a silent `Exchange::Unknown`.
+
 ## [0.1.0] - 2026-08-20
 
 Initial release.

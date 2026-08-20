@@ -47,14 +47,21 @@ and the rules any change to this repository must follow.
 
 ## Structural rules
 
-- The `Exchange` match in `presets/current.rs` is exhaustive with **no
-  catch-all arm** — adding a variant must be a compile error until its hours
-  are decided. Keep it that way.
-- A new `Exchange` variant must also be added to `ALL_EXCHANGES`, `is_listed`,
-  and `EXCHANGE_VARIANT_COUNT` in `tests/contract/session_invariants.rs`, and
-  to the region list in `exchange.rs` if a bulk builder covers it.
-- Serde wire format is stable: variants serialize as `snake_case` strings;
-  renames that change a serialized string break persisted data.
+- `Exchange` and `MarketHoursKey` are `#[non_exhaustive]`: venue additions are
+  minor releases, not breaking ones. Never remove that attribute, and never
+  remove or rename a variant outside a major release.
+- Inside the crate the matches stay exhaustive with **no catch-all arm**:
+  `hours_for_exchange` in `presets/current.rs` (hours decision) and
+  `Exchange::as_str` in `exchange_name.rs` (canonical name) both stop
+  compiling when a variant is added — that is the coverage fence. The same
+  edit must reach `Exchange::ALL`, the region list in `exchange.rs` when a
+  bulk builder covers the venue, and `ALL_EXCHANGES` +
+  `EXCHANGE_VARIANT_COUNT` in `tests/contract/session_invariants.rs` (the
+  runtime cross-check of `Exchange::ALL`).
+- One canonical `snake_case` name per venue, shared by serde, `as_str`,
+  `Display`, and `FromStr`, and it is stable: a rename breaks persisted data.
+  `FromStr` rejects unknown names with `ParseExchangeError` — never map bad
+  input to `Exchange::Unknown`.
 - Production files stay under 300 lines (500 is a hard stop — split by operator
   family, as `profiles/equities_eu/` does). Test files are exempt.
 - Profile tables are `static` so `MarketHours` can borrow them allocation-free.

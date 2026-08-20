@@ -2,7 +2,7 @@
 
 [package]
 name = "exchange-hours"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2024"
 # Deliberately conservative: the language floor is 1.88 (the `let`-chains this
 # crate uses) but 1.95 is what consumers are expected to be on. Verified by the

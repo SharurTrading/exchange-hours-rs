@@ -14,16 +14,25 @@ use serde::{Deserialize, Serialize};
 ///
 /// Variants are grouped by product family (US equities, US options, US futures,
 /// European futures/energy, Asia-Pacific futures, EU equities, and always-open
-/// crypto venues). The enum is exhaustive, so adding a venue forces the match in
-/// [`hours_for_exchange`](super::hours_for_exchange) to be updated and keeps the
-/// calendar surface complete.
+/// crypto venues). Inside this crate the matches over it stay exhaustive, so
+/// adding a venue forces the match in
+/// [`hours_for_exchange`](super::hours_for_exchange) and the name table in
+/// [`Exchange::as_str`] to be updated and keeps the calendar surface complete.
+///
+/// The enum is `#[non_exhaustive]`, mirroring
+/// [`MarketHoursKey`](super::MarketHoursKey): venue coverage grows over time,
+/// and adding a variant must not be a breaking change for dependents. Match it
+/// with a wildcard arm; [`Exchange::ALL`] enumerates the variants of the
+/// version you compiled against.
 ///
 /// Holidays and product-level calendar variations are deliberately not modeled
 /// here: this enum drives only normal-week, exchange-level session defaults.
-/// [`Exchange::Unknown`] maps to a 24×7 UTC fallback. Variants serialize as
-/// `snake_case` strings (e.g. `Exchange::NasdaqBx` ↔ `"nasdaq_bx"`); that wire
-/// form is asserted by the `exchange_serde_snake_case_*` tests and must stay
-/// stable.
+/// [`Exchange::Unknown`] maps to a 24×7 UTC fallback. Variants have one
+/// canonical `snake_case` name (e.g. `Exchange::NasdaqBx` ↔ `"nasdaq_bx"`)
+/// used identically by serde, [`Exchange::as_str`], [`std::fmt::Display`], and
+/// [`std::str::FromStr`]; that wire form is asserted variant-by-variant in the
+/// test suite and must stay stable.
+#[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum Exchange {

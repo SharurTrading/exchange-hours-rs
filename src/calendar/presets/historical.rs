@@ -14,7 +14,7 @@
 //! [`hours_for_exchange`](super::hours_for_exchange), so this module is an
 //! overlay, never a second venue table.
 
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, NaiveDate, Utc};
 use chrono_tz::{America, Europe, US};
 
 use crate::calendar::profiles::{
@@ -28,21 +28,51 @@ use crate::calendar::{Exchange, MarketHours};
 
 use super::hours_for_exchange;
 
+/// Builds a cutover date at compile time. Used only to initialise the `const`
+/// cutover items below: an invalid literal fails the build during constant
+/// evaluation, so no panic path exists at runtime.
+const fn cutover(year: i32, month: u32, day: u32) -> NaiveDate {
+    match NaiveDate::from_ymd_opt(year, month, day) {
+        Some(date) => date,
+        None => panic!("invalid hard-coded cutover date"),
+    }
+}
+
+/// Cboe Options (C1): GTH close extended 09:15 -> 09:25 ET.
+const C1_GTH_CUTOVER: NaiveDate = cutover(2024, 8, 26);
+/// CME equity index: short window close moved 16:15 -> 16:00 CT.
+const CME_CUTOVER: NaiveDate = cutover(2016, 3, 4);
+/// EUREX: Asian trading window added.
+const EUREX_ASIAN_CUTOVER: NaiveDate = cutover(2018, 12, 10);
+/// IEX: extended pre/post sessions introduced.
+const IEX_EXTENDED_CUTOVER: NaiveDate = cutover(2015, 8, 21);
+/// CFE: overnight ETH introduced.
+const CFE_ETH_CUTOVER: NaiveDate = cutover(2014, 6, 1);
+/// CFE: queuing period abolished, RTH close moved to 15:00 CT.
+const CFE_QUEUING_CUTOVER: NaiveDate = cutover(2021, 12, 6);
+/// NYSE Texas: go-live.
+const NYSE_TEXAS_GO_LIVE: NaiveDate = cutover(2025, 3, 31);
+/// Blue Ocean ATS: production launch.
+const BLUE_OCEAN_GO_LIVE: NaiveDate = cutover(2021, 10, 5);
+/// CBOT: grain trading hours reduced.
+const CBOT_CUTOVER: NaiveDate = cutover(2013, 4, 8);
+
 /// Time-aware market hours: returns the exchange-level `MarketHours` profile appropriate
 /// for the provided `as_of` timestamp. Defaults to the latest profile if no historical
 /// revision is defined for the exchange.
 ///
-/// # Panics
-///
-/// Panics only if one of the hard-coded historical cutover dates in this
-/// function is invalid.
+/// Cutover semantics: `as_of` is converted to the venue's local calendar date
+/// and compared against the effective date. The new profile applies from the
+/// venue-local **midnight** of the effective date — an `as_of` at exactly that
+/// midnight already sees the new hours, and one nanosecond before it sees the
+/// old ones.
 #[must_use]
 pub fn hours_for_exchange_as_of(exch: Exchange, as_of: DateTime<Utc>) -> MarketHours {
     match exch {
         // Cboe Options (C1): GTH end extended from 09:15 → 09:25 ET on 2024-08-26.
         Exchange::CboeOptionsC1 => {
             let d = as_of.with_timezone(&America::New_York).date_naive();
-            if d < chrono::NaiveDate::from_ymd_opt(2024, 8, 26).unwrap() {
+            if d < C1_GTH_CUTOVER {
                 from_profile(Exchange::CboeOptionsC1, &C1_PROFILE_PRE_2024_08_26)
             } else {
                 from_profile(Exchange::CboeOptionsC1, &C1_PROFILE_POST_2024_08_26)
@@ -54,7 +84,7 @@ pub fn hours_for_exchange_as_of(exch: Exchange, as_of: DateTime<Utc>) -> MarketH
         //  - >= 2016-03-04: RTH 08:30–15:15; short window 15:30–16:00
         Exchange::Cme => {
             let d = as_of.with_timezone(&US::Central).date_naive();
-            if d < chrono::NaiveDate::from_ymd_opt(2016, 3, 4).unwrap() {
+            if d < CME_CUTOVER {
                 from_profile(Exchange::Cme, &CME_PROFILE_PRE2016)
             } else {
                 from_profile(Exchange::Cme, &CME_PROFILE_POST2016)
@@ -64,7 +94,7 @@ pub fn hours_for_exchange_as_of(exch: Exchange, as_of: DateTime<Utc>) -> MarketH
         // EUREX: Asian hours added 2018-12-10. Before that, omit the 01:00–08:00 slice.
         Exchange::Eurex => {
             let d = as_of.with_timezone(&Europe::Berlin).date_naive();
-            let asian = d >= chrono::NaiveDate::from_ymd_opt(2018, 12, 10).unwrap();
+            let asian = d >= EUREX_ASIAN_CUTOVER;
             if asian {
                 from_profile(Exchange::Eurex, &EUREX_PROFILE_WITH_ASIAN)
             } else {
@@ -79,7 +109,7 @@ pub fn hours_for_exchange_as_of(exch: Exchange, as_of: DateTime<Utc>) -> MarketH
         // (https://iextrading.com/trading/alerts/2015/015/)
         Exchange::Iex => {
             let d = as_of.with_timezone(&America::New_York).date_naive();
-            let has_ext = d >= chrono::NaiveDate::from_ymd_opt(2015, 8, 21).unwrap();
+            let has_ext = d >= IEX_EXTENDED_CUTOVER;
             if has_ext {
                 from_profile(Exchange::Iex, &IEX_PROFILE_POST2015)
             } else {
@@ -102,9 +132,9 @@ pub fn hours_for_exchange_as_of(exch: Exchange, as_of: DateTime<Utc>) -> MarketH
         // (21-028)". Rule filing CFE-2021-028 (2021-11-04) carries the redline.
         Exchange::Cfe => {
             let d = as_of.with_timezone(&US::Central).date_naive();
-            if d < chrono::NaiveDate::from_ymd_opt(2014, 6, 1).unwrap() {
+            if d < CFE_ETH_CUTOVER {
                 from_profile(Exchange::Cfe, &CFE_PROFILE_PRE2014)
-            } else if d < chrono::NaiveDate::from_ymd_opt(2021, 12, 6).unwrap() {
+            } else if d < CFE_QUEUING_CUTOVER {
                 from_profile(Exchange::Cfe, &CFE_PROFILE_PRE_2021_12_06)
             } else {
                 from_profile(Exchange::Cfe, &CFE_PROFILE)
@@ -114,7 +144,7 @@ pub fn hours_for_exchange_as_of(exch: Exchange, as_of: DateTime<Utc>) -> MarketH
         // NYSE Texas: go-live 2025-03-31; before that, no trading sessions.
         Exchange::NyseTexas => {
             let d = as_of.with_timezone(&America::New_York).date_naive();
-            if d < chrono::NaiveDate::from_ymd_opt(2025, 3, 31).unwrap() {
+            if d < NYSE_TEXAS_GO_LIVE {
                 MarketHours {
                     exchange: Exchange::NyseTexas,
                     tz: America::New_York,
@@ -140,7 +170,7 @@ pub fn hours_for_exchange_as_of(exch: Exchange, as_of: DateTime<Utc>) -> MarketH
         // unavailable to report Saturday).
         Exchange::BlueOceanAts => {
             let d = as_of.with_timezone(&America::New_York).date_naive();
-            if d < chrono::NaiveDate::from_ymd_opt(2021, 10, 5).unwrap() {
+            if d < BLUE_OCEAN_GO_LIVE {
                 MarketHours {
                     exchange: Exchange::BlueOceanAts,
                     tz: America::New_York,
@@ -157,7 +187,7 @@ pub fn hours_for_exchange_as_of(exch: Exchange, as_of: DateTime<Utc>) -> MarketH
         // CBOT: reduced hours effective 2013-04-08; before that, use 17:00–07:45 overnight and 08:30–13:15 day.
         Exchange::Cbot => {
             let d = as_of.with_timezone(&US::Central).date_naive();
-            if d < chrono::NaiveDate::from_ymd_opt(2013, 4, 8).unwrap() {
+            if d < CBOT_CUTOVER {
                 from_profile(Exchange::Cbot, &CBOT_PROFILE_PRE2013)
             } else {
                 from_profile(Exchange::Cbot, &CBOT_PROFILE_POST2013)

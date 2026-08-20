@@ -33,12 +33,6 @@ use super::{MarketHours, SessionKind};
 /// next session strictly after `t` via [`next_session_after_with`]. Bounds are
 /// end-exclusive on the close; opens resolve to the earliest DST mapping and
 /// closes to the latest.
-///
-/// # Panics
-///
-/// Panics only on a malformed calendar — if resolving a session's local
-/// open/close instant exhausts the bounded DST-gap search (see
-/// [`next_session_after_with`]).
 #[must_use]
 pub fn session_bounds_with(
     kind: SessionKind,
@@ -95,10 +89,6 @@ pub fn session_bounds_with(
 }
 
 /// Returns [`session_bounds_with`] over [`SessionKind::Both`] (regular + extended).
-///
-/// # Panics
-///
-/// Panics only on a malformed calendar; see [`session_bounds_with`].
 #[must_use]
 pub fn session_bounds(hours: &MarketHours, t: DateTime<Utc>) -> (DateTime<Utc>, DateTime<Utc>) {
     session_bounds_with(SessionKind::Both, hours, t)
@@ -111,12 +101,6 @@ pub fn session_bounds(hours: &MarketHours, t: DateTime<Utc>) -> (DateTime<Utc>, 
 /// sessions whose close day is a holiday; within a day it picks the earliest
 /// qualifying open. If no session is found in that horizon it returns the
 /// degenerate `(end_excl, end_excl)`.
-///
-/// # Panics
-///
-/// Panics only on a malformed calendar — if resolving a session's local
-/// open/close instant exhausts the bounded DST-gap search in the internal
-/// local-time resolver.
 #[must_use]
 pub fn next_session_after_with(
     kind: SessionKind,
@@ -179,10 +163,6 @@ pub fn next_session_after_with(
 }
 
 /// Returns [`next_session_after_with`] over [`SessionKind::Both`] (regular + extended).
-///
-/// # Panics
-///
-/// Panics only on a malformed calendar; see [`next_session_after_with`].
 #[must_use]
 pub fn next_session_after(
     hours: &MarketHours,
@@ -194,10 +174,6 @@ pub fn next_session_after(
 /// Returns only the open instant of the next session after `after_utc`.
 ///
 /// Thin projection of [`next_session_after`], returning only its `.0` field.
-///
-/// # Panics
-///
-/// Panics only on a malformed calendar; see [`next_session_after_with`].
 #[inline]
 #[must_use]
 pub fn next_session_open_after(mh: &MarketHours, after_utc: DateTime<Utc>) -> DateTime<Utc> {

@@ -21,15 +21,21 @@
 //! construction.
 //!
 //! Scans are bounded at 21 local days, enough to clear any weekend or
-//! consecutive-holiday run in a normal-week profile.
+//! consecutive-holiday run in a normal-week profile. Every function here
+//! returns `Option`: `None` means no close exists inside that horizon — a
+//! profile with no rules at all — and the public candle surface maps it to the
+//! documented degenerate value instead of looping or panicking. The walk loops
+//! terminate by construction: a local day contributes at most one daily close,
+//! so each iteration advances at least one day and a week/month boundary is
+//! reached within at most 7/31 closes.
 
 use chrono::{DateTime, Datelike, Duration, NaiveDate, Utc};
 
 use super::local_time::{is_holiday, mk_local_close};
-use super::session::next_session_after_with;
 use super::{MarketHours, SessionKind};
 
-/// Next "day close" strictly after `t` for this market and session kind.
+/// Next "day close" strictly after `t` for this market and session kind, or
+/// `None` if no session close exists within the bounded 21-day horizon.
 /// A "day close" is the **latest session close that occurs on a local calendar day**.
 /// - Same-day sessions contribute closes on that day.
 /// - Wrap sessions contribute a close on the **next** local day, but only if the
@@ -38,7 +44,7 @@ pub(crate) fn next_daily_close_after_with(
     hours: &MarketHours,
     t: DateTime<Utc>,
     kind: SessionKind,
-) -> DateTime<Utc> {
+) -> Option<DateTime<Utc>> {
     let tz = hours.tz;
     let mut day = t.with_timezone(&tz).date_naive();
 
@@ -46,13 +52,12 @@ pub(crate) fn next_daily_close_after_with(
         if let Some(close) = daily_close_for_local_day(hours, day, kind)
             && close > t
         {
-            return close;
+            return Some(close);
         }
         day += Duration::days(1);
     }
 
-    // Fallback (shouldn't happen with well-formed calendars)
-    next_session_after_with(kind, hours, t).1
+    None
 }
 
 /// Compute the last close **that occurs on** `day` (exchange-local day).
@@ -101,31 +106,37 @@ pub(crate) fn daily_close_for_local_day(
 }
 
 /// Next weekly close strictly after `t`: find the **last** day-close
-/// that belongs to its ISO week (in exchange TZ).
+/// that belongs to its ISO week (in exchange TZ). `None` if no daily close
+/// exists within the bounded horizon at all.
 pub(crate) fn next_weekly_close_after_with(
     hours: &MarketHours,
     t: DateTime<Utc>,
     kind: SessionKind,
-) -> DateTime<Utc> {
+) -> Option<DateTime<Utc>> {
     let tz = hours.tz;
 
-    // First candidate daily close after t
-    let mut c = next_daily_close_after_with(hours, t, kind);
+    // First candidate daily close after t.
+    let mut c = next_daily_close_after_with(hours, t, kind)?;
 
     // Keep advancing daily closes while they are still in the same ISO week
     // as the candidate `c`. The first close whose **next** daily close is in a
-    // different ISO week is the weekly boundary.
+    // different ISO week is the weekly boundary. Terminates: each daily close
+    // lands on a later local day, so the week changes within at most 7 steps.
     loop {
         let c_local = c.with_timezone(&tz);
         let c_week = (c_local.iso_week().year(), c_local.iso_week().week());
 
-        // Tiny epsilon to move strictly past `c`
-        let c_next = next_daily_close_after_with(hours, c + Duration::nanoseconds(1), kind);
+        // Tiny epsilon to move strictly past `c`. If the horizon runs out,
+        // `c` is the last close the calendar knows about — return it.
+        let Some(c_next) = next_daily_close_after_with(hours, c + Duration::nanoseconds(1), kind)
+        else {
+            return Some(c);
+        };
         let n_local = c_next.with_timezone(&tz);
         let n_week = (n_local.iso_week().year(), n_local.iso_week().week());
 
         if n_week != c_week {
-            return c; // `c` is the last close of its week
+            return Some(c); // `c` is the last close of its week
         }
 
         c = c_next;
@@ -136,30 +147,36 @@ pub(crate) fn next_weekly_close_after_with(
 /// belongs to its exchange-local calendar month. Mirrors
 /// [`next_weekly_close_after_with`] but groups by `(year, month)` instead of ISO
 /// week, so the boundary handles month lengths and year rollover by construction.
+/// `None` if no daily close exists within the bounded horizon at all.
 pub(crate) fn next_monthly_close_after_with(
     hours: &MarketHours,
     t: DateTime<Utc>,
     kind: SessionKind,
-) -> DateTime<Utc> {
+) -> Option<DateTime<Utc>> {
     let tz = hours.tz;
 
     // First candidate daily close after `t`.
-    let mut c = next_daily_close_after_with(hours, t, kind);
+    let mut c = next_daily_close_after_with(hours, t, kind)?;
 
     // Keep advancing daily closes while the next close is still in the same
     // calendar month as the candidate `c`. The first close whose **next** daily
-    // close lands in a different month is the monthly boundary.
+    // close lands in a different month is the monthly boundary. Terminates for
+    // the same reason as the weekly walk (at most 31 steps).
     loop {
         let c_local = c.with_timezone(&tz);
         let c_month = (c_local.year(), c_local.month());
 
-        // Tiny epsilon to move strictly past `c`.
-        let c_next = next_daily_close_after_with(hours, c + Duration::nanoseconds(1), kind);
+        // Tiny epsilon to move strictly past `c`. If the horizon runs out,
+        // `c` is the last close the calendar knows about — return it.
+        let Some(c_next) = next_daily_close_after_with(hours, c + Duration::nanoseconds(1), kind)
+        else {
+            return Some(c);
+        };
         let n_local = c_next.with_timezone(&tz);
         let n_month = (n_local.year(), n_local.month());
 
         if n_month != c_month {
-            return c; // `c` is the last close of its month
+            return Some(c); // `c` is the last close of its month
         }
 
         c = c_next;

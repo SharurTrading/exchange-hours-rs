@@ -13,6 +13,16 @@
 //! recorded change appear here; everything else falls through to
 //! [`hours_for_exchange`](super::hours_for_exchange), so this module is an
 //! overlay, never a second venue table.
+//!
+//! **Known unsourced history.** MEMX and MIAX Pearl Equities extended their
+//! early sessions to 04:00 ET in real, recent changes (MEMX per its own
+//! insights posts; MIAX Pearl per alert 2024-11-13), but no primary source in
+//! hand states a day-level effective date for either — so, on the same
+//! no-fabricated-dates principle as the Blue Ocean beta exclusion, neither has
+//! a cutover here and `hours_for_exchange_as_of` returns **current** hours for
+//! those two venues at every `as_of`. Backtests before their rollouts will see
+//! more pre-market than the venue actually ran. The match arm below marks
+//! where the cutovers land once an effective date is sourced.
 
 use chrono::{DateTime, NaiveDate, Utc};
 use chrono_tz::{America, Europe, US};
@@ -70,6 +80,11 @@ const BZX_EARLY_CUTOVER: NaiveDate = cutover(2025, 5, 1);
 /// venue-local **midnight** of the effective date — an `as_of` at exactly that
 /// midnight already sees the new hours, and one nanosecond before it sees the
 /// old ones.
+///
+/// Known gap: [`Exchange::MemxEq`] and [`Exchange::MiaxPearlEq`] changed their
+/// extended hours in recent years but have **no recorded cutover** (no
+/// day-level primary source), so this function returns their *current* hours
+/// for every `as_of` — see the module documentation.
 #[must_use]
 pub fn hours_for_exchange_as_of(exch: Exchange, as_of: DateTime<Utc>) -> MarketHours {
     match exch {
@@ -227,6 +242,14 @@ pub fn hours_for_exchange_as_of(exch: Exchange, as_of: DateTime<Utc>) -> MarketH
                 from_profile(Exchange::Cbot, &CBOT_PROFILE_POST2013)
             }
         }
+
+        // MEMX and MIAX Pearl Equities: deliberately NO cutover — their
+        // early-session extensions to 04:00 ET are real but unsourced at day
+        // level, so every `as_of` gets current hours rather than an invented
+        // boundary (see the module doc). When a primary source with an
+        // effective date is found, replace this arm with the dated
+        // pre/post-profile selection, mirroring the CboeBzx arm above.
+        Exchange::MemxEq | Exchange::MiaxPearlEq => hours_for_exchange(exch),
 
         // Default: return the current exchange profile.
         _ => hours_for_exchange(exch),

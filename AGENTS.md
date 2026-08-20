@@ -50,14 +50,15 @@ and the rules any change to this repository must follow.
 - `Exchange` and `MarketHoursKey` are `#[non_exhaustive]`: venue additions are
   minor releases, not breaking ones. Never remove that attribute, and never
   remove or rename a variant outside a major release.
-- Inside the crate the matches stay exhaustive with **no catch-all arm**:
-  `hours_for_exchange` in `presets/current.rs` (hours decision) and
-  `Exchange::as_str` in `exchange_name.rs` (canonical name) both stop
-  compiling when a variant is added — that is the coverage fence. The same
-  edit must reach `Exchange::ALL`, the region list in `exchange.rs` when a
-  bulk builder covers the venue, and `ALL_EXCHANGES` +
-  `EXCHANGE_VARIANT_COUNT` in `tests/contract/session_invariants.rs` (the
-  runtime cross-check of `Exchange::ALL`).
+- `Exchange`, `Exchange::ALL`, and `Exchange::as_str` are generated from
+  **one table** (the `exchanges!` macro in `exchange.rs`): adding a venue is
+  one new row, and neither `ALL` nor the name table can omit it. The compiler
+  then forces the remaining in-crate exhaustive match, `hours_for_exchange`
+  in `presets/current.rs` (no catch-all arm — the hours decision). The same
+  edit must also reach the region list in `bulk.rs` when a bulk builder
+  covers the venue, and `ALL_EXCHANGES` + `EXCHANGE_VARIANT_COUNT` in
+  `tests/contract/session_invariants.rs` — the test suite's independent
+  expectation of the table's contents and order.
 - One canonical `snake_case` name per venue, shared by serde, `as_str`,
   `Display`, and `FromStr`, and it is stable: a rename breaks persisted data.
   `FromStr` rejects unknown names with `ParseExchangeError` — never map bad
@@ -113,6 +114,9 @@ end-exclusive close, lunch/maintenance gaps, weekend boundary, serde form) and
 ## Housekeeping
 
 - Record user-visible changes under `[Unreleased]` in `CHANGELOG.md`; session
-  data corrections go under **Fixed**, new venues under **Added**.
+  data corrections go under **Fixed**, new venues under **Added**. A PR that
+  bumps the version in `Cargo.toml` is a release cut: that PR retitles
+  `[Unreleased]` to the dated version section (as the 0.1.0 and 0.2.0
+  release-prep PRs did), and the tag follows the merge.
 - The README badges (version, MSRV) and the Coverage table's venue counts are
   duplicated facts — update them together with `Cargo.toml` and the enum.

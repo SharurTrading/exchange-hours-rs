@@ -416,18 +416,20 @@ fn dst_transition_queries_are_stable_and_total() {
 // no rules contains nothing, which is the correct `false`.
 // ---------------------------------------------------------------------------
 
-/// Number of [`Exchange`] variants. `Exchange` is `#[non_exhaustive]`, so
-/// this crate cannot hold the compile-time coverage fence any more — that
-/// fence is the wildcard-free match in `Exchange::as_str` inside the library.
-/// This count and the independent list below are the runtime companions:
-/// `all_exchanges_matches_the_crates_own_list` cross-checks them against
-/// `Exchange::ALL`, so the grids fail loudly instead of silently shrinking.
-/// Bump all three together (`as_str`, `Exchange::ALL`, and this pair).
+/// Number of [`Exchange`] variants. `Exchange`, `Exchange::ALL`, and
+/// `Exchange::as_str` are generated from one table by the library's
+/// `exchanges!` macro, so `ALL` is complete by construction; this count and
+/// the independent list below are the *expectation* side:
+/// `all_exchanges_matches_the_crates_own_list` compares them against the
+/// generated `ALL`, so a row accidentally dropped from (or mis-ordered in)
+/// the library's table fails here instead of silently shrinking the grids.
+/// A new venue bumps this count and adds one entry below.
 const EXCHANGE_VARIANT_COUNT: usize = 69;
 
 /// Every [`Exchange`] variant, maintained by hand and on purpose
-/// independently of `Exchange::ALL`: the two lists are compared element by
-/// element below, so an omission in either is caught by the other.
+/// independently of the generated `Exchange::ALL`: this list is the test's
+/// own expectation of what the library's table contains, compared element by
+/// element below.
 const ALL_EXCHANGES: &[Exchange] = &[
     Exchange::Unknown,
     Exchange::Nasdaq,
@@ -502,13 +504,14 @@ const ALL_EXCHANGES: &[Exchange] = &[
 
 #[test]
 fn all_exchanges_matches_the_crates_own_list() {
-    // `Exchange` is `#[non_exhaustive]`, so this crate can no longer hold an
-    // exhaustive match as the coverage fence — that fence is the wildcard-free
-    // match in `Exchange::as_str` inside the library. What this test pins
-    // instead: the hand-maintained list above agrees element-by-element (and
-    // in order) with `Exchange::ALL`, and both carry the declared count. An
-    // omission in either list is caught by the other; a variant missing from
-    // *both* is caught by the library's own `as_str` fence at compile time.
+    // `Exchange` is `#[non_exhaustive]`, so this crate cannot hold an
+    // exhaustive match as a coverage fence. It does not need one: the
+    // library's `exchanges!` macro generates the enum, `Exchange::ALL`, and
+    // `as_str` from one table, so a variant cannot exist while missing from
+    // `ALL`. What this test pins is the expectation side: the hand-maintained
+    // list above agrees element-by-element (and in order) with the generated
+    // `ALL`, and both carry the declared count — catching a row dropped from
+    // or reordered in the library's table.
     assert_eq!(
         ALL_EXCHANGES,
         Exchange::ALL,

@@ -1,0 +1,30 @@
+# Copyright (C) 2026 Kevin Monaghan. All rights reserved.
+#
+# This file is proprietary and confidential.
+# Unauthorized copying, use, modification, distribution, or disclosure of this file,
+# via any medium, is strictly prohibited except under a written agreement with the
+# copyright owner.
+
+[package]
+name = "market-hours"
+version = "0.1.0"
+edition = "2024"
+publish = false
+description = "Market-hours, session-boundary, and candle-boundary contracts."
+
+[lib]
+name = "market_hours"
+
+[dependencies]
+chrono = { version = "0.4.42", features = ["clock", "serde"] }
+chrono-tz = "0.10"
+serde = { version = "1.0.228", features = ["derive"] }
+tracing = "0.1"
+
+[dev-dependencies]
+serde_json = "1.0.145"
+
+# Subdirectory test files are not auto-discovered, so targets are declared explicitly.
+[[test]]
+name = "session_invariants"
+path = "tests/contract/session_invariants.rs"

@@ -68,7 +68,8 @@ let (open, close) = session_bounds(&hours, monday_10am).expect("CME trades this 
 assert_eq!(open, ct(2026, 4, 20, 8, 30));
 assert_eq!(close, ct(2026, 4, 20, 15, 15)); // end-exclusive
 
-// 16:30 CT is the daily maintenance gap: closed, but reopening within 90 min.
+// 16:30 CT is the daily maintenance break: closed, inside a gap between
+// two sessions (16:00→17:00) shorter than six hours end to end.
 let monday_evening = ct(2026, 4, 20, 16, 30);
 assert!(!hours.is_open(monday_evening));
 assert!(hours.is_maintenance(monday_evening));

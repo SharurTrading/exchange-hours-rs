@@ -217,7 +217,7 @@ fn cme_daily_maintenance_gap() {
     assert!(!h.is_open(t), "CME maintenance gap 16:30 CT");
     assert!(
         h.is_maintenance(ct((2026, 4, 20), (16, 30, 0))),
-        "16:30 is near-next-session"
+        "16:30 is inside the sub-six-hour 16:00→17:00 break"
     );
 }
 
@@ -393,7 +393,7 @@ fn comex_daily_maintenance() {
     assert!(!h.is_open(t), "COMEX maintenance gap 16:30 CT");
     assert!(
         h.is_maintenance(t),
-        "16:30 CT is near-next-session maintenance"
+        "16:30 CT is inside the sub-six-hour 16:00→17:00 break"
     );
 }
 
@@ -595,7 +595,82 @@ fn iceus_daily_break() {
     assert!(!h.is_open(t), "ICEUS in 18:00–20:00 ET break");
     assert!(
         h.is_maintenance(t),
-        "19:00 ET is near-next-session maintenance"
+        "19:00 ET is inside the sub-six-hour 18:00→20:00 break"
+    );
+}
+
+#[test]
+fn maintenance_covers_the_whole_break_not_just_its_tail() {
+    // The break is classified by its full close-to-reopen span, so the front
+    // of a long break counts too. Until 0.2.0 a 90-minutes-to-reopen
+    // heuristic missed the first half hour of ICE's two-hour break, the first
+    // 90 minutes of Eurex's three-hour overnight gap, and almost four hours
+    // of CBOT grains' 13:20→19:00 CT afternoon.
+    let ice = hours_for_exchange(Exchange::Iceus);
+    let t = et((2026, 4, 20), (18, 5, 0));
+    assert!(!ice.is_open(t), "ICEUS 18:05 ET is closed");
+    assert!(
+        ice.is_maintenance(t),
+        "the start of ICE's two-hour break is maintenance"
+    );
+
+    let eurex = hours_for_exchange(Exchange::Eurex);
+    let t = cet((2026, 4, 20), (22, 30, 0));
+    assert!(!eurex.is_open(t), "Eurex 22:30 CET is closed");
+    assert!(
+        eurex.is_maintenance(t),
+        "Eurex's 22:00→01:00 daily gap is maintenance end to end"
+    );
+
+    let cbot = hours_for_exchange(Exchange::Cbot);
+    let t = ct((2026, 4, 20), (14, 0, 0));
+    assert!(!cbot.is_open(t), "CBOT 14:00 CT is closed");
+    assert!(
+        cbot.is_maintenance(t),
+        "CBOT grains' 13:20→19:00 CT afternoon gap (5h40) is maintenance"
+    );
+}
+
+#[test]
+fn maintenance_starts_at_the_close_instant() {
+    // Closes are end-exclusive, so the close instant itself is the break's
+    // first closed instant.
+    let h = hours_for_exchange(Exchange::Cme);
+    assert!(
+        h.is_maintenance(ct((2026, 4, 20), (16, 0, 0))),
+        "16:00 CT (the daily close) is the first instant of the break"
+    );
+    // The 15:15→15:30 CT gap between RTH and the short pre-close window is a
+    // between-sessions break too.
+    assert!(
+        h.is_maintenance(ct((2026, 4, 20), (15, 20, 0))),
+        "the 15:15→15:30 CT inter-session gap is maintenance"
+    );
+}
+
+#[test]
+fn pre_open_and_overnight_windows_are_not_maintenance() {
+    // Closed-but-reopening-soon is not maintenance when the enclosing gap is
+    // overnight- or weekend-long. Until 0.2.0 the 90-minute heuristic flagged
+    // all of these.
+    let cme = hours_for_exchange(Exchange::Cme);
+    assert!(
+        !cme.is_maintenance(ct((2026, 4, 19), (16, 30, 0))),
+        "Sunday 16:30 CT precedes the reopen but the closure began Friday"
+    );
+    assert!(
+        !cme.is_maintenance(ct((2026, 4, 24), (16, 30, 0))),
+        "Friday 16:30 CT starts the weekend closure, not a break"
+    );
+    assert!(
+        !cme.is_maintenance(ct((2026, 4, 25), (12, 0, 0))),
+        "Saturday is a weekend closure"
+    );
+
+    let nasdaq = hours_for_exchange(Exchange::Nasdaq);
+    assert!(
+        !nasdaq.is_maintenance(et((2026, 4, 21), (3, 30, 0))),
+        "Tuesday 03:30 ET sits in the eight-hour equity overnight, not a break"
     );
 }
 

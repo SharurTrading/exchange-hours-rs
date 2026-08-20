@@ -9,9 +9,23 @@ edition = "2024"
 # `msrv` CI job, which builds on exactly this version.
 rust-version = "1.95"
 license = "MIT-0"
-publish = false
-description = "Exchange trading hours, session-boundary, and candle-boundary contracts."
+description = "Exchange trading hours, session boundaries, and calendar-aware bar boundaries. UTC in, UTC out."
 repository = "https://github.com/SharurTrading/exchange-hours-rs"
+documentation = "https://docs.rs/exchange-hours"
+readme = "README.md"
+keywords = ["exchange", "trading", "market-hours", "calendar", "finance"]
+categories = ["date-and-time", "finance"]
+# Packaged crates carry the library and its proof, nothing else: CI config, lint
+# and dependency policy, and the toolchain pin are repository concerns that a
+# consumer never reads. `rust-toolchain.toml` in particular would only confuse —
+# it governs this repo's own builds, not a dependent's.
+exclude = [
+    ".github/",
+    "rust-toolchain.toml",
+    "clippy.toml",
+    "deny.toml",
+    "AGENTS.md",
+]
 
 [lib]
 name = "exchange_hours"

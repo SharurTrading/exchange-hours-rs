@@ -37,10 +37,12 @@
 //!
 //! let hours = hours_for_exchange(Exchange::Cme);
 //!
-//! // Monday mid-morning sits inside the regular session.
+//! // Monday mid-morning sits inside the regular session. Boundary queries
+//! // return `Option`: `None` means no matching session exists in the bounded
+//! // search horizon (e.g. a pre-go-live date) or the interval is zero.
 //! let monday_10am = ct(2026, 4, 20, 10, 0);
 //! assert!(hours.is_open_regular(monday_10am));
-//! let (open, close) = session_bounds(&hours, monday_10am);
+//! let (open, close) = session_bounds(&hours, monday_10am).expect("CME trades this week");
 //! assert_eq!(open, ct(2026, 4, 20, 8, 30));
 //! assert_eq!(close, ct(2026, 4, 20, 15, 15)); // end-exclusive
 //!
@@ -51,13 +53,13 @@
 //!
 //! // After Friday's close the next session is Sunday evening, not Saturday.
 //! let friday_after_close = ct(2026, 4, 24, 16, 30);
-//! let (next_open, _) = next_session_after(&hours, friday_after_close);
+//! let (next_open, _) = next_session_after(&hours, friday_after_close).expect("reopens Sunday");
 //! assert_eq!(next_open, ct(2026, 4, 26, 17, 0));
 //!
 //! // Bar boundaries follow the same rules: a daily bar closes at the venue's
 //! // session close, not at midnight.
 //! let daily_close = candle_end(&hours, monday_10am, CalendarResolution::Daily);
-//! assert_eq!(daily_close, ct(2026, 4, 20, 16, 0));
+//! assert_eq!(daily_close, Some(ct(2026, 4, 20, 16, 0)));
 //! ```
 //!
 //! # Model
@@ -97,7 +99,3 @@
 mod calendar;
 
 pub use calendar::*;
-
-#[cfg(test)]
-#[path = "../tests/unit/market_hours.rs"]
-mod tests;

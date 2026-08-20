@@ -14,12 +14,13 @@
 //! inclusive while its close stays end-exclusive at the true boundary. A
 //! wall-clock inside a spring-forward gap does not exist, so the resolver steps
 //! forward minute by minute — bounded — to the first representable instant.
+//! The resolver is **total**: it never panics, for any time zone or input.
 //!
 //! Callers must resolve through [`mk_local_open`] / [`mk_local_close`] rather
 //! than [`chrono::TimeZone::from_local_datetime`]: picking a bias ad hoc is how
 //! fall-back hours produce sessions that appear to run backwards.
 
-use chrono::{Duration, LocalResult, NaiveDateTime, TimeZone};
+use chrono::{Duration, LocalResult, NaiveDateTime, NaiveTime, TimeZone};
 use chrono_tz::Tz;
 
 use super::MarketHours;
@@ -27,9 +28,15 @@ use super::MarketHours;
 /// Holiday hook. Always `false` today: the crate ships normal-week,
 /// exchange-level defaults and deliberately owns no holiday calendar.
 ///
-/// Every wrap-session and daily-close path already routes its
-/// "may this session exist on this local date?" question through here, so
-/// landing a real calendar is a body change, not a control-flow change.
+/// Every query path routes its "may this session exist on this local date?"
+/// question through here, so landing a real calendar is a body change, not a
+/// control-flow change. The session-existence contract every caller
+/// implements: a **same-day** session on local day `D` exists iff `D` is not
+/// a holiday, and a **wrap** session opening on `D` and closing on `D+1`
+/// exists iff neither `D` nor `D+1` is a holiday. `is_open_with`,
+/// `session_bounds_with`, `next_session_after_with`, and the daily-close
+/// finder all apply these gates identically — the cross-query fence in
+/// `tests/contract/session_invariants.rs` is what keeps them from drifting.
 pub(crate) fn is_holiday(_hours: &MarketHours, _d: chrono::NaiveDate) -> bool {
     false
 }
@@ -43,14 +50,21 @@ enum AmbigBias {
 /// Resolve a local wall-clock (day + SSM) into a concrete `DateTime<Tz>`,
 /// choosing a deterministic mapping across DST transitions.
 /// - Ambiguous: pick earliest/latest according to `bias`.
-/// - Skipped (spring forward): pick the earliest valid instant *after* the gap.
+/// - Skipped (spring forward): pick the earliest valid instant *after* the gap,
+///   at minute granularity.
+///
+/// Total by construction: the gap search covers 50 hours — the largest gaps in
+/// IANA history are the 24-hour date-line skips (Pacific/Apia 2011,
+/// Pacific/Kiritimati 1994), and ordinary DST gaps are one hour — and if a
+/// hypothetical zone exhausted even that, the wall-clock is deterministically
+/// reinterpreted as UTC rather than panicking.
 fn mk_local_biased(
     tz: Tz,
     day: chrono::NaiveDate,
     ssm: u32,
     bias: AmbigBias,
 ) -> chrono::DateTime<Tz> {
-    let base: NaiveDateTime = day.and_hms_opt(0, 0, 0).unwrap() + Duration::seconds(i64::from(ssm));
+    let base: NaiveDateTime = day.and_time(NaiveTime::MIN) + Duration::seconds(i64::from(ssm));
     match tz.from_local_datetime(&base) {
         LocalResult::Single(dt) => dt,
         LocalResult::Ambiguous(a, b) => match bias {
@@ -59,9 +73,9 @@ fn mk_local_biased(
         },
         LocalResult::None => {
             // Step forward until we land on a representable instant (bounded).
-            // Typical DST gaps are 60 minutes; 180 provides ample headroom.
+            // 3_000 one-minute steps cover a 50-hour gap.
             let mut trial = base + Duration::minutes(1);
-            for _ in 0..180 {
+            for _ in 0..3_000 {
                 match tz.from_local_datetime(&trial) {
                     LocalResult::Single(dt) => return dt,
                     LocalResult::Ambiguous(a, b) => {
@@ -75,8 +89,10 @@ fn mk_local_biased(
                     }
                 }
             }
-            // If still unresolved (extremely unlikely), assert—calendars should be well-formed.
-            panic!("unresolvable local time after DST gap search");
+            // Unreachable for real time-zone data. Reinterpreting the
+            // wall-clock as UTC keeps the resolver total and deterministic
+            // without inventing a nearby local instant.
+            tz.from_utc_datetime(&base)
         }
     }
 }

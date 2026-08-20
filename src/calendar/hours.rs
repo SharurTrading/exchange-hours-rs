@@ -21,9 +21,10 @@
 
 use std::borrow::Cow;
 
-use chrono::{DateTime, Datelike, Duration, LocalResult, NaiveDate, TimeZone, Timelike, Utc};
+use chrono::{DateTime, Datelike, Duration, NaiveDate, Timelike, Utc};
 use chrono_tz::Tz;
 
+use super::local_time::{is_holiday, mk_local_open};
 use super::rule::{SECONDS_PER_NORMAL_WEEK, normal_week_rule_intervals};
 use super::session::{next_session_after, next_session_after_with};
 use super::{Exchange, SessionKind, SessionRule};
@@ -35,10 +36,6 @@ use super::{Exchange, SessionKind, SessionRule};
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct MarketHours {
     /// Which exchange these hours represent.
-    #[allow(
-        dead_code,
-        reason = "retained in the test-only market-hours harness; tests inspect session rules, not the tag"
-    )]
     pub exchange: Exchange,
     /// Exchange’s local time zone (used to interpret `SessionRule`s and handle DST).
     pub tz: Tz,
@@ -60,13 +57,12 @@ impl MarketHours {
     /// tests all rules or takes a min/max over them.
     #[inline]
     pub(crate) fn iter_rules(&self, kind: SessionKind) -> impl Iterator<Item = &SessionRule> + '_ {
-        let reg = self.regular.iter();
-        let ext = self.extended.iter();
-        match kind {
-            SessionKind::Regular => reg.take(usize::MAX).chain(ext.take(0)),
-            SessionKind::Extended => reg.take(0).chain(ext.take(usize::MAX)),
-            SessionKind::Both => reg.take(usize::MAX).chain(ext.take(usize::MAX)),
-        }
+        let (regular, extended): (&[SessionRule], &[SessionRule]) = match kind {
+            SessionKind::Regular => (&self.regular, &[]),
+            SessionKind::Extended => (&[], &self.extended),
+            SessionKind::Both => (&self.regular, &self.extended),
+        };
+        regular.iter().chain(extended.iter())
     }
 
     /// Returns the number of distinct scheduled open seconds in this profile's
@@ -108,30 +104,50 @@ impl MarketHours {
     }
 
     /// True if a session of the requested kind is open at `t`.
+    ///
+    /// Session existence follows the crate-wide contract (stated on the
+    /// internal holiday hook in `local_time`): a same-day session on local day `D` exists iff
+    /// `D` is not a holiday, and a wrap session opening on `D` exists iff
+    /// neither `D` nor `D+1` is one. The gates below mirror
+    /// [`session_bounds_with`](super::session_bounds_with) and
+    /// [`next_session_after_with`](super::next_session_after_with) so the two
+    /// code paths cannot drift once a real holiday calendar lands (today the
+    /// hook is a stub returning `false`).
     #[must_use]
     pub fn is_open_with(&self, t: DateTime<Utc>, kind: SessionKind) -> bool {
         let local = t.with_timezone(&self.tz);
-        // Holidays are modeled via status; exchange-level defaults do not gate by holidays.
+        let today = local.date_naive();
         let w_today = local.weekday().num_days_from_monday() as usize;
         let ssm = local.num_seconds_from_midnight();
 
-        // Direct rule evaluation (no exchange-specific hard gates; breaks are modeled as rules)
-        if self.iter_rules(kind).any(|r| {
-            if !r.days[w_today] {
-                return false;
-            }
-            if r.open_ssm <= r.close_ssm {
-                ssm >= r.open_ssm && ssm < r.close_ssm
-            } else {
-                // wrap (open today, close next day)
-                ssm >= r.open_ssm || ssm < r.close_ssm
-            }
-        }) {
+        // Today's rules (breaks are modeled as gaps between rules, not gates).
+        if !is_holiday(self, today)
+            && self.iter_rules(kind).any(|r| {
+                if !r.days[w_today] {
+                    return false;
+                }
+                if r.open_ssm <= r.close_ssm {
+                    ssm >= r.open_ssm && ssm < r.close_ssm
+                } else {
+                    // Wrap: today's instance of the rule contributes only its
+                    // open side, and only if the close day exists (no wrap
+                    // into a holiday). The close side belongs to *yesterday's*
+                    // instance, which the scan below evaluates against
+                    // yesterday's weekday — testing `ssm < close_ssm` here
+                    // would report the venue open before its own open on any
+                    // day whose predecessor ran no session.
+                    ssm >= r.open_ssm && !is_holiday(self, today + Duration::days(1))
+                }
+            })
+        {
             return true;
         }
 
-        // Yesterday's wrap may spill into today unless yesterday was a holiday.
-        let yday_date = local.date_naive() - Duration::days(1);
+        // Yesterday's wrap may spill into today unless either day is a holiday.
+        let yday_date = today - Duration::days(1);
+        if is_holiday(self, yday_date) || is_holiday(self, today) {
+            return false;
+        }
         let yday = yday_date.weekday().num_days_from_monday() as usize;
         self.iter_rules(kind).any(|r| {
             if r.open_ssm <= r.close_ssm {
@@ -168,15 +184,20 @@ impl MarketHours {
     /// within 90 minutes (across regular and extended sessions). This captures
     /// daily maintenance breaks such as CME's 16:00–17:00 CT window without
     /// modeling them as explicit rules. Always-open venues are never in
-    /// maintenance because they are never closed.
+    /// maintenance because they are never closed, and a profile with no
+    /// sessions at all is never in maintenance because nothing reopens.
     #[must_use]
     pub fn is_maintenance(&self, t: DateTime<Utc>) -> bool {
         // “Maintenance” := closed now but next session is within ~90 minutes.
         if self.is_open(t) {
             return false;
         }
-        let (open, _close) = next_session_after(self, t);
-        (open - t) <= chrono::Duration::minutes(90)
+        match next_session_after(self, t) {
+            Some((open, _close)) => (open - t) <= chrono::Duration::minutes(90),
+            // No session in the horizon: nothing reopens, so nothing is
+            // "about to reopen".
+            None => false,
+        }
     }
 
     /// Return true iff the market is closed for the entire **calendar day** `day`
@@ -187,11 +208,10 @@ impl MarketHours {
     /// part of a day defined in another zone, so the answer is decided strictly
     /// by session overlap with that window, never by a weekday shortcut.
     ///
-    /// # Panics
-    ///
-    /// Panics only if Chrono cannot resolve the fallback local time used for an
-    /// exceptional midnight DST gap, or if `day` is the maximum representable
-    /// `NaiveDate` and therefore has no successor.
+    /// A skipped local midnight (some zones start DST at 00:00) resolves to the
+    /// first representable instant of the day via the crate's shared local-time
+    /// resolver; if `day` is the maximum representable `NaiveDate`, the window
+    /// end saturates to the far future rather than failing.
     #[must_use]
     pub fn is_closed_all_day_in_calendar(
         &self,
@@ -199,23 +219,17 @@ impl MarketHours {
         calendar_tz: Tz,
         kind: SessionKind,
     ) -> bool {
-        // Convert the calendar day's bounds to UTC, DST-safe.
+        // The calendar day's bounds in UTC. `mk_local_open` carries the DST
+        // policy (earliest mapping on a fold, first instant after a gap), so
+        // midnight resolution here cannot drift from the session queries'.
         fn midnight_utc_for(tz: Tz, d: NaiveDate) -> DateTime<Utc> {
-            match tz.with_ymd_and_hms(d.year(), d.month(), d.day(), 0, 0, 0) {
-                LocalResult::Single(dt) => dt.with_timezone(&Utc),
-                LocalResult::Ambiguous(a, b) => a.min(b).with_timezone(&Utc),
-                LocalResult::None => {
-                    // Extremely rare at midnight; fallback to 01:00 local.
-                    tz.with_ymd_and_hms(d.year(), d.month(), d.day(), 1, 0, 0)
-                        .single()
-                        .expect("resolvable local time")
-                        .with_timezone(&Utc)
-                }
-            }
+            mk_local_open(tz, d, 0).with_timezone(&Utc)
         }
 
         let start_utc = midnight_utc_for(calendar_tz, day);
-        let end_utc = midnight_utc_for(calendar_tz, day.succ_opt().expect("valid next day"));
+        let end_utc = day.succ_opt().map_or(DateTime::<Utc>::MAX_UTC, |next| {
+            midnight_utc_for(calendar_tz, next)
+        });
 
         // NOTE: Do not short-circuit on exchange-local holidays here; a calendar
         // day in another TZ can still overlap valid trading. Decide strictly by overlap.
@@ -226,9 +240,13 @@ impl MarketHours {
         }
 
         // Otherwise, check the *next* session after the window start; if it opens
-        // before the window ends, the day is not fully closed.
-        let (next_open, _next_close) = next_session_after_with(kind, self, start_utc);
-        next_open >= end_utc
+        // before the window ends, the day is not fully closed. `None` means no
+        // session exists in the search horizon at all, so the day is fully
+        // closed.
+        match next_session_after_with(self, start_utc, kind) {
+            Some((next_open, _next_close)) => next_open >= end_utc,
+            None => true,
+        }
     }
 
     /// Convenience: interpret the date in the **exchange TZ** (what your old
@@ -241,10 +259,6 @@ impl MarketHours {
 
     /// Convenience: starting from a UTC timestamp, use a chosen calendar TZ to define “the day”.
     #[inline]
-    #[allow(
-        dead_code,
-        reason = "retained in the test-only market-hours harness for scheduled calendar checks"
-    )]
     #[must_use]
     pub fn is_closed_all_day_at(
         &self,

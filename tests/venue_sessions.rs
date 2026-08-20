@@ -16,9 +16,9 @@
 //   - DST-transition edge cases (covered separately by the bias-aware helpers)
 //   - Binance quarterly-expiry pauses
 
-use super::*;
 use chrono::{DateTime, Datelike, TimeZone, Utc};
 use chrono_tz::{America, Asia, Europe, US};
+use exchange_hours::*;
 
 fn utc(date: (i32, u32, u32), time: (u32, u32, u32)) -> DateTime<Utc> {
     Utc.with_ymd_and_hms(date.0, date.1, date.2, time.0, time.1, time.2)
@@ -735,7 +735,9 @@ fn sgx_sunday_closed() {
 
 // ---------------------------------------------------------------------------
 // CFE (Cboe Futures — VIX)
-//   RTH 08:30–15:15 CT, curb 15:30–16:00, overnight Sun+Mon–Thu 17:00→08:30
+//   RTH 08:30–15:00 CT, post-settlement ETH 15:00–16:00 CT (Mon–Fri),
+//   overnight Sun+Mon–Thu 17:00→08:30. Effective 2021-12-06; see the
+//   venue-data section at the end of this file for the sources.
 // ---------------------------------------------------------------------------
 
 #[test]
@@ -756,19 +758,22 @@ fn cfe_rth() {
 #[test]
 fn cfe_rth_close() {
     let h = hours_for_exchange(Exchange::Cfe);
-    let t = ct((2026, 4, 20), (15, 15, 0));
     assert!(
-        !h.is_open_regular(t),
-        "CFE RTH ends 15:15 CT (end-exclusive)"
+        !h.is_open_regular(ct((2026, 4, 20), (15, 0, 0))),
+        "CFE RTH ends 15:00 CT (end-exclusive) since 2021-12-06"
+    );
+    assert!(
+        !h.is_open_regular(ct((2026, 4, 20), (15, 15, 0))),
+        "15:15 CT is past the RTH close"
     );
 }
 
 #[test]
-fn cfe_curb_window() {
+fn cfe_post_settlement_window() {
     let h = hours_for_exchange(Exchange::Cfe);
     let t = ct((2026, 4, 20), (15, 45, 0));
-    assert!(h.is_open(t), "CFE curb 15:30–16:00 CT");
-    assert!(h.is_open_extended(t), "curb is extended");
+    assert!(h.is_open(t), "CFE post-settlement ETH 15:00–16:00 CT");
+    assert!(h.is_open_extended(t), "post-settlement is extended");
 }
 
 #[test]
@@ -945,7 +950,7 @@ fn futures_venues_sunday_has_sessions() {
 fn cme_session_bounds_monday_rth() {
     let h = hours_for_exchange(Exchange::Cme);
     let t = ct((2026, 4, 20), (10, 0, 0));
-    let (open, close) = session_bounds(&h, t);
+    let (open, close) = session_bounds(&h, t).expect("a session contains or follows t");
     assert_eq!(
         open,
         ct((2026, 4, 20), (8, 30, 0)),
@@ -962,7 +967,7 @@ fn cme_session_bounds_monday_rth() {
 fn cme_next_session_after_friday_close() {
     let h = hours_for_exchange(Exchange::Cme);
     let t = ct((2026, 4, 24), (16, 30, 0));
-    let (open, _close) = next_session_after(&h, t);
+    let (open, _close) = next_session_after(&h, t).expect("the next session exists");
     assert_eq!(
         open,
         ct((2026, 4, 26), (17, 0, 0)),
@@ -974,7 +979,7 @@ fn cme_next_session_after_friday_close() {
 fn cbot_session_bounds_day_session() {
     let h = hours_for_exchange(Exchange::Cbot);
     let t = ct((2026, 4, 20), (10, 0, 0));
-    let (open, close) = session_bounds(&h, t);
+    let (open, close) = session_bounds(&h, t).expect("a session contains or follows t");
     assert_eq!(open, ct((2026, 4, 20), (8, 30, 0)));
     assert_eq!(close, ct((2026, 4, 20), (13, 20, 0)));
 }
@@ -1033,7 +1038,8 @@ fn candle_end_monthly_returns_last_close_of_month() {
     let h = hours_for_exchange(Exchange::Cme);
     let mid_jan = ct((2026, 1, 15), (12, 0, 0));
 
-    let close = candle_end(&h, mid_jan, CalendarResolution::Monthly);
+    let close =
+        candle_end(&h, mid_jan, CalendarResolution::Monthly).expect("January has daily closes");
     assert!(
         close > mid_jan,
         "monthly close must be after the input instant"
@@ -1044,7 +1050,8 @@ fn candle_end_monthly_returns_last_close_of_month() {
         "monthly close stays in January (exchange-local)"
     );
 
-    let next = candle_end(&h, close, CalendarResolution::Daily);
+    let next =
+        candle_end(&h, close, CalendarResolution::Daily).expect("trading continues in February");
     assert_eq!(
         next.with_timezone(&US::Central).month(),
         2,
@@ -1080,12 +1087,14 @@ fn candle_end_monthly_year_boundary() {
     let h = hours_for_exchange(Exchange::Cme);
     let late_dec = ct((2026, 12, 20), (12, 0, 0));
 
-    let close = candle_end(&h, late_dec, CalendarResolution::Monthly);
+    let close =
+        candle_end(&h, late_dec, CalendarResolution::Monthly).expect("December has daily closes");
     let local = close.with_timezone(&US::Central);
     assert_eq!(local.month(), 12, "boundary stays in December");
     assert_eq!(local.year(), 2026, "boundary stays in 2026");
 
-    let next = candle_end(&h, close, CalendarResolution::Daily);
+    let next = candle_end(&h, close, CalendarResolution::Daily)
+        .expect("trading continues in January 2027");
     let next_local = next.with_timezone(&US::Central);
     assert_eq!(next_local.month(), 1, "next close rolls into January");
     assert_eq!(next_local.year(), 2027, "next close rolls into 2027");
@@ -1111,12 +1120,12 @@ fn candle_start_daily_uses_the_overnight_session_open() {
 
     assert_eq!(
         candle_start(&hours, first_trade, CalendarResolution::Daily),
-        ct((2026, 1, 29), (17, 0, 0)),
+        Some(ct((2026, 1, 29), (17, 0, 0))),
         "the trading-day candle starts at the catalog session open, not its first trade"
     );
     assert_eq!(
         candle_end(&hours, first_trade, CalendarResolution::Daily),
-        ct((2026, 1, 30), (16, 0, 0)),
+        Some(ct((2026, 1, 30), (16, 0, 0))),
         "the paired daily close remains the following civil day"
     );
 }
@@ -1125,7 +1134,8 @@ fn candle_start_daily_uses_the_overnight_session_open() {
 fn candle_start_resolves_the_post_dst_globex_open() {
     let hours = hours_for_market_hours_key(MarketHoursKey::GlobexEquityIndex);
     let post_spring_forward_trade = ct((2026, 3, 8), (18, 0, 0));
-    let start = candle_start(&hours, post_spring_forward_trade, CalendarResolution::Daily);
+    let start = candle_start(&hours, post_spring_forward_trade, CalendarResolution::Daily)
+        .expect("the Globex week is open");
 
     assert_eq!(start, ct((2026, 3, 8), (17, 0, 0)));
     assert_eq!(
@@ -1146,7 +1156,7 @@ fn candle_start_monthly_can_open_in_the_preceding_civil_month() {
             first_june_session_trade,
             CalendarResolution::Monthly,
         ),
-        ct((2026, 5, 31), (17, 0, 0)),
+        Some(ct((2026, 5, 31), (17, 0, 0))),
         "June's first trading session opens on the final civil day of May"
     );
     assert_eq!(
@@ -1155,7 +1165,7 @@ fn candle_start_monthly_can_open_in_the_preceding_civil_month() {
             ct((2026, 6, 30), (12, 0, 0)),
             CalendarResolution::Monthly,
         ),
-        ct((2026, 5, 31), (17, 0, 0)),
+        Some(ct((2026, 5, 31), (17, 0, 0))),
         "every instant in the same trading month shares one canonical start"
     );
 }
@@ -1197,12 +1207,13 @@ fn hours_for_market_hours_key_drives_calendar_boundaries() {
     // Daily: a weekday instant resolves to a strictly-later close.
     let wed = ct((2026, 1, 7), (9, 0, 0));
     assert!(
-        candle_end(&hours, wed, CalendarResolution::Daily) > wed,
+        candle_end(&hours, wed, CalendarResolution::Daily).expect("mid-week close exists") > wed,
         "daily close must be after the input instant"
     );
 
     // Weekly: idempotent within an ISO week, distinct across weeks.
     let wed_weekly = candle_end(&hours, wed, CalendarResolution::Weekly);
+    assert!(wed_weekly.is_some(), "the trading week has a weekly close");
     let thu = ct((2026, 1, 8), (9, 0, 0));
     assert_eq!(
         candle_end(&hours, thu, CalendarResolution::Weekly),
@@ -1219,7 +1230,8 @@ fn hours_for_market_hours_key_drives_calendar_boundaries() {
     // Monthly: a mid-January instant resolves to a January close whose next daily
     // close rolls into February.
     let mid_jan = ct((2026, 1, 15), (12, 0, 0));
-    let monthly = candle_end(&hours, mid_jan, CalendarResolution::Monthly);
+    let monthly =
+        candle_end(&hours, mid_jan, CalendarResolution::Monthly).expect("January has daily closes");
     assert_eq!(
         monthly.with_timezone(&US::Central).month(),
         1,
@@ -1227,6 +1239,7 @@ fn hours_for_market_hours_key_drives_calendar_boundaries() {
     );
     assert_eq!(
         candle_end(&hours, monthly, CalendarResolution::Daily)
+            .expect("trading continues in February")
             .with_timezone(&US::Central)
             .month(),
         2,
@@ -1264,4 +1277,629 @@ fn market_hours_derives_eq() {
         hours_for_exchange(Exchange::Eurex),
         "distinct exchanges yield unequal hours"
     );
+}
+
+// ---------------------------------------------------------------------------
+// Overnight-wrap open-side regression
+//
+// A wrap rule (`open_ssm > close_ssm`) that is enabled on a given weekday
+// contributes only its OPEN side on that day. Its close belongs to the previous
+// day's instance of the same rule, so a venue whose previous local day ran no
+// session must read closed right up to today's open.
+//
+// COMEX/NYMEX (17:00→16:00 CT) and ICE US (20:00→18:00 ET) are the venues that
+// expose this: their wrap close falls late in the day, so every Sunday instant
+// before that close previously reported open even though Saturday never opened
+// a session. CME is pinned alongside them because its wrap closes at 08:30,
+// which makes it insensitive to the same defect — its behaviour must not move.
+// ---------------------------------------------------------------------------
+
+#[test]
+fn comex_sunday_morning_closed_before_globex_open() {
+    let h = hours_for_exchange(Exchange::Comex);
+    let t = ct((2026, 4, 19), (10, 0, 0));
+    assert!(
+        !h.is_open(t),
+        "COMEX closed Sun 10:00 CT: Saturday opened no session to wrap into Sunday"
+    );
+}
+
+#[test]
+fn nymex_sunday_morning_closed_before_globex_open() {
+    let h = hours_for_exchange(Exchange::Nymex);
+    let t = ct((2026, 4, 19), (10, 0, 0));
+    assert!(
+        !h.is_open(t),
+        "NYMEX closed Sun 10:00 CT: Saturday opened no session to wrap into Sunday"
+    );
+}
+
+#[test]
+fn iceus_sunday_morning_closed_before_open() {
+    let h = hours_for_exchange(Exchange::Iceus);
+    let t = et((2026, 4, 19), (10, 0, 0));
+    assert!(
+        !h.is_open(t),
+        "ICE US closed Sun 10:00 ET: Saturday opened no session to wrap into Sunday"
+    );
+}
+
+#[test]
+fn cme_sunday_morning_closed_before_globex_open() {
+    let h = hours_for_exchange(Exchange::Cme);
+    let t = ct((2026, 4, 19), (10, 0, 0));
+    assert!(!h.is_open(t), "CME closed Sun 10:00 CT");
+}
+
+#[test]
+fn sunday_morning_is_open_agrees_with_session_bounds() {
+    // The defect showed up as two public queries disagreeing: `is_open` said
+    // open while `session_bounds` returned a session starting hours later.
+    for (exchange, instant) in [
+        (Exchange::Comex, ct((2026, 4, 19), (10, 0, 0))),
+        (Exchange::Nymex, ct((2026, 4, 19), (10, 0, 0))),
+        (Exchange::Iceus, et((2026, 4, 19), (10, 0, 0))),
+        (Exchange::Cme, ct((2026, 4, 19), (10, 0, 0))),
+    ] {
+        let h = hours_for_exchange(exchange);
+        let (open, close) = session_bounds(&h, instant).expect("a session follows the weekend");
+        let contained = open <= instant && instant < close;
+        assert_eq!(
+            h.is_open(instant),
+            contained,
+            "{exchange:?}: is_open disagrees with session_bounds at {instant} \
+             (bounds {open}..{close})"
+        );
+    }
+}
+
+#[test]
+fn wrap_venues_reopen_at_their_published_sunday_open() {
+    // The fix must not close a venue that genuinely is open: each of these is
+    // the first instant of the Sunday-evening session.
+    for (exchange, instant) in [
+        (Exchange::Comex, ct((2026, 4, 19), (17, 0, 0))),
+        (Exchange::Nymex, ct((2026, 4, 19), (17, 0, 0))),
+        (Exchange::Iceus, et((2026, 4, 19), (20, 0, 0))),
+        (Exchange::Cme, ct((2026, 4, 19), (17, 0, 0))),
+    ] {
+        let h = hours_for_exchange(exchange);
+        assert!(h.is_open(instant), "{exchange:?} open at its Sunday open");
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Venue-data corrections (primary-source verified)
+// ---------------------------------------------------------------------------
+
+// IEX runs narrower extended hours than the Reg NMS default: "System Hours" are
+// 08:00–17:00 ET, with pre-market 08:00–09:30 and post-market 16:00–17:00.
+// Source: IEX Exchange, "Trading Hours & Holidays"
+// (https://www.iex.io/resources/trading/trading-hours-holidays); Investors
+// Exchange Rule Book Rule 1.160(z)/(aa)/(gg).
+#[test]
+fn iex_premarket_opens_at_0800_not_0400() {
+    let h = hours_for_exchange(Exchange::Iex);
+    assert!(
+        !h.is_open(et((2026, 4, 20), (4, 0, 0))),
+        "IEX closed 04:00 ET; System Hours start at 08:00"
+    );
+    assert!(
+        !h.is_open(et((2026, 4, 20), (7, 59, 0))),
+        "IEX closed 07:59 ET"
+    );
+    assert!(
+        h.is_open_extended(et((2026, 4, 20), (8, 0, 0))),
+        "IEX pre-market opens 08:00 ET"
+    );
+}
+
+#[test]
+fn iex_postmarket_closes_at_1700_not_2000() {
+    let h = hours_for_exchange(Exchange::Iex);
+    assert!(
+        h.is_open_extended(et((2026, 4, 20), (16, 30, 0))),
+        "IEX post-market runs 16:00–17:00 ET"
+    );
+    assert!(
+        !h.is_open(et((2026, 4, 20), (17, 0, 0))),
+        "IEX closed at 17:00 ET (end-exclusive)"
+    );
+    assert!(
+        !h.is_open(et((2026, 4, 20), (19, 0, 0))),
+        "IEX closed 19:00 ET; it runs no 20:00 post-market"
+    );
+}
+
+#[test]
+fn iex_extended_hours_differ_from_the_generic_us_equities_profile() {
+    let iex = hours_for_exchange(Exchange::Iex);
+    let generic = hours_for_exchange(Exchange::Nasdaq);
+    assert_eq!(
+        iex.regular, generic.regular,
+        "IEX shares the Reg NMS regular session"
+    );
+    assert_ne!(
+        iex.extended, generic.extended,
+        "IEX must not inherit the 04:00/20:00 generic extended windows"
+    );
+    assert!(
+        generic.is_open(et((2026, 4, 20), (4, 0, 0))),
+        "the generic profile does trade at 04:00 ET, so the contrast is real"
+    );
+}
+
+// Blue Ocean ATS reached production on 2021-10-05; the June 2021 beta has no
+// day-level primary source and is deliberately excluded.
+// Source: Blue Ocean Technologies, "Announcing Launch of Blue Ocean ATS
+// Afterhours Trading" (2021-10-05).
+#[test]
+fn blue_ocean_has_no_sessions_before_its_production_launch() {
+    let before = hours_for_exchange_as_of(Exchange::BlueOceanAts, et((2021, 10, 4), (22, 0, 0)));
+    assert!(
+        before.regular.is_empty() && before.extended.is_empty(),
+        "Blue Ocean ATS had not launched on 2021-10-04"
+    );
+
+    let after = hours_for_exchange_as_of(Exchange::BlueOceanAts, et((2021, 10, 5), (22, 0, 0)));
+    assert!(
+        !after.extended.is_empty(),
+        "Blue Ocean ATS trades from its 2021-10-05 production launch"
+    );
+    assert!(
+        after.is_open(et((2021, 10, 5), (22, 0, 0))),
+        "Blue Ocean session runs 20:00–04:00 ET"
+    );
+}
+
+#[test]
+fn blue_ocean_runs_sunday_through_thursday_only() {
+    // No Friday-evening session: the NYSE TRF cannot report the trades on
+    // Saturday. Source: Blue Ocean SEC Form ATS-N, "Hours of Operations".
+    let h = hours_for_exchange(Exchange::BlueOceanAts);
+    assert!(
+        h.is_open(et((2026, 4, 19), (22, 0, 0))),
+        "Sunday evening session trades"
+    );
+    assert!(
+        !h.is_open(et((2026, 4, 24), (22, 0, 0))),
+        "no Friday-evening session"
+    );
+    assert!(
+        !h.is_open(et((2026, 4, 25), (2, 0, 0))),
+        "nothing wraps into Saturday morning"
+    );
+}
+
+// CFE removed the 15:15–15:30 queuing period and moved the RTH close to 15:00
+// on 2021-12-06, so RTH now flows seamlessly into post-settlement ETH.
+// Sources: Cboe notice C2021102603 ("Effective December 6, 2021 … CFE will
+// eliminate the queuing period which occurs between 3:15 p.m. CT and 3:30 p.m.
+// CT, Monday through Friday … and redefine regular trading hours as 8:30 a.m.
+// CT to 3:00 p.m. CT"); CFE rule filing CFE-2021-028 (2021-11-04); CFE Rulebook
+// Rule 1202, whose amendment history stamps "December 6, 2021 (21-028)".
+#[test]
+fn cfe_rth_transitions_seamlessly_into_post_settlement_at_1500() {
+    let h = hours_for_exchange(Exchange::Cfe);
+    let close = ct((2026, 4, 20), (15, 0, 0));
+    assert!(
+        !h.is_open_regular(close),
+        "RTH is end-exclusive at 15:00 CT"
+    );
+    assert!(
+        h.is_open_extended(close),
+        "ETH takes over at 15:00 CT with no pause"
+    );
+    assert!(h.is_open(close), "the venue never closes at 15:00 CT");
+}
+
+#[test]
+fn cfe_has_no_queuing_gap_between_1515_and_1530() {
+    // The old model left 15:15–15:30 closed. That queuing period is gone.
+    let h = hours_for_exchange(Exchange::Cfe);
+    for minute in [15, 20, 29] {
+        let t = ct((2026, 4, 20), (15, minute, 0));
+        assert!(
+            h.is_open(t),
+            "CFE open at 15:{minute:02} CT since 2021-12-06"
+        );
+    }
+}
+
+#[test]
+fn cfe_post_settlement_runs_on_friday_too() {
+    // The session is Monday through Friday in both the pre- and post-2021
+    // rulebook charts; the old model wrongly limited it to Mon–Thu.
+    let h = hours_for_exchange(Exchange::Cfe);
+    assert!(
+        h.is_open(ct((2026, 4, 24), (15, 45, 0))),
+        "CFE post-settlement trades on Friday"
+    );
+    assert!(
+        !h.is_open(ct((2026, 4, 24), (17, 0, 0))),
+        "but there is still no Friday overnight session"
+    );
+}
+
+#[test]
+fn cfe_before_the_2021_cutover_keeps_the_queuing_gap() {
+    let before = hours_for_exchange_as_of(Exchange::Cfe, ct((2021, 12, 3), (12, 0, 0)));
+    assert!(
+        before.is_open_regular(ct((2021, 12, 3), (15, 10, 0))),
+        "RTH ran to 15:15 CT before the cutover"
+    );
+    assert!(
+        !before.is_open(ct((2021, 12, 3), (15, 20, 0))),
+        "15:15–15:30 was a queuing period with no trading"
+    );
+
+    let after = hours_for_exchange_as_of(Exchange::Cfe, ct((2021, 12, 6), (12, 0, 0)));
+    assert!(
+        !after.is_open_regular(ct((2021, 12, 6), (15, 10, 0))),
+        "RTH ends 15:00 CT from the cutover"
+    );
+    assert!(
+        after.is_open(ct((2021, 12, 6), (15, 20, 0))),
+        "the queuing period is replaced by extended trading"
+    );
+}
+
+// SIX Swiss Exchange shares segments: continuous trading ends 17:20, closing
+// auction 17:20–17:30, Trading-At-Last to 17:40. The 17:30–17:35 auction the
+// model previously used belongs to the ETF/ETP segments, which have no TAL.
+// Source: SIX Group "Trading hours" and the SIX Swiss Exchange Trading Guide
+// ("Continuous Trading 09:00 - 17:20 CET / Closing Auction 17:20 - 17:30 CET /
+// Trading-At-Last … End: 17:40 CET").
+#[test]
+fn six_continuous_trading_ends_at_1720() {
+    let h = hours_for_exchange(Exchange::Six);
+    assert!(
+        h.is_open_regular(cet((2026, 4, 20), (17, 19, 0))),
+        "SIX continuous trading runs to 17:20"
+    );
+    assert!(
+        !h.is_open_regular(cet((2026, 4, 20), (17, 20, 0))),
+        "17:20 is the end-exclusive continuous close"
+    );
+}
+
+#[test]
+fn six_closing_auction_and_trading_at_last_run_to_1740() {
+    let h = hours_for_exchange(Exchange::Six);
+    assert!(
+        h.is_open_extended(cet((2026, 4, 20), (17, 25, 0))),
+        "closing auction 17:20–17:30"
+    );
+    assert!(
+        h.is_open_extended(cet((2026, 4, 20), (17, 35, 0))),
+        "Trading-At-Last 17:30–17:40"
+    );
+    assert!(
+        !h.is_open(cet((2026, 4, 20), (17, 40, 0))),
+        "SIX is done at 17:40 (end-exclusive)"
+    );
+}
+
+#[test]
+fn six_does_not_share_the_xetra_schedule() {
+    let six = hours_for_exchange(Exchange::Six);
+    let xetra = hours_for_exchange(Exchange::Xetra);
+    assert_ne!(
+        six.regular, xetra.regular,
+        "SIX closes continuous trading 10 minutes before Xetra"
+    );
+    assert!(
+        xetra.is_open_regular(cet((2026, 4, 20), (17, 25, 0))),
+        "Xetra still trades continuously at 17:25, so the contrast is real"
+    );
+}
+
+// ---------------------------------------------------------------------------
+// candle_start_with — kind-aware period starts
+// ---------------------------------------------------------------------------
+
+#[test]
+fn candle_start_with_regular_kind_anchors_the_trading_day_at_rth() {
+    let hours = hours_for_market_hours_key(MarketHoursKey::GlobexEquityIndex);
+    let monday_mid_rth = ct((2026, 4, 20), (10, 0, 0));
+
+    // Consulting only regular sessions, the Monday trading day runs
+    // 08:30–15:15 CT; the overnight wrap belongs to the extended set.
+    assert_eq!(
+        candle_start_with(
+            &hours,
+            monday_mid_rth,
+            CalendarResolution::Daily,
+            SessionKind::Regular
+        ),
+        Some(ct((2026, 4, 20), (8, 30, 0))),
+        "Regular-kind daily start is the RTH open, not the Globex overnight open"
+    );
+    assert_eq!(
+        candle_end_with(
+            &hours,
+            monday_mid_rth,
+            CalendarResolution::Daily,
+            SessionKind::Regular
+        ),
+        Some(ct((2026, 4, 20), (15, 15, 0))),
+        "Regular-kind daily end is the RTH close"
+    );
+}
+
+#[test]
+fn candle_start_with_extended_kind_anchors_the_trading_day_at_the_globex_open() {
+    let hours = hours_for_market_hours_key(MarketHoursKey::GlobexEquityIndex);
+    let monday_mid_rth = ct((2026, 4, 20), (10, 0, 0));
+
+    // Consulting only extended sessions, the Monday trading day opened with
+    // Sunday's 17:00 CT Globex wrap and its last close is the 15:30-16:00
+    // post-settlement window.
+    assert_eq!(
+        candle_start_with(
+            &hours,
+            monday_mid_rth,
+            CalendarResolution::Daily,
+            SessionKind::Extended
+        ),
+        Some(ct((2026, 4, 19), (17, 0, 0))),
+        "Extended-kind daily start is the Sunday Globex open"
+    );
+    assert_eq!(
+        candle_end_with(
+            &hours,
+            monday_mid_rth,
+            CalendarResolution::Daily,
+            SessionKind::Extended
+        ),
+        Some(ct((2026, 4, 20), (16, 0, 0))),
+        "Extended-kind daily end is the 16:00 CT extended close"
+    );
+}
+
+#[test]
+fn candle_start_with_both_matches_candle_start() {
+    let hours = hours_for_market_hours_key(MarketHoursKey::GlobexEquityIndex);
+    for (res, t) in [
+        (CalendarResolution::Daily, ct((2026, 1, 29), (18, 0, 0))),
+        (
+            CalendarResolution::Minutes(5),
+            ct((2026, 4, 20), (10, 0, 0)),
+        ),
+        (CalendarResolution::Weekly, ct((2026, 4, 20), (10, 0, 0))),
+    ] {
+        assert_eq!(
+            candle_start_with(&hours, t, res, SessionKind::Both),
+            candle_start(&hours, t, res),
+            "candle_start must be exactly candle_start_with over Both ({res:?})"
+        );
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Venue data verified against primary sources (2026-08 pass): NYSE-family and
+// Cboe early sessions, the Nasdaq Nordic closes, and the European post-close
+// price-formation windows. Reference week: Monday 2026-04-20.
+// ---------------------------------------------------------------------------
+
+/// Builds a Helsinki (EET/EEST) local instant.
+fn hel(date: (i32, u32, u32), time: (u32, u32, u32)) -> DateTime<Utc> {
+    Europe::Helsinki
+        .with_ymd_and_hms(date.0, date.1, date.2, time.0, time.1, time.2)
+        .single()
+        .expect("valid Helsinki instant")
+        .with_timezone(&Utc)
+}
+
+#[test]
+fn nyse_trades_the_core_session_only() {
+    // nyse.com "Trading Hours": NYSE lists a core session 9:30-16:00 ET and
+    // no early or late session; extended trading in NYSE Group happens on
+    // Arca, American, National, and Texas.
+    let hours = hours_for_exchange(Exchange::Nyse);
+    assert!(
+        hours.extended.is_empty(),
+        "NYSE must have no extended rules"
+    );
+    assert!(!hours.is_open(et((2026, 4, 20), (8, 0, 0))));
+    assert!(!hours.is_open(et((2026, 4, 20), (16, 30, 0))));
+    assert!(hours.is_open_regular(et((2026, 4, 20), (10, 0, 0))));
+}
+
+#[test]
+fn nyse_american_and_cboe_byx_premarket_opens_at_0700_not_0400() {
+    // nyse.com "Trading Hours": American/National early session 7:00-9:30 ET.
+    // cboe.com "Hours & Holidays": BYX/EDGA early session begins 7:00 a.m.
+    for exch in [
+        Exchange::NyseAmerican,
+        Exchange::NyseNational,
+        Exchange::CboeByx,
+        Exchange::CboeEdga,
+    ] {
+        let hours = hours_for_exchange(exch);
+        assert!(
+            !hours.is_open(et((2026, 4, 20), (5, 0, 0))),
+            "{exch:?} must be closed at 05:00 ET"
+        );
+        assert!(
+            !hours.is_open(et((2026, 4, 20), (6, 59, 59))),
+            "{exch:?} must be closed just before 07:00 ET"
+        );
+        assert!(
+            hours.is_open_extended(et((2026, 4, 20), (7, 0, 0))),
+            "{exch:?} early session must open 07:00 ET"
+        );
+        assert!(
+            hours.is_open_extended(et((2026, 4, 20), (19, 59, 59))),
+            "{exch:?} late session must run to 20:00 ET"
+        );
+    }
+}
+
+#[test]
+fn bzx_and_edgx_premarket_opens_at_0400_today() {
+    // cboe.com "Hours & Holidays": BZX/EDGX early session begins 4:00 a.m. ET.
+    for exch in [Exchange::CboeBzx, Exchange::CboeEdgx] {
+        let hours = hours_for_exchange(exch);
+        assert!(!hours.is_open(et((2026, 4, 20), (3, 59, 59))));
+        assert!(
+            hours.is_open_extended(et((2026, 4, 20), (4, 0, 0))),
+            "{exch:?} early session must open 04:00 ET"
+        );
+    }
+}
+
+#[test]
+fn edgx_early_session_started_0700_before_2021_03_08() {
+    // Cboe press release (2021-02-08): early trading from 4:00 a.m. ET
+    // effective Monday, March 8, 2021.
+    let before = hours_for_exchange_as_of(Exchange::CboeEdgx, et((2021, 3, 5), (12, 0, 0)));
+    assert!(!before.is_open(et((2021, 3, 5), (5, 0, 0))));
+    assert!(before.is_open_extended(et((2021, 3, 5), (7, 30, 0))));
+
+    let after = hours_for_exchange_as_of(Exchange::CboeEdgx, et((2021, 3, 8), (12, 0, 0)));
+    assert!(after.is_open_extended(et((2021, 3, 8), (5, 0, 0))));
+}
+
+#[test]
+fn bzx_early_session_started_0700_before_2025_05_01() {
+    // Cboe release notice #54236: "Effective May 1, 2025 … will commence the
+    // Early Trading Session at 4:00 a.m. ET. Currently, BZX … commences the
+    // Early Trading Session at 7:00 a.m. ET."
+    let before = hours_for_exchange_as_of(Exchange::CboeBzx, et((2025, 4, 30), (12, 0, 0)));
+    assert!(!before.is_open(et((2025, 4, 30), (5, 0, 0))));
+    assert!(before.is_open_extended(et((2025, 4, 30), (7, 30, 0))));
+
+    let after = hours_for_exchange_as_of(Exchange::CboeBzx, et((2025, 5, 1), (12, 0, 0)));
+    assert!(after.is_open_extended(et((2025, 5, 1), (5, 0, 0))));
+}
+
+#[test]
+fn nasdaq_stockholm_continuous_ends_1725() {
+    // FESE 2025 hours: Stockholm continuous 09:00-17:25, closing call to ~17:30.
+    let hours = hours_for_exchange(Exchange::NasdaqStockholm);
+    assert!(hours.is_open_regular(cet((2026, 4, 20), (17, 24, 59))));
+    assert!(!hours.is_open_regular(cet((2026, 4, 20), (17, 25, 0))));
+    assert!(hours.is_open_extended(cet((2026, 4, 20), (17, 27, 0))));
+    assert!(!hours.is_open(cet((2026, 4, 20), (17, 30, 0))));
+    // Pre-opening from 08:00.
+    assert!(hours.is_open_extended(cet((2026, 4, 20), (8, 30, 0))));
+}
+
+#[test]
+fn nasdaq_helsinki_trades_1000_to_1825_local_eet() {
+    // FESE 2025 hours: Helsinki 10:00-18:25 EET — one hour ahead of the CET
+    // books in local terms, simultaneous in absolute time.
+    let hours = hours_for_exchange(Exchange::NasdaqHelsinki);
+    assert!(!hours.is_open_regular(hel((2026, 4, 20), (9, 30, 0))));
+    assert!(hours.is_open_extended(hel((2026, 4, 20), (9, 30, 0))));
+    assert!(hours.is_open_regular(hel((2026, 4, 20), (10, 0, 0))));
+    assert!(hours.is_open_regular(hel((2026, 4, 20), (18, 24, 59))));
+    assert!(!hours.is_open_regular(hel((2026, 4, 20), (18, 25, 0))));
+    assert!(!hours.is_open(hel((2026, 4, 20), (18, 30, 0))));
+    // Helsinki's regular open coincides with Stockholm's in absolute time.
+    assert_eq!(
+        hel((2026, 4, 20), (10, 0, 0)),
+        cet((2026, 4, 20), (9, 0, 0)),
+        "the Nordic books align on CET"
+    );
+}
+
+#[test]
+fn nasdaq_copenhagen_closes_1655_with_optional_trade_at_close() {
+    // FESE 2025 hours: Copenhagen continuous 09:00-16:55, closing call to
+    // ~17:00, Trade-at-Close 17:00-17:10.
+    let hours = hours_for_exchange(Exchange::NasdaqCopenhagen);
+    assert!(hours.is_open_regular(cet((2026, 4, 20), (16, 54, 59))));
+    assert!(!hours.is_open_regular(cet((2026, 4, 20), (16, 55, 0))));
+    assert!(hours.is_open_extended(cet((2026, 4, 20), (17, 5, 0))));
+    assert!(!hours.is_open(cet((2026, 4, 20), (17, 10, 0))));
+}
+
+#[test]
+fn euronext_trading_at_last_runs_to_1740() {
+    // FESE 2025 hours / Euronext cash documentation: closing auction uncross
+    // ~17:35, Trading-at-Last until 17:40.
+    for exch in [
+        Exchange::EuronextParis,
+        Exchange::EuronextAmsterdam,
+        Exchange::EuronextBrussels,
+        Exchange::EuronextMilan,
+    ] {
+        let hours = hours_for_exchange(exch);
+        assert!(
+            hours.is_open_extended(cet((2026, 4, 20), (17, 37, 0))),
+            "{exch:?} must run Trading-at-Last 17:35-17:40"
+        );
+        assert!(
+            !hours.is_open(cet((2026, 4, 20), (17, 40, 0))),
+            "{exch:?} must be closed at 17:40 (end-exclusive)"
+        );
+    }
+}
+
+#[test]
+fn euronext_lisbon_trading_at_last_runs_to_1740_local_time() {
+    // Lisbon shares the Euronext schedule but keeps its own zone, one hour
+    // behind the continental venues year-round, so the TAL window must be
+    // probed in Europe/Lisbon local time — 17:37 on the continental clock is
+    // 16:37 in Lisbon, outside the window.
+    let hours = hours_for_exchange(Exchange::EuronextLisbon);
+    let lis = |h: u32, m: u32| {
+        Europe::Lisbon
+            .with_ymd_and_hms(2026, 4, 20, h, m, 0)
+            .single()
+            .expect("valid Lisbon instant")
+            .with_timezone(&Utc)
+    };
+    assert!(hours.is_open_extended(lis(17, 37)));
+    assert!(
+        !hours.is_open(lis(17, 40)),
+        "closed at 17:40 (end-exclusive)"
+    );
+}
+
+#[test]
+fn euronext_dublin_continuous_ends_1728() {
+    // FESE 2025 hours: Dublin continuous 09:00-17:28 (WET), closing auction
+    // 17:30, Trading-at-Last 17:30-17:40.
+    let hours = hours_for_exchange(Exchange::EuronextDublin);
+    let dub = |h: u32, m: u32, s: u32| {
+        Europe::Dublin
+            .with_ymd_and_hms(2026, 4, 20, h, m, s)
+            .single()
+            .expect("valid Dublin instant")
+            .with_timezone(&Utc)
+    };
+    assert!(hours.is_open_regular(dub(17, 27, 59)));
+    assert!(!hours.is_open_regular(dub(17, 28, 0)));
+    assert!(hours.is_open_extended(dub(17, 29, 0)));
+    assert!(hours.is_open_extended(dub(17, 35, 0)));
+    assert!(!hours.is_open(dub(17, 40, 0)));
+}
+
+#[test]
+fn lse_closing_price_crossing_runs_to_1640() {
+    // LSE Guide to the Trading System (MIT201): Closing Auction Call
+    // 16:30-16:35, Closing Price Crossing Session to 16:40.
+    let hours = hours_for_exchange(Exchange::Lse);
+    assert!(hours.is_open_extended(lon((2026, 4, 20), (16, 37, 0))));
+    assert!(!hours.is_open(lon((2026, 4, 20), (16, 40, 0))));
+}
+
+#[test]
+fn xetra_bme_and_vienna_run_post_close_price_formation() {
+    // FESE 2025 hours: Xetra Trade-at-Close 17:35-17:45; BME Trading-at-Last
+    // 17:35-17:45; Vienna Trade-at-Close 17:35-17:45.
+    for exch in [Exchange::Xetra, Exchange::Bme, Exchange::Vienna] {
+        let hours = hours_for_exchange(exch);
+        assert!(
+            hours.is_open_extended(cet((2026, 4, 20), (17, 40, 0))),
+            "{exch:?} must run post-close price formation 17:35-17:45"
+        );
+        assert!(
+            !hours.is_open(cet((2026, 4, 20), (17, 45, 0))),
+            "{exch:?} must be closed at 17:45 (end-exclusive)"
+        );
+    }
 }

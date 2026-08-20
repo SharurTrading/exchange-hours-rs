@@ -63,7 +63,7 @@ pub use bulk::{
     hours_for_all, hours_for_eu_equities, hours_for_us_equities, hours_map_eu_equities,
     hours_map_for, hours_map_us_equities,
 };
-pub use candle::{candle_end, candle_end_with, candle_start, time_end_of_day};
+pub use candle::{candle_end, candle_end_with, candle_start, candle_start_with, time_end_of_day};
 pub use exchange::Exchange;
 pub use futures_profile::{
     FuturesSessionProfile, MarketHoursKey, hours_for_market_hours_key, session_profile,
@@ -74,7 +74,7 @@ pub use profiles::{
     BLUE_OCEAN_EXTENDED, NYSE_TEXAS_EXTENDED, US_EQUITY_EXTENDED, US_EQUITY_REGULAR,
 };
 pub use resolution::CalendarResolution;
-pub use rule::{SessionKind, SessionRule};
+pub use rule::{SessionKind, SessionRule, SessionRuleError};
 pub use session::{
     next_session_after, next_session_after_with, next_session_open_after, session_bounds,
     session_bounds_with,

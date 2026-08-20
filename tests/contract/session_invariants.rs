@@ -414,6 +414,12 @@ fn dst_transition_queries_are_stable_and_total() {
 // no rules contains nothing, which is the correct `false`.
 // ---------------------------------------------------------------------------
 
+/// Number of [`Exchange`] variants. The compiler forces a new `is_listed`
+/// match arm when a variant is added; this count is the companion fence that
+/// makes a stale `ALL_EXCHANGES` fail loudly instead of silently shrinking
+/// the grid. Bump all three together.
+const EXCHANGE_VARIANT_COUNT: usize = 69;
+
 /// Every [`Exchange`] variant. Kept exhaustive by
 /// `all_exchanges_covers_every_variant` below.
 const ALL_EXCHANGES: &[Exchange] = &[
@@ -573,6 +579,12 @@ fn all_exchanges_covers_every_variant() {
             "{exchange:?} missing from ALL_EXCHANGES"
         );
     }
+    assert_eq!(
+        ALL_EXCHANGES.len(),
+        EXCHANGE_VARIANT_COUNT,
+        "ALL_EXCHANGES lost or gained an entry; update it together with \
+         `is_listed` and EXCHANGE_VARIANT_COUNT or the grids skip a venue"
+    );
 }
 
 /// Builds the UTC instant for `ssm` seconds after local midnight on `day` in
@@ -843,7 +855,7 @@ fn historical_profiles_hold_the_cross_query_fence() {
         }
     }
 
-    // 17 regimes x ~450 probe instants x 3 kinds. The floor guards against the
+    // 21 regimes (10 venues; CFE has three) x ~450 probe instants x 3 kinds. The floor guards against the
     // probe set silently collapsing, not an exact count.
     assert!(
         checked > 15_000,

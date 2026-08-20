@@ -89,6 +89,17 @@ fn validate_rechecks_a_literal_or_deserialized_rule() {
     )
     .expect("valid JSON shape");
     assert_eq!(deserialized.validate(), Ok(()));
+
+    // Serde does not enforce the domain; `validate` is the recheck that must
+    // reject an out-of-domain payload.
+    let out_of_domain_wire: SessionRule = serde_json::from_str(
+        r#"{"days":[true,true,true,true,true,false,false],"open_ssm":86400,"close_ssm":3600}"#,
+    )
+    .expect("serde accepts the shape regardless of domain");
+    assert_eq!(
+        out_of_domain_wire.validate(),
+        Err(SessionRuleError::OpenOutOfRange { open_ssm: 86_400 })
+    );
 }
 
 #[test]

@@ -138,6 +138,16 @@ fn no_session_intraday_candles_are_none_but_seconds_stays_an_offset() {
         candle_end(&hours, t, CalendarResolution::Seconds(30)),
         Some(t + chrono::Duration::seconds(30))
     );
+    // The paired starts agree on bar existence.
+    assert_eq!(
+        candle_start(&hours, t, CalendarResolution::Minutes(5)),
+        None
+    );
+    assert_eq!(candle_start(&hours, t, CalendarResolution::Hours(1)), None);
+    assert_eq!(
+        candle_start(&hours, t, CalendarResolution::Seconds(30)),
+        Some(t)
+    );
 }
 
 #[test]

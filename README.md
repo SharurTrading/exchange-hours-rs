@@ -49,7 +49,8 @@ let ct = |y, m, d, hh, mm| {
 let hours = hours_for_exchange(Exchange::Cme);
 
 // Monday mid-morning sits inside the regular session. Boundary queries
-// return `Option`: `None` means the profile runs no such session at all.
+// return `Option`: `None` means no matching session exists in the bounded
+// search horizon (e.g. a pre-go-live date) or the interval is zero.
 let monday_10am = ct(2026, 4, 20, 10, 0);
 assert!(hours.is_open_regular(monday_10am));
 let (open, close) = session_bounds(&hours, monday_10am).expect("CME trades this week");

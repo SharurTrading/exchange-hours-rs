@@ -1093,8 +1093,8 @@ fn candle_end_monthly_year_boundary() {
     assert_eq!(local.month(), 12, "boundary stays in December");
     assert_eq!(local.year(), 2026, "boundary stays in 2026");
 
-    let next =
-        candle_end(&h, close, CalendarResolution::Daily).expect("trading continues in February");
+    let next = candle_end(&h, close, CalendarResolution::Daily)
+        .expect("trading continues in January 2027");
     let next_local = next.with_timezone(&US::Central);
     assert_eq!(next_local.month(), 1, "next close rolls into January");
     assert_eq!(next_local.year(), 2027, "next close rolls into 2027");
@@ -1628,6 +1628,36 @@ fn candle_start_with_regular_kind_anchors_the_trading_day_at_rth() {
 }
 
 #[test]
+fn candle_start_with_extended_kind_anchors_the_trading_day_at_the_globex_open() {
+    let hours = hours_for_market_hours_key(MarketHoursKey::GlobexEquityIndex);
+    let monday_mid_rth = ct((2026, 4, 20), (10, 0, 0));
+
+    // Consulting only extended sessions, the Monday trading day opened with
+    // Sunday's 17:00 CT Globex wrap and its last close is the 15:30-16:00
+    // post-settlement window.
+    assert_eq!(
+        candle_start_with(
+            &hours,
+            monday_mid_rth,
+            CalendarResolution::Daily,
+            SessionKind::Extended
+        ),
+        Some(ct((2026, 4, 19), (17, 0, 0))),
+        "Extended-kind daily start is the Sunday Globex open"
+    );
+    assert_eq!(
+        candle_end_with(
+            &hours,
+            monday_mid_rth,
+            CalendarResolution::Daily,
+            SessionKind::Extended
+        ),
+        Some(ct((2026, 4, 20), (16, 0, 0))),
+        "Extended-kind daily end is the 16:00 CT extended close"
+    );
+}
+
+#[test]
 fn candle_start_with_both_matches_candle_start() {
     let hours = hours_for_market_hours_key(MarketHoursKey::GlobexEquityIndex);
     for (res, t) in [
@@ -1806,6 +1836,26 @@ fn euronext_trading_at_last_runs_to_1740() {
             "{exch:?} must be closed at 17:40 (end-exclusive)"
         );
     }
+}
+
+#[test]
+fn euronext_lisbon_trading_at_last_runs_to_1740_local_wet() {
+    // Lisbon shares the Euronext schedule but trades in WET, so the TAL
+    // window must be probed in Europe/Lisbon local time — 17:37 CET is 16:37
+    // in Lisbon, outside the window.
+    let hours = hours_for_exchange(Exchange::EuronextLisbon);
+    let lis = |h: u32, m: u32| {
+        Europe::Lisbon
+            .with_ymd_and_hms(2026, 4, 20, h, m, 0)
+            .single()
+            .expect("valid Lisbon instant")
+            .with_timezone(&Utc)
+    };
+    assert!(hours.is_open_extended(lis(17, 37)));
+    assert!(
+        !hours.is_open(lis(17, 40)),
+        "closed at 17:40 (end-exclusive)"
+    );
 }
 
 #[test]

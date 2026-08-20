@@ -19,10 +19,10 @@
 //! than [`chrono::TimeZone::from_local_datetime`]: picking a bias ad hoc is how
 //! fall-back hours produce sessions that appear to run backwards.
 
-use chrono::{Datelike, Duration, LocalResult, NaiveDateTime, TimeZone};
+use chrono::{Duration, LocalResult, NaiveDateTime, TimeZone};
 use chrono_tz::Tz;
 
-use super::{MarketHours, SessionKind, SessionRule};
+use super::MarketHours;
 
 /// Holiday hook. Always `false` today: the crate ships normal-week,
 /// exchange-level defaults and deliberately owns no holiday calendar.
@@ -32,24 +32,6 @@ use super::{MarketHours, SessionKind, SessionRule};
 /// landing a real calendar is a body change, not a control-flow change.
 pub(crate) fn is_holiday(_hours: &MarketHours, _d: chrono::NaiveDate) -> bool {
     false
-}
-
-// Unreferenced in-crate today; retained as the date-keyed companion to the
-// weekday scans in `session`/`candle`, which is where a holiday calendar lands.
-#[allow(
-    dead_code,
-    reason = "date-keyed rule lookup retained for the holiday-calendar hook; no in-crate caller yet"
-)]
-pub(crate) fn rule_for_date_in(
-    hours: &MarketHours,
-    d: chrono::NaiveDate,
-    kind: SessionKind,
-) -> Option<&SessionRule> {
-    if is_holiday(hours, d) {
-        return None;
-    }
-    let w = d.weekday().num_days_from_monday() as usize;
-    hours.iter_rules(kind).find(|r| r.days[w])
 }
 
 #[derive(Clone, Copy)]

@@ -16,14 +16,16 @@
 //!
 //! # Quick start
 //!
-//! Session bounds and maintenance breaks for a Globex venue. CME equity-index
-//! futures trade 17:00→16:00 CT with a one-hour daily break, and RTH runs
-//! 08:30–15:15 CT:
+//! CME equity-index futures trade 17:00→16:00 CT with a one-hour daily break,
+//! and RTH runs 08:30–15:15 CT:
 //!
 //! ```
 //! use chrono::{TimeZone, Utc};
 //! use chrono_tz::US;
-//! use exchange_hours::{Exchange, hours_for_exchange, next_session_after, session_bounds};
+//! use exchange_hours::{
+//!     CalendarResolution, Exchange, candle_end, hours_for_exchange, next_session_after,
+//!     session_bounds,
+//! };
 //!
 //! let ct = |y, m, d, hh, mm| {
 //!     US::Central
@@ -51,25 +53,9 @@
 //! let friday_after_close = ct(2026, 4, 24, 16, 30);
 //! let (next_open, _) = next_session_after(&hours, friday_after_close);
 //! assert_eq!(next_open, ct(2026, 4, 26, 17, 0));
-//! ```
 //!
-//! Bar boundaries follow the same session rules, so a daily bar closes at the
-//! venue's session close rather than at midnight:
-//!
-//! ```
-//! # use chrono::{TimeZone, Utc};
-//! # use chrono_tz::US;
-//! # let ct = |y, m, d, hh, mm| {
-//! #     US::Central
-//! #         .with_ymd_and_hms(y, m, d, hh, mm, 0)
-//! #         .single()
-//! #         .expect("valid CT instant")
-//! #         .with_timezone(&Utc)
-//! # };
-//! # let monday_10am = ct(2026, 4, 20, 10, 0);
-//! use exchange_hours::{CalendarResolution, Exchange, candle_end, hours_for_exchange};
-//!
-//! let hours = hours_for_exchange(Exchange::Cme);
+//! // Bar boundaries follow the same rules: a daily bar closes at the venue's
+//! // session close, not at midnight.
 //! let daily_close = candle_end(&hours, monday_10am, CalendarResolution::Daily);
 //! assert_eq!(daily_close, ct(2026, 4, 20, 16, 0));
 //! ```

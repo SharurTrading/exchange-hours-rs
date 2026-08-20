@@ -5,10 +5,10 @@
 // via any medium, is strictly prohibited except under a written agreement with the
 // copyright owner.
 
-//! Deterministic property + workload coverage for the `market-hours` public
+//! Deterministic property + workload coverage for the `exchange-hours` public
 //! schedule contract.
 //!
-//! `market-hours` is a pure, stateless schedule-arithmetic library, so the
+//! `exchange-hours` is a pure, stateless schedule-arithmetic library, so the
 //! correct validation class is property/deterministic-fixture rather than a
 //! stateful workload. These tests assert structural invariants that must hold
 //! for every venue profile and every instant, using a self-contained

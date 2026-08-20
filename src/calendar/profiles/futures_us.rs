@@ -152,31 +152,11 @@ pub(crate) static CBOT_PROFILE_PRE2013: StaticHoursProfile = StaticHoursProfile 
     has_weekend_close: true,
 };
 
-// COMEX / NYMEX: 17:00–16:00 wrap (maintenance 16:00–17:00), no Fri overnight
+// COMEX / NYMEX: 17:00–16:00 wrap (maintenance 16:00–17:00), no Fri overnight.
+// Both venues reach this table through the shared `GlobexEnergy` futures profile
+// rather than through a per-venue `StaticHoursProfile`.
 pub(crate) static MAINT_17_16_EXT: &[SessionRule] = &[SessionRule {
     days: SUN_PLUS_MON_THU,
     open_ssm: 17 * 3600,
     close_ssm: 16 * 3600,
 }];
-#[allow(
-    dead_code,
-    reason = "historical GUI-local profile; COMEX now delegates to instrument-catalog"
-)]
-static COMEX_PROFILE: StaticHoursProfile = StaticHoursProfile {
-    tz: US::Central,
-    regular: &[],
-    extended: MAINT_17_16_EXT,
-    has_daily_close: true,
-    has_weekend_close: true,
-};
-#[allow(
-    dead_code,
-    reason = "historical GUI-local profile; NYMEX now delegates to instrument-catalog"
-)]
-static NYMEX_PROFILE: StaticHoursProfile = StaticHoursProfile {
-    tz: US::Central,
-    regular: &[],
-    extended: MAINT_17_16_EXT,
-    has_daily_close: true,
-    has_weekend_close: true,
-};

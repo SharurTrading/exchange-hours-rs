@@ -27,13 +27,16 @@ over a `MarketHours` value: no state, no I/O, no clocks, no floats, no secrets, 
 
 ## Quick start
 
-Both examples are the compiled doctests in `src/lib.rs`, copied verbatim. CME equity-index
-futures trade 17:00→16:00 CT with a one-hour daily break; RTH runs 08:30–15:15 CT:
+This is the compiled doctest in `src/lib.rs`, copied verbatim. CME equity-index futures trade
+17:00→16:00 CT with a one-hour daily break; RTH runs 08:30–15:15 CT:
 
 ```rust
 use chrono::{TimeZone, Utc};
 use chrono_tz::US;
-use exchange_hours::{Exchange, hours_for_exchange, next_session_after, session_bounds};
+use exchange_hours::{
+    CalendarResolution, Exchange, candle_end, hours_for_exchange, next_session_after,
+    session_bounds,
+};
 
 let ct = |y, m, d, hh, mm| {
     US::Central
@@ -61,15 +64,9 @@ assert!(hours.is_maintenance(monday_evening));
 let friday_after_close = ct(2026, 4, 24, 16, 30);
 let (next_open, _) = next_session_after(&hours, friday_after_close);
 assert_eq!(next_open, ct(2026, 4, 26, 17, 0));
-```
 
-Bar boundaries follow the same session rules, so a daily bar closes at the venue's session
-close rather than at midnight:
-
-```rust
-use exchange_hours::{CalendarResolution, Exchange, candle_end, hours_for_exchange};
-
-let hours = hours_for_exchange(Exchange::Cme);
+// Bar boundaries follow the same rules: a daily bar closes at the venue's
+// session close, not at midnight.
 let daily_close = candle_end(&hours, monday_10am, CalendarResolution::Daily);
 assert_eq!(daily_close, ct(2026, 4, 20, 16, 0));
 ```
@@ -143,7 +140,7 @@ Pure and stateless, so the validation class is property/deterministic-fixture, n
   every public query, `is_open == is_open_with(Both)`, maintenance implies closed, ordered
   bounds, candle ends never preceding their start, and a strictly-advancing
   `next_session_after` walk. Failures print seed and instant, so they are reproducible.
-- `src/lib.rs` doctests (2) — the Quick start examples above.
+- `src/lib.rs` doctest (1) — the Quick start example above.
 
 ```bash
 cargo fmt --check && cargo clippy --all-targets -- -D warnings && cargo test

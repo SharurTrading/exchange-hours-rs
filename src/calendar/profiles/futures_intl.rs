@@ -17,7 +17,7 @@
 //! rather than `SUN_PLUS_MON_THU`: its Friday T+1 session legitimately runs into
 //! Saturday morning SGT, which the weekend tests pin.
 
-use chrono_tz::{America, Asia, Europe};
+use chrono_tz::{America, Europe};
 
 use super::StaticHoursProfile;
 use crate::calendar::SessionRule;
@@ -56,17 +56,8 @@ pub(crate) static ICE_WRAP_20_18_EXT: &[SessionRule] = &[SessionRule {
     open_ssm: 20 * 3600,
     close_ssm: 18 * 3600,
 }];
-#[allow(
-    dead_code,
-    reason = "historical GUI-local profile; ICEUS now delegates to instrument-catalog"
-)]
-static ICEUS_PROFILE: StaticHoursProfile = StaticHoursProfile {
-    tz: America::New_York,
-    regular: &[],
-    extended: ICE_WRAP_20_18_EXT,
-    has_daily_close: true,
-    has_weekend_close: true,
-};
+// ICE Futures U.S. shares this table through the `IceUs` futures profile rather
+// than through a per-venue `StaticHoursProfile`.
 pub(crate) static ICE_CANADA_PROFILE: StaticHoursProfile = StaticHoursProfile {
     tz: America::New_York,
     regular: &[],
@@ -117,7 +108,8 @@ pub(crate) static EEX_PROFILE: StaticHoursProfile = StaticHoursProfile {
     has_weekend_close: true,
 };
 
-// SGX: Day 07:10–20:00; T+1 wrap 20:00 → 05:15
+// SGX: Day 07:10–20:00; T+1 wrap 20:00 → 05:15. SGX reaches these tables through
+// the `Sgx` futures profile rather than through a per-venue `StaticHoursProfile`.
 pub(crate) static SGX_REGULAR: &[SessionRule] = &[SessionRule {
     days: MON_FRI,
     open_ssm: 7 * 3600 + 10 * 60,
@@ -128,14 +120,3 @@ pub(crate) static SGX_EXTENDED: &[SessionRule] = &[SessionRule {
     open_ssm: 20 * 3600,
     close_ssm: 5 * 3600 + 15 * 60,
 }];
-#[allow(
-    dead_code,
-    reason = "historical GUI-local profile; SGX now delegates to instrument-catalog"
-)]
-static SGX_PROFILE: StaticHoursProfile = StaticHoursProfile {
-    tz: Asia::Singapore,
-    regular: SGX_REGULAR,
-    extended: SGX_EXTENDED,
-    has_daily_close: true,
-    has_weekend_close: true,
-};

@@ -148,7 +148,7 @@ that callers do not also get (TEST-LAYOUT).
   Friday T+1 wrap into Saturday), always-open venues, bounds, the `snake_case` serde forms,
   and source-cited pins for the venue-data corrections (NYSE-family and Cboe early sessions,
   Nordic closes, European post-close windows).
-- `tests/no_session_contract.rs` — the degenerate contract for profiles with no rules.
+- `tests/no_session_contract.rs` — the `None` contract for profiles with no rules.
 - `tests/rule_validation.rs` — the `SessionRule` domain: what `new`/`validate` accept and reject.
 - `tests/contract/session_invariants.rs` — properties that must hold for **every** venue and
   instant. A `splitmix64` PRNG on a fixed seed set plus a pinned DST fixture cover totality and

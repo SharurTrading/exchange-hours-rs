@@ -21,6 +21,11 @@
 //! preceding civil day, month, or year** — the CME trading day closing Monday
 //! 16:00 CT starts Sunday 17:00 CT. An end-exclusive provider close marker must
 //! therefore be probed at `close - 1ns`, not at `close`.
+//!
+//! Every boundary query returns `Option`: `None` means no bar exists — the
+//! profile has no session of the requested kind in the bounded search horizon,
+//! or the interval is zero. `candle_start*` and `candle_end*` agree on bar
+//! existence by construction (fence-checked).
 
 use chrono::{DateTime, Datelike, Duration, Utc};
 

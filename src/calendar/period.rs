@@ -23,8 +23,8 @@
 //! Scans are bounded at 21 local days, enough to clear any weekend or
 //! consecutive-holiday run in a normal-week profile. Every function here
 //! returns `Option`: `None` means no close exists inside that horizon — a
-//! profile with no rules at all — and the public candle surface maps it to the
-//! documented degenerate value instead of looping or panicking. The walk loops
+//! profile with no rules at all — which the public candle surface passes
+//! through unchanged instead of looping or panicking. The walk loops
 //! terminate by construction: a local day contributes at most one daily close,
 //! so each iteration advances at least one day and a week/month boundary is
 //! reached within at most 7/31 closes.

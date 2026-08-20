@@ -74,10 +74,53 @@ pub(crate) static XETRA_PROFILE: StaticHoursProfile = StaticHoursProfile {
     has_daily_close: true,
     has_weekend_close: true,
 };
+// SIX Swiss Exchange — shares segments (Blue Chip / Mid-/Small-Cap), which is
+// what `Exchange::Six` denotes. SIX does NOT follow the Xetra pattern:
+// continuous trading ends at 17:20, the closing auction runs 17:20–17:30, and
+// Trading-At-Last then runs to 17:40. The 17:30–17:35 auction belongs to the
+// ETF/ETP/Sponsored Funds segments only, which have no TAL.
+//
+// Trading Guide, Blue Chip Shares: "Trading Hours 09:00 - 17:30 CET /
+// Continuous Trading 09:00 - 17:20 CET / Closing Auction 17:20 - 17:30 CET /
+// Trading-At-Last Start: 17:30 - 17:32 CET End: 17:40 CET"; segment table row
+// "Blue Chip Shares 06:00 09:00 17:20 17:30 17:30 17:40 22:00".
+// Sources: SIX Group, "Trading hours"
+// (https://www.six-group.com/en/products-services/the-swiss-stock-exchange/trading/trading-provisions/trading-hours.html)
+// and the SIX Swiss Exchange Trading Guide.
+//
+// SIX labels its times "CET" year-round; they are local Zurich wall-clock, so
+// `Europe::Zurich` (CET/CEST) is the correct zone, not a fixed offset.
+static SIX_REGULAR: &[SessionRule] = &[SessionRule {
+    days: MON_FRI,
+    open_ssm: 9 * 3600,
+    close_ssm: 17 * 3600 + 20 * 60,
+}];
+static SIX_EXTENDED: &[SessionRule] = &[
+    // Pre-opening: order entry with a theoretical opening price, from the start
+    // of the business day until the opening auction uncrosses at 09:00. No
+    // continuous trading happens in this window.
+    SessionRule {
+        days: MON_FRI,
+        open_ssm: 6 * 3600,
+        close_ssm: 9 * 3600,
+    },
+    // Closing auction.
+    SessionRule {
+        days: MON_FRI,
+        open_ssm: 17 * 3600 + 20 * 60,
+        close_ssm: 17 * 3600 + 30 * 60,
+    },
+    // Trading-At-Last: execution at the closing price after the auction.
+    SessionRule {
+        days: MON_FRI,
+        open_ssm: 17 * 3600 + 30 * 60,
+        close_ssm: 17 * 3600 + 40 * 60,
+    },
+];
 pub(crate) static SIX_PROFILE: StaticHoursProfile = StaticHoursProfile {
     tz: Europe::Zurich,
-    regular: REG_0900_1730,
-    extended: AU_0850_0900_1730_1735,
+    regular: SIX_REGULAR,
+    extended: SIX_EXTENDED,
     has_daily_close: true,
     has_weekend_close: true,
 };

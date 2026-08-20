@@ -29,20 +29,32 @@ use crate::calendar::SessionRule;
 use crate::calendar::rule::MON_FRI;
 use crate::calendar::rule::SUN_PLUS_MON_THU;
 
-// CFE (VIX): RTH + curb + overnight
+// CFE (VIX) — current schedule, effective 2021-12-06.
+//
+// "Following these changes, the trading hours for VX, VXM, and AMERIBOR futures
+// on Monday through Friday will consist of ETH from 5:00 p.m. CT (prior day) to
+// 8:30 a.m. CT, RTH from 8:30 a.m. CT to 3:00 p.m., and ETH from 3:00 p.m. CT to
+// 4:00 p.m. CT … there will be no pause in trading at 3:00 p.m. CT and RTH will
+// seamlessly transition to ETH at 3:00 p.m. CT."
+// Source: Cboe notice C2021102603, "CFE to Update Trading Hours and Adjust
+// Pre-Open Sequence for TAS and Non-TAS Contracts" (effective 2021-12-06); rule
+// certification CFE-2021-028 (2021-11-04), "All times referenced in this
+// submission are in Chicago time."
 pub(crate) static CFE_REGULAR: &[SessionRule] = &[SessionRule {
     days: MON_FRI,
     open_ssm: 8 * 3600 + 30 * 60,
-    close_ssm: 15 * 3600 + 15 * 60,
+    close_ssm: 15 * 3600,
 }];
 pub(crate) static CFE_EXTENDED: &[SessionRule] = &[
-    // curb
+    // Post-settlement ETH, seamless from the 15:00 RTH close. Mon–Fri: the
+    // 2021 change also removed the 15:15–15:30 queuing period that used to
+    // separate the two.
     SessionRule {
-        days: [true, true, true, true, false, false, false],
-        open_ssm: 15 * 3600 + 30 * 60,
+        days: MON_FRI,
+        open_ssm: 15 * 3600,
         close_ssm: 16 * 3600,
     },
-    // overnight wrap
+    // Overnight wrap: 17:00 CT the prior day → 08:30 CT.
     SessionRule {
         days: SUN_PLUS_MON_THU,
         open_ssm: 17 * 3600,
@@ -57,7 +69,41 @@ pub(crate) static CFE_PROFILE: StaticHoursProfile = StaticHoursProfile {
     has_weekend_close: true,
 };
 
-// CFE pre-2014: no overnight; RTH + 15:30–16:00 curb
+// CFE from 2014-06-01 until the 2021-12-06 change: RTH 08:30–15:15, a dead
+// queuing period 15:15–15:30 in which no trading takes place, then ETH
+// 15:30–16:00, plus the same overnight wrap.
+//
+// "These trading hours currently include extended trading hours from 5:00 p.m.
+// the previous day to 8:30 a.m., regular trading hours from 8:30 a.m. to 3:15
+// p.m., and extended trading hours from 3:30 p.m. to 4:00 p.m. There is
+// currently a queuing period between 3:15 p.m. and 3:30 p.m. during which no
+// trading takes place…" — CFE-2021-028.
+static CFE_REGULAR_PRE_2021_12_06: &[SessionRule] = &[SessionRule {
+    days: MON_FRI,
+    open_ssm: 8 * 3600 + 30 * 60,
+    close_ssm: 15 * 3600 + 15 * 60,
+}];
+static CFE_EXT_PRE_2021_12_06: &[SessionRule] = &[
+    SessionRule {
+        days: MON_FRI,
+        open_ssm: 15 * 3600 + 30 * 60,
+        close_ssm: 16 * 3600,
+    },
+    SessionRule {
+        days: SUN_PLUS_MON_THU,
+        open_ssm: 17 * 3600,
+        close_ssm: 8 * 3600 + 30 * 60,
+    },
+];
+pub(crate) static CFE_PROFILE_PRE_2021_12_06: StaticHoursProfile = StaticHoursProfile {
+    tz: US::Central,
+    regular: CFE_REGULAR_PRE_2021_12_06,
+    extended: CFE_EXT_PRE_2021_12_06,
+    has_daily_close: true,
+    has_weekend_close: true,
+};
+
+// CFE pre-2014: no overnight; RTH 08:30–15:15 + 15:30–16:00 curb.
 static CFE_EXT_PRE2014: &[SessionRule] = &[SessionRule {
     days: MON_FRI,
     open_ssm: 15 * 3600 + 30 * 60,
@@ -65,7 +111,7 @@ static CFE_EXT_PRE2014: &[SessionRule] = &[SessionRule {
 }];
 pub(crate) static CFE_PROFILE_PRE2014: StaticHoursProfile = StaticHoursProfile {
     tz: US::Central,
-    regular: CFE_REGULAR,
+    regular: CFE_REGULAR_PRE_2021_12_06,
     extended: CFE_EXT_PRE2014,
     has_daily_close: true,
     has_weekend_close: true,

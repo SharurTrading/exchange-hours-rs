@@ -75,12 +75,12 @@ assert_eq!(daily_close, ct(2026, 4, 20, 16, 0));
 
 | Family | Variants | Local zone | Session shape |
 |---|---|---|---|
-| US equities (Reg NMS) | 17 | `America/New_York` | 09:30–16:00 regular; 04:00–09:30 and 16:00–20:00 extended. NYSE Texas, IntelligentCross, and the overnight-only Blue Ocean ATS differ. |
+| US equities (Reg NMS) | 17 | `America/New_York` | 09:30–16:00 regular; 04:00–09:30 and 16:00–20:00 extended. IEX (08:00–17:00 System Hours), NYSE Texas, IntelligentCross, and the overnight-only Blue Ocean ATS each differ. |
 | FINRA TRFs | 3 | `America/New_York` | 08:00–20:00; no extended session. |
 | US options | 18 | `America/New_York` | 09:30–16:00; Cboe C1 adds a 20:15→09:25 GTH wrap and a 16:15–17:00 curb. |
 | CME Globex futures | 4 | `US/Central` | 17:00→16:00 wrap with a 60-minute daily break; CBOT grains keep their own day session. |
-| Cboe Futures (CFE) | 1 | `US/Central` | RTH 08:30–15:15, 15:30–16:00 curb, 17:00→08:30 overnight wrap. |
-| EU equities | 14 | 11 European zones | 09:00–17:30 continuous plus auction windows; LSE 08:00–16:30. |
+| Cboe Futures (CFE) | 1 | `US/Central` | RTH 08:30–15:00 flowing seamlessly into post-settlement 15:00–16:00, plus a 17:00→08:30 overnight wrap. |
+| EU equities | 14 | 11 European zones | 09:00–17:30 continuous plus auction windows; LSE 08:00–16:30; SIX 09:00–17:20 with a closing auction and Trading-At-Last to 17:40. |
 | ICE complex & European energy | 9 | London / Amsterdam / Berlin / Dubai / New York | 01:00–23:00 local, or the ICE 20:00→18:00 ET wrap. |
 | Asia-Pacific futures (SGX) | 1 | `Asia/Singapore` | 07:10–20:00 day session plus a T+1 wrap to 05:15. |
 | Always-open venues, and the `Exchange::Unknown` fallback | 2 | `UTC` | 24×7; no daily close, no weekend close. `Unknown` also logs a one-shot `tracing::warn!`. |

@@ -19,9 +19,10 @@ use chrono_tz::{America, Europe, US};
 
 use crate::calendar::profiles::{
     BLUE_OCEAN_PROFILE, C1_PROFILE_POST_2024_08_26, C1_PROFILE_PRE_2024_08_26,
-    CBOT_PROFILE_POST2013, CBOT_PROFILE_PRE2013, CFE_PROFILE, CFE_PROFILE_PRE2014,
-    CME_PROFILE_POST2016, CME_PROFILE_PRE2016, EUREX_PROFILE_NO_ASIAN, EUREX_PROFILE_WITH_ASIAN,
-    IEX_PROFILE_POST2015, IEX_PROFILE_PRE2015, NYSE_TEXAS_PROFILE, from_profile,
+    CBOT_PROFILE_POST2013, CBOT_PROFILE_PRE2013, CFE_PROFILE, CFE_PROFILE_PRE_2021_12_06,
+    CFE_PROFILE_PRE2014, CME_PROFILE_POST2016, CME_PROFILE_PRE2016, EUREX_PROFILE_NO_ASIAN,
+    EUREX_PROFILE_WITH_ASIAN, IEX_PROFILE_POST2015, IEX_PROFILE_PRE2015, NYSE_TEXAS_PROFILE,
+    from_profile,
 };
 use crate::calendar::{Exchange, MarketHours};
 
@@ -86,11 +87,25 @@ pub fn hours_for_exchange_as_of(exch: Exchange, as_of: DateTime<Utc>) -> MarketH
             }
         }
 
-        // CFE (VIX): before 2014-06-01, approximate as RTH + curb only (no overnight).
+        // CFE (VIX): before 2014-06-01, approximate as RTH + curb only (no
+        // overnight). From 2014-06-01 to 2021-12-05, RTH ends 15:15 CT and ETH
+        // resumes at 15:30 after a dead 15-minute queuing period. From
+        // 2021-12-06 the queuing period is gone and RTH ends 15:00 CT, flowing
+        // seamlessly into ETH until 16:00.
+        //
+        // Source for the 2021 cutover: Cboe notice C2021102603, "Effective
+        // December 6, 2021 … CFE will eliminate the queuing period which occurs
+        // between 3:15 p.m. CT and 3:30 p.m. CT, Monday through Friday … CFE
+        // will also redefine regular trading hours as 8:30 a.m. CT to 3:00 p.m.
+        // CT". The date is corroborated by the CFE Rulebook amendment history,
+        // which stamps Rule 1202 and seven other rules "December 6, 2021
+        // (21-028)". Rule filing CFE-2021-028 (2021-11-04) carries the redline.
         Exchange::Cfe => {
             let d = as_of.with_timezone(&US::Central).date_naive();
             if d < chrono::NaiveDate::from_ymd_opt(2014, 6, 1).unwrap() {
                 from_profile(Exchange::Cfe, &CFE_PROFILE_PRE2014)
+            } else if d < chrono::NaiveDate::from_ymd_opt(2021, 12, 6).unwrap() {
+                from_profile(Exchange::Cfe, &CFE_PROFILE_PRE_2021_12_06)
             } else {
                 from_profile(Exchange::Cfe, &CFE_PROFILE)
             }

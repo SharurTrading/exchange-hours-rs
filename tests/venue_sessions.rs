@@ -735,7 +735,9 @@ fn sgx_sunday_closed() {
 
 // ---------------------------------------------------------------------------
 // CFE (Cboe Futures — VIX)
-//   RTH 08:30–15:15 CT, curb 15:30–16:00, overnight Sun+Mon–Thu 17:00→08:30
+//   RTH 08:30–15:00 CT, post-settlement ETH 15:00–16:00 CT (Mon–Fri),
+//   overnight Sun+Mon–Thu 17:00→08:30. Effective 2021-12-06; see the
+//   venue-data section at the end of this file for the sources.
 // ---------------------------------------------------------------------------
 
 #[test]
@@ -756,19 +758,22 @@ fn cfe_rth() {
 #[test]
 fn cfe_rth_close() {
     let h = hours_for_exchange(Exchange::Cfe);
-    let t = ct((2026, 4, 20), (15, 15, 0));
     assert!(
-        !h.is_open_regular(t),
-        "CFE RTH ends 15:15 CT (end-exclusive)"
+        !h.is_open_regular(ct((2026, 4, 20), (15, 0, 0))),
+        "CFE RTH ends 15:00 CT (end-exclusive) since 2021-12-06"
+    );
+    assert!(
+        !h.is_open_regular(ct((2026, 4, 20), (15, 15, 0))),
+        "15:15 CT is past the RTH close"
     );
 }
 
 #[test]
-fn cfe_curb_window() {
+fn cfe_post_settlement_window() {
     let h = hours_for_exchange(Exchange::Cfe);
     let t = ct((2026, 4, 20), (15, 45, 0));
-    assert!(h.is_open(t), "CFE curb 15:30–16:00 CT");
-    assert!(h.is_open_extended(t), "curb is extended");
+    assert!(h.is_open(t), "CFE post-settlement ETH 15:00–16:00 CT");
+    assert!(h.is_open_extended(t), "post-settlement is extended");
 }
 
 #[test]
@@ -1455,5 +1460,128 @@ fn blue_ocean_runs_sunday_through_thursday_only() {
     assert!(
         !h.is_open(et((2026, 4, 25), (2, 0, 0))),
         "nothing wraps into Saturday morning"
+    );
+}
+
+// CFE removed the 15:15–15:30 queuing period and moved the RTH close to 15:00
+// on 2021-12-06, so RTH now flows seamlessly into post-settlement ETH.
+// Sources: Cboe notice C2021102603 ("Effective December 6, 2021 … CFE will
+// eliminate the queuing period which occurs between 3:15 p.m. CT and 3:30 p.m.
+// CT, Monday through Friday … and redefine regular trading hours as 8:30 a.m.
+// CT to 3:00 p.m. CT"); CFE rule filing CFE-2021-028 (2021-11-04); CFE Rulebook
+// Rule 1202, whose amendment history stamps "December 6, 2021 (21-028)".
+#[test]
+fn cfe_rth_transitions_seamlessly_into_post_settlement_at_1500() {
+    let h = hours_for_exchange(Exchange::Cfe);
+    let close = ct((2026, 4, 20), (15, 0, 0));
+    assert!(
+        !h.is_open_regular(close),
+        "RTH is end-exclusive at 15:00 CT"
+    );
+    assert!(
+        h.is_open_extended(close),
+        "ETH takes over at 15:00 CT with no pause"
+    );
+    assert!(h.is_open(close), "the venue never closes at 15:00 CT");
+}
+
+#[test]
+fn cfe_has_no_queuing_gap_between_1515_and_1530() {
+    // The old model left 15:15–15:30 closed. That queuing period is gone.
+    let h = hours_for_exchange(Exchange::Cfe);
+    for minute in [15, 20, 29] {
+        let t = ct((2026, 4, 20), (15, minute, 0));
+        assert!(
+            h.is_open(t),
+            "CFE open at 15:{minute:02} CT since 2021-12-06"
+        );
+    }
+}
+
+#[test]
+fn cfe_post_settlement_runs_on_friday_too() {
+    // The session is Monday through Friday in both the pre- and post-2021
+    // rulebook charts; the old model wrongly limited it to Mon–Thu.
+    let h = hours_for_exchange(Exchange::Cfe);
+    assert!(
+        h.is_open(ct((2026, 4, 24), (15, 45, 0))),
+        "CFE post-settlement trades on Friday"
+    );
+    assert!(
+        !h.is_open(ct((2026, 4, 24), (17, 0, 0))),
+        "but there is still no Friday overnight session"
+    );
+}
+
+#[test]
+fn cfe_before_the_2021_cutover_keeps_the_queuing_gap() {
+    let before = hours_for_exchange_as_of(Exchange::Cfe, ct((2021, 12, 3), (12, 0, 0)));
+    assert!(
+        before.is_open_regular(ct((2021, 12, 3), (15, 10, 0))),
+        "RTH ran to 15:15 CT before the cutover"
+    );
+    assert!(
+        !before.is_open(ct((2021, 12, 3), (15, 20, 0))),
+        "15:15–15:30 was a queuing period with no trading"
+    );
+
+    let after = hours_for_exchange_as_of(Exchange::Cfe, ct((2021, 12, 6), (12, 0, 0)));
+    assert!(
+        !after.is_open_regular(ct((2021, 12, 6), (15, 10, 0))),
+        "RTH ends 15:00 CT from the cutover"
+    );
+    assert!(
+        after.is_open(ct((2021, 12, 6), (15, 20, 0))),
+        "the queuing period is replaced by extended trading"
+    );
+}
+
+// SIX Swiss Exchange shares segments: continuous trading ends 17:20, closing
+// auction 17:20–17:30, Trading-At-Last to 17:40. The 17:30–17:35 auction the
+// model previously used belongs to the ETF/ETP segments, which have no TAL.
+// Source: SIX Group "Trading hours" and the SIX Swiss Exchange Trading Guide
+// ("Continuous Trading 09:00 - 17:20 CET / Closing Auction 17:20 - 17:30 CET /
+// Trading-At-Last … End: 17:40 CET").
+#[test]
+fn six_continuous_trading_ends_at_1720() {
+    let h = hours_for_exchange(Exchange::Six);
+    assert!(
+        h.is_open_regular(cet((2026, 4, 20), (17, 19, 0))),
+        "SIX continuous trading runs to 17:20"
+    );
+    assert!(
+        !h.is_open_regular(cet((2026, 4, 20), (17, 20, 0))),
+        "17:20 is the end-exclusive continuous close"
+    );
+}
+
+#[test]
+fn six_closing_auction_and_trading_at_last_run_to_1740() {
+    let h = hours_for_exchange(Exchange::Six);
+    assert!(
+        h.is_open_extended(cet((2026, 4, 20), (17, 25, 0))),
+        "closing auction 17:20–17:30"
+    );
+    assert!(
+        h.is_open_extended(cet((2026, 4, 20), (17, 35, 0))),
+        "Trading-At-Last 17:30–17:40"
+    );
+    assert!(
+        !h.is_open(cet((2026, 4, 20), (17, 40, 0))),
+        "SIX is done at 17:40 (end-exclusive)"
+    );
+}
+
+#[test]
+fn six_does_not_share_the_xetra_schedule() {
+    let six = hours_for_exchange(Exchange::Six);
+    let xetra = hours_for_exchange(Exchange::Xetra);
+    assert_ne!(
+        six.regular, xetra.regular,
+        "SIX closes continuous trading 10 minutes before Xetra"
+    );
+    assert!(
+        xetra.is_open_regular(cet((2026, 4, 20), (17, 25, 0))),
+        "Xetra still trades continuously at 17:25, so the contrast is real"
     );
 }

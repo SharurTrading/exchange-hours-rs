@@ -19,6 +19,8 @@
 //! more pre-market than the venue actually ran. The match arm below marks
 //! where the cutovers land once an effective date is sourced.
 
+use std::borrow::Cow;
+
 use chrono::{DateTime, NaiveDate, Utc};
 use chrono_tz::{America, Europe, Tz, US};
 
@@ -61,12 +63,16 @@ fn is_before(as_of: DateTime<Utc>, tz: Tz, cutover: NaiveDate) -> bool {
 /// A profile with no sessions at all: what a venue's hours were before it went
 /// live. Every boundary query over these hours returns `None`, which is the
 /// no-session contract rather than a zero-length trading day.
+///
+/// The rule sets borrow a static empty slice rather than owning an empty
+/// `Vec`, matching how every other profile is built. Neither allocates; the
+/// point is that one construction shape covers all of them.
 fn no_sessions(exchange: Exchange, tz: Tz) -> MarketHours {
     MarketHours {
         exchange,
         tz,
-        regular: Vec::new().into(),
-        extended: Vec::new().into(),
+        regular: Cow::Borrowed(&[]),
+        extended: Cow::Borrowed(&[]),
         has_daily_close: true,
         has_weekend_close: true,
     }

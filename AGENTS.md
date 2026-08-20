@@ -28,7 +28,11 @@ and the rules any change to this repository must follow.
 
 ## Modeling conventions
 
-- **UTC in, UTC out.** Public functions take and return `DateTime<Utc>` only.
+- **UTC in, UTC out.** Every *timestamp* crossing the public boundary is a
+  `DateTime<Utc>`: a local time is never a parameter or a return value, and the
+  venue's zone stays an internal detail. This constrains which time types may
+  appear, not signatures in general — public functions legitimately take an
+  `Exchange` and return a `MarketHours` with no timestamp involved.
   Session rules are seconds-since-local-midnight in the venue's own IANA zone.
 - **Closes are end-exclusive.** An instant equal to a close is closed.
 - **`open_ssm > close_ssm` wraps** past local midnight — the only way a session
@@ -82,10 +86,17 @@ and the rules any change to this repository must follow.
 
 ## Verification
 
-Run before claiming any change is done:
+Run before claiming any change is done — this is every check the `quality` CI
+job runs, in the same order:
 
 ```bash
-cargo fmt --all --check && cargo clippy --all-targets -- -D warnings && cargo nextest run --all-targets && cargo test --doc && cargo deny check
+cargo fmt --all --check && cargo clippy --all-targets -- -D warnings && cargo nextest run --all-targets && cargo test --doc && RUSTDOCFLAGS="-D warnings" cargo doc --no-deps && cargo deny check
+```
+
+The MSRV job builds on a second toolchain, so it is a separate command:
+
+```bash
+cargo +1.95 check --all-targets
 ```
 
 New venues need per-venue baseline tests (published open, minute before, the

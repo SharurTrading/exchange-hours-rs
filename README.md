@@ -206,10 +206,16 @@ The CI gate, in order — `cargo fmt --all --check`, `cargo clippy --all-targets
 `Cargo.toml` and `clippy.toml`), `cargo nextest run`, `cargo test --doc`, `cargo doc` with
 warnings denied, and `cargo deny check` for dependency licences and advisories. A second job
 builds on the declared MSRV so that floor is exercised rather than asserted. The build
-toolchain is pinned in `rust-toolchain.toml`; run the whole gate locally with:
+toolchain is pinned in `rust-toolchain.toml`. Run everything the `quality` job runs:
 
 ```bash
-cargo fmt --all --check && cargo clippy --all-targets -- -D warnings && cargo nextest run --all-targets && cargo test --doc && cargo deny check
+cargo fmt --all --check && cargo clippy --all-targets -- -D warnings && cargo nextest run --all-targets && cargo test --doc && RUSTDOCFLAGS="-D warnings" cargo doc --no-deps && cargo deny check
+```
+
+The MSRV job needs a second toolchain, so it is a separate command:
+
+```bash
+cargo +1.95 check --all-targets
 ```
 
 ## License

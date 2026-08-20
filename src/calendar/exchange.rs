@@ -32,36 +32,46 @@ pub enum Exchange {
     Unknown,
 
     // US Equities (ET)
-    /// The Nasdaq Stock Market — the primary Nasdaq listing venue.
+    /// The Nasdaq Stock Market — the primary Nasdaq listing venue; early
+    /// session from 04:00 ET.
     Nasdaq,
-    /// Nasdaq BX, the former Boston Stock Exchange book.
+    /// Nasdaq BX, the former Boston Stock Exchange book; early session from
+    /// 04:00 ET.
     NasdaqBx,
-    /// Nasdaq PSX, the former Philadelphia Stock Exchange equities book.
+    /// Nasdaq PSX, the former Philadelphia Stock Exchange equities book;
+    /// early session from 04:00 ET.
     NasdaqPsx,
-    /// Cboe BZX Equities.
+    /// Cboe BZX Equities — early session from 04:00 ET (07:00 before
+    /// 2025-05-01).
     CboeBzx,
-    /// Cboe BYX Equities.
+    /// Cboe BYX Equities — early session from 07:00 ET.
     CboeByx,
-    /// Cboe EDGA Equities.
+    /// Cboe EDGA Equities — early session from 07:00 ET.
     CboeEdga,
-    /// Cboe EDGX Equities.
+    /// Cboe EDGX Equities — early session from 04:00 ET (07:00 before
+    /// 2021-03-08).
     CboeEdgx,
     /// New York Stock Exchange — the core session only; NYSE Group extended
     /// trading happens on Arca, American, National, and Texas.
     Nyse,
-    /// NYSE Arca.
+    /// NYSE Arca — early session from 04:00 ET, unlike the NYSE core book.
     NyseArca,
-    /// NYSE American, formerly the American Stock Exchange.
+    /// NYSE American, formerly the American Stock Exchange — early session
+    /// from 07:00 ET.
     NyseAmerican,
-    /// NYSE National.
+    /// NYSE National — early session from 07:00 ET.
     NyseNational,
-    /// NYSE Texas, formerly NYSE Chicago.
+    /// NYSE Texas, formerly NYSE Chicago — no sessions before its
+    /// 2025-03-31 go-live.
     NyseTexas,
-    /// MEMX, the Members Exchange — equities market.
+    /// MEMX, the Members Exchange — early session from 04:00 ET, with no
+    /// recorded cutover (see `hours_for_exchange_as_of`).
     MemxEq,
-    /// MIAX Pearl Equities.
+    /// MIAX Pearl Equities — early session from 04:00 ET, with no recorded
+    /// cutover (see `hours_for_exchange_as_of`).
     MiaxPearlEq,
-    /// IEX, the Investors Exchange.
+    /// IEX, the Investors Exchange — System Hours 08:00–17:00 ET, narrower
+    /// than the Reg NMS extended default at both ends.
     Iex,
     /// `IntelligentCross`, an ATS whose IQX book executes during regular hours.
     IntelligentcrossIqx,

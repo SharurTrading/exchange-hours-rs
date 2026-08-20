@@ -3,7 +3,10 @@
 # Gates in order, matching the platform's CI. No custom policy scripts.
 #
 # Runners are pinned to explicit GitHub-hosted images, so `runs-on` never
-# resolves to a self-hosted runner.
+# resolves to a self-hosted runner. Actions are pinned to commit SHAs (the tag
+# each one resolves to is named alongside it) because a tag is mutable: this
+# crate is a dependency of a trading platform, so a silently retagged action is
+# a supply-chain path into it. Dependabot keeps the pins fresh.
 name: ci
 
 on:
@@ -11,23 +14,31 @@ on:
   push:
     branches: [main]
 
+# Read-only by default; no job here writes to the repository.
+permissions:
+  contents: read
+
 env:
   CARGO_TERM_COLOR: always
 
 jobs:
   quality:
+    name: quality
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          # Do not leave the job token in .git/config for later steps to reuse.
+          persist-credentials: false
 
       # Toolchain comes from rust-toolchain.toml.
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: dtolnay/rust-toolchain@4360b52568e2003a75bf9bc1d59f33a8e3fc893c # stable
         with:
           components: rustfmt, clippy
 
-      - uses: Swatinem/rust-cache@v2
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2
 
-      - uses: taiki-e/install-action@v2
+      - uses: taiki-e/install-action@a2a5f6e99e1a31540baa0468acfa302cff0f359f # v2
         with:
           tool: cargo-nextest,cargo-deny
 
@@ -57,15 +68,18 @@ jobs:
       matrix:
         rust: ["1.95"]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
 
-      # Overrides rust-toolchain.toml so the `rust-version` floor declared in
-      # Cargo.toml is actually exercised rather than merely asserted.
-      - uses: dtolnay/rust-toolchain@master
+      # The `toolchain` input overrides rust-toolchain.toml, so the
+      # `rust-version` floor declared in Cargo.toml is actually exercised
+      # rather than merely asserted.
+      - uses: dtolnay/rust-toolchain@4360b52568e2003a75bf9bc1d59f33a8e3fc893c # stable
         with:
           toolchain: ${{ matrix.rust }}
 
-      - uses: Swatinem/rust-cache@v2
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2
         with:
           key: msrv-${{ matrix.rust }}
 

@@ -1,0 +1,20 @@
+# SPDX-License-Identifier: MIT-0
+
+# The workflow pins actions to commit SHAs, which do not pick up upstream
+# security fixes on their own. Dependabot re-pins them, so the pins stay a
+# supply-chain control rather than a way to freeze known-stale code.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: "ci"
+
+  - package-ecosystem: cargo
+    directory: "/"
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: "deps"

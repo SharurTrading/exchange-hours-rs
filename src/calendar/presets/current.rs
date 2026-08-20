@@ -25,9 +25,10 @@ use crate::calendar::profiles::{
     ABU_DHABI_01_23_PROFILE, BLUE_OCEAN_PROFILE, BME_PROFILE, C1_PROFILE_POST_2024_08_26,
     EEX_PROFILE, ENDEX_01_23_PROFILE, EURONEXT_AMS_PROFILE, EURONEXT_BRU_PROFILE,
     EURONEXT_DUB_PROFILE, EURONEXT_LIS_PROFILE, EURONEXT_MIL_PROFILE, EURONEXT_PARIS_PROFILE,
-    FINRA_TRF_PROFILE, ICE_CANADA_PROFILE, ICE_EU_LONDON_01_23_PROFILE, IQX_PROFILE, LSE_PROFILE,
-    NASDAQ_CPH_PROFILE, NASDAQ_HEL_PROFILE, NASDAQ_STO_PROFILE, NYSE_TEXAS_PROFILE, SIX_PROFILE,
-    US_EQUITIES_PROFILE, US_OPTIONS_DEFAULT_PROFILE, VIENNA_PROFILE, XETRA_PROFILE, from_profile,
+    FINRA_TRF_PROFILE, ICE_CANADA_PROFILE, ICE_EU_LONDON_01_23_PROFILE, IEX_PROFILE_POST2015,
+    IQX_PROFILE, LSE_PROFILE, NASDAQ_CPH_PROFILE, NASDAQ_HEL_PROFILE, NASDAQ_STO_PROFILE,
+    NYSE_TEXAS_PROFILE, SIX_PROFILE, US_EQUITIES_PROFILE, US_OPTIONS_DEFAULT_PROFILE,
+    VIENNA_PROFILE, XETRA_PROFILE, from_profile,
 };
 use crate::calendar::{Exchange, MarketHours, MarketHoursKey, SessionRule, session_profile};
 
@@ -63,8 +64,13 @@ pub fn hours_for_exchange(exch: Exchange) -> MarketHours {
         | Exchange::MemxEq
         | Exchange::MiaxPearlEq => from_profile(exch, &US_EQUITIES_PROFILE),
 
-        // IEX (executes only RTH; keep pre for uniformity if you prefer)
-        Exchange::Iex => from_profile(Exchange::Iex, &US_EQUITIES_PROFILE),
+        // IEX — narrower extended hours than the Reg NMS default: pre-market
+        // 08:00–09:30 and post-market 16:00–17:00 ET, together with RTH forming
+        // IEX's "System Hours" of 08:00–17:00 ET.
+        // Source: IEX Exchange, "Trading Hours & Holidays"
+        // (https://www.iex.io/resources/trading/trading-hours-holidays) and
+        // Investors Exchange Rule Book Rule 1.160(z)/(aa)/(gg).
+        Exchange::Iex => from_profile(Exchange::Iex, &IEX_PROFILE_POST2015),
 
         // NYSE Texas — opening 07:00–09:30, core 09:30–16:00, late 16:00–20:00 ET.
         Exchange::NyseTexas => from_profile(Exchange::NyseTexas, &NYSE_TEXAS_PROFILE),

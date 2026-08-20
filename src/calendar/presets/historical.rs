@@ -72,6 +72,10 @@ pub fn hours_for_exchange_as_of(exch: Exchange, as_of: DateTime<Utc>) -> MarketH
         }
 
         // IEX: Pre 08:00–09:30 and Post 16:00–17:00 begin 2015-08-21; before then, use RTH only.
+        // Source: IEX Trading Alert #2015-015 (2015-07-13), "Effective Friday,
+        // August 21, 2015, IEX will begin to rollout extended hours trading with
+        // Pre-Market and Post-Market Sessions."
+        // (https://iextrading.com/trading/alerts/2015/015/)
         Exchange::Iex => {
             let d = as_of.with_timezone(&America::New_York).date_naive();
             let has_ext = d >= chrono::NaiveDate::from_ymd_opt(2015, 8, 21).unwrap();
@@ -109,10 +113,19 @@ pub fn hours_for_exchange_as_of(exch: Exchange, as_of: DateTime<Utc>) -> MarketH
             }
         }
 
-        // Blue Ocean ATS: assume go-live ~2021-01-01; prior to that, no sessions.
+        // Blue Ocean ATS: production launch 2021-10-05; prior to that, no sessions.
+        // Source: Blue Ocean Technologies, "Announcing Launch of Blue Ocean ATS
+        // Afterhours Trading" (2021-10-05) — "the official launch of The Blue
+        // Ocean ATS, known as BOATS. After going live in beta in June 2021…"
+        // (https://blueocean-tech.io/2021/10/05/announcing-launch-of-blue-ocean-ats-afterhours-trading/)
+        // The June 2021 beta is deliberately excluded: no primary source gives it
+        // a day-level date, and pre-production beta liquidity is not tradable
+        // history. The 20:00→04:00 ET Sun–Thu mask matches the venue's SEC Form
+        // ATS-N, which also explains the missing Friday session (the NYSE TRF is
+        // unavailable to report Saturday).
         Exchange::BlueOceanAts => {
             let d = as_of.with_timezone(&America::New_York).date_naive();
-            if d < chrono::NaiveDate::from_ymd_opt(2021, 1, 1).unwrap() {
+            if d < chrono::NaiveDate::from_ymd_opt(2021, 10, 5).unwrap() {
                 MarketHours {
                     exchange: Exchange::BlueOceanAts,
                     tz: America::New_York,

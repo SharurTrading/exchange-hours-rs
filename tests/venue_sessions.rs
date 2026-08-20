@@ -1354,3 +1354,106 @@ fn wrap_venues_reopen_at_their_published_sunday_open() {
         assert!(h.is_open(instant), "{exchange:?} open at its Sunday open");
     }
 }
+
+// ---------------------------------------------------------------------------
+// Venue-data corrections (primary-source verified)
+// ---------------------------------------------------------------------------
+
+// IEX runs narrower extended hours than the Reg NMS default: "System Hours" are
+// 08:00–17:00 ET, with pre-market 08:00–09:30 and post-market 16:00–17:00.
+// Source: IEX Exchange, "Trading Hours & Holidays"
+// (https://www.iex.io/resources/trading/trading-hours-holidays); Investors
+// Exchange Rule Book Rule 1.160(z)/(aa)/(gg).
+#[test]
+fn iex_premarket_opens_at_0800_not_0400() {
+    let h = hours_for_exchange(Exchange::Iex);
+    assert!(
+        !h.is_open(et((2026, 4, 20), (4, 0, 0))),
+        "IEX closed 04:00 ET; System Hours start at 08:00"
+    );
+    assert!(
+        !h.is_open(et((2026, 4, 20), (7, 59, 0))),
+        "IEX closed 07:59 ET"
+    );
+    assert!(
+        h.is_open_extended(et((2026, 4, 20), (8, 0, 0))),
+        "IEX pre-market opens 08:00 ET"
+    );
+}
+
+#[test]
+fn iex_postmarket_closes_at_1700_not_2000() {
+    let h = hours_for_exchange(Exchange::Iex);
+    assert!(
+        h.is_open_extended(et((2026, 4, 20), (16, 30, 0))),
+        "IEX post-market runs 16:00–17:00 ET"
+    );
+    assert!(
+        !h.is_open(et((2026, 4, 20), (17, 0, 0))),
+        "IEX closed at 17:00 ET (end-exclusive)"
+    );
+    assert!(
+        !h.is_open(et((2026, 4, 20), (19, 0, 0))),
+        "IEX closed 19:00 ET; it runs no 20:00 post-market"
+    );
+}
+
+#[test]
+fn iex_extended_hours_differ_from_the_generic_us_equities_profile() {
+    let iex = hours_for_exchange(Exchange::Iex);
+    let generic = hours_for_exchange(Exchange::Nasdaq);
+    assert_eq!(
+        iex.regular, generic.regular,
+        "IEX shares the Reg NMS regular session"
+    );
+    assert_ne!(
+        iex.extended, generic.extended,
+        "IEX must not inherit the 04:00/20:00 generic extended windows"
+    );
+    assert!(
+        generic.is_open(et((2026, 4, 20), (4, 0, 0))),
+        "the generic profile does trade at 04:00 ET, so the contrast is real"
+    );
+}
+
+// Blue Ocean ATS reached production on 2021-10-05; the June 2021 beta has no
+// day-level primary source and is deliberately excluded.
+// Source: Blue Ocean Technologies, "Announcing Launch of Blue Ocean ATS
+// Afterhours Trading" (2021-10-05).
+#[test]
+fn blue_ocean_has_no_sessions_before_its_production_launch() {
+    let before = hours_for_exchange_as_of(Exchange::BlueOceanAts, et((2021, 10, 4), (22, 0, 0)));
+    assert!(
+        before.regular.is_empty() && before.extended.is_empty(),
+        "Blue Ocean ATS had not launched on 2021-10-04"
+    );
+
+    let after = hours_for_exchange_as_of(Exchange::BlueOceanAts, et((2021, 10, 5), (22, 0, 0)));
+    assert!(
+        !after.extended.is_empty(),
+        "Blue Ocean ATS trades from its 2021-10-05 production launch"
+    );
+    assert!(
+        after.is_open(et((2021, 10, 5), (22, 0, 0))),
+        "Blue Ocean session runs 20:00–04:00 ET"
+    );
+}
+
+#[test]
+fn blue_ocean_runs_sunday_through_thursday_only() {
+    // No Friday-evening session: the NYSE TRF cannot report the trades on
+    // Saturday. Source: Blue Ocean SEC Form ATS-N, "Hours of Operations".
+    let h = hours_for_exchange(Exchange::BlueOceanAts);
+    assert!(
+        h.is_open(et((2026, 4, 19), (22, 0, 0))),
+        "Sunday evening session trades"
+    );
+    assert!(
+        !h.is_open(et((2026, 4, 24), (22, 0, 0))),
+        "no Friday-evening session"
+    );
+    assert!(
+        !h.is_open(et((2026, 4, 25), (2, 0, 0))),
+        "nothing wraps into Saturday morning"
+    );
+}

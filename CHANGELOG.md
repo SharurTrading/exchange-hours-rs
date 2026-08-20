@@ -29,6 +29,15 @@ crates.io. `0.1.0` exists as a git tag only.
   a V1-inherited exception that contradicted the crate's own end-exclusive
   close convention by counting closed time as bar time. Intraday bars now
   simply clamp to the enclosing session close, everywhere.
+- **Breaking (behavioral):** `is_maintenance` now classifies the enclosing
+  gap, not the distance to the reopen. It is true exactly when `t` lies inside
+  a closed gap between two sessions whose whole close-to-reopen span is
+  shorter than six hours. The old rule — closed and reopening within 90
+  minutes — missed the front of every break longer than its threshold (the
+  first 30 minutes of ICE's two-hour break, the first half of Eurex's
+  three-hour gap, almost four hours of CBOT grains' 13:20→19:00 CT afternoon)
+  and wrongly flagged pre-open windows (CME Sunday 15:30–17:00 CT, US
+  equities 02:30–04:00 ET) that belong to overnight or weekend closures.
 
 ### Added
 

@@ -20,6 +20,7 @@ use chrono::{DateTime, Datelike, Duration, NaiveDate, Timelike, Utc};
 use chrono_tz::Tz;
 
 use super::local_time::{is_holiday, mk_local_open};
+use super::period::latest_close_at_or_before;
 use super::rule::{SECONDS_PER_NORMAL_WEEK, normal_week_rule_intervals};
 use super::session::{next_session_after, next_session_after_with};
 use super::{Exchange, SessionKind, SessionRule};
@@ -173,26 +174,45 @@ impl MarketHours {
         self.is_open_with(t, SessionKind::Extended)
     }
 
-    /// True if `t` falls in a short pre-open "maintenance" gap.
+    /// True if `t` falls inside a daily maintenance break: a closed gap
+    /// between two sessions whose **whole** close-to-reopen span is shorter
+    /// than six hours.
     ///
-    /// Heuristic: the market is currently closed **and** the next session opens
-    /// within 90 minutes (across regular and extended sessions). This captures
-    /// daily maintenance breaks such as CME's 16:00–17:00 CT window without
-    /// modeling them as explicit rules. Always-open venues are never in
-    /// maintenance because they are never closed, and a profile with no
-    /// sessions at all is never in maintenance because nothing reopens.
+    /// The gap is measured from the previous session close to the next open
+    /// (across regular and extended sessions), so the entire break qualifies
+    /// from its first closed instant — CME's 16:00–17:00 CT hour, ICE's
+    /// two-hour 18:00–20:00 ET window, and CBOT grains' 13:20→19:00 CT
+    /// afternoon alike. Longer closures never count: an equity venue's
+    /// overnight, a weekend, and the run-up to a Sunday reopen are closed but
+    /// not maintenance. Always-open venues are never in maintenance because
+    /// they are never closed, and a profile with no sessions at all is never
+    /// in maintenance because nothing reopens.
+    ///
+    /// This crate deliberately does not model breaks as explicit rules; the
+    /// six-hour threshold is what separates the shipped schedules' longest
+    /// intraday break (CBOT grains, 5h40) from their shortest overnight
+    /// closure (SIX, 12h20).
     #[must_use]
     pub fn is_maintenance(&self, t: DateTime<Utc>) -> bool {
-        // “Maintenance” := closed now but next session is within ~90 minutes.
+        // Gaps of six hours or more are overnight or weekend closures.
+        let max_gap = Duration::hours(6);
         if self.is_open(t) {
             return false;
         }
-        match next_session_after(self, t) {
-            Some((open, _close)) => (open - t) <= chrono::Duration::minutes(90),
-            // No session in the horizon: nothing reopens, so nothing is
-            // "about to reopen".
-            None => false,
+        // No session in the horizon: nothing reopens, so nothing is a break.
+        let Some((next_open, _close)) = next_session_after(self, t) else {
+            return false;
+        };
+        // The reopen side alone can rule the gap out: the full gap is at
+        // least as long as the part still ahead of `t`.
+        if next_open - t >= max_gap {
+            return false;
         }
+        // Otherwise the close side decides. A close bounding a sub-six-hour
+        // gap always lands inside the helper's two-local-day window, so
+        // `None` means the closure is at least overnight-long.
+        latest_close_at_or_before(self, t, SessionKind::Both)
+            .is_some_and(|prev_close| next_open - prev_close < max_gap)
     }
 
     /// Return true iff the market is closed for the entire **calendar day** `day`

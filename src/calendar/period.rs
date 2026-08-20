@@ -55,49 +55,74 @@ pub(crate) fn next_daily_close_after_with(
     None
 }
 
+/// Enumerates every session close that occurs **on** `day` (exchange-local).
+///
+/// Two sources contribute:
+///  (A) same-day sessions active on `day`;
+///  (B) wrap sessions opened on `day-1` that close on `day` (only if `day-1`
+///      is not a holiday — no wrap bleed across a holiday).
+/// Yields nothing when `day` itself is a holiday.
+fn closes_landing_on_day(
+    hours: &MarketHours,
+    day: NaiveDate,
+    kind: SessionKind,
+) -> impl Iterator<Item = DateTime<Utc>> + '_ {
+    let tz = hours.tz;
+    let day_is_holiday = is_holiday(hours, day);
+    let yday = day - Duration::days(1);
+    let yday_is_holiday = is_holiday(hours, yday);
+    let w_today = day.weekday().num_days_from_monday() as usize;
+    let w_yday = yday.weekday().num_days_from_monday() as usize;
+
+    hours.iter_rules(kind).filter_map(move |r| {
+        if day_is_holiday {
+            return None;
+        }
+        let lands_on_day = if r.open_ssm <= r.close_ssm {
+            // same-day: close occurs on `day` if the rule is active on `day`
+            r.days[w_today]
+        } else {
+            // wrap: close occurs on `day` if the rule was active on `day-1`
+            // and `day-1` is not a holiday
+            !yday_is_holiday && r.days[w_yday]
+        };
+        lands_on_day.then(|| mk_local_close(tz, day, r.close_ssm).with_timezone(&Utc))
+    })
+}
+
 /// Compute the last close **that occurs on** `day` (exchange-local day).
 pub(crate) fn daily_close_for_local_day(
     hours: &MarketHours,
     day: NaiveDate,
     kind: SessionKind,
 ) -> Option<DateTime<Utc>> {
-    // If the close occurs on `day`, we may have two sources:
-    //  (A) same-day sessions on `day`
-    //  (B) wrap sessions opened on `day-1` that close on `day` (only if `day-1` not a holiday)
-    let tz = hours.tz;
+    closes_landing_on_day(hours, day, kind).max()
+}
 
-    if is_holiday(hours, day) {
-        return None;
-    }
-
-    let w_today = day.weekday().num_days_from_monday() as usize;
-
-    let mut best: Option<DateTime<Utc>> = None;
-
-    for r in hours.iter_rules(kind) {
-        if r.open_ssm <= r.close_ssm {
-            // same-day close occurs on `day` if rule is active on `day`
-            if r.days[w_today] {
-                let close = mk_local_close(tz, day, r.close_ssm).with_timezone(&Utc);
-                best = Some(best.map_or(close, |b| b.max(close)));
-            }
-        } else {
-            // wrap: close occurs on `day` if:
-            // - `day-1` is active in rule
-            // - `day-1` is NOT a holiday (no wrap bleed into holiday)
-            let yday = day - Duration::days(1);
-            if is_holiday(hours, yday) {
-                continue;
-            }
-            let w_yday = yday.weekday().num_days_from_monday() as usize;
-            if r.days[w_yday] {
-                let close = mk_local_close(tz, day, r.close_ssm).with_timezone(&Utc);
-                best = Some(best.map_or(close, |b| b.max(close)));
-            }
+/// Latest session close at or before `t`, considering only closes that land
+/// on `t`'s exchange-local day or the day before. `None` when neither day
+/// carries a close by `t`.
+///
+/// The two-day window is deliberate, not a truncated general scan: the one
+/// caller ([`MarketHours::is_maintenance`](crate::MarketHours::is_maintenance))
+/// classifies gaps shorter than six hours, and any close bounding such a gap
+/// lands inside the window. A venue whose last close is older than the window
+/// is in an overnight or weekend closure, which `None` encodes directly.
+pub(crate) fn latest_close_at_or_before(
+    hours: &MarketHours,
+    t: DateTime<Utc>,
+    kind: SessionKind,
+) -> Option<DateTime<Utc>> {
+    let day = t.with_timezone(&hours.tz).date_naive();
+    for offset in 0..=1 {
+        let close = closes_landing_on_day(hours, day - Duration::days(offset), kind)
+            .filter(|close| *close <= t)
+            .max();
+        if close.is_some() {
+            return close;
         }
     }
-
-    best
+    None
 }
 
 /// Next weekly close strictly after `t`: find the **last** day-close

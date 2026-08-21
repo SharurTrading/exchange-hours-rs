@@ -11,6 +11,11 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-08-21
+
+A dependency removal and the lint attribute that fell out of it. No change to
+any returned value. `0.2.0` is yanked in favour of this release.
+
 ### Removed
 
 - **`tracing` is no longer a dependency.** It backed a single one-shot
@@ -37,12 +42,13 @@ corrections (a venue's hours fixed against a primary source) go under
   `#![deny(warnings)]`. The signature and the returned value are unchanged, so
   any call that uses its result is unaffected.
 
-## [0.2.0] - 2026-08-20
+## [0.2.0] - 2026-08-20 [YANKED]
 
-API corrections published the same day as `0.1.0`, which is now **yanked** from
-crates.io. The breaking changes below are therefore breaking only against a
-version no longer available for selection; `0.2.0` is the first release
-intended for use.
+API corrections published the same day as `0.1.0`. Both versions are now
+**yanked** — `0.1.0` as superseded by this release, `0.2.0` in turn by
+`0.2.1`, which is the release to use. The breaking changes below are therefore
+breaking only against versions no longer available for selection; they remain
+listed here because they are real and shipped.
 
 ### Changed
 
@@ -119,6 +125,7 @@ Initial release.
 - No runtime state, no I/O, no clock reads, no floats, and
   `#![forbid(unsafe_code)]`.
 
-[Unreleased]: https://github.com/SharurTrading/exchange-hours-rs/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/SharurTrading/exchange-hours-rs/compare/v0.2.1...HEAD
+[0.2.1]: https://github.com/SharurTrading/exchange-hours-rs/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/SharurTrading/exchange-hours-rs/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/SharurTrading/exchange-hours-rs/releases/tag/v0.1.0

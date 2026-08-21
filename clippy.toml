@@ -8,7 +8,7 @@ avoid-breaking-exported-api = false
 allow-unwrap-in-tests = true
 allow-expect-in-tests = true
 allow-panic-in-tests = true
-# STYLE-LOG: tests may print.
+# STYLE-LOG: the library emits no output; tests may print.
 allow-print-in-tests = true
 allow-dbg-in-tests = true
 

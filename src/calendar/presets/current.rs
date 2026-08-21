@@ -9,10 +9,6 @@
 //! together. The *data* the arms name already lives in
 //! [`super::super::profiles`], grouped by product family.
 
-use std::sync::Once;
-
-use tracing::warn;
-
 use crate::calendar::profiles::{
     ABU_DHABI_01_23_PROFILE, BLUE_OCEAN_PROFILE, BME_PROFILE, C1_PROFILE_POST_2024_08_26,
     EEX_PROFILE, ENDEX_01_23_PROFILE, EURONEXT_AMS_PROFILE, EURONEXT_BRU_PROFILE,
@@ -27,15 +23,10 @@ use crate::calendar::{Exchange, MarketHours, MarketHoursKey, session_profile};
 
 /// Build default futures trading hours per exchange.
 /// NOTE: These are exchange-level defaults. Product-level variations may differ.
+#[must_use]
 pub fn hours_for_exchange(exch: Exchange) -> MarketHours {
     match exch {
-        Exchange::Unknown => {
-            static ONCE: Once = Once::new();
-            ONCE.call_once(|| {
-                warn!("hours_for_exchange: Unknown exchange encountered; using 24x7 UTC fallback");
-            });
-            default_24x7(exch)
-        }
+        Exchange::Unknown => default_24x7(exch),
         // ==============================
         // US EQUITIES (ET)
         // ==============================

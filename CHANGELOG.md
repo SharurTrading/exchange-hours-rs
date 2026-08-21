@@ -14,7 +14,7 @@ corrections (a venue's hours fixed against a primary source) go under
 ## [0.2.1] - 2026-08-21
 
 A dependency removal and the lint attribute that fell out of it. No change to
-any returned value. `0.2.0` is yanked; use `0.2.1`.
+any returned value. `0.2.0` is yanked in favour of this release.
 
 ### Removed
 
@@ -44,10 +44,11 @@ any returned value. `0.2.0` is yanked; use `0.2.1`.
 
 ## [0.2.0] - 2026-08-20 [YANKED]
 
-API corrections published the same day as `0.1.0`, which is now **yanked** from
-crates.io. The breaking changes below are therefore breaking only against a
-version no longer available for selection; `0.2.0` is the first release
-intended for use.
+API corrections published the same day as `0.1.0`. Both versions are now
+**yanked** — `0.1.0` as superseded by this release, `0.2.0` in turn by
+`0.2.1`, which is the release to use. The breaking changes below are therefore
+breaking only against versions no longer available for selection; they remain
+listed here because they are real and shipped.
 
 ### Changed
 

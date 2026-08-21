@@ -118,5 +118,8 @@ end-exclusive close, lunch/maintenance gaps, weekend boundary, serde form) and
   bumps the version in `Cargo.toml` is a release cut: that PR retitles
   `[Unreleased]` to the dated version section (as the 0.1.0 and 0.2.0
   release-prep PRs did), and the tag follows the merge.
-- The README badges (version, MSRV) and the Coverage table's venue counts are
-  duplicated facts — update them together with `Cargo.toml` and the enum.
+- The README's version and MSRV badges read from crates.io, so they cannot
+  drift; do not re-hardcode them. The Coverage table's venue counts still
+  duplicate the enum — update them together. When a dependency or an
+  observable behaviour goes away, grep `README.md` for it as well: the
+  `tracing` removal left two stale claims there and shipped in `0.2.1`.

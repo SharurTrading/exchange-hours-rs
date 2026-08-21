@@ -13,8 +13,10 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ## [0.2.0] - 2026-08-20
 
-Pre-publication API corrections, made while nothing had yet been published to
-crates.io. `0.1.0` exists as a git tag only.
+API corrections published the same day as `0.1.0`, which is now **yanked** from
+crates.io. The breaking changes below are therefore breaking only against a
+version no longer available for selection; `0.2.0` is the first release
+intended for use.
 
 ### Changed
 
@@ -48,7 +50,7 @@ crates.io. `0.1.0` exists as a git tag only.
   unrecognized name is a `ParseExchangeError` (new public type) carrying the
   offending input, never a silent `Exchange::Unknown`.
 
-## [0.1.0] - 2026-08-20
+## [0.1.0] - 2026-08-20 [YANKED]
 
 Initial release.
 
@@ -91,5 +93,6 @@ Initial release.
 - No runtime state, no I/O, no clock reads, no floats, and
   `#![forbid(unsafe_code)]`.
 
-[Unreleased]: https://github.com/SharurTrading/exchange-hours-rs/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/SharurTrading/exchange-hours-rs/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/SharurTrading/exchange-hours-rs/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/SharurTrading/exchange-hours-rs/releases/tag/v0.1.0

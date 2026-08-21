@@ -11,6 +11,24 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ## [Unreleased]
 
+## [0.2.2] - 2026-08-21
+
+Documentation only; no code, no API, and no dependency change. The published
+`0.2.1` README carried claims that `0.2.1` itself had made false.
+
+### Fixed
+
+- **The README no longer says the crate logs through `tracing`.** Two claims
+  survived the dependency's removal in `0.2.1` and shipped with it: the
+  coverage table's always-open row stated that `Exchange::Unknown` "also logs a
+  one-shot `tracing::warn!`", and the dependency paragraph listed `tracing`
+  itself as a dependency. Neither has been true since `0.2.1`.
+- **The version and MSRV badges are read from crates.io** rather than
+  hardcoded. The version badge had been left at `0.2.0` across the `0.2.1`
+  release — the same class of duplicated fact that `AGENTS.md` warns about —
+  and pointed at a yanked version from the crate's own front page. Both badges
+  now track the published crate and cannot drift again.
+
 ## [0.2.1] - 2026-08-21
 
 A dependency removal and the lint attribute that fell out of it. No change to
@@ -125,7 +143,8 @@ Initial release.
 - No runtime state, no I/O, no clock reads, no floats, and
   `#![forbid(unsafe_code)]`.
 
-[Unreleased]: https://github.com/SharurTrading/exchange-hours-rs/compare/v0.2.1...HEAD
+[Unreleased]: https://github.com/SharurTrading/exchange-hours-rs/compare/v0.2.2...HEAD
+[0.2.2]: https://github.com/SharurTrading/exchange-hours-rs/compare/v0.2.1...v0.2.2
 [0.2.1]: https://github.com/SharurTrading/exchange-hours-rs/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/SharurTrading/exchange-hours-rs/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/SharurTrading/exchange-hours-rs/releases/tag/v0.1.0

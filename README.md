@@ -3,9 +3,9 @@
 # exchange-hours
 
 [![CI](https://github.com/SharurTrading/exchange-hours-rs/actions/workflows/ci.yml/badge.svg)](https://github.com/SharurTrading/exchange-hours-rs/actions/workflows/ci.yml)
-![Version](https://img.shields.io/badge/version-0.2.0-blue)
+[![Crates.io](https://img.shields.io/crates/v/exchange-hours.svg)](https://crates.io/crates/exchange-hours)
 ![Edition](https://img.shields.io/badge/edition-2024-orange)
-![MSRV](https://img.shields.io/badge/MSRV-1.95-informational)
+![MSRV](https://img.shields.io/crates/msrv/exchange-hours.svg)
 ![Unsafe](https://img.shields.io/badge/unsafe-forbidden-success)
 [![License](https://img.shields.io/badge/license-MIT--0-blue)](LICENSE)
 
@@ -97,7 +97,7 @@ assert_eq!(daily_close, Some(ct(2026, 4, 20, 16, 0)));
 | EU equities | 14 | 11 European zones | 09:00–17:30 continuous as the continental default, with real divergence: LSE 08:00–16:30 (+ Closing Price Crossing to 16:40), SIX to 17:20, Euronext Dublin to 17:28, Nasdaq Stockholm to 17:25, Copenhagen to 16:55, Helsinki 10:00–18:25 EET; post-close trading-at-last windows on Euronext, Xetra, BME, Vienna, and SIX. |
 | ICE complex & European energy | 9 | London / Amsterdam / Berlin / Dubai / New York | 01:00–23:00 local, or the ICE 20:00→18:00 ET wrap. |
 | Asia-Pacific futures (SGX) | 1 | `Asia/Singapore` | 07:10–20:00 day session plus a T+1 wrap to 05:15. |
-| Always-open venues, and the `Exchange::Unknown` fallback | 2 | `UTC` | 24×7; no daily close, no weekend close. `Unknown` also logs a one-shot `tracing::warn!`. |
+| Always-open venues, and the `Exchange::Unknown` fallback | 2 | `UTC` | 24×7; no daily close, no weekend close. |
 
 Futures hours track the *product family*, not the venue: nine shared profiles are also addressable by `MarketHoursKey` via `session_profile` / `hours_for_market_hours_key`.
 
@@ -132,9 +132,8 @@ contract specifications.
 ## Place in the system
 
 A foundational leaf. It depends only on `chrono` + `chrono-tz` (instant/zone arithmetic and
-the DST resolver), `serde` (snake_case (de)serialization of the public types), and `tracing`
-(the `Unknown`-fallback warning) — no engine, transport, adapter, async, or credential crate,
-and no `tokio`. Downstream, the Sharur platform consumes it as a git dependency: the
+the DST resolver) and `serde` (snake_case (de)serialization of the public types) — no logging
+facade, engine, transport, adapter, async, or credential crate, and no `tokio`. Downstream, the Sharur platform consumes it as a git dependency: the
 instrument catalog maps instrument roots onto `MarketHoursKey` and re-exports
 `FuturesSessionProfile`, `SessionRule`, and `session_profile`; chart bar consolidation and the
 GUI's session overlays reach `candle_start` / `candle_end` / `session_bounds` through that

@@ -11,6 +11,195 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ## [Unreleased]
 
+### Added
+
+- **23 major cash-equity venues:** ASX, TMX Australia, NZX, TSE, NSE India,
+  BSE India, HKEX, SGX Securities, Bursa Malaysia, SET Thailand, IDX, PSE,
+  HOSE, SSE, SZSE, KRX, TWSE, Borsa Istanbul, TSX, JSE, Tadawul, B3, and BMV.
+  This brings the crate to 92 exchange variants.
+- **The additive `ExchangeCalendar` API** for date-aware predicates, session
+  scans, maintenance/all-day queries, and candle boundaries. Existing
+  `MarketHours` functions and signatures remain unchanged; B3/BMV calendars
+  reselect their published grid on every candidate trading day.
+- **`hours_for_market_hours_key_as_of`** for primary-sourced point-in-time
+  futures product-family snapshots, reusing the same dated tables as the
+  corresponding exchange profiles.
+- **Point-in-time APAC and global-equity schedules back to the January 2010
+  audit floor.** Every encoded cutover has a primary-source, day-level
+  effective date; temporary pandemic schedules and PSE's two full closure
+  dates are preserved. B3 preserves every explicit grid back to January 2010
+  before switching to its modern cross-zone rule; BMV preserves its exact 2010
+  spring exception before applying the operator's prospective New York-alignment
+  policy from November 2010.
+- **Regional bulk builders** for Asia-Pacific and other major global equities:
+  `hours_for_apac_equities`, `hours_map_apac_equities`,
+  `hours_for_global_equities`, and `hours_map_global_equities`.
+- **Schedule-maintenance documentation:** the README now publishes an explicit
+  source-review cutoff and machine-checked assurance counts, while a dated
+  audit report, per-exchange verification ledger, normalized official-source
+  registry, and repeatable update guide make freshness, scope, and known
+  evidence gaps auditable without overstating future accuracy.
+
+### Changed
+
+- **Equal `SessionRule` endpoints now mean a complete local-day session.** A
+  rule such as Sunday `18:00→18:00` preserves one continuous session through
+  Monday 18:00, including exact `session_bounds`; absence is represented by
+  omitting the rule. This intentionally breaking pre-1.0 correction removes
+  `SessionRuleError::EmptyInterval`.
+
+### Fixed
+
+- **Bursa Malaysia, IDX, HOSE, and BMV January-2010 history.** Bursa's morning
+  continuous session now runs through 12:30 under the pre-audit-floor v2 manual
+  and its dated successors. IDX now includes its archived 09:10–09:30 pre-open
+  before the 2013 expansion. HOSE retains the operator's exact January-2010
+  phase table plus its sourced September 2010, March 2012, and July 2013
+  revisions. BMV preserves the exact March 2010 early interval and uses the
+  operator's prospective New York-alignment rule from November 1, 2010 through
+  a date-aware Mexico City/New York offset selector.
+- **Calendar candle boundaries now honor the profile's close semantics.**
+  Always-open profiles no longer receive artificial daily, weekly, or monthly
+  closes; adjacent phase handoffs are ignored when the requested session kind
+  remains open; and a venue's first launch-day candle start no longer requires
+  a pre-launch close.
+- **ASX's pre-Service Release 15 staggered opening envelope.** The historical
+  profile now keeps the opening-auction phase through the sourced latest Group
+  5 transition at 10:09:15 Sydney time while retaining 10:00 as the earliest
+  continuous-trading edge. The current post-June 23, 2025 profile is unchanged.
+- **Primary-sourced European cash-equity phases and ICE Canada history.** LSE
+  SETS now includes pre-trading, conservative randomized opening and midday
+  auction edges, and its sourced 2012 closing-price crossing session. SIX and BME now use
+  the operators' conservative two-minute and 30-second randomized opening
+  edges, respectively; their pre-TAL closing auctions retain the same sourced
+  maximum envelopes. Nasdaq Stockholm, Helsinki, and Copenhagen now use the
+  market model's five-second randomized opening edge. SIX and BME retain
+  their pre-TAL profiles before the sourced June 22, 2020 and December 4, 2023
+  launches; Vienna now includes complete 2010/2017/2019/2020 ATX history. LSE,
+  Xetra, SIX, BME, all three Nasdaq Nordic markets, Vienna, and Euronext Milan
+  now have complete primary-sourced histories for their stated scopes. ICE Futures Canada
+  now preserves the sourced January-2010 19:00 pre-open / 20:00–13:15 CT
+  continuous grid, its 2011 opening change, 2012 and 2013 close revisions,
+  and the 2016 move to 13:20 before closing on the 2018 IFUS transfer's actual
+  Sunday opening day. The five remaining Euronext historical gaps stay
+  documented rather than receiving invented cutovers.
+- **Product-scoped international derivatives schedules.** Eurex benchmark
+  futures now preserve the January-2010 07:30 pre-trading / 07:50 continuous
+  grid and classify the fixed-UTC Asian pre-trading/opening auction separately
+  from post-2018 continuous trading across CET/CEST; EEX is
+  narrowed to Nordic Zonal Power Futures with its 2024 launch; ICE Europe
+  identities now model Brent and FTSE 100 Futures, ICE Endex models Dutch TTF
+  including the 2026 opening eve and recurring DST grid, and IFAD models Murban
+  in its New-York-locked schedule. SGX is narrowed to Three-Month SORA Futures
+  with its sourced 2024 launch and auction gaps. Binance Futures is narrowed to
+  USDⓈ-M perpetuals and is closed before the exact sourced 2019-09-13 04:00 UTC
+  platform launch. Xetra now includes the sourced 2025 Extended Retail envelope
+  for DAX shares. Remaining older-history gaps stay explicit in the verification
+  ledger.
+- **Nasdaq-family equity schedules and history.** Nasdaq BX/Texas now preserves
+  its sourced January-2010 08:00–19:00 ET grid and exact April 18, 2011 move to
+  07:00–19:00, while PSX uses 08:00–17:00 and is
+  closed before its sourced October 8, 2010 launch; its launch-day 09:00 open
+  moves to 08:00 on the sourced December 13, 2010 date. Nasdaq Stock Market
+  history now retains the 07:00 pre-market before its sourced March 18, 2013
+  move to 04:00. Date-aware lookups add Nasdaq's 21:00–04:00 Night Session
+  from 2026-12-06, preserving its fixed current snapshot.
+- **Cboe US-equity launch and phase history.** BZX now retains its January-2010
+  08:00–17:00 ET baseline; BYX, EDGA, and EDGX are closed before their sourced
+  2010 exchange launches. Each venue applies its own published May 2016 move
+  from 08:00 to 07:00, and BZX/BYX apply their distinct 2018 moves to a 20:00
+  close. Existing 2021 EDGX and 2025 BZX 04:00 opens remain date-aware. EDGX's
+  announced 21:00–04:00 session begins Sunday 2026-12-06 for the December 7
+  business date, preserving the fixed current snapshot and 20:00–21:00 pause.
+- **NYSE-family equity history.** Arca's 04:00–20:00 grid is now explicitly
+  supported at the January-2010 audit floor. American retains its core-only
+  continuous session until the sourced July 24, 2017 Pillar launch. National
+  now preserves its legacy 08:00–18:30 and 08:00–20:00 grids, the sourced
+  May 16, 2014 move to a 17:00 close, the 2014–2015 and 2017–2018 dormant
+  intervals, the 2015 08:00–17:00 relaunch, and the May 21, 2018 Pillar
+  relaunch.
+- **IEX and US ATS identity/history.** The `iex` exchange identity is closed
+  before its sourced August 19, 2016 first production-symbol launch instead of
+  inheriting predecessor-ATS history. IntelligentCross IQX now uses its live
+  and first public 2019 SEC ATS-N hours without treating the operator's January
+  17, 2018 company commencement as an ATS launch; an archived 2018 operator FAQ
+  now verifies launch-era hours, leaving only the exact September-2018 launch
+  day unresolved. Blue Ocean is
+  closed before its October 5, 2021 production launch and is explicitly scoped
+  to the production ATS service rather than its earlier beta/testing phase;
+  its primary-sourced new-order trading window is 20:00–04:00. The live
+  filing's sub-minute resting-book cleanup is outside that stated scope.
+- **Primary-sourced US listed-equity-options profiles.** All 18 identifiers now
+  model the published 09:30–16:00 regular-session envelope for ordinary
+  individual-stock options, excluding ETF/ETN/index/FLEX/floor-only and
+  venue-designated extended classes. Eleven post-2010 venues are closed before
+  exact sourced launch dates; the other seven have pre-floor primary baselines.
+- **Euronext cash-market clocks and pre-open phases.** Paris, Amsterdam,
+  Brussels, Lisbon, Dublin, and Milan now use the operator's published 07:30
+  CET pre-open and conservative 30-second randomized-opening envelope. Lisbon
+  and Dublin retain their venue IANA zones while translating Euronext's
+  Central-European clock one hour earlier locally, eliminating the former
+  one-hour UTC shift. Legacy Euronext markets change pre-opening on the sourced
+  March 20, 2023 date, while Milan changes on March 27. Milan's complete history
+  is recorded; the undated late-2015 randomization onset for four legacy markets
+  and Dublin's incomplete January-2010 phase chain remain explicit gaps.
+- **CME equity-index historical closes.** The pre-November-18, 2012 profile no
+  longer receives the later 15:30–16:15 CT post-halt session. That extension
+  begins on CME's published Sunday effective date, and the later
+  16:15→16:00 close change begins on September 21, 2015 rather than the
+  unrelated March 4, 2016 boundary.
+- **MEMX and MIAX Pearl Equities launch and early-session history.** Both
+  venues are now closed before their sourced September 2020 production
+  launches. MEMX then retains its 07:00 ET pre-market before the exchange's
+  May 19, 2025 production launch of 04:00 trading; MIAX Pearl retains its
+  regular-hours-only profile before its sourced February 20, 2025 Early and
+  Late Trading Session launch.
+- **CBOT grain/oilseed history.** The January 2010 profile now uses the
+  published 18:00–07:15 and 09:30–13:15 CT split sessions. The sourced
+  17:00–14:00 continuous electronic regime begins Sunday May 20, 2012, and
+  CME's 19:00–07:45 / 08:30–13:15 regime begins Sunday April 7, 2013 rather
+  than one day late. The 13:20 close still begins Sunday July 5, 2015 for the
+  July 6 trade date.
+- **COMEX, NYMEX, CME FX, and ICE U.S. product scopes.** COMEX Gold and NYMEX
+  benchmark-energy profiles now preserve the sourced January-2010 16:15 CT
+  close and the September 2015 move to 16:00. CME FX's unchanged 17:00→16:00
+  grid is fenced by its pre-audit-floor February 2009 revision and primary
+  2010, 2018, 2020, and current operator snapshots, and ICE U.S.
+  now represents NYSE FANG+ Index Futures with its exact November 2017 launch
+  and Sunday-session shape instead of an uncited venue-wide default.
+- **CFE's 2013 phased extensions, 2014 launch, and 2018 system-migration
+  history.** The profile now retains CFE's 07:00 CT morning open before the
+  sourced October 28, 2013 launch of its Monday–Thursday 15:29–15:30 pre-open
+  and 15:30–16:15 session, then moves the morning open to 02:00 on the sourced
+  November 4 second phase while retaining that pre-open.
+  The nearly 24-hour profile starts on the sourced Sunday, June 22, 2014 launch
+  rather than June 1, including its exact 16:15–17:00 Sunday pre-open. Its
+  continuous Monday–Thursday 15:30–08:30 ETH comes directly from CFE-2014-010.
+  A further sourced revision on February 25, 2018
+  restores the 16:00–17:00 CT daily break introduced with CFE's system migration
+  and classifies its 15:15–15:30, Sunday 16:00–17:00, and weekday 16:45–17:00
+  order-entry queues as extended rather than closed.
+  The January-2010 08:30–15:15 baseline plus the December 2010 07:20 and
+  September 2011 07:00 morning extensions are now date-aware, completing the
+  VIX-futures normal-week history from the audit floor.
+- **FINRA TRF session classification and 2026 opening-time history.** Carteret,
+  Chicago, and the FINRA/NYSE TRF now classify 09:30–16:00 ET as regular and
+  their before/after-RTH reporting windows as extended. Their point-in-time
+  profiles retain the former 08:00 ET system open before March 30, 2026 and
+  apply FINRA's 04:00 ET open from that effective date. Chicago is now closed
+  before its sourced September 10, 2018 facility launch; that launch was
+  test-security-only through September 21. A second sourced
+  revision adds the scheduled Sunday 21:00–Friday 20:00 operation, including
+  Monday–Thursday 20:00–21:00 pauses, from December 6, 2026; FINRA states that
+  implementation moves with the SIP rollout if that anticipated date changes.
+- **Calendar queries remain total at Chrono's representational bounds.** Local
+  date resolution and forward/backward scans now use checked, inward-bounded
+  arithmetic, and a bar that cannot advance past `DateTime<Utc>::MAX_UTC`
+  returns `None` instead of overflowing.
+- **Oversized intraday intervals clamp to the enclosing session close** instead
+  of overflowing, and candle starts now exist exactly when their paired ends
+  do. Weekly/monthly walks also retain the last representable valid close.
+
 ## [0.2.2] - 2026-08-21
 
 Documentation only; no code, no API, and no dependency change. The published

@@ -5,11 +5,16 @@
 //!
 //! The SSM domain is `open_ssm in 0..86_400`, `close_ssm in 0..=86_400` (the
 //! `86_400` sentinel closes a same-day session exactly at next local
-//! midnight — the shape the 24×7 profile uses), a non-empty interval, and at
-//! least one enabled weekday. Struct-literal and serde construction bypass the
-//! checks by design; `validate` is the recheck for those paths.
+//! midnight — the shape the 24×7 profile uses), and at least one enabled
+//! weekday. Equal endpoints encode one complete local-day span. Struct-literal
+//! and serde construction bypass the checks by design; `validate` is the
+//! recheck for those paths.
 
-use exchange_hours::{SessionRule, SessionRuleError};
+use std::borrow::Cow;
+
+use chrono::{Duration, TimeZone, Utc};
+use chrono_tz::America;
+use exchange_hours::{Exchange, MarketHours, SessionRule, SessionRuleError, session_bounds};
 
 const MON_FRI: [bool; 7] = [true, true, true, true, true, false, false];
 const NO_DAYS: [bool; 7] = [false; 7];
@@ -20,12 +25,15 @@ fn new_accepts_a_same_day_rule() {
     assert_eq!(rule.open_ssm, 9 * 3600 + 30 * 60);
     assert_eq!(rule.close_ssm, 16 * 3600);
     assert_eq!(rule.days, MON_FRI);
+    assert!(!rule.wraps_to_next_day());
 }
 
 #[test]
 fn new_accepts_a_wrap_rule() {
     // 17:00 -> 08:30 next day (Globex shape).
-    SessionRule::new(MON_FRI, 17 * 3600, 8 * 3600 + 30 * 60).expect("wrap rules are valid");
+    let rule =
+        SessionRule::new(MON_FRI, 17 * 3600, 8 * 3600 + 30 * 60).expect("wrap rules are valid");
+    assert!(rule.wraps_to_next_day());
 }
 
 #[test]
@@ -51,11 +59,12 @@ fn new_rejects_an_out_of_range_close() {
 }
 
 #[test]
-fn new_rejects_an_empty_interval() {
-    assert_eq!(
-        SessionRule::new(MON_FRI, 3600, 3600),
-        Err(SessionRuleError::EmptyInterval { ssm: 3600 })
-    );
+fn new_accepts_equal_endpoints_as_a_complete_local_day() {
+    let rule = SessionRule::new(MON_FRI, 3600, 3600).expect("complete local-day rule is valid");
+    assert_eq!(rule.open_ssm, 3600);
+    assert_eq!(rule.close_ssm, 3600);
+    assert_eq!(rule.validate(), Ok(()));
+    assert!(rule.wraps_to_next_day());
 }
 
 #[test]
@@ -109,4 +118,40 @@ fn error_display_names_the_violated_bound() {
         msg.contains("86400"),
         "message should carry the bound: {msg}"
     );
+}
+
+#[test]
+fn equal_endpoints_span_one_local_day_across_dst_transitions() {
+    let sunday = [false, false, false, false, false, false, true];
+    let rule = SessionRule::new(sunday, 0, 0).expect("complete local-day rule");
+    let hours = MarketHours {
+        exchange: Exchange::Unknown,
+        tz: America::New_York,
+        regular: Cow::Owned(vec![rule]),
+        extended: Cow::Borrowed(&[]),
+        has_daily_close: true,
+        has_weekend_close: true,
+    };
+    let et = |date: (i32, u32, u32), time: (u32, u32, u32)| {
+        America::New_York
+            .with_ymd_and_hms(date.0, date.1, date.2, time.0, time.1, time.2)
+            .single()
+            .expect("valid New York fixture")
+            .with_timezone(&Utc)
+    };
+
+    for (day, next_day, elapsed_hours) in [
+        ((2026, 3, 8), (2026, 3, 9), 23),
+        ((2026, 11, 1), (2026, 11, 2), 25),
+    ] {
+        let open = et(day, (0, 0, 0));
+        let close = et(next_day, (0, 0, 0));
+        assert_eq!(session_bounds(&hours, open), Some((open, close)));
+        assert_eq!(close - open, Duration::hours(elapsed_hours));
+        assert!(hours.is_open(close - Duration::nanoseconds(1)));
+        assert!(
+            !hours.is_open(close),
+            "the local-day close is end-exclusive"
+        );
+    }
 }

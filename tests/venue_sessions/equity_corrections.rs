@@ -1,0 +1,443 @@
+// SPDX-License-Identifier: MIT-0
+
+//! Primary-source-verified US and European equity schedules.
+
+use super::prelude::*;
+
+// ---------------------------------------------------------------------------
+// Venue data verified against primary sources (2026-08 pass): NYSE-family and
+// Cboe early sessions, the Nasdaq Nordic closes, and the European post-close
+// price-formation windows. Reference week: Monday 2026-04-20.
+// ---------------------------------------------------------------------------
+
+/// Builds a Helsinki (EET/EEST) local instant.
+fn hel(date: (i32, u32, u32), time: (u32, u32, u32)) -> DateTime<Utc> {
+    Europe::Helsinki
+        .with_ymd_and_hms(date.0, date.1, date.2, time.0, time.1, time.2)
+        .single()
+        .expect("valid Helsinki instant")
+        .with_timezone(&Utc)
+}
+
+#[test]
+fn nyse_trades_the_core_session_only() {
+    // nyse.com "Trading Hours": NYSE lists a core session 9:30-16:00 ET and
+    // no early or late session; extended trading in NYSE Group happens on
+    // Arca, American, National, and Texas.
+    let hours = hours_for_exchange(Exchange::Nyse);
+    assert!(
+        hours.extended.is_empty(),
+        "NYSE must have no extended rules"
+    );
+    assert!(!hours.is_open(et((2026, 4, 20), (8, 0, 0))));
+    assert!(!hours.is_open(et((2026, 4, 20), (16, 30, 0))));
+    assert!(hours.is_open_regular(et((2026, 4, 20), (10, 0, 0))));
+}
+
+#[test]
+fn nyse_american_and_cboe_byx_premarket_opens_at_0700_not_0400() {
+    // nyse.com "Trading Hours": American/National early session 7:00-9:30 ET.
+    // cboe.com "Hours & Holidays": BYX/EDGA early session begins 7:00 a.m.
+    for exch in [
+        Exchange::NyseAmerican,
+        Exchange::NyseNational,
+        Exchange::CboeByx,
+        Exchange::CboeEdga,
+    ] {
+        let hours = hours_for_exchange(exch);
+        assert!(
+            !hours.is_open(et((2026, 4, 20), (5, 0, 0))),
+            "{exch:?} must be closed at 05:00 ET"
+        );
+        assert!(
+            !hours.is_open(et((2026, 4, 20), (6, 59, 59))),
+            "{exch:?} must be closed just before 07:00 ET"
+        );
+        assert!(
+            hours.is_open_extended(et((2026, 4, 20), (7, 0, 0))),
+            "{exch:?} early session must open 07:00 ET"
+        );
+        assert!(
+            hours.is_open_extended(et((2026, 4, 20), (19, 59, 59))),
+            "{exch:?} late session must run to 20:00 ET"
+        );
+    }
+}
+
+#[test]
+fn nyse_national_dormancy_and_relaunch_use_sourced_dates() {
+    // SR-NSX-2017-04 ceased trading before market open on 2017-02-01; NYSE
+    // National records its Pillar relaunch on 2018-05-21.
+    // https://www.sec.gov/files/rules/sro/nsx/2017/34-80018.pdf
+    // https://www.nyse.com/publicdocs/nyse/markets/nyse-national/rule-filings/filings/2020/SR-NYSENat-2020-05.pdf
+    let cessation = et((2017, 2, 1), (0, 0, 0));
+    let before = hours_for_exchange_as_of(
+        Exchange::NyseNational,
+        cessation - chrono::Duration::seconds(1),
+    );
+    let dormant = hours_for_exchange_as_of(Exchange::NyseNational, cessation);
+
+    assert!(before.is_open_regular(et((2017, 2, 1), (10, 0, 0))));
+    assert!(dormant.regular.is_empty());
+    assert!(dormant.extended.is_empty());
+    assert!(!calendar_for_exchange(Exchange::NyseNational).is_open(et((2017, 2, 1), (10, 0, 0))));
+
+    let relaunch = et((2018, 5, 21), (0, 0, 0));
+    let still_dormant = hours_for_exchange_as_of(
+        Exchange::NyseNational,
+        relaunch - chrono::Duration::seconds(1),
+    );
+    let reopened = hours_for_exchange_as_of(Exchange::NyseNational, relaunch);
+
+    assert!(still_dormant.regular.is_empty());
+    assert!(reopened.is_open_extended(et((2018, 5, 21), (7, 0, 0))));
+    assert!(reopened.is_open_regular(et((2018, 5, 21), (9, 30, 0))));
+    assert!(
+        calendar_for_exchange(Exchange::NyseNational)
+            .is_open_regular(et((2018, 5, 21), (10, 0, 0)))
+    );
+}
+
+#[test]
+fn bzx_and_edgx_premarket_opens_at_0400_today() {
+    // cboe.com "Hours & Holidays": BZX/EDGX early session begins 4:00 a.m. ET.
+    for exch in [Exchange::CboeBzx, Exchange::CboeEdgx] {
+        let hours = hours_for_exchange(exch);
+        assert!(!hours.is_open(et((2026, 4, 20), (3, 59, 59))));
+        assert!(
+            hours.is_open_extended(et((2026, 4, 20), (4, 0, 0))),
+            "{exch:?} early session must open 04:00 ET"
+        );
+    }
+}
+
+#[test]
+fn edgx_early_session_started_0700_before_2021_03_08() {
+    // Cboe press release (2021-02-08): early trading from 4:00 a.m. ET
+    // effective Monday, March 8, 2021.
+    let before = hours_for_exchange_as_of(Exchange::CboeEdgx, et((2021, 3, 5), (12, 0, 0)));
+    assert!(!before.is_open(et((2021, 3, 5), (5, 0, 0))));
+    assert!(before.is_open_extended(et((2021, 3, 5), (7, 30, 0))));
+
+    let after = hours_for_exchange_as_of(Exchange::CboeEdgx, et((2021, 3, 8), (12, 0, 0)));
+    assert!(after.is_open_extended(et((2021, 3, 8), (5, 0, 0))));
+}
+
+#[test]
+fn edgx_overnight_session_starts_on_the_night_before_2026_12_07() {
+    // Cboe's opening-process specification makes 21:00–04:00 ET trading
+    // effective for business date 2026-12-07. The first observable opening is
+    // therefore Sunday 2026-12-06 at 21:00 ET.
+    // https://www.cboe.com/document/tech-spec/document/technical-specifications/cboe-titanium-u.s.-equities-opening-process
+    let fixed = hours_for_exchange(Exchange::CboeEdgx);
+    assert!(!fixed.is_open(et((2026, 12, 6), (21, 0, 0))));
+
+    let cutover = et((2026, 12, 6), (0, 0, 0));
+    let before =
+        hours_for_exchange_as_of(Exchange::CboeEdgx, cutover - chrono::Duration::seconds(1));
+    let after = hours_for_exchange_as_of(Exchange::CboeEdgx, cutover);
+
+    assert!(!before.is_open(et((2026, 12, 6), (21, 0, 0))));
+    assert!(!after.is_open(et((2026, 12, 6), (20, 59, 59))));
+    assert!(after.is_open_extended(et((2026, 12, 6), (21, 0, 0))));
+    assert!(after.is_open_extended(et((2026, 12, 7), (3, 59, 59))));
+    assert!(after.is_open_extended(et((2026, 12, 7), (4, 0, 0))));
+    assert!(after.is_open_regular(et((2026, 12, 7), (9, 30, 0))));
+    assert!(!after.is_open(et((2026, 12, 7), (20, 0, 0))));
+    assert!(after.is_maintenance(et((2026, 12, 7), (20, 30, 0))));
+    assert!(after.is_open_extended(et((2026, 12, 7), (21, 0, 0))));
+    assert!(!after.is_open(et((2026, 12, 11), (21, 0, 0))));
+    assert!(!after.is_open(et((2026, 12, 12), (12, 0, 0))));
+    assert!(
+        calendar_for_exchange(Exchange::CboeEdgx).is_open_extended(et((2026, 12, 6), (21, 0, 0)))
+    );
+}
+
+#[test]
+fn bzx_early_session_started_0700_before_2025_05_01() {
+    // Cboe release notice #54236: "Effective May 1, 2025 … will commence the
+    // Early Trading Session at 4:00 a.m. ET. Currently, BZX … commences the
+    // Early Trading Session at 7:00 a.m. ET."
+    // https://www.cboe.com/insights/posts/early-birds-and-night-owls-how-extended-trading-hours-are-reshaping-u-s-equities-markets-
+    let before = hours_for_exchange_as_of(Exchange::CboeBzx, et((2025, 4, 30), (12, 0, 0)));
+    assert!(!before.is_open(et((2025, 4, 30), (5, 0, 0))));
+    assert!(before.is_open_extended(et((2025, 4, 30), (7, 30, 0))));
+
+    let after = hours_for_exchange_as_of(Exchange::CboeBzx, et((2025, 5, 1), (12, 0, 0)));
+    assert!(after.is_open_extended(et((2025, 5, 1), (5, 0, 0))));
+}
+
+#[test]
+fn memx_is_closed_before_its_2020_09_21_launch() {
+    // MEMX's official Day 1 retrospective dates live trading to September 21,
+    // 2020.
+    // https://memx.com/insights/day-1
+    let cutover = et((2020, 9, 21), (0, 0, 0));
+    let before = hours_for_exchange_as_of(Exchange::MemxEq, cutover - chrono::Duration::seconds(1));
+    let launched = hours_for_exchange_as_of(Exchange::MemxEq, cutover);
+
+    assert!(before.regular.is_empty());
+    assert!(before.extended.is_empty());
+    assert!(launched.is_open_extended(et((2020, 9, 21), (7, 0, 0))));
+    assert!(launched.is_open_regular(et((2020, 9, 21), (10, 0, 0))));
+}
+
+#[test]
+fn memx_0400_premarket_started_2025_05_19() {
+    // MEMX's 2025-06-06 retrospective identifies May 19 as the production
+    // launch of 04:00 ET trading.
+    // https://memx.com/insights/pre-market-share-gains-and-new-options-active-risk-feature
+    let cutover = et((2025, 5, 19), (0, 0, 0));
+    let before = hours_for_exchange_as_of(Exchange::MemxEq, cutover - chrono::Duration::seconds(1));
+    let after = hours_for_exchange_as_of(Exchange::MemxEq, cutover);
+
+    assert!(!before.is_open(et((2025, 5, 19), (5, 0, 0))));
+    assert!(before.is_open_extended(et((2025, 5, 19), (7, 0, 0))));
+    assert!(after.is_open_extended(et((2025, 5, 19), (4, 0, 0))));
+}
+
+#[test]
+fn miax_pearl_is_closed_before_its_2020_09_29_launch() {
+    // MIAX's official US-equities history dates Pearl Equities' launch to
+    // September 29, 2020.
+    // https://www.miaxglobal.com/company/markets/us-equities
+    let cutover = et((2020, 9, 29), (0, 0, 0));
+    let before = hours_for_exchange_as_of(
+        Exchange::MiaxPearlEq,
+        cutover - chrono::Duration::seconds(1),
+    );
+    let launched = hours_for_exchange_as_of(Exchange::MiaxPearlEq, cutover);
+
+    assert!(before.regular.is_empty());
+    assert!(before.extended.is_empty());
+    assert!(launched.is_open_regular(et((2020, 9, 29), (10, 0, 0))));
+    assert!(!launched.is_open(et((2020, 9, 29), (17, 0, 0))));
+}
+
+#[test]
+fn miax_pearl_extended_sessions_started_2025_02_20() {
+    // MIAX Pearl Equities Regulatory Circular 2025-02 made 04:00–09:30 and
+    // 16:00–20:00 ET available beginning February 20, 2025.
+    // https://www.miaxglobal.com/sites/default/files/circular-files/MIAX_Pearl_Equities_RC_2025_02_0.pdf
+    let cutover = et((2025, 2, 20), (0, 0, 0));
+    let before = hours_for_exchange_as_of(
+        Exchange::MiaxPearlEq,
+        cutover - chrono::Duration::seconds(1),
+    );
+    let after = hours_for_exchange_as_of(Exchange::MiaxPearlEq, cutover);
+
+    assert!(!before.is_open(et((2025, 2, 20), (5, 0, 0))));
+    assert!(!before.is_open(et((2025, 2, 20), (17, 0, 0))));
+    assert!(after.is_open_extended(et((2025, 2, 20), (4, 0, 0))));
+    assert!(after.is_open_extended(et((2025, 2, 20), (19, 59, 59))));
+    assert!(!after.is_open(et((2025, 2, 20), (20, 0, 0))));
+}
+
+#[test]
+fn nasdaq_stockholm_continuous_ends_1725() {
+    // Nasdaq Nordic Market Model 2026:03 section 3.1: Stockholm opens each
+    // order book randomly from 09:00:00 through 09:00:05 CET, then trades
+    // continuously to 17:25 with a closing call to 17:30 and post-trading to
+    // 18:00.
+    let hours = hours_for_exchange(Exchange::NasdaqStockholm);
+    assert!(hours.is_open_extended(cet((2026, 4, 20), (9, 0, 4))));
+    assert!(!hours.is_open_regular(cet((2026, 4, 20), (9, 0, 4))));
+    assert!(hours.is_open_regular(cet((2026, 4, 20), (9, 0, 5))));
+    assert!(hours.is_open_regular(cet((2026, 4, 20), (17, 24, 59))));
+    assert!(!hours.is_open_regular(cet((2026, 4, 20), (17, 25, 0))));
+    assert!(hours.is_open_extended(cet((2026, 4, 20), (17, 27, 0))));
+    assert!(hours.is_open_extended(cet((2026, 4, 20), (17, 45, 0))));
+    assert!(!hours.is_open(cet((2026, 4, 20), (18, 0, 0))));
+    // Pre-opening from 08:00.
+    assert!(hours.is_open_extended(cet((2026, 4, 20), (8, 30, 0))));
+}
+
+#[test]
+fn nasdaq_helsinki_trades_1000_to_1825_local_eet() {
+    // Nasdaq Nordic Market Model 2026:03 publishes Helsinki on the common CET
+    // clock. Its venue-local open is therefore the same randomized edge at
+    // 10:00:05 EET/EEST, simultaneous with 09:00:05 CET.
+    let hours = hours_for_exchange(Exchange::NasdaqHelsinki);
+    assert!(!hours.is_open_regular(hel((2026, 4, 20), (9, 30, 0))));
+    assert!(hours.is_open_extended(hel((2026, 4, 20), (9, 30, 0))));
+    assert!(hours.is_open_extended(hel((2026, 4, 20), (10, 0, 4))));
+    assert!(!hours.is_open_regular(hel((2026, 4, 20), (10, 0, 4))));
+    assert!(hours.is_open_regular(hel((2026, 4, 20), (10, 0, 5))));
+    assert!(hours.is_open_regular(hel((2026, 4, 20), (18, 24, 59))));
+    assert!(!hours.is_open_regular(hel((2026, 4, 20), (18, 25, 0))));
+    assert!(hours.is_open_extended(hel((2026, 4, 20), (18, 45, 0))));
+    assert!(!hours.is_open(hel((2026, 4, 20), (19, 0, 0))));
+    // Helsinki's regular open coincides with Stockholm's in absolute time.
+    assert_eq!(
+        hel((2026, 4, 20), (10, 0, 5)),
+        cet((2026, 4, 20), (9, 0, 5)),
+        "the Nordic books align on CET"
+    );
+}
+
+#[test]
+fn nasdaq_copenhagen_closes_1655_with_optional_trade_at_close() {
+    // Nasdaq Nordic Market Model 2026:03: randomized open through 09:00:05,
+    // continuous trading to 16:55, closing call to 17:00, and
+    // Trading@Closing Price 17:00-17:10, then post-trading through 17:20.
+    let hours = hours_for_exchange(Exchange::NasdaqCopenhagen);
+    assert!(hours.is_open_extended(cet((2026, 4, 20), (9, 0, 4))));
+    assert!(!hours.is_open_regular(cet((2026, 4, 20), (9, 0, 4))));
+    assert!(hours.is_open_regular(cet((2026, 4, 20), (9, 0, 5))));
+    assert!(hours.is_open_regular(cet((2026, 4, 20), (16, 54, 59))));
+    assert!(!hours.is_open_regular(cet((2026, 4, 20), (16, 55, 0))));
+    assert!(hours.is_open_extended(cet((2026, 4, 20), (17, 5, 0))));
+    assert!(hours.is_open_extended(cet((2026, 4, 20), (17, 15, 0))));
+    assert!(!hours.is_open(cet((2026, 4, 20), (17, 20, 0))));
+}
+
+#[test]
+fn euronext_continental_books_follow_the_published_cet_clock() {
+    // Euronext's current 4-01/4-03 appendix: pre-open 07:30 CET, randomized
+    // opening uncross through 09:00:30, continuous to 17:30, and closing/TAL
+    // through 17:40.
+    for exch in [
+        Exchange::EuronextParis,
+        Exchange::EuronextAmsterdam,
+        Exchange::EuronextBrussels,
+        Exchange::EuronextMilan,
+    ] {
+        let hours = hours_for_exchange(exch);
+        assert!(!hours.is_open(cet((2026, 4, 20), (7, 29, 59))));
+        assert!(hours.is_open_extended(cet((2026, 4, 20), (7, 30, 0))));
+        assert!(hours.is_open_extended(cet((2026, 4, 20), (9, 0, 29))));
+        assert!(hours.is_open_regular(cet((2026, 4, 20), (9, 0, 30))));
+        assert!(hours.is_open_regular(cet((2026, 4, 20), (17, 29, 59))));
+        let (_, auction_close) = session_bounds_with(
+            &hours,
+            cet((2026, 4, 20), (17, 35, 29)),
+            SessionKind::Extended,
+        )
+        .expect("Euronext closing auction");
+        assert_eq!(auction_close, cet((2026, 4, 20), (17, 35, 30)));
+        let (tal_open, tal_close) = session_bounds_with(
+            &hours,
+            cet((2026, 4, 20), (17, 35, 30)),
+            SessionKind::Extended,
+        )
+        .expect("Euronext Trading-at-Last");
+        assert_eq!(tal_open, cet((2026, 4, 20), (17, 35, 30)));
+        assert_eq!(tal_close, cet((2026, 4, 20), (17, 40, 0)));
+        assert!(
+            hours.is_open_extended(cet((2026, 4, 20), (17, 37, 0))),
+            "{exch:?} must run Trading-at-Last to 17:40 CET"
+        );
+        assert!(
+            !hours.is_open(cet((2026, 4, 20), (17, 40, 0))),
+            "{exch:?} must be closed at 17:40 (end-exclusive)"
+        );
+    }
+}
+
+#[test]
+fn euronext_lisbon_keeps_its_zone_but_follows_the_cet_book() {
+    // Euronext publishes all cash-market hours in CET/CEST. Lisbon keeps its
+    // venue zone, so every phase is one local-clock hour earlier while
+    // remaining simultaneous with the continental books.
+    let hours = hours_for_exchange(Exchange::EuronextLisbon);
+    let lis = |h: u32, m: u32, s: u32| {
+        Europe::Lisbon
+            .with_ymd_and_hms(2026, 4, 20, h, m, s)
+            .single()
+            .expect("valid Lisbon instant")
+            .with_timezone(&Utc)
+    };
+    assert_eq!(hours.tz, Europe::Lisbon);
+    assert!(!hours.is_open(lis(6, 29, 59)));
+    assert!(hours.is_open_extended(lis(6, 30, 0)));
+    assert!(hours.is_open_extended(lis(8, 0, 29)));
+    assert!(hours.is_open_regular(lis(8, 0, 30)));
+    assert_eq!(
+        lis(8, 0, 30),
+        cet((2026, 4, 20), (9, 0, 30)),
+        "Lisbon and continental Euronext books must open simultaneously"
+    );
+    assert!(hours.is_open_regular(lis(16, 29, 59)));
+    assert!(hours.is_open_extended(lis(16, 37, 0)));
+    assert!(!hours.is_open(lis(16, 40, 0)));
+}
+
+#[test]
+fn euronext_dublin_uses_the_distinct_cet_close_in_its_venue_zone() {
+    // The current 4-01/4-03 appendix gives Dublin shares the common CET open
+    // but a 17:28 CET continuous close, followed by closing/TAL through 17:40.
+    let hours = hours_for_exchange(Exchange::EuronextDublin);
+    let dub = |h: u32, m: u32, s: u32| {
+        Europe::Dublin
+            .with_ymd_and_hms(2026, 4, 20, h, m, s)
+            .single()
+            .expect("valid Dublin instant")
+            .with_timezone(&Utc)
+    };
+    assert_eq!(hours.tz, Europe::Dublin);
+    assert!(!hours.is_open(dub(6, 29, 59)));
+    assert!(hours.is_open_extended(dub(6, 30, 0)));
+    assert!(hours.is_open_extended(dub(8, 0, 29)));
+    assert!(hours.is_open_regular(dub(8, 0, 30)));
+    assert!(hours.is_open_regular(dub(16, 27, 59)));
+    assert!(!hours.is_open_regular(dub(16, 28, 0)));
+    assert!(hours.is_open_extended(dub(16, 29, 0)));
+    let (_, auction_close) = session_bounds_with(&hours, dub(16, 30, 29), SessionKind::Extended)
+        .expect("Dublin closing auction");
+    assert_eq!(auction_close, dub(16, 30, 30));
+    let (tal_open, tal_close) = session_bounds_with(&hours, dub(16, 30, 30), SessionKind::Extended)
+        .expect("Dublin Trading-at-Last");
+    assert_eq!(tal_open, dub(16, 30, 30));
+    assert_eq!(tal_close, dub(16, 40, 0));
+    assert!(hours.is_open_extended(dub(16, 35, 0)));
+    assert!(!hours.is_open(dub(16, 40, 0)));
+}
+
+#[test]
+fn lse_closing_price_crossing_runs_to_1640() {
+    // LSE Guide to the Trading System (MIT201): Closing Auction Call
+    // 16:30-16:35, Closing Price Crossing Session to 16:40.
+    let hours = hours_for_exchange(Exchange::Lse);
+    assert!(hours.is_open_extended(lon((2026, 4, 20), (16, 37, 0))));
+    assert!(!hours.is_open(lon((2026, 4, 20), (16, 40, 0))));
+}
+
+#[test]
+fn bme_and_vienna_run_post_close_phases() {
+    let bme = hours_for_exchange(Exchange::Bme);
+    assert!(bme.is_open_extended(cet((2026, 4, 20), (17, 40, 0))));
+    assert!(!bme.is_open(cet((2026, 4, 20), (17, 45, 0))));
+
+    let vienna = hours_for_exchange(Exchange::Vienna);
+    assert!(vienna.is_open_extended(cet((2026, 4, 20), (17, 40, 0))));
+    assert!(vienna.is_open_extended(cet((2026, 4, 20), (17, 45, 0))));
+    assert!(!vienna.is_open(cet((2026, 4, 20), (17, 50, 0))));
+}
+
+#[test]
+fn xetra_extended_retail_has_a_sourced_current_cutover() {
+    let current = hours_for_exchange(Exchange::Xetra);
+    assert!(!current.is_open(cet((2026, 4, 20), (6, 59, 59))));
+    assert!(current.is_open_extended(cet((2026, 4, 20), (7, 0, 0))));
+    assert!(!current.is_open_regular(cet((2026, 4, 20), (9, 0, 29))));
+    assert!(current.is_open_regular(cet((2026, 4, 20), (9, 0, 30))));
+    assert!(current.is_open_extended(cet((2026, 4, 20), (13, 1, 0))));
+    assert!(current.is_open_regular(cet((2026, 4, 20), (13, 2, 30))));
+    assert!(!current.is_open_regular(cet((2026, 4, 20), (17, 30, 0))));
+    assert!(current.is_open_extended(cet((2026, 4, 20), (17, 40, 0))));
+    assert!(current.is_open_extended(cet((2026, 4, 20), (21, 59, 59))));
+    assert!(current.is_open_extended(cet((2026, 4, 20), (22, 4, 59))));
+    assert!(!current.is_open(cet((2026, 4, 20), (22, 5, 0))));
+
+    let before = hours_for_exchange_as_of(Exchange::Xetra, cet((2025, 11, 28), (12, 0, 0)));
+    assert!(!before.is_open(cet((2025, 11, 28), (7, 29, 59))));
+    assert!(before.is_open_extended(cet((2025, 11, 28), (7, 30, 0))));
+    assert!(before.is_open_extended(cet((2025, 11, 28), (17, 44, 59))));
+    assert!(before.is_open_extended(cet((2025, 11, 28), (20, 29, 59))));
+    assert!(!before.is_open(cet((2025, 11, 28), (20, 30, 0))));
+
+    let after = hours_for_exchange_as_of(Exchange::Xetra, cet((2025, 12, 1), (0, 0, 0)));
+    assert!(after.is_open_extended(cet((2025, 12, 1), (7, 0, 0))));
+    assert!(after.is_open_extended(cet((2025, 12, 1), (21, 59, 59))));
+    assert!(after.is_open_extended(cet((2025, 12, 1), (22, 4, 59))));
+}

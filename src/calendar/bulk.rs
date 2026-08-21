@@ -7,9 +7,11 @@
 //! therefore iterate in [`Exchange`] `Ord` order regardless of insertion order.
 //! Anything that feeds a deterministic pipeline should take the map form.
 //!
-//! Every builder resolves through [`hours_for_exchange`], so these return
-//! *current* hours; a point-in-time sweep must call
-//! [`hours_for_exchange_as_of`](super::hours_for_exchange_as_of) per venue.
+//! Every builder resolves through [`hours_for_exchange`], so these return its
+//! fixed default snapshots. A point-in-time sweep must call
+//! [`hours_for_exchange_as_of`](super::hours_for_exchange_as_of) per venue;
+//! scans that can cross a B3/BMV reference-zone transition should use
+//! [`calendar_for_exchange`](super::calendar_for_exchange).
 
 use std::collections::BTreeMap;
 
@@ -57,6 +59,37 @@ const EU_EQUITY_EXCHANGES: &[Exchange] = &[
     Exchange::Vienna,
 ];
 
+/// Asia-Pacific cash-equity venues in stable geographic/operator order.
+const APAC_EQUITY_EXCHANGES: &[Exchange] = &[
+    Exchange::Asx,
+    Exchange::TmxAustralia,
+    Exchange::Nzx,
+    Exchange::Tse,
+    Exchange::NseIndia,
+    Exchange::BseIndia,
+    Exchange::Hkex,
+    Exchange::SgxSecurities,
+    Exchange::BursaMalaysia,
+    Exchange::SetThailand,
+    Exchange::Idx,
+    Exchange::Pse,
+    Exchange::Hose,
+    Exchange::Sse,
+    Exchange::Szse,
+    Exchange::Krx,
+    Exchange::Twse,
+];
+
+/// Major standalone cash-equity venues outside the US/EU/APAC sets.
+const GLOBAL_EQUITY_EXCHANGES: &[Exchange] = &[
+    Exchange::BorsaIstanbul,
+    Exchange::Tsx,
+    Exchange::Jse,
+    Exchange::Tadawul,
+    Exchange::B3,
+    Exchange::Bmv,
+];
+
 /// Builds the current [`MarketHours`] for each exchange, preserving input order.
 #[must_use]
 pub fn hours_for_all(exchanges: &[Exchange]) -> Vec<MarketHours> {
@@ -73,6 +106,22 @@ pub fn hours_for_us_equities() -> Vec<MarketHours> {
 #[must_use]
 pub fn hours_for_eu_equities() -> Vec<MarketHours> {
     hours_for_all(EU_EQUITY_EXCHANGES)
+}
+
+/// Builds current [`MarketHours`] for the built-in Asia-Pacific equities set.
+#[must_use]
+pub fn hours_for_apac_equities() -> Vec<MarketHours> {
+    hours_for_all(APAC_EQUITY_EXCHANGES)
+}
+
+/// Builds default fixed [`MarketHours`] snapshots for major-global equities.
+///
+/// B3 and BMV are date-dependent; use
+/// [`calendar_for_exchange`](super::calendar_for_exchange) when scanning them
+/// across dates.
+#[must_use]
+pub fn hours_for_global_equities() -> Vec<MarketHours> {
+    hours_for_all(GLOBAL_EQUITY_EXCHANGES)
 }
 
 /// Builds a deterministic [`Exchange`]-keyed map of current [`MarketHours`].
@@ -98,4 +147,19 @@ pub fn hours_map_us_equities() -> BTreeMap<Exchange, MarketHours> {
 #[must_use]
 pub fn hours_map_eu_equities() -> BTreeMap<Exchange, MarketHours> {
     hours_map_for(EU_EQUITY_EXCHANGES)
+}
+
+/// Builds an [`Exchange`]-keyed map for the Asia-Pacific equities set.
+#[must_use]
+pub fn hours_map_apac_equities() -> BTreeMap<Exchange, MarketHours> {
+    hours_map_for(APAC_EQUITY_EXCHANGES)
+}
+
+/// Builds a fixed-snapshot map for the other major-global equities set.
+///
+/// B3/BMV entries have the same date-dependent caveat as
+/// [`hours_for_global_equities`].
+#[must_use]
+pub fn hours_map_global_equities() -> BTreeMap<Exchange, MarketHours> {
+    hours_map_for(GLOBAL_EQUITY_EXCHANGES)
 }

@@ -1,0 +1,159 @@
+// SPDX-License-Identifier: MIT-0
+
+//! A date-aware exchange calendar over point-in-time [`MarketHours`] profiles.
+
+mod candles;
+mod week;
+
+use chrono::{DateTime, NaiveDate, Utc};
+use chrono_tz::Tz;
+
+use super::query::{QueryContext, sessions, status};
+use super::{Exchange, MarketHours, SessionKind, hours_for_exchange, hours_for_exchange_as_of};
+
+/// A deterministic, date-aware calendar for one exchange.
+///
+/// The calendar reselects a concrete fixed profile for every candidate
+/// venue-local opening day. It holds no clock and performs no I/O.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct ExchangeCalendar {
+    exchange: Exchange,
+}
+
+impl ExchangeCalendar {
+    /// Creates a date-aware calendar for `exchange`.
+    #[must_use]
+    pub const fn new(exchange: Exchange) -> Self {
+        Self { exchange }
+    }
+
+    /// Returns the exchange represented by this calendar.
+    #[must_use]
+    pub const fn exchange(self) -> Exchange {
+        self.exchange
+    }
+
+    /// Resolves the fixed [`MarketHours`] profile in force at `instant`.
+    #[must_use]
+    pub fn hours_at(self, instant: DateTime<Utc>) -> MarketHours {
+        hours_for_exchange_as_of(self.exchange, instant)
+    }
+
+    /// Returns the venue's invariant IANA time zone.
+    #[must_use]
+    pub fn tz(self) -> Tz {
+        hours_for_exchange(self.exchange).tz
+    }
+
+    /// Returns whether any regular or extended session is open at `instant`.
+    #[must_use]
+    pub fn is_open(self, instant: DateTime<Utc>) -> bool {
+        self.is_open_with(instant, SessionKind::Both)
+    }
+
+    /// Returns whether the selected session kind is open at `instant`.
+    #[must_use]
+    pub fn is_open_with(self, instant: DateTime<Utc>, kind: SessionKind) -> bool {
+        status::is_open_with(&QueryContext::date_aware(self), instant, kind)
+    }
+
+    /// Returns whether a regular session is open at `instant`.
+    #[must_use]
+    pub fn is_open_regular(self, instant: DateTime<Utc>) -> bool {
+        self.is_open_with(instant, SessionKind::Regular)
+    }
+
+    /// Returns whether an extended session is open at `instant`.
+    #[must_use]
+    pub fn is_open_extended(self, instant: DateTime<Utc>) -> bool {
+        self.is_open_with(instant, SessionKind::Extended)
+    }
+
+    /// Returns the containing or next regular/extended session bounds.
+    #[must_use]
+    pub fn session_bounds(self, instant: DateTime<Utc>) -> Option<(DateTime<Utc>, DateTime<Utc>)> {
+        self.session_bounds_with(instant, SessionKind::Both)
+    }
+
+    /// Returns the containing or next bounds for `kind`.
+    #[must_use]
+    pub fn session_bounds_with(
+        self,
+        instant: DateTime<Utc>,
+        kind: SessionKind,
+    ) -> Option<(DateTime<Utc>, DateTime<Utc>)> {
+        sessions::session_bounds_with(&QueryContext::date_aware(self), instant, kind)
+    }
+
+    /// Returns the first regular/extended session opening strictly after
+    /// `instant`, reselecting the profile for every candidate opening day.
+    #[must_use]
+    pub fn next_session_after(
+        self,
+        instant: DateTime<Utc>,
+    ) -> Option<(DateTime<Utc>, DateTime<Utc>)> {
+        self.next_session_after_with(instant, SessionKind::Both)
+    }
+
+    /// Returns the first session of `kind` opening strictly after `instant`.
+    #[must_use]
+    pub fn next_session_after_with(
+        self,
+        instant: DateTime<Utc>,
+        kind: SessionKind,
+    ) -> Option<(DateTime<Utc>, DateTime<Utc>)> {
+        sessions::next_session_after_with(&QueryContext::date_aware(self), instant, kind)
+    }
+
+    /// Returns only the next regular/extended session open after `instant`.
+    #[must_use]
+    pub fn next_session_open_after(self, instant: DateTime<Utc>) -> Option<DateTime<Utc>> {
+        self.next_session_after(instant).map(|(open, _close)| open)
+    }
+
+    /// Returns whether `instant` lies in a closed gap shorter than six hours.
+    #[must_use]
+    pub fn is_maintenance(self, instant: DateTime<Utc>) -> bool {
+        status::is_maintenance(&QueryContext::date_aware(self), instant)
+    }
+
+    /// Returns whether no session of `kind` intersects `day` in `calendar_tz`.
+    #[must_use]
+    pub fn is_closed_all_day_in_calendar(
+        self,
+        day: NaiveDate,
+        calendar_tz: Tz,
+        kind: SessionKind,
+    ) -> bool {
+        status::is_closed_all_day_in_calendar(
+            &QueryContext::date_aware(self),
+            day,
+            calendar_tz,
+            kind,
+        )
+    }
+
+    /// Returns whether no session of `kind` intersects venue-local `day`.
+    #[must_use]
+    pub fn is_closed_all_day_on(self, day: NaiveDate, kind: SessionKind) -> bool {
+        self.is_closed_all_day_in_calendar(day, self.tz(), kind)
+    }
+
+    /// Returns whether no session of `kind` intersects the calendar day
+    /// containing `instant` in `calendar_tz`.
+    #[must_use]
+    pub fn is_closed_all_day_at(
+        self,
+        instant: DateTime<Utc>,
+        calendar_tz: Tz,
+        kind: SessionKind,
+    ) -> bool {
+        status::is_closed_all_day_at(&QueryContext::date_aware(self), instant, calendar_tz, kind)
+    }
+}
+
+/// Creates a date-aware calendar for `exchange`.
+#[must_use]
+pub const fn calendar_for_exchange(exchange: Exchange) -> ExchangeCalendar {
+    ExchangeCalendar::new(exchange)
+}

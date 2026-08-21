@@ -11,6 +11,32 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ## [Unreleased]
 
+### Removed
+
+- **`tracing` is no longer a dependency.** It backed a single one-shot
+  `warn!`, fired when a caller passed `Exchange::Unknown` to
+  `hours_for_exchange` and received the documented 24×7 UTC fallback. That
+  variant is reachable only deliberately — it is not a `Default`, and neither
+  `FromStr` nor serde will produce it from an unrecognized name (both error) —
+  so the warning reported a choice the caller had just made, to a subscriber
+  most consumers of a pure-computation crate never install. The dependency
+  tree is now `chrono`, `chrono-tz`, and `serde` alone — 25 locked packages
+  down to 19, since `tracing-attributes` also pinned a second `syn` major
+  alongside the one `serde_derive` uses. Returned values are unchanged:
+  `hours_for_exchange(Exchange::Unknown)` still yields the 24×7 UTC fallback,
+  as the contract suite's always-open invariant pins. Only the log line is
+  gone.
+
+### Changed
+
+- `hours_for_exchange` is now `#[must_use]`, matching every other query in the
+  crate. It was the sole public query without the attribute: the removed
+  `warn!` was a side effect, so `clippy::must_use_candidate` never fired on
+  it. **This is visible downstream** — a caller that discards the returned
+  `MarketHours` now gets an `unused_must_use` warning, which is an error under
+  `#![deny(warnings)]`. The signature and the returned value are unchanged, so
+  any call that uses its result is unaffected.
+
 ## [0.2.0] - 2026-08-20
 
 API corrections published the same day as `0.1.0`, which is now **yanked** from

@@ -92,7 +92,9 @@ exchanges! {
     #[serde(rename_all = "snake_case")]
     pub enum Exchange {
         /// Unrecognized or unset venue; [`hours_for_exchange`](super::hours_for_exchange)
-        /// returns a 24×7 UTC fallback and logs a one-shot warning.
+        /// returns a 24×7 UTC fallback. Reaching this variant is always a
+        /// deliberate act: neither `FromStr` nor serde will produce it from an
+        /// unrecognized name, and it is not a `Default`.
         Unknown => "unknown",
 
         // US Equities (ET)

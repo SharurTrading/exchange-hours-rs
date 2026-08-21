@@ -45,7 +45,9 @@ expect_used = "deny"
 panic = "deny"
 todo = "deny"
 unreachable = "deny"
-# STYLE-LOG — a library observes through `tracing`, never through stdio.
+# STYLE-LOG — a library emits no output. This crate is pure computation, so
+# there is nothing to report that is not already in a return value; it carries
+# no logging facade at all.
 print_stdout = "deny"
 print_stderr = "deny"
 dbg_macro = "deny"
@@ -63,7 +65,6 @@ chrono = { version = "0.4.45", default-features = false, features = ["std"] }
 # 0.10.4 carries the fix for tz transitions specified in UTC and mid-2025 tzdb.
 chrono-tz = "0.10.4"
 serde = { version = "1.0.229", features = ["derive"] }
-tracing = "0.1.44"
 
 [dev-dependencies]
 serde_json = "1.0.151"

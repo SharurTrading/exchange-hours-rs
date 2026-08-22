@@ -34,12 +34,14 @@
 //!
 //! ## What this calendar is not
 //!
-//! It is a **normal-week** model. Holidays, early closes, half-days, and
-//! product-level variations are out of scope, so the internal holiday policy
-//! deliberately returns `false`. Each source-backed schedule states its
-//! venue, segment, or product-family scope explicitly; it is not a claim about
-//! products outside that scope. All query paths use the same session-existence
-//! policy.
+//! Built-in profiles are **normal-week** models and ship no holiday data.
+//! Callers can overlay their own deterministic, trade-date-keyed closures and
+//! early/late boundaries with [`DayPolicy`], [`StaticDayPolicy`], and
+//! [`PolicyCalendar`]. These scalar overrides do not represent a special day
+//! that replaces or splits internal phases. Each
+//! source-backed schedule states its venue, segment, or product-family scope
+//! explicitly; it is not a claim about products outside that scope. All fixed,
+//! date-aware, and policy-aware query paths share the same resolver.
 
 mod bulk;
 mod candle;
@@ -48,12 +50,14 @@ mod exchange_calendar;
 mod futures_profile;
 mod hours;
 mod local_time;
+mod policy;
 mod presets;
 mod query;
 mod resolution;
 mod rule;
 mod schedules;
 mod session;
+mod state;
 
 pub use bulk::{
     hours_for_all, hours_for_apac_equities, hours_for_eu_equities, hours_for_global_equities,
@@ -62,12 +66,17 @@ pub use bulk::{
 };
 pub use candle::{candle_end, candle_end_with, candle_start, candle_start_with, time_end_of_day};
 pub use exchange::{Exchange, ParseExchangeError};
-pub use exchange_calendar::{ExchangeCalendar, calendar_for_exchange};
+pub use exchange_calendar::{
+    CalendarSource, ExchangeCalendar, calendar_for_exchange, calendar_for_market_hours_key,
+};
 pub use futures_profile::{
     FuturesSessionProfile, MarketHoursKey, ParseMarketHoursKeyError, hours_for_market_hours_key,
     hours_for_market_hours_key_as_of, session_profile,
 };
 pub use hours::MarketHours;
+pub use policy::{
+    DayOverride, DayPolicy, NoPolicy, PolicyCalendar, StaticDayPolicy, StaticDayPolicyError,
+};
 pub use presets::{hours_for_exchange, hours_for_exchange_as_of};
 pub use resolution::CalendarResolution;
 pub use rule::{SessionKind, SessionRule, SessionRuleError};
@@ -75,3 +84,4 @@ pub use session::{
     next_session_after, next_session_after_with, next_session_open_after, session_bounds,
     session_bounds_with,
 };
+pub use state::SessionState;

@@ -14,7 +14,8 @@ mod prelude {
     pub(super) use chrono::Duration;
     pub(super) use chrono_tz::{Asia, Australia, Pacific, Tz};
     pub(super) use exchange_hours::{
-        Exchange, MarketHours, hours_for_apac_equities, hours_for_exchange,
+        CalendarResolution, Exchange, MarketHours, SessionKind, SessionState,
+        calendar_for_exchange, hours_for_apac_equities, hours_for_exchange,
         hours_for_exchange_as_of, hours_map_apac_equities,
     };
 

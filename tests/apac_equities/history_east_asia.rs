@@ -12,13 +12,11 @@ fn hong_kong_cutovers() {
     let at_0945 = local(tz, probe, (9, 45, 0));
     assert!(!pre.is_open_regular(at_0945));
     assert!(post.is_open_regular(at_0945));
+    let at_1300 = local(tz, probe, (13, 0, 0));
+    assert!(pre.is_open_regular(at_1300));
+    assert!(post.is_open_regular(at_1300));
 
-    let (pre, post) = cutover_sides(Exchange::Hkex, tz, (2012, 3, 5));
-    let at_1315 = local(tz, probe, (13, 15, 0));
-    assert!(!pre.is_open(at_1315));
-    assert!(post.is_open_regular(at_1315));
-
-    let (pre, post) = cutover_sides(Exchange::Hkex, tz, (2019, 10, 8));
+    let (pre, post) = cutover_sides(Exchange::Hkex, tz, (2016, 7, 25));
     let at_1605 = local(tz, probe, (16, 5, 0));
     assert!(!pre.is_open(at_1605));
     assert!(post.is_open_extended(at_1605));
@@ -40,9 +38,8 @@ fn mainland_china_cutovers() {
     assert!(!post.is_open(at_0927));
 
     for exchange in [Exchange::Sse, Exchange::Szse] {
-        let (pre, post) = cutover_sides(exchange, tz, (2026, 7, 6));
-        let at_1502 = local(tz, probe, (15, 2, 0));
-        assert!(!pre.is_open(at_1502));
-        assert!(post.is_open_extended(at_1502));
+        let baseline = hours_for_exchange_as_of(exchange, local(tz, (2010, 1, 4), (12, 0, 0)));
+        assert!(baseline.is_open_extended(local(tz, probe, (15, 20, 0))));
+        assert!(!baseline.is_open(local(tz, probe, (15, 30, 0))));
     }
 }

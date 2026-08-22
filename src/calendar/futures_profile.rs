@@ -5,40 +5,32 @@
 //! Futures hours track the *product family*, not just the exchange: CME
 //! equity-index and CME FX contracts list on the same venue but have separately
 //! sourced profiles. Keying on the family is therefore the correct granularity,
-//! and it is the surface `instrument-catalog` maps instrument roots onto.
+//! and the caller's sourced instrument catalog must select the exact family.
+//! This crate does not map symbols, roots, product codes, or MICs to keys.
 //!
-//! [`MarketHoursKey`] is `#[non_exhaustive]`: adding a family must not break a
-//! downstream match. The tables here are the same *current* statics the
-//! [`Exchange`]-keyed presets use — one source of truth, two addressing schemes.
-//! [`session_profile`] and [`hours_for_market_hours_key`] remain fixed-current
-//! compatibility snapshots. [`hours_for_market_hours_key_as_of`] selects every
-//! primary-sourced key revision available to the corresponding venue family.
-//! It returns one snapshot, not a scanning calendar: callers crossing a
-//! transition must resolve again for each date. [`ExchangeCalendar`](super::ExchangeCalendar)
-//! remains the date-aware session-scan API for venue identities.
+//! [`MarketHoursKey`] is `#[non_exhaustive]`. [`session_profile`] is a current
+//! snapshot, [`hours_for_market_hours_key_as_of`] selects sourced revisions,
+//! and [`ExchangeCalendar`](super::ExchangeCalendar) scans date-aware profiles.
 
 mod key_serde;
+mod profiles;
 
 pub use key_serde::ParseMarketHoursKeyError;
 use key_serde::market_hours_keys;
+pub use profiles::session_profile;
 
 use std::borrow::Cow;
 
 use chrono::{DateTime, Utc};
-use chrono_tz::UTC;
-use chrono_tz::{America, Asia, Europe, Tz, US};
+use chrono_tz::Tz;
 
 use super::local_time::bounded_utc;
-use super::rule::{ALL_DAYS, SUN_PLUS_MON_THU};
 use super::schedules::from_profile;
-use super::schedules::futures::international::{
-    EUREX_CURRENT_EXTENDED, EUREX_CURRENT_REGULAR, SGX_CURRENT_EXTENDED, SGX_CURRENT_REGULAR,
-    eurex_profile_at, sgx_profile_at,
-};
+use super::schedules::futures::international::{eurex_profile_at, sgx_profile_at};
 use super::schedules::futures::us::{
-    CBOT_EXTENDED_CURRENT, CBOT_REGULAR_CURRENT, CFE_EXTENDED, CFE_REGULAR, CME_EXTENDED_CURRENT,
-    CME_REGULAR, ENERGY_METALS_EXTENDED_CURRENT, ICE_US_FANG_EXTENDED_CURRENT, cbot_profile_at,
-    cfe_profile_at, cme_profile_at, energy_metals_profile_at, ice_us_fang_profile_at,
+    cbot_profile_at, cfe_profile_at, cme_profile_at, cryptocurrency_profile_at,
+    energy_metals_profile_at, fx_profile_at, ice_us_fang_profile_at, interest_rates_profile_at,
+    livestock_profile_at,
 };
 use super::{Exchange, MarketHours, SessionRule};
 
@@ -98,18 +90,53 @@ market_hours_keys! {
     /// variant has one stable canonical `snake_case` name, shared by serde,
     /// [`MarketHoursKey::as_str`], [`core::fmt::Display`], and
     /// [`core::str::FromStr`]. Serde uses that string in every format, including
-    /// compact non-self-describing formats.
+    /// compact non-self-describing formats. Renaming a key is therefore a
+    /// breaking persisted-wire change.
+    ///
+    /// The venue-keyed compatibility defaults are CME →
+    /// [`GlobexEquityIndex`](Self::GlobexEquityIndex), CBOT →
+    /// [`GlobexGrains`](Self::GlobexGrains), COMEX/NYMEX →
+    /// [`GlobexEnergy`](Self::GlobexEnergy), CFE → [`CfeVix`](Self::CfeVix),
+    /// Eurex → [`Eurex`](Self::Eurex), ICEUS → [`IceUs`](Self::IceUs), and SGX
+    /// → [`Sgx`](Self::Sgx). Those defaults are wrong for products outside the
+    /// named families; select a product-family key instead of treating a venue
+    /// as one universal clock.
     #[non_exhaustive]
     #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
     pub enum MarketHoursKey {
-        /// CME equity-index Globex hours.
+        /// CME/CBOT equity-index futures on the sourced U.S. grid, including
+        /// YM/MYM. Excludes full-size S&P 500 (`SP`), Nikkei 225 Dollar (`NKD`),
+        /// and BTIC/TACO products, whose historical or current grids differ.
         GlobexEquityIndex => "globex_equity_index",
-        /// COMEX Gold and NYMEX benchmark-energy Globex hours.
+        /// NYMEX `CL/MCL/QM`, `NG/MNG/QG`, `HO/RB/BZ`, and `PL/PA`, plus
+        /// COMEX `GC/MGC`, `SI/SIL`, and `HG/MHG`, including their shared
+        /// energy/metals history. Excludes TAS/TAM/BTIC, options, and products
+        /// whose own specification publishes a different grid.
         GlobexEnergy => "globex_energy",
-        /// CBOT grains/oilseeds Globex hours.
+        /// Standard-size CBOT grain/oilseed Globex hours; excludes mini-sized
+        /// Corn, Soybean, and Wheat futures, whose 2012 schedule diverged.
         GlobexGrains => "globex_grains",
-        /// CME FX Globex hours.
+        /// CME FX futures on the standard 17:00-16:00 CT Globex grid; excludes
+        /// eFix, BTIC, TAS, options, and products with a different specification.
         GlobexFx => "globex_fx",
+        /// CBOT U.S. Treasury (`ZT/ZF/ZN/TN/ZB/UB` and micros), 30-Day Fed
+        /// Funds (`ZQ`), and CME SOFR (`SR1/SR3`) Globex hours. Excludes
+        /// options and separately specified interest-rate product families.
+        GlobexInterestRates => "globex_interest_rates",
+        /// CME Live Cattle, Feeder Cattle, and Lean Hog futures Globex hours;
+        /// excludes options and separately specified TAS sessions.
+        GlobexLivestock => "globex_livestock",
+        /// CME non-spot-quoted cryptocurrency futures Globex hours.
+        ///
+        /// The fixed profile uses adjacent rules for exact open/closed state.
+        /// [`calendar_for_market_hours_key`](super::calendar_for_market_hours_key)
+        /// joins the storage pieces into exact weekend blocks and applies CME's
+        /// following-open-business-day convention. That date is normally
+        /// Monday; a caller policy that closes Monday rolls the trading to
+        /// Tuesday. Friday 16:00 remains the weekly close. Detached fixed
+        /// snapshots retain table-piece bounds and do not expose that weekly
+        /// boundary or trade dates because they carry no key identity.
+        GlobexCryptocurrency => "globex_cryptocurrency",
         /// CFE VIX futures hours.
         CfeVix => "cfe_vix",
         /// Eurex FESX/FDAX/FDXM benchmark-index futures current-season snapshot.
@@ -119,124 +146,10 @@ market_hours_keys! {
         /// SGX Three-Month SORA Futures current profile.
         Sgx => "sgx",
         /// Continuous 24x7 UTC profile.
+        ///
+        /// It has no final daily close, so date-aware trade-date queries return
+        /// `None` at every instant.
         AlwaysOpen => "always_open",
-    }
-}
-
-static ALWAYS_OPEN_RULE: &[SessionRule] = &[SessionRule {
-    days: ALL_DAYS,
-    open_ssm: 0,
-    close_ssm: 24 * 3600,
-}];
-
-static FUTURES_GLOBEX_EQUITY_INDEX: FuturesSessionProfile = FuturesSessionProfile {
-    tz: US::Central,
-    regular: CME_REGULAR,
-    extended: CME_EXTENDED_CURRENT,
-    has_daily_close: true,
-    has_weekend_close: true,
-};
-
-// This profile borrows the current representative COMEX Gold / NYMEX benchmark
-// energy rule owned with that product family's dated history.
-static FUTURES_GLOBEX_ENERGY: FuturesSessionProfile = FuturesSessionProfile {
-    tz: US::Central,
-    regular: &[],
-    extended: ENERGY_METALS_EXTENDED_CURRENT,
-    has_daily_close: true,
-    has_weekend_close: true,
-};
-
-// CME's 2010 FX guide publishes this grid for all major CME FX futures, and
-// primary operator snapshots from 2018, 2020, and the current product material
-// retain it. The last normal-week change found in CME's electronic-trading
-// notices was effective in February 2009, before the crate's January-2010 audit
-// floor. This fixed key therefore has no in-scope dated revision.
-// https://www.cmegroup.com/tools-information/lookups/advisories/electronic-trading/20081229.html
-// https://www.cmegroup.com/trading/fx/files/FX248-2010_FX_Product_Guide_and_Calendar.pdf
-// https://www.cmegroup.com/trading/fx/fx-report/files/q1-2018-cme-fx-products.pdf
-// https://www.cmegroup.com/trading/fx/files/emfx-brochure-q3-2020.pdf
-// https://www.cmegroup.com/articles/faqs/frequently-asked-questions-cme-fx-futures-calendar-spreads.html
-static CME_FX_EXTENDED_CURRENT: &[SessionRule] = &[SessionRule {
-    days: SUN_PLUS_MON_THU,
-    open_ssm: 17 * 3600,
-    close_ssm: 16 * 3600,
-}];
-static FUTURES_GLOBEX_FX: FuturesSessionProfile = FuturesSessionProfile {
-    tz: US::Central,
-    regular: &[],
-    extended: CME_FX_EXTENDED_CURRENT,
-    has_daily_close: true,
-    has_weekend_close: true,
-};
-
-static FUTURES_GLOBEX_GRAINS: FuturesSessionProfile = FuturesSessionProfile {
-    tz: US::Central,
-    regular: CBOT_REGULAR_CURRENT,
-    extended: CBOT_EXTENDED_CURRENT,
-    has_daily_close: true,
-    has_weekend_close: true,
-};
-
-static FUTURES_CFE_VIX: FuturesSessionProfile = FuturesSessionProfile {
-    tz: US::Central,
-    regular: CFE_REGULAR,
-    extended: CFE_EXTENDED,
-    has_daily_close: true,
-    has_weekend_close: true,
-};
-
-static FUTURES_EUREX: FuturesSessionProfile = FuturesSessionProfile {
-    tz: Europe::Berlin,
-    regular: EUREX_CURRENT_REGULAR,
-    extended: EUREX_CURRENT_EXTENDED,
-    has_daily_close: true,
-    has_weekend_close: true,
-};
-
-static FUTURES_ICE_US: FuturesSessionProfile = FuturesSessionProfile {
-    tz: America::New_York,
-    regular: &[],
-    extended: ICE_US_FANG_EXTENDED_CURRENT,
-    has_daily_close: true,
-    has_weekend_close: true,
-};
-
-static FUTURES_SGX: FuturesSessionProfile = FuturesSessionProfile {
-    tz: Asia::Singapore,
-    regular: SGX_CURRENT_REGULAR,
-    extended: SGX_CURRENT_EXTENDED,
-    has_daily_close: true,
-    has_weekend_close: true,
-};
-
-static FUTURES_ALWAYS_OPEN: FuturesSessionProfile = FuturesSessionProfile {
-    tz: UTC,
-    regular: ALWAYS_OPEN_RULE,
-    extended: &[],
-    has_daily_close: false,
-    has_weekend_close: false,
-};
-
-/// Returns the fixed-current normal-week futures session profile for a well-known key.
-///
-/// This function does not select historical revisions. Use
-/// [`hours_for_market_hours_key_as_of`] for a dated key snapshot. Callers that
-/// scan across a transition must re-resolve for each date; the venue-keyed
-/// [`ExchangeCalendar`](super::ExchangeCalendar) performs that reselection
-/// while scanning.
-#[must_use]
-pub fn session_profile(key: MarketHoursKey) -> &'static FuturesSessionProfile {
-    match key {
-        MarketHoursKey::GlobexEquityIndex => &FUTURES_GLOBEX_EQUITY_INDEX,
-        MarketHoursKey::GlobexEnergy => &FUTURES_GLOBEX_ENERGY,
-        MarketHoursKey::GlobexGrains => &FUTURES_GLOBEX_GRAINS,
-        MarketHoursKey::GlobexFx => &FUTURES_GLOBEX_FX,
-        MarketHoursKey::CfeVix => &FUTURES_CFE_VIX,
-        MarketHoursKey::Eurex => &FUTURES_EUREX,
-        MarketHoursKey::IceUs => &FUTURES_ICE_US,
-        MarketHoursKey::Sgx => &FUTURES_SGX,
-        MarketHoursKey::AlwaysOpen => &FUTURES_ALWAYS_OPEN,
     }
 }
 
@@ -248,7 +161,10 @@ pub fn session_profile(key: MarketHoursKey) -> &'static FuturesSessionProfile {
 /// [`session_profile`] returns — not a second source of truth. The `exchange`
 /// tag is [`Exchange::Unknown`] because the key, not a venue enum, identifies
 /// these shared futures profiles. This function does not select historical
-/// revisions.
+/// revisions. For [`MarketHoursKey::GlobexCryptocurrency`], open/closed state
+/// remains exact, but identity-dependent multi-day bounds, trade dates, and
+/// weekly candle boundaries are available only from
+/// [`calendar_for_market_hours_key`](super::calendar_for_market_hours_key).
 #[must_use]
 pub fn hours_for_market_hours_key(key: MarketHoursKey) -> MarketHours {
     session_profile(key).to_market_hours(Exchange::Unknown)
@@ -256,20 +172,22 @@ pub fn hours_for_market_hours_key(key: MarketHoursKey) -> MarketHours {
 
 /// Resolves the fixed [`MarketHours`] snapshot in effect for `key` at `as_of`.
 ///
-/// Sourced histories are reused from the corresponding product-family venue:
-/// CME equity-index, COMEX Gold/NYMEX benchmark energy, CBOT grains/oilseeds,
-/// CFE VIX, Eurex benchmark-index, ICE U.S. NYSE FANG+, and SGX Three-Month
-/// SORA futures. Keys with no in-scope recorded change return their current
-/// snapshot. Dates before the January-2010 audit floor receive the oldest
-/// audited profile. For launch-dated families — currently ICE U.S. NYSE FANG+
-/// and SGX Three-Month SORA — a pre-launch date returns an explicit sessionless
-/// profile that reports closed at every instant. That result means the market
-/// was closed, not that schedule data is missing.
+/// Sourced histories are selected independently for each product family,
+/// including CME Group equity-index, energy/metals, grains, FX, interest-rate,
+/// livestock, and cryptocurrency grids. Keys with no in-scope recorded change
+/// return their current snapshot. Dates before the January-2010 audit floor
+/// receive the oldest audited profile. For launch-dated families — CME
+/// cryptocurrency, ICE U.S. NYSE FANG+, and SGX Three-Month SORA — a pre-launch
+/// date returns an explicit sessionless profile. A member listed after its
+/// family began does not create a key-level revision; callers enforce product
+/// launch dates in their catalog. Some CME histories have an exact current
+/// fixed profile but no primary day for an older Pre-Open or PCP onset. Their
+/// dated selectors intentionally omit only that unsourced phase rather than
+/// fabricate a cutover; use [`session_profile`] for the exact current snapshot.
 ///
-/// This returns one snapshot. A caller spanning a schedule transition must
-/// invoke it again for each date; there is intentionally no key-keyed calendar
-/// type in this release. Use [`ExchangeCalendar`](super::ExchangeCalendar) for
-/// date-aware scans when a venue identity is available.
+/// This returns one snapshot. Use
+/// [`calendar_for_market_hours_key`](super::calendar_for_market_hours_key) for
+/// date-aware scans that cross a family revision.
 #[must_use]
 pub fn hours_for_market_hours_key_as_of(key: MarketHoursKey, as_of: DateTime<Utc>) -> MarketHours {
     let current = hours_for_market_hours_key(key);
@@ -278,11 +196,15 @@ pub fn hours_for_market_hours_key_as_of(key: MarketHoursKey, as_of: DateTime<Utc
         MarketHoursKey::GlobexEquityIndex => cme_profile_at(as_of),
         MarketHoursKey::GlobexEnergy => energy_metals_profile_at(as_of),
         MarketHoursKey::GlobexGrains => cbot_profile_at(as_of),
+        MarketHoursKey::GlobexFx => fx_profile_at(as_of),
+        MarketHoursKey::GlobexInterestRates => interest_rates_profile_at(as_of),
+        MarketHoursKey::GlobexLivestock => livestock_profile_at(as_of),
+        MarketHoursKey::GlobexCryptocurrency => cryptocurrency_profile_at(as_of),
         MarketHoursKey::CfeVix => cfe_profile_at(as_of),
         MarketHoursKey::Eurex => eurex_profile_at(as_of),
         MarketHoursKey::IceUs => ice_us_fang_profile_at(as_of),
         MarketHoursKey::Sgx => sgx_profile_at(as_of),
-        MarketHoursKey::GlobexFx | MarketHoursKey::AlwaysOpen => return current,
+        MarketHoursKey::AlwaysOpen => return current,
     };
     from_profile(Exchange::Unknown, profile)
 }

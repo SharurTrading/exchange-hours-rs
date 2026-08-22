@@ -27,6 +27,10 @@ use crate::calendar::{Exchange, MarketHours, MarketHoursKey, session_profile};
 /// B3's short grid, BMV's early grid, Vienna's ordinary non-settlement grid,
 /// and the current-season reference-clock grids for the three derivatives
 /// profiles.
+#[expect(
+    clippy::too_many_lines,
+    reason = "one exhaustive match is the compile-time fence for every Exchange variant"
+)]
 #[must_use]
 pub fn hours_for_exchange(exch: Exchange) -> MarketHours {
     match exch {
@@ -47,6 +51,9 @@ pub fn hours_for_exchange(exch: Exchange) -> MarketHours {
         Exchange::MemxEq => from_profile(exch, &us::MEMX_EQ_PROFILE),
         Exchange::MiaxPearlEq => from_profile(exch, &us::MIAX_PEARL_EQ_PROFILE),
         Exchange::Iex => from_profile(exch, &us::IEX_PROFILE),
+        Exchange::Ltse => from_profile(exch, &us::LTSE_PROFILE),
+        Exchange::TwentyFourX => from_profile(exch, &us::TWENTY_FOUR_X_PROFILE),
+        Exchange::Txse => from_profile(exch, &us::TXSE_PROFILE),
         Exchange::BlueOceanAts => from_profile(exch, &us::BLUE_OCEAN_PROFILE),
         Exchange::FinraTrfCarteret => from_profile(exch, &us::FINRA_TRF_CARTERET_PROFILE),
         Exchange::FinraTrfChicago => from_profile(exch, &us::FINRA_TRF_CHICAGO_PROFILE),

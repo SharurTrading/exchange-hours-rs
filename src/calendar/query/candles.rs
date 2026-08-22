@@ -5,8 +5,8 @@
 use chrono::{DateTime, Datelike, Duration, Utc};
 
 use super::periods::{
-    daily_close_for_local_day, next_daily_close_after_with, next_monthly_close_after_with,
-    next_weekly_close_after_with,
+    daily_close_for_trade_date, next_daily_close_after_with, next_monthly_close_after_with,
+    next_weekly_close_after_with, trade_date_for_daily_close,
 };
 use super::schedule::QueryContext;
 use super::sessions::{next_session_after_with, session_bounds_with};
@@ -33,7 +33,7 @@ pub(in crate::calendar) fn candle_end_with(
     {
         return None;
     }
-    if resolution == CalendarResolution::Weekly && !context.has_weekend_close_at(instant) {
+    if resolution == CalendarResolution::Weekly && !context.has_weekly_close_at(instant) {
         return None;
     }
     match resolution {
@@ -109,12 +109,11 @@ fn period_start(
     kind: SessionKind,
 ) -> Option<DateTime<Utc>> {
     let end = candle_end_with(context, instant, resolution, kind)?;
-    let tz = context.tz();
-    let end_local = end.with_timezone(&tz);
-    let end_day = end_local.date_naive();
-    let end_week = end_local.iso_week();
-    let end_month = (end_local.year(), end_local.month());
+    let end_day = trade_date_for_daily_close(context, end, kind)?;
+    let end_week = end_day.iso_week();
+    let end_month = (end_day.year(), end_day.month());
     let mut first_close = end;
+    let mut first_trade_date = end_day;
 
     if resolution != CalendarResolution::Daily
         && let Some(mut day) = end_day.pred_opt()
@@ -131,8 +130,9 @@ fn period_start(
             if !same_period {
                 break;
             }
-            if let Some(close) = daily_close_for_local_day(context, day, kind) {
+            if let Some(close) = daily_close_for_trade_date(context, day, kind) {
                 first_close = close;
+                first_trade_date = day;
             }
             let Some(previous_day) = day.pred_opt() else {
                 break;
@@ -141,12 +141,12 @@ fn period_start(
         }
     }
 
-    let Some(mut day) = first_close.with_timezone(&tz).date_naive().pred_opt() else {
+    let Some(mut day) = first_trade_date.pred_opt() else {
         return first_representable_period_open(context, first_close, kind);
     };
     let mut previous_close = None;
     for _ in 0..PREVIOUS_CLOSE_LOOKBACK_DAYS {
-        if let Some(close) = daily_close_for_local_day(context, day, kind)
+        if let Some(close) = daily_close_for_trade_date(context, day, kind)
             && close < first_close
         {
             previous_close = Some(close);

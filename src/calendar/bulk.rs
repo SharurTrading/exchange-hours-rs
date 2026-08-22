@@ -37,6 +37,9 @@ const US_EQUITY_EXCHANGES: &[Exchange] = &[
     Exchange::MemxEq,
     Exchange::MiaxPearlEq,
     Exchange::Iex,
+    Exchange::Ltse,
+    Exchange::TwentyFourX,
+    Exchange::Txse,
     Exchange::BlueOceanAts,
 ];
 

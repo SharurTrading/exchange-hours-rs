@@ -10,6 +10,12 @@ const EXPECTED_MARKET_HOURS_KEYS: &[(MarketHoursKey, &str)] = &[
     (MarketHoursKey::GlobexEnergy, "globex_energy"),
     (MarketHoursKey::GlobexGrains, "globex_grains"),
     (MarketHoursKey::GlobexFx, "globex_fx"),
+    (MarketHoursKey::GlobexInterestRates, "globex_interest_rates"),
+    (MarketHoursKey::GlobexLivestock, "globex_livestock"),
+    (
+        MarketHoursKey::GlobexCryptocurrency,
+        "globex_cryptocurrency",
+    ),
     (MarketHoursKey::CfeVix, "cfe_vix"),
     (MarketHoursKey::Eurex, "eurex"),
     (MarketHoursKey::IceUs, "ice_us"),
@@ -86,11 +92,11 @@ fn futures_session_profile_globex_equity_index_respects_daily_break() {
     );
     assert!(
         !profile.is_open(ct((2026, 4, 20), (16, 30, 0))),
-        "Globex equity-index profile is closed during the 16:00-17:00 CT maintenance break"
+        "Globex equity-index profile is closed during the 16:00-16:45 CT maintenance gap"
     );
     assert!(
         profile.is_open(ct((2026, 4, 20), (17, 0, 0))),
-        "Globex equity-index profile reopens at 17:00 CT"
+        "Globex equity-index matching resumes at 17:00 CT"
     );
 }
 
@@ -104,7 +110,7 @@ fn futures_session_profile_globex_energy_uses_wrap_session() {
     );
     assert!(
         !profile.is_open(ct((2026, 4, 20), (16, 30, 0))),
-        "Globex energy profile is closed during the 16:00-17:00 CT maintenance break"
+        "Globex energy profile is closed during the 16:00-16:45 CT maintenance gap"
     );
 }
 
@@ -112,13 +118,14 @@ fn futures_session_profile_globex_energy_uses_wrap_session() {
 fn futures_session_profile_globex_fx_matches_current_major_cme_fx_grid() {
     let profile = session_profile(MarketHoursKey::GlobexFx);
 
+    assert!(!profile.is_open(ct((2026, 4, 19), (15, 59, 59))));
     assert!(
-        !profile.is_open(ct((2026, 4, 19), (16, 59, 59))),
-        "CME FX is closed before the Sunday 17:00 CT open"
+        profile.is_open(ct((2026, 4, 19), (16, 0, 0))),
+        "CME FX enters its Sunday Pre-Open at 16:00 CT"
     );
     assert!(
         profile.is_open(ct((2026, 4, 19), (17, 0, 0))),
-        "CME FX opens Sunday at 17:00 CT"
+        "CME FX matching begins Sunday at 17:00 CT"
     );
     assert!(
         profile.is_open(ct((2026, 4, 20), (15, 59, 59))),
@@ -130,7 +137,7 @@ fn futures_session_profile_globex_fx_matches_current_major_cme_fx_grid() {
     );
     assert!(
         profile.is_open(ct((2026, 4, 20), (17, 0, 0))),
-        "CME FX reopens after the daily maintenance break"
+        "CME FX matching resumes after Pre-Open"
     );
     assert!(
         !profile.is_open(ct((2026, 4, 25), (12, 0, 0))),
@@ -220,8 +227,10 @@ fn dated_market_hours_keys_reuse_cme_group_and_cfe_histories() {
         MarketHoursKey::GlobexGrains,
         ct((2012, 5, 20), (0, 0, 0)),
     );
-    assert!(!grains_before.is_open(ct((2012, 5, 20), (17, 0, 0))));
+    assert!(grains_before.is_open_extended(ct((2012, 5, 20), (17, 0, 0))));
     assert!(grains_after.is_open_extended(ct((2012, 5, 20), (17, 0, 0))));
+    assert!(grains_before.is_open_extended(ct((2012, 5, 21), (14, 30, 0))));
+    assert!(!grains_after.is_open(ct((2012, 5, 21), (14, 30, 0))));
 
     let cfe_before =
         hours_for_market_hours_key_as_of(MarketHoursKey::CfeVix, ct((2010, 12, 9), (12, 0, 0)));
@@ -262,7 +271,7 @@ fn dated_market_hours_keys_reuse_international_product_launches() {
     let ice_launch =
         hours_for_market_hours_key_as_of(MarketHoursKey::IceUs, et((2017, 11, 7), (0, 0, 0)));
     assert!(!ice_before.is_open(et((2017, 11, 7), (20, 0, 0))));
-    assert!(ice_launch.is_open_extended(et((2017, 11, 7), (20, 0, 0))));
+    assert!(ice_launch.is_open_regular(et((2017, 11, 7), (20, 0, 0))));
 
     let sgx_before =
         hours_for_market_hours_key_as_of(MarketHoursKey::Sgx, sgt((2024, 7, 28), (12, 0, 0)));
@@ -273,12 +282,7 @@ fn dated_market_hours_keys_reuse_international_product_launches() {
 }
 
 #[test]
-fn keys_without_an_in_scope_revision_return_the_current_snapshot() {
-    let fx_2010 =
-        hours_for_market_hours_key_as_of(MarketHoursKey::GlobexFx, ct((2010, 1, 4), (12, 0, 0)));
-    let fx_current = hours_for_market_hours_key(MarketHoursKey::GlobexFx);
-    assert_eq!(fx_2010, fx_current);
-
+fn synthetic_key_without_an_in_scope_revision_returns_the_current_snapshot() {
     let continuous_2010 =
         hours_for_market_hours_key_as_of(MarketHoursKey::AlwaysOpen, utc((2010, 1, 4), (12, 0, 0)));
     assert_eq!(

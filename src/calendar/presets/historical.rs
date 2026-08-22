@@ -9,10 +9,11 @@
 //!
 //! **Evidence rule.** A selector is added only when the owning venue module has
 //! primary evidence for an unconditional, day-level boundary
-//! (LAW-NO-FABRICATED-DATES). The current verification ledger records no
-//! modeled-history gap within any row's stated scope. Undated changes are
-//! disclosed, and conditional future plans remain unselected, rather than this
-//! router inventing or prematurely activating a cutover.
+//! (LAW-NO-FABRICATED-DATES). Undated changes are disclosed as `Partial` gaps,
+//! and conditional future plans remain unselected, rather than this router
+//! inventing or prematurely activating a cutover. A fixed current profile may
+//! therefore contain a source-verified phase that a Partial dated selector
+//! conservatively omits until an effective day is found.
 
 use chrono::{DateTime, Utc};
 
@@ -36,7 +37,9 @@ use super::hours_for_exchange;
 /// every candidate opening day.
 ///
 /// Venues without recorded historical revisions return their current profile.
-/// See the module documentation for the evidence rule applied to revisions.
+/// A `Partial` owner may intentionally omit an undated historical phase even
+/// for recent `as_of` values; use [`hours_for_exchange`] for the exact fixed
+/// current snapshot and consult the verification ledger for the named gap.
 #[must_use]
 pub fn hours_for_exchange_as_of(exch: Exchange, as_of: DateTime<Utc>) -> MarketHours {
     let current = hours_for_exchange(exch);
@@ -49,10 +52,17 @@ pub fn hours_for_exchange_as_of(exch: Exchange, as_of: DateTime<Utc>) -> MarketH
         Exchange::CboeBzx => us::bzx_profile_at(as_of),
         Exchange::CboeByx => us::byx_profile_at(as_of),
         Exchange::CboeEdga => us::edga_profile_at(as_of),
+        Exchange::Nyse => us::nyse_profile_at(as_of),
+        Exchange::NyseArca => us::nyse_arca_profile_at(as_of),
         Exchange::CboeOptionsC1 => us::c1_profile_at(as_of),
         Exchange::CboeC2Options => us::c2_options_profile_at(as_of),
         Exchange::CboeBzxOptions => us::bzx_options_profile_at(as_of),
         Exchange::CboeEdgxOptions => us::edgx_options_profile_at(as_of),
+        Exchange::NyseArcaOptions => us::nyse_arca_options_profile_at(as_of),
+        Exchange::NyseAmericanOptions => us::nyse_american_options_profile_at(as_of),
+        Exchange::NasdaqPhlx => us::nasdaq_phlx_profile_at(as_of),
+        Exchange::NasdaqIse => us::nasdaq_ise_profile_at(as_of),
+        Exchange::NasdaqNom => us::nasdaq_nom_profile_at(as_of),
         Exchange::NasdaqMrx => us::nasdaq_mrx_profile_at(as_of),
         Exchange::NasdaqGemx => us::nasdaq_gemx_profile_at(as_of),
         Exchange::NasdaqBxOptions => us::nasdaq_bx_options_profile_at(as_of),
@@ -60,8 +70,12 @@ pub fn hours_for_exchange_as_of(exch: Exchange, as_of: DateTime<Utc>) -> MarketH
         Exchange::MiaxEmeraldOptions => us::miax_emerald_options_profile_at(as_of),
         Exchange::MiaxPearlOptions => us::miax_pearl_options_profile_at(as_of),
         Exchange::MiaxSapphireOptions => us::miax_sapphire_options_profile_at(as_of),
+        Exchange::BoxOptions => us::box_options_profile_at(as_of),
         Exchange::MemxOptions => us::memx_options_profile_at(as_of),
         Exchange::Iex => us::iex_profile_at(as_of),
+        Exchange::Ltse => us::ltse_profile_at(as_of),
+        Exchange::TwentyFourX => us::twenty_four_x_profile_at(as_of),
+        Exchange::Txse => us::txse_profile_at(as_of),
         Exchange::NyseAmerican => us::nyse_american_profile_at(as_of),
         Exchange::NyseNational => us::nyse_national_profile_at(as_of),
         Exchange::NyseTexas => us::nyse_texas_profile_at(as_of),

@@ -33,9 +33,13 @@ fn every_fixed_venue_calendar_matches_the_current_market_hours_surface() {
     ];
 
     for &exchange in Exchange::ALL {
-        // B3/BMV/Vienna and the international reference-clock selectors are
-        // intentionally date-dependent.
-        if matches!(
+        // Seasonal/reference-clock selectors are intentionally date-dependent.
+        // Partial rows with an undated queue/PCP onset also differ by design:
+        // the fixed profile is the exact current snapshot, while dated routing
+        // retains only phases whose effective day is primary-sourced. CME,
+        // COMEX, and NYMEX lack the Sunday queue-change day; CBOT additionally
+        // has unresolved post-2012 queue and PCP onset dates.
+        let current_snapshot_may_differ = matches!(
             exchange,
             Exchange::B3
                 | Exchange::Bmv
@@ -43,16 +47,62 @@ fn every_fixed_venue_calendar_matches_the_current_market_hours_surface() {
                 | Exchange::Eurex
                 | Exchange::IceEndex
                 | Exchange::IceAbuDhabi
-        ) {
-            continue;
-        }
+                | Exchange::CboeEdga
+                | Exchange::CboeEdgx
+                | Exchange::Nyse
+                | Exchange::NyseArca
+                | Exchange::NyseAmerican
+                | Exchange::NyseNational
+                | Exchange::CboeOptionsC1
+                | Exchange::CboeC2Options
+                | Exchange::CboeBzxOptions
+                | Exchange::CboeEdgxOptions
+                | Exchange::NyseArcaOptions
+                | Exchange::NyseAmericanOptions
+                | Exchange::NasdaqPhlx
+                | Exchange::NasdaqIse
+                | Exchange::NasdaqNom
+                | Exchange::NasdaqMrx
+                | Exchange::NasdaqGemx
+                | Exchange::NasdaqBxOptions
+                | Exchange::MiaxOptions
+                | Exchange::MiaxEmeraldOptions
+                | Exchange::MiaxPearlOptions
+                | Exchange::MiaxSapphireOptions
+                | Exchange::BoxOptions
+                | Exchange::Cme
+                | Exchange::Cbot
+                | Exchange::Comex
+                | Exchange::Nymex
+        );
+        // Recurring selectors can reselect during a multi-day candle scan, and
+        // SET's identified calendar assigns its post-midnight DR tail to the
+        // prior opening-day trade date. A detached MarketHours snapshot cannot
+        // reproduce those identity-aware bounds; dedicated venue tests pin the
+        // intentional distinctions. Partial CME calendars have no such special
+        // topology, so they retain this parity coverage.
+        let calendar_has_identity_specific_topology = matches!(
+            exchange,
+            Exchange::B3
+                | Exchange::Bmv
+                | Exchange::Vienna
+                | Exchange::Eurex
+                | Exchange::IceEndex
+                | Exchange::IceAbuDhabi
+                | Exchange::SetThailand
+        );
+
         for instant in instants {
-            assert_eq!(
-                hours_for_exchange_as_of(exchange, instant),
-                hours_for_exchange(exchange),
-                "{exchange:?}: current and as-of snapshots diverge at {instant}"
-            );
-            assert_fixed_calendar_parity(exchange, instant);
+            if !current_snapshot_may_differ {
+                assert_eq!(
+                    hours_for_exchange_as_of(exchange, instant),
+                    hours_for_exchange(exchange),
+                    "{exchange:?}: current and as-of snapshots diverge at {instant}"
+                );
+            }
+            if !calendar_has_identity_specific_topology {
+                assert_fixed_calendar_parity(exchange, instant);
+            }
         }
     }
 }

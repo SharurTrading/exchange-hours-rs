@@ -52,13 +52,17 @@ fn iceus_sunday_morning_closed_before_open() {
 #[test]
 fn iceus_equal_endpoint_rule_is_one_continuous_sunday_session() {
     // ICE's FANG+ specification publishes 20:00-18:00 ET and an exceptional
-    // Sunday 18:00 open. Equal endpoints describe one complete local day.
+    // Sunday 18:00 open, preceded by a 17:30 Pre-Open. Equal endpoints
+    // describe one complete local day after that distinct queue phase.
     // https://www.ice.com/products/66380320/NYSE-FANG-Index-Future
     let h = hours_for_exchange(Exchange::Iceus);
+    let pre_open = et((2026, 4, 19), (17, 30, 0));
     let sunday_open = et((2026, 4, 19), (18, 0, 0));
     let monday_close = et((2026, 4, 20), (18, 0, 0));
 
-    assert!(!h.is_open(sunday_open - chrono::Duration::seconds(1)));
+    assert!(!h.is_open(pre_open - chrono::Duration::seconds(1)));
+    assert!(h.is_open_extended(pre_open));
+    assert!(h.is_open(sunday_open - chrono::Duration::seconds(1)));
     assert!(h.is_open(sunday_open));
     assert!(h.is_open(et((2026, 4, 20), (0, 0, 0))));
     assert!(h.is_open(monday_close - chrono::Duration::seconds(1)));
@@ -77,14 +81,14 @@ fn iceus_equal_endpoint_rule_is_one_continuous_sunday_session() {
     );
     assert_eq!(
         candle_start(&h, et((2026, 4, 20), (12, 0, 0)), CalendarResolution::Daily,),
-        Some(sunday_open)
+        Some(pre_open)
     );
-    assert_eq!(h.normal_week_open_seconds(), 112 * 3600);
+    assert_eq!(h.normal_week_open_seconds(), 114 * 3600 + 30 * 60);
 
-    let before = sunday_open - chrono::Duration::seconds(1);
+    let before = pre_open - chrono::Duration::seconds(1);
     assert_eq!(
         next_session_after(&h, before),
-        Some((sunday_open, monday_close))
+        Some((pre_open, sunday_open))
     );
     let calendar = calendar_for_exchange(Exchange::Iceus);
     assert_eq!(
@@ -93,7 +97,7 @@ fn iceus_equal_endpoint_rule_is_one_continuous_sunday_session() {
     );
     assert_eq!(
         calendar.candle_start(et((2026, 4, 20), (12, 0, 0)), CalendarResolution::Daily,),
-        Some(sunday_open)
+        Some(pre_open)
     );
     assert_eq!(
         calendar.candle_end(sunday_open, CalendarResolution::Daily),
@@ -101,7 +105,7 @@ fn iceus_equal_endpoint_rule_is_one_continuous_sunday_session() {
     );
     assert_eq!(
         calendar.normal_week_open_seconds_containing(sunday_open),
-        112 * 3600
+        114 * 3600 + 30 * 60
     );
 }
 

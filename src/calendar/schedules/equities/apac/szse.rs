@@ -31,10 +31,6 @@ static CHINA_EXTENDED_CORE: &[SessionRule] = &[
         open_ssm: 14 * 3600 + 57 * 60,
         close_ssm: 15 * 3600,
     },
-];
-static CHINA_EXTENDED_CURRENT: &[SessionRule] = &[
-    CHINA_EXTENDED_CORE[0],
-    CHINA_EXTENDED_CORE[1],
     SessionRule {
         days: MON_FRI,
         open_ssm: 15 * 3600,
@@ -52,19 +48,20 @@ static SZSE_EXTENDED_PRE_2016: &[SessionRule] = &[
         open_ssm: 14 * 3600 + 57 * 60,
         close_ssm: 15 * 3600,
     },
+    CHINA_EXTENDED_CORE[2],
 ];
-// Effective 2026-07-06, both exchanges extended generic after-hours
-// fixed-price order acceptance through 15:30 (matching begins 15:05). The
-// 15:00–15:05 order-only slice is extended by convention. Product-specific
-// STAR/ChiNext predecessors are excluded.
-// SSE rule and notice:
-// https://www.sse.com.cn/lawandrules/sselawsrules2025/stocks/exchange/c/c_20260424_10816482.shtml
-// SZSE rule and notice:
+// SZSE has accepted block-trading declarations through 15:30 since before the
+// January-2010 audit floor. The 2026-07-06 generic fixed-price expansion
+// changed eligibility inside that existing venue envelope, not the
+// exchange-level close. Block and fixed-price phases are extended by
+// convention; not every security is eligible for them.
 // https://www.szse.cn/lawrules/rule/trade/current/t20260424_620190.html
+// Block-trading rule effective 2006-07-01:
+// https://www.szse.cn/disclosure/notice/general/t20060515_499577.html
 pub(crate) static SZSE_PROFILE_CURRENT: StaticHoursProfile = StaticHoursProfile {
     tz: Asia::Shanghai,
     regular: CHINA_REGULAR_WITH_CLOSE_CALL,
-    extended: CHINA_EXTENDED_CURRENT,
+    extended: CHINA_EXTENDED_CORE,
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -90,16 +87,10 @@ use crate::calendar::schedules::timeline::{Revision, effective_date, local_date,
 
 pub(crate) const CURRENT: &StaticHoursProfile = &SZSE_PROFILE_CURRENT;
 
-static REVISIONS: &[Revision] = &[
-    Revision {
-        effective: effective_date(2016, 5, 9),
-        profile: &SZSE_PROFILE_POST_2016_05_09,
-    },
-    Revision {
-        effective: effective_date(2026, 7, 6),
-        profile: &SZSE_PROFILE_CURRENT,
-    },
-];
+static REVISIONS: &[Revision] = &[Revision {
+    effective: effective_date(2016, 5, 9),
+    profile: &SZSE_PROFILE_POST_2016_05_09,
+}];
 
 pub(crate) fn profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {
     select_revision(

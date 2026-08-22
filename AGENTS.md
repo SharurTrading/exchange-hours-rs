@@ -2,9 +2,8 @@
 
 # AGENTS.md — conventions for humans and coding agents
 
-This file defines the named laws referenced in code comments (they originated in
-the Sharur v1 monolith this crate was extracted from; this is now their home)
-and the rules any change to this repository must follow.
+This file defines the named laws referenced in code comments and the rules any
+change to this standalone repository must follow.
 
 ## Laws
 
@@ -12,6 +11,12 @@ and the rules any change to this repository must follow.
   randomness. Same inputs, same answer, forever. Enforced structurally where
   possible: `chrono` is built with `default-features = false` so `Utc::now()`
   does not compile here. Do not add a dependency or code path that breaks this.
+- **LAW-PANIC** — production queries are total: they do not panic, hang, or use
+  unreachable fallbacks. Invalid raw `SessionRule` values may return
+  unspecified answers, but still return normally; absence and bounded-search
+  exhaustion are explicit.
+- **STYLE-LOG** — library code emits no output. Diagnostics belong to callers;
+  tests may print only when it makes a failure reproducible.
 - **TEST-LAYOUT** — every test is an integration test over the public surface.
   Tests get nothing callers do not also get: no `#[cfg(test)]` back doors, no
   test-only methods on production types, no `pub(crate)` leaks for test access.
@@ -43,9 +48,41 @@ and the rules any change to this repository must follow.
   encode one complete local-day span; omit a rule to express no session.
 - **DST bias is asymmetric on purpose**: opens resolve earliest, closes latest.
   Never "simplify" this to a single bias.
-- **Regular vs extended**: continuous trading is `regular`; auction call
-  windows, order-entry-only phases, and post-close/trade-at-last sessions are
+- **Regular vs extended.** A venue's primary/core continuous session, or a
+  derivatives operator's explicitly published regular-trading-hours (`RTH`)
+  session, is `regular`. Electronic or overnight trading outside that RTH may
+  be `extended` when the owner scope says so. Auction calls, pre-open and other
+  order-entry-only windows, and post-close/trade-at-last sessions are always
   `extended`. Lunch breaks are gaps between regular rules, not rules.
+- **Cash-equity venue envelope.** An `Exchange` cash-equity profile is the
+  availability union of the venue's automated order-capable systems within the
+  row's documented scope; it does not claim every listed security is eligible
+  for every phase. Include executable and accepted order-entry phases. Exclude
+  pure reporting, cancellation-only, enquiry, and administrative states, and
+  systems that are separately modeled identities.
+- **Product-neutral family selection.** `MarketHoursKey` names a sourced
+  schedule family. This crate never maps symbols, roots, product codes, or MICs
+  to keys; that belongs to a caller's instrument catalog. A venue-keyed default
+  is not permission to use that clock for every product listed there.
+- **Trade dates and state.** A containing session's trade date is normally the
+  venue-local date of its final close. Same-trade-date gaps are `Halt`, except
+  that a sourced continuously traded-week profile can retain an
+  operator-designated gap of no more than four hours as `Maintenance`.
+  Inter-trade-date gaps no longer than four elapsed hours within one ISO week
+  are also `Maintenance`; longer gaps are `Closed`. `is_maintenance` must
+  remain exactly the maintenance case of `session_state`.
+- **Caller-owned day overrides.** Built-in profiles contain normal-week data,
+  not holidays. `DayPolicy` is keyed by trade date and overlays closed dates,
+  early final closes, and late first opens on queries; `StaticDayPolicy`
+  standardizes validated hard-coded records. Neither mutates the profile
+  returned by `hours_at`. A closed date normally removes its complete trading
+  day, including the prior-evening wrap. Preserve a sourced family exception
+  when the operator assigns continuous weekend trading to the following open
+  business date; CME cryptocurrency rolls a closed Monday's weekend block into
+  Tuesday instead of deleting it. A special day that changes internal phase
+  topology is not representable by scalar boundaries: do not force it into a
+  normal profile or delete a valid phase. Follow
+  `docs/schedules/date-exceptions.md` for the richer provider contract.
 - **Exchange-level boundaries, not per-security auction outcomes.** When an
   operator publishes a nominal phase boundary but randomizes the actual
   auction uncross per security or trading group, the venue owner documents the
@@ -87,10 +124,25 @@ and the rules any change to this repository must follow.
   removing a variant would silently remap binary payloads. Their `FromStr`
   implementations reject unknown names with `ParseExchangeError` or
   `ParseMarketHoursKeyError`—never map bad input to `Exchange::Unknown`.
-- Production files stay under 300 lines (500 is a hard stop — split by venue or
-  operator family under `schedules/`). Test files are exempt.
+- Production source files stay cohesive and reviewable, ordinarily at or below
+  500 lines. This is a source-reviewability guard, not a repository or packaged-
+  crate size limit: split independent responsibilities (for example, by venue or
+  operator family under `schedules/`), but do not fragment a coherent module
+  merely to satisfy a smaller arbitrary line count. Test files are exempt.
 - Schedule profile tables are `static` so `MarketHours` can borrow them
   allocation-free.
+- `ExchangeCalendar` represents either `CalendarSource::Exchange` or
+  `CalendarSource::MarketHoursKey`. Both sources must support the same
+  date-aware query surface. Keep the calendar `Copy + Send + Sync + 'static`
+  and built-in hot-path queries allocation-free over bounded rule scans.
+- Identity-dependent topology belongs on the date-aware identity calendar. A
+  detached `MarketHours` snapshot must remain exactly the caller-supplied rule
+  set; never guess a family from coincident rules to coalesce sessions or assign
+  a special trade date. Always-open calendars have no final close and return no
+  trade date.
+- Existing public fixed-snapshot free functions are compatibility contracts:
+  do not remove or silently redirect `hours_for_exchange_as_of`,
+  `session_bounds*`, or `candle_*` while adding calendar methods.
 
 ## Adding or revising a venue
 
@@ -142,6 +194,25 @@ handwritten test lists from production data.
 8. **Verification.** Run the complete quality and MSRV commands below. A
    focused venue test is useful while iterating, but it does not replace the
    all-venue contracts.
+
+## Adding or revising a product-family key
+
+Treat a `MarketHoursKey` change with the same evidence discipline as a venue:
+
+1. Add the stable canonical identity to the single `market_hours_keys!` table;
+   never add an in-crate symbol-to-key mapper.
+2. Give the family its own sourced static profile and history. A member product
+   listing after the family clock began remains caller catalog data unless it
+   changes the family schedule itself.
+3. Update fixed, point-in-time, and date-aware key routing, including
+   `calendar_for_market_hours_key`; never borrow an unrelated family's history
+   merely because today's hours coincide.
+4. Update every handwritten key list, wire/serde fence, baseline and cutover
+   test, verification row, source registry, README count/scope, and changelog.
+5. Document any venue-keyed compatibility default that uses the profile and
+   explicitly warn which other products it does not cover. Unsupported
+   families remain rejected rather than mapped to the nearest key.
+6. Run the complete quality, MSRV, documentation, and publish-dry-run gates.
 
 ## Lints and toolchain
 

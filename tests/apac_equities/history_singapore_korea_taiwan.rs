@@ -34,13 +34,19 @@ fn korea_and_taiwan_cutovers() {
     assert!(post.is_open_regular(at_1510));
 
     let (pre, post) = cutover_sides(Exchange::Krx, Asia::Seoul, (2019, 4, 29));
-    let at_0815 = local(Asia::Seoul, probe, (8, 15, 0));
-    assert!(pre.is_open_extended(at_0815));
-    assert!(!post.is_open(at_0815));
+    let at_0745 = local(Asia::Seoul, probe, (7, 45, 0));
+    assert!(pre.is_open_extended(at_0745));
+    assert!(!post.is_open(at_0745));
+    let at_0800 = local(Asia::Seoul, probe, (8, 0, 0));
+    assert!(post.is_open_extended(at_0800));
 
     let (pre, post) = cutover_sides(Exchange::Twse, Asia::Taipei, (2020, 3, 23));
     let at_1000 = local(Asia::Taipei, probe, (10, 0, 0));
     assert!(!pre.is_open_regular(at_1000));
     assert!(pre.is_open_extended(at_1000));
     assert!(post.is_open_regular(at_1000));
+    assert!(post.is_open_extended(at_1000));
+    let at_1659 = local(Asia::Taipei, probe, (16, 59, 59));
+    assert!(pre.is_open_extended(at_1659));
+    assert!(post.is_open_extended(at_1659));
 }

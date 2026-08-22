@@ -10,6 +10,11 @@ use crate::calendar::{CalendarResolution, SessionKind};
 
 impl ExchangeCalendar {
     /// Returns the date-aware bar close after `instant`.
+    ///
+    /// A key-backed CME cryptocurrency calendar retains Friday 16:00 CT as
+    /// the weekly close even though its current profile has no long weekend
+    /// shutdown. An identity-erased fixed snapshot cannot apply that
+    /// product-family convention.
     #[must_use]
     pub fn candle_end(
         self,
@@ -20,6 +25,9 @@ impl ExchangeCalendar {
     }
 
     /// Returns the date-aware bar close after `instant` for `kind`.
+    ///
+    /// The CME cryptocurrency weekly-boundary convention described by
+    /// [`Self::candle_end`] applies here as well.
     #[must_use]
     pub fn candle_end_with(
         self,

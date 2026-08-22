@@ -6,10 +6,10 @@ use chrono_tz::America;
 
 use super::StaticHoursProfile;
 use super::equities::{
-    MEMX_EQ_PROFILE, MEMX_EQ_PROFILE_PRE_2025_05_19, MIAX_PEARL_EQ_PROFILE,
-    MIAX_PEARL_EQ_PROFILE_PRE_2025_02_20, NASDAQ_BX_PROFILE, NASDAQ_BX_PROFILE_PRE_2011_04_18,
-    NASDAQ_PROFILE, NASDAQ_PROFILE_PRE_2013_03_18, NASDAQ_PSX_PROFILE,
-    NASDAQ_PSX_PROFILE_AT_LAUNCH,
+    MEMX_EQ_PROFILE, MEMX_EQ_PROFILE_2020_10_05, MEMX_EQ_PROFILE_PRE_2025_05_19,
+    MIAX_PEARL_EQ_PROFILE, MIAX_PEARL_EQ_PROFILE_PRE_2025_02_20, NASDAQ_BX_PROFILE,
+    NASDAQ_BX_PROFILE_PRE_2011_04_18, NASDAQ_PROFILE, NASDAQ_PROFILE_PRE_2013_03_18,
+    NASDAQ_PSX_PROFILE, NASDAQ_PSX_PROFILE_AT_LAUNCH,
 };
 use crate::calendar::schedules::CLOSED_NEW_YORK;
 use crate::calendar::schedules::timeline::{Revision, effective_date, local_date, select_revision};
@@ -80,15 +80,28 @@ pub(crate) fn nasdaq_psx_profile_at(
     )
 }
 
-// MEMX began live trading on 2020-09-21. Its own 2025-06-06 retrospective
-// identifies 2025-05-19 as the actual launch of its 04:00 ET pre-market. The
-// earlier rule filing proposed a March date, so the exchange's stated
-// production launch is the operative boundary.
+// MEMX began live trading on 2020-09-21. It shortened the Post-Market Session
+// from 20:00 to 17:00 ET on 2020-10-05 and restored the 20:00 close on
+// 2023-02-01. Its own 2025-06-06 retrospective identifies 2025-05-19 as the
+// actual launch of its 04:00 ET pre-market. The earlier rule filing proposed a
+// March date, so the exchange's stated production launch is the operative
+// boundary.
 // https://memx.com/insights/day-1
+// https://info.memxtrading.com/trader-alert-20-06-memx-market-hours-change/
+// https://www.sec.gov/files/rules/sro/memx/2023/34-96773.pdf
+// https://info.memxtrading.com/trader-alert-23-04-memx-trading-hours-change/
 // https://memx.com/insights/pre-market-share-gains-and-new-options-active-risk-feature
 static MEMX_REVISIONS: &[Revision] = &[
     Revision {
         effective: effective_date(2020, 9, 21),
+        profile: &MEMX_EQ_PROFILE_PRE_2025_05_19,
+    },
+    Revision {
+        effective: effective_date(2020, 10, 5),
+        profile: &MEMX_EQ_PROFILE_2020_10_05,
+    },
+    Revision {
+        effective: effective_date(2023, 2, 1),
         profile: &MEMX_EQ_PROFILE_PRE_2025_05_19,
     },
     Revision {

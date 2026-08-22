@@ -11,46 +11,44 @@ use super::prelude::*;
 // ---------------------------------------------------------------------------
 
 #[test]
-fn nyse_trades_the_core_session_only() {
-    // nyse.com "Trading Hours": NYSE lists a core session 9:30-16:00 ET and
-    // no early or late session; extended trading in NYSE Group happens on
-    // Arca, American, National, and Texas.
+fn nyse_accepts_orders_from_0630_before_its_core_session() {
+    // NYSE's living hours table opens its pre-opening order queue at 06:30 ET.
     let hours = hours_for_exchange(Exchange::Nyse);
-    assert!(
-        hours.extended.is_empty(),
-        "NYSE must have no extended rules"
-    );
-    assert!(!hours.is_open(et((2026, 4, 20), (8, 0, 0))));
+    assert!(!hours.is_open(et((2026, 4, 20), (6, 29, 59))));
+    assert!(hours.is_open_extended(et((2026, 4, 20), (6, 30, 0))));
     assert!(!hours.is_open(et((2026, 4, 20), (16, 30, 0))));
     assert!(hours.is_open_regular(et((2026, 4, 20), (10, 0, 0))));
 }
 
 #[test]
-fn nyse_american_and_cboe_byx_premarket_opens_at_0700_not_0400() {
-    // nyse.com "Trading Hours": American/National early session 7:00-9:30 ET.
-    // cboe.com "Hours & Holidays": BYX/EDGA early session begins 7:00 a.m.
+fn current_nyse_and_cboe_queues_precede_their_active_early_sessions() {
     for exch in [
         Exchange::NyseAmerican,
         Exchange::NyseNational,
-        Exchange::CboeByx,
-        Exchange::CboeEdga,
+        Exchange::NyseTexas,
     ] {
         let hours = hours_for_exchange(exch);
+        assert!(!hours.is_open(et((2026, 4, 20), (6, 29, 59))), "{exch:?}");
         assert!(
-            !hours.is_open(et((2026, 4, 20), (5, 0, 0))),
-            "{exch:?} must be closed at 05:00 ET"
-        );
-        assert!(
-            !hours.is_open(et((2026, 4, 20), (6, 59, 59))),
-            "{exch:?} must be closed just before 07:00 ET"
-        );
-        assert!(
-            hours.is_open_extended(et((2026, 4, 20), (7, 0, 0))),
-            "{exch:?} early session must open 07:00 ET"
+            hours.is_open_extended(et((2026, 4, 20), (6, 30, 0))),
+            "{exch:?}"
         );
         assert!(
             hours.is_open_extended(et((2026, 4, 20), (19, 59, 59))),
-            "{exch:?} late session must run to 20:00 ET"
+            "{exch:?}"
+        );
+    }
+
+    for exch in [Exchange::CboeByx, Exchange::CboeEdga] {
+        let hours = hours_for_exchange(exch);
+        assert!(!hours.is_open(et((2026, 4, 20), (5, 59, 59))), "{exch:?}");
+        assert!(
+            hours.is_open_extended(et((2026, 4, 20), (6, 0, 0))),
+            "{exch:?}"
+        );
+        assert!(
+            hours.is_open_extended(et((2026, 4, 20), (19, 59, 59))),
+            "{exch:?}"
         );
     }
 }
@@ -93,33 +91,35 @@ fn nyse_national_dormancy_and_relaunch_use_sourced_dates() {
     assert_eq!(
         calendar_for_exchange(Exchange::NyseNational)
             .next_session_after(et((2018, 5, 7), (0, 0, 0))),
-        Some((et((2018, 5, 21), (7, 0, 0)), et((2018, 5, 21), (9, 30, 0)),))
+        Some((et((2018, 5, 21), (6, 30, 0)), et((2018, 5, 21), (9, 30, 0)),))
     );
 }
 
 #[test]
-fn bzx_and_edgx_premarket_opens_at_0400_today() {
-    // cboe.com "Hours & Holidays": BZX/EDGX early session begins 4:00 a.m. ET.
-    for exch in [Exchange::CboeBzx, Exchange::CboeEdgx] {
+fn bzx_edgx_and_arca_accept_orders_at_0230_today() {
+    for exch in [Exchange::CboeBzx, Exchange::CboeEdgx, Exchange::NyseArca] {
         let hours = hours_for_exchange(exch);
-        assert!(!hours.is_open(et((2026, 4, 20), (3, 59, 59))));
+        assert!(!hours.is_open(et((2026, 4, 20), (2, 29, 59))));
         assert!(
-            hours.is_open_extended(et((2026, 4, 20), (4, 0, 0))),
-            "{exch:?} early session must open 04:00 ET"
+            hours.is_open_extended(et((2026, 4, 20), (2, 30, 0))),
+            "{exch:?}"
         );
     }
 }
 
 #[test]
-fn edgx_early_session_started_0700_before_2021_03_08() {
-    // Cboe press release (2021-02-08): early trading from 4:00 a.m. ET
-    // effective Monday, March 8, 2021.
+fn edgx_exact_2021_queue_changes_are_date_aware() {
     let before = hours_for_exchange_as_of(Exchange::CboeEdgx, et((2021, 3, 5), (12, 0, 0)));
     assert!(!before.is_open(et((2021, 3, 5), (5, 0, 0))));
     assert!(before.is_open_extended(et((2021, 3, 5), (7, 30, 0))));
 
     let after = hours_for_exchange_as_of(Exchange::CboeEdgx, et((2021, 3, 8), (12, 0, 0)));
-    assert!(after.is_open_extended(et((2021, 3, 8), (5, 0, 0))));
+    assert!(!after.is_open(et((2021, 3, 8), (3, 29, 59))));
+    assert!(after.is_open_extended(et((2021, 3, 8), (3, 30, 0))));
+
+    let september = hours_for_exchange_as_of(Exchange::CboeEdgx, et((2021, 9, 7), (12, 0, 0)));
+    assert!(!september.is_open(et((2021, 9, 7), (2, 29, 59))));
+    assert!(september.is_open_extended(et((2021, 9, 7), (2, 30, 0))));
 }
 
 #[test]
@@ -138,17 +138,15 @@ fn edgx_unconfirmed_overnight_session_is_not_encoded() {
 }
 
 #[test]
-fn bzx_early_session_started_0700_before_2025_05_01() {
-    // Cboe release notice #54236: "Effective May 1, 2025 … will commence the
-    // Early Trading Session at 4:00 a.m. ET. Currently, BZX … commences the
-    // Early Trading Session at 7:00 a.m. ET."
+fn bzx_0230_queue_started_with_the_2025_early_session_expansion() {
     // https://www.cboe.com/insights/posts/early-birds-and-night-owls-how-extended-trading-hours-are-reshaping-u-s-equities-markets-
     let before = hours_for_exchange_as_of(Exchange::CboeBzx, et((2025, 4, 30), (12, 0, 0)));
     assert!(!before.is_open(et((2025, 4, 30), (5, 0, 0))));
-    assert!(before.is_open_extended(et((2025, 4, 30), (7, 30, 0))));
+    assert!(before.is_open_extended(et((2025, 4, 30), (6, 0, 0))));
 
     let after = hours_for_exchange_as_of(Exchange::CboeBzx, et((2025, 5, 1), (12, 0, 0)));
-    assert!(after.is_open_extended(et((2025, 5, 1), (5, 0, 0))));
+    assert!(!after.is_open(et((2025, 5, 1), (2, 29, 59))));
+    assert!(after.is_open_extended(et((2025, 5, 1), (2, 30, 0))));
 }
 
 #[test]
@@ -178,6 +176,25 @@ fn memx_0400_premarket_started_2025_05_19() {
     assert!(!before.is_open(et((2025, 5, 19), (5, 0, 0))));
     assert!(before.is_open_extended(et((2025, 5, 19), (7, 0, 0))));
     assert!(after.is_open_extended(et((2025, 5, 19), (4, 0, 0))));
+}
+
+#[test]
+fn memx_postmarket_close_changed_in_2020_and_2023() {
+    // MEMX's operator alerts make the 20:00→17:00 and restoration boundaries
+    // effective 2020-10-05 and 2023-02-01, respectively.
+    // https://info.memxtrading.com/trader-alert-20-06-memx-market-hours-change/
+    // https://info.memxtrading.com/trader-alert-23-04-memx-trading-hours-change/
+    let launch_grid = hours_for_exchange_as_of(Exchange::MemxEq, et((2020, 10, 2), (12, 0, 0)));
+    let short_grid = hours_for_exchange_as_of(Exchange::MemxEq, et((2020, 10, 5), (0, 0, 0)));
+    let restored = hours_for_exchange_as_of(Exchange::MemxEq, et((2023, 2, 1), (0, 0, 0)));
+
+    assert!(launch_grid.is_open_extended(et((2020, 10, 2), (19, 59, 59))));
+    assert!(short_grid.is_open_extended(et((2020, 10, 5), (16, 59, 59))));
+    assert!(!short_grid.is_open(et((2020, 10, 5), (17, 0, 0))));
+    assert!(restored.is_open_regular(et((2023, 2, 1), (15, 59, 59))));
+    assert!(restored.is_open_extended(et((2023, 2, 1), (16, 0, 0))));
+    assert!(restored.is_open_extended(et((2023, 2, 1), (19, 59, 59))));
+    assert!(!restored.is_open(et((2023, 2, 1), (20, 0, 0))));
 }
 
 #[test]

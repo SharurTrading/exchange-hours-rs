@@ -28,6 +28,10 @@ reviews:
     base_branches:
       - "^main$"
 
+  pre_merge_checks:
+    docstrings:
+      mode: "off"
+
   path_instructions:
     - path: "src/**/*.rs"
       instructions: |
@@ -60,9 +64,11 @@ reviews:
           DateTime::<Utc>::MIN_UTC/MAX_UTC.
         - Owned/allocated schedule tables where static borrowed slices suffice, or
           a new runtime/dependency abstraction without a concrete need.
-        - A production file pushed over the 300-line architecture limit without
-          splitting by venue/operator family; 500 lines is the hard stop. Tests are
-          exempt.
+        - A production source file over 500 lines without a strong cohesion reason,
+          or one that mixes independently reviewable responsibilities that should be
+          split (for example, by venue/operator family). This is a source-reviewability
+          check, not a repository/package-size limit; do not request fragmentation of
+          a coherent module merely to meet a smaller arbitrary count. Tests are exempt.
 
         Do not report stylistic preferences already enforced by CI. Do flag an
         unjustified #[allow], weakened #[expect] reason, ignored test, or new unsafe
@@ -71,15 +77,18 @@ reviews:
 
     - path: "src/calendar/query/**/*.rs"
       instructions: |
-        This directory is the single implementation for fixed MarketHours and
-        date-aware ExchangeCalendar queries. Preserve one QueryContext/ProfileSource
-        path rather than duplicating algorithms in public adapters.
+        This directory is the single implementation for fixed MarketHours,
+        date-aware ExchangeCalendar, and policy-aware PolicyCalendar queries.
+        Preserve one QueryContext/ProfileSource path rather than duplicating
+        algorithms in public adapters.
 
         Date-aware scans must select a profile for each candidate venue-local
         opening day. Selecting once at the query instant is wrong for wrap sessions,
         historical cutovers, future scans, and B3/BMV cross-zone regimes. Fixed
         queries must continue using the exact caller-supplied MarketHours, including
-        owned Cow data and custom rules.
+        owned Cow data and custom rules. Do not infer a MarketHoursKey from coincident
+        rules to apply identity-specific coalescing or trade-date behavior; that
+        belongs only to the date-aware calendar carrying the key.
 
         Check containing/next-session ordering, bounded scan horizons, SessionKind
         filtering, end-exclusive closes, DST gaps/folds, and Chrono MIN/MAX totality.
@@ -89,6 +98,18 @@ reviews:
         On a venue's first sourced session, candle_start may use that first real open
         when no earlier close exists; it must not fail merely because history before
         launch is closed.
+
+        DayPolicy is keyed by the effective trade date and normally applies to the
+        whole trading day, including a prior-evening wrapped portion. Preserve an
+        explicitly sourced following-business-day exception: CME cryptocurrency
+        weekend trading rolls from a policy-closed Monday into Tuesday. hours_at
+        remains the unmodified sourced profile. Same-trade-date gaps are Halt except
+        for an operator-designated gap of at most four hours on a sourced
+        continuously traded-week profile; inter-trade-date gaps qualify as
+        Maintenance only within that four-hour bound and one ISO week.
+        is_maintenance is exactly that SessionState. Always-open profiles have no
+        final close and therefore no trade date. Multi-local-day operator sessions
+        must keep their exact bounds and operator trade-date assignment.
 
     - path: "src/calendar/schedules/**/*.rs"
       instructions: |
@@ -110,31 +131,62 @@ reviews:
         undated changes remain disclosed Partial gaps. The audit floor is January
         2010; a later-launched identity is closed before its sourced launch.
 
-        Confirm revisions are ascending, current pointers equal the final regime,
-        and every profile for one identity keeps the same IANA zone. Opening-day
-        semantics matter: a Monday trade-date change whose session opens Sunday is
-        normally keyed to Sunday. Temporary regimes need both sourced start and
-        restoration rows. Cross-zone recurring selectors must recompute the
-        reference-zone relationship per candidate opening day.
+        Confirm revisions are ascending and every profile for one identity keeps
+        the same IANA zone. For non-recurring Primary history, the current pointer
+        equals the final dated regime. A Partial history may intentionally keep an
+        exact fixed current profile while dated routing ends at the last sourced
+        regime; its adjacent comment and ledger row must name that divergence.
+        Opening-day semantics matter: a Monday trade-date change whose session
+        opens Sunday is normally keyed to Sunday. Temporary regimes need both
+        sourced start and restoration rows. Cross-zone recurring selectors must
+        recompute the reference-zone relationship per candidate opening day.
 
-        Preserve the documented product/segment envelope. Do not silently widen a
-        product-family schedule to a whole venue, include cancellation/reporting-only
-        phases, or omit executable auctions/order-entry/TAL phases. For a randomized
-        per-security auction uncross, accept either the published nominal phase edge
-        or a conservative venue envelope when the owner documents that choice; do not
-        demand ticker-level outcomes. Unrelated venues keep distinct named profiles
-        even when rule slices coincide; sharing is only for genuinely coupled
-        operator/product families.
+        Preserve the documented product/segment envelope. A cash-equity Exchange
+        profile is the venue-level union of its automated executable and accepted
+        order-entry phases; security eligibility may be narrower. Exclude pure
+        reporting, cancellation-only, enquiry, and administrative states and systems
+        modeled as distinct identities. For derivatives, Regular means the primary
+        session or operator-published RTH; electronic/overnight trading outside RTH
+        may be Extended. Never omit executable auctions, queues, or TAL phases. For a
+        randomized per-security auction uncross, accept either the published nominal
+        phase edge or a conservative venue envelope when the owner documents that
+        choice; do not demand ticker-level outcomes. Unrelated venues keep distinct
+        named profiles even when rule slices coincide; sharing is only for genuinely
+        coupled operator/product families.
 
-    - path: "src/calendar/futures_profile.rs"
+    - path: "src/calendar/futures_profile{.rs,/**/*.rs}"
       instructions: |
         MarketHoursKey profiles follow the same evidence and scope rules as venue
-        schedules. Fixed APIs are current snapshots; the as-of API returns one
-        dated snapshot, so callers spanning dates must re-resolve. Verify every key
-        keeps a stable snake_case serde name encoded as a string in every format,
-        never a derive-generated ordinal. Also verify distinct product-family
-        scope, static rules, and sourced dated routing where available. AlwaysOpen
-        is synthetic; do not demand exchange evidence for it.
+        schedules. Fixed APIs are current snapshots, the as-of API returns one dated
+        snapshot, and calendar_for_market_hours_key must reselect revisions during
+        scans. Verify every key comes from the one market_hours_keys! table and keeps
+        a stable snake_case serde name encoded as a string in every format, never a
+        derive-generated ordinal. Also verify distinct product-family scope, static
+        rules, sourced dated routing, and independent handwritten fences. This crate
+        never maps symbols, roots, product codes, or MICs to keys; unsupported
+        families remain rejected rather than borrowing the closest venue default.
+        AlwaysOpen is synthetic; do not demand exchange evidence for it.
+
+    - path: "src/calendar/policy.rs"
+      instructions: |
+        DayPolicy implementations are caller-owned and deterministic. The overlay is
+        keyed by venue-local trade date: closed normally removes the whole trading
+        day, early close truncates its final close, and late open delays its first
+        session. Retain a family-specific following-business-day rule only where the
+        operator sources it (currently CME cryptocurrency weekend trading). Invalid
+        seconds-since-midnight values and all-closed policies must return absence
+        rather than panic or loop. PolicyCalendar must mirror the complete
+        ExchangeCalendar query surface while leaving hours_at unchanged. Do not
+        claim that scalar first-open/final-close clipping represents a special day
+        that pauses/reopens or changes regular and extended phases differently.
+
+    - path: "src/calendar/policy/**/*.rs"
+      instructions: |
+        Apply the same DayPolicy/PolicyCalendar rules as src/calendar/policy.rs.
+        Do not fork query semantics into adapters; route through the shared query
+        context and preserve bounded, total scans. StaticDayPolicy tables must be
+        validated, strictly date-ordered, allocation-free, and exact-date-only;
+        missing records mean no boundary override, never an inferred holiday.
 
     - path: "src/calendar/presets/**/*.rs"
       instructions: |
@@ -190,10 +242,12 @@ reviews:
         exchange, instant, session kind, and resolution.
 
         Reject self-referential tests that derive expectations from the production
-        selector under test. Do not require one-off holidays or half-days: built-in
-        profiles intentionally model normal weeks unless a public API explicitly
-        adds exception data. Test code may deliberately use unwrap, expect, panic,
-        and catch_unwind; the production panic-family law does not apply to tests.
+        selector under test. Do not require bundled one-off holidays or half-days:
+        built-in profiles intentionally model normal weeks. Changes to DayPolicy or
+        PolicyCalendar do require public-surface exception tests, including static
+        table validation, wrapped trade dates, and bounded all-closed scans. Test code may deliberately use
+        unwrap, expect, panic, and catch_unwind; the production panic-family law does
+        not apply to tests.
 
     - path: "docs/schedules/**/*.md"
       instructions: |
@@ -270,8 +324,9 @@ reviews:
         This is the repository-specific cloud-review contract. Preserve the MIT-0
         header, schema-v2 marker, automatic non-draft review of main-targeted PRs,
         AGENTS/architecture knowledge-base links, and high-signal path rules. Do not
-        import Sharur's proprietary header, SH-* identifiers, Python rules, or
-        trading-engine architecture into this standalone deterministic Rust crate.
+        import proprietary application headers, internal ticket identifiers,
+        Python-specific rules, or trading-engine architecture into this standalone
+        deterministic Rust crate.
 
   tools:
     clippy:

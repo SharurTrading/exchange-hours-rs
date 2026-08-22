@@ -9,7 +9,7 @@ fn date_aware_scan_reselects_bmv_grid_over_spring_and_fall_weekends() {
     let calendar = calendar_for_exchange(Exchange::Bmv);
     let tz = America::Mexico_City;
 
-    let spring_friday_close = local(tz, (2024, 3, 8), (15, 0, 0));
+    let spring_friday_close = local(tz, (2024, 3, 8), (15, 20, 0));
     let spring_next = calendar
         .next_session_after(spring_friday_close)
         .expect("BMV reopens Monday");
@@ -27,7 +27,7 @@ fn date_aware_scan_reselects_bmv_grid_over_spring_and_fall_weekends() {
         ))
     );
 
-    let fall_friday_close = local(tz, (2024, 11, 1), (14, 0, 0));
+    let fall_friday_close = local(tz, (2024, 11, 1), (14, 20, 0));
     assert_eq!(
         calendar.next_session_after(fall_friday_close),
         Some((
@@ -58,7 +58,7 @@ fn resolved_snapshot_is_exact_at_its_instant_but_not_across_a_transition() {
     assert!(calendar.is_open_regular(monday));
     assert!(!friday_snapshot.is_open_regular(monday));
 
-    let friday_close = local(tz, (2024, 3, 8), (15, 0, 0));
+    let friday_close = local(tz, (2024, 3, 8), (15, 20, 0));
     assert_eq!(
         calendar.next_session_open_after(friday_close),
         Some(local(tz, (2024, 3, 11), (7, 0, 0)))

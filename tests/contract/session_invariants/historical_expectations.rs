@@ -42,8 +42,10 @@ pub(super) const HISTORICAL_CUTOVERS: &[(Exchange, Ymd, chrono_tz::Tz)] = &[
         (2010, 12, 13),
         chrono_tz::America::New_York,
     ),
+    (Exchange::Cme, (2010, 11, 15), chrono_tz::US::Central),
     (Exchange::Cme, (2012, 11, 18), chrono_tz::US::Central),
     (Exchange::Cme, (2015, 9, 20), chrono_tz::US::Central),
+    (Exchange::Cme, (2021, 6, 27), chrono_tz::US::Central),
     (Exchange::Comex, (2015, 9, 20), chrono_tz::US::Central),
     (Exchange::Nymex, (2015, 9, 20), chrono_tz::US::Central),
     (Exchange::Eurex, (2018, 12, 10), chrono_tz::Europe::Berlin),
@@ -177,6 +179,13 @@ pub(super) const HISTORICAL_CUTOVERS: &[(Exchange, Ymd, chrono_tz::Tz)] = &[
         chrono_tz::America::Winnipeg,
     ),
     (Exchange::Iex, (2016, 8, 19), chrono_tz::America::New_York),
+    (Exchange::Ltse, (2020, 8, 28), chrono_tz::America::New_York),
+    (
+        Exchange::TwentyFourX,
+        (2025, 10, 14),
+        chrono_tz::America::New_York,
+    ),
+    (Exchange::Txse, (2026, 7, 10), chrono_tz::America::New_York),
     (
         Exchange::CboeBzxOptions,
         (2010, 2, 26),
@@ -242,7 +251,7 @@ pub(super) const HISTORICAL_CUTOVERS: &[(Exchange, Ymd, chrono_tz::Tz)] = &[
     (Exchange::Cfe, (2021, 12, 6), chrono_tz::US::Central),
     (
         Exchange::NyseTexas,
-        (2025, 3, 31),
+        (2019, 11, 4),
         chrono_tz::America::New_York,
     ),
     (
@@ -270,12 +279,15 @@ pub(super) const HISTORICAL_CUTOVERS: &[(Exchange, Ymd, chrono_tz::Tz)] = &[
         (2026, 3, 30),
         chrono_tz::America::New_York,
     ),
+    (Exchange::Cbot, (2010, 4, 19), chrono_tz::US::Central),
+    (Exchange::Cbot, (2011, 12, 27), chrono_tz::US::Central),
     (Exchange::Cbot, (2012, 5, 20), chrono_tz::US::Central),
     (Exchange::Cbot, (2013, 4, 7), chrono_tz::US::Central),
+    (Exchange::Cbot, (2013, 8, 18), chrono_tz::US::Central),
     (Exchange::Cbot, (2015, 7, 5), chrono_tz::US::Central),
     (
         Exchange::CboeBzx,
-        (2016, 5, 25),
+        (2014, 12, 2),
         chrono_tz::America::New_York,
     ),
     (
@@ -295,7 +307,7 @@ pub(super) const HISTORICAL_CUTOVERS: &[(Exchange, Ymd, chrono_tz::Tz)] = &[
     ),
     (
         Exchange::CboeByx,
-        (2016, 5, 23),
+        (2014, 12, 1),
         chrono_tz::America::New_York,
     ),
     (
@@ -326,6 +338,11 @@ pub(super) const HISTORICAL_CUTOVERS: &[(Exchange, Ymd, chrono_tz::Tz)] = &[
     (
         Exchange::CboeEdgx,
         (2021, 3, 8),
+        chrono_tz::America::New_York,
+    ),
+    (
+        Exchange::CboeEdgx,
+        (2021, 9, 7),
         chrono_tz::America::New_York,
     ),
     (
@@ -368,6 +385,12 @@ pub(super) const HISTORICAL_CUTOVERS: &[(Exchange, Ymd, chrono_tz::Tz)] = &[
         (2020, 9, 21),
         chrono_tz::America::New_York,
     ),
+    (
+        Exchange::MemxEq,
+        (2020, 10, 5),
+        chrono_tz::America::New_York,
+    ),
+    (Exchange::MemxEq, (2023, 2, 1), chrono_tz::America::New_York),
     (
         Exchange::MemxEq,
         (2025, 5, 19),
@@ -415,8 +438,7 @@ pub(super) const HISTORICAL_CUTOVERS: &[(Exchange, Ymd, chrono_tz::Tz)] = &[
     (Exchange::BseIndia, (2010, 10, 18), chrono_tz::Asia::Kolkata),
     (Exchange::BseIndia, (2026, 8, 3), chrono_tz::Asia::Kolkata),
     (Exchange::Hkex, (2011, 3, 7), chrono_tz::Asia::Hong_Kong),
-    (Exchange::Hkex, (2012, 3, 5), chrono_tz::Asia::Hong_Kong),
-    (Exchange::Hkex, (2019, 10, 8), chrono_tz::Asia::Hong_Kong),
+    (Exchange::Hkex, (2016, 7, 25), chrono_tz::Asia::Hong_Kong),
     (
         Exchange::SgxSecurities,
         (2011, 8, 1),
@@ -437,6 +459,16 @@ pub(super) const HISTORICAL_CUTOVERS: &[(Exchange, Ymd, chrono_tz::Tz)] = &[
         (2024, 3, 25),
         chrono_tz::Asia::Bangkok,
     ),
+    (
+        Exchange::SetThailand,
+        (2025, 5, 6),
+        chrono_tz::Asia::Bangkok,
+    ),
+    (
+        Exchange::SetThailand,
+        (2025, 5, 7),
+        chrono_tz::Asia::Bangkok,
+    ),
     (Exchange::Idx, (2013, 1, 2), chrono_tz::Asia::Jakarta),
     (Exchange::Idx, (2020, 3, 30), chrono_tz::Asia::Jakarta),
     (Exchange::Idx, (2023, 4, 3), chrono_tz::Asia::Jakarta),
@@ -454,9 +486,7 @@ pub(super) const HISTORICAL_CUTOVERS: &[(Exchange, Ymd, chrono_tz::Tz)] = &[
     (Exchange::Hose, (2012, 3, 5), chrono_tz::Asia::Ho_Chi_Minh),
     (Exchange::Hose, (2013, 7, 22), chrono_tz::Asia::Ho_Chi_Minh),
     (Exchange::Sse, (2018, 8, 20), chrono_tz::Asia::Shanghai),
-    (Exchange::Sse, (2026, 7, 6), chrono_tz::Asia::Shanghai),
     (Exchange::Szse, (2016, 5, 9), chrono_tz::Asia::Shanghai),
-    (Exchange::Szse, (2026, 7, 6), chrono_tz::Asia::Shanghai),
     (Exchange::Krx, (2016, 8, 1), chrono_tz::Asia::Seoul),
     (Exchange::Krx, (2019, 4, 29), chrono_tz::Asia::Seoul),
     (Exchange::Twse, (2020, 3, 23), chrono_tz::Asia::Taipei),
@@ -550,6 +580,17 @@ pub(super) const HISTORICAL_CUTOVERS: &[(Exchange, Ymd, chrono_tz::Tz)] = &[
     (
         Exchange::Bmv,
         (2010, 11, 1),
+        chrono_tz::America::Mexico_City,
+    ),
+    (Exchange::Bmv, (2016, 9, 5), chrono_tz::America::Mexico_City),
+    (
+        Exchange::Bmv,
+        (2023, 5, 29),
+        chrono_tz::America::Mexico_City,
+    ),
+    (
+        Exchange::Bmv,
+        (2023, 11, 6),
         chrono_tz::America::Mexico_City,
     ),
 ];

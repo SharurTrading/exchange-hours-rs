@@ -6,7 +6,8 @@ use super::prelude::*;
 
 // ---------------------------------------------------------------------------
 // COMEX (Metals)
-//   17:00–16:00 CT wrap (Sun + Mon–Thu), maintenance 16:00–17:00 daily
+//   Sunday Pre-Open 16:00, matching 17:00; weekday Pre-Open 16:45
+//   Matching closes 16:00 CT, leaving a 16:00–16:45 closed maintenance gap.
 //   No Fri overnight.
 // ---------------------------------------------------------------------------
 
@@ -14,7 +15,7 @@ use super::prelude::*;
 fn comex_sunday_open() {
     let h = hours_for_exchange(Exchange::Comex);
     let t = ct((2026, 4, 19), (17, 0, 0));
-    assert!(h.is_open(t), "COMEX opens Sun 17:00 CT");
+    assert!(h.is_open(t), "COMEX matching begins Sun 17:00 CT");
 }
 
 #[test]
@@ -33,7 +34,7 @@ fn comex_daily_maintenance() {
     assert!(!h.is_open(t), "COMEX maintenance gap 16:30 CT");
     assert!(
         h.is_maintenance(t),
-        "16:30 CT is inside the sub-six-hour 16:00→17:00 break"
+        "16:30 CT is inside the four-hour-bounded 16:00→16:45 closed gap"
     );
 }
 
@@ -41,7 +42,7 @@ fn comex_daily_maintenance() {
 fn comex_monday_reopen() {
     let h = hours_for_exchange(Exchange::Comex);
     let t = ct((2026, 4, 20), (17, 0, 0));
-    assert!(h.is_open(t), "COMEX reopens Mon 17:00 CT");
+    assert!(h.is_open(t), "COMEX matching resumes Mon 17:00 CT");
 }
 
 #[test]
@@ -68,12 +69,16 @@ fn comex_saturday_closed() {
 fn comex_weekend_boundary() {
     let h = hours_for_exchange(Exchange::Comex);
     assert!(
-        !h.is_open(ct((2026, 4, 26), (16, 59, 0))),
-        "COMEX closed before Sun 17:00 CT"
+        !h.is_open(ct((2026, 4, 26), (15, 59, 59))),
+        "COMEX closed before Sunday Pre-Open"
+    );
+    assert!(
+        h.is_open_extended(ct((2026, 4, 26), (16, 0, 0))),
+        "COMEX Pre-Open begins Sunday 16:00 CT"
     );
     assert!(
         h.is_open(ct((2026, 4, 26), (17, 0, 0))),
-        "COMEX opens Sun 17:00 CT"
+        "COMEX matching begins Sun 17:00 CT"
     );
 }
 
@@ -86,7 +91,7 @@ fn nymex_sunday_open() {
     let h = hours_for_exchange(Exchange::Nymex);
     assert!(
         h.is_open(ct((2026, 4, 19), (17, 0, 0))),
-        "NYMEX opens Sun 17:00 CT"
+        "NYMEX matching begins Sun 17:00 CT"
     );
 }
 

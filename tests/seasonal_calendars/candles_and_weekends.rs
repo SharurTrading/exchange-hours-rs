@@ -34,12 +34,16 @@ fn seasonal_daily_candles_use_the_profile_for_each_trading_day() {
     let early = local(mexico, (2024, 3, 11), (10, 0, 0));
     assert_eq!(
         bmv.candle_end(normal, CalendarResolution::Daily),
-        Some(local(mexico, (2024, 3, 8), (15, 0, 0)))
+        Some(local(mexico, (2024, 3, 8), (15, 20, 0)))
     );
     assert_eq!(
         bmv.candle_end(early, CalendarResolution::Daily),
-        Some(local(mexico, (2024, 3, 11), (14, 0, 0)))
+        Some(local(mexico, (2024, 3, 11), (14, 20, 0)))
     );
+    assert!(bmv.is_open_extended(local(mexico, (2024, 3, 8), (15, 19, 59))));
+    assert!(bmv.is_open_extended(local(mexico, (2024, 3, 11), (14, 19, 59))));
+    assert!(!bmv.is_open(local(mexico, (2024, 3, 8), (15, 20, 0))));
+    assert!(!bmv.is_open(local(mexico, (2024, 3, 11), (14, 20, 0))));
 }
 
 #[test]
@@ -52,7 +56,7 @@ fn seasonal_calendars_keep_weekends_and_closes_end_exclusive() {
 
     let bmv = calendar_for_exchange(Exchange::Bmv);
     let mexico = America::Mexico_City;
-    assert!(!bmv.is_open(local(mexico, (2026, 8, 21), (14, 0, 0))));
+    assert!(!bmv.is_open(local(mexico, (2026, 8, 21), (14, 20, 0))));
     assert!(!bmv.is_open(local(mexico, (2026, 8, 22), (10, 0, 0))));
     assert!(bmv.is_closed_all_day_on(day((2026, 8, 22)), SessionKind::Both));
 }

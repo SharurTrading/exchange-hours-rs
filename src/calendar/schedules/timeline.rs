@@ -42,14 +42,11 @@ pub(crate) fn select_revision(
     baseline: &'static StaticHoursProfile,
     revisions: &[Revision],
 ) -> &'static StaticHoursProfile {
-    let mut selected = baseline;
-    for revision in revisions {
-        if day < revision.effective {
-            break;
-        }
-        selected = revision.profile;
-    }
-    selected
+    let insertion = revisions.partition_point(|revision| revision.effective <= day);
+    insertion
+        .checked_sub(1)
+        .and_then(|index| revisions.get(index))
+        .map_or(baseline, |revision| revision.profile)
 }
 
 /// Returns `reference - venue` UTC-offset seconds on the venue's local day.

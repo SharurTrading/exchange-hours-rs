@@ -47,32 +47,60 @@ fn cboe_exchange_launches_are_not_backfilled() {
 }
 
 #[test]
-fn cboe_2016_early_open_changes_use_each_venue_date() {
-    // The operator's implementation notice gives a distinct production date
-    // for each 08:00→07:00 matching-start change.
-    // https://cdn.cboe.com/resources/release_notes/2016/Update-Bats-to-Begin-Equity-Order-Matching-and-Routing-at-7-am-ET.pdf
+fn bzx_and_byx_2014_order_queues_use_the_exact_operator_dates() {
+    // The final operator notice makes the 06:00 queues effective on distinct
+    // dates. Those queues make the later 2016 matching-start changes invisible
+    // to this exchange-envelope API.
+    // https://cdn.cboe.com/resources/release_notes/2014/BATS-BYX-Exchange-and-BZX-Exchange-Feature-Release-Postponed-Until-December-2014.pdf
     for (exch, date) in [
-        (Exchange::CboeByx, (2016, 5, 23)),
-        (Exchange::CboeEdga, (2016, 5, 24)),
-        (Exchange::CboeBzx, (2016, 5, 25)),
-        (Exchange::CboeEdgx, (2016, 5, 26)),
+        (Exchange::CboeByx, (2014, 12, 1)),
+        (Exchange::CboeBzx, (2014, 12, 2)),
     ] {
         let before = profile_before(exch, date);
         let after = profile_from(exch, date);
-        let session_day = date;
 
-        assert!(!before.is_open(et(session_day, (7, 0, 0))), "{exch:?}");
+        assert!(!before.is_open(et(date, (6, 0, 0))), "{exch:?}");
+        assert!(before.is_open_extended(et(date, (8, 0, 0))), "{exch:?}");
+        assert!(!after.is_open(et(date, (5, 59, 59))), "{exch:?}");
+        assert!(after.is_open_extended(et(date, (6, 0, 0))), "{exch:?}");
+    }
+}
+
+#[test]
+fn partial_us_equity_histories_do_not_invent_current_queue_onsets() {
+    // The current EDGA queue is primary-supported at 06:00, but its original
+    // onset day is not. The historical selector keeps the exact 2016 matching
+    // change without pretending that it introduced the older queue.
+    let before = profile_before(Exchange::CboeEdga, (2016, 5, 24));
+    let after = profile_from(Exchange::CboeEdga, (2016, 5, 24));
+    assert!(!before.is_open(et((2016, 5, 24), (7, 0, 0))));
+    assert!(after.is_open_extended(et((2016, 5, 24), (7, 0, 0))));
+
+    let current = hours_for_exchange(Exchange::CboeEdga);
+    let partial_as_of = hours_for_exchange_as_of(Exchange::CboeEdga, et((2026, 4, 20), (12, 0, 0)));
+    assert!(current.is_open_extended(et((2026, 4, 20), (6, 0, 0))));
+    assert!(!partial_as_of.is_open(et((2026, 4, 20), (6, 0, 0))));
+    assert!(!calendar_for_exchange(Exchange::CboeEdga).is_open(et((2026, 4, 20), (6, 0, 0))));
+
+    for (exchange, current_queue, dated_open) in [
+        (Exchange::Nyse, (6, 30, 0), (9, 30, 0)),
+        (Exchange::NyseArca, (2, 30, 0), (4, 0, 0)),
+    ] {
+        let instant = et((2026, 4, 20), current_queue);
+        let dated = hours_for_exchange_as_of(exchange, instant);
         assert!(
-            before.is_open_extended(et(session_day, (8, 0, 0))),
-            "{exch:?}"
+            hours_for_exchange(exchange).is_open_extended(instant),
+            "{exchange:?} at {instant}"
         );
+        assert!(!dated.is_open(instant), "{exchange:?} at {instant}");
         assert!(
-            after.is_open_extended(et(session_day, (7, 0, 0))),
-            "{exch:?}"
+            !calendar_for_exchange(exchange).is_open(instant),
+            "{exchange:?} at {instant}"
         );
+        let dated_instant = et((2026, 4, 20), dated_open);
         assert!(
-            after.is_open_regular(et(session_day, (9, 30, 0))),
-            "{exch:?}"
+            dated.is_open(dated_instant),
+            "{exchange:?} at {dated_instant}"
         );
     }
 }
@@ -140,7 +168,8 @@ fn nyse_arca_grid_is_supported_at_the_2010_audit_floor() {
 #[test]
 fn nyse_american_extended_trading_begins_with_pillar() {
     // NYSE's launch update dates all-NMS-stock Pillar production to
-    // 2017-07-24; the functional update defines the new 07:00–20:00 envelope.
+    // 2017-07-24; the functional update defines a 06:30 order-acceptance edge
+    // around the 07:00–20:00 execution grid.
     // https://www.nyse.com/publicdocs/nyse/markets/nyse-american/Pillar_Update_NYSE_American_Weekend_Test_Update_July21_2017.pdf
     let before = profile_before(Exchange::NyseAmerican, (2017, 7, 24));
     let pillar = profile_from(Exchange::NyseAmerican, (2017, 7, 24));
@@ -148,10 +177,38 @@ fn nyse_american_extended_trading_begins_with_pillar() {
     assert!(!before.is_open(et((2017, 7, 24), (8, 0, 0))));
     assert!(before.is_open_regular(et((2017, 7, 24), (10, 0, 0))));
     assert!(!before.is_open(et((2017, 7, 24), (16, 0, 0))));
-    assert!(pillar.is_open_extended(et((2017, 7, 24), (7, 0, 0))));
+    assert!(pillar.is_open_extended(et((2017, 7, 24), (6, 30, 0))));
     assert!(pillar.is_open_regular(et((2017, 7, 24), (9, 30, 0))));
     assert!(pillar.is_open_extended(et((2017, 7, 24), (19, 59, 59))));
     assert!(!pillar.is_open(et((2017, 7, 24), (20, 0, 0))));
+}
+
+#[test]
+fn nyse_texas_preserves_chx_history_through_the_pillar_migration() {
+    // NYSE Texas is a non-substantive continuation of NYSE Chicago/CHX. CHX's
+    // January-2010 rules retain a 07:00–17:00 envelope, including the
+    // 16:15–17:00 cross-only stage. The exact 2019-11-04 Pillar migration
+    // added the 06:30 order-entry queue and extended the late session to 20:00.
+    // https://www.sec.gov/rules/sro/chx/2009/34-60775.pdf
+    // https://www.sec.gov/files/rules/sro/nysechx/2019/34-86709.pdf
+    // https://www.nyse.com/publicdocs/nyse/markets/nyse-chicago/NYSE_Chicago_Migration.pdf
+    // https://www.sec.gov/files/rules/sro/nysechx/2025/34-102507.pdf
+    let baseline = hours_for_exchange_as_of(Exchange::NyseTexas, et((2010, 1, 4), (12, 0, 0)));
+    assert!(!baseline.is_open(et((2010, 1, 4), (6, 59, 59))));
+    assert!(baseline.is_open_extended(et((2010, 1, 4), (7, 0, 0))));
+    assert!(baseline.is_open_regular(et((2010, 1, 4), (9, 30, 0))));
+    assert!(baseline.is_open_extended(et((2010, 1, 4), (16, 59, 59))));
+    assert!(!baseline.is_open(et((2010, 1, 4), (17, 0, 0))));
+
+    let before = profile_before(Exchange::NyseTexas, (2019, 11, 4));
+    let pillar = profile_from(Exchange::NyseTexas, (2019, 11, 4));
+    assert!(!before.is_open(et((2019, 11, 4), (17, 0, 0))));
+    assert!(!pillar.is_open(et((2019, 11, 4), (6, 29, 59))));
+    assert!(pillar.is_open_extended(et((2019, 11, 4), (6, 30, 0))));
+    assert!(pillar.is_open_extended(et((2019, 11, 4), (17, 0, 0))));
+    assert!(pillar.is_open_extended(et((2019, 11, 4), (19, 59, 59))));
+    assert!(!pillar.is_open(et((2019, 11, 4), (20, 0, 0))));
+    assert_eq!(pillar, profile_from(Exchange::NyseTexas, (2025, 3, 28)));
 }
 
 #[test]
@@ -186,7 +243,7 @@ fn nyse_national_full_legacy_and_dormant_timeline_is_preserved() {
     assert!(second_dormant.regular.is_empty() && second_dormant.extended.is_empty());
 
     let pillar = profile_from(Exchange::NyseNational, (2018, 5, 21));
-    assert!(pillar.is_open_extended(et((2018, 5, 21), (7, 0, 0))));
+    assert!(pillar.is_open_extended(et((2018, 5, 21), (6, 30, 0))));
     assert!(pillar.is_open_extended(et((2018, 5, 21), (19, 59, 59))));
     assert!(!pillar.is_open(et((2018, 5, 21), (20, 0, 0))));
 }

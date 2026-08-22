@@ -40,11 +40,11 @@ fn tokyo_current_baseline() {
     assert!(!h.is_open(local(tz, (2026, 8, 19), (7, 59, 0))));
     assert!(h.is_open_extended(local(tz, (2026, 8, 19), (8, 0, 0))));
     assert!(h.is_open_regular(local(tz, (2026, 8, 19), (9, 0, 0))));
-    assert!(!h.is_open(local(tz, (2026, 8, 19), (12, 0, 0))));
-    assert!(h.is_open_extended(local(tz, (2026, 8, 19), (12, 5, 0))));
+    assert!(h.is_open_extended(local(tz, (2026, 8, 19), (12, 0, 0))));
     assert!(h.is_open_regular(local(tz, (2026, 8, 19), (12, 30, 0))));
     assert!(h.is_open_extended(local(tz, (2026, 8, 19), (15, 25, 0))));
-    assert!(!h.is_open(local(tz, (2026, 8, 19), (15, 30, 0))));
+    assert!(h.is_open_extended(local(tz, (2026, 8, 19), (17, 59, 59))));
+    assert!(!h.is_open(local(tz, (2026, 8, 19), (18, 0, 0))));
     assert_weekend_closed(Exchange::Tse, tz);
 }
 
@@ -85,7 +85,7 @@ fn hong_kong_current_baseline() {
     assert!(!h.is_open(local(tz, (2026, 8, 19), (8, 59, 0))));
     assert!(h.is_open_extended(local(tz, (2026, 8, 19), (9, 0, 0))));
     assert!(h.is_open_regular(local(tz, (2026, 8, 19), (9, 30, 0))));
-    assert!(!h.is_open(local(tz, (2026, 8, 19), (12, 30, 0))));
+    assert!(h.is_open_regular(local(tz, (2026, 8, 19), (12, 30, 0))));
     assert!(h.is_open_regular(local(tz, (2026, 8, 19), (13, 0, 0))));
     assert!(h.is_open_extended(local(tz, (2026, 8, 19), (16, 0, 0))));
     assert!(!h.is_open(local(tz, (2026, 8, 19), (16, 10, 0))));
@@ -130,11 +130,15 @@ fn southeast_asia_current_baselines() {
     assert!(!h.is_open(local(tz, date, (9, 29, 0))));
     assert!(h.is_open_extended(local(tz, date, (9, 30, 0))));
     assert!(h.is_open_regular(local(tz, date, (10, 0, 0))));
-    assert!(!h.is_open(local(tz, date, (12, 30, 0))));
+    assert!(h.is_open_regular(local(tz, date, (12, 30, 0))));
     assert!(h.is_open_extended(local(tz, date, (13, 30, 0))));
     assert!(h.is_open_regular(local(tz, date, (14, 0, 0))));
     assert!(h.is_open_extended(local(tz, date, (16, 30, 0))));
     assert!(!h.is_open(local(tz, date, (17, 0, 0))));
+    assert!(h.is_open_extended(local(tz, date, (18, 45, 0))));
+    assert!(h.is_open_regular(local(tz, date, (19, 0, 0))));
+    assert!(h.is_open_extended(local(tz, (2026, 8, 20), (2, 45, 0))));
+    assert!(!h.is_open(local(tz, (2026, 8, 20), (3, 0, 0))));
     assert_weekend_closed(Exchange::SetThailand, tz);
 
     let tz = Asia::Jakarta;
@@ -145,7 +149,8 @@ fn southeast_asia_current_baselines() {
     assert!(!h.is_open(local(tz, date, (12, 0, 0))));
     assert!(h.is_open_regular(local(tz, date, (13, 30, 0))));
     assert!(h.is_open_extended(local(tz, date, (15, 50, 0))));
-    assert!(!h.is_open(local(tz, date, (16, 15, 0))));
+    assert!(h.is_open_extended(local(tz, date, (16, 29, 59))));
+    assert!(!h.is_open(local(tz, date, (16, 30, 0))));
     assert!(!h.is_open(local(tz, (2026, 8, 21), (11, 30, 0))));
     assert!(h.is_open_regular(local(tz, (2026, 8, 21), (14, 0, 0))));
     assert_weekend_closed(Exchange::Idx, tz);
@@ -169,7 +174,8 @@ fn southeast_asia_current_baselines() {
     assert!(!h.is_open(local(tz, date, (11, 30, 0))));
     assert!(h.is_open_regular(local(tz, date, (13, 0, 0))));
     assert!(h.is_open_extended(local(tz, date, (14, 30, 0))));
-    assert!(!h.is_open(local(tz, date, (14, 45, 0))));
+    assert!(h.is_open_extended(local(tz, date, (14, 59, 59))));
+    assert!(!h.is_open(local(tz, date, (15, 0, 0))));
     assert_weekend_closed(Exchange::Hose, tz);
 }
 
@@ -195,7 +201,8 @@ fn mainland_china_current_baselines() {
 fn korea_current_baseline() {
     let h = hours_for_exchange(Exchange::Krx);
     let tz = Asia::Seoul;
-    assert!(!h.is_open(local(tz, (2026, 8, 19), (8, 29, 0))));
+    assert!(!h.is_open(local(tz, (2026, 8, 19), (7, 59, 59))));
+    assert!(h.is_open_extended(local(tz, (2026, 8, 19), (8, 0, 0))));
     assert!(h.is_open_extended(local(tz, (2026, 8, 19), (8, 30, 0))));
     assert!(h.is_open_regular(local(tz, (2026, 8, 19), (9, 0, 0))));
     assert!(h.is_open_extended(local(tz, (2026, 8, 19), (15, 20, 0))));
@@ -207,12 +214,11 @@ fn korea_current_baseline() {
 fn taiwan_current_baseline() {
     let h = hours_for_exchange(Exchange::Twse);
     let tz = Asia::Taipei;
-    assert!(!h.is_open(local(tz, (2026, 8, 19), (8, 29, 0))));
-    assert!(h.is_open_extended(local(tz, (2026, 8, 19), (8, 30, 0))));
+    assert!(!h.is_open(local(tz, (2026, 8, 19), (7, 59, 59))));
+    assert!(h.is_open_extended(local(tz, (2026, 8, 19), (8, 0, 0))));
     assert!(h.is_open_regular(local(tz, (2026, 8, 19), (9, 0, 0))));
     assert!(h.is_open_extended(local(tz, (2026, 8, 19), (13, 25, 0))));
-    assert!(!h.is_open(local(tz, (2026, 8, 19), (13, 30, 0))));
-    assert!(h.is_open_extended(local(tz, (2026, 8, 19), (14, 0, 0))));
-    assert!(!h.is_open(local(tz, (2026, 8, 19), (14, 30, 0))));
+    assert!(h.is_open_extended(local(tz, (2026, 8, 19), (16, 59, 59))));
+    assert!(!h.is_open(local(tz, (2026, 8, 19), (17, 0, 0))));
     assert_weekend_closed(Exchange::Twse, tz);
 }

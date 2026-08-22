@@ -7,6 +7,7 @@ mod bounds_and_serde;
 mod candle_starts_and_profile_adapters;
 mod cboe_options;
 mod cme_cbot;
+mod cme_families;
 mod commodities;
 mod equity_corrections;
 mod eurex_ice;
@@ -19,6 +20,7 @@ mod nasdaq;
 mod sgx_cfe;
 mod sunday_wraps;
 mod us_equity_history;
+mod us_independent_exchanges;
 mod verified_corrections;
 
 mod prelude {

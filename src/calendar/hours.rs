@@ -22,13 +22,17 @@ use chrono::{DateTime, NaiveDate, Utc};
 use chrono_tz::Tz;
 
 use super::query::{QueryContext, status, week};
-use super::{Exchange, SessionKind, SessionRule};
+use super::{Exchange, SessionKind, SessionRule, SessionState};
 
 /// Normal-week trading-hours definition.
 ///
 /// Built-in values state their exchange, segment, or product-family scope in
 /// the verification ledger. They do not capture holidays or products outside
 /// that scope; consult the relevant contract specifications before trading.
+/// Open-state predicates and session-bound queries traverse the borrowed rule
+/// slices directly: they allocate nothing and take `O(rules)` work per call.
+/// Forward-looking queries use a documented, bounded civil-day scan rather
+/// than an unbounded search.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct MarketHours {
     /// Which exchange these hours represent.
@@ -43,7 +47,12 @@ pub struct MarketHours {
     pub extended: Cow<'static, [SessionRule]>,
     /// True if there is a distinct daily close (used for daily candle boundaries).
     pub has_daily_close: bool,
-    /// True if the exchange has a true weekend close (used for weekly boundaries).
+    /// True if this fixed profile has a true weekend close used for generic
+    /// weekly boundaries.
+    ///
+    /// An identity-aware calendar may expose a sourced product-family weekly
+    /// boundary without a long weekend shutdown. CME cryptocurrency is the
+    /// built-in example; use `calendar_for_market_hours_key` for that result.
     pub has_weekend_close: bool,
 }
 
@@ -68,13 +77,11 @@ impl MarketHours {
 
     /// True if a session of the requested kind is open at `t`.
     ///
-    /// Session existence follows the crate-wide contract (stated on the
-    /// internal holiday hook in `local_time`): a same-day session on local day `D` exists iff
-    /// `D` is not a holiday, and a wrap session opening on `D` exists iff
-    /// neither `D` nor `D+1` is one. This predicate and
-    /// [`session_bounds_with`](super::session_bounds_with) share the same
-    /// containing-session resolver, so their answers cannot drift. Holidays are
-    /// outside this normal-week model, and its internal policy returns `false`.
+    /// This predicate and [`session_bounds_with`](super::session_bounds_with)
+    /// share the same containing-session resolver, so their answers cannot
+    /// drift. This fixed profile is a normal-week grid and has no holiday
+    /// overlay; use a date-aware calendar with a caller-supplied
+    /// [`DayPolicy`](super::DayPolicy) when day-level overrides are required.
     #[must_use]
     pub fn is_open_with(&self, t: DateTime<Utc>, kind: SessionKind) -> bool {
         status::is_open_with(&QueryContext::fixed(self), t, kind)
@@ -98,27 +105,33 @@ impl MarketHours {
         self.is_open_with(t, SessionKind::Extended)
     }
 
-    /// True if `t` falls inside a daily maintenance break: a closed gap
-    /// between two sessions whose **whole** close-to-reopen span is shorter
-    /// than six hours.
+    /// True if `t` falls inside a daily maintenance break.
     ///
     /// The gap is measured from the previous session close to the next open
-    /// (across regular and extended sessions), so the entire break qualifies
-    /// from its first closed instant — CME's 16:00–17:00 CT hour, ICE's
-    /// two-hour 18:00–20:00 ET window, and CBOT grains' 13:20→19:00 CT
-    /// afternoon alike. Longer closures never count: an equity venue's
-    /// overnight, a weekend, and the run-up to a Sunday reopen are closed but
-    /// not maintenance. Always-open venues are never in maintenance because
-    /// they are never closed, and a profile with no sessions at all is never
-    /// in maintenance because nothing reopens.
+    /// (across regular and extended sessions). It normally qualifies only when
+    /// it lies between different trade dates in the same ISO week and the
+    /// complete close-to-reopen span is at most four elapsed hours. A profile
+    /// that explicitly has no weekend close also retains operator-designated
+    /// breaks of that length inside one trade date. Other same-trade-date gaps
+    /// are [`SessionState::Halt`]; longer afternoon, overnight, and weekend
+    /// closures are [`SessionState::Closed`].
     ///
-    /// This crate deliberately does not model breaks as explicit rules; the
-    /// six-hour threshold is what separates the shipped schedules' longest
-    /// intraday break (CBOT grains, 5h40) from their shortest overnight
-    /// closure (SIX, 8h).
+    /// This crate deliberately derives breaks from adjacent sourced sessions
+    /// rather than inserting synthetic maintenance rules.
     #[must_use]
     pub fn is_maintenance(&self, t: DateTime<Utc>) -> bool {
         status::is_maintenance(&QueryContext::fixed(self), t)
+    }
+
+    /// Returns one mutually exclusive open, halt, maintenance, or closed state.
+    ///
+    /// Maintenance is normally a complete inter-trade-date gap of at most four
+    /// elapsed hours within one ISO week. A profile with no weekend close also
+    /// retains operator-designated short maintenance inside one trade date;
+    /// longer closures are [`SessionState::Closed`].
+    #[must_use]
+    pub fn session_state(&self, t: DateTime<Utc>) -> SessionState {
+        status::session_state(&QueryContext::fixed(self), t)
     }
 
     /// Return true iff the market is closed for the entire **calendar day** `day`

@@ -5,9 +5,9 @@
 //!
 //! Searches check the instant's venue-local opening day, then a previous-day
 //! wrap that may still be open, then scan forward. The close is exclusive: it
-//! is the first instant outside the session. Forward scans are bounded at 14
-//! local days, so a profile with no matching rule returns `None` instead of a
-//! fabricated interval.
+//! is the first instant outside the session. Forward scans are bounded through
+//! 14 local days ahead, so a profile with no matching rule returns `None`
+//! instead of a fabricated interval.
 //!
 //! These public fixed-profile adapters and the date-aware calendar use the
 //! same private engine, preventing their session semantics from drifting.
@@ -43,9 +43,10 @@ pub fn session_bounds(
 
 /// Returns the first session of `kind` opening strictly after `instant`.
 ///
-/// The search scans up to 14 candidate venue-local opening days, skips
-/// unavailable days, rejects wraps whose close day is unavailable, and picks
-/// the earliest qualifying open on the first matching day.
+/// The search scans through 14 venue-local days ahead, skips unavailable or
+/// civil-time-collapsed occurrences, rejects wraps whose close day is
+/// unavailable, and picks the earliest qualifying open on the first matching
+/// day.
 #[must_use]
 pub fn next_session_after_with(
     hours: &MarketHours,

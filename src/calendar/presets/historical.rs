@@ -8,10 +8,11 @@
 //! behavior for venues with no recorded revision.
 //!
 //! **Evidence rule.** A selector is added only when the owning venue module has
-//! primary, day-level evidence for its boundary (LAW-NO-FABRICATED-DATES). The
-//! current verification ledger records no modeled-history gap within any row's
-//! stated scope. If a future review finds an undated change, the ledger must
-//! disclose it rather than this router inventing a cutover.
+//! primary evidence for an unconditional, day-level boundary
+//! (LAW-NO-FABRICATED-DATES). The current verification ledger records no
+//! modeled-history gap within any row's stated scope. Undated changes are
+//! disclosed, and conditional future plans remain unselected, rather than this
+//! router inventing or prematurely activating a cutover.
 
 use chrono::{DateTime, Utc};
 

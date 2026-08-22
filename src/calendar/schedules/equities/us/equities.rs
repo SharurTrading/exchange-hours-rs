@@ -6,7 +6,7 @@ use chrono_tz::America;
 
 use super::StaticHoursProfile;
 use crate::calendar::SessionRule;
-use crate::calendar::rule::{MON_FRI, SUN_PLUS_MON_THU};
+use crate::calendar::rule::MON_FRI;
 
 /// Reg NMS regular-hours rule set: 09:30–16:00 ET, Monday–Friday.
 ///
@@ -117,35 +117,6 @@ static NASDAQ_PSX_EXTENDED_AT_LAUNCH: &[SessionRule] = &[
 pub(crate) static NASDAQ_PSX_PROFILE: StaticHoursProfile = equity_profile(NASDAQ_PSX_EXTENDED);
 pub(super) static NASDAQ_PSX_PROFILE_AT_LAUNCH: StaticHoursProfile =
     equity_profile(NASDAQ_PSX_EXTENDED_AT_LAUNCH);
-
-// Nasdaq Equity Trader Alert 2026-46 announces the new Night Session for
-// Sunday 2026-12-06. Nasdaq Equity 1 defines it as 21:00–04:00 ET Sunday
-// through Thursday, followed by the existing 04:00–20:00 Day Session on
-// business days. The 20:00–21:00 interval remains the daily pause. Equity 1
-// conditions actual commencement on Equity Data Plan readiness and a later
-// Nasdaq rule filing confirming readiness. This table encodes the announced
-// date and must move if that final filing changes the launch.
-// https://www.nasdaqtrader.com/TraderNews.aspx?id=ETA2026-46
-// https://listingcenter.nasdaq.com/assets/RuleBook/Nasdaq/rules/Nasdaq%20Equity%201.html
-static NASDAQ_EXTENDED_POST_2026_12_06: &[SessionRule] = &[
-    SessionRule {
-        days: SUN_PLUS_MON_THU,
-        open_ssm: 21 * 3600,
-        close_ssm: 4 * 3600,
-    },
-    SessionRule {
-        days: MON_FRI,
-        open_ssm: 4 * 3600,
-        close_ssm: 9 * 3600 + 30 * 60,
-    },
-    SessionRule {
-        days: MON_FRI,
-        open_ssm: 16 * 3600,
-        close_ssm: 20 * 3600,
-    },
-];
-pub(super) static NASDAQ_PROFILE_POST_2026_12_06: StaticHoursProfile =
-    equity_profile(NASDAQ_EXTENDED_POST_2026_12_06);
 
 pub(super) static MEMX_EQ_PROFILE_PRE_2025_05_19: StaticHoursProfile =
     equity_profile(EXTENDED_0700_2000);

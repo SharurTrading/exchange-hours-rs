@@ -23,10 +23,12 @@ and the rules any change to this repository must follow.
   table. A venue that merely coincides with another still gets its own named
   profile so a future divergence is a one-line edit.
 - **LAW-NO-FABRICATED-DATES** — a historical cutover exists only when a primary
-  source states a **day-level** effective date. A real change without one is
-  documented as a known gap, never given an invented date. Amendment history
-  is recorded back to **January 2010**; earlier changes are out of scope by
-  design.
+  source states an **unconditional, day-level** effective date. A real change
+  without one is documented as a known gap, never given an invented date. A
+  future date contingent on a readiness filing, regulatory condition, or
+  infrastructure rollout stays in the update-guide watch list and out of
+  runtime selectors. Amendment history is recorded back to **January 2010**;
+  earlier changes are out of scope by design.
 
 ## Modeling conventions
 
@@ -107,9 +109,10 @@ handwritten test lists from production data.
    and their day-level effective-date sources with the same venue family.
 3. **Routing.** Update the no-catch-all `hours_for_exchange` match with an
    explicit current-profile decision. Add point-in-time routing only for
-   primary-sourced revisions; document an unsourced gap instead of inventing a
-   date. A cross-zone or otherwise recurring selector also needs date-aware
-   `ExchangeCalendar` transition coverage.
+   primary-sourced, unconditional revisions; document an unsourced gap instead
+   of inventing a date, and monitor a conditional future announcement without
+   routing it. A cross-zone or otherwise recurring selector also needs
+   date-aware `ExchangeCalendar` transition coverage.
 4. **Regional membership.** Add the venue to the appropriate `bulk.rs` region
    list when a built-in bulk builder should include it, preserving that list's
    documented stable order.
@@ -134,7 +137,8 @@ handwritten test lists from production data.
    source sets when necessary. Advance the README repository cutoff only after
    every real venue row has been reviewed through that date. Record a new venue
    under `[Unreleased]` / **Added** or a schedule correction under **Fixed** in
-   `CHANGELOG.md`.
+   `CHANGELOG.md`. If a version has already been cut but is not yet tagged or
+   published, record final preparation fixes in that pending version section.
 8. **Verification.** Run the complete quality and MSRV commands below. A
    focused venue test is useful while iterating, but it does not replace the
    all-venue contracts.
@@ -186,8 +190,10 @@ end-exclusive close, lunch/maintenance gaps, weekend boundary, serde form) and
 ## Housekeeping
 
 - Record user-visible changes under `[Unreleased]` in `CHANGELOG.md`; session
-  data corrections go under **Fixed**, new venues under **Added**. A PR that
-  bumps the version in `Cargo.toml` is a release cut: that PR retitles
+  data corrections go under **Fixed**, new venues under **Added**. If a version
+  has been cut but not tagged or published, final preparation fixes belong in
+  that pending version section. A PR that bumps the version in `Cargo.toml` is
+  a release cut: that PR retitles
   `[Unreleased]` to the dated version section (as the 0.1.0 and 0.2.0
   release-prep PRs did), and the tag follows the merge. Follow
   [`RELEASING.md`](RELEASING.md) for the cut, tag, publish, and verification

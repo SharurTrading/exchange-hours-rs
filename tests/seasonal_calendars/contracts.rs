@@ -34,10 +34,7 @@ fn every_fixed_venue_calendar_matches_the_current_market_hours_surface() {
 
     for &exchange in Exchange::ALL {
         // B3/BMV/Vienna and the international reference-clock selectors are
-        // intentionally date-dependent. Nasdaq, EDGX, and the FINRA fixed
-        // snapshots intentionally remain on today's profile until their
-        // sourced future revisions take effect; a 2100 date-aware query has
-        // crossed them.
+        // intentionally date-dependent.
         if matches!(
             exchange,
             Exchange::B3
@@ -46,11 +43,6 @@ fn every_fixed_venue_calendar_matches_the_current_market_hours_surface() {
                 | Exchange::Eurex
                 | Exchange::IceEndex
                 | Exchange::IceAbuDhabi
-                | Exchange::Nasdaq
-                | Exchange::CboeEdgx
-                | Exchange::FinraTrfCarteret
-                | Exchange::FinraTrfChicago
-                | Exchange::FinraTrfNyse
         ) {
             continue;
         }

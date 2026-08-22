@@ -34,7 +34,7 @@ The internal ownership and extension model is documented in
   fallback (91 `Exchange` variants total) — covering US equities/options, US and
   international futures, EU and Asia-Pacific equities, other major global cash
   markets, and always-open crypto, with independently fenced point-in-time
-  revisions wherever primary evidence states a day-level boundary.
+  revisions wherever primary evidence states an unconditional day-level boundary.
 - **Session queries** — open/closed by regular/extended/both, session bounds, next open, gaps.
 - **Calendar-aware bar boundaries** — intraday bars clamp to the session close so no bar
   spans a closed period; the day's last bar ends at the daily close itself (CME 16:00 CT,
@@ -125,11 +125,11 @@ assert_eq!(snapshot_for_one_instant.exchange, Exchange::Bmv);
 
 | Family | Market identities | Local zone | Session shape |
 |---|---|---|---|
-| US equities and ATS | 16 | `America/New_York` | 09:30–16:00 regular on matching venues; modeled extended hours differ by venue. Nasdaq is 04:00–20:00 today, Nasdaq BX/Texas is 07:00–19:00, and PSX is 08:00–17:00. Date-aware profiles encode the announced Nasdaq and EDGX 21:00–04:00 sessions from 2026-12-06, subject to final regulatory/readiness filings; fixed current snapshots remain unchanged. NYSE Tape A is core-only, IEX runs 08:00–17:00 System Hours, and Blue Ocean's production new-order ATS window is 20:00–04:00. |
-| FINRA TRFs | 3 | `America/New_York` | 09:30–16:00 regular; outside-RTH reporting is extended (04:00–20:00 system envelope from 2026-03-30, with the announced SIP-contingent overnight expansion tracked from 2026-12-06). |
+| US equities and ATS | 16 | `America/New_York` | 09:30–16:00 regular on matching venues; modeled extended hours differ by venue. Nasdaq is 04:00–20:00 today, Nasdaq BX/Texas is 07:00–19:00, and PSX is 08:00–17:00. The announced Nasdaq and EDGX 21:00–04:00 sessions are monitored but deliberately unencoded until their final readiness filings. NYSE Tape A is core-only, IEX runs 08:00–17:00 System Hours, and Blue Ocean's production new-order ATS window is 20:00–04:00. |
+| FINRA TRFs | 3 | `America/New_York` | 09:30–16:00 regular; outside-RTH reporting is extended under the sourced 04:00–20:00 system envelope from 2026-03-30. FINRA's announced overnight expansion remains unencoded while its date depends on the SIP rollout. |
 | US options | 18 | `America/New_York` | Each venue models the primary-sourced 09:30–16:00 regular-session envelope for ordinary individual-stock options, with exact closed-before-launch history where the venue began after January 2010. ETF, ETN, index, FLEX, floor-only, and venue-designated extended-hours classes are outside this deliberately narrow scope. |
 | CME Globex futures | 4 | `US/Central` | CME equity-index futures use the current 17:00→16:00 envelope with their 15:15–15:30 halt; date-aware history retains the sourced 2012 and 2015 close changes. CBOT grains keep distinct sourced 2010, 2012, 2013, and 2015 regimes. |
-| Cboe Futures (CFE) | 1 | `US/Central` | RTH 08:30–15:00 flows into post-settlement 15:00–16:00; order-entry queues run Sunday 16:00–17:00 and Monday–Thursday 16:45–17:00 before the 17:00→08:30 overnight wrap. |
+| Cboe Futures (CFE) | 1 | `US/Central` | RTH 08:30–15:00 flows into post-settlement 15:00–16:00; conservative latest queue-acceptance edges are Sunday 16:00:06 and Monday–Thursday 16:45:06 before the 17:00→08:30 overnight wrap. |
 | EU equities | 14 | 11 European zones | 09:00–17:30 continuous as the continental default, with venue-owned phases: Xetra's DAX-share envelope includes participant-restricted Extended Retail from 07:00 to 22:00; LSE SETS includes 07:00 pre-trading, randomized opening/noon auctions, and CPX to 16:40; central Euronext profiles use the published nominal phase boundaries and exclude per-security randomized uncross seconds; SIX, BME, Vienna, and Nasdaq Nordic books keep their own phases and clocks. |
 | Asia-Pacific equities | 17 | 14 IANA zones | ASX, TMX Australia, NZX, TSE, NSE India, BSE India, HKEX, SGX Securities, Bursa Malaysia, SET, IDX, PSE, HOSE, SSE, SZSE, KRX, and TWSE. Lunch breaks, auctions, and post-close windows stay venue-specific. |
 | Other major global equities | 6 | Toronto / Istanbul / Johannesburg / Riyadh / São Paulo / Mexico City | TSX, Borsa Istanbul, JSE's main/liquid ZA01 segment, Tadawul, B3, and BMV, including their pre-open, closing-auction, and trade-at-last phases. B3/BMV grids are date-aware because they follow New York's offset relationship. |
@@ -213,11 +213,11 @@ trading day.
   preserves the exact venue-wide open/closed envelope. IEX and Blue Ocean have sourced
   production launch boundaries, and B3's explicit older grids are fully recorded to
   January 2010.
-- **Announced future changes stay conditional.** Nasdaq, EDGX, and the three
-  FINRA TRFs have official 2026-12-06 schedule announcements encoded in their
-  date-aware selectors. Nasdaq and EDGX still require final readiness/regulatory
-  filings, and FINRA's date moves if the SIP rollout moves. Recheck the linked
-  pending-confirmation sources before relying on any post-cutover answer.
+- **Conditional future changes are not schedules yet.** Nasdaq, EDGX, and the
+  three FINRA TRFs have official future-session announcements, but their dates
+  still depend on later readiness filings or the SIP rollout. They remain on
+  the pending-confirmation watch list and are deliberately absent from runtime
+  selectors until every stated condition is satisfied.
 - **Cutover semantics.** Date-only changes are compared in the venue's **own local zone**.
   The new profile applies from venue-local midnight on its session opening day—often Sunday
   for a Monday trade-date change. When a primary source states an exact intraday instant,

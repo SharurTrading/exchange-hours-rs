@@ -128,30 +128,29 @@ Equal `SessionRule` endpoints represent one complete local-day session. Use
 that shape when a sourced session opens and closes at the same wall-clock time
 on consecutive days; omit the rule when no session exists.
 
-Future-effective notices can be encoded immediately when fully sourced. The
-row's review date is still the day the evidence was checked, not the notice's
-effective date. When an announced launch remains conditional on regulatory or
-infrastructure readiness, label the encoded revision as an announced plan and
-keep it below until the operator confirms that every condition has been met.
+Future-effective notices can be encoded immediately only when their effective
+day is unconditional and fully sourced. The row's review date is still the day
+the evidence was checked, not the notice's effective date. When an announced
+launch remains conditional on regulatory or infrastructure readiness, keep it
+out of runtime selectors and track it below until every condition is confirmed.
 
 ### Pending effective-date confirmations
 
 - **Nasdaq — 2026-12-06:** [ETA2026-46](https://www.nasdaqtrader.com/TraderNews.aspx?id=ETA2026-46)
   announces the Night Session date, while [Nasdaq Equity 1](https://listingcenter.nasdaq.com/assets/RuleBook/Nasdaq/rules/Nasdaq%20Equity%201.html)
   conditions commencement on Equity Data Plan readiness and a later Nasdaq
-  readiness filing. Recheck that filing and move the revision if it changes the
-  launch.
+  readiness filing. Add the revision only after that filing confirms the day.
 - **Cboe EDGX — 2026-12-06:** the [opening-process specification](https://www.cboe.com/document/tech-spec/document/technical-specifications/cboe-titanium-u.s.-equities-opening-process)
-  announces the first overnight opening for the 2026-12-07 business date, but
-  [SR-CboeEDGX-2026-019 Amendment No. 1](https://cdn.cboe.com/resources/regulation/rule_filings/pending/2026/SR-CboeEDGX-2026-019-Amendment-No-1.pdf)
-  conditions commencement on regulatory completion, Equity Data Plan readiness,
-  and a later EDGX readiness filing. Move the revision if those conditions
-  change the launch.
+  announces the first overnight opening for the 2026-12-07 business date. The
+  [SEC approval order](https://www.sec.gov/files/rules/sro/cboeedgx/2026/34-105587.pdf)
+  confirms that commencement still requires Equity Data Plan
+  readiness and a later EDGX readiness filing. Add the revision only after
+  those remaining conditions confirm the day.
 - **FINRA TRFs — 2026-12-06:** recheck the Securities Information Processor
   (SIP) Amendment launch against [SR-FINRA-2026-015](https://www.finra.org/sites/default/files/2026-07/SR-FINRA-2026-015.pdf)
-  before this date. The modeled Sunday-through-Friday reporting regime is the
-  announced plan and is conditional on that rollout; if the SIP implementation
-  moves, move the Carteret, Chicago, and NYSE TRF revisions with it.
+  before this date. The announced Sunday-through-Friday reporting regime is not
+  modeled while its day remains conditional; add all three TRF revisions only
+  when the SIP implementation day is confirmed.
 
 ## 4. Implement in the owner module
 
@@ -184,7 +183,9 @@ After the comparison is complete:
    The contract derives Primary, Partial, Pragmatic, and Known-issue counts from
    the ledger; do not copy forward old assurance numbers without that check.
 5. Record schedule changes under `[Unreleased]` / **Fixed** and new venues under
-   **Added** in `CHANGELOG.md`.
+   **Added** in `CHANGELOG.md`. If a version has already been cut but is not yet
+   tagged or published, put final preparation fixes in that pending version
+   section.
 
 Emergency reviews normally advance one venue only; the repository-wide cutoff
 therefore remains unchanged until the lagging rows catch up.

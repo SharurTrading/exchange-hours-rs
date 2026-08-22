@@ -2,12 +2,12 @@
 
 //! The two concrete profile sources consumed by the query engine.
 
-use chrono::{NaiveDate, Utc};
+use chrono::{DateTime, NaiveDate, Utc};
 use chrono_tz::Tz;
 
 use crate::calendar::exchange_calendar::ExchangeCalendar;
 use crate::calendar::hours::MarketHours;
-use crate::calendar::local_time::{is_holiday, mk_local_open};
+use crate::calendar::local_time::{is_holiday, mk_local_close, mk_local_open};
 use crate::calendar::rule::{SessionKind, SessionRule};
 
 const OPEN_DAY_ANCHOR_SSM: u32 = 12 * 3_600;
@@ -87,6 +87,30 @@ impl<'a> QueryContext<'a> {
 /// Normal-week calendars have no holiday overlay yet.
 pub(super) const fn day_is_holiday(day: NaiveDate) -> bool {
     is_holiday(day)
+}
+
+/// Resolves one scheduled occurrence and rejects civil-time collapses.
+pub(super) fn resolve_rule_bounds(
+    context: &QueryContext<'_>,
+    open_day: NaiveDate,
+    rule: &SessionRule,
+) -> Option<(DateTime<Utc>, DateTime<Utc>)> {
+    if day_is_holiday(open_day) {
+        return None;
+    }
+    let close_day = if rule.wraps_to_next_day() {
+        let next_day = open_day.succ_opt()?;
+        if day_is_holiday(next_day) {
+            return None;
+        }
+        next_day
+    } else {
+        open_day
+    };
+    let tz = context.tz();
+    let open = mk_local_open(tz, open_day, rule.open_ssm).with_timezone(&Utc);
+    let close = mk_local_close(tz, close_day, rule.close_ssm).with_timezone(&Utc);
+    (open < close).then_some((open, close))
 }
 
 pub(super) fn rules(hours: &MarketHours, kind: SessionKind) -> impl Iterator<Item = &SessionRule> {

@@ -383,7 +383,11 @@ fn every_exchange_owner_link_resolves() {
 }
 
 #[test]
-fn conditional_future_revisions_remain_pending_confirmation() {
+fn conditional_future_revisions_remain_unencoded_pending_confirmation() {
+    assert!(
+        UPDATING.contains("keep it\nout of runtime selectors"),
+        "conditional-date policy must prohibit provisional runtime selectors"
+    );
     let (_, pending) = UPDATING
         .split_once("### Pending effective-date confirmations")
         .expect("updating guide must retain a pending-confirmations section");

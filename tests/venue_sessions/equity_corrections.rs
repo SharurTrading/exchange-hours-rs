@@ -87,6 +87,14 @@ fn nyse_national_dormancy_and_relaunch_use_sourced_dates() {
         calendar_for_exchange(Exchange::NyseNational)
             .is_open_regular(et((2018, 5, 21), (10, 0, 0)))
     );
+
+    // The dormant profile has no sessions. This pins the inclusive fourteen-day
+    // search horizon needed to reach the exact relaunch session.
+    assert_eq!(
+        calendar_for_exchange(Exchange::NyseNational)
+            .next_session_after(et((2018, 5, 7), (0, 0, 0))),
+        Some((et((2018, 5, 21), (7, 0, 0)), et((2018, 5, 21), (9, 30, 0)),))
+    );
 }
 
 #[test]
@@ -115,36 +123,18 @@ fn edgx_early_session_started_0700_before_2021_03_08() {
 }
 
 #[test]
-fn edgx_overnight_session_starts_on_the_night_before_2026_12_07() {
-    // Cboe's opening-process specification announces 21:00–04:00 ET trading
-    // for business date 2026-12-07. The first observable opening is therefore
-    // Sunday 2026-12-06 at 21:00 ET. Amendment No. 1 conditions commencement
-    // on regulatory completion, data-plan readiness, and a later EDGX filing,
-    // so this contract covers the announced profile.
+fn edgx_unconfirmed_overnight_session_is_not_encoded() {
+    // The SEC-approved EDGX rule still conditions commencement on data-plan
+    // readiness and a later EDGX filing, so future lookups retain current hours.
     // https://www.cboe.com/document/tech-spec/document/technical-specifications/cboe-titanium-u.s.-equities-opening-process
-    // https://cdn.cboe.com/resources/regulation/rule_filings/pending/2026/SR-CboeEDGX-2026-019-Amendment-No-1.pdf
+    // https://www.sec.gov/files/rules/sro/cboeedgx/2026/34-105587.pdf
     let fixed = hours_for_exchange(Exchange::CboeEdgx);
-    assert!(!fixed.is_open(et((2026, 12, 6), (21, 0, 0))));
+    let future = hours_for_exchange_as_of(Exchange::CboeEdgx, et((2026, 12, 7), (12, 0, 0)));
+    let sunday_night = et((2026, 12, 6), (21, 0, 0));
 
-    let cutover = et((2026, 12, 6), (0, 0, 0));
-    let before =
-        hours_for_exchange_as_of(Exchange::CboeEdgx, cutover - chrono::Duration::seconds(1));
-    let after = hours_for_exchange_as_of(Exchange::CboeEdgx, cutover);
-
-    assert!(!before.is_open(et((2026, 12, 6), (21, 0, 0))));
-    assert!(!after.is_open(et((2026, 12, 6), (20, 59, 59))));
-    assert!(after.is_open_extended(et((2026, 12, 6), (21, 0, 0))));
-    assert!(after.is_open_extended(et((2026, 12, 7), (3, 59, 59))));
-    assert!(after.is_open_extended(et((2026, 12, 7), (4, 0, 0))));
-    assert!(after.is_open_regular(et((2026, 12, 7), (9, 30, 0))));
-    assert!(!after.is_open(et((2026, 12, 7), (20, 0, 0))));
-    assert!(after.is_maintenance(et((2026, 12, 7), (20, 30, 0))));
-    assert!(after.is_open_extended(et((2026, 12, 7), (21, 0, 0))));
-    assert!(!after.is_open(et((2026, 12, 11), (21, 0, 0))));
-    assert!(!after.is_open(et((2026, 12, 12), (12, 0, 0))));
-    assert!(
-        calendar_for_exchange(Exchange::CboeEdgx).is_open_extended(et((2026, 12, 6), (21, 0, 0)))
-    );
+    assert!(!fixed.is_open(sunday_night));
+    assert!(!future.is_open(sunday_night));
+    assert!(!calendar_for_exchange(Exchange::CboeEdgx).is_open(sunday_night));
 }
 
 #[test]

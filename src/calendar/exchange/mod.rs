@@ -48,7 +48,7 @@ exchanges! {
         /// from 07:00 ET since 2011-04-18.
         NasdaqBx => "nasdaq_bx",
         /// Nasdaq PSX, the former Philadelphia Stock Exchange equities book;
-        /// early session from 04:00 ET.
+        /// early session from 08:00 ET.
         NasdaqPsx => "nasdaq_psx",
         /// Cboe BZX Equities — early session from 04:00 ET (07:00 before
         /// 2025-05-01).
@@ -149,7 +149,7 @@ exchanges! {
         Eurex => "eurex",
         /// EEX Nordic Zonal Power Futures.
         Eex => "eex",
-        /// ICE Futures U.S.
+        /// ICE Futures U.S. NYSE FANG+ Index Futures default.
         Iceus => "iceus",
         /// ICE Futures Europe Brent Crude Futures default.
         Iceeu => "iceeu",

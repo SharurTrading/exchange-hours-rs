@@ -24,17 +24,25 @@ fn cboe_exchange_launches_are_not_backfilled() {
     assert!(byx_launch.is_open_extended(et((2010, 10, 15), (8, 0, 0))));
     assert!(!byx_launch.is_open(et((2010, 10, 15), (17, 0, 0))));
 
-    // Direct Edge's operator release dates both exchange launches to
-    // 2010-07-21.
+    // The UTP alert and SEC record date first-symbol production trading on
+    // both Direct Edge exchanges to 2010-07-02. The later operator release
+    // records completion of the all-symbol rollout on 2010-07-21.
+    // https://www.nasdaqtrader.com/TraderNews.aspx?id=uva2010-007
+    // https://www.sec.gov/file/34-62431
     // https://www.globenewswire.com/news-release/2010/07/21/425534/9381/en/Direct-Edge-Launches-Exchange-Operations.html
     for exch in [Exchange::CboeEdga, Exchange::CboeEdgx] {
-        let before = profile_before(exch, (2010, 7, 21));
-        let launched = profile_from(exch, (2010, 7, 21));
+        let before = profile_before(exch, (2010, 7, 2));
+        let launched = profile_from(exch, (2010, 7, 2));
         assert!(before.regular.is_empty() && before.extended.is_empty());
-        assert!(!launched.is_open(et((2010, 7, 21), (7, 59, 59))));
-        assert!(launched.is_open_extended(et((2010, 7, 21), (8, 0, 0))));
-        assert!(launched.is_open_extended(et((2010, 7, 21), (19, 59, 59))));
-        assert!(!launched.is_open(et((2010, 7, 21), (20, 0, 0))));
+        assert!(!launched.is_open(et((2010, 7, 2), (7, 59, 59))));
+        assert!(launched.is_open_extended(et((2010, 7, 2), (8, 0, 0))));
+        assert!(launched.is_open_extended(et((2010, 7, 2), (19, 59, 59))));
+        assert!(!launched.is_open(et((2010, 7, 2), (20, 0, 0))));
+        assert_eq!(
+            launched,
+            profile_from(exch, (2010, 7, 21)),
+            "all-symbol completion is not a schedule cutover for {exch:?}"
+        );
     }
 }
 

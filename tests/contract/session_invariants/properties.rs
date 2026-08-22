@@ -67,8 +67,8 @@ fn next_session_after_walk_strictly_advances_opens() {
                     "session walk stalled or moved backward ({ctx})"
                 );
                 assert!(
-                    close >= open,
-                    "session close precedes open during walk ({ctx})"
+                    close > open,
+                    "session must have positive width during walk ({ctx})"
                 );
                 cursor = open;
             }

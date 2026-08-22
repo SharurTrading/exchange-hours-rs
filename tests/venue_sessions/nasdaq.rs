@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT-0
 
-//! Nasdaq Stock Market current snapshot and future Night Session contracts.
+//! Nasdaq Stock Market current snapshot and sourced historical contracts.
 
 use super::prelude::*;
 
@@ -94,58 +94,24 @@ fn nasdaq_psx_launch_and_0800_expansion_use_sourced_dates() {
     );
 }
 
-// Nasdaq Equity Trader Alert 2026-46 announces the 21:00–04:00 ET Night Session
-// for Sunday 2026-12-06. Nasdaq Equity 1 limits that session to Sunday through
-// Thursday, retains the 04:00–20:00 Day Session, and leaves a daily 20:00–21:00
-// pause. Commencement remains conditional on data-plan readiness and a later
-// Nasdaq readiness filing, so these contracts cover the announced profile.
+// Nasdaq's announced Night Session remains conditional on data-plan readiness
+// and a later Nasdaq filing. Until that confirmation exists, even future-dated
+// lookups deliberately retain the current 04:00–20:00 profile.
 // https://www.nasdaqtrader.com/TraderNews.aspx?id=ETA2026-46
 // https://listingcenter.nasdaq.com/assets/RuleBook/Nasdaq/rules/Nasdaq%20Equity%201.html
 
 #[test]
-fn nasdaq_fixed_snapshot_remains_the_review_date_profile() {
+fn nasdaq_unconfirmed_night_session_is_not_encoded() {
     let current = hours_for_exchange(Exchange::Nasdaq);
+    let future = hours_for_exchange_as_of(Exchange::Nasdaq, et((2026, 12, 7), (12, 0, 0)));
 
-    assert!(!current.is_open(et((2026, 12, 6), (21, 0, 0))));
-    assert!(current.is_open_extended(et((2026, 12, 7), (4, 0, 0))));
-    assert!(current.is_open_regular(et((2026, 12, 7), (9, 30, 0))));
-    assert!(current.is_open_extended(et((2026, 12, 7), (16, 0, 0))));
-    assert!(!current.is_open(et((2026, 12, 7), (20, 0, 0))));
-}
-
-#[test]
-fn nasdaq_night_session_starts_at_the_sourced_cutover() {
-    let cutover = et((2026, 12, 6), (0, 0, 0));
-    let before = hours_for_exchange_as_of(Exchange::Nasdaq, cutover - chrono::Duration::seconds(1));
-    let after = hours_for_exchange_as_of(Exchange::Nasdaq, cutover);
-
-    assert!(!before.is_open(et((2026, 12, 6), (21, 0, 0))));
-    assert!(!after.is_open(et((2026, 12, 6), (20, 59, 59))));
-    assert!(after.is_open_extended(et((2026, 12, 6), (21, 0, 0))));
-    assert!(after.is_open_extended(et((2026, 12, 7), (3, 59, 59))));
-    assert!(after.is_open_extended(et((2026, 12, 7), (4, 0, 0))));
-    assert!(after.is_open_regular(et((2026, 12, 7), (9, 30, 0))));
-}
-
-#[test]
-fn nasdaq_future_profile_preserves_pauses_and_weekend_close() {
-    let after = hours_for_exchange_as_of(Exchange::Nasdaq, et((2026, 12, 7), (12, 0, 0)));
-
-    for day in 7..=10 {
-        let date = (2026, 12, day);
-        assert!(after.is_open_extended(et(date, (19, 59, 59))));
-        assert!(!after.is_open(et(date, (20, 0, 0))));
-        assert!(after.is_maintenance(et(date, (20, 30, 0))));
-        assert!(after.is_open_extended(et(date, (21, 0, 0))));
+    for hours in [&current, &future] {
+        assert!(!hours.is_open(et((2026, 12, 6), (21, 0, 0))));
+        assert!(hours.is_open_extended(et((2026, 12, 7), (4, 0, 0))));
+        assert!(hours.is_open_regular(et((2026, 12, 7), (9, 30, 0))));
+        assert!(hours.is_open_extended(et((2026, 12, 7), (16, 0, 0))));
+        assert!(!hours.is_open(et((2026, 12, 7), (20, 0, 0))));
+        assert!(!hours.is_open(et((2026, 12, 7), (21, 0, 0))));
     }
-
-    assert!(after.is_open_extended(et((2026, 12, 11), (19, 59, 59))));
-    assert!(!after.is_open(et((2026, 12, 11), (20, 0, 0))));
-    assert!(!after.is_open(et((2026, 12, 11), (21, 0, 0))));
-    assert!(!after.is_open(et((2026, 12, 12), (12, 0, 0))));
-
-    let calendar = calendar_for_exchange(Exchange::Nasdaq);
-    assert!(calendar.is_open_extended(et((2026, 12, 6), (21, 0, 0))));
-    assert!(!calendar.is_open(et((2026, 12, 7), (20, 30, 0))));
-    assert!(calendar.is_open_extended(et((2026, 12, 7), (21, 0, 0))));
+    assert!(!calendar_for_exchange(Exchange::Nasdaq).is_open(et((2026, 12, 6), (21, 0, 0))));
 }

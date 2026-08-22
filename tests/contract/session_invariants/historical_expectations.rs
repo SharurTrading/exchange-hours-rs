@@ -28,11 +28,6 @@ pub(super) const HISTORICAL_CUTOVERS: &[(Exchange, Ymd, chrono_tz::Tz)] = &[
         chrono_tz::America::New_York,
     ),
     (
-        Exchange::Nasdaq,
-        (2026, 12, 6),
-        chrono_tz::America::New_York,
-    ),
-    (
         Exchange::NasdaqBx,
         (2011, 4, 18),
         chrono_tz::America::New_York,
@@ -243,6 +238,7 @@ pub(super) const HISTORICAL_CUTOVERS: &[(Exchange, Ymd, chrono_tz::Tz)] = &[
     (Exchange::Cfe, (2013, 11, 4), chrono_tz::US::Central),
     (Exchange::Cfe, (2014, 6, 22), chrono_tz::US::Central),
     (Exchange::Cfe, (2018, 2, 25), chrono_tz::US::Central),
+    (Exchange::Cfe, (2018, 8, 12), chrono_tz::US::Central),
     (Exchange::Cfe, (2021, 12, 6), chrono_tz::US::Central),
     (
         Exchange::NyseTexas,
@@ -260,11 +256,6 @@ pub(super) const HISTORICAL_CUTOVERS: &[(Exchange, Ymd, chrono_tz::Tz)] = &[
         chrono_tz::America::New_York,
     ),
     (
-        Exchange::FinraTrfCarteret,
-        (2026, 12, 6),
-        chrono_tz::America::New_York,
-    ),
-    (
         Exchange::FinraTrfChicago,
         (2018, 9, 10),
         chrono_tz::America::New_York,
@@ -275,18 +266,8 @@ pub(super) const HISTORICAL_CUTOVERS: &[(Exchange, Ymd, chrono_tz::Tz)] = &[
         chrono_tz::America::New_York,
     ),
     (
-        Exchange::FinraTrfChicago,
-        (2026, 12, 6),
-        chrono_tz::America::New_York,
-    ),
-    (
         Exchange::FinraTrfNyse,
         (2026, 3, 30),
-        chrono_tz::America::New_York,
-    ),
-    (
-        Exchange::FinraTrfNyse,
-        (2026, 12, 6),
         chrono_tz::America::New_York,
     ),
     (Exchange::Cbot, (2012, 5, 20), chrono_tz::US::Central),
@@ -324,7 +305,7 @@ pub(super) const HISTORICAL_CUTOVERS: &[(Exchange, Ymd, chrono_tz::Tz)] = &[
     ),
     (
         Exchange::CboeEdga,
-        (2010, 7, 21),
+        (2010, 7, 2),
         chrono_tz::America::New_York,
     ),
     (
@@ -334,7 +315,7 @@ pub(super) const HISTORICAL_CUTOVERS: &[(Exchange, Ymd, chrono_tz::Tz)] = &[
     ),
     (
         Exchange::CboeEdgx,
-        (2010, 7, 21),
+        (2010, 7, 2),
         chrono_tz::America::New_York,
     ),
     (
@@ -345,11 +326,6 @@ pub(super) const HISTORICAL_CUTOVERS: &[(Exchange, Ymd, chrono_tz::Tz)] = &[
     (
         Exchange::CboeEdgx,
         (2021, 3, 8),
-        chrono_tz::America::New_York,
-    ),
-    (
-        Exchange::CboeEdgx,
-        (2026, 12, 6),
         chrono_tz::America::New_York,
     ),
     (

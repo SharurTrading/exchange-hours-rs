@@ -43,62 +43,34 @@ fn assert_2026_opening_cutover(exchange: Exchange) {
     assert!(calendar.is_open_extended(et(effective_day, (4, 0, 0))));
 }
 
-fn assert_2026_overnight_cutover(exchange: Exchange) {
-    let cutover = et((2026, 12, 6), (0, 0, 0));
-    let before = hours_for_exchange_as_of(exchange, cutover - chrono::Duration::seconds(1));
-    let after = hours_for_exchange_as_of(exchange, cutover);
-    let sunday = (2026, 12, 6);
-    let monday = (2026, 12, 7);
+fn assert_unconfirmed_overnight_is_not_encoded(exchange: Exchange) {
+    let sunday_night = et((2026, 12, 6), (21, 0, 0));
+    let future = hours_for_exchange_as_of(exchange, et((2026, 12, 7), (12, 0, 0)));
 
-    assert_ne!(before.extended, after.extended);
-    assert!(!before.is_open(et(sunday, (21, 0, 0))));
-    assert!(!after.is_open(et(sunday, (20, 59, 59))));
-    assert!(after.is_open_extended(et(sunday, (21, 0, 0))));
-    assert!(after.is_open_extended(et(monday, (9, 29, 59))));
-    assert!(!after.is_open_extended(et(monday, (9, 30, 0))));
-    assert!(after.is_open_regular(et(monday, (9, 30, 0))));
-
-    for day in 7..=10 {
-        let date = (2026, 12, day);
-        assert!(after.is_open_extended(et(date, (19, 59, 59))));
-        assert!(!after.is_open(et(date, (20, 0, 0))));
-        assert!(!after.is_open(et(date, (20, 59, 59))));
-        assert!(after.is_maintenance(et(date, (20, 30, 0))));
-        assert!(after.is_open_extended(et(date, (21, 0, 0))));
-    }
-
-    assert!(after.is_open_extended(et((2026, 12, 11), (19, 59, 59))));
-    assert!(!after.is_open(et((2026, 12, 11), (20, 0, 0))));
-    assert!(!after.is_open(et((2026, 12, 11), (21, 0, 0))));
-    assert!(!after.is_open(et((2026, 12, 12), (10, 0, 0))));
-
-    let calendar = calendar_for_exchange(exchange);
-    assert!(calendar.is_open_extended(et(sunday, (21, 0, 0))));
-    assert!(!calendar.is_open(et(monday, (20, 30, 0))));
-    assert!(calendar.is_open_extended(et(monday, (21, 0, 0))));
+    assert!(!future.is_open(sunday_night));
+    assert!(!calendar_for_exchange(exchange).is_open(sunday_night));
 }
 
 // FINRA Regulatory Notice 25-15 states that Carteret, Chicago, and the NYSE
 // TRF moved from 08:00 to 04:00 ET on 2026-03-30. It identifies 09:30–16:00 as
 // regular hours and the 04:00–09:30 / 16:00–20:00 windows as outside RTH.
 // https://www.finra.org/rules-guidance/notices/25-15
-// SR-FINRA-2026-015 announces the Sunday-through-Friday regime for 2026-12-06,
-// conditional on the SIP Amendment launching then; these contracts cover that
-// announced profile.
+// SR-FINRA-2026-015 announces a Sunday-through-Friday regime, but its date is
+// conditional on the SIP rollout. These contracts fence that it remains held.
 // https://www.finra.org/sites/default/files/2026-07/SR-FINRA-2026-015.pdf
 
 #[test]
 fn finra_trf_carteret_baseline_cutover_and_session_kinds() {
     assert_current_baseline_and_session_kinds(Exchange::FinraTrfCarteret);
     assert_2026_opening_cutover(Exchange::FinraTrfCarteret);
-    assert_2026_overnight_cutover(Exchange::FinraTrfCarteret);
+    assert_unconfirmed_overnight_is_not_encoded(Exchange::FinraTrfCarteret);
 }
 
 #[test]
 fn finra_trf_chicago_baseline_cutover_and_session_kinds() {
     assert_current_baseline_and_session_kinds(Exchange::FinraTrfChicago);
     assert_2026_opening_cutover(Exchange::FinraTrfChicago);
-    assert_2026_overnight_cutover(Exchange::FinraTrfChicago);
+    assert_unconfirmed_overnight_is_not_encoded(Exchange::FinraTrfChicago);
 }
 
 #[test]
@@ -130,5 +102,5 @@ fn finra_trf_chicago_is_closed_before_its_sourced_launch() {
 fn finra_trf_nyse_baseline_cutover_and_session_kinds() {
     assert_current_baseline_and_session_kinds(Exchange::FinraTrfNyse);
     assert_2026_opening_cutover(Exchange::FinraTrfNyse);
-    assert_2026_overnight_cutover(Exchange::FinraTrfNyse);
+    assert_unconfirmed_overnight_is_not_encoded(Exchange::FinraTrfNyse);
 }

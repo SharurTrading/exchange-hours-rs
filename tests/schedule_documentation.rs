@@ -19,12 +19,17 @@ const VERIFICATION: &str = include_str!("../docs/schedules/verification.md");
 const SOURCES: &str = include_str!("../docs/schedules/sources.md");
 const UPDATING: &str = include_str!("../docs/schedules/updating.md");
 const AUDIT: &str = include_str!("../docs/schedules/audit-2026-08-21.md");
+const DATE_EXCEPTIONS: &str = include_str!("../docs/schedules/date-exceptions.md");
+const UNSUPPORTED_FAMILIES: &str = include_str!("../docs/schedules/unsupported-families.md");
 
-const EXPECTED_MARKET_HOURS_KEY_NAMES: [&str; 9] = [
+const EXPECTED_MARKET_HOURS_KEY_NAMES: [&str; 12] = [
     "globex_equity_index",
     "globex_energy",
     "globex_grains",
     "globex_fx",
+    "globex_interest_rates",
+    "globex_livestock",
+    "globex_cryptocurrency",
     "cfe_vix",
     "eurex",
     "ice_us",
@@ -140,6 +145,50 @@ fn verification_ledger_has_every_market_hours_key_once_and_in_order() {
         .collect::<Vec<_>>();
 
     assert_eq!(documented, EXPECTED_MARKET_HOURS_KEY_NAMES);
+}
+
+#[test]
+fn market_hours_key_selection_contract_is_explicit() {
+    for claim in [
+        "stable persisted wire identity",
+        "does **not** map symbols, roots, product codes, or MICs",
+        "Those defaults are the wrong choice for any product outside the named family.",
+        "all nine prospective names remain rejected",
+    ] {
+        assert!(
+            README.contains(claim),
+            "README lost a product-family selection contract: {claim}"
+        );
+    }
+
+    assert!(
+        README.contains("docs/schedules/unsupported-families.md"),
+        "README must link the explicit unsupported-family register"
+    );
+    for prospective_name in [
+        "globex_nikkei_225_dollar",
+        "ice_us_dollar_index",
+        "ice_us_sugar",
+        "ice_us_coffee",
+        "ice_us_cocoa",
+        "ice_us_cotton",
+        "ice_us_orange_juice",
+        "eurex_fixed_income",
+        "sgx_equity_index",
+    ] {
+        assert!(
+            UNSUPPORTED_FAMILIES.contains(prospective_name),
+            "unsupported-family register lost {prospective_name}"
+        );
+    }
+    assert_eq!(
+        UNSUPPORTED_FAMILIES
+            .lines()
+            .filter(|line| line.starts_with("| `"))
+            .count(),
+        9,
+        "the README and unsupported-family register must agree on exactly nine entries"
+    );
 }
 
 #[test]
@@ -405,4 +454,29 @@ fn conditional_future_revisions_remain_unencoded_pending_confirmation() {
             "conditional future revision is missing from the update checklist: {revision}"
         );
     }
+}
+
+#[test]
+fn date_exception_contract_distinguishes_boundaries_coverage_and_finality() {
+    for claim in [
+        "`StaticDayPolicy` gives callers an allocation-free, validated table format",
+        "`ReplaceSessions`",
+        "`OutOfCoverage`",
+        "announced/final distinction",
+        "redistribution rights",
+    ] {
+        assert!(
+            DATE_EXCEPTIONS.contains(claim),
+            "date-exception contract lost a required distinction: {claim}"
+        );
+    }
+
+    assert!(
+        README.contains("docs/schedules/date-exceptions.md"),
+        "README must link the date-exception contract"
+    );
+    assert!(
+        UPDATING.contains("[date-exceptions.md](date-exceptions.md)"),
+        "schedule-update guide must route special dates to the exception contract"
+    );
 }

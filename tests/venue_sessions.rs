@@ -6,7 +6,7 @@
 //! Deliberately not covered here (and out of scope for the normal-week model):
 //!
 //!   - product-level hour variations (e.g. CME wheat vs equity index)
-//!   - holiday calendars (the normal-week holiday policy returns false)
+//!   - built-in holiday datasets (callers can supply a `DayPolicy` overlay)
 //!   - early-close / half-day schedules
 //!   - DST-transition edge cases (covered separately by the bias-aware helpers)
 //!   - Binance quarterly-expiry pauses

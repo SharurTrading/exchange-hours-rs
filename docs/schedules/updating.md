@@ -8,10 +8,13 @@ It complements the mandatory venue checklist in
 
 The supporting records are:
 
-- [verification.md](verification.md): one row per public exchange, with its
-  owner, evidence basis, review date, and known gaps;
+- [verification.md](verification.md): one row per public exchange and
+  `MarketHoursKey`, with its owner, evidence basis, review date, and known
+  gaps;
 - [sources.md](sources.md): stable operator/rulebook/notice entry points keyed
   by source-set ID;
+- [date-exceptions.md](date-exceptions.md): the boundary-overlay contract and
+  evidence requirements for future complete holiday calendars;
 - [audit-2026-08-21.md](audit-2026-08-21.md): the dated repository-wide
   assurance result, method, corrections, and exclusions for the current cutoff.
 
@@ -30,7 +33,9 @@ The repository source-review cutoff is the oldest `Reviewed on` value among
 non-synthetic `Exchange` rows. A partial review advances only the affected
 rows. Advance the README cutoff only after every non-synthetic `Exchange` row
 has been reviewed through the new date. `Unknown` is synthetic and is excluded
-from that calculation.
+from that calculation. Product-family key rows carry their own review dates and
+are counted separately; adding a key does not retroactively change the
+exchange-wide cutoff.
 
 The evidence basis does not improve merely because a row was reviewed:
 
@@ -89,6 +94,13 @@ Check the complete model rather than only the headline open and close:
   published nominal phase edge when only a per-security handoff varies, or a
   conservative venue envelope when that is the profile's stated scope;
 - product, segment, or security-eligibility limitations;
+- whether a venue-keyed default and a product-family key cover the same exact
+  scope (never assume that they do);
+- trade-date semantics and whether a session spans more than one local
+  midnight; use identity-aware calendar coalescing when adjacent static pieces
+  are only storage for one sourced multi-day block. If the public model still
+  cannot preserve an operator's exact continuous bound, state that remaining
+  limitation instead of implying it can;
 - cancellation-only, reporting-only, negotiated, or administrative phases
   that the profile intentionally excludes.
 
@@ -113,8 +125,13 @@ exact evidence belongs with the code it supports.
   test every transition; do not freeze one seasonal snapshot. If the current
   profile format can express only a static local-time approximation, keep the
   ledger basis pragmatic and state which season differs.
-- **One-off holiday, halt, weather closure, or half-day:** document it if useful,
-  but do not force it into the normal-week profile.
+- **One-off holiday, halt, weather closure, or half-day:** never force it into
+  the normal-week profile. A whole trade-date closure, later first open, or
+  earlier final close can use a sourced `DayPolicy`/`StaticDayPolicy` record.
+  If regular and extended phases change differently, the day pauses and
+  reopens, or its trade-date assignment changes, the scalar overlay is not
+  exact; follow [date-exceptions.md](date-exceptions.md) and wait for a complete
+  replacement-session provider instead of deleting valid trading.
 - **Per-security randomized auction uncross:** this is microstructure, not an
   exchange closure. Use the operator's published nominal phase boundary when
   the random delay only shifts an adjacent auction/continuous handoff and the
@@ -123,6 +140,21 @@ exact evidence belongs with the code it supports.
   Do not claim ticker-level uncross timing.
 - **Product-specific variation:** either narrow the documented profile scope or
   add a distinct product/venue model; do not silently widen an envelope.
+- **Product-family identity:** add or revise a `MarketHoursKey`; do not map
+  symbols, roots, product codes, or MICs inside this crate. A product that
+  joins an already-live family normally has a caller-owned listing date, not a
+  revision of the shared family clock. If its hours differ, it needs a separate
+  key.
+- **Holiday or special-day data:** keep it out of the built-in normal-week
+  tables. A caller supplies sourced boundary-level records through `DayPolicy`
+  or `StaticDayPolicy`. A closed date normally removes its complete trading
+  day, including a prior-evening wrap. Preserve a different
+  following-business-day assignment only when the operator sources it; CME
+  cryptocurrency weekend trading rolls into Tuesday when policy closes Monday.
+  Do not describe this scalar overlay as a complete holiday calendar: phase
+  replacement, coverage status, evidence finality, and redistribution rights
+  are separate requirements documented in
+  [date-exceptions.md](date-exceptions.md).
 
 Equal `SessionRule` endpoints represent one complete local-day session. Use
 that shape when a sourced session opens and closes at the same wall-clock time
@@ -165,6 +197,12 @@ Then follow every independent fence in AGENTS.md:
 - handwritten exchange identity and cutover expectations;
 - baseline and both-sides-of-cutover integration tests;
 - README coverage, this ledger, and the changelog.
+
+For a `MarketHoursKey`, also update the single key table, handwritten key
+expectations, canonical Serde/parse/display contracts, fixed and dated routing,
+the verification row, and date-aware key-calendar parity tests. Document any
+venue default that happens to use the family, while warning that the default is
+not a venue-wide schedule.
 
 Update the source set only when the authority changes or a more stable official
 entry point is found. Update code citations and the registry in the same change.

@@ -33,7 +33,7 @@ pub(in crate::calendar) fn candle_end_with(
     {
         return None;
     }
-    if resolution == CalendarResolution::Weekly && !context.has_weekend_close_at(instant) {
+    if resolution == CalendarResolution::Weekly && !context.has_weekly_close_at(instant) {
         return None;
     }
     match resolution {

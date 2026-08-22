@@ -139,17 +139,15 @@ fn iceus_daily_break() {
     assert!(!h.is_open(t), "ICEUS in 18:00–20:00 ET break");
     assert!(
         h.is_maintenance(t),
-        "19:00 ET is inside the sub-six-hour 18:00→20:00 break"
+        "19:00 ET is inside the four-hour-bounded 18:00→20:00 break"
     );
 }
 
 #[test]
 fn maintenance_covers_the_whole_break_not_just_its_tail() {
-    // The break is classified by its full close-to-reopen span, so the front
-    // of a long break counts too. Until 0.2.0 a 90-minutes-to-reopen
-    // heuristic missed the first half hour of ICE's two-hour break, the first
-    // 90 minutes of Eurex's three-hour overnight gap, and almost four hours
-    // of CBOT grains' 13:20→19:00 CT afternoon.
+    // Maintenance is classified by the full close-to-reopen span, so the
+    // front of a qualifying break counts too. The four-hour inclusive bound
+    // deliberately excludes CBOT grains' longer afternoon closure.
     let ice = hours_for_exchange(Exchange::Iceus);
     let t = et((2026, 4, 20), (18, 5, 0));
     assert!(!ice.is_open(t), "ICEUS 18:05 ET is closed");
@@ -169,10 +167,8 @@ fn maintenance_covers_the_whole_break_not_just_its_tail() {
     let cbot = hours_for_exchange(Exchange::Cbot);
     let t = ct((2026, 4, 20), (14, 0, 0));
     assert!(!cbot.is_open(t), "CBOT 14:00 CT is closed");
-    assert!(
-        cbot.is_maintenance(t),
-        "CBOT grains' 13:20→19:00 CT afternoon gap (5h40) is maintenance"
-    );
+    assert!(!cbot.is_maintenance(t));
+    assert_eq!(cbot.session_state(t), SessionState::Closed);
 }
 
 #[test]
@@ -184,11 +180,10 @@ fn maintenance_starts_at_the_close_instant() {
         h.is_maintenance(ct((2026, 4, 20), (16, 0, 0))),
         "16:00 CT (the daily close) is the first instant of the break"
     );
-    // The 15:15→15:30 CT gap between RTH and the short pre-close window is a
-    // between-sessions break too.
-    assert!(
-        h.is_maintenance(ct((2026, 4, 20), (15, 20, 0))),
-        "the 15:15→15:30 CT inter-session gap is maintenance"
+    // The 15:15→15:30 CT gap separates two phases of the same trade date.
+    assert_eq!(
+        h.session_state(ct((2026, 4, 20), (15, 20, 0))),
+        SessionState::Halt
     );
 }
 

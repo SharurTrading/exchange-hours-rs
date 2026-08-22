@@ -33,7 +33,7 @@ fn comex_daily_maintenance() {
     assert!(!h.is_open(t), "COMEX maintenance gap 16:30 CT");
     assert!(
         h.is_maintenance(t),
-        "16:30 CT is inside the sub-six-hour 16:00→17:00 break"
+        "16:30 CT is inside the four-hour-bounded 16:00→17:00 break"
     );
 }
 

@@ -67,7 +67,7 @@ fn cme_daily_maintenance_gap() {
     assert!(!h.is_open(t), "CME maintenance gap 16:30 CT");
     assert!(
         h.is_maintenance(ct((2026, 4, 20), (16, 30, 0))),
-        "16:30 is inside the sub-six-hour 16:00→17:00 break"
+        "16:30 is inside the four-hour-bounded 16:00→17:00 break"
     );
 }
 

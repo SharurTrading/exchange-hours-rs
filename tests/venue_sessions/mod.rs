@@ -7,6 +7,7 @@ mod bounds_and_serde;
 mod candle_starts_and_profile_adapters;
 mod cboe_options;
 mod cme_cbot;
+mod cme_families;
 mod commodities;
 mod equity_corrections;
 mod eurex_ice;

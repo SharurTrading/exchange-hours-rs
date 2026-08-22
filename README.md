@@ -23,10 +23,11 @@ questions:
    boundaries that follow the exchange's real sessions, so a bar never spans a closed
    period and a daily bar closes at the session close, not at midnight.
 
-Everything is a pure function over a `MarketHours` snapshot or date-aware
-`ExchangeCalendar`: no state, no I/O, no clock reads, no floats, and
-`#![forbid(unsafe_code)]`. Timestamps go in as UTC and come out as UTC — each
-exchange's local time zone, including its DST quirks, is handled internally.
+Everything is a pure function over a `MarketHours` snapshot, date-aware
+`ExchangeCalendar`, or caller-overlaid `PolicyCalendar`: no state, no I/O, no
+clock reads, no floats, and `#![forbid(unsafe_code)]`. Timestamps go in as UTC
+and come out as UTC — each exchange's local time zone, including its DST
+quirks, is handled internally.
 The internal ownership and extension model is documented in
 [ARCHITECTURE.md](ARCHITECTURE.md).
 
@@ -36,6 +37,12 @@ The internal ownership and extension model is documented in
   markets, and always-open crypto, with independently fenced point-in-time
   revisions wherever primary evidence states an unconditional day-level boundary.
 - **Session queries** — open/closed by regular/extended/both, session bounds, next open, gaps.
+- **Product-family calendars** — all 11 operator-derived `MarketHoursKey`
+  values have fixed, point-in-time, and date-aware query surfaces.
+- **Caller-supplied day policy** — whole trade-date closures, early final
+  closes, and late first opens can be overlaid without putting mutable or
+  bundled operator data in this crate. `StaticDayPolicy` provides a validated
+  hard-coded table format for these boundary-level exceptions.
 - **Calendar-aware bar boundaries** — intraday bars clamp to the session close so no bar
   spans a closed period; the day's last bar ends at the daily close itself (CME 16:00 CT,
   never the 17:00 reopen), and daily/weekly/monthly bars close at real session closes,
@@ -87,8 +94,8 @@ let (open, close) = session_bounds(&hours, monday_10am).expect("CME trades this 
 assert_eq!(open, ct(2026, 4, 20, 8, 30));
 assert_eq!(close, ct(2026, 4, 20, 15, 15)); // end-exclusive
 
-// 16:30 CT is the daily maintenance break: closed, inside a gap between
-// two sessions (16:00→17:00) shorter than six hours end to end.
+// 16:30 CT is the daily maintenance break: closed, inside an inter-trade-date
+// gap (16:00→17:00) no longer than the documented four-hour bound.
 let monday_evening = ct(2026, 4, 20, 16, 30);
 assert!(!hours.is_open(monday_evening));
 assert!(hours.is_maintenance(monday_evening));
@@ -121,6 +128,20 @@ let snapshot_for_one_instant = bmv.hours_at(instant);
 assert_eq!(snapshot_for_one_instant.exchange, Exchange::Bmv);
 ```
 
+Product-family calendars use the same date-aware surface. Their identity is a
+`MarketHoursKey`, exposed through `CalendarSource`, rather than a venue:
+
+```rust
+use exchange_hours::{CalendarSource, MarketHoursKey, calendar_for_market_hours_key};
+
+let calendar = calendar_for_market_hours_key(MarketHoursKey::GlobexInterestRates);
+assert_eq!(
+    calendar.source(),
+    CalendarSource::MarketHoursKey(MarketHoursKey::GlobexInterestRates)
+);
+assert_eq!(calendar.exchange(), None);
+```
+
 ## Coverage
 
 | Family | Market identities | Local zone | Session shape |
@@ -128,7 +149,7 @@ assert_eq!(snapshot_for_one_instant.exchange, Exchange::Bmv);
 | US equities and ATS | 16 | `America/New_York` | 09:30–16:00 regular on matching venues; modeled extended hours differ by venue. Nasdaq is 04:00–20:00 today, Nasdaq BX/Texas is 07:00–19:00, and PSX is 08:00–17:00. The announced Nasdaq and EDGX 21:00–04:00 sessions are monitored but deliberately unencoded until their final readiness filings. NYSE Tape A is core-only, IEX runs 08:00–17:00 System Hours, and Blue Ocean's production new-order ATS window is 20:00–04:00. |
 | FINRA TRFs | 3 | `America/New_York` | 09:30–16:00 regular; outside-RTH reporting is extended under the sourced 04:00–20:00 system envelope from 2026-03-30. FINRA's announced overnight expansion remains unencoded while its date depends on the SIP rollout. |
 | US options | 18 | `America/New_York` | Each venue models the primary-sourced 09:30–16:00 regular-session envelope for ordinary individual-stock options, with exact closed-before-launch history where the venue began after January 2010. ETF, ETN, index, FLEX, floor-only, and venue-designated extended-hours classes are outside this deliberately narrow scope. |
-| CME Globex futures | 4 | `US/Central` | CME equity-index futures use the current 17:00→16:00 envelope with their 15:15–15:30 halt; date-aware history retains the sourced 2012 and 2015 close changes. CBOT grains keep distinct sourced 2010, 2012, 2013, and 2015 regimes. |
+| CME Globex futures | 4 | `US/Central` | The count is four `Exchange` identities (CME, CBOT, COMEX, NYMEX); seven separate product-family keys cover U.S. equity indexes, NYMEX energy/PGM and COMEX metals, CBOT grains, CME FX, CBOT/CME interest rates, CME livestock, and CME non-spot-quoted cryptocurrency futures. Each family owns its sourced history. Cryptocurrency moved from the five-day 17:00→16:00 grid to 24/7 trading on 2026-05-29, with weekday 16:00–16:02 and Saturday 02:00–04:00 maintenance. |
 | Cboe Futures (CFE) | 1 | `US/Central` | RTH 08:30–15:00 flows into post-settlement 15:00–16:00; conservative latest queue-acceptance edges are Sunday 16:00:06 and Monday–Thursday 16:45:06 before the 17:00→08:30 overnight wrap. |
 | EU equities | 14 | 11 European zones | 09:00–17:30 continuous as the continental default, with venue-owned phases: Xetra's DAX-share envelope includes participant-restricted Extended Retail from 07:00 to 22:00; LSE SETS includes 07:00 pre-trading, randomized opening/noon auctions, and CPX to 16:40; central Euronext profiles use the published nominal phase boundaries and exclude per-security randomized uncross seconds; SIX, BME, Vienna, and Nasdaq Nordic books keep their own phases and clocks. |
 | Asia-Pacific equities | 17 | 14 IANA zones | ASX, TMX Australia, NZX, TSE, NSE India, BSE India, HKEX, SGX Securities, Bursa Malaysia, SET, IDX, PSE, HOSE, SSE, SZSE, KRX, and TWSE. Lunch breaks, auctions, and post-close windows stay venue-specific. |
@@ -137,11 +158,41 @@ assert_eq!(snapshot_for_one_instant.exchange, Exchange::Bmv);
 | Asia-Pacific futures (SGX) | 1 | `Asia/Singapore` | Three-Month SORA Futures: continuous 07:25–17:55 and 18:15→05:15, with opening/closing phases and a 18:00–18:05 gap. Closed before the 2024-07-29 launch. |
 | Always-open crypto | 1 | `UTC` | Binance USDⓈ-M perpetuals are normally 24×7 after their exact 2019-09-13 04:00 UTC launch. |
 
-Futures hours track the *product family*, not the venue. `MarketHoursKey` has
-9 variants—8 operator-derived product-family keys plus the synthetic
-`AlwaysOpen` key. They reuse profiles and are not additional venues. Fixed
-snapshots use `session_profile` / `hours_for_market_hours_key`; sourced dated
-revisions use `hours_for_market_hours_key_as_of`.
+Futures hours track the *product family*, not merely the listing venue.
+`MarketHoursKey` has 12 variants—11 operator-derived product-family keys plus
+the synthetic `AlwaysOpen` key. They reuse profiles and are not additional
+venues. Fixed snapshots use `session_profile` /
+`hours_for_market_hours_key`; sourced dated revisions use
+`hours_for_market_hours_key_as_of`; `calendar_for_market_hours_key` reselects
+the dated profile while scanning sessions and candles.
+
+Every key's `snake_case` name is a stable persisted wire identity shared by
+`as_str`, `Display`, `FromStr`, and Serde. Renaming one is a breaking change.
+The crate deliberately does **not** map symbols, roots, product codes, or MICs
+to keys: the caller's sourced instrument catalog must make that selection.
+
+The venue-keyed API retains these explicit defaults for compatibility:
+
+| Venue identity | Default family profile |
+|---|---|
+| `cme` | `globex_equity_index` |
+| `cbot` | `globex_grains` |
+| `comex`, `nymex` | `globex_energy` |
+| `cfe` | `cfe_vix` |
+| `eurex` | `eurex` |
+| `iceus` | `ice_us` |
+| `sgx` | `sgx` |
+
+Those defaults are the wrong choice for any product outside the named family.
+In particular, CME interest-rate, livestock, and cryptocurrency products must
+use their family keys rather than `Exchange::Cme` or `Exchange::Cbot`.
+
+Family selection is exact: consumers must never substitute the nearest venue
+or product-family key when a product is outside that key's documented scope.
+Nikkei 225 Dollar futures (`NKD`) and eight requested ICE/Eurex/SGX families
+are explicitly deferred from 1.0; all nine prospective names remain rejected.
+See
+[Unsupported futures families in 1.0](docs/schedules/unsupported-families.md).
 
 The table contains 90 source-backed market identities. `Exchange::Unknown` is
 an additional synthetic 24×7 UTC fallback and is not counted as an exchange or
@@ -150,6 +201,9 @@ trading venue.
 ## Schedule assurance
 
 **Repository-wide review completed:** `2026-08-21`
+
+That is the 90-exchange ledger cutoff. The three final CME Group key families
+were separately reviewed on `2026-08-22`, as recorded in their ledger rows.
 
 **Primary-source-verified current profiles:** `90 of 90` non-synthetic
 `Exchange` identities, within each row's documented normal-week scope.
@@ -169,16 +223,21 @@ non-synthetic row remains **Partial**, **Secondary**, **Pragmatic**, or **Known 
 identities.
 
 The key surface was audited separately:
-**Primary-source-verified current key snapshots:** `8 of 8` operator-derived
-`MarketHoursKey` values. The key API provides both fixed-current snapshots and
-an `as_of` selector for sourced histories. All eight operator-derived key rows
-are **Primary**.
+**Primary-source-verified current key snapshots:** `11 of 11` operator-derived
+`MarketHoursKey` values. The key API provides fixed-current snapshots, an
+`as_of` selector, and a date-aware calendar for sourced histories. All 11
+operator-derived key rows are **Primary** within their stated product-family
+and representational scopes.
 
 These are backward-looking evidence statements, not promises that an exchange
 will remain unchanged after the review date. They cover recurring weekday
 phases, time zones, lunch and maintenance gaps, and weekend boundaries. They
-exclude holidays, half-days, one-off closures, halts, severe-weather exceptions,
-and product-specific variations outside a row's stated scope. The full method,
+exclude built-in holidays, half-days, one-off closures or halts,
+severe-weather exceptions, and product-specific variations outside a row's
+stated scope. Callers can apply their own sourced closed-day, early-close, and
+late-open boundary data through `DayPolicy`. Holiday arrangements that replace
+or split phases need a richer exception calendar and must not be approximated
+by clipping a valid session. The full method,
 corrections, exclusions, and confidence levels are recorded in the
 [2026-08-21 schedule audit](docs/schedules/audit-2026-08-21.md).
 
@@ -188,6 +247,21 @@ states whether the deterministic profile uses the operator's nominal phase
 boundary or a conservative venue envelope; it does not predict that day's
 per-security uncross second.
 
+CME's post-2026-05-29 cryptocurrency weekend is stored as one-midnight
+`SessionRule` pieces, but the identity-aware
+`calendar_for_market_hours_key(GlobexCryptocurrency)` joins adjacent pieces
+into CME's exact multi-day bounds. Both blocks around Saturday maintenance
+carry the following open business date: normally Monday, with a daily bar from
+Friday 16:02 through Monday 16:00 CT. If a caller's `DayPolicy` closes Monday,
+the weekend trading remains open, rolls to Tuesday, and the daily bar closes
+Tuesday at 16:00. Its key calendar also retains the real Friday 16:00 final
+weekly close before the next trade-date week starts at 16:02. A fixed
+`MarketHours` snapshot has no family identity: its open/closed state is exact,
+but its bounds retain the one-midnight storage pieces and its generic weekly
+candle and trade-date queries are unavailable. Use the key-backed calendar for
+those family-specific results. Product-specific listing dates after the family
+began remain instrument-catalog data.
+
 The [source-set registry](docs/schedules/sources.md) records the stable official
 pages and notice/evidence entry points to check for each exchange. The
 repeatable process is in
@@ -196,11 +270,11 @@ notices remain cited beside the Rust table they support.
 
 ## Historical amendments
 
-`hours_for_exchange` returns a fixed default snapshot, while
-`hours_for_exchange_as_of` returns the fixed snapshot selected at a UTC instant. For
-queries that span dates, `calendar_for_exchange` is the authoritative entry point: its
-session and candle methods resolve the applicable profile again for every candidate
-trading day.
+`hours_for_exchange` and `hours_for_market_hours_key` return fixed-current
+snapshots, while their `_as_of` counterparts select the fixed snapshot at a
+UTC instant. For queries that span dates, use `calendar_for_exchange` or
+`calendar_for_market_hours_key`: their session and candle methods resolve the
+applicable profile again for every candidate trading day.
 
 - **Recorded changes only.** A venue gets a historical cutover only when a primary source
   (exchange notice, rulebook amendment, press release) states a day-level effective date.
@@ -233,8 +307,67 @@ B3 and BMV use recurring cross-zone selection. B3 chooses its short or long cash
 grid from the New York−São Paulo UTC-offset difference; BMV chooses its early or normal
 grid from the New York−Mexico City difference. This covers the mismatch weeks created by
 the countries' former DST calendars and the post-abolition rules without hard-coding yearly
-US transition dates. A `MarketHours` returned for one date remains a fixed snapshot, so use
-`calendar_for_exchange` rather than carrying that snapshot across a transition.
+US transition dates. A `MarketHours` returned for one date remains a fixed
+snapshot, so use the appropriate date-aware calendar rather than carrying it
+across a transition.
+
+## Trade dates, state, and caller day policies
+
+On `ExchangeCalendar` and `PolicyCalendar`, `trade_date(instant)` returns the
+venue-local trade date of the containing session, or `None` while closed.
+Wrapped sessions use the date of the trading day's final close, so a normal
+Sunday-evening Globex instant maps to Monday. An always-open profile has no
+final close, so its trade date is always `None`.
+`session_state(instant)` returns exactly one of `OpenRegular`, `OpenExtended`,
+`Halt`, `Maintenance`, or `Closed`. A halt separates phases of the same trade
+date. Maintenance is normally an inter-trade-date gap no longer than four
+elapsed hours within one ISO week. A profile explicitly marked as having no
+weekend close also retains an operator-designated short maintenance gap inside
+one trade date; this covers CME cryptocurrency's Saturday 02:00–04:00 CT
+window. Longer afternoon gaps, closed days, and weekends are closed.
+`is_maintenance` is exactly the maintenance-state predicate.
+
+The built-in profiles remain normal-week schedules and ship no holiday data.
+Implement `DayPolicy`, or construct a validated `StaticDayPolicy` from
+hard-coded `DayOverride` records, then call
+`ExchangeCalendar::with_day_policy` to create a `PolicyCalendar`. It applies
+closed trade dates, early final closes, and late first opens to every
+predicate, scan, trade-date, state, and candle query.
+Policy dates are trade dates: for an ordinary wrapped session, closing Monday
+removes the trading day that would have opened Sunday evening. CME's continuous
+cryptocurrency weekend follows the operator's next-open-business-day rule
+instead: closing Monday leaves the weekend trading open and assigns it to
+Tuesday. Profiles without a final daily close—such as `AlwaysOpen`—have no
+trade date and ignore the day-policy overlay rather than inventing one.
+`PolicyCalendar::hours_at` intentionally returns the unmodified
+sourced snapshot because the policy is a query overlay, not another static
+profile.
+
+For a small caller-owned table, no custom trait implementation is needed:
+
+```rust
+use chrono::NaiveDate;
+use exchange_hours::{
+    DayOverride, MarketHoursKey, StaticDayPolicy, calendar_for_market_hours_key,
+};
+
+let closed_date = NaiveDate::from_ymd_opt(2026, 4, 20).expect("valid trade date");
+let overrides = [DayOverride::closed(closed_date)];
+let policy = StaticDayPolicy::new(&overrides).expect("records are sorted and valid");
+let calendar = calendar_for_market_hours_key(MarketHoursKey::GlobexEquityIndex)
+    .with_day_policy(&policy);
+```
+
+The date above is an API example, not bundled operator data; callers remain
+responsible for the source and exact family/venue scope of every record.
+
+Boundary clipping is not a complete holiday-session model. It cannot insert an
+intraday pause/reopen or close only regular trading while an extended phase
+continues. One-off arrangements still belong in a date-exception layer rather
+than a normal-profile revision, but exact complex calendars require complete
+replacement sessions plus explicit coverage and source finality. The v1
+capabilities, limits, and additive path for future built-in data are documented
+in [Date exceptions and holiday calendars](docs/schedules/date-exceptions.md).
 
 ## Best effort — validate before production use
 
@@ -243,7 +376,10 @@ pinned by tests. Every non-synthetic current profile is source-supported within 
 segment scope stated in the ledger, with complete January-2010-or-launch history at that
 scope. This crate is a **best-effort model, not an authority**:
 exchanges amend hours on short notice, publish product-level exceptions, and run holiday
-and half-day schedules that this normal-week model deliberately omits. Before trading on
+and half-day schedules that the built-in normal-week tables deliberately omit.
+Supply boundary-level exceptions through `DayPolicy` when it can represent
+them exactly; do not reduce a multi-phase holiday schedule to one cutoff.
+Before trading on
 any venue's hours in production, have a human verify the profile against the exchange's
 currently published schedule and the relevant contract specifications.
 
@@ -253,6 +389,18 @@ This is a foundational leaf crate. It depends only on `chrono` + `chrono-tz`
 (instant/zone arithmetic and the DST resolver) and `serde` (canonical string
 serialization of public identities)—no logging facade, engine, transport,
 adapter, async runtime, credential crate, or `tokio`.
+
+Built-in `MarketHours` status/bound/candle queries and `ExchangeCalendar`
+status/bound/trade-date/candle queries allocate nothing. `is_open` is
+`O(rules)` for a fixed snapshot and `O(rules + log revisions)` for a
+date-aware calendar. Session-bound, forward, candle, and trade-date queries
+multiply that work by their documented bounded day scans; identity-aware
+coalescing may inspect adjacent rule pieces.
+`ExchangeCalendar` is `Copy + Send + Sync + 'static`; work performed inside a
+caller's `DayPolicy` is outside that guarantee. The Criterion
+`calendar_queries` benchmark records `is_open`, `session_bounds`, daily
+`candle_end`, `trade_date`, and closed-gap `session_state` costs for
+`GlobexEquityIndex`.
 
 ## Upgrading from 0.2.x
 
@@ -266,6 +414,10 @@ adapter, async runtime, credential crate, or `tokio`.
 - Equal `SessionRule` endpoints now encode one complete local-day session, and
   `SessionRuleError::EmptyInterval` was removed. Omit a rule to represent no
   session.
+- `ExchangeCalendar::exchange()` now returns `Option<Exchange>` because the
+  same calendar type can represent a `MarketHoursKey`. Existing venue callers
+  handle `Some(exchange)`; family calendars return `None`. Use `source()` when
+  both identity kinds are valid, or `market_hours_key()` for the family case.
 - The raw `US_EQUITY_REGULAR`, `US_EQUITY_EXTENDED`,
   `NYSE_TEXAS_EXTENDED`, and `BLUE_OCEAN_EXTENDED` slices are no longer public.
   Use `hours_for_exchange`, `hours_for_exchange_as_of`, or
@@ -308,10 +460,13 @@ schedule, and migration record.
   `Exchange::Unknown`. A rename that changes one of these strings breaks
   persisted data. Neither identity enum uses variant ordinals, so adding or
   removing a row cannot silently reinterpret another identity.
-- **Normal week only.** Holidays, early closes, half-days, and product-level variations are
-  absent—the internal holiday policy returns `false`, while every query path
-  routes through the same session-existence contract. Verify contract specs
-  before trading on a profile outside its explicitly stated scope.
+- **Normal week plus explicit overlays.** Built-in tables contain no holiday,
+  half-day, or product-level exception data. `DayPolicy` and the validated
+  `StaticDayPolicy` helper let a caller overlay sourced closed trade dates,
+  early final closes, and late first opens without changing `hours_at`.
+  Multi-phase exceptions require complete replacement sessions and are not
+  approximated by this boundary API; verify contract specs before trading on a
+  profile outside its explicitly stated scope.
 - **No panics, and absence is `None`.** The public surface is total, and boundary queries
   (`session_bounds*`, `next_session_after*`, `candle_start*`/`candle_end*`,
   `time_end_of_day`) return `Option`: a profile with no session of the requested kind in
@@ -340,7 +495,7 @@ that callers do not also get (see [Architecture: Tests](ARCHITECTURE.md#tests)).
   baselines, amendment history, and the global bulk/name contract for TSX, Borsa Istanbul,
   JSE, Tadawul, B3, and BMV.
 - `tests/schedule_documentation.rs` — keeps all 91 `Exchange` rows (90
-  non-synthetic plus `Unknown`) and nine `MarketHoursKey` rows (eight
+  non-synthetic plus `Unknown`) and 12 `MarketHoursKey` rows (11
   operator-derived plus `AlwaysOpen`) in canonical order; validates their
   review metadata and owner/source links; requires both current and
   notice/evidence channels for every source set; rejects orphaned source sets;
@@ -349,6 +504,9 @@ that callers do not also get (see [Architecture: Tests](ARCHITECTURE.md#tests)).
   split into B3, BMV, transition-scan, candle/weekend, Chrono-edge, and compatibility-contract
   modules. The contracts include all-fixed-venue `MarketHours`/`ExchangeCalendar` parity and
   a daily history scan proving venue time zones remain stable.
+- `tests/calendar_policies.rs` and `tests/calendar_value_traits.rs` — pin
+  date-aware key parity, trade-date/state classification, caller policy
+  overlays, bounded all-closed scans, and the calendar's value/thread traits.
 - `tests/support/` — fixture construction shared by integration targets; it uses only the
   public crate surface and provides no test-only access to production internals.
 - `tests/no_session_contract.rs` — the `None` contract for profiles with no rules.

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT-0
 
-//! COMEX Gold and NYMEX benchmark-energy futures schedules.
+//! NYMEX energy/PGM and COMEX gold/silver/copper futures schedules.
 
 use chrono_tz::US;
 
@@ -9,11 +9,13 @@ use crate::calendar::rule::SUN_PLUS_MON_THU;
 use crate::calendar::schedules::StaticHoursProfile;
 use crate::calendar::schedules::timeline::{Revision, effective_date, local_date, select_revision};
 
-// These are representative product-family defaults, not venue-wide clocks:
-// COMEX Gold (GC/MGC) and NYMEX benchmark energy, including Light Sweet Crude
-// Oil. At the January-2010 audit floor, both families opened 17:00 CT and
-// closed 16:15 CT. CME's 2015 Globex notice moved every COMEX and NYMEX close
-// to 16:00 CT effective for Monday 2015-09-21 while leaving opens unchanged.
+// This family covers the shared grid used by NYMEX CL/MCL/QM, NG/MNG/QG,
+// HO/RB/BZ, and PL/PA plus COMEX GC/MGC, SI/SIL, and HG/MHG. Platinum and
+// palladium are NYMEX products, not COMEX products. At the January-2010 audit
+// floor these families opened 17:00 CT and closed 16:15 CT. CME's 2015 Globex
+// notice moved every COMEX and NYMEX close to 16:00 CT for Monday 2015-09-21
+// while leaving opens unchanged, so a separate metals clock would duplicate
+// both the current grid and the in-scope history.
 // The revision is keyed to Sunday 2015-09-20, the local opening day of that
 // Monday trade-date session, so a wrapped rule gives Monday the sourced close.
 // https://www.cmegroup.com/tools-information/lookups/advisories/electronic-trading/20090130.html

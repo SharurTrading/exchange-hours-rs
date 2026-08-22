@@ -32,7 +32,15 @@ credentialed release workflow; CI remains read-only.
 
 7. Inspect `cargo package --list --locked` for missing evidence/docs or
    accidental repository-only files.
-8. Open the release pull request. Do not tag or publish from the branch. Any
+8. For changes to the calendar query engine, run the informational performance
+   baseline. This is not a correctness gate, but a release review should call
+   out a material regression rather than hiding it:
+
+   ```bash
+   cargo bench --bench calendar_queries
+   ```
+
+9. Open the release pull request. Do not tag or publish from the branch. Any
    later commit requires the gates and archive checks to be rerun.
 
 ## Publish after merge

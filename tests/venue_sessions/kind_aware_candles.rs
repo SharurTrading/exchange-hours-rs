@@ -85,3 +85,31 @@ fn candle_start_with_both_matches_candle_start() {
         );
     }
 }
+
+#[test]
+fn adjacent_different_session_kinds_remain_distinct_bounds() {
+    let calendar = calendar_for_market_hours_key(MarketHoursKey::GlobexEquityIndex);
+    let before_handoff = ct((2026, 4, 20), (8, 29, 59));
+    let at_handoff = ct((2026, 4, 20), (8, 30, 0));
+
+    assert_eq!(
+        calendar.session_bounds_with(before_handoff, SessionKind::Extended),
+        Some((ct((2026, 4, 19), (17, 0, 0)), ct((2026, 4, 20), (8, 30, 0)),)),
+    );
+    assert_eq!(
+        calendar.session_bounds(before_handoff),
+        Some((ct((2026, 4, 19), (17, 0, 0)), ct((2026, 4, 20), (8, 30, 0)),)),
+    );
+    assert_eq!(
+        calendar.session_bounds(at_handoff),
+        Some((
+            ct((2026, 4, 20), (8, 30, 0)),
+            ct((2026, 4, 20), (15, 15, 0)),
+        )),
+    );
+    assert_eq!(
+        calendar.candle_end(before_handoff, CalendarResolution::Minutes(5),),
+        Some(at_handoff),
+        "an intraday candle cannot cross an extended-to-regular handoff",
+    );
+}

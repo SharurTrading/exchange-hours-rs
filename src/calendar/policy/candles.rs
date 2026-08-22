@@ -1,20 +1,20 @@
 // SPDX-License-Identifier: MIT-0
 
-//! Date-aware candle adapters over the shared query engine.
+//! Policy-aware candle adapters.
 
 use chrono::{DateTime, Utc};
 
-use super::ExchangeCalendar;
-use crate::calendar::query::{QueryContext, candles};
+use super::PolicyCalendar;
+use crate::calendar::query::candles;
 use crate::calendar::{CalendarResolution, SessionKind};
 
-impl ExchangeCalendar {
-    /// Returns the date-aware bar close after `instant`.
+impl PolicyCalendar<'_> {
+    /// Returns the policy-aware bar close after `instant`.
     ///
-    /// A key-backed CME cryptocurrency calendar retains Friday 16:00 CT as
+    /// For a key-backed CME cryptocurrency calendar, Friday 16:00 CT remains
     /// the weekly close even though its current profile has no long weekend
-    /// shutdown. An identity-erased fixed snapshot cannot apply that
-    /// product-family convention.
+    /// shutdown. Policy changes to the following business date do not move
+    /// that physical weekly boundary.
     #[must_use]
     pub fn candle_end(
         self,
@@ -24,7 +24,7 @@ impl ExchangeCalendar {
         self.candle_end_with(instant, resolution, SessionKind::Both)
     }
 
-    /// Returns the date-aware bar close after `instant` for `kind`.
+    /// Returns the policy-aware bar close after `instant` for `kind`.
     ///
     /// The CME cryptocurrency weekly-boundary convention described by
     /// [`Self::candle_end`] applies here as well.
@@ -35,10 +35,10 @@ impl ExchangeCalendar {
         resolution: CalendarResolution,
         kind: SessionKind,
     ) -> Option<DateTime<Utc>> {
-        candles::candle_end_with(&QueryContext::date_aware(self), instant, resolution, kind)
+        candles::candle_end_with(&self.context(), instant, resolution, kind)
     }
 
-    /// Returns the date-aware bar start paired with [`candle_end`](Self::candle_end).
+    /// Returns the policy-aware bar start paired with [`Self::candle_end`].
     #[must_use]
     pub fn candle_start(
         self,
@@ -48,8 +48,7 @@ impl ExchangeCalendar {
         self.candle_start_with(instant, resolution, SessionKind::Both)
     }
 
-    /// Returns the date-aware bar start paired with
-    /// [`candle_end_with`](Self::candle_end_with) for `kind`.
+    /// Returns the policy-aware bar start for `kind`.
     #[must_use]
     pub fn candle_start_with(
         self,
@@ -57,10 +56,10 @@ impl ExchangeCalendar {
         resolution: CalendarResolution,
         kind: SessionKind,
     ) -> Option<DateTime<Utc>> {
-        candles::candle_start_with(&QueryContext::date_aware(self), instant, resolution, kind)
+        candles::candle_start_with(&self.context(), instant, resolution, kind)
     }
 
-    /// Returns the next date-aware trading-day close after `instant`.
+    /// Returns the next policy-aware trading-day close after `instant`.
     #[must_use]
     pub fn time_end_of_day(self, instant: DateTime<Utc>) -> Option<DateTime<Utc>> {
         self.candle_end(instant, CalendarResolution::Daily)

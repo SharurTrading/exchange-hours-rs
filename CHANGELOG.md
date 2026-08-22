@@ -29,6 +29,34 @@ maintenance contract described in the README and schedule verification ledger.
   scans, maintenance/all-day queries, and candle boundaries. Existing
   `MarketHours` functions and signatures remain unchanged; B3/BMV calendars
   reselect their published grid on every candidate trading day.
+- **Date-aware product-family calendars.** `calendar_for_market_hours_key`
+  gives every `MarketHoursKey` the complete calendar query surface and
+  reselects sourced revisions for each candidate opening day. `CalendarSource`,
+  `ExchangeCalendar::source`, `exchange`, and `market_hours_key` preserve
+  whether a calendar represents a venue or a product family.
+- **Three primary-sourced CME Group family keys:**
+  `GlobexInterestRates` (`globex_interest_rates`) for CBOT Treasuries/Fed Funds
+  and CME SOFR, `GlobexLivestock` (`globex_livestock`) for LE/GF/HE, and
+  `GlobexCryptocurrency` (`globex_cryptocurrency`) for CME non-spot-quoted
+  cryptocurrency futures. Each owns its dated family history rather than
+  borrowing another product family's clock. There are now 12 keys total: 11
+  operator-derived families plus synthetic `AlwaysOpen`.
+- **Caller-supplied trade-date overrides.** `DayPolicy` and
+  `PolicyCalendar` apply closed dates, early final closes, and late first opens
+  to all status, session, candle, and closed-day scans without bundling holiday
+  data or modifying `hours_at`. `StaticDayPolicy` and `DayOverride` add a
+  validated, allocation-free hard-coded record format; `NoPolicy` preserves
+  normal-week behavior. Complex holiday phase replacements remain explicitly
+  outside this scalar boundary API rather than being approximated.
+- **Trade-date and one-shot state queries.** `trade_date` and
+  `is_closed_trade_date` are available on date-aware and policy-aware
+  calendars. `SessionState` distinguishes regular, extended, halt,
+  maintenance, and closed states; `is_maintenance` is exactly its maintenance
+  case.
+- **A Criterion query benchmark** covering `is_open`, `session_bounds`, daily
+  `candle_end`, `trade_date`, and closed-gap `session_state` for
+  `GlobexEquityIndex`, plus documented allocation and value/thread-trait
+  performance contracts.
 - **`hours_for_market_hours_key_as_of`** for primary-sourced point-in-time
   futures product-family snapshots, reusing the same dated tables as the
   corresponding exchange profiles.
@@ -53,6 +81,25 @@ maintenance contract described in the README and schedule verification ledger.
 
 ### Changed
 
+- **Breaking: `ExchangeCalendar::exchange()` now returns `Option<Exchange>`.**
+  Venue calendars return `Some(exchange)` and product-family calendars return
+  `None`. Callers that accept both identity kinds should match on
+  `ExchangeCalendar::source()`; family-specific callers can use
+  `market_hours_key()`.
+- **Breaking (behavioral): maintenance uses a four-hour bound and trade-date
+  semantics.** A same-trade-date gap is now `Halt`; an inter-trade-date gap is
+  `Maintenance` only when its complete elapsed span is at most four hours and
+  both dates are in one ISO week. A sourced continuously traded-week profile
+  can also retain an operator-designated gap within that bound as maintenance;
+  this covers CME cryptocurrency's Saturday window even though trading on both
+  sides carries one trade date. Longer gaps such as CBOT grains' afternoon
+  closure and policy-created early-close gaps are `Closed`.
+- **Product-family selection is explicit.** The crate does not map symbols,
+  roots, product codes, or MICs to keys. Venue-keyed compatibility defaults are
+  documented, and callers are warned not to use them for products outside the
+  named family. Nine unmodeled families—including CME NKD and the requested
+  ICE/Eurex/SGX expansions—remain rejected rather than receiving guessed
+  substitutes.
 - **Equal `SessionRule` endpoints now mean a complete local-day session.** A
   rule such as Sunday `18:00→18:00` preserves one continuous session through
   Monday 18:00, including exact `session_bounds`; absence is represented by
@@ -85,6 +132,18 @@ maintenance contract described in the README and schedule verification ledger.
 
 ### Fixed
 
+- **Exact CME cryptocurrency weekend semantics.** The key-backed calendar now
+  joins adjacent one-midnight storage pieces into the two physical session
+  blocks around Saturday maintenance and assigns both to the following open
+  business date. Ordinarily that is Monday and the daily bar is Friday
+  16:02→Monday 16:00 CT; when caller policy closes Monday, weekend trading
+  remains open, receives Tuesday's trade date, and the bar ends Tuesday at
+  16:00. Friday 16:00 remains the final weekly close before the next trade-date
+  week starts at 16:02. CME's operator-designated Saturday 02:00–04:00 window
+  remains `Maintenance`. Detached fixed snapshots preserve exact open/closed
+  state but retain table-piece bounds because only the key calendar carries
+  the family identity required for coalescing, weekly boundaries, and trade
+  dates.
 - **Civil-time discontinuities in public queries.** A rule occurrence whose
   local open and close both collapse onto the same instant in a DST gap is now
   omitted instead of producing a zero-width session or candle. Partially
@@ -205,9 +264,19 @@ maintenance contract described in the README and schedule verification ledger.
   CME's 19:00–07:45 / 08:30–13:15 regime begins Sunday April 7, 2013 rather
   than one day late. The 13:20 close still begins Sunday July 5, 2015 for the
   July 6 trade date.
-- **COMEX, NYMEX, CME FX, and ICE U.S. product scopes.** COMEX Gold and NYMEX
-  benchmark-energy profiles now preserve the sourced January-2010 16:15 CT
-  close and the September 2015 move to 16:00. CME FX's unchanged 17:00→16:00
+- **CME Group interest-rate, livestock, and cryptocurrency family history.**
+  Interest rates retain the January-2010 17:30→16:00 CT baseline and exact
+  2011-10-02 move to a 17:00 open. Livestock retains its overnight baseline,
+  the 2014-10-27 removal of evening trading, and the 2016-02-29 move to
+  08:30–13:05. Cryptocurrency is closed before the 2017-12-17 Bitcoin launch
+  opening, preserves the five-day 17:00→16:00 era, switches at the exact
+  2026-05-29 24/7 transition, and records the temporary 2026-08-01 Saturday
+  maintenance extension plus its 2026-08-02 restoration.
+- **COMEX, NYMEX, CME FX, and ICE U.S. product scopes.** The shared NYMEX
+  energy/PGM and COMEX metals profile preserves the sourced January-2010 16:15
+  CT close and September 2015 move to 16:00. Its verified scope is NYMEX
+  CL/MCL/QM, NG/MNG/QG, HO/RB/BZ, and PL/PA plus COMEX GC/MGC, SI/SIL, and
+  HG/MHG. CME FX's unchanged 17:00→16:00
   grid is fenced by its pre-audit-floor February 2009 revision and primary
   2010, 2018, 2020, and current operator snapshots, and ICE U.S.
   now represents NYSE FANG+ Index Futures with its exact November 2017 launch

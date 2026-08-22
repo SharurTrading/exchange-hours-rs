@@ -46,12 +46,6 @@ pub(crate) fn bounded_utc(
     }
 }
 
-/// Holiday policy for the normal-week model; exceptions are deliberately out
-/// of scope, so it always returns `false`.
-pub(crate) const fn is_holiday(_day: chrono::NaiveDate) -> bool {
-    false
-}
-
 #[derive(Clone, Copy)]
 enum AmbigBias {
     Earliest,

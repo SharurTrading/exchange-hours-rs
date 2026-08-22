@@ -12,8 +12,9 @@ use crate::calendar::rule::{MON_FRI, MON_THU, SUN_PLUS_MON_THU};
 use crate::calendar::schedules::StaticHoursProfile;
 use crate::calendar::schedules::timeline::{Revision, effective_date, local_date, select_revision};
 
-// CME benchmark E-mini equity-index futures. CME's October-2009 product guide
-// supplies the complete grid in force at the January-2010 audit floor:
+// U.S.-grid CME and CBOT equity-index futures, including CBOT YM/MYM but not
+// CME Nikkei 225 Dollar (NKD), whose historical grid differs. CME's
+// October-2009 product guide supplies the complete grid at the audit floor:
 // Sunday 17:00–Monday 15:15, then Monday–Thursday 17:00–15:15 and
 // 15:30–16:30, with 16:30–17:00 maintenance. The 2012 notice changed the
 // trade-date boundary and the post-halt slice to 15:30–16:15, including
@@ -24,6 +25,8 @@ use crate::calendar::schedules::timeline::{Revision, effective_date, local_date,
 // https://www.cmegroup.com/education/files/eq-trading-hours.pdf
 // https://www.cmegroup.com/tools-information/lookups/advisories/clearing/Chadv12-423.html
 // https://www.cmegroup.com/tools-information/lookups/advisories/electronic-trading/20121022.html
+// https://www.cmegroup.com/tools-information/lookups/advisories/market-data/20121015.html
+// https://www.cmegroup.com/notices/clearing/2019/06/Chadv19-182.pdf
 // https://www.cmegroup.com/tools-information/lookups/advisories/electronic-trading/20150914.html
 pub(crate) static CME_REGULAR: &[SessionRule] = &[SessionRule {
     days: MON_FRI,

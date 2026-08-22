@@ -38,7 +38,7 @@ mod prelude {
         let calendar = calendar_for_exchange(exchange);
         let fixed = hours_for_exchange_as_of(exchange, instant);
 
-        assert_eq!(calendar.exchange(), exchange);
+        assert_eq!(calendar.exchange(), Some(exchange));
         assert_eq!(calendar.tz(), fixed.tz);
         assert_eq!(calendar.hours_at(instant), fixed);
         assert_eq!(

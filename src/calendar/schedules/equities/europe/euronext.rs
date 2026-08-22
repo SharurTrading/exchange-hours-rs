@@ -21,14 +21,18 @@ pub(crate) use milan::{EURONEXT_MIL_PROFILE, profile_at as milan_profile_at};
 
 // The operator's 2010 special-day appendix and 2014 normal-hours appendix show
 // the legacy 07:15 CET pre-opening and the principal-share opening at 09:00.
-// Euronext introduced a zero-to-30-second randomized opening uncross in late
-// 2015, but the recovered operator source does not give its day-level boundary.
-// LAW-NO-FABRICATED-DATES therefore retains the conservative latest edge for
-// earlier dates while recording that exact regular/extended classification as
-// unresolved; the venue's open/closed state remains exact.
+// Euronext notice PAR_20150924_07448_EUR explicitly introduces a zero-to-30-
+// second randomized auction for Belgian, Dutch, French, and Portuguese groups,
+// but its 2015 notice header misprints the effective year as 2012. The successor
+// appendix is effective 2015-10-05, treats the randomization appendix as already
+// current, and changes only two trading groups, so it proves presence but not
+// onset. LAW-NO-FABRICATED-DATES therefore retains the conservative latest edge
+// for earlier dates while recording that exact regular/extended classification
+// as unresolved; the venue's open/closed state remains exact.
 // https://www.euronext.com/sites/default/files/european_cash_markets_trading_hours_for_24th_and_31st_december_2010.pdf
 // https://connect.euronext.com/nl/listview/notice-download?attachmentId=201416&id=581906&type=PDF
-// https://www.euronext.com/en/media/4008/download
+// https://live.euronext.com/en/listview/notice-download?id=598779&type=PDF&attachmentId=218289
+// https://live.euronext.com/en/listview/notice-download?id=598933&type=PDF&attachmentId=218443
 static CENTRAL_REGULAR: &[SessionRule] = &[SessionRule {
     days: MON_FRI,
     open_ssm: 9 * 3600 + 30,

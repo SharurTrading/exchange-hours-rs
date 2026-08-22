@@ -76,20 +76,22 @@ corrections (a venue's hours fixed against a primary source) go under
   market model's five-second randomized opening edge. SIX and BME retain
   their pre-TAL profiles before the sourced June 22, 2020 and December 4, 2023
   launches; Vienna now includes complete 2010/2017/2019/2020 ATX history. LSE,
-  Xetra, SIX, BME, all three Nasdaq Nordic markets, Vienna, and Euronext Milan
-  now have complete primary-sourced histories for their stated scopes. ICE Futures Canada
+  Xetra, SIX, BME, all three Nasdaq Nordic markets, Vienna, Euronext Milan, and
+  Euronext Dublin now have complete primary-sourced histories for their stated
+  scopes. ICE Futures Canada
   now preserves the sourced January-2010 19:00 pre-open / 20:00–13:15 CT
   continuous grid, its 2011 opening change, 2012 and 2013 close revisions,
   and the 2016 move to 13:20 before closing on the 2018 IFUS transfer's actual
-  Sunday opening day. The five remaining Euronext historical gaps stay
+  Sunday opening day. The four remaining Euronext historical gaps stay
   documented rather than receiving invented cutovers.
 - **Product-scoped international derivatives schedules.** Eurex benchmark
   futures now preserve the January-2010 07:30 pre-trading / 07:50 continuous
   grid and classify the fixed-UTC Asian pre-trading/opening auction separately
   from post-2018 continuous trading across CET/CEST; EEX is
   narrowed to Nordic Zonal Power Futures with its 2024 launch; ICE Europe
-  identities now model Brent and FTSE 100 Futures, ICE Endex models Dutch TTF
-  including the 2026 opening eve and recurring DST grid, and IFAD models Murban
+  identities now model Brent and FTSE 100 Futures. ICE Endex preserves the
+  transferred Dutch TTF contract's sourced 2013 WebICE grid, 2026 opening eve,
+  and recurring DST rule; IFAD models Murban
   in its New-York-locked schedule. SGX is narrowed to Three-Month SORA Futures
   with its sourced 2024 launch and auction gaps. Binance Futures is narrowed to
   USDⓈ-M perpetuals and is closed before the exact sourced 2019-09-13 04:00 UTC
@@ -123,8 +125,8 @@ corrections (a venue's hours fixed against a primary source) go under
   inheriting predecessor-ATS history. IntelligentCross IQX now uses its live
   and first public 2019 SEC ATS-N hours without treating the operator's January
   17, 2018 company commencement as an ATS launch; an archived 2018 operator FAQ
-  now verifies launch-era hours, leaving only the exact September-2018 launch
-  day unresolved. Blue Ocean is
+  now verifies launch-era hours. Primary filings bracket first live processing
+  to August/September 2018 but do not state a day. Blue Ocean is
   closed before its October 5, 2021 production launch and is explicitly scoped
   to the production ATS service rather than its earlier beta/testing phase;
   its primary-sourced new-order trading window is 20:00–04:00. The live
@@ -141,8 +143,11 @@ corrections (a venue's hours fixed against a primary source) go under
   Central-European clock one hour earlier locally, eliminating the former
   one-hour UTC shift. Legacy Euronext markets change pre-opening on the sourced
   March 20, 2023 date, while Milan changes on March 27. Milan's complete history
-  is recorded; the undated late-2015 randomization onset for four legacy markets
-  and Dublin's incomplete January-2010 phase chain remain explicit gaps.
+  is recorded; Dublin now preserves its operator-published pre-floor timetable
+  through successive ISE order-book models and the 2018 calendar. Four legacy
+  markets retain one explicit gap because Euronext's 2015
+  randomization-introduction notice misprints its effective year and its
+  successor does not repair the onset day.
 - **CME equity-index historical closes.** The pre-November-18, 2012 profile no
   longer receives the later 15:30–16:15 CT post-halt session. That extension
   begins on CME's published Sunday effective date, and the later

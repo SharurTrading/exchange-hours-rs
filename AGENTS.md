@@ -24,8 +24,8 @@ and the rules any change to this repository must follow.
   profile so a future divergence is a one-line edit.
 - **LAW-NO-FABRICATED-DATES** — a historical cutover exists only when a primary
   source states a **day-level** effective date. A real change without one is
-  documented as a known gap (see IntelligentCross IQX and ICE Endex in their
-  venue modules under `src/calendar/schedules/`),
+  documented as a known gap (see IntelligentCross IQX and the central Euronext
+  markets in their venue modules under `src/calendar/schedules/`),
   never given an invented date. Amendment history is recorded back to
   **January 2010**; earlier changes are out of scope by design.
 

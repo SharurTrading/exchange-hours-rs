@@ -70,14 +70,19 @@ static TSE_EXTENDED_PRE_2024: &[SessionRule] = &[SessionRule {
 }];
 
 // JPX's official trading-hours transition table dates the arrowhead morning
-// extension to 2011-11-21 and the afternoon extension to 2024-11-05. Its 2010
-// shareholder report establishes that ToSTNeT had already been extended to
-// 17:30 in November 2009, before this repository's January-2010 audit floor.
+// extension to 2011-11-21. The 2024 extension appendix expressly changes
+// ToSTNeT single-stock/basket trading to 18:00, and the final go-live release
+// confirms the upgraded arrowhead and ToSTNeT systems launched on 2024-11-05.
+// Its 2010 shareholder report establishes that ToSTNeT had already been
+// extended to 17:30 in November 2009, before this repository's January-2010
+// audit floor.
 // JPX Working Paper No.3 analyzes the operator's own FLEX order-book data from
 // 2010-01-04 and explicitly identifies orders entered from 08:00 outside the
 // matching session. The report does not state an exact pre-floor day for the
 // 2009 tail change, so none is invented here.
 // https://www.jpx.co.jp/english/equities/trading/domestic/tvdivq0000006blj-att/tradinghours_eg.pdf
+// https://www.jpx.co.jp/english/corporate/news/news-releases/1030/uorii50000002f2a-att/pressrelease_extension_of_trading_hours_en.pdf
+// https://www.jpx.co.jp/english/corporate/news/news-releases/1030/20241103-01.html
 // https://www.jpx.co.jp/english/corporate/investor-relations/shareholders/meeting/tvdivq000000958w-att/tse04.pdf
 // https://www.jpx.co.jp/corporate/research-study/working-paper/tvdivq0000008q5y-att/JPX_working_paper_No.3.pdf
 pub(crate) static TSE_PROFILE_CURRENT: StaticHoursProfile = StaticHoursProfile {

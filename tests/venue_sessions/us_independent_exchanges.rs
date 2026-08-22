@@ -108,14 +108,26 @@ fn independent_us_exchange_wires_and_bulk_order_are_stable() {
         .into_iter()
         .map(|hours| hours.exchange)
         .collect();
-    assert_eq!(
-        &exchanges[14..],
-        &[
-            Exchange::Iex,
-            Exchange::Ltse,
-            Exchange::TwentyFourX,
-            Exchange::Txse,
-            Exchange::BlueOceanAts,
-        ]
-    );
+    let expected = [
+        Exchange::Nasdaq,
+        Exchange::NasdaqBx,
+        Exchange::NasdaqPsx,
+        Exchange::CboeBzx,
+        Exchange::CboeByx,
+        Exchange::CboeEdga,
+        Exchange::CboeEdgx,
+        Exchange::Nyse,
+        Exchange::NyseArca,
+        Exchange::NyseAmerican,
+        Exchange::NyseNational,
+        Exchange::NyseTexas,
+        Exchange::MemxEq,
+        Exchange::MiaxPearlEq,
+        Exchange::Iex,
+        Exchange::Ltse,
+        Exchange::TwentyFourX,
+        Exchange::Txse,
+        Exchange::BlueOceanAts,
+    ];
+    assert_eq!(exchanges.as_slice(), expected.as_slice());
 }

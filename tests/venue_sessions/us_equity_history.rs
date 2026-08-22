@@ -67,7 +67,7 @@ fn bzx_and_byx_2014_order_queues_use_the_exact_operator_dates() {
 }
 
 #[test]
-fn direct_edge_partial_history_does_not_invent_the_0600_queue_onset() {
+fn partial_us_equity_histories_do_not_invent_current_queue_onsets() {
     // The current EDGA queue is primary-supported at 06:00, but its original
     // onset day is not. The historical selector keeps the exact 2016 matching
     // change without pretending that it introduced the older queue.
@@ -81,6 +81,28 @@ fn direct_edge_partial_history_does_not_invent_the_0600_queue_onset() {
     assert!(current.is_open_extended(et((2026, 4, 20), (6, 0, 0))));
     assert!(!partial_as_of.is_open(et((2026, 4, 20), (6, 0, 0))));
     assert!(!calendar_for_exchange(Exchange::CboeEdga).is_open(et((2026, 4, 20), (6, 0, 0))));
+
+    for (exchange, current_queue, dated_open) in [
+        (Exchange::Nyse, (6, 30, 0), (9, 30, 0)),
+        (Exchange::NyseArca, (2, 30, 0), (4, 0, 0)),
+    ] {
+        let instant = et((2026, 4, 20), current_queue);
+        let dated = hours_for_exchange_as_of(exchange, instant);
+        assert!(
+            hours_for_exchange(exchange).is_open_extended(instant),
+            "{exchange:?} at {instant}"
+        );
+        assert!(!dated.is_open(instant), "{exchange:?} at {instant}");
+        assert!(
+            !calendar_for_exchange(exchange).is_open(instant),
+            "{exchange:?} at {instant}"
+        );
+        let dated_instant = et((2026, 4, 20), dated_open);
+        assert!(
+            dated.is_open(dated_instant),
+            "{exchange:?} at {dated_instant}"
+        );
+    }
 }
 
 #[test]
@@ -146,7 +168,8 @@ fn nyse_arca_grid_is_supported_at_the_2010_audit_floor() {
 #[test]
 fn nyse_american_extended_trading_begins_with_pillar() {
     // NYSE's launch update dates all-NMS-stock Pillar production to
-    // 2017-07-24; the functional update defines the new 07:00–20:00 envelope.
+    // 2017-07-24; the functional update defines a 06:30 order-acceptance edge
+    // around the 07:00–20:00 execution grid.
     // https://www.nyse.com/publicdocs/nyse/markets/nyse-american/Pillar_Update_NYSE_American_Weekend_Test_Update_July21_2017.pdf
     let before = profile_before(Exchange::NyseAmerican, (2017, 7, 24));
     let pillar = profile_from(Exchange::NyseAmerican, (2017, 7, 24));
@@ -165,7 +188,7 @@ fn nyse_texas_preserves_chx_history_through_the_pillar_migration() {
     // NYSE Texas is a non-substantive continuation of NYSE Chicago/CHX. CHX's
     // January-2010 rules retain a 07:00–17:00 envelope, including the
     // 16:15–17:00 cross-only stage. The exact 2019-11-04 Pillar migration
-    // extended the late session through 20:00.
+    // added the 06:30 order-entry queue and extended the late session to 20:00.
     // https://www.sec.gov/rules/sro/chx/2009/34-60775.pdf
     // https://www.sec.gov/files/rules/sro/nysechx/2019/34-86709.pdf
     // https://www.nyse.com/publicdocs/nyse/markets/nyse-chicago/NYSE_Chicago_Migration.pdf

@@ -214,8 +214,9 @@ pub(crate) fn edga_profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static 
 }
 
 // EDGA and EDGX accepted orders from 06:00 by 2014, but the reviewed primary
-// sources do not state the original onset day. Their historical selectors keep
-// only the exact execution changes rather than inventing that queue cutover.
+// sources do not state the original onset day. Their exact fixed-current
+// snapshots include that queue. EDGA's present and future dated queries retain
+// its last sourced 07:00 regime rather than inventing a queue cutover.
 // EDGX introduced its 03:30 queue / 04:00 active session on 2021-03-08 and
 // moved the queue to 02:30 on 2021-09-07. Its future overnight-session remains
 // unselected until the Equity Data Plan and readiness conditions are satisfied.

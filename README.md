@@ -323,7 +323,10 @@ On `ExchangeCalendar` and `PolicyCalendar`, `trade_date(instant)` returns the
 venue-local trade date of the containing session, or `None` while closed.
 Wrapped sessions use the date of the trading day's final close, so a normal
 Sunday-evening Globex instant maps to Monday. An always-open profile has no
-final close, so its trade date is always `None`.
+final close, so its trade date is always `None`; consequently
+`is_closed_trade_date` is true for every date because no session is assigned to
+one. Use `is_closed_all_day_on` or `is_closed_all_day_in_calendar` for
+civil-day availability.
 `session_state(instant)` returns exactly one of `OpenRegular`, `OpenExtended`,
 `Halt`, `Maintenance`, or `Closed`. A halt separates phases of the same trade
 date. Maintenance is normally an inter-trade-date gap no longer than four
@@ -507,7 +510,8 @@ that callers do not also get (see [Architecture: Tests](ARCHITECTURE.md#tests)).
 - `tests/global_equities.rs` and `tests/global_equities/` — a thin harness over current
   baselines, amendment history, and the global bulk/name contract for TSX, Borsa Istanbul,
   JSE, Tadawul, B3, and BMV.
-- `tests/schedule_documentation.rs` — keeps all 94 `Exchange` rows (93
+- `tests/schedule_documentation.rs` and `tests/schedule_documentation/` — a
+  thin harness over contracts that keep all 94 `Exchange` rows (93
   non-synthetic plus `Unknown`) and 12 `MarketHoursKey` rows (11
   operator-derived plus `AlwaysOpen`) in canonical order; validates their
   review metadata and owner/source links; requires both current and

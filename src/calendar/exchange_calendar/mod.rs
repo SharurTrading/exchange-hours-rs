@@ -221,6 +221,10 @@ impl ExchangeCalendar {
 
     /// Returns whether no effective session of `kind` is assigned to `day` as
     /// its venue-local trade date.
+    ///
+    /// Profiles without a trade-date concept return `true` because no session
+    /// can be assigned to the requested trade date. Use the civil-day queries
+    /// when asking whether trading intersects a calendar date instead.
     #[must_use]
     pub fn is_closed_trade_date(self, day: NaiveDate, kind: SessionKind) -> bool {
         status::is_closed_trade_date(&QueryContext::date_aware(self), day, kind)

@@ -40,6 +40,10 @@ fn seasonal_daily_candles_use_the_profile_for_each_trading_day() {
         bmv.candle_end(early, CalendarResolution::Daily),
         Some(local(mexico, (2024, 3, 11), (14, 20, 0)))
     );
+    assert!(bmv.is_open_extended(local(mexico, (2024, 3, 8), (15, 19, 59))));
+    assert!(bmv.is_open_extended(local(mexico, (2024, 3, 11), (14, 19, 59))));
+    assert!(!bmv.is_open(local(mexico, (2024, 3, 8), (15, 20, 0))));
+    assert!(!bmv.is_open(local(mexico, (2024, 3, 11), (14, 20, 0))));
 }
 
 #[test]

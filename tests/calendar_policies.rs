@@ -474,6 +474,7 @@ fn policy_does_not_invent_trade_dates_for_an_always_open_profile() {
         assert_eq!(calendar.trade_date(instant), None);
     }
     assert!(calendar.is_closed_trade_date(monday, SessionKind::Both));
+    assert!(!calendar.is_closed_all_day_on(monday, SessionKind::Both));
 }
 
 #[test]

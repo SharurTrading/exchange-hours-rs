@@ -108,8 +108,11 @@ fn adjacent_different_session_kinds_remain_distinct_bounds() {
         )),
     );
     assert_eq!(
-        calendar.candle_end(before_handoff, CalendarResolution::Minutes(5),),
+        calendar.candle_end(
+            ct((2026, 4, 20), (8, 28, 0)),
+            CalendarResolution::Minutes(5),
+        ),
         Some(at_handoff),
-        "an intraday candle cannot cross an extended-to-regular handoff",
+        "the natural 08:33 grid end is clamped at the session handoff",
     );
 }

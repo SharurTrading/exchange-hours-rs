@@ -55,9 +55,11 @@ maintenance contract described in the README and schedule verification ledger.
   outside this scalar boundary API rather than being approximated.
 - **Trade-date and one-shot state queries.** `trade_date` and
   `is_closed_trade_date` are available on date-aware and policy-aware
-  calendars. `SessionState` distinguishes regular, extended, halt,
-  maintenance, and closed states; `is_maintenance` is exactly its maintenance
-  case.
+  calendars. Profiles without a trade-date concept return no trade date and
+  report every trade date closed because no session can be assigned to one;
+  their civil-day availability remains available separately. `SessionState`
+  distinguishes regular, extended, halt, maintenance, and closed states;
+  `is_maintenance` is exactly its maintenance case.
 - **A Criterion query benchmark** covering `is_open`, `session_bounds`, daily
   `candle_end`, `trade_date`, and closed-gap `session_state` for
   `GlobexEquityIndex`, plus documented allocation and value/thread-trait

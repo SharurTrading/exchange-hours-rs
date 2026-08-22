@@ -131,12 +131,15 @@ reviews:
         undated changes remain disclosed Partial gaps. The audit floor is January
         2010; a later-launched identity is closed before its sourced launch.
 
-        Confirm revisions are ascending, current pointers equal the final regime,
-        and every profile for one identity keeps the same IANA zone. Opening-day
-        semantics matter: a Monday trade-date change whose session opens Sunday is
-        normally keyed to Sunday. Temporary regimes need both sourced start and
-        restoration rows. Cross-zone recurring selectors must recompute the
-        reference-zone relationship per candidate opening day.
+        Confirm revisions are ascending and every profile for one identity keeps
+        the same IANA zone. For non-recurring Primary history, the current pointer
+        equals the final dated regime. A Partial history may intentionally keep an
+        exact fixed current profile while dated routing ends at the last sourced
+        regime; its adjacent comment and ledger row must name that divergence.
+        Opening-day semantics matter: a Monday trade-date change whose session
+        opens Sunday is normally keyed to Sunday. Temporary regimes need both
+        sourced start and restoration rows. Cross-zone recurring selectors must
+        recompute the reference-zone relationship per candidate opening day.
 
         Preserve the documented product/segment envelope. A cash-equity Exchange
         profile is the venue-level union of its automated executable and accepted

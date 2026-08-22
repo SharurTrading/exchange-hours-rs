@@ -17,10 +17,7 @@ mod options;
 mod trfs;
 
 pub use ats::BLUE_OCEAN_EXTENDED;
-pub(crate) use ats::{
-    BLUE_OCEAN_PROFILE, IEX_PROFILE, INTELLIGENTCROSS_IQX_PROFILE, blue_ocean_profile_at,
-    iex_profile_at, intelligentcross_iqx_profile_at,
-};
+pub(crate) use ats::{BLUE_OCEAN_PROFILE, IEX_PROFILE, blue_ocean_profile_at, iex_profile_at};
 pub(crate) use cboe::{
     CBOE_BYX_PROFILE, CBOE_BZX_PROFILE, CBOE_EDGA_PROFILE, CBOE_EDGX_PROFILE, byx_profile_at,
     bzx_profile_at, edga_profile_at, edgx_profile_at,

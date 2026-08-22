@@ -198,23 +198,3 @@ fn blue_ocean_new_order_window_is_stable_from_launch() {
     assert!(historical.is_open_extended(et((2021, 10, 6), (3, 59, 59))));
     assert!(!historical.is_open(et((2021, 10, 6), (4, 0, 0))));
 }
-
-#[test]
-fn intelligentcross_gap_does_not_use_company_start_as_ats_launch() {
-    // The operator dates the ATS launch only to September 2018, while the
-    // exact 2018-01-17 date in the audited statement is company commencement.
-    // The first public electronic ATS-N on 2019-07-22 supplies the hours but
-    // not their launch-day onset, so no historical cutover is fabricated.
-    // https://www.imperativex.com/news/imperative-execution-closes-9-million-series-a-financing-round
-    // https://www.sec.gov/Archives/edgar/data/1708826/000170882619000008/xslATS-N_X01/primary_doc.xml
-    let historical =
-        hours_for_exchange_as_of(Exchange::IntelligentcrossIqx, et((2018, 1, 17), (12, 0, 0)));
-    let current = hours_for_exchange(Exchange::IntelligentcrossIqx);
-
-    assert_eq!(historical.regular, current.regular);
-    assert_eq!(historical.extended, current.extended);
-    assert!(!historical.is_open(et((2018, 1, 17), (8, 59, 59))));
-    assert!(historical.is_open_extended(et((2018, 1, 17), (9, 0, 0))));
-    assert!(historical.is_open_regular(et((2018, 1, 17), (9, 30, 0))));
-    assert!(!historical.is_open(et((2018, 1, 17), (16, 0, 0))));
-}

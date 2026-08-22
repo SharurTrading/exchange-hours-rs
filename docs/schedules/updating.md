@@ -84,7 +84,9 @@ Check the complete model rather than only the headline open and close:
 - fixed-UTC or foreign-market references expressed as seasonally changing
   venue-local times;
 - daily-close and weekend-close flags;
-- randomized boundaries and the deterministic envelope chosen by the crate;
+- randomized auction boundaries and the documented deterministic choice:
+  published nominal phase edge when only a per-security handoff varies, or a
+  conservative venue envelope when that is the profile's stated scope;
 - product, segment, or security-eligibility limitations;
 - cancellation-only, reporting-only, negotiated, or administrative phases
   that the profile intentionally excludes.
@@ -112,6 +114,12 @@ exact evidence belongs with the code it supports.
   ledger basis pragmatic and state which season differs.
 - **One-off holiday, halt, weather closure, or half-day:** document it if useful,
   but do not force it into the normal-week profile.
+- **Per-security randomized auction uncross:** this is microstructure, not an
+  exchange closure. Use the operator's published nominal phase boundary when
+  the random delay only shifts an adjacent auction/continuous handoff and the
+  exchange remains available throughout. If a venue profile instead promises
+  a conservative maximum auction envelope, retain and document that choice.
+  Do not claim ticker-level uncross timing.
 - **Product-specific variation:** either narrow the documented profile scope or
   add a distinct product/venue model; do not silently widen an envelope.
 

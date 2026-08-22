@@ -3,6 +3,7 @@
 //! Named futures-session profile contracts.
 
 use super::prelude::*;
+use serde_test::{Configure, Token, assert_de_tokens_error, assert_tokens};
 
 // ---------------------------------------------------------------------------
 // Named futures session profiles.
@@ -30,6 +31,34 @@ fn all_market_hours_keys_return_profiles() {
             "{key:?} profile must have at least one session rule"
         );
     }
+}
+
+#[test]
+fn every_market_hours_key_uses_its_canonical_string_in_every_serde_format() {
+    let keys = [
+        (MarketHoursKey::GlobexEquityIndex, "globex_equity_index"),
+        (MarketHoursKey::GlobexEnergy, "globex_energy"),
+        (MarketHoursKey::GlobexGrains, "globex_grains"),
+        (MarketHoursKey::GlobexFx, "globex_fx"),
+        (MarketHoursKey::CfeVix, "cfe_vix"),
+        (MarketHoursKey::Eurex, "eurex"),
+        (MarketHoursKey::IceUs, "ice_us"),
+        (MarketHoursKey::Sgx, "sgx"),
+        (MarketHoursKey::AlwaysOpen, "always_open"),
+    ];
+
+    for (key, name) in keys {
+        assert_tokens(&key.readable(), &[Token::Str(name)]);
+        assert_tokens(&key.compact(), &[Token::Str(name)]);
+    }
+}
+
+#[test]
+fn market_hours_key_serde_rejects_ordinal_indices() {
+    assert_de_tokens_error::<MarketHoursKey>(
+        &[Token::U32(0)],
+        "invalid type: integer `0`, expected a canonical market-hours key",
+    );
 }
 
 #[test]

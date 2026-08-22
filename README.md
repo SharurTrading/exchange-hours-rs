@@ -29,7 +29,7 @@ exchange's local time zone, including its DST quirks, is handled internally.
 The internal ownership and extension model is documented in
 [ARCHITECTURE.md](ARCHITECTURE.md).
 
-- **92 exchange identifiers** — US equities/options, US and international futures, EU and Asia-Pacific
+- **91 exchange identifiers** — US equities/options, US and international futures, EU and Asia-Pacific
   equities, other major global cash markets, and always-open crypto — with independently
   fenced point-in-time revisions wherever primary evidence states a day-level boundary.
 - **Session queries** — open/closed by regular/extended/both, session bounds, next open, gaps.
@@ -110,12 +110,12 @@ assert_eq!(snapshot_for_one_instant.exchange, Exchange::Bmv);
 
 | Family | Variants | Local zone | Session shape |
 |---|---|---|---|
-| US equities (Reg NMS) | 17 | `America/New_York` | 09:30–16:00 regular on matching venues; modeled extended hours differ by venue. Nasdaq is 04:00–20:00 today, Nasdaq BX/Texas is 07:00–19:00, and PSX is 08:00–17:00. Date-aware profiles add Nasdaq and EDGX 21:00–04:00 sessions from 2026-12-06 while fixed current snapshots remain unchanged. NYSE Tape A is core-only, IEX runs 08:00–17:00 System Hours, IntelligentCross accepts orders from 09:00, and Blue Ocean's production new-order ATS window is 20:00–04:00. |
+| US equities and ATS | 16 | `America/New_York` | 09:30–16:00 regular on matching venues; modeled extended hours differ by venue. Nasdaq is 04:00–20:00 today, Nasdaq BX/Texas is 07:00–19:00, and PSX is 08:00–17:00. Date-aware profiles add Nasdaq and EDGX 21:00–04:00 sessions from 2026-12-06 while fixed current snapshots remain unchanged. NYSE Tape A is core-only, IEX runs 08:00–17:00 System Hours, and Blue Ocean's production new-order ATS window is 20:00–04:00. |
 | FINRA TRFs | 3 | `America/New_York` | 09:30–16:00 regular; outside-RTH reporting is extended (04:00–20:00 system envelope from 2026-03-30, with the sourced overnight expansion tracked from 2026-12-06). |
 | US options | 18 | `America/New_York` | Each venue models the primary-sourced 09:30–16:00 regular-session envelope for ordinary individual-stock options, with exact closed-before-launch history where the venue began after January 2010. ETF, ETN, index, FLEX, floor-only, and venue-designated extended-hours classes are outside this deliberately narrow scope. |
 | CME Globex futures | 4 | `US/Central` | CME equity-index futures use the current 17:00→16:00 envelope with their 15:15–15:30 halt; date-aware history retains the sourced 2012 and 2015 close changes. CBOT grains keep distinct sourced 2010, 2012, 2013, and 2015 regimes. |
 | Cboe Futures (CFE) | 1 | `US/Central` | RTH 08:30–15:00 flows into post-settlement 15:00–16:00; order-entry queues run Sunday 16:00–17:00 and Monday–Thursday 16:45–17:00 before the 17:00→08:30 overnight wrap. |
-| EU equities | 14 | 11 European zones | 09:00–17:30 continuous as the continental default, with venue-owned phases: Xetra's DAX-share envelope includes participant-restricted Extended Retail from 07:00 to 22:00; LSE SETS includes 07:00 pre-trading, randomized opening/noon auctions, and CPX to 16:40; SIX, BME, Euronext, Vienna, and Nasdaq Nordic books keep their own phases and clocks. |
+| EU equities | 14 | 11 European zones | 09:00–17:30 continuous as the continental default, with venue-owned phases: Xetra's DAX-share envelope includes participant-restricted Extended Retail from 07:00 to 22:00; LSE SETS includes 07:00 pre-trading, randomized opening/noon auctions, and CPX to 16:40; central Euronext profiles use the published nominal phase boundaries and exclude per-security randomized uncross seconds; SIX, BME, Vienna, and Nasdaq Nordic books keep their own phases and clocks. |
 | Asia-Pacific equities | 17 | 14 IANA zones | ASX, TMX Australia, NZX, TSE, NSE India, BSE India, HKEX, SGX Securities, Bursa Malaysia, SET, IDX, PSE, HOSE, SSE, SZSE, KRX, and TWSE. Lunch breaks, auctions, and post-close windows stay venue-specific. |
 | Other major global equities | 6 | Toronto / Istanbul / Johannesburg / Riyadh / São Paulo / Mexico City | TSX, Borsa Istanbul, JSE's main/liquid ZA01 segment, Tadawul, B3, and BMV, including their pre-open, closing-auction, and trade-at-last phases. B3/BMV grids are date-aware because they follow New York's offset relationship. |
 | ICE complex & European energy | 9 | London / Amsterdam / Berlin / Dubai / New York / Winnipeg | Named product-family profiles: Eurex FESX/FDAX/FDXM, EEX Nordic Zonal Power, ICE FANG+, Brent, FTSE 100, Dutch TTF, Murban, and legacy Canola. Date-aware profiles preserve product launches, FTSE extensions, Eurex's fixed-UTC Asian pre-trading/auction and continuous phases, Endex's 2026 extension/DST rule, Murban's New-York-locked grid, and Canola's sourced 2010–2018 eras. |
@@ -128,22 +128,21 @@ Futures hours track the *product family*, not the venue: nine shared profiles ar
 
 **Repository-wide review completed:** `2026-08-21`
 
-**Primary-source-verified current profiles:** `91 of 91` real exchange
+**Primary-source-verified current profiles:** `90 of 90` real exchange
 identifiers, within each row's documented normal-week scope.
 
-**Complete sourced history since January 2010:** `86 of 91` real exchange
+**Complete sourced history since January 2010:** `90 of 90` real exchange
 identifiers.
 
-**Venue-specific profiles requiring reconciliation:** `0 of 91` real exchange
+**Venue-specific profiles requiring reconciliation:** `0 of 90` real exchange
 identifiers.
 
 Every real exchange identifier was compared with its official current-hours or
-rulebook material and its notice/evidence channel. All 91 current profiles are
-primary-supported within their stated scope. Of those, 86 **Primary** rows have
-no known modeled-history gap since January 2010; five **Partial** rows have an
-explicitly bounded older-history gap. No real row remains **Secondary**,
-**Pragmatic**, or **Known issue**. `Exchange::Unknown` is synthetic and is not
-one of the 91 real identifiers.
+rulebook material and its notice/evidence channel. All 90 current profiles are
+primary-supported within their stated scope, and all 90 **Primary** rows have
+no known modeled-history gap since January 2010 or their sourced launch. No
+real row remains **Partial**, **Secondary**, **Pragmatic**, or **Known issue**.
+`Exchange::Unknown` is synthetic and is not one of the 90 real identifiers.
 
 The key surface was audited separately:
 **Primary-source-verified current key snapshots:** `8 of 8` operator-derived
@@ -158,6 +157,12 @@ exclude holidays, half-days, one-off closures, halts, severe-weather exceptions,
 and product-specific variations outside a row's stated scope. The full method,
 corrections, exclusions, and confidence levels are recorded in the
 [2026-08-21 schedule audit](docs/schedules/audit-2026-08-21.md).
+
+The guarantee is exchange/segment/product-family level, never ticker-level
+microstructure. When an auction uncross is randomized per security, the row
+states whether the deterministic profile uses the operator's nominal phase
+boundary or a conservative venue envelope; it does not predict that day's
+per-security uncross second.
 
 The [source-set registry](docs/schedules/sources.md) records the stable official
 pages and notice/evidence entry points to check for each exchange. The
@@ -176,14 +181,14 @@ trading day.
 - **Recorded changes only.** A venue gets a historical cutover only when a primary source
   (exchange notice, rulebook amendment, press release) states a day-level effective date.
   Real changes without a sourced date are documented as known gaps rather than given
-  invented dates. The verification ledger is the complete gap inventory: IntelligentCross
-  IQX lacks only its exact first-live day in August/September 2018; Euronext Paris,
-  Amsterdam, Brussels, and Lisbon lack the exact day of a randomized-auction change whose
-  2015 introduction notice has a defective effective year.
-  A selector retains the oldest sourced profile when the evidence supports its range;
-  otherwise, as with IQX, the current snapshot remains the explicit historical fallback
-  through the disclosed ambiguity. IEX and Blue Ocean have sourced production launch
-  boundaries, and B3's explicit older grids are fully recorded to January 2010.
+  invented dates. The current verification ledger has no such gap within its stated
+  exchange/product scopes. For Paris, Amsterdam, Brussels, and Lisbon, Euronext's
+  per-security 0–30-second auction uncross delay is outside the exchange-level schedule,
+  so those profiles use the operator's published nominal phase boundaries. Dublin and
+  Milan retain their documented conservative latest-edge envelopes. Every choice
+  preserves the exact venue-wide open/closed envelope. IEX and Blue Ocean have sourced
+  production launch boundaries, and B3's explicit older grids are fully recorded to
+  January 2010.
 - **Cutover semantics.** Date-only changes are compared in the venue's **own local zone**.
   The new profile applies from venue-local midnight on its session opening day—often Sunday
   for a Monday trade-date change. When a primary source states an exact intraday instant,
@@ -206,8 +211,8 @@ US transition dates. A `MarketHours` returned for one date remains a fixed snaps
 
 Primary-sourced tables and dated revisions carry their citations beside the data and are
 pinned by tests. Every real current profile is source-supported within the product or
-segment scope stated in the ledger; the seven incomplete histories are named explicitly
-rather than blurred into defaults. This crate is a **best-effort model, not an authority**:
+segment scope stated in the ledger, with complete January-2010-or-launch history at that
+scope. This crate is a **best-effort model, not an authority**:
 exchanges amend hours on short notice, publish product-level exceptions, and run holiday
 and half-day schedules that this normal-week model deliberately omits. Before trading on
 any venue's hours in production, have a human verify the profile against the exchange's
@@ -250,11 +255,19 @@ reaches every consumer at once.
   rule on all seven days with `has_daily_close` / `has_weekend_close` both `false`; it is
   never folded into the CME-style daily-break profiles.
 - **One canonical name per venue, and it is stable.** `Exchange` and `MarketHoursKey`
-  serialize as `snake_case` strings, and `Exchange` exposes the same names directly:
+  serialize as `snake_case` strings in every Serde format, and `Exchange` exposes
+  the same names directly:
   `as_str`, `Display`, and `FromStr` (`"nyse_arca".parse::<Exchange>()`), so string-keyed
   callers parse instead of pattern-matching. An unrecognized name is a `ParseExchangeError`,
   never a silent `Exchange::Unknown`. A rename that changes one of these strings breaks
-  persisted data.
+  persisted data. Neither identity enum uses variant ordinals, so adding or removing an
+  enum row cannot silently reinterpret another venue or product family.
+- **Pre-1.0 IQX migration.** The retired `intelligentcross_iqx` value has no replacement
+  `Exchange` variant. Remove persisted entries that used it, or keep an application-level
+  mapping if the IntelligentCross ATS is still required; never translate it to another
+  venue or to `Exchange::Unknown`. Earlier binary ordinal payloads for `Exchange` and
+  `MarketHoursKey` must be decoded with their original crate version and rewritten using
+  the canonical string representation.
 - **Normal week only.** Holidays, early closes, half-days, and product-level variations are
   absent — `is_holiday` is a stub returning `false`, though every query path already routes
   through it under one session-existence contract. Verify contract specs before trading on
@@ -286,7 +299,7 @@ that callers do not also get (TEST-LAYOUT, see [AGENTS.md](AGENTS.md)).
 - `tests/global_equities.rs` and `tests/global_equities/` — a thin harness over current
   baselines, amendment history, and the global bulk/name contract for TSX, Borsa Istanbul,
   JSE, Tadawul, B3, and BMV.
-- `tests/schedule_documentation.rs` — keeps all 92 exchange rows and nine reusable
+- `tests/schedule_documentation.rs` — keeps all 91 exchange rows and nine reusable
   `MarketHoursKey` rows in canonical order, validates their review metadata and owner/source
   links, requires both current and notice/evidence channels for every source set, rejects
   orphaned source sets, and prevents the README freshness date from drifting from the ledger.

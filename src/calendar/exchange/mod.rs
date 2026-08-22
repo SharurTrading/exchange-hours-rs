@@ -3,8 +3,6 @@
 //! Venue identity. One table generates [`Exchange`], [`Exchange::ALL`], and
 //! [`Exchange::as_str`]; exhaustive routing catches incomplete additions.
 
-use serde::{Deserialize, Serialize};
-
 mod define;
 mod name;
 
@@ -35,8 +33,7 @@ exchanges! {
     /// [`std::str::FromStr`]; that wire form is asserted variant-by-variant
     /// in the test suite and must stay stable.
     #[non_exhaustive]
-    #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
-    #[serde(rename_all = "snake_case")]
+    #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
     pub enum Exchange {
         /// Unrecognized or unset venue; [`hours_for_exchange`](super::hours_for_exchange)
         /// returns a 24×7 UTC fallback. Reaching this variant is always a
@@ -84,9 +81,6 @@ exchanges! {
         /// IEX, the Investors Exchange — System Hours 08:00–17:00 ET,
         /// narrower than the Reg NMS extended default at both ends.
         Iex => "iex",
-        /// `IntelligentCross`, an ATS whose IQX book executes during regular
-        /// hours.
-        IntelligentcrossIqx => "intelligentcross_iqx",
         /// Blue Ocean ATS, an overnight-only US equities ATS.
         BlueOceanAts => "blue_ocean_ats",
         /// FINRA/Nasdaq Trade Reporting Facility, Carteret — an off-exchange

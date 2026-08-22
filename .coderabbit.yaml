@@ -49,7 +49,8 @@ reviews:
         - Resolving ambiguous/nonexistent local time with the wrong bias: opens use
           the earliest valid instant and closes use the latest.
         - A breaking removal/rename/signature or serde-wire-name change without a
-          deliberate major release. Exchange and MarketHoursKey stay non_exhaustive.
+          deliberate pre-1.0 migration or post-1.0 major release. Exchange and
+          MarketHoursKey stay non_exhaustive.
 
         MAJOR findings:
         - New public behavior implemented in a second engine rather than the shared
@@ -116,19 +117,22 @@ reviews:
 
         Preserve the documented product/segment envelope. Do not silently widen a
         product-family schedule to a whole venue, include cancellation/reporting-only
-        phases, or omit executable auctions/order-entry/TAL phases. Randomized edges
-        use the documented deterministic envelope. Unrelated venues keep distinct
-        named profiles even when rule slices coincide; sharing is only for genuinely
-        coupled operator/product families.
+        phases, or omit executable auctions/order-entry/TAL phases. For a randomized
+        per-security auction uncross, accept either the published nominal phase edge
+        or a conservative venue envelope when the owner documents that choice; do not
+        demand ticker-level outcomes. Unrelated venues keep distinct named profiles
+        even when rule slices coincide; sharing is only for genuinely coupled
+        operator/product families.
 
     - path: "src/calendar/futures_profile.rs"
       instructions: |
         MarketHoursKey profiles follow the same evidence and scope rules as venue
         schedules. Fixed APIs are current snapshots; the as-of API returns one
         dated snapshot, so callers spanning dates must re-resolve. Verify every key
-        keeps a stable snake_case serde name, distinct product-family scope, static
-        rules, and sourced dated routing where available. AlwaysOpen is synthetic;
-        do not demand exchange evidence for it.
+        keeps a stable snake_case serde name encoded as a string in every format,
+        never a derive-generated ordinal. Also verify distinct product-family
+        scope, static rules, and sourced dated routing where available. AlwaysOpen
+        is synthetic; do not demand exchange evidence for it.
 
     - path: "src/calendar/presets/**/*.rs"
       instructions: |
@@ -145,11 +149,16 @@ reviews:
     - path: "src/calendar/exchange/**/*.rs"
       instructions: |
         Exchange, Exchange::ALL, as_str, Display, FromStr, and serde names come from
-        the single exchanges! table. Wire names are stable persisted data. Flag a
-        duplicate identity table, a removed/renamed variant, mapping bad input to
+        the single exchanges! table. Serde must encode the canonical string in every
+        format, never a derive-generated ordinal that variant insertion/removal can
+        silently remap. Wire names are stable persisted data. Flag a duplicate
+        identity table, an unreviewed removed/renamed variant, mapping bad input to
         Unknown, or weakening #[non_exhaustive]. A new row must also reach current
         routing, regional bulk membership where applicable, independent identity
         expectations, schedule documentation, and public venue tests.
+        For an explicitly authorized pre-1.0 removal, require a changelog migration
+        and rejection coverage for the retired name; do not request a compatibility
+        alias that would keep the removed identity parseable.
 
     - path: "src/calendar/bulk.rs"
       instructions: |

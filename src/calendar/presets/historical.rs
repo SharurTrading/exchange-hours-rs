@@ -58,7 +58,6 @@ pub fn hours_for_exchange_as_of(exch: Exchange, as_of: DateTime<Utc>) -> MarketH
         Exchange::MiaxSapphireOptions => us::miax_sapphire_options_profile_at(as_of),
         Exchange::MemxOptions => us::memx_options_profile_at(as_of),
         Exchange::Iex => us::iex_profile_at(as_of),
-        Exchange::IntelligentcrossIqx => us::intelligentcross_iqx_profile_at(as_of),
         Exchange::NyseAmerican => us::nyse_american_profile_at(as_of),
         Exchange::NyseNational => us::nyse_national_profile_at(as_of),
         Exchange::NyseTexas => us::nyse_texas_profile_at(as_of),

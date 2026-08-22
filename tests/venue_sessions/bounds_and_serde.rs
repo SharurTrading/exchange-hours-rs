@@ -79,11 +79,3 @@ fn exchange_serde_snake_case_binance_futures() {
     let rt: Exchange = serde_json::from_str(&json).unwrap();
     assert_eq!(rt, Exchange::BinanceFutures);
 }
-
-#[test]
-fn exchange_serde_snake_case_intelligentcross_iqx() {
-    let json = serde_json::to_string(&Exchange::IntelligentcrossIqx).unwrap();
-    assert_eq!(json, "\"intelligentcross_iqx\"");
-    let rt: Exchange = serde_json::from_str(&json).unwrap();
-    assert_eq!(rt, Exchange::IntelligentcrossIqx);
-}

@@ -18,11 +18,14 @@ and the rules any change to this repository must follow.
 - **LAW-PRIMARY-SOURCES** — every session time in a profile table is backed by a
   primary source (the exchange's own site, rulebook, notice, or regulator
   circular), cited in a comment next to the table. Secondary sources corroborate
-  only. A venue that merely coincides with another still gets its own named
+  only. Stable monitoring entry points live in
+  `docs/schedules/sources.md`; exact effective-date evidence stays beside the
+  table. A venue that merely coincides with another still gets its own named
   profile so a future divergence is a one-line edit.
 - **LAW-NO-FABRICATED-DATES** — a historical cutover exists only when a primary
   source states a **day-level** effective date. A real change without one is
-  documented as a known gap (see MEMX / MIAX Pearl in `presets/historical.rs`),
+  documented as a known gap (see IntelligentCross IQX and ICE Endex in their
+  venue modules under `src/calendar/schedules/`),
   never given an invented date. Amendment history is recorded back to
   **January 2010**; earlier changes are out of scope by design.
 
@@ -35,8 +38,8 @@ and the rules any change to this repository must follow.
   `Exchange` and return a `MarketHours` with no timestamp involved.
   Session rules are seconds-since-local-midnight in the venue's own IANA zone.
 - **Closes are end-exclusive.** An instant equal to a close is closed.
-- **`open_ssm > close_ssm` wraps** past local midnight — the only way a session
-  crosses a day boundary.
+- **`open_ssm >= close_ssm` wraps** into the next local day. Equal endpoints
+  encode one complete local-day span; omit a rule to express no session.
 - **DST bias is asymmetric on purpose**: opens resolve earliest, closes latest.
   Never "simplify" this to a single bias.
 - **Regular vs extended**: continuous trading is `regular`; auction call
@@ -51,21 +54,72 @@ and the rules any change to this repository must follow.
   minor releases, not breaking ones. Never remove that attribute, and never
   remove or rename a variant outside a major release.
 - `Exchange`, `Exchange::ALL`, and `Exchange::as_str` are generated from
-  **one table** (the `exchanges!` macro in `exchange.rs`): adding a venue is
+  **one table** (the `exchanges!` invocation in `exchange/mod.rs`, using the
+  macro in `exchange/define.rs`): adding a venue is
   one new row, and neither `ALL` nor the name table can omit it. The compiler
   then forces the remaining in-crate exhaustive match, `hours_for_exchange`
   in `presets/current.rs` (no catch-all arm — the hours decision). The same
   edit must also reach the region list in `bulk.rs` when a bulk builder
   covers the venue, and `ALL_EXCHANGES` + `EXCHANGE_VARIANT_COUNT` in
-  `tests/contract/session_invariants.rs` — the test suite's independent
-  expectation of the table's contents and order.
+  `tests/contract/session_invariants/identity_expectations.rs` — the test
+  suite's independent expectation of the table's contents and order.
 - One canonical `snake_case` name per venue, shared by serde, `as_str`,
   `Display`, and `FromStr`, and it is stable: a rename breaks persisted data.
   `FromStr` rejects unknown names with `ParseExchangeError` — never map bad
   input to `Exchange::Unknown`.
-- Production files stay under 300 lines (500 is a hard stop — split by operator
-  family, as `profiles/equities_eu/` does). Test files are exempt.
-- Profile tables are `static` so `MarketHours` can borrow them allocation-free.
+- Production files stay under 300 lines (500 is a hard stop — split by venue or
+  operator family under `schedules/`). Test files are exempt.
+- Schedule profile tables are `static` so `MarketHours` can borrow them
+  allocation-free.
+
+## Adding or revising a venue
+
+Treat the following as one change set. The repeated expectations in production,
+tests, and documentation are deliberate coverage fences; do not generate the
+handwritten test lists from production data.
+
+1. **Identity.** Add the canonical enum row in the `exchanges!` table, with a
+   stable `snake_case` wire name and public variant documentation. Never rename
+   an existing row as part of an hours correction.
+2. **Schedule data.** Add or revise the venue-owned static profile beside its
+   primary-source citations. Start from the venue's source-set IDs in
+   `docs/schedules/verification.md` and follow
+   `docs/schedules/updating.md`. Give a venue its own named profile even when
+   its hours currently coincide with another venue. Keep historical revisions
+   and their day-level effective-date sources with the same venue family.
+3. **Routing.** Update the no-catch-all `hours_for_exchange` match with an
+   explicit current-profile decision. Add point-in-time routing only for
+   primary-sourced revisions; document an unsourced gap instead of inventing a
+   date. A cross-zone or otherwise recurring selector also needs date-aware
+   `ExchangeCalendar` transition coverage.
+4. **Regional membership.** Add the venue to the appropriate `bulk.rs` region
+   list when a built-in bulk builder should include it, preserving that list's
+   documented stable order.
+5. **Independent contracts.** Update `ALL_EXCHANGES` and
+   `EXCHANGE_VARIANT_COUNT` in
+   `tests/contract/session_invariants/identity_expectations.rs`. Add every
+   observable dated profile change to `HISTORICAL_CUTOVERS` in
+   `tests/contract/session_invariants/historical_expectations.rs`, including
+   restoration boundaries for temporary schedules. Add a source-stated
+   intraday boundary to `HISTORICAL_INSTANT_CUTOVERS` instead of rounding it to
+   local midnight. For a wrap, record the local opening day (often Sunday for
+   a Monday trade-date change). These lists must remain handwritten so they
+   can catch production omissions.
+6. **Public-surface tests.** Add a per-venue baseline for the published open,
+   the instant before it, regular/extended classification, every lunch or
+   maintenance gap, the end-exclusive close, the weekend boundary, and the
+   serde form. Test both sides of every recorded cutover at venue-local
+   midnight. Put growing suites behind a thin top-level integration harness and
+   feature/venue submodules; shared fixtures may use only public APIs.
+7. **User-facing records.** Update the README Coverage counts and relevant
+   limitations, the venue row in `docs/schedules/verification.md`, and its
+   source sets when necessary. Advance the README repository cutoff only after
+   every real venue row has been reviewed through that date. Record a new venue
+   under `[Unreleased]` / **Added** or a schedule correction under **Fixed** in
+   `CHANGELOG.md`.
+8. **Verification.** Run the complete quality and MSRV commands below. A
+   focused venue test is useful while iterating, but it does not replace the
+   all-venue contracts.
 
 ## Lints and toolchain
 
@@ -78,7 +132,7 @@ and the rules any change to this repository must follow.
   variant, carries a doc comment.
 - **Suppressions are `#[expect(..., reason = "...")]`, never bare `#[allow]`**,
   and only where the lint is wrong for a stated reason (see the const-eval
-  `panic` in `presets/historical.rs`). Tests are exempt from the panic-family
+  `panic` in `schedules/timeline.rs`). Tests are exempt from the panic-family
   lints via the `allow-*-in-tests` switches in `clippy.toml`.
 - **Toolchain** is pinned in `rust-toolchain.toml` to the version the consuming
   platform builds with. That is the *build* toolchain; the *minimum supported*

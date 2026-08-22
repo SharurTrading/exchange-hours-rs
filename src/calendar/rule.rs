@@ -21,6 +21,18 @@ pub(crate) const SECONDS_PER_NORMAL_WEEK: u64 = 7 * SECONDS_PER_NORMAL_DAY;
 // Common weekday masks (Mon=0 .. Sun=6) used across presets.
 // Monday–Friday open days (no weekend trading)
 pub(crate) const MON_FRI: [bool; 7] = [true, true, true, true, true, false, false];
+// Monday only.
+pub(crate) const MON_ONLY: [bool; 7] = [true, false, false, false, false, false, false];
+// Monday-Thursday only.
+pub(crate) const MON_THU: [bool; 7] = [true, true, true, true, false, false, false];
+// Friday only.
+pub(crate) const FRI: [bool; 7] = [false, false, false, false, true, false, false];
+// Tuesday only.
+pub(crate) const TUE_ONLY: [bool; 7] = [false, true, false, false, false, false, false];
+// Tuesday-Friday only.
+pub(crate) const TUE_FRI: [bool; 7] = [false, true, true, true, true, false, false];
+// Sunday only.
+pub(crate) const SUN_ONLY: [bool; 7] = [false, false, false, false, false, false, true];
 // Open on Sunday and Mon–Thu (i.e., Sunday evening open, no Friday overnight open)
 pub(crate) const SUN_PLUS_MON_THU: [bool; 7] = [true, true, true, true, false, false, true];
 // Open on all seven weekdays.
@@ -30,8 +42,10 @@ pub(crate) const ALL_DAYS: [bool; 7] = [true, true, true, true, true, true, true
 ///
 /// - `days`: Monday=0 .. Sunday=6 mask; `true` enables the rule on that weekday.
 /// - `open_ssm` / `close_ssm`: seconds since local midnight in the exchange time zone.
-///   If `open_ssm <= close_ssm` the session is same-day; if `open_ssm > close_ssm`
-///   the session wraps into the next local day and closes at `close_ssm` there.
+///   If `open_ssm < close_ssm` the session is same-day. If
+///   `open_ssm >= close_ssm`, it wraps into the next local day and closes at
+///   `close_ssm` there; equal endpoints therefore encode exactly one complete
+///   local-day span anchored on each enabled opening day.
 /// - Close comparisons are end-exclusive: an instant exactly equal to `close_ssm`
 ///   is considered closed.
 ///
@@ -39,9 +53,8 @@ pub(crate) const ALL_DAYS: [bool; 7] = [true, true, true, true, true, true, true
 ///
 /// A well-formed rule has `open_ssm < 86_400`, `close_ssm <= 86_400` (the
 /// `86_400` sentinel closes a same-day session exactly at next local
-/// midnight), `open_ssm != close_ssm` (a zero-length session matches no
-/// instant), and at least one enabled weekday. [`SessionRule::new`] enforces
-/// all four; construction by struct literal or via `Deserialize` bypasses them,
+/// midnight), and at least one enabled weekday. [`SessionRule::new`] enforces
+/// all three; construction by struct literal or via `Deserialize` bypasses them,
 /// so validate untrusted input with [`SessionRule::validate`]. Queries stay
 /// total for out-of-domain values but their answers are unspecified — an
 /// out-of-range `open_ssm` silently degrades the rule.
@@ -63,8 +76,8 @@ impl SessionRule {
     /// # Errors
     ///
     /// Returns the first violated invariant: an out-of-range `open_ssm` or
-    /// `close_ssm`, a zero-length interval (`open_ssm == close_ssm`), or an
-    /// all-`false` weekday mask.
+    /// `close_ssm`, or an all-`false` weekday mask. Equal endpoints are valid
+    /// and represent one complete local-day span.
     pub fn new(days: [bool; 7], open_ssm: u32, close_ssm: u32) -> Result<Self, SessionRuleError> {
         let rule = Self {
             days,
@@ -93,13 +106,19 @@ impl SessionRule {
                 close_ssm: self.close_ssm,
             });
         }
-        if self.open_ssm == self.close_ssm {
-            return Err(SessionRuleError::EmptyInterval { ssm: self.open_ssm });
-        }
         if !self.days.iter().any(|&enabled| enabled) {
             return Err(SessionRuleError::NoEnabledDays);
         }
         Ok(())
+    }
+
+    /// Returns whether this session closes on the next local day.
+    ///
+    /// Equal endpoints return `true`: they represent one complete local-day
+    /// span anchored on each enabled opening day, not an empty interval.
+    #[must_use]
+    pub const fn wraps_to_next_day(&self) -> bool {
+        self.open_ssm >= self.close_ssm
     }
 }
 
@@ -124,11 +143,6 @@ pub enum SessionRuleError {
         /// The rejected close value.
         close_ssm: u32,
     },
-    /// `open_ssm == close_ssm`: a zero-length session matches no instant.
-    EmptyInterval {
-        /// The shared open/close value.
-        ssm: u32,
-    },
     /// Every weekday is disabled, so the rule can never apply.
     NoEnabledDays,
 }
@@ -141,12 +155,6 @@ impl core::fmt::Display for SessionRuleError {
             }
             Self::CloseOutOfRange { close_ssm } => {
                 write!(f, "close_ssm {close_ssm} is outside 0..=86400")
-            }
-            Self::EmptyInterval { ssm } => {
-                write!(
-                    f,
-                    "open_ssm and close_ssm are both {ssm}; the session is empty"
-                )
             }
             Self::NoEnabledDays => write!(f, "no weekday is enabled"),
         }
@@ -185,12 +193,12 @@ pub(crate) fn normal_week_rule_intervals(rule: &SessionRule) -> Vec<(u64, u64)> 
         let start = weekday
             .saturating_mul(SECONDS_PER_NORMAL_DAY)
             .saturating_add(u64::from(rule.open_ssm));
-        let duration = if rule.open_ssm <= rule.close_ssm {
-            u64::from(rule.close_ssm - rule.open_ssm)
-        } else {
+        let duration = if rule.wraps_to_next_day() {
             SECONDS_PER_NORMAL_DAY
                 .saturating_sub(u64::from(rule.open_ssm))
                 .saturating_add(u64::from(rule.close_ssm))
+        } else {
+            u64::from(rule.close_ssm - rule.open_ssm)
         };
         let end = start.saturating_add(duration);
         if end <= SECONDS_PER_NORMAL_WEEK {

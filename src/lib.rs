@@ -34,7 +34,7 @@
 //!
 //! // Monday mid-morning sits inside the regular session. Boundary queries
 //! // return `Option`: `None` means no matching session exists in the bounded
-//! // search horizon (e.g. a pre-go-live date) or the interval is zero.
+//! // search horizon (for example, on a pre-go-live date).
 //! let monday_10am = ct(2026, 4, 20, 10, 0);
 //! assert!(hours.is_open_regular(monday_10am));
 //! let (open, close) = session_bounds(&hours, monday_10am).expect("CME trades this week");
@@ -60,13 +60,16 @@
 //!
 //! # Model
 //!
-//! A venue is a [`MarketHours`] value: a time zone plus `regular` and `extended`
-//! [`SessionRule`] sets, each rule a weekday mask and an open/close pair in
-//! seconds since local midnight. Three conventions decide every answer —
+//! A fixed venue snapshot is a [`MarketHours`] value: a time zone plus `regular`
+//! and `extended` [`SessionRule`] sets, each rule a weekday mask and an
+//! open/close pair in seconds since local midnight. [`ExchangeCalendar`] is the
+//! additive date-aware surface for venues whose fixed grid changes over time.
+//! Three conventions decide every answer —
 //! weekdays are Monday = 0 through Sunday = 6; closes are **end-exclusive**, so
 //! the instant equal to a close is closed and adjacent sessions never overlap;
-//! and `open_ssm > close_ssm` marks a session that **wraps** past local midnight,
-//! which is how overnight and Globex-style trading days are expressed.
+//! and `open_ssm >= close_ssm` marks a session that **wraps** into the next local
+//! day. Equal endpoints encode one complete local-day span, which supports
+//! exact 24-hour sessions without making a venue always open.
 //!
 //! Ambiguous and skipped local times are resolved deterministically: opens take
 //! the earliest valid mapping, closes the latest, and a wall-clock inside a
@@ -76,17 +79,20 @@
 //!
 //! This is a **normal-week** calendar. Holidays, early closes, half-days, and
 //! product-level variations are deliberately out of scope — the internal
-//! `is_holiday` hook is a stub that always returns `false` — so the profiles are
-//! pragmatic exchange-level defaults, not contract-exact schedules. Verify
-//! specific contract rules before trading on them.
+//! `is_holiday` hook is a stub that always returns `false`. Each profile's
+//! documented venue, segment, or product-family scope therefore matters; verify
+//! the relevant contract and holiday rules before trading on it.
 //!
 //! # Entry points
 //!
-//! - [`hours_for_exchange`] / [`hours_for_exchange_as_of`] — venue → hours, now
-//!   or at a point in time.
-//! - [`session_profile`] / [`hours_for_market_hours_key`] — the shared futures
-//!   profiles, addressed by [`MarketHoursKey`] (product family) rather than by
-//!   venue.
+//! - [`hours_for_exchange`] / [`hours_for_exchange_as_of`] — venue → a
+//!   default fixed snapshot or the snapshot at a point in time.
+//! - [`calendar_for_exchange`] — a date-aware calendar that reselects the
+//!   applicable profile while scanning sessions and bar boundaries.
+//! - [`session_profile`] / [`hours_for_market_hours_key`] — fixed-current
+//!   futures profiles addressed by [`MarketHoursKey`] (product family) rather
+//!   than by venue; [`hours_for_market_hours_key_as_of`] selects a sourced
+//!   dated snapshot. Re-resolve when crossing a profile transition.
 //! - [`MarketHours::is_open`] and friends, [`session_bounds`],
 //!   [`next_session_after`], [`candle_start`], [`candle_end`].
 

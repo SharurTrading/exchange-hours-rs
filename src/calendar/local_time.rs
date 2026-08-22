@@ -15,24 +15,40 @@
 //! than [`chrono::TimeZone::from_local_datetime`]: picking a bias ad hoc is how
 //! fall-back hours produce sessions that appear to run backwards.
 
-use chrono::{Duration, LocalResult, NaiveDateTime, NaiveTime, TimeZone};
+use chrono::{Duration, LocalResult, NaiveDateTime, NaiveTime, Offset, TimeZone};
 use chrono_tz::Tz;
 
-use super::MarketHours;
+/// Preserves `t` whenever its local civil representation exists, moving only
+/// an otherwise-unrepresentable chrono edge inward before zone conversion.
+pub(crate) fn bounded_utc(
+    t: chrono::DateTime<chrono::Utc>,
+    tz: Tz,
+) -> chrono::DateTime<chrono::Utc> {
+    let offset_seconds = tz
+        .offset_from_utc_datetime(&t.naive_utc())
+        .fix()
+        .local_minus_utc();
+    if t.naive_utc()
+        .checked_add_signed(Duration::seconds(i64::from(offset_seconds)))
+        .is_some()
+    {
+        return t;
+    }
 
-/// Holiday hook. Always `false` today: the crate ships normal-week,
-/// exchange-level defaults and deliberately owns no holiday calendar.
-///
-/// Every query path routes its "may this session exist on this local date?"
-/// question through here, so landing a real calendar is a body change, not a
-/// control-flow change. The session-existence contract every caller
-/// implements: a **same-day** session on local day `D` exists iff `D` is not
-/// a holiday, and a **wrap** session opening on `D` and closing on `D+1`
-/// exists iff neither `D` nor `D+1` is a holiday. `is_open_with`,
-/// `session_bounds_with`, `next_session_after_with`, and the daily-close
-/// finder all apply these gates identically — the cross-query fence in
-/// `tests/contract/session_invariants.rs` is what keeps them from drifting.
-pub(crate) fn is_holiday(_hours: &MarketHours, _d: chrono::NaiveDate) -> bool {
+    // `FixedOffset` is strictly inside +/-24 hours. One day therefore makes
+    // the local representation valid while retaining the nearest
+    // representable local date for forward/backward scans.
+    let margin = Duration::days(1);
+    if offset_seconds.is_positive() {
+        t.checked_sub_signed(margin).unwrap_or(t)
+    } else {
+        t.checked_add_signed(margin).unwrap_or(t)
+    }
+}
+
+/// Holiday hook for the normal-week model; always `false` until an exception
+/// calendar is added. Query contexts own when this policy is consulted.
+pub(crate) const fn is_holiday(_day: chrono::NaiveDate) -> bool {
     false
 }
 
@@ -59,7 +75,10 @@ fn mk_local_biased(
     ssm: u32,
     bias: AmbigBias,
 ) -> chrono::DateTime<Tz> {
-    let base: NaiveDateTime = day.and_time(NaiveTime::MIN) + Duration::seconds(i64::from(ssm));
+    let base = day
+        .and_time(NaiveTime::MIN)
+        .checked_add_signed(Duration::seconds(i64::from(ssm)))
+        .unwrap_or(NaiveDateTime::MAX);
     match tz.from_local_datetime(&base) {
         LocalResult::Single(dt) => dt,
         LocalResult::Ambiguous(a, b) => match bias {
@@ -69,7 +88,9 @@ fn mk_local_biased(
         LocalResult::None => {
             // Step forward until we land on a representable instant (bounded).
             // 3_000 one-minute steps cover a 50-hour gap.
-            let mut trial = base + Duration::minutes(1);
+            let Some(mut trial) = base.checked_add_signed(Duration::minutes(1)) else {
+                return tz.from_utc_datetime(&base);
+            };
             for _ in 0..3_000 {
                 match tz.from_local_datetime(&trial) {
                     LocalResult::Single(dt) => return dt,
@@ -80,7 +101,10 @@ fn mk_local_biased(
                         };
                     }
                     LocalResult::None => {
-                        trial += Duration::minutes(1);
+                        let Some(next) = trial.checked_add_signed(Duration::minutes(1)) else {
+                            return tz.from_utc_datetime(&base);
+                        };
+                        trial = next;
                     }
                 }
             }

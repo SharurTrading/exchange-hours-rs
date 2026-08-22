@@ -1,0 +1,244 @@
+// SPDX-License-Identifier: MIT-0
+
+//! Named futures-session profile contracts.
+
+use super::prelude::*;
+
+// ---------------------------------------------------------------------------
+// Named futures session profiles.
+// ---------------------------------------------------------------------------
+
+#[test]
+fn all_market_hours_keys_return_profiles() {
+    let keys = [
+        MarketHoursKey::GlobexEquityIndex,
+        MarketHoursKey::GlobexEnergy,
+        MarketHoursKey::GlobexGrains,
+        MarketHoursKey::GlobexFx,
+        MarketHoursKey::CfeVix,
+        MarketHoursKey::Eurex,
+        MarketHoursKey::IceUs,
+        MarketHoursKey::Sgx,
+        MarketHoursKey::AlwaysOpen,
+    ];
+
+    for key in keys {
+        let profile = session_profile(key);
+        let total_rules = profile.regular.len() + profile.extended.len();
+        assert!(
+            total_rules > 0,
+            "{key:?} profile must have at least one session rule"
+        );
+    }
+}
+
+#[test]
+fn futures_session_profile_globex_equity_index_respects_daily_break() {
+    let profile = session_profile(MarketHoursKey::GlobexEquityIndex);
+
+    assert!(
+        profile.is_open(ct((2026, 4, 20), (15, 45, 0))),
+        "Globex equity-index profile is open during the 15:30-16:00 CT window"
+    );
+    assert!(
+        !profile.is_open(ct((2026, 4, 20), (16, 30, 0))),
+        "Globex equity-index profile is closed during the 16:00-17:00 CT maintenance break"
+    );
+    assert!(
+        profile.is_open(ct((2026, 4, 20), (17, 0, 0))),
+        "Globex equity-index profile reopens at 17:00 CT"
+    );
+}
+
+#[test]
+fn futures_session_profile_globex_energy_uses_wrap_session() {
+    let profile = session_profile(MarketHoursKey::GlobexEnergy);
+
+    assert!(
+        profile.is_open(ct((2026, 4, 20), (15, 0, 0))),
+        "Globex energy profile is open before the 16:00 CT daily close"
+    );
+    assert!(
+        !profile.is_open(ct((2026, 4, 20), (16, 30, 0))),
+        "Globex energy profile is closed during the 16:00-17:00 CT maintenance break"
+    );
+}
+
+#[test]
+fn futures_session_profile_globex_fx_matches_current_major_cme_fx_grid() {
+    let profile = session_profile(MarketHoursKey::GlobexFx);
+
+    assert!(
+        !profile.is_open(ct((2026, 4, 19), (16, 59, 59))),
+        "CME FX is closed before the Sunday 17:00 CT open"
+    );
+    assert!(
+        profile.is_open(ct((2026, 4, 19), (17, 0, 0))),
+        "CME FX opens Sunday at 17:00 CT"
+    );
+    assert!(
+        profile.is_open(ct((2026, 4, 20), (15, 59, 59))),
+        "CME FX remains open until the 16:00 CT daily break"
+    );
+    assert!(
+        !profile.is_open(ct((2026, 4, 20), (16, 0, 0))),
+        "CME FX close is end-exclusive at 16:00 CT"
+    );
+    assert!(
+        profile.is_open(ct((2026, 4, 20), (17, 0, 0))),
+        "CME FX reopens after the daily maintenance break"
+    );
+    assert!(
+        !profile.is_open(ct((2026, 4, 25), (12, 0, 0))),
+        "CME FX has a true weekend close"
+    );
+    assert_eq!(
+        serde_json::to_string(&MarketHoursKey::GlobexFx).expect("key serializes"),
+        r#""globex_fx""#
+    );
+}
+
+#[test]
+fn futures_session_profile_always_open_has_one_all_days_rule() {
+    let profile = session_profile(MarketHoursKey::AlwaysOpen);
+    let total_rules = profile.regular.len() + profile.extended.len();
+
+    assert_eq!(total_rules, 1, "AlwaysOpen should have exactly one rule");
+    assert!(
+        profile.extended.is_empty(),
+        "AlwaysOpen has no extended rules"
+    );
+    assert!(
+        !profile.has_daily_close,
+        "AlwaysOpen must not have a daily close"
+    );
+    assert!(
+        !profile.has_weekend_close,
+        "AlwaysOpen must not have a weekend close"
+    );
+
+    let rule = &profile.regular[0];
+    assert_eq!(
+        rule.days, [true; 7],
+        "AlwaysOpen rule must activate all days"
+    );
+    assert_eq!(rule.open_ssm, 0);
+    assert_eq!(rule.close_ssm, 24 * 3600);
+}
+
+#[test]
+fn dated_market_hours_keys_reuse_cme_group_and_cfe_histories() {
+    let equity_before = hours_for_market_hours_key_as_of(
+        MarketHoursKey::GlobexEquityIndex,
+        ct((2012, 11, 17), (12, 0, 0)),
+    );
+    let equity_after = hours_for_market_hours_key_as_of(
+        MarketHoursKey::GlobexEquityIndex,
+        ct((2012, 11, 18), (0, 0, 0)),
+    );
+    assert!(equity_before.is_open_extended(ct((2012, 11, 19), (16, 29, 59))));
+    assert!(!equity_before.is_open(ct((2012, 11, 19), (16, 30, 0))));
+    assert!(equity_after.is_open_extended(ct((2012, 11, 19), (15, 45, 0))));
+    assert!(!equity_after.is_open(ct((2012, 11, 19), (16, 15, 0))));
+
+    let equity_close_before = hours_for_market_hours_key_as_of(
+        MarketHoursKey::GlobexEquityIndex,
+        ct((2015, 9, 19), (12, 0, 0)),
+    );
+    let equity_close_after = hours_for_market_hours_key_as_of(
+        MarketHoursKey::GlobexEquityIndex,
+        ct((2015, 9, 20), (0, 0, 0)),
+    );
+    assert!(equity_close_before.is_open(ct((2015, 9, 21), (16, 14, 59))));
+    assert!(!equity_close_after.is_open(ct((2015, 9, 21), (16, 0, 0))));
+
+    let energy_before = hours_for_market_hours_key_as_of(
+        MarketHoursKey::GlobexEnergy,
+        ct((2015, 9, 19), (12, 0, 0)),
+    );
+    let energy_after = hours_for_market_hours_key_as_of(
+        MarketHoursKey::GlobexEnergy,
+        ct((2015, 9, 20), (0, 0, 0)),
+    );
+    assert!(energy_before.is_open(ct((2015, 9, 21), (16, 14, 59))));
+    assert!(!energy_after.is_open(ct((2015, 9, 21), (16, 0, 0))));
+    assert!(
+        !hours_for_market_hours_key(MarketHoursKey::GlobexEnergy)
+            .is_open(ct((2015, 9, 21), (16, 5, 0))),
+        "the pre-existing date-free function remains a current snapshot"
+    );
+
+    let grains_before = hours_for_market_hours_key_as_of(
+        MarketHoursKey::GlobexGrains,
+        ct((2012, 5, 19), (12, 0, 0)),
+    );
+    let grains_after = hours_for_market_hours_key_as_of(
+        MarketHoursKey::GlobexGrains,
+        ct((2012, 5, 20), (0, 0, 0)),
+    );
+    assert!(!grains_before.is_open(ct((2012, 5, 20), (17, 0, 0))));
+    assert!(grains_after.is_open_extended(ct((2012, 5, 20), (17, 0, 0))));
+
+    let cfe_before =
+        hours_for_market_hours_key_as_of(MarketHoursKey::CfeVix, ct((2010, 12, 9), (12, 0, 0)));
+    let cfe_after =
+        hours_for_market_hours_key_as_of(MarketHoursKey::CfeVix, ct((2010, 12, 10), (0, 0, 0)));
+    assert!(!cfe_before.is_open(ct((2010, 12, 10), (7, 20, 0))));
+    assert!(cfe_after.is_open_extended(ct((2010, 12, 10), (7, 20, 0))));
+    assert_eq!(cfe_after.exchange, Exchange::Unknown);
+
+    let cfe_weekday_queue_before =
+        hours_for_market_hours_key_as_of(MarketHoursKey::CfeVix, ct((2013, 10, 27), (12, 0, 0)));
+    let cfe_weekday_queue_after =
+        hours_for_market_hours_key_as_of(MarketHoursKey::CfeVix, ct((2013, 10, 28), (0, 0, 0)));
+    assert!(!cfe_weekday_queue_before.is_open(ct((2013, 10, 28), (15, 29, 0))));
+    assert!(cfe_weekday_queue_after.is_open_extended(ct((2013, 10, 28), (15, 29, 0))));
+
+    let cfe_sunday_queue_before =
+        hours_for_market_hours_key_as_of(MarketHoursKey::CfeVix, ct((2014, 6, 21), (12, 0, 0)));
+    let cfe_sunday_queue_after =
+        hours_for_market_hours_key_as_of(MarketHoursKey::CfeVix, ct((2014, 6, 22), (0, 0, 0)));
+    assert!(!cfe_sunday_queue_before.is_open(ct((2014, 6, 22), (16, 15, 0))));
+    assert!(!cfe_sunday_queue_after.is_open(ct((2014, 6, 22), (16, 14, 59))));
+    assert!(cfe_sunday_queue_after.is_open_extended(ct((2014, 6, 22), (16, 15, 0))));
+}
+
+#[test]
+fn dated_market_hours_keys_reuse_international_product_launches() {
+    let eurex_before =
+        hours_for_market_hours_key_as_of(MarketHoursKey::Eurex, cet((2018, 12, 9), (12, 0, 0)));
+    let eurex_after =
+        hours_for_market_hours_key_as_of(MarketHoursKey::Eurex, cet((2018, 12, 10), (0, 0, 0)));
+    assert!(!eurex_before.is_open(cet((2018, 12, 10), (5, 0, 0))));
+    assert!(eurex_after.is_open_extended(cet((2018, 12, 10), (1, 0, 0))));
+    assert!(eurex_after.is_open_regular(cet((2018, 12, 10), (5, 0, 0))));
+
+    let ice_before =
+        hours_for_market_hours_key_as_of(MarketHoursKey::IceUs, et((2017, 11, 6), (12, 0, 0)));
+    let ice_launch =
+        hours_for_market_hours_key_as_of(MarketHoursKey::IceUs, et((2017, 11, 7), (0, 0, 0)));
+    assert!(!ice_before.is_open(et((2017, 11, 7), (20, 0, 0))));
+    assert!(ice_launch.is_open_extended(et((2017, 11, 7), (20, 0, 0))));
+
+    let sgx_before =
+        hours_for_market_hours_key_as_of(MarketHoursKey::Sgx, sgt((2024, 7, 28), (12, 0, 0)));
+    let sgx_after =
+        hours_for_market_hours_key_as_of(MarketHoursKey::Sgx, sgt((2024, 7, 29), (0, 0, 0)));
+    assert!(!sgx_before.is_open(sgt((2024, 7, 29), (7, 25, 0))));
+    assert!(sgx_after.is_open_regular(sgt((2024, 7, 29), (7, 25, 0))));
+}
+
+#[test]
+fn keys_without_an_in_scope_revision_return_the_current_snapshot() {
+    let fx_2010 =
+        hours_for_market_hours_key_as_of(MarketHoursKey::GlobexFx, ct((2010, 1, 4), (12, 0, 0)));
+    let fx_current = hours_for_market_hours_key(MarketHoursKey::GlobexFx);
+    assert_eq!(fx_2010, fx_current);
+
+    let continuous_2010 =
+        hours_for_market_hours_key_as_of(MarketHoursKey::AlwaysOpen, utc((2010, 1, 4), (12, 0, 0)));
+    assert_eq!(
+        continuous_2010,
+        hours_for_market_hours_key(MarketHoursKey::AlwaysOpen)
+    );
+}

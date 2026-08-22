@@ -1,0 +1,363 @@
+// SPDX-License-Identifier: MIT-0
+
+//! Documentation fences for the schedule-review ledger.
+
+#![expect(
+    clippy::expect_used,
+    reason = "malformed repository-owned documentation must fail this contract test"
+)]
+
+#[path = "schedule_documentation/source_registry.rs"]
+mod source_registry;
+
+use chrono::NaiveDate;
+use exchange_hours::Exchange;
+use std::path::Path;
+
+const README: &str = include_str!("../README.md");
+const VERIFICATION: &str = include_str!("../docs/schedules/verification.md");
+const SOURCES: &str = include_str!("../docs/schedules/sources.md");
+const AUDIT: &str = include_str!("../docs/schedules/audit-2026-08-21.md");
+
+const EXPECTED_MARKET_HOURS_KEY_NAMES: [&str; 9] = [
+    "globex_equity_index",
+    "globex_energy",
+    "globex_grains",
+    "globex_fx",
+    "cfe_vix",
+    "eurex",
+    "ice_us",
+    "sgx",
+    "always_open",
+];
+
+const VALID_BASES: [&str; 6] = [
+    "Primary",
+    "Partial",
+    "Secondary",
+    "Pragmatic",
+    "Known issue",
+    "Synthetic",
+];
+
+fn repository_cutoff() -> &'static str {
+    const PREFIX: &str = "**Repository source-review cutoff:** `";
+    let line = VERIFICATION
+        .lines()
+        .find(|line| line.starts_with(PREFIX))
+        .expect("verification ledger must declare its repository cutoff");
+    line.strip_prefix(PREFIX)
+        .and_then(|value| value.strip_suffix('`'))
+        .expect("repository cutoff must be a single backtick-delimited ISO date")
+}
+
+fn exchange_rows() -> Vec<&'static str> {
+    let (_, exchanges) = VERIFICATION
+        .split_once("## Exchanges")
+        .expect("verification ledger must have an Exchanges section");
+    let (exchanges, _) = exchanges
+        .split_once("## `MarketHoursKey` profiles")
+        .expect("exchange table must end before MarketHoursKey profiles");
+
+    exchanges
+        .lines()
+        .filter(|line| line.starts_with("| `"))
+        .collect()
+}
+
+fn market_hours_key_rows() -> Vec<&'static str> {
+    let (_, profiles) = VERIFICATION
+        .split_once("## `MarketHoursKey` profiles")
+        .expect("verification ledger must have a MarketHoursKey profiles section");
+
+    profiles
+        .lines()
+        .filter(|line| line.starts_with("| `"))
+        .collect()
+}
+
+fn row_cells(row: &str) -> Vec<&str> {
+    row.trim_matches('|').split('|').map(str::trim).collect()
+}
+
+fn wire_name(row: &str) -> &str {
+    row_cells(row)[0]
+        .strip_prefix('`')
+        .and_then(|name| name.strip_suffix('`'))
+        .expect("wire names must be backtick-delimited")
+}
+
+fn owner_target(owner: &str) -> &str {
+    owner
+        .split_once("](")
+        .and_then(|(_, target)| target.strip_suffix(')'))
+        .expect("owner cell must contain one Markdown file link")
+}
+
+fn validated_source_link_count(text: &str) -> u16 {
+    let mut remainder = text;
+    let mut links = 0_u16;
+
+    while let Some((_, after_prefix)) = remainder.split_once("(sources.md#") {
+        let (anchor, after_link) = after_prefix
+            .split_once(')')
+            .expect("source-set link must close its destination");
+        let declaration = format!("<a id=\"{anchor}\"></a>");
+        assert_eq!(
+            SOURCES.matches(&declaration).count(),
+            1,
+            "source-set link must have exactly one registry anchor: {anchor}"
+        );
+        links = links.saturating_add(1);
+        remainder = after_link;
+    }
+
+    links
+}
+
+fn assert_source_links_resolve(source_cell: &str, row: &str) {
+    assert!(
+        validated_source_link_count(source_cell) > 0,
+        "ledger row must reference a source set: {row}"
+    );
+}
+
+#[test]
+fn verification_ledger_has_every_exchange_once_and_in_order() {
+    let rows = exchange_rows();
+    let documented = rows.iter().map(|row| wire_name(row));
+    let expected = Exchange::ALL.iter().map(|exchange| exchange.as_str());
+
+    assert_eq!(documented.collect::<Vec<_>>(), expected.collect::<Vec<_>>());
+}
+
+#[test]
+fn verification_ledger_has_every_market_hours_key_once_and_in_order() {
+    let documented = market_hours_key_rows()
+        .into_iter()
+        .map(wire_name)
+        .collect::<Vec<_>>();
+
+    assert_eq!(documented, EXPECTED_MARKET_HOURS_KEY_NAMES);
+}
+
+#[test]
+fn exchange_rows_have_complete_review_metadata() {
+    let cutoff = NaiveDate::parse_from_str(repository_cutoff(), "%Y-%m-%d")
+        .expect("repository cutoff must be an ISO calendar date");
+
+    for row in exchange_rows() {
+        let cells = row_cells(row);
+        assert_eq!(cells.len(), 6, "unexpected verification row shape: {row}");
+
+        let name = wire_name(row);
+        let basis = cells[3];
+        let reviewed = cells[4];
+        assert!(
+            VALID_BASES.contains(&basis),
+            "unrecognized verification basis: {row}"
+        );
+
+        if name == "unknown" {
+            assert_eq!(basis, "Synthetic", "unknown must remain synthetic");
+            assert_eq!(reviewed, "—", "synthetic profiles have no review date");
+        } else {
+            assert_ne!(
+                basis, "Synthetic",
+                "real exchange cannot be synthetic: {row}"
+            );
+            let reviewed = NaiveDate::parse_from_str(reviewed, "%Y-%m-%d")
+                .expect("every real exchange must have an ISO review date");
+            assert!(
+                reviewed >= cutoff,
+                "exchange review date predates repository cutoff: {row}"
+            );
+        }
+    }
+}
+
+#[test]
+fn market_hours_key_rows_have_complete_review_metadata() {
+    let cutoff = NaiveDate::parse_from_str(repository_cutoff(), "%Y-%m-%d")
+        .expect("repository cutoff must be an ISO calendar date");
+
+    for row in market_hours_key_rows() {
+        let cells = row_cells(row);
+        assert_eq!(cells.len(), 6, "unexpected verification row shape: {row}");
+
+        let name = wire_name(row);
+        let basis = cells[3];
+        let reviewed = cells[4];
+        assert!(
+            VALID_BASES.contains(&basis),
+            "unrecognized verification basis: {row}"
+        );
+
+        if name == "always_open" {
+            assert_eq!(basis, "Synthetic", "always_open must remain synthetic");
+            assert_eq!(reviewed, "—", "synthetic profiles have no review date");
+        } else {
+            assert_ne!(
+                basis, "Synthetic",
+                "real profile cannot be synthetic: {row}"
+            );
+            let reviewed = NaiveDate::parse_from_str(reviewed, "%Y-%m-%d")
+                .expect("every real MarketHoursKey profile must have an ISO review date");
+            assert!(
+                reviewed >= cutoff,
+                "MarketHoursKey review date predates repository cutoff: {row}"
+            );
+        }
+    }
+}
+
+#[test]
+fn every_market_hours_key_owner_and_source_link_resolves() {
+    let docs_dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("docs/schedules");
+
+    for row in market_hours_key_rows() {
+        let cells = row_cells(row);
+        assert_eq!(cells.len(), 6, "unexpected verification row shape: {row}");
+
+        let owner = owner_target(cells[1]);
+        assert!(
+            docs_dir.join(owner).is_file(),
+            "MarketHoursKey owner link does not resolve: {owner}"
+        );
+        assert_source_links_resolve(cells[2], row);
+    }
+}
+
+#[test]
+fn readme_and_review_dates_match_the_repository_cutoff() {
+    let cutoff = repository_cutoff();
+    let cutoff_date = NaiveDate::parse_from_str(cutoff, "%Y-%m-%d")
+        .expect("repository cutoff must be an ISO calendar date");
+    let readme_claim = format!("**Repository-wide review completed:** `{cutoff}`");
+
+    assert!(
+        README.contains(&readme_claim),
+        "README freshness claim must match the verification ledger"
+    );
+
+    for row in exchange_rows()
+        .into_iter()
+        .filter(|row| wire_name(row) != "unknown")
+    {
+        let cells = row_cells(row);
+        assert_eq!(cells.len(), 6, "unexpected verification row shape: {row}");
+        let reviewed = NaiveDate::parse_from_str(cells[4], "%Y-%m-%d")
+            .expect("every real exchange must have an ISO review date");
+        assert!(
+            reviewed >= cutoff_date,
+            "exchange review date predates repository cutoff: {row}"
+        );
+    }
+}
+
+#[test]
+fn readme_and_audit_quantify_assurance_from_the_ledger() {
+    let exchange_rows = exchange_rows();
+    let real_exchange_rows = exchange_rows
+        .iter()
+        .copied()
+        .filter(|row| wire_name(row) != "unknown")
+        .collect::<Vec<_>>();
+    let key_rows = market_hours_key_rows();
+    let real_key_rows = key_rows
+        .iter()
+        .copied()
+        .filter(|row| wire_name(row) != "always_open")
+        .collect::<Vec<_>>();
+
+    let basis_count =
+        |rows: &[&str], basis: &str| rows.iter().filter(|row| row_cells(row)[3] == basis).count();
+
+    let primary = basis_count(&real_exchange_rows, "Primary");
+    let partial = basis_count(&real_exchange_rows, "Partial");
+    let verified = primary + partial;
+    let secondary = basis_count(&exchange_rows, "Secondary");
+    let pragmatic = basis_count(&exchange_rows, "Pragmatic");
+    let known_issues = basis_count(&real_exchange_rows, "Known issue");
+    let synthetic = basis_count(&exchange_rows, "Synthetic");
+    let verified_keys =
+        basis_count(&real_key_rows, "Primary") + basis_count(&real_key_rows, "Partial");
+
+    let claims = [
+        format!(
+            "**Primary-source-verified current profiles:** `{verified} of {}`",
+            real_exchange_rows.len()
+        ),
+        format!(
+            "**Complete sourced history since January 2010:** `{primary} of {}`",
+            real_exchange_rows.len()
+        ),
+        format!(
+            "**Venue-specific profiles requiring reconciliation:** `{known_issues} of {}`",
+            real_exchange_rows.len()
+        ),
+        format!(
+            "**Primary-source-verified current key snapshots:** `{verified_keys} of {}`",
+            real_key_rows.len()
+        ),
+    ];
+
+    for claim in claims {
+        assert!(
+            README.contains(&claim),
+            "README assurance count drifted: {claim}"
+        );
+        assert!(AUDIT.contains(&claim), "dated audit count drifted: {claim}");
+    }
+
+    let exchange_distribution = format!(
+        "| {} `Exchange` identifiers | {primary} | {partial} | {secondary} | {pragmatic} | \
+         {known_issues} | {synthetic} |",
+        exchange_rows.len()
+    );
+    let key_distribution = format!(
+        "| {} `MarketHoursKey` values | {} | {} | {} | {} | {} | {} |",
+        key_rows.len(),
+        basis_count(&key_rows, "Primary"),
+        basis_count(&key_rows, "Partial"),
+        basis_count(&key_rows, "Secondary"),
+        basis_count(&key_rows, "Pragmatic"),
+        basis_count(&key_rows, "Known issue"),
+        basis_count(&key_rows, "Synthetic")
+    );
+    assert!(
+        AUDIT.contains(&exchange_distribution),
+        "dated audit exchange distribution drifted: {exchange_distribution}"
+    );
+    assert!(
+        AUDIT.contains(&key_distribution),
+        "dated audit key distribution drifted: {key_distribution}"
+    );
+
+    assert!(
+        README.contains("docs/schedules/audit-2026-08-21.md"),
+        "README must link the dated audit report"
+    );
+}
+
+#[test]
+fn every_ledger_source_link_has_a_registry_anchor() {
+    assert!(
+        validated_source_link_count(VERIFICATION) > 0,
+        "verification ledger must reference source sets"
+    );
+}
+
+#[test]
+fn every_exchange_owner_link_resolves() {
+    let docs_dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("docs/schedules");
+
+    for row in exchange_rows() {
+        let cells = row_cells(row);
+        let owner = owner_target(cells[1]);
+        assert!(
+            docs_dir.join(owner).is_file(),
+            "exchange owner link does not resolve: {owner}"
+        );
+    }
+}

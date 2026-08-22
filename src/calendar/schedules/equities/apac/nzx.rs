@@ -1,0 +1,83 @@
+// SPDX-License-Identifier: MIT-0
+
+//! New Zealand Exchange Main Board cash equities.
+
+use chrono_tz::Pacific;
+
+use super::super::StaticHoursProfile;
+use crate::calendar::SessionRule;
+use crate::calendar::rule::MON_FRI;
+
+// NZX Main Board: pre-open/order entry 08:30–10:00, continuous
+// 10:00–16:45, and pre-close/closing-auction orders 16:45–17:00. Both auction
+// uncrosses are randomized ±30 seconds around the nominal boundary; this
+// deterministic venue profile uses 10:00 and 17:00. Enquiry and Adjust do not
+// accept automatically matched orders and are excluded.
+// Sources:
+// https://www.nzx.com/learning/help-reference/trading-hours
+// https://www.nzx.com/learning/issuer-participant-resources/nzx-trading/anatomy-of-a-trading-day
+static NZX_REGULAR: &[SessionRule] = &[SessionRule {
+    days: MON_FRI,
+    open_ssm: 10 * 3600,
+    close_ssm: 16 * 3600 + 45 * 60,
+}];
+static NZX_EXTENDED: &[SessionRule] = &[
+    SessionRule {
+        days: MON_FRI,
+        open_ssm: 8 * 3600 + 30 * 60,
+        close_ssm: 10 * 3600,
+    },
+    SessionRule {
+        days: MON_FRI,
+        open_ssm: 16 * 3600 + 45 * 60,
+        close_ssm: 17 * 3600,
+    },
+];
+static NZX_EXTENDED_PRE_2020_04_06: &[SessionRule] = &[
+    SessionRule {
+        days: MON_FRI,
+        open_ssm: 9 * 3600,
+        close_ssm: 10 * 3600,
+    },
+    SessionRule {
+        days: MON_FRI,
+        open_ssm: 16 * 3600 + 45 * 60,
+        close_ssm: 17 * 3600,
+    },
+];
+pub(crate) static NZX_PROFILE: StaticHoursProfile = StaticHoursProfile {
+    tz: Pacific::Auckland,
+    regular: NZX_REGULAR,
+    extended: NZX_EXTENDED,
+    has_daily_close: true,
+    has_weekend_close: true,
+};
+
+// NZX moved pre-open 09:00 -> 08:30 effective 2020-04-06 and later made the
+// initially temporary change indefinite.
+// https://www.nzx.com/announcements/350919
+// https://www.nzx.com/announcements/353837
+pub(crate) static NZX_PROFILE_PRE_2020_04_06: StaticHoursProfile = StaticHoursProfile {
+    tz: Pacific::Auckland,
+    regular: NZX_REGULAR,
+    extended: NZX_EXTENDED_PRE_2020_04_06,
+    has_daily_close: true,
+    has_weekend_close: true,
+};
+
+use crate::calendar::schedules::timeline::{Revision, effective_date, local_date, select_revision};
+
+pub(crate) const CURRENT: &StaticHoursProfile = &NZX_PROFILE;
+
+static REVISIONS: &[Revision] = &[Revision {
+    effective: effective_date(2020, 4, 6),
+    profile: &NZX_PROFILE,
+}];
+
+pub(crate) fn profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {
+    select_revision(
+        local_date(as_of, CURRENT.tz),
+        &NZX_PROFILE_PRE_2020_04_06,
+        REVISIONS,
+    )
+}

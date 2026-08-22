@@ -1,0 +1,134 @@
+<!-- SPDX-License-Identifier: MIT-0 -->
+
+# Architecture
+
+`exchange-hours` separates identity, sourced schedule data, schedule selection,
+and time queries. That separation is intentional: adding a venue should not
+require touching an algorithm, and adding a query should not require knowing
+which venues have historical or seasonal rules.
+
+## Data flow
+
+```text
+Exchange
+   │
+   ├─ presets/current.rs ───────────────┐
+   └─ presets/historical.rs ────────────┤
+                                       ▼
+                         schedules/<family>/<venue>.rs
+                         static tables + sources + revisions
+                                       │
+                                       ▼
+                                  MarketHours
+                                       │
+                      ┌────────────────┴────────────────┐
+                      │                                 │
+               fixed snapshot                  ExchangeCalendar
+                      │                       date-aware selection
+                      └────────────────┬────────────────┘
+                                       ▼
+                              query/ shared engine
+                         sessions, status, bars, periods
+```
+
+Both public query surfaces use the same private engine. A fixed
+`MarketHours` is borrowed exactly as supplied by the caller. An
+`ExchangeCalendar` reselects a static profile for every candidate venue-local
+opening day, which is required for historical cutovers, wrap sessions, and the
+B3/BMV New York offset rules.
+
+## Source tree
+
+```text
+src/calendar/
+  exchange/             Exchange table, canonical names, parsing
+  exchange_calendar/    Date-aware value and its public method adapters
+  query/                One private implementation of every query algorithm
+  schedules/            Sourced static rule tables and venue-local revisions
+    equities/           Geographic folders are navigation only
+    futures/            Operator/product-family tables where genuinely shared
+    profile.rs          StaticHoursProfile and allocation-free adapter
+    timeline.rs         Ordinary dated revisions and cross-zone helpers
+  presets/
+    current.rs          One exhaustive Exchange -> current profile match
+    historical.rs       Point-in-time routing and documented history gaps
+  hours.rs              MarketHours value and fixed-snapshot method adapters
+  session.rs            Public fixed-session free-function adapters
+  candle.rs             Public fixed-candle free-function adapters
+  local_time.rs         The only local-wall-time -> UTC resolver
+  rule.rs               SessionRule and SessionKind values
+  resolution.rs         CalendarResolution value
+  bulk.rs               Deliberate regional membership lists
+```
+
+Most modules are private and the crate root re-exports the stable public API.
+Internal folders can therefore evolve without changing downstream import paths.
+
+## Schedule ownership
+
+A venue module owns:
+
+- literal `SessionRule` slices and `StaticHoursProfile` values;
+- the primary-source comments supporting every literal and the exact venue,
+  segment, or product-family scope those literals describe;
+- day-level effective dates and its `profile_at` selector, when it has history;
+- a current-profile pointer used by the exhaustive current preset.
+
+The repeatable evidence workflow is documented in
+[Updating exchange schedules](docs/schedules/updating.md). The
+[verification ledger](docs/schedules/verification.md) maps every public venue
+to its owner and source-set IDs; the [source registry](docs/schedules/sources.md)
+normalizes stable monitoring entry points. Exact dated evidence remains beside
+the literals it proves.
+
+Use an operator-family module only when schedules genuinely share sourced rule
+data. Mere equality today is not enough: unrelated venues retain named profiles
+so one can diverge without untangling another.
+
+Ordinary histories are ascending static `Revision` timelines. Temporary regimes
+are a start row followed by a restoration row. B3 and BMV keep custom selectors
+because their current grids depend on the UTC-offset relationship with New York;
+those selectors still return the same static profile type.
+
+## Deliberate independent fences
+
+Some repeated wiring is a correctness check, not architecture debt. Keep these
+independent:
+
+- the `Exchange` declaration/name table;
+- the exhaustive match in `presets/current.rs`;
+- regional membership in `bulk.rs`;
+- the handwritten exchange list/count and historical cutover tables in the
+  integration contracts.
+
+This means a new venue is intentionally not a literal one-file change. Its
+schedule and future amendments have one owner module, while the compiler and
+independent tests force explicit product and coverage decisions. The complete
+checklist lives in [AGENTS.md](AGENTS.md#adding-or-revising-a-venue).
+
+## Query invariants
+
+`query/` has one private concrete context with two sources: fixed and
+date-aware. Do not add a second implementation for a new public facade. Extend
+the private source enum only when a genuinely different source of schedules is
+needed.
+
+The shared engine must preserve:
+
+- UTC timestamps at every public boundary;
+- end-exclusive closes;
+- equal rule endpoints as one complete local-day session, never an empty rule;
+- opening-day selection for wrap and future-session scans;
+- earliest resolution for opens and latest resolution for closes;
+- bounded, total behavior at Chrono's minimum and maximum instants;
+- `None` for unavailable boundaries rather than fabricated intervals.
+
+## Tests
+
+Integration-test roots are thin harnesses. Growing suites live in same-named
+directories and are split by venue or behavior. Shared fixtures in
+`tests/support/` use only the public crate surface, preserving TEST-LAYOUT.
+
+The independent all-exchange and all-cutover contracts should never import
+production schedule tables. Their duplication is what detects missing wiring,
+wrong zones, or a selector that skipped a historical regime.

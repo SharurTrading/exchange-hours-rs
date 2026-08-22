@@ -3,17 +3,18 @@
 //! The bar interval a candle-boundary query is asked about.
 //!
 //! Two families live in one enum because callers select between them at
-//! runtime: fixed-grid intraday intervals, whose boundaries are arithmetic
-//! clamped to the enclosing session, and calendar periods, whose boundaries come
-//! from the venue's session closes rather than from any fixed grid. See
-//! [`super::candle`] for which family each variant takes.
+//! runtime: arithmetic intraday intervals and calendar periods, whose boundaries
+//! come from the venue's session closes rather than from any fixed grid.
+//! Minute/hour bars are clamped to the enclosing session; second bars are a
+//! pure checked offset. See [`super::candle`] for the exact behavior.
 
 use serde::{Deserialize, Serialize};
 
 /// Bar resolution / time interval for candle-boundary computations.
 ///
-/// Intraday variants carry a positive interval count; [`candle_end`](super::candle_end)
-/// steps by that interval, clamped to the enclosing session close.
+/// Intraday variants carry a positive interval count. Minute/hour bars returned
+/// by [`candle_end`](super::candle_end) are clamped to the enclosing session;
+/// second bars are a pure checked offset and do not consult market hours.
 /// [`CalendarResolution::Daily`], [`CalendarResolution::Weekly`],
 /// and [`CalendarResolution::Monthly`] resolve to canonical session-period
 /// boundaries instead of a fixed grid.

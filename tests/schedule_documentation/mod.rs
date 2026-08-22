@@ -284,6 +284,7 @@ fn readme_and_review_dates_match_the_repository_cutoff() {
         "README freshness claim must match the verification ledger"
     );
 
+    let mut minimum_reviewed: Option<NaiveDate> = None;
     for row in exchange_rows()
         .into_iter()
         .filter(|row| wire_name(row) != "unknown")
@@ -296,7 +297,14 @@ fn readme_and_review_dates_match_the_repository_cutoff() {
             reviewed >= cutoff_date,
             "exchange review date predates repository cutoff: {row}"
         );
+        minimum_reviewed =
+            Some(minimum_reviewed.map_or(reviewed, |earliest| earliest.min(reviewed)));
     }
+    assert_eq!(
+        minimum_reviewed,
+        Some(cutoff_date),
+        "repository cutoff must equal the oldest non-synthetic Exchange review date"
+    );
 }
 
 #[test]

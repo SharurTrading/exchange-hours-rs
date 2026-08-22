@@ -2,7 +2,7 @@
 
 [package]
 name = "exchange-hours"
-version = "0.2.2"
+version = "1.0.0"
 edition = "2024"
 # Deliberately conservative: the language floor is 1.88 (the `let`-chains this
 # crate uses) but 1.95 is what consumers are expected to be on. Verified by the
@@ -15,17 +15,17 @@ documentation = "https://docs.rs/exchange-hours"
 readme = "README.md"
 keywords = ["exchange", "trading", "market-hours", "calendar", "finance"]
 categories = ["date-and-time", "finance"]
-# Packaged crates carry the library and its proof, nothing else: CI config, lint
-# and dependency policy, and the toolchain pin are repository concerns that a
-# consumer never reads. `rust-toolchain.toml` in particular would only confuse —
-# it governs this repo's own builds, not a dependent's.
+# Packaged crates carry the library, its evidence, and the maintenance laws
+# linked by those documents. CI config, lint/dependency policy, and the
+# toolchain pin are repository concerns that a consumer never reads.
+# `rust-toolchain.toml` in particular would only confuse—it governs this
+# repo's own builds, not a dependent's.
 exclude = [
     ".coderabbit.yaml",
     ".github/",
     "rust-toolchain.toml",
     "clippy.toml",
     "deny.toml",
-    "AGENTS.md",
 ]
 
 [lib]

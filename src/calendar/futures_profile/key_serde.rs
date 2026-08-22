@@ -1,79 +1,144 @@
 // SPDX-License-Identifier: MIT-0
 
-//! Stable canonical-string serde for [`MarketHoursKey`].
+//! The single declarative source for market-hours keys and canonical names.
 
-use core::fmt;
+/// Generates `MarketHoursKey`, `MarketHoursKey::ALL`, `MarketHoursKey::as_str`,
+/// and its serde implementations from one variant table, so none can drift.
+macro_rules! market_hours_keys {
+    (
+        $(#[$enum_meta:meta])*
+        $vis:vis enum $name:ident {
+            $(
+                $(#[$variant_meta:meta])*
+                $variant:ident => $canonical:literal
+            ),+ $(,)?
+        }
+    ) => {
+        $(#[$enum_meta])*
+        $vis enum $name {
+            $(
+                $(#[$variant_meta])*
+                $variant,
+            )+
+        }
 
-use serde::de::{Error, Visitor};
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
+        impl $name {
+            /// Every key, in declaration (and therefore [`Ord`]) order.
+            ///
+            /// This enumerates the variants in the crate version a caller
+            /// compiled against. The enum is `#[non_exhaustive]`, so later
+            /// minor releases may add entries.
+            $vis const ALL: &'static [$name] = &[$($name::$variant,)+];
 
-use super::MarketHoursKey;
-
-macro_rules! market_hours_key_names {
-    ($($variant:ident => $canonical:literal),+ $(,)?) => {
-        const EXPECTED: &[&str] = &[$($canonical,)+];
-
-        const fn canonical_name(key: MarketHoursKey) -> &'static str {
-            match key {
-                $(MarketHoursKey::$variant => $canonical,)+
+            /// The key's stable canonical `snake_case` name.
+            ///
+            /// This is the same string serde writes, [`Display`](core::fmt::Display)
+            /// renders, and [`FromStr`](core::str::FromStr) accepts.
+            #[must_use]
+            $vis const fn as_str(self) -> &'static str {
+                match self {
+                    $($name::$variant => $canonical,)+
+                }
             }
         }
 
-        fn from_canonical_name<E>(value: &str) -> Result<MarketHoursKey, E>
-        where
-            E: Error,
-        {
-            match value {
-                $($canonical => Ok(MarketHoursKey::$variant),)+
-                _ => Err(E::unknown_variant(value, EXPECTED)),
+        impl core::fmt::Display for $name {
+            fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+                f.write_str(self.as_str())
+            }
+        }
+
+        impl core::str::FromStr for $name {
+            type Err = ParseMarketHoursKeyError;
+
+            /// Parses the exact canonical `snake_case` name returned by
+            /// `as_str`.
+            ///
+            /// An unrecognized name is an error; matching is case-sensitive.
+            fn from_str(input: &str) -> Result<Self, Self::Err> {
+                match input {
+                    $($canonical => Ok($name::$variant),)+
+                    _ => Err(ParseMarketHoursKeyError::new(input)),
+                }
+            }
+        }
+
+        impl serde::Serialize for $name {
+            fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+            where
+                S: serde::Serializer,
+            {
+                serializer.serialize_str(self.as_str())
+            }
+        }
+
+        impl<'de> serde::Deserialize<'de> for $name {
+            fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct CanonicalNameVisitor;
+
+                impl<'de> serde::de::Visitor<'de> for CanonicalNameVisitor {
+                    type Value = $name;
+
+                    fn expecting(
+                        &self,
+                        formatter: &mut core::fmt::Formatter<'_>,
+                    ) -> core::fmt::Result {
+                        formatter.write_str("a canonical market-hours key")
+                    }
+
+                    fn visit_str<E>(self, value: &str) -> Result<Self::Value, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                        const EXPECTED: &[&str] = &[$($canonical,)+];
+
+                        match value {
+                            $($canonical => Ok($name::$variant),)+
+                            _ => Err(E::unknown_variant(value, EXPECTED)),
+                        }
+                    }
+                }
+
+                deserializer.deserialize_str(CanonicalNameVisitor)
             }
         }
     };
 }
 
-market_hours_key_names! {
-    GlobexEquityIndex => "globex_equity_index",
-    GlobexEnergy => "globex_energy",
-    GlobexGrains => "globex_grains",
-    GlobexFx => "globex_fx",
-    CfeVix => "cfe_vix",
-    Eurex => "eurex",
-    IceUs => "ice_us",
-    Sgx => "sgx",
-    AlwaysOpen => "always_open",
+pub(super) use market_hours_keys;
+
+/// The error [`MarketHoursKey`](super::MarketHoursKey)'s
+/// [`FromStr`](core::str::FromStr) implementation returns for an unknown name.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ParseMarketHoursKeyError {
+    input: Box<str>,
 }
 
-impl Serialize for MarketHoursKey {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        serializer.serialize_str(canonical_name(*self))
-    }
-}
-
-impl<'de> Deserialize<'de> for MarketHoursKey {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        struct CanonicalNameVisitor;
-
-        impl Visitor<'_> for CanonicalNameVisitor {
-            type Value = MarketHoursKey;
-
-            fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-                formatter.write_str("a canonical market-hours key")
-            }
-
-            fn visit_str<E>(self, value: &str) -> Result<Self::Value, E>
-            where
-                E: Error,
-            {
-                from_canonical_name(value)
-            }
+impl ParseMarketHoursKeyError {
+    pub(super) fn new(input: &str) -> Self {
+        Self {
+            input: input.into(),
         }
+    }
 
-        deserializer.deserialize_str(CanonicalNameVisitor)
+    /// The string that failed to parse.
+    #[must_use]
+    pub fn input(&self) -> &str {
+        &self.input
     }
 }
+
+impl core::fmt::Display for ParseMarketHoursKeyError {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        write!(
+            f,
+            "{:?} is not a known market-hours key; expected a canonical snake_case name",
+            self.input
+        )
+    }
+}
+
+impl std::error::Error for ParseMarketHoursKeyError {}

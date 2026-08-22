@@ -27,9 +27,10 @@ expiry date and does not promise that an exchange will remain unchanged after
 that day.
 
 The repository source-review cutoff is the oldest `Reviewed on` value among
-real exchange rows. A partial review advances only the affected rows. Advance
-the README cutoff only after every real exchange row has been reviewed through
-the new date. `Unknown` is synthetic and is excluded from that calculation.
+non-synthetic `Exchange` rows. A partial review advances only the affected
+rows. Advance the README cutoff only after every non-synthetic `Exchange` row
+has been reviewed through the new date. `Unknown` is synthetic and is excluded
+from that calculation.
 
 The evidence basis does not improve merely because a row was reviewed:
 
@@ -129,13 +130,27 @@ on consecutive days; omit the rule when no session exists.
 
 Future-effective notices can be encoded immediately when fully sourced. The
 row's review date is still the day the evidence was checked, not the notice's
-effective date.
+effective date. When an announced launch remains conditional on regulatory or
+infrastructure readiness, label the encoded revision as an announced plan and
+keep it below until the operator confirms that every condition has been met.
 
 ### Pending effective-date confirmations
 
+- **Nasdaq — 2026-12-06:** [ETA2026-46](https://www.nasdaqtrader.com/TraderNews.aspx?id=ETA2026-46)
+  announces the Night Session date, while [Nasdaq Equity 1](https://listingcenter.nasdaq.com/assets/RuleBook/Nasdaq/rules/Nasdaq%20Equity%201.html)
+  conditions commencement on Equity Data Plan readiness and a later Nasdaq
+  readiness filing. Recheck that filing and move the revision if it changes the
+  launch.
+- **Cboe EDGX — 2026-12-06:** the [opening-process specification](https://www.cboe.com/document/tech-spec/document/technical-specifications/cboe-titanium-u.s.-equities-opening-process)
+  announces the first overnight opening for the 2026-12-07 business date, but
+  [SR-CboeEDGX-2026-019 Amendment No. 1](https://cdn.cboe.com/resources/regulation/rule_filings/pending/2026/SR-CboeEDGX-2026-019-Amendment-No-1.pdf)
+  conditions commencement on regulatory completion, Equity Data Plan readiness,
+  and a later EDGX readiness filing. Move the revision if those conditions
+  change the launch.
 - **FINRA TRFs — 2026-12-06:** recheck the Securities Information Processor
-  (SIP) Amendment launch before this date. The modeled Sunday-through-Friday
-  reporting regime is conditional on that rollout; if the SIP implementation
+  (SIP) Amendment launch against [SR-FINRA-2026-015](https://www.finra.org/sites/default/files/2026-07/SR-FINRA-2026-015.pdf)
+  before this date. The modeled Sunday-through-Friday reporting regime is the
+  announced plan and is conditional on that rollout; if the SIP implementation
   moves, move the Carteret, Chicago, and NYSE TRF revisions with it.
 
 ## 4. Implement in the owner module
@@ -163,7 +178,7 @@ After the comparison is complete:
    status, and scope note.
 2. Add any newly found gap rather than hiding it behind a stronger status.
 3. Advance the repository cutoff in [verification.md](verification.md) and the
-   README only if every real exchange row has reached that date.
+   README only if every non-synthetic `Exchange` row has reached that date.
 4. For a repository-wide review, create a new dated audit report, update the
    README link, and update the documentation contract's included audit path.
    The contract derives Primary, Partial, Pragmatic, and Known-issue counts from

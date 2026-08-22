@@ -73,8 +73,8 @@ impl MarketHours {
     /// `D` is not a holiday, and a wrap session opening on `D` exists iff
     /// neither `D` nor `D+1` is one. This predicate and
     /// [`session_bounds_with`](super::session_bounds_with) share the same
-    /// containing-session resolver, so their answers cannot drift once a real
-    /// holiday calendar lands (today the hook is a stub returning `false`).
+    /// containing-session resolver, so their answers cannot drift. Holidays are
+    /// outside this normal-week model, and its internal policy returns `false`.
     #[must_use]
     pub fn is_open_with(&self, t: DateTime<Utc>, kind: SessionKind) -> bool {
         status::is_open_with(&QueryContext::fixed(self), t, kind)

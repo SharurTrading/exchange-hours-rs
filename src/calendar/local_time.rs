@@ -46,8 +46,8 @@ pub(crate) fn bounded_utc(
     }
 }
 
-/// Holiday hook for the normal-week model; always `false` until an exception
-/// calendar is added. Query contexts own when this policy is consulted.
+/// Holiday policy for the normal-week model; exceptions are deliberately out
+/// of scope, so it always returns `false`.
 pub(crate) const fn is_holiday(_day: chrono::NaiveDate) -> bool {
     false
 }

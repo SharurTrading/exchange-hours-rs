@@ -116,10 +116,13 @@ fn edgx_early_session_started_0700_before_2021_03_08() {
 
 #[test]
 fn edgx_overnight_session_starts_on_the_night_before_2026_12_07() {
-    // Cboe's opening-process specification makes 21:00–04:00 ET trading
-    // effective for business date 2026-12-07. The first observable opening is
-    // therefore Sunday 2026-12-06 at 21:00 ET.
+    // Cboe's opening-process specification announces 21:00–04:00 ET trading
+    // for business date 2026-12-07. The first observable opening is therefore
+    // Sunday 2026-12-06 at 21:00 ET. Amendment No. 1 conditions commencement
+    // on regulatory completion, data-plan readiness, and a later EDGX filing,
+    // so this contract covers the announced profile.
     // https://www.cboe.com/document/tech-spec/document/technical-specifications/cboe-titanium-u.s.-equities-opening-process
+    // https://cdn.cboe.com/resources/regulation/rule_filings/pending/2026/SR-CboeEDGX-2026-019-Amendment-No-1.pdf
     let fixed = hours_for_exchange(Exchange::CboeEdgx);
     assert!(!fixed.is_open(et((2026, 12, 6), (21, 0, 0))));
 

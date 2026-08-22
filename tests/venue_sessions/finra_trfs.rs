@@ -82,8 +82,9 @@ fn assert_2026_overnight_cutover(exchange: Exchange) {
 // TRF moved from 08:00 to 04:00 ET on 2026-03-30. It identifies 09:30–16:00 as
 // regular hours and the 04:00–09:30 / 16:00–20:00 windows as outside RTH.
 // https://www.finra.org/rules-guidance/notices/25-15
-// SR-FINRA-2026-015 schedules the Sunday-through-Friday regime for 2026-12-06,
-// conditional on the SIP Amendment launching then.
+// SR-FINRA-2026-015 announces the Sunday-through-Friday regime for 2026-12-06,
+// conditional on the SIP Amendment launching then; these contracts cover that
+// announced profile.
 // https://www.finra.org/sites/default/files/2026-07/SR-FINRA-2026-015.pdf
 
 #[test]

@@ -5,25 +5,38 @@
 use super::prelude::*;
 use serde_test::{Configure, Token, assert_de_tokens_error, assert_tokens};
 
+const EXPECTED_MARKET_HOURS_KEYS: &[(MarketHoursKey, &str)] = &[
+    (MarketHoursKey::GlobexEquityIndex, "globex_equity_index"),
+    (MarketHoursKey::GlobexEnergy, "globex_energy"),
+    (MarketHoursKey::GlobexGrains, "globex_grains"),
+    (MarketHoursKey::GlobexFx, "globex_fx"),
+    (MarketHoursKey::CfeVix, "cfe_vix"),
+    (MarketHoursKey::Eurex, "eurex"),
+    (MarketHoursKey::IceUs, "ice_us"),
+    (MarketHoursKey::Sgx, "sgx"),
+    (MarketHoursKey::AlwaysOpen, "always_open"),
+];
+
 // ---------------------------------------------------------------------------
 // Named futures session profiles.
 // ---------------------------------------------------------------------------
 
 #[test]
-fn all_market_hours_keys_return_profiles() {
-    let keys = [
-        MarketHoursKey::GlobexEquityIndex,
-        MarketHoursKey::GlobexEnergy,
-        MarketHoursKey::GlobexGrains,
-        MarketHoursKey::GlobexFx,
-        MarketHoursKey::CfeVix,
-        MarketHoursKey::Eurex,
-        MarketHoursKey::IceUs,
-        MarketHoursKey::Sgx,
-        MarketHoursKey::AlwaysOpen,
-    ];
+fn market_hours_key_all_matches_the_independent_expected_list() {
+    let expected_keys = EXPECTED_MARKET_HOURS_KEYS
+        .iter()
+        .map(|&(key, _name)| key)
+        .collect::<Vec<_>>();
+    assert_eq!(MarketHoursKey::ALL, expected_keys);
+    assert!(
+        MarketHoursKey::ALL.windows(2).all(|pair| pair[0] < pair[1]),
+        "MarketHoursKey::ALL must stay in declaration/Ord order"
+    );
+}
 
-    for key in keys {
+#[test]
+fn all_market_hours_keys_return_profiles() {
+    for &key in MarketHoursKey::ALL {
         let profile = session_profile(key);
         let total_rules = profile.regular.len() + profile.extended.len();
         assert!(
@@ -35,21 +48,23 @@ fn all_market_hours_keys_return_profiles() {
 
 #[test]
 fn every_market_hours_key_uses_its_canonical_string_in_every_serde_format() {
-    let keys = [
-        (MarketHoursKey::GlobexEquityIndex, "globex_equity_index"),
-        (MarketHoursKey::GlobexEnergy, "globex_energy"),
-        (MarketHoursKey::GlobexGrains, "globex_grains"),
-        (MarketHoursKey::GlobexFx, "globex_fx"),
-        (MarketHoursKey::CfeVix, "cfe_vix"),
-        (MarketHoursKey::Eurex, "eurex"),
-        (MarketHoursKey::IceUs, "ice_us"),
-        (MarketHoursKey::Sgx, "sgx"),
-        (MarketHoursKey::AlwaysOpen, "always_open"),
-    ];
-
-    for (key, name) in keys {
+    for &(key, name) in EXPECTED_MARKET_HOURS_KEYS {
         assert_tokens(&key.readable(), &[Token::Str(name)]);
         assert_tokens(&key.compact(), &[Token::Str(name)]);
+        assert_eq!(key.as_str(), name, "{key:?}: canonical name drifted");
+        assert_eq!(key.to_string(), name, "{key:?}: Display drifted");
+        assert_eq!(name.parse::<MarketHoursKey>(), Ok(key));
+    }
+}
+
+#[test]
+fn market_hours_key_from_str_rejects_noncanonical_names() {
+    for input in ["", "EUREX", "globex-energy", "sgx ", "unknown"] {
+        let error: ParseMarketHoursKeyError = input
+            .parse::<MarketHoursKey>()
+            .expect_err("noncanonical key must be rejected");
+        assert_eq!(error.input(), input);
+        assert!(!error.to_string().is_empty());
     }
 }
 

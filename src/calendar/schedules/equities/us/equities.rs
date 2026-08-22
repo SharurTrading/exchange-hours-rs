@@ -11,14 +11,14 @@ use crate::calendar::rule::{MON_FRI, SUN_PLUS_MON_THU};
 /// Reg NMS regular-hours rule set: 09:30–16:00 ET, Monday–Friday.
 ///
 /// Shared by the venue-owned US-equity profiles without allocation.
-pub static US_EQUITY_REGULAR: &[SessionRule] = &[SessionRule {
+pub(crate) static US_EQUITY_REGULAR: &[SessionRule] = &[SessionRule {
     days: MON_FRI,
     open_ssm: 9 * 3600 + 30 * 60,
     close_ssm: 16 * 3600,
 }];
 
 /// Reg NMS extended-hours rule set: 04:00–09:30 and 16:00–20:00 ET.
-pub static US_EQUITY_EXTENDED: &[SessionRule] = &[
+pub(crate) static US_EQUITY_EXTENDED: &[SessionRule] = &[
     SessionRule {
         days: MON_FRI,
         open_ssm: 4 * 3600,
@@ -118,12 +118,15 @@ pub(crate) static NASDAQ_PSX_PROFILE: StaticHoursProfile = equity_profile(NASDAQ
 pub(super) static NASDAQ_PSX_PROFILE_AT_LAUNCH: StaticHoursProfile =
     equity_profile(NASDAQ_PSX_EXTENDED_AT_LAUNCH);
 
-// Nasdaq Equity Trader Alert 2026-46 makes the new Night Session effective
+// Nasdaq Equity Trader Alert 2026-46 announces the new Night Session for
 // Sunday 2026-12-06. Nasdaq Equity 1 defines it as 21:00–04:00 ET Sunday
 // through Thursday, followed by the existing 04:00–20:00 Day Session on
-// business days. The 20:00–21:00 interval remains the daily pause.
+// business days. The 20:00–21:00 interval remains the daily pause. Equity 1
+// conditions actual commencement on Equity Data Plan readiness and a later
+// Nasdaq rule filing confirming readiness. This table encodes the announced
+// date and must move if that final filing changes the launch.
 // https://www.nasdaqtrader.com/TraderNews.aspx?id=ETA2026-46
-// https://listingcenter.nasdaq.com/rulebook/nasdaq/rules/Nasdaq%20Equity%201
+// https://listingcenter.nasdaq.com/assets/RuleBook/Nasdaq/rules/Nasdaq%20Equity%201.html
 static NASDAQ_EXTENDED_POST_2026_12_06: &[SessionRule] = &[
     SessionRule {
         days: SUN_PLUS_MON_THU,

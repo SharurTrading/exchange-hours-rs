@@ -181,10 +181,14 @@ pub(crate) fn edga_profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static 
 }
 
 // EDGX introduced 04:00 ET trading on 2021-03-08. Its current opening-process
-// specification makes 21:00–04:00 effective for business date 2026-12-07, so
-// the first observable opening is Sunday 2026-12-06.
+// specification announces 21:00–04:00 for business date 2026-12-07, so the
+// first observable opening is Sunday 2026-12-06. Amendment No. 1 to the
+// underlying rule filing conditions commencement on Equity Data Plan readiness
+// and a later EDGX readiness filing. This revision encodes the announced plan
+// and must move if regulatory approval or that readiness filing changes it.
 // https://www.cboe.com/insights/posts/cboe-edgx-equities-exchange-to-introduce-early-trading-hours-beginning-march-8/
 // https://www.cboe.com/document/tech-spec/document/technical-specifications/cboe-titanium-u.s.-equities-opening-process
+// https://cdn.cboe.com/resources/regulation/rule_filings/pending/2026/SR-CboeEDGX-2026-019-Amendment-No-1.pdf
 static EDGX_REVISIONS: &[Revision] = &[
     Revision {
         effective: effective_date(2010, 7, 21),

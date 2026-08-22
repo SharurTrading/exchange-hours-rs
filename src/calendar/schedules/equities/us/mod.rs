@@ -16,7 +16,6 @@ mod nyse;
 mod options;
 mod trfs;
 
-pub use ats::BLUE_OCEAN_EXTENDED;
 pub(crate) use ats::{BLUE_OCEAN_PROFILE, IEX_PROFILE, blue_ocean_profile_at, iex_profile_at};
 pub(crate) use cboe::{
     CBOE_BYX_PROFILE, CBOE_BZX_PROFILE, CBOE_EDGA_PROFILE, CBOE_EDGX_PROFILE, byx_profile_at,
@@ -25,12 +24,10 @@ pub(crate) use cboe::{
 pub(crate) use equities::{
     MEMX_EQ_PROFILE, MIAX_PEARL_EQ_PROFILE, NASDAQ_BX_PROFILE, NASDAQ_PROFILE, NASDAQ_PSX_PROFILE,
 };
-pub use equities::{US_EQUITY_EXTENDED, US_EQUITY_REGULAR};
 pub(crate) use history::{
     memx_profile_at, miax_pearl_profile_at, nasdaq_bx_profile_at, nasdaq_profile_at,
     nasdaq_psx_profile_at,
 };
-pub use nyse::NYSE_TEXAS_EXTENDED;
 pub(crate) use nyse::{
     NYSE_AMERICAN_PROFILE, NYSE_ARCA_PROFILE, NYSE_NATIONAL_PROFILE, NYSE_PROFILE,
     NYSE_TEXAS_PROFILE, nyse_american_profile_at, nyse_national_profile_at, nyse_texas_profile_at,

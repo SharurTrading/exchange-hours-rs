@@ -18,11 +18,13 @@ use crate::calendar::schedules::timeline::{Revision, effective_date, local_date,
 // 04:00 ET effective Monday 2013-03-18. Equity Trader Alert 2026-46 announces
 // that the Nasdaq Stock Market Night Session will begin Sunday 2026-12-06. The
 // operator's living Equity 1 rule gives the Sunday-through-Thursday day mask
-// and retains the 20:00–21:00 ET daily pause. This selector intentionally
-// applies only to `nasdaq`, not to Nasdaq Texas or PSX.
+// and retains the 20:00–21:00 ET daily pause, but conditions commencement on
+// Equity Data Plan readiness and a later Nasdaq readiness filing. This selector
+// represents the announced date and must move if that filing changes it. It
+// intentionally applies only to `nasdaq`, not to Nasdaq Texas or PSX.
 // https://www.nasdaqtrader.com/TraderNews.aspx?id=ETA2013-21
 // https://www.nasdaqtrader.com/TraderNews.aspx?id=ETA2026-46
-// https://listingcenter.nasdaq.com/rulebook/nasdaq/rules/Nasdaq%20Equity%201
+// https://listingcenter.nasdaq.com/assets/RuleBook/Nasdaq/rules/Nasdaq%20Equity%201.html
 static NASDAQ_REVISIONS: &[Revision] = &[
     Revision {
         effective: effective_date(2013, 3, 18),

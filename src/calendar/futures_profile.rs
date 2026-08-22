@@ -19,6 +19,9 @@
 
 mod key_serde;
 
+pub use key_serde::ParseMarketHoursKeyError;
+use key_serde::market_hours_keys;
+
 use std::borrow::Cow;
 
 use chrono::{DateTime, Utc};
@@ -87,31 +90,37 @@ impl FuturesSessionProfile {
     }
 }
 
-/// Names a SHARUR-owned normal-week product-family market-hours profile.
-///
-/// Serde encodes each key as its stable canonical `snake_case` string in every
-/// format, including compact non-self-describing formats.
-#[non_exhaustive]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum MarketHoursKey {
-    /// CME equity-index Globex hours.
-    GlobexEquityIndex,
-    /// COMEX Gold and NYMEX benchmark-energy Globex hours.
-    GlobexEnergy,
-    /// CBOT grains/oilseeds Globex hours.
-    GlobexGrains,
-    /// CME FX Globex hours.
-    GlobexFx,
-    /// CFE VIX futures hours.
-    CfeVix,
-    /// Eurex FESX/FDAX/FDXM benchmark-index futures current-season snapshot.
-    Eurex,
-    /// ICE Futures U.S. NYSE FANG+ Index futures hours.
-    IceUs,
-    /// SGX Three-Month SORA Futures current profile.
-    Sgx,
-    /// Continuous 24x7 UTC profile.
-    AlwaysOpen,
+market_hours_keys! {
+    /// Names a normal-week product-family market-hours profile.
+    ///
+    /// The enum is `#[non_exhaustive]`; match it with a wildcard and enumerate
+    /// the keys in the compiled crate version with [`MarketHoursKey::ALL`]. Each
+    /// variant has one stable canonical `snake_case` name, shared by serde,
+    /// [`MarketHoursKey::as_str`], [`core::fmt::Display`], and
+    /// [`core::str::FromStr`]. Serde uses that string in every format, including
+    /// compact non-self-describing formats.
+    #[non_exhaustive]
+    #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
+    pub enum MarketHoursKey {
+        /// CME equity-index Globex hours.
+        GlobexEquityIndex => "globex_equity_index",
+        /// COMEX Gold and NYMEX benchmark-energy Globex hours.
+        GlobexEnergy => "globex_energy",
+        /// CBOT grains/oilseeds Globex hours.
+        GlobexGrains => "globex_grains",
+        /// CME FX Globex hours.
+        GlobexFx => "globex_fx",
+        /// CFE VIX futures hours.
+        CfeVix => "cfe_vix",
+        /// Eurex FESX/FDAX/FDXM benchmark-index futures current-season snapshot.
+        Eurex => "eurex",
+        /// ICE Futures U.S. NYSE FANG+ Index futures hours.
+        IceUs => "ice_us",
+        /// SGX Three-Month SORA Futures current profile.
+        Sgx => "sgx",
+        /// Continuous 24x7 UTC profile.
+        AlwaysOpen => "always_open",
+    }
 }
 
 static ALWAYS_OPEN_RULE: &[SessionRule] = &[SessionRule {

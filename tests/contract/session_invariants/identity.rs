@@ -61,8 +61,8 @@ fn every_exchange_name_round_trips_through_serde_display_and_from_str() {
 
 #[test]
 fn serde_rejects_the_retired_intelligentcross_wire_name() {
-    // This is a deliberately authorized pre-1.0 removal, documented under
-    // CHANGELOG [Unreleased] / Removed. There is no replacement Exchange
+    // This removal was deliberately authorized at the 1.0 boundary and is
+    // documented under CHANGELOG [1.0.0] / Removed. There is no replacement Exchange
     // identity; rejection prevents persisted IQX values from being silently
     // reinterpreted as another venue or as Exchange::Unknown.
     const RETIRED: &str = "intelligentcross_iqx";

@@ -5,8 +5,8 @@
 //!
 //! A no-session profile is reachable through the public API —
 //! [`hours_for_exchange_as_of`] returns one for a venue queried before its
-//! go-live date (Blue Ocean ATS before 2021-10-05, NYSE Texas before
-//! 2025-03-31). The contract these tests pin: every query stays total and
+//! go-live date (for example, Blue Ocean ATS before 2021-10-05). The contract
+//! these tests pin: every query stays total and
 //! terminates, boundary queries return **`None`** — absence of a session is a
 //! fact, never a fabricated pair — and no query invents state: a venue with
 //! no sessions is never "open", never "in maintenance", and closed all day on

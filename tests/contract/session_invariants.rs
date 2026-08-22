@@ -36,8 +36,7 @@
 //! # Reproducibility
 //!
 //! Failures print the seed, iteration/step index, the enabled venue/resolution
-//! operation space, the venue, and the offending UTC instant
-//! (`TEST-DETERMINISM-01`).
+//! operation space, the venue, and the offending UTC instant.
 
 #![expect(
     clippy::expect_used,

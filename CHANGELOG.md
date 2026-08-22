@@ -22,9 +22,14 @@ maintenance contract described in the README and schedule verification ledger.
 - **23 major cash-equity venues:** ASX, TMX Australia, NZX, TSE, NSE India,
   BSE India, HKEX, SGX Securities, Bursa Malaysia, SET Thailand, IDX, PSE,
   HOSE, SSE, SZSE, KRX, TWSE, Borsa Istanbul, TSX, JSE, Tadawul, B3, and BMV.
-  Together with the pre-v1 IQX cleanup below, this brings the crate to 90
+  Together with the US additions below and pre-v1 IQX cleanup, this brings the crate to 93
   source-backed market identities plus the synthetic `Exchange::Unknown`
-  fallback (91 `Exchange` variants total).
+  fallback (94 `Exchange` variants total).
+- **Three live US national exchanges:** LTSE (`ltse`), 24X National Exchange
+  (`24x`), and Texas Stock Exchange (`txse`), each with its primary-sourced
+  production launch boundary, current accepted-order envelope, regional bulk
+  membership, and stable canonical identity. Conditional 24X overnight hours
+  remain on the watch list rather than activating early.
 - **The additive `ExchangeCalendar` API** for date-aware predicates, session
   scans, maintenance/all-day queries, and candle boundaries. Existing
   `MarketHours` functions and signatures remain unchanged; B3/BMV calendars
@@ -136,11 +141,12 @@ maintenance contract described in the README and schedule verification ledger.
   joins adjacent one-midnight storage pieces into the two physical session
   blocks around Saturday maintenance and assigns both to the following open
   business date. Ordinarily that is Monday and the daily bar is Friday
-  16:02→Monday 16:00 CT; when caller policy closes Monday, weekend trading
+  16:01 Pre-Open→Monday 16:00 CT; when caller policy closes Monday, weekend trading
   remains open, receives Tuesday's trade date, and the bar ends Tuesday at
   16:00. Friday 16:00 remains the final weekly close before the next trade-date
-  week starts at 16:02. CME's operator-designated Saturday 02:00–04:00 window
-  remains `Maintenance`. Detached fixed snapshots preserve exact open/closed
+  week enters Pre-Open at 16:01. The weekday 16:01–16:02 and Saturday
+  03:45–04:00 order-entry phases are now correctly `Extended`; the preceding
+  closed portions remain `Maintenance`. Detached fixed snapshots preserve exact open/closed
   state but retain table-piece bounds because only the key calendar carries
   the family identity required for coalescing, weekly boundaries, and trade
   dates.
@@ -150,9 +156,12 @@ maintenance contract described in the README and schedule verification ledger.
   skipped rules resolve to the first real wall-clock second, and a wholly
   skipped civil date is correctly treated as an empty, closed calendar day.
 - **Conditional future schedules are held until confirmed.** Announced Nasdaq,
-  EDGX, and FINRA TRF overnight expansions are monitored in the update guide
-  but no longer activate from provisional 2026-12-06 dates. Runtime selectors
-  will gain them only after the required readiness/SIP confirmations.
+  EDGX, NYSE Arca, MEMX, 24X, and FINRA TRF overnight expansions are monitored
+  in the update guide but do not activate from provisional target dates. MX2
+  Options, IEX Options, MRX's additional sessions, and GIX are likewise watched
+  without premature identities or selectors. Runtime coverage will change only
+  after the required readiness, regulatory, clearing, SIP, and production-day
+  confirmations.
 - **Bursa Malaysia, IDX, HOSE, and BMV January-2010 history.** Bursa's morning
   continuous session now runs through 12:30 under the pre-audit-floor v2 manual
   and its dated successors. IDX now includes its archived 09:10–09:30 pre-open
@@ -161,6 +170,14 @@ maintenance contract described in the README and schedule verification ledger.
   revisions. BMV preserves the exact March 2010 early interval and uses the
   operator's prospective New York-alignment rule from November 1, 2010 through
   a date-aware Mexico City/New York offset selector.
+- **Venue-union phases across APAC, China, and Mexico.** HKEX now treats its
+  executable Extended Morning Session as continuous Regular trading and dates
+  CAS from 2016-07-25. SET includes the exact 2025-05-06 DR night launch and
+  post-midnight trade-date boundary. TSE/TWSE include ToSTNeT/block tails;
+  SSE/SZSE retain 15:00–15:30 block trading from the audit floor; HOSE retains
+  every era's put-through tail; IDX restores Negotiated Market through 16:30;
+  and BMV preserves its sourced HD/ID `:06`, `:10`, and `:20` transitions.
+  Security eligibility may be narrower than these exchange-availability unions.
 - **Calendar candle boundaries now honor the profile's close semantics.**
   Always-open profiles no longer receive artificial daily, weekly, or monthly
   closes; adjacent phase handoffs are ignored when the requested session kind
@@ -208,20 +225,17 @@ maintenance contract described in the README and schedule verification ledger.
   history now retains the 07:00 pre-market before its sourced March 18, 2013
   move to 04:00. Nasdaq's announced Night Session remains monitored but is not
   encoded until the operator files its final readiness confirmation.
-- **Cboe US-equity launch and phase history.** BZX now retains its January-2010
-  08:00–17:00 ET baseline; BYX is closed before its sourced 2010 launch, while
-  EDGA and EDGX begin on their 2010-07-02 first-symbol production day rather
-  than the later all-symbol completion. Each venue applies its May 2016 move
-  from 08:00 to 07:00, and BZX/BYX apply their distinct 2018 moves to a 20:00
-  close. Existing 2021 EDGX and 2025 BZX 04:00 opens remain date-aware. EDGX's
-  approved overnight rule remains unencoded until its later readiness filing.
-- **NYSE-family equity history.** Arca's 04:00–20:00 grid is now explicitly
-  supported at the January-2010 audit floor. American retains its core-only
-  continuous session until the sourced July 24, 2017 Pillar launch. National
-  now preserves its legacy 08:00–18:30 and 08:00–20:00 grids, the sourced
-  May 16, 2014 move to a 17:00 close, the 2014–2015 and 2017–2018 dormant
-  intervals, the 2015 08:00–17:00 relaunch, and the May 21, 2018 Pillar
-  relaunch.
+- **Cboe US-equity accepted-order envelopes.** BZX and BYX retain their exact
+  2014-12-02/2014-12-01 06:00 queue onsets; BZX moves to a 02:30 queue on
+  2025-05-01. EDGX retains its exact 2021 queue changes. EDGA/EDGX still begin
+  on their 2010-07-02 first-symbol production day, but an undated original
+  queue onset is now disclosed as Partial instead of being silently excluded.
+- **NYSE-family accepted-order envelopes and Texas continuity.** Current
+  profiles now include the operator-published 06:30 queues for NYSE, American,
+  National, and Texas and 02:30 for Arca. NYSE Texas is correctly modeled as
+  the continuing CHX/NYSE Chicago identity: 07:00–17:00 at the January-2010
+  floor, Pillar from 2019-11-04, and a non-substantive 2025 rename—not a new
+  2025 launch. Incomplete staged/legacy queue histories remain Partial.
 - **IEX and Blue Ocean ATS identity/history.** The `iex` exchange identity is closed
   before its sourced August 19, 2016 first production-symbol launch instead of
   inheriting predecessor-ATS history. Blue Ocean is
@@ -229,11 +243,11 @@ maintenance contract described in the README and schedule verification ledger.
   to the production ATS service rather than its earlier beta/testing phase;
   its primary-sourced new-order trading window is 20:00–04:00. The live
   filing's sub-minute resting-book cleanup is outside that stated scope.
-- **Primary-sourced US listed-equity-options profiles.** All 18 identifiers now
-  model the published 09:30–16:00 regular-session envelope for ordinary
-  individual-stock options, excluding ETF/ETN/index/FLEX/floor-only and
-  venue-designated extended classes. Eleven post-2010 venues are closed before
-  exact sourced launch dates; the other seven have pre-floor primary baselines.
+- **Primary-sourced US listed-equity-options queues.** Seventeen identifiers now
+  include their current generic 06:00, 07:00, or 07:30 order-acceptance phase
+  before the 09:30–16:00 ordinary-stock-options RTH; MEMX correctly rejects
+  pre-09:30 orders. Exact launch history remains, while each unavailable queue
+  onset is explicitly Partial instead of receiving an inferred date.
 - **Euronext cash-market clocks and pre-open phases.** Paris, Amsterdam,
   Brussels, Lisbon, Dublin, and Milan now use the operator's published 07:30
   CET pre-open. Paris, Amsterdam, Brussels, and Lisbon use the published
@@ -247,40 +261,54 @@ maintenance contract described in the README and schedule verification ledger.
   is recorded; Dublin now preserves its operator-published pre-floor timetable
   through successive ISE order-book models and the 2018 calendar. All six rows
   now have complete history within their documented exchange-level scopes.
-- **CME equity-index historical closes.** The pre-November-18, 2012 profile no
-  longer receives the later 15:30–16:15 CT post-halt session. That extension
-  begins on CME's published Sunday effective date, and the later
-  16:15→16:00 close change begins on September 21, 2015 rather than the
-  unrelated March 4, 2016 boundary.
+- **CME equity-index matching, queues, and scope.** The pre-November-18, 2012
+  profile no longer receives the later 15:30–16:15 CT post-halt session. That
+  extension begins on CME's published Sunday effective date, the 16:15→16:00
+  close change begins on September 20, 2015's opening day, and the 15:15–15:30
+  halt is removed from the exact 2021-06-27 opening. The fixed-current profile
+  now includes the Sunday 16:00 and weekday 16:45 Pre-Open queues. The dated
+  history retains the exact 2010 weekday-queue change but omits the Sunday
+  queue where its 16:15→16:00 onset day is unavailable, so the family is
+  explicitly Partial. Its scope excludes full-size `SP`, NKD, BTIC, and TACO.
 - **MEMX and MIAX Pearl Equities launch and early-session history.** Both
   venues are now closed before their sourced September 2020 production
-  launches. MEMX then retains its 07:00 ET pre-market before the exchange's
+  launches. MEMX retains its exact 2020-10-05 shortening to a 17:00 close,
+  2023-02-01 restoration to 20:00, and 07:00 pre-market before the exchange's
   May 19, 2025 production launch of 04:00 trading; MIAX Pearl retains its
   regular-hours-only profile before its sourced February 20, 2025 Early and
   Late Trading Session launch.
-- **CBOT grain/oilseed history.** The January 2010 profile now uses the
-  published 18:00–07:15 and 09:30–13:15 CT split sessions. The sourced
-  17:00–14:00 continuous electronic regime begins Sunday May 20, 2012, and
-  CME's 19:00–07:45 / 08:30–13:15 regime begins Sunday April 7, 2013 rather
-  than one day late. The 13:20 close still begins Sunday July 5, 2015 for the
-  July 6 trade date.
+- **CBOT standard-size grain/oilseed history and accepted-order phases.** The
+  January-2010 profile now uses the published matching, morning Pre-Open, and
+  PCP phases; PCP expands on 2010-04-19 and the morning queue moves to 08:00 on
+  2011-12-27. The sourced 17:00–14:00 electronic regime begins Sunday
+  2012-05-20, CME's 19:00–07:45 / 08:30–13:15 regime begins Sunday 2013-04-07,
+  and the 13:20 close begins Sunday 2015-07-05. The fixed-current profile also
+  includes the published 16:00/16:45 evening queues and 14:30–16:00 PCP.
+  Their post-2012 onset chain is incomplete, so those phases are omitted from
+  the affected dated eras and the history is Partial. Mini grains are excluded.
 - **CME Group interest-rate, livestock, and cryptocurrency family history.**
-  Interest rates retain the January-2010 17:30→16:00 CT baseline and exact
-  2011-10-02 move to a 17:00 open. Livestock retains its overnight baseline,
-  the 2014-10-27 removal of evening trading, and the 2016-02-29 move to
-  08:30–13:05. Cryptocurrency is closed before the 2017-12-17 Bitcoin launch
-  opening, preserves the five-day 17:00→16:00 era, switches at the exact
-  2026-05-29 24/7 transition, and records the temporary 2026-08-01 Saturday
-  maintenance extension plus its 2026-08-02 restoration.
-- **COMEX, NYMEX, CME FX, and ICE U.S. product scopes.** The shared NYMEX
-  energy/PGM and COMEX metals profile preserves the sourced January-2010 16:15
-  CT close and September 2015 move to 16:00. Its verified scope is NYMEX
+  Interest rates retain the January-2010 17:30→16:00 CT matching grid and
+  queues, the exact 2010 weekday-queue change, and the 2011-10-02 move to a
+  17:00 match open. Livestock retains its overnight baseline, the 2014-10-27
+  removal of evening trading, the 2016-02-29 move to 08:30–13:05, and the exact
+  2020 move to an 08:00 Pre-Open; its fixed-current profile also includes PCP.
+  Cryptocurrency is closed before the 2017-12-17 Bitcoin launch, preserves the
+  five-day matching era, and switches at the exact 2026-05-29 24/7 transition
+  with its 16:01 weekday and 03:45 Saturday Pre-Open phases, plus the temporary
+  2026-08-01 maintenance extension and restoration. All three histories are
+  Partial only for named older PCP/Pre-Open onset gaps; no date is inferred.
+- **COMEX, NYMEX, CME FX, and ICE U.S. product scopes and queues.** The shared
+  NYMEX energy/PGM and COMEX metals profile preserves the sourced January-2010
+  16:15 CT close and September 2015 move to 16:00, while its fixed-current
+  snapshot includes Sunday 16:00 and weekday 16:45 Pre-Open. Its scope is NYMEX
   CL/MCL/QM, NG/MNG/QG, HO/RB/BZ, and PL/PA plus COMEX GC/MGC, SI/SIL, and
-  HG/MHG. CME FX's unchanged 17:00→16:00
-  grid is fenced by its pre-audit-floor February 2009 revision and primary
-  2010, 2018, 2020, and current operator snapshots, and ICE U.S.
-  now represents NYSE FANG+ Index Futures with its exact November 2017 launch
-  and Sunday-session shape instead of an uncited venue-wide default.
+  HG/MHG, excluding alternate session types and differently specified products.
+  Standard-grid CME FX retains its 17:00→16:00 matching history and exact 2010
+  weekday-queue change; current Sunday Pre-Open is included. Both CME histories
+  are Partial only because the Sunday queue's earlier onset lacks a source day.
+  ICE U.S. now represents NYSE FANG+ Index Futures with its exact November 2017
+  launch, 30-minute Pre-Open queues as Extended, and matching as Regular instead
+  of an uncited venue-wide default.
 - **CFE's 2013 phased extensions, 2014 launch, and 2018 system-migration
   history.** The profile now retains CFE's 07:00 CT morning open before the
   sourced October 28, 2013 launch of its Monday–Thursday 15:29–15:30 pre-open

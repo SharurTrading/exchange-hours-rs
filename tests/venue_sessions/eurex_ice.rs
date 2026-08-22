@@ -107,15 +107,20 @@ fn eurex_had_no_asian_session_before_2018_12_10() {
 
 // ---------------------------------------------------------------------------
 // ICE Futures U.S. (ICEUS)
-//   NYSE FANG+: Sunday 18:00–Monday 18:00, then 20:00–18:00 ET Mon–Thu
+//   NYSE FANG+: Pre-Open Sunday 17:30 and weekdays 19:30, followed by
+//   Sunday 18:00–Monday 18:00 and 20:00–18:00 ET Mon–Thu trading
 //   No Fri overnight.
 // ---------------------------------------------------------------------------
 
 #[test]
 fn iceus_sunday_open() {
     let h = hours_for_exchange(Exchange::Iceus);
-    let t = et((2026, 4, 19), (18, 0, 0));
-    assert!(h.is_open(t), "ICEUS FANG+ opens Sun 18:00 ET");
+    assert!(!h.is_open(et((2026, 4, 19), (17, 29, 59))));
+    assert!(
+        h.is_open_extended(et((2026, 4, 19), (17, 30, 0))),
+        "ICEUS FANG+ Pre-Open starts Sunday 17:30 ET"
+    );
+    assert!(h.is_open_regular(et((2026, 4, 19), (18, 0, 0))));
 }
 
 #[test]
@@ -146,8 +151,8 @@ fn iceus_daily_break() {
 #[test]
 fn maintenance_covers_the_whole_break_not_just_its_tail() {
     // Maintenance is classified by the full close-to-reopen span, so the
-    // front of a qualifying break counts too. The four-hour inclusive bound
-    // deliberately excludes CBOT grains' longer afternoon closure.
+    // front of a qualifying break counts too. CBOT's current 13:20-14:30 gap
+    // stays within one trade date before PCP and is therefore a Halt.
     let ice = hours_for_exchange(Exchange::Iceus);
     let t = et((2026, 4, 20), (18, 5, 0));
     assert!(!ice.is_open(t), "ICEUS 18:05 ET is closed");
@@ -168,7 +173,7 @@ fn maintenance_covers_the_whole_break_not_just_its_tail() {
     let t = ct((2026, 4, 20), (14, 0, 0));
     assert!(!cbot.is_open(t), "CBOT 14:00 CT is closed");
     assert!(!cbot.is_maintenance(t));
-    assert_eq!(cbot.session_state(t), SessionState::Closed);
+    assert_eq!(cbot.session_state(t), SessionState::Halt);
 }
 
 #[test]
@@ -180,10 +185,10 @@ fn maintenance_starts_at_the_close_instant() {
         h.is_maintenance(ct((2026, 4, 20), (16, 0, 0))),
         "16:00 CT (the daily close) is the first instant of the break"
     );
-    // The 15:15→15:30 CT gap separates two phases of the same trade date.
+    // CME removed the old 15:15-15:30 CT pause in 2021.
     assert_eq!(
         h.session_state(ct((2026, 4, 20), (15, 20, 0))),
-        SessionState::Halt
+        SessionState::OpenExtended
     );
 }
 
@@ -193,10 +198,8 @@ fn pre_open_and_overnight_windows_are_not_maintenance() {
     // overnight- or weekend-long. Until 0.2.0 the 90-minute heuristic flagged
     // all of these.
     let cme = hours_for_exchange(Exchange::Cme);
-    assert!(
-        !cme.is_maintenance(ct((2026, 4, 19), (16, 30, 0))),
-        "Sunday 16:30 CT precedes the reopen but the closure began Friday"
-    );
+    assert!(cme.is_open_extended(ct((2026, 4, 19), (16, 30, 0))));
+    assert!(!cme.is_maintenance(ct((2026, 4, 19), (16, 30, 0))));
     assert!(
         !cme.is_maintenance(ct((2026, 4, 24), (16, 30, 0))),
         "Friday 16:30 CT starts the weekend closure, not a break"
@@ -234,8 +237,8 @@ fn iceus_weekend_closed() {
 }
 
 // ICE launched NYSE FANG+ futures at the start of trade date 2017-11-08. The
-// same notice defines that start as 20:00 on the preceding local day, pinning
-// the first session to Tuesday 2017-11-07 at 20:00 ET.
+// same notice defines trading at 20:00 on the preceding local day and Pre-Open
+// 30 minutes earlier, pinning first order entry to 2017-11-07 at 19:30 ET.
 // https://www.ice.com/publicdocs/futures_us/exchange_notices/ICE_Futures_US_FANG%2BFuture_20170926.pdf
 #[test]
 fn iceus_fang_profile_is_closed_before_its_sourced_launch() {
@@ -245,19 +248,21 @@ fn iceus_fang_profile_is_closed_before_its_sourced_launch() {
     let first_evening = hours_for_exchange_as_of(Exchange::Iceus, launch_eve);
 
     assert!(!closed.is_open(et((2017, 11, 6), (12, 0, 0))));
-    assert!(!first_evening.is_open(et((2017, 11, 7), (19, 59, 59))));
-    assert!(first_evening.is_open_extended(et((2017, 11, 7), (20, 0, 0))));
-    assert!(first_evening.is_open_extended(et((2017, 11, 8), (17, 59, 59))));
+    assert!(!first_evening.is_open(et((2017, 11, 7), (19, 29, 59))));
+    assert!(first_evening.is_open_extended(et((2017, 11, 7), (19, 30, 0))));
+    assert!(first_evening.is_open_regular(et((2017, 11, 7), (20, 0, 0))));
+    assert!(first_evening.is_open_regular(et((2017, 11, 8), (17, 59, 59))));
     assert!(!first_evening.is_open(et((2017, 11, 8), (18, 0, 0))));
 
     let full_week = hours_for_exchange_as_of(Exchange::Iceus, et((2017, 11, 8), (0, 0, 0)));
-    assert!(full_week.is_open_extended(et((2017, 11, 8), (20, 0, 0))));
+    assert!(full_week.is_open_regular(et((2017, 11, 8), (20, 0, 0))));
 
     let calendar = calendar_for_exchange(Exchange::Iceus);
-    assert!(!calendar.is_open(et((2017, 11, 7), (19, 59, 59))));
-    assert!(calendar.is_open_extended(et((2017, 11, 7), (20, 0, 0))));
+    assert!(!calendar.is_open(et((2017, 11, 7), (19, 29, 59))));
+    assert!(calendar.is_open_extended(et((2017, 11, 7), (19, 30, 0))));
+    assert!(calendar.is_open_regular(et((2017, 11, 7), (20, 0, 0))));
     assert!(!calendar.is_open(et((2017, 11, 8), (18, 0, 0))));
-    assert!(calendar.is_open_extended(et((2017, 11, 8), (20, 0, 0))));
+    assert!(calendar.is_open_regular(et((2017, 11, 8), (20, 0, 0))));
 }
 
 #[test]

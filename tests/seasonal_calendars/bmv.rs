@@ -41,12 +41,45 @@ fn bmv_2010_sources_switch_at_local_midnight() {
     assert!(normal.is_open_extended(local(tz, probe, (8, 0, 0))));
     assert!(normal.is_open_regular(local(tz, probe, (8, 30, 0))));
     assert!(!normal.is_open(local(tz, probe, (15, 0, 0))));
+    assert!(normal.is_open_extended(local(tz, probe, (15, 1, 0))));
+    assert!(!normal.is_open(local(tz, probe, (15, 6, 0))));
 
     let early = calendar.hours_at(local(tz, (2010, 3, 16), (12, 0, 0)));
     assert!(!early.is_open(local(tz, probe, (6, 59, 59))));
     assert!(early.is_open_extended(local(tz, probe, (7, 0, 0))));
     assert!(early.is_open_regular(local(tz, probe, (7, 30, 0))));
     assert!(!early.is_open(local(tz, probe, (14, 0, 0))));
+    assert!(early.is_open_extended(local(tz, probe, (14, 1, 0))));
+    assert!(!early.is_open(local(tz, probe, (14, 6, 0))));
+}
+
+#[test]
+fn bmv_closing_price_extensions_follow_the_operative_manuals() {
+    let calendar = calendar_for_exchange(Exchange::Bmv);
+    let tz = America::Mexico_City;
+    let probe = (2026, 8, 19);
+
+    let before_2016 = calendar.hours_at(local(tz, (2016, 9, 4), (23, 59, 59)));
+    let from_2016 = calendar.hours_at(local(tz, (2016, 9, 5), (0, 0, 0)));
+    let at_1508 = local(tz, probe, (15, 8, 0));
+    assert!(!before_2016.is_open(at_1508));
+    assert!(from_2016.is_open_extended(at_1508));
+
+    let before_early_extension = calendar.hours_at(local(tz, (2023, 5, 28), (23, 59, 59)));
+    let from_early_extension = calendar.hours_at(local(tz, (2023, 5, 29), (0, 0, 0)));
+    let at_1415 = local(tz, probe, (14, 15, 0));
+    assert!(!before_early_extension.is_open(at_1415));
+    assert!(from_early_extension.is_open_extended(at_1415));
+
+    let v188 = calendar.hours_at(local(tz, (2023, 5, 29), (12, 0, 0)));
+    let v189 = calendar.hours_at(local(tz, (2023, 8, 1), (12, 0, 0)));
+    assert_eq!(v188, v189);
+
+    let before_normal_extension = calendar.hours_at(local(tz, (2023, 11, 5), (23, 59, 59)));
+    let from_normal_extension = calendar.hours_at(local(tz, (2023, 11, 6), (0, 0, 0)));
+    let at_1515 = local(tz, probe, (15, 15, 0));
+    assert!(!before_normal_extension.is_open(at_1515));
+    assert!(from_normal_extension.is_open_extended(at_1515));
 }
 
 #[test]

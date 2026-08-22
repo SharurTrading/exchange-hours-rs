@@ -38,14 +38,32 @@ static IDX_EXTENDED_CURRENT: &[SessionRule] = &[
     SessionRule {
         days: MON_FRI,
         open_ssm: 15 * 3600 + 50 * 60,
+        close_ssm: 16 * 3600 + 30 * 60,
+    },
+];
+static IDX_EXTENDED_PRE_PANDEMIC: &[SessionRule] = &[
+    IDX_EXTENDED_CURRENT[0],
+    SessionRule {
+        days: MON_FRI,
+        open_ssm: 15 * 3600 + 50 * 60,
         close_ssm: 16 * 3600 + 15 * 60,
     },
 ];
+// The restored regular-market closing phases end at 16:15, while the
+// exchange's Negotiated Market remains available through 16:30. The combined
+// venue envelope is extended through the latter boundary.
 // https://www.idx.id/en/products-services/trading-hours-and-mechanism/
 pub(crate) static IDX_PROFILE_CURRENT: StaticHoursProfile = StaticHoursProfile {
     tz: Asia::Jakarta,
     regular: IDX_REGULAR_CURRENT,
     extended: IDX_EXTENDED_CURRENT,
+    has_daily_close: true,
+    has_weekend_close: true,
+};
+static IDX_PROFILE_PRE_PANDEMIC: StaticHoursProfile = StaticHoursProfile {
+    tz: Asia::Jakarta,
+    regular: IDX_REGULAR_CURRENT,
+    extended: IDX_EXTENDED_PRE_PANDEMIC,
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -135,7 +153,7 @@ pub(crate) const CURRENT: &StaticHoursProfile = &IDX_PROFILE_CURRENT;
 static REVISIONS: &[Revision] = &[
     Revision {
         effective: effective_date(2013, 1, 2),
-        profile: &IDX_PROFILE_CURRENT,
+        profile: &IDX_PROFILE_PRE_PANDEMIC,
     },
     Revision {
         effective: effective_date(2020, 3, 30),

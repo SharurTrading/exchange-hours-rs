@@ -31,8 +31,8 @@ quirks, is handled internally.
 The internal ownership and extension model is documented in
 [ARCHITECTURE.md](ARCHITECTURE.md).
 
-- **90 source-backed market identities**, plus the synthetic `Exchange::Unknown`
-  fallback (91 `Exchange` variants total) — covering US equities/options, US and
+- **93 source-backed market identities**, plus the synthetic `Exchange::Unknown`
+  fallback (94 `Exchange` variants total) — covering US equities/options, US and
   international futures, EU and Asia-Pacific equities, other major global cash
   markets, and always-open crypto, with independently fenced point-in-time
   revisions wherever primary evidence states an unconditional day-level boundary.
@@ -45,8 +45,8 @@ The internal ownership and extension model is documented in
   hard-coded table format for these boundary-level exceptions.
 - **Calendar-aware bar boundaries** — intraday bars clamp to the session close so no bar
   spans a closed period; the day's last bar ends at the daily close itself (CME 16:00 CT,
-  never the 17:00 reopen), and daily/weekly/monthly bars close at real session closes,
-  not midnight.
+  never the later Pre-Open or matching restart), and daily/weekly/monthly bars close at
+  real session closes, not midnight.
 - **DST correctness by construction** — local seconds-since-midnight rules, resolved to
   instants with an explicit, asymmetric bias (opens earliest, closes latest).
 
@@ -64,8 +64,8 @@ chrono-tz = "0.10"
 
 ## Quick start
 
-This is the compiled doctest in `src/lib.rs`, copied verbatim. CME equity-index futures trade
-17:00→16:00 CT with a one-hour daily break; RTH runs 08:30–15:15 CT:
+This is the compiled doctest in `src/lib.rs`, copied verbatim. CME equity-index futures match
+17:00→16:00 CT and accept weekday orders from 16:45; RTH runs 08:30–15:15 CT:
 
 ```rust
 use chrono::{TimeZone, Utc};
@@ -95,15 +95,16 @@ assert_eq!(open, ct(2026, 4, 20, 8, 30));
 assert_eq!(close, ct(2026, 4, 20, 15, 15)); // end-exclusive
 
 // 16:30 CT is the daily maintenance break: closed, inside an inter-trade-date
-// gap (16:00→17:00) no longer than the documented four-hour bound.
+// gap (16:00→16:45) no longer than the documented four-hour bound.
 let monday_evening = ct(2026, 4, 20, 16, 30);
 assert!(!hours.is_open(monday_evening));
 assert!(hours.is_maintenance(monday_evening));
 
-// After Friday's close the next session is Sunday evening, not Saturday.
+// After Friday's close the next accepted-order phase is Sunday's 16:00
+// Pre-Open, not Saturday. Matching resumes at 17:00.
 let friday_after_close = ct(2026, 4, 24, 16, 30);
 let (next_open, _) = next_session_after(&hours, friday_after_close).expect("reopens Sunday");
-assert_eq!(next_open, ct(2026, 4, 26, 17, 0));
+assert_eq!(next_open, ct(2026, 4, 26, 16, 0));
 
 // Bar boundaries follow the same rules: a daily bar closes at the venue's
 // session close, not at midnight.
@@ -146,14 +147,14 @@ assert_eq!(calendar.exchange(), None);
 
 | Family | Market identities | Local zone | Session shape |
 |---|---|---|---|
-| US equities and ATS | 16 | `America/New_York` | 09:30–16:00 regular on matching venues; modeled extended hours differ by venue. Nasdaq is 04:00–20:00 today, Nasdaq BX/Texas is 07:00–19:00, and PSX is 08:00–17:00. The announced Nasdaq and EDGX 21:00–04:00 sessions are monitored but deliberately unencoded until their final readiness filings. NYSE Tape A is core-only, IEX runs 08:00–17:00 System Hours, and Blue Ocean's production new-order ATS window is 20:00–04:00. |
+| US equities and ATS | 19 | `America/New_York` | 09:30–16:00 regular on matching venues; modeled accepted-order envelopes differ by venue. The set includes LTSE (08:00–17:00), 24X's live daytime service (04:00–20:00), and TXSE (08:00–17:00), each closed before its sourced production launch. Announced overnight expansions remain monitored and unencoded until their readiness conditions and live days are confirmed. |
 | FINRA TRFs | 3 | `America/New_York` | 09:30–16:00 regular; outside-RTH reporting is extended under the sourced 04:00–20:00 system envelope from 2026-03-30. FINRA's announced overnight expansion remains unencoded while its date depends on the SIP rollout. |
-| US options | 18 | `America/New_York` | Each venue models the primary-sourced 09:30–16:00 regular-session envelope for ordinary individual-stock options, with exact closed-before-launch history where the venue began after January 2010. ETF, ETN, index, FLEX, floor-only, and venue-designated extended-hours classes are outside this deliberately narrow scope. |
-| CME Globex futures | 4 | `US/Central` | The count is four `Exchange` identities (CME, CBOT, COMEX, NYMEX); seven separate product-family keys cover U.S. equity indexes, NYMEX energy/PGM and COMEX metals, CBOT grains, CME FX, CBOT/CME interest rates, CME livestock, and CME non-spot-quoted cryptocurrency futures. Each family owns its sourced history. Cryptocurrency moved from the five-day 17:00→16:00 grid to 24/7 trading on 2026-05-29, with weekday 16:00–16:02 and Saturday 02:00–04:00 maintenance. |
+| US options | 18 | `America/New_York` | Ordinary individual-stock options trade 09:30–16:00 regular. Seventeen venues also expose their current generic order-acceptance queue as extended (06:00, 07:00, or 07:30 by operator); MEMX rejects orders before 09:30. Product-specific ETF, ETN, index, FLEX, floor-only, and designated sessions remain outside scope. Exact launch history is retained, while an unknown historical queue-onset day is disclosed as Partial rather than invented. |
+| CME Globex futures | 4 | `US/Central` | The count is four compatibility `Exchange` identities (CME, CBOT, COMEX, NYMEX); seven product-family keys cover scoped U.S. equity indexes, NYMEX energy/PGM and COMEX metals, standard-size CBOT grains, standard-grid CME FX, CBOT/CME interest rates, CME livestock, and CME non-spot-quoted cryptocurrency futures. Fixed-current profiles include the published Pre-Open/order-entry and PCP phases. Dated selectors retain only source-dated phase changes, so all seven key histories—and the four venue defaults that reuse them—are Partial where an older phase-onset day is unavailable. Cryptocurrency moved from the five-day 17:00→16:00 grid to 24/7 trading on 2026-05-29. Its weekday maintenance is 16:00–16:02 with Pre-Open from 16:01; Saturday maintenance is 02:00–04:00 with Pre-Open from 03:45. |
 | Cboe Futures (CFE) | 1 | `US/Central` | RTH 08:30–15:00 flows into post-settlement 15:00–16:00; conservative latest queue-acceptance edges are Sunday 16:00:06 and Monday–Thursday 16:45:06 before the 17:00→08:30 overnight wrap. |
 | EU equities | 14 | 11 European zones | 09:00–17:30 continuous as the continental default, with venue-owned phases: Xetra's DAX-share envelope includes participant-restricted Extended Retail from 07:00 to 22:00; LSE SETS includes 07:00 pre-trading, randomized opening/noon auctions, and CPX to 16:40; central Euronext profiles use the published nominal phase boundaries and exclude per-security randomized uncross seconds; SIX, BME, Vienna, and Nasdaq Nordic books keep their own phases and clocks. |
-| Asia-Pacific equities | 17 | 14 IANA zones | ASX, TMX Australia, NZX, TSE, NSE India, BSE India, HKEX, SGX Securities, Bursa Malaysia, SET, IDX, PSE, HOSE, SSE, SZSE, KRX, and TWSE. Lunch breaks, auctions, and post-close windows stay venue-specific. |
-| Other major global equities | 6 | Toronto / Istanbul / Johannesburg / Riyadh / São Paulo / Mexico City | TSX, Borsa Istanbul, JSE's main/liquid ZA01 segment, Tadawul, B3, and BMV, including their pre-open, closing-auction, and trade-at-last phases. B3/BMV grids are date-aware because they follow New York's offset relationship. |
+| Asia-Pacific equities | 17 | 14 IANA zones | ASX, TMX Australia, NZX, TSE, NSE India, BSE India, HKEX, SGX Securities, Bursa Malaysia, SET, IDX, PSE, HOSE, SSE, SZSE, KRX, and TWSE. Venue unions include accepted block/crossing phases; SET also includes the sourced 2025 DR night session. Security eligibility may be narrower than the exchange envelope. |
+| Other major global equities | 6 | Toronto / Istanbul / Johannesburg / Riyadh / São Paulo / Mexico City | TSX, Borsa Istanbul, JSE's main/liquid ZA01 segment, Tadawul, B3, and BMV, including their pre-open, closing, trade-at-last, and accepted post-close order phases. B3/BMV grids are date-aware because they follow New York's offset relationship. |
 | ICE complex & European energy | 9 | London / Amsterdam / Berlin / Dubai / New York / Winnipeg | Named product-family profiles: Eurex FESX/FDAX/FDXM, EEX Nordic Zonal Power, ICE FANG+, Brent, FTSE 100, Dutch TTF, Murban, and legacy Canola. Date-aware profiles preserve product launches, FTSE extensions, Eurex's fixed-UTC Asian pre-trading/auction and continuous phases, Endex's 2026 extension/DST rule, Murban's New-York-locked grid, and Canola's sourced 2010–2018 eras. |
 | Asia-Pacific futures (SGX) | 1 | `Asia/Singapore` | Three-Month SORA Futures: continuous 07:25–17:55 and 18:15→05:15, with opening/closing phases and a 18:00–18:05 gap. Closed before the 2024-07-29 launch. |
 | Always-open crypto | 1 | `UTC` | Binance USDⓈ-M perpetuals are normally 24×7 after their exact 2019-09-13 04:00 UTC launch. |
@@ -194,40 +195,41 @@ are explicitly deferred from 1.0; all nine prospective names remain rejected.
 See
 [Unsupported futures families in 1.0](docs/schedules/unsupported-families.md).
 
-The table contains 90 source-backed market identities. `Exchange::Unknown` is
+The table contains 93 source-backed market identities. `Exchange::Unknown` is
 an additional synthetic 24×7 UTC fallback and is not counted as an exchange or
 trading venue.
 
 ## Schedule assurance
 
-**Repository-wide review completed:** `2026-08-21`
+**Repository-wide review completed:** `2026-08-22`
 
-That is the 90-exchange ledger cutoff. The three final CME Group key families
-were separately reviewed on `2026-08-22`, as recorded in their ledger rows.
+That is the 93-identity ledger cutoff. Product-family keys were reviewed in the
+same pass and carry their own basis labels in the ledger.
 
-**Primary-source-verified current profiles:** `90 of 90` non-synthetic
+**Primary-source-verified current profiles:** `93 of 93` non-synthetic
 `Exchange` identities, within each row's documented normal-week scope.
 
-**Complete sourced history since January 2010:** `90 of 90` non-synthetic
+**Complete sourced history since January 2010:** `66 of 93` non-synthetic
 `Exchange` identities.
 
-**Non-synthetic profiles requiring reconciliation:** `0 of 90` non-synthetic
+**Non-synthetic profiles requiring reconciliation:** `27 of 93` non-synthetic
 `Exchange` identities.
 
 Every non-synthetic identity was compared with its official current-hours or
-rulebook material and its notice/evidence channel. All 90 current profiles are
-primary-supported within their stated scope, and all 90 **Primary** rows have
-no known modeled-history gap since January 2010 or their sourced launch. No
-non-synthetic row remains **Partial**, **Secondary**, **Pragmatic**, or **Known issue**.
-`Exchange::Unknown` is synthetic and is not one of the 90 source-backed
-identities.
+rulebook material and its notice/evidence channel. All 93 current profiles are
+primary-supported within their stated scope. The 66 **Primary** rows have no
+known modeled-history gap since January 2010 or their sourced launch; 27
+**Partial** rows name an older queue, PCP phase, or exact onset that available
+primary evidence cannot date. No row relies on Secondary, Pragmatic, or Known
+issue evidence. `Exchange::Unknown` is synthetic and is not one of the 93
+source-backed identities.
 
 The key surface was audited separately:
 **Primary-source-verified current key snapshots:** `11 of 11` operator-derived
 `MarketHoursKey` values. The key API provides fixed-current snapshots, an
-`as_of` selector, and a date-aware calendar for sourced histories. All 11
-operator-derived key rows are **Primary** within their stated product-family
-and representational scopes.
+`as_of` selector, and a date-aware calendar for sourced histories. Four key
+rows are **Primary** and seven CME-family rows are **Partial** because their
+current queues are sourced but an older onset or PCP amendment day is not.
 
 These are backward-looking evidence statements, not promises that an exchange
 will remain unchanged after the review date. They cover recurring weekday
@@ -239,7 +241,7 @@ late-open boundary data through `DayPolicy`. Holiday arrangements that replace
 or split phases need a richer exception calendar and must not be approximated
 by clipping a valid session. The full method,
 corrections, exclusions, and confidence levels are recorded in the
-[2026-08-21 schedule audit](docs/schedules/audit-2026-08-21.md).
+[2026-08-22 schedule audit](docs/schedules/audit-2026-08-22.md).
 
 The guarantee is exchange/segment/product-family level, never ticker-level
 microstructure. When an auction uncross is randomized per security, the row
@@ -252,10 +254,10 @@ CME's post-2026-05-29 cryptocurrency weekend is stored as one-midnight
 `calendar_for_market_hours_key(GlobexCryptocurrency)` joins adjacent pieces
 into CME's exact multi-day bounds. Both blocks around Saturday maintenance
 carry the following open business date: normally Monday, with a daily bar from
-Friday 16:02 through Monday 16:00 CT. If a caller's `DayPolicy` closes Monday,
+Friday 16:01 Pre-Open through Monday 16:00 CT. If a caller's `DayPolicy` closes Monday,
 the weekend trading remains open, rolls to Tuesday, and the daily bar closes
 Tuesday at 16:00. Its key calendar also retains the real Friday 16:00 final
-weekly close before the next trade-date week starts at 16:02. A fixed
+weekly close before the next trade-date week enters Pre-Open at 16:01. A fixed
 `MarketHours` snapshot has no family identity: its open/closed state is exact,
 but its bounds retain the one-midnight storage pieces and its generic weekly
 candle and trade-date queries are unavailable. Use the key-backed calendar for
@@ -278,20 +280,24 @@ applicable profile again for every candidate trading day.
 
 - **Recorded changes only.** A venue gets a historical cutover only when a primary source
   (exchange notice, rulebook amendment, press release) states a day-level effective date.
-  Real changes without a sourced date are documented as known gaps rather than given
-  invented dates. The current verification ledger has no such gap within its stated
-  exchange/product scopes. For Paris, Amsterdam, Brussels, and Lisbon, Euronext's
+  Real changes without a sourced date are documented as Partial gaps rather than given
+  invented dates. A fixed current snapshot includes a source-verified current phase;
+  an `as_of` selector adds it only from a source-stated effective day. Consequently a
+  Partial row's dated history can conservatively omit an undated queue even when its
+  date-free current snapshot is exact. The verification ledger names every such interval.
+  For Paris, Amsterdam, Brussels, and Lisbon, Euronext's
   per-security 0–30-second auction uncross delay is outside the exchange-level schedule,
   so those profiles use the operator's published nominal phase boundaries. Dublin and
   Milan retain their documented conservative latest-edge envelopes. Every choice
   preserves the exact venue-wide open/closed envelope. IEX and Blue Ocean have sourced
   production launch boundaries, and B3's explicit older grids are fully recorded to
   January 2010.
-- **Conditional future changes are not schedules yet.** Nasdaq, EDGX, and the
-  three FINRA TRFs have official future-session announcements, but their dates
-  still depend on later readiness filings or the SIP rollout. They remain on
-  the pending-confirmation watch list and are deliberately absent from runtime
-  selectors until every stated condition is satisfied.
+- **Conditional future changes are not schedules yet.** Nasdaq, EDGX, NYSE
+  Arca, MEMX, 24X, and the three FINRA TRFs have official future-session plans
+  that still depend on readiness, SIP, clearing, or later filings. MX2 Options,
+  IEX Options, MRX's additional sessions, and GIX are also watched as future
+  identities/phases. They remain deliberately absent from runtime selectors
+  until every condition and actual production day is confirmed.
 - **Cutover semantics.** Date-only changes are compared in the venue's **own local zone**.
   The new profile applies from venue-local midnight on its session opening day—often Sunday
   for a Monday trade-date change. When a primary source states an exact intraday instant,
@@ -323,8 +329,9 @@ final close, so its trade date is always `None`.
 date. Maintenance is normally an inter-trade-date gap no longer than four
 elapsed hours within one ISO week. A profile explicitly marked as having no
 weekend close also retains an operator-designated short maintenance gap inside
-one trade date; this covers CME cryptocurrency's Saturday 02:00–04:00 CT
-window. Longer afternoon gaps, closed days, and weekends are closed.
+one trade date; this covers CME cryptocurrency's Saturday 02:00–03:45 CT
+closed interval before its 03:45–04:00 Pre-Open. Longer afternoon gaps, closed
+days, and weekends are closed.
 `is_maintenance` is exactly the maintenance-state predicate.
 
 The built-in profiles remain normal-week schedules and ship no holiday data.
@@ -373,8 +380,9 @@ in [Date exceptions and holiday calendars](docs/schedules/date-exceptions.md).
 
 Primary-sourced tables and dated revisions carry their citations beside the data and are
 pinned by tests. Every non-synthetic current profile is source-supported within the product or
-segment scope stated in the ledger, with complete January-2010-or-launch history at that
-scope. This crate is a **best-effort model, not an authority**:
+segment scope stated in the ledger. Rows labeled Primary have complete
+January-2010-or-launch history at that scope; Partial rows explicitly identify the older
+phase or onset that could not be dated. This crate is a **best-effort model, not an authority**:
 exchanges amend hours on short notice, publish product-level exceptions, and run holiday
 and half-day schedules that the built-in normal-week tables deliberately omit.
 Supply boundary-level exceptions through `DayPolicy` when it can represent
@@ -418,6 +426,11 @@ caller's `DayPolicy` is outside that guarantee. The Criterion
   same calendar type can represent a `MarketHoursKey`. Existing venue callers
   handle `Some(exchange)`; family calendars return `None`. Use `source()` when
   both identity kinds are valid, or `market_hours_key()` for the family case.
+- `SessionState` now uses trade-date-aware gap classification with a four-hour
+  maintenance ceiling. Same-trade-date gaps are normally `Halt`; a sourced gap
+  inside a continuously traded week can remain `Maintenance` within that bound.
+  Longer inter-trade-date and policy-created gaps are `Closed`. Recheck callers
+  that persisted or matched the former state labels.
 - The raw `US_EQUITY_REGULAR`, `US_EQUITY_EXTENDED`,
   `NYSE_TEXAS_EXTENDED`, and `BLUE_OCEAN_EXTENDED` slices are no longer public.
   Use `hours_for_exchange`, `hours_for_exchange_as_of`, or
@@ -494,7 +507,7 @@ that callers do not also get (see [Architecture: Tests](ARCHITECTURE.md#tests)).
 - `tests/global_equities.rs` and `tests/global_equities/` — a thin harness over current
   baselines, amendment history, and the global bulk/name contract for TSX, Borsa Istanbul,
   JSE, Tadawul, B3, and BMV.
-- `tests/schedule_documentation.rs` — keeps all 91 `Exchange` rows (90
+- `tests/schedule_documentation.rs` — keeps all 94 `Exchange` rows (93
   non-synthetic plus `Unknown`) and 12 `MarketHoursKey` rows (11
   operator-derived plus `AlwaysOpen`) in canonical order; validates their
   review metadata and owner/source links; requires both current and

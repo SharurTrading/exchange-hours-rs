@@ -6,8 +6,8 @@ use super::prelude::*;
 
 // ---------------------------------------------------------------------------
 // CME (Equity Index) — Globex
-//   Sun 17:00 – Fri 16:00 CT, daily maintenance 16:00–17:00 CT
-//   RTH 08:30–15:15 CT, short window 15:30–16:00 CT
+//   Sunday Pre-Open 16:00, matching 17:00; weekday Pre-Open 16:45
+//   RTH 08:30–15:15 CT, then electronic trading through 16:00 CT
 //   No Fri overnight session.
 // ---------------------------------------------------------------------------
 
@@ -15,15 +15,18 @@ use super::prelude::*;
 fn cme_sunday_globex_open() {
     let h = hours_for_exchange(Exchange::Cme);
     let t = ct((2026, 4, 19), (17, 0, 0));
-    assert!(h.is_open(t), "CME Globex opens Sun 17:00 CT");
+    assert!(h.is_open(t), "CME Globex matching begins Sun 17:00 CT");
     assert!(h.is_open_extended(t), "Sunday open is extended (Globex)");
 }
 
 #[test]
-fn cme_sunday_before_open_closed() {
+fn cme_sunday_preopen_boundary() {
     let h = hours_for_exchange(Exchange::Cme);
-    let t = ct((2026, 4, 19), (16, 59, 0));
-    assert!(!h.is_open(t), "CME closed before Sun 17:00 CT");
+    assert!(!h.is_open(ct((2026, 4, 19), (15, 59, 59))));
+    assert!(
+        h.is_open_extended(ct((2026, 4, 19), (16, 0, 0))),
+        "CME enters Pre-Open Sunday at 16:00 CT"
+    );
 }
 
 #[test]
@@ -67,7 +70,7 @@ fn cme_daily_maintenance_gap() {
     assert!(!h.is_open(t), "CME maintenance gap 16:30 CT");
     assert!(
         h.is_maintenance(ct((2026, 4, 20), (16, 30, 0))),
-        "16:30 is inside the four-hour-bounded 16:00→17:00 break"
+        "16:30 is inside the four-hour-bounded 16:00→16:45 closed gap"
     );
 }
 
@@ -75,7 +78,7 @@ fn cme_daily_maintenance_gap() {
 fn cme_monday_globex_reopen() {
     let h = hours_for_exchange(Exchange::Cme);
     let t = ct((2026, 4, 20), (17, 0, 0));
-    assert!(h.is_open(t), "CME Globex reopens Mon 17:00 CT");
+    assert!(h.is_open(t), "CME Globex matching resumes Mon 17:00 CT");
 }
 
 #[test]
@@ -114,7 +117,7 @@ fn cme_weekend_boundary() {
     );
     assert!(
         h.is_open(ct((2026, 4, 26), (17, 0, 0))),
-        "CME opens Sun 17:00 CT"
+        "CME matching begins Sun 17:00 CT"
     );
 }
 
@@ -157,10 +160,13 @@ fn cbot_overnight_close_before_day() {
 }
 
 #[test]
-fn cbot_gap_between_overnight_and_day() {
+fn cbot_morning_preopen_follows_the_overnight_gap() {
     let h = hours_for_exchange(Exchange::Cbot);
-    let t = ct((2026, 4, 20), (8, 0, 0));
-    assert!(!h.is_open(t), "CBOT gap between 07:45 and 08:30 CT");
+    assert!(!h.is_open(ct((2026, 4, 20), (7, 59, 59))));
+    assert!(
+        h.is_open_extended(ct((2026, 4, 20), (8, 0, 0))),
+        "CBOT Pre-Open starts at 08:00 CT"
+    );
 }
 
 #[test]
@@ -277,21 +283,25 @@ fn cme_equity_close_moved_with_the_2015_09_20_sunday_session() {
     );
 }
 
-// CME's 2009 announcement supplies the schedule in force at the January 2010
-// audit floor: electronic trading 18:00–07:15 CT, with the unchanged weekday
-// 09:30–13:15 day session.
+// CME's 2009 announcement plus its March-2010 market-state table supply the
+// schedule at the January-2010 floor: Sunday Pre-Open 16:15, matching
+// 18:00–07:15, weekday Pre-Open 07:15–09:30, RTH 09:30–13:15, and PCP
+// 14:30–16:00 CT.
 // https://www.cmegroup.com/media-room/press-releases/2009/6/05/cme_group_announcesadditionalagricultureethanolelectronictrading.html
+// https://www.cmegroup.com/tools-information/lookups/advisories/electronic-trading/20100315.html
 #[test]
 fn cbot_2010_floor_uses_the_published_split_sessions() {
     let hours = hours_for_exchange_as_of(Exchange::Cbot, ct((2010, 1, 4), (12, 0, 0)));
     let sunday = (2010, 1, 3);
     let monday = (2010, 1, 4);
 
-    assert!(!hours.is_open(ct(sunday, (17, 59, 59))));
+    assert!(!hours.is_open(ct(sunday, (16, 14, 59))));
+    assert!(hours.is_open_extended(ct(sunday, (16, 15, 0))));
+    assert!(hours.is_open_extended(ct(sunday, (17, 59, 59))));
     assert!(hours.is_open_extended(ct(sunday, (18, 0, 0))));
     assert!(hours.is_open_extended(ct(monday, (7, 14, 59))));
-    assert!(!hours.is_open(ct(monday, (7, 15, 0))));
-    assert!(!hours.is_open(ct(monday, (9, 29, 59))));
+    assert!(hours.is_open_extended(ct(monday, (7, 15, 0))));
+    assert!(hours.is_open_extended(ct(monday, (9, 29, 59))));
     assert!(hours.is_open_regular(ct(monday, (9, 30, 0))));
     assert!(!hours.is_open(ct(monday, (13, 15, 0))));
     assert!(hours.is_open_extended(ct(monday, (18, 0, 0))));
@@ -303,14 +313,16 @@ fn cbot_2010_floor_uses_the_published_split_sessions() {
 // https://www.cmegroup.com/media-room/press-releases/2012/5/18/cme_group_to_startexpandedcbotgrainandoilseedtradinghoursmay20.html
 // https://www.cmegroup.com/tools-information/lookups/advisories/market-data/20120518.html
 #[test]
-fn cbot_continuous_1700_to_1400_session_started_on_2012_05_20() {
+fn cbot_2012_matching_revision_omits_order_phases_without_sourced_onsets() {
     let cutover = ct((2012, 5, 20), (0, 0, 0));
     let before = hours_for_exchange_as_of(Exchange::Cbot, cutover - chrono::Duration::seconds(1));
     let after = hours_for_exchange_as_of(Exchange::Cbot, cutover);
     let sunday = (2012, 5, 20);
     let monday = (2012, 5, 21);
 
-    assert!(!before.is_open(ct(sunday, (17, 0, 0))));
+    assert!(before.is_open_extended(ct(sunday, (16, 30, 0))));
+    assert!(!after.is_open(ct(sunday, (16, 30, 0))));
+    assert!(before.is_open_extended(ct(sunday, (17, 0, 0))));
     assert!(after.is_open_extended(ct(sunday, (17, 0, 0))));
     assert!(!before.is_open(ct(monday, (7, 15, 0))));
     assert!(after.is_open_extended(ct(monday, (7, 15, 0))));
@@ -318,7 +330,8 @@ fn cbot_continuous_1700_to_1400_session_started_on_2012_05_20() {
     assert!(after.is_open_extended(ct(monday, (13, 15, 0))));
     assert!(after.is_open_extended(ct(monday, (13, 59, 59))));
     assert!(!after.is_open(ct(monday, (14, 0, 0))));
-    assert!(calendar_for_exchange(Exchange::Cbot).is_open_extended(ct(sunday, (17, 0, 0))));
+    assert!(!calendar_for_exchange(Exchange::Cbot).is_open(ct((2026, 4, 19), (17, 0, 0))));
+    assert!(calendar_for_exchange(Exchange::Cbot).is_open_extended(ct((2026, 4, 19), (19, 0, 0))));
 }
 
 // CME Group SER-6617 set 19:00–07:45 and 08:30–13:15 CT effective Sunday

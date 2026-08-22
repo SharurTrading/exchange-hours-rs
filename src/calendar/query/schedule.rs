@@ -10,7 +10,7 @@ use crate::calendar::hours::MarketHours;
 use crate::calendar::local_time::{mk_local_close, mk_local_open};
 use crate::calendar::policy::DayPolicy;
 use crate::calendar::rule::{SessionKind, SessionRule};
-use crate::calendar::{CalendarResolution, CalendarSource, MarketHoursKey};
+use crate::calendar::{CalendarResolution, CalendarSource, Exchange, MarketHoursKey};
 
 use super::candles;
 
@@ -87,11 +87,11 @@ impl<'a> QueryContext<'a> {
 
     /// Assigns a resolved session block to its venue-local trade date.
     ///
-    /// Most profiles use the local date of the final close. CME's 24/7
-    /// cryptocurrency schedule is the sourced exception: both weekend blocks
-    /// after Friday's daily close carry the following business date, even
-    /// though Saturday maintenance separates them. Only a key-backed calendar
-    /// has enough identity to apply that product-family convention.
+    /// Most profiles use the local date of the final close. Identified
+    /// calendars retain two sourced exceptions: SET's after-midnight DR night
+    /// phase belongs to its prior local opening date, and CME cryptocurrency's
+    /// weekend blocks carry the following business date. A detached fixed
+    /// snapshot has no identity with which to apply either convention.
     pub(super) fn trade_date_for_bounds(
         self,
         open: DateTime<Utc>,
@@ -101,6 +101,17 @@ impl<'a> QueryContext<'a> {
         let ProfileSource::DateAware(calendar) = self.source else {
             return default;
         };
+        let local_open = open.with_timezone(&self.tz);
+        if matches!(
+            calendar.source(),
+            CalendarSource::Exchange(Exchange::SetThailand)
+        ) {
+            return if local_open.time().num_seconds_from_midnight() < 3 * 3_600 {
+                local_open.date_naive().pred_opt().unwrap_or(default)
+            } else {
+                local_open.date_naive()
+            };
+        }
         if !matches!(
             calendar.source(),
             CalendarSource::MarketHoursKey(MarketHoursKey::GlobexCryptocurrency)
@@ -108,7 +119,6 @@ impl<'a> QueryContext<'a> {
             return default;
         }
 
-        let local_open = open.with_timezone(&self.tz);
         let days_to_monday = match local_open.weekday() {
             Weekday::Fri if local_open.time().num_seconds_from_midnight() >= 16 * 3_600 => 3,
             Weekday::Sat => 2,
@@ -182,7 +192,7 @@ impl<'a> QueryContext<'a> {
     /// Most profiles use their explicit weekend-close flag. CME's key-backed
     /// cryptocurrency calendar is the sourced exception: its continuous week
     /// has no long weekend shutdown, but Friday 16:00 CT remains the final
-    /// close of that trade-date week before Monday trading starts at 16:02.
+    /// close of that trade-date week before Monday Pre-Open starts at 16:01.
     /// The identity-erased fixed snapshot cannot apply that convention.
     pub(super) fn has_weekly_close_at(self, instant: chrono::DateTime<Utc>) -> bool {
         if self.has_weekend_close_at(instant) {

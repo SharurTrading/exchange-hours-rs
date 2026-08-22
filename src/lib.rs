@@ -12,8 +12,8 @@
 //!
 //! # Quick start
 //!
-//! CME equity-index futures trade 17:00→16:00 CT with a one-hour daily break,
-//! and RTH runs 08:30–15:15 CT:
+//! CME equity-index futures match 17:00→16:00 CT and accept weekday orders from
+//! 16:45; RTH runs 08:30–15:15 CT:
 //!
 //! ```
 //! use chrono::{TimeZone, Utc};
@@ -43,15 +43,16 @@
 //! assert_eq!(close, ct(2026, 4, 20, 15, 15)); // end-exclusive
 //!
 //! // 16:30 CT is the daily maintenance break: closed, inside an inter-trade-date
-//! // gap (16:00→17:00) no longer than the documented four-hour bound.
+//! // gap (16:00→16:45) no longer than the documented four-hour bound.
 //! let monday_evening = ct(2026, 4, 20, 16, 30);
 //! assert!(!hours.is_open(monday_evening));
 //! assert!(hours.is_maintenance(monday_evening));
 //!
-//! // After Friday's close the next session is Sunday evening, not Saturday.
+//! // After Friday's close the next accepted-order phase is Sunday's 16:00
+//! // Pre-Open, not Saturday. Matching resumes at 17:00.
 //! let friday_after_close = ct(2026, 4, 24, 16, 30);
 //! let (next_open, _) = next_session_after(&hours, friday_after_close).expect("reopens Sunday");
-//! assert_eq!(next_open, ct(2026, 4, 26, 17, 0));
+//! assert_eq!(next_open, ct(2026, 4, 26, 16, 0));
 //!
 //! // Bar boundaries follow the same rules: a daily bar closes at the venue's
 //! // session close, not at midnight.

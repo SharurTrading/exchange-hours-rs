@@ -15,7 +15,7 @@ The supporting records are:
   by source-set ID;
 - [date-exceptions.md](date-exceptions.md): the boundary-overlay contract and
   evidence requirements for future complete holiday calendars;
-- [audit-2026-08-21.md](audit-2026-08-21.md): the dated repository-wide
+- [audit-2026-08-22.md](audit-2026-08-22.md): the dated repository-wide
   assurance result, method, corrections, and exclusions for the current cutoff.
 
 Exact historical notices and effective-date evidence remain beside the Rust
@@ -82,7 +82,9 @@ official origin and the archive delivery URL.
 Check the complete model rather than only the headline open and close:
 
 - IANA time zone and trading weekdays;
-- continuous (`regular`) phases;
+- primary/core continuous or published RTH (`regular`) phases, and any
+  electronic/overnight continuous trading that the owner scope classifies as
+  `extended`;
 - auctions, order-entry windows, and trade-at-last (`extended`) phases;
 - lunch, maintenance, and transition gaps;
 - sessions wrapping past local midnight;
@@ -140,6 +142,11 @@ exact evidence belongs with the code it supports.
   Do not claim ticker-level uncross timing.
 - **Product-specific variation:** either narrow the documented profile scope or
   add a distinct product/venue model; do not silently widen an envelope.
+- **Cash-equity venue union:** compare every automated order-capable system
+  owned by the modeled exchange, including queues and block/crossing phases.
+  The profile may be open when only a subset of securities is eligible. Exclude
+  pure reporting, cancellation-only, enquiry, and administrative states and a
+  system represented by another `Exchange` identity.
 - **Product-family identity:** add or revise a `MarketHoursKey`; do not map
   symbols, roots, product codes, or MICs inside this crate. A product that
   joins an already-live family normally has a caller-owned listing date, not a
@@ -183,6 +190,36 @@ out of runtime selectors and track it below until every condition is confirmed.
   before this date. The announced Sunday-through-Friday reporting regime is not
   modeled while its day remains conditional; add all three TRF revisions only
   when the SIP implementation day is confirmed.
+- **NYSE Arca — target 2026-12-06:** the operator's
+  [extended-hours program](https://www.nyse.com/trade/equities/extended-hours-trading)
+  remains conditional on SIP, DTCC, and exchange-readiness milestones. Do not
+  extend the Arca runtime profile until the operator confirms production
+  readiness and the actual opening day.
+- **MEMX — target 2026-12-06:** the operator's
+  [23×5 FAQ](https://info.memxtrading.com/equities-trading-resources/23-5-faq/)
+  conditions launch on SEC, DTCC, SIP, and primary-listing-market readiness.
+  Keep the existing 04:00–20:00 profile until every condition and the live day
+  are confirmed.
+- **24X overnight phase — no unconditional day:** the
+  [SEC order](https://www.sec.gov/files/rules/exorders/2026/34-106061.pdf)
+  records the proposed 21:00–04:00 phase and its remaining conditions. The
+  existing live daytime venue is modeled separately; do not infer an overnight
+  cutover from the approval or an announced target.
+- **MX2 Options — target 2026-09-14:** monitor the operator's
+  [phased go-live announcement](https://memx.com/insights/september-2026-go-live-date-for-mx2-options).
+  Add an `mx2_options` identity only after the first production tranche is
+  confirmed live and its ordinary-product order phases are sourced.
+- **IEX Options — target 2026-10-02:** monitor the
+  [IEX Options resources](https://www.iex.io/options/resources). Add an
+  `iex_options` identity only after the phased production launch and supported
+  order envelope are confirmed.
+- **Green Impact Exchange — no unconditional day:** monitor the
+  [GIX operator site](https://www.tradegix.com/). Registration or an H2 target
+  is not a live-session boundary; add a `gix` identity only after a sourced
+  production day and hours are available.
+- **Nasdaq MRX Options 3C — awaiting operative alert:** the approved additional
+  sessions remain unencoded until Nasdaq publishes the required trader alert
+  with the production day and final phase table.
 
 ## 4. Implement in the owner module
 

@@ -20,6 +20,7 @@ mod nasdaq;
 mod sgx_cfe;
 mod sunday_wraps;
 mod us_equity_history;
+mod us_independent_exchanges;
 mod verified_corrections;
 
 mod prelude {

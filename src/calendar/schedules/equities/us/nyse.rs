@@ -11,10 +11,29 @@ use crate::calendar::rule::MON_FRI;
 use crate::calendar::schedules::CLOSED_NEW_YORK;
 use crate::calendar::schedules::timeline::{Revision, effective_date, local_date, select_revision};
 
-static EXTENDED_0700_2000: &[SessionRule] = &[
+static EXTENDED_0630_1600: &[SessionRule] = &[SessionRule {
+    days: MON_FRI,
+    open_ssm: 6 * 3600 + 30 * 60,
+    close_ssm: 9 * 3600 + 30 * 60,
+}];
+
+static EXTENDED_0630_2000: &[SessionRule] = &[
     SessionRule {
         days: MON_FRI,
-        open_ssm: 7 * 3600,
+        open_ssm: 6 * 3600 + 30 * 60,
+        close_ssm: 9 * 3600 + 30 * 60,
+    },
+    SessionRule {
+        days: MON_FRI,
+        open_ssm: 16 * 3600,
+        close_ssm: 20 * 3600,
+    },
+];
+
+static EXTENDED_0230_2000: &[SessionRule] = &[
+    SessionRule {
+        days: MON_FRI,
+        open_ssm: 2 * 3600 + 30 * 60,
         close_ssm: 9 * 3600 + 30 * 60,
     },
     SessionRule {
@@ -63,30 +82,62 @@ static NATIONAL_0800_1700: &[SessionRule] = &[
     },
 ];
 
-/// NYSE Texas opening and late sessions: 07:00–09:30 and 16:00–20:00 ET.
-static NYSE_TEXAS_EXTENDED: &[SessionRule] = EXTENDED_0700_2000;
+static NYSE_CHICAGO_EXTENDED_PRE_PILLAR: &[SessionRule] = &[
+    SessionRule {
+        days: MON_FRI,
+        open_ssm: 7 * 3600,
+        close_ssm: 9 * 3600 + 30 * 60,
+    },
+    SessionRule {
+        days: MON_FRI,
+        open_ssm: 16 * 3600,
+        close_ssm: 17 * 3600,
+    },
+];
 
-// This profile is scoped to NYSE Tape A. Its core is 09:30–16:00 ET; the 06:30
-// pre-opening accepts and queues orders but is not executable. The operator's
-// separately published Tapes B/C early session is outside this row's scope.
-// https://www.nyse.com/markets/hours-calendars
-pub(crate) static NYSE_PROFILE: StaticHoursProfile = equity_profile(&[]);
+// NYSE accepts orders from 06:30 ET. Tape A queues them for the core opening;
+// Tapes B/C also enter an active early session at 07:00. The single exchange
+// identity is therefore open Extended from the common 06:30 acceptance edge.
+// The reviewed sources do not state an unconditional exchange-wide onset day,
+// so the historical selector retains the prior core-only representation.
+// https://www.nyse.com/trade/hours-calendars?os=.
+static NYSE_HISTORICAL_PROFILE: StaticHoursProfile = equity_profile(&[]);
+pub(crate) static NYSE_PROFILE: StaticHoursProfile = equity_profile(EXTENDED_0630_1600);
 
-// NYSE Arca's 04:00–20:00 exchange-level grid predates the audit floor: the
-// SEC's 2008 filing identifies the 04:00–09:30, 09:30–16:00, and 16:00–20:00
-// sessions, and the living NYSE table retains those boundaries.
+pub(crate) fn nyse_profile_at(
+    _as_of: chrono::DateTime<chrono::Utc>,
+) -> &'static StaticHoursProfile {
+    &NYSE_HISTORICAL_PROFILE
+}
+
+// NYSE Arca currently accepts and queues orders at 02:30 before its 04:00
+// active early session. Its 04:00–20:00 execution grid predates the audit floor,
+// but the primary amendment chain reviewed here does not give an unconditional
+// day for the later 02:30 queue. The current fixed profile includes the queue;
+// the historical selector retains only the sourced 04:00 execution envelope.
 // https://www.sec.gov/files/rules/sro/nysearca/2008/34-57505.pdf
-// https://www.nyse.com/markets/hours-calendars
-pub(crate) static NYSE_ARCA_PROFILE: StaticHoursProfile = equity_profile(US_EQUITY_EXTENDED);
+// https://www.nyse.com/trade/hours-calendars?os=.
+// https://www.nyse.com/publicdocs/nyse/data/ArcaBook_Client_Specification.pdf
+// https://www.nyse.com/publicdocs/nyse/markets/nyse-arca/rule-filings/filings/2021/SR-NYSEArca-2021-71.pdf
+static NYSE_ARCA_HISTORICAL_PROFILE: StaticHoursProfile = equity_profile(US_EQUITY_EXTENDED);
+pub(crate) static NYSE_ARCA_PROFILE: StaticHoursProfile = equity_profile(EXTENDED_0230_2000);
 
-// NYSE American's Pillar launch added the continuous 07:00–20:00 envelope on
-// 2017-07-24. Before Pillar, NYSE Amex/MKT's continuous session was
-// 09:30–16:00; discrete off-hours crosses are outside this interval model.
+pub(crate) fn nyse_arca_profile_at(
+    _as_of: chrono::DateTime<chrono::Utc>,
+) -> &'static StaticHoursProfile {
+    &NYSE_ARCA_HISTORICAL_PROFILE
+}
+
+// NYSE American's Pillar launch added its current 06:30 order-acceptance edge
+// around the 07:00–20:00 execution grid on 2017-07-24. Before Pillar, the
+// sourced continuous session was 09:30–16:00. Legacy off-hours crosses are not
+// backfilled because the exact January-2010 phase table and complete amendment
+// chain have not been established; this history remains explicitly partial.
 // https://www.sec.gov/rules/sro/nyseamex/2010/34-61890.pdf
 // https://www.nyse.com/publicdocs/nyse/markets/nyse-american/Pillar_Update_NYSE_American_March_2017.pdf
 // https://www.nyse.com/publicdocs/nyse/markets/nyse-american/Pillar_Update_NYSE_American_Weekend_Test_Update_July21_2017.pdf
 static NYSE_AMERICAN_PRE_PILLAR: StaticHoursProfile = equity_profile(&[]);
-pub(crate) static NYSE_AMERICAN_PROFILE: StaticHoursProfile = equity_profile(EXTENDED_0700_2000);
+pub(crate) static NYSE_AMERICAN_PROFILE: StaticHoursProfile = equity_profile(EXTENDED_0630_2000);
 
 static AMERICAN_REVISIONS: &[Revision] = &[Revision {
     effective: effective_date(2017, 7, 24),
@@ -106,7 +157,7 @@ pub(crate) fn nyse_american_profile_at(
 static NATIONAL_PRE_2010_08_02: StaticHoursProfile = equity_profile(NATIONAL_0800_1830);
 static NATIONAL_2010_08_02: StaticHoursProfile = equity_profile(NATIONAL_0800_2000);
 static NATIONAL_2015_12_22: StaticHoursProfile = equity_profile(NATIONAL_0800_1700);
-pub(crate) static NYSE_NATIONAL_PROFILE: StaticHoursProfile = equity_profile(EXTENDED_0700_2000);
+pub(crate) static NYSE_NATIONAL_PROFILE: StaticHoursProfile = equity_profile(EXTENDED_0630_2000);
 
 // NSX's operative 2010 filing dates the 18:30→20:00 close extension to
 // 2010-08-02. Its immediately operative 2014 filing shortened that close to
@@ -114,7 +165,8 @@ pub(crate) static NYSE_NATIONAL_PROFILE: StaticHoursProfile = equity_profile(EXT
 // 2015 approval says the resumed marketplace would use the rules then in
 // effect, and the exchange's SEC-filed Form 1 dates its phased relaunch to
 // 2015-12-22. It ceased again before the 2017-02-01 open. NYSE National
-// launched on Pillar on 2018-05-21 with its current 07:00–20:00 grid.
+// launched on Pillar on 2018-05-21 with its current 06:30 order-acceptance edge
+// around the 07:00–20:00 execution grid.
 // https://www.sec.gov/files/rules/sro/nsx/2010/34-62643.pdf
 // https://www.sec.gov/files/rules/sro/nsx/2014/34-72215.pdf
 // https://www.sec.gov/files/rules/sro/nsx/2014/34-72107.pdf
@@ -159,12 +211,24 @@ pub(crate) fn nyse_national_profile_at(
     )
 }
 
-// NYSE Texas went live on 2025-03-31 with the operator's 07:00–20:00 grid.
-// https://www.nyse.com/markets/nyse-texas
-pub(crate) static NYSE_TEXAS_PROFILE: StaticHoursProfile = equity_profile(NYSE_TEXAS_EXTENDED);
+// NYSE Texas is the same registered exchange formerly called NYSE Chicago and
+// CHX; its 2025-03-28 conversion and rename were non-substantive. At the audit
+// floor, CHX accepted orders from 07:00 through 17:00 ET: early trading to
+// 09:30, core trading to 16:00, the late session to 16:15, and cross-only late
+// crossing through 17:00. Its Pillar migration established the current 06:30
+// order-acceptance edge around the 07:00–20:00 three-session grid on 2019-11-04.
+// https://www.sec.gov/rules/sro/chx/2009/34-60775.pdf
+// https://www.sec.gov/files/rules/sro/nysechx/2019/34-86709.pdf
+// https://www.nyse.com/publicdocs/nyse/markets/nyse-chicago/NYSE_Chicago_Migration.pdf
+// https://www.sec.gov/files/rules/sro/nysechx/2019/34-87264.pdf
+// https://www.sec.gov/files/rules/sro/nysechx/2025/34-102507.pdf
+// https://www.nyse.com/trade/hours-calendars?os=.
+pub(crate) static NYSE_TEXAS_PROFILE: StaticHoursProfile = equity_profile(EXTENDED_0630_2000);
+static NYSE_CHICAGO_PROFILE_PRE_PILLAR: StaticHoursProfile =
+    equity_profile(NYSE_CHICAGO_EXTENDED_PRE_PILLAR);
 
 static TEXAS_REVISIONS: &[Revision] = &[Revision {
-    effective: effective_date(2025, 3, 31),
+    effective: effective_date(2019, 11, 4),
     profile: &NYSE_TEXAS_PROFILE,
 }];
 
@@ -173,7 +237,7 @@ pub(crate) fn nyse_texas_profile_at(
 ) -> &'static StaticHoursProfile {
     select_revision(
         local_date(as_of, America::New_York),
-        &CLOSED_NEW_YORK,
+        &NYSE_CHICAGO_PROFILE_PRE_PILLAR,
         TEXAS_REVISIONS,
     )
 }

@@ -120,6 +120,8 @@ pub(super) static NASDAQ_PSX_PROFILE_AT_LAUNCH: StaticHoursProfile =
 
 pub(super) static MEMX_EQ_PROFILE_PRE_2025_05_19: StaticHoursProfile =
     equity_profile(EXTENDED_0700_2000);
+pub(super) static MEMX_EQ_PROFILE_2020_10_05: StaticHoursProfile =
+    equity_profile(EXTENDED_0700_1700);
 pub(super) static MIAX_PEARL_EQ_PROFILE_PRE_2025_02_20: StaticHoursProfile = equity_profile(&[]);
 
 static EXTENDED_0700_2000: &[SessionRule] = &[
@@ -132,6 +134,19 @@ static EXTENDED_0700_2000: &[SessionRule] = &[
         days: MON_FRI,
         open_ssm: 16 * 3600,
         close_ssm: 20 * 3600,
+    },
+];
+
+// MEMX shortened its executable Post-Market Session from 20:00 to 17:00 ET
+// effective 2020-10-05, then restored the 20:00 close on 2023-02-01.
+// https://info.memxtrading.com/trader-alert-20-06-memx-market-hours-change/
+// https://info.memxtrading.com/trader-alert-23-04-memx-trading-hours-change/
+static EXTENDED_0700_1700: &[SessionRule] = &[
+    EXTENDED_0700_2000[0],
+    SessionRule {
+        days: MON_FRI,
+        open_ssm: 16 * 3600,
+        close_ssm: 17 * 3600,
     },
 ];
 

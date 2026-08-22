@@ -5,7 +5,7 @@
 use chrono::{DateTime, Datelike, Duration, NaiveDate, Utc};
 use chrono_tz::Tz;
 
-use super::periods::{daily_close_for_local_day, next_daily_close_after_with};
+use super::periods::{daily_close_for_trade_date, next_daily_close_after_with};
 use super::schedule::QueryContext;
 use super::sessions::{
     containing_session_with, contains_in_session_with, next_session_after_with,
@@ -94,7 +94,7 @@ pub(in crate::calendar) fn is_closed_trade_date(
     day: NaiveDate,
     kind: SessionKind,
 ) -> bool {
-    daily_close_for_local_day(context, day, kind).is_none()
+    daily_close_for_trade_date(context, day, kind).is_none()
 }
 
 pub(in crate::calendar) fn is_closed_all_day_in_calendar(

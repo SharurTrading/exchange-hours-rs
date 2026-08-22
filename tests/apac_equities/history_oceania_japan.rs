@@ -31,8 +31,12 @@ fn oceania_and_japan_cutovers() {
 
     let (pre, post) = cutover_sides(Exchange::Tse, Asia::Tokyo, (2024, 11, 5));
     let at_1515 = local(Asia::Tokyo, probe, (15, 15, 0));
-    assert!(!pre.is_open(at_1515));
+    assert!(!pre.is_open_regular(at_1515));
+    assert!(pre.is_open_extended(at_1515));
     assert!(post.is_open_regular(at_1515));
+    let at_1745 = local(Asia::Tokyo, probe, (17, 45, 0));
+    assert!(!pre.is_open(at_1745));
+    assert!(post.is_open_extended(at_1745));
 }
 
 #[test]

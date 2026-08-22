@@ -25,42 +25,103 @@ const ALL_LISTED_EQUITY_OPTIONS: &[Exchange] = &[
     Exchange::MemxOptions,
 ];
 
-// The venue rules consistently distinguish ordinary options on individual
-// stocks from ETF, ETN, index, FLEX, and designated extended-hours products.
-// The scoped family's published regular-session envelope is 09:30–16:00 ET;
-// venue-specific primary sources are cited beside the production table.
+const OPEN_0600: &[Exchange] = &[
+    Exchange::NyseArcaOptions,
+    Exchange::NyseAmericanOptions,
+    Exchange::NasdaqIse,
+    Exchange::NasdaqMrx,
+    Exchange::NasdaqGemx,
+];
+
+const OPEN_0700: &[Exchange] = &[Exchange::BoxOptions];
+
+const OPEN_0730: &[Exchange] = &[
+    Exchange::CboeOptionsC1,
+    Exchange::CboeC2Options,
+    Exchange::CboeBzxOptions,
+    Exchange::CboeEdgxOptions,
+    Exchange::NasdaqPhlx,
+    Exchange::NasdaqNom,
+    Exchange::NasdaqBxOptions,
+    Exchange::MiaxOptions,
+    Exchange::MiaxEmeraldOptions,
+    Exchange::MiaxPearlOptions,
+    Exchange::MiaxSapphireOptions,
+];
+
+// Generic pre-open order acceptance is Extended even though execution begins
+// at 09:30. Product-specific executable sessions remain outside this ordinary
+// individual-stock-options family.
 #[test]
-fn listed_equity_options_have_one_exact_product_family_scope() {
+fn listed_equity_options_include_each_current_order_acceptance_edge() {
+    for (exchanges, open) in [
+        (OPEN_0600, (6, 0, 0)),
+        (OPEN_0700, (7, 0, 0)),
+        (OPEN_0730, (7, 30, 0)),
+    ] {
+        for &exchange in exchanges {
+            let hours = hours_for_exchange(exchange);
+            let instant = et((2026, 4, 20), open);
+
+            assert!(
+                !hours.is_open(instant - chrono::Duration::seconds(1)),
+                "{exchange:?}"
+            );
+            assert!(hours.is_open_extended(instant), "{exchange:?}");
+            assert!(
+                hours.is_open_extended(et((2026, 4, 20), (9, 29, 59))),
+                "{exchange:?}"
+            );
+            assert!(
+                hours.is_open_regular(et((2026, 4, 20), (9, 30, 0))),
+                "{exchange:?}"
+            );
+            assert!(
+                !hours.is_open(et((2026, 4, 20), (16, 0, 0))),
+                "{exchange:?}"
+            );
+            assert!(
+                !hours.is_open(et((2026, 4, 18), (12, 0, 0))),
+                "{exchange:?}"
+            );
+        }
+    }
+
+    let memx = hours_for_exchange(Exchange::MemxOptions);
+    assert!(!memx.is_open(et((2026, 4, 20), (9, 29, 59))));
+    assert!(memx.is_open_regular(et((2026, 4, 20), (9, 30, 0))));
+    assert!(memx.extended.is_empty());
+}
+
+#[test]
+fn every_listed_options_identity_is_covered_by_a_current_group() {
     for &exchange in ALL_LISTED_EQUITY_OPTIONS {
         let hours = hours_for_exchange(exchange);
 
         assert!(
-            !hours.is_open(et((2026, 4, 20), (9, 29, 59))),
-            "{exchange:?}"
-        );
-        assert!(
-            hours.is_open_regular(et((2026, 4, 20), (9, 30, 0))),
-            "{exchange:?}"
-        );
-        assert!(
             hours.is_open_regular(et((2026, 4, 20), (15, 59, 59))),
             "{exchange:?}"
         );
-        assert!(
-            !hours.is_open(et((2026, 4, 20), (16, 0, 0))),
-            "{exchange:?}"
-        );
-        assert!(
-            !hours.is_open(et((2026, 4, 18), (12, 0, 0))),
-            "{exchange:?}"
-        );
-        assert!(hours.extended.is_empty(), "{exchange:?}");
     }
 }
 
+#[test]
+fn partial_options_history_does_not_invent_a_queue_onset() {
+    // C1's current 07:30 queue is primary-supported, but its exact onset day is
+    // not. The fixed current snapshot includes it; the as-of selector keeps the
+    // sourced execution-only history instead of assigning an inferred date.
+    let current = hours_for_exchange(Exchange::CboeOptionsC1);
+    let historical =
+        hours_for_exchange_as_of(Exchange::CboeOptionsC1, et((2026, 4, 20), (12, 0, 0)));
+
+    assert!(current.is_open_extended(et((2026, 4, 20), (7, 30, 0))));
+    assert!(!historical.is_open(et((2026, 4, 20), (7, 30, 0))));
+    assert!(historical.is_open_regular(et((2026, 4, 20), (9, 30, 0))));
+}
+
 // These venues all traded this product family before the January-2010 audit
-// floor. Each identity has its own regulator/operator baseline rather than
-// inheriting another venue's coincident hours.
+// floor. Their exact execution grid is retained; no undated current queue is
+// backfilled into this historical surface.
 // https://www.sec.gov/rules/sro/cboe/2006/34-53246.pdf
 // https://www.sec.gov/rules/sro/pcx/34-53249.pdf
 // https://www.sec.gov/rules/sro/amex/2006/34-53244.pdf

@@ -38,6 +38,14 @@ fn sgt(date: (i32, u32, u32), time: (u32, u32, u32)) -> DateTime<Utc> {
         .with_timezone(&Utc)
 }
 
+fn bangkok(date: (i32, u32, u32), time: (u32, u32, u32)) -> DateTime<Utc> {
+    Asia::Bangkok
+        .with_ymd_and_hms(date.0, date.1, date.2, time.0, time.1, time.2)
+        .single()
+        .expect("fixture must be a valid Bangkok instant")
+        .with_timezone(&Utc)
+}
+
 fn day(year: i32, month: u32, day: u32) -> NaiveDate {
     NaiveDate::from_ymd_opt(year, month, day).expect("fixture must be a valid date")
 }
@@ -137,7 +145,10 @@ fn closed_trade_date_removes_the_prior_evening_but_not_the_next_trade_date() {
     );
     assert_eq!(
         calendar.session_bounds(ct((2026, 4, 19), (18, 0, 0))),
-        Some((ct((2026, 4, 20), (17, 0, 0)), ct((2026, 4, 21), (8, 30, 0)),))
+        Some((
+            ct((2026, 4, 20), (16, 45, 0)),
+            ct((2026, 4, 20), (17, 0, 0)),
+        ))
     );
 }
 
@@ -185,14 +196,14 @@ fn closed_crypto_monday_rolls_weekend_into_the_following_business_day() {
         assert_eq!(calendar.trade_date(instant), Some(tuesday));
     }
     assert!(calendar.is_closed_trade_date(monday, SessionKind::Both));
-    assert!(calendar.is_open(ct((2026, 6, 8), (16, 2, 0))));
+    assert!(calendar.is_open(ct((2026, 6, 8), (16, 1, 0))));
     assert_eq!(
-        calendar.trade_date(ct((2026, 6, 8), (16, 2, 0))),
+        calendar.trade_date(ct((2026, 6, 8), (16, 1, 0))),
         Some(tuesday)
     );
     assert_eq!(
         calendar.candle_start(ct((2026, 6, 7), (12, 0, 0)), CalendarResolution::Daily,),
-        Some(ct((2026, 6, 5), (16, 2, 0)))
+        Some(ct((2026, 6, 5), (16, 1, 0)))
     );
     assert_eq!(
         calendar.candle_end(ct((2026, 6, 7), (12, 0, 0)), CalendarResolution::Daily,),
@@ -200,7 +211,7 @@ fn closed_crypto_monday_rolls_weekend_into_the_following_business_day() {
     );
     assert_eq!(
         calendar.candle_start(ct((2026, 6, 7), (12, 0, 0)), CalendarResolution::Weekly,),
-        Some(ct((2026, 6, 5), (16, 2, 0)))
+        Some(ct((2026, 6, 5), (16, 1, 0)))
     );
     assert_eq!(
         calendar.candle_end(ct((2026, 6, 7), (12, 0, 0)), CalendarResolution::Weekly,),
@@ -211,6 +222,29 @@ fn closed_crypto_monday_rolls_weekend_into_the_following_business_day() {
         .with_day_policy(&Closed);
     assert_eq!(closed.session_bounds(ct((2026, 6, 5), (17, 0, 0))), None);
     assert_eq!(closed.trade_date(ct((2026, 6, 5), (17, 0, 0))), None);
+}
+
+#[test]
+fn closed_set_trade_date_removes_its_day_and_after_midnight_tail() {
+    let wednesday = day(2025, 5, 7);
+    let closed = [wednesday];
+    let policy = TestPolicy {
+        closed: &closed,
+        early: None,
+        late: None,
+    };
+    let calendar = calendar_for_exchange(Exchange::SetThailand).with_day_policy(&policy);
+
+    assert!(calendar.is_open_extended(bangkok((2025, 5, 7), (2, 50, 0))));
+    assert_eq!(
+        calendar.trade_date(bangkok((2025, 5, 7), (2, 50, 0))),
+        Some(day(2025, 5, 6))
+    );
+    assert!(!calendar.is_open(bangkok((2025, 5, 7), (12, 0, 0))));
+    assert!(!calendar.is_open(bangkok((2025, 5, 7), (19, 0, 0))));
+    assert!(!calendar.is_open(bangkok((2025, 5, 8), (2, 50, 0))));
+    assert!(calendar.is_open(bangkok((2025, 5, 8), (10, 0, 0))));
+    assert!(calendar.is_closed_trade_date(wednesday, SessionKind::Both));
 }
 
 #[test]
@@ -379,9 +413,13 @@ fn cme_mlk_and_presidents_day_close_at_noon_then_reopen_at_five() {
             )),
             Some(ct(
                 (holiday.year(), holiday.month(), holiday.day()),
-                (17, 0, 0),
+                (16, 45, 0),
             ))
         );
+        assert!(calendar.is_open_extended(ct(
+            (holiday.year(), holiday.month(), holiday.day()),
+            (17, 0, 0),
+        )));
     }
 }
 
@@ -466,7 +504,7 @@ fn next_session_scan_includes_day_fourteen_and_excludes_day_fifteen() {
     let calendar = calendar_for_exchange(Exchange::NyseNational);
     assert_eq!(
         calendar.next_session_open_after(et((2018, 5, 7), (7, 0, 0))),
-        Some(et((2018, 5, 21), (7, 0, 0)))
+        Some(et((2018, 5, 21), (6, 30, 0)))
     );
     assert_eq!(
         calendar.next_session_open_after(et((2018, 5, 6), (7, 0, 0))),
@@ -488,7 +526,10 @@ fn trade_dates_and_states_cover_the_globex_day() {
         calendar.trade_date(ct((2026, 4, 20), (10, 0, 0))),
         Some(monday)
     );
-    assert_eq!(calendar.trade_date(ct((2026, 4, 20), (15, 20, 0))), None);
+    assert_eq!(
+        calendar.trade_date(ct((2026, 4, 20), (15, 20, 0))),
+        Some(monday)
+    );
     assert_eq!(calendar.trade_date(ct((2026, 4, 20), (16, 30, 0))), None);
     assert_eq!(
         calendar.session_state(ct((2026, 4, 20), (10, 0, 0))),
@@ -500,7 +541,7 @@ fn trade_dates_and_states_cover_the_globex_day() {
     );
     assert_eq!(
         calendar.session_state(ct((2026, 4, 20), (15, 20, 0))),
-        SessionState::Halt
+        SessionState::OpenExtended
     );
     assert_eq!(
         calendar.session_state(ct((2026, 4, 20), (16, 30, 0))),

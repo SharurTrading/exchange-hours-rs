@@ -18,7 +18,7 @@ const README: &str = include_str!("../README.md");
 const VERIFICATION: &str = include_str!("../docs/schedules/verification.md");
 const SOURCES: &str = include_str!("../docs/schedules/sources.md");
 const UPDATING: &str = include_str!("../docs/schedules/updating.md");
-const AUDIT: &str = include_str!("../docs/schedules/audit-2026-08-21.md");
+const AUDIT: &str = include_str!("../docs/schedules/audit-2026-08-22.md");
 const DATE_EXCEPTIONS: &str = include_str!("../docs/schedules/date-exceptions.md");
 const UNSUPPORTED_FAMILIES: &str = include_str!("../docs/schedules/unsupported-families.md");
 
@@ -329,6 +329,10 @@ fn readme_and_audit_quantify_assurance_from_the_ledger() {
     let secondary = basis_count(&exchange_rows, "Secondary");
     let pragmatic = basis_count(&exchange_rows, "Pragmatic");
     let known_issues = basis_count(&real_exchange_rows, "Known issue");
+    let requiring_reconciliation = partial
+        + basis_count(&real_exchange_rows, "Secondary")
+        + basis_count(&real_exchange_rows, "Pragmatic")
+        + known_issues;
     let synthetic = basis_count(&exchange_rows, "Synthetic");
     let verified_keys =
         basis_count(&real_key_rows, "Primary") + basis_count(&real_key_rows, "Partial");
@@ -362,7 +366,7 @@ fn readme_and_audit_quantify_assurance_from_the_ledger() {
             real_exchange_rows.len()
         ),
         format!(
-            "**Non-synthetic profiles requiring reconciliation:** `{known_issues} of {}`",
+            "**Non-synthetic profiles requiring reconciliation:** `{requiring_reconciliation} of {}`",
             real_exchange_rows.len()
         ),
         format!(
@@ -404,7 +408,7 @@ fn readme_and_audit_quantify_assurance_from_the_ledger() {
     );
 
     assert!(
-        README.contains("docs/schedules/audit-2026-08-21.md"),
+        README.contains("docs/schedules/audit-2026-08-22.md"),
         "README must link the dated audit report"
     );
 }
@@ -448,6 +452,13 @@ fn conditional_future_revisions_remain_unencoded_pending_confirmation() {
         "**Nasdaq — 2026-12-06:**",
         "**Cboe EDGX — 2026-12-06:**",
         "**FINRA TRFs — 2026-12-06:**",
+        "**NYSE Arca — target 2026-12-06:**",
+        "**MEMX — target 2026-12-06:**",
+        "**24X overnight phase — no unconditional day:**",
+        "**MX2 Options — target 2026-09-14:**",
+        "**IEX Options — target 2026-10-02:**",
+        "**Green Impact Exchange — no unconditional day:**",
+        "**Nasdaq MRX Options 3C — awaiting operative alert:**",
     ] {
         assert!(
             pending.contains(revision),

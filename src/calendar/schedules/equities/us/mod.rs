@@ -12,6 +12,7 @@ mod ats;
 mod cboe;
 mod equities;
 mod history;
+mod independent;
 mod nyse;
 mod options;
 mod trfs;
@@ -28,9 +29,14 @@ pub(crate) use history::{
     memx_profile_at, miax_pearl_profile_at, nasdaq_bx_profile_at, nasdaq_profile_at,
     nasdaq_psx_profile_at,
 };
+pub(crate) use independent::{
+    LTSE_PROFILE, TWENTY_FOUR_X_PROFILE, TXSE_PROFILE, ltse_profile_at, twenty_four_x_profile_at,
+    txse_profile_at,
+};
 pub(crate) use nyse::{
     NYSE_AMERICAN_PROFILE, NYSE_ARCA_PROFILE, NYSE_NATIONAL_PROFILE, NYSE_PROFILE,
-    NYSE_TEXAS_PROFILE, nyse_american_profile_at, nyse_national_profile_at, nyse_texas_profile_at,
+    NYSE_TEXAS_PROFILE, nyse_american_profile_at, nyse_arca_profile_at, nyse_national_profile_at,
+    nyse_profile_at, nyse_texas_profile_at,
 };
 pub(crate) use options::{
     BOX_OPTIONS_PROFILE, CBOE_BZX_OPTIONS_PROFILE, CBOE_C2_OPTIONS_PROFILE,
@@ -39,10 +45,12 @@ pub(crate) use options::{
     MIAX_SAPPHIRE_OPTIONS_PROFILE, NASDAQ_BX_OPTIONS_PROFILE, NASDAQ_GEMX_OPTIONS_PROFILE,
     NASDAQ_ISE_OPTIONS_PROFILE, NASDAQ_MRX_OPTIONS_PROFILE, NASDAQ_NOM_OPTIONS_PROFILE,
     NASDAQ_PHLX_OPTIONS_PROFILE, NYSE_AMERICAN_OPTIONS_PROFILE, NYSE_ARCA_OPTIONS_PROFILE,
-    bzx_options_profile_at, c1_profile_at, c2_options_profile_at, edgx_options_profile_at,
-    memx_options_profile_at, miax_emerald_options_profile_at, miax_options_profile_at,
-    miax_pearl_options_profile_at, miax_sapphire_options_profile_at, nasdaq_bx_options_profile_at,
-    nasdaq_gemx_profile_at, nasdaq_mrx_profile_at,
+    box_options_profile_at, bzx_options_profile_at, c1_profile_at, c2_options_profile_at,
+    edgx_options_profile_at, memx_options_profile_at, miax_emerald_options_profile_at,
+    miax_options_profile_at, miax_pearl_options_profile_at, miax_sapphire_options_profile_at,
+    nasdaq_bx_options_profile_at, nasdaq_gemx_profile_at, nasdaq_ise_profile_at,
+    nasdaq_mrx_profile_at, nasdaq_nom_profile_at, nasdaq_phlx_profile_at,
+    nyse_american_options_profile_at, nyse_arca_options_profile_at,
 };
 pub(crate) use trfs::{
     FINRA_TRF_CARTERET_PROFILE, FINRA_TRF_CHICAGO_PROFILE, FINRA_TRF_NYSE_PROFILE,

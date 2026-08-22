@@ -29,7 +29,7 @@ use super::schedules::from_profile;
 use super::schedules::futures::international::{eurex_profile_at, sgx_profile_at};
 use super::schedules::futures::us::{
     cbot_profile_at, cfe_profile_at, cme_profile_at, cryptocurrency_profile_at,
-    energy_metals_profile_at, ice_us_fang_profile_at, interest_rates_profile_at,
+    energy_metals_profile_at, fx_profile_at, ice_us_fang_profile_at, interest_rates_profile_at,
     livestock_profile_at,
 };
 use super::{Exchange, MarketHours, SessionRule};
@@ -104,21 +104,27 @@ market_hours_keys! {
     #[non_exhaustive]
     #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
     pub enum MarketHoursKey {
-        /// U.S. equity-index Globex grid across CME and CBOT, including YM/MYM;
-        /// excludes Nikkei 225 Dollar (NKD), whose historical grid differs.
+        /// CME/CBOT equity-index futures on the sourced U.S. grid, including
+        /// YM/MYM. Excludes full-size S&P 500 (`SP`), Nikkei 225 Dollar (`NKD`),
+        /// and BTIC/TACO products, whose historical or current grids differ.
         GlobexEquityIndex => "globex_equity_index",
         /// NYMEX `CL/MCL/QM`, `NG/MNG/QG`, `HO/RB/BZ`, and `PL/PA`, plus
         /// COMEX `GC/MGC`, `SI/SIL`, and `HG/MHG`, including their shared
-        /// energy/metals history.
+        /// energy/metals history. Excludes TAS/TAM/BTIC, options, and products
+        /// whose own specification publishes a different grid.
         GlobexEnergy => "globex_energy",
-        /// CBOT grains/oilseeds Globex hours.
+        /// Standard-size CBOT grain/oilseed Globex hours; excludes mini-sized
+        /// Corn, Soybean, and Wheat futures, whose 2012 schedule diverged.
         GlobexGrains => "globex_grains",
-        /// CME FX Globex hours.
+        /// CME FX futures on the standard 17:00-16:00 CT Globex grid; excludes
+        /// eFix, BTIC, TAS, options, and products with a different specification.
         GlobexFx => "globex_fx",
         /// CBOT U.S. Treasury (`ZT/ZF/ZN/TN/ZB/UB` and micros), 30-Day Fed
-        /// Funds (`ZQ`), and CME SOFR (`SR1/SR3`) Globex hours.
+        /// Funds (`ZQ`), and CME SOFR (`SR1/SR3`) Globex hours. Excludes
+        /// options and separately specified interest-rate product families.
         GlobexInterestRates => "globex_interest_rates",
-        /// CME Live Cattle, Feeder Cattle, and Lean Hog Globex hours.
+        /// CME Live Cattle, Feeder Cattle, and Lean Hog futures Globex hours;
+        /// excludes options and separately specified TAS sessions.
         GlobexLivestock => "globex_livestock",
         /// CME non-spot-quoted cryptocurrency futures Globex hours.
         ///
@@ -167,14 +173,17 @@ pub fn hours_for_market_hours_key(key: MarketHoursKey) -> MarketHours {
 /// Resolves the fixed [`MarketHours`] snapshot in effect for `key` at `as_of`.
 ///
 /// Sourced histories are selected independently for each product family,
-/// including CME Group equity-index, energy/metals, grains, interest-rate,
+/// including CME Group equity-index, energy/metals, grains, FX, interest-rate,
 /// livestock, and cryptocurrency grids. Keys with no in-scope recorded change
 /// return their current snapshot. Dates before the January-2010 audit floor
 /// receive the oldest audited profile. For launch-dated families — CME
 /// cryptocurrency, ICE U.S. NYSE FANG+, and SGX Three-Month SORA — a pre-launch
 /// date returns an explicit sessionless profile. A member listed after its
 /// family began does not create a key-level revision; callers enforce product
-/// launch dates in their catalog.
+/// launch dates in their catalog. Some CME histories have an exact current
+/// fixed profile but no primary day for an older Pre-Open or PCP onset. Their
+/// dated selectors intentionally omit only that unsourced phase rather than
+/// fabricate a cutover; use [`session_profile`] for the exact current snapshot.
 ///
 /// This returns one snapshot. Use
 /// [`calendar_for_market_hours_key`](super::calendar_for_market_hours_key) for
@@ -187,6 +196,7 @@ pub fn hours_for_market_hours_key_as_of(key: MarketHoursKey, as_of: DateTime<Utc
         MarketHoursKey::GlobexEquityIndex => cme_profile_at(as_of),
         MarketHoursKey::GlobexEnergy => energy_metals_profile_at(as_of),
         MarketHoursKey::GlobexGrains => cbot_profile_at(as_of),
+        MarketHoursKey::GlobexFx => fx_profile_at(as_of),
         MarketHoursKey::GlobexInterestRates => interest_rates_profile_at(as_of),
         MarketHoursKey::GlobexLivestock => livestock_profile_at(as_of),
         MarketHoursKey::GlobexCryptocurrency => cryptocurrency_profile_at(as_of),
@@ -194,7 +204,7 @@ pub fn hours_for_market_hours_key_as_of(key: MarketHoursKey, as_of: DateTime<Utc
         MarketHoursKey::Eurex => eurex_profile_at(as_of),
         MarketHoursKey::IceUs => ice_us_fang_profile_at(as_of),
         MarketHoursKey::Sgx => sgx_profile_at(as_of),
-        MarketHoursKey::GlobexFx | MarketHoursKey::AlwaysOpen => return current,
+        MarketHoursKey::AlwaysOpen => return current,
     };
     from_profile(Exchange::Unknown, profile)
 }

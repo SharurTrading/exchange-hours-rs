@@ -11,6 +11,12 @@ change to this standalone repository must follow.
   randomness. Same inputs, same answer, forever. Enforced structurally where
   possible: `chrono` is built with `default-features = false` so `Utc::now()`
   does not compile here. Do not add a dependency or code path that breaks this.
+- **LAW-PANIC** — production queries are total: they do not panic, hang, or use
+  unreachable fallbacks. Invalid raw `SessionRule` values may return
+  unspecified answers, but still return normally; absence and bounded-search
+  exhaustion are explicit.
+- **STYLE-LOG** — library code emits no output. Diagnostics belong to callers;
+  tests may print only when it makes a failure reproducible.
 - **TEST-LAYOUT** — every test is an integration test over the public surface.
   Tests get nothing callers do not also get: no `#[cfg(test)]` back doors, no
   test-only methods on production types, no `pub(crate)` leaks for test access.
@@ -42,9 +48,18 @@ change to this standalone repository must follow.
   encode one complete local-day span; omit a rule to express no session.
 - **DST bias is asymmetric on purpose**: opens resolve earliest, closes latest.
   Never "simplify" this to a single bias.
-- **Regular vs extended**: continuous trading is `regular`; auction call
-  windows, order-entry-only phases, and post-close/trade-at-last sessions are
+- **Regular vs extended.** A venue's primary/core continuous session, or a
+  derivatives operator's explicitly published regular-trading-hours (`RTH`)
+  session, is `regular`. Electronic or overnight trading outside that RTH may
+  be `extended` when the owner scope says so. Auction calls, pre-open and other
+  order-entry-only windows, and post-close/trade-at-last sessions are always
   `extended`. Lunch breaks are gaps between regular rules, not rules.
+- **Cash-equity venue envelope.** An `Exchange` cash-equity profile is the
+  availability union of the venue's automated order-capable systems within the
+  row's documented scope; it does not claim every listed security is eligible
+  for every phase. Include executable and accepted order-entry phases. Exclude
+  pure reporting, cancellation-only, enquiry, and administrative states, and
+  systems that are separately modeled identities.
 - **Product-neutral family selection.** `MarketHoursKey` names a sourced
   schedule family. This crate never maps symbols, roots, product codes, or MICs
   to keys; that belongs to a caller's instrument catalog. A venue-keyed default

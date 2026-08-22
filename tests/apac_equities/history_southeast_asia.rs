@@ -26,6 +26,63 @@ fn thailand_cutover() {
 }
 
 #[test]
+fn thailand_dr_night_launch_and_trade_date() {
+    let tz = Asia::Bangkok;
+    let calendar = calendar_for_exchange(Exchange::SetThailand);
+    let monday_lunch = local(tz, (2025, 5, 5), (12, 30, 0));
+    let launch_lunch = local(tz, (2025, 5, 6), (12, 30, 0));
+    let prelaunch_tail = local(tz, (2025, 5, 6), (2, 50, 0));
+    let night_preopen = local(tz, (2025, 5, 6), (18, 45, 0));
+    let night_regular = local(tz, (2025, 5, 6), (19, 0, 0));
+    let night_close_call = local(tz, (2025, 5, 7), (2, 45, 0));
+    let final_close = local(tz, (2025, 5, 7), (3, 0, 0));
+
+    assert!(!calendar.is_open(monday_lunch));
+    assert!(!calendar.is_open(prelaunch_tail));
+    assert!(calendar.is_open_regular(launch_lunch));
+    assert!(calendar.is_open_extended(night_preopen));
+    assert!(calendar.is_open_regular(night_regular));
+    assert!(calendar.is_open_extended(night_close_call));
+    assert!(!calendar.is_open(final_close));
+
+    let trade_date = launch_lunch.with_timezone(&tz).date_naive();
+    for instant in [launch_lunch, night_preopen, night_regular, night_close_call] {
+        assert_eq!(calendar.trade_date(instant), Some(trade_date));
+    }
+    assert_eq!(
+        calendar.candle_end(night_regular, CalendarResolution::Daily),
+        Some(final_close)
+    );
+    assert_eq!(
+        calendar.session_state(local(tz, (2025, 5, 6), (17, 30, 0))),
+        SessionState::Halt
+    );
+    assert_eq!(calendar.session_state(final_close), SessionState::Closed);
+    assert!(!calendar.is_closed_trade_date(trade_date, SessionKind::Both));
+}
+
+#[test]
+fn thailand_monthly_candles_group_the_after_midnight_close_by_trade_date() {
+    let tz = Asia::Bangkok;
+    let calendar = calendar_for_exchange(Exchange::SetThailand);
+    let march_31 = local(tz, (2026, 3, 31), (12, 0, 0));
+    let march_close = local(tz, (2026, 4, 1), (3, 0, 0));
+
+    assert_eq!(
+        calendar.candle_end(march_31, CalendarResolution::Daily),
+        Some(march_close)
+    );
+    assert_eq!(
+        calendar.candle_end(march_31, CalendarResolution::Monthly),
+        Some(march_close)
+    );
+    assert_eq!(
+        calendar.candle_start(march_31, CalendarResolution::Monthly),
+        Some(local(tz, (2026, 3, 2), (9, 30, 0)))
+    );
+}
+
+#[test]
 fn indonesia_cutovers() {
     let tz = Asia::Jakarta;
     let probe = (2026, 8, 19);
@@ -45,6 +102,9 @@ fn indonesia_cutovers() {
     let (pre, post) = cutover_sides(Exchange::Idx, tz, (2023, 4, 3));
     assert!(!pre.is_open(at_1530));
     assert!(post.is_open_regular(at_1530));
+    let at_1620 = local(tz, probe, (16, 20, 0));
+    assert!(!pre.is_open(at_1620));
+    assert!(post.is_open_extended(at_1620));
 }
 
 #[test]
@@ -117,23 +177,28 @@ fn vietnam_cutover_and_oldest_profile() {
     assert!(pre.is_open_extended(at_0845));
     assert!(post.is_open_regular(at_0845));
     let at_1030 = local(tz, probe, (10, 30, 0));
-    assert!(!pre.is_open(at_1030));
+    assert!(pre.is_open_extended(at_1030));
     assert!(post.is_open_extended(at_1030));
+    assert!(post.is_open_extended(local(tz, probe, (10, 50, 0))));
 
     let (pre, post) = cutover_sides(Exchange::Hose, tz, (2012, 3, 5));
     let at_1045 = local(tz, probe, (10, 45, 0));
-    assert!(!pre.is_open(at_1045));
+    assert!(!pre.is_open_regular(at_1045));
+    assert!(pre.is_open_extended(at_1045));
     assert!(post.is_open_regular(at_1045));
+    assert!(post.is_open_extended(local(tz, probe, (14, 10, 0))));
 
     let (pre, post) = cutover_sides(Exchange::Hose, tz, (2013, 7, 22));
     let at_1415 = local(tz, probe, (14, 15, 0));
     assert!(!pre.is_open(at_1415));
     assert!(post.is_open_regular(at_1415));
+    assert!(post.is_open_extended(local(tz, probe, (14, 50, 0))));
 
     // The archived operator PDF supplies the exact January-2010 baseline.
     let oldest = hours_for_exchange_as_of(Exchange::Hose, local(tz, (2010, 1, 4), (10, 0, 0)));
     assert!(oldest.is_open_regular(local(tz, probe, (10, 0, 0))));
     assert!(oldest.is_open_extended(local(tz, probe, (10, 15, 0))));
-    assert!(!oldest.is_open(local(tz, probe, (10, 30, 0))));
+    assert!(oldest.is_open_extended(local(tz, probe, (10, 30, 0))));
+    assert!(!oldest.is_open(local(tz, probe, (11, 0, 0))));
     assert!(!oldest.is_open(local(tz, probe, (14, 15, 0))));
 }

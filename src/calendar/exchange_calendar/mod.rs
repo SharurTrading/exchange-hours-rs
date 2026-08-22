@@ -210,9 +210,10 @@ impl ExchangeCalendar {
     ///
     /// The date is taken from the effective trading day's final close, so a
     /// Sunday-evening Globex phase normally maps to Monday. An identified
-    /// family can retain a sourced convention instead; CME cryptocurrency's
-    /// weekend blocks use the following open business date. Closed instants
-    /// return `None`, including halts and maintenance gaps.
+    /// calendar can retain a sourced convention instead: SET's after-midnight
+    /// DR night phase keeps its prior local opening date, and CME
+    /// cryptocurrency's weekend blocks use the following open business date.
+    /// Closed instants return `None`, including halts and maintenance gaps.
     #[must_use]
     pub fn trade_date(self, instant: DateTime<Utc>) -> Option<NaiveDate> {
         status::trade_date(&QueryContext::date_aware(self), instant)

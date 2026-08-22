@@ -138,14 +138,18 @@ reviews:
         restoration rows. Cross-zone recurring selectors must recompute the
         reference-zone relationship per candidate opening day.
 
-        Preserve the documented product/segment envelope. Do not silently widen a
-        product-family schedule to a whole venue, include cancellation/reporting-only
-        phases, or omit executable auctions/order-entry/TAL phases. For a randomized
-        per-security auction uncross, accept either the published nominal phase edge
-        or a conservative venue envelope when the owner documents that choice; do not
-        demand ticker-level outcomes. Unrelated venues keep distinct named profiles
-        even when rule slices coincide; sharing is only for genuinely coupled
-        operator/product families.
+        Preserve the documented product/segment envelope. A cash-equity Exchange
+        profile is the venue-level union of its automated executable and accepted
+        order-entry phases; security eligibility may be narrower. Exclude pure
+        reporting, cancellation-only, enquiry, and administrative states and systems
+        modeled as distinct identities. For derivatives, Regular means the primary
+        session or operator-published RTH; electronic/overnight trading outside RTH
+        may be Extended. Never omit executable auctions, queues, or TAL phases. For a
+        randomized per-security auction uncross, accept either the published nominal
+        phase edge or a conservative venue envelope when the owner documents that
+        choice; do not demand ticker-level outcomes. Unrelated venues keep distinct
+        named profiles even when rule slices coincide; sharing is only for genuinely
+        coupled operator/product families.
 
     - path: "src/calendar/futures_profile{.rs,/**/*.rs}"
       instructions: |

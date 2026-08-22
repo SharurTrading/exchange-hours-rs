@@ -50,28 +50,31 @@ exchanges! {
         /// Nasdaq PSX, the former Philadelphia Stock Exchange equities book;
         /// early session from 08:00 ET.
         NasdaqPsx => "nasdaq_psx",
-        /// Cboe BZX Equities — early session from 04:00 ET (07:00 before
-        /// 2025-05-01).
+        /// Cboe BZX Equities — accepts orders from 02:30 ET for its 04:00
+        /// active early session.
         CboeBzx => "cboe_bzx",
-        /// Cboe BYX Equities — early session from 07:00 ET.
+        /// Cboe BYX Equities — accepts orders from 06:00 ET for its 07:00
+        /// active early session.
         CboeByx => "cboe_byx",
-        /// Cboe EDGA Equities — early session from 07:00 ET.
+        /// Cboe EDGA Equities — accepts orders from 06:00 ET for its 07:00
+        /// active early session.
         CboeEdga => "cboe_edga",
-        /// Cboe EDGX Equities — early session from 04:00 ET (07:00 before
-        /// 2021-03-08).
+        /// Cboe EDGX Equities — accepts orders from 02:30 ET for its 04:00
+        /// active early session.
         CboeEdgx => "cboe_edgx",
-        /// New York Stock Exchange — the core session only; NYSE Group
-        /// extended trading happens on Arca, American, National, and Texas.
+        /// New York Stock Exchange — accepts orders from 06:30 ET before its
+        /// 09:30 core session.
         Nyse => "nyse",
-        /// NYSE Arca — early session from 04:00 ET, unlike the NYSE core book.
+        /// NYSE Arca — accepts orders from 02:30 ET for its 04:00 early session.
         NyseArca => "nyse_arca",
-        /// NYSE American, formerly the American Stock Exchange — early
-        /// session from 07:00 ET.
+        /// NYSE American, formerly the American Stock Exchange — accepts
+        /// orders from 06:30 ET for its 07:00 early session.
         NyseAmerican => "nyse_american",
-        /// NYSE National — early session from 07:00 ET.
+        /// NYSE National — accepts orders from 06:30 ET for its 07:00 early
+        /// session.
         NyseNational => "nyse_national",
-        /// NYSE Texas, formerly NYSE Chicago — no sessions before its
-        /// 2025-03-31 go-live.
+        /// NYSE Texas, formerly NYSE Chicago/CHX — accepts orders from 06:30
+        /// ET for its 07:00 early session.
         NyseTexas => "nyse_texas",
         /// MEMX, the Members Exchange — early session from 04:00 ET since
         /// 2025-05-19.
@@ -81,6 +84,12 @@ exchanges! {
         /// IEX, the Investors Exchange — System Hours 08:00–17:00 ET,
         /// narrower than the Reg NMS extended default at both ends.
         Iex => "iex",
+        /// Long-Term Stock Exchange (LTSE) — System Hours 08:00–17:00 ET.
+        Ltse => "ltse",
+        /// 24X National Exchange — current sessions span 04:00–20:00 ET.
+        TwentyFourX => "24x",
+        /// Texas Stock Exchange (TXSE) — sessions span 08:00–17:00 ET.
+        Txse => "txse",
         /// Blue Ocean ATS, an overnight-only US equities ATS.
         BlueOceanAts => "blue_ocean_ats",
         /// FINRA/Nasdaq Trade Reporting Facility, Carteret — an off-exchange
@@ -91,44 +100,59 @@ exchanges! {
         /// FINRA/NYSE Trade Reporting Facility.
         FinraTrfNyse => "finra_trf_nyse",
         // US Options (ET)
-        /// Cboe Options Exchange (C1) — ordinary individual-stock options'
-        /// executable regular session.
+        /// Cboe Options Exchange (C1) — accepts ordinary individual-stock
+        /// options orders from 07:30 ET before its regular session.
         CboeOptionsC1 => "cboe_options_c1",
-        /// Cboe C2 — ordinary individual-stock options' regular session.
+        /// Cboe C2 — accepts ordinary individual-stock options orders from
+        /// 07:30 ET before its regular session.
         CboeC2Options => "cboe_c2_options",
-        /// Cboe BZX — ordinary individual-stock options' regular session.
+        /// Cboe BZX Options — accepts ordinary individual-stock options orders
+        /// from 07:30 ET before its regular session.
         CboeBzxOptions => "cboe_bzx_options",
-        /// Cboe EDGX — ordinary individual-stock options' regular session.
+        /// Cboe EDGX Options — accepts ordinary individual-stock options
+        /// orders from 07:30 ET before its regular session.
         CboeEdgxOptions => "cboe_edgx_options",
-        /// NYSE Arca — ordinary individual-stock options' regular session.
+        /// NYSE Arca Options — accepts ordinary individual-stock options
+        /// orders from 06:00 ET before its regular session.
         NyseArcaOptions => "nyse_arca_options",
-        /// NYSE American — ordinary individual-stock options' regular session.
+        /// NYSE American Options — accepts ordinary individual-stock options
+        /// orders from 06:00 ET before its regular session.
         NyseAmericanOptions => "nyse_american_options",
-        /// Nasdaq PHLX — ordinary individual-stock options' regular session.
+        /// Nasdaq PHLX — accepts ordinary individual-stock options orders from
+        /// 07:30 ET before its regular session.
         NasdaqPhlx => "nasdaq_phlx",
-        /// Nasdaq ISE — ordinary individual-stock options' regular session.
+        /// Nasdaq ISE — accepts ordinary individual-stock options orders from
+        /// 06:00 ET before its regular session.
         NasdaqIse => "nasdaq_ise",
-        /// Nasdaq Options Market — ordinary individual-stock options' regular
-        /// session.
+        /// Nasdaq Options Market — accepts ordinary individual-stock options
+        /// orders from 07:30 ET before its regular session.
         NasdaqNom => "nasdaq_nom",
-        /// Nasdaq MRX — ordinary individual-stock options' regular session.
+        /// Nasdaq MRX — accepts ordinary individual-stock options orders from
+        /// 06:00 ET before its regular session.
         NasdaqMrx => "nasdaq_mrx",
-        /// Nasdaq GEMX — ordinary individual-stock options' regular session.
+        /// Nasdaq GEMX — accepts ordinary individual-stock options orders from
+        /// 06:00 ET before its regular session.
         NasdaqGemx => "nasdaq_gemx",
-        /// Nasdaq Texas Options (stable BX wire name) — ordinary
-        /// individual-stock options' regular session.
+        /// Nasdaq Texas Options (stable BX wire name) — accepts ordinary
+        /// individual-stock options orders from 07:30 ET.
         NasdaqBxOptions => "nasdaq_bx_options",
-        /// MIAX Options — ordinary individual-stock options' regular session.
+        /// MIAX Options — accepts ordinary individual-stock options orders
+        /// from 07:30 ET before its regular session.
         MiaxOptions => "miax_options",
-        /// MIAX Emerald — ordinary individual-stock options' regular session.
+        /// MIAX Emerald — accepts ordinary individual-stock options orders
+        /// from 07:30 ET before its regular session.
         MiaxEmeraldOptions => "miax_emerald_options",
-        /// MIAX Pearl — ordinary individual-stock options' regular session.
+        /// MIAX Pearl — accepts ordinary individual-stock options orders from
+        /// 07:30 ET before its regular session.
         MiaxPearlOptions => "miax_pearl_options",
-        /// MIAX Sapphire — ordinary individual-stock options' regular session.
+        /// MIAX Sapphire — accepts ordinary individual-stock options orders
+        /// from 07:30 ET before its regular session.
         MiaxSapphireOptions => "miax_sapphire_options",
-        /// BOX — ordinary individual-stock options' regular session.
+        /// BOX Options — accepts ordinary individual-stock options orders from
+        /// 07:00 ET before its regular session.
         BoxOptions => "box_options",
-        /// MEMX — ordinary individual-stock options' regular session.
+        /// MEMX Options — ordinary individual-stock options' 09:30–16:00
+        /// regular session; orders are rejected before 09:30.
         MemxOptions => "memx_options",
         // US Futures
         /// CME, the Chicago Mercantile Exchange; the venue default is the

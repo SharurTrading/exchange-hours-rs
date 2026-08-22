@@ -18,16 +18,19 @@ const THU_ONLY: [bool; 7] = [false, false, false, true, false, false, false];
 // launch dates are intentionally not family-clock revisions.
 //
 // CME filing 26-114 changed all non-spot-quoted cryptocurrency futures to
-// 24/7 Globex trading effective Friday 2026-05-29: maintenance is 16:00-16:02
-// CT Monday-Friday and 02:00-04:00 CT Saturday. A one-day notice extended the
-// Saturday 2026-08-01 window through 09:00 CT, then restored the normal grid.
+// 24/7 Globex trading effective Friday 2026-05-29: matching maintenance is
+// 16:00-16:02 CT Monday-Friday with Pre-Open from 16:01, and 02:00-04:00 CT
+// Saturday with Pre-Open from 03:45. A one-day notice extended the Saturday
+// 2026-08-01 window through 09:00 CT without publishing a replacement Pre-Open,
+// then restored the normal grid.
 //
 // `SessionRule` spans at most one local midnight, so the multi-day weekend
 // session is stored in adjacent pieces. The key-backed calendar joins those
-// storage-only pieces at query time, while retaining the 02:00-04:00 Saturday
-// break. Both weekend blocks carry the following open business date: normally
-// Monday, or Tuesday when a caller policy closes Monday. The corresponding
-// daily bar runs from Friday 16:02 through that business date's 16:00 close.
+// storage-only pieces at query time, while retaining the 02:00-03:45 Saturday
+// closed break and 03:45-04:00 Pre-Open. Both weekend blocks carry the following
+// open business date: normally Monday, or Tuesday when a caller policy closes
+// Monday. The corresponding daily bar runs from Friday 16:01 Pre-Open through
+// that business date's 16:00 close.
 // https://www.cmegroup.com/notices/ser/2017/12/SER-8051R.html
 // https://www.cmegroup.com/market-regulation/rule-filings/2017/12/17-417.pdf
 // https://www.cmegroup.com/notices/clearing/2021/01/Chadv21-028.pdf
@@ -51,7 +54,7 @@ static CURRENT_EXTENDED: &[SessionRule] = &[
     },
     SessionRule {
         days: MON_FRI,
-        open_ssm: 16 * 3600 + 2 * 60,
+        open_ssm: 16 * 3600 + 60,
         close_ssm: 24 * 3600,
     },
     SessionRule {
@@ -61,7 +64,7 @@ static CURRENT_EXTENDED: &[SessionRule] = &[
     },
     SessionRule {
         days: SAT_ONLY,
-        open_ssm: 4 * 3600,
+        open_ssm: 3 * 3600 + 45 * 60,
         close_ssm: 24 * 3600,
     },
     SessionRule {
@@ -73,8 +76,9 @@ static CURRENT_EXTENDED: &[SessionRule] = &[
 
 // The permanent 24/7 normal week did not govern the morning of its first day:
 // that trading block still began Thursday at 17:00 and closed Friday at 16:00.
-// The new schedule then opened at 16:02. Keeping this one-day bridge prevents
-// the historical Thursday open from being rewritten as Friday midnight.
+// The new schedule then entered Pre-Open at 16:01 and matching resumed at
+// 16:02. Keeping this one-day bridge prevents the historical Thursday open
+// from being rewritten as Friday midnight.
 static EXTENDED_2026_05_29: &[SessionRule] = &[
     SessionRule {
         days: THU_ONLY,
@@ -83,7 +87,7 @@ static EXTENDED_2026_05_29: &[SessionRule] = &[
     },
     SessionRule {
         days: FRI,
-        open_ssm: 16 * 3600 + 2 * 60,
+        open_ssm: 16 * 3600 + 60,
         close_ssm: 24 * 3600,
     },
 ];
@@ -96,7 +100,7 @@ static EXTENDED_2026_08_01: &[SessionRule] = &[
     },
     SessionRule {
         days: MON_FRI,
-        open_ssm: 16 * 3600 + 2 * 60,
+        open_ssm: 16 * 3600 + 60,
         close_ssm: 24 * 3600,
     },
     SessionRule {

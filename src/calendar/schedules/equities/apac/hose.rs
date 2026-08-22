@@ -8,9 +8,10 @@ use super::super::StaticHoursProfile;
 use crate::calendar::SessionRule;
 use crate::calendar::rule::MON_FRI;
 
-// HOSE order book: opening call 09:00–09:15, continuous
-// 09:15–11:30/13:00–14:30, closing call 14:30–14:45. Negotiated put-through
-// trading to 15:00 is excluded from the generic order-book profile.
+// HOSE venue envelope: opening call 09:00–09:15, continuous
+// 09:15–11:30/13:00–14:30, closing call 14:30–14:45, then negotiated
+// put-through trading through 15:00. Put-through is extended by convention;
+// not every security is eligible for every phase.
 // https://staticfile.hsx.vn/Uploads/UploadDocuments/2372209/2.Trading%20hours.pdf
 static HOSE_REGULAR_CURRENT: &[SessionRule] = &[
     SessionRule {
@@ -34,6 +35,11 @@ static HOSE_EXTENDED_CURRENT: &[SessionRule] = &[
         days: MON_FRI,
         open_ssm: 14 * 3600 + 30 * 60,
         close_ssm: 14 * 3600 + 45 * 60,
+    },
+    SessionRule {
+        days: MON_FRI,
+        open_ssm: 14 * 3600 + 45 * 60,
+        close_ssm: 15 * 3600,
     },
 ];
 pub(crate) static HOSE_PROFILE_CURRENT: StaticHoursProfile = StaticHoursProfile {
@@ -72,6 +78,11 @@ static HOSE_EXTENDED_2012: &[SessionRule] = &[
         open_ssm: 13 * 3600 + 45 * 60,
         close_ssm: 14 * 3600,
     },
+    SessionRule {
+        days: MON_FRI,
+        open_ssm: 14 * 3600,
+        close_ssm: 14 * 3600 + 15 * 60,
+    },
 ];
 pub(crate) static HOSE_PROFILE_2012: StaticHoursProfile = StaticHoursProfile {
     tz: Asia::Ho_Chi_Minh,
@@ -100,6 +111,11 @@ static HOSE_EXTENDED_2010_09_13: &[SessionRule] = &[
         open_ssm: 10 * 3600 + 30 * 60,
         close_ssm: 10 * 3600 + 45 * 60,
     },
+    SessionRule {
+        days: MON_FRI,
+        open_ssm: 10 * 3600 + 45 * 60,
+        close_ssm: 11 * 3600,
+    },
 ];
 static HOSE_PROFILE_2010_09_13: StaticHoursProfile = StaticHoursProfile {
     tz: Asia::Ho_Chi_Minh,
@@ -127,6 +143,11 @@ static HOSE_EXTENDED_AT_2010_FLOOR: &[SessionRule] = &[
         days: MON_FRI,
         open_ssm: 10 * 3600 + 15 * 60,
         close_ssm: 10 * 3600 + 30 * 60,
+    },
+    SessionRule {
+        days: MON_FRI,
+        open_ssm: 10 * 3600 + 30 * 60,
+        close_ssm: 11 * 3600,
     },
 ];
 static HOSE_PROFILE_AT_2010_FLOOR: StaticHoursProfile = StaticHoursProfile {

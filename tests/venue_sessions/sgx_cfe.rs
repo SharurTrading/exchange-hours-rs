@@ -112,8 +112,9 @@ fn sgx_sunday_closed() {
 // ---------------------------------------------------------------------------
 // CFE (Cboe Futures — VIX)
 //   RTH 08:30–15:00 CT, post-settlement ETH 15:00–16:00 CT (Mon–Fri),
-//   Sunday queue 16:00–17:00, Mon–Thu queue 16:45–17:00, and overnight
-//   Sun+Mon–Thu 17:00→08:30. Effective 2021-12-06; source pins follow.
+//   Sunday queue 16:00:06–17:00, Mon–Thu queue 16:45:06–17:00, and overnight
+//   Sun+Mon–Thu 17:00→08:30. Queue starts use the conservative latest edge of
+//   CFE's randomized acceptance window. Effective 2021-12-06.
 // ---------------------------------------------------------------------------
 
 #[test]
@@ -125,16 +126,19 @@ fn cfe_sunday_overnight() {
 
 #[test]
 fn cfe_pre_open_queues_are_extended() {
-    // CFE-2021-028 P&P XIX accepts non-executable orders in a Sunday
-    // 16:00–17:00 queue and a Monday–Thursday 16:45–17:00 queue.
+    // CFE-2021-028 P&P XIX accepts non-executable orders in queues whose
+    // starts are randomized through six seconds after 16:00 / 16:45.
     // https://cdn.cboe.com/resources/regulation/rule_filings/pending/2021/21-028-VX-VXM-and-AMERIBOR-Trading-Hours.pdf
-    let h = hours_for_exchange(Exchange::Cfe);
-
-    assert!(!h.is_open(ct((2026, 4, 19), (15, 59, 59))));
-    assert!(h.is_open_extended(ct((2026, 4, 19), (16, 0, 0))));
-    assert!(h.is_open_extended(ct((2026, 4, 19), (16, 30, 0))));
-    assert!(!h.is_open(ct((2026, 4, 20), (16, 44, 59))));
-    assert!(h.is_open_extended(ct((2026, 4, 20), (16, 45, 0))));
+    for h in [
+        hours_for_exchange(Exchange::Cfe),
+        hours_for_market_hours_key(MarketHoursKey::CfeVix),
+    ] {
+        assert!(!h.is_open(ct((2026, 4, 19), (16, 0, 5))));
+        assert!(h.is_open_extended(ct((2026, 4, 19), (16, 0, 6))));
+        assert!(h.is_open_extended(ct((2026, 4, 19), (16, 30, 0))));
+        assert!(!h.is_open(ct((2026, 4, 20), (16, 45, 5))));
+        assert!(h.is_open_extended(ct((2026, 4, 20), (16, 45, 6))));
+    }
 }
 
 #[test]
@@ -316,9 +320,9 @@ fn cfe_nearly_24_hour_week_launched_on_2014_06_22() {
     assert!(calendar.is_open_extended(ct((2014, 6, 22), (17, 0, 0))));
 }
 
-// SR-CFE-2017-017 tied the 16:00–16:45 CT suspension and 16:45–17:00 queue to
-// CFE's system migration. RG18-005 confirms the migration completed Sunday
-// 2018-02-25 for business date Monday 2018-02-26.
+// SR-CFE-2017-017 tied the 16:00–16:45 CT suspension and randomized opening
+// queues to CFE's system migration. RG18-005 confirms the migration completed
+// Sunday 2018-02-25 for business date Monday 2018-02-26.
 // https://cdn.cboe.com/resources/regulation/rule_filings/approved/2017/SR-CFE-2017-017.pdf
 // https://cdn.cboe.com/resources/regulation/circulars/regulatory/RG-CFE-2018-005.pdf
 #[test]
@@ -332,13 +336,13 @@ fn cfe_system_migration_restored_daily_gap_on_2018_02_25() {
     assert!(!before.is_open(ct((2018, 2, 25), (16, 0, 0))));
     assert!(before.is_open_extended(ct((2018, 2, 25), (16, 15, 0))));
 
-    assert!(!after.is_open(ct((2018, 2, 25), (15, 59, 59))));
-    assert!(after.is_open_extended(ct((2018, 2, 25), (16, 0, 0))));
+    assert!(!after.is_open(ct((2018, 2, 25), (16, 0, 2))));
+    assert!(after.is_open_extended(ct((2018, 2, 25), (16, 0, 3))));
     assert!(after.is_open_extended(ct(monday, (15, 15, 0))));
     assert!(after.is_open_extended(ct(monday, (15, 20, 0))));
     assert!(!after.is_open_regular(ct(monday, (15, 20, 0))));
-    assert!(!after.is_open(ct(monday, (16, 44, 59))));
-    assert!(after.is_open_extended(ct(monday, (16, 45, 0))));
+    assert!(!after.is_open(ct(monday, (16, 45, 2))));
+    assert!(after.is_open_extended(ct(monday, (16, 45, 3))));
     assert!(after.is_open_extended(ct(monday, (15, 30, 0))));
     assert!(after.is_open_extended(ct(monday, (15, 59, 59))));
     assert!(!after.is_open(ct(monday, (16, 0, 0))));
@@ -347,6 +351,37 @@ fn cfe_system_migration_restored_daily_gap_on_2018_02_25() {
 
     let calendar = calendar_for_exchange(Exchange::Cfe);
     assert!(!calendar.is_open(ct(monday, (16, 30, 0))));
-    assert!(calendar.is_open_extended(ct(monday, (16, 45, 0))));
+    assert!(!calendar.is_open(ct(monday, (16, 45, 2))));
+    assert!(calendar.is_open_extended(ct(monday, (16, 45, 3))));
     assert!(calendar.is_open_extended(ct(monday, (17, 0, 0))));
+}
+
+// C2018071603 moved TAS opening-queue starts into the three-to-six-second
+// randomized window effective with the Sunday 2018-08-12 opening. The
+// all-contract conservative edge therefore moved from +3 to +6 seconds.
+// https://cdn.cboe.com/resources/release_notes/2018/Change-to-CFE-Pre-Open-Time-for-TAS-Contracts-and-Order-Submission-Commencement-Times.pdf
+#[test]
+fn cfe_queue_envelope_widened_on_2018_08_12() {
+    let cutover = ct((2018, 8, 12), (0, 0, 0));
+    let exchange_before =
+        hours_for_exchange_as_of(Exchange::Cfe, cutover - chrono::Duration::seconds(1));
+    let exchange_after = hours_for_exchange_as_of(Exchange::Cfe, cutover);
+    let key_before = hours_for_market_hours_key_as_of(
+        MarketHoursKey::CfeVix,
+        cutover - chrono::Duration::seconds(1),
+    );
+    let key_after = hours_for_market_hours_key_as_of(MarketHoursKey::CfeVix, cutover);
+
+    for (before, after) in [(exchange_before, exchange_after), (key_before, key_after)] {
+        assert!(before.is_open_extended(ct((2018, 8, 12), (16, 0, 3))));
+        assert!(!after.is_open(ct((2018, 8, 12), (16, 0, 5))));
+        assert!(after.is_open_extended(ct((2018, 8, 12), (16, 0, 6))));
+        assert!(before.is_open_extended(ct((2018, 8, 13), (16, 45, 3))));
+        assert!(!after.is_open(ct((2018, 8, 13), (16, 45, 5))));
+        assert!(after.is_open_extended(ct((2018, 8, 13), (16, 45, 6))));
+    }
+
+    let calendar = calendar_for_exchange(Exchange::Cfe);
+    assert!(!calendar.is_open(ct((2018, 8, 12), (16, 0, 5))));
+    assert!(calendar.is_open_extended(ct((2018, 8, 12), (16, 0, 6))));
 }

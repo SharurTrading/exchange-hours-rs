@@ -7,7 +7,7 @@ use chrono_tz::America;
 
 use super::StaticHoursProfile;
 use crate::calendar::SessionRule;
-use crate::calendar::rule::{MON_FRI, SUN_PLUS_MON_THU};
+use crate::calendar::rule::MON_FRI;
 use crate::calendar::schedules::CLOSED_NEW_YORK;
 use crate::calendar::schedules::timeline::{Revision, effective_date, local_date, select_revision};
 
@@ -51,29 +51,6 @@ static EXTENDED_POST_2026_03_30: &[SessionRule] = &[
     },
 ];
 
-// SR-FINRA-2026-015 announces extending all three TRFs from Sunday 21:00
-// through Friday 20:00 ET, with 20:00–21:00 pauses Monday–Thursday. RTH remains
-// the REGULAR slice above; every other operational window is extended. The
-// filing was immediately effective, but makes implementation conditional on
-// the SIP Amendment rollout: 2026-12-06 is the published anticipated date, and
-// FINRA says a SIP delay would delay this revision too. The living Rules
-// 6380A/B amendment histories currently record 2026-12-06 as effective.
-// https://www.finra.org/sites/default/files/2026-07/SR-FINRA-2026-015.pdf
-// https://www.finra.org/rules-guidance/rulebooks/finra-rules/6380a
-// https://www.finra.org/rules-guidance/rulebooks/finra-rules/6380b
-static EXTENDED_POST_2026_12_06: &[SessionRule] = &[
-    SessionRule {
-        days: SUN_PLUS_MON_THU,
-        open_ssm: 21 * 3600,
-        close_ssm: 9 * 3600 + 30 * 60,
-    },
-    SessionRule {
-        days: MON_FRI,
-        open_ssm: 16 * 3600,
-        close_ssm: 20 * 3600,
-    },
-];
-
 static FINRA_TRF_CARTERET_PROFILE_PRE_2026_03_30: StaticHoursProfile =
     profile(EXTENDED_PRE_2026_03_30);
 static FINRA_TRF_CHICAGO_PROFILE_PRE_2026_03_30: StaticHoursProfile =
@@ -85,25 +62,14 @@ pub(crate) static FINRA_TRF_CARTERET_PROFILE: StaticHoursProfile =
 pub(crate) static FINRA_TRF_CHICAGO_PROFILE: StaticHoursProfile = profile(EXTENDED_POST_2026_03_30);
 pub(crate) static FINRA_TRF_NYSE_PROFILE: StaticHoursProfile = profile(EXTENDED_POST_2026_03_30);
 
-static FINRA_TRF_CARTERET_PROFILE_POST_2026_12_06: StaticHoursProfile =
-    profile(EXTENDED_POST_2026_12_06);
-static FINRA_TRF_CHICAGO_PROFILE_POST_2026_12_06: StaticHoursProfile =
-    profile(EXTENDED_POST_2026_12_06);
-static FINRA_TRF_NYSE_PROFILE_POST_2026_12_06: StaticHoursProfile =
-    profile(EXTENDED_POST_2026_12_06);
-// Scheduled-date caveat: the filing ties implementation to the SIP Amendment.
-// These 2026-12-06 rows follow the date currently recorded by the living rules
-// and must move if FINRA announces that the SIP rollout has moved.
-static CARTERET_REVISIONS: &[Revision] = &[
-    Revision {
-        effective: effective_date(2026, 3, 30),
-        profile: &FINRA_TRF_CARTERET_PROFILE,
-    },
-    Revision {
-        effective: effective_date(2026, 12, 6),
-        profile: &FINRA_TRF_CARTERET_PROFILE_POST_2026_12_06,
-    },
-];
+// FINRA's later Sunday-through-Friday expansion remains monitored but is not
+// selected while its anticipated implementation day is conditional on the SIP
+// rollout. See the schedule update guide for the outstanding confirmation.
+// https://www.finra.org/sites/default/files/2026-07/SR-FINRA-2026-015.pdf
+static CARTERET_REVISIONS: &[Revision] = &[Revision {
+    effective: effective_date(2026, 3, 30),
+    profile: &FINRA_TRF_CARTERET_PROFILE,
+}];
 static CHICAGO_REVISIONS: &[Revision] = &[
     Revision {
         // FINRA says the Chicago facility commenced operation on 2018-09-10.
@@ -117,21 +83,11 @@ static CHICAGO_REVISIONS: &[Revision] = &[
         effective: effective_date(2026, 3, 30),
         profile: &FINRA_TRF_CHICAGO_PROFILE,
     },
-    Revision {
-        effective: effective_date(2026, 12, 6),
-        profile: &FINRA_TRF_CHICAGO_PROFILE_POST_2026_12_06,
-    },
 ];
-static NYSE_REVISIONS: &[Revision] = &[
-    Revision {
-        effective: effective_date(2026, 3, 30),
-        profile: &FINRA_TRF_NYSE_PROFILE,
-    },
-    Revision {
-        effective: effective_date(2026, 12, 6),
-        profile: &FINRA_TRF_NYSE_PROFILE_POST_2026_12_06,
-    },
-];
+static NYSE_REVISIONS: &[Revision] = &[Revision {
+    effective: effective_date(2026, 3, 30),
+    profile: &FINRA_TRF_NYSE_PROFILE,
+}];
 
 pub(crate) fn carteret_profile_at(as_of: DateTime<Utc>) -> &'static StaticHoursProfile {
     select_revision(

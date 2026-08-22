@@ -72,7 +72,6 @@ static BASE_PROFILE: StaticHoursProfile = StaticHoursProfile {
 // before the existing post-trading period resumed.
 // https://www.cashmarket.deutsche-boerse.com/cash-en/Stay-Informed/circulars-newsletters/deutsche-boerse-circulars/Introduction-of-T7-Release-9.0-1978838
 // https://www.cashmarket.deutsche-boerse.com/cash-en/Stay-Informed/newsroom/press-releases/Xetra-Trade-at-Close-enables-trading-at-the-official-closing-price-2346762
-// https://www.xetra.com/resource/blob/2317768/0e06651d8b87a834e417209504dfd22a/data/Xetra-Trade-at-Close-factsheet_de.pdf
 static TAC_EXTENDED: &[SessionRule] = &[
     BASE_EXTENDED[0],
     BASE_EXTENDED[1],

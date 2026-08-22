@@ -2,10 +2,10 @@
 
 //! Containing- and next-session queries over a [`QueryContext`].
 
-use chrono::{DateTime, Datelike, Duration, Timelike, Utc};
+use chrono::{DateTime, Datelike, Duration, Utc};
 
-use super::schedule::{QueryContext, day_is_holiday, rules};
-use crate::calendar::local_time::{bounded_utc, mk_local_close, mk_local_open};
+use super::schedule::{QueryContext, day_is_holiday, resolve_rule_bounds, rules};
+use crate::calendar::local_time::bounded_utc;
 use crate::calendar::rule::SessionKind;
 
 const SESSION_LOOKAHEAD_DAYS: i64 = 14;
@@ -27,36 +27,14 @@ pub(in crate::calendar) fn containing_session_with(
     let tz = context.tz();
     let local = bounded_utc(instant, tz).with_timezone(&tz);
     let day = local.date_naive();
-    let second = local.num_seconds_from_midnight();
     let weekday = day.weekday().num_days_from_monday() as usize;
 
     if !day_is_holiday(day) {
         let selected = context.profile_for_open_day(day);
         for rule in rules(selected.as_ref(), kind).filter(|rule| rule.days[weekday]) {
-            let same_day = !rule.wraps_to_next_day();
-            let contains_local = if same_day {
-                rule.open_ssm <= second && second < rule.close_ssm
-            } else {
-                rule.open_ssm <= second
-            };
-            if !contains_local {
+            let Some(candidate) = resolve_rule_bounds(context, day, rule) else {
                 continue;
-            }
-            let close_day = if same_day {
-                day
-            } else {
-                let Some(next_day) = day.succ_opt() else {
-                    continue;
-                };
-                if day_is_holiday(next_day) {
-                    continue;
-                }
-                next_day
             };
-            let candidate = (
-                mk_local_open(tz, day, rule.open_ssm).with_timezone(&Utc),
-                mk_local_close(tz, close_day, rule.close_ssm).with_timezone(&Utc),
-            );
             if candidate.0 <= instant && instant < candidate.1 {
                 return Some(candidate);
             }
@@ -69,13 +47,12 @@ pub(in crate::calendar) fn containing_session_with(
     }
     let selected = context.profile_for_open_day(yesterday);
     let previous_weekday = yesterday.weekday().num_days_from_monday() as usize;
-    for rule in rules(selected.as_ref(), kind).filter(|rule| {
-        rule.days[previous_weekday] && rule.wraps_to_next_day() && second < rule.close_ssm
-    }) {
-        let candidate = (
-            mk_local_open(tz, yesterday, rule.open_ssm).with_timezone(&Utc),
-            mk_local_close(tz, day, rule.close_ssm).with_timezone(&Utc),
-        );
+    for rule in rules(selected.as_ref(), kind)
+        .filter(|rule| rule.days[previous_weekday] && rule.wraps_to_next_day())
+    {
+        let Some(candidate) = resolve_rule_bounds(context, yesterday, rule) else {
+            continue;
+        };
         if candidate.0 <= instant && instant < candidate.1 {
             return Some(candidate);
         }
@@ -91,7 +68,7 @@ pub(in crate::calendar) fn next_session_after_with(
     let tz = context.tz();
     let base_day = bounded_utc(instant, tz).with_timezone(&tz).date_naive();
 
-    for offset in 0..SESSION_LOOKAHEAD_DAYS {
+    for offset in 0..=SESSION_LOOKAHEAD_DAYS {
         let Some(day) = base_day.checked_add_signed(Duration::days(offset)) else {
             break;
         };
@@ -103,23 +80,13 @@ pub(in crate::calendar) fn next_session_after_with(
         let mut best = None;
 
         for rule in rules(selected.as_ref(), kind).filter(|rule| rule.days[weekday]) {
-            let open = mk_local_open(tz, day, rule.open_ssm).with_timezone(&Utc);
+            let Some(candidate) = resolve_rule_bounds(context, day, rule) else {
+                continue;
+            };
+            let open = candidate.0;
             if open <= instant {
                 continue;
             }
-            let close_day = if rule.wraps_to_next_day() {
-                let Some(next_day) = day.succ_opt() else {
-                    continue;
-                };
-                if day_is_holiday(next_day) {
-                    continue;
-                }
-                next_day
-            } else {
-                day
-            };
-            let close = mk_local_close(tz, close_day, rule.close_ssm).with_timezone(&Utc);
-            let candidate = (open, close);
             if best.is_none_or(|current: (DateTime<Utc>, DateTime<Utc>)| candidate.0 < current.0) {
                 best = Some(candidate);
             }

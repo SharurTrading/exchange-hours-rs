@@ -101,12 +101,14 @@ reviews:
         Stable monitoring links belong in docs/schedules/sources.md; exact dated
         evidence remains beside the table it proves.
 
-        A historical Revision requires a primary source with a day-level effective
-        date. Never infer a cutover from publication, filing, archive-capture,
-        registration, anniversary, or migration dates unless the source explicitly
-        binds the schedule/identity change to that day. Real undated changes remain
-        disclosed Partial gaps. The audit floor is January 2010; a later-launched
-        identity is closed before its sourced launch.
+        A historical Revision requires a primary source with an unconditional,
+        day-level effective date. Never infer a cutover from publication, filing,
+        archive-capture, registration, anniversary, or migration dates unless the
+        source explicitly binds the schedule/identity change to that day. A future
+        readiness or infrastructure target remains in the update-guide watch list
+        and out of runtime selectors until every condition is confirmed. Real
+        undated changes remain disclosed Partial gaps. The audit floor is January
+        2010; a later-launched identity is closed before its sourced launch.
 
         Confirm revisions are ascending, current pointers equal the final regime,
         and every profile for one identity keeps the same IANA zone. Opening-day
@@ -221,6 +223,8 @@ reviews:
         date-aware API distinctions, product-family scope, support counts, limitations,
         MSRV, and test claims against code. User-visible schedule/API corrections go
         under CHANGELOG.md [Unreleased]. New venues are Added; corrections are Fixed.
+        When a version is cut but not yet tagged or published, final preparation fixes
+        belong in that pending version section.
         Do not request removal of long primary-source URLs, HTML anchors used by the
         source registry, deliberate duplicated assurance counts fenced by tests, or
         hard-coded replacement of the crates.io-derived version/MSRV badges.

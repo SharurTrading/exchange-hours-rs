@@ -8,7 +8,7 @@
 //! mapping and a **close** takes the latest, which keeps a session maximally
 //! inclusive while its close stays end-exclusive at the true boundary. A
 //! wall-clock inside a spring-forward gap does not exist, so the resolver steps
-//! forward minute by minute — bounded — to the first representable instant.
+//! forward through a bounded search to the first representable wall-clock second.
 //! The resolver is **total**: it never panics, for any time zone or input.
 //!
 //! Callers must resolve through [`mk_local_open`] / [`mk_local_close`] rather
@@ -58,11 +58,22 @@ enum AmbigBias {
     Latest,
 }
 
+fn resolve_biased(tz: Tz, local: NaiveDateTime, bias: AmbigBias) -> Option<chrono::DateTime<Tz>> {
+    match tz.from_local_datetime(&local) {
+        LocalResult::Single(dt) => Some(dt),
+        LocalResult::Ambiguous(earliest, latest) => Some(match bias {
+            AmbigBias::Earliest => earliest,
+            AmbigBias::Latest => latest,
+        }),
+        LocalResult::None => None,
+    }
+}
+
 /// Resolve a local wall-clock (day + SSM) into a concrete `DateTime<Tz>`,
 /// choosing a deterministic mapping across DST transitions.
 /// - Ambiguous: pick earliest/latest according to `bias`.
 /// - Skipped (spring forward): pick the earliest valid instant *after* the gap,
-///   at minute granularity.
+///   to the first representable wall-clock second.
 ///
 /// Total by construction: the gap search covers 50 hours — the largest gaps in
 /// IANA history are the 24-hour date-line skips (Pacific/Apia 2011,
@@ -79,40 +90,39 @@ fn mk_local_biased(
         .and_time(NaiveTime::MIN)
         .checked_add_signed(Duration::seconds(i64::from(ssm)))
         .unwrap_or(NaiveDateTime::MAX);
-    match tz.from_local_datetime(&base) {
-        LocalResult::Single(dt) => dt,
-        LocalResult::Ambiguous(a, b) => match bias {
-            AmbigBias::Earliest => a.min(b),
-            AmbigBias::Latest => a.max(b),
-        },
-        LocalResult::None => {
-            // Step forward until we land on a representable instant (bounded).
-            // 3_000 one-minute steps cover a 50-hour gap.
-            let Some(mut trial) = base.checked_add_signed(Duration::minutes(1)) else {
+    if let Some(dt) = resolve_biased(tz, base, bias) {
+        dt
+    } else {
+        // Step forward until we land on a representable instant (bounded).
+        // Minute probes cover a 50-hour gap. Once one succeeds, the prior
+        // failed probe bounds the exact transition to the preceding 59s.
+        let Some(mut trial) = base.checked_add_signed(Duration::minutes(1)) else {
+            return tz.from_utc_datetime(&base);
+        };
+        for _ in 0..3_000 {
+            if let Some(mut resolved) = resolve_biased(tz, trial, bias) {
+                let mut boundary = trial;
+                for _ in 0..59 {
+                    let Some(previous) = boundary.checked_sub_signed(Duration::seconds(1)) else {
+                        break;
+                    };
+                    let Some(previous_resolved) = resolve_biased(tz, previous, bias) else {
+                        break;
+                    };
+                    boundary = previous;
+                    resolved = previous_resolved;
+                }
+                return resolved;
+            }
+            let Some(next) = trial.checked_add_signed(Duration::minutes(1)) else {
                 return tz.from_utc_datetime(&base);
             };
-            for _ in 0..3_000 {
-                match tz.from_local_datetime(&trial) {
-                    LocalResult::Single(dt) => return dt,
-                    LocalResult::Ambiguous(a, b) => {
-                        return match bias {
-                            AmbigBias::Earliest => a.min(b),
-                            AmbigBias::Latest => a.max(b),
-                        };
-                    }
-                    LocalResult::None => {
-                        let Some(next) = trial.checked_add_signed(Duration::minutes(1)) else {
-                            return tz.from_utc_datetime(&base);
-                        };
-                        trial = next;
-                    }
-                }
-            }
-            // Unreachable for real time-zone data. Reinterpreting the
-            // wall-clock as UTC keeps the resolver total and deterministic
-            // without inventing a nearby local instant.
-            tz.from_utc_datetime(&base)
+            trial = next;
         }
+        // Unreachable for real time-zone data. Reinterpreting the
+        // wall-clock as UTC keeps the resolver total and deterministic
+        // without inventing a nearby local instant.
+        tz.from_utc_datetime(&base)
     }
 }
 

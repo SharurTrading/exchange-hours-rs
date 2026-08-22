@@ -4,9 +4,9 @@
 
 use chrono::{DateTime, Datelike, Duration, NaiveDate, Utc};
 
-use super::schedule::{QueryContext, day_is_holiday, rules};
+use super::schedule::{QueryContext, day_is_holiday, resolve_rule_bounds, rules};
 use super::sessions::containing_session_with;
-use crate::calendar::local_time::{bounded_utc, mk_local_close};
+use crate::calendar::local_time::bounded_utc;
 use crate::calendar::rule::SessionKind;
 
 const CLOSE_LOOKAHEAD_DAYS: i64 = 21;
@@ -36,7 +36,6 @@ fn latest_close_landing_on_day(
     if day_is_holiday(day) {
         return None;
     }
-    let tz = context.tz();
     let weekday = day.weekday().num_days_from_monday() as usize;
     let today = context.profile_for_open_day(day);
     let mut latest = None;
@@ -44,8 +43,9 @@ fn latest_close_landing_on_day(
     for rule in
         rules(today.as_ref(), kind).filter(|rule| rule.days[weekday] && !rule.wraps_to_next_day())
     {
-        let close = mk_local_close(tz, day, rule.close_ssm).with_timezone(&Utc);
-        update_latest(context, kind, &mut latest, close, ceiling);
+        if let Some((_open, close)) = resolve_rule_bounds(context, day, rule) {
+            update_latest(context, kind, &mut latest, close, ceiling);
+        }
     }
 
     if let Some(yesterday) = day.pred_opt()
@@ -56,8 +56,9 @@ fn latest_close_landing_on_day(
         for rule in rules(previous.as_ref(), kind)
             .filter(|rule| rule.days[previous_weekday] && rule.wraps_to_next_day())
         {
-            let close = mk_local_close(tz, day, rule.close_ssm).with_timezone(&Utc);
-            update_latest(context, kind, &mut latest, close, ceiling);
+            if let Some((_open, close)) = resolve_rule_bounds(context, yesterday, rule) {
+                update_latest(context, kind, &mut latest, close, ceiling);
+            }
         }
     }
     latest

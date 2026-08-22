@@ -131,8 +131,9 @@ impl MarketHours {
     ///
     /// A skipped local midnight (some zones start DST at 00:00) resolves to the
     /// first representable instant of the day via the crate's shared local-time
-    /// resolver; if `day` is the maximum representable `NaiveDate`, the window
-    /// end saturates to the far future rather than failing.
+    /// resolver. A wholly skipped civil date has an empty window and is closed.
+    /// If `day` is the maximum representable `NaiveDate`, the window end
+    /// saturates to the far future rather than failing.
     #[must_use]
     pub fn is_closed_all_day_in_calendar(
         &self,

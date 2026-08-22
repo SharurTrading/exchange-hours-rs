@@ -70,12 +70,17 @@ impl ExchangeCalendar {
     }
 
     /// Returns the containing or next regular/extended session bounds.
+    ///
+    /// See [`Self::session_bounds_with`] for the bounded-search semantics.
     #[must_use]
     pub fn session_bounds(self, instant: DateTime<Utc>) -> Option<(DateTime<Utc>, DateTime<Utc>)> {
         self.session_bounds_with(instant, SessionKind::Both)
     }
 
     /// Returns the containing or next bounds for `kind`.
+    ///
+    /// The forward search runs through 14 venue-local days. `None` means no
+    /// matching positive-width session exists within that bounded horizon.
     #[must_use]
     pub fn session_bounds_with(
         self,
@@ -87,6 +92,8 @@ impl ExchangeCalendar {
 
     /// Returns the first regular/extended session opening strictly after
     /// `instant`, reselecting the profile for every candidate opening day.
+    ///
+    /// See [`Self::next_session_after_with`] for the bounded-search semantics.
     #[must_use]
     pub fn next_session_after(
         self,
@@ -96,6 +103,10 @@ impl ExchangeCalendar {
     }
 
     /// Returns the first session of `kind` opening strictly after `instant`.
+    ///
+    /// The search runs through 14 venue-local days and skips unavailable or
+    /// civil-time-collapsed occurrences. `None` means no matching session was
+    /// found within that bounded horizon.
     #[must_use]
     pub fn next_session_after_with(
         self,
@@ -106,6 +117,9 @@ impl ExchangeCalendar {
     }
 
     /// Returns only the next regular/extended session open after `instant`.
+    ///
+    /// This projects [`Self::next_session_after`], including its bounded
+    /// 14-local-day search and `None` semantics.
     #[must_use]
     pub fn next_session_open_after(self, instant: DateTime<Utc>) -> Option<DateTime<Utc>> {
         self.next_session_after(instant).map(|(open, _close)| open)
@@ -118,6 +132,7 @@ impl ExchangeCalendar {
     }
 
     /// Returns whether no session of `kind` intersects `day` in `calendar_tz`.
+    /// A wholly skipped civil date has an empty window and is closed.
     #[must_use]
     pub fn is_closed_all_day_in_calendar(
         self,

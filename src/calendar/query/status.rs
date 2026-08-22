@@ -48,6 +48,9 @@ pub(in crate::calendar) fn is_closed_all_day_in_calendar(
     let end = day.succ_opt().map_or(DateTime::<Utc>::MAX_UTC, |next| {
         mk_local_open(calendar_tz, next, 0).with_timezone(&Utc)
     });
+    if start >= end {
+        return true;
+    }
     if is_open_with(context, start, kind) {
         return false;
     }

@@ -85,6 +85,15 @@ maintenance contract described in the README and schedule verification ledger.
 
 ### Fixed
 
+- **Civil-time discontinuities in public queries.** A rule occurrence whose
+  local open and close both collapse onto the same instant in a DST gap is now
+  omitted instead of producing a zero-width session or candle. Partially
+  skipped rules resolve to the first real wall-clock second, and a wholly
+  skipped civil date is correctly treated as an empty, closed calendar day.
+- **Conditional future schedules are held until confirmed.** Announced Nasdaq,
+  EDGX, and FINRA TRF overnight expansions are monitored in the update guide
+  but no longer activate from provisional 2026-12-06 dates. Runtime selectors
+  will gain them only after the required readiness/SIP confirmations.
 - **Bursa Malaysia, IDX, HOSE, and BMV January-2010 history.** Bursa's morning
   continuous session now runs through 12:30 under the pre-audit-floor v2 manual
   and its dated successors. IDX now includes its archived 09:10–09:30 pre-open
@@ -138,17 +147,15 @@ maintenance contract described in the README and schedule verification ledger.
   closed before its sourced October 8, 2010 launch; its launch-day 09:00 open
   moves to 08:00 on the sourced December 13, 2010 date. Nasdaq Stock Market
   history now retains the 07:00 pre-market before its sourced March 18, 2013
-  move to 04:00. Date-aware lookups add Nasdaq's 21:00–04:00 Night Session
-  from the announced 2026-12-06 date, preserving its fixed current snapshot;
-  operation remains subject to Nasdaq's final readiness filing.
+  move to 04:00. Nasdaq's announced Night Session remains monitored but is not
+  encoded until the operator files its final readiness confirmation.
 - **Cboe US-equity launch and phase history.** BZX now retains its January-2010
-  08:00–17:00 ET baseline; BYX, EDGA, and EDGX are closed before their sourced
-  2010 exchange launches. Each venue applies its own published May 2016 move
+  08:00–17:00 ET baseline; BYX is closed before its sourced 2010 launch, while
+  EDGA and EDGX begin on their 2010-07-02 first-symbol production day rather
+  than the later all-symbol completion. Each venue applies its May 2016 move
   from 08:00 to 07:00, and BZX/BYX apply their distinct 2018 moves to a 20:00
   close. Existing 2021 EDGX and 2025 BZX 04:00 opens remain date-aware. EDGX's
-  announced 21:00–04:00 session begins Sunday 2026-12-06 for the December 7
-  business date, preserving the fixed current snapshot and 20:00–21:00 pause;
-  the pending rule filing still requires a final readiness confirmation.
+  approved overnight rule remains unencoded until its later readiness filing.
 - **NYSE-family equity history.** Arca's 04:00–20:00 grid is now explicitly
   supported at the January-2010 audit floor. American retains its core-only
   continuous session until the sourced July 24, 2017 Pillar launch. National
@@ -215,8 +222,9 @@ maintenance contract described in the README and schedule verification ledger.
   continuous Monday–Thursday 15:30–08:30 ETH comes directly from CFE-2014-010.
   A further sourced revision on February 25, 2018
   restores the 16:00–17:00 CT daily break introduced with CFE's system migration
-  and classifies its 15:15–15:30, Sunday 16:00–17:00, and weekday 16:45–17:00
-  order-entry queues as extended rather than closed.
+  and classifies its 15:15–15:30 and later opening queues as extended rather
+  than closed. Randomized queue starts use the sourced conservative latest edge
+  of three seconds from 2018-02-25 and six seconds from 2018-08-12.
   The January-2010 08:30–15:15 baseline plus the December 2010 07:20 and
   September 2011 07:00 morning extensions are now date-aware, completing the
   VIX-futures normal-week history from the audit floor.
@@ -226,10 +234,8 @@ maintenance contract described in the README and schedule verification ledger.
   profiles retain the former 08:00 ET system open before March 30, 2026 and
   apply FINRA's 04:00 ET open from that effective date. Chicago is now closed
   before its sourced September 10, 2018 facility launch; that launch was
-  test-security-only through September 21. A second sourced
-  revision adds the scheduled Sunday 21:00–Friday 20:00 operation, including
-  Monday–Thursday 20:00–21:00 pauses, from December 6, 2026; FINRA states that
-  implementation moves with the SIP rollout if that anticipated date changes.
+  test-security-only through September 21. FINRA's later overnight expansion
+  remains monitored but unencoded while implementation follows the SIP rollout.
 - **Calendar queries remain total at Chrono's representational bounds.** Local
   date resolution and forward/backward scans now use checked, inward-bounded
   arithmetic, and a bar that cannot advance past `DateTime<Utc>::MAX_UTC`

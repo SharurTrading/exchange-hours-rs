@@ -50,16 +50,16 @@ pub(crate) fn iex_profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static S
 // The live SEC Form ATS-N gives the IQX order-acceptance and execution table:
 // 09:00–09:30 ET accepts and queues orders; matching runs 09:30–16:00. The
 // operator's archived 2018-08-18 FAQ and first public electronic filing on
-// 2019-07-22 contain the same grid, so launch-era hours are known. The operator
-// says the ATS launched in September 2018 without a day, while an SEC-filed
-// audited statement dates only the company's commencement to 2018-01-17.
-// Neither artifact supports a day-level launch cutover, so the current snapshot
-// remains the explicit fallback through that single inception-boundary gap.
+// 2019-07-22 contain the same grid, so launch-era hours are known. An SEC-filed
+// audit says transaction processing began in August 2018, while the operator
+// describes the public launch only as September 2018; neither gives the first
+// live matching day. The current snapshot therefore remains the explicit
+// fallback through that single inception-boundary gap.
 // https://www.sec.gov/Archives/edgar/data/1708826/000170882626000008/xslATS-N_X01/primary_doc.xml
 // https://www.sec.gov/Archives/edgar/data/1708826/000170882619000008/xslATS-N_X01/primary_doc.xml
 // https://web.archive.org/web/20180818115449id_/http://intelligentcross.com/faq
 // https://www.imperativex.com/news/imperative-execution-closes-9-million-series-a-financing-round
-// https://www.sec.gov/Archives/edgar/data/1708826/000170882624000011/1ICPublic.pdf
+// https://www.sec.gov/Archives/edgar/vprr/1901/19010702.pdf
 static IQX_EXTENDED: &[SessionRule] = &[SessionRule {
     days: MON_FRI,
     open_ssm: 9 * 3600,

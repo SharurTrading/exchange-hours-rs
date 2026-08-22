@@ -131,7 +131,7 @@ Futures hours track the *product family*, not the venue: nine shared profiles ar
 **Primary-source-verified current profiles:** `91 of 91` real exchange
 identifiers, within each row's documented normal-week scope.
 
-**Complete sourced history since January 2010:** `84 of 91` real exchange
+**Complete sourced history since January 2010:** `86 of 91` real exchange
 identifiers.
 
 **Venue-specific profiles requiring reconciliation:** `0 of 91` real exchange
@@ -139,8 +139,8 @@ identifiers.
 
 Every real exchange identifier was compared with its official current-hours or
 rulebook material and its notice/evidence channel. All 91 current profiles are
-primary-supported within their stated scope. Of those, 84 **Primary** rows have
-no known modeled-history gap since January 2010; seven **Partial** rows have an
+primary-supported within their stated scope. Of those, 86 **Primary** rows have
+no known modeled-history gap since January 2010; five **Partial** rows have an
 explicitly bounded older-history gap. No real row remains **Secondary**,
 **Pragmatic**, or **Known issue**. `Exchange::Unknown` is synthetic and is not
 one of the 91 real identifiers.
@@ -177,10 +177,9 @@ trading day.
   (exchange notice, rulebook amendment, press release) states a day-level effective date.
   Real changes without a sourced date are documented as known gaps rather than given
   invented dates. The verification ledger is the complete gap inventory: IntelligentCross
-  IQX lacks only its exact September-2018 production-launch day; ICE Endex lacks the onset
-  date of its historical 07:45 pre-open; Euronext Paris, Amsterdam, Brussels, and Lisbon
-  lack the exact day of a late-2015 randomized-auction change; and Euronext Dublin lacks a
-  regulator/operator-hosted January-2010 detailed phase table and complete amendment chain.
+  IQX lacks only its exact first-live day in August/September 2018; Euronext Paris,
+  Amsterdam, Brussels, and Lisbon lack the exact day of a randomized-auction change whose
+  2015 introduction notice has a defective effective year.
   A selector retains the oldest sourced profile when the evidence supports its range;
   otherwise, as with IQX, the current snapshot remains the explicit historical fallback
   through the disclosed ambiguity. IEX and Blue Ocean have sourced production launch

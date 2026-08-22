@@ -73,10 +73,43 @@ fn euronext_dublin_cutovers() {
     let tz = Europe::Dublin;
     let probe = (2026, 8, 19);
 
+    // ISE's archived pre-2010 timetable, successive order-book models, and 2018
+    // calendar establish this complete baseline at the repository's history floor.
+    let legacy_date = (2010, 1, 4);
+    let legacy =
+        hours_for_exchange_as_of(Exchange::EuronextDublin, local(tz, legacy_date, (12, 0, 0)));
+    assert!(!legacy.is_open(local(tz, legacy_date, (6, 29, 59))));
+    assert!(legacy.is_open_extended(local(tz, legacy_date, (6, 30, 0))));
+    assert!(legacy.is_open_extended(local(tz, legacy_date, (7, 59, 59))));
+    assert!(legacy.is_open_regular(local(tz, legacy_date, (8, 0, 0))));
+    assert!(legacy.is_open_regular(local(tz, legacy_date, (16, 27, 59))));
+    assert!(legacy.is_open_extended(local(tz, legacy_date, (16, 28, 0))));
+    assert!(legacy.is_open_extended(local(tz, legacy_date, (17, 14, 59))));
+    assert!(!legacy.is_open(local(tz, legacy_date, (17, 15, 0))));
+
     let (pre, post) = cutover_sides(Exchange::EuronextDublin, tz, (2019, 2, 4));
     let at_0620 = local(tz, probe, (6, 20, 0));
     assert!(!pre.is_open(at_0620));
     assert!(post.is_open_extended(at_0620));
+    assert!(post.is_open_extended(local(tz, probe, (8, 0, 29))));
+    assert!(post.is_open_regular(local(tz, probe, (8, 0, 30))));
+    let close_auction_probe = local(tz, probe, (16, 30, 29));
+    let (_, close_auction_end) = exchange_hours::session_bounds_with(
+        &post,
+        close_auction_probe,
+        exchange_hours::SessionKind::Extended,
+    )
+    .expect("post-Optiq Dublin close auction");
+    assert_eq!(close_auction_end, local(tz, probe, (16, 30, 30)));
+    let tal_probe = local(tz, probe, (16, 30, 30));
+    let (tal_start, tal_end) = exchange_hours::session_bounds_with(
+        &post,
+        tal_probe,
+        exchange_hours::SessionKind::Extended,
+    )
+    .expect("post-Optiq Dublin Trading-at-Last");
+    assert_eq!(tal_start, tal_probe);
+    assert_eq!(tal_end, local(tz, probe, (16, 40, 0)));
     let at_1700 = local(tz, probe, (17, 0, 0));
     assert!(pre.is_open_extended(at_1700));
     assert!(!post.is_open(at_1700));

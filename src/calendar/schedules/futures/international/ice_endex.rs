@@ -9,20 +9,24 @@ use crate::calendar::SessionRule;
 use crate::calendar::rule::{MON_FRI, SUN_ONLY, TUE_FRI};
 use crate::calendar::schedules::timeline::{effective_date, local_date, reference_delta_seconds};
 
-// ICE Endex is scoped to Dutch TTF Natural Gas Futures. The predecessor's 2010
-// product specification publishes 08:00-18:00 CET, and Circular 13/107 moves
-// the same contract to ICE Endex on 2013-10-07. The March 2014 operating
-// schedule and 2015-07-01 rulebook independently retain 08:00-18:00. The 2019
-// and 2021 operating schedules say only "Until 08:00" for the pre-market
-// phase, without a start. E26/004 proves the immediately preceding 07:45
-// pre-open / 08:00-18:00 continuous grid and changes it on 2026-04-13 to a
-// 21-hour day, including the exact one-hour-earlier profile used while US and
-// Central-European daylight time differ. No primary source states when the
-// 07:45 pre-open began, so that historical phase remains a documented gap
-// rather than receiving an inferred cutover.
+// ICE Endex is scoped to the post-combination Dutch TTF Natural Gas Futures
+// contract. ICE's 2013-08-31 WebICE hours table shows the transferred contract's
+// 07:45 pre-open / 08:00-18:00 CET grid immediately before the handoff. Circular
+// 13/107 moves the equivalent contract to ICE Endex on 2013-10-07 and explicitly
+// keeps it on the same ICE platform; the completion release confirms combined
+// WebICE trading from that date. The first archived Endex product page and March
+// 2014 schedule retain the 08:00 open, 18:00 close, and pre-market phase. The
+// original predecessor-venue onset of 07:45 is outside this identity's modeled
+// interval; the transfer selector does not claim that the phase began in 2013.
+// E26/004 proves the immediately preceding grid and changes it on 2026-04-13 to
+// a 21-hour day, including the exact one-hour-earlier profile used while US and
+// Central-European daylight time differ.
+// https://web.archive.org/web/20130831104114id_/https://www.theice.com/productguide/Search.shtml?tradingHours=
 // https://www.ice.com/publicdocs/circulars/10010%20attach%201%20-%20TTF%20Nat%20Gas%20Contract%20Spec.pdf
 // https://www.ice.com/publicdocs/circulars/13107.pdf
 // https://www.ice.com/publicdocs/circulars/13134.pdf
+// https://ir.theice.com/press/news-details/2013/IntercontinentalExchange-Completes-Trading-and-Clearing-Transition-for-ICE-Endex-Futures-Markets/default.aspx
+// https://web.archive.org/web/20140215045503id_/https://www.theice.com/productguide/ProductSpec.shtml?specId=27996665
 // https://www.ice.com/publicdocs/endex/circulars/ICE-Endex-Derivatives-Rules-V21-2-201403-Appendix-B-1-Operating-Time-Schedule.pdf
 // https://www.ice.com/publicdocs/endex/ICE_Endex_Rules.pdf
 // https://www.ice.com/publicdocs/endex/circulars/E19003_attach_2.pdf

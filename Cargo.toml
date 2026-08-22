@@ -20,6 +20,7 @@ categories = ["date-and-time", "finance"]
 # consumer never reads. `rust-toolchain.toml` in particular would only confuse —
 # it governs this repo's own builds, not a dependent's.
 exclude = [
+    ".coderabbit.yaml",
     ".github/",
     "rust-toolchain.toml",
     "clippy.toml",

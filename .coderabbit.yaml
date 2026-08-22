@@ -1,0 +1,290 @@
+# SPDX-License-Identifier: MIT-0
+#
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+#
+# CodeRabbit cloud-review policy for exchange-hours. AGENTS.md is the repository
+# contract; these path instructions are a high-signal index into its named laws,
+# architecture, evidence workflow, and deliberately independent test fences.
+
+language: "en-US"
+
+tone_instructions: "Prioritize concrete correctness and evidence defects. Cite the exact named AGENTS.md law or contract when applicable; never invent rule IDs. Omit rustfmt, strict-Clippy, rustdoc, cargo-deny, and preference-only findings already enforced by CI."
+
+reviews:
+  profile: "assertive"
+  request_changes_workflow: false
+  high_level_summary: true
+  review_status: true
+  collapse_walkthrough: true
+  in_progress_fortune: false
+  enable_prompt_for_ai_agents: false
+  poem: false
+
+  auto_review:
+    enabled: true
+    auto_incremental_review: true
+    auto_pause_after_reviewed_commits: 0
+    drafts: false
+    base_branches:
+      - "^main$"
+
+  path_instructions:
+    - path: "src/**/*.rs"
+      instructions: |
+        Apply AGENTS.md and ARCHITECTURE.md. Focus on observable correctness;
+        formatting, public rustdoc, panic-family lints, and unsafe are already
+        hard-gated by rustfmt, rustdoc, Cargo lints, and Clippy.
+
+        BLOCKERS:
+        - Library code reading a clock, performing I/O, using randomness, logging,
+          printing, or consulting mutable process/environment state. The crate is
+          pure deterministic computation (LAW-DETERMINISM).
+        - A public timestamp that is not DateTime<Utc>, a local timestamp crossing
+          the API boundary, a panic/hang path, or a fabricated boundary instead of
+          None. UTC in/out and totality are public contracts.
+        - Inclusive close behavior. Closes are end-exclusive. Equal SessionRule
+          endpoints are one complete local-day session (23h/24h/25h across DST),
+          not an empty interval; close_ssm = 86_400 is a valid next-midnight
+          sentinel. Omit the rule to model no session.
+        - Resolving ambiguous/nonexistent local time with the wrong bias: opens use
+          the earliest valid instant and closes use the latest.
+        - A breaking removal/rename/signature or serde-wire-name change without a
+          deliberate major release. Exchange and MarketHoursKey stay non_exhaustive.
+
+        MAJOR findings:
+        - New public behavior implemented in a second engine rather than the shared
+          private query engine, or a fixed caller-owned MarketHours value being
+          re-resolved from Exchange instead of borrowed exactly.
+        - Unbounded scans, unchecked Chrono arithmetic, or behavior that fails near
+          DateTime::<Utc>::MIN_UTC/MAX_UTC.
+        - Owned/allocated schedule tables where static borrowed slices suffice, or
+          a new runtime/dependency abstraction without a concrete need.
+        - A production file pushed over the 300-line architecture limit without
+          splitting by venue/operator family; 500 lines is the hard stop. Tests are
+          exempt.
+
+        Do not report stylistic preferences already enforced by CI. Do flag an
+        unjustified #[allow], weakened #[expect] reason, ignored test, or new unsafe
+        (unsafe is forbidden). Do not suggest logging: this library intentionally
+        has no logging facade.
+
+    - path: "src/calendar/query/**/*.rs"
+      instructions: |
+        This directory is the single implementation for fixed MarketHours and
+        date-aware ExchangeCalendar queries. Preserve one QueryContext/ProfileSource
+        path rather than duplicating algorithms in public adapters.
+
+        Date-aware scans must select a profile for each candidate venue-local
+        opening day. Selecting once at the query instant is wrong for wrap sessions,
+        historical cutovers, future scans, and B3/BMV cross-zone regimes. Fixed
+        queries must continue using the exact caller-supplied MarketHours, including
+        owned Cow data and custom rules.
+
+        Check containing/next-session ordering, bounded scan horizons, SessionKind
+        filtering, end-exclusive closes, DST gaps/folds, and Chrono MIN/MAX totality.
+        A phase handoff is not a daily/weekly close when the same requested kind is
+        still open at that instant. Daily/monthly/weekly candle boundaries must
+        respect has_daily_close/has_weekend_close, including AlwaysOpen and Binance.
+        On a venue's first sourced session, candle_start may use that first real open
+        when no earlier close exists; it must not fail merely because history before
+        launch is closed.
+
+    - path: "src/calendar/schedules/**/*.rs"
+      instructions: |
+        Enforce LAW-PRIMARY-SOURCES and LAW-NO-FABRICATED-DATES.
+
+        Every session time needs adjacent operator/exchange/regulator evidence.
+        Weekday masks, phase classification, IANA zone, product scope, and close
+        flags must agree with the cited operator contract and modeled session
+        topology. Secondary sources may corroborate but never establish a literal.
+        Stable monitoring links belong in docs/schedules/sources.md; exact dated
+        evidence remains beside the table it proves.
+
+        A historical Revision requires a primary source with a day-level effective
+        date. Never infer a cutover from publication, filing, archive-capture,
+        registration, anniversary, or migration dates unless the source explicitly
+        binds the schedule/identity change to that day. Real undated changes remain
+        disclosed Partial gaps. The audit floor is January 2010; a later-launched
+        identity is closed before its sourced launch.
+
+        Confirm revisions are ascending, current pointers equal the final regime,
+        and every profile for one identity keeps the same IANA zone. Opening-day
+        semantics matter: a Monday trade-date change whose session opens Sunday is
+        normally keyed to Sunday. Temporary regimes need both sourced start and
+        restoration rows. Cross-zone recurring selectors must recompute the
+        reference-zone relationship per candidate opening day.
+
+        Preserve the documented product/segment envelope. Do not silently widen a
+        product-family schedule to a whole venue, include cancellation/reporting-only
+        phases, or omit executable auctions/order-entry/TAL phases. Randomized edges
+        use the documented deterministic envelope. Unrelated venues keep distinct
+        named profiles even when rule slices coincide; sharing is only for genuinely
+        coupled operator/product families.
+
+    - path: "src/calendar/futures_profile.rs"
+      instructions: |
+        MarketHoursKey profiles follow the same evidence and scope rules as venue
+        schedules. Fixed APIs are current snapshots; the as-of API returns one
+        dated snapshot, so callers spanning dates must re-resolve. Verify every key
+        keeps a stable snake_case serde name, distinct product-family scope, static
+        rules, and sourced dated routing where available. AlwaysOpen is synthetic;
+        do not demand exchange evidence for it.
+
+    - path: "src/calendar/presets/**/*.rs"
+      instructions: |
+        presets/current.rs owns the one exhaustive Exchange match. It must keep an
+        explicit arm for every variant and no wildcard; do not replace this compiler
+        fence with a generated catalog or catch-all. Each arm must route to the
+        venue-owned current profile with its documented scope.
+
+        presets/historical.rs is routing only. Every venue with observable revisions
+        must dispatch to its owner selector; invariant venues may use current. Do not
+        add a selector for an unsourced cutover, resolve in UTC rather than venue
+        opening-day semantics, or freeze a recurring profile at scan start.
+
+    - path: "src/calendar/exchange/**/*.rs"
+      instructions: |
+        Exchange, Exchange::ALL, as_str, Display, FromStr, and serde names come from
+        the single exchanges! table. Wire names are stable persisted data. Flag a
+        duplicate identity table, a removed/renamed variant, mapping bad input to
+        Unknown, or weakening #[non_exhaustive]. A new row must also reach current
+        routing, regional bulk membership where applicable, independent identity
+        expectations, schedule documentation, and public venue tests.
+
+    - path: "src/calendar/bulk.rs"
+      instructions: |
+        Regional lists are deliberate stable membership/order decisions, not a view
+        generated from Exchange::ALL. A venue addition must be placed explicitly in
+        each applicable builder without reordering existing members accidentally.
+
+    - path: "tests/**/*.rs"
+      instructions: |
+        TEST-LAYOUT is strict: integration tests use only the public crate surface.
+        Flag #[cfg(test)] production back doors, private schedule imports, test-only
+        public methods, or requests to expose internal Revision/profile tables.
+
+        Handwritten ALL_EXCHANGES, EXCHANGE_VARIANT_COUNT, MarketHoursKey expectations,
+        and HISTORICAL_CUTOVERS are independent coverage fences. Do not suggest
+        generating them from production data or adding MarketHoursKey::ALL merely to
+        drive the tests. New submodules must be reachable from a thin Cargo test
+        harness; shared fixtures stay public-surface-only.
+
+        A schedule change needs falsifiable public assertions for the instant before
+        open, open, regular/extended classification, every lunch/maintenance gap,
+        the instant before close, the end-exclusive close, weekend behavior, and
+        stable serde identity. Test both sides of every sourced cutover at venue-local
+        midnight (or the exact instant for intraday cutovers), plus opening-day scans
+        for wrapped/seasonal schedules. Cover relevant DST folds/gaps and Chrono
+        MIN/MAX edges. Failure messages for table-driven tests should identify the
+        exchange, instant, session kind, and resolution.
+
+        Reject self-referential tests that derive expectations from the production
+        selector under test. Do not require one-off holidays or half-days: built-in
+        profiles intentionally model normal weeks unless a public API explicitly
+        adds exception data. Test code may deliberately use unwrap, expect, panic,
+        and catch_unwind; the production panic-family law does not apply to tests.
+
+    - path: "docs/schedules/**/*.md"
+      instructions: |
+        Treat these files as an auditable data contract, not marketing prose.
+        verification.md has exactly one row per Exchange in Exchange::ALL order and
+        one row per MarketHoursKey. Owner links must resolve, source-set anchors must
+        exist exactly once and be referenced, and every real source set needs both an
+        official current/rulebook link and an official notice/evidence channel or
+        explicit repeatable entry point.
+
+        Basis labels are evidence claims: Primary means current primary support and
+        no known modeled-history gap since January 2010 (or sourced launch); Partial
+        means current primary support with a precisely named history gap. Never
+        promote from Partial on inference. The repository review cutoff is the
+        minimum Reviewed on date across real exchange rows and is not an accuracy
+        guarantee or review-due date.
+
+        Any changed schedule, scope, source, basis, row count, or review date must be
+        reconciled across verification.md, sources.md, the dated audit, README,
+        adjacent Rust citations, documentation contracts, and CHANGELOG.md. Exact
+        historical artifacts belong beside Rust literals even when also indexed here.
+
+    - path: "*.md"
+      instructions: |
+        Documentation must match committed public behavior and avoid future-validity
+        guarantees. Verify UTC/end-exclusive/equal-endpoint semantics, current versus
+        date-aware API distinctions, product-family scope, support counts, limitations,
+        MSRV, and test claims against code. User-visible schedule/API corrections go
+        under CHANGELOG.md [Unreleased]. New venues are Added; corrections are Fixed.
+        Do not request removal of long primary-source URLs, HTML anchors used by the
+        source registry, deliberate duplicated assurance counts fenced by tests, or
+        hard-coded replacement of the crates.io-derived version/MSRV badges.
+
+    - path: "Cargo.toml"
+      instructions: |
+        Dependencies remain minimal, deterministic, and license-approved. chrono must
+        keep default-features = false so clock access does not compile. Flag new I/O,
+        clock, randomness, logging, async/runtime, or timezone dependencies without a
+        demonstrated public requirement. New licenses/registries must satisfy deny.toml.
+
+        Preserve edition 2024, rust-version 1.95, missing_docs=deny, unsafe_code=forbid,
+        strict Clippy/panic/determinism lints, and explicit integration-test targets.
+        A public breaking API or version bump is a deliberate release change with
+        README/toolchain/CI/changelog reconciliation, not drive-by cleanup.
+
+    - path: "deny.toml"
+      instructions: |
+        Do not suppress an active advisory, widen allowed licenses/registries, or add
+        a skip without narrow evidence and a removal condition. Cargo.lock and feature
+        changes must agree with Cargo.toml and remain covered by cargo deny.
+
+    - path: "{rust-toolchain.toml,clippy.toml}"
+      instructions: |
+        Keep the repository build-toolchain pin separate from Cargo.toml's Rust 1.95
+        consumer floor and the CI MSRV matrix. Raising either is deliberate and must
+        update its documented counterparts. Do not weaken the panic, output,
+        determinism, missing-docs, unsafe, or exported-API lint policy; tests retain
+        only their documented panic-family exemptions.
+
+    - path: ".github/workflows/**"
+      instructions: |
+        CI stays deterministic, credential-free, read-only, and GitHub-hosted on the
+        explicit ubuntu-24.04 image. Actions stay SHA-pinned and checkout must use
+        persist-credentials: false. Preserve the complete quality gate (fmt, strict
+        all-target Clippy, all-target nextest, doctest, rustdoc warnings denied, cargo
+        deny) plus the separate Rust 1.95 all-target MSRV build. Flag self-hosted
+        runners, mutable action tags, broad write permissions, secrets/live exchange
+        access, or duplicated toolchain version pins.
+
+    - path: ".coderabbit.yaml"
+      instructions: |
+        This is the repository-specific cloud-review contract. Preserve the MIT-0
+        header, schema-v2 marker, automatic non-draft review of main-targeted PRs,
+        AGENTS/architecture knowledge-base links, and high-signal path rules. Do not
+        import Sharur's proprietary header, SH-* identifiers, Python rules, or
+        trading-engine architecture into this standalone deterministic Rust crate.
+
+  tools:
+    clippy:
+      enabled: true
+    actionlint:
+      enabled: true
+    yamllint:
+      enabled: true
+    markdownlint:
+      enabled: false
+    gitleaks:
+      enabled: true
+
+knowledge_base:
+  code_guidelines:
+    enabled: true
+    filePatterns:
+      - "AGENTS.md"
+      - "ARCHITECTURE.md"
+      - "docs/schedules/updating.md"
+      - "docs/schedules/verification.md"
+  learnings:
+    scope: "local"
+  issues:
+    scope: "local"
+  pull_requests:
+    scope: "local"
+  web_search:
+    enabled: true

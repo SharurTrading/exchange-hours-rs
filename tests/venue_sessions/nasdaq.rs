@@ -94,12 +94,13 @@ fn nasdaq_psx_launch_and_0800_expansion_use_sourced_dates() {
     );
 }
 
-// Nasdaq Equity Trader Alert 2026-46 makes the 21:00–04:00 ET Night Session
-// effective Sunday 2026-12-06. Nasdaq Equity 1 limits that session to Sunday
-// through Thursday, retains the 04:00–20:00 Day Session, and leaves a daily
-// 20:00–21:00 pause.
+// Nasdaq Equity Trader Alert 2026-46 announces the 21:00–04:00 ET Night Session
+// for Sunday 2026-12-06. Nasdaq Equity 1 limits that session to Sunday through
+// Thursday, retains the 04:00–20:00 Day Session, and leaves a daily 20:00–21:00
+// pause. Commencement remains conditional on data-plan readiness and a later
+// Nasdaq readiness filing, so these contracts cover the announced profile.
 // https://www.nasdaqtrader.com/TraderNews.aspx?id=ETA2026-46
-// https://listingcenter.nasdaq.com/rulebook/nasdaq/rules/Nasdaq%20Equity%201
+// https://listingcenter.nasdaq.com/assets/RuleBook/Nasdaq/rules/Nasdaq%20Equity%201.html
 
 #[test]
 fn nasdaq_fixed_snapshot_remains_the_review_date_profile() {

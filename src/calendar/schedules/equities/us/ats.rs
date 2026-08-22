@@ -54,7 +54,7 @@ pub(crate) fn iex_profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static S
 /// bounded cleanup is outside this new-order session scope. Friday night is
 /// excluded because the reporting facility is unavailable on Saturday.
 /// <https://www.sec.gov/Archives/edgar/data/1795131/000090266426001359/xslATS-N_X01/primary_doc.xml>
-pub static BLUE_OCEAN_EXTENDED: &[SessionRule] = &[SessionRule {
+static BLUE_OCEAN_EXTENDED: &[SessionRule] = &[SessionRule {
     days: SUN_PLUS_MON_THU,
     open_ssm: 20 * 3600,
     close_ssm: 4 * 3600,

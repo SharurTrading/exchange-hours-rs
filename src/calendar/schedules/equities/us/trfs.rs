@@ -51,13 +51,13 @@ static EXTENDED_POST_2026_03_30: &[SessionRule] = &[
     },
 ];
 
-// SR-FINRA-2026-015 extends all three TRFs from Sunday 21:00 through Friday
-// 20:00 ET, with 20:00–21:00 pauses Monday–Thursday. RTH remains the REGULAR
-// slice above; every other operational window is extended. The filing was
-// immediately effective, but makes implementation conditional on the SIP
-// Amendment rollout: 2026-12-06 is the published anticipated date, and FINRA
-// says a SIP delay would delay this revision too. The living Rules 6380A/B
-// amendment histories currently record 2026-12-06 as effective.
+// SR-FINRA-2026-015 announces extending all three TRFs from Sunday 21:00
+// through Friday 20:00 ET, with 20:00–21:00 pauses Monday–Thursday. RTH remains
+// the REGULAR slice above; every other operational window is extended. The
+// filing was immediately effective, but makes implementation conditional on
+// the SIP Amendment rollout: 2026-12-06 is the published anticipated date, and
+// FINRA says a SIP delay would delay this revision too. The living Rules
+// 6380A/B amendment histories currently record 2026-12-06 as effective.
 // https://www.finra.org/sites/default/files/2026-07/SR-FINRA-2026-015.pdf
 // https://www.finra.org/rules-guidance/rulebooks/finra-rules/6380a
 // https://www.finra.org/rules-guidance/rulebooks/finra-rules/6380b

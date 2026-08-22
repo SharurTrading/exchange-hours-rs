@@ -28,7 +28,7 @@ use crate::calendar::rule::MON_FRI;
 // Sources: SIX Group, "Trading hours"
 // (https://www.six-group.com/en/products-services/the-swiss-stock-exchange/trading/trading-provisions/trading-hours.html)
 // and the SIX Swiss Exchange Trading Guide
-// (https://www.six-group.com/dam/download/the-swiss-stock-exchange/trading/trading-provisions/regulation/trading-guides-upcoming/trading-hours.pdf).
+// (https://www.six-group.com/dam/download/the-swiss-stock-exchange/trading/trading-provisions/regulation/trading-guides/trading-guide.pdf).
 // SIX's official guide valid from 2018-05-28 records the same Blue Chip grid,
 // including the two-minute randomized opening and closing auction windows.
 // https://www.six-group.com/dam/download/sites/education/preparatory-documentation/trading-module/trading-guide.pdf

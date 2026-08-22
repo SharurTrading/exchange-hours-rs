@@ -64,7 +64,7 @@ static NATIONAL_0800_1700: &[SessionRule] = &[
 ];
 
 /// NYSE Texas opening and late sessions: 07:00–09:30 and 16:00–20:00 ET.
-pub static NYSE_TEXAS_EXTENDED: &[SessionRule] = EXTENDED_0700_2000;
+static NYSE_TEXAS_EXTENDED: &[SessionRule] = EXTENDED_0700_2000;
 
 // This profile is scoped to NYSE Tape A. Its core is 09:30–16:00 ET; the 06:30
 // pre-opening accepts and queues orders but is not executable. The operator's
@@ -161,7 +161,7 @@ pub(crate) fn nyse_national_profile_at(
 
 // NYSE Texas went live on 2025-03-31 with the operator's 07:00–20:00 grid.
 // https://www.nyse.com/markets/nyse-texas
-pub(crate) static NYSE_TEXAS_PROFILE: StaticHoursProfile = equity_profile(EXTENDED_0700_2000);
+pub(crate) static NYSE_TEXAS_PROFILE: StaticHoursProfile = equity_profile(NYSE_TEXAS_EXTENDED);
 
 static TEXAS_REVISIONS: &[Revision] = &[Revision {
     effective: effective_date(2025, 3, 31),

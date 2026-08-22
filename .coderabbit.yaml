@@ -48,8 +48,8 @@ reviews:
           sentinel. Omit the rule to model no session.
         - Resolving ambiguous/nonexistent local time with the wrong bias: opens use
           the earliest valid instant and closes use the latest.
-        - A breaking removal/rename/signature or serde-wire-name change without a
-          deliberate pre-1.0 migration or post-1.0 major release. Exchange and
+        - A breaking removal/rename/signature or serde-wire-name change outside a
+          deliberate major release with migration guidance. Exchange and
           MarketHoursKey stay non_exhaustive.
 
         MAJOR findings:
@@ -156,9 +156,9 @@ reviews:
         Unknown, or weakening #[non_exhaustive]. A new row must also reach current
         routing, regional bulk membership where applicable, independent identity
         expectations, schedule documentation, and public venue tests.
-        For an explicitly authorized pre-1.0 removal, require a changelog migration
-        and rejection coverage for the retired name; do not request a compatibility
-        alias that would keep the removed identity parseable.
+        For an explicitly authorized major-release removal, require a changelog
+        migration and rejection coverage for the retired name; do not request a
+        compatibility alias that would keep the removed identity parseable.
 
     - path: "src/calendar/bulk.rs"
       instructions: |
@@ -174,9 +174,9 @@ reviews:
 
         Handwritten ALL_EXCHANGES, EXCHANGE_VARIANT_COUNT, MarketHoursKey expectations,
         and HISTORICAL_CUTOVERS are independent coverage fences. Do not suggest
-        generating them from production data or adding MarketHoursKey::ALL merely to
-        drive the tests. New submodules must be reachable from a thin Cargo test
-        harness; shared fixtures stay public-surface-only.
+        generating them from production Exchange::ALL or MarketHoursKey::ALL. New
+        submodules must be reachable from a thin Cargo test harness; shared fixtures
+        stay public-surface-only.
 
         A schedule change needs falsifiable public assertions for the instant before
         open, open, regular/extended classification, every lunch/maintenance gap,

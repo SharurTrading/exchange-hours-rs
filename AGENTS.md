@@ -59,10 +59,10 @@ and the rules any change to this repository must follow.
 
 - `Exchange` and `MarketHoursKey` are `#[non_exhaustive]`: venue additions are
   minor releases, not breaking ones. Never remove that attribute, and never
-  remove or rename a variant after 1.0 outside a major release. Before 1.0, a
-  breaking identity or wire-format change requires explicit authorization,
-  an `[Unreleased]` migration note, and exhaustive production/test/documentation
-  cleanup; never perform one as drive-by cleanup.
+  remove or rename a variant outside a major release. A breaking identity or
+  wire-format change requires explicit authorization, an appropriate SemVer
+  release, a changelog migration note, and exhaustive
+  production/test/documentation cleanup; never perform one as drive-by cleanup.
 - `Exchange`, `Exchange::ALL`, and `Exchange::as_str` are generated from
   **one table** (the `exchanges!` invocation in `exchange/mod.rs`, using the
   macro in `exchange/define.rs`): adding a venue is
@@ -73,13 +73,18 @@ and the rules any change to this repository must follow.
   covers the venue, and `ALL_EXCHANGES` + `EXCHANGE_VARIANT_COUNT` in
   `tests/contract/session_invariants/identity_expectations.rs` — the test
   suite's independent expectation of the table's contents and order.
-- One canonical `snake_case` name per venue, shared by serde, `as_str`,
+- `MarketHoursKey`, `MarketHoursKey::ALL`, `MarketHoursKey::as_str`, and its
+  serde implementations likewise come from the single `market_hours_keys!`
+  table in `futures_profile.rs` / `futures_profile/key_serde.rs`. A new key
+  must also reach the handwritten key expectations, verification ledger, and
+  public profile tests; never generate those independent fences from `ALL`.
+- One canonical `snake_case` name per identity, shared by serde, `as_str`,
   `Display`, and `FromStr`, and it is stable: a rename breaks persisted data.
   `Exchange` and `MarketHoursKey` Serde use their canonical strings in every
   format; never restore derive-generated enum ordinals, because inserting or
-  removing a variant would silently remap binary payloads.
-  `FromStr` rejects unknown names with `ParseExchangeError` — never map bad
-  input to `Exchange::Unknown`.
+  removing a variant would silently remap binary payloads. Their `FromStr`
+  implementations reject unknown names with `ParseExchangeError` or
+  `ParseMarketHoursKeyError`—never map bad input to `Exchange::Unknown`.
 - Production files stay under 300 lines (500 is a hard stop — split by venue or
   operator family under `schedules/`). Test files are exempt.
 - Schedule profile tables are `static` so `MarketHours` can borrow them
@@ -184,9 +189,11 @@ end-exclusive close, lunch/maintenance gaps, weekend boundary, serde form) and
   data corrections go under **Fixed**, new venues under **Added**. A PR that
   bumps the version in `Cargo.toml` is a release cut: that PR retitles
   `[Unreleased]` to the dated version section (as the 0.1.0 and 0.2.0
-  release-prep PRs did), and the tag follows the merge.
+  release-prep PRs did), and the tag follows the merge. Follow
+  [`RELEASING.md`](RELEASING.md) for the cut, tag, publish, and verification
+  sequence.
 - The README's version and MSRV badges read from crates.io, so they cannot
-  drift; do not re-hardcode them. The Coverage table's venue counts still
+  drift; do not re-hardcode them. The Coverage table's market-identity counts still
   duplicate the enum — update them together. When a dependency or an
   observable behaviour goes away, grep `README.md` for it as well: the
   `tracing` removal left two stale claims there and shipped in `0.2.1`.

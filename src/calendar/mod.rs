@@ -35,12 +35,11 @@
 //! ## What this calendar is not
 //!
 //! It is a **normal-week** model. Holidays, early closes, half-days, and
-//! product-level variations are out of scope: [`local_time::is_holiday`] is a
-//! stub that always returns `false`. Each source-backed schedule states its
+//! product-level variations are out of scope, so the internal holiday policy
+//! deliberately returns `false`. Each source-backed schedule states its
 //! venue, segment, or product-family scope explicitly; it is not a claim about
-//! products outside that scope. The wrap and daily-close paths already route
-//! through the holiday hook, so a real calendar lands as a body change rather
-//! than a control-flow change.
+//! products outside that scope. All query paths use the same session-existence
+//! policy.
 
 mod bulk;
 mod candle;
@@ -65,16 +64,13 @@ pub use candle::{candle_end, candle_end_with, candle_start, candle_start_with, t
 pub use exchange::{Exchange, ParseExchangeError};
 pub use exchange_calendar::{ExchangeCalendar, calendar_for_exchange};
 pub use futures_profile::{
-    FuturesSessionProfile, MarketHoursKey, hours_for_market_hours_key,
+    FuturesSessionProfile, MarketHoursKey, ParseMarketHoursKeyError, hours_for_market_hours_key,
     hours_for_market_hours_key_as_of, session_profile,
 };
 pub use hours::MarketHours;
 pub use presets::{hours_for_exchange, hours_for_exchange_as_of};
 pub use resolution::CalendarResolution;
 pub use rule::{SessionKind, SessionRule, SessionRuleError};
-pub use schedules::{
-    BLUE_OCEAN_EXTENDED, NYSE_TEXAS_EXTENDED, US_EQUITY_EXTENDED, US_EQUITY_REGULAR,
-};
 pub use session::{
     next_session_after, next_session_after_with, next_session_open_after, session_bounds,
     session_bounds_with,

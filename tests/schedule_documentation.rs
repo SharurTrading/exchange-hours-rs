@@ -17,6 +17,7 @@ use std::path::Path;
 const README: &str = include_str!("../README.md");
 const VERIFICATION: &str = include_str!("../docs/schedules/verification.md");
 const SOURCES: &str = include_str!("../docs/schedules/sources.md");
+const UPDATING: &str = include_str!("../docs/schedules/updating.md");
 const AUDIT: &str = include_str!("../docs/schedules/audit-2026-08-21.md");
 
 const EXPECTED_MARKET_HOURS_KEY_NAMES: [&str; 9] = [
@@ -164,10 +165,10 @@ fn exchange_rows_have_complete_review_metadata() {
         } else {
             assert_ne!(
                 basis, "Synthetic",
-                "real exchange cannot be synthetic: {row}"
+                "non-synthetic Exchange identity cannot be synthetic: {row}"
             );
             let reviewed = NaiveDate::parse_from_str(reviewed, "%Y-%m-%d")
-                .expect("every real exchange must have an ISO review date");
+                .expect("every non-synthetic Exchange identity must have an ISO review date");
             assert!(
                 reviewed >= cutoff,
                 "exchange review date predates repository cutoff: {row}"
@@ -247,7 +248,7 @@ fn readme_and_review_dates_match_the_repository_cutoff() {
         let cells = row_cells(row);
         assert_eq!(cells.len(), 6, "unexpected verification row shape: {row}");
         let reviewed = NaiveDate::parse_from_str(cells[4], "%Y-%m-%d")
-            .expect("every real exchange must have an ISO review date");
+            .expect("every non-synthetic Exchange identity must have an ISO review date");
         assert!(
             reviewed >= cutoff_date,
             "exchange review date predates repository cutoff: {row}"
@@ -283,6 +284,25 @@ fn readme_and_audit_quantify_assurance_from_the_ledger() {
     let verified_keys =
         basis_count(&real_key_rows, "Primary") + basis_count(&real_key_rows, "Partial");
 
+    let readme_identity_claims = [
+        format!(
+            "**{} source-backed market identities**",
+            real_exchange_rows.len()
+        ),
+        format!("({} `Exchange` variants total)", exchange_rows.len()),
+        format!(
+            "{} variants—{} operator-derived product-family keys",
+            key_rows.len(),
+            real_key_rows.len()
+        ),
+    ];
+    for claim in readme_identity_claims {
+        assert!(
+            README.contains(&claim),
+            "README identity count drifted: {claim}"
+        );
+    }
+
     let claims = [
         format!(
             "**Primary-source-verified current profiles:** `{verified} of {}`",
@@ -293,7 +313,7 @@ fn readme_and_audit_quantify_assurance_from_the_ledger() {
             real_exchange_rows.len()
         ),
         format!(
-            "**Venue-specific profiles requiring reconciliation:** `{known_issues} of {}`",
+            "**Non-synthetic profiles requiring reconciliation:** `{known_issues} of {}`",
             real_exchange_rows.len()
         ),
         format!(
@@ -358,6 +378,27 @@ fn every_exchange_owner_link_resolves() {
         assert!(
             docs_dir.join(owner).is_file(),
             "exchange owner link does not resolve: {owner}"
+        );
+    }
+}
+
+#[test]
+fn conditional_future_revisions_remain_pending_confirmation() {
+    let (_, pending) = UPDATING
+        .split_once("### Pending effective-date confirmations")
+        .expect("updating guide must retain a pending-confirmations section");
+    let (pending, _) = pending
+        .split_once("\n## ")
+        .expect("pending confirmations must end before the next guide section");
+
+    for revision in [
+        "**Nasdaq — 2026-12-06:**",
+        "**Cboe EDGX — 2026-12-06:**",
+        "**FINRA TRFs — 2026-12-06:**",
+    ] {
+        assert!(
+            pending.contains(revision),
+            "conditional future revision is missing from the update checklist: {revision}"
         );
     }
 }

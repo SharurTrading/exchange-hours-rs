@@ -7,10 +7,11 @@
 //! only preserves the public `Exchange` dispatch and the default-to-current
 //! behavior for venues with no recorded revision.
 //!
-//! **Known source gaps.** A selector is added only when the owning venue module
-//! has primary, day-level evidence for its boundary. Remaining gaps are listed
-//! per row in `docs/schedules/verification.md`; the current snapshot is the
-//! explicit fallback where an older boundary cannot be dated truthfully.
+//! **Evidence rule.** A selector is added only when the owning venue module has
+//! primary, day-level evidence for its boundary (LAW-NO-FABRICATED-DATES). The
+//! current verification ledger records no modeled-history gap within any row's
+//! stated scope. If a future review finds an undated change, the ledger must
+//! disclose it rather than this router inventing a cutover.
 
 use chrono::{DateTime, Utc};
 
@@ -26,13 +27,15 @@ use super::hours_for_exchange;
 ///
 /// Date-only changes are interpreted at venue-local midnight on the session's
 /// opening day. A source-stated intraday boundary is preserved at its exact UTC
-/// instant. B3 and BMV also select their published New York reference-zone grid
-/// for the venue-local day containing `as_of`. A caller scanning across later
-/// schedule transitions should use [`calendar_for_exchange`](crate::calendar_for_exchange),
-/// which reselects at every candidate opening day.
+/// instant. Recurring selectors choose the applicable B3/BMV New York-offset
+/// grid, Vienna third-Friday grid, Eurex fixed-UTC Asian open, or ICE Endex /
+/// ICE Abu Dhabi New York-reference grid for the venue-local day containing
+/// `as_of`. A caller scanning across later schedule transitions should use
+/// [`calendar_for_exchange`](crate::calendar_for_exchange), which reselects at
+/// every candidate opening day.
 ///
 /// Venues without recorded historical revisions return their current profile.
-/// See the module documentation for known primary-source gaps.
+/// See the module documentation for the evidence rule applied to revisions.
 #[must_use]
 pub fn hours_for_exchange_as_of(exch: Exchange, as_of: DateTime<Utc>) -> MarketHours {
     let current = hours_for_exchange(exch);

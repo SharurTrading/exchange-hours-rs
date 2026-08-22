@@ -73,19 +73,10 @@ fn every_shipped_rule_table_satisfies_the_session_rule_domain() {
         }
     }
 
-    // The shared futures profiles addressed by key. `MarketHoursKey` is
-    // non_exhaustive for downstream code; this in-repo list tracks the enum.
-    for key in [
-        MarketHoursKey::GlobexEquityIndex,
-        MarketHoursKey::GlobexEnergy,
-        MarketHoursKey::GlobexGrains,
-        MarketHoursKey::GlobexFx,
-        MarketHoursKey::CfeVix,
-        MarketHoursKey::Eurex,
-        MarketHoursKey::IceUs,
-        MarketHoursKey::Sgx,
-        MarketHoursKey::AlwaysOpen,
-    ] {
+    // The generated enumeration ensures a newly added key cannot skip this
+    // shipped-rule validation. A separate test owns the independent identity
+    // and order expectation.
+    for &key in MarketHoursKey::ALL {
         let profile = session_profile(key);
         for rule in profile.regular.iter().chain(profile.extended.iter()) {
             rule.validate().unwrap_or_else(|violation| {

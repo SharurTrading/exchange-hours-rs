@@ -11,13 +11,20 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-08-22
+
+First stable release. Version 1.0 establishes the canonical string identities,
+normal-week schedule scope, date-aware calendar surface, and primary-source
+maintenance contract described in the README and schedule verification ledger.
+
 ### Added
 
 - **23 major cash-equity venues:** ASX, TMX Australia, NZX, TSE, NSE India,
   BSE India, HKEX, SGX Securities, Bursa Malaysia, SET Thailand, IDX, PSE,
   HOSE, SSE, SZSE, KRX, TWSE, Borsa Istanbul, TSX, JSE, Tadawul, B3, and BMV.
-  Together with the pre-v1 IQX cleanup below, this brings the crate to 91
-  exchange identifiers including `Exchange::Unknown`.
+  Together with the pre-v1 IQX cleanup below, this brings the crate to 90
+  source-backed market identities plus the synthetic `Exchange::Unknown`
+  fallback (91 `Exchange` variants total).
 - **The additive `ExchangeCalendar` API** for date-aware predicates, session
   scans, maintenance/all-day queries, and candle boundaries. Existing
   `MarketHours` functions and signatures remain unchanged; B3/BMV calendars
@@ -25,6 +32,9 @@ corrections (a venue's hours fixed against a primary source) go under
 - **`hours_for_market_hours_key_as_of`** for primary-sourced point-in-time
   futures product-family snapshots, reusing the same dated tables as the
   corresponding exchange profiles.
+- **A complete `MarketHoursKey` identity surface:** `ALL`, `as_str`, `Display`,
+  `FromStr`, `Ord`, and `PartialOrd` share the canonical string table used by Serde;
+  `ParseMarketHoursKeyError` preserves rejected input for callers.
 - **Point-in-time APAC and global-equity schedules back to the January 2010
   audit floor.** Every encoded cutover has a primary-source, day-level
   effective date; temporary pandemic schedules and PSE's two full closure
@@ -38,15 +48,15 @@ corrections (a venue's hours fixed against a primary source) go under
 - **Schedule-maintenance documentation:** the README now publishes an explicit
   source-review cutoff and machine-checked assurance counts, while a dated
   audit report, per-exchange verification ledger, normalized official-source
-  registry, and repeatable update guide make freshness, scope, and known
-  evidence gaps auditable without overstating future accuracy.
+  registry, and repeatable update guide make freshness, scope, and evidence
+  status auditable without overstating future accuracy.
 
 ### Changed
 
 - **Equal `SessionRule` endpoints now mean a complete local-day session.** A
   rule such as Sunday `18:00→18:00` preserves one continuous session through
   Monday 18:00, including exact `session_bounds`; absence is represented by
-  omitting the rule. This intentionally breaking pre-1.0 correction removes
+  omitting the rule. This intentionally breaking 1.0-boundary correction removes
   `SessionRuleError::EmptyInterval`.
 - **Canonical string Serde for `Exchange` and `MarketHoursKey`.** Both public
   identity enums now use their stable `snake_case` strings in every format.
@@ -67,6 +77,11 @@ corrections (a venue's hours fixed against a primary source) go under
   is no replacement `Exchange` variant: applications that still need the ATS
   must keep an external mapping rather than converting it to another venue or
   to `Exchange::Unknown`.
+- **Four raw US schedule slices are no longer public:**
+  `US_EQUITY_REGULAR`, `US_EQUITY_EXTENDED`, `NYSE_TEXAS_EXTENDED`, and
+  `BLUE_OCEAN_EXTENDED` were implementation details that could bypass
+  venue/date routing. Use `hours_for_exchange`, `hours_for_exchange_as_of`, or
+  `calendar_for_exchange` and the public query APIs instead.
 
 ### Fixed
 
@@ -115,8 +130,8 @@ corrections (a venue's hours fixed against a primary source) go under
   with its sourced 2024 launch and auction gaps. Binance Futures is narrowed to
   USDⓈ-M perpetuals and is closed before the exact sourced 2019-09-13 04:00 UTC
   platform launch. Xetra now includes the sourced 2025 Extended Retail envelope
-  for DAX shares. Remaining older-history gaps stay explicit in the verification
-  ledger.
+  for DAX shares. Each profile's exact product scope and historical boundary are
+  recorded in the verification ledger.
 - **Nasdaq-family equity schedules and history.** Nasdaq BX/Texas now preserves
   its sourced January-2010 08:00–19:00 ET grid and exact April 18, 2011 move to
   07:00–19:00, while PSX uses 08:00–17:00 and is
@@ -124,14 +139,16 @@ corrections (a venue's hours fixed against a primary source) go under
   moves to 08:00 on the sourced December 13, 2010 date. Nasdaq Stock Market
   history now retains the 07:00 pre-market before its sourced March 18, 2013
   move to 04:00. Date-aware lookups add Nasdaq's 21:00–04:00 Night Session
-  from 2026-12-06, preserving its fixed current snapshot.
+  from the announced 2026-12-06 date, preserving its fixed current snapshot;
+  operation remains subject to Nasdaq's final readiness filing.
 - **Cboe US-equity launch and phase history.** BZX now retains its January-2010
   08:00–17:00 ET baseline; BYX, EDGA, and EDGX are closed before their sourced
   2010 exchange launches. Each venue applies its own published May 2016 move
   from 08:00 to 07:00, and BZX/BYX apply their distinct 2018 moves to a 20:00
   close. Existing 2021 EDGX and 2025 BZX 04:00 opens remain date-aware. EDGX's
   announced 21:00–04:00 session begins Sunday 2026-12-06 for the December 7
-  business date, preserving the fixed current snapshot and 20:00–21:00 pause.
+  business date, preserving the fixed current snapshot and 20:00–21:00 pause;
+  the pending rule filing still requires a final readiness confirmation.
 - **NYSE-family equity history.** Arca's 04:00–20:00 grid is now explicitly
   supported at the January-2010 audit floor. American retains its core-only
   continuous session until the sourced July 24, 2017 Pillar launch. National
@@ -353,7 +370,8 @@ Initial release.
 - No runtime state, no I/O, no clock reads, no floats, and
   `#![forbid(unsafe_code)]`.
 
-[Unreleased]: https://github.com/SharurTrading/exchange-hours-rs/compare/v0.2.2...HEAD
+[Unreleased]: https://github.com/SharurTrading/exchange-hours-rs/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/SharurTrading/exchange-hours-rs/compare/v0.2.2...v1.0.0
 [0.2.2]: https://github.com/SharurTrading/exchange-hours-rs/compare/v0.2.1...v0.2.2
 [0.2.1]: https://github.com/SharurTrading/exchange-hours-rs/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/SharurTrading/exchange-hours-rs/compare/v0.1.0...v0.2.0

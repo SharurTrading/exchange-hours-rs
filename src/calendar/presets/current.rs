@@ -16,12 +16,17 @@ use crate::calendar::{Exchange, MarketHours, MarketHoursKey, session_profile};
 
 /// Builds the default fixed trading-hours snapshot for an exchange.
 ///
-/// Product-level variations may differ. B3 and BMV also change grids according
-/// to New York's UTC-offset relationship with their own venue zone; their
-/// date-free values are compatibility snapshots. Use
-/// [`calendar_for_exchange`](crate::calendar_for_exchange) for queries that
-/// can cross one of those recurring transitions. The compatibility choices
-/// are B3's short grid and BMV's early grid.
+/// Product-level variations may differ. This date-free function necessarily
+/// returns one compatibility snapshot for every venue, including profiles with
+/// recurring date selection: B3 and BMV follow New York offset relationships,
+/// Vienna has a third-Friday settlement grid, Eurex's Asian open is fixed in
+/// UTC, and ICE Endex / ICE Abu Dhabi follow New York reference clocks. Use
+/// [`hours_for_exchange_as_of`](crate::hours_for_exchange_as_of) for one dated
+/// snapshot and [`calendar_for_exchange`](crate::calendar_for_exchange) for a
+/// query or scan that can cross a transition. The compatibility choices are
+/// B3's short grid, BMV's early grid, Vienna's ordinary non-settlement grid,
+/// and the current-season reference-clock grids for the three derivatives
+/// profiles.
 #[must_use]
 pub fn hours_for_exchange(exch: Exchange) -> MarketHours {
     match exch {

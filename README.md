@@ -4,6 +4,7 @@
 
 [![CI](https://github.com/SharurTrading/exchange-hours-rs/actions/workflows/ci.yml/badge.svg)](https://github.com/SharurTrading/exchange-hours-rs/actions/workflows/ci.yml)
 [![Crates.io](https://img.shields.io/crates/v/exchange-hours.svg)](https://crates.io/crates/exchange-hours)
+[![Docs.rs](https://docs.rs/exchange-hours/badge.svg)](https://docs.rs/exchange-hours)
 ![Edition](https://img.shields.io/badge/edition-2024-orange)
 ![MSRV](https://img.shields.io/crates/msrv/exchange-hours.svg)
 ![Unsafe](https://img.shields.io/badge/unsafe-forbidden-success)
@@ -29,9 +30,11 @@ exchange's local time zone, including its DST quirks, is handled internally.
 The internal ownership and extension model is documented in
 [ARCHITECTURE.md](ARCHITECTURE.md).
 
-- **91 exchange identifiers** — US equities/options, US and international futures, EU and Asia-Pacific
-  equities, other major global cash markets, and always-open crypto — with independently
-  fenced point-in-time revisions wherever primary evidence states a day-level boundary.
+- **90 source-backed market identities**, plus the synthetic `Exchange::Unknown`
+  fallback (91 `Exchange` variants total) — covering US equities/options, US and
+  international futures, EU and Asia-Pacific equities, other major global cash
+  markets, and always-open crypto, with independently fenced point-in-time
+  revisions wherever primary evidence states a day-level boundary.
 - **Session queries** — open/closed by regular/extended/both, session bounds, next open, gaps.
 - **Calendar-aware bar boundaries** — intraday bars clamp to the session close so no bar
   spans a closed period; the day's last bar ends at the daily close itself (CME 16:00 CT,
@@ -39,6 +42,18 @@ The internal ownership and extension model is documented in
   not midnight.
 - **DST correctness by construction** — local seconds-since-midnight rules, resolved to
   instants with an explicit, asymmetric bias (opens earliest, closes latest).
+
+## Installation
+
+`exchange-hours` 1.0 requires Rust 1.95 or newer. The Quick start constructs
+timestamps directly, so its complete dependency set is:
+
+```toml
+[dependencies]
+exchange-hours = "1"
+chrono = "0.4"
+chrono-tz = "0.10"
+```
 
 ## Quick start
 
@@ -65,7 +80,7 @@ let hours = hours_for_exchange(Exchange::Cme);
 
 // Monday mid-morning sits inside the regular session. Boundary queries
 // return `Option`: `None` means no matching session exists in the bounded
-// search horizon (for example, a pre-go-live date).
+// search horizon (for example, on a pre-go-live date).
 let monday_10am = ct(2026, 4, 20, 10, 0);
 assert!(hours.is_open_regular(monday_10am));
 let (open, close) = session_bounds(&hours, monday_10am).expect("CME trades this week");
@@ -108,10 +123,10 @@ assert_eq!(snapshot_for_one_instant.exchange, Exchange::Bmv);
 
 ## Coverage
 
-| Family | Variants | Local zone | Session shape |
+| Family | Market identities | Local zone | Session shape |
 |---|---|---|---|
-| US equities and ATS | 16 | `America/New_York` | 09:30–16:00 regular on matching venues; modeled extended hours differ by venue. Nasdaq is 04:00–20:00 today, Nasdaq BX/Texas is 07:00–19:00, and PSX is 08:00–17:00. Date-aware profiles add Nasdaq and EDGX 21:00–04:00 sessions from 2026-12-06 while fixed current snapshots remain unchanged. NYSE Tape A is core-only, IEX runs 08:00–17:00 System Hours, and Blue Ocean's production new-order ATS window is 20:00–04:00. |
-| FINRA TRFs | 3 | `America/New_York` | 09:30–16:00 regular; outside-RTH reporting is extended (04:00–20:00 system envelope from 2026-03-30, with the sourced overnight expansion tracked from 2026-12-06). |
+| US equities and ATS | 16 | `America/New_York` | 09:30–16:00 regular on matching venues; modeled extended hours differ by venue. Nasdaq is 04:00–20:00 today, Nasdaq BX/Texas is 07:00–19:00, and PSX is 08:00–17:00. Date-aware profiles encode the announced Nasdaq and EDGX 21:00–04:00 sessions from 2026-12-06, subject to final regulatory/readiness filings; fixed current snapshots remain unchanged. NYSE Tape A is core-only, IEX runs 08:00–17:00 System Hours, and Blue Ocean's production new-order ATS window is 20:00–04:00. |
+| FINRA TRFs | 3 | `America/New_York` | 09:30–16:00 regular; outside-RTH reporting is extended (04:00–20:00 system envelope from 2026-03-30, with the announced SIP-contingent overnight expansion tracked from 2026-12-06). |
 | US options | 18 | `America/New_York` | Each venue models the primary-sourced 09:30–16:00 regular-session envelope for ordinary individual-stock options, with exact closed-before-launch history where the venue began after January 2010. ETF, ETN, index, FLEX, floor-only, and venue-designated extended-hours classes are outside this deliberately narrow scope. |
 | CME Globex futures | 4 | `US/Central` | CME equity-index futures use the current 17:00→16:00 envelope with their 15:15–15:30 halt; date-aware history retains the sourced 2012 and 2015 close changes. CBOT grains keep distinct sourced 2010, 2012, 2013, and 2015 regimes. |
 | Cboe Futures (CFE) | 1 | `US/Central` | RTH 08:30–15:00 flows into post-settlement 15:00–16:00; order-entry queues run Sunday 16:00–17:00 and Monday–Thursday 16:45–17:00 before the 17:00→08:30 overnight wrap. |
@@ -120,29 +135,38 @@ assert_eq!(snapshot_for_one_instant.exchange, Exchange::Bmv);
 | Other major global equities | 6 | Toronto / Istanbul / Johannesburg / Riyadh / São Paulo / Mexico City | TSX, Borsa Istanbul, JSE's main/liquid ZA01 segment, Tadawul, B3, and BMV, including their pre-open, closing-auction, and trade-at-last phases. B3/BMV grids are date-aware because they follow New York's offset relationship. |
 | ICE complex & European energy | 9 | London / Amsterdam / Berlin / Dubai / New York / Winnipeg | Named product-family profiles: Eurex FESX/FDAX/FDXM, EEX Nordic Zonal Power, ICE FANG+, Brent, FTSE 100, Dutch TTF, Murban, and legacy Canola. Date-aware profiles preserve product launches, FTSE extensions, Eurex's fixed-UTC Asian pre-trading/auction and continuous phases, Endex's 2026 extension/DST rule, Murban's New-York-locked grid, and Canola's sourced 2010–2018 eras. |
 | Asia-Pacific futures (SGX) | 1 | `Asia/Singapore` | Three-Month SORA Futures: continuous 07:25–17:55 and 18:15→05:15, with opening/closing phases and a 18:00–18:05 gap. Closed before the 2024-07-29 launch. |
-| Always-open venues, and the `Exchange::Unknown` fallback | 2 | `UTC` | Binance USDⓈ-M perpetuals are normally 24×7 after their exact 2019-09-13 04:00 UTC launch; `Unknown` is always-open library policy. |
+| Always-open crypto | 1 | `UTC` | Binance USDⓈ-M perpetuals are normally 24×7 after their exact 2019-09-13 04:00 UTC launch. |
 
-Futures hours track the *product family*, not the venue: nine shared profiles are also addressable by `MarketHoursKey`. Fixed snapshots use `session_profile` / `hours_for_market_hours_key`; sourced dated revisions use `hours_for_market_hours_key_as_of`.
+Futures hours track the *product family*, not the venue. `MarketHoursKey` has
+9 variants—8 operator-derived product-family keys plus the synthetic
+`AlwaysOpen` key. They reuse profiles and are not additional venues. Fixed
+snapshots use `session_profile` / `hours_for_market_hours_key`; sourced dated
+revisions use `hours_for_market_hours_key_as_of`.
+
+The table contains 90 source-backed market identities. `Exchange::Unknown` is
+an additional synthetic 24×7 UTC fallback and is not counted as an exchange or
+trading venue.
 
 ## Schedule assurance
 
 **Repository-wide review completed:** `2026-08-21`
 
-**Primary-source-verified current profiles:** `90 of 90` real exchange
-identifiers, within each row's documented normal-week scope.
+**Primary-source-verified current profiles:** `90 of 90` non-synthetic
+`Exchange` identities, within each row's documented normal-week scope.
 
-**Complete sourced history since January 2010:** `90 of 90` real exchange
-identifiers.
+**Complete sourced history since January 2010:** `90 of 90` non-synthetic
+`Exchange` identities.
 
-**Venue-specific profiles requiring reconciliation:** `0 of 90` real exchange
-identifiers.
+**Non-synthetic profiles requiring reconciliation:** `0 of 90` non-synthetic
+`Exchange` identities.
 
-Every real exchange identifier was compared with its official current-hours or
+Every non-synthetic identity was compared with its official current-hours or
 rulebook material and its notice/evidence channel. All 90 current profiles are
 primary-supported within their stated scope, and all 90 **Primary** rows have
 no known modeled-history gap since January 2010 or their sourced launch. No
-real row remains **Partial**, **Secondary**, **Pragmatic**, or **Known issue**.
-`Exchange::Unknown` is synthetic and is not one of the 90 real identifiers.
+non-synthetic row remains **Partial**, **Secondary**, **Pragmatic**, or **Known issue**.
+`Exchange::Unknown` is synthetic and is not one of the 90 source-backed
+identities.
 
 The key surface was audited separately:
 **Primary-source-verified current key snapshots:** `8 of 8` operator-derived
@@ -189,6 +213,11 @@ trading day.
   preserves the exact venue-wide open/closed envelope. IEX and Blue Ocean have sourced
   production launch boundaries, and B3's explicit older grids are fully recorded to
   January 2010.
+- **Announced future changes stay conditional.** Nasdaq, EDGX, and the three
+  FINRA TRFs have official 2026-12-06 schedule announcements encoded in their
+  date-aware selectors. Nasdaq and EDGX still require final readiness/regulatory
+  filings, and FINRA's date moves if the SIP rollout moves. Recheck the linked
+  pending-confirmation sources before relying on any post-cutover answer.
 - **Cutover semantics.** Date-only changes are compared in the venue's **own local zone**.
   The new profile applies from venue-local midnight on its session opening day—often Sunday
   for a Monday trade-date change. When a primary source states an exact intraday instant,
@@ -210,7 +239,7 @@ US transition dates. A `MarketHours` returned for one date remains a fixed snaps
 ## Best effort — validate before production use
 
 Primary-sourced tables and dated revisions carry their citations beside the data and are
-pinned by tests. Every real current profile is source-supported within the product or
+pinned by tests. Every non-synthetic current profile is source-supported within the product or
 segment scope stated in the ledger, with complete January-2010-or-launch history at that
 scope. This crate is a **best-effort model, not an authority**:
 exchanges amend hours on short notice, publish product-level exceptions, and run holiday
@@ -218,16 +247,32 @@ and half-day schedules that this normal-week model deliberately omits. Before tr
 any venue's hours in production, have a human verify the profile against the exchange's
 currently published schedule and the relevant contract specifications.
 
-## Place in the system
+## Design
 
-A foundational leaf. It depends only on `chrono` + `chrono-tz` (instant/zone arithmetic and
-the DST resolver) and `serde` (snake_case (de)serialization of the public types) — no logging
-facade, engine, transport, adapter, async, or credential crate, and no `tokio`. Downstream, the Sharur platform consumes it as a git dependency: the
-instrument catalog maps instrument roots onto `MarketHoursKey` and re-exports
-`FuturesSessionProfile`, `SessionRule`, and `session_profile`; chart bar consolidation and the
-GUI's session overlays reach `candle_start` / `candle_end` / `session_bounds` through that
-catalog rather than hand-rolling hour arithmetic — one shared definition, so a change here
-reaches every consumer at once.
+This is a foundational leaf crate. It depends only on `chrono` + `chrono-tz`
+(instant/zone arithmetic and the DST resolver) and `serde` (canonical string
+serialization of public identities)—no logging facade, engine, transport,
+adapter, async runtime, credential crate, or `tokio`.
+
+## Upgrading from 0.2.x
+
+- The retired `intelligentcross_iqx` value has no replacement `Exchange`
+  variant. Remove persisted entries that used it, or keep an application-level
+  mapping if the IntelligentCross ATS is still required; never translate it to
+  another venue or to `Exchange::Unknown`.
+- `Exchange` and `MarketHoursKey` now serialize as canonical `snake_case`
+  strings in every Serde format. Earlier binary ordinal payloads must be decoded
+  with their original crate version and rewritten using the string form.
+- Equal `SessionRule` endpoints now encode one complete local-day session, and
+  `SessionRuleError::EmptyInterval` was removed. Omit a rule to represent no
+  session.
+- The raw `US_EQUITY_REGULAR`, `US_EQUITY_EXTENDED`,
+  `NYSE_TEXAS_EXTENDED`, and `BLUE_OCEAN_EXTENDED` slices are no longer public.
+  Use `hours_for_exchange`, `hours_for_exchange_as_of`, or
+  `calendar_for_exchange` so venue and historical routing cannot be bypassed.
+
+See the [1.0.0 changelog](CHANGELOG.md#100---2026-08-22) for the complete API,
+schedule, and migration record.
 
 ## Boundaries & invariants
 
@@ -254,24 +299,19 @@ reaches every consumer at once.
 - **Always-open venues stay categorically separate.** A 24×7 venue is a single `0..86400`
   rule on all seven days with `has_daily_close` / `has_weekend_close` both `false`; it is
   never folded into the CME-style daily-break profiles.
-- **One canonical name per venue, and it is stable.** `Exchange` and `MarketHoursKey`
-  serialize as `snake_case` strings in every Serde format, and `Exchange` exposes
-  the same names directly:
-  `as_str`, `Display`, and `FromStr` (`"nyse_arca".parse::<Exchange>()`), so string-keyed
-  callers parse instead of pattern-matching. An unrecognized name is a `ParseExchangeError`,
-  never a silent `Exchange::Unknown`. A rename that changes one of these strings breaks
-  persisted data. Neither identity enum uses variant ordinals, so adding or removing an
-  enum row cannot silently reinterpret another venue or product family.
-- **Pre-1.0 IQX migration.** The retired `intelligentcross_iqx` value has no replacement
-  `Exchange` variant. Remove persisted entries that used it, or keep an application-level
-  mapping if the IntelligentCross ATS is still required; never translate it to another
-  venue or to `Exchange::Unknown`. Earlier binary ordinal payloads for `Exchange` and
-  `MarketHoursKey` must be decoded with their original crate version and rewritten using
-  the canonical string representation.
+- **One canonical name per identity, and it is stable.** `Exchange` and
+  `MarketHoursKey` serialize as `snake_case` strings in every Serde format and
+  expose the same names through `as_str`, `Display`, and `FromStr`; each also
+  has an `ALL` enumeration. String-keyed callers parse instead of
+  pattern-matching (`"nyse_arca".parse::<Exchange>()`). Unrecognized input
+  returns `ParseExchangeError` or `ParseMarketHoursKeyError`, never a silent
+  `Exchange::Unknown`. A rename that changes one of these strings breaks
+  persisted data. Neither identity enum uses variant ordinals, so adding or
+  removing a row cannot silently reinterpret another identity.
 - **Normal week only.** Holidays, early closes, half-days, and product-level variations are
-  absent — `is_holiday` is a stub returning `false`, though every query path already routes
-  through it under one session-existence contract. Verify contract specs before trading on
-  a profile outside its explicitly stated scope.
+  absent—the internal holiday policy returns `false`, while every query path
+  routes through the same session-existence contract. Verify contract specs
+  before trading on a profile outside its explicitly stated scope.
 - **No panics, and absence is `None`.** The public surface is total, and boundary queries
   (`session_bounds*`, `next_session_after*`, `candle_start*`/`candle_end*`,
   `time_end_of_day`) return `Option`: a profile with no session of the requested kind in
@@ -287,7 +327,7 @@ reaches every consumer at once.
 
 Pure and stateless, so the validation class is property/deterministic-fixture, not workload.
 Every test is an integration test over the public surface: the crate exposes nothing to tests
-that callers do not also get (TEST-LAYOUT, see [AGENTS.md](AGENTS.md)).
+that callers do not also get (see [Architecture: Tests](ARCHITECTURE.md#tests)).
 
 - `tests/venue_sessions.rs` and `tests/venue_sessions/` — a thin harness over focused futures,
   equities, candle, wrap, bounds, and correction modules. Together they pin published opens,
@@ -299,10 +339,12 @@ that callers do not also get (TEST-LAYOUT, see [AGENTS.md](AGENTS.md)).
 - `tests/global_equities.rs` and `tests/global_equities/` — a thin harness over current
   baselines, amendment history, and the global bulk/name contract for TSX, Borsa Istanbul,
   JSE, Tadawul, B3, and BMV.
-- `tests/schedule_documentation.rs` — keeps all 91 exchange rows and nine reusable
-  `MarketHoursKey` rows in canonical order, validates their review metadata and owner/source
-  links, requires both current and notice/evidence channels for every source set, rejects
-  orphaned source sets, and prevents the README freshness date from drifting from the ledger.
+- `tests/schedule_documentation.rs` — keeps all 91 `Exchange` rows (90
+  non-synthetic plus `Unknown`) and nine `MarketHoursKey` rows (eight
+  operator-derived plus `AlwaysOpen`) in canonical order; validates their
+  review metadata and owner/source links; requires both current and
+  notice/evidence channels for every source set; rejects orphaned source sets;
+  and prevents the README freshness date from drifting from the ledger.
 - `tests/seasonal_calendars.rs` and `tests/seasonal_calendars/` — a thin integration harness
   split into B3, BMV, transition-scan, candle/weekend, Chrono-edge, and compatibility-contract
   modules. The contracts include all-fixed-venue `MarketHours`/`ExchangeCalendar` parity and

@@ -78,8 +78,8 @@
 //! # Scope
 //!
 //! This is a **normal-week** calendar. Holidays, early closes, half-days, and
-//! product-level variations are deliberately out of scope — the internal
-//! `is_holiday` hook is a stub that always returns `false`. Each profile's
+//! product-level variations are deliberately out of scope—the internal
+//! holiday policy always returns `false`. Each profile's
 //! documented venue, segment, or product-family scope therefore matters; verify
 //! the relevant contract and holiday rules before trading on it.
 //!

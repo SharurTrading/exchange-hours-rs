@@ -283,36 +283,39 @@ fn nasdaq_copenhagen_closes_1655_with_optional_trade_at_close() {
 }
 
 #[test]
-fn euronext_continental_books_follow_the_published_cet_clock() {
-    // Euronext's current 4-01/4-03 appendix: pre-open 07:30 CET, randomized
-    // opening uncross through 09:00:30, continuous to 17:30, and closing/TAL
-    // through 17:40.
+fn euronext_central_books_use_nominal_exchange_boundaries() {
+    // Euronext's current 4-01/4-03 appendix publishes the nominal venue-level
+    // timetable: pre-open 07:30, continuous trading 09:00-17:30, closing
+    // auction 17:30-17:35, and Trading-at-Last 17:35-17:40 CET. Per-security
+    // randomized uncross microtiming does not move these exchange boundaries.
     for exch in [
         Exchange::EuronextParis,
         Exchange::EuronextAmsterdam,
         Exchange::EuronextBrussels,
-        Exchange::EuronextMilan,
     ] {
         let hours = hours_for_exchange(exch);
         assert!(!hours.is_open(cet((2026, 4, 20), (7, 29, 59))));
         assert!(hours.is_open_extended(cet((2026, 4, 20), (7, 30, 0))));
-        assert!(hours.is_open_extended(cet((2026, 4, 20), (9, 0, 29))));
-        assert!(hours.is_open_regular(cet((2026, 4, 20), (9, 0, 30))));
+        assert!(hours.is_open_extended(cet((2026, 4, 20), (8, 59, 59))));
+        assert!(hours.is_open_regular(cet((2026, 4, 20), (9, 0, 0))));
+        assert!(!hours.is_open_extended(cet((2026, 4, 20), (9, 0, 0))));
         assert!(hours.is_open_regular(cet((2026, 4, 20), (17, 29, 59))));
+        assert!(hours.is_open_extended(cet((2026, 4, 20), (17, 30, 0))));
+        assert!(!hours.is_open_regular(cet((2026, 4, 20), (17, 30, 0))));
         let (_, auction_close) = session_bounds_with(
             &hours,
-            cet((2026, 4, 20), (17, 35, 29)),
+            cet((2026, 4, 20), (17, 34, 59)),
             SessionKind::Extended,
         )
         .expect("Euronext closing auction");
-        assert_eq!(auction_close, cet((2026, 4, 20), (17, 35, 30)));
+        assert_eq!(auction_close, cet((2026, 4, 20), (17, 35, 0)));
         let (tal_open, tal_close) = session_bounds_with(
             &hours,
-            cet((2026, 4, 20), (17, 35, 30)),
+            cet((2026, 4, 20), (17, 35, 0)),
             SessionKind::Extended,
         )
         .expect("Euronext Trading-at-Last");
-        assert_eq!(tal_open, cet((2026, 4, 20), (17, 35, 30)));
+        assert_eq!(tal_open, cet((2026, 4, 20), (17, 35, 0)));
         assert_eq!(tal_close, cet((2026, 4, 20), (17, 40, 0)));
         assert!(
             hours.is_open_extended(cet((2026, 4, 20), (17, 37, 0))),
@@ -334,14 +337,35 @@ fn euronext_lisbon_keeps_its_zone_but_follows_the_cet_book() {
     assert_eq!(hours.tz, Europe::Lisbon);
     assert!(!hours.is_open(zoned(Europe::Lisbon, (2026, 4, 20), (6, 29, 59))));
     assert!(hours.is_open_extended(zoned(Europe::Lisbon, (2026, 4, 20), (6, 30, 0))));
-    assert!(hours.is_open_extended(zoned(Europe::Lisbon, (2026, 4, 20), (8, 0, 29))));
-    assert!(hours.is_open_regular(zoned(Europe::Lisbon, (2026, 4, 20), (8, 0, 30))));
+    assert!(hours.is_open_extended(zoned(Europe::Lisbon, (2026, 4, 20), (7, 59, 59))));
+    assert!(hours.is_open_regular(zoned(Europe::Lisbon, (2026, 4, 20), (8, 0, 0))));
+    assert!(!hours.is_open_extended(zoned(Europe::Lisbon, (2026, 4, 20), (8, 0, 0))));
     assert_eq!(
-        zoned(Europe::Lisbon, (2026, 4, 20), (8, 0, 30)),
-        cet((2026, 4, 20), (9, 0, 30)),
+        zoned(Europe::Lisbon, (2026, 4, 20), (8, 0, 0)),
+        cet((2026, 4, 20), (9, 0, 0)),
         "Lisbon and continental Euronext books must open simultaneously"
     );
     assert!(hours.is_open_regular(zoned(Europe::Lisbon, (2026, 4, 20), (16, 29, 59))));
+    assert!(hours.is_open_extended(zoned(Europe::Lisbon, (2026, 4, 20), (16, 30, 0))));
+    assert!(!hours.is_open_regular(zoned(Europe::Lisbon, (2026, 4, 20), (16, 30, 0))));
+    let (_, auction_close) = session_bounds_with(
+        &hours,
+        zoned(Europe::Lisbon, (2026, 4, 20), (16, 34, 59)),
+        SessionKind::Extended,
+    )
+    .expect("Euronext Lisbon closing auction");
+    assert_eq!(
+        auction_close,
+        zoned(Europe::Lisbon, (2026, 4, 20), (16, 35, 0))
+    );
+    let (tal_open, tal_close) = session_bounds_with(
+        &hours,
+        zoned(Europe::Lisbon, (2026, 4, 20), (16, 35, 0)),
+        SessionKind::Extended,
+    )
+    .expect("Euronext Lisbon Trading-at-Last");
+    assert_eq!(tal_open, zoned(Europe::Lisbon, (2026, 4, 20), (16, 35, 0)));
+    assert_eq!(tal_close, zoned(Europe::Lisbon, (2026, 4, 20), (16, 40, 0)));
     assert!(hours.is_open_extended(zoned(Europe::Lisbon, (2026, 4, 20), (16, 37, 0))));
     assert!(!hours.is_open(zoned(Europe::Lisbon, (2026, 4, 20), (16, 40, 0))));
 }

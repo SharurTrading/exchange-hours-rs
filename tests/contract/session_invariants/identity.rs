@@ -4,6 +4,7 @@
 
 use super::identity_expectations::*;
 use super::prelude::*;
+use serde_test::{Configure, Token, assert_de_tokens_error, assert_tokens};
 
 #[test]
 fn all_exchanges_matches_the_crates_own_list() {
@@ -37,18 +38,14 @@ fn all_exchanges_matches_the_crates_own_list() {
 #[test]
 fn every_exchange_name_round_trips_through_serde_display_and_from_str() {
     // One venue has exactly one snake_case name, shared by serde, `as_str`,
-    // `Display`, and `FromStr`. `as_str` is a hand-written second copy of the
-    // serde rename table, so every variant is checked both ways; `FromStr`
-    // searches `Exchange::ALL` by `as_str`, so its agreement is implied but
-    // pinned anyway.
+    // `Display`, and `FromStr`. The token assertion is format-neutral: it pins
+    // serde to its string data model instead of a derive-generated enum
+    // variant or ordinal. The macro generates the serde mapping and `as_str`
+    // from the same table; `FromStr` searches `Exchange::ALL` by `as_str`.
     for &exchange in Exchange::ALL {
         let name = exchange.as_str();
-        let serde_form = serde_json::to_value(exchange).expect("serializes");
-        assert_eq!(
-            serde_form,
-            serde_json::Value::String(name.to_owned()),
-            "{exchange:?}: as_str and the serde wire form disagree"
-        );
+        assert_tokens(&exchange.readable(), &[Token::Str(name)]);
+        assert_tokens(&exchange.compact(), &[Token::Str(name)]);
         assert_eq!(
             exchange.to_string(),
             name,
@@ -63,11 +60,48 @@ fn every_exchange_name_round_trips_through_serde_display_and_from_str() {
 }
 
 #[test]
+fn serde_rejects_the_retired_intelligentcross_wire_name() {
+    // This is a deliberately authorized pre-1.0 removal, documented under
+    // CHANGELOG [Unreleased] / Removed. There is no replacement Exchange
+    // identity; rejection prevents persisted IQX values from being silently
+    // reinterpreted as another venue or as Exchange::Unknown.
+    const RETIRED: &str = "intelligentcross_iqx";
+
+    let expected_names = Exchange::ALL
+        .iter()
+        .map(|exchange| format!("`{}`", exchange.as_str()))
+        .collect::<Vec<_>>()
+        .join(", ");
+    let expected_error = format!("unknown variant `{RETIRED}`, expected one of {expected_names}");
+
+    assert_de_tokens_error::<Exchange>(&[Token::Str(RETIRED)], &expected_error);
+    assert!(
+        RETIRED.parse::<Exchange>().is_err(),
+        "the retired wire name must not parse through FromStr"
+    );
+}
+
+#[test]
+fn serde_rejects_ordinal_exchange_indices() {
+    assert_de_tokens_error::<Exchange>(
+        &[Token::U32(0)],
+        "invalid type: integer `0`, expected a canonical exchange name",
+    );
+}
+
+#[test]
 fn from_str_rejects_unrecognized_names_instead_of_defaulting() {
     // A typo must surface as an error a caller can see — never silently
     // become `Exchange::Unknown`. `"unknown"` itself parses, because that is
     // the canonical name a caller uses to *choose* the fallback explicitly.
-    for bad in ["", "CME", "nyse-arca", "cme ", "totally_made_up"] {
+    for bad in [
+        "",
+        "CME",
+        "nyse-arca",
+        "cme ",
+        "totally_made_up",
+        "intelligentcross_iqx",
+    ] {
         let parsed = bad.parse::<Exchange>();
         assert!(parsed.is_err(), "{bad:?} must not parse, got {parsed:?}");
         let error = parsed.expect_err("checked above");

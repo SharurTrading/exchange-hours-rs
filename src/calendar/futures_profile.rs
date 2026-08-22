@@ -17,12 +17,13 @@
 //! transition must resolve again for each date. [`ExchangeCalendar`](super::ExchangeCalendar)
 //! remains the date-aware session-scan API for venue identities.
 
+mod key_serde;
+
 use std::borrow::Cow;
 
 use chrono::{DateTime, Utc};
 use chrono_tz::UTC;
 use chrono_tz::{America, Asia, Europe, Tz, US};
-use serde::{Deserialize, Serialize};
 
 use super::local_time::bounded_utc;
 use super::rule::{ALL_DAYS, SUN_PLUS_MON_THU};
@@ -87,9 +88,11 @@ impl FuturesSessionProfile {
 }
 
 /// Names a SHARUR-owned normal-week product-family market-hours profile.
+///
+/// Serde encodes each key as its stable canonical `snake_case` string in every
+/// format, including compact non-self-describing formats.
 #[non_exhaustive]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum MarketHoursKey {
     /// CME equity-index Globex hours.
     GlobexEquityIndex,

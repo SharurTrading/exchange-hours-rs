@@ -55,16 +55,92 @@ fn xetra_cutovers() {
 
 #[test]
 fn euronext_core_pre_open_cutovers() {
-    for (exchange, tz, probe_time) in [
-        (Exchange::EuronextParis, Europe::Paris, (7, 20, 0)),
-        (Exchange::EuronextAmsterdam, Europe::Amsterdam, (7, 20, 0)),
-        (Exchange::EuronextBrussels, Europe::Brussels, (7, 20, 0)),
-        (Exchange::EuronextLisbon, Europe::Lisbon, (6, 20, 0)),
+    for (exchange, tz, pre_open_probe, regular_open, auction_open, tal_open, close) in [
+        (
+            Exchange::EuronextParis,
+            Europe::Paris,
+            (7, 20, 0),
+            (9, 0, 0),
+            (17, 30, 0),
+            (17, 35, 0),
+            (17, 40, 0),
+        ),
+        (
+            Exchange::EuronextAmsterdam,
+            Europe::Amsterdam,
+            (7, 20, 0),
+            (9, 0, 0),
+            (17, 30, 0),
+            (17, 35, 0),
+            (17, 40, 0),
+        ),
+        (
+            Exchange::EuronextBrussels,
+            Europe::Brussels,
+            (7, 20, 0),
+            (9, 0, 0),
+            (17, 30, 0),
+            (17, 35, 0),
+            (17, 40, 0),
+        ),
+        (
+            Exchange::EuronextLisbon,
+            Europe::Lisbon,
+            (6, 20, 0),
+            (8, 0, 0),
+            (16, 30, 0),
+            (16, 35, 0),
+            (16, 40, 0),
+        ),
     ] {
         let (pre, post) = cutover_sides(exchange, tz, (2023, 3, 20));
-        let probe = local(tz, (2026, 8, 19), probe_time);
+        let probe = local(tz, (2026, 8, 19), pre_open_probe);
         assert!(pre.is_open_extended(probe), "{exchange:?}");
         assert!(!post.is_open(probe), "{exchange:?}");
+
+        let open = local(tz, (2026, 8, 19), regular_open);
+        assert!(
+            pre.is_open_extended(open - Duration::seconds(1)),
+            "{exchange:?}"
+        );
+        assert!(
+            post.is_open_extended(open - Duration::seconds(1)),
+            "{exchange:?}"
+        );
+        assert!(pre.is_open_regular(open), "{exchange:?}");
+        assert!(post.is_open_regular(open), "{exchange:?}");
+        assert!(!pre.is_open_extended(open), "{exchange:?}");
+        assert!(!post.is_open_extended(open), "{exchange:?}");
+
+        let auction_open = local(tz, (2026, 8, 19), auction_open);
+        let tal_open = local(tz, (2026, 8, 19), tal_open);
+        let close = local(tz, (2026, 8, 19), close);
+        for hours in [&pre, &post] {
+            assert!(
+                hours.is_open_regular(auction_open - Duration::seconds(1)),
+                "{exchange:?}"
+            );
+            assert!(hours.is_open_extended(auction_open), "{exchange:?}");
+            assert!(!hours.is_open_regular(auction_open), "{exchange:?}");
+
+            let (_, auction_close) = exchange_hours::session_bounds_with(
+                hours,
+                tal_open - Duration::seconds(1),
+                exchange_hours::SessionKind::Extended,
+            )
+            .expect("Euronext closing auction");
+            assert_eq!(auction_close, tal_open, "{exchange:?}");
+
+            let (actual_tal_open, tal_close) = exchange_hours::session_bounds_with(
+                hours,
+                tal_open,
+                exchange_hours::SessionKind::Extended,
+            )
+            .expect("Euronext Trading-at-Last");
+            assert_eq!(actual_tal_open, tal_open, "{exchange:?}");
+            assert_eq!(tal_close, close, "{exchange:?}");
+            assert!(!hours.is_open(close), "{exchange:?}");
+        }
     }
 }
 

@@ -21,37 +21,35 @@ pub(crate) use milan::{EURONEXT_MIL_PROFILE, profile_at as milan_profile_at};
 
 // The operator's 2010 special-day appendix and 2014 normal-hours appendix show
 // the legacy 07:15 CET pre-opening and the principal-share opening at 09:00.
-// Euronext notice PAR_20150924_07448_EUR explicitly introduces a zero-to-30-
-// second randomized auction for Belgian, Dutch, French, and Portuguese groups,
-// but its 2015 notice header misprints the effective year as 2012. The successor
-// appendix is effective 2015-10-05, treats the randomization appendix as already
-// current, and changes only two trading groups, so it proves presence but not
-// onset. LAW-NO-FABRICATED-DATES therefore retains the conservative latest edge
-// for earlier dates while recording that exact regular/extended classification
-// as unresolved; the venue's open/closed state remains exact.
+// Euronext notice PAR_20150924_07448_EUR documents zero-to-30-second randomized
+// uncrosses for Belgian, Dutch, French, and Portuguese trading groups. Those
+// instrument-level micro-events do not define one exchange-wide transition instant,
+// so this exchange-level profile retains the published nominal boundaries:
+// continuous trading starts at 09:00, the closing auction ends at 17:35, and
+// Trading-at-Last then runs to 17:40.
 // https://www.euronext.com/sites/default/files/european_cash_markets_trading_hours_for_24th_and_31st_december_2010.pdf
 // https://connect.euronext.com/nl/listview/notice-download?attachmentId=201416&id=581906&type=PDF
 // https://live.euronext.com/en/listview/notice-download?id=598779&type=PDF&attachmentId=218289
 // https://live.euronext.com/en/listview/notice-download?id=598933&type=PDF&attachmentId=218443
 static CENTRAL_REGULAR: &[SessionRule] = &[SessionRule {
     days: MON_FRI,
-    open_ssm: 9 * 3600 + 30,
+    open_ssm: 9 * 3600,
     close_ssm: 17 * 3600 + 30 * 60,
 }];
 static CENTRAL_LEGACY_EXTENDED: &[SessionRule] = &[
     SessionRule {
         days: MON_FRI,
         open_ssm: 7 * 3600 + 15 * 60,
-        close_ssm: 9 * 3600 + 30,
+        close_ssm: 9 * 3600,
     },
     SessionRule {
         days: MON_FRI,
         open_ssm: 17 * 3600 + 30 * 60,
-        close_ssm: 17 * 3600 + 35 * 60 + 30,
+        close_ssm: 17 * 3600 + 35 * 60,
     },
     SessionRule {
         days: MON_FRI,
-        open_ssm: 17 * 3600 + 35 * 60 + 30,
+        open_ssm: 17 * 3600 + 35 * 60,
         close_ssm: 17 * 3600 + 40 * 60,
     },
 ];
@@ -59,41 +57,41 @@ static CENTRAL_CURRENT_EXTENDED: &[SessionRule] = &[
     SessionRule {
         days: MON_FRI,
         open_ssm: 7 * 3600 + 30 * 60,
-        close_ssm: 9 * 3600 + 30,
+        close_ssm: 9 * 3600,
     },
-    // Closing auction, including its latest 30-second random uncross.
+    // Nominal closing auction.
     SessionRule {
         days: MON_FRI,
         open_ssm: 17 * 3600 + 30 * 60,
-        close_ssm: 17 * 3600 + 35 * 60 + 30,
+        close_ssm: 17 * 3600 + 35 * 60,
     },
     // Trading-at-Last.
     SessionRule {
         days: MON_FRI,
-        open_ssm: 17 * 3600 + 35 * 60 + 30,
+        open_ssm: 17 * 3600 + 35 * 60,
         close_ssm: 17 * 3600 + 40 * 60,
     },
 ];
 
 static LISBON_REGULAR: &[SessionRule] = &[SessionRule {
     days: MON_FRI,
-    open_ssm: 8 * 3600 + 30,
+    open_ssm: 8 * 3600,
     close_ssm: 16 * 3600 + 30 * 60,
 }];
 static LISBON_LEGACY_EXTENDED: &[SessionRule] = &[
     SessionRule {
         days: MON_FRI,
         open_ssm: 6 * 3600 + 15 * 60,
-        close_ssm: 8 * 3600 + 30,
+        close_ssm: 8 * 3600,
     },
     SessionRule {
         days: MON_FRI,
         open_ssm: 16 * 3600 + 30 * 60,
-        close_ssm: 16 * 3600 + 35 * 60 + 30,
+        close_ssm: 16 * 3600 + 35 * 60,
     },
     SessionRule {
         days: MON_FRI,
-        open_ssm: 16 * 3600 + 35 * 60 + 30,
+        open_ssm: 16 * 3600 + 35 * 60,
         close_ssm: 16 * 3600 + 40 * 60,
     },
 ];
@@ -101,23 +99,25 @@ static LISBON_CURRENT_EXTENDED: &[SessionRule] = &[
     SessionRule {
         days: MON_FRI,
         open_ssm: 6 * 3600 + 30 * 60,
-        close_ssm: 8 * 3600 + 30,
+        close_ssm: 8 * 3600,
     },
     SessionRule {
         days: MON_FRI,
         open_ssm: 16 * 3600 + 30 * 60,
-        close_ssm: 16 * 3600 + 35 * 60 + 30,
+        close_ssm: 16 * 3600 + 35 * 60,
     },
     SessionRule {
         days: MON_FRI,
-        open_ssm: 16 * 3600 + 35 * 60 + 30,
+        open_ssm: 16 * 3600 + 35 * 60,
         close_ssm: 16 * 3600 + 40 * 60,
     },
 ];
 
 // The current 4-01/4-03 trading appendix confirms pre-opening at 07:30 CET,
-// randomized opening through 09:00:30, continuous trading through 17:30, and
-// the closing/Trading-at-Last envelope through 17:40 for principal shares.
+// nominal continuous trading from 09:00 through 17:30, a closing auction to
+// 17:35, and Trading-at-Last through 17:40 for principal shares. Its randomized
+// zero-to-30-second uncross timing is per security and is outside the scope of
+// these exchange-level boundaries.
 // https://www.euronext.com/sites/default/files/2026-07/appendix%20to%20Euronext%20Instructions%204-01%204-03%20Trading%20Manuals_0.xlsx
 
 macro_rules! profile {

@@ -23,10 +23,6 @@ use crate::calendar::{Exchange, MarketHours, MarketHoursKey, session_profile};
 /// can cross one of those recurring transitions. The compatibility choices
 /// are B3's short grid and BMV's early grid.
 #[must_use]
-#[expect(
-    clippy::too_many_lines,
-    reason = "the one exhaustive venue match is intentionally kept together so additions fail closed"
-)]
 pub fn hours_for_exchange(exch: Exchange) -> MarketHours {
     match exch {
         Exchange::Unknown => default_24x7(exch),
@@ -46,7 +42,6 @@ pub fn hours_for_exchange(exch: Exchange) -> MarketHours {
         Exchange::MemxEq => from_profile(exch, &us::MEMX_EQ_PROFILE),
         Exchange::MiaxPearlEq => from_profile(exch, &us::MIAX_PEARL_EQ_PROFILE),
         Exchange::Iex => from_profile(exch, &us::IEX_PROFILE),
-        Exchange::IntelligentcrossIqx => from_profile(exch, &us::INTELLIGENTCROSS_IQX_PROFILE),
         Exchange::BlueOceanAts => from_profile(exch, &us::BLUE_OCEAN_PROFILE),
         Exchange::FinraTrfCarteret => from_profile(exch, &us::FINRA_TRF_CARTERET_PROFILE),
         Exchange::FinraTrfChicago => from_profile(exch, &us::FINRA_TRF_CHICAGO_PROFILE),

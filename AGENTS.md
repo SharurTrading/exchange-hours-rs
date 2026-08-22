@@ -24,10 +24,9 @@ and the rules any change to this repository must follow.
   profile so a future divergence is a one-line edit.
 - **LAW-NO-FABRICATED-DATES** — a historical cutover exists only when a primary
   source states a **day-level** effective date. A real change without one is
-  documented as a known gap (see IntelligentCross IQX and the central Euronext
-  markets in their venue modules under `src/calendar/schedules/`),
-  never given an invented date. Amendment history is recorded back to
-  **January 2010**; earlier changes are out of scope by design.
+  documented as a known gap, never given an invented date. Amendment history
+  is recorded back to **January 2010**; earlier changes are out of scope by
+  design.
 
 ## Modeling conventions
 
@@ -45,6 +44,14 @@ and the rules any change to this repository must follow.
 - **Regular vs extended**: continuous trading is `regular`; auction call
   windows, order-entry-only phases, and post-close/trade-at-last sessions are
   `extended`. Lunch breaks are gaps between regular rules, not rules.
+- **Exchange-level boundaries, not per-security auction outcomes.** When an
+  operator publishes a nominal phase boundary but randomizes the actual
+  auction uncross per security or trading group, the venue owner documents the
+  deterministic representation it uses. Prefer the published nominal boundary
+  when the randomized seconds only move an adjacent phase handoff and do not
+  change the exchange-wide open/closed envelope; use a conservative envelope
+  when that is the profile's stated venue-level scope. Never imply exact
+  ticker-level uncross timing.
 - **Absence is `None`.** Boundary queries return `Option`; never fabricate a
   degenerate session. No public code path may panic or hang.
 
@@ -52,7 +59,10 @@ and the rules any change to this repository must follow.
 
 - `Exchange` and `MarketHoursKey` are `#[non_exhaustive]`: venue additions are
   minor releases, not breaking ones. Never remove that attribute, and never
-  remove or rename a variant outside a major release.
+  remove or rename a variant after 1.0 outside a major release. Before 1.0, a
+  breaking identity or wire-format change requires explicit authorization,
+  an `[Unreleased]` migration note, and exhaustive production/test/documentation
+  cleanup; never perform one as drive-by cleanup.
 - `Exchange`, `Exchange::ALL`, and `Exchange::as_str` are generated from
   **one table** (the `exchanges!` invocation in `exchange/mod.rs`, using the
   macro in `exchange/define.rs`): adding a venue is
@@ -65,6 +75,9 @@ and the rules any change to this repository must follow.
   suite's independent expectation of the table's contents and order.
 - One canonical `snake_case` name per venue, shared by serde, `as_str`,
   `Display`, and `FromStr`, and it is stable: a rename breaks persisted data.
+  `Exchange` and `MarketHoursKey` Serde use their canonical strings in every
+  format; never restore derive-generated enum ordinals, because inserting or
+  removing a variant would silently remap binary payloads.
   `FromStr` rejects unknown names with `ParseExchangeError` — never map bad
   input to `Exchange::Unknown`.
 - Production files stay under 300 lines (500 is a hard stop — split by venue or

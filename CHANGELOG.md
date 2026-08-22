@@ -16,7 +16,8 @@ corrections (a venue's hours fixed against a primary source) go under
 - **23 major cash-equity venues:** ASX, TMX Australia, NZX, TSE, NSE India,
   BSE India, HKEX, SGX Securities, Bursa Malaysia, SET Thailand, IDX, PSE,
   HOSE, SSE, SZSE, KRX, TWSE, Borsa Istanbul, TSX, JSE, Tadawul, B3, and BMV.
-  This brings the crate to 92 exchange variants.
+  Together with the pre-v1 IQX cleanup below, this brings the crate to 91
+  exchange identifiers including `Exchange::Unknown`.
 - **The additive `ExchangeCalendar` API** for date-aware predicates, session
   scans, maintenance/all-day queries, and candle boundaries. Existing
   `MarketHours` functions and signatures remain unchanged; B3/BMV calendars
@@ -47,6 +48,25 @@ corrections (a venue's hours fixed against a primary source) go under
   Monday 18:00, including exact `session_bounds`; absence is represented by
   omitting the rule. This intentionally breaking pre-1.0 correction removes
   `SessionRuleError::EmptyInterval`.
+- **Canonical string Serde for `Exchange` and `MarketHoursKey`.** Both public
+  identity enums now use their stable `snake_case` strings in every format.
+  This replaces derive-generated enum ordinals in non-self-describing formats,
+  so a future variant insertion or removal cannot silently decode as another
+  venue or product family. JSON remains unchanged. Binary payloads written by
+  earlier crate versions require a one-time migration to the canonical string
+  representation.
+
+### Removed
+
+- **`Exchange::IntelligentcrossIqx` and the `intelligentcross_iqx` wire name.**
+  Official materials identify IntelligentCross as an ATS and `IQX` as its
+  market-data feed, while available primary evidence cannot state the ATS's
+  exact first-live day. Removing the unused, misleading pre-v1 identity avoids
+  returning today's schedule for dates before the venue existed. Persisted
+  `intelligentcross_iqx` values must be removed or migrated by callers. There
+  is no replacement `Exchange` variant: applications that still need the ATS
+  must keep an external mapping rather than converting it to another venue or
+  to `Exchange::Unknown`.
 
 ### Fixed
 
@@ -82,8 +102,7 @@ corrections (a venue's hours fixed against a primary source) go under
   now preserves the sourced January-2010 19:00 pre-open / 20:00–13:15 CT
   continuous grid, its 2011 opening change, 2012 and 2013 close revisions,
   and the 2016 move to 13:20 before closing on the 2018 IFUS transfer's actual
-  Sunday opening day. The four remaining Euronext historical gaps stay
-  documented rather than receiving invented cutovers.
+  Sunday opening day.
 - **Product-scoped international derivatives schedules.** Eurex benchmark
   futures now preserve the January-2010 07:30 pre-trading / 07:50 continuous
   grid and classify the fixed-UTC Asian pre-trading/opening auction separately
@@ -120,13 +139,9 @@ corrections (a venue's hours fixed against a primary source) go under
   May 16, 2014 move to a 17:00 close, the 2014–2015 and 2017–2018 dormant
   intervals, the 2015 08:00–17:00 relaunch, and the May 21, 2018 Pillar
   relaunch.
-- **IEX and US ATS identity/history.** The `iex` exchange identity is closed
+- **IEX and Blue Ocean ATS identity/history.** The `iex` exchange identity is closed
   before its sourced August 19, 2016 first production-symbol launch instead of
-  inheriting predecessor-ATS history. IntelligentCross IQX now uses its live
-  and first public 2019 SEC ATS-N hours without treating the operator's January
-  17, 2018 company commencement as an ATS launch; an archived 2018 operator FAQ
-  now verifies launch-era hours. Primary filings bracket first live processing
-  to August/September 2018 but do not state a day. Blue Ocean is
+  inheriting predecessor-ATS history. Blue Ocean is
   closed before its October 5, 2021 production launch and is explicitly scoped
   to the production ATS service rather than its earlier beta/testing phase;
   its primary-sourced new-order trading window is 20:00–04:00. The live
@@ -138,16 +153,17 @@ corrections (a venue's hours fixed against a primary source) go under
   exact sourced launch dates; the other seven have pre-floor primary baselines.
 - **Euronext cash-market clocks and pre-open phases.** Paris, Amsterdam,
   Brussels, Lisbon, Dublin, and Milan now use the operator's published 07:30
-  CET pre-open and conservative 30-second randomized-opening envelope. Lisbon
+  CET pre-open. Paris, Amsterdam, Brussels, and Lisbon use the published
+  nominal 09:00 continuous-session start and 17:35 Trading-at-Last handoff;
+  the per-security 0–30-second randomized auction uncross is explicitly outside
+  the exchange-level schedule. Lisbon
   and Dublin retain their venue IANA zones while translating Euronext's
   Central-European clock one hour earlier locally, eliminating the former
   one-hour UTC shift. Legacy Euronext markets change pre-opening on the sourced
   March 20, 2023 date, while Milan changes on March 27. Milan's complete history
   is recorded; Dublin now preserves its operator-published pre-floor timetable
-  through successive ISE order-book models and the 2018 calendar. Four legacy
-  markets retain one explicit gap because Euronext's 2015
-  randomization-introduction notice misprints its effective year and its
-  successor does not repair the onset day.
+  through successive ISE order-book models and the 2018 calendar. All six rows
+  now have complete history within their documented exchange-level scopes.
 - **CME equity-index historical closes.** The pre-November-18, 2012 profile no
   longer receives the later 15:30–16:15 CT post-halt session. That extension
   begins on CME's published Sunday effective date, and the later

@@ -47,32 +47,6 @@ pub(crate) fn iex_profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static S
     )
 }
 
-// The live SEC Form ATS-N gives the IQX order-acceptance and execution table:
-// 09:00–09:30 ET accepts and queues orders; matching runs 09:30–16:00. The
-// operator's archived 2018-08-18 FAQ and first public electronic filing on
-// 2019-07-22 contain the same grid, so launch-era hours are known. An SEC-filed
-// audit says transaction processing began in August 2018, while the operator
-// describes the public launch only as September 2018; neither gives the first
-// live matching day. The current snapshot therefore remains the explicit
-// fallback through that single inception-boundary gap.
-// https://www.sec.gov/Archives/edgar/data/1708826/000170882626000008/xslATS-N_X01/primary_doc.xml
-// https://www.sec.gov/Archives/edgar/data/1708826/000170882619000008/xslATS-N_X01/primary_doc.xml
-// https://web.archive.org/web/20180818115449id_/http://intelligentcross.com/faq
-// https://www.imperativex.com/news/imperative-execution-closes-9-million-series-a-financing-round
-// https://www.sec.gov/Archives/edgar/vprr/1901/19010702.pdf
-static IQX_EXTENDED: &[SessionRule] = &[SessionRule {
-    days: MON_FRI,
-    open_ssm: 9 * 3600,
-    close_ssm: 9 * 3600 + 30 * 60,
-}];
-pub(crate) static INTELLIGENTCROSS_IQX_PROFILE: StaticHoursProfile = equity_profile(IQX_EXTENDED);
-
-pub(crate) fn intelligentcross_iqx_profile_at(
-    _as_of: chrono::DateTime<chrono::Utc>,
-) -> &'static StaticHoursProfile {
-    &INTELLIGENTCROSS_IQX_PROFILE
-}
-
 /// Blue Ocean ATS 20:00→04:00 ET new-order trading window, Sunday through Thursday.
 ///
 /// The live SEC Form ATS-N ends new-order acceptance at 04:00. It permits

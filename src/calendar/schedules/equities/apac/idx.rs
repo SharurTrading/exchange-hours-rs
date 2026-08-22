@@ -6,10 +6,7 @@ use chrono_tz::Asia;
 
 use super::super::StaticHoursProfile;
 use crate::calendar::SessionRule;
-use crate::calendar::rule::MON_FRI;
-
-const MON_THU: [bool; 7] = [true, true, true, true, false, false, false];
-const FRI: [bool; 7] = [false, false, false, false, true, false, false];
+use crate::calendar::rule::{FRI, MON_FRI, MON_THU};
 static IDX_REGULAR_CURRENT: &[SessionRule] = &[
     SessionRule {
         days: MON_THU,

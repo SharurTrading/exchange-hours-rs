@@ -17,6 +17,7 @@ upgrade its basis.
 ## Synthetic profiles
 
 <a id="synthetic-24x7"></a>
+
 ### `SYNTHETIC-24X7`
 
 - **Official current/rulebook:** none; this is library policy.
@@ -26,6 +27,7 @@ upgrade its basis.
 ## United States equities and options
 
 <a id="us-nasdaq-equities"></a>
+
 ### `US-NASDAQ-EQUITIES`
 
 - **Official current/rulebook:** [Nasdaq systems hours](https://www.nasdaqtrader.com/content/technicalsupport/nasdaq_sys_hours.pdf), [Nasdaq Equity 1](https://listingcenter.nasdaq.com/rulebook/nasdaq/rules/Nasdaq%20Equity%201), [Nasdaq Equity 2](https://listingcenter.nasdaq.com/rulebook/nasdaq/rules/Nasdaq%20Equity%202), [Nasdaq Texas Equity 1](https://listingcenter.nasdaq.com/rulebook/nasdaqtx/rules/Nasdaq%20Texas%20Equity%201), and [PSX legacy rules](https://listingcenter.nasdaq.com/rulebook/phlx/rules/phlx-psx-legacy-3000).
@@ -33,6 +35,7 @@ upgrade its basis.
 - **Status:** Nasdaq, Nasdaq Texas/BX, and PSX current and January-2010-or-launch histories are primary-supported within their stated scopes. The stable `nasdaq_bx` wire name is not renamed with the legal venue.
 
 <a id="us-cboe-equities"></a>
+
 ### `US-CBOE-EQUITIES`
 
 - **Official current/rulebook:** [Cboe hours and holidays](https://www.cboe.com/about/hours) and the [US equities rule-book hub](https://www.cboe.com/markets/us/equities/membership).
@@ -40,6 +43,7 @@ upgrade its basis.
 - **Status:** all four equity rows have primary-supported January-2010-or-launch baselines and dated phase changes. Their profiles model executable session envelopes, not earlier connectivity or order-acceptance queues. Recheck EDGX's announced future date and regulatory-readiness conditions before release.
 
 <a id="us-nyse-equities"></a>
+
 ### `US-NYSE-EQUITIES`
 
 - **Official current/rulebook:** [NYSE hours and calendars](https://www.nyse.com/markets/hours-calendars), [NYSE market rule books](https://www.nyse.com/regulation/rules), and [NYSE Texas](https://www.nyse.com/markets/nyse-texas).
@@ -47,6 +51,7 @@ upgrade its basis.
 - **Status:** check NYSE Tape A, Arca, American, National, and Texas separately; a shared operator does not imply shared phases. The `nyse` row is scoped to Tape A and excludes its queued pre-open plus the separate Tapes B/C early session. Arca is supported at the January-2010 floor, American's pre-/post-Pillar continuous envelopes are dated, and National's legacy grids, 2014 short close, dormant intervals, and relaunches are date-aware. Discrete legacy American off-hours crosses are outside the interval model.
 
 <a id="us-memx"></a>
+
 ### `US-MEMX`
 
 - **Official current/rulebook:** [MEMX market hours and holidays](https://info.memxtrading.com/market-hours-and-holiday-schedule/) and the current [MEMX rulebook](https://info.memxtrading.com/regulation/memx-rules/).
@@ -54,6 +59,7 @@ upgrade its basis.
 - **Status:** the equity launch boundary, current schedule, and 2025 cutover are primary-supported. MEMX Options is closed before its sourced 2023-09-27 stock-options launch and then uses the operator-supported ordinary individual-stock-options RTH envelope; exact artifacts remain beside `options.rs`.
 
 <a id="us-miax"></a>
+
 ### `US-MIAX`
 
 - **Official current/rulebook:** [MIAX markets](https://www.miaxglobal.com/markets) and [all-options-exchanges rulebooks](https://www.miaxglobal.com/markets/us-options/all-options-exchanges/rulebooks).
@@ -61,6 +67,7 @@ upgrade its basis.
 - **Status:** the Pearl Equities launch boundary, current schedule, and 2025 expansion are primary-supported. MIAX, Pearl, Emerald, and Sapphire Options each own their sourced launch boundary and ordinary individual-stock-options RTH profile; exact launch artifacts remain beside `options.rs`.
 
 <a id="us-iex"></a>
+
 ### `US-IEX`
 
 - **Official current/rulebook:** [IEX trading hours and holidays](https://www.iex.io/resources/trading/trading-hours-holidays) and the current [IEX regulation and rule-book hub](https://www.iex.io/resources/regulation).
@@ -68,6 +75,7 @@ upgrade its basis.
 - **Status:** the `iex` row represents Investors Exchange, not its predecessor ATS. It is closed before the sourced 2016-08-19 exchange launch, notes the symbol phase-in through 2016-09-02, and uses primary-supported 08:00–17:00 System Hours.
 
 <a id="us-intelligentcross"></a>
+
 ### `US-INTELLIGENTCROSS`
 
 - **Official current/rulebook:** the SEC's [current live IntelligentCross Form ATS-N](https://www.sec.gov/Archives/edgar/data/1708826/000170882626000008/xslATS-N_X01/primary_doc.xml) and the [Form ATS-N filings index](https://www.sec.gov/about/divisions-offices/division-trading-markets/alternative-trading-systems/form-ats-n-filings-information).
@@ -75,6 +83,7 @@ upgrade its basis.
 - **Status:** **partial history.** Current, launch-era, and 2019 filings support 09:00–09:30 order acceptance and 09:30–16:00 matching. No primary source states the exact September-2018 production-launch day, so no inception selector is fabricated.
 
 <a id="us-blue-ocean"></a>
+
 ### `US-BLUE-OCEAN`
 
 - **Official current/rulebook:** the SEC's [live Blue Ocean Form ATS-N](https://www.sec.gov/Archives/edgar/data/1795131/000090266426001359/xslATS-N_X01/primary_doc.xml) and the [Form ATS-N filings index](https://www.sec.gov/about/divisions-offices/division-trading-markets/alternative-trading-systems/form-ats-n-filings-information).
@@ -82,6 +91,7 @@ upgrade its basis.
 - **Status:** the row is scoped to production new-order ATS service. Its 2021-10-05 launch and 20:00–04:00 Sunday–Thursday window are primary-supported, and the profile is closed before launch. The live ATS-N's sub-minute resting-book cleanup and earlier beta/testing are explicitly outside scope rather than stretched into an unsupported interval.
 
 <a id="us-finra-trf"></a>
+
 ### `US-FINRA-TRF`
 
 - **Official current/rulebook:** [FINRA TRF hub](https://www.finra.org/filing-reporting/trade-reporting-facility-trf), [Rule 6380A](https://www.finra.org/rules-guidance/rulebooks/finra-rules/6380a), and [Rule 6380B](https://www.finra.org/rules-guidance/rulebooks/finra-rules/6380b).
@@ -89,6 +99,7 @@ upgrade its basis.
 - **Status:** these are reporting facilities, not matching venues. Chicago is closed before its sourced 2018-09-10 facility launch; it accepted test securities only through 2018-09-21. The currently published 2026-12-06 effective date is modeled for all three TRFs; move that revision if FINRA or the SIP schedule moves it.
 
 <a id="us-cboe-options"></a>
+
 ### `US-CBOE-OPTIONS`
 
 - **Official current/rulebook:** [Cboe US options hours](https://www.cboe.com/about/hours/us-options), the [US options rule-book hub](https://www.cboe.com/markets/us/options/membership), the [options FIX specification](https://www.cboe.com/document/tech-spec/document/technical-specifications/cboe-titanium-u.s.-options-fix-specification), and the [C1 opening-process specification](https://www.cboe.com/document/tech-spec/document/technical-specifications/cboe-titanium-u.s.-options-opening-process).
@@ -96,6 +107,7 @@ upgrade its basis.
 - **Status:** each row is narrowly scoped to the published 09:30–16:00 regular-session envelope for ordinary individual-stock options. ETF, ETN, index, FLEX, floor-only, and venue-designated extended-hours classes are excluded. C1 has a pre-floor primary baseline; C2, BZX Options, and EDGX Options are closed before their exact sourced launches.
 
 <a id="us-nyse-options"></a>
+
 ### `US-NYSE-OPTIONS`
 
 - **Official current/rulebook:** [NYSE hours and calendars](https://www.nyse.com/markets/hours-calendars) and [NYSE options rule books](https://www.nyse.com/regulation/rules).
@@ -103,6 +115,7 @@ upgrade its basis.
 - **Status:** Arca Options and American Options are scoped to ordinary individual-stock options' published 09:30–16:00 regular-session envelope. Their primary baseline predates January 2010; product-specific extended classes are excluded.
 
 <a id="us-nasdaq-options"></a>
+
 ### `US-NASDAQ-OPTIONS`
 
 - **Official current/rulebook:** [Nasdaq options trading hours](https://www.nasdaqtrader.com/Trader.aspx?id=optionshours) and [Nasdaq rulebooks](https://listingcenter.nasdaq.com/rulebook).
@@ -110,6 +123,7 @@ upgrade its basis.
 - **Status:** each row is scoped to ordinary individual-stock options' published 09:30–16:00 regular-session envelope. PHLX, ISE, and NOM have pre-floor baselines; MRX, GEMX, and BX Options are closed before exact sourced launches. Product-specific extended classes are excluded.
 
 <a id="us-box-options"></a>
+
 ### `US-BOX-OPTIONS`
 
 - **Official current/rulebook:** [BOX Options](https://boxexchange.com/) and the current [BOX rulebook and filings hub](https://boxexchange.com/regulatory/rulebook-filings/).
@@ -119,6 +133,7 @@ upgrade its basis.
 ## Futures, energy, and crypto
 
 <a id="us-cme-group"></a>
+
 ### `US-CME-GROUP`
 
 - **Official current/rulebook:** [CME Group trading hours](https://www.cmegroup.com/trading-hours.html), [CME Group rulebooks](https://www.cmegroup.com/market-regulation/rulebook.html), [Globex overview](https://www.cmegroup.com/solutions/market-access/globex.html), the current [CME FX futures grid](https://www.cmegroup.com/trading/why-futures/welcome-to-cme-fx-futures.html), [COMEX Gold specifications](https://www.cmegroup.com/markets/metals/precious/gold.contractSpecs.html), and [NYMEX Light Sweet Crude specifications](https://www.cmegroup.com/markets/energy/crude-oil/light-sweet-crude.contractSpecs.html).
@@ -126,6 +141,7 @@ upgrade its basis.
 - **Status:** product specifications control. E-mini equity-index, CBOT grain/oilseed, COMEX Gold, NYMEX benchmark-energy, and major CME FX rows have primary-supported January-2010 baselines and all modeled normal-week revisions. Every scope is a named product family rather than a venue-wide clock.
 
 <a id="us-cfe"></a>
+
 ### `US-CFE`
 
 - **Official current/rulebook:** [CFE trading hours](https://www.cboe.com/about/hours/us-futures), [VIX futures specifications](https://www.cboe.com/tradable-products/vix/vix-futures/specifications), and the current [CFE regulation/rule-book hub](https://www.cboe.com/us/futures/regulation/).
@@ -133,6 +149,7 @@ upgrade its basis.
 - **Status:** Primary. VIX-futures normal-week history is primary-supported from the January-2010 floor, including the 2010 and 2011 morning extensions, the exact 2013 weekday and 2014 Sunday old-system pre-open onsets, and every later modeled regime. The venue default is specifically VIX futures; other CFE contracts require their own check.
 
 <a id="eu-eurex"></a>
+
 ### `EU-EUREX`
 
 - **Official current/rulebook:** [Eurex trading hours](https://www.eurex.com/ex-en/trade/trading-hours) and the current [contract-specification Annex C](https://www.eurex.com/resource/blob/2824010/3b94b95cdf5f31cc635294659a5e9786/data/2026_05_04_eurex_d_kontraktspezifikationen_annexe_en.pdf).
@@ -140,6 +157,7 @@ upgrade its basis.
 - **Status:** Primary for FESX/FDAX/FDXM benchmark-index futures. The archive pins the January-2010 07:30 pre-trading / 07:50–22:00 continuous grid; the 2018 notice supplies the day-level extension cutover, and the launch diagram distinguishes the first 15 minutes of pre-trading/opening auction from continuous trading.
 
 <a id="eu-eex"></a>
+
 ### `EU-EEX`
 
 - **Official current/rulebook:** the current [EEX rules and regulations](https://www.eex.com/en/trading-resources/trading-information/rules-and-regulations), [trading-hours documents](https://www.eex.com/en/trading-resources/trading-information/trading-forms-and-documentation), and [derivatives timetable](https://www.eex.com/fileadmin/EEX/Downloads/Trading/Trading_Hours/20250701_Trading_Hours_on_EEX_Derivatives_Markets_.pdf).
@@ -147,6 +165,7 @@ upgrade its basis.
 - **Status:** Primary for the specifically named Nordic Zonal Power Futures scope; other EEX products require their own profile.
 
 <a id="ice-derivatives"></a>
+
 ### `ICE-DERIVATIVES`
 
 - **Official current/rulebook:** [ICE trading hours](https://www.ice.com/trading-hours), the [ICE product directory](https://www.ice.com/products), [NYSE FANG+ Index Futures](https://www.ice.com/products/66380320/NYSE-FANG-Index-Future), [Brent Crude Futures](https://www.ice.com/products/219/Brent-Crude-Futures), [FTSE 100 Index Futures](https://www.ice.com/products/38716764/FTSE-100-INDEX-), and [Murban Crude Oil Futures](https://www.ice.com/products/75443578/Murban-Crude-Oil-Futures/).
@@ -154,6 +173,7 @@ upgrade its basis.
 - **Status:** ICE has no venue-wide clock. The named FANG+, Brent, FTSE 100, and Murban scopes are primary-supported; every other contract family requires a separate review.
 
 <a id="ice-endex"></a>
+
 ### `ICE-ENDEX`
 
 - **Official current/rulebook:** [ICE Endex market resources](https://www.ice.com/endex/market-resources), the [Dutch TTF Natural Gas Futures specification](https://www.ice.com/products/27996665/Dutch-TTF-Gas-Futures), and the current [Operating Time Schedule](https://www.ice.com/publicdocs/endex/ICE_Endex_Operating_Schedule.pdf).
@@ -161,6 +181,7 @@ upgrade its basis.
 - **Status:** current Dutch TTF phases, the 2013 transfer boundary, continuous 08:00–18:00 trading through the 2014/2015 primary artifacts, and the 2026 extension/DST selector are primary-supported. No primary source dates the historical 07:45 pre-open onset, so the row remains Partial.
 
 <a id="ice-canada-legacy"></a>
+
 ### `ICE-CANADA-LEGACY`
 
 - **Official current/rulebook:** ICE's [historical IFUS volume page](https://www.ice.com/historical-volumes-ifus-futures) records that ICE Futures Canada ceased operations, while the current [Canola contract](https://www.ice.com/products/251/Canola) is an ICE Futures U.S. product.
@@ -168,6 +189,7 @@ upgrade its basis.
 - **Status:** Primary for the legacy Winnipeg Canola identity from the January-2010 audit floor through its final IFCA session. The notices explicitly pin the 2011, 2012, and 2013 opening days or trade-date/session relationship; the 2016 close extension and 2018 IFUS transfer complete the history.
 
 <a id="apac-sgx-derivatives"></a>
+
 ### `APAC-SGX-DERIVATIVES`
 
 - **Official current/rulebook:** the [Three-Month SORA Futures product page](https://www.sgx.com/derivatives/products/stir-products?cc=SORA), [Rule 4.1.5](https://rulebook.sgx.com/rulebook/415-trading-hours-opening-and-closing-routines-and-closing-range), and the current [SGX derivatives calendar](https://api2.sgx.com/sites/default/files/2026-01/SGX%20Calendar%202026_2.pdf).
@@ -175,6 +197,7 @@ upgrade its basis.
 - **Status:** Primary for Three-Month SORA Futures, including closed-before-launch history. Other SGX derivatives remain contract-specific.
 
 <a id="crypto-binance"></a>
+
 ### `CRYPTO-BINANCE`
 
 - **Official current/rulebook:** the [Binance USDⓈ-M Futures API](https://developers.binance.com/en/docs/products/derivatives-trading-usds-futures/Introduction), [Exchange Information](https://developers.binance.com/docs/derivatives/usds-margined-futures/market-data/rest-api/Exchange-Information), and current operator launch specifications that state 24/7 trading.
@@ -184,30 +207,35 @@ upgrade its basis.
 ## Asia-Pacific cash equities
 
 <a id="apac-asx"></a>
+
 ### `APAC-ASX`
 
 - **Official current/rulebook:** [ASX cash-market hours](https://www.asx.com.au/markets/market-resources/trading-hours-calendar/cash-market-trading-hours) and ASX Operating Rules Procedures Appendix 4013.
 - **Notices/evidence:** [Service Release 15 notice](https://www.asxonline.com/public/notices/2025/may/0473.25.05.html) and its [marked procedure amendments](https://www.asxonline.com/content/dam/asxonline/public/notices/2025/april/asx-sr15asx-operating-rule-procedure-amendments.pdf).
 
 <a id="apac-tmx-australia"></a>
+
 ### `APAC-TMX-AUSTRALIA`
 
 - **Official current/rulebook:** [TMX Australia hours](https://www.tmxaustralia.com/about/hours) and [Operating Rules and Procedures](https://cdn.cboe.com/resources/au/tmx/participant_resources/Operating_Rules_Procedures_Clean.pdf).
 - **Notices/evidence:** no consolidated schedule-notice feed is indexed here; reopen the [current hours page](https://www.tmxaustralia.com/about/hours) and every dated ASIC/Cboe/TMX artifact linked beside the owner profiles.
 
 <a id="apac-nzx"></a>
+
 ### `APAC-NZX`
 
 - **Official current/rulebook:** [NZX trading hours](https://www.nzx.com/learning/help-reference/trading-hours) and [anatomy of a trading day](https://www.nzx.com/learning/issuer-participant-resources/nzx-trading/anatomy-of-a-trading-day).
 - **Notices/evidence:** [announcement 350919](https://www.nzx.com/announcements/350919) and [announcement 353837](https://www.nzx.com/announcements/353837).
 
 <a id="apac-jpx"></a>
+
 ### `APAC-JPX`
 
 - **Official current/rulebook:** [TSE domestic trading hours](https://www.jpx.co.jp/english/equities/trading/domestic/01.html) and [equities trading system](https://www.jpx.co.jp/english/systems/equities-trading/01.html).
 - **Notices/evidence:** JPX's [official trading-hours transition table](https://www.jpx.co.jp/english/equities/trading/domestic/tvdivq0000006blj-att/tradinghours_eg.pdf).
 
 <a id="apac-india-cash"></a>
+
 ### `APAC-INDIA-CASH`
 
 - **Official current/rulebook:** [NSE closing-auction session](https://www.nseindia.com/static/products-services/closing-auction-session), the [SEBI CAS circular](https://www.sebi.gov.in/legal/circulars/jan-2026/introduction-of-closing-auction-session-cas-in-the-equity-cash-segment-and-certain-modifications-in-the-pre-open-auction-session_99122.html), and BSE's [notices and circulars portal](https://www.bseindia.com/markets/MarketInfo/NoticesCirculars.aspx).
@@ -215,18 +243,21 @@ upgrade its basis.
 - **Status:** keep NSE and BSE historical evidence distinct even where the current CAS envelope is coordinated.
 
 <a id="apac-hkex"></a>
+
 ### `APAC-HKEX`
 
 - **Official current/rulebook:** [HKEX securities trading hours](https://www.hkex.com.hk/Services/Trading-hours-and-Severe-Weather-Arrangements/Trading-Hours/Securities-Market?sc_lang=en).
 - **Notices/evidence:** monitor [HKEX market communications](https://www.hkex.com.hk/News/Market-Communications?sc_lang=en) and [regulatory announcements](https://www.hkex.com.hk/News/Regulatory-Announcements?sc_lang=en); the exact 2011, 2012, and 2019 releases remain beside the owner timeline.
 
 <a id="apac-sgx-securities"></a>
+
 ### `APAC-SGX-SECURITIES`
 
 - **Official current/rulebook:** [SGX-ST Regulatory Notice 8.2.1](https://rulebook.sgx.com/rulebook/regulatory-notice-821-trading-hours-market-phases-application-market-phases-and-principles).
 - **Notices/evidence:** no consolidated schedule-only feed is indexed here; reopen [Regulatory Notice 8.2.1](https://rulebook.sgx.com/rulebook/regulatory-notice-821-trading-hours-market-phases-application-market-phases-and-principles) and the exact 2011 rule and 2017/2019 operator announcements beside the owner timeline.
 
 <a id="apac-bursa"></a>
+
 ### `APAC-BURSA`
 
 - **Official current/rulebook:** Bursa Malaysia's stable [Securities rules hub](https://www.bursamalaysia.com/regulation/securities/rules_of_bursa_malaysia_securities), [Trading Manual v36](https://www.bursamalaysia.com/sites/5d809dcf39fba22790cad230/assets/65e1a47ccd34aaccd96e5ef0/POs_Trading_Manual_v36_4_March_2024.pdf), and [market-phase/TOP example](https://www.bursamalaysia.com/sites/5bb54be15f36ca0af339077a/assets/5bb57dc75f36ca0c341f041c/Example_on_Theoretical_Opening_Price__TOP_.pdf).
@@ -234,12 +265,14 @@ upgrade its basis.
 - **Status:** the 2009 v2 manual was in force at the January-2010 floor, and the dated amendment/manual sequence retains the modeled normal-lot grid through the current table. The row is Primary for the normal-week scope.
 
 <a id="apac-set"></a>
+
 ### `APAC-SET`
 
 - **Official current/rulebook:** [SET trading hours](https://www.set.or.th/en/market/information/trading-procedure/trading-hours).
 - **Notices/evidence:** [2024 session-change notice](https://www.set.or.th/en/market/news-and-alert/newsdetails?id=86864800&symbol=SET) and SET market alerts.
 
 <a id="apac-idx"></a>
+
 ### `APAC-IDX`
 
 - **Official current/rulebook:** [IDX trading hours and mechanism](https://www.idx.id/en/products-services/trading-hours-and-mechanism/).
@@ -247,12 +280,14 @@ upgrade its basis.
 - **Status:** the archived operator table supplies the January-2010 pre-open and continuous-session baseline; the 2013 expansion, 2020 temporary schedule, and 2023 restoration are primary-supported. The row is Primary.
 
 <a id="apac-pse"></a>
+
 ### `APAC-PSE`
 
 - **Official current/rulebook:** [PSE investing/trading overview](https://www.pse.com.ph/investing-at-pse/).
 - **Notices/evidence:** use the official [PSE EDGE disclosure portal](https://edge.pse.com.ph/) as the living search entry point; retain the exact 2011–2013, pandemic, and 2024 circulars beside the owner timeline.
 
 <a id="apac-hose"></a>
+
 ### `APAC-HOSE`
 
 - **Official current/rulebook:** [HOSE trading-hours table](https://staticfile.hsx.vn/Uploads/UploadDocuments/2372209/2.Trading%20hours.pdf).
@@ -260,6 +295,7 @@ upgrade its basis.
 - **Status:** the January-2010 baseline and every modeled 2010, 2012, and 2013 phase revision are primary-supported with day-level effective dates. The row is Primary.
 
 <a id="apac-china-cash"></a>
+
 ### `APAC-CHINA-CASH`
 
 - **Official current/rulebook:** the current [SSE trading rule](https://www.sse.com.cn/lawandrules/sselawsrules2025/stocks/exchange/c/c_20260424_10816482.shtml) and [SZSE trading rule](https://www.szse.cn/lawrules/rule/trade/current/t20260424_620190.html).
@@ -267,12 +303,14 @@ upgrade its basis.
 - **Status:** monitor both exchanges independently even when a national rule change is coordinated.
 
 <a id="apac-krx"></a>
+
 ### `APAC-KRX`
 
 - **Official current/rulebook:** [KRX cash-equity trading hours](https://global.krx.co.kr/contents/GLB/06/0602/0602020204/GLB0602020204T1.jsp) and [KRX rules](https://law.krx.co.kr/las/LawBon.jsp?lawid=000111).
 - **Notices/evidence:** use the official [KRX rules service](https://law.krx.co.kr/las/LawBon.jsp?lawid=000111) as the living entry point; the exact brochure remains beside the 2016/2019 revisions.
 
 <a id="apac-twse"></a>
+
 ### `APAC-TWSE`
 
 - **Official current/rulebook:** [TWSE trading system](https://www.twse.com.tw/en/products/system/trading.html).
@@ -281,6 +319,7 @@ upgrade its basis.
 ## Europe, Americas, Africa, and Middle East cash equities
 
 <a id="eu-fese-secondary"></a>
+
 ### `EU-FESE-SECONDARY`
 
 - **Official current/rulebook:** no venue-primary source belongs to this set; the indexed material is the secondary [FESE 2025 trading-hours table](https://www.fese.eu/app/uploads/2024/07/trading-hours-2025-1.pdf).
@@ -288,6 +327,7 @@ upgrade its basis.
 - **Status:** secondary only. It can cross-check captured European phases but cannot by itself satisfy LAW-PRIMARY-SOURCES or establish an effective date.
 
 <a id="eu-lse"></a>
+
 ### `EU-LSE`
 
 - **Official current/rulebook:** [LSE SETS](https://www.londonstockexchange.com/equities-trading/asset-classes/shares-trading/sets), the [equities technical library](https://www.londonstockexchange.com/resources/equities-trading-resources?tab=technical-library), and the operator's [SETS-aligned trading-day timetable](https://docs.londonstockexchange.com/sites/default/files/documents/international-order-book-introduction-sheet.pdf).
@@ -295,6 +335,7 @@ upgrade its basis.
 - **Status:** SETS has a primary January-2010 baseline and exact 2012 CPX and 2016 midday-auction revisions. Randomized uncrosses use the documented conservative latest edge.
 
 <a id="eu-xetra"></a>
+
 ### `EU-XETRA`
 
 - **Official current/rulebook:** [Xetra calendar and hours](https://www.cashmarket.deutsche-boerse.com/cash-en/trading/trading-calendar-and-trading-hours), [continuous trading with auctions](https://www.cashmarket.deutsche-boerse.com/cash-en/trading/Xetra/continuous-trading-with-auctions), and [FWB rules](https://www.cashmarket.deutsche-boerse.com/cash-en/Stay-Informed/rules-and-regulations-for-the-fwb).
@@ -302,6 +343,7 @@ upgrade its basis.
 - **Status:** the DAX-share January-2010 phases, 2020-11-24 Trade-at-Close launch, and participant-restricted 2025-12-01 Extended Retail cutover are primary-supported.
 
 <a id="eu-six"></a>
+
 ### `EU-SIX`
 
 - **Official current/rulebook:** [SIX trading hours](https://www.six-group.com/en/products-services/the-swiss-stock-exchange/trading/trading-provisions/trading-hours.html), the current [SIX Trading Guide](https://www.six-group.com/dam/download/the-swiss-stock-exchange/trading/trading-provisions/regulation/trading-guides-upcoming/trading-hours.pdf), and the [SIX download centre](https://www.six-group.com/en/products-services/the-swiss-stock-exchange/trading/download-center.html).
@@ -309,6 +351,7 @@ upgrade its basis.
 - **Status:** the shares profile, including its two-minute randomized opening and closing edges, is primary-supported from January 2010; ETF/ETP timing differs and is outside scope.
 
 <a id="eu-euronext"></a>
+
 ### `EU-EURONEXT`
 
 - **Official current/rulebook:** [Euronext trading hours and holidays](https://www.euronext.com/en/trading/trading-hours-holidays), the [regulated-market manuals](https://www.euronext.com/en/regulation/euronext-regulated-markets), and the current [4-01/4-03 timing appendix](https://www.euronext.com/sites/default/files/2026-07/appendix%20to%20Euronext%20Instructions%204-01%204-03%20Trading%20Manuals_0.xlsx).
@@ -316,6 +359,7 @@ upgrade its basis.
 - **Status:** current core-share phases and their Central-European clock are primary-supported. Milan has complete sourced history. Paris, Amsterdam, Brussels, and Lisbon remain Partial only because the operator dates the 30-second randomization onset to “late 2015,” not a day. Dublin remains Partial because no operator/regulator-hosted detailed January-2010 phase table or complete amendment chain was recovered.
 
 <a id="eu-bme"></a>
+
 ### `EU-BME`
 
 - **Official current/rulebook:** [BME trading hours](https://www.bolsasymercados.es/en/bme-exchange/trading-hours.html) and the [Regulation Explorer](https://www.bolsasymercados.es/bme-exchange/en/Regulation/Regulation-Explorer).
@@ -323,6 +367,7 @@ upgrade its basis.
 - **Status:** principal-share phases, the conservative 30-second auction envelope, and the 2023 Trading-At-Last revision are primary-supported through the complete audit window.
 
 <a id="eu-nasdaq-nordic"></a>
+
 ### `EU-NASDAQ-NORDIC`
 
 - **Official current/rulebook:** [Nasdaq European trading hours](https://www.nasdaq.com/european-market-activity/trading-hours), [Nordic member rules](https://www.nasdaq.com/market-regulation/nordic/member-rules), and the current [Nasdaq Nordic Market Model 2026:03](https://www.nasdaq.com/docs/2026/06/17/Nasdaq_Nordic_Market_Model_2026_03_Clean.pdf), section 3.1.
@@ -330,6 +375,7 @@ upgrade its basis.
 - **Status:** Stockholm, Helsinki, and Copenhagen have primary January-2010 baselines, exact randomized-auction revisions, and current post-trading phases; Copenhagen's closing-price session is also date-aware.
 
 <a id="eu-vienna"></a>
+
 ### `EU-VIENNA`
 
 - **Official current/rulebook:** [Vienna trading hours](https://www.wienerborse.at/en/trading/trading-information/trading-hours/), the [current German hours table](https://www.wienerborse.at/handel/handelsinformationen/handelszeiten/), and the [trading-system/model hub](https://www.wienerborse.at/en/trading/trading-information/trading-system/).
@@ -337,36 +383,42 @@ upgrade its basis.
 - **Status:** ATX phases, recurring third-Friday settlement schedule, and 2017/2019/2020 revisions are primary-supported through the complete audit window. Published nominal deterministic auction edges are documented beside the table.
 
 <a id="eu-bist"></a>
+
 ### `EU-BIST`
 
 - **Official current/rulebook:** [Borsa İstanbul Equity Market procedure](https://www.borsaistanbul.com/files/equity-market-procedure.pdf).
 - **Notices/evidence:** no stable consolidated announcements-feed URL is indexed here; reopen the [Equity Market procedure](https://www.borsaistanbul.com/files/equity-market-procedure.pdf) and every exact 2012–2019 circular or announcement beside `bist.rs`.
 
 <a id="amer-tsx"></a>
+
 ### `AMER-TSX`
 
 - **Official current/rulebook:** [TSX trading hours](https://www.tsx.com/en/trading/calendars-and-trading-hours/trading-hours).
 - **Notices/evidence:** TMX notices plus the [OSC bulletin](https://www.osc.ca/sites/default/files/pdfs/bulletins/oscb_20050114_2802.pdf) establishing the pre-2010 close-side phases.
 
 <a id="africa-jse"></a>
+
 ### `AFRICA-JSE`
 
 - **Official current/rulebook:** the stable [JSE trading and market-data technical library](https://clientportal.jse.co.za/technical-library/trading-and-market-data-documentation), its current Volume 00E v4.09 and session-time workbook, the [Equities Directives](https://www.jse.co.za/media/document/market-regulation/equities-directives), and the [Market Regulation hub](https://www.jse.co.za/regulation/market-regulation).
 - **Notices/evidence:** monitor [JSE service hotlines](https://clientportal.jse.co.za/communication/jse-service-hotlines); Release 7.8 became effective 2026-08-17 without changing ZA01 session times, and exact notices for every modeled 2012–2021 change remain beside `jse.rs`.
 
 <a id="mideast-tadawul"></a>
+
 ### `MIDEAST-TADAWUL`
 
 - **Official current/rulebook:** [Saudi Exchange trading cycle and times](https://www.saudiexchange.sa/wps/portal/saudiexchange/rules-guidance/capital-market-overview/trading-cycle-and-times?locale=en).
 - **Notices/evidence:** no consolidated schedule-notice feed is indexed here; reopen the official [trading cycle and times](https://www.saudiexchange.sa/wps/portal/saudiexchange/rules-guidance/capital-market-overview/trading-cycle-and-times?locale=en) and every report, press-agency release, and pandemic notice beside `tadawul.rs`.
 
 <a id="amer-b3"></a>
+
 ### `AMER-B3`
 
 - **Official current/rulebook:** [B3 trading-hours notices](https://www.b3.com.br/pt_br/noticias/horarios-de-negociacao.htm) and the current operator circulars linked beside the profiles.
 - **Notices/evidence:** monitor B3's [trading-hours notices](https://www.b3.com.br/pt_br/noticias/horarios-de-negociacao.htm); the January-2010 baseline, every old-grid switch, and recurring New York-reference rule remain beside `b3.rs`.
 
 <a id="amer-bmv"></a>
+
 ### `AMER-BMV`
 
 - **Official current/rulebook:** [BMV operating manual](https://www.bmv.com.mx/docs-pub/MARCO_NORMATIVO/CTEN_MNBM/MANUAL_OPERATIVO.PDF) and [Manual v1.95](https://www.bmv.com.mx/docs-pub/MARCO_NORMATIVO/CTEN_MERMO/20260102_V1.95_Act_Tarifas.pdf), which prints the normal and US-daylight-time grids.

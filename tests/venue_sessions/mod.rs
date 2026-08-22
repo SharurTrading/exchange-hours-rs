@@ -26,49 +26,38 @@ mod prelude {
     pub(super) use chrono_tz::{America, Asia, Europe, US};
     pub(super) use exchange_hours::*;
 
-    pub(super) fn utc(date: (i32, u32, u32), time: (u32, u32, u32)) -> DateTime<Utc> {
-        Utc.with_ymd_and_hms(date.0, date.1, date.2, time.0, time.1, time.2)
+    pub(super) fn zoned(
+        tz: chrono_tz::Tz,
+        date: (i32, u32, u32),
+        time: (u32, u32, u32),
+    ) -> DateTime<Utc> {
+        tz.with_ymd_and_hms(date.0, date.1, date.2, time.0, time.1, time.2)
             .single()
-            .expect("valid UTC instant")
+            .expect("valid zoned instant")
+            .with_timezone(&Utc)
+    }
+
+    pub(super) fn utc(date: (i32, u32, u32), time: (u32, u32, u32)) -> DateTime<Utc> {
+        zoned(chrono_tz::UTC, date, time)
     }
 
     pub(super) fn ct(date: (i32, u32, u32), time: (u32, u32, u32)) -> DateTime<Utc> {
-        US::Central
-            .with_ymd_and_hms(date.0, date.1, date.2, time.0, time.1, time.2)
-            .single()
-            .expect("valid CT instant")
-            .with_timezone(&Utc)
+        zoned(US::Central, date, time)
     }
 
     pub(super) fn et(date: (i32, u32, u32), time: (u32, u32, u32)) -> DateTime<Utc> {
-        America::New_York
-            .with_ymd_and_hms(date.0, date.1, date.2, time.0, time.1, time.2)
-            .single()
-            .expect("valid ET instant")
-            .with_timezone(&Utc)
+        zoned(America::New_York, date, time)
     }
 
     pub(super) fn cet(date: (i32, u32, u32), time: (u32, u32, u32)) -> DateTime<Utc> {
-        Europe::Berlin
-            .with_ymd_and_hms(date.0, date.1, date.2, time.0, time.1, time.2)
-            .single()
-            .expect("valid CET instant")
-            .with_timezone(&Utc)
+        zoned(Europe::Berlin, date, time)
     }
 
     pub(super) fn lon(date: (i32, u32, u32), time: (u32, u32, u32)) -> DateTime<Utc> {
-        Europe::London
-            .with_ymd_and_hms(date.0, date.1, date.2, time.0, time.1, time.2)
-            .single()
-            .expect("valid London instant")
-            .with_timezone(&Utc)
+        zoned(Europe::London, date, time)
     }
 
     pub(super) fn sgt(date: (i32, u32, u32), time: (u32, u32, u32)) -> DateTime<Utc> {
-        Asia::Singapore
-            .with_ymd_and_hms(date.0, date.1, date.2, time.0, time.1, time.2)
-            .single()
-            .expect("valid SGT instant")
-            .with_timezone(&Utc)
+        zoned(Asia::Singapore, date, time)
     }
 }

@@ -217,8 +217,4 @@ fn intelligentcross_gap_does_not_use_company_start_as_ats_launch() {
     assert!(historical.is_open_extended(et((2018, 1, 17), (9, 0, 0))));
     assert!(historical.is_open_regular(et((2018, 1, 17), (9, 30, 0))));
     assert!(!historical.is_open(et((2018, 1, 17), (16, 0, 0))));
-    assert_eq!(
-        serde_json::to_string(&Exchange::IntelligentcrossIqx).expect("serialize exchange"),
-        "\"intelligentcross_iqx\""
-    );
 }

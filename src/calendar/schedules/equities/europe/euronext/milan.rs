@@ -45,11 +45,7 @@ static BASE_PROFILE: StaticHoursProfile = StaticHoursProfile {
 static CPX_EXTENDED: &[SessionRule] = &[
     BASE_EXTENDED[0],
     // Closing auction.
-    SessionRule {
-        days: MON_FRI,
-        open_ssm: 17 * 3600 + 25 * 60,
-        close_ssm: 17 * 3600 + 31 * 60,
-    },
+    BASE_EXTENDED[1],
     // Closing Price Cross.
     SessionRule {
         days: MON_FRI,
@@ -68,7 +64,7 @@ static CPX_PROFILE: StaticHoursProfile = StaticHoursProfile {
 // Notice 17016, effective 2015-11-23, moved the continuous close to 17:30,
 // the closing auction's latest uncross to 17:35:59, and CPX end to 17:42.
 // https://www.borsaitaliana.it/borsaitaliana/regolamenti/avvisi/17016orarineg.pdf
-static EXTENDED_2015_REGULAR: &[SessionRule] = &[SessionRule {
+static REGULAR_2015: &[SessionRule] = &[SessionRule {
     days: MON_FRI,
     open_ssm: 9 * 3600 + 60,
     close_ssm: 17 * 3600 + 30 * 60,
@@ -90,7 +86,7 @@ static EXTENDED_2015: &[SessionRule] = &[
 ];
 static PROFILE_2015: StaticHoursProfile = StaticHoursProfile {
     tz: Europe::Rome,
-    regular: EXTENDED_2015_REGULAR,
+    regular: REGULAR_2015,
     extended: EXTENDED_2015,
     has_daily_close: true,
     has_weekend_close: true,

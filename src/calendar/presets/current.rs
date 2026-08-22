@@ -59,11 +59,11 @@ pub fn hours_for_exchange(exch: Exchange) -> MarketHours {
         Exchange::CboeEdgxOptions => from_profile(exch, &us::CBOE_EDGX_OPTIONS_PROFILE),
         Exchange::NyseArcaOptions => from_profile(exch, &us::NYSE_ARCA_OPTIONS_PROFILE),
         Exchange::NyseAmericanOptions => from_profile(exch, &us::NYSE_AMERICAN_OPTIONS_PROFILE),
-        Exchange::NasdaqPhlx => from_profile(exch, &us::NASDAQ_PHLX_PROFILE),
-        Exchange::NasdaqIse => from_profile(exch, &us::NASDAQ_ISE_PROFILE),
-        Exchange::NasdaqNom => from_profile(exch, &us::NASDAQ_NOM_PROFILE),
-        Exchange::NasdaqMrx => from_profile(exch, &us::NASDAQ_MRX_PROFILE),
-        Exchange::NasdaqGemx => from_profile(exch, &us::NASDAQ_GEMX_PROFILE),
+        Exchange::NasdaqPhlx => from_profile(exch, &us::NASDAQ_PHLX_OPTIONS_PROFILE),
+        Exchange::NasdaqIse => from_profile(exch, &us::NASDAQ_ISE_OPTIONS_PROFILE),
+        Exchange::NasdaqNom => from_profile(exch, &us::NASDAQ_NOM_OPTIONS_PROFILE),
+        Exchange::NasdaqMrx => from_profile(exch, &us::NASDAQ_MRX_OPTIONS_PROFILE),
+        Exchange::NasdaqGemx => from_profile(exch, &us::NASDAQ_GEMX_OPTIONS_PROFILE),
         Exchange::NasdaqBxOptions => from_profile(exch, &us::NASDAQ_BX_OPTIONS_PROFILE),
         Exchange::MiaxOptions => from_profile(exch, &us::MIAX_OPTIONS_PROFILE),
         Exchange::MiaxEmeraldOptions => from_profile(exch, &us::MIAX_EMERALD_OPTIONS_PROFILE),
@@ -72,7 +72,7 @@ pub fn hours_for_exchange(exch: Exchange) -> MarketHours {
         Exchange::BoxOptions => from_profile(exch, &us::BOX_OPTIONS_PROFILE),
         Exchange::MemxOptions => from_profile(exch, &us::MEMX_OPTIONS_PROFILE),
 
-        // Futures and energy profiles shared by a genuine operator family.
+        // Venue-owned international futures and energy profiles.
         Exchange::IceEuropeCommodities => {
             from_profile(exch, &international::ICE_EUROPE_COMMODITIES_CURRENT)
         }
@@ -136,6 +136,10 @@ pub fn hours_for_exchange(exch: Exchange) -> MarketHours {
         // published grid at every candidate trading day.
         Exchange::B3 => from_profile(exch, americas::b3::CURRENT),
         Exchange::Bmv => from_profile(exch, americas::bmv::CURRENT),
+
+        // Futures and crypto venue defaults. Some reuse the matching named
+        // key; the remainder route directly to their sourced product-family
+        // profile.
         Exchange::Cme => session_profile(MarketHoursKey::GlobexEquityIndex).to_market_hours(exch),
         Exchange::Cbot => session_profile(MarketHoursKey::GlobexGrains).to_market_hours(exch),
         Exchange::Comex | Exchange::Nymex => from_profile(exch, &futures_us::ENERGY_METALS_CURRENT),

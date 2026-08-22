@@ -123,6 +123,13 @@ Future-effective notices can be encoded immediately when fully sourced. The
 row's review date is still the day the evidence was checked, not the notice's
 effective date.
 
+### Pending effective-date confirmations
+
+- **FINRA TRFs — 2026-12-06:** recheck the Securities Information Processor
+  (SIP) Amendment launch before this date. The modeled Sunday-through-Friday
+  reporting regime is conditional on that rollout; if the SIP implementation
+  moves, move the Carteret, Chicago, and NYSE TRF revisions with it.
+
 ## 4. Implement in the owner module
 
 For an existing venue, its file under `src/calendar/schedules/` owns current

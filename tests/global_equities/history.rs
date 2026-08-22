@@ -265,10 +265,7 @@ fn six_trading_at_last_cutover() {
     let (_, pre_phase_close) =
         exchange_hours::session_bounds_with(&pre, probe, exchange_hours::SessionKind::Extended)
             .expect("pre-TAL post-trading phase");
-    let (_, post_phase_close) =
-        exchange_hours::session_bounds_with(&post, probe, exchange_hours::SessionKind::Extended)
-            .expect("TAL phase");
-    let (post_phase_open, _) =
+    let (post_phase_open, post_phase_close) =
         exchange_hours::session_bounds_with(&post, probe, exchange_hours::SessionKind::Extended)
             .expect("TAL phase");
     assert_eq!(pre_phase_close, local(tz, (2026, 8, 19), (22, 0, 0)));

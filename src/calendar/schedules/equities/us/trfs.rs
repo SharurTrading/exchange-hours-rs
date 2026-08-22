@@ -8,6 +8,7 @@ use chrono_tz::America;
 use super::StaticHoursProfile;
 use crate::calendar::SessionRule;
 use crate::calendar::rule::{MON_FRI, SUN_PLUS_MON_THU};
+use crate::calendar::schedules::CLOSED_NEW_YORK;
 use crate::calendar::schedules::timeline::{Revision, effective_date, local_date, select_revision};
 
 // FINRA Regulatory Notice 25-15 identifies all three active TRFs, states that
@@ -90,14 +91,6 @@ static FINRA_TRF_CHICAGO_PROFILE_POST_2026_12_06: StaticHoursProfile =
     profile(EXTENDED_POST_2026_12_06);
 static FINRA_TRF_NYSE_PROFILE_POST_2026_12_06: StaticHoursProfile =
     profile(EXTENDED_POST_2026_12_06);
-static FINRA_TRF_CHICAGO_CLOSED: StaticHoursProfile = StaticHoursProfile {
-    tz: America::New_York,
-    regular: &[],
-    extended: &[],
-    has_daily_close: true,
-    has_weekend_close: true,
-};
-
 // Scheduled-date caveat: the filing ties implementation to the SIP Amendment.
 // These 2026-12-06 rows follow the date currently recorded by the living rules
 // and must move if FINRA announces that the SIP rollout has moved.
@@ -151,7 +144,7 @@ pub(crate) fn carteret_profile_at(as_of: DateTime<Utc>) -> &'static StaticHoursP
 pub(crate) fn chicago_profile_at(as_of: DateTime<Utc>) -> &'static StaticHoursProfile {
     select_revision(
         local_date(as_of, America::New_York),
-        &FINRA_TRF_CHICAGO_CLOSED,
+        &CLOSED_NEW_YORK,
         CHICAGO_REVISIONS,
     )
 }

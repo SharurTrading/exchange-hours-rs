@@ -30,8 +30,8 @@ fn local_sample(tz: chrono_tz::Tz, day: NaiveDate, ssm: u32) -> Option<DateTime<
 /// an hourly sweep of a full reference week (weekends, overnight sessions, and
 /// maintenance gaps); the exact open and close instant of every rule on every
 /// weekday it is enabled, plus one second either side (off-by-one at a boundary,
-/// and the wrap open/close sides); and hourly sweeps across four DST transitions
-/// covering the US and EU shift dates, which fall on different days.
+/// and the wrap open/close sides); and hourly sweeps around the 2026 US, EU,
+/// Sydney, and Auckland DST transition dates.
 pub(super) fn probe_instants(hours: &MarketHours) -> Vec<DateTime<Utc>> {
     // Sunday 2026-04-19 through Monday 2026-04-27, the reference week the
     // per-venue suite pins.
@@ -74,9 +74,26 @@ pub(super) fn probe_instants(hours: &MarketHours) -> Vec<DateTime<Utc>> {
     }
 
     // DST transitions: US spring-forward / fall-back and the EU equivalents,
-    // which land on different dates. Swept hourly across the whole local day.
+    // which land on different dates. Swept hourly around their UTC dates.
     for (year, month, day) in [(2026, 3, 8), (2026, 11, 1), (2026, 3, 29), (2026, 10, 25)] {
         let Some(midnight) = Utc.with_ymd_and_hms(year, month, day, 0, 0, 0).single() else {
+            continue;
+        };
+        for hour in -6..30 {
+            instants.push(midnight + Duration::hours(hour));
+        }
+    }
+
+    // Sydney and Auckland transitions occur on the preceding UTC date, so a
+    // UTC-midnight anchor misses them. April 5 is shared; the other local
+    // transition dates differ. Resolve these anchors in each venue's zone.
+    for (year, month, day) in [(2026, 4, 5), (2026, 9, 27), (2026, 10, 4)] {
+        let Some(midnight) = hours
+            .tz
+            .with_ymd_and_hms(year, month, day, 0, 0, 0)
+            .single()
+            .map(|local| local.with_timezone(&Utc))
+        else {
             continue;
         };
         for hour in -6..30 {

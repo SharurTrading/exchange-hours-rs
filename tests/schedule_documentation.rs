@@ -94,9 +94,9 @@ fn owner_target(owner: &str) -> &str {
         .expect("owner cell must contain one Markdown file link")
 }
 
-fn assert_source_links_resolve(source_cell: &str, row: &str) {
-    let mut remainder = source_cell;
-    let mut links = 0_u8;
+fn validated_source_link_count(text: &str) -> u16 {
+    let mut remainder = text;
+    let mut links = 0_u16;
 
     while let Some((_, after_prefix)) = remainder.split_once("(sources.md#") {
         let (anchor, after_link) = after_prefix
@@ -112,7 +112,14 @@ fn assert_source_links_resolve(source_cell: &str, row: &str) {
         remainder = after_link;
     }
 
-    assert!(links > 0, "ledger row must reference a source set: {row}");
+    links
+}
+
+fn assert_source_links_resolve(source_cell: &str, row: &str) {
+    assert!(
+        validated_source_link_count(source_cell) > 0,
+        "ledger row must reference a source set: {row}"
+    );
 }
 
 #[test]
@@ -233,7 +240,10 @@ fn readme_and_review_dates_match_the_repository_cutoff() {
         "README freshness claim must match the verification ledger"
     );
 
-    for row in exchange_rows().into_iter().skip(1) {
+    for row in exchange_rows()
+        .into_iter()
+        .filter(|row| wire_name(row) != "unknown")
+    {
         let cells = row_cells(row);
         assert_eq!(cells.len(), 6, "unexpected verification row shape: {row}");
         let reviewed = NaiveDate::parse_from_str(cells[4], "%Y-%m-%d")
@@ -332,24 +342,10 @@ fn readme_and_audit_quantify_assurance_from_the_ledger() {
 
 #[test]
 fn every_ledger_source_link_has_a_registry_anchor() {
-    let mut remainder = VERIFICATION;
-    let mut links = 0_u16;
-
-    while let Some((_, after_prefix)) = remainder.split_once("(sources.md#") {
-        let (anchor, after_link) = after_prefix
-            .split_once(')')
-            .expect("source-set link must close its destination");
-        let declaration = format!("<a id=\"{anchor}\"></a>");
-        assert_eq!(
-            SOURCES.matches(&declaration).count(),
-            1,
-            "source-set link must have exactly one registry anchor: {anchor}"
-        );
-        links = links.saturating_add(1);
-        remainder = after_link;
-    }
-
-    assert!(links > 0, "verification ledger must reference source sets");
+    assert!(
+        validated_source_link_count(VERIFICATION) > 0,
+        "verification ledger must reference source sets"
+    );
 }
 
 #[test]

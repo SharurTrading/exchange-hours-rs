@@ -8,15 +8,8 @@ use chrono_tz::America;
 use super::StaticHoursProfile;
 use crate::calendar::SessionRule;
 use crate::calendar::rule::MON_FRI;
+use crate::calendar::schedules::CLOSED_NEW_YORK;
 use crate::calendar::schedules::timeline::{Revision, effective_date, local_date, select_revision};
-
-static CLOSED: StaticHoursProfile = StaticHoursProfile {
-    tz: America::New_York,
-    regular: &[],
-    extended: &[],
-    has_daily_close: true,
-    has_weekend_close: true,
-};
 
 // Every profile in this module is deliberately scoped to the published
 // regular-session envelope for ordinary options on individual US stocks. It excludes
@@ -73,11 +66,11 @@ pub(crate) static CBOE_EDGX_OPTIONS_PROFILE: StaticHoursProfile = listed_equity_
 pub(crate) static NYSE_ARCA_OPTIONS_PROFILE: StaticHoursProfile = listed_equity_options_profile();
 pub(crate) static NYSE_AMERICAN_OPTIONS_PROFILE: StaticHoursProfile =
     listed_equity_options_profile();
-pub(crate) static NASDAQ_PHLX_PROFILE: StaticHoursProfile = listed_equity_options_profile();
-pub(crate) static NASDAQ_ISE_PROFILE: StaticHoursProfile = listed_equity_options_profile();
-pub(crate) static NASDAQ_NOM_PROFILE: StaticHoursProfile = listed_equity_options_profile();
-pub(crate) static NASDAQ_MRX_PROFILE: StaticHoursProfile = listed_equity_options_profile();
-pub(crate) static NASDAQ_GEMX_PROFILE: StaticHoursProfile = listed_equity_options_profile();
+pub(crate) static NASDAQ_PHLX_OPTIONS_PROFILE: StaticHoursProfile = listed_equity_options_profile();
+pub(crate) static NASDAQ_ISE_OPTIONS_PROFILE: StaticHoursProfile = listed_equity_options_profile();
+pub(crate) static NASDAQ_NOM_OPTIONS_PROFILE: StaticHoursProfile = listed_equity_options_profile();
+pub(crate) static NASDAQ_MRX_OPTIONS_PROFILE: StaticHoursProfile = listed_equity_options_profile();
+pub(crate) static NASDAQ_GEMX_OPTIONS_PROFILE: StaticHoursProfile = listed_equity_options_profile();
 pub(crate) static NASDAQ_BX_OPTIONS_PROFILE: StaticHoursProfile = listed_equity_options_profile();
 pub(crate) static MIAX_OPTIONS_PROFILE: StaticHoursProfile = listed_equity_options_profile();
 pub(crate) static MIAX_EMERALD_OPTIONS_PROFILE: StaticHoursProfile =
@@ -133,11 +126,11 @@ static BX_REVISIONS: &[Revision] = &[Revision {
 }];
 static GEMX_REVISIONS: &[Revision] = &[Revision {
     effective: effective_date(2013, 8, 5),
-    profile: &NASDAQ_GEMX_PROFILE,
+    profile: &NASDAQ_GEMX_OPTIONS_PROFILE,
 }];
 static MRX_REVISIONS: &[Revision] = &[Revision {
     effective: effective_date(2016, 2, 16),
-    profile: &NASDAQ_MRX_PROFILE,
+    profile: &NASDAQ_MRX_OPTIONS_PROFILE,
 }];
 static MIAX_REVISIONS: &[Revision] = &[Revision {
     effective: effective_date(2012, 12, 7),
@@ -167,7 +160,11 @@ pub(crate) fn c1_profile_at(_as_of: DateTime<Utc>) -> &'static StaticHoursProfil
 macro_rules! launch_selector {
     ($name:ident, $revisions:ident) => {
         pub(crate) fn $name(as_of: DateTime<Utc>) -> &'static StaticHoursProfile {
-            select_revision(local_date(as_of, America::New_York), &CLOSED, $revisions)
+            select_revision(
+                local_date(as_of, America::New_York),
+                &CLOSED_NEW_YORK,
+                $revisions,
+            )
         }
     };
 }

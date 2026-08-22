@@ -10,7 +10,7 @@ use crate::calendar::local_time::bounded_utc;
 use crate::calendar::rule::{SECONDS_PER_NORMAL_WEEK, SessionKind, normal_week_rule_intervals};
 
 const DAY_SECONDS: i64 = 86_400;
-const WEEK_SECONDS: i64 = 7 * DAY_SECONDS;
+const WEEK_SECONDS: i64 = SECONDS_PER_NORMAL_WEEK.cast_signed();
 
 fn union_seconds(mut intervals: Vec<(u64, u64)>) -> u64 {
     intervals.sort_unstable();

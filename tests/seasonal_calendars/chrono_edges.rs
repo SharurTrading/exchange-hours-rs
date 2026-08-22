@@ -13,11 +13,6 @@ fn date_aware_queries_are_total_at_chrono_bounds() {
                 let snapshot = hours_for_exchange_as_of(exchange, instant);
                 let fixed_open = snapshot.is_open(instant);
                 let fixed_bounds = session_bounds(&snapshot, instant);
-                assert_eq!(
-                    fixed_open,
-                    fixed_bounds.is_some_and(|(open, close)| open <= instant && instant < close),
-                    "{exchange:?} fixed query fence failed at {instant}"
-                );
                 let _fixed_next = next_session_after(&snapshot, instant);
                 let _fixed_daily = candle_end(&snapshot, instant, CalendarResolution::Daily);
                 let _fixed_start = candle_start(&snapshot, instant, CalendarResolution::Monthly);
@@ -27,11 +22,6 @@ fn date_aware_queries_are_total_at_chrono_bounds() {
                     snapshot.is_closed_all_day_at(instant, chrono_tz::UTC, SessionKind::Both);
                 let open = calendar.is_open(instant);
                 let bounds = calendar.session_bounds(instant);
-                assert_eq!(
-                    open,
-                    bounds.is_some_and(|(start, end)| start <= instant && instant < end),
-                    "{exchange:?} calendar query fence failed at {instant}"
-                );
                 let _next = calendar.next_session_after(instant);
                 let _daily = calendar.candle_end(instant, CalendarResolution::Daily);
                 let _weekly = calendar.candle_end(instant, CalendarResolution::Weekly);
@@ -42,10 +32,20 @@ fn date_aware_queries_are_total_at_chrono_bounds() {
                 let _closed =
                     calendar.is_closed_all_day_at(instant, chrono_tz::UTC, SessionKind::Both);
                 let _week = calendar.normal_week_open_seconds_containing(instant);
+
+                (fixed_open, fixed_bounds, open, bounds)
             });
-            assert!(
-                result.is_ok(),
-                "{exchange:?} panicked at chrono bound {instant}"
+            let (fixed_open, fixed_bounds, open, bounds) = result
+                .unwrap_or_else(|_| panic!("{exchange:?} panicked at chrono bound {instant}"));
+            assert_eq!(
+                fixed_open,
+                fixed_bounds.is_some_and(|(start, end)| start <= instant && instant < end),
+                "{exchange:?} fixed query fence failed at {instant}"
+            );
+            assert_eq!(
+                open,
+                bounds.is_some_and(|(start, end)| start <= instant && instant < end),
+                "{exchange:?} calendar query fence failed at {instant}"
             );
         }
     }

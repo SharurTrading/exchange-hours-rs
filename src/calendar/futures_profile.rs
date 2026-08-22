@@ -249,7 +249,10 @@ pub fn hours_for_market_hours_key(key: MarketHoursKey) -> MarketHours {
 /// CFE VIX, Eurex benchmark-index, ICE U.S. NYSE FANG+, and SGX Three-Month
 /// SORA futures. Keys with no in-scope recorded change return their current
 /// snapshot. Dates before the January-2010 audit floor receive the oldest
-/// audited profile.
+/// audited profile. For launch-dated families — currently ICE U.S. NYSE FANG+
+/// and SGX Three-Month SORA — a pre-launch date returns an explicit sessionless
+/// profile that reports closed at every instant. That result means the market
+/// was closed, not that schedule data is missing.
 ///
 /// This returns one snapshot. A caller spanning a schedule transition must
 /// invoke it again for each date; there is intentionally no key-keyed calendar

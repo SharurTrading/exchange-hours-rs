@@ -11,6 +11,7 @@ use super::equities::{
     NASDAQ_PROFILE, NASDAQ_PROFILE_POST_2026_12_06, NASDAQ_PROFILE_PRE_2013_03_18,
     NASDAQ_PSX_PROFILE, NASDAQ_PSX_PROFILE_AT_LAUNCH,
 };
+use crate::calendar::schedules::CLOSED_NEW_YORK;
 use crate::calendar::schedules::timeline::{Revision, effective_date, local_date, select_revision};
 
 // Nasdaq Equity Trader Alert 2013-21 moved the pre-market open from 07:00 to
@@ -63,14 +64,6 @@ pub(crate) fn nasdaq_bx_profile_at(
     )
 }
 
-static NASDAQ_PSX_CLOSED: StaticHoursProfile = StaticHoursProfile {
-    tz: America::New_York,
-    regular: &[],
-    extended: &[],
-    has_daily_close: true,
-    has_weekend_close: true,
-};
-
 // Nasdaq's launch alert dates PSX production to 2010-10-08. The initial rules
 // operated 09:00–17:00 ET; SR-Phlx-2010-172 explicitly identifies 2010-12-13
 // as the implementation date for the 08:00 ET opening.
@@ -92,18 +85,10 @@ pub(crate) fn nasdaq_psx_profile_at(
 ) -> &'static StaticHoursProfile {
     select_revision(
         local_date(as_of, America::New_York),
-        &NASDAQ_PSX_CLOSED,
+        &CLOSED_NEW_YORK,
         NASDAQ_PSX_REVISIONS,
     )
 }
-
-static MEMX_CLOSED: StaticHoursProfile = StaticHoursProfile {
-    tz: America::New_York,
-    regular: &[],
-    extended: &[],
-    has_daily_close: true,
-    has_weekend_close: true,
-};
 
 // MEMX began live trading on 2020-09-21. Its own 2025-06-06 retrospective
 // identifies 2025-05-19 as the actual launch of its 04:00 ET pre-market. The
@@ -125,18 +110,10 @@ static MEMX_REVISIONS: &[Revision] = &[
 pub(crate) fn memx_profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {
     select_revision(
         local_date(as_of, America::New_York),
-        &MEMX_CLOSED,
+        &CLOSED_NEW_YORK,
         MEMX_REVISIONS,
     )
 }
-
-static MIAX_PEARL_CLOSED: StaticHoursProfile = StaticHoursProfile {
-    tz: America::New_York,
-    regular: &[],
-    extended: &[],
-    has_daily_close: true,
-    has_weekend_close: true,
-};
 
 // MIAX Pearl Equities launched on 2020-09-29. Regulatory Circular 2025-02
 // later made the Early Trading Session (04:00–09:30 ET) and Late Trading
@@ -160,7 +137,7 @@ pub(crate) fn miax_pearl_profile_at(
 ) -> &'static StaticHoursProfile {
     select_revision(
         local_date(as_of, America::New_York),
-        &MIAX_PEARL_CLOSED,
+        &CLOSED_NEW_YORK,
         MIAX_PEARL_REVISIONS,
     )
 }

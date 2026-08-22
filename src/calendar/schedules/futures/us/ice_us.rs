@@ -5,11 +5,9 @@
 use chrono_tz::America;
 
 use crate::calendar::SessionRule;
-use crate::calendar::rule::{SUN_ONLY, TUE_ONLY};
-use crate::calendar::schedules::StaticHoursProfile;
+use crate::calendar::rule::{MON_THU, SUN_ONLY, TUE_ONLY};
 use crate::calendar::schedules::timeline::{Revision, effective_date, local_date, select_revision};
-
-const MON_THU: [bool; 7] = [true, true, true, true, false, false, false];
+use crate::calendar::schedules::{CLOSED_NEW_YORK, StaticHoursProfile};
 
 // The `iceus` default is the NYSE FANG+ Index futures family, not a venue-wide
 // clock. ICE launched it for trade date 2017-11-08 with 20:00-18:00 ET hours
@@ -38,14 +36,6 @@ pub(crate) static ICE_US_FANG_CURRENT: StaticHoursProfile = StaticHoursProfile {
     tz: America::New_York,
     regular: &[],
     extended: ICE_US_FANG_EXTENDED_CURRENT,
-    has_daily_close: true,
-    has_weekend_close: true,
-};
-
-static ICE_US_FANG_CLOSED: StaticHoursProfile = StaticHoursProfile {
-    tz: America::New_York,
-    regular: &[],
-    extended: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -83,7 +73,7 @@ pub(crate) fn ice_us_fang_profile_at(
 ) -> &'static StaticHoursProfile {
     select_revision(
         local_date(as_of, America::New_York),
-        &ICE_US_FANG_CLOSED,
+        &CLOSED_NEW_YORK,
         ICE_US_FANG_REVISIONS,
     )
 }

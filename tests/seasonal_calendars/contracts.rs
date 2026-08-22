@@ -70,14 +70,18 @@ fn historical_profiles_preserve_each_venue_timezone() {
     let mut date = day((2010, 1, 1));
     let end = day((2027, 1, 1));
 
-    for &exchange in Exchange::ALL {
-        let expected = hours_for_exchange(exchange).tz;
-        assert_eq!(
-            calendar_for_exchange(exchange).tz(),
-            expected,
-            "{exchange:?}: ExchangeCalendar exposes a different venue zone"
-        );
-    }
+    let expected_zones: Vec<_> = Exchange::ALL
+        .iter()
+        .map(|&exchange| {
+            let expected = hours_for_exchange(exchange).tz;
+            assert_eq!(
+                calendar_for_exchange(exchange).tz(),
+                expected,
+                "{exchange:?}: ExchangeCalendar exposes a different venue zone"
+            );
+            (exchange, expected)
+        })
+        .collect();
 
     while date < end {
         let instant = Utc.from_utc_datetime(
@@ -85,8 +89,7 @@ fn historical_profiles_preserve_each_venue_timezone() {
                 .and_hms_opt(12, 0, 0)
                 .expect("daily UTC-noon fixture is representable"),
         );
-        for &exchange in Exchange::ALL {
-            let expected = hours_for_exchange(exchange).tz;
+        for &(exchange, expected) in &expected_zones {
             assert_eq!(
                 hours_for_exchange_as_of(exchange, instant).tz,
                 expected,

@@ -4,7 +4,7 @@
 
 use std::borrow::Cow;
 
-use chrono_tz::Tz;
+use chrono_tz::{America, Tz};
 
 use crate::calendar::{Exchange, MarketHours, SessionRule};
 
@@ -20,6 +20,15 @@ pub(crate) struct StaticHoursProfile {
     pub(crate) has_daily_close: bool,
     pub(crate) has_weekend_close: bool,
 }
+
+pub(in crate::calendar::schedules) static CLOSED_NEW_YORK: StaticHoursProfile =
+    StaticHoursProfile {
+        tz: America::New_York,
+        regular: &[],
+        extended: &[],
+        has_daily_close: true,
+        has_weekend_close: true,
+    };
 
 /// Tags a static schedule with its venue without cloning its rule slices.
 #[inline]

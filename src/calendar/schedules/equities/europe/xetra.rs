@@ -100,7 +100,8 @@ static TAC_PROFILE: StaticHoursProfile = StaticHoursProfile {
 // Extended Xetra Retail became effective on 2025-12-01. The DAX envelope now
 // begins at 07:00, Trade-at-Close ends at 17:40, participant-restricted late
 // retail trading continues through 22:00, and post-trading ends at 22:05. The
-// non-continuous and order-entry-only phases are `extended`.
+// non-continuous, order-entry-only, and participant-restricted retail phases
+// are `extended`; only the unrestricted continuous phases stay `regular`.
 // https://www.cashmarket.deutsche-boerse.com/cash-en/Stay-Informed/circulars-newsletters/deutsche-boerse-circulars/Introduction-of-the-Extended-Xetra-Retail-Service-early-and-late-trading-Planned-changes-to-the-trading-process-valid-from-1-December-2025-4793480
 // https://www.cashmarket.deutsche-boerse.com/resource/blob/250890/24d50260d22cd63e0f600ae2543ca529/data/trading-parameters-xetra.pdf
 static CURRENT_EXTENDED: &[SessionRule] = &[

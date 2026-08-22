@@ -15,4 +15,5 @@ pub(crate) mod timeline;
 pub use equities::us::{
     BLUE_OCEAN_EXTENDED, NYSE_TEXAS_EXTENDED, US_EQUITY_EXTENDED, US_EQUITY_REGULAR,
 };
+pub(in crate::calendar::schedules) use profile::CLOSED_NEW_YORK;
 pub(crate) use profile::{StaticHoursProfile, from_profile};

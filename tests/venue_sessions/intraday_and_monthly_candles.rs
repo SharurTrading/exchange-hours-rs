@@ -68,13 +68,6 @@ fn intraday_bar_queried_inside_maintenance_anchors_at_the_reopen() {
 
 #[test]
 fn daily_candles_ignore_phase_handoffs_that_remain_open() {
-    let dubai = |date: (i32, u32, u32), time: (u32, u32, u32)| {
-        Asia::Dubai
-            .with_ymd_and_hms(date.0, date.1, date.2, time.0, time.1, time.2)
-            .single()
-            .expect("valid Dubai instant")
-            .with_timezone(&Utc)
-    };
     let cases = [
         (
             Exchange::Cfe,
@@ -88,8 +81,8 @@ fn daily_candles_ignore_phase_handoffs_that_remain_open() {
         ),
         (
             Exchange::IceAbuDhabi,
-            dubai((2026, 8, 17), (12, 0, 0)),
-            dubai((2026, 8, 18), (2, 0, 0)),
+            zoned(Asia::Dubai, (2026, 8, 17), (12, 0, 0)),
+            zoned(Asia::Dubai, (2026, 8, 18), (2, 0, 0)),
         ),
         (
             Exchange::Sgx,

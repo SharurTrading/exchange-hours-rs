@@ -44,8 +44,10 @@ pub(crate) static MIAX_PEARL_EQ_PROFILE: StaticHoursProfile = equity_profile(US_
 pub(super) static NASDAQ_PROFILE_PRE_2013_03_18: StaticHoursProfile =
     equity_profile(EXTENDED_0700_2000);
 
-// Nasdaq Texas (the stable public identity remains `nasdaq_bx`) publishes
-// 07:00–19:00 ET system hours around the 09:30–16:00 core session.
+// Nasdaq BX, renamed Nasdaq Texas by the operator. This is not the unrelated
+// NYSE Texas venue, whose profile lives in `nyse.rs`. The stable public
+// identity here remains `nasdaq_bx`. The venue publishes 07:00–19:00 ET system
+// hours around the 09:30–16:00 core session.
 // An official 2009 circular proves an 08:00–19:00 January-2010 baseline, and
 // SR-BX-2011-016 proves the later 08:00→07:00 system-hours change, and Equity
 // Trader Alert 2011-20 makes its production date Monday 2011-04-18. A

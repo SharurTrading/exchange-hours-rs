@@ -8,15 +8,8 @@ use super::StaticHoursProfile;
 use super::equities::{equity_profile, profile};
 use crate::calendar::SessionRule;
 use crate::calendar::rule::{MON_FRI, SUN_PLUS_MON_THU};
+use crate::calendar::schedules::CLOSED_NEW_YORK;
 use crate::calendar::schedules::timeline::{Revision, effective_date, local_date, select_revision};
-
-static CLOSED: StaticHoursProfile = StaticHoursProfile {
-    tz: America::New_York,
-    regular: &[],
-    extended: &[],
-    has_daily_close: true,
-    has_weekend_close: true,
-};
 
 // Investors Exchange's initial exchange rules and living hours table define
 // System Hours as 08:00–17:00 ET around the 09:30–16:00 regular session.
@@ -47,7 +40,11 @@ static IEX_REVISIONS: &[Revision] = &[Revision {
 }];
 
 pub(crate) fn iex_profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {
-    select_revision(local_date(as_of, America::New_York), &CLOSED, IEX_REVISIONS)
+    select_revision(
+        local_date(as_of, America::New_York),
+        &CLOSED_NEW_YORK,
+        IEX_REVISIONS,
+    )
 }
 
 // The live SEC Form ATS-N gives the IQX order-acceptance and execution table:
@@ -112,7 +109,7 @@ pub(crate) fn blue_ocean_profile_at(
 ) -> &'static StaticHoursProfile {
     select_revision(
         local_date(as_of, America::New_York),
-        &CLOSED,
+        &CLOSED_NEW_YORK,
         BLUE_OCEAN_REVISIONS,
     )
 }

@@ -8,6 +8,7 @@ use super::StaticHoursProfile;
 use super::equities::{US_EQUITY_EXTENDED, equity_profile};
 use crate::calendar::SessionRule;
 use crate::calendar::rule::MON_FRI;
+use crate::calendar::schedules::CLOSED_NEW_YORK;
 use crate::calendar::schedules::timeline::{Revision, effective_date, local_date, select_revision};
 
 static EXTENDED_0700_2000: &[SessionRule] = &[
@@ -107,14 +108,6 @@ static NATIONAL_2010_08_02: StaticHoursProfile = equity_profile(NATIONAL_0800_20
 static NATIONAL_2015_12_22: StaticHoursProfile = equity_profile(NATIONAL_0800_1700);
 pub(crate) static NYSE_NATIONAL_PROFILE: StaticHoursProfile = equity_profile(EXTENDED_0700_2000);
 
-static NATIONAL_CLOSED: StaticHoursProfile = StaticHoursProfile {
-    tz: America::New_York,
-    regular: &[],
-    extended: &[],
-    has_daily_close: true,
-    has_weekend_close: true,
-};
-
 // NSX's operative 2010 filing dates the 18:30→20:00 close extension to
 // 2010-08-02. Its immediately operative 2014 filing shortened that close to
 // 17:00 on 2014-05-16. Trading ceased after the 2014-05-30 close. The SEC's
@@ -140,7 +133,7 @@ static NATIONAL_REVISIONS: &[Revision] = &[
     },
     Revision {
         effective: effective_date(2014, 5, 31),
-        profile: &NATIONAL_CLOSED,
+        profile: &CLOSED_NEW_YORK,
     },
     Revision {
         effective: effective_date(2015, 12, 22),
@@ -148,7 +141,7 @@ static NATIONAL_REVISIONS: &[Revision] = &[
     },
     Revision {
         effective: effective_date(2017, 2, 1),
-        profile: &NATIONAL_CLOSED,
+        profile: &CLOSED_NEW_YORK,
     },
     Revision {
         effective: effective_date(2018, 5, 21),
@@ -180,7 +173,7 @@ pub(crate) fn nyse_texas_profile_at(
 ) -> &'static StaticHoursProfile {
     select_revision(
         local_date(as_of, America::New_York),
-        &NATIONAL_CLOSED,
+        &CLOSED_NEW_YORK,
         TEXAS_REVISIONS,
     )
 }

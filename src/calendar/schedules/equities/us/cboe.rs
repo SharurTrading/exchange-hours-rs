@@ -8,6 +8,7 @@ use super::StaticHoursProfile;
 use super::equities::{US_EQUITY_EXTENDED, equity_profile};
 use crate::calendar::SessionRule;
 use crate::calendar::rule::{MON_FRI, SUN_PLUS_MON_THU};
+use crate::calendar::schedules::CLOSED_NEW_YORK;
 use crate::calendar::schedules::timeline::{Revision, effective_date, local_date, select_revision};
 
 static EXTENDED_0800_1700: &[SessionRule] = &[
@@ -108,14 +109,6 @@ static EDGX_0700_2000: StaticHoursProfile = equity_profile(EXTENDED_0700_2000);
 pub(crate) static CBOE_EDGX_PROFILE: StaticHoursProfile = equity_profile(US_EQUITY_EXTENDED);
 static EDGX_POST_2026_12_06: StaticHoursProfile = equity_profile(EDGX_EXTENDED_POST_2026_12_06);
 
-static CLOSED: StaticHoursProfile = StaticHoursProfile {
-    tz: America::New_York,
-    regular: &[],
-    extended: &[],
-    has_daily_close: true,
-    has_weekend_close: true,
-};
-
 // The 2018 operator notice dates BZX's and BYX's 20:00 close extensions. Cboe's
 // early-hours article and launch retrospective independently date BZX's 04:00
 // open to 2025-05-01.
@@ -161,7 +154,11 @@ static BYX_REVISIONS: &[Revision] = &[
 ];
 
 pub(crate) fn byx_profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {
-    select_revision(local_date(as_of, America::New_York), &CLOSED, BYX_REVISIONS)
+    select_revision(
+        local_date(as_of, America::New_York),
+        &CLOSED_NEW_YORK,
+        BYX_REVISIONS,
+    )
 }
 
 static EDGA_REVISIONS: &[Revision] = &[
@@ -178,7 +175,7 @@ static EDGA_REVISIONS: &[Revision] = &[
 pub(crate) fn edga_profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {
     select_revision(
         local_date(as_of, America::New_York),
-        &CLOSED,
+        &CLOSED_NEW_YORK,
         EDGA_REVISIONS,
     )
 }
@@ -210,7 +207,7 @@ static EDGX_REVISIONS: &[Revision] = &[
 pub(crate) fn edgx_profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {
     select_revision(
         local_date(as_of, America::New_York),
-        &CLOSED,
+        &CLOSED_NEW_YORK,
         EDGX_REVISIONS,
     )
 }

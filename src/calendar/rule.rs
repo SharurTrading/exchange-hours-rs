@@ -25,6 +25,8 @@ pub(crate) const MON_FRI: [bool; 7] = [true, true, true, true, true, false, fals
 pub(crate) const MON_ONLY: [bool; 7] = [true, false, false, false, false, false, false];
 // Monday-Thursday only.
 pub(crate) const MON_THU: [bool; 7] = [true, true, true, true, false, false, false];
+// Friday only.
+pub(crate) const FRI: [bool; 7] = [false, false, false, false, true, false, false];
 // Tuesday only.
 pub(crate) const TUE_ONLY: [bool; 7] = [false, true, false, false, false, false, false];
 // Tuesday-Friday only.

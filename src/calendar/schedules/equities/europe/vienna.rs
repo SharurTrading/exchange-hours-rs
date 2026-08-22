@@ -175,6 +175,7 @@ pub(crate) static VIENNA_PROFILE: StaticHoursProfile = StaticHoursProfile {
     has_daily_close: true,
     has_weekend_close: true,
 };
+static CURRENT_NORMAL: &StaticHoursProfile = &VIENNA_PROFILE;
 static CURRENT_SETTLEMENT: StaticHoursProfile = StaticHoursProfile {
     tz: Europe::Vienna,
     regular: T7_SETTLEMENT_REGULAR,
@@ -219,6 +220,6 @@ pub(crate) fn profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static Stati
     if settlement {
         &CURRENT_SETTLEMENT
     } else {
-        &VIENNA_PROFILE
+        CURRENT_NORMAL
     }
 }

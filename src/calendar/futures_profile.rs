@@ -38,12 +38,14 @@ use super::schedules::futures::us::{
     livestock_profile_at, nkd_profile_at, sugar_profile_at,
 };
 use super::{Exchange, MarketHours, SessionRule};
+use super::exchange_calendar::CalendarSource;
 
 /// A timezone-aware set of normal-week futures session rules.
 ///
 /// `regular` carries primary trading sessions; `extended` carries electronic,
 /// overnight, and other non-regular sessions. Holiday and special-session
 /// overlays are deliberately modeled outside this normal-week profile.
+#[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct FuturesSessionProfile {
     /// Exchange local timezone used to interpret `SessionRule` SSM values.
@@ -62,7 +64,8 @@ impl FuturesSessionProfile {
     /// Returns `true` when any regular or extended normal-week session is active.
     #[must_use]
     pub fn is_open(&self, t: DateTime<Utc>) -> bool {
-        self.to_market_hours(Exchange::Unknown).is_open(t)
+        self.to_market_hours(CalendarSource::Exchange(Exchange::Unknown))
+            .is_open(t)
     }
 
     /// Converts this profile into the [`MarketHours`] value the calendar query
@@ -75,9 +78,9 @@ impl FuturesSessionProfile {
     /// back several venues — [`hours_for_market_hours_key`] tags with
     /// [`Exchange::Unknown`] since the key, not a venue, identifies the profile.
     #[must_use]
-    pub fn to_market_hours(self, exchange: Exchange) -> MarketHours {
+    pub fn to_market_hours(self, source: CalendarSource) -> MarketHours {
         MarketHours {
-            exchange,
+            source,
             tz: self.tz,
             regular: Cow::Borrowed(self.regular),
             extended: Cow::Borrowed(self.extended),
@@ -200,7 +203,7 @@ market_hours_keys! {
 /// [`calendar_for_market_hours_key`](super::calendar_for_market_hours_key).
 #[must_use]
 pub fn hours_for_market_hours_key(key: MarketHoursKey) -> MarketHours {
-    session_profile(key).to_market_hours(Exchange::Unknown)
+    session_profile(key).to_market_hours(CalendarSource::MarketHoursKey(key))
 }
 
 /// Resolves the fixed [`MarketHours`] snapshot in effect for `key` at `as_of`.

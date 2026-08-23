@@ -28,6 +28,18 @@ pub enum CalendarSource {
     MarketHoursKey(MarketHoursKey),
 }
 
+impl From<Exchange> for CalendarSource {
+    fn from(exchange: Exchange) -> Self {
+        Self::Exchange(exchange)
+    }
+}
+
+impl From<MarketHoursKey> for CalendarSource {
+    fn from(key: MarketHoursKey) -> Self {
+        Self::MarketHoursKey(key)
+    }
+}
+
 /// A deterministic, date-aware calendar for one exchange or product family.
 ///
 /// The calendar reselects a concrete fixed profile for every candidate local

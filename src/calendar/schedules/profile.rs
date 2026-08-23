@@ -6,7 +6,8 @@ use std::borrow::Cow;
 
 use chrono_tz::{America, Tz};
 
-use crate::calendar::{Exchange, MarketHours, SessionRule};
+use crate::calendar::{MarketHours, SessionRule};
+use crate::calendar::exchange_calendar::CalendarSource;
 
 /// A venue's normal-week schedule in fully static form.
 ///
@@ -33,11 +34,11 @@ pub(in crate::calendar::schedules) static CLOSED_NEW_YORK: StaticHoursProfile =
 /// Tags a static schedule with its venue without cloning its rule slices.
 #[inline]
 pub(crate) fn from_profile(
-    exchange: Exchange,
+    source: impl Into<CalendarSource>,
     profile: &'static StaticHoursProfile,
 ) -> MarketHours {
     MarketHours {
-        exchange,
+        source: source.into(),
         tz: profile.tz,
         regular: Cow::Borrowed(profile.regular),
         extended: Cow::Borrowed(profile.extended),

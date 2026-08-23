@@ -269,7 +269,7 @@ fn dated_market_hours_keys_reuse_cme_group_and_cfe_histories() {
         hours_for_market_hours_key_as_of(MarketHoursKey::CfeVix, ct((2010, 12, 10), (0, 0, 0)));
     assert!(!cfe_before.is_open(ct((2010, 12, 10), (7, 20, 0))));
     assert!(cfe_after.is_open_extended(ct((2010, 12, 10), (7, 20, 0))));
-    assert_eq!(cfe_after.exchange, Exchange::Unknown);
+    assert_eq!(cfe_after.exchange(), Some(Exchange::Unknown));
 
     let cfe_weekday_queue_before =
         hours_for_market_hours_key_as_of(MarketHoursKey::CfeVix, ct((2013, 10, 27), (12, 0, 0)));

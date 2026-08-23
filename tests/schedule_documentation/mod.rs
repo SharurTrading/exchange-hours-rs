@@ -383,6 +383,8 @@ fn readme_and_audit_quantify_assurance_from_the_ledger() {
         ),
     ];
 
+    assert_key_basis_prose_matches_the_ledger(&real_key_rows);
+
     for claim in claims {
         assert!(
             README.contains(&claim),
@@ -498,4 +500,47 @@ fn date_exception_contract_distinguishes_boundaries_coverage_and_finality() {
         UPDATING.contains("[date-exceptions.md](date-exceptions.md)"),
         "schedule-update guide must route special dates to the exception contract"
     );
+}
+
+/// Asserts the README's spelled-out Primary/Partial key split and headline
+/// product-family count both derive from the ledger.
+///
+/// Split out of `readme_and_audit_quantify_assurance_from_the_ledger` to keep
+/// that test inside the crate's 100-line function limit.
+fn assert_key_basis_prose_matches_the_ledger(real_key_rows: &[&str]) {
+    let basis_count =
+        |rows: &[&str], basis: &str| rows.iter().filter(|row| row_cells(row)[3] == basis).count();
+    // The prose Primary/Partial split for keys is written in words, and drifted
+    // silently twice: README.md once said "Four key rows are Primary" while the
+    // ledger held five, and the headline bullet said "11 operator-derived" long
+    // after the count reached 24. Derive both from the ledger instead.
+    let key_primary = basis_count(real_key_rows, "Primary");
+    let key_partial = basis_count(real_key_rows, "Partial");
+    let spelled = |n: usize| -> String {
+        const WORDS: [&str; 21] = [
+            "Zero", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight",
+            "Nine", "Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen",
+            "Sixteen", "Seventeen", "Eighteen", "Nineteen", "Twenty",
+        ];
+        WORDS.get(n).map_or_else(|| n.to_string(), ToString::to_string)
+    };
+    let key_split = format!(
+        "{} key rows are **Primary** and {} are **Partial**",
+        spelled(key_primary),
+        spelled(key_partial).to_lowercase()
+    );
+    // README prose is hard-wrapped, so these claims straddle line breaks.
+    let flowed = README.split_whitespace().collect::<Vec<_>>().join(" ");
+    assert!(
+        flowed.contains(&key_split),
+        "README key basis split drifted from the ledger: expected {key_split:?}"
+    );
+    assert!(
+        flowed.contains(&format!(
+            "all {} operator-derived `MarketHoursKey`",
+            real_key_rows.len()
+        )),
+        "README headline product-family count drifted from the ledger"
+    );
+
 }

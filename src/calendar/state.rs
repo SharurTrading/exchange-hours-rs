@@ -3,6 +3,7 @@
 //! One mutually exclusive market-state classification.
 
 /// The effective state of a schedule at one UTC instant.
+#[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum SessionState {
     /// A primary or regular session is open.

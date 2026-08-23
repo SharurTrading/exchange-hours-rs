@@ -23,6 +23,7 @@ use chrono_tz::Tz;
 
 use super::query::{QueryContext, status, week};
 use super::{Exchange, SessionKind, SessionRule, SessionState};
+use super::exchange_calendar::CalendarSource;
 
 /// Normal-week trading-hours definition.
 ///
@@ -33,10 +34,17 @@ use super::{Exchange, SessionKind, SessionRule, SessionState};
 /// slices directly: they allocate nothing and take `O(rules)` work per call.
 /// Forward-looking queries use a documented, bounded civil-day scan rather
 /// than an unbounded search.
+#[non_exhaustive]
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct MarketHours {
-    /// Which exchange these hours represent.
-    pub exchange: Exchange,
+    /// Which identity these hours represent.
+    ///
+    /// A venue-backed profile carries [`CalendarSource::Exchange`]; a
+    /// product-family profile carries [`CalendarSource::MarketHoursKey`]. The
+    /// field previously held a bare [`Exchange`] and was set to
+    /// [`Exchange::Unknown`] for every key-backed profile, which collided with
+    /// the crate's own 24x7-fallback sentinel.
+    pub source: CalendarSource,
     /// Exchange’s local time zone (used to interpret `SessionRule`s and handle DST).
     pub tz: Tz,
     /// Primary/pit ("regular") trading sessions (e.g., RTH for equities/futures).
@@ -57,6 +65,62 @@ pub struct MarketHours {
 }
 
 impl MarketHours {
+    /// Builds a profile for `source`.
+    ///
+    /// The struct is `#[non_exhaustive]`, so this is the constructor available
+    /// to callers outside the crate. `source` accepts an [`Exchange`], a
+    /// [`MarketHoursKey`](crate::MarketHoursKey), or a [`CalendarSource`]
+    /// directly.
+    ///
+    /// The built-in tables are reached through `hours_for_exchange`,
+    /// `hours_for_market_hours_key`, and their `as_of` variants; this exists for
+    /// callers modelling a venue the crate does not ship.
+    #[must_use]
+    pub fn new(
+        source: impl Into<CalendarSource>,
+        tz: Tz,
+        regular: Cow<'static, [SessionRule]>,
+        extended: Cow<'static, [SessionRule]>,
+        has_daily_close: bool,
+        has_weekend_close: bool,
+    ) -> Self {
+        Self {
+            source: source.into(),
+            tz,
+            regular,
+            extended,
+            has_daily_close,
+            has_weekend_close,
+        }
+    }
+
+    /// The identity these hours represent.
+    #[must_use]
+    pub const fn source(&self) -> CalendarSource {
+        self.source
+    }
+
+    /// The venue identity, or `None` when these hours are product-family keyed.
+    ///
+    /// Mirrors [`ExchangeCalendar::exchange`](crate::ExchangeCalendar::exchange)
+    /// so a value and the calendar that produced it answer identically.
+    #[must_use]
+    pub const fn exchange(&self) -> Option<Exchange> {
+        match self.source {
+            CalendarSource::Exchange(exchange) => Some(exchange),
+            CalendarSource::MarketHoursKey(_) => None,
+        }
+    }
+
+    /// The product-family identity, or `None` when these hours are venue keyed.
+    #[must_use]
+    pub const fn market_hours_key(&self) -> Option<crate::MarketHoursKey> {
+        match self.source {
+            CalendarSource::MarketHoursKey(key) => Some(key),
+            CalendarSource::Exchange(_) => None,
+        }
+    }
+
     /// Returns the number of distinct scheduled open seconds in this profile's
     /// normal week, consulting regular and extended sessions together.
     ///

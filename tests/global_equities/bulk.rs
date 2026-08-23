@@ -26,7 +26,7 @@ fn global_bulk_and_names_are_stable() {
             .collect::<Vec<_>>()
     );
     for ((exchange, name), hours) in expected.into_iter().zip(bulk) {
-        assert_eq!(hours.exchange, exchange);
+        assert_eq!(hours.exchange(), Some(exchange));
         assert_eq!(exchange.as_str(), name);
         assert_eq!(
             serde_json::to_string(&exchange).expect("serializes"),

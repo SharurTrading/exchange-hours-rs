@@ -106,7 +106,7 @@ fn independent_us_exchange_wires_and_bulk_order_are_stable() {
 
     let exchanges: Vec<_> = hours_for_us_equities()
         .into_iter()
-        .map(|hours| hours.exchange)
+        .filter_map(|hours| hours.exchange())
         .collect();
     let expected = [
         Exchange::Nasdaq,

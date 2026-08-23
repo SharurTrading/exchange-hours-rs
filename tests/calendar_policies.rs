@@ -624,6 +624,9 @@ fn session_state_and_trade_date_are_consistent_for_every_key() {
                 SessionState::Halt | SessionState::Maintenance | SessionState::Closed => {
                     assert!(!calendar.is_open(instant), "{key} at {instant}");
                 }
+                // SessionState is #[non_exhaustive]; a future state must not
+                // silently satisfy this assertion.
+                _ => panic!("unhandled SessionState variant at {instant} for {key}"),
             }
         }
         instant += Duration::hours(1);

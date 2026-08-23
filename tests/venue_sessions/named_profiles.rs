@@ -19,6 +19,37 @@ const EXPECTED_MARKET_HOURS_KEYS: &[(MarketHoursKey, &str)] = &[
     (MarketHoursKey::CfeVix, "cfe_vix"),
     (MarketHoursKey::Eurex, "eurex"),
     (MarketHoursKey::IceUs, "ice_us"),
+    (MarketHoursKey::IceUsSugar, "ice_us_sugar"),
+    (MarketHoursKey::IceUsCoffee, "ice_us_coffee"),
+    (MarketHoursKey::IceUsCocoa, "ice_us_cocoa"),
+    (MarketHoursKey::IceUsCotton, "ice_us_cotton"),
+    (MarketHoursKey::IceUsOrangeJuice, "ice_us_orange_juice"),
+    (MarketHoursKey::IceUsDollarIndex, "ice_us_dollar_index"),
+    (
+        MarketHoursKey::GlobexNikkei225Dollar,
+        "globex_nikkei_225_dollar",
+    ),
+    (MarketHoursKey::EurexFixedIncome, "eurex_fixed_income"),
+    (
+        MarketHoursKey::SgxEquityIndexJapan,
+        "sgx_equity_index_japan",
+    ),
+    (
+        MarketHoursKey::SgxEquityIndexChina,
+        "sgx_equity_index_china",
+    ),
+    (
+        MarketHoursKey::SgxEquityIndexSingapore,
+        "sgx_equity_index_singapore",
+    ),
+    (
+        MarketHoursKey::SgxEquityIndexTaiwan,
+        "sgx_equity_index_taiwan",
+    ),
+    (
+        MarketHoursKey::SgxEquityIndexNtrUsd,
+        "sgx_equity_index_ntr_usd",
+    ),
     (MarketHoursKey::Sgx, "sgx"),
     (MarketHoursKey::AlwaysOpen, "always_open"),
 ];

@@ -8,13 +8,22 @@ use super::{FuturesSessionProfile, MarketHoursKey};
 use crate::calendar::SessionRule;
 use crate::calendar::rule::ALL_DAYS;
 use crate::calendar::schedules::futures::international::{
-    EUREX_CURRENT_EXTENDED, EUREX_CURRENT_REGULAR, SGX_CURRENT_EXTENDED, SGX_CURRENT_REGULAR,
+    EUREX_CURRENT_EXTENDED, EUREX_CURRENT_REGULAR, EUREX_FIXED_INCOME_EXTENDED_CURRENT,
+    EUREX_FIXED_INCOME_REGULAR_CURRENT, SGX_CURRENT_EXTENDED, SGX_CURRENT_REGULAR,
+    SGX_EQUITY_INDEX_CHINA_EXTENDED_CURRENT, SGX_EQUITY_INDEX_CHINA_REGULAR_CURRENT,
+    SGX_EQUITY_INDEX_JAPAN_EXTENDED_CURRENT, SGX_EQUITY_INDEX_JAPAN_REGULAR_CURRENT,
+    SGX_EQUITY_INDEX_NTR_USD_EXTENDED_CURRENT, SGX_EQUITY_INDEX_NTR_USD_REGULAR_CURRENT,
+    SGX_EQUITY_INDEX_SINGAPORE_EXTENDED_CURRENT, SGX_EQUITY_INDEX_SINGAPORE_REGULAR_CURRENT,
+    SGX_EQUITY_INDEX_TAIWAN_EXTENDED_CURRENT, SGX_EQUITY_INDEX_TAIWAN_REGULAR_CURRENT,
 };
 use crate::calendar::schedules::futures::us::{
     CBOT_EXTENDED_CURRENT, CBOT_REGULAR_CURRENT, CFE_EXTENDED, CFE_REGULAR, CME_EXTENDED_CURRENT,
-    CME_REGULAR, CRYPTOCURRENCY_CURRENT, ENERGY_METALS_EXTENDED_CURRENT, FX_CURRENT,
-    ICE_US_FANG_EXTENDED_CURRENT, ICE_US_FANG_REGULAR_CURRENT, INTEREST_RATES_CURRENT,
-    LIVESTOCK_CURRENT,
+    CME_REGULAR, COCOA_EXTENDED_CURRENT, COCOA_REGULAR_CURRENT, COFFEE_EXTENDED_CURRENT,
+    COFFEE_REGULAR_CURRENT, COTTON_EXTENDED_CURRENT, COTTON_REGULAR_CURRENT,
+    CRYPTOCURRENCY_CURRENT, ENERGY_METALS_EXTENDED_CURRENT, FCOJ_EXTENDED_CURRENT,
+    FCOJ_REGULAR_CURRENT, FX_CURRENT, ICE_US_FANG_EXTENDED_CURRENT, ICE_US_FANG_REGULAR_CURRENT,
+    ICE_USDX_EXTENDED_CURRENT, ICE_USDX_REGULAR_CURRENT, INTEREST_RATES_CURRENT, LIVESTOCK_CURRENT,
+    NKD_EXTENDED_CURRENT, NKD_REGULAR_CURRENT, SUGAR_EXTENDED_CURRENT, SUGAR_REGULAR_CURRENT,
 };
 
 static ALWAYS_OPEN_RULE: &[SessionRule] = &[SessionRule {
@@ -71,6 +80,110 @@ static FUTURES_ICE_US: FuturesSessionProfile = FuturesSessionProfile {
     has_weekend_close: true,
 };
 
+static FUTURES_ICE_US_SUGAR: FuturesSessionProfile = FuturesSessionProfile {
+    tz: America::New_York,
+    regular: SUGAR_REGULAR_CURRENT,
+    extended: SUGAR_EXTENDED_CURRENT,
+    has_daily_close: true,
+    has_weekend_close: true,
+};
+
+static FUTURES_COFFEE: FuturesSessionProfile = FuturesSessionProfile {
+    tz: America::New_York,
+    regular: COFFEE_REGULAR_CURRENT,
+    extended: COFFEE_EXTENDED_CURRENT,
+    has_daily_close: true,
+    has_weekend_close: true,
+};
+
+static FUTURES_COCOA: FuturesSessionProfile = FuturesSessionProfile {
+    tz: America::New_York,
+    regular: COCOA_REGULAR_CURRENT,
+    extended: COCOA_EXTENDED_CURRENT,
+    has_daily_close: true,
+    has_weekend_close: true,
+};
+
+static FUTURES_COTTON: FuturesSessionProfile = FuturesSessionProfile {
+    tz: America::New_York,
+    regular: COTTON_REGULAR_CURRENT,
+    extended: COTTON_EXTENDED_CURRENT,
+    has_daily_close: true,
+    has_weekend_close: true,
+};
+
+static FUTURES_FCOJ: FuturesSessionProfile = FuturesSessionProfile {
+    tz: America::New_York,
+    regular: FCOJ_REGULAR_CURRENT,
+    extended: FCOJ_EXTENDED_CURRENT,
+    has_daily_close: true,
+    has_weekend_close: true,
+};
+
+static FUTURES_ICE_USDX: FuturesSessionProfile = FuturesSessionProfile {
+    tz: America::New_York,
+    regular: ICE_USDX_REGULAR_CURRENT,
+    extended: ICE_USDX_EXTENDED_CURRENT,
+    has_daily_close: true,
+    has_weekend_close: true,
+};
+
+static FUTURES_NKD: FuturesSessionProfile = FuturesSessionProfile {
+    tz: US::Central,
+    regular: NKD_REGULAR_CURRENT,
+    extended: NKD_EXTENDED_CURRENT,
+    has_daily_close: true,
+    has_weekend_close: true,
+};
+
+static FUTURES_EUREX_FIXED_INCOME: FuturesSessionProfile = FuturesSessionProfile {
+    tz: Europe::Berlin,
+    regular: EUREX_FIXED_INCOME_REGULAR_CURRENT,
+    extended: EUREX_FIXED_INCOME_EXTENDED_CURRENT,
+    has_daily_close: true,
+    has_weekend_close: true,
+};
+
+static FUTURES_SGX_EQUITY_INDEX_JAPAN: FuturesSessionProfile = FuturesSessionProfile {
+    tz: Asia::Singapore,
+    regular: SGX_EQUITY_INDEX_JAPAN_REGULAR_CURRENT,
+    extended: SGX_EQUITY_INDEX_JAPAN_EXTENDED_CURRENT,
+    has_daily_close: true,
+    has_weekend_close: true,
+};
+
+static FUTURES_SGX_EQUITY_INDEX_CHINA: FuturesSessionProfile = FuturesSessionProfile {
+    tz: Asia::Singapore,
+    regular: SGX_EQUITY_INDEX_CHINA_REGULAR_CURRENT,
+    extended: SGX_EQUITY_INDEX_CHINA_EXTENDED_CURRENT,
+    has_daily_close: true,
+    has_weekend_close: true,
+};
+
+static FUTURES_SGX_EQUITY_INDEX_SINGAPORE: FuturesSessionProfile = FuturesSessionProfile {
+    tz: Asia::Singapore,
+    regular: SGX_EQUITY_INDEX_SINGAPORE_REGULAR_CURRENT,
+    extended: SGX_EQUITY_INDEX_SINGAPORE_EXTENDED_CURRENT,
+    has_daily_close: true,
+    has_weekend_close: true,
+};
+
+static FUTURES_SGX_EQUITY_INDEX_TAIWAN: FuturesSessionProfile = FuturesSessionProfile {
+    tz: Asia::Singapore,
+    regular: SGX_EQUITY_INDEX_TAIWAN_REGULAR_CURRENT,
+    extended: SGX_EQUITY_INDEX_TAIWAN_EXTENDED_CURRENT,
+    has_daily_close: true,
+    has_weekend_close: true,
+};
+
+static FUTURES_SGX_EQUITY_INDEX_NTR_USD: FuturesSessionProfile = FuturesSessionProfile {
+    tz: Asia::Singapore,
+    regular: SGX_EQUITY_INDEX_NTR_USD_REGULAR_CURRENT,
+    extended: SGX_EQUITY_INDEX_NTR_USD_EXTENDED_CURRENT,
+    has_daily_close: true,
+    has_weekend_close: true,
+};
+
 static FUTURES_SGX: FuturesSessionProfile = FuturesSessionProfile {
     tz: Asia::Singapore,
     regular: SGX_CURRENT_REGULAR,
@@ -107,6 +220,19 @@ pub fn session_profile(key: MarketHoursKey) -> &'static FuturesSessionProfile {
         MarketHoursKey::CfeVix => &FUTURES_CFE_VIX,
         MarketHoursKey::Eurex => &FUTURES_EUREX,
         MarketHoursKey::IceUs => &FUTURES_ICE_US,
+        MarketHoursKey::IceUsSugar => &FUTURES_ICE_US_SUGAR,
+        MarketHoursKey::IceUsCoffee => &FUTURES_COFFEE,
+        MarketHoursKey::IceUsCocoa => &FUTURES_COCOA,
+        MarketHoursKey::IceUsCotton => &FUTURES_COTTON,
+        MarketHoursKey::IceUsOrangeJuice => &FUTURES_FCOJ,
+        MarketHoursKey::IceUsDollarIndex => &FUTURES_ICE_USDX,
+        MarketHoursKey::GlobexNikkei225Dollar => &FUTURES_NKD,
+        MarketHoursKey::EurexFixedIncome => &FUTURES_EUREX_FIXED_INCOME,
+        MarketHoursKey::SgxEquityIndexJapan => &FUTURES_SGX_EQUITY_INDEX_JAPAN,
+        MarketHoursKey::SgxEquityIndexChina => &FUTURES_SGX_EQUITY_INDEX_CHINA,
+        MarketHoursKey::SgxEquityIndexSingapore => &FUTURES_SGX_EQUITY_INDEX_SINGAPORE,
+        MarketHoursKey::SgxEquityIndexTaiwan => &FUTURES_SGX_EQUITY_INDEX_TAIWAN,
+        MarketHoursKey::SgxEquityIndexNtrUsd => &FUTURES_SGX_EQUITY_INDEX_NTR_USD,
         MarketHoursKey::Sgx => &FUTURES_SGX,
         MarketHoursKey::AlwaysOpen => &FUTURES_ALWAYS_OPEN,
     }

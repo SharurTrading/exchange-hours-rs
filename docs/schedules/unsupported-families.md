@@ -1,38 +1,37 @@
 <!-- SPDX-License-Identifier: MIT-0 -->
 
-# Unsupported futures families in 1.0
+# Ambiguous futures families
 
 `MarketHoursKey` identifies an exact product-family schedule, not an
-approximation selected from the same venue. The families below are deferred
-from 1.0 and targeted for primary-source evidence work in 1.1. Until a sourced
-profile is shipped, both `MarketHoursKey::from_str` and Serde reject these
-prospective identifiers:
+approximation selected from the same venue. Every family deferred from an
+earlier draft now ships with a primary-sourced profile. One prospective name
+remains rejected, and it is rejected on evidence rather than on effort:
 
-There are nine deferred families: CME Nikkei 225 Dollar plus six ICE Futures
-U.S. families, Eurex fixed income, and SGX equity indexes. The strings below
-are prospective names, not reserved wire identities; 1.0 tests require them to
-remain rejected until the corresponding sourced profile is actually added.
-
-| Prospective identifier | Unsupported family |
+| Prospective identifier | Why it does not resolve |
 |---|---|
-| `globex_nikkei_225_dollar` | CME Nikkei 225 Dollar futures (`NKD`) |
-| `ice_us_dollar_index` | ICE Futures U.S. U.S. Dollar Index futures |
-| `ice_us_sugar` | ICE Futures U.S. Sugar No. 11 futures |
-| `ice_us_coffee` | ICE Futures U.S. Coffee “C” futures |
-| `ice_us_cocoa` | ICE Futures U.S. Cocoa futures |
-| `ice_us_cotton` | ICE Futures U.S. Cotton No. 2 futures |
-| `ice_us_orange_juice` | ICE Futures U.S. FCOJ-A futures |
-| `eurex_fixed_income` | Eurex fixed-income futures |
-| `sgx_equity_index` | SGX equity-index futures |
+| `sgx_equity_index` | SGX equity-index products do not share a session grid |
 
-Consumers must report an unsupported-family error for these products. Do not
-substitute `IceUs`, `Eurex`, or `Sgx`: those existing keys deliberately model
-NYSE FANG+ Index futures, FESX/FDAX/FDXM index futures, and Three-Month SORA
-futures respectively, and their session grids are not venue-wide defaults.
-Likewise, do not substitute `GlobexEquityIndex` for NKD. The crate performs no
-symbol-to-family mapping; that refusal belongs in the caller's instrument
-catalog.
+SGX runs five materially different grids, all `Asia/Singapore`:
 
-Adding one of these names later is an explicit new supported identity. It
-requires a primary-sourced normal-week profile and history, date-aware routing,
-wire-format and boundary tests, and the usual verification-ledger update.
+| Key | T session |
+|---|---|
+| `sgx_equity_index_japan` | 07:30–14:55 |
+| `sgx_equity_index_china` | 09:00–16:30 |
+| `sgx_equity_index_singapore` | 08:30–17:20 |
+| `sgx_equity_index_taiwan` | 08:45–13:45 |
+| `sgx_equity_index_ntr_usd` | 07:25–18:30 |
+
+A single `sgx_equity_index` key would have to pick one of these and answer with
+it for all five. A Taiwan contract would report Singapore's 17:25 close — a
+wrong answer delivered with full confidence, which is the exact failure this
+crate exists to prevent. Select the specific grid instead.
+
+Nifty is also absent. It is no longer an SGX-listed product: SGX's 2018
+derivatives calendar lists `SGX Nifty 50`, while its 2025 and 2026 calendars
+list only NSE IFSC contracts under `GIN`/`GINB`/`GINF`/`GINI`. SGX's own 2026
+calendar and its GIFT Connect product page state different T+1 start times
+(18:35 versus 19:05), so no profile is modelled from contradicting primary
+sources.
+
+The crate performs no symbol-to-family mapping; refusing an unsupported product
+belongs in the caller's instrument catalog.

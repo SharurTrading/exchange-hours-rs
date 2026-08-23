@@ -160,7 +160,7 @@ assert_eq!(calendar.exchange(), None);
 | Always-open crypto | 1 | `UTC` | Binance USDⓈ-M perpetuals are normally 24×7 after their exact 2019-09-13 04:00 UTC launch. |
 
 Futures hours track the *product family*, not merely the listing venue.
-`MarketHoursKey` has 12 variants—11 operator-derived product-family keys plus
+`MarketHoursKey` has 25 variants—24 operator-derived product-family keys plus
 the synthetic `AlwaysOpen` key. They reuse profiles and are not additional
 venues. Fixed snapshots use `session_profile` /
 `hours_for_market_hours_key`; sourced dated revisions use
@@ -190,10 +190,12 @@ use their family keys rather than `Exchange::Cme` or `Exchange::Cbot`.
 
 Family selection is exact: consumers must never substitute the nearest venue
 or product-family key when a product is outside that key's documented scope.
-Nikkei 225 Dollar futures (`NKD`) and eight requested ICE/Eurex/SGX families
-are explicitly deferred from 1.0; all nine prospective names remain rejected.
+Nikkei 225 Dollar futures (`NKD`), the six ICE Futures U.S. families, and Eurex
+fixed income all ship as sourced keys. SGX equity-index products do **not**
+share one grid, so they ship as five separate keys and the ambiguous name
+`sgx_equity_index` stays rejected rather than resolving to one venue-wide clock.
 See
-[Unsupported futures families in 1.0](docs/schedules/unsupported-families.md).
+[Ambiguous futures families](docs/schedules/unsupported-families.md).
 
 The table contains 93 source-backed market identities. `Exchange::Unknown` is
 an additional synthetic 24×7 UTC fallback and is not counted as an exchange or
@@ -225,7 +227,7 @@ issue evidence. `Exchange::Unknown` is synthetic and is not one of the 93
 source-backed identities.
 
 The key surface was audited separately:
-**Primary-source-verified current key snapshots:** `11 of 11` operator-derived
+**Primary-source-verified current key snapshots:** `24 of 24` operator-derived
 `MarketHoursKey` values. The key API provides fixed-current snapshots, an
 `as_of` selector, and a date-aware calendar for sourced histories. Four key
 rows are **Primary** and seven CME-family rows are **Partial** because their
@@ -512,7 +514,7 @@ that callers do not also get (see [Architecture: Tests](ARCHITECTURE.md#tests)).
   JSE, Tadawul, B3, and BMV.
 - `tests/schedule_documentation.rs` and `tests/schedule_documentation/` — a
   thin harness over contracts that keep all 94 `Exchange` rows (93
-  non-synthetic plus `Unknown`) and 12 `MarketHoursKey` rows (11
+  non-synthetic plus `Unknown`) and 25 `MarketHoursKey` rows (24
   operator-derived plus `AlwaysOpen`) in canonical order; validates their
   review metadata and owner/source links; requires both current and
   notice/evidence channels for every source set; rejects orphaned source sets;

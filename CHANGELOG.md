@@ -11,6 +11,49 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ## [Unreleased]
 
+### Added
+
+- **Thirteen product-family keys, closing the deferred-family gap.** Every
+  futures family previously listed as unsupported now ships with a
+  primary-sourced profile: ICE Futures U.S. Sugar No. 11 (`ice_us_sugar`),
+  Coffee "C" (`ice_us_coffee`), Cocoa (`ice_us_cocoa`), Cotton No. 2
+  (`ice_us_cotton`), FCOJ-A (`ice_us_orange_juice`) and U.S. Dollar Index
+  (`ice_us_dollar_index`); CME Nikkei 225 Dollar
+  (`globex_nikkei_225_dollar`); and Eurex fixed income
+  (`eurex_fixed_income`). `MarketHoursKey` goes from 12 variants to 25.
+- **SGX equity index ships as five keys, not one.** Sourcing the schedules
+  showed SGX equity-index products do not share a grid: Japan 07:30–14:55,
+  China 09:00–16:30, Singapore 08:30–17:20, Taiwan 08:45–13:45, and the
+  NTR (USD) global grid 07:25–18:30, all `Asia/Singapore`. They ship as
+  `sgx_equity_index_japan`, `_china`, `_singapore`, `_taiwan` and
+  `_ntr_usd`. The ambiguous name `sgx_equity_index` stays rejected: a single
+  key would answer a Taiwan contract with Singapore's close, which is the
+  substitution the key API exists to prevent.
+
+### Notes
+
+- Fifteen dated cutovers were encoded from operator notices, each carrying its
+  verbatim quote and source URL — ICE Sugar 2012-01-30, 2012-11-05,
+  2014-02-03 and 2018-10-08; Coffee, Cocoa and Cotton 2014-02-03 and
+  2018-10-08; ICE USDX 2011-02-14; Eurex fixed income 2018-12-10 and
+  2019-02-25.
+- Two candidate cutovers were **rejected** rather than encoded. A CME NKD 2010
+  date was retrievable only from a third-party news aggregator, with the CME
+  URL returning 403 and no archive capture. An ICE Sugar 2012-03-12 notice is
+  titled "Temporary Change to Opening Time" and is a daylight-saving window
+  change, not a normal-week revision.
+- `globex_nikkei_225_dollar` is modelled current-only. Its two sourced CME
+  Special Executive Reports both leave the close at 16:15 CT while the
+  contract specification now states 16:00 CT, and no retrievable CME document
+  dates the difference. Encoding only the sourced rows would make every
+  present-day query return a wrong close, so the current grid is carried
+  across the window and the row is Partial.
+- The five SGX rows are Partial for the same reason: SGX's circular archive
+  exposes no day-level hours changes, so every transition is bracketed between
+  calendar PDFs but undated. No date was inferred to fill a gap.
+- Nifty is deliberately absent. It is an NSE IFSC product now, and SGX's own
+  2026 calendar and GIFT Connect product page state different T+1 start times.
+
 ## [1.0.0] - 2026-08-22
 
 First stable release. Version 1.0 establishes the canonical string identities,

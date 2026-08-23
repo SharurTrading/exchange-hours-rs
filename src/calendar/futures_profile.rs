@@ -24,6 +24,7 @@ use std::borrow::Cow;
 use chrono::{DateTime, Utc};
 use chrono_tz::Tz;
 
+use super::exchange_calendar::CalendarSource;
 use super::local_time::bounded_utc;
 use super::schedules::from_profile;
 use super::schedules::futures::international::{
@@ -38,7 +39,6 @@ use super::schedules::futures::us::{
     livestock_profile_at, nkd_profile_at, sugar_profile_at,
 };
 use super::{Exchange, MarketHours, SessionRule};
-use super::exchange_calendar::CalendarSource;
 
 /// A timezone-aware set of normal-week futures session rules.
 ///

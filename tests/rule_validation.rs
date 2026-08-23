@@ -123,13 +123,13 @@ fn equal_endpoints_span_one_local_day_across_dst_transitions() {
     let sunday = [false, false, false, false, false, false, true];
     let rule = SessionRule::new(sunday, 0, 0).expect("complete local-day rule");
     let hours = MarketHours::new(
-            Exchange::Unknown,
-            America::New_York,
-            Cow::Owned(vec![rule]),
-            Cow::Borrowed(&[]),
-            true,
-            true,
-        );
+        Exchange::Unknown,
+        America::New_York,
+        Cow::Owned(vec![rule]),
+        Cow::Borrowed(&[]),
+        true,
+        true,
+    );
     let et = |date: (i32, u32, u32), time: (u32, u32, u32)| {
         America::New_York
             .with_ymd_and_hms(date.0, date.1, date.2, time.0, time.1, time.2)
@@ -160,13 +160,13 @@ fn a_rule_collapsed_by_a_dst_gap_is_not_a_session_or_candle() {
     let rule = SessionRule::new(sunday, 2 * 3600 + 15 * 60, 2 * 3600 + 45 * 60)
         .expect("valid Sunday rule");
     let hours = MarketHours::new(
-            Exchange::Unknown,
-            America::New_York,
-            Cow::Owned(vec![rule]),
-            Cow::Borrowed(&[]),
-            true,
-            true,
-        );
+        Exchange::Unknown,
+        America::New_York,
+        Cow::Owned(vec![rule]),
+        Cow::Borrowed(&[]),
+        true,
+        true,
+    );
     let et = |date: (i32, u32, u32), time: (u32, u32, u32)| {
         America::New_York
             .with_ymd_and_hms(date.0, date.1, date.2, time.0, time.1, time.2)
@@ -203,13 +203,13 @@ fn a_dst_gap_cannot_invert_a_session_or_calendar_candle() {
     let rule = SessionRule::new(sunday, 2 * 3600 + 45 * 60 + 45, 2 * 3600 + 50 * 60 + 15)
         .expect("valid Sunday rule");
     let hours = MarketHours::new(
-            Exchange::Unknown,
-            America::New_York,
-            Cow::Owned(vec![rule]),
-            Cow::Borrowed(&[]),
-            true,
-            true,
-        );
+        Exchange::Unknown,
+        America::New_York,
+        Cow::Owned(vec![rule]),
+        Cow::Borrowed(&[]),
+        true,
+        true,
+    );
     let et = |date: (i32, u32, u32), time: (u32, u32, u32)| {
         America::New_York
             .with_ymd_and_hms(date.0, date.1, date.2, time.0, time.1, time.2)
@@ -242,13 +242,13 @@ fn a_partially_skipped_rule_opens_at_the_first_real_second() {
     let rule = SessionRule::new(sunday, 2 * 3600 + 15 * 60 + 15, 3 * 3600 + 15 * 60)
         .expect("valid second-granularity rule");
     let hours = MarketHours::new(
-            Exchange::Unknown,
-            America::New_York,
-            Cow::Owned(vec![rule]),
-            Cow::Borrowed(&[]),
-            true,
-            true,
-        );
+        Exchange::Unknown,
+        America::New_York,
+        Cow::Owned(vec![rule]),
+        Cow::Borrowed(&[]),
+        true,
+        true,
+    );
     let et = |time: (u32, u32, u32)| {
         America::New_York
             .with_ymd_and_hms(2025, 3, 9, time.0, time.1, time.2)
@@ -273,13 +273,13 @@ fn a_partially_skipped_close_lands_on_the_first_real_second() {
     let rule = SessionRule::new(sunday, 3600 + 30 * 60, 2 * 3600 + 45 * 60 + 45)
         .expect("valid second-granularity rule");
     let hours = MarketHours::new(
-            Exchange::Unknown,
-            America::New_York,
-            Cow::Owned(vec![rule]),
-            Cow::Borrowed(&[]),
-            true,
-            true,
-        );
+        Exchange::Unknown,
+        America::New_York,
+        Cow::Owned(vec![rule]),
+        Cow::Borrowed(&[]),
+        true,
+        true,
+    );
     let et = |time: (u32, u32, u32)| {
         America::New_York
             .with_ymd_and_hms(2025, 3, 9, time.0, time.1, time.2)
@@ -326,13 +326,13 @@ fn a_fall_back_session_spans_both_copies_of_the_repeated_hour() {
     let rule =
         SessionRule::new(sunday, 3600 + 30 * 60, 3600 + 45 * 60).expect("valid Sunday fold rule");
     let hours = MarketHours::new(
-            Exchange::Unknown,
-            America::New_York,
-            Cow::Owned(vec![rule]),
-            Cow::Borrowed(&[]),
-            true,
-            true,
-        );
+        Exchange::Unknown,
+        America::New_York,
+        Cow::Owned(vec![rule]),
+        Cow::Borrowed(&[]),
+        true,
+        true,
+    );
     let utc = |time: (u32, u32, u32)| {
         Utc.with_ymd_and_hms(2025, 11, 2, time.0, time.1, time.2)
             .single()
@@ -370,13 +370,13 @@ fn a_wrapping_session_uses_the_latest_fall_back_close() {
     let rule =
         SessionRule::new(saturday, 23 * 3600, 3600 + 30 * 60).expect("valid Saturday wrap rule");
     let hours = MarketHours::new(
-            Exchange::Unknown,
-            America::New_York,
-            Cow::Owned(vec![rule]),
-            Cow::Borrowed(&[]),
-            true,
-            true,
-        );
+        Exchange::Unknown,
+        America::New_York,
+        Cow::Owned(vec![rule]),
+        Cow::Borrowed(&[]),
+        true,
+        true,
+    );
     let utc = |date: (i32, u32, u32), time: (u32, u32, u32)| {
         Utc.with_ymd_and_hms(date.0, date.1, date.2, time.0, time.1, time.2)
             .single()

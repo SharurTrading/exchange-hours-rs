@@ -518,11 +518,31 @@ fn assert_key_basis_prose_matches_the_ledger(real_key_rows: &[&str]) {
     let key_partial = basis_count(real_key_rows, "Partial");
     let spelled = |n: usize| -> String {
         const WORDS: [&str; 21] = [
-            "Zero", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight",
-            "Nine", "Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen",
-            "Sixteen", "Seventeen", "Eighteen", "Nineteen", "Twenty",
+            "Zero",
+            "One",
+            "Two",
+            "Three",
+            "Four",
+            "Five",
+            "Six",
+            "Seven",
+            "Eight",
+            "Nine",
+            "Ten",
+            "Eleven",
+            "Twelve",
+            "Thirteen",
+            "Fourteen",
+            "Fifteen",
+            "Sixteen",
+            "Seventeen",
+            "Eighteen",
+            "Nineteen",
+            "Twenty",
         ];
-        WORDS.get(n).map_or_else(|| n.to_string(), ToString::to_string)
+        WORDS
+            .get(n)
+            .map_or_else(|| n.to_string(), ToString::to_string)
     };
     let key_split = format!(
         "{} key rows are **Primary** and {} are **Partial**",
@@ -542,5 +562,4 @@ fn assert_key_basis_prose_matches_the_ledger(real_key_rows: &[&str]) {
         )),
         "README headline product-family count drifted from the ledger"
     );
-
 }

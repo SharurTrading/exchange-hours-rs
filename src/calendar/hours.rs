@@ -21,9 +21,9 @@ use std::borrow::Cow;
 use chrono::{DateTime, NaiveDate, Utc};
 use chrono_tz::Tz;
 
+use super::exchange_calendar::CalendarSource;
 use super::query::{QueryContext, status, week};
 use super::{Exchange, SessionKind, SessionRule, SessionState};
-use super::exchange_calendar::CalendarSource;
 
 /// Normal-week trading-hours definition.
 ///

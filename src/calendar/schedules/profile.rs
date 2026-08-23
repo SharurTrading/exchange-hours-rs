@@ -6,8 +6,8 @@ use std::borrow::Cow;
 
 use chrono_tz::{America, Tz};
 
-use crate::calendar::{MarketHours, SessionRule};
 use crate::calendar::exchange_calendar::CalendarSource;
+use crate::calendar::{MarketHours, SessionRule};
 
 /// A venue's normal-week schedule in fully static form.
 ///

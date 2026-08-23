@@ -42,12 +42,23 @@ corrections (a venue's hours fixed against a primary source) go under
   URL returning 403 and no archive capture. An ICE Sugar 2012-03-12 notice is
   titled "Temporary Change to Opening Time" and is a daylight-saving window
   change, not a normal-week revision.
-- `globex_nikkei_225_dollar` is modelled current-only. Its two sourced CME
-  Special Executive Reports both leave the close at 16:15 CT while the
-  contract specification now states 16:00 CT, and no retrievable CME document
-  dates the difference. Encoding only the sourced rows would make every
-  present-day query return a wrong close, so the current grid is carried
-  across the window and the row is Partial.
+- `globex_nikkei_225_dollar` carries a fully dated timeline. A follow-up
+  sourcing pass found the previously undated close change: CME Globex Notice
+  #20150817 of 17 August 2015 moves the CME Equity close to 16:00 CT effective
+  Monday 2015-09-21, corroborated by CME's own NKD contract-specification
+  captures either side of the cutover. NKD therefore routes SER-6465 from
+  2012-11-18, the SER-6554R halt removal from 2013-03-03, and the 16:00 CT
+  close from 2015-09-20. The same notice supplies the original-announcement
+  citation for `globex_equity_index`'s existing 2015-09-20 revision. The row
+  stays Partial only because the pre-2012 evening open is carried back rather
+  than separately sourced.
+- The Sunday Globex pre-open queue's 16:15→16:00 move remains undated after a
+  read of 481 CME Globex Notices spanning 2008 to early 2016. It is bracketed
+  by primary evidence but never announced, so it stays omitted from
+  `globex_equity_index`, `globex_fx` and `globex_interest_rates` rather than
+  being inferred. The same pass established that `globex_fx` and
+  `globex_interest_rates` never had a 16:15 CT close to move — both already
+  closed at 16:00 CT before 2015 — so there was no gap there to close.
 - The five SGX rows are Partial for the same reason: SGX's circular archive
   exposes no day-level hours changes, so every transition is bracketed between
   calendar PDFs but undated. No date was inferred to fill a gap.

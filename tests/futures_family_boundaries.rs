@@ -1,0 +1,130 @@
+// SPDX-License-Identifier: MIT-0
+
+//! Dated-boundary contracts for the product-family keys added in 1.0.
+//!
+//! Each assertion probes an instant that falls on one side of a sourced cutover
+//! and would flip if the revision were mis-keyed or the profile mis-encoded. A
+//! 15-minute encoding slip is otherwise invisible to the rest of the suite.
+
+use chrono::{DateTime, TimeZone as _, Utc};
+use exchange_hours::{
+    MarketHoursKey, hours_for_market_hours_key, hours_for_market_hours_key_as_of,
+};
+
+/// Builds a UTC probe instant from literals. UTC has no ambiguous local times,
+/// so `single()` always resolves here; the epoch fallback keeps the helper total
+/// without a panic path, and any probe that somehow reached it would fail its
+/// assertion loudly rather than pass silently.
+fn utc(year: i32, month: u32, day: u32, hour: u32, minute: u32) -> DateTime<Utc> {
+    Utc.with_ymd_and_hms(year, month, day, hour, minute, 0)
+        .single()
+        .unwrap_or(DateTime::UNIX_EPOCH)
+}
+
+fn open_at(key: MarketHoursKey, instant: DateTime<Utc>) -> bool {
+    hours_for_market_hours_key_as_of(key, instant).is_open(instant)
+}
+
+/// Regular session only. The ICE families run order-entry phases outside the
+/// executable session, so `is_open` would answer true during a pre-open.
+fn open_regular_at(key: MarketHoursKey, instant: DateTime<Utc>) -> bool {
+    hours_for_market_hours_key_as_of(key, instant).is_open_regular(instant)
+}
+
+/// CME Nikkei 225 Dollar moved 15:15 CT -> 16:15 CT (2012), kept 16:15 CT after
+/// the halt removal (2013), then moved to 16:00 CT (2015-09-20, CME Globex
+/// Notice #20150817). 21:10Z is 16:10 CT on a US summer date, so it is inside
+/// the session only while the close is 16:15 CT.
+#[test]
+fn nkd_close_tracks_its_three_sourced_revisions() {
+    let key = MarketHoursKey::GlobexNikkei225Dollar;
+
+    assert!(
+        !open_at(key, utc(2011, 6, 15, 21, 10)),
+        "pre-2012 baseline closes 15:15 CT, so 16:10 CT must be closed"
+    );
+    assert!(
+        open_at(key, utc(2014, 6, 18, 21, 10)),
+        "between 2013-03-03 and 2015-09-19 the close is 16:15 CT, so 16:10 CT is open"
+    );
+    assert!(
+        !open_at(key, utc(2026, 6, 17, 21, 10)),
+        "from 2015-09-20 the close is 16:00 CT, so 16:10 CT must be closed"
+    );
+}
+
+/// The 2015-09-20 revision is keyed to the session-opening Sunday for trade date
+/// Monday 2015-09-21, matching `cme_group`. A revision mis-keyed to the Monday
+/// would leave the preceding session on the old profile.
+#[test]
+fn nkd_2015_revision_is_keyed_to_the_session_opening_day() {
+    let key = MarketHoursKey::GlobexNikkei225Dollar;
+
+    assert!(
+        open_at(key, utc(2015, 9, 17, 21, 10)),
+        "trade date 2015-09-17 still closes 16:15 CT"
+    );
+    assert!(
+        !open_at(key, utc(2015, 9, 21, 21, 10)),
+        "trade date 2015-09-21 is the first close at 16:00 CT"
+    );
+}
+
+/// ICE Sugar No. 11 moved its open across 2012 and its whole grid on
+/// 2014-02-03. 08:00Z is 03:00 NY in winter, before the current 03:30 open but
+/// after the 02:30 open in force between 2012-11-05 and 2014-01-31.
+#[test]
+fn ice_sugar_open_tracks_its_sourced_revisions() {
+    let key = MarketHoursKey::IceUsSugar;
+
+    assert!(
+        open_regular_at(key, utc(2013, 1, 16, 8, 0)),
+        "2012-11-05 through 2014-01-31 opens 02:30 NY, so 03:00 NY is executable"
+    );
+    assert!(
+        !open_regular_at(key, utc(2026, 1, 14, 8, 0)),
+        "from 2014-02-03 the open is 03:30 NY, so 03:00 NY is not yet executable"
+    );
+}
+
+/// The five SGX equity-index grids must disagree. If any two collapsed onto one
+/// profile, the crate would be substituting one market's hours for another's -
+/// the exact failure the split exists to prevent.
+#[test]
+fn sgx_equity_index_grids_do_not_collapse_onto_each_other() {
+    let keys = [
+        MarketHoursKey::SgxEquityIndexJapan,
+        MarketHoursKey::SgxEquityIndexChina,
+        MarketHoursKey::SgxEquityIndexSingapore,
+        MarketHoursKey::SgxEquityIndexTaiwan,
+        MarketHoursKey::SgxEquityIndexNtrUsd,
+    ];
+
+    // 08:00 Singapore on a Wednesday = 00:00Z. Japan (07:30) and NTR (07:25)
+    // have opened; China (09:00), Singapore (08:30) and Taiwan (08:45) have not.
+    let probe = utc(2026, 6, 17, 0, 0);
+    let open_count = keys.iter().filter(|&&key| open_at(key, probe)).count();
+
+    assert_eq!(
+        open_count, 2,
+        "at 08:00 Singapore exactly the Japan and NTR (USD) grids are open; \
+         a different count means two grids have collapsed together"
+    );
+}
+
+/// Every new key must expose a current snapshot without panicking, and the
+/// snapshot must agree with the dated selector at a present-day instant.
+#[test]
+fn current_snapshots_agree_with_dated_selectors_today() {
+    let now = utc(2026, 6, 17, 12, 0);
+    for key in MarketHoursKey::ALL {
+        let snapshot = hours_for_market_hours_key(*key);
+        let dated = hours_for_market_hours_key_as_of(*key, now);
+        assert_eq!(
+            snapshot.is_open(now),
+            dated.is_open(now),
+            "{}: fixed snapshot and dated selector disagree today",
+            key.as_str()
+        );
+    }
+}

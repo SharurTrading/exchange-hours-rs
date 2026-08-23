@@ -37,6 +37,15 @@ use crate::calendar::schedules::timeline::{Revision, effective_date, local_date,
 // https://www.cmegroup.com/tools-information/lookups/advisories/electronic-trading/20121022.html
 // https://www.cmegroup.com/tools-information/lookups/advisories/market-data/20121015.html
 // https://www.cmegroup.com/notices/clearing/2019/06/Chadv19-182.pdf
+// The 2015-09-20 revision's original announcement, CME Globex Notice #20150817
+// of 17 August 2015: "Effective Monday, September 21, the daily CME Globex
+// maintenance period will begin 15 minutes earlier Monday through Thursday from
+// 16:00 until 16:45 Central Time (CT). ... the closing times for the following
+// markets will now occur 15 minutes earlier Monday through Friday at 16:00 CT.
+// CME Equity / CBOT Equity / COMEX / NYMEX / DME. All other CME Globex markets
+// trading hours remain unchanged." The #20150914 repeat below carries the same
+// article with "Effective this Monday" wording.
+// https://www.cmegroup.com/tools-information/lookups/advisories/electronic-trading/20150817.html
 // https://www.cmegroup.com/tools-information/lookups/advisories/electronic-trading/20150914.html
 // https://www.cmegroup.com/tools-information/lookups/advisories/electronic-trading/20101025.html
 // https://www.cmegroup.com/notices/electronic-trading/2021/06/20210621.html

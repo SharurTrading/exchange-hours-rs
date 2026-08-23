@@ -185,8 +185,19 @@ The venue-keyed API retains these explicit defaults for compatibility:
 | `sgx` | `sgx` |
 
 Those defaults are the wrong choice for any product outside the named family.
-In particular, CME interest-rate, livestock, and cryptocurrency products must
-use their family keys rather than `Exchange::Cme` or `Exchange::Cbot`.
+CME interest-rate, livestock, and cryptocurrency products must use their family
+keys rather than `Exchange::Cme` or `Exchange::Cbot`. The same applies to the
+two venues whose default now covers only a small slice of what they list:
+`Exchange::Iceus` resolves to NYSE FANG+, so Sugar No. 11, Coffee "C", Cocoa,
+Cotton No. 2, FCOJ-A and the U.S. Dollar Index must select `ice_us_sugar`,
+`ice_us_coffee`, `ice_us_cocoa`, `ice_us_cotton`, `ice_us_orange_juice` or
+`ice_us_dollar_index`; `Exchange::Sgx` resolves to Three-Month SORA, so SGX
+equity-index products must select the matching grid: `sgx_equity_index_japan`,
+`sgx_equity_index_china`, `sgx_equity_index_singapore`,
+`sgx_equity_index_taiwan`, or `sgx_equity_index_ntr_usd`. Eurex
+fixed income likewise has its own `eurex_fixed_income` key, distinct from the
+`eurex` index-futures default, and Nikkei 225 Dollar uses
+`globex_nikkei_225_dollar` rather than `globex_equity_index`.
 
 Family selection is exact: consumers must never substitute the nearest venue
 or product-family key when a product is outside that key's documented scope.

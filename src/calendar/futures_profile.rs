@@ -26,11 +26,16 @@ use chrono_tz::Tz;
 
 use super::local_time::bounded_utc;
 use super::schedules::from_profile;
-use super::schedules::futures::international::{eurex_profile_at, sgx_profile_at};
+use super::schedules::futures::international::{
+    eurex_fixed_income_profile_at, eurex_profile_at, sgx_equity_index_china_profile_at,
+    sgx_equity_index_japan_profile_at, sgx_equity_index_ntr_usd_profile_at,
+    sgx_equity_index_singapore_profile_at, sgx_equity_index_taiwan_profile_at, sgx_profile_at,
+};
 use super::schedules::futures::us::{
-    cbot_profile_at, cfe_profile_at, cme_profile_at, cryptocurrency_profile_at,
-    energy_metals_profile_at, fx_profile_at, ice_us_fang_profile_at, interest_rates_profile_at,
-    livestock_profile_at,
+    cbot_profile_at, cfe_profile_at, cme_profile_at, cocoa_profile_at, coffee_profile_at,
+    cotton_profile_at, cryptocurrency_profile_at, energy_metals_profile_at, fcoj_profile_at,
+    fx_profile_at, ice_us_fang_profile_at, ice_usdx_profile_at, interest_rates_profile_at,
+    livestock_profile_at, nkd_profile_at, sugar_profile_at,
 };
 use super::{Exchange, MarketHours, SessionRule};
 
@@ -143,6 +148,34 @@ market_hours_keys! {
         Eurex => "eurex",
         /// ICE Futures U.S. NYSE FANG+ Index futures hours.
         IceUs => "ice_us",
+        /// ICE Futures U.S. Sugar No. 11 (`SB`) futures and options. One
+        /// same-day New York session with separate order-entry phases.
+        IceUsSugar => "ice_us_sugar",
+        /// ICE Futures U.S. Coffee \"C\" (`KC`) futures and options.
+        IceUsCoffee => "ice_us_coffee",
+        /// ICE Futures U.S. Cocoa (`CC`) futures and options.
+        IceUsCocoa => "ice_us_cocoa",
+        /// ICE Futures U.S. Cotton No. 2 (`CT`) futures and options.
+        IceUsCotton => "ice_us_cotton",
+        /// ICE Futures U.S. FCOJ-A frozen concentrated orange juice (`OJ`) futures.
+        IceUsOrangeJuice => "ice_us_orange_juice",
+        /// ICE Futures U.S. U.S. Dollar Index (`DX`) futures and options.
+        IceUsDollarIndex => "ice_us_dollar_index",
+        /// CME Nikkei 225 Dollar (`NKD`) futures on CME Globex.
+        GlobexNikkei225Dollar => "globex_nikkei_225_dollar",
+        /// Eurex fixed-income futures (`FGBL`/`FGBM`/`FGBS`/`FGBX`).
+        EurexFixedIncome => "eurex_fixed_income",
+        /// SGX Japan equity-index derivatives (Nikkei 225 suite).
+        SgxEquityIndexJapan => "sgx_equity_index_japan",
+        /// SGX China equity-index derivatives (FTSE China A50/H50).
+        SgxEquityIndexChina => "sgx_equity_index_china",
+        /// SGX Singapore equity-index derivatives (`SiMSCI`, Straits Times Index).
+        SgxEquityIndexSingapore => "sgx_equity_index_singapore",
+        /// SGX Taiwan equity-index derivatives (FTSE Taiwan suite).
+        SgxEquityIndexTaiwan => "sgx_equity_index_taiwan",
+        /// SGX NTR (USD) global equity-index futures.
+        SgxEquityIndexNtrUsd => "sgx_equity_index_ntr_usd",
+
         /// SGX Three-Month SORA Futures current profile.
         Sgx => "sgx",
         /// Continuous 24x7 UTC profile.
@@ -203,6 +236,19 @@ pub fn hours_for_market_hours_key_as_of(key: MarketHoursKey, as_of: DateTime<Utc
         MarketHoursKey::CfeVix => cfe_profile_at(as_of),
         MarketHoursKey::Eurex => eurex_profile_at(as_of),
         MarketHoursKey::IceUs => ice_us_fang_profile_at(as_of),
+        MarketHoursKey::IceUsSugar => sugar_profile_at(as_of),
+        MarketHoursKey::IceUsCoffee => coffee_profile_at(as_of),
+        MarketHoursKey::IceUsCocoa => cocoa_profile_at(as_of),
+        MarketHoursKey::IceUsCotton => cotton_profile_at(as_of),
+        MarketHoursKey::IceUsOrangeJuice => fcoj_profile_at(as_of),
+        MarketHoursKey::IceUsDollarIndex => ice_usdx_profile_at(as_of),
+        MarketHoursKey::GlobexNikkei225Dollar => nkd_profile_at(as_of),
+        MarketHoursKey::EurexFixedIncome => eurex_fixed_income_profile_at(as_of),
+        MarketHoursKey::SgxEquityIndexJapan => sgx_equity_index_japan_profile_at(as_of),
+        MarketHoursKey::SgxEquityIndexChina => sgx_equity_index_china_profile_at(as_of),
+        MarketHoursKey::SgxEquityIndexSingapore => sgx_equity_index_singapore_profile_at(as_of),
+        MarketHoursKey::SgxEquityIndexTaiwan => sgx_equity_index_taiwan_profile_at(as_of),
+        MarketHoursKey::SgxEquityIndexNtrUsd => sgx_equity_index_ntr_usd_profile_at(as_of),
         MarketHoursKey::Sgx => sgx_profile_at(as_of),
         MarketHoursKey::AlwaysOpen => return current,
     };

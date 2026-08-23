@@ -16,7 +16,7 @@ const AUDIT: &str = include_str!("../../docs/schedules/audit-2026-08-22.md");
 const DATE_EXCEPTIONS: &str = include_str!("../../docs/schedules/date-exceptions.md");
 const UNSUPPORTED_FAMILIES: &str = include_str!("../../docs/schedules/unsupported-families.md");
 
-const EXPECTED_MARKET_HOURS_KEY_NAMES: [&str; 12] = [
+const EXPECTED_MARKET_HOURS_KEY_NAMES: [&str; 25] = [
     "globex_equity_index",
     "globex_energy",
     "globex_grains",
@@ -27,6 +27,19 @@ const EXPECTED_MARKET_HOURS_KEY_NAMES: [&str; 12] = [
     "cfe_vix",
     "eurex",
     "ice_us",
+    "ice_us_sugar",
+    "ice_us_coffee",
+    "ice_us_cocoa",
+    "ice_us_cotton",
+    "ice_us_orange_juice",
+    "ice_us_dollar_index",
+    "globex_nikkei_225_dollar",
+    "eurex_fixed_income",
+    "sgx_equity_index_japan",
+    "sgx_equity_index_china",
+    "sgx_equity_index_singapore",
+    "sgx_equity_index_taiwan",
+    "sgx_equity_index_ntr_usd",
     "sgx",
     "always_open",
 ];
@@ -147,7 +160,7 @@ fn market_hours_key_selection_contract_is_explicit() {
         "stable persisted wire identity",
         "does **not** map symbols, roots, product codes, or MICs",
         "Those defaults are the wrong choice for any product outside the named family.",
-        "all nine prospective names remain rejected",
+        "the ambiguous name\n`sgx_equity_index` stays rejected",
     ] {
         assert!(
             README.contains(claim),
@@ -159,29 +172,22 @@ fn market_hours_key_selection_contract_is_explicit() {
         README.contains("docs/schedules/unsupported-families.md"),
         "README must link the explicit unsupported-family register"
     );
-    for prospective_name in [
-        "globex_nikkei_225_dollar",
-        "ice_us_dollar_index",
-        "ice_us_sugar",
-        "ice_us_coffee",
-        "ice_us_cocoa",
-        "ice_us_cotton",
-        "ice_us_orange_juice",
-        "eurex_fixed_income",
-        "sgx_equity_index",
+    for sourced_name in [
+        "sgx_equity_index_japan",
+        "sgx_equity_index_china",
+        "sgx_equity_index_singapore",
+        "sgx_equity_index_taiwan",
+        "sgx_equity_index_ntr_usd",
     ] {
         assert!(
-            UNSUPPORTED_FAMILIES.contains(prospective_name),
-            "unsupported-family register lost {prospective_name}"
+            UNSUPPORTED_FAMILIES.contains(sourced_name),
+            "register must name the specific grid that replaces the ambiguous key: \
+             {sourced_name}"
         );
     }
-    assert_eq!(
-        UNSUPPORTED_FAMILIES
-            .lines()
-            .filter(|line| line.starts_with("| `"))
-            .count(),
-        9,
-        "the README and unsupported-family register must agree on exactly nine entries"
+    assert!(
+        UNSUPPORTED_FAMILIES.contains("`sgx_equity_index` | SGX equity-index products do not"),
+        "register must state why the ambiguous name is refused"
     );
 }
 

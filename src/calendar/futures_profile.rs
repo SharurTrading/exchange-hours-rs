@@ -94,8 +94,9 @@ impl FuturesSessionProfile {
     ///
     /// The rule slices are borrowed (`Cow::Borrowed`), so this allocates
     /// nothing. The tag is passed by the caller because one shared profile can
-    /// back several venues — [`hours_for_market_hours_key`] tags with
-    /// [`Exchange::Unknown`] since the key, not a venue, identifies the profile.
+    /// back several identities — [`hours_for_market_hours_key`] tags with
+    /// [`CalendarSource::MarketHoursKey`] since the key, not a venue,
+    /// identifies the profile.
     #[must_use]
     pub fn to_market_hours(self, source: CalendarSource) -> MarketHours {
         MarketHours {
@@ -214,10 +215,10 @@ market_hours_keys! {
 /// [`session_bounds`](super::session_bounds), …) consumes.
 ///
 /// This borrows the same static [`FuturesSessionProfile`] table
-/// [`session_profile`] returns — not a second source of truth. The `exchange`
-/// tag is [`Exchange::Unknown`] because the key, not a venue enum, identifies
-/// these shared futures profiles. This function does not select historical
-/// revisions. For [`MarketHoursKey::GlobexCryptocurrency`], open/closed state
+/// [`session_profile`] returns — not a second source of truth. The source is
+/// [`CalendarSource::MarketHoursKey`] because the key, not a venue enum,
+/// identifies these shared futures profiles. This function does not select
+/// historical revisions. For [`MarketHoursKey::GlobexCryptocurrency`], open/closed state
 /// remains exact, but identity-dependent multi-day bounds, trade dates, and
 /// weekly candle boundaries are available only from
 /// [`calendar_for_market_hours_key`](super::calendar_for_market_hours_key).
@@ -275,5 +276,5 @@ pub fn hours_for_market_hours_key_as_of(key: MarketHoursKey, as_of: DateTime<Utc
         MarketHoursKey::Sgx => sgx_profile_at(as_of),
         MarketHoursKey::AlwaysOpen => return current,
     };
-    from_profile(Exchange::Unknown, profile)
+    from_profile(CalendarSource::MarketHoursKey(key), profile)
 }

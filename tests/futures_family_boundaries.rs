@@ -34,14 +34,24 @@ fn open_regular_at(key: MarketHoursKey, instant: DateTime<Utc>) -> bool {
 /// CME Nikkei 225 Dollar moved 15:15 CT -> 16:15 CT (2012), kept 16:15 CT after
 /// the halt removal (2013), then moved to 16:00 CT (2015-09-20, CME Globex
 /// Notice #20150817). 21:10Z is 16:10 CT on a US summer date, so it is inside
-/// the session only while the close is 16:15 CT.
+/// the session only while the close is 16:15 CT. Before 2012-11-18 the dated
+/// route returns no session at all: the pre-2012 evening open is not
+/// primary-sourced, so the interval is omitted rather than filled with the
+/// post-2012 grid.
 #[test]
 fn nkd_close_tracks_its_three_sourced_revisions() {
     let key = MarketHoursKey::GlobexNikkei225Dollar;
 
+    // 18:30 CT on a Wednesday evening: inside the post-2012 envelope, but
+    // pre-2012 dates are sessionless, so the dated surface must not fabricate
+    // a session boundary for an unsourced era.
+    assert!(
+        !open_at(key, utc(2011, 6, 15, 23, 30)),
+        "pre-2012 dates return no session; the evening open of that era is not sourced"
+    );
     assert!(
         !open_at(key, utc(2011, 6, 15, 21, 10)),
-        "pre-2012 baseline closes 15:15 CT, so 16:10 CT must be closed"
+        "with no pre-2012 session there is nothing open at 16:10 CT either"
     );
     assert!(
         open_at(key, utc(2014, 6, 18, 21, 10)),
@@ -64,9 +74,17 @@ fn nkd_2015_revision_is_keyed_to_the_session_opening_day() {
         open_at(key, utc(2015, 9, 17, 21, 10)),
         "trade date 2015-09-17 still closes 16:15 CT"
     );
+    // Select the snapshot after the Sunday 2015-09-20 17:00 CT opening
+    // (22:01Z). A selector mis-keyed to the Monday civil date still returns
+    // the old profile here, so this probes the opening-day key itself.
+    let monday_session = hours_for_market_hours_key_as_of(key, utc(2015, 9, 20, 22, 1));
     assert!(
-        !open_at(key, utc(2015, 9, 21, 21, 10)),
+        !monday_session.is_open(utc(2015, 9, 21, 21, 10)),
         "trade date 2015-09-21 is the first close at 16:00 CT"
+    );
+    assert!(
+        monday_session.is_open(utc(2015, 9, 21, 20, 50)),
+        "the Monday session itself still trades through 15:50 CT"
     );
 }
 

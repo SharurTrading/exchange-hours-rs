@@ -580,11 +580,11 @@ ice_us_cocoa | regular  | MoTuWeThFr---- | 04:45:00-13:30:00
 ice_us_cocoa | extended | (none)
 ice_us_cocoa | order-en | MoTuWeThFr---- | 14:00:00-18:00:00
 ice_us_cocoa | order-en | MoTuWeTh------ | 20:00:00-04:45:00 +1d
-ice_us_cotton | tz America/New_York | week_open_seconds 312000
-ice_us_cotton | regular  | MoTuWeTh----Su | 21:00:00-14:20:00 +1d
+ice_us_cotton | tz America/New_York | week_open_seconds 249600
+ice_us_cotton | regular  | MoTuWeTh------ | 21:00:00-14:20:00 +1d
 ice_us_cotton | extended | (none)
 ice_us_cotton | order-en | MoTuWeThFr---- | 14:50:00-18:00:00
-ice_us_cotton | order-en | MoTuWeTh----Su | 19:30:00-21:00:00
+ice_us_cotton | order-en | MoTuWeTh------ | 19:30:00-21:00:00
 ice_us_orange_juice | tz America/New_York | week_open_seconds 108000
 ice_us_orange_juice | regular  | MoTuWeThFr---- | 08:00:00-14:00:00
 ice_us_orange_juice | extended | (none)

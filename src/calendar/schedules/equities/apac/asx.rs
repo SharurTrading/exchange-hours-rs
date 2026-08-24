@@ -31,8 +31,10 @@ static ASX_REGULAR: &[SessionRule] = &[SessionRule {
 // venue default still defers continuous trading to 10:00, so 09:59–10:00 stays
 // extended rather than regular.
 static ASX_EXTENDED_CURRENT: &[SessionRule] = &[
-    // Pre-open: no matching, but overnight/overseas and allowable trades report
-    // and print here. See the note on ASX_ORDER_ENTRY_CURRENT.
+    // Pre-open: ASX Trade does not match here, but overnight and overseas
+    // trades report until 09:45 and other allowable trades may be reported
+    // under the Operating Rules — reported trades print, so a price can occur
+    // and the window is tradeable extended, never order-entry.
     SessionRule {
         days: MON_FRI,
         open_ssm: 7 * 3600,
@@ -50,17 +52,11 @@ static ASX_EXTENDED_CURRENT: &[SessionRule] = &[
     },
 ];
 
-// Order entry only: no trade can print in either window. Pre-open is documented
-// as "ASX Trade does not match orders" — orders are queued in price/time
-// priority until the opening auction. Pre-CSPA is the phase in which
-// "continuous matching ceases" and only entry and amendment are accepted, ahead
-// of the 16:10 CSPA uncrossing.
-// Pre-open is TRADEABLE, not order-entry-only. ASX Trade does not MATCH in it,
-// but the same source states "Overnight and overseas trades may be reported
-// until 9:45:00" and that allowable trades may be reported under the ASX
-// Operating Rules — reported trades print on the tape, so a price can occur.
-// Only Pre-CSPA is genuinely order-entry-only: continuous matching has ceased
-// and nothing prints before the 16:10 CSPA uncross.
+// Order entry only: the one window in which no trade can print is Pre-CSPA
+// 16:00–16:10, the phase in which "continuous matching ceases" and only entry
+// and amendment are accepted, ahead of the 16:10 CSPA uncrossing. Pre-open is
+// not here: ASX Trade does not match in it, but reported overnight, overseas
+// and allowable trades print, so it stays tradeable in `extended`.
 static ASX_ORDER_ENTRY_CURRENT: &[SessionRule] = &[SessionRule {
     days: MON_FRI,
     open_ssm: 16 * 3600,
@@ -98,9 +94,9 @@ static ASX_EXTENDED_PRE_2025_06_23: &[SessionRule] = &[
     },
 ];
 
-// Order entry only in the pre-SR15 era: Pre-open matched nothing before the
-// first group transition, and Pre-CSPA 16:00–16:10 accepted entry and amendment
-// with continuous matching already ceased.
+// Order entry only in the pre-SR15 era: Pre-CSPA 16:00–16:10, with continuous
+// matching ceased and only entry and amendment accepted. Pre-open stayed
+// tradeable for the same reported-trades reason as the current era.
 static ASX_ORDER_ENTRY_PRE_2025_06_23: &[SessionRule] = &[SessionRule {
     days: MON_FRI,
     open_ssm: 16 * 3600,

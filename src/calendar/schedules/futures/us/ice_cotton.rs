@@ -5,7 +5,7 @@
 use chrono_tz::America;
 
 use crate::calendar::SessionRule;
-use crate::calendar::rule::{MON_FRI, SUN_PLUS_MON_THU};
+use crate::calendar::rule::{MON_THU, MON_FRI};
 use crate::calendar::schedules::StaticHoursProfile;
 use crate::calendar::schedules::timeline::{Revision, local_date, revisions, select_revision};
 
@@ -19,46 +19,26 @@ use crate::calendar::schedules::timeline::{Revision, local_date, revisions, sele
 // puts the daily settlement window at 14:14 - 14:15, so 14:20 is the session end
 // on every trade date, not just ordinary ones.
 //
-// SUNDAY EVENING. The evening open is modelled on Sunday as well as Monday
-// through Thursday, at the ordinary 21:00 - there is no Sunday carve-out for
-// Cotton. Three primary-source strands force this reading:
+// SUNDAY EVENING — A KNOWN GAP, NOT A MODELLED PHASE. The master-table row
+// "*Trading commences on previous business day." pins Monday-Thursday
+// evening opens: each of those evenings is the previous business day of the
+// next trade date. No ICE primary document names Sunday in connection with
+// Cotton No. 2 — the product page carries no day names, and the master
+// table's explicit Sunday footnotes ("**... on Sunday evenings only trading
+// commences at 18:00", "*** ... 17:50") belong to other products. A Sunday
+// 21:00 open is the only reading consistent with the holiday notices (the
+// 2021 Labor Day notice runs "Mon, Sep 6 Closed / Tue, Sep 7 Regular Hours",
+// and the 2025 Good Friday notice gives Cotton "Regular Hours" on the Monday
+// while the morning-opening softs take a late open), but that reading is
+// assembled from indirect material rather than stated by any ICE sentence.
+// Under LAW-PRIMARY-SOURCES an unasserted phase is omitted, so the Sunday
+// evening open and its pre-open are modelled as closed; the documented
+// weekend boundary is therefore Friday 14:20 to Monday 19:30 NY.
 //
-//   (a) In the ICE master table Cotton carries ONLY the single asterisk,
-//       "*Trading commences on previous business day." The Sunday carve-outs
-//       belong to the other footnote markers and to other products: "**Trading
-//       commences on previous business day and on Sunday evenings only trading
-//       commences at 18:00" (USDX, currency pairs, daily gold/silver, the index
-//       futures, digital asset) and "*** ... on Sunday evenings only trading
-//       commences at 17:50" (natural gas, power, environmental, oil). Cotton is
-//       in neither group, so nothing displaces its Sunday open from 21:00.
-//   (b) ICE holiday notices show the 21:00 evening open belongs to the NEXT
-//       trade date regardless of which calendar day that evening falls on. The
-//       2021 Labor Day notice reads "Mon, Sep 6  Closed" / "Tue, Sep 7  Regular
-//       Hours", i.e. Tuesday's session commenced at 21:00 on the Monday holiday
-//       evening. Reading "previous BUSINESS day" literally would put Tuesday's
-//       open on the preceding Friday, which the notice contradicts; ICE's
-//       wording therefore means the prior calendar evening, and for a Monday
-//       trade date that evening is Sunday.
-//   (c) The Good Friday notices settle it. After a Friday closure the
-//       morning-opening softs need a delayed Monday start while Cotton does
-//       not - 2025 Good Friday notice, Mon Apr 21 row, verbatim: "Sugar No. 11,
-//       Coffee "C" and Cocoa - late open at 7:30 am. Regular Hours for all other
-//       contracts." (the 2022 notice uses identical wording for Mon Apr 18).
-//       Cotton being on Regular Hours that Monday is only possible if its
-//       Monday session had already opened on the Sunday evening. The contrast
-//       case confirms the mechanism: when a Thursday/Friday holiday does kill
-//       Cotton's evening open, Cotton gets the late open too - 2025 Christmas
-//       notice, Fri Dec 26 row: "Late Open for Coffee "C", Cocoa, Cotton No. 2
-//       and Sugar 11 - 7:30 am".
-//
-// CAVEAT: no ICE primary document uses the word "Sunday" in connection with
-// Cotton No. 2. The Sunday open encoded here is the only reading consistent with
-// the primary sources, but it is assembled from them rather than stated outright
-// in any one ICE sentence. Treat it as a sourced inference, not a quotation.
-//
-// WEEKEND WRAP: the week therefore runs Sunday 19:30 pre-open / 21:00 open
-// through Friday 14:20 close. There is no Friday-evening open, because a Friday
-// 21:00 open would belong to a Saturday trade date, which does not exist.
+// WEEKEND WRAP: the modelled week runs Monday 19:30 pre-open / 21:00 open
+// through Friday 14:20 close. There is no Friday-evening open, because a
+// Friday 21:00 open would belong to a Saturday trade date, which does not
+// exist.
 //
 // https://www.ice.com/publicdocs/futures_us/ICE_Futures_US_Regular_Trading_Hours.pdf
 // https://www.ice.com/products/254/cotton-no-2-futures
@@ -68,7 +48,7 @@ use crate::calendar::schedules::timeline::{Revision, local_date, revisions, sele
 // https://www.ice.com/publicdocs/futures_us/exchange_notices/ICE_Futures_US_2025_GoodFridayHoliday20250210.pdf
 // https://www.ice.com/publicdocs/futures_us/exchange_notices/ICE_Futures_US_2025_Christmas_Holiday_20251031.pdf
 pub(crate) static COTTON_REGULAR_CURRENT: &[SessionRule] = &[SessionRule {
-    days: SUN_PLUS_MON_THU,
+    days: MON_THU,
     open_ssm: 21 * 3600,
     close_ssm: 14 * 3600 + 20 * 60,
 }];
@@ -77,7 +57,7 @@ pub(crate) static COTTON_REGULAR_CURRENT: &[SessionRule] = &[SessionRule {
 //
 // The regular Pre-Open / Pre-Trading Session runs 19:30 - 21:00 NY immediately
 // before each open, so it carries the same opening-day mask as the executable
-// session, Sunday included. The product page gives Pre-Open "7:30 PM" / "19:30",
+// session. The product page gives Pre-Open "7:30 PM" / "19:30",
 // and the 2018 PCPO notice's own table lists Cotton No. 2 with Pre-Open Start
 // 7:30 PM and End 9:00 PM. Only Limit orders are accepted (Rule 4.22(a):
 // "Prior to the opening of a trading session for an Exchange Commodity
@@ -116,7 +96,7 @@ pub(crate) static COTTON_ORDER_ENTRY_CURRENT: &[SessionRule] = &[
         close_ssm: 18 * 3600,
     },
     SessionRule {
-        days: SUN_PLUS_MON_THU,
+        days: MON_THU,
         open_ssm: 19 * 3600 + 30 * 60,
         close_ssm: 21 * 3600,
     },
@@ -138,7 +118,7 @@ pub(crate) static COTTON_CURRENT: StaticHoursProfile = StaticHoursProfile {
 // the non-executable grid in this regime - and, being order entry under Rule
 // 4.22(a), it sits in order_entry, leaving these eras with no extended phase.
 static COTTON_ORDER_ENTRY_2014: &[SessionRule] = &[SessionRule {
-    days: SUN_PLUS_MON_THU,
+    days: MON_THU,
     open_ssm: 19 * 3600 + 30 * 60,
     close_ssm: 21 * 3600,
 }];
@@ -165,7 +145,7 @@ static COTTON_2014: StaticHoursProfile = StaticHoursProfile {
 //
 // https://www.ice.com/publicdocs/futures_us/exchange_notices/ExNot012714Hours.pdf
 static COTTON_REGULAR_BASELINE: &[SessionRule] = &[SessionRule {
-    days: SUN_PLUS_MON_THU,
+    days: MON_THU,
     open_ssm: 21 * 3600,
     close_ssm: 14 * 3600 + 30 * 60,
 }];

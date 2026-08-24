@@ -67,9 +67,9 @@ pub(crate) static NKD_CURRENT: StaticHoursProfile = StaticHoursProfile {
     has_weekend_close: true,
 };
 
-// NKD now carries a fully dated timeline. The 16:15 -> 16:00 CT close, which
-// was previously undatable and forced this family to be modelled current-only,
-// is dated by CME Globex Notice #20150817 of 17 August 2015:
+// NKD now carries a dated timeline from 2012-11-18. The 16:15 -> 16:00 CT
+// close, which was previously undatable and forced this family to be modelled
+// current-only, is dated by CME Globex Notice #20150817 of 17 August 2015:
 //
 //   "Effective Monday, September 21, the daily CME Globex maintenance period
 //    will begin 15 minutes earlier Monday through Thursday from 16:00 until
@@ -131,22 +131,19 @@ static NKD_2012: StaticHoursProfile = StaticHoursProfile {
     has_weekend_close: true,
 };
 
-// Baseline before 2012-11-18. SER-6465 describes the change it makes as
-// extending the close from 15:15 CT, which pins the outgoing close; the 17:00 CT
-// evening open is carried back from the post-2012 grid because no primary source
-// in the audited set states the pre-2012 open separately. A 2010 change to the
-// NKD grid is also known to have occurred, but its only retrievable statement is
-// a third-party news aggregator, so it is not dated here.
-static NKD_REGULAR_BASELINE: &[SessionRule] = &[SessionRule {
-    days: SUN_PLUS_MON_THU,
-    open_ssm: 17 * 3600,
-    close_ssm: 15 * 3600 + 15 * 60,
-}];
-
-pub(crate) static NKD_BASELINE: StaticHoursProfile = StaticHoursProfile {
+// Before 2012-11-18 the dated route returns no session. SER-6465 pins the
+// outgoing 15:15 CT close by describing the change as extending it, but no
+// primary source in the audited set states the pre-2012 evening open
+// separately, and a 2010 grid change is attested only by a third-party news
+// aggregator. Carrying the post-2012 17:00 CT open back would fabricate a
+// session boundary (LAW-NO-FABRICATED-DATES), so dates before the first fully
+// sourced profile are modelled sessionless, matching the pre-launch treatment
+// of launch-dated families. Callers needing a current NKD clock always have
+// `hours_for_market_hours_key`.
+static CLOSED: StaticHoursProfile = StaticHoursProfile {
     tz: US::Central,
-    regular: NKD_REGULAR_BASELINE,
-    extended: NKD_EXTENDED_CURRENT,
+    regular: &[],
+    extended: &[],
     order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
@@ -171,6 +168,10 @@ pub(crate) static NKD_REVISIONS: &[Revision] = revisions![
 ];
 
 /// Selects the CME Nikkei 225 Dollar profile in force on `as_of`'s Chicago day.
+///
+/// Dates before the first fully sourced profile (2012-11-18) return a
+/// sessionless profile: the pre-2012 evening open is not primary-sourced, so
+/// the interval is omitted rather than filled with an inferred grid.
 pub(crate) fn nkd_profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {
-    select_revision(local_date(as_of, US::Central), &NKD_BASELINE, NKD_REVISIONS)
+    select_revision(local_date(as_of, US::Central), &CLOSED, NKD_REVISIONS)
 }

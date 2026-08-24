@@ -30,6 +30,15 @@ corrections (a venue's hours fixed against a primary source) go under
   key would answer a Taiwan contract with Singapore's close, which is the
   substitution the key API exists to prevent.
 
+### Fixed
+
+- **ICE Cotton's Sunday evening open is no longer asserted.** The Sunday
+  21:00 NY opening (and its 19:30 pre-open) was a sourced inference: three
+  primary-source strands pointed at it, but no ICE document names Sunday for
+  Cotton No. 2. Under the crate's primary-source law an unasserted phase is
+  omitted, so the modelled week now runs Monday 19:30 through Friday 14:20
+  and Sunday evenings read closed until ICE states otherwise.
+
 ### Notes
 
 - Every revision timeline row now carries its primary-source citation in the
@@ -47,16 +56,17 @@ corrections (a venue's hours fixed against a primary source) go under
   URL returning 403 and no archive capture. An ICE Sugar 2012-03-12 notice is
   titled "Temporary Change to Opening Time" and is a daylight-saving window
   change, not a normal-week revision.
-- `globex_nikkei_225_dollar` carries a fully dated timeline. A follow-up
-  sourcing pass found the previously undated close change: CME Globex Notice
-  #20150817 of 17 August 2015 moves the CME Equity close to 16:00 CT effective
-  Monday 2015-09-21, corroborated by CME's own NKD contract-specification
-  captures either side of the cutover. NKD therefore routes SER-6465 from
-  2012-11-18, the SER-6554R halt removal from 2013-03-03, and the 16:00 CT
-  close from 2015-09-20. The same notice supplies the original-announcement
-  citation for `globex_equity_index`'s existing 2015-09-20 revision. The row
-  stays Partial only because the pre-2012 evening open is carried back rather
-  than separately sourced.
+- `globex_nikkei_225_dollar` carries a dated timeline from 2012-11-18. A
+  follow-up sourcing pass found the previously undated close change: CME
+  Globex Notice #20150817 of 17 August 2015 moves the CME Equity close to
+  16:00 CT effective Monday 2015-09-21, corroborated by CME's own NKD
+  contract-specification captures either side of the cutover. NKD therefore
+  routes SER-6465 from 2012-11-18, the SER-6554R halt removal from
+  2013-03-03, and the 16:00 CT close from 2015-09-20. The same notice
+  supplies the original-announcement citation for `globex_equity_index`'s
+  existing 2015-09-20 revision. The row stays Partial because the pre-2012
+  interval is omitted: no primary source states the pre-2012 evening open, so
+  pre-2012 dated queries return no session rather than an inferred grid.
 - The Sunday Globex pre-open queue's 16:15→16:00 move remains undated after a
   read of 481 CME Globex Notices spanning 2008 to early 2016. It is bracketed
   by primary evidence but never announced, so it stays omitted from

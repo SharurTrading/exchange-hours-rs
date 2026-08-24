@@ -33,7 +33,15 @@ pub(crate) static SUGAR_REGULAR_CURRENT: &[SessionRule] = &[SessionRule {
 // Two order-entry-only phases: the post-close pre-open ("PCPO") beginning 30
 // minutes after the 13:00 close, and the regular pre-open from 20:00 running to
 // the next morning's open.
-pub(crate) static SUGAR_EXTENDED_CURRENT: &[SessionRule] = &[
+//
+// Both are classified order_entry, not extended: neither matches. The 2018
+// notice that created the PCPO calls it an extension of the "pre-open order
+// entry session" and kills Day orders entered in it at its end, and the
+// pre-open only accepts orders ahead of the Opening Match that occurs at the
+// open itself. Sugar No. 11 publishes no tradeable phase outside its executable
+// session, so the extended slice is empty.
+pub(crate) static SUGAR_EXTENDED_CURRENT: &[SessionRule] = &[];
+pub(crate) static SUGAR_ORDER_ENTRY_CURRENT: &[SessionRule] = &[
     SessionRule {
         days: MON_FRI,
         open_ssm: 13 * 3600 + 30 * 60,
@@ -50,14 +58,17 @@ pub(crate) static SUGAR_CURRENT: StaticHoursProfile = StaticHoursProfile {
     tz: America::New_York,
     regular: SUGAR_REGULAR_CURRENT,
     extended: SUGAR_EXTENDED_CURRENT,
-    order_entry: &[],
+    order_entry: SUGAR_ORDER_ENTRY_CURRENT,
     has_daily_close: true,
     has_weekend_close: true,
 };
 
 // 2014-02-03 through 2018-10-05: the executable session is already today's
-// 03:30-13:00 grid, but the PCPO order-entry window does not exist yet.
-static SUGAR_EXTENDED_2014: &[SessionRule] = &[SessionRule {
+// 03:30-13:00 grid, but the PCPO order-entry window does not exist yet, leaving
+// the 20:00 pre-open as the only non-executable phase. It is order entry for
+// the same reason as the current one, so these eras carry an empty extended
+// slice too.
+static SUGAR_ORDER_ENTRY_2014: &[SessionRule] = &[SessionRule {
     days: MON_THU,
     open_ssm: 20 * 3600,
     close_ssm: 3 * 3600 + 30 * 60,
@@ -66,8 +77,8 @@ static SUGAR_EXTENDED_2014: &[SessionRule] = &[SessionRule {
 static SUGAR_2014: StaticHoursProfile = StaticHoursProfile {
     tz: America::New_York,
     regular: SUGAR_REGULAR_CURRENT,
-    extended: SUGAR_EXTENDED_2014,
-    order_entry: &[],
+    extended: &[],
+    order_entry: SUGAR_ORDER_ENTRY_2014,
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -82,8 +93,8 @@ static SUGAR_REGULAR_2012_NOV: &[SessionRule] = &[SessionRule {
 static SUGAR_2012_NOV: StaticHoursProfile = StaticHoursProfile {
     tz: America::New_York,
     regular: SUGAR_REGULAR_2012_NOV,
-    extended: SUGAR_EXTENDED_2014,
-    order_entry: &[],
+    extended: &[],
+    order_entry: SUGAR_ORDER_ENTRY_2014,
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -101,8 +112,8 @@ static SUGAR_REGULAR_2012_JAN: &[SessionRule] = &[SessionRule {
 static SUGAR_2012_JAN: StaticHoursProfile = StaticHoursProfile {
     tz: America::New_York,
     regular: SUGAR_REGULAR_2012_JAN,
-    extended: SUGAR_EXTENDED_2014,
-    order_entry: &[],
+    extended: &[],
+    order_entry: SUGAR_ORDER_ENTRY_2014,
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -125,8 +136,8 @@ static SUGAR_REGULAR_BASELINE: &[SessionRule] = &[SessionRule {
 pub(crate) static SUGAR_BASELINE: StaticHoursProfile = StaticHoursProfile {
     tz: America::New_York,
     regular: SUGAR_REGULAR_BASELINE,
-    extended: SUGAR_EXTENDED_2014,
-    order_entry: &[],
+    extended: &[],
+    order_entry: SUGAR_ORDER_ENTRY_2014,
     has_daily_close: true,
     has_weekend_close: true,
 };

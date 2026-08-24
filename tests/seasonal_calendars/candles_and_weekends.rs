@@ -80,7 +80,9 @@ fn launch_day_candle_starts_do_not_require_a_prelaunch_close() {
     let sgx_instant = local(singapore, (2024, 7, 29), (12, 0, 0));
     assert_eq!(
         sgx.candle_start(sgx_instant, CalendarResolution::Daily),
-        Some(local(singapore, (2024, 7, 29), (7, 10, 0)))
+        // The daily bar now opens at the first tradeable instant rather than at
+        // the 07:10 pre-opening routine.
+        Some(local(singapore, (2024, 7, 29), (7, 25, 0)))
     );
     assert_eq!(
         sgx.candle_end(sgx_instant, CalendarResolution::Daily),

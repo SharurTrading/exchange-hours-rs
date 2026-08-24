@@ -22,12 +22,22 @@ static TSX_REGULAR: &[SessionRule] = &[SessionRule {
     open_ssm: 9 * 3600 + 30 * 60,
     close_ssm: 16 * 3600,
 }];
+// Order entry only. The venue's session table describes Pre-Open as a phase in
+// which orders may be entered but will not be executed; the first print of the
+// day is the 09:30 Market-on-Open cross that starts continuous trading, so no
+// trade can match inside 07:00–09:30.
+// https://www.tsx.com/en/trading/calendars-and-trading-hours/trading-hours
+static TSX_ORDER_ENTRY: &[SessionRule] = &[SessionRule {
+    days: MON_FRI,
+    open_ssm: 7 * 3600,
+    close_ssm: 9 * 3600 + 30 * 60,
+}];
+// Both close-side phases stay tradeable. When the Price Movement Extension
+// fires it is the delayed MOC cross for that symbol and prints, so its maximum
+// envelope is not order-entry-only even though ordinary days are cancel-only;
+// Extended Trading executes at the last sale price. The separate 16:10–16:15
+// Post Market Cancel Session is not modeled at all.
 static TSX_EXTENDED: &[SessionRule] = &[
-    SessionRule {
-        days: MON_FRI,
-        open_ssm: 7 * 3600,
-        close_ssm: 9 * 3600 + 30 * 60,
-    },
     SessionRule {
         days: MON_FRI,
         open_ssm: 16 * 3600,
@@ -43,7 +53,7 @@ pub(crate) static TSX_PROFILE: StaticHoursProfile = StaticHoursProfile {
     tz: America::Toronto,
     regular: TSX_REGULAR,
     extended: TSX_EXTENDED,
-    order_entry: &[],
+    order_entry: TSX_ORDER_ENTRY,
     has_daily_close: true,
     has_weekend_close: true,
 };

@@ -33,7 +33,15 @@ pub(crate) static ICE_US_FANG_REGULAR_CURRENT: &[SessionRule] = &[
         close_ssm: 18 * 3600,
     },
 ];
-pub(crate) static ICE_US_FANG_EXTENDED_CURRENT: &[SessionRule] = &[
+// ORDER ENTRY, NOT TRADING. The 17:30 Sunday and 19:30 weekday phases are the
+// Pre-Open queues the launch notice and product page describe: the platform
+// accepts, amends and cancels orders for the coming session, and nothing
+// matches until the 18:00 / 20:00 open. They are therefore classified as
+// order-entry phases rather than tradeable extended sessions. FANG publishes no
+// tradeable phase outside its executable session, so the extended slice is
+// empty.
+pub(crate) static ICE_US_FANG_EXTENDED_CURRENT: &[SessionRule] = &[];
+pub(crate) static ICE_US_FANG_ORDER_ENTRY_CURRENT: &[SessionRule] = &[
     SessionRule {
         days: SUN_ONLY,
         open_ssm: 17 * 3600 + 30 * 60,
@@ -50,7 +58,7 @@ pub(crate) static ICE_US_FANG_CURRENT: StaticHoursProfile = StaticHoursProfile {
     tz: America::New_York,
     regular: ICE_US_FANG_REGULAR_CURRENT,
     extended: ICE_US_FANG_EXTENDED_CURRENT,
-    order_entry: &[],
+    order_entry: ICE_US_FANG_ORDER_ENTRY_CURRENT,
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -64,7 +72,9 @@ static ICE_US_FANG_LAUNCH_EVE_REGULAR: &[SessionRule] = &[SessionRule {
     open_ssm: 20 * 3600,
     close_ssm: 18 * 3600,
 }];
-static ICE_US_FANG_LAUNCH_EVE_EXTENDED: &[SessionRule] = &[SessionRule {
+// Same Pre-Open queue as the current profile, so the same classification: this
+// is the launch evening's order-entry phase, not a tradeable session.
+static ICE_US_FANG_LAUNCH_EVE_ORDER_ENTRY: &[SessionRule] = &[SessionRule {
     days: TUE_ONLY,
     open_ssm: 19 * 3600 + 30 * 60,
     close_ssm: 20 * 3600,
@@ -72,8 +82,8 @@ static ICE_US_FANG_LAUNCH_EVE_EXTENDED: &[SessionRule] = &[SessionRule {
 static ICE_US_FANG_LAUNCH_EVE: StaticHoursProfile = StaticHoursProfile {
     tz: America::New_York,
     regular: ICE_US_FANG_LAUNCH_EVE_REGULAR,
-    extended: ICE_US_FANG_LAUNCH_EVE_EXTENDED,
-    order_entry: &[],
+    extended: &[],
+    order_entry: ICE_US_FANG_LAUNCH_EVE_ORDER_ENTRY,
     has_daily_close: true,
     has_weekend_close: true,
 };

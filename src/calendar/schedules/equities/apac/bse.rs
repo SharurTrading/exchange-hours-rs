@@ -23,12 +23,36 @@ static REGULAR_0915_1530: &[SessionRule] = &[SessionRule {
     open_ssm: 9 * 3600 + 15 * 60,
     close_ssm: 15 * 3600 + 30 * 60,
 }];
+// The 09:00–09:15 pre-open is two phases, not one. BSE's operating notice for
+// the 2010-10-18 call-auction launch prints the grid outright: Order Entry
+// Period 9:00am–9:07/08am with "Random stoppage between 7th and 8th minute" and
+// "No trades are executed"; Order Matching & Confirmation Period 9:08am–9:12am;
+// Buffer Period 9:12am–9:15am. The same notice records that the pre-open and
+// continuous sessions "will not run concurrently" and that pre-open-ineligible
+// stocks only trade from 9:15am, so nothing prints venue-wide during the order
+// entry period. NSE's pre-open page documents the identical structure and is
+// still current after the 2026-08-03 CAS cutover.
+//
+// Only the collection phase is `order_entry`. Because the random stoppage can
+// end collection anywhere in the 7th–8th minute, the boundary is set at the
+// earliest second a trade could print (09:07), never later; 09:07–09:15 stays
+// `extended` so the auction match, its trade confirmations, and the transition
+// buffer remain tradeable.
+// https://www.bseindia.com/markets/MarketInfo/DispNewNoticesCirculars?page=20101014-8
+// https://www.nseindia.com/static/products-services/equity-market-pre-open
+static INDIA_ORDER_ENTRY_PREOPEN: &[SessionRule] = &[SessionRule {
+    days: MON_FRI,
+    open_ssm: 9 * 3600,
+    close_ssm: 9 * 3600 + 7 * 60,
+}];
+static INDIA_PREOPEN_MATCH: SessionRule = SessionRule {
+    days: MON_FRI,
+    open_ssm: 9 * 3600 + 7 * 60,
+    close_ssm: 9 * 3600 + 15 * 60,
+};
+
 static INDIA_EXTENDED_PRE_CAS: &[SessionRule] = &[
-    SessionRule {
-        days: MON_FRI,
-        open_ssm: 9 * 3600,
-        close_ssm: 9 * 3600 + 15 * 60,
-    },
+    INDIA_PREOPEN_MATCH,
     SessionRule {
         days: MON_FRI,
         open_ssm: 15 * 3600 + 40 * 60,
@@ -36,11 +60,7 @@ static INDIA_EXTENDED_PRE_CAS: &[SessionRule] = &[
     },
 ];
 static INDIA_EXTENDED_CURRENT: &[SessionRule] = &[
-    SessionRule {
-        days: MON_FRI,
-        open_ssm: 9 * 3600,
-        close_ssm: 9 * 3600 + 15 * 60,
-    },
+    INDIA_PREOPEN_MATCH,
     SessionRule {
         days: MON_FRI,
         open_ssm: 15 * 3600 + 15 * 60,
@@ -65,11 +85,19 @@ static BSE_EXTENDED_PRE_2010_10_18: &[SessionRule] = &[SessionRule {
 // https://www.nseindia.com/static/products-services/closing-auction-session
 // https://www.sebi.gov.in/legal/circulars/jan-2026/introduction-of-closing-auction-session-cas-in-the-equity-cash-segment-and-certain-modifications-in-the-pre-open-auction-session_99122.html
 // https://www.bseindia.com/markets/MarketInfo/DispNewNoticesCirculars?page=20260801-1
+//
+// Both close-side windows stay `extended`. CAS 15:15–15:35 contains
+// order-entry-only sub-phases for CAS-eligible stocks, but BSE's detailed
+// operating guidelines also state that securities not eligible for CAS "shall
+// continue to be available for continuous trading till 3:30pm", so trades print
+// venue-wide throughout; the CAS itself then matches 15:30–15:35. The
+// 15:50–16:00 post-close is a fixed-price session in which trades execute.
+// https://www.bseindia.com/downloads/UploadDocs/Notices/20260610-41/20260610-41.pdf
 pub(crate) static BSE_PROFILE_CURRENT: StaticHoursProfile = StaticHoursProfile {
     tz: Asia::Kolkata,
     regular: REGULAR_0915_1530,
     extended: INDIA_EXTENDED_CURRENT,
-    order_entry: &[],
+    order_entry: INDIA_ORDER_ENTRY_PREOPEN,
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -86,10 +114,13 @@ pub(crate) static BSE_PROFILE_POST_2010_10_18: StaticHoursProfile = StaticHoursP
     tz: Asia::Kolkata,
     regular: REGULAR_0915_1530,
     extended: INDIA_EXTENDED_PRE_CAS,
-    order_entry: &[],
+    order_entry: INDIA_ORDER_ENTRY_PREOPEN,
     has_daily_close: true,
     has_weekend_close: true,
 };
+// No pre-open existed before 2010-10-18, so these two profiles have nothing to
+// classify as order entry: their only extended window is the 15:40–16:00
+// post-close, a fixed-price session in which trades execute.
 pub(crate) static BSE_PROFILE_POST_2010_01_04: StaticHoursProfile = StaticHoursProfile {
     tz: Asia::Kolkata,
     regular: REGULAR_0900_1530,

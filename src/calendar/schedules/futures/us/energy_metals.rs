@@ -36,21 +36,21 @@ static ENERGY_METALS_EXTENDED_AT_2010_FLOOR: &[SessionRule] = &[SessionRule {
     open_ssm: 17 * 3600,
     close_ssm: 16 * 3600 + 15 * 60,
 }];
-static ENERGY_METALS_MATCHING_CURRENT: &[SessionRule] = &[SessionRule {
+pub(crate) static ENERGY_METALS_EXTENDED_CURRENT: &[SessionRule] = &[SessionRule {
     days: SUN_PLUS_MON_THU,
     open_ssm: 17 * 3600,
     close_ssm: 16 * 3600,
 }];
-pub(crate) static ENERGY_METALS_EXTENDED_CURRENT: &[SessionRule] = &[
+// ORDER-ENTRY CLASSIFICATION. The two phases the comment above cites are named
+// "Pre-Open" by CME: the book queues orders until the 17:00 Globex open and no
+// trade can match inside them, so they are `order_entry` rather than a
+// tradeable extended session. The 17:00-16:00 electronic session is matching
+// and stays in `extended`.
+pub(crate) static ENERGY_METALS_ORDER_ENTRY_CURRENT: &[SessionRule] = &[
     SessionRule {
         days: SUN_ONLY,
         open_ssm: 16 * 3600,
         close_ssm: 17 * 3600,
-    },
-    SessionRule {
-        days: SUN_PLUS_MON_THU,
-        open_ssm: 17 * 3600,
-        close_ssm: 16 * 3600,
     },
     SessionRule {
         days: MON_THU,
@@ -71,14 +71,14 @@ pub(crate) static ENERGY_METALS_CURRENT: StaticHoursProfile = StaticHoursProfile
     tz: US::Central,
     regular: &[],
     extended: ENERGY_METALS_EXTENDED_CURRENT,
-    order_entry: &[],
+    order_entry: ENERGY_METALS_ORDER_ENTRY_CURRENT,
     has_daily_close: true,
     has_weekend_close: true,
 };
 static ENERGY_METALS_DATED_CURRENT: StaticHoursProfile = StaticHoursProfile {
     tz: US::Central,
     regular: &[],
-    extended: ENERGY_METALS_MATCHING_CURRENT,
+    extended: ENERGY_METALS_EXTENDED_CURRENT,
     order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,

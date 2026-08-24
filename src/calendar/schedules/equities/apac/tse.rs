@@ -58,15 +58,30 @@ static TSE_REGULAR_PRE_2011: &[SessionRule] = &[
 // phase.
 // https://www.jpx.co.jp/english/systems/equities-trading/
 // https://www.jpx.co.jp/english/equities/trading/tostnet/02.html
+//
+// Order-entry split: JPX's ToSTNeT hours page puts single-issue and basket
+// trading (ToSTNeT-1) at 08:20–18:00 today and 08:20–17:30 before the
+// 2024-11-05 upgrade, so the earliest executable edge of the venue is 08:20 in
+// both eras. Arrowhead only accepts orders from 08:00; its first Itayose match
+// is the 09:00 open, and JPX Working Paper No.3 records those 08:00 orders as
+// entered outside the matching session. Nothing can print between 08:00 and
+// 08:20, so that leading window is order entry rather than extended trading.
 static TSE_EXTENDED_CURRENT: &[SessionRule] = &[SessionRule {
     days: MON_FRI,
-    open_ssm: 8 * 3600,
+    open_ssm: 8 * 3600 + 20 * 60,
     close_ssm: 18 * 3600,
 }];
 static TSE_EXTENDED_PRE_2024: &[SessionRule] = &[SessionRule {
     days: MON_FRI,
-    open_ssm: 8 * 3600,
+    open_ssm: 8 * 3600 + 20 * 60,
     close_ssm: 17 * 3600 + 30 * 60,
+}];
+// Arrowhead order acceptance ahead of the 08:20 ToSTNeT open. Orders may be
+// entered, amended and cancelled; no matching engine runs, so no trade prints.
+static TSE_ORDER_ENTRY: &[SessionRule] = &[SessionRule {
+    days: MON_FRI,
+    open_ssm: 8 * 3600,
+    close_ssm: 8 * 3600 + 20 * 60,
 }];
 
 // JPX's official trading-hours transition table dates the arrowhead morning
@@ -89,7 +104,7 @@ pub(crate) static TSE_PROFILE_CURRENT: StaticHoursProfile = StaticHoursProfile {
     tz: Asia::Tokyo,
     regular: TSE_REGULAR_CURRENT,
     extended: TSE_EXTENDED_CURRENT,
-    order_entry: &[],
+    order_entry: TSE_ORDER_ENTRY,
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -97,7 +112,7 @@ pub(crate) static TSE_PROFILE_POST_2011_11_21: StaticHoursProfile = StaticHoursP
     tz: Asia::Tokyo,
     regular: TSE_REGULAR_POST_2011,
     extended: TSE_EXTENDED_PRE_2024,
-    order_entry: &[],
+    order_entry: TSE_ORDER_ENTRY,
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -105,7 +120,7 @@ pub(crate) static TSE_PROFILE_PRE_2011_11_21: StaticHoursProfile = StaticHoursPr
     tz: Asia::Tokyo,
     regular: TSE_REGULAR_PRE_2011,
     extended: TSE_EXTENDED_PRE_2024,
-    order_entry: &[],
+    order_entry: TSE_ORDER_ENTRY,
     has_daily_close: true,
     has_weekend_close: true,
 };

@@ -13,9 +13,10 @@ use crate::calendar::schedules::timeline::{Revision, effective_date, local_date,
 
 // Every profile in this module is deliberately scoped to ordinary options on
 // individual US stocks. Generic pre-open order acceptance is part of the
-// exchange envelope and is Extended even when execution begins at 09:30. ETF,
-// ETN, index, FLEX, floor-only, and venue-designated extended-hours classes
-// remain separate product families because their executable sessions vary.
+// exchange envelope, but execution in this product family begins at 09:30, so
+// those windows are order entry rather than trading. ETF, ETN, index, FLEX,
+// floor-only, and venue-designated extended-hours classes remain separate
+// product families because their executable sessions vary.
 //
 // The 2006 coordinated rule changes moved individual-stock options from a
 // 16:02 to a 16:00 ET close before this repository's January-2010 history
@@ -61,19 +62,25 @@ static LISTED_EQUITY_OPTIONS_REGULAR: &[SessionRule] = &[SessionRule {
     close_ssm: 16 * 3600,
 }];
 
-static EXTENDED_0600: &[SessionRule] = &[SessionRule {
+// Order-entry-only pre-open queues. Each venue below opens its book to order
+// entry, amendment, and cancellation at the stated time, but no contract in
+// this product family can match until the opening process runs at 09:30 ET —
+// the cited operator system-settings and hours pages describe these windows as
+// order acceptance/queuing, and the first execution of the day is the 09:30
+// opening. They are therefore `order_entry`, not tradeable extended sessions.
+static ORDER_ENTRY_0600: &[SessionRule] = &[SessionRule {
     days: MON_FRI,
     open_ssm: 6 * 3600,
     close_ssm: 9 * 3600 + 30 * 60,
 }];
 
-static EXTENDED_0700: &[SessionRule] = &[SessionRule {
+static ORDER_ENTRY_0700: &[SessionRule] = &[SessionRule {
     days: MON_FRI,
     open_ssm: 7 * 3600,
     close_ssm: 9 * 3600 + 30 * 60,
 }];
 
-static EXTENDED_0730: &[SessionRule] = &[SessionRule {
+static ORDER_ENTRY_0730: &[SessionRule] = &[SessionRule {
     days: MON_FRI,
     open_ssm: 7 * 3600 + 30 * 60,
     close_ssm: 9 * 3600 + 30 * 60,
@@ -82,7 +89,9 @@ static EXTENDED_0730: &[SessionRule] = &[SessionRule {
 // Current ordinary-stock-option order-acceptance edges. The reviewed primary
 // sources do not supply a complete day-level amendment chain for these queues,
 // so current fixed profiles include them while historical selectors retain only
-// the exact 09:30–16:00 execution history below.
+// the exact 09:30–16:00 execution history below. Because nothing matches in a
+// queue, carrying them as `order_entry` leaves the historical selectors — which
+// hold no queue at all — unaffected in their tradeable coverage.
 // https://www.cboe.com/about/hours/us-options
 // https://www.nyse.com/trade/hours-calendars?os=.
 // https://www.nasdaq.com/docs/PHLXSystemSettings
@@ -95,39 +104,39 @@ static EXTENDED_0730: &[SessionRule] = &[SessionRule {
 // https://boxexchange.com/assets/BOX-Exchange-Quoting-Requirements-Summary_10.15.pdf
 // https://info.memxtrading.com/wp-content/uploads/2023/05/MEMX-Options-User-Manual.pdf
 pub(crate) static CBOE_OPTIONS_C1_PROFILE: StaticHoursProfile =
-    listed_equity_options_profile(EXTENDED_0730);
+    listed_equity_options_profile(ORDER_ENTRY_0730);
 pub(crate) static CBOE_C2_OPTIONS_PROFILE: StaticHoursProfile =
-    listed_equity_options_profile(EXTENDED_0730);
+    listed_equity_options_profile(ORDER_ENTRY_0730);
 pub(crate) static CBOE_BZX_OPTIONS_PROFILE: StaticHoursProfile =
-    listed_equity_options_profile(EXTENDED_0730);
+    listed_equity_options_profile(ORDER_ENTRY_0730);
 pub(crate) static CBOE_EDGX_OPTIONS_PROFILE: StaticHoursProfile =
-    listed_equity_options_profile(EXTENDED_0730);
+    listed_equity_options_profile(ORDER_ENTRY_0730);
 pub(crate) static NYSE_ARCA_OPTIONS_PROFILE: StaticHoursProfile =
-    listed_equity_options_profile(EXTENDED_0600);
+    listed_equity_options_profile(ORDER_ENTRY_0600);
 pub(crate) static NYSE_AMERICAN_OPTIONS_PROFILE: StaticHoursProfile =
-    listed_equity_options_profile(EXTENDED_0600);
+    listed_equity_options_profile(ORDER_ENTRY_0600);
 pub(crate) static NASDAQ_PHLX_OPTIONS_PROFILE: StaticHoursProfile =
-    listed_equity_options_profile(EXTENDED_0730);
+    listed_equity_options_profile(ORDER_ENTRY_0730);
 pub(crate) static NASDAQ_ISE_OPTIONS_PROFILE: StaticHoursProfile =
-    listed_equity_options_profile(EXTENDED_0600);
+    listed_equity_options_profile(ORDER_ENTRY_0600);
 pub(crate) static NASDAQ_NOM_OPTIONS_PROFILE: StaticHoursProfile =
-    listed_equity_options_profile(EXTENDED_0730);
+    listed_equity_options_profile(ORDER_ENTRY_0730);
 pub(crate) static NASDAQ_MRX_OPTIONS_PROFILE: StaticHoursProfile =
-    listed_equity_options_profile(EXTENDED_0600);
+    listed_equity_options_profile(ORDER_ENTRY_0600);
 pub(crate) static NASDAQ_GEMX_OPTIONS_PROFILE: StaticHoursProfile =
-    listed_equity_options_profile(EXTENDED_0600);
+    listed_equity_options_profile(ORDER_ENTRY_0600);
 pub(crate) static NASDAQ_BX_OPTIONS_PROFILE: StaticHoursProfile =
-    listed_equity_options_profile(EXTENDED_0730);
+    listed_equity_options_profile(ORDER_ENTRY_0730);
 pub(crate) static MIAX_OPTIONS_PROFILE: StaticHoursProfile =
-    listed_equity_options_profile(EXTENDED_0730);
+    listed_equity_options_profile(ORDER_ENTRY_0730);
 pub(crate) static MIAX_EMERALD_OPTIONS_PROFILE: StaticHoursProfile =
-    listed_equity_options_profile(EXTENDED_0730);
+    listed_equity_options_profile(ORDER_ENTRY_0730);
 pub(crate) static MIAX_PEARL_OPTIONS_PROFILE: StaticHoursProfile =
-    listed_equity_options_profile(EXTENDED_0730);
+    listed_equity_options_profile(ORDER_ENTRY_0730);
 pub(crate) static MIAX_SAPPHIRE_OPTIONS_PROFILE: StaticHoursProfile =
-    listed_equity_options_profile(EXTENDED_0730);
+    listed_equity_options_profile(ORDER_ENTRY_0730);
 pub(crate) static BOX_OPTIONS_PROFILE: StaticHoursProfile =
-    listed_equity_options_profile(EXTENDED_0700);
+    listed_equity_options_profile(ORDER_ENTRY_0700);
 pub(crate) static MEMX_OPTIONS_PROFILE: StaticHoursProfile = listed_equity_options_profile(&[]);
 
 static LISTED_EQUITY_OPTIONS_HISTORICAL: StaticHoursProfile = listed_equity_options_profile(&[]);
@@ -251,12 +260,15 @@ launch_selector!(miax_emerald_options_profile_at, MIAX_EMERALD_REVISIONS);
 launch_selector!(miax_sapphire_options_profile_at, MIAX_SAPPHIRE_REVISIONS);
 launch_selector!(memx_options_profile_at, MEMX_REVISIONS);
 
-const fn listed_equity_options_profile(extended: &'static [SessionRule]) -> StaticHoursProfile {
+// This family has no tradeable session outside 09:30–16:00: every non-regular
+// window a venue publishes here is a pre-open order-acceptance queue, so
+// `extended` is empty and the queue lands in `order_entry`.
+const fn listed_equity_options_profile(order_entry: &'static [SessionRule]) -> StaticHoursProfile {
     StaticHoursProfile {
         tz: America::New_York,
         regular: LISTED_EQUITY_OPTIONS_REGULAR,
-        extended,
-        order_entry: &[],
+        extended: &[],
+        order_entry,
         has_daily_close: true,
         has_weekend_close: true,
     }

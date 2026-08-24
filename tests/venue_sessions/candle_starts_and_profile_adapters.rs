@@ -11,8 +11,8 @@ fn candle_start_daily_uses_the_overnight_session_open() {
 
     assert_eq!(
         candle_start(&hours, first_trade, CalendarResolution::Daily),
-        Some(ct((2026, 1, 29), (16, 45, 0))),
-        "the trading-day candle starts at the published Pre-Open, not its first trade"
+        Some(ct((2026, 1, 29), (17, 0, 0))),
+        "the trading-day candle starts at the session open, not at the 16:45 Pre-Open\n         queue - no trade can print in a queue, so no bar may begin there"
     );
     assert_eq!(
         candle_end(&hours, first_trade, CalendarResolution::Daily),
@@ -28,11 +28,11 @@ fn candle_start_resolves_the_post_dst_globex_open() {
     let start = candle_start(&hours, post_spring_forward_trade, CalendarResolution::Daily)
         .expect("the Globex week is open");
 
-    assert_eq!(start, ct((2026, 3, 8), (16, 0, 0)));
+    assert_eq!(start, ct((2026, 3, 8), (17, 0, 0)));
     assert_eq!(
         start,
-        utc((2026, 3, 8), (21, 0, 0)),
-        "16:00 CT is 21:00 UTC after the spring DST transition"
+        utc((2026, 3, 8), (22, 0, 0)),
+        "17:00 CT is 22:00 UTC after the spring DST transition"
     );
 }
 
@@ -47,7 +47,8 @@ fn candle_start_monthly_can_open_in_the_preceding_civil_month() {
             first_june_session_trade,
             CalendarResolution::Monthly,
         ),
-        Some(ct((2026, 5, 31), (16, 0, 0))),
+        // 16:00 CT is the Sunday queue; the session opens at 17:00.
+        Some(ct((2026, 5, 31), (17, 0, 0))),
         "June's first trading session opens on the final civil day of May"
     );
     assert_eq!(
@@ -56,7 +57,7 @@ fn candle_start_monthly_can_open_in_the_preceding_civil_month() {
             ct((2026, 6, 30), (12, 0, 0)),
             CalendarResolution::Monthly,
         ),
-        Some(ct((2026, 5, 31), (16, 0, 0))),
+        Some(ct((2026, 5, 31), (17, 0, 0))),
         "every instant in the same trading month shares one canonical start"
     );
 }
@@ -144,8 +145,8 @@ fn normal_week_open_seconds_unions_overlapping_session_rules() {
 
     assert_eq!(
         hours.normal_week_open_seconds(),
-        421_200,
-        "the current week includes sourced Pre-Open queues and no post-2021 RTH pause"
+        414_000,
+        "down 7_200s from 421_200: Pre-Open queues are order entry and no longer\n         count as scheduled open time; still no post-2021 RTH pause"
     );
 
     let always_open = hours_for_market_hours_key(MarketHoursKey::AlwaysOpen);

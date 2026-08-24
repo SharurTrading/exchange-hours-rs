@@ -151,8 +151,8 @@ fn futures_session_profile_globex_fx_matches_current_major_cme_fx_grid() {
 
     assert!(!profile.is_open(ct((2026, 4, 19), (15, 59, 59))));
     assert!(
-        profile.is_open(ct((2026, 4, 19), (16, 0, 0))),
-        "CME FX enters its Sunday Pre-Open at 16:00 CT"
+        profile.is_order_entry_only(ct((2026, 4, 19), (16, 0, 0))),
+        "CME FX enters its Sunday Pre-Open at 16:00 CT - order entry, not matching"
     );
     assert!(
         profile.is_open(ct((2026, 4, 19), (17, 0, 0))),
@@ -258,9 +258,9 @@ fn dated_market_hours_keys_reuse_cme_group_and_cfe_histories() {
         MarketHoursKey::GlobexGrains,
         ct((2012, 5, 20), (0, 0, 0)),
     );
-    assert!(grains_before.is_open_extended(ct((2012, 5, 20), (17, 0, 0))));
+    assert!(grains_before.is_order_entry_only(ct((2012, 5, 20), (17, 0, 0))));
     assert!(grains_after.is_open_extended(ct((2012, 5, 20), (17, 0, 0))));
-    assert!(grains_before.is_open_extended(ct((2012, 5, 21), (14, 30, 0))));
+    assert!(grains_before.is_order_entry_only(ct((2012, 5, 21), (14, 30, 0))));
     assert!(!grains_after.is_open(ct((2012, 5, 21), (14, 30, 0))));
 
     let cfe_before =
@@ -276,7 +276,7 @@ fn dated_market_hours_keys_reuse_cme_group_and_cfe_histories() {
     let cfe_weekday_queue_after =
         hours_for_market_hours_key_as_of(MarketHoursKey::CfeVix, ct((2013, 10, 28), (0, 0, 0)));
     assert!(!cfe_weekday_queue_before.is_open(ct((2013, 10, 28), (15, 29, 0))));
-    assert!(cfe_weekday_queue_after.is_open_extended(ct((2013, 10, 28), (15, 29, 0))));
+    assert!(cfe_weekday_queue_after.is_order_entry_only(ct((2013, 10, 28), (15, 29, 0))));
 
     let cfe_sunday_queue_before =
         hours_for_market_hours_key_as_of(MarketHoursKey::CfeVix, ct((2014, 6, 21), (12, 0, 0)));
@@ -284,7 +284,7 @@ fn dated_market_hours_keys_reuse_cme_group_and_cfe_histories() {
         hours_for_market_hours_key_as_of(MarketHoursKey::CfeVix, ct((2014, 6, 22), (0, 0, 0)));
     assert!(!cfe_sunday_queue_before.is_open(ct((2014, 6, 22), (16, 15, 0))));
     assert!(!cfe_sunday_queue_after.is_open(ct((2014, 6, 22), (16, 14, 59))));
-    assert!(cfe_sunday_queue_after.is_open_extended(ct((2014, 6, 22), (16, 15, 0))));
+    assert!(cfe_sunday_queue_after.is_order_entry_only(ct((2014, 6, 22), (16, 15, 0))));
 }
 
 #[test]
@@ -294,7 +294,7 @@ fn dated_market_hours_keys_reuse_international_product_launches() {
     let eurex_after =
         hours_for_market_hours_key_as_of(MarketHoursKey::Eurex, cet((2018, 12, 10), (0, 0, 0)));
     assert!(!eurex_before.is_open(cet((2018, 12, 10), (5, 0, 0))));
-    assert!(eurex_after.is_open_extended(cet((2018, 12, 10), (1, 0, 0))));
+    assert!(eurex_after.is_order_entry_only(cet((2018, 12, 10), (1, 0, 0))));
     assert!(eurex_after.is_open_regular(cet((2018, 12, 10), (5, 0, 0))));
 
     let ice_before =

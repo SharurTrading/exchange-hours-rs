@@ -22,50 +22,50 @@ nasdaq_psx | regular  | MoTuWeThFr---- | 09:30:00-16:00:00
 nasdaq_psx | extended | MoTuWeThFr---- | 08:00:00-09:30:00
 nasdaq_psx | extended | MoTuWeThFr---- | 16:00:00-17:00:00
 nasdaq_psx | order-en | (none)
-cboe_bzx | tz America/New_York | week_open_seconds 315000
+cboe_bzx | tz America/New_York | week_open_seconds 288000
 cboe_bzx | regular  | MoTuWeThFr---- | 09:30:00-16:00:00
-cboe_bzx | extended | MoTuWeThFr---- | 02:30:00-09:30:00
+cboe_bzx | extended | MoTuWeThFr---- | 04:00:00-09:30:00
 cboe_bzx | extended | MoTuWeThFr---- | 16:00:00-20:00:00
-cboe_bzx | order-en | (none)
-cboe_byx | tz America/New_York | week_open_seconds 252000
+cboe_bzx | order-en | MoTuWeThFr---- | 02:30:00-04:00:00
+cboe_byx | tz America/New_York | week_open_seconds 234000
 cboe_byx | regular  | MoTuWeThFr---- | 09:30:00-16:00:00
-cboe_byx | extended | MoTuWeThFr---- | 06:00:00-09:30:00
+cboe_byx | extended | MoTuWeThFr---- | 07:00:00-09:30:00
 cboe_byx | extended | MoTuWeThFr---- | 16:00:00-20:00:00
-cboe_byx | order-en | (none)
-cboe_edga | tz America/New_York | week_open_seconds 252000
+cboe_byx | order-en | MoTuWeThFr---- | 06:00:00-07:00:00
+cboe_edga | tz America/New_York | week_open_seconds 234000
 cboe_edga | regular  | MoTuWeThFr---- | 09:30:00-16:00:00
-cboe_edga | extended | MoTuWeThFr---- | 06:00:00-09:30:00
+cboe_edga | extended | MoTuWeThFr---- | 07:00:00-09:30:00
 cboe_edga | extended | MoTuWeThFr---- | 16:00:00-20:00:00
-cboe_edga | order-en | (none)
-cboe_edgx | tz America/New_York | week_open_seconds 315000
+cboe_edga | order-en | MoTuWeThFr---- | 06:00:00-07:00:00
+cboe_edgx | tz America/New_York | week_open_seconds 288000
 cboe_edgx | regular  | MoTuWeThFr---- | 09:30:00-16:00:00
-cboe_edgx | extended | MoTuWeThFr---- | 02:30:00-09:30:00
+cboe_edgx | extended | MoTuWeThFr---- | 04:00:00-09:30:00
 cboe_edgx | extended | MoTuWeThFr---- | 16:00:00-20:00:00
-cboe_edgx | order-en | (none)
-nyse | tz America/New_York | week_open_seconds 171000
+cboe_edgx | order-en | MoTuWeThFr---- | 02:30:00-04:00:00
+nyse | tz America/New_York | week_open_seconds 162000
 nyse | regular  | MoTuWeThFr---- | 09:30:00-16:00:00
-nyse | extended | MoTuWeThFr---- | 06:30:00-09:30:00
-nyse | order-en | (none)
-nyse_arca | tz America/New_York | week_open_seconds 315000
+nyse | extended | MoTuWeThFr---- | 07:00:00-09:30:00
+nyse | order-en | MoTuWeThFr---- | 06:30:00-07:00:00
+nyse_arca | tz America/New_York | week_open_seconds 288000
 nyse_arca | regular  | MoTuWeThFr---- | 09:30:00-16:00:00
-nyse_arca | extended | MoTuWeThFr---- | 02:30:00-09:30:00
+nyse_arca | extended | MoTuWeThFr---- | 04:00:00-09:30:00
 nyse_arca | extended | MoTuWeThFr---- | 16:00:00-20:00:00
-nyse_arca | order-en | (none)
-nyse_american | tz America/New_York | week_open_seconds 243000
+nyse_arca | order-en | MoTuWeThFr---- | 02:30:00-04:00:00
+nyse_american | tz America/New_York | week_open_seconds 234000
 nyse_american | regular  | MoTuWeThFr---- | 09:30:00-16:00:00
-nyse_american | extended | MoTuWeThFr---- | 06:30:00-09:30:00
+nyse_american | extended | MoTuWeThFr---- | 07:00:00-09:30:00
 nyse_american | extended | MoTuWeThFr---- | 16:00:00-20:00:00
-nyse_american | order-en | (none)
-nyse_national | tz America/New_York | week_open_seconds 243000
+nyse_american | order-en | MoTuWeThFr---- | 06:30:00-07:00:00
+nyse_national | tz America/New_York | week_open_seconds 234000
 nyse_national | regular  | MoTuWeThFr---- | 09:30:00-16:00:00
-nyse_national | extended | MoTuWeThFr---- | 06:30:00-09:30:00
+nyse_national | extended | MoTuWeThFr---- | 07:00:00-09:30:00
 nyse_national | extended | MoTuWeThFr---- | 16:00:00-20:00:00
-nyse_national | order-en | (none)
-nyse_texas | tz America/New_York | week_open_seconds 243000
+nyse_national | order-en | MoTuWeThFr---- | 06:30:00-07:00:00
+nyse_texas | tz America/New_York | week_open_seconds 234000
 nyse_texas | regular  | MoTuWeThFr---- | 09:30:00-16:00:00
-nyse_texas | extended | MoTuWeThFr---- | 06:30:00-09:30:00
+nyse_texas | extended | MoTuWeThFr---- | 07:00:00-09:30:00
 nyse_texas | extended | MoTuWeThFr---- | 16:00:00-20:00:00
-nyse_texas | order-en | (none)
+nyse_texas | order-en | MoTuWeThFr---- | 06:30:00-07:00:00
 memx_eq | tz America/New_York | week_open_seconds 288000
 memx_eq | regular  | MoTuWeThFr---- | 09:30:00-16:00:00
 memx_eq | extended | MoTuWeThFr---- | 04:00:00-09:30:00
@@ -115,209 +115,208 @@ finra_trf_nyse | regular  | MoTuWeThFr---- | 09:30:00-16:00:00
 finra_trf_nyse | extended | MoTuWeThFr---- | 04:00:00-09:30:00
 finra_trf_nyse | extended | MoTuWeThFr---- | 16:00:00-20:00:00
 finra_trf_nyse | order-en | (none)
-cboe_options_c1 | tz America/New_York | week_open_seconds 153000
+cboe_options_c1 | tz America/New_York | week_open_seconds 117000
 cboe_options_c1 | regular  | MoTuWeThFr---- | 09:30:00-16:00:00
-cboe_options_c1 | extended | MoTuWeThFr---- | 07:30:00-09:30:00
-cboe_options_c1 | order-en | (none)
-cboe_c2_options | tz America/New_York | week_open_seconds 153000
+cboe_options_c1 | extended | (none)
+cboe_options_c1 | order-en | MoTuWeThFr---- | 07:30:00-09:30:00
+cboe_c2_options | tz America/New_York | week_open_seconds 117000
 cboe_c2_options | regular  | MoTuWeThFr---- | 09:30:00-16:00:00
-cboe_c2_options | extended | MoTuWeThFr---- | 07:30:00-09:30:00
-cboe_c2_options | order-en | (none)
-cboe_bzx_options | tz America/New_York | week_open_seconds 153000
+cboe_c2_options | extended | (none)
+cboe_c2_options | order-en | MoTuWeThFr---- | 07:30:00-09:30:00
+cboe_bzx_options | tz America/New_York | week_open_seconds 117000
 cboe_bzx_options | regular  | MoTuWeThFr---- | 09:30:00-16:00:00
-cboe_bzx_options | extended | MoTuWeThFr---- | 07:30:00-09:30:00
-cboe_bzx_options | order-en | (none)
-cboe_edgx_options | tz America/New_York | week_open_seconds 153000
+cboe_bzx_options | extended | (none)
+cboe_bzx_options | order-en | MoTuWeThFr---- | 07:30:00-09:30:00
+cboe_edgx_options | tz America/New_York | week_open_seconds 117000
 cboe_edgx_options | regular  | MoTuWeThFr---- | 09:30:00-16:00:00
-cboe_edgx_options | extended | MoTuWeThFr---- | 07:30:00-09:30:00
-cboe_edgx_options | order-en | (none)
-nyse_arca_options | tz America/New_York | week_open_seconds 180000
+cboe_edgx_options | extended | (none)
+cboe_edgx_options | order-en | MoTuWeThFr---- | 07:30:00-09:30:00
+nyse_arca_options | tz America/New_York | week_open_seconds 117000
 nyse_arca_options | regular  | MoTuWeThFr---- | 09:30:00-16:00:00
-nyse_arca_options | extended | MoTuWeThFr---- | 06:00:00-09:30:00
-nyse_arca_options | order-en | (none)
-nyse_american_options | tz America/New_York | week_open_seconds 180000
+nyse_arca_options | extended | (none)
+nyse_arca_options | order-en | MoTuWeThFr---- | 06:00:00-09:30:00
+nyse_american_options | tz America/New_York | week_open_seconds 117000
 nyse_american_options | regular  | MoTuWeThFr---- | 09:30:00-16:00:00
-nyse_american_options | extended | MoTuWeThFr---- | 06:00:00-09:30:00
-nyse_american_options | order-en | (none)
-nasdaq_phlx | tz America/New_York | week_open_seconds 153000
+nyse_american_options | extended | (none)
+nyse_american_options | order-en | MoTuWeThFr---- | 06:00:00-09:30:00
+nasdaq_phlx | tz America/New_York | week_open_seconds 117000
 nasdaq_phlx | regular  | MoTuWeThFr---- | 09:30:00-16:00:00
-nasdaq_phlx | extended | MoTuWeThFr---- | 07:30:00-09:30:00
-nasdaq_phlx | order-en | (none)
-nasdaq_ise | tz America/New_York | week_open_seconds 180000
+nasdaq_phlx | extended | (none)
+nasdaq_phlx | order-en | MoTuWeThFr---- | 07:30:00-09:30:00
+nasdaq_ise | tz America/New_York | week_open_seconds 117000
 nasdaq_ise | regular  | MoTuWeThFr---- | 09:30:00-16:00:00
-nasdaq_ise | extended | MoTuWeThFr---- | 06:00:00-09:30:00
-nasdaq_ise | order-en | (none)
-nasdaq_nom | tz America/New_York | week_open_seconds 153000
+nasdaq_ise | extended | (none)
+nasdaq_ise | order-en | MoTuWeThFr---- | 06:00:00-09:30:00
+nasdaq_nom | tz America/New_York | week_open_seconds 117000
 nasdaq_nom | regular  | MoTuWeThFr---- | 09:30:00-16:00:00
-nasdaq_nom | extended | MoTuWeThFr---- | 07:30:00-09:30:00
-nasdaq_nom | order-en | (none)
-nasdaq_mrx | tz America/New_York | week_open_seconds 180000
+nasdaq_nom | extended | (none)
+nasdaq_nom | order-en | MoTuWeThFr---- | 07:30:00-09:30:00
+nasdaq_mrx | tz America/New_York | week_open_seconds 117000
 nasdaq_mrx | regular  | MoTuWeThFr---- | 09:30:00-16:00:00
-nasdaq_mrx | extended | MoTuWeThFr---- | 06:00:00-09:30:00
-nasdaq_mrx | order-en | (none)
-nasdaq_gemx | tz America/New_York | week_open_seconds 180000
+nasdaq_mrx | extended | (none)
+nasdaq_mrx | order-en | MoTuWeThFr---- | 06:00:00-09:30:00
+nasdaq_gemx | tz America/New_York | week_open_seconds 117000
 nasdaq_gemx | regular  | MoTuWeThFr---- | 09:30:00-16:00:00
-nasdaq_gemx | extended | MoTuWeThFr---- | 06:00:00-09:30:00
-nasdaq_gemx | order-en | (none)
-nasdaq_bx_options | tz America/New_York | week_open_seconds 153000
+nasdaq_gemx | extended | (none)
+nasdaq_gemx | order-en | MoTuWeThFr---- | 06:00:00-09:30:00
+nasdaq_bx_options | tz America/New_York | week_open_seconds 117000
 nasdaq_bx_options | regular  | MoTuWeThFr---- | 09:30:00-16:00:00
-nasdaq_bx_options | extended | MoTuWeThFr---- | 07:30:00-09:30:00
-nasdaq_bx_options | order-en | (none)
-miax_options | tz America/New_York | week_open_seconds 153000
+nasdaq_bx_options | extended | (none)
+nasdaq_bx_options | order-en | MoTuWeThFr---- | 07:30:00-09:30:00
+miax_options | tz America/New_York | week_open_seconds 117000
 miax_options | regular  | MoTuWeThFr---- | 09:30:00-16:00:00
-miax_options | extended | MoTuWeThFr---- | 07:30:00-09:30:00
-miax_options | order-en | (none)
-miax_emerald_options | tz America/New_York | week_open_seconds 153000
+miax_options | extended | (none)
+miax_options | order-en | MoTuWeThFr---- | 07:30:00-09:30:00
+miax_emerald_options | tz America/New_York | week_open_seconds 117000
 miax_emerald_options | regular  | MoTuWeThFr---- | 09:30:00-16:00:00
-miax_emerald_options | extended | MoTuWeThFr---- | 07:30:00-09:30:00
-miax_emerald_options | order-en | (none)
-miax_pearl_options | tz America/New_York | week_open_seconds 153000
+miax_emerald_options | extended | (none)
+miax_emerald_options | order-en | MoTuWeThFr---- | 07:30:00-09:30:00
+miax_pearl_options | tz America/New_York | week_open_seconds 117000
 miax_pearl_options | regular  | MoTuWeThFr---- | 09:30:00-16:00:00
-miax_pearl_options | extended | MoTuWeThFr---- | 07:30:00-09:30:00
-miax_pearl_options | order-en | (none)
-miax_sapphire_options | tz America/New_York | week_open_seconds 153000
+miax_pearl_options | extended | (none)
+miax_pearl_options | order-en | MoTuWeThFr---- | 07:30:00-09:30:00
+miax_sapphire_options | tz America/New_York | week_open_seconds 117000
 miax_sapphire_options | regular  | MoTuWeThFr---- | 09:30:00-16:00:00
-miax_sapphire_options | extended | MoTuWeThFr---- | 07:30:00-09:30:00
-miax_sapphire_options | order-en | (none)
-box_options | tz America/New_York | week_open_seconds 162000
+miax_sapphire_options | extended | (none)
+miax_sapphire_options | order-en | MoTuWeThFr---- | 07:30:00-09:30:00
+box_options | tz America/New_York | week_open_seconds 117000
 box_options | regular  | MoTuWeThFr---- | 09:30:00-16:00:00
-box_options | extended | MoTuWeThFr---- | 07:00:00-09:30:00
-box_options | order-en | (none)
+box_options | extended | (none)
+box_options | order-en | MoTuWeThFr---- | 07:00:00-09:30:00
 memx_options | tz America/New_York | week_open_seconds 117000
 memx_options | regular  | MoTuWeThFr---- | 09:30:00-16:00:00
 memx_options | extended | (none)
 memx_options | order-en | (none)
-cme | tz US/Central | week_open_seconds 421200
+cme | tz US/Central | week_open_seconds 414000
 cme | regular  | MoTuWeThFr---- | 08:30:00-15:15:00
 cme | extended | MoTuWeThFr---- | 15:15:00-16:00:00
 cme | extended | MoTuWeTh----Su | 17:00:00-08:30:00 +1d
-cme | extended | ------------Su | 16:00:00-17:00:00
-cme | extended | MoTuWeTh------ | 16:45:00-17:00:00
-cme | order-en | (none)
-cbot | tz US/Central | week_open_seconds 395700
+cme | order-en | ------------Su | 16:00:00-17:00:00
+cme | order-en | MoTuWeTh------ | 16:45:00-17:00:00
+cbot | tz US/Central | week_open_seconds 316500
 cbot | regular  | MoTuWeThFr---- | 08:30:00-13:20:00
-cbot | extended | ------------Su | 16:00:00-19:00:00
 cbot | extended | MoTuWeTh----Su | 19:00:00-07:45:00 +1d
-cbot | extended | MoTuWeThFr---- | 08:00:00-08:30:00
-cbot | extended | MoTuWeThFr---- | 14:30:00-16:00:00
-cbot | extended | MoTuWeTh------ | 16:45:00-19:00:00
-cbot | order-en | (none)
-comex | tz US/Central | week_open_seconds 421200
+cbot | order-en | ------------Su | 16:00:00-19:00:00
+cbot | order-en | MoTuWeThFr---- | 08:00:00-08:30:00
+cbot | order-en | MoTuWeThFr---- | 14:30:00-16:00:00
+cbot | order-en | MoTuWeTh------ | 16:45:00-19:00:00
+comex | tz US/Central | week_open_seconds 414000
 comex | regular  | (none)
-comex | extended | ------------Su | 16:00:00-17:00:00
 comex | extended | MoTuWeTh----Su | 17:00:00-16:00:00 +1d
-comex | extended | MoTuWeTh------ | 16:45:00-17:00:00
-comex | order-en | (none)
-nymex | tz US/Central | week_open_seconds 421200
+comex | order-en | ------------Su | 16:00:00-17:00:00
+comex | order-en | MoTuWeTh------ | 16:45:00-17:00:00
+nymex | tz US/Central | week_open_seconds 414000
 nymex | regular  | (none)
-nymex | extended | ------------Su | 16:00:00-17:00:00
 nymex | extended | MoTuWeTh----Su | 17:00:00-16:00:00 +1d
-nymex | extended | MoTuWeTh------ | 16:45:00-17:00:00
-nymex | order-en | (none)
-cfe | tz US/Central | week_open_seconds 421170
+nymex | order-en | ------------Su | 16:00:00-17:00:00
+nymex | order-en | MoTuWeTh------ | 16:45:00-17:00:00
+cfe | tz US/Central | week_open_seconds 414000
 cfe | regular  | MoTuWeThFr---- | 08:30:00-15:00:00
 cfe | extended | MoTuWeThFr---- | 15:00:00-16:00:00
-cfe | extended | ------------Su | 16:00:06-17:00:00
-cfe | extended | MoTuWeTh------ | 16:45:06-17:00:00
 cfe | extended | MoTuWeTh----Su | 17:00:00-08:30:00 +1d
-cfe | order-en | (none)
-eurex | tz Europe/Berlin | week_open_seconds 360000
+cfe | order-en | ------------Su | 16:00:06-17:00:00
+cfe | order-en | MoTuWeTh------ | 16:45:06-17:00:00
+eurex | tz Europe/Berlin | week_open_seconds 357000
 eurex | regular  | MoTuWeThFr---- | 02:15:00-22:00:00
-eurex | extended | MoTuWeThFr---- | 02:00:00-02:15:00
-eurex | order-en | (none)
+eurex | extended | MoTuWeThFr---- | 02:10:00-02:15:00
+eurex | order-en | MoTuWeThFr---- | 02:00:00-02:10:00
 eex | tz Europe/Berlin | week_open_seconds 180000
 eex | regular  | MoTuWeThFr---- | 08:00:00-18:00:00
 eex | extended | (none)
 eex | order-en | (none)
-iceus | tz America/New_York | week_open_seconds 412200
+iceus | tz America/New_York | week_open_seconds 403200
 iceus | regular  | ------------Su | 18:00:00-18:00:00 +1d
 iceus | regular  | MoTuWeTh------ | 20:00:00-18:00:00 +1d
-iceus | extended | ------------Su | 17:30:00-18:00:00
-iceus | extended | MoTuWeTh------ | 19:30:00-20:00:00
-iceus | order-en | (none)
-iceeu | tz America/New_York | week_open_seconds 410400
+iceus | extended | (none)
+iceus | order-en | ------------Su | 17:30:00-18:00:00
+iceus | order-en | MoTuWeTh------ | 19:30:00-20:00:00
+iceeu | tz America/New_York | week_open_seconds 403200
 iceeu | regular  | ------------Su | 18:00:00-18:00:00 +1d
 iceeu | regular  | MoTuWeTh------ | 20:00:00-18:00:00 +1d
-iceeu | extended | ------------Su | 17:00:00-18:00:00
-iceeu | extended | MoTuWeTh------ | 19:45:00-20:00:00
-iceeu | order-en | (none)
-ice_europe_commodities | tz America/New_York | week_open_seconds 410400
+iceeu | extended | (none)
+iceeu | order-en | ------------Su | 17:00:00-18:00:00
+iceeu | order-en | MoTuWeTh------ | 19:45:00-20:00:00
+ice_europe_commodities | tz America/New_York | week_open_seconds 403200
 ice_europe_commodities | regular  | ------------Su | 18:00:00-18:00:00 +1d
 ice_europe_commodities | regular  | MoTuWeTh------ | 20:00:00-18:00:00 +1d
-ice_europe_commodities | extended | ------------Su | 17:00:00-18:00:00
-ice_europe_commodities | extended | MoTuWeTh------ | 19:45:00-20:00:00
-ice_europe_commodities | order-en | (none)
-ice_europe_financials | tz Europe/London | week_open_seconds 364500
+ice_europe_commodities | extended | (none)
+ice_europe_commodities | order-en | ------------Su | 17:00:00-18:00:00
+ice_europe_commodities | order-en | MoTuWeTh------ | 19:45:00-20:00:00
+ice_europe_financials | tz Europe/London | week_open_seconds 360000
 ice_europe_financials | regular  | MoTuWeThFr---- | 01:00:00-21:00:00
-ice_europe_financials | extended | MoTuWeThFr---- | 00:45:00-01:00:00
-ice_europe_financials | order-en | (none)
-ice_endex | tz Europe/Amsterdam | week_open_seconds 391200
+ice_europe_financials | extended | (none)
+ice_europe_financials | order-en | MoTuWeThFr---- | 00:45:00-01:00:00
+ice_endex | tz Europe/Amsterdam | week_open_seconds 388200
 ice_endex | regular  | ------------Su | 23:50:00-23:00:00 +1d
 ice_endex | regular  | --TuWeThFr---- | 01:50:00-23:00:00
-ice_endex | extended | ------------Su | 23:40:00-23:50:00
-ice_endex | extended | --TuWeThFr---- | 01:40:00-01:50:00
-ice_endex | order-en | (none)
-ice_abu_dhabi | tz Asia/Dubai | week_open_seconds 410400
+ice_endex | extended | (none)
+ice_endex | order-en | ------------Su | 23:40:00-23:50:00
+ice_endex | order-en | --TuWeThFr---- | 01:40:00-01:50:00
+ice_abu_dhabi | tz Asia/Dubai | week_open_seconds 403200
 ice_abu_dhabi | regular  | Mo------------ | 02:00:00-02:00:00 +1d
 ice_abu_dhabi | regular  | --TuWeThFr---- | 04:00:00-02:00:00 +1d
-ice_abu_dhabi | extended | Mo------------ | 01:00:00-02:00:00
-ice_abu_dhabi | extended | --TuWeThFr---- | 03:45:00-04:00:00
-ice_abu_dhabi | order-en | (none)
+ice_abu_dhabi | extended | (none)
+ice_abu_dhabi | order-en | Mo------------ | 01:00:00-02:00:00
+ice_abu_dhabi | order-en | --TuWeThFr---- | 03:45:00-04:00:00
 ice_canada | tz America/Winnipeg | week_open_seconds 0
 ice_canada | regular  | (none)
 ice_canada | extended | (none)
 ice_canada | order-en | (none)
-sgx | tz Asia/Singapore | week_open_seconds 396000
+sgx | tz Asia/Singapore | week_open_seconds 388500
 sgx | regular  | MoTuWeThFr---- | 07:25:00-17:55:00
 sgx | regular  | MoTuWeThFr---- | 18:15:00-05:15:00 +1d
-sgx | extended | MoTuWeThFr---- | 07:10:00-07:25:00
 sgx | extended | MoTuWeThFr---- | 17:55:00-18:00:00
-sgx | extended | MoTuWeThFr---- | 18:05:00-18:15:00
-sgx | order-en | (none)
-asx | tz Australia/Sydney | week_open_seconds 168450
+sgx | order-en | MoTuWeThFr---- | 07:10:00-07:25:00
+sgx | order-en | MoTuWeThFr---- | 18:05:00-18:15:00
+asx | tz Australia/Sydney | week_open_seconds 165450
 asx | regular  | MoTuWeThFr---- | 10:00:00-16:00:00
-asx | extended | MoTuWeThFr---- | 07:00:00-10:00:00
-asx | extended | MoTuWeThFr---- | 16:00:00-16:21:30
-asx | order-en | (none)
+asx | extended | MoTuWeThFr---- | 07:00:00-09:59:00
+asx | extended | MoTuWeThFr---- | 09:59:00-10:00:00
+asx | extended | MoTuWeThFr---- | 16:10:00-16:21:30
+asx | order-en | MoTuWeThFr---- | 16:00:00-16:10:00
 tmx_australia | tz Australia/Sydney | week_open_seconds 168000
 tmx_australia | regular  | MoTuWeThFr---- | 10:00:00-16:13:00
-tmx_australia | extended | MoTuWeThFr---- | 07:00:00-10:00:00
+tmx_australia | extended | MoTuWeThFr---- | 07:00:00-09:59:45
+tmx_australia | extended | MoTuWeThFr---- | 09:59:45-10:00:00
 tmx_australia | extended | MoTuWeThFr---- | 16:00:00-16:20:00
 tmx_australia | order-en | (none)
-nzx | tz Pacific/Auckland | week_open_seconds 153000
+nzx | tz Pacific/Auckland | week_open_seconds 148800
 nzx | regular  | MoTuWeThFr---- | 10:00:00-16:45:00
-nzx | extended | MoTuWeThFr---- | 08:30:00-10:00:00
-nzx | extended | MoTuWeThFr---- | 16:45:00-17:00:00
-nzx | order-en | (none)
-tse | tz Asia/Tokyo | week_open_seconds 180000
+nzx | extended | MoTuWeThFr---- | 08:30:00-09:59:30
+nzx | extended | MoTuWeThFr---- | 09:59:30-10:00:00
+nzx | extended | MoTuWeThFr---- | 16:59:30-17:00:30
+nzx | order-en | MoTuWeThFr---- | 16:45:00-16:59:30
+tse | tz Asia/Tokyo | week_open_seconds 174000
 tse | regular  | MoTuWeThFr---- | 09:00:00-11:30:00
 tse | regular  | MoTuWeThFr---- | 12:30:00-15:25:00
-tse | extended | MoTuWeThFr---- | 08:00:00-18:00:00
-tse | order-en | (none)
-nse_india | tz Asia/Kolkata | week_open_seconds 121500
+tse | extended | MoTuWeThFr---- | 08:20:00-18:00:00
+tse | order-en | MoTuWeThFr---- | 08:00:00-08:20:00
+nse_india | tz Asia/Kolkata | week_open_seconds 119400
 nse_india | regular  | MoTuWeThFr---- | 09:15:00-15:30:00
-nse_india | extended | MoTuWeThFr---- | 09:00:00-09:15:00
+nse_india | extended | MoTuWeThFr---- | 09:07:00-09:15:00
 nse_india | extended | MoTuWeThFr---- | 15:15:00-15:35:00
 nse_india | extended | MoTuWeThFr---- | 15:50:00-16:00:00
-nse_india | order-en | (none)
-bse_india | tz Asia/Kolkata | week_open_seconds 121500
+nse_india | order-en | MoTuWeThFr---- | 09:00:00-09:07:00
+bse_india | tz Asia/Kolkata | week_open_seconds 119400
 bse_india | regular  | MoTuWeThFr---- | 09:15:00-15:30:00
-bse_india | extended | MoTuWeThFr---- | 09:00:00-09:15:00
+bse_india | extended | MoTuWeThFr---- | 09:07:00-09:15:00
 bse_india | extended | MoTuWeThFr---- | 15:15:00-15:35:00
 bse_india | extended | MoTuWeThFr---- | 15:50:00-16:00:00
-bse_india | order-en | (none)
-hkex | tz Asia/Hong_Kong | week_open_seconds 129000
+bse_india | order-en | MoTuWeThFr---- | 09:00:00-09:07:00
+hkex | tz Asia/Hong_Kong | week_open_seconds 123000
 hkex | regular  | MoTuWeThFr---- | 09:30:00-16:00:00
-hkex | extended | MoTuWeThFr---- | 09:00:00-09:30:00
+hkex | extended | MoTuWeThFr---- | 09:20:00-09:30:00
 hkex | extended | MoTuWeThFr---- | 16:00:00-16:10:00
-hkex | order-en | (none)
-sgx_securities | tz Asia/Singapore | week_open_seconds 157800
+hkex | order-en | MoTuWeThFr---- | 09:00:00-09:20:00
+sgx_securities | tz Asia/Singapore | week_open_seconds 130800
 sgx_securities | regular  | MoTuWeThFr---- | 09:00:00-12:00:00
 sgx_securities | regular  | MoTuWeThFr---- | 13:00:00-17:00:00
-sgx_securities | extended | MoTuWeThFr---- | 08:30:00-09:00:00
-sgx_securities | extended | MoTuWeThFr---- | 12:00:00-13:00:00
-sgx_securities | extended | MoTuWeThFr---- | 17:00:00-17:16:00
-sgx_securities | order-en | (none)
+sgx_securities | extended | MoTuWeThFr---- | 08:58:00-09:00:00
+sgx_securities | extended | MoTuWeThFr---- | 12:58:00-13:00:00
+sgx_securities | extended | MoTuWeThFr---- | 17:04:00-17:16:00
+sgx_securities | order-en | MoTuWeThFr---- | 08:30:00-08:58:00
+sgx_securities | order-en | MoTuWeThFr---- | 12:00:00-12:58:00
+sgx_securities | order-en | MoTuWeThFr---- | 17:00:00-17:04:00
 bursa_malaysia | tz Asia/Kuala_Lumpur | week_open_seconds 126000
 bursa_malaysia | regular  | MoTuWeThFr---- | 09:00:00-12:30:00
 bursa_malaysia | regular  | MoTuWeThFr---- | 14:30:00-16:45:00
@@ -325,23 +324,25 @@ bursa_malaysia | extended | MoTuWeThFr---- | 08:30:00-09:00:00
 bursa_malaysia | extended | MoTuWeThFr---- | 14:00:00-14:30:00
 bursa_malaysia | extended | MoTuWeThFr---- | 16:45:00-17:00:00
 bursa_malaysia | order-en | (none)
-set_thailand | tz Asia/Bangkok | week_open_seconds 283500
+set_thailand | tz Asia/Bangkok | week_open_seconds 273000
 set_thailand | regular  | MoTuWeThFr---- | 10:00:00-16:30:00
 set_thailand | regular  | MoTuWeThFr---- | 19:00:00-02:45:00 +1d
-set_thailand | extended | MoTuWeThFr---- | 09:30:00-10:00:00
-set_thailand | extended | MoTuWeThFr---- | 13:30:00-14:00:00
+set_thailand | extended | MoTuWeThFr---- | 09:55:00-10:00:00
+set_thailand | extended | MoTuWeThFr---- | 13:55:00-14:00:00
 set_thailand | extended | MoTuWeThFr---- | 16:30:00-17:00:00
-set_thailand | extended | MoTuWeThFr---- | 18:45:00-19:00:00
+set_thailand | extended | MoTuWeThFr---- | 18:55:00-19:00:00
 set_thailand | extended | --TuWeThFrSa-- | 02:45:00-03:00:00
-set_thailand | order-en | (none)
-idx | tz Asia/Jakarta | week_open_seconds 108900
+set_thailand | order-en | MoTuWeThFr---- | 09:30:00-09:55:00
+set_thailand | order-en | MoTuWeThFr---- | 13:30:00-13:55:00
+set_thailand | order-en | MoTuWeThFr---- | 18:45:00-18:55:00
+idx | tz Asia/Jakarta | week_open_seconds 105900
 idx | regular  | MoTuWeTh------ | 09:00:00-12:00:00
 idx | regular  | MoTuWeTh------ | 13:30:00-15:50:00
 idx | regular  | --------Fr---- | 09:00:00-11:30:00
 idx | regular  | --------Fr---- | 14:00:00-15:50:00
-idx | extended | MoTuWeThFr---- | 08:45:00-09:00:00
+idx | extended | MoTuWeThFr---- | 08:55:00-09:00:00
 idx | extended | MoTuWeThFr---- | 15:50:00-16:30:00
-idx | order-en | (none)
+idx | order-en | MoTuWeThFr---- | 08:45:00-08:55:00
 pse | tz Asia/Manila | week_open_seconds 94500
 pse | regular  | MoTuWeThFr---- | 09:30:00-12:00:00
 pse | regular  | MoTuWeThFr---- | 13:00:00-14:45:00
@@ -374,74 +375,69 @@ krx | regular  | MoTuWeThFr---- | 09:00:00-15:20:00
 krx | extended | MoTuWeThFr---- | 08:00:00-09:00:00
 krx | extended | MoTuWeThFr---- | 15:20:00-18:00:00
 krx | order-en | (none)
-twse | tz Asia/Taipei | week_open_seconds 162000
+twse | tz Asia/Taipei | week_open_seconds 153000
 twse | regular  | MoTuWeThFr---- | 09:00:00-13:25:00
-twse | extended | MoTuWeThFr---- | 08:00:00-17:00:00
-twse | order-en | (none)
-lse | tz Europe/London | week_open_seconds 174000
+twse | extended | MoTuWeThFr---- | 08:00:00-08:30:00
+twse | extended | MoTuWeThFr---- | 09:00:00-17:00:00
+twse | order-en | MoTuWeThFr---- | 08:30:00-09:00:00
+lse | tz Europe/London | week_open_seconds 159000
 lse | regular  | MoTuWeThFr---- | 08:00:30-12:00:00
 lse | regular  | MoTuWeThFr---- | 12:02:30-16:30:00
-lse | extended | MoTuWeThFr---- | 07:00:00-07:50:00
 lse | extended | MoTuWeThFr---- | 07:50:00-08:00:30
 lse | extended | MoTuWeThFr---- | 12:00:00-12:02:30
 lse | extended | MoTuWeThFr---- | 16:30:00-16:35:30
 lse | extended | MoTuWeThFr---- | 16:35:30-16:40:00
-lse | order-en | (none)
-xetra | tz Europe/Berlin | week_open_seconds 271500
+lse | order-en | MoTuWeThFr---- | 07:00:00-07:50:00
+xetra | tz Europe/Berlin | week_open_seconds 252000
 xetra | regular  | MoTuWeThFr---- | 09:00:30-13:00:00
 xetra | regular  | MoTuWeThFr---- | 13:02:30-17:30:00
-xetra | extended | MoTuWeThFr---- | 07:00:00-08:00:00
 xetra | extended | MoTuWeThFr---- | 08:00:00-08:55:00
 xetra | extended | MoTuWeThFr---- | 08:55:00-09:00:30
 xetra | extended | MoTuWeThFr---- | 13:00:00-13:02:30
 xetra | extended | MoTuWeThFr---- | 17:30:00-17:35:30
 xetra | extended | MoTuWeThFr---- | 17:35:30-17:40:00
 xetra | extended | MoTuWeThFr---- | 17:40:00-22:00:00
-xetra | extended | MoTuWeThFr---- | 22:00:00-22:05:00
-xetra | order-en | (none)
-six | tz Europe/Zurich | week_open_seconds 288000
+xetra | order-en | MoTuWeThFr---- | 07:00:00-08:00:00
+xetra | order-en | MoTuWeThFr---- | 22:00:00-22:05:00
+six | tz Europe/Zurich | week_open_seconds 156000
 six | regular  | MoTuWeThFr---- | 09:02:00-17:20:00
-six | extended | MoTuWeThFr---- | 06:00:00-09:02:00
+six | extended | MoTuWeThFr---- | 09:00:00-09:02:00
 six | extended | MoTuWeThFr---- | 17:20:00-17:32:00
 six | extended | MoTuWeThFr---- | 17:32:00-17:40:00
-six | extended | MoTuWeThFr---- | 17:40:00-22:00:00
-six | order-en | (none)
-euronext_paris | tz Europe/Paris | week_open_seconds 183000
+six | order-en | MoTuWeThFr---- | 06:00:00-09:00:00
+six | order-en | MoTuWeThFr---- | 17:40:00-22:00:00
+euronext_paris | tz Europe/Paris | week_open_seconds 156000
 euronext_paris | regular  | MoTuWeThFr---- | 09:00:00-17:30:00
-euronext_paris | extended | MoTuWeThFr---- | 07:30:00-09:00:00
 euronext_paris | extended | MoTuWeThFr---- | 17:30:00-17:35:00
 euronext_paris | extended | MoTuWeThFr---- | 17:35:00-17:40:00
-euronext_paris | order-en | (none)
-euronext_amsterdam | tz Europe/Amsterdam | week_open_seconds 183000
+euronext_paris | order-en | MoTuWeThFr---- | 07:30:00-09:00:00
+euronext_amsterdam | tz Europe/Amsterdam | week_open_seconds 156000
 euronext_amsterdam | regular  | MoTuWeThFr---- | 09:00:00-17:30:00
-euronext_amsterdam | extended | MoTuWeThFr---- | 07:30:00-09:00:00
 euronext_amsterdam | extended | MoTuWeThFr---- | 17:30:00-17:35:00
 euronext_amsterdam | extended | MoTuWeThFr---- | 17:35:00-17:40:00
-euronext_amsterdam | order-en | (none)
-euronext_brussels | tz Europe/Brussels | week_open_seconds 183000
+euronext_amsterdam | order-en | MoTuWeThFr---- | 07:30:00-09:00:00
+euronext_brussels | tz Europe/Brussels | week_open_seconds 156000
 euronext_brussels | regular  | MoTuWeThFr---- | 09:00:00-17:30:00
-euronext_brussels | extended | MoTuWeThFr---- | 07:30:00-09:00:00
 euronext_brussels | extended | MoTuWeThFr---- | 17:30:00-17:35:00
 euronext_brussels | extended | MoTuWeThFr---- | 17:35:00-17:40:00
-euronext_brussels | order-en | (none)
-euronext_lisbon | tz Europe/Lisbon | week_open_seconds 183000
+euronext_brussels | order-en | MoTuWeThFr---- | 07:30:00-09:00:00
+euronext_lisbon | tz Europe/Lisbon | week_open_seconds 156000
 euronext_lisbon | regular  | MoTuWeThFr---- | 08:00:00-16:30:00
-euronext_lisbon | extended | MoTuWeThFr---- | 06:30:00-08:00:00
 euronext_lisbon | extended | MoTuWeThFr---- | 16:30:00-16:35:00
 euronext_lisbon | extended | MoTuWeThFr---- | 16:35:00-16:40:00
-euronext_lisbon | order-en | (none)
-euronext_dublin | tz Europe/Dublin | week_open_seconds 183000
+euronext_lisbon | order-en | MoTuWeThFr---- | 06:30:00-08:00:00
+euronext_dublin | tz Europe/Dublin | week_open_seconds 156000
 euronext_dublin | regular  | MoTuWeThFr---- | 08:00:30-16:28:00
-euronext_dublin | extended | MoTuWeThFr---- | 06:30:00-08:00:30
+euronext_dublin | extended | MoTuWeThFr---- | 08:00:00-08:00:30
 euronext_dublin | extended | MoTuWeThFr---- | 16:28:00-16:30:30
 euronext_dublin | extended | MoTuWeThFr---- | 16:30:30-16:40:00
-euronext_dublin | order-en | (none)
-euronext_milan | tz Europe/Rome | week_open_seconds 183000
+euronext_dublin | order-en | MoTuWeThFr---- | 06:30:00-08:00:00
+euronext_milan | tz Europe/Rome | week_open_seconds 156000
 euronext_milan | regular  | MoTuWeThFr---- | 09:00:30-17:30:00
-euronext_milan | extended | MoTuWeThFr---- | 07:30:00-09:00:30
+euronext_milan | extended | MoTuWeThFr---- | 09:00:00-09:00:30
 euronext_milan | extended | MoTuWeThFr---- | 17:30:00-17:35:30
 euronext_milan | extended | MoTuWeThFr---- | 17:35:30-17:40:00
-euronext_milan | order-en | (none)
+euronext_milan | order-en | MoTuWeThFr---- | 07:30:00-09:00:00
 bme | tz Europe/Madrid | week_open_seconds 166500
 bme | regular  | MoTuWeThFr---- | 09:00:30-17:30:00
 bme | extended | MoTuWeThFr---- | 08:30:00-09:00:30
@@ -467,44 +463,40 @@ nasdaq_copenhagen | extended | MoTuWeThFr---- | 16:55:00-17:00:00
 nasdaq_copenhagen | extended | MoTuWeThFr---- | 17:00:00-17:10:00
 nasdaq_copenhagen | extended | MoTuWeThFr---- | 17:10:00-17:20:00
 nasdaq_copenhagen | order-en | (none)
-vienna | tz Europe/Vienna | week_open_seconds 177000
+vienna | tz Europe/Vienna | week_open_seconds 159000
 vienna | regular  | MoTuWeThFr---- | 09:00:30-12:00:00
 vienna | regular  | MoTuWeThFr---- | 12:03:30-17:30:00
-vienna | extended | MoTuWeThFr---- | 08:00:00-08:55:00
 vienna | extended | MoTuWeThFr---- | 08:55:00-09:00:30
 vienna | extended | MoTuWeThFr---- | 12:00:00-12:03:30
 vienna | extended | MoTuWeThFr---- | 17:30:00-17:35:30
 vienna | extended | MoTuWeThFr---- | 17:35:30-17:45:00
-vienna | extended | MoTuWeThFr---- | 17:45:00-17:50:00
-vienna | order-en | (none)
-borsa_istanbul | tz Europe/Istanbul | week_open_seconds 153000
+vienna | order-en | MoTuWeThFr---- | 08:00:00-08:55:00
+vienna | order-en | MoTuWeThFr---- | 17:45:00-17:50:00
+borsa_istanbul | tz Europe/Istanbul | week_open_seconds 148500
 borsa_istanbul | regular  | MoTuWeThFr---- | 10:00:00-18:00:00
-borsa_istanbul | extended | MoTuWeThFr---- | 09:40:00-10:00:00
+borsa_istanbul | extended | MoTuWeThFr---- | 09:55:00-10:00:00
 borsa_istanbul | extended | MoTuWeThFr---- | 18:00:00-18:10:00
-borsa_istanbul | order-en | (none)
-tsx | tz America/Toronto | week_open_seconds 178500
+borsa_istanbul | order-en | MoTuWeThFr---- | 09:40:00-09:55:00
+tsx | tz America/Toronto | week_open_seconds 133500
 tsx | regular  | MoTuWeThFr---- | 09:30:00-16:00:00
-tsx | extended | MoTuWeThFr---- | 07:00:00-09:30:00
 tsx | extended | MoTuWeThFr---- | 16:00:00-16:10:00
 tsx | extended | MoTuWeThFr---- | 16:15:00-17:00:00
-tsx | order-en | (none)
+tsx | order-en | MoTuWeThFr---- | 07:00:00-09:30:00
 jse | tz Africa/Johannesburg | week_open_seconds 155400
 jse | regular  | MoTuWeThFr---- | 09:00:00-16:50:00
 jse | extended | MoTuWeThFr---- | 08:30:00-09:00:00
 jse | extended | MoTuWeThFr---- | 16:50:00-17:00:00
 jse | extended | MoTuWeThFr---- | 17:02:00-17:10:00
 jse | order-en | (none)
-tadawul | tz Asia/Riyadh | week_open_seconds 105000
+tadawul | tz Asia/Riyadh | week_open_seconds 96000
 tadawul | regular  | MoTuWeTh----Su | 10:00:00-15:00:00
-tadawul | extended | MoTuWeTh----Su | 09:30:00-10:00:00
 tadawul | extended | MoTuWeTh----Su | 15:00:00-15:20:00
-tadawul | order-en | (none)
-b3 | tz America/Sao_Paulo | week_open_seconds 139500
+tadawul | order-en | MoTuWeTh----Su | 09:30:00-10:00:00
+b3 | tz America/Sao_Paulo | week_open_seconds 135000
 b3 | regular  | MoTuWeThFr---- | 10:00:00-16:55:00
-b3 | extended | MoTuWeThFr---- | 09:45:00-10:00:00
 b3 | extended | MoTuWeThFr---- | 16:55:00-17:00:00
 b3 | extended | MoTuWeThFr---- | 17:30:00-18:00:00
-b3 | order-en | (none)
+b3 | order-en | MoTuWeThFr---- | 09:45:00-10:00:00
 bmv | tz America/Mexico_City | week_open_seconds 131700
 bmv | regular  | MoTuWeThFr---- | 07:30:00-14:00:00
 bmv | extended | MoTuWeThFr---- | 07:00:00-07:30:00
@@ -516,44 +508,39 @@ binance_futures | extended | (none)
 binance_futures | order-en | (none)
 
 ## MarketHoursKey (current profiles)
-globex_equity_index | tz US/Central | week_open_seconds 421200
+globex_equity_index | tz US/Central | week_open_seconds 414000
 globex_equity_index | regular  | MoTuWeThFr---- | 08:30:00-15:15:00
 globex_equity_index | extended | MoTuWeThFr---- | 15:15:00-16:00:00
 globex_equity_index | extended | MoTuWeTh----Su | 17:00:00-08:30:00 +1d
-globex_equity_index | extended | ------------Su | 16:00:00-17:00:00
-globex_equity_index | extended | MoTuWeTh------ | 16:45:00-17:00:00
-globex_equity_index | order-en | (none)
-globex_energy | tz US/Central | week_open_seconds 421200
+globex_equity_index | order-en | ------------Su | 16:00:00-17:00:00
+globex_equity_index | order-en | MoTuWeTh------ | 16:45:00-17:00:00
+globex_energy | tz US/Central | week_open_seconds 414000
 globex_energy | regular  | (none)
-globex_energy | extended | ------------Su | 16:00:00-17:00:00
 globex_energy | extended | MoTuWeTh----Su | 17:00:00-16:00:00 +1d
-globex_energy | extended | MoTuWeTh------ | 16:45:00-17:00:00
-globex_energy | order-en | (none)
-globex_grains | tz US/Central | week_open_seconds 395700
+globex_energy | order-en | ------------Su | 16:00:00-17:00:00
+globex_energy | order-en | MoTuWeTh------ | 16:45:00-17:00:00
+globex_grains | tz US/Central | week_open_seconds 316500
 globex_grains | regular  | MoTuWeThFr---- | 08:30:00-13:20:00
-globex_grains | extended | ------------Su | 16:00:00-19:00:00
 globex_grains | extended | MoTuWeTh----Su | 19:00:00-07:45:00 +1d
-globex_grains | extended | MoTuWeThFr---- | 08:00:00-08:30:00
-globex_grains | extended | MoTuWeThFr---- | 14:30:00-16:00:00
-globex_grains | extended | MoTuWeTh------ | 16:45:00-19:00:00
-globex_grains | order-en | (none)
-globex_fx | tz US/Central | week_open_seconds 421200
+globex_grains | order-en | ------------Su | 16:00:00-19:00:00
+globex_grains | order-en | MoTuWeThFr---- | 08:00:00-08:30:00
+globex_grains | order-en | MoTuWeThFr---- | 14:30:00-16:00:00
+globex_grains | order-en | MoTuWeTh------ | 16:45:00-19:00:00
+globex_fx | tz US/Central | week_open_seconds 414000
 globex_fx | regular  | (none)
-globex_fx | extended | ------------Su | 16:00:00-17:00:00
 globex_fx | extended | MoTuWeTh----Su | 17:00:00-16:00:00 +1d
-globex_fx | extended | MoTuWeTh------ | 16:45:00-17:00:00
-globex_fx | order-en | (none)
-globex_interest_rates | tz US/Central | week_open_seconds 421200
+globex_fx | order-en | ------------Su | 16:00:00-17:00:00
+globex_fx | order-en | MoTuWeTh------ | 16:45:00-17:00:00
+globex_interest_rates | tz US/Central | week_open_seconds 414000
 globex_interest_rates | regular  | (none)
-globex_interest_rates | extended | ------------Su | 16:00:00-17:00:00
 globex_interest_rates | extended | MoTuWeTh----Su | 17:00:00-16:00:00 +1d
-globex_interest_rates | extended | MoTuWeTh------ | 16:45:00-17:00:00
-globex_interest_rates | order-en | (none)
-globex_livestock | tz US/Central | week_open_seconds 118500
+globex_interest_rates | order-en | ------------Su | 16:00:00-17:00:00
+globex_interest_rates | order-en | MoTuWeTh------ | 16:45:00-17:00:00
+globex_livestock | tz US/Central | week_open_seconds 82500
 globex_livestock | regular  | MoTuWeThFr---- | 08:30:00-13:05:00
-globex_livestock | extended | MoTuWeThFr---- | 08:00:00-08:30:00
-globex_livestock | extended | MoTuWeThFr---- | 14:30:00-16:00:00
-globex_livestock | order-en | (none)
+globex_livestock | extended | (none)
+globex_livestock | order-en | MoTuWeThFr---- | 08:00:00-08:30:00
+globex_livestock | order-en | MoTuWeThFr---- | 14:30:00-16:00:00
 globex_cryptocurrency | tz US/Central | week_open_seconds 598200
 globex_cryptocurrency | regular  | (none)
 globex_cryptocurrency | extended | MoTuWeThFr---- | 00:00:00-16:00:00
@@ -562,105 +549,98 @@ globex_cryptocurrency | extended | ----------Sa-- | 00:00:00-02:00:00
 globex_cryptocurrency | extended | ----------Sa-- | 03:45:00-24:00:00
 globex_cryptocurrency | extended | ------------Su | 00:00:00-24:00:00
 globex_cryptocurrency | order-en | (none)
-cfe_vix | tz US/Central | week_open_seconds 421170
+cfe_vix | tz US/Central | week_open_seconds 414000
 cfe_vix | regular  | MoTuWeThFr---- | 08:30:00-15:00:00
 cfe_vix | extended | MoTuWeThFr---- | 15:00:00-16:00:00
-cfe_vix | extended | ------------Su | 16:00:06-17:00:00
-cfe_vix | extended | MoTuWeTh------ | 16:45:06-17:00:00
 cfe_vix | extended | MoTuWeTh----Su | 17:00:00-08:30:00 +1d
-cfe_vix | order-en | (none)
-eurex | tz Europe/Berlin | week_open_seconds 360000
+cfe_vix | order-en | ------------Su | 16:00:06-17:00:00
+cfe_vix | order-en | MoTuWeTh------ | 16:45:06-17:00:00
+eurex | tz Europe/Berlin | week_open_seconds 357000
 eurex | regular  | MoTuWeThFr---- | 02:15:00-22:00:00
-eurex | extended | MoTuWeThFr---- | 02:00:00-02:15:00
-eurex | order-en | (none)
-ice_us | tz America/New_York | week_open_seconds 412200
+eurex | extended | MoTuWeThFr---- | 02:10:00-02:15:00
+eurex | order-en | MoTuWeThFr---- | 02:00:00-02:10:00
+ice_us | tz America/New_York | week_open_seconds 403200
 ice_us | regular  | ------------Su | 18:00:00-18:00:00 +1d
 ice_us | regular  | MoTuWeTh------ | 20:00:00-18:00:00 +1d
-ice_us | extended | ------------Su | 17:30:00-18:00:00
-ice_us | extended | MoTuWeTh------ | 19:30:00-20:00:00
-ice_us | order-en | (none)
-ice_us_sugar | tz America/New_York | week_open_seconds 360000
+ice_us | extended | (none)
+ice_us | order-en | ------------Su | 17:30:00-18:00:00
+ice_us | order-en | MoTuWeTh------ | 19:30:00-20:00:00
+ice_us_sugar | tz America/New_York | week_open_seconds 171000
 ice_us_sugar | regular  | MoTuWeThFr---- | 03:30:00-13:00:00
-ice_us_sugar | extended | MoTuWeThFr---- | 13:30:00-18:00:00
-ice_us_sugar | extended | MoTuWeTh------ | 20:00:00-03:30:00 +1d
-ice_us_sugar | order-en | (none)
-ice_us_coffee | tz America/New_York | week_open_seconds 357300
+ice_us_sugar | extended | (none)
+ice_us_sugar | order-en | MoTuWeThFr---- | 13:30:00-18:00:00
+ice_us_sugar | order-en | MoTuWeTh------ | 20:00:00-03:30:00 +1d
+ice_us_coffee | tz America/New_York | week_open_seconds 166500
 ice_us_coffee | regular  | MoTuWeThFr---- | 04:15:00-13:30:00
-ice_us_coffee | extended | MoTuWeThFr---- | 14:00:00-18:00:00
-ice_us_coffee | extended | MoTuWeTh------ | 20:00:00-04:15:00 +1d
-ice_us_coffee | order-en | (none)
-ice_us_cocoa | tz America/New_York | week_open_seconds 355500
+ice_us_coffee | extended | (none)
+ice_us_coffee | order-en | MoTuWeThFr---- | 14:00:00-18:00:00
+ice_us_coffee | order-en | MoTuWeTh------ | 20:00:00-04:15:00 +1d
+ice_us_cocoa | tz America/New_York | week_open_seconds 157500
 ice_us_cocoa | regular  | MoTuWeThFr---- | 04:45:00-13:30:00
-ice_us_cocoa | extended | MoTuWeThFr---- | 14:00:00-18:00:00
-ice_us_cocoa | extended | MoTuWeTh------ | 20:00:00-04:45:00 +1d
-ice_us_cocoa | order-en | (none)
-ice_us_cotton | tz America/New_York | week_open_seconds 396000
+ice_us_cocoa | extended | (none)
+ice_us_cocoa | order-en | MoTuWeThFr---- | 14:00:00-18:00:00
+ice_us_cocoa | order-en | MoTuWeTh------ | 20:00:00-04:45:00 +1d
+ice_us_cotton | tz America/New_York | week_open_seconds 312000
 ice_us_cotton | regular  | MoTuWeTh----Su | 21:00:00-14:20:00 +1d
-ice_us_cotton | extended | MoTuWeThFr---- | 14:50:00-18:00:00
-ice_us_cotton | extended | MoTuWeTh----Su | 19:30:00-21:00:00
-ice_us_cotton | order-en | (none)
-ice_us_orange_juice | tz America/New_York | week_open_seconds 343800
+ice_us_cotton | extended | (none)
+ice_us_cotton | order-en | MoTuWeThFr---- | 14:50:00-18:00:00
+ice_us_cotton | order-en | MoTuWeTh----Su | 19:30:00-21:00:00
+ice_us_orange_juice | tz America/New_York | week_open_seconds 108000
 ice_us_orange_juice | regular  | MoTuWeThFr---- | 08:00:00-14:00:00
-ice_us_orange_juice | extended | MoTuWeThFr---- | 14:30:00-18:00:00
-ice_us_orange_juice | extended | MoTuWeTh------ | 20:00:00-08:00:00 +1d
-ice_us_orange_juice | order-en | (none)
-ice_us_dollar_index | tz America/New_York | week_open_seconds 394200
+ice_us_orange_juice | extended | (none)
+ice_us_orange_juice | order-en | MoTuWeThFr---- | 14:30:00-18:00:00
+ice_us_orange_juice | order-en | MoTuWeTh------ | 20:00:00-08:00:00 +1d
+ice_us_dollar_index | tz America/New_York | week_open_seconds 385200
 ice_us_dollar_index | regular  | ------------Su | 18:00:00-17:00:00 +1d
 ice_us_dollar_index | regular  | MoTuWeTh------ | 20:00:00-17:00:00 +1d
-ice_us_dollar_index | extended | ------------Su | 17:30:00-18:00:00
-ice_us_dollar_index | extended | MoTuWeTh------ | 19:30:00-20:00:00
-ice_us_dollar_index | order-en | (none)
+ice_us_dollar_index | extended | (none)
+ice_us_dollar_index | order-en | ------------Su | 17:30:00-18:00:00
+ice_us_dollar_index | order-en | MoTuWeTh------ | 19:30:00-20:00:00
 globex_nikkei_225_dollar | tz US/Central | week_open_seconds 414000
 globex_nikkei_225_dollar | regular  | MoTuWeTh----Su | 17:00:00-16:00:00 +1d
 globex_nikkei_225_dollar | extended | (none)
 globex_nikkei_225_dollar | order-en | (none)
-eurex_fixed_income | tz Europe/Berlin | week_open_seconds 363000
+eurex_fixed_income | tz Europe/Berlin | week_open_seconds 357000
 eurex_fixed_income | regular  | MoTuWeThFr---- | 02:10:00-22:00:00
-eurex_fixed_income | extended | MoTuWeThFr---- | 02:00:00-02:10:00
-eurex_fixed_income | extended | MoTuWeThFr---- | 22:00:00-22:10:00
-eurex_fixed_income | order-en | (none)
-sgx_equity_index_japan | tz Asia/Singapore | week_open_seconds 394500
+eurex_fixed_income | extended | (none)
+eurex_fixed_income | order-en | MoTuWeThFr---- | 02:00:00-02:10:00
+eurex_fixed_income | order-en | MoTuWeThFr---- | 22:00:00-22:10:00
+sgx_equity_index_japan | tz Asia/Singapore | week_open_seconds 388500
 sgx_equity_index_japan | regular  | MoTuWeThFr---- | 07:30:00-14:55:00
 sgx_equity_index_japan | regular  | MoTuWeThFr---- | 15:10:00-05:15:00 +1d
-sgx_equity_index_japan | extended | MoTuWeThFr---- | 07:15:00-07:30:00
 sgx_equity_index_japan | extended | MoTuWeThFr---- | 14:55:00-15:00:00
-sgx_equity_index_japan | extended | MoTuWeThFr---- | 15:05:00-15:10:00
-sgx_equity_index_japan | order-en | (none)
-sgx_equity_index_china | tz Asia/Singapore | week_open_seconds 367500
+sgx_equity_index_japan | order-en | MoTuWeThFr---- | 07:15:00-07:30:00
+sgx_equity_index_japan | order-en | MoTuWeThFr---- | 15:05:00-15:10:00
+sgx_equity_index_china | tz Asia/Singapore | week_open_seconds 361500
 sgx_equity_index_china | regular  | MoTuWeThFr---- | 09:00:00-16:30:00
 sgx_equity_index_china | regular  | MoTuWeThFr---- | 16:45:00-05:15:00 +1d
-sgx_equity_index_china | extended | MoTuWeThFr---- | 08:45:00-09:00:00
 sgx_equity_index_china | extended | MoTuWeThFr---- | 16:30:00-16:35:00
-sgx_equity_index_china | extended | MoTuWeThFr---- | 16:40:00-16:45:00
-sgx_equity_index_china | order-en | (none)
-sgx_equity_index_singapore | tz Asia/Singapore | week_open_seconds 376500
+sgx_equity_index_china | order-en | MoTuWeThFr---- | 08:45:00-09:00:00
+sgx_equity_index_china | order-en | MoTuWeThFr---- | 16:40:00-16:45:00
+sgx_equity_index_singapore | tz Asia/Singapore | week_open_seconds 370500
 sgx_equity_index_singapore | regular  | MoTuWeThFr---- | 08:30:00-17:20:00
 sgx_equity_index_singapore | regular  | MoTuWeThFr---- | 17:35:00-05:15:00 +1d
-sgx_equity_index_singapore | extended | MoTuWeThFr---- | 08:15:00-08:30:00
 sgx_equity_index_singapore | extended | MoTuWeThFr---- | 17:20:00-17:25:00
-sgx_equity_index_singapore | extended | MoTuWeThFr---- | 17:30:00-17:35:00
-sgx_equity_index_singapore | order-en | (none)
-sgx_equity_index_taiwan | tz Asia/Singapore | week_open_seconds 372000
+sgx_equity_index_singapore | order-en | MoTuWeThFr---- | 08:15:00-08:30:00
+sgx_equity_index_singapore | order-en | MoTuWeThFr---- | 17:30:00-17:35:00
+sgx_equity_index_taiwan | tz Asia/Singapore | week_open_seconds 366000
 sgx_equity_index_taiwan | regular  | MoTuWeThFr---- | 08:45:00-13:45:00
 sgx_equity_index_taiwan | regular  | MoTuWeThFr---- | 14:00:00-05:15:00 +1d
-sgx_equity_index_taiwan | extended | MoTuWeThFr---- | 08:30:00-08:45:00
 sgx_equity_index_taiwan | extended | MoTuWeThFr---- | 13:45:00-13:50:00
-sgx_equity_index_taiwan | extended | MoTuWeThFr---- | 13:55:00-14:00:00
-sgx_equity_index_taiwan | order-en | (none)
-sgx_equity_index_ntr_usd | tz Asia/Singapore | week_open_seconds 396000
+sgx_equity_index_taiwan | order-en | MoTuWeThFr---- | 08:30:00-08:45:00
+sgx_equity_index_taiwan | order-en | MoTuWeThFr---- | 13:55:00-14:00:00
+sgx_equity_index_ntr_usd | tz Asia/Singapore | week_open_seconds 390000
 sgx_equity_index_ntr_usd | regular  | MoTuWeThFr---- | 07:25:00-18:30:00
 sgx_equity_index_ntr_usd | regular  | MoTuWeThFr---- | 18:45:00-05:15:00 +1d
-sgx_equity_index_ntr_usd | extended | MoTuWeThFr---- | 07:10:00-07:25:00
 sgx_equity_index_ntr_usd | extended | MoTuWeThFr---- | 18:30:00-18:35:00
-sgx_equity_index_ntr_usd | extended | MoTuWeThFr---- | 18:40:00-18:45:00
-sgx_equity_index_ntr_usd | order-en | (none)
-sgx | tz Asia/Singapore | week_open_seconds 396000
+sgx_equity_index_ntr_usd | order-en | MoTuWeThFr---- | 07:10:00-07:25:00
+sgx_equity_index_ntr_usd | order-en | MoTuWeThFr---- | 18:40:00-18:45:00
+sgx | tz Asia/Singapore | week_open_seconds 388500
 sgx | regular  | MoTuWeThFr---- | 07:25:00-17:55:00
 sgx | regular  | MoTuWeThFr---- | 18:15:00-05:15:00 +1d
-sgx | extended | MoTuWeThFr---- | 07:10:00-07:25:00
 sgx | extended | MoTuWeThFr---- | 17:55:00-18:00:00
-sgx | extended | MoTuWeThFr---- | 18:05:00-18:15:00
-sgx | order-en | (none)
+sgx | order-en | MoTuWeThFr---- | 07:10:00-07:25:00
+sgx | order-en | MoTuWeThFr---- | 18:05:00-18:15:00
 always_open | tz UTC | week_open_seconds 604800
 always_open | regular  | MoTuWeThFrSaSu | 00:00:00-24:00:00
 always_open | extended | (none)

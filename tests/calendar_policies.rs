@@ -145,10 +145,9 @@ fn closed_trade_date_removes_the_prior_evening_but_not_the_next_trade_date() {
     );
     assert_eq!(
         calendar.session_bounds(ct((2026, 4, 19), (18, 0, 0))),
-        Some((
-            ct((2026, 4, 20), (16, 45, 0)),
-            ct((2026, 4, 20), (17, 0, 0)),
-        ))
+        // Sessions now begin at the matching open. Previously this returned the
+        // 16:45-17:00 pre-open queue as if it were a fifteen-minute session.
+        Some((ct((2026, 4, 20), (17, 0, 0)), ct((2026, 4, 21), (8, 30, 0)),))
     );
 }
 
@@ -411,9 +410,11 @@ fn cme_mlk_and_presidents_day_close_at_noon_then_reopen_at_five() {
                 (holiday.year(), holiday.month(), holiday.day()),
                 (12, 0, 0),
             )),
+            // 16:45 is the pre-open queue, not a session; matching resumes at
+            // 17:00 and that is where the next session opens.
             Some(ct(
                 (holiday.year(), holiday.month(), holiday.day()),
-                (16, 45, 0),
+                (17, 0, 0),
             ))
         );
         assert!(calendar.is_open_extended(ct(
@@ -505,7 +506,9 @@ fn next_session_scan_includes_day_fourteen_and_excludes_day_fifteen() {
     let calendar = calendar_for_exchange(Exchange::NyseNational);
     assert_eq!(
         calendar.next_session_open_after(et((2018, 5, 7), (7, 0, 0))),
-        Some(et((2018, 5, 21), (6, 30, 0)))
+        // NYSE National's 06:30 order-acceptance edge is not a session; the
+        // first session opens with matching at 07:00.
+        Some(et((2018, 5, 21), (7, 0, 0)))
     );
     assert_eq!(
         calendar.next_session_open_after(et((2018, 5, 6), (7, 0, 0))),
@@ -607,9 +610,12 @@ fn session_state_and_trade_date_are_consistent_for_every_key() {
             if key == MarketHoursKey::AlwaysOpen {
                 assert_eq!(calendar.trade_date(instant), None, "{key} at {instant}");
             } else {
+                // A trade date exists wherever the venue is doing business -
+                // including an order-entry phase, which carries the trade date
+                // of the session it feeds.
                 assert_eq!(
                     calendar.trade_date(instant).is_some(),
-                    calendar.is_open(instant),
+                    calendar.is_accepting_orders(instant),
                     "{key} at {instant}"
                 );
             }
@@ -620,6 +626,15 @@ fn session_state_and_trade_date_are_consistent_for_every_key() {
                 SessionState::OpenExtended => {
                     assert!(!calendar.is_open_regular(instant), "{key} at {instant}");
                     assert!(calendar.is_open_extended(instant), "{key} at {instant}");
+                }
+                SessionState::OrderEntry => {
+                    // Nothing matches, so the market is not open - but orders
+                    // are accepted, which is the whole point of the phase.
+                    assert!(!calendar.is_open(instant), "{key} at {instant}");
+                    assert!(
+                        calendar.is_accepting_orders(instant),
+                        "{key} at {instant}: OrderEntry state must accept orders"
+                    );
                 }
                 SessionState::Halt | SessionState::Maintenance | SessionState::Closed => {
                     assert!(!calendar.is_open(instant), "{key} at {instant}");

@@ -83,7 +83,10 @@ pub(crate) fn twenty_four_x_profile_at(as_of: DateTime<Utc>) -> &'static StaticH
 
 // TXSE's production alerts distinguish its July 6–9 test-symbol activity from
 // the first NMS-stock production rollout on 2026-07-10. The current exchange
-// schedule accepts orders from 08:00 through its 17:00 late-session close.
+// schedule accepts orders from 08:00 through its 17:00 late-session close. The
+// operator names 08:00–09:30 a Pre-Market session rather than an order-entry
+// phase and does not document a separate unmatchable acceptance window, so both
+// off-core legs stay Extended.
 // https://www.txse.com/alerts/6a5e8e60-8753-4eac-906d-ecbbf8682df9
 // https://www.txse.com/alerts/txse-production-launch-and-market-activation
 static TXSE_EXTENDED: &[SessionRule] = &[

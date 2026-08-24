@@ -38,7 +38,8 @@ fn tokyo_current_baseline() {
     let h = hours_for_exchange(Exchange::Tse);
     let tz = Asia::Tokyo;
     assert!(!h.is_open(local(tz, (2026, 8, 19), (7, 59, 0))));
-    assert!(h.is_open_extended(local(tz, (2026, 8, 19), (8, 0, 0))));
+    // TSE pre-opening: Itayose order acceptance, no matching until 09:00.
+    assert!(h.is_order_entry_only(local(tz, (2026, 8, 19), (8, 0, 0))));
     assert!(h.is_open_regular(local(tz, (2026, 8, 19), (9, 0, 0))));
     assert!(h.is_open_extended(local(tz, (2026, 8, 19), (12, 0, 0))));
     assert!(h.is_open_regular(local(tz, (2026, 8, 19), (12, 30, 0))));
@@ -55,8 +56,12 @@ fn nzx_current_baseline() {
     assert!(!h.is_open(local(tz, (2026, 8, 19), (8, 29, 0))));
     assert!(h.is_open_extended(local(tz, (2026, 8, 19), (8, 30, 0))));
     assert!(h.is_open_regular(local(tz, (2026, 8, 19), (10, 0, 0))));
-    assert!(h.is_open_extended(local(tz, (2026, 8, 19), (16, 45, 0))));
-    assert!(!h.is_open(local(tz, (2026, 8, 19), (17, 0, 0))));
+    // NZX Pre-Close: order entry for the closing auction, nothing matches.
+    assert!(h.is_order_entry_only(local(tz, (2026, 8, 19), (16, 45, 0))));
+    // The closing uncross is randomised within 30 seconds EITHER side of
+    // 17:00, so 17:00 itself is still inside the tradeable auction window.
+    assert!(h.is_open_extended(local(tz, (2026, 8, 19), (17, 0, 0))));
+    assert!(!h.is_open(local(tz, (2026, 8, 19), (17, 1, 0))));
     assert_weekend_closed(Exchange::Nzx, tz);
 }
 
@@ -66,7 +71,9 @@ fn india_current_baselines() {
     for exchange in [Exchange::NseIndia, Exchange::BseIndia] {
         let h = hours_for_exchange(exchange);
         assert!(!h.is_open(local(tz, (2026, 8, 19), (8, 59, 0))));
-        assert!(h.is_open_extended(local(tz, (2026, 8, 19), (9, 0, 0))));
+        // India pre-open order-collection sub-window; the matching
+        // sub-window that follows it stays tradeable.
+        assert!(h.is_order_entry_only(local(tz, (2026, 8, 19), (9, 0, 0))));
         assert!(h.is_open_regular(local(tz, (2026, 8, 19), (9, 15, 0))));
         assert!(h.is_open_regular(local(tz, (2026, 8, 19), (15, 20, 0))));
         assert!(h.is_open_extended(local(tz, (2026, 8, 19), (15, 20, 0))));
@@ -83,7 +90,8 @@ fn hong_kong_current_baseline() {
     let h = hours_for_exchange(Exchange::Hkex);
     let tz = Asia::Hong_Kong;
     assert!(!h.is_open(local(tz, (2026, 8, 19), (8, 59, 0))));
-    assert!(h.is_open_extended(local(tz, (2026, 8, 19), (9, 0, 0))));
+    // HKEX pre-opening order-input period; the auction match follows.
+    assert!(h.is_order_entry_only(local(tz, (2026, 8, 19), (9, 0, 0))));
     assert!(h.is_open_regular(local(tz, (2026, 8, 19), (9, 30, 0))));
     assert!(h.is_open_regular(local(tz, (2026, 8, 19), (12, 30, 0))));
     assert!(h.is_open_regular(local(tz, (2026, 8, 19), (13, 0, 0))));
@@ -97,10 +105,12 @@ fn sgx_securities_current_baseline() {
     let h = hours_for_exchange(Exchange::SgxSecurities);
     let tz = Asia::Singapore;
     assert!(!h.is_open(local(tz, (2026, 8, 19), (8, 29, 0))));
-    assert!(h.is_open_extended(local(tz, (2026, 8, 19), (8, 30, 0))));
+    // SGX Pre-Opening routine: order entry only.
+    assert!(h.is_order_entry_only(local(tz, (2026, 8, 19), (8, 30, 0))));
     assert!(h.is_open_regular(local(tz, (2026, 8, 19), (9, 0, 0))));
     assert!(!h.is_open_regular(local(tz, (2026, 8, 19), (12, 30, 0))));
-    assert!(h.is_open_extended(local(tz, (2026, 8, 19), (12, 30, 0))));
+    // Midday pre-opening routine ahead of the afternoon session: order entry.
+    assert!(h.is_order_entry_only(local(tz, (2026, 8, 19), (12, 30, 0))));
     assert!(h.is_open_regular(local(tz, (2026, 8, 19), (13, 0, 0))));
     assert!(h.is_open_extended(local(tz, (2026, 8, 19), (17, 15, 0))));
     assert!(!h.is_open(local(tz, (2026, 8, 19), (17, 16, 0))));
@@ -128,15 +138,22 @@ fn southeast_asia_current_baselines() {
     let tz = Asia::Bangkok;
     let h = hours_for_exchange(Exchange::SetThailand);
     assert!(!h.is_open(local(tz, date, (9, 29, 0))));
-    assert!(h.is_open_extended(local(tz, date, (9, 30, 0))));
+    // SET pre-open order accumulation ahead of the randomised auction.
+    assert!(h.is_order_entry_only(local(tz, date, (9, 30, 0))));
     assert!(h.is_open_regular(local(tz, date, (10, 0, 0))));
     assert!(h.is_open_regular(local(tz, date, (12, 30, 0))));
-    assert!(h.is_open_extended(local(tz, date, (13, 30, 0))));
+    // 13:30 sits in SET's afternoon pre-open for ordinary shares, but eligible
+    // Europe/Americas DRs trade continuously through the break, so the venue is
+    // genuinely open here rather than order-entry-only.
+    assert!(h.is_open(local(tz, date, (13, 30, 0))));
     assert!(h.is_open_regular(local(tz, date, (14, 0, 0))));
     assert!(h.is_open_extended(local(tz, date, (16, 30, 0))));
     assert!(!h.is_open(local(tz, date, (17, 0, 0))));
-    assert!(h.is_open_extended(local(tz, date, (18, 45, 0))));
+    // Night-session pre-open: order accumulation, no matching.
+    assert!(h.is_order_entry_only(local(tz, date, (18, 45, 0))));
     assert!(h.is_open_regular(local(tz, date, (19, 0, 0))));
+    // Night-session pre-close AND off-hour window: off-hour trades print, so
+    // this stays tradeable rather than order-entry-only.
     assert!(h.is_open_extended(local(tz, (2026, 8, 20), (2, 45, 0))));
     assert!(!h.is_open(local(tz, (2026, 8, 20), (3, 0, 0))));
     assert_weekend_closed(Exchange::SetThailand, tz);
@@ -144,7 +161,9 @@ fn southeast_asia_current_baselines() {
     let tz = Asia::Jakarta;
     let h = hours_for_exchange(Exchange::Idx);
     assert!(!h.is_open(local(tz, date, (8, 44, 0))));
-    assert!(h.is_open_extended(local(tz, date, (8, 45, 0))));
+    // IDX pre-opening order collection 08:45-08:55; the 08:55 pre-open match
+    // that follows it is tradeable and stays in `extended`.
+    assert!(h.is_order_entry_only(local(tz, date, (8, 45, 0))));
     assert!(h.is_open_regular(local(tz, date, (9, 0, 0))));
     assert!(!h.is_open(local(tz, date, (12, 0, 0))));
     assert!(h.is_open_regular(local(tz, date, (13, 30, 0))));

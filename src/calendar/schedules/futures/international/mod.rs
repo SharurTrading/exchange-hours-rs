@@ -21,10 +21,12 @@ mod sgx_equity_index;
 mod sgx_equity_index_more;
 
 pub(crate) use binance::{CURRENT as BINANCE_CURRENT, profile_at as binance_profile_at};
+pub(crate) use eurex_fixed_income::EUREX_FIXED_INCOME_ORDER_ENTRY_CURRENT;
 pub(crate) use eurex_fixed_income::{
     EUREX_FIXED_INCOME_EXTENDED_CURRENT, EUREX_FIXED_INCOME_REGULAR_CURRENT,
     eurex_fixed_income_profile_at,
 };
+pub(crate) use europe::EUREX_CURRENT_ORDER_ENTRY;
 pub(crate) use europe::{
     EEX_PROFILE, EUREX_CURRENT_EXTENDED, EUREX_CURRENT_REGULAR, eex_profile_at, eurex_profile_at,
 };
@@ -35,7 +37,11 @@ pub(crate) use ice_europe::{
     ICE_EUROPE_COMMODITIES_CURRENT, ICE_EUROPE_FINANCIALS_CURRENT, ICEEU_CURRENT,
     ice_europe_commodities_profile_at, ice_europe_financials_profile_at, iceeu_profile_at,
 };
+pub(crate) use sgx::SGX_CURRENT_ORDER_ENTRY;
 pub(crate) use sgx::{SGX_CURRENT_EXTENDED, SGX_CURRENT_REGULAR, sgx_profile_at};
+pub(crate) use sgx_equity_index::SGX_EQUITY_INDEX_CHINA_ORDER_ENTRY_CURRENT;
+pub(crate) use sgx_equity_index::SGX_EQUITY_INDEX_JAPAN_ORDER_ENTRY_CURRENT;
+pub(crate) use sgx_equity_index::SGX_EQUITY_INDEX_SINGAPORE_ORDER_ENTRY_CURRENT;
 pub(crate) use sgx_equity_index::{
     SGX_EQUITY_INDEX_CHINA_EXTENDED_CURRENT, SGX_EQUITY_INDEX_CHINA_REGULAR_CURRENT,
     SGX_EQUITY_INDEX_JAPAN_EXTENDED_CURRENT, SGX_EQUITY_INDEX_JAPAN_REGULAR_CURRENT,
@@ -43,6 +49,8 @@ pub(crate) use sgx_equity_index::{
     sgx_equity_index_china_profile_at, sgx_equity_index_japan_profile_at,
     sgx_equity_index_singapore_profile_at,
 };
+pub(crate) use sgx_equity_index_more::SGX_EQUITY_INDEX_NTR_USD_ORDER_ENTRY_CURRENT;
+pub(crate) use sgx_equity_index_more::SGX_EQUITY_INDEX_TAIWAN_ORDER_ENTRY_CURRENT;
 pub(crate) use sgx_equity_index_more::{
     SGX_EQUITY_INDEX_NTR_USD_EXTENDED_CURRENT, SGX_EQUITY_INDEX_NTR_USD_REGULAR_CURRENT,
     SGX_EQUITY_INDEX_TAIWAN_EXTENDED_CURRENT, SGX_EQUITY_INDEX_TAIWAN_REGULAR_CURRENT,

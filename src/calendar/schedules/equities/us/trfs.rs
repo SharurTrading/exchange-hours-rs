@@ -15,6 +15,12 @@ use crate::calendar::schedules::timeline::{Revision, effective_date, local_date,
 // their system hours changed from 08:00–20:00 to 04:00–20:00 ET on 2026-03-30,
 // and classifies 09:30–16:00 as Regular Trading Hours. Rules 6380A and 6380B
 // require the outside-RTH reports to carry the corresponding modifier.
+//
+// A TRF is a reporting facility, not a matching engine and not an order book:
+// it has no order-entry phase to separate out, because it never accepts orders
+// at all. Every window below is a window in which an executed trade is reported
+// and disseminated, so a print does occur inside it and all of them stay in
+// `extended`; `order_entry` is empty because the concept does not apply here.
 // https://www.finra.org/filing-reporting/trade-reporting-facility-trf
 // https://www.finra.org/rules-guidance/rulebooks/finra-rules/6380a
 // https://www.finra.org/rules-guidance/rulebooks/finra-rules/6380b

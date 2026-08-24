@@ -62,7 +62,7 @@ fn bzx_and_byx_2014_order_queues_use_the_exact_operator_dates() {
         assert!(!before.is_open(et(date, (6, 0, 0))), "{exch:?}");
         assert!(before.is_open_extended(et(date, (8, 0, 0))), "{exch:?}");
         assert!(!after.is_open(et(date, (5, 59, 59))), "{exch:?}");
-        assert!(after.is_open_extended(et(date, (6, 0, 0))), "{exch:?}");
+        assert!(after.is_order_entry_only(et(date, (6, 0, 0))), "{exch:?}");
     }
 }
 
@@ -78,7 +78,7 @@ fn partial_us_equity_histories_do_not_invent_current_queue_onsets() {
 
     let current = hours_for_exchange(Exchange::CboeEdga);
     let partial_as_of = hours_for_exchange_as_of(Exchange::CboeEdga, et((2026, 4, 20), (12, 0, 0)));
-    assert!(current.is_open_extended(et((2026, 4, 20), (6, 0, 0))));
+    assert!(current.is_order_entry_only(et((2026, 4, 20), (6, 0, 0))));
     assert!(!partial_as_of.is_open(et((2026, 4, 20), (6, 0, 0))));
     assert!(!calendar_for_exchange(Exchange::CboeEdga).is_open(et((2026, 4, 20), (6, 0, 0))));
 
@@ -89,7 +89,7 @@ fn partial_us_equity_histories_do_not_invent_current_queue_onsets() {
         let instant = et((2026, 4, 20), current_queue);
         let dated = hours_for_exchange_as_of(exchange, instant);
         assert!(
-            hours_for_exchange(exchange).is_open_extended(instant),
+            hours_for_exchange(exchange).is_order_entry_only(instant),
             "{exchange:?} at {instant}"
         );
         assert!(!dated.is_open(instant), "{exchange:?} at {instant}");
@@ -177,7 +177,7 @@ fn nyse_american_extended_trading_begins_with_pillar() {
     assert!(!before.is_open(et((2017, 7, 24), (8, 0, 0))));
     assert!(before.is_open_regular(et((2017, 7, 24), (10, 0, 0))));
     assert!(!before.is_open(et((2017, 7, 24), (16, 0, 0))));
-    assert!(pillar.is_open_extended(et((2017, 7, 24), (6, 30, 0))));
+    assert!(pillar.is_order_entry_only(et((2017, 7, 24), (6, 30, 0))));
     assert!(pillar.is_open_regular(et((2017, 7, 24), (9, 30, 0))));
     assert!(pillar.is_open_extended(et((2017, 7, 24), (19, 59, 59))));
     assert!(!pillar.is_open(et((2017, 7, 24), (20, 0, 0))));
@@ -204,7 +204,7 @@ fn nyse_texas_preserves_chx_history_through_the_pillar_migration() {
     let pillar = profile_from(Exchange::NyseTexas, (2019, 11, 4));
     assert!(!before.is_open(et((2019, 11, 4), (17, 0, 0))));
     assert!(!pillar.is_open(et((2019, 11, 4), (6, 29, 59))));
-    assert!(pillar.is_open_extended(et((2019, 11, 4), (6, 30, 0))));
+    assert!(pillar.is_order_entry_only(et((2019, 11, 4), (6, 30, 0))));
     assert!(pillar.is_open_extended(et((2019, 11, 4), (17, 0, 0))));
     assert!(pillar.is_open_extended(et((2019, 11, 4), (19, 59, 59))));
     assert!(!pillar.is_open(et((2019, 11, 4), (20, 0, 0))));
@@ -243,7 +243,7 @@ fn nyse_national_full_legacy_and_dormant_timeline_is_preserved() {
     assert!(second_dormant.regular.is_empty() && second_dormant.extended.is_empty());
 
     let pillar = profile_from(Exchange::NyseNational, (2018, 5, 21));
-    assert!(pillar.is_open_extended(et((2018, 5, 21), (6, 30, 0))));
+    assert!(pillar.is_order_entry_only(et((2018, 5, 21), (6, 30, 0))));
     assert!(pillar.is_open_extended(et((2018, 5, 21), (19, 59, 59))));
     assert!(!pillar.is_open(et((2018, 5, 21), (20, 0, 0))));
 }

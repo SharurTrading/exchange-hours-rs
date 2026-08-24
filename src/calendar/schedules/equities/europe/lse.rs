@@ -21,29 +21,36 @@ static BASE_REGULAR: &[SessionRule] = &[SessionRule {
     close_ssm: 16 * 3600 + 30 * 60,
 }];
 static BASE_EXTENDED: &[SessionRule] = &[
-    // Pre-trading.
-    SessionRule {
-        days: MON_FRI,
-        open_ssm: 7 * 3600,
-        close_ssm: 7 * 3600 + 50 * 60,
-    },
-    // Opening auction.
+    // Opening auction call and its randomized uncross: the uncrossing prints
+    // trades at the opening price, so the whole window stays tradeable.
     SessionRule {
         days: MON_FRI,
         open_ssm: 7 * 3600 + 50 * 60,
         close_ssm: 8 * 3600 + 30,
     },
+    // Closing auction.
     SessionRule {
         days: MON_FRI,
         open_ssm: 16 * 3600 + 30 * 60,
         close_ssm: 16 * 3600 + 35 * 60 + 30,
     },
 ];
+// Pre-trading is order-entry-only: MIT201 section 4.4 lists it as a scheduled
+// trading session that precedes the opening auction call, separate from the
+// executable phases of the order-book day (opening auction, regular trading,
+// closing auction, and the closing price crossing session). No on-book
+// execution can occur before the opening auction uncrosses.
+// https://docs.londonstockexchange.com/sites/default/files/documents/mit201-guide-to-the-trading-system-15-6-20240429.pdf
+static ORDER_ENTRY: &[SessionRule] = &[SessionRule {
+    days: MON_FRI,
+    open_ssm: 7 * 3600,
+    close_ssm: 7 * 3600 + 50 * 60,
+}];
 static BASE_PROFILE: StaticHoursProfile = StaticHoursProfile {
     tz: Europe::London,
     regular: BASE_REGULAR,
     extended: BASE_EXTENDED,
-    order_entry: &[],
+    order_entry: ORDER_ENTRY,
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -60,14 +67,15 @@ static BASE_PROFILE: StaticHoursProfile = StaticHoursProfile {
 // https://docs.londonstockexchange.com/sites/default/files/documents/mit201-guide-to-the-trading-system-15-6-20240429.pdf
 static CPX_EXTENDED: &[SessionRule] = &[
     BASE_EXTENDED[0],
-    BASE_EXTENDED[1],
     // Closing auction.
     SessionRule {
         days: MON_FRI,
         open_ssm: 16 * 3600 + 30 * 60,
         close_ssm: 16 * 3600 + 35 * 60 + 30,
     },
-    // Closing Price Crossing.
+    // Closing Price Crossing: MIT201 section 4.5 calls CPX "a short, modified
+    // regular trading session" whose executions occur at the closing auction
+    // price, so it is tradeable, not order entry.
     SessionRule {
         days: MON_FRI,
         open_ssm: 16 * 3600 + 35 * 60 + 30,
@@ -78,7 +86,7 @@ static CPX_PROFILE: StaticHoursProfile = StaticHoursProfile {
     tz: Europe::London,
     regular: BASE_REGULAR,
     extended: CPX_EXTENDED,
-    order_entry: &[],
+    order_entry: ORDER_ENTRY,
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -102,21 +110,21 @@ static CURRENT_REGULAR: &[SessionRule] = &[
 ];
 static CURRENT_EXTENDED: &[SessionRule] = &[
     BASE_EXTENDED[0],
-    BASE_EXTENDED[1],
+    // Intraday auction: its uncross prints trades.
     SessionRule {
         days: MON_FRI,
         open_ssm: 12 * 3600,
         close_ssm: 12 * 3600 + 2 * 60 + 30,
     },
+    CPX_EXTENDED[1],
     CPX_EXTENDED[2],
-    CPX_EXTENDED[3],
 ];
 
 pub(crate) static LSE_PROFILE: StaticHoursProfile = StaticHoursProfile {
     tz: Europe::London,
     regular: CURRENT_REGULAR,
     extended: CURRENT_EXTENDED,
-    order_entry: &[],
+    order_entry: ORDER_ENTRY,
     has_daily_close: true,
     has_weekend_close: true,
 };

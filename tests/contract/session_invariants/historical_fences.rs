@@ -77,9 +77,20 @@ fn cutovers_flip_exactly_at_the_venue_local_midnight() {
         let hours_before = hours_for_exchange_as_of(exchange, just_before);
         let hours_at = hours_for_exchange_as_of(exchange, at);
 
+        // All three phases participate: several sourced cutovers changed only a
+        // pre-open queue, which now lives in `order_entry` rather than
+        // `extended`, and comparing two phases would miss them.
         assert_ne!(
-            (hours_before.regular.clone(), hours_before.extended.clone()),
-            (hours_at.regular.clone(), hours_at.extended.clone()),
+            (
+                hours_before.regular.clone(),
+                hours_before.extended.clone(),
+                hours_before.order_entry.clone(),
+            ),
+            (
+                hours_at.regular.clone(),
+                hours_at.extended.clone(),
+                hours_at.order_entry.clone(),
+            ),
             "{exchange:?}: the {year}-{month:02}-{day:02} cutover did not change the profile \
              at venue-local midnight"
         );

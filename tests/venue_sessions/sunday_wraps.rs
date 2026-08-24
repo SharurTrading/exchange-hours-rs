@@ -61,8 +61,8 @@ fn iceus_equal_endpoint_rule_is_one_continuous_sunday_session() {
     let monday_close = et((2026, 4, 20), (18, 0, 0));
 
     assert!(!h.is_open(pre_open - chrono::Duration::seconds(1)));
-    assert!(h.is_open_extended(pre_open));
-    assert!(h.is_open(sunday_open - chrono::Duration::seconds(1)));
+    assert!(h.is_order_entry_only(pre_open));
+    assert!(h.is_order_entry_only(sunday_open - chrono::Duration::seconds(1)));
     assert!(h.is_open(sunday_open));
     assert!(h.is_open(et((2026, 4, 20), (0, 0, 0))));
     assert!(h.is_open(monday_close - chrono::Duration::seconds(1)));
@@ -81,14 +81,18 @@ fn iceus_equal_endpoint_rule_is_one_continuous_sunday_session() {
     );
     assert_eq!(
         candle_start(&h, et((2026, 4, 20), (12, 0, 0)), CalendarResolution::Daily,),
-        Some(pre_open)
+        // The daily bar opens with the session, not with the queue that precedes it.
+        Some(sunday_open)
     );
-    assert_eq!(h.normal_week_open_seconds(), 114 * 3600 + 30 * 60);
+    // Down 9_000s: the Pre-Open and post-close order-entry windows no longer
+    // count as scheduled open time.
+    assert_eq!(h.normal_week_open_seconds(), 112 * 3600);
 
     let before = pre_open - chrono::Duration::seconds(1);
     assert_eq!(
         next_session_after(&h, before),
-        Some((pre_open, sunday_open))
+        // The queue is not a session, so the next session is the Sunday open.
+        Some((sunday_open, monday_close))
     );
     let calendar = calendar_for_exchange(Exchange::Iceus);
     assert_eq!(
@@ -97,7 +101,7 @@ fn iceus_equal_endpoint_rule_is_one_continuous_sunday_session() {
     );
     assert_eq!(
         calendar.candle_start(et((2026, 4, 20), (12, 0, 0)), CalendarResolution::Daily,),
-        Some(pre_open)
+        Some(sunday_open)
     );
     assert_eq!(
         calendar.candle_end(sunday_open, CalendarResolution::Daily),
@@ -105,7 +109,8 @@ fn iceus_equal_endpoint_rule_is_one_continuous_sunday_session() {
     );
     assert_eq!(
         calendar.normal_week_open_seconds_containing(sunday_open),
-        114 * 3600 + 30 * 60
+        // Down 9_000s: the order-entry windows are no longer scheduled open time.
+        112 * 3600
     );
 }
 

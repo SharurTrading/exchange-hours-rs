@@ -70,6 +70,23 @@ impl FuturesSessionProfile {
             .is_open(t)
     }
 
+    /// True when `t` falls in an order-entry-only phase where nothing matches.
+    ///
+    /// Mirrors [`MarketHours::is_order_entry_only`] so a profile and the hours
+    /// it produces answer identically.
+    #[must_use]
+    pub fn is_order_entry_only(&self, t: DateTime<Utc>) -> bool {
+        self.to_market_hours(CalendarSource::Exchange(Exchange::Unknown))
+            .is_order_entry_only(t)
+    }
+
+    /// True when orders may be entered, amended or cancelled at `t`.
+    #[must_use]
+    pub fn is_accepting_orders(&self, t: DateTime<Utc>) -> bool {
+        self.to_market_hours(CalendarSource::Exchange(Exchange::Unknown))
+            .is_accepting_orders(t)
+    }
+
     /// Converts this profile into the [`MarketHours`] value the calendar query
     /// surface ([`candle_end`](super::candle_end),
     /// [`session_bounds`](super::session_bounds), …) consumes, tagged with

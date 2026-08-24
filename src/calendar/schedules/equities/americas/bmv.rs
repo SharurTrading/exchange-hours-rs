@@ -18,6 +18,10 @@ static BMV_REGULAR_EARLY: &[SessionRule] = &[SessionRule {
     open_ssm: 7 * 3600 + 30 * 60,
     close_ssm: 14 * 3600,
 }];
+// No BMV phase is order-entry-only, so `order_entry` stays empty on every
+// profile below. The window before the open is the venue's opening-auction
+// stage — the cancellation-only setup that precedes it is already excluded
+// from the model — and the HD/ID tail is executable, so both print.
 static BMV_EXTENDED_NORMAL_PRE_2016: &[SessionRule] = &[
     SessionRule {
         days: MON_FRI,

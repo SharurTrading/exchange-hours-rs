@@ -99,8 +99,17 @@ pub(crate) static COTTON_REGULAR_CURRENT: &[SessionRule] = &[SessionRule {
 //
 // https://www.ice.com/products/254/cotton-no-2-futures
 // https://www.ice.com/publicdocs/futures_us/exchange_notices/ICE_Futures_US_PCPO_Session_20180920.pdf
+// CLASSIFICATION. Both phases are order_entry, not extended. Rule 4.22(a)
+// restricts the Pre-Trading Session to Limit order entry and puts the Opening
+// Match at the open, so no trade prints between 19:30 and 21:00; the PCPO is an
+// order entry/amendment window whose own Day orders are killed at its end, so
+// no trade prints between 14:50 and 18:00 either. Cotton No. 2 publishes no
+// tradeable phase outside its executable session, which leaves the extended
+// slice empty.
+//
 // https://www.ice.com/publicdocs/rulebooks/futures_us/4_Trading.pdf
-pub(crate) static COTTON_EXTENDED_CURRENT: &[SessionRule] = &[
+pub(crate) static COTTON_EXTENDED_CURRENT: &[SessionRule] = &[];
+pub(crate) static COTTON_ORDER_ENTRY_CURRENT: &[SessionRule] = &[
     SessionRule {
         days: MON_FRI,
         open_ssm: 14 * 3600 + 50 * 60,
@@ -117,7 +126,7 @@ pub(crate) static COTTON_CURRENT: StaticHoursProfile = StaticHoursProfile {
     tz: America::New_York,
     regular: COTTON_REGULAR_CURRENT,
     extended: COTTON_EXTENDED_CURRENT,
-    order_entry: &[],
+    order_entry: COTTON_ORDER_ENTRY_CURRENT,
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -126,8 +135,9 @@ pub(crate) static COTTON_CURRENT: StaticHoursProfile = StaticHoursProfile {
 // 21:00 - 14:20, but the PCPO order-entry window does not exist yet. The
 // September 2018 notice describes the PCPO as an addition to the existing
 // pre-open order entry session, so the 19:30 - 21:00 Pre-Open is the whole of
-// the extended grid in this regime.
-static COTTON_EXTENDED_2014: &[SessionRule] = &[SessionRule {
+// the non-executable grid in this regime - and, being order entry under Rule
+// 4.22(a), it sits in order_entry, leaving these eras with no extended phase.
+static COTTON_ORDER_ENTRY_2014: &[SessionRule] = &[SessionRule {
     days: SUN_PLUS_MON_THU,
     open_ssm: 19 * 3600 + 30 * 60,
     close_ssm: 21 * 3600,
@@ -136,8 +146,8 @@ static COTTON_EXTENDED_2014: &[SessionRule] = &[SessionRule {
 static COTTON_2014: StaticHoursProfile = StaticHoursProfile {
     tz: America::New_York,
     regular: COTTON_REGULAR_CURRENT,
-    extended: COTTON_EXTENDED_2014,
-    order_entry: &[],
+    extended: &[],
+    order_entry: COTTON_ORDER_ENTRY_2014,
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -163,8 +173,8 @@ static COTTON_REGULAR_BASELINE: &[SessionRule] = &[SessionRule {
 pub(crate) static COTTON_BASELINE: StaticHoursProfile = StaticHoursProfile {
     tz: America::New_York,
     regular: COTTON_REGULAR_BASELINE,
-    extended: COTTON_EXTENDED_2014,
-    order_entry: &[],
+    extended: &[],
+    order_entry: COTTON_ORDER_ENTRY_2014,
     has_daily_close: true,
     has_weekend_close: true,
 };

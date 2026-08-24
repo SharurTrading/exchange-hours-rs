@@ -29,12 +29,28 @@ static B3_REGULAR_LONG: &[SessionRule] = &[SessionRule {
     open_ssm: 10 * 3600,
     close_ssm: 17 * 3600 + 55 * 60,
 }];
+// Order entry only. B3's own timetable annexes list "Pre-Opening" as a phase
+// distinct from "Trading": the 15 minutes before the open collect and price a
+// book that does not match, and the first print is the opening call at the
+// start of continuous trading. The immediately preceding "Order Cancellation"
+// window (09:30–09:45) stays excluded from the model entirely.
+// https://www.b3.com.br/data/files/AE/22/40/4A/1131A910F51990A9AC094EA8/CL%20043-2025-VNC%20NOVOS%20HORARIOS%20DE%20NEGOCIACAO_EN.pdf
+static B3_ORDER_ENTRY_0945: &[SessionRule] = &[SessionRule {
+    days: MON_FRI,
+    open_ssm: 9 * 3600 + 45 * 60,
+    close_ssm: 10 * 3600,
+}];
+// Same phase on the 2010–2012 grids that opened continuous trading at 11:00.
+static B3_ORDER_ENTRY_1045: &[SessionRule] = &[SessionRule {
+    days: MON_FRI,
+    open_ssm: 10 * 3600 + 45 * 60,
+    close_ssm: 11 * 3600,
+}];
+// The remaining phases all print: closing calls cross at the auction price and
+// the after-market windows execute. The after-market envelopes below merge the
+// venue's after-market pre-opening with after-market trading, so they stay
+// tradeable rather than being split on an unsourced internal boundary.
 static B3_EXTENDED_SHORT: &[SessionRule] = &[
-    SessionRule {
-        days: MON_FRI,
-        open_ssm: 9 * 3600 + 45 * 60,
-        close_ssm: 10 * 3600,
-    },
     SessionRule {
         days: MON_FRI,
         open_ssm: 16 * 3600 + 55 * 60,
@@ -46,20 +62,12 @@ static B3_EXTENDED_SHORT: &[SessionRule] = &[
         close_ssm: 18 * 3600,
     },
 ];
-static B3_EXTENDED_LONG: &[SessionRule] = &[
-    B3_EXTENDED_SHORT[0],
-    SessionRule {
-        days: MON_FRI,
-        open_ssm: 17 * 3600 + 55 * 60,
-        close_ssm: 18 * 3600,
-    },
-];
+static B3_EXTENDED_LONG: &[SessionRule] = &[SessionRule {
+    days: MON_FRI,
+    open_ssm: 17 * 3600 + 55 * 60,
+    close_ssm: 18 * 3600,
+}];
 static B3_EXTENDED_INTERIM: &[SessionRule] = &[
-    SessionRule {
-        days: MON_FRI,
-        open_ssm: 9 * 3600 + 45 * 60,
-        close_ssm: 10 * 3600,
-    },
     SessionRule {
         days: MON_FRI,
         open_ssm: 17 * 3600 + 25 * 60,
@@ -73,7 +81,6 @@ static B3_EXTENDED_INTERIM: &[SessionRule] = &[
 ];
 static B3_EXTENDED_OLD_SHORT: &[SessionRule] = &[
     B3_EXTENDED_SHORT[0],
-    B3_EXTENDED_SHORT[1],
     SessionRule {
         days: MON_FRI,
         open_ssm: 17 * 3600 + 30 * 60,
@@ -81,11 +88,6 @@ static B3_EXTENDED_OLD_SHORT: &[SessionRule] = &[
     },
 ];
 static B3_EXTENDED_OLD_LONG: &[SessionRule] = &[
-    SessionRule {
-        days: MON_FRI,
-        open_ssm: 10 * 3600 + 45 * 60,
-        close_ssm: 11 * 3600,
-    },
     SessionRule {
         days: MON_FRI,
         open_ssm: 17 * 3600 + 55 * 60,
@@ -113,7 +115,7 @@ pub(crate) static B3_PROFILE_OLD_SHORT: StaticHoursProfile = StaticHoursProfile 
     tz: America::Sao_Paulo,
     regular: B3_REGULAR_OLD_SHORT,
     extended: B3_EXTENDED_OLD_SHORT,
-    order_entry: &[],
+    order_entry: B3_ORDER_ENTRY_0945,
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -121,7 +123,7 @@ pub(crate) static B3_PROFILE_OLD_LONG: StaticHoursProfile = StaticHoursProfile {
     tz: America::Sao_Paulo,
     regular: B3_REGULAR_OLD_LONG,
     extended: B3_EXTENDED_OLD_LONG,
-    order_entry: &[],
+    order_entry: B3_ORDER_ENTRY_1045,
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -134,7 +136,7 @@ pub(crate) static B3_PROFILE_INTERIM: StaticHoursProfile = StaticHoursProfile {
     tz: America::Sao_Paulo,
     regular: B3_REGULAR_INTERIM,
     extended: B3_EXTENDED_INTERIM,
-    order_entry: &[],
+    order_entry: B3_ORDER_ENTRY_0945,
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -157,7 +159,7 @@ pub(crate) static B3_PROFILE_SHORT: StaticHoursProfile = StaticHoursProfile {
     tz: America::Sao_Paulo,
     regular: B3_REGULAR_SHORT,
     extended: B3_EXTENDED_SHORT,
-    order_entry: &[],
+    order_entry: B3_ORDER_ENTRY_0945,
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -165,7 +167,7 @@ pub(crate) static B3_PROFILE_LONG: StaticHoursProfile = StaticHoursProfile {
     tz: America::Sao_Paulo,
     regular: B3_REGULAR_LONG,
     extended: B3_EXTENDED_LONG,
-    order_entry: &[],
+    order_entry: B3_ORDER_ENTRY_0945,
     has_daily_close: true,
     has_weekend_close: true,
 };

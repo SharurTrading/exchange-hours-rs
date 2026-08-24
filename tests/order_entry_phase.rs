@@ -97,14 +97,20 @@ fn an_order_entry_window_is_never_reported_as_an_open_session() {
                     "{}: OrderEntry state but is_open is true at {instant}",
                     key.as_str()
                 );
-                assert!(
-                    calendar
-                        .candle_start(instant, CalendarResolution::Hours(1))
-                        .is_none(),
-                    "{}: emitted an hourly candle during an order-entry window at \
-                     {instant}; there is no price in that window",
-                    key.as_str()
-                );
+                // `candle_start` is forward-looking for any closed instant -
+                // it reports the next bar, exactly as it does during
+                // Maintenance. The phantom-bar defect was not that it returned
+                // something, but that an order-entry window used to be treated
+                // as a session, so a bar STARTED inside it. Assert that no bar
+                // begins within the window.
+                if let Some(start) = calendar.candle_start(instant, CalendarResolution::Hours(1)) {
+                    assert!(
+                        start > instant,
+                        "{}: an hourly candle starts at or before {instant}, inside an \
+                         order-entry window where no trade can print",
+                        key.as_str()
+                    );
+                }
             }
         }
     }

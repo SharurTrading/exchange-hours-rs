@@ -47,9 +47,16 @@ pub(crate) static FCOJ_REGULAR_CURRENT: &[SessionRule] = &[SessionRule {
 // shown above, there will be a Post-Close Pre-Open order entry session from 2:30
 // pm to 6:00 pm NY time on the prior Exchange business day."
 //
+// Both windows are order_entry, not extended: the product page names the PCPO
+// an "order entry session", and Rule 4.22(a) confines the Pre-Trading Session
+// to Limit order entry with the Opening Match at the open. FCOJ-A publishes no
+// tradeable phase outside its 08:00-14:00 executable session, so the extended
+// slice is empty.
+//
 // https://www.ice.com/products/30/FCOJ-A-Futures
 // https://www.ice.com/publicdocs/rulebooks/futures_us/4_Trading.pdf
-pub(crate) static FCOJ_EXTENDED_CURRENT: &[SessionRule] = &[
+pub(crate) static FCOJ_EXTENDED_CURRENT: &[SessionRule] = &[];
+pub(crate) static FCOJ_ORDER_ENTRY_CURRENT: &[SessionRule] = &[
     SessionRule {
         days: MON_FRI,
         open_ssm: 14 * 3600 + 30 * 60,
@@ -66,14 +73,15 @@ pub(crate) static FCOJ_CURRENT: StaticHoursProfile = StaticHoursProfile {
     tz: America::New_York,
     regular: FCOJ_REGULAR_CURRENT,
     extended: FCOJ_EXTENDED_CURRENT,
-    order_entry: &[],
+    order_entry: FCOJ_ORDER_ENTRY_CURRENT,
     has_daily_close: true,
     has_weekend_close: true,
 };
 
 // Baseline before 2018-10-08: the executable session is already today's
 // 08:00-14:00 grid, but the PCPO order-entry window does not exist yet, leaving
-// the 20:00 pre-open as the only extended phase.
+// the 20:00 pre-open as the only non-executable phase - order entry, like the
+// current one, so this era carries no extended phase either.
 //
 // The executable grid is carried back unchanged rather than dated to an earlier
 // cutover. ICE's 2014 softs hours notice re-tabulated Sugar No. 11, Coffee "C",
@@ -83,7 +91,7 @@ pub(crate) static FCOJ_CURRENT: StaticHoursProfile = StaticHoursProfile {
 // so no earlier revision is invented here.
 //
 // https://www.ice.com/publicdocs/futures_us/exchange_notices/ExNot012714Hours.pdf
-static FCOJ_EXTENDED_BASELINE: &[SessionRule] = &[SessionRule {
+static FCOJ_ORDER_ENTRY_BASELINE: &[SessionRule] = &[SessionRule {
     days: MON_THU,
     open_ssm: 20 * 3600,
     close_ssm: 8 * 3600,
@@ -92,8 +100,8 @@ static FCOJ_EXTENDED_BASELINE: &[SessionRule] = &[SessionRule {
 pub(crate) static FCOJ_BASELINE: StaticHoursProfile = StaticHoursProfile {
     tz: America::New_York,
     regular: FCOJ_REGULAR_CURRENT,
-    extended: FCOJ_EXTENDED_BASELINE,
-    order_entry: &[],
+    extended: &[],
+    order_entry: FCOJ_ORDER_ENTRY_BASELINE,
     has_daily_close: true,
     has_weekend_close: true,
 };

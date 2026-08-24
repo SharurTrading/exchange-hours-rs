@@ -39,8 +39,20 @@ static ISE_REGULAR: &[SessionRule] = &[SessionRule {
     open_ssm: 8 * 3600,
     close_ssm: 16 * 3600 + 28 * 60,
 }];
+// Order-entry classification. The same market model states that "the order book
+// is only open for trading during auctions and continuous trading in the main
+// trading phase", and describes the pre-trading phase as one where participants
+// enter, modify and delete orders and quotes with the order book closed. No
+// order-book trade can match there, so pre-trading is `order_entry`. The
+// post-trading leg stays in `extended`: this file's existing sourced note
+// records that it accepted off-book reports as well as orders, and demoting a
+// post-close window on that record is the unsafe direction.
 static ISE_EXTENDED: &[SessionRule] = &[
-    // Pre-trading.
+    // Pre-trading. The order book is closed to MATCHING here, but the same
+    // record that keeps the post-trading leg tradeable shows off-book reports
+    // were accepted in both phases - and prints occur wherever off-book reports
+    // are accepted. Applying that criterion to the close side but not the open
+    // side was the inconsistency; both legs stay tradeable.
     SessionRule {
         days: MON_FRI,
         open_ssm: 6 * 3600 + 30 * 60,
@@ -52,11 +64,13 @@ static ISE_EXTENDED: &[SessionRule] = &[
         open_ssm: 7 * 3600 + 50 * 60,
         close_ssm: 8 * 3600,
     },
+    // Closing auction.
     SessionRule {
         days: MON_FRI,
         open_ssm: 16 * 3600 + 28 * 60,
         close_ssm: 16 * 3600 + 30 * 60,
     },
+    // Post-trading.
     SessionRule {
         days: MON_FRI,
         open_ssm: 16 * 3600 + 30 * 60,
@@ -85,17 +99,31 @@ static OPTIQ_REGULAR: &[SessionRule] = &[SessionRule {
     open_ssm: 8 * 3600 + 30,
     close_ssm: 16 * 3600 + 28 * 60,
 }];
+// Order-entry classification. Optiq pre-opening is a Call (order-accumulation)
+// phase: orders are collected and the first order-book print of the day is the
+// opening uncrossing, which the trading appendix randomizes over the 30 seconds
+// from 08:00:00 Dublin local time. Only the accumulation leg moves; the
+// uncross, the closing uncrossing and Trading-at-Last all print and stay in
+// `extended`.
+static OPTIQ_ORDER_ENTRY: &[SessionRule] = &[SessionRule {
+    days: MON_FRI,
+    open_ssm: 6 * 3600 + 15 * 60,
+    close_ssm: 8 * 3600,
+}];
 static OPTIQ_EXTENDED: &[SessionRule] = &[
+    // Opening uncrossing, including its latest 30-second random uncross.
     SessionRule {
         days: MON_FRI,
-        open_ssm: 6 * 3600 + 15 * 60,
+        open_ssm: 8 * 3600,
         close_ssm: 8 * 3600 + 30,
     },
+    // Closing auction.
     SessionRule {
         days: MON_FRI,
         open_ssm: 16 * 3600 + 28 * 60,
         close_ssm: 16 * 3600 + 30 * 60 + 30,
     },
+    // Trading-at-Last.
     SessionRule {
         days: MON_FRI,
         open_ssm: 16 * 3600 + 30 * 60 + 30,
@@ -106,7 +134,7 @@ static OPTIQ_PROFILE: StaticHoursProfile = StaticHoursProfile {
     tz: Europe::Dublin,
     regular: OPTIQ_REGULAR,
     extended: OPTIQ_EXTENDED,
-    order_entry: &[],
+    order_entry: OPTIQ_ORDER_ENTRY,
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -117,10 +145,18 @@ static OPTIQ_PROFILE: StaticHoursProfile = StaticHoursProfile {
 // The current trading appendix confirms the resulting principal-share grid.
 // https://connect.euronext.com/sites/default/files/it-documentation/Go-Live%20Weekend%20Guidelines%20-%20Borsa%20Italiana%20Optiq%20Migration.pdf
 // https://www.euronext.com/sites/default/files/2026-07/appendix%20to%20Euronext%20Instructions%204-01%204-03%20Trading%20Manuals_0.xlsx
+// Order-entry classification: same Call/uncrossing split as the 2019 grid, with
+// the pre-opening start shifted to 06:30 Dublin local time.
+static CURRENT_ORDER_ENTRY: &[SessionRule] = &[SessionRule {
+    days: MON_FRI,
+    open_ssm: 6 * 3600 + 30 * 60,
+    close_ssm: 8 * 3600,
+}];
 static CURRENT_EXTENDED: &[SessionRule] = &[
+    // Opening uncrossing, including its latest 30-second random uncross.
     SessionRule {
         days: MON_FRI,
-        open_ssm: 6 * 3600 + 30 * 60,
+        open_ssm: 8 * 3600,
         close_ssm: 8 * 3600 + 30,
     },
     // Closing auction, including its latest 30-second random uncross.
@@ -140,7 +176,7 @@ pub(crate) static EURONEXT_DUB_PROFILE: StaticHoursProfile = StaticHoursProfile 
     tz: Europe::Dublin,
     regular: OPTIQ_REGULAR,
     extended: CURRENT_EXTENDED,
-    order_entry: &[],
+    order_entry: CURRENT_ORDER_ENTRY,
     has_daily_close: true,
     has_weekend_close: true,
 };

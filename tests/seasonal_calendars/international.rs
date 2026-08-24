@@ -12,8 +12,10 @@ fn eurex_calendar_scans_reselect_the_fixed_utc_asian_start() {
     let spring_close = local(berlin, (2026, 3, 27), (22, 0, 0));
     assert_eq!(
         calendar.next_session_after(spring_close),
+        // Eurex pre-trading 02:00-02:10 CEST is order entry, so the session
+        // itself now begins at the 02:10 opening auction.
         Some((
-            local(berlin, (2026, 3, 30), (2, 0, 0)),
+            local(berlin, (2026, 3, 30), (2, 10, 0)),
             local(berlin, (2026, 3, 30), (2, 15, 0)),
         ))
     );
@@ -23,7 +25,7 @@ fn eurex_calendar_scans_reselect_the_fixed_utc_asian_start() {
     assert_eq!(
         calendar.next_session_after(autumn_close),
         Some((
-            local(berlin, (2026, 10, 26), (1, 0, 0)),
+            local(berlin, (2026, 10, 26), (1, 10, 0)),
             local(berlin, (2026, 10, 26), (1, 15, 0)),
         ))
     );
@@ -37,23 +39,23 @@ fn endex_calendar_scans_reselect_both_mismatch_entries_and_exits() {
     let cases = [
         (
             local(amsterdam, (2027, 3, 12), (23, 0, 0)),
-            local(amsterdam, (2027, 3, 14), (22, 40, 0)),
             local(amsterdam, (2027, 3, 14), (22, 50, 0)),
+            local(amsterdam, (2027, 3, 15), (22, 0, 0)),
         ),
         (
             local(amsterdam, (2027, 3, 26), (22, 0, 0)),
-            local(amsterdam, (2027, 3, 28), (23, 40, 0)),
             local(amsterdam, (2027, 3, 28), (23, 50, 0)),
+            local(amsterdam, (2027, 3, 29), (23, 0, 0)),
         ),
         (
             local(amsterdam, (2026, 10, 23), (23, 0, 0)),
-            local(amsterdam, (2026, 10, 25), (22, 40, 0)),
             local(amsterdam, (2026, 10, 25), (22, 50, 0)),
+            local(amsterdam, (2026, 10, 26), (22, 0, 0)),
         ),
         (
             local(amsterdam, (2026, 10, 30), (22, 0, 0)),
-            local(amsterdam, (2026, 11, 1), (23, 40, 0)),
             local(amsterdam, (2026, 11, 1), (23, 50, 0)),
+            local(amsterdam, (2026, 11, 2), (23, 0, 0)),
         ),
     ];
 
@@ -62,8 +64,10 @@ fn endex_calendar_scans_reselect_both_mismatch_entries_and_exits() {
             calendar.next_session_after(prior_close),
             Some((expected_open, expected_close))
         );
-        assert!(!calendar.is_open(expected_open - Duration::nanoseconds(1)));
-        assert!(calendar.is_open_extended(expected_open));
+        // The 10 minutes before the open are the pre-open queue: order entry,
+        // not a tradeable session.
+        assert!(calendar.is_order_entry_only(expected_open - Duration::nanoseconds(1)));
+        assert!(calendar.is_open(expected_open));
     }
 }
 
@@ -76,8 +80,8 @@ fn murban_calendar_scans_reselect_new_york_dst_in_dubai() {
     assert_eq!(
         calendar.next_session_after(spring_close),
         Some((
-            local(dubai, (2026, 3, 9), (1, 0, 0)),
             local(dubai, (2026, 3, 9), (2, 0, 0)),
+            local(dubai, (2026, 3, 10), (2, 0, 0)),
         ))
     );
 
@@ -85,8 +89,8 @@ fn murban_calendar_scans_reselect_new_york_dst_in_dubai() {
     assert_eq!(
         calendar.next_session_after(autumn_close),
         Some((
-            local(dubai, (2026, 11, 2), (2, 0, 0)),
             local(dubai, (2026, 11, 2), (3, 0, 0)),
+            local(dubai, (2026, 11, 3), (3, 0, 0)),
         ))
     );
 }

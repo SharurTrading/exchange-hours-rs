@@ -10,7 +10,8 @@ fn tsx_current_baseline() {
     let tz = America::Toronto;
     let date = (2026, 8, 19);
     assert!(!h.is_open(local(tz, date, (6, 59, 0))));
-    assert!(h.is_open_extended(local(tz, date, (7, 0, 0))));
+    // TSX pre-open order entry; matching begins at 09:30.
+    assert!(h.is_order_entry_only(local(tz, date, (7, 0, 0))));
     assert!(h.is_open_regular(local(tz, date, (9, 30, 0))));
     assert!(h.is_open_extended(local(tz, date, (16, 0, 0))));
     assert!(!h.is_open(local(tz, date, (16, 10, 0))));
@@ -25,7 +26,8 @@ fn borsa_istanbul_current_baseline() {
     let tz = Europe::Istanbul;
     let date = (2026, 8, 19);
     assert!(!h.is_open(local(tz, date, (9, 39, 0))));
-    assert!(h.is_open_extended(local(tz, date, (9, 40, 0))));
+    // BIST opening order-collection phase ahead of the opening auction.
+    assert!(h.is_order_entry_only(local(tz, date, (9, 40, 0))));
     assert!(h.is_open_regular(local(tz, date, (10, 0, 0))));
     assert!(h.is_open_extended(local(tz, date, (18, 0, 0))));
     assert!(!h.is_open(local(tz, date, (18, 10, 0))));
@@ -53,7 +55,8 @@ fn tadawul_current_baseline_and_workweek() {
     let tz = Asia::Riyadh;
     let date = (2026, 8, 19);
     assert!(!h.is_open(local(tz, date, (9, 29, 0))));
-    assert!(h.is_open_extended(local(tz, date, (9, 30, 0))));
+    // Tadawul pre-open order entry ahead of the opening auction.
+    assert!(h.is_order_entry_only(local(tz, date, (9, 30, 0))));
     assert!(h.is_open_regular(local(tz, date, (10, 0, 0))));
     assert!(h.is_open_extended(local(tz, date, (15, 0, 0))));
     assert!(!h.is_open(local(tz, date, (15, 20, 0))));
@@ -68,7 +71,8 @@ fn lse_sets_current_auction_envelope() {
     let date = (2026, 8, 19);
 
     assert!(!h.is_open(local(tz, date, (6, 59, 59))));
-    assert!(h.is_open_extended(local(tz, date, (7, 0, 0))));
+    // LSE pre-trading: no on-book execution before the opening auction.
+    assert!(h.is_order_entry_only(local(tz, date, (7, 0, 0))));
     assert!(h.is_open_extended(local(tz, date, (8, 0, 29))));
     assert!(h.is_open_regular(local(tz, date, (8, 0, 30))));
     assert!(h.is_open_extended(local(tz, date, (12, 0, 0))));
@@ -134,7 +138,8 @@ fn vienna_atx_current_auction_envelope() {
     let date = (2026, 8, 19);
 
     assert!(!h.is_open(local(tz, date, (7, 59, 59))));
-    assert!(h.is_open_extended(local(tz, date, (8, 0, 0))));
+    // Xetra pre-trading: order book closed to matching.
+    assert!(h.is_order_entry_only(local(tz, date, (8, 0, 0))));
     assert!(h.is_open_extended(local(tz, date, (8, 55, 0))));
     assert!(h.is_open_extended(local(tz, date, (9, 0, 29))));
     assert!(!h.is_open_regular(local(tz, date, (9, 0, 29))));
@@ -159,7 +164,8 @@ fn vienna_atx_current_auction_envelope() {
     assert_eq!(tac_start, local(tz, date, (17, 35, 30)));
     assert_eq!(tac_end, local(tz, date, (17, 45, 0)));
     assert!(h.is_open_extended(local(tz, date, (17, 44, 59))));
-    assert!(h.is_open_extended(local(tz, date, (17, 45, 0))));
+    // Vienna post-trading tail: order maintenance only, no matching.
+    assert!(h.is_order_entry_only(local(tz, date, (17, 45, 0))));
     assert!(!h.is_open(local(tz, date, (17, 50, 0))));
     assert!(!h.is_open(local(tz, (2026, 8, 22), (10, 0, 0))));
 }

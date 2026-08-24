@@ -15,33 +15,39 @@ static REGULAR_CURRENT: &[SessionRule] = &[SessionRule {
     open_ssm: 10 * 3600,
     close_ssm: 15 * 3600,
 }];
-static EXTENDED_CURRENT: &[SessionRule] = &[
-    SessionRule {
-        days: SUN_THU,
-        open_ssm: 9 * 3600 + 30 * 60,
-        close_ssm: 10 * 3600,
-    },
-    SessionRule {
-        days: SUN_THU,
-        open_ssm: 15 * 3600,
-        close_ssm: 15 * 3600 + 20 * 60,
-    },
-];
-static EXTENDED_POST_2018: &[SessionRule] = &[
-    EXTENDED_CURRENT[0],
-    SessionRule {
-        days: SUN_THU,
-        open_ssm: 15 * 3600,
-        close_ssm: 15 * 3600 + 10 * 60,
-    },
-];
-static EXTENDED_POST_2016: &[SessionRule] = &[EXTENDED_CURRENT[0]];
+// Order entry only. The operator's trading-times table starts "Trading in
+// Equities" at 10:00 and notes only that the market opens on a variable basis
+// within 30 seconds after 10:00, so the preceding half hour collects, amends
+// and cancels opening-auction orders without any of them matching; the first
+// print is the 10:00 uncross.
+// https://www.saudiexchange.sa/wps/portal/saudiexchange/rules-guidance/capital-market-overview/trading-cycle-and-times?locale=en
+static ORDER_ENTRY_CURRENT: &[SessionRule] = &[SessionRule {
+    days: SUN_THU,
+    open_ssm: 9 * 3600 + 30 * 60,
+    close_ssm: 10 * 3600,
+}];
+// The closing auction and trade-at-last tail both print, so they stay
+// tradeable: trade at last executes at the closing auction price.
+static EXTENDED_CURRENT: &[SessionRule] = &[SessionRule {
+    days: SUN_THU,
+    open_ssm: 15 * 3600,
+    close_ssm: 15 * 3600 + 20 * 60,
+}];
+static EXTENDED_POST_2018: &[SessionRule] = &[SessionRule {
+    days: SUN_THU,
+    open_ssm: 15 * 3600,
+    close_ssm: 15 * 3600 + 10 * 60,
+}];
 static REGULAR_OLD_SUN_THU: &[SessionRule] = &[SessionRule {
     days: SUN_THU,
     open_ssm: 11 * 3600,
     close_ssm: 15 * 3600 + 30 * 60,
 }];
-static EXTENDED_OLD_SUN_THU: &[SessionRule] = &[SessionRule {
+// Same order-entry-only pre-open phase on the pre-2016 grids: the hour before
+// the 11:00 open is the opening-auction order window, and the venue's trading
+// hours began at 11:00. Neither old grid had any close-side phase, so their
+// extended slices are empty.
+static ORDER_ENTRY_OLD_SUN_THU: &[SessionRule] = &[SessionRule {
     days: SUN_THU,
     open_ssm: 10 * 3600,
     close_ssm: 11 * 3600,
@@ -51,7 +57,7 @@ static REGULAR_OLD_SAT_WED: &[SessionRule] = &[SessionRule {
     open_ssm: 11 * 3600,
     close_ssm: 15 * 3600 + 30 * 60,
 }];
-static EXTENDED_OLD_SAT_WED: &[SessionRule] = &[SessionRule {
+static ORDER_ENTRY_OLD_SAT_WED: &[SessionRule] = &[SessionRule {
     days: SAT_WED,
     open_ssm: 10 * 3600,
     close_ssm: 11 * 3600,
@@ -61,14 +67,11 @@ static REGULAR_PANDEMIC: &[SessionRule] = &[SessionRule {
     open_ssm: 10 * 3600,
     close_ssm: 13 * 3600,
 }];
-static EXTENDED_PANDEMIC: &[SessionRule] = &[
-    EXTENDED_CURRENT[0],
-    SessionRule {
-        days: SUN_THU,
-        open_ssm: 13 * 3600,
-        close_ssm: 13 * 3600 + 20 * 60,
-    },
-];
+static EXTENDED_PANDEMIC: &[SessionRule] = &[SessionRule {
+    days: SUN_THU,
+    open_ssm: 13 * 3600,
+    close_ssm: 13 * 3600 + 20 * 60,
+}];
 
 // Current Main Market phases: opening-auction orders 09:30–10:00,
 // continuous trading 10:00–15:00, closing auction 15:00–15:10, and trade at
@@ -79,7 +82,7 @@ pub(crate) static TADAWUL_PROFILE_CURRENT: StaticHoursProfile = StaticHoursProfi
     tz: Asia::Riyadh,
     regular: REGULAR_CURRENT,
     extended: EXTENDED_CURRENT,
-    order_entry: &[],
+    order_entry: ORDER_ENTRY_CURRENT,
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -95,31 +98,31 @@ pub(crate) static TADAWUL_PROFILE_POST_2018_05_27: StaticHoursProfile = StaticHo
     tz: Asia::Riyadh,
     regular: REGULAR_CURRENT,
     extended: EXTENDED_POST_2018,
-    order_entry: &[],
+    order_entry: ORDER_ENTRY_CURRENT,
     has_daily_close: true,
     has_weekend_close: true,
 };
 pub(crate) static TADAWUL_PROFILE_POST_2016_04_03: StaticHoursProfile = StaticHoursProfile {
     tz: Asia::Riyadh,
     regular: REGULAR_CURRENT,
-    extended: EXTENDED_POST_2016,
-    order_entry: &[],
+    extended: &[],
+    order_entry: ORDER_ENTRY_CURRENT,
     has_daily_close: true,
     has_weekend_close: true,
 };
 pub(crate) static TADAWUL_PROFILE_POST_2013_06_29: StaticHoursProfile = StaticHoursProfile {
     tz: Asia::Riyadh,
     regular: REGULAR_OLD_SUN_THU,
-    extended: EXTENDED_OLD_SUN_THU,
-    order_entry: &[],
+    extended: &[],
+    order_entry: ORDER_ENTRY_OLD_SUN_THU,
     has_daily_close: true,
     has_weekend_close: true,
 };
 pub(crate) static TADAWUL_PROFILE_PRE_2013_06_29: StaticHoursProfile = StaticHoursProfile {
     tz: Asia::Riyadh,
     regular: REGULAR_OLD_SAT_WED,
-    extended: EXTENDED_OLD_SAT_WED,
-    order_entry: &[],
+    extended: &[],
+    order_entry: ORDER_ENTRY_OLD_SAT_WED,
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -131,7 +134,7 @@ pub(crate) static TADAWUL_PROFILE_PANDEMIC: StaticHoursProfile = StaticHoursProf
     tz: Asia::Riyadh,
     regular: REGULAR_PANDEMIC,
     extended: EXTENDED_PANDEMIC,
-    order_entry: &[],
+    order_entry: ORDER_ENTRY_CURRENT,
     has_daily_close: true,
     has_weekend_close: true,
 };

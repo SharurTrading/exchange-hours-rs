@@ -13,6 +13,10 @@ static JSE_REGULAR: &[SessionRule] = &[SessionRule {
     open_ssm: 9 * 3600,
     close_ssm: 16 * 3600 + 50 * 60,
 }];
+// No ZA01 phase is order-entry-only, so `order_entry` stays empty on every
+// profile below. The two bounds here are the opening and closing auction call
+// sessions, each of which uncrosses into a printed auction trade, and the CPX
+// and EOD tails are crossing sessions that print at the closing price.
 static JSE_OPEN_CLOSE_CURRENT: &[SessionRule] = &[
     SessionRule {
         days: MON_FRI,

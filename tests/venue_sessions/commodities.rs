@@ -73,8 +73,8 @@ fn comex_weekend_boundary() {
         "COMEX closed before Sunday Pre-Open"
     );
     assert!(
-        h.is_open_extended(ct((2026, 4, 26), (16, 0, 0))),
-        "COMEX Pre-Open begins Sunday 16:00 CT"
+        h.is_order_entry_only(ct((2026, 4, 26), (16, 0, 0))),
+        "COMEX Pre-Open begins Sunday 16:00 CT - order entry, not matching"
     );
     assert!(
         h.is_open(ct((2026, 4, 26), (17, 0, 0))),

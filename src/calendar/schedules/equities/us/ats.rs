@@ -17,6 +17,9 @@ use crate::calendar::schedules::timeline::{Revision, effective_date, local_date,
 // the symbol-by-symbol phase-in through 2016-09-02, when the predecessor ATS
 // ceased. The stable `iex` exchange identity is therefore closed before the
 // first non-test securities transitioned; ATS history is not conflated with it.
+// Both System Hours wings are executable: the exchange rules run the same
+// continuous order book in the pre-market and post-market sessions as in the
+// regular one, so trades print throughout and neither wing is order entry.
 // https://www.sec.gov/files/rules/sro/iex/2016/34-78447.pdf
 // https://www.iex.io/resources/trading/trading-hours-holidays
 // https://iextrading.com/trading/alerts/2016/042/
@@ -48,6 +51,9 @@ pub(crate) fn iex_profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static S
 }
 
 /// Blue Ocean ATS 20:00→04:00 ET new-order trading window, Sunday through Thursday.
+///
+/// The window matches continuously — Blue Ocean's overnight book crosses and
+/// prints throughout it, so it is a tradeable extended session, not order entry.
 ///
 /// The live SEC Form ATS-N ends new-order acceptance at 04:00. It permits
 /// resting-book clearing matches for less than a further minute, but that

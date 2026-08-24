@@ -23,7 +23,7 @@ fn sgx_day_session() {
 fn sgx_day_open() {
     let h = hours_for_exchange(Exchange::Sgx);
     assert!(!h.is_open(sgt((2026, 4, 20), (7, 9, 59))));
-    assert!(h.is_open_extended(sgt((2026, 4, 20), (7, 10, 0))));
+    assert!(h.is_order_entry_only(sgt((2026, 4, 20), (7, 10, 0))));
     assert!(!h.is_open_regular(sgt((2026, 4, 20), (7, 24, 59))));
     assert!(h.is_open_regular(sgt((2026, 4, 20), (7, 25, 0))));
 }
@@ -35,7 +35,7 @@ fn sgx_day_close() {
     assert!(!h.is_open_regular(sgt((2026, 4, 20), (17, 55, 0))));
     assert!(h.is_open_extended(sgt((2026, 4, 20), (17, 55, 0))));
     assert!(!h.is_open(sgt((2026, 4, 20), (18, 0, 0))));
-    assert!(h.is_open_extended(sgt((2026, 4, 20), (18, 5, 0))));
+    assert!(h.is_order_entry_only(sgt((2026, 4, 20), (18, 5, 0))));
 }
 
 #[test]
@@ -79,7 +79,7 @@ fn sgx_sora_is_closed_before_its_sourced_launch() {
     assert!(before.regular.is_empty());
     assert!(before.extended.is_empty());
     assert!(!before.is_open(sgt((2024, 7, 26), (10, 0, 0))));
-    assert!(after.is_open_extended(sgt((2024, 7, 29), (7, 10, 0))));
+    assert!(after.is_order_entry_only(sgt((2024, 7, 29), (7, 10, 0))));
     assert!(after.is_open_regular(sgt((2024, 7, 29), (7, 25, 0))));
 }
 
@@ -134,10 +134,10 @@ fn cfe_pre_open_queues_are_extended() {
         hours_for_market_hours_key(MarketHoursKey::CfeVix),
     ] {
         assert!(!h.is_open(ct((2026, 4, 19), (16, 0, 5))));
-        assert!(h.is_open_extended(ct((2026, 4, 19), (16, 0, 6))));
-        assert!(h.is_open_extended(ct((2026, 4, 19), (16, 30, 0))));
+        assert!(h.is_order_entry_only(ct((2026, 4, 19), (16, 0, 6))));
+        assert!(h.is_order_entry_only(ct((2026, 4, 19), (16, 30, 0))));
         assert!(!h.is_open(ct((2026, 4, 20), (16, 45, 5))));
-        assert!(h.is_open_extended(ct((2026, 4, 20), (16, 45, 6))));
+        assert!(h.is_order_entry_only(ct((2026, 4, 20), (16, 45, 6))));
     }
 }
 
@@ -247,8 +247,8 @@ fn cfe_afternoon_extension_launched_on_2013_10_28() {
     assert!(!before.is_open(ct((2013, 10, 28), (15, 30, 0))));
 
     assert!(!after.is_open(ct((2013, 10, 28), (15, 28, 59))));
-    assert!(after.is_open_extended(ct((2013, 10, 28), (15, 29, 0))));
-    assert!(after.is_open_extended(ct((2013, 10, 28), (15, 29, 59))));
+    assert!(after.is_order_entry_only(ct((2013, 10, 28), (15, 29, 0))));
+    assert!(after.is_order_entry_only(ct((2013, 10, 28), (15, 29, 59))));
     assert!(after.is_open_extended(ct((2013, 10, 28), (15, 30, 0))));
     assert!(after.is_open_extended(ct((2013, 10, 28), (16, 14, 59))));
     assert!(!after.is_open(ct((2013, 10, 28), (16, 15, 0))));
@@ -259,7 +259,7 @@ fn cfe_afternoon_extension_launched_on_2013_10_28() {
 
     let calendar = calendar_for_exchange(Exchange::Cfe);
     assert!(!calendar.is_open(ct((2013, 10, 28), (15, 28, 59))));
-    assert!(calendar.is_open_extended(ct((2013, 10, 28), (15, 29, 0))));
+    assert!(calendar.is_order_entry_only(ct((2013, 10, 28), (15, 29, 0))));
     assert!(calendar.is_open_extended(ct((2013, 10, 28), (15, 30, 0))));
 }
 
@@ -271,14 +271,14 @@ fn cfe_morning_extension_launched_on_2013_11_04() {
 
     assert!(!before.is_open(ct((2013, 11, 4), (2, 0, 0))));
     assert!(before.is_open_extended(ct((2013, 11, 4), (7, 0, 0))));
-    assert!(before.is_open_extended(ct((2013, 11, 4), (15, 29, 0))));
+    assert!(before.is_order_entry_only(ct((2013, 11, 4), (15, 29, 0))));
 
     assert!(!after.is_open(ct((2013, 11, 4), (1, 59, 59))));
     assert!(after.is_open_extended(ct((2013, 11, 4), (2, 0, 0))));
     assert!(after.is_open_extended(ct((2013, 11, 4), (8, 29, 59))));
     assert!(!after.is_open_extended(ct((2013, 11, 4), (8, 30, 0))));
     assert!(after.is_open_regular(ct((2013, 11, 4), (8, 30, 0))));
-    assert!(after.is_open_extended(ct((2013, 11, 4), (15, 29, 0))));
+    assert!(after.is_order_entry_only(ct((2013, 11, 4), (15, 29, 0))));
 
     let calendar = calendar_for_exchange(Exchange::Cfe);
     assert!(!calendar.is_open(ct((2013, 11, 4), (1, 59, 59))));
@@ -304,19 +304,19 @@ fn cfe_nearly_24_hour_week_launched_on_2014_06_22() {
     assert!(!before.is_open(ct((2014, 6, 22), (17, 0, 0))));
 
     assert!(!after.is_open(ct((2014, 6, 22), (16, 14, 59))));
-    assert!(after.is_open_extended(ct((2014, 6, 22), (16, 15, 0))));
-    assert!(after.is_open_extended(ct((2014, 6, 22), (16, 59, 59))));
+    assert!(after.is_order_entry_only(ct((2014, 6, 22), (16, 15, 0))));
+    assert!(after.is_order_entry_only(ct((2014, 6, 22), (16, 59, 59))));
     assert!(after.is_open_extended(ct((2014, 6, 22), (17, 0, 0))));
     assert!(!after.is_open(ct((2014, 6, 23), (15, 28, 59))));
-    assert!(after.is_open_extended(ct((2014, 6, 23), (15, 29, 0))));
+    assert!(after.is_order_entry_only(ct((2014, 6, 23), (15, 29, 0))));
     assert!(after.is_open_extended(ct((2014, 6, 23), (15, 30, 0))));
     assert!(after.is_open_extended(ct((2014, 6, 23), (16, 30, 0))));
     assert!(after.is_open_extended(ct((2014, 6, 24), (2, 0, 0))));
 
     let calendar = calendar_for_exchange(Exchange::Cfe);
     assert!(!calendar.is_open(ct((2014, 6, 22), (16, 14, 59))));
-    assert!(calendar.is_open_extended(ct((2014, 6, 22), (16, 15, 0))));
-    assert!(calendar.is_open_extended(ct((2014, 6, 22), (16, 59, 59))));
+    assert!(calendar.is_order_entry_only(ct((2014, 6, 22), (16, 15, 0))));
+    assert!(calendar.is_order_entry_only(ct((2014, 6, 22), (16, 59, 59))));
     assert!(calendar.is_open_extended(ct((2014, 6, 22), (17, 0, 0))));
 }
 
@@ -334,25 +334,25 @@ fn cfe_system_migration_restored_daily_gap_on_2018_02_25() {
 
     assert!(before.is_open_extended(ct(monday, (16, 59, 59))));
     assert!(!before.is_open(ct((2018, 2, 25), (16, 0, 0))));
-    assert!(before.is_open_extended(ct((2018, 2, 25), (16, 15, 0))));
+    assert!(before.is_order_entry_only(ct((2018, 2, 25), (16, 15, 0))));
 
     assert!(!after.is_open(ct((2018, 2, 25), (16, 0, 2))));
-    assert!(after.is_open_extended(ct((2018, 2, 25), (16, 0, 3))));
-    assert!(after.is_open_extended(ct(monday, (15, 15, 0))));
-    assert!(after.is_open_extended(ct(monday, (15, 20, 0))));
+    assert!(after.is_order_entry_only(ct((2018, 2, 25), (16, 0, 3))));
+    assert!(after.is_order_entry_only(ct(monday, (15, 15, 0))));
+    assert!(after.is_order_entry_only(ct(monday, (15, 20, 0))));
     assert!(!after.is_open_regular(ct(monday, (15, 20, 0))));
     assert!(!after.is_open(ct(monday, (16, 45, 2))));
-    assert!(after.is_open_extended(ct(monday, (16, 45, 3))));
+    assert!(after.is_order_entry_only(ct(monday, (16, 45, 3))));
     assert!(after.is_open_extended(ct(monday, (15, 30, 0))));
     assert!(after.is_open_extended(ct(monday, (15, 59, 59))));
     assert!(!after.is_open(ct(monday, (16, 0, 0))));
-    assert!(after.is_open_extended(ct(monday, (16, 59, 59))));
+    assert!(after.is_order_entry_only(ct(monday, (16, 59, 59))));
     assert!(after.is_open_extended(ct(monday, (17, 0, 0))));
 
     let calendar = calendar_for_exchange(Exchange::Cfe);
     assert!(!calendar.is_open(ct(monday, (16, 30, 0))));
     assert!(!calendar.is_open(ct(monday, (16, 45, 2))));
-    assert!(calendar.is_open_extended(ct(monday, (16, 45, 3))));
+    assert!(calendar.is_order_entry_only(ct(monday, (16, 45, 3))));
     assert!(calendar.is_open_extended(ct(monday, (17, 0, 0))));
 }
 
@@ -373,15 +373,15 @@ fn cfe_queue_envelope_widened_on_2018_08_12() {
     let key_after = hours_for_market_hours_key_as_of(MarketHoursKey::CfeVix, cutover);
 
     for (before, after) in [(exchange_before, exchange_after), (key_before, key_after)] {
-        assert!(before.is_open_extended(ct((2018, 8, 12), (16, 0, 3))));
+        assert!(before.is_order_entry_only(ct((2018, 8, 12), (16, 0, 3))));
         assert!(!after.is_open(ct((2018, 8, 12), (16, 0, 5))));
-        assert!(after.is_open_extended(ct((2018, 8, 12), (16, 0, 6))));
-        assert!(before.is_open_extended(ct((2018, 8, 13), (16, 45, 3))));
+        assert!(after.is_order_entry_only(ct((2018, 8, 12), (16, 0, 6))));
+        assert!(before.is_order_entry_only(ct((2018, 8, 13), (16, 45, 3))));
         assert!(!after.is_open(ct((2018, 8, 13), (16, 45, 5))));
-        assert!(after.is_open_extended(ct((2018, 8, 13), (16, 45, 6))));
+        assert!(after.is_order_entry_only(ct((2018, 8, 13), (16, 45, 6))));
     }
 
     let calendar = calendar_for_exchange(Exchange::Cfe);
     assert!(!calendar.is_open(ct((2018, 8, 12), (16, 0, 5))));
-    assert!(calendar.is_open_extended(ct((2018, 8, 12), (16, 0, 6))));
+    assert!(calendar.is_order_entry_only(ct((2018, 8, 12), (16, 0, 6))));
 }

@@ -43,8 +43,8 @@ fn candle_start_with_extended_kind_anchors_the_trading_day_at_the_globex_open() 
     let monday_mid_rth = ct((2026, 4, 20), (10, 0, 0));
 
     // Consulting only extended sessions, the Monday trading day opened with
-    // Sunday's 16:00 CT Pre-Open and its last close is the 15:15-16:00
-    // electronic window.
+    // Sunday's 17:00 CT electronic open - the 16:00 Pre-Open is order entry,
+    // not a session - and its last close is the 15:15-16:00 electronic window.
     assert_eq!(
         candle_start_with(
             &hours,
@@ -52,8 +52,8 @@ fn candle_start_with_extended_kind_anchors_the_trading_day_at_the_globex_open() 
             CalendarResolution::Daily,
             SessionKind::Extended
         ),
-        Some(ct((2026, 4, 19), (16, 0, 0))),
-        "Extended-kind daily start is the Sunday Pre-Open"
+        Some(ct((2026, 4, 19), (17, 0, 0))),
+        "Extended-kind daily start is the Sunday electronic open, not the Pre-Open"
     );
     assert_eq!(
         candle_end_with(

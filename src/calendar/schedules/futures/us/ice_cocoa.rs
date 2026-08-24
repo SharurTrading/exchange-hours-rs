@@ -34,8 +34,16 @@ pub(crate) static COCOA_REGULAR_CURRENT: &[SessionRule] = &[SessionRule {
 // minutes after the 13:30 close, and the regular pre-open from 20:00 running to
 // the next morning's open.
 //
+// Both are classified order_entry, not extended: nothing matches in either. The
+// 2018 notice creating the PCPO calls it an extension of the "pre-open order
+// entry session" and kills Day orders entered in it at its end, and the
+// pre-open only accepts orders ahead of the Opening Match at the open itself.
+// Cocoa publishes no tradeable phase outside its executable session, so the
+// extended slice is empty.
+//
 // https://www.ice.com/publicdocs/futures_us/exchange_notices/ICE_Futures_US_PCPO_Session_20180920.pdf
-pub(crate) static COCOA_EXTENDED_CURRENT: &[SessionRule] = &[
+pub(crate) static COCOA_EXTENDED_CURRENT: &[SessionRule] = &[];
+pub(crate) static COCOA_ORDER_ENTRY_CURRENT: &[SessionRule] = &[
     SessionRule {
         days: MON_FRI,
         open_ssm: 14 * 3600,
@@ -52,7 +60,7 @@ pub(crate) static COCOA_CURRENT: StaticHoursProfile = StaticHoursProfile {
     tz: America::New_York,
     regular: COCOA_REGULAR_CURRENT,
     extended: COCOA_EXTENDED_CURRENT,
-    order_entry: &[],
+    order_entry: COCOA_ORDER_ENTRY_CURRENT,
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -60,8 +68,10 @@ pub(crate) static COCOA_CURRENT: StaticHoursProfile = StaticHoursProfile {
 // 2014-02-03 through 2018-10-05: the executable session is already today's
 // 04:45-13:30 grid, but the PCPO order-entry window does not exist yet. The
 // 2014 hours notice does not address the pre-open, so the 20:00 start carries
-// through unchanged; only its end moves with the open it feeds.
-static COCOA_EXTENDED_2014: &[SessionRule] = &[SessionRule {
+// through unchanged; only its end moves with the open it feeds. It is order
+// entry for the same reason as the current pre-open, so this era's extended
+// slice is empty as well.
+static COCOA_ORDER_ENTRY_2014: &[SessionRule] = &[SessionRule {
     days: MON_THU,
     open_ssm: 20 * 3600,
     close_ssm: 4 * 3600 + 45 * 60,
@@ -70,8 +80,8 @@ static COCOA_EXTENDED_2014: &[SessionRule] = &[SessionRule {
 static COCOA_2014: StaticHoursProfile = StaticHoursProfile {
     tz: America::New_York,
     regular: COCOA_REGULAR_CURRENT,
-    extended: COCOA_EXTENDED_2014,
-    order_entry: &[],
+    extended: &[],
+    order_entry: COCOA_ORDER_ENTRY_2014,
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -88,7 +98,8 @@ static COCOA_2014: StaticHoursProfile = StaticHoursProfile {
 // revision.
 //
 // The pre-open likewise runs from 20:00 on the prior Exchange business day; only
-// its end differs, tracking the 04:00 open of this era.
+// its end differs, tracking the 04:00 open of this era. It is order entry, not
+// trading, so it sits in the order_entry slice.
 //
 // https://www.ice.com/publicdocs/futures_us/exchange_notices/ExNot012714Hours.pdf
 static COCOA_REGULAR_BASELINE: &[SessionRule] = &[SessionRule {
@@ -97,7 +108,7 @@ static COCOA_REGULAR_BASELINE: &[SessionRule] = &[SessionRule {
     close_ssm: 14 * 3600,
 }];
 
-static COCOA_EXTENDED_BASELINE: &[SessionRule] = &[SessionRule {
+static COCOA_ORDER_ENTRY_BASELINE: &[SessionRule] = &[SessionRule {
     days: MON_THU,
     open_ssm: 20 * 3600,
     close_ssm: 4 * 3600,
@@ -106,8 +117,8 @@ static COCOA_EXTENDED_BASELINE: &[SessionRule] = &[SessionRule {
 pub(crate) static COCOA_BASELINE: StaticHoursProfile = StaticHoursProfile {
     tz: America::New_York,
     regular: COCOA_REGULAR_BASELINE,
-    extended: COCOA_EXTENDED_BASELINE,
-    order_entry: &[],
+    extended: &[],
+    order_entry: COCOA_ORDER_ENTRY_BASELINE,
     has_daily_close: true,
     has_weekend_close: true,
 };

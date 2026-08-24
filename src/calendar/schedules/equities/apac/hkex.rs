@@ -18,22 +18,38 @@ static HKEX_REGULAR_PRE_2011: &[SessionRule] = &[SessionRule {
     open_ssm: 10 * 3600,
     close_ssm: 16 * 3600,
 }];
-static HKEX_PREOPEN_CURRENT: &[SessionRule] = &[SessionRule {
+// Pre-opening Session split. SEHK Rule 501G divides the 09:00–09:30 POS into
+// four named periods: order input 09:00–09:15, pre-order matching (renamed
+// no-cancellation in 2020) 09:15–09:20, order matching from 09:20, then a
+// blocking period to 09:30. HKEX states that orders "will be accumulated and
+// updated but no matching will occur" during the first two periods, so
+// 09:00–09:20 is order entry. Matching begins at 09:20 and prints the opening
+// trades at the final IEP, so 09:20–09:30 stays extended (the blocking tail is
+// kept with the match because the 2020 enhancement randomised the match end).
+// https://www.hkex.com.hk/Global/Exchange/FAQ/Securities-Market/Trading/Pre_opening-Session?sc_lang=en
+// https://www.hkex.com.hk/-/media/HKEX-Market/Services/Rules-and-Forms-and-Fees/Rules/SEHK/Securities/Rule-Update_Rules-of-the-Exchange/05-11-SEHK-StampDuty-TradingHour_e.pdf
+static HKEX_PREOPEN_MATCH_CURRENT: &[SessionRule] = &[SessionRule {
     days: MON_FRI,
-    open_ssm: 9 * 3600,
+    open_ssm: 9 * 3600 + 20 * 60,
     close_ssm: 9 * 3600 + 30 * 60,
 }];
+static HKEX_ORDER_ENTRY_CURRENT: &[SessionRule] = &[SessionRule {
+    days: MON_FRI,
+    open_ssm: 9 * 3600,
+    close_ssm: 9 * 3600 + 20 * 60,
+}];
+// Pre-2011-03-07 POS ran 09:30–10:00 against a 10:00 morning open. No primary
+// SEHK text for that era's period boundaries was located, so the whole window
+// is left extended rather than guessing where its matching period began.
 static HKEX_PREOPEN_OLD: &[SessionRule] = &[SessionRule {
     days: MON_FRI,
     open_ssm: 9 * 3600 + 30 * 60,
     close_ssm: 10 * 3600,
 }];
+// CAS 16:00–16:10 ends in a randomised uncrossing that prints the closing
+// trades, so the whole auction stays extended.
 static HKEX_EXTENDED_CURRENT: &[SessionRule] = &[
-    SessionRule {
-        days: MON_FRI,
-        open_ssm: 9 * 3600,
-        close_ssm: 9 * 3600 + 30 * 60,
-    },
+    HKEX_PREOPEN_MATCH_CURRENT[0],
     SessionRule {
         days: MON_FRI,
         open_ssm: 16 * 3600,
@@ -52,7 +68,7 @@ pub(crate) static HKEX_PROFILE_CURRENT: StaticHoursProfile = StaticHoursProfile 
     tz: Asia::Hong_Kong,
     regular: HKEX_REGULAR_CURRENT,
     extended: HKEX_EXTENDED_CURRENT,
-    order_entry: &[],
+    order_entry: HKEX_ORDER_ENTRY_CURRENT,
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -70,8 +86,8 @@ pub(crate) static HKEX_PROFILE_CURRENT: StaticHoursProfile = StaticHoursProfile 
 pub(crate) static HKEX_PROFILE_POST_2011_03_07: StaticHoursProfile = StaticHoursProfile {
     tz: Asia::Hong_Kong,
     regular: HKEX_REGULAR_CURRENT,
-    extended: HKEX_PREOPEN_CURRENT,
-    order_entry: &[],
+    extended: HKEX_PREOPEN_MATCH_CURRENT,
+    order_entry: HKEX_ORDER_ENTRY_CURRENT,
     has_daily_close: true,
     has_weekend_close: true,
 };

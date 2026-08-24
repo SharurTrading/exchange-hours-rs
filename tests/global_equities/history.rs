@@ -36,21 +36,24 @@ fn xetra_cutovers() {
 
     let (pre, post) = cutover_sides(Exchange::Xetra, tz, (2020, 11, 24));
     let at_1740 = local(tz, probe, (17, 40, 0));
-    assert!(pre.is_open_extended(at_1740));
+    // Xetra post-trading: the order book is closed to matching.
+    assert!(pre.is_order_entry_only(at_1740));
     assert!(post.is_open_extended(at_1740));
-    let (_, pre_phase_close) =
-        exchange_hours::session_bounds_with(&pre, at_1740, exchange_hours::SessionKind::Extended)
-            .expect("pre-TAC post-trading phase");
-    let (_, post_phase_close) =
-        exchange_hours::session_bounds_with(&post, at_1740, exchange_hours::SessionKind::Extended)
-            .expect("TAC phase");
-    assert_eq!(pre_phase_close, local(tz, probe, (20, 30, 0)));
-    assert_eq!(post_phase_close, local(tz, probe, (17, 45, 0)));
+    // Both post-trading phases are order-entry now, so they have no extended
+    // session bounds; probe their trailing edges instead.
+    assert!(pre.is_order_entry_only(local(tz, probe, (20, 29, 0))));
+    assert!(!pre.is_open(local(tz, probe, (20, 30, 0))));
+    // Post-TAC, 17:44 falls in Trade-at-Close, which executes at the closing
+    // price and therefore stays tradeable.
+    assert!(post.is_open_extended(local(tz, probe, (17, 44, 0))));
+    assert!(post.is_order_entry_only(local(tz, probe, (17, 46, 0))));
 
     let (pre, post) = cutover_sides(Exchange::Xetra, tz, (2025, 12, 1));
     let at_0715 = local(tz, probe, (7, 15, 0));
     assert!(!pre.is_open(at_0715));
-    assert!(post.is_open_extended(at_0715));
+    // The 2025 change moved Xetra's pre-trading start earlier; 07:15 sits in
+    // that order-entry phase, with the order book still closed to matching.
+    assert!(post.is_order_entry_only(at_0715));
 }
 
 #[test]
@@ -95,16 +98,17 @@ fn euronext_core_pre_open_cutovers() {
     ] {
         let (pre, post) = cutover_sides(exchange, tz, (2023, 3, 20));
         let probe = local(tz, (2026, 8, 19), pre_open_probe);
-        assert!(pre.is_open_extended(probe), "{exchange:?}");
+        // Pre-2023 these venues ran an order-accumulation phase here.
+        assert!(pre.is_order_entry_only(probe), "{exchange:?}");
         assert!(!post.is_open(probe), "{exchange:?}");
 
         let open = local(tz, (2026, 8, 19), regular_open);
         assert!(
-            pre.is_open_extended(open - Duration::seconds(1)),
+            pre.is_order_entry_only(open - Duration::seconds(1)),
             "{exchange:?}"
         );
         assert!(
-            post.is_open_extended(open - Duration::seconds(1)),
+            post.is_order_entry_only(open - Duration::seconds(1)),
             "{exchange:?}"
         );
         assert!(pre.is_open_regular(open), "{exchange:?}");
@@ -166,7 +170,8 @@ fn euronext_dublin_cutovers() {
     let (pre, post) = cutover_sides(Exchange::EuronextDublin, tz, (2019, 2, 4));
     let at_0620 = local(tz, probe, (6, 20, 0));
     assert!(!pre.is_open(at_0620));
-    assert!(post.is_open_extended(at_0620));
+    // Optiq-era pre-trading: order entry before the opening auction.
+    assert!(post.is_order_entry_only(at_0620));
     assert!(post.is_open_extended(local(tz, probe, (8, 0, 29))));
     assert!(post.is_open_regular(local(tz, probe, (8, 0, 30))));
     let close_auction_probe = local(tz, probe, (16, 30, 29));
@@ -191,7 +196,7 @@ fn euronext_dublin_cutovers() {
     assert!(!post.is_open(at_1700));
 
     let (pre, post) = cutover_sides(Exchange::EuronextDublin, tz, (2023, 3, 20));
-    assert!(pre.is_open_extended(at_0620));
+    assert!(pre.is_order_entry_only(at_0620));
     assert!(!post.is_open(at_0620));
 }
 
@@ -340,7 +345,8 @@ fn tadawul_cutovers() {
     let (pre, post) = cutover_sides(Exchange::Tadawul, tz, (2016, 4, 3));
     let at_1030 = local(tz, probe, (10, 30, 0));
     assert!(!pre.is_open_regular(at_1030));
-    assert!(pre.is_open_extended(at_1030));
+    // Pre-2016 Tadawul opened later, so 10:30 was still order entry.
+    assert!(pre.is_order_entry_only(at_1030));
     assert!(post.is_open_regular(at_1030));
 
     let (pre, post) = cutover_sides(Exchange::Tadawul, tz, (2018, 5, 27));
@@ -369,22 +375,24 @@ fn six_trading_at_last_cutover() {
     let probe = local(tz, (2026, 8, 19), (17, 35, 0));
     let (pre, post) = cutover_sides(Exchange::Six, tz, (2020, 6, 22));
 
-    assert!(pre.is_open_extended(probe));
+    // SIX post-trading before the TAL cutover: the guide lists Executions: None.
+    assert!(pre.is_order_entry_only(probe));
     assert!(post.is_open_extended(probe));
-    let (_, pre_phase_close) =
-        exchange_hours::session_bounds_with(&pre, probe, exchange_hours::SessionKind::Extended)
-            .expect("pre-TAL post-trading phase");
+    // Pre-TAL post-trading is an order-entry phase now, so it has no extended
+    // session bounds; probe its edges directly instead.
+    assert!(pre.is_order_entry_only(local(tz, (2026, 8, 19), (21, 59, 0))));
+    assert!(!pre.is_open(local(tz, (2026, 8, 19), (22, 0, 0))));
     let (post_phase_open, post_phase_close) =
         exchange_hours::session_bounds_with(&post, probe, exchange_hours::SessionKind::Extended)
             .expect("TAL phase");
-    assert_eq!(pre_phase_close, local(tz, (2026, 8, 19), (22, 0, 0)));
     assert_eq!(post_phase_open, local(tz, (2026, 8, 19), (17, 32, 0)));
     assert_eq!(post_phase_close, local(tz, (2026, 8, 19), (17, 40, 0)));
 
     let last_randomized_auction_second = local(tz, (2026, 8, 19), (17, 31, 59));
     let randomized_auction_close = local(tz, (2026, 8, 19), (17, 32, 0));
     assert!(pre.is_open_extended(last_randomized_auction_second));
-    assert!(pre.is_open_extended(randomized_auction_close));
+    // 17:32 is where pre-TAL SIX entered post-trading, which is order entry.
+    assert!(pre.is_order_entry_only(randomized_auction_close));
     assert!(post.is_open_extended(randomized_auction_close));
 }
 
@@ -419,14 +427,11 @@ fn vienna_xetra_t7_migration_and_closing_extension() {
 
     let (pre, post) = cutover_sides(Exchange::Vienna, tz, (2019, 5, 2));
     let at_1734 = local(tz, probe_day, (17, 34, 0));
-    let (pre_open, pre_close) =
-        exchange_hours::session_bounds_with(&pre, at_1734, exchange_hours::SessionKind::Extended)
-            .expect("pre-extension post-trading phase");
     let (post_open, post_close) =
         exchange_hours::session_bounds_with(&post, at_1734, exchange_hours::SessionKind::Extended)
             .expect("extended closing auction");
-    assert_eq!(pre_open, local(tz, probe_day, (17, 33, 30)));
-    assert_eq!(pre_close, local(tz, probe_day, (17, 45, 0)));
+    // The pre-extension phase at 17:34 is order entry, not an extended session.
+    assert!(pre.is_order_entry_only(at_1734));
     assert_eq!(post_open, local(tz, probe_day, (17, 30, 0)));
     assert_eq!(post_close, local(tz, probe_day, (17, 35, 30)));
 }
@@ -438,12 +443,10 @@ fn vienna_trade_at_close_cutover() {
     let (pre, post) = cutover_sides(Exchange::Vienna, tz, (2020, 12, 1));
 
     assert!(!pre.is_open(probe));
-    assert!(post.is_open_extended(probe));
-    let (post_phase_open, post_phase_close) =
-        exchange_hours::session_bounds_with(&post, probe, exchange_hours::SessionKind::Extended)
-            .expect("post-TAC post-trading phase");
-    assert_eq!(post_phase_open, local(tz, (2026, 8, 19), (17, 45, 0)));
-    assert_eq!(post_phase_close, local(tz, (2026, 8, 19), (17, 50, 0)));
+    // Vienna post-TAC post-trading: order maintenance only.
+    assert!(post.is_order_entry_only(probe));
+    assert!(post.is_order_entry_only(local(tz, (2026, 8, 19), (17, 49, 0))));
+    assert!(!post.is_open(local(tz, (2026, 8, 19), (17, 50, 0))));
 }
 
 #[test]

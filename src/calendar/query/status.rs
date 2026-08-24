@@ -36,9 +36,22 @@ pub(in crate::calendar) fn trade_date(
     context: &QueryContext<'_>,
     instant: DateTime<Utc>,
 ) -> Option<NaiveDate> {
-    let (open, _session_close) = containing_session_with(context, instant, SessionKind::Both)?;
-    let close = next_daily_close_after_with(context, instant, SessionKind::Both)?;
-    Some(context.trade_date_for_bounds(open, close))
+    if let Some((open, _session_close)) =
+        containing_session_with(context, instant, SessionKind::Both)
+    {
+        let close = next_daily_close_after_with(context, instant, SessionKind::Both)?;
+        return Some(context.trade_date_for_bounds(open, close));
+    }
+    // An order-entry phase is not a session, so it has no containing bounds -
+    // but it exists to feed the session that follows it, and an order queued in
+    // a Sunday pre-open belongs to Monday's trade date. Resolve through the next
+    // session rather than reporting `None`.
+    if context.is_order_entry_only(instant) {
+        let (open, _next_close) = next_session_after_with(context, instant, SessionKind::Both)?;
+        let close = next_daily_close_after_with(context, open, SessionKind::Both)?;
+        return Some(context.trade_date_for_bounds(open, close));
+    }
+    None
 }
 
 pub(in crate::calendar) fn session_state(

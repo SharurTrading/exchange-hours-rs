@@ -37,7 +37,13 @@ static ICE_CANADA_2010_REGULAR: &[SessionRule] = &[SessionRule {
     open_ssm: 20 * 3600,
     close_ssm: 13 * 3600 + 15 * 60,
 }];
-static ICE_CANADA_2010_EXTENDED: &[SessionRule] = &[SessionRule {
+// The phase preceding each open is the pre-open the sources name as such - the
+// 2009 calendar's "pre-open 19:00" and the 2011 notice's move of the
+// "pre-open/open" to 18:30/19:00. Orders are entered ahead of the open and
+// nothing matches until continuous trading starts, so it is order_entry;
+// Canola published no tradeable phase outside continuous trading, so the
+// extended slices stay empty.
+static ICE_CANADA_2010_ORDER_ENTRY: &[SessionRule] = &[SessionRule {
     days: SUN_PLUS_MON_THU,
     open_ssm: 19 * 3600,
     close_ssm: 20 * 3600,
@@ -45,8 +51,8 @@ static ICE_CANADA_2010_EXTENDED: &[SessionRule] = &[SessionRule {
 static ICE_CANADA_2010: StaticHoursProfile = StaticHoursProfile {
     tz: America::Winnipeg,
     regular: ICE_CANADA_2010_REGULAR,
-    extended: ICE_CANADA_2010_EXTENDED,
-    order_entry: &[],
+    extended: &[],
+    order_entry: ICE_CANADA_2010_ORDER_ENTRY,
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -56,7 +62,7 @@ static ICE_CANADA_2011_REGULAR: &[SessionRule] = &[SessionRule {
     open_ssm: 19 * 3600,
     close_ssm: 13 * 3600 + 15 * 60,
 }];
-static ICE_CANADA_2011_EXTENDED: &[SessionRule] = &[SessionRule {
+static ICE_CANADA_2011_ORDER_ENTRY: &[SessionRule] = &[SessionRule {
     days: SUN_PLUS_MON_THU,
     open_ssm: 18 * 3600 + 30 * 60,
     close_ssm: 19 * 3600,
@@ -64,8 +70,8 @@ static ICE_CANADA_2011_EXTENDED: &[SessionRule] = &[SessionRule {
 static ICE_CANADA_2011: StaticHoursProfile = StaticHoursProfile {
     tz: America::Winnipeg,
     regular: ICE_CANADA_2011_REGULAR,
-    extended: ICE_CANADA_2011_EXTENDED,
-    order_entry: &[],
+    extended: &[],
+    order_entry: ICE_CANADA_2011_ORDER_ENTRY,
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -78,8 +84,8 @@ static ICE_CANADA_2012_REGULAR: &[SessionRule] = &[SessionRule {
 static ICE_CANADA_2012: StaticHoursProfile = StaticHoursProfile {
     tz: America::Winnipeg,
     regular: ICE_CANADA_2012_REGULAR,
-    extended: ICE_CANADA_2011_EXTENDED,
-    order_entry: &[],
+    extended: &[],
+    order_entry: ICE_CANADA_2011_ORDER_ENTRY,
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -92,8 +98,8 @@ static ICE_CANADA_2016_REGULAR: &[SessionRule] = &[SessionRule {
 static ICE_CANADA_2016: StaticHoursProfile = StaticHoursProfile {
     tz: America::Winnipeg,
     regular: ICE_CANADA_2016_REGULAR,
-    extended: ICE_CANADA_2011_EXTENDED,
-    order_entry: &[],
+    extended: &[],
+    order_entry: ICE_CANADA_2011_ORDER_ENTRY,
     has_daily_close: true,
     has_weekend_close: true,
 };

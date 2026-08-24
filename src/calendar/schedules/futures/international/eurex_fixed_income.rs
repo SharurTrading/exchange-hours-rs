@@ -20,7 +20,15 @@ use crate::calendar::schedules::timeline::{
 // Opening auction, Continuous Trading, Closing auction, Post-Trading. The
 // executable on-exchange order book is the Continuous Trading phase, so that
 // phase alone is `regular`; Pre-Trading and Post-Trading accept order entry and
-// maintenance without matching, so they are `extended`.
+// maintenance without matching, so they are `order_entry`.
+//
+// Classification note: no trade can print in Pre-Trading or Post-Trading. The
+// trading-phases page defines them as the phases in which orders and quotes may
+// be entered, modified and deleted while the order book is not executable, and
+// the two auctions that do print sit inside the Continuous Trading row modelled
+// as `regular` here. Both phases are therefore `order_entry`, not `extended`,
+// and the `extended` slice for this family is empty: this grid has no tradeable
+// phase outside continuous trading.
 //
 // The morning phases are anchored to 08:00 Singapore time, not to a fixed
 // Berlin wall clock: Annex C states Continuous Trading as "01:10-22:00 MEZ /
@@ -48,10 +56,15 @@ pub(crate) static EUREX_FIXED_INCOME_REGULAR_CURRENT: &[SessionRule] = &[Session
     close_ssm: 22 * 3600,
 }];
 
+// No tradeable non-continuous phase exists on this grid; see the classification
+// note above. Kept as an explicit empty slice so the family's shape stays
+// visible next to its `order_entry` twin.
+pub(crate) static EUREX_FIXED_INCOME_EXTENDED_CURRENT: &[SessionRule] = &[];
+
 // Pre-Trading 02:00-02:10 CEST, then Post-Trading 22:00-22:10 local. Annex C
 // gives the post-trading row as "Post-Trading Periode bis / Post-Trading Period
-// Until = 22:10*".
-pub(crate) static EUREX_FIXED_INCOME_EXTENDED_CURRENT: &[SessionRule] = &[
+// Until = 22:10*". Order entry only in both windows.
+pub(crate) static EUREX_FIXED_INCOME_ORDER_ENTRY_CURRENT: &[SessionRule] = &[
     SessionRule {
         days: MON_FRI,
         open_ssm: 2 * 3600,
@@ -68,7 +81,7 @@ pub(crate) static EUREX_FIXED_INCOME_CURRENT: StaticHoursProfile = StaticHoursPr
     tz: Europe::Berlin,
     regular: EUREX_FIXED_INCOME_REGULAR_CURRENT,
     extended: EUREX_FIXED_INCOME_EXTENDED_CURRENT,
-    order_entry: &[],
+    order_entry: EUREX_FIXED_INCOME_ORDER_ENTRY_CURRENT,
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -82,7 +95,7 @@ static EUREX_FIXED_INCOME_REGULAR_WINTER: &[SessionRule] = &[SessionRule {
     close_ssm: 22 * 3600,
 }];
 
-static EUREX_FIXED_INCOME_EXTENDED_WINTER: &[SessionRule] = &[
+static EUREX_FIXED_INCOME_ORDER_ENTRY_WINTER: &[SessionRule] = &[
     SessionRule {
         days: MON_FRI,
         open_ssm: 3600,
@@ -98,8 +111,8 @@ static EUREX_FIXED_INCOME_EXTENDED_WINTER: &[SessionRule] = &[
 static EUREX_FIXED_INCOME_WINTER: StaticHoursProfile = StaticHoursProfile {
     tz: Europe::Berlin,
     regular: EUREX_FIXED_INCOME_REGULAR_WINTER,
-    extended: EUREX_FIXED_INCOME_EXTENDED_WINTER,
-    order_entry: &[],
+    extended: &[],
+    order_entry: EUREX_FIXED_INCOME_ORDER_ENTRY_WINTER,
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -110,7 +123,8 @@ static EUREX_FIXED_INCOME_WINTER: StaticHoursProfile = StaticHoursProfile {
 // amendment records as the state it replaced. That whole window sits inside
 // CET, so the CEST twin below is never selected in practice; it is kept so the
 // regime is described by its dates rather than by an accident of the calendar.
-static EUREX_FIXED_INCOME_EXTENDED_2018_SUMMER: &[SessionRule] = &[
+// Both windows are Pre-Trading and Post-Trading, so both are order entry only.
+static EUREX_FIXED_INCOME_ORDER_ENTRY_2018_SUMMER: &[SessionRule] = &[
     SessionRule {
         days: MON_FRI,
         open_ssm: 2 * 3600,
@@ -123,7 +137,7 @@ static EUREX_FIXED_INCOME_EXTENDED_2018_SUMMER: &[SessionRule] = &[
     },
 ];
 
-static EUREX_FIXED_INCOME_EXTENDED_2018_WINTER: &[SessionRule] = &[
+static EUREX_FIXED_INCOME_ORDER_ENTRY_2018_WINTER: &[SessionRule] = &[
     SessionRule {
         days: MON_FRI,
         open_ssm: 3600,
@@ -139,8 +153,8 @@ static EUREX_FIXED_INCOME_EXTENDED_2018_WINTER: &[SessionRule] = &[
 static EUREX_FIXED_INCOME_2018_SUMMER: StaticHoursProfile = StaticHoursProfile {
     tz: Europe::Berlin,
     regular: EUREX_FIXED_INCOME_REGULAR_CURRENT,
-    extended: EUREX_FIXED_INCOME_EXTENDED_2018_SUMMER,
-    order_entry: &[],
+    extended: &[],
+    order_entry: EUREX_FIXED_INCOME_ORDER_ENTRY_2018_SUMMER,
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -148,8 +162,8 @@ static EUREX_FIXED_INCOME_2018_SUMMER: StaticHoursProfile = StaticHoursProfile {
 static EUREX_FIXED_INCOME_2018_WINTER: StaticHoursProfile = StaticHoursProfile {
     tz: Europe::Berlin,
     regular: EUREX_FIXED_INCOME_REGULAR_WINTER,
-    extended: EUREX_FIXED_INCOME_EXTENDED_2018_WINTER,
-    order_entry: &[],
+    extended: &[],
+    order_entry: EUREX_FIXED_INCOME_ORDER_ENTRY_2018_WINTER,
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -173,7 +187,9 @@ static EUREX_FIXED_INCOME_REGULAR_BASELINE: &[SessionRule] = &[SessionRule {
     close_ssm: 22 * 3600,
 }];
 
-static EUREX_FIXED_INCOME_EXTENDED_BASELINE: &[SessionRule] = &[
+// Pre-Trading 07:30-08:00 CET and Post-Trading 22:00-22:30: order entry only,
+// same phase machine as the current grid.
+static EUREX_FIXED_INCOME_ORDER_ENTRY_BASELINE: &[SessionRule] = &[
     SessionRule {
         days: MON_FRI,
         open_ssm: 7 * 3600 + 30 * 60,
@@ -189,8 +205,8 @@ static EUREX_FIXED_INCOME_EXTENDED_BASELINE: &[SessionRule] = &[
 pub(crate) static EUREX_FIXED_INCOME_BASELINE: StaticHoursProfile = StaticHoursProfile {
     tz: Europe::Berlin,
     regular: EUREX_FIXED_INCOME_REGULAR_BASELINE,
-    extended: EUREX_FIXED_INCOME_EXTENDED_BASELINE,
-    order_entry: &[],
+    extended: &[],
+    order_entry: EUREX_FIXED_INCOME_ORDER_ENTRY_BASELINE,
     has_daily_close: true,
     has_weekend_close: true,
 };

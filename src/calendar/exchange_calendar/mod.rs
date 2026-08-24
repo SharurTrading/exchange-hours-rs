@@ -141,6 +141,25 @@ impl ExchangeCalendar {
         self.is_open_with(instant, SessionKind::Extended)
     }
 
+    /// Returns whether orders may be entered, amended or cancelled at `instant`.
+    ///
+    /// True during order-entry-only phases and during any tradeable session.
+    /// This is a different question from [`Self::is_open`], which asks whether a
+    /// trade can print.
+    #[must_use]
+    pub fn is_accepting_orders(self, instant: DateTime<Utc>) -> bool {
+        self.hours_at(instant).is_accepting_orders(instant)
+    }
+
+    /// Returns whether `instant` falls in an order-entry-only phase where no
+    /// trade can match.
+    ///
+    /// Mutually exclusive with [`Self::is_open`].
+    #[must_use]
+    pub fn is_order_entry_only(self, instant: DateTime<Utc>) -> bool {
+        self.hours_at(instant).is_order_entry_only(instant)
+    }
+
     /// Returns the containing or next regular/extended session bounds.
     ///
     /// See [`Self::session_bounds_with`] for the bounded-search semantics.

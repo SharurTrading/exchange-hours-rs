@@ -61,8 +61,14 @@ pub(crate) static ICE_USDX_REGULAR_CURRENT: &[SessionRule] = &[
 // 30 minutes before the opening for order entry. Open on Sunday night is 6:00
 // PM ET; Pre-Open at 5:30 PM ET".
 //
+// ICE's own wording settles the classification: the platform "is available 30
+// minutes before the opening for order entry" and nothing matches until the
+// open, so the Pre-Open goes in order_entry. USDX publishes no tradeable phase
+// outside its near-24-hour executable session, so the extended slice is empty.
+//
 // https://www.ice.com/products/194/US-Dollar-Index-USDX-Futures
-pub(crate) static ICE_USDX_EXTENDED_CURRENT: &[SessionRule] = &[
+pub(crate) static ICE_USDX_EXTENDED_CURRENT: &[SessionRule] = &[];
+pub(crate) static ICE_USDX_ORDER_ENTRY_CURRENT: &[SessionRule] = &[
     SessionRule {
         days: SUN_ONLY,
         open_ssm: 17 * 3600 + 30 * 60,
@@ -79,7 +85,7 @@ pub(crate) static ICE_USDX_CURRENT: StaticHoursProfile = StaticHoursProfile {
     tz: America::New_York,
     regular: ICE_USDX_REGULAR_CURRENT,
     extended: ICE_USDX_EXTENDED_CURRENT,
-    order_entry: &[],
+    order_entry: ICE_USDX_ORDER_ENTRY_CURRENT,
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -118,14 +124,17 @@ static ICE_USDX_REGULAR_BASELINE: &[SessionRule] = &[
 // Dollar Index FAQ already reads "The ICE trading platform is available for
 // order entry thirty minutes before the opening of trading", and the current
 // product page repeats it. No primary source dates its introduction, so no
-// cutover is encoded for the extended phases; only the close moves in 2011.
+// cutover is encoded for the order-entry phases; only the close moves in 2011.
+// The FAQ's wording - "available for order entry thirty minutes before the
+// opening of trading" - is also why the phase is order_entry in this era, not a
+// tradeable extended session.
 //
 // https://www.ice.com/publicdocs/futures_us/ICE_Dollar_Index_FAQ.pdf
 pub(crate) static ICE_USDX_BASELINE: StaticHoursProfile = StaticHoursProfile {
     tz: America::New_York,
     regular: ICE_USDX_REGULAR_BASELINE,
     extended: ICE_USDX_EXTENDED_CURRENT,
-    order_entry: &[],
+    order_entry: ICE_USDX_ORDER_ENTRY_CURRENT,
     has_daily_close: true,
     has_weekend_close: true,
 };

@@ -15,12 +15,13 @@ const SUNDAY: [bool; 7] = [false, false, false, false, false, false, true];
 const fn profile(
     regular: &'static [SessionRule],
     extended: &'static [SessionRule],
+    order_entry: &'static [SessionRule],
 ) -> StaticHoursProfile {
     StaticHoursProfile {
         tz: US::Central,
         regular,
         extended,
-        order_entry: &[],
+        order_entry,
         has_daily_close: true,
         has_weekend_close: true,
     }
@@ -43,12 +44,24 @@ pub(crate) static CFE_REGULAR: &[SessionRule] = &[SessionRule {
     open_ssm: 8 * 3600 + 30 * 60,
     close_ssm: 15 * 3600,
 }];
+// ORDER-ENTRY CLASSIFICATION. The notice quoted above calls the Sunday
+// 16:00-17:00 and Monday-Thursday 16:45-17:00 windows "order-entry queues":
+// CFE accepts non-market orders that cannot execute until trading resumes at
+// 17:00, so no trade can print inside them. They are `order_entry`. The
+// 15:00-16:00 and 17:00-08:30 ETH windows match and stay in `extended`.
 pub(crate) static CFE_EXTENDED: &[SessionRule] = &[
     SessionRule {
         days: MON_FRI,
         open_ssm: 15 * 3600,
         close_ssm: 16 * 3600,
     },
+    SessionRule {
+        days: SUN_PLUS_MON_THU,
+        open_ssm: 17 * 3600,
+        close_ssm: 8 * 3600 + 30 * 60,
+    },
+];
+pub(crate) static CFE_ORDER_ENTRY: &[SessionRule] = &[
     SessionRule {
         days: SUNDAY,
         open_ssm: 16 * 3600 + 6,
@@ -59,13 +72,8 @@ pub(crate) static CFE_EXTENDED: &[SessionRule] = &[
         open_ssm: 16 * 3600 + 45 * 60 + 6,
         close_ssm: 17 * 3600,
     },
-    SessionRule {
-        days: SUN_PLUS_MON_THU,
-        open_ssm: 17 * 3600,
-        close_ssm: 8 * 3600 + 30 * 60,
-    },
 ];
-static CFE_PROFILE: StaticHoursProfile = profile(CFE_REGULAR, CFE_EXTENDED);
+static CFE_PROFILE: StaticHoursProfile = profile(CFE_REGULAR, CFE_EXTENDED, CFE_ORDER_ENTRY);
 
 static CFE_REGULAR_0830_1515: &[SessionRule] = &[SessionRule {
     days: MON_FRI,
@@ -79,14 +87,14 @@ static CFE_REGULAR_0830_1515: &[SessionRule] = &[SessionRule {
 // effective dates and preserve the 08:30-15:15 regular session.
 // https://cdn.cboe.com/resources/regulation/rule_filings/approved/2010/SR-CFE-2010-013.pdf
 // https://cdn.cboe.com/resources/regulation/rule_filings/approved/2011/SR-CFE-2011-019.pdf
-static CFE_PROFILE_AT_2010_FLOOR: StaticHoursProfile = profile(CFE_REGULAR_0830_1515, &[]);
+static CFE_PROFILE_AT_2010_FLOOR: StaticHoursProfile = profile(CFE_REGULAR_0830_1515, &[], &[]);
 static CFE_EXT_2010_12_10: &[SessionRule] = &[SessionRule {
     days: MON_FRI,
     open_ssm: 7 * 3600 + 20 * 60,
     close_ssm: 8 * 3600 + 30 * 60,
 }];
 static CFE_PROFILE_2010_12_10: StaticHoursProfile =
-    profile(CFE_REGULAR_0830_1515, CFE_EXT_2010_12_10);
+    profile(CFE_REGULAR_0830_1515, CFE_EXT_2010_12_10, &[]);
 
 // CFE expanded VX hours in two phases during 2013. Its announcement describes
 // the predecessor 07:00–15:15 trading day and the exact phase shapes; Cboe's
@@ -105,16 +113,18 @@ static CFE_EXT_PRE_2013_10_28: &[SessionRule] = &[SessionRule {
     open_ssm: 7 * 3600,
     close_ssm: 8 * 3600 + 30 * 60,
 }];
+// IC13-041 publishes 15:29-15:30 as a Monday-Thursday "pre-open queue" ahead of
+// the 15:30 session, so it accepts orders without matching and is `order_entry`.
+static CFE_ORDER_ENTRY_1529: &[SessionRule] = &[SessionRule {
+    days: MON_THU,
+    open_ssm: 15 * 3600 + 29 * 60,
+    close_ssm: 15 * 3600 + 30 * 60,
+}];
 static CFE_EXT_2013_10_28: &[SessionRule] = &[
     SessionRule {
         days: MON_FRI,
         open_ssm: 7 * 3600,
         close_ssm: 8 * 3600 + 30 * 60,
-    },
-    SessionRule {
-        days: MON_THU,
-        open_ssm: 15 * 3600 + 29 * 60,
-        close_ssm: 15 * 3600 + 30 * 60,
     },
     SessionRule {
         days: MON_THU,
@@ -130,21 +140,22 @@ static CFE_EXT_2013_11_04: &[SessionRule] = &[
     },
     SessionRule {
         days: MON_THU,
-        open_ssm: 15 * 3600 + 29 * 60,
-        close_ssm: 15 * 3600 + 30 * 60,
-    },
-    SessionRule {
-        days: MON_THU,
         open_ssm: 15 * 3600 + 30 * 60,
         close_ssm: 16 * 3600 + 15 * 60,
     },
 ];
 static CFE_PROFILE_PRE_2013_10_28: StaticHoursProfile =
-    profile(CFE_REGULAR_0830_1515, CFE_EXT_PRE_2013_10_28);
-static CFE_PROFILE_2013_10_28: StaticHoursProfile =
-    profile(CFE_REGULAR_0830_1515, CFE_EXT_2013_10_28);
-static CFE_PROFILE_2013_11_04: StaticHoursProfile =
-    profile(CFE_REGULAR_0830_1515, CFE_EXT_2013_11_04);
+    profile(CFE_REGULAR_0830_1515, CFE_EXT_PRE_2013_10_28, &[]);
+static CFE_PROFILE_2013_10_28: StaticHoursProfile = profile(
+    CFE_REGULAR_0830_1515,
+    CFE_EXT_2013_10_28,
+    CFE_ORDER_ENTRY_1529,
+);
+static CFE_PROFILE_2013_11_04: StaticHoursProfile = profile(
+    CFE_REGULAR_0830_1515,
+    CFE_EXT_2013_11_04,
+    CFE_ORDER_ENTRY_1529,
+);
 
 // CFE-2014-010 introduced nearly-24-hour VX trading on Sunday 2014-06-22.
 // IC14-036 publishes the resulting 16:15–17:00 Sunday pre-open and retained
@@ -156,18 +167,8 @@ static CFE_PROFILE_2013_11_04: StaticHoursProfile =
 static CFE_EXT_2014_06_22: &[SessionRule] = &[
     SessionRule {
         days: SUNDAY,
-        open_ssm: 16 * 3600 + 15 * 60,
-        close_ssm: 17 * 3600,
-    },
-    SessionRule {
-        days: SUNDAY,
         open_ssm: 17 * 3600,
         close_ssm: 8 * 3600 + 30 * 60,
-    },
-    SessionRule {
-        days: MON_THU,
-        open_ssm: 15 * 3600 + 29 * 60,
-        close_ssm: 15 * 3600 + 30 * 60,
     },
     SessionRule {
         days: MON_THU,
@@ -175,8 +176,25 @@ static CFE_EXT_2014_06_22: &[SessionRule] = &[
         close_ssm: 8 * 3600 + 30 * 60,
     },
 ];
-static CFE_PROFILE_2014_06_22: StaticHoursProfile =
-    profile(CFE_REGULAR_0830_1515, CFE_EXT_2014_06_22);
+// IC14-036 names both the Sunday 16:15-17:00 phase and the retained 15:29-15:30
+// weekday phase as pre-opens: orders queue, nothing matches.
+static CFE_ORDER_ENTRY_2014_06_22: &[SessionRule] = &[
+    SessionRule {
+        days: SUNDAY,
+        open_ssm: 16 * 3600 + 15 * 60,
+        close_ssm: 17 * 3600,
+    },
+    SessionRule {
+        days: MON_THU,
+        open_ssm: 15 * 3600 + 29 * 60,
+        close_ssm: 15 * 3600 + 30 * 60,
+    },
+];
+static CFE_PROFILE_2014_06_22: StaticHoursProfile = profile(
+    CFE_REGULAR_0830_1515,
+    CFE_EXT_2014_06_22,
+    CFE_ORDER_ENTRY_2014_06_22,
+);
 
 // SR-CFE-2017-017 tied a revised VX schedule to CFE's system migration:
 // 08:30–15:15 RTH, a 15:15–15:30 order-entry-only queue, 15:30–16:00 ETH, a
@@ -190,11 +208,28 @@ static CFE_PROFILE_2014_06_22: StaticHoursProfile =
 // Monday 2018-02-26.
 // https://cdn.cboe.com/resources/regulation/rule_filings/approved/2017/SR-CFE-2017-017.pdf
 // https://cdn.cboe.com/resources/regulation/circulars/regulatory/RG-CFE-2018-005.pdf
+// The filing above enumerates the migration-era phases separately: RTH ends at
+// 15:15, 15:15-15:30 is an "order-entry-only queue", 15:30-16:00 is ETH, and
+// the 16:00/16:45 opening queues run to the 17:00 ETH open. Only the two ETH
+// windows match, so the 15:15-15:30 queue is split out of the former merged
+// 15:15-16:00 rule and joins the evening queues in `order_entry`.
 static CFE_EXT_2018_02_25: &[SessionRule] = &[
     SessionRule {
         days: MON_FRI,
-        open_ssm: 15 * 3600 + 15 * 60,
+        open_ssm: 15 * 3600 + 30 * 60,
         close_ssm: 16 * 3600,
+    },
+    SessionRule {
+        days: SUN_PLUS_MON_THU,
+        open_ssm: 17 * 3600,
+        close_ssm: 8 * 3600 + 30 * 60,
+    },
+];
+static CFE_ORDER_ENTRY_2018_02_25: &[SessionRule] = &[
+    SessionRule {
+        days: MON_FRI,
+        open_ssm: 15 * 3600 + 15 * 60,
+        close_ssm: 15 * 3600 + 30 * 60,
     },
     SessionRule {
         days: SUNDAY,
@@ -206,14 +241,12 @@ static CFE_EXT_2018_02_25: &[SessionRule] = &[
         open_ssm: 16 * 3600 + 45 * 60 + 3,
         close_ssm: 17 * 3600,
     },
-    SessionRule {
-        days: SUN_PLUS_MON_THU,
-        open_ssm: 17 * 3600,
-        close_ssm: 8 * 3600 + 30 * 60,
-    },
 ];
-static CFE_PROFILE_2018_02_25: StaticHoursProfile =
-    profile(CFE_REGULAR_0830_1515, CFE_EXT_2018_02_25);
+static CFE_PROFILE_2018_02_25: StaticHoursProfile = profile(
+    CFE_REGULAR_0830_1515,
+    CFE_EXT_2018_02_25,
+    CFE_ORDER_ENTRY_2018_02_25,
+);
 
 // C2018071603 changed TAS queue commencement to a randomized instant three to
 // six seconds after the nominal Sunday 16:00 and weekday 16:45 boundaries,
@@ -221,11 +254,13 @@ static CFE_PROFILE_2018_02_25: StaticHoursProfile =
 // zero to three seconds. The all-contract profile therefore advances its
 // conservative latest edge from three to six seconds on that opening day.
 // https://cdn.cboe.com/resources/release_notes/2018/Change-to-CFE-Pre-Open-Time-for-TAS-Contracts-and-Order-Submission-Commencement-Times.pdf
-static CFE_EXT_2018_08_12: &[SessionRule] = &[
+// Only the queue-commencement seconds change here, so the matching grid is the
+// one CFE_EXT_2018_02_25 already carries.
+static CFE_ORDER_ENTRY_2018_08_12: &[SessionRule] = &[
     SessionRule {
         days: MON_FRI,
         open_ssm: 15 * 3600 + 15 * 60,
-        close_ssm: 16 * 3600,
+        close_ssm: 15 * 3600 + 30 * 60,
     },
     SessionRule {
         days: SUNDAY,
@@ -237,14 +272,12 @@ static CFE_EXT_2018_08_12: &[SessionRule] = &[
         open_ssm: 16 * 3600 + 45 * 60 + 6,
         close_ssm: 17 * 3600,
     },
-    SessionRule {
-        days: SUN_PLUS_MON_THU,
-        open_ssm: 17 * 3600,
-        close_ssm: 8 * 3600 + 30 * 60,
-    },
 ];
-static CFE_PROFILE_2018_08_12: StaticHoursProfile =
-    profile(CFE_REGULAR_0830_1515, CFE_EXT_2018_08_12);
+static CFE_PROFILE_2018_08_12: StaticHoursProfile = profile(
+    CFE_REGULAR_0830_1515,
+    CFE_EXT_2018_02_25,
+    CFE_ORDER_ENTRY_2018_08_12,
+);
 
 static CFE_REVISIONS: &[Revision] = &[
     Revision {

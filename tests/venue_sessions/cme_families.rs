@@ -11,12 +11,13 @@ fn interest_rates_current_profile_is_the_extended_17_to_16_grid() {
 
     assert!(profile.regular.is_empty());
     assert!(!profile.is_open(ct((2026, 4, 19), (15, 59, 59))));
-    assert!(profile.is_open(ct((2026, 4, 19), (16, 0, 0))));
+    // 16:00 CT Sunday is the pre-open queue: order entry, not a session.
+    assert!(profile.is_order_entry_only(ct((2026, 4, 19), (16, 0, 0))));
     assert!(profile.is_open(ct((2026, 4, 19), (17, 0, 0))));
     assert!(profile.is_open(ct((2026, 4, 20), (15, 59, 59))));
     assert!(!profile.is_open(ct((2026, 4, 20), (16, 0, 0))));
     assert!(!profile.is_open(ct((2026, 4, 20), (16, 44, 59))));
-    assert!(profile.is_open(ct((2026, 4, 20), (16, 45, 0))));
+    assert!(profile.is_order_entry_only(ct((2026, 4, 20), (16, 45, 0))));
     assert!(profile.is_open(ct((2026, 4, 20), (17, 0, 0))));
     assert!(!profile.is_open(ct((2026, 4, 25), (12, 0, 0))));
     assert_eq!(
@@ -59,8 +60,8 @@ fn interest_rates_open_changed_on_the_sourced_2011_opening_day() {
     );
 
     assert!(!before.is_open(ct((2011, 10, 2), (16, 14, 59))));
-    assert!(before.is_open_extended(ct((2011, 10, 2), (16, 15, 0))));
-    assert!(before.is_open_extended(ct((2011, 10, 2), (17, 29, 59))));
+    assert!(before.is_order_entry_only(ct((2011, 10, 2), (16, 15, 0))));
+    assert!(before.is_order_entry_only(ct((2011, 10, 2), (17, 29, 59))));
     assert!(before.is_open_extended(ct((2011, 10, 2), (17, 30, 0))));
     assert!(!after.is_open(ct((2011, 10, 2), (16, 59, 59))));
     assert!(after.is_open_extended(ct((2011, 10, 2), (17, 0, 0))));
@@ -82,8 +83,8 @@ fn cme_weekday_preopen_changed_on_the_sourced_2010_day() {
             !before.is_open(early),
             "{key:?} predecessor starts at 16:50"
         );
-        assert!(before.is_open_extended(predecessor));
-        assert!(after.is_open_extended(early));
+        assert!(before.is_order_entry_only(predecessor));
+        assert!(after.is_order_entry_only(early));
     }
 }
 
@@ -116,7 +117,7 @@ fn grains_keep_exact_sourced_order_phase_revisions() {
     );
     let early_pcp = ct((2010, 4, 19), (13, 15, 30));
     assert!(!before_pcp.is_open(early_pcp));
-    assert!(expanded_pcp.is_open_extended(early_pcp));
+    assert!(expanded_pcp.is_order_entry_only(early_pcp));
 
     let before_morning_change = hours_for_market_hours_key_as_of(
         MarketHoursKey::GlobexGrains,
@@ -126,9 +127,9 @@ fn grains_keep_exact_sourced_order_phase_revisions() {
         MarketHoursKey::GlobexGrains,
         ct((2011, 12, 27), (0, 0, 0)),
     );
-    assert!(before_morning_change.is_open_extended(ct((2011, 12, 27), (7, 15, 0))));
+    assert!(before_morning_change.is_order_entry_only(ct((2011, 12, 27), (7, 15, 0))));
     assert!(!after_morning_change.is_open(ct((2011, 12, 27), (7, 59, 59))));
-    assert!(after_morning_change.is_open_extended(ct((2011, 12, 27), (8, 0, 0))));
+    assert!(after_morning_change.is_order_entry_only(ct((2011, 12, 27), (8, 0, 0))));
 
     let before_2013_queue = hours_for_market_hours_key_as_of(
         MarketHoursKey::GlobexGrains,
@@ -139,7 +140,7 @@ fn grains_keep_exact_sourced_order_phase_revisions() {
         ct((2013, 8, 18), (0, 0, 0)),
     );
     assert!(!before_2013_queue.is_open(ct((2013, 8, 19), (8, 0, 0))));
-    assert!(from_2013_queue.is_open_extended(ct((2013, 8, 19), (8, 0, 0))));
+    assert!(from_2013_queue.is_order_entry_only(ct((2013, 8, 19), (8, 0, 0))));
 }
 
 #[test]
@@ -148,20 +149,25 @@ fn livestock_current_profile_is_the_weekday_day_session() {
     let hours = hours_for_market_hours_key(MarketHoursKey::GlobexLivestock);
     let calendar = calendar_for_market_hours_key(MarketHoursKey::GlobexLivestock);
 
-    assert!(!profile.extended.is_empty());
+    // Livestock has a day session plus queues and no electronic overnight
+    // session, so `extended` is legitimately empty and the queues are
+    // `order_entry`.
+    assert!(profile.extended.is_empty());
+    assert!(!profile.order_entry.is_empty());
     assert!(!profile.is_open(ct((2026, 4, 20), (7, 59, 59))));
-    assert!(profile.is_open(ct((2026, 4, 20), (8, 0, 0))));
-    assert!(hours.is_open_extended(ct((2026, 4, 20), (8, 29, 59))));
+    assert!(profile.is_order_entry_only(ct((2026, 4, 20), (8, 0, 0))));
+    assert!(hours.is_order_entry_only(ct((2026, 4, 20), (8, 29, 59))));
     assert!(profile.is_open(ct((2026, 4, 20), (8, 30, 0))));
     assert!(profile.is_open(ct((2026, 4, 20), (13, 4, 59))));
     assert!(!profile.is_open(ct((2026, 4, 20), (13, 5, 0))));
     assert!(!profile.is_open(ct((2026, 4, 20), (14, 29, 59))));
-    assert!(hours.is_open_extended(ct((2026, 4, 20), (14, 30, 0))));
+    assert!(hours.is_order_entry_only(ct((2026, 4, 20), (14, 30, 0))));
     assert!(!profile.is_open(ct((2026, 4, 20), (16, 0, 0))));
     assert!(!profile.is_open(ct((2026, 4, 25), (10, 0, 0))));
     assert_eq!(
         calendar.next_session_open_after(ct((2026, 4, 24), (13, 5, 0))),
-        Some(ct((2026, 4, 27), (8, 0, 0))),
+        // 08:00 is livestock's pre-open queue; the session opens at 08:30.
+        Some(ct((2026, 4, 27), (8, 30, 0))),
     );
     assert_eq!(
         calendar.candle_end(ct((2026, 4, 20), (9, 0, 0)), CalendarResolution::Daily,),
@@ -175,26 +181,26 @@ fn livestock_current_profile_is_the_weekday_day_session() {
 fn fixed_current_cme_families_include_operator_published_order_phases() {
     let equity = hours_for_market_hours_key(MarketHoursKey::GlobexEquityIndex);
     assert!(!equity.is_open(ct((2026, 4, 19), (15, 59, 59))));
-    assert!(equity.is_open_extended(ct((2026, 4, 19), (16, 0, 0))));
-    assert!(equity.is_open_extended(ct((2026, 4, 20), (16, 45, 0))));
+    assert!(equity.is_order_entry_only(ct((2026, 4, 19), (16, 0, 0))));
+    assert!(equity.is_order_entry_only(ct((2026, 4, 20), (16, 45, 0))));
     assert!(equity.is_open_extended(ct((2026, 4, 20), (15, 15, 0))));
 
     let energy = hours_for_market_hours_key(MarketHoursKey::GlobexEnergy);
-    assert!(energy.is_open_extended(ct((2026, 4, 19), (16, 0, 0))));
-    assert!(energy.is_open_extended(ct((2026, 4, 20), (16, 45, 0))));
+    assert!(energy.is_order_entry_only(ct((2026, 4, 19), (16, 0, 0))));
+    assert!(energy.is_order_entry_only(ct((2026, 4, 20), (16, 45, 0))));
 
     let fx = hours_for_market_hours_key(MarketHoursKey::GlobexFx);
-    assert!(fx.is_open_extended(ct((2026, 4, 19), (16, 0, 0))));
-    assert!(fx.is_open_extended(ct((2026, 4, 20), (16, 45, 0))));
+    assert!(fx.is_order_entry_only(ct((2026, 4, 19), (16, 0, 0))));
+    assert!(fx.is_order_entry_only(ct((2026, 4, 20), (16, 45, 0))));
 
     let grains = hours_for_market_hours_key(MarketHoursKey::GlobexGrains);
-    assert!(grains.is_open_extended(ct((2026, 4, 19), (16, 0, 0))));
+    assert!(grains.is_order_entry_only(ct((2026, 4, 19), (16, 0, 0))));
     assert!(!grains.is_open(ct((2026, 4, 20), (7, 59, 59))));
-    assert!(grains.is_open_extended(ct((2026, 4, 20), (8, 0, 0))));
+    assert!(grains.is_order_entry_only(ct((2026, 4, 20), (8, 0, 0))));
     assert!(!grains.is_open(ct((2026, 4, 20), (13, 20, 0))));
-    assert!(grains.is_open_extended(ct((2026, 4, 20), (14, 30, 0))));
+    assert!(grains.is_order_entry_only(ct((2026, 4, 20), (14, 30, 0))));
     assert!(!grains.is_open(ct((2026, 4, 20), (16, 0, 0))));
-    assert!(grains.is_open_extended(ct((2026, 4, 20), (16, 45, 0))));
+    assert!(grains.is_order_entry_only(ct((2026, 4, 20), (16, 45, 0))));
 }
 
 #[test]
@@ -209,7 +215,7 @@ fn dated_cme_calendars_expose_the_undated_phase_limit_without_inventing_cutovers
         let dated = calendar_for_market_hours_key(key);
         let sunday_queue = ct((2026, 4, 19), (16, 30, 0));
         assert!(
-            fixed.is_open_extended(sunday_queue),
+            fixed.is_order_entry_only(sunday_queue),
             "{key:?} fixed current queue"
         );
         assert!(
@@ -222,14 +228,14 @@ fn dated_cme_calendars_expose_the_undated_phase_limit_without_inventing_cutovers
     let grains_dated = calendar_for_market_hours_key(MarketHoursKey::GlobexGrains);
     let sunday_queue = ct((2026, 4, 19), (16, 30, 0));
     let pcp = ct((2026, 4, 20), (15, 0, 0));
-    assert!(grains_fixed.is_open_extended(sunday_queue));
+    assert!(grains_fixed.is_order_entry_only(sunday_queue));
     assert!(!grains_dated.is_open(sunday_queue));
-    assert!(grains_fixed.is_open_extended(pcp));
+    assert!(grains_fixed.is_order_entry_only(pcp));
     assert!(!grains_dated.is_open(pcp));
 
     let livestock_fixed = hours_for_market_hours_key(MarketHoursKey::GlobexLivestock);
     let livestock_dated = calendar_for_market_hours_key(MarketHoursKey::GlobexLivestock);
-    assert!(livestock_fixed.is_open_extended(pcp));
+    assert!(livestock_fixed.is_order_entry_only(pcp));
     assert!(!livestock_dated.is_open(pcp));
 
     let crypto_dated = calendar_for_market_hours_key(MarketHoursKey::GlobexCryptocurrency);
@@ -280,7 +286,7 @@ fn livestock_dated_preopen_begins_at_the_sourced_2020_revision() {
         "the predecessor queue's onset is not invented"
     );
     assert!(!after.is_open(ct((2020, 6, 1), (7, 59, 59))));
-    assert!(after.is_open_extended(ct((2020, 6, 1), (8, 0, 0))));
+    assert!(after.is_order_entry_only(ct((2020, 6, 1), (8, 0, 0))));
 }
 
 #[test]
@@ -483,7 +489,7 @@ fn cryptocurrency_history_covers_launch_24_7_and_temporary_maintenance() {
 fn family_calendars_reselect_the_new_cme_histories() {
     let interest = calendar_for_market_hours_key(MarketHoursKey::GlobexInterestRates);
     assert!(!interest.is_open(ct((2011, 9, 25), (16, 14, 59))));
-    assert!(interest.is_open_extended(ct((2011, 9, 25), (16, 15, 0))));
+    assert!(interest.is_order_entry_only(ct((2011, 9, 25), (16, 15, 0))));
     assert!(!interest.is_open(ct((2011, 10, 2), (16, 59, 59))));
     assert!(interest.is_open(ct((2011, 10, 2), (17, 0, 0))));
 

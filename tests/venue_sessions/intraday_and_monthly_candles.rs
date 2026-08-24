@@ -52,8 +52,9 @@ fn intraday_bar_ends_at_the_daily_close_not_the_reopen() {
 
 #[test]
 fn intraday_bar_queried_inside_maintenance_anchors_at_the_reopen() {
-    // From inside the 16:00-16:45 CT maintenance break the containing session
-    // is the next Pre-Open, so the bar anchors at 16:45 and steps from there.
+    // From inside the maintenance break the containing session is the next
+    // one - the 16:45 Pre-Open is order entry, not a session - so the bar
+    // anchors at the 17:00 reopen and steps from there.
     let h = hours_for_exchange(Exchange::Cme);
     assert_eq!(
         candle_end(
@@ -61,7 +62,7 @@ fn intraday_bar_queried_inside_maintenance_anchors_at_the_reopen() {
             ct((2026, 4, 20), (16, 30, 0)),
             CalendarResolution::Minutes(5)
         ),
-        Some(ct((2026, 4, 20), (16, 50, 0))),
+        Some(ct((2026, 4, 20), (17, 5, 0))),
         "a query inside the break belongs to the next session's first bar"
     );
 }

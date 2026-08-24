@@ -78,12 +78,19 @@ static REGULAR_CURRENT: &[SessionRule] = &[SessionRule {
     open_ssm: 8 * 3600 + 30 * 60,
     close_ssm: 13 * 3600 + 5 * 60,
 }];
-static EXTENDED_DATED_CURRENT: &[SessionRule] = &[SessionRule {
+// ORDER-ENTRY CLASSIFICATION. Both phases modelled after 2016-02-29 are
+// non-matching. The comment above names 08:00-08:30 as the "Pre-Open" (its
+// start moved from 06:00 on 2020-05-31) which queues orders until the 08:30
+// regular open, and 14:30-16:00 as PCP, the post-close order-entry period that
+// follows the 13:05 close. Neither can print a trade, so the family has no
+// tradeable extended session at all: `extended` is empty and both phases are
+// `order_entry`.
+static ORDER_ENTRY_DATED_CURRENT: &[SessionRule] = &[SessionRule {
     days: MON_FRI,
     open_ssm: 8 * 3600,
     close_ssm: 8 * 3600 + 30 * 60,
 }];
-static EXTENDED_CURRENT: &[SessionRule] = &[
+pub(crate) static ORDER_ENTRY_CURRENT: &[SessionRule] = &[
     SessionRule {
         days: MON_FRI,
         open_ssm: 8 * 3600,
@@ -99,8 +106,8 @@ static EXTENDED_CURRENT: &[SessionRule] = &[
 pub(crate) static CURRENT_FUTURES_PROFILE: FuturesSessionProfile = FuturesSessionProfile {
     tz: US::Central,
     regular: REGULAR_CURRENT,
-    extended: EXTENDED_CURRENT,
-    order_entry: &[],
+    extended: &[],
+    order_entry: ORDER_ENTRY_CURRENT,
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -135,8 +142,8 @@ static PROFILE_2016_02_29: StaticHoursProfile = StaticHoursProfile {
 static PROFILE_CURRENT: StaticHoursProfile = StaticHoursProfile {
     tz: US::Central,
     regular: REGULAR_CURRENT,
-    extended: EXTENDED_DATED_CURRENT,
-    order_entry: &[],
+    extended: &[],
+    order_entry: ORDER_ENTRY_DATED_CURRENT,
     has_daily_close: true,
     has_weekend_close: true,
 };

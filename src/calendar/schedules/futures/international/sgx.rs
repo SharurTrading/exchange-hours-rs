@@ -31,16 +31,26 @@ pub(crate) static SGX_CURRENT_REGULAR: &[SessionRule] = &[
         close_ssm: 5 * 3600 + 15 * 60,
     },
 ];
-pub(crate) static SGX_CURRENT_EXTENDED: &[SessionRule] = &[
+// The closing routine that follows the T session. It ends in a match at a
+// single closing price, so a trade can print in it and it stays `extended`.
+pub(crate) static SGX_CURRENT_EXTENDED: &[SessionRule] = &[SessionRule {
+    days: MON_FRI,
+    open_ssm: 17 * 3600 + 55 * 60,
+    close_ssm: 18 * 3600,
+}];
+
+// The two opening routines: the T Pre-Opening/Non-Cancel window that precedes
+// the 07:25 open, and the shorter T+1 routine that precedes the 18:15 reopen.
+// Both are Pre-Opening/Non-Cancel routines under SGX Rule 4.1.5: they collect
+// orders and compute an indicative opening price without matching. The opening
+// match itself falls on the session-open instant that already begins the
+// `regular` window, so nothing tradeable is lost by classifying these two
+// windows as `order_entry`.
+pub(crate) static SGX_CURRENT_ORDER_ENTRY: &[SessionRule] = &[
     SessionRule {
         days: MON_FRI,
         open_ssm: 7 * 3600 + 10 * 60,
         close_ssm: 7 * 3600 + 25 * 60,
-    },
-    SessionRule {
-        days: MON_FRI,
-        open_ssm: 17 * 3600 + 55 * 60,
-        close_ssm: 18 * 3600,
     },
     SessionRule {
         days: MON_FRI,
@@ -61,7 +71,7 @@ static SGX_CURRENT: StaticHoursProfile = StaticHoursProfile {
     tz: Asia::Singapore,
     regular: SGX_CURRENT_REGULAR,
     extended: SGX_CURRENT_EXTENDED,
-    order_entry: &[],
+    order_entry: SGX_CURRENT_ORDER_ENTRY,
     has_daily_close: true,
     has_weekend_close: true,
 };

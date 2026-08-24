@@ -13,10 +13,26 @@ static TMX_AU_REGULAR: &[SessionRule] = &[SessionRule {
     open_ssm: 10 * 3600,
     close_ssm: 16 * 3600 + 13 * 60,
 }];
+// Tradeable close-side and open-side windows. The Opening Auction uncrosses in
+// a randomized 09:59:45–10:00:00 window, so a print is possible there. The
+// close-side 16:00–16:20 window stays tradeable throughout: non-auction-eligible
+// products keep trading continuously to 16:13, MOC matches at the ASX closing
+// auction price around 16:10, the Closing Auction uncrosses 16:12:45–16:13, and
+// @Last/MOC trading runs to 16:20.
 static TMX_AU_EXTENDED_CURRENT: &[SessionRule] = &[
+    // Pre-Open. The Trading System does not MATCH here, but the venue's hours
+    // page states that during the pre-market period "trade reports may be
+    // lodged in accordance with the Cboe Operating Rules and the Market
+    // Integrity Rules" — reported trades print, so the window is tradeable and
+    // is not order-entry-only.
     SessionRule {
         days: MON_FRI,
         open_ssm: 7 * 3600,
+        close_ssm: 9 * 3600 + 59 * 60 + 45,
+    },
+    SessionRule {
+        days: MON_FRI,
+        open_ssm: 9 * 3600 + 59 * 60 + 45,
         close_ssm: 10 * 3600,
     },
     SessionRule {
@@ -25,6 +41,9 @@ static TMX_AU_EXTENDED_CURRENT: &[SessionRule] = &[
         close_ssm: 16 * 3600 + 20 * 60,
     },
 ];
+
+// Pre-auction eras carry no order-entry-only window: the only non-regular
+// phases are @Last and MOC, both of which execute at the closing price.
 static TMX_AU_EXTENDED_POST_2015: &[SessionRule] = &[SessionRule {
     days: MON_FRI,
     open_ssm: 16 * 3600 + 12 * 60,

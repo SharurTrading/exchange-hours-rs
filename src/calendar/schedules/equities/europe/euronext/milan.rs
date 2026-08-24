@@ -19,12 +19,24 @@ static BASE_REGULAR: &[SessionRule] = &[SessionRule {
     open_ssm: 9 * 3600 + 60,
     close_ssm: 17 * 3600 + 25 * 60,
 }];
+// Order-entry classification. The 08:00-09:00 leg is the pre-auction
+// order-accumulation phase of the opening auction: orders are collected and no
+// contract is concluded until the randomized uncross, which the same source
+// places in 09:00-09:01. Only the accumulation leg moves to `order_entry`; the
+// 09:00-09:01 uncross itself prints and stays in `extended`.
+static BASE_ORDER_ENTRY: &[SessionRule] = &[SessionRule {
+    days: MON_FRI,
+    open_ssm: 8 * 3600,
+    close_ssm: 9 * 3600,
+}];
 static BASE_EXTENDED: &[SessionRule] = &[
+    // Randomized opening uncross.
     SessionRule {
         days: MON_FRI,
-        open_ssm: 8 * 3600,
+        open_ssm: 9 * 3600,
         close_ssm: 9 * 3600 + 60,
     },
+    // Closing auction.
     SessionRule {
         days: MON_FRI,
         open_ssm: 17 * 3600 + 25 * 60,
@@ -35,7 +47,7 @@ static BASE_PROFILE: StaticHoursProfile = StaticHoursProfile {
     tz: Europe::Rome,
     regular: BASE_REGULAR,
     extended: BASE_EXTENDED,
-    order_entry: &[],
+    order_entry: BASE_ORDER_ENTRY,
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -44,6 +56,7 @@ static BASE_PROFILE: StaticHoursProfile = StaticHoursProfile {
 // 2013-09-30, extending the closing envelope through 17:40.
 // https://www.borsaitaliana.it/azioni/notiziedettaglio/cpx.en.htm
 static CPX_EXTENDED: &[SessionRule] = &[
+    // Randomized opening uncross.
     BASE_EXTENDED[0],
     // Closing auction.
     BASE_EXTENDED[1],
@@ -58,7 +71,7 @@ static CPX_PROFILE: StaticHoursProfile = StaticHoursProfile {
     tz: Europe::Rome,
     regular: BASE_REGULAR,
     extended: CPX_EXTENDED,
-    order_entry: &[],
+    order_entry: BASE_ORDER_ENTRY,
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -72,6 +85,7 @@ static REGULAR_2015: &[SessionRule] = &[SessionRule {
     close_ssm: 17 * 3600 + 30 * 60,
 }];
 static EXTENDED_2015: &[SessionRule] = &[
+    // Randomized opening uncross.
     BASE_EXTENDED[0],
     // Closing auction, including the full one-minute random period.
     SessionRule {
@@ -90,7 +104,7 @@ static PROFILE_2015: StaticHoursProfile = StaticHoursProfile {
     tz: Europe::Rome,
     regular: REGULAR_2015,
     extended: EXTENDED_2015,
-    order_entry: &[],
+    order_entry: BASE_ORDER_ENTRY,
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -106,17 +120,30 @@ static CURRENT_REGULAR: &[SessionRule] = &[SessionRule {
     open_ssm: 9 * 3600 + 30,
     close_ssm: 17 * 3600 + 30 * 60,
 }];
+// Order-entry classification. Post-Optiq Milan follows the Euronext Call
+// (order-accumulation) model: the 07:30 pre-opening collects orders and the
+// trading appendix states the opening uncrossing "will randomly occur between
+// CET 09:00:00 and 09:00:30". Nothing matches on the central order book before
+// 09:00, so 07:30-09:00 is order entry only.
+static CURRENT_ORDER_ENTRY: &[SessionRule] = &[SessionRule {
+    days: MON_FRI,
+    open_ssm: 7 * 3600 + 30 * 60,
+    close_ssm: 9 * 3600,
+}];
 static CURRENT_EXTENDED: &[SessionRule] = &[
+    // Randomized opening uncross.
     SessionRule {
         days: MON_FRI,
-        open_ssm: 7 * 3600 + 30 * 60,
+        open_ssm: 9 * 3600,
         close_ssm: 9 * 3600 + 30,
     },
+    // Closing auction, including its latest 30-second random uncross.
     SessionRule {
         days: MON_FRI,
         open_ssm: 17 * 3600 + 30 * 60,
         close_ssm: 17 * 3600 + 35 * 60 + 30,
     },
+    // Trading-at-Last.
     SessionRule {
         days: MON_FRI,
         open_ssm: 17 * 3600 + 35 * 60 + 30,
@@ -127,7 +154,7 @@ pub(crate) static EURONEXT_MIL_PROFILE: StaticHoursProfile = StaticHoursProfile 
     tz: Europe::Rome,
     regular: CURRENT_REGULAR,
     extended: CURRENT_EXTENDED,
-    order_entry: &[],
+    order_entry: CURRENT_ORDER_ENTRY,
     has_daily_close: true,
     has_weekend_close: true,
 };

@@ -61,18 +61,21 @@ fn normal_week_samples() -> impl Iterator<Item = DateTime<Utc>> {
     })
 }
 
-/// Minutes per week where the two surfaces disagree, and whether the dated
-/// surface was ever the more permissive of the two.
-fn divergence(key: MarketHoursKey) -> (u32, bool) {
+/// Minutes per week where the two surfaces disagree on `predicate`, and whether
+/// the dated surface was ever the more permissive of the two.
+fn divergence(
+    key: MarketHoursKey,
+    predicate: fn(&exchange_hours::MarketHours, DateTime<Utc>) -> bool,
+) -> (u32, bool) {
     let fixed = hours_for_market_hours_key(key);
     let mut minutes = 0;
     let mut dated_ever_wider = false;
     for instant in normal_week_samples() {
         let dated = hours_for_market_hours_key_as_of(key, instant);
-        let (fixed_open, dated_open) = (fixed.is_open(instant), dated.is_open(instant));
-        if fixed_open != dated_open {
+        let (fixed_yes, dated_yes) = (predicate(&fixed, instant), predicate(&dated, instant));
+        if fixed_yes != dated_yes {
             minutes += 5;
-            if dated_open {
+            if dated_yes {
                 dated_ever_wider = true;
             }
         }
@@ -80,22 +83,45 @@ fn divergence(key: MarketHoursKey) -> (u32, bool) {
     (minutes, dated_ever_wider)
 }
 
+fn is_open(hours: &exchange_hours::MarketHours, t: DateTime<Utc>) -> bool {
+    hours.is_open(t)
+}
+
+fn is_accepting_orders(hours: &exchange_hours::MarketHours, t: DateTime<Utc>) -> bool {
+    hours.is_accepting_orders(t)
+}
+
 #[test]
-fn only_documented_families_diverge_between_the_two_surfaces() {
+fn the_two_surfaces_now_agree_on_whether_a_trade_can_print() {
+    // Before the order-entry phase existed, six futures families disagreed here
+    // by up to 1110 min/week. Every one of those divergences was a pre-open
+    // queue sitting in `extended`; with queues moved to `order_entry`, `is_open`
+    // means "a trade can print" and the two surfaces agree everywhere.
+    for key in MarketHoursKey::ALL {
+        let (minutes, _) = divergence(*key, is_open);
+        assert_eq!(
+            minutes,
+            0,
+            "{}: the fixed snapshot and the dated calendar disagree on is_open by \
+             {minutes} min/week. Tradeable sessions must not diverge between surfaces.",
+            key.as_str()
+        );
+    }
+}
+
+#[test]
+fn only_documented_families_diverge_on_order_acceptance() {
     let documented: Vec<MarketHoursKey> =
         DOCUMENTED_DIVERGENCE.iter().map(|&(key, _)| key).collect();
 
     for key in MarketHoursKey::ALL {
-        let (minutes, _) = divergence(*key);
-        let is_documented = documented.contains(key);
-
+        let (minutes, _) = divergence(*key, is_accepting_orders);
         assert!(
-            minutes == 0 || is_documented,
-            "{} diverges by {minutes} min/week between hours_for_market_hours_key and \
-             hours_for_market_hours_key_as_of, but no documented reason is recorded. \
-             Either the dated timeline's head no longer matches the current snapshot, \
-             or this is a deliberate omission that must be added to DOCUMENTED_DIVERGENCE \
-             with its verification.md reason.",
+            minutes == 0 || documented.contains(key),
+            "{} diverges by {minutes} min/week on order acceptance with no documented \
+             reason. Either the dated timeline's head no longer matches the current \
+             snapshot, or this is a deliberate omission that must be added to \
+             DOCUMENTED_DIVERGENCE with its verification.md reason.",
             key.as_str()
         );
     }
@@ -104,11 +130,11 @@ fn only_documented_families_diverge_between_the_two_surfaces() {
 #[test]
 fn every_documented_divergence_is_still_real() {
     for &(key, reason) in DOCUMENTED_DIVERGENCE {
-        let (minutes, _) = divergence(key);
+        let (minutes, _) = divergence(key, is_accepting_orders);
         assert!(
             minutes > 0,
             "{} is listed as deliberately divergent ({reason}) but the two surfaces now \
-             agree. If the onset was sourced and encoded, remove the entry.",
+             agree on order acceptance. If the onset was sourced and encoded, remove it.",
             key.as_str()
         );
     }
@@ -116,17 +142,22 @@ fn every_documented_divergence_is_still_real() {
 
 #[test]
 fn the_dated_surface_is_never_more_permissive_than_the_fixed_one() {
-    // Containment matters more than agreement. A consumer scanning with the
-    // dated calendar may see fewer open minutes than the fixed snapshot, which
-    // is conservative. The reverse would mean the dated surface reports a market
-    // open that the current sourced grid says is closed.
+    // Containment, on both predicates. The dated calendar may report fewer
+    // minutes than the current snapshot; reporting more would mean telling a
+    // consumer a market is open, or an order workable, when the current sourced
+    // grid says otherwise.
     for key in MarketHoursKey::ALL {
-        let (_, dated_ever_wider) = divergence(*key);
-        assert!(
-            !dated_ever_wider,
-            "{}: the dated selector reported open where the current snapshot reports \
-             closed. Divergence must only ever drop phases, never add them.",
-            key.as_str()
-        );
+        for predicate in [
+            is_open as fn(&exchange_hours::MarketHours, DateTime<Utc>) -> bool,
+            is_accepting_orders,
+        ] {
+            let (_, dated_ever_wider) = divergence(*key, predicate);
+            assert!(
+                !dated_ever_wider,
+                "{}: the dated selector was more permissive than the current snapshot. \
+                 Divergence must only ever drop phases, never add them.",
+                key.as_str()
+            );
+        }
     }
 }

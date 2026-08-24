@@ -18,6 +18,12 @@ use crate::calendar::rule::MON_FRI;
 // seconds. The deterministic profile uses the latest possible opening edge so
 // it never reports continuous trading while the opening auction can still run.
 // https://www.bolsasymercados.es/es/sala-de-comunicacion/noticias/2023/las-subastas-en-la-bolsa-parte-2.html
+//
+// Every non-regular phase modeled here is tradeable, so `order_entry` stays
+// empty. The opening and closing windows are the SIBE auctions themselves:
+// each ends in an allocation that prints trades at the auction price, and the
+// operator publishes no separate pre-open or post-close order-entry phase for
+// the general trading segment. Trading-at-Last executes at the closing price.
 static BME_REGULAR: &[SessionRule] = &[SessionRule {
     days: MON_FRI,
     open_ssm: 9 * 3600 + 30,

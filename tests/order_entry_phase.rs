@@ -11,10 +11,11 @@
 //! These tests pin the separation itself, so it cannot quietly erode as rules
 //! are reclassified venue by venue.
 
-use chrono::{DateTime, TimeZone as _, Utc};
+use chrono::{DateTime, NaiveDate, TimeZone as _, Utc};
 use exchange_hours::{
-    CalendarResolution, Exchange, MarketHoursKey, SessionState, calendar_for_exchange,
-    calendar_for_market_hours_key, hours_for_exchange, hours_for_market_hours_key,
+    CalendarResolution, DayOverride, Exchange, MarketHoursKey, SessionState, StaticDayPolicy,
+    calendar_for_exchange, calendar_for_market_hours_key, hours_for_exchange,
+    hours_for_market_hours_key,
 };
 
 fn utc(year: i32, month: u32, day: u32, hour: u32, minute: u32) -> DateTime<Utc> {
@@ -114,6 +115,54 @@ fn an_order_entry_window_is_never_reported_as_an_open_session() {
             }
         }
     }
+}
+
+#[test]
+fn order_entry_queries_reselect_on_the_session_opening_day_across_a_revision() {
+    // CFE's system migration completed Sunday 2018-02-25 for business date
+    // Monday 2018-02-26. The Sunday pre-open queue moves from a 16:15 start to
+    // the 16:00:03 conservative edge, and the wrapped Sunday 17:00 session it
+    // feeds belongs to Monday's trade date. Order-entry queries must be
+    // answered by the profile owning the opening day — Sunday — through the
+    // same candidate-day reselection the open queries use, never by whichever
+    // profile the instant's own civil date selects.
+    let calendar = calendar_for_market_hours_key(MarketHoursKey::CfeVix);
+
+    // 22:10/22:20 UTC are 16:10/16:20 CT (CST). The prior regime's queue
+    // starts 16:15.
+    assert!(!calendar.is_order_entry_only(utc(2018, 2, 18, 22, 10)));
+    assert!(calendar.is_order_entry_only(utc(2018, 2, 18, 22, 20)));
+
+    // Sunday 2018-02-25, 22:01 UTC = 16:01 CT: the new regime already queues.
+    assert!(calendar.is_order_entry_only(utc(2018, 2, 25, 22, 1)));
+    // Monday 2018-02-26, 14:00 UTC = 08:00 CT: the wrapped session opened
+    // Sunday under the new profile and is still trading.
+    assert!(calendar.is_open(utc(2018, 2, 26, 14, 0)));
+}
+
+#[test]
+fn a_closed_trade_date_removes_the_queue_that_feeds_it() {
+    // The Sunday 16:00-17:00 queue feeds Monday's trade date through the
+    // wrapped Sunday session. A caller's policy closing that trade date must
+    // remove the complete trading day - including the queue - exactly as it
+    // removes the tradeable session itself, instead of reporting an
+    // order-entry window for a day that will not trade.
+    const MONDAY: NaiveDate = NaiveDate::from_ymd_opt(2026, 8, 24)
+        .expect("fixture must be a valid calendar date");
+    static OVERRIDES: [DayOverride; 1] = [DayOverride::closed(MONDAY)];
+    let policy = StaticDayPolicy::new(&OVERRIDES)
+        .expect("a single closed-date record must be valid");
+
+    let calendar = calendar_for_market_hours_key(MarketHoursKey::CfeVix);
+    // Sunday 2026-08-23, 21:30 UTC = 16:30 CT (CDT): inside the queue.
+    let sunday_queue = utc(2026, 8, 23, 21, 30);
+    assert_eq!(
+        calendar.session_state(sunday_queue),
+        SessionState::OrderEntry
+    );
+
+    let closed = calendar.with_day_policy(&policy);
+    assert_eq!(closed.session_state(sunday_queue), SessionState::Closed);
 }
 
 #[test]

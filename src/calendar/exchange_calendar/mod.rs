@@ -145,19 +145,24 @@ impl ExchangeCalendar {
     ///
     /// True during order-entry-only phases and during any tradeable session.
     /// This is a different question from [`Self::is_open`], which asks whether a
-    /// trade can print.
+    /// trade can print. Resolved through the same date-aware profile selection
+    /// as [`Self::is_open`], so a revision reselects per candidate opening day
+    /// and a caller's [`DayPolicy`](super::DayPolicy) overlay applies here too.
     #[must_use]
     pub fn is_accepting_orders(self, instant: DateTime<Utc>) -> bool {
-        self.hours_at(instant).is_accepting_orders(instant)
+        status::is_accepting_orders(&QueryContext::date_aware(self), instant)
     }
 
     /// Returns whether `instant` falls in an order-entry-only phase where no
     /// trade can match.
     ///
-    /// Mutually exclusive with [`Self::is_open`].
+    /// Mutually exclusive with [`Self::is_open`]. Resolved through the same
+    /// date-aware profile selection as [`Self::is_open`], so a revision
+    /// reselects per candidate opening day and a caller's
+    /// [`DayPolicy`](super::DayPolicy) overlay applies here too.
     #[must_use]
     pub fn is_order_entry_only(self, instant: DateTime<Utc>) -> bool {
-        self.hours_at(instant).is_order_entry_only(instant)
+        status::is_order_entry_only(&QueryContext::date_aware(self), instant)
     }
 
     /// Returns the containing or next regular/extended session bounds.

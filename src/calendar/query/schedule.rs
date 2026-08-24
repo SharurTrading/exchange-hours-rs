@@ -7,7 +7,7 @@ use chrono_tz::Tz;
 
 use crate::calendar::exchange_calendar::ExchangeCalendar;
 use crate::calendar::hours::MarketHours;
-use crate::calendar::local_time::{mk_local_close, mk_local_open};
+use crate::calendar::local_time::{bounded_utc, mk_local_close, mk_local_open};
 use crate::calendar::policy::DayPolicy;
 use crate::calendar::rule::{SessionKind, SessionRule};
 use crate::calendar::{CalendarResolution, CalendarSource, Exchange, MarketHoursKey};
@@ -187,17 +187,52 @@ impl<'a> QueryContext<'a> {
         }
     }
 
-    /// True when `instant` falls in an order-entry-only phase.
+    /// True when `instant` falls in an order-entry-only phase occurrence.
     ///
-    /// Resolves through the same profile source as every other query, so a
-    /// date-aware calendar consults the profile in force on that day.
-    pub(super) fn is_order_entry_only(self, instant: chrono::DateTime<Utc>) -> bool {
-        match self.source {
-            ProfileSource::Fixed(hours) => hours.is_order_entry_only(instant),
-            ProfileSource::DateAware(calendar) => {
-                calendar.hours_at(instant).is_order_entry_only(instant)
+    /// Resolves through the same opening-day-keyed selection as every session
+    /// query: today's occurrences from today's profile and wrapped occurrences
+    /// from yesterday's profile, so a phase is always answered by the profile
+    /// that owns its opening day even when a revision takes effect on the
+    /// following civil date. A caller's [`DayPolicy`] applies as it does to
+    /// tradeable sessions: a closed trade date removes the complete trading
+    /// day, including the queue that feeds it.
+    pub(super) fn contains_order_entry(self, instant: chrono::DateTime<Utc>) -> bool {
+        let day = bounded_utc(instant, self.tz).with_timezone(&self.tz).date_naive();
+        let weekday = day.weekday().num_days_from_monday() as usize;
+        let selected = self.profile_for_open_day(day);
+        for rule in selected
+            .as_ref()
+            .order_entry
+            .iter()
+            .filter(|rule| rule.days[weekday])
+        {
+            let Some(candidate) = resolve_rule_bounds(&self, day, rule) else {
+                continue;
+            };
+            if candidate.0 <= instant && instant < candidate.1 {
+                return true;
             }
         }
+
+        let Some(yesterday) = day.pred_opt() else {
+            return false;
+        };
+        let previous_weekday = yesterday.weekday().num_days_from_monday() as usize;
+        let selected = self.profile_for_open_day(yesterday);
+        for rule in selected
+            .as_ref()
+            .order_entry
+            .iter()
+            .filter(|rule| rule.days[previous_weekday] && rule.wraps_to_next_day())
+        {
+            let Some(candidate) = resolve_rule_bounds(&self, yesterday, rule) else {
+                continue;
+            };
+            if candidate.0 <= instant && instant < candidate.1 {
+                return true;
+            }
+        }
+        false
     }
 
     /// Returns whether this source exposes a real weekly candle boundary.

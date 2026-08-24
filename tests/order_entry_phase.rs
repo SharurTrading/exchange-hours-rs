@@ -147,11 +147,11 @@ fn a_closed_trade_date_removes_the_queue_that_feeds_it() {
     // remove the complete trading day - including the queue - exactly as it
     // removes the tradeable session itself, instead of reporting an
     // order-entry window for a day that will not trade.
-    const MONDAY: NaiveDate = NaiveDate::from_ymd_opt(2026, 8, 24)
-        .expect("fixture must be a valid calendar date");
+    const MONDAY: NaiveDate =
+        NaiveDate::from_ymd_opt(2026, 8, 24).expect("fixture must be a valid calendar date");
     static OVERRIDES: [DayOverride; 1] = [DayOverride::closed(MONDAY)];
-    let policy = StaticDayPolicy::new(&OVERRIDES)
-        .expect("a single closed-date record must be valid");
+    let policy =
+        StaticDayPolicy::new(&OVERRIDES).expect("a single closed-date record must be valid");
 
     let calendar = calendar_for_market_hours_key(MarketHoursKey::CfeVix);
     // Sunday 2026-08-23, 21:30 UTC = 16:30 CT (CDT): inside the queue.

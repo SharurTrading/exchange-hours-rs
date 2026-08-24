@@ -197,7 +197,9 @@ impl<'a> QueryContext<'a> {
     /// tradeable sessions: a closed trade date removes the complete trading
     /// day, including the queue that feeds it.
     pub(super) fn contains_order_entry(self, instant: chrono::DateTime<Utc>) -> bool {
-        let day = bounded_utc(instant, self.tz).with_timezone(&self.tz).date_naive();
+        let day = bounded_utc(instant, self.tz)
+            .with_timezone(&self.tz)
+            .date_naive();
         let weekday = day.weekday().num_days_from_monday() as usize;
         let selected = self.profile_for_open_day(day);
         for rule in selected

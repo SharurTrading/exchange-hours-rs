@@ -5,7 +5,7 @@
 use chrono_tz::America;
 
 use crate::calendar::SessionRule;
-use crate::calendar::rule::{MON_THU, MON_FRI};
+use crate::calendar::rule::{MON_FRI, MON_THU};
 use crate::calendar::schedules::StaticHoursProfile;
 use crate::calendar::schedules::timeline::{Revision, local_date, revisions, select_revision};
 

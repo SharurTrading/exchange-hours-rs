@@ -345,8 +345,10 @@ fn tadawul_cutovers() {
     let (pre, post) = cutover_sides(Exchange::Tadawul, tz, (2016, 4, 3));
     let at_1030 = local(tz, probe, (10, 30, 0));
     assert!(!pre.is_open_regular(at_1030));
-    // Pre-2016 Tadawul opened later, so 10:30 was still order entry.
-    assert!(pre.is_order_entry_only(at_1030));
+    // Pre-2016 Tadawul opened later, but its opening-auction order window is
+    // not primary-sourced, so 10:30 reads closed in that era rather than
+    // order entry.
+    assert!(!pre.is_accepting_orders(at_1030));
     assert!(post.is_open_regular(at_1030));
 
     let (pre, post) = cutover_sides(Exchange::Tadawul, tz, (2018, 5, 27));

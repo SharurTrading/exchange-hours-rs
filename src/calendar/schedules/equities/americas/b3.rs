@@ -40,12 +40,12 @@ static B3_ORDER_ENTRY_0945: &[SessionRule] = &[SessionRule {
     open_ssm: 9 * 3600 + 45 * 60,
     close_ssm: 10 * 3600,
 }];
-// Same phase on the 2010–2012 grids that opened continuous trading at 11:00.
-static B3_ORDER_ENTRY_1045: &[SessionRule] = &[SessionRule {
-    days: MON_FRI,
-    open_ssm: 10 * 3600 + 45 * 60,
-    close_ssm: 11 * 3600,
-}];
+// The 11:00-open grids carry no pre-opening phase. The 2010-2012 circulars
+// pin the trading grid itself, and the 2025 circular proves today's
+// pre-opening concept, but nothing in the audited primary set states the
+// pre-opening window for those grids — a 10:45-11:00 phase would be an
+// inference from today's 15-minute convention, so under LAW-PRIMARY-SOURCES
+// the window is omitted and reads closed.
 // The remaining phases all print: closing calls cross at the auction price and
 // the after-market windows execute. The after-market envelopes below merge the
 // venue's after-market pre-opening with after-market trading, so they stay
@@ -123,7 +123,7 @@ pub(crate) static B3_PROFILE_OLD_LONG: StaticHoursProfile = StaticHoursProfile {
     tz: America::Sao_Paulo,
     regular: B3_REGULAR_OLD_LONG,
     extended: B3_EXTENDED_OLD_LONG,
-    order_entry: B3_ORDER_ENTRY_1045,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };

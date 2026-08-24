@@ -113,8 +113,9 @@ fn b3_explicit_2010_to_2012_grids_and_cutovers_are_preserved() {
     }
 
     let old_long_day = (2010, 1, 6);
-    // B3 pre-abertura in the 2010 long-session grid.
-    assert!(calendar.is_order_entry_only(local(tz, old_long_day, (10, 45, 0))));
+    // The 2010 long-session grid's pre-abertura window is not primary-sourced,
+    // so 10:45 reads closed rather than order entry.
+    assert!(!calendar.is_accepting_orders(local(tz, old_long_day, (10, 45, 0))));
     assert!(calendar.is_open_regular(local(tz, old_long_day, (11, 0, 0))));
     assert!(calendar.is_open_extended(local(tz, old_long_day, (17, 55, 0))));
     assert!(calendar.is_open_extended(local(tz, old_long_day, (18, 30, 0))));

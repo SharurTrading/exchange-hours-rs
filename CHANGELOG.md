@@ -32,6 +32,15 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Fixed
 
+- **Unsourced historical order-entry phases are no longer asserted.** B3's
+  2010–2012 11:00-open grids and Tadawul's pre-2016 11:00-open grids carried
+  inferred pre-opening order windows (10:45–11:00 and 10:00–11:00
+  respectively) with no dated primary source behind them; both now read
+  closed until evidence surfaces. TSE's historical 08:00 order acceptance,
+  by contrast, gained dated primary evidence and stays: JPX's November 2020
+  Investigation Report into the October 1, 2020 system failure states "Order
+  acceptance began as normal at 08:00", covering the post-2011 era alongside
+  Working Paper No.3's 2010-01-04 data for the earlier one.
 - **ICE Cotton's Sunday evening open is no longer asserted.** The Sunday
   21:00 NY opening (and its 19:30 pre-open) was a sourced inference: three
   primary-source strands pointed at it, but no ICE document names Sunday for

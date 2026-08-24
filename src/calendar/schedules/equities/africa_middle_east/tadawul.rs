@@ -43,24 +43,16 @@ static REGULAR_OLD_SUN_THU: &[SessionRule] = &[SessionRule {
     open_ssm: 11 * 3600,
     close_ssm: 15 * 3600 + 30 * 60,
 }];
-// Same order-entry-only pre-open phase on the pre-2016 grids: the hour before
-// the 11:00 open is the opening-auction order window, and the venue's trading
-// hours began at 11:00. Neither old grid had any close-side phase, so their
-// extended slices are empty.
-static ORDER_ENTRY_OLD_SUN_THU: &[SessionRule] = &[SessionRule {
-    days: SUN_THU,
-    open_ssm: 10 * 3600,
-    close_ssm: 11 * 3600,
-}];
+// The pre-2016 grids carry no pre-opening phase. Today's trading-cycle table
+// documents the 09:30-10:00 opening auction, but no dated primary source
+// states the opening-auction order window for the 11:00-open eras — a
+// 10:00-11:00 window would be an inference from the later auction's shape, so
+// under LAW-PRIMARY-SOURCES it is omitted and reads closed. Neither old grid
+// had any close-side phase, so their extended slices are empty too.
 static REGULAR_OLD_SAT_WED: &[SessionRule] = &[SessionRule {
     days: SAT_WED,
     open_ssm: 11 * 3600,
     close_ssm: 15 * 3600 + 30 * 60,
-}];
-static ORDER_ENTRY_OLD_SAT_WED: &[SessionRule] = &[SessionRule {
-    days: SAT_WED,
-    open_ssm: 10 * 3600,
-    close_ssm: 11 * 3600,
 }];
 static REGULAR_PANDEMIC: &[SessionRule] = &[SessionRule {
     days: SUN_THU,
@@ -114,7 +106,7 @@ pub(crate) static TADAWUL_PROFILE_POST_2013_06_29: StaticHoursProfile = StaticHo
     tz: Asia::Riyadh,
     regular: REGULAR_OLD_SUN_THU,
     extended: &[],
-    order_entry: ORDER_ENTRY_OLD_SUN_THU,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -122,7 +114,7 @@ pub(crate) static TADAWUL_PROFILE_PRE_2013_06_29: StaticHoursProfile = StaticHou
     tz: Asia::Riyadh,
     regular: REGULAR_OLD_SAT_WED,
     extended: &[],
-    order_entry: ORDER_ENTRY_OLD_SAT_WED,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };

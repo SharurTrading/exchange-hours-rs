@@ -93,6 +93,7 @@ macro_rules! profile {
             tz: Europe::Istanbul,
             regular: $regular,
             extended: $extended,
+            order_entry: &[],
             has_daily_close: true,
             has_weekend_close: true,
         };

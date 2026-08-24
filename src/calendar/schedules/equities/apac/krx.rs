@@ -55,6 +55,7 @@ pub(crate) static KRX_PROFILE_CURRENT: StaticHoursProfile = StaticHoursProfile {
     tz: Asia::Seoul,
     regular: KRX_REGULAR_CURRENT,
     extended: KRX_EXTENDED_CURRENT,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -70,6 +71,7 @@ pub(crate) static KRX_PROFILE_POST_2016_08_01: StaticHoursProfile = StaticHoursP
     tz: Asia::Seoul,
     regular: KRX_REGULAR_CURRENT,
     extended: KRX_EXTENDED_POST_2016,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -77,6 +79,7 @@ pub(crate) static KRX_PROFILE_PRE_2016_08_01: StaticHoursProfile = StaticHoursPr
     tz: Asia::Seoul,
     regular: KRX_REGULAR_PRE_2016,
     extended: KRX_EXTENDED_PRE_2016,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };

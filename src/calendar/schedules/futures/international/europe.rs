@@ -62,6 +62,7 @@ static EUREX_PRE_2018: StaticHoursProfile = StaticHoursProfile {
     tz: Europe::Berlin,
     regular: EUREX_PRE_2018_REGULAR,
     extended: EUREX_PRE_2018_EXTENDED,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -69,6 +70,7 @@ static EUREX_WINTER: StaticHoursProfile = StaticHoursProfile {
     tz: Europe::Berlin,
     regular: EUREX_WINTER_REGULAR,
     extended: EUREX_WINTER_EXTENDED,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -76,6 +78,7 @@ pub(crate) static EUREX_CURRENT: StaticHoursProfile = StaticHoursProfile {
     tz: Europe::Berlin,
     regular: EUREX_CURRENT_REGULAR,
     extended: EUREX_CURRENT_EXTENDED,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -112,6 +115,7 @@ pub(crate) static EEX_PROFILE: StaticHoursProfile = StaticHoursProfile {
     tz: Europe::Berlin,
     regular: EEX_POWER_REGULAR,
     extended: &[],
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -119,6 +123,7 @@ static EEX_CLOSED: StaticHoursProfile = StaticHoursProfile {
     tz: Europe::Berlin,
     regular: &[],
     extended: &[],
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };

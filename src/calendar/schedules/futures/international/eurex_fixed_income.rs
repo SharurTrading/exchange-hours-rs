@@ -68,6 +68,7 @@ pub(crate) static EUREX_FIXED_INCOME_CURRENT: StaticHoursProfile = StaticHoursPr
     tz: Europe::Berlin,
     regular: EUREX_FIXED_INCOME_REGULAR_CURRENT,
     extended: EUREX_FIXED_INCOME_EXTENDED_CURRENT,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -98,6 +99,7 @@ static EUREX_FIXED_INCOME_WINTER: StaticHoursProfile = StaticHoursProfile {
     tz: Europe::Berlin,
     regular: EUREX_FIXED_INCOME_REGULAR_WINTER,
     extended: EUREX_FIXED_INCOME_EXTENDED_WINTER,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -138,6 +140,7 @@ static EUREX_FIXED_INCOME_2018_SUMMER: StaticHoursProfile = StaticHoursProfile {
     tz: Europe::Berlin,
     regular: EUREX_FIXED_INCOME_REGULAR_CURRENT,
     extended: EUREX_FIXED_INCOME_EXTENDED_2018_SUMMER,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -146,6 +149,7 @@ static EUREX_FIXED_INCOME_2018_WINTER: StaticHoursProfile = StaticHoursProfile {
     tz: Europe::Berlin,
     regular: EUREX_FIXED_INCOME_REGULAR_WINTER,
     extended: EUREX_FIXED_INCOME_EXTENDED_2018_WINTER,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -186,6 +190,7 @@ pub(crate) static EUREX_FIXED_INCOME_BASELINE: StaticHoursProfile = StaticHoursP
     tz: Europe::Berlin,
     regular: EUREX_FIXED_INCOME_REGULAR_BASELINE,
     extended: EUREX_FIXED_INCOME_EXTENDED_BASELINE,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };

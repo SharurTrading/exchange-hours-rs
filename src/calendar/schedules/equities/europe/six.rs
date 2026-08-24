@@ -98,6 +98,7 @@ pub(crate) static SIX_PROFILE: StaticHoursProfile = StaticHoursProfile {
     tz: Europe::Zurich,
     regular: SIX_REGULAR,
     extended: SIX_EXTENDED_CURRENT,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -105,6 +106,7 @@ static SIX_PROFILE_PRE_2020_06_22: StaticHoursProfile = StaticHoursProfile {
     tz: Europe::Zurich,
     regular: SIX_REGULAR,
     extended: SIX_EXTENDED_PRE_TAL,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };

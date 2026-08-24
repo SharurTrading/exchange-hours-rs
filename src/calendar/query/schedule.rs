@@ -187,6 +187,19 @@ impl<'a> QueryContext<'a> {
         }
     }
 
+    /// True when `instant` falls in an order-entry-only phase.
+    ///
+    /// Resolves through the same profile source as every other query, so a
+    /// date-aware calendar consults the profile in force on that day.
+    pub(super) fn is_order_entry_only(self, instant: chrono::DateTime<Utc>) -> bool {
+        match self.source {
+            ProfileSource::Fixed(hours) => hours.is_order_entry_only(instant),
+            ProfileSource::DateAware(calendar) => {
+                calendar.hours_at(instant).is_order_entry_only(instant)
+            }
+        }
+    }
+
     /// Returns whether this source exposes a real weekly candle boundary.
     ///
     /// Most profiles use their explicit weekend-close flag. CME's key-backed

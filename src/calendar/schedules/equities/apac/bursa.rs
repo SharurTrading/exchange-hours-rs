@@ -53,6 +53,7 @@ pub(crate) static BURSA_MALAYSIA_PROFILE: StaticHoursProfile = StaticHoursProfil
     tz: Asia::Kuala_Lumpur,
     regular: BURSA_REGULAR,
     extended: BURSA_EXTENDED,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };

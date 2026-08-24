@@ -53,6 +53,7 @@ static LEGACY_NORMAL: StaticHoursProfile = StaticHoursProfile {
     tz: Europe::Vienna,
     regular: LEGACY_NORMAL_REGULAR,
     extended: LEGACY_NORMAL_EXTENDED,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -60,6 +61,7 @@ static LEGACY_SETTLEMENT: StaticHoursProfile = StaticHoursProfile {
     tz: Europe::Vienna,
     regular: LEGACY_SETTLEMENT_REGULAR,
     extended: LEGACY_SETTLEMENT_EXTENDED,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -99,6 +101,7 @@ static T7_NORMAL_PRE_2019: StaticHoursProfile = StaticHoursProfile {
     tz: Europe::Vienna,
     regular: T7_NORMAL_REGULAR,
     extended: T7_NORMAL_PRE_2019_EXTENDED,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -106,6 +109,7 @@ static T7_SETTLEMENT_PRE_2019: StaticHoursProfile = StaticHoursProfile {
     tz: Europe::Vienna,
     regular: T7_SETTLEMENT_REGULAR,
     extended: T7_SETTLEMENT_PRE_2019_EXTENDED,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -133,6 +137,7 @@ static PRE_TAC_NORMAL: StaticHoursProfile = StaticHoursProfile {
     tz: Europe::Vienna,
     regular: T7_NORMAL_REGULAR,
     extended: PRE_TAC_NORMAL_EXTENDED,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -140,6 +145,7 @@ static PRE_TAC_SETTLEMENT: StaticHoursProfile = StaticHoursProfile {
     tz: Europe::Vienna,
     regular: T7_SETTLEMENT_REGULAR,
     extended: PRE_TAC_SETTLEMENT_EXTENDED,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -172,6 +178,7 @@ pub(crate) static VIENNA_PROFILE: StaticHoursProfile = StaticHoursProfile {
     tz: Europe::Vienna,
     regular: T7_NORMAL_REGULAR,
     extended: CURRENT_NORMAL_EXTENDED,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -180,6 +187,7 @@ static CURRENT_SETTLEMENT: StaticHoursProfile = StaticHoursProfile {
     tz: Europe::Vienna,
     regular: T7_SETTLEMENT_REGULAR,
     extended: CURRENT_SETTLEMENT_EXTENDED,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };

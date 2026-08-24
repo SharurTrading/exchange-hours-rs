@@ -57,6 +57,7 @@ pub(crate) static IDX_PROFILE_CURRENT: StaticHoursProfile = StaticHoursProfile {
     tz: Asia::Jakarta,
     regular: IDX_REGULAR_CURRENT,
     extended: IDX_EXTENDED_CURRENT,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -64,6 +65,7 @@ static IDX_PROFILE_PRE_PANDEMIC: StaticHoursProfile = StaticHoursProfile {
     tz: Asia::Jakarta,
     regular: IDX_REGULAR_CURRENT,
     extended: IDX_EXTENDED_PRE_PANDEMIC,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -106,6 +108,7 @@ pub(crate) static IDX_PROFILE_PRE_2013_01_02: StaticHoursProfile = StaticHoursPr
     tz: Asia::Jakarta,
     regular: IDX_REGULAR_PRE_2013,
     extended: IDX_EXTENDED_PRE_2013,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -142,6 +145,7 @@ pub(crate) static IDX_PROFILE_PANDEMIC: StaticHoursProfile = StaticHoursProfile 
     tz: Asia::Jakarta,
     regular: IDX_REGULAR_PANDEMIC,
     extended: IDX_EXTENDED_PANDEMIC,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };

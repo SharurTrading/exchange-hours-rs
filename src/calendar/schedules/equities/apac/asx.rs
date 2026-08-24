@@ -59,6 +59,7 @@ pub(crate) static ASX_PROFILE_CURRENT: StaticHoursProfile = StaticHoursProfile {
     tz: Australia::Sydney,
     regular: ASX_REGULAR,
     extended: ASX_EXTENDED_CURRENT,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -67,6 +68,7 @@ pub(crate) static ASX_PROFILE_PRE_2025_06_23: StaticHoursProfile = StaticHoursPr
     tz: Australia::Sydney,
     regular: ASX_REGULAR,
     extended: ASX_EXTENDED_PRE_2025_06_23,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };

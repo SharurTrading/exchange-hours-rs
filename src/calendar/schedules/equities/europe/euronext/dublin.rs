@@ -67,6 +67,7 @@ static ISE_PROFILE: StaticHoursProfile = StaticHoursProfile {
     tz: Europe::Dublin,
     regular: ISE_REGULAR,
     extended: ISE_EXTENDED,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -105,6 +106,7 @@ static OPTIQ_PROFILE: StaticHoursProfile = StaticHoursProfile {
     tz: Europe::Dublin,
     regular: OPTIQ_REGULAR,
     extended: OPTIQ_EXTENDED,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -138,6 +140,7 @@ pub(crate) static EURONEXT_DUB_PROFILE: StaticHoursProfile = StaticHoursProfile 
     tz: Europe::Dublin,
     regular: OPTIQ_REGULAR,
     extended: CURRENT_EXTENDED,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };

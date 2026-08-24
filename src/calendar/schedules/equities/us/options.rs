@@ -256,6 +256,7 @@ const fn listed_equity_options_profile(extended: &'static [SessionRule]) -> Stat
         tz: America::New_York,
         regular: LISTED_EQUITY_OPTIONS_REGULAR,
         extended,
+        order_entry: &[],
         has_daily_close: true,
         has_weekend_close: true,
     }

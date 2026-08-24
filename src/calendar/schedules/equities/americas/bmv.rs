@@ -89,6 +89,7 @@ pub(crate) static BMV_PROFILE_NORMAL_CURRENT: StaticHoursProfile = StaticHoursPr
     tz: America::Mexico_City,
     regular: BMV_REGULAR_NORMAL,
     extended: BMV_EXTENDED_NORMAL_CURRENT,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -96,6 +97,7 @@ pub(crate) static BMV_PROFILE_EARLY_CURRENT: StaticHoursProfile = StaticHoursPro
     tz: America::Mexico_City,
     regular: BMV_REGULAR_EARLY,
     extended: BMV_EXTENDED_EARLY_CURRENT,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -104,6 +106,7 @@ static BMV_PROFILE_NORMAL_POST_2016: StaticHoursProfile = StaticHoursProfile {
     tz: America::Mexico_City,
     regular: BMV_REGULAR_NORMAL,
     extended: BMV_EXTENDED_NORMAL_POST_2016,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -111,6 +114,7 @@ static BMV_PROFILE_EARLY_POST_2016: StaticHoursProfile = StaticHoursProfile {
     tz: America::Mexico_City,
     regular: BMV_REGULAR_EARLY,
     extended: BMV_EXTENDED_EARLY_POST_2016,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -118,6 +122,7 @@ static BMV_PROFILE_EARLY_POST_2023_05_29: StaticHoursProfile = StaticHoursProfil
     tz: America::Mexico_City,
     regular: BMV_REGULAR_EARLY,
     extended: BMV_EXTENDED_EARLY_CURRENT,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -125,6 +130,7 @@ static BMV_PROFILE_NORMAL_PRE_2016: StaticHoursProfile = StaticHoursProfile {
     tz: America::Mexico_City,
     regular: BMV_REGULAR_NORMAL,
     extended: BMV_EXTENDED_NORMAL_PRE_2016,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -132,6 +138,7 @@ static BMV_PROFILE_EARLY_PRE_2016: StaticHoursProfile = StaticHoursProfile {
     tz: America::Mexico_City,
     regular: BMV_REGULAR_EARLY,
     extended: BMV_EXTENDED_EARLY_PRE_2016,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };

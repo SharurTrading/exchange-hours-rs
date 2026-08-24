@@ -62,6 +62,7 @@ pub(crate) static NKD_CURRENT: StaticHoursProfile = StaticHoursProfile {
     tz: US::Central,
     regular: NKD_REGULAR_CURRENT,
     extended: NKD_EXTENDED_CURRENT,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -101,6 +102,7 @@ static NKD_2013: StaticHoursProfile = StaticHoursProfile {
     tz: US::Central,
     regular: NKD_REGULAR_2013,
     extended: NKD_EXTENDED_CURRENT,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -124,6 +126,7 @@ static NKD_2012: StaticHoursProfile = StaticHoursProfile {
     tz: US::Central,
     regular: NKD_REGULAR_2012,
     extended: NKD_EXTENDED_CURRENT,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -144,6 +147,7 @@ pub(crate) static NKD_BASELINE: StaticHoursProfile = StaticHoursProfile {
     tz: US::Central,
     regular: NKD_REGULAR_BASELINE,
     extended: NKD_EXTENDED_CURRENT,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };

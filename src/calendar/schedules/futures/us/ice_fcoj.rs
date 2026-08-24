@@ -66,6 +66,7 @@ pub(crate) static FCOJ_CURRENT: StaticHoursProfile = StaticHoursProfile {
     tz: America::New_York,
     regular: FCOJ_REGULAR_CURRENT,
     extended: FCOJ_EXTENDED_CURRENT,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -92,6 +93,7 @@ pub(crate) static FCOJ_BASELINE: StaticHoursProfile = StaticHoursProfile {
     tz: America::New_York,
     regular: FCOJ_REGULAR_CURRENT,
     extended: FCOJ_EXTENDED_BASELINE,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };

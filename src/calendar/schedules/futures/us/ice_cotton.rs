@@ -117,6 +117,7 @@ pub(crate) static COTTON_CURRENT: StaticHoursProfile = StaticHoursProfile {
     tz: America::New_York,
     regular: COTTON_REGULAR_CURRENT,
     extended: COTTON_EXTENDED_CURRENT,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -136,6 +137,7 @@ static COTTON_2014: StaticHoursProfile = StaticHoursProfile {
     tz: America::New_York,
     regular: COTTON_REGULAR_CURRENT,
     extended: COTTON_EXTENDED_2014,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -162,6 +164,7 @@ pub(crate) static COTTON_BASELINE: StaticHoursProfile = StaticHoursProfile {
     tz: America::New_York,
     regular: COTTON_REGULAR_BASELINE,
     extended: COTTON_EXTENDED_2014,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };

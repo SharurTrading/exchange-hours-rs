@@ -20,6 +20,7 @@ const fn profile(
         tz: US::Central,
         regular,
         extended,
+        order_entry: &[],
         has_daily_close: true,
         has_weekend_close: true,
     }

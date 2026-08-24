@@ -56,6 +56,7 @@ pub(crate) static BME_PROFILE: StaticHoursProfile = StaticHoursProfile {
     tz: Europe::Madrid,
     regular: BME_REGULAR,
     extended: BME_EXTENDED_CURRENT,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -63,6 +64,7 @@ static BME_PROFILE_PRE_2023_12_04: StaticHoursProfile = StaticHoursProfile {
     tz: Europe::Madrid,
     regular: BME_REGULAR,
     extended: BME_EXTENDED_PRE_TAL,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };

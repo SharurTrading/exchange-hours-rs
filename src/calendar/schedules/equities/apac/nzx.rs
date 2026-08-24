@@ -49,6 +49,7 @@ pub(crate) static NZX_PROFILE: StaticHoursProfile = StaticHoursProfile {
     tz: Pacific::Auckland,
     regular: NZX_REGULAR,
     extended: NZX_EXTENDED,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -61,6 +62,7 @@ pub(crate) static NZX_PROFILE_PRE_2020_04_06: StaticHoursProfile = StaticHoursPr
     tz: Pacific::Auckland,
     regular: NZX_REGULAR,
     extended: NZX_EXTENDED_PRE_2020_04_06,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };

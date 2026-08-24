@@ -127,6 +127,7 @@ fn equal_endpoints_span_one_local_day_across_dst_transitions() {
         America::New_York,
         Cow::Owned(vec![rule]),
         Cow::Borrowed(&[]),
+        Cow::Borrowed(&[]),
         true,
         true,
     );
@@ -163,6 +164,7 @@ fn a_rule_collapsed_by_a_dst_gap_is_not_a_session_or_candle() {
         Exchange::Unknown,
         America::New_York,
         Cow::Owned(vec![rule]),
+        Cow::Borrowed(&[]),
         Cow::Borrowed(&[]),
         true,
         true,
@@ -207,6 +209,7 @@ fn a_dst_gap_cannot_invert_a_session_or_calendar_candle() {
         America::New_York,
         Cow::Owned(vec![rule]),
         Cow::Borrowed(&[]),
+        Cow::Borrowed(&[]),
         true,
         true,
     );
@@ -246,6 +249,7 @@ fn a_partially_skipped_rule_opens_at_the_first_real_second() {
         America::New_York,
         Cow::Owned(vec![rule]),
         Cow::Borrowed(&[]),
+        Cow::Borrowed(&[]),
         true,
         true,
     );
@@ -276,6 +280,7 @@ fn a_partially_skipped_close_lands_on_the_first_real_second() {
         Exchange::Unknown,
         America::New_York,
         Cow::Owned(vec![rule]),
+        Cow::Borrowed(&[]),
         Cow::Borrowed(&[]),
         true,
         true,
@@ -330,6 +335,7 @@ fn a_fall_back_session_spans_both_copies_of_the_repeated_hour() {
         America::New_York,
         Cow::Owned(vec![rule]),
         Cow::Borrowed(&[]),
+        Cow::Borrowed(&[]),
         true,
         true,
     );
@@ -373,6 +379,7 @@ fn a_wrapping_session_uses_the_latest_fall_back_close() {
         Exchange::Unknown,
         America::New_York,
         Cow::Owned(vec![rule]),
+        Cow::Borrowed(&[]),
         Cow::Borrowed(&[]),
         true,
         true,

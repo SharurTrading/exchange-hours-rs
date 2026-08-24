@@ -62,6 +62,7 @@ static BASE_PROFILE: StaticHoursProfile = StaticHoursProfile {
     tz: Europe::Berlin,
     regular: REGULAR,
     extended: BASE_EXTENDED,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -92,6 +93,7 @@ static TAC_PROFILE: StaticHoursProfile = StaticHoursProfile {
     tz: Europe::Berlin,
     regular: REGULAR,
     extended: TAC_EXTENDED,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -141,6 +143,7 @@ pub(crate) static XETRA_PROFILE: StaticHoursProfile = StaticHoursProfile {
     tz: Europe::Berlin,
     regular: REGULAR,
     extended: CURRENT_EXTENDED,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };

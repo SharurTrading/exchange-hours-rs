@@ -81,6 +81,7 @@ const fn dubai_profile(
         tz: Asia::Dubai,
         regular,
         extended,
+        order_entry: &[],
         has_daily_close: true,
         has_weekend_close: true,
     }

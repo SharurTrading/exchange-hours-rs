@@ -82,6 +82,7 @@ pub(crate) static NSE_PROFILE_CURRENT: StaticHoursProfile = StaticHoursProfile {
     tz: Asia::Kolkata,
     regular: REGULAR_0915_1530,
     extended: INDIA_EXTENDED_CURRENT,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -94,6 +95,7 @@ pub(crate) static NSE_PROFILE_POST_2011_10_03: StaticHoursProfile = StaticHoursP
     tz: Asia::Kolkata,
     regular: REGULAR_0915_1530,
     extended: INDIA_EXTENDED_PRE_CAS,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -101,6 +103,7 @@ pub(crate) static NSE_PROFILE_POST_2010_10_18: StaticHoursProfile = StaticHoursP
     tz: Asia::Kolkata,
     regular: REGULAR_0915_1530,
     extended: NSE_EXTENDED_POST_2010_10_18,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -113,6 +116,7 @@ pub(crate) static NSE_PROFILE_POST_2010_01_04: StaticHoursProfile = StaticHoursP
     tz: Asia::Kolkata,
     regular: REGULAR_0900_1530,
     extended: NSE_EXTENDED_PRE_2010_10_18,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -120,6 +124,7 @@ pub(crate) static NSE_PROFILE_PRE_2010_01_04: StaticHoursProfile = StaticHoursPr
     tz: Asia::Kolkata,
     regular: REGULAR_0955_1530,
     extended: NSE_EXTENDED_PRE_2010_10_18,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };

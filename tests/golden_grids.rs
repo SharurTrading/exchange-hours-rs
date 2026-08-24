@@ -80,6 +80,7 @@ fn render(identity: &str, hours: &MarketHours) -> String {
     );
     render_rules(&mut out, identity, "regular ", &hours.regular);
     render_rules(&mut out, identity, "extended", &hours.extended);
+    render_rules(&mut out, identity, "order-en", &hours.order_entry);
     out
 }
 

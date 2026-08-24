@@ -52,6 +52,7 @@ pub(crate) static HKEX_PROFILE_CURRENT: StaticHoursProfile = StaticHoursProfile 
     tz: Asia::Hong_Kong,
     regular: HKEX_REGULAR_CURRENT,
     extended: HKEX_EXTENDED_CURRENT,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -70,6 +71,7 @@ pub(crate) static HKEX_PROFILE_POST_2011_03_07: StaticHoursProfile = StaticHours
     tz: Asia::Hong_Kong,
     regular: HKEX_REGULAR_CURRENT,
     extended: HKEX_PREOPEN_CURRENT,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -77,6 +79,7 @@ pub(crate) static HKEX_PROFILE_PRE_2011_03_07: StaticHoursProfile = StaticHoursP
     tz: Asia::Hong_Kong,
     regular: HKEX_REGULAR_PRE_2011,
     extended: HKEX_PREOPEN_OLD,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };

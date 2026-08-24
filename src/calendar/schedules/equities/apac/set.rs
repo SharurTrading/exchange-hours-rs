@@ -102,6 +102,7 @@ pub(crate) static SET_PROFILE_CURRENT: StaticHoursProfile = StaticHoursProfile {
     tz: Asia::Bangkok,
     regular: SET_REGULAR_CURRENT,
     extended: SET_EXTENDED_CURRENT,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -112,6 +113,7 @@ pub(crate) static SET_PROFILE_2025_05_06: StaticHoursProfile = StaticHoursProfil
     tz: Asia::Bangkok,
     regular: SET_REGULAR_CURRENT,
     extended: SET_EXTENDED_TRANSITION,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -121,6 +123,7 @@ pub(crate) static SET_PROFILE_POST_2024_03_25: StaticHoursProfile = StaticHoursP
     tz: Asia::Bangkok,
     regular: SET_REGULAR_POST_2024,
     extended: SET_EXTENDED_POST_2024,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -128,6 +131,7 @@ pub(crate) static SET_PROFILE_PRE_2024_03_25: StaticHoursProfile = StaticHoursPr
     tz: Asia::Bangkok,
     regular: SET_REGULAR_PRE_2024,
     extended: SET_EXTENDED_PRE_2024,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };

@@ -162,6 +162,7 @@ pub(super) const fn profile(
         tz: America::New_York,
         regular,
         extended,
+        order_entry: &[],
         has_daily_close: true,
         has_weekend_close: true,
     }

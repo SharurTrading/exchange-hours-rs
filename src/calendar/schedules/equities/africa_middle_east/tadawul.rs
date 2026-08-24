@@ -79,6 +79,7 @@ pub(crate) static TADAWUL_PROFILE_CURRENT: StaticHoursProfile = StaticHoursProfi
     tz: Asia::Riyadh,
     regular: REGULAR_CURRENT,
     extended: EXTENDED_CURRENT,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -94,6 +95,7 @@ pub(crate) static TADAWUL_PROFILE_POST_2018_05_27: StaticHoursProfile = StaticHo
     tz: Asia::Riyadh,
     regular: REGULAR_CURRENT,
     extended: EXTENDED_POST_2018,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -101,6 +103,7 @@ pub(crate) static TADAWUL_PROFILE_POST_2016_04_03: StaticHoursProfile = StaticHo
     tz: Asia::Riyadh,
     regular: REGULAR_CURRENT,
     extended: EXTENDED_POST_2016,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -108,6 +111,7 @@ pub(crate) static TADAWUL_PROFILE_POST_2013_06_29: StaticHoursProfile = StaticHo
     tz: Asia::Riyadh,
     regular: REGULAR_OLD_SUN_THU,
     extended: EXTENDED_OLD_SUN_THU,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -115,6 +119,7 @@ pub(crate) static TADAWUL_PROFILE_PRE_2013_06_29: StaticHoursProfile = StaticHou
     tz: Asia::Riyadh,
     regular: REGULAR_OLD_SAT_WED,
     extended: EXTENDED_OLD_SAT_WED,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -126,6 +131,7 @@ pub(crate) static TADAWUL_PROFILE_PANDEMIC: StaticHoursProfile = StaticHoursProf
     tz: Asia::Riyadh,
     regular: REGULAR_PANDEMIC,
     extended: EXTENDED_PANDEMIC,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };

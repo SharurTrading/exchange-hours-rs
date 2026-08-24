@@ -113,6 +113,7 @@ pub(crate) static B3_PROFILE_OLD_SHORT: StaticHoursProfile = StaticHoursProfile 
     tz: America::Sao_Paulo,
     regular: B3_REGULAR_OLD_SHORT,
     extended: B3_EXTENDED_OLD_SHORT,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -120,6 +121,7 @@ pub(crate) static B3_PROFILE_OLD_LONG: StaticHoursProfile = StaticHoursProfile {
     tz: America::Sao_Paulo,
     regular: B3_REGULAR_OLD_LONG,
     extended: B3_EXTENDED_OLD_LONG,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -132,6 +134,7 @@ pub(crate) static B3_PROFILE_INTERIM: StaticHoursProfile = StaticHoursProfile {
     tz: America::Sao_Paulo,
     regular: B3_REGULAR_INTERIM,
     extended: B3_EXTENDED_INTERIM,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -154,6 +157,7 @@ pub(crate) static B3_PROFILE_SHORT: StaticHoursProfile = StaticHoursProfile {
     tz: America::Sao_Paulo,
     regular: B3_REGULAR_SHORT,
     extended: B3_EXTENDED_SHORT,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -161,6 +165,7 @@ pub(crate) static B3_PROFILE_LONG: StaticHoursProfile = StaticHoursProfile {
     tz: America::Sao_Paulo,
     regular: B3_REGULAR_LONG,
     extended: B3_EXTENDED_LONG,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };

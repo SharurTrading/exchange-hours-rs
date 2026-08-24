@@ -52,8 +52,10 @@ pub struct FuturesSessionProfile {
     pub tz: Tz,
     /// Primary trading sessions.
     pub regular: &'static [SessionRule],
-    /// Electronic, overnight, and other non-regular sessions.
+    /// Electronic, overnight, and other tradeable non-regular sessions.
     pub extended: &'static [SessionRule],
+    /// Order-entry-only phases in which no trade can match.
+    pub order_entry: &'static [SessionRule],
     /// True when the venue has a distinct daily close.
     pub has_daily_close: bool,
     /// True when the venue has a true weekend close.
@@ -84,6 +86,7 @@ impl FuturesSessionProfile {
             tz: self.tz,
             regular: Cow::Borrowed(self.regular),
             extended: Cow::Borrowed(self.extended),
+            order_entry: Cow::Borrowed(self.order_entry),
             has_daily_close: self.has_daily_close,
             has_weekend_close: self.has_weekend_close,
         }

@@ -39,6 +39,7 @@ pub(crate) static PSE_PROFILE_CURRENT: StaticHoursProfile = StaticHoursProfile {
     tz: Asia::Manila,
     regular: PSE_REGULAR_CURRENT,
     extended: PSE_EXTENDED_CURRENT,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -167,6 +168,7 @@ macro_rules! pse_profile {
             tz: Asia::Manila,
             regular: $regular,
             extended: $extended,
+            order_entry: &[],
             has_daily_close: true,
             has_weekend_close: true,
         };
@@ -200,6 +202,7 @@ pub(crate) static PSE_PROFILE_CLOSED: StaticHoursProfile = StaticHoursProfile {
     tz: Asia::Manila,
     regular: &[],
     extended: &[],
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };

@@ -62,6 +62,7 @@ pub(crate) static SZSE_PROFILE_CURRENT: StaticHoursProfile = StaticHoursProfile 
     tz: Asia::Shanghai,
     regular: CHINA_REGULAR_WITH_CLOSE_CALL,
     extended: CHINA_EXTENDED_CORE,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -72,6 +73,7 @@ pub(crate) static SZSE_PROFILE_POST_2016_05_09: StaticHoursProfile = StaticHours
     tz: Asia::Shanghai,
     regular: CHINA_REGULAR_WITH_CLOSE_CALL,
     extended: CHINA_EXTENDED_CORE,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -79,6 +81,7 @@ pub(crate) static SZSE_PROFILE_PRE_2016_05_09: StaticHoursProfile = StaticHoursP
     tz: Asia::Shanghai,
     regular: CHINA_REGULAR_WITH_CLOSE_CALL,
     extended: SZSE_EXTENDED_PRE_2016,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };

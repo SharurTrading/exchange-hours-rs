@@ -124,6 +124,7 @@ pub(crate) static CURRENT_FUTURES_PROFILE: FuturesSessionProfile = FuturesSessio
     tz: US::Central,
     regular: &[],
     extended: CURRENT_EXTENDED,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: false,
 };
@@ -132,6 +133,7 @@ static CLOSED: StaticHoursProfile = StaticHoursProfile {
     tz: US::Central,
     regular: &[],
     extended: &[],
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -140,6 +142,7 @@ static FIVE_DAY: StaticHoursProfile = StaticHoursProfile {
     tz: US::Central,
     regular: &[],
     extended: FIVE_DAY_EXTENDED,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -148,6 +151,7 @@ static CURRENT: StaticHoursProfile = StaticHoursProfile {
     tz: US::Central,
     regular: &[],
     extended: CURRENT_EXTENDED,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: false,
 };
@@ -156,6 +160,7 @@ static TRANSITION_2026_05_29: StaticHoursProfile = StaticHoursProfile {
     tz: US::Central,
     regular: &[],
     extended: EXTENDED_2026_05_29,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: false,
 };
@@ -164,6 +169,7 @@ static TEMPORARY_2026_08_01: StaticHoursProfile = StaticHoursProfile {
     tz: US::Central,
     regular: &[],
     extended: EXTENDED_2026_08_01,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: false,
 };

@@ -102,6 +102,7 @@ pub(crate) static CURRENT_FUTURES_PROFILE: FuturesSessionProfile = FuturesSessio
     tz: US::Central,
     regular: &[],
     extended: EXTENDED_CURRENT,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -110,6 +111,7 @@ static PROFILE_AT_2010_FLOOR: StaticHoursProfile = StaticHoursProfile {
     tz: US::Central,
     regular: &[],
     extended: EXTENDED_AT_2010_FLOOR,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -118,6 +120,7 @@ static PROFILE_2010_11_15: StaticHoursProfile = StaticHoursProfile {
     tz: US::Central,
     regular: &[],
     extended: EXTENDED_2010_11_15,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -126,6 +129,7 @@ static PROFILE_2011_10_02: StaticHoursProfile = StaticHoursProfile {
     tz: US::Central,
     regular: &[],
     extended: EXTENDED_DATED_2011_10_02,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };

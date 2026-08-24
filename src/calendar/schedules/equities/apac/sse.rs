@@ -70,6 +70,7 @@ pub(crate) static SSE_PROFILE_CURRENT: StaticHoursProfile = StaticHoursProfile {
     tz: Asia::Shanghai,
     regular: CHINA_REGULAR_WITH_CLOSE_CALL,
     extended: CHINA_EXTENDED_CORE,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -79,6 +80,7 @@ pub(crate) static SSE_PROFILE_POST_2018_08_20: StaticHoursProfile = StaticHoursP
     tz: Asia::Shanghai,
     regular: CHINA_REGULAR_WITH_CLOSE_CALL,
     extended: CHINA_EXTENDED_CORE,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -86,6 +88,7 @@ pub(crate) static SSE_PROFILE_PRE_2018_08_20: StaticHoursProfile = StaticHoursPr
     tz: Asia::Shanghai,
     regular: CHINA_REGULAR_WITHOUT_CLOSE_CALL,
     extended: SSE_EXTENDED_PRE_2018,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };

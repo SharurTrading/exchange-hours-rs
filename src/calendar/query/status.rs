@@ -51,6 +51,12 @@ pub(in crate::calendar) fn session_state(
     if is_open_with(context, instant, SessionKind::Extended) {
         return SessionState::OpenExtended;
     }
+    // Checked before the gap classification below: an order-entry window that
+    // sits inside a maintenance or post-close gap is more precisely described
+    // by what a caller can actually do in it than by the gap around it.
+    if context.is_order_entry_only(instant) {
+        return SessionState::OrderEntry;
+    }
     let Some((_previous_open, previous_close)) =
         previous_session_before_with(context, instant, SessionKind::Both)
     else {

@@ -49,6 +49,7 @@ pub(crate) static HOSE_PROFILE_CURRENT: StaticHoursProfile = StaticHoursProfile 
     tz: Asia::Ho_Chi_Minh,
     regular: HOSE_REGULAR_CURRENT,
     extended: HOSE_EXTENDED_CURRENT,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -90,6 +91,7 @@ pub(crate) static HOSE_PROFILE_2012: StaticHoursProfile = StaticHoursProfile {
     tz: Asia::Ho_Chi_Minh,
     regular: HOSE_REGULAR_2012,
     extended: HOSE_EXTENDED_2012,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -126,6 +128,7 @@ static HOSE_PROFILE_2010_09_13: StaticHoursProfile = StaticHoursProfile {
     tz: Asia::Ho_Chi_Minh,
     regular: HOSE_REGULAR_2010_09_13,
     extended: HOSE_EXTENDED_2010_09_13,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -159,6 +162,7 @@ static HOSE_PROFILE_AT_2010_FLOOR: StaticHoursProfile = StaticHoursProfile {
     tz: Asia::Ho_Chi_Minh,
     regular: HOSE_REGULAR_AT_2010_FLOOR,
     extended: HOSE_EXTENDED_AT_2010_FLOOR,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };

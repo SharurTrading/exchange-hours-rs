@@ -43,6 +43,7 @@ pub(crate) static TSX_PROFILE: StaticHoursProfile = StaticHoursProfile {
     tz: America::Toronto,
     regular: TSX_REGULAR,
     extended: TSX_EXTENDED,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };

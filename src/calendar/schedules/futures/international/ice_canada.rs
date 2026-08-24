@@ -46,6 +46,7 @@ static ICE_CANADA_2010: StaticHoursProfile = StaticHoursProfile {
     tz: America::Winnipeg,
     regular: ICE_CANADA_2010_REGULAR,
     extended: ICE_CANADA_2010_EXTENDED,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -64,6 +65,7 @@ static ICE_CANADA_2011: StaticHoursProfile = StaticHoursProfile {
     tz: America::Winnipeg,
     regular: ICE_CANADA_2011_REGULAR,
     extended: ICE_CANADA_2011_EXTENDED,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -77,6 +79,7 @@ static ICE_CANADA_2012: StaticHoursProfile = StaticHoursProfile {
     tz: America::Winnipeg,
     regular: ICE_CANADA_2012_REGULAR,
     extended: ICE_CANADA_2011_EXTENDED,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -90,6 +93,7 @@ static ICE_CANADA_2016: StaticHoursProfile = StaticHoursProfile {
     tz: America::Winnipeg,
     regular: ICE_CANADA_2016_REGULAR,
     extended: ICE_CANADA_2011_EXTENDED,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -101,6 +105,7 @@ pub(crate) static ICE_CANADA_PROFILE: StaticHoursProfile = StaticHoursProfile {
     tz: America::Winnipeg,
     regular: &[],
     extended: &[],
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };

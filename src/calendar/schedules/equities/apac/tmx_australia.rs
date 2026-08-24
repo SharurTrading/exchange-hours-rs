@@ -46,6 +46,7 @@ pub(crate) static TMX_AU_PROFILE_CURRENT: StaticHoursProfile = StaticHoursProfil
     tz: Australia::Sydney,
     regular: TMX_AU_REGULAR,
     extended: TMX_AU_EXTENDED_CURRENT,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -62,6 +63,7 @@ pub(crate) static TMX_AU_PROFILE_POST_2015_08_31: StaticHoursProfile = StaticHou
     tz: Australia::Sydney,
     regular: TMX_AU_REGULAR,
     extended: TMX_AU_EXTENDED_POST_2015,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -69,6 +71,7 @@ pub(crate) static TMX_AU_PROFILE_POST_2013_12_09: StaticHoursProfile = StaticHou
     tz: Australia::Sydney,
     regular: TMX_AU_REGULAR,
     extended: TMX_AU_EXTENDED_POST_2013,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -76,6 +79,7 @@ pub(crate) static TMX_AU_PROFILE_LAUNCH: StaticHoursProfile = StaticHoursProfile
     tz: Australia::Sydney,
     regular: TMX_AU_REGULAR,
     extended: &[],
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -83,6 +87,7 @@ pub(crate) static TMX_AU_PROFILE_CLOSED: StaticHoursProfile = StaticHoursProfile
     tz: Australia::Sydney,
     regular: &[],
     extended: &[],
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };

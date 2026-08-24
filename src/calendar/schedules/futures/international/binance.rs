@@ -31,6 +31,7 @@ pub(crate) static CURRENT: StaticHoursProfile = StaticHoursProfile {
     tz: UTC,
     regular: ALWAYS_OPEN,
     extended: &[],
+    order_entry: &[],
     has_daily_close: false,
     has_weekend_close: false,
 };
@@ -38,6 +39,7 @@ static CLOSED: StaticHoursProfile = StaticHoursProfile {
     tz: UTC,
     regular: &[],
     extended: &[],
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -45,6 +47,7 @@ static LAUNCH_DAY: StaticHoursProfile = StaticHoursProfile {
     tz: UTC,
     regular: LAUNCH_DAY_RULE,
     extended: &[],
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };

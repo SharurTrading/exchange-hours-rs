@@ -55,6 +55,7 @@ pub(crate) static COFFEE_CURRENT: StaticHoursProfile = StaticHoursProfile {
     tz: America::New_York,
     regular: COFFEE_REGULAR_CURRENT,
     extended: COFFEE_EXTENDED_CURRENT,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -73,6 +74,7 @@ static COFFEE_2014: StaticHoursProfile = StaticHoursProfile {
     tz: America::New_York,
     regular: COFFEE_REGULAR_CURRENT,
     extended: COFFEE_EXTENDED_2014,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -108,6 +110,7 @@ pub(crate) static COFFEE_BASELINE: StaticHoursProfile = StaticHoursProfile {
     tz: America::New_York,
     regular: COFFEE_REGULAR_BASELINE,
     extended: COFFEE_EXTENDED_BASELINE,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };

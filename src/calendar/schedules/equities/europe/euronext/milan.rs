@@ -35,6 +35,7 @@ static BASE_PROFILE: StaticHoursProfile = StaticHoursProfile {
     tz: Europe::Rome,
     regular: BASE_REGULAR,
     extended: BASE_EXTENDED,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -57,6 +58,7 @@ static CPX_PROFILE: StaticHoursProfile = StaticHoursProfile {
     tz: Europe::Rome,
     regular: BASE_REGULAR,
     extended: CPX_EXTENDED,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -88,6 +90,7 @@ static PROFILE_2015: StaticHoursProfile = StaticHoursProfile {
     tz: Europe::Rome,
     regular: REGULAR_2015,
     extended: EXTENDED_2015,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -124,6 +127,7 @@ pub(crate) static EURONEXT_MIL_PROFILE: StaticHoursProfile = StaticHoursProfile 
     tz: Europe::Rome,
     regular: CURRENT_REGULAR,
     extended: CURRENT_EXTENDED,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };

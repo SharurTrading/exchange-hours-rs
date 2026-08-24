@@ -50,6 +50,7 @@ pub(crate) static ICE_US_FANG_CURRENT: StaticHoursProfile = StaticHoursProfile {
     tz: America::New_York,
     regular: ICE_US_FANG_REGULAR_CURRENT,
     extended: ICE_US_FANG_EXTENDED_CURRENT,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -72,6 +73,7 @@ static ICE_US_FANG_LAUNCH_EVE: StaticHoursProfile = StaticHoursProfile {
     tz: America::New_York,
     regular: ICE_US_FANG_LAUNCH_EVE_REGULAR,
     extended: ICE_US_FANG_LAUNCH_EVE_EXTENDED,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };

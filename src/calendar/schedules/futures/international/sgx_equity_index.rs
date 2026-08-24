@@ -76,6 +76,7 @@ pub(crate) static SGX_EQUITY_INDEX_JAPAN_BASELINE: StaticHoursProfile = StaticHo
     tz: Asia::Singapore,
     regular: SGX_EQUITY_INDEX_JAPAN_REGULAR_CURRENT,
     extended: SGX_EQUITY_INDEX_JAPAN_EXTENDED_CURRENT,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -157,6 +158,7 @@ pub(crate) static SGX_EQUITY_INDEX_CHINA_BASELINE: StaticHoursProfile = StaticHo
     tz: Asia::Singapore,
     regular: SGX_EQUITY_INDEX_CHINA_REGULAR_CURRENT,
     extended: SGX_EQUITY_INDEX_CHINA_EXTENDED_CURRENT,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -236,6 +238,7 @@ pub(crate) static SGX_EQUITY_INDEX_SINGAPORE_BASELINE: StaticHoursProfile = Stat
     tz: Asia::Singapore,
     regular: SGX_EQUITY_INDEX_SINGAPORE_REGULAR_CURRENT,
     extended: SGX_EQUITY_INDEX_SINGAPORE_EXTENDED_CURRENT,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };

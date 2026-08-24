@@ -52,6 +52,7 @@ pub(crate) static COCOA_CURRENT: StaticHoursProfile = StaticHoursProfile {
     tz: America::New_York,
     regular: COCOA_REGULAR_CURRENT,
     extended: COCOA_EXTENDED_CURRENT,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -70,6 +71,7 @@ static COCOA_2014: StaticHoursProfile = StaticHoursProfile {
     tz: America::New_York,
     regular: COCOA_REGULAR_CURRENT,
     extended: COCOA_EXTENDED_2014,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -105,6 +107,7 @@ pub(crate) static COCOA_BASELINE: StaticHoursProfile = StaticHoursProfile {
     tz: America::New_York,
     regular: COCOA_REGULAR_BASELINE,
     extended: COCOA_EXTENDED_BASELINE,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };

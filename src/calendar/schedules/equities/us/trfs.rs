@@ -118,6 +118,7 @@ const fn profile(extended: &'static [SessionRule]) -> StaticHoursProfile {
         tz: America::New_York,
         regular: REGULAR,
         extended,
+        order_entry: &[],
         has_daily_close: true,
         has_weekend_close: true,
     }

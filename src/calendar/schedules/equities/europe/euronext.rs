@@ -126,6 +126,7 @@ macro_rules! profile {
             tz: $tz,
             regular: $regular,
             extended: $extended,
+            order_entry: &[],
             has_daily_close: true,
             has_weekend_close: true,
         };
@@ -161,6 +162,7 @@ pub(crate) static EURONEXT_PARIS_PROFILE: StaticHoursProfile = StaticHoursProfil
     tz: Europe::Paris,
     regular: CENTRAL_REGULAR,
     extended: CENTRAL_CURRENT_EXTENDED,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -168,6 +170,7 @@ pub(crate) static EURONEXT_AMS_PROFILE: StaticHoursProfile = StaticHoursProfile 
     tz: Europe::Amsterdam,
     regular: CENTRAL_REGULAR,
     extended: CENTRAL_CURRENT_EXTENDED,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -175,6 +178,7 @@ pub(crate) static EURONEXT_BRU_PROFILE: StaticHoursProfile = StaticHoursProfile 
     tz: Europe::Brussels,
     regular: CENTRAL_REGULAR,
     extended: CENTRAL_CURRENT_EXTENDED,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -182,6 +186,7 @@ pub(crate) static EURONEXT_LIS_PROFILE: StaticHoursProfile = StaticHoursProfile 
     tz: Europe::Lisbon,
     regular: LISBON_REGULAR,
     extended: LISBON_CURRENT_EXTENDED,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };

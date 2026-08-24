@@ -50,6 +50,7 @@ pub(crate) static SUGAR_CURRENT: StaticHoursProfile = StaticHoursProfile {
     tz: America::New_York,
     regular: SUGAR_REGULAR_CURRENT,
     extended: SUGAR_EXTENDED_CURRENT,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -66,6 +67,7 @@ static SUGAR_2014: StaticHoursProfile = StaticHoursProfile {
     tz: America::New_York,
     regular: SUGAR_REGULAR_CURRENT,
     extended: SUGAR_EXTENDED_2014,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -81,6 +83,7 @@ static SUGAR_2012_NOV: StaticHoursProfile = StaticHoursProfile {
     tz: America::New_York,
     regular: SUGAR_REGULAR_2012_NOV,
     extended: SUGAR_EXTENDED_2014,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -99,6 +102,7 @@ static SUGAR_2012_JAN: StaticHoursProfile = StaticHoursProfile {
     tz: America::New_York,
     regular: SUGAR_REGULAR_2012_JAN,
     extended: SUGAR_EXTENDED_2014,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -122,6 +126,7 @@ pub(crate) static SUGAR_BASELINE: StaticHoursProfile = StaticHoursProfile {
     tz: America::New_York,
     regular: SUGAR_REGULAR_BASELINE,
     extended: SUGAR_EXTENDED_2014,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };

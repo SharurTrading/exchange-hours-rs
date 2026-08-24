@@ -89,6 +89,7 @@ pub(crate) static TSE_PROFILE_CURRENT: StaticHoursProfile = StaticHoursProfile {
     tz: Asia::Tokyo,
     regular: TSE_REGULAR_CURRENT,
     extended: TSE_EXTENDED_CURRENT,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -96,6 +97,7 @@ pub(crate) static TSE_PROFILE_POST_2011_11_21: StaticHoursProfile = StaticHoursP
     tz: Asia::Tokyo,
     regular: TSE_REGULAR_POST_2011,
     extended: TSE_EXTENDED_PRE_2024,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -103,6 +105,7 @@ pub(crate) static TSE_PROFILE_PRE_2011_11_21: StaticHoursProfile = StaticHoursPr
     tz: Asia::Tokyo,
     regular: TSE_REGULAR_PRE_2011,
     extended: TSE_EXTENDED_PRE_2024,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };

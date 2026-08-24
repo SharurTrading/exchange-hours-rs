@@ -43,6 +43,7 @@ static BASE_PROFILE: StaticHoursProfile = StaticHoursProfile {
     tz: Europe::London,
     regular: BASE_REGULAR,
     extended: BASE_EXTENDED,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -77,6 +78,7 @@ static CPX_PROFILE: StaticHoursProfile = StaticHoursProfile {
     tz: Europe::London,
     regular: BASE_REGULAR,
     extended: CPX_EXTENDED,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -114,6 +116,7 @@ pub(crate) static LSE_PROFILE: StaticHoursProfile = StaticHoursProfile {
     tz: Europe::London,
     regular: CURRENT_REGULAR,
     extended: CURRENT_EXTENDED,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };

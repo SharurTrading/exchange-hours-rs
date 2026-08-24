@@ -55,6 +55,7 @@ static STO_BASE_PROFILE: StaticHoursProfile = StaticHoursProfile {
     tz: Europe::Stockholm,
     regular: STO_BASE_REGULAR,
     extended: STO_BASE_EXTENDED,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -76,6 +77,7 @@ pub(crate) static NASDAQ_STO_PROFILE: StaticHoursProfile = StaticHoursProfile {
     tz: Europe::Stockholm,
     regular: STO_CURRENT_REGULAR,
     extended: STO_CURRENT_EXTENDED,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -106,6 +108,7 @@ static HEL_BASE_PROFILE: StaticHoursProfile = StaticHoursProfile {
     tz: Europe::Helsinki,
     regular: HEL_BASE_REGULAR,
     extended: HEL_BASE_EXTENDED,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -127,6 +130,7 @@ pub(crate) static NASDAQ_HEL_PROFILE: StaticHoursProfile = StaticHoursProfile {
     tz: Europe::Helsinki,
     regular: HEL_CURRENT_REGULAR,
     extended: HEL_CURRENT_EXTENDED,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -157,6 +161,7 @@ static CPH_BASE_PROFILE: StaticHoursProfile = StaticHoursProfile {
     tz: Europe::Copenhagen,
     regular: CPH_BASE_REGULAR,
     extended: CPH_BASE_EXTENDED,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -178,6 +183,7 @@ static CPH_RANDOM_PROFILE: StaticHoursProfile = StaticHoursProfile {
     tz: Europe::Copenhagen,
     regular: CPH_RANDOM_REGULAR,
     extended: CPH_RANDOM_EXTENDED,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -206,6 +212,7 @@ pub(crate) static NASDAQ_CPH_PROFILE: StaticHoursProfile = StaticHoursProfile {
     tz: Europe::Copenhagen,
     regular: CPH_RANDOM_REGULAR,
     extended: CPH_CURRENT_EXTENDED,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };

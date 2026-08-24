@@ -167,6 +167,7 @@ static CME_PROFILE_PRE_2012_11_18: StaticHoursProfile = StaticHoursProfile {
     tz: US::Central,
     regular: CME_REGULAR,
     extended: CME_EXT_PRE_2012_11_18,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -174,6 +175,7 @@ static CME_PROFILE_PRE_2010_11_15: StaticHoursProfile = StaticHoursProfile {
     tz: US::Central,
     regular: CME_REGULAR,
     extended: CME_EXT_PRE_2012_11_18_AND_PREOPEN_CHANGE,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -181,6 +183,7 @@ static CME_PROFILE_2012_11_18: StaticHoursProfile = StaticHoursProfile {
     tz: US::Central,
     regular: CME_REGULAR,
     extended: CME_EXT_PRE_2015_09_20,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -188,6 +191,7 @@ static CME_PROFILE_2015_09_20: StaticHoursProfile = StaticHoursProfile {
     tz: US::Central,
     regular: CME_REGULAR,
     extended: CME_EXT_2015_09_20,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -195,6 +199,7 @@ static CME_PROFILE_DATED_CURRENT: StaticHoursProfile = StaticHoursProfile {
     tz: US::Central,
     regular: CME_REGULAR,
     extended: CME_EXT_DATED_CURRENT,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };

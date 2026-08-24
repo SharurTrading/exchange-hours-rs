@@ -93,6 +93,7 @@ pub(crate) static SGX_SEC_PROFILE_CURRENT: StaticHoursProfile = StaticHoursProfi
     tz: Asia::Singapore,
     regular: SGX_REGULAR_CURRENT,
     extended: SGX_EXTENDED_CURRENT,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -106,6 +107,7 @@ pub(crate) static SGX_SEC_PROFILE_POST_2017_11_13: StaticHoursProfile = StaticHo
     tz: Asia::Singapore,
     regular: SGX_REGULAR_CURRENT,
     extended: SGX_EXTENDED_PRE_TAC,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -113,6 +115,7 @@ pub(crate) static SGX_SEC_PROFILE_POST_2011_08_01: StaticHoursProfile = StaticHo
     tz: Asia::Singapore,
     regular: SGX_REGULAR_CONTINUOUS,
     extended: SGX_EXTENDED_NO_LUNCH,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -120,6 +123,7 @@ pub(crate) static SGX_SEC_PROFILE_PRE_2011_08_01: StaticHoursProfile = StaticHou
     tz: Asia::Singapore,
     regular: SGX_REGULAR_PRE_2011,
     extended: SGX_EXTENDED_PRE_2011,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };

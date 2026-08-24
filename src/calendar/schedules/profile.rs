@@ -18,6 +18,8 @@ pub(crate) struct StaticHoursProfile {
     pub(crate) tz: Tz,
     pub(crate) regular: &'static [SessionRule],
     pub(crate) extended: &'static [SessionRule],
+    /// Order-entry-only phases in which no trade can match.
+    pub(crate) order_entry: &'static [SessionRule],
     pub(crate) has_daily_close: bool,
     pub(crate) has_weekend_close: bool,
 }
@@ -27,6 +29,7 @@ pub(in crate::calendar::schedules) static CLOSED_NEW_YORK: StaticHoursProfile =
         tz: America::New_York,
         regular: &[],
         extended: &[],
+        order_entry: &[],
         has_daily_close: true,
         has_weekend_close: true,
     };
@@ -42,6 +45,7 @@ pub(crate) fn from_profile(
         tz: profile.tz,
         regular: Cow::Borrowed(profile.regular),
         extended: Cow::Borrowed(profile.extended),
+        order_entry: Cow::Borrowed(profile.order_entry),
         has_daily_close: profile.has_daily_close,
         has_weekend_close: profile.has_weekend_close,
     }

@@ -79,6 +79,7 @@ pub(crate) static ICE_USDX_CURRENT: StaticHoursProfile = StaticHoursProfile {
     tz: America::New_York,
     regular: ICE_USDX_REGULAR_CURRENT,
     extended: ICE_USDX_EXTENDED_CURRENT,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -124,6 +125,7 @@ pub(crate) static ICE_USDX_BASELINE: StaticHoursProfile = StaticHoursProfile {
     tz: America::New_York,
     regular: ICE_USDX_REGULAR_BASELINE,
     extended: ICE_USDX_EXTENDED_CURRENT,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };

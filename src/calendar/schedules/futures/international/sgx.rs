@@ -53,6 +53,7 @@ static SGX_CLOSED: StaticHoursProfile = StaticHoursProfile {
     tz: Asia::Singapore,
     regular: &[],
     extended: &[],
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -60,6 +61,7 @@ static SGX_CURRENT: StaticHoursProfile = StaticHoursProfile {
     tz: Asia::Singapore,
     regular: SGX_CURRENT_REGULAR,
     extended: SGX_CURRENT_EXTENDED,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };

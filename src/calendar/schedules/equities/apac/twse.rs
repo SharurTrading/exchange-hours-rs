@@ -30,6 +30,7 @@ pub(crate) static TWSE_PROFILE_CURRENT: StaticHoursProfile = StaticHoursProfile 
     tz: Asia::Taipei,
     regular: TWSE_REGULAR_CURRENT,
     extended: TWSE_EXTENDED_ENVELOPE,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -46,6 +47,7 @@ pub(crate) static TWSE_PROFILE_PRE_2020_03_23: StaticHoursProfile = StaticHoursP
     tz: Asia::Taipei,
     regular: &[],
     extended: TWSE_EXTENDED_ENVELOPE,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };

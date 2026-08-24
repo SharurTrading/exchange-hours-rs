@@ -82,6 +82,7 @@ pub(crate) static JSE_PROFILE_CURRENT: StaticHoursProfile = StaticHoursProfile {
     tz: Africa::Johannesburg,
     regular: JSE_REGULAR,
     extended: JSE_EXTENDED_CURRENT,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -100,6 +101,7 @@ pub(crate) static JSE_PROFILE_POST_2021_02_01: StaticHoursProfile = StaticHoursP
     tz: Africa::Johannesburg,
     regular: JSE_REGULAR,
     extended: JSE_EXTENDED_2021_02_01,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -107,6 +109,7 @@ pub(crate) static JSE_PROFILE_POST_2020_08_24: StaticHoursProfile = StaticHoursP
     tz: Africa::Johannesburg,
     regular: JSE_REGULAR,
     extended: JSE_EXTENDED_CPX_ONLY,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -114,6 +117,7 @@ pub(crate) static JSE_PROFILE_POST_2016_09_26: StaticHoursProfile = StaticHoursP
     tz: Africa::Johannesburg,
     regular: JSE_REGULAR,
     extended: JSE_EXTENDED_CPX_EOD,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -121,6 +125,7 @@ pub(crate) static JSE_PROFILE_POST_2013_11_11: StaticHoursProfile = StaticHoursP
     tz: Africa::Johannesburg,
     regular: JSE_REGULAR,
     extended: JSE_EXTENDED_CPX_ONLY,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -128,6 +133,7 @@ pub(crate) static JSE_PROFILE_POST_2012_07_02: StaticHoursProfile = StaticHoursP
     tz: Africa::Johannesburg,
     regular: JSE_REGULAR,
     extended: JSE_OPEN_CLOSE_CURRENT,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -135,6 +141,7 @@ pub(crate) static JSE_PROFILE_PRE_2012_07_02: StaticHoursProfile = StaticHoursPr
     tz: Africa::Johannesburg,
     regular: JSE_REGULAR,
     extended: JSE_OPEN_CLOSE_PRE_2012,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };

@@ -56,6 +56,7 @@ const fn brent_profile(
         tz: America::New_York,
         regular,
         extended,
+        order_entry: &[],
         has_daily_close: true,
         has_weekend_close: true,
     }
@@ -127,6 +128,7 @@ const fn london_profile(
         tz: Europe::London,
         regular,
         extended,
+        order_entry: &[],
         has_daily_close: true,
         has_weekend_close: true,
     }

@@ -49,8 +49,8 @@ fn cboe_exchange_launches_are_not_backfilled() {
 #[test]
 fn bzx_and_byx_2014_order_queues_use_the_exact_operator_dates() {
     // The final operator notice makes the 06:00 queues effective on distinct
-    // dates. Those queues make the later 2016 matching-start changes invisible
-    // to this exchange-envelope API.
+    // dates. Before the 2016 matching change those queues ran to 08:00, the
+    // hour at which matching began.
     // https://cdn.cboe.com/resources/release_notes/2014/BATS-BYX-Exchange-and-BZX-Exchange-Feature-Release-Postponed-Until-December-2014.pdf
     for (exch, date) in [
         (Exchange::CboeByx, (2014, 12, 1)),
@@ -63,6 +63,29 @@ fn bzx_and_byx_2014_order_queues_use_the_exact_operator_dates() {
         assert!(before.is_open_extended(et(date, (8, 0, 0))), "{exch:?}");
         assert!(!after.is_open(et(date, (5, 59, 59))), "{exch:?}");
         assert!(after.is_order_entry_only(et(date, (6, 0, 0))), "{exch:?}");
+    }
+}
+
+#[test]
+fn bzx_and_byx_2016_matching_start_moves_the_0700_hour_into_extended() {
+    // Bats moved equity order matching and routing one hour earlier, to 07:00
+    // ET, on staggered days: BYX May 23, BZX May 25. Before each exchange's
+    // day orders were accepted from 06:00 but nothing matched until 08:00, so
+    // 07:30 was order entry, never a tradeable session.
+    // https://cdn.cboe.com/resources/release_notes/2016/Update-Bats-to-Begin-Equity-Order-Matching-and-Routing-at-7-am-ET.pdf
+    for (exch, date) in [
+        (Exchange::CboeByx, (2016, 5, 23)),
+        (Exchange::CboeBzx, (2016, 5, 25)),
+    ] {
+        let before = profile_before(exch, date);
+        let after = profile_from(exch, date);
+
+        assert!(before.is_order_entry_only(et(date, (7, 30, 0))), "{exch:?}");
+        assert!(!before.is_open(et(date, (7, 30, 0))), "{exch:?}");
+        assert!(before.is_open_extended(et(date, (8, 0, 0))), "{exch:?}");
+        assert!(after.is_open_extended(et(date, (7, 30, 0))), "{exch:?}");
+        assert!(!after.is_order_entry_only(et(date, (7, 30, 0))), "{exch:?}");
+        assert!(after.is_order_entry_only(et(date, (6, 30, 0))), "{exch:?}");
     }
 }
 

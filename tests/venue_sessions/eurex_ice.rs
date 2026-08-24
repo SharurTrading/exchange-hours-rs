@@ -163,7 +163,14 @@ fn maintenance_covers_the_whole_break_not_just_its_tail() {
 
     let eurex = hours_for_exchange(Exchange::Eurex);
     let t = cet((2026, 4, 20), (22, 30, 0));
-    assert!(!eurex.is_open(t), "Eurex 22:30 CET is closed");
+    // The matching gap runs 22:00 → 02:10 CEST, because the 02:00-02:10
+    // pre-trading phase accepts orders but matches nothing. At four hours ten
+    // minutes it exceeds the maintenance bound, so it reads Closed.
+    assert_eq!(
+        eurex.session_state(t),
+        SessionState::Closed,
+        "Eurex's 22:00→02:10 non-matching gap exceeds the maintenance bound"
+    );
     assert!(
         !eurex.is_open(t),
         "Eurex's current-summer 22:00→02:00 daily gap admits no trading end to end"

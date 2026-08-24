@@ -32,6 +32,14 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Fixed
 
+- **BZX and BYX no longer report trading before their 2016 matching start.**
+  Bats' 2016 release note moved equity order matching and routing from 08:00
+  to 07:00 ET on staggered days (BYX 2016-05-23, BZX 2016-05-25). The dated
+  timelines previously kept 07:00–08:00 tradeable across that boundary, so a
+  2015 instant answered "open" during a window in which orders were accepted
+  but nothing could match. Both exchanges now carry their sourced 2016
+  revision: the 06:00–08:00 queue narrows to 06:00–07:00 and the 07:00 hour
+  becomes tradeable exactly on the operator's day.
 - **Unsourced historical order-entry phases are no longer asserted.** B3's
   2010–2012 11:00-open grids and Tadawul's pre-2016 11:00-open grids carried
   inferred pre-opening order windows (10:45–11:00 and 10:00–11:00

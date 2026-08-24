@@ -39,20 +39,15 @@ static ISE_REGULAR: &[SessionRule] = &[SessionRule {
     open_ssm: 8 * 3600,
     close_ssm: 16 * 3600 + 28 * 60,
 }];
-// Order-entry classification. The same market model states that "the order book
+// Tradeability classification. The market model states that "the order book
 // is only open for trading during auctions and continuous trading in the main
-// trading phase", and describes the pre-trading phase as one where participants
-// enter, modify and delete orders and quotes with the order book closed. No
-// order-book trade can match there, so pre-trading is `order_entry`. The
-// post-trading leg stays in `extended`: this file's existing sourced note
-// records that it accepted off-book reports as well as orders, and demoting a
-// post-close window on that record is the unsafe direction.
+// trading phase", so neither pre-trading nor post-trading matches an
+// order-book trade. Both legs still print, so both stay in `extended`: the
+// same sourced record shows off-book reports were accepted in each phase, and
+// prints occur wherever off-book reports are accepted. Demoting either leg to
+// order-entry on this record would claim a window that can print cannot.
 static ISE_EXTENDED: &[SessionRule] = &[
-    // Pre-trading. The order book is closed to MATCHING here, but the same
-    // record that keeps the post-trading leg tradeable shows off-book reports
-    // were accepted in both phases - and prints occur wherever off-book reports
-    // are accepted. Applying that criterion to the close side but not the open
-    // side was the inconsistency; both legs stay tradeable.
+    // Pre-trading.
     SessionRule {
         days: MON_FRI,
         open_ssm: 6 * 3600 + 30 * 60,

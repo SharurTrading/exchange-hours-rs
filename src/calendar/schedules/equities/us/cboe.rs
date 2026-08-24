@@ -49,6 +49,15 @@ static ENTRY_0600_0700: &[SessionRule] = &[SessionRule {
     close_ssm: 7 * 3600,
 }];
 
+// 2014-12 through each exchange's 2016 matching change: orders were accepted
+// from 06:00 but matching and routing began at 08:00, so the whole 06:00-08:00
+// window is `order_entry`.
+static ENTRY_0600_0800: &[SessionRule] = &[SessionRule {
+    days: MON_FRI,
+    open_ssm: 6 * 3600,
+    close_ssm: 8 * 3600,
+}];
+
 static EXTENDED_0700_1700: &[SessionRule] = &[
     SessionRule {
         days: MON_FRI,
@@ -106,6 +115,8 @@ static EXTENDED_0700_2000: &[SessionRule] = &[
 // https://cdn.cboe.com/resources/release_notes/2016/Update-Bats-to-Begin-Equity-Order-Matching-and-Routing-at-7-am-ET.pdf
 // https://www.cboe.com/about/hours/
 static BZX_0800_1700: StaticHoursProfile = equity_profile(EXTENDED_0800_1700);
+static BZX_QUEUE_2014: StaticHoursProfile =
+    equity_profile_with_entry(EXTENDED_0800_1700, ENTRY_0600_0800);
 static BZX_0600_1700: StaticHoursProfile =
     equity_profile_with_entry(EXTENDED_0700_1700, ENTRY_0600_0700);
 static BZX_0600_2000: StaticHoursProfile =
@@ -114,6 +125,8 @@ pub(crate) static CBOE_BZX_PROFILE: StaticHoursProfile =
     equity_profile_with_entry(US_EQUITY_EXTENDED, ENTRY_0230_0400);
 
 static BYX_0800_1700: StaticHoursProfile = equity_profile(EXTENDED_0800_1700);
+static BYX_QUEUE_2014: StaticHoursProfile =
+    equity_profile_with_entry(EXTENDED_0800_1700, ENTRY_0600_0800);
 static BYX_0600_1700: StaticHoursProfile =
     equity_profile_with_entry(EXTENDED_0700_1700, ENTRY_0600_0700);
 pub(crate) static CBOE_BYX_PROFILE: StaticHoursProfile =
@@ -132,24 +145,34 @@ pub(crate) static CBOE_EDGX_PROFILE: StaticHoursProfile =
     equity_profile_with_entry(US_EQUITY_EXTENDED, ENTRY_0230_0400);
 
 // The final 2014 operator notice dates BYX's and BZX's 06:00 order-acceptance
-// queues to 2014-12-01 and 2014-12-02, respectively. Because those queues span
-// the later 2016 matching-start changes, the 2016 dates no longer change this
-// API's open/closed envelope. They do bound the order-entry split conservatively:
-// matching began at 08:00 until the 2016 change and at 07:00 after it, so only
-// 06:00–07:00 is certainly unmatchable across the whole 2014–2018 span and only
-// that leg is classified `order_entry`. The 07:00–08:00 leg stays Extended for
-// the pre-2016 era rather than risk suppressing a tradeable window.
+// queues to 2014-12-01 and 2014-12-02. The 2016 release note then moved
+// matching and routing one hour earlier, to 07:00 ET, on staggered days (BYX
+// May 23, EDGA May 24, BZX May 25, EDGX May 26) and published the resulting
+// sessions: Early Order Acceptance 06:00-07:00, Early Trading Session
+// 07:00-08:00, Pre-Market 08:00-09:30. Before each exchange's 2016 day orders
+// were accepted from 06:00 but nothing matched until 08:00, so the 2014-2016
+// profiles carry the whole 06:00-08:00 leg as `order_entry` and extended
+// starts at 08:00; from the 2016 day the 07:00-08:00 hour matches and joins
+// `extended`.
 // The 2018 notice dates each 20:00 close extension,
 // and the operator independently dates BZX's 02:30 queue / 04:00 active-session
 // expansion to 2025-05-01.
 // https://cdn.cboe.com/resources/release_notes/2014/BATS-BYX-Exchange-and-BZX-Exchange-Feature-Release-Postponed-Until-December-2014.pdf
 // https://www.sec.gov/rules/sro/bats/2014/34-73745.pdf
 // https://www.sec.gov/rules/sro/byx/2014/34-73744.pdf
+// https://cdn.cboe.com/resources/release_notes/2016/Update-Bats-to-Begin-Equity-Order-Matching-and-Routing-at-7-am-ET.pdf
 // https://cdn.cboe.com/resources/release_notes/2018/BZX-Exchange-and-BYX-Exchange-to-Extend-Post-Market-Session-Hours-to-8PM-ET.pdf
 // https://www.cboe.com/insights/posts/early-birds-and-night-owls-how-extended-trading-hours-are-reshaping-u-s-equities-markets-
 // https://res.cboe.com/insights/posts/u-s-cash-equities-may-highlights/
 static BZX_REVISIONS: &[Revision] = revisions![
-    (2014, 12, 2, &BZX_0600_1700, "SEC 34-73745"),
+    (2014, 12, 2, &BZX_QUEUE_2014, "SEC 34-73745"),
+    (
+        2016,
+        5,
+        25,
+        &BZX_0600_1700,
+        "Bats release note 2016 7am matching"
+    ),
     (
         2018,
         7,
@@ -170,7 +193,14 @@ pub(crate) fn bzx_profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static S
 
 static BYX_REVISIONS: &[Revision] = revisions![
     (2010, 10, 15, &BYX_0800_1700, "SEC 34-63097"),
-    (2014, 12, 1, &BYX_0600_1700, "SEC 34-73744"),
+    (2014, 12, 1, &BYX_QUEUE_2014, "SEC 34-73744"),
+    (
+        2016,
+        5,
+        23,
+        &BYX_0600_1700,
+        "Bats release note 2016 7am matching"
+    ),
     (
         2018,
         8,

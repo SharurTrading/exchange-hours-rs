@@ -8,7 +8,7 @@
 
 use chrono::{DateTime, TimeZone as _, Utc};
 use exchange_hours::{
-    MarketHoursKey, hours_for_market_hours_key, hours_for_market_hours_key_as_of,
+    MarketHoursKey, SessionState, hours_for_market_hours_key, hours_for_market_hours_key_as_of,
 };
 
 /// Builds a UTC probe instant from literals. UTC has no ambiguous local times,
@@ -145,4 +145,62 @@ fn current_snapshots_agree_with_dated_selectors_today() {
             key.as_str()
         );
     }
+}
+
+/// The overnight phase machine classifies by phase kind, not by envelope.
+///
+/// Eurex fixed income runs pre-trading 02:00-02:10 and post-trading
+/// 22:00-22:10 CEST around its 02:10-22:00 continuous session; SGX's
+/// Three-Month SORA and Japan equity-index grids open their T sessions at
+/// 07:25 and 07:30 SGT behind pre-opening order windows. Each boundary below
+/// is derived from those published grids, and the fixed snapshot must answer
+/// a current week identically to the dated selector.
+#[test]
+fn overnight_order_entry_and_closed_gaps_match_the_published_phase_machine() {
+    // 2026-04-20 is a Monday; Berlin is CEST (+02:00), Singapore is SGT (+08:00).
+    let dated =
+        hours_for_market_hours_key_as_of(MarketHoursKey::EurexFixedIncome, utc(2026, 4, 20, 12, 0));
+    let snapshot = hours_for_market_hours_key(MarketHoursKey::EurexFixedIncome);
+    for hours in [&dated, &snapshot] {
+        // 22:02 CEST Monday: post-trading accepts orders, nothing matches.
+        assert_eq!(
+            hours.session_state(utc(2026, 4, 20, 20, 2)),
+            SessionState::OrderEntry
+        );
+        // 22:30 CEST Monday and 01:30 CEST Tuesday: the 22:00 -> 02:10
+        // matching gap exceeds the four-hour maintenance bound.
+        assert_eq!(
+            hours.session_state(utc(2026, 4, 20, 20, 30)),
+            SessionState::Closed
+        );
+        assert_eq!(
+            hours.session_state(utc(2026, 4, 20, 23, 30)),
+            SessionState::Closed
+        );
+        // 02:05 CEST Tuesday: pre-trading before the 02:10 continuous open.
+        assert_eq!(
+            hours.session_state(utc(2026, 4, 21, 0, 5)),
+            SessionState::OrderEntry
+        );
+    }
+
+    // 07:10 SGT Monday (23:10 UTC Sunday): SORA's T pre-opening window runs
+    // 07:10-07:25, so the market accepts orders but nothing matches.
+    for hours in [
+        hours_for_market_hours_key(MarketHoursKey::Sgx),
+        hours_for_market_hours_key_as_of(MarketHoursKey::Sgx, utc(2026, 4, 20, 12, 0)),
+    ] {
+        assert_eq!(
+            hours.session_state(utc(2026, 4, 19, 23, 10)),
+            SessionState::OrderEntry
+        );
+    }
+
+    // 07:20 SGT Monday: the Japan grid's pre-opening window runs 07:15-07:30
+    // ahead of its 07:30 T session.
+    let japan = hours_for_market_hours_key(MarketHoursKey::SgxEquityIndexJapan);
+    assert_eq!(
+        japan.session_state(utc(2026, 4, 19, 23, 20)),
+        SessionState::OrderEntry
+    );
 }

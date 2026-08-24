@@ -221,6 +221,20 @@ static DATED_CURRENT: StaticHoursProfile = profile(
     ORDER_ENTRY_0800_0830,
 );
 
+// Revision evidence — each row's day-level effective date and the primary
+// source that states it (full quotations sit in the blocks above):
+//   2010-04-19 "CME Globex notice 20100405"
+//     https://www.cmegroup.com/tools-information/lookups/advisories/electronic-trading/20100405.html
+//   2011-12-27 "CFTC filing rul120711cbot001"
+//     https://www.cftc.gov/stellent/groups/public/%40rulesandproducts/documents/ifdocs/rul120711cbot001.pdf
+//   2012-05-20 "CME market-data advisory 20120518"
+//     https://www.cmegroup.com/tools-information/lookups/advisories/market-data/20120518.html
+//   2013-04-07 "CME SER-6617"
+//     https://www.cmegroup.com/rulebook/files/ser_6617_cbot_grain_oilseed_hours_2013_final.pdf
+//   2013-08-18 "CME market-data advisory 20130812"
+//     https://www.cmegroup.com/tools-information/lookups/advisories/market-data/20130812.html
+//   2015-07-05 "CME SER-7395R"
+//     https://www.cmegroup.com/tools-information/lookups/advisories/ser/SER-7395R.html
 static REVISIONS: &[Revision] = revisions![
     (2010, 4, 19, &FROM_2010_04_19, "CME Globex notice 20100405"),
     (

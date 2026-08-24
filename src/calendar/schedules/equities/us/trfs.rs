@@ -72,6 +72,13 @@ pub(crate) static FINRA_TRF_NYSE_PROFILE: StaticHoursProfile = profile(EXTENDED_
 // selected while its anticipated implementation day is conditional on the SIP
 // rollout. See the schedule update guide for the outstanding confirmation.
 // https://www.finra.org/sites/default/files/2026-07/SR-FINRA-2026-015.pdf
+//
+// Row evidence — each revision's day-level effective date and the primary
+// source that states it (full quotations sit in the header block above):
+//   2018-09-10 "FINRA/Nasdaq TRF Chicago technical notice" (Chicago)
+//     https://www.finra.org/filing-reporting/trf/technical-notices/reminder-finranasdaq-trf-chicago
+//   2026-03-30 "FINRA Notice 25-15" (Carteret, Chicago, NYSE)
+//     https://www.finra.org/rules-guidance/rulebooks/notices/25-15
 static CARTERET_REVISIONS: &[Revision] = revisions![(
     2026,
     3,

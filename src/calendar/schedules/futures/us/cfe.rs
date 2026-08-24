@@ -279,6 +279,22 @@ static CFE_PROFILE_2018_08_12: StaticHoursProfile = profile(
     CFE_ORDER_ENTRY_2018_08_12,
 );
 
+// Row evidence — each revision's day-level effective date and the primary
+// source that states it (full quotations sit in the blocks above):
+//   2010-12-10 "Cboe SR-CFE-2010-013"
+//     https://cdn.cboe.com/resources/regulation/rule_filings/approved/2010/SR-CFE-2010-013.pdf
+//   2011-09-26 "Cboe SR-CFE-2011-019"
+//     https://cdn.cboe.com/resources/regulation/rule_filings/approved/2011/SR-CFE-2011-019.pdf
+//   2013-10-28 "Cboe IC13-041" and 2013-11-04 "Cboe IC13-041"
+//     https://cdn.cboe.com/resources/regulation/circulars/general/CFE-IC-2013-041.pdf
+//   2014-06-22 "Cboe RG-CFE-2014-020"
+//     https://cdn.cboe.com/resources/regulation/circulars/regulatory/RG-CFE-2014-020.pdf
+//   2018-02-25 "Cboe RG-CFE-2018-005"
+//     https://cdn.cboe.com/resources/regulation/circulars/regulatory/RG-CFE-2018-005.pdf
+//   2018-08-12 "Cboe C2018071603"
+//     https://cdn.cboe.com/resources/release_notes/2018/Change-to-CFE-Pre-Open-Time-for-TAS-Contracts-and-Order-Submission-Commencement-Times.pdf
+//   2021-12-06 "Cboe C2021102603"
+//     https://cdn.cboe.com/resources/regulation/rule_filings/pending/2021/21-028-VX-VXM-and-AMERIBOR-Trading-Hours.pdf
 static CFE_REVISIONS: &[Revision] = revisions![
     (
         2010,

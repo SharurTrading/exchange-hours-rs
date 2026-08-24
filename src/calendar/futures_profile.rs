@@ -90,7 +90,7 @@ impl FuturesSessionProfile {
     /// Converts this profile into the [`MarketHours`] value the calendar query
     /// surface ([`candle_end`](super::candle_end),
     /// [`session_bounds`](super::session_bounds), …) consumes, tagged with
-    /// `exchange`.
+    /// `source`.
     ///
     /// The rule slices are borrowed (`Cow::Borrowed`), so this allocates
     /// nothing. The tag is passed by the caller because one shared profile can

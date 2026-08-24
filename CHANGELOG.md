@@ -53,8 +53,10 @@ corrections (a venue's hours fixed against a primary source) go under
   21:00 NY opening (and its 19:30 pre-open) was a sourced inference: three
   primary-source strands pointed at it, but no ICE document names Sunday for
   Cotton No. 2. Under the crate's primary-source law an unasserted phase is
-  omitted, so the modelled week now runs Monday 19:30 through Friday 14:20
-  and Sunday evenings read closed until ICE states otherwise.
+  omitted, so the tradeable week now runs Monday 21:00 through Friday 14:20
+  and Sunday evenings read closed until ICE states otherwise. The sourced
+  Friday 14:50–18:00 post-close pre-open remains the week's final
+  order-entry window, feeding Monday's session.
 
 ### Notes
 

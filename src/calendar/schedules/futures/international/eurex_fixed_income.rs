@@ -226,6 +226,14 @@ pub(crate) static EUREX_FIXED_INCOME_BASELINE: StaticHoursProfile = StaticHoursP
 //   was untouched.
 //   https://www.eurex.com/resource/blob/1493194/bee8965900f0124d7ff7c7993d5f969b/data/2019_02_25_cs_4_history.pdf
 //
+// Revision evidence — both seasonal tables carry the same two rows, and each
+// row's day-level effective date is stated by the primary source quoted in
+// full above:
+//   2018-12-10 "Eurex Circular 088/18"
+//     https://www.eurex.com/resource/blob/1412768/e61a2c41d65ad165af7909002223b943/data/er18088e.pdf
+//   2019-02-25 "Eurex CS amendment 2019-02-25"
+//     https://www.eurex.com/resource/blob/1493194/bee8965900f0124d7ff7c7993d5f969b/data/2019_02_25_cs_4_history.pdf
+//
 // This is the CEST (summer) timeline; `EUREX_FIXED_INCOME_WINTER_REVISIONS`
 // carries the identical dates against the CET grid.
 pub(crate) static EUREX_FIXED_INCOME_REVISIONS: &[Revision] = revisions![

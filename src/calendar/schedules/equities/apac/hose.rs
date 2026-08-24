@@ -171,6 +171,14 @@ use crate::calendar::schedules::timeline::{Revision, local_date, revisions, sele
 
 pub(crate) const CURRENT: &StaticHoursProfile = &HOSE_PROFILE_CURRENT;
 
+// Revision evidence — each row's day-level effective date and the primary
+// source that states it (full quotations sit in the blocks above):
+//   2010-09-13 "HOSE news notice 48784"
+//     https://web.archive.org/web/20100830155813id_/http://www.hsx.vn/hsx/Modules/News/NewsDetail.aspx?id=48784
+//   2012-03-05 "HOSE 2012 annual report"
+//     https://staticfile.hsx.vn/Uploads/Annual/6dfe6cf6-93b2-4871-966f-2bb9bb92c110/10dd075f-c751-46d2-b598-022850e517f6
+//   2013-07-22 "HOSE 2013 annual report"
+//     https://web.archive.org/web/20140501225025id_/http://www.hsx.vn:80/hsx_en/Modules/annual/annual_files/BCTN-ANNUAL%20REPORT%202013.pdf
 static REVISIONS: &[Revision] = revisions![
     (
         2010,

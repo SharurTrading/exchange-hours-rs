@@ -35,10 +35,15 @@ use crate::calendar::schedules::timeline::{Revision, local_date, revisions, sele
 // evening open and its pre-open are modelled as closed; the documented
 // weekend boundary is therefore Friday 14:20 to Monday 19:30 NY.
 //
-// WEEKEND WRAP: the modelled week runs Monday 19:30 pre-open / 21:00 open
-// through Friday 14:20 close. There is no Friday-evening open, because a
-// Friday 21:00 open would belong to a Saturday trade date, which does not
-// exist.
+// WEEKEND WRAP: the tradeable week runs Monday 21:00 open through Friday
+// 14:20 close, with Monday-Thursday 19:30 pre-opens. There is no
+// Friday-evening open, because a Friday 21:00 open would belong to a
+// Saturday trade date, which does not exist. The Friday 14:50-18:00 PCPO is
+// retained: the product-page footnote and the 2018 notice's worked example
+// state it on the prior Exchange business day, so it remains the week's
+// final order-entry window, feeding Monday's session — orders accepted
+// there wait for the modelled Monday 21:00 open instead of the unsourced
+// Sunday one.
 //
 // https://www.ice.com/publicdocs/futures_us/ICE_Futures_US_Regular_Trading_Hours.pdf
 // https://www.ice.com/products/254/cotton-no-2-futures

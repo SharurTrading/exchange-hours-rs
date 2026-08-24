@@ -168,6 +168,30 @@ static LISTED_EQUITY_OPTIONS_HISTORICAL: StaticHoursProfile = listed_equity_opti
 // https://www.miaxglobal.com/sites/default/files/alert-files/MIAX_Press_Release_09102024.pdf
 // MEMX launched 2023-09-27 with stock classes SBUX and IMGN (plus GLD):
 // https://info.memxtrading.com/trader-alert-23-42-memx-options-exchange-schedule-update/
+//
+// Row evidence — each table's launch day mapped to its primary source:
+//   2010-02-26 "BATS Options launch press release" (BZX)
+//     https://cdn.cboe.com/resources/press_releases/BATSOptionsGoesLive_FINAL.pdf
+//   2010-10-29 "Cboe circular IC-CBOE-2010-168" (C2)
+//     https://cdn.cboe.com/resources/regulation/circulars/general/IC-CBOE-2010-168.pdf
+//   2015-11-02 "Bats EDGX options update 2015-11-10" (EDGX)
+//     https://cdn.cboe.com/resources/release_notes/2015/BATS-EDGX-Options-Update-2015_11_10.pdf
+//   2012-06-29 "Nasdaq OTA 2012-41" (BX)
+//     https://www.nasdaqtrader.com/MicroNews.aspx?id=OTA2012-41
+//   2013-08-05 "SEC filing 16019242" (GEMX)
+//     https://www.sec.gov/Archives/edgar/vprr/1601/16019242.pdf
+//   2016-02-16 "SEC 34-77256" (MRX)
+//     https://www.sec.gov/files/rules/sro/bats/2016/34-77256.pdf
+//   2012-12-07 "MIAX launch alert 2012-12-06"
+//     https://www.miaxglobal.com/alert/2012/12/06/miax-options-will-commence-trading-friday-december-7-2012
+//   2017-02-06 "MIAX Pearl launch alert 2017-02-01"
+//     https://www.miaxglobal.com/alerts/2017/02/01/market-underlying-security-used-openings-miax-pearl-newly-listed-option-class
+//   2019-03-01 "MIAX Emerald launch announcement"
+//     https://www.miaxglobal.com/news/miax-emerald-successfully-launches-trading-operations
+//   2024-08-12 "MIAX press release 2024-09-10" (Sapphire)
+//     https://www.miaxglobal.com/sites/default/files/alert-files/MIAX_Press_Release_09102024.pdf
+//   2023-09-27 "MEMX trader alert 23-42"
+//     https://info.memxtrading.com/trader-alert-23-42-memx-options-exchange-schedule-update/
 static BZX_REVISIONS: &[Revision] = revisions![(
     2010,
     2,

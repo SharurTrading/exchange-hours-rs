@@ -164,6 +164,15 @@ pub(crate) static CBOE_EDGX_PROFILE: StaticHoursProfile =
 // https://cdn.cboe.com/resources/release_notes/2018/BZX-Exchange-and-BYX-Exchange-to-Extend-Post-Market-Session-Hours-to-8PM-ET.pdf
 // https://www.cboe.com/insights/posts/early-birds-and-night-owls-how-extended-trading-hours-are-reshaping-u-s-equities-markets-
 // https://res.cboe.com/insights/posts/u-s-cash-equities-may-highlights/
+// Row evidence:
+//   2014-12-02 "SEC 34-73745"
+//     https://www.sec.gov/rules/sro/bats/2014/34-73745.pdf
+//   2016-05-25 "Bats release note 2016 7am matching"
+//     https://cdn.cboe.com/resources/release_notes/2016/Update-Bats-to-Begin-Equity-Order-Matching-and-Routing-at-7-am-ET.pdf
+//   2018-07-30 "Bats release note 2018 8pm post-market"
+//     https://cdn.cboe.com/resources/release_notes/2018/BZX-Exchange-and-BYX-Exchange-to-Extend-Post-Market-Session-Hours-to-8PM-ET.pdf
+//   2025-05-01 "Cboe insights May 2025"
+//     https://res.cboe.com/insights/posts/u-s-cash-equities-may-highlights/
 static BZX_REVISIONS: &[Revision] = revisions![
     (2014, 12, 2, &BZX_QUEUE_2014, "SEC 34-73745"),
     (
@@ -191,6 +200,15 @@ pub(crate) fn bzx_profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static S
     )
 }
 
+// Row evidence:
+//   2010-10-15 "SEC 34-63097"
+//     https://www.sec.gov/files/rules/sro/byx/2010/34-63097.pdf
+//   2014-12-01 "SEC 34-73744"
+//     https://www.sec.gov/rules/sro/byx/2014/34-73744.pdf
+//   2016-05-23 "Bats release note 2016 7am matching"
+//     https://cdn.cboe.com/resources/release_notes/2016/Update-Bats-to-Begin-Equity-Order-Matching-and-Routing-at-7-am-ET.pdf
+//   2018-08-27 "Bats release note 2018 8pm post-market"
+//     https://cdn.cboe.com/resources/release_notes/2018/BZX-Exchange-and-BYX-Exchange-to-Extend-Post-Market-Session-Hours-to-8PM-ET.pdf
 static BYX_REVISIONS: &[Revision] = revisions![
     (2010, 10, 15, &BYX_0800_1700, "SEC 34-63097"),
     (2014, 12, 1, &BYX_QUEUE_2014, "SEC 34-73744"),
@@ -218,6 +236,11 @@ pub(crate) fn byx_profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static S
     )
 }
 
+// Row evidence:
+//   2010-07-02 "SEC 34-62431"
+//     https://www.sec.gov/file/34-62431
+//   2016-05-24 "Bats release note 2016 7am matching"
+//     https://cdn.cboe.com/resources/release_notes/2016/Update-Bats-to-Begin-Equity-Order-Matching-and-Routing-at-7-am-ET.pdf
 static EDGA_REVISIONS: &[Revision] = revisions![
     (2010, 7, 2, &EDGA_0800_2000, "SEC 34-62431"),
     (
@@ -251,6 +274,15 @@ pub(crate) fn edga_profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static 
 // https://www.sec.gov/rules/sro/edgx/2014/34-73468.pdf
 // https://ir.cboe.com/news/news-details/2021/Cboe-EDGX-Equities-Exchange-To-Introduce-Early-Trading-Hours-Beginning-March-8-02-08-2021/default.aspx
 // https://www.sec.gov/files/rules/sro/cboeedgx/2021/34-92914.pdf
+// Row evidence:
+//   2010-07-02 "SEC 34-62431"
+//     https://www.sec.gov/file/34-62431
+//   2016-05-26 "Bats release note 2016 7am matching"
+//     https://cdn.cboe.com/resources/release_notes/2016/Update-Bats-to-Begin-Equity-Order-Matching-and-Routing-at-7-am-ET.pdf
+//   2021-03-08 "Cboe press release 2021-02-08"
+//     https://ir.cboe.com/news/news-details/2021/Cboe-EDGX-Equities-Exchange-To-Introduce-Early-Trading-Hours-Beginning-March-8-02-08-2021/default.aspx
+//   2021-09-07 "SEC 34-92914"
+//     https://www.sec.gov/files/rules/sro/cboeedgx/2021/34-92914.pdf
 static EDGX_REVISIONS: &[Revision] = revisions![
     (2010, 7, 2, &EDGX_0800_2000, "SEC 34-62431"),
     (

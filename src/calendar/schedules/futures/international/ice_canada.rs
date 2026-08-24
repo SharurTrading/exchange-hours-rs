@@ -116,6 +116,18 @@ pub(crate) static ICE_CANADA_PROFILE: StaticHoursProfile = StaticHoursProfile {
     has_weekend_close: true,
 };
 
+// Revision evidence — each row's day-level effective date and the primary
+// source that states it (full quotations sit in the blocks above):
+//   2011-02-28 "ICE Canada Feb 1 2011 revised trading hours"
+//     https://www.ice.com/publicdocs/futures_canada/member_notices/Feb1_2011_revised_trading_hours.pdf
+//   2012-06-24 "ICE Canada June 13 2012 trading hours change"
+//     https://www.ice.com/publicdocs/futures_canada/member_notices/June_13_2012_ICE_Futures_Canada_notice-Trading_Hours_and_Settlement_Time_Change.pdf
+//   2013-04-07 "ICE Canada April 8 2013 reminder"
+//     https://www.ice.com/publicdocs/futures_canada/member_notices/April_8_2013_Reminder_Closing_time_and_Settlement_time_changes_today.pdf
+//   2016-01-24 "ICE Canada Jan 18 2016 reminder"
+//     https://www.ice.com/publicdocs/futures_canada/member_notices/2016_01_18_Reminder_Canola_Trade_At_Settlement.pdf
+//   2018-07-29 "ICE Futures US notice Canola 20180501"
+//     https://www.ice.com/publicdocs/futures_us/exchange_notices/ICE_Futures_US-Notice-Canola-20180501.pdf
 static ICE_CANADA_REVISIONS: &[Revision] = revisions![
     (
         2011,

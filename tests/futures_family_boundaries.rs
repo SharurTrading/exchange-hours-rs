@@ -63,6 +63,61 @@ fn nkd_close_tracks_its_three_sourced_revisions() {
     );
 }
 
+/// SER-6465 (session-opening Sunday 2012-11-18) extended the close to 16:15 CT
+/// and introduced a 15:15–15:30 CT halt; SER-6554R (session-opening Sunday
+/// 2013-03-03) removed that halt for the International Equity Index contracts
+/// it names explicitly. Both sides of both cutovers are probed on the snapshot
+/// selected after each Sunday opening, so a selector with either effective
+/// date shifted fails here.
+#[test]
+fn nkd_halt_revision_and_removal_are_keyed_to_their_sunday_opening_days() {
+    let key = MarketHoursKey::GlobexNikkei225Dollar;
+
+    // 2012-11-18: the halt regime begins. The Monday probes are
+    // 15:14/15:20/15:30/16:10/16:20 CT (CST).
+    let halted = hours_for_market_hours_key_as_of(key, utc(2012, 11, 18, 23, 30));
+    assert!(
+        halted.is_open(utc(2012, 11, 19, 21, 14)),
+        "15:14 CT still trades ahead of the halt"
+    );
+    assert!(
+        !halted.is_open(utc(2012, 11, 19, 21, 20)),
+        "the 15:15-15:30 CT halt matches nothing"
+    );
+    assert!(
+        halted.is_open(utc(2012, 11, 19, 21, 30)),
+        "the halt is end-exclusive: 15:30 CT trades again"
+    );
+    assert!(
+        halted.is_open(utc(2012, 11, 19, 22, 10)),
+        "the close is 16:15 CT"
+    );
+    assert!(
+        !halted.is_open(utc(2012, 11, 19, 22, 20)),
+        "16:20 CT is past the 16:15 CT close"
+    );
+
+    // The Sunday before: pre-2012 dates are sessionless, so the same Monday
+    // probe answers closed everywhere.
+    let before = hours_for_market_hours_key_as_of(key, utc(2012, 11, 11, 23, 30));
+    assert!(!before.is_open(utc(2012, 11, 12, 21, 20)));
+
+    // 2013-03-03: the halt is gone and the 16:15 CT close remains.
+    let unhalting = hours_for_market_hours_key_as_of(key, utc(2013, 3, 3, 23, 30));
+    assert!(
+        unhalting.is_open(utc(2013, 3, 4, 21, 20)),
+        "15:20 CT trades again after the halt removal"
+    );
+    assert!(
+        unhalting.is_open(utc(2013, 3, 4, 22, 10)),
+        "the close is still 16:15 CT"
+    );
+
+    // The Sunday before: the 2012 regime still halts at 15:15 CT.
+    let still_halted = hours_for_market_hours_key_as_of(key, utc(2013, 2, 24, 23, 30));
+    assert!(!still_halted.is_open(utc(2013, 2, 25, 21, 20)));
+}
+
 /// The 2015-09-20 revision is keyed to the session-opening Sunday for trade date
 /// Monday 2015-09-21, matching `cme_group`. A revision mis-keyed to the Monday
 /// would leave the preceding session on the old profile.

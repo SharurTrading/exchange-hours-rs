@@ -7,7 +7,7 @@ use chrono_tz::Europe;
 use super::super::super::StaticHoursProfile;
 use crate::calendar::SessionRule;
 use crate::calendar::rule::MON_FRI;
-use crate::calendar::schedules::timeline::{Revision, effective_date, local_date, select_revision};
+use crate::calendar::schedules::timeline::{Revision, local_date, revisions, select_revision};
 
 // Borsa Italiana changed the MTA opening effective 2009-09-29. The resulting
 // Jan-2010 baseline starts pre-opening at 08:00, uncrosses randomly from
@@ -159,19 +159,22 @@ pub(crate) static EURONEXT_MIL_PROFILE: StaticHoursProfile = StaticHoursProfile 
     has_weekend_close: true,
 };
 
-static REVISIONS: &[Revision] = &[
-    Revision {
-        effective: effective_date(2013, 9, 30),
-        profile: &CPX_PROFILE,
-    },
-    Revision {
-        effective: effective_date(2015, 11, 23),
-        profile: &PROFILE_2015,
-    },
-    Revision {
-        effective: effective_date(2023, 3, 27),
-        profile: &EURONEXT_MIL_PROFILE,
-    },
+static REVISIONS: &[Revision] = revisions![
+    (
+        2013,
+        9,
+        30,
+        &CPX_PROFILE,
+        "Borsa Italiana CPX launch notice"
+    ),
+    (2015, 11, 23, &PROFILE_2015, "Borsa Italiana notice 17016"),
+    (
+        2023,
+        3,
+        27,
+        &EURONEXT_MIL_PROFILE,
+        "Euronext Go-Live Weekend Guidelines"
+    ),
 ];
 
 pub(crate) fn profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {

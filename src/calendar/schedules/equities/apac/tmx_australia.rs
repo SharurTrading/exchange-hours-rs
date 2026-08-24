@@ -111,27 +111,39 @@ pub(crate) static TMX_AU_PROFILE_CLOSED: StaticHoursProfile = StaticHoursProfile
     has_weekend_close: true,
 };
 
-use crate::calendar::schedules::timeline::{Revision, effective_date, local_date, select_revision};
+use crate::calendar::schedules::timeline::{Revision, local_date, revisions, select_revision};
 
 pub(crate) const CURRENT: &StaticHoursProfile = &TMX_AU_PROFILE_CURRENT;
 
-static REVISIONS: &[Revision] = &[
-    Revision {
-        effective: effective_date(2011, 10, 31),
-        profile: &TMX_AU_PROFILE_LAUNCH,
-    },
-    Revision {
-        effective: effective_date(2013, 12, 9),
-        profile: &TMX_AU_PROFILE_POST_2013_12_09,
-    },
-    Revision {
-        effective: effective_date(2015, 8, 31),
-        profile: &TMX_AU_PROFILE_POST_2015_08_31,
-    },
-    Revision {
-        effective: effective_date(2025, 3, 17),
-        profile: &TMX_AU_PROFILE_CURRENT,
-    },
+static REVISIONS: &[Revision] = revisions![
+    (
+        2011,
+        10,
+        31,
+        &TMX_AU_PROFILE_LAUNCH,
+        "ASIC media release 12-295MR"
+    ),
+    (
+        2013,
+        12,
+        9,
+        &TMX_AU_PROFILE_POST_2013_12_09,
+        "Chi-X Australia Compliance Notice 0009-13"
+    ),
+    (
+        2015,
+        8,
+        31,
+        &TMX_AU_PROFILE_POST_2015_08_31,
+        "Chi-X Australia Compliance Notice 0006-15"
+    ),
+    (
+        2025,
+        3,
+        17,
+        &TMX_AU_PROFILE_CURRENT,
+        "Cboe Australia Technical Notice 0003-25"
+    ),
 ];
 
 pub(crate) fn profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {

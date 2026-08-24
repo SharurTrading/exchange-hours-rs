@@ -95,14 +95,11 @@ pub(crate) static NZX_PROFILE_PRE_2020_04_06: StaticHoursProfile = StaticHoursPr
     has_weekend_close: true,
 };
 
-use crate::calendar::schedules::timeline::{Revision, effective_date, local_date, select_revision};
+use crate::calendar::schedules::timeline::{Revision, local_date, revisions, select_revision};
 
 pub(crate) const CURRENT: &StaticHoursProfile = &NZX_PROFILE;
 
-static REVISIONS: &[Revision] = &[Revision {
-    effective: effective_date(2020, 4, 6),
-    profile: &NZX_PROFILE,
-}];
+static REVISIONS: &[Revision] = revisions![(2020, 4, 6, &NZX_PROFILE, "NZX announcement 350919"),];
 
 pub(crate) fn profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {
     select_revision(

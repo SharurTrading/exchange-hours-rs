@@ -32,6 +32,11 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Notes
 
+- Every revision timeline row now carries its primary-source citation in the
+  type (`SourceRef`), and a `revisions!` macro fails the build unless a
+  timeline's effective dates are strictly ascending and every row names its
+  source. A shadowed duplicate date or an uncited revision can no longer
+  compile.
 - Fifteen dated cutovers were encoded from operator notices, each carrying its
   verbatim quote and source URL — ICE Sugar 2012-01-30, 2012-11-05,
   2014-02-03 and 2018-10-08; Coffee, Cocoa and Cotton 2014-02-03 and

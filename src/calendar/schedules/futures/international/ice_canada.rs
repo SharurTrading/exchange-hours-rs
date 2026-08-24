@@ -7,7 +7,7 @@ use chrono_tz::America;
 use super::super::StaticHoursProfile;
 use crate::calendar::SessionRule;
 use crate::calendar::rule::SUN_PLUS_MON_THU;
-use crate::calendar::schedules::timeline::{Revision, effective_date, local_date, select_revision};
+use crate::calendar::schedules::timeline::{Revision, local_date, revisions, select_revision};
 
 // ICE Futures Canada's Winnipeg Canola profile has a fully sourced baseline
 // and four observable revisions before the venue identity closes.
@@ -116,27 +116,42 @@ pub(crate) static ICE_CANADA_PROFILE: StaticHoursProfile = StaticHoursProfile {
     has_weekend_close: true,
 };
 
-static ICE_CANADA_REVISIONS: &[Revision] = &[
-    Revision {
-        effective: effective_date(2011, 2, 28),
-        profile: &ICE_CANADA_2011,
-    },
-    Revision {
-        effective: effective_date(2012, 6, 24),
-        profile: &ICE_CANADA_2012,
-    },
-    Revision {
-        effective: effective_date(2013, 4, 7),
-        profile: &ICE_CANADA_2011,
-    },
-    Revision {
-        effective: effective_date(2016, 1, 24),
-        profile: &ICE_CANADA_2016,
-    },
-    Revision {
-        effective: effective_date(2018, 7, 29),
-        profile: &ICE_CANADA_PROFILE,
-    },
+static ICE_CANADA_REVISIONS: &[Revision] = revisions![
+    (
+        2011,
+        2,
+        28,
+        &ICE_CANADA_2011,
+        "ICE Canada Feb 1 2011 revised trading hours"
+    ),
+    (
+        2012,
+        6,
+        24,
+        &ICE_CANADA_2012,
+        "ICE Canada June 13 2012 trading hours change"
+    ),
+    (
+        2013,
+        4,
+        7,
+        &ICE_CANADA_2011,
+        "ICE Canada April 8 2013 reminder"
+    ),
+    (
+        2016,
+        1,
+        24,
+        &ICE_CANADA_2016,
+        "ICE Canada Jan 18 2016 reminder"
+    ),
+    (
+        2018,
+        7,
+        29,
+        &ICE_CANADA_PROFILE,
+        "ICE Futures US notice Canola 20180501"
+    ),
 ];
 
 pub(crate) fn ice_canada_profile_at(

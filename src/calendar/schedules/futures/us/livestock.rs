@@ -6,7 +6,7 @@ use chrono_tz::US;
 
 use crate::calendar::rule::{FRI, MON_FRI, MON_ONLY};
 use crate::calendar::schedules::StaticHoursProfile;
-use crate::calendar::schedules::timeline::{Revision, effective_date, local_date, select_revision};
+use crate::calendar::schedules::timeline::{Revision, local_date, revisions, select_revision};
 use crate::calendar::{FuturesSessionProfile, SessionRule};
 
 const MON_WED: [bool; 7] = [true, true, true, false, false, false, false];
@@ -148,19 +148,10 @@ static PROFILE_CURRENT: StaticHoursProfile = StaticHoursProfile {
     has_weekend_close: true,
 };
 
-static REVISIONS: &[Revision] = &[
-    Revision {
-        effective: effective_date(2014, 10, 27),
-        profile: &PROFILE_2014_10_27,
-    },
-    Revision {
-        effective: effective_date(2016, 2, 29),
-        profile: &PROFILE_2016_02_29,
-    },
-    Revision {
-        effective: effective_date(2020, 5, 31),
-        profile: &PROFILE_CURRENT,
-    },
+static REVISIONS: &[Revision] = revisions![
+    (2014, 10, 27, &PROFILE_2014_10_27, "CME SER-7194"),
+    (2016, 2, 29, &PROFILE_2016_02_29, "CME SER-7591"),
+    (2020, 5, 31, &PROFILE_CURRENT, "CME SER-8599R"),
 ];
 
 pub(crate) fn profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {

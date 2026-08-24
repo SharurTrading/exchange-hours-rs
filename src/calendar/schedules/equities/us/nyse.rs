@@ -9,7 +9,7 @@ use super::equities::{US_EQUITY_EXTENDED, equity_profile, equity_profile_with_en
 use crate::calendar::SessionRule;
 use crate::calendar::rule::MON_FRI;
 use crate::calendar::schedules::CLOSED_NEW_YORK;
-use crate::calendar::schedules::timeline::{Revision, effective_date, local_date, select_revision};
+use crate::calendar::schedules::timeline::{Revision, local_date, revisions, select_revision};
 
 // Pillar order-entry edges. NYSE's hours table lists "Order Entry" starting at
 // 06:30 (02:30 on Arca) with the first executable phase — the Early Trading
@@ -156,10 +156,13 @@ static NYSE_AMERICAN_PRE_PILLAR: StaticHoursProfile = equity_profile(&[]);
 pub(crate) static NYSE_AMERICAN_PROFILE: StaticHoursProfile =
     equity_profile_with_entry(EXTENDED_0700_2000, ENTRY_0630_0700);
 
-static AMERICAN_REVISIONS: &[Revision] = &[Revision {
-    effective: effective_date(2017, 7, 24),
-    profile: &NYSE_AMERICAN_PROFILE,
-}];
+static AMERICAN_REVISIONS: &[Revision] = revisions![(
+    2017,
+    7,
+    24,
+    &NYSE_AMERICAN_PROFILE,
+    "NYSE American Pillar update 2017-07-21"
+),];
 
 pub(crate) fn nyse_american_profile_at(
     as_of: chrono::DateTime<chrono::Utc>,
@@ -193,31 +196,19 @@ pub(crate) static NYSE_NATIONAL_PROFILE: StaticHoursProfile =
 // https://www.sec.gov/Archives/edgar/vprr/1601/16019238.pdf
 // https://www.sec.gov/files/rules/sro/nsx/2017/34-80018.pdf
 // https://www.nyse.com/publicdocs/nyse/markets/nyse-national/rule-filings/filings/2020/SR-NYSENat-2020-05.pdf
-static NATIONAL_REVISIONS: &[Revision] = &[
-    Revision {
-        effective: effective_date(2010, 8, 2),
-        profile: &NATIONAL_2010_08_02,
-    },
-    Revision {
-        effective: effective_date(2014, 5, 16),
-        profile: &NATIONAL_2015_12_22,
-    },
-    Revision {
-        effective: effective_date(2014, 5, 31),
-        profile: &CLOSED_NEW_YORK,
-    },
-    Revision {
-        effective: effective_date(2015, 12, 22),
-        profile: &NATIONAL_2015_12_22,
-    },
-    Revision {
-        effective: effective_date(2017, 2, 1),
-        profile: &CLOSED_NEW_YORK,
-    },
-    Revision {
-        effective: effective_date(2018, 5, 21),
-        profile: &NYSE_NATIONAL_PROFILE,
-    },
+static NATIONAL_REVISIONS: &[Revision] = revisions![
+    (2010, 8, 2, &NATIONAL_2010_08_02, "SEC 34-62643"),
+    (2014, 5, 16, &NATIONAL_2015_12_22, "SEC 34-72215"),
+    (2014, 5, 31, &CLOSED_NEW_YORK, "SEC 34-72107"),
+    (
+        2015,
+        12,
+        22,
+        &NATIONAL_2015_12_22,
+        "NSX SEC Form 1 relaunch filing"
+    ),
+    (2017, 2, 1, &CLOSED_NEW_YORK, "SEC 34-80018"),
+    (2018, 5, 21, &NYSE_NATIONAL_PROFILE, "SR-NYSENat-2020-05"),
 ];
 
 pub(crate) fn nyse_national_profile_at(
@@ -250,10 +241,13 @@ pub(crate) static NYSE_TEXAS_PROFILE: StaticHoursProfile =
 static NYSE_CHICAGO_PROFILE_PRE_PILLAR: StaticHoursProfile =
     equity_profile(NYSE_CHICAGO_EXTENDED_PRE_PILLAR);
 
-static TEXAS_REVISIONS: &[Revision] = &[Revision {
-    effective: effective_date(2019, 11, 4),
-    profile: &NYSE_TEXAS_PROFILE,
-}];
+static TEXAS_REVISIONS: &[Revision] = revisions![(
+    2019,
+    11,
+    4,
+    &NYSE_TEXAS_PROFILE,
+    "NYSE Chicago migration notice"
+),];
 
 pub(crate) fn nyse_texas_profile_at(
     as_of: chrono::DateTime<chrono::Utc>,

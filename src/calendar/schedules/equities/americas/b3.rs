@@ -173,7 +173,7 @@ pub(crate) static B3_PROFILE_LONG: StaticHoursProfile = StaticHoursProfile {
 };
 
 use crate::calendar::schedules::timeline::{
-    Revision, effective_date, local_date, reference_delta_seconds, select_revision,
+    Revision, effective_date, local_date, reference_delta_seconds, revisions, select_revision,
 };
 
 pub(crate) const CURRENT: &StaticHoursProfile = &B3_PROFILE_SHORT;
@@ -182,35 +182,14 @@ pub(crate) const CURRENT: &StaticHoursProfile = &B3_PROFILE_SHORT;
 // baseline. Circular 127/2015-DP introduced the recurring pair from
 // 2015-12-21 and tied it to the Brazil/New York daylight-time relationship.
 // https://www.b3.com.br/data/files/CF/31/79/3D/611B25107399EA25790D8AA8/127-2015DP.pdf
-static EXPLICIT_REVISIONS: &[Revision] = &[
-    Revision {
-        effective: effective_date(2010, 3, 15),
-        profile: &B3_PROFILE_OLD_SHORT,
-    },
-    Revision {
-        effective: effective_date(2010, 10, 18),
-        profile: &B3_PROFILE_OLD_LONG,
-    },
-    Revision {
-        effective: effective_date(2011, 3, 14),
-        profile: &B3_PROFILE_OLD_SHORT,
-    },
-    Revision {
-        effective: effective_date(2011, 10, 17),
-        profile: &B3_PROFILE_OLD_LONG,
-    },
-    Revision {
-        effective: effective_date(2012, 3, 12),
-        profile: &B3_PROFILE_OLD_SHORT,
-    },
-    Revision {
-        effective: effective_date(2012, 12, 3),
-        profile: &B3_PROFILE_INTERIM,
-    },
-    Revision {
-        effective: effective_date(2013, 7, 8),
-        profile: &B3_PROFILE_SHORT,
-    },
+static EXPLICIT_REVISIONS: &[Revision] = revisions![
+    (2010, 3, 15, &B3_PROFILE_OLD_SHORT, "B3 OC 009/2010-DP"),
+    (2010, 10, 18, &B3_PROFILE_OLD_LONG, "B3 OC 002/2010-DO"),
+    (2011, 3, 14, &B3_PROFILE_OLD_SHORT, "B3 OC 001/2011-DO"),
+    (2011, 10, 17, &B3_PROFILE_OLD_LONG, "B3 OC 009/2011-DO"),
+    (2012, 3, 12, &B3_PROFILE_OLD_SHORT, "B3 OC 009/2012-DP"),
+    (2012, 12, 3, &B3_PROFILE_INTERIM, "B3 OC 066/2012-DP"),
+    (2013, 7, 8, &B3_PROFILE_SHORT, "B3 OC 042/2013-DP"),
 ];
 
 const REFERENCE_GRID: chrono::NaiveDate = effective_date(2015, 12, 21);

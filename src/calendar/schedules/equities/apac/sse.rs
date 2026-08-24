@@ -93,14 +93,17 @@ pub(crate) static SSE_PROFILE_PRE_2018_08_20: StaticHoursProfile = StaticHoursPr
     has_weekend_close: true,
 };
 
-use crate::calendar::schedules::timeline::{Revision, effective_date, local_date, select_revision};
+use crate::calendar::schedules::timeline::{Revision, local_date, revisions, select_revision};
 
 pub(crate) const CURRENT: &StaticHoursProfile = &SSE_PROFILE_CURRENT;
 
-static REVISIONS: &[Revision] = &[Revision {
-    effective: effective_date(2018, 8, 20),
-    profile: &SSE_PROFILE_POST_2018_08_20,
-}];
+static REVISIONS: &[Revision] = revisions![(
+    2018,
+    8,
+    20,
+    &SSE_PROFILE_POST_2018_08_20,
+    "SSE news release 4947833"
+),];
 
 pub(crate) fn profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {
     select_revision(

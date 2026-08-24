@@ -7,7 +7,7 @@ use chrono_tz::Asia;
 use super::super::StaticHoursProfile;
 use crate::calendar::SessionRule;
 use crate::calendar::rule::MON_FRI;
-use crate::calendar::schedules::timeline::{Revision, effective_date, local_date, select_revision};
+use crate::calendar::schedules::timeline::{Revision, local_date, revisions, select_revision};
 
 // The SGX derivatives default is Three-Month SORA Futures, not a venue-wide
 // derivatives clock. SGX's launch announcement gives the day-level 2024-07-29
@@ -76,10 +76,13 @@ static SGX_CURRENT: StaticHoursProfile = StaticHoursProfile {
     has_weekend_close: true,
 };
 
-static SGX_REVISIONS: &[Revision] = &[Revision {
-    effective: effective_date(2024, 7, 29),
-    profile: &SGX_CURRENT,
-}];
+static SGX_REVISIONS: &[Revision] = revisions![(
+    2024,
+    7,
+    29,
+    &SGX_CURRENT,
+    "SGX launch announcement 2024-07-29"
+),];
 
 pub(crate) fn sgx_profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {
     select_revision(

@@ -6,7 +6,7 @@ use chrono_tz::US;
 
 use crate::calendar::rule::{MON_THU, SUN_ONLY, SUN_PLUS_MON_THU};
 use crate::calendar::schedules::StaticHoursProfile;
-use crate::calendar::schedules::timeline::{Revision, effective_date, local_date, select_revision};
+use crate::calendar::schedules::timeline::{Revision, local_date, revisions, select_revision};
 use crate::calendar::{FuturesSessionProfile, SessionRule};
 
 // CME's 2010 guide publishes the 17:00-16:00 matching grid for its standard FX
@@ -84,10 +84,8 @@ static DATED_CURRENT: StaticHoursProfile = StaticHoursProfile {
     has_weekend_close: true,
 };
 
-static REVISIONS: &[Revision] = &[Revision {
-    effective: effective_date(2010, 11, 15),
-    profile: &DATED_CURRENT,
-}];
+static REVISIONS: &[Revision] =
+    revisions![(2010, 11, 15, &DATED_CURRENT, "CME Globex notice 20101025"),];
 
 pub(crate) fn profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {
     select_revision(local_date(as_of, US::Central), &AT_2010_FLOOR, REVISIONS)

@@ -150,35 +150,47 @@ pub(crate) static JSE_PROFILE_PRE_2012_07_02: StaticHoursProfile = StaticHoursPr
     has_weekend_close: true,
 };
 
-use crate::calendar::schedules::timeline::{Revision, effective_date, local_date, select_revision};
+use crate::calendar::schedules::timeline::{Revision, local_date, revisions, select_revision};
 
 pub(crate) const CURRENT: &StaticHoursProfile = &JSE_PROFILE_CURRENT;
 
-static REVISIONS: &[Revision] = &[
-    Revision {
-        effective: effective_date(2012, 7, 2),
-        profile: &JSE_PROFILE_POST_2012_07_02,
-    },
-    Revision {
-        effective: effective_date(2013, 11, 11),
-        profile: &JSE_PROFILE_POST_2013_11_11,
-    },
-    Revision {
-        effective: effective_date(2016, 9, 26),
-        profile: &JSE_PROFILE_POST_2016_09_26,
-    },
-    Revision {
-        effective: effective_date(2020, 8, 24),
-        profile: &JSE_PROFILE_POST_2020_08_24,
-    },
-    Revision {
-        effective: effective_date(2021, 2, 1),
-        profile: &JSE_PROFILE_POST_2021_02_01,
-    },
-    Revision {
-        effective: effective_date(2021, 2, 15),
-        profile: &JSE_PROFILE_CURRENT,
-    },
+static REVISIONS: &[Revision] = revisions![
+    (
+        2012,
+        7,
+        2,
+        &JSE_PROFILE_POST_2012_07_02,
+        "JSE notice 20120525-049C"
+    ),
+    (
+        2013,
+        11,
+        11,
+        &JSE_PROFILE_POST_2013_11_11,
+        "JSE notice 2013_158B"
+    ),
+    (2016, 9, 26, &JSE_PROFILE_POST_2016_09_26, "JSE notice 461A"),
+    (
+        2020,
+        8,
+        24,
+        &JSE_PROFILE_POST_2020_08_24,
+        "JSE Service Hotline 18520"
+    ),
+    (
+        2021,
+        2,
+        1,
+        &JSE_PROFILE_POST_2021_02_01,
+        "JSE Service Hotline 28220"
+    ),
+    (
+        2021,
+        2,
+        15,
+        &JSE_PROFILE_CURRENT,
+        "JSE Service Hotline 03721"
+    ),
 ];
 
 pub(crate) fn profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {

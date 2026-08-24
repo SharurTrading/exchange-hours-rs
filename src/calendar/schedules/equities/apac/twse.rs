@@ -73,14 +73,17 @@ pub(crate) static TWSE_PROFILE_PRE_2020_03_23: StaticHoursProfile = StaticHoursP
     has_weekend_close: true,
 };
 
-use crate::calendar::schedules::timeline::{Revision, effective_date, local_date, select_revision};
+use crate::calendar::schedules::timeline::{Revision, local_date, revisions, select_revision};
 
 pub(crate) const CURRENT: &StaticHoursProfile = &TWSE_PROFILE_CURRENT;
 
-static REVISIONS: &[Revision] = &[Revision {
-    effective: effective_date(2020, 3, 23),
-    profile: &TWSE_PROFILE_CURRENT,
-}];
+static REVISIONS: &[Revision] = revisions![(
+    2020,
+    3,
+    23,
+    &TWSE_PROFILE_CURRENT,
+    "TWSE company history page"
+),];
 
 pub(crate) fn profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {
     select_revision(

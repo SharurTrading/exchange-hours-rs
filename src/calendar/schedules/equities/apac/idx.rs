@@ -176,23 +176,32 @@ pub(crate) static IDX_PROFILE_PANDEMIC: StaticHoursProfile = StaticHoursProfile 
     has_weekend_close: true,
 };
 
-use crate::calendar::schedules::timeline::{Revision, effective_date, local_date, select_revision};
+use crate::calendar::schedules::timeline::{Revision, local_date, revisions, select_revision};
 
 pub(crate) const CURRENT: &StaticHoursProfile = &IDX_PROFILE_CURRENT;
 
-static REVISIONS: &[Revision] = &[
-    Revision {
-        effective: effective_date(2013, 1, 2),
-        profile: &IDX_PROFILE_PRE_PANDEMIC,
-    },
-    Revision {
-        effective: effective_date(2020, 3, 30),
-        profile: &IDX_PROFILE_PANDEMIC,
-    },
-    Revision {
-        effective: effective_date(2023, 4, 3),
-        profile: &IDX_PROFILE_CURRENT,
-    },
+static REVISIONS: &[Revision] = revisions![
+    (
+        2013,
+        1,
+        2,
+        &IDX_PROFILE_PRE_PANDEMIC,
+        "IDX 2013 annual report"
+    ),
+    (
+        2020,
+        3,
+        30,
+        &IDX_PROFILE_PANDEMIC,
+        "OJK Siaran Pers Perubahan Jam Perdagangan"
+    ),
+    (
+        2023,
+        4,
+        3,
+        &IDX_PROFILE_CURRENT,
+        "IDX ikhtisar dan sejarah BEI"
+    ),
 ];
 
 pub(crate) fn profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {

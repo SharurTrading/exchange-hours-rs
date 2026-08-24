@@ -139,35 +139,53 @@ pub(crate) static TADAWUL_PROFILE_PANDEMIC: StaticHoursProfile = StaticHoursProf
     has_weekend_close: true,
 };
 
-use crate::calendar::schedules::timeline::{Revision, effective_date, local_date, select_revision};
+use crate::calendar::schedules::timeline::{Revision, local_date, revisions, select_revision};
 
 pub(crate) const CURRENT: &StaticHoursProfile = &TADAWUL_PROFILE_CURRENT;
 
-static REVISIONS: &[Revision] = &[
-    Revision {
-        effective: effective_date(2013, 6, 29),
-        profile: &TADAWUL_PROFILE_POST_2013_06_29,
-    },
-    Revision {
-        effective: effective_date(2016, 4, 3),
-        profile: &TADAWUL_PROFILE_POST_2016_04_03,
-    },
-    Revision {
-        effective: effective_date(2018, 5, 27),
-        profile: &TADAWUL_PROFILE_POST_2018_05_27,
-    },
-    Revision {
-        effective: effective_date(2019, 5, 12),
-        profile: &TADAWUL_PROFILE_CURRENT,
-    },
-    Revision {
-        effective: effective_date(2020, 3, 26),
-        profile: &TADAWUL_PROFILE_PANDEMIC,
-    },
-    Revision {
-        effective: effective_date(2020, 5, 31),
-        profile: &TADAWUL_PROFILE_CURRENT,
-    },
+static REVISIONS: &[Revision] = revisions![
+    (
+        2013,
+        6,
+        29,
+        &TADAWUL_PROFILE_POST_2013_06_29,
+        "SPA news 7e453de27d"
+    ),
+    (
+        2016,
+        4,
+        3,
+        &TADAWUL_PROFILE_POST_2016_04_03,
+        "SPA news 1484000"
+    ),
+    (
+        2018,
+        5,
+        27,
+        &TADAWUL_PROFILE_POST_2018_05_27,
+        "Tadawul Statistical Report H1 2018"
+    ),
+    (
+        2019,
+        5,
+        12,
+        &TADAWUL_PROFILE_CURRENT,
+        "Tadawul Statistical Report 2019"
+    ),
+    (
+        2020,
+        3,
+        26,
+        &TADAWUL_PROFILE_PANDEMIC,
+        "Saudi Exchange issuer news 6262"
+    ),
+    (
+        2020,
+        5,
+        31,
+        &TADAWUL_PROFILE_CURRENT,
+        "Saudi Exchange resumption notice"
+    ),
 ];
 
 pub(crate) fn profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {

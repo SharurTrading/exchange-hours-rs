@@ -100,19 +100,25 @@ pub(crate) static HKEX_PROFILE_PRE_2011_03_07: StaticHoursProfile = StaticHoursP
     has_weekend_close: true,
 };
 
-use crate::calendar::schedules::timeline::{Revision, effective_date, local_date, select_revision};
+use crate::calendar::schedules::timeline::{Revision, local_date, revisions, select_revision};
 
 pub(crate) const CURRENT: &StaticHoursProfile = &HKEX_PROFILE_CURRENT;
 
-static REVISIONS: &[Revision] = &[
-    Revision {
-        effective: effective_date(2011, 3, 7),
-        profile: &HKEX_PROFILE_POST_2011_03_07,
-    },
-    Revision {
-        effective: effective_date(2016, 7, 25),
-        profile: &HKEX_PROFILE_CURRENT,
-    },
+static REVISIONS: &[Revision] = revisions![
+    (
+        2011,
+        3,
+        7,
+        &HKEX_PROFILE_POST_2011_03_07,
+        "HKEX news release 110303news"
+    ),
+    (
+        2016,
+        7,
+        25,
+        &HKEX_PROFILE_CURRENT,
+        "HKEX market communication 160725news"
+    ),
 ];
 
 pub(crate) fn profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {

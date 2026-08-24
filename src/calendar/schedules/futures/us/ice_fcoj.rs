@@ -8,7 +8,7 @@ use chrono_tz::America;
 use crate::calendar::SessionRule;
 use crate::calendar::rule::{MON_FRI, MON_THU};
 use crate::calendar::schedules::StaticHoursProfile;
-use crate::calendar::schedules::timeline::{Revision, effective_date, local_date, select_revision};
+use crate::calendar::schedules::timeline::{Revision, local_date, revisions, select_revision};
 
 // FCOJ-A runs one same-day executable session. The ICE master hours table
 // carries no footnote marker on the FCOJ-A row - neither the single asterisk
@@ -123,10 +123,8 @@ pub(crate) static FCOJ_BASELINE: StaticHoursProfile = StaticHoursProfile {
 // product-page form ("Pre-Open ... 8:00 PM 20:00"); ICE publishes no notice
 // establishing or moving it, so it is carried in the baseline rather than given
 // a cutover.
-pub(crate) static FCOJ_REVISIONS: &[Revision] = &[Revision {
-    effective: effective_date(2018, 10, 8),
-    profile: &FCOJ_CURRENT,
-}];
+pub(crate) static FCOJ_REVISIONS: &[Revision] =
+    revisions![(2018, 10, 8, &FCOJ_CURRENT, "ICE PCPO notice 20180920"),];
 
 /// Selects the FCOJ-A profile in force on `as_of`'s New York day.
 pub(crate) fn fcoj_profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {

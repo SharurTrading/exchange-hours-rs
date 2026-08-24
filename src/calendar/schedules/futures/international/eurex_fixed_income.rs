@@ -13,7 +13,7 @@ use crate::calendar::SessionRule;
 use crate::calendar::rule::MON_FRI;
 use crate::calendar::schedules::StaticHoursProfile;
 use crate::calendar::schedules::timeline::{
-    Revision, effective_date, local_date, reference_delta_seconds, select_revision,
+    Revision, local_date, reference_delta_seconds, revisions, select_revision,
 };
 
 // Eurex publishes a phase machine, not a single open/close pair: Pre-Trading,
@@ -228,26 +228,38 @@ pub(crate) static EUREX_FIXED_INCOME_BASELINE: StaticHoursProfile = StaticHoursP
 //
 // This is the CEST (summer) timeline; `EUREX_FIXED_INCOME_WINTER_REVISIONS`
 // carries the identical dates against the CET grid.
-pub(crate) static EUREX_FIXED_INCOME_REVISIONS: &[Revision] = &[
-    Revision {
-        effective: effective_date(2018, 12, 10),
-        profile: &EUREX_FIXED_INCOME_2018_SUMMER,
-    },
-    Revision {
-        effective: effective_date(2019, 2, 25),
-        profile: &EUREX_FIXED_INCOME_CURRENT,
-    },
+pub(crate) static EUREX_FIXED_INCOME_REVISIONS: &[Revision] = revisions![
+    (
+        2018,
+        12,
+        10,
+        &EUREX_FIXED_INCOME_2018_SUMMER,
+        "Eurex Circular 088/18"
+    ),
+    (
+        2019,
+        2,
+        25,
+        &EUREX_FIXED_INCOME_CURRENT,
+        "Eurex CS amendment 2019-02-25"
+    ),
 ];
 
-static EUREX_FIXED_INCOME_WINTER_REVISIONS: &[Revision] = &[
-    Revision {
-        effective: effective_date(2018, 12, 10),
-        profile: &EUREX_FIXED_INCOME_2018_WINTER,
-    },
-    Revision {
-        effective: effective_date(2019, 2, 25),
-        profile: &EUREX_FIXED_INCOME_WINTER,
-    },
+static EUREX_FIXED_INCOME_WINTER_REVISIONS: &[Revision] = revisions![
+    (
+        2018,
+        12,
+        10,
+        &EUREX_FIXED_INCOME_2018_WINTER,
+        "Eurex Circular 088/18"
+    ),
+    (
+        2019,
+        2,
+        25,
+        &EUREX_FIXED_INCOME_WINTER,
+        "Eurex CS amendment 2019-02-25"
+    ),
 ];
 
 /// The `reference - venue` delta that marks a CEST (summer) Berlin day: UTC

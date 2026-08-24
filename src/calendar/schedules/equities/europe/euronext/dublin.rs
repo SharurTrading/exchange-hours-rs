@@ -7,7 +7,7 @@ use chrono_tz::Europe;
 use super::super::super::StaticHoursProfile;
 use crate::calendar::SessionRule;
 use crate::calendar::rule::MON_FRI;
-use crate::calendar::schedules::timeline::{Revision, effective_date, local_date, select_revision};
+use crate::calendar::schedules::timeline::{Revision, local_date, revisions, select_revision};
 
 // ISE's own archived trading-hours page establishes the complete legacy grid
 // before the January-2010 audit floor: pre-trading 06:30-07:50, opening auction
@@ -181,15 +181,21 @@ pub(crate) static EURONEXT_DUB_PROFILE: StaticHoursProfile = StaticHoursProfile 
     has_weekend_close: true,
 };
 
-static REVISIONS: &[Revision] = &[
-    Revision {
-        effective: effective_date(2019, 2, 4),
-        profile: &OPTIQ_PROFILE,
-    },
-    Revision {
-        effective: effective_date(2023, 3, 20),
-        profile: &EURONEXT_DUB_PROFILE,
-    },
+static REVISIONS: &[Revision] = revisions![
+    (
+        2019,
+        2,
+        4,
+        &OPTIQ_PROFILE,
+        "Euronext Dublin Optiq migration press release"
+    ),
+    (
+        2023,
+        3,
+        20,
+        &EURONEXT_DUB_PROFILE,
+        "Euronext Go-Live Weekend Guidelines"
+    ),
 ];
 
 pub(crate) fn profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {

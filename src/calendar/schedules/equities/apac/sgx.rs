@@ -199,23 +199,32 @@ pub(crate) static SGX_SEC_PROFILE_PRE_2011_08_01: StaticHoursProfile = StaticHou
     has_weekend_close: true,
 };
 
-use crate::calendar::schedules::timeline::{Revision, effective_date, local_date, select_revision};
+use crate::calendar::schedules::timeline::{Revision, local_date, revisions, select_revision};
 
 pub(crate) const CURRENT: &StaticHoursProfile = &SGX_SEC_PROFILE_CURRENT;
 
-static REVISIONS: &[Revision] = &[
-    Revision {
-        effective: effective_date(2011, 8, 1),
-        profile: &SGX_SEC_PROFILE_POST_2011_08_01,
-    },
-    Revision {
-        effective: effective_date(2017, 11, 13),
-        profile: &SGX_SEC_PROFILE_POST_2017_11_13,
-    },
-    Revision {
-        effective: effective_date(2019, 6, 3),
-        profile: &SGX_SEC_PROFILE_CURRENT,
-    },
+static REVISIONS: &[Revision] = revisions![
+    (
+        2011,
+        8,
+        1,
+        &SGX_SEC_PROFILE_POST_2011_08_01,
+        "SGX-ST Rules 2011-08-01"
+    ),
+    (
+        2017,
+        11,
+        13,
+        &SGX_SEC_PROFILE_POST_2017_11_13,
+        "SGX announcement 2017-07-18"
+    ),
+    (
+        2019,
+        6,
+        3,
+        &SGX_SEC_PROFILE_CURRENT,
+        "SGX announcement 2019-05-14"
+    ),
 ];
 
 pub(crate) fn profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {

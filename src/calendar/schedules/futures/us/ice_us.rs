@@ -6,7 +6,7 @@ use chrono_tz::America;
 
 use crate::calendar::SessionRule;
 use crate::calendar::rule::{MON_THU, SUN_ONLY, TUE_ONLY};
-use crate::calendar::schedules::timeline::{Revision, effective_date, local_date, select_revision};
+use crate::calendar::schedules::timeline::{Revision, local_date, revisions, select_revision};
 use crate::calendar::schedules::{CLOSED_NEW_YORK, StaticHoursProfile};
 
 // The `iceus` default is the NYSE FANG+ Index futures family, not a venue-wide
@@ -88,15 +88,21 @@ static ICE_US_FANG_LAUNCH_EVE: StaticHoursProfile = StaticHoursProfile {
     has_weekend_close: true,
 };
 
-static ICE_US_FANG_REVISIONS: &[Revision] = &[
-    Revision {
-        effective: effective_date(2017, 11, 7),
-        profile: &ICE_US_FANG_LAUNCH_EVE,
-    },
-    Revision {
-        effective: effective_date(2017, 11, 8),
-        profile: &ICE_US_FANG_CURRENT,
-    },
+static ICE_US_FANG_REVISIONS: &[Revision] = revisions![
+    (
+        2017,
+        11,
+        7,
+        &ICE_US_FANG_LAUNCH_EVE,
+        "ICE FANG+ launch notice 20170926"
+    ),
+    (
+        2017,
+        11,
+        8,
+        &ICE_US_FANG_CURRENT,
+        "ICE FANG+ launch notice 20170926"
+    ),
 ];
 
 pub(crate) fn ice_us_fang_profile_at(

@@ -7,7 +7,7 @@ use chrono_tz::US;
 use crate::calendar::SessionRule;
 use crate::calendar::rule::{MON_FRI, SUN_PLUS_MON_THU};
 use crate::calendar::schedules::StaticHoursProfile;
-use crate::calendar::schedules::timeline::{Revision, effective_date, local_date, select_revision};
+use crate::calendar::schedules::timeline::{Revision, local_date, revisions, select_revision};
 
 const MON_THU: [bool; 7] = [true, true, true, true, false, false, false];
 const SUNDAY: [bool; 7] = [false, false, false, false, false, false, true];
@@ -279,41 +279,29 @@ static CFE_PROFILE_2018_08_12: StaticHoursProfile = profile(
     CFE_ORDER_ENTRY_2018_08_12,
 );
 
-static CFE_REVISIONS: &[Revision] = &[
-    Revision {
-        effective: effective_date(2010, 12, 10),
-        profile: &CFE_PROFILE_2010_12_10,
-    },
-    Revision {
-        effective: effective_date(2011, 9, 26),
-        profile: &CFE_PROFILE_PRE_2013_10_28,
-    },
-    Revision {
-        effective: effective_date(2013, 10, 28),
-        profile: &CFE_PROFILE_2013_10_28,
-    },
-    Revision {
-        effective: effective_date(2013, 11, 4),
-        profile: &CFE_PROFILE_2013_11_04,
-    },
-    Revision {
-        effective: effective_date(2014, 6, 22),
-        profile: &CFE_PROFILE_2014_06_22,
-    },
-    Revision {
-        // Sunday implementation; the revised weekday hours first occur on
-        // CFE's Monday 2018-02-26 business date.
-        effective: effective_date(2018, 2, 25),
-        profile: &CFE_PROFILE_2018_02_25,
-    },
-    Revision {
-        effective: effective_date(2018, 8, 12),
-        profile: &CFE_PROFILE_2018_08_12,
-    },
-    Revision {
-        effective: effective_date(2021, 12, 6),
-        profile: &CFE_PROFILE,
-    },
+static CFE_REVISIONS: &[Revision] = revisions![
+    (
+        2010,
+        12,
+        10,
+        &CFE_PROFILE_2010_12_10,
+        "Cboe SR-CFE-2010-013"
+    ),
+    (
+        2011,
+        9,
+        26,
+        &CFE_PROFILE_PRE_2013_10_28,
+        "Cboe SR-CFE-2011-019"
+    ),
+    (2013, 10, 28, &CFE_PROFILE_2013_10_28, "Cboe IC13-041"),
+    (2013, 11, 4, &CFE_PROFILE_2013_11_04, "Cboe IC13-041"),
+    (2014, 6, 22, &CFE_PROFILE_2014_06_22, "Cboe RG-CFE-2014-020"),
+    // Sunday implementation; the revised weekday hours first occur on
+    // CFE's Monday 2018-02-26 business date.
+    (2018, 2, 25, &CFE_PROFILE_2018_02_25, "Cboe RG-CFE-2018-005"),
+    (2018, 8, 12, &CFE_PROFILE_2018_08_12, "Cboe C2018071603"),
+    (2021, 12, 6, &CFE_PROFILE, "Cboe C2021102603"),
 ];
 
 pub(crate) fn cfe_profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {

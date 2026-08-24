@@ -7,7 +7,7 @@ use chrono_tz::Europe;
 use super::super::StaticHoursProfile;
 use crate::calendar::SessionRule;
 use crate::calendar::rule::MON_FRI;
-use crate::calendar::schedules::timeline::{Revision, effective_date, local_date, select_revision};
+use crate::calendar::schedules::timeline::{Revision, local_date, revisions, select_revision};
 
 // The 2009 compliance parameters and the September 2010 Millennium Exchange
 // rehearsal timetable establish the Jan-2010 SETS baseline: pre-trading at
@@ -129,15 +129,9 @@ pub(crate) static LSE_PROFILE: StaticHoursProfile = StaticHoursProfile {
     has_weekend_close: true,
 };
 
-static REVISIONS: &[Revision] = &[
-    Revision {
-        effective: effective_date(2012, 4, 30),
-        profile: &CPX_PROFILE,
-    },
-    Revision {
-        effective: effective_date(2016, 3, 21),
-        profile: &LSE_PROFILE,
-    },
+static REVISIONS: &[Revision] = revisions![
+    (2012, 4, 30, &CPX_PROFILE, "LSE MIT201 document history"),
+    (2016, 3, 21, &LSE_PROFILE, "LSE notice N01/16"),
 ];
 
 pub(crate) fn profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {

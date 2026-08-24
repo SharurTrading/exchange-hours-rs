@@ -7,7 +7,7 @@ use chrono_tz::US;
 use crate::calendar::SessionRule;
 use crate::calendar::rule::{MON_FRI, MON_THU, SUN_ONLY, SUN_PLUS_MON_THU};
 use crate::calendar::schedules::StaticHoursProfile;
-use crate::calendar::schedules::timeline::{Revision, effective_date, local_date, select_revision};
+use crate::calendar::schedules::timeline::{Revision, local_date, revisions, select_revision};
 
 // This profile is deliberately limited to standard-size CBOT grain and oilseed
 // futures. Mini-sized Corn, Soybean, and Wheat diverged on 2012-09-16 and are
@@ -221,31 +221,31 @@ static DATED_CURRENT: StaticHoursProfile = profile(
     ORDER_ENTRY_0800_0830,
 );
 
-static REVISIONS: &[Revision] = &[
-    Revision {
-        effective: effective_date(2010, 4, 19),
-        profile: &FROM_2010_04_19,
-    },
-    Revision {
-        effective: effective_date(2011, 12, 27),
-        profile: &FROM_2011_12_27,
-    },
-    Revision {
-        effective: effective_date(2012, 5, 20),
-        profile: &FROM_2012_05_20,
-    },
-    Revision {
-        effective: effective_date(2013, 4, 7),
-        profile: &FROM_2013_04_07,
-    },
-    Revision {
-        effective: effective_date(2013, 8, 18),
-        profile: &FROM_2013_08_18,
-    },
-    Revision {
-        effective: effective_date(2015, 7, 5),
-        profile: &DATED_CURRENT,
-    },
+static REVISIONS: &[Revision] = revisions![
+    (2010, 4, 19, &FROM_2010_04_19, "CME Globex notice 20100405"),
+    (
+        2011,
+        12,
+        27,
+        &FROM_2011_12_27,
+        "CFTC filing rul120711cbot001"
+    ),
+    (
+        2012,
+        5,
+        20,
+        &FROM_2012_05_20,
+        "CME market-data advisory 20120518"
+    ),
+    (2013, 4, 7, &FROM_2013_04_07, "CME SER-6617"),
+    (
+        2013,
+        8,
+        18,
+        &FROM_2013_08_18,
+        "CME market-data advisory 20130812"
+    ),
+    (2015, 7, 5, &DATED_CURRENT, "CME SER-7395R"),
 ];
 
 pub(crate) fn profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {

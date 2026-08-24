@@ -8,7 +8,7 @@ use chrono_tz::America;
 use crate::calendar::SessionRule;
 use crate::calendar::rule::{MON_THU, SUN_ONLY};
 use crate::calendar::schedules::StaticHoursProfile;
-use crate::calendar::schedules::timeline::{Revision, effective_date, local_date, select_revision};
+use crate::calendar::schedules::timeline::{Revision, local_date, revisions, select_revision};
 
 // USDX is a near-24-hour contract whose session commences on the evening before
 // its trade date, with a Sunday evening that opens two hours earlier than the
@@ -153,10 +153,8 @@ pub(crate) static ICE_USDX_BASELINE: StaticHoursProfile = StaticHoursProfile {
 //   from ice.com; per the crate's established practice for superseded operator
 //   documents, the archive capture is cited as-is.
 //   https://web.archive.org/web/20110222135802/https://www.theice.com/publicdocs/futures_us/exchange_notices/ExNot020311DXhours.pdf
-pub(crate) static ICE_USDX_REVISIONS: &[Revision] = &[Revision {
-    effective: effective_date(2011, 2, 14),
-    profile: &ICE_USDX_CURRENT,
-}];
+pub(crate) static ICE_USDX_REVISIONS: &[Revision] =
+    revisions![(2011, 2, 14, &ICE_USDX_CURRENT, "ICE ExNot 020311 DX hours"),];
 
 /// Selects the USDX profile in force on `as_of`'s New York day.
 pub(crate) fn ice_usdx_profile_at(

@@ -136,15 +136,18 @@ static SIX_PROFILE_PRE_2020_06_22: StaticHoursProfile = StaticHoursProfile {
     has_weekend_close: true,
 };
 
-use crate::calendar::schedules::timeline::{Revision, effective_date, local_date, select_revision};
+use crate::calendar::schedules::timeline::{Revision, local_date, revisions, select_revision};
 
 // Trading-At-Last launched with SMR8.2 on 2020-06-22. The readiness document
 // gives both the production date and the added 17:30-17:40 phase.
 // https://www.six-group.com/dam/download/the-swiss-stock-exchange/trading/participation/SWXess-maintenance-releases/smr82_participant_readiness.pdf
-static REVISIONS: &[Revision] = &[Revision {
-    effective: effective_date(2020, 6, 22),
-    profile: &SIX_PROFILE,
-}];
+static REVISIONS: &[Revision] = revisions![(
+    2020,
+    6,
+    22,
+    &SIX_PROFILE,
+    "SIX SMR8.2 participant readiness"
+),];
 
 pub(crate) fn profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {
     select_revision(

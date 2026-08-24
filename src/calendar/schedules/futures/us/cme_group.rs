@@ -10,7 +10,7 @@ use chrono_tz::US;
 use crate::calendar::SessionRule;
 use crate::calendar::rule::{MON_FRI, MON_THU, SUN_ONLY, SUN_PLUS_MON_THU};
 use crate::calendar::schedules::StaticHoursProfile;
-use crate::calendar::schedules::timeline::{Revision, effective_date, local_date, select_revision};
+use crate::calendar::schedules::timeline::{Revision, local_date, revisions, select_revision};
 
 // U.S.-grid CME and CBOT equity-index futures, including CBOT YM/MYM but not
 // CME Nikkei 225 Dollar (NKD), whose historical grid differs. CME's
@@ -194,23 +194,35 @@ static CME_PROFILE_DATED_CURRENT: StaticHoursProfile = StaticHoursProfile {
     has_weekend_close: true,
 };
 
-static CME_REVISIONS: &[Revision] = &[
-    Revision {
-        effective: effective_date(2010, 11, 15),
-        profile: &CME_PROFILE_PRE_2012_11_18,
-    },
-    Revision {
-        effective: effective_date(2012, 11, 18),
-        profile: &CME_PROFILE_2012_11_18,
-    },
-    Revision {
-        effective: effective_date(2015, 9, 20),
-        profile: &CME_PROFILE_2015_09_20,
-    },
-    Revision {
-        effective: effective_date(2021, 6, 27),
-        profile: &CME_PROFILE_DATED_CURRENT,
-    },
+static CME_REVISIONS: &[Revision] = revisions![
+    (
+        2010,
+        11,
+        15,
+        &CME_PROFILE_PRE_2012_11_18,
+        "CME Globex notice 20101025"
+    ),
+    (
+        2012,
+        11,
+        18,
+        &CME_PROFILE_2012_11_18,
+        "CME Globex notice 20121022"
+    ),
+    (
+        2015,
+        9,
+        20,
+        &CME_PROFILE_2015_09_20,
+        "CME Globex notice 20150817"
+    ),
+    (
+        2021,
+        6,
+        27,
+        &CME_PROFILE_DATED_CURRENT,
+        "CME Globex notice 20210621"
+    ),
 ];
 
 pub(crate) fn cme_profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {

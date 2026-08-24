@@ -9,7 +9,7 @@ use super::StaticHoursProfile;
 use crate::calendar::SessionRule;
 use crate::calendar::rule::MON_FRI;
 use crate::calendar::schedules::CLOSED_NEW_YORK;
-use crate::calendar::schedules::timeline::{Revision, effective_date, local_date, select_revision};
+use crate::calendar::schedules::timeline::{Revision, local_date, revisions, select_revision};
 
 // Every profile in this module is deliberately scoped to ordinary options on
 // individual US stocks. Generic pre-open order acceptance is part of the
@@ -168,50 +168,83 @@ static LISTED_EQUITY_OPTIONS_HISTORICAL: StaticHoursProfile = listed_equity_opti
 // https://www.miaxglobal.com/sites/default/files/alert-files/MIAX_Press_Release_09102024.pdf
 // MEMX launched 2023-09-27 with stock classes SBUX and IMGN (plus GLD):
 // https://info.memxtrading.com/trader-alert-23-42-memx-options-exchange-schedule-update/
-static BZX_REVISIONS: &[Revision] = &[Revision {
-    effective: effective_date(2010, 2, 26),
-    profile: &LISTED_EQUITY_OPTIONS_HISTORICAL,
-}];
-static C2_REVISIONS: &[Revision] = &[Revision {
-    effective: effective_date(2010, 10, 29),
-    profile: &LISTED_EQUITY_OPTIONS_HISTORICAL,
-}];
-static EDGX_REVISIONS: &[Revision] = &[Revision {
-    effective: effective_date(2015, 11, 2),
-    profile: &LISTED_EQUITY_OPTIONS_HISTORICAL,
-}];
-static BX_REVISIONS: &[Revision] = &[Revision {
-    effective: effective_date(2012, 6, 29),
-    profile: &LISTED_EQUITY_OPTIONS_HISTORICAL,
-}];
-static GEMX_REVISIONS: &[Revision] = &[Revision {
-    effective: effective_date(2013, 8, 5),
-    profile: &LISTED_EQUITY_OPTIONS_HISTORICAL,
-}];
-static MRX_REVISIONS: &[Revision] = &[Revision {
-    effective: effective_date(2016, 2, 16),
-    profile: &LISTED_EQUITY_OPTIONS_HISTORICAL,
-}];
-static MIAX_REVISIONS: &[Revision] = &[Revision {
-    effective: effective_date(2012, 12, 7),
-    profile: &LISTED_EQUITY_OPTIONS_HISTORICAL,
-}];
-static MIAX_PEARL_REVISIONS: &[Revision] = &[Revision {
-    effective: effective_date(2017, 2, 6),
-    profile: &LISTED_EQUITY_OPTIONS_HISTORICAL,
-}];
-static MIAX_EMERALD_REVISIONS: &[Revision] = &[Revision {
-    effective: effective_date(2019, 3, 1),
-    profile: &LISTED_EQUITY_OPTIONS_HISTORICAL,
-}];
-static MIAX_SAPPHIRE_REVISIONS: &[Revision] = &[Revision {
-    effective: effective_date(2024, 8, 12),
-    profile: &LISTED_EQUITY_OPTIONS_HISTORICAL,
-}];
-static MEMX_REVISIONS: &[Revision] = &[Revision {
-    effective: effective_date(2023, 9, 27),
-    profile: &MEMX_OPTIONS_PROFILE,
-}];
+static BZX_REVISIONS: &[Revision] = revisions![(
+    2010,
+    2,
+    26,
+    &LISTED_EQUITY_OPTIONS_HISTORICAL,
+    "BATS Options launch press release"
+),];
+static C2_REVISIONS: &[Revision] = revisions![(
+    2010,
+    10,
+    29,
+    &LISTED_EQUITY_OPTIONS_HISTORICAL,
+    "Cboe circular IC-CBOE-2010-168"
+),];
+static EDGX_REVISIONS: &[Revision] = revisions![(
+    2015,
+    11,
+    2,
+    &LISTED_EQUITY_OPTIONS_HISTORICAL,
+    "Bats EDGX options update 2015-11-10"
+),];
+static BX_REVISIONS: &[Revision] = revisions![(
+    2012,
+    6,
+    29,
+    &LISTED_EQUITY_OPTIONS_HISTORICAL,
+    "Nasdaq OTA 2012-41"
+),];
+static GEMX_REVISIONS: &[Revision] = revisions![(
+    2013,
+    8,
+    5,
+    &LISTED_EQUITY_OPTIONS_HISTORICAL,
+    "SEC filing 16019242"
+),];
+static MRX_REVISIONS: &[Revision] = revisions![(
+    2016,
+    2,
+    16,
+    &LISTED_EQUITY_OPTIONS_HISTORICAL,
+    "SEC 34-77256"
+),];
+static MIAX_REVISIONS: &[Revision] = revisions![(
+    2012,
+    12,
+    7,
+    &LISTED_EQUITY_OPTIONS_HISTORICAL,
+    "MIAX launch alert 2012-12-06"
+),];
+static MIAX_PEARL_REVISIONS: &[Revision] = revisions![(
+    2017,
+    2,
+    6,
+    &LISTED_EQUITY_OPTIONS_HISTORICAL,
+    "MIAX Pearl launch alert 2017-02-01"
+),];
+static MIAX_EMERALD_REVISIONS: &[Revision] = revisions![(
+    2019,
+    3,
+    1,
+    &LISTED_EQUITY_OPTIONS_HISTORICAL,
+    "MIAX Emerald launch announcement"
+),];
+static MIAX_SAPPHIRE_REVISIONS: &[Revision] = revisions![(
+    2024,
+    8,
+    12,
+    &LISTED_EQUITY_OPTIONS_HISTORICAL,
+    "MIAX press release 2024-09-10"
+),];
+static MEMX_REVISIONS: &[Revision] = revisions![(
+    2023,
+    9,
+    27,
+    &MEMX_OPTIONS_PROFILE,
+    "MEMX trader alert 23-42"
+),];
 
 pub(crate) fn c1_profile_at(_as_of: DateTime<Utc>) -> &'static StaticHoursProfile {
     &LISTED_EQUITY_OPTIONS_HISTORICAL

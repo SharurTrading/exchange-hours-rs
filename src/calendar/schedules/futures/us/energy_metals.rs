@@ -7,7 +7,7 @@ use chrono_tz::US;
 use crate::calendar::SessionRule;
 use crate::calendar::rule::{MON_THU, SUN_ONLY, SUN_PLUS_MON_THU};
 use crate::calendar::schedules::StaticHoursProfile;
-use crate::calendar::schedules::timeline::{Revision, effective_date, local_date, select_revision};
+use crate::calendar::schedules::timeline::{Revision, local_date, revisions, select_revision};
 
 // This family covers the shared grid used by NYMEX CL/MCL/QM, NG/MNG/QG,
 // HO/RB/BZ, and PL/PA plus COMEX GC/MGC, SI/SIL, and HG/MHG. Platinum and
@@ -84,10 +84,13 @@ static ENERGY_METALS_DATED_CURRENT: StaticHoursProfile = StaticHoursProfile {
     has_weekend_close: true,
 };
 
-static ENERGY_METALS_REVISIONS: &[Revision] = &[Revision {
-    effective: effective_date(2015, 9, 20),
-    profile: &ENERGY_METALS_DATED_CURRENT,
-}];
+static ENERGY_METALS_REVISIONS: &[Revision] = revisions![(
+    2015,
+    9,
+    20,
+    &ENERGY_METALS_DATED_CURRENT,
+    "CME Globex notice 20150907"
+),];
 
 pub(crate) fn energy_metals_profile_at(
     as_of: chrono::DateTime<chrono::Utc>,

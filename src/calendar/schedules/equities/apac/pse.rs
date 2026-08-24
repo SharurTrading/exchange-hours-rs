@@ -207,51 +207,57 @@ pub(crate) static PSE_PROFILE_CLOSED: StaticHoursProfile = StaticHoursProfile {
     has_weekend_close: true,
 };
 
-use crate::calendar::schedules::timeline::{Revision, effective_date, local_date, select_revision};
+use crate::calendar::schedules::timeline::{Revision, local_date, revisions, select_revision};
 
 pub(crate) const CURRENT: &StaticHoursProfile = &PSE_PROFILE_CURRENT;
 
-static REVISIONS: &[Revision] = &[
-    Revision {
-        effective: effective_date(2011, 10, 1),
-        profile: &PSE_PROFILE_PHASE_ONE,
-    },
-    Revision {
-        effective: effective_date(2012, 1, 2),
-        profile: &PSE_PROFILE_2012,
-    },
-    Revision {
-        effective: effective_date(2013, 11, 4),
-        profile: &PSE_PROFILE_2013,
-    },
-    Revision {
-        effective: effective_date(2020, 3, 16),
-        profile: &PSE_PROFILE_SHORT,
-    },
-    Revision {
-        effective: effective_date(2020, 3, 17),
-        profile: &PSE_PROFILE_CLOSED,
-    },
-    Revision {
-        effective: effective_date(2020, 3, 19),
-        profile: &PSE_PROFILE_SHORT,
-    },
-    Revision {
-        effective: effective_date(2021, 12, 6),
-        profile: &PSE_PROFILE_FULL_DAY,
-    },
-    Revision {
-        effective: effective_date(2022, 1, 14),
-        profile: &PSE_PROFILE_SHORT,
-    },
-    Revision {
-        effective: effective_date(2022, 2, 2),
-        profile: &PSE_PROFILE_FULL_DAY,
-    },
-    Revision {
-        effective: effective_date(2024, 3, 1),
-        profile: &PSE_PROFILE_CURRENT,
-    },
+static REVISIONS: &[Revision] = revisions![
+    (
+        2011,
+        10,
+        1,
+        &PSE_PROFILE_PHASE_ONE,
+        "PSE circular CN-2011-0013"
+    ),
+    (
+        2012,
+        1,
+        2,
+        &PSE_PROFILE_2012,
+        "PSE announcement New Trading Hours"
+    ),
+    (2013, 11, 4, &PSE_PROFILE_2013, "PSE advisory TPA 2013-0185"),
+    (2020, 3, 16, &PSE_PROFILE_SHORT, "PSE circular CN-2020-0017"),
+    (
+        2020,
+        3,
+        17,
+        &PSE_PROFILE_CLOSED,
+        "PSE circular CN-2020-0021"
+    ),
+    (2020, 3, 19, &PSE_PROFILE_SHORT, "PSE circular CN-2020-0025"),
+    (
+        2021,
+        12,
+        6,
+        &PSE_PROFILE_FULL_DAY,
+        "PSE circular CN-2021-0059"
+    ),
+    (2022, 1, 14, &PSE_PROFILE_SHORT, "PSE circular CN-2022-0004"),
+    (
+        2022,
+        2,
+        2,
+        &PSE_PROFILE_FULL_DAY,
+        "PSE circular CN-2022-0007"
+    ),
+    (
+        2024,
+        3,
+        1,
+        &PSE_PROFILE_CURRENT,
+        "PSE circular CN-2024-0012"
+    ),
 ];
 
 pub(crate) fn profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {

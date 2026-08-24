@@ -10,7 +10,7 @@ use chrono_tz::{Europe, Tz};
 use super::super::StaticHoursProfile;
 use crate::calendar::SessionRule;
 use crate::calendar::rule::MON_FRI;
-use crate::calendar::schedules::timeline::{Revision, effective_date, local_date, select_revision};
+use crate::calendar::schedules::timeline::{Revision, local_date, revisions, select_revision};
 
 // Nasdaq's Jan-2010 INET notices made the migration effective 2010-02-08 and
 // explicitly state that it did not materially change Nordic trading hours.
@@ -217,50 +217,57 @@ pub(crate) static NASDAQ_CPH_PROFILE: StaticHoursProfile = StaticHoursProfile {
     has_weekend_close: true,
 };
 
+static STO_REVISIONS: &[Revision] = revisions![(
+    2015,
+    11,
+    16,
+    &NASDAQ_STO_PROFILE,
+    "Nasdaq INET notice 61/15"
+),];
+static HEL_REVISIONS: &[Revision] = revisions![(
+    2015,
+    11,
+    16,
+    &NASDAQ_HEL_PROFILE,
+    "Nasdaq INET notice 61/15"
+),];
+
 fn randomized_open_profile(
     as_of: chrono::DateTime<chrono::Utc>,
     tz: Tz,
     baseline: &'static StaticHoursProfile,
-    current: &'static StaticHoursProfile,
+    revisions: &[Revision],
 ) -> &'static StaticHoursProfile {
-    let revisions = [Revision {
-        effective: effective_date(2015, 11, 16),
-        profile: current,
-    }];
-    select_revision(local_date(as_of, tz), baseline, &revisions)
+    select_revision(local_date(as_of, tz), baseline, revisions)
 }
 
 pub(crate) fn stockholm_profile_at(
     as_of: chrono::DateTime<chrono::Utc>,
 ) -> &'static StaticHoursProfile {
-    randomized_open_profile(
-        as_of,
-        Europe::Stockholm,
-        &STO_BASE_PROFILE,
-        &NASDAQ_STO_PROFILE,
-    )
+    randomized_open_profile(as_of, Europe::Stockholm, &STO_BASE_PROFILE, STO_REVISIONS)
 }
 
 pub(crate) fn helsinki_profile_at(
     as_of: chrono::DateTime<chrono::Utc>,
 ) -> &'static StaticHoursProfile {
-    randomized_open_profile(
-        as_of,
-        Europe::Helsinki,
-        &HEL_BASE_PROFILE,
-        &NASDAQ_HEL_PROFILE,
-    )
+    randomized_open_profile(as_of, Europe::Helsinki, &HEL_BASE_PROFILE, HEL_REVISIONS)
 }
 
-static CPH_REVISIONS: &[Revision] = &[
-    Revision {
-        effective: effective_date(2015, 11, 16),
-        profile: &CPH_RANDOM_PROFILE,
-    },
-    Revision {
-        effective: effective_date(2019, 5, 1),
-        profile: &NASDAQ_CPH_PROFILE,
-    },
+static CPH_REVISIONS: &[Revision] = revisions![
+    (
+        2015,
+        11,
+        16,
+        &CPH_RANDOM_PROFILE,
+        "Nasdaq INET notice 61/15"
+    ),
+    (
+        2019,
+        5,
+        1,
+        &NASDAQ_CPH_PROFILE,
+        "Nasdaq Copenhagen Trading@Closing Price announcement"
+    ),
 ];
 
 pub(crate) fn copenhagen_profile_at(

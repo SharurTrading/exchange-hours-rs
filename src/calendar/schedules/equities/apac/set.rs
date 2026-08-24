@@ -187,23 +187,32 @@ pub(crate) static SET_PROFILE_PRE_2024_03_25: StaticHoursProfile = StaticHoursPr
     has_weekend_close: true,
 };
 
-use crate::calendar::schedules::timeline::{Revision, effective_date, local_date, select_revision};
+use crate::calendar::schedules::timeline::{Revision, local_date, revisions, select_revision};
 
 pub(crate) const CURRENT: &StaticHoursProfile = &SET_PROFILE_CURRENT;
 
-static REVISIONS: &[Revision] = &[
-    Revision {
-        effective: effective_date(2024, 3, 25),
-        profile: &SET_PROFILE_POST_2024_03_25,
-    },
-    Revision {
-        effective: effective_date(2025, 5, 6),
-        profile: &SET_PROFILE_2025_05_06,
-    },
-    Revision {
-        effective: effective_date(2025, 5, 7),
-        profile: &SET_PROFILE_CURRENT,
-    },
+static REVISIONS: &[Revision] = revisions![
+    (
+        2024,
+        3,
+        25,
+        &SET_PROFILE_POST_2024_03_25,
+        "SET notification 86864800"
+    ),
+    (
+        2025,
+        5,
+        6,
+        &SET_PROFILE_2025_05_06,
+        "SET notification 95921400"
+    ),
+    (
+        2025,
+        5,
+        7,
+        &SET_PROFILE_CURRENT,
+        "SET notification 95921400"
+    ),
 ];
 
 pub(crate) fn profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {

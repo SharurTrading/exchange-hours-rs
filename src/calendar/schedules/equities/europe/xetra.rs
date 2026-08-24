@@ -7,7 +7,7 @@ use chrono_tz::Europe;
 use super::super::StaticHoursProfile;
 use crate::calendar::SessionRule;
 use crate::calendar::rule::MON_FRI;
-use crate::calendar::schedules::timeline::{Revision, effective_date, local_date, select_revision};
+use crate::calendar::schedules::timeline::{Revision, local_date, revisions, select_revision};
 
 // Deutsche Börse circulars 207/08 and 091/18 bracket the Jan-2010 baseline and
 // confirm that the DAX grid remained: pre-trading from 07:30, opening auction
@@ -184,15 +184,21 @@ pub(crate) static XETRA_PROFILE: StaticHoursProfile = StaticHoursProfile {
     has_weekend_close: true,
 };
 
-static REVISIONS: &[Revision] = &[
-    Revision {
-        effective: effective_date(2020, 11, 24),
-        profile: &TAC_PROFILE,
-    },
-    Revision {
-        effective: effective_date(2025, 12, 1),
-        profile: &XETRA_PROFILE,
-    },
+static REVISIONS: &[Revision] = revisions![
+    (
+        2020,
+        11,
+        24,
+        &TAC_PROFILE,
+        "Deutsche Börse Trade-at-Close press release"
+    ),
+    (
+        2025,
+        12,
+        1,
+        &XETRA_PROFILE,
+        "Deutsche Börse Extended Xetra Retail circular"
+    ),
 ];
 
 pub(crate) fn profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {

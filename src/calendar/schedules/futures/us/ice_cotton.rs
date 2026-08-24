@@ -7,7 +7,7 @@ use chrono_tz::America;
 use crate::calendar::SessionRule;
 use crate::calendar::rule::{MON_FRI, SUN_PLUS_MON_THU};
 use crate::calendar::schedules::StaticHoursProfile;
-use crate::calendar::schedules::timeline::{Revision, effective_date, local_date, select_revision};
+use crate::calendar::schedules::timeline::{Revision, local_date, revisions, select_revision};
 
 // Cotton No. 2 is a wrapping contract: the session for trade date D commences at
 // 21:00 NY on calendar day D-1 and closes at 14:20 NY on D. The ICE master hours
@@ -196,15 +196,9 @@ pub(crate) static COTTON_BASELINE: StaticHoursProfile = StaticHoursProfile {
 //   contract and end at 6:00 pm on the Exchange business day prior to each
 //   trading day." For Cotton the 14:20 close puts that start at 14:50.
 //   https://www.ice.com/publicdocs/futures_us/exchange_notices/ICE_Futures_US_PCPO_Session_20180920.pdf
-pub(crate) static COTTON_REVISIONS: &[Revision] = &[
-    Revision {
-        effective: effective_date(2014, 2, 3),
-        profile: &COTTON_2014,
-    },
-    Revision {
-        effective: effective_date(2018, 10, 8),
-        profile: &COTTON_CURRENT,
-    },
+pub(crate) static COTTON_REVISIONS: &[Revision] = revisions![
+    (2014, 2, 3, &COTTON_2014, "ICE ExNot 012714 hours"),
+    (2018, 10, 8, &COTTON_CURRENT, "ICE PCPO notice 20180920"),
 ];
 
 /// Selects the Cotton No. 2 profile in force on `as_of`'s New York day.

@@ -14,7 +14,7 @@ use chrono_tz::US;
 use crate::calendar::SessionRule;
 use crate::calendar::rule::SUN_PLUS_MON_THU;
 use crate::calendar::schedules::StaticHoursProfile;
-use crate::calendar::schedules::timeline::{Revision, effective_date, local_date, select_revision};
+use crate::calendar::schedules::timeline::{Revision, local_date, revisions, select_revision};
 
 // NKD outrights run one continuous Globex envelope per trade date: the session
 // opens 17:00 CT on the previous calendar evening and closes 16:00 CT on the
@@ -164,19 +164,10 @@ pub(crate) static NKD_BASELINE: StaticHoursProfile = StaticHoursProfile {
 //   https://www.cmegroup.com/rulebook/files/ser_6554R_-_CME_Modifies_Trading_Hours_for_International_Equity_Index_futures_on_20130304.pdf
 // 2015-09-20: CME Globex Notice #20150817, quoted above; trade date Monday
 //   2015-09-21, session-opening day Sunday 2015-09-20.
-pub(crate) static NKD_REVISIONS: &[Revision] = &[
-    Revision {
-        effective: effective_date(2012, 11, 18),
-        profile: &NKD_2012,
-    },
-    Revision {
-        effective: effective_date(2013, 3, 3),
-        profile: &NKD_2013,
-    },
-    Revision {
-        effective: effective_date(2015, 9, 20),
-        profile: &NKD_CURRENT,
-    },
+pub(crate) static NKD_REVISIONS: &[Revision] = revisions![
+    (2012, 11, 18, &NKD_2012, "CME SER-6465"),
+    (2013, 3, 3, &NKD_2013, "CME SER-6554R"),
+    (2015, 9, 20, &NKD_CURRENT, "CME Globex notice 20150817"),
 ];
 
 /// Selects the CME Nikkei 225 Dollar profile in force on `as_of`'s Chicago day.

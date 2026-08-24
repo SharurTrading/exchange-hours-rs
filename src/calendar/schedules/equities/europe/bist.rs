@@ -155,43 +155,67 @@ profile!(
     ORDER_ENTRY_2016_NOVEMBER
 );
 
-use crate::calendar::schedules::timeline::{Revision, effective_date, local_date, select_revision};
+use crate::calendar::schedules::timeline::{Revision, local_date, revisions, select_revision};
 
 pub(crate) const CURRENT: &StaticHoursProfile = &BIST_PROFILE_CURRENT;
 
-static REVISIONS: &[Revision] = &[
-    Revision {
-        effective: effective_date(2012, 3, 2),
-        profile: &BIST_PROFILE_POST_2012_03_02,
-    },
-    Revision {
-        effective: effective_date(2012, 7, 16),
-        profile: &BIST_PROFILE_POST_2012_07_16,
-    },
-    Revision {
-        effective: effective_date(2013, 4, 5),
-        profile: &BIST_PROFILE_POST_2013_04_05,
-    },
-    Revision {
-        effective: effective_date(2013, 6, 10),
-        profile: &BIST_PROFILE_POST_2013_06_10,
-    },
-    Revision {
-        effective: effective_date(2015, 11, 30),
-        profile: &BIST_PROFILE_POST_2015_11_30,
-    },
-    Revision {
-        effective: effective_date(2016, 3, 28),
-        profile: &BIST_PROFILE_POST_2016_03_28,
-    },
-    Revision {
-        effective: effective_date(2016, 11, 14),
-        profile: &BIST_PROFILE_POST_2016_11_14,
-    },
-    Revision {
-        effective: effective_date(2019, 10, 4),
-        profile: &BIST_PROFILE_CURRENT,
-    },
+static REVISIONS: &[Revision] = revisions![
+    (
+        2012,
+        3,
+        2,
+        &BIST_PROFILE_POST_2012_03_02,
+        "Borsa Istanbul closing_session"
+    ),
+    (
+        2012,
+        7,
+        16,
+        &BIST_PROFILE_POST_2012_07_16,
+        "Borsa Istanbul Genelge gn2012394"
+    ),
+    (
+        2013,
+        4,
+        5,
+        &BIST_PROFILE_POST_2013_04_05,
+        "Borsa Istanbul Genelge gn2013421"
+    ),
+    (
+        2013,
+        6,
+        10,
+        &BIST_PROFILE_POST_2013_06_10,
+        "Borsa Istanbul Genelge gn2013430"
+    ),
+    (
+        2015,
+        11,
+        30,
+        &BIST_PROFILE_POST_2015_11_30,
+        "Borsa Istanbul announcement 13472"
+    ),
+    (
+        2016,
+        3,
+        28,
+        &BIST_PROFILE_POST_2016_03_28,
+        "Borsa Istanbul announcement 13446"
+    ),
+    (
+        2016,
+        11,
+        14,
+        &BIST_PROFILE_POST_2016_11_14,
+        "Borsa Istanbul announcement 13376"
+    ),
+    (
+        2019,
+        10,
+        4,
+        &BIST_PROFILE_CURRENT,
+        "Borsa Istanbul duyuru 2019/56"
+    ),
 ];
 
 pub(crate) fn profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {

@@ -6,7 +6,7 @@ use chrono_tz::US;
 
 use crate::calendar::rule::{MON_THU, SUN_ONLY, SUN_PLUS_MON_THU};
 use crate::calendar::schedules::StaticHoursProfile;
-use crate::calendar::schedules::timeline::{Revision, effective_date, local_date, select_revision};
+use crate::calendar::schedules::timeline::{Revision, local_date, revisions, select_revision};
 use crate::calendar::{FuturesSessionProfile, SessionRule};
 
 // The January-2008 CBOT migration notice establishes the 17:30-16:00 CT
@@ -127,15 +127,21 @@ static PROFILE_2011_10_02: StaticHoursProfile = StaticHoursProfile {
     has_weekend_close: true,
 };
 
-static REVISIONS: &[Revision] = &[
-    Revision {
-        effective: effective_date(2010, 11, 15),
-        profile: &PROFILE_2010_11_15,
-    },
-    Revision {
-        effective: effective_date(2011, 10, 2),
-        profile: &PROFILE_2011_10_02,
-    },
+static REVISIONS: &[Revision] = revisions![
+    (
+        2010,
+        11,
+        15,
+        &PROFILE_2010_11_15,
+        "CME Globex notice 20101025"
+    ),
+    (
+        2011,
+        10,
+        2,
+        &PROFILE_2011_10_02,
+        "CME Globex notice 20110926"
+    ),
 ];
 
 pub(crate) fn profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {

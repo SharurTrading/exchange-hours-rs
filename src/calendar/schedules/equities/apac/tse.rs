@@ -125,19 +125,25 @@ pub(crate) static TSE_PROFILE_PRE_2011_11_21: StaticHoursProfile = StaticHoursPr
     has_weekend_close: true,
 };
 
-use crate::calendar::schedules::timeline::{Revision, effective_date, local_date, select_revision};
+use crate::calendar::schedules::timeline::{Revision, local_date, revisions, select_revision};
 
 pub(crate) const CURRENT: &StaticHoursProfile = &TSE_PROFILE_CURRENT;
 
-static REVISIONS: &[Revision] = &[
-    Revision {
-        effective: effective_date(2011, 11, 21),
-        profile: &TSE_PROFILE_POST_2011_11_21,
-    },
-    Revision {
-        effective: effective_date(2024, 11, 5),
-        profile: &TSE_PROFILE_CURRENT,
-    },
+static REVISIONS: &[Revision] = revisions![
+    (
+        2011,
+        11,
+        21,
+        &TSE_PROFILE_POST_2011_11_21,
+        "JPX trading-hours transition table"
+    ),
+    (
+        2024,
+        11,
+        5,
+        &TSE_PROFILE_CURRENT,
+        "JPX news release 20241103-01"
+    ),
 ];
 
 pub(crate) fn profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {

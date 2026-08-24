@@ -138,23 +138,26 @@ pub(crate) static BSE_PROFILE_PRE_2010_01_04: StaticHoursProfile = StaticHoursPr
     has_weekend_close: true,
 };
 
-use crate::calendar::schedules::timeline::{Revision, effective_date, local_date, select_revision};
+use crate::calendar::schedules::timeline::{Revision, local_date, revisions, select_revision};
 
 pub(crate) const CURRENT: &StaticHoursProfile = &BSE_PROFILE_CURRENT;
 
-static REVISIONS: &[Revision] = &[
-    Revision {
-        effective: effective_date(2010, 1, 4),
-        profile: &BSE_PROFILE_POST_2010_01_04,
-    },
-    Revision {
-        effective: effective_date(2010, 10, 18),
-        profile: &BSE_PROFILE_POST_2010_10_18,
-    },
-    Revision {
-        effective: effective_date(2026, 8, 3),
-        profile: &BSE_PROFILE_CURRENT,
-    },
+static REVISIONS: &[Revision] = revisions![
+    (
+        2010,
+        1,
+        4,
+        &BSE_PROFILE_POST_2010_01_04,
+        "BSE notice 20091217-15"
+    ),
+    (
+        2010,
+        10,
+        18,
+        &BSE_PROFILE_POST_2010_10_18,
+        "BSE notice 20101014-8"
+    ),
+    (2026, 8, 3, &BSE_PROFILE_CURRENT, "SEBI circular 99122"),
 ];
 
 pub(crate) fn profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {

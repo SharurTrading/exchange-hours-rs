@@ -9,7 +9,7 @@ use super::equities::{equity_profile, profile};
 use crate::calendar::SessionRule;
 use crate::calendar::rule::{MON_FRI, SUN_PLUS_MON_THU};
 use crate::calendar::schedules::CLOSED_NEW_YORK;
-use crate::calendar::schedules::timeline::{Revision, effective_date, local_date, select_revision};
+use crate::calendar::schedules::timeline::{Revision, local_date, revisions, select_revision};
 
 // Investors Exchange's initial exchange rules and living hours table define
 // System Hours as 08:00–17:00 ET around the 09:30–16:00 regular session.
@@ -37,10 +37,8 @@ static IEX_EXTENDED: &[SessionRule] = &[
 ];
 pub(crate) static IEX_PROFILE: StaticHoursProfile = equity_profile(IEX_EXTENDED);
 
-static IEX_REVISIONS: &[Revision] = &[Revision {
-    effective: effective_date(2016, 8, 19),
-    profile: &IEX_PROFILE,
-}];
+static IEX_REVISIONS: &[Revision] =
+    revisions![(2016, 8, 19, &IEX_PROFILE, "IEX Trading Alert 2016-042"),];
 
 pub(crate) fn iex_profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {
     select_revision(
@@ -79,10 +77,13 @@ pub(crate) static BLUE_OCEAN_PROFILE: StaticHoursProfile = profile(&[], BLUE_OCE
 // https://blueocean-tech.io/timeline/
 // https://www.sec.gov/Archives/edgar/data/1795131/000153949721000764/primary_doc.xml
 // https://www.sec.gov/Archives/edgar/data/1795131/000153949723000091/primary_doc.xml
-static BLUE_OCEAN_REVISIONS: &[Revision] = &[Revision {
-    effective: effective_date(2021, 10, 5),
-    profile: &BLUE_OCEAN_PROFILE,
-}];
+static BLUE_OCEAN_REVISIONS: &[Revision] = revisions![(
+    2021,
+    10,
+    5,
+    &BLUE_OCEAN_PROFILE,
+    "Blue Ocean launch announcement 2021-10-05"
+),];
 
 pub(crate) fn blue_ocean_profile_at(
     as_of: chrono::DateTime<chrono::Utc>,

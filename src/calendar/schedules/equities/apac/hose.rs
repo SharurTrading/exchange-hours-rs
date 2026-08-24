@@ -167,23 +167,26 @@ static HOSE_PROFILE_AT_2010_FLOOR: StaticHoursProfile = StaticHoursProfile {
     has_weekend_close: true,
 };
 
-use crate::calendar::schedules::timeline::{Revision, effective_date, local_date, select_revision};
+use crate::calendar::schedules::timeline::{Revision, local_date, revisions, select_revision};
 
 pub(crate) const CURRENT: &StaticHoursProfile = &HOSE_PROFILE_CURRENT;
 
-static REVISIONS: &[Revision] = &[
-    Revision {
-        effective: effective_date(2010, 9, 13),
-        profile: &HOSE_PROFILE_2010_09_13,
-    },
-    Revision {
-        effective: effective_date(2012, 3, 5),
-        profile: &HOSE_PROFILE_2012,
-    },
-    Revision {
-        effective: effective_date(2013, 7, 22),
-        profile: &HOSE_PROFILE_CURRENT,
-    },
+static REVISIONS: &[Revision] = revisions![
+    (
+        2010,
+        9,
+        13,
+        &HOSE_PROFILE_2010_09_13,
+        "HOSE news notice 48784"
+    ),
+    (2012, 3, 5, &HOSE_PROFILE_2012, "HOSE 2012 annual report"),
+    (
+        2013,
+        7,
+        22,
+        &HOSE_PROFILE_CURRENT,
+        "HOSE 2013 annual report"
+    ),
 ];
 
 pub(crate) fn profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {

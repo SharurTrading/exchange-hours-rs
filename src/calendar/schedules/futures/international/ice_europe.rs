@@ -7,7 +7,7 @@ use chrono_tz::{America, Europe};
 use super::super::StaticHoursProfile;
 use crate::calendar::SessionRule;
 use crate::calendar::rule::{MON_FRI, MON_THU, SUN_ONLY};
-use crate::calendar::schedules::timeline::{Revision, effective_date, local_date, select_revision};
+use crate::calendar::schedules::timeline::{Revision, local_date, revisions, select_revision};
 
 // ICE Europe does not have a venue-wide schedule. `iceeu` and the commodities
 // row are scoped to Brent Crude Futures (B). The live product specification
@@ -148,19 +148,16 @@ const fn london_profile(
     }
 }
 
-static FTSE_REVISIONS: &[Revision] = &[
-    Revision {
-        effective: effective_date(2014, 11, 17),
-        profile: &FTSE_0800,
-    },
-    Revision {
-        effective: effective_date(2015, 2, 16),
-        profile: &FTSE_0700,
-    },
-    Revision {
-        effective: effective_date(2015, 10, 1),
-        profile: &ICE_EUROPE_FINANCIALS_CURRENT,
-    },
+static FTSE_REVISIONS: &[Revision] = revisions![
+    (2014, 11, 17, &FTSE_0800, "ICE Europe circular 14/146"),
+    (2015, 2, 16, &FTSE_0700, "ICE Europe circular 15/016"),
+    (
+        2015,
+        10,
+        1,
+        &ICE_EUROPE_FINANCIALS_CURRENT,
+        "ICE Europe circular 15/169"
+    ),
 ];
 
 pub(crate) fn ice_europe_financials_profile_at(

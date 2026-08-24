@@ -125,14 +125,17 @@ pub(crate) static ASX_PROFILE_PRE_2025_06_23: StaticHoursProfile = StaticHoursPr
     has_weekend_close: true,
 };
 
-use crate::calendar::schedules::timeline::{Revision, effective_date, local_date, select_revision};
+use crate::calendar::schedules::timeline::{Revision, local_date, revisions, select_revision};
 
 pub(crate) const CURRENT: &StaticHoursProfile = &ASX_PROFILE_CURRENT;
 
-static REVISIONS: &[Revision] = &[Revision {
-    effective: effective_date(2025, 6, 23),
-    profile: &ASX_PROFILE_CURRENT,
-}];
+static REVISIONS: &[Revision] = revisions![(
+    2025,
+    6,
+    23,
+    &ASX_PROFILE_CURRENT,
+    "ASX SR15 notice 0473.25.05"
+),];
 
 pub(crate) fn profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {
     select_revision(

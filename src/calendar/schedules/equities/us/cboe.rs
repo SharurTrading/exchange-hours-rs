@@ -9,7 +9,7 @@ use super::equities::{US_EQUITY_EXTENDED, equity_profile, equity_profile_with_en
 use crate::calendar::SessionRule;
 use crate::calendar::rule::MON_FRI;
 use crate::calendar::schedules::CLOSED_NEW_YORK;
-use crate::calendar::schedules::timeline::{Revision, effective_date, local_date, select_revision};
+use crate::calendar::schedules::timeline::{Revision, local_date, revisions, select_revision};
 
 static EXTENDED_0800_1700: &[SessionRule] = &[
     SessionRule {
@@ -148,19 +148,16 @@ pub(crate) static CBOE_EDGX_PROFILE: StaticHoursProfile =
 // https://cdn.cboe.com/resources/release_notes/2018/BZX-Exchange-and-BYX-Exchange-to-Extend-Post-Market-Session-Hours-to-8PM-ET.pdf
 // https://www.cboe.com/insights/posts/early-birds-and-night-owls-how-extended-trading-hours-are-reshaping-u-s-equities-markets-
 // https://res.cboe.com/insights/posts/u-s-cash-equities-may-highlights/
-static BZX_REVISIONS: &[Revision] = &[
-    Revision {
-        effective: effective_date(2014, 12, 2),
-        profile: &BZX_0600_1700,
-    },
-    Revision {
-        effective: effective_date(2018, 7, 30),
-        profile: &BZX_0600_2000,
-    },
-    Revision {
-        effective: effective_date(2025, 5, 1),
-        profile: &CBOE_BZX_PROFILE,
-    },
+static BZX_REVISIONS: &[Revision] = revisions![
+    (2014, 12, 2, &BZX_0600_1700, "SEC 34-73745"),
+    (
+        2018,
+        7,
+        30,
+        &BZX_0600_2000,
+        "Bats release note 2018 8pm post-market"
+    ),
+    (2025, 5, 1, &CBOE_BZX_PROFILE, "Cboe insights May 2025"),
 ];
 
 pub(crate) fn bzx_profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {
@@ -171,19 +168,16 @@ pub(crate) fn bzx_profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static S
     )
 }
 
-static BYX_REVISIONS: &[Revision] = &[
-    Revision {
-        effective: effective_date(2010, 10, 15),
-        profile: &BYX_0800_1700,
-    },
-    Revision {
-        effective: effective_date(2014, 12, 1),
-        profile: &BYX_0600_1700,
-    },
-    Revision {
-        effective: effective_date(2018, 8, 27),
-        profile: &CBOE_BYX_PROFILE,
-    },
+static BYX_REVISIONS: &[Revision] = revisions![
+    (2010, 10, 15, &BYX_0800_1700, "SEC 34-63097"),
+    (2014, 12, 1, &BYX_0600_1700, "SEC 34-73744"),
+    (
+        2018,
+        8,
+        27,
+        &CBOE_BYX_PROFILE,
+        "Bats release note 2018 8pm post-market"
+    ),
 ];
 
 pub(crate) fn byx_profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {
@@ -194,15 +188,15 @@ pub(crate) fn byx_profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static S
     )
 }
 
-static EDGA_REVISIONS: &[Revision] = &[
-    Revision {
-        effective: effective_date(2010, 7, 2),
-        profile: &EDGA_0800_2000,
-    },
-    Revision {
-        effective: effective_date(2016, 5, 24),
-        profile: &EDGA_0700_2000,
-    },
+static EDGA_REVISIONS: &[Revision] = revisions![
+    (2010, 7, 2, &EDGA_0800_2000, "SEC 34-62431"),
+    (
+        2016,
+        5,
+        24,
+        &EDGA_0700_2000,
+        "Bats release note 2016 7am matching"
+    ),
 ];
 
 pub(crate) fn edga_profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {
@@ -227,23 +221,17 @@ pub(crate) fn edga_profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static 
 // https://www.sec.gov/rules/sro/edgx/2014/34-73468.pdf
 // https://ir.cboe.com/news/news-details/2021/Cboe-EDGX-Equities-Exchange-To-Introduce-Early-Trading-Hours-Beginning-March-8-02-08-2021/default.aspx
 // https://www.sec.gov/files/rules/sro/cboeedgx/2021/34-92914.pdf
-static EDGX_REVISIONS: &[Revision] = &[
-    Revision {
-        effective: effective_date(2010, 7, 2),
-        profile: &EDGX_0800_2000,
-    },
-    Revision {
-        effective: effective_date(2016, 5, 26),
-        profile: &EDGX_0700_2000,
-    },
-    Revision {
-        effective: effective_date(2021, 3, 8),
-        profile: &EDGX_0330_2000,
-    },
-    Revision {
-        effective: effective_date(2021, 9, 7),
-        profile: &CBOE_EDGX_PROFILE,
-    },
+static EDGX_REVISIONS: &[Revision] = revisions![
+    (2010, 7, 2, &EDGX_0800_2000, "SEC 34-62431"),
+    (
+        2016,
+        5,
+        26,
+        &EDGX_0700_2000,
+        "Bats release note 2016 7am matching"
+    ),
+    (2021, 3, 8, &EDGX_0330_2000, "Cboe press release 2021-02-08"),
+    (2021, 9, 7, &CBOE_EDGX_PROFILE, "SEC 34-92914"),
 ];
 
 pub(crate) fn edgx_profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {

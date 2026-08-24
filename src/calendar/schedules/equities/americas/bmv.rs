@@ -148,7 +148,7 @@ static BMV_PROFILE_EARLY_PRE_2016: StaticHoursProfile = StaticHoursProfile {
 };
 
 use crate::calendar::schedules::timeline::{
-    Revision, effective_date, local_date, reference_delta_seconds, select_revision,
+    Revision, effective_date, local_date, reference_delta_seconds, revisions, select_revision,
 };
 
 pub(crate) const CURRENT: &StaticHoursProfile = &BMV_PROFILE_EARLY_CURRENT;
@@ -164,15 +164,21 @@ pub(crate) const CURRENT: &StaticHoursProfile = &BMV_PROFILE_EARLY_CURRENT;
 // https://web.archive.org/web/20150510152627id_/http://www.bmv.com.mx/wb3/wb/BMV/BMV_repositorio/_vtp/BMV/BMV_1139_bmv_informa/_rid/223/_mto/3/Aviso_Importante_Horario_Operacion_2014.pdf
 // https://web.archive.org/web/20180413023907id_/http://www.bmv.com.mx:80/docs-pub/SALA_PRENSA/CTEN_NOTI/Aviso_Importante_Horario_Operaci%C3%B3n_ING.pdf
 // https://web.archive.org/web/20210310164243id_/https://www.bmv.com.mx/docs-pub/SALA_PRENSA/CTEN_NOTI/Aviso_Importante_Horario_Operaci%C3%B3n%20marzo%202021.pdf
-static SOURCED_REVISIONS: &[Revision] = &[
-    Revision {
-        effective: effective_date(2010, 3, 16),
-        profile: &BMV_PROFILE_EARLY_PRE_2016,
-    },
-    Revision {
-        effective: effective_date(2010, 4, 1),
-        profile: &BMV_PROFILE_NORMAL_PRE_2016,
-    },
+static SOURCED_REVISIONS: &[Revision] = revisions![
+    (
+        2010,
+        3,
+        16,
+        &BMV_PROFILE_EARLY_PRE_2016,
+        "BMV DST notice 20100218"
+    ),
+    (
+        2010,
+        4,
+        1,
+        &BMV_PROFILE_NORMAL_PRE_2016,
+        "BMV DST notice 20100218"
+    ),
 ];
 
 const REFERENCE_GRID: chrono::NaiveDate = effective_date(2010, 11, 1);

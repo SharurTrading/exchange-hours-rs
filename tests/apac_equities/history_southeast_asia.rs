@@ -21,7 +21,9 @@ fn thailand_cutover() {
     let (pre, post) = cutover_sides(Exchange::SetThailand, tz, (2024, 3, 25));
     let at_1415 = local(tz, (2026, 8, 19), (14, 15, 0));
     assert!(!pre.is_open_regular(at_1415));
-    assert!(pre.is_open_extended(at_1415));
+    // Before 2024 the afternoon session opened later, so 14:15 was still the
+    // pre-open order-accumulation window rather than continuous trading.
+    assert!(pre.is_order_entry_only(at_1415));
     assert!(post.is_open_regular(at_1415));
 }
 
@@ -40,12 +42,15 @@ fn thailand_dr_night_launch_and_trade_date() {
     assert!(!calendar.is_open(monday_lunch));
     assert!(!calendar.is_open(prelaunch_tail));
     assert!(calendar.is_open_regular(launch_lunch));
-    assert!(calendar.is_open_extended(night_preopen));
+    assert!(calendar.is_order_entry_only(night_preopen));
     assert!(calendar.is_open_regular(night_regular));
+    // Pre-close and off-hour: off-hour trades print here.
     assert!(calendar.is_open_extended(night_close_call));
     assert!(!calendar.is_open(final_close));
 
     let trade_date = launch_lunch.with_timezone(&tz).date_naive();
+    // night_preopen is an order-entry phase, not a session, but it feeds the
+    // night session and therefore carries its trade date.
     for instant in [launch_lunch, night_preopen, night_regular, night_close_call] {
         assert_eq!(calendar.trade_date(instant), Some(trade_date));
     }
@@ -78,7 +83,9 @@ fn thailand_monthly_candles_group_the_after_midnight_close_by_trade_date() {
     );
     assert_eq!(
         calendar.candle_start(march_31, CalendarResolution::Monthly),
-        Some(local(tz, (2026, 3, 2), (9, 30, 0)))
+        // The monthly bar now opens at the randomised opening auction, the
+        // first instant a trade can print, rather than at the 09:30 pre-open.
+        Some(local(tz, (2026, 3, 2), (9, 55, 0)))
     );
 }
 

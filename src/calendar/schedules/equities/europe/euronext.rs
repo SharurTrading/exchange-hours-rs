@@ -14,7 +14,7 @@ use chrono_tz::{Europe, Tz};
 use super::super::StaticHoursProfile;
 use crate::calendar::SessionRule;
 use crate::calendar::rule::MON_FRI;
-use crate::calendar::schedules::timeline::{Revision, effective_date, local_date, select_revision};
+use crate::calendar::schedules::timeline::{Revision, local_date, revisions, select_revision};
 
 pub(crate) use dublin::{EURONEXT_DUB_PROFILE, profile_at as dublin_profile_at};
 pub(crate) use milan::{EURONEXT_MIL_PROFILE, profile_at as milan_profile_at};
@@ -36,29 +36,40 @@ static CENTRAL_REGULAR: &[SessionRule] = &[SessionRule {
     open_ssm: 9 * 3600,
     close_ssm: 17 * 3600 + 30 * 60,
 }];
+// Order-entry classification. The operator's trading appendix describes the
+// pre-opening as a Call phase - the French and Dutch columns render it
+// "phase d'accumulation" / "accumulatiefase" - and its liquidity-provider
+// clause speaks of "the order-accumulation periods preceding pre-scheduled or
+// other Uncrossings during a Trading Day". The first uncrossing of the day is
+// the 09:00 opening uncrossing, so no central-order-book trade can match
+// before continuous trading starts. The pre-opening windows below are
+// therefore order entry only; the closing uncrossing and Trading-at-Last both
+// print and stay in `extended`.
+static CENTRAL_LEGACY_ORDER_ENTRY: &[SessionRule] = &[SessionRule {
+    days: MON_FRI,
+    open_ssm: 7 * 3600 + 15 * 60,
+    close_ssm: 9 * 3600,
+}];
 static CENTRAL_LEGACY_EXTENDED: &[SessionRule] = &[
-    SessionRule {
-        days: MON_FRI,
-        open_ssm: 7 * 3600 + 15 * 60,
-        close_ssm: 9 * 3600,
-    },
+    // Nominal closing auction.
     SessionRule {
         days: MON_FRI,
         open_ssm: 17 * 3600 + 30 * 60,
         close_ssm: 17 * 3600 + 35 * 60,
     },
+    // Trading-at-Last.
     SessionRule {
         days: MON_FRI,
         open_ssm: 17 * 3600 + 35 * 60,
         close_ssm: 17 * 3600 + 40 * 60,
     },
 ];
+static CENTRAL_CURRENT_ORDER_ENTRY: &[SessionRule] = &[SessionRule {
+    days: MON_FRI,
+    open_ssm: 7 * 3600 + 30 * 60,
+    close_ssm: 9 * 3600,
+}];
 static CENTRAL_CURRENT_EXTENDED: &[SessionRule] = &[
-    SessionRule {
-        days: MON_FRI,
-        open_ssm: 7 * 3600 + 30 * 60,
-        close_ssm: 9 * 3600,
-    },
     // Nominal closing auction.
     SessionRule {
         days: MON_FRI,
@@ -78,12 +89,13 @@ static LISBON_REGULAR: &[SessionRule] = &[SessionRule {
     open_ssm: 8 * 3600,
     close_ssm: 16 * 3600 + 30 * 60,
 }];
+static LISBON_LEGACY_ORDER_ENTRY: &[SessionRule] = &[SessionRule {
+    days: MON_FRI,
+    open_ssm: 6 * 3600 + 15 * 60,
+    close_ssm: 8 * 3600,
+}];
 static LISBON_LEGACY_EXTENDED: &[SessionRule] = &[
-    SessionRule {
-        days: MON_FRI,
-        open_ssm: 6 * 3600 + 15 * 60,
-        close_ssm: 8 * 3600,
-    },
+    // Nominal closing auction.
     SessionRule {
         days: MON_FRI,
         open_ssm: 16 * 3600 + 30 * 60,
@@ -95,12 +107,13 @@ static LISBON_LEGACY_EXTENDED: &[SessionRule] = &[
         close_ssm: 16 * 3600 + 40 * 60,
     },
 ];
+static LISBON_CURRENT_ORDER_ENTRY: &[SessionRule] = &[SessionRule {
+    days: MON_FRI,
+    open_ssm: 6 * 3600 + 30 * 60,
+    close_ssm: 8 * 3600,
+}];
 static LISBON_CURRENT_EXTENDED: &[SessionRule] = &[
-    SessionRule {
-        days: MON_FRI,
-        open_ssm: 6 * 3600 + 30 * 60,
-        close_ssm: 8 * 3600,
-    },
+    // Nominal closing auction.
     SessionRule {
         days: MON_FRI,
         open_ssm: 16 * 3600 + 30 * 60,
@@ -121,11 +134,12 @@ static LISBON_CURRENT_EXTENDED: &[SessionRule] = &[
 // https://www.euronext.com/sites/default/files/2026-07/appendix%20to%20Euronext%20Instructions%204-01%204-03%20Trading%20Manuals_0.xlsx
 
 macro_rules! profile {
-    ($name:ident, $tz:expr, $regular:ident, $extended:ident) => {
+    ($name:ident, $tz:expr, $regular:ident, $extended:ident, $order_entry:ident) => {
         static $name: StaticHoursProfile = StaticHoursProfile {
             tz: $tz,
             regular: $regular,
             extended: $extended,
+            order_entry: $order_entry,
             has_daily_close: true,
             has_weekend_close: true,
         };
@@ -136,31 +150,36 @@ profile!(
     PARIS_LEGACY,
     Europe::Paris,
     CENTRAL_REGULAR,
-    CENTRAL_LEGACY_EXTENDED
+    CENTRAL_LEGACY_EXTENDED,
+    CENTRAL_LEGACY_ORDER_ENTRY
 );
 profile!(
     AMSTERDAM_LEGACY,
     Europe::Amsterdam,
     CENTRAL_REGULAR,
-    CENTRAL_LEGACY_EXTENDED
+    CENTRAL_LEGACY_EXTENDED,
+    CENTRAL_LEGACY_ORDER_ENTRY
 );
 profile!(
     BRUSSELS_LEGACY,
     Europe::Brussels,
     CENTRAL_REGULAR,
-    CENTRAL_LEGACY_EXTENDED
+    CENTRAL_LEGACY_EXTENDED,
+    CENTRAL_LEGACY_ORDER_ENTRY
 );
 profile!(
     LISBON_LEGACY,
     Europe::Lisbon,
     LISBON_REGULAR,
-    LISBON_LEGACY_EXTENDED
+    LISBON_LEGACY_EXTENDED,
+    LISBON_LEGACY_ORDER_ENTRY
 );
 
 pub(crate) static EURONEXT_PARIS_PROFILE: StaticHoursProfile = StaticHoursProfile {
     tz: Europe::Paris,
     regular: CENTRAL_REGULAR,
     extended: CENTRAL_CURRENT_EXTENDED,
+    order_entry: CENTRAL_CURRENT_ORDER_ENTRY,
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -168,6 +187,7 @@ pub(crate) static EURONEXT_AMS_PROFILE: StaticHoursProfile = StaticHoursProfile 
     tz: Europe::Amsterdam,
     regular: CENTRAL_REGULAR,
     extended: CENTRAL_CURRENT_EXTENDED,
+    order_entry: CENTRAL_CURRENT_ORDER_ENTRY,
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -175,6 +195,7 @@ pub(crate) static EURONEXT_BRU_PROFILE: StaticHoursProfile = StaticHoursProfile 
     tz: Europe::Brussels,
     regular: CENTRAL_REGULAR,
     extended: CENTRAL_CURRENT_EXTENDED,
+    order_entry: CENTRAL_CURRENT_ORDER_ENTRY,
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -182,6 +203,7 @@ pub(crate) static EURONEXT_LIS_PROFILE: StaticHoursProfile = StaticHoursProfile 
     tz: Europe::Lisbon,
     regular: LISBON_REGULAR,
     extended: LISBON_CURRENT_EXTENDED,
+    order_entry: LISBON_CURRENT_ORDER_ENTRY,
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -191,23 +213,48 @@ pub(crate) static EURONEXT_LIS_PROFILE: StaticHoursProfile = StaticHoursProfile 
 // distinguishes that legacy-markets date from Milan's 2023-03-27 migration.
 // https://connect.euronext.com/sites/default/files/it-documentation/Guide%20to%20Trading%20System%20-%20Borsa%20Italiana%20Migration%20to%20Optiq%20-%20Functional%20Changes%20v.2.0.pdf
 // https://connect.euronext.com/sites/default/files/it-documentation/Go-Live%20Weekend%20Guidelines%20-%20Borsa%20Italiana%20Optiq%20Migration.pdf
+static PARIS_REVISIONS: &[Revision] = revisions![(
+    2023,
+    3,
+    20,
+    &EURONEXT_PARIS_PROFILE,
+    "Euronext Go-Live Weekend Guidelines"
+),];
+static AMSTERDAM_REVISIONS: &[Revision] = revisions![(
+    2023,
+    3,
+    20,
+    &EURONEXT_AMS_PROFILE,
+    "Euronext Go-Live Weekend Guidelines"
+),];
+static BRUSSELS_REVISIONS: &[Revision] = revisions![(
+    2023,
+    3,
+    20,
+    &EURONEXT_BRU_PROFILE,
+    "Euronext Go-Live Weekend Guidelines"
+),];
+static LISBON_REVISIONS: &[Revision] = revisions![(
+    2023,
+    3,
+    20,
+    &EURONEXT_LIS_PROFILE,
+    "Euronext Go-Live Weekend Guidelines"
+),];
+
 fn phase_one_profile(
     as_of: chrono::DateTime<chrono::Utc>,
     tz: Tz,
     baseline: &'static StaticHoursProfile,
-    current: &'static StaticHoursProfile,
+    revisions: &[Revision],
 ) -> &'static StaticHoursProfile {
-    let revisions = [Revision {
-        effective: effective_date(2023, 3, 20),
-        profile: current,
-    }];
-    select_revision(local_date(as_of, tz), baseline, &revisions)
+    select_revision(local_date(as_of, tz), baseline, revisions)
 }
 
 pub(crate) fn paris_profile_at(
     as_of: chrono::DateTime<chrono::Utc>,
 ) -> &'static StaticHoursProfile {
-    phase_one_profile(as_of, Europe::Paris, &PARIS_LEGACY, &EURONEXT_PARIS_PROFILE)
+    phase_one_profile(as_of, Europe::Paris, &PARIS_LEGACY, PARIS_REVISIONS)
 }
 
 pub(crate) fn amsterdam_profile_at(
@@ -217,7 +264,7 @@ pub(crate) fn amsterdam_profile_at(
         as_of,
         Europe::Amsterdam,
         &AMSTERDAM_LEGACY,
-        &EURONEXT_AMS_PROFILE,
+        AMSTERDAM_REVISIONS,
     )
 }
 
@@ -228,12 +275,12 @@ pub(crate) fn brussels_profile_at(
         as_of,
         Europe::Brussels,
         &BRUSSELS_LEGACY,
-        &EURONEXT_BRU_PROFILE,
+        BRUSSELS_REVISIONS,
     )
 }
 
 pub(crate) fn lisbon_profile_at(
     as_of: chrono::DateTime<chrono::Utc>,
 ) -> &'static StaticHoursProfile {
-    phase_one_profile(as_of, Europe::Lisbon, &LISBON_LEGACY, &EURONEXT_LIS_PROFILE)
+    phase_one_profile(as_of, Europe::Lisbon, &LISBON_LEGACY, LISBON_REVISIONS)
 }

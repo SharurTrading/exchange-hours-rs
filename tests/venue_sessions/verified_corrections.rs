@@ -193,7 +193,7 @@ fn cfe_before_the_2021_cutover_classifies_the_order_queue_as_extended() {
         "RTH ran to 15:15 CT before the cutover"
     );
     assert!(
-        before.is_open_extended(ct((2021, 12, 3), (15, 20, 0))),
+        before.is_order_entry_only(ct((2021, 12, 3), (15, 20, 0))),
         "15:15–15:30 accepted non-executable orders in the queuing state"
     );
     assert!(
@@ -257,10 +257,10 @@ fn six_closing_auction_and_trading_at_last_then_post_trading() {
     assert_eq!(tal_open, cet((2026, 4, 20), (17, 32, 0)));
     assert_eq!(tal_close, cet((2026, 4, 20), (17, 40, 0)));
     assert!(
-        h.is_open_extended(cet((2026, 4, 20), (17, 40, 0))),
+        h.is_order_entry_only(cet((2026, 4, 20), (17, 40, 0))),
         "order-entry-only post-trading follows TAL"
     );
-    assert!(h.is_open_extended(cet((2026, 4, 20), (21, 59, 59))));
+    assert!(h.is_order_entry_only(cet((2026, 4, 20), (21, 59, 59))));
     assert!(!h.is_open(cet((2026, 4, 20), (22, 0, 0))));
 }
 

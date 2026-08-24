@@ -292,6 +292,11 @@ pub(super) const HISTORICAL_CUTOVERS: &[(Exchange, Ymd, chrono_tz::Tz)] = &[
     ),
     (
         Exchange::CboeBzx,
+        (2016, 5, 25),
+        chrono_tz::America::New_York,
+    ),
+    (
+        Exchange::CboeBzx,
         (2018, 7, 30),
         chrono_tz::America::New_York,
     ),
@@ -308,6 +313,11 @@ pub(super) const HISTORICAL_CUTOVERS: &[(Exchange, Ymd, chrono_tz::Tz)] = &[
     (
         Exchange::CboeByx,
         (2014, 12, 1),
+        chrono_tz::America::New_York,
+    ),
+    (
+        Exchange::CboeByx,
+        (2016, 5, 23),
         chrono_tz::America::New_York,
     ),
     (

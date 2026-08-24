@@ -29,12 +29,28 @@ static B3_REGULAR_LONG: &[SessionRule] = &[SessionRule {
     open_ssm: 10 * 3600,
     close_ssm: 17 * 3600 + 55 * 60,
 }];
+// Order entry only. B3's own timetable annexes list "Pre-Opening" as a phase
+// distinct from "Trading": the 15 minutes before the open collect and price a
+// book that does not match, and the first print is the opening call at the
+// start of continuous trading. The immediately preceding "Order Cancellation"
+// window (09:30–09:45) stays excluded from the model entirely.
+// https://www.b3.com.br/data/files/AE/22/40/4A/1131A910F51990A9AC094EA8/CL%20043-2025-VNC%20NOVOS%20HORARIOS%20DE%20NEGOCIACAO_EN.pdf
+static B3_ORDER_ENTRY_0945: &[SessionRule] = &[SessionRule {
+    days: MON_FRI,
+    open_ssm: 9 * 3600 + 45 * 60,
+    close_ssm: 10 * 3600,
+}];
+// The 11:00-open grids carry no pre-opening phase. The 2010-2012 circulars
+// pin the trading grid itself, and the 2025 circular proves today's
+// pre-opening concept, but nothing in the audited primary set states the
+// pre-opening window for those grids — a 10:45-11:00 phase would be an
+// inference from today's 15-minute convention, so under LAW-PRIMARY-SOURCES
+// the window is omitted and reads closed.
+// The remaining phases all print: closing calls cross at the auction price and
+// the after-market windows execute. The after-market envelopes below merge the
+// venue's after-market pre-opening with after-market trading, so they stay
+// tradeable rather than being split on an unsourced internal boundary.
 static B3_EXTENDED_SHORT: &[SessionRule] = &[
-    SessionRule {
-        days: MON_FRI,
-        open_ssm: 9 * 3600 + 45 * 60,
-        close_ssm: 10 * 3600,
-    },
     SessionRule {
         days: MON_FRI,
         open_ssm: 16 * 3600 + 55 * 60,
@@ -46,20 +62,12 @@ static B3_EXTENDED_SHORT: &[SessionRule] = &[
         close_ssm: 18 * 3600,
     },
 ];
-static B3_EXTENDED_LONG: &[SessionRule] = &[
-    B3_EXTENDED_SHORT[0],
-    SessionRule {
-        days: MON_FRI,
-        open_ssm: 17 * 3600 + 55 * 60,
-        close_ssm: 18 * 3600,
-    },
-];
+static B3_EXTENDED_LONG: &[SessionRule] = &[SessionRule {
+    days: MON_FRI,
+    open_ssm: 17 * 3600 + 55 * 60,
+    close_ssm: 18 * 3600,
+}];
 static B3_EXTENDED_INTERIM: &[SessionRule] = &[
-    SessionRule {
-        days: MON_FRI,
-        open_ssm: 9 * 3600 + 45 * 60,
-        close_ssm: 10 * 3600,
-    },
     SessionRule {
         days: MON_FRI,
         open_ssm: 17 * 3600 + 25 * 60,
@@ -73,7 +81,6 @@ static B3_EXTENDED_INTERIM: &[SessionRule] = &[
 ];
 static B3_EXTENDED_OLD_SHORT: &[SessionRule] = &[
     B3_EXTENDED_SHORT[0],
-    B3_EXTENDED_SHORT[1],
     SessionRule {
         days: MON_FRI,
         open_ssm: 17 * 3600 + 30 * 60,
@@ -81,11 +88,6 @@ static B3_EXTENDED_OLD_SHORT: &[SessionRule] = &[
     },
 ];
 static B3_EXTENDED_OLD_LONG: &[SessionRule] = &[
-    SessionRule {
-        days: MON_FRI,
-        open_ssm: 10 * 3600 + 45 * 60,
-        close_ssm: 11 * 3600,
-    },
     SessionRule {
         days: MON_FRI,
         open_ssm: 17 * 3600 + 55 * 60,
@@ -113,6 +115,7 @@ pub(crate) static B3_PROFILE_OLD_SHORT: StaticHoursProfile = StaticHoursProfile 
     tz: America::Sao_Paulo,
     regular: B3_REGULAR_OLD_SHORT,
     extended: B3_EXTENDED_OLD_SHORT,
+    order_entry: B3_ORDER_ENTRY_0945,
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -120,6 +123,7 @@ pub(crate) static B3_PROFILE_OLD_LONG: StaticHoursProfile = StaticHoursProfile {
     tz: America::Sao_Paulo,
     regular: B3_REGULAR_OLD_LONG,
     extended: B3_EXTENDED_OLD_LONG,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -132,6 +136,7 @@ pub(crate) static B3_PROFILE_INTERIM: StaticHoursProfile = StaticHoursProfile {
     tz: America::Sao_Paulo,
     regular: B3_REGULAR_INTERIM,
     extended: B3_EXTENDED_INTERIM,
+    order_entry: B3_ORDER_ENTRY_0945,
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -154,6 +159,7 @@ pub(crate) static B3_PROFILE_SHORT: StaticHoursProfile = StaticHoursProfile {
     tz: America::Sao_Paulo,
     regular: B3_REGULAR_SHORT,
     extended: B3_EXTENDED_SHORT,
+    order_entry: B3_ORDER_ENTRY_0945,
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -161,12 +167,13 @@ pub(crate) static B3_PROFILE_LONG: StaticHoursProfile = StaticHoursProfile {
     tz: America::Sao_Paulo,
     regular: B3_REGULAR_LONG,
     extended: B3_EXTENDED_LONG,
+    order_entry: B3_ORDER_ENTRY_0945,
     has_daily_close: true,
     has_weekend_close: true,
 };
 
 use crate::calendar::schedules::timeline::{
-    Revision, effective_date, local_date, reference_delta_seconds, select_revision,
+    Revision, effective_date, local_date, reference_delta_seconds, revisions, select_revision,
 };
 
 pub(crate) const CURRENT: &StaticHoursProfile = &B3_PROFILE_SHORT;
@@ -175,35 +182,14 @@ pub(crate) const CURRENT: &StaticHoursProfile = &B3_PROFILE_SHORT;
 // baseline. Circular 127/2015-DP introduced the recurring pair from
 // 2015-12-21 and tied it to the Brazil/New York daylight-time relationship.
 // https://www.b3.com.br/data/files/CF/31/79/3D/611B25107399EA25790D8AA8/127-2015DP.pdf
-static EXPLICIT_REVISIONS: &[Revision] = &[
-    Revision {
-        effective: effective_date(2010, 3, 15),
-        profile: &B3_PROFILE_OLD_SHORT,
-    },
-    Revision {
-        effective: effective_date(2010, 10, 18),
-        profile: &B3_PROFILE_OLD_LONG,
-    },
-    Revision {
-        effective: effective_date(2011, 3, 14),
-        profile: &B3_PROFILE_OLD_SHORT,
-    },
-    Revision {
-        effective: effective_date(2011, 10, 17),
-        profile: &B3_PROFILE_OLD_LONG,
-    },
-    Revision {
-        effective: effective_date(2012, 3, 12),
-        profile: &B3_PROFILE_OLD_SHORT,
-    },
-    Revision {
-        effective: effective_date(2012, 12, 3),
-        profile: &B3_PROFILE_INTERIM,
-    },
-    Revision {
-        effective: effective_date(2013, 7, 8),
-        profile: &B3_PROFILE_SHORT,
-    },
+static EXPLICIT_REVISIONS: &[Revision] = revisions![
+    (2010, 3, 15, &B3_PROFILE_OLD_SHORT, "B3 OC 009/2010-DP"),
+    (2010, 10, 18, &B3_PROFILE_OLD_LONG, "B3 OC 002/2010-DO"),
+    (2011, 3, 14, &B3_PROFILE_OLD_SHORT, "B3 OC 001/2011-DO"),
+    (2011, 10, 17, &B3_PROFILE_OLD_LONG, "B3 OC 009/2011-DO"),
+    (2012, 3, 12, &B3_PROFILE_OLD_SHORT, "B3 OC 009/2012-DP"),
+    (2012, 12, 3, &B3_PROFILE_INTERIM, "B3 OC 066/2012-DP"),
+    (2013, 7, 8, &B3_PROFILE_SHORT, "B3 OC 042/2013-DP"),
 ];
 
 const REFERENCE_GRID: chrono::NaiveDate = effective_date(2015, 12, 21);

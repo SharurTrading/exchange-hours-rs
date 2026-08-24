@@ -21,6 +21,7 @@ use std::borrow::Cow;
 use chrono::{DateTime, NaiveDate, Utc};
 use chrono_tz::Tz;
 
+use super::exchange_calendar::CalendarSource;
 use super::query::{QueryContext, status, week};
 use super::{Exchange, SessionKind, SessionRule, SessionState};
 
@@ -33,10 +34,17 @@ use super::{Exchange, SessionKind, SessionRule, SessionState};
 /// slices directly: they allocate nothing and take `O(rules)` work per call.
 /// Forward-looking queries use a documented, bounded civil-day scan rather
 /// than an unbounded search.
+#[non_exhaustive]
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct MarketHours {
-    /// Which exchange these hours represent.
-    pub exchange: Exchange,
+    /// Which identity these hours represent.
+    ///
+    /// A venue-backed profile carries [`CalendarSource::Exchange`]; a
+    /// product-family profile carries [`CalendarSource::MarketHoursKey`]. The
+    /// field previously held a bare [`Exchange`] and was set to
+    /// [`Exchange::Unknown`] for every key-backed profile, which collided with
+    /// the crate's own 24x7-fallback sentinel.
+    pub source: CalendarSource,
     /// Exchange’s local time zone (used to interpret `SessionRule`s and handle DST).
     pub tz: Tz,
     /// Primary/pit ("regular") trading sessions (e.g., RTH for equities/futures).
@@ -45,6 +53,16 @@ pub struct MarketHours {
     /// Electronic/overnight and other non-regular sessions.
     /// Uses Cow so callers can borrow from static tables without allocation.
     pub extended: Cow<'static, [SessionRule]>,
+    /// Order-entry-only phases.
+    ///
+    /// Pre-open queues and post-close order windows in which orders may be
+    /// entered, amended or cancelled but **no trade can match**. These are
+    /// deliberately separate from `extended`, which holds genuinely tradeable
+    /// electronic and overnight sessions: `is_open` counts `regular` and
+    /// `extended` only, so a caller asking whether a market is open is asking
+    /// whether a trade can print. Use [`MarketHours::is_accepting_orders`] for
+    /// the order-entry question.
+    pub order_entry: Cow<'static, [SessionRule]>,
     /// True if there is a distinct daily close (used for daily candle boundaries).
     pub has_daily_close: bool,
     /// True if this fixed profile has a true weekend close used for generic
@@ -57,6 +75,105 @@ pub struct MarketHours {
 }
 
 impl MarketHours {
+    /// Builds a profile for `source`.
+    ///
+    /// The struct is `#[non_exhaustive]`, so this is the constructor available
+    /// to callers outside the crate. `source` accepts an [`Exchange`], a
+    /// [`MarketHoursKey`](crate::MarketHoursKey), or a [`CalendarSource`]
+    /// directly.
+    ///
+    /// The built-in tables are reached through `hours_for_exchange`,
+    /// `hours_for_market_hours_key`, and their `as_of` variants; this exists for
+    /// callers modelling a venue the crate does not ship.
+    #[must_use]
+    pub fn new(
+        source: impl Into<CalendarSource>,
+        tz: Tz,
+        regular: Cow<'static, [SessionRule]>,
+        extended: Cow<'static, [SessionRule]>,
+        order_entry: Cow<'static, [SessionRule]>,
+        has_daily_close: bool,
+        has_weekend_close: bool,
+    ) -> Self {
+        Self {
+            source: source.into(),
+            tz,
+            regular,
+            extended,
+            order_entry,
+            has_daily_close,
+            has_weekend_close,
+        }
+    }
+
+    /// True when orders may be entered, amended or cancelled at `t`.
+    ///
+    /// This is **not** the same question as [`MarketHours::is_open`]. It is true
+    /// during order-entry-only phases such as pre-open queues and post-close
+    /// order windows, where nothing can match, and also whenever a tradeable
+    /// session is running. A venue that publishes no order-entry phase returns
+    /// the same answer as `is_open`.
+    #[must_use]
+    pub fn is_accepting_orders(&self, t: DateTime<Utc>) -> bool {
+        self.is_open(t) || self.is_order_entry_only(t)
+    }
+
+    /// True when `t` falls in an order-entry-only phase and no trade can match.
+    ///
+    /// False whenever a tradeable session is running, so the two states are
+    /// mutually exclusive: a caller can branch on them without ordering care.
+    #[must_use]
+    pub fn is_order_entry_only(&self, t: DateTime<Utc>) -> bool {
+        !self.is_open(t)
+            && self
+                .order_entry_view()
+                .is_open_with(t, SessionKind::Regular)
+    }
+
+    /// The order-entry phases viewed as a schedule in their own right.
+    ///
+    /// Reuses the one query engine rather than re-deriving wrap and DST
+    /// handling for a second rule slice. Borrowed rule slices stay borrowed, so
+    /// a static profile allocates nothing here.
+    fn order_entry_view(&self) -> Self {
+        Self {
+            source: self.source,
+            tz: self.tz,
+            regular: self.order_entry.clone(),
+            extended: Cow::Borrowed(&[]),
+            order_entry: Cow::Borrowed(&[]),
+            has_daily_close: self.has_daily_close,
+            has_weekend_close: self.has_weekend_close,
+        }
+    }
+
+    /// The identity these hours represent.
+    #[must_use]
+    pub const fn source(&self) -> CalendarSource {
+        self.source
+    }
+
+    /// The venue identity, or `None` when these hours are product-family keyed.
+    ///
+    /// Mirrors [`ExchangeCalendar::exchange`](crate::ExchangeCalendar::exchange)
+    /// so a value and the calendar that produced it answer identically.
+    #[must_use]
+    pub const fn exchange(&self) -> Option<Exchange> {
+        match self.source {
+            CalendarSource::Exchange(exchange) => Some(exchange),
+            CalendarSource::MarketHoursKey(_) => None,
+        }
+    }
+
+    /// The product-family identity, or `None` when these hours are venue keyed.
+    #[must_use]
+    pub const fn market_hours_key(&self) -> Option<crate::MarketHoursKey> {
+        match self.source {
+            CalendarSource::MarketHoursKey(key) => Some(key),
+            CalendarSource::Exchange(_) => None,
+        }
+    }
+
     /// Returns the number of distinct scheduled open seconds in this profile's
     /// normal week, consulting regular and extended sessions together.
     ///

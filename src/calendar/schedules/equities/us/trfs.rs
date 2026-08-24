@@ -9,12 +9,18 @@ use super::StaticHoursProfile;
 use crate::calendar::SessionRule;
 use crate::calendar::rule::MON_FRI;
 use crate::calendar::schedules::CLOSED_NEW_YORK;
-use crate::calendar::schedules::timeline::{Revision, effective_date, local_date, select_revision};
+use crate::calendar::schedules::timeline::{Revision, local_date, revisions, select_revision};
 
 // FINRA Regulatory Notice 25-15 identifies all three active TRFs, states that
 // their system hours changed from 08:00–20:00 to 04:00–20:00 ET on 2026-03-30,
 // and classifies 09:30–16:00 as Regular Trading Hours. Rules 6380A and 6380B
 // require the outside-RTH reports to carry the corresponding modifier.
+//
+// A TRF is a reporting facility, not a matching engine and not an order book:
+// it has no order-entry phase to separate out, because it never accepts orders
+// at all. Every window below is a window in which an executed trade is reported
+// and disseminated, so a print does occur inside it and all of them stay in
+// `extended`; `order_entry` is empty because the concept does not apply here.
 // https://www.finra.org/filing-reporting/trade-reporting-facility-trf
 // https://www.finra.org/rules-guidance/rulebooks/finra-rules/6380a
 // https://www.finra.org/rules-guidance/rulebooks/finra-rules/6380b
@@ -66,28 +72,42 @@ pub(crate) static FINRA_TRF_NYSE_PROFILE: StaticHoursProfile = profile(EXTENDED_
 // selected while its anticipated implementation day is conditional on the SIP
 // rollout. See the schedule update guide for the outstanding confirmation.
 // https://www.finra.org/sites/default/files/2026-07/SR-FINRA-2026-015.pdf
-static CARTERET_REVISIONS: &[Revision] = &[Revision {
-    effective: effective_date(2026, 3, 30),
-    profile: &FINRA_TRF_CARTERET_PROFILE,
-}];
-static CHICAGO_REVISIONS: &[Revision] = &[
-    Revision {
-        // FINRA says the Chicago facility commenced operation on 2018-09-10.
-        // It accepted test securities only through 2018-09-21; all NMS stocks
-        // became reportable on 2018-09-24.
-        // https://www.finra.org/filing-reporting/trf/technical-notices/reminder-finranasdaq-trf-chicago
-        effective: effective_date(2018, 9, 10),
-        profile: &FINRA_TRF_CHICAGO_PROFILE_PRE_2026_03_30,
-    },
-    Revision {
-        effective: effective_date(2026, 3, 30),
-        profile: &FINRA_TRF_CHICAGO_PROFILE,
-    },
+//
+// Row evidence — each revision's day-level effective date and the primary
+// source that states it (full quotations sit in the header block above):
+//   2018-09-10 "FINRA/Nasdaq TRF Chicago technical notice" (Chicago)
+//     https://www.finra.org/filing-reporting/trf/technical-notices/reminder-finranasdaq-trf-chicago
+//   2026-03-30 "FINRA Notice 25-15" (Carteret, Chicago, NYSE)
+//     https://www.finra.org/rules-guidance/rulebooks/notices/25-15
+static CARTERET_REVISIONS: &[Revision] = revisions![(
+    2026,
+    3,
+    30,
+    &FINRA_TRF_CARTERET_PROFILE,
+    "FINRA Notice 25-15"
+),];
+static CHICAGO_REVISIONS: &[Revision] = revisions![
+    // FINRA says the Chicago facility commenced operation on 2018-09-10.
+    // It accepted test securities only through 2018-09-21; all NMS stocks
+    // became reportable on 2018-09-24.
+    // https://www.finra.org/filing-reporting/trf/technical-notices/reminder-finranasdaq-trf-chicago
+    (
+        2018,
+        9,
+        10,
+        &FINRA_TRF_CHICAGO_PROFILE_PRE_2026_03_30,
+        "FINRA/Nasdaq TRF Chicago technical notice",
+    ),
+    (
+        2026,
+        3,
+        30,
+        &FINRA_TRF_CHICAGO_PROFILE,
+        "FINRA Notice 25-15"
+    ),
 ];
-static NYSE_REVISIONS: &[Revision] = &[Revision {
-    effective: effective_date(2026, 3, 30),
-    profile: &FINRA_TRF_NYSE_PROFILE,
-}];
+static NYSE_REVISIONS: &[Revision] =
+    revisions![(2026, 3, 30, &FINRA_TRF_NYSE_PROFILE, "FINRA Notice 25-15"),];
 
 pub(crate) fn carteret_profile_at(as_of: DateTime<Utc>) -> &'static StaticHoursProfile {
     select_revision(
@@ -118,6 +138,7 @@ const fn profile(extended: &'static [SessionRule]) -> StaticHoursProfile {
         tz: America::New_York,
         regular: REGULAR,
         extended,
+        order_entry: &[],
         has_daily_close: true,
         has_weekend_close: true,
     }

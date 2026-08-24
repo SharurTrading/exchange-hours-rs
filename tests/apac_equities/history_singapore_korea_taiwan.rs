@@ -17,7 +17,8 @@ fn sgx_securities_cutovers() {
     let at_1230 = local(tz, probe, (12, 30, 0));
     assert!(pre.is_open_regular(at_1230));
     assert!(!post.is_open_regular(at_1230));
-    assert!(post.is_open_extended(at_1230));
+    // After 2017 the midday break carries SGX's pre-opening routine only.
+    assert!(post.is_order_entry_only(at_1230));
 
     let (pre, post) = cutover_sides(Exchange::SgxSecurities, tz, (2019, 6, 3));
     let at_1710 = local(tz, probe, (17, 10, 0));

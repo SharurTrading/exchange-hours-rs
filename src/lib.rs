@@ -48,11 +48,14 @@
 //! assert!(!hours.is_open(monday_evening));
 //! assert!(hours.is_maintenance(monday_evening));
 //!
-//! // After Friday's close the next accepted-order phase is Sunday's 16:00
-//! // Pre-Open, not Saturday. Matching resumes at 17:00.
+//! // After Friday's close the next SESSION is Sunday's 17:00 matching open, not
+//! // Saturday. Sunday's 16:00 Pre-Open accepts orders but matches nothing, so it
+//! // is an order-entry phase rather than a session.
 //! let friday_after_close = ct(2026, 4, 24, 16, 30);
 //! let (next_open, _) = next_session_after(&hours, friday_after_close).expect("reopens Sunday");
-//! assert_eq!(next_open, ct(2026, 4, 26, 16, 0));
+//! assert_eq!(next_open, ct(2026, 4, 26, 17, 0));
+//! assert!(hours.is_order_entry_only(ct(2026, 4, 26, 16, 0)));
+//! assert!(!hours.is_open(ct(2026, 4, 26, 16, 0)));
 //!
 //! // Bar boundaries follow the same rules: a daily bar closes at the venue's
 //! // session close, not at midnight.
@@ -63,8 +66,10 @@
 //! # Model
 //!
 //! A fixed venue snapshot is a [`MarketHours`] value: a time zone plus `regular`
-//! and `extended` [`SessionRule`] sets, each rule a weekday mask and an
-//! open/close pair in seconds since local midnight. [`ExchangeCalendar`] is the
+//! `extended` and `order_entry` [`SessionRule`] sets, each rule a weekday mask
+//! and an open/close pair in seconds since local midnight. `regular` and
+//! `extended` are tradeable, so `is_open` means a trade can print; `order_entry`
+//! holds pre-open queues and post-close order windows where nothing matches. [`ExchangeCalendar`] is the
 //! date-aware surface for either an [`Exchange`] venue identity or a
 //! [`MarketHoursKey`] product family; [`CalendarSource`] reports which identity
 //! it carries. [`PolicyCalendar`] applies a caller's [`DayPolicy`] overrides to

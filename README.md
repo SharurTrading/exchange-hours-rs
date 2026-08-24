@@ -37,7 +37,7 @@ The internal ownership and extension model is documented in
   markets, and always-open crypto, with independently fenced point-in-time
   revisions wherever primary evidence states an unconditional day-level boundary.
 - **Session queries** — open/closed by regular/extended/both, session bounds, next open, gaps.
-- **Product-family calendars** — all 11 operator-derived `MarketHoursKey`
+- **Product-family calendars** — all 24 operator-derived `MarketHoursKey`
   values have fixed, point-in-time, and date-aware query surfaces.
 - **Caller-supplied day policy** — whole trade-date closures, early final
   closes, and late first opens can be overlaid without putting mutable or
@@ -185,8 +185,19 @@ The venue-keyed API retains these explicit defaults for compatibility:
 | `sgx` | `sgx` |
 
 Those defaults are the wrong choice for any product outside the named family.
-In particular, CME interest-rate, livestock, and cryptocurrency products must
-use their family keys rather than `Exchange::Cme` or `Exchange::Cbot`.
+CME interest-rate, livestock, and cryptocurrency products must use their family
+keys rather than `Exchange::Cme` or `Exchange::Cbot`. The same applies to the
+two venues whose default now covers only a small slice of what they list:
+`Exchange::Iceus` resolves to NYSE FANG+, so Sugar No. 11, Coffee "C", Cocoa,
+Cotton No. 2, FCOJ-A and the U.S. Dollar Index must select `ice_us_sugar`,
+`ice_us_coffee`, `ice_us_cocoa`, `ice_us_cotton`, `ice_us_orange_juice` or
+`ice_us_dollar_index`; `Exchange::Sgx` resolves to Three-Month SORA, so SGX
+equity-index products must select the matching grid: `sgx_equity_index_japan`,
+`sgx_equity_index_china`, `sgx_equity_index_singapore`,
+`sgx_equity_index_taiwan`, or `sgx_equity_index_ntr_usd`. Eurex
+fixed income likewise has its own `eurex_fixed_income` key, distinct from the
+`eurex` index-futures default, and Nikkei 225 Dollar uses
+`globex_nikkei_225_dollar` rather than `globex_equity_index`.
 
 Family selection is exact: consumers must never substitute the nearest venue
 or product-family key when a product is outside that key's documented scope.
@@ -229,9 +240,10 @@ source-backed identities.
 The key surface was audited separately:
 **Primary-source-verified current key snapshots:** `24 of 24` operator-derived
 `MarketHoursKey` values. The key API provides fixed-current snapshots, an
-`as_of` selector, and a date-aware calendar for sourced histories. Four key
-rows are **Primary** and seven CME-family rows are **Partial** because their
-current queues are sourced but an older onset or PCP amendment day is not.
+`as_of` selector, and a date-aware calendar for sourced histories. Five key
+rows are **Primary** and nineteen are **Partial**, because a named historical
+queue, PCP amendment day, or undated venue transition cannot be dated from a
+primary source.
 
 These are backward-looking evidence statements, not promises that an exchange
 will remain unchanged after the review date. They cover recurring weekday

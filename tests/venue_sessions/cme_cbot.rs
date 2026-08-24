@@ -24,8 +24,8 @@ fn cme_sunday_preopen_boundary() {
     let h = hours_for_exchange(Exchange::Cme);
     assert!(!h.is_open(ct((2026, 4, 19), (15, 59, 59))));
     assert!(
-        h.is_open_extended(ct((2026, 4, 19), (16, 0, 0))),
-        "CME enters Pre-Open Sunday at 16:00 CT"
+        h.is_order_entry_only(ct((2026, 4, 19), (16, 0, 0))),
+        "CME enters Pre-Open Sunday at 16:00 CT - order entry, not matching"
     );
 }
 
@@ -164,8 +164,8 @@ fn cbot_morning_preopen_follows_the_overnight_gap() {
     let h = hours_for_exchange(Exchange::Cbot);
     assert!(!h.is_open(ct((2026, 4, 20), (7, 59, 59))));
     assert!(
-        h.is_open_extended(ct((2026, 4, 20), (8, 0, 0))),
-        "CBOT Pre-Open starts at 08:00 CT"
+        h.is_order_entry_only(ct((2026, 4, 20), (8, 0, 0))),
+        "CBOT Pre-Open starts at 08:00 CT - order entry, not matching"
     );
 }
 
@@ -296,12 +296,13 @@ fn cbot_2010_floor_uses_the_published_split_sessions() {
     let monday = (2010, 1, 4);
 
     assert!(!hours.is_open(ct(sunday, (16, 14, 59))));
-    assert!(hours.is_open_extended(ct(sunday, (16, 15, 0))));
-    assert!(hours.is_open_extended(ct(sunday, (17, 59, 59))));
+    // The 16:15 Sunday queue is order entry; matching starts later.
+    assert!(hours.is_order_entry_only(ct(sunday, (16, 15, 0))));
+    assert!(hours.is_order_entry_only(ct(sunday, (17, 59, 59))));
     assert!(hours.is_open_extended(ct(sunday, (18, 0, 0))));
     assert!(hours.is_open_extended(ct(monday, (7, 14, 59))));
-    assert!(hours.is_open_extended(ct(monday, (7, 15, 0))));
-    assert!(hours.is_open_extended(ct(monday, (9, 29, 59))));
+    assert!(hours.is_order_entry_only(ct(monday, (7, 15, 0))));
+    assert!(hours.is_order_entry_only(ct(monday, (9, 29, 59))));
     assert!(hours.is_open_regular(ct(monday, (9, 30, 0))));
     assert!(!hours.is_open(ct(monday, (13, 15, 0))));
     assert!(hours.is_open_extended(ct(monday, (18, 0, 0))));
@@ -320,9 +321,10 @@ fn cbot_2012_matching_revision_omits_order_phases_without_sourced_onsets() {
     let sunday = (2012, 5, 20);
     let monday = (2012, 5, 21);
 
-    assert!(before.is_open_extended(ct(sunday, (16, 30, 0))));
+    // Pre-cutover CBOT Sunday queue at 16:30: order entry.
+    assert!(before.is_order_entry_only(ct(sunday, (16, 30, 0))));
     assert!(!after.is_open(ct(sunday, (16, 30, 0))));
-    assert!(before.is_open_extended(ct(sunday, (17, 0, 0))));
+    assert!(before.is_order_entry_only(ct(sunday, (17, 0, 0))));
     assert!(after.is_open_extended(ct(sunday, (17, 0, 0))));
     assert!(!before.is_open(ct(monday, (7, 15, 0))));
     assert!(after.is_open_extended(ct(monday, (7, 15, 0))));

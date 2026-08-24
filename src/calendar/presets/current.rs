@@ -9,6 +9,7 @@
 //! together. The data and its history live in venue-owned modules under
 //! [`super::super::schedules`].
 
+use crate::calendar::exchange_calendar::CalendarSource;
 use crate::calendar::schedules::equities::{africa_middle_east, americas, apac, europe, us};
 use crate::calendar::schedules::from_profile;
 use crate::calendar::schedules::futures::{international, us as futures_us};
@@ -147,14 +148,22 @@ pub fn hours_for_exchange(exch: Exchange) -> MarketHours {
         // Futures and crypto venue defaults. Some reuse the matching named
         // key; the remainder route directly to their sourced product-family
         // profile.
-        Exchange::Cme => session_profile(MarketHoursKey::GlobexEquityIndex).to_market_hours(exch),
-        Exchange::Cbot => session_profile(MarketHoursKey::GlobexGrains).to_market_hours(exch),
+        Exchange::Cme => session_profile(MarketHoursKey::GlobexEquityIndex)
+            .to_market_hours(CalendarSource::Exchange(exch)),
+        Exchange::Cbot => session_profile(MarketHoursKey::GlobexGrains)
+            .to_market_hours(CalendarSource::Exchange(exch)),
         Exchange::Comex | Exchange::Nymex => from_profile(exch, &futures_us::ENERGY_METALS_CURRENT),
-        Exchange::Eurex => session_profile(MarketHoursKey::Eurex).to_market_hours(exch),
+        Exchange::Eurex => {
+            session_profile(MarketHoursKey::Eurex).to_market_hours(CalendarSource::Exchange(exch))
+        }
         Exchange::Iceus => from_profile(exch, &futures_us::ICE_US_FANG_CURRENT),
         Exchange::Iceeu => from_profile(exch, &international::ICEEU_CURRENT),
-        Exchange::Sgx => session_profile(MarketHoursKey::Sgx).to_market_hours(exch),
-        Exchange::Cfe => session_profile(MarketHoursKey::CfeVix).to_market_hours(exch),
+        Exchange::Sgx => {
+            session_profile(MarketHoursKey::Sgx).to_market_hours(CalendarSource::Exchange(exch))
+        }
+        Exchange::Cfe => {
+            session_profile(MarketHoursKey::CfeVix).to_market_hours(CalendarSource::Exchange(exch))
+        }
         Exchange::BinanceFutures => from_profile(exch, &international::BINANCE_CURRENT),
         // All known exchanges covered; no default arm.
     }
@@ -162,5 +171,5 @@ pub fn hours_for_exchange(exch: Exchange) -> MarketHours {
 
 /// Tags the shared 24×7 UTC profile with an always-open venue.
 fn default_24x7(ex: Exchange) -> MarketHours {
-    session_profile(MarketHoursKey::AlwaysOpen).to_market_hours(ex)
+    session_profile(MarketHoursKey::AlwaysOpen).to_market_hours(CalendarSource::Exchange(ex))
 }

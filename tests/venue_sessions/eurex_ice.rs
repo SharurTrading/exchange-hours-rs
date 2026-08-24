@@ -24,13 +24,13 @@ fn eurex_asian_hours() {
 fn eurex_asian_start_tracks_fixed_midnight_utc() {
     let summer = hours_for_exchange_as_of(Exchange::Eurex, cet((2026, 4, 20), (12, 0, 0)));
     assert!(!summer.is_open(cet((2026, 4, 20), (1, 59, 59))));
-    assert!(summer.is_open_extended(cet((2026, 4, 20), (2, 0, 0))));
+    assert!(summer.is_order_entry_only(cet((2026, 4, 20), (2, 0, 0))));
     assert!(summer.is_open_extended(cet((2026, 4, 20), (2, 14, 59))));
     assert!(summer.is_open_regular(cet((2026, 4, 20), (2, 15, 0))));
 
     let winter = hours_for_exchange_as_of(Exchange::Eurex, cet((2026, 1, 19), (12, 0, 0)));
     assert!(!winter.is_open(cet((2026, 1, 19), (0, 59, 59))));
-    assert!(winter.is_open_extended(cet((2026, 1, 19), (1, 0, 0))));
+    assert!(winter.is_order_entry_only(cet((2026, 1, 19), (1, 0, 0))));
     assert!(winter.is_open_extended(cet((2026, 1, 19), (1, 14, 59))));
     assert!(winter.is_open_regular(cet((2026, 1, 19), (1, 15, 0))));
 }
@@ -94,13 +94,13 @@ fn eurex_had_no_asian_session_before_2018_12_10() {
     // 07:50. Pins the exact phase edges on both sides of the cutover.
     let before = hours_for_exchange_as_of(Exchange::Eurex, cet((2018, 12, 7), (12, 0, 0)));
     assert!(!before.is_open(cet((2018, 12, 7), (7, 29, 59))));
-    assert!(before.is_open_extended(cet((2018, 12, 7), (7, 30, 0))));
-    assert!(before.is_open_extended(cet((2018, 12, 7), (7, 49, 59))));
+    assert!(before.is_order_entry_only(cet((2018, 12, 7), (7, 30, 0))));
+    assert!(before.is_order_entry_only(cet((2018, 12, 7), (7, 49, 59))));
     assert!(before.is_open_regular(cet((2018, 12, 7), (7, 50, 0))));
 
     let after = hours_for_exchange_as_of(Exchange::Eurex, cet((2018, 12, 10), (12, 0, 0)));
     assert!(!after.is_open(cet((2018, 12, 10), (0, 59, 59))));
-    assert!(after.is_open_extended(cet((2018, 12, 10), (1, 0, 0))));
+    assert!(after.is_order_entry_only(cet((2018, 12, 10), (1, 0, 0))));
     assert!(after.is_open_extended(cet((2018, 12, 10), (1, 14, 59))));
     assert!(after.is_open_regular(cet((2018, 12, 10), (1, 15, 0))));
 }
@@ -117,8 +117,8 @@ fn iceus_sunday_open() {
     let h = hours_for_exchange(Exchange::Iceus);
     assert!(!h.is_open(et((2026, 4, 19), (17, 29, 59))));
     assert!(
-        h.is_open_extended(et((2026, 4, 19), (17, 30, 0))),
-        "ICEUS FANG+ Pre-Open starts Sunday 17:30 ET"
+        h.is_order_entry_only(et((2026, 4, 19), (17, 30, 0))),
+        "ICEUS FANG+ Pre-Open starts Sunday 17:30 ET - order entry, not matching"
     );
     assert!(h.is_open_regular(et((2026, 4, 19), (18, 0, 0))));
 }
@@ -163,17 +163,27 @@ fn maintenance_covers_the_whole_break_not_just_its_tail() {
 
     let eurex = hours_for_exchange(Exchange::Eurex);
     let t = cet((2026, 4, 20), (22, 30, 0));
-    assert!(!eurex.is_open(t), "Eurex 22:30 CET is closed");
+    // The matching gap runs 22:00 → 02:10 CEST, because the 02:00-02:10
+    // pre-trading phase accepts orders but matches nothing. At four hours ten
+    // minutes it exceeds the maintenance bound, so it reads Closed.
+    assert_eq!(
+        eurex.session_state(t),
+        SessionState::Closed,
+        "Eurex's 22:00→02:10 non-matching gap exceeds the maintenance bound"
+    );
     assert!(
-        eurex.is_maintenance(t),
-        "Eurex's current-summer 22:00→02:00 daily gap is maintenance end to end"
+        !eurex.is_open(t),
+        "Eurex's current-summer 22:00→02:00 daily gap admits no trading end to end"
     );
 
     let cbot = hours_for_exchange(Exchange::Cbot);
     let t = ct((2026, 4, 20), (14, 0, 0));
     assert!(!cbot.is_open(t), "CBOT 14:00 CT is closed");
     assert!(!cbot.is_maintenance(t));
-    assert_eq!(cbot.session_state(t), SessionState::Halt);
+    // 14:00 CT sits between the 13:20 grain close and the 14:30 PCP order-entry
+    // window. With the queues out of `extended`, the surrounding sessions belong
+    // to different trade dates, so this reads Closed rather than an intraday Halt.
+    assert_eq!(cbot.session_state(t), SessionState::Closed);
 }
 
 #[test]
@@ -198,7 +208,7 @@ fn pre_open_and_overnight_windows_are_not_maintenance() {
     // overnight- or weekend-long. Until 0.2.0 the 90-minute heuristic flagged
     // all of these.
     let cme = hours_for_exchange(Exchange::Cme);
-    assert!(cme.is_open_extended(ct((2026, 4, 19), (16, 30, 0))));
+    assert!(cme.is_order_entry_only(ct((2026, 4, 19), (16, 30, 0))));
     assert!(!cme.is_maintenance(ct((2026, 4, 19), (16, 30, 0))));
     assert!(
         !cme.is_maintenance(ct((2026, 4, 24), (16, 30, 0))),
@@ -249,7 +259,7 @@ fn iceus_fang_profile_is_closed_before_its_sourced_launch() {
 
     assert!(!closed.is_open(et((2017, 11, 6), (12, 0, 0))));
     assert!(!first_evening.is_open(et((2017, 11, 7), (19, 29, 59))));
-    assert!(first_evening.is_open_extended(et((2017, 11, 7), (19, 30, 0))));
+    assert!(first_evening.is_order_entry_only(et((2017, 11, 7), (19, 30, 0))));
     assert!(first_evening.is_open_regular(et((2017, 11, 7), (20, 0, 0))));
     assert!(first_evening.is_open_regular(et((2017, 11, 8), (17, 59, 59))));
     assert!(!first_evening.is_open(et((2017, 11, 8), (18, 0, 0))));
@@ -259,7 +269,7 @@ fn iceus_fang_profile_is_closed_before_its_sourced_launch() {
 
     let calendar = calendar_for_exchange(Exchange::Iceus);
     assert!(!calendar.is_open(et((2017, 11, 7), (19, 29, 59))));
-    assert!(calendar.is_open_extended(et((2017, 11, 7), (19, 30, 0))));
+    assert!(calendar.is_order_entry_only(et((2017, 11, 7), (19, 30, 0))));
     assert!(calendar.is_open_regular(et((2017, 11, 7), (20, 0, 0))));
     assert!(!calendar.is_open(et((2017, 11, 8), (18, 0, 0))));
     assert!(calendar.is_open_regular(et((2017, 11, 8), (20, 0, 0))));
@@ -270,8 +280,8 @@ fn ice_canada_canola_january_2010_baseline() {
     let baseline = hours_for_exchange_as_of(Exchange::IceCanada, ct((2010, 1, 10), (12, 0, 0)));
     assert_eq!(baseline.tz, America::Winnipeg);
     assert!(!baseline.is_open(ct((2010, 1, 10), (18, 59, 59))));
-    assert!(baseline.is_open_extended(ct((2010, 1, 10), (19, 0, 0))));
-    assert!(baseline.is_open_extended(ct((2010, 1, 10), (19, 59, 59))));
+    assert!(baseline.is_order_entry_only(ct((2010, 1, 10), (19, 0, 0))));
+    assert!(baseline.is_order_entry_only(ct((2010, 1, 10), (19, 59, 59))));
     assert!(baseline.is_open_regular(ct((2010, 1, 10), (20, 0, 0))));
     assert!(baseline.is_open_regular(ct((2010, 1, 11), (13, 14, 59))));
     assert!(!baseline.is_open(ct((2010, 1, 11), (13, 15, 0))));
@@ -281,17 +291,17 @@ fn ice_canada_canola_january_2010_baseline() {
 fn ice_canada_canola_2011_opening_change_uses_actual_opening_day() {
     let before = hours_for_exchange_as_of(Exchange::IceCanada, ct((2011, 2, 27), (12, 0, 0)));
     assert!(!before.is_open(ct((2011, 2, 27), (18, 59, 59))));
-    assert!(before.is_open_extended(ct((2011, 2, 27), (19, 0, 0))));
+    assert!(before.is_order_entry_only(ct((2011, 2, 27), (19, 0, 0))));
     assert!(before.is_open_regular(ct((2011, 2, 27), (20, 0, 0))));
 
     let after = hours_for_exchange_as_of(Exchange::IceCanada, ct((2011, 2, 28), (12, 0, 0)));
     assert!(!after.is_open(ct((2011, 2, 28), (18, 29, 59))));
-    assert!(after.is_open_extended(ct((2011, 2, 28), (18, 30, 0))));
+    assert!(after.is_order_entry_only(ct((2011, 2, 28), (18, 30, 0))));
     assert!(after.is_open_regular(ct((2011, 2, 28), (19, 0, 0))));
 
     let calendar = calendar_for_exchange(Exchange::IceCanada);
     assert!(!calendar.is_open(ct((2011, 2, 28), (18, 29, 59))));
-    assert!(calendar.is_open_extended(ct((2011, 2, 28), (18, 30, 0))));
+    assert!(calendar.is_order_entry_only(ct((2011, 2, 28), (18, 30, 0))));
     assert!(calendar.is_open_regular(ct((2011, 2, 28), (19, 0, 0))));
 }
 
@@ -355,7 +365,7 @@ fn iceeu_monday_open() {
     let h = hours_for_exchange(Exchange::Iceeu);
     assert_eq!(h.tz, America::New_York);
     assert!(!h.is_open(et((2026, 4, 19), (16, 59, 59))));
-    assert!(h.is_open_extended(et((2026, 4, 19), (17, 0, 0))));
+    assert!(h.is_order_entry_only(et((2026, 4, 19), (17, 0, 0))));
     assert!(h.is_open_regular(et((2026, 4, 19), (18, 0, 0))));
 }
 
@@ -379,7 +389,7 @@ fn iceeu_close() {
 fn iceeu_before_open() {
     let h = hours_for_exchange(Exchange::Iceeu);
     assert!(!h.is_open(et((2026, 4, 20), (19, 44, 59))));
-    assert!(h.is_open_extended(et((2026, 4, 20), (19, 45, 0))));
+    assert!(h.is_order_entry_only(et((2026, 4, 20), (19, 45, 0))));
     assert!(h.is_open_regular(et((2026, 4, 20), (20, 0, 0))));
 }
 

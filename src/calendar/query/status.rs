@@ -25,6 +25,20 @@ pub(in crate::calendar) fn is_open_with(
     contains_in_session_with(context, instant, kind)
 }
 
+pub(in crate::calendar) fn is_order_entry_only(
+    context: &QueryContext<'_>,
+    instant: DateTime<Utc>,
+) -> bool {
+    !is_open_with(context, instant, SessionKind::Both) && context.contains_order_entry(instant)
+}
+
+pub(in crate::calendar) fn is_accepting_orders(
+    context: &QueryContext<'_>,
+    instant: DateTime<Utc>,
+) -> bool {
+    is_open_with(context, instant, SessionKind::Both) || context.contains_order_entry(instant)
+}
+
 pub(in crate::calendar) fn is_maintenance(
     context: &QueryContext<'_>,
     instant: DateTime<Utc>,
@@ -36,9 +50,22 @@ pub(in crate::calendar) fn trade_date(
     context: &QueryContext<'_>,
     instant: DateTime<Utc>,
 ) -> Option<NaiveDate> {
-    let (open, _session_close) = containing_session_with(context, instant, SessionKind::Both)?;
-    let close = next_daily_close_after_with(context, instant, SessionKind::Both)?;
-    Some(context.trade_date_for_bounds(open, close))
+    if let Some((open, _session_close)) =
+        containing_session_with(context, instant, SessionKind::Both)
+    {
+        let close = next_daily_close_after_with(context, instant, SessionKind::Both)?;
+        return Some(context.trade_date_for_bounds(open, close));
+    }
+    // An order-entry phase is not a session, so it has no containing bounds -
+    // but it exists to feed the session that follows it, and an order queued in
+    // a Sunday pre-open belongs to Monday's trade date. Resolve through the next
+    // session rather than reporting `None`.
+    if context.contains_order_entry(instant) {
+        let (open, _next_close) = next_session_after_with(context, instant, SessionKind::Both)?;
+        let close = next_daily_close_after_with(context, open, SessionKind::Both)?;
+        return Some(context.trade_date_for_bounds(open, close));
+    }
+    None
 }
 
 pub(in crate::calendar) fn session_state(
@@ -50,6 +77,12 @@ pub(in crate::calendar) fn session_state(
     }
     if is_open_with(context, instant, SessionKind::Extended) {
         return SessionState::OpenExtended;
+    }
+    // Checked before the gap classification below: an order-entry window that
+    // sits inside a maintenance or post-close gap is more precisely described
+    // by what a caller can actually do in it than by the gap around it.
+    if context.contains_order_entry(instant) {
+        return SessionState::OrderEntry;
     }
     let Some((_previous_open, previous_close)) =
         previous_session_before_with(context, instant, SessionKind::Both)

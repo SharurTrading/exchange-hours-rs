@@ -58,6 +58,7 @@ pub(crate) const ALL_DAYS: [bool; 7] = [true, true, true, true, true, true, true
 /// so validate untrusted input with [`SessionRule::validate`]. Queries stay
 /// total for out-of-domain values but their answers are unspecified — an
 /// out-of-range `open_ssm` silently degrades the rule.
+#[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub struct SessionRule {
     /// Weekday activation mask (Mon=0 .. Sun=6).

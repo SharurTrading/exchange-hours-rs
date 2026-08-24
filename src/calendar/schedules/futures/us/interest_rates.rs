@@ -6,7 +6,7 @@ use chrono_tz::US;
 
 use crate::calendar::rule::{MON_THU, SUN_ONLY, SUN_PLUS_MON_THU};
 use crate::calendar::schedules::StaticHoursProfile;
-use crate::calendar::schedules::timeline::{Revision, effective_date, local_date, select_revision};
+use crate::calendar::schedules::timeline::{Revision, local_date, revisions, select_revision};
 use crate::calendar::{FuturesSessionProfile, SessionRule};
 
 // The January-2008 CBOT migration notice establishes the 17:30-16:00 CT
@@ -34,16 +34,26 @@ use crate::calendar::{FuturesSessionProfile, SessionRule};
 // https://www.cmegroup.com/markets/interest-rates/stirs/30-day-federal-fund.contractSpecs.html
 // https://www.cmegroup.com/education/articles-and-reports/understanding-sofr-futures
 // https://www.cmegroup.com/notices/ser/2022/02/SER-8921.pdf
-static EXTENDED_AT_2010_FLOOR: &[SessionRule] = &[
+// ORDER-ENTRY CLASSIFICATION. The comment above calls the Sunday 16:15 (later
+// 16:00) and weekday 16:50 (later 16:45) phases "queues": Globex accepts,
+// amends, and cancels orders in them while the matching engine is stopped, and
+// nothing can print until the 17:30 (later 17:00) open. They are `order_entry`.
+// The matching windows below stay in `extended`.
+static EXTENDED_1730_1600: &[SessionRule] = &[SessionRule {
+    days: SUN_PLUS_MON_THU,
+    open_ssm: 17 * 3600 + 30 * 60,
+    close_ssm: 16 * 3600,
+}];
+static EXTENDED_1700_1600: &[SessionRule] = &[SessionRule {
+    days: SUN_PLUS_MON_THU,
+    open_ssm: 17 * 3600,
+    close_ssm: 16 * 3600,
+}];
+static ORDER_ENTRY_AT_2010_FLOOR: &[SessionRule] = &[
     SessionRule {
         days: SUN_ONLY,
         open_ssm: 16 * 3600 + 15 * 60,
         close_ssm: 17 * 3600 + 30 * 60,
-    },
-    SessionRule {
-        days: SUN_PLUS_MON_THU,
-        open_ssm: 17 * 3600 + 30 * 60,
-        close_ssm: 16 * 3600,
     },
     SessionRule {
         days: MON_THU,
@@ -51,45 +61,28 @@ static EXTENDED_AT_2010_FLOOR: &[SessionRule] = &[
         close_ssm: 17 * 3600 + 30 * 60,
     },
 ];
-static EXTENDED_2010_11_15: &[SessionRule] = &[
+static ORDER_ENTRY_2010_11_15: &[SessionRule] = &[
     SessionRule {
         days: SUN_ONLY,
         open_ssm: 16 * 3600 + 15 * 60,
         close_ssm: 17 * 3600 + 30 * 60,
     },
     SessionRule {
-        days: SUN_PLUS_MON_THU,
-        open_ssm: 17 * 3600 + 30 * 60,
-        close_ssm: 16 * 3600,
-    },
-    SessionRule {
         days: MON_THU,
         open_ssm: 16 * 3600 + 45 * 60,
         close_ssm: 17 * 3600 + 30 * 60,
     },
 ];
-static EXTENDED_DATED_2011_10_02: &[SessionRule] = &[
-    SessionRule {
-        days: SUN_PLUS_MON_THU,
-        open_ssm: 17 * 3600,
-        close_ssm: 16 * 3600,
-    },
-    SessionRule {
-        days: MON_THU,
-        open_ssm: 16 * 3600 + 45 * 60,
-        close_ssm: 17 * 3600,
-    },
-];
-static EXTENDED_CURRENT: &[SessionRule] = &[
+static ORDER_ENTRY_DATED_2011_10_02: &[SessionRule] = &[SessionRule {
+    days: MON_THU,
+    open_ssm: 16 * 3600 + 45 * 60,
+    close_ssm: 17 * 3600,
+}];
+pub(crate) static ORDER_ENTRY_CURRENT: &[SessionRule] = &[
     SessionRule {
         days: SUN_ONLY,
         open_ssm: 16 * 3600,
         close_ssm: 17 * 3600,
-    },
-    SessionRule {
-        days: SUN_PLUS_MON_THU,
-        open_ssm: 17 * 3600,
-        close_ssm: 16 * 3600,
     },
     SessionRule {
         days: MON_THU,
@@ -101,7 +94,8 @@ static EXTENDED_CURRENT: &[SessionRule] = &[
 pub(crate) static CURRENT_FUTURES_PROFILE: FuturesSessionProfile = FuturesSessionProfile {
     tz: US::Central,
     regular: &[],
-    extended: EXTENDED_CURRENT,
+    extended: EXTENDED_1700_1600,
+    order_entry: ORDER_ENTRY_CURRENT,
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -109,7 +103,8 @@ pub(crate) static CURRENT_FUTURES_PROFILE: FuturesSessionProfile = FuturesSessio
 static PROFILE_AT_2010_FLOOR: StaticHoursProfile = StaticHoursProfile {
     tz: US::Central,
     regular: &[],
-    extended: EXTENDED_AT_2010_FLOOR,
+    extended: EXTENDED_1730_1600,
+    order_entry: ORDER_ENTRY_AT_2010_FLOOR,
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -117,7 +112,8 @@ static PROFILE_AT_2010_FLOOR: StaticHoursProfile = StaticHoursProfile {
 static PROFILE_2010_11_15: StaticHoursProfile = StaticHoursProfile {
     tz: US::Central,
     regular: &[],
-    extended: EXTENDED_2010_11_15,
+    extended: EXTENDED_1730_1600,
+    order_entry: ORDER_ENTRY_2010_11_15,
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -125,20 +121,27 @@ static PROFILE_2010_11_15: StaticHoursProfile = StaticHoursProfile {
 static PROFILE_2011_10_02: StaticHoursProfile = StaticHoursProfile {
     tz: US::Central,
     regular: &[],
-    extended: EXTENDED_DATED_2011_10_02,
+    extended: EXTENDED_1700_1600,
+    order_entry: ORDER_ENTRY_DATED_2011_10_02,
     has_daily_close: true,
     has_weekend_close: true,
 };
 
-static REVISIONS: &[Revision] = &[
-    Revision {
-        effective: effective_date(2010, 11, 15),
-        profile: &PROFILE_2010_11_15,
-    },
-    Revision {
-        effective: effective_date(2011, 10, 2),
-        profile: &PROFILE_2011_10_02,
-    },
+static REVISIONS: &[Revision] = revisions![
+    (
+        2010,
+        11,
+        15,
+        &PROFILE_2010_11_15,
+        "CME Globex notice 20101025"
+    ),
+    (
+        2011,
+        10,
+        2,
+        &PROFILE_2011_10_02,
+        "CME Globex notice 20110926"
+    ),
 ];
 
 pub(crate) fn profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {

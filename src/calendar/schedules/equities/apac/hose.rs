@@ -49,6 +49,7 @@ pub(crate) static HOSE_PROFILE_CURRENT: StaticHoursProfile = StaticHoursProfile 
     tz: Asia::Ho_Chi_Minh,
     regular: HOSE_REGULAR_CURRENT,
     extended: HOSE_EXTENDED_CURRENT,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -90,6 +91,7 @@ pub(crate) static HOSE_PROFILE_2012: StaticHoursProfile = StaticHoursProfile {
     tz: Asia::Ho_Chi_Minh,
     regular: HOSE_REGULAR_2012,
     extended: HOSE_EXTENDED_2012,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -126,6 +128,7 @@ static HOSE_PROFILE_2010_09_13: StaticHoursProfile = StaticHoursProfile {
     tz: Asia::Ho_Chi_Minh,
     regular: HOSE_REGULAR_2010_09_13,
     extended: HOSE_EXTENDED_2010_09_13,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -159,27 +162,39 @@ static HOSE_PROFILE_AT_2010_FLOOR: StaticHoursProfile = StaticHoursProfile {
     tz: Asia::Ho_Chi_Minh,
     regular: HOSE_REGULAR_AT_2010_FLOOR,
     extended: HOSE_EXTENDED_AT_2010_FLOOR,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
 
-use crate::calendar::schedules::timeline::{Revision, effective_date, local_date, select_revision};
+use crate::calendar::schedules::timeline::{Revision, local_date, revisions, select_revision};
 
 pub(crate) const CURRENT: &StaticHoursProfile = &HOSE_PROFILE_CURRENT;
 
-static REVISIONS: &[Revision] = &[
-    Revision {
-        effective: effective_date(2010, 9, 13),
-        profile: &HOSE_PROFILE_2010_09_13,
-    },
-    Revision {
-        effective: effective_date(2012, 3, 5),
-        profile: &HOSE_PROFILE_2012,
-    },
-    Revision {
-        effective: effective_date(2013, 7, 22),
-        profile: &HOSE_PROFILE_CURRENT,
-    },
+// Revision evidence — each row's day-level effective date and the primary
+// source that states it (full quotations sit in the blocks above):
+//   2010-09-13 "HOSE news notice 48784"
+//     https://web.archive.org/web/20100830155813id_/http://www.hsx.vn/hsx/Modules/News/NewsDetail.aspx?id=48784
+//   2012-03-05 "HOSE 2012 annual report"
+//     https://staticfile.hsx.vn/Uploads/Annual/6dfe6cf6-93b2-4871-966f-2bb9bb92c110/10dd075f-c751-46d2-b598-022850e517f6
+//   2013-07-22 "HOSE 2013 annual report"
+//     https://web.archive.org/web/20140501225025id_/http://www.hsx.vn:80/hsx_en/Modules/annual/annual_files/BCTN-ANNUAL%20REPORT%202013.pdf
+static REVISIONS: &[Revision] = revisions![
+    (
+        2010,
+        9,
+        13,
+        &HOSE_PROFILE_2010_09_13,
+        "HOSE news notice 48784"
+    ),
+    (2012, 3, 5, &HOSE_PROFILE_2012, "HOSE 2012 annual report"),
+    (
+        2013,
+        7,
+        22,
+        &HOSE_PROFILE_CURRENT,
+        "HOSE 2013 annual report"
+    ),
 ];
 
 pub(crate) fn profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {

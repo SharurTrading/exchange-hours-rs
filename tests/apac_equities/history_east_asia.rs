@@ -34,7 +34,8 @@ fn mainland_china_cutovers() {
 
     let (pre, post) = cutover_sides(Exchange::Szse, tz, (2016, 5, 9));
     let at_0927 = local(tz, probe, (9, 27, 0));
-    assert!(pre.is_open_extended(at_0927));
+    // SZSE call-auction order entry before the 2016 change; nothing matched.
+    assert!(pre.is_order_entry_only(at_0927));
     assert!(!post.is_open(at_0927));
 
     for exchange in [Exchange::Sse, Exchange::Szse] {

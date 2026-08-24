@@ -67,9 +67,10 @@ fn listed_equity_options_include_each_current_order_acceptance_edge() {
                 !hours.is_open(instant - chrono::Duration::seconds(1)),
                 "{exchange:?}"
             );
-            assert!(hours.is_open_extended(instant), "{exchange:?}");
+            // Each venue's order-acceptance edge: orders only, no matching.
+            assert!(hours.is_order_entry_only(instant), "{exchange:?}");
             assert!(
-                hours.is_open_extended(et((2026, 4, 20), (9, 29, 59))),
+                hours.is_order_entry_only(et((2026, 4, 20), (9, 29, 59))),
                 "{exchange:?}"
             );
             assert!(
@@ -114,7 +115,7 @@ fn partial_options_history_does_not_invent_a_queue_onset() {
     let historical =
         hours_for_exchange_as_of(Exchange::CboeOptionsC1, et((2026, 4, 20), (12, 0, 0)));
 
-    assert!(current.is_open_extended(et((2026, 4, 20), (7, 30, 0))));
+    assert!(current.is_order_entry_only(et((2026, 4, 20), (7, 30, 0))));
     assert!(!historical.is_open(et((2026, 4, 20), (7, 30, 0))));
     assert!(historical.is_open_regular(et((2026, 4, 20), (9, 30, 0))));
 }

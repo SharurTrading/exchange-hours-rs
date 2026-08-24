@@ -6,7 +6,7 @@ use chrono_tz::US;
 
 use crate::calendar::rule::{FRI, MON_FRI, MON_ONLY};
 use crate::calendar::schedules::StaticHoursProfile;
-use crate::calendar::schedules::timeline::{Revision, effective_date, local_date, select_revision};
+use crate::calendar::schedules::timeline::{Revision, local_date, revisions, select_revision};
 use crate::calendar::{FuturesSessionProfile, SessionRule};
 
 const MON_WED: [bool; 7] = [true, true, true, false, false, false, false];
@@ -78,12 +78,19 @@ static REGULAR_CURRENT: &[SessionRule] = &[SessionRule {
     open_ssm: 8 * 3600 + 30 * 60,
     close_ssm: 13 * 3600 + 5 * 60,
 }];
-static EXTENDED_DATED_CURRENT: &[SessionRule] = &[SessionRule {
+// ORDER-ENTRY CLASSIFICATION. Both phases modelled after 2016-02-29 are
+// non-matching. The comment above names 08:00-08:30 as the "Pre-Open" (its
+// start moved from 06:00 on 2020-05-31) which queues orders until the 08:30
+// regular open, and 14:30-16:00 as PCP, the post-close order-entry period that
+// follows the 13:05 close. Neither can print a trade, so the family has no
+// tradeable extended session at all: `extended` is empty and both phases are
+// `order_entry`.
+static ORDER_ENTRY_DATED_CURRENT: &[SessionRule] = &[SessionRule {
     days: MON_FRI,
     open_ssm: 8 * 3600,
     close_ssm: 8 * 3600 + 30 * 60,
 }];
-static EXTENDED_CURRENT: &[SessionRule] = &[
+pub(crate) static ORDER_ENTRY_CURRENT: &[SessionRule] = &[
     SessionRule {
         days: MON_FRI,
         open_ssm: 8 * 3600,
@@ -99,7 +106,8 @@ static EXTENDED_CURRENT: &[SessionRule] = &[
 pub(crate) static CURRENT_FUTURES_PROFILE: FuturesSessionProfile = FuturesSessionProfile {
     tz: US::Central,
     regular: REGULAR_CURRENT,
-    extended: EXTENDED_CURRENT,
+    extended: &[],
+    order_entry: ORDER_ENTRY_CURRENT,
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -108,6 +116,7 @@ static PROFILE_AT_2010_FLOOR: StaticHoursProfile = StaticHoursProfile {
     tz: US::Central,
     regular: REGULAR_AT_2010_FLOOR,
     extended: &[],
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -116,6 +125,7 @@ static PROFILE_2014_10_27: StaticHoursProfile = StaticHoursProfile {
     tz: US::Central,
     regular: REGULAR_2014_10_27,
     extended: &[],
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -124,6 +134,7 @@ static PROFILE_2016_02_29: StaticHoursProfile = StaticHoursProfile {
     tz: US::Central,
     regular: REGULAR_CURRENT,
     extended: &[],
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -131,24 +142,16 @@ static PROFILE_2016_02_29: StaticHoursProfile = StaticHoursProfile {
 static PROFILE_CURRENT: StaticHoursProfile = StaticHoursProfile {
     tz: US::Central,
     regular: REGULAR_CURRENT,
-    extended: EXTENDED_DATED_CURRENT,
+    extended: &[],
+    order_entry: ORDER_ENTRY_DATED_CURRENT,
     has_daily_close: true,
     has_weekend_close: true,
 };
 
-static REVISIONS: &[Revision] = &[
-    Revision {
-        effective: effective_date(2014, 10, 27),
-        profile: &PROFILE_2014_10_27,
-    },
-    Revision {
-        effective: effective_date(2016, 2, 29),
-        profile: &PROFILE_2016_02_29,
-    },
-    Revision {
-        effective: effective_date(2020, 5, 31),
-        profile: &PROFILE_CURRENT,
-    },
+static REVISIONS: &[Revision] = revisions![
+    (2014, 10, 27, &PROFILE_2014_10_27, "CME SER-7194"),
+    (2016, 2, 29, &PROFILE_2016_02_29, "CME SER-7591"),
+    (2020, 5, 31, &PROFILE_CURRENT, "CME SER-8599R"),
 ];
 
 pub(crate) fn profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {

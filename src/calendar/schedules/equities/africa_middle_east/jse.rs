@@ -13,6 +13,10 @@ static JSE_REGULAR: &[SessionRule] = &[SessionRule {
     open_ssm: 9 * 3600,
     close_ssm: 16 * 3600 + 50 * 60,
 }];
+// No ZA01 phase is order-entry-only, so `order_entry` stays empty on every
+// profile below. The two bounds here are the opening and closing auction call
+// sessions, each of which uncrosses into a printed auction trade, and the CPX
+// and EOD tails are crossing sessions that print at the closing price.
 static JSE_OPEN_CLOSE_CURRENT: &[SessionRule] = &[
     SessionRule {
         days: MON_FRI,
@@ -82,6 +86,7 @@ pub(crate) static JSE_PROFILE_CURRENT: StaticHoursProfile = StaticHoursProfile {
     tz: Africa::Johannesburg,
     regular: JSE_REGULAR,
     extended: JSE_EXTENDED_CURRENT,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -100,6 +105,7 @@ pub(crate) static JSE_PROFILE_POST_2021_02_01: StaticHoursProfile = StaticHoursP
     tz: Africa::Johannesburg,
     regular: JSE_REGULAR,
     extended: JSE_EXTENDED_2021_02_01,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -107,6 +113,7 @@ pub(crate) static JSE_PROFILE_POST_2020_08_24: StaticHoursProfile = StaticHoursP
     tz: Africa::Johannesburg,
     regular: JSE_REGULAR,
     extended: JSE_EXTENDED_CPX_ONLY,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -114,6 +121,7 @@ pub(crate) static JSE_PROFILE_POST_2016_09_26: StaticHoursProfile = StaticHoursP
     tz: Africa::Johannesburg,
     regular: JSE_REGULAR,
     extended: JSE_EXTENDED_CPX_EOD,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -121,6 +129,7 @@ pub(crate) static JSE_PROFILE_POST_2013_11_11: StaticHoursProfile = StaticHoursP
     tz: Africa::Johannesburg,
     regular: JSE_REGULAR,
     extended: JSE_EXTENDED_CPX_ONLY,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -128,6 +137,7 @@ pub(crate) static JSE_PROFILE_POST_2012_07_02: StaticHoursProfile = StaticHoursP
     tz: Africa::Johannesburg,
     regular: JSE_REGULAR,
     extended: JSE_OPEN_CLOSE_CURRENT,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -135,39 +145,52 @@ pub(crate) static JSE_PROFILE_PRE_2012_07_02: StaticHoursProfile = StaticHoursPr
     tz: Africa::Johannesburg,
     regular: JSE_REGULAR,
     extended: JSE_OPEN_CLOSE_PRE_2012,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
 
-use crate::calendar::schedules::timeline::{Revision, effective_date, local_date, select_revision};
+use crate::calendar::schedules::timeline::{Revision, local_date, revisions, select_revision};
 
 pub(crate) const CURRENT: &StaticHoursProfile = &JSE_PROFILE_CURRENT;
 
-static REVISIONS: &[Revision] = &[
-    Revision {
-        effective: effective_date(2012, 7, 2),
-        profile: &JSE_PROFILE_POST_2012_07_02,
-    },
-    Revision {
-        effective: effective_date(2013, 11, 11),
-        profile: &JSE_PROFILE_POST_2013_11_11,
-    },
-    Revision {
-        effective: effective_date(2016, 9, 26),
-        profile: &JSE_PROFILE_POST_2016_09_26,
-    },
-    Revision {
-        effective: effective_date(2020, 8, 24),
-        profile: &JSE_PROFILE_POST_2020_08_24,
-    },
-    Revision {
-        effective: effective_date(2021, 2, 1),
-        profile: &JSE_PROFILE_POST_2021_02_01,
-    },
-    Revision {
-        effective: effective_date(2021, 2, 15),
-        profile: &JSE_PROFILE_CURRENT,
-    },
+static REVISIONS: &[Revision] = revisions![
+    (
+        2012,
+        7,
+        2,
+        &JSE_PROFILE_POST_2012_07_02,
+        "JSE notice 20120525-049C"
+    ),
+    (
+        2013,
+        11,
+        11,
+        &JSE_PROFILE_POST_2013_11_11,
+        "JSE notice 2013_158B"
+    ),
+    (2016, 9, 26, &JSE_PROFILE_POST_2016_09_26, "JSE notice 461A"),
+    (
+        2020,
+        8,
+        24,
+        &JSE_PROFILE_POST_2020_08_24,
+        "JSE Service Hotline 18520"
+    ),
+    (
+        2021,
+        2,
+        1,
+        &JSE_PROFILE_POST_2021_02_01,
+        "JSE Service Hotline 28220"
+    ),
+    (
+        2021,
+        2,
+        15,
+        &JSE_PROFILE_CURRENT,
+        "JSE Service Hotline 03721"
+    ),
 ];
 
 pub(crate) fn profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {

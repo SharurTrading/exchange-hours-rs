@@ -154,14 +154,34 @@ pub(super) const fn equity_profile(extended: &'static [SessionRule]) -> StaticHo
     profile(US_EQUITY_REGULAR, extended)
 }
 
+/// Reg NMS regular hours plus an order-entry-only phase that precedes matching.
+///
+/// Used by the venues that publish an order-acceptance edge ahead of their
+/// first executable session; nothing can print inside `order_entry`.
+pub(super) const fn equity_profile_with_entry(
+    extended: &'static [SessionRule],
+    order_entry: &'static [SessionRule],
+) -> StaticHoursProfile {
+    profile_with_entry(US_EQUITY_REGULAR, extended, order_entry)
+}
+
 pub(super) const fn profile(
     regular: &'static [SessionRule],
     extended: &'static [SessionRule],
+) -> StaticHoursProfile {
+    profile_with_entry(regular, extended, &[])
+}
+
+pub(super) const fn profile_with_entry(
+    regular: &'static [SessionRule],
+    extended: &'static [SessionRule],
+    order_entry: &'static [SessionRule],
 ) -> StaticHoursProfile {
     StaticHoursProfile {
         tz: America::New_York,
         regular,
         extended,
+        order_entry,
         has_daily_close: true,
         has_weekend_close: true,
     }

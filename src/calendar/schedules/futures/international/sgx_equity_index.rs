@@ -8,9 +8,14 @@
 //! Pre-Opening/Non-Cancel order-entry routine and ends with a Pre-Closing /
 //! Non-Cancel closing routine, then an overnight "T+1" session that reopens
 //! after a short second order-entry routine and runs to 05:15 the next calendar
-//! day. Continuous, executable phases are `regular`; the order-entry and
-//! auction-matching phases, which accept orders but do not trade continuously,
-//! are `extended`.
+//! day. Continuous, executable phases are `regular`.
+//!
+//! The non-continuous phases split in two. The Pre-Opening/Non-Cancel routines
+//! that precede the T and T+1 opens only collect orders - nothing matches until
+//! the open, and the opening match falls on the session-open instant that
+//! already starts a `regular` window - so they are `order_entry`. The closing
+//! routine is different: it matches at a single closing price, a trade prints
+//! in it, so it stays `extended`.
 //!
 //! The Taiwan and NTR (USD) grids live in the `sgx_equity_index_more` module.
 
@@ -46,22 +51,26 @@ pub(crate) static SGX_EQUITY_INDEX_JAPAN_REGULAR_CURRENT: &[SessionRule] = &[
     },
 ];
 
-// Three non-continuous phases. SGX states the T routine as "Pre-Opening : 7.15
-// am - 7.28 am / Non-Cancel : 7.28 am - 7.30 am"; the two are contiguous and
-// are merged into one 07:15-07:30 order-entry window. The closing routine
-// ("Pre-Closing : 2.55 pm - 2.59 pm / Non-Cancel : 2.59 pm - 3.00 pm") is
-// merged the same way. The T+1 routine is "Pre-Opening : 3.05 pm - 3.08 pm /
-// Non-Cancel : 3.08 pm - 3.10 pm".
-pub(crate) static SGX_EQUITY_INDEX_JAPAN_EXTENDED_CURRENT: &[SessionRule] = &[
+// The closing routine, "Pre-Closing : 2.55 pm - 2.59 pm / Non-Cancel : 2.59 pm
+// - 3.00 pm", merged into one 14:55-15:00 window. It matches at a single closing
+// price, so a trade prints in it and it stays `extended`.
+pub(crate) static SGX_EQUITY_INDEX_JAPAN_EXTENDED_CURRENT: &[SessionRule] = &[SessionRule {
+    days: MON_FRI,
+    open_ssm: 14 * 3600 + 55 * 60,
+    close_ssm: 15 * 3600,
+}];
+
+// The two opening routines. SGX states the T routine as "Pre-Opening : 7.15 am -
+// 7.28 am / Non-Cancel : 7.28 am - 7.30 am" and the T+1 routine as "Pre-Opening
+// : 3.05 pm - 3.08 pm / Non-Cancel : 3.08 pm - 3.10 pm"; each contiguous pair is
+// merged into one window. Both only collect orders - the opening matches land on
+// the 07:30 and 15:10 session opens that already begin `regular` windows - so
+// both are `order_entry`, not `extended`.
+pub(crate) static SGX_EQUITY_INDEX_JAPAN_ORDER_ENTRY_CURRENT: &[SessionRule] = &[
     SessionRule {
         days: MON_FRI,
         open_ssm: 7 * 3600 + 15 * 60,
         close_ssm: 7 * 3600 + 30 * 60,
-    },
-    SessionRule {
-        days: MON_FRI,
-        open_ssm: 14 * 3600 + 55 * 60,
-        close_ssm: 15 * 3600,
     },
     SessionRule {
         days: MON_FRI,
@@ -76,6 +85,7 @@ pub(crate) static SGX_EQUITY_INDEX_JAPAN_BASELINE: StaticHoursProfile = StaticHo
     tz: Asia::Singapore,
     regular: SGX_EQUITY_INDEX_JAPAN_REGULAR_CURRENT,
     extended: SGX_EQUITY_INDEX_JAPAN_EXTENDED_CURRENT,
+    order_entry: SGX_EQUITY_INDEX_JAPAN_ORDER_ENTRY_CURRENT,
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -127,22 +137,27 @@ pub(crate) static SGX_EQUITY_INDEX_CHINA_REGULAR_CURRENT: &[SessionRule] = &[
     },
 ];
 
-// SGX states the routines as "Pre - Opening: 8.45 am - 8.58 am / Non - Cancel:
-// 8.58 am - 9.00 am", "Pre - Closing: 4.30 pm - 4.34 pm / Non - Cancel: 4.34 pm
-// - 4.35 pm" and "Pre - Opening: 4.40 pm - 4.43 pm / Non - Cancel: 4.43 pm -
-// 4.45 pm"; each contiguous pair is merged into a single window. The H50
-// options row (FCHO) ends its continuous T phase at 16:35 rather than 16:30
-// because options carry no closing auction; the futures grid is modelled here.
-pub(crate) static SGX_EQUITY_INDEX_CHINA_EXTENDED_CURRENT: &[SessionRule] = &[
+// The closing routine, "Pre - Closing: 4.30 pm - 4.34 pm / Non - Cancel: 4.34 pm
+// - 4.35 pm", merged into one 16:30-16:35 window. It matches at a single closing
+// price, so a trade prints in it and it stays `extended`. The H50 options row
+// (FCHO) ends its continuous T phase at 16:35 rather than 16:30 because options
+// carry no closing auction; the futures grid is modelled here.
+pub(crate) static SGX_EQUITY_INDEX_CHINA_EXTENDED_CURRENT: &[SessionRule] = &[SessionRule {
+    days: MON_FRI,
+    open_ssm: 16 * 3600 + 30 * 60,
+    close_ssm: 16 * 3600 + 35 * 60,
+}];
+
+// The two opening routines, "Pre - Opening: 8.45 am - 8.58 am / Non - Cancel:
+// 8.58 am - 9.00 am" and "Pre - Opening: 4.40 pm - 4.43 pm / Non - Cancel: 4.43
+// pm - 4.45 pm", each contiguous pair merged into one window. Neither matches:
+// the opening matches land on the 09:00 and 16:45 session opens that already
+// begin `regular` windows, so both windows are `order_entry`.
+pub(crate) static SGX_EQUITY_INDEX_CHINA_ORDER_ENTRY_CURRENT: &[SessionRule] = &[
     SessionRule {
         days: MON_FRI,
         open_ssm: 8 * 3600 + 45 * 60,
         close_ssm: 9 * 3600,
-    },
-    SessionRule {
-        days: MON_FRI,
-        open_ssm: 16 * 3600 + 30 * 60,
-        close_ssm: 16 * 3600 + 35 * 60,
     },
     SessionRule {
         days: MON_FRI,
@@ -157,6 +172,7 @@ pub(crate) static SGX_EQUITY_INDEX_CHINA_BASELINE: StaticHoursProfile = StaticHo
     tz: Asia::Singapore,
     regular: SGX_EQUITY_INDEX_CHINA_REGULAR_CURRENT,
     extended: SGX_EQUITY_INDEX_CHINA_EXTENDED_CURRENT,
+    order_entry: SGX_EQUITY_INDEX_CHINA_ORDER_ENTRY_CURRENT,
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -206,22 +222,28 @@ pub(crate) static SGX_EQUITY_INDEX_SINGAPORE_REGULAR_CURRENT: &[SessionRule] = &
     },
 ];
 
-// SGX states the futures routines as "Pre - Opening: 8:15 am - 8:28 am / Non -
-// Cancel: 8:28 am - 8:30 am", "Pre - Closing: 5:20 pm - 5:24 pm / Non - Cancel:
-// 5:24 pm - 5:25 pm" and "Pre - Opening: 5:30 pm - 5:33 pm / Non - Cancel: 5:33
-// pm - 5:35 pm". The options variant (CSGP) publishes a single "Order
-// Cancellation" window over the same spans - 08:15-08:30 and 17:30-17:35 - so
-// the merged windows below cover futures and options alike.
-pub(crate) static SGX_EQUITY_INDEX_SINGAPORE_EXTENDED_CURRENT: &[SessionRule] = &[
+// The closing routine, "Pre - Closing: 5:20 pm - 5:24 pm / Non - Cancel: 5:24 pm
+// - 5:25 pm", merged into one 17:20-17:25 window. It matches at a single closing
+// price, so a trade prints in it and it stays `extended`.
+pub(crate) static SGX_EQUITY_INDEX_SINGAPORE_EXTENDED_CURRENT: &[SessionRule] = &[SessionRule {
+    days: MON_FRI,
+    open_ssm: 17 * 3600 + 20 * 60,
+    close_ssm: 17 * 3600 + 25 * 60,
+}];
+
+// The two opening routines, "Pre - Opening: 8:15 am - 8:28 am / Non - Cancel:
+// 8:28 am - 8:30 am" and "Pre - Opening: 5:30 pm - 5:33 pm / Non - Cancel: 5:33
+// pm - 5:35 pm", each contiguous pair merged into one window. The options
+// variant (CSGP) publishes a single "Order Cancellation" window over the same
+// spans - 08:15-08:30 and 17:30-17:35 - so these windows cover futures and
+// options alike. Neither matches: the opening matches land on the 08:30 and
+// 17:35 session opens that already begin `regular` windows, so both windows are
+// `order_entry`.
+pub(crate) static SGX_EQUITY_INDEX_SINGAPORE_ORDER_ENTRY_CURRENT: &[SessionRule] = &[
     SessionRule {
         days: MON_FRI,
         open_ssm: 8 * 3600 + 15 * 60,
         close_ssm: 8 * 3600 + 30 * 60,
-    },
-    SessionRule {
-        days: MON_FRI,
-        open_ssm: 17 * 3600 + 20 * 60,
-        close_ssm: 17 * 3600 + 25 * 60,
     },
     SessionRule {
         days: MON_FRI,
@@ -236,6 +258,7 @@ pub(crate) static SGX_EQUITY_INDEX_SINGAPORE_BASELINE: StaticHoursProfile = Stat
     tz: Asia::Singapore,
     regular: SGX_EQUITY_INDEX_SINGAPORE_REGULAR_CURRENT,
     extended: SGX_EQUITY_INDEX_SINGAPORE_EXTENDED_CURRENT,
+    order_entry: SGX_EQUITY_INDEX_SINGAPORE_ORDER_ENTRY_CURRENT,
     has_daily_close: true,
     has_weekend_close: true,
 };

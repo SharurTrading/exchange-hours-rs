@@ -38,7 +38,15 @@ static PRE_REGULAR: &[SessionRule] = &[SessionRule {
     open_ssm: 8 * 3600,
     close_ssm: 18 * 3600,
 }];
-static PRE_EXTENDED: &[SessionRule] = &[SessionRule {
+// PHASE CLASSIFICATION. Every non-executable window below is the pre-open /
+// pre-market phase that precedes the day's open: the WebICE hours table and the
+// archived Endex product page publish it as "pre-open" ahead of the 08:00 open,
+// and the Endex Rules' Operating Time Schedule keeps it a separate Pre-Opening
+// phase from Trading. Orders may be entered, amended and cancelled there and
+// nothing matches until the open, so these windows are order_entry. Dutch TTF
+// has no tradeable phase outside its executable session, so extended is empty
+// in every era.
+static PRE_ORDER_ENTRY: &[SessionRule] = &[SessionRule {
     days: MON_FRI,
     open_ssm: 7 * 3600 + 45 * 60,
     close_ssm: 8 * 3600,
@@ -55,7 +63,7 @@ static ALIGNED_REGULAR: &[SessionRule] = &[
         close_ssm: 23 * 3600,
     },
 ];
-static ALIGNED_EXTENDED: &[SessionRule] = &[
+static ALIGNED_ORDER_ENTRY: &[SessionRule] = &[
     SessionRule {
         days: SUN_ONLY,
         open_ssm: 23 * 3600 + 40 * 60,
@@ -79,7 +87,7 @@ static MISMATCH_REGULAR: &[SessionRule] = &[
         close_ssm: 22 * 3600,
     },
 ];
-static MISMATCH_EXTENDED: &[SessionRule] = &[
+static MISMATCH_ORDER_ENTRY: &[SessionRule] = &[
     SessionRule {
         days: SUN_ONLY,
         open_ssm: 22 * 3600 + 40 * 60,
@@ -92,7 +100,7 @@ static MISMATCH_EXTENDED: &[SessionRule] = &[
     },
 ];
 
-static PRE: StaticHoursProfile = amsterdam_profile(PRE_REGULAR, PRE_EXTENDED);
+static PRE: StaticHoursProfile = amsterdam_profile(PRE_REGULAR, PRE_ORDER_ENTRY);
 static CLOSED: StaticHoursProfile = amsterdam_profile(&[], &[]);
 static EXTENSION_EVE: StaticHoursProfile = amsterdam_profile(
     &[SessionRule {
@@ -107,17 +115,18 @@ static EXTENSION_EVE: StaticHoursProfile = amsterdam_profile(
     }],
 );
 pub(crate) static CURRENT: StaticHoursProfile =
-    amsterdam_profile(ALIGNED_REGULAR, ALIGNED_EXTENDED);
-static MISMATCH: StaticHoursProfile = amsterdam_profile(MISMATCH_REGULAR, MISMATCH_EXTENDED);
+    amsterdam_profile(ALIGNED_REGULAR, ALIGNED_ORDER_ENTRY);
+static MISMATCH: StaticHoursProfile = amsterdam_profile(MISMATCH_REGULAR, MISMATCH_ORDER_ENTRY);
 
 const fn amsterdam_profile(
     regular: &'static [SessionRule],
-    extended: &'static [SessionRule],
+    order_entry: &'static [SessionRule],
 ) -> StaticHoursProfile {
     StaticHoursProfile {
         tz: Europe::Amsterdam,
         regular,
-        extended,
+        extended: &[],
+        order_entry,
         has_daily_close: true,
         has_weekend_close: true,
     }

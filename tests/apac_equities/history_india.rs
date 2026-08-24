@@ -18,7 +18,8 @@ fn india_cutovers() {
         let at_0905 = local(tz, probe, (9, 5, 0));
         assert!(pre.is_open_regular(at_0905));
         assert!(!post.is_open_regular(at_0905));
-        assert!(post.is_open_extended(at_0905));
+        // The 2010 pre-open call introduced an order-collection window here.
+        assert!(post.is_order_entry_only(at_0905));
 
         let (pre, post) = cutover_sides(exchange, tz, (2026, 8, 3));
         let at_1520 = local(tz, probe, (15, 20, 0));

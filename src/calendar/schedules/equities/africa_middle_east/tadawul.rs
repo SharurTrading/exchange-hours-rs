@@ -15,60 +15,55 @@ static REGULAR_CURRENT: &[SessionRule] = &[SessionRule {
     open_ssm: 10 * 3600,
     close_ssm: 15 * 3600,
 }];
-static EXTENDED_CURRENT: &[SessionRule] = &[
-    SessionRule {
-        days: SUN_THU,
-        open_ssm: 9 * 3600 + 30 * 60,
-        close_ssm: 10 * 3600,
-    },
-    SessionRule {
-        days: SUN_THU,
-        open_ssm: 15 * 3600,
-        close_ssm: 15 * 3600 + 20 * 60,
-    },
-];
-static EXTENDED_POST_2018: &[SessionRule] = &[
-    EXTENDED_CURRENT[0],
-    SessionRule {
-        days: SUN_THU,
-        open_ssm: 15 * 3600,
-        close_ssm: 15 * 3600 + 10 * 60,
-    },
-];
-static EXTENDED_POST_2016: &[SessionRule] = &[EXTENDED_CURRENT[0]];
+// Order entry only. The operator's trading-times table starts "Trading in
+// Equities" at 10:00 and notes only that the market opens on a variable basis
+// within 30 seconds after 10:00, so the preceding half hour collects, amends
+// and cancels opening-auction orders without any of them matching; the first
+// print is the 10:00 uncross.
+// https://www.saudiexchange.sa/wps/portal/saudiexchange/rules-guidance/capital-market-overview/trading-cycle-and-times?locale=en
+static ORDER_ENTRY_CURRENT: &[SessionRule] = &[SessionRule {
+    days: SUN_THU,
+    open_ssm: 9 * 3600 + 30 * 60,
+    close_ssm: 10 * 3600,
+}];
+// The closing auction and trade-at-last tail both print, so they stay
+// tradeable: trade at last executes at the closing auction price.
+static EXTENDED_CURRENT: &[SessionRule] = &[SessionRule {
+    days: SUN_THU,
+    open_ssm: 15 * 3600,
+    close_ssm: 15 * 3600 + 20 * 60,
+}];
+static EXTENDED_POST_2018: &[SessionRule] = &[SessionRule {
+    days: SUN_THU,
+    open_ssm: 15 * 3600,
+    close_ssm: 15 * 3600 + 10 * 60,
+}];
 static REGULAR_OLD_SUN_THU: &[SessionRule] = &[SessionRule {
     days: SUN_THU,
     open_ssm: 11 * 3600,
     close_ssm: 15 * 3600 + 30 * 60,
 }];
-static EXTENDED_OLD_SUN_THU: &[SessionRule] = &[SessionRule {
-    days: SUN_THU,
-    open_ssm: 10 * 3600,
-    close_ssm: 11 * 3600,
-}];
+// The pre-2016 grids carry no pre-opening phase. Today's trading-cycle table
+// documents the 09:30-10:00 opening auction, but no dated primary source
+// states the opening-auction order window for the 11:00-open eras — a
+// 10:00-11:00 window would be an inference from the later auction's shape, so
+// under LAW-PRIMARY-SOURCES it is omitted and reads closed. Neither old grid
+// had any close-side phase, so their extended slices are empty too.
 static REGULAR_OLD_SAT_WED: &[SessionRule] = &[SessionRule {
     days: SAT_WED,
     open_ssm: 11 * 3600,
     close_ssm: 15 * 3600 + 30 * 60,
-}];
-static EXTENDED_OLD_SAT_WED: &[SessionRule] = &[SessionRule {
-    days: SAT_WED,
-    open_ssm: 10 * 3600,
-    close_ssm: 11 * 3600,
 }];
 static REGULAR_PANDEMIC: &[SessionRule] = &[SessionRule {
     days: SUN_THU,
     open_ssm: 10 * 3600,
     close_ssm: 13 * 3600,
 }];
-static EXTENDED_PANDEMIC: &[SessionRule] = &[
-    EXTENDED_CURRENT[0],
-    SessionRule {
-        days: SUN_THU,
-        open_ssm: 13 * 3600,
-        close_ssm: 13 * 3600 + 20 * 60,
-    },
-];
+static EXTENDED_PANDEMIC: &[SessionRule] = &[SessionRule {
+    days: SUN_THU,
+    open_ssm: 13 * 3600,
+    close_ssm: 13 * 3600 + 20 * 60,
+}];
 
 // Current Main Market phases: opening-auction orders 09:30–10:00,
 // continuous trading 10:00–15:00, closing auction 15:00–15:10, and trade at
@@ -79,6 +74,7 @@ pub(crate) static TADAWUL_PROFILE_CURRENT: StaticHoursProfile = StaticHoursProfi
     tz: Asia::Riyadh,
     regular: REGULAR_CURRENT,
     extended: EXTENDED_CURRENT,
+    order_entry: ORDER_ENTRY_CURRENT,
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -94,27 +90,31 @@ pub(crate) static TADAWUL_PROFILE_POST_2018_05_27: StaticHoursProfile = StaticHo
     tz: Asia::Riyadh,
     regular: REGULAR_CURRENT,
     extended: EXTENDED_POST_2018,
+    order_entry: ORDER_ENTRY_CURRENT,
     has_daily_close: true,
     has_weekend_close: true,
 };
 pub(crate) static TADAWUL_PROFILE_POST_2016_04_03: StaticHoursProfile = StaticHoursProfile {
     tz: Asia::Riyadh,
     regular: REGULAR_CURRENT,
-    extended: EXTENDED_POST_2016,
+    extended: &[],
+    order_entry: ORDER_ENTRY_CURRENT,
     has_daily_close: true,
     has_weekend_close: true,
 };
 pub(crate) static TADAWUL_PROFILE_POST_2013_06_29: StaticHoursProfile = StaticHoursProfile {
     tz: Asia::Riyadh,
     regular: REGULAR_OLD_SUN_THU,
-    extended: EXTENDED_OLD_SUN_THU,
+    extended: &[],
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
 pub(crate) static TADAWUL_PROFILE_PRE_2013_06_29: StaticHoursProfile = StaticHoursProfile {
     tz: Asia::Riyadh,
     regular: REGULAR_OLD_SAT_WED,
-    extended: EXTENDED_OLD_SAT_WED,
+    extended: &[],
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -126,39 +126,58 @@ pub(crate) static TADAWUL_PROFILE_PANDEMIC: StaticHoursProfile = StaticHoursProf
     tz: Asia::Riyadh,
     regular: REGULAR_PANDEMIC,
     extended: EXTENDED_PANDEMIC,
+    order_entry: ORDER_ENTRY_CURRENT,
     has_daily_close: true,
     has_weekend_close: true,
 };
 
-use crate::calendar::schedules::timeline::{Revision, effective_date, local_date, select_revision};
+use crate::calendar::schedules::timeline::{Revision, local_date, revisions, select_revision};
 
 pub(crate) const CURRENT: &StaticHoursProfile = &TADAWUL_PROFILE_CURRENT;
 
-static REVISIONS: &[Revision] = &[
-    Revision {
-        effective: effective_date(2013, 6, 29),
-        profile: &TADAWUL_PROFILE_POST_2013_06_29,
-    },
-    Revision {
-        effective: effective_date(2016, 4, 3),
-        profile: &TADAWUL_PROFILE_POST_2016_04_03,
-    },
-    Revision {
-        effective: effective_date(2018, 5, 27),
-        profile: &TADAWUL_PROFILE_POST_2018_05_27,
-    },
-    Revision {
-        effective: effective_date(2019, 5, 12),
-        profile: &TADAWUL_PROFILE_CURRENT,
-    },
-    Revision {
-        effective: effective_date(2020, 3, 26),
-        profile: &TADAWUL_PROFILE_PANDEMIC,
-    },
-    Revision {
-        effective: effective_date(2020, 5, 31),
-        profile: &TADAWUL_PROFILE_CURRENT,
-    },
+static REVISIONS: &[Revision] = revisions![
+    (
+        2013,
+        6,
+        29,
+        &TADAWUL_PROFILE_POST_2013_06_29,
+        "SPA news 7e453de27d"
+    ),
+    (
+        2016,
+        4,
+        3,
+        &TADAWUL_PROFILE_POST_2016_04_03,
+        "SPA news 1484000"
+    ),
+    (
+        2018,
+        5,
+        27,
+        &TADAWUL_PROFILE_POST_2018_05_27,
+        "Tadawul Statistical Report H1 2018"
+    ),
+    (
+        2019,
+        5,
+        12,
+        &TADAWUL_PROFILE_CURRENT,
+        "Tadawul Statistical Report 2019"
+    ),
+    (
+        2020,
+        3,
+        26,
+        &TADAWUL_PROFILE_PANDEMIC,
+        "Saudi Exchange issuer news 6262"
+    ),
+    (
+        2020,
+        5,
+        31,
+        &TADAWUL_PROFILE_CURRENT,
+        "Saudi Exchange resumption notice"
+    ),
 ];
 
 pub(crate) fn profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {

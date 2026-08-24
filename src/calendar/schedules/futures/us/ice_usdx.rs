@@ -8,7 +8,7 @@ use chrono_tz::America;
 use crate::calendar::SessionRule;
 use crate::calendar::rule::{MON_THU, SUN_ONLY};
 use crate::calendar::schedules::StaticHoursProfile;
-use crate::calendar::schedules::timeline::{Revision, effective_date, local_date, select_revision};
+use crate::calendar::schedules::timeline::{Revision, local_date, revisions, select_revision};
 
 // USDX is a near-24-hour contract whose session commences on the evening before
 // its trade date, with a Sunday evening that opens two hours earlier than the
@@ -61,8 +61,14 @@ pub(crate) static ICE_USDX_REGULAR_CURRENT: &[SessionRule] = &[
 // 30 minutes before the opening for order entry. Open on Sunday night is 6:00
 // PM ET; Pre-Open at 5:30 PM ET".
 //
+// ICE's own wording settles the classification: the platform "is available 30
+// minutes before the opening for order entry" and nothing matches until the
+// open, so the Pre-Open goes in order_entry. USDX publishes no tradeable phase
+// outside its near-24-hour executable session, so the extended slice is empty.
+//
 // https://www.ice.com/products/194/US-Dollar-Index-USDX-Futures
-pub(crate) static ICE_USDX_EXTENDED_CURRENT: &[SessionRule] = &[
+pub(crate) static ICE_USDX_EXTENDED_CURRENT: &[SessionRule] = &[];
+pub(crate) static ICE_USDX_ORDER_ENTRY_CURRENT: &[SessionRule] = &[
     SessionRule {
         days: SUN_ONLY,
         open_ssm: 17 * 3600 + 30 * 60,
@@ -79,6 +85,7 @@ pub(crate) static ICE_USDX_CURRENT: StaticHoursProfile = StaticHoursProfile {
     tz: America::New_York,
     regular: ICE_USDX_REGULAR_CURRENT,
     extended: ICE_USDX_EXTENDED_CURRENT,
+    order_entry: ICE_USDX_ORDER_ENTRY_CURRENT,
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -117,13 +124,17 @@ static ICE_USDX_REGULAR_BASELINE: &[SessionRule] = &[
 // Dollar Index FAQ already reads "The ICE trading platform is available for
 // order entry thirty minutes before the opening of trading", and the current
 // product page repeats it. No primary source dates its introduction, so no
-// cutover is encoded for the extended phases; only the close moves in 2011.
+// cutover is encoded for the order-entry phases; only the close moves in 2011.
+// The FAQ's wording - "available for order entry thirty minutes before the
+// opening of trading" - is also why the phase is order_entry in this era, not a
+// tradeable extended session.
 //
 // https://www.ice.com/publicdocs/futures_us/ICE_Dollar_Index_FAQ.pdf
 pub(crate) static ICE_USDX_BASELINE: StaticHoursProfile = StaticHoursProfile {
     tz: America::New_York,
     regular: ICE_USDX_REGULAR_BASELINE,
     extended: ICE_USDX_EXTENDED_CURRENT,
+    order_entry: ICE_USDX_ORDER_ENTRY_CURRENT,
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -142,10 +153,8 @@ pub(crate) static ICE_USDX_BASELINE: StaticHoursProfile = StaticHoursProfile {
 //   from ice.com; per the crate's established practice for superseded operator
 //   documents, the archive capture is cited as-is.
 //   https://web.archive.org/web/20110222135802/https://www.theice.com/publicdocs/futures_us/exchange_notices/ExNot020311DXhours.pdf
-pub(crate) static ICE_USDX_REVISIONS: &[Revision] = &[Revision {
-    effective: effective_date(2011, 2, 14),
-    profile: &ICE_USDX_CURRENT,
-}];
+pub(crate) static ICE_USDX_REVISIONS: &[Revision] =
+    revisions![(2011, 2, 14, &ICE_USDX_CURRENT, "ICE ExNot 020311 DX hours"),];
 
 /// Selects the USDX profile in force on `as_of`'s New York day.
 pub(crate) fn ice_usdx_profile_at(

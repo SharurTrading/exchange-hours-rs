@@ -15,7 +15,7 @@ fn nyse_accepts_orders_from_0630_before_its_core_session() {
     // NYSE's living hours table opens its pre-opening order queue at 06:30 ET.
     let hours = hours_for_exchange(Exchange::Nyse);
     assert!(!hours.is_open(et((2026, 4, 20), (6, 29, 59))));
-    assert!(hours.is_open_extended(et((2026, 4, 20), (6, 30, 0))));
+    assert!(hours.is_order_entry_only(et((2026, 4, 20), (6, 30, 0))));
     assert!(!hours.is_open(et((2026, 4, 20), (16, 30, 0))));
     assert!(hours.is_open_regular(et((2026, 4, 20), (10, 0, 0))));
 }
@@ -30,7 +30,7 @@ fn current_nyse_and_cboe_queues_precede_their_active_early_sessions() {
         let hours = hours_for_exchange(exch);
         assert!(!hours.is_open(et((2026, 4, 20), (6, 29, 59))), "{exch:?}");
         assert!(
-            hours.is_open_extended(et((2026, 4, 20), (6, 30, 0))),
+            hours.is_order_entry_only(et((2026, 4, 20), (6, 30, 0))),
             "{exch:?}"
         );
         assert!(
@@ -43,7 +43,7 @@ fn current_nyse_and_cboe_queues_precede_their_active_early_sessions() {
         let hours = hours_for_exchange(exch);
         assert!(!hours.is_open(et((2026, 4, 20), (5, 59, 59))), "{exch:?}");
         assert!(
-            hours.is_open_extended(et((2026, 4, 20), (6, 0, 0))),
+            hours.is_order_entry_only(et((2026, 4, 20), (6, 0, 0))),
             "{exch:?}"
         );
         assert!(
@@ -91,7 +91,8 @@ fn nyse_national_dormancy_and_relaunch_use_sourced_dates() {
     assert_eq!(
         calendar_for_exchange(Exchange::NyseNational)
             .next_session_after(et((2018, 5, 7), (0, 0, 0))),
-        Some((et((2018, 5, 21), (6, 30, 0)), et((2018, 5, 21), (9, 30, 0)),))
+        // 06:30 is the order-acceptance edge; the session opens at 07:00.
+        Some((et((2018, 5, 21), (7, 0, 0)), et((2018, 5, 21), (9, 30, 0)),))
     );
 }
 
@@ -101,7 +102,7 @@ fn bzx_edgx_and_arca_accept_orders_at_0230_today() {
         let hours = hours_for_exchange(exch);
         assert!(!hours.is_open(et((2026, 4, 20), (2, 29, 59))));
         assert!(
-            hours.is_open_extended(et((2026, 4, 20), (2, 30, 0))),
+            hours.is_order_entry_only(et((2026, 4, 20), (2, 30, 0))),
             "{exch:?}"
         );
     }
@@ -115,11 +116,11 @@ fn edgx_exact_2021_queue_changes_are_date_aware() {
 
     let after = hours_for_exchange_as_of(Exchange::CboeEdgx, et((2021, 3, 8), (12, 0, 0)));
     assert!(!after.is_open(et((2021, 3, 8), (3, 29, 59))));
-    assert!(after.is_open_extended(et((2021, 3, 8), (3, 30, 0))));
+    assert!(after.is_order_entry_only(et((2021, 3, 8), (3, 30, 0))));
 
     let september = hours_for_exchange_as_of(Exchange::CboeEdgx, et((2021, 9, 7), (12, 0, 0)));
     assert!(!september.is_open(et((2021, 9, 7), (2, 29, 59))));
-    assert!(september.is_open_extended(et((2021, 9, 7), (2, 30, 0))));
+    assert!(september.is_order_entry_only(et((2021, 9, 7), (2, 30, 0))));
 }
 
 #[test]
@@ -142,11 +143,11 @@ fn bzx_0230_queue_started_with_the_2025_early_session_expansion() {
     // https://www.cboe.com/insights/posts/early-birds-and-night-owls-how-extended-trading-hours-are-reshaping-u-s-equities-markets-
     let before = hours_for_exchange_as_of(Exchange::CboeBzx, et((2025, 4, 30), (12, 0, 0)));
     assert!(!before.is_open(et((2025, 4, 30), (5, 0, 0))));
-    assert!(before.is_open_extended(et((2025, 4, 30), (6, 0, 0))));
+    assert!(before.is_order_entry_only(et((2025, 4, 30), (6, 0, 0))));
 
     let after = hours_for_exchange_as_of(Exchange::CboeBzx, et((2025, 5, 1), (12, 0, 0)));
     assert!(!after.is_open(et((2025, 5, 1), (2, 29, 59))));
-    assert!(after.is_open_extended(et((2025, 5, 1), (2, 30, 0))));
+    assert!(after.is_order_entry_only(et((2025, 5, 1), (2, 30, 0))));
 }
 
 #[test]
@@ -305,8 +306,8 @@ fn euronext_central_books_use_nominal_exchange_boundaries() {
     ] {
         let hours = hours_for_exchange(exch);
         assert!(!hours.is_open(cet((2026, 4, 20), (7, 29, 59))));
-        assert!(hours.is_open_extended(cet((2026, 4, 20), (7, 30, 0))));
-        assert!(hours.is_open_extended(cet((2026, 4, 20), (8, 59, 59))));
+        assert!(hours.is_order_entry_only(cet((2026, 4, 20), (7, 30, 0))));
+        assert!(hours.is_order_entry_only(cet((2026, 4, 20), (8, 59, 59))));
         assert!(hours.is_open_regular(cet((2026, 4, 20), (9, 0, 0))));
         assert!(!hours.is_open_extended(cet((2026, 4, 20), (9, 0, 0))));
         assert!(hours.is_open_regular(cet((2026, 4, 20), (17, 29, 59))));
@@ -346,8 +347,8 @@ fn euronext_lisbon_keeps_its_zone_but_follows_the_cet_book() {
     let hours = hours_for_exchange(Exchange::EuronextLisbon);
     assert_eq!(hours.tz, Europe::Lisbon);
     assert!(!hours.is_open(zoned(Europe::Lisbon, (2026, 4, 20), (6, 29, 59))));
-    assert!(hours.is_open_extended(zoned(Europe::Lisbon, (2026, 4, 20), (6, 30, 0))));
-    assert!(hours.is_open_extended(zoned(Europe::Lisbon, (2026, 4, 20), (7, 59, 59))));
+    assert!(hours.is_order_entry_only(zoned(Europe::Lisbon, (2026, 4, 20), (6, 30, 0))));
+    assert!(hours.is_order_entry_only(zoned(Europe::Lisbon, (2026, 4, 20), (7, 59, 59))));
     assert!(hours.is_open_regular(zoned(Europe::Lisbon, (2026, 4, 20), (8, 0, 0))));
     assert!(!hours.is_open_extended(zoned(Europe::Lisbon, (2026, 4, 20), (8, 0, 0))));
     assert_eq!(
@@ -387,7 +388,7 @@ fn euronext_dublin_uses_the_distinct_cet_close_in_its_venue_zone() {
     let hours = hours_for_exchange(Exchange::EuronextDublin);
     assert_eq!(hours.tz, Europe::Dublin);
     assert!(!hours.is_open(zoned(Europe::Dublin, (2026, 4, 20), (6, 29, 59))));
-    assert!(hours.is_open_extended(zoned(Europe::Dublin, (2026, 4, 20), (6, 30, 0))));
+    assert!(hours.is_order_entry_only(zoned(Europe::Dublin, (2026, 4, 20), (6, 30, 0))));
     assert!(hours.is_open_extended(zoned(Europe::Dublin, (2026, 4, 20), (8, 0, 29))));
     assert!(hours.is_open_regular(zoned(Europe::Dublin, (2026, 4, 20), (8, 0, 30))));
     assert!(hours.is_open_regular(zoned(Europe::Dublin, (2026, 4, 20), (16, 27, 59))));
@@ -432,7 +433,7 @@ fn bme_and_vienna_run_post_close_phases() {
 
     let vienna = hours_for_exchange(Exchange::Vienna);
     assert!(vienna.is_open_extended(cet((2026, 4, 20), (17, 40, 0))));
-    assert!(vienna.is_open_extended(cet((2026, 4, 20), (17, 45, 0))));
+    assert!(vienna.is_order_entry_only(cet((2026, 4, 20), (17, 45, 0))));
     assert!(!vienna.is_open(cet((2026, 4, 20), (17, 50, 0))));
 }
 
@@ -440,7 +441,7 @@ fn bme_and_vienna_run_post_close_phases() {
 fn xetra_extended_retail_has_a_sourced_current_cutover() {
     let current = hours_for_exchange(Exchange::Xetra);
     assert!(!current.is_open(cet((2026, 4, 20), (6, 59, 59))));
-    assert!(current.is_open_extended(cet((2026, 4, 20), (7, 0, 0))));
+    assert!(current.is_order_entry_only(cet((2026, 4, 20), (7, 0, 0))));
     assert!(!current.is_open_regular(cet((2026, 4, 20), (9, 0, 29))));
     assert!(current.is_open_regular(cet((2026, 4, 20), (9, 0, 30))));
     assert!(current.is_open_extended(cet((2026, 4, 20), (13, 1, 0))));
@@ -448,18 +449,18 @@ fn xetra_extended_retail_has_a_sourced_current_cutover() {
     assert!(!current.is_open_regular(cet((2026, 4, 20), (17, 30, 0))));
     assert!(current.is_open_extended(cet((2026, 4, 20), (17, 40, 0))));
     assert!(current.is_open_extended(cet((2026, 4, 20), (21, 59, 59))));
-    assert!(current.is_open_extended(cet((2026, 4, 20), (22, 4, 59))));
+    assert!(current.is_order_entry_only(cet((2026, 4, 20), (22, 4, 59))));
     assert!(!current.is_open(cet((2026, 4, 20), (22, 5, 0))));
 
     let before = hours_for_exchange_as_of(Exchange::Xetra, cet((2025, 11, 28), (12, 0, 0)));
     assert!(!before.is_open(cet((2025, 11, 28), (7, 29, 59))));
-    assert!(before.is_open_extended(cet((2025, 11, 28), (7, 30, 0))));
+    assert!(before.is_order_entry_only(cet((2025, 11, 28), (7, 30, 0))));
     assert!(before.is_open_extended(cet((2025, 11, 28), (17, 44, 59))));
-    assert!(before.is_open_extended(cet((2025, 11, 28), (20, 29, 59))));
+    assert!(before.is_order_entry_only(cet((2025, 11, 28), (20, 29, 59))));
     assert!(!before.is_open(cet((2025, 11, 28), (20, 30, 0))));
 
     let after = hours_for_exchange_as_of(Exchange::Xetra, cet((2025, 12, 1), (0, 0, 0)));
-    assert!(after.is_open_extended(cet((2025, 12, 1), (7, 0, 0))));
+    assert!(after.is_order_entry_only(cet((2025, 12, 1), (7, 0, 0))));
     assert!(after.is_open_extended(cet((2025, 12, 1), (21, 59, 59))));
-    assert!(after.is_open_extended(cet((2025, 12, 1), (22, 4, 59))));
+    assert!(after.is_order_entry_only(cet((2025, 12, 1), (22, 4, 59))));
 }

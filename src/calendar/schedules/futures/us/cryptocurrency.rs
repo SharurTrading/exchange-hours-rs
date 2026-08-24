@@ -6,7 +6,7 @@ use chrono_tz::US;
 
 use crate::calendar::rule::{FRI, MON_FRI, SUN_ONLY, SUN_PLUS_MON_THU};
 use crate::calendar::schedules::StaticHoursProfile;
-use crate::calendar::schedules::timeline::{Revision, effective_date, local_date, select_revision};
+use crate::calendar::schedules::timeline::{Revision, local_date, revisions, select_revision};
 use crate::calendar::{FuturesSessionProfile, SessionRule};
 
 const SAT_ONLY: [bool; 7] = [false, false, false, false, false, true, false];
@@ -124,6 +124,7 @@ pub(crate) static CURRENT_FUTURES_PROFILE: FuturesSessionProfile = FuturesSessio
     tz: US::Central,
     regular: &[],
     extended: CURRENT_EXTENDED,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: false,
 };
@@ -132,6 +133,7 @@ static CLOSED: StaticHoursProfile = StaticHoursProfile {
     tz: US::Central,
     regular: &[],
     extended: &[],
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -140,6 +142,7 @@ static FIVE_DAY: StaticHoursProfile = StaticHoursProfile {
     tz: US::Central,
     regular: &[],
     extended: FIVE_DAY_EXTENDED,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -148,6 +151,7 @@ static CURRENT: StaticHoursProfile = StaticHoursProfile {
     tz: US::Central,
     regular: &[],
     extended: CURRENT_EXTENDED,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: false,
 };
@@ -156,6 +160,7 @@ static TRANSITION_2026_05_29: StaticHoursProfile = StaticHoursProfile {
     tz: US::Central,
     regular: &[],
     extended: EXTENDED_2026_05_29,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: false,
 };
@@ -164,31 +169,23 @@ static TEMPORARY_2026_08_01: StaticHoursProfile = StaticHoursProfile {
     tz: US::Central,
     regular: &[],
     extended: EXTENDED_2026_08_01,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: false,
 };
 
-static REVISIONS: &[Revision] = &[
-    Revision {
-        effective: effective_date(2017, 12, 17),
-        profile: &FIVE_DAY,
-    },
-    Revision {
-        effective: effective_date(2026, 5, 29),
-        profile: &TRANSITION_2026_05_29,
-    },
-    Revision {
-        effective: effective_date(2026, 5, 30),
-        profile: &CURRENT,
-    },
-    Revision {
-        effective: effective_date(2026, 8, 1),
-        profile: &TEMPORARY_2026_08_01,
-    },
-    Revision {
-        effective: effective_date(2026, 8, 2),
-        profile: &CURRENT,
-    },
+static REVISIONS: &[Revision] = revisions![
+    (2017, 12, 17, &FIVE_DAY, "CME SER-8051R"),
+    (2026, 5, 29, &TRANSITION_2026_05_29, "CME filing 26-114"),
+    (2026, 5, 30, &CURRENT, "CME filing 26-114"),
+    (
+        2026,
+        8,
+        1,
+        &TEMPORARY_2026_08_01,
+        "CME Globex notice 20260727"
+    ),
+    (2026, 8, 2, &CURRENT, "CME Globex notice 20260727"),
 ];
 
 pub(crate) fn profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {

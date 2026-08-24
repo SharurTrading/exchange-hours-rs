@@ -28,6 +28,18 @@ pub enum CalendarSource {
     MarketHoursKey(MarketHoursKey),
 }
 
+impl From<Exchange> for CalendarSource {
+    fn from(exchange: Exchange) -> Self {
+        Self::Exchange(exchange)
+    }
+}
+
+impl From<MarketHoursKey> for CalendarSource {
+    fn from(key: MarketHoursKey) -> Self {
+        Self::MarketHoursKey(key)
+    }
+}
+
 /// A deterministic, date-aware calendar for one exchange or product family.
 ///
 /// The calendar reselects a concrete fixed profile for every candidate local
@@ -127,6 +139,30 @@ impl ExchangeCalendar {
     #[must_use]
     pub fn is_open_extended(self, instant: DateTime<Utc>) -> bool {
         self.is_open_with(instant, SessionKind::Extended)
+    }
+
+    /// Returns whether orders may be entered, amended or cancelled at `instant`.
+    ///
+    /// True during order-entry-only phases and during any tradeable session.
+    /// This is a different question from [`Self::is_open`], which asks whether a
+    /// trade can print. Resolved through the same date-aware profile selection
+    /// as [`Self::is_open`], so a revision reselects per candidate opening day
+    /// and a caller's [`DayPolicy`](super::DayPolicy) overlay applies here too.
+    #[must_use]
+    pub fn is_accepting_orders(self, instant: DateTime<Utc>) -> bool {
+        status::is_accepting_orders(&QueryContext::date_aware(self), instant)
+    }
+
+    /// Returns whether `instant` falls in an order-entry-only phase where no
+    /// trade can match.
+    ///
+    /// Mutually exclusive with [`Self::is_open`]. Resolved through the same
+    /// date-aware profile selection as [`Self::is_open`], so a revision
+    /// reselects per candidate opening day and a caller's
+    /// [`DayPolicy`](super::DayPolicy) overlay applies here too.
+    #[must_use]
+    pub fn is_order_entry_only(self, instant: DateTime<Utc>) -> bool {
+        status::is_order_entry_only(&QueryContext::date_aware(self), instant)
     }
 
     /// Returns the containing or next regular/extended session bounds.

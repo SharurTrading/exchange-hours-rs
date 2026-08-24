@@ -32,8 +32,8 @@ fn cme_next_session_after_friday_close() {
     let (open, _close) = next_session_after(&h, t).expect("the next session exists");
     assert_eq!(
         open,
-        ct((2026, 4, 26), (16, 0, 0)),
-        "Next order-entry phase after Fri close is Sun 16:00 CT"
+        ct((2026, 4, 26), (17, 0, 0)),
+        "Next SESSION after Fri close is Sun 17:00 CT. The 16:00 CT Sunday queue is\n         an order-entry phase, not a session, so it no longer opens one."
     );
 }
 

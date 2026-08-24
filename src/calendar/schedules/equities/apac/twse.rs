@@ -13,16 +13,37 @@ static TWSE_REGULAR_CURRENT: &[SessionRule] = &[SessionRule {
     open_ssm: 9 * 3600,
     close_ssm: 13 * 3600 + 25 * 60,
 }];
-static TWSE_EXTENDED_ENVELOPE: &[SessionRule] = &[SessionRule {
+// TWSE's own trading-system page splits the 08:00–17:00 envelope. Paired block
+// trading runs 08:00–08:30 and executes on quoted terms; non-paired and paired
+// block trading then run 09:00–17:00. Between them, 08:30–09:00 is the regular
+// session's order-placing window whose call-auction match lands at 09:00, and
+// no block-trading window is open, so nothing can print in that half hour.
+// https://www.twse.com.tw/en/products/system/trading.html
+static TWSE_EXTENDED_ENVELOPE: &[SessionRule] = &[
+    SessionRule {
+        days: MON_FRI,
+        open_ssm: 8 * 3600,
+        close_ssm: 8 * 3600 + 30 * 60,
+    },
+    SessionRule {
+        days: MON_FRI,
+        open_ssm: 9 * 3600,
+        close_ssm: 17 * 3600,
+    },
+];
+// Opening call-auction order collection: orders may be placed, amended and
+// cancelled, but the first match is the 09:00 opening call.
+static TWSE_ORDER_ENTRY: &[SessionRule] = &[SessionRule {
     days: MON_FRI,
-    open_ssm: 8 * 3600,
-    close_ssm: 17 * 3600,
+    open_ssm: 8 * 3600 + 30 * 60,
+    close_ssm: 9 * 3600,
 }];
 
 // TWSE's central order book trades continuously 09:00–13:25, bounded by
 // opening and closing calls. Its paired block window begins at 08:00 and block
 // trading continues through 17:00, so the exchange-level availability
-// envelope is continuous 08:00–17:00. Specialized block, odd-lot, auction, and
+// envelope spans 08:00–17:00, broken only by the 08:30–09:00 order-collection
+// window that now sits in order_entry. Specialized block, odd-lot, auction, and
 // after-hours methods are classified extended; not every security is eligible
 // for every phase.
 // https://www.twse.com.tw/en/products/system/trading.html
@@ -30,6 +51,7 @@ pub(crate) static TWSE_PROFILE_CURRENT: StaticHoursProfile = StaticHoursProfile 
     tz: Asia::Taipei,
     regular: TWSE_REGULAR_CURRENT,
     extended: TWSE_EXTENDED_ENVELOPE,
+    order_entry: TWSE_ORDER_ENTRY,
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -46,18 +68,22 @@ pub(crate) static TWSE_PROFILE_PRE_2020_03_23: StaticHoursProfile = StaticHoursP
     tz: Asia::Taipei,
     regular: &[],
     extended: TWSE_EXTENDED_ENVELOPE,
+    order_entry: TWSE_ORDER_ENTRY,
     has_daily_close: true,
     has_weekend_close: true,
 };
 
-use crate::calendar::schedules::timeline::{Revision, effective_date, local_date, select_revision};
+use crate::calendar::schedules::timeline::{Revision, local_date, revisions, select_revision};
 
 pub(crate) const CURRENT: &StaticHoursProfile = &TWSE_PROFILE_CURRENT;
 
-static REVISIONS: &[Revision] = &[Revision {
-    effective: effective_date(2020, 3, 23),
-    profile: &TWSE_PROFILE_CURRENT,
-}];
+static REVISIONS: &[Revision] = revisions![(
+    2020,
+    3,
+    23,
+    &TWSE_PROFILE_CURRENT,
+    "TWSE company history page"
+),];
 
 pub(crate) fn profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {
     select_revision(

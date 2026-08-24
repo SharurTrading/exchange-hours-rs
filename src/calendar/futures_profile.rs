@@ -24,6 +24,7 @@ use std::borrow::Cow;
 use chrono::{DateTime, Utc};
 use chrono_tz::Tz;
 
+use super::exchange_calendar::CalendarSource;
 use super::local_time::bounded_utc;
 use super::schedules::from_profile;
 use super::schedules::futures::international::{
@@ -44,14 +45,17 @@ use super::{Exchange, MarketHours, SessionRule};
 /// `regular` carries primary trading sessions; `extended` carries electronic,
 /// overnight, and other non-regular sessions. Holiday and special-session
 /// overlays are deliberately modeled outside this normal-week profile.
+#[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct FuturesSessionProfile {
     /// Exchange local timezone used to interpret `SessionRule` SSM values.
     pub tz: Tz,
     /// Primary trading sessions.
     pub regular: &'static [SessionRule],
-    /// Electronic, overnight, and other non-regular sessions.
+    /// Electronic, overnight, and other tradeable non-regular sessions.
     pub extended: &'static [SessionRule],
+    /// Order-entry-only phases in which no trade can match.
+    pub order_entry: &'static [SessionRule],
     /// True when the venue has a distinct daily close.
     pub has_daily_close: bool,
     /// True when the venue has a true weekend close.
@@ -62,25 +66,45 @@ impl FuturesSessionProfile {
     /// Returns `true` when any regular or extended normal-week session is active.
     #[must_use]
     pub fn is_open(&self, t: DateTime<Utc>) -> bool {
-        self.to_market_hours(Exchange::Unknown).is_open(t)
+        self.to_market_hours(CalendarSource::Exchange(Exchange::Unknown))
+            .is_open(t)
+    }
+
+    /// True when `t` falls in an order-entry-only phase where nothing matches.
+    ///
+    /// Mirrors [`MarketHours::is_order_entry_only`] so a profile and the hours
+    /// it produces answer identically.
+    #[must_use]
+    pub fn is_order_entry_only(&self, t: DateTime<Utc>) -> bool {
+        self.to_market_hours(CalendarSource::Exchange(Exchange::Unknown))
+            .is_order_entry_only(t)
+    }
+
+    /// True when orders may be entered, amended or cancelled at `t`.
+    #[must_use]
+    pub fn is_accepting_orders(&self, t: DateTime<Utc>) -> bool {
+        self.to_market_hours(CalendarSource::Exchange(Exchange::Unknown))
+            .is_accepting_orders(t)
     }
 
     /// Converts this profile into the [`MarketHours`] value the calendar query
     /// surface ([`candle_end`](super::candle_end),
     /// [`session_bounds`](super::session_bounds), …) consumes, tagged with
-    /// `exchange`.
+    /// `source`.
     ///
     /// The rule slices are borrowed (`Cow::Borrowed`), so this allocates
     /// nothing. The tag is passed by the caller because one shared profile can
-    /// back several venues — [`hours_for_market_hours_key`] tags with
-    /// [`Exchange::Unknown`] since the key, not a venue, identifies the profile.
+    /// back several identities — [`hours_for_market_hours_key`] tags with
+    /// [`CalendarSource::MarketHoursKey`] since the key, not a venue,
+    /// identifies the profile.
     #[must_use]
-    pub fn to_market_hours(self, exchange: Exchange) -> MarketHours {
+    pub fn to_market_hours(self, source: CalendarSource) -> MarketHours {
         MarketHours {
-            exchange,
+            source,
             tz: self.tz,
             regular: Cow::Borrowed(self.regular),
             extended: Cow::Borrowed(self.extended),
+            order_entry: Cow::Borrowed(self.order_entry),
             has_daily_close: self.has_daily_close,
             has_weekend_close: self.has_weekend_close,
         }
@@ -191,16 +215,16 @@ market_hours_keys! {
 /// [`session_bounds`](super::session_bounds), …) consumes.
 ///
 /// This borrows the same static [`FuturesSessionProfile`] table
-/// [`session_profile`] returns — not a second source of truth. The `exchange`
-/// tag is [`Exchange::Unknown`] because the key, not a venue enum, identifies
-/// these shared futures profiles. This function does not select historical
-/// revisions. For [`MarketHoursKey::GlobexCryptocurrency`], open/closed state
+/// [`session_profile`] returns — not a second source of truth. The source is
+/// [`CalendarSource::MarketHoursKey`] because the key, not a venue enum,
+/// identifies these shared futures profiles. This function does not select
+/// historical revisions. For [`MarketHoursKey::GlobexCryptocurrency`], open/closed state
 /// remains exact, but identity-dependent multi-day bounds, trade dates, and
 /// weekly candle boundaries are available only from
 /// [`calendar_for_market_hours_key`](super::calendar_for_market_hours_key).
 #[must_use]
 pub fn hours_for_market_hours_key(key: MarketHoursKey) -> MarketHours {
-    session_profile(key).to_market_hours(Exchange::Unknown)
+    session_profile(key).to_market_hours(CalendarSource::MarketHoursKey(key))
 }
 
 /// Resolves the fixed [`MarketHours`] snapshot in effect for `key` at `as_of`.
@@ -252,5 +276,5 @@ pub fn hours_for_market_hours_key_as_of(key: MarketHoursKey, as_of: DateTime<Utc
         MarketHoursKey::Sgx => sgx_profile_at(as_of),
         MarketHoursKey::AlwaysOpen => return current,
     };
-    from_profile(Exchange::Unknown, profile)
+    from_profile(CalendarSource::MarketHoursKey(key), profile)
 }

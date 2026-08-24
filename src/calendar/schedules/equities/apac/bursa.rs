@@ -32,6 +32,13 @@ static BURSA_REGULAR: &[SessionRule] = &[
         close_ssm: 16 * 3600 + 45 * 60,
     },
 ];
+// No rule is reclassified as order entry here. Each of these three windows is a
+// combined order-entry/call phase whose call leg matches and prints: the
+// morning and afternoon pre-open windows end in the Theoretical Opening Price
+// match, and the 16:45–17:00 window carries the closing call plus trade-at-last.
+// The trading manuals cited above give the window bounds but the crate has no
+// reachable primary source for the sub-phase boundary at which the call begins,
+// so splitting would be a guess and the whole window stays tradeable.
 static BURSA_EXTENDED: &[SessionRule] = &[
     SessionRule {
         days: MON_FRI,
@@ -53,6 +60,7 @@ pub(crate) static BURSA_MALAYSIA_PROFILE: StaticHoursProfile = StaticHoursProfil
     tz: Asia::Kuala_Lumpur,
     regular: BURSA_REGULAR,
     extended: BURSA_EXTENDED,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };

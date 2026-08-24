@@ -10,7 +10,7 @@ use super::equities::equity_profile;
 use crate::calendar::SessionRule;
 use crate::calendar::rule::MON_FRI;
 use crate::calendar::schedules::CLOSED_NEW_YORK;
-use crate::calendar::schedules::timeline::{Revision, effective_date, local_date, select_revision};
+use crate::calendar::schedules::timeline::{Revision, local_date, revisions, select_revision};
 
 // LTSE's trading schedule defines an 08:00–09:30 Early Trading Session,
 // 09:30–16:00 Regular Market Session, and 16:00–17:00 Late Trading Session.
@@ -33,10 +33,7 @@ static LTSE_EXTENDED: &[SessionRule] = &[
 
 pub(crate) static LTSE_PROFILE: StaticHoursProfile = equity_profile(LTSE_EXTENDED);
 
-static LTSE_REVISIONS: &[Revision] = &[Revision {
-    effective: effective_date(2020, 8, 28),
-    profile: &LTSE_PROFILE,
-}];
+static LTSE_REVISIONS: &[Revision] = revisions![(2020, 8, 28, &LTSE_PROFILE, "SEC 34-89766"),];
 
 pub(crate) fn ltse_profile_at(as_of: DateTime<Utc>) -> &'static StaticHoursProfile {
     select_revision(
@@ -68,10 +65,8 @@ static TWENTY_FOUR_X_EXTENDED: &[SessionRule] = &[
 pub(crate) static TWENTY_FOUR_X_PROFILE: StaticHoursProfile =
     equity_profile(TWENTY_FOUR_X_EXTENDED);
 
-static TWENTY_FOUR_X_REVISIONS: &[Revision] = &[Revision {
-    effective: effective_date(2025, 10, 14),
-    profile: &TWENTY_FOUR_X_PROFILE,
-}];
+static TWENTY_FOUR_X_REVISIONS: &[Revision] =
+    revisions![(2025, 10, 14, &TWENTY_FOUR_X_PROFILE, "SEC 34-106061"),];
 
 pub(crate) fn twenty_four_x_profile_at(as_of: DateTime<Utc>) -> &'static StaticHoursProfile {
     select_revision(
@@ -83,7 +78,10 @@ pub(crate) fn twenty_four_x_profile_at(as_of: DateTime<Utc>) -> &'static StaticH
 
 // TXSE's production alerts distinguish its July 6–9 test-symbol activity from
 // the first NMS-stock production rollout on 2026-07-10. The current exchange
-// schedule accepts orders from 08:00 through its 17:00 late-session close.
+// schedule accepts orders from 08:00 through its 17:00 late-session close. The
+// operator names 08:00–09:30 a Pre-Market session rather than an order-entry
+// phase and does not document a separate unmatchable acceptance window, so both
+// off-core legs stay Extended.
 // https://www.txse.com/alerts/6a5e8e60-8753-4eac-906d-ecbbf8682df9
 // https://www.txse.com/alerts/txse-production-launch-and-market-activation
 static TXSE_EXTENDED: &[SessionRule] = &[
@@ -101,10 +99,8 @@ static TXSE_EXTENDED: &[SessionRule] = &[
 
 pub(crate) static TXSE_PROFILE: StaticHoursProfile = equity_profile(TXSE_EXTENDED);
 
-static TXSE_REVISIONS: &[Revision] = &[Revision {
-    effective: effective_date(2026, 7, 10),
-    profile: &TXSE_PROFILE,
-}];
+static TXSE_REVISIONS: &[Revision] =
+    revisions![(2026, 7, 10, &TXSE_PROFILE, "TXSE production launch alert"),];
 
 pub(crate) fn txse_profile_at(as_of: DateTime<Utc>) -> &'static StaticHoursProfile {
     select_revision(

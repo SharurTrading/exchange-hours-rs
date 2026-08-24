@@ -13,10 +13,26 @@ static TMX_AU_REGULAR: &[SessionRule] = &[SessionRule {
     open_ssm: 10 * 3600,
     close_ssm: 16 * 3600 + 13 * 60,
 }];
+// Tradeable close-side and open-side windows. The Opening Auction uncrosses in
+// a randomized 09:59:45–10:00:00 window, so a print is possible there. The
+// close-side 16:00–16:20 window stays tradeable throughout: non-auction-eligible
+// products keep trading continuously to 16:13, MOC matches at the ASX closing
+// auction price around 16:10, the Closing Auction uncrosses 16:12:45–16:13, and
+// @Last/MOC trading runs to 16:20.
 static TMX_AU_EXTENDED_CURRENT: &[SessionRule] = &[
+    // Pre-Open. The Trading System does not MATCH here, but the venue's hours
+    // page states that during the pre-market period "trade reports may be
+    // lodged in accordance with the Cboe Operating Rules and the Market
+    // Integrity Rules" — reported trades print, so the window is tradeable and
+    // is not order-entry-only.
     SessionRule {
         days: MON_FRI,
         open_ssm: 7 * 3600,
+        close_ssm: 9 * 3600 + 59 * 60 + 45,
+    },
+    SessionRule {
+        days: MON_FRI,
+        open_ssm: 9 * 3600 + 59 * 60 + 45,
         close_ssm: 10 * 3600,
     },
     SessionRule {
@@ -25,6 +41,9 @@ static TMX_AU_EXTENDED_CURRENT: &[SessionRule] = &[
         close_ssm: 16 * 3600 + 20 * 60,
     },
 ];
+
+// Pre-auction eras carry no order-entry-only window: the only non-regular
+// phases are @Last and MOC, both of which execute at the closing price.
 static TMX_AU_EXTENDED_POST_2015: &[SessionRule] = &[SessionRule {
     days: MON_FRI,
     open_ssm: 16 * 3600 + 12 * 60,
@@ -46,6 +65,7 @@ pub(crate) static TMX_AU_PROFILE_CURRENT: StaticHoursProfile = StaticHoursProfil
     tz: Australia::Sydney,
     regular: TMX_AU_REGULAR,
     extended: TMX_AU_EXTENDED_CURRENT,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -62,6 +82,7 @@ pub(crate) static TMX_AU_PROFILE_POST_2015_08_31: StaticHoursProfile = StaticHou
     tz: Australia::Sydney,
     regular: TMX_AU_REGULAR,
     extended: TMX_AU_EXTENDED_POST_2015,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -69,6 +90,7 @@ pub(crate) static TMX_AU_PROFILE_POST_2013_12_09: StaticHoursProfile = StaticHou
     tz: Australia::Sydney,
     regular: TMX_AU_REGULAR,
     extended: TMX_AU_EXTENDED_POST_2013,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -76,6 +98,7 @@ pub(crate) static TMX_AU_PROFILE_LAUNCH: StaticHoursProfile = StaticHoursProfile
     tz: Australia::Sydney,
     regular: TMX_AU_REGULAR,
     extended: &[],
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -83,31 +106,44 @@ pub(crate) static TMX_AU_PROFILE_CLOSED: StaticHoursProfile = StaticHoursProfile
     tz: Australia::Sydney,
     regular: &[],
     extended: &[],
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
 
-use crate::calendar::schedules::timeline::{Revision, effective_date, local_date, select_revision};
+use crate::calendar::schedules::timeline::{Revision, local_date, revisions, select_revision};
 
 pub(crate) const CURRENT: &StaticHoursProfile = &TMX_AU_PROFILE_CURRENT;
 
-static REVISIONS: &[Revision] = &[
-    Revision {
-        effective: effective_date(2011, 10, 31),
-        profile: &TMX_AU_PROFILE_LAUNCH,
-    },
-    Revision {
-        effective: effective_date(2013, 12, 9),
-        profile: &TMX_AU_PROFILE_POST_2013_12_09,
-    },
-    Revision {
-        effective: effective_date(2015, 8, 31),
-        profile: &TMX_AU_PROFILE_POST_2015_08_31,
-    },
-    Revision {
-        effective: effective_date(2025, 3, 17),
-        profile: &TMX_AU_PROFILE_CURRENT,
-    },
+static REVISIONS: &[Revision] = revisions![
+    (
+        2011,
+        10,
+        31,
+        &TMX_AU_PROFILE_LAUNCH,
+        "ASIC media release 12-295MR"
+    ),
+    (
+        2013,
+        12,
+        9,
+        &TMX_AU_PROFILE_POST_2013_12_09,
+        "Chi-X Australia Compliance Notice 0009-13"
+    ),
+    (
+        2015,
+        8,
+        31,
+        &TMX_AU_PROFILE_POST_2015_08_31,
+        "Chi-X Australia Compliance Notice 0006-15"
+    ),
+    (
+        2025,
+        3,
+        17,
+        &TMX_AU_PROFILE_CURRENT,
+        "Cboe Australia Technical Notice 0003-25"
+    ),
 ];
 
 pub(crate) fn profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {

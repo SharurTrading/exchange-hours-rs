@@ -30,8 +30,41 @@ corrections (a venue's hours fixed against a primary source) go under
   key would answer a Taiwan contract with Singapore's close, which is the
   substitution the key API exists to prevent.
 
+### Fixed
+
+- **BZX and BYX no longer report trading before their 2016 matching start.**
+  Bats' 2016 release note moved equity order matching and routing from 08:00
+  to 07:00 ET on staggered days (BYX 2016-05-23, BZX 2016-05-25). The dated
+  timelines previously kept 07:00–08:00 tradeable across that boundary, so a
+  2015 instant answered "open" during a window in which orders were accepted
+  but nothing could match. Both exchanges now carry their sourced 2016
+  revision: the 06:00–08:00 queue narrows to 06:00–07:00 and the 07:00 hour
+  becomes tradeable exactly on the operator's day.
+- **Unsourced historical order-entry phases are no longer asserted.** B3's
+  2010–2012 11:00-open grids and Tadawul's pre-2016 11:00-open grids carried
+  inferred pre-opening order windows (10:45–11:00 and 10:00–11:00
+  respectively) with no dated primary source behind them; both now read
+  closed until evidence surfaces. TSE's historical 08:00 order acceptance,
+  by contrast, gained dated primary evidence and stays: JPX's November 2020
+  Investigation Report into the October 1, 2020 system failure states "Order
+  acceptance began as normal at 08:00", covering the post-2011 era alongside
+  Working Paper No.3's 2010-01-04 data for the earlier one.
+- **ICE Cotton's Sunday evening open is no longer asserted.** The Sunday
+  21:00 NY opening (and its 19:30 pre-open) was a sourced inference: three
+  primary-source strands pointed at it, but no ICE document names Sunday for
+  Cotton No. 2. Under the crate's primary-source law an unasserted phase is
+  omitted, so the tradeable week now runs Monday 21:00 through Friday 14:20
+  and Sunday evenings read closed until ICE states otherwise. The sourced
+  Friday 14:50–18:00 post-close pre-open remains the week's final
+  order-entry window, feeding Monday's session.
+
 ### Notes
 
+- Every revision timeline row now carries its primary-source citation in the
+  type (`SourceRef`), and a `revisions!` macro fails the build unless a
+  timeline's effective dates are strictly ascending and every row names its
+  source. A shadowed duplicate date or an uncited revision can no longer
+  compile.
 - Fifteen dated cutovers were encoded from operator notices, each carrying its
   verbatim quote and source URL — ICE Sugar 2012-01-30, 2012-11-05,
   2014-02-03 and 2018-10-08; Coffee, Cocoa and Cotton 2014-02-03 and
@@ -42,12 +75,24 @@ corrections (a venue's hours fixed against a primary source) go under
   URL returning 403 and no archive capture. An ICE Sugar 2012-03-12 notice is
   titled "Temporary Change to Opening Time" and is a daylight-saving window
   change, not a normal-week revision.
-- `globex_nikkei_225_dollar` is modelled current-only. Its two sourced CME
-  Special Executive Reports both leave the close at 16:15 CT while the
-  contract specification now states 16:00 CT, and no retrievable CME document
-  dates the difference. Encoding only the sourced rows would make every
-  present-day query return a wrong close, so the current grid is carried
-  across the window and the row is Partial.
+- `globex_nikkei_225_dollar` carries a dated timeline from 2012-11-18. A
+  follow-up sourcing pass found the previously undated close change: CME
+  Globex Notice #20150817 of 17 August 2015 moves the CME Equity close to
+  16:00 CT effective Monday 2015-09-21, corroborated by CME's own NKD
+  contract-specification captures either side of the cutover. NKD therefore
+  routes SER-6465 from 2012-11-18, the SER-6554R halt removal from
+  2013-03-03, and the 16:00 CT close from 2015-09-20. The same notice
+  supplies the original-announcement citation for `globex_equity_index`'s
+  existing 2015-09-20 revision. The row stays Partial because the pre-2012
+  interval is omitted: no primary source states the pre-2012 evening open, so
+  pre-2012 dated queries return no session rather than an inferred grid.
+- The Sunday Globex pre-open queue's 16:15→16:00 move remains undated after a
+  read of 481 CME Globex Notices spanning 2008 to early 2016. It is bracketed
+  by primary evidence but never announced, so it stays omitted from
+  `globex_equity_index`, `globex_fx` and `globex_interest_rates` rather than
+  being inferred. The same pass established that `globex_fx` and
+  `globex_interest_rates` never had a 16:15 CT close to move — both already
+  closed at 16:00 CT before 2015 — so there was no gap there to close.
 - The five SGX rows are Partial for the same reason: SGX's circular archive
   exposes no day-level hours changes, so every transition is bracketed between
   calendar PDFs but undated. No date was inferred to fill a gap.

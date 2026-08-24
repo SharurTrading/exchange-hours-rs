@@ -49,8 +49,8 @@ fn cboe_exchange_launches_are_not_backfilled() {
 #[test]
 fn bzx_and_byx_2014_order_queues_use_the_exact_operator_dates() {
     // The final operator notice makes the 06:00 queues effective on distinct
-    // dates. Those queues make the later 2016 matching-start changes invisible
-    // to this exchange-envelope API.
+    // dates. Before the 2016 matching change those queues ran to 08:00, the
+    // hour at which matching began.
     // https://cdn.cboe.com/resources/release_notes/2014/BATS-BYX-Exchange-and-BZX-Exchange-Feature-Release-Postponed-Until-December-2014.pdf
     for (exch, date) in [
         (Exchange::CboeByx, (2014, 12, 1)),
@@ -62,7 +62,30 @@ fn bzx_and_byx_2014_order_queues_use_the_exact_operator_dates() {
         assert!(!before.is_open(et(date, (6, 0, 0))), "{exch:?}");
         assert!(before.is_open_extended(et(date, (8, 0, 0))), "{exch:?}");
         assert!(!after.is_open(et(date, (5, 59, 59))), "{exch:?}");
-        assert!(after.is_open_extended(et(date, (6, 0, 0))), "{exch:?}");
+        assert!(after.is_order_entry_only(et(date, (6, 0, 0))), "{exch:?}");
+    }
+}
+
+#[test]
+fn bzx_and_byx_2016_matching_start_moves_the_0700_hour_into_extended() {
+    // Bats moved equity order matching and routing one hour earlier, to 07:00
+    // ET, on staggered days: BYX May 23, BZX May 25. Before each exchange's
+    // day orders were accepted from 06:00 but nothing matched until 08:00, so
+    // 07:30 was order entry, never a tradeable session.
+    // https://cdn.cboe.com/resources/release_notes/2016/Update-Bats-to-Begin-Equity-Order-Matching-and-Routing-at-7-am-ET.pdf
+    for (exch, date) in [
+        (Exchange::CboeByx, (2016, 5, 23)),
+        (Exchange::CboeBzx, (2016, 5, 25)),
+    ] {
+        let before = profile_before(exch, date);
+        let after = profile_from(exch, date);
+
+        assert!(before.is_order_entry_only(et(date, (7, 30, 0))), "{exch:?}");
+        assert!(!before.is_open(et(date, (7, 30, 0))), "{exch:?}");
+        assert!(before.is_open_extended(et(date, (8, 0, 0))), "{exch:?}");
+        assert!(after.is_open_extended(et(date, (7, 30, 0))), "{exch:?}");
+        assert!(!after.is_order_entry_only(et(date, (7, 30, 0))), "{exch:?}");
+        assert!(after.is_order_entry_only(et(date, (6, 30, 0))), "{exch:?}");
     }
 }
 
@@ -78,7 +101,7 @@ fn partial_us_equity_histories_do_not_invent_current_queue_onsets() {
 
     let current = hours_for_exchange(Exchange::CboeEdga);
     let partial_as_of = hours_for_exchange_as_of(Exchange::CboeEdga, et((2026, 4, 20), (12, 0, 0)));
-    assert!(current.is_open_extended(et((2026, 4, 20), (6, 0, 0))));
+    assert!(current.is_order_entry_only(et((2026, 4, 20), (6, 0, 0))));
     assert!(!partial_as_of.is_open(et((2026, 4, 20), (6, 0, 0))));
     assert!(!calendar_for_exchange(Exchange::CboeEdga).is_open(et((2026, 4, 20), (6, 0, 0))));
 
@@ -89,7 +112,7 @@ fn partial_us_equity_histories_do_not_invent_current_queue_onsets() {
         let instant = et((2026, 4, 20), current_queue);
         let dated = hours_for_exchange_as_of(exchange, instant);
         assert!(
-            hours_for_exchange(exchange).is_open_extended(instant),
+            hours_for_exchange(exchange).is_order_entry_only(instant),
             "{exchange:?} at {instant}"
         );
         assert!(!dated.is_open(instant), "{exchange:?} at {instant}");
@@ -177,7 +200,7 @@ fn nyse_american_extended_trading_begins_with_pillar() {
     assert!(!before.is_open(et((2017, 7, 24), (8, 0, 0))));
     assert!(before.is_open_regular(et((2017, 7, 24), (10, 0, 0))));
     assert!(!before.is_open(et((2017, 7, 24), (16, 0, 0))));
-    assert!(pillar.is_open_extended(et((2017, 7, 24), (6, 30, 0))));
+    assert!(pillar.is_order_entry_only(et((2017, 7, 24), (6, 30, 0))));
     assert!(pillar.is_open_regular(et((2017, 7, 24), (9, 30, 0))));
     assert!(pillar.is_open_extended(et((2017, 7, 24), (19, 59, 59))));
     assert!(!pillar.is_open(et((2017, 7, 24), (20, 0, 0))));
@@ -204,7 +227,7 @@ fn nyse_texas_preserves_chx_history_through_the_pillar_migration() {
     let pillar = profile_from(Exchange::NyseTexas, (2019, 11, 4));
     assert!(!before.is_open(et((2019, 11, 4), (17, 0, 0))));
     assert!(!pillar.is_open(et((2019, 11, 4), (6, 29, 59))));
-    assert!(pillar.is_open_extended(et((2019, 11, 4), (6, 30, 0))));
+    assert!(pillar.is_order_entry_only(et((2019, 11, 4), (6, 30, 0))));
     assert!(pillar.is_open_extended(et((2019, 11, 4), (17, 0, 0))));
     assert!(pillar.is_open_extended(et((2019, 11, 4), (19, 59, 59))));
     assert!(!pillar.is_open(et((2019, 11, 4), (20, 0, 0))));
@@ -243,7 +266,7 @@ fn nyse_national_full_legacy_and_dormant_timeline_is_preserved() {
     assert!(second_dormant.regular.is_empty() && second_dormant.extended.is_empty());
 
     let pillar = profile_from(Exchange::NyseNational, (2018, 5, 21));
-    assert!(pillar.is_open_extended(et((2018, 5, 21), (6, 30, 0))));
+    assert!(pillar.is_order_entry_only(et((2018, 5, 21), (6, 30, 0))));
     assert!(pillar.is_open_extended(et((2018, 5, 21), (19, 59, 59))));
     assert!(!pillar.is_open(et((2018, 5, 21), (20, 0, 0))));
 }

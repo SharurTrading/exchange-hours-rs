@@ -6,7 +6,7 @@ use chrono_tz::America;
 
 use crate::calendar::SessionRule;
 use crate::calendar::rule::{MON_THU, SUN_ONLY, TUE_ONLY};
-use crate::calendar::schedules::timeline::{Revision, effective_date, local_date, select_revision};
+use crate::calendar::schedules::timeline::{Revision, local_date, revisions, select_revision};
 use crate::calendar::schedules::{CLOSED_NEW_YORK, StaticHoursProfile};
 
 // The `iceus` default is the NYSE FANG+ Index futures family, not a venue-wide
@@ -33,7 +33,15 @@ pub(crate) static ICE_US_FANG_REGULAR_CURRENT: &[SessionRule] = &[
         close_ssm: 18 * 3600,
     },
 ];
-pub(crate) static ICE_US_FANG_EXTENDED_CURRENT: &[SessionRule] = &[
+// ORDER ENTRY, NOT TRADING. The 17:30 Sunday and 19:30 weekday phases are the
+// Pre-Open queues the launch notice and product page describe: the platform
+// accepts, amends and cancels orders for the coming session, and nothing
+// matches until the 18:00 / 20:00 open. They are therefore classified as
+// order-entry phases rather than tradeable extended sessions. FANG publishes no
+// tradeable phase outside its executable session, so the extended slice is
+// empty.
+pub(crate) static ICE_US_FANG_EXTENDED_CURRENT: &[SessionRule] = &[];
+pub(crate) static ICE_US_FANG_ORDER_ENTRY_CURRENT: &[SessionRule] = &[
     SessionRule {
         days: SUN_ONLY,
         open_ssm: 17 * 3600 + 30 * 60,
@@ -50,6 +58,7 @@ pub(crate) static ICE_US_FANG_CURRENT: StaticHoursProfile = StaticHoursProfile {
     tz: America::New_York,
     regular: ICE_US_FANG_REGULAR_CURRENT,
     extended: ICE_US_FANG_EXTENDED_CURRENT,
+    order_entry: ICE_US_FANG_ORDER_ENTRY_CURRENT,
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -63,7 +72,9 @@ static ICE_US_FANG_LAUNCH_EVE_REGULAR: &[SessionRule] = &[SessionRule {
     open_ssm: 20 * 3600,
     close_ssm: 18 * 3600,
 }];
-static ICE_US_FANG_LAUNCH_EVE_EXTENDED: &[SessionRule] = &[SessionRule {
+// Same Pre-Open queue as the current profile, so the same classification: this
+// is the launch evening's order-entry phase, not a tradeable session.
+static ICE_US_FANG_LAUNCH_EVE_ORDER_ENTRY: &[SessionRule] = &[SessionRule {
     days: TUE_ONLY,
     open_ssm: 19 * 3600 + 30 * 60,
     close_ssm: 20 * 3600,
@@ -71,20 +82,27 @@ static ICE_US_FANG_LAUNCH_EVE_EXTENDED: &[SessionRule] = &[SessionRule {
 static ICE_US_FANG_LAUNCH_EVE: StaticHoursProfile = StaticHoursProfile {
     tz: America::New_York,
     regular: ICE_US_FANG_LAUNCH_EVE_REGULAR,
-    extended: ICE_US_FANG_LAUNCH_EVE_EXTENDED,
+    extended: &[],
+    order_entry: ICE_US_FANG_LAUNCH_EVE_ORDER_ENTRY,
     has_daily_close: true,
     has_weekend_close: true,
 };
 
-static ICE_US_FANG_REVISIONS: &[Revision] = &[
-    Revision {
-        effective: effective_date(2017, 11, 7),
-        profile: &ICE_US_FANG_LAUNCH_EVE,
-    },
-    Revision {
-        effective: effective_date(2017, 11, 8),
-        profile: &ICE_US_FANG_CURRENT,
-    },
+static ICE_US_FANG_REVISIONS: &[Revision] = revisions![
+    (
+        2017,
+        11,
+        7,
+        &ICE_US_FANG_LAUNCH_EVE,
+        "ICE FANG+ launch notice 20170926"
+    ),
+    (
+        2017,
+        11,
+        8,
+        &ICE_US_FANG_CURRENT,
+        "ICE FANG+ launch notice 20170926"
+    ),
 ];
 
 pub(crate) fn ice_us_fang_profile_at(

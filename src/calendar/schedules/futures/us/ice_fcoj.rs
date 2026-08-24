@@ -8,7 +8,7 @@ use chrono_tz::America;
 use crate::calendar::SessionRule;
 use crate::calendar::rule::{MON_FRI, MON_THU};
 use crate::calendar::schedules::StaticHoursProfile;
-use crate::calendar::schedules::timeline::{Revision, effective_date, local_date, select_revision};
+use crate::calendar::schedules::timeline::{Revision, local_date, revisions, select_revision};
 
 // FCOJ-A runs one same-day executable session. The ICE master hours table
 // carries no footnote marker on the FCOJ-A row - neither the single asterisk
@@ -47,9 +47,16 @@ pub(crate) static FCOJ_REGULAR_CURRENT: &[SessionRule] = &[SessionRule {
 // shown above, there will be a Post-Close Pre-Open order entry session from 2:30
 // pm to 6:00 pm NY time on the prior Exchange business day."
 //
+// Both windows are order_entry, not extended: the product page names the PCPO
+// an "order entry session", and Rule 4.22(a) confines the Pre-Trading Session
+// to Limit order entry with the Opening Match at the open. FCOJ-A publishes no
+// tradeable phase outside its 08:00-14:00 executable session, so the extended
+// slice is empty.
+//
 // https://www.ice.com/products/30/FCOJ-A-Futures
 // https://www.ice.com/publicdocs/rulebooks/futures_us/4_Trading.pdf
-pub(crate) static FCOJ_EXTENDED_CURRENT: &[SessionRule] = &[
+pub(crate) static FCOJ_EXTENDED_CURRENT: &[SessionRule] = &[];
+pub(crate) static FCOJ_ORDER_ENTRY_CURRENT: &[SessionRule] = &[
     SessionRule {
         days: MON_FRI,
         open_ssm: 14 * 3600 + 30 * 60,
@@ -66,13 +73,15 @@ pub(crate) static FCOJ_CURRENT: StaticHoursProfile = StaticHoursProfile {
     tz: America::New_York,
     regular: FCOJ_REGULAR_CURRENT,
     extended: FCOJ_EXTENDED_CURRENT,
+    order_entry: FCOJ_ORDER_ENTRY_CURRENT,
     has_daily_close: true,
     has_weekend_close: true,
 };
 
 // Baseline before 2018-10-08: the executable session is already today's
 // 08:00-14:00 grid, but the PCPO order-entry window does not exist yet, leaving
-// the 20:00 pre-open as the only extended phase.
+// the 20:00 pre-open as the only non-executable phase - order entry, like the
+// current one, so this era carries no extended phase either.
 //
 // The executable grid is carried back unchanged rather than dated to an earlier
 // cutover. ICE's 2014 softs hours notice re-tabulated Sugar No. 11, Coffee "C",
@@ -82,7 +91,7 @@ pub(crate) static FCOJ_CURRENT: StaticHoursProfile = StaticHoursProfile {
 // so no earlier revision is invented here.
 //
 // https://www.ice.com/publicdocs/futures_us/exchange_notices/ExNot012714Hours.pdf
-static FCOJ_EXTENDED_BASELINE: &[SessionRule] = &[SessionRule {
+static FCOJ_ORDER_ENTRY_BASELINE: &[SessionRule] = &[SessionRule {
     days: MON_THU,
     open_ssm: 20 * 3600,
     close_ssm: 8 * 3600,
@@ -91,7 +100,8 @@ static FCOJ_EXTENDED_BASELINE: &[SessionRule] = &[SessionRule {
 pub(crate) static FCOJ_BASELINE: StaticHoursProfile = StaticHoursProfile {
     tz: America::New_York,
     regular: FCOJ_REGULAR_CURRENT,
-    extended: FCOJ_EXTENDED_BASELINE,
+    extended: &[],
+    order_entry: FCOJ_ORDER_ENTRY_BASELINE,
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -113,10 +123,8 @@ pub(crate) static FCOJ_BASELINE: StaticHoursProfile = StaticHoursProfile {
 // product-page form ("Pre-Open ... 8:00 PM 20:00"); ICE publishes no notice
 // establishing or moving it, so it is carried in the baseline rather than given
 // a cutover.
-pub(crate) static FCOJ_REVISIONS: &[Revision] = &[Revision {
-    effective: effective_date(2018, 10, 8),
-    profile: &FCOJ_CURRENT,
-}];
+pub(crate) static FCOJ_REVISIONS: &[Revision] =
+    revisions![(2018, 10, 8, &FCOJ_CURRENT, "ICE PCPO notice 20180920"),];
 
 /// Selects the FCOJ-A profile in force on `as_of`'s New York day.
 pub(crate) fn fcoj_profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {

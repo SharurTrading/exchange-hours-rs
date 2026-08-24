@@ -55,6 +55,7 @@ pub(crate) static KRX_PROFILE_CURRENT: StaticHoursProfile = StaticHoursProfile {
     tz: Asia::Seoul,
     regular: KRX_REGULAR_CURRENT,
     extended: KRX_EXTENDED_CURRENT,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -70,6 +71,7 @@ pub(crate) static KRX_PROFILE_POST_2016_08_01: StaticHoursProfile = StaticHoursP
     tz: Asia::Seoul,
     regular: KRX_REGULAR_CURRENT,
     extended: KRX_EXTENDED_POST_2016,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -77,23 +79,18 @@ pub(crate) static KRX_PROFILE_PRE_2016_08_01: StaticHoursProfile = StaticHoursPr
     tz: Asia::Seoul,
     regular: KRX_REGULAR_PRE_2016,
     extended: KRX_EXTENDED_PRE_2016,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
 
-use crate::calendar::schedules::timeline::{Revision, effective_date, local_date, select_revision};
+use crate::calendar::schedules::timeline::{Revision, local_date, revisions, select_revision};
 
 pub(crate) const CURRENT: &StaticHoursProfile = &KRX_PROFILE_CURRENT;
 
-static REVISIONS: &[Revision] = &[
-    Revision {
-        effective: effective_date(2016, 8, 1),
-        profile: &KRX_PROFILE_POST_2016_08_01,
-    },
-    Revision {
-        effective: effective_date(2019, 4, 29),
-        profile: &KRX_PROFILE_CURRENT,
-    },
+static REVISIONS: &[Revision] = revisions![
+    (2016, 8, 1, &KRX_PROFILE_POST_2016_08_01, "FSC notice 73613"),
+    (2019, 4, 29, &KRX_PROFILE_CURRENT, "KRX rulebook law 000111"),
 ];
 
 pub(crate) fn profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {

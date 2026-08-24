@@ -8,11 +8,111 @@ use chrono_tz::Tz;
 use super::StaticHoursProfile;
 use crate::calendar::local_time::mk_local_open;
 
-/// A profile that takes effect at venue-local midnight on `effective`.
+/// The primary source that states a revision's day-level effective date.
+///
+/// A short label naming the dated primary artifact — notice, circular, or
+/// rulebook filing — behind one [`Revision`] row. The full quotation and URL
+/// stay in the comment beside the table; this carries the identity of the
+/// evidence in the type itself, and [`revisions!`] rejects a row whose label
+/// is empty.
+#[derive(Clone, Copy)]
+pub(crate) struct SourceRef(&'static str);
+
+impl SourceRef {
+    /// Wraps a citation label naming the primary source of an effective date.
+    pub(crate) const fn new(citation: &'static str) -> Self {
+        Self(citation)
+    }
+
+    /// The citation label.
+    pub(crate) const fn as_str(self) -> &'static str {
+        self.0
+    }
+}
+
+/// A profile that takes effect at venue-local midnight on `effective`, on the
+/// authority of `source`.
 #[derive(Clone, Copy)]
 pub(crate) struct Revision {
     pub(crate) effective: NaiveDate,
     pub(crate) profile: &'static StaticHoursProfile,
+    pub(crate) source: SourceRef,
+}
+
+/// Builds a `&'static [Revision]` timeline whose invariants hold by
+/// construction.
+///
+/// Each row is `(year, month, day, profile, citation)`, where `citation` is a
+/// short label naming the primary source that states the row's unconditional
+/// day-level effective date. Constant evaluation fails the build unless:
+///
+/// - the effective dates are strictly ascending, so [`select_revision`]'s
+///   partition-point search sees a total order and no row is silently
+///   shadowed by a duplicate or later-dated predecessor; and
+/// - every row carries a non-empty [`SourceRef`] citation, so a revision can
+///   never exist without a named primary source.
+///
+/// The comment beside the invocation keeps the full quotations and URLs.
+macro_rules! revisions {
+    (
+        $( ($year:expr, $month:expr, $day:expr, $profile:expr, $citation:literal $(,)?) ),+ $(,)?
+    ) => {{
+        const TIMELINE: &[$crate::calendar::schedules::timeline::Revision] = &[
+            $(
+                $crate::calendar::schedules::timeline::Revision {
+                    effective: $crate::calendar::schedules::timeline::effective_date(
+                        $year, $month, $day,
+                    ),
+                    profile: $profile,
+                    source: $crate::calendar::schedules::timeline::SourceRef::new($citation),
+                }
+            ),+
+        ];
+        const _: () = {
+            const DATES: &[(i32, u32, u32)] = &[$(($year, $month, $day)),+];
+            $crate::calendar::schedules::timeline::assert_ascending(DATES);
+            $crate::calendar::schedules::timeline::assert_cited(TIMELINE);
+        };
+        TIMELINE
+    }};
+}
+
+pub(crate) use revisions;
+
+/// Fails the build when a timeline's effective dates are not strictly
+/// ascending.
+///
+/// A duplicate date would be silently shadowed by `select_revision`'s
+/// partition-point search, and an out-of-order row would misroute every
+/// earlier lookup, so both are build failures rather than runtime hazards.
+pub(crate) const fn assert_ascending(rows: &[(i32, u32, u32)]) {
+    let mut index = 1;
+    while index < rows.len() {
+        assert!(
+            day_key(rows[index].0, rows[index].1, rows[index].2)
+                > day_key(rows[index - 1].0, rows[index - 1].1, rows[index - 1].2),
+            "revision timeline is not strictly ascending; a row is out of order or shadowed"
+        );
+        index += 1;
+    }
+}
+
+/// Fails the build when a revision row carries no primary-source citation.
+pub(crate) const fn assert_cited(rows: &[Revision]) {
+    let mut index = 0;
+    while index < rows.len() {
+        assert!(
+            !rows[index].source.as_str().is_empty(),
+            "revision row carries no primary-source citation"
+        );
+        index += 1;
+    }
+}
+
+/// Orders `(year, month, day)` as one comparable scalar for const evaluation;
+/// tuple `PartialOrd` is not const-callable.
+const fn day_key(year: i32, month: u32, day: u32) -> i64 {
+    year as i64 * 10_000 + month as i64 * 100 + day as i64
 }
 
 /// Builds a hard-coded effective date during constant evaluation.
@@ -37,6 +137,8 @@ pub(crate) fn local_date(as_of: DateTime<Utc>, tz: Tz) -> NaiveDate {
 ///
 /// Dates before the first revision retain `baseline`. Temporary regimes are
 /// represented by an ordinary start revision followed by a restoration row.
+/// Timelines built by [`revisions!`] guarantee the ascending-order
+/// precondition this partition-point search relies on.
 pub(crate) fn select_revision(
     day: NaiveDate,
     baseline: &'static StaticHoursProfile,

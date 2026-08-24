@@ -31,7 +31,12 @@ static EARLY_REGULAR: &[SessionRule] = &[
         close_ssm: 2 * 3600,
     },
 ];
-static EARLY_EXTENDED: &[SessionRule] = &[
+// The window before each open is the pre-open the contract page publishes
+// ("19:45 pre-open" on the 20:00 New York open, an hour earlier on the Monday
+// trading-day open): order entry, amendment and cancellation only, with no
+// matching until the open. It is therefore held in order_entry. Murban has no
+// tradeable phase outside its near-24-hour session, so extended is empty.
+static EARLY_ORDER_ENTRY: &[SessionRule] = &[
     SessionRule {
         days: MON_ONLY,
         open_ssm: 3600,
@@ -55,7 +60,7 @@ static LATE_REGULAR: &[SessionRule] = &[
         close_ssm: 3 * 3600,
     },
 ];
-static LATE_EXTENDED: &[SessionRule] = &[
+static LATE_ORDER_ENTRY: &[SessionRule] = &[
     SessionRule {
         days: MON_ONLY,
         open_ssm: 2 * 3600,
@@ -69,18 +74,19 @@ static LATE_EXTENDED: &[SessionRule] = &[
 ];
 
 pub(crate) static ICE_ABU_DHABI_CURRENT: StaticHoursProfile =
-    dubai_profile(EARLY_REGULAR, EARLY_EXTENDED);
-static ICE_ABU_DHABI_LATE: StaticHoursProfile = dubai_profile(LATE_REGULAR, LATE_EXTENDED);
+    dubai_profile(EARLY_REGULAR, EARLY_ORDER_ENTRY);
+static ICE_ABU_DHABI_LATE: StaticHoursProfile = dubai_profile(LATE_REGULAR, LATE_ORDER_ENTRY);
 static ICE_ABU_DHABI_CLOSED: StaticHoursProfile = dubai_profile(&[], &[]);
 
 const fn dubai_profile(
     regular: &'static [SessionRule],
-    extended: &'static [SessionRule],
+    order_entry: &'static [SessionRule],
 ) -> StaticHoursProfile {
     StaticHoursProfile {
         tz: Asia::Dubai,
         regular,
-        extended,
+        extended: &[],
+        order_entry,
         has_daily_close: true,
         has_weekend_close: true,
     }

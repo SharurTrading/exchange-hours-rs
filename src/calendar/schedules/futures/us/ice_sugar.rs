@@ -7,7 +7,7 @@ use chrono_tz::America;
 use crate::calendar::SessionRule;
 use crate::calendar::rule::{MON_FRI, MON_THU};
 use crate::calendar::schedules::StaticHoursProfile;
-use crate::calendar::schedules::timeline::{Revision, effective_date, local_date, select_revision};
+use crate::calendar::schedules::timeline::{Revision, local_date, revisions, select_revision};
 
 // Sugar No. 11 runs one same-day executable session; the ICE master hours table
 // carries no footnote marker on its row, so nothing commences on the previous
@@ -33,7 +33,15 @@ pub(crate) static SUGAR_REGULAR_CURRENT: &[SessionRule] = &[SessionRule {
 // Two order-entry-only phases: the post-close pre-open ("PCPO") beginning 30
 // minutes after the 13:00 close, and the regular pre-open from 20:00 running to
 // the next morning's open.
-pub(crate) static SUGAR_EXTENDED_CURRENT: &[SessionRule] = &[
+//
+// Both are classified order_entry, not extended: neither matches. The 2018
+// notice that created the PCPO calls it an extension of the "pre-open order
+// entry session" and kills Day orders entered in it at its end, and the
+// pre-open only accepts orders ahead of the Opening Match that occurs at the
+// open itself. Sugar No. 11 publishes no tradeable phase outside its executable
+// session, so the extended slice is empty.
+pub(crate) static SUGAR_EXTENDED_CURRENT: &[SessionRule] = &[];
+pub(crate) static SUGAR_ORDER_ENTRY_CURRENT: &[SessionRule] = &[
     SessionRule {
         days: MON_FRI,
         open_ssm: 13 * 3600 + 30 * 60,
@@ -50,13 +58,17 @@ pub(crate) static SUGAR_CURRENT: StaticHoursProfile = StaticHoursProfile {
     tz: America::New_York,
     regular: SUGAR_REGULAR_CURRENT,
     extended: SUGAR_EXTENDED_CURRENT,
+    order_entry: SUGAR_ORDER_ENTRY_CURRENT,
     has_daily_close: true,
     has_weekend_close: true,
 };
 
 // 2014-02-03 through 2018-10-05: the executable session is already today's
-// 03:30-13:00 grid, but the PCPO order-entry window does not exist yet.
-static SUGAR_EXTENDED_2014: &[SessionRule] = &[SessionRule {
+// 03:30-13:00 grid, but the PCPO order-entry window does not exist yet, leaving
+// the 20:00 pre-open as the only non-executable phase. It is order entry for
+// the same reason as the current one, so these eras carry an empty extended
+// slice too.
+static SUGAR_ORDER_ENTRY_2014: &[SessionRule] = &[SessionRule {
     days: MON_THU,
     open_ssm: 20 * 3600,
     close_ssm: 3 * 3600 + 30 * 60,
@@ -65,7 +77,8 @@ static SUGAR_EXTENDED_2014: &[SessionRule] = &[SessionRule {
 static SUGAR_2014: StaticHoursProfile = StaticHoursProfile {
     tz: America::New_York,
     regular: SUGAR_REGULAR_CURRENT,
-    extended: SUGAR_EXTENDED_2014,
+    extended: &[],
+    order_entry: SUGAR_ORDER_ENTRY_2014,
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -80,7 +93,8 @@ static SUGAR_REGULAR_2012_NOV: &[SessionRule] = &[SessionRule {
 static SUGAR_2012_NOV: StaticHoursProfile = StaticHoursProfile {
     tz: America::New_York,
     regular: SUGAR_REGULAR_2012_NOV,
-    extended: SUGAR_EXTENDED_2014,
+    extended: &[],
+    order_entry: SUGAR_ORDER_ENTRY_2014,
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -98,7 +112,8 @@ static SUGAR_REGULAR_2012_JAN: &[SessionRule] = &[SessionRule {
 static SUGAR_2012_JAN: StaticHoursProfile = StaticHoursProfile {
     tz: America::New_York,
     regular: SUGAR_REGULAR_2012_JAN,
-    extended: SUGAR_EXTENDED_2014,
+    extended: &[],
+    order_entry: SUGAR_ORDER_ENTRY_2014,
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -121,7 +136,8 @@ static SUGAR_REGULAR_BASELINE: &[SessionRule] = &[SessionRule {
 pub(crate) static SUGAR_BASELINE: StaticHoursProfile = StaticHoursProfile {
     tz: America::New_York,
     regular: SUGAR_REGULAR_BASELINE,
-    extended: SUGAR_EXTENDED_2014,
+    extended: &[],
+    order_entry: SUGAR_ORDER_ENTRY_2014,
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -145,23 +161,11 @@ pub(crate) static SUGAR_BASELINE: StaticHoursProfile = StaticHoursProfile {
 //   end of trading for the contract and end at 6:00 pm on the Exchange business
 //   day prior to each trading day."
 //   https://www.ice.com/publicdocs/futures_us/exchange_notices/ICE_Futures_US_PCPO_Session_20180920.pdf
-pub(crate) static SUGAR_REVISIONS: &[Revision] = &[
-    Revision {
-        effective: effective_date(2012, 1, 30),
-        profile: &SUGAR_2012_JAN,
-    },
-    Revision {
-        effective: effective_date(2012, 11, 5),
-        profile: &SUGAR_2012_NOV,
-    },
-    Revision {
-        effective: effective_date(2014, 2, 3),
-        profile: &SUGAR_2014,
-    },
-    Revision {
-        effective: effective_date(2018, 10, 8),
-        profile: &SUGAR_CURRENT,
-    },
+pub(crate) static SUGAR_REVISIONS: &[Revision] = revisions![
+    (2012, 1, 30, &SUGAR_2012_JAN, "ICE ExNot 121911 S11 hours"),
+    (2012, 11, 5, &SUGAR_2012_NOV, "ICE ExNot 1018912 S11 hours"),
+    (2014, 2, 3, &SUGAR_2014, "ICE ExNot 012714 hours"),
+    (2018, 10, 8, &SUGAR_CURRENT, "ICE PCPO notice 20180920"),
 ];
 
 /// Selects the Sugar No. 11 profile in force on `as_of`'s New York day.

@@ -18,6 +18,7 @@ use serde::{Deserialize, Serialize};
 /// [`CalendarResolution::Daily`], [`CalendarResolution::Weekly`],
 /// and [`CalendarResolution::Monthly`] resolve to canonical session-period
 /// boundaries instead of a fixed grid.
+#[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum CalendarResolution {
     /// Fixed-grid bar spanning the given number of seconds.

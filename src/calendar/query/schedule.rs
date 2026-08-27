@@ -14,7 +14,15 @@ use crate::calendar::{CalendarResolution, CalendarSource, Exchange, MarketHoursK
 
 use super::candles;
 
-const OPEN_DAY_ANCHOR_SSM: u32 = 12 * 3_600;
+// Sessions opening on a civil day are governed by the profile in force at the
+// end of that opening day. Midnight-keyed revisions select the same profile
+// at any post-midnight anchor, so this only distinguishes sourced intraday
+// cutovers: one that lands in an intraday gap after noon (ICE Canada's 18:30
+// CT pre-open move) must govern the sessions opening later that day. The last
+// second of the local day exists in every zone — DST transitions never
+// collapse or duplicate 23:59:59 — and `mk_local_open` resolves earliest on
+// ambiguity regardless.
+const OPEN_DAY_ANCHOR_SSM: u32 = 86_399;
 const TRADE_DATE_LOOKAHEAD_DAYS: usize = 14;
 
 #[derive(Clone, Copy)]

@@ -35,6 +35,12 @@ starts; see [sources.md](sources.md) and the repeatable
   longer identifies the modeled venue/profile; reconcile before relying on it.
 - **Synthetic** — deterministic library policy with no real exchange schedule.
 
+A row may additionally carry the **Scheduled** marker: a fully sourced,
+unconditional revision is encoded ahead of its effective day, and the marker
+clears in the first release pass after that day confirms the change took
+effect. A `Scheduled` row that slips or is cancelled is removed as a schedule
+fix. This is orthogonal to the basis labels above.
+
 ## Exchanges
 
 The exchange name column is the canonical serde/parse/display wire name. There

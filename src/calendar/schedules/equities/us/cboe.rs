@@ -250,6 +250,18 @@ static EDGA_REVISIONS: &[Revision] = revisions![
         &EDGA_0700_2000,
         "Bats release note 2016 7am matching"
     ),
+    // Knowledge-bound row: EDGA's 06:00 order-acceptance queue is
+    // primary-verified in the current envelope, but no reviewed source states
+    // its onset day, so earlier dated queries omit it. From the 2026-08-22
+    // repository review onward the verified-current grid applies; a sourced
+    // onset day replaces this row.
+    (
+        2026,
+        8,
+        22,
+        &CBOE_EDGA_PROFILE,
+        "2026-08-22 review: verified current, onset undated"
+    ),
 ];
 
 pub(crate) fn edga_profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {

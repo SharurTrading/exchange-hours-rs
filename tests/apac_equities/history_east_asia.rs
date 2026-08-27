@@ -39,7 +39,7 @@ fn mainland_china_cutovers() {
     assert!(!post.is_open(at_0927));
 
     for exchange in [Exchange::Sse, Exchange::Szse] {
-        let baseline = hours_for_exchange_as_of(exchange, local(tz, (2010, 1, 4), (12, 0, 0)));
+        let baseline = hours_for_exchange(exchange, local(tz, (2010, 1, 4), (12, 0, 0)));
         assert!(baseline.is_open_extended(local(tz, probe, (15, 20, 0))));
         assert!(!baseline.is_open(local(tz, probe, (15, 30, 0))));
     }

@@ -71,13 +71,13 @@ pub use exchange_calendar::{
 };
 pub use futures_profile::{
     FuturesSessionProfile, MarketHoursKey, ParseMarketHoursKeyError, hours_for_market_hours_key,
-    hours_for_market_hours_key_as_of, session_profile,
+    session_profile,
 };
 pub use hours::MarketHours;
 pub use policy::{
     DayOverride, DayPolicy, NoPolicy, PolicyCalendar, StaticDayPolicy, StaticDayPolicyError,
 };
-pub use presets::{hours_for_exchange, hours_for_exchange_as_of};
+pub use presets::hours_for_exchange;
 pub use resolution::CalendarResolution;
 pub use rule::{SessionKind, SessionRule, SessionRuleError};
 pub use session::{

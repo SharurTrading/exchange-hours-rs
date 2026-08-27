@@ -17,6 +17,14 @@ use crate::calendar::schedules::timeline::{Revision, local_date, revisions, sele
 // https://www.ice.com/publicdocs/futures_canada/member_notices/Trading_Calendar_2009.pdf
 // https://www.ice.com/publicdocs/futures_canada/member_notices/Feb1_2011_revised_trading_hours.pdf
 //
+// The 2011 boundary is intraday, not midnight: local midnight of 2011-02-28
+// falls inside the still-running Sunday session (20:00 CT open, 13:15 CT
+// next-day close), so a day-level row would split that running session. The
+// change is therefore encoded at the exact UTC instant of the first
+// new-schedule phase — the 18:30 CT pre-open, 2011-03-01 00:30:00 UTC — and
+// the day-level timeline below begins with the 2012 revision.
+const REVISED_HOURS_2011_UNIX_SECONDS: i64 = 1_298_939_400;
+//
 // The 2012 notice moves the close to 14:00 for trade date 2012-06-25, whose
 // session opened Sunday 2012-06-24. A 2013 reminder restores it to 13:15 for
 // trade date 2013-04-08, whose session opened Sunday 2013-04-07. The 2016
@@ -117,9 +125,9 @@ pub(crate) static ICE_CANADA_PROFILE: StaticHoursProfile = StaticHoursProfile {
 };
 
 // Revision evidence — each row's day-level effective date and the primary
-// source that states it (full quotations sit in the blocks above):
-//   2011-02-28 "ICE Canada Feb 1 2011 revised trading hours"
-//     https://www.ice.com/publicdocs/futures_canada/member_notices/Feb1_2011_revised_trading_hours.pdf
+// source that states it (full quotations sit in the blocks above). The 2011
+// change is not in this timeline: its sourced boundary is the intraday
+// instant encoded above.
 //   2012-06-24 "ICE Canada June 13 2012 trading hours change"
 //     https://www.ice.com/publicdocs/futures_canada/member_notices/June_13_2012_ICE_Futures_Canada_notice-Trading_Hours_and_Settlement_Time_Change.pdf
 //   2013-04-07 "ICE Canada April 8 2013 reminder"
@@ -129,13 +137,6 @@ pub(crate) static ICE_CANADA_PROFILE: StaticHoursProfile = StaticHoursProfile {
 //   2018-07-29 "ICE Futures US notice Canola 20180501"
 //     https://www.ice.com/publicdocs/futures_us/exchange_notices/ICE_Futures_US-Notice-Canola-20180501.pdf
 static ICE_CANADA_REVISIONS: &[Revision] = revisions![
-    (
-        2011,
-        2,
-        28,
-        &ICE_CANADA_2011,
-        "ICE Canada Feb 1 2011 revised trading hours"
-    ),
     (
         2012,
         6,
@@ -169,9 +170,13 @@ static ICE_CANADA_REVISIONS: &[Revision] = revisions![
 pub(crate) fn ice_canada_profile_at(
     as_of: chrono::DateTime<chrono::Utc>,
 ) -> &'static StaticHoursProfile {
-    select_revision(
-        local_date(as_of, America::Winnipeg),
-        &ICE_CANADA_2010,
-        ICE_CANADA_REVISIONS,
-    )
+    if as_of.timestamp() < REVISED_HOURS_2011_UNIX_SECONDS {
+        &ICE_CANADA_2010
+    } else {
+        select_revision(
+            local_date(as_of, America::Winnipeg),
+            &ICE_CANADA_2011,
+            ICE_CANADA_REVISIONS,
+        )
+    }
 }

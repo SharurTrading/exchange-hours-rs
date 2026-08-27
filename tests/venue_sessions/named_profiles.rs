@@ -210,11 +210,11 @@ fn futures_session_profile_always_open_has_one_all_days_rule() {
 
 #[test]
 fn dated_market_hours_keys_reuse_cme_group_and_cfe_histories() {
-    let equity_before = hours_for_market_hours_key_as_of(
+    let equity_before = hours_for_market_hours_key(
         MarketHoursKey::GlobexEquityIndex,
         ct((2012, 11, 17), (12, 0, 0)),
     );
-    let equity_after = hours_for_market_hours_key_as_of(
+    let equity_after = hours_for_market_hours_key(
         MarketHoursKey::GlobexEquityIndex,
         ct((2012, 11, 18), (0, 0, 0)),
     );
@@ -223,50 +223,45 @@ fn dated_market_hours_keys_reuse_cme_group_and_cfe_histories() {
     assert!(equity_after.is_open_extended(ct((2012, 11, 19), (15, 45, 0))));
     assert!(!equity_after.is_open(ct((2012, 11, 19), (16, 15, 0))));
 
-    let equity_close_before = hours_for_market_hours_key_as_of(
+    let equity_close_before = hours_for_market_hours_key(
         MarketHoursKey::GlobexEquityIndex,
         ct((2015, 9, 19), (12, 0, 0)),
     );
-    let equity_close_after = hours_for_market_hours_key_as_of(
+    let equity_close_after = hours_for_market_hours_key(
         MarketHoursKey::GlobexEquityIndex,
         ct((2015, 9, 20), (0, 0, 0)),
     );
     assert!(equity_close_before.is_open(ct((2015, 9, 21), (16, 14, 59))));
     assert!(!equity_close_after.is_open(ct((2015, 9, 21), (16, 0, 0))));
 
-    let energy_before = hours_for_market_hours_key_as_of(
-        MarketHoursKey::GlobexEnergy,
-        ct((2015, 9, 19), (12, 0, 0)),
-    );
-    let energy_after = hours_for_market_hours_key_as_of(
-        MarketHoursKey::GlobexEnergy,
-        ct((2015, 9, 20), (0, 0, 0)),
-    );
+    let energy_before =
+        hours_for_market_hours_key(MarketHoursKey::GlobexEnergy, ct((2015, 9, 19), (12, 0, 0)));
+    let energy_after =
+        hours_for_market_hours_key(MarketHoursKey::GlobexEnergy, ct((2015, 9, 20), (0, 0, 0)));
     assert!(energy_before.is_open(ct((2015, 9, 21), (16, 14, 59))));
     assert!(!energy_after.is_open(ct((2015, 9, 21), (16, 0, 0))));
     assert!(
-        !hours_for_market_hours_key(MarketHoursKey::GlobexEnergy)
-            .is_open(ct((2015, 9, 21), (16, 5, 0))),
+        !hours_for_market_hours_key(
+            MarketHoursKey::GlobexEnergy,
+            chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000)
+        )
+        .is_open(ct((2015, 9, 21), (16, 5, 0))),
         "the pre-existing date-free function remains a current snapshot"
     );
 
-    let grains_before = hours_for_market_hours_key_as_of(
-        MarketHoursKey::GlobexGrains,
-        ct((2012, 5, 19), (12, 0, 0)),
-    );
-    let grains_after = hours_for_market_hours_key_as_of(
-        MarketHoursKey::GlobexGrains,
-        ct((2012, 5, 20), (0, 0, 0)),
-    );
+    let grains_before =
+        hours_for_market_hours_key(MarketHoursKey::GlobexGrains, ct((2012, 5, 19), (12, 0, 0)));
+    let grains_after =
+        hours_for_market_hours_key(MarketHoursKey::GlobexGrains, ct((2012, 5, 20), (0, 0, 0)));
     assert!(grains_before.is_order_entry_only(ct((2012, 5, 20), (17, 0, 0))));
     assert!(grains_after.is_open_extended(ct((2012, 5, 20), (17, 0, 0))));
     assert!(grains_before.is_order_entry_only(ct((2012, 5, 21), (14, 30, 0))));
     assert!(!grains_after.is_open(ct((2012, 5, 21), (14, 30, 0))));
 
     let cfe_before =
-        hours_for_market_hours_key_as_of(MarketHoursKey::CfeVix, ct((2010, 12, 9), (12, 0, 0)));
+        hours_for_market_hours_key(MarketHoursKey::CfeVix, ct((2010, 12, 9), (12, 0, 0)));
     let cfe_after =
-        hours_for_market_hours_key_as_of(MarketHoursKey::CfeVix, ct((2010, 12, 10), (0, 0, 0)));
+        hours_for_market_hours_key(MarketHoursKey::CfeVix, ct((2010, 12, 10), (0, 0, 0)));
     assert!(!cfe_before.is_open(ct((2010, 12, 10), (7, 20, 0))));
     assert!(cfe_after.is_open_extended(ct((2010, 12, 10), (7, 20, 0))));
     assert_eq!(cfe_after.exchange(), None);
@@ -276,22 +271,26 @@ fn dated_market_hours_keys_reuse_cme_group_and_cfe_histories() {
         "the dated snapshot keeps its key identity"
     );
     assert_eq!(
-        hours_for_market_hours_key(MarketHoursKey::CfeVix).market_hours_key(),
+        hours_for_market_hours_key(
+            MarketHoursKey::CfeVix,
+            chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000)
+        )
+        .market_hours_key(),
         Some(MarketHoursKey::CfeVix),
         "the fixed snapshot keeps its key identity"
     );
 
     let cfe_weekday_queue_before =
-        hours_for_market_hours_key_as_of(MarketHoursKey::CfeVix, ct((2013, 10, 27), (12, 0, 0)));
+        hours_for_market_hours_key(MarketHoursKey::CfeVix, ct((2013, 10, 27), (12, 0, 0)));
     let cfe_weekday_queue_after =
-        hours_for_market_hours_key_as_of(MarketHoursKey::CfeVix, ct((2013, 10, 28), (0, 0, 0)));
+        hours_for_market_hours_key(MarketHoursKey::CfeVix, ct((2013, 10, 28), (0, 0, 0)));
     assert!(!cfe_weekday_queue_before.is_open(ct((2013, 10, 28), (15, 29, 0))));
     assert!(cfe_weekday_queue_after.is_order_entry_only(ct((2013, 10, 28), (15, 29, 0))));
 
     let cfe_sunday_queue_before =
-        hours_for_market_hours_key_as_of(MarketHoursKey::CfeVix, ct((2014, 6, 21), (12, 0, 0)));
+        hours_for_market_hours_key(MarketHoursKey::CfeVix, ct((2014, 6, 21), (12, 0, 0)));
     let cfe_sunday_queue_after =
-        hours_for_market_hours_key_as_of(MarketHoursKey::CfeVix, ct((2014, 6, 22), (0, 0, 0)));
+        hours_for_market_hours_key(MarketHoursKey::CfeVix, ct((2014, 6, 22), (0, 0, 0)));
     assert!(!cfe_sunday_queue_before.is_open(ct((2014, 6, 22), (16, 15, 0))));
     assert!(!cfe_sunday_queue_after.is_open(ct((2014, 6, 22), (16, 14, 59))));
     assert!(cfe_sunday_queue_after.is_order_entry_only(ct((2014, 6, 22), (16, 15, 0))));
@@ -300,24 +299,23 @@ fn dated_market_hours_keys_reuse_cme_group_and_cfe_histories() {
 #[test]
 fn dated_market_hours_keys_reuse_international_product_launches() {
     let eurex_before =
-        hours_for_market_hours_key_as_of(MarketHoursKey::Eurex, cet((2018, 12, 9), (12, 0, 0)));
+        hours_for_market_hours_key(MarketHoursKey::Eurex, cet((2018, 12, 9), (12, 0, 0)));
     let eurex_after =
-        hours_for_market_hours_key_as_of(MarketHoursKey::Eurex, cet((2018, 12, 10), (0, 0, 0)));
+        hours_for_market_hours_key(MarketHoursKey::Eurex, cet((2018, 12, 10), (0, 0, 0)));
     assert!(!eurex_before.is_open(cet((2018, 12, 10), (5, 0, 0))));
     assert!(eurex_after.is_order_entry_only(cet((2018, 12, 10), (1, 0, 0))));
     assert!(eurex_after.is_open_regular(cet((2018, 12, 10), (5, 0, 0))));
 
     let ice_before =
-        hours_for_market_hours_key_as_of(MarketHoursKey::IceUs, et((2017, 11, 6), (12, 0, 0)));
+        hours_for_market_hours_key(MarketHoursKey::IceUs, et((2017, 11, 6), (12, 0, 0)));
     let ice_launch =
-        hours_for_market_hours_key_as_of(MarketHoursKey::IceUs, et((2017, 11, 7), (0, 0, 0)));
+        hours_for_market_hours_key(MarketHoursKey::IceUs, et((2017, 11, 7), (0, 0, 0)));
     assert!(!ice_before.is_open(et((2017, 11, 7), (20, 0, 0))));
     assert!(ice_launch.is_open_regular(et((2017, 11, 7), (20, 0, 0))));
 
     let sgx_before =
-        hours_for_market_hours_key_as_of(MarketHoursKey::Sgx, sgt((2024, 7, 28), (12, 0, 0)));
-    let sgx_after =
-        hours_for_market_hours_key_as_of(MarketHoursKey::Sgx, sgt((2024, 7, 29), (0, 0, 0)));
+        hours_for_market_hours_key(MarketHoursKey::Sgx, sgt((2024, 7, 28), (12, 0, 0)));
+    let sgx_after = hours_for_market_hours_key(MarketHoursKey::Sgx, sgt((2024, 7, 29), (0, 0, 0)));
     assert!(!sgx_before.is_open(sgt((2024, 7, 29), (7, 25, 0))));
     assert!(sgx_after.is_open_regular(sgt((2024, 7, 29), (7, 25, 0))));
 }
@@ -325,9 +323,12 @@ fn dated_market_hours_keys_reuse_international_product_launches() {
 #[test]
 fn synthetic_key_without_an_in_scope_revision_returns_the_current_snapshot() {
     let continuous_2010 =
-        hours_for_market_hours_key_as_of(MarketHoursKey::AlwaysOpen, utc((2010, 1, 4), (12, 0, 0)));
+        hours_for_market_hours_key(MarketHoursKey::AlwaysOpen, utc((2010, 1, 4), (12, 0, 0)));
     assert_eq!(
         continuous_2010,
-        hours_for_market_hours_key(MarketHoursKey::AlwaysOpen)
+        hours_for_market_hours_key(
+            MarketHoursKey::AlwaysOpen,
+            chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000)
+        )
     );
 }

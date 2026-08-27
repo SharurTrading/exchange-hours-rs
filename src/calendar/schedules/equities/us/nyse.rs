@@ -115,10 +115,26 @@ static NYSE_HISTORICAL_PROFILE: StaticHoursProfile = equity_profile(&[]);
 pub(crate) static NYSE_PROFILE: StaticHoursProfile =
     equity_profile_with_entry(EXTENDED_0700_0930, ENTRY_0630_0700);
 
-pub(crate) fn nyse_profile_at(
-    _as_of: chrono::DateTime<chrono::Utc>,
-) -> &'static StaticHoursProfile {
-    &NYSE_HISTORICAL_PROFILE
+// Knowledge-bound row: the 06:30 order-entry edge and the 07:00 Early Trading
+// Session are primary-verified in the current envelope, but no reviewed source
+// states an unconditional exchange-wide onset day, so earlier dated queries
+// keep the core-only representation. From the 2026-08-22 repository review
+// onward the verified-current grid applies; a sourced onset day replaces this
+// row.
+static NYSE_REVISIONS: &[Revision] = revisions![(
+    2026,
+    8,
+    22,
+    &NYSE_PROFILE,
+    "2026-08-22 review: verified current, onset undated"
+),];
+
+pub(crate) fn nyse_profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {
+    select_revision(
+        local_date(as_of, America::New_York),
+        &NYSE_HISTORICAL_PROFILE,
+        NYSE_REVISIONS,
+    )
 }
 
 // NYSE Arca currently accepts and queues orders at 02:30 before its 04:00
@@ -136,10 +152,27 @@ static NYSE_ARCA_HISTORICAL_PROFILE: StaticHoursProfile = equity_profile(US_EQUI
 pub(crate) static NYSE_ARCA_PROFILE: StaticHoursProfile =
     equity_profile_with_entry(US_EQUITY_EXTENDED, ENTRY_0230_0400);
 
+// Knowledge-bound row: the 02:30–04:00 queue is primary-verified in the
+// current envelope, but the reviewed amendment chain states no unconditional
+// day for its onset, so earlier dated queries keep only the sourced 04:00
+// execution envelope. From the 2026-08-22 repository review onward the
+// verified-current grid applies; a sourced onset day replaces this row.
+static NYSE_ARCA_REVISIONS: &[Revision] = revisions![(
+    2026,
+    8,
+    22,
+    &NYSE_ARCA_PROFILE,
+    "2026-08-22 review: verified current, onset undated"
+),];
+
 pub(crate) fn nyse_arca_profile_at(
-    _as_of: chrono::DateTime<chrono::Utc>,
+    as_of: chrono::DateTime<chrono::Utc>,
 ) -> &'static StaticHoursProfile {
-    &NYSE_ARCA_HISTORICAL_PROFILE
+    select_revision(
+        local_date(as_of, America::New_York),
+        &NYSE_ARCA_HISTORICAL_PROFILE,
+        NYSE_ARCA_REVISIONS,
+    )
 }
 
 // NYSE American's Pillar launch added its current 06:30 order-acceptance edge

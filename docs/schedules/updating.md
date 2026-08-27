@@ -173,6 +173,31 @@ the evidence was checked, not the notice's effective date. When an announced
 launch remains conditional on regulatory or infrastructure readiness, keep it
 out of runtime selectors and track it below until every condition is confirmed.
 
+The pre-coding loop, once a day is confirmed unconditional:
+
+- encode the revision row ahead of its effective day; add its boundary to the
+  handwritten `HISTORICAL_CUTOVERS` (or `HISTORICAL_INSTANT_CUTOVERS`) list
+  with both-sides tests; mark the ledger row `Scheduled`;
+- every query is instant-driven, so the row is inert until its effective
+  instant — callers roll over with no release in between;
+- in the first release pass after the effective date, confirm the change took
+  effect and clear the `Scheduled` marker;
+- if the operator slips or cancels the change, remove the row in a patch
+  release and record it under **Fixed** in `CHANGELOG.md` — the same
+  remediation as any wrong schedule row.
+
+### Knowledge-bound rows
+
+A venue or family whose verified-current profile carries a phase no reviewed
+source can date — an order-acceptance queue, a PCP window, an early session —
+records that gap as a **knowledge-bound row**: the final timeline row, dated
+at the repository review that verified the phase (2026-08-22 in the current
+tables), routing to the verified-current profile with the citation label
+`"<date> review: verified current, onset undated"`. Instants before the row
+resolve to the conservative dated grid; instants on or after it resolve to the
+verified-current grid. The row makes no onset claim: its date never moves
+forward, and only a sourced onset day replaces it.
+
 ### Pending effective-date confirmations
 
 - **Nasdaq — 2026-12-06:** [ETA2026-46](https://www.nasdaqtrader.com/TraderNews.aspx?id=ETA2026-46)

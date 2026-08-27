@@ -12,8 +12,13 @@ pub(super) type UtcYmdHms = (i32, u32, u32, u32, u32, u32);
 
 /// Observable profile changes whose primary-sourced boundary is not local
 /// midnight and therefore cannot be represented in [`HISTORICAL_CUTOVERS`].
-pub(super) const HISTORICAL_INSTANT_CUTOVERS: &[(Exchange, UtcYmdHms)] =
-    &[(Exchange::BinanceFutures, (2019, 9, 13, 4, 0, 0))];
+pub(super) const HISTORICAL_INSTANT_CUTOVERS: &[(Exchange, UtcYmdHms)] = &[
+    (Exchange::BinanceFutures, (2019, 9, 13, 4, 0, 0)),
+    // ICE Canada's 2011 pre-open/open move states 18:30/19:00 CT on the
+    // 2011-02-28 civil day, whose midnight falls inside the running Sunday
+    // session: the sourced boundary is the 18:30 CT pre-open instant.
+    (Exchange::IceCanada, (2011, 3, 1, 0, 30, 0)),
+];
 
 /// Every observable point-in-time profile change shipped by the crate.
 ///
@@ -153,11 +158,6 @@ pub(super) const HISTORICAL_CUTOVERS: &[(Exchange, Ymd, chrono_tz::Tz)] = &[
     ),
     (Exchange::Iceus, (2017, 11, 7), chrono_tz::America::New_York),
     (Exchange::Iceus, (2017, 11, 8), chrono_tz::America::New_York),
-    (
-        Exchange::IceCanada,
-        (2011, 2, 28),
-        chrono_tz::America::Winnipeg,
-    ),
     (
         Exchange::IceCanada,
         (2012, 6, 24),
@@ -603,4 +603,107 @@ pub(super) const HISTORICAL_CUTOVERS: &[(Exchange, Ymd, chrono_tz::Tz)] = &[
         (2023, 11, 6),
         chrono_tz::America::Mexico_City,
     ),
+    // Knowledge-bound rows: each venue's verified-current order-acceptance
+    // (and, for NYSE, early-session) phases apply from the 2026-08-22
+    // repository review; earlier dated queries conservatively omit them.
+    (
+        Exchange::CboeEdga,
+        (2026, 8, 22),
+        chrono_tz::America::New_York,
+    ),
+    (Exchange::Nyse, (2026, 8, 22), chrono_tz::America::New_York),
+    (
+        Exchange::NyseArca,
+        (2026, 8, 22),
+        chrono_tz::America::New_York,
+    ),
+    (
+        Exchange::CboeOptionsC1,
+        (2026, 8, 22),
+        chrono_tz::America::New_York,
+    ),
+    (
+        Exchange::CboeC2Options,
+        (2026, 8, 22),
+        chrono_tz::America::New_York,
+    ),
+    (
+        Exchange::CboeBzxOptions,
+        (2026, 8, 22),
+        chrono_tz::America::New_York,
+    ),
+    (
+        Exchange::CboeEdgxOptions,
+        (2026, 8, 22),
+        chrono_tz::America::New_York,
+    ),
+    (
+        Exchange::NyseArcaOptions,
+        (2026, 8, 22),
+        chrono_tz::America::New_York,
+    ),
+    (
+        Exchange::NyseAmericanOptions,
+        (2026, 8, 22),
+        chrono_tz::America::New_York,
+    ),
+    (
+        Exchange::NasdaqPhlx,
+        (2026, 8, 22),
+        chrono_tz::America::New_York,
+    ),
+    (
+        Exchange::NasdaqIse,
+        (2026, 8, 22),
+        chrono_tz::America::New_York,
+    ),
+    (
+        Exchange::NasdaqNom,
+        (2026, 8, 22),
+        chrono_tz::America::New_York,
+    ),
+    (
+        Exchange::NasdaqMrx,
+        (2026, 8, 22),
+        chrono_tz::America::New_York,
+    ),
+    (
+        Exchange::NasdaqGemx,
+        (2026, 8, 22),
+        chrono_tz::America::New_York,
+    ),
+    (
+        Exchange::NasdaqBxOptions,
+        (2026, 8, 22),
+        chrono_tz::America::New_York,
+    ),
+    (
+        Exchange::MiaxOptions,
+        (2026, 8, 22),
+        chrono_tz::America::New_York,
+    ),
+    (
+        Exchange::MiaxEmeraldOptions,
+        (2026, 8, 22),
+        chrono_tz::America::New_York,
+    ),
+    (
+        Exchange::MiaxPearlOptions,
+        (2026, 8, 22),
+        chrono_tz::America::New_York,
+    ),
+    (
+        Exchange::MiaxSapphireOptions,
+        (2026, 8, 22),
+        chrono_tz::America::New_York,
+    ),
+    (
+        Exchange::BoxOptions,
+        (2026, 8, 22),
+        chrono_tz::America::New_York,
+    ),
+    (Exchange::Cme, (2026, 8, 22), chrono_tz::US::Central),
+    (Exchange::Cbot, (2026, 8, 22), chrono_tz::US::Central),
+    (Exchange::Comex, (2026, 8, 22), chrono_tz::US::Central),
+    (Exchange::Nymex, (2026, 8, 22), chrono_tz::US::Central),
 ];

@@ -38,9 +38,7 @@ pub(crate) use cryptocurrency::{
     CURRENT_FUTURES_PROFILE as CRYPTOCURRENCY_CURRENT, profile_at as cryptocurrency_profile_at,
 };
 pub(crate) use energy_metals::ENERGY_METALS_ORDER_ENTRY_CURRENT;
-pub(crate) use energy_metals::{
-    ENERGY_METALS_CURRENT, ENERGY_METALS_EXTENDED_CURRENT, energy_metals_profile_at,
-};
+pub(crate) use energy_metals::{ENERGY_METALS_EXTENDED_CURRENT, energy_metals_profile_at};
 pub(crate) use fx::{CURRENT_FUTURES_PROFILE as FX_CURRENT, profile_at as fx_profile_at};
 pub(crate) use grains::CBOT_ORDER_ENTRY_CURRENT;
 pub(crate) use grains::{
@@ -58,8 +56,7 @@ pub(crate) use ice_sugar::SUGAR_ORDER_ENTRY_CURRENT;
 pub(crate) use ice_sugar::{SUGAR_EXTENDED_CURRENT, SUGAR_REGULAR_CURRENT, sugar_profile_at};
 pub(crate) use ice_us::ICE_US_FANG_ORDER_ENTRY_CURRENT;
 pub(crate) use ice_us::{
-    ICE_US_FANG_CURRENT, ICE_US_FANG_EXTENDED_CURRENT, ICE_US_FANG_REGULAR_CURRENT,
-    ice_us_fang_profile_at,
+    ICE_US_FANG_EXTENDED_CURRENT, ICE_US_FANG_REGULAR_CURRENT, ice_us_fang_profile_at,
 };
 pub(crate) use ice_usdx::ICE_USDX_ORDER_ENTRY_CURRENT;
 pub(crate) use ice_usdx::{

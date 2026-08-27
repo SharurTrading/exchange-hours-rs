@@ -7,14 +7,15 @@
 //! therefore iterate in [`Exchange`] `Ord` order regardless of insertion order.
 //! Anything that feeds a deterministic pipeline should take the map form.
 //!
-//! Every builder resolves through [`hours_for_exchange`], so these return its
-//! fixed default snapshots. A point-in-time sweep must call
-//! [`hours_for_exchange_as_of`](super::hours_for_exchange_as_of) per venue.
-//! Scans that can cross a recurring selector transition—B3, BMV, Vienna,
+//! Every builder resolves through [`hours_for_exchange`] at the caller's
+//! instant, so a bulk sweep and a per-venue query run identical code. Scans
+//! that can cross a recurring selector transition—B3, BMV, Vienna,
 //! Eurex, ICE Endex, or ICE Abu Dhabi—should use
 //! [`calendar_for_exchange`](super::calendar_for_exchange).
 
 use std::collections::BTreeMap;
+
+use chrono::{DateTime, Utc};
 
 use super::{Exchange, MarketHours, hours_for_exchange};
 
@@ -93,84 +94,99 @@ const GLOBAL_EQUITY_EXCHANGES: &[Exchange] = &[
     Exchange::Bmv,
 ];
 
-/// Builds the current [`MarketHours`] for each exchange, preserving input order.
+/// Builds the [`MarketHours`] in effect at `as_of` for each exchange,
+/// preserving input order.
 #[must_use]
-pub fn hours_for_all(exchanges: &[Exchange]) -> Vec<MarketHours> {
-    exchanges.iter().map(|&e| hours_for_exchange(e)).collect()
+pub fn hours_for_all(exchanges: &[Exchange], as_of: DateTime<Utc>) -> Vec<MarketHours> {
+    exchanges
+        .iter()
+        .map(|&e| hours_for_exchange(e, as_of))
+        .collect()
 }
 
-/// Builds the current [`MarketHours`] for the built-in US-equities exchange set.
+/// Builds the [`MarketHours`] in effect at `as_of` for the built-in
+/// US-equities exchange set.
 #[must_use]
-pub fn hours_for_us_equities() -> Vec<MarketHours> {
-    hours_for_all(US_EQUITY_EXCHANGES)
+pub fn hours_for_us_equities(as_of: DateTime<Utc>) -> Vec<MarketHours> {
+    hours_for_all(US_EQUITY_EXCHANGES, as_of)
 }
 
-/// Builds default fixed [`MarketHours`] snapshots for the built-in EU-equities
+/// Builds the [`MarketHours`] in effect at `as_of` for the built-in EU-equities
 /// set.
 ///
-/// Vienna's entry is its ordinary non-settlement compatibility snapshot. Use
+/// Vienna's entry reflects the grid `as_of` selects. Use
 /// [`calendar_for_exchange`](super::calendar_for_exchange) for its recurring
 /// third-Friday settlement grid.
 #[must_use]
-pub fn hours_for_eu_equities() -> Vec<MarketHours> {
-    hours_for_all(EU_EQUITY_EXCHANGES)
+pub fn hours_for_eu_equities(as_of: DateTime<Utc>) -> Vec<MarketHours> {
+    hours_for_all(EU_EQUITY_EXCHANGES, as_of)
 }
 
-/// Builds current [`MarketHours`] for the built-in Asia-Pacific equities set.
+/// Builds the [`MarketHours`] in effect at `as_of` for the built-in
+/// Asia-Pacific equities set.
 #[must_use]
-pub fn hours_for_apac_equities() -> Vec<MarketHours> {
-    hours_for_all(APAC_EQUITY_EXCHANGES)
+pub fn hours_for_apac_equities(as_of: DateTime<Utc>) -> Vec<MarketHours> {
+    hours_for_all(APAC_EQUITY_EXCHANGES, as_of)
 }
 
-/// Builds default fixed [`MarketHours`] snapshots for major-global equities.
+/// Builds the [`MarketHours`] in effect at `as_of` for the major-global
+/// equities set.
 ///
 /// B3 and BMV are date-dependent; use
 /// [`calendar_for_exchange`](super::calendar_for_exchange) when scanning them
 /// across dates.
 #[must_use]
-pub fn hours_for_global_equities() -> Vec<MarketHours> {
-    hours_for_all(GLOBAL_EQUITY_EXCHANGES)
+pub fn hours_for_global_equities(as_of: DateTime<Utc>) -> Vec<MarketHours> {
+    hours_for_all(GLOBAL_EQUITY_EXCHANGES, as_of)
 }
 
-/// Builds a deterministic [`Exchange`]-keyed map of current [`MarketHours`].
+/// Builds a deterministic [`Exchange`]-keyed map of the [`MarketHours`] in
+/// effect at `as_of`.
 ///
 /// Backed by a [`BTreeMap`] so iteration order is the [`Exchange`] `Ord` order,
 /// not insertion order.
 #[must_use]
-pub fn hours_map_for(exchanges: &[Exchange]) -> BTreeMap<Exchange, MarketHours> {
+pub fn hours_map_for(
+    exchanges: &[Exchange],
+    as_of: DateTime<Utc>,
+) -> BTreeMap<Exchange, MarketHours> {
     let mut m = BTreeMap::new();
     for &e in exchanges {
-        m.insert(e, hours_for_exchange(e));
+        m.insert(e, hours_for_exchange(e, as_of));
     }
     m
 }
 
-/// Builds an [`Exchange`]-keyed [`BTreeMap`] for the built-in US-equities set.
+/// Builds an [`Exchange`]-keyed [`BTreeMap`] at `as_of` for the built-in
+/// US-equities set.
 #[must_use]
-pub fn hours_map_us_equities() -> BTreeMap<Exchange, MarketHours> {
-    hours_map_for(US_EQUITY_EXCHANGES)
+pub fn hours_map_us_equities(as_of: DateTime<Utc>) -> BTreeMap<Exchange, MarketHours> {
+    hours_map_for(US_EQUITY_EXCHANGES, as_of)
 }
 
-/// Builds an [`Exchange`]-keyed [`BTreeMap`] for the built-in EU-equities set.
+/// Builds an [`Exchange`]-keyed [`BTreeMap`] at `as_of` for the built-in
+/// EU-equities set.
 ///
 /// Vienna's entry has the same recurring-grid caveat as
 /// [`hours_for_eu_equities`].
 #[must_use]
-pub fn hours_map_eu_equities() -> BTreeMap<Exchange, MarketHours> {
-    hours_map_for(EU_EQUITY_EXCHANGES)
+pub fn hours_map_eu_equities(as_of: DateTime<Utc>) -> BTreeMap<Exchange, MarketHours> {
+    hours_map_for(EU_EQUITY_EXCHANGES, as_of)
 }
 
-/// Builds an [`Exchange`]-keyed map for the Asia-Pacific equities set.
+/// Builds an [`Exchange`]-keyed map at `as_of` for the Asia-Pacific equities
+/// set.
 #[must_use]
-pub fn hours_map_apac_equities() -> BTreeMap<Exchange, MarketHours> {
-    hours_map_for(APAC_EQUITY_EXCHANGES)
+pub fn hours_map_apac_equities(as_of: DateTime<Utc>) -> BTreeMap<Exchange, MarketHours> {
+    hours_map_for(APAC_EQUITY_EXCHANGES, as_of)
 }
 
-/// Builds a fixed-snapshot map for the other major-global equities set.
+/// Builds a fixed-snapshot map at `as_of` for the other major-global equities
+/// set.
 ///
 /// B3/BMV entries have the same date-dependent caveat as
 /// [`hours_for_global_equities`].
 #[must_use]
-pub fn hours_map_global_equities() -> BTreeMap<Exchange, MarketHours> {
-    hours_map_for(GLOBAL_EQUITY_EXCHANGES)
+pub fn hours_map_global_equities(as_of: DateTime<Utc>) -> BTreeMap<Exchange, MarketHours> {
+    hours_map_for(GLOBAL_EQUITY_EXCHANGES, as_of)
 }

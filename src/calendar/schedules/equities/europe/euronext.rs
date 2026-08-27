@@ -16,8 +16,8 @@ use crate::calendar::SessionRule;
 use crate::calendar::rule::MON_FRI;
 use crate::calendar::schedules::timeline::{Revision, local_date, revisions, select_revision};
 
-pub(crate) use dublin::{EURONEXT_DUB_PROFILE, profile_at as dublin_profile_at};
-pub(crate) use milan::{EURONEXT_MIL_PROFILE, profile_at as milan_profile_at};
+pub(crate) use dublin::profile_at as dublin_profile_at;
+pub(crate) use milan::profile_at as milan_profile_at;
 
 // The operator's 2010 special-day appendix and 2014 normal-hours appendix show
 // the legacy 07:15 CET pre-opening and the principal-share opening at 09:00.

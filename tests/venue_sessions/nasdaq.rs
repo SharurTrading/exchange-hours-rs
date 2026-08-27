@@ -10,7 +10,10 @@ fn nasdaq_bx_current_snapshot_uses_texas_0700_to_1900_hours() {
     // its 2026 rename. The crate intentionally preserves the stable BX wire
     // identity while using the operator's 07:00–19:00 ET schedule.
     // https://www.nasdaqtrader.com/content/technicalsupport/nasdaq_sys_hours.pdf
-    let hours = hours_for_exchange(Exchange::NasdaqBx);
+    let hours = hours_for_exchange(
+        Exchange::NasdaqBx,
+        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
+    );
     let monday = (2026, 4, 20);
 
     assert!(!hours.is_open(et(monday, (6, 59, 59))));
@@ -30,7 +33,10 @@ fn nasdaq_psx_current_snapshot_uses_0800_to_1700_hours() {
     // PSX Rule 3100 defines System Hours 08:00–17:00 ET, with Market Hours
     // 09:30–16:00 ET.
     // https://listingcenter.nasdaq.com/rulebook/phlx/rules/phlx-psx-legacy-3000
-    let hours = hours_for_exchange(Exchange::NasdaqPsx);
+    let hours = hours_for_exchange(
+        Exchange::NasdaqPsx,
+        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
+    );
     let monday = (2026, 4, 20);
 
     assert!(!hours.is_open(et(monday, (7, 59, 59))));
@@ -51,8 +57,8 @@ fn nasdaq_0400_premarket_started_on_2013_03_18() {
     // from 07:00 to 04:00 ET on Monday 2013-03-18.
     // https://www.nasdaqtrader.com/TraderNews.aspx?id=ETA2013-21
     let cutover = et((2013, 3, 18), (0, 0, 0));
-    let before = hours_for_exchange_as_of(Exchange::Nasdaq, cutover - chrono::Duration::seconds(1));
-    let after = hours_for_exchange_as_of(Exchange::Nasdaq, cutover);
+    let before = hours_for_exchange(Exchange::Nasdaq, cutover - chrono::Duration::seconds(1));
+    let after = hours_for_exchange(Exchange::Nasdaq, cutover);
 
     assert!(!before.is_open(et((2013, 3, 18), (6, 59, 59))));
     assert!(before.is_open_extended(et((2013, 3, 18), (7, 0, 0))));
@@ -68,9 +74,8 @@ fn nasdaq_psx_launch_and_0800_expansion_use_sourced_dates() {
     // https://www.nasdaqtrader.com/TraderNews.aspx?id=ETA2010-56
     // https://www.sec.gov/files/rules/sro/phlx/2010/34-63492.pdf
     let launch = et((2010, 10, 8), (0, 0, 0));
-    let closed =
-        hours_for_exchange_as_of(Exchange::NasdaqPsx, launch - chrono::Duration::seconds(1));
-    let launched = hours_for_exchange_as_of(Exchange::NasdaqPsx, launch);
+    let closed = hours_for_exchange(Exchange::NasdaqPsx, launch - chrono::Duration::seconds(1));
+    let launched = hours_for_exchange(Exchange::NasdaqPsx, launch);
 
     assert!(closed.regular.is_empty());
     assert!(closed.extended.is_empty());
@@ -81,11 +86,11 @@ fn nasdaq_psx_launch_and_0800_expansion_use_sourced_dates() {
     assert!(!launched.is_open(et((2010, 10, 8), (17, 0, 0))));
 
     let expansion = et((2010, 12, 13), (0, 0, 0));
-    let before = hours_for_exchange_as_of(
+    let before = hours_for_exchange(
         Exchange::NasdaqPsx,
         expansion - chrono::Duration::seconds(1),
     );
-    let after = hours_for_exchange_as_of(Exchange::NasdaqPsx, expansion);
+    let after = hours_for_exchange(Exchange::NasdaqPsx, expansion);
 
     assert!(!before.is_open(et((2010, 12, 13), (8, 0, 0))));
     assert!(after.is_open_extended(et((2010, 12, 13), (8, 0, 0))));
@@ -102,8 +107,11 @@ fn nasdaq_psx_launch_and_0800_expansion_use_sourced_dates() {
 
 #[test]
 fn nasdaq_unconfirmed_night_session_is_not_encoded() {
-    let current = hours_for_exchange(Exchange::Nasdaq);
-    let future = hours_for_exchange_as_of(Exchange::Nasdaq, et((2026, 12, 7), (12, 0, 0)));
+    let current = hours_for_exchange(
+        Exchange::Nasdaq,
+        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
+    );
+    let future = hours_for_exchange(Exchange::Nasdaq, et((2026, 12, 7), (12, 0, 0)));
 
     for hours in [&current, &future] {
         assert!(!hours.is_open(et((2026, 12, 6), (21, 0, 0))));

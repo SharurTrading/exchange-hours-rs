@@ -49,7 +49,7 @@ fn resolved_snapshot_is_exact_at_its_instant_but_not_across_a_transition() {
     let calendar = calendar_for_exchange(Exchange::Bmv);
     let tz = America::Mexico_City;
     let friday = local(tz, (2024, 3, 8), (14, 0, 0));
-    let friday_snapshot = hours_for_exchange_as_of(Exchange::Bmv, friday);
+    let friday_snapshot = hours_for_exchange(Exchange::Bmv, friday);
 
     assert_eq!(calendar.hours_at(friday), friday_snapshot);
     assert_eq!(calendar.is_open(friday), friday_snapshot.is_open(friday));

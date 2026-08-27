@@ -16,8 +16,8 @@ mod prelude {
     pub(super) use exchange_hours::{
         CalendarResolution, Exchange, ExchangeCalendar, MarketHours, SessionKind,
         calendar_for_exchange, candle_end, candle_end_with, candle_start, candle_start_with,
-        hours_for_exchange, hours_for_exchange_as_of, next_session_after, next_session_after_with,
-        session_bounds, session_bounds_with, time_end_of_day,
+        hours_for_exchange, next_session_after, next_session_after_with, session_bounds,
+        session_bounds_with, time_end_of_day,
     };
 
     pub(super) use crate::support::local;
@@ -36,7 +36,7 @@ mod prelude {
 
     pub(super) fn assert_fixed_calendar_parity(exchange: Exchange, instant: DateTime<Utc>) {
         let calendar = calendar_for_exchange(exchange);
-        let fixed = hours_for_exchange_as_of(exchange, instant);
+        let fixed = hours_for_exchange(exchange, instant);
 
         assert_eq!(calendar.exchange(), Some(exchange));
         assert_eq!(calendar.tz(), fixed.tz);

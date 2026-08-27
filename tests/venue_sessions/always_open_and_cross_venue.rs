@@ -14,7 +14,10 @@ use super::prelude::*;
 
 #[test]
 fn binance_futures_always_open() {
-    let h = hours_for_exchange(Exchange::BinanceFutures);
+    let h = hours_for_exchange(
+        Exchange::BinanceFutures,
+        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
+    );
     assert!(
         h.is_open(utc((2026, 4, 20), (0, 0, 0))),
         "Binance Mon midnight UTC"
@@ -32,11 +35,11 @@ fn binance_futures_always_open() {
 #[test]
 fn binance_futures_opens_at_its_exact_sourced_launch_instant() {
     let launch = utc((2019, 9, 13), (4, 0, 0));
-    let before = hours_for_exchange_as_of(
+    let before = hours_for_exchange(
         Exchange::BinanceFutures,
         launch - chrono::Duration::nanoseconds(1),
     );
-    let after = hours_for_exchange_as_of(Exchange::BinanceFutures, launch);
+    let after = hours_for_exchange(Exchange::BinanceFutures, launch);
 
     assert!(before.regular.is_empty());
     assert!(before.extended.is_empty());
@@ -55,7 +58,10 @@ fn binance_futures_opens_at_its_exact_sourced_launch_instant() {
 
 #[test]
 fn always_open_no_maintenance() {
-    let h = hours_for_exchange(Exchange::BinanceFutures);
+    let h = hours_for_exchange(
+        Exchange::BinanceFutures,
+        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
+    );
     for day in 19..26 {
         let t = utc((2026, 4, day), (12, 0, 0));
         assert!(
@@ -67,7 +73,10 @@ fn always_open_no_maintenance() {
 
 #[test]
 fn always_open_no_daily_or_weekend_close() {
-    let h = hours_for_exchange(Exchange::BinanceFutures);
+    let h = hours_for_exchange(
+        Exchange::BinanceFutures,
+        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
+    );
     assert!(!h.has_daily_close, "Always-open venue has no daily close");
     assert!(
         !h.has_weekend_close,
@@ -94,8 +103,14 @@ fn always_open_no_daily_or_weekend_close() {
 
 #[test]
 fn always_open_distinct_from_futures() {
-    let always_open = hours_for_exchange(Exchange::BinanceFutures);
-    let cme = hours_for_exchange(Exchange::Cme);
+    let always_open = hours_for_exchange(
+        Exchange::BinanceFutures,
+        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
+    );
+    let cme = hours_for_exchange(
+        Exchange::Cme,
+        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
+    );
 
     assert!(
         !always_open.has_daily_close,
@@ -135,7 +150,10 @@ fn futures_venues_closed_saturday() {
         Exchange::Iceeu,
         Exchange::Cfe,
     ] {
-        let h = hours_for_exchange(exch);
+        let h = hours_for_exchange(
+            exch,
+            chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
+        );
         assert!(
             h.is_closed_all_day_on(saturday, SessionKind::Both),
             "{exch:?} should be closed all Saturday"
@@ -145,7 +163,10 @@ fn futures_venues_closed_saturday() {
 
 #[test]
 fn sgx_saturday_partial_trading_from_friday_wrap() {
-    let h = hours_for_exchange(Exchange::Sgx);
+    let h = hours_for_exchange(
+        Exchange::Sgx,
+        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
+    );
     let saturday = chrono::NaiveDate::from_ymd_opt(2026, 4, 25).unwrap();
     assert!(
         !h.is_closed_all_day_on(saturday, SessionKind::Both),
@@ -165,7 +186,10 @@ fn sgx_saturday_partial_trading_from_friday_wrap() {
 fn futures_venues_sunday_morning_closed() {
     let sunday = chrono::NaiveDate::from_ymd_opt(2026, 4, 26).unwrap();
     for &exch in &[Exchange::Eurex, Exchange::Sgx] {
-        let h = hours_for_exchange(exch);
+        let h = hours_for_exchange(
+            exch,
+            chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
+        );
         assert!(
             h.is_closed_all_day_on(sunday, SessionKind::Both),
             "{exch:?} should be closed all Sunday"
@@ -184,7 +208,10 @@ fn futures_venues_sunday_has_sessions() {
         Exchange::Iceeu,
         Exchange::Cfe,
     ] {
-        let h = hours_for_exchange(exch);
+        let h = hours_for_exchange(
+            exch,
+            chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
+        );
         assert!(
             !h.is_closed_all_day_on(sunday, SessionKind::Both),
             "{exch:?} has Sunday evening sessions"

@@ -193,6 +193,17 @@ static CME_PROFILE_DATED_CURRENT: StaticHoursProfile = StaticHoursProfile {
     has_daily_close: true,
     has_weekend_close: true,
 };
+// Verified-current grid: identical to DATED_CURRENT except the Sunday
+// 16:00–17:00 Pre-Open queue, whose onset day no reviewed primary source
+// states.
+static CME_PROFILE_CURRENT: StaticHoursProfile = StaticHoursProfile {
+    tz: US::Central,
+    regular: CME_REGULAR,
+    extended: CME_EXTENDED_CURRENT,
+    order_entry: CME_ORDER_ENTRY_CURRENT,
+    has_daily_close: true,
+    has_weekend_close: true,
+};
 
 static CME_REVISIONS: &[Revision] = revisions![
     (
@@ -222,6 +233,18 @@ static CME_REVISIONS: &[Revision] = revisions![
         27,
         &CME_PROFILE_DATED_CURRENT,
         "CME Globex notice 20210621"
+    ),
+    // Knowledge-bound row: the Sunday 16:00–17:00 Pre-Open queue is
+    // primary-verified in the current envelope, but no reviewed source states
+    // its onset day, so earlier dated queries conservatively omit it. From the
+    // 2026-08-22 repository review onward the verified-current grid applies; a
+    // sourced onset day replaces this row.
+    (
+        2026,
+        8,
+        22,
+        &CME_PROFILE_CURRENT,
+        "2026-08-22 review: verified current, onset undated"
     ),
 ];
 

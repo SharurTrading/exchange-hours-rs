@@ -6,7 +6,10 @@ use super::prelude::*;
 
 #[test]
 fn asx_current_baseline() {
-    let h = hours_for_exchange(Exchange::Asx);
+    let h = hours_for_exchange(
+        Exchange::Asx,
+        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
+    );
     let tz = Australia::Sydney;
     assert!(!h.is_open(local(tz, (2026, 8, 19), (6, 59, 0))));
     assert!(h.is_open_extended(local(tz, (2026, 8, 19), (7, 0, 0))));
@@ -19,7 +22,10 @@ fn asx_current_baseline() {
 
 #[test]
 fn tmx_australia_current_baseline() {
-    let h = hours_for_exchange(Exchange::TmxAustralia);
+    let h = hours_for_exchange(
+        Exchange::TmxAustralia,
+        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
+    );
     let tz = Australia::Sydney;
     let date = (2026, 8, 19);
     assert!(!h.is_open(local(tz, date, (6, 59, 59))));
@@ -35,7 +41,10 @@ fn tmx_australia_current_baseline() {
 
 #[test]
 fn tokyo_current_baseline() {
-    let h = hours_for_exchange(Exchange::Tse);
+    let h = hours_for_exchange(
+        Exchange::Tse,
+        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
+    );
     let tz = Asia::Tokyo;
     assert!(!h.is_open(local(tz, (2026, 8, 19), (7, 59, 0))));
     // TSE pre-opening: Itayose order acceptance, no matching until 09:00.
@@ -51,7 +60,10 @@ fn tokyo_current_baseline() {
 
 #[test]
 fn nzx_current_baseline() {
-    let h = hours_for_exchange(Exchange::Nzx);
+    let h = hours_for_exchange(
+        Exchange::Nzx,
+        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
+    );
     let tz = Pacific::Auckland;
     assert!(!h.is_open(local(tz, (2026, 8, 19), (8, 29, 0))));
     assert!(h.is_open_extended(local(tz, (2026, 8, 19), (8, 30, 0))));
@@ -69,7 +81,10 @@ fn nzx_current_baseline() {
 fn india_current_baselines() {
     let tz = Asia::Kolkata;
     for exchange in [Exchange::NseIndia, Exchange::BseIndia] {
-        let h = hours_for_exchange(exchange);
+        let h = hours_for_exchange(
+            exchange,
+            chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
+        );
         assert!(!h.is_open(local(tz, (2026, 8, 19), (8, 59, 0))));
         // India pre-open order-collection sub-window; the matching
         // sub-window that follows it stays tradeable.
@@ -87,7 +102,10 @@ fn india_current_baselines() {
 
 #[test]
 fn hong_kong_current_baseline() {
-    let h = hours_for_exchange(Exchange::Hkex);
+    let h = hours_for_exchange(
+        Exchange::Hkex,
+        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
+    );
     let tz = Asia::Hong_Kong;
     assert!(!h.is_open(local(tz, (2026, 8, 19), (8, 59, 0))));
     // HKEX pre-opening order-input period; the auction match follows.
@@ -102,7 +120,10 @@ fn hong_kong_current_baseline() {
 
 #[test]
 fn sgx_securities_current_baseline() {
-    let h = hours_for_exchange(Exchange::SgxSecurities);
+    let h = hours_for_exchange(
+        Exchange::SgxSecurities,
+        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
+    );
     let tz = Asia::Singapore;
     assert!(!h.is_open(local(tz, (2026, 8, 19), (8, 29, 0))));
     // SGX Pre-Opening routine: order entry only.
@@ -122,7 +143,10 @@ fn southeast_asia_current_baselines() {
     let date = (2026, 8, 19);
 
     let tz = Asia::Kuala_Lumpur;
-    let h = hours_for_exchange(Exchange::BursaMalaysia);
+    let h = hours_for_exchange(
+        Exchange::BursaMalaysia,
+        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
+    );
     assert!(!h.is_open(local(tz, date, (8, 29, 0))));
     assert!(h.is_open_extended(local(tz, date, (8, 30, 0))));
     assert!(h.is_open_regular(local(tz, date, (9, 0, 0))));
@@ -136,7 +160,10 @@ fn southeast_asia_current_baselines() {
     assert_weekend_closed(Exchange::BursaMalaysia, tz);
 
     let tz = Asia::Bangkok;
-    let h = hours_for_exchange(Exchange::SetThailand);
+    let h = hours_for_exchange(
+        Exchange::SetThailand,
+        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
+    );
     assert!(!h.is_open(local(tz, date, (9, 29, 0))));
     // SET pre-open order accumulation ahead of the randomised auction.
     assert!(h.is_order_entry_only(local(tz, date, (9, 30, 0))));
@@ -159,7 +186,10 @@ fn southeast_asia_current_baselines() {
     assert_weekend_closed(Exchange::SetThailand, tz);
 
     let tz = Asia::Jakarta;
-    let h = hours_for_exchange(Exchange::Idx);
+    let h = hours_for_exchange(
+        Exchange::Idx,
+        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
+    );
     assert!(!h.is_open(local(tz, date, (8, 44, 0))));
     // IDX pre-opening order collection 08:45-08:55; the 08:55 pre-open match
     // that follows it is tradeable and stays in `extended`.
@@ -175,7 +205,10 @@ fn southeast_asia_current_baselines() {
     assert_weekend_closed(Exchange::Idx, tz);
 
     let tz = Asia::Manila;
-    let h = hours_for_exchange(Exchange::Pse);
+    let h = hours_for_exchange(
+        Exchange::Pse,
+        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
+    );
     assert!(!h.is_open(local(tz, date, (8, 59, 0))));
     assert!(h.is_open_extended(local(tz, date, (9, 0, 0))));
     assert!(h.is_open_regular(local(tz, date, (9, 30, 0))));
@@ -186,7 +219,10 @@ fn southeast_asia_current_baselines() {
     assert_weekend_closed(Exchange::Pse, tz);
 
     let tz = Asia::Ho_Chi_Minh;
-    let h = hours_for_exchange(Exchange::Hose);
+    let h = hours_for_exchange(
+        Exchange::Hose,
+        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
+    );
     assert!(!h.is_open(local(tz, date, (8, 59, 0))));
     assert!(h.is_open_extended(local(tz, date, (9, 0, 0))));
     assert!(h.is_open_regular(local(tz, date, (9, 15, 0))));
@@ -202,7 +238,10 @@ fn southeast_asia_current_baselines() {
 fn mainland_china_current_baselines() {
     let tz = Asia::Shanghai;
     for exchange in [Exchange::Sse, Exchange::Szse] {
-        let h = hours_for_exchange(exchange);
+        let h = hours_for_exchange(
+            exchange,
+            chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
+        );
         assert!(!h.is_open(local(tz, (2026, 8, 19), (9, 14, 0))));
         assert!(h.is_open_extended(local(tz, (2026, 8, 19), (9, 15, 0))));
         assert!(!h.is_open(local(tz, (2026, 8, 19), (9, 25, 0))));
@@ -218,7 +257,10 @@ fn mainland_china_current_baselines() {
 
 #[test]
 fn korea_current_baseline() {
-    let h = hours_for_exchange(Exchange::Krx);
+    let h = hours_for_exchange(
+        Exchange::Krx,
+        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
+    );
     let tz = Asia::Seoul;
     assert!(!h.is_open(local(tz, (2026, 8, 19), (7, 59, 59))));
     assert!(h.is_open_extended(local(tz, (2026, 8, 19), (8, 0, 0))));
@@ -231,7 +273,10 @@ fn korea_current_baseline() {
 
 #[test]
 fn taiwan_current_baseline() {
-    let h = hours_for_exchange(Exchange::Twse);
+    let h = hours_for_exchange(
+        Exchange::Twse,
+        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
+    );
     let tz = Asia::Taipei;
     assert!(!h.is_open(local(tz, (2026, 8, 19), (7, 59, 59))));
     assert!(h.is_open_extended(local(tz, (2026, 8, 19), (8, 0, 0))));

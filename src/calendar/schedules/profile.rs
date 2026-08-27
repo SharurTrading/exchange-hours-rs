@@ -4,9 +4,10 @@
 
 use std::borrow::Cow;
 
-use chrono_tz::{America, Tz};
+use chrono_tz::{America, Tz, UTC};
 
 use crate::calendar::exchange_calendar::CalendarSource;
+use crate::calendar::rule::ALL_DAYS;
 use crate::calendar::{MarketHours, SessionRule};
 
 /// A venue's normal-week schedule in fully static form.
@@ -33,6 +34,26 @@ pub(in crate::calendar::schedules) static CLOSED_NEW_YORK: StaticHoursProfile =
         has_daily_close: true,
         has_weekend_close: true,
     };
+
+/// One shared static rule slice for continuous 24×7 profiles (the synthetic
+/// `Exchange::Unknown` fallback and `MarketHoursKey::AlwaysOpen`), so the two
+/// identities cannot drift apart.
+pub(crate) static ALWAYS_OPEN_RULE: &[SessionRule] = &[SessionRule {
+    days: ALL_DAYS,
+    open_ssm: 0,
+    close_ssm: 24 * 3600,
+}];
+
+/// The continuous 24×7 UTC profile. It has no final daily close, so
+/// date-aware trade-date queries return `None` at every instant.
+pub(crate) static ALWAYS_OPEN_PROFILE: StaticHoursProfile = StaticHoursProfile {
+    tz: UTC,
+    regular: ALWAYS_OPEN_RULE,
+    extended: &[],
+    order_entry: &[],
+    has_daily_close: false,
+    has_weekend_close: false,
+};
 
 /// Tags a static schedule with its venue without cloning its rule slices.
 #[inline]

@@ -5,8 +5,7 @@
 use chrono_tz::{America, Asia, Europe, US, UTC};
 
 use super::{FuturesSessionProfile, MarketHoursKey};
-use crate::calendar::SessionRule;
-use crate::calendar::rule::ALL_DAYS;
+use crate::calendar::schedules::ALWAYS_OPEN_RULE;
 use crate::calendar::schedules::futures::international::{
     EUREX_CURRENT_EXTENDED, EUREX_CURRENT_ORDER_ENTRY, EUREX_CURRENT_REGULAR,
     EUREX_FIXED_INCOME_EXTENDED_CURRENT, EUREX_FIXED_INCOME_ORDER_ENTRY_CURRENT,
@@ -33,12 +32,6 @@ use crate::calendar::schedules::futures::us::{
     INTEREST_RATES_CURRENT, LIVESTOCK_CURRENT, NKD_EXTENDED_CURRENT, NKD_REGULAR_CURRENT,
     SUGAR_EXTENDED_CURRENT, SUGAR_ORDER_ENTRY_CURRENT, SUGAR_REGULAR_CURRENT,
 };
-
-static ALWAYS_OPEN_RULE: &[SessionRule] = &[SessionRule {
-    days: ALL_DAYS,
-    open_ssm: 0,
-    close_ssm: 24 * 3600,
-}];
 
 static FUTURES_GLOBEX_EQUITY_INDEX: FuturesSessionProfile = FuturesSessionProfile {
     tz: US::Central,
@@ -228,14 +221,17 @@ static FUTURES_ALWAYS_OPEN: FuturesSessionProfile = FuturesSessionProfile {
     has_daily_close: false,
     has_weekend_close: false,
 };
-
 /// Returns the fixed-current normal-week futures session profile for `key`.
 ///
-/// This function does not select historical revisions. Use
-/// [`super::hours_for_market_hours_key_as_of`] for a dated key snapshot.
-/// Callers that scan across a transition should use
+/// This is the static current table, not a time selection: it equals the
+/// revision timeline's selection at any instant on or after the family's
+/// knowledge-bound row (the 2026-08-22 repository review for families whose
+/// current order-entry queues have no sourced onset day). Use
+/// [`super::hours_for_market_hours_key`] to resolve the family at a caller's
+/// instant, and
 /// [`crate::calendar::calendar_for_market_hours_key`], which reselects the
-/// product-family profile for every candidate opening day.
+/// product-family profile for every candidate opening day, for scans that
+/// cross a transition.
 #[must_use]
 pub fn session_profile(key: MarketHoursKey) -> &'static FuturesSessionProfile {
     match key {

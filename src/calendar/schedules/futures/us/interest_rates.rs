@@ -127,6 +127,17 @@ static PROFILE_2011_10_02: StaticHoursProfile = StaticHoursProfile {
     has_weekend_close: true,
 };
 
+// Verified-current grid: identical to PROFILE_2011_10_02 except the Sunday
+// 16:00–17:00 queue, whose onset day no reviewed primary source states.
+static PROFILE_CURRENT: StaticHoursProfile = StaticHoursProfile {
+    tz: US::Central,
+    regular: &[],
+    extended: EXTENDED_1700_1600,
+    order_entry: ORDER_ENTRY_CURRENT,
+    has_daily_close: true,
+    has_weekend_close: true,
+};
+
 static REVISIONS: &[Revision] = revisions![
     (
         2010,
@@ -141,6 +152,18 @@ static REVISIONS: &[Revision] = revisions![
         2,
         &PROFILE_2011_10_02,
         "CME Globex notice 20110926"
+    ),
+    // Knowledge-bound row: the Sunday 16:00–17:00 queue is primary-verified
+    // in the current envelope, but no reviewed source states its onset day,
+    // so earlier dated queries conservatively omit it. From the 2026-08-22
+    // repository review onward the verified-current grid applies; a sourced
+    // onset day replaces this row.
+    (
+        2026,
+        8,
+        22,
+        &PROFILE_CURRENT,
+        "2026-08-22 review: verified current, onset undated"
     ),
 ];
 

@@ -60,8 +60,7 @@ src/calendar/
     profile.rs          StaticHoursProfile and allocation-free adapter
     timeline.rs         Ordinary dated revisions and cross-zone helpers
   presets/
-    current.rs          One exhaustive Exchange -> current profile match
-    historical.rs       Point-in-time routing and documented history gaps
+    historical.rs       The one exhaustive Exchange -> point-in-time routing match
   hours.rs              MarketHours value and fixed-snapshot method adapters
   state.rs              SessionState classification
   session.rs            Public fixed-session free-function adapters
@@ -82,8 +81,9 @@ A venue or product-family module owns:
 - literal `SessionRule` slices and `StaticHoursProfile` values;
 - the primary-source comments supporting every literal and the exact venue,
   segment, or product-family scope those literals describe;
-- day-level effective dates and its `profile_at` selector, when it has history;
-- a current-profile pointer used by the exhaustive current preset.
+- its `profile_at` selector — a trivial one-profile selector for venues with
+  no recorded change, a dated `Revision` timeline otherwise, so a venue's
+  first future revision is a purely local edit.
 
 The repeatable evidence workflow is documented in
 [Updating exchange schedules](docs/schedules/updating.md). The
@@ -109,7 +109,7 @@ independent:
 
 - the `Exchange` declaration/name table;
 - the `MarketHoursKey` declaration/name table;
-- the exhaustive match in `presets/current.rs`;
+- the exhaustive routing match in `presets/historical.rs`;
 - fixed and dated product-family routing;
 - regional membership in `bulk.rs`;
 - the handwritten exchange/key lists, counts, and historical cutover tables in

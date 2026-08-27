@@ -110,7 +110,10 @@ fn bmv_reference_rule_recurs_across_us_clock_transitions() {
     ];
 
     assert_eq!(
-        hours_for_exchange(Exchange::Bmv),
+        hours_for_exchange(
+            Exchange::Bmv,
+            chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000)
+        ),
         calendar.hours_at(local(tz, (2026, 8, 19), (12, 0, 0)))
     );
 

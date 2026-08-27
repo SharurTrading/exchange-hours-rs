@@ -11,6 +11,38 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ## [Unreleased]
 
+### Changed
+
+- **Single-path, instant-driven profile selection (breaking, pre-1.0).**
+  Every schedule-selection entry point now requires the caller's instant:
+  `hours_for_exchange(exchange, as_of)` and
+  `hours_for_market_hours_key(key, as_of)` (formerly the `_as_of` variants —
+  the clock-less twins are removed, and the plain names moved to the
+  instant-driven signatures), and every `bulk` builder takes a trailing
+  `as_of`. The crate still never reads a clock (LAW-DETERMINISM): a live
+  caller passes their own `Utc::now()` at the application edge, and a
+  backtest passes its historical instant — identical code either way. A
+  fully sourced, unconditional future revision can now be encoded ahead of
+  its effective day and rolls over with no release in between.
+  `presets/current.rs` is gone; the one exhaustive routing match lives in
+  `presets/historical.rs` with no catch-all arm, and every venue module owns
+  a `profile_at` selector. The `ExchangeCalendar` opening-day anchor moved
+  from venue-local noon to the end of the local opening day, so a sourced
+  intraday cutover in an afternoon gap (as ICE Canada's 2011 18:30 CT
+  pre-open) governs that day's later sessions. `session_profile` remains the
+  static current-table accessor and equals the timelines' selection at any
+  instant on or after the 2026-08-22 knowledge-bound rows.
+- **Verified-current phases are carried by knowledge-bound timeline rows.**
+  Twenty-four venues and four Globex families whose current grids include
+  an order-acceptance or early phase with no sourced onset day (for example
+  the US options pre-open queues and CME's Sunday 16:00 CT Pre-Open) now
+  record that phase as the final timeline row dated at the 2026-08-22
+  repository review, labeled "verified current, onset undated". Instants
+  before the row keep the conservative dated grid; instants on or after it
+  resolve to the verified-current grid, so the previous clock-less snapshot
+  answers are preserved exactly. Finding a sourced onset day replaces each
+  row.
+
 ### Added
 
 - **Thirteen product-family keys, closing the deferred-family gap.** Every
@@ -32,6 +64,18 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Fixed
 
+- **ICE Futures Canada's 2011 hours change now flips at its sourced intraday
+  instant, not local midnight.** The February 2011 notice moves the Canola
+  pre-open/open to 18:30/19:00 CT on Monday 2011-02-28, and local midnight of
+  that day falls inside the still-running Sunday session. The previous
+  day-level row split that running session: a 2011-02-28 morning query
+  reported the Sunday session as opening at the not-yet-in-force 19:00 CT.
+  The change is now an exact-instant cutover at 2011-03-01 00:30:00 UTC, and
+  the date-aware engine's opening-day anchor moved from local noon to the end
+  of the local opening day so an afternoon intraday cutover governs that
+  day's later sessions. A new contract fence (`day_level_cutovers_never_
+  split_a_running_session`) now enforces the no-split invariant for every
+  recorded cutover.
 - **BZX and BYX no longer report trading before their 2016 matching start.**
   Bats' 2016 release note moved equity order matching and routing from 08:00
   to 07:00 ET on staggered days (BYX 2016-05-23, BZX 2016-05-25). The dated

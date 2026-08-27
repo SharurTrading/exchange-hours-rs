@@ -8,9 +8,10 @@
 //! and the caller's sourced instrument catalog must select the exact family.
 //! This crate does not map symbols, roots, product codes, or MICs to keys.
 //!
-//! [`MarketHoursKey`] is `#[non_exhaustive]`. [`session_profile`] is a current
-//! snapshot, [`hours_for_market_hours_key_as_of`] selects sourced revisions,
-//! and [`ExchangeCalendar`](super::ExchangeCalendar) scans date-aware profiles.
+//! [`MarketHoursKey`] is `#[non_exhaustive]`. [`session_profile`] exposes the
+//! fixed-current static table, [`hours_for_market_hours_key`] selects sourced
+//! revisions at the caller's instant, and
+//! [`ExchangeCalendar`](super::ExchangeCalendar) scans date-aware profiles.
 
 mod key_serde;
 mod profiles;
@@ -25,7 +26,7 @@ use chrono::{DateTime, Utc};
 use chrono_tz::Tz;
 
 use super::exchange_calendar::CalendarSource;
-use super::local_time::bounded_utc;
+use super::schedules::ALWAYS_OPEN_PROFILE;
 use super::schedules::from_profile;
 use super::schedules::futures::international::{
     eurex_fixed_income_profile_at, eurex_profile_at, sgx_equity_index_china_profile_at,
@@ -210,45 +211,28 @@ market_hours_keys! {
     }
 }
 
-/// Resolves a [`MarketHoursKey`] to the fixed-current [`MarketHours`] value the
-/// calendar query surface ([`candle_end`](super::candle_end),
-/// [`session_bounds`](super::session_bounds), …) consumes.
-///
-/// This borrows the same static [`FuturesSessionProfile`] table
-/// [`session_profile`] returns — not a second source of truth. The source is
-/// [`CalendarSource::MarketHoursKey`] because the key, not a venue enum,
-/// identifies these shared futures profiles. This function does not select
-/// historical revisions. For [`MarketHoursKey::GlobexCryptocurrency`], open/closed state
-/// remains exact, but identity-dependent multi-day bounds, trade dates, and
-/// weekly candle boundaries are available only from
-/// [`calendar_for_market_hours_key`](super::calendar_for_market_hours_key).
-#[must_use]
-pub fn hours_for_market_hours_key(key: MarketHoursKey) -> MarketHours {
-    session_profile(key).to_market_hours(CalendarSource::MarketHoursKey(key))
-}
-
 /// Resolves the fixed [`MarketHours`] snapshot in effect for `key` at `as_of`.
 ///
-/// Sourced histories are selected independently for each product family,
-/// including CME Group equity-index, energy/metals, grains, FX, interest-rate,
-/// livestock, and cryptocurrency grids. Keys with no in-scope recorded change
-/// return their current snapshot. Dates before the January-2010 audit floor
-/// receive the oldest audited profile. For launch-dated families — CME
-/// cryptocurrency, ICE U.S. NYSE FANG+, and SGX Three-Month SORA — a pre-launch
-/// date returns an explicit sessionless profile. A member listed after its
-/// family began does not create a key-level revision; callers enforce product
-/// launch dates in their catalog. Some CME histories have an exact current
-/// fixed profile but no primary day for an older Pre-Open or PCP onset. Their
-/// dated selectors intentionally omit only that unsourced phase rather than
-/// fabricate a cutover; use [`session_profile`] for the exact current snapshot.
+/// This is the key-side's only profile-selection path: every request carries
+/// the caller's instant (LAW-DETERMINISM), so a backtest and a live query run
+/// identical code. Sourced histories are selected independently for each
+/// product family, including CME Group equity-index, energy/metals, grains,
+/// FX, interest-rate, livestock, and cryptocurrency grids. Keys with no
+/// in-scope recorded change resolve to their one grid at every instant. Dates
+/// before the January-2010 audit floor receive the oldest audited profile. For
+/// launch-dated families — CME cryptocurrency, ICE U.S. NYSE FANG+, and SGX
+/// Three-Month SORA — a pre-launch date returns an explicit sessionless
+/// profile. A member listed after its family began does not create a key-level
+/// revision; callers enforce product launch dates in their catalog. Some CME
+/// histories have a verified-current Pre-Open or PCP queue with no primary day
+/// for its onset; each of those timelines carries the queue only from its
+/// 2026-08-22 knowledge-bound row onward rather than fabricating a cutover.
 ///
 /// This returns one snapshot. Use
 /// [`calendar_for_market_hours_key`](super::calendar_for_market_hours_key) for
 /// date-aware scans that cross a family revision.
 #[must_use]
-pub fn hours_for_market_hours_key_as_of(key: MarketHoursKey, as_of: DateTime<Utc>) -> MarketHours {
-    let current = hours_for_market_hours_key(key);
-    let as_of = bounded_utc(as_of, current.tz);
+pub fn hours_for_market_hours_key(key: MarketHoursKey, as_of: DateTime<Utc>) -> MarketHours {
     let profile = match key {
         MarketHoursKey::GlobexEquityIndex => cme_profile_at(as_of),
         MarketHoursKey::GlobexEnergy => energy_metals_profile_at(as_of),
@@ -274,7 +258,7 @@ pub fn hours_for_market_hours_key_as_of(key: MarketHoursKey, as_of: DateTime<Utc
         MarketHoursKey::SgxEquityIndexTaiwan => sgx_equity_index_taiwan_profile_at(as_of),
         MarketHoursKey::SgxEquityIndexNtrUsd => sgx_equity_index_ntr_usd_profile_at(as_of),
         MarketHoursKey::Sgx => sgx_profile_at(as_of),
-        MarketHoursKey::AlwaysOpen => return current,
+        MarketHoursKey::AlwaysOpen => &ALWAYS_OPEN_PROFILE,
     };
     from_profile(CalendarSource::MarketHoursKey(key), profile)
 }

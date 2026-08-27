@@ -13,7 +13,10 @@ use super::prelude::*;
 
 #[test]
 fn cme_sunday_globex_open() {
-    let h = hours_for_exchange(Exchange::Cme);
+    let h = hours_for_exchange(
+        Exchange::Cme,
+        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
+    );
     let t = ct((2026, 4, 19), (17, 0, 0));
     assert!(h.is_open(t), "CME Globex matching begins Sun 17:00 CT");
     assert!(h.is_open_extended(t), "Sunday open is extended (Globex)");
@@ -21,7 +24,10 @@ fn cme_sunday_globex_open() {
 
 #[test]
 fn cme_sunday_preopen_boundary() {
-    let h = hours_for_exchange(Exchange::Cme);
+    let h = hours_for_exchange(
+        Exchange::Cme,
+        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
+    );
     assert!(!h.is_open(ct((2026, 4, 19), (15, 59, 59))));
     assert!(
         h.is_order_entry_only(ct((2026, 4, 19), (16, 0, 0))),
@@ -31,7 +37,10 @@ fn cme_sunday_preopen_boundary() {
 
 #[test]
 fn cme_monday_overnight_wrap() {
-    let h = hours_for_exchange(Exchange::Cme);
+    let h = hours_for_exchange(
+        Exchange::Cme,
+        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
+    );
     let t = ct((2026, 4, 20), (2, 0, 0));
     assert!(h.is_open(t), "CME Globex overnight Mon 02:00 CT");
     assert!(h.is_open_extended(t), "Overnight is extended");
@@ -39,7 +48,10 @@ fn cme_monday_overnight_wrap() {
 
 #[test]
 fn cme_monday_rth_open() {
-    let h = hours_for_exchange(Exchange::Cme);
+    let h = hours_for_exchange(
+        Exchange::Cme,
+        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
+    );
     let t = ct((2026, 4, 20), (8, 30, 0));
     assert!(h.is_open(t), "CME RTH Mon 08:30 CT");
     assert!(h.is_open_regular(t), "08:30 is RTH");
@@ -47,7 +59,10 @@ fn cme_monday_rth_open() {
 
 #[test]
 fn cme_monday_rth_close() {
-    let h = hours_for_exchange(Exchange::Cme);
+    let h = hours_for_exchange(
+        Exchange::Cme,
+        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
+    );
     let t = ct((2026, 4, 20), (15, 15, 0));
     assert!(
         !h.is_open_regular(t),
@@ -57,7 +72,10 @@ fn cme_monday_rth_close() {
 
 #[test]
 fn cme_monday_short_window_open() {
-    let h = hours_for_exchange(Exchange::Cme);
+    let h = hours_for_exchange(
+        Exchange::Cme,
+        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
+    );
     let t = ct((2026, 4, 20), (15, 30, 0));
     assert!(h.is_open(t), "CME short window 15:30–16:00 CT");
     assert!(h.is_open_extended(t), "short window is extended");
@@ -65,7 +83,10 @@ fn cme_monday_short_window_open() {
 
 #[test]
 fn cme_daily_maintenance_gap() {
-    let h = hours_for_exchange(Exchange::Cme);
+    let h = hours_for_exchange(
+        Exchange::Cme,
+        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
+    );
     let t = ct((2026, 4, 20), (16, 30, 0));
     assert!(!h.is_open(t), "CME maintenance gap 16:30 CT");
     assert!(
@@ -76,14 +97,20 @@ fn cme_daily_maintenance_gap() {
 
 #[test]
 fn cme_monday_globex_reopen() {
-    let h = hours_for_exchange(Exchange::Cme);
+    let h = hours_for_exchange(
+        Exchange::Cme,
+        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
+    );
     let t = ct((2026, 4, 20), (17, 0, 0));
     assert!(h.is_open(t), "CME Globex matching resumes Mon 17:00 CT");
 }
 
 #[test]
 fn cme_friday_no_overnight() {
-    let h = hours_for_exchange(Exchange::Cme);
+    let h = hours_for_exchange(
+        Exchange::Cme,
+        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
+    );
     let t_short_end = ct((2026, 4, 24), (16, 0, 0));
     assert!(
         !h.is_open(t_short_end),
@@ -99,14 +126,20 @@ fn cme_friday_no_overnight() {
 
 #[test]
 fn cme_saturday_closed() {
-    let h = hours_for_exchange(Exchange::Cme);
+    let h = hours_for_exchange(
+        Exchange::Cme,
+        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
+    );
     let t = ct((2026, 4, 25), (10, 0, 0));
     assert!(!h.is_open(t), "CME closed Saturday");
 }
 
 #[test]
 fn cme_weekend_boundary() {
-    let h = hours_for_exchange(Exchange::Cme);
+    let h = hours_for_exchange(
+        Exchange::Cme,
+        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
+    );
     assert!(
         !h.is_open(ct((2026, 4, 25), (23, 59, 0))),
         "CME closed Sat night"
@@ -123,7 +156,10 @@ fn cme_weekend_boundary() {
 
 #[test]
 fn cme_full_normal_week_open_flags() {
-    let h = hours_for_exchange(Exchange::Cme);
+    let h = hours_for_exchange(
+        Exchange::Cme,
+        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
+    );
     assert!(h.has_daily_close, "CME has a daily close (maintenance gap)");
     assert!(h.has_weekend_close, "CME has a weekend close");
 }
@@ -137,21 +173,30 @@ fn cme_full_normal_week_open_flags() {
 
 #[test]
 fn cbot_sunday_overnight_open() {
-    let h = hours_for_exchange(Exchange::Cbot);
+    let h = hours_for_exchange(
+        Exchange::Cbot,
+        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
+    );
     let t = ct((2026, 4, 19), (19, 0, 0));
     assert!(h.is_open(t), "CBOT overnight opens Sun 19:00 CT");
 }
 
 #[test]
 fn cbot_overnight_wrap_into_monday() {
-    let h = hours_for_exchange(Exchange::Cbot);
+    let h = hours_for_exchange(
+        Exchange::Cbot,
+        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
+    );
     let t = ct((2026, 4, 20), (2, 0, 0));
     assert!(h.is_open(t), "CBOT overnight wrap Mon 02:00 CT");
 }
 
 #[test]
 fn cbot_overnight_close_before_day() {
-    let h = hours_for_exchange(Exchange::Cbot);
+    let h = hours_for_exchange(
+        Exchange::Cbot,
+        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
+    );
     let t = ct((2026, 4, 20), (7, 45, 0));
     assert!(
         !h.is_open(t),
@@ -161,7 +206,10 @@ fn cbot_overnight_close_before_day() {
 
 #[test]
 fn cbot_morning_preopen_follows_the_overnight_gap() {
-    let h = hours_for_exchange(Exchange::Cbot);
+    let h = hours_for_exchange(
+        Exchange::Cbot,
+        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
+    );
     assert!(!h.is_open(ct((2026, 4, 20), (7, 59, 59))));
     assert!(
         h.is_order_entry_only(ct((2026, 4, 20), (8, 0, 0))),
@@ -171,7 +219,10 @@ fn cbot_morning_preopen_follows_the_overnight_gap() {
 
 #[test]
 fn cbot_day_session_open() {
-    let h = hours_for_exchange(Exchange::Cbot);
+    let h = hours_for_exchange(
+        Exchange::Cbot,
+        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
+    );
     let t = ct((2026, 4, 20), (8, 30, 0));
     assert!(h.is_open(t), "CBOT day session Mon 08:30 CT");
     assert!(h.is_open_regular(t), "08:30 is regular (day)");
@@ -179,28 +230,40 @@ fn cbot_day_session_open() {
 
 #[test]
 fn cbot_day_session_close() {
-    let h = hours_for_exchange(Exchange::Cbot);
+    let h = hours_for_exchange(
+        Exchange::Cbot,
+        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
+    );
     let t = ct((2026, 4, 20), (13, 20, 0));
     assert!(!h.is_open(t), "CBOT day ends 13:20 CT (end-exclusive)");
 }
 
 #[test]
 fn cbot_monday_overnight_reopen() {
-    let h = hours_for_exchange(Exchange::Cbot);
+    let h = hours_for_exchange(
+        Exchange::Cbot,
+        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
+    );
     let t = ct((2026, 4, 20), (19, 0, 0));
     assert!(h.is_open(t), "CBOT overnight reopens Mon 19:00 CT");
 }
 
 #[test]
 fn cbot_friday_no_overnight() {
-    let h = hours_for_exchange(Exchange::Cbot);
+    let h = hours_for_exchange(
+        Exchange::Cbot,
+        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
+    );
     let t = ct((2026, 4, 24), (19, 0, 0));
     assert!(!h.is_open(t), "CBOT closed Fri 19:00 CT (no Fri overnight)");
 }
 
 #[test]
 fn cbot_saturday_closed() {
-    let h = hours_for_exchange(Exchange::Cbot);
+    let h = hours_for_exchange(
+        Exchange::Cbot,
+        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
+    );
     assert!(
         !h.is_open(ct((2026, 4, 25), (10, 0, 0))),
         "CBOT closed Saturday"
@@ -209,7 +272,10 @@ fn cbot_saturday_closed() {
 
 #[test]
 fn cbot_weekend_boundary() {
-    let h = hours_for_exchange(Exchange::Cbot);
+    let h = hours_for_exchange(
+        Exchange::Cbot,
+        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
+    );
     assert!(
         !h.is_open(ct((2026, 4, 26), (10, 0, 0))),
         "CBOT closed Sun morning"
@@ -229,8 +295,8 @@ fn cbot_weekend_boundary() {
 #[test]
 fn cme_post_halt_session_changed_on_2012_11_18() {
     let cutover = ct((2012, 11, 18), (0, 0, 0));
-    let before = hours_for_exchange_as_of(Exchange::Cme, cutover - chrono::Duration::seconds(1));
-    let after = hours_for_exchange_as_of(Exchange::Cme, cutover);
+    let before = hours_for_exchange(Exchange::Cme, cutover - chrono::Duration::seconds(1));
+    let after = hours_for_exchange(Exchange::Cme, cutover);
     let monday = (2012, 11, 19);
     let friday = (2012, 11, 23);
 
@@ -256,8 +322,8 @@ fn cme_post_halt_session_changed_on_2012_11_18() {
 #[test]
 fn cme_equity_close_moved_with_the_2015_09_20_sunday_session() {
     let cutover = ct((2015, 9, 20), (0, 0, 0));
-    let before = hours_for_exchange_as_of(Exchange::Cme, cutover - chrono::Duration::seconds(1));
-    let after = hours_for_exchange_as_of(Exchange::Cme, cutover);
+    let before = hours_for_exchange(Exchange::Cme, cutover - chrono::Duration::seconds(1));
+    let after = hours_for_exchange(Exchange::Cme, cutover);
     let sunday_open = ct((2015, 9, 20), (17, 0, 0));
     let monday = (2015, 9, 21);
 
@@ -291,7 +357,7 @@ fn cme_equity_close_moved_with_the_2015_09_20_sunday_session() {
 // https://www.cmegroup.com/tools-information/lookups/advisories/electronic-trading/20100315.html
 #[test]
 fn cbot_2010_floor_uses_the_published_split_sessions() {
-    let hours = hours_for_exchange_as_of(Exchange::Cbot, ct((2010, 1, 4), (12, 0, 0)));
+    let hours = hours_for_exchange(Exchange::Cbot, ct((2010, 1, 4), (12, 0, 0)));
     let sunday = (2010, 1, 3);
     let monday = (2010, 1, 4);
 
@@ -316,8 +382,8 @@ fn cbot_2010_floor_uses_the_published_split_sessions() {
 #[test]
 fn cbot_2012_matching_revision_omits_order_phases_without_sourced_onsets() {
     let cutover = ct((2012, 5, 20), (0, 0, 0));
-    let before = hours_for_exchange_as_of(Exchange::Cbot, cutover - chrono::Duration::seconds(1));
-    let after = hours_for_exchange_as_of(Exchange::Cbot, cutover);
+    let before = hours_for_exchange(Exchange::Cbot, cutover - chrono::Duration::seconds(1));
+    let after = hours_for_exchange(Exchange::Cbot, cutover);
     let sunday = (2012, 5, 20);
     let monday = (2012, 5, 21);
 
@@ -344,8 +410,8 @@ fn cbot_2012_matching_revision_omits_order_phases_without_sourced_onsets() {
 #[test]
 fn cbot_2013_profile_kept_the_1315_close() {
     let cutover = ct((2013, 4, 7), (0, 0, 0));
-    let before = hours_for_exchange_as_of(Exchange::Cbot, cutover - chrono::Duration::seconds(1));
-    let after = hours_for_exchange_as_of(Exchange::Cbot, cutover);
+    let before = hours_for_exchange(Exchange::Cbot, cutover - chrono::Duration::seconds(1));
+    let after = hours_for_exchange(Exchange::Cbot, cutover);
 
     assert!(before.is_open_extended(ct((2013, 4, 7), (17, 0, 0))));
     assert!(!after.is_open(ct((2013, 4, 7), (17, 0, 0))));
@@ -362,8 +428,8 @@ fn cbot_1320_close_started_with_the_2015_07_06_trade_date() {
     // The profile boundary is CME's stated Sunday implementation date. The
     // only changed session is first observable on Monday's named trade date.
     let cutover = ct((2015, 7, 5), (0, 0, 0));
-    let before = hours_for_exchange_as_of(Exchange::Cbot, cutover - chrono::Duration::seconds(1));
-    let after = hours_for_exchange_as_of(Exchange::Cbot, cutover);
+    let before = hours_for_exchange(Exchange::Cbot, cutover - chrono::Duration::seconds(1));
+    let after = hours_for_exchange(Exchange::Cbot, cutover);
     let monday = (2015, 7, 6);
 
     assert!(!before.is_open(ct(monday, (13, 15, 0))));

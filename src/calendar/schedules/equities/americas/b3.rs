@@ -176,8 +176,6 @@ use crate::calendar::schedules::timeline::{
     Revision, effective_date, local_date, reference_delta_seconds, revisions, select_revision,
 };
 
-pub(crate) const CURRENT: &StaticHoursProfile = &B3_PROFILE_SHORT;
-
 // Official circulars pin every old-grid switch from the January-2010
 // baseline. Circular 127/2015-DP introduced the recurring pair from
 // 2015-12-21 and tied it to the Brazil/New York daylight-time relationship.

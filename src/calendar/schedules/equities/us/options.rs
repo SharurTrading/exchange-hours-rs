@@ -88,10 +88,11 @@ static ORDER_ENTRY_0730: &[SessionRule] = &[SessionRule {
 
 // Current ordinary-stock-option order-acceptance edges. The reviewed primary
 // sources do not supply a complete day-level amendment chain for these queues,
-// so current fixed profiles include them while historical selectors retain only
-// the exact 09:30–16:00 execution history below. Because nothing matches in a
-// queue, carrying them as `order_entry` leaves the historical selectors — which
-// hold no queue at all — unaffected in their tradeable coverage.
+// so each venue's timeline carries them only from its 2026-08-22
+// knowledge-bound row onward while earlier dated queries retain the exact
+// 09:30–16:00 execution history. Because nothing matches in a queue, carrying
+// them as `order_entry` leaves earlier dated grids — which hold no queue at
+// all — unaffected in their tradeable coverage.
 // https://www.cboe.com/about/hours/us-options
 // https://www.nyse.com/trade/hours-calendars?os=.
 // https://www.nasdaq.com/docs/PHLXSystemSettings
@@ -192,76 +193,172 @@ static LISTED_EQUITY_OPTIONS_HISTORICAL: StaticHoursProfile = listed_equity_opti
 //     https://www.miaxglobal.com/sites/default/files/alert-files/MIAX_Press_Release_09102024.pdf
 //   2023-09-27 "MEMX trader alert 23-42"
 //     https://info.memxtrading.com/trader-alert-23-42-memx-options-exchange-schedule-update/
-static BZX_REVISIONS: &[Revision] = revisions![(
-    2010,
-    2,
-    26,
-    &LISTED_EQUITY_OPTIONS_HISTORICAL,
-    "BATS Options launch press release"
-),];
-static C2_REVISIONS: &[Revision] = revisions![(
-    2010,
-    10,
-    29,
-    &LISTED_EQUITY_OPTIONS_HISTORICAL,
-    "Cboe circular IC-CBOE-2010-168"
-),];
-static EDGX_REVISIONS: &[Revision] = revisions![(
-    2015,
-    11,
-    2,
-    &LISTED_EQUITY_OPTIONS_HISTORICAL,
-    "Bats EDGX options update 2015-11-10"
-),];
-static BX_REVISIONS: &[Revision] = revisions![(
-    2012,
-    6,
-    29,
-    &LISTED_EQUITY_OPTIONS_HISTORICAL,
-    "Nasdaq OTA 2012-41"
-),];
-static GEMX_REVISIONS: &[Revision] = revisions![(
-    2013,
-    8,
-    5,
-    &LISTED_EQUITY_OPTIONS_HISTORICAL,
-    "SEC filing 16019242"
-),];
-static MRX_REVISIONS: &[Revision] = revisions![(
-    2016,
-    2,
-    16,
-    &LISTED_EQUITY_OPTIONS_HISTORICAL,
-    "SEC 34-77256"
-),];
-static MIAX_REVISIONS: &[Revision] = revisions![(
-    2012,
-    12,
-    7,
-    &LISTED_EQUITY_OPTIONS_HISTORICAL,
-    "MIAX launch alert 2012-12-06"
-),];
-static MIAX_PEARL_REVISIONS: &[Revision] = revisions![(
-    2017,
-    2,
-    6,
-    &LISTED_EQUITY_OPTIONS_HISTORICAL,
-    "MIAX Pearl launch alert 2017-02-01"
-),];
-static MIAX_EMERALD_REVISIONS: &[Revision] = revisions![(
-    2019,
-    3,
-    1,
-    &LISTED_EQUITY_OPTIONS_HISTORICAL,
-    "MIAX Emerald launch announcement"
-),];
-static MIAX_SAPPHIRE_REVISIONS: &[Revision] = revisions![(
-    2024,
-    8,
-    12,
-    &LISTED_EQUITY_OPTIONS_HISTORICAL,
-    "MIAX press release 2024-09-10"
-),];
+// Knowledge-bound rows (the final 2026-08-22 row in each table below): each
+// venue's current order-acceptance queue is primary-verified in the current
+// envelope, but the reviewed sources state no day-level amendment chain for
+// these queues, so earlier dated queries retain only the exact 09:30–16:00
+// execution history. From the 2026-08-22 repository review onward each
+// verified-current grid applies; a sourced onset day replaces its row.
+static BZX_REVISIONS: &[Revision] = revisions![
+    (
+        2010,
+        2,
+        26,
+        &LISTED_EQUITY_OPTIONS_HISTORICAL,
+        "BATS Options launch press release"
+    ),
+    (
+        2026,
+        8,
+        22,
+        &CBOE_BZX_OPTIONS_PROFILE,
+        "2026-08-22 review: verified current, onset undated"
+    ),
+];
+static C2_REVISIONS: &[Revision] = revisions![
+    (
+        2010,
+        10,
+        29,
+        &LISTED_EQUITY_OPTIONS_HISTORICAL,
+        "Cboe circular IC-CBOE-2010-168"
+    ),
+    (
+        2026,
+        8,
+        22,
+        &CBOE_C2_OPTIONS_PROFILE,
+        "2026-08-22 review: verified current, onset undated"
+    ),
+];
+static EDGX_REVISIONS: &[Revision] = revisions![
+    (
+        2015,
+        11,
+        2,
+        &LISTED_EQUITY_OPTIONS_HISTORICAL,
+        "Bats EDGX options update 2015-11-10"
+    ),
+    (
+        2026,
+        8,
+        22,
+        &CBOE_EDGX_OPTIONS_PROFILE,
+        "2026-08-22 review: verified current, onset undated"
+    ),
+];
+static BX_REVISIONS: &[Revision] = revisions![
+    (
+        2012,
+        6,
+        29,
+        &LISTED_EQUITY_OPTIONS_HISTORICAL,
+        "Nasdaq OTA 2012-41"
+    ),
+    (
+        2026,
+        8,
+        22,
+        &NASDAQ_BX_OPTIONS_PROFILE,
+        "2026-08-22 review: verified current, onset undated"
+    ),
+];
+static GEMX_REVISIONS: &[Revision] = revisions![
+    (
+        2013,
+        8,
+        5,
+        &LISTED_EQUITY_OPTIONS_HISTORICAL,
+        "SEC filing 16019242"
+    ),
+    (
+        2026,
+        8,
+        22,
+        &NASDAQ_GEMX_OPTIONS_PROFILE,
+        "2026-08-22 review: verified current, onset undated"
+    ),
+];
+static MRX_REVISIONS: &[Revision] = revisions![
+    (
+        2016,
+        2,
+        16,
+        &LISTED_EQUITY_OPTIONS_HISTORICAL,
+        "SEC 34-77256"
+    ),
+    (
+        2026,
+        8,
+        22,
+        &NASDAQ_MRX_OPTIONS_PROFILE,
+        "2026-08-22 review: verified current, onset undated"
+    ),
+];
+static MIAX_REVISIONS: &[Revision] = revisions![
+    (
+        2012,
+        12,
+        7,
+        &LISTED_EQUITY_OPTIONS_HISTORICAL,
+        "MIAX launch alert 2012-12-06"
+    ),
+    (
+        2026,
+        8,
+        22,
+        &MIAX_OPTIONS_PROFILE,
+        "2026-08-22 review: verified current, onset undated"
+    ),
+];
+static MIAX_PEARL_REVISIONS: &[Revision] = revisions![
+    (
+        2017,
+        2,
+        6,
+        &LISTED_EQUITY_OPTIONS_HISTORICAL,
+        "MIAX Pearl launch alert 2017-02-01"
+    ),
+    (
+        2026,
+        8,
+        22,
+        &MIAX_PEARL_OPTIONS_PROFILE,
+        "2026-08-22 review: verified current, onset undated"
+    ),
+];
+static MIAX_EMERALD_REVISIONS: &[Revision] = revisions![
+    (
+        2019,
+        3,
+        1,
+        &LISTED_EQUITY_OPTIONS_HISTORICAL,
+        "MIAX Emerald launch announcement"
+    ),
+    (
+        2026,
+        8,
+        22,
+        &MIAX_EMERALD_OPTIONS_PROFILE,
+        "2026-08-22 review: verified current, onset undated"
+    ),
+];
+static MIAX_SAPPHIRE_REVISIONS: &[Revision] = revisions![
+    (
+        2024,
+        8,
+        12,
+        &LISTED_EQUITY_OPTIONS_HISTORICAL,
+        "MIAX press release 2024-09-10"
+    ),
+    (
+        2026,
+        8,
+        22,
+        &MIAX_SAPPHIRE_OPTIONS_PROFILE,
+        "2026-08-22 review: verified current, onset undated"
+    ),
+];
 static MEMX_REVISIONS: &[Revision] = revisions![(
     2023,
     9,
@@ -270,27 +367,89 @@ static MEMX_REVISIONS: &[Revision] = revisions![(
     "MEMX trader alert 23-42"
 ),];
 
-pub(crate) fn c1_profile_at(_as_of: DateTime<Utc>) -> &'static StaticHoursProfile {
-    &LISTED_EQUITY_OPTIONS_HISTORICAL
-}
+// Venues whose execution history predates the audit floor and whose only
+// timeline row is the knowledge bound: the dated baseline is the queue-less
+// 09:30–16:00 grid, and the 2026-08-22 row applies the verified-current
+// order-acceptance queue.
+static C1_REVISIONS: &[Revision] = revisions![(
+    2026,
+    8,
+    22,
+    &CBOE_OPTIONS_C1_PROFILE,
+    "2026-08-22 review: verified current, onset undated"
+),];
+static NYSE_ARCA_OPTIONS_REVISIONS: &[Revision] = revisions![(
+    2026,
+    8,
+    22,
+    &NYSE_ARCA_OPTIONS_PROFILE,
+    "2026-08-22 review: verified current, onset undated"
+),];
+static NYSE_AMERICAN_OPTIONS_REVISIONS: &[Revision] = revisions![(
+    2026,
+    8,
+    22,
+    &NYSE_AMERICAN_OPTIONS_PROFILE,
+    "2026-08-22 review: verified current, onset undated"
+),];
+static NASDAQ_PHLX_REVISIONS: &[Revision] = revisions![(
+    2026,
+    8,
+    22,
+    &NASDAQ_PHLX_OPTIONS_PROFILE,
+    "2026-08-22 review: verified current, onset undated"
+),];
+static NASDAQ_ISE_REVISIONS: &[Revision] = revisions![(
+    2026,
+    8,
+    22,
+    &NASDAQ_ISE_OPTIONS_PROFILE,
+    "2026-08-22 review: verified current, onset undated"
+),];
+static NASDAQ_NOM_REVISIONS: &[Revision] = revisions![(
+    2026,
+    8,
+    22,
+    &NASDAQ_NOM_OPTIONS_PROFILE,
+    "2026-08-22 review: verified current, onset undated"
+),];
+static BOX_REVISIONS: &[Revision] = revisions![(
+    2026,
+    8,
+    22,
+    &BOX_OPTIONS_PROFILE,
+    "2026-08-22 review: verified current, onset undated"
+),];
 
-macro_rules! historical_selector {
-    ($($name:ident),+ $(,)?) => {
+macro_rules! knowledge_selector {
+    ($($name:ident, $revisions:ident),+ $(,)?) => {
         $(
-            pub(crate) fn $name(_as_of: DateTime<Utc>) -> &'static StaticHoursProfile {
-                &LISTED_EQUITY_OPTIONS_HISTORICAL
+            pub(crate) fn $name(as_of: DateTime<Utc>) -> &'static StaticHoursProfile {
+                select_revision(
+                    local_date(as_of, America::New_York),
+                    &LISTED_EQUITY_OPTIONS_HISTORICAL,
+                    $revisions,
+                )
             }
         )+
     };
 }
 
-historical_selector!(
+knowledge_selector!(
+    c1_profile_at,
+    C1_REVISIONS,
     nyse_arca_options_profile_at,
+    NYSE_ARCA_OPTIONS_REVISIONS,
     nyse_american_options_profile_at,
+    NYSE_AMERICAN_OPTIONS_REVISIONS,
     nasdaq_phlx_profile_at,
+    NASDAQ_PHLX_REVISIONS,
     nasdaq_ise_profile_at,
+    NASDAQ_ISE_REVISIONS,
     nasdaq_nom_profile_at,
+    NASDAQ_NOM_REVISIONS,
     box_options_profile_at,
+    BOX_REVISIONS,
 );
 
 macro_rules! launch_selector {

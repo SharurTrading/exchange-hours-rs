@@ -95,8 +95,12 @@ fn every_fixed_venue_calendar_matches_the_current_market_hours_surface() {
         for instant in instants {
             if !current_snapshot_may_differ {
                 assert_eq!(
-                    hours_for_exchange_as_of(exchange, instant),
-                    hours_for_exchange(exchange),
+                    hours_for_exchange(exchange, instant),
+                    hours_for_exchange(
+                        exchange,
+                        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH
+                            + chrono::Duration::seconds(1_787_400_000)
+                    ),
                     "{exchange:?}: current and as-of snapshots diverge at {instant}"
                 );
             }
@@ -115,7 +119,12 @@ fn historical_profiles_preserve_each_venue_timezone() {
     let expected_zones: Vec<_> = Exchange::ALL
         .iter()
         .map(|&exchange| {
-            let expected = hours_for_exchange(exchange).tz;
+            let expected = hours_for_exchange(
+                exchange,
+                chrono::DateTime::<chrono::Utc>::UNIX_EPOCH
+                    + chrono::Duration::seconds(1_787_400_000),
+            )
+            .tz;
             assert_eq!(
                 calendar_for_exchange(exchange).tz(),
                 expected,
@@ -133,7 +142,7 @@ fn historical_profiles_preserve_each_venue_timezone() {
         );
         for &(exchange, expected) in &expected_zones {
             assert_eq!(
-                hours_for_exchange_as_of(exchange, instant).tz,
+                hours_for_exchange(exchange, instant).tz,
                 expected,
                 "{exchange:?}: historical profile changed venue zone at {instant}"
             );

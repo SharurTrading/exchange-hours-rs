@@ -16,7 +16,11 @@ fn calendar_queries_are_total_and_consistent_over_random_instants() {
         let mut state = seed;
         for iter in 0..ITERATIONS {
             let exch = PROPERTY_VENUES[bounded(&mut state, PROPERTY_VENUES.len())];
-            let hours = hours_for_exchange(exch);
+            let hours = hours_for_exchange(
+                exch,
+                chrono::DateTime::<chrono::Utc>::UNIX_EPOCH
+                    + chrono::Duration::seconds(1_787_400_000),
+            );
             let instant = random_instant(&mut state);
             let label = format!(
                 "[total+consistency invariant] seed={seed:#018x} iter={iter}/{ITERATIONS} \
@@ -31,7 +35,7 @@ fn calendar_queries_are_total_and_consistent_over_random_instants() {
             // the profile the venue actually published at the sampled instant
             // — the ~14-year window crosses every recorded cutover, including
             // the pre-go-live no-session profiles.
-            let historical = hours_for_exchange_as_of(exch, instant);
+            let historical = hours_for_exchange(exch, instant);
             let historical_label = format!("{label} [as-of profile]");
             assert_instant_invariants(exch, &historical, instant, &historical_label);
         }
@@ -50,7 +54,11 @@ fn next_session_after_walk_strictly_advances_opens() {
     for seed in SEEDS {
         let mut state = seed;
         for exch in WALK_VENUES {
-            let hours = hours_for_exchange(exch);
+            let hours = hours_for_exchange(
+                exch,
+                chrono::DateTime::<chrono::Utc>::UNIX_EPOCH
+                    + chrono::Duration::seconds(1_787_400_000),
+            );
             let mut cursor = random_instant(&mut state);
             for step in 0..STEPS {
                 let (open, close) = next_session_after(&hours, cursor)
@@ -83,7 +91,11 @@ fn always_open_venues_stay_open_without_maintenance() {
     for seed in SEEDS {
         let mut state = seed;
         for exch in ALWAYS_OPEN {
-            let hours = hours_for_exchange(exch);
+            let hours = hours_for_exchange(
+                exch,
+                chrono::DateTime::<chrono::Utc>::UNIX_EPOCH
+                    + chrono::Duration::seconds(1_787_400_000),
+            );
             for iter in 0..ITERATIONS {
                 let instant = random_instant(&mut state);
                 let ctx = format!(
@@ -114,7 +126,10 @@ fn always_open_venues_stay_open_without_maintenance() {
 fn dst_transition_queries_are_stable_and_total() {
     use chrono::TimeZone;
 
-    let hours = hours_for_exchange(Exchange::Cme);
+    let hours = hours_for_exchange(
+        Exchange::Cme,
+        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
+    );
     // UTC instants bracketing the US 2025 spring-forward (Mar 9) and fall-back
     // (Nov 2) transitions, where local wall-clock mapping is a gap or a fold.
     let instants = [

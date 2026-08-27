@@ -3,7 +3,7 @@
 //! Agreement between the fixed snapshot and the dated calendar.
 //!
 //! `hours_for_market_hours_key` returns the current sourced grid.
-//! `hours_for_market_hours_key_as_of` reselects from the dated timeline. For
+//! `hours_for_market_hours_key` reselects from the dated timeline. For
 //! most families the two agree at every instant. For a handful they do not, and
 //! that divergence is deliberate: where a phase is primary-sourced today but its
 //! onset day cannot be dated, the dated selector omits the phase rather than
@@ -16,9 +16,7 @@
 //! can never report a market open that the fixed surface calls closed.
 
 use chrono::{DateTime, TimeZone as _, Utc};
-use exchange_hours::{
-    MarketHoursKey, hours_for_market_hours_key, hours_for_market_hours_key_as_of,
-};
+use exchange_hours::{MarketHoursKey, hours_for_market_hours_key};
 
 /// Families whose dated selector deliberately omits an undatable phase, with
 /// the phase each one drops. Every entry must actually diverge; a stale entry
@@ -67,11 +65,14 @@ fn divergence(
     key: MarketHoursKey,
     predicate: fn(&exchange_hours::MarketHours, DateTime<Utc>) -> bool,
 ) -> (u32, bool) {
-    let fixed = hours_for_market_hours_key(key);
+    let fixed = hours_for_market_hours_key(
+        key,
+        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
+    );
     let mut minutes = 0;
     let mut dated_ever_wider = false;
     for instant in normal_week_samples() {
-        let dated = hours_for_market_hours_key_as_of(key, instant);
+        let dated = hours_for_market_hours_key(key, instant);
         let (fixed_yes, dated_yes) = (predicate(&fixed, instant), predicate(&dated, instant));
         if fixed_yes != dated_yes {
             minutes += 5;

@@ -45,7 +45,10 @@ fn week_samples() -> impl Iterator<Item = DateTime<Utc>> {
 fn open_and_order_entry_only_are_mutually_exclusive() {
     // A caller must be able to branch on these without ordering care.
     for exchange in Exchange::ALL {
-        let hours = hours_for_exchange(*exchange);
+        let hours = hours_for_exchange(
+            *exchange,
+            chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
+        );
         for instant in week_samples() {
             assert!(
                 !(hours.is_open(instant) && hours.is_order_entry_only(instant)),
@@ -55,7 +58,10 @@ fn open_and_order_entry_only_are_mutually_exclusive() {
         }
     }
     for key in MarketHoursKey::ALL {
-        let hours = hours_for_market_hours_key(*key);
+        let hours = hours_for_market_hours_key(
+            *key,
+            chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
+        );
         for instant in week_samples() {
             assert!(
                 !(hours.is_open(instant) && hours.is_order_entry_only(instant)),
@@ -71,7 +77,10 @@ fn accepting_orders_is_a_superset_of_open() {
     // Anything tradeable is necessarily order-accepting. The reverse does not
     // hold, which is the entire point of the phase.
     for key in MarketHoursKey::ALL {
-        let hours = hours_for_market_hours_key(*key);
+        let hours = hours_for_market_hours_key(
+            *key,
+            chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
+        );
         for instant in week_samples() {
             if hours.is_open(instant) {
                 assert!(
@@ -177,7 +186,10 @@ fn the_calendar_never_accepts_orders_the_fixed_profile_rejects() {
     // more, or a consumer would be told it can work an order the venue would
     // reject.
     for exchange in Exchange::ALL {
-        let hours = hours_for_exchange(*exchange);
+        let hours = hours_for_exchange(
+            *exchange,
+            chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
+        );
         let calendar = calendar_for_exchange(*exchange);
         for instant in week_samples() {
             if calendar.hours_at(instant).is_accepting_orders(instant) {

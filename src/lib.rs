@@ -31,36 +31,39 @@
 //!         .with_timezone(&Utc)
 //! };
 //!
-//! let hours = hours_for_exchange(Exchange::Cme);
+//! // Every snapshot request carries the caller's instant: the crate never
+//! // reads a clock, so a backtest and a live query run identical code. A
+//! // live caller passes their own `Utc::now()` at the application edge.
+//! let hours = hours_for_exchange(Exchange::Cme, ct(2026, 8, 24, 10, 0));
 //!
 //! // Monday mid-morning sits inside the regular session. Boundary queries
 //! // return `Option`: `None` means no matching session exists in the bounded
 //! // search horizon (for example, on a pre-go-live date).
-//! let monday_10am = ct(2026, 4, 20, 10, 0);
+//! let monday_10am = ct(2026, 8, 24, 10, 0);
 //! assert!(hours.is_open_regular(monday_10am));
 //! let (open, close) = session_bounds(&hours, monday_10am).expect("CME trades this week");
-//! assert_eq!(open, ct(2026, 4, 20, 8, 30));
-//! assert_eq!(close, ct(2026, 4, 20, 15, 15)); // end-exclusive
+//! assert_eq!(open, ct(2026, 8, 24, 8, 30));
+//! assert_eq!(close, ct(2026, 8, 24, 15, 15)); // end-exclusive
 //!
 //! // 16:30 CT is the daily maintenance break: closed, inside an inter-trade-date
 //! // gap (16:00→16:45) no longer than the documented four-hour bound.
-//! let monday_evening = ct(2026, 4, 20, 16, 30);
+//! let monday_evening = ct(2026, 8, 24, 16, 30);
 //! assert!(!hours.is_open(monday_evening));
 //! assert!(hours.is_maintenance(monday_evening));
 //!
 //! // After Friday's close the next SESSION is Sunday's 17:00 matching open, not
 //! // Saturday. Sunday's 16:00 Pre-Open accepts orders but matches nothing, so it
 //! // is an order-entry phase rather than a session.
-//! let friday_after_close = ct(2026, 4, 24, 16, 30);
+//! let friday_after_close = ct(2026, 8, 28, 16, 30);
 //! let (next_open, _) = next_session_after(&hours, friday_after_close).expect("reopens Sunday");
-//! assert_eq!(next_open, ct(2026, 4, 26, 17, 0));
-//! assert!(hours.is_order_entry_only(ct(2026, 4, 26, 16, 0)));
-//! assert!(!hours.is_open(ct(2026, 4, 26, 16, 0)));
+//! assert_eq!(next_open, ct(2026, 8, 30, 17, 0));
+//! assert!(hours.is_order_entry_only(ct(2026, 8, 30, 16, 0)));
+//! assert!(!hours.is_open(ct(2026, 8, 30, 16, 0)));
 //!
 //! // Bar boundaries follow the same rules: a daily bar closes at the venue's
 //! // session close, not at midnight.
 //! let daily_close = candle_end(&hours, monday_10am, CalendarResolution::Daily);
-//! assert_eq!(daily_close, Some(ct(2026, 4, 20, 16, 0)));
+//! assert_eq!(daily_close, Some(ct(2026, 8, 24, 16, 0)));
 //! ```
 //!
 //! # Model
@@ -106,14 +109,17 @@
 //!
 //! # Entry points
 //!
-//! - [`hours_for_exchange`] / [`hours_for_exchange_as_of`] — venue → a
-//!   default fixed snapshot or the snapshot at a point in time.
+//! - [`hours_for_exchange`] — venue → the fixed snapshot in effect at the
+//!   caller's instant. This is the only venue selection path; there is no
+//!   clock-less "current" selector, because the crate never reads a clock
+//!   (the caller's instant *is* the clock).
 //! - [`calendar_for_exchange`] — a date-aware calendar that reselects the
 //!   applicable profile while scanning sessions and bar boundaries.
-//! - [`session_profile`] / [`hours_for_market_hours_key`] — fixed-current
-//!   futures profiles addressed by [`MarketHoursKey`] (product family) rather
-//!   than by venue; [`hours_for_market_hours_key_as_of`] selects a sourced
-//!   dated snapshot.
+//! - [`session_profile`] / [`hours_for_market_hours_key`] — futures profiles
+//!   addressed by [`MarketHoursKey`] (product family) rather than by venue;
+//!   [`session_profile`] exposes the fixed-current static table and
+//!   [`hours_for_market_hours_key`] selects the sourced snapshot at the
+//!   caller's instant.
 //! - [`calendar_for_market_hours_key`] — the same date-aware calendar surface
 //!   for a product family. Use [`ExchangeCalendar::source`] to retain its exact
 //!   [`CalendarSource`] identity. Identity-specific topology, including CME

@@ -7,8 +7,8 @@ use super::prelude::*;
 fn cutover_sides(exchange: Exchange, tz: Tz, date: (i32, u32, u32)) -> (MarketHours, MarketHours) {
     let midnight = local(tz, date, (0, 0, 0));
     (
-        hours_for_exchange_as_of(exchange, midnight - Duration::nanoseconds(1)),
-        hours_for_exchange_as_of(exchange, midnight),
+        hours_for_exchange(exchange, midnight - Duration::nanoseconds(1)),
+        hours_for_exchange(exchange, midnight),
     )
 }
 
@@ -156,8 +156,7 @@ fn euronext_dublin_cutovers() {
     // ISE's archived pre-2010 timetable, successive order-book models, and 2018
     // calendar establish this complete baseline at the repository's history floor.
     let legacy_date = (2010, 1, 4);
-    let legacy =
-        hours_for_exchange_as_of(Exchange::EuronextDublin, local(tz, legacy_date, (12, 0, 0)));
+    let legacy = hours_for_exchange(Exchange::EuronextDublin, local(tz, legacy_date, (12, 0, 0)));
     assert!(!legacy.is_open(local(tz, legacy_date, (6, 29, 59))));
     assert!(legacy.is_open_extended(local(tz, legacy_date, (6, 30, 0))));
     assert!(legacy.is_open_extended(local(tz, legacy_date, (7, 59, 59))));

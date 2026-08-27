@@ -220,6 +220,13 @@ static DATED_CURRENT: StaticHoursProfile = profile(
     CBOT_EXTENDED_CURRENT,
     ORDER_ENTRY_0800_0830,
 );
+// Verified-current grid: identical to DATED_CURRENT except the current
+// Pre-Open queues, whose onset day no reviewed primary source states.
+static CBOT_CURRENT: StaticHoursProfile = profile(
+    CBOT_REGULAR_CURRENT,
+    CBOT_EXTENDED_CURRENT,
+    CBOT_ORDER_ENTRY_CURRENT,
+);
 
 // Revision evidence — each row's day-level effective date and the primary
 // source that states it (full quotations sit in the blocks above):
@@ -260,6 +267,18 @@ static REVISIONS: &[Revision] = revisions![
         "CME market-data advisory 20130812"
     ),
     (2015, 7, 5, &DATED_CURRENT, "CME SER-7395R"),
+    // Knowledge-bound row: the current Pre-Open queues are primary-verified
+    // in the current envelope, but no reviewed source states their onset day,
+    // so earlier dated queries conservatively omit them. From the 2026-08-22
+    // repository review onward the verified-current grid applies; a sourced
+    // onset day replaces this row.
+    (
+        2026,
+        8,
+        22,
+        &CBOT_CURRENT,
+        "2026-08-22 review: verified current, onset undated"
+    ),
 ];
 
 pub(crate) fn profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {

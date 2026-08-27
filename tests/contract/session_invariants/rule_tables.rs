@@ -9,7 +9,7 @@ use super::prelude::*;
 #[test]
 fn every_shipped_rule_table_satisfies_the_session_rule_domain() {
     use chrono::TimeZone;
-    use exchange_hours::{MarketHoursKey, hours_for_exchange_as_of, session_profile};
+    use exchange_hours::{MarketHoursKey, hours_for_exchange, session_profile};
 
     // Epochs on both sides of every recorded cutover, so the historical
     // profiles (including pre-go-live empties) are validated too.
@@ -37,10 +37,17 @@ fn every_shipped_rule_table_satisfies_the_session_rule_domain() {
     };
 
     for &exchange in ALL_EXCHANGES {
-        validate_all(&hours_for_exchange(exchange), &format!("{exchange:?}"));
+        validate_all(
+            &hours_for_exchange(
+                exchange,
+                chrono::DateTime::<chrono::Utc>::UNIX_EPOCH
+                    + chrono::Duration::seconds(1_787_400_000),
+            ),
+            &format!("{exchange:?}"),
+        );
         for epoch in epochs {
             validate_all(
-                &hours_for_exchange_as_of(exchange, epoch),
+                &hours_for_exchange(exchange, epoch),
                 &format!("{exchange:?} as of {epoch}"),
             );
         }
@@ -54,7 +61,7 @@ fn every_shipped_rule_table_satisfies_the_session_rule_domain() {
             .with_timezone(&Utc);
         for epoch in [at - Duration::seconds(1), at] {
             validate_all(
-                &hours_for_exchange_as_of(exchange, epoch),
+                &hours_for_exchange(exchange, epoch),
                 &format!("{exchange:?} as of {epoch}"),
             );
         }
@@ -67,7 +74,7 @@ fn every_shipped_rule_table_satisfies_the_session_rule_domain() {
             .expect("sourced UTC cutover resolves");
         for epoch in [at - Duration::nanoseconds(1), at] {
             validate_all(
-                &hours_for_exchange_as_of(exchange, epoch),
+                &hours_for_exchange(exchange, epoch),
                 &format!("{exchange:?} as of {epoch}"),
             );
         }
@@ -93,7 +100,10 @@ fn every_equal_endpoint_rule_is_an_intentional_complete_day_session() {
     let mut exchange_rules = 0_u8;
 
     for &exchange in ALL_EXCHANGES {
-        let hours = hours_for_exchange(exchange);
+        let hours = hours_for_exchange(
+            exchange,
+            chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
+        );
         for rule in hours
             .regular
             .iter()

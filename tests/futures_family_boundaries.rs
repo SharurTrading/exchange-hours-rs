@@ -7,9 +7,7 @@
 //! 15-minute encoding slip is otherwise invisible to the rest of the suite.
 
 use chrono::{DateTime, TimeZone as _, Utc};
-use exchange_hours::{
-    MarketHoursKey, SessionState, hours_for_market_hours_key, hours_for_market_hours_key_as_of,
-};
+use exchange_hours::{MarketHoursKey, SessionState, hours_for_market_hours_key};
 
 /// Builds a UTC probe instant from literals. UTC has no ambiguous local times,
 /// so `single()` always resolves here; the epoch fallback keeps the helper total
@@ -22,13 +20,13 @@ fn utc(year: i32, month: u32, day: u32, hour: u32, minute: u32) -> DateTime<Utc>
 }
 
 fn open_at(key: MarketHoursKey, instant: DateTime<Utc>) -> bool {
-    hours_for_market_hours_key_as_of(key, instant).is_open(instant)
+    hours_for_market_hours_key(key, instant).is_open(instant)
 }
 
 /// Regular session only. The ICE families run order-entry phases outside the
 /// executable session, so `is_open` would answer true during a pre-open.
 fn open_regular_at(key: MarketHoursKey, instant: DateTime<Utc>) -> bool {
-    hours_for_market_hours_key_as_of(key, instant).is_open_regular(instant)
+    hours_for_market_hours_key(key, instant).is_open_regular(instant)
 }
 
 /// CME Nikkei 225 Dollar moved 15:15 CT -> 16:15 CT (2012), kept 16:15 CT after
@@ -75,7 +73,7 @@ fn nkd_halt_revision_and_removal_are_keyed_to_their_sunday_opening_days() {
 
     // 2012-11-18: the halt regime begins. The Monday probes are
     // 15:14/15:20/15:30/16:10/16:20 CT (CST).
-    let halted = hours_for_market_hours_key_as_of(key, utc(2012, 11, 18, 23, 30));
+    let halted = hours_for_market_hours_key(key, utc(2012, 11, 18, 23, 30));
     assert!(
         halted.is_open(utc(2012, 11, 19, 21, 14)),
         "15:14 CT still trades ahead of the halt"
@@ -99,11 +97,11 @@ fn nkd_halt_revision_and_removal_are_keyed_to_their_sunday_opening_days() {
 
     // The Sunday before: pre-2012 dates are sessionless, so the same Monday
     // probe answers closed everywhere.
-    let before = hours_for_market_hours_key_as_of(key, utc(2012, 11, 11, 23, 30));
+    let before = hours_for_market_hours_key(key, utc(2012, 11, 11, 23, 30));
     assert!(!before.is_open(utc(2012, 11, 12, 21, 20)));
 
     // 2013-03-03: the halt is gone and the 16:15 CT close remains.
-    let unhalting = hours_for_market_hours_key_as_of(key, utc(2013, 3, 3, 23, 30));
+    let unhalting = hours_for_market_hours_key(key, utc(2013, 3, 3, 23, 30));
     assert!(
         unhalting.is_open(utc(2013, 3, 4, 21, 20)),
         "15:20 CT trades again after the halt removal"
@@ -114,7 +112,7 @@ fn nkd_halt_revision_and_removal_are_keyed_to_their_sunday_opening_days() {
     );
 
     // The Sunday before: the 2012 regime still halts at 15:15 CT.
-    let still_halted = hours_for_market_hours_key_as_of(key, utc(2013, 2, 24, 23, 30));
+    let still_halted = hours_for_market_hours_key(key, utc(2013, 2, 24, 23, 30));
     assert!(!still_halted.is_open(utc(2013, 2, 25, 21, 20)));
 }
 
@@ -132,7 +130,7 @@ fn nkd_2015_revision_is_keyed_to_the_session_opening_day() {
     // Select the snapshot after the Sunday 2015-09-20 17:00 CT opening
     // (22:01Z). A selector mis-keyed to the Monday civil date still returns
     // the old profile here, so this probes the opening-day key itself.
-    let monday_session = hours_for_market_hours_key_as_of(key, utc(2015, 9, 20, 22, 1));
+    let monday_session = hours_for_market_hours_key(key, utc(2015, 9, 20, 22, 1));
     assert!(
         !monday_session.is_open(utc(2015, 9, 21, 21, 10)),
         "trade date 2015-09-21 is the first close at 16:00 CT"
@@ -191,8 +189,11 @@ fn sgx_equity_index_grids_do_not_collapse_onto_each_other() {
 fn current_snapshots_agree_with_dated_selectors_today() {
     let now = utc(2026, 6, 17, 12, 0);
     for key in MarketHoursKey::ALL {
-        let snapshot = hours_for_market_hours_key(*key);
-        let dated = hours_for_market_hours_key_as_of(*key, now);
+        let snapshot = hours_for_market_hours_key(
+            *key,
+            chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
+        );
+        let dated = hours_for_market_hours_key(*key, now);
         assert_eq!(
             snapshot.is_open(now),
             dated.is_open(now),
@@ -214,8 +215,11 @@ fn current_snapshots_agree_with_dated_selectors_today() {
 fn overnight_order_entry_and_closed_gaps_match_the_published_phase_machine() {
     // 2026-04-20 is a Monday; Berlin is CEST (+02:00), Singapore is SGT (+08:00).
     let dated =
-        hours_for_market_hours_key_as_of(MarketHoursKey::EurexFixedIncome, utc(2026, 4, 20, 12, 0));
-    let snapshot = hours_for_market_hours_key(MarketHoursKey::EurexFixedIncome);
+        hours_for_market_hours_key(MarketHoursKey::EurexFixedIncome, utc(2026, 4, 20, 12, 0));
+    let snapshot = hours_for_market_hours_key(
+        MarketHoursKey::EurexFixedIncome,
+        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
+    );
     for hours in [&dated, &snapshot] {
         // 22:02 CEST Monday: post-trading accepts orders, nothing matches.
         assert_eq!(
@@ -242,8 +246,11 @@ fn overnight_order_entry_and_closed_gaps_match_the_published_phase_machine() {
     // 07:10 SGT Monday (23:10 UTC Sunday): SORA's T pre-opening window runs
     // 07:10-07:25, so the market accepts orders but nothing matches.
     for hours in [
-        hours_for_market_hours_key(MarketHoursKey::Sgx),
-        hours_for_market_hours_key_as_of(MarketHoursKey::Sgx, utc(2026, 4, 20, 12, 0)),
+        hours_for_market_hours_key(
+            MarketHoursKey::Sgx,
+            chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
+        ),
+        hours_for_market_hours_key(MarketHoursKey::Sgx, utc(2026, 4, 20, 12, 0)),
     ] {
         assert_eq!(
             hours.session_state(utc(2026, 4, 19, 23, 10)),
@@ -253,7 +260,10 @@ fn overnight_order_entry_and_closed_gaps_match_the_published_phase_machine() {
 
     // 07:20 SGT Monday: the Japan grid's pre-opening window runs 07:15-07:30
     // ahead of its 07:30 T session.
-    let japan = hours_for_market_hours_key(MarketHoursKey::SgxEquityIndexJapan);
+    let japan = hours_for_market_hours_key(
+        MarketHoursKey::SgxEquityIndexJapan,
+        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
+    );
     assert_eq!(
         japan.session_state(utc(2026, 4, 19, 23, 20)),
         SessionState::OrderEntry

@@ -33,7 +33,7 @@ corrections (a venue's hours fixed against a primary source) go under
   static current-table accessor and equals the timelines' selection at any
   instant on or after the 2026-08-22 knowledge-bound rows.
 - **Verified-current phases are carried by knowledge-bound timeline rows.**
-  Twenty-four venues and four Globex families whose current grids include
+  Twenty-four venues and six Globex families whose current grids include
   an order-acceptance or early phase with no sourced onset day (for example
   the US options pre-open queues and CME's Sunday 16:00 CT Pre-Open) now
   record that phase as the final timeline row dated at the 2026-08-22

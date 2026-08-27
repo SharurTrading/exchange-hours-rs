@@ -12,9 +12,12 @@ Measurably, the end state is:
 
 1. **Every automated order-capable system** of every venue is in exactly one
    place — its venue envelope or its own identity — verified by audit.
-2. **Every non-synthetic ledger row is `Primary`**: a complete dated
-   amendment chain since January 2010, or a documented permanent
-   knowledge-bound row the ledger names as the honest answer.
+2. **Every non-synthetic ledger row reaches its honest terminal state**:
+   `Primary` with a complete dated amendment chain since January 2010, or
+   `Partial` with a precisely named, permanent knowledge-bound gap. A
+   knowledge-bound row *is* a history gap, so its ledger row stays
+   `Partial` and never upgrades without dated primary evidence — the
+   target is not "93 `Primary` rows".
 3. **Holiday and special-day topology** is servable through the exception
    layer: the engine ships, and built-in data exists for every venue that
    publishes a primary holiday calendar, with coverage and finality
@@ -102,8 +105,9 @@ notice may close many.
 - [ ] Per row: follow `docs/schedules/updating.md` (open the monitoring
       sources, review everything since the row's `Reviewed on` date); add
       dated rows + `HISTORICAL_CUTOVERS`/instant entries + both-sides
-      tests, or leave the knowledge-bound row and upgrade the ledger note to
-      name the gap as permanent.
+      tests, or leave the knowledge-bound row with the ledger note naming
+      the gap as permanent — the row keeps its `Partial` basis label
+      either way until dated evidence upgrades it to `Primary`.
 - [ ] Advance the README assurance counts batch by batch (66 → … of 93);
       `Fixed` changelog entries per correction; full verification gates per
       merged batch.

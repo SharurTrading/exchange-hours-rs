@@ -14,10 +14,15 @@ credentialed release workflow; CI remains read-only.
 4. Update the README installation, migration, coverage, and assurance text.
    Do not advance the schedule-review cutoff unless every non-synthetic
    `Exchange` row was reviewed through the new date.
-5. Review and commit the intended release changes. Require a clean working tree
+5. For every ledger row still carrying the **Scheduled** marker whose
+   effective date has passed, confirm against the operator's published
+   schedule that the change took effect, then clear the marker in this release;
+   if it slipped or was cancelled, remove the revision row and record the
+   correction under **Fixed** in `CHANGELOG.md` instead of shipping it.
+6. Review and commit the intended release changes. Require a clean working tree
    before package/publish validation so the inspected archive exactly matches a
    PR commit.
-6. Run the full gates from `AGENTS.md`, then verify the publish archive:
+7. Run the full gates from `AGENTS.md`, then verify the publish archive:
 
    ```bash
    cargo fmt --all --check
@@ -30,9 +35,9 @@ credentialed release workflow; CI remains read-only.
    cargo publish --dry-run --locked
    ```
 
-7. Inspect `cargo package --list --locked` for missing evidence/docs or
+8. Inspect `cargo package --list --locked` for missing evidence/docs or
    accidental repository-only files.
-8. For changes to the calendar query engine, run the informational performance
+9. For changes to the calendar query engine, run the informational performance
    baseline. This is not a correctness gate, but a release review should call
    out a material regression rather than hiding it:
 
@@ -40,8 +45,8 @@ credentialed release workflow; CI remains read-only.
    cargo bench --bench calendar_queries
    ```
 
-9. Open the release pull request. Do not tag or publish from the branch. Any
-   later commit requires the gates and archive checks to be rerun.
+10. Open the release pull request. Do not tag or publish from the branch. Any
+    later commit requires the gates and archive checks to be rerun.
 
 ## Publish after merge
 

@@ -9,7 +9,7 @@ fn bursa_january_2010_baseline_matches_current_grid() {
     let tz = Asia::Kuala_Lumpur;
     let as_of = local(tz, (2010, 1, 4), (12, 0, 0));
     let probe = (2026, 8, 19);
-    let hours = hours_for_exchange_as_of(Exchange::BursaMalaysia, as_of);
+    let hours = hours_for_exchange(Exchange::BursaMalaysia, as_of);
 
     assert!(hours.is_open_regular(local(tz, probe, (12, 29, 59))));
     assert!(!hours.is_open(local(tz, probe, (12, 30, 0))));
@@ -149,10 +149,10 @@ fn philippines_cutovers() {
 
     let at_1000 = |date| local(tz, date, (10, 0, 0));
     for date in [(2020, 3, 17), (2020, 3, 18)] {
-        let hours = hours_for_exchange_as_of(Exchange::Pse, at_1000(date));
+        let hours = hours_for_exchange(Exchange::Pse, at_1000(date));
         assert!(!hours.is_open(at_1000(date)));
     }
-    let resumed = hours_for_exchange_as_of(Exchange::Pse, at_1000((2020, 3, 19)));
+    let resumed = hours_for_exchange(Exchange::Pse, at_1000((2020, 3, 19)));
     assert!(resumed.is_open_regular(at_1000((2020, 3, 19))));
 
     let (pre, post) = cutover_sides(Exchange::Pse, tz, (2021, 12, 6));
@@ -202,7 +202,7 @@ fn vietnam_cutover_and_oldest_profile() {
     assert!(post.is_open_extended(local(tz, probe, (14, 50, 0))));
 
     // The archived operator PDF supplies the exact January-2010 baseline.
-    let oldest = hours_for_exchange_as_of(Exchange::Hose, local(tz, (2010, 1, 4), (10, 0, 0)));
+    let oldest = hours_for_exchange(Exchange::Hose, local(tz, (2010, 1, 4), (10, 0, 0)));
     assert!(oldest.is_open_regular(local(tz, probe, (10, 0, 0))));
     assert!(oldest.is_open_extended(local(tz, probe, (10, 15, 0))));
     assert!(oldest.is_open_extended(local(tz, probe, (10, 30, 0))));

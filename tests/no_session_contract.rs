@@ -4,7 +4,7 @@
 //! rules at all.
 //!
 //! A no-session profile is reachable through the public API —
-//! [`hours_for_exchange_as_of`] returns one for a venue queried before its
+//! [`hours_for_exchange`] returns one for a venue queried before its
 //! go-live date (for example, Blue Ocean ATS before 2021-10-05). The contract
 //! these tests pin: every query stays total and
 //! terminates, boundary queries return **`None`** — absence of a session is a
@@ -26,7 +26,7 @@
 
 use chrono::{TimeZone, Utc};
 use exchange_hours::{
-    CalendarResolution, Exchange, SessionKind, candle_end, candle_start, hours_for_exchange_as_of,
+    CalendarResolution, Exchange, SessionKind, candle_end, candle_start, hours_for_exchange,
     next_session_after, session_bounds,
 };
 
@@ -37,7 +37,7 @@ fn no_session_hours() -> exchange_hours::MarketHours {
         .with_ymd_and_hms(2021, 3, 1, 12, 0, 0)
         .single()
         .expect("valid UTC instant");
-    let hours = hours_for_exchange_as_of(Exchange::BlueOceanAts, pre_launch);
+    let hours = hours_for_exchange(Exchange::BlueOceanAts, pre_launch);
     assert!(
         hours.regular.is_empty() && hours.extended.is_empty(),
         "fixture must be a no-session profile"
@@ -155,7 +155,10 @@ fn zero_intervals_have_no_bar_on_any_profile() {
     // A zero interval could never advance, so both ends of the bar are None —
     // on a no-session profile and on a normal venue alike.
     use exchange_hours::{candle_end_with, candle_start_with, hours_for_exchange};
-    let cme = hours_for_exchange(Exchange::Cme);
+    let cme = hours_for_exchange(
+        Exchange::Cme,
+        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
+    );
     let empty = no_session_hours();
     let t = probe();
     for res in [

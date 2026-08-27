@@ -10,8 +10,8 @@ mod prelude {
     pub(super) use chrono::Duration;
     pub(super) use chrono_tz::{Africa, America, Asia, Europe, Tz};
     pub(super) use exchange_hours::{
-        Exchange, MarketHours, hours_for_exchange, hours_for_exchange_as_of,
-        hours_for_global_equities, hours_map_global_equities,
+        Exchange, MarketHours, hours_for_exchange, hours_for_global_equities,
+        hours_map_global_equities,
     };
 
     pub(super) use crate::support::local;

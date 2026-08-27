@@ -305,7 +305,10 @@ fn a_partially_skipped_close_lands_on_the_first_real_second() {
 
 #[test]
 fn a_wholly_skipped_civil_date_has_an_empty_closed_window() {
-    let always_open = hours_for_exchange(Exchange::Unknown);
+    let always_open = hours_for_exchange(
+        Exchange::Unknown,
+        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
+    );
     let calendar = calendar_for_exchange(Exchange::Unknown);
     let day = |day| NaiveDate::from_ymd_opt(2011, 12, day).expect("valid Apia fixture date");
 

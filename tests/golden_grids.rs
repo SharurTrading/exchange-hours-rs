@@ -94,12 +94,26 @@ fn render_all() -> String {
 
     out.push_str("## Exchange (current profiles)\n");
     for exchange in Exchange::ALL {
-        out.push_str(&render(exchange.as_str(), &hours_for_exchange(*exchange)));
+        out.push_str(&render(
+            exchange.as_str(),
+            &hours_for_exchange(
+                *exchange,
+                chrono::DateTime::<chrono::Utc>::UNIX_EPOCH
+                    + chrono::Duration::seconds(1_787_400_000),
+            ),
+        ));
     }
 
     out.push_str("\n## MarketHoursKey (current profiles)\n");
     for key in MarketHoursKey::ALL {
-        out.push_str(&render(key.as_str(), &hours_for_market_hours_key(*key)));
+        out.push_str(&render(
+            key.as_str(),
+            &hours_for_market_hours_key(
+                *key,
+                chrono::DateTime::<chrono::Utc>::UNIX_EPOCH
+                    + chrono::Duration::seconds(1_787_400_000),
+            ),
+        ));
     }
     out
 }
@@ -111,9 +125,9 @@ fn shipped_grids_match_the_golden_file() {
 
     if std::env::var_os("UPDATE_GOLDEN").is_some() {
         if let Some(parent) = path.parent() {
-            let _ = std::fs::create_dir_all(parent);
+            std::fs::create_dir_all(parent).expect("create golden-file directory");
         }
-        std::fs::write(&path, &rendered).ok();
+        std::fs::write(&path, &rendered).expect("write golden file");
         return;
     }
 

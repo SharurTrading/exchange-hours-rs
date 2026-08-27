@@ -12,7 +12,7 @@
 use chrono_tz::US;
 
 use crate::calendar::SessionRule;
-use crate::calendar::rule::SUN_PLUS_MON_THU;
+use crate::calendar::rule::{MON_FRI, SUN_PLUS_MON_THU};
 use crate::calendar::schedules::StaticHoursProfile;
 use crate::calendar::schedules::timeline::{Revision, local_date, revisions, select_revision};
 
@@ -108,7 +108,11 @@ static NKD_2013: StaticHoursProfile = StaticHoursProfile {
 };
 
 // 2012-11-18 through 2013-03-02: close extended to 16:15 CT with a 15-minute
-// electronic halt at 15:15-15:30 CT, so the day is two rules.
+// electronic halt at 15:15-15:30 CT, so the day is two rules. The first rule
+// carries the opening days (Sunday–Thursday evenings); the post-halt
+// continuation runs on the closing local day of those wrapped sessions,
+// which is Monday–Friday — a Sunday-afternoon instance never existed, and
+// Friday's post-halt segment belongs to the Thursday-evening session.
 static NKD_REGULAR_2012: &[SessionRule] = &[
     SessionRule {
         days: SUN_PLUS_MON_THU,
@@ -116,7 +120,7 @@ static NKD_REGULAR_2012: &[SessionRule] = &[
         close_ssm: 15 * 3600 + 15 * 60,
     },
     SessionRule {
-        days: SUN_PLUS_MON_THU,
+        days: MON_FRI,
         open_ssm: 15 * 3600 + 30 * 60,
         close_ssm: 16 * 3600 + 15 * 60,
     },

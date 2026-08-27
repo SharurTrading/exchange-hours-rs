@@ -84,13 +84,27 @@ static ENERGY_METALS_DATED_CURRENT: StaticHoursProfile = StaticHoursProfile {
     has_weekend_close: true,
 };
 
-static ENERGY_METALS_REVISIONS: &[Revision] = revisions![(
-    2015,
-    9,
-    20,
-    &ENERGY_METALS_DATED_CURRENT,
-    "CME Globex notice 20150907"
-),];
+static ENERGY_METALS_REVISIONS: &[Revision] = revisions![
+    (
+        2015,
+        9,
+        20,
+        &ENERGY_METALS_DATED_CURRENT,
+        "CME Globex notice 20150907"
+    ),
+    // Knowledge-bound row: the current order-entry queues are
+    // primary-verified in the current envelope, but no reviewed source states
+    // their onset day, so earlier dated queries conservatively omit them. From
+    // the 2026-08-22 repository review onward the verified-current grid
+    // applies; a sourced onset day replaces this row.
+    (
+        2026,
+        8,
+        22,
+        &ENERGY_METALS_CURRENT,
+        "2026-08-22 review: verified current, onset undated"
+    ),
+];
 
 pub(crate) fn energy_metals_profile_at(
     as_of: chrono::DateTime<chrono::Utc>,

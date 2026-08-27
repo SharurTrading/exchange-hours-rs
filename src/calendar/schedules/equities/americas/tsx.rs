@@ -59,3 +59,10 @@ pub(crate) static TSX_PROFILE: StaticHoursProfile = StaticHoursProfile {
 };
 
 pub(crate) const CURRENT: &StaticHoursProfile = &TSX_PROFILE;
+
+/// No dated revision is recorded: the reviewed grid holds for the whole audit
+/// window, so every instant resolves to the one profile. A sourced revision
+/// later replaces this with a real timeline row and needs no routing change.
+pub(crate) fn profile_at(_as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {
+    CURRENT
+}

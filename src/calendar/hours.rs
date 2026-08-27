@@ -82,9 +82,9 @@ impl MarketHours {
     /// [`MarketHoursKey`](crate::MarketHoursKey), or a [`CalendarSource`]
     /// directly.
     ///
-    /// The built-in tables are reached through `hours_for_exchange`,
-    /// `hours_for_market_hours_key`, and their `as_of` variants; this exists for
-    /// callers modelling a venue the crate does not ship.
+    /// The built-in tables are reached through `hours_for_exchange` and
+    /// `hours_for_market_hours_key`, each at the caller's instant; this exists
+    /// for callers modelling a venue the crate does not ship.
     #[must_use]
     pub fn new(
         source: impl Into<CalendarSource>,

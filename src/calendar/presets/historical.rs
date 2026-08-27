@@ -1,49 +1,45 @@
 // SPDX-License-Identifier: MIT-0
 
-//! Point-in-time venue schedule routing.
+//! Point-in-time venue schedule routing — the crate's one exhaustive
+//! `Exchange` match.
 //!
-//! Literal tables, effective dates, source citations, and selection logic live
-//! together in the owning module under [`super::super::schedules`]. This file
-//! only preserves the public `Exchange` dispatch and the default-to-current
-//! behavior for venues with no recorded revision.
+//! The bulk of this module is one exhaustive `match` over `Exchange`, which is
+//! load-bearing: there is no catch-all arm, so adding a venue is a compile
+//! error until someone decides its routing. Splitting the match across modules
+//! would replace that guarantee with a runtime fallthrough, so the arms stay
+//! together. The data and its history live in venue-owned modules under
+//! [`super::super::schedules`]; this router owns no schedule data.
 //!
-//! **Evidence rule.** A selector is added only when the owning venue module has
-//! primary evidence for an unconditional, day-level boundary
-//! (LAW-NO-FABRICATED-DATES). Undated changes are disclosed as `Partial` gaps,
-//! and conditional future plans remain unselected, rather than this router
-//! inventing or prematurely activating a cutover. A fixed current profile may
-//! therefore contain a source-verified phase that a Partial dated selector
-//! conservatively omits until an effective day is found.
+//! **Evidence rule.** A dated revision row is added only when the owning venue
+//! module has primary evidence for an unconditional, day-level boundary
+//! (LAW-NO-FABRICATED-DATES). Undated changes are disclosed as `Partial` gaps
+//! carried by a knowledge-bound row at the repository review date, and
+//! conditional future plans remain unselected rather than this router
+//! inventing or prematurely activating a cutover.
 
 use chrono::{DateTime, Utc};
 
-use crate::calendar::local_time::bounded_utc;
+use crate::calendar::schedules::ALWAYS_OPEN_PROFILE;
 use crate::calendar::schedules::equities::{africa_middle_east, americas, apac, europe, us};
 use crate::calendar::schedules::from_profile;
 use crate::calendar::schedules::futures::{international, us as futures_us};
 use crate::calendar::{Exchange, MarketHours};
 
-use super::hours_for_exchange;
-
-/// Returns the fixed schedule snapshot in effect at `as_of`.
+/// Returns the fixed schedule snapshot in effect for `exch` at `as_of`.
 ///
+/// This is the crate's only venue profile-selection path: every request
+/// carries the caller's instant — the crate never reads a clock
+/// (LAW-DETERMINISM) — so a backtest and a live query run identical code.
 /// Date-only changes are interpreted at venue-local midnight on the session's
-/// opening day. A source-stated intraday boundary is preserved at its exact UTC
-/// instant. Recurring selectors choose the applicable B3/BMV New York-offset
-/// grid, Vienna third-Friday grid, Eurex fixed-UTC Asian open, or ICE Endex /
-/// ICE Abu Dhabi New York-reference grid for the venue-local day containing
-/// `as_of`. A caller scanning across later schedule transitions should use
-/// [`calendar_for_exchange`](crate::calendar_for_exchange), which reselects at
-/// every candidate opening day.
-///
-/// Venues without recorded historical revisions return their current profile.
-/// A `Partial` owner may intentionally omit an undated historical phase even
-/// for recent `as_of` values; use [`hours_for_exchange`] for the exact fixed
-/// current snapshot and consult the verification ledger for the named gap.
+/// opening day. A source-stated intraday boundary is preserved at its exact
+/// UTC instant. Recurring selectors choose the applicable B3/BMV New
+/// York-offset grid, Vienna third-Friday grid, Eurex fixed-UTC Asian open, or
+/// ICE Endex / ICE Abu Dhabi New York-reference grid for the venue-local day
+/// containing `as_of`. A caller scanning across later schedule transitions
+/// should use [`calendar_for_exchange`](crate::calendar_for_exchange), which
+/// reselects at every candidate opening day.
 #[must_use]
-pub fn hours_for_exchange_as_of(exch: Exchange, as_of: DateTime<Utc>) -> MarketHours {
-    let current = hours_for_exchange(exch);
-    let as_of = bounded_utc(as_of, current.tz);
+pub fn hours_for_exchange(exch: Exchange, as_of: DateTime<Utc>) -> MarketHours {
     let profile = match exch {
         Exchange::Nasdaq => us::nasdaq_profile_at(as_of),
         Exchange::NasdaqBx => us::nasdaq_bx_profile_at(as_of),
@@ -108,6 +104,7 @@ pub fn hours_for_exchange_as_of(exch: Exchange, as_of: DateTime<Utc>) -> MarketH
         Exchange::BseIndia => apac::bse::profile_at(as_of),
         Exchange::Hkex => apac::hkex::profile_at(as_of),
         Exchange::SgxSecurities => apac::sgx::profile_at(as_of),
+        Exchange::BursaMalaysia => apac::bursa::profile_at(as_of),
         Exchange::SetThailand => apac::set::profile_at(as_of),
         Exchange::Idx => apac::idx::profile_at(as_of),
         Exchange::Pse => apac::pse::profile_at(as_of),
@@ -129,13 +126,21 @@ pub fn hours_for_exchange_as_of(exch: Exchange, as_of: DateTime<Utc>) -> MarketH
         Exchange::NasdaqStockholm => europe::nasdaq_nordics::stockholm_profile_at(as_of),
         Exchange::NasdaqHelsinki => europe::nasdaq_nordics::helsinki_profile_at(as_of),
         Exchange::NasdaqCopenhagen => europe::nasdaq_nordics::copenhagen_profile_at(as_of),
+        // Vienna's recurring third-Friday settlement grid is selected by
+        // `as_of`; a single instant sees only one grid, so scans across
+        // settlement Fridays belong on `calendar_for_exchange`.
         Exchange::Vienna => europe::vienna::profile_at(as_of),
         Exchange::BorsaIstanbul => europe::bist::profile_at(as_of),
         Exchange::Jse => africa_middle_east::jse::profile_at(as_of),
         Exchange::Tadawul => africa_middle_east::tadawul::profile_at(as_of),
+        // B3 and BMV follow New York offset relationships selected by `as_of`;
+        // scans across a seasonal transition belong on
+        // `calendar_for_exchange`.
         Exchange::B3 => americas::b3::profile_at(as_of),
         Exchange::Bmv => americas::bmv::profile_at(as_of),
-        _ => return current,
+        Exchange::Tsx => americas::tsx::profile_at(as_of),
+        // The synthetic 24×7 fallback identity: no timeline, one static grid.
+        Exchange::Unknown => &ALWAYS_OPEN_PROFILE,
     };
     from_profile(exch, profile)
 }

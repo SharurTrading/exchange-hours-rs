@@ -25,8 +25,12 @@ fn apac_bulk_and_canonical_names_cover_every_new_venue() {
         (Exchange::Krx, "krx"),
         (Exchange::Twse, "twse"),
     ];
-    let bulk = hours_for_apac_equities();
-    let map = hours_map_apac_equities();
+    let bulk = hours_for_apac_equities(
+        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
+    );
+    let map = hours_map_apac_equities(
+        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
+    );
     assert_eq!(bulk.len(), expected.len());
     assert_eq!(map.len(), expected.len());
     assert_eq!(

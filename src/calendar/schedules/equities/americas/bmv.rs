@@ -151,8 +151,6 @@ use crate::calendar::schedules::timeline::{
     Revision, effective_date, local_date, reference_delta_seconds, revisions, select_revision,
 };
 
-pub(crate) const CURRENT: &StaticHoursProfile = &BMV_PROFILE_EARLY_CURRENT;
-
 // BMV's 2010 spring notice gives an exact bounded early grid. Its 2010 fall
 // notice gives another exact table and, crucially, states that BMV will align
 // its hours with New York whenever the two countries' clock-change dates

@@ -148,10 +148,33 @@ static PROFILE_CURRENT: StaticHoursProfile = StaticHoursProfile {
     has_weekend_close: true,
 };
 
+// Verified-current grid: identical to PROFILE_CURRENT except the 14:30–16:00
+// PCP order-entry window, whose onset day no reviewed primary source states.
+static PROFILE_VERIFIED_CURRENT: StaticHoursProfile = StaticHoursProfile {
+    tz: US::Central,
+    regular: REGULAR_CURRENT,
+    extended: &[],
+    order_entry: ORDER_ENTRY_CURRENT,
+    has_daily_close: true,
+    has_weekend_close: true,
+};
+
 static REVISIONS: &[Revision] = revisions![
     (2014, 10, 27, &PROFILE_2014_10_27, "CME SER-7194"),
     (2016, 2, 29, &PROFILE_2016_02_29, "CME SER-7591"),
     (2020, 5, 31, &PROFILE_CURRENT, "CME SER-8599R"),
+    // Knowledge-bound row: the 14:30–16:00 PCP window is primary-verified in
+    // the current envelope, but no reviewed source states its onset day, so
+    // earlier dated queries conservatively omit it. From the 2026-08-22
+    // repository review onward the verified-current grid applies; a sourced
+    // onset day replaces this row.
+    (
+        2026,
+        8,
+        22,
+        &PROFILE_VERIFIED_CURRENT,
+        "2026-08-22 review: verified current, onset undated"
+    ),
 ];
 
 pub(crate) fn profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {

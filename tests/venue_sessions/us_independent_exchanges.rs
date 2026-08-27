@@ -11,7 +11,10 @@ fn independent_us_exchanges_publish_their_current_envelopes() {
         (Exchange::TwentyFourX, (4, 0, 0), (20, 0, 0)),
         (Exchange::Txse, (8, 0, 0), (17, 0, 0)),
     ] {
-        let hours = hours_for_exchange(exchange);
+        let hours = hours_for_exchange(
+            exchange,
+            chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
+        );
         let open = et((2026, 8, 17), open);
         let close = et((2026, 8, 17), close);
 
@@ -52,8 +55,8 @@ fn independent_us_exchange_launches_are_not_backfilled() {
         (Exchange::Txse, (2026, 7, 10), (8, 0, 0)),
     ] {
         let boundary = et(date, (0, 0, 0));
-        let before = hours_for_exchange_as_of(exchange, boundary - chrono::Duration::seconds(1));
-        let launched = hours_for_exchange_as_of(exchange, boundary);
+        let before = hours_for_exchange(exchange, boundary - chrono::Duration::seconds(1));
+        let launched = hours_for_exchange(exchange, boundary);
 
         assert!(before.regular.is_empty(), "{exchange:?}");
         assert!(before.extended.is_empty(), "{exchange:?}");
@@ -67,7 +70,7 @@ fn independent_us_exchange_launches_are_not_backfilled() {
     // TXSE's July 6–9 connectivity/test-symbol period was not the production
     // NMS-stock exchange schedule represented by this identity.
     assert!(
-        !hours_for_exchange_as_of(Exchange::Txse, et((2026, 7, 9), (12, 0, 0)))
+        !hours_for_exchange(Exchange::Txse, et((2026, 7, 9), (12, 0, 0)))
             .is_open(et((2026, 7, 9), (12, 0, 0)))
     );
 }
@@ -77,8 +80,11 @@ fn twenty_four_x_conditional_overnight_session_is_not_encoded() {
     // The SEC order leaves 21:00–04:00 commencement dependent on the SIP and a
     // later filing. Fixed, future-as-of, and date-aware queries retain 04:00–20:00.
     let sunday_night = et((2026, 12, 6), (21, 0, 0));
-    let fixed = hours_for_exchange(Exchange::TwentyFourX);
-    let future = hours_for_exchange_as_of(Exchange::TwentyFourX, et((2026, 12, 7), (12, 0, 0)));
+    let fixed = hours_for_exchange(
+        Exchange::TwentyFourX,
+        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
+    );
+    let future = hours_for_exchange(Exchange::TwentyFourX, et((2026, 12, 7), (12, 0, 0)));
 
     assert!(!fixed.is_open(sunday_night));
     assert!(!future.is_open(sunday_night));
@@ -104,10 +110,12 @@ fn independent_us_exchange_wires_and_bulk_order_are_stable() {
         );
     }
 
-    let exchanges: Vec<_> = hours_for_us_equities()
-        .into_iter()
-        .filter_map(|hours| hours.exchange())
-        .collect();
+    let exchanges: Vec<_> = hours_for_us_equities(
+        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
+    )
+    .into_iter()
+    .filter_map(|hours| hours.exchange())
+    .collect();
     let expected = [
         Exchange::Nasdaq,
         Exchange::NasdaqBx,

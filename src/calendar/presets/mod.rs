@@ -1,16 +1,14 @@
 // SPDX-License-Identifier: MIT-0
 
-//! Venue → hours. The two entry points that turn an [`Exchange`](super::Exchange)
+//! Venue → hours. The one entry point that turns an [`Exchange`](super::Exchange)
 //! into a [`MarketHours`](super::MarketHours).
 //!
-//! Split by *when* rather than by venue, because the two functions answer
-//! different questions: [`current`] gives today's published hours for every
-//! venue, [`historical`] gives the hours that were in effect at an instant.
-//! Backtests need the second one — a 2015 CME session queried with 2026 hours
-//! silently mislabels bars.
+//! There is exactly one selection path and it always carries the caller's
+//! instant: [`historical::hours_for_exchange`] routes every venue through its
+//! owned revision timeline. A backtest and a live query therefore run
+//! identical code, and a pre-coded future revision rolls over with no release
+//! in between.
 
-mod current;
 mod historical;
 
-pub use current::hours_for_exchange;
-pub use historical::hours_for_exchange_as_of;
+pub use historical::hours_for_exchange;

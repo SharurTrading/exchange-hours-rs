@@ -6,7 +6,7 @@ use chrono::{DateTime, NaiveDate, Offset, Utc};
 use chrono_tz::Tz;
 
 use super::StaticHoursProfile;
-use crate::calendar::local_time::mk_local_open;
+use crate::calendar::local_time::{bounded_utc, mk_local_open};
 
 /// The primary source that states a revision's day-level effective date.
 ///
@@ -128,9 +128,14 @@ pub(crate) const fn effective_date(year: i32, month: u32, day: u32) -> NaiveDate
 }
 
 /// Converts an instant to the calendar date used by a venue's rule table.
+///
+/// The instant is bounded to the venue zone first (see [`bounded_utc`]), so an
+/// otherwise-unrepresentable chrono edge degrades inward instead of
+/// misrouting the civil day. This is the one shared place every day-level
+/// selector's instant is normalized.
 #[inline]
 pub(crate) fn local_date(as_of: DateTime<Utc>, tz: Tz) -> NaiveDate {
-    as_of.with_timezone(&tz).date_naive()
+    bounded_utc(as_of, tz).with_timezone(&tz).date_naive()
 }
 
 /// Selects from an ascending, venue-local revision timeline.

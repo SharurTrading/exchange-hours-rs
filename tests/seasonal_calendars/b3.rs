@@ -10,7 +10,10 @@ fn b3_selects_current_short_and_northern_winter_long_grids() {
     let tz = America::Sao_Paulo;
     let short_day = (2026, 8, 19);
     assert_eq!(
-        hours_for_exchange(Exchange::B3),
+        hours_for_exchange(
+            Exchange::B3,
+            chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000)
+        ),
         calendar.hours_at(local(tz, short_day, (12, 0, 0)))
     );
 

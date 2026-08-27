@@ -7,8 +7,8 @@ use super::prelude::*;
 #[test]
 fn eex_nordic_zonal_power_is_closed_before_launch() {
     let cutover = cet((2024, 3, 25), (0, 0, 0));
-    let before = hours_for_exchange_as_of(Exchange::Eex, cutover - chrono::Duration::seconds(1));
-    let after = hours_for_exchange_as_of(Exchange::Eex, cutover);
+    let before = hours_for_exchange(Exchange::Eex, cutover - chrono::Duration::seconds(1));
+    let after = hours_for_exchange(Exchange::Eex, cutover);
 
     assert!(before.regular.is_empty());
     assert!(!before.is_open(cet((2024, 3, 22), (12, 0, 0))));
@@ -20,25 +20,25 @@ fn eex_nordic_zonal_power_is_closed_before_launch() {
 #[test]
 fn ice_ftse_100_migration_and_open_extensions() {
     let launch = lon((2014, 11, 17), (0, 0, 0));
-    let closed = hours_for_exchange_as_of(
+    let closed = hours_for_exchange(
         Exchange::IceEuropeFinancials,
         launch - chrono::Duration::seconds(1),
     );
-    let migrated = hours_for_exchange_as_of(Exchange::IceEuropeFinancials, launch);
+    let migrated = hours_for_exchange(Exchange::IceEuropeFinancials, launch);
     assert!(closed.regular.is_empty());
     assert!(closed.extended.is_empty());
     assert!(!migrated.is_open(lon((2014, 11, 17), (6, 2, 59))));
     assert!(migrated.is_order_entry_only(lon((2014, 11, 17), (6, 3, 0))));
     assert!(migrated.is_open_regular(lon((2014, 11, 17), (8, 0, 0))));
 
-    let seven = hours_for_exchange_as_of(
+    let seven = hours_for_exchange(
         Exchange::IceEuropeFinancials,
         lon((2015, 2, 16), (12, 0, 0)),
     );
     assert!(seven.is_order_entry_only(lon((2015, 2, 16), (6, 3, 0))));
     assert!(seven.is_open_regular(lon((2015, 2, 16), (7, 0, 0))));
 
-    let one = hours_for_exchange_as_of(
+    let one = hours_for_exchange(
         Exchange::IceEuropeFinancials,
         lon((2015, 10, 1), (12, 0, 0)),
     );
@@ -51,15 +51,14 @@ fn ice_ftse_100_migration_and_open_extensions() {
 #[test]
 fn ice_endex_ttf_extension_and_reference_clock() {
     let transfer = zoned(Europe::Amsterdam, (2013, 10, 7), (0, 0, 0));
-    let closed =
-        hours_for_exchange_as_of(Exchange::IceEndex, transfer - chrono::Duration::seconds(1));
-    let transferred = hours_for_exchange_as_of(Exchange::IceEndex, transfer);
+    let closed = hours_for_exchange(Exchange::IceEndex, transfer - chrono::Duration::seconds(1));
+    let transferred = hours_for_exchange(Exchange::IceEndex, transfer);
     assert!(closed.regular.is_empty());
     assert!(closed.extended.is_empty());
     assert!(transferred.is_order_entry_only(zoned(Europe::Amsterdam, (2013, 10, 7), (7, 45, 0))));
     assert!(transferred.is_open_regular(zoned(Europe::Amsterdam, (2013, 10, 7), (8, 0, 0))));
 
-    let before = hours_for_exchange_as_of(
+    let before = hours_for_exchange(
         Exchange::IceEndex,
         zoned(Europe::Amsterdam, (2026, 4, 10), (12, 0, 0)),
     );
@@ -68,7 +67,7 @@ fn ice_endex_ttf_extension_and_reference_clock() {
     assert!(before.is_open_regular(zoned(Europe::Amsterdam, (2026, 4, 10), (8, 0, 0))));
     assert!(!before.is_open(zoned(Europe::Amsterdam, (2026, 4, 10), (18, 0, 0))));
 
-    let opening_eve = hours_for_exchange_as_of(
+    let opening_eve = hours_for_exchange(
         Exchange::IceEndex,
         zoned(Europe::Amsterdam, (2026, 4, 12), (23, 45, 0)),
     );
@@ -76,7 +75,7 @@ fn ice_endex_ttf_extension_and_reference_clock() {
     assert!(opening_eve.is_order_entry_only(zoned(Europe::Amsterdam, (2026, 4, 12), (23, 40, 0))));
     assert!(opening_eve.is_open_regular(zoned(Europe::Amsterdam, (2026, 4, 12), (23, 50, 0))));
 
-    let aligned = hours_for_exchange_as_of(
+    let aligned = hours_for_exchange(
         Exchange::IceEndex,
         zoned(Europe::Amsterdam, (2026, 4, 14), (12, 0, 0)),
     );
@@ -85,7 +84,7 @@ fn ice_endex_ttf_extension_and_reference_clock() {
     assert!(aligned.is_open_regular(zoned(Europe::Amsterdam, (2026, 4, 14), (1, 50, 0))));
     assert!(!aligned.is_open(zoned(Europe::Amsterdam, (2026, 4, 14), (23, 0, 0))));
 
-    let mismatch = hours_for_exchange_as_of(
+    let mismatch = hours_for_exchange(
         Exchange::IceEndex,
         zoned(Europe::Amsterdam, (2026, 10, 27), (12, 0, 0)),
     );
@@ -93,7 +92,7 @@ fn ice_endex_ttf_extension_and_reference_clock() {
     assert!(mismatch.is_open_regular(zoned(Europe::Amsterdam, (2026, 10, 27), (0, 50, 0))));
     assert!(!mismatch.is_open(zoned(Europe::Amsterdam, (2026, 10, 27), (22, 0, 0))));
 
-    let spring_mismatch = hours_for_exchange_as_of(
+    let spring_mismatch = hours_for_exchange(
         Exchange::IceEndex,
         zoned(Europe::Amsterdam, (2027, 3, 16), (12, 0, 0)),
     );
@@ -109,9 +108,8 @@ fn ice_endex_ttf_extension_and_reference_clock() {
 #[test]
 fn ice_abu_dhabi_murban_launch_and_us_reference_clock() {
     let launch = zoned(Asia::Dubai, (2021, 3, 29), (0, 0, 0));
-    let before =
-        hours_for_exchange_as_of(Exchange::IceAbuDhabi, launch - chrono::Duration::seconds(1));
-    let after = hours_for_exchange_as_of(Exchange::IceAbuDhabi, launch);
+    let before = hours_for_exchange(Exchange::IceAbuDhabi, launch - chrono::Duration::seconds(1));
+    let after = hours_for_exchange(Exchange::IceAbuDhabi, launch);
     assert!(before.regular.is_empty());
     assert!(before.extended.is_empty());
     assert!(!after.is_open(zoned(Asia::Dubai, (2021, 3, 29), (0, 59, 59))));
@@ -119,7 +117,7 @@ fn ice_abu_dhabi_murban_launch_and_us_reference_clock() {
     assert!(after.is_open_regular(zoned(Asia::Dubai, (2021, 3, 29), (2, 0, 0))));
     assert!(!after.is_open(zoned(Asia::Dubai, (2021, 3, 30), (2, 0, 0))));
 
-    let winter = hours_for_exchange_as_of(
+    let winter = hours_for_exchange(
         Exchange::IceAbuDhabi,
         zoned(Asia::Dubai, (2026, 1, 19), (12, 0, 0)),
     );

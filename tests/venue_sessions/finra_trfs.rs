@@ -5,7 +5,10 @@
 use super::prelude::*;
 
 fn assert_current_baseline_and_session_kinds(exchange: Exchange) {
-    let hours = hours_for_exchange(exchange);
+    let hours = hours_for_exchange(
+        exchange,
+        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
+    );
     let monday = (2026, 4, 20);
 
     assert!(!hours.is_open(et(monday, (3, 59, 59))));
@@ -24,8 +27,8 @@ fn assert_current_baseline_and_session_kinds(exchange: Exchange) {
 
 fn assert_2026_opening_cutover(exchange: Exchange) {
     let cutover = et((2026, 3, 30), (0, 0, 0));
-    let before = hours_for_exchange_as_of(exchange, cutover - chrono::Duration::seconds(1));
-    let after = hours_for_exchange_as_of(exchange, cutover);
+    let before = hours_for_exchange(exchange, cutover - chrono::Duration::seconds(1));
+    let after = hours_for_exchange(exchange, cutover);
     let prior_business_day = (2026, 3, 27);
     let effective_day = (2026, 3, 30);
 
@@ -45,7 +48,7 @@ fn assert_2026_opening_cutover(exchange: Exchange) {
 
 fn assert_unconfirmed_overnight_is_not_encoded(exchange: Exchange) {
     let sunday_night = et((2026, 12, 6), (21, 0, 0));
-    let future = hours_for_exchange_as_of(exchange, et((2026, 12, 7), (12, 0, 0)));
+    let future = hours_for_exchange(exchange, et((2026, 12, 7), (12, 0, 0)));
 
     assert!(!future.is_open(sunday_night));
     assert!(!calendar_for_exchange(exchange).is_open(sunday_night));
@@ -80,11 +83,11 @@ fn finra_trf_chicago_is_closed_before_its_sourced_launch() {
     // stocks enabled from 2018-09-24.
     // https://www.finra.org/filing-reporting/trf/technical-notices/reminder-finranasdaq-trf-chicago
     let cutover = et((2018, 9, 10), (0, 0, 0));
-    let before = hours_for_exchange_as_of(
+    let before = hours_for_exchange(
         Exchange::FinraTrfChicago,
         cutover - chrono::Duration::seconds(1),
     );
-    let launched = hours_for_exchange_as_of(Exchange::FinraTrfChicago, cutover);
+    let launched = hours_for_exchange(Exchange::FinraTrfChicago, cutover);
 
     assert!(before.regular.is_empty());
     assert!(before.extended.is_empty());

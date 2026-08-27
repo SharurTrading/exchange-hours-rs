@@ -15,7 +15,10 @@ fn intraday_bar_ends_at_the_daily_close_not_the_reopen() {
     // closes are end-exclusive boundaries, and a bar whose end sat at the
     // 17:00 reopen would claim the closed hour as bar time. (V1 snapped this
     // end to the reopen; removed in 0.2.0.)
-    let h = hours_for_exchange(Exchange::Cme);
+    let h = hours_for_exchange(
+        Exchange::Cme,
+        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
+    );
     assert_eq!(
         candle_end(
             &h,
@@ -55,7 +58,10 @@ fn intraday_bar_queried_inside_maintenance_anchors_at_the_reopen() {
     // From inside the maintenance break the containing session is the next
     // one - the 16:45 Pre-Open is order entry, not a session - so the bar
     // anchors at the 17:00 reopen and steps from there.
-    let h = hours_for_exchange(Exchange::Cme);
+    let h = hours_for_exchange(
+        Exchange::Cme,
+        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
+    );
     assert_eq!(
         candle_end(
             &h,
@@ -93,7 +99,10 @@ fn daily_candles_ignore_phase_handoffs_that_remain_open() {
     ];
 
     for (exchange, instant, expected_close) in cases {
-        let hours = hours_for_exchange(exchange);
+        let hours = hours_for_exchange(
+            exchange,
+            chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
+        );
         let close = candle_end(&hours, instant, CalendarResolution::Daily);
         assert_eq!(close, Some(expected_close), "{exchange:?}");
         assert!(!hours.is_open(expected_close), "{exchange:?}");
@@ -105,7 +114,10 @@ fn candle_end_monthly_returns_last_close_of_month() {
     // A mid-January instant resolves to January's final daily close: the
     // returned instant is in January (exchange-local) and the very next daily
     // close after it falls in February.
-    let h = hours_for_exchange(Exchange::Cme);
+    let h = hours_for_exchange(
+        Exchange::Cme,
+        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
+    );
     let mid_jan = ct((2026, 1, 15), (12, 0, 0));
 
     let close =
@@ -134,7 +146,10 @@ fn candle_end_monthly_on_final_trading_day_returns_that_close() {
     // On a month's last trading day, the monthly boundary coincides with that
     // day's daily close. Friday 2026-01-30 is January's last trading day
     // (2026-01-31 is a Saturday).
-    let h = hours_for_exchange(Exchange::Cme);
+    let h = hours_for_exchange(
+        Exchange::Cme,
+        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
+    );
     let on_last_day = ct((2026, 1, 30), (9, 0, 0));
     assert_eq!(
         candle_end(&h, on_last_day, CalendarResolution::Monthly),
@@ -154,7 +169,10 @@ fn calendar_resolution_monthly_serde_round_trip() {
 fn candle_end_monthly_year_boundary() {
     // A late-December instant resolves to December's final close, not January:
     // the boundary stays in December 2026 and the next close rolls to 2027.
-    let h = hours_for_exchange(Exchange::Cme);
+    let h = hours_for_exchange(
+        Exchange::Cme,
+        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
+    );
     let late_dec = ct((2026, 12, 20), (12, 0, 0));
 
     let close =
@@ -173,7 +191,10 @@ fn candle_end_monthly_year_boundary() {
 #[test]
 fn candle_end_monthly_mid_month_is_idempotent_within_month() {
     // Two instants in the same month resolve to the same monthly boundary.
-    let h = hours_for_exchange(Exchange::Cme);
+    let h = hours_for_exchange(
+        Exchange::Cme,
+        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
+    );
     let early = ct((2026, 3, 3), (9, 0, 0));
     let later = ct((2026, 3, 25), (14, 0, 0));
     assert_eq!(

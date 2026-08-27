@@ -10,7 +10,7 @@ fn date_aware_queries_are_total_at_chrono_bounds() {
         let calendar = calendar_for_exchange(exchange);
         for instant in [DateTime::<Utc>::MIN_UTC, DateTime::<Utc>::MAX_UTC] {
             let result = std::panic::catch_unwind(|| {
-                let snapshot = hours_for_exchange_as_of(exchange, instant);
+                let snapshot = hours_for_exchange(exchange, instant);
                 let fixed_open = snapshot.is_open(instant);
                 let fixed_bounds = session_bounds(&snapshot, instant);
                 let _fixed_next = next_session_after(&snapshot, instant);
@@ -54,7 +54,10 @@ fn date_aware_queries_are_total_at_chrono_bounds() {
 #[test]
 fn synthetic_always_open_utc_profile_has_exact_chrono_edge_sessions() {
     let calendar = calendar_for_exchange(Exchange::Unknown);
-    let fixed = hours_for_exchange(Exchange::Unknown);
+    let fixed = hours_for_exchange(
+        Exchange::Unknown,
+        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
+    );
     let minimum = DateTime::<Utc>::MIN_UTC;
     let next_midnight = minimum
         .checked_add_signed(Duration::days(1))
@@ -109,7 +112,7 @@ fn negative_offset_scan_keeps_the_first_session_at_chrono_minimum() {
         .expect("NYSE minimum-date close has one local mapping")
         .with_timezone(&Utc);
     let expected = Some((open, close));
-    let fixed = hours_for_exchange_as_of(Exchange::Nyse, minimum);
+    let fixed = hours_for_exchange(Exchange::Nyse, minimum);
     let calendar = calendar_for_exchange(Exchange::Nyse);
 
     assert_eq!(next_session_after(&fixed, minimum), expected);
@@ -132,7 +135,7 @@ fn maximum_hour_resolution_clamps_without_losing_a_bar() {
     let instant = local(tz, (2026, 8, 19), (10, 12, 0));
     let close = local(tz, (2026, 8, 19), (16, 0, 0));
     let resolution = CalendarResolution::Hours(u32::MAX);
-    let fixed = hours_for_exchange_as_of(Exchange::Tsx, instant);
+    let fixed = hours_for_exchange(Exchange::Tsx, instant);
     let calendar = calendar_for_exchange(Exchange::Tsx);
 
     assert_eq!(candle_start(&fixed, instant, resolution), Some(instant));

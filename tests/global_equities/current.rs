@@ -6,7 +6,10 @@ use super::prelude::*;
 
 #[test]
 fn tsx_current_baseline() {
-    let h = hours_for_exchange(Exchange::Tsx);
+    let h = hours_for_exchange(
+        Exchange::Tsx,
+        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
+    );
     let tz = America::Toronto;
     let date = (2026, 8, 19);
     assert!(!h.is_open(local(tz, date, (6, 59, 0))));
@@ -22,7 +25,10 @@ fn tsx_current_baseline() {
 
 #[test]
 fn borsa_istanbul_current_baseline() {
-    let h = hours_for_exchange(Exchange::BorsaIstanbul);
+    let h = hours_for_exchange(
+        Exchange::BorsaIstanbul,
+        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
+    );
     let tz = Europe::Istanbul;
     let date = (2026, 8, 19);
     assert!(!h.is_open(local(tz, date, (9, 39, 0))));
@@ -36,7 +42,10 @@ fn borsa_istanbul_current_baseline() {
 
 #[test]
 fn jse_current_baseline() {
-    let h = hours_for_exchange(Exchange::Jse);
+    let h = hours_for_exchange(
+        Exchange::Jse,
+        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
+    );
     let tz = Africa::Johannesburg;
     let date = (2026, 8, 19);
     assert!(!h.is_open(local(tz, date, (8, 29, 0))));
@@ -51,7 +60,10 @@ fn jse_current_baseline() {
 
 #[test]
 fn tadawul_current_baseline_and_workweek() {
-    let h = hours_for_exchange(Exchange::Tadawul);
+    let h = hours_for_exchange(
+        Exchange::Tadawul,
+        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
+    );
     let tz = Asia::Riyadh;
     let date = (2026, 8, 19);
     assert!(!h.is_open(local(tz, date, (9, 29, 0))));
@@ -66,7 +78,10 @@ fn tadawul_current_baseline_and_workweek() {
 
 #[test]
 fn lse_sets_current_auction_envelope() {
-    let h = hours_for_exchange(Exchange::Lse);
+    let h = hours_for_exchange(
+        Exchange::Lse,
+        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
+    );
     let tz = Europe::London;
     let date = (2026, 8, 19);
 
@@ -101,7 +116,10 @@ fn lse_sets_current_auction_envelope() {
 
 #[test]
 fn bme_current_auction_and_trading_at_last_envelope() {
-    let h = hours_for_exchange(Exchange::Bme);
+    let h = hours_for_exchange(
+        Exchange::Bme,
+        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
+    );
     let tz = Europe::Madrid;
     let date = (2026, 8, 19);
 
@@ -133,7 +151,10 @@ fn bme_current_auction_and_trading_at_last_envelope() {
 
 #[test]
 fn vienna_atx_current_auction_envelope() {
-    let h = hours_for_exchange(Exchange::Vienna);
+    let h = hours_for_exchange(
+        Exchange::Vienna,
+        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
+    );
     let tz = Europe::Vienna;
     let date = (2026, 8, 19);
 

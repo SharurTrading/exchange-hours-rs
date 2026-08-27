@@ -662,7 +662,7 @@ fn all_key_calendars_match_dated_snapshots_over_two_cutover_free_years() {
     while instant < end {
         for &key in MarketHoursKey::ALL {
             let calendar = calendar_for_market_hours_key(key);
-            let snapshot = exchange_hours::hours_for_market_hours_key_as_of(key, instant);
+            let snapshot = exchange_hours::hours_for_market_hours_key(key, instant);
             assert_eq!(
                 calendar.is_open(instant),
                 snapshot.is_open(instant),

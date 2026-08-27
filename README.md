@@ -83,33 +83,36 @@ let ct = |y, m, d, hh, mm| {
         .with_timezone(&Utc)
 };
 
-let hours = hours_for_exchange(Exchange::Cme);
+// Every snapshot request carries the caller's instant: the crate never reads
+// a clock, so a backtest and a live query run identical code. A live caller
+// passes their own `Utc::now()` at the application edge.
+let hours = hours_for_exchange(Exchange::Cme, ct(2026, 8, 24, 10, 0));
 
 // Monday mid-morning sits inside the regular session. Boundary queries
 // return `Option`: `None` means no matching session exists in the bounded
 // search horizon (for example, on a pre-go-live date).
-let monday_10am = ct(2026, 4, 20, 10, 0);
+let monday_10am = ct(2026, 8, 24, 10, 0);
 assert!(hours.is_open_regular(monday_10am));
 let (open, close) = session_bounds(&hours, monday_10am).expect("CME trades this week");
-assert_eq!(open, ct(2026, 4, 20, 8, 30));
-assert_eq!(close, ct(2026, 4, 20, 15, 15)); // end-exclusive
+assert_eq!(open, ct(2026, 8, 24, 8, 30));
+assert_eq!(close, ct(2026, 8, 24, 15, 15)); // end-exclusive
 
 // 16:30 CT is the daily maintenance break: closed, inside an inter-trade-date
 // gap (16:00→16:45) no longer than the documented four-hour bound.
-let monday_evening = ct(2026, 4, 20, 16, 30);
+let monday_evening = ct(2026, 8, 24, 16, 30);
 assert!(!hours.is_open(monday_evening));
 assert!(hours.is_maintenance(monday_evening));
 
 // After Friday's close the next accepted-order phase is Sunday's 16:00
 // Pre-Open, not Saturday. Matching resumes at 17:00.
-let friday_after_close = ct(2026, 4, 24, 16, 30);
+let friday_after_close = ct(2026, 8, 28, 16, 30);
 let (next_open, _) = next_session_after(&hours, friday_after_close).expect("reopens Sunday");
-assert_eq!(next_open, ct(2026, 4, 26, 16, 0));
+assert_eq!(next_open, ct(2026, 8, 30, 16, 0));
 
 // Bar boundaries follow the same rules: a daily bar closes at the venue's
 // session close, not at midnight.
 let daily_close = candle_end(&hours, monday_10am, CalendarResolution::Daily);
-assert_eq!(daily_close, Some(ct(2026, 4, 20, 16, 0)));
+assert_eq!(daily_close, Some(ct(2026, 8, 24, 16, 0)));
 ```
 
 For a venue whose grid can change between dates, keep an `ExchangeCalendar`
@@ -162,10 +165,10 @@ assert_eq!(calendar.exchange(), None);
 Futures hours track the *product family*, not merely the listing venue.
 `MarketHoursKey` has 25 variants—24 operator-derived product-family keys plus
 the synthetic `AlwaysOpen` key. They reuse profiles and are not additional
-venues. Fixed snapshots use `session_profile` /
-`hours_for_market_hours_key`; sourced dated revisions use
-`hours_for_market_hours_key_as_of`; `calendar_for_market_hours_key` reselects
-the dated profile while scanning sessions and candles.
+venues. `session_profile` exposes each family's fixed-current static table;
+`hours_for_market_hours_key` selects the sourced snapshot at the caller's
+instant; `calendar_for_market_hours_key` reselects the dated profile while
+scanning sessions and candles.
 
 Every key's `snake_case` name is a stable persisted wire identity shared by
 `as_str`, `Display`, `FromStr`, and Serde. Renaming one is a breaking change.
@@ -319,9 +322,9 @@ applicable profile again for every candidate trading day.
   the old profile.
 - **How far back.** The aim is to record every session-defining amendment back to
   **January 2010**; changes before that are out of scope by design. Below a venue's oldest
-  recorded profile, `hours_for_exchange_as_of` keeps returning that oldest profile — it
-  does not manufacture an older row or change. Venues with no recorded change return current
-  hours at every `as_of`.
+  recorded profile, `hours_for_exchange` keeps returning that oldest profile at earlier
+  instants — it does not manufacture an older row or change. Venues with no recorded change
+  return their one grid at every instant.
 
 B3 and BMV use recurring cross-zone selection. B3 chooses its short or long cash-equity
 grid from the New York−São Paulo UTC-offset difference; BMV chooses its early or normal
@@ -450,8 +453,8 @@ caller's `DayPolicy` is outside that guarantee. The Criterion
   that persisted or matched the former state labels.
 - The raw `US_EQUITY_REGULAR`, `US_EQUITY_EXTENDED`,
   `NYSE_TEXAS_EXTENDED`, and `BLUE_OCEAN_EXTENDED` slices are no longer public.
-  Use `hours_for_exchange`, `hours_for_exchange_as_of`, or
-  `calendar_for_exchange` so venue and historical routing cannot be bypassed.
+  Use `hours_for_exchange` or `calendar_for_exchange` so venue and historical
+  routing cannot be bypassed.
 
 See the [1.0.0 changelog](CHANGELOG.md#100---2026-08-22) for the complete API,
 schedule, and migration record.

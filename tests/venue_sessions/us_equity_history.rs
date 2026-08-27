@@ -5,11 +5,11 @@
 use super::prelude::*;
 
 fn profile_before(exch: Exchange, date: (i32, u32, u32)) -> MarketHours {
-    hours_for_exchange_as_of(exch, et(date, (0, 0, 0)) - chrono::Duration::seconds(1))
+    hours_for_exchange(exch, et(date, (0, 0, 0)) - chrono::Duration::seconds(1))
 }
 
 fn profile_from(exch: Exchange, date: (i32, u32, u32)) -> MarketHours {
-    hours_for_exchange_as_of(exch, et(date, (0, 0, 0)))
+    hours_for_exchange(exch, et(date, (0, 0, 0)))
 }
 
 #[test]
@@ -99,8 +99,11 @@ fn partial_us_equity_histories_do_not_invent_current_queue_onsets() {
     assert!(!before.is_open(et((2016, 5, 24), (7, 0, 0))));
     assert!(after.is_open_extended(et((2016, 5, 24), (7, 0, 0))));
 
-    let current = hours_for_exchange(Exchange::CboeEdga);
-    let partial_as_of = hours_for_exchange_as_of(Exchange::CboeEdga, et((2026, 4, 20), (12, 0, 0)));
+    let current = hours_for_exchange(
+        Exchange::CboeEdga,
+        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
+    );
+    let partial_as_of = hours_for_exchange(Exchange::CboeEdga, et((2026, 4, 20), (12, 0, 0)));
     assert!(current.is_order_entry_only(et((2026, 4, 20), (6, 0, 0))));
     assert!(!partial_as_of.is_open(et((2026, 4, 20), (6, 0, 0))));
     assert!(!calendar_for_exchange(Exchange::CboeEdga).is_open(et((2026, 4, 20), (6, 0, 0))));
@@ -110,9 +113,14 @@ fn partial_us_equity_histories_do_not_invent_current_queue_onsets() {
         (Exchange::NyseArca, (2, 30, 0), (4, 0, 0)),
     ] {
         let instant = et((2026, 4, 20), current_queue);
-        let dated = hours_for_exchange_as_of(exchange, instant);
+        let dated = hours_for_exchange(exchange, instant);
         assert!(
-            hours_for_exchange(exchange).is_order_entry_only(instant),
+            hours_for_exchange(
+                exchange,
+                chrono::DateTime::<chrono::Utc>::UNIX_EPOCH
+                    + chrono::Duration::seconds(1_787_400_000)
+            )
+            .is_order_entry_only(instant),
             "{exchange:?} at {instant}"
         );
         assert!(!dated.is_open(instant), "{exchange:?} at {instant}");
@@ -150,7 +158,7 @@ fn bzx_january_2010_baseline_is_0800_to_1700() {
     // SEC Release 34-59963 records the 08:00–09:30, 09:30–16:00, and
     // 16:00–17:00 sessions in force before the audit floor.
     // https://www.sec.gov/rules/sro/bats/2009/34-59963.pdf
-    let hours = hours_for_exchange_as_of(Exchange::CboeBzx, et((2010, 1, 4), (12, 0, 0)));
+    let hours = hours_for_exchange(Exchange::CboeBzx, et((2010, 1, 4), (12, 0, 0)));
     assert!(!hours.is_open(et((2010, 1, 4), (7, 59, 59))));
     assert!(hours.is_open_extended(et((2010, 1, 4), (8, 0, 0))));
     assert!(hours.is_open_regular(et((2010, 1, 4), (9, 30, 0))));
@@ -179,7 +187,7 @@ fn nyse_arca_grid_is_supported_at_the_2010_audit_floor() {
     // SEC Release 34-57505 records Arca's 04:00–20:00 three-session grid in
     // 2008, before this crate's historical floor.
     // https://www.sec.gov/files/rules/sro/nysearca/2008/34-57505.pdf
-    let hours = hours_for_exchange_as_of(Exchange::NyseArca, et((2010, 1, 4), (12, 0, 0)));
+    let hours = hours_for_exchange(Exchange::NyseArca, et((2010, 1, 4), (12, 0, 0)));
     assert!(!hours.is_open(et((2010, 1, 4), (3, 59, 59))));
     assert!(hours.is_open_extended(et((2010, 1, 4), (4, 0, 0))));
     assert!(hours.is_open_regular(et((2010, 1, 4), (9, 30, 0))));
@@ -216,7 +224,7 @@ fn nyse_texas_preserves_chx_history_through_the_pillar_migration() {
     // https://www.sec.gov/files/rules/sro/nysechx/2019/34-86709.pdf
     // https://www.nyse.com/publicdocs/nyse/markets/nyse-chicago/NYSE_Chicago_Migration.pdf
     // https://www.sec.gov/files/rules/sro/nysechx/2025/34-102507.pdf
-    let baseline = hours_for_exchange_as_of(Exchange::NyseTexas, et((2010, 1, 4), (12, 0, 0)));
+    let baseline = hours_for_exchange(Exchange::NyseTexas, et((2010, 1, 4), (12, 0, 0)));
     assert!(!baseline.is_open(et((2010, 1, 4), (6, 59, 59))));
     assert!(baseline.is_open_extended(et((2010, 1, 4), (7, 0, 0))));
     assert!(baseline.is_open_regular(et((2010, 1, 4), (9, 30, 0))));
@@ -278,8 +286,11 @@ fn blue_ocean_new_order_window_is_stable_from_launch() {
     // explicitly scoped new-order window and creates no historical cutover.
     // https://www.sec.gov/Archives/edgar/data/1795131/000153949721000764/primary_doc.xml
     // https://www.sec.gov/Archives/edgar/data/1795131/000153949723000091/primary_doc.xml
-    let historical = hours_for_exchange_as_of(Exchange::BlueOceanAts, et((2021, 10, 6), (2, 0, 0)));
-    let current = hours_for_exchange(Exchange::BlueOceanAts);
+    let historical = hours_for_exchange(Exchange::BlueOceanAts, et((2021, 10, 6), (2, 0, 0)));
+    let current = hours_for_exchange(
+        Exchange::BlueOceanAts,
+        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
+    );
 
     assert_eq!(historical.regular, current.regular);
     assert_eq!(historical.extended, current.extended);

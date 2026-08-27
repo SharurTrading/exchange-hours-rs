@@ -32,8 +32,16 @@ change to this standalone repository must follow.
   without one is documented as a known gap, never given an invented date. A
   future date contingent on a readiness filing, regulatory condition, or
   infrastructure rollout stays in the update-guide watch list and out of
-  runtime selectors. Amendment history is recorded back to **January 2010**;
-  earlier changes are out of scope by design.
+  runtime selectors. An unconditional, fully sourced future date **may** be
+  encoded ahead of its effective day, so instant-driven queries roll over
+  with no release in between; the row's review date is the day the evidence
+  was checked, and a slipped or cancelled change is corrected as a schedule
+  fix. Day-level revision rows are keyed to the local
+  **opening day** of the first session they govern, and a day-level revision
+  boundary never splits a running session; a sourced change whose boundary
+  falls at a stated intraday instant is an exact-instant cutover, never a
+  day-level row rounded to local midnight. Amendment history is recorded back
+  to **January 2010**; earlier changes are out of scope by design.
 
 ## Modeling conventions
 
@@ -106,8 +114,9 @@ change to this standalone repository must follow.
   **one table** (the `exchanges!` invocation in `exchange/mod.rs`, using the
   macro in `exchange/define.rs`): adding a venue is
   one new row, and neither `ALL` nor the name table can omit it. The compiler
-  then forces the remaining in-crate exhaustive match, `hours_for_exchange`
-  in `presets/current.rs` (no catch-all arm — the hours decision). The same
+  then forces the remaining in-crate exhaustive match — `hours_for_exchange`
+  in `presets/historical.rs` (no catch-all arm — the routing decision: every
+  venue names its `profile_at` selector). The same
   edit must also reach the region list in `bulk.rs` when a bulk builder
   covers the venue, and `ALL_EXCHANGES` + `EXCHANGE_VARIANT_COUNT` in
   `tests/contract/session_invariants/identity_expectations.rs` — the test
@@ -140,9 +149,17 @@ change to this standalone repository must follow.
   set; never guess a family from coincident rules to coalesce sessions or assign
   a special trade date. Always-open calendars have no final close and return no
   trade date.
-- Existing public fixed-snapshot free functions are compatibility contracts:
-  do not remove or silently redirect `hours_for_exchange_as_of`,
-  `session_bounds*`, or `candle_*` while adding calendar methods.
+- **Instant-only selection.** Every public entry point that resolves an
+  identity to a schedule for a moment in time requires the caller's instant —
+  `hours_for_exchange(exchange, as_of)`, `hours_for_market_hours_key(key,
+  as_of)`, and the bulk builders all carry it — and there is no clock-less
+  "current" routing between eras. `session_profile` remains the one static
+  current-*table* accessor (it selects no era and equals the timelines'
+  selection at any instant on or after the knowledge-bound rows). This is
+  what makes backtest and live one code path; do not reintroduce a second
+  selector. The public fixed-snapshot query adapters (`session_bounds*`,
+  `candle_*`, `next_session_*`) remain compatibility contracts: do not remove
+  or silently redirect them while adding calendar methods.
 
 ## Adding or revising a venue
 
@@ -159,11 +176,12 @@ handwritten test lists from production data.
    `docs/schedules/updating.md`. Give a venue its own named profile even when
    its hours currently coincide with another venue. Keep historical revisions
    and their day-level effective-date sources with the same venue family.
-3. **Routing.** Update the no-catch-all `hours_for_exchange` match with an
-   explicit current-profile decision. Add point-in-time routing only for
-   primary-sourced, unconditional revisions; document an unsourced gap instead
-   of inventing a date, and monitor a conditional future announcement without
-   routing it. A cross-zone or otherwise recurring selector also needs
+3. **Routing.** Add the venue's arm to the no-catch-all `hours_for_exchange`
+   match in `presets/historical.rs`, dispatching to its `profile_at` selector.
+   Add dated revision rows only for primary-sourced, unconditional revisions;
+   document an unsourced gap as a knowledge-bound row at the review date
+   instead of inventing a date, and monitor a conditional future announcement
+   without routing it. A cross-zone or otherwise recurring selector also needs
    date-aware `ExchangeCalendar` transition coverage.
 4. **Regional membership.** Add the venue to the appropriate `bulk.rs` region
    list when a built-in bulk builder should include it, preserving that list's
@@ -204,9 +222,9 @@ Treat a `MarketHoursKey` change with the same evidence discipline as a venue:
 2. Give the family its own sourced static profile and history. A member product
    listing after the family clock began remains caller catalog data unless it
    changes the family schedule itself.
-3. Update fixed, point-in-time, and date-aware key routing, including
-   `calendar_for_market_hours_key`; never borrow an unrelated family's history
-   merely because today's hours coincide.
+3. Update the key's `hours_for_market_hours_key` routing arm and the date-aware
+   `calendar_for_market_hours_key` surface; never borrow an unrelated family's
+   history merely because today's hours coincide.
 4. Update every handwritten key list, wire/serde fence, baseline and cutover
    test, verification row, source registry, README count/scope, and changelog.
 5. Document any venue-keyed compatibility default that uses the profile and

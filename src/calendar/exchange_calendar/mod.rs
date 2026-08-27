@@ -11,8 +11,13 @@ use chrono_tz::Tz;
 use super::query::{QueryContext, sessions, status};
 use super::{
     Exchange, MarketHours, MarketHoursKey, SessionKind, SessionState, hours_for_exchange,
-    hours_for_exchange_as_of, hours_for_market_hours_key, hours_for_market_hours_key_as_of,
+    hours_for_market_hours_key,
 };
+
+/// A venue's zone is invariant across its revision eras, so any fixed instant
+/// resolves it; the epoch keeps this independent of schedule data and of any
+/// caller's clock.
+const TZ_RESOLUTION_INSTANT: DateTime<Utc> = DateTime::<Utc>::UNIX_EPOCH;
 
 /// Identifies the schedule selected by an [`ExchangeCalendar`].
 ///
@@ -103,8 +108,8 @@ impl ExchangeCalendar {
     #[must_use]
     pub fn hours_at(self, instant: DateTime<Utc>) -> MarketHours {
         match self.source {
-            CalendarSource::Exchange(exchange) => hours_for_exchange_as_of(exchange, instant),
-            CalendarSource::MarketHoursKey(key) => hours_for_market_hours_key_as_of(key, instant),
+            CalendarSource::Exchange(exchange) => hours_for_exchange(exchange, instant),
+            CalendarSource::MarketHoursKey(key) => hours_for_market_hours_key(key, instant),
         }
     }
 
@@ -112,8 +117,12 @@ impl ExchangeCalendar {
     #[must_use]
     pub fn tz(self) -> Tz {
         match self.source {
-            CalendarSource::Exchange(exchange) => hours_for_exchange(exchange).tz,
-            CalendarSource::MarketHoursKey(key) => hours_for_market_hours_key(key).tz,
+            CalendarSource::Exchange(exchange) => {
+                hours_for_exchange(exchange, TZ_RESOLUTION_INSTANT).tz
+            }
+            CalendarSource::MarketHoursKey(key) => {
+                hours_for_market_hours_key(key, TZ_RESOLUTION_INSTANT).tz
+            }
         }
     }
 
@@ -310,7 +319,7 @@ pub const fn calendar_for_exchange(exchange: Exchange) -> ExchangeCalendar {
 
 /// Creates a date-aware calendar for a product-family `key`.
 ///
-/// The calendar reselects [`hours_for_market_hours_key_as_of`] for every
+/// The calendar reselects [`hours_for_market_hours_key`] for every
 /// candidate session-opening day, including while scanning across a sourced
 /// historical revision.
 #[must_use]

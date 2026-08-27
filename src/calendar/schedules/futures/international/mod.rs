@@ -20,7 +20,7 @@ mod sgx_equity_index;
 
 mod sgx_equity_index_more;
 
-pub(crate) use binance::{CURRENT as BINANCE_CURRENT, profile_at as binance_profile_at};
+pub(crate) use binance::profile_at as binance_profile_at;
 pub(crate) use eurex_fixed_income::EUREX_FIXED_INCOME_ORDER_ENTRY_CURRENT;
 pub(crate) use eurex_fixed_income::{
     EUREX_FIXED_INCOME_EXTENDED_CURRENT, EUREX_FIXED_INCOME_REGULAR_CURRENT,
@@ -28,13 +28,12 @@ pub(crate) use eurex_fixed_income::{
 };
 pub(crate) use europe::EUREX_CURRENT_ORDER_ENTRY;
 pub(crate) use europe::{
-    EEX_PROFILE, EUREX_CURRENT_EXTENDED, EUREX_CURRENT_REGULAR, eex_profile_at, eurex_profile_at,
+    EUREX_CURRENT_EXTENDED, EUREX_CURRENT_REGULAR, eex_profile_at, eurex_profile_at,
 };
-pub(crate) use ice_abu_dhabi::{ICE_ABU_DHABI_CURRENT, ice_abu_dhabi_profile_at};
-pub(crate) use ice_canada::{ICE_CANADA_PROFILE, ice_canada_profile_at};
-pub(crate) use ice_endex::{CURRENT as ICE_ENDEX_CURRENT, profile_at as ice_endex_profile_at};
+pub(crate) use ice_abu_dhabi::ice_abu_dhabi_profile_at;
+pub(crate) use ice_canada::ice_canada_profile_at;
+pub(crate) use ice_endex::profile_at as ice_endex_profile_at;
 pub(crate) use ice_europe::{
-    ICE_EUROPE_COMMODITIES_CURRENT, ICE_EUROPE_FINANCIALS_CURRENT, ICEEU_CURRENT,
     ice_europe_commodities_profile_at, ice_europe_financials_profile_at, iceeu_profile_at,
 };
 pub(crate) use sgx::SGX_CURRENT_ORDER_ENTRY;

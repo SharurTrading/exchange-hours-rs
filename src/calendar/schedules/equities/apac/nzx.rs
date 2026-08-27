@@ -64,10 +64,12 @@ static NZX_EXTENDED_PRE_2020_04_06: &[SessionRule] = &[
     NZX_SHARED_EXTENDED[1],
 ];
 
-// Order entry only. NZX documents the 08:30–10:00 phase as pre-open/order entry
-// and 16:45–17:00 as pre-close order entry for the closing auction; neither
-// matches. The slices stop 30 seconds short of the nominal boundary so the
-// randomized uncross stays inside the tradeable window above.
+// Order entry only. NZX documents 16:45–17:00 as pre-close order entry for
+// the closing auction, and it neither matches nor accepts reports. The
+// 08:30–10:00 pre-open is NOT here: off-market reports print in it, so it
+// stays tradeable in `extended` (see above). The slice stops 30 seconds
+// short of the nominal 17:00 boundary so the randomized uncross stays inside
+// the tradeable window above.
 static NZX_ORDER_ENTRY: &[SessionRule] = &[SessionRule {
     days: MON_FRI,
     open_ssm: 16 * 3600 + 45 * 60,

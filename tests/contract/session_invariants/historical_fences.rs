@@ -180,9 +180,10 @@ fn day_level_cutovers_never_split_a_running_session() {
              mid-session instant instead"
         );
     }
-    // Almost every cutover flips while closed; the counter guards against the
-    // containing-session lookup silently collapsing so the fence stops
-    // checking anything.
+    // Almost every cutover flips while closed, so `spanning` is normally very
+    // low. This upper bound only rejects the degenerate case where every
+    // cutover appears to span its boundary; it cannot detect a collapsed
+    // containing-session lookup, which would report zero.
     assert!(
         (spanning as usize) < HISTORICAL_CUTOVERS.len(),
         "every cutover now spans its boundary; the skip conditions have stopped discriminating"

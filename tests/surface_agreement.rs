@@ -2,9 +2,10 @@
 
 //! Agreement between the fixed snapshot and the dated calendar.
 //!
-//! `hours_for_market_hours_key` returns the current sourced grid.
-//! `hours_for_market_hours_key` reselects from the dated timeline. For
-//! most families the two agree at every instant. For a handful they do not, and
+//! `hours_for_market_hours_key` at the knowledge-bound instant returns the
+//! current sourced grid; at a sampled instant it reselects from the dated
+//! timeline. For most families the two agree at every instant. For a handful
+//! they do not, and
 //! that divergence is deliberate: where a phase is primary-sourced today but its
 //! onset day cannot be dated, the dated selector omits the phase rather than
 //! asserting a cutover the record does not support. See the `omits`/`omitted`

@@ -95,6 +95,26 @@ fn nkd_halt_revision_and_removal_are_keyed_to_their_sunday_opening_days() {
         "16:20 CT is past the 16:15 CT close"
     );
 
+    // The post-halt continuation runs on every closing day Monday–Friday.
+    // Friday's segment belongs to the Thursday-evening session, and a
+    // Sunday-afternoon instance never existed (Sunday opens at 17:00 CT).
+    assert!(
+        halted.is_open(utc(2012, 11, 23, 21, 30)),
+        "Friday 15:30 CT trades after the halt"
+    );
+    assert!(
+        halted.is_open(utc(2012, 11, 23, 22, 10)),
+        "Friday's close is 16:15 CT"
+    );
+    assert!(
+        !halted.is_open(utc(2012, 11, 25, 21, 30)),
+        "Sunday afternoon has no post-halt session"
+    );
+    assert!(
+        !halted.is_open(utc(2012, 11, 25, 22, 10)),
+        "Sunday afternoon has no 16:15 CT close either"
+    );
+
     // The Sunday before: pre-2012 dates are sessionless, so the same Monday
     // probe answers closed everywhere.
     let before = hours_for_market_hours_key(key, utc(2012, 11, 11, 23, 30));

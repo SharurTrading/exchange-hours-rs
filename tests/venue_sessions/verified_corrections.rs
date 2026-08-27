@@ -213,7 +213,7 @@ fn cfe_post_settlement_runs_on_friday_too() {
 }
 
 #[test]
-fn cfe_before_the_2021_cutover_classifies_the_order_queue_as_extended() {
+fn cfe_before_the_2021_cutover_classifies_the_order_queue_as_order_entry() {
     let before = hours_for_exchange(Exchange::Cfe, ct((2021, 12, 3), (12, 0, 0)));
     assert!(
         before.is_open_regular(ct((2021, 12, 3), (15, 10, 0))),

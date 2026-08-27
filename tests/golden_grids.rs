@@ -125,9 +125,9 @@ fn shipped_grids_match_the_golden_file() {
 
     if std::env::var_os("UPDATE_GOLDEN").is_some() {
         if let Some(parent) = path.parent() {
-            let _ = std::fs::create_dir_all(parent);
+            std::fs::create_dir_all(parent).expect("create golden-file directory");
         }
-        std::fs::write(&path, &rendered).ok();
+        std::fs::write(&path, &rendered).expect("write golden file");
         return;
     }
 

@@ -94,11 +94,16 @@ pub(crate) static TADAWUL_PROFILE_POST_2018_05_27: StaticHoursProfile = StaticHo
     has_daily_close: true,
     has_weekend_close: true,
 };
+// The 2016–2018 era carries no order-entry schedule: the 09:30 queue is
+// evidenced only by the operator's current trading-cycle page, which states
+// nothing about that era, so asserting it there would attach an undated phase
+// to a dated regime (LAW-PRIMARY-SOURCES). A dated primary source for the
+// queue's era restores it.
 pub(crate) static TADAWUL_PROFILE_POST_2016_04_03: StaticHoursProfile = StaticHoursProfile {
     tz: Asia::Riyadh,
     regular: REGULAR_CURRENT,
     extended: &[],
-    order_entry: ORDER_ENTRY_CURRENT,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };

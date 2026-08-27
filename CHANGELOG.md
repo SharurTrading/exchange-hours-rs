@@ -64,6 +64,18 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Fixed
 
+- **NKD's 2012–2013 post-halt segment now covers its closing days.** The
+  15:30–16:15 CT continuation during the sourced halt regime carried the
+  opening-day mask (Sunday–Thursday), which fabricated a Sunday-afternoon
+  session and dropped Friday's post-halt trading entirely. The rule now runs
+  Monday–Friday — the closing days of the wrapped sessions — with new
+  Friday and Sunday probes in the key boundary test.
+- **Tadawul's 2016–2018 era no longer carries the current pre-open queue.**
+  The 09:30–10:00 order-entry window is evidenced only by the operator's
+  current trading-cycle page; applying it to the 2016-04-03 through
+  2018-05-27 regime asserted an undated phase against a dated one. The era
+  now carries no order-entry schedule until a dated primary source
+  restores it.
 - **ICE Futures Canada's 2011 hours change now flips at its sourced intraday
   instant, not local midnight.** The February 2011 notice moves the Canola
   pre-open/open to 18:30/19:00 CT on Monday 2011-02-28, and local midnight of

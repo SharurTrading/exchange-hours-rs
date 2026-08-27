@@ -76,6 +76,21 @@ fn open_and_order_entry_only_are_mutually_exclusive() {
 fn accepting_orders_is_a_superset_of_open() {
     // Anything tradeable is necessarily order-accepting. The reverse does not
     // hold, which is the entire point of the phase.
+    for exchange in Exchange::ALL {
+        let hours = hours_for_exchange(
+            *exchange,
+            chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
+        );
+        for instant in week_samples() {
+            if hours.is_open(instant) {
+                assert!(
+                    hours.is_accepting_orders(instant),
+                    "{}: open but not accepting orders at {instant}",
+                    exchange.as_str()
+                );
+            }
+        }
+    }
     for key in MarketHoursKey::ALL {
         let hours = hours_for_market_hours_key(
             *key,

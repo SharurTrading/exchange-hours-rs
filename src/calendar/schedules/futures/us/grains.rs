@@ -38,14 +38,17 @@ use crate::calendar::schedules::timeline::{Revision, local_date, revisions, sele
 // https://www.cmegroup.com/tools-information/lookups/advisories/market-data/20130812.html
 // https://www.cmegroup.com/tools-information/lookups/advisories/ser/SER-7395R.html
 //
-// Current primary material additionally establishes Sunday 16:00-19:00,
-// Monday-Thursday 16:45-19:00, and PCP 14:30-16:00. It does not state the
-// unconditional days on which those phases entered the post-May-2012 schedule.
-// The fixed-current profile includes them. Dated profiles conservatively omit
-// those unresolved phases from 2012-05-20 onward instead of inventing onset
-// selectors; matching and the exact 2013 morning-queue change remain complete.
+// The 22 March 2013 Global Command Center client notice that carried the
+// SER-6617 change also states every current queue's unconditional onset:
+// "Effective Sunday, April 7, 2013 (trade date Monday, April 8) ... Pre-Opens
+// (including MGEX): Sunday night: 16:00-19:00 CT / Monday-Thursday night:
+// 16:45-19:00 CT / Monday-Friday morning: 08:15-08:30 CT. Post Close Pre-Open:
+// Monday-Friday: 14:30-16:00 CT", with a 07:45-08:15 cancellation-only slice
+// inside the break that no order-entry rule models. Only the 21-hour
+// 2012-05-20..2013-04-06 regime's queue and PCP states remain undocumented, so
+// that dated profile conservatively omits them instead of inventing onsets.
+// https://web.archive.org/web/20130423023212/http://www.cmegroup.com/globex/files/cmegroup_reduced_grain_and_oilseed_hours.pdf
 // https://www.cmegroup.com/notices/ser/2022/02/SER-8921.pdf
-// https://www.cmegroup.com/trading-hours/files/memorial-day-2023.pdf
 
 static REGULAR_0930_1315: &[SessionRule] = &[SessionRule {
     days: MON_FRI,
@@ -66,9 +69,10 @@ pub(crate) static CBOT_REGULAR_CURRENT: &[SessionRule] = &[SessionRule {
 // ORDER-ENTRY CLASSIFICATION. The comment above distinguishes the matching
 // windows from the market-state phases the operator's tables publish around
 // them. Only the matching windows can print a trade, so the Sunday evening
-// queue, the weekday morning queue (07:15, later 08:00, up to the day-session
-// open), and the afternoon PCP are `order_entry`; the electronic session and
-// the post-2012 afternoon matching slice stay `extended`.
+// queue, the weekday morning queue (07:15, later 08:00, briefly 08:15 from
+// 2013-04-07, back to 08:00 from 2013-08-18, up to the day-session open), and
+// the afternoon PCP are `order_entry`; the electronic session and the
+// post-2012 afternoon matching slice stay `extended`.
 static EXTENDED_AT_2010_FLOOR: &[SessionRule] = &[SessionRule {
     days: SUN_PLUS_MON_THU,
     open_ssm: 18 * 3600,
@@ -140,21 +144,41 @@ static EXTENDED_2012_05_20: &[SessionRule] = &[
         close_ssm: 14 * 3600,
     },
 ];
-// The 08:00-08:30 phase the 2013-08-18 advisory names as the morning "Pre-Open"
-// accepts orders only; matching resumes with the 08:30 regular session.
-static ORDER_ENTRY_0800_0830: &[SessionRule] = &[SessionRule {
-    days: MON_FRI,
-    open_ssm: 8 * 3600,
-    close_ssm: 8 * 3600 + 30 * 60,
-}];
+// Queues from the 2013-03-22 operator notice: the Sunday and Monday-Thursday
+// evening pre-opens that run up to the 19:00 electronic open, the 08:15-08:30
+// morning Pre-Open at go-live, and the 14:30-16:00 PCP. None can match a trade.
+static ORDER_ENTRY_2013_04_07: &[SessionRule] = &[
+    SessionRule {
+        days: SUN_ONLY,
+        open_ssm: 16 * 3600,
+        close_ssm: 19 * 3600,
+    },
+    SessionRule {
+        days: MON_FRI,
+        open_ssm: 8 * 3600 + 15 * 60,
+        close_ssm: 8 * 3600 + 30 * 60,
+    },
+    SessionRule {
+        days: MON_FRI,
+        open_ssm: 14 * 3600 + 30 * 60,
+        close_ssm: 16 * 3600,
+    },
+    SessionRule {
+        days: MON_THU,
+        open_ssm: 16 * 3600 + 45 * 60,
+        close_ssm: 19 * 3600,
+    },
+];
 pub(crate) static CBOT_EXTENDED_CURRENT: &[SessionRule] = &[SessionRule {
     days: SUN_PLUS_MON_THU,
     open_ssm: 19 * 3600,
     close_ssm: 7 * 3600 + 45 * 60,
 }];
-/// Fixed-current queues: the Sunday and Monday-Thursday evening pre-opens that
-/// run up to the 19:00 electronic open, the 08:00-08:30 morning Pre-Open, and
-/// the 14:30-16:00 PCP. None of them can match a trade.
+/// The queue set the 2013-03-22 notice established with the 19:00 open, with
+/// the morning Pre-Open widened from 08:15 to 08:00 by the 2013-08-18 advisory:
+/// the Sunday and Monday-Thursday evening pre-opens up to the 19:00 electronic
+/// open, the 08:00-08:30 morning Pre-Open, and the 14:30-16:00 PCP. None of
+/// them can match a trade.
 pub(crate) static CBOT_ORDER_ENTRY_CURRENT: &[SessionRule] = &[
     SessionRule {
         days: SUN_ONLY,
@@ -209,20 +233,17 @@ static FROM_2011_12_27: StaticHoursProfile = profile(
     ORDER_ENTRY_2011_12_27,
 );
 static FROM_2012_05_20: StaticHoursProfile = profile(REGULAR_0930_1315, EXTENDED_2012_05_20, &[]);
-static FROM_2013_04_07: StaticHoursProfile = profile(REGULAR_0830_1315, CBOT_EXTENDED_CURRENT, &[]);
+static FROM_2013_04_07: StaticHoursProfile = profile(
+    REGULAR_0830_1315,
+    CBOT_EXTENDED_CURRENT,
+    ORDER_ENTRY_2013_04_07,
+);
 static FROM_2013_08_18: StaticHoursProfile = profile(
     REGULAR_0830_1315,
     CBOT_EXTENDED_CURRENT,
-    ORDER_ENTRY_0800_0830,
+    CBOT_ORDER_ENTRY_CURRENT,
 );
 static DATED_CURRENT: StaticHoursProfile = profile(
-    CBOT_REGULAR_CURRENT,
-    CBOT_EXTENDED_CURRENT,
-    ORDER_ENTRY_0800_0830,
-);
-// Verified-current grid: identical to DATED_CURRENT except the current
-// Pre-Open queues, whose onset day no reviewed primary source states.
-static CBOT_CURRENT: StaticHoursProfile = profile(
     CBOT_REGULAR_CURRENT,
     CBOT_EXTENDED_CURRENT,
     CBOT_ORDER_ENTRY_CURRENT,
@@ -236,8 +257,9 @@ static CBOT_CURRENT: StaticHoursProfile = profile(
 //     https://www.cftc.gov/stellent/groups/public/%40rulesandproducts/documents/ifdocs/rul120711cbot001.pdf
 //   2012-05-20 "CME market-data advisory 20120518"
 //     https://www.cmegroup.com/tools-information/lookups/advisories/market-data/20120518.html
-//   2013-04-07 "CME SER-6617"
+//   2013-04-07 "CME SER-6617 and GCC notice 2013-03-22"
 //     https://www.cmegroup.com/rulebook/files/ser_6617_cbot_grain_oilseed_hours_2013_final.pdf
+//     https://web.archive.org/web/20130423023212/http://www.cmegroup.com/globex/files/cmegroup_reduced_grain_and_oilseed_hours.pdf
 //   2013-08-18 "CME market-data advisory 20130812"
 //     https://www.cmegroup.com/tools-information/lookups/advisories/market-data/20130812.html
 //   2015-07-05 "CME SER-7395R"
@@ -258,7 +280,13 @@ static REVISIONS: &[Revision] = revisions![
         &FROM_2012_05_20,
         "CME market-data advisory 20120518"
     ),
-    (2013, 4, 7, &FROM_2013_04_07, "CME SER-6617"),
+    (
+        2013,
+        4,
+        7,
+        &FROM_2013_04_07,
+        "CME SER-6617 and GCC notice 2013-03-22"
+    ),
     (
         2013,
         8,
@@ -267,18 +295,6 @@ static REVISIONS: &[Revision] = revisions![
         "CME market-data advisory 20130812"
     ),
     (2015, 7, 5, &DATED_CURRENT, "CME SER-7395R"),
-    // Knowledge-bound row: the current Pre-Open queues are primary-verified
-    // in the current envelope, but no reviewed source states their onset day,
-    // so earlier dated queries conservatively omit them. From the 2026-08-22
-    // repository review onward the verified-current grid applies; a sourced
-    // onset day replaces this row.
-    (
-        2026,
-        8,
-        22,
-        &CBOT_CURRENT,
-        "2026-08-22 review: verified current, onset undated"
-    ),
 ];
 
 pub(crate) fn profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {

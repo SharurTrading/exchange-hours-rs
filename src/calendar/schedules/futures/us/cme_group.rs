@@ -27,16 +27,21 @@ use crate::calendar::schedules::timeline::{Revision, local_date, revisions, sele
 // The exact Monday-Thursday Pre-Open changed from 16:50 to 16:45 on
 // 2010-11-15. Current primary material also establishes Sunday 16:00-17:00,
 // but calls it a long-term practice without giving the day when the earlier
-// 16:15 start moved. The fixed-current table includes that sourced current
-// queue. Dated profiles deliberately omit only the Sunday queue rather than
-// inventing its cutover; their executable trading and weekday queues remain
-// exact. Revisions are keyed by the local session-opening day.
+// 16:15 start moved: primary documents updated 2012-05-03 still publish
+// Sunday 16:15, trading-hours pages crawled 2012-06-15/16 already publish
+// 16:00, and no notice in between states the day. The fixed-current table
+// includes that sourced current queue. Dated profiles deliberately omit only
+// the Sunday queue rather than inventing its cutover; their executable
+// trading and weekday queues remain exact. Revisions are keyed by the local
+// session-opening day.
 // https://www.cmegroup.com/content/dam/cmegroup/education/modules/files/EQ240_EQ_for_AIT.pdf
 // https://www.cmegroup.com/education/files/eq-trading-hours.pdf
 // https://www.cmegroup.com/tools-information/lookups/advisories/clearing/Chadv12-423.html
 // https://www.cmegroup.com/tools-information/lookups/advisories/electronic-trading/20121022.html
 // https://www.cmegroup.com/tools-information/lookups/advisories/market-data/20121015.html
 // https://www.cmegroup.com/notices/clearing/2019/06/Chadv19-182.pdf
+// https://web.archive.org/web/20120503104328/http://www.cmegroup.com/trading_hours/equities-hours.html
+// https://web.archive.org/web/20120616181609/http://www.cmegroup.com/trading_hours/equities-hours.html
 // The 2015-09-20 revision's original announcement, CME Globex Notice #20150817
 // of 17 August 2015: "Effective Monday, September 21, the daily CME Globex
 // maintenance period will begin 15 minutes earlier Monday through Thursday from

@@ -11,6 +11,34 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ## [Unreleased]
 
+### Fixed
+
+- **CME grains: dated queues and PCP now begin at their sourced 2013 onset.**
+  CME's 22 March 2013 Global Command Center notice, the state-level companion
+  to SER-6617, states the unconditional onset of every current CBOT
+  grain/oilseed queue: Sunday 16:00–19:00, Monday–Thursday 16:45–19:00,
+  Monday–Friday morning 08:15–08:30 (widened to 08:00 on 2013-08-18), and the
+  14:30–16:00 PCP, effective Sunday 2013-04-07. Dated `globex_grains`/`cbot`
+  selectors now carry those phases from that day (previously omitted to the
+  2026-08-22 knowledge-bound row); the dated and fixed-current surfaces now
+  agree, and the remaining gap shrinks to the 21-hour 2012-05-20..2013-04-06
+  regime's undocumented queue states.
+- **CME livestock: the 14:30–16:00 PCP onset is sourced to 2016-06-06.** The
+  30 May 2016 CME Globex notice implements the Post-Close state for Live
+  Cattle, Feeder Cattle, and Lean Hog futures effective Monday 2016-06-06;
+  dated `globex_livestock` selectors now carry the PCP from that day.
+  Official trading-hours captures omit the row between November 2016 and
+  March 2020 with no removal notice, so that interval and the pre-2020 06:00
+  queue's onset remain documented gaps.
+- **CME Globex Sunday pre-open 16:15→16:00: bracket documented, day still
+  unsourced.** The move was real and platform-wide: primary documents updated
+  2012-05-03 (holiday workbook and equities/FX/metals hours pages) still
+  publish Sunday 16:15 CT, and pages crawled 2012-06-15/16 already publish
+  16:00, but no notice states the day. The equity-index, FX, energy/metals,
+  and interest-rate families keep their knowledge-bound Sunday-queue
+  treatment, now with the bracket recorded beside each table and in the
+  verification ledger.
+
 ### Changed
 
 - **Single-path, instant-driven profile selection (breaking, pre-1.0).**
@@ -33,7 +61,7 @@ corrections (a venue's hours fixed against a primary source) go under
   static current-table accessor and equals the timelines' selection at any
   instant on or after the 2026-08-22 knowledge-bound rows.
 - **Verified-current phases are carried by knowledge-bound timeline rows.**
-  Twenty-four venues and six Globex families whose current grids include
+  Twenty-four venues and the Globex families whose current grids include
   an order-acceptance or early phase with no sourced onset day (for example
   the US options pre-open queues and CME's Sunday 16:00 CT Pre-Open) now
   record that phase as the final timeline row dated at the 2026-08-22
@@ -41,7 +69,7 @@ corrections (a venue's hours fixed against a primary source) go under
   before the row keep the conservative dated grid; instants on or after it
   resolve to the verified-current grid, so the previous clock-less snapshot
   answers are preserved exactly. Finding a sourced onset day replaces each
-  row.
+  row — the grains and livestock rows above are the first two replaced.
 
 ### Added
 

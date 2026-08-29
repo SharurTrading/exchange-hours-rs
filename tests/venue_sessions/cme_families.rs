@@ -154,9 +154,15 @@ fn grains_queues_and_pcp_begin_on_the_sourced_2013_opening_day() {
     let pcp = ct((2013, 4, 8), (15, 0, 0));
     let evening_queue = ct((2013, 4, 8), (17, 0, 0));
     assert!(!after.is_open(ct((2013, 4, 8), (8, 14, 59))));
+    assert!(!after.is_order_entry_only(ct((2013, 4, 8), (8, 14, 59))));
     assert!(after.is_order_entry_only(morning_queue));
+    assert!(after.is_order_entry_only(ct((2013, 4, 8), (8, 29, 59))));
+    assert!(after.is_open_regular(ct((2013, 4, 8), (8, 30, 0))));
     assert!(!before.is_open(pcp));
+    assert!(!after.is_order_entry_only(ct((2013, 4, 8), (14, 29, 59))));
     assert!(after.is_order_entry_only(pcp));
+    assert!(after.is_order_entry_only(ct((2013, 4, 8), (15, 59, 59))));
+    assert!(!after.is_order_entry_only(ct((2013, 4, 8), (16, 0, 0))));
     assert!(after.is_order_entry_only(evening_queue));
     assert!(after.is_open_extended(ct((2013, 4, 8), (19, 0, 0))));
 }
@@ -310,8 +316,10 @@ fn livestock_dated_pcp_begins_on_the_sourced_2016_day() {
     let pcp = ct((2016, 6, 6), (15, 0, 0));
     assert!(!before.is_open(pcp));
     assert!(!after.is_open(ct((2016, 6, 6), (14, 29, 59))));
+    assert!(!after.is_order_entry_only(ct((2016, 6, 6), (14, 29, 59))));
     assert!(after.is_order_entry_only(pcp));
-    assert!(!after.is_open(ct((2016, 6, 6), (16, 0, 0))));
+    assert!(after.is_order_entry_only(ct((2016, 6, 6), (15, 59, 59))));
+    assert!(!after.is_order_entry_only(ct((2016, 6, 6), (16, 0, 0))));
 }
 
 #[test]

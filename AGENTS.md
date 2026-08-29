@@ -42,6 +42,17 @@ change to this standalone repository must follow.
   falls at a stated intraday instant is an exact-instant cutover, never a
   day-level row rounded to local midnight. Amendment history is recorded back
   to **January 2010**; earlier changes are out of scope by design.
+- **LAW-HOLIDAY-SCOPE** — a change confined to a single trade date (or a
+  bounded holiday run of dates) — an early final close, a late first open, or
+  a full calendar-day closure — is a **holiday**, not a schedule. Holidays are
+  caller-owned date exceptions: they belong to the `DayPolicy` overlay and the
+  `docs/schedules/date-exceptions.md` provider contract, never to a profile
+  table, revision row, or template edit. Normal-week templates and their dated
+  revisions encode only real exchange behavior changes — sourced, persistent
+  changes to the recurring week. Do not bend a template, add a revision row,
+  or delete a valid phase to absorb a single-day event, and do not downgrade
+  a genuine recurring-grid change to "just a holiday" to avoid the evidence
+  work.
 
 ## Modeling conventions
 
@@ -80,7 +91,9 @@ change to this standalone repository must follow.
   are also `Maintenance`; longer gaps are `Closed`. `is_maintenance` must
   remain exactly the maintenance case of `session_state`.
 - **Caller-owned day overrides.** Built-in profiles contain normal-week data,
-  not holidays. `DayPolicy` is keyed by trade date and overlays closed dates,
+  not holidays (LAW-HOLIDAY-SCOPE: a single-trade-date early close, late
+  open, or closure is always a date exception, never a template change).
+  `DayPolicy` is keyed by trade date and overlays closed dates,
   early final closes, and late first opens on queries; `StaticDayPolicy`
   standardizes validated hard-coded records. Neither mutates the profile
   returned by `hours_at`. A closed date normally removes its complete trading

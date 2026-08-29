@@ -131,6 +131,15 @@ reviews:
         undated changes remain disclosed Partial gaps. The audit floor is January
         2010; a later-launched identity is closed before its sourced launch.
 
+        Holiday scope (LAW-HOLIDAY-SCOPE): a change confined to a single trade
+        date or a bounded holiday run — an early final close, a late first open,
+        or a full calendar-day closure — is a holiday, i.e. a caller-owned
+        DayPolicy/date-exceptions overlay. It is never a template edit, revision
+        row, or phase deletion. Normal-week templates and dated revisions encode
+        only real exchange behavior changes to the recurring week. Flag any diff
+        that bends a normal-week profile to absorb a one-day event, and flag the
+        reverse: a genuine recurring-grid change dismissed as "just a holiday".
+
         Confirm revisions are ascending and every profile for one identity keeps
         the same IANA zone. For non-recurring Primary history, the current pointer
         equals the final dated regime. A Partial history may intentionally keep an

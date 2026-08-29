@@ -14,9 +14,11 @@ use crate::calendar::{FuturesSessionProfile, SessionRule};
 // product whose own specification publishes a different grid. The exact
 // Monday-Thursday Pre-Open changed from 16:50 to 16:45 on 2010-11-15. Current
 // primary material publishes Sunday 16:00-17:00, but calls it a long-term
-// practice without stating the day on which the earlier queue moved. The
-// fixed-current profile includes that exact current phase; dated profiles omit
-// only the unresolved Sunday queue.
+// practice without stating the day on which the earlier queue moved; primary
+// documents updated 2012-05-03 still publish Sunday 16:15 while pages crawled
+// 2012-06-15/16 already publish 16:00, and no notice in between states the
+// day. The fixed-current profile includes that exact current phase; dated
+// profiles omit only the unresolved Sunday queue.
 // https://www.cmegroup.com/tools-information/lookups/advisories/electronic-trading/20081229.html
 // https://www.cmegroup.com/trading/fx/files/FX248-2010_FX_Product_Guide_and_Calendar.pdf
 // https://www.cmegroup.com/tools-information/lookups/advisories/electronic-trading/20101025.html
@@ -24,6 +26,8 @@ use crate::calendar::{FuturesSessionProfile, SessionRule};
 // https://www.cmegroup.com/trading/fx/files/emfx-brochure-q3-2020.pdf
 // https://www.cmegroup.com/notices/ser/2022/02/SER-8921.pdf
 // https://www.cmegroup.com/articles/faqs/frequently-asked-questions-cme-fx-futures-calendar-spreads.html
+// https://web.archive.org/web/20120503103452/http://www.cmegroup.com/trading_hours/fx-hours.html
+// https://web.archive.org/web/20120616190153/http://www.cmegroup.com/trading_hours/fx-hours.html
 // ORDER-ENTRY CLASSIFICATION. The 17:00-16:00 window is the matching grid the
 // 2010 product guide publishes. Every other phase here is a Globex queue: the
 // weekday "Pre-Open" the comment above names (16:50, then 16:45, to 17:00) and

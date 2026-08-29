@@ -32,20 +32,12 @@ const DOCUMENTED_DIVERGENCE: &[(MarketHoursKey, &str)] = &[
         "queues omitted from history: unconditional onset chain incomplete",
     ),
     (
-        MarketHoursKey::GlobexGrains,
-        "post-2012 afternoon/Sunday queue and PCP onset days unresolved",
-    ),
-    (
         MarketHoursKey::GlobexFx,
         "Sunday pre-open omitted: its 16:15->16:00 CT cutover day is unavailable",
     ),
     (
         MarketHoursKey::GlobexInterestRates,
         "Sunday queue omitted after 2011: cutover day unavailable",
-    ),
-    (
-        MarketHoursKey::GlobexLivestock,
-        "PCP 14:30-16:00 omitted: unconditional onset chain unavailable",
     ),
 ];
 

@@ -17,7 +17,10 @@ use crate::calendar::{FuturesSessionProfile, SessionRule};
 // audit-floor queues at Sunday 16:15 and weekdays 16:50; CME moved the weekday
 // queue to 16:45 on 2010-11-15. Current material publishes a Sunday 16:00
 // queue, but no primary source states the exact day on which 16:15 moved to
-// 16:00. The fixed-current profile includes the exact current queue. The dated
+// 16:00: the holiday workbook updated 2012-05-03 still schedules every
+// complex's Sunday pre-opening at 16:15, the interest-rate hours page crawled
+// 2012-06-16 already shows 16:00, and no notice in between states the day.
+// The fixed-current profile includes the exact current queue. The dated
 // selector retains the sourced audit-floor queue, then omits only that Sunday
 // phase after the exact 2011 matching-open revision rather than inventing a
 // queue cutover.
@@ -34,6 +37,8 @@ use crate::calendar::{FuturesSessionProfile, SessionRule};
 // https://www.cmegroup.com/markets/interest-rates/stirs/30-day-federal-fund.contractSpecs.html
 // https://www.cmegroup.com/education/articles-and-reports/understanding-sofr-futures
 // https://www.cmegroup.com/notices/ser/2022/02/SER-8921.pdf
+// https://web.archive.org/web/20120505161543/http://www.cmegroup.com/tools-information/holiday-calendar/files/2012-memorial-day.xls
+// https://web.archive.org/web/20120616195651/http://www.cmegroup.com:80/trading_hours/interest-rates-hours.html
 // ORDER-ENTRY CLASSIFICATION. The comment above calls the Sunday 16:15 (later
 // 16:00) and weekday 16:50 (later 16:45) phases "queues": Globex accepts,
 // amends, and cancels orders in them while the matching engine is stopped, and

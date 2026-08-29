@@ -128,7 +128,43 @@ fn grains_keep_exact_sourced_order_phase_revisions() {
     let from_2013_queue =
         hours_for_market_hours_key(MarketHoursKey::GlobexGrains, ct((2013, 8, 18), (0, 0, 0)));
     assert!(!before_2013_queue.is_open(ct((2013, 8, 19), (8, 0, 0))));
+    assert!(before_2013_queue.is_order_entry_only(ct((2013, 8, 19), (8, 15, 0))));
     assert!(from_2013_queue.is_order_entry_only(ct((2013, 8, 19), (8, 0, 0))));
+}
+
+#[test]
+fn grains_queues_and_pcp_begin_on_the_sourced_2013_opening_day() {
+    // The 2013-03-22 Global Command Center notice states every queue's onset
+    // with the 19:00 open: Sunday 16:00-19:00, Monday-Thursday 16:45-19:00,
+    // morning 08:15-08:30 (widened to 08:00 on 2013-08-18), and PCP
+    // 14:30-16:00. Only the 21-hour 2012-05-20..2013-04-06 regime's queues
+    // stay omitted.
+    let before =
+        hours_for_market_hours_key(MarketHoursKey::GlobexGrains, ct((2013, 4, 6), (12, 0, 0)));
+    let after =
+        hours_for_market_hours_key(MarketHoursKey::GlobexGrains, ct((2013, 4, 7), (12, 0, 0)));
+
+    let sunday_queue = ct((2013, 4, 7), (16, 30, 0));
+    assert!(!before.is_open(sunday_queue));
+    assert!(after.is_order_entry_only(sunday_queue));
+    assert!(after.is_order_entry_only(ct((2013, 4, 7), (18, 59, 59))));
+    assert!(after.is_open_extended(ct((2013, 4, 7), (19, 0, 0))));
+
+    let morning_queue = ct((2013, 4, 8), (8, 15, 0));
+    let pcp = ct((2013, 4, 8), (15, 0, 0));
+    let evening_queue = ct((2013, 4, 8), (17, 0, 0));
+    assert!(!after.is_open(ct((2013, 4, 8), (8, 14, 59))));
+    assert!(!after.is_order_entry_only(ct((2013, 4, 8), (8, 14, 59))));
+    assert!(after.is_order_entry_only(morning_queue));
+    assert!(after.is_order_entry_only(ct((2013, 4, 8), (8, 29, 59))));
+    assert!(after.is_open_regular(ct((2013, 4, 8), (8, 30, 0))));
+    assert!(!before.is_open(pcp));
+    assert!(!after.is_order_entry_only(ct((2013, 4, 8), (14, 29, 59))));
+    assert!(after.is_order_entry_only(pcp));
+    assert!(after.is_order_entry_only(ct((2013, 4, 8), (15, 59, 59))));
+    assert!(!after.is_order_entry_only(ct((2013, 4, 8), (16, 0, 0))));
+    assert!(after.is_order_entry_only(evening_queue));
+    assert!(after.is_open_extended(ct((2013, 4, 8), (19, 0, 0))));
 }
 
 #[test]
@@ -230,26 +266,6 @@ fn dated_cme_calendars_expose_the_undated_phase_limit_without_inventing_cutovers
         );
     }
 
-    let grains_fixed = hours_for_market_hours_key(
-        MarketHoursKey::GlobexGrains,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
-    let grains_dated = calendar_for_market_hours_key(MarketHoursKey::GlobexGrains);
-    let sunday_queue = ct((2026, 4, 19), (16, 30, 0));
-    let pcp = ct((2026, 4, 20), (15, 0, 0));
-    assert!(grains_fixed.is_order_entry_only(sunday_queue));
-    assert!(!grains_dated.is_open(sunday_queue));
-    assert!(grains_fixed.is_order_entry_only(pcp));
-    assert!(!grains_dated.is_open(pcp));
-
-    let livestock_fixed = hours_for_market_hours_key(
-        MarketHoursKey::GlobexLivestock,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
-    let livestock_dated = calendar_for_market_hours_key(MarketHoursKey::GlobexLivestock);
-    assert!(livestock_fixed.is_order_entry_only(pcp));
-    assert!(!livestock_dated.is_open(pcp));
-
     let crypto_dated = calendar_for_market_hours_key(MarketHoursKey::GlobexCryptocurrency);
     assert!(!crypto_dated.is_open(ct((2025, 4, 20), (16, 30, 0))));
     assert!(crypto_dated.is_open(ct((2025, 4, 20), (17, 0, 0))));
@@ -280,6 +296,30 @@ fn livestock_history_keeps_both_sourced_reductions() {
     assert!(!before_2016.is_open(ct((2016, 2, 29), (8, 30, 0))));
     assert!(from_2016.is_open_regular(ct((2016, 2, 29), (8, 30, 0))));
     assert!(!from_2016.is_open(ct((2016, 2, 29), (13, 5, 0))));
+}
+
+#[test]
+fn livestock_dated_pcp_begins_on_the_sourced_2016_day() {
+    // The 2016-05-30 Globex notice implements the Post-Close state Monday
+    // through Friday 14:30-16:00 CT for LE, GF, and HE effective
+    // 2016-06-06; trading-hours captures that omit the row between November
+    // 2016 and March 2020 are a published-table gap, not a stated removal.
+    let before = hours_for_market_hours_key(
+        MarketHoursKey::GlobexLivestock,
+        ct((2016, 6, 5), (12, 0, 0)),
+    );
+    let after = hours_for_market_hours_key(
+        MarketHoursKey::GlobexLivestock,
+        ct((2016, 6, 6), (12, 0, 0)),
+    );
+
+    let pcp = ct((2016, 6, 6), (15, 0, 0));
+    assert!(!before.is_open(pcp));
+    assert!(!after.is_open(ct((2016, 6, 6), (14, 29, 59))));
+    assert!(!after.is_order_entry_only(ct((2016, 6, 6), (14, 29, 59))));
+    assert!(after.is_order_entry_only(pcp));
+    assert!(after.is_order_entry_only(ct((2016, 6, 6), (15, 59, 59))));
+    assert!(!after.is_order_entry_only(ct((2016, 6, 6), (16, 0, 0))));
 }
 
 #[test]

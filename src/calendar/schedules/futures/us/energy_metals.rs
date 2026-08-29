@@ -19,8 +19,12 @@ use crate::calendar::schedules::timeline::{Revision, local_date, revisions, sele
 // publishes Sunday 16:00-17:00 and Monday-Thursday 16:45-17:00 Pre-Open. Its
 // correction calls both queues a long-term practice without giving their
 // unconditional onset days. A 2010 notice observes that the weekday queue was
-// already 16:45 but likewise supplies no onset. The fixed-current table
-// includes both sourced current queues; dated profiles retain matching only.
+// already 16:45 but likewise supplies no onset, and the Sunday queue's
+// 16:15→16:00 move is only bracketed: metals hours pages crawled 2012-05-01
+// still publish "17:15 ET (16:15 CT)" while the 2012-06-16 crawl shows
+// "17:00 ET (16:00 CT)", with no notice stating the day. The fixed-current
+// table includes both sourced current queues; dated profiles retain matching
+// only.
 // The revision is keyed to Sunday 2015-09-20, the local opening day of that
 // Monday trade-date session, so a wrapped rule gives Monday the sourced close.
 // https://www.cmegroup.com/tools-information/lookups/advisories/electronic-trading/20090130.html
@@ -31,6 +35,8 @@ use crate::calendar::schedules::timeline::{Revision, local_date, revisions, sele
 // https://www.cmegroup.com/markets/metals/precious/gold.contractSpecs.html
 // https://www.cmegroup.com/markets/energy/crude-oil/light-sweet-crude.contractSpecs.html
 // https://www.cmegroup.com/notices/ser/2022/02/SER-8921.pdf
+// https://web.archive.org/web/20120501182431/http://www.cmegroup.com/trading_hours/metals-hours.html
+// https://web.archive.org/web/20120616193920/http://www.cmegroup.com/trading_hours/metals-hours.html
 static ENERGY_METALS_EXTENDED_AT_2010_FLOOR: &[SessionRule] = &[SessionRule {
     days: SUN_PLUS_MON_THU,
     open_ssm: 17 * 3600,

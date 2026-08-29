@@ -253,10 +253,14 @@ will remain unchanged after the review date. They cover recurring weekday
 phases, time zones, lunch and maintenance gaps, and weekend boundaries. They
 exclude built-in holidays, half-days, one-off closures or halts,
 severe-weather exceptions, and product-specific variations outside a row's
-stated scope. Callers can apply their own sourced closed-day, early-close, and
-late-open boundary data through `DayPolicy`. Holiday arrangements that replace
-or split phases need a richer exception calendar and must not be approximated
-by clipping a valid session. The full method,
+stated scope. A change confined to a single trade date — an early final
+close, a late first open, or a full calendar-day closure — is always a
+holiday-class date exception, never a normal-week template change: the
+built-in tables and their dated revisions encode only real, recurring
+exchange behavior. Callers can apply their own sourced closed-day,
+early-close, and late-open boundary data through `DayPolicy`. Holiday
+arrangements that replace or split phases need a richer exception calendar
+and must not be approximated by clipping a valid session. The full method,
 corrections, exclusions, and confidence levels are recorded in the
 [2026-08-22 schedule audit](docs/schedules/audit-2026-08-22.md).
 

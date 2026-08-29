@@ -703,7 +703,6 @@ pub(super) const HISTORICAL_CUTOVERS: &[(Exchange, Ymd, chrono_tz::Tz)] = &[
         chrono_tz::America::New_York,
     ),
     (Exchange::Cme, (2026, 8, 22), chrono_tz::US::Central),
-    (Exchange::Cbot, (2026, 8, 22), chrono_tz::US::Central),
     (Exchange::Comex, (2026, 8, 22), chrono_tz::US::Central),
     (Exchange::Nymex, (2026, 8, 22), chrono_tz::US::Central),
 ];

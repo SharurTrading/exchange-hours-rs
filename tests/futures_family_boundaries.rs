@@ -397,66 +397,67 @@ fn livestock_morning_queue_spans_its_sourced_matching_grid() {
     );
 }
 
-/// SGX equity-index history has three sourced eras, read from six editions of
-/// SGX's Derivatives Trading Calendar. Before the 2020 edition nothing is
-/// sourced and SGX's own member newsletters place an hours change right there,
-/// so those dates are sessionless. The 2020-2024 editions agree on one grid.
-/// The 2025-01 edition lengthens Japan's T session and moves its T+1 to 15:25.
-/// The 2025-11 and 2026 editions settle Japan's T+1 at 15:10 and pull the other
-/// four families' T+1 opens fifteen minutes earlier.
+/// SGX equity-index history: sessionless before the first sourced calendar
+/// edition, then one sourced window, then the verified-current grid from the
+/// knowledge-bound review row.
 ///
-/// The 15:10-15:25 probe below is the one that matters: an intersection taken
-/// from the 2021 and 2026 editions alone would report Japan open there through
-/// 2025, when SGX was not.
+/// Six editions of SGX's Derivatives Trading Calendar disagree in two places
+/// and state neither transition day, so the dated surface serves the
+/// intersection of all six rather than keying revisions to an edition's year —
+/// an annual edition's year is a publication scope, not an effective date.
+/// Japan's T closes at 14:25 and its T+1 opens at 15:25 in that window, which
+/// are the narrowest bounds any edition gives.
 ///
 /// Singapore has no DST, so 06:30Z is 14:30 SGT, 07:15Z is 15:15 SGT, 07:40Z is
-/// 15:40 SGT and 08:50Z is 16:50 SGT.
+/// 15:40 SGT and 08:50Z is 16:50 SGT. 2026-09-16 falls after the review row.
 #[test]
-fn sgx_equity_index_history_has_three_sourced_eras() {
+fn sgx_equity_index_serves_the_sourced_window_then_the_verified_grid() {
     let japan = MarketHoursKey::SgxEquityIndexJapan;
 
-    // Era boundaries on Japan's T close: 14:25 through 2024, 14:55 from 2025.
     assert!(
         !open_at(japan, utc(2015, 6, 17, 6, 30)),
         "pre-2020 SGX dates are sessionless: no edition of the calendar survives"
     );
-    assert!(
-        !open_at(japan, utc(2022, 6, 15, 6, 30)),
-        "the 2020-2024 grid closes Japan's T session at 14:25 SGT"
-    );
-    for year in [2025, 2026] {
-        assert!(
-            open_at(japan, utc(year, 6, 18, 6, 30)),
-            "from the 2025 edition Japan's T session runs to 14:55 SGT"
-        );
-    }
 
-    // Japan's T+1 opened at 15:25 in the 2025-01 edition and 15:10 from 2026.
-    assert!(
-        !open_at(japan, utc(2025, 6, 18, 7, 15)),
-        "Japan's T+1 opens at 15:25 SGT in 2025, so 15:15 must be closed - the \
-         intersection this module briefly shipped reported it open"
-    );
-    assert!(
-        open_at(japan, utc(2025, 6, 18, 7, 40)),
-        "15:40 SGT is inside Japan's 2025 T+1 session"
-    );
-    assert!(
-        open_at(japan, utc(2026, 6, 17, 7, 15)),
-        "from the 2026 edition Japan's T+1 opens at 15:10 SGT"
-    );
-
-    // The other four families moved only at the third era.
-    let china = MarketHoursKey::SgxEquityIndexChina;
+    // Inside the sourced window the narrowest bounds apply, so both the T close
+    // beyond 14:25 and the T+1 open before 15:25 stay closed.
     for year in [2022, 2025] {
+        for (h, m, what) in [
+            (6u32, 30u32, "14:30 SGT, past the 14:25 T close"),
+            (7, 15, "15:15 SGT, before the 15:25 T+1 open"),
+        ] {
+            let t = utc(year, 6, if year == 2022 { 15 } else { 18 }, h, m);
+            assert!(
+                !open_at(japan, t),
+                "{year}: {what} is outside the sourced window every edition agrees on"
+            );
+        }
+        let inside = utc(year, 6, if year == 2022 { 15 } else { 18 }, 7, 40);
         assert!(
-            !open_at(china, utc(year, 6, 18, 8, 50)),
-            "China's T+1 opens at 17:00 SGT until the 2026 edition"
+            open_at(japan, inside),
+            "{year}: 15:40 SGT is inside the T+1 session in every sourced edition"
         );
     }
+
+    // After the knowledge-bound row the verified-current grid applies: T runs to
+    // 14:55 and T+1 opens at 15:10.
+    for (h, m) in [(6u32, 30u32), (7, 15)] {
+        let t = utc(2026, 9, 16, h, m);
+        assert!(
+            open_at(japan, t),
+            "the verified-current grid opens Japan at both 14:30 and 15:15 SGT"
+        );
+    }
+
+    // China's T+1 opens at 17:00 in the sourced window and 16:45 currently.
+    let china = MarketHoursKey::SgxEquityIndexChina;
     assert!(
-        open_at(china, utc(2026, 6, 17, 8, 50)),
-        "the 2026 grid opens China's T+1 at 16:45 SGT"
+        !open_at(china, utc(2022, 6, 15, 8, 50)),
+        "16:50 SGT precedes China's 17:00 T+1 open in the sourced window"
+    );
+    assert!(
+        open_at(china, utc(2026, 9, 16, 8, 50)),
+        "the verified-current grid opens China's T+1 at 16:45 SGT"
     );
 
     for key in [
@@ -466,7 +467,7 @@ fn sgx_equity_index_history_has_three_sourced_eras() {
     ] {
         assert!(
             !open_at(key, utc(2015, 6, 17, 6, 30)),
-            "{key:?} must be sessionless before the 2020 calendar"
+            "{key:?} must be sessionless before the first sourced edition"
         );
     }
 }

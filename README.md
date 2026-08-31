@@ -222,7 +222,7 @@ trading venue.
 That is the 93-identity ledger cutoff. Product-family keys were reviewed in the
 same pass and carry their own basis labels in the ledger.
 
-**Today's hours check out against the exchange:** `93 of 93` non-synthetic
+**Hours verified against the exchange at the review date:** `93 of 93` non-synthetic
 `Exchange` identities, within each row's documented normal-week scope.
 
 **Full dated history back to January 2010:** `66 of 93` non-synthetic
@@ -277,7 +277,7 @@ issue evidence. `Exchange::Unknown` is synthetic and is not one of the 93
 source-backed identities.
 
 The key surface was audited separately:
-**Today's hours check out for each product family:** `24 of 24` operator-derived
+**Hours verified at the review date for each product family:** `24 of 24` operator-derived
 `MarketHoursKey` values. The key API provides fixed-current snapshots, an
 `as_of` selector, and a date-aware calendar for sourced histories. Five key
 rows are **Primary** and nineteen are **Partial**, because a named historical

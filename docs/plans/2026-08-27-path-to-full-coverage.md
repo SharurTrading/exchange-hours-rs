@@ -198,9 +198,9 @@ notice may close many.
       only rows that could report a market *open* on hours that were not in
       force. SGX's own Derivatives Trading Calendar (2020, 2021, 2025, 2026
       editions, all retrievable as static PDFs from api2.sgx.com) proves the
-      movement and supplies the dated grids. Six editions (2020, 2021-07, 2024, 2025-01, 2025-11, 2026-01) show three
-      sourced eras and two transitions, each now served as the grid its
-      editions state; dates before the 2020 edition are sessionless. An
+      movement and supplies the dated grids. Six editions (2020, 2021-07, 2024, 2025-01, 2025-11, 2026-01) show two
+      undated transitions; the dated surface serves their intersection as one
+      window rather than keying revisions to an edition's year; dates before the 2020 edition are sessionless. An
       intersection taken from only the 2021 and 2026 editions — briefly
       shipped — reported Japan open between 15:10 and 15:25 through 2025;
       reading the intervening editions was what caught it. Still Partial:

@@ -46,12 +46,17 @@ corrections (a venue's hours fixed against a primary source) go under
   families pull their T+1 opens fifteen minutes earlier. **An intersection
   computed from the 2021 and 2026 editions alone — which this crate briefly
   shipped — puts Japan's T+1 at 15:10 and so reports the market open between
-  15:10 and 15:25 through 2025, when it was not.** Each era is now served as the
-  grid its editions state, keyed to the trading year each annual edition governs.
-  Neither transition day is stated, so both are approached from the conservative
-  side: the 2025-11 revision already shows the third era, so keying it at
-  2026-01-01 under-reports the last weeks of 2025 rather than over-reporting
-  them. Routines are dropped from the historical eras deliberately — the calendar
+  15:10 and 15:25 through 2025, when it was not.** The dated surface therefore serves **one window** from the first sourced
+  edition — the intersection of all six, the bounds `regular` in every one of
+  them (Japan T 07:30–14:25 and T+1 15:25–05:15; China T+1 17:00; SiMSCI
+  17:50; Taiwan 14:15; NTR 19:00) — and the verified-current grid from the
+  2026 edition. No revision is keyed to either undated transition.
+  Neither transition day is stated anywhere reachable, and an annual edition's
+  year is a publication scope rather than an effective date, so no revision is
+  keyed to one: the intersection carries the uncertainty instead. The two
+  boundaries that remain are not inferred cutovers — 2020-01-01 separates
+  sourced from unsourced, and 2026-01-01 is the scope of the edition titled
+  "SGX Calendar 2026". Routines are dropped from the historical eras deliberately — the calendar
   states session bounds only, and each Pre-Opening/Non-Cancel and closing routine
   moved with the session it brackets. Dates before the 2020 edition remain
   sessionless. `sgx_equity_index_history_has_three_sourced_eras` pins all three

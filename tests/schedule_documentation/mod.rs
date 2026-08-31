@@ -366,7 +366,7 @@ fn readme_and_audit_quantify_assurance_from_the_ledger() {
 
     let claims = [
         format!(
-            "**Today's hours check out against the exchange:** `{verified} of {}`",
+            "**Hours verified against the exchange at the review date:** `{verified} of {}`",
             real_exchange_rows.len()
         ),
         format!(
@@ -378,7 +378,7 @@ fn readme_and_audit_quantify_assurance_from_the_ledger() {
             real_exchange_rows.len()
         ),
         format!(
-            "**Today's hours check out for each product family:** `{verified_keys} of {}`",
+            "**Hours verified at the review date for each product family:** `{verified_keys} of {}`",
             real_key_rows.len()
         ),
     ];

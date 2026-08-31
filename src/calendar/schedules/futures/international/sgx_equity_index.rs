@@ -116,19 +116,39 @@ static SGX_EQUITY_INDEX_CLOSED: StaticHoursProfile = StaticHoursProfile {
 //   2025-11   07:30-14:55 / 15:10  16:45      17:35       14:00       18:45
 //   2026-01   07:30-14:55 / 15:10  16:45      17:35       14:00       18:45
 //
-// So Japan's T session lengthened at the 2024/2025 boundary while its T+1 moved
-// to 15:25, and only later in 2025 did Japan's T+1 settle at 15:10 and the other
-// four families pull their T+1 opens fifteen minutes earlier. An intersection
-// computed from the 2021 and 2026 editions alone - which is what this module
-// briefly shipped - puts Japan's T+1 at 15:10 and therefore reports the market
-// open between 15:10 and 15:25 through 2025, when it was not. Each era is now
-// carried as the grid its editions actually state.
+// So Japan's T session lengthened somewhere between the 2024 and 2025-01
+// editions while its T+1 moved to 15:25, and somewhere between the 2025-01 and
+// 2025-11 editions Japan's T+1 settled at 15:10 and the other four families
+// pulled their T+1 opens fifteen minutes earlier. NEITHER TRANSITION DAY IS
+// STATED ANYWHERE, and an annual edition's year is a publication scope, not an
+// effective date - LAW-NO-FABRICATED-DATES forbids keying a revision to one.
+// Encoding the eras at January-1 boundaries would also risk real error: if the
+// first change landed after the 2025 edition went out, serving the longer T
+// session from 2025-01-01 reports the market open before it was.
 //
-// Boundaries are keyed to the trading year each annual edition governs, which is
-// the strongest reading two consecutive annual documents support; neither
-// transition day is stated, so both are approached from the conservative side.
-// The 2025-11 revision already shows the third era, so keying it at 2026-01-01
-// under-reports the last weeks of 2025 rather than over-reporting them.
+// WHY THE TWO BOUNDARIES ARE NOT INFERRED CUTOVERS. 2020-01-01 is a knowledge
+// boundary, not a claimed change: no edition of the calendar survives before it,
+// so it separates "sourced" from "unsourced" exactly as a launch day separates a
+// venue from its pre-launch closure. 2026-01-01 is the scope of the edition
+// titled "SGX Calendar 2026", which states hours for that trading year; applying
+// a source across the period it covers is not the same as inferring an effective
+// day. What is genuinely undated - the two transitions inside 2024-2025 - is
+// handled by the intersection rather than by a revision row, which is the whole
+// point of serving one window there.
+//
+// A knowledge-bound review row cannot be used here. Those rows may only ADD
+// order-entry phases: `surface_agreement` holds tradeable sessions identical
+// between the fixed and dated surfaces, and `DOCUMENTED_DIVERGENCE` licenses
+// divergence on order acceptance only. SGX's undated transitions move `regular`
+// bounds, so they must resolve inside the dated timeline.
+//
+// So the dated surface serves ONE window from the first sourced edition: the
+// intersection of all six, the bounds that are `regular` in every one of them.
+// Japan T 07:30-14:25 and T+1 15:25-05:15; China T+1 17:00; SiMSCI T+1 17:50;
+// Taiwan T+1 14:15; NTR (USD) T+1 19:00. No cutover is asserted and no instant
+// is reported open on hours that were not in force. The verified-current grid
+// arrives at the 2026-08-22 knowledge-bound row, the same device every other
+// undated-onset family in this crate uses.
 //
 // Routines are dropped from the historical eras deliberately: the calendar
 // states session bounds only, and each Pre-Opening/Non-Cancel window and the
@@ -147,7 +167,7 @@ static SGX_EQUITY_INDEX_CLOSED: StaticHoursProfile = StaticHoursProfile {
 // https://api2.sgx.com/sites/default/files/2025-01/SGX%20Calendar%202025.pdf
 // https://api2.sgx.com/sites/default/files/2025-11/DT%20Trading%20Calendar%202025.pdf
 // https://api2.sgx.com/sites/default/files/2026-01/SGX%20Calendar%202026_2.pdf
-static SGX_EQUITY_INDEX_JAPAN_REGULAR_ERA_2020: &[SessionRule] = &[
+static SGX_EQUITY_INDEX_JAPAN_REGULAR_SOURCED_WINDOW: &[SessionRule] = &[
     SessionRule {
         days: MON_FRI,
         open_ssm: 7 * 3600 + 30 * 60,
@@ -155,41 +175,20 @@ static SGX_EQUITY_INDEX_JAPAN_REGULAR_ERA_2020: &[SessionRule] = &[
     },
     SessionRule {
         days: MON_FRI,
-        open_ssm: 14 * 3600 + 55 * 60,
-        close_ssm: 5 * 3600 + 15 * 60,
-    },
-];
-static SGX_EQUITY_INDEX_JAPAN_ERA_2020: StaticHoursProfile = StaticHoursProfile {
-    tz: Asia::Singapore,
-    regular: SGX_EQUITY_INDEX_JAPAN_REGULAR_ERA_2020,
-    extended: &[],
-    order_entry: &[],
-    has_daily_close: true,
-    has_weekend_close: true,
-};
-
-static SGX_EQUITY_INDEX_JAPAN_REGULAR_ERA_2025: &[SessionRule] = &[
-    SessionRule {
-        days: MON_FRI,
-        open_ssm: 7 * 3600 + 30 * 60,
-        close_ssm: 14 * 3600 + 55 * 60,
-    },
-    SessionRule {
-        days: MON_FRI,
         open_ssm: 15 * 3600 + 25 * 60,
         close_ssm: 5 * 3600 + 15 * 60,
     },
 ];
-static SGX_EQUITY_INDEX_JAPAN_ERA_2025: StaticHoursProfile = StaticHoursProfile {
+static SGX_EQUITY_INDEX_JAPAN_SOURCED_WINDOW: StaticHoursProfile = StaticHoursProfile {
     tz: Asia::Singapore,
-    regular: SGX_EQUITY_INDEX_JAPAN_REGULAR_ERA_2025,
+    regular: SGX_EQUITY_INDEX_JAPAN_REGULAR_SOURCED_WINDOW,
     extended: &[],
     order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
 
-static SGX_EQUITY_INDEX_CHINA_REGULAR_ERA_2020: &[SessionRule] = &[
+static SGX_EQUITY_INDEX_CHINA_REGULAR_SOURCED_WINDOW: &[SessionRule] = &[
     SessionRule {
         days: MON_FRI,
         open_ssm: 9 * 3600,
@@ -201,16 +200,16 @@ static SGX_EQUITY_INDEX_CHINA_REGULAR_ERA_2020: &[SessionRule] = &[
         close_ssm: 5 * 3600 + 15 * 60,
     },
 ];
-static SGX_EQUITY_INDEX_CHINA_ERA_2020: StaticHoursProfile = StaticHoursProfile {
+static SGX_EQUITY_INDEX_CHINA_SOURCED_WINDOW: StaticHoursProfile = StaticHoursProfile {
     tz: Asia::Singapore,
-    regular: SGX_EQUITY_INDEX_CHINA_REGULAR_ERA_2020,
+    regular: SGX_EQUITY_INDEX_CHINA_REGULAR_SOURCED_WINDOW,
     extended: &[],
     order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
 
-static SGX_EQUITY_INDEX_SINGAPORE_REGULAR_ERA_2020: &[SessionRule] = &[
+static SGX_EQUITY_INDEX_SINGAPORE_REGULAR_SOURCED_WINDOW: &[SessionRule] = &[
     SessionRule {
         days: MON_FRI,
         open_ssm: 8 * 3600 + 30 * 60,
@@ -222,9 +221,9 @@ static SGX_EQUITY_INDEX_SINGAPORE_REGULAR_ERA_2020: &[SessionRule] = &[
         close_ssm: 5 * 3600 + 15 * 60,
     },
 ];
-static SGX_EQUITY_INDEX_SINGAPORE_ERA_2020: StaticHoursProfile = StaticHoursProfile {
+static SGX_EQUITY_INDEX_SINGAPORE_SOURCED_WINDOW: StaticHoursProfile = StaticHoursProfile {
     tz: Asia::Singapore,
-    regular: SGX_EQUITY_INDEX_SINGAPORE_REGULAR_ERA_2020,
+    regular: SGX_EQUITY_INDEX_SINGAPORE_REGULAR_SOURCED_WINDOW,
     extended: &[],
     order_entry: &[],
     has_daily_close: true,
@@ -258,15 +257,8 @@ pub(crate) static SGX_EQUITY_INDEX_JAPAN_REVISIONS: &[Revision] = revisions![
         2020,
         1,
         1,
-        &SGX_EQUITY_INDEX_JAPAN_ERA_2020,
-        "SGX Derivatives Trading Calendar 2020"
-    ),
-    (
-        2025,
-        1,
-        1,
-        &SGX_EQUITY_INDEX_JAPAN_ERA_2025,
-        "SGX Calendar 2025"
+        &SGX_EQUITY_INDEX_JAPAN_SOURCED_WINDOW,
+        "first sourced SGX calendar edition"
     ),
     (
         2026,
@@ -367,8 +359,8 @@ pub(crate) static SGX_EQUITY_INDEX_CHINA_REVISIONS: &[Revision] = revisions![
         2020,
         1,
         1,
-        &SGX_EQUITY_INDEX_CHINA_ERA_2020,
-        "SGX Derivatives Trading Calendar 2020"
+        &SGX_EQUITY_INDEX_CHINA_SOURCED_WINDOW,
+        "first sourced SGX calendar edition"
     ),
     (
         2026,
@@ -467,8 +459,8 @@ pub(crate) static SGX_EQUITY_INDEX_SINGAPORE_REVISIONS: &[Revision] = revisions!
         2020,
         1,
         1,
-        &SGX_EQUITY_INDEX_SINGAPORE_ERA_2020,
-        "SGX Derivatives Trading Calendar 2020"
+        &SGX_EQUITY_INDEX_SINGAPORE_SOURCED_WINDOW,
+        "first sourced SGX calendar edition"
     ),
     (
         2026,

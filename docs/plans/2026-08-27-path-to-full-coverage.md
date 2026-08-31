@@ -160,19 +160,25 @@ notice may close many.
       is the earliest surviving edition of the table, and ICE's 2007
       currencies release never prints a USDX grid. All six keep `Partial`
       with one shared residual gap, January 2010 to August 2011.
-- [ ] **Batch D — SGX equity-index keys** (five rows). **Attempted 2026-08-31;
-      blocked on retrieval, not on evidence.** `sgx.com/regulation/circulars`
-      redirects to the regco.sgx.com single-page app, which renders nothing
-      without JavaScript; no public content API for it is reachable; and the
-      Wayback archive holds no derivatives circular listing (only securities
-      prospectus pages and one 2009 trading calendar that no longer retrieves).
-      The box stays unchecked: this batch needs a human with a browser on the
-      SGX circular archive, and it should be the **first** thing done, because
-      these five rows fail in the opposite direction to every other Partial row
-      — they carry today's grid across known moves, so a pre-current instant
-      can answer *open* on bounds that differed then, rather than merely
-      withholding a phase. A false "open" is the dangerous direction for an
-      order router.
+- [x] **Batch D — SGX equity-index keys** (five rows). **Closed 2026-08-31 —
+      and it was the most serious defect in the crate, not a documentation
+      gap.** These five rows carried today's grid to the January-2010 floor
+      across transitions the module already recorded as real, making them the
+      only rows that could report a market *open* on hours that were not in
+      force. SGX's own Derivatives Trading Calendar (2020, 2021, 2025, 2026
+      editions, all retrievable as static PDFs from api2.sgx.com) proves the
+      movement and supplies the dated grids. The dated surface now serves the
+      intersection of every sourced edition from 2020-01-01 and the exact
+      current grid from the 2026 edition; dates before the 2020 edition are
+      sessionless. Still Partial: the 2021→2026 transition day and the pre-2020
+      era are undated, and closing them needs a member to open the
+      password-locked Titan DTDC newsletters ("Change of Trading Hours"
+      2018-12, "Extension of T+1 Trading Hours" 2019-07, "Ext of T+1 Trading
+      Hours Go Live Schedule" 2019-10). Note for future passes: the SGX
+      circular archive is a JavaScript app with no reachable public API, but
+      the calendar PDFs under api2.sgx.com/sites/default/files/ are static and
+      readable — that is the productive channel.
+
 - [ ] **Batch E — US equity early sessions** (Cboe ×2, NYSE ×4): the 07:00
       early session and 06:30/02:30 queue onsets. **Started 2026-08-31; the key
       structural fact is established and the search is expected to succeed.**

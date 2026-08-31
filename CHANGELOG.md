@@ -26,19 +26,28 @@ corrections (a venue's hours fixed against a primary source) go under
   (75 FR 13151) does not state the hours; the filing that first set Rule
   11.1(a)(1) to 06:00 remains the target.
 
-- **SGX equity-index rows now state which way they are wrong.** The five
-  `sgx_equity_index_*` keys carry today's grid across transitions that
-  `sgx_equity_index.rs` already recorded as demonstrably real, which makes them
-  the only Partial rows in the crate that **over**-report: a pre-current instant
-  can answer open on session bounds that differed then, where every other
-  Partial row withholds a phase and answers closed. That direction is now stated
-  in the ledger and beside the table, because a false "open" is the more
-  dangerous answer for an order router. The 2026-08-31 attempt to date the
-  transitions was blocked on retrieval rather than on evidence — the SGX
-  circular archive redirects to a JavaScript single-page app, exposes no
-  reachable content API, and has no derivatives circular listing in the Wayback
-  archive — so the rows keep their review dates and their gap is recorded as
-  "not searchable from here", not "no dated evidence exists".
+- **SGX equity-index history rebuilt: the crate no longer reports these markets
+  open on hours that were not in force (behaviour change).** The five
+  `sgx_equity_index_*` keys carried today's grid back to the January-2010 floor
+  across transitions the module itself recorded as real, which made them the
+  only rows in the crate that could **over**-report. SGX's own Derivatives
+  Trading Calendar proves the movement — the 2020 and 2021 editions give Nikkei
+  225 T 07:30–14:25 and T+1 14:55–05:15 against T 07:30–14:55 and T+1
+  15:10–05:15 in 2025/2026, and FTSE China A50, SiMSCI, FTSE Taiwan and the NTR
+  (USD) grid each moved their T+1 open by fifteen minutes over the same span.
+  The dated surface now serves the **intersection** of every sourced edition
+  from 2020-01-01 — the window that is `regular` under all of them, so no
+  cutover is asserted — and the exact current grid from the 2026 edition.
+  Routines are dropped from the intersection deliberately: the calendar states
+  session bounds only, and each Pre-Opening/Non-Cancel window moved with the
+  session it precedes. Dates before the 2020 edition are sessionless, matching
+  the crate's treatment of every unsourced era: no earlier edition survives, and
+  SGX's own member newsletters place an hours change immediately there
+  ("Change of Trading Hours", 2018-12; "Extension of T+1 Trading Hours",
+  2019-07; "Ext of T+1 Trading Hours Go Live Schedule", 2019-10), all
+  password-locked member documents whose titles and publication months are
+  visible even though their contents are not.
+  `sgx_equity_index_history_has_three_sourced_eras` pins all three eras.
 
 - **Historical queue and session gaps are now served instead of withheld
   (behaviour change).** Two conventions were made explicit in `AGENTS.md` and

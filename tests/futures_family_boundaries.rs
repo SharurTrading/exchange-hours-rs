@@ -396,3 +396,54 @@ fn livestock_morning_queue_spans_its_sourced_matching_grid() {
         "the morning queue is not carried back past the 2016-02-29 grid it belongs to"
     );
 }
+
+/// SGX equity-index history has three eras, and this pins all three. Before the
+/// 2020 Derivatives Trading Calendar — the earliest surviving edition — nothing
+/// is sourced and SGX's own member newsletters place an hours change right
+/// there, so those dates are sessionless. From 2020 to 2025 the dated surface
+/// serves the intersection of every sourced edition, which is narrower than
+/// today's grid because SGX later lengthened the sessions. From the 2026
+/// calendar the exact current grid applies.
+///
+/// 06:30Z is 14:30 SGT and 08:50Z is 16:50 SGT (Singapore has no DST).
+#[test]
+fn sgx_equity_index_history_has_three_sourced_eras() {
+    // Japan T ran to 14:25 in the 2020/2021 editions and to 14:55 in 2026, so
+    // 14:30 SGT separates the intersection from the current grid.
+    let japan = MarketHoursKey::SgxEquityIndexJapan;
+    assert!(
+        !open_at(japan, utc(2015, 6, 17, 6, 30)),
+        "pre-2020 SGX dates are sessionless: no edition of the calendar survives"
+    );
+    assert!(
+        !open_at(japan, utc(2022, 6, 15, 6, 30)),
+        "2020-2025 serves the intersection, whose T session closes at 14:25 SGT"
+    );
+    assert!(
+        open_at(japan, utc(2026, 6, 17, 6, 30)),
+        "from the 2026 calendar the current grid applies, closing T at 14:55 SGT"
+    );
+
+    // China T+1 opened at 17:00 in the 2020/2021 editions and 16:45 in 2026.
+    let china = MarketHoursKey::SgxEquityIndexChina;
+    assert!(
+        !open_at(china, utc(2022, 6, 15, 8, 50)),
+        "the intersection opens China's T+1 at 17:00 SGT, so 16:50 is closed"
+    );
+    assert!(
+        open_at(china, utc(2026, 6, 17, 8, 50)),
+        "the 2026 grid opens China's T+1 at 16:45 SGT, so 16:50 is open"
+    );
+
+    // The dated surface must never claim a session before the first edition.
+    for key in [
+        MarketHoursKey::SgxEquityIndexSingapore,
+        MarketHoursKey::SgxEquityIndexTaiwan,
+        MarketHoursKey::SgxEquityIndexNtrUsd,
+    ] {
+        assert!(
+            !open_at(key, utc(2015, 6, 17, 6, 30)),
+            "{key:?} must be sessionless before the 2020 calendar"
+        );
+    }
+}

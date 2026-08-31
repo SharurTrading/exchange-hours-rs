@@ -98,30 +98,54 @@ static SGX_EQUITY_INDEX_CLOSED: StaticHoursProfile = StaticHoursProfile {
     has_weekend_close: true,
 };
 
-// SGX EQUITY-INDEX HISTORY, REBUILT 2026-08-31. These grids previously asserted
-// today's schedule back to the January-2010 floor across transitions this module
-// itself recorded as real, which made them the only rows in the crate that could
-// answer *open* on bounds that differed at the time. SGX's own Derivatives
-// Trading Calendar proves the movement: T+1 2.15pm in the 2020/2021 editions against 2:00pm in 2025/2026, T unchanged at 8.45am to 1.45pm.
+// SGX EQUITY-INDEX HISTORY, REBUILT 2026-08-31 FROM SIX CALENDAR EDITIONS. These
+// grids previously asserted today's schedule back to the January-2010 floor
+// across transitions this module itself recorded as real, which made them the
+// only rows in the crate that could answer *open* on bounds that differed at the
+// time. SGX's own Derivatives Trading Calendar - static, readable PDFs under
+// api2.sgx.com/sites/default/files/ - supplies the dated grids, and reading six
+// editions rather than two shows there were TWO changes, not one:
 //
-// The dated surface now serves the intersection of every sourced edition - the
-// window that is `regular` under all of them - so no cutover is asserted and no
-// instant is reported open on hours that were not in force. The routines are
-// dropped from the intersection deliberately: the calendar states session bounds
-// only, and each Pre-Opening/Non-Cancel window moved with the session it
-// precedes, so their historical positions are not sourced.
+//   edition   Japan T / T+1        China T+1  SiMSCI T+1  Taiwan T+1  NTR T+1
+//   2020      07:30-14:25 / 14:55  17:00      17:50       14:15       19:00
+//   2021-07   07:30-14:25 / 14:55  17:00      17:50       14:15       19:00
+//   2024      07:30-14:25 / 14:55  17:00      17:50       14:15       19:00
+//   2025-01   07:30-14:55 / 15:25  17:00      17:50       14:15       19:00
+//   2025-11   07:30-14:55 / 15:10  16:45      17:35       14:00       18:45
+//   2026-01   07:30-14:55 / 15:10  16:45      17:35       14:00       18:45
+//
+// So Japan's T session lengthened at the 2024/2025 boundary while its T+1 moved
+// to 15:25, and only later in 2025 did Japan's T+1 settle at 15:10 and the other
+// four families pull their T+1 opens fifteen minutes earlier. An intersection
+// computed from the 2021 and 2026 editions alone - which is what this module
+// briefly shipped - puts Japan's T+1 at 15:10 and therefore reports the market
+// open between 15:10 and 15:25 through 2025, when it was not. Each era is now
+// carried as the grid its editions actually state.
+//
+// Boundaries are keyed to the trading year each annual edition governs, which is
+// the strongest reading two consecutive annual documents support; neither
+// transition day is stated, so both are approached from the conservative side.
+// The 2025-11 revision already shows the third era, so keying it at 2026-01-01
+// under-reports the last weeks of 2025 rather than over-reporting them.
+//
+// Routines are dropped from the historical eras deliberately: the calendar
+// states session bounds only, and each Pre-Opening/Non-Cancel window and the
+// closing routine moved with the session it brackets, so their historical
+// positions are not sourced.
 //
 // Before the 2020 edition nothing is sourced and SGX's own member newsletters
-// place a hours change immediately there - "Titan DTDC Newsletter - Change of
+// place an hours change immediately there - "Titan DTDC Newsletter - Change of
 // Trading Hours" (2018-12), "- Extension of T+1 Trading Hours" (2019-07) and
 // "- Ext of T+1 Trading Hours Go Live Schedule" (2019-10), all password-locked
-// member documents. Those dates are therefore modelled sessionless, matching the
-// crate's treatment of every era it cannot source.
+// member documents. Those dates are modelled sessionless, matching the crate's
+// treatment of every era it cannot source.
 // https://api2.sgx.com/sites/default/files/2020-01/SGX%20Derivatives%20Trading%20Calendar%202020.pdf
 // https://api2.sgx.com/sites/default/files/2021-07/SGX_Derivatives%20Trading%20Calendar%202021%20%28Final%20-%20Jul%29.pdf
+// https://api2.sgx.com/sites/default/files/2024-01/SGX%20Calendar%202024.pdf
+// https://api2.sgx.com/sites/default/files/2025-01/SGX%20Calendar%202025.pdf
 // https://api2.sgx.com/sites/default/files/2025-11/DT%20Trading%20Calendar%202025.pdf
 // https://api2.sgx.com/sites/default/files/2026-01/SGX%20Calendar%202026_2.pdf
-static SGX_EQUITY_INDEX_TAIWAN_REGULAR_SOURCED_SPAN: &[SessionRule] = &[
+static SGX_EQUITY_INDEX_TAIWAN_REGULAR_ERA_2020: &[SessionRule] = &[
     SessionRule {
         days: MON_FRI,
         open_ssm: 8 * 3600 + 45 * 60,
@@ -133,39 +157,16 @@ static SGX_EQUITY_INDEX_TAIWAN_REGULAR_SOURCED_SPAN: &[SessionRule] = &[
         close_ssm: 5 * 3600 + 15 * 60,
     },
 ];
-static SGX_EQUITY_INDEX_TAIWAN_SOURCED_SPAN: StaticHoursProfile = StaticHoursProfile {
+static SGX_EQUITY_INDEX_TAIWAN_ERA_2020: StaticHoursProfile = StaticHoursProfile {
     tz: Asia::Singapore,
-    regular: SGX_EQUITY_INDEX_TAIWAN_REGULAR_SOURCED_SPAN,
+    regular: SGX_EQUITY_INDEX_TAIWAN_REGULAR_ERA_2020,
     extended: &[],
     order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
 
-// SGX EQUITY-INDEX HISTORY, REBUILT 2026-08-31. These grids previously asserted
-// today's schedule back to the January-2010 floor across transitions this module
-// itself recorded as real, which made them the only rows in the crate that could
-// answer *open* on bounds that differed at the time. SGX's own Derivatives
-// Trading Calendar proves the movement: T+1 7.00pm in the 2021 edition against 6:45pm in 2026, T unchanged at 7.25am to 6.30pm.
-//
-// The dated surface now serves the intersection of every sourced edition - the
-// window that is `regular` under all of them - so no cutover is asserted and no
-// instant is reported open on hours that were not in force. The routines are
-// dropped from the intersection deliberately: the calendar states session bounds
-// only, and each Pre-Opening/Non-Cancel window moved with the session it
-// precedes, so their historical positions are not sourced.
-//
-// Before the 2020 edition nothing is sourced and SGX's own member newsletters
-// place a hours change immediately there - "Titan DTDC Newsletter - Change of
-// Trading Hours" (2018-12), "- Extension of T+1 Trading Hours" (2019-07) and
-// "- Ext of T+1 Trading Hours Go Live Schedule" (2019-10), all password-locked
-// member documents. Those dates are therefore modelled sessionless, matching the
-// crate's treatment of every era it cannot source.
-// https://api2.sgx.com/sites/default/files/2020-01/SGX%20Derivatives%20Trading%20Calendar%202020.pdf
-// https://api2.sgx.com/sites/default/files/2021-07/SGX_Derivatives%20Trading%20Calendar%202021%20%28Final%20-%20Jul%29.pdf
-// https://api2.sgx.com/sites/default/files/2025-11/DT%20Trading%20Calendar%202025.pdf
-// https://api2.sgx.com/sites/default/files/2026-01/SGX%20Calendar%202026_2.pdf
-static SGX_EQUITY_INDEX_NTR_USD_REGULAR_SOURCED_SPAN: &[SessionRule] = &[
+static SGX_EQUITY_INDEX_NTR_USD_REGULAR_ERA_2020: &[SessionRule] = &[
     SessionRule {
         days: MON_FRI,
         open_ssm: 7 * 3600 + 25 * 60,
@@ -177,9 +178,9 @@ static SGX_EQUITY_INDEX_NTR_USD_REGULAR_SOURCED_SPAN: &[SessionRule] = &[
         close_ssm: 5 * 3600 + 15 * 60,
     },
 ];
-static SGX_EQUITY_INDEX_NTR_USD_SOURCED_SPAN: StaticHoursProfile = StaticHoursProfile {
+static SGX_EQUITY_INDEX_NTR_USD_ERA_2020: StaticHoursProfile = StaticHoursProfile {
     tz: Asia::Singapore,
-    regular: SGX_EQUITY_INDEX_NTR_USD_REGULAR_SOURCED_SPAN,
+    regular: SGX_EQUITY_INDEX_NTR_USD_REGULAR_ERA_2020,
     extended: &[],
     order_entry: &[],
     has_daily_close: true,
@@ -192,7 +193,7 @@ pub(crate) static SGX_EQUITY_INDEX_TAIWAN_REVISIONS: &[Revision] = revisions![
         2020,
         1,
         1,
-        &SGX_EQUITY_INDEX_TAIWAN_SOURCED_SPAN,
+        &SGX_EQUITY_INDEX_TAIWAN_ERA_2020,
         "SGX Derivatives Trading Calendar 2020"
     ),
     (
@@ -290,7 +291,7 @@ pub(crate) static SGX_EQUITY_INDEX_NTR_USD_REVISIONS: &[Revision] = revisions![
         2020,
         1,
         1,
-        &SGX_EQUITY_INDEX_NTR_USD_SOURCED_SPAN,
+        &SGX_EQUITY_INDEX_NTR_USD_ERA_2020,
         "SGX Derivatives Trading Calendar 2020"
     ),
     (

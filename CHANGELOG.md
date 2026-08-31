@@ -26,28 +26,36 @@ corrections (a venue's hours fixed against a primary source) go under
   (75 FR 13151) does not state the hours; the filing that first set Rule
   11.1(a)(1) to 06:00 remains the target.
 
-- **SGX equity-index history rebuilt: the crate no longer reports these markets
-  open on hours that were not in force (behaviour change).** The five
+- **SGX equity-index history rebuilt from six calendar editions: three sourced
+  eras, and a correction to the fix itself (behaviour change).** The five
   `sgx_equity_index_*` keys carried today's grid back to the January-2010 floor
-  across transitions the module itself recorded as real, which made them the
-  only rows in the crate that could **over**-report. SGX's own Derivatives
-  Trading Calendar proves the movement — the 2020 and 2021 editions give Nikkei
-  225 T 07:30–14:25 and T+1 14:55–05:15 against T 07:30–14:55 and T+1
-  15:10–05:15 in 2025/2026, and FTSE China A50, SiMSCI, FTSE Taiwan and the NTR
-  (USD) grid each moved their T+1 open by fifteen minutes over the same span.
-  The dated surface now serves the **intersection** of every sourced edition
-  from 2020-01-01 — the window that is `regular` under all of them, so no
-  cutover is asserted — and the exact current grid from the 2026 edition.
-  Routines are dropped from the intersection deliberately: the calendar states
-  session bounds only, and each Pre-Opening/Non-Cancel window moved with the
-  session it precedes. Dates before the 2020 edition are sessionless, matching
-  the crate's treatment of every unsourced era: no earlier edition survives, and
-  SGX's own member newsletters place an hours change immediately there
-  ("Change of Trading Hours", 2018-12; "Extension of T+1 Trading Hours",
-  2019-07; "Ext of T+1 Trading Hours Go Live Schedule", 2019-10), all
-  password-locked member documents whose titles and publication months are
-  visible even though their contents are not.
-  `sgx_equity_index_history_has_three_sourced_eras` pins all three eras.
+  across transitions the module itself recorded as real, which made them the only
+  rows in the crate that could **over**-report. SGX's Derivatives Trading
+  Calendar — static, readable PDFs under `api2.sgx.com/sites/default/files/` —
+  supplies the dated grids, and reading six editions rather than two shows there
+  were **two** changes:
+
+  | edition | Japan T / T+1 | China T+1 | SiMSCI T+1 | Taiwan T+1 | NTR T+1 |
+  |---|---|---|---|---|---|
+  | 2020, 2021-07, 2024 | 07:30–14:25 / 14:55 | 17:00 | 17:50 | 14:15 | 19:00 |
+  | 2025-01 | 07:30–**14:55** / **15:25** | 17:00 | 17:50 | 14:15 | 19:00 |
+  | 2025-11, 2026-01 | 07:30–14:55 / **15:10** | **16:45** | **17:35** | **14:00** | **18:45** |
+
+  Japan's T session lengthened at the 2024/2025 boundary while its T+1 moved to
+  15:25; only later in 2025 did Japan's T+1 settle at 15:10 and the other four
+  families pull their T+1 opens fifteen minutes earlier. **An intersection
+  computed from the 2021 and 2026 editions alone — which this crate briefly
+  shipped — puts Japan's T+1 at 15:10 and so reports the market open between
+  15:10 and 15:25 through 2025, when it was not.** Each era is now served as the
+  grid its editions state, keyed to the trading year each annual edition governs.
+  Neither transition day is stated, so both are approached from the conservative
+  side: the 2025-11 revision already shows the third era, so keying it at
+  2026-01-01 under-reports the last weeks of 2025 rather than over-reporting
+  them. Routines are dropped from the historical eras deliberately — the calendar
+  states session bounds only, and each Pre-Opening/Non-Cancel and closing routine
+  moved with the session it brackets. Dates before the 2020 edition remain
+  sessionless. `sgx_equity_index_history_has_three_sourced_eras` pins all three
+  eras, including the 15:10–15:25 probe that the earlier intersection failed.
 
 - **Historical queue and session gaps are now served instead of withheld
   (behaviour change).** Two conventions were made explicit in `AGENTS.md` and

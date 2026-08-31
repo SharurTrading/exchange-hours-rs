@@ -397,45 +397,68 @@ fn livestock_morning_queue_spans_its_sourced_matching_grid() {
     );
 }
 
-/// SGX equity-index history has three eras, and this pins all three. Before the
-/// 2020 Derivatives Trading Calendar — the earliest surviving edition — nothing
-/// is sourced and SGX's own member newsletters place an hours change right
-/// there, so those dates are sessionless. From 2020 to 2025 the dated surface
-/// serves the intersection of every sourced edition, which is narrower than
-/// today's grid because SGX later lengthened the sessions. From the 2026
-/// calendar the exact current grid applies.
+/// SGX equity-index history has three sourced eras, read from six editions of
+/// SGX's Derivatives Trading Calendar. Before the 2020 edition nothing is
+/// sourced and SGX's own member newsletters place an hours change right there,
+/// so those dates are sessionless. The 2020-2024 editions agree on one grid.
+/// The 2025-01 edition lengthens Japan's T session and moves its T+1 to 15:25.
+/// The 2025-11 and 2026 editions settle Japan's T+1 at 15:10 and pull the other
+/// four families' T+1 opens fifteen minutes earlier.
 ///
-/// 06:30Z is 14:30 SGT and 08:50Z is 16:50 SGT (Singapore has no DST).
+/// The 15:10-15:25 probe below is the one that matters: an intersection taken
+/// from the 2021 and 2026 editions alone would report Japan open there through
+/// 2025, when SGX was not.
+///
+/// Singapore has no DST, so 06:30Z is 14:30 SGT, 07:15Z is 15:15 SGT, 07:40Z is
+/// 15:40 SGT and 08:50Z is 16:50 SGT.
 #[test]
 fn sgx_equity_index_history_has_three_sourced_eras() {
-    // Japan T ran to 14:25 in the 2020/2021 editions and to 14:55 in 2026, so
-    // 14:30 SGT separates the intersection from the current grid.
     let japan = MarketHoursKey::SgxEquityIndexJapan;
+
+    // Era boundaries on Japan's T close: 14:25 through 2024, 14:55 from 2025.
     assert!(
         !open_at(japan, utc(2015, 6, 17, 6, 30)),
         "pre-2020 SGX dates are sessionless: no edition of the calendar survives"
     );
     assert!(
         !open_at(japan, utc(2022, 6, 15, 6, 30)),
-        "2020-2025 serves the intersection, whose T session closes at 14:25 SGT"
+        "the 2020-2024 grid closes Japan's T session at 14:25 SGT"
+    );
+    for year in [2025, 2026] {
+        assert!(
+            open_at(japan, utc(year, 6, 18, 6, 30)),
+            "from the 2025 edition Japan's T session runs to 14:55 SGT"
+        );
+    }
+
+    // Japan's T+1 opened at 15:25 in the 2025-01 edition and 15:10 from 2026.
+    assert!(
+        !open_at(japan, utc(2025, 6, 18, 7, 15)),
+        "Japan's T+1 opens at 15:25 SGT in 2025, so 15:15 must be closed - the \
+         intersection this module briefly shipped reported it open"
     );
     assert!(
-        open_at(japan, utc(2026, 6, 17, 6, 30)),
-        "from the 2026 calendar the current grid applies, closing T at 14:55 SGT"
+        open_at(japan, utc(2025, 6, 18, 7, 40)),
+        "15:40 SGT is inside Japan's 2025 T+1 session"
+    );
+    assert!(
+        open_at(japan, utc(2026, 6, 17, 7, 15)),
+        "from the 2026 edition Japan's T+1 opens at 15:10 SGT"
     );
 
-    // China T+1 opened at 17:00 in the 2020/2021 editions and 16:45 in 2026.
+    // The other four families moved only at the third era.
     let china = MarketHoursKey::SgxEquityIndexChina;
-    assert!(
-        !open_at(china, utc(2022, 6, 15, 8, 50)),
-        "the intersection opens China's T+1 at 17:00 SGT, so 16:50 is closed"
-    );
+    for year in [2022, 2025] {
+        assert!(
+            !open_at(china, utc(year, 6, 18, 8, 50)),
+            "China's T+1 opens at 17:00 SGT until the 2026 edition"
+        );
+    }
     assert!(
         open_at(china, utc(2026, 6, 17, 8, 50)),
-        "the 2026 grid opens China's T+1 at 16:45 SGT, so 16:50 is open"
+        "the 2026 grid opens China's T+1 at 16:45 SGT"
     );
 
-    // The dated surface must never claim a session before the first edition.
     for key in [
         MarketHoursKey::SgxEquityIndexSingapore,
         MarketHoursKey::SgxEquityIndexTaiwan,

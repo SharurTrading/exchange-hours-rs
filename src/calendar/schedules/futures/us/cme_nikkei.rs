@@ -135,19 +135,49 @@ static NKD_2012: StaticHoursProfile = StaticHoursProfile {
     has_weekend_close: true,
 };
 
-// Before 2012-11-18 the dated route returns no session. SER-6465 pins the
-// outgoing 15:15 CT close by describing the change as extending it, but no
-// primary source in the audited set states the pre-2012 evening open
-// separately, and a 2010 grid change is attested only by a third-party news
-// aggregator. Carrying the post-2012 17:00 CT open back would fabricate a
-// session boundary (LAW-NO-FABRICATED-DATES), so dates before the first fully
-// sourced profile are modelled sessionless, matching the pre-launch treatment
-// of launch-dated families. Callers needing a current NKD clock always have
-// `hours_for_market_hours_key`.
-static CLOSED: StaticHoursProfile = StaticHoursProfile {
+// PRE-2012 GRID, CARRIED BACK TO THE JANUARY-2010 FLOOR. This interval used to
+// return no session at all, which reported a contract that was demonstrably
+// trading as closed for nearly three years. CME's own trading-hours pages,
+// captured 2012-05-11 and 2012-05-28 and therefore inside this era, publish the
+// grid directly: "Nikkei 225 (Dollar) Futures" reads Electronic Trading
+// (Sunday) "17:00-15:15" and Electronic Trading (Weekday) "15:30-16:30,
+// 17:00-15:15" - byte-identical to the E-mini S&P 500 row on the same page,
+// which independently validates the column reading against a grid this crate
+// already models exactly. SER-6465 corroborates the outgoing 15:15 CT close by
+// describing its own change as an extension of it.
+//
+// No primary source names a cutover inside 2010-01-01..2012-11-17, so the grid
+// is carried back to the audit floor rather than given an invented start: this
+// asserts no revision row, it extends the earliest sourced state backwards, the
+// same treatment ICE Sugar's August-2011 baseline already receives.
+//
+// RESIDUAL RISK, STATED PLAINLY: a 2010 NKD grid change is attested by a
+// third-party news aggregator and by no primary source. If that change was
+// real, this profile is wrong for the part of 2010 that precedes it. It is
+// carried anyway because "no session" is wrong for the whole interval while
+// this is at worst wrong for part of it, and because the alternative would
+// leave a trading contract modelled as closed. Primary evidence dating that
+// change replaces this profile with a revision row.
+// Official origin http://www.cmegroup.com/trading_hours/ delivered via:
+// https://web.archive.org/web/20120511163357id_/http://www.cmegroup.com/trading_hours/index.html?show=Commodities
+// https://web.archive.org/web/20120528102754id_/http://www.cmegroup.com/trading_hours/index.html
+static NKD_REGULAR_PRE_2012: &[SessionRule] = &[
+    SessionRule {
+        days: SUN_PLUS_MON_THU,
+        open_ssm: 17 * 3600,
+        close_ssm: 15 * 3600 + 15 * 60,
+    },
+    SessionRule {
+        days: MON_FRI,
+        open_ssm: 15 * 3600 + 30 * 60,
+        close_ssm: 16 * 3600 + 30 * 60,
+    },
+];
+
+static NKD_PRE_2012: StaticHoursProfile = StaticHoursProfile {
     tz: US::Central,
-    regular: &[],
-    extended: &[],
+    regular: NKD_REGULAR_PRE_2012,
+    extended: NKD_EXTENDED_CURRENT,
     order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
@@ -173,9 +203,9 @@ pub(crate) static NKD_REVISIONS: &[Revision] = revisions![
 
 /// Selects the CME Nikkei 225 Dollar profile in force on `as_of`'s Chicago day.
 ///
-/// Dates before the first fully sourced profile (2012-11-18) return a
-/// sessionless profile: the pre-2012 evening open is not primary-sourced, so
-/// the interval is omitted rather than filled with an inferred grid.
+/// Dates before the first dated revision (2012-11-18) resolve to the sourced
+/// pre-2012 grid, carried back to the January-2010 audit floor because no
+/// primary source names a cutover inside that interval.
 pub(crate) fn nkd_profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {
-    select_revision(local_date(as_of, US::Central), &CLOSED, NKD_REVISIONS)
+    select_revision(local_date(as_of, US::Central), &NKD_PRE_2012, NKD_REVISIONS)
 }

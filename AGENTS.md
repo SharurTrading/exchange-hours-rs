@@ -112,6 +112,24 @@ change to this standalone repository must follow.
   change the exchange-wide open/closed envelope; use a conservative envelope
   when that is the profile's stated venue-level scope. Never imply exact
   ticker-level uncross timing.
+- **Carry the earliest sourced state back to the audit floor.** When a phase is
+  primary-sourced at some instant and no primary source names a cutover between
+  the January-2010 floor and that instant, extend it backwards to the floor
+  rather than modelling the interval as sessionless. This asserts *no* revision
+  row, so it does not fabricate a date — it declines to invent one, exactly as
+  ICE Sugar's August-2011 baseline is carried back. Modelling a venue that was
+  demonstrably trading as closed is a worse error than carrying its earliest
+  sourced grid: absence is a claim too. Where a third-party (non-primary) source
+  attests a change inside the carried interval, carry the state anyway and state
+  the residual risk beside the table.
+- **Prefer the sourced intersection to omission.** When a phase's endpoints are
+  sourced at two different values and only the changeover day is undated, serve
+  the window that holds under *every* sourced state and withhold only the
+  disputed remainder. CME's Sunday Pre-Open is the worked example: sourced at
+  16:15 at the floor and 16:00 currently, so 16:15-17:00 is carried from the
+  floor with no cutover asserted and only the 16:00-16:15 quarter-hour waits on
+  the undated 2012 move. Dropping the whole phase because part of it is disputed
+  under-reports the venue far more than the uncertainty warrants.
 - **Absence is `None`.** Boundary queries return `Option`; never fabricate a
   degenerate session. No public code path may panic or hang.
 

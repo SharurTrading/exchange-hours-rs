@@ -33,23 +33,40 @@ fn open_regular_at(key: MarketHoursKey, instant: DateTime<Utc>) -> bool {
 /// the halt removal (2013), then moved to 16:00 CT (2015-09-20, CME Globex
 /// Notice #20150817). 21:10Z is 16:10 CT on a US summer date, so it is inside
 /// the session only while the close is 16:15 CT. Before 2012-11-18 the dated
-/// route returns no session at all: the pre-2012 evening open is not
-/// primary-sourced, so the interval is omitted rather than filled with the
-/// post-2012 grid.
+/// route serves the sourced pre-2012 grid — CME's own trading-hours pages give
+/// Electronic Trading (Sunday) "17:00-15:15" and (Weekday) "15:30-16:30,
+/// 17:00-15:15" — carried back to the January-2010 floor because no primary
+/// source names a cutover inside that interval.
 #[test]
 fn nkd_close_tracks_its_three_sourced_revisions() {
     let key = MarketHoursKey::GlobexNikkei225Dollar;
 
-    // 18:30 CT on a Wednesday evening: inside the post-2012 envelope, but
-    // pre-2012 dates are sessionless, so the dated surface must not fabricate
-    // a session boundary for an unsourced era.
+    // 18:30 CT on a Wednesday evening is inside the pre-2012 evening session,
+    // which runs 17:00 CT to 15:15 CT on the next trade date.
     assert!(
-        !open_at(key, utc(2011, 6, 15, 23, 30)),
-        "pre-2012 dates return no session; the evening open of that era is not sourced"
+        open_at(key, utc(2011, 6, 15, 23, 30)),
+        "the pre-2012 grid opens at 17:00 CT, so 18:30 CT that evening is open"
+    );
+    // 16:10 CT is inside the pre-2012 post-halt segment, which ran to 16:30 CT
+    // — fifteen minutes longer than the 16:15 CT close SER-6465 introduced.
+    assert!(
+        open_at(key, utc(2011, 6, 15, 21, 10)),
+        "the pre-2012 post-halt segment closes at 16:30 CT, so 16:10 CT is open"
+    );
+    // ...and the extra quarter-hour is the difference from the 2012 grid: 16:20
+    // CT is open before 2012-11-18 and closed after it.
+    assert!(
+        open_at(key, utc(2011, 6, 15, 21, 20)),
+        "16:20 CT is inside the pre-2012 16:30 CT close"
     );
     assert!(
-        !open_at(key, utc(2011, 6, 15, 21, 10)),
-        "with no pre-2012 session there is nothing open at 16:10 CT either"
+        !open_at(key, utc(2013, 6, 19, 21, 20)),
+        "SER-6465 pulled the close to 16:15 CT, so 16:20 CT must be closed after it"
+    );
+    // The carry-back reaches the January-2010 audit floor.
+    assert!(
+        open_at(key, utc(2010, 1, 6, 23, 30)),
+        "the sourced pre-2012 grid is carried back to the 2010 audit floor"
     );
     assert!(
         open_at(key, utc(2014, 6, 18, 21, 10)),
@@ -288,4 +305,50 @@ fn overnight_order_entry_and_closed_gaps_match_the_published_phase_machine() {
         japan.session_state(utc(2026, 4, 19, 23, 20)),
         SessionState::OrderEntry
     );
+}
+
+/// The Sunday Pre-Open queue is carried back to the January-2010 floor at its
+/// narrowest sourced value, 16:15 CT, because CME's queue only ever widened
+/// inside the modelled window (16:15 at the audit floor, 16:00 verified
+/// current). These probes fence the intersection on both sides so a future edit
+/// cannot silently drop the historical Sunday queue again — the state this
+/// suite previously did not cover at all — nor quietly widen it to 16:00 on a
+/// dated instant, which would assert the undated 2012 cutover.
+///
+/// 21:00Z is 16:00 CT and 21:30Z is 16:30 CT on a US summer Sunday.
+#[test]
+fn sunday_pre_open_carries_back_at_its_narrowest_sourced_edge() {
+    const FAMILIES: [MarketHoursKey; 4] = [
+        MarketHoursKey::GlobexEquityIndex,
+        MarketHoursKey::GlobexEnergy,
+        MarketHoursKey::GlobexFx,
+        MarketHoursKey::GlobexInterestRates,
+    ];
+
+    // Sundays spread across the modelled window, each side of the undated
+    // 2012-05-28..2012-06-07 bracket and well beyond it.
+    const SUNDAYS: [(i32, u32, u32); 4] = [(2010, 6, 6), (2011, 6, 5), (2015, 6, 7), (2025, 6, 8)];
+
+    for key in FAMILIES {
+        for (year, month, day) in SUNDAYS {
+            let inside = utc(year, month, day, 21, 30);
+            assert_eq!(
+                hours_for_market_hours_key(key, inside).session_state(inside),
+                SessionState::OrderEntry,
+                "{key:?} must queue orders at Sunday 16:30 CT on {year}-{month}-{day}: \
+                 16:30 is inside the queue under every sourced Sunday value"
+            );
+
+            // 16:00 CT is inside the queue only under the verified-current
+            // grid, whose onset day is undated, so a dated instant must not
+            // claim it.
+            let disputed = utc(year, month, day, 21, 0);
+            assert_eq!(
+                hours_for_market_hours_key(key, disputed).session_state(disputed),
+                SessionState::Closed,
+                "{key:?} must not extend the dated Sunday queue to 16:00 CT on \
+                 {year}-{month}-{day}: that quarter-hour depends on the undated 2012 cutover"
+            );
+        }
+    }
 }

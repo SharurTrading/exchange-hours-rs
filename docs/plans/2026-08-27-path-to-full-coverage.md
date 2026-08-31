@@ -34,9 +34,16 @@ maintenance property: the review cutoff must keep advancing and `Scheduled`
 markers must keep cycling — this plan builds toward a state, not a one-time
 destination.
 
-Phases 1–2 and 3 are independent of Phases 4–6; the merge order at the end
-makes the only hard dependency explicit (Phase 2 needs Phase 1's findings;
-Phases 5–6 need Phase 4's engine).
+Phases 1–2 and 3 are independent of Phases 4–6 in principle; the merge order at
+the end makes the structural dependencies explicit (Phase 2 needs Phase 1's
+findings; Phases 5–6 need Phase 4's engine).
+
+**Sequencing decision, 2026-08-31: Phase 3 completes before Phase 4 starts.**
+Every incomplete exchange row is closed to its terminal state — a sourced grid
+carried to the January-2010 floor, or a precisely named permanent gap — before
+any work begins on holidays and the exception layer. Normal-week accuracy back
+to 2010 is the release-blocking goal; holiday topology is the next project, not
+a parallel one.
 
 ---
 
@@ -89,16 +96,70 @@ documented permanent knowledge-bound row. Batches are ordered by
 evidence-leverage — several rows likely share one industry timeline, so one
 notice may close many.
 
-- [ ] **Batch A — US options queue onsets** (the 20 `options.rs` rows).
-      Investigate the coordinated industry events first: the 2016
-      early-matching move, any GTH-era queue changes, operator system
-      settings archives. One dated artifact may close a dozen rows.
-- [ ] **Batch B — CME family onsets** (equity-index, grains, energy/metals,
+- [x] **Batch A — US options queue onsets** (17 `Partial` `options.rs` rows;
+      MEMX Options and the count of 20 were wrong — `options.rs` owns 18
+      venues, of which 17 are `Partial`). **Closed 2026-08-31 as
+      knowledge-bound, not as a search that ran out of time.** The
+      coordinated-industry-event hypothesis was wrong: there is no dated
+      artifact to find, because on every venue the generic order-acceptance
+      start is an operator *system setting* on a mutable hours/system-settings
+      page rather than a rulebook boundary with a filed operative date. The
+      two filings that codified the Cboe queuing periods state it outright
+      (SR-C2-2019-009, SR-CboeBZX-2020-012: 07:30 was already "the same
+      time at which the System begins accepting orders and quotes today"; Cboe
+      Options Rule 6.2(a) bounds the pre-opening period rather than fixing
+      it). Nasdaq publishes each start in a per-venue System Settings
+      document, NYSE on its hours page, MIAX on its trade-hours calendar —
+      none with a dated change notice. Outcome: all 17 rows keep `Partial`
+      with a named permanent gap; three gained sourced lower bounds (C2
+      2019-05-10, BZX Options 2020-02-04, ISE 2019-10-17); MIAX Options gained
+      a true bracket (2012-12-09..2013-05-07) plus positive sourcing for its
+      queue-free launch row. No dates invented, no profile changed. Review
+      dates were **not** advanced: `nasdaqtrader.com` served a bot-protection
+      interstitial and BOX notice bodies were not machine-readable, so those
+      source sets were not fully opened.
+- [x] **Batch B — CME family onsets** (equity-index, grains, energy/metals,
       FX, interest rates, livestock, cryptocurrency, NKD): the Sunday
-      16:00 CT pre-open queue and PCP onsets. CME advisory archives are the
-      likely single source.
-- [ ] **Batch C — ICE US softs and USDX** (sugar, coffee, cocoa, cotton,
-      FCOJ, dollar index): each family's own queue-onset gaps.
+      16:00 CT pre-open queue and PCP onsets. **Closed 2026-08-31.** The
+      **Sunday-queue question is closed
+      2026-08-31 as knowledge-bound.** The CME advisory archives were the right
+      place to look and the answer is negative: the platform-wide 16:15→16:00
+      Sunday Pre-Open bracket narrows to 2012-05-28..2012-06-07 on CME's own
+      archived trading-hours pages, and both dated notice channels covering
+      that window (Globex Notices 2012-05-21/05-28/06-04; Market Data Notices
+      2012-05-28) contain no pre-open or trading-hours item at all — CME made
+      the change without announcing it. CBOT grains were separated out: they
+      moved at the already-dated 2012-05-20 expansion, not with the platform.
+      No cutover encoded; the only Sunday in the bracket (2012-06-03) is an
+      inference, not a stated day. Note for future passes: CME serves an
+      explicit anti-scraping block to automated clients, so cmegroup.com must
+      be read by hand or through the public archive.
+      The other four sub-gaps were then worked to their terminal state.
+      `globex_grains`: the 21-hour regime's queue and PCP states are now
+      sourced from CME's own hours pages and the switch bracketed to
+      2012-05-11..2012-05-28 around the sourced expansion, but Advisory
+      #20120518 states matching hours only, so nothing is keyed to it.
+      `globex_nikkei_225_dollar`: CME's hours pages DO state the pre-2012 grid
+      (17:00-15:15 with the 15:30-16:30 slice), superseding the earlier record
+      that no primary source states the pre-2012 evening open; only the onset
+      stays undated. `globex_cryptocurrency`: the launch-era bitcoin
+      specification publishes matching hours and no Pre-Open — undated at the
+      source. `globex_livestock`: the specification channel is silent across
+      2016-11..2020-03 too, corroborating the trading-hours omission. All four
+      keep `Partial` with named, evidence-backed gaps; no dates invented.
+- [x] **Batch C — ICE US softs and USDX** (sugar, coffee, cocoa, cotton,
+      FCOJ, dollar index). **Closed 2026-08-31.** The gaps were baseline gaps
+      rather than queue-onset gaps. Two dated editions of ICE's *Regular
+      Trading Hours* master table (AUGUST 2011, JANUARY 2, 2013) print the
+      pre-2014 grids outright, superseding the record that coffee's and
+      cocoa's were only corroborated; the same two editions show FCOJ-A
+      unchanged, and repeat the `*` / `**` / `***` footnote contrast that
+      excludes Cotton from the Sunday-evening clause — turning that omission
+      from silence into positive evidence. Sugar's January-2010 close and
+      USDX's pre-2011 grid were re-worked and confirmed negative: August 2011
+      is the earliest surviving edition of the table, and ICE's 2007
+      currencies release never prints a USDX grid. All six keep `Partial`
+      with one shared residual gap, January 2010 to August 2011.
 - [ ] **Batch D — SGX equity-index keys** (five rows).
 - [ ] **Batch E — US equity early sessions** (Cboe ×2, NYSE ×4): the 07:00
       early session and 06:30/02:30 queue onsets.

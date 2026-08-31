@@ -222,14 +222,36 @@ trading venue.
 That is the 93-identity ledger cutoff. Product-family keys were reviewed in the
 same pass and carry their own basis labels in the ledger.
 
-**Primary-source-verified current profiles:** `93 of 93` non-synthetic
+**Today's hours check out against the exchange:** `93 of 93` non-synthetic
 `Exchange` identities, within each row's documented normal-week scope.
 
-**Complete sourced history since January 2010:** `66 of 93` non-synthetic
+**Full dated history back to January 2010:** `66 of 93` non-synthetic
 `Exchange` identities.
 
-**Non-synthetic profiles requiring reconciliation:** `27 of 93` non-synthetic
+**History complete except for one named gap:** `27 of 93` non-synthetic
 `Exchange` identities.
+
+In plain terms:
+
+- **All 93 venues are right for today.** Every venue's present-day normal week
+  was compared against the operator's own published schedule, inside the scope
+  its ledger row states. None is unreviewed, and none is known to be wrong.
+- **66 of them are also right for any date back to January 2010.** Ask one of
+  these what the hours were on an arbitrary past date and every answer is
+  carried by dated primary sources the whole way back.
+- **The other 27 are right for today, and right for the past except for one
+  specific thing each.** That thing is almost always the exact *day* an older
+  order-acceptance queue or post-close phase started — not the hours
+  themselves, and not whether the venue was open. Every one of those 27 rows
+  names its own gap in the
+  [ledger](docs/schedules/verification.md), and the gap is bounded: where a
+  phase is sourced at both ends, the crate serves the part that is true under
+  every sourced state and withholds only the disputed remainder.
+
+A row in that last group is not an error, a guess, or an unfinished review. It
+is a row where a real exchange change is known to have happened and no operator
+ever published the day it took effect. Closing all 27 is the current priority,
+ahead of any built-in holiday data.
 
 Every non-synthetic identity was compared with its official current-hours or
 rulebook material and its notice/evidence channel. All 93 current profiles are
@@ -241,7 +263,7 @@ issue evidence. `Exchange::Unknown` is synthetic and is not one of the 93
 source-backed identities.
 
 The key surface was audited separately:
-**Primary-source-verified current key snapshots:** `24 of 24` operator-derived
+**Today's hours check out for each product family:** `24 of 24` operator-derived
 `MarketHoursKey` values. The key API provides fixed-current snapshots, an
 `as_of` selector, and a date-aware calendar for sourced histories. Five key
 rows are **Primary** and nineteen are **Partial**, because a named historical

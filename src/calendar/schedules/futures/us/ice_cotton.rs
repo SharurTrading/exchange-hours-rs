@@ -31,6 +31,18 @@ use crate::calendar::schedules::timeline::{Revision, local_date, revisions, sele
 // and the 2025 Good Friday notice gives Cotton "Regular Hours" on the Monday
 // while the morning-opening softs take a late open), but that reading is
 // assembled from indirect material rather than stated by any ICE sentence.
+// Confirmed independently on 2026-08-31: the JANUARY 2, 2013 edition of the
+// master table repeats the same contrast - "Cotton No. 2(R)  21:00* - 14:30"
+// against "Grains and Oilseeds", "Russell Index", "USDX(R)" and the currency
+// rows all carrying "**", and the energy rows "***". ICE therefore drew the
+// Sunday distinction explicitly at two independent dated points and did not
+// extend it to Cotton, which is positive evidence for the omission rather than
+// mere silence.
+// Dated editions of ICE's own master table, official origin
+// https://www.ice.com/publicdocs/futures_us/ICE_Futures_US_Regular_Trading_Hours.pdf
+// delivered via
+// https://web.archive.org/web/20111212140120id_/https://www.theice.com/publicdocs/futures_us/ICE_Futures_US_Regular_Trading_Hours.pdf
+// https://web.archive.org/web/20130122132629id_/https://www.theice.com/publicdocs/futures_us/ICE_Futures_US_Regular_Trading_Hours.pdf
 // Under LAW-PRIMARY-SOURCES an unasserted phase is omitted, so the Sunday
 // evening open and its pre-open are modelled as closed; the documented
 // weekend boundary is therefore Friday 14:20 to Monday 19:30 NY.

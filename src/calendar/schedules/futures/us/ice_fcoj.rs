@@ -20,6 +20,17 @@ use crate::calendar::schedules::timeline::{Revision, local_date, revisions, sele
 // Master table, verbatim: "FCOJ-A   8:00 - 14:00". Corroborated by the ICE
 // product page: "NEW YORK  8:00 AM - 2:00 PM  08:00 - 14:00".
 //
+// 2026-08-31: the same "FCOJ-A   8:00 - 14:00" row appears in the AUGUST 2011
+// and JANUARY 2, 2013 editions of the master table, so "no earlier change
+// inside the modelled window" is now supported by two dated ICE documents
+// rather than by absence of evidence. The residual gap is January 2010 to
+// August 2011, for which no edition survives in the archive.
+// Dated editions of ICE's own master table, official origin
+// https://www.ice.com/publicdocs/futures_us/ICE_Futures_US_Regular_Trading_Hours.pdf
+// delivered via
+// https://web.archive.org/web/20111212140120id_/https://www.theice.com/publicdocs/futures_us/ICE_Futures_US_Regular_Trading_Hours.pdf
+// https://web.archive.org/web/20130122132629id_/https://www.theice.com/publicdocs/futures_us/ICE_Futures_US_Regular_Trading_Hours.pdf
+//
 // https://www.ice.com/publicdocs/futures_us/ICE_Futures_US_Regular_Trading_Hours.pdf
 // https://www.ice.com/products/30/FCOJ-A-Futures
 pub(crate) static FCOJ_REGULAR_CURRENT: &[SessionRule] = &[SessionRule {

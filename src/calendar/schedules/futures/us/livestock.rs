@@ -27,6 +27,13 @@ const TUE_THU: [bool; 7] = [false, true, true, true, false, false, false];
 // omission is treated as a published-table gap rather than an operator-stated
 // removal and the sourced onset stands. CME moved the Pre-Open start from
 // 06:00 to 08:00 effective Sunday 2020-05-31 for trade date Monday 2020-06-01.
+// 2026-08-31 review: the contract-specification channel was checked as a second
+// route into the 2016-11..2020-03 interval and is silent too — the Live Cattle
+// specification captured 2016-09-25, 2016-12-04, 2017-09-23 and 2018-04-19
+// renders only "CME ClearPort" and "Default" hours (Monday-Friday 08:30-13:05
+// CT) with no CME Globex Pre-Open or PCP row at all. Both the trading-hours and
+// the specification channels therefore fail to carry the PCP through that
+// interval, which corroborates the omission below rather than resolving it.
 // The pre-2020 06:00 queue's own onset is still unresolved, so dated profiles
 // omit that queue instead of manufacturing a selector. A generic 2010 Globex
 // queue notice does not enumerate livestock, so it is not used to invent a

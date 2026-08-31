@@ -2,6 +2,18 @@
 
 //! CME cryptocurrency futures schedules.
 
+// 2026-08-31 five-day-era Pre-Open review — confirmed knowledge-bound. The CME
+// bitcoin contract specification captured 2017-12-14, which itself carries the
+// launch statement "Effective Sunday 17 December 2017 for trade date Monday 18
+// December 2017 ... CME will launch Bitcoin Futures", publishes only the
+// matching grid: "CME Globex: Sunday - Friday 6:00 p.m. - 5:00 p.m. (5:00 p.m.
+// - 4:00 p.m. CT) with a 60-minute break each day beginning at 5:00 p.m. (4:00
+// p.m. CT)". It states no Pre-Open, and neither do the 2017-12-22 or
+// 2018-01-04 captures. The five-day era's Sunday/weekday Pre-Open onset is
+// therefore undated at the source, not merely unsearched. Official origin
+// http://www.cmegroup.com/trading/equity-index/us-index/bitcoin_contract_specifications.html
+// delivered via
+// https://web.archive.org/web/20171214071544id_/http://www.cmegroup.com/trading/equity-index/us-index/bitcoin_contract_specifications.html
 use chrono_tz::US;
 
 use crate::calendar::rule::{FRI, MON_FRI, SUN_ONLY, SUN_PLUS_MON_THU};

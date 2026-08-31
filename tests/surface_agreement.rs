@@ -25,19 +25,23 @@ use exchange_hours::{MarketHoursKey, hours_for_market_hours_key};
 const DOCUMENTED_DIVERGENCE: &[(MarketHoursKey, &str)] = &[
     (
         MarketHoursKey::GlobexEquityIndex,
-        "Sunday queue omitted: its 16:15->16:00 CT cutover day is unknown",
+        "Sunday queue narrowed to its sourced intersection (16:15-17:00 CT); \
+         only the 16:00-16:15 slice waits on the undated 2012 cutover",
     ),
     (
         MarketHoursKey::GlobexEnergy,
-        "queues omitted from history: unconditional onset chain incomplete",
+        "Sunday queue narrowed to 16:15-17:00 CT; the 16:00-16:15 slice waits on \
+         the undated 2012 cutover",
     ),
     (
         MarketHoursKey::GlobexFx,
-        "Sunday pre-open omitted: its 16:15->16:00 CT cutover day is unavailable",
+        "Sunday pre-open narrowed to 16:15-17:00 CT; the 16:00-16:15 slice waits \
+         on the undated 2012 cutover",
     ),
     (
         MarketHoursKey::GlobexInterestRates,
-        "Sunday queue omitted after 2011: cutover day unavailable",
+        "Sunday queue narrowed to 16:15-17:00 CT; the 16:00-16:15 slice waits on \
+         the undated 2012 cutover",
     ),
 ];
 

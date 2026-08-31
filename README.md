@@ -257,10 +257,15 @@ families found none of them withholding executable time that the current grid
 serves. Rows carry this distinction in the ledger, so check there before treating
 a `Partial` label as a reason to hesitate.
 
-A row in that last group is not an error, a guess, or an unfinished review. It
-is a row where a real exchange change is known to have happened and no operator
-ever published the day it took effect. Closing all 27 is the current priority,
-ahead of any built-in holiday data.
+Those 27 are not all the same, and the ledger says which kind each one is. Most
+are **knowledge-bound**: a real exchange change happened and no operator ever
+published the day, because the value was an operator system setting no filing
+ever fixed — searching harder will not close them. A few are **source-limited**:
+the document that would date them exists but is a member-only or password-locked
+publication. And a few are **unfinished searches** — `cboe_edga` and `cboe_edgx`
+are the current examples, where the queue is a rulebook provision, so a dated SEC
+filing does exist and simply has not been located yet. Closing all 27 is the
+current priority, ahead of any built-in holiday data.
 
 Every non-synthetic identity was compared with its official current-hours or
 rulebook material and its notice/evidence channel. All 93 current profiles are

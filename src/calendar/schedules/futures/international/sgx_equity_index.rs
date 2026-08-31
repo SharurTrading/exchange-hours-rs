@@ -231,33 +231,25 @@ static SGX_EQUITY_INDEX_SINGAPORE_ERA_2020: StaticHoursProfile = StaticHoursProf
     has_weekend_close: true,
 };
 
-// 2026-08-31 Batch D review — NOT evidence-exhausted, retrieval-blocked. The
-// SGX circular archive could not be reached by automated means:
-// www.sgx.com/regulation/circulars redirects to the regco.sgx.com single-page
-// app, which renders nothing without executing its JavaScript, no public
-// content API for it is reachable, and the Wayback archive holds no derivatives
-// circular listing (only securities prospectus pages and a single 2009 trading
-// calendar that no longer retrieves). This row therefore keeps its review date
-// and its Partial basis, and the gap statement should be read as "the archive
-// was not searchable from here", not as "no dated evidence exists". A human
-// with a browser on the SGX circular archive is the next step, and it is the
-// most valuable remaining item in the backlog for the reason below.
+// RETRIEVAL NOTE, and why these rows stay Partial. The SGX circular archive
+// could not be reached by automated means: www.sgx.com/regulation/circulars
+// redirects to the regco.sgx.com single-page app, which renders nothing without
+// executing its JavaScript, and no public content API for it is reachable. The
+// Derivatives Trading Calendar PDFs read above are the productive channel, and
+// they date the grids but not the transition days; the newsletters that would
+// date them are password-locked member documents. So these rows keep their
+// review dates and their Partial basis, and the gap should be read as "the
+// transition days were not stated anywhere reachable", not as "no dated
+// evidence exists". A member reading those newsletters closes this.
 //
-// DIRECTION OF THE ERROR — worth stating plainly, because it is the opposite of
-// every other Partial row in this crate. Elsewhere an undated phase is withheld,
-// so a dated query under-reports: it answers Closed where the venue was in fact
-// accepting orders. Here the current grid is carried across known moves, so a
-// dated query can over-report: an instant inside today's T+1 window in, say,
-// 2011 answers open even though the session's bounds demonstrably differed then.
-// A false "open" is the more dangerous direction for an order router. Until the
-// circulars are read, treat pre-current SGX equity-index instants as
-// approximate rather than sourced.
-// Deliberately empty. SGX's equity-index hours demonstrably moved inside the
-// modelled window, but every move is only bracketed between successive editions
-// of the SGX derivatives trading calendar - the circular archive does not
-// expose a day-level effective date for any of them. No primary source dates a
-// cutover, so none is encoded and the current grid is carried back across the
-// whole modelled window. That makes this family Partial rather than Primary.
+// DIRECTION OF THE ERROR. Before 2026-08-31 these rows carried today's grid to
+// the January-2010 floor across the moves tabulated above, which made them the
+// only rows in the crate that could **over**-report — answer open on bounds
+// that differed at the time. They no longer can: each era serves the grid its
+// editions state, both undated transitions are approached from the conservative
+// side, and dates before the 2020 edition are sessionless. Like every other
+// Partial row in this crate they now err toward Closed, which is the safe
+// direction for an order router.
 //
 // https://api2.sgx.com/sites/default/files/2026-01/SGX%20Calendar%202026_2.pdf
 // https://api2.sgx.com/sites/default/files/2025-11/DT%20Trading%20Calendar%202025.pdf

@@ -156,11 +156,11 @@ static ENERGY_METALS_REVISIONS: &[Revision] = revisions![
         &ENERGY_METALS_DATED_CURRENT,
         "CME Globex notice 20150907"
     ),
-    // Knowledge-bound row: the current order-entry queues are
-    // primary-verified in the current envelope, but no reviewed source states
-    // their onset day, so earlier dated queries conservatively omit them. From
-    // the 2026-08-22 repository review onward the verified-current grid
-    // applies; a sourced onset day replaces this row.
+    // Knowledge-bound row: the dated profiles above already carry the sourced
+    // Sunday 16:15–17:00 and Monday–Thursday 16:45–17:00 queues from the
+    // January-2010 floor. This row widens the Sunday queue by the disputed
+    // 16:00–16:15 quarter-hour, which is the only part depending on the
+    // undated 2012 move. A sourced onset day replaces this row.
     (
         2026,
         8,

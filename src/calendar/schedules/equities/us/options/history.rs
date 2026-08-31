@@ -73,7 +73,9 @@ use crate::calendar::schedules::timeline::{Revision, local_date, revisions, sele
 //     https://www.miaxglobal.com/sites/default/files/alert-files/MIAX_Press_Release_09102024.pdf
 //   2023-09-27 "MEMX trader alert 23-42"
 //     https://info.memxtrading.com/trader-alert-23-42-memx-options-exchange-schedule-update/
-// Knowledge-bound rows (the final 2026-08-22 row in each table below): each
+// Knowledge-bound rows (the final 2026-08-22 row in every table below except
+// MEMX_REVISIONS, whose profile carries no queue at all — MEMX rejects orders
+// before 09:30, so its sourced launch day is its only row): each
 // venue's current order-acceptance queue is primary-verified in the current
 // envelope, but the reviewed sources state no day-level amendment chain for
 // these queues, so earlier dated queries retain only the exact 09:30–16:00

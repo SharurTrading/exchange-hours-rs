@@ -69,8 +69,11 @@ corrections (a venue's hours fixed against a primary source) go under
     undated. CME's queue only ever widened — 16:15 at the audit floor, 16:00
     verified current — so Sunday **16:15–17:00 is order-entry under every
     sourced state** and is now carried from the January-2010 floor with no
-    cutover asserted. Only the disputed 16:00–16:15 quarter-hour still waits on
-    the undated 2012 move. A Sunday 16:30 CT instant in 2011, 2015 or 2025 now
+    cutover asserted — for `globex_equity_index`, `globex_energy`, `globex_fx` and
+    `globex_interest_rates`, and the `cme`/`cbot`/`comex`/`nymex` rows that
+    reuse them. Only the disputed 16:00–16:15 quarter-hour still waits on the
+    undated 2012 move, and that quarter-hour alone — not the whole hour — is
+    what the 2026-08-22 review row adds. A Sunday 16:30 CT instant in 2011, 2015 or 2025 now
     answers `OrderEntry` rather than `Closed`. `globex_energy` also regains its
     Monday–Thursday 16:45–17:00 queue, which the dated profiles dropped
     entirely.

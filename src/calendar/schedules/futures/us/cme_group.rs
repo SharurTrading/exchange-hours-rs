@@ -30,9 +30,10 @@ use crate::calendar::schedules::timeline::{Revision, local_date, revisions, sele
 // 16:15 start moved: primary documents updated 2012-05-03 still publish
 // Sunday 16:15, trading-hours pages crawled 2012-06-15/16 already publish
 // 16:00, and no notice in between states the day. The fixed-current table
-// includes that sourced current queue. Dated profiles deliberately omit only
-// the Sunday queue rather than inventing its cutover; their executable
-// trading and weekday queues remain exact. Revisions are keyed by the local
+// includes that sourced current queue. Dated profiles carry the sourced
+// Sunday 16:15–17:00 intersection from the January-2010 floor and withhold
+// only the disputed 16:00–16:15 quarter-hour rather than inventing its
+// cutover; their executable trading and weekday queues remain exact. Revisions are keyed by the local
 // session-opening day.
 // https://www.cmegroup.com/content/dam/cmegroup/education/modules/files/EQ240_EQ_for_AIT.pdf
 // https://www.cmegroup.com/education/files/eq-trading-hours.pdf
@@ -297,11 +298,11 @@ static CME_REVISIONS: &[Revision] = revisions![
         &CME_PROFILE_DATED_CURRENT,
         "CME Globex notice 20210621"
     ),
-    // Knowledge-bound row: the Sunday 16:00–17:00 Pre-Open queue is
-    // primary-verified in the current envelope, but no reviewed source states
-    // its onset day, so earlier dated queries conservatively omit it. From the
-    // 2026-08-22 repository review onward the verified-current grid applies; a
-    // sourced onset day replaces this row.
+    // Knowledge-bound row: only the disputed 16:00–16:15 quarter-hour depends
+    // on the undated 2012 move. The 16:15–17:00 remainder is order-entry under
+    // every sourced Sunday value and is already carried from the January-2010
+    // floor by the dated profiles above, so this row widens the queue rather
+    // than introducing it. A sourced onset day replaces this row.
     (
         2026,
         8,

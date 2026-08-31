@@ -18,7 +18,8 @@ use crate::calendar::{FuturesSessionProfile, SessionRule};
 // documents updated 2012-05-03 still publish Sunday 16:15 while pages crawled
 // 2012-06-15/16 already publish 16:00, and no notice in between states the
 // day. The fixed-current profile includes that exact current phase; dated
-// profiles omit only the unresolved Sunday queue.
+// profiles carry the sourced Sunday 16:15–17:00 intersection from the
+// January-2010 floor and withhold only the disputed 16:00–16:15 quarter-hour.
 // https://www.cmegroup.com/tools-information/lookups/advisories/electronic-trading/20081229.html
 // https://www.cmegroup.com/trading/fx/files/FX248-2010_FX_Product_Guide_and_Calendar.pdf
 // https://www.cmegroup.com/tools-information/lookups/advisories/electronic-trading/20101025.html
@@ -158,11 +159,11 @@ static FX_CURRENT: StaticHoursProfile = StaticHoursProfile {
 
 static REVISIONS: &[Revision] = revisions![
     (2010, 11, 15, &DATED_CURRENT, "CME Globex notice 20101025"),
-    // Knowledge-bound row: the Sunday 16:00–17:00 queue is primary-verified
-    // in the current envelope, but no reviewed source states its onset day,
-    // so earlier dated queries conservatively omit it. From the 2026-08-22
-    // repository review onward the verified-current grid applies; a sourced
-    // onset day replaces this row.
+    // Knowledge-bound row: only the disputed 16:00–16:15 quarter-hour depends
+    // on the undated 2012 move. The 16:15–17:00 remainder is order-entry under
+    // every sourced Sunday value and is already carried from the January-2010
+    // floor by the dated profiles above, so this row widens the queue rather
+    // than introducing it. A sourced onset day replaces this row.
     (
         2026,
         8,

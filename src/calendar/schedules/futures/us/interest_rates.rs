@@ -211,11 +211,11 @@ static REVISIONS: &[Revision] = revisions![
         &PROFILE_2011_10_02,
         "CME Globex notice 20110926"
     ),
-    // Knowledge-bound row: the Sunday 16:00–17:00 queue is primary-verified
-    // in the current envelope, but no reviewed source states its onset day,
-    // so earlier dated queries conservatively omit it. From the 2026-08-22
-    // repository review onward the verified-current grid applies; a sourced
-    // onset day replaces this row.
+    // Knowledge-bound row: only the disputed 16:00–16:15 quarter-hour depends
+    // on the undated 2012 move. The 16:15–17:00 remainder is order-entry under
+    // every sourced Sunday value and is already carried from the January-2010
+    // floor by the dated profiles above, so this row widens the queue rather
+    // than introducing it. A sourced onset day replaces this row.
     (
         2026,
         8,

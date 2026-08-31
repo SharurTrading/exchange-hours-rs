@@ -294,13 +294,18 @@ tables.
 - [ ] Public docs (README, date-exceptions.md updated from "path to" to
       "shipped for caller-owned data"); changelog **Added**; full gates.
 
-## Phase 5 — Built-in exception data: pilot (licensing-gated)
+## Phase 5 — Built-in exception data: pilot (public-source-gated)
 
-- [ ] Pick 1–2 pilot venues whose holiday calendars are primary, public,
-      and unencumbered (NYSE and CME Group are the natural candidates).
-- [ ] Licensing check per source before any data drives runtime answers —
-      public access is not permission to republish a licensed feed; the
-      check outcome is recorded beside the data.
+- [ ] Pick 1–2 pilot venues whose holiday calendars are primary and publicly
+      available without authentication (NYSE and CME Group are the natural
+      candidates).
+- [ ] Source check per venue before any data drives runtime answers: the
+      calendar must be primary and publicly available without
+      authentication, and the check outcome is recorded beside the data.
+      Per the sourcing policy in `date-exceptions.md`, the crate encodes the
+      facts a public schedule states rather than reproducing the document, so
+      this is a scope check, not a rights negotiation. A venue whose calendar
+      exists only behind a member portal stays `OutOfCoverage`.
 - [ ] Ship the pilot tables with full metadata: source, revision,
       review-date, finality, first/last covered trade date, scoped to one
       exact `CalendarSource`.
@@ -315,7 +320,7 @@ tables.
 ## Phase 6 — Exception-data rollout
 
 - [ ] Region batches mirroring Phase 3's leverage ordering; per venue:
-      evidence per `updating.md`, licensing check, tables, ledger row,
+      evidence per `updating.md`, public-source check, tables, ledger row,
       changelog.
 - [ ] Venues with no published primary calendar stay explicitly
       `OutOfCoverage` — the provider contract makes absence honest rather
@@ -339,7 +344,7 @@ cargo +1.95 check --all-targets
 3. Phase 3 — independent; batches merge in A→E order, interleaving freely
    with Phases 4–6.
 4. Phase 4 — before any built-in exception data.
-5. Phase 5 — after Phase 4; the licensing check is a hard gate before data
+5. Phase 5 — after Phase 4; the public-source check is a hard gate before data
    ships.
 6. Phase 6 — after Phase 5, batch by batch.
 

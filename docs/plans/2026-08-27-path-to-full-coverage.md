@@ -90,6 +90,35 @@ Completeness is a verification question.
 
 ## Phase 3 — The Partial-history backlog (independent; batched by family)
 
+
+### Open crate-wide question: bound the timeline at the January-2010 floor?
+
+Raised in review on PR #25 against `cme_nikkei.rs` and answered there rather
+than patched, because it is not specific to that venue. `select_revision`
+returns a venue's baseline profile for **every** date before its first revision,
+with no lower bound, so pre-2010 instants get the January-2010 grid rather than
+an absence. Measured on that branch at 18:30 CT:
+
+```
+NKD        open in: [2005, 2008, 2009, 2010]
+globex_eq  open in: [2005, 2008, 2009, 2010]
+```
+
+`globex_equity_index` behaves identically and predates the branch — this is the
+crate's existing design for every venue whose baseline profile is non-empty, not
+a regression. But LAW-NO-FABRICATED-DATES says amendment history is recorded
+back to January 2010 and earlier changes are out of scope, and answering a 2005
+query with a 2010 grid is arguably a claim outside that scope.
+
+Two defensible positions: leave it (the profile is the earliest sourced state,
+and the caller asked for a date the crate never promised to model), or bound
+every timeline at the floor so pre-2010 returns no session. Bounding is a
+crate-wide change touching every venue with a non-empty baseline, needs its own
+fences, and changes answers well outside any one venue's scope — so it belongs
+in its own change set, not folded into a schedule PR. Decide it before the next
+release either way, because the two positions give different answers to the same
+query and the ledger currently documents neither.
+
 ### Priority, set 2026-08-31: executable hours before queues
 
 The hours where trades actually print matter more than the windows where orders

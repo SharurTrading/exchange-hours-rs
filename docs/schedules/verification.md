@@ -27,6 +27,21 @@ starts; see [sources.md](sources.md) and the repeatable
   regulator source, with no known modeled-history gap since January 2010.
 - **Partial** — current boundaries have primary support, but a modeled
   historical era, phase, or exact cutover has a documented gap.
+- **Partial** rows must name which *kind* of window the gap sits in. A gap in a
+  phase where trades print (`regular`/`extended`) is a materially worse defect
+  than an undated `order_entry` start, and the basis label alone does not
+  distinguish them.
+
+  Classification status, 2026-08-31: the sixteen US futures product families
+  were audited explicitly (executable-only, sampled weeks in 2011/2015/2019/2023)
+  and **none withholds executable time the current grid serves** — every one of
+  their gaps is an `order_entry` question, except that the `ice_us_*` January-2010
+  to August-2011 interval and `globex_nikkei_225_dollar` before 2012 have their
+  executable hours *carried back* rather than directly sourced. The remaining
+  rows state the phase in their gap text (`queue`, `PCP`, `grid`, `close`) but
+  have not been audited this way; classifying them is outstanding work, and until
+  it is done a reader should read the gap text rather than infer the kind from
+  the basis label.
 - **Secondary** — the captured schedule relies on corroborating material rather
   than a primary source.
 - **Pragmatic** — the profile is an intentionally representative

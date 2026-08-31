@@ -100,6 +100,12 @@ official origin and the archive delivery URL.
 
 ## 2. Compare every modeled field
 
+Work the executable phases first. A discrepancy in a `regular` or `extended`
+window changes whether the crate reports the market as tradeable; a discrepancy
+in an `order_entry` window only changes whether orders could be queued before an
+open that is already modelled correctly. Both are worth fixing, but the first
+outranks the second no matter how many rows the second touches.
+
 Check the complete model rather than only the headline open and close:
 
 - IANA time zone and trading weekdays;

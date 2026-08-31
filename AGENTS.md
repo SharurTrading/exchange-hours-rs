@@ -112,6 +112,16 @@ change to this standalone repository must follow.
   change the exchange-wide open/closed envelope; use a conservative envelope
   when that is the profile's stated venue-level scope. Never imply exact
   ticker-level uncross timing.
+- **Executable windows are the priority.** A gap in a phase where a trade can
+  print — `regular` or `extended` — is materially more serious than a gap in an
+  `order_entry` window. The first changes whether the crate says a market was
+  tradeable; the second only changes whether orders could be queued ahead of an
+  open that is itself modelled correctly. Two obligations follow. When ordering
+  evidence work, close executable-hours gaps first, however many more rows the
+  queue-onset gaps touch — row count is not impact. When recording a gap, say
+  which kind it is: "this row is `Partial`" carries very different weight for a
+  missing trading session than for an undated queue start, and a reader cannot
+  tell them apart from the basis label alone.
 - **Carry the earliest sourced state back to the audit floor.** When a phase is
   primary-sourced at some instant and no primary source names a cutover between
   the January-2010 floor and that instant, extend it backwards to the floor

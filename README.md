@@ -240,13 +240,22 @@ In plain terms:
   these what the hours were on an arbitrary past date and every answer is
   carried by dated primary sources the whole way back.
 - **The other 27 are right for today, and right for the past except for one
-  specific thing each.** That thing is almost always the exact *day* an older
-  order-acceptance queue or post-close phase started — not the hours
-  themselves, and not whether the venue was open. Every one of those 27 rows
-  names its own gap in the
+  specific thing each.** Every one of those 27 rows names its own gap in the
   [ledger](docs/schedules/verification.md), and the gap is bounded: where a
   phase is sourced at both ends, the crate serves the part that is true under
   every sourced state and withholds only the disputed remainder.
+
+**Which window a gap sits in decides what it costs you.** A gap in a phase where
+trades print — the regular or extended session — would change whether the crate
+reports a market as tradeable. A gap in an order-entry window only changes
+whether orders could be *queued* ahead of an open that is itself modelled
+correctly; no trade can print in one of those windows on any venue in this crate.
+Almost every one of the 27 is the second kind: the exact *day* an older
+order-acceptance queue or post-close phase started, with the trading session
+itself sourced. A recent executable-only audit of all sixteen US futures product
+families found none of them withholding executable time that the current grid
+serves. Rows carry this distinction in the ledger, so check there before treating
+a `Partial` label as a reason to hesitate.
 
 A row in that last group is not an error, a guess, or an unfinished review. It
 is a row where a real exchange change is known to have happened and no operator

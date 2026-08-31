@@ -46,6 +46,20 @@ use crate::calendar::schedules::timeline::{Revision, local_date, revisions, sele
 // Monday-Friday: 14:30-16:00 CT", with a 07:45-08:15 cancellation-only slice
 // inside the break that no order-entry rule models. Only the 21-hour
 // 2012-05-20..2013-04-06 regime's queue and PCP states remain undocumented, so
+// 2026-08-31 grains-regime review — the states are now sourced, only their
+// switch-on day is not. CME's own trading-hours pages inside the 21-hour
+// regime publish, for Corn/Wheat/Soybean/Soybean Oil futures and options,
+// Sunday Pre-Open 16:00, weekday Pre-Open "14:30-16:00, 16:45-17:00" (the PCP
+// plus the evening queue) and ETH 17:00-14:00. The pre-expansion capture of
+// 2012-05-11 shows the other side: Sunday Pre-Open 16:15, weekday
+// "14:30-16:00 16:45 08:00" and ETH 18:00-07:15, 09:30-13:15. The switch is
+// therefore bracketed to 2012-05-11..2012-05-28, which contains the sourced
+// 2012-05-20 expansion — but Advisory #20120518 states only the new matching
+// hours, never the queue times, so no queue revision is keyed to that day.
+// Official origin http://www.cmegroup.com/trading_hours/ delivered via:
+// https://web.archive.org/web/20120511163357id_/http://www.cmegroup.com/trading_hours/index.html?show=Commodities
+// https://web.archive.org/web/20120528102754id_/http://www.cmegroup.com/trading_hours/index.html
+// https://web.archive.org/web/20120607015831id_/http://www.cmegroup.com/trading_hours/
 // that dated profile conservatively omits them instead of inventing onsets.
 // https://web.archive.org/web/20130423023212/http://www.cmegroup.com/globex/files/cmegroup_reduced_grain_and_oilseed_hours.pdf
 // https://www.cmegroup.com/notices/ser/2022/02/SER-8921.pdf

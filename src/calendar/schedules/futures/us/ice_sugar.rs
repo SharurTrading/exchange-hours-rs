@@ -125,6 +125,18 @@ static SUGAR_2012_JAN: StaticHoursProfile = StaticHoursProfile {
 // January 2010 close, so the August 2011 grid is carried back as the baseline
 // rather than inventing an earlier cutover.
 //
+// 2026-08-31: confirmed negative. Every archived edition of the master table
+// was enumerated and the AUGUST 2011 one (captured 2011-12-12) is the earliest
+// in existence; there is no 2010 edition to consult. The JANUARY 2, 2013
+// edition reads "Sugar No. 11(R)  2:30 - 14:00", consistent with the dated
+// 2012-01-30 revision already modelled. The January-2010 close therefore
+// remains unsourced by document availability, not by an unfinished search.
+// Dated editions of ICE's own master table, official origin
+// https://www.ice.com/publicdocs/futures_us/ICE_Futures_US_Regular_Trading_Hours.pdf
+// delivered via
+// https://web.archive.org/web/20111212140120id_/https://www.theice.com/publicdocs/futures_us/ICE_Futures_US_Regular_Trading_Hours.pdf
+// https://web.archive.org/web/20130122132629id_/https://www.theice.com/publicdocs/futures_us/ICE_Futures_US_Regular_Trading_Hours.pdf
+//
 // https://www.ice.com/publicdocs/futures_us/exchange_notices/exnot03XX10DST.pdf
 // https://web.archive.org/web/20111212140120/https://www.theice.com/publicdocs/futures_us/ICE_Futures_US_Regular_Trading_Hours.pdf
 static SUGAR_REGULAR_BASELINE: &[SessionRule] = &[SessionRule {

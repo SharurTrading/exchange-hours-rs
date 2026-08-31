@@ -222,14 +222,50 @@ trading venue.
 That is the 93-identity ledger cutoff. Product-family keys were reviewed in the
 same pass and carry their own basis labels in the ledger.
 
-**Primary-source-verified current profiles:** `93 of 93` non-synthetic
+**Hours verified against the exchange at the review date:** `93 of 93` non-synthetic
 `Exchange` identities, within each row's documented normal-week scope.
 
-**Complete sourced history since January 2010:** `66 of 93` non-synthetic
+**Full dated history back to January 2010:** `66 of 93` non-synthetic
 `Exchange` identities.
 
-**Non-synthetic profiles requiring reconciliation:** `27 of 93` non-synthetic
+**History complete except for one named gap:** `27 of 93` non-synthetic
 `Exchange` identities.
+
+In plain terms:
+
+- **All 93 venues are right for today.** Every venue's present-day normal week
+  was compared against the operator's own published schedule, inside the scope
+  its ledger row states. None is unreviewed, and none is known to be wrong.
+- **66 of them are also right for any date back to January 2010.** Ask one of
+  these what the hours were on an arbitrary past date and every answer is
+  carried by dated primary sources the whole way back.
+- **The other 27 are right for today, and right for the past except for one
+  specific thing each.** Every one of those 27 rows names its own gap in the
+  [ledger](docs/schedules/verification.md), and the gap is bounded: where a
+  phase is sourced at both ends, the crate serves the part that is true under
+  every sourced state and withholds only the disputed remainder.
+
+**Which window a gap sits in decides what it costs you.** A gap in a phase where
+trades print — the regular or extended session — would change whether the crate
+reports a market as tradeable. A gap in an order-entry window only changes
+whether orders could be *queued* ahead of an open that is itself modelled
+correctly; no trade can print in one of those windows on any venue in this crate.
+Almost every one of the 27 is the second kind: the exact *day* an older
+order-acceptance queue or post-close phase started, with the trading session
+itself sourced. A recent executable-only audit of all sixteen US futures product
+families found none of them withholding executable time that the current grid
+serves. Rows carry this distinction in the ledger, so check there before treating
+a `Partial` label as a reason to hesitate.
+
+Those 27 are not all the same, and the ledger says which kind each one is. Most
+are **knowledge-bound**: a real exchange change happened and no operator ever
+published the day, because the value was an operator system setting no filing
+ever fixed — searching harder will not close them. A few are **source-limited**:
+the document that would date them exists but is a member-only or password-locked
+publication. And a few are **unfinished searches** — `cboe_edga` and `cboe_edgx`
+are the current examples, where the queue is a rulebook provision, so a dated SEC
+filing does exist and simply has not been located yet. Closing all 27 is the
+current priority, ahead of any built-in holiday data.
 
 Every non-synthetic identity was compared with its official current-hours or
 rulebook material and its notice/evidence channel. All 93 current profiles are
@@ -241,7 +277,7 @@ issue evidence. `Exchange::Unknown` is synthetic and is not one of the 93
 source-backed identities.
 
 The key surface was audited separately:
-**Primary-source-verified current key snapshots:** `24 of 24` operator-derived
+**Hours verified at the review date for each product family:** `24 of 24` operator-derived
 `MarketHoursKey` values. The key API provides fixed-current snapshots, an
 `as_of` selector, and a date-aware calendar for sourced histories. Five key
 rows are **Primary** and nineteen are **Partial**, because a named historical

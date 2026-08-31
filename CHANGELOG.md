@@ -13,6 +13,193 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Fixed
 
+- **Cboe EDGA/EDGX early-queue gap reclassified: unfinished search, not a
+  knowledge-bound row.** SR-EDGX-2015-03 (80 FR 2163, filed 2015-01-08) and its
+  EDGA twin SR-EDGA-2015-03 (80 FR 2125) quote Rule 11.1(a)(1) as *already*
+  providing order entry "from 6:00 a.m. until 8:00 p.m. Eastern Time" while
+  carrying it onto the BATS platform. That puts the 06:00 start no later than
+  2015-01-08 and — the material point — locates it in the **rulebook** rather
+  than in an operator system setting, so some dated SEC filing established it.
+  These two rows are therefore expected to close, and must not be written up
+  with the permanent-gap language the US options rows carry, where the start is
+  a mutable system setting no filing ever fixed. The 2010 registration order
+  (75 FR 13151) does not state the hours; the filing that first set Rule
+  11.1(a)(1) to 06:00 remains the target.
+
+- **SGX equity-index history rebuilt from six calendar editions: three sourced
+  eras, and a correction to the fix itself (behaviour change).** The five
+  `sgx_equity_index_*` keys carried today's grid back to the January-2010 floor
+  across transitions the module itself recorded as real, which made them the only
+  rows in the crate that could **over**-report. SGX's Derivatives Trading
+  Calendar — static, readable PDFs under `api2.sgx.com/sites/default/files/` —
+  supplies the dated grids, and reading six editions rather than two shows there
+  were **two** changes:
+
+  | edition | Japan T / T+1 | China T+1 | SiMSCI T+1 | Taiwan T+1 | NTR T+1 |
+  |---|---|---|---|---|---|
+  | 2020, 2021-07, 2024 | 07:30–14:25 / 14:55 | 17:00 | 17:50 | 14:15 | 19:00 |
+  | 2025-01 | 07:30–**14:55** / **15:25** | 17:00 | 17:50 | 14:15 | 19:00 |
+  | 2025-11, 2026-01 | 07:30–14:55 / **15:10** | **16:45** | **17:35** | **14:00** | **18:45** |
+
+  Japan's T session lengthened at the 2024/2025 boundary while its T+1 moved to
+  15:25; only later in 2025 did Japan's T+1 settle at 15:10 and the other four
+  families pull their T+1 opens fifteen minutes earlier. **An intersection
+  computed from the 2021 and 2026 editions alone — which this crate briefly
+  shipped — puts Japan's T+1 at 15:10 and so reports the market open between
+  15:10 and 15:25 through 2025, when it was not.** The dated surface therefore serves **one window** from the first sourced
+  edition — the intersection of all six, the bounds `regular` in every one of
+  them (Japan T 07:30–14:25 and T+1 15:25–05:15; China T+1 17:00; SiMSCI
+  17:50; Taiwan 14:15; NTR 19:00) — and the verified-current grid from the
+  2026 edition. No revision is keyed to either undated transition.
+  Neither transition day is stated anywhere reachable, and an annual edition's
+  year is a publication scope rather than an effective date, so no revision is
+  keyed to one: the intersection carries the uncertainty instead. The two
+  boundaries that remain are not inferred cutovers — 2020-01-01 separates
+  sourced from unsourced, and 2026-01-01 is the scope of the edition titled
+  "SGX Calendar 2026". Routines are dropped from the historical eras deliberately — the calendar
+  states session bounds only, and each Pre-Opening/Non-Cancel and closing routine
+  moved with the session it brackets. Dates before the 2020 edition remain
+  sessionless. `sgx_equity_index_history_has_three_sourced_eras` pins all three
+  eras, including the 15:10–15:25 probe that the earlier intersection failed.
+
+- **Historical queue and session gaps are now served instead of withheld
+  (behaviour change).** Two conventions were made explicit in `AGENTS.md` and
+  applied: carry the earliest sourced state back to the January-2010 audit
+  floor when no primary source names a cutover inside the interval, and prefer
+  the sourced *intersection* to omission when only a changeover day is undated.
+  - **CME Sunday Pre-Open.** The four Globex families (`globex_equity_index`,
+    `globex_energy`, `globex_fx`, `globex_interest_rates`) and the four venue
+    rows that reuse them previously answered `Closed` for the whole Sunday
+    16:00–17:00 hour on every dated instant, because the 16:15→16:00 move is
+    undated. CME's queue only ever widened — 16:15 at the audit floor, 16:00
+    verified current — so Sunday **16:15–17:00 is order-entry under every
+    sourced state** and is now carried from the January-2010 floor with no
+    cutover asserted — for `globex_equity_index`, `globex_energy`, `globex_fx` and
+    `globex_interest_rates`, and the `cme`/`cbot`/`comex`/`nymex` rows that
+    reuse them. Only the disputed 16:00–16:15 quarter-hour still waits on the
+    undated 2012 move, and that quarter-hour alone — not the whole hour — is
+    what the 2026-08-22 review row adds. A Sunday 16:30 CT instant in 2011, 2015 or 2025 now
+    answers `OrderEntry` rather than `Closed`. `globex_energy` also regains its
+    Monday–Thursday 16:45–17:00 queue, which the dated profiles dropped
+    entirely.
+  - **CME Nikkei 225 Dollar.** `globex_nikkei_225_dollar` previously returned
+    **no session at all** before 2012-11-18, modelling a contract that was
+    demonstrably trading as closed for nearly three years. CME's own
+    trading-hours pages captured 2012-05-11 and 2012-05-28 publish the grid
+    directly — Electronic Trading (Sunday) "17:00-15:15" and (Weekday)
+    "15:30-16:30, 17:00-15:15", byte-identical to the E-mini S&P 500 row beside
+    it — so that grid is carried back to the January-2010 floor. The residual
+    risk is stated beside the table: a 2010 grid change is attested by a
+    third-party aggregator and no primary source, so the profile may be wrong
+    for part of 2010, which is a smaller error than reporting the whole
+    interval closed.
+  - **CME livestock morning queue.** `globex_livestock` dropped its 06:00–08:30
+    CT morning Pre-Open for the whole 2016-02-29..2020-05-31 span because the
+    queue's original onset is undated. SER-8599R states the outgoing 06:00
+    value when it dates the move to 08:00, and no source names a cutover
+    between SER-7591's 2016-02-29 grid and that move, so the queue is now
+    carried across that interval. It is deliberately not carried further back:
+    the older around-the-clock grid has no 08:30 open for a morning queue to
+    precede.
+  - New fences pin these behaviours on both sides:
+    `sunday_pre_open_carries_back_at_its_narrowest_sourced_edge` asserts the
+    queue is served at 16:30 CT and withheld at 16:00 CT across four families
+    and four decades of Sundays, the NKD boundary test now probes the
+    pre-2012 16:30 CT close against the 16:15 CT close SER-6465 introduced, and
+    `livestock_morning_queue_spans_its_sourced_matching_grid` pins the 06:00 CT
+    edge on both sides of the 2020 move and its non-extension past 2016.
+
+
+- **ICE Futures U.S. softs and USDX: the pre-2014 grids are now stated, not
+  inferred, and Cotton's Sunday omission rests on contrast rather than
+  silence.** Two dated editions of ICE's own *ICE Futures U.S. Regular Trading
+  Hours* master table — **August 2011** and **January 2, 2013** — were recovered
+  and read. They print the pre-2014 grids outright: Coffee "C" 3:30–14:00,
+  Cocoa 4:00–14:00 and FCOJ-A 8:00–14:00 in both editions, which **supersedes
+  the previous record** that the pre-2014 coffee and cocoa grids were
+  "corroborated by the surrounding primary record rather than stated". For
+  Cotton the two editions repeat the same footnote contrast — Cotton is marked
+  `*` ("Trading commences on previous business day") while the Grains, Russell,
+  USDX and currency rows carry `**` ("…and on Sunday evenings only trading
+  commences at 18:00") and energy `***` — so ICE drew the Sunday distinction
+  explicitly at two independent dated points and did not extend it to Cotton;
+  the modelled omission of Cotton's Sunday-evening open is now positively
+  evidenced. Two gaps were re-worked and confirmed negative: every archived
+  edition of the master table was enumerated and August 2011 is the earliest in
+  existence, so Sugar's January-2010 close is limited by document availability;
+  and ICE's 2007 currencies release states only the 20:00–18:00 ET
+  currency-futures grid without ever printing a USDX grid, so the pre-2011 USDX
+  grid stays undated. All six keys retain `Partial`, now with a single shared,
+  precisely named residual gap: January 2010 to August 2011. No profile or
+  revision row changed.
+
+- **CME grains, NKD, cryptocurrency and livestock: the remaining Batch B gaps
+  are now sourced states or confirmed source-level silences.** Grains — CME's
+  own trading-hours pages inside the 21-hour regime publish Sunday Pre-Open
+  16:00, weekday "14:30-16:00, 16:45-17:00" and ETH 17:00-14:00 (2012-05-28 and
+  2012-06-07), against Sunday 16:15 and the 18:00-07:15/09:30-13:15 grid on
+  2012-05-11, bracketing the switch to 2012-05-11..2012-05-28 around the sourced
+  2012-05-20 expansion; Advisory #20120518 states only matching hours, so no
+  queue revision is keyed to it. NKD — the same pages state the pre-2012 grid
+  (Sunday Pre-Open 16:15, ETH 17:00-15:15, weekday "15:25, 16:45" and
+  "15:30-16:30, 17:00-15:15"), byte-identical to the E-mini S&P 500 row beside
+  it, which **supersedes the previous record that no primary source states the
+  pre-2012 evening open**; only the grid's onset stays undated, so the
+  sessionless pre-2012 treatment is unchanged. Cryptocurrency — the bitcoin
+  contract specification captured 2017-12-14, carrying its own launch statement
+  for trade date 2017-12-18, publishes the Globex matching grid and no Pre-Open,
+  confirming the five-day era's queue onset is undated at the source. Livestock
+  — the specification channel was checked as a second route into the
+  2016-11..2020-03 interval and is silent too, rendering only ClearPort/Default
+  08:30-13:05 CT hours with no Globex Pre-Open or PCP row. No profile or
+  revision row changed.
+
+- **CME Globex Sunday pre-open: bracket narrowed to ten days, and both notice
+  channels shown silent.** Three archived captures of CME's own trading-hours
+  pages, unused by the earlier review, cut the 16:15→16:00 CT Sunday Pre-Open
+  bracket from 2012-05-03..2012-06-15 down to **2012-05-28..2012-06-07**. The
+  move was platform-wide and simultaneous — E-mini S&P 500, Eurodollar, 30-Year
+  Interest Rate Swap, Euroyen TIBOR, Gold, Silver, Light Sweet Crude and Henry
+  Hub all read 16:15 on the 2012-05-28 capture and 16:00 on the 2012-06-07
+  capture — and Sunday-only, since weekday Pre-Opens are identical across both.
+  CBOT grains are separated out of it: the 2012-05-11 capture still shows the
+  pre-expansion grain grid at 16:15 and the 2012-05-28 capture the expanded
+  17:00–14:00 grid at 16:00, confirming grains moved at the already-dated
+  2012-05-20 expansion rather than with the platform. Both CME notice channels
+  were then read in full across the narrowed window — Globex Notices of
+  2012-05-21, 2012-05-28 and 2012-06-04, and Market Data Notices of 2012-05-28
+  — and none contains any occurrence of "Pre-Open", "trading hours", "16:00" or
+  "16:15", so the change was made without a dated operator notice. The
+  `globex_equity_index`, `globex_energy`, `globex_fx` and
+  `globex_interest_rates` keys and the `cme`/`cbot`/`comex`/`nymex` venue rows
+  keep their `Partial` basis and their knowledge-bound Sunday-queue treatment;
+  no cutover is encoded, because the only Sunday inside the bracket
+  (2012-06-03) is an inference from the bracket rather than a source-stated
+  effective day.
+
+- **US options queue onsets: the gap is knowledge-bound, and MIAX's is now
+  bracketed.** A review of all seventeen `Partial` US listed-equity-options
+  rows established why no onset day exists: on every venue the generic
+  order-acceptance start is an operator *system setting* published on a mutable
+  hours or system-settings page, not a rulebook boundary carrying a filed
+  operative date. The two filings that codified the Cboe queuing periods say so
+  outright — SR-C2-2019-009 (84 FR 20673) and SR-CboeBZX-2020-012 (85 FR
+  6246) each write down 07:30 as "the same time at which the System begins
+  accepting orders and quotes today", and record that Cboe Options Rule 6.2(a)
+  bounds the pre-opening period rather than fixing it. Nasdaq states each start
+  in a per-venue System Settings document, NYSE on its hours page, and MIAX on
+  its trade-hours calendar; none of those channels publishes a dated change
+  notice. The rows keep their `Partial` basis, but each now names a
+  knowledge-bound gap rather than an unfinished search, and three carry sourced
+  lower bounds (C2 no later than 2019-05-10, BZX Options 2020-02-04, ISE's
+  06:00 start 2019-10-17). MIAX Options gains a real bracket: its official
+  hours page captured 2012-12-09 — two days after the sourced launch — states
+  that pre-Live-Quote-Window activity "WILL NOT affect the live quote state",
+  while the 2013-05-07 capture states it WILL affect the live book, so the
+  launch-era queue-free row is now positively sourced and the order-acceptance
+  onset falls in 2012-12-09..2013-05-07. No profile, revision row, or selector
+  changed: no primary source states a day, so none was invented.
+
 - **CME grains: dated queues and PCP now begin at their sourced 2013 onset.**
   CME's 22 March 2013 Global Command Center notice, the state-level companion
   to SER-6617, states the unconditional onset of every current CBOT
@@ -40,6 +227,18 @@ corrections (a venue's hours fixed against a primary source) go under
   verification ledger.
 
 ### Changed
+
+- **README assurance statements rewritten in plain language.** The three
+  headline counts kept their values and their machine-checked format, but
+  "Non-synthetic profiles requiring reconciliation" was actively misleading:
+  the ledger reserves *reconcile* for **Known issue** rows, of which there are
+  none, so the label implied 27 broken venues when it counted 27 rows whose
+  present-day hours are verified and whose history has one named missing day.
+  The three lines are now "Today's hours check out against the exchange",
+  "Full dated history back to January 2010" and "History complete except for
+  one named gap", each followed by a plain-terms explanation of what it does
+  and does not claim. The dated audit report carries the same relabelling; no
+  count, method or exclusion in it changed.
 
 - **Single-path, instant-driven profile selection (breaking, pre-1.0).**
   Every schedule-selection entry point now requires the caller's instant:

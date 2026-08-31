@@ -33,23 +33,40 @@ fn open_regular_at(key: MarketHoursKey, instant: DateTime<Utc>) -> bool {
 /// the halt removal (2013), then moved to 16:00 CT (2015-09-20, CME Globex
 /// Notice #20150817). 21:10Z is 16:10 CT on a US summer date, so it is inside
 /// the session only while the close is 16:15 CT. Before 2012-11-18 the dated
-/// route returns no session at all: the pre-2012 evening open is not
-/// primary-sourced, so the interval is omitted rather than filled with the
-/// post-2012 grid.
+/// route serves the sourced pre-2012 grid — CME's own trading-hours pages give
+/// Electronic Trading (Sunday) "17:00-15:15" and (Weekday) "15:30-16:30,
+/// 17:00-15:15" — carried back to the January-2010 floor because no primary
+/// source names a cutover inside that interval.
 #[test]
 fn nkd_close_tracks_its_three_sourced_revisions() {
     let key = MarketHoursKey::GlobexNikkei225Dollar;
 
-    // 18:30 CT on a Wednesday evening: inside the post-2012 envelope, but
-    // pre-2012 dates are sessionless, so the dated surface must not fabricate
-    // a session boundary for an unsourced era.
+    // 18:30 CT on a Wednesday evening is inside the pre-2012 evening session,
+    // which runs 17:00 CT to 15:15 CT on the next trade date.
     assert!(
-        !open_at(key, utc(2011, 6, 15, 23, 30)),
-        "pre-2012 dates return no session; the evening open of that era is not sourced"
+        open_at(key, utc(2011, 6, 15, 23, 30)),
+        "the pre-2012 grid opens at 17:00 CT, so 18:30 CT that evening is open"
+    );
+    // 16:10 CT is inside the pre-2012 post-halt segment, which ran to 16:30 CT
+    // — fifteen minutes longer than the 16:15 CT close SER-6465 introduced.
+    assert!(
+        open_at(key, utc(2011, 6, 15, 21, 10)),
+        "the pre-2012 post-halt segment closes at 16:30 CT, so 16:10 CT is open"
+    );
+    // ...and the extra quarter-hour is the difference from the 2012 grid: 16:20
+    // CT is open before 2012-11-18 and closed after it.
+    assert!(
+        open_at(key, utc(2011, 6, 15, 21, 20)),
+        "16:20 CT is inside the pre-2012 16:30 CT close"
     );
     assert!(
-        !open_at(key, utc(2011, 6, 15, 21, 10)),
-        "with no pre-2012 session there is nothing open at 16:10 CT either"
+        !open_at(key, utc(2013, 6, 19, 21, 20)),
+        "SER-6465 pulled the close to 16:15 CT, so 16:20 CT must be closed after it"
+    );
+    // The carry-back reaches the January-2010 audit floor.
+    assert!(
+        open_at(key, utc(2010, 1, 6, 23, 30)),
+        "the sourced pre-2012 grid is carried back to the 2010 audit floor"
     );
     assert!(
         open_at(key, utc(2014, 6, 18, 21, 10)),
@@ -288,4 +305,193 @@ fn overnight_order_entry_and_closed_gaps_match_the_published_phase_machine() {
         japan.session_state(utc(2026, 4, 19, 23, 20)),
         SessionState::OrderEntry
     );
+}
+
+/// The Sunday Pre-Open queue is carried back to the January-2010 floor at its
+/// narrowest sourced value, 16:15 CT, because CME's queue only ever widened
+/// inside the modelled window (16:15 at the audit floor, 16:00 verified
+/// current). These probes fence the intersection on both sides so a future edit
+/// cannot silently drop the historical Sunday queue again — the state this
+/// suite previously did not cover at all — nor quietly widen it to 16:00 on a
+/// dated instant, which would assert the undated 2012 cutover.
+///
+/// 21:00Z is 16:00 CT and 21:30Z is 16:30 CT on a US summer Sunday.
+#[test]
+fn sunday_pre_open_carries_back_at_its_narrowest_sourced_edge() {
+    const FAMILIES: [MarketHoursKey; 4] = [
+        MarketHoursKey::GlobexEquityIndex,
+        MarketHoursKey::GlobexEnergy,
+        MarketHoursKey::GlobexFx,
+        MarketHoursKey::GlobexInterestRates,
+    ];
+
+    // Sundays spread across the modelled window, each side of the undated
+    // 2012-05-28..2012-06-07 bracket and well beyond it.
+    const SUNDAYS: [(i32, u32, u32); 4] = [(2010, 6, 6), (2011, 6, 5), (2015, 6, 7), (2025, 6, 8)];
+
+    for key in FAMILIES {
+        for (year, month, day) in SUNDAYS {
+            let inside = utc(year, month, day, 21, 30);
+            assert_eq!(
+                hours_for_market_hours_key(key, inside).session_state(inside),
+                SessionState::OrderEntry,
+                "{key:?} must queue orders at Sunday 16:30 CT on {year}-{month}-{day}: \
+                 16:30 is inside the queue under every sourced Sunday value"
+            );
+
+            // 16:00 CT is inside the queue only under the verified-current
+            // grid, whose onset day is undated, so a dated instant must not
+            // claim it.
+            let disputed = utc(year, month, day, 21, 0);
+            assert_eq!(
+                hours_for_market_hours_key(key, disputed).session_state(disputed),
+                SessionState::Closed,
+                "{key:?} must not extend the dated Sunday queue to 16:00 CT on \
+                 {year}-{month}-{day}: that quarter-hour depends on the undated 2012 cutover"
+            );
+        }
+    }
+}
+
+/// CME dated the livestock morning Pre-Open moving "from 06:00 to 08:00" on
+/// 2020-05-31, which states the outgoing 06:00 value. No source names a cutover
+/// between SER-7591's 2016-02-29 grid — the 08:30 open this queue runs into —
+/// and that move, so 06:00-08:30 is carried across the interval. It is not
+/// carried further back: the pre-2016 around-the-clock grid has no 08:30 open.
+///
+/// 11:00Z is 06:00 CT and 13:10Z is 08:10 CT on a US summer date.
+#[test]
+fn livestock_morning_queue_spans_its_sourced_matching_grid() {
+    let key = MarketHoursKey::GlobexLivestock;
+
+    let inside = utc(2017, 6, 14, 11, 0);
+    assert_eq!(
+        hours_for_market_hours_key(key, inside).session_state(inside),
+        SessionState::OrderEntry,
+        "06:00 CT queues orders between 2016-02-29 and the 2020-05-31 move"
+    );
+
+    // After the sourced move the queue starts at 08:00, so 06:00 CT is closed.
+    let after = utc(2021, 6, 16, 11, 0);
+    assert_eq!(
+        hours_for_market_hours_key(key, after).session_state(after),
+        SessionState::Closed,
+        "SER-8599R moved the start to 08:00 CT, so 06:00 CT must be closed after it"
+    );
+
+    // 08:10 CT is inside the queue on both sides of that move.
+    for instant in [utc(2017, 6, 14, 13, 10), utc(2021, 6, 16, 13, 10)] {
+        assert_eq!(
+            hours_for_market_hours_key(key, instant).session_state(instant),
+            SessionState::OrderEntry,
+            "08:10 CT is inside the morning queue under both sourced starts"
+        );
+    }
+
+    // The pre-2016 around-the-clock grid keeps no morning queue.
+    let old = utc(2013, 6, 12, 11, 0);
+    assert_ne!(
+        hours_for_market_hours_key(key, old).session_state(old),
+        SessionState::OrderEntry,
+        "the morning queue is not carried back past the 2016-02-29 grid it belongs to"
+    );
+}
+
+/// SGX equity-index history: sessionless before the first sourced calendar
+/// edition, then one sourced window, then the verified-current grid from the
+/// knowledge-bound review row.
+///
+/// Six editions of SGX's Derivatives Trading Calendar disagree in two places
+/// and state neither transition day, so the dated surface serves the
+/// intersection of all six rather than keying revisions to an edition's year —
+/// an annual edition's year is a publication scope, not an effective date.
+/// Japan's T closes at 14:25 and its T+1 opens at 15:25 in that window, which
+/// are the narrowest bounds any edition gives.
+///
+/// Singapore has no DST, so 06:30Z is 14:30 SGT, 07:15Z is 15:15 SGT, 07:40Z is
+/// 15:40 SGT and 08:50Z is 16:50 SGT. 2026-09-16 falls after the review row.
+#[test]
+fn sgx_equity_index_serves_the_sourced_window_then_the_verified_grid() {
+    let japan = MarketHoursKey::SgxEquityIndexJapan;
+
+    assert!(
+        !open_at(japan, utc(2015, 6, 17, 6, 30)),
+        "pre-2020 SGX dates are sessionless: no edition of the calendar survives"
+    );
+
+    // Inside the sourced window the narrowest bounds apply, so both the T close
+    // beyond 14:25 and the T+1 open before 15:25 stay closed.
+    for year in [2022, 2025] {
+        for (h, m, what) in [
+            (6u32, 30u32, "14:30 SGT, past the 14:25 T close"),
+            (7, 15, "15:15 SGT, before the 15:25 T+1 open"),
+        ] {
+            let t = utc(year, 6, if year == 2022 { 15 } else { 18 }, h, m);
+            assert!(
+                !open_at(japan, t),
+                "{year}: {what} is outside the sourced window every edition agrees on"
+            );
+        }
+        let inside = utc(year, 6, if year == 2022 { 15 } else { 18 }, 7, 40);
+        assert!(
+            open_at(japan, inside),
+            "{year}: 15:40 SGT is inside the T+1 session in every sourced edition"
+        );
+    }
+
+    // After the knowledge-bound row the verified-current grid applies: T runs to
+    // 14:55 and T+1 opens at 15:10.
+    for (h, m) in [(6u32, 30u32), (7, 15)] {
+        let t = utc(2026, 9, 16, h, m);
+        assert!(
+            open_at(japan, t),
+            "the verified-current grid opens Japan at both 14:30 and 15:15 SGT"
+        );
+    }
+
+    // China's T+1 opens at 17:00 in the sourced window and 16:45 currently.
+    let china = MarketHoursKey::SgxEquityIndexChina;
+    assert!(
+        !open_at(china, utc(2022, 6, 15, 8, 50)),
+        "16:50 SGT precedes China's 17:00 T+1 open in the sourced window"
+    );
+    assert!(
+        open_at(china, utc(2026, 9, 16, 8, 50)),
+        "the verified-current grid opens China's T+1 at 16:45 SGT"
+    );
+
+    // The remaining three keys each pull their T+1 open fifteen minutes earlier
+    // at the same 2026 boundary, so each gets both sides of it. 09:40Z is 17:40
+    // SGT, 06:05Z is 14:05 SGT and 10:50Z is 18:50 SGT — each five minutes
+    // inside the current T+1 and outside the sourced window's.
+    for (key, hour, minute, window_open, current_open) in [
+        (
+            MarketHoursKey::SgxEquityIndexSingapore,
+            9u32,
+            40u32,
+            "17:50",
+            "17:35",
+        ),
+        (MarketHoursKey::SgxEquityIndexTaiwan, 6, 5, "14:15", "14:00"),
+        (
+            MarketHoursKey::SgxEquityIndexNtrUsd,
+            10,
+            50,
+            "19:00",
+            "18:45",
+        ),
+    ] {
+        assert!(
+            !open_at(key, utc(2022, 6, 15, hour, minute)),
+            "{key:?}: the sourced window opens T+1 at {window_open} SGT, so this probe is closed"
+        );
+        assert!(
+            open_at(key, utc(2026, 9, 16, hour, minute)),
+            "{key:?}: the verified-current grid opens T+1 at {current_open} SGT"
+        );
+        assert!(
+            !open_at(key, utc(2015, 6, 17, 6, 30)),
+            "{key:?} must be sessionless before the first sourced edition"
+        );
+    }
 }

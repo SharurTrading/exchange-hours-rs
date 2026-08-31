@@ -100,6 +100,16 @@ pub(crate) static ICE_USDX_CURRENT: StaticHoursProfile = StaticHoursProfile {
 // close_ssm` encodes exactly one complete local-day span, so Sunday 18:00 runs
 // continuously to Monday 18:00, which is what the pre-2011 grid described.
 //
+// 2026-08-31: the pre-2011 dating question was re-worked and stays negative.
+// ICE's 2007 currencies release states only that "Electronic trading hours for
+// currency futures are from 8:00 p.m. ET through 6:00 p.m. ET each trading
+// day", and mentions the Dollar Index solely as having "began trading
+// electronically in June" - it never prints a USDX grid. The earliest surviving
+// edition of the master table is AUGUST 2011, after the 2011-02-14 close
+// revision. So no primary source dates the pre-2011 USDX grid, and the gap is
+// document availability rather than an unfinished search.
+// https://web.archive.org/web/20101224164411id_/https://www.theice.com/publicdocs/futures_us/exchange_notices/Currencies_Electronic_Trade.pdf
+//
 // The notice's parenthetical lists the unchanged weekday opens as "8:00 pm NY
 // time Tuesday through Thursday evenings". That wording would leave Tuesday's
 // trade date with no open at all, and the master hours table footnote applies

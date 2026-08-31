@@ -337,7 +337,7 @@ fn readme_and_audit_quantify_assurance_from_the_ledger() {
     let secondary = basis_count(&exchange_rows, "Secondary");
     let pragmatic = basis_count(&exchange_rows, "Pragmatic");
     let known_issues = basis_count(&real_exchange_rows, "Known issue");
-    let requiring_reconciliation = partial
+    let history_gap_rows = partial
         + basis_count(&real_exchange_rows, "Secondary")
         + basis_count(&real_exchange_rows, "Pragmatic")
         + known_issues;
@@ -366,19 +366,19 @@ fn readme_and_audit_quantify_assurance_from_the_ledger() {
 
     let claims = [
         format!(
-            "**Primary-source-verified current profiles:** `{verified} of {}`",
+            "**Hours verified against the exchange at the review date:** `{verified} of {}`",
             real_exchange_rows.len()
         ),
         format!(
-            "**Complete sourced history since January 2010:** `{primary} of {}`",
+            "**Full dated history back to January 2010:** `{primary} of {}`",
             real_exchange_rows.len()
         ),
         format!(
-            "**Non-synthetic profiles requiring reconciliation:** `{requiring_reconciliation} of {}`",
+            "**History complete except for one named gap:** `{history_gap_rows} of {}`",
             real_exchange_rows.len()
         ),
         format!(
-            "**Primary-source-verified current key snapshots:** `{verified_keys} of {}`",
+            "**Hours verified at the review date for each product family:** `{verified_keys} of {}`",
             real_key_rows.len()
         ),
     ];

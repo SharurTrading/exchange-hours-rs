@@ -93,12 +93,23 @@ static COFFEE_2014: StaticHoursProfile = StaticHoursProfile {
 //
 // Sourcing caveat, stated plainly: the January 2014 notice prints only the NEW
 // grid, marking in bold which of those figures moved. It never prints the times
-// it replaced. The pre-2014 03:30 open and 14:00 close are therefore corroborated
-// by the surrounding primary record rather than stated by the notice that dates
-// the change, and they are recorded here on that basis. Because no primary
-// document dates a cutover earlier than 2014-02-03 inside the modelled window,
-// this grid is carried back as the baseline rather than inventing an earlier
-// revision.
+// it replaced.
+//
+// SOURCING CAVEAT SUPERSEDED 2026-08-31. The pre-2014 grid is no longer merely
+// corroborated: two dated editions of ICE's own "ICE Futures U.S. Regular
+// Trading Hours" master table print it outright. The AUGUST 2011 edition and
+// the JANUARY 2, 2013 edition both read "Coffee "C"(R)   3:30 - 14:00", so the
+// 03:30 open and 14:00 close are stated by primary ICE documents at two dated
+// points spanning up to the 2014-02-03 change. Because no primary document
+// dates a cutover earlier than 2014-02-03 inside the modelled window, this grid
+// is still carried back as the baseline rather than inventing an earlier
+// revision; the residual gap is January 2010 to August 2011, for which no
+// edition of the master table survives in the archive.
+// Dated editions of ICE's own master table, official origin
+// https://www.ice.com/publicdocs/futures_us/ICE_Futures_US_Regular_Trading_Hours.pdf
+// delivered via
+// https://web.archive.org/web/20111212140120id_/https://www.theice.com/publicdocs/futures_us/ICE_Futures_US_Regular_Trading_Hours.pdf
+// https://web.archive.org/web/20130122132629id_/https://www.theice.com/publicdocs/futures_us/ICE_Futures_US_Regular_Trading_Hours.pdf
 //
 // The pre-open likewise runs from 20:00 on the prior Exchange business day; only
 // its end differs, tracking the 03:30 open of this era. It is order entry, not

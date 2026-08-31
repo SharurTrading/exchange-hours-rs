@@ -24,7 +24,7 @@ use chrono_tz::Asia;
 use super::super::StaticHoursProfile;
 use crate::calendar::SessionRule;
 use crate::calendar::rule::MON_FRI;
-use crate::calendar::schedules::timeline::{Revision, local_date, select_revision};
+use crate::calendar::schedules::timeline::{Revision, local_date, revisions, select_revision};
 
 // --- Japan (Nikkei 225 suite: NK, NS, NU, NC, NR, ND, EJP, EJRT) -------------
 
@@ -90,16 +90,184 @@ pub(crate) static SGX_EQUITY_INDEX_JAPAN_BASELINE: StaticHoursProfile = StaticHo
     has_weekend_close: true,
 };
 
-// Deliberately empty. SGX's equity-index hours demonstrably moved inside the
-// modelled window, but every move is only bracketed between successive editions
-// of the SGX derivatives trading calendar - the circular archive does not
-// expose a day-level effective date for any of them. No primary source dates a
-// cutover, so none is encoded and the current grid is carried back across the
-// whole modelled window. That makes this family Partial rather than Primary.
+/// Sessionless profile for dates before the first sourced SGX calendar edition.
+static SGX_EQUITY_INDEX_CLOSED: StaticHoursProfile = StaticHoursProfile {
+    tz: Asia::Singapore,
+    regular: &[],
+    extended: &[],
+    order_entry: &[],
+    has_daily_close: true,
+    has_weekend_close: true,
+};
+
+// SGX EQUITY-INDEX HISTORY, REBUILT 2026-08-31 FROM SIX CALENDAR EDITIONS. These
+// grids previously asserted today's schedule back to the January-2010 floor
+// across transitions this module itself recorded as real, which made them the
+// only rows in the crate that could answer *open* on bounds that differed at the
+// time. SGX's own Derivatives Trading Calendar - static, readable PDFs under
+// api2.sgx.com/sites/default/files/ - supplies the dated grids, and reading six
+// editions rather than two shows there were TWO changes, not one:
+//
+//   edition   Japan T / T+1        China T+1  SiMSCI T+1  Taiwan T+1  NTR T+1
+//   2020      07:30-14:25 / 14:55  17:00      17:50       14:15       19:00
+//   2021-07   07:30-14:25 / 14:55  17:00      17:50       14:15       19:00
+//   2024      07:30-14:25 / 14:55  17:00      17:50       14:15       19:00
+//   2025-01   07:30-14:55 / 15:25  17:00      17:50       14:15       19:00
+//   2025-11   07:30-14:55 / 15:10  16:45      17:35       14:00       18:45
+//   2026-01   07:30-14:55 / 15:10  16:45      17:35       14:00       18:45
+//
+// So Japan's T session lengthened somewhere between the 2024 and 2025-01
+// editions while its T+1 moved to 15:25, and somewhere between the 2025-01 and
+// 2025-11 editions Japan's T+1 settled at 15:10 and the other four families
+// pulled their T+1 opens fifteen minutes earlier. NEITHER TRANSITION DAY IS
+// STATED ANYWHERE, and an annual edition's year is a publication scope, not an
+// effective date - LAW-NO-FABRICATED-DATES forbids keying a revision to one.
+// Encoding the eras at January-1 boundaries would also risk real error: if the
+// first change landed after the 2025 edition went out, serving the longer T
+// session from 2025-01-01 reports the market open before it was.
+//
+// WHY THE TWO BOUNDARIES ARE NOT INFERRED CUTOVERS. 2020-01-01 is a knowledge
+// boundary, not a claimed change: no edition of the calendar survives before it,
+// so it separates "sourced" from "unsourced" exactly as a launch day separates a
+// venue from its pre-launch closure. 2026-01-01 is the scope of the edition
+// titled "SGX Calendar 2026", which states hours for that trading year; applying
+// a source across the period it covers is not the same as inferring an effective
+// day. What is genuinely undated - the two transitions inside 2024-2025 - is
+// handled by the intersection rather than by a revision row, which is the whole
+// point of serving one window there.
+//
+// A knowledge-bound review row cannot be used here. Those rows may only ADD
+// order-entry phases: `surface_agreement` holds tradeable sessions identical
+// between the fixed and dated surfaces, and `DOCUMENTED_DIVERGENCE` licenses
+// divergence on order acceptance only. SGX's undated transitions move `regular`
+// bounds, so they must resolve inside the dated timeline.
+//
+// So the dated surface serves ONE window from the first sourced edition: the
+// intersection of all six, the bounds that are `regular` in every one of them.
+// Japan T 07:30-14:25 and T+1 15:25-05:15; China T+1 17:00; SiMSCI T+1 17:50;
+// Taiwan T+1 14:15; NTR (USD) T+1 19:00. No cutover is asserted and no instant
+// is reported open on hours that were not in force. The verified-current grid
+// arrives at the 2026-08-22 knowledge-bound row, the same device every other
+// undated-onset family in this crate uses.
+//
+// Routines are dropped from the historical eras deliberately: the calendar
+// states session bounds only, and each Pre-Opening/Non-Cancel window and the
+// closing routine moved with the session it brackets, so their historical
+// positions are not sourced.
+//
+// Before the 2020 edition nothing is sourced and SGX's own member newsletters
+// place an hours change immediately there - "Titan DTDC Newsletter - Change of
+// Trading Hours" (2018-12), "- Extension of T+1 Trading Hours" (2019-07) and
+// "- Ext of T+1 Trading Hours Go Live Schedule" (2019-10), all password-locked
+// member documents. Those dates are modelled sessionless, matching the crate's
+// treatment of every era it cannot source.
+// https://api2.sgx.com/sites/default/files/2020-01/SGX%20Derivatives%20Trading%20Calendar%202020.pdf
+// https://api2.sgx.com/sites/default/files/2021-07/SGX_Derivatives%20Trading%20Calendar%202021%20%28Final%20-%20Jul%29.pdf
+// https://api2.sgx.com/sites/default/files/2024-01/SGX%20Calendar%202024.pdf
+// https://api2.sgx.com/sites/default/files/2025-01/SGX%20Calendar%202025.pdf
+// https://api2.sgx.com/sites/default/files/2025-11/DT%20Trading%20Calendar%202025.pdf
+// https://api2.sgx.com/sites/default/files/2026-01/SGX%20Calendar%202026_2.pdf
+static SGX_EQUITY_INDEX_JAPAN_REGULAR_SOURCED_WINDOW: &[SessionRule] = &[
+    SessionRule {
+        days: MON_FRI,
+        open_ssm: 7 * 3600 + 30 * 60,
+        close_ssm: 14 * 3600 + 25 * 60,
+    },
+    SessionRule {
+        days: MON_FRI,
+        open_ssm: 15 * 3600 + 25 * 60,
+        close_ssm: 5 * 3600 + 15 * 60,
+    },
+];
+static SGX_EQUITY_INDEX_JAPAN_SOURCED_WINDOW: StaticHoursProfile = StaticHoursProfile {
+    tz: Asia::Singapore,
+    regular: SGX_EQUITY_INDEX_JAPAN_REGULAR_SOURCED_WINDOW,
+    extended: &[],
+    order_entry: &[],
+    has_daily_close: true,
+    has_weekend_close: true,
+};
+
+static SGX_EQUITY_INDEX_CHINA_REGULAR_SOURCED_WINDOW: &[SessionRule] = &[
+    SessionRule {
+        days: MON_FRI,
+        open_ssm: 9 * 3600,
+        close_ssm: 16 * 3600 + 30 * 60,
+    },
+    SessionRule {
+        days: MON_FRI,
+        open_ssm: 17 * 3600,
+        close_ssm: 5 * 3600 + 15 * 60,
+    },
+];
+static SGX_EQUITY_INDEX_CHINA_SOURCED_WINDOW: StaticHoursProfile = StaticHoursProfile {
+    tz: Asia::Singapore,
+    regular: SGX_EQUITY_INDEX_CHINA_REGULAR_SOURCED_WINDOW,
+    extended: &[],
+    order_entry: &[],
+    has_daily_close: true,
+    has_weekend_close: true,
+};
+
+static SGX_EQUITY_INDEX_SINGAPORE_REGULAR_SOURCED_WINDOW: &[SessionRule] = &[
+    SessionRule {
+        days: MON_FRI,
+        open_ssm: 8 * 3600 + 30 * 60,
+        close_ssm: 17 * 3600 + 20 * 60,
+    },
+    SessionRule {
+        days: MON_FRI,
+        open_ssm: 17 * 3600 + 50 * 60,
+        close_ssm: 5 * 3600 + 15 * 60,
+    },
+];
+static SGX_EQUITY_INDEX_SINGAPORE_SOURCED_WINDOW: StaticHoursProfile = StaticHoursProfile {
+    tz: Asia::Singapore,
+    regular: SGX_EQUITY_INDEX_SINGAPORE_REGULAR_SOURCED_WINDOW,
+    extended: &[],
+    order_entry: &[],
+    has_daily_close: true,
+    has_weekend_close: true,
+};
+
+// RETRIEVAL NOTE, and why these rows stay Partial. The SGX circular archive
+// could not be reached by automated means: www.sgx.com/regulation/circulars
+// redirects to the regco.sgx.com single-page app, which renders nothing without
+// executing its JavaScript, and no public content API for it is reachable. The
+// Derivatives Trading Calendar PDFs read above are the productive channel, and
+// they date the grids but not the transition days; the newsletters that would
+// date them are password-locked member documents. So these rows keep their
+// review dates and their Partial basis, and the gap should be read as "the
+// transition days were not stated anywhere reachable", not as "no dated
+// evidence exists". A member reading those newsletters closes this.
+//
+// DIRECTION OF THE ERROR. Before 2026-08-31 these rows carried today's grid to
+// the January-2010 floor across the moves tabulated above, which made them the
+// only rows in the crate that could **over**-report — answer open on bounds
+// that differed at the time. They no longer can: each era serves the grid its
+// editions state, both undated transitions are approached from the conservative
+// side, and dates before the 2020 edition are sessionless. Like every other
+// Partial row in this crate they now err toward Closed, which is the safe
+// direction for an order router.
 //
 // https://api2.sgx.com/sites/default/files/2026-01/SGX%20Calendar%202026_2.pdf
 // https://api2.sgx.com/sites/default/files/2025-11/DT%20Trading%20Calendar%202025.pdf
-pub(crate) static SGX_EQUITY_INDEX_JAPAN_REVISIONS: &[Revision] = &[];
+pub(crate) static SGX_EQUITY_INDEX_JAPAN_REVISIONS: &[Revision] = revisions![
+    (
+        2020,
+        1,
+        1,
+        &SGX_EQUITY_INDEX_JAPAN_SOURCED_WINDOW,
+        "first sourced SGX calendar edition"
+    ),
+    (
+        2026,
+        1,
+        1,
+        &SGX_EQUITY_INDEX_JAPAN_BASELINE,
+        "SGX Calendar 2026"
+    ),
+];
 
 /// Selects the SGX Japan equity-index profile in force on `as_of`'s Singapore day.
 pub(crate) fn sgx_equity_index_japan_profile_at(
@@ -107,7 +275,7 @@ pub(crate) fn sgx_equity_index_japan_profile_at(
 ) -> &'static StaticHoursProfile {
     select_revision(
         local_date(as_of, Asia::Singapore),
-        &SGX_EQUITY_INDEX_JAPAN_BASELINE,
+        &SGX_EQUITY_INDEX_CLOSED,
         SGX_EQUITY_INDEX_JAPAN_REVISIONS,
     )
 }
@@ -186,7 +354,22 @@ pub(crate) static SGX_EQUITY_INDEX_CHINA_BASELINE: StaticHoursProfile = StaticHo
 //
 // https://api2.sgx.com/sites/default/files/2026-01/SGX%20Calendar%202026_2.pdf
 // https://api2.sgx.com/sites/default/files/2025-11/DT%20Trading%20Calendar%202025.pdf
-pub(crate) static SGX_EQUITY_INDEX_CHINA_REVISIONS: &[Revision] = &[];
+pub(crate) static SGX_EQUITY_INDEX_CHINA_REVISIONS: &[Revision] = revisions![
+    (
+        2020,
+        1,
+        1,
+        &SGX_EQUITY_INDEX_CHINA_SOURCED_WINDOW,
+        "first sourced SGX calendar edition"
+    ),
+    (
+        2026,
+        1,
+        1,
+        &SGX_EQUITY_INDEX_CHINA_BASELINE,
+        "SGX Calendar 2026"
+    ),
+];
 
 /// Selects the SGX China equity-index profile in force on `as_of`'s Singapore day.
 pub(crate) fn sgx_equity_index_china_profile_at(
@@ -194,7 +377,7 @@ pub(crate) fn sgx_equity_index_china_profile_at(
 ) -> &'static StaticHoursProfile {
     select_revision(
         local_date(as_of, Asia::Singapore),
-        &SGX_EQUITY_INDEX_CHINA_BASELINE,
+        &SGX_EQUITY_INDEX_CLOSED,
         SGX_EQUITY_INDEX_CHINA_REVISIONS,
     )
 }
@@ -271,7 +454,22 @@ pub(crate) static SGX_EQUITY_INDEX_SINGAPORE_BASELINE: StaticHoursProfile = Stat
 //
 // https://api2.sgx.com/sites/default/files/2026-01/SGX%20Calendar%202026_2.pdf
 // https://api2.sgx.com/sites/default/files/2025-11/DT%20Trading%20Calendar%202025.pdf
-pub(crate) static SGX_EQUITY_INDEX_SINGAPORE_REVISIONS: &[Revision] = &[];
+pub(crate) static SGX_EQUITY_INDEX_SINGAPORE_REVISIONS: &[Revision] = revisions![
+    (
+        2020,
+        1,
+        1,
+        &SGX_EQUITY_INDEX_SINGAPORE_SOURCED_WINDOW,
+        "first sourced SGX calendar edition"
+    ),
+    (
+        2026,
+        1,
+        1,
+        &SGX_EQUITY_INDEX_SINGAPORE_BASELINE,
+        "SGX Calendar 2026"
+    ),
+];
 
 /// Selects the SGX Singapore equity-index profile in force on `as_of`'s Singapore day.
 pub(crate) fn sgx_equity_index_singapore_profile_at(
@@ -279,7 +477,7 @@ pub(crate) fn sgx_equity_index_singapore_profile_at(
 ) -> &'static StaticHoursProfile {
     select_revision(
         local_date(as_of, Asia::Singapore),
-        &SGX_EQUITY_INDEX_SINGAPORE_BASELINE,
+        &SGX_EQUITY_INDEX_CLOSED,
         SGX_EQUITY_INDEX_SINGAPORE_REVISIONS,
     )
 }

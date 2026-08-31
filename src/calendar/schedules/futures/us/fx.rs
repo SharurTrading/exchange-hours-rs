@@ -18,7 +18,8 @@ use crate::calendar::{FuturesSessionProfile, SessionRule};
 // documents updated 2012-05-03 still publish Sunday 16:15 while pages crawled
 // 2012-06-15/16 already publish 16:00, and no notice in between states the
 // day. The fixed-current profile includes that exact current phase; dated
-// profiles omit only the unresolved Sunday queue.
+// profiles carry the sourced Sunday 16:15–17:00 intersection from the
+// January-2010 floor and withhold only the disputed 16:00–16:15 quarter-hour.
 // https://www.cmegroup.com/tools-information/lookups/advisories/electronic-trading/20081229.html
 // https://www.cmegroup.com/trading/fx/files/FX248-2010_FX_Product_Guide_and_Calendar.pdf
 // https://www.cmegroup.com/tools-information/lookups/advisories/electronic-trading/20101025.html
@@ -28,6 +29,39 @@ use crate::calendar::{FuturesSessionProfile, SessionRule};
 // https://www.cmegroup.com/articles/faqs/frequently-asked-questions-cme-fx-futures-calendar-spreads.html
 // https://web.archive.org/web/20120503103452/http://www.cmegroup.com/trading_hours/fx-hours.html
 // https://web.archive.org/web/20120616190153/http://www.cmegroup.com/trading_hours/fx-hours.html
+//
+// 2026-08-31 Sunday-queue review — bracket narrowed, notice channels negative.
+// Three archived captures of CME's own trading-hours pages, unused by the
+// earlier review, move the bracket from 2012-05-03..2012-06-15 down to
+// 2012-05-28..2012-06-07. The move was platform-wide and simultaneous: on the
+// 2012-05-28 capture the Sunday Pre-Open is 16:15 for E-mini S&P 500,
+// Eurodollar, 30-Year Interest Rate Swap, Euroyen TIBOR and (as "17:15 ET
+// (16:15 CT)") Gold, Silver, Light Sweet Crude and Henry Hub; on the
+// 2012-06-07 capture every one of them reads 16:00. Weekday Pre-Opens are
+// unchanged across both captures, so this is a Sunday-only change.
+// CBOT grains are NOT part of it: the 2012-05-11 capture still shows the
+// pre-expansion 18:00-07:15/09:30-13:15 grain grid with a 16:15 Sunday
+// Pre-Open, and the 2012-05-28 capture shows the expanded 17:00-14:00 grid
+// with 16:00 — so grains moved at the separately sourced 2012-05-20
+// expansion (CME Globex Advisory #20120518), which the grains module already
+// dates.
+// Both of CME's dated notice channels were then read in full across the
+// narrowed window and none announces the change: CME Globex Notices of
+// 2012-05-21, 2012-05-28 and 2012-06-04, and Market Data Notices of
+// 2012-05-28, contain no occurrence of "Pre-Open", "trading hours", "16:00"
+// or "16:15". The change was therefore made without a dated operator notice,
+// which is why no cutover is encoded. (The only Sunday inside the narrowed
+// bracket is 2012-06-03; that is an observation about the bracket, not a
+// source-stated effective day, so LAW-NO-FABRICATED-DATES keeps it out of the
+// tables.) Official origin http://www.cmegroup.com/trading_hours/ delivered
+// via:
+// https://web.archive.org/web/20120511163357id_/http://www.cmegroup.com/trading_hours/index.html?show=Commodities
+// https://web.archive.org/web/20120528102754id_/http://www.cmegroup.com/trading_hours/index.html
+// https://web.archive.org/web/20120607015831id_/http://www.cmegroup.com/trading_hours/
+// https://web.archive.org/web/20190820012118id_/https://www.cmegroup.com/tools-information/lookups/advisories/electronic-trading/20120521.html
+// https://web.archive.org/web/20190716070058id_/https://www.cmegroup.com/tools-information/lookups/advisories/electronic-trading/20120528.html
+// https://web.archive.org/web/20190720204402id_/https://www.cmegroup.com/tools-information/lookups/advisories/electronic-trading/20120604.html
+// https://web.archive.org/web/20120622070557id_/https://www.cmegroup.com/tools-information/lookups/advisories/market-data/20120528.html
 // ORDER-ENTRY CLASSIFICATION. The 17:00-16:00 window is the matching grid the
 // 2010 product guide publishes. Every other phase here is a Globex queue: the
 // weekday "Pre-Open" the comment above names (16:50, then 16:45, to 17:00) and
@@ -39,16 +73,41 @@ static MATCHING_GRID: &[SessionRule] = &[SessionRule {
     open_ssm: 17 * 3600,
     close_ssm: 16 * 3600,
 }];
-static ORDER_ENTRY_AT_2010_FLOOR: &[SessionRule] = &[SessionRule {
-    days: MON_THU,
-    open_ssm: 16 * 3600 + 50 * 60,
-    close_ssm: 17 * 3600,
-}];
-static ORDER_ENTRY_DATED_CURRENT: &[SessionRule] = &[SessionRule {
-    days: MON_THU,
-    open_ssm: 16 * 3600 + 45 * 60,
-    close_ssm: 17 * 3600,
-}];
+// SUNDAY QUEUE, CARRIED BACK AS THE SOURCED INTERSECTION. CME's Sunday Pre-Open
+// only ever widened inside the modelled window: the audit-floor material pins it
+// at 16:15 and the verified-current value is 16:00, with the undated 2012 move
+// (bracketed 2012-05-28..2012-06-07) the only change between them. The
+// 16:15-17:00 window is therefore order-entry under *every* sourced state, so
+// carrying it from the January-2010 floor asserts no cutover at all - it is the
+// intersection of the two regimes, not a guess at either. The undated change
+// adds only the 16:00-16:15 quarter-hour, which the knowledge-bound row supplies
+// from the repository review date onward. Previously these dated profiles
+// omitted the Sunday queue entirely, which under-reported order acceptance for
+// the whole 16:00-17:00 hour rather than only the disputed quarter-hour.
+static ORDER_ENTRY_AT_2010_FLOOR: &[SessionRule] = &[
+    SessionRule {
+        days: SUN_ONLY,
+        open_ssm: 16 * 3600 + 15 * 60,
+        close_ssm: 17 * 3600,
+    },
+    SessionRule {
+        days: MON_THU,
+        open_ssm: 16 * 3600 + 50 * 60,
+        close_ssm: 17 * 3600,
+    },
+];
+static ORDER_ENTRY_DATED_CURRENT: &[SessionRule] = &[
+    SessionRule {
+        days: SUN_ONLY,
+        open_ssm: 16 * 3600 + 15 * 60,
+        close_ssm: 17 * 3600,
+    },
+    SessionRule {
+        days: MON_THU,
+        open_ssm: 16 * 3600 + 45 * 60,
+        close_ssm: 17 * 3600,
+    },
+];
 pub(crate) static ORDER_ENTRY_CURRENT: &[SessionRule] = &[
     SessionRule {
         days: SUN_ONLY,
@@ -100,11 +159,11 @@ static FX_CURRENT: StaticHoursProfile = StaticHoursProfile {
 
 static REVISIONS: &[Revision] = revisions![
     (2010, 11, 15, &DATED_CURRENT, "CME Globex notice 20101025"),
-    // Knowledge-bound row: the Sunday 16:00–17:00 queue is primary-verified
-    // in the current envelope, but no reviewed source states its onset day,
-    // so earlier dated queries conservatively omit it. From the 2026-08-22
-    // repository review onward the verified-current grid applies; a sourced
-    // onset day replaces this row.
+    // Knowledge-bound row: only the disputed 16:00–16:15 quarter-hour depends
+    // on the undated 2012 move. The 16:15–17:00 remainder is order-entry under
+    // every sourced Sunday value and is already carried from the January-2010
+    // floor by the dated profiles above, so this row widens the queue rather
+    // than introducing it. A sourced onset day replaces this row.
     (
         2026,
         8,

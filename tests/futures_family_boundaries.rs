@@ -352,3 +352,47 @@ fn sunday_pre_open_carries_back_at_its_narrowest_sourced_edge() {
         }
     }
 }
+
+/// CME dated the livestock morning Pre-Open moving "from 06:00 to 08:00" on
+/// 2020-05-31, which states the outgoing 06:00 value. No source names a cutover
+/// between SER-7591's 2016-02-29 grid — the 08:30 open this queue runs into —
+/// and that move, so 06:00-08:30 is carried across the interval. It is not
+/// carried further back: the pre-2016 around-the-clock grid has no 08:30 open.
+///
+/// 11:00Z is 06:00 CT and 13:10Z is 08:10 CT on a US summer date.
+#[test]
+fn livestock_morning_queue_spans_its_sourced_matching_grid() {
+    let key = MarketHoursKey::GlobexLivestock;
+
+    let inside = utc(2017, 6, 14, 11, 0);
+    assert_eq!(
+        hours_for_market_hours_key(key, inside).session_state(inside),
+        SessionState::OrderEntry,
+        "06:00 CT queues orders between 2016-02-29 and the 2020-05-31 move"
+    );
+
+    // After the sourced move the queue starts at 08:00, so 06:00 CT is closed.
+    let after = utc(2021, 6, 16, 11, 0);
+    assert_eq!(
+        hours_for_market_hours_key(key, after).session_state(after),
+        SessionState::Closed,
+        "SER-8599R moved the start to 08:00 CT, so 06:00 CT must be closed after it"
+    );
+
+    // 08:10 CT is inside the queue on both sides of that move.
+    for instant in [utc(2017, 6, 14, 13, 10), utc(2021, 6, 16, 13, 10)] {
+        assert_eq!(
+            hours_for_market_hours_key(key, instant).session_state(instant),
+            SessionState::OrderEntry,
+            "08:10 CT is inside the morning queue under both sourced starts"
+        );
+    }
+
+    // The pre-2016 around-the-clock grid keeps no morning queue.
+    let old = utc(2013, 6, 12, 11, 0);
+    assert_ne!(
+        hours_for_market_hours_key(key, old).session_state(old),
+        SessionState::OrderEntry,
+        "the morning queue is not carried back past the 2016-02-29 grid it belongs to"
+    );
+}

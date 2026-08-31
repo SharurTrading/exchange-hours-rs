@@ -41,11 +41,21 @@ corrections (a venue's hours fixed against a primary source) go under
     third-party aggregator and no primary source, so the profile may be wrong
     for part of 2010, which is a smaller error than reporting the whole
     interval closed.
-  - New fences pin both behaviours on both sides:
+  - **CME livestock morning queue.** `globex_livestock` dropped its 06:00–08:30
+    CT morning Pre-Open for the whole 2016-02-29..2020-05-31 span because the
+    queue's original onset is undated. SER-8599R states the outgoing 06:00
+    value when it dates the move to 08:00, and no source names a cutover
+    between SER-7591's 2016-02-29 grid and that move, so the queue is now
+    carried across that interval. It is deliberately not carried further back:
+    the older around-the-clock grid has no 08:30 open for a morning queue to
+    precede.
+  - New fences pin these behaviours on both sides:
     `sunday_pre_open_carries_back_at_its_narrowest_sourced_edge` asserts the
     queue is served at 16:30 CT and withheld at 16:00 CT across four families
-    and four decades of Sundays, and the NKD boundary test now probes the
-    pre-2012 16:30 CT close against the 16:15 CT close SER-6465 introduced.
+    and four decades of Sundays, the NKD boundary test now probes the
+    pre-2012 16:30 CT close against the 16:15 CT close SER-6465 introduced, and
+    `livestock_morning_queue_spans_its_sourced_matching_grid` pins the 06:00 CT
+    edge on both sides of the 2020 move and its non-extension past 2016.
 
 
 - **ICE Futures U.S. softs and USDX: the pre-2014 grids are now stated, not

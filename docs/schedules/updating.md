@@ -186,8 +186,8 @@ exact evidence belongs with the code it supports.
   following-business-day assignment only when the operator sources it; CME
   cryptocurrency weekend trading rolls into Tuesday when policy closes Monday.
   Do not describe this scalar overlay as a complete holiday calendar: phase
-  replacement, coverage status, evidence finality, and redistribution rights
-  are separate requirements documented in
+  replacement, coverage status, and evidence finality are separate requirements
+  documented in
   [date-exceptions.md](date-exceptions.md).
 
 Equal `SessionRule` endpoints represent one complete local-day session. Use

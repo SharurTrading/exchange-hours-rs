@@ -29,10 +29,10 @@ change to this standalone repository must follow.
   profile so a future divergence is a one-line edit.
 - **LAW-PUBLIC-SOURCES** — every cited source must be publicly available
   without authentication. The crate encodes the schedule facts a published
-  document states and cites it; it does not reproduce or redistribute the
-  document. Material behind a member portal or authenticated feed is out of
-  scope as a data source, though its existence and publication date may be
-  cited as evidence that a change occurred when the contents are unavailable.
+  document states and cites it. Material behind a member portal or an
+  authenticated feed is out of scope as a data source, though its existence and
+  publication date may be cited as evidence that a change occurred when the
+  contents are unavailable.
 - **LAW-NO-FABRICATED-DATES** — a historical cutover exists only when a primary
   source states an **unconditional, day-level** effective date. A real change
   without one is documented as a known gap, never given an invented date. A

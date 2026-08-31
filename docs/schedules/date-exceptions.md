@@ -23,8 +23,8 @@ hard-coded `DayOverride` records. It supports:
 Records are exact dates, not inferred weekday or holiday rules. The table is
 opt-in: callers apply it with `ExchangeCalendar::with_day_policy`, and
 `hours_at` continues to return the unmodified normal-week profile. This keeps
-application-owned or licensed calendars outside the crate while avoiding a
-different ad-hoc record shape in every consumer.
+application-owned calendars outside the crate while avoiding a different ad-hoc
+record shape in every consumer.
 
 These scalar overrides are intentionally not described as a complete holiday
 calendar. They cannot express an extra intraday pause, a special reopen, a
@@ -60,11 +60,9 @@ profiles.
 **Sourcing policy, recorded 2026-08-31.** This project uses only publicly
 available operator and regulator material, and it encodes the schedule facts
 those documents state — opening and closing times, phase boundaries, effective
-days. It does not reproduce or redistribute the documents themselves, so
-redistribution rights over an operator's publications are not what gates this
-work — public availability is. Every literal in the crate is a fact read from a
-public primary source and cited back to it, which is the use those publications
-are made for. A source behind a
+days. Every literal in the crate is a fact read from a public primary source and
+cited back to it, which is the use those publications are made for. What gates
+this work is public availability of the source, nothing else. A source behind a
 member portal or an authenticated feed is out of scope as a data source; its
 existence and publication date may still be cited as evidence that a change
 occurred, as the SGX Titan newsletters are.

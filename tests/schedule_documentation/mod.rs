@@ -484,7 +484,7 @@ fn date_exception_contract_distinguishes_boundaries_coverage_and_finality() {
         "`ReplaceSessions`",
         "`OutOfCoverage`",
         "announced/final distinction",
-        "redistribution rights",
+        "publicly available",
     ] {
         assert!(
             DATE_EXCEPTIONS.contains(claim),

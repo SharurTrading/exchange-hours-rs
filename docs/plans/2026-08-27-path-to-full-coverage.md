@@ -319,7 +319,7 @@ tables.
 ## Phase 6 — Exception-data rollout
 
 - [ ] Region batches mirroring Phase 3's leverage ordering; per venue:
-      evidence per `updating.md`, licensing check, tables, ledger row,
+      evidence per `updating.md`, public-source check, tables, ledger row,
       changelog.
 - [ ] Venues with no published primary calendar stay explicitly
       `OutOfCoverage` — the provider contract makes absence honest rather
@@ -343,7 +343,7 @@ cargo +1.95 check --all-targets
 3. Phase 3 — independent; batches merge in A→E order, interleaving freely
    with Phases 4–6.
 4. Phase 4 — before any built-in exception data.
-5. Phase 5 — after Phase 4; the licensing check is a hard gate before data
+5. Phase 5 — after Phase 4; the public-source check is a hard gate before data
    ships.
 6. Phase 6 — after Phase 5, batch by batch.
 

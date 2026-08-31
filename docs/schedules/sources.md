@@ -23,8 +23,8 @@ points include [CME holiday and trading hours](https://www.cmegroup.com/trading-
 [NYSE hours and calendars](https://www.nyse.com/trade/hours-calendars),
 [Nasdaq's trading calendar](https://www.nasdaqtrader.com/Trader.aspx?id=calendar),
 and [Cboe hours and holidays](https://www.cboe.com/about/hours). Detailed
-operator notices, revisions, finality, product/segment scope, and redistribution
-rights still require per-record review before any exception can drive runtime.
+operator notices, revisions, finality, and product/segment scope still require
+per-record review before any exception can drive runtime.
 
 ## Synthetic profiles
 

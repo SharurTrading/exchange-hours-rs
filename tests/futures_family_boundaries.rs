@@ -460,11 +460,35 @@ fn sgx_equity_index_serves_the_sourced_window_then_the_verified_grid() {
         "the verified-current grid opens China's T+1 at 16:45 SGT"
     );
 
-    for key in [
-        MarketHoursKey::SgxEquityIndexSingapore,
-        MarketHoursKey::SgxEquityIndexTaiwan,
-        MarketHoursKey::SgxEquityIndexNtrUsd,
+    // The remaining three keys each pull their T+1 open fifteen minutes earlier
+    // at the same 2026 boundary, so each gets both sides of it. 09:40Z is 17:40
+    // SGT, 06:05Z is 14:05 SGT and 10:50Z is 18:50 SGT — each five minutes
+    // inside the current T+1 and outside the sourced window's.
+    for (key, hour, minute, window_open, current_open) in [
+        (
+            MarketHoursKey::SgxEquityIndexSingapore,
+            9u32,
+            40u32,
+            "17:50",
+            "17:35",
+        ),
+        (MarketHoursKey::SgxEquityIndexTaiwan, 6, 5, "14:15", "14:00"),
+        (
+            MarketHoursKey::SgxEquityIndexNtrUsd,
+            10,
+            50,
+            "19:00",
+            "18:45",
+        ),
     ] {
+        assert!(
+            !open_at(key, utc(2022, 6, 15, hour, minute)),
+            "{key:?}: the sourced window opens T+1 at {window_open} SGT, so this probe is closed"
+        );
+        assert!(
+            open_at(key, utc(2026, 9, 16, hour, minute)),
+            "{key:?}: the verified-current grid opens T+1 at {current_open} SGT"
+        );
         assert!(
             !open_at(key, utc(2015, 6, 17, 6, 30)),
             "{key:?} must be sessionless before the first sourced edition"

@@ -174,7 +174,18 @@ notice may close many.
       withholding a phase. A false "open" is the dangerous direction for an
       order router.
 - [ ] **Batch E — US equity early sessions** (Cboe ×2, NYSE ×4): the 07:00
-      early session and 06:30/02:30 queue onsets.
+      early session and 06:30/02:30 queue onsets. **Started 2026-08-31; the key
+      structural fact is established and the search is expected to succeed.**
+      Unlike Batch A's options queues, these are *rulebook* provisions:
+      SR-EDGX-2015-03 (80 FR 2163) and SR-EDGA-2015-03 (80 FR 2125) quote Rule
+      11.1(a)(1) as already providing order entry "from 6:00 a.m. until 8:00
+      p.m. Eastern Time", which puts the start no later than 2015-01-08 and
+      locates it in a rule an SEC filing must have established on a stated day.
+      The 2010 registration order (75 FR 13151) does not carry the hours, so the
+      filing that first set Rule 11.1(a)(1) to 06:00 is the remaining target.
+      Do NOT close these rows with the permanent-gap language Batch A uses —
+      they are an unfinished search, and the Federal Register full-text API is
+      the tool that will finish it. The four NYSE rows have not been started.
 - [ ] Per row: follow `docs/schedules/updating.md` (open the monitoring
       sources, review everything since the row's `Reviewed on` date); add
       dated rows + `HISTORICAL_CUTOVERS`/instant entries + both-sides

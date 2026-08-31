@@ -11,6 +11,23 @@ use crate::calendar::rule::MON_FRI;
 use crate::calendar::schedules::CLOSED_NEW_YORK;
 use crate::calendar::schedules::timeline::{Revision, local_date, revisions, select_revision};
 
+// 2026-08-31 Batch E review — these queues are RULEBOOK provisions, so unlike
+// the US options queues they are findable in principle. SR-EDGX-2015-03 (80 FR
+// 2163, filed 2015-01-08) and its EDGA twin SR-EDGA-2015-03 (80 FR 2125)
+// describe, as *existing* functionality being carried onto the BATS platform:
+// "Under Rule 11.1(a)(1), orders may be entered into the System from 6:00 a.m.
+// until 8:00 p.m. Eastern Time, but orders entered between 6:00 a.m. and 8:00
+// a.m. Eastern Time are not eligible for execution until the start of the
+// session selected by the User." That puts the 06:00 start no later than
+// 2015-01-08 and, crucially, locates it in Rule 11.1(a)(1) rather than in an
+// operator system setting — so an SEC filing established it and that filing
+// carries a date. The 2010 registration order (75 FR 13151) does not state the
+// hours, and the filing that first set Rule 11.1(a)(1) to 06:00 has not yet
+// been located. This gap is therefore an unfinished search, NOT a
+// knowledge-bound row: it is expected to close, and it should not be recorded
+// with the permanent-gap language the options rows carry.
+// https://www.federalregister.gov/documents/2015/01/15/2015-00525/
+// https://www.federalregister.gov/documents/2015/01/15/2015-00531/
 static EXTENDED_0800_1700: &[SessionRule] = &[
     SessionRule {
         days: MON_FRI,

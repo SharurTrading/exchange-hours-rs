@@ -13,6 +13,19 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Fixed
 
+- **Cboe EDGA/EDGX early-queue gap reclassified: unfinished search, not a
+  knowledge-bound row.** SR-EDGX-2015-03 (80 FR 2163, filed 2015-01-08) and its
+  EDGA twin SR-EDGA-2015-03 (80 FR 2125) quote Rule 11.1(a)(1) as *already*
+  providing order entry "from 6:00 a.m. until 8:00 p.m. Eastern Time" while
+  carrying it onto the BATS platform. That puts the 06:00 start no later than
+  2015-01-08 and — the material point — locates it in the **rulebook** rather
+  than in an operator system setting, so some dated SEC filing established it.
+  These two rows are therefore expected to close, and must not be written up
+  with the permanent-gap language the US options rows carry, where the start is
+  a mutable system setting no filing ever fixed. The 2010 registration order
+  (75 FR 13151) does not state the hours; the filing that first set Rule
+  11.1(a)(1) to 06:00 remains the target.
+
 - **SGX equity-index rows now state which way they are wrong.** The five
   `sgx_equity_index_*` keys carry today's grid across transitions that
   `sgx_equity_index.rs` already recorded as demonstrably real, which makes them

@@ -90,6 +90,37 @@ Completeness is a verification question.
 
 ## Phase 3 — The Partial-history backlog (independent; batched by family)
 
+### Priority, set 2026-08-31: executable hours before queues
+
+The hours where trades actually print matter more than the windows where orders
+merely queue. An executable-only audit of all sixteen US futures keys (sampled
+weeks in 2011/2015/2019/2023, `is_open` — regular plus extended, order-entry
+excluded) puts the current state beyond doubt:
+
+- **No US futures key withholds executable time that the current grid serves**,
+  except where the venue genuinely traded fewer hours then (`cfe_vix` 2011,
+  `globex_cryptocurrency` and `ice_us` before launch) or a sourced revision
+  applies. `globex_fx` reads 0/0 in every sampled year.
+- **All six `ice_us_*` keys withhold nothing executable in any year.**
+- Every remaining `Partial` gap in US futures is therefore an
+  **order-entry/queue** question — the CME Sunday 16:00–16:15 slice, the options
+  queue onsets, the livestock and grains queue days. No trade can print in any
+  of them.
+
+Two places where executable time is *served but rests on carry-back* rather than
+direct sourcing, and which are the real remaining executable-hours work:
+
+1. `ice_us_*` — January 2010 to August 2011 is filled by carrying the August
+   2011 master table back; no edition of that table survives for the interval.
+2. `globex_nikkei_225_dollar` — the pre-2012 grid is carried to the floor, with
+   a third-party-attested 2010 change that no primary source dates.
+
+**Order of work when this resumes:** (1) executable-hours gaps above, (2) the
+rest of US futures, (3) other futures (Eurex, ICE Europe/Endex, SGX SORA,
+Binance), (4) everything else. Queue-onset dating is last: it is the largest
+remaining pile by row count and the smallest by trading impact.
+
+
 46 ledger rows currently carry `Partial` (27 venue rows plus the key
 families). Each closes one of two ways: a sourced dated chain, or a
 documented permanent knowledge-bound row. Batches are ordered by

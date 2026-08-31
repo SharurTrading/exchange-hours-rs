@@ -68,6 +68,27 @@ For every referenced set:
 4. Confirm that the source still covers the same venue, board, product family,
    and phase semantics represented by the profile.
 
+**Channel access notes, recorded 2026-08-31.** Several operators cannot be read
+by automated retrieval, which changes how a review must be run:
+
+- **CME Group** returns an explicit anti-scraping block citing its Data Terms of
+  Use. Read cmegroup.com by hand, or take archived copies. Its Globex and Market
+  Data notice digests are weekly Monday pages under
+  `tools-information/lookups/advisories/{electronic-trading,market-data}/YYYYMMDD.html`,
+  and its rule-filing PDFs are not archived.
+- **SGX** serves its circular archive as a JavaScript app with no reachable
+  public API, and its Titan DTDC newsletters — where hours changes are announced
+  — are password-locked member documents. Its *Derivatives Trading Calendar*
+  PDFs under `api2.sgx.com/sites/default/files/YYYY-MM/` are static, readable,
+  and state per-contract session bounds; that is the productive channel.
+- **ICE**: `ice.com/publicdocs/circulars/{YY}{NNN}.pdf` is enumerable but is ICE
+  Futures *Europe*. ICE Futures U.S. notices have descriptive filenames under
+  `publicdocs/futures_us/exchange_notices/` and are only thinly archived.
+- **Nasdaq**: `nasdaqtrader.com` serves a bot-protection interstitial;
+  `nasdaq.com/docs/*SystemSettings` serves the same content as static PDFs.
+- The **Federal Register full-text API** covers every SEC self-regulatory
+  filing and is the most productive channel for US equity and options venues.
+
 Search engines and industry summaries can locate evidence, but they do not
 establish a schedule. Final literals and day-level cutovers require an exchange,
 operator, or regulator source under LAW-PRIMARY-SOURCES.

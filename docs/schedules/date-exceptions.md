@@ -57,15 +57,28 @@ retain source, revision, review-date, and finality metadata. Replacement blocks
 must use the same local-time resolution and end-exclusive-close rules as normal
 profiles.
 
-Built-in data is not included in v1. A complete backfill is an evidence and
-licensing project, not a table-size problem:
+**Sourcing policy, recorded 2026-08-31.** This project uses only publicly
+available operator and regulator material, and it encodes the schedule facts
+those documents state — opening and closing times, phase boundaries, effective
+days. It does not reproduce or redistribute the documents themselves, so
+redistribution rights over an operator's publications are not what gates this
+work — public availability is. Every literal in the crate is a fact read from a
+public primary source and cited back to it, which is the use those publications
+are made for. A source behind a
+member portal or an authenticated feed is out of scope as a data source; its
+existence and publication date may still be cited as evidence that a change
+occurred, as the SGX Titan newsletters are.
+
+Built-in data is not included in v1. A complete backfill is an evidence
+project, not a table-size problem:
 
 - holiday topology differs by venue, segment, and futures product family;
 - operator notices are sometimes revised;
 - exceptional closures such as weather events or national days of mourning
   must be retained explicitly;
-- some machine-readable operator feeds are licensed for use or redistribution;
-  public access alone is not permission to republish them; and
+- a calendar that exists only behind authentication is out of scope under the
+  sourcing policy above, so its venue stays `OutOfCoverage` rather than being
+  filled from a non-public source; and
 - a future calendar is finite and may change after publication.
 
 ## Future dates
@@ -92,8 +105,8 @@ For each exception dataset:
 4. Test every block edge, phase kind, trade-date assignment, daily/weekly bar
    boundary, and the first date outside coverage.
 5. Recheck future entries inside the operator's finalization window.
-6. Confirm redistribution rights before committing data obtained from a
-   licensed or authenticated feed.
+6. Confirm the source is primary and publicly available without
+   authentication, and record that alongside its citation.
 
 Until that contract is implemented, complex holiday schedules remain
 caller-owned. Do not approximate them with normal-week profile revisions or

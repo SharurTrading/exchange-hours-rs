@@ -11,6 +11,24 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ## [Unreleased]
 
+### Changed
+
+- **Sourcing policy recorded: public sources only, facts not documents.** The
+  project uses only publicly available operator and regulator material and
+  encodes the schedule facts those documents state — opening and closing times,
+  phase boundaries, effective days — citing each back to its source. It does not
+  reproduce or redistribute the documents themselves, so redistribution rights
+  over an operator's publications are not what gates this work; public
+  availability is. Material behind a member portal or an authenticated feed is
+  out of scope as a data source, though its existence and publication date may
+  still be cited as evidence that a change occurred, as the SGX Titan
+  newsletters are. Recorded as **LAW-PUBLIC-SOURCES** in `AGENTS.md`, as the
+  sourcing policy in `docs/schedules/date-exceptions.md`, and in the Phase 5
+  gate of the coverage plan, which is renamed from "licensing-gated" to
+  "public-source-gated" because it is a scope check rather than a rights
+  negotiation. A venue whose holiday calendar exists only behind authentication
+  stays `OutOfCoverage` rather than being filled from a non-public source.
+
 ### Fixed
 
 - **Cboe EDGA/EDGX early-queue gap reclassified: unfinished search, not a

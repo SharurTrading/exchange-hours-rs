@@ -294,13 +294,17 @@ tables.
 - [ ] Public docs (README, date-exceptions.md updated from "path to" to
       "shipped for caller-owned data"); changelog **Added**; full gates.
 
-## Phase 5 — Built-in exception data: pilot (licensing-gated)
+## Phase 5 — Built-in exception data: pilot (public-source-gated)
 
 - [ ] Pick 1–2 pilot venues whose holiday calendars are primary, public,
       and unencumbered (NYSE and CME Group are the natural candidates).
-- [ ] Licensing check per source before any data drives runtime answers —
-      public access is not permission to republish a licensed feed; the
-      check outcome is recorded beside the data.
+- [ ] Source check per venue before any data drives runtime answers: the
+      calendar must be primary and publicly available without
+      authentication, and the check outcome is recorded beside the data.
+      Per the sourcing policy in `date-exceptions.md`, the crate encodes the
+      facts a public schedule states rather than reproducing the document, so
+      this is a scope check, not a rights negotiation. A venue whose calendar
+      exists only behind a member portal stays `OutOfCoverage`.
 - [ ] Ship the pilot tables with full metadata: source, revision,
       review-date, finality, first/last covered trade date, scoped to one
       exact `CalendarSource`.

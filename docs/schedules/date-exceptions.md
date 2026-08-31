@@ -60,9 +60,13 @@ profiles.
 **Sourcing policy, recorded 2026-08-31.** This project uses only publicly
 available operator and regulator material, and it encodes the schedule facts
 those documents state — opening and closing times, phase boundaries, effective
-days. Every literal in the crate is a fact read from a public primary source and
-cited back to it, which is the use those publications are made for. What gates
-this work is public availability of the source, nothing else. A source behind a
+days. Reading a published schedule and encoding the times it states is the use
+those publications are made for, and public availability of the source is what
+gates the work — nothing else does. This is the standard every new or revised
+literal is held to; it does not assert that every literal already in the crate
+meets it. Where adjacent primary support is still missing, the ledger says so on
+the row and [sources.md](sources.md) marks the source set "Missing/uncited",
+and those gaps stay visible rather than being papered over by this policy. A source behind a
 member portal or an authenticated feed is out of scope as a data source; its
 existence and publication date may still be cited as evidence that a change
 occurred, as the SGX Titan newsletters are.

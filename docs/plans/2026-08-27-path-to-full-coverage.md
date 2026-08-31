@@ -296,8 +296,9 @@ tables.
 
 ## Phase 5 — Built-in exception data: pilot (public-source-gated)
 
-- [ ] Pick 1–2 pilot venues whose holiday calendars are primary, public,
-      and unencumbered (NYSE and CME Group are the natural candidates).
+- [ ] Pick 1–2 pilot venues whose holiday calendars are primary and publicly
+      available without authentication (NYSE and CME Group are the natural
+      candidates).
 - [ ] Source check per venue before any data drives runtime answers: the
       calendar must be primary and publicly available without
       authentication, and the check outcome is recorded beside the data.

@@ -90,6 +90,27 @@ pub(crate) static SGX_EQUITY_INDEX_JAPAN_BASELINE: StaticHoursProfile = StaticHo
     has_weekend_close: true,
 };
 
+// 2026-08-31 Batch D review — NOT evidence-exhausted, retrieval-blocked. The
+// SGX circular archive could not be reached by automated means:
+// www.sgx.com/regulation/circulars redirects to the regco.sgx.com single-page
+// app, which renders nothing without executing its JavaScript, no public
+// content API for it is reachable, and the Wayback archive holds no derivatives
+// circular listing (only securities prospectus pages and a single 2009 trading
+// calendar that no longer retrieves). This row therefore keeps its review date
+// and its Partial basis, and the gap statement should be read as "the archive
+// was not searchable from here", not as "no dated evidence exists". A human
+// with a browser on the SGX circular archive is the next step, and it is the
+// most valuable remaining item in the backlog for the reason below.
+//
+// DIRECTION OF THE ERROR — worth stating plainly, because it is the opposite of
+// every other Partial row in this crate. Elsewhere an undated phase is withheld,
+// so a dated query under-reports: it answers Closed where the venue was in fact
+// accepting orders. Here the current grid is carried across known moves, so a
+// dated query can over-report: an instant inside today's T+1 window in, say,
+// 2011 answers open even though the session's bounds demonstrably differed then.
+// A false "open" is the more dangerous direction for an order router. Until the
+// circulars are read, treat pre-current SGX equity-index instants as
+// approximate rather than sourced.
 // Deliberately empty. SGX's equity-index hours demonstrably moved inside the
 // modelled window, but every move is only bracketed between successive editions
 // of the SGX derivatives trading calendar - the circular archive does not

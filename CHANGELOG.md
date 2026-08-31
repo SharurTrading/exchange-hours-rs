@@ -13,6 +13,20 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Fixed
 
+- **SGX equity-index rows now state which way they are wrong.** The five
+  `sgx_equity_index_*` keys carry today's grid across transitions that
+  `sgx_equity_index.rs` already recorded as demonstrably real, which makes them
+  the only Partial rows in the crate that **over**-report: a pre-current instant
+  can answer open on session bounds that differed then, where every other
+  Partial row withholds a phase and answers closed. That direction is now stated
+  in the ledger and beside the table, because a false "open" is the more
+  dangerous answer for an order router. The 2026-08-31 attempt to date the
+  transitions was blocked on retrieval rather than on evidence — the SGX
+  circular archive redirects to a JavaScript single-page app, exposes no
+  reachable content API, and has no derivatives circular listing in the Wayback
+  archive — so the rows keep their review dates and their gap is recorded as
+  "not searchable from here", not "no dated evidence exists".
+
 - **Historical queue and session gaps are now served instead of withheld
   (behaviour change).** Two conventions were made explicit in `AGENTS.md` and
   applied: carry the earliest sourced state back to the January-2010 audit

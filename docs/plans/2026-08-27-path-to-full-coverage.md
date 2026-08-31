@@ -160,7 +160,19 @@ notice may close many.
       is the earliest surviving edition of the table, and ICE's 2007
       currencies release never prints a USDX grid. All six keep `Partial`
       with one shared residual gap, January 2010 to August 2011.
-- [ ] **Batch D — SGX equity-index keys** (five rows).
+- [ ] **Batch D — SGX equity-index keys** (five rows). **Attempted 2026-08-31;
+      blocked on retrieval, not on evidence.** `sgx.com/regulation/circulars`
+      redirects to the regco.sgx.com single-page app, which renders nothing
+      without JavaScript; no public content API for it is reachable; and the
+      Wayback archive holds no derivatives circular listing (only securities
+      prospectus pages and one 2009 trading calendar that no longer retrieves).
+      The box stays unchecked: this batch needs a human with a browser on the
+      SGX circular archive, and it should be the **first** thing done, because
+      these five rows fail in the opposite direction to every other Partial row
+      — they carry today's grid across known moves, so a pre-current instant
+      can answer *open* on bounds that differed then, rather than merely
+      withholding a phase. A false "open" is the dangerous direction for an
+      order router.
 - [ ] **Batch E — US equity early sessions** (Cboe ×2, NYSE ×4): the 07:00
       early session and 06:30/02:30 queue onsets.
 - [ ] Per row: follow `docs/schedules/updating.md` (open the monitoring

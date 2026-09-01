@@ -100,6 +100,20 @@ pub(crate) static ICE_USDX_CURRENT: StaticHoursProfile = StaticHoursProfile {
 // close_ssm` encodes exactly one complete local-day span, so Sunday 18:00 runs
 // continuously to Monday 18:00, which is what the pre-2011 grid described.
 //
+//
+// 2026-09-01: WHY THE 2010-2011 INTERVAL CANNOT BE SOURCED. ICE Futures U.S.
+// sets these hours administratively, not by rule. Its product rulebook chapters
+// - Sugar No. 11, Cotton No. 2, Coffee, Cocoa, FCOJ and USDX, all captured
+// December 2011 - contain no hours provision at all, and chapter 4 is
+// trade-practice rules. No SEC or CFTC filing therefore fixes an ICE Futures
+// U.S. trading hour, and the master hours table is the only source; its earliest
+// surviving edition is August 2011. This interval is bounded by document
+// availability, not by an unfinished search, so the carry-back above is the
+// terminal answer unless an earlier edition surfaces.
+// https://web.archive.org/web/20111213011033id_/https://www.theice.com/publicdocs/rulebooks/futures_us/11_Sugar_11.pdf
+// https://web.archive.org/web/20111213011055id_/https://www.theice.com/publicdocs/rulebooks/futures_us/8_Coffee.pdf
+// https://web.archive.org/web/20111213011442id_/https://www.theice.com/publicdocs/rulebooks/futures_us/9_Cocoa.pdf
+// https://web.archive.org/web/20111213003348id_/https://www.theice.com/publicdocs/rulebooks/futures_us/15_USDX.pdf
 // 2026-08-31: the pre-2011 dating question was re-worked and stays negative.
 // ICE's 2007 currencies release states only that "Electronic trading hours for
 // currency futures are from 8:00 p.m. ET through 6:00 p.m. ET each trading

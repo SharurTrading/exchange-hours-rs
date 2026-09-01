@@ -140,7 +140,10 @@ Two places where executable time is *served but rests on carry-back* rather than
 direct sourcing, and which are the real remaining executable-hours work:
 
 1. `ice_us_*` — January 2010 to August 2011 is filled by carrying the August
-   2011 master table back; no edition of that table survives for the interval.
+   2011 master table back. **Resolved 2026-09-01 as terminal:** ICE Futures U.S.
+   sets these hours administratively, not by rule (no product rulebook chapter
+   carries an hours provision), so no filing can date them and the master hours
+   table — earliest surviving edition August 2011 — is the only source.
 2. `globex_nikkei_225_dollar` — the pre-2012 grid is carried to the floor, with
    a third-party-attested 2010 change that no primary source dates.
 

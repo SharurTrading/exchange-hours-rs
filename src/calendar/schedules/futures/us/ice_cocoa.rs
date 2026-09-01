@@ -92,6 +92,19 @@ static COCOA_2014: StaticHoursProfile = StaticHoursProfile {
 // grid, marking in bold which of those figures moved. It never prints the times
 // it replaced.
 //
+//
+// 2026-09-01: WHY THE 2010-2011 INTERVAL CANNOT BE SOURCED. ICE Futures U.S.
+// sets these hours administratively, not by rule. Its product rulebook chapters
+// - Sugar No. 11, Cotton No. 2, Coffee, Cocoa, FCOJ and USDX, all captured
+// December 2011 - contain no hours provision at all, and chapter 4 is
+// trade-practice rules. No SEC or CFTC filing therefore fixes an ICE Futures
+// U.S. trading hour, and the master hours table is the only source; its earliest
+// surviving edition is August 2011. This interval is bounded by document
+// availability, not by an unfinished search, so the carry-back above is the
+// terminal answer unless an earlier edition surfaces.
+// https://web.archive.org/web/20111213011033id_/https://www.theice.com/publicdocs/rulebooks/futures_us/11_Sugar_11.pdf
+// https://web.archive.org/web/20111213011055id_/https://www.theice.com/publicdocs/rulebooks/futures_us/8_Coffee.pdf
+// https://web.archive.org/web/20111213011442id_/https://www.theice.com/publicdocs/rulebooks/futures_us/9_Cocoa.pdf
 // SOURCING CAVEAT SUPERSEDED 2026-08-31. The pre-2014 grid is no longer merely
 // corroborated: two dated editions of ICE's own "ICE Futures U.S. Regular
 // Trading Hours" master table print it outright. The AUGUST 2011 edition and

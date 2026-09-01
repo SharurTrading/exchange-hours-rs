@@ -11,6 +11,25 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ## [Unreleased]
 
+### Fixed
+
+- **ICE Futures U.S.: the January 2010 – August 2011 gap is document-bound, not
+  an unfinished search.** The six `ice_us_*` keys carry the August 2011 master
+  hours table back to the January-2010 floor, which is executable-hours coverage
+  resting on a carry-back rather than direct sourcing — one of only two such
+  places in the crate. The 2026-09-01 review established why it cannot be closed
+  by a filing: **ICE Futures U.S. sets these hours administratively, not by
+  rule.** Its product rulebook chapters — Sugar No. 11, Cotton No. 2, Coffee,
+  Cocoa, FCOJ and USDX, all captured December 2011 — contain no hours provision
+  at all, and chapter 4 is trade-practice rules. So no SEC or CFTC filing fixes
+  an ICE Futures U.S. trading hour, the master hours table is the only source,
+  and its earliest surviving edition is August 2011. The rows keep `Partial` and
+  the carry-back stands as the terminal answer unless an earlier edition
+  surfaces. **No profile, selector, or schedule data changed** — the hours the
+  crate serves are identical before and after; only the characterisation of the
+  gap changed, recorded in all six ledger rows, beside each table, and in the
+  source registry.
+
 ### Changed
 
 - **Sourcing policy recorded: public sources only.** The project uses only

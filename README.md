@@ -250,9 +250,13 @@ trades print — the regular or extended session — would change whether the cr
 reports a market as tradeable. A gap in an order-entry window only changes
 whether orders could be *queued* ahead of an open that is itself modelled
 correctly; no trade can print in one of those windows on any venue in this crate.
-Almost every one of the 27 is the second kind: the exact *day* an older
-order-acceptance queue or post-close phase started, with the trading session
-itself sourced. A recent executable-only audit of all sixteen US futures product
+Every `Partial` row states which kind it is, and the split is **34 order-entry
+to 12 executable** across the 46 rows in the ledger. The order-entry majority is
+the exact *day* an older queue or post-close phase started, with the trading
+session itself sourced. The executable twelve — the ICE Futures U.S. keys, CME
+Nikkei 225 Dollar and the SGX equity-index keys — are each served
+conservatively, erring toward closed rather than claiming hours they cannot
+support. A recent executable-only audit of all sixteen US futures product
 families found none of them withholding executable time that the current grid
 serves. Rows carry this distinction in the ledger, so check there before treating
 a `Partial` label as a reason to hesitate.

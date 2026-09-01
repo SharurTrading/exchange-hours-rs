@@ -288,6 +288,12 @@ rows are **Primary** and nineteen are **Partial**, because a named historical
 queue, PCP amendment day, or undated venue transition cannot be dated from a
 primary source.
 
+Queries before January 2010 fall outside all of this. The crate records
+amendment history back to January 2010 by design, and an instant before that
+floor resolves to the oldest profile on record rather than to an absence — it is
+not a reviewed answer, and nothing below the floor is covered by the counts
+above.
+
 These are backward-looking evidence statements, not promises that an exchange
 will remain unchanged after the review date. They cover recurring weekday
 phases, time zones, lunch and maintenance gaps, and weekend boundaries. They

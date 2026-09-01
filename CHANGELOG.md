@@ -13,6 +13,21 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Changed
 
+- **Recorded decision: the timeline is not bounded at the January-2010 floor.**
+  `select_revision` returns a venue's baseline for any date before its first
+  revision, so a pre-floor instant resolves to the January-2010 grid rather than
+  to an absence — `globex_equity_index` answers open at 18:30 CT in 2005, and
+  always has. That is now a deliberate, recorded convention rather than an
+  undocumented side effect: the profile returned is the earliest state the crate
+  has sourced, and the caller asked for a date the crate never undertook to
+  model. Adding a lower bound would touch every venue with a non-empty baseline
+  and trade one unreviewed answer for another, since neither `Closed` nor the
+  2010 grid is sourced below the floor. Recorded in `AGENTS.md`, and the README
+  now tells callers that a pre-2010 answer is the oldest profile on record rather
+  than a reviewed one. No profile, selector, or schedule data changed.
+
+### Changed
+
 - **Every `Partial` row now states its gap kind.** `AGENTS.md` requires it — a
   missing trading session and an undated queue start carry very different weight
   and the basis label cannot distinguish them — but only the US futures families

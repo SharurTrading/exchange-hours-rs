@@ -73,154 +73,76 @@ use crate::calendar::schedules::timeline::{Revision, local_date, revisions, sele
 //     https://www.miaxglobal.com/sites/default/files/alert-files/MIAX_Press_Release_09102024.pdf
 //   2023-09-27 "MEMX trader alert 23-42"
 //     https://info.memxtrading.com/trader-alert-23-42-memx-options-exchange-schedule-update/
-// Knowledge-bound rows (the final 2026-08-22 row in every table below except
-// MEMX_REVISIONS, whose profile carries no queue at all — MEMX rejects orders
-// before 09:30, so its sourced launch day is its only row): each
-// venue's current order-acceptance queue is primary-verified in the current
-// envelope, but the reviewed sources state no day-level amendment chain for
-// these queues, so earlier dated queries retain only the exact 09:30–16:00
-// execution history. From the 2026-08-22 repository review onward each
-// verified-current grid applies; a sourced onset day replaces its row.
+// QUEUE CARRY-BACK, DECIDED 2026-09-01 — READ THIS BEFORE TRUSTING A HISTORICAL
+// QUEUE ANSWER. Each venue's current order-acceptance queue is now served across
+// its whole modelled history rather than only from the repository review date.
+// The queues are `order_entry`: nothing matches in them, and every venue's
+// 09:30-16:00 execution history is sourced independently and unaffected.
 //
-// Why no onset day exists — the structural finding of the 2026-08-31 queue
-// review. On every venue in this module the generic order-acceptance start is
-// an operator *system setting* published on a mutable hours or system-settings
-// page, not a rulebook boundary carrying an SEC-filed operative date. The two
-// filings that codified the Cboe queuing periods say so explicitly, each
-// declining to change the time they wrote down:
-//   SR-C2-2019-009 (84 FR 20673, 2019-05-10) — "The Queuing Period begins
-//   at 7:30 a.m. for all class[es]. This is the same time at which the System
-//   begins accepting orders and quotes today." Its footnote records that Cboe
-//   Options Rule 6.2(a) bounds the pre-opening period ("no earlier than 2:00
-//   a.m. Central time") rather than fixing it.
-//   https://www.federalregister.gov/documents/2019/05/10/2019-09634/
-//   SR-CboeBZX-2020-012 (85 FR 6246, 2020-02-04) — same sentence for BZX.
-//   https://www.federalregister.gov/documents/2020/02/04/2020-02049/
-// Nasdaq states each venue's start in its per-venue "System Settings" document
-// ("System begins accepting orders"), NYSE on its hours-and-calendars page
-// ("Pre-Opening Session: 6:00 a.m. ET"), and MIAX on its trade-hours calendar
-// ("Firm Interface Startup Time"). None of those channels publishes a dated
-// change notice for the value, so these rows are knowledge-bound by the shape
-// of the evidence rather than by an unfinished search.
+// THE ASSUMPTION, STATED PLAINLY. No primary source says when any of these
+// queues began. They are operator *system settings* published on mutable
+// hours/system-settings pages, not rulebook boundaries with filed operative
+// dates — SR-C2-2019-009 and SR-CboeBZX-2020-012 each write down 07:30 as "the
+// same time at which the System begins accepting orders and quotes today" while
+// declining to change it, and Cboe Options Rule 6.2(a) bounds the pre-opening
+// period rather than fixing it. Carrying the queue back therefore asserts
+// continuity that no document states. It is a deliberate, recorded choice, not
+// a sourced fact: a venue almost certainly accepted orders before its open, and
+// under-reporting order acceptance for sixteen years was judged the worse error.
 //
-// Sourced lower bounds recovered by that review — each queue was already at
-// its current value on the stated day, so any onset precedes it:
-//   C2 7:30 — 2019-05-10 (SR-C2-2019-009, above).
-//   BZX Options 7:30 — 2020-02-04 (SR-CboeBZX-2020-012, above).
-//   ISE 6:00 — 2019-10-17 "Nasdaq ISE INET System Settings", official origin
-//   https://www.nasdaq.com/docs/ISESystemSettings.pdf delivered via
-//   https://web.archive.org/web/20191017150502id_/https://www.nasdaq.com/docs/ISESystemSettings.pdf
-//   MIAX Options 7:30 — 2013-05-07 (the live-book capture below).
+// WHERE THE ASSUMPTION IS NOT MADE. MIAX Options is the counterexample and is
+// modelled from evidence instead. Its 07:30 window existed at the sourced
+// 2012-12-07 launch but was connectivity verification only — the official hours
+// page captured 2012-12-09 says activity before the Live Quote Window "WILL NOT
+// affect the live quote state" — and the next capture, 2013-05-07, says it WILL
+// affect the live book. So MIAX carries a queue-free launch row and gains the
+// queue at that second capture, not at launch.
 //
-// MIAX Options is the one venue whose queue onset is now bracketed rather than
-// open. Its 07:30 window existed at the sourced 2012-12-07 launch but was not
-// order acceptance: the official hours page captured two days later states
-// that pre-Live-Quote-Window activity "will be acknowledged for connectivity
-// verification purposes, but WILL NOT affect the live quote state", while the
-// next capture states that the same activity WILL affect the live book. The
-// launch-era row below is therefore positively sourced as queue-free, and the
-// order-acceptance onset falls in 2012-12-09..2013-05-07 with no operator
-// notice in the archived alert channels stating the day. Official origin
-// http://www.miaxoptions.com/hours-operation-miax-options-exchange delivered
-// via
-// https://web.archive.org/web/20121209014257id_/http://www.miaxoptions.com/hours-operation-miax-options-exchange
-// https://web.archive.org/web/20130507151726id_/http://www.miaxoptions.com/hours-operation-miax-options-exchange
-static BZX_REVISIONS: &[Revision] = revisions![
-    (
-        2010,
-        2,
-        26,
-        &LISTED_EQUITY_OPTIONS_HISTORICAL,
-        "BATS Options launch press release"
-    ),
-    (
-        2026,
-        8,
-        22,
-        &CBOE_BZX_OPTIONS_PROFILE,
-        "2026-08-22 review: verified current, onset undated"
-    ),
-];
-static C2_REVISIONS: &[Revision] = revisions![
-    (
-        2010,
-        10,
-        29,
-        &LISTED_EQUITY_OPTIONS_HISTORICAL,
-        "Cboe circular IC-CBOE-2010-168"
-    ),
-    (
-        2026,
-        8,
-        22,
-        &CBOE_C2_OPTIONS_PROFILE,
-        "2026-08-22 review: verified current, onset undated"
-    ),
-];
-static EDGX_REVISIONS: &[Revision] = revisions![
-    (
-        2015,
-        11,
-        2,
-        &LISTED_EQUITY_OPTIONS_HISTORICAL,
-        "Bats EDGX options update 2015-11-10"
-    ),
-    (
-        2026,
-        8,
-        22,
-        &CBOE_EDGX_OPTIONS_PROFILE,
-        "2026-08-22 review: verified current, onset undated"
-    ),
-];
-static BX_REVISIONS: &[Revision] = revisions![
-    (
-        2012,
-        6,
-        29,
-        &LISTED_EQUITY_OPTIONS_HISTORICAL,
-        "Nasdaq OTA 2012-41"
-    ),
-    (
-        2026,
-        8,
-        22,
-        &NASDAQ_BX_OPTIONS_PROFILE,
-        "2026-08-22 review: verified current, onset undated"
-    ),
-];
-static GEMX_REVISIONS: &[Revision] = revisions![
-    (
-        2013,
-        8,
-        5,
-        &LISTED_EQUITY_OPTIONS_HISTORICAL,
-        "SEC filing 16019242"
-    ),
-    (
-        2026,
-        8,
-        22,
-        &NASDAQ_GEMX_OPTIONS_PROFILE,
-        "2026-08-22 review: verified current, onset undated"
-    ),
-];
-static MRX_REVISIONS: &[Revision] = revisions![
-    (
-        2016,
-        2,
-        16,
-        &LISTED_EQUITY_OPTIONS_HISTORICAL,
-        "SEC 34-77256"
-    ),
-    (
-        2026,
-        8,
-        22,
-        &NASDAQ_MRX_OPTIONS_PROFILE,
-        "2026-08-22 review: verified current, onset undated"
-    ),
-];
+// The three evidence classes below:
+//   * no launch inside the window (C1, NYSE Arca/American, PHLX, ISE, NOM, BOX)
+//     — queue carried from the January-2010 audit floor, assumption applies;
+//   * launch-dated (C2, BZX, EDGX, BX, GEMX, MRX, MIAX Pearl/Emerald/Sapphire)
+//     — queue carried from the sourced launch day, assumption applies;
+//   * MIAX Options — sourced on both sides, no assumption.
+// MEMX Options is outside all three: it has no queue at all, rejecting orders
+// before 09:30, so its sourced launch row is its only row.
+static BZX_REVISIONS: &[Revision] = revisions![(
+    2010,
+    2,
+    26,
+    &CBOE_BZX_OPTIONS_PROFILE,
+    "BATS Options launch press release"
+),];
+static C2_REVISIONS: &[Revision] = revisions![(
+    2010,
+    10,
+    29,
+    &CBOE_C2_OPTIONS_PROFILE,
+    "Cboe circular IC-CBOE-2010-168"
+),];
+static EDGX_REVISIONS: &[Revision] = revisions![(
+    2015,
+    11,
+    2,
+    &CBOE_EDGX_OPTIONS_PROFILE,
+    "Bats EDGX options update 2015-11-10"
+),];
+static BX_REVISIONS: &[Revision] = revisions![(
+    2012,
+    6,
+    29,
+    &NASDAQ_BX_OPTIONS_PROFILE,
+    "Nasdaq OTA 2012-41"
+),];
+static GEMX_REVISIONS: &[Revision] = revisions![(
+    2013,
+    8,
+    5,
+    &NASDAQ_GEMX_OPTIONS_PROFILE,
+    "SEC filing 16019242"
+),];
+static MRX_REVISIONS: &[Revision] =
+    revisions![(2016, 2, 16, &NASDAQ_MRX_OPTIONS_PROFILE, "SEC 34-77256"),];
 static MIAX_REVISIONS: &[Revision] = revisions![
     (
         2012,
@@ -230,61 +152,34 @@ static MIAX_REVISIONS: &[Revision] = revisions![
         "MIAX launch alert 2012-12-06"
     ),
     (
-        2026,
-        8,
-        22,
+        2013,
+        5,
+        7,
         &MIAX_OPTIONS_PROFILE,
-        "2026-08-22 review: verified current, onset undated"
+        "first capture showing the window affecting the live book"
     ),
 ];
-static MIAX_PEARL_REVISIONS: &[Revision] = revisions![
-    (
-        2017,
-        2,
-        6,
-        &LISTED_EQUITY_OPTIONS_HISTORICAL,
-        "MIAX Pearl launch alert 2017-02-01"
-    ),
-    (
-        2026,
-        8,
-        22,
-        &MIAX_PEARL_OPTIONS_PROFILE,
-        "2026-08-22 review: verified current, onset undated"
-    ),
-];
-static MIAX_EMERALD_REVISIONS: &[Revision] = revisions![
-    (
-        2019,
-        3,
-        1,
-        &LISTED_EQUITY_OPTIONS_HISTORICAL,
-        "MIAX Emerald launch announcement"
-    ),
-    (
-        2026,
-        8,
-        22,
-        &MIAX_EMERALD_OPTIONS_PROFILE,
-        "2026-08-22 review: verified current, onset undated"
-    ),
-];
-static MIAX_SAPPHIRE_REVISIONS: &[Revision] = revisions![
-    (
-        2024,
-        8,
-        12,
-        &LISTED_EQUITY_OPTIONS_HISTORICAL,
-        "MIAX press release 2024-09-10"
-    ),
-    (
-        2026,
-        8,
-        22,
-        &MIAX_SAPPHIRE_OPTIONS_PROFILE,
-        "2026-08-22 review: verified current, onset undated"
-    ),
-];
+static MIAX_PEARL_REVISIONS: &[Revision] = revisions![(
+    2017,
+    2,
+    6,
+    &MIAX_PEARL_OPTIONS_PROFILE,
+    "MIAX Pearl launch alert 2017-02-01"
+),];
+static MIAX_EMERALD_REVISIONS: &[Revision] = revisions![(
+    2019,
+    3,
+    1,
+    &MIAX_EMERALD_OPTIONS_PROFILE,
+    "MIAX Emerald launch announcement"
+),];
+static MIAX_SAPPHIRE_REVISIONS: &[Revision] = revisions![(
+    2024,
+    8,
+    12,
+    &MIAX_SAPPHIRE_OPTIONS_PROFILE,
+    "MIAX press release 2024-09-10"
+),];
 static MEMX_REVISIONS: &[Revision] = revisions![(
     2023,
     9,
@@ -297,63 +192,21 @@ static MEMX_REVISIONS: &[Revision] = revisions![(
 // timeline row is the knowledge bound: the dated baseline is the queue-less
 // 09:30–16:00 grid, and the 2026-08-22 row applies the verified-current
 // order-acceptance queue.
-static C1_REVISIONS: &[Revision] = revisions![(
-    2026,
-    8,
-    22,
-    &CBOE_OPTIONS_C1_PROFILE,
-    "2026-08-22 review: verified current, onset undated"
-),];
-static NYSE_ARCA_OPTIONS_REVISIONS: &[Revision] = revisions![(
-    2026,
-    8,
-    22,
-    &NYSE_ARCA_OPTIONS_PROFILE,
-    "2026-08-22 review: verified current, onset undated"
-),];
-static NYSE_AMERICAN_OPTIONS_REVISIONS: &[Revision] = revisions![(
-    2026,
-    8,
-    22,
-    &NYSE_AMERICAN_OPTIONS_PROFILE,
-    "2026-08-22 review: verified current, onset undated"
-),];
-static NASDAQ_PHLX_REVISIONS: &[Revision] = revisions![(
-    2026,
-    8,
-    22,
-    &NASDAQ_PHLX_OPTIONS_PROFILE,
-    "2026-08-22 review: verified current, onset undated"
-),];
-static NASDAQ_ISE_REVISIONS: &[Revision] = revisions![(
-    2026,
-    8,
-    22,
-    &NASDAQ_ISE_OPTIONS_PROFILE,
-    "2026-08-22 review: verified current, onset undated"
-),];
-static NASDAQ_NOM_REVISIONS: &[Revision] = revisions![(
-    2026,
-    8,
-    22,
-    &NASDAQ_NOM_OPTIONS_PROFILE,
-    "2026-08-22 review: verified current, onset undated"
-),];
-static BOX_REVISIONS: &[Revision] = revisions![(
-    2026,
-    8,
-    22,
-    &BOX_OPTIONS_PROFILE,
-    "2026-08-22 review: verified current, onset undated"
-),];
+static C1_REVISIONS: &[Revision] = &[];
+static NYSE_ARCA_OPTIONS_REVISIONS: &[Revision] = &[];
+static NYSE_AMERICAN_OPTIONS_REVISIONS: &[Revision] = &[];
+static NASDAQ_PHLX_REVISIONS: &[Revision] = &[];
+static NASDAQ_ISE_REVISIONS: &[Revision] = &[];
+static NASDAQ_NOM_REVISIONS: &[Revision] = &[];
+static BOX_REVISIONS: &[Revision] = &[];
 
-macro_rules! knowledge_selector {
-    ($($name:ident, $revisions:ident),+ $(,)?) => {
+macro_rules! carried_selector {
+    ($($name:ident, $baseline:ident, $revisions:ident),+ $(,)?) => {
         $(
             pub(crate) fn $name(as_of: DateTime<Utc>) -> &'static StaticHoursProfile {
                 select_revision(
                     local_date(as_of, America::New_York),
-                    &LISTED_EQUITY_OPTIONS_HISTORICAL,
+                    &$baseline,
                     $revisions,
                 )
             }
@@ -361,20 +214,27 @@ macro_rules! knowledge_selector {
     };
 }
 
-knowledge_selector!(
+carried_selector!(
     c1_profile_at,
+    CBOE_OPTIONS_C1_PROFILE,
     C1_REVISIONS,
     nyse_arca_options_profile_at,
+    NYSE_ARCA_OPTIONS_PROFILE,
     NYSE_ARCA_OPTIONS_REVISIONS,
     nyse_american_options_profile_at,
+    NYSE_AMERICAN_OPTIONS_PROFILE,
     NYSE_AMERICAN_OPTIONS_REVISIONS,
     nasdaq_phlx_profile_at,
+    NASDAQ_PHLX_OPTIONS_PROFILE,
     NASDAQ_PHLX_REVISIONS,
     nasdaq_ise_profile_at,
+    NASDAQ_ISE_OPTIONS_PROFILE,
     NASDAQ_ISE_REVISIONS,
     nasdaq_nom_profile_at,
+    NASDAQ_NOM_OPTIONS_PROFILE,
     NASDAQ_NOM_REVISIONS,
     box_options_profile_at,
+    BOX_OPTIONS_PROFILE,
     BOX_REVISIONS,
 );
 

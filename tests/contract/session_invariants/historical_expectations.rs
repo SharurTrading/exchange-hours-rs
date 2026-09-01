@@ -603,9 +603,18 @@ pub(super) const HISTORICAL_CUTOVERS: &[(Exchange, Ymd, chrono_tz::Tz)] = &[
         (2023, 11, 6),
         chrono_tz::America::Mexico_City,
     ),
-    // Knowledge-bound rows: each venue's verified-current order-acceptance
-    // (and, for NYSE, early-session) phases apply from the 2026-08-22
-    // repository review; earlier dated queries conservatively omit them.
+    // MIAX Options' 07:30 window existed at launch but did not affect the live
+    // book; the first capture showing it live-book is 2013-05-07.
+    (
+        Exchange::MiaxOptions,
+        (2013, 5, 7),
+        chrono_tz::America::New_York,
+    ),
+    // Knowledge-bound rows that remain: the cash-equity and CME venues whose
+    // verified-current order-acceptance (and, for NYSE, early-session) phases
+    // apply from the 2026-08-22 repository review. The seventeen US options
+    // venues no longer appear here - their queues are carried across history,
+    // so no profile changes on that day.
     (
         Exchange::CboeEdga,
         (2026, 8, 22),
@@ -614,91 +623,6 @@ pub(super) const HISTORICAL_CUTOVERS: &[(Exchange, Ymd, chrono_tz::Tz)] = &[
     (Exchange::Nyse, (2026, 8, 22), chrono_tz::America::New_York),
     (
         Exchange::NyseArca,
-        (2026, 8, 22),
-        chrono_tz::America::New_York,
-    ),
-    (
-        Exchange::CboeOptionsC1,
-        (2026, 8, 22),
-        chrono_tz::America::New_York,
-    ),
-    (
-        Exchange::CboeC2Options,
-        (2026, 8, 22),
-        chrono_tz::America::New_York,
-    ),
-    (
-        Exchange::CboeBzxOptions,
-        (2026, 8, 22),
-        chrono_tz::America::New_York,
-    ),
-    (
-        Exchange::CboeEdgxOptions,
-        (2026, 8, 22),
-        chrono_tz::America::New_York,
-    ),
-    (
-        Exchange::NyseArcaOptions,
-        (2026, 8, 22),
-        chrono_tz::America::New_York,
-    ),
-    (
-        Exchange::NyseAmericanOptions,
-        (2026, 8, 22),
-        chrono_tz::America::New_York,
-    ),
-    (
-        Exchange::NasdaqPhlx,
-        (2026, 8, 22),
-        chrono_tz::America::New_York,
-    ),
-    (
-        Exchange::NasdaqIse,
-        (2026, 8, 22),
-        chrono_tz::America::New_York,
-    ),
-    (
-        Exchange::NasdaqNom,
-        (2026, 8, 22),
-        chrono_tz::America::New_York,
-    ),
-    (
-        Exchange::NasdaqMrx,
-        (2026, 8, 22),
-        chrono_tz::America::New_York,
-    ),
-    (
-        Exchange::NasdaqGemx,
-        (2026, 8, 22),
-        chrono_tz::America::New_York,
-    ),
-    (
-        Exchange::NasdaqBxOptions,
-        (2026, 8, 22),
-        chrono_tz::America::New_York,
-    ),
-    (
-        Exchange::MiaxOptions,
-        (2026, 8, 22),
-        chrono_tz::America::New_York,
-    ),
-    (
-        Exchange::MiaxEmeraldOptions,
-        (2026, 8, 22),
-        chrono_tz::America::New_York,
-    ),
-    (
-        Exchange::MiaxPearlOptions,
-        (2026, 8, 22),
-        chrono_tz::America::New_York,
-    ),
-    (
-        Exchange::MiaxSapphireOptions,
-        (2026, 8, 22),
-        chrono_tz::America::New_York,
-    ),
-    (
-        Exchange::BoxOptions,
         (2026, 8, 22),
         chrono_tz::America::New_York,
     ),

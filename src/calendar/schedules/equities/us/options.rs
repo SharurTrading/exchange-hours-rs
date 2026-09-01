@@ -84,12 +84,13 @@ static ORDER_ENTRY_0730: &[SessionRule] = &[SessionRule {
 }];
 
 // Current ordinary-stock-option order-acceptance edges. The reviewed primary
-// sources do not supply a complete day-level amendment chain for these queues,
-// so each venue's timeline carries them only from its 2026-08-22
-// knowledge-bound row onward while earlier dated queries retain the exact
-// 09:30–16:00 execution history. Because nothing matches in a queue, carrying
-// them as `order_entry` leaves earlier dated grids — which hold no queue at
-// all — unaffected in their tradeable coverage.
+// sources supply no day-level amendment chain for these queues — they are
+// operator system settings, not rulebook boundaries — so as of 2026-09-01 each
+// venue carries its queue across history rather than only from a review-date
+// row. The per-profile notes below say which basis each venue uses, and
+// `options/history.rs` states the assumption in full. Because nothing matches in
+// a queue, this changes `order_entry` coverage only: every venue's 09:30–16:00
+// execution history is sourced independently and untouched.
 // https://www.cboe.com/about/hours/us-options
 // https://www.nyse.com/trade/hours-calendars?os=.
 // https://www.nasdaq.com/docs/PHLXSystemSettings
@@ -101,40 +102,68 @@ static ORDER_ENTRY_0730: &[SessionRule] = &[SessionRule {
 // https://www.miaxglobal.com/markets/us-options/all-options-exchanges/trade-hours-calendar
 // https://boxexchange.com/assets/BOX-Exchange-Quoting-Requirements-Summary_10.15.pdf
 // https://info.memxtrading.com/wp-content/uploads/2023/05/MEMX-Options-User-Manual.pdf
+/// C1. Queue carried from the January-2010 floor; onset assumed, not sourced.
 pub(crate) static CBOE_OPTIONS_C1_PROFILE: StaticHoursProfile =
     listed_equity_options_profile(ORDER_ENTRY_0730);
+/// C2. Queue carried from the sourced 2010-10-29 launch; onset assumed.
 pub(crate) static CBOE_C2_OPTIONS_PROFILE: StaticHoursProfile =
     listed_equity_options_profile(ORDER_ENTRY_0730);
+/// BZX Options. Queue carried from the sourced 2010-02-26 launch; onset
+/// assumed.
 pub(crate) static CBOE_BZX_OPTIONS_PROFILE: StaticHoursProfile =
     listed_equity_options_profile(ORDER_ENTRY_0730);
+/// EDGX Options. Queue carried from the sourced 2015-11-02 launch; onset
+/// assumed.
 pub(crate) static CBOE_EDGX_OPTIONS_PROFILE: StaticHoursProfile =
     listed_equity_options_profile(ORDER_ENTRY_0730);
+/// Arca Options. Queue carried from the January-2010 floor; onset assumed.
 pub(crate) static NYSE_ARCA_OPTIONS_PROFILE: StaticHoursProfile =
     listed_equity_options_profile(ORDER_ENTRY_0600);
+/// American Options. Queue carried from the January-2010 floor; onset
+/// assumed.
 pub(crate) static NYSE_AMERICAN_OPTIONS_PROFILE: StaticHoursProfile =
     listed_equity_options_profile(ORDER_ENTRY_0600);
+/// PHLX. Queue carried from the January-2010 floor; onset assumed.
 pub(crate) static NASDAQ_PHLX_OPTIONS_PROFILE: StaticHoursProfile =
     listed_equity_options_profile(ORDER_ENTRY_0730);
+/// ISE. Queue carried from the January-2010 floor; onset assumed.
 pub(crate) static NASDAQ_ISE_OPTIONS_PROFILE: StaticHoursProfile =
     listed_equity_options_profile(ORDER_ENTRY_0600);
+/// NOM. Queue carried from the January-2010 floor; onset assumed.
 pub(crate) static NASDAQ_NOM_OPTIONS_PROFILE: StaticHoursProfile =
     listed_equity_options_profile(ORDER_ENTRY_0730);
+/// MRX. Queue carried from the sourced 2016-02-16 launch; onset assumed.
 pub(crate) static NASDAQ_MRX_OPTIONS_PROFILE: StaticHoursProfile =
     listed_equity_options_profile(ORDER_ENTRY_0600);
+/// GEMX. Queue carried from the sourced 2013-08-05 launch; onset assumed.
 pub(crate) static NASDAQ_GEMX_OPTIONS_PROFILE: StaticHoursProfile =
     listed_equity_options_profile(ORDER_ENTRY_0600);
+/// BX Options. Queue carried from the sourced 2012-06-29 launch; onset
+/// assumed.
 pub(crate) static NASDAQ_BX_OPTIONS_PROFILE: StaticHoursProfile =
     listed_equity_options_profile(ORDER_ENTRY_0730);
+/// MIAX Options. Queue served from 2013-05-07, the first capture showing it
+/// affecting the live book - NOT from launch, where the same window was
+/// connectivity verification only. Sourced on both sides; no assumption.
 pub(crate) static MIAX_OPTIONS_PROFILE: StaticHoursProfile =
     listed_equity_options_profile(ORDER_ENTRY_0730);
+/// MIAX Emerald. Queue carried from the sourced 2019-03-01 launch; onset
+/// assumed.
 pub(crate) static MIAX_EMERALD_OPTIONS_PROFILE: StaticHoursProfile =
     listed_equity_options_profile(ORDER_ENTRY_0730);
+/// MIAX Pearl. Queue carried from the sourced 2017-02-06 launch; onset
+/// assumed.
 pub(crate) static MIAX_PEARL_OPTIONS_PROFILE: StaticHoursProfile =
     listed_equity_options_profile(ORDER_ENTRY_0730);
+/// MIAX Sapphire. Queue carried from the sourced 2024-08-12 launch; onset
+/// assumed.
 pub(crate) static MIAX_SAPPHIRE_OPTIONS_PROFILE: StaticHoursProfile =
     listed_equity_options_profile(ORDER_ENTRY_0730);
+/// BOX. Queue carried from the January-2010 floor; onset assumed.
 pub(crate) static BOX_OPTIONS_PROFILE: StaticHoursProfile =
     listed_equity_options_profile(ORDER_ENTRY_0700);
+/// MEMX Options. No queue at all - it rejects orders before 09:30 - so
+/// nothing is carried.
 pub(crate) static MEMX_OPTIONS_PROFILE: StaticHoursProfile = listed_equity_options_profile(&[]);
 
 static LISTED_EQUITY_OPTIONS_HISTORICAL: StaticHoursProfile = listed_equity_options_profile(&[]);

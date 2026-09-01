@@ -25,7 +25,9 @@ corrections (a venue's hours fixed against a primary source) go under
   an ICE Futures U.S. trading hour, the master hours table is the only source,
   and its earliest surviving edition is August 2011. The rows keep `Partial` and
   the carry-back stands as the terminal answer unless an earlier edition
-  surfaces. Recorded in all six ledger rows, beside each table, and in the
+  surfaces. **No profile, selector, or schedule data changed** — the hours the
+  crate serves are identical before and after; only the characterisation of the
+  gap changed, recorded in all six ledger rows, beside each table, and in the
   source registry.
 
 ### Changed

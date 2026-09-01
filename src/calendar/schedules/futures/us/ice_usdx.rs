@@ -113,6 +113,7 @@ pub(crate) static ICE_USDX_CURRENT: StaticHoursProfile = StaticHoursProfile {
 // https://web.archive.org/web/20111213011033id_/https://www.theice.com/publicdocs/rulebooks/futures_us/11_Sugar_11.pdf
 // https://web.archive.org/web/20111213011055id_/https://www.theice.com/publicdocs/rulebooks/futures_us/8_Coffee.pdf
 // https://web.archive.org/web/20111213011442id_/https://www.theice.com/publicdocs/rulebooks/futures_us/9_Cocoa.pdf
+// https://web.archive.org/web/20111213003348id_/https://www.theice.com/publicdocs/rulebooks/futures_us/15_USDX.pdf
 // 2026-08-31: the pre-2011 dating question was re-worked and stays negative.
 // ICE's 2007 currencies release states only that "Electronic trading hours for
 // currency futures are from 8:00 p.m. ET through 6:00 p.m. ET each trading

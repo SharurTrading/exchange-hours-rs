@@ -33,6 +33,7 @@ use crate::calendar::schedules::timeline::{Revision, local_date, revisions, sele
 // https://web.archive.org/web/20111213011033id_/https://www.theice.com/publicdocs/rulebooks/futures_us/11_Sugar_11.pdf
 // https://web.archive.org/web/20111213011055id_/https://www.theice.com/publicdocs/rulebooks/futures_us/8_Coffee.pdf
 // https://web.archive.org/web/20111213011442id_/https://www.theice.com/publicdocs/rulebooks/futures_us/9_Cocoa.pdf
+// https://web.archive.org/web/20111213010113id_/https://www.theice.com/publicdocs/rulebooks/futures_us/13_FCOJ.pdf
 // 2026-08-31: the same "FCOJ-A   8:00 - 14:00" row appears in the AUGUST 2011
 // and JANUARY 2, 2013 editions of the master table, so "no earlier change
 // inside the modelled window" is now supported by two dated ICE documents

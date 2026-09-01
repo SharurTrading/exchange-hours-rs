@@ -44,6 +44,7 @@ use crate::calendar::schedules::timeline::{Revision, local_date, revisions, sele
 // https://web.archive.org/web/20111213011033id_/https://www.theice.com/publicdocs/rulebooks/futures_us/11_Sugar_11.pdf
 // https://web.archive.org/web/20111213011055id_/https://www.theice.com/publicdocs/rulebooks/futures_us/8_Coffee.pdf
 // https://web.archive.org/web/20111213011442id_/https://www.theice.com/publicdocs/rulebooks/futures_us/9_Cocoa.pdf
+// https://web.archive.org/web/20111120214154id_/https://www.theice.com/publicdocs/rulebooks/futures_us/10_Cotton.pdf
 // Confirmed independently on 2026-08-31: the JANUARY 2, 2013 edition of the
 // master table repeats the same contrast - "Cotton No. 2(R)  21:00* - 14:30"
 // against "Grains and Oilseeds", "Russell Index", "USDX(R)" and the currency

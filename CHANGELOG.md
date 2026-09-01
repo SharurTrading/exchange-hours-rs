@@ -11,6 +11,20 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ## [Unreleased]
 
+### Changed
+
+- **Every `Partial` row now states its gap kind.** `AGENTS.md` requires it — a
+  missing trading session and an undated queue start carry very different weight
+  and the basis label cannot distinguish them — but only the US futures families
+  had been classified. All 46 rows are now tagged: **34 order-entry**, where the
+  trading session is sourced and what is undated is a queue or post-close phase
+  in which no trade can print, and **12 executable**, where the uncertainty
+  touches a window where trades print. The executable twelve are the six ICE
+  Futures U.S. keys, `globex_nikkei_225_dollar` and the five SGX equity-index
+  keys; none serves hours it cannot support, and each errs toward `Closed`. The
+  ledger's classification-status note is replaced with the completed result and
+  the README carries the split. No profile, selector, or schedule data changed.
+
 ### Fixed
 
 - **CME Nikkei 225 Dollar: the 2011 grid is no longer carried across 2010, where

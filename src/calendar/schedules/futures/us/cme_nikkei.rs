@@ -135,33 +135,42 @@ static NKD_2012: StaticHoursProfile = StaticHoursProfile {
     has_weekend_close: true,
 };
 
-// PRE-2012 GRID, CARRIED BACK TO THE JANUARY-2010 FLOOR. This interval used to
-// return no session at all, which reported a contract that was demonstrably
-// trading as closed for nearly three years. CME's own trading-hours pages,
-// captured 2012-05-11 and 2012-05-28 and therefore inside this era, publish the
-// grid directly: "Nikkei 225 (Dollar) Futures" reads Electronic Trading
-// (Sunday) "17:00-15:15" and Electronic Trading (Weekday) "15:30-16:30,
-// 17:00-15:15" - byte-identical to the E-mini S&P 500 row on the same page,
-// which independently validates the column reading against a grid this crate
-// already models exactly. SER-6465 corroborates the outgoing 15:15 CT close by
-// describing its own change as an extension of it.
+// THE 2011 GRID, AND WHY IT IS NOT CARRIED TO THE FLOOR. CME's trading-hours
+// pages publish this grid — Electronic Trading (Sunday) "17:00-15:15" and
+// (Weekday) "15:30-16:30, 17:00-15:15", byte-identical to the E-mini S&P 500 row
+// beside it — from the 2011-01-12 capture onward. SER-6465 corroborates the
+// outgoing 15:15 CT close by describing its own change as an extension of it.
 //
-// No primary source names a cutover inside 2010-01-01..2012-11-17, so the grid
-// is carried back to the audit floor rather than given an invented start: this
-// asserts no revision row, it extends the earliest sourced state backwards, the
-// same treatment ICE Sugar's August-2011 baseline already receives.
+// It is NOT carried back to the January-2010 floor, because the 2010 grid was
+// materially different and is sourced. The 2010-03-10 and 2010-04-07 captures of
+// the same page read, for "Nikkei 225 (Dollar) Futures":
 //
-// RESIDUAL RISK, STATED PLAINLY: a 2010 NKD grid change is attested by a
-// third-party news aggregator and by no primary source. If that change was
-// real, this profile is wrong for the part of 2010 that precedes it. It is
-// carried anyway because "no session" is wrong for the whole interval while
-// this is at worst wrong for part of it, and because the alternative would
-// leave a trading contract modelled as closed. Primary evidence dating that
-// change replaces this profile with a revision row.
+//   Electronic (weekday)  CDT: 03:00-15:15 reopens 15:30-16:30; closes
+//                         16:30-17:00; reopens 17:00-18:00
+//                         CST: 02:00-15:15; reopens 15:30-16:30; closes 16:30
+//   Sunday                CDT: Opens 17:00-18:00    CST: No Sunday Hours
+//
+// That is a daytime-anchored, DST-dependent grid whose evening segment ran only
+// 17:00-18:00 and which had no Sunday session at all in CST. Serving the
+// 17:00-15:15 continuous grid across it would report the contract open through
+// the whole overnight window when it was closed — a false open, in executable
+// hours. An earlier revision of this module did exactly that, on the reasoning
+// that no source named a cutover; a source does, and the carry-back convention
+// requires that none exists.
+//
+// The transition is undated: 2010-04-07 still shows the old grid and 2011-01-12
+// already shows the new one, with no capture and no located CME notice in
+// between. Dates before the first sourced appearance of the served grid are
+// therefore modelled sessionless, the same knowledge boundary a launch day
+// provides. Encoding the 2010 grid itself would need seasonal CDT/CST rules and
+// a boundary that is still undated, so it is left as sourced-but-unmodelled and
+// recorded here.
 // Official origin http://www.cmegroup.com/trading_hours/ delivered via:
-// https://web.archive.org/web/20120511163357id_/http://www.cmegroup.com/trading_hours/index.html?show=Commodities
-// https://web.archive.org/web/20120528102754id_/http://www.cmegroup.com/trading_hours/index.html
-static NKD_REGULAR_PRE_2012: &[SessionRule] = &[
+// https://web.archive.org/web/20100310022002id_/http://www.cmegroup.com/trading_hours/
+// https://web.archive.org/web/20100407094843id_/http://www.cmegroup.com/trading_hours/
+// https://web.archive.org/web/20110112032949id_/http://www.cmegroup.com/trading_hours/
+// https://web.archive.org/web/20110811113223id_/http://www.cmegroup.com/trading_hours/
+static NKD_REGULAR_2011: &[SessionRule] = &[
     SessionRule {
         days: SUN_PLUS_MON_THU,
         open_ssm: 17 * 3600,
@@ -174,10 +183,22 @@ static NKD_REGULAR_PRE_2012: &[SessionRule] = &[
     },
 ];
 
-static NKD_PRE_2012: StaticHoursProfile = StaticHoursProfile {
+static NKD_2011: StaticHoursProfile = StaticHoursProfile {
     tz: US::Central,
-    regular: NKD_REGULAR_PRE_2012,
+    regular: NKD_REGULAR_2011,
     extended: NKD_EXTENDED_CURRENT,
+    order_entry: &[],
+    has_daily_close: true,
+    has_weekend_close: true,
+};
+
+/// Sessionless profile for dates before the first sourced appearance of the
+/// 2011 grid. The 2010 grid is sourced but structurally different and its
+/// changeover day is undated; see the note above.
+static NKD_CLOSED: StaticHoursProfile = StaticHoursProfile {
+    tz: US::Central,
+    regular: &[],
+    extended: &[],
     order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
@@ -196,6 +217,13 @@ static NKD_PRE_2012: StaticHoursProfile = StaticHoursProfile {
 // 2015-09-20: CME Globex Notice #20150817, quoted above; trade date Monday
 //   2015-09-21, session-opening day Sunday 2015-09-20.
 pub(crate) static NKD_REVISIONS: &[Revision] = revisions![
+    (
+        2011,
+        1,
+        12,
+        &NKD_2011,
+        "first sourced CME trading-hours capture of this grid"
+    ),
     (2012, 11, 18, &NKD_2012, "CME SER-6465"),
     (2013, 3, 3, &NKD_2013, "CME SER-6554R"),
     (2015, 9, 20, &NKD_CURRENT, "CME Globex notice 20150817"),
@@ -203,9 +231,9 @@ pub(crate) static NKD_REVISIONS: &[Revision] = revisions![
 
 /// Selects the CME Nikkei 225 Dollar profile in force on `as_of`'s Chicago day.
 ///
-/// Dates before the first dated revision (2012-11-18) resolve to the sourced
-/// pre-2012 grid, carried back to the January-2010 audit floor because no
-/// primary source names a cutover inside that interval.
+/// Dates before 2011-01-12 — the first sourced appearance of the 2011 grid —
+/// resolve to a sessionless profile. The 2010 grid was materially different and
+/// its changeover day is undated, so neither grid may be carried across it.
 pub(crate) fn nkd_profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {
-    select_revision(local_date(as_of, US::Central), &NKD_PRE_2012, NKD_REVISIONS)
+    select_revision(local_date(as_of, US::Central), &NKD_CLOSED, NKD_REVISIONS)
 }

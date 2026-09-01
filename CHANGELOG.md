@@ -13,6 +13,29 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Fixed
 
+- **CME Nikkei 225 Dollar: the 2011 grid is no longer carried across 2010, where
+  it was wrong (behaviour change).** An earlier commit on this branch carried the
+  17:00–15:15 CT grid back to the January-2010 floor, on the reasoning that no
+  primary source named a cutover inside the interval. A source does. CME's own
+  trading-hours pages captured **2010-03-10** and **2010-04-07** publish a
+  materially different grid for `Nikkei 225 (Dollar) Futures`: CDT 03:00–15:15
+  reopening 15:30–16:30 and 17:00–18:00, CST 02:00–15:15, and **no Sunday hours
+  at all in CST**. Serving the continuous grid across that period reported the
+  contract open through the whole overnight window when it was closed — a false
+  open, in executable hours.
+
+  The changeover day is undated: 2010-04-07 still shows the old grid, 2011-01-12
+  already shows the new one, and no capture or CME notice between them was
+  located. So the served grid now applies from **2011-01-12**, its first sourced
+  appearance, and earlier dates are sessionless. The 2010 grid is recorded beside
+  the table as sourced-but-unmodelled — encoding it would need seasonal CDT/CST
+  rules and a boundary that is still undated.
+
+  `nkd_close_tracks_its_three_sourced_revisions` now pins 2010 as sessionless at
+  three points and the grid as served from its first sourced capture.
+
+### Fixed
+
 - **ICE Futures U.S.: the January 2010 – August 2011 gap is document-bound, not
   an unfinished search.** The six `ice_us_*` keys carry the August 2011 master
   hours table back to the January-2010 floor, which is executable-hours coverage

@@ -144,8 +144,11 @@ direct sourcing, and which are the real remaining executable-hours work:
    sets these hours administratively, not by rule (no product rulebook chapter
    carries an hours provision), so no filing can date them and the master hours
    table — earliest surviving edition August 2011 — is the only source.
-2. `globex_nikkei_225_dollar` — the pre-2012 grid is carried to the floor, with
-   a third-party-attested 2010 change that no primary source dates.
+2. `globex_nikkei_225_dollar` — **resolved 2026-09-01.** The 2010 change is real
+   and primary-sourced: CME's trading-hours captures of 2010-03-10 and
+   2010-04-07 show a different, DST-dependent grid. The served grid now starts at
+   its first sourced appearance (2011-01-12) and 2010 is sessionless rather than
+   filled with a grid that was wrong for it.
 
 **Order of work when this resumes:** (1) executable-hours gaps above, (2) the
 rest of US futures, (3) other futures (Eurex, ICE Europe/Endex, SGX SORA,

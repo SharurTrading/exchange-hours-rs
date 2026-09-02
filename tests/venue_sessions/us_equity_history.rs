@@ -144,33 +144,55 @@ fn edga_and_edgx_0600_queue_starts_on_the_2014_rule_approval_days() {
 }
 
 #[test]
-fn partial_us_equity_histories_do_not_invent_current_queue_onsets() {
-    for (exchange, current_queue, dated_open) in [
-        (Exchange::Nyse, (6, 30, 0), (9, 30, 0)),
-        (Exchange::NyseArca, (2, 30, 0), (4, 0, 0)),
-    ] {
-        let instant = et((2026, 4, 20), current_queue);
-        let dated = hours_for_exchange(exchange, instant);
-        assert!(
-            hours_for_exchange(
-                exchange,
-                chrono::DateTime::<chrono::Utc>::UNIX_EPOCH
-                    + chrono::Duration::seconds(1_787_400_000)
-            )
-            .is_order_entry_only(instant),
-            "{exchange:?} at {instant}"
-        );
-        assert!(!dated.is_open(instant), "{exchange:?} at {instant}");
-        assert!(
-            !calendar_for_exchange(exchange).is_open(instant),
-            "{exchange:?} at {instant}"
-        );
-        let dated_instant = et((2026, 4, 20), dated_open);
-        assert!(
-            dated.is_open(dated_instant),
-            "{exchange:?} at {dated_instant}"
-        );
-    }
+fn nyse_early_session_and_queue_begin_with_the_2018_utp_pillar_launch() {
+    // NYSE Rule 7.34(a)(1) sets the Early Trading Session at 07:00 and order
+    // acceptance 30 minutes earlier; NYSE's own filings date the production
+    // day without condition: "On April 9, 2018, the Exchange began trading UTP
+    // Securities on the Exchange on the Pillar trading platform."
+    // https://www.federalregister.gov/documents/2018/03/29/2018-06339/self-regulatory-organizations-new-york-stock-exchange-llc-notice-of-filing-of-amendment-no-1-and
+    // https://www.federalregister.gov/documents/2018/05/18/2018-10606/self-regulatory-organizations-new-york-stock-exchange-llc-notice-of-filing-and-immediate
+    let before = profile_before(Exchange::Nyse, (2018, 4, 9));
+    let after = profile_from(Exchange::Nyse, (2018, 4, 9));
+
+    assert!(!before.is_open(et((2018, 4, 9), (6, 30, 0))));
+    assert!(!before.is_order_entry_only(et((2018, 4, 9), (6, 30, 0))));
+    assert!(!before.is_open(et((2018, 4, 9), (7, 0, 0))));
+    assert!(before.is_open_regular(et((2018, 4, 9), (9, 30, 0))));
+
+    assert!(!after.is_open(et((2018, 4, 9), (6, 29, 59))));
+    assert!(after.is_order_entry_only(et((2018, 4, 9), (6, 30, 0))));
+    assert!(!after.is_open(et((2018, 4, 9), (6, 30, 0))));
+    assert!(after.is_open_extended(et((2018, 4, 9), (7, 0, 0))));
+    assert!(after.is_open_regular(et((2018, 4, 9), (9, 30, 0))));
+    assert!(!after.is_open(et((2018, 4, 9), (16, 0, 0))));
+}
+
+#[test]
+fn nyse_arca_queue_moves_from_0330_to_0230_on_the_trader_update_day() {
+    // Pre-Pillar Rule 7.35(a)(1) accepted orders 30 minutes before the 04:00
+    // Opening Session, and the Pillar I filing carried that text into Rule
+    // 7.34-E(a)(1) unchanged, so 03:30 is carried back to the audit floor.
+    // SR-NYSEArca-2021-71 moved it to 90 minutes and deferred production to a
+    // Trader Update, which names Monday 2021-09-13.
+    // https://www.federalregister.gov/documents/2015/05/19/2015-12028/self-regulatory-organizations-nyse-arca-inc-notice-of-filing-of-proposed-rule-change-adopting-new
+    // https://www.federalregister.gov/documents/2021/08/18/2021-17673/self-regulatory-organizations-nysearca-inc-notice-of-filing-and-immediate-effectiveness-of-proposed
+    // https://www.nyse.com/trader-update/history#110000372318
+    let floor = hours_for_exchange(Exchange::NyseArca, et((2010, 1, 4), (12, 0, 0)));
+    assert!(!floor.is_open(et((2010, 1, 4), (3, 29, 59))));
+    assert!(floor.is_order_entry_only(et((2010, 1, 4), (3, 30, 0))));
+    assert!(!floor.is_order_entry_only(et((2010, 1, 4), (2, 30, 0))));
+
+    let before = profile_before(Exchange::NyseArca, (2021, 9, 13));
+    let after = profile_from(Exchange::NyseArca, (2021, 9, 13));
+
+    assert!(!before.is_open(et((2021, 9, 13), (2, 30, 0))));
+    assert!(!before.is_order_entry_only(et((2021, 9, 13), (2, 30, 0))));
+    assert!(before.is_order_entry_only(et((2021, 9, 13), (3, 30, 0))));
+
+    assert!(!after.is_open(et((2021, 9, 13), (2, 29, 59))));
+    assert!(after.is_order_entry_only(et((2021, 9, 13), (2, 30, 0))));
+    assert!(after.is_order_entry_only(et((2021, 9, 13), (3, 30, 0))));
+    assert!(after.is_open_extended(et((2021, 9, 13), (4, 0, 0))));
 }
 
 #[test]

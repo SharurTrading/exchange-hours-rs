@@ -106,6 +106,15 @@ by automated retrieval, which changes how a review must be run:
   start was found by querying the exact sentence
   `"orders may be entered into the System from 6:00 a.m."`, which surfaced the
   2014 adopting notices that a Rule-11.1 search had missed.
+- **NYSE Group** publishes its trader updates through a client-side
+  application, so web-archive captures of `nyse.com/trader-update/history` show
+  an empty list and are useless. The page's own public JSON endpoint is
+  readable and unauthenticated (added 2026-09-02):
+  `nyse.com/api/notifications/public/system/1/summaries/filter?pageSize=500&pageNumber=N&sortKey=publishedDate&sortOrder=desc`
+  returns subject, full body, publication date, and market tags for every
+  notice back to 2006. Use it whenever an SEC filing changes an NYSE-family
+  rule but defers production to "a Trader Update": that notice is the dated
+  artifact, and the Federal Register will not contain the day.
 - The **web archive's CDX API** (`web.archive.org/cdx/search/cdx`) stays
   available when the replay endpoint is rate-limiting, and enumerating a
   defunct operator's document directory is often the whole job. Direct Edge's

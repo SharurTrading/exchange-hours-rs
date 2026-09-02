@@ -55,8 +55,6 @@ corrections (a venue's hours fixed against a primary source) go under
   now tells callers that a pre-2010 answer is the oldest profile on record rather
   than a reviewed one. No profile, selector, or schedule data changed.
 
-### Changed
-
 - **Every `Partial` row now states its gap kind.** `AGENTS.md` requires it — a
   missing trading session and an undated queue start carry very different weight
   and the basis label cannot distinguish them — but only the US futures families

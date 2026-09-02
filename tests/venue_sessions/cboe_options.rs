@@ -198,3 +198,90 @@ fn post_floor_options_venues_are_closed_before_their_launches() {
         assert!(!launched.is_open(et(date, (16, 0, 0))), "{exchange:?}");
     }
 }
+
+/// The three evidence classes behind the 2026-09-01 queue carry-back, pinned so
+/// a future edit cannot silently move a venue between them.
+///
+/// Sixteen venues carry their queue across history on a stated assumption: no
+/// primary source says when the queue began, because it is an operator system
+/// setting rather than a rulebook boundary. MIAX Options is excluded — its
+/// launch-era window was connectivity verification only, sourced on both sides —
+/// and MEMX has no queue at all.
+///
+/// 12:45Z is 07:45 ET on a US summer date: inside a 07:30 queue, outside the
+/// 09:30 open, and outside a 06:00 venue's queue only if that queue is absent.
+#[test]
+fn queue_carry_back_matches_each_venue_s_evidence_class() {
+    use chrono::{TimeZone as _, Utc};
+    use exchange_hours::{Exchange, SessionState, hours_for_exchange};
+
+    let at = |y: i32, m: u32, d: u32, h: u32, mi: u32| {
+        Utc.with_ymd_and_hms(y, m, d, h, mi, 0)
+            .single()
+            .expect("UTC is unambiguous")
+    };
+    let state = |ex: Exchange, t: chrono::DateTime<Utc>| hours_for_exchange(ex, t).session_state(t);
+
+    // Class 1 — no launch inside the window: queue carried from the audit floor.
+    for ex in [
+        Exchange::CboeOptionsC1,
+        Exchange::NasdaqPhlx,
+        Exchange::BoxOptions,
+    ] {
+        for year in [2010, 2015, 2026] {
+            let t = at(year, 6, 17, 12, 45);
+            assert_eq!(
+                state(ex, t),
+                SessionState::OrderEntry,
+                "{ex:?} carries its queue from the January-2010 floor"
+            );
+        }
+    }
+
+    // Class 2 — launch-dated: queue carried from the sourced launch, and the
+    // venue stays closed before it.
+    for (ex, before, after) in [
+        (
+            Exchange::CboeC2Options,
+            at(2010, 6, 17, 12, 45),
+            at(2011, 6, 17, 12, 45),
+        ),
+        (
+            Exchange::NasdaqGemx,
+            at(2012, 6, 18, 12, 45),
+            at(2014, 6, 17, 12, 45),
+        ),
+    ] {
+        assert_eq!(
+            state(ex, before),
+            SessionState::Closed,
+            "{ex:?} predates its launch"
+        );
+        assert_eq!(
+            state(ex, after),
+            SessionState::OrderEntry,
+            "{ex:?} carries its queue from its sourced launch day"
+        );
+    }
+
+    // Class 3 — MIAX Options: sourced on both sides, so no assumption. The
+    // window existed at launch but did not affect the live book until 2013-05-07.
+    let miax = Exchange::MiaxOptions;
+    assert_eq!(
+        state(miax, at(2013, 1, 16, 12, 45)),
+        SessionState::Closed,
+        "MIAX's launch-era window was connectivity verification only"
+    );
+    assert_eq!(
+        state(miax, at(2013, 6, 17, 12, 45)),
+        SessionState::OrderEntry,
+        "MIAX gains its queue at the first live-book capture, not at launch"
+    );
+
+    // MEMX has no queue at all: it rejects orders before 09:30.
+    assert_eq!(
+        state(Exchange::MemxOptions, at(2026, 6, 17, 12, 45)),
+        SessionState::Closed,
+        "MEMX Options rejects orders before 09:30, so nothing is carried"
+    );
+}

@@ -280,11 +280,16 @@ are **knowledge-bound**: a real exchange change happened and no operator ever
 published the day, because the value was an operator system setting no filing
 ever fixed — searching harder will not close them. A few are **source-limited**:
 the document that would date them exists but is a member-only or password-locked
-publication. And a few are **unfinished searches** — `cboe_edga` and `cboe_edgx`
-are the current examples, where the queue is a rulebook provision, so a dated SEC
-filing does exist and simply has not been located yet. Closing all 27 is the
-current priority, ahead of any built-in holiday data — the exception-session
-engine ships, its data does not.
+publication. The remainder are **unfinished searches**, where a dated document
+should exist and simply has not been found. `cboe_edga` and `cboe_edgx` used to
+be the examples of that last kind; they are not any more. The SEC orders that
+wrote the 06:00 order-entry start into Rule 11.1(a)(1) have been identified and
+dated, and Direct Edge's own FIX and API specifications supply the earlier
+07:00 queue back to launch — leaving a knowledge-bound residue of four months
+in late 2010 and early 2011 during which the specifications move acceptance
+from 07:00 to 06:00 with no source naming the day. Closing all 27 is the current
+priority, ahead of any built-in holiday data — the exception-session engine
+ships, its data does not.
 
 Every non-synthetic identity was compared with its official current-hours or
 rulebook material and its notice/evidence channel. All 93 current profiles are

@@ -298,6 +298,45 @@ corrections (a venue's hours fixed against a primary source) go under
   lives in the web archive under `sgx.com/wps/wcm/connect/` rather than on the
   live site. The same pass replaced an uncited "SGX's 2018 derivatives calendar"
   claim in `unsupported-families.md` with the archived page it can actually cite.
+- **Cboe EDGA and EDGX gain their historical order-entry queues (behaviour
+  change).** Both venues served no order-acceptance window at all before the
+  2016 matching change — EDGA served none before the 2026-08-22 review row —
+  even though Direct Edge published its acceptance hours from the day the
+  exchanges launched. Two independent primary sources close most of that gap.
+
+  **The rule-book provision is dated.** Rule 11.1(a)(1) — "orders may be entered
+  into the System from 6:00 a.m. until 8:00 p.m. Eastern Time, but orders
+  entered between 6:00 a.m. and 8:00 a.m. Eastern Time are not eligible for
+  execution until the start of the session selected by the User" — was adopted
+  by **SR-EDGX-2014-18**, approved by SEC Release **34-73468 of 2014-10-29**,
+  and by **SR-EDGA-2014-20**, approved by Release **34-73592 of 2014-11-13**.
+  Neither order defers the change, so each exchange gains its 06:00 queue on its
+  own approval day and EDGA's 2026-08-22 knowledge-bound row is gone.
+
+  **The launch-era queue comes from Direct Edge's own specifications.** Every
+  edition of the FIX and High Performance API specifications carries an "Hours of
+  Operation" table with a cover version date. "Begin Order Acceptance" reads
+  **7:00 AM** in v1.0 (2009-09-22), v1.1 (2009-10-08) and v1.9 (2010-10-01), and
+  **6:00 AM** from the v1.13 editions (2011-02-03) onward, over an unchanged
+  08:00 matching start. The 07:00–08:00 window is therefore carried from the
+  sourced 2010-07-02 launch day. A 07:30 ET instant in 2011 now answers
+  `OrderEntry` on both venues where it previously answered `Closed`.
+
+  **What is still withheld, and why.** No specification changelog, operator
+  notice or SEC filing names the day acceptance moved from 07:00 to 06:00; it
+  falls after 2010-10-01 and no later than 2011-02-03, and a document's own
+  version date is a publication date, not a cutover. Following the
+  sourced-intersection convention the crate serves the 07:00 start, which holds
+  under every sourced state, and withholds the disputed 06:00–07:00 hour until
+  the 2014 approval days supply a date. Both rows stay `Partial`, but the gap is
+  now a four-month bracket in an order-entry window rather than an unfinished
+  search across sixteen years. The archived rule books (February 2011 through
+  July 2014) confirm the pre-2014 text stated the sessions, not the acceptance
+  clock, which is why the specifications rather than the rule book supply the
+  earlier queue.
+
+  `HISTORICAL_CUTOVERS` gains `cboe_edgx` 2014-10-29 and `cboe_edga` 2014-11-13
+  and drops `cboe_edga` 2026-08-22.
 
 - **CME Nikkei 225 Dollar: the 2011 grid is no longer carried across 2010, where
   it was wrong (behaviour change).** An earlier commit on this branch carried the
@@ -371,6 +410,10 @@ corrections (a venue's hours fixed against a primary source) go under
   a mutable system setting no filing ever fixed. The 2010 registration order
   (75 FR 13151) does not state the hours; the filing that first set Rule
   11.1(a)(1) to 06:00 remains the target.
+
+  **Superseded later on this branch.** That filing was found — SR-EDGX-2014-18
+  and SR-EDGA-2014-20 — and the rows now carry dated queues; see the EDGA/EDGX
+  entry at the top of this section for what actually shipped.
 
 - **SGX equity-index history rebuilt from six calendar editions: three sourced
   eras, and a correction to the fix itself (behaviour change).** The five

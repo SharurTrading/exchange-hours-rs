@@ -330,6 +330,14 @@ pub(super) const HISTORICAL_CUTOVERS: &[(Exchange, Ymd, chrono_tz::Tz)] = &[
         (2010, 7, 2),
         chrono_tz::America::New_York,
     ),
+    // SEC Release 34-73592 approved SR-EDGA-2014-20, which first stated the
+    // 06:00 order-entry start in Rule 11.1(a)(1); 34-73468 did the same for
+    // EDGX two weeks earlier.
+    (
+        Exchange::CboeEdga,
+        (2014, 11, 13),
+        chrono_tz::America::New_York,
+    ),
     (
         Exchange::CboeEdga,
         (2016, 5, 24),
@@ -338,6 +346,11 @@ pub(super) const HISTORICAL_CUTOVERS: &[(Exchange, Ymd, chrono_tz::Tz)] = &[
     (
         Exchange::CboeEdgx,
         (2010, 7, 2),
+        chrono_tz::America::New_York,
+    ),
+    (
+        Exchange::CboeEdgx,
+        (2014, 10, 29),
         chrono_tz::America::New_York,
     ),
     (
@@ -614,12 +627,8 @@ pub(super) const HISTORICAL_CUTOVERS: &[(Exchange, Ymd, chrono_tz::Tz)] = &[
     // verified-current order-acceptance (and, for NYSE, early-session) phases
     // apply from the 2026-08-22 repository review. The seventeen US options
     // venues no longer appear here - their queues are carried across history,
-    // so no profile changes on that day.
-    (
-        Exchange::CboeEdga,
-        (2026, 8, 22),
-        chrono_tz::America::New_York,
-    ),
+    // so no profile changes on that day. Cboe EDGA no longer appears either:
+    // its queue now starts on the sourced 2014-11-13 approval day.
     (Exchange::Nyse, (2026, 8, 22), chrono_tz::America::New_York),
     (
         Exchange::NyseArca,

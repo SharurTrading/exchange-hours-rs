@@ -35,6 +35,13 @@ fn cboe_exchange_launches_are_not_backfilled() {
         let launched = profile_from(exch, (2010, 7, 2));
         assert!(before.regular.is_empty() && before.extended.is_empty());
         assert!(!launched.is_open(et((2010, 7, 2), (7, 59, 59))));
+        // Direct Edge's launch-era FIX and High Performance API specifications
+        // begin order acceptance at 07:00 with nothing matching until 08:00.
+        // The later 06:00 start is not carried back over them.
+        assert!(!launched.is_open(et((2010, 7, 2), (6, 59, 59))));
+        assert!(!launched.is_order_entry_only(et((2010, 7, 2), (6, 59, 59))));
+        assert!(launched.is_order_entry_only(et((2010, 7, 2), (7, 0, 0))));
+        assert!(launched.is_order_entry_only(et((2010, 7, 2), (7, 59, 59))));
         assert!(launched.is_open_extended(et((2010, 7, 2), (8, 0, 0))));
         assert!(launched.is_open_extended(et((2010, 7, 2), (19, 59, 59))));
         assert!(!launched.is_open(et((2010, 7, 2), (20, 0, 0))));
@@ -90,24 +97,54 @@ fn bzx_and_byx_2016_matching_start_moves_the_0700_hour_into_extended() {
 }
 
 #[test]
+fn edga_and_edgx_0600_queue_starts_on_the_2014_rule_approval_days() {
+    // Rule 11.1(a)(1) first stated the 06:00 order-entry start when the SEC
+    // approved SR-EDGX-2014-18 on 2014-10-29 (Release 34-73468) and
+    // SR-EDGA-2014-20 on 2014-11-13 (Release 34-73592). Direct Edge's own
+    // specifications state a 07:00 acceptance start at launch and 06:00 by
+    // 2011-02-03 without dating the move, so the crate serves 07:00 — true
+    // under every sourced state — until each approval day supplies a date.
+    // https://www.sec.gov/rules/sro/edgx/2014/34-73468.pdf
+    // https://www.sec.gov/files/rules/sro/edga/2014/34-73592.pdf
+    // https://web.archive.org/web/20101231125614id_/http://www.directedge.com/Portals/0/docs/Direct%20Edge%20Next%20Gen%20High%20Perf%20API%20Manual.pdf
+    for (exch, date) in [
+        (Exchange::CboeEdgx, (2014, 10, 29)),
+        (Exchange::CboeEdga, (2014, 11, 13)),
+    ] {
+        let before = profile_before(exch, date);
+        let after = profile_from(exch, date);
+
+        assert!(!before.is_open(et(date, (6, 0, 0))), "{exch:?}");
+        assert!(!before.is_order_entry_only(et(date, (6, 0, 0))), "{exch:?}");
+        assert!(before.is_order_entry_only(et(date, (7, 30, 0))), "{exch:?}");
+        assert!(!before.is_open(et(date, (7, 30, 0))), "{exch:?}");
+        assert!(before.is_open_extended(et(date, (8, 0, 0))), "{exch:?}");
+
+        assert!(!after.is_open(et(date, (5, 59, 59))), "{exch:?}");
+        assert!(after.is_order_entry_only(et(date, (6, 0, 0))), "{exch:?}");
+        assert!(after.is_order_entry_only(et(date, (7, 59, 59))), "{exch:?}");
+        assert!(after.is_open_extended(et(date, (8, 0, 0))), "{exch:?}");
+        assert!(!after.is_open(et(date, (20, 0, 0))), "{exch:?}");
+    }
+
+    // The 2016 matching change then moves the 07:00 hour out of the queue and
+    // into `extended` on each exchange's own operator-stated day.
+    for (exch, date) in [
+        (Exchange::CboeEdga, (2016, 5, 24)),
+        (Exchange::CboeEdgx, (2016, 5, 26)),
+    ] {
+        let before = profile_before(exch, date);
+        let after = profile_from(exch, date);
+
+        assert!(before.is_order_entry_only(et(date, (7, 0, 0))), "{exch:?}");
+        assert!(!before.is_open(et(date, (7, 0, 0))), "{exch:?}");
+        assert!(after.is_open_extended(et(date, (7, 0, 0))), "{exch:?}");
+        assert!(after.is_order_entry_only(et(date, (6, 30, 0))), "{exch:?}");
+    }
+}
+
+#[test]
 fn partial_us_equity_histories_do_not_invent_current_queue_onsets() {
-    // The current EDGA queue is primary-supported at 06:00, but its original
-    // onset day is not. The historical selector keeps the exact 2016 matching
-    // change without pretending that it introduced the older queue.
-    let before = profile_before(Exchange::CboeEdga, (2016, 5, 24));
-    let after = profile_from(Exchange::CboeEdga, (2016, 5, 24));
-    assert!(!before.is_open(et((2016, 5, 24), (7, 0, 0))));
-    assert!(after.is_open_extended(et((2016, 5, 24), (7, 0, 0))));
-
-    let current = hours_for_exchange(
-        Exchange::CboeEdga,
-        chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
-    );
-    let partial_as_of = hours_for_exchange(Exchange::CboeEdga, et((2026, 4, 20), (12, 0, 0)));
-    assert!(current.is_order_entry_only(et((2026, 4, 20), (6, 0, 0))));
-    assert!(!partial_as_of.is_open(et((2026, 4, 20), (6, 0, 0))));
-    assert!(!calendar_for_exchange(Exchange::CboeEdga).is_open(et((2026, 4, 20), (6, 0, 0))));
-
     for (exchange, current_queue, dated_open) in [
         (Exchange::Nyse, (6, 30, 0), (9, 30, 0)),
         (Exchange::NyseArca, (2, 30, 0), (4, 0, 0)),

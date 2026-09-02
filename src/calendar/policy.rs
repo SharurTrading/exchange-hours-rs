@@ -11,6 +11,7 @@ pub use static_policy::{DayOverride, StaticDayPolicy, StaticDayPolicyError};
 use chrono::{DateTime, NaiveDate, Utc};
 use chrono_tz::Tz;
 
+use super::exceptions::{DateException, ExceptionScopeError, SessionExceptionSource};
 use super::query::{QueryContext, sessions, status};
 use super::{
     CalendarSource, Exchange, ExchangeCalendar, MarketHours, MarketHoursKey, SessionKind,
@@ -31,7 +32,8 @@ use super::{
 /// Callers with hard-coded records can use [`StaticDayPolicy`] instead of
 /// implementing this trait themselves. This boundary API cannot replace or
 /// split arbitrary intraday phases; a special day with different internal
-/// topology needs a complete exception-session provider.
+/// topology goes through [`SessionExceptionSource`], which this overlay then
+/// clips exactly as it clips a normal week.
 pub trait DayPolicy: Send + Sync {
     /// Returns whether the market does not trade on `trade_date`.
     ///
@@ -71,25 +73,111 @@ impl DayPolicy for NoPolicy {
     }
 }
 
-/// A date-aware calendar with caller-supplied trade-date overrides.
+impl core::fmt::Debug for PolicyCalendar<'_> {
+    /// Reports the identity and which overlays are attached.
+    ///
+    /// Neither overlay is a `Debug` value — both are caller-supplied trait
+    /// objects — so this states their presence rather than their contents.
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_struct("PolicyCalendar")
+            .field("source", &self.calendar.source())
+            .field("day_policy", &self.policy.is_some())
+            .field("session_exceptions", &self.exceptions.is_some())
+            .finish()
+    }
+}
+
+/// A date-aware calendar with the caller's own day overlays applied.
 ///
-/// The wrapper borrows the policy and remains allocation-free itself. Work or
-/// allocation performed inside the caller's policy callbacks is outside the
+/// Two independent overlays can be attached, and both are optional. A
+/// [`DayPolicy`] clips a trading day's outer boundaries; a
+/// [`SessionExceptionSource`] replaces a trade date outright with a complete
+/// ordered block set. Precedence is fixed and one-directional: the exception
+/// layer resolves the trading day, then the policy overlays it exactly as it
+/// overlays a normal week. Two replacement layers never compose — attaching a
+/// provider replaces any provider already attached.
+///
+/// The wrapper borrows both overlays and remains allocation-free itself. Work
+/// or allocation performed inside the caller's callbacks is outside the
 /// calendar's performance guarantees. [`Self::hours_at`] deliberately returns
-/// the unmodified sourced profile; the policy overlays queries, not tables.
+/// the unmodified sourced profile; the overlays apply to queries, not tables.
 #[derive(Clone, Copy)]
 pub struct PolicyCalendar<'a> {
     calendar: ExchangeCalendar,
-    policy: &'a dyn DayPolicy,
+    policy: Option<&'a dyn DayPolicy>,
+    exceptions: Option<&'a dyn SessionExceptionSource>,
 }
 
 impl<'a> PolicyCalendar<'a> {
-    pub(super) const fn new(calendar: ExchangeCalendar, policy: &'a dyn DayPolicy) -> Self {
-        Self { calendar, policy }
+    pub(super) const fn new(
+        calendar: ExchangeCalendar,
+        policy: Option<&'a dyn DayPolicy>,
+        exceptions: Option<&'a dyn SessionExceptionSource>,
+    ) -> Self {
+        Self {
+            calendar,
+            policy,
+            exceptions,
+        }
     }
 
     fn context(self) -> QueryContext<'a> {
-        QueryContext::with_policy(self.calendar, self.policy)
+        QueryContext::overlay(self.calendar, self.policy, self.exceptions)
+    }
+
+    /// Returns whether a [`DayPolicy`] is attached.
+    #[must_use]
+    pub const fn has_day_policy(self) -> bool {
+        self.policy.is_some()
+    }
+
+    /// Returns whether a [`SessionExceptionSource`] is attached.
+    #[must_use]
+    pub const fn has_session_exceptions(self) -> bool {
+        self.exceptions.is_some()
+    }
+
+    /// Applies caller-supplied trade-date boundary overrides to every query.
+    ///
+    /// Replaces any policy already attached.
+    #[must_use]
+    pub const fn with_day_policy(self, policy: &'a dyn DayPolicy) -> Self {
+        Self::new(self.calendar, Some(policy), self.exceptions)
+    }
+
+    /// Applies a caller-supplied replacement-session provider to every query.
+    ///
+    /// Replaces any provider already attached: two replacement layers never
+    /// compose.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`ExceptionScopeError`] when `exceptions` is scoped to a
+    /// different [`CalendarSource`] than this calendar represents.
+    pub fn with_session_exceptions(
+        self,
+        exceptions: &'a dyn SessionExceptionSource,
+    ) -> Result<Self, ExceptionScopeError> {
+        let provider = exceptions.source();
+        if provider == self.calendar.source() {
+            Ok(Self::new(self.calendar, self.policy, Some(exceptions)))
+        } else {
+            Err(ExceptionScopeError {
+                calendar: self.calendar.source(),
+                provider,
+            })
+        }
+    }
+
+    /// Returns what the attached provider knows about `trade_date`.
+    ///
+    /// Returns `None` when no provider is attached. This is the only way to
+    /// tell an audited-and-normal date from one the provider never covered:
+    /// runtime queries necessarily serve the normal week for both.
+    #[must_use]
+    pub fn session_exception_on(self, trade_date: NaiveDate) -> Option<DateException<'a>> {
+        self.exceptions
+            .map(|provider| provider.exception_on(trade_date))
     }
 
     /// Returns the underlying date-aware calendar.
@@ -150,6 +238,25 @@ impl<'a> PolicyCalendar<'a> {
     #[must_use]
     pub fn is_open_extended(self, instant: DateTime<Utc>) -> bool {
         self.is_open_with(instant, SessionKind::Extended)
+    }
+
+    /// Returns whether orders may be entered, amended or cancelled at `instant`.
+    ///
+    /// True during effective order-entry-only phases and during any effective
+    /// tradeable session. A closed trade date removes the queue that feeds it;
+    /// a replaced trade date serves only the order-entry blocks the caller
+    /// supplied for it.
+    #[must_use]
+    pub fn is_accepting_orders(self, instant: DateTime<Utc>) -> bool {
+        status::is_accepting_orders(&self.context(), instant)
+    }
+
+    /// Returns whether `instant` falls in an effective order-entry-only phase.
+    ///
+    /// Mutually exclusive with [`Self::is_open`].
+    #[must_use]
+    pub fn is_order_entry_only(self, instant: DateTime<Utc>) -> bool {
+        status::is_order_entry_only(&self.context(), instant)
     }
 
     /// Returns the containing or next effective session bounds.
@@ -263,9 +370,39 @@ impl<'a> PolicyCalendar<'a> {
 }
 
 impl ExchangeCalendar {
-    /// Applies caller-supplied trade-date overrides to every query.
+    /// Applies caller-supplied trade-date boundary overrides to every query.
     #[must_use]
     pub const fn with_day_policy(self, policy: &dyn DayPolicy) -> PolicyCalendar<'_> {
-        PolicyCalendar::new(self, policy)
+        PolicyCalendar::new(self, Some(policy), None)
+    }
+
+    /// Applies a caller-supplied replacement-session provider to every query.
+    ///
+    /// The provider replaces whole trade dates with complete ordered block
+    /// sets, which scalar [`DayPolicy`] boundaries cannot express. Attach a
+    /// policy as well with
+    /// [`PolicyCalendar::with_day_policy`](PolicyCalendar::with_day_policy);
+    /// the policy then overlays the replacement exactly as it overlays a
+    /// normal week.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`ExceptionScopeError`] when `exceptions` is scoped to a
+    /// different [`CalendarSource`] than this calendar represents. One venue's
+    /// holiday topology is never evidence about another's, so the mismatch is
+    /// refused rather than applied.
+    pub fn with_session_exceptions(
+        self,
+        exceptions: &dyn SessionExceptionSource,
+    ) -> Result<PolicyCalendar<'_>, ExceptionScopeError> {
+        let provider = exceptions.source();
+        if provider == self.source() {
+            Ok(PolicyCalendar::new(self, None, Some(exceptions)))
+        } else {
+            Err(ExceptionScopeError {
+                calendar: self.source(),
+                provider,
+            })
+        }
     }
 }

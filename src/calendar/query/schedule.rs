@@ -2,17 +2,18 @@
 
 //! The two concrete profile sources consumed by the query engine.
 
-use chrono::{DateTime, Datelike, Duration, NaiveDate, Timelike, Utc, Weekday};
+use chrono::{DateTime, Datelike, NaiveDate, Timelike, Utc};
 use chrono_tz::Tz;
 
+use crate::calendar::exceptions::{DateException, SessionExceptionSource};
 use crate::calendar::exchange_calendar::ExchangeCalendar;
 use crate::calendar::hours::MarketHours;
 use crate::calendar::local_time::{bounded_utc, mk_local_close, mk_local_open};
 use crate::calendar::policy::DayPolicy;
 use crate::calendar::rule::{SessionKind, SessionRule};
-use crate::calendar::{CalendarResolution, CalendarSource, Exchange, MarketHoursKey};
+use crate::calendar::{CalendarResolution, CalendarSource};
 
-use super::candles;
+use super::{candles, identity, replacement};
 
 // Sessions opening on a civil day are governed by the profile in force at the
 // end of that opening day. Midnight-keyed revisions select the same profile
@@ -23,12 +24,26 @@ use super::candles;
 // collapse or duplicate 23:59:59 — and `mk_local_open` resolves earliest on
 // ambiguity regardless.
 const OPEN_DAY_ANCHOR_SSM: u32 = 86_399;
-const TRADE_DATE_LOOKAHEAD_DAYS: usize = 14;
+const SECONDS_PER_DAY: u32 = 86_400;
 
 #[derive(Clone, Copy)]
 enum ProfileSource<'a> {
     Fixed(&'a MarketHours),
     DateAware(ExchangeCalendar),
+}
+
+/// Which of a profile's rule sets a scan consults.
+///
+/// `order_entry` is deliberately not a [`SessionKind`]: it is not tradeable, so
+/// it can never join a session union. Keeping the two apart in one enum lets
+/// every occurrence scan — sessions and queues alike — share one code path,
+/// including the caller-supplied replacement layer.
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub(super) enum RuleSet {
+    /// Tradeable rules selected by `kind`.
+    Sessions(SessionKind),
+    /// Order-entry-only rules.
+    OrderEntry,
 }
 
 /// A per-query schedule source with its invariant venue zone cached once.
@@ -37,6 +52,7 @@ pub(in crate::calendar) struct QueryContext<'a> {
     source: ProfileSource<'a>,
     tz: Tz,
     policy: Option<&'a dyn DayPolicy>,
+    exceptions: Option<&'a dyn SessionExceptionSource>,
 }
 
 pub(super) enum ResolvedHours<'a> {
@@ -59,6 +75,7 @@ impl<'a> QueryContext<'a> {
             source: ProfileSource::Fixed(hours),
             tz: hours.tz,
             policy: None,
+            exceptions: None,
         }
     }
 
@@ -67,25 +84,33 @@ impl<'a> QueryContext<'a> {
             source: ProfileSource::DateAware(calendar),
             tz: calendar.tz(),
             policy: None,
+            exceptions: None,
         }
     }
 
-    pub(in crate::calendar) fn with_policy(
+    pub(in crate::calendar) fn overlay(
         calendar: ExchangeCalendar,
-        policy: &'a dyn DayPolicy,
+        policy: Option<&'a dyn DayPolicy>,
+        exceptions: Option<&'a dyn SessionExceptionSource>,
     ) -> Self {
         Self {
             source: ProfileSource::DateAware(calendar),
             tz: calendar.tz(),
-            policy: Some(policy),
+            policy,
+            exceptions,
         }
     }
 
-    pub(super) const fn without_policy(self) -> Self {
+    /// Drops both caller overlays, leaving the sourced normal week.
+    ///
+    /// The overlay paths resolve a normal trading day first and then modify it,
+    /// so they need a view of the profile that cannot re-enter themselves.
+    pub(super) const fn baseline(self) -> Self {
         Self {
             source: self.source,
             tz: self.tz,
             policy: None,
+            exceptions: None,
         }
     }
 
@@ -93,102 +118,99 @@ impl<'a> QueryContext<'a> {
         self.tz
     }
 
+    pub(super) const fn policy(self) -> Option<&'a dyn DayPolicy> {
+        self.policy
+    }
+
+    pub(super) const fn exceptions(self) -> Option<&'a dyn SessionExceptionSource> {
+        self.exceptions
+    }
+
+    /// Returns whether either caller-owned overlay is attached.
+    pub(super) const fn has_overlay(self) -> bool {
+        self.policy.is_some() || self.exceptions.is_some()
+    }
+
+    /// Returns the schedule identity, or `None` for a detached fixed snapshot.
+    pub(super) const fn identity(self) -> Option<CalendarSource> {
+        match self.source {
+            ProfileSource::Fixed(_) => None,
+            ProfileSource::DateAware(calendar) => Some(calendar.source()),
+        }
+    }
+
+    /// Returns what the caller's exception provider knows about `trade_date`.
+    pub(super) fn exception_on(self, trade_date: NaiveDate) -> DateException<'a> {
+        self.exceptions
+            .map_or(DateException::KnownNormal, |provider| {
+                provider.exception_on(trade_date)
+            })
+    }
+
+    /// Returns whether the exception layer replaces `trade_date` outright.
+    pub(super) fn trade_date_is_replaced(self, trade_date: NaiveDate) -> bool {
+        matches!(
+            self.exception_on(trade_date),
+            DateException::ReplaceSessions(_)
+        )
+    }
+
+    /// Returns whether either overlay removes `trade_date` completely.
+    ///
+    /// The exception layer answers first; the caller's [`DayPolicy`] then
+    /// overlays it exactly as it overlays a normal week.
+    pub(super) fn trade_date_is_closed(self, trade_date: NaiveDate) -> bool {
+        matches!(self.exception_on(trade_date), DateException::Closed)
+            || self
+                .policy
+                .is_some_and(|policy| policy.is_closed(trade_date))
+    }
+
     /// Assigns a resolved session block to its venue-local trade date.
+    ///
+    /// A replacement block carries its assignment explicitly, so it wins over
+    /// every derived convention. Everything else falls through to
+    /// [`Self::normal_trade_date_for_bounds`].
+    pub(super) fn trade_date_for_bounds(
+        self,
+        open: DateTime<Utc>,
+        close: DateTime<Utc>,
+    ) -> NaiveDate {
+        replacement::replacement_trade_date(&self, open)
+            .unwrap_or_else(|| identity::assign_normal(&self, open, close))
+    }
+
+    /// Assigns bounds produced by a normal-week rule to their trade date.
     ///
     /// Most profiles use the local date of the final close. Identified
     /// calendars retain two sourced exceptions: SET's after-midnight DR night
     /// phase belongs to its prior local opening date, and CME cryptocurrency's
     /// weekend blocks carry the following business date. A detached fixed
     /// snapshot has no identity with which to apply either convention.
-    pub(super) fn trade_date_for_bounds(
+    pub(super) fn normal_trade_date_for_bounds(
         self,
         open: DateTime<Utc>,
         close: DateTime<Utc>,
     ) -> NaiveDate {
-        let default = close.with_timezone(&self.tz).date_naive();
-        let ProfileSource::DateAware(calendar) = self.source else {
-            return default;
-        };
-        let local_open = open.with_timezone(&self.tz);
-        if matches!(
-            calendar.source(),
-            CalendarSource::Exchange(Exchange::SetThailand)
-        ) {
-            return if local_open.time().num_seconds_from_midnight() < 3 * 3_600 {
-                local_open.date_naive().pred_opt().unwrap_or(default)
-            } else {
-                local_open.date_naive()
-            };
-        }
-        if !matches!(
-            calendar.source(),
-            CalendarSource::MarketHoursKey(MarketHoursKey::GlobexCryptocurrency)
-        ) {
-            return default;
-        }
-
-        let days_to_monday = match local_open.weekday() {
-            Weekday::Fri if local_open.time().num_seconds_from_midnight() >= 16 * 3_600 => 3,
-            Weekday::Sat => 2,
-            Weekday::Sun => 1,
-            _ => 0,
-        };
-        let nominal = if days_to_monday == 0 {
-            default
-        } else {
-            local_open
-                .date_naive()
-                .checked_add_signed(Duration::days(days_to_monday))
-                .unwrap_or(default)
-        };
-
-        // The permanent 24/7 schedule assigns holiday/weekend trading to the
-        // following business day. A closed day in the caller's policy is
-        // skipped rather than deleting the connected trading block. Legacy
-        // five-day profiles retain ordinary closed-trade-date behavior.
-        let Some(policy) = self.policy else {
-            return nominal;
-        };
-        if self.has_weekend_close_at(open) {
-            return nominal;
-        }
-        let mut candidate = nominal;
-        for _ in 0..=TRADE_DATE_LOOKAHEAD_DAYS {
-            if !matches!(candidate.weekday(), Weekday::Sat | Weekday::Sun)
-                && !policy.is_closed(candidate)
-            {
-                return candidate;
-            }
-            let Some(next) = candidate.succ_opt() else {
-                return nominal;
-            };
-            candidate = next;
-        }
-        nominal
+        identity::assign_normal(&self, open, close)
     }
 
     /// Returns whether this identified calendar joins storage-only rule pieces.
     ///
     /// This is intentionally an identity capability, not a shape heuristic:
     /// adjacent rules are real phase boundaries for several other profiles.
-    pub(super) const fn joins_adjacent_same_kind(self) -> bool {
-        let ProfileSource::DateAware(calendar) = self.source else {
-            return false;
-        };
-        matches!(
-            calendar.source(),
-            CalendarSource::MarketHoursKey(MarketHoursKey::GlobexCryptocurrency)
-        )
+    pub(super) fn joins_adjacent_same_kind(self) -> bool {
+        identity::joins_adjacent_same_kind(&self)
     }
 
-    pub(super) fn has_daily_close_at(self, instant: chrono::DateTime<Utc>) -> bool {
+    pub(super) fn has_daily_close_at(self, instant: DateTime<Utc>) -> bool {
         match self.source {
             ProfileSource::Fixed(hours) => hours.has_daily_close,
             ProfileSource::DateAware(calendar) => calendar.hours_at(instant).has_daily_close,
         }
     }
 
-    pub(super) fn has_weekend_close_at(self, instant: chrono::DateTime<Utc>) -> bool {
+    pub(super) fn has_weekend_close_at(self, instant: DateTime<Utc>) -> bool {
         match self.source {
             ProfileSource::Fixed(hours) => hours.has_weekend_close,
             ProfileSource::DateAware(calendar) => calendar.hours_at(instant).has_weekend_close,
@@ -201,48 +223,24 @@ impl<'a> QueryContext<'a> {
     /// query: today's occurrences from today's profile and wrapped occurrences
     /// from yesterday's profile, so a phase is always answered by the profile
     /// that owns its opening day even when a revision takes effect on the
-    /// following civil date. A caller's [`DayPolicy`] applies as it does to
-    /// tradeable sessions: a closed trade date removes the complete trading
-    /// day, including the queue that feeds it.
-    pub(super) fn contains_order_entry(self, instant: chrono::DateTime<Utc>) -> bool {
+    /// following civil date. Both caller overlays apply as they do to tradeable
+    /// sessions: a closed trade date removes the complete trading day including
+    /// the queue that feeds it, and a replaced trade date serves only the
+    /// order-entry blocks the caller supplied for it.
+    pub(super) fn contains_order_entry(self, instant: DateTime<Utc>) -> bool {
         let day = bounded_utc(instant, self.tz)
             .with_timezone(&self.tz)
             .date_naive();
-        let weekday = day.weekday().num_days_from_monday() as usize;
-        let selected = self.profile_for_open_day(day);
-        for rule in selected
-            .as_ref()
-            .order_entry
-            .iter()
-            .filter(|rule| rule.days[weekday])
-        {
-            let Some(candidate) = resolve_rule_bounds(&self, day, rule) else {
-                continue;
-            };
-            if candidate.0 <= instant && instant < candidate.1 {
-                return true;
-            }
+        let hit = |open: DateTime<Utc>, close: DateTime<Utc>| {
+            (open <= instant && instant < close).then_some(())
+        };
+        if find_occurrence(&self, day, RuleSet::OrderEntry, false, hit).is_some() {
+            return true;
         }
-
         let Some(yesterday) = day.pred_opt() else {
             return false;
         };
-        let previous_weekday = yesterday.weekday().num_days_from_monday() as usize;
-        let selected = self.profile_for_open_day(yesterday);
-        for rule in selected
-            .as_ref()
-            .order_entry
-            .iter()
-            .filter(|rule| rule.days[previous_weekday] && rule.wraps_to_next_day())
-        {
-            let Some(candidate) = resolve_rule_bounds(&self, yesterday, rule) else {
-                continue;
-            };
-            if candidate.0 <= instant && instant < candidate.1 {
-                return true;
-            }
-        }
-        false
+        find_occurrence(&self, yesterday, RuleSet::OrderEntry, true, hit).is_some()
     }
 
     /// Returns whether this source exposes a real weekly candle boundary.
@@ -252,17 +250,11 @@ impl<'a> QueryContext<'a> {
     /// has no long weekend shutdown, but Friday 16:00 CT remains the final
     /// close of that trade-date week before Monday Pre-Open starts at 16:01.
     /// The identity-erased fixed snapshot cannot apply that convention.
-    pub(super) fn has_weekly_close_at(self, instant: chrono::DateTime<Utc>) -> bool {
+    pub(super) fn has_weekly_close_at(self, instant: DateTime<Utc>) -> bool {
         if self.has_weekend_close_at(instant) {
             return true;
         }
-        let ProfileSource::DateAware(calendar) = self.source else {
-            return false;
-        };
-        matches!(
-            calendar.source(),
-            CalendarSource::MarketHoursKey(MarketHoursKey::GlobexCryptocurrency)
-        ) && self.has_daily_close_at(instant)
+        identity::joins_adjacent_same_kind(&self) && self.has_daily_close_at(instant)
     }
 
     /// Selects a profile by the venue-local day on which a session opens.
@@ -275,6 +267,39 @@ impl<'a> QueryContext<'a> {
             }
         }
     }
+}
+
+/// Visits every effective occurrence opening on `open_day`, newest layer last.
+///
+/// `probe` receives resolved `(open, close)` bounds and returns `Some` to stop
+/// the scan with that value, so one helper serves both "find the containing
+/// occurrence" and "fold over all of them". `wrapped_only` restricts the scan
+/// to occurrences that close on the following local day, which is what a
+/// containment query needs when it looks back one opening day.
+///
+/// Normal-week occurrences come first; a caller-supplied replacement day then
+/// contributes its own blocks. The two never overlap for one trade date:
+/// [`resolve_rule_bounds`] drops every normal occurrence whose trade date the
+/// exception layer replaced or closed.
+pub(super) fn find_occurrence<T>(
+    context: &QueryContext<'_>,
+    open_day: NaiveDate,
+    set: RuleSet,
+    wrapped_only: bool,
+    mut probe: impl FnMut(DateTime<Utc>, DateTime<Utc>) -> Option<T>,
+) -> Option<T> {
+    let weekday = open_day.weekday().num_days_from_monday() as usize;
+    let selected = context.profile_for_open_day(open_day);
+    for rule in rules(selected.as_ref(), set)
+        .filter(|rule| rule.days[weekday] && (!wrapped_only || rule.wraps_to_next_day()))
+    {
+        if let Some((open, close)) = resolve_rule_bounds(context, open_day, rule)
+            && let Some(found) = probe(open, close)
+        {
+            return Some(found);
+        }
+    }
+    replacement::find_occurrence(context, open_day, set, wrapped_only, probe)
 }
 
 /// Resolves one scheduled occurrence and rejects civil-time collapses.
@@ -294,17 +319,17 @@ pub(super) fn resolve_rule_bounds(
     if raw_open >= raw_close {
         return None;
     }
-    let Some(policy) = context.policy else {
+    if !context.has_overlay() {
         return Some((raw_open, raw_close));
-    };
+    }
     if !context.has_daily_close_at(raw_open) {
         // Without a final daily close this profile has no trade-date identity.
-        // Applying a policy to its storage-rule close would invent a date and
+        // Applying an overlay to its storage-rule close would invent a date and
         // could close an always-open market one civil day early.
         return Some((raw_open, raw_close));
     }
 
-    let baseline = context.without_policy();
+    let baseline = context.baseline();
     let final_close = candles::candle_end_with(
         &baseline,
         raw_open,
@@ -319,22 +344,39 @@ pub(super) fn resolve_rule_bounds(
         SessionKind::Both,
     )
     .unwrap_or(raw_open);
-    let trade_date = context.trade_date_for_bounds(raw_open, final_close);
-    if policy.is_closed(trade_date) {
+    let trade_date = context.normal_trade_date_for_bounds(raw_open, final_close);
+    // The exception layer resolves the trading day before the policy clips it:
+    // a replaced or closed trade date deletes its normal-week occurrences, and
+    // the caller's replacement blocks stand in their place.
+    if context.trade_date_is_replaced(trade_date) || context.trade_date_is_closed(trade_date) {
         return None;
     }
+    let Some(policy) = context.policy else {
+        return Some((raw_open, raw_close));
+    };
+    clamp_to_policy(context, policy, trade_date, first_open, raw_open, raw_close)
+}
 
+fn clamp_to_policy(
+    context: &QueryContext<'_>,
+    policy: &dyn DayPolicy,
+    trade_date: NaiveDate,
+    first_open: DateTime<Utc>,
+    raw_open: DateTime<Utc>,
+    raw_close: DateTime<Utc>,
+) -> Option<(DateTime<Utc>, DateTime<Utc>)> {
+    let tz = context.tz();
     let mut open = raw_open;
     let mut close = raw_close;
     if let Some(ssm) = policy.early_close_ssm(trade_date) {
-        if ssm > 86_400 {
+        if ssm > SECONDS_PER_DAY {
             return None;
         }
         let cutoff = mk_local_close(tz, trade_date, ssm).with_timezone(&Utc);
         close = close.min(cutoff);
     }
     if let Some(ssm) = policy.late_open_ssm(trade_date) {
-        if ssm >= 86_400 {
+        if ssm >= SECONDS_PER_DAY {
             return None;
         }
         let first_local = first_open.with_timezone(&tz);
@@ -351,11 +393,12 @@ pub(super) fn resolve_rule_bounds(
     (open < close).then_some((open, close))
 }
 
-pub(super) fn rules(hours: &MarketHours, kind: SessionKind) -> impl Iterator<Item = &SessionRule> {
-    let (regular, extended): (&[SessionRule], &[SessionRule]) = match kind {
-        SessionKind::Regular => (&hours.regular, &[]),
-        SessionKind::Extended => (&[], &hours.extended),
-        SessionKind::Both => (&hours.regular, &hours.extended),
+pub(super) fn rules(hours: &MarketHours, set: RuleSet) -> impl Iterator<Item = &SessionRule> {
+    let (first, second): (&[SessionRule], &[SessionRule]) = match set {
+        RuleSet::Sessions(SessionKind::Regular) => (&hours.regular, &[]),
+        RuleSet::Sessions(SessionKind::Extended) => (&[], &hours.extended),
+        RuleSet::Sessions(SessionKind::Both) => (&hours.regular, &hours.extended),
+        RuleSet::OrderEntry => (&hours.order_entry, &[]),
     };
-    regular.iter().chain(extended)
+    first.iter().chain(second)
 }

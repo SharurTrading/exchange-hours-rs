@@ -2,9 +2,9 @@
 
 //! Containing- and next-session queries over a [`QueryContext`].
 
-use chrono::{DateTime, Datelike, Duration, Utc};
+use chrono::{DateTime, Duration, Utc};
 
-use super::schedule::{QueryContext, resolve_rule_bounds, rules};
+use super::schedule::{QueryContext, RuleSet, find_occurrence};
 use crate::calendar::local_time::bounded_utc;
 use crate::calendar::rule::SessionKind;
 
@@ -17,17 +17,20 @@ fn merge_occurrences_on_day(
     kind: SessionKind,
     bounds: &mut SessionBounds,
 ) {
-    let selected = context.profile_for_open_day(day);
-    let weekday = day.weekday().num_days_from_monday() as usize;
-    for rule in rules(selected.as_ref(), kind).filter(|rule| rule.days[weekday]) {
-        let Some(candidate) = resolve_rule_bounds(context, day, rule) else {
-            continue;
-        };
-        if candidate.0 <= bounds.1 && candidate.1 >= bounds.0 {
-            bounds.0 = bounds.0.min(candidate.0);
-            bounds.1 = bounds.1.max(candidate.1);
-        }
-    }
+    // The probe never stops the scan: it folds every occurrence into `bounds`.
+    let _: Option<()> = find_occurrence(
+        context,
+        day,
+        RuleSet::Sessions(kind),
+        false,
+        |open, close| {
+            if open <= bounds.1 && close >= bounds.0 {
+                bounds.0 = bounds.0.min(open);
+                bounds.1 = bounds.1.max(close);
+            }
+            None
+        },
+    );
 }
 
 /// Unions adjacent or overlapping occurrences of one concrete session kind.
@@ -74,34 +77,16 @@ fn containing_occurrence_of_kind(
     kind: SessionKind,
 ) -> Option<SessionBounds> {
     let tz = context.tz();
-    let local = bounded_utc(instant, tz).with_timezone(&tz);
-    let day = local.date_naive();
-    let weekday = day.weekday().num_days_from_monday() as usize;
+    let day = bounded_utc(instant, tz).with_timezone(&tz).date_naive();
+    let hit = |open: DateTime<Utc>, close: DateTime<Utc>| {
+        (open <= instant && instant < close).then_some((open, close))
+    };
 
-    let selected = context.profile_for_open_day(day);
-    for rule in rules(selected.as_ref(), kind).filter(|rule| rule.days[weekday]) {
-        let Some(candidate) = resolve_rule_bounds(context, day, rule) else {
-            continue;
-        };
-        if candidate.0 <= instant && instant < candidate.1 {
-            return Some(candidate);
-        }
+    if let Some(found) = find_occurrence(context, day, RuleSet::Sessions(kind), false, hit) {
+        return Some(found);
     }
-
     let yesterday = day.pred_opt()?;
-    let selected = context.profile_for_open_day(yesterday);
-    let previous_weekday = yesterday.weekday().num_days_from_monday() as usize;
-    for rule in rules(selected.as_ref(), kind)
-        .filter(|rule| rule.days[previous_weekday] && rule.wraps_to_next_day())
-    {
-        let Some(candidate) = resolve_rule_bounds(context, yesterday, rule) else {
-            continue;
-        };
-        if candidate.0 <= instant && instant < candidate.1 {
-            return Some(candidate);
-        }
-    }
-    None
+    find_occurrence(context, yesterday, RuleSet::Sessions(kind), true, hit)
 }
 
 fn containing_concrete_kind(
@@ -161,23 +146,26 @@ fn consider_next_on_day(
     kind: SessionKind,
     best: &mut Option<SessionBounds>,
 ) {
-    let selected = context.profile_for_open_day(day);
-    let weekday = day.weekday().num_days_from_monday() as usize;
-    for rule in rules(selected.as_ref(), kind).filter(|rule| rule.days[weekday]) {
-        let Some(candidate) = resolve_rule_bounds(context, day, rule) else {
-            continue;
-        };
-        if candidate.0 <= instant {
-            continue;
-        }
-        let merged = coalesce_same_kind(context, candidate, kind);
-        if merged.0 <= instant {
-            continue;
-        }
-        if best.is_none_or(|current| merged.0 < current.0) {
-            *best = Some(merged);
-        }
-    }
+    // The probe never stops the scan: it keeps the best candidate in `best`.
+    let _: Option<()> = find_occurrence(
+        context,
+        day,
+        RuleSet::Sessions(kind),
+        false,
+        |open, close| {
+            if open <= instant {
+                return None;
+            }
+            let merged = coalesce_same_kind(context, (open, close), kind);
+            if merged.0 <= instant {
+                return None;
+            }
+            if best.is_none_or(|current| merged.0 < current.0) {
+                *best = Some(merged);
+            }
+            None
+        },
+    );
 }
 
 pub(in crate::calendar) fn next_session_after_with(
@@ -219,20 +207,23 @@ fn consider_previous_on_day(
     kind: SessionKind,
     best: &mut Option<SessionBounds>,
 ) {
-    let selected = context.profile_for_open_day(day);
-    let weekday = day.weekday().num_days_from_monday() as usize;
-    for rule in rules(selected.as_ref(), kind).filter(|rule| rule.days[weekday]) {
-        let Some(candidate) = resolve_rule_bounds(context, day, rule) else {
-            continue;
-        };
-        let merged = coalesce_same_kind(context, candidate, kind);
-        if merged.1 > instant {
-            continue;
-        }
-        if best.is_none_or(|current| merged.1 > current.1) {
-            *best = Some(merged);
-        }
-    }
+    // The probe never stops the scan: it keeps the best candidate in `best`.
+    let _: Option<()> = find_occurrence(
+        context,
+        day,
+        RuleSet::Sessions(kind),
+        false,
+        |open, close| {
+            let merged = coalesce_same_kind(context, (open, close), kind);
+            if merged.1 > instant {
+                return None;
+            }
+            if best.is_none_or(|current| merged.1 > current.1) {
+                *best = Some(merged);
+            }
+            None
+        },
+    );
 }
 
 pub(super) fn previous_session_before_with(

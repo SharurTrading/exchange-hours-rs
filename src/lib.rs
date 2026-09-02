@@ -78,7 +78,11 @@
 //! it carries. [`PolicyCalendar`] applies a caller's [`DayPolicy`] overrides to
 //! the same query surface without changing the underlying profile;
 //! [`StaticDayPolicy`] is the validated hard-coded record format for those
-//! boundary-level overrides.
+//! boundary-level overrides. A special day that scalar boundaries cannot state
+//! — an intraday pause and reopen, a regular-only early close while extended
+//! trading continues — goes through [`SessionExceptionSource`] instead, which
+//! replaces a whole trade date with an ordered [`ExceptionBlock`] set;
+//! [`StaticSessionExceptions`] is its validated table format.
 //! Three conventions decide every answer —
 //! weekdays are Monday = 0 through Sunday = 6; closes are **end-exclusive**, so
 //! the instant equal to a close is closed and adjacent sessions never overlap;
@@ -100,9 +104,13 @@
 //!
 //! Built-in profiles are **normal-week** calendars and contain no holiday or
 //! half-day data. A caller can overlay sourced closed trade dates, early final
-//! closes, and late first opens through [`DayPolicy`]. Complex special days
-//! that replace or split phases require a complete exception-session provider,
-//! not scalar boundary clipping. Product-level variations
+//! closes, and late first opens through [`DayPolicy`], and complete replacement
+//! trading days through [`SessionExceptionSource`]. Both layers ship with
+//! **zero** built-in data: the crate provides the model, the validation, and
+//! the engine, and the caller owns every record. Precedence is fixed — the
+//! exception layer resolves the trading day, then the policy overlays it
+//! exactly as it overlays a normal week, and two replacement layers never
+//! compose. Product-level variations
 //! outside a profile remain out of scope. In particular, this crate does not
 //! map symbols, roots, product codes, or MICs to [`MarketHoursKey`] values; a
 //! caller's instrument catalog must select the exact supported family.
@@ -128,6 +136,12 @@
 //!   open/closed state but not those coalesced bounds or trade dates.
 //! - [`ExchangeCalendar::with_day_policy`] — a borrowed [`PolicyCalendar`]
 //!   overlay for caller-supplied closed days, early closes, and late opens.
+//! - [`ExchangeCalendar::with_session_exceptions`] — the same overlay carrying
+//!   a caller-supplied [`SessionExceptionSource`], which replaces whole trade
+//!   dates. Attaching a provider scoped to another identity is refused with
+//!   [`ExceptionScopeError`]; [`PolicyCalendar::session_exception_on`] reports
+//!   the provider's [`DateException`] for a date, the only way to separate an
+//!   audited-normal date from one outside the provider's coverage.
 //! - [`ExchangeCalendar::trade_date`] and [`ExchangeCalendar::session_state`]
 //!   — one containing-session trade date and one mutually exclusive
 //!   [`SessionState`] classification per instant. An always-open profile has no

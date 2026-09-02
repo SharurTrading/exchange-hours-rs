@@ -13,6 +13,35 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Changed
 
+- **US options queues are carried across history instead of withheld
+  (behaviour change).** The seventeen `Partial` US options rows served no
+  order-acceptance queue before the 2026-08-22 review row, which under-reported
+  order acceptance for up to sixteen years per venue. They now carry it — from
+  the January-2010 floor where the venue predates the window, or from its sourced
+  launch day. A 07:45 ET instant in 2011 answers `OrderEntry` on C1 and C2 where
+  it previously answered `Closed`.
+
+  **The assumption is stated, not hidden.** No primary source says when any of
+  these queues began: they are operator system settings on mutable pages, not
+  rulebook boundaries — SR-C2-2019-009 and SR-CboeBZX-2020-012 each write down
+  07:30 as "the same time at which the System begins accepting orders and quotes
+  today" while declining to change it. Carrying the queue back asserts continuity
+  no document states. It is recorded in `options/history.rs`, in a `///` note on
+  every affected profile, and in all seventeen ledger rows.
+
+  **MIAX Options is excluded and modelled from evidence instead.** Its 07:30
+  window existed at the sourced 2012-12-07 launch but was connectivity
+  verification only — the official hours page captured 2012-12-09 says activity
+  before the Live Quote Window "WILL NOT affect the live quote state", and the
+  2013-05-07 capture says it WILL affect the live book. MIAX therefore keeps a
+  queue-free launch row and gains the queue at that second capture. MEMX Options
+  is outside the change entirely: it has no queue, rejecting orders before 09:30.
+
+  Nothing matches in a queue, so this changes `order_entry` coverage only — every
+  venue's 09:30–16:00 execution history is sourced independently and untouched.
+  `HISTORICAL_CUTOVERS` drops the seventeen 2026-08-22 option rows, which no
+  longer exist, and gains MIAX Options' sourced 2013-05-07 cutover.
+
 - **Recorded decision: the timeline is not bounded at the January-2010 floor.**
   `select_revision` returns a venue's baseline for any date before its first
   revision, so a pre-floor instant resolves to the January-2010 grid rather than

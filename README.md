@@ -43,6 +43,11 @@ The internal ownership and extension model is documented in
   closes, and late first opens can be overlaid without putting mutable or
   bundled operator data in this crate. `StaticDayPolicy` provides a validated
   hard-coded table format for these boundary-level exceptions.
+- **Caller-supplied exception sessions** — a trade date that pauses and
+  reopens, ends regular trading while extended continues, or spans several
+  civil dates is replaced outright by an ordered `ExceptionBlock` set.
+  `StaticSessionExceptions` is the validated table format; the crate ships
+  **zero** exception data.
 - **Calendar-aware bar boundaries** — intraday bars clamp to the session close so no bar
   spans a closed period; the day's last bar ends at the daily close itself (CME 16:00 CT,
   never the later Pre-Open or matching restart), and daily/weekly/monthly bars close at
@@ -269,7 +274,8 @@ the document that would date them exists but is a member-only or password-locked
 publication. And a few are **unfinished searches** — `cboe_edga` and `cboe_edgx`
 are the current examples, where the queue is a rulebook provision, so a dated SEC
 filing does exist and simply has not been located yet. Closing all 27 is the
-current priority, ahead of any built-in holiday data.
+current priority, ahead of any built-in holiday data — the exception-session
+engine ships, its data does not.
 
 Every non-synthetic identity was compared with its official current-hours or
 rulebook material and its notice/evidence channel. All 93 current profiles are
@@ -305,10 +311,14 @@ close, a late first open, or a full calendar-day closure — is always a
 holiday-class date exception, never a normal-week template change: the
 built-in tables and their dated revisions encode only real, recurring
 exchange behavior. Callers can apply their own sourced closed-day,
-early-close, and late-open boundary data through `DayPolicy`. Holiday
-arrangements that replace or split phases need a richer exception calendar
-and must not be approximated by clipping a valid session. The full method,
-corrections, exclusions, and confidence levels are recorded in the
+early-close, and late-open boundary data through `DayPolicy`, and holiday
+arrangements that replace or split phases through `SessionExceptionSource`.
+An early close or a late open is exactly a clipped boundary on an otherwise
+normal session, which is what `DayPolicy` applies. An arrangement that
+replaces or splits phases is not, and is never approximated by clipping: it
+states its own blocks through `SessionExceptionSource`. Neither mechanism
+ships with data. The full method, corrections, exclusions, and confidence
+levels are recorded in the
 [2026-08-22 schedule audit](docs/schedules/audit-2026-08-22.md).
 
 The guarantee is exchange/segment/product-family level, never ticker-level
@@ -441,11 +451,54 @@ responsible for the source and exact family/venue scope of every record.
 
 Boundary clipping is not a complete holiday-session model. It cannot insert an
 intraday pause/reopen or close only regular trading while an extended phase
-continues. One-off arrangements still belong in a date-exception layer rather
-than a normal-profile revision, but exact complex calendars require complete
-replacement sessions plus explicit coverage and source finality. The v1
-capabilities, limits, and additive path for future built-in data are documented
-in [Date exceptions and holiday calendars](docs/schedules/date-exceptions.md).
+continues. Those arrangements go through the **exception-session layer**, which
+ships for caller-owned data alongside `DayPolicy`. Implement
+`SessionExceptionSource`, or build a validated `StaticSessionExceptions` table,
+then call `ExchangeCalendar::with_session_exceptions`:
+
+```rust
+use chrono::NaiveDate;
+use exchange_hours::{
+    CalendarSource, Exchange, ExceptionBlock, SessionExceptionRecord,
+    StaticSessionExceptions, calendar_for_exchange,
+};
+
+// A regular-only early close: extended trading continues past 13:00 local.
+static BLOCKS: [ExceptionBlock; 2] = [
+    ExceptionBlock::regular(0, 9 * 3_600 + 30 * 60, 13 * 3_600),
+    ExceptionBlock::extended(0, 13 * 3_600, 17 * 3_600),
+];
+
+let half_day = NaiveDate::from_ymd_opt(2026, 11, 27).expect("valid trade date");
+let first = NaiveDate::from_ymd_opt(2026, 11, 23).expect("valid trade date");
+let last = NaiveDate::from_ymd_opt(2026, 11, 30).expect("valid trade date");
+let records = [SessionExceptionRecord::replace_sessions(half_day, &BLOCKS)];
+let table = StaticSessionExceptions::new(
+    CalendarSource::Exchange(Exchange::Nasdaq),
+    first,
+    last,
+    &records,
+)
+.expect("records are sorted, in range, and inside the coverage window");
+let calendar = calendar_for_exchange(Exchange::Nasdaq)
+    .with_session_exceptions(&table)
+    .expect("the table is scoped to this calendar");
+```
+
+Each record is one venue-local trade date and is exactly one of *known normal*,
+*closed*, or *replaced* — never two at once. Blocks state venue-local
+seconds-since-midnight with end-exclusive closes, the same asymmetric DST bias
+as normal profiles, and an explicit opening-day offset, so a Globex-style day
+that opens the previous evening uses `-1`. A table publishes its audited
+first/last trade dates, and a date outside that window reports
+`DateException::OutOfCoverage` rather than silently reading as an ordinary
+weekday. A table scoped to another `CalendarSource` is refused, not applied.
+
+Precedence is fixed: the exception layer resolves the trading day, then a
+`DayPolicy` overlays it exactly as it overlays a normal week. Two replacement
+layers never compose. The contract, the coverage and finality requirements, and
+the maintenance checklist for any exception dataset are in
+[Date exceptions and holiday calendars](docs/schedules/date-exceptions.md).
 
 ## Best effort — validate before production use
 
@@ -457,7 +510,9 @@ phase or onset that could not be dated. This crate is a **best-effort model, not
 exchanges amend hours on short notice, publish product-level exceptions, and run holiday
 and half-day schedules that the built-in normal-week tables deliberately omit.
 Supply boundary-level exceptions through `DayPolicy` when it can represent
-them exactly; do not reduce a multi-phase holiday schedule to one cutoff.
+them exactly, and multi-phase holiday schedules through
+`SessionExceptionSource`; do not reduce a multi-phase holiday schedule to one
+cutoff.
 Before trading on
 any venue's hours in production, have a human verify the profile against the exchange's
 currently published schedule and the relevant contract specifications.
@@ -548,9 +603,11 @@ schedule, and migration record.
   half-day, or product-level exception data. `DayPolicy` and the validated
   `StaticDayPolicy` helper let a caller overlay sourced closed trade dates,
   early final closes, and late first opens without changing `hours_at`.
-  Multi-phase exceptions require complete replacement sessions and are not
-  approximated by this boundary API; verify contract specs before trading on a
-  profile outside its explicitly stated scope.
+  Multi-phase exceptions are not approximated by that boundary API: they go
+  through `SessionExceptionSource` and `StaticSessionExceptions`, which replace
+  a whole trade date with an ordered block set and publish their own audited
+  coverage window. Both layers are caller-owned; verify contract specs before
+  trading on a profile outside its explicitly stated scope.
 - **No panics, and absence is `None`.** The public surface is total, and boundary queries
   (`session_bounds*`, `next_session_after*`, `candle_start*`/`candle_end*`,
   `time_end_of_day`) return `Option`: a profile with no session of the requested kind in

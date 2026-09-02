@@ -11,6 +11,65 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ## [Unreleased]
 
+### Added
+
+- **Caller-owned exception sessions: a trade date can now be replaced, not just
+  clipped.** `DayPolicy` moves a trading day's outer boundaries, which cannot
+  express an intraday pause and reopen, a regular-only early close while
+  extended trading continues, or a trade date whose blocks span several civil
+  dates. The new exception layer replaces such a trade date outright with a
+  complete ordered `ExceptionBlock` set. **Zero exception data ships with it**,
+  exactly as `DayPolicy` shipped: the crate provides the model, the validation,
+  and the engine, and the caller owns every record.
+
+  New public surface: `SessionExceptionSource` (the provider trait, scoped to
+  one `CalendarSource` and publishing an `ExceptionCoverage` window),
+  `DateException` (`KnownNormal` / `Closed` / `ReplaceSessions` /
+  `OutOfCoverage`), `ExceptionBlock` and `ExceptionBlockKind`,
+  `SessionExceptionRecord`, the validated `const`-constructible
+  `StaticSessionExceptions` table with `StaticSessionExceptionsError`, and
+  `ExceptionScopeError`. `ExchangeCalendar::with_session_exceptions` and
+  `PolicyCalendar::with_session_exceptions` attach a provider;
+  `PolicyCalendar::session_exception_on` reports what it knows about a trade
+  date, which is the only way to tell an audited-normal date from an unaudited
+  one — runtime queries necessarily serve the normal week for both.
+
+  Blocks use the same representation as `SessionRule`: venue-local
+  seconds-since-midnight, end-exclusive closes, `open_ssm >= close_ssm`
+  wrapping into the next local day, and the asymmetric DST bias (opens
+  earliest, closes latest). An explicit `open_day_offset` places a block's
+  opening local day relative to its trade date. Because a trade date is named
+  by the local date of its final close, a block at offset `0` may not wrap past
+  it; one whole local day is stated as `close_ssm = 86_400`, which does not
+  wrap.
+
+  **Precedence is fixed and one-directional.** The exception layer resolves the
+  trading day — a replaced or closed trade date deletes its normal-week
+  occurrences — and the caller's `DayPolicy` then overlays that result exactly
+  as it overlays a normal week. Two replacement layers never compose. CME
+  cryptocurrency's following-open-business-day convention skips a date the
+  exception layer closes just as it skips one a `DayPolicy` closes, and a
+  profile with no final daily close still ignores both overlays rather than
+  inventing a trade date.
+
+  Validation is by construction: coverage bounds are published and checked,
+  record dates must be strictly increasing and inside the window, blocks must
+  be ordered and in domain, and closed/replaced are mutually exclusive because
+  a record is one variant and an empty replacement is rejected. A provider
+  scoped to another identity is refused with `ExceptionScopeError` rather than
+  applied.
+
+  The two documented impossibles are pinned as fence tests in
+  `tests/session_exceptions.rs`: CME's 2015 Thanksgiving pause-and-reopen
+  (Wednesday 17:00 CT to Thursday 12:00 CT, an order-entry-only pause, then
+  Thursday 17:00 CT to a 12:15 CT Friday early close — all one trade date), and
+  a regular-only early close with extended trading continuing past it.
+
+- **`PolicyCalendar` gained `is_accepting_orders`, `is_order_entry_only`,
+  `has_day_policy`, `has_session_exceptions`, and a `Debug` implementation.**
+  The order-entry predicates already existed on `ExchangeCalendar`; an overlay
+  calendar could previously only reach them through `session_state`.
+
 ### Changed
 
 - **US options queues are carried across history instead of withheld

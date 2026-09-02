@@ -14,7 +14,8 @@ const SECONDS_PER_DAY: u32 = 86_400;
 /// earlier, delay its first open, or apply both boundary changes. It cannot
 /// replace arbitrary intraday phases, add a split session, or express a
 /// product-specific topology change; those cases are outside the [`DayPolicy`]
-/// model and require a richer replacement-session layer.
+/// model and belong to
+/// [`StaticSessionExceptions`](crate::StaticSessionExceptions).
 ///
 /// Boundary values are checked when the record is placed in a
 /// [`StaticDayPolicy`]. The explicit constructors prevent a closed date from

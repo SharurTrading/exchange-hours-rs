@@ -4,7 +4,8 @@
 
 use chrono::{DateTime, Datelike, Duration, NaiveDate, Utc};
 
-use super::schedule::{QueryContext, resolve_rule_bounds, rules};
+use super::replacement::{self, ExceptionDailyClose};
+use super::schedule::{QueryContext, RuleSet, resolve_rule_bounds, rules};
 use super::sessions::containing_session_with;
 use crate::calendar::local_time::bounded_utc;
 use crate::calendar::rule::SessionKind;
@@ -39,7 +40,7 @@ fn latest_close_for_trade_date(
     let today = context.profile_for_open_day(day);
     let mut latest = None;
 
-    for rule in rules(today.as_ref(), kind).filter(|rule| rule.days[weekday]) {
+    for rule in rules(today.as_ref(), RuleSet::Sessions(kind)).filter(|rule| rule.days[weekday]) {
         if let Some((open, close)) = resolve_rule_bounds(context, day, rule) {
             update_latest(context, day, kind, &mut latest, open, close, ceiling);
         }
@@ -48,7 +49,9 @@ fn latest_close_for_trade_date(
     if let Some(yesterday) = day.pred_opt() {
         let previous_weekday = yesterday.weekday().num_days_from_monday() as usize;
         let previous = context.profile_for_open_day(yesterday);
-        for rule in rules(previous.as_ref(), kind).filter(|rule| rule.days[previous_weekday]) {
+        for rule in rules(previous.as_ref(), RuleSet::Sessions(kind))
+            .filter(|rule| rule.days[previous_weekday])
+        {
             if let Some((open, close)) = resolve_rule_bounds(context, yesterday, rule) {
                 update_latest(context, day, kind, &mut latest, open, close, ceiling);
             }
@@ -57,7 +60,9 @@ fn latest_close_for_trade_date(
     if let Some(tomorrow) = day.succ_opt() {
         let next_weekday = tomorrow.weekday().num_days_from_monday() as usize;
         let next = context.profile_for_open_day(tomorrow);
-        for rule in rules(next.as_ref(), kind).filter(|rule| rule.days[next_weekday]) {
+        for rule in
+            rules(next.as_ref(), RuleSet::Sessions(kind)).filter(|rule| rule.days[next_weekday])
+        {
             if let Some((open, close)) = resolve_rule_bounds(context, tomorrow, rule) {
                 update_latest(context, day, kind, &mut latest, open, close, ceiling);
             }
@@ -66,12 +71,23 @@ fn latest_close_for_trade_date(
     latest
 }
 
+/// Returns the final close assigned to venue-local trade date `day`.
+///
+/// A caller-supplied exception record answers first and completely: a closed
+/// trade date has no close, and a replaced one takes its close from its own
+/// blocks rather than from the normal-week neighbour scan below, whose
+/// one-day-either-side window cannot reach a block that opens several local
+/// days before its trade date.
 pub(in crate::calendar) fn daily_close_for_trade_date(
     context: &QueryContext<'_>,
     day: NaiveDate,
     kind: SessionKind,
 ) -> Option<DateTime<Utc>> {
-    latest_close_for_trade_date(context, day, kind, None)
+    match replacement::daily_close(context, day, kind) {
+        ExceptionDailyClose::NoSession => None,
+        ExceptionDailyClose::Close(close) => Some(close),
+        ExceptionDailyClose::NotGoverned => latest_close_for_trade_date(context, day, kind, None),
+    }
 }
 
 pub(in crate::calendar) fn next_daily_close_after_with(

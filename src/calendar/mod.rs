@@ -11,6 +11,7 @@
 //! | Layer | Modules | Owns |
 //! |---|---|---|
 //! | Values | [`exchange`], [`rule`], [`resolution`], [`hours`], [`exchange_calendar`] | Venue identity, session slices, fixed and date-aware calendar values |
+//! | Overlays | [`policy`], [`exceptions`] | Caller-owned boundary overrides and replacement trading days |
 //! | Schedules | [`schedules`], [`futures_profile`], [`presets`] | Sourced static tables, revisions, and exhaustive venue routing |
 //! | Civil time | [`local_time`] | The one place a local wall-clock becomes a UTC instant |
 //! | Queries | [`query`] with [`session`] / [`candle`] adapters | One engine for open/closed, bounds, periods, and bar boundaries |
@@ -37,14 +38,18 @@
 //! Built-in profiles are **normal-week** models and ship no holiday data.
 //! Callers can overlay their own deterministic, trade-date-keyed closures and
 //! early/late boundaries with [`DayPolicy`], [`StaticDayPolicy`], and
-//! [`PolicyCalendar`]. These scalar overrides do not represent a special day
-//! that replaces or splits internal phases. Each
+//! [`PolicyCalendar`]. A special day that replaces or splits internal phases
+//! needs the exception layer instead: [`SessionExceptionSource`] and
+//! [`StaticSessionExceptions`] replace a whole trade date with an ordered
+//! [`ExceptionBlock`] set, and the caller's [`DayPolicy`] then overlays that
+//! replacement exactly as it overlays a normal week. Each
 //! source-backed schedule states its venue, segment, or product-family scope
 //! explicitly; it is not a claim about products outside that scope. All fixed,
-//! date-aware, and policy-aware query paths share the same resolver.
+//! date-aware, and overlay-aware query paths share the same resolver.
 
 mod bulk;
 mod candle;
+mod exceptions;
 mod exchange;
 mod exchange_calendar;
 mod futures_profile;
@@ -65,6 +70,11 @@ pub use bulk::{
     hours_map_global_equities, hours_map_us_equities,
 };
 pub use candle::{candle_end, candle_end_with, candle_start, candle_start_with, time_end_of_day};
+pub use exceptions::{
+    DateException, ExceptionBlock, ExceptionBlockKind, ExceptionCoverage, ExceptionScopeError,
+    SessionExceptionRecord, SessionExceptionSource, StaticSessionExceptions,
+    StaticSessionExceptionsError,
+};
 pub use exchange::{Exchange, ParseExchangeError};
 pub use exchange_calendar::{
     CalendarSource, ExchangeCalendar, calendar_for_exchange, calendar_for_market_hours_key,

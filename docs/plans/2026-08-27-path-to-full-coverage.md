@@ -91,7 +91,7 @@ Completeness is a verification question.
 ## Phase 3 — The Partial-history backlog (independent; batched by family)
 
 
-### Open crate-wide question: bound the timeline at the January-2010 floor?
+### Resolved 2026-09-01: do NOT bound the timeline at the January-2010 floor
 
 Raised in review on PR #25 against `cme_nikkei.rs` and answered there rather
 than patched, because it is not specific to that venue. `select_revision`
@@ -110,14 +110,16 @@ a regression. But LAW-NO-FABRICATED-DATES says amendment history is recorded
 back to January 2010 and earlier changes are out of scope, and answering a 2005
 query with a 2010 grid is arguably a claim outside that scope.
 
-Two defensible positions: leave it (the profile is the earliest sourced state,
-and the caller asked for a date the crate never promised to model), or bound
-every timeline at the floor so pre-2010 returns no session. Bounding is a
-crate-wide change touching every venue with a non-empty baseline, needs its own
-fences, and changes answers well outside any one venue's scope — so it belongs
-in its own change set, not folded into a schedule PR. Decide it before the next
-release either way, because the two positions give different answers to the same
-query and the ledger currently documents neither.
+**Decision: leave it.** The profile returned is the earliest state the crate has
+sourced, and the caller asked for a date this crate never undertook to model —
+`AGENTS.md` already scopes amendment history to January 2010 and puts earlier
+changes out of scope by design. Adding a lower bound would touch every venue with
+a non-empty baseline and would trade one unreviewed answer for another, since
+neither `Closed` nor the 2010 grid is sourced below the floor.
+
+Recorded as a modelling convention in `AGENTS.md` so it is not re-argued. The
+caller-facing consequence is stated in the README: a pre-2010 answer is the
+oldest profile on record, not a reviewed one.
 
 ### Priority, set 2026-08-31: executable hours before queues
 

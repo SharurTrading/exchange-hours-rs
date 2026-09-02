@@ -118,6 +118,18 @@ change to this standalone repository must follow.
   change the exchange-wide open/closed envelope; use a conservative envelope
   when that is the profile's stated venue-level scope. Never imply exact
   ticker-level uncross timing.
+- **Below the January-2010 floor, the earliest sourced profile stands.**
+  `select_revision` returns a venue's baseline for any date before its first
+  revision, so an instant before the audit floor resolves to that venue's oldest
+  profile on record rather than to an absence — which for a launch-dated venue is
+  its pre-launch closure, and for others the earliest grid the crate holds. That
+  is deliberate, decided 2026-09-01: the profile returned is the oldest state the
+  crate has sourced for that venue, and the caller
+  asked for a date this crate never undertook to model — amendment history is
+  recorded back to January 2010 and earlier changes are out of scope by design.
+  Do not add a lower bound to the timelines. Callers needing pre-2010 behaviour
+  must not read these answers as sourced; nothing below the floor is reviewed,
+  and the profile is simply the oldest one on record.
 - **Executable windows are the priority.** A gap in a phase where a trade can
   print — `regular` or `extended` — is materially more serious than a gap in an
   `order_entry` window. The first changes whether the crate says a market was

@@ -290,9 +290,10 @@ primary source.
 
 Queries before January 2010 fall outside all of this. The crate records
 amendment history back to January 2010 by design, and an instant before that
-floor resolves to the oldest profile on record rather than to an absence — it is
-not a reviewed answer, and nothing below the floor is covered by the counts
-above.
+floor resolves to that venue's oldest profile on record rather than to an
+absence — its pre-launch closure where the venue launched later, or its earliest
+grid otherwise. It is not a reviewed answer, and nothing below the floor is
+covered by the counts above.
 
 These are backward-looking evidence statements, not promises that an exchange
 will remain unchanged after the review date. They cover recurring weekday

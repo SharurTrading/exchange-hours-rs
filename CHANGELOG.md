@@ -44,9 +44,10 @@ corrections (a venue's hours fixed against a primary source) go under
 
 - **Recorded decision: the timeline is not bounded at the January-2010 floor.**
   `select_revision` returns a venue's baseline for any date before its first
-  revision, so a pre-floor instant resolves to the January-2010 grid rather than
-  to an absence — `globex_equity_index` answers open at 18:30 CT in 2005, and
-  always has. That is now a deliberate, recorded convention rather than an
+  revision, so a pre-floor instant resolves to that venue's oldest profile on
+  record rather than to an absence — for a launch-dated venue that is its
+  pre-launch closure, while `globex_equity_index`, whose baseline is a grid,
+  answers open at 18:30 CT in 2005 and always has. That is now a deliberate, recorded convention rather than an
   undocumented side effect: the profile returned is the earliest state the crate
   has sourced, and the caller asked for a date the crate never undertook to
   model. Adding a lower bound would touch every venue with a non-empty baseline

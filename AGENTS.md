@@ -120,9 +120,11 @@ change to this standalone repository must follow.
   ticker-level uncross timing.
 - **Below the January-2010 floor, the earliest sourced profile stands.**
   `select_revision` returns a venue's baseline for any date before its first
-  revision, so an instant before the audit floor resolves to the January-2010
-  grid rather than to an absence. That is deliberate, decided 2026-09-01: the
-  profile returned is the earliest state the crate has sourced, and the caller
+  revision, so an instant before the audit floor resolves to that venue's oldest
+  profile on record rather than to an absence — which for a launch-dated venue is
+  its pre-launch closure, and for others the earliest grid the crate holds. That
+  is deliberate, decided 2026-09-01: the profile returned is the oldest state the
+  crate has sourced for that venue, and the caller
   asked for a date this crate never undertook to model — amendment history is
   recorded back to January 2010 and earlier changes are out of scope by design.
   Do not add a lower bound to the timelines. Callers needing pre-2010 behaviour

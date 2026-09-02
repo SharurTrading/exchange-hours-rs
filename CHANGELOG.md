@@ -82,6 +82,49 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Changed
 
+- **System-coverage audit: the US cash-equity tranche is enumerated, and the
+  envelope union is not complete.** `AGENTS.md` has always defined a cash-equity
+  profile as the availability union of the venue's automated order-capable
+  systems, with separately modelled identities excluded. Nothing had ever
+  verified that the union was *complete*, and the ledger carried no "systems in
+  scope" note for any row. All nineteen US cash-equity rows now carry one, and
+  `verification.md` gains a **System-coverage audit** section holding the
+  repeatable method, the discrepancy list, and two evidence side-lists.
+
+  **Five systems sit in neither the row's envelope nor a modelled identity**, and
+  each is routed rather than absorbed: **NYSE Bonds** (a facility of New York
+  Stock Exchange LLC, 04:00–20:00 ET, two daily bond auctions); the **NYSE
+  Off-Hours Trading Facility/Crossing Session II** (16:00–18:30 ET from before
+  the audit floor until 2024-01-31, per SR-NYSE-2022-37 and SR-NYSE-2024-06);
+  its **NYSE American twin** under Rule 7.39E (decommissioned 2022-09-01);
+  **IEX Options**, a facility of the same SRO as the `iex` row; and **MIAX Pearl
+  Equities' 03:30 Live Order Window**, published on the operator's trade-hours
+  table half an hour ahead of the 04:00 Early Trading Session. Two of the five
+  are executable-window findings and three touch order entry only.
+
+  **Every discrepancy is a window the crate omits, never one it wrongly serves**,
+  so the dated surface stays conservative in all five cases. **No profile,
+  selector, or schedule data changed** — a discrepancy becomes an envelope
+  amendment or a new identity through its own evidence work, never a silent
+  widening, and no `Reviewed on` value was advanced by an enumeration pass.
+
+  Two side-lists were captured while enumerating. **Cancellation-only windows:
+  none** — no venue in the tranche accepts cancellations while refusing new
+  orders, and the three look-alikes (auction no-cancel freeze periods, the
+  entry-and-cancel cut-offs such as Cboe Market Close's 15:35, and
+  system-initiated end-of-session cancellation) are recorded with sources so
+  Phase 2's exclusion rests on evidence rather than assumption.
+  **Settlement/fixing windows:** closing and opening auctions, Cboe Market
+  Close's price-referenced match, and Blue Ocean's 19:30 ET Reference Price
+  instant — all either interior to a modelled phase or a price determination
+  with no order capability.
+
+  Also recorded: NYSE Arca's conditional 23/5 Overnight Trading Session under
+  temporary Rule 7.34-E(T) (SR-NYSEARCA-2026-53), which the `nyse_arca` row had
+  not carried although the comparable monitored sessions on `nasdaq`,
+  `cboe_edgx`, and `24x` were. It stays unencoded pending Equity Data Plan
+  readiness.
+
 - **US options queues are carried across history instead of withheld
   (behaviour change).** The seventeen `Partial` US options rows served no
   order-acceptance queue before the 2026-08-22 review row, which under-reported

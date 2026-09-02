@@ -187,7 +187,14 @@ exact evidence belongs with the code it supports.
   owned by the modeled exchange, including queues and block/crossing phases.
   The profile may be open when only a subset of securities is eligible. Exclude
   pure reporting, cancellation-only, enquiry, and administrative states and a
-  system represented by another `Exchange` identity.
+  system represented by another `Exchange` identity. The repeatable enumeration
+  procedure — fix the universe from the SRO rather than the brand, enumerate
+  from the operator's own timetable, confirm the envelope in the rulebook,
+  classify each system into exactly one bucket, check both envelope edges, and
+  route the residue instead of widening — is the method recorded in
+  [verification.md](verification.md#system-coverage-audit-phase-1), together
+  with the rows already enumerated. Never widen an envelope to absorb a system
+  the audit finds; record it on the discrepancy list and route it.
 - **Product-family identity:** add or revise a `MarketHoursKey`; do not map
   symbols, roots, product codes, or MICs inside this crate. A product that
   joins an already-live family normally has a caller-owned listing date, not a

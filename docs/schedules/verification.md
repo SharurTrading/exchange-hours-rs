@@ -21,6 +21,13 @@ The source-set links below are the stable places from which the next review
 starts; see [sources.md](sources.md) and the repeatable
 [update workflow](updating.md).
 
+A review date says the row's *boundaries* were compared with primary material.
+It says nothing about whether the row's envelope covers every system the venue
+runs. That is a separate question, answered row by row by the
+[system-coverage audit](#system-coverage-audit-phase-1) below: a row carries a
+`Systems in scope` clause once its enumeration has been done, and the audit
+section holds the method, the discrepancy list, and the two side-lists.
+
 ## Basis
 
 - **Primary** — current boundaries are supported by an exchange, operator, or
@@ -74,25 +81,25 @@ is exactly one row for every `Exchange` variant, in `Exchange::ALL` order.
 | Exchange | Owner | Source sets | Basis | Reviewed on | Scope / history gap |
 |---|---|---|---|---|---|
 | `unknown` | [futures_profile.rs](../../src/calendar/futures_profile.rs) | [SYNTHETIC-24X7](sources.md#synthetic-24x7) | Synthetic | — | Deliberate UTC 24×7 fallback; not a venue. |
-| `nasdaq` | [equities.rs](../../src/calendar/schedules/equities/us/equities.rs) | [US-NASDAQ-EQUITIES](sources.md#us-nasdaq-equities) | Primary | 2026-08-22 | Nasdaq Stock Market normal week; date-aware lookups retain the sourced 2013 07:00→04:00 early-open change. The announced Night Session is monitored but unencoded pending Equity Data Plan readiness and a later Nasdaq filing, so current and future snapshots remain 04:00–20:00. |
-| `nasdaq_bx` | [equities.rs](../../src/calendar/schedules/equities/us/equities.rs) | [US-NASDAQ-EQUITIES](sources.md#us-nasdaq-equities) | Primary | 2026-08-22 | Stable wire identity for Nasdaq Texas; January-2010 08:00–19:00 hours and the exact 2011-04-18 move to the current 07:00–19:00 grid are primary-sourced. |
-| `nasdaq_psx` | [equities.rs](../../src/calendar/schedules/equities/us/equities.rs) | [US-NASDAQ-EQUITIES](sources.md#us-nasdaq-equities) | Primary | 2026-08-22 | Closed before the sourced 2010-10-08 launch; 09:00–17:00 at launch and the 2010-12-13 move to the current 08:00–17:00 grid are primary-sourced. |
-| `cboe_bzx` | [cboe.rs](../../src/calendar/schedules/equities/us/cboe.rs) | [US-CBOE-EQUITIES](sources.md#us-cboe-equities) | Primary | 2026-08-24 | Current venue envelope is 02:30–20:00. January-2010 trading, the exact 2014-12-02 06:00 queue onset, the 2016-05-25 matching start (the 06:00–08:00 queue narrowed to 06:00–07:00 as the 07:00 hour became tradeable), 2018 close extension, and 2025-05-01 02:30 queue change are date-aware. |
-| `cboe_byx` | [cboe.rs](../../src/calendar/schedules/equities/us/cboe.rs) | [US-CBOE-EQUITIES](sources.md#us-cboe-equities) | Primary | 2026-08-24 | Closed before the 2010-10-15 launch; the exact 2014-12-01 06:00 queue onset, the 2016-05-23 matching start (the 06:00–08:00 queue narrowed to 06:00–07:00 as the 07:00 hour became tradeable), and 2018-08-27 20:00 close are date-aware. |
-| `cboe_edga` | [cboe.rs](../../src/calendar/schedules/equities/us/cboe.rs) | [US-CBOE-EQUITIES](sources.md#us-cboe-equities) | Partial | 2026-08-22 | **Gap: order-entry** — the trading session is sourced; what is undated is a queue or post-close phase in which no trade can print. Current 06:00–20:00 envelope and the 2010-07-02 first-symbol launch are primary-supported. The exact original 06:00 order-queue onset is unavailable, so dated history before the 2026-08-22 review row conservatively omits that queue rather than inventing a cutover; from that row onward the verified-current queue applies. That row is a placement device, not a finality claim — Unlike the options rows this is an **unfinished search, not a knowledge-bound row**: SR-EDGA-2015-03 (80 FR 2125) quotes Rule 11.1(a)(1) as already providing the 06:00 entry start, so the queue is a rulebook provision that some dated SEC filing established; that filing has not yet been located. |
-| `cboe_edgx` | [cboe.rs](../../src/calendar/schedules/equities/us/cboe.rs) | [US-CBOE-EQUITIES](sources.md#us-cboe-equities) | Partial | 2026-08-22 | **Gap: order-entry** — the trading session is sourced; what is undated is a queue or post-close phase in which no trade can print. Current 02:30–20:00 envelope, 2010-07-02 launch, and exact 2021-03-08/2021-09-07 queue changes are sourced. The exact original 06:00 queue-onset day remains unknown, but as an **unfinished search rather than a knowledge-bound row**: SR-EDGX-2015-03 (80 FR 2163, filed 2015-01-08) quotes Rule 11.1(a)(1) as already providing entry from 06:00, so a dated SEC filing established it and remains to be located. The conditional future overnight phase stays unencoded. |
-| `nyse` | [nyse.rs](../../src/calendar/schedules/equities/us/nyse.rs) | [US-NYSE-EQUITIES](sources.md#us-nyse-equities) | Partial | 2026-08-22 | **Gap: order-entry** — the trading session is sourced; what is undated is a queue or post-close phase in which no trade can print. Current NYSE venue envelope includes accepted orders from 06:30 through the 16:00 core close. Pre-Pillar/Pillar tape-and-symbol-staged acceptance lacks one exchange-wide onset day, so the fixed current profile is exact while dated history remains conservative. |
-| `nyse_arca` | [nyse.rs](../../src/calendar/schedules/equities/us/nyse.rs) | [US-NYSE-EQUITIES](sources.md#us-nyse-equities) | Partial | 2026-08-22 | **Gap: order-entry** — the trading session is sourced; what is undated is a queue or post-close phase in which no trade can print. Current accepted-order envelope is 02:30–20:00. The executable history is sourced, but the complete 03:30→02:30 queue implementation chain lacks exact day-level evidence; the conditional future extension remains unencoded. |
-| `nyse_american` | [nyse.rs](../../src/calendar/schedules/equities/us/nyse.rs) | [US-NYSE-EQUITIES](sources.md#us-nyse-equities) | Partial | 2026-08-22 | **Gap: order-entry** — the trading session is sourced; what is undated is a queue or post-close phase in which no trade can print. Current accepted-order envelope is 06:30–20:00 and the 2017 Pillar launch is sourced. January-2010 off-hours crossing/acceptance topology and its amendment chain remain incomplete. |
-| `nyse_national` | [nyse.rs](../../src/calendar/schedules/equities/us/nyse.rs) | [US-NYSE-EQUITIES](sources.md#us-nyse-equities) | Partial | 2026-08-22 | **Gap: order-entry** — the trading session is sourced; what is undated is a queue or post-close phase in which no trade can print. Current accepted-order envelope is 06:30–20:00; legacy grids, dormant intervals, and the 2018 Pillar relaunch are date-aware. Legacy NSX acceptance-phase history remains incomplete. |
-| `nyse_texas` | [nyse.rs](../../src/calendar/schedules/equities/us/nyse.rs) | [US-NYSE-EQUITIES](sources.md#us-nyse-equities) | Primary | 2026-08-22 | Stable CHX/NYSE Chicago identity: 07:00–17:00 from the January-2010 floor, 06:30–20:00 from the 2019-11-04 Pillar migration, and a non-substantive 2025 Texas rename. It did not launch in 2025. |
-| `memx_eq` | [equities.rs](../../src/calendar/schedules/equities/us/equities.rs) | [US-MEMX](sources.md#us-memx) | Primary | 2026-08-22 | Closed before the sourced 2020-09-21 live launch; the 2020-10-05 post-market shortening, 2023-02-01 restoration, and 2025-05-19 early-open change are date-aware and primary-sourced. |
-| `miax_pearl_eq` | [equities.rs](../../src/calendar/schedules/equities/us/equities.rs) | [US-MIAX](sources.md#us-miax) | Primary | 2026-08-22 | Closed before the sourced 2020-09-29 live launch; the 2025-02-20 early/late expansion is also sourced. |
-| `iex` | [ats.rs](../../src/calendar/schedules/equities/us/ats.rs) | [US-IEX](sources.md#us-iex) | Primary | 2026-08-22 | The exchange identity is closed before its 2016-08-19 first production-symbol launch; the symbol phase-in ended and predecessor ATS ceased on 2016-09-02. Current 08:00–17:00 System Hours are primary-sourced. |
-| `ltse` | [independent.rs](../../src/calendar/schedules/equities/us/independent.rs) | [US-LTSE](sources.md#us-ltse) | Primary | 2026-08-22 | Closed before first production symbols on 2020-08-28, then 08:00–17:00 ET with 09:30–16:00 regular. |
-| `24x` | [independent.rs](../../src/calendar/schedules/equities/us/independent.rs) | [US-24X](sources.md#us-24x) | Primary | 2026-08-22 | Closed before actual exchange commencement on 2025-10-14, then 04:00–20:00 ET. The proposed overnight phase is monitored but unencoded. |
-| `txse` | [independent.rs](../../src/calendar/schedules/equities/us/independent.rs) | [US-TXSE](sources.md#us-txse) | Primary | 2026-08-22 | Closed through the July 6–9 non-clearing test-symbol period; live NMS production begins 2026-07-10 with an 08:00–17:00 ET envelope. |
-| `blue_ocean_ats` | [ats.rs](../../src/calendar/schedules/equities/us/ats.rs) | [US-BLUE-OCEAN](sources.md#us-blue-ocean) | Primary | 2026-08-22 | Production ATS new-order service only: closed before the sourced 2021-10-05 launch, then 20:00–04:00 Sunday–Thursday. The live ATS-N's sub-minute resting-book cleanup and pre-production beta/testing are outside this row's stated scope. |
+| `nasdaq` | [equities.rs](../../src/calendar/schedules/equities/us/equities.rs) | [US-NASDAQ-EQUITIES](sources.md#us-nasdaq-equities) | Primary | 2026-08-22 | Nasdaq Stock Market normal week; date-aware lookups retain the sourced 2013 07:00→04:00 early-open change. The announced Night Session is monitored but unencoded pending Equity Data Plan readiness and a later Nasdaq filing, so current and future snapshots remain 04:00–20:00. **Systems in scope (2026-09-02):** the Nasdaq equities matching system (System Hours 04:00–20:00) is the envelope; The Nasdaq Options Market is `nasdaq_nom` and the FINRA/Nasdaq TRF is `finra_trf_carteret`. ACT, Weblink ACT 2.0, ACES (08:00–18:30, interior), the Nasdaq Testing Facility and index dissemination are excluded classes; Nasdaq Fixed Income and Nasdaq Futures belong to neither this SRO nor cash equity. No discrepancy. |
+| `nasdaq_bx` | [equities.rs](../../src/calendar/schedules/equities/us/equities.rs) | [US-NASDAQ-EQUITIES](sources.md#us-nasdaq-equities) | Primary | 2026-08-22 | Stable wire identity for Nasdaq Texas; January-2010 08:00–19:00 hours and the exact 2011-04-18 move to the current 07:00–19:00 grid are primary-sourced. **Systems in scope (2026-09-02):** the BX/Nasdaq Texas equities matching system (07:00–19:00) is the envelope; BX Options is `nasdaq_bx_options`. This SRO operates no other facility. No discrepancy. |
+| `nasdaq_psx` | [equities.rs](../../src/calendar/schedules/equities/us/equities.rs) | [US-NASDAQ-EQUITIES](sources.md#us-nasdaq-equities) | Primary | 2026-08-22 | Closed before the sourced 2010-10-08 launch; 09:00–17:00 at launch and the 2010-12-13 move to the current 08:00–17:00 grid are primary-sourced. **Systems in scope (2026-09-02):** the PSX equities matching system (08:00–17:00) is the envelope; the other Nasdaq PHLX LLC facility, PHLX Options, is `nasdaq_phlx`. No discrepancy. |
+| `cboe_bzx` | [cboe.rs](../../src/calendar/schedules/equities/us/cboe.rs) | [US-CBOE-EQUITIES](sources.md#us-cboe-equities) | Primary | 2026-08-24 | Current venue envelope is 02:30–20:00. January-2010 trading, the exact 2014-12-02 06:00 queue onset, the 2016-05-25 matching start (the 06:00–08:00 queue narrowed to 06:00–07:00 as the 07:00 hour became tradeable), 2018 close extension, and 2025-05-01 02:30 queue change are date-aware. **Systems in scope (2026-09-02):** BZX Rule 11.1(a) makes the single order-capable envelope 02:30–20:00, matching the modeled grid; BZX Options is `cboe_bzx_options`. The BZX auctions and Cboe Market Close (Rule 11.28, 15:35 cut-off) are interior, and the pre-07:00 order-type restrictions limit eligibility without closing the venue. No discrepancy. |
+| `cboe_byx` | [cboe.rs](../../src/calendar/schedules/equities/us/cboe.rs) | [US-CBOE-EQUITIES](sources.md#us-cboe-equities) | Primary | 2026-08-24 | Closed before the 2010-10-15 launch; the exact 2014-12-01 06:00 queue onset, the 2016-05-23 matching start (the 06:00–08:00 queue narrowed to 06:00–07:00 as the 07:00 hour became tradeable), and 2018-08-27 20:00 close are date-aware. **Systems in scope (2026-09-02):** one equities matching system, envelope 06:00–20:00 on the operator hours table; this SRO operates no options facility. No discrepancy. |
+| `cboe_edga` | [cboe.rs](../../src/calendar/schedules/equities/us/cboe.rs) | [US-CBOE-EQUITIES](sources.md#us-cboe-equities) | Partial | 2026-08-22 | **Gap: order-entry** — the trading session is sourced; what is undated is a queue or post-close phase in which no trade can print. Current 06:00–20:00 envelope and the 2010-07-02 first-symbol launch are primary-supported. The exact original 06:00 order-queue onset is unavailable, so dated history before the 2026-08-22 review row conservatively omits that queue rather than inventing a cutover; from that row onward the verified-current queue applies. That row is a placement device, not a finality claim — Unlike the options rows this is an **unfinished search, not a knowledge-bound row**: SR-EDGA-2015-03 (80 FR 2125) quotes Rule 11.1(a)(1) as already providing the 06:00 entry start, so the queue is a rulebook provision that some dated SEC filing established; that filing has not yet been located. **Systems in scope (2026-09-02):** one equities matching system; EDGA Rule 11.1 states order entry from 06:00 until 20:00, matching the modeled envelope. This SRO operates no options facility. No discrepancy. |
+| `cboe_edgx` | [cboe.rs](../../src/calendar/schedules/equities/us/cboe.rs) | [US-CBOE-EQUITIES](sources.md#us-cboe-equities) | Partial | 2026-08-22 | **Gap: order-entry** — the trading session is sourced; what is undated is a queue or post-close phase in which no trade can print. Current 02:30–20:00 envelope, 2010-07-02 launch, and exact 2021-03-08/2021-09-07 queue changes are sourced. The exact original 06:00 queue-onset day remains unknown, but as an **unfinished search rather than a knowledge-bound row**: SR-EDGX-2015-03 (80 FR 2163, filed 2015-01-08) quotes Rule 11.1(a)(1) as already providing entry from 06:00, so a dated SEC filing established it and remains to be located. The conditional future overnight phase stays unencoded. **Systems in scope (2026-09-02):** the EDGX equities matching system (02:30–20:00) is the envelope; EDGX Options is `cboe_edgx_options`. No discrepancy. |
+| `nyse` | [nyse.rs](../../src/calendar/schedules/equities/us/nyse.rs) | [US-NYSE-EQUITIES](sources.md#us-nyse-equities) | Partial | 2026-08-22 | **Gap: order-entry** — the trading session is sourced; what is undated is a queue or post-close phase in which no trade can print. Current NYSE venue envelope includes accepted orders from 06:30 through the 16:00 core close. Pre-Pillar/Pillar tape-and-symbol-staged acceptance lacks one exchange-wide onset day, so the fixed current profile is exact while dated history remains conservative. **Systems in scope (2026-09-02):** the Pillar equities matching system is the envelope, but two further New York Stock Exchange LLC systems sit in neither place — NYSE Bonds (04:00–20:00) and the Off-Hours Trading Facility/Crossing Session II (16:00–18:30, decommissioned 2024-01-31). Both are on the system-coverage discrepancy list; the modeled envelope is conservative, never over-served. |
+| `nyse_arca` | [nyse.rs](../../src/calendar/schedules/equities/us/nyse.rs) | [US-NYSE-EQUITIES](sources.md#us-nyse-equities) | Partial | 2026-08-22 | **Gap: order-entry** — the trading session is sourced; what is undated is a queue or post-close phase in which no trade can print. Current accepted-order envelope is 02:30–20:00. The executable history is sourced, but the complete 03:30→02:30 queue implementation chain lacks exact day-level evidence; the conditional future extension remains unencoded. **Systems in scope (2026-09-02):** the Arca equities Pillar system (02:30–20:00) is the envelope and NYSE Arca Options is `nyse_arca_options`; no discrepancy. The conditional 23/5 Overnight Trading Session under temporary Rule 7.34-E(T) (SR-NYSEARCA-2026-53: 21:00 Sunday to 20:00 Friday, order acceptance from 20:59) is monitored and unencoded pending Equity Data Plan readiness. |
+| `nyse_american` | [nyse.rs](../../src/calendar/schedules/equities/us/nyse.rs) | [US-NYSE-EQUITIES](sources.md#us-nyse-equities) | Partial | 2026-08-22 | **Gap: order-entry** — the trading session is sourced; what is undated is a queue or post-close phase in which no trade can print. Current accepted-order envelope is 06:30–20:00 and the 2017 Pillar launch is sourced. January-2010 off-hours crossing/acceptance topology and its amendment chain remain incomplete. **Systems in scope (2026-09-02):** the American equities Pillar system (06:30–20:00) is the envelope and NYSE American Options is `nyse_american_options`; the Off-Hours Trading Facility under Rule 7.39E, decommissioned 2022-09-01, is in neither place and is on the discrepancy list. |
+| `nyse_national` | [nyse.rs](../../src/calendar/schedules/equities/us/nyse.rs) | [US-NYSE-EQUITIES](sources.md#us-nyse-equities) | Partial | 2026-08-22 | **Gap: order-entry** — the trading session is sourced; what is undated is a queue or post-close phase in which no trade can print. Current accepted-order envelope is 06:30–20:00; legacy grids, dormant intervals, and the 2018 Pillar relaunch are date-aware. Legacy NSX acceptance-phase history remains incomplete. **Systems in scope (2026-09-02):** one equities matching system; this SRO operates no options or bond facility. No discrepancy. |
+| `nyse_texas` | [nyse.rs](../../src/calendar/schedules/equities/us/nyse.rs) | [US-NYSE-EQUITIES](sources.md#us-nyse-equities) | Primary | 2026-08-22 | Stable CHX/NYSE Chicago identity: 07:00–17:00 from the January-2010 floor, 06:30–20:00 from the 2019-11-04 Pillar migration, and a non-substantive 2025 Texas rename. It did not launch in 2025. **Systems in scope (2026-09-02):** one equities matching system; this SRO operates no options or bond facility. No discrepancy. |
+| `memx_eq` | [equities.rs](../../src/calendar/schedules/equities/us/equities.rs) | [US-MEMX](sources.md#us-memx) | Primary | 2026-08-22 | Closed before the sourced 2020-09-21 live launch; the 2020-10-05 post-market shortening, 2023-02-01 restoration, and 2025-05-19 early-open change are date-aware and primary-sourced. **Systems in scope (2026-09-02):** the MEMX equities matching system (04:00–20:00 on the operator hours table) is the envelope; MEMX Options is `memx_options`. No discrepancy. |
+| `miax_pearl_eq` | [equities.rs](../../src/calendar/schedules/equities/us/equities.rs) | [US-MIAX](sources.md#us-miax) | Primary | 2026-08-22 | Closed before the sourced 2020-09-29 live launch; the 2025-02-20 early/late expansion is also sourced. **Systems in scope (2026-09-02):** MIAX Pearl Options is `miax_pearl_options`, but the operator's trade-hours table opens a Live Order Window at 03:30 — “Firms can send MEO and FIX orders” — half an hour before the 04:00 Early Trading Session, and this profile carries no `order_entry` phase. On the discrepancy list as an order-entry omission; the 01:30 market-data start and the 03:00 connectivity step stay excluded. |
+| `iex` | [ats.rs](../../src/calendar/schedules/equities/us/ats.rs) | [US-IEX](sources.md#us-iex) | Primary | 2026-08-22 | The exchange identity is closed before its 2016-08-19 first production-symbol launch; the symbol phase-in ended and predecessor ATS ceased on 2016-09-02. Current 08:00–17:00 System Hours are primary-sourced. **Systems in scope (2026-09-02):** the equities matching system (08:00–17:00 System Hours) is the envelope and the predecessor IEX ATS is out of scope by identity. IEX Options is a facility of the same SRO, Investors Exchange LLC, and is modeled nowhere; it is on the discrepancy list, with no unconditional launch day in the reviewed material. |
+| `ltse` | [independent.rs](../../src/calendar/schedules/equities/us/independent.rs) | [US-LTSE](sources.md#us-ltse) | Primary | 2026-08-22 | Closed before first production symbols on 2020-08-28, then 08:00–17:00 ET with 09:30–16:00 regular. **Systems in scope (2026-09-02):** one equities matching system covering all three published sessions. No discrepancy. |
+| `24x` | [independent.rs](../../src/calendar/schedules/equities/us/independent.rs) | [US-24X](sources.md#us-24x) | Primary | 2026-08-22 | Closed before actual exchange commencement on 2025-10-14, then 04:00–20:00 ET. The proposed overnight phase is monitored but unencoded. **Systems in scope (2026-09-02):** one equities matching system; the user manual's hours table publishes only the three daytime sessions, and its single residual reference to a “24X Market Session” corroborates that the overnight session exists in the rule set but is not operative. No discrepancy. |
+| `txse` | [independent.rs](../../src/calendar/schedules/equities/us/independent.rs) | [US-TXSE](sources.md#us-txse) | Primary | 2026-08-22 | Closed through the July 6–9 non-clearing test-symbol period; live NMS production begins 2026-07-10 with an 08:00–17:00 ET envelope. **Systems in scope (2026-09-02):** one equities matching system; the separately published UAT environment (08:00–17:00) is a test facility and is excluded. No discrepancy. |
+| `blue_ocean_ats` | [ats.rs](../../src/calendar/schedules/equities/us/ats.rs) | [US-BLUE-OCEAN](sources.md#us-blue-ocean) | Primary | 2026-08-22 | Production ATS new-order service only: closed before the sourced 2021-10-05 launch, then 20:00–04:00 Sunday–Thursday. The live ATS-N's sub-minute resting-book cleanup and pre-production beta/testing are outside this row's stated scope. **Systems in scope (2026-09-02):** one matching system. The live ATS-N's 18:15 test-order window is excluded as testing, the post-04:00 sub-minute cleanup stays outside the stated new-order scope, and the 19:30 Reference Price is a fixing instant rather than an order-capable window. No discrepancy. |
 | `finra_trf_carteret` | [trfs.rs](../../src/calendar/schedules/equities/us/trfs.rs) | [US-FINRA-TRF](sources.md#us-finra-trf) | Primary | 2026-08-22 | Reporting facility; the 2026-03-30 04:00–20:00 revision is sourced. The announced overnight expansion remains unencoded while its date depends on the SIP rollout. |
 | `finra_trf_chicago` | [trfs.rs](../../src/calendar/schedules/equities/us/trfs.rs) | [US-FINRA-TRF](sources.md#us-finra-trf) | Primary | 2026-08-22 | Closed before the sourced 2018-09-10 facility launch (test securities only through 2018-09-21); the 2026-03-30 revision is sourced. The SIP-conditional overnight expansion remains unencoded. |
 | `finra_trf_nyse` | [trfs.rs](../../src/calendar/schedules/equities/us/trfs.rs) | [US-FINRA-TRF](sources.md#us-finra-trf) | Primary | 2026-08-22 | Reporting facility; the 2026-03-30 04:00–20:00 revision is sourced. The announced overnight expansion remains unencoded while its date depends on the SIP rollout. |
@@ -167,6 +174,203 @@ is exactly one row for every `Exchange` variant, in `Exchange::ALL` order.
 | `b3` | [b3.rs](../../src/calendar/schedules/equities/americas/b3.rs) | [AMER-B3](sources.md#amer-b3) | Primary | 2026-08-24 | Cash-equity recurring New York-reference grids; use date-aware calendar. The 11:00-open 2010–2012 grids carry no pre-opening phase: the era's pre-opening window is not primary-sourced, so it reads closed. |
 | `bmv` | [bmv.rs](../../src/calendar/schedules/equities/americas/bmv.rs) | [AMER-BMV](sources.md#amer-bmv) | Primary | 2026-08-22 | Date-aware normal/early grids retain the sourced HD/ID post-close tails: `:06` through 2016-09-04, `:10` from 2016-09-05, early `:20` from 2023-05-29, and normal `:20` from 2023-11-06. Operative manuals and the regulator annual record control over stale one-off DST notices. |
 | `binance_futures` | [binance.rs](../../src/calendar/schedules/futures/international/binance.rs) | [CRYPTO-BINANCE](sources.md#crypto-binance) | Primary | 2026-08-22 | Binance USDⓈ-M perpetuals' normal 24×7 availability: closed before the archived official 2019-09-13 04:00 UTC platform launch, then continuously open. Ad-hoc maintenance, contract launch/delist events, and incidents are excluded. |
+
+## System-coverage audit (Phase 1)
+
+`AGENTS.md` defines a cash-equity `Exchange` profile as the availability
+**union of the venue's automated order-capable systems** within the row's
+documented scope, excluding systems that are separately modeled identities.
+Whether that union was *complete* had never been verified for any row. This
+section records the audit that verifies it, the method that makes it
+repeatable, and the residue it produced.
+
+**Status: the US cash-equity tranche is done (19 rows, 2026-09-02); the other
+74 non-synthetic rows are not.** A row carries a `Systems in scope` clause in
+the table above once it has been through the method below. No `Reviewed on`
+value was advanced by this pass and the repository cutoff is unchanged: a
+systems-coverage audit opens a venue's *enumeration* sources, not every source
+set a full row review requires.
+
+### The method
+
+1. **Fix the system universe from the SRO, not the brand.** A row's universe is
+   every automated order-capable system operated by the registered exchange or
+   ATS operator that the row names, its facilities included. A sibling SRO under
+   the same corporate parent is another row's business — Cboe BZX is not Cboe
+   EDGX, MIAX PEARL is not MIAX Emerald — and a non-SRO affiliate of the parent
+   (BIDS Trading under Cboe, MIAX Futures under Miami International Holdings)
+   is a *coverage* question for a future identity, not an envelope question for
+   this row.
+2. **Enumerate from the operator's own timetable first.** One operator page
+   normally lists every facility and its phases: NYSE's hours-and-calendars
+   page, Cboe's hours page, Nasdaq's *Nasdaq Systems — Hours of Operation*
+   sheet, a venue's own *Trade Hours of Operation* table. Enumerate from that
+   page, never from the crate's own tables — the point of the audit is to find
+   what the crate does not know about.
+3. **Confirm the envelope in the rulebook.** A timetable states today's
+   setting; a rulebook hours provision states whether that setting is a rule
+   boundary. Cboe BZX Rule 11.1(a) puts order entry into the System from 02:30
+   until 20:00, and EDGA's identical provision starts at 06:00, so both
+   envelopes are rulebook facts that some dated SEC filing established; MIAX
+   Pearl Equities' Live Order Window appears only on a
+   mutable operator page. That difference decides whether an undated onset is a
+   *findable* gap or a knowledge-bound one, so record which kind it is.
+4. **Classify every enumerated system into exactly one bucket**: (a) inside the
+   row's envelope; (b) an identity the crate already models; (c) an excluded
+   class — pure reporting, test/UAT, connectivity-only, market-data
+   dissemination, cancellation-only, enquiry, administrative; (d) **discrepancy**
+   — none of the above.
+5. **Check both edges of the envelope explicitly.** Venues publish the earliest
+   order-acceptance instant separately from the first executable session — Cboe
+   "Early Order Acceptance", NYSE "Pre-Opening Session", MIAX Pearl "Live Order
+   Window", NYSE Arca's Rule 7.34-E(T) "begin accepting orders". That edge, not
+   the headline open, is where omissions were actually found.
+6. **Record the residue as a discrepancy with a routing, never a widening.**
+   Name the system, its published hours, the primary source, whether the window
+   is **executable** or **order-entry**, and which disposition it needs — an
+   envelope amendment or a new identity. Say whether an unconditional day-level
+   date exists for it; without one, LAW-NO-FABRICATED-DATES governs the fix as
+   much as it governs the original row.
+7. **Capture the two side-lists while enumerating**, and keep a genuine
+   cancellation-only window (cancels accepted, new entries refused) distinct
+   from its two look-alikes: a *no-cancel* freeze period, and an
+   entry-and-cancel *cutoff*.
+8. **Send conditional future sessions to the watch list, not to a selector.** An
+   overnight or extended session whose operative day depends on Equity Data
+   Plan readiness or a later readiness filing is enumerated, recorded on the
+   row, and left unencoded.
+
+**Channel notes for this tranche.** `nyse.com`, `cboe.com`, `memxtrading.com`,
+`miaxglobal.com`, `iex.io`, `ltse.com`, `equities.24exchange.com`, `txse.com`,
+Cboe's rulebook PDFs, the SEC's EDGAR Form ATS-N documents, and the Federal
+Register full-text API all answered directly. `nasdaqtrader.com` served its
+bot-protection interstitial as recorded in
+[updating.md](updating.md#1-open-the-monitoring-sources), so Nasdaq's *Nasdaq
+Systems — Hours of Operation* sheet (official origin
+<https://www.nasdaqtrader.com/content/TechnicalSupport/nasdaq_sys_hours.pdf>)
+was read through the web archive at
+<https://web.archive.org/web/20251210213123id_/https://www.nasdaqtrader.com/content/TechnicalSupport/nasdaq_sys_hours.pdf>.
+That sheet carries a 2020 copyright line, so it enumerates Nasdaq's system
+inventory as of 2020 and predates the BX-to-Nasdaq-Texas conversion; its
+equities figures agree with the modeled envelopes, and the enumeration should be
+re-taken from a current edition when one becomes reachable. The Nasdaq rulebook
+at `listingcenter.nasdaq.com` returned HTTP 403 and was not opened.
+
+### Discrepancy list — US cash-equity tranche, 2026-09-02
+
+Five systems sit in neither place. **Every one of them is a window the crate
+currently omits, never one it wrongly serves**, so the dated surface is
+conservative in all five cases; none makes the crate report a market open that
+was closed. None is fixed here: a discrepancy is routed, not silently absorbed.
+
+| # | System | Owner row | Published hours | Kind | Routing |
+|---|---|---|---|---|---|
+| 1 | **NYSE Bonds** | `nyse` | Early 04:00–08:00, Core 08:00–17:00, Late 17:00–20:00 ET, with an Opening Bond Auction at 04:00 and a Core Bond Auction at 08:00 | Executable, debt securities | Decision required: a new `nyse_bonds` identity, or an explicit scope exclusion. **Not** an envelope amendment — folding it in would widen the `nyse` cash-equity envelope from 06:30–16:00 to 04:00–20:00 for NMS stocks that cannot trade there. |
+| 2 | **NYSE Off-Hours Trading Facility (Crossing Session II)** | `nyse` | 16:00–18:30 ET, from before the January-2010 floor until decommissioning on 2024-01-31 | Executable, restricted eligibility | Decision required: a historical envelope amendment covering 2010-01→2024-01-31, or a documented exclusion as a coupled-order crossing facility. Highest-severity entry: trades printed in it. |
+| 3 | **NYSE American Off-Hours Trading Facility (Rule 7.39E)** | `nyse_american` | Same aggregate-price coupled-order facility, decommissioned 2022-09-01 | Executable, restricted eligibility | Same decision as #2, on `nyse_american`'s pre-2022-09-01 history. |
+| 4 | **IEX Options** | `iex` | Not yet operating; launch announced for 2026 | Not yet applicable | New identity once an unconditional launch day is sourced. Until then, an explicit scope exclusion on the `iex` row plus a watch-list entry. |
+| 5 | **MIAX Pearl Equities Live Order Window** | `miax_pearl_eq` | 03:30–04:00 ET order acceptance ahead of the 04:00 Early Trading Session | Order-entry | Envelope amendment: an `order_entry` phase. Its onset day is published only on a mutable operator page, so the amendment must expect a knowledge-bound onset, exactly like the US options queues. |
+
+Evidence for each entry:
+
+1. NYSE's hours-and-calendars page publishes the NYSE Bonds phase table and its
+   two auctions. The SEC's Section 36 order of 2025-03-04 identifies NYSE Bonds
+   as "the facility that is now known as NYSE Bonds" of the New York Stock
+   Exchange, trading debt securities (90 FR 11194).
+   <https://www.nyse.com/markets/hours-calendars> ·
+   <https://www.federalregister.gov/documents/full_text/text/2025/03/04/2025-03432.txt>
+2. SR-NYSE-2022-37 (87 FR 50906, 2022-08-18): "Currently, the Exchange offers an
+   off-hours trading facility known as Crossing Session II pursuant to NYSE
+   Rules 900-907 that operates between 4:00 p.m. and 6:30 p.m." — hours sourced
+   in turn to Exchange Act Release No. 52026 (70 FR 41806, 2005-07-20). The
+   facility was carried into Pillar as Rule 7.39 effective 2022-09-01.
+   SR-NYSE-2024-06 (89 FR 13132, 2024-02-21) deletes Rule 7.39 and states the
+   Exchange ceased offering CS II and decommissioned the facility **effective
+   2024-01-31**.
+   <https://www.federalregister.gov/documents/full_text/text/2022/08/18/2022-17749.txt>
+   · <https://www.federalregister.gov/documents/full_text/text/2024/02/21/2024-03449.txt>
+3. The companion filing deleting NYSE American Rule 7.39E — SR-NYSEAMER-2022-35
+   (87 FR 50894, 2022-08-18) — states the Commission waived the operative delay
+   because "the Exchange plans to decommission the Off-Hours Trading Facility as
+   of September 1, 2022", and designates the proposal operative on that day.
+   <https://www.federalregister.gov/documents/full_text/text/2022/08/18/2022-17750.txt>
+4. IEX Options is a facility of **Investors Exchange LLC** — the same SRO as the
+   `iex` row, not a separate exchange. Its filings are captioned
+   "Self-Regulatory Organizations; Investors Exchange LLC" and amend IEX Rules
+   22.250/22.260 governing "IEX Options Members"; a fee filing of 2026-08-12
+   describes organizational changes "in Preparation for the Launch of IEX
+   Options Later This Year", and the options listing plan's amendment adding
+   Investors Exchange LLC as a plan sponsor was published 2026-09-01. No
+   unconditional launch day is stated in the reviewed material, so nothing here
+   is encodable — only monitorable.
+   <https://www.federalregister.gov/documents/2026/08/25/2026-17281/> ·
+   <https://www.federalregister.gov/documents/2026/08/12/2026-16383/> ·
+   <https://www.federalregister.gov/documents/2026/09/01/2026-17806/>
+5. MIAX Pearl Equities' own *Trade Hours of Operation* table: 01:30–03:00 start
+   of System Hours (market-data dissemination), 03:00 MEO/FIX interfaces open
+   ("Firms can connect"), **03:30 "Live Order Window (LOW) Opens — Firms can
+   send MEO and FIX orders"**, 04:00 start of the Early Trading Session. The
+   03:00 step is connectivity only and stays excluded; the 03:30 step accepts
+   orders and is not represented.
+   <https://www.miaxglobal.com/markets/us-equities/pearl-equities/trade-hours-calendar>
+
+A sixth finding is an enumeration omission rather than a system in neither
+place: **NYSE Arca's conditional 23/5 Overnight Trading Session** under
+temporary Rule 7.34-E(T) was not recorded on the `nyse_arca` row, although the
+comparable monitored future sessions on `nasdaq`, `cboe_edgx`, and `24x` were.
+SR-NYSEARCA-2026-53 (91 FR 31509, 2026-05-27) would run the Exchange from 21:00
+Sunday to 20:00 Friday with a one-hour technical pause from 20:00 Monday through
+Thursday and order acceptance from 20:59, and remains inoperative until the
+Equity Data Plans certify readiness. The row now records it; nothing is encoded.
+
+### Side-list A — cancellation-only windows observed
+
+**None.** No venue in this tranche publishes a window in which the system
+accepts cancellations while refusing new orders. This is a positive finding
+against primary timetables and rulebooks, not an absence of searching, and it is
+the evidence Phase 2 needs to record the exclusion as evidence-based rather than
+assumed. Everything that looked like one on first reading is a different animal:
+
+- **No-cancel freeze periods** — the inverse. NYSE, NYSE American, NYSE Arca and
+  NYSE Texas publish auction Imbalance Freeze Periods (06:59–07:00,
+  09:29:55–09:30, and 15:50–16:00 or 15:59–16:00) during which orders may *not*
+  be cancelled. The SEC order approving Cboe BZX's 2025 closing-auction
+  amendment (90 FR 43486, 2025-09-09) adopts the same shape: LOC orders "cannot
+  be modified or cancelled between 3:55 p.m. and 3:59 p.m.", and an LLOC order,
+  once entered, may not be modified or cancelled at all. All sit inside a phase
+  the profile already serves.
+- **Entry-and-cancel cutoffs** — a single instant, not a window. The Cboe Market
+  Close MOC Cut-Off Time is "3:35 p.m. ET, and represents the time up until
+  which members may enter, cancel, or replace MOC orders designated for
+  participation in the Cboe Market Close" (BZX Rule 11.28(a), quoted in 85 FR
+  9824, 2020-02-20); entry and cancellation stop together. NYSE Arca, NYSE American and NYSE Texas publish a
+  09:29 MOO/LOO Cancellation Cutoff with the same shape.
+- **System-initiated cancellation** — not a member-facing window at all. 24X:
+  orders left in the System at 20:00 are automatically cancelled. Blue Ocean:
+  every order on the book is cancelled at the end of the operating session.
+
+### Side-list B — settlement, fixing, and price-reference windows observed
+
+Recorded to confirm the exclusion is documented rather than assumed. None
+requires an envelope change: every one either sits inside a phase the profile
+already serves, or is a price-determination instant with no order capability.
+
+- **Closing and opening auctions that set official prices** — NYSE Closing
+  Auction at 16:00 behind a 15:50–16:00 Closing Imbalance Period; the NYSE
+  American, Arca and Texas Closing Auctions at 16:00; the Early Open Auctions at
+  07:00 (04:00 on Arca); MIAX Pearl Equities' Opening Process at 09:30. All are
+  interior to `regular` or `extended` phases already modeled.
+- **Price-referenced crossing at the official close** — Cboe Market Close (BZX
+  Rule 11.28), which matches at the primary listing market's official closing
+  price with a 15:35 cut-off. Interior to `regular`.
+- **Blue Ocean's 19:30 ET Reference Price** — the last SIP print at or before
+  19:30 ET fixes each symbol's ±20% Reference Price Band for the session that
+  opens at 20:00. It falls outside the modeled envelope but is a price
+  determination, not an order-capable window, so the exclusion is correct and is
+  now recorded rather than assumed.
+- **NYSE Bonds' Opening Bond Auction (04:00) and Core Bond Auction (08:00)** —
+  outside every modeled envelope, but only because the whole facility is
+  (discrepancy #1); they are not a separate exclusion.
 
 ## `MarketHoursKey` profiles
 

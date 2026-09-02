@@ -53,6 +53,20 @@ The rule already exists (AGENTS.md cash-equity envelope: availability union
 of automated order-capable systems; separately modeled identities excluded).
 Completeness is a verification question.
 
+**Method established and first tranche done, 2026-09-02.** The nineteen US
+cash-equity rows (`nasdaq` through `blue_ocean_ats`) are enumerated and carry a
+`Systems in scope` clause; the repeatable eight-step method, the discrepancy
+list, and both side-lists live in the **System-coverage audit** section of
+`docs/schedules/verification.md`. Five systems landed in neither place — NYSE
+Bonds, the NYSE and NYSE American Off-Hours Trading Facilities, IEX Options, and
+MIAX Pearl Equities' 03:30 Live Order Window — and are routed, not absorbed;
+every one is a window the crate omits rather than one it wrongly serves, so the
+dated surface stays conservative. **Cancellation-only windows observed: none**,
+which is the evidence Phase 2 was waiting for. The remaining 74 rows follow the
+same method; no `Reviewed on` value was advanced, because an enumeration pass
+opens a venue's system-inventory sources, not every source set a row review
+needs.
+
 - [ ] For each of the 93 non-synthetic rows, enumerate the venue's automated
       order-capable systems from its primary documentation (rulebook hours
       sections, system timetables, member notices) — the source sets in

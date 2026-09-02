@@ -45,6 +45,12 @@ fn et(date: (i32, u32, u32), time: (u32, u32, u32)) -> DateTime<Utc> {
         .with_timezone(&Utc)
 }
 
+fn utc(date: (i32, u32, u32), time: (u32, u32, u32)) -> DateTime<Utc> {
+    Utc.with_ymd_and_hms(date.0, date.1, date.2, time.0, time.1, time.2)
+        .single()
+        .expect("fixture must be a valid UTC instant")
+}
+
 fn assert_copy_send_sync_static<T: Copy + Send + Sync + 'static>() {}
 
 /// Reads a table through the object-safe trait the engine consumes.
@@ -514,6 +520,39 @@ fn a_profile_without_a_daily_close_ignores_the_replacement_layer() {
         calendar.is_closed_trade_date(trade_date, SessionKind::Both),
         plain.is_closed_trade_date(trade_date, SessionKind::Both)
     );
+
+    // The same holds for a closed record. The layer declines to govern the
+    // date at all rather than resolving no blocks and calling that no session,
+    // so the refusal cannot come out as a closure the profile cannot express.
+    let closed = [SessionExceptionRecord::closed(trade_date)];
+    let closed_table = StaticSessionExceptions::new(
+        CalendarSource::Exchange(Exchange::BinanceFutures),
+        day(2026, 4, 13),
+        day(2026, 4, 27),
+        &closed,
+    )
+    .expect("valid records");
+    let closed_calendar = calendar_for_exchange(Exchange::BinanceFutures)
+        .with_session_exceptions(&closed_table)
+        .expect("the fixture is scoped to this calendar");
+    for hour in [3_u32, 10, 14, 22] {
+        let instant = Utc
+            .with_ymd_and_hms(2026, 4, 20, hour, 0, 0)
+            .single()
+            .expect("valid UTC instant");
+        assert!(
+            closed_calendar.is_open(instant),
+            "a closed record removed 24x7 trading at {hour}"
+        );
+        assert_eq!(
+            closed_calendar.session_bounds(instant),
+            plain.session_bounds(instant)
+        );
+    }
+    assert_eq!(
+        closed_calendar.is_closed_trade_date(trade_date, SessionKind::Both),
+        plain.is_closed_trade_date(trade_date, SessionKind::Both)
+    );
 }
 
 #[test]
@@ -710,6 +749,156 @@ fn an_empty_table_is_valid_and_asserts_an_audited_normal_window() {
 }
 
 // ---------------------------------------------------------------------------
+// Daylight-saving edges and scan bounds.
+// ---------------------------------------------------------------------------
+
+// US/Central falls back on Sunday 2026-11-01: 01:00-02:00 CT is served twice,
+// first as CDT (UTC-5) and again as CST (UTC-6). A replacement block resolves
+// its open like any session open (the earliest of the two valid instants) and
+// its close like any session close (the latest), so a block stated wholly
+// inside the repeated hour covers both passes rather than one.
+static FOLD_BLOCKS: [ExceptionBlock; 1] = [ExceptionBlock::regular(
+    -1,
+    3_600 + 30 * 60,
+    3_600 + 45 * 60,
+)];
+
+#[test]
+fn a_replacement_block_covers_both_passes_of_a_dst_fold() {
+    let trade_date = day(2026, 11, 2);
+    let records = [SessionExceptionRecord::replace_sessions(
+        trade_date,
+        &FOLD_BLOCKS,
+    )];
+    let table = StaticSessionExceptions::new(
+        CalendarSource::Exchange(Exchange::Cme),
+        day(2026, 10, 30),
+        day(2026, 11, 3),
+        &records,
+    )
+    .expect("valid records");
+    let calendar = calendar_for_exchange(Exchange::Cme)
+        .with_session_exceptions(&table)
+        .expect("the fixture is scoped to this calendar");
+
+    // 01:30 CDT is 06:30 UTC and 01:45 CST is 07:45 UTC. A single bias on both
+    // endpoints would yield a 15-minute session at one end of the fold or the
+    // other; the split bias spans the whole repeated hour.
+    let expected = (
+        utc((2026, 11, 1), (6, 30, 0)),
+        utc((2026, 11, 1), (7, 45, 0)),
+    );
+    for instant in [
+        utc((2026, 11, 1), (6, 30, 0)),
+        utc((2026, 11, 1), (7, 0, 0)),
+        utc((2026, 11, 1), (7, 44, 59)),
+    ] {
+        assert_eq!(
+            calendar.session_bounds(instant),
+            Some(expected),
+            "the fold block did not cover {instant}"
+        );
+        assert!(calendar.is_open(instant));
+        assert_eq!(calendar.trade_date(instant), Some(trade_date));
+    }
+    assert!(!calendar.is_open(utc((2026, 11, 1), (6, 29, 59))));
+    assert!(!calendar.is_open(utc((2026, 11, 1), (7, 45, 0))));
+}
+
+// US/Central springs forward on Sunday 2026-03-08: 02:00-03:00 CT does not
+// exist. A block stated inside the gap resolves forward to the first instant
+// the zone actually serves, 03:00 CDT, rather than being dropped.
+static GAP_BLOCKS: [ExceptionBlock; 1] =
+    [ExceptionBlock::regular(0, 2 * 3_600 + 30 * 60, 4 * 3_600)];
+
+#[test]
+fn a_replacement_block_that_opens_in_a_dst_gap_moves_to_the_first_real_instant() {
+    let trade_date = day(2026, 3, 8);
+    let records = [SessionExceptionRecord::replace_sessions(
+        trade_date,
+        &GAP_BLOCKS,
+    )];
+    let table = StaticSessionExceptions::new(
+        CalendarSource::Exchange(Exchange::Cme),
+        day(2026, 3, 6),
+        day(2026, 3, 10),
+        &records,
+    )
+    .expect("valid records");
+    let calendar = calendar_for_exchange(Exchange::Cme)
+        .with_session_exceptions(&table)
+        .expect("the fixture is scoped to this calendar");
+
+    // 02:30 CT is unrepresentable, so the open lands on 03:00 CDT = 08:00 UTC.
+    // The 04:00 CDT close is 09:00 UTC.
+    assert_eq!(
+        calendar.session_bounds(utc((2026, 3, 8), (8, 30, 0))),
+        Some((utc((2026, 3, 8), (8, 0, 0)), utc((2026, 3, 8), (9, 0, 0))))
+    );
+    assert!(calendar.is_open(utc((2026, 3, 8), (8, 0, 0))));
+    assert!(!calendar.is_open(utc((2026, 3, 8), (7, 59, 59))));
+    assert!(!calendar.is_open(utc((2026, 3, 8), (9, 0, 0))));
+}
+
+#[test]
+fn an_all_closed_window_terminates_every_forward_scan() {
+    // Longer than any of the engine's forward horizons, so a scan that failed
+    // to terminate would hang instead of answering.
+    let first = day(2026, 6, 1);
+    let last = day(2026, 7, 15);
+    let mut records = Vec::new();
+    let mut date = first;
+    while date <= last {
+        records.push(SessionExceptionRecord::closed(date));
+        date = date.succ_opt().expect("in-range fixture date");
+    }
+    let table = StaticSessionExceptions::new(
+        CalendarSource::Exchange(Exchange::Nasdaq),
+        first,
+        last,
+        &records,
+    )
+    .expect("valid records");
+    let calendar = calendar_for_exchange(Exchange::Nasdaq)
+        .with_session_exceptions(&table)
+        .expect("the fixture is scoped to this calendar");
+
+    let instant = utc((2026, 6, 22), (14, 30, 0));
+    assert!(!calendar.is_open(instant));
+    assert_eq!(calendar.session_bounds(instant), None);
+    assert_eq!(calendar.next_session_open_after(instant), None);
+    assert_eq!(calendar.next_session_after(instant), None);
+    for offset in 0..21 {
+        let day_in_window = first
+            .checked_add_signed(chrono::Duration::days(offset))
+            .expect("in-range fixture date");
+        assert!(calendar.is_closed_trade_date(day_in_window, SessionKind::Both));
+    }
+}
+
+#[test]
+fn a_policy_calendar_refuses_a_provider_scoped_to_another_identity() {
+    // `PolicyCalendar` carries its own scope check; the `ExchangeCalendar`
+    // entry point does not stand in for it.
+    let policy = StaticDayPolicy::new(&[]).expect("empty is valid");
+    let error = calendar_for_exchange(Exchange::Nasdaq)
+        .with_day_policy(&policy)
+        .with_session_exceptions(&cme_table())
+        .expect_err("a CME table must not drive a Nasdaq policy calendar");
+
+    assert_eq!(error.calendar, CalendarSource::Exchange(Exchange::Nasdaq));
+    assert_eq!(error.provider, CalendarSource::Exchange(Exchange::Cme));
+
+    // The matching identity is still accepted through the same entry point.
+    assert!(
+        calendar_for_exchange(Exchange::Cme)
+            .with_day_policy(&policy)
+            .with_session_exceptions(&cme_table())
+            .is_ok()
+    );
+}
+
+// ---------------------------------------------------------------------------
 // Validation.
 // ---------------------------------------------------------------------------
 
@@ -845,6 +1034,53 @@ fn block_domain_violations_are_rejected() {
 }
 
 #[test]
+fn a_block_opening_on_its_trade_date_may_not_wrap_past_it() {
+    // A trade date is named by the local date of its final close, so a block
+    // at offset 0 may not run past midnight into the following date: the
+    // record would still be keyed by the earlier date, handing back a trade
+    // date and a candle boundary that disagree with the block itself.
+    let wraps_past_the_trade_date = [ExceptionBlock::regular(0, 17 * 3_600, 16 * 3_600)];
+    assert!(wraps_past_the_trade_date[0].wraps_to_next_day());
+    let records = [SessionExceptionRecord::replace_sessions(
+        NASDAQ_HALF_DAY,
+        &wraps_past_the_trade_date,
+    )];
+    assert_eq!(
+        nasdaq_records(&records),
+        Err(StaticSessionExceptionsError::BlockClosesAfterTradeDate { index: 0, block: 0 })
+    );
+
+    // Equal endpoints wrap by the same rule, so they are refused too.
+    let equal_endpoints = [ExceptionBlock::extended(0, 9 * 3_600, 9 * 3_600)];
+    let records = [SessionExceptionRecord::replace_sessions(
+        NASDAQ_HALF_DAY,
+        &equal_endpoints,
+    )];
+    assert_eq!(
+        nasdaq_records(&records),
+        Err(StaticSessionExceptionsError::BlockClosesAfterTradeDate { index: 0, block: 0 })
+    );
+
+    // A block covering one whole local day has a non-wrapping spelling, so
+    // nothing expressible is lost: `close_ssm` may state the closing midnight.
+    let whole_local_day = [ExceptionBlock::regular(0, 0, 86_400)];
+    assert!(!whole_local_day[0].wraps_to_next_day());
+    let records = [SessionExceptionRecord::replace_sessions(
+        NASDAQ_HALF_DAY,
+        &whole_local_day,
+    )];
+    assert!(nasdaq_records(&records).is_ok());
+
+    // A block that opens on an earlier date may still wrap.
+    let wraps_into_the_trade_date = [ExceptionBlock::regular(-1, 17 * 3_600, 16 * 3_600)];
+    let records = [SessionExceptionRecord::replace_sessions(
+        NASDAQ_HALF_DAY,
+        &wraps_into_the_trade_date,
+    )];
+    assert!(nasdaq_records(&records).is_ok());
+}
+
+#[test]
 fn out_of_order_blocks_are_rejected() {
     let unordered = [
         ExceptionBlock::regular(0, 9 * 3_600, 13 * 3_600),
@@ -898,7 +1134,8 @@ fn every_validation_error_renders_a_distinct_message() {
             close_ssm: 90_001,
         }
         .to_string(),
-        StaticSessionExceptionsError::BlocksNotOrdered { index: 7, block: 3 }.to_string(),
+        StaticSessionExceptionsError::BlockClosesAfterTradeDate { index: 7, block: 3 }.to_string(),
+        StaticSessionExceptionsError::BlocksNotOrdered { index: 8, block: 4 }.to_string(),
     ];
     for (position, message) in messages.iter().enumerate() {
         assert!(!message.is_empty());

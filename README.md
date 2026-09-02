@@ -313,9 +313,12 @@ built-in tables and their dated revisions encode only real, recurring
 exchange behavior. Callers can apply their own sourced closed-day,
 early-close, and late-open boundary data through `DayPolicy`, and holiday
 arrangements that replace or split phases through `SessionExceptionSource`.
-Neither is approximated by clipping a valid session, and neither ships with
-data. The full method,
-corrections, exclusions, and confidence levels are recorded in the
+An early close or a late open is exactly a clipped boundary on an otherwise
+normal session, which is what `DayPolicy` applies. An arrangement that
+replaces or splits phases is not, and is never approximated by clipping: it
+states its own blocks through `SessionExceptionSource`. Neither mechanism
+ships with data. The full method, corrections, exclusions, and confidence
+levels are recorded in the
 [2026-08-22 schedule audit](docs/schedules/audit-2026-08-22.md).
 
 The guarantee is exchange/segment/product-family level, never ticker-level

@@ -38,7 +38,10 @@ corrections (a venue's hours fixed against a primary source) go under
   seconds-since-midnight, end-exclusive closes, `open_ssm >= close_ssm`
   wrapping into the next local day, and the asymmetric DST bias (opens
   earliest, closes latest). An explicit `open_day_offset` places a block's
-  opening local day relative to its trade date.
+  opening local day relative to its trade date. Because a trade date is named
+  by the local date of its final close, a block at offset `0` may not wrap past
+  it; one whole local day is stated as `close_ssm = 86_400`, which does not
+  wrap.
 
   **Precedence is fixed and one-directional.** The exception layer resolves the
   trading day — a replaced or closed trade date deletes its normal-week

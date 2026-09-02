@@ -109,6 +109,13 @@ opening local day relative to its trade date, within
 `SessionRule`, a block spans at most one local midnight; longer continuous
 trading is stated as adjacent blocks.
 
+A trade date is named by the local date of its final close, so nothing in a
+record may close after it: a block at offset `0` is rejected if it wraps. That
+costs no expressiveness, because a block covering one whole local day is
+stated as `open_ssm = 0`, `close_ssm = 86_400`, which does not wrap. Blocks at
+a negative offset wrap freely — that is how an evening open reaches its own
+trade date.
+
 **Precedence, and it does not vary.** The exception layer resolves the trading
 day first: a replaced or closed trade date deletes its normal-week occurrences
 outright. The caller's `DayPolicy` then overlays the result exactly as it

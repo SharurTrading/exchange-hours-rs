@@ -213,6 +213,22 @@ pub(super) fn daily_close(
     trade_date: NaiveDate,
     kind: SessionKind,
 ) -> ExceptionDailyClose {
+    // A profile with no final daily close has no trade-date identity, so a
+    // trade-date-keyed record has nothing to attach to -- the same refusal
+    // `resolve_block_bounds` makes one layer down. Without this the record's
+    // blocks would each fail to resolve, the date would read as having no
+    // session, and `is_closed_trade_date` would call an always-open venue
+    // closed instead of deferring to the normal path.
+    //
+    // No test fences this today and none can: every shipped profile with no
+    // daily close is also weekend-open, and on those the normal path finds no
+    // daily close either, so both answers agree. The guard exists because that
+    // agreement is a coincidence of the current tables, not a property of the
+    // engine -- the first continuous-weekday profile would break it silently.
+    let opening_midnight = mk_local_open(context.tz(), trade_date, 0).with_timezone(&Utc);
+    if !context.has_daily_close_at(opening_midnight) {
+        return ExceptionDailyClose::NotGoverned;
+    }
     match context.exception_on(trade_date) {
         DateException::Closed => ExceptionDailyClose::NoSession,
         DateException::ReplaceSessions(blocks) => {

@@ -285,6 +285,9 @@ const fn validate_blocks(
                 close_ssm: current.close_ssm(),
             });
         }
+        if current.open_day_offset() == 0 && current.wraps_to_next_day() {
+            return Err(StaticSessionExceptionsError::BlockClosesAfterTradeDate { index, block });
+        }
         if block > 0 {
             let previous = blocks[block - 1];
             if current.open_day_offset() < previous.open_day_offset()
@@ -361,6 +364,17 @@ pub enum StaticSessionExceptionsError {
         /// Rejected close value.
         close_ssm: u32,
     },
+    /// A block opening on its trade date closes on the following local date.
+    ///
+    /// A trade date is named by the local date of its final close, so a block
+    /// at offset `0` may not wrap. A span covering one whole local day is
+    /// stated as `open_ssm = 0`, `close_ssm = 86_400`, which does not wrap.
+    BlockClosesAfterTradeDate {
+        /// Index of the owning record.
+        index: usize,
+        /// Position of the wrapping block inside that record.
+        block: usize,
+    },
     /// A block does not start at or after its predecessor.
     BlocksNotOrdered {
         /// Index of the owning record.
@@ -413,6 +427,10 @@ impl core::fmt::Display for StaticSessionExceptionsError {
             } => write!(
                 f,
                 "block {block} of record {index} has close_ssm {close_ssm} outside 0..=86400"
+            ),
+            Self::BlockClosesAfterTradeDate { index, block } => write!(
+                f,
+                "block {block} of record {index} opens on its trade date and closes on the next local date"
             ),
             Self::BlocksNotOrdered { index, block } => write!(
                 f,

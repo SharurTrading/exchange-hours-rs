@@ -629,6 +629,11 @@ that callers do not also get (see [Architecture: Tests](ARCHITECTURE.md#tests)).
   equities, candle, wrap, bounds, and correction modules. Together they pin published opens,
   end-exclusive closes, overnight wraps, maintenance gaps, weekend boundaries, always-open
   venues, serde forms, and source-cited data corrections.
+- `tests/futures_family_boundaries.rs` and `tests/futures_family_boundaries/` — a thin
+  harness over dated-boundary fixtures split by venue family (CME Nikkei, CME family
+  queues, ICE, SGX equity index). Each assertion probes an instant on one side of a
+  sourced cutover, at venue-local midnight for the revision and to the second for the
+  session open, so a mis-keyed revision or a one-minute encoding slip fails here.
 - `tests/apac_equities.rs` and `tests/apac_equities/` — a thin integration harness with
   separate modules for current boundaries, regional amendment history, and APAC bulk/name
   contracts across all 17 cash-equity venues.

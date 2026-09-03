@@ -92,8 +92,8 @@ static SGX_EQUITY_INDEX_CLOSED: StaticHoursProfile = StaticHoursProfile {
 
 // SGX EQUITY-INDEX HISTORY. The evidence, the nine calendar editions, the dated
 // 2025-04-07 cutover and the one transition that remains undated are all
-// recorded once beside the Japan grid in the `sgx_equity_index` module; that
-// note governs these two families exactly as it governs the other three. In
+// recorded once in the `sgx_equity_index::history` module; that note governs
+// these two families exactly as it governs the other three. In
 // short: from the first surviving edition through 2025-04-06 each family serves
 // the intersection of every state sourced in that interval - Taiwan T+1 14:15
 // (from the 2021 edition; see the boundary note below) and NTR (USD) T+1 19:00,
@@ -202,6 +202,15 @@ pub(crate) fn sgx_equity_index_taiwan_profile_at(
 // whole series uniformly as "7:25am 6:30pm 6:45pm 5:15am" (T start, T end, T+1
 // start, T+1 end), which is why one profile covers the entire NTR (USD) and
 // global-index family rather than one profile per contract code.
+//
+// THE SUITE'S MEMBERSHIP GREW; ITS GRID DID NOT. The codes listed above are
+// today's. The 2020 edition carries an MSCI-branded suite (NJP, NTW, NSP), the
+// FN* series appears from the 2021 edition and the MCN* series from the 2024
+// one. Every edition puts whichever contracts it lists on the identical
+// 07:25-18:30 / 19:00-05:15 pair, and NSP is present in all of them, so the
+// grid this key models is continuously sourced from the first edition and the
+// 2020 boundary stands. That is the difference from the FTSE Taiwan suite
+// below, where no member of the modelled family existed in 2020 at all.
 //
 // https://www.sgx.com/derivatives/products/sgxsimsci
 // https://api2.sgx.com/sites/default/files/2026-01/SGX%20Calendar%202026_2.pdf

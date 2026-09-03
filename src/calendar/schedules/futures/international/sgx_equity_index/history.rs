@@ -84,17 +84,34 @@ pub(super) static SGX_EQUITY_INDEX_CLOSED: StaticHoursProfile = StaticHoursProfi
 // state session bounds only, and the circular's "current" column is the state
 // after the undated Japan move, not before it.
 //
-// 2020-01-01 is a knowledge boundary, not a claimed change: no edition of the
-// calendar survives before it, so it separates "sourced" from "unsourced"
-// exactly as a launch day separates a venue from its pre-launch closure. Four
-// of the five families start there. The FTSE Taiwan suite starts at the 2021
-// edition instead, because the 2020 one contains no FTSE Taiwan contract at
-// all - see the boundary note beside its revisions in `sgx_equity_index_more`. SGX's
-// own newsletter index puts an hours change immediately there - "Change of
-// Trading Hours" (21 Sep 2017), "Extension of T+1 Trading Hours" (15 Jul 2019),
-// "Ext of T+1 Trading Hours Go Live Schedule" (8 Oct 2019) and "Reminder on
-// Extension of T+1 Trading Hours" (5 Nov 2019), all password-locked. Those dates
-// are modelled sessionless, matching every era this crate cannot source.
+// 2020-01-01 is a knowledge boundary, not a claimed change: it separates what
+// this crate has worked up into profiles from what it has not, the way a launch
+// day separates a venue from its pre-launch closure. Four of the five families
+// start there. The FTSE Taiwan suite starts at the 2021 edition instead,
+// because the 2020 one contains no FTSE Taiwan contract at all - see the
+// boundary note beside its revisions in `sgx_equity_index_more`.
+//
+// EARLIER EVIDENCE DOES EXIST; IT IS UNMODELLED, NOT UNSOURCEABLE. Do not read
+// the boundary as "nothing survives before 2020". SGX's own derivatives
+// Trading Hours page is archived from the retired portal, and the capture of
+// 11 July 2018 states a materially different grid: Nikkei 225 T 07:45-14:25
+// and T+1 15:15-02:00, FTSE Xinhua China A50 09:00-15:25 and 16:10-02:00, MSCI
+// Singapore 08:30-17:10 and 18:15-02:00, MSCI Taiwan 08:45-13:45 and
+// 14:35-02:00, under the same footnote convention the later PDFs use. That
+// page also links "SGX Derivatives Trading Calendar 2018 (Apr Update)" and a
+// September 2017 update.
+//
+// So the T+1 end moved from 02:00 to 05:15, and three of the four opens moved,
+// between that capture and the 2020 edition - which is the change SGX's own
+// newsletter index names but does not open: "Change of Trading Hours"
+// (21 Sep 2017), "Extension of T+1 Trading Hours" (15 Jul 2019), "Ext of T+1
+// Trading Hours Go Live Schedule" (8 Oct 2019) and "Reminder on Extension of
+// T+1 Trading Hours" (5 Nov 2019), all password-locked. Modelling the earlier
+// grid would need those effective days, and the pre-2019 contract set differs
+// again (no NTR (USD) suite, MSCI rather than FTSE branding). Until that work
+// is done these dates stay sessionless, which under-reports them rather than
+// serving a grid whose end date is unknown.
+// https://web.archive.org/web/20180711020353id_/http://www.sgx.com/wps/wcm/connect/mp_en/site/trading_on_sgx/derivatives_market/derivatives_trading_hours_and_calendar/Trading+Hours?%20noCache=1531274630984.837727.133108399
 // https://api2.sgx.com/sites/default/files/2020-01/SGX%20Derivatives%20Trading%20Calendar%202020.pdf
 // https://api2.sgx.com/sites/default/files/2021-01/SGX%20Derivatives%20Trading%20Calendar%202021.pdf
 // https://api2.sgx.com/sites/default/files/2021-07/SGX_Derivatives%20Trading%20Calendar%202021%20%28Final%20-%20Jul%29.pdf

@@ -195,6 +195,26 @@ corrections (a venue's hours fixed against a primary source) go under
   `sgx_taiwan_history_starts_at_the_first_edition_that_lists_the_ftse_suite`
   fences the boundary and checks the other four families keep their 2020 start.
 
+- **SGX: the pre-2020 era is documented as unmodelled, not unsourceable
+  (documentation correction).** The SGX rows justified their 2020 knowledge
+  boundary with "no edition of the calendar survives before it". That is wrong,
+  and a docs pass caught it. SGX's own derivatives trading-hours page is
+  archived from the retired portal, and the capture of 11 July 2018 states a
+  materially different grid — Nikkei 225 T 07:45–14:25 and T+1 15:15–**02:00**,
+  FTSE Xinhua China A50 09:00–15:25 and 16:10–02:00, MSCI Singapore 08:30–17:10
+  and 18:15–02:00, MSCI Taiwan 08:45–13:45 and 14:35–02:00 — under the same
+  footnote convention the later PDFs use. It also links an April-2018 calendar
+  edition, a September-2017 update and `DTAM 84 of 2018`.
+
+  So the T+1 end moved from 02:00 to 05:15 between that capture and the 2020
+  edition: the change SGX's newsletter index names but does not open. **No
+  served hour changes** — the pre-2020 era stays sessionless, which under-reports
+  it rather than serving a grid whose end date is unknown — but the reason is
+  now stated correctly, and `sources.md` records that pre-2020 SGX evidence
+  lives in the web archive under `sgx.com/wps/wcm/connect/` rather than on the
+  live site. The same pass replaced an uncited "SGX's 2018 derivatives calendar"
+  claim in `unsupported-families.md` with the archived page it can actually cite.
+
 - **CME Nikkei 225 Dollar: the 2011 grid is no longer carried across 2010, where
   it was wrong (behaviour change).** An earlier commit on this branch carried the
   17:00–15:15 CT grid back to the January-2010 floor, on the reasoning that no
@@ -304,7 +324,9 @@ corrections (a venue's hours fixed against a primary source) go under
   sessionless. `sgx_equity_index_serves_the_sourced_window_then_the_verified_grid` pins all three
   eras, including the 15:10–15:25 probe that the earlier intersection failed.
 
-  *Superseded within this same unreleased section:* the later transition was
+  *Superseded within this same unreleased section,* twice: the pre-2020 era is
+  unmodelled rather than unsourceable — SGX's archived trading-hours page does
+  survive from 2018 — and the later transition was
   subsequently dated to **2025-04-07** from SGX-DT Circular DT/AM 15 of 2025, so
   the second revision row is keyed there instead of at 2026-01-01. See the SGX
   entry above. The undated Japan T-session extension, and everything said here

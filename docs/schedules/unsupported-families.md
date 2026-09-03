@@ -26,8 +26,9 @@ it for all five. A Taiwan contract would report Singapore's 17:25 close — a
 wrong answer delivered with full confidence, which is the exact failure this
 crate exists to prevent. Select the specific grid instead.
 
-Nifty is also absent. It is no longer an SGX-listed product: SGX's 2018
-derivatives calendar lists `SGX Nifty 50`, while its 2025 and 2026 calendars
+Nifty is also absent. It is no longer an SGX-listed product: SGX's own
+[derivatives trading-hours page, captured 11 July 2018](https://web.archive.org/web/20180711020353id_/http://www.sgx.com/wps/wcm/connect/mp_en/site/trading_on_sgx/derivatives_market/derivatives_trading_hours_and_calendar/Trading+Hours?%20noCache=1531274630984.837727.133108399), lists
+`S&P CNX Nifty Index Futures`, while its 2025 and 2026 calendars
 list only NSE IFSC contracts under `GIN`/`GINB`/`GINF`/`GINI`. SGX's own 2026
 calendar and its GIFT Connect product page state different T+1 start times
 (18:35 versus 19:05), so no profile is modelled from contradicting primary

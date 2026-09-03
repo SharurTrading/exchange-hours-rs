@@ -158,6 +158,22 @@ change to this standalone repository must follow.
   floor with no cutover asserted and only the 16:00-16:15 quarter-hour waits on
   the undated 2012 move. Dropping the whole phase because part of it is disputed
   under-reports the venue far more than the uncertainty warrants.
+- **A knowledge boundary is the first source that lists the modelled product,**
+  not merely the earliest source that survives. A document only sources a family
+  if that family appears in it. SGX's FTSE Taiwan suite is the worked example:
+  the 2020 calendar edition is the earliest that survives, but it lists only the
+  MSCI Taiwan predecessors, so the FTSE row starts at the 2021 edition instead.
+  The predecessor's hours were identical, which is exactly why this is easy to
+  miss - matching times are not evidence that the modelled contract existed.
+  Check the contract set, not just the grid, before keying a row to an edition.
+- **"Unsourced" means "not worked up", never "no source exists".** Say a row is
+  unmodelled before an era and say what would close it; do not write that
+  nothing survives unless the predecessor channels have actually been searched.
+  Operators retire sites, and the web archive keeps what the live site dropped.
+  This repository shipped "no edition of the calendar survives before it" for
+  SGX while the operator's own pre-2020 hours pages sat in the archive stating a
+  materially different grid. A sessionless era is a safe answer either way, but
+  the stated reason has to be true.
 - **Absence is `None`.** Boundary queries return `Option`; never fabricate a
   degenerate session. No public code path may panic or hang.
 

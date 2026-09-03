@@ -433,7 +433,7 @@ fn sgx_equity_index_serves_the_sourced_window_then_the_verified_grid() {
 
     assert!(
         !open_at(japan, utc(2015, 6, 17, 6, 30)),
-        "pre-2020 SGX dates are sessionless: no edition of the calendar survives"
+        "pre-2020 SGX dates are sessionless: that era is unmodelled, not unsourceable"
     );
 
     // Inside the sourced window the narrowest bounds apply, so both the T close

@@ -89,7 +89,12 @@ by automated retrieval, which changes how a review must be run:
   do carry `with effect from` dates, exist as verbatim copies on SGX trading
   members' public sites when no SGX page links them; treat the mirror as a
   delivery channel, cite the circular number, date and title with it, and
-  re-verify from SGX if a reachable copy appears.
+  re-verify from SGX if a reachable copy appears. A fourth channel covers the
+  years the live site dropped: SGX's **retired** portal is archived, and
+  `sgx.com/wps/wcm/connect/` captures carry both the pre-2020 derivatives
+  trading-hours pages and the circulars of that era. Look there before
+  recording a pre-2020 era as unsourceable — one such claim shipped in this
+  repository and was wrong.
 - **ICE**: `ice.com/publicdocs/circulars/{YY}{NNN}.pdf` is enumerable but is ICE
   Futures *Europe*. ICE Futures U.S. notices have descriptive filenames under
   `publicdocs/futures_us/exchange_notices/` and are only thinly archived.

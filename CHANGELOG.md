@@ -187,13 +187,19 @@ corrections (a venue's hours fixed against a primary source) go under
   history starts there; 2020 is sessionless.
 
   The predecessor's hours were identical (T 08:45–13:45, T+1 14:15–05:15), so
-  **no served time changes** — what changes is that the crate no longer reports
-  contracts open on the authority of an edition that does not contain them. It
-  now under-reports the part of 2020 after the FTSE suite launched instead of
-  over-reporting the part before it, which is the direction every other
-  unsourced era in this crate errs.
+  **no session time moves — but availability does**: every 2020 date now answers
+  closed for this key where it previously answered open on the sourced window.
+  That is the point of the change, not a side effect of it. The crate no longer
+  reports contracts open on the authority of an edition that does not contain
+  them; it under-reports the part of 2020 after the FTSE suite launched instead
+  of over-reporting the part before it, which is the direction every other
+  unmodelled era in this crate errs. Callers reading 2020 Taiwan availability
+  will see the difference.
   `sgx_taiwan_history_starts_at_the_first_edition_that_lists_the_ftse_suite`
   fences the boundary and checks the other four families keep their 2020 start.
+  The cutover fence pins each family's T+1 open **to the second** on both
+  profiles, so a session that opened a minute early or late would fail it;
+  probing only inside the session could not tell those apart.
 
 - **SGX: the pre-2020 era is documented as unmodelled, not unsourceable
   (documentation correction).** The SGX rows justified their 2020 knowledge

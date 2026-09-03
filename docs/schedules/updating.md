@@ -77,10 +77,19 @@ by automated retrieval, which changes how a review must be run:
   `tools-information/lookups/advisories/{electronic-trading,market-data}/YYYYMMDD.html`,
   and its rule-filing PDFs are not archived.
 - **SGX** serves its circular archive as a JavaScript app with no reachable
-  public API, and its Titan DTDC newsletters — where hours changes are announced
-  — are password-locked member documents. Its *Derivatives Trading Calendar*
-  PDFs under `api2.sgx.com/sites/default/files/YYYY-MM/` are static, readable,
-  and state per-contract session bounds; that is the productive channel.
+  public API — the regco.sgx.com CMS now answers the `/circulars` route with
+  `null` — and its Titan DTDC newsletters, where hours changes are announced,
+  are password-locked member documents. Three channels are productive instead.
+  Its *Derivatives Trading Calendar* PDFs under
+  `api2.sgx.com/sites/default/files/YYYY-MM/` are static, readable, and state
+  per-contract session bounds. The public [Titan DT/DC
+  portal](https://www.sgx.com/titan-dt-dc-portal) page lists every member
+  document's title, version and **release date**, which dates a change's
+  announcement even when its contents are locked. And `DT/AM` circulars, which
+  do carry `with effect from` dates, exist as verbatim copies on SGX trading
+  members' public sites when no SGX page links them; treat the mirror as a
+  delivery channel, cite the circular number, date and title with it, and
+  re-verify from SGX if a reachable copy appears.
 - **ICE**: `ice.com/publicdocs/circulars/{YY}{NNN}.pdf` is enumerable but is ICE
   Futures *Europe*. ICE Futures U.S. notices have descriptive filenames under
   `publicdocs/futures_us/exchange_notices/` and are only thinly archived.

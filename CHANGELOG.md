@@ -129,6 +129,72 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Fixed
 
+- **SGX equity index: the later of the two undated transitions is now dated, and
+  the current grid arrives eight months earlier (behaviour change).** The five
+  `sgx_equity_index_*` keys served the intersection of every sourced calendar
+  edition right up to a 2026-01-01 edition-scope row, because neither transition
+  day was stated in any source then reachable. One of them is stated. **SGX-DT
+  Circular DT/AM 15 of 2025** (24 February 2025), "Revision of T+1 Session
+  Trading Hours for SGX Equity Index Futures/Options, Dividend Index Futures and
+  United States Single Stock Futures (US SSFs)", says the T+1 pre-open routine
+  moves ten minutes earlier and shortens from ten minutes to five "with effect
+  from Monday, [7] April 2025", with "no change to the T session trading hours",
+  and its Appendix A lists every affected contract's revised
+  Pre-Opening/Non-Cancel/Opening times — exactly the grid the crate models as
+  current. So each family's second revision row moves from **2026-01-01 to
+  2025-04-07**: Japan's T+1 opens 15:10 instead of 15:25, China's 16:45 instead
+  of 17:00, SiMSCI's 17:35 instead of 17:50, Taiwan's 14:00 instead of 14:15 and
+  the NTR (USD) grid's 18:45 instead of 19:00, from that Monday rather than nine
+  months later, and Japan's T session runs to 14:55 from the same day on the
+  circular's own appendices. Nothing is reported open earlier than a source
+  supports.
+
+  **How it was found, and the delivery caveat.** SGX publishes no `DT/AM`
+  circular at a publicly reachable sgx.com address: regco.sgx.com's `/circulars`
+  route now answers `null` and the `api2.sgx.com` file store is not listable. The
+  circular text was read from a verbatim copy — SGX letterhead, circular number,
+  signatory, both appendices — published by CITIC Futures International, an SGX
+  trading member. SGX's own public Titan DT/DC portal corroborates the issue date
+  by listing the matching password-locked newsletter with release date 24 Feb
+  2025, and three further SGX calendar editions found in this review (2021-01,
+  2022-06 and 2025-07) bracket the change from both sides. The 2025-07 file,
+  "DT Trading Calendar 2025 (updated 31 Jul 2025)", is byte-identical to the
+  2025-11 file the crate already cited, so what looked like a November edition is
+  really a 31 July one.
+
+  **The earlier transition is still undated and still carried conservatively.**
+  Japan's T session lengthened by thirty minutes somewhere between the 2024 and
+  2025-01 editions; SGX's Titan portal dates the newsletter that announced it
+  (28 Aug 2024) but that document is password-locked, and the only public
+  attestation of the effective day — Monday 4 November 2024 — is a trading
+  member's notice, which cannot date a revision row. The first era therefore
+  keeps the sourced intersection, so that interval is under-reported rather than
+  over-reported, and all five rows stay `Partial`. Dates before the 2020 edition
+  remain sessionless.
+
+  `sgx_equity_index_t_plus_one_opens_fifteen_minutes_earlier_from_2025_04_07`
+  fences both sides of the new cutover at Singapore local midnight for all five
+  keys.
+
+- **SGX FTSE Taiwan: history now starts at the 2021 calendar edition, not the
+  2020 one (behaviour change).** Re-reading the editions to date the cutover
+  above turned up a second error. `sgx_equity_index_taiwan` is scoped to the
+  FTSE Taiwan suite (`TWN`, `MTWN`, `TWNO`, `CTWN`), and **the 2020 Derivatives
+  Trading Calendar contains none of them** — it lists only the MSCI Taiwan
+  predecessors (`TW`, `TWO`, `NTW`), and `TWN` appears in that edition solely as
+  the holiday country code for Taiwan (TWSE). The 2021 edition is the first to
+  list "SGX FTSE Taiwan Index Futures" under `TWN`, so the family's sourced
+  history starts there; 2020 is sessionless.
+
+  The predecessor's hours were identical (T 08:45–13:45, T+1 14:15–05:15), so
+  **no served time changes** — what changes is that the crate no longer reports
+  contracts open on the authority of an edition that does not contain them. It
+  now under-reports the part of 2020 after the FTSE suite launched instead of
+  over-reporting the part before it, which is the direction every other
+  unsourced era in this crate errs.
+  `sgx_taiwan_history_starts_at_the_first_edition_that_lists_the_ftse_suite`
+  fences the boundary and checks the other four families keep their 2020 start.
+
 - **CME Nikkei 225 Dollar: the 2011 grid is no longer carried across 2010, where
   it was wrong (behaviour change).** An earlier commit on this branch carried the
   17:00–15:15 CT grid back to the January-2010 floor, on the reasoning that no
@@ -235,8 +301,14 @@ corrections (a venue's hours fixed against a primary source) go under
   "SGX Calendar 2026". Routines are dropped from the historical eras deliberately — the calendar
   states session bounds only, and each Pre-Opening/Non-Cancel and closing routine
   moved with the session it brackets. Dates before the 2020 edition remain
-  sessionless. `sgx_equity_index_history_has_three_sourced_eras` pins all three
+  sessionless. `sgx_equity_index_serves_the_sourced_window_then_the_verified_grid` pins all three
   eras, including the 15:10–15:25 probe that the earlier intersection failed.
+
+  *Superseded within this same unreleased section:* the later transition was
+  subsequently dated to **2025-04-07** from SGX-DT Circular DT/AM 15 of 2025, so
+  the second revision row is keyed there instead of at 2026-01-01. See the SGX
+  entry above. The undated Japan T-session extension, and everything said here
+  about the intersection carrying it, still stands.
 
 - **Historical queue and session gaps are now served instead of withheld
   (behaviour change).** Two conventions were made explicit in `AGENTS.md` and

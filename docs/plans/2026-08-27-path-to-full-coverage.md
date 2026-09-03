@@ -240,14 +240,24 @@ notice may close many.
       window rather than keying revisions to an edition's year; dates before the 2020 edition are sessionless. An
       intersection taken from only the 2021 and 2026 editions — briefly
       shipped — reported Japan open between 15:10 and 15:25 through 2025;
-      reading the intervening editions was what caught it. Still Partial:
-      neither transition day is stated and the pre-2020 era is unsourced, and closing them needs a member to open the
-      password-locked Titan DTDC newsletters ("Change of Trading Hours"
-      2018-12, "Extension of T+1 Trading Hours" 2019-07, "Ext of T+1 Trading
-      Hours Go Live Schedule" 2019-10). Note for future passes: the SGX
-      circular archive is a JavaScript app with no reachable public API, but
-      the calendar PDFs under api2.sgx.com/sites/default/files/ are static and
-      readable — that is the productive channel.
+      reading the intervening editions was what caught it.
+      **Updated 2026-09-02:** three further editions (2021-01, 2022-06 and
+      2025-07 — the last byte-identical to the 2025-11 file) tightened the
+      brackets, and the *later* transition is now dated to **2025-04-07** by
+      SGX-DT Circular DT/AM 15 of 2025 (24 Feb 2025), read from a trading
+      member's verbatim public mirror because SGX hosts no publicly reachable
+      copy. Still Partial: the earlier Japan T-session extension has no public
+      exchange document (a member notice attests Monday 4 Nov 2024, which cannot
+      date a row) and the pre-2020 era is unsourced; closing either needs a
+      member to open the password-locked Titan DTDC newsletters ("SR12.5, Japan
+      Derivatives Trading Hours Extension and I2 Timing Change" 28 Aug 2024;
+      "Change of Trading Hours" 21 Sep 2017; "Extension of T+1 Trading Hours"
+      15 Jul 2019; "Ext of T+1 Trading Hours Go Live Schedule" 8 Oct 2019 —
+      release dates from SGX's own public Titan DT/DC portal index). Note for
+      future passes: the SGX circular archive is a JavaScript app whose
+      /circulars route now returns `null`, but the calendar PDFs under
+      api2.sgx.com/sites/default/files/, the Titan portal's document index, and
+      member mirrors of DT/AM circulars are all productive channels.
 
 - [ ] **Batch E — US equity early sessions** (Cboe ×2, NYSE ×4): the 07:00
       early session and 06:30/02:30 queue onsets. **Started 2026-08-31; the key

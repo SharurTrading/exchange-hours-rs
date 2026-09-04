@@ -13,6 +13,16 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Added
 
+- **Checked Databento venue crosswalk.** All 50 distinct venue labels in the
+  supplied equities, equity-options, futures, and options-on-futures inventory
+  are mapped to their existing non-`Unknown` `Exchange` identities, canonical
+  wire names, and verification-ledger basis. A documentation contract keeps
+  the 19 / 18 / 13 family counts and every mapping explicit. Nasdaq Texas and
+  Nasdaq Texas Options intentionally retain the stable `NasdaqBx` /
+  `NasdaqBxOptions` identities rather than splitting one renamed venue into
+  duplicate enum variants; feed-availability dates are also distinguished from
+  exchange launch or schedule-revision evidence.
+
 - **Caller-owned exception sessions: a trade date can now be replaced, not just
   clipped.** `DayPolicy` moves a trading day's outer boundaries, which cannot
   express an intraday pause and reopen, a regular-only early close while

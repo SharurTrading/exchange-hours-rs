@@ -2,6 +2,7 @@
 
 //! Documentation fences for the schedule-review ledger.
 
+mod databento;
 mod source_registry;
 
 use chrono::NaiveDate;
@@ -15,6 +16,7 @@ const UPDATING: &str = include_str!("../../docs/schedules/updating.md");
 const AUDIT: &str = include_str!("../../docs/schedules/audit-2026-08-22.md");
 const DATE_EXCEPTIONS: &str = include_str!("../../docs/schedules/date-exceptions.md");
 const UNSUPPORTED_FAMILIES: &str = include_str!("../../docs/schedules/unsupported-families.md");
+const DATABENTO_VENUES: &str = include_str!("../../docs/schedules/databento-venues.md");
 
 const EXPECTED_MARKET_HOURS_KEY_NAMES: [&str; 25] = [
     "globex_equity_index",

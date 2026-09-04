@@ -167,6 +167,12 @@ assert_eq!(calendar.exchange(), None);
 | Asia-Pacific futures (SGX) | 1 | `Asia/Singapore` | Three-Month SORA Futures: continuous 07:25–17:55 and 18:15→05:15, with opening/closing phases and a 18:00–18:05 gap. Closed before the 2024-07-29 launch. |
 | Always-open crypto | 1 | `UTC` | Binance USDⓈ-M perpetuals are normally 24×7 after their exact 2019-09-13 04:00 UTC launch. |
 
+The supplied Databento catalog is covered explicitly: all 50 distinct venue
+labels across equities, equity options, futures, and options on futures map to
+non-`Unknown` identities. See the checked
+[Databento venue crosswalk](docs/schedules/databento-venues.md) for exact vendor
+labels, stable enum variants, canonical wire names, and each ledger basis.
+
 Futures hours track the *product family*, not merely the listing venue.
 `MarketHoursKey` has 25 variants—24 operator-derived product-family keys plus
 the synthetic `AlwaysOpen` key. They reuse profiles and are not additional

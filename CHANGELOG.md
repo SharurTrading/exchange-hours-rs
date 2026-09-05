@@ -13,6 +13,33 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Added
 
+- **`MarketHoursKey::GlobexMiniGrains`** — CBOT mini-sized grain futures,
+  Mini-Sized Corn (`XC`), Mini-Sized Soybean (`XK`), Mini-Sized Wheat (`XW`),
+  and Mini-Sized KC HRW Wheat (`MKC`), on the canonical wire name
+  `globex_mini_grains`. One family on one grid: every retrieved CME document
+  from 2010 to 2026 moves the minis together, and `MKC` follows the mini grid
+  despite its KC-wheat lineage — same-day September-2015 spec captures show
+  `MKC` closing 13:45 while KC wheat closes 13:20. The key exists because
+  matching today's envelope is not matching the family: the minis' day session
+  closed 30 minutes after the standard grains' from before the January-2010
+  floor (Globex notice 20100405's mini-specific block and the August-2010 mini
+  specs, against February-April 2010 table cells reading 13:15 that are judged
+  copy errors of the standard row), they joined the standard 21-hour session on
+  2012-05-20, diverged alone to a 14:30 close on 2012-09-16 (advisory 20120904),
+  took the 2013-04-07 reduction at 08:30-13:45 while the standard grid took
+  13:15, skipped SER-7395R's 2015-07-05 move to 13:20 entirely, and converged
+  with the standard grid only on 2022-10-02 (SER-9049 with Globex notice
+  20220905, one table row per product, Pre-Open hours unchanged). Seven dated
+  revisions; between 2015 and 2022 the standard grain key serves the minis a
+  day close 25 minutes too early. `MKC`'s 2014-03-23 listing is member catalog
+  data, not a grid revision, so it creates no revision row. Every matching
+  window is dated and sourced; the ledger row is **Partial** for the
+  order-entry record only — the floor queues come from a category-level notice,
+  the 2012-05-20 queue switch is bracketed without a dated notice, and the
+  2012-09-16 era models only the PCP its advisory dates. `globex_grains`
+  behavior is unchanged, and the mini grains are now explicitly outside its
+  scope.
+
 - **`MarketHoursKey::GlobexRoughRice`** — CBOT Rough Rice futures (`ZR`) and
   options (`OZR`), Rulebook chapters 17 and 17A, on the canonical wire name
   `globex_rough_rice`. Rough Rice ran on the standard CBOT grain and oilseed

@@ -10,8 +10,9 @@ use crate::calendar::schedules::StaticHoursProfile;
 use crate::calendar::schedules::timeline::{Revision, local_date, revisions, select_revision};
 
 // This profile is deliberately limited to standard-size CBOT grain and oilseed
-// futures. Mini-sized Corn, Soybean, and Wheat diverged on 2012-09-16 and are
-// not represented by this key.
+// futures. Mini-sized Corn, Soybean, Wheat, and KC HRW Wheat diverged on
+// 2012-09-16 and are not represented by this key; `mini_grains.rs` owns their
+// sourced timeline.
 //
 // The `CBOT_*` rule tables below are `pub(crate)` because Rough Rice
 // (`rough_rice.rs`) ran on this same grid until its 2018-01-21 divergence and

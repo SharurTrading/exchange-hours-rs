@@ -29,9 +29,10 @@ use crate::calendar::schedules::futures::us::{
     FCOJ_EXTENDED_CURRENT, FCOJ_ORDER_ENTRY_CURRENT, FCOJ_REGULAR_CURRENT, FX_CURRENT,
     ICE_US_FANG_EXTENDED_CURRENT, ICE_US_FANG_ORDER_ENTRY_CURRENT, ICE_US_FANG_REGULAR_CURRENT,
     ICE_USDX_EXTENDED_CURRENT, ICE_USDX_ORDER_ENTRY_CURRENT, ICE_USDX_REGULAR_CURRENT,
-    INTEREST_RATES_CURRENT, LIVESTOCK_CURRENT, NKD_EXTENDED_CURRENT, NKD_REGULAR_CURRENT,
-    ROUGH_RICE_EXTENDED_CURRENT, ROUGH_RICE_ORDER_ENTRY_CURRENT, ROUGH_RICE_REGULAR_CURRENT,
-    SUGAR_EXTENDED_CURRENT, SUGAR_ORDER_ENTRY_CURRENT, SUGAR_REGULAR_CURRENT,
+    INTEREST_RATES_CURRENT, LIVESTOCK_CURRENT, MINI_EXTENDED_CURRENT, MINI_ORDER_ENTRY_CURRENT,
+    MINI_REGULAR_CURRENT, NKD_EXTENDED_CURRENT, NKD_REGULAR_CURRENT, ROUGH_RICE_EXTENDED_CURRENT,
+    ROUGH_RICE_ORDER_ENTRY_CURRENT, ROUGH_RICE_REGULAR_CURRENT, SUGAR_EXTENDED_CURRENT,
+    SUGAR_ORDER_ENTRY_CURRENT, SUGAR_REGULAR_CURRENT,
 };
 
 static FUTURES_GLOBEX_EQUITY_INDEX: FuturesSessionProfile = FuturesSessionProfile {
@@ -57,6 +58,18 @@ static FUTURES_GLOBEX_GRAINS: FuturesSessionProfile = FuturesSessionProfile {
     regular: CBOT_REGULAR_CURRENT,
     extended: CBOT_EXTENDED_CURRENT,
     order_entry: CBOT_ORDER_ENTRY_CURRENT,
+    has_daily_close: true,
+    has_weekend_close: true,
+};
+
+// The mini grid converged with the standard grain grid on 2022-10-02, so the
+// tables are the shared ones under mini names; `mini_grains.rs` holds the
+// diverged history that makes the separate key necessary.
+static FUTURES_GLOBEX_MINI_GRAINS: FuturesSessionProfile = FuturesSessionProfile {
+    tz: US::Central,
+    regular: MINI_REGULAR_CURRENT,
+    extended: MINI_EXTENDED_CURRENT,
+    order_entry: MINI_ORDER_ENTRY_CURRENT,
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -248,6 +261,7 @@ pub fn session_profile(key: MarketHoursKey) -> &'static FuturesSessionProfile {
         MarketHoursKey::GlobexEquityIndex => &FUTURES_GLOBEX_EQUITY_INDEX,
         MarketHoursKey::GlobexEnergy => &FUTURES_GLOBEX_ENERGY,
         MarketHoursKey::GlobexGrains => &FUTURES_GLOBEX_GRAINS,
+        MarketHoursKey::GlobexMiniGrains => &FUTURES_GLOBEX_MINI_GRAINS,
         MarketHoursKey::GlobexFx => &FX_CURRENT,
         MarketHoursKey::GlobexInterestRates => &INTEREST_RATES_CURRENT,
         MarketHoursKey::GlobexLivestock => &LIVESTOCK_CURRENT,

@@ -38,7 +38,7 @@ use super::schedules::futures::us::{
     cotton_profile_at, cryptocurrency_profile_at, energy_metals_profile_at, fcoj_profile_at,
     fx_profile_at, ice_us_fang_profile_at, ice_usdx_profile_at, interest_rates_profile_at,
     livestock_profile_at, mini_grains_profile_at, nkd_profile_at, rough_rice_profile_at,
-    sugar_profile_at, weather_profile_at,
+    spot_quoted_profile_at, sugar_profile_at, weather_profile_at,
 };
 use super::{Exchange, MarketHours, SessionRule};
 
@@ -248,6 +248,34 @@ market_hours_keys! {
         /// neither: weather closed 15:15 CT from the January-2010 floor until
         /// CME SER-9519 expanded it to 16:00 CT on 2025-04-13.
         GlobexWeather => "globex_weather",
+        /// CME/CBOT Spot-Quoted Futures ("SQF"), Rulebook Chapter 24: the
+        /// eight tradeable roots `QSPX`, `QNDX`, `QDOW` and `QRTY` on the
+        /// equity indices and `QBTC`, `QETH`, `QSOL` and `QXRP` on the
+        /// cryptocurrency reference rates. `QDOW` is the CBOT listing and the
+        /// other seven are CME. Excludes the non-trade clearing legs (`QSF`,
+        /// `QNF`, `QDF`, `QRF`, `QTF`, `QEF`, `QOF`, `QXF`) and the
+        /// financing-adjustment marker codes (`QSM`, `QNM`, `QDM`, `QRM`,
+        /// `QTM`, `QEM`, `QOM`, `QXM`), which are settlement identifiers
+        /// rather than order books, and CME `ClearPort`.
+        ///
+        /// The family is neither
+        /// [`GlobexEquityIndex`](Self::GlobexEquityIndex) — which publishes an
+        /// 08:30-15:15 CT RTH that no SQF document states — nor
+        /// [`GlobexCryptocurrency`](Self::GlobexCryptocurrency), which moved
+        /// to 24/7 trading on 2026-05-29 while CME kept spot-quoted on the
+        /// five-day grid by name. Its envelope also coincides exactly with
+        /// [`GlobexWeather`](Self::GlobexWeather) today while the two
+        /// histories share nothing: weather closed 15:15 CT until 2025-04-13
+        /// and this family did not exist until 2025-06-29.
+        ///
+        /// One key covers all eight roots because their normal week and their
+        /// dated history are identical. Their *holiday* grids are not: CME
+        /// publishes different half-day closes for the equity roots and the
+        /// cryptocurrency roots. Holiday and early-close data is caller-owned,
+        /// so it lies outside this key — but a caller attaching date
+        /// exceptions to it must build them per subgroup rather than applying
+        /// one early-close set to all eight.
+        GlobexSpotQuoted => "globex_spot_quoted",
 
         /// SGX Three-Month SORA Futures current profile.
         Sgx => "sgx",
@@ -268,9 +296,10 @@ market_hours_keys! {
 /// FX, interest-rate, livestock, and cryptocurrency grids. Keys with no
 /// in-scope recorded change resolve to their one grid at every instant. Dates
 /// before the January-2010 audit floor receive the oldest audited profile. For
-/// launch-dated families — CME cryptocurrency, ICE U.S. NYSE FANG+, and SGX
-/// Three-Month SORA — a pre-launch date returns an explicit sessionless
-/// profile. A member listed after its family began does not create a key-level
+/// launch-dated families — CME cryptocurrency, CME/CBOT spot-quoted, ICE U.S.
+/// NYSE FANG+, and SGX Three-Month SORA — a pre-launch date returns an
+/// explicit sessionless profile. A member listed after its family began does
+/// not create a key-level
 /// revision; callers enforce product launch dates in their catalog. Some CME
 /// histories have a verified-current Pre-Open or PCP queue with no primary day
 /// for its onset; each of those timelines carries the queue only from its own
@@ -310,6 +339,7 @@ pub fn hours_for_market_hours_key(key: MarketHoursKey, as_of: DateTime<Utc>) -> 
         MarketHoursKey::SgxEquityIndexNtrUsd => sgx_equity_index_ntr_usd_profile_at(as_of),
         MarketHoursKey::GlobexRoughRice => rough_rice_profile_at(as_of),
         MarketHoursKey::GlobexWeather => weather_profile_at(as_of),
+        MarketHoursKey::GlobexSpotQuoted => spot_quoted_profile_at(as_of),
         MarketHoursKey::Sgx => sgx_profile_at(as_of),
         MarketHoursKey::AlwaysOpen => &ALWAYS_OPEN_PROFILE,
     };

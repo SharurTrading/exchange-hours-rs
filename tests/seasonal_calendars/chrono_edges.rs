@@ -51,6 +51,63 @@ fn date_aware_queries_are_total_at_chrono_bounds() {
     }
 }
 
+/// The same totality contract, over `MarketHoursKey` rather than `Exchange`.
+///
+/// The test above iterates `Exchange::ALL` only, so until this existed **no
+/// product-family key was covered at Chrono's edges** — not the ones added
+/// recently and not the original twenty-odd either. `LAW-PANIC` is a promise
+/// about every public entry point, and `calendar_for_market_hours_key` is one,
+/// so the gap was in the fence rather than in the engine. Both surfaces are
+/// exercised here: the dated calendar and the fixed snapshot.
+#[test]
+fn date_aware_key_queries_are_total_at_chrono_bounds() {
+    for &key in MarketHoursKey::ALL {
+        let calendar = calendar_for_market_hours_key(key);
+        for instant in [DateTime::<Utc>::MIN_UTC, DateTime::<Utc>::MAX_UTC] {
+            let result = std::panic::catch_unwind(|| {
+                let snapshot = hours_for_market_hours_key(key, instant);
+                let fixed_open = snapshot.is_open(instant);
+                let fixed_bounds = session_bounds(&snapshot, instant);
+                let _fixed_next = next_session_after(&snapshot, instant);
+                let _fixed_daily = candle_end(&snapshot, instant, CalendarResolution::Daily);
+                let _fixed_start = candle_start(&snapshot, instant, CalendarResolution::Monthly);
+                let _fixed_seconds = candle_end(&snapshot, instant, CalendarResolution::Seconds(1));
+                let _fixed_maintenance = snapshot.is_maintenance(instant);
+                let _fixed_accepting = snapshot.is_accepting_orders(instant);
+                let _fixed_closed =
+                    snapshot.is_closed_all_day_at(instant, chrono_tz::UTC, SessionKind::Both);
+                let open = calendar.is_open(instant);
+                let bounds = calendar.session_bounds(instant);
+                let _next = calendar.next_session_after(instant);
+                let _daily = calendar.candle_end(instant, CalendarResolution::Daily);
+                let _weekly = calendar.candle_end(instant, CalendarResolution::Weekly);
+                let _monthly = calendar.candle_end(instant, CalendarResolution::Monthly);
+                let _start = calendar.candle_start(instant, CalendarResolution::Monthly);
+                let _seconds = calendar.candle_end(instant, CalendarResolution::Seconds(1));
+                let _maintenance = calendar.is_maintenance(instant);
+                let _trade_date = calendar.trade_date(instant);
+                let _closed =
+                    calendar.is_closed_all_day_at(instant, chrono_tz::UTC, SessionKind::Both);
+                let _week = calendar.normal_week_open_seconds_containing(instant);
+
+                (fixed_open, fixed_bounds, open, bounds)
+            });
+            let (fixed_open, fixed_bounds, open, bounds) =
+                result.unwrap_or_else(|_| panic!("{key:?} panicked at chrono bound {instant}"));
+            assert_eq!(
+                fixed_open,
+                fixed_bounds.is_some_and(|(start, end)| start <= instant && instant < end),
+                "{key:?} fixed query fence failed at {instant}"
+            );
+            assert_eq!(
+                open,
+                bounds.is_some_and(|(start, end)| start <= instant && instant < end),
+                "{key:?} calendar query fence failed at {instant}"
+            );
+        }
+    }
+}
+
 #[test]
 fn synthetic_always_open_utc_profile_has_exact_chrono_edge_sessions() {
     let calendar = calendar_for_exchange(Exchange::Unknown);

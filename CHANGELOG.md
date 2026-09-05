@@ -13,6 +13,44 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Added
 
+- **`MarketHoursKey::GlobexSpotQuoted`** — CME/CBOT Spot-Quoted Futures
+  ("SQF"), Rulebook Chapter 24, on the canonical wire name
+  `globex_spot_quoted`. Eight tradeable roots on one clock: `QSPX`, `QNDX`,
+  `QRTY` and `QDOW` (the CBOT listing) on the equity indices and `QBTC`,
+  `QETH`, `QSOL` and `QXRP` on the cryptocurrency reference rates. The grid is
+  extended Sunday and Monday-Thursday 17:00→16:00 CT wrapping midnight, with
+  CME Globex Pre-Opens Sunday 16:00-17:00 and Monday-Thursday 16:45-17:00 CT, a
+  60-minute maintenance period from 16:00, and no Friday-evening reopen.
+  `regular` is empty in every era: no CME channel splits this session into RTH
+  and ETH — the notices and all eight live contract specifications print one
+  "CME Globex" line, and both Chapter 24 rulebooks defer the schedule to the
+  Exchange. Excludes the non-trade clearing legs
+  (`QSF`/`QNF`/`QDF`/`QRF`/`QTF`/`QEF`/`QOF`/`QXF`), the financing-adjustment
+  marker codes (`QSM`/`QNM`/`QDM`/`QRM`/`QTM`/`QEM`/`QOM`/`QXM`), and CME
+  ClearPort. The family is closed before its sourced launch: CME SER-9506R
+  lists the first six roots "Effective Sunday, June 29, 2025 for trade date
+  Monday, June 30, 2025", and the row is keyed to the venue-local opening day
+  because the first session opens that Sunday evening. SER-9630RR's SOL/XRP
+  listing of 2025-12-14 reprints the same hours cell unchanged, so it is member
+  catalog data rather than a clock revision — note that CME's own notice index
+  reports that SER's effective date as its 2025-12-17 posting date, which the
+  document body overrides. The ledger row is **Primary**: matching leg and both
+  queues are sourced on the one launch day, everything earlier is a sourced
+  closure, and no undated phase is withheld. Neither
+  `globex_equity_index` (which publishes an 08:30-15:15 CT RTH these contracts
+  do not have, and a history running fifteen years before they existed) nor
+  `globex_cryptocurrency` (which moved to 24/7 trading on 2026-05-29 while CME
+  kept spot-quoted on the five-day grid by name) can stand in. The envelope is
+  identical to `globex_weather` today while the histories share nothing —
+  weather closed 15:15 CT until 2025-04-13 and this family did not exist until
+  2025-06-29. All eight roots share one key because their normal week and dated
+  history are identical, **not** because their published grids never differ:
+  CME's trading-hours service gives the equity roots and the cryptocurrency
+  roots different half-day closes (12:00 against 13:45 CT on 2026-11-27, 12:15
+  against 12:45 CT on 2026-12-24). Those are caller-owned date exceptions under
+  LAW-HOLIDAY-SCOPE and lie outside the key, but a caller attaching exception
+  data to `globex_spot_quoted` must build it separately for the two subgroups.
+
 - **`MarketHoursKey::GlobexWeather`** — CME weather temperature-index
   **futures** (CME Globex security group `HW`): the HDD, CDD and CAT monthly,
   seasonal-strip and quarterly-strip contracts for the US, European and Pacific

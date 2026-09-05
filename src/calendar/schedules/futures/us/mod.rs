@@ -18,6 +18,7 @@ mod interest_rates;
 mod livestock;
 mod mini_grains;
 mod rough_rice;
+mod spot_quoted;
 mod weather;
 
 mod cme_nikkei;
@@ -78,6 +79,10 @@ pub(crate) use mini_grains::{
 pub(crate) use rough_rice::{
     ROUGH_RICE_EXTENDED_CURRENT, ROUGH_RICE_ORDER_ENTRY_CURRENT, ROUGH_RICE_REGULAR_CURRENT,
     profile_at as rough_rice_profile_at,
+};
+pub(crate) use spot_quoted::{
+    SPOT_QUOTED_EXTENDED_CURRENT, SPOT_QUOTED_ORDER_ENTRY_CURRENT,
+    profile_at as spot_quoted_profile_at,
 };
 pub(crate) use weather::{
     WEATHER_EXTENDED_CURRENT, WEATHER_ORDER_ENTRY_CURRENT, profile_at as weather_profile_at,

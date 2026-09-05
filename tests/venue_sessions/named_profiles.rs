@@ -53,6 +53,7 @@ const EXPECTED_MARKET_HOURS_KEYS: &[(MarketHoursKey, &str)] = &[
     ),
     (MarketHoursKey::GlobexRoughRice, "globex_rough_rice"),
     (MarketHoursKey::GlobexWeather, "globex_weather"),
+    (MarketHoursKey::GlobexSpotQuoted, "globex_spot_quoted"),
     (MarketHoursKey::Sgx, "sgx"),
     (MarketHoursKey::AlwaysOpen, "always_open"),
 ];

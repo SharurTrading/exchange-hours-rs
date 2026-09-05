@@ -4,8 +4,8 @@
 
 Plan date: 2026-09-05 · Revised 2026-09-05 after the first two deliveries.
 
-Delivered so far: **Rough Rice** (PR #47) and **mini grains** (PR #51, work item
-1 below). Both are on `main`; the research that produced them is unchanged and
+Delivered so far: **Rough Rice** (PR #47), **mini grains** (PR #51, item 1),
+**weather** (PR #53, item 2) and **spot-quoted** (item 3). Both are on `main`; the research that produced them is unchanged and
 still applies to items 2-6.
 
 Driver: SharurPlatform's Databento GLBX.MDP3 catalog audit found `ZR` on the
@@ -98,11 +98,11 @@ on captures taken the same day in 2015, KC HRW Wheat (`KE`) reads
 lineage. Note `SER-9049` (2022-09-01) documents an `08:00–08:30 CT` morning
 Pre-Open for the four mini contracts.
 
-### 2. CME Weather
+### 2. CME Weather — **DELIVERED, PR #53**
 Research complete, one dated revision (**2025-04-14**, `SER-9519`). Verdict: one
 schedule family, no split by contract type. ~179 roots ride on it.
 
-### 3. Spot-quoted — `QSPX QNDX QDOW QRTY QBTC QETH QSOL QXRP`
+### 3. Spot-quoted — `QSPX QNDX QDOW QRTY QBTC QETH QSOL QXRP` — **DELIVERED**
 Research complete, 5 dated revisions. Verdict: **its own family** — CME/CBOT
 Rulebook Chapter 24. Explicitly **not** the equity-index key and **not** the
 cryptocurrency key: the crypto family went 24/7 on 2026-05-29 and spot-quoted

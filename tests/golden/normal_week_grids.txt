@@ -652,6 +652,11 @@ globex_weather | regular  | (none)
 globex_weather | extended | MoTuWeTh----Su | 17:00:00-16:00:00 +1d
 globex_weather | order-en | ------------Su | 16:15:00-17:00:00
 globex_weather | order-en | MoTuWeTh------ | 16:45:00-17:00:00
+globex_spot_quoted | tz US/Central | week_open_seconds 414000
+globex_spot_quoted | regular  | (none)
+globex_spot_quoted | extended | MoTuWeTh----Su | 17:00:00-16:00:00 +1d
+globex_spot_quoted | order-en | ------------Su | 16:00:00-17:00:00
+globex_spot_quoted | order-en | MoTuWeTh------ | 16:45:00-17:00:00
 sgx | tz Asia/Singapore | week_open_seconds 388500
 sgx | regular  | MoTuWeThFr---- | 07:25:00-17:55:00
 sgx | regular  | MoTuWeThFr---- | 18:15:00-05:15:00 +1d

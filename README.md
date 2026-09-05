@@ -37,7 +37,7 @@ The internal ownership and extension model is documented in
   markets, and always-open crypto, with independently fenced point-in-time
   revisions wherever primary evidence states an unconditional day-level boundary.
 - **Session queries** — open/closed by regular/extended/both, session bounds, next open, gaps.
-- **Product-family calendars** — all 27 operator-derived `MarketHoursKey`
+- **Product-family calendars** — all 28 operator-derived `MarketHoursKey`
   values have fixed, point-in-time, and date-aware query surfaces.
 - **Caller-supplied day policy** — whole trade-date closures, early final
   closes, and late first opens can be overlaid without putting mutable or
@@ -174,7 +174,7 @@ non-`Unknown` identities. See the checked
 labels, stable enum variants, canonical wire names, and each ledger basis.
 
 Futures hours track the *product family*, not merely the listing venue.
-`MarketHoursKey` has 28 variants—27 operator-derived product-family keys plus
+`MarketHoursKey` has 29 variants—28 operator-derived product-family keys plus
 the synthetic `AlwaysOpen` key. They reuse profiles and are not additional
 venues. `session_profile` exposes each family's fixed-current static table;
 `hours_for_market_hours_key` selects the sourced snapshot at the caller's
@@ -211,7 +211,12 @@ the standard grid's 2015-07-05 close change entirely. CME weather
 temperature-index futures must select `globex_weather` rather than
 `Exchange::Cme`: they have no regular session and closed 15:15 CT until
 2025-04-13, so their history matches neither `globex_fx` nor `globex_energy`
-despite sharing the same envelope today. The same applies to the
+despite sharing the same envelope today. CME/CBOT Spot-Quoted Futures
+(`QSPX`/`QNDX`/`QDOW`/`QRTY`/`QBTC`/`QETH`/`QSOL`/`QXRP`) must select
+`globex_spot_quoted`: they have no regular session, they launched only on
+2025-06-29, and CME kept them on the five-day grid when the cryptocurrency
+family moved to 24/7 trading on 2026-05-29, so neither
+`globex_equity_index` nor `globex_cryptocurrency` answers for them. The same applies to the
 two venues whose default now covers only a small slice of what they list:
 `Exchange::Iceus` resolves to NYSE FANG+, so Sugar No. 11, Coffee "C", Cocoa,
 Cotton No. 2, FCOJ-A and the U.S. Dollar Index must select `ice_us_sugar`,
@@ -227,7 +232,12 @@ fixed income likewise has its own `eurex_fixed_income` key, distinct from the
 Family selection is exact: consumers must never substitute the nearest venue
 or product-family key when a product is outside that key's documented scope.
 Nikkei 225 Dollar futures (`NKD`), the six ICE Futures U.S. families, CBOT
-mini-sized grains, CBOT Rough Rice, CME weather temperature-index futures, and Eurex fixed income all ship as sourced keys. Options on weather futures are **not** in
+mini-sized grains, CBOT Rough Rice, CME weather temperature-index futures, CME/CBOT
+Spot-Quoted Futures, and Eurex fixed income all ship as sourced keys.
+All eight spot-quoted roots share one key because their normal week and dated
+history are identical; their holiday half-day closes are not, so a caller
+attaching date exceptions to `globex_spot_quoted` must build them separately
+for the equity and cryptocurrency roots. Options on weather futures are **not** in
 `globex_weather`: they traded on the CME floor for most of the audited history
 and the day they moved to CME Globex is unsourced, so they stay caller catalog
 data. SGX equity-index products do **not**
@@ -313,9 +323,9 @@ issue evidence. `Exchange::Unknown` is synthetic and is not one of the 93
 source-backed identities.
 
 The key surface was audited separately:
-**Hours verified at the review date for each product family:** `27 of 27` operator-derived
+**Hours verified at the review date for each product family:** `28 of 28` operator-derived
 `MarketHoursKey` values. The key API provides fixed-current snapshots, an
-`as_of` selector, and a date-aware calendar for sourced histories. Five key
+`as_of` selector, and a date-aware calendar for sourced histories. Six key
 rows are **Primary** and 22 are **Partial**, because a named historical
 queue, PCP amendment day, or undated venue transition cannot be dated from a
 primary source.
@@ -668,7 +678,7 @@ that callers do not also get (see [Architecture: Tests](ARCHITECTURE.md#tests)).
   JSE, Tadawul, B3, and BMV.
 - `tests/schedule_documentation.rs` and `tests/schedule_documentation/` — a
   thin harness over contracts that keep all 94 `Exchange` rows (93
-  non-synthetic plus `Unknown`) and 26 `MarketHoursKey` rows (25
+  non-synthetic plus `Unknown`) and 29 `MarketHoursKey` rows (28
   operator-derived plus `AlwaysOpen`) in canonical order; validates their
   review metadata and owner/source links; requires both current and
   notice/evidence channels for every source set; rejects orphaned source sets;

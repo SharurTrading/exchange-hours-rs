@@ -31,9 +31,9 @@ use crate::calendar::schedules::futures::us::{
     ICE_USDX_EXTENDED_CURRENT, ICE_USDX_ORDER_ENTRY_CURRENT, ICE_USDX_REGULAR_CURRENT,
     INTEREST_RATES_CURRENT, LIVESTOCK_CURRENT, MINI_EXTENDED_CURRENT, MINI_ORDER_ENTRY_CURRENT,
     MINI_REGULAR_CURRENT, NKD_EXTENDED_CURRENT, NKD_REGULAR_CURRENT, ROUGH_RICE_EXTENDED_CURRENT,
-    ROUGH_RICE_ORDER_ENTRY_CURRENT, ROUGH_RICE_REGULAR_CURRENT, SUGAR_EXTENDED_CURRENT,
-    SUGAR_ORDER_ENTRY_CURRENT, SUGAR_REGULAR_CURRENT, WEATHER_EXTENDED_CURRENT,
-    WEATHER_ORDER_ENTRY_CURRENT,
+    ROUGH_RICE_ORDER_ENTRY_CURRENT, ROUGH_RICE_REGULAR_CURRENT, SPOT_QUOTED_EXTENDED_CURRENT,
+    SPOT_QUOTED_ORDER_ENTRY_CURRENT, SUGAR_EXTENDED_CURRENT, SUGAR_ORDER_ENTRY_CURRENT,
+    SUGAR_REGULAR_CURRENT, WEATHER_EXTENDED_CURRENT, WEATHER_ORDER_ENTRY_CURRENT,
 };
 
 static FUTURES_GLOBEX_EQUITY_INDEX: FuturesSessionProfile = FuturesSessionProfile {
@@ -84,6 +84,20 @@ static FUTURES_GLOBEX_WEATHER: FuturesSessionProfile = FuturesSessionProfile {
     regular: &[],
     extended: WEATHER_EXTENDED_CURRENT,
     order_entry: WEATHER_ORDER_ENTRY_CURRENT,
+    has_daily_close: true,
+    has_weekend_close: true,
+};
+
+// No regular session either: no CME document classifies any part of the
+// spot-quoted session as RTH, so the whole Globex wrap is extended.
+// `spot_quoted.rs` holds the 2025-06-29 launch and the closed era before it,
+// which is what makes this key distinct from `globex_weather` despite an
+// identical current envelope.
+static FUTURES_GLOBEX_SPOT_QUOTED: FuturesSessionProfile = FuturesSessionProfile {
+    tz: US::Central,
+    regular: &[],
+    extended: SPOT_QUOTED_EXTENDED_CURRENT,
+    order_entry: SPOT_QUOTED_ORDER_ENTRY_CURRENT,
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -298,6 +312,7 @@ pub fn session_profile(key: MarketHoursKey) -> &'static FuturesSessionProfile {
         MarketHoursKey::SgxEquityIndexNtrUsd => &FUTURES_SGX_EQUITY_INDEX_NTR_USD,
         MarketHoursKey::GlobexRoughRice => &FUTURES_GLOBEX_ROUGH_RICE,
         MarketHoursKey::GlobexWeather => &FUTURES_GLOBEX_WEATHER,
+        MarketHoursKey::GlobexSpotQuoted => &FUTURES_GLOBEX_SPOT_QUOTED,
         MarketHoursKey::Sgx => &FUTURES_SGX,
         MarketHoursKey::AlwaysOpen => &FUTURES_ALWAYS_OPEN,
     }

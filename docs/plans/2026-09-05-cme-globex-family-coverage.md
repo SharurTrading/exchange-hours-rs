@@ -5,8 +5,10 @@
 Plan date: 2026-09-05 · Revised 2026-09-05 after the first two deliveries.
 
 Delivered so far: **Rough Rice** (PR #47), **mini grains** (PR #51, item 1),
-**weather** (PR #53, item 2) and **spot-quoted** (item 3). Both are on `main`; the research that produced them is unchanged and
-still applies to items 2-6.
+**weather** (PR #53, item 2), **spot-quoted** (PR #54, item 3) and **event
+contracts** (item 4). They are on `main`; the research that produced them is
+unchanged and still applies to items 5-6, with the correction recorded in item
+4 above.
 
 Driver: SharurPlatform's Databento GLBX.MDP3 catalog audit found `ZR` on the
 wrong key and 1,342 roots with no authored product-family selector. This plan
@@ -112,12 +114,29 @@ non-events for this family. Its own family, CME/CBOT Rulebook Chapter 24. Explic
 cryptocurrency key: the crypto family went 24/7 on 2026-05-29 and spot-quoted
 deliberately did not.
 
-### 4. Event contracts — `ECES ECNQ ECRTY ECYM ECBTC EC6E ECCL ECNG ECGC ECSI ECHG`
-Research complete, 4 dated revisions. Open design question to settle from the
-notices before coding: pre-2026 closes were **underlying-specific**, so decide
-whether that era needs several profiles collapsing to one 24/7 profile at
-2026-05-29. `SER-8968` (original grids) and the 2026-03-30 notice (24/7
-transition) are the anchors.
+### 4. Event contracts — `ECES ECNQ ECRTY ECYM ECBTC EC6E ECCL ECNG ECGC ECSI ECHG` — **DELIVERED**
+Delivered as **one** key with **one** dated revision, 2022-09-18, plus the
+hourly Chapter 23A roots. The research proposed seven keys — six split by
+"daily termination time T" plus one for `ECBTC` — and that split is refuted:
+`SER-9624` prints five contracts with five *different* daily Termination-of-
+Trading times against one Trading Hours cell whose only daily boundary is a
+named 16:00-17:00 CT maintenance period, and its own footnote defines
+Termination as "the Contract's Stated Expiration Time". Clearing advisory
+25-326 glosses the same cell shape as an expiration time, and `SER-9586RR`
+carries the identical five termination times against a completely different
+24/7 session. The six per-root numbers were expiries, so the six-way split
+would have invented six grids from one.
+
+`ECBTC`'s 2023-03-12 listing is member catalog data (its hours cell is
+unchanged). Its 2026-05-29 move to 24/7 is a real session change and a real
+divergence, so that root leaves the key's scope on that day — but no key
+replaces it, because `SER-9740R` and CME's client-systems wiki disagree by an
+hour on the new daily close and the disputed hour is exactly the old expiry
+instant. Recorded in `docs/schedules/unsupported-families.md`.
+
+The ledger row is **Partial / executable**: `SER-8968R` states the queues, the
+17:00 open and the relist at launch but no daily close, so 16:00 CT is carried
+back from the 2025 and 2026 statements of it with no cutover asserted.
 
 ### 5. The 37-shape research queue
 Rows 2, 3, 6–34 and 36–41 of the inventory: BTIC, TAS, TAM, TACO, TMAC, housing,

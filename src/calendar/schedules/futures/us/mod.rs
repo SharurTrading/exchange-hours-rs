@@ -10,6 +10,7 @@ mod cfe;
 mod cme_group;
 mod cryptocurrency;
 mod energy_metals;
+mod event_contracts;
 mod fx;
 mod grains;
 mod ice_sugar;
@@ -43,6 +44,10 @@ pub(crate) use cryptocurrency::{
 };
 pub(crate) use energy_metals::ENERGY_METALS_ORDER_ENTRY_CURRENT;
 pub(crate) use energy_metals::{ENERGY_METALS_EXTENDED_CURRENT, energy_metals_profile_at};
+pub(crate) use event_contracts::{
+    EVENT_CONTRACTS_EXTENDED_CURRENT, EVENT_CONTRACTS_ORDER_ENTRY_CURRENT,
+    profile_at as event_contracts_profile_at,
+};
 pub(crate) use fx::{CURRENT_FUTURES_PROFILE as FX_CURRENT, profile_at as fx_profile_at};
 pub(crate) use grains::CBOT_ORDER_ENTRY_CURRENT;
 pub(crate) use grains::{

@@ -64,17 +64,22 @@ use super::grains::{
 // THE JANUARY-2010 FLOOR. Day matching 09:30-13:45 around the 18:00-07:15
 // overnight leg. The 13:45 close is stated by Globex notice 20100405's
 // mini-specific block — "CBOT Mini-sized grain futures / Trading ends at
-// 1:45 p.m. Central time (CT)" inside a change that "will not affect the end
-// of trading times" — by the August-2010 contract specs for all three minis
-// ("9:30 am - 1:45 pm Central Time, Sunday - Friday"), and retrospectively by
-// 13-092's "traditional mini- to full-sized trading hours". CME's own
-// trading-hours tables of February-April 2010 show 13:15 in the mini rows'
-// Globex column against a 13:45 open-outcry column; those cells are judged
-// copied from the standard-grain row in error — a page whose pit column says
-// 13:45 cannot have an electronic column closing thirty minutes earlier for
-// a product CME describes as electronic-and-floor — and by 24 August 2010
-// both cells read 13:45. No 13:15<->13:45 transition is dated and none is
-// asserted. Floor queues (Sunday 16:15-18:00, weekday 07:15-09:30, PCP
+// 1:45 p.m. Central time (CT)" — inside a notice that describes the
+// then-current state ("This will not affect the end of trading times, as
+// described below") with three product blocks side by side: CBOT and KCBT
+// grains end 1:15 p.m., CBOT Mini-sized grain futures end 1:45 p.m., MGEX
+// 1:30 p.m. The same notice therefore contradicts CME's own trading-hours
+// tables of February-April 2010 directly rather than merely outweighing
+// them: those tables show 13:15 in the mini rows' Globex column against a
+// 13:45 open-outcry column, cells judged copied from the standard-grain row
+// in error — a page whose pit column says 13:45 cannot have an electronic
+// column closing thirty minutes earlier for a product CME describes as
+// electronic-and-floor — and by 24 August 2010 both cells read 13:45. The
+// notice is also corroborated by the August-2010 contract specs for all
+// three minis ("9:30 am - 1:45 pm Central Time, Sunday - Friday") and
+// retrospectively by 13-092's "traditional mini- to full-sized trading
+// hours". No 13:15<->13:45 transition is dated and none is asserted. Floor
+// queues (Sunday 16:15-18:00, weekday 07:15-09:30, PCP
 // 14:30-16:00) come from Globex notice 20100315's category line "Current
 // Pre-Open for CBOT, KCBT and MGEX Grain Futures", which does not enumerate
 // the minis; the first product-specific enumeration is CME's trading-hours

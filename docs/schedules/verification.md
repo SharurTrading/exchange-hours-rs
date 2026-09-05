@@ -42,7 +42,7 @@ starts; see [sources.md](sources.md) and the repeatable
   was worked.
 
   **Classification complete, 2026-09-01.** Every `Partial` row now opens with its
-  gap kind. Of the 47, **35 are order-entry** — the trading session is sourced and
+  gap kind. Of the 48, **36 are order-entry** — the trading session is sourced and
   what is undated is a queue or post-close phase in which no trade can print — and
   **12 are executable**, where the uncertainty touches a window where trades
   print. The executable twelve are the six ICE Futures U.S. keys (their pre-August-2011

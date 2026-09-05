@@ -567,3 +567,92 @@ fn assert_key_basis_prose_matches_the_ledger(real_key_rows: &[&str]) {
         "README headline product-family count drifted from the ledger"
     );
 }
+
+/// Asserts the gap-kind split is quoted consistently wherever it appears.
+///
+/// Three narrative claims restate the `Gap: order-entry` / `Gap: executable`
+/// tally in prose: the README's split sentence, the ledger's own summary, and
+/// the audit's spelled-out Partial-key count. None of them was derived from the
+/// ledger, so every new key silently staled all three while the tests stayed
+/// green -- it happened on two consecutive product-family additions before this
+/// fence existed. Derive them here instead.
+#[test]
+fn the_gap_kind_split_is_quoted_consistently_everywhere() {
+    let order_entry = VERIFICATION.matches("Gap: order-entry").count();
+    let executable = VERIFICATION.matches("Gap: executable").count();
+    let partial_rows = order_entry + executable;
+
+    let flowed = |text: &str| text.split_whitespace().collect::<Vec<_>>().join(" ");
+    let readme = flowed(README);
+    let ledger = flowed(VERIFICATION);
+    let audit = flowed(AUDIT);
+
+    let readme_claim = format!(
+        "the split is **{order_entry} order-entry to {executable} executable** across the {partial_rows} rows in the ledger."
+    );
+    assert!(
+        readme.contains(&readme_claim),
+        "README gap-kind split drifted from the ledger: expected {readme_claim:?}"
+    );
+
+    let ledger_claim = format!("Of the {partial_rows}, **{order_entry} are order-entry**");
+    assert!(
+        ledger.contains(&ledger_claim),
+        "the ledger's own summary drifted from its rows: expected {ledger_claim:?}"
+    );
+
+    let executable_claim = format!("**{executable} are executable**");
+    assert!(
+        ledger.contains(&executable_claim),
+        "the ledger's executable count drifted from its rows: expected {executable_claim:?}"
+    );
+
+    // The audit states its Partial product-family key count in words beside a
+    // table that states it in digits; they drifted apart once already.
+    let key_rows = market_hours_key_rows();
+    let real_keys: Vec<&str> = key_rows
+        .iter()
+        .copied()
+        .filter(|row| row_cells(row)[3] != "Synthetic")
+        .collect();
+    let partial_keys = real_keys
+        .iter()
+        .filter(|row| row_cells(row)[3] == "Partial")
+        .count();
+    let words = [
+        "zero",
+        "one",
+        "two",
+        "three",
+        "four",
+        "five",
+        "six",
+        "seven",
+        "eight",
+        "nine",
+        "ten",
+        "eleven",
+        "twelve",
+        "thirteen",
+        "fourteen",
+        "fifteen",
+        "sixteen",
+        "seventeen",
+        "eighteen",
+        "nineteen",
+        "twenty",
+        "twenty-one",
+        "twenty-two",
+        "twenty-three",
+        "twenty-four",
+        "twenty-five",
+    ];
+    let spelled = words
+        .get(partial_keys)
+        .unwrap_or_else(|| panic!("extend the number words past {partial_keys}"));
+    let audit_claim = format!("{spelled} product-family keys are **Partial**");
+    assert!(
+        audit.to_lowercase().contains(&audit_claim.to_lowercase()),
+        "the audit's spelled-out Partial key count drifted from the ledger: expected {audit_claim:?}"
+    );
+}

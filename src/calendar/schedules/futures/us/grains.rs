@@ -13,6 +13,13 @@ use crate::calendar::schedules::timeline::{Revision, local_date, revisions, sele
 // futures. Mini-sized Corn, Soybean, and Wheat diverged on 2012-09-16 and are
 // not represented by this key.
 //
+// The `CBOT_*` rule tables below are `pub(crate)` because Rough Rice
+// (`rough_rice.rs`) ran on this same grid until its 2018-01-21 divergence and
+// borrows the pre-divergence eras rather than copying them. That key owns its
+// own `StaticHoursProfile` values and its own timeline, so a future Rough
+// Rice-specific finding repoints one of its eras instead of editing anything
+// here. Nothing in this file may be changed on Rough Rice evidence.
+//
 // At the January-2010 audit floor, matching ran 18:00-07:15 around the
 // 09:30-13:15 RTH. The operator's March-2010 market-state table supplies the
 // then-live 16:15-18:00 Sunday, 07:15-09:30 weekday, and 14:30-16:00 PCP
@@ -64,12 +71,12 @@ use crate::calendar::schedules::timeline::{Revision, local_date, revisions, sele
 // https://web.archive.org/web/20130423023212/http://www.cmegroup.com/globex/files/cmegroup_reduced_grain_and_oilseed_hours.pdf
 // https://www.cmegroup.com/notices/ser/2022/02/SER-8921.pdf
 
-static REGULAR_0930_1315: &[SessionRule] = &[SessionRule {
+pub(crate) static CBOT_REGULAR_0930_1315: &[SessionRule] = &[SessionRule {
     days: MON_FRI,
     open_ssm: 9 * 3600 + 30 * 60,
     close_ssm: 13 * 3600 + 15 * 60,
 }];
-static REGULAR_0830_1315: &[SessionRule] = &[SessionRule {
+pub(crate) static CBOT_REGULAR_0830_1315: &[SessionRule] = &[SessionRule {
     days: MON_FRI,
     open_ssm: 8 * 3600 + 30 * 60,
     close_ssm: 13 * 3600 + 15 * 60,
@@ -87,12 +94,12 @@ pub(crate) static CBOT_REGULAR_CURRENT: &[SessionRule] = &[SessionRule {
 // 2013-04-07, back to 08:00 from 2013-08-18, up to the day-session open), and
 // the afternoon PCP are `order_entry`; the electronic session and the
 // post-2012 afternoon matching slice stay `extended`.
-static EXTENDED_AT_2010_FLOOR: &[SessionRule] = &[SessionRule {
+pub(crate) static CBOT_EXTENDED_AT_2010_FLOOR: &[SessionRule] = &[SessionRule {
     days: SUN_PLUS_MON_THU,
     open_ssm: 18 * 3600,
     close_ssm: 7 * 3600 + 15 * 60,
 }];
-static ORDER_ENTRY_AT_2010_FLOOR: &[SessionRule] = &[
+pub(crate) static CBOT_ORDER_ENTRY_AT_2010_FLOOR: &[SessionRule] = &[
     SessionRule {
         days: SUN_ONLY,
         open_ssm: 16 * 3600 + 15 * 60,
@@ -111,8 +118,8 @@ static ORDER_ENTRY_AT_2010_FLOOR: &[SessionRule] = &[
 ];
 // 2010-04-19 and 2011-12-27 change only queue boundaries: PCP expands to start
 // at 13:15:30, then the morning queue starts at 08:00. The matching grid is
-// unchanged, so both revisions reuse `EXTENDED_AT_2010_FLOOR`.
-static ORDER_ENTRY_2010_04_19: &[SessionRule] = &[
+// unchanged, so both revisions reuse `CBOT_EXTENDED_AT_2010_FLOOR`.
+pub(crate) static CBOT_ORDER_ENTRY_2010_04_19: &[SessionRule] = &[
     SessionRule {
         days: SUN_ONLY,
         open_ssm: 16 * 3600 + 15 * 60,
@@ -129,7 +136,7 @@ static ORDER_ENTRY_2010_04_19: &[SessionRule] = &[
         close_ssm: 16 * 3600,
     },
 ];
-static ORDER_ENTRY_2011_12_27: &[SessionRule] = &[
+pub(crate) static CBOT_ORDER_ENTRY_2011_12_27: &[SessionRule] = &[
     SessionRule {
         days: SUN_ONLY,
         open_ssm: 16 * 3600 + 15 * 60,
@@ -146,7 +153,7 @@ static ORDER_ENTRY_2011_12_27: &[SessionRule] = &[
         close_ssm: 16 * 3600,
     },
 ];
-static EXTENDED_2012_05_20: &[SessionRule] = &[
+pub(crate) static CBOT_EXTENDED_2012_05_20: &[SessionRule] = &[
     SessionRule {
         days: SUN_PLUS_MON_THU,
         open_ssm: 17 * 3600,
@@ -161,7 +168,7 @@ static EXTENDED_2012_05_20: &[SessionRule] = &[
 // Queues from the 2013-03-22 operator notice: the Sunday and Monday-Thursday
 // evening pre-opens that run up to the 19:00 electronic open, the 08:15-08:30
 // morning Pre-Open at go-live, and the 14:30-16:00 PCP. None can match a trade.
-static ORDER_ENTRY_2013_04_07: &[SessionRule] = &[
+pub(crate) static CBOT_ORDER_ENTRY_2013_04_07: &[SessionRule] = &[
     SessionRule {
         days: SUN_ONLY,
         open_ssm: 16 * 3600,
@@ -232,28 +239,29 @@ const fn profile(
 }
 
 static AT_2010_FLOOR: StaticHoursProfile = profile(
-    REGULAR_0930_1315,
-    EXTENDED_AT_2010_FLOOR,
-    ORDER_ENTRY_AT_2010_FLOOR,
+    CBOT_REGULAR_0930_1315,
+    CBOT_EXTENDED_AT_2010_FLOOR,
+    CBOT_ORDER_ENTRY_AT_2010_FLOOR,
 );
 static FROM_2010_04_19: StaticHoursProfile = profile(
-    REGULAR_0930_1315,
-    EXTENDED_AT_2010_FLOOR,
-    ORDER_ENTRY_2010_04_19,
+    CBOT_REGULAR_0930_1315,
+    CBOT_EXTENDED_AT_2010_FLOOR,
+    CBOT_ORDER_ENTRY_2010_04_19,
 );
 static FROM_2011_12_27: StaticHoursProfile = profile(
-    REGULAR_0930_1315,
-    EXTENDED_AT_2010_FLOOR,
-    ORDER_ENTRY_2011_12_27,
+    CBOT_REGULAR_0930_1315,
+    CBOT_EXTENDED_AT_2010_FLOOR,
+    CBOT_ORDER_ENTRY_2011_12_27,
 );
-static FROM_2012_05_20: StaticHoursProfile = profile(REGULAR_0930_1315, EXTENDED_2012_05_20, &[]);
+static FROM_2012_05_20: StaticHoursProfile =
+    profile(CBOT_REGULAR_0930_1315, CBOT_EXTENDED_2012_05_20, &[]);
 static FROM_2013_04_07: StaticHoursProfile = profile(
-    REGULAR_0830_1315,
+    CBOT_REGULAR_0830_1315,
     CBOT_EXTENDED_CURRENT,
-    ORDER_ENTRY_2013_04_07,
+    CBOT_ORDER_ENTRY_2013_04_07,
 );
 static FROM_2013_08_18: StaticHoursProfile = profile(
-    REGULAR_0830_1315,
+    CBOT_REGULAR_0830_1315,
     CBOT_EXTENDED_CURRENT,
     CBOT_ORDER_ENTRY_CURRENT,
 );

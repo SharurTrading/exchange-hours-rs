@@ -18,7 +18,7 @@ const DATE_EXCEPTIONS: &str = include_str!("../../docs/schedules/date-exceptions
 const UNSUPPORTED_FAMILIES: &str = include_str!("../../docs/schedules/unsupported-families.md");
 const DATABENTO_VENUES: &str = include_str!("../../docs/schedules/databento-venues.md");
 
-const EXPECTED_MARKET_HOURS_KEY_NAMES: [&str; 25] = [
+const EXPECTED_MARKET_HOURS_KEY_NAMES: [&str; 26] = [
     "globex_equity_index",
     "globex_energy",
     "globex_grains",
@@ -42,6 +42,7 @@ const EXPECTED_MARKET_HOURS_KEY_NAMES: [&str; 25] = [
     "sgx_equity_index_singapore",
     "sgx_equity_index_taiwan",
     "sgx_equity_index_ntr_usd",
+    "globex_rough_rice",
     "sgx",
     "always_open",
 ];

@@ -16,6 +16,7 @@ mod ice_sugar;
 mod ice_us;
 mod interest_rates;
 mod livestock;
+mod rough_rice;
 
 mod cme_nikkei;
 
@@ -67,4 +68,8 @@ pub(crate) use interest_rates::{
 };
 pub(crate) use livestock::{
     CURRENT_FUTURES_PROFILE as LIVESTOCK_CURRENT, profile_at as livestock_profile_at,
+};
+pub(crate) use rough_rice::{
+    ROUGH_RICE_EXTENDED_CURRENT, ROUGH_RICE_ORDER_ENTRY_CURRENT, ROUGH_RICE_REGULAR_CURRENT,
+    profile_at as rough_rice_profile_at,
 };

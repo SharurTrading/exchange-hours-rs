@@ -37,7 +37,7 @@ use super::schedules::futures::us::{
     cbot_profile_at, cfe_profile_at, cme_profile_at, cocoa_profile_at, coffee_profile_at,
     cotton_profile_at, cryptocurrency_profile_at, energy_metals_profile_at, fcoj_profile_at,
     fx_profile_at, ice_us_fang_profile_at, ice_usdx_profile_at, interest_rates_profile_at,
-    livestock_profile_at, nkd_profile_at, sugar_profile_at,
+    livestock_profile_at, nkd_profile_at, rough_rice_profile_at, sugar_profile_at,
 };
 use super::{Exchange, MarketHours, SessionRule};
 
@@ -125,7 +125,9 @@ market_hours_keys! {
     ///
     /// The venue-keyed compatibility defaults are CME →
     /// [`GlobexEquityIndex`](Self::GlobexEquityIndex), CBOT →
-    /// [`GlobexGrains`](Self::GlobexGrains), COMEX/NYMEX →
+    /// [`GlobexGrains`](Self::GlobexGrains) — which excludes Rough Rice, whose
+    /// grid diverged in 2018 and needs
+    /// [`GlobexRoughRice`](Self::GlobexRoughRice) — COMEX/NYMEX →
     /// [`GlobexEnergy`](Self::GlobexEnergy), CFE → [`CfeVix`](Self::CfeVix),
     /// Eurex → [`Eurex`](Self::Eurex), ICEUS → [`IceUs`](Self::IceUs), and SGX
     /// → [`Sgx`](Self::Sgx). Those defaults are wrong for products outside the
@@ -144,7 +146,9 @@ market_hours_keys! {
         /// whose own specification publishes a different grid.
         GlobexEnergy => "globex_energy",
         /// Standard-size CBOT grain/oilseed Globex hours; excludes mini-sized
-        /// Corn, Soybean, and Wheat futures, whose 2012 schedule diverged.
+        /// Corn, Soybean, and Wheat futures, whose 2012 schedule diverged, and
+        /// Rough Rice, whose extended session diverged on 2018-01-21 and which
+        /// has its own [`GlobexRoughRice`](Self::GlobexRoughRice) key.
         GlobexGrains => "globex_grains",
         /// CME FX futures on the standard 17:00-16:00 CT Globex grid; excludes
         /// eFix, BTIC, TAS, options, and products with a different specification.
@@ -200,6 +204,19 @@ market_hours_keys! {
         SgxEquityIndexTaiwan => "sgx_equity_index_taiwan",
         /// SGX NTR (USD) global equity-index futures.
         SgxEquityIndexNtrUsd => "sgx_equity_index_ntr_usd",
+        /// CBOT Rough Rice futures (`ZR`) and options (`OZR`), Rulebook
+        /// chapters 17 and 17A.
+        ///
+        /// Rough Rice shared the standard CBOT grain and oilseed grid until
+        /// CBOT Submission 18-001 cut its extended session to Sunday-Thursday
+        /// 19:00-21:00 CT on 2018-01-21; from that day it has no
+        /// midnight-wrapping session and is **not** covered by
+        /// [`GlobexGrains`](Self::GlobexGrains). Excludes every other CBOT
+        /// grain and oilseed contract, mini-sized grains, and separately
+        /// specified session types such as TAS and BTIC. No morning Pre-Open
+        /// or post-close Pre-Open is modeled after the divergence, because
+        /// CME's Rough Rice specification publishes neither.
+        GlobexRoughRice => "globex_rough_rice",
 
         /// SGX Three-Month SORA Futures current profile.
         Sgx => "sgx",
@@ -257,6 +274,7 @@ pub fn hours_for_market_hours_key(key: MarketHoursKey, as_of: DateTime<Utc>) -> 
         MarketHoursKey::SgxEquityIndexSingapore => sgx_equity_index_singapore_profile_at(as_of),
         MarketHoursKey::SgxEquityIndexTaiwan => sgx_equity_index_taiwan_profile_at(as_of),
         MarketHoursKey::SgxEquityIndexNtrUsd => sgx_equity_index_ntr_usd_profile_at(as_of),
+        MarketHoursKey::GlobexRoughRice => rough_rice_profile_at(as_of),
         MarketHoursKey::Sgx => sgx_profile_at(as_of),
         MarketHoursKey::AlwaysOpen => &ALWAYS_OPEN_PROFILE,
     };

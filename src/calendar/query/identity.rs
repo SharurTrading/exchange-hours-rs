@@ -26,10 +26,11 @@ pub(super) fn joins_adjacent_same_kind(context: &QueryContext<'_>) -> bool {
 
 /// Assigns bounds produced by a normal-week rule to their venue-local trade date.
 ///
-/// Most profiles use the local date of the final close. Two sourced exceptions
-/// survive: SET's after-midnight DR night phase belongs to its prior local
-/// opening date, and CME cryptocurrency's weekend blocks carry the following
-/// open business date.
+/// Most profiles use the local date of the final close. Three sourced
+/// exceptions survive: SET's after-midnight DR night phase belongs to its prior
+/// local opening date, CBOT Rough Rice's evening leg belongs to the following
+/// local date, and CME cryptocurrency's weekend blocks carry the following open
+/// business date.
 pub(super) fn assign_normal(
     context: &QueryContext<'_>,
     open: DateTime<Utc>,
@@ -46,6 +47,24 @@ pub(super) fn assign_normal(
             local_open.date_naive().pred_opt().unwrap_or(default)
         } else {
             local_open.date_naive()
+        };
+    }
+    // CBOT Rough Rice stopped wrapping past local midnight on 2018-01-21, so
+    // the close-date default would put Sunday's 19:00-21:00 CT session on
+    // Sunday. CBOT Submission 18-001 states the operator's own assignment for
+    // this contract: the session effective "on Sunday, January 21, 2018" is
+    // "for trade date Monday, January 22, 2018". Every evening leg therefore
+    // carries the following local date. Before the divergence the leg wrapped
+    // and the close-date default already produced that same answer, so this
+    // branch changes no pre-2018 result.
+    if matches!(
+        source,
+        CalendarSource::MarketHoursKey(MarketHoursKey::GlobexRoughRice)
+    ) {
+        return if local_open.time().num_seconds_from_midnight() >= 19 * 3_600 {
+            local_open.date_naive().succ_opt().unwrap_or(default)
+        } else {
+            default
         };
     }
     if !matches!(

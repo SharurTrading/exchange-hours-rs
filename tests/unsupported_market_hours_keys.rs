@@ -24,6 +24,7 @@ const SUPPORTED_FAMILY_NAMES: &[&str] = &[
     "sgx_equity_index_singapore",
     "sgx_equity_index_taiwan",
     "sgx_equity_index_ntr_usd",
+    "globex_rough_rice",
 ];
 
 /// Names that must never resolve, because no single venue-wide grid exists.

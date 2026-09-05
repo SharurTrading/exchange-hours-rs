@@ -4,6 +4,7 @@
 
 mod cme_families;
 mod cme_nikkei;
+mod cme_rough_rice;
 mod ice;
 mod sgx_equity_index;
 

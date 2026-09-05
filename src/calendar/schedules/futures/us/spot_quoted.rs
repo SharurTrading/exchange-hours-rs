@@ -264,7 +264,8 @@ static FROM_2025_06_29: StaticHoursProfile = StaticHoursProfile {
 // endpoints. CME's session service is forward-only — a query for the launch
 // week 2025-06-28..2025-07-04 returns empty days — so the interior cannot be
 // sampled. What can be done was done: a sweep of CME's notice-search index
-// over 2025-04-01..2027-03-05 (about 1,800 notices) returns nine notices
+// from 2025-04-01 to the 2026-09-06 review date (about 1,800 notices) returns
+// nine notices
 // mentioning spot-quoted futures — SER-9506R, SER-9630RR, SER-9739, clearing
 // advisories 25-154, 25-201 and 25-348, and market-regulation notices
 // MSN06-25-25, MSN11-14-25 and MSN02-11-26 — and none of them amends trading

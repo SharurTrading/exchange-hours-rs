@@ -298,7 +298,7 @@ static FROM_2022_09_18: StaticHoursProfile = StaticHoursProfile {
 // specification page that carried one now redirects to a prediction-markets
 // landing page with no hours, and the current event-contract specification PDF
 // lists every root but contains the string "Trading Hours" zero times. The
-// 2026-09-06 evidence pass additionally paged CME's product-slate and
+// 2026-09-05 evidence pass additionally paged CME's product-slate and
 // trading-hours services to exhaustion and found no event-contract product in
 // either; that negative is recorded rather than re-derived here, because
 // cmegroup.com now refuses this machine at IP level and the services cannot be

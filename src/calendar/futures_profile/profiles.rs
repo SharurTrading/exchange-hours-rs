@@ -32,7 +32,8 @@ use crate::calendar::schedules::futures::us::{
     INTEREST_RATES_CURRENT, LIVESTOCK_CURRENT, MINI_EXTENDED_CURRENT, MINI_ORDER_ENTRY_CURRENT,
     MINI_REGULAR_CURRENT, NKD_EXTENDED_CURRENT, NKD_REGULAR_CURRENT, ROUGH_RICE_EXTENDED_CURRENT,
     ROUGH_RICE_ORDER_ENTRY_CURRENT, ROUGH_RICE_REGULAR_CURRENT, SUGAR_EXTENDED_CURRENT,
-    SUGAR_ORDER_ENTRY_CURRENT, SUGAR_REGULAR_CURRENT,
+    SUGAR_ORDER_ENTRY_CURRENT, SUGAR_REGULAR_CURRENT, WEATHER_EXTENDED_CURRENT,
+    WEATHER_ORDER_ENTRY_CURRENT,
 };
 
 static FUTURES_GLOBEX_EQUITY_INDEX: FuturesSessionProfile = FuturesSessionProfile {
@@ -70,6 +71,19 @@ static FUTURES_GLOBEX_MINI_GRAINS: FuturesSessionProfile = FuturesSessionProfile
     regular: MINI_REGULAR_CURRENT,
     extended: MINI_EXTENDED_CURRENT,
     order_entry: MINI_ORDER_ENTRY_CURRENT,
+    has_daily_close: true,
+    has_weekend_close: true,
+};
+
+// No regular session: weather futures have never been pit-eligible, so the
+// whole executable envelope is the CME Globex wrap. `weather.rs` holds the
+// 15:15 CT close this family ran on until SER-9519, which is what makes the
+// key necessary despite an envelope shared with FX and energy today.
+static FUTURES_GLOBEX_WEATHER: FuturesSessionProfile = FuturesSessionProfile {
+    tz: US::Central,
+    regular: &[],
+    extended: WEATHER_EXTENDED_CURRENT,
+    order_entry: WEATHER_ORDER_ENTRY_CURRENT,
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -283,6 +297,7 @@ pub fn session_profile(key: MarketHoursKey) -> &'static FuturesSessionProfile {
         MarketHoursKey::SgxEquityIndexTaiwan => &FUTURES_SGX_EQUITY_INDEX_TAIWAN,
         MarketHoursKey::SgxEquityIndexNtrUsd => &FUTURES_SGX_EQUITY_INDEX_NTR_USD,
         MarketHoursKey::GlobexRoughRice => &FUTURES_GLOBEX_ROUGH_RICE,
+        MarketHoursKey::GlobexWeather => &FUTURES_GLOBEX_WEATHER,
         MarketHoursKey::Sgx => &FUTURES_SGX,
         MarketHoursKey::AlwaysOpen => &FUTURES_ALWAYS_OPEN,
     }

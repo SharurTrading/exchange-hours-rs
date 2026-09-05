@@ -38,7 +38,7 @@ use super::schedules::futures::us::{
     cotton_profile_at, cryptocurrency_profile_at, energy_metals_profile_at, fcoj_profile_at,
     fx_profile_at, ice_us_fang_profile_at, ice_usdx_profile_at, interest_rates_profile_at,
     livestock_profile_at, mini_grains_profile_at, nkd_profile_at, rough_rice_profile_at,
-    sugar_profile_at,
+    sugar_profile_at, weather_profile_at,
 };
 use super::{Exchange, MarketHours, SessionRule};
 
@@ -232,6 +232,22 @@ market_hours_keys! {
         /// or post-close Pre-Open is modeled after the divergence, because
         /// CME's Rough Rice specification publishes neither.
         GlobexRoughRice => "globex_rough_rice",
+        /// CME weather temperature-index **futures** (CME Globex security
+        /// group `HW`): the HDD, CDD and CAT monthly, seasonal-strip and
+        /// quarterly-strip contracts for the US, European and Pacific Rim
+        /// cities, all quoted in Chicago time. **Excludes options on weather
+        /// futures**, which are a separate Globex security group and traded
+        /// on the CME floor for most of the audited history; the day they
+        /// moved to CME Globex is unsourced, so they stay caller catalog
+        /// data. Also excludes CME `ClearPort`, which is a clearing-submission
+        /// window rather than a session, and CME's separate "Wind" products.
+        ///
+        /// Its current envelope coincides with
+        /// [`GlobexFx`](Self::GlobexFx) and
+        /// [`GlobexEnergy`](Self::GlobexEnergy) and its history matches
+        /// neither: weather closed 15:15 CT from the January-2010 floor until
+        /// CME SER-9519 expanded it to 16:00 CT on 2025-04-13.
+        GlobexWeather => "globex_weather",
 
         /// SGX Three-Month SORA Futures current profile.
         Sgx => "sgx",
@@ -257,8 +273,10 @@ market_hours_keys! {
 /// profile. A member listed after its family began does not create a key-level
 /// revision; callers enforce product launch dates in their catalog. Some CME
 /// histories have a verified-current Pre-Open or PCP queue with no primary day
-/// for its onset; each of those timelines carries the queue only from its
-/// 2026-08-22 knowledge-bound row onward rather than fabricating a cutover.
+/// for its onset; each of those timelines carries the queue only from its own
+/// knowledge-bound review row onward — 2026-08-22 for the equity-index,
+/// energy, FX and interest-rate families and 2026-09-05 for weather — rather
+/// than fabricating a cutover.
 ///
 /// This returns one snapshot. Use
 /// [`calendar_for_market_hours_key`](super::calendar_for_market_hours_key) for
@@ -291,6 +309,7 @@ pub fn hours_for_market_hours_key(key: MarketHoursKey, as_of: DateTime<Utc>) -> 
         MarketHoursKey::SgxEquityIndexTaiwan => sgx_equity_index_taiwan_profile_at(as_of),
         MarketHoursKey::SgxEquityIndexNtrUsd => sgx_equity_index_ntr_usd_profile_at(as_of),
         MarketHoursKey::GlobexRoughRice => rough_rice_profile_at(as_of),
+        MarketHoursKey::GlobexWeather => weather_profile_at(as_of),
         MarketHoursKey::Sgx => sgx_profile_at(as_of),
         MarketHoursKey::AlwaysOpen => &ALWAYS_OPEN_PROFILE,
     };

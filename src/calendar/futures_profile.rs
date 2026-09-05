@@ -35,10 +35,11 @@ use super::schedules::futures::international::{
 };
 use super::schedules::futures::us::{
     cbot_profile_at, cfe_profile_at, cme_profile_at, cocoa_profile_at, coffee_profile_at,
-    cotton_profile_at, cryptocurrency_profile_at, energy_metals_profile_at, fcoj_profile_at,
-    fx_profile_at, ice_us_fang_profile_at, ice_usdx_profile_at, interest_rates_profile_at,
-    livestock_profile_at, mini_grains_profile_at, nkd_profile_at, rough_rice_profile_at,
-    spot_quoted_profile_at, sugar_profile_at, weather_profile_at,
+    cotton_profile_at, cryptocurrency_profile_at, energy_metals_profile_at,
+    event_contracts_profile_at, fcoj_profile_at, fx_profile_at, ice_us_fang_profile_at,
+    ice_usdx_profile_at, interest_rates_profile_at, livestock_profile_at, mini_grains_profile_at,
+    nkd_profile_at, rough_rice_profile_at, spot_quoted_profile_at, sugar_profile_at,
+    weather_profile_at,
 };
 use super::{Exchange, MarketHours, SessionRule};
 
@@ -276,6 +277,42 @@ market_hours_keys! {
         /// exceptions to it must build them per subgroup rather than applying
         /// one early-close set to all eight.
         GlobexSpotQuoted => "globex_spot_quoted",
+        /// CME Group Event Contracts on futures — daily-expiring,
+        /// cash-settled, European-style options on futures under CME, CBOT,
+        /// NYMEX and COMEX Rulebook Chapter 23, together with the hourly
+        /// contracts under Chapter 23A. The Chapter 23 roots are `ECES`,
+        /// `ECNQ`, `ECRTY`, `ECYM`, `EC6E`, `ECCL`, `ECNG`, `ECGC`, `ECSI`
+        /// and `ECHG`, plus `ECBTC` from its 2023-03-12 listing until
+        /// 2026-05-28; the Chapter 23A roots are the hourly `ECS*`, `ECN*`,
+        /// `ECR*`, `ECD*`, `ECC*`, `ECH*` and `ECG*` contracts listed from
+        /// 2025-12-08.
+        ///
+        /// **A contract's Termination of Trading time is not this family's
+        /// session close.** CME publishes one hours cell per document with a
+        /// different termination time per root — 15:00 CT for the equity
+        /// indices down to 12:00 CT for `ECHG` — and those per-root numbers
+        /// are stated expiration times, not daily closes. The session is one
+        /// grid for every root: 17:00→16:00 CT wrapping midnight with a
+        /// 60-minute maintenance period from 16:00, Pre-Opens Sunday
+        /// 16:00-17:00 and Monday-Thursday 16:45-17:00 CT, and no
+        /// Friday-evening reopen.
+        ///
+        /// **Excludes `ECBTC` from 2026-05-29**, when CME moved that root
+        /// alone to 24/7 trading and left the rest on this schedule; two CME
+        /// primary sources disagree by an hour on its new daily close, so no
+        /// key models it and it becomes caller catalog data on that day. Also
+        /// excludes the Chapter 22 swap-based economic and cryptocurrency
+        /// event contracts, which run a 24/7 grid with a one-minute daily
+        /// halt, and the sports and political event contracts on the CME
+        /// `FutureSports` Performance Indexes.
+        ///
+        /// The envelope coincides exactly with
+        /// [`GlobexSpotQuoted`](Self::GlobexSpotQuoted) and
+        /// [`GlobexWeather`](Self::GlobexWeather) today and the three
+        /// histories share nothing: weather closed 15:15 CT until 2025-04-13,
+        /// spot-quoted did not exist until 2025-06-29, and this family has run
+        /// its one grid since 2022-09-18.
+        GlobexEventContracts => "globex_event_contracts",
 
         /// SGX Three-Month SORA Futures current profile.
         Sgx => "sgx",
@@ -296,7 +333,8 @@ market_hours_keys! {
 /// FX, interest-rate, livestock, and cryptocurrency grids. Keys with no
 /// in-scope recorded change resolve to their one grid at every instant. Dates
 /// before the January-2010 audit floor receive the oldest audited profile. For
-/// launch-dated families — CME cryptocurrency, CME/CBOT spot-quoted, ICE U.S.
+/// launch-dated families — CME cryptocurrency, CME/CBOT spot-quoted, CME Group
+/// event contracts, ICE U.S.
 /// NYSE FANG+, and SGX Three-Month SORA — a pre-launch date returns an
 /// explicit sessionless profile. A member listed after its family began does
 /// not create a key-level
@@ -340,6 +378,7 @@ pub fn hours_for_market_hours_key(key: MarketHoursKey, as_of: DateTime<Utc>) -> 
         MarketHoursKey::GlobexRoughRice => rough_rice_profile_at(as_of),
         MarketHoursKey::GlobexWeather => weather_profile_at(as_of),
         MarketHoursKey::GlobexSpotQuoted => spot_quoted_profile_at(as_of),
+        MarketHoursKey::GlobexEventContracts => event_contracts_profile_at(as_of),
         MarketHoursKey::Sgx => sgx_profile_at(as_of),
         MarketHoursKey::AlwaysOpen => &ALWAYS_OPEN_PROFILE,
     };

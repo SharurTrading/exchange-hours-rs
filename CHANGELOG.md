@@ -13,6 +13,55 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Added
 
+- **`MarketHoursKey::GlobexEventContracts`** — CME Group Event Contracts on
+  futures, CME/CBOT/NYMEX/COMEX Rulebook Chapter 23 and 23A, on the canonical
+  wire name `globex_event_contracts`. The Chapter 23 roots are `ECES`, `ECNQ`,
+  `ECRTY`, `ECYM`, `EC6E`, `ECCL`, `ECNG`, `ECGC`, `ECSI` and `ECHG`, plus
+  `ECBTC` from 2023-03-12 to 2026-05-28; the hourly Chapter 23A roots (`ECS*`,
+  `ECN*`, `ECR*`, `ECD*`, `ECC*`, `ECH*`, `ECG*`) listed from 2025-12-08 are in
+  scope on the same cell. The grid is extended Sunday and Monday-Thursday
+  17:00→16:00 CT wrapping midnight, with CME Globex Pre-Opens Sunday
+  16:00-17:00 and Monday-Thursday 16:45-17:00 CT, a 60-minute maintenance
+  period from 16:00, and no Friday-evening reopen. `regular` is empty in every
+  era: no CME document about this family uses RTH or ETH or splits the window,
+  and rule 2302.A defers the schedule to the Exchange entirely.
+  **A contract's Termination of Trading time is not this family's session
+  close**, and that is the whole modelling question. CME writes every hours cell
+  as "Sunday 5:00 p.m. - `T`" with six different `T` values across the ten
+  Chapter 23 roots — 15:00 CT for the equity indices down to 12:00 CT for
+  `ECHG` — which read as daily closes would force six separate grids. CME
+  refutes that itself: SER-9624 prints **five** contracts with five *different*
+  daily Termination times (10:00/11:00/13:00/15:00/16:00 ET) against **one**
+  Trading Hours cell, "CME Globex: Sunday 6:00 p.m. - Friday 5:00 p.m. ET with a
+  daily maintenance period from 5:00 p.m. - 6:00 p.m. ET", under the footnote
+  "Termination of Trading is contingent on the Contract's Stated Expiration
+  Time". Clearing advisory 25-326 glosses the same cell shape as the "stated
+  expiration time of Event Contract", rulebook 2302.E puts termination in its own
+  per-contract rule, and SER-9586RR carries the identical five termination times
+  against a wholly different 24/7 session. One key, therefore, not six or seven.
+  The family is closed before its sourced launch: CME SER-8968R lists the ten
+  Chapter 23 roots "Effective Sunday, September 18, 2022, for trade date Monday,
+  September 19, 2022", and the row is keyed to the venue-local opening day
+  because the first session opens that Sunday evening. SER-9092's `ECBTC`
+  listing of 2023-03-12 and rule filing 25-521's hourly listing of 2025-12-08
+  both reprint the hours cell unchanged, so both are member catalog data rather
+  than clock revisions. The ledger row is **Partial** with an **executable**
+  gap: SER-8968R states the queues, the open and the relist but no daily close,
+  so 16:00 CT is carried back from SER-9624 (2025-10-15) and SER-9740R
+  (2026-05-28, which states the same grid in Central time for a table including
+  `ECBTC`) with no cutover asserted. `ECBTC` **leaves this key on 2026-05-29**,
+  when SER-9740R moved that root alone to 24/7 trading and CME's client-systems
+  wiki confirmed the scope — "Other event contracts will continue on the current
+  schedule." No key replaces it: those two sources disagree by an hour on the new
+  daily close (16:00 versus 15:00 CT) and the disputed hour is exactly the old
+  expiry instant, so post-cutover `ECBTC` is recorded as an unsupported family
+  rather than modelled. Excludes the Chapter 22 swap-based economic and
+  cryptocurrency event contracts and the CME FutureSports index contracts. The
+  envelope is now identical to **two** other keys — `globex_spot_quoted` and
+  `globex_weather` — while no history overlaps: weather closed 15:15 CT until
+  2025-04-13, spot-quoted did not exist until 2025-06-29, and a single midweek
+  afternoon in 2023 separates all three.
+
 - **`MarketHoursKey::GlobexSpotQuoted`** — CME/CBOT Spot-Quoted Futures
   ("SQF"), Rulebook Chapter 24, on the canonical wire name
   `globex_spot_quoted`. Eight tradeable roots on one clock: `QSPX`, `QNDX`,

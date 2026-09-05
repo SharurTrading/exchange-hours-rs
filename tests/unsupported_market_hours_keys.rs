@@ -28,6 +28,7 @@ const SUPPORTED_FAMILY_NAMES: &[&str] = &[
     "globex_mini_grains",
     "globex_weather",
     "globex_spot_quoted",
+    "globex_event_contracts",
 ];
 
 /// Names that must never resolve, because no single venue-wide grid exists.

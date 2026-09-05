@@ -37,7 +37,7 @@ The internal ownership and extension model is documented in
   markets, and always-open crypto, with independently fenced point-in-time
   revisions wherever primary evidence states an unconditional day-level boundary.
 - **Session queries** — open/closed by regular/extended/both, session bounds, next open, gaps.
-- **Product-family calendars** — all 28 operator-derived `MarketHoursKey`
+- **Product-family calendars** — all 29 operator-derived `MarketHoursKey`
   values have fixed, point-in-time, and date-aware query surfaces.
 - **Caller-supplied day policy** — whole trade-date closures, early final
   closes, and late first opens can be overlaid without putting mutable or
@@ -158,7 +158,7 @@ assert_eq!(calendar.exchange(), None);
 | US equities and ATS | 19 | `America/New_York` | 09:30–16:00 regular on matching venues; modeled accepted-order envelopes differ by venue. The set includes LTSE (08:00–17:00), 24X's live daytime service (04:00–20:00), and TXSE (08:00–17:00), each closed before its sourced production launch. Announced overnight expansions remain monitored and unencoded until their readiness conditions and live days are confirmed. |
 | FINRA TRFs | 3 | `America/New_York` | 09:30–16:00 regular; outside-RTH reporting is extended under the sourced 04:00–20:00 system envelope from 2026-03-30. FINRA's announced overnight expansion remains unencoded while its date depends on the SIP rollout. |
 | US options | 18 | `America/New_York` | Ordinary individual-stock options trade 09:30–16:00 regular. Seventeen venues also expose their current generic order-acceptance queue as extended (06:00, 07:00, or 07:30 by operator); MEMX rejects orders before 09:30. Product-specific ETF, ETN, index, FLEX, floor-only, and designated sessions remain outside scope. Exact launch history is retained, while an unknown historical queue-onset day is disclosed as Partial rather than invented. |
-| CME Globex futures | 4 | `US/Central` | The count is four compatibility `Exchange` identities (CME, CBOT, COMEX, NYMEX); eleven product-family keys cover scoped U.S. equity indexes, NYMEX energy/PGM and COMEX metals, standard-size CBOT grains, mini-sized CBOT grains, Rough Rice, standard-grid CME FX, CBOT/CME interest rates, CME livestock, Nikkei 225 Dollar, CME weather temperature-index futures, and CME non-spot-quoted cryptocurrency futures. Fixed-current profiles include the published Pre-Open/order-entry and PCP phases. Dated selectors retain only source-dated phase changes, so all eleven key histories—and the four venue defaults that reuse the standard grids—are Partial where an older phase-onset day is unavailable. Weather futures have no regular session and closed 15:15 CT until CME SER-9519 expanded them to 16:00 CT on 2025-04-13. Cryptocurrency moved from the five-day 17:00→16:00 grid to 24/7 trading on 2026-05-29. Its weekday maintenance is 16:00–16:02 with Pre-Open from 16:01; Saturday maintenance is 02:00–04:00 with Pre-Open from 03:45. |
+| CME Globex futures | 4 | `US/Central` | The count is four compatibility `Exchange` identities (CME, CBOT, COMEX, NYMEX); thirteen product-family keys cover scoped U.S. equity indexes, NYMEX energy/PGM and COMEX metals, standard-size CBOT grains, mini-sized CBOT grains, Rough Rice, standard-grid CME FX, CBOT/CME interest rates, CME livestock, Nikkei 225 Dollar, CME weather temperature-index futures, CME non-spot-quoted cryptocurrency futures, CME/CBOT Spot-Quoted Futures, and CME Group event contracts. Fixed-current profiles include the published Pre-Open/order-entry and PCP phases. Dated selectors retain only source-dated phase changes, so twelve of the thirteen key histories—and the four venue defaults that reuse the standard grids—are Partial where an older phase-onset day or a carried-back boundary is unavailable; `globex_spot_quoted` is the exception. Weather futures have no regular session and closed 15:15 CT until CME SER-9519 expanded them to 16:00 CT on 2025-04-13. Cryptocurrency moved from the five-day 17:00→16:00 grid to 24/7 trading on 2026-05-29. Its weekday maintenance is 16:00–16:02 with Pre-Open from 16:01; Saturday maintenance is 02:00–04:00 with Pre-Open from 03:45. |
 | Cboe Futures (CFE) | 1 | `US/Central` | RTH 08:30–15:00 flows into post-settlement 15:00–16:00; conservative latest queue-acceptance edges are Sunday 16:00:06 and Monday–Thursday 16:45:06 before the 17:00→08:30 overnight wrap. |
 | EU equities | 14 | 11 European zones | 09:00–17:30 continuous as the continental default, with venue-owned phases: Xetra's DAX-share envelope includes participant-restricted Extended Retail from 07:00 to 22:00; LSE SETS includes 07:00 pre-trading, randomized opening/noon auctions, and CPX to 16:40; central Euronext profiles use the published nominal phase boundaries and exclude per-security randomized uncross seconds; SIX, BME, Vienna, and Nasdaq Nordic books keep their own phases and clocks. |
 | Asia-Pacific equities | 17 | 14 IANA zones | ASX, TMX Australia, NZX, TSE, NSE India, BSE India, HKEX, SGX Securities, Bursa Malaysia, SET, IDX, PSE, HOSE, SSE, SZSE, KRX, and TWSE. Venue unions include accepted block/crossing phases; SET also includes the sourced 2025 DR night session. Security eligibility may be narrower than the exchange envelope. |
@@ -174,7 +174,7 @@ non-`Unknown` identities. See the checked
 labels, stable enum variants, canonical wire names, and each ledger basis.
 
 Futures hours track the *product family*, not merely the listing venue.
-`MarketHoursKey` has 29 variants—28 operator-derived product-family keys plus
+`MarketHoursKey` has 30 variants—29 operator-derived product-family keys plus
 the synthetic `AlwaysOpen` key. They reuse profiles and are not additional
 venues. `session_profile` exposes each family's fixed-current static table;
 `hours_for_market_hours_key` selects the sourced snapshot at the caller's
@@ -216,7 +216,15 @@ despite sharing the same envelope today. CME/CBOT Spot-Quoted Futures
 `globex_spot_quoted`: they have no regular session, they launched only on
 2025-06-29, and CME kept them on the five-day grid when the cryptocurrency
 family moved to 24/7 trading on 2026-05-29, so neither
-`globex_equity_index` nor `globex_cryptocurrency` answers for them. The same applies to the
+`globex_equity_index` nor `globex_cryptocurrency` answers for them. CME Group
+event contracts (`ECES`/`ECNQ`/`ECRTY`/`ECYM`/`EC6E`/`ECCL`/`ECNG`/`ECGC`/`ECSI`/`ECHG`
+and the hourly Chapter 23A roots) must select `globex_event_contracts`: their
+per-root Termination of Trading times are stated *expiration* times, not session
+closes, so all of them run one 17:00→16:00 CT grid rather than the six their
+published hours cells appear to describe. `ECBTC` rides that key only from
+2023-03-12 to 2026-05-28, because CME moved that one root to 24/7 trading on
+2026-05-29 and two of its own primary sources disagree by an hour on the new
+daily close, so no key models it afterwards. The same applies to the
 two venues whose default now covers only a small slice of what they list:
 `Exchange::Iceus` resolves to NYSE FANG+, so Sugar No. 11, Coffee "C", Cocoa,
 Cotton No. 2, FCOJ-A and the U.S. Dollar Index must select `ice_us_sugar`,
@@ -233,7 +241,8 @@ Family selection is exact: consumers must never substitute the nearest venue
 or product-family key when a product is outside that key's documented scope.
 Nikkei 225 Dollar futures (`NKD`), the six ICE Futures U.S. families, CBOT
 mini-sized grains, CBOT Rough Rice, CME weather temperature-index futures, CME/CBOT
-Spot-Quoted Futures, and Eurex fixed income all ship as sourced keys.
+Spot-Quoted Futures, CME Group event contracts, and Eurex fixed income all ship as
+sourced keys.
 All eight spot-quoted roots share one key because their normal week and dated
 history are identical; their holiday half-day closes are not, so a caller
 attaching date exceptions to `globex_spot_quoted` must build them separately
@@ -286,12 +295,13 @@ reports a market as tradeable. A gap in an order-entry window only changes
 whether orders could be *queued* ahead of an open that is itself modelled
 correctly; no trade can print in one of those windows on any venue in this crate.
 Every `Partial` row states which kind it is, and the split is **34 order-entry
-to 14 executable** across the 48 rows in the ledger. The order-entry majority is
+to 15 executable** across the 49 rows in the ledger. The order-entry majority is
 the exact *day* an older queue or post-close phase started, with the trading
-session itself sourced. The executable fourteen — the ICE Futures U.S. keys, CME
-Nikkei 225 Dollar, the SGX equity-index keys, and `nyse` and `nyse_american`,
+session itself sourced. The executable fifteen — the ICE Futures U.S. keys, CME
+Nikkei 225 Dollar, the SGX equity-index keys, `nyse` and `nyse_american`,
 whose January-2010 off-hours crossing phase was reclassified from order-entry on
-2026-09-02 — are each served conservatively, erring toward closed rather than
+2026-09-02, and `globex_event_contracts`, whose daily close is carried back to its
+2022 launch — are each served conservatively, erring toward closed rather than
 claiming hours they cannot support. A recent executable-only audit of all
 sixteen US futures product families found none of them withholding executable
 time that the current grid serves. Rows carry this distinction in the ledger, so
@@ -323,10 +333,10 @@ issue evidence. `Exchange::Unknown` is synthetic and is not one of the 93
 source-backed identities.
 
 The key surface was audited separately:
-**Hours verified at the review date for each product family:** `28 of 28` operator-derived
+**Hours verified at the review date for each product family:** `29 of 29` operator-derived
 `MarketHoursKey` values. The key API provides fixed-current snapshots, an
 `as_of` selector, and a date-aware calendar for sourced histories. Six key
-rows are **Primary** and 22 are **Partial**, because a named historical
+rows are **Primary** and 23 are **Partial**, because a named historical
 queue, PCP amendment day, or undated venue transition cannot be dated from a
 primary source.
 

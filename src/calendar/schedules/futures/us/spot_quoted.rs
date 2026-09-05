@@ -32,7 +32,7 @@ use crate::calendar::schedules::timeline::{Revision, local_date, revisions, sele
 // https://www.cmegroup.com/rulebook/files/spot-quoted-futures-listing-and-procedures-table.xlsx
 //
 // ONE KEY FOR ALL EIGHT, AND THE REASON IS NOT "THE GRIDS NEVER DIFFER". They
-// do differ, on half-days. CME's own trading-hours service, read 2026-09-06,
+// do differ, on half-days. CME's own trading-hours service, read 2026-09-05,
 // publishes a 4/4 split along the equity/cryptocurrency line: on Thanksgiving
 // Friday 2026-11-27 the four equity roots (Globex security groups `D1`-`D4`)
 // carry `closed@12:00` while the four cryptocurrency roots (`D5`, `D6`, `D7`,
@@ -72,7 +72,7 @@ use crate::calendar::schedules::timeline::{Revision, local_date, revisions, sele
 // separating on U.S. Monday holidays, where `ES` opens Sunday evening and
 // trades a shortened Monday session while every SQF root is shut. Labor Day
 // 2026 is the worked example — `ES` (id 133) returns `preopen@16:00` on Sunday
-// 2026-09-06 and `preopen@12:00` on Monday 2026-09-07, while all eight SQF ids
+// 2026-09-05 and `preopen@12:00` on Monday 2026-09-07, while all eight SQF ids
 // return *no* Sunday events and nothing on Monday before that evening's
 // `preopen@16:45` for trade date 2026-09-08. That divergence is holiday data
 // and is therefore not encoded here; it is recorded because it refutes the
@@ -256,7 +256,7 @@ static FROM_2025_06_29: StaticHoursProfile = StaticHoursProfile {
 //
 // NO KNOWLEDGE-BOUND ROW, BECAUSE THERE IS NO UNDATED PHASE. Both the matching
 // leg and both queues are stated by SER-9506R on the launch day and returned
-// unchanged by CME's live specification API and session service on 2026-09-06;
+// unchanged by CME's live specification API and session service on 2026-09-05;
 // the four CME families with a knowledge-bound review row have it because
 // their Sunday queue's onset day is genuinely unsourced, which is not the case
 // here. The residual risk is stated rather than hidden: no single document
@@ -264,7 +264,7 @@ static FROM_2025_06_29: StaticHoursProfile = StaticHoursProfile {
 // endpoints. CME's session service is forward-only — a query for the launch
 // week 2025-06-28..2025-07-04 returns empty days — so the interior cannot be
 // sampled. What can be done was done: a sweep of CME's notice-search index
-// from 2025-04-01 to the 2026-09-06 review date (about 1,800 notices) returns
+// from 2025-04-01 to the 2026-09-05 review date (about 1,800 notices) returns
 // nine notices
 // mentioning spot-quoted futures — SER-9506R, SER-9630RR, SER-9739, clearing
 // advisories 25-154, 25-201 and 25-348, and market-regulation notices

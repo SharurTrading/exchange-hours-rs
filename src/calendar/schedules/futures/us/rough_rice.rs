@@ -160,9 +160,25 @@ static FROM_2015_07_05: StaticHoursProfile = profile(
     CBOT_EXTENDED_CURRENT,
     CBOT_ORDER_ENTRY_CURRENT,
 );
-// The divergence: the 19:00-21:00 CT evening leg replaces the wrapping
-// 19:00-07:45 one, and the queue set narrows to the two evening pre-opens the
-// contract specification publishes.
+// The divergence. 18-001 dates ONE thing: the executable evening leg, which
+// stops wrapping and becomes 19:00-21:00 CT. It is silent on the queues, so
+// nothing here claims the queues changed on 2018-01-21 and no queue cutover is
+// asserted anywhere in this timeline.
+//
+// What the queue set records instead is the sourced intersection over the
+// interval that begins here. Two queue states are sourced for this contract:
+// the standard grain set this profile inherits for the earlier eras, and the
+// two evening pre-opens CME's Rough Rice specification publishes today. No
+// document dates a move between them, so the interval serves the set that
+// holds under both -- the narrower one -- exactly as the crate's
+// sourced-intersection convention requires.
+//
+// The alternative, carrying the inherited 08:00-08:30 and 14:30-16:00 CT
+// windows forward, would make the dated surface report order acceptance today
+// that CME's current specification does not publish: an over-report of
+// queueing, and in the present tense. Serving the intersection under-reports
+// queueing for whatever part of the interval still had the wider set. That is
+// the safe direction and it touches no window in which a trade can print.
 static DATED_CURRENT: StaticHoursProfile = profile(
     ROUGH_RICE_REGULAR_CURRENT,
     ROUGH_RICE_EXTENDED_CURRENT,

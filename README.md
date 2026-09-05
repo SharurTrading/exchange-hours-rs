@@ -264,8 +264,8 @@ trades print — the regular or extended session — would change whether the cr
 reports a market as tradeable. A gap in an order-entry window only changes
 whether orders could be *queued* ahead of an open that is itself modelled
 correctly; no trade can print in one of those windows on any venue in this crate.
-Every `Partial` row states which kind it is, and the split is **34 order-entry
-to 12 executable** across the 46 rows in the ledger. The order-entry majority is
+Every `Partial` row states which kind it is, and the split is **35 order-entry
+to 12 executable** across the 47 rows in the ledger. The order-entry majority is
 the exact *day* an older queue or post-close phase started, with the trading
 session itself sourced. The executable twelve — the ICE Futures U.S. keys, CME
 Nikkei 225 Dollar and the SGX equity-index keys — are each served

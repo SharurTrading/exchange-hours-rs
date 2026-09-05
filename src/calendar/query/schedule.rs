@@ -183,10 +183,12 @@ impl<'a> QueryContext<'a> {
     /// Assigns bounds produced by a normal-week rule to their trade date.
     ///
     /// Most profiles use the local date of the final close. Identified
-    /// calendars retain two sourced exceptions: SET's after-midnight DR night
-    /// phase belongs to its prior local opening date, and CME cryptocurrency's
-    /// weekend blocks carry the following business date. A detached fixed
-    /// snapshot has no identity with which to apply either convention.
+    /// calendars retain three sourced exceptions: SET's after-midnight DR night
+    /// phase belongs to its prior local opening date, CBOT Rough Rice's
+    /// evening leg belongs to the following local date, and CME
+    /// cryptocurrency's weekend blocks carry the following business date. A
+    /// detached fixed snapshot has no identity with which to apply any of
+    /// them.
     pub(super) fn normal_trade_date_for_bounds(
         self,
         open: DateTime<Utc>,

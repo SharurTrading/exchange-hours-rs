@@ -30,6 +30,7 @@ use crate::calendar::schedules::futures::us::{
     ICE_US_FANG_EXTENDED_CURRENT, ICE_US_FANG_ORDER_ENTRY_CURRENT, ICE_US_FANG_REGULAR_CURRENT,
     ICE_USDX_EXTENDED_CURRENT, ICE_USDX_ORDER_ENTRY_CURRENT, ICE_USDX_REGULAR_CURRENT,
     INTEREST_RATES_CURRENT, LIVESTOCK_CURRENT, NKD_EXTENDED_CURRENT, NKD_REGULAR_CURRENT,
+    ROUGH_RICE_EXTENDED_CURRENT, ROUGH_RICE_ORDER_ENTRY_CURRENT, ROUGH_RICE_REGULAR_CURRENT,
     SUGAR_EXTENDED_CURRENT, SUGAR_ORDER_ENTRY_CURRENT, SUGAR_REGULAR_CURRENT,
 };
 
@@ -56,6 +57,15 @@ static FUTURES_GLOBEX_GRAINS: FuturesSessionProfile = FuturesSessionProfile {
     regular: CBOT_REGULAR_CURRENT,
     extended: CBOT_EXTENDED_CURRENT,
     order_entry: CBOT_ORDER_ENTRY_CURRENT,
+    has_daily_close: true,
+    has_weekend_close: true,
+};
+
+static FUTURES_GLOBEX_ROUGH_RICE: FuturesSessionProfile = FuturesSessionProfile {
+    tz: US::Central,
+    regular: ROUGH_RICE_REGULAR_CURRENT,
+    extended: ROUGH_RICE_EXTENDED_CURRENT,
+    order_entry: ROUGH_RICE_ORDER_ENTRY_CURRENT,
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -258,6 +268,7 @@ pub fn session_profile(key: MarketHoursKey) -> &'static FuturesSessionProfile {
         MarketHoursKey::SgxEquityIndexSingapore => &FUTURES_SGX_EQUITY_INDEX_SINGAPORE,
         MarketHoursKey::SgxEquityIndexTaiwan => &FUTURES_SGX_EQUITY_INDEX_TAIWAN,
         MarketHoursKey::SgxEquityIndexNtrUsd => &FUTURES_SGX_EQUITY_INDEX_NTR_USD,
+        MarketHoursKey::GlobexRoughRice => &FUTURES_GLOBEX_ROUGH_RICE,
         MarketHoursKey::Sgx => &FUTURES_SGX,
         MarketHoursKey::AlwaysOpen => &FUTURES_ALWAYS_OPEN,
     }

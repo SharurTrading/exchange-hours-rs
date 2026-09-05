@@ -659,6 +659,15 @@ fn all_key_calendars_match_dated_snapshots_over_two_cutover_free_years() {
         .single()
         .expect("fixture must have a valid end");
 
+    // Rough Rice is the one key whose daily bar is identity-dependent: CBOT
+    // Submission 18-001 assigns its non-wrapping 19:00-21:00 CT evening leg to
+    // the following trade date, which only an identified calendar can know. A
+    // detached snapshot has no identity and falls back to the close-date
+    // default, exactly as `docs/schedules/sources.md` states for fixed
+    // snapshots. Open/closed state must still agree everywhere, and the flag
+    // below fails the test if this carve-out ever goes stale.
+    let mut rough_rice_daily_bars_diverged = false;
+
     while instant < end {
         for &key in MarketHoursKey::ALL {
             let calendar = calendar_for_market_hours_key(key);
@@ -668,12 +677,22 @@ fn all_key_calendars_match_dated_snapshots_over_two_cutover_free_years() {
                 snapshot.is_open(instant),
                 "{key}"
             );
-            assert_eq!(
-                calendar.candle_end(instant, CalendarResolution::Daily),
-                exchange_hours::candle_end(&snapshot, instant, CalendarResolution::Daily),
-                "{key} at {instant}",
-            );
+            let calendar_bar = calendar.candle_end(instant, CalendarResolution::Daily);
+            let snapshot_bar =
+                exchange_hours::candle_end(&snapshot, instant, CalendarResolution::Daily);
+            if key == MarketHoursKey::GlobexRoughRice && calendar_bar != snapshot_bar {
+                rough_rice_daily_bars_diverged = true;
+                continue;
+            }
+            assert_eq!(calendar_bar, snapshot_bar, "{key} at {instant}");
         }
         instant += Duration::hours(1);
     }
+
+    assert!(
+        rough_rice_daily_bars_diverged,
+        "the Rough Rice daily-bar carve-out is stale: the identified calendar and the \
+         detached snapshot now agree, so the exemption belongs in neither this test nor \
+         the documentation"
+    );
 }

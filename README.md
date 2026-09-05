@@ -37,7 +37,7 @@ The internal ownership and extension model is documented in
   markets, and always-open crypto, with independently fenced point-in-time
   revisions wherever primary evidence states an unconditional day-level boundary.
 - **Session queries** — open/closed by regular/extended/both, session bounds, next open, gaps.
-- **Product-family calendars** — all 24 operator-derived `MarketHoursKey`
+- **Product-family calendars** — all 25 operator-derived `MarketHoursKey`
   values have fixed, point-in-time, and date-aware query surfaces.
 - **Caller-supplied day policy** — whole trade-date closures, early final
   closes, and late first opens can be overlaid without putting mutable or
@@ -174,7 +174,7 @@ non-`Unknown` identities. See the checked
 labels, stable enum variants, canonical wire names, and each ledger basis.
 
 Futures hours track the *product family*, not merely the listing venue.
-`MarketHoursKey` has 25 variants—24 operator-derived product-family keys plus
+`MarketHoursKey` has 26 variants—25 operator-derived product-family keys plus
 the synthetic `AlwaysOpen` key. They reuse profiles and are not additional
 venues. `session_profile` exposes each family's fixed-current static table;
 `hours_for_market_hours_key` selects the sourced snapshot at the caller's
@@ -200,7 +200,10 @@ The venue-keyed API retains these explicit defaults for compatibility:
 
 Those defaults are the wrong choice for any product outside the named family.
 CME interest-rate, livestock, and cryptocurrency products must use their family
-keys rather than `Exchange::Cme` or `Exchange::Cbot`. The same applies to the
+keys rather than `Exchange::Cme` or `Exchange::Cbot`. `Exchange::Cbot` resolves
+to the standard grain and oilseed grid, so Rough Rice (`ZR`/`OZR`) must select
+`globex_rough_rice`: its extended session was cut to Sunday-Thursday
+19:00-21:00 CT on 2018-01-21 and no longer wraps past midnight. The same applies to the
 two venues whose default now covers only a small slice of what they list:
 `Exchange::Iceus` resolves to NYSE FANG+, so Sugar No. 11, Coffee "C", Cocoa,
 Cotton No. 2, FCOJ-A and the U.S. Dollar Index must select `ice_us_sugar`,
@@ -215,8 +218,8 @@ fixed income likewise has its own `eurex_fixed_income` key, distinct from the
 
 Family selection is exact: consumers must never substitute the nearest venue
 or product-family key when a product is outside that key's documented scope.
-Nikkei 225 Dollar futures (`NKD`), the six ICE Futures U.S. families, and Eurex
-fixed income all ship as sourced keys. SGX equity-index products do **not**
+Nikkei 225 Dollar futures (`NKD`), the six ICE Futures U.S. families, CBOT
+Rough Rice, and Eurex fixed income all ship as sourced keys. SGX equity-index products do **not**
 share one grid, so they ship as five separate keys and the ambiguous name
 `sgx_equity_index` stays rejected rather than resolving to one venue-wide clock.
 See
@@ -293,10 +296,10 @@ issue evidence. `Exchange::Unknown` is synthetic and is not one of the 93
 source-backed identities.
 
 The key surface was audited separately:
-**Hours verified at the review date for each product family:** `24 of 24` operator-derived
+**Hours verified at the review date for each product family:** `25 of 25` operator-derived
 `MarketHoursKey` values. The key API provides fixed-current snapshots, an
 `as_of` selector, and a date-aware calendar for sourced histories. Five key
-rows are **Primary** and nineteen are **Partial**, because a named historical
+rows are **Primary** and twenty are **Partial**, because a named historical
 queue, PCP amendment day, or undated venue transition cannot be dated from a
 primary source.
 
@@ -648,7 +651,7 @@ that callers do not also get (see [Architecture: Tests](ARCHITECTURE.md#tests)).
   JSE, Tadawul, B3, and BMV.
 - `tests/schedule_documentation.rs` and `tests/schedule_documentation/` — a
   thin harness over contracts that keep all 94 `Exchange` rows (93
-  non-synthetic plus `Unknown`) and 25 `MarketHoursKey` rows (24
+  non-synthetic plus `Unknown`) and 26 `MarketHoursKey` rows (25
   operator-derived plus `AlwaysOpen`) in canonical order; validates their
   review metadata and owner/source links; requires both current and
   notice/evidence channels for every source set; rejects orphaned source sets;

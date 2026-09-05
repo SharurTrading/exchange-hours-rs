@@ -13,6 +13,31 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Added
 
+- **`MarketHoursKey::GlobexRoughRice`** — CBOT Rough Rice futures (`ZR`) and
+  options (`OZR`), Rulebook chapters 17 and 17A, on the canonical wire name
+  `globex_rough_rice`. Rough Rice ran on the standard CBOT grain and oilseed
+  grid until CBOT Submission 18-001 cut its CME Globex extended session from
+  Sunday–Friday 19:00–07:45 CT to Sunday–Thursday 19:00–21:00 CT, effective
+  Sunday 2018-01-21 for trade date Monday 2018-01-22; from that day the family
+  has no midnight-wrapping session. Regular hours are unchanged at
+  Monday–Friday 08:30–13:20 CT, and the current queue set is the Sunday
+  16:00–19:00 and Monday–Thursday 16:45–19:00 CT Pre-Opens CME's Rough Rice
+  contract specification publishes. No morning Pre-Open or post-close Pre-Open
+  is modeled after the divergence, because that specification publishes
+  neither. The six pre-2018 revisions are inherited from the reviewed
+  `globex_grains` encoding rather than sourced separately for `ZR`, so the
+  ledger row is **Partial**; `globex_grains` behavior is unchanged, and Rough
+  Rice is now explicitly outside its scope.
+
+  `calendar_for_market_hours_key(MarketHoursKey::GlobexRoughRice)` also carries
+  the trade-date assignment 18-001 states — the evening leg belongs to the
+  following local date — so the 21:00–08:30 CT break is a `Halt` inside one
+  trade date and a daily bar runs from the evening open to the next 13:20 CT
+  close. Like CME cryptocurrency's weekend convention, this is identity-derived:
+  a detached `MarketHours` snapshot keeps exact open/closed state but falls back
+  to the close-date default for trade dates and daily bars. No other identity's
+  answers change.
+
 - **Checked Databento venue crosswalk.** All 50 distinct venue labels in the
   supplied equities, equity-options, futures, and options-on-futures inventory
   are mapped to their existing non-`Unknown` `Exchange` identities, canonical

@@ -51,6 +51,177 @@ fn date_aware_queries_are_total_at_chrono_bounds() {
     }
 }
 
+/// The open/bounds pair each surface returns for the caller to fence.
+type OpenAndBounds = (bool, Option<(DateTime<Utc>, DateTime<Utc>)>);
+
+/// Runs one query under a label, so a panic names the entry point that failed.
+#[expect(
+    clippy::panic,
+    reason = "re-raising a caught panic with the failing query's name is this fence's whole purpose"
+)]
+fn total<T>(
+    key: MarketHoursKey,
+    instant: DateTime<Utc>,
+    query: &str,
+    call: impl FnOnce() -> T,
+) -> T {
+    std::panic::catch_unwind(std::panic::AssertUnwindSafe(call))
+        .unwrap_or_else(|_| panic!("{key:?}: {query} panicked at chrono bound {instant}"))
+}
+
+/// Every resolution on both surfaces, each named individually.
+fn exercise_every_resolution(
+    key: MarketHoursKey,
+    instant: DateTime<Utc>,
+    snapshot: &MarketHours,
+    calendar: ExchangeCalendar,
+) {
+    for resolution in [
+        CalendarResolution::Daily,
+        CalendarResolution::Weekly,
+        CalendarResolution::Monthly,
+        CalendarResolution::Seconds(1),
+    ] {
+        total(
+            key,
+            instant,
+            &format!("candle_end(&snapshot, {resolution:?})"),
+            || candle_end(snapshot, instant, resolution),
+        );
+        total(
+            key,
+            instant,
+            &format!("candle_start(&snapshot, {resolution:?})"),
+            || candle_start(snapshot, instant, resolution),
+        );
+        total(
+            key,
+            instant,
+            &format!("ExchangeCalendar::candle_end({resolution:?})"),
+            || calendar.candle_end(instant, resolution),
+        );
+        total(
+            key,
+            instant,
+            &format!("ExchangeCalendar::candle_start({resolution:?})"),
+            || calendar.candle_start(instant, resolution),
+        );
+    }
+}
+
+/// The fixed-snapshot surface. Returns the open/bounds pair the caller fences.
+fn exercise_fixed_surface(
+    key: MarketHoursKey,
+    instant: DateTime<Utc>,
+    snapshot: &MarketHours,
+) -> OpenAndBounds {
+    let open = total(key, instant, "MarketHours::is_open", || {
+        snapshot.is_open(instant)
+    });
+    let bounds = total(key, instant, "session_bounds(&snapshot)", || {
+        session_bounds(snapshot, instant)
+    });
+    total(key, instant, "next_session_after(&snapshot)", || {
+        next_session_after(snapshot, instant)
+    });
+    total(key, instant, "MarketHours::is_maintenance", || {
+        snapshot.is_maintenance(instant)
+    });
+    total(key, instant, "MarketHours::is_accepting_orders", || {
+        snapshot.is_accepting_orders(instant)
+    });
+    for kind in [
+        SessionKind::Regular,
+        SessionKind::Extended,
+        SessionKind::Both,
+    ] {
+        total(
+            key,
+            instant,
+            &format!("MarketHours::is_closed_all_day_at({kind:?})"),
+            || snapshot.is_closed_all_day_at(instant, chrono_tz::UTC, kind),
+        );
+    }
+    (open, bounds)
+}
+
+/// The dated-calendar surface. Returns the open/bounds pair the caller fences.
+fn exercise_calendar_surface(
+    key: MarketHoursKey,
+    instant: DateTime<Utc>,
+    calendar: ExchangeCalendar,
+) -> OpenAndBounds {
+    let open = total(key, instant, "ExchangeCalendar::is_open", || {
+        calendar.is_open(instant)
+    });
+    let bounds = total(key, instant, "ExchangeCalendar::session_bounds", || {
+        calendar.session_bounds(instant)
+    });
+    total(key, instant, "ExchangeCalendar::next_session_after", || {
+        calendar.next_session_after(instant)
+    });
+    total(key, instant, "ExchangeCalendar::is_maintenance", || {
+        calendar.is_maintenance(instant)
+    });
+    total(key, instant, "ExchangeCalendar::trade_date", || {
+        calendar.trade_date(instant)
+    });
+    total(key, instant, "normal_week_open_seconds_containing", || {
+        calendar.normal_week_open_seconds_containing(instant)
+    });
+    for kind in [
+        SessionKind::Regular,
+        SessionKind::Extended,
+        SessionKind::Both,
+    ] {
+        total(
+            key,
+            instant,
+            &format!("ExchangeCalendar::is_closed_all_day_at({kind:?})"),
+            || calendar.is_closed_all_day_at(instant, chrono_tz::UTC, kind),
+        );
+    }
+    (open, bounds)
+}
+
+/// The same totality contract, over `MarketHoursKey` rather than `Exchange`.
+///
+/// The test above iterates `Exchange::ALL` only, so until this existed **no
+/// product-family key was covered at Chrono's edges** — not the ones added
+/// recently and not the original twenty-odd either. `LAW-PANIC` is a promise
+/// about every public entry point, and `calendar_for_market_hours_key` is one,
+/// so the gap was in the fence rather than in the engine.
+///
+/// Each query runs under its own label, because a bare "key panicked at bound"
+/// message cannot say which of two dozen entry points, resolutions or session
+/// kinds failed — and pointing at the one that did is the whole value here.
+/// The surfaces are split into helpers to stay inside the 100-line limit.
+#[test]
+fn date_aware_key_queries_are_total_at_chrono_bounds() {
+    for &key in MarketHoursKey::ALL {
+        let calendar = calendar_for_market_hours_key(key);
+        for instant in [DateTime::<Utc>::MIN_UTC, DateTime::<Utc>::MAX_UTC] {
+            let snapshot = total(key, instant, "hours_for_market_hours_key", || {
+                hours_for_market_hours_key(key, instant)
+            });
+            let (fixed_open, fixed_bounds) = exercise_fixed_surface(key, instant, &snapshot);
+            let (open, bounds) = exercise_calendar_surface(key, instant, calendar);
+            exercise_every_resolution(key, instant, &snapshot, calendar);
+
+            assert_eq!(
+                fixed_open,
+                fixed_bounds.is_some_and(|(start, end)| start <= instant && instant < end),
+                "{key:?} fixed query fence failed at {instant}"
+            );
+            assert_eq!(
+                open,
+                bounds.is_some_and(|(start, end)| start <= instant && instant < end),
+                "{key:?} calendar query fence failed at {instant}"
+            );
+        }
+    }
+}
+
 #[test]
 fn synthetic_always_open_utc_profile_has_exact_chrono_edge_sessions() {
     let calendar = calendar_for_exchange(Exchange::Unknown);

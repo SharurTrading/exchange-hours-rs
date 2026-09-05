@@ -10,7 +10,7 @@
 //!
 //! This file is that rendering. It is not a correctness proof - a golden file
 //! agrees with whatever is committed - but it converts every silent table edit
-//! into a reviewable diff, and it covers all 94 exchanges and all 27 keys at
+//! into a reviewable diff, and it covers all 94 exchanges and all 28 keys at
 //! once rather than depending on someone remembering to hand-write a baseline.
 //!
 //! To regenerate after an intended schedule change:

@@ -26,6 +26,7 @@ const SUPPORTED_FAMILY_NAMES: &[&str] = &[
     "sgx_equity_index_ntr_usd",
     "globex_rough_rice",
     "globex_mini_grains",
+    "globex_weather",
 ];
 
 /// Names that must never resolve, because no single venue-wide grid exists.

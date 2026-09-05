@@ -13,6 +13,40 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Added
 
+- **`MarketHoursKey::GlobexWeather`** — CME weather temperature-index
+  **futures** (CME Globex security group `HW`): the HDD, CDD and CAT monthly,
+  seasonal-strip and quarterly-strip contracts for the US, European and Pacific
+  Rim cities, on the canonical wire name `globex_weather`. One family on one
+  grid, all quoted in America/Chicago whatever city the index measures, and no
+  regular session in any era — weather futures have never been pit-eligible.
+  The key exists because matching today's envelope is not matching the family,
+  and this is the crate's clearest case of it: the current grid (extended
+  Sunday and Monday-Thursday 17:00→16:00 CT wrapping midnight, Pre-Opens Sunday
+  16:00-17:00 and Monday-Thursday 16:45-17:00, a 60-minute daily halt from
+  16:00, no Friday-evening reopen) is byte-for-byte the `globex_fx` and
+  `globex_energy` envelope, while the history matches neither. Weather closed
+  **15:15 CT** from the January-2010 floor until CME SER-9519 expanded it to
+  16:00 CT effective Sunday 2025-04-13 for trade date Monday 2025-04-14 — the
+  family's one dated revision, keyed to the venue-local opening day so the
+  wrapped rule gives Monday the sourced close. FX has run 17:00→16:00 since the
+  floor and energy closed 16:15 until 2015-09-20; weather sat that move out
+  entirely, every capture of its own specification after that day still reading
+  3:15 p.m., from 2016-12-01 through 2022-06-30. Three keys, one envelope, three histories.
+  **Excludes options on weather futures** (security group `W7`), which traded
+  Monday-Friday 08:30-15:15 CT on the CME trading floor for most of the audited
+  history; the day they moved to CME Globex is bracketed only to
+  (2023-03-08, 2023-09-29] with no CME notice naming it, so no
+  `globex_weather_options` key is created and weather options remain caller
+  catalog data. CME ClearPort is deliberately not modelled, and its own hours
+  changed between SER-7606R (2016) and SER-9519 (2025). Every executable window
+  is dated and sourced; the ledger row is **Partial** for the order-entry
+  record only — CME's weather trading-hours pages published no Pre-Open columns
+  at all before 2012, and the Sunday queue's 16:15→16:00 widening is bracketed
+  to 2012-05-28..2012-06-07 on weather's own rows with both CME notice channels
+  silent, so the dated profiles carry the sourced 16:15-17:00 intersection from
+  the January-2010 floor and only the 16:00-16:15 quarter-hour waits on the
+  2026-09-05 knowledge-bound row.
+
 - **`MarketHoursKey::GlobexMiniGrains`** — CBOT mini-sized grain futures,
   Mini-Sized Corn (`XC`), Mini-Sized Soybean (`XK`), Mini-Sized Wheat (`XW`),
   and Mini-Sized KC HRW Wheat (`MKC`), on the canonical wire name

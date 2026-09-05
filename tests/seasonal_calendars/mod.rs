@@ -14,10 +14,11 @@ mod prelude {
     pub(super) use chrono::{DateTime, Datelike, Duration, NaiveDate, TimeZone, Utc};
     pub(super) use chrono_tz::{America, Asia, Europe, US};
     pub(super) use exchange_hours::{
-        CalendarResolution, Exchange, ExchangeCalendar, MarketHours, SessionKind,
-        calendar_for_exchange, candle_end, candle_end_with, candle_start, candle_start_with,
-        hours_for_exchange, next_session_after, next_session_after_with, session_bounds,
-        session_bounds_with, time_end_of_day,
+        CalendarResolution, Exchange, ExchangeCalendar, MarketHours, MarketHoursKey, SessionKind,
+        calendar_for_exchange, calendar_for_market_hours_key, candle_end, candle_end_with,
+        candle_start, candle_start_with, hours_for_exchange, hours_for_market_hours_key,
+        next_session_after, next_session_after_with, session_bounds, session_bounds_with,
+        time_end_of_day,
     };
 
     pub(super) use crate::support::local;

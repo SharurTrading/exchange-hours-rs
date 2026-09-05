@@ -6,6 +6,7 @@ mod cme_families;
 mod cme_mini_grains;
 mod cme_nikkei;
 mod cme_rough_rice;
+mod cme_weather;
 mod ice;
 mod sgx_equity_index;
 

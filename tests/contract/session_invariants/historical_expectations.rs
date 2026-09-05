@@ -623,18 +623,24 @@ pub(super) const HISTORICAL_CUTOVERS: &[(Exchange, Ymd, chrono_tz::Tz)] = &[
         (2013, 5, 7),
         chrono_tz::America::New_York,
     ),
-    // Knowledge-bound rows that remain: the cash-equity and CME venues whose
-    // verified-current order-acceptance (and, for NYSE, early-session) phases
-    // apply from the 2026-08-22 repository review. The seventeen US options
-    // venues no longer appear here - their queues are carried across history,
-    // so no profile changes on that day. Cboe EDGA no longer appears either:
-    // its queue now starts on the sourced 2014-11-13 approval day.
-    (Exchange::Nyse, (2026, 8, 22), chrono_tz::America::New_York),
+    // NYSE began trading UTP securities on Pillar on 2018-04-09, the day its
+    // Rule 7.34 06:30 acceptance edge and 07:00 Early Trading Session first
+    // reached the venue envelope.
+    (Exchange::Nyse, (2018, 4, 9), chrono_tz::America::New_York),
+    // NYSE Arca moved its rulebook acceptance edge from 03:30 to 02:30 on
+    // Monday 2021-09-13, the day its own Trader Update names.
     (
         Exchange::NyseArca,
-        (2026, 8, 22),
+        (2021, 9, 13),
         chrono_tz::America::New_York,
     ),
+    // Knowledge-bound rows that remain: the CME venues whose verified-current
+    // order-acceptance phases apply from the 2026-08-22 repository review. The
+    // seventeen US options venues no longer appear here - their queues are
+    // carried across history, so no profile changes on that day. Cboe EDGA no
+    // longer appears either: its queue now starts on the sourced 2014-11-13
+    // approval day. Nor do NYSE and NYSE Arca, whose acceptance and
+    // early-session phases are dated above.
     (Exchange::Cme, (2026, 8, 22), chrono_tz::US::Central),
     (Exchange::Comex, (2026, 8, 22), chrono_tz::US::Central),
     (Exchange::Nymex, (2026, 8, 22), chrono_tz::US::Central),

@@ -46,7 +46,7 @@ evidence, and therefore do not alter the historical selectors.
 | Equities | Nasdaq Texas | `Exchange::NasdaqBx` | `nasdaq_bx` | Primary |
 | Equities | NYSE | `Exchange::Nyse` | `nyse` | Partial |
 | Equities | NYSE American | `Exchange::NyseAmerican` | `nyse_american` | Partial |
-| Equities | NYSE Arca | `Exchange::NyseArca` | `nyse_arca` | Partial |
+| Equities | NYSE Arca | `Exchange::NyseArca` | `nyse_arca` | Primary |
 | Equities | NYSE National | `Exchange::NyseNational` | `nyse_national` | Partial |
 | Equities | NYSE Texas | `Exchange::NyseTexas` | `nyse_texas` | Primary |
 | Equity options | BOX Options | `Exchange::BoxOptions` | `box_options` | Partial |

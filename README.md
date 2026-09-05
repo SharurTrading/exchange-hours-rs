@@ -243,10 +243,10 @@ same pass and carry their own basis labels in the ledger.
 **Hours verified against the exchange at the review date:** `93 of 93` non-synthetic
 `Exchange` identities, within each row's documented normal-week scope.
 
-**Full dated history back to January 2010:** `66 of 93` non-synthetic
+**Full dated history back to January 2010:** `67 of 93` non-synthetic
 `Exchange` identities.
 
-**History complete except for one named gap:** `27 of 93` non-synthetic
+**History complete except for one named gap:** `26 of 93` non-synthetic
 `Exchange` identities.
 
 In plain terms:
@@ -254,11 +254,11 @@ In plain terms:
 - **All 93 venues are right for today.** Every venue's present-day normal week
   was compared against the operator's own published schedule, inside the scope
   its ledger row states. None is unreviewed, and none is known to be wrong.
-- **66 of them are also right for any date back to January 2010.** Ask one of
+- **67 of them are also right for any date back to January 2010.** Ask one of
   these what the hours were on an arbitrary past date and every answer is
   carried by dated primary sources the whole way back.
-- **The other 27 are right for today, and right for the past except for one
-  specific thing each.** Every one of those 27 rows names its own gap in the
+- **The other 26 are right for today, and right for the past except for one
+  specific thing each.** Every one of those 26 rows names its own gap in the
   [ledger](docs/schedules/verification.md), and the gap is bounded: where a
   phase is sourced at both ends, the crate serves the part that is true under
   every sourced state and withholds only the disputed remainder.
@@ -268,18 +268,19 @@ trades print — the regular or extended session — would change whether the cr
 reports a market as tradeable. A gap in an order-entry window only changes
 whether orders could be *queued* ahead of an open that is itself modelled
 correctly; no trade can print in one of those windows on any venue in this crate.
-Every `Partial` row states which kind it is, and the split is **36 order-entry
-to 12 executable** across the 48 rows in the ledger. The order-entry majority is
+Every `Partial` row states which kind it is, and the split is **33 order-entry
+to 14 executable** across the 47 rows in the ledger. The order-entry majority is
 the exact *day* an older queue or post-close phase started, with the trading
-session itself sourced. The executable twelve — the ICE Futures U.S. keys, CME
-Nikkei 225 Dollar and the SGX equity-index keys — are each served
-conservatively, erring toward closed rather than claiming hours they cannot
-support. A recent executable-only audit of all sixteen US futures product
-families found none of them withholding executable time that the current grid
-serves. Rows carry this distinction in the ledger, so check there before treating
-a `Partial` label as a reason to hesitate.
+session itself sourced. The executable fourteen — the ICE Futures U.S. keys, CME
+Nikkei 225 Dollar, the SGX equity-index keys, and `nyse` and `nyse_american`,
+whose January-2010 off-hours crossing phase was reclassified from order-entry on
+2026-09-02 — are each served conservatively, erring toward closed rather than
+claiming hours they cannot support. A recent executable-only audit of all
+sixteen US futures product families found none of them withholding executable
+time that the current grid serves. Rows carry this distinction in the ledger, so
+check there before treating a `Partial` label as a reason to hesitate.
 
-Those 27 are not all the same, and the ledger says which kind each one is. Most
+Those 26 are not all the same, and the ledger says which kind each one is. Most
 are **knowledge-bound**: a real exchange change happened and no operator ever
 published the day, because the value was an operator system setting no filing
 ever fixed — searching harder will not close them. A few are **source-limited**:
@@ -291,14 +292,14 @@ wrote the 06:00 order-entry start into Rule 11.1(a)(1) have been identified and
 dated, and Direct Edge's own FIX and API specifications supply the earlier
 07:00 queue back to launch — leaving a knowledge-bound residue of four months
 in late 2010 and early 2011 during which the specifications move acceptance
-from 07:00 to 06:00 with no source naming the day. Closing all 27 is the current
+from 07:00 to 06:00 with no source naming the day. Closing all 26 is the current
 priority, ahead of any built-in holiday data — the exception-session engine
 ships, its data does not.
 
 Every non-synthetic identity was compared with its official current-hours or
 rulebook material and its notice/evidence channel. All 93 current profiles are
-primary-supported within their stated scope. The 66 **Primary** rows have no
-known modeled-history gap since January 2010 or their sourced launch; 27
+primary-supported within their stated scope. The 67 **Primary** rows have no
+known modeled-history gap since January 2010 or their sourced launch; 26
 **Partial** rows name an older queue, PCP phase, or exact onset that available
 primary evidence cannot date. No row relies on Secondary, Pragmatic, or Known
 issue evidence. `Exchange::Unknown` is synthetic and is not one of the 93

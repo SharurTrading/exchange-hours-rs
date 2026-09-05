@@ -232,6 +232,42 @@ corrections (a venue's hours fixed against a primary source) go under
   ledger's classification-status note is replaced with the completed result and
   the README carries the split. No profile, selector, or schedule data changed.
 
+- **The four NYSE equity early-session rows are re-answered from evidence, and
+  two of them are reclassified.** The question asked of each row was whether its
+  order-acceptance time is a *rulebook* provision (findable, dateable) or an
+  *operator system setting* (structurally undateable, like the US options
+  queues). On all four it is a rulebook provision: NYSE Rule 7.34(a)(1), NYSE
+  Arca Rule 7.34-E(a)(1), NYSE American Rule 7.34E(a)(1) and NYSE National Rule
+  7.34 all say the exchange "will begin accepting orders 30 minutes before the
+  Early Trading Session begins", and the legacy National grid sat in NSX Rule
+  11.1 ("Hours of Trading"). None of these rows is knowledge-bound in the way
+  the options queues are.
+
+  `nyse` and `nyse_american` are therefore reclassified from **order-entry** to
+  **executable** gaps. Their residue is not a queue: NYSE ran Crossing Session
+  II, the surviving leg of its Off-Hours Trading Facility, from before the audit
+  floor until 18:30 on 2024-01-31, and neither row models any post-16:00 phase.
+  Crossing Session I was eliminated in 2009, below the floor. The crate errs
+  toward closed there, and whether member-organization aggregate-priced basket
+  crosses belong in a cash-equity venue envelope is an open scope decision, so
+  nothing was encoded from the two endpoints. `nyse_national` is recategorised
+  from an unfinished search to **source-limited**: NSX's floor-era table is
+  stated outright by its own 2010 filing and every later change is dated, but
+  Rule 11.1(a) also let the Board set hours by Regulatory Circular, and NSX's
+  circular archive is gone — nsx.com survives in the web archive only as index
+  pages. The ledger split becomes **32 order-entry to 14 executable** across 46
+  `Partial` rows, superseding the 34/12-of-46 figures in the entry above, which
+  `MarketHoursKey::GlobexRoughRice` had already carried to 35/12-of-47.
+
+- **The NYSE trader-update archive is now a usable primary channel.** The
+  trader-update page is a client-side application and the web archive captured
+  it as "No results found", which is why earlier passes treated it as
+  unreadable. The page's own public, unauthenticated JSON endpoint serves the
+  full archive back to 2006 — subject, complete body, publication date, and
+  market tags, 500 notices per page. It is recorded in `docs/schedules/sources.md`
+  and in the channel-access notes in `docs/schedules/updating.md`. It is what
+  dated NYSE Arca's 2021-09-13 order-entry move, which no SEC filing states.
+
 ### Fixed
 
 - **SGX equity index: the later of the two undated transitions is now dated, and
@@ -364,6 +400,37 @@ corrections (a venue's hours fixed against a primary source) go under
 
   `HISTORICAL_CUTOVERS` gains `cboe_edgx` 2014-10-29 and `cboe_edga` 2014-11-13
   and drops `cboe_edga` 2026-08-22.
+
+- **NYSE Arca: the 03:30→02:30 order-entry move is dated, and 03:30 is carried
+  back to the audit floor (behaviour change).** The row previously served no
+  queue at all before its 2026-08-22 knowledge-bound review row. Two sourced
+  states are now modelled. Pre-Pillar Rule 7.35(a)(1) began accepting orders 30
+  minutes before the 04:00 Opening Session, and the Pillar I filing carried that
+  text into Rule 7.34-E(a)(1) "without any substantive differences" (80 FR
+  28721); no reviewed filing changes that edge between January 2010 and 2015, so
+  03:30–04:00 is carried back to the floor and no revision row is asserted for
+  it. SR-NYSEArca-2021-71 (86 FR 46296) then moved it to 90 minutes but deferred
+  production to a Trader Update — and that Trader Update, issued 2021-08-11 and
+  repeated on 2021-09-09, states the day unconditionally: "Beginning on Monday,
+  September 13, 2021, NYSE Arca will change the time for order entry to 2:30
+  a.m. ET." Archived captures of the exchange's hours page agree, showing 3:30
+  on 2021-09-12 and 2:30 on 2021-09-27. A 03:00 ET instant in 2015 now answers
+  `OrderEntry` where it answered `Closed`; 02:45 answers `OrderEntry` from
+  2021-09-13 and `Closed` before it. The row moves from **Partial** to
+  **Primary**, and `HISTORICAL_CUTOVERS` trades its 2026-08-22 review row for
+  the sourced 2021-09-13 one.
+
+- **NYSE: the 06:30 queue and 07:00 Early Trading Session are dated to
+  2018-04-09 (behaviour change).** The row previously deferred both phases to
+  its 2026-08-22 knowledge-bound review row because no source was thought to
+  give an exchange-wide onset day. Two NYSE filings give it without condition:
+  "On April 9, 2018, the Exchange began trading UTP Securities on the Exchange
+  on the Pillar trading platform" (83 FR 23313, restated in 84 FR 37702), and
+  the exchange's Trader Update of 2018-03-27 announced the same day. Tape A
+  migrated in tranches from 2019-08-05, which extends the same phases to more
+  symbols without moving the venue-level onset. A 07:30 ET instant in 2019 now
+  answers open-extended where it answered `Closed`, and 06:30 answers
+  `OrderEntry`. The row stays **Partial** for the reasons above.
 
 - **CME Nikkei 225 Dollar: the 2011 grid is no longer carried across 2010, where
   it was wrong (behaviour change).** An earlier commit on this branch carried the

@@ -11,7 +11,18 @@ use crate::calendar::schedules::timeline::{Revision, local_date, revisions, sele
 
 // CME weather temperature-index FUTURES in America/Chicago: the HDD, CDD and
 // CAT monthly, seasonal-strip and quarterly-strip contracts listed on CME
-// (XCME) under CME Globex security group `HW` — US HDD `H0`-`H7`/`HQ`/`HR`/
+// SYMBOL, NOT SECURITY GROUP. `HW` is the Globex tag 55-Symbol these futures
+// share; it is NOT a family-wide tag 1151-SecurityGroup, and an earlier draft
+// of this module said it was. CME's Globex notice of 2010-02-22 is explicit:
+// Pacific Rim Hiroshima weather monthly futures "will use tag
+// 1151-SecurityGroup= HJ", their seasonal strips take eleven month-coded
+// groups (`HJV`, `HJX`, `HJZ`, `HJF`, `HJG`, `HJJ`, `HJK`, `HJM`, `HJN`,
+// `HJQ`, `HJU`), and "All futures will be listed with tag 55-Symbol= HW".
+// The security group therefore varies by city and contract month while the
+// symbol does not, so only the symbol can name the family.
+// https://www.cmegroup.com/tools-information/lookups/advisories/electronic-trading/20100222.html
+// https://web.archive.org/web/20190824051344id_/https://www.cmegroup.com/tools-information/lookups/advisories/electronic-trading/20100222.html
+// (XCME), all listed with CME Globex tag 55-Symbol `HW` — US HDD `H0`-`H7`/`HQ`/`HR`/
 // `HS`/`HW`/`LP`, US CDD `K0`-`K7`/`KQ`/`KR`/`KS`/`KW`/`KP`, European HDD
 // `D0`/`D1`/`D2`/`D4`, European CAT `G0`/`G1`/`G2`/`G4`, Pacific Rim CAT `G6`,
 // and their `X`/`Z`/`K`/`N` seasonal and current quarterly strips. CME
@@ -20,7 +31,7 @@ use crate::calendar::schedules::timeline::{Revision, local_date, revisions, sele
 //
 // EXCLUDES OPTIONS. Options on weather futures carry the same roots as their
 // futures and today publish the same Globex line, but they are a different
-// Globex security group (`W7`) and, for most of the audited history, a
+// Globex identifier and, for most of the audited history, a
 // different venue: they were an open-outcry product on the CME trading floor.
 // CME's US Monthly Weather HDD OPTIONS specification reads "Trading Hours /
 // (All times listed are Central Time) / Open Outcry / (Trading Floor) /
@@ -75,7 +86,7 @@ use crate::calendar::schedules::timeline::{Revision, local_date, revisions, sele
 //
 // The product-family separation is equally sharp on CME's own taxonomy:
 // weather is CME (XCME), financially settled off a published temperature
-// index, with its own Globex security groups (`HW` futures, `W7` options), its
+// index, with its own Globex identifiers (see the symbol note above), its
 // own rulebook chapters (CME 403/403A, 405/405A, 407/407A, 408/408A, 409/409A
 // — European CAT seasonal-strip options sit in 409A), and its own Daily
 // Bulletin section 24, which carries every weather sub-group at once: WEATHER

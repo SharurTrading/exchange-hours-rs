@@ -233,7 +233,7 @@ market_hours_keys! {
         /// CME's Rough Rice specification publishes neither.
         GlobexRoughRice => "globex_rough_rice",
         /// CME weather temperature-index **futures** (CME Globex security
-        /// group `HW`): the HDD, CDD and CAT monthly, seasonal-strip and
+        /// tag 55 symbol `HW`): the HDD, CDD and CAT monthly, seasonal-strip and
         /// quarterly-strip contracts for the US, European and Pacific Rim
         /// cities, all quoted in Chicago time. **Excludes options on weather
         /// futures**, which are a separate Globex security group and traded

@@ -14,11 +14,26 @@ sequences the exchange-hours side of that.
 
 ## Where the research already lives — READ THIS FIRST
 
-**Local only, outside both repos** (sessions and their `/tmp` scratchpads are
-disposable, and agent runs have died mid-flight on usage limits):
+The research store is **deliberately not in this repository**, and it is not a
+committed artifact. Two reasons, in order of importance:
+
+1. **It holds retrieved primary documents** — exchange PDFs, archived operator
+   pages, a member-mirrored circular. This repository's posture is to *cite*
+   primary sources and quote what they state, never to redistribute them.
+   Committing the store would republish third-party material.
+2. Sessions and their `/tmp` scratchpads are disposable, and agent runs have
+   died mid-flight on usage limits, so the notes need somewhere durable that is
+   also not version-controlled noise.
+
+**Convention:** the store lives at `$EXCHANGE_HOURS_RESEARCH`, defaulting to
+`../exchange-hours-research` beside this checkout. Set the variable if you keep
+it elsewhere. If it is absent you have not lost anything reproducible — every
+conclusion in it is reconstructible from the citations recorded in the source
+comments, the ledger, and `docs/schedules/sources.md`; the store is a cache of
+that retrieval, not a second source of truth.
 
 ```
-/Users/agedvagabond/Developer/exchange-hours-research/
+$EXCHANGE_HOURS_RESEARCH/          # default: ../exchange-hours-research
 ├── STATUS.md                      start here — threads, state, next steps
 ├── cme-globex/
 │   ├── rough-rice.md / .json      DELIVERED as PR #47
@@ -41,9 +56,13 @@ verbatim quotes, dated revisions each with a working citation, an explicit
 **unsourced** list, and a reuse verdict. The unsourced lists are as important as
 the findings — do not silently close a gap another agent recorded as open.
 
-The audit inputs are at
-`/Users/agedvagabond/Developer/SharurPlatform/catalog-artifacts/glbx-mdp3/`
-(`market-hours-profile-inventory.md` is the work list).
+The audit inputs come from the SharurPlatform repository, at
+`catalog-artifacts/glbx-mdp3/` within that checkout —
+`market-hours-profile-inventory.md` is the work list, with
+`market-hours-electronic-envelope-candidates.tsv` and
+`market-hours-root-classification.tsv` beside it. They are generated artifacts
+owned by that repository and are not vendored here; regenerate them there rather
+than copying them in.
 
 ## The constraint that governs every item
 

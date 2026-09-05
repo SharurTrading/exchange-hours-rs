@@ -37,7 +37,8 @@ use super::schedules::futures::us::{
     cbot_profile_at, cfe_profile_at, cme_profile_at, cocoa_profile_at, coffee_profile_at,
     cotton_profile_at, cryptocurrency_profile_at, energy_metals_profile_at, fcoj_profile_at,
     fx_profile_at, ice_us_fang_profile_at, ice_usdx_profile_at, interest_rates_profile_at,
-    livestock_profile_at, nkd_profile_at, rough_rice_profile_at, sugar_profile_at,
+    livestock_profile_at, mini_grains_profile_at, nkd_profile_at, rough_rice_profile_at,
+    sugar_profile_at,
 };
 use super::{Exchange, MarketHours, SessionRule};
 
@@ -125,8 +126,10 @@ market_hours_keys! {
     ///
     /// The venue-keyed compatibility defaults are CME →
     /// [`GlobexEquityIndex`](Self::GlobexEquityIndex), CBOT →
-    /// [`GlobexGrains`](Self::GlobexGrains) — which excludes Rough Rice, whose
-    /// grid diverged in 2018 and needs
+    /// [`GlobexGrains`](Self::GlobexGrains) — which excludes the mini-sized
+    /// grains and Rough Rice, whose grids diverged from it (2012 and
+    /// 2018-01-21 respectively) and need
+    /// [`GlobexMiniGrains`](Self::GlobexMiniGrains) and
     /// [`GlobexRoughRice`](Self::GlobexRoughRice) — COMEX/NYMEX →
     /// [`GlobexEnergy`](Self::GlobexEnergy), CFE → [`CfeVix`](Self::CfeVix),
     /// Eurex → [`Eurex`](Self::Eurex), ICEUS → [`IceUs`](Self::IceUs), and SGX
@@ -145,11 +148,23 @@ market_hours_keys! {
         /// energy/metals history. Excludes TAS/TAM/BTIC, options, and products
         /// whose own specification publishes a different grid.
         GlobexEnergy => "globex_energy",
-        /// Standard-size CBOT grain/oilseed Globex hours; excludes mini-sized
-        /// Corn, Soybean, and Wheat futures, whose 2012 schedule diverged, and
-        /// Rough Rice, whose extended session diverged on 2018-01-21 and which
-        /// has its own [`GlobexRoughRice`](Self::GlobexRoughRice) key.
+        /// Standard-size CBOT grain/oilseed Globex hours; excludes the
+        /// mini-sized grain futures, which have their own
+        /// [`GlobexMiniGrains`](Self::GlobexMiniGrains) key, and Rough Rice,
+        /// whose extended session diverged on 2018-01-21 and which has its
+        /// own [`GlobexRoughRice`](Self::GlobexRoughRice) key.
         GlobexGrains => "globex_grains",
+        /// CBOT mini-sized grain futures — Mini-Sized Corn (`XC`), Mini-Sized
+        /// Soybean (`XK`), Mini-Sized Wheat (`XW`), and Mini-Sized KC HRW
+        /// Wheat (`MKC`, listed 2014-03-23; launch dates remain caller
+        /// catalog data) — on the Globex mini grid. Its day session closed 30
+        /// minutes after the standard grains' from before the January-2010
+        /// floor, it skipped the standard grid's 2015-07-05 close change
+        /// entirely, and it converged with that grid only on 2022-10-02, so
+        /// the envelopes match today while the histories do not. Excludes the
+        /// standard-size corn/soybean/wheat/KC-wheat contracts, Rough Rice,
+        /// and the Micro Ag futures, which follow the standard grid.
+        GlobexMiniGrains => "globex_mini_grains",
         /// CME FX futures on the standard 17:00-16:00 CT Globex grid; excludes
         /// eFix, BTIC, TAS, options, and products with a different specification.
         GlobexFx => "globex_fx",
@@ -254,6 +269,7 @@ pub fn hours_for_market_hours_key(key: MarketHoursKey, as_of: DateTime<Utc>) -> 
         MarketHoursKey::GlobexEquityIndex => cme_profile_at(as_of),
         MarketHoursKey::GlobexEnergy => energy_metals_profile_at(as_of),
         MarketHoursKey::GlobexGrains => cbot_profile_at(as_of),
+        MarketHoursKey::GlobexMiniGrains => mini_grains_profile_at(as_of),
         MarketHoursKey::GlobexFx => fx_profile_at(as_of),
         MarketHoursKey::GlobexInterestRates => interest_rates_profile_at(as_of),
         MarketHoursKey::GlobexLivestock => livestock_profile_at(as_of),

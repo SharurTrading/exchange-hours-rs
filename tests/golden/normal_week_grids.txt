@@ -526,6 +526,13 @@ globex_grains | order-en | ------------Su | 16:00:00-19:00:00
 globex_grains | order-en | MoTuWeThFr---- | 08:00:00-08:30:00
 globex_grains | order-en | MoTuWeThFr---- | 14:30:00-16:00:00
 globex_grains | order-en | MoTuWeTh------ | 16:45:00-19:00:00
+globex_mini_grains | tz US/Central | week_open_seconds 316500
+globex_mini_grains | regular  | MoTuWeThFr---- | 08:30:00-13:20:00
+globex_mini_grains | extended | MoTuWeTh----Su | 19:00:00-07:45:00 +1d
+globex_mini_grains | order-en | ------------Su | 16:00:00-19:00:00
+globex_mini_grains | order-en | MoTuWeThFr---- | 08:00:00-08:30:00
+globex_mini_grains | order-en | MoTuWeThFr---- | 14:30:00-16:00:00
+globex_mini_grains | order-en | MoTuWeTh------ | 16:45:00-19:00:00
 globex_fx | tz US/Central | week_open_seconds 414000
 globex_fx | regular  | (none)
 globex_fx | extended | MoTuWeTh----Su | 17:00:00-16:00:00 +1d

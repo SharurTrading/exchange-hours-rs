@@ -9,6 +9,7 @@ const EXPECTED_MARKET_HOURS_KEYS: &[(MarketHoursKey, &str)] = &[
     (MarketHoursKey::GlobexEquityIndex, "globex_equity_index"),
     (MarketHoursKey::GlobexEnergy, "globex_energy"),
     (MarketHoursKey::GlobexGrains, "globex_grains"),
+    (MarketHoursKey::GlobexMiniGrains, "globex_mini_grains"),
     (MarketHoursKey::GlobexFx, "globex_fx"),
     (MarketHoursKey::GlobexInterestRates, "globex_interest_rates"),
     (MarketHoursKey::GlobexLivestock, "globex_livestock"),

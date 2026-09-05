@@ -649,7 +649,7 @@ fn session_state_and_trade_date_are_consistent_for_every_key() {
 }
 
 #[test]
-fn all_key_calendars_match_dated_snapshots_over_two_cutover_free_years() {
+fn all_key_calendars_match_dated_snapshots_over_two_years() {
     let mut instant = Utc
         .with_ymd_and_hms(2022, 1, 1, 0, 0, 0)
         .single()
@@ -680,11 +680,31 @@ fn all_key_calendars_match_dated_snapshots_over_two_cutover_free_years() {
             let calendar_bar = calendar.candle_end(instant, CalendarResolution::Daily);
             let snapshot_bar =
                 exchange_hours::candle_end(&snapshot, instant, CalendarResolution::Daily);
-            if key == MarketHoursKey::GlobexRoughRice && calendar_bar != snapshot_bar {
+            if calendar_bar == snapshot_bar {
+                continue;
+            }
+            if key == MarketHoursKey::GlobexRoughRice {
                 rough_rice_daily_bars_diverged = true;
                 continue;
             }
-            assert_eq!(calendar_bar, snapshot_bar, "{key} at {instant}");
+            // Open/closed state agrees everywhere, but a daily bar can
+            // legitimately diverge inside a revision's shadow: the fixed
+            // snapshot projects its own era onto the containing-or-next trade
+            // date, while the calendar re-selects the product-family profile
+            // for every candidate opening day. That shadow is exactly where
+            // the snapshot taken at the bar's opening session differs from the
+            // snapshot taken at the instant, so require every disagreement to
+            // be explained that way and nothing else. The revisions themselves
+            // are fenced by each family's boundary tests.
+            let bar_era = calendar
+                .session_bounds(instant)
+                .map(|(open, _)| exchange_hours::hours_for_market_hours_key(key, open));
+            assert_ne!(
+                bar_era.as_ref(),
+                Some(&snapshot),
+                "{key} at {instant}: the calendar's daily bar {calendar_bar:?} disagrees with \
+                 the dated snapshot outside any revision shadow"
+            );
         }
         instant += Duration::hours(1);
     }

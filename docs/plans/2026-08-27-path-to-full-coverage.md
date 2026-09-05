@@ -282,10 +282,16 @@ notice may close many.
       p.m. Eastern Time", which puts the start no later than 2015-01-08 and
       locates it in a rule an SEC filing must have established on a stated day.
       The 2010 registration order (75 FR 13151) does not carry the hours, so the
-      filing that first set Rule 11.1(a)(1) to 06:00 is the remaining target.
-      Do NOT close these rows with the permanent-gap language Batch A uses —
-      they are an unfinished search, and the Federal Register full-text API is
-      the tool that will finish it. The four NYSE rows have not been started.
+      filing that first set Rule 11.1(a)(1) to 06:00 was the remaining target.
+      **Cboe ×2 resolved 2026-09-02.** The Federal Register full-text API found
+      it: SR-EDGX-2014-18 (Release 34-73468, 2014-10-29) and SR-EDGA-2014-20
+      (Release 34-73592, 2014-11-13) adopted the 06:00 entry start, and Direct
+      Edge's archived FIX and High Performance API specifications supply the
+      07:00 acceptance window back to the 2010-07-02 launch. Both rows keep
+      `Partial` for one residual: the specifications move acceptance from 07:00
+      to 06:00 between the editions dated 2010-10-01 and 2011-02-03 and nothing
+      names the day, so the 06:00–07:00 hour waits for the 2014 approval. The
+      four NYSE rows have not been started.
 - [ ] Per row: follow `docs/schedules/updating.md` (open the monitoring
       sources, review everything since the row's `Reviewed on` date); add
       dated rows + `HISTORICAL_CUTOVERS`/instant entries + both-sides

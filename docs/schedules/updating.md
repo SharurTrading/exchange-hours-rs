@@ -102,6 +102,18 @@ by automated retrieval, which changes how a review must be run:
   `nasdaq.com/docs/*SystemSettings` serves the same content as static PDFs.
 - The **Federal Register full-text API** covers every SEC self-regulatory
   filing and is the most productive channel for US equity and options venues.
+  Search the operative phrase, not the rule number: the EDGA/EDGX 06:00 entry
+  start was found by querying the exact sentence
+  `"orders may be entered into the System from 6:00 a.m."`, which surfaced the
+  2014 adopting notices that a Rule-11.1 search had missed.
+- The **web archive's CDX API** (`web.archive.org/cdx/search/cdx`) stays
+  available when the replay endpoint is rate-limiting, and enumerating a
+  defunct operator's document directory is often the whole job. Direct Edge's
+  dated rule books and its FIX/API specifications — each carrying its own cover
+  version date — were found that way, and a decommissioned operator's technical
+  specification frequently states an order-acceptance window the rule book never
+  does. Prefer a document's own printed version date to its capture timestamp,
+  and remember that neither is an effective date (LAW-NO-FABRICATED-DATES).
 
 Search engines and industry summaries can locate evidence, but they do not
 establish a schedule. Final literals and day-level cutovers require an exchange,

@@ -240,13 +240,17 @@ change to this standalone repository must follow.
   all T+1 traded contracts" (issued 2019-10-07) date the two 2019 SGX moves
   that no reachable circular states. Record the interpretive step beside the
   row where a header scopes the items rather than sharing their cell. A bare
-  day-and-month in an operator's log means the entry's own year, provided the
-  log spells the year out whenever a day sits near a year boundary - SGX does
-  ("eff 22 Dec 18" issued 2018-12-18; "eff 21 Jan 19" issued 2019-01-07; "eff
-  13 Jan 2020" issued 2019-12-23), and every bare day in its sheet falls
-  within months of its issue date, so its "eff 10 Jun" of 2019-05-21 is
-  2019-06-10; a log that never spells a year gives the reader none, and the
-  entry fails the same-entry test. What this
+  day-and-month in an operator's log means the occurrence of that day nearest
+  the entry's issue date - the entry's own year except across a year turn -
+  and the warrant is the clustering, not the operator's spelling habit: every
+  one of SGX's 195 bare effective days resolves that way to within eleven
+  weeks of its issue date, 193 in the issue year and the two that cross both
+  in the entry issued 2024-12-31 ("eff 6 Jan", "eff 20 Jan"), while SGX
+  spelled the year at some turns ("eff 22 Dec 18" and "eff 21 Jan 19" issued
+  2018-12-18; "eff 13 Jan 2020" issued 2019-12-23) and not at that one. So
+  "eff 10 Jun" issued 2019-05-21 is 2019-06-10. A log whose bare days do not
+  cluster that tightly gives the reader no year, and the entry fails the
+  same-entry test. What this
   does not admit: a change log a reader must date from formatting alone, an
   entry whose day must be inferred from a month, filename or directory, or a
   member firm's own summary of the operator's log.

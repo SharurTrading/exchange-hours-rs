@@ -439,8 +439,8 @@ corrections (a venue's hours fixed against a primary source) go under
   China without the lunch break, to 15:05, with 09:00–09:15 as order entry, no
   closing routine and its T+1 open still held at 17:00. The 2013 table's state
   arrives as a revision row on all three keys at **Monday 2013-08-26** (it
-  lengthens the wrapping overnight close, so it is keyed to the Monday after
-  the capture; China's former 2013-08-20 row is folded into it). Pre-2010 and
+  creates a wrapping overnight close, 22:55 the same day to 02:00, so it is
+  keyed to the Monday after the capture; China's former 2013-08-20 row is folded into it). Pre-2010 and
   2010–2013 instants therefore under-report the T+1 leg by up to three hours
   and never over-report it. The routines between the content API's 2020-01-09
   payload and DT/AM 15 of 2025 are now sourced rather than carried — all 22

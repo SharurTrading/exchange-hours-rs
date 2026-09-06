@@ -43,16 +43,21 @@ macro_rules! era {
 
 // --- Japan -------------------------------------------------------------------
 
-// THE FLOOR: the intersection of the two oldest states SGX published for
-// NK/NU. SGX's own pre-portal specification page, captured 2009-03-08: "T
+// THE FLOOR: the intersection of the two oldest states SGX published for the
+// NK grid this key models. SGX's own pre-portal NK specification page,
+// captured 2009-03-08: "T
 // Session: Pre -Opening 7.30am -7.43 am / Non -Cancel Period 7.43am -7.45 am
 // / Opening 7.45 am - 2.25 pm / Pre-Closing 2.25 pm- 2.29 pm / Non-Cancel
 // Period 2. 29 pm - 2.30 pm // T+1 Session: Pre -Opening 3.15 pm - 3.28 pm /
 // Non -Cancel Period 3.28 pm - 3.30pm / Opening 3.30 pm - 10.55 pm". The
 // portal's Trading Hours table captured 2013-08-20: "SGX Nikkei 225 Index
 // Futures / SGX USD Nikkei 225 Index Futures | 7.45am to 2.25pm | 3.15pm to
-// 2.00am", routines excluded by its footnote. The T session and its closing
-// routine are identical in both; the T+1 leg moved (open 15:30 -> 15:15,
+// 2.00am", routines excluded by its footnote. The T session bounds are
+// identical in both, and the closing routine is NK's alone in 2009 - SGX's
+// separate NU page of 2009-02-27 prints "Opening 7.45 am - 2.30 pm" with no
+// pre-closing block, the divergence `history` records as residual risk (4);
+// the 2013 table is the first of the two that puts NK and NU on one row. The
+// T+1 leg moved (open 15:30 -> 15:15,
 // close 22:55 -> 02:00) on days no SGX artifact states, so from the
 // January-2010 floor to the 2013 witness the key serves what both hold: T+1
 // 15:30-22:55. The T pre-open queue 07:30-07:45 is stated in 2009 on the same
@@ -71,10 +76,11 @@ era!(SGX_JAPAN_FLOOR,
     order_entry: [(7, 30, 7, 45), (15, 15, 15, 30)]);
 
 // 2013-08-26. The 2013-08-20 table's state - T+1 15:15-02:00 - keyed to the
-// following Monday because it lengthens a wrapping overnight close, per the
-// convention `AGENTS.md` records: a capture is a knowledge boundary, never a
-// cutover, and a mid-week key would report Tuesday's leg running past the
-// 22:55 it opened under. The T queue is carried on its unchanged 07:45
+// following Monday because it creates a wrapping overnight close - the
+// floor's T+1 leg closes 22:55 on its own local day - per the convention
+// `AGENTS.md` records ("lengthens or creates"): a capture is a knowledge
+// boundary, never a cutover, and a mid-week key would report Monday's leg
+// running past the 22:55 it opened under. The T queue is carried on its unchanged 07:45
 // anchor; the T+1 queue is not, because its anchor moved and the 2013 page
 // states no length (#65).
 era!(SGX_JAPAN_FROM_2013_08_26,
@@ -147,9 +153,11 @@ era!(SGX_CHINA_FLOOR,
 // specification captured the same day states ("Pre - Opening 8.45 am - 8.58
 // am / Non - Cancel 8.58 am - 9.00 am / Opening 9.00 am - 3.55 pm / Pre -
 // Closing 3.55 pm - 3.59 pm / Non - Cancel 3.59 pm - 4.00 pm"), keyed to the
-// following Monday because it lengthens the wrapping overnight close from
-// 22:55 to 02:00 as well as widening the T close; the T+1 open stays held at
-// 17:00.
+// following Monday because it creates a wrapping overnight close (the
+// floor's T+1 leg ends 22:55 the same day; this row runs it to 02:00) as well
+// as widening the T close; the T+1 open stays held at 17:00, so the leaf's
+// 16:30-16:40 queue, anchored to a 16:40 open this row does not serve, is
+// withheld.
 era!(SGX_CHINA_FROM_2013_08_26,
     regular: [(9, 0, 15, 55), (17, 0, 2, 0)],
     extended: [(15, 55, 16, 0)],
@@ -179,7 +187,7 @@ era!(SGX_CHINA_FROM_2017_07_10,
 // Straits Times Index Futures | 8.30am to 5.10pm | 6.15pm to 2.00am". Only the
 // T+1 close moved (22:55 -> 02:00), undated, so the floor serves T+1
 // 18:15-22:55; both queues are stated in 2009 on opens that did not move
-// (the T queue 08:15-08:30 is byte-for-byte what SGX still prints in 2020)
+// (the T queue 08:15-08:30 is, to the minute, what SGX still prints in 2020)
 // and are carried with them. The ~2012 fragment prints the same bounds for
 // MSCI Singapore and a 07:55 open for the Straits Times future.
 // https://web.archive.org/web/20090308120909id_/http://www.sgx.com:80/psv/derivatives/futures_options/equity_index/SGX_MSCI_Singapore_Index.shtml
@@ -190,7 +198,8 @@ era!(SGX_SINGAPORE_FLOOR,
     order_entry: [(8, 15, 8, 30), (18, 0, 18, 15)]);
 
 // 2013-08-26. The 2013-08-20 table's state - T+1 to 02:00 - keyed to the
-// following Monday because it lengthens the wrapping overnight close.
+// following Monday because it creates a wrapping overnight close (22:55 the
+// same day to 02:00 the next).
 era!(SGX_SINGAPORE_FROM_2013_08_26,
     regular: [(8, 30, 17, 10), (18, 15, 2, 0)],
     extended: [(17, 10, 17, 15)],

@@ -118,16 +118,17 @@ use history::{
 // the January-2010 floor across every move, which made them the only rows in
 // the crate that could **over**-report. They no longer can: every undated move
 // is approached from the conservative side, every dated move begins on its
-// stated day, and every boundary that lengthens a wrapping overnight close —
-// 2013-08-26 (22:55 to 02:00), 2017-07-10 and 2018-04-16 (02:00 or
+// stated day, and every boundary that creates or lengthens a wrapping overnight close —
+// 2013-08-26 (22:55 the same day to 02:00), 2017-07-10 and 2018-04-16 (02:00 or
 // sessionless to 04:45) and 2019-11-11 (04:45 to 05:15, the Monday SGX itself
 // chose) — falls on a Monday so no
 // evening leg runs past the close in force when it opened. Like every other
 // Partial row in this crate they err toward Closed, which is the safe
-// direction for an order router. The stated residual risk in the other
-// direction is the first eight months of 2010, where third-party press
-// attests a 01:00 rather than 02:00 T+1 close; the carry-back convention
-// carries the sourced state anyway.
+// direction for an order router. Nothing remains in the other direction:
+// third-party press attests the T+1 close moving 22:55 -> 01:00 on
+// 2010-01-11 and 01:00 -> 02:00 on 2010-08-30, both inadmissible for a row,
+// and the floor serves 22:55 to 2013-08-25, so those days are under-reported
+// by up to three hours too and never over-reported.
 //
 // https://api2.sgx.com/sites/default/files/2026-01/SGX%20Calendar%202026_2.pdf
 // https://api2.sgx.com/sites/default/files/2026-08/Derivatives+Products+Description+v17.6%20eff%2020260824,%2020260907.zip
@@ -247,7 +248,7 @@ pub(crate) static SGX_EQUITY_INDEX_CHINA_BASELINE: StaticHoursProfile = StaticHo
 };
 
 // Four rows, for the reasons recorded in the history note: the floor grid is
-// this key's baseline; 2013-08-26 widens the T close and lengthens the T+1
+// this key's baseline; 2013-08-26 widens the T close and creates the wrapping T+1
 // close on the 2013-08-20 portal table and specification; 2017-07-10 is the State-A knowledge boundary; the
 // 2019-11-11 row, dated by SGX's change log, carries the 05:15 close and the
 // routines; and the current grid begins on the stated effective day of SGX-DT
@@ -363,7 +364,7 @@ pub(crate) static SGX_EQUITY_INDEX_SINGAPORE_BASELINE: StaticHoursProfile = Stat
     has_weekend_close: true,
 };
 
-// Five rows: the floor grid is this key's baseline; 2013-08-26 lengthens the
+// Five rows: the floor grid is this key's baseline; 2013-08-26 creates the wrapping
 // T+1 close on the 2013-08-20 table; 2017-07-10 is the State-A knowledge
 // boundary; 2019-06-10 is the SiMSCI move SGX's change log dates;
 // the 2019-11-11 row, dated by the same log, carries the 05:15 close; and the

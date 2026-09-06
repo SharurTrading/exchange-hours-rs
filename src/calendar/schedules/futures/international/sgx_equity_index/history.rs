@@ -79,10 +79,14 @@ use super::{MON_FRI, SessionRule, StaticHoursProfile};
 // file-encoded entry - SGX's own recurring convention in that column: of its
 // six "Effective <day>:" headers, four share the items' cell (rows 60, 61, 62
 // and 79) and two stand on their own row (83 and 87). A bare day-and-month
-// means the entry's own year: SGX spells the year out whenever a day sits
-// near a year boundary ("eff 22 Dec 18" issued 2018-12-18, r68; "eff 21 Jan
-// 19" issued 2019-01-07, r69; "eff 13 Jan 2020" issued 2019-12-23, r94), and
-// every bare day in the sheet falls within months of its issue date. Both
+// means the occurrence of that day nearest the entry's issue date: every one
+// of the sheet's 195 bare day-and-month tokens resolves that way to within
+// eleven weeks of its issue date (-77 to +60 days), 193 of them in the issue
+// year, and the two that cross are both in the entry issued 2024-12-31 (r166,
+// "eff 6 Jan", "eff 20 Jan" - 2025). SGX spelled the year at the 2018/19 and
+// 2019/20 turns ("eff 22 Dec 18" and "eff 21 Jan 19" issued 2018-12-18, r68;
+// "eff 13 Jan 2020" issued 2019-12-23, r94) but not at 2024/25, so the
+// warrant is the clustering, not a spelling habit. Both
 // days sit inside SGX-artifact brackets: the SiMSCI move between
 // the content API's 2019-02-04 payload (17:10 / 17:40) and its 2019-06-11
 // payload (17:20 / 17:50), the day after the stated 10 June; the 05:15 close
@@ -104,16 +108,23 @@ use super::{MON_FRI, SessionRule, StaticHoursProfile};
 //               07:45-14:25 / 15:30-22:55; A50 09:15-11:35, 13:00-15:05 /
 //               15:40-22:55; MSCI S'pore and STI 08:30-17:10 / 18:15-22:55;
 //               MSCI Taiwan 08:45-13:45 / 14:45-22:55. Each page states both
-//               pre-opening routines, the T one as 13 minutes plus a 2-minute
-//               non-cancel on every page and the T+1 one likewise except the
-//               A50's ("Pre -Opening 3.35 pm - 3.38 pm / Non -Cancel Period
-//               3.38 pm - 3.40 pm")
-//               (Nikkei "Pre -Opening 7.30am -7.43 am / Non -Cancel Period
-//               7.43am -7.45 am"; SiMSCI "Pre -Opening 8.15am -8.28 am / Non
-//               -Cancel Period 8.28am -8.30 am", "Pre -Opening 6.00 pm - 6.13
-//               pm / Non -Cancel Period 6.13 pm - 6.15pm"; A50 "Pre -Opening
-//               9.00am -9.13 am"), and the same 4+1 pre-closing routine the
-//               later pages print. Below the January-2010 floor.
+//               pre-opening routines - the T one as 13 minutes plus a
+//               2-minute non-cancel on every page (Nikkei "Pre -Opening
+//               7.30am -7.43 am / Non -Cancel Period 7.43am -7.45 am"; SiMSCI
+//               "Pre -Opening 8.15am -8.28 am / Non -Cancel Period 8.28am
+//               -8.30 am"; A50 "Pre -Opening 9.00am -9.13 am"), the T+1 one
+//               likewise (SiMSCI "Pre -Opening 6.00 pm – 6.13 pm / Non -Cancel
+//               Period 6.13 pm – 6.15pm") except the A50's ("Pre -Opening
+//               3.35 pm - 3.38 pm / Non -Cancel Period 3.38 pm - 3.40 pm") -
+//               and every page but the A50's states the same 4+1 pre-closing
+//               routine the later pages print (Nikkei "Pre-Closing 2.25 pm-
+//               2.29 pm / Non-Cancel Period 2. 29 pm - 2.30 pm"; SiMSCI
+//               "Pre-Closing 5.10 pm-5.14 pm / Non-Cancel Period 5.14 pm-
+//               5.15 pm"; MSCI Taiwan "Pre-Closing 1.45 pm - 1.49 pm / Non
+//               -Cancel Period 1. 49pm - 1.50 pm"). The A50 page prints none
+//               - its T block ends "1.00pm - 3.05pm" and "T+1 session" begins
+//               - which is why `SGX_CHINA_FLOOR` serves no extended phase.
+//               Below the January-2010 floor.
 //   W   ~2012   Nikkei 07:45-14:25 / 15:15-02:00; A50 09:00-15:25 / 16:10-02:00;
 //               MSCI S'pore 08:30-17:10 / 18:15-02:00; MSCI Taiwan 08:45-13:45 /
 //               14:35-02:00. An orphaned wcm/connect fragment captured
@@ -156,10 +167,14 @@ use super::{MON_FRI, SessionRule, StaticHoursProfile};
 // ("Amendments to NK suite, CH, CHO and CN trading hours") place the move in
 // 2016, though neither states a day (#66). The lower bound is the 2016
 // calendar edition's as-of date, 2015-12-24, so the S0 -> A window is
-// (2015-12-24, 2017-07-05), with both change-log entries, SGX's Titan DT/DC
-// newsletter "Extended Trading Hours, Price Limits and Trade at Settlement"
-// of 27 July 2016 (listed on the Titan portal's public index; the file is
-// password-locked) and the Titan launch itself inside it. SGX's Futures
+// (2015-12-24, 2017-07-05), with both change-log entries, the Titan DT/DC
+// newsletter SGX released on 27 July 2016 and the Titan launch itself inside
+// it. That newsletter's subject is a later label: SGX's Titan portal index
+// captured 2017-06-17 lists the 27 Jul 2016 row only as "Titan DTDC
+// Newsletter - New Feature Overview 2", and the title "Extended Trading
+// Hours, Price Limits and Trade at Settlement" appears only in the 2018-12
+// re-upload the current index serves; the file is password-locked either
+// way. SGX's Futures
 // Trading Rules carry thirty-six dated annotations for that system cutover
 // ("Amended on 14 November 2016" and its variants), none of them Rule 4.1.5,
 // which delegates hours to the contract specifications; the rulebook dates
@@ -183,13 +198,24 @@ use super::{MON_FRI, SessionRule, StaticHoursProfile};
 // 15:05, with 09:00-09:15 as order entry for the same reason and its T+1 open
 // held at 17:00 (below). The 2009 pre-open queues are served where their
 // anchor did not move (Nikkei T 07:30-07:45; SiMSCI 08:15-08:30 and
-// 18:00-18:15) and withheld where it did (Nikkei T+1, A50 T+1); the A50's T
-// queue coincides with the 09:00-09:15 order-entry window the intersection
-// already serves. The
-// S0 state then arrives as a dated row on all three keys, keyed to Monday
-// 2013-08-26 rather than the Tuesday capture because it lengthens the wrapping
-// overnight close; its T+1 queues are withheld because S0 states no length
-// and the anchors moved, except SiMSCI's 18:00-18:15, whose anchor did not.
+// 18:00-18:15) and withheld where it did (A50 T+1, whose 15:35-15:40 sits
+// inside the floor's closed gap between the 15:05 T close and the 17:00 T+1
+// open); the Nikkei's T+1 queue 15:15-15:30 and the A50's T queue
+// 09:00-09:15 each coincide with an order-entry window the intersection
+// already serves, so the carrying rule decides nothing there. The S0 state
+// then arrives as a dated row on all three keys, keyed to Monday 2013-08-26
+// rather than the Tuesday capture because it creates a wrapping overnight
+// close - the floor's T+1 leg ends 22:55 on its own local day; this row runs
+// it to 02:00 - and `AGENTS.md` routes a row that lengthens or creates one to
+// the Monday. Its T+1 queues part three ways. SiMSCI's 18:00-18:15 carries:
+// its 18:15 anchor did not move. Japan's is withheld because the portal
+// table states no length, the archive holds no Nikkei leaf of that day, and
+// the anchor moved 15:30 -> 15:15. The A50's is withheld although the leaf
+// captured the same day states it exactly (16:30-16:38 / 16:38-16:40, the
+// leaf that sources the 08:45-09:00 queue this row does serve): it anchors
+// to the 16:40 open the row does not serve, the T+1 open being held at 17:00
+// under the widen-only rule, and granting it would have to be withdrawn at
+// the 2017-07-10 boundary, whose queue is 16:50-17:00.
 // FTSE Taiwan and the NTR (USD) suite did not exist then and stay sessionless
 // below their own first listing. The State-A boundary is a knowledge boundary, keyed to Monday
 // 2017-07-10 rather than the Wednesday capture: a boundary that lengthens a

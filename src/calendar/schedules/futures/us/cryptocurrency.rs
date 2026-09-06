@@ -32,9 +32,15 @@ const THU_ONLY: [bool; 7] = [false, false, false, true, false, false, false];
 // CME filing 26-114 changed all non-spot-quoted cryptocurrency futures to
 // 24/7 Globex trading effective Friday 2026-05-29: matching maintenance is
 // 16:00-16:02 CT Monday-Friday with Pre-Open from 16:01, and 02:00-04:00 CT
-// Saturday with Pre-Open from 03:45. A one-day notice extended the Saturday
-// 2026-08-01 window through 09:00 CT without publishing a replacement Pre-Open,
-// then restored the normal grid.
+// Saturday with Pre-Open from 03:45. Three one-day Globex notices then
+// temporarily extended the Saturday window for the 24/7 markets — 2026-08-01
+// through 09:00 CT (notice 20260727), 2026-08-29 through 06:00 CT and
+// 2026-09-19 through 08:00 CT (notice 20260824, restated by 20260831) — each
+// without publishing a replacement Pre-Open, each followed by the standard
+// 02:00-04:00 window. The notices' tables name this family's channels, "CME
+// Crypto Futures | 74 | 326" and "CME Crypto Options | 327", alongside the
+// event-contract channels. The September row is forward-dated on the
+// operator's statement.
 //
 // `SessionRule` spans at most one local midnight, so the multi-day weekend
 // session is stored in adjacent pieces. The key-backed calendar joins those
@@ -52,6 +58,8 @@ const THU_ONLY: [bool; 7] = [false, false, false, true, false, false, false];
 // https://www.cmegroup.com/notices/electronic-trading/2026/05/20260525.html
 // https://www.cmegroup.com/articles/faqs/frequently-asked-questions-cryptocurrency-futures.html
 // https://www.cmegroup.com/notices/electronic-trading/2026/07/20260727.html
+// https://www.cmegroup.com/notices/electronic-trading/2026/08/20260824.html
+// https://www.cmegroup.com/notices/electronic-trading/2026/08/20260831.html
 static FIVE_DAY_EXTENDED: &[SessionRule] = &[SessionRule {
     days: SUN_PLUS_MON_THU,
     open_ssm: 17 * 3600,
@@ -104,33 +112,43 @@ static EXTENDED_2026_05_29: &[SessionRule] = &[
     },
 ];
 
-static EXTENDED_2026_08_01: &[SessionRule] = &[
-    SessionRule {
-        days: MON_FRI,
-        open_ssm: 0,
-        close_ssm: 16 * 3600,
-    },
-    SessionRule {
-        days: MON_FRI,
-        open_ssm: 16 * 3600 + 60,
-        close_ssm: 24 * 3600,
-    },
-    SessionRule {
-        days: SAT_ONLY,
-        open_ssm: 0,
-        close_ssm: 2 * 3600,
-    },
-    SessionRule {
-        days: SAT_ONLY,
-        open_ssm: 9 * 3600,
-        close_ssm: 24 * 3600,
-    },
-    SessionRule {
-        days: SUN_ONLY,
-        open_ssm: 0,
-        close_ssm: 24 * 3600,
-    },
-];
+// One-day Saturday extensions: the weekday and Sunday pieces are the normal
+// grid; only the Saturday reopen moves, and no replacement Pre-Open is
+// published, so the 03:45 queue is absent on those days.
+macro_rules! saturday_extended_to {
+    ($name:ident, $reopen_hour:expr) => {
+        static $name: &[SessionRule] = &[
+            SessionRule {
+                days: MON_FRI,
+                open_ssm: 0,
+                close_ssm: 16 * 3600,
+            },
+            SessionRule {
+                days: MON_FRI,
+                open_ssm: 16 * 3600 + 60,
+                close_ssm: 24 * 3600,
+            },
+            SessionRule {
+                days: SAT_ONLY,
+                open_ssm: 0,
+                close_ssm: 2 * 3600,
+            },
+            SessionRule {
+                days: SAT_ONLY,
+                open_ssm: $reopen_hour * 3600,
+                close_ssm: 24 * 3600,
+            },
+            SessionRule {
+                days: SUN_ONLY,
+                open_ssm: 0,
+                close_ssm: 24 * 3600,
+            },
+        ];
+    };
+}
+saturday_extended_to!(EXTENDED_2026_08_01, 9);
+saturday_extended_to!(EXTENDED_2026_08_29, 6);
+saturday_extended_to!(EXTENDED_2026_09_19, 8);
 
 pub(crate) static CURRENT_FUTURES_PROFILE: FuturesSessionProfile = FuturesSessionProfile {
     tz: US::Central,
@@ -177,14 +195,21 @@ static TRANSITION_2026_05_29: StaticHoursProfile = StaticHoursProfile {
     has_weekend_close: false,
 };
 
-static TEMPORARY_2026_08_01: StaticHoursProfile = StaticHoursProfile {
-    tz: US::Central,
-    regular: &[],
-    extended: EXTENDED_2026_08_01,
-    order_entry: &[],
-    has_daily_close: true,
-    has_weekend_close: false,
-};
+macro_rules! temporary_saturday {
+    ($name:ident, $extended:ident) => {
+        static $name: StaticHoursProfile = StaticHoursProfile {
+            tz: US::Central,
+            regular: &[],
+            extended: $extended,
+            order_entry: &[],
+            has_daily_close: true,
+            has_weekend_close: false,
+        };
+    };
+}
+temporary_saturday!(TEMPORARY_2026_08_01, EXTENDED_2026_08_01);
+temporary_saturday!(TEMPORARY_2026_08_29, EXTENDED_2026_08_29);
+temporary_saturday!(TEMPORARY_2026_09_19, EXTENDED_2026_09_19);
 
 static REVISIONS: &[Revision] = revisions![
     (2017, 12, 17, &FIVE_DAY, "CME SER-8051R"),
@@ -198,6 +223,22 @@ static REVISIONS: &[Revision] = revisions![
         "CME Globex notice 20260727"
     ),
     (2026, 8, 2, &CURRENT, "CME Globex notice 20260727"),
+    (
+        2026,
+        8,
+        29,
+        &TEMPORARY_2026_08_29,
+        "CME Globex notice 20260824"
+    ),
+    (2026, 8, 30, &CURRENT, "CME Globex notice 20260824"),
+    (
+        2026,
+        9,
+        19,
+        &TEMPORARY_2026_09_19,
+        "CME Globex notice 20260824"
+    ),
+    (2026, 9, 20, &CURRENT, "CME Globex notice 20260824"),
 ];
 
 pub(crate) fn profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {

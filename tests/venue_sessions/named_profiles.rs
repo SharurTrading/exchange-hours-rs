@@ -58,6 +58,10 @@ const EXPECTED_MARKET_HOURS_KEYS: &[(MarketHoursKey, &str)] = &[
         MarketHoursKey::GlobexEventContracts,
         "globex_event_contracts",
     ),
+    (
+        MarketHoursKey::GlobexEventContractsBtc,
+        "globex_event_contracts_btc",
+    ),
     (MarketHoursKey::Sgx, "sgx"),
     (MarketHoursKey::AlwaysOpen, "always_open"),
 ];

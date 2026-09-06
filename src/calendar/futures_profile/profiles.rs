@@ -20,6 +20,7 @@ use crate::calendar::schedules::futures::international::{
     SGX_EQUITY_INDEX_TAIWAN_ORDER_ENTRY_CURRENT, SGX_EQUITY_INDEX_TAIWAN_REGULAR_CURRENT,
 };
 use crate::calendar::schedules::futures::us::{
+    BITCOIN_EVENT_CONTRACTS_EXTENDED_CURRENT, BITCOIN_EVENT_CONTRACTS_ORDER_ENTRY_CURRENT,
     CBOT_EXTENDED_CURRENT, CBOT_ORDER_ENTRY_CURRENT, CBOT_REGULAR_CURRENT, CFE_EXTENDED,
     CFE_ORDER_ENTRY, CFE_REGULAR, CME_EXTENDED_CURRENT, CME_ORDER_ENTRY_CURRENT, CME_REGULAR,
     COCOA_EXTENDED_CURRENT, COCOA_ORDER_ENTRY_CURRENT, COCOA_REGULAR_CURRENT,
@@ -116,6 +117,21 @@ static FUTURES_GLOBEX_EVENT_CONTRACTS: FuturesSessionProfile = FuturesSessionPro
     order_entry: EVENT_CONTRACTS_ORDER_ENTRY_CURRENT,
     has_daily_close: true,
     has_weekend_close: true,
+};
+
+// `ECBTC` alone: 24/7 on the sourced intersection of CME's two primaries, so
+// the weekday executable leg ends at 15:00 CT and resumes at 16:02, with the
+// 16:01 and Saturday 03:45 Pre-Opens as order-entry phases. The Saturday
+// 02:00-04:00 window is agreed. `bitcoin_event_contracts.rs` holds the 2023
+// listing, the shared era, the 2026-05-29 transition day and the three
+// notice-dated Saturday extensions.
+static FUTURES_GLOBEX_EVENT_CONTRACTS_BTC: FuturesSessionProfile = FuturesSessionProfile {
+    tz: US::Central,
+    regular: &[],
+    extended: BITCOIN_EVENT_CONTRACTS_EXTENDED_CURRENT,
+    order_entry: BITCOIN_EVENT_CONTRACTS_ORDER_ENTRY_CURRENT,
+    has_daily_close: true,
+    has_weekend_close: false,
 };
 
 static FUTURES_GLOBEX_ROUGH_RICE: FuturesSessionProfile = FuturesSessionProfile {
@@ -330,6 +346,7 @@ pub fn session_profile(key: MarketHoursKey) -> &'static FuturesSessionProfile {
         MarketHoursKey::GlobexWeather => &FUTURES_GLOBEX_WEATHER,
         MarketHoursKey::GlobexSpotQuoted => &FUTURES_GLOBEX_SPOT_QUOTED,
         MarketHoursKey::GlobexEventContracts => &FUTURES_GLOBEX_EVENT_CONTRACTS,
+        MarketHoursKey::GlobexEventContractsBtc => &FUTURES_GLOBEX_EVENT_CONTRACTS_BTC,
         MarketHoursKey::Sgx => &FUTURES_SGX,
         MarketHoursKey::AlwaysOpen => &FUTURES_ALWAYS_OPEN,
     }

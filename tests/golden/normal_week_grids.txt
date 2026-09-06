@@ -662,6 +662,15 @@ globex_event_contracts | regular  | (none)
 globex_event_contracts | extended | MoTuWeTh----Su | 17:00:00-16:00:00 +1d
 globex_event_contracts | order-en | ------------Su | 16:00:00-17:00:00
 globex_event_contracts | order-en | MoTuWeTh------ | 16:45:00-17:00:00
+globex_event_contracts_btc | tz US/Central | week_open_seconds 579000
+globex_event_contracts_btc | regular  | (none)
+globex_event_contracts_btc | extended | MoTuWeThFr---- | 00:00:00-15:00:00
+globex_event_contracts_btc | extended | MoTuWeThFr---- | 16:02:00-24:00:00
+globex_event_contracts_btc | extended | ----------Sa-- | 00:00:00-02:00:00
+globex_event_contracts_btc | extended | ----------Sa-- | 04:00:00-24:00:00
+globex_event_contracts_btc | extended | ------------Su | 00:00:00-24:00:00
+globex_event_contracts_btc | order-en | MoTuWeThFr---- | 16:01:00-16:02:00
+globex_event_contracts_btc | order-en | ----------Sa-- | 03:45:00-04:00:00
 sgx | tz Asia/Singapore | week_open_seconds 388500
 sgx | regular  | MoTuWeThFr---- | 07:25:00-17:55:00
 sgx | regular  | MoTuWeThFr---- | 18:15:00-05:15:00 +1d

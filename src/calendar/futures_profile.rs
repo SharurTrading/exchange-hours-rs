@@ -34,12 +34,12 @@ use super::schedules::futures::international::{
     sgx_equity_index_singapore_profile_at, sgx_equity_index_taiwan_profile_at, sgx_profile_at,
 };
 use super::schedules::futures::us::{
-    cbot_profile_at, cfe_profile_at, cme_profile_at, cocoa_profile_at, coffee_profile_at,
-    cotton_profile_at, cryptocurrency_profile_at, energy_metals_profile_at,
-    event_contracts_profile_at, fcoj_profile_at, fx_profile_at, ice_us_fang_profile_at,
-    ice_usdx_profile_at, interest_rates_profile_at, livestock_profile_at, mini_grains_profile_at,
-    nkd_profile_at, rough_rice_profile_at, spot_quoted_profile_at, sugar_profile_at,
-    weather_profile_at,
+    bitcoin_event_contracts_profile_at, cbot_profile_at, cfe_profile_at, cme_profile_at,
+    cocoa_profile_at, coffee_profile_at, cotton_profile_at, cryptocurrency_profile_at,
+    energy_metals_profile_at, event_contracts_profile_at, fcoj_profile_at, fx_profile_at,
+    ice_us_fang_profile_at, ice_usdx_profile_at, interest_rates_profile_at, livestock_profile_at,
+    mini_grains_profile_at, nkd_profile_at, rough_rice_profile_at, spot_quoted_profile_at,
+    sugar_profile_at, weather_profile_at,
 };
 use super::{Exchange, MarketHours, SessionRule};
 
@@ -304,9 +304,9 @@ market_hours_keys! {
         /// Friday-evening reopen.
         ///
         /// **Excludes `ECBTC` from 2026-05-29**, when CME moved that root
-        /// alone to 24/7 trading and left the rest on this schedule; two CME
-        /// primary sources disagree by an hour on its new daily close, so no
-        /// key models it and it becomes caller catalog data on that day. Also
+        /// alone to 24/7 trading and left the rest on this schedule; select
+        /// [`GlobexEventContractsBtc`](Self::GlobexEventContractsBtc) for that
+        /// root in every era instead. Also
         /// excludes the Chapter 22 swap-based economic and cryptocurrency
         /// event contracts, which run a 24/7 grid with a one-minute daily
         /// halt, and the sports and political event contracts on the CME
@@ -319,6 +319,31 @@ market_hours_keys! {
         /// spot-quoted did not exist until 2025-06-29, and this family has run
         /// its one grid since 2022-09-18.
         GlobexEventContracts => "globex_event_contracts",
+        /// CME Event Contracts on Bitcoin Futures (`ECBTC`), Rulebook Chapter
+        /// 23 — the one event-contract root CME moved to 24/7 trading on
+        /// 2026-05-29. The key carries the root's whole life: sessionless
+        /// before its 2023-03-12 listing, the
+        /// [`GlobexEventContracts`](Self::GlobexEventContracts) grid to
+        /// 2026-05-28, and a 24/7 grid from 2026-05-29.
+        ///
+        /// **The 24/7 weekday close is the sourced intersection of two CME
+        /// primaries that disagree by an hour.** SER-9740R states a 16:00-16:02
+        /// CT maintenance window; CME's client-systems wiki, written five weeks
+        /// earlier for this root alone and never revised, states 15:00-16:01
+        /// CT. Both give the 16:01-16:02 Pre-Open, the 16:02 open, and the
+        /// Saturday 02:00-04:00 window with its 03:45 Pre-Open. The key serves
+        /// what both support — open 16:02→15:00 CT — and withholds the disputed
+        /// hour, erring toward closed. CME's Globex notices since the cutover
+        /// confirm the Saturday window for this root's channel and also state
+        /// three one-day Saturday extensions, which are modelled.
+        ///
+        /// The fixed profile uses adjacent rules for exact open/closed state;
+        /// [`calendar_for_market_hours_key`](super::calendar_for_market_hours_key)
+        /// joins the storage pieces into the continuous weekend block and
+        /// carries the following open business date, as for
+        /// [`GlobexCryptocurrency`](Self::GlobexCryptocurrency). Unlike that
+        /// key, this root's Pre-Opens stay `order_entry`.
+        GlobexEventContractsBtc => "globex_event_contracts_btc",
 
         /// SGX Three-Month SORA Futures current profile.
         Sgx => "sgx",
@@ -385,6 +410,7 @@ pub fn hours_for_market_hours_key(key: MarketHoursKey, as_of: DateTime<Utc>) -> 
         MarketHoursKey::GlobexWeather => weather_profile_at(as_of),
         MarketHoursKey::GlobexSpotQuoted => spot_quoted_profile_at(as_of),
         MarketHoursKey::GlobexEventContracts => event_contracts_profile_at(as_of),
+        MarketHoursKey::GlobexEventContractsBtc => bitcoin_event_contracts_profile_at(as_of),
         MarketHoursKey::Sgx => sgx_profile_at(as_of),
         MarketHoursKey::AlwaysOpen => &ALWAYS_OPEN_PROFILE,
     };

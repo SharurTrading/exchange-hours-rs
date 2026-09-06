@@ -53,9 +53,17 @@ pub(crate) static NKD_REGULAR_CURRENT: &[SessionRule] = &[SessionRule {
 // fact card, so no extended phase is asserted. The 16:00-17:00 CT daily break is
 // a maintenance/closed period, not an order-entry phase, and BTIC ("Sunday -
 // Friday 6:00 p.m. ET - 3:30 p.m. Tokyo time ... and Monday - Friday Noon to
-// 5:00 p.m. ET") is a separately scheduled trade-registration facility rather
-// than a phase of the outright order book. Both are deliberately omitted rather
+// 5:00 p.m. ET") is separately scheduled, on its own published hours, so it is
+// not a phase of this outright order book. Both are deliberately omitted rather
 // than modelled as extended sessions.
+//
+// That is a statement about scope, not about tradability: the Nikkei BTIC
+// instruments are their own order book with their own CME-published hours, and
+// the quoted sentence above is itself the primary source for their second daily
+// window. Should they be authored, they take their own key rather than becoming
+// a phase here — see the trade-type handoff in `docs/plans/`, whose survey found
+// exactly one trade-type root out of roughly 180 that genuinely rides its
+// underlying's clock.
 pub(crate) static NKD_EXTENDED_CURRENT: &[SessionRule] = &[];
 
 pub(crate) static NKD_CURRENT: StaticHoursProfile = StaticHoursProfile {

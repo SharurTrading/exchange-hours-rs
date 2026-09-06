@@ -167,7 +167,13 @@ market_hours_keys! {
         /// and the Micro Ag futures, which follow the standard grid.
         GlobexMiniGrains => "globex_mini_grains",
         /// CME FX futures on the standard 17:00-16:00 CT Globex grid; excludes
-        /// eFix, BTIC, TAS, options, and products with a different specification.
+        /// eFix, TAS, options, and products with a different specification.
+        /// Excludes plain BTIC (`6EB`), which CME's FX BTIC FAQ trades "up to
+        /// 3:40 p.m. London time (typically 9:40 a.m. CT)" — a different
+        /// window. The same FAQ puts BTIC+ (`6EP`) on this clock: "BTIC+
+        /// contracts can be traded through the standard CME Globex trading
+        /// hours of Sunday-Friday 5:00 p.m.-4:00 p.m. CT", so the exclusion is
+        /// of the trade type's plain flavour, not of the ticker family.
         GlobexFx => "globex_fx",
         /// CBOT U.S. Treasury (`ZT/ZF/ZN/TN/ZB/UB` and micros), 30-Day Fed
         /// Funds (`ZQ`), and CME SOFR (`SR1/SR3`) Globex hours. Excludes

@@ -221,6 +221,28 @@ change to this standalone repository must follow.
   the second half is. Check the contract set, not just the grid, before keying
   a row to an edition - and check the other channels before concluding an
   edition is the earliest source at all.
+- **An operator's own dated change log is a primary source for an effective
+  day.** The law asks whether a primary source states an unconditional,
+  day-level effective date, not what genre of document carries it. A
+  product-parameter change log the operator authors, dates in the file and
+  serves publicly satisfies that test when four things hold: the entry is the
+  operator's (authored and issue-dated in the document itself, not by a
+  reader); the effective day is stated inside that same entry - in the same
+  cell, or in a header row that scopes the items below it within one entry
+  whose structure is encoded in the file (border-partitioned rows with zero
+  merges) and that is the operator's own recurring convention there; it is
+  stated in session language; and the log is calibrated against at least one
+  cutover the crate already holds from a circular. SGX's *Derivatives Products
+  Description* `read_me` sheet is the worked example: its entries "(eff 4
+  Nov)" and "(eff 7 Apr)" match DT/AM 50 of 2024 and DT/AM 15 of 2025 to the
+  day, so its "Amended trading hours for SGP, SGPO and ST eff 10 Jun" (issued
+  2019-05-21) and "Effective 11 Nov: … (T+1) session Closing hours to 5:15am
+  all T+1 traded contracts" (issued 2019-10-07) date the two 2019 SGX moves
+  that no reachable circular states. Record the interpretive step beside the
+  row where a header scopes the items rather than sharing their cell. What
+  this does not admit: a change log a reader must date from formatting alone,
+  an entry whose day must be inferred from a month, filename or directory, or
+  a member firm's own summary of the operator's log.
 - **A knowledge boundary may only widen.** Intersecting per interval can make a
   bound move *inward* at a boundary that asserts no change - three sourced
   states in sequence, the middle one directly witnessed on a date, will do it.

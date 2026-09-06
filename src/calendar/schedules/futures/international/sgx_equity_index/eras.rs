@@ -164,23 +164,16 @@ era!(SGX_SINGAPORE_FROM_2017_07_10,
     extended: [(17, 10, 17, 15)],
     order_entry: [(8, 15, 8, 30), (17, 30, 17, 40)]);
 
-// 2019-02-06 to 2019-06-10: the sourced intersection across the undated
-// SiMSCI move. The content API prints "Opening: 8:30 am - 5:10 pm / ...
-// Opening: 5:40 pm - 4:45 am" on 2019-02-04 (= 2019-02-05 04:09 SGT) and
-// "Opening: 8:30 am - 5:20 pm / ... Opening: 5:50 pm - 4:45 am" on
-// 2019-06-11. Serving what both hold — T to 17:10, T+1 from 17:50 — the
-// pre-open queue moves with the later open.
-era!(SGX_SINGAPORE_FROM_2019_02_06,
-    regular: [(8, 30, 17, 10), (17, 50, 4, 45)],
-    extended: [(17, 10, 17, 15)],
-    order_entry: [(8, 15, 8, 30), (17, 40, 17, 50)]);
-
-// 2019-06-11. Content API, capture 2019-06-11 (revisit 2019-06-21): "Pre -
-// Opening: 8:15 am - 8:28 am / Non - Cancel: 8:28 am - 8:30 am / Opening: 8:30
-// am - 5:20 pm / Pre - Closing: 5:20 pm - 5:24 pm / Non - Cancel: 5:24 pm -
-// 5:25 pm // Pre - Opening: 5:40 pm - 5:48 pm / Non - Cancel: 5:48 pm - 5:50 pm
-// / Opening: 5:50 pm - 4:45 am".
-era!(SGX_SINGAPORE_FROM_2019_06_11,
+// 2019-06-10. SGX's Derivatives Products Description change log, entry
+// issued 2019-05-21 (v6.1): "Amended trading hours for SGP, SGPO and ST eff 10
+// Jun" - a single cell, no scoping step; the year is the entry's own. The
+// grid it moved to is the one the content API prints on 2019-06-11, the next
+// day (revisit 2019-06-21): "Pre - Opening: 8:15 am - 8:28 am / Non - Cancel:
+// 8:28 am - 8:30 am / Opening: 8:30 am - 5:20 pm / Pre - Closing: 5:20 pm -
+// 5:24 pm / Non - Cancel: 5:24 pm - 5:25 pm // Pre - Opening: 5:40 pm - 5:48
+// pm / Non - Cancel: 5:48 pm - 5:50 pm / Opening: 5:50 pm - 4:45 am", and the
+// state before it is the one the API printed on 2019-02-04 (17:10 / 17:40).
+era!(SGX_SINGAPORE_FROM_2019_06_10,
     regular: [(8, 30, 17, 20), (17, 50, 4, 45)],
     extended: [(17, 20, 17, 25)],
     order_entry: [(8, 15, 8, 30), (17, 40, 17, 50)]);

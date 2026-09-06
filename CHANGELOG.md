@@ -421,6 +421,28 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Fixed
 
+- **SGX equity index: the two 2019 moves are dated from SGX's own product
+  change log, and the convention that admits it is recorded.** The 2019
+  SiMSCI move (T close 17:10 → 17:20, T+1 open 17:40 → 17:50) and the T+1 close
+  extension 04:45 → 05:15 on the Japan, China, Singapore and NTR (USD) keys
+  were served as sourced intersections because no reachable circular states
+  their days. SGX's *Derivatives Products Description* `read_me` sheet does:
+  an SGX-authored, issue-dated change log, parsed from the workbook's XML
+  (zero merged cells, entries partitioned by border styles), whose entry
+  issued 2019-05-21 reads "Amended trading hours for SGP, SGPO and ST eff 10
+  Jun" and whose entry issued 2019-10-07 reads "Effective 11 Nov:" / "(T+1)
+  session Closing hours to 5:15am all T+1 traded contracts" — and whose later
+  "(eff 4 Nov)" and "(eff 7 Apr)" entries match DT/AM 50 of 2024 and DT/AM 15
+  of 2025 to the day. `AGENTS.md` now records the convention under which an
+  operator's own dated change log is a primary source for an effective day,
+  with its four conditions and its exclusions. Singapore's two 2019 rows
+  (2019-02-06 intersection, 2019-06-11 witness) become one dated cutover at
+  **Monday 2019-06-10**; the 05:15 close on four keys moves from Monday
+  2020-01-06 to **Monday 2019-11-11**. Both days are Mondays SGX chose, so no
+  rounding applies. Every row stays **Partial** for the one move still
+  undated (the 2016 change behind the 04:45 grid, #66) and NTR's under-reported
+  launch interval. Closes #45.
+
 - **SGX equity index: the pre-2020 era is modelled, the 2024 Japan move is
   dated, and the Taiwan and NTR boundaries move to their own first sources
   (behaviour change).** The five `sgx_equity_index_*` keys were sessionless

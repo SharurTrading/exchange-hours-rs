@@ -205,35 +205,36 @@ fn state_a_begins_on_the_monday_after_the_capture_for_the_three_carried_families
     );
 }
 
-/// The undated `SiMSCI` move is served as an intersection: the T+1 open narrows
-/// to 17:50 on 2019-02-06 (the day after the last 17:40 witness) and the T
-/// close widens to 17:20 on 2019-06-11 (the first 17:20 witness).
+/// SGX's change log dates the `SiMSCI` move to Monday 2019-06-10 ("Amended
+/// trading hours for SGP, SGPO and ST eff 10 Jun", entry issued 2019-05-21):
+/// the T close moves 17:10 -> 17:20 and the T+1 open 17:40 -> 17:50 on that
+/// day, and the content API's 2019-06-11 payload is the first witness of the
+/// new grid.
 #[test]
-fn the_simsci_move_is_served_as_an_intersection_between_its_witnesses() {
+fn the_simsci_move_is_dated_to_2019_06_10_by_the_change_log() {
     assert!(
-        open(SINGAPORE, sgt((2019, 2, 5), (17, 45))),
-        "still 17:40 open on 2019-02-05"
+        !open(SINGAPORE, sgt((2019, 6, 7), (17, 15))),
+        "Friday: 17:10 close"
     );
     assert!(
-        !open(SINGAPORE, sgt((2019, 2, 6), (17, 45))),
-        "17:50 from 2019-02-06"
-    );
-    assert!(open(SINGAPORE, sgt((2019, 2, 6), (17, 52))));
-    assert!(
-        !open(SINGAPORE, sgt((2019, 6, 10), (17, 15))),
-        "17:10 close through 2019-06-10"
+        open(SINGAPORE, sgt((2019, 6, 7), (17, 45))),
+        "Friday: 17:40 T+1 open"
     );
     assert!(
-        open(SINGAPORE, sgt((2019, 6, 11), (17, 15))),
-        "17:20 close from 2019-06-11"
+        open(SINGAPORE, sgt((2019, 6, 10), (17, 15))),
+        "Monday: 17:20 close"
     );
     assert_eq!(
-        state(SINGAPORE, sgt((2019, 6, 11), (17, 22))),
+        state(SINGAPORE, sgt((2019, 6, 10), (17, 22))),
         SessionState::OpenExtended
     );
     assert_eq!(
-        state(SINGAPORE, sgt((2019, 6, 11), (17, 45))),
+        state(SINGAPORE, sgt((2019, 6, 10), (17, 45))),
         SessionState::OrderEntry
+    );
+    assert!(
+        open(SINGAPORE, sgt((2019, 6, 10), (17, 52))),
+        "Monday: 17:50 T+1 open"
     );
 }
 
@@ -313,30 +314,31 @@ fn taiwan_starts_on_its_launch_day_and_ntr_on_its_first_listing() {
     );
 }
 
-/// The 2020 rows lengthen the T+1 close from 04:45 to 05:15 and are keyed to
-/// Monday 2020-01-06, so the Thursday leg that opened under 04:45 still closes
-/// at 04:45 on Friday 2020-01-03 and the first leg to run to 05:15 opens on
-/// the Monday.
+/// SGX's change log dates the T+1 close extension to Monday 2019-11-11
+/// ("Effective 11 Nov: ... (T+1) session Closing hours to 5:15am all T+1 traded
+/// contracts", entry issued 2019-10-07), so the Thursday leg that opened under
+/// 04:45 still closes at 04:45 on Friday 2019-11-08 and the first leg to run
+/// to 05:15 opens on the Monday, on all four keys trading then.
 #[test]
-fn the_2020_rows_lengthen_the_overnight_close_from_the_monday() {
+fn the_t_plus_one_close_extends_to_05_15_on_2019_11_11_on_four_keys() {
     for key in [JAPAN, CHINA, SINGAPORE, NTR] {
         assert!(
-            !open(key, sgt((2020, 1, 3), (5, 0))),
+            !open(key, sgt((2019, 11, 8), (5, 0))),
             "{key:?}: Friday leg closed at 04:45"
         );
         assert!(
-            open(key, sgt((2020, 1, 7), (5, 0))),
+            open(key, sgt((2019, 11, 12), (5, 0))),
             "{key:?}: Monday's leg runs to 05:15"
         );
         assert!(
-            !open(key, sgt((2020, 1, 7), (5, 15))),
+            !open(key, sgt((2019, 11, 12), (5, 15))),
             "{key:?}: 05:15 closes end-exclusive"
         );
     }
 }
 
-/// The 2020 rows carry the routines SGX's content API states on 2020-01-09 for
-/// every family on that grid.
+/// The 2019-11-11 rows (and Taiwan's launch row) carry the routines SGX's
+/// content API states on 2020-01-09 for every family on that grid.
 #[test]
 fn the_2020_rows_carry_the_content_api_routines_on_all_five_keys() {
     let day = (2022, 6, 15);

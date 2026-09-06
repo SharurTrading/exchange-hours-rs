@@ -543,6 +543,49 @@ fn cryptocurrency_history_covers_launch_24_7_and_temporary_maintenance() {
     assert!(restored.is_open_extended(ct((2026, 8, 8), (3, 45, 0))));
 }
 
+/// Notice 20260824 names two more one-day Saturday extensions for the same
+/// channels, each reverting to the standard window the following week.
+#[test]
+fn cryptocurrency_models_the_later_saturday_extensions() {
+    for (saturday, reopen_hour, next_saturday) in [
+        ((2026, 8, 29), 6u32, (2026, 9, 5)),
+        ((2026, 9, 19), 8, (2026, 9, 26)),
+    ] {
+        let temporary = hours_for_market_hours_key(
+            MarketHoursKey::GlobexCryptocurrency,
+            ct(saturday, (0, 0, 0)),
+        );
+        assert!(
+            temporary.is_open_extended(ct(saturday, (1, 59, 59))),
+            "{saturday:?}"
+        );
+        assert!(
+            !temporary.is_open(ct(saturday, (3, 45, 0))),
+            "{saturday:?}: no Pre-Open"
+        );
+        assert!(
+            !temporary.is_open(ct(saturday, (reopen_hour - 1, 59, 59))),
+            "{saturday:?}"
+        );
+        assert!(
+            temporary.is_open_extended(ct(saturday, (reopen_hour, 0, 0))),
+            "{saturday:?}: reopens at {reopen_hour}:00 CT"
+        );
+        let restored = hours_for_market_hours_key(
+            MarketHoursKey::GlobexCryptocurrency,
+            ct(next_saturday, (0, 0, 0)),
+        );
+        assert!(
+            !restored.is_open(ct(next_saturday, (3, 44, 59))),
+            "{next_saturday:?}"
+        );
+        assert!(
+            restored.is_open_extended(ct(next_saturday, (3, 45, 0))),
+            "{next_saturday:?}"
+        );
+    }
+}
+
 #[test]
 fn family_calendars_reselect_the_new_cme_histories() {
     let interest = calendar_for_market_hours_key(MarketHoursKey::GlobexInterestRates);

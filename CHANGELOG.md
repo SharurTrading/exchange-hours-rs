@@ -35,8 +35,7 @@ corrections (a venue's hours fixed against a primary source) go under
   disputed hour as maintenance, erring toward closed. CME Globex notices
   20260727, 20260824 and 20260831 confirm the Saturday window for channel 329
   after the cutover and date three one-day Saturday extensions (2026-08-01 to
-  09:00, 2026-08-29 to 06:00, 2026-09-19 to 08:00 CT), all modelled; the
-  cryptocurrency key models only the first (#61). The
+  09:00, 2026-08-29 to 06:00, 2026-09-19 to 08:00 CT), all modelled. The
   key-backed calendar joins the weekend pieces into one block and carries the
   following open business date, as for `globex_cryptocurrency`; unlike that
   key, the Pre-Opens stay `order_entry`. The ledger row is **Partial** with an
@@ -421,6 +420,22 @@ corrections (a venue's hours fixed against a primary source) go under
   dated NYSE Arca's 2021-09-13 order-entry move, which no SEC filing states.
 
 ### Fixed
+
+- **`globex_cryptocurrency`: the 2026-08-29 and 2026-09-19 Saturday maintenance
+  extensions are modelled** (#61). CME Globex notice 20260824 — "Starting this
+  Saturday, August 29, CME Group will temporarily extend the Saturday
+  maintenance window schedule for 24/7 markets on two upcoming dates: Saturday,
+  August 29: 2:00 a.m. – 6:00 a.m. Central Time (CT); Saturday, September 19:
+  2:00 a.m. – 8:00 a.m. CT. Following each extension, the Saturday maintenance
+  window will revert to its 2:00 a.m. – 4:00 a.m. CT standard schedule." —
+  lists "CME Crypto Futures | 74 | 326" and "CME Crypto Options | 327" in its
+  table, and notice 20260831 restates the September date. The key previously
+  modelled only the 2026-08-01 extension (notice 20260727) and served the
+  standard 03:45 Pre-Open and 04:00 reopen on the two later Saturdays. Each new
+  row mirrors the existing one: no replacement Pre-Open, the standard window
+  from the following day; the September row is forward-dated on the operator's
+  statement. Found while adding `globex_event_contracts_btc` (#60), whose
+  channel appears in the same tables.
 
 - **SGX equity index: the later of the two undated transitions is now dated, and
   the current grid arrives eight months earlier (behaviour change).** The five

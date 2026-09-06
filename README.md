@@ -691,7 +691,7 @@ that callers do not also get (see [Architecture: Tests](ARCHITECTURE.md#tests)).
   JSE, Tadawul, B3, and BMV.
 - `tests/schedule_documentation.rs` and `tests/schedule_documentation/` — a
   thin harness over contracts that keep all 94 `Exchange` rows (93
-  non-synthetic plus `Unknown`) and 29 `MarketHoursKey` rows (28
+  non-synthetic plus `Unknown`) and 31 `MarketHoursKey` rows (30
   operator-derived plus `AlwaysOpen`) in canonical order; validates their
   review metadata and owner/source links; requires both current and
   notice/evidence channels for every source set; rejects orphaned source sets;

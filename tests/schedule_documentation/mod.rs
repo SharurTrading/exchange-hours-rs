@@ -321,6 +321,36 @@ fn readme_and_review_dates_match_the_repository_cutoff() {
     );
 }
 
+/// The README's test-inventory sentence states how many `Exchange` and
+/// `MarketHoursKey` rows the documentation harness keeps in canonical order.
+/// It was hand-written, so it lagged the public surface by two key additions
+/// before anyone noticed. Derive it from the ledger instead, flowing the
+/// README's hard-wrapped prose so the claim can straddle line breaks.
+#[test]
+fn readme_test_inventory_counts_match_the_ledger() {
+    let exchange_rows = exchange_rows();
+    let real_exchange_rows = exchange_rows
+        .iter()
+        .filter(|row| wire_name(row) != "unknown")
+        .count();
+    let key_rows = market_hours_key_rows();
+    let real_key_rows = key_rows
+        .iter()
+        .filter(|row| wire_name(row) != "always_open")
+        .count();
+
+    let claim = format!(
+        "keep all {} `Exchange` rows ({real_exchange_rows} non-synthetic plus `Unknown`) and {} `MarketHoursKey` rows ({real_key_rows} operator-derived plus `AlwaysOpen`) in canonical order",
+        exchange_rows.len(),
+        key_rows.len()
+    );
+    let flowed = README.split_whitespace().collect::<Vec<_>>().join(" ");
+    assert!(
+        flowed.contains(&claim),
+        "README test-inventory counts drifted from the ledger: expected {claim:?}"
+    );
+}
+
 #[test]
 fn readme_and_audit_quantify_assurance_from_the_ledger() {
     let exchange_rows = exchange_rows();

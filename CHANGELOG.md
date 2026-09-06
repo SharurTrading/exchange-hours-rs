@@ -421,6 +421,56 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Fixed
 
+- **SGX equity index: the pre-2020 era is modelled, the 2024 Japan move is
+  dated, and the Taiwan and NTR boundaries move to their own first sources
+  (behaviour change).** The five `sgx_equity_index_*` keys were sessionless
+  before the 2020 calendar edition (Taiwan before the 2021 one) on the recorded
+  premise that no earlier edition survived. The premise was half wrong and the
+  conclusion wholly so: the 2018 (Apr) and 2019 editions are still served live
+  from `api2.sgx.com` (the web archive never captured them), the retired
+  portal's Trading Hours table is archived at 2013-08-20, 2017-07-05 and
+  2017-09-27, its per-contract specification leaves are archived, and SGX's
+  content API's archived payloads print every family's routines. From that
+  evidence — 34 artifact states independently re-read — the keys now serve:
+  **Japan, China and Singapore** carried to the January-2010 floor on the 2013
+  portal grid (T+1 close 02:00) as each key's timeline baseline, then the
+  04:45-close grid from Monday 2017-07-10 (a knowledge boundary keyed to the
+  Monday after the capture, never a cutover); **China** additionally the
+  2013-08-20 widening of its T close, with its T+1 open held at 17:00 across
+  the whole undated span because a knowledge boundary may widen but never
+  narrow; **Singapore** the undated SiMSCI move as an intersection between its
+  witnesses (2019-02-06 to 2019-06-10) and the later state from 2019-06-11;
+  **Taiwan** from its stated launch day, 2020-07-20, on the grid SGX's content
+  API listed from 2020-07-15 (absent on 2020-06-02), five months before the
+  2021 edition; **NTR (USD)** from Monday 2018-04-16, the Monday after the 2018
+  (Apr) edition that first lists the suite. The **2020** rows on all five keys
+  gain the Pre-Opening/Non-Cancel and Pre-Closing/Non-Cancel windows the
+  content API states inside that row's own interval (capture 2020-01-09), and
+  on the four keys whose overnight close lengthens there (04:45 → 05:15) the
+  row is keyed to **Monday 2020-01-06** rather than New Year's Day, so the
+  Tuesday evening leg is not reported running past the close it opened under.
+  The
+  **Japan** key's 2020..2025-04-06 intersection era splits at **Monday
+  2024-11-04** on SGX-DT Circular DT/AM 50 of 2024 (9 September 2024, "with
+  effect from Monday, 4 November 2024, the T session trading hours for SGX
+  Nikkei derivatives and SGX FTSE Blossom Japan Index Futures will be extended
+  by 30 minutes", with a Current/Revised table of every routine) — read from
+  a verbatim member mirror carrying SGX's own document metadata, the channel
+  DT/AM 15 came through (#62). The 04:45 → 05:15 T+1 close of late 2019 stays
+  undated in the admissible channels and is served at 04:45 until the 2020
+  row; SGX's product-catalogue change log states the day ("Effective 11 Nov",
+  entry issued 2019-10-07) and the SiMSCI day ("eff 10 Jun", issued 2019-05-21),
+  and whether that channel may key a row is the open decision on #45.
+  Pre-2010 instants on the Japan, China and Singapore keys now resolve to the
+  carried floor grid rather than to a sessionless profile, as the floor
+  convention prescribes. Two conventions are added to `AGENTS.md`: a knowledge
+  boundary may only widen (with the Monday-keying rule for boundaries that
+  lengthen a wrapping overnight close), and the knowledge-boundary worked
+  example is corrected to the Taiwan launch. Every row stays **Partial** with
+  an executable gap and says which. Follow-ups: #64 (content API 2021–2024),
+  #65 (pre-2017 pre-open routines), #66 (the 2016 notice behind the 04:45
+  grid).
+
 - **`globex_cryptocurrency`: the 2026-08-29 and 2026-09-19 Saturday maintenance
   extensions are modelled** (#61). CME Globex notice 20260824 — "Starting this
   Saturday, August 29, CME Group will temporarily extend the Saturday

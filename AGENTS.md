@@ -209,12 +209,39 @@ change to this standalone repository must follow.
   SER as its exhibit — as a second statement or a tie-breaker.
 - **A knowledge boundary is the first source that lists the modelled product,**
   not merely the earliest source that survives. A document only sources a family
-  if that family appears in it. SGX's FTSE Taiwan suite is the worked example:
-  the 2020 calendar edition is the earliest that survives, but it lists only the
-  MSCI Taiwan predecessors, so the FTSE row starts at the 2021 edition instead.
-  The predecessor's hours were identical, which is exactly why this is easy to
-  miss - matching times are not evidence that the modelled contract existed.
-  Check the contract set, not just the grid, before keying a row to an edition.
+  if that family appears in it. SGX's FTSE Taiwan suite is the worked example,
+  and the worked example of getting this half right: the 2020 calendar edition
+  is the earliest calendar that survives, but it lists only the MSCI Taiwan
+  predecessors, so the row cannot start there - and it does not start at the
+  2021 edition either, because SGX's own content API lists the FTSE suite with
+  its full grid from July 2020 and SGX's own release states the launch day,
+  five months before that edition. The predecessor's hours were identical,
+  which is exactly why the first half is easy to miss; one channel's earliest
+  surviving document is not the family's earliest source, which is exactly why
+  the second half is. Check the contract set, not just the grid, before keying
+  a row to an edition - and check the other channels before concluding an
+  edition is the earliest source at all.
+- **A knowledge boundary may only widen.** Intersecting per interval can make a
+  bound move *inward* at a boundary that asserts no change - three sourced
+  states in sequence, the middle one directly witnessed on a date, will do it.
+  Do not encode that. Knowledge does not shrink: a boundary that widens says
+  "from here we have sourced this much", and one that narrows says a window
+  that was open became closed, which is a claim about the market that
+  LAW-NO-FABRICATED-DATES requires a stated day for. Where the per-interval
+  intersections would narrow a bound, hold it at its narrowest value across
+  the whole undated span and withhold the disputed remainder from the earlier
+  interval, exactly as CME's Sunday Pre-Open withholds 16:00-16:15 rather than
+  granting it early and withdrawing it at the capture that first shows the
+  later state. SGX's FTSE China A50 is the worked example: its T+1 open is
+  sourced at 16:10, 16:40 and 17:00 across three undated states, so 17:00 is
+  served from the floor and only its T close, which widens, is keyed at the
+  boundaries. The same asymmetry decides the day: a row that lengthens or
+  creates a wrapping overnight close is keyed to the following Monday, because
+  the selector reads the query instant's local date and a mid-week key would
+  report the previous evening's leg running past the close that was in force
+  when it opened - the running session LAW-NO-FABRICATED-DATES says a boundary
+  must not split. A row that changes only daytime bounds, or that narrows an
+  overnight open, keeps its artifact's own date.
 - **"Unsourced" means "not worked up", never "no source exists".** Say a row is
   unmodelled before an era and say what would close it; do not write that
   nothing survives unless the predecessor channels have actually been searched.

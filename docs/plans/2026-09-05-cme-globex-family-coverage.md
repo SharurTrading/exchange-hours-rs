@@ -151,7 +151,22 @@ list with reasons — *not* 37 new keys. Most will resolve to "reuse an existing
 key" or "cannot source, leave unmapped". Combine shapes under one key only where
 product-family semantics and history prove it, never because envelopes match.
 
-### 6. Review the 30 roots already mapped
+### 6. Review the roots already mapped — **DONE; no repository change required**
+Reviewed the 32 roots the inventory maps to existing keys (row 4 → `globex_cryptocurrency`,
+row 5 → `globex_grains`, row 35 → `globex_livestock`).
+
+**The key documentation is already correct and needed no edit.** `GlobexGrains` states that it
+"excludes the mini-sized grain futures, which have their own `GlobexMiniGrains` key, and Rough
+Rice … `GlobexRoughRice`", and `GlobexMiniGrains` states that the Micro Ag futures
+(`MZC`/`MZL`/`MZM`/`MZS`/`MZW`) "follow the standard grid". Between them every root in row 5
+resolves unambiguously.
+
+**The staleness is downstream, and is expected.** The inventory still maps `MKC`, `XC`, `XK` and
+`XW` to `globex_grains`; they moved to `globex_mini_grains` in #51, and `ZR` moved to
+`globex_rough_rice` in #47. That artifact is SharurPlatform's to regenerate, which this plan
+already says happens *after* these PRs land — so the correct action here is to name it, not to
+edit their file. Regenerating the catalog against `main` will pick up all five new keys.
+
 Update key documentation where needed; change no schedule unless evidence
 requires it.
 

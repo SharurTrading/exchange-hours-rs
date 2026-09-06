@@ -12,6 +12,7 @@ mod cme_spot_quoted;
 mod cme_weather;
 mod ice;
 mod sgx_equity_index;
+mod sgx_equity_index_eras;
 
 mod prelude {
     pub(super) use chrono::{DateTime, Duration, TimeZone as _, Utc};

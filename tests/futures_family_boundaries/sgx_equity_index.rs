@@ -49,29 +49,45 @@ fn sgx_equity_index_grids_do_not_collapse_onto_each_other() {
 fn sgx_equity_index_serves_the_sourced_window_then_the_verified_grid() {
     let japan = MarketHoursKey::SgxEquityIndexJapan;
 
+    // Pre-2020 dates serve the carried floor grid, not a sessionless profile:
+    // 10:00 SGT is inside the floor T session and 07:40 SGT precedes its 07:45
+    // open. The era suite fences every pre-2020 boundary in detail.
     assert!(
-        !open_at(japan, utc(2015, 6, 17, 6, 30)),
-        "pre-2020 SGX dates are sessionless: that era is unmodelled, not unsourceable"
+        open_at(japan, utc(2015, 6, 17, 2, 0)),
+        "the 2013 portal grid is carried to the January-2010 floor"
+    );
+    assert!(
+        !open_at(japan, utc(2015, 6, 16, 23, 40)),
+        "the floor grid opens the Nikkei T session at 07:45 SGT"
     );
 
-    // Inside the sourced window the narrowest bounds apply, so both the T close
-    // beyond 14:25 and the T+1 open before 15:25 stay closed. 2022-06-15 and
-    // 2025-03-19 are both Wednesdays inside that era.
-    for (year, month, day) in [(2022, 6, 15), (2025, 3, 19)] {
-        for (h, m, what) in [
-            (6u32, 30u32, "14:30 SGT, past the 14:25 T close"),
-            (7, 15, "15:15 SGT, before the 15:25 T+1 open"),
-        ] {
-            let t = utc(year, month, day, h, m);
-            assert!(
-                !open_at(japan, t),
-                "{year}: {what} is outside the sourced window every edition agrees on"
-            );
-        }
-        let inside = utc(year, month, day, 7, 40);
+    // Two dated eras sit between the 2020 row and the 2025 cutover. Through
+    // 2024-11-03 the T session closes 14:25 and the T+1 opens 14:55; from
+    // 2024-11-04 (DT/AM 50) the T session runs to 14:55 and the T+1 opens
+    // 15:25 behind a 15:15-15:25 queue. 2022-06-15 and 2025-03-19 are
+    // Wednesdays on either side.
+    let t_2022 = |h, m| utc(2022, 6, 15, h, m);
+    assert!(
+        !open_at(japan, t_2022(6, 30)),
+        "2022: 14:30 SGT, the closing routine has ended"
+    );
+    assert!(
+        open_at(japan, t_2022(7, 15)),
+        "2022: 15:15 SGT is inside the 14:55 T+1 session"
+    );
+    let t_2025 = |h, m| utc(2025, 3, 19, h, m);
+    assert!(
+        open_at(japan, t_2025(6, 30)),
+        "2025: 14:30 SGT is inside the lengthened T session"
+    );
+    assert!(
+        !open_at(japan, t_2025(7, 15)),
+        "2025: 15:15 SGT is the T+1 queue, not the session"
+    );
+    for t in [t_2022(7, 40), t_2025(7, 40)] {
         assert!(
-            open_at(japan, inside),
-            "{year}: 15:40 SGT is inside the T+1 session in every sourced edition"
+            open_at(japan, t),
+            "15:40 SGT is inside the T+1 session in both eras"
         );
     }
 
@@ -125,9 +141,14 @@ fn sgx_equity_index_serves_the_sourced_window_then_the_verified_grid() {
             open_at(key, utc(2026, 9, 16, hour, minute)),
             "{key:?}: the verified-current grid opens T+1 at {current_open} SGT"
         );
-        assert!(
-            !open_at(key, utc(2015, 6, 17, 6, 30)),
-            "{key:?} must be sessionless before the first sourced edition"
+        // Singapore's floor grid is carried to the January-2010 floor (14:30
+        // SGT is inside its 08:30-17:10 T session); the FTSE Taiwan and NTR
+        // suites did not exist in 2015 and stay sessionless.
+        let carried = key == MarketHoursKey::SgxEquityIndexSingapore;
+        assert_eq!(
+            open_at(key, utc(2015, 6, 17, 6, 30)),
+            carried,
+            "{key:?}: pre-2020 history is carried only where the family was listed"
         );
     }
 }
@@ -264,17 +285,23 @@ fn sgx_equity_index_t_plus_one_opens_fifteen_minutes_earlier_from_2025_04_07() {
 
     // The circular states "no change to the T session trading hours", and its
     // appendices confirm the Japan T close at 14:55 on both sides of the move.
-    // The dated surface still lengthens Japan's T session here, because the
-    // conservative intersection that hides the undated 2024 extension ends at
-    // this same boundary — 06:30Z is 14:30 SGT.
+    // That 14:55 came in on Monday 2024-11-04 under DT/AM 50 of 2024, so the
+    // profile in force on 2025-04-06 already serves it — 06:30Z is 14:30 SGT.
     let japan = MarketHoursKey::SgxEquityIndexJapan;
-    let japan_t_close = utc(2025, 4, 7, 6, 30);
+    let japan_t_probe = utc(2025, 4, 7, 6, 30);
     assert!(
-        !hours_for_market_hours_key(japan, last_earlier_day).is_open(japan_t_close),
-        "the intersection era closes Japan's T session at 14:25, its narrowest sourced bound"
+        hours_for_market_hours_key(japan, last_earlier_day).is_open(japan_t_probe),
+        "DT/AM 50 of 2024 lengthened Japan's T session to 14:55 before this cutover"
     );
     assert!(
-        hours_for_market_hours_key(japan, first_revised_day).is_open(japan_t_close),
-        "the circular's appendices put Japan's T close at 14:55 from 2025-04-07"
+        hours_for_market_hours_key(japan, first_revised_day).is_open(japan_t_probe),
+        "the circular's appendices keep Japan's T close at 14:55 from 2025-04-07"
     );
+    // And the lengthening itself is keyed to the Monday DT/AM 50 states:
+    // 23:59 SGT on 2024-11-03 is 15:59Z, midnight 2024-11-04 is 16:00Z.
+    let last_short_day = utc(2024, 11, 3, 15, 59);
+    let first_long_day = utc(2024, 11, 3, 16, 0);
+    let monday_afternoon = utc(2024, 11, 4, 6, 40);
+    assert!(!hours_for_market_hours_key(japan, last_short_day).is_open(monday_afternoon));
+    assert!(hours_for_market_hours_key(japan, first_long_day).is_open(monday_afternoon));
 }

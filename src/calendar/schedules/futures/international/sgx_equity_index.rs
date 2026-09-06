@@ -17,10 +17,11 @@
 //! routine is different: it matches at a single closing price, a trade prints
 //! in it, so it stays `extended`.
 //!
-//! The Taiwan and NTR (USD) grids live in the `sgx_equity_index_more` module,
-//! and the published evidence behind every family's dated history — which
-//! calendar editions were read and where they disagree — lives in the
-//! `history` submodule.
+//! The Taiwan and NTR (USD) grids live in the `sgx_equity_index_more` module.
+//! The pre-2020 and 2024 era tables for the three families here live in the
+//! `eras` submodule, and the published evidence behind every family's dated
+//! history — which artifacts were read, where they disagree, and how the
+//! undated changeovers are served — lives in the `history` submodule.
 
 use chrono_tz::Asia;
 
@@ -93,42 +94,63 @@ pub(crate) static SGX_EQUITY_INDEX_JAPAN_BASELINE: StaticHoursProfile = StaticHo
     has_weekend_close: true,
 };
 
+mod eras;
 mod history;
 
+use eras::{
+    SGX_CHINA_FLOOR, SGX_CHINA_FROM_2013_08_20, SGX_CHINA_FROM_2017_07_10, SGX_JAPAN_FLOOR,
+    SGX_JAPAN_FROM_2017_07_10, SGX_JAPAN_FROM_2024_11_04, SGX_SINGAPORE_FLOOR,
+    SGX_SINGAPORE_FROM_2017_07_10, SGX_SINGAPORE_FROM_2019_02_06, SGX_SINGAPORE_FROM_2019_06_11,
+};
 use history::{
-    SGX_EQUITY_INDEX_CHINA_SOURCED_WINDOW, SGX_EQUITY_INDEX_CLOSED,
-    SGX_EQUITY_INDEX_JAPAN_SOURCED_WINDOW, SGX_EQUITY_INDEX_SINGAPORE_SOURCED_WINDOW,
+    SGX_EQUITY_INDEX_CHINA_SOURCED_WINDOW, SGX_EQUITY_INDEX_JAPAN_SOURCED_WINDOW,
+    SGX_EQUITY_INDEX_SINGAPORE_SOURCED_WINDOW,
 };
 
-// RETRIEVAL NOTE, and why these rows stay Partial. The SGX circular archive
-// still cannot be read from SGX: www.sgx.com/regulation/circulars redirects to
-// the regco.sgx.com single-page app, whose CMS now answers the /circulars route
-// with `null`, and the api2.sgx.com file store is not listable. The Derivatives
-// Trading Calendar PDFs read above are SGX's productive channel and they date
-// the grids, not the transition days. What closed the 2025 transition was the
-// circular itself, found through a trading member's public mirror; the 2024
-// Japan transition has no equivalent, so these rows keep the Partial basis. The
-// gap should be read as "the first transition day is not stated anywhere
-// publicly reachable", not as "no dated evidence exists".
+// WHY THESE ROWS STAY PARTIAL. Two moves inside the modelled window are still
+// undated — the 04:45 -> 05:15 T+1 close of late 2019 on every family and the
+// SiMSCI 17:10/17:40 -> 17:20/17:50 move of 2019 — and the S0 -> A move that
+// the 2017-07-10 boundary bounds from above is undated too. Each is served as
+// the intersection of the states sourced around it; the `history` module
+// records the SGX channel that does state two of those days and the pending
+// decision on admitting it.
 //
 // DIRECTION OF THE ERROR. Before 2026-08-31 these rows carried today's grid to
-// the January-2010 floor across the moves tabulated above, which made them the
-// only rows in the crate that could **over**-report — answer open on bounds
-// that differed at the time. They no longer can: the sourced-intersection era
-// approaches the one remaining undated transition from the conservative side,
-// the current grid begins on the circular's stated effective day, and dates
-// before the 2020 edition are sessionless. Like every other Partial row in this
-// crate they err toward Closed, which is the safe direction for an order router.
+// the January-2010 floor across every move, which made them the only rows in
+// the crate that could **over**-report. They no longer can: every undated move
+// is approached from the conservative side, every dated move begins on its
+// circular's stated day, and the two boundaries that lengthen a wrapping
+// overnight close are keyed to a Monday so no evening leg runs past the close
+// in force when it opened. Like every other Partial row in this crate they err
+// toward Closed, which is the safe direction for an order router. The one
+// place the floor rows can over-report is the first eight months of 2010,
+// where third-party press attests a 01:00 rather than 02:00 T+1 close; the
+// carry-back convention carries the sourced state anyway and this note is the
+// stated residual risk.
 //
 // https://api2.sgx.com/sites/default/files/2026-01/SGX%20Calendar%202026_2.pdf
 // https://api2.sgx.com/sites/default/files/2025-07/DT%20Trading%20Calendar%202025%20%28updated%2031%20Jul%202025%29.pdf
 pub(crate) static SGX_EQUITY_INDEX_JAPAN_REVISIONS: &[Revision] = revisions![
     (
+        2017,
+        7,
+        10,
+        &SGX_JAPAN_FROM_2017_07_10,
+        "SGX derivatives Trading Hours page, captures 2017-07-05 and 2017-09-27"
+    ),
+    (
         2020,
         1,
         1,
         &SGX_EQUITY_INDEX_JAPAN_SOURCED_WINDOW,
-        "first sourced SGX calendar edition"
+        "SGX Derivatives Trading Calendar 2020 edition: T+1 close 05:15"
+    ),
+    (
+        2024,
+        11,
+        4,
+        &SGX_JAPAN_FROM_2024_11_04,
+        "SGX-DT Circular DT/AM 50 of 2024"
     ),
     (
         2025,
@@ -145,7 +167,7 @@ pub(crate) fn sgx_equity_index_japan_profile_at(
 ) -> &'static StaticHoursProfile {
     select_revision(
         local_date(as_of, Asia::Singapore),
-        &SGX_EQUITY_INDEX_CLOSED,
+        &SGX_JAPAN_FLOOR,
         SGX_EQUITY_INDEX_JAPAN_REVISIONS,
     )
 }
@@ -215,22 +237,38 @@ pub(crate) static SGX_EQUITY_INDEX_CHINA_BASELINE: StaticHoursProfile = StaticHo
     has_weekend_close: true,
 };
 
-// Two rows, for the reasons recorded in the history note above: a knowledge
-// boundary at the first surviving calendar edition, then the current grid on the
-// stated effective day of SGX-DT Circular DT/AM 15 of 2025, which moved this
-// family's T+1 open from 17:00 to 16:45. The family's T session and closing
-// routine are unchanged across the whole window; it is Partial only because
-// nothing before the 2020 edition is sourced.
+// Four rows, for the reasons recorded in the history note: the floor grid is
+// this key's baseline; 2013-08-20 widens the T close on that day's portal
+// table and specification; 2017-07-10 is the State-A knowledge boundary; the
+// 2020 row carries the 05:15 close and the routines; and the current grid
+// begins on the stated effective day of SGX-DT Circular DT/AM 15 of 2025,
+// which moved this family's T+1 open from 17:00 to 16:45. Partial because the
+// S0 -> A move and the 2019 T+1 close move are undated and served as
+// intersections.
 //
 // https://api2.sgx.com/sites/default/files/2026-01/SGX%20Calendar%202026_2.pdf
 // https://api2.sgx.com/sites/default/files/2025-07/DT%20Trading%20Calendar%202025%20%28updated%2031%20Jul%202025%29.pdf
 pub(crate) static SGX_EQUITY_INDEX_CHINA_REVISIONS: &[Revision] = revisions![
     (
+        2013,
+        8,
+        20,
+        &SGX_CHINA_FROM_2013_08_20,
+        "SGX portal Trading Hours table and FTSE China A50 specification, captures 2013-08-20"
+    ),
+    (
+        2017,
+        7,
+        10,
+        &SGX_CHINA_FROM_2017_07_10,
+        "SGX derivatives Trading Hours page, captures 2017-07-05 and 2017-09-27"
+    ),
+    (
         2020,
         1,
         1,
         &SGX_EQUITY_INDEX_CHINA_SOURCED_WINDOW,
-        "first sourced SGX calendar edition"
+        "SGX Derivatives Trading Calendar 2020 edition: T+1 close 05:15"
     ),
     (
         2025,
@@ -247,7 +285,7 @@ pub(crate) fn sgx_equity_index_china_profile_at(
 ) -> &'static StaticHoursProfile {
     select_revision(
         local_date(as_of, Asia::Singapore),
-        &SGX_EQUITY_INDEX_CLOSED,
+        &SGX_CHINA_FLOOR,
         SGX_EQUITY_INDEX_CHINA_REVISIONS,
     )
 }
@@ -316,21 +354,44 @@ pub(crate) static SGX_EQUITY_INDEX_SINGAPORE_BASELINE: StaticHoursProfile = Stat
     has_weekend_close: true,
 };
 
-// Two rows, as for the China grid: the knowledge boundary at the first
-// surviving calendar edition, then the current grid on the stated effective day
-// of SGX-DT Circular DT/AM 15 of 2025, which moved this family's T+1 open from
-// 17:50 to 17:35. Partial only because nothing before the 2020 edition is
-// sourced.
+// Five rows: the floor grid is this key's baseline; 2017-07-10 is the State-A
+// knowledge boundary; 2019-02-06 to 2019-06-10 serves the intersection across
+// the undated SiMSCI move and 2019-06-11 the state the content API first shows
+// it in; the 2020 row carries the 05:15 close; and the current grid begins on
+// the stated effective day of SGX-DT Circular DT/AM 15 of 2025, which moved
+// this family's T+1 open from 17:50 to 17:35. Partial because three moves are
+// undated and served as intersections.
 //
 // https://api2.sgx.com/sites/default/files/2026-01/SGX%20Calendar%202026_2.pdf
 // https://api2.sgx.com/sites/default/files/2025-07/DT%20Trading%20Calendar%202025%20%28updated%2031%20Jul%202025%29.pdf
 pub(crate) static SGX_EQUITY_INDEX_SINGAPORE_REVISIONS: &[Revision] = revisions![
     (
+        2017,
+        7,
+        10,
+        &SGX_SINGAPORE_FROM_2017_07_10,
+        "SGX derivatives Trading Hours page, captures 2017-07-05 and 2017-09-27"
+    ),
+    (
+        2019,
+        2,
+        6,
+        &SGX_SINGAPORE_FROM_2019_02_06,
+        "sourced intersection across the undated SiMSCI move: SGX content API captures 2019-02-04 and 2019-06-11"
+    ),
+    (
+        2019,
+        6,
+        11,
+        &SGX_SINGAPORE_FROM_2019_06_11,
+        "SGX content API derivatives product list, capture 2019-06-11"
+    ),
+    (
         2020,
         1,
         1,
         &SGX_EQUITY_INDEX_SINGAPORE_SOURCED_WINDOW,
-        "first sourced SGX calendar edition"
+        "SGX Derivatives Trading Calendar 2020 edition: T+1 close 05:15"
     ),
     (
         2025,
@@ -347,7 +408,7 @@ pub(crate) fn sgx_equity_index_singapore_profile_at(
 ) -> &'static StaticHoursProfile {
     select_revision(
         local_date(as_of, Asia::Singapore),
-        &SGX_EQUITY_INDEX_CLOSED,
+        &SGX_SINGAPORE_FLOOR,
         SGX_EQUITY_INDEX_SINGAPORE_REVISIONS,
     )
 }

@@ -48,13 +48,36 @@ agree everywhere except the boundary that matters most:
 | SER-9740R, 28 May 2026 | 02:00–04:00 CT | **16:00**–16:02 CT | 16:02 CT |
 | CME client-systems wiki, revised 22 April 2026 | 02:00–04:00 CT | **15:00**–16:01 CT | 16:02 CT |
 
-The disagreement is a full hour of executable time, five days a week, and the
-disputed hour is exactly `ECBTC`'s former Termination of Trading instant — the
-expiry-for-session confusion that `globex_event_contracts` exists to avoid.
-Encoding either number would assert a resolution neither document supports, and
-serving the intersection would ship a key whose entire daily close is disputed.
-So no key models this root after 2026-05-29; it is caller catalog data until CME
+The disagreement is a full hour of executable time, five days a week. Encoding
+either number would assert a resolution neither document supports, and serving
+the intersection would ship a key whose entire daily close is disputed. So no key
+models this root after 2026-05-29; it is caller catalog data until CME
 republishes the cell.
+
+That the disputed hour coincides with this root's former Termination of Trading
+instant is **not** evidence either way, and an earlier revision of this file
+wrongly offered it as part of the reason. Under `LAW-SESSION-NOT-EXPIRY` an
+expiry is not a session boundary, so it can neither corroborate nor refute a
+close; instrument lifecycle belongs to the caller's catalog and its provider
+adapters. The coincidence is at most a hypothesis about *why* two CME documents
+diverge, and it is untested.
+
+**Cite the right wiki page.** The wiki figure in the table above is the
+`Close` cell of the row *"Monday through Friday Daily Maintenance Window (with
+Trade Date roll)"*, which reads verbatim `Close : 3:00:00 p.m. to 4:01:00 p.m.
+CT` (its `Pre-open` cell is `4:01:00 p.m. to 4:01:30 p.m. CT`, `No cancel`
+`4:01:30 p.m. to 4:02:00 p.m. CT`, `Open` `4:02:00 p.m. CT` — hence the shared
+16:02 reopen). It is on
+[Event-Based Contracts Expansion to 24-7 Trading](https://cmegroupclientsite.atlassian.net/wiki/spaces/EPICSANDBOX/pages/1394343937/Event-Based+Contracts+Expansion+to+24-7+Trading),
+version 4 of 2026-04-23, whose Product Scope table names `ECBTC` on channel 329
+and says "Other event contracts will continue on the current schedule".
+
+A near-identically titled neighbour,
+[Swap-Based Event Contracts and 24-7 Trading](https://cmegroupclientsite.atlassian.net/wiki/spaces/EPICSANDBOX/pages/988020743/Swap-Based+Event+Contracts+and+24-7+Trading),
+covers a December-2025 launch of different products and gives the same row as
+`4:00 to 4:01 p.m. CT` — one minute from the SER, not an hour. Reading that page
+instead produces a confident and wrong conclusion that this row's conflict does
+not exist; it was reached once during review and corrected.
 
 The crate performs no symbol-to-family mapping; refusing an unsupported product
 belongs in the caller's instrument catalog.

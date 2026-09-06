@@ -147,13 +147,15 @@ use crate::calendar::schedules::timeline::{Revision, local_date, revisions, sele
 // p.m. to 4:02:00 p.m. CT | Open: 4:02:00 p.m. CT". They reconcile everywhere
 // else — both give Saturday 02:00-04:00 CT with a 03:45 Pre-Open, and both
 // resume matching at 16:02 — but they disagree by a full hour on the daily
-// executable close, and the disputed hour is exactly `ECBTC`'s old expiry
-// instant, which is the confusion this whole family's modelling exists to
-// avoid. Encoding either number would assert a resolution neither document
-// supports, so no `globex_event_contracts_btc` key exists and post-2026-05-29
+// executable close. That the disputed hour coincides with this root's old
+// expiry instant is not evidence either way: LAW-SESSION-NOT-EXPIRY puts
+// instrument lifecycle outside this crate, so an expiry can neither
+// corroborate nor refute a close. Encoding either number would assert a
+// resolution neither document supports, so no `globex_event_contracts_btc`
+// key exists and post-2026-05-29
 // `ECBTC` stays caller catalog data, recorded in
 // `docs/schedules/unsupported-families.md`.
-// https://cmegroupclientsite.atlassian.net/wiki/display/EPICSANDBOX/Event-Based+Contracts+Expansion+to+24-7+Trading
+// https://cmegroupclientsite.atlassian.net/wiki/spaces/EPICSANDBOX/pages/1394343937/Event-Based+Contracts+Expansion+to+24-7+Trading
 //
 // THE HOURLY CONTRACTS ARE IN SCOPE AND CHANGE NO CLOCK. CME rule filing
 // 25-521 reproduces SER-9624's exhibit with an "Initial Listing Schedule" of

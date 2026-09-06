@@ -186,6 +186,59 @@ fn the_weekend_block_is_joined_and_carries_mondays_trade_date() {
     );
 }
 
+/// The joined weekend block straddles both US DST transitions: the Saturday
+/// 04:00 CT open to the Monday 15:00 CT close is 60 wall-clock hours across
+/// the November fall-back and 58 across the March spring-forward. The join must
+/// neither drop nor double-count that hour, and the trade date stays Monday.
+#[test]
+fn the_joined_weekend_block_survives_both_dst_transitions() {
+    let calendar = calendar_for_market_hours_key(BTC_EVENTS);
+    for (saturday, monday, hours) in [
+        ((2026, 10, 31), (2026, 11, 2), 60i64),
+        ((2027, 3, 13), (2027, 3, 15), 58),
+    ] {
+        let open = ct(saturday, (4, 0, 0));
+        let close = ct(monday, (15, 0, 0));
+        assert_eq!(
+            (close - open).num_hours(),
+            hours,
+            "{saturday:?}: block length"
+        );
+        let sunday_noon = open + chrono::Duration::hours(32);
+        for instant in [open, sunday_noon, close - chrono::Duration::seconds(1)] {
+            assert_eq!(
+                calendar.session_bounds_with(instant, SessionKind::Extended),
+                Some((open, close)),
+                "{saturday:?}: the weekend block is one joined session across the clock change"
+            );
+            assert_eq!(calendar.trade_date(instant), Some(day(monday)));
+            assert!(calendar.is_open(instant));
+        }
+        assert!(
+            !calendar.is_open(close),
+            "{monday:?}: 15:00 CT closes end-exclusive"
+        );
+        assert_eq!(
+            calendar.session_state(ct(monday, (15, 30, 0))),
+            SessionState::Maintenance
+        );
+        assert!(
+            calendar.is_open(ct(monday, (16, 2, 0))),
+            "{monday:?}: 16:02 CT reopens"
+        );
+        // The Friday evening block ahead of it also lands on the right side.
+        let friday = (saturday.0, saturday.1, saturday.2 - 1);
+        assert_eq!(
+            calendar.session_bounds_with(ct(friday, (20, 0, 0)), SessionKind::Extended),
+            Some((ct(friday, (16, 2, 0)), ct(saturday, (2, 0, 0))))
+        );
+        assert_eq!(
+            calendar.trade_date(ct(friday, (20, 0, 0))),
+            Some(day(monday))
+        );
+    }
+}
+
 /// Three one-day Saturday extensions CME announced for channel 329, each
 /// reverting to the standard window the following week.
 #[test]

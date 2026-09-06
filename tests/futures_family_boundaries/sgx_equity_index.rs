@@ -62,7 +62,7 @@ fn sgx_equity_index_serves_the_sourced_window_then_the_verified_grid() {
         "the floor grid opens the Nikkei T session at 07:45 SGT"
     );
 
-    // Two dated eras sit between the 2020 row and the 2025 cutover. Through
+    // Two dated eras sit between the 2019-11-11 row and the 2025 cutover. Through
     // 2024-11-03 the T session closes 14:25 and the T+1 opens 14:55; from
     // 2024-11-04 (DT/AM 50) the T session runs to 14:55 and the T+1 opens
     // 15:25 behind a 15:15-15:25 queue. 2022-06-15 and 2025-03-19 are

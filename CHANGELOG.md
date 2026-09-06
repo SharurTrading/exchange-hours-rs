@@ -421,6 +421,39 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Fixed
 
+- **SGX equity index: the floor eras intersect with SGX's own 2009
+  specification pages, and the 2013 state becomes a dated Monday row
+  (behaviour change).** The Japan, China and Singapore keys carried the
+  2013-08-20 portal grid (T+1 close 02:00) to the January-2010 floor. SGX's
+  pre-portal product site (`sgx.com/psv/…`, archived to March 2009 and never
+  again) states an older grid for every family — T+1 to **22:55**, the Nikkei
+  T+1 open 15:30, the A50 with a lunch break (09:15–11:35, 13:00–15:05) and a
+  15:40 T+1 open — and, for the first time from an SGX artifact, the length of
+  every pre-opening routine (13 minutes plus a 2-minute non-cancel on the T
+  session everywhere and on the T+1 session except the A50's 3 + 2). The 2009 pages are below the floor, but the moves they bound fall
+  inside the audit window on days SGX never states (third-party press puts the
+  22:55 → 01:00 → 02:00 close moves in January and August 2010), so the floor
+  rows now serve the intersection: T+1 to 22:55 on all three keys; Japan's
+  T+1 open 15:30 with 15:15–15:30 as order entry and its 07:30–07:45 T queue;
+  Singapore's 08:15–08:30 and 18:00–18:15 queues, whose anchors never moved;
+  China without the lunch break, to 15:05, with 09:00–09:15 as order entry, no
+  closing routine and its T+1 open still held at 17:00. The 2013 table's state
+  arrives as a revision row on all three keys at **Monday 2013-08-26** (it
+  creates a wrapping overnight close, 22:55 the same day to 02:00, so it is
+  keyed to the Monday after the capture; China's former 2013-08-20 row is folded into it). Pre-2010 and
+  2010–2013 instants therefore under-report the T+1 leg by up to three hours
+  and never over-report it. The routines between the content API's 2020-01-09
+  payload and DT/AM 15 of 2025 are now sourced rather than carried — all 22
+  archived payloads of 2021–2024 reproduce them to the minute — and DT/AM 50
+  of 2024 is corroborated routine by routine by SGX's own server-rendered
+  product pages across the content API's capture gap. The 2016 move behind
+  the 04:45 grid stays undated (#66), but its window narrows to (2015-12-24,
+  2017-07-05) on SGX's own 2016 calendar edition, served verbatim by a member
+  and read at its printed as-of date; member notices placing it at the Titan
+  launch of Monday 2016-11-14 are recorded as risk, not as a row. `AGENTS.md`
+  records how a bare day-and-month in an operator's change log is given its
+  year. Closes #64 and #65.
+
 - **SGX equity index: the two 2019 moves are dated from SGX's own product
   change log, and the convention that admits it is recorded.** The 2019
   SiMSCI move (T close 17:10 → 17:20, T+1 open 17:40 → 17:50) and the T+1 close
@@ -440,7 +473,8 @@ corrections (a venue's hours fixed against a primary source) go under
   **Monday 2019-06-10**; the 05:15 close on four keys moves from Monday
   2020-01-06 to **Monday 2019-11-11**. Both days are Mondays SGX chose, so no
   rounding applies. Every row stays **Partial** for the one move still
-  undated (the 2016 change behind the 04:45 grid, #66) and NTR's under-reported
+  undated (the 2016 change behind the 04:45 grid, #66), the undated moves
+  between the 2009 pages and the 2013 table, and NTR's under-reported
   launch interval. Closes #45.
 
 - **SGX equity index: the pre-2020 era is modelled, the 2024 Japan move is

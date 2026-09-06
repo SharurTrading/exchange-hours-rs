@@ -198,7 +198,7 @@ static SGX_EQUITY_INDEX_NTR_USD_SOURCED_WINDOW: StaticHoursProfile = StaticHours
     has_weekend_close: true,
 };
 
-// 2018-04-16 to 2019-12-31: the suite's first listing. The 2018 (Apr) calendar
+// 2018-04-16 to 2019-11-10: the suite's first listing. The 2018 (Apr) calendar
 // edition (PDF created 2018-04-11) prints thirteen NTR (USD) rows, every one
 // "7.25am to 6.30pm / 7.00pm to 4.45am", and the 2019 edition repeats them;
 // neither 2017 portal table lists the suite. Keyed to the Monday after the
@@ -208,7 +208,11 @@ static SGX_EQUITY_INDEX_NTR_USD_SOURCED_WINDOW: StaticHoursProfile = StaticHours
 // across an undated change with no second state to intersect, and the row
 // creates a wrapping overnight close, which the history note explains is why
 // it lands on a Monday. Routines as above, from the content API's 2019-02-04
-// payload.
+// payload; the change log's entry issued 2019-08-14, v6.5, "Editorial change
+// Contracts_data: (T) session Closing hours and LTD Last Trade Time to
+// 6:35pm" for EM, NAU, NCH, NEA and the rest of the suite, restates the
+// closing routine's end (18:30 close, 18:30-18:35 pre-closing and non-cancel)
+// that the 2019 payloads already print, and names no day.
 static SGX_EQUITY_INDEX_NTR_USD_REGULAR_2018: &[SessionRule] = &[
     SessionRule {
         days: MON_FRI,

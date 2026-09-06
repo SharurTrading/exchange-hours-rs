@@ -35,125 +35,422 @@ fn state(key: MarketHoursKey, at: DateTime<Utc>) -> SessionState {
     hours_for_market_hours_key(key, at).session_state(at)
 }
 
-/// The floor grids: the 2013-08-20 portal table carried to the January-2010
-/// floor for Japan, China and Singapore, and — because the floor row is the
-/// timeline baseline rather than a dated row — below it too. The 02:00 T+1
-/// close, the 07:45 Nikkei open and the Notes-stated closing routine are all
-/// probed; the A50's T+1 open is held at 17:00, the narrowest value sourced
-/// anywhere in the undated span, not the 16:10 the older fragment prints.
+/// The floor grids: the intersection of SGX's 2009 specification pages and
+/// the 2013-08-20 portal table, carried to the January-2010 floor for Japan,
+/// China and Singapore and — because the floor row is the timeline baseline
+/// rather than a dated row — below it too. The T+1 leg closes 22:55, the
+/// narrowest sourced close across the undated span; Japan's T+1 opens 15:30
+/// behind the 15:15-15:30 queue; the A50's 2009 lunch break is withheld and
+/// its T+1 open held at 17:00; the 2009 pre-open queues are served where their
+/// anchor did not move.
 #[test]
-fn the_floor_grids_are_carried_to_the_audit_floor_and_below() {
-    for date in [(2009, 6, 17), (2012, 6, 20), (2015, 6, 17)] {
+fn the_floor_grids_are_the_2009_and_2013_intersection_carried_to_the_floor_and_below() {
+    for date in [(2009, 6, 17), (2012, 6, 20)] {
+        // Japan.
+        assert!(
+            !open(JAPAN, sgt(date, (7, 40))),
+            "{date:?}: Nikkei opened 07:45"
+        );
+        assert_eq!(
+            state(JAPAN, sgt(date, (7, 35))),
+            SessionState::OrderEntry,
+            "{date:?}"
+        );
         assert!(
             open(JAPAN, sgt(date, (10, 0))),
             "{date:?}: Nikkei T session"
-        );
-        assert!(
-            !open(JAPAN, sgt(date, (7, 40))),
-            "{date:?}: Nikkei opened 07:45 then"
-        );
-        assert!(
-            open(JAPAN, sgt(date, (20, 0))),
-            "{date:?}: Nikkei T+1 session"
         );
         assert_eq!(
             state(JAPAN, sgt(date, (14, 27))),
             SessionState::OpenExtended
         );
+        assert_eq!(
+            state(JAPAN, sgt(date, (15, 20))),
+            SessionState::OrderEntry,
+            "{date:?}"
+        );
         assert!(
-            open(CHINA, sgt(date, (15, 20))),
-            "{date:?}: A50 T to at least 15:25"
+            !open(JAPAN, sgt(date, (15, 20))),
+            "{date:?}: T+1 opens 15:30 at the floor"
+        );
+        assert!(open(JAPAN, sgt(date, (15, 35))), "{date:?}: T+1 open");
+        assert!(open(JAPAN, sgt(date, (22, 50))), "{date:?}: T+1 to 22:55");
+        assert!(
+            !open(JAPAN, sgt(date, (23, 30))),
+            "{date:?}: 22:55 close at the floor"
+        );
+        // China.
+        assert_eq!(
+            state(CHINA, sgt(date, (9, 5))),
+            SessionState::OrderEntry,
+            "{date:?}"
+        );
+        assert!(open(CHINA, sgt(date, (10, 0))), "{date:?}: A50 T session");
+        assert!(
+            !open(CHINA, sgt(date, (12, 0))),
+            "{date:?}: the 2009 lunch break is withheld"
+        );
+        assert!(open(CHINA, sgt(date, (15, 3))), "{date:?}: A50 T to 15:05");
+        assert!(
+            !open(CHINA, sgt(date, (15, 10))),
+            "{date:?}: A50 floor T close 15:05"
         );
         assert!(
             !open(CHINA, sgt(date, (16, 50))),
             "{date:?}: A50 T+1 held at 17:00"
         );
-        assert_eq!(state(CHINA, sgt(date, (8, 50))), SessionState::OrderEntry);
+        assert!(open(CHINA, sgt(date, (17, 5))), "{date:?}: A50 T+1 open");
+        assert!(!open(CHINA, sgt(date, (23, 30))), "{date:?}: 22:55 close");
+        // Singapore.
+        assert_eq!(
+            state(SINGAPORE, sgt(date, (8, 20))),
+            SessionState::OrderEntry,
+            "{date:?}"
+        );
         assert!(
             open(SINGAPORE, sgt(date, (17, 0))),
             "{date:?}: SiMSCI T to 17:10"
-        );
-        assert!(
-            !open(SINGAPORE, sgt(date, (18, 0))),
-            "{date:?}: SiMSCI T+1 opened 18:15"
         );
         assert_eq!(
             state(SINGAPORE, sgt(date, (17, 12))),
             SessionState::OpenExtended
         );
-        // The floor eras serve no pre-open queue: no artifact of that era that
-        // has been read states its length (#65).
-        for (key, at) in [(JAPAN, (7, 20)), (SINGAPORE, (8, 20))] {
-            let phase = state(key, sgt(date, at));
-            assert_ne!(
-                phase,
-                SessionState::OrderEntry,
-                "{key:?} {date:?}: no queue is served"
-            );
-            assert!(
-                !open(key, sgt(date, at)),
-                "{key:?} {date:?}: and nothing matches"
-            );
-        }
+        assert_eq!(
+            state(SINGAPORE, sgt(date, (18, 5))),
+            SessionState::OrderEntry,
+            "{date:?}"
+        );
+        assert!(
+            open(SINGAPORE, sgt(date, (18, 20))),
+            "{date:?}: SiMSCI T+1 from 18:15"
+        );
+        assert!(
+            !open(SINGAPORE, sgt(date, (23, 30))),
+            "{date:?}: 22:55 close"
+        );
+        // Not yet listed.
         assert!(
             !open(TAIWAN, sgt(date, (10, 0))),
             "{date:?}: no FTSE Taiwan yet"
         );
         assert!(!open(NTR, sgt(date, (10, 0))), "{date:?}: no NTR suite yet");
     }
-    // The A50's floor T close is 15:25 until the 2013-08-20 row widens it to
-    // 15:55; the T+1 open is held at 17:00 throughout.
-    for date in [(2009, 6, 17), (2012, 6, 20)] {
+}
+
+/// The floor grid's edges, exactly: the last open minute and the end-exclusive
+/// close of every bound the intersection sets, so a table off by a minute
+/// on any of them fails here rather than passing between loose probes.
+#[test]
+fn the_floor_edges_are_exact_on_the_japan_key() {
+    let date = (2011, 3, 16);
+    for key in [JAPAN, CHINA, SINGAPORE] {
         assert!(
-            !open(CHINA, sgt(date, (15, 40))),
-            "{date:?}: A50 floor T close 15:25"
+            open(key, sgt(date, (22, 54))),
+            "{key:?}: last minute before 22:55"
         );
-        assert_eq!(
-            state(CHINA, sgt(date, (15, 27))),
-            SessionState::OpenExtended,
-            "{date:?}: the Notes-stated closing routine follows the 15:25 close"
+        assert!(
+            !open(key, sgt(date, (22, 55))),
+            "{key:?}: 22:55 closes end-exclusive"
         );
     }
+    assert_eq!(
+        state(JAPAN, sgt(date, (7, 29))),
+        SessionState::Closed,
+        "queue opens 07:30"
+    );
+    assert_eq!(state(JAPAN, sgt(date, (7, 30))), SessionState::OrderEntry);
+    assert_eq!(state(JAPAN, sgt(date, (7, 44))), SessionState::OrderEntry);
+    assert_eq!(state(JAPAN, sgt(date, (7, 45))), SessionState::OpenRegular);
+    assert_eq!(state(JAPAN, sgt(date, (14, 24))), SessionState::OpenRegular);
+    assert_eq!(
+        state(JAPAN, sgt(date, (14, 25))),
+        SessionState::OpenExtended
+    );
+    assert_eq!(
+        state(JAPAN, sgt(date, (14, 29))),
+        SessionState::OpenExtended
+    );
+    assert_eq!(state(JAPAN, sgt(date, (14, 30))), SessionState::Halt);
+    assert_eq!(
+        state(JAPAN, sgt(date, (15, 14))),
+        SessionState::Halt,
+        "T+1 queue opens 15:15"
+    );
+    assert_eq!(state(JAPAN, sgt(date, (15, 15))), SessionState::OrderEntry);
+    assert_eq!(state(JAPAN, sgt(date, (15, 29))), SessionState::OrderEntry);
+    assert_eq!(
+        state(JAPAN, sgt(date, (15, 30))),
+        SessionState::OpenRegular,
+        "T+1 opens 15:30"
+    );
+}
+
+/// The same exact edges on the China key, including the 2009 lunch break
+/// the floor withholds.
+#[test]
+fn the_floor_edges_are_exact_on_the_china_key() {
+    let date = (2011, 3, 16);
+    assert_eq!(
+        state(CHINA, sgt(date, (8, 59))),
+        SessionState::Closed,
+        "queue opens 09:00"
+    );
+    assert_eq!(state(CHINA, sgt(date, (9, 0))), SessionState::OrderEntry);
+    assert_eq!(state(CHINA, sgt(date, (9, 14))), SessionState::OrderEntry);
+    assert_eq!(
+        state(CHINA, sgt(date, (9, 15))),
+        SessionState::OpenRegular,
+        "T opens 09:15"
+    );
+    assert_eq!(state(CHINA, sgt(date, (11, 34))), SessionState::OpenRegular);
+    assert_eq!(
+        state(CHINA, sgt(date, (11, 35))),
+        SessionState::Halt,
+        "the 2009 lunch break closes 11:35"
+    );
+    assert_eq!(state(CHINA, sgt(date, (12, 59))), SessionState::Halt);
+    assert_eq!(
+        state(CHINA, sgt(date, (13, 0))),
+        SessionState::OpenRegular,
+        "the T session resumes 13:00"
+    );
+    assert_eq!(state(CHINA, sgt(date, (15, 4))), SessionState::OpenRegular);
+    assert_eq!(
+        state(CHINA, sgt(date, (15, 5))),
+        SessionState::Halt,
+        "15:05 closes end-exclusive"
+    );
+    assert_eq!(
+        state(CHINA, sgt(date, (16, 59))),
+        SessionState::Halt,
+        "T+1 held at 17:00"
+    );
+    assert_eq!(state(CHINA, sgt(date, (17, 0))), SessionState::OpenRegular);
+}
+
+/// The same exact edges on the Singapore key.
+#[test]
+fn the_floor_edges_are_exact_on_the_singapore_key() {
+    let date = (2011, 3, 16);
+    assert_eq!(
+        state(SINGAPORE, sgt(date, (8, 14))),
+        SessionState::Closed,
+        "queue opens 08:15"
+    );
+    assert_eq!(
+        state(SINGAPORE, sgt(date, (8, 15))),
+        SessionState::OrderEntry
+    );
+    assert_eq!(
+        state(SINGAPORE, sgt(date, (8, 30))),
+        SessionState::OpenRegular
+    );
+    assert_eq!(
+        state(SINGAPORE, sgt(date, (17, 9))),
+        SessionState::OpenRegular
+    );
+    assert_eq!(
+        state(SINGAPORE, sgt(date, (17, 10))),
+        SessionState::OpenExtended
+    );
+    assert_eq!(state(SINGAPORE, sgt(date, (17, 15))), SessionState::Halt);
+    assert_eq!(
+        state(SINGAPORE, sgt(date, (17, 59))),
+        SessionState::Halt,
+        "queue opens 18:00"
+    );
+    assert_eq!(
+        state(SINGAPORE, sgt(date, (18, 0))),
+        SessionState::OrderEntry
+    );
+    assert_eq!(
+        state(SINGAPORE, sgt(date, (18, 14))),
+        SessionState::OrderEntry
+    );
+    assert_eq!(
+        state(SINGAPORE, sgt(date, (18, 15))),
+        SessionState::OpenRegular,
+        "T+1 opens 18:15"
+    );
+}
+
+/// The 2013-08-20 table widens the A50's T close and creates a wrapping
+/// overnight close on every carried family (22:55 the same day becomes 02:00
+/// the next); because it creates the wrap it is keyed to Monday 2013-08-26,
+/// so the Friday leg still ends 22:55 and Monday's runs to Tuesday 02:00.
+#[test]
+fn the_2013_table_takes_effect_on_the_monday_and_creates_the_overnight_close() {
+    for key in [JAPAN, CHINA, SINGAPORE] {
+        assert!(
+            !open(key, sgt((2013, 8, 23), (23, 30))),
+            "{key:?}: Friday leg ends 22:55"
+        );
+        assert!(
+            open(key, sgt((2013, 8, 26), (23, 30))),
+            "{key:?}: Monday's leg runs on"
+        );
+        assert!(open(key, sgt((2013, 8, 27), (1, 59))), "{key:?}: to 02:00");
+        assert!(
+            !open(key, sgt((2013, 8, 27), (2, 0))),
+            "{key:?}: 02:00 closes end-exclusive"
+        );
+    }
+}
+
+/// The Japan 2013-08-26 row, edge by edge: both sides of the Monday, and a
+/// Wednesday inside the row's interval for the T session it carries.
+#[test]
+fn the_2013_row_on_the_japan_key() {
+    let mon = (2013, 8, 26);
+    assert!(
+        !open(JAPAN, sgt((2013, 8, 23), (15, 20))),
+        "Friday: T+1 opens 15:30"
+    );
+    assert_eq!(state(JAPAN, sgt(mon, (7, 35))), SessionState::OrderEntry);
+    assert_eq!(state(JAPAN, sgt(mon, (14, 24))), SessionState::OpenRegular);
+    assert_eq!(
+        state(JAPAN, sgt(mon, (14, 25))),
+        SessionState::OpenExtended,
+        "14:25 closes into the routine"
+    );
+    assert_eq!(state(JAPAN, sgt(mon, (14, 27))), SessionState::OpenExtended);
+    assert_ne!(
+        state(JAPAN, sgt(mon, (14, 30))),
+        SessionState::OpenExtended,
+        "the routine ends 14:30"
+    );
+    assert_ne!(
+        state(JAPAN, sgt(mon, (15, 5))),
+        SessionState::OrderEntry,
+        "T+1 queue withheld"
+    );
+    assert_eq!(
+        state(JAPAN, sgt(mon, (15, 14))),
+        SessionState::Maintenance,
+        "the minute before the T+1 open"
+    );
+    assert_eq!(
+        state(JAPAN, sgt(mon, (15, 15))),
+        SessionState::OpenRegular,
+        "Monday: T+1 opens 15:15"
+    );
+    let mid = (2015, 6, 17);
+    assert_eq!(state(JAPAN, sgt(mid, (14, 24))), SessionState::OpenRegular);
+    assert_eq!(state(JAPAN, sgt(mid, (14, 27))), SessionState::OpenExtended);
+    assert_ne!(state(JAPAN, sgt(mid, (14, 30))), SessionState::OpenExtended);
+    assert_eq!(state(JAPAN, sgt(mid, (15, 15))), SessionState::OpenRegular);
+    assert!(open(JAPAN, sgt((2015, 6, 18), (1, 59))));
+    assert!(!open(JAPAN, sgt((2015, 6, 18), (2, 0))));
+}
+
+/// The China 2013-08-26 row: the widened 15:55 close with its routine, the
+/// T+1 open still held at 17:00 with both candidate queues withheld.
+#[test]
+fn the_2013_row_on_the_china_key() {
+    let mon = (2013, 8, 26);
+    assert!(
+        !open(CHINA, sgt((2013, 8, 23), (15, 40))),
+        "Friday: 15:05 close"
+    );
+    assert!(
+        !open(CHINA, sgt((2013, 8, 23), (12, 0))),
+        "Friday: lunch withheld"
+    );
+    assert_eq!(state(CHINA, sgt(mon, (8, 50))), SessionState::OrderEntry);
+    assert!(open(CHINA, sgt(mon, (12, 0))), "Monday: no lunch break");
+    assert_eq!(
+        state(CHINA, sgt(mon, (15, 54))),
+        SessionState::OpenRegular,
+        "last regular minute before 15:55"
+    );
+    assert_eq!(
+        state(CHINA, sgt(mon, (15, 55))),
+        SessionState::OpenExtended,
+        "15:55 closes into the 3.55-4.00 pm routine"
+    );
+    assert_eq!(state(CHINA, sgt(mon, (15, 57))), SessionState::OpenExtended);
+    assert!(
+        !open(CHINA, sgt(mon, (16, 0))),
+        "the closing routine ends 16:00"
+    );
+    assert_ne!(
+        state(CHINA, sgt(mon, (16, 35))),
+        SessionState::OrderEntry,
+        "the leaf's 16:30-16:40 queue is withheld"
+    );
+    assert_ne!(
+        state(CHINA, sgt(mon, (16, 55))),
+        SessionState::OrderEntry,
+        "no 16:50-17:00 queue before 2017-07-10"
+    );
+    assert!(!open(CHINA, sgt(mon, (16, 59))), "T+1 still held at 17:00");
+    assert!(
+        open(CHINA, sgt(mon, (17, 0))),
+        "Monday: the A50 T+1 opens 17:00"
+    );
     assert!(
         open(CHINA, sgt((2015, 6, 17), (15, 40))),
         "2015: A50 T runs to 15:55"
     );
-    assert!(
-        !open(CHINA, sgt((2015, 6, 17), (16, 10))),
-        "2015: closed after the 15:55-16:00 routine"
-    );
-    // The 02:00 close: a Wednesday leg ends on Thursday morning.
-    assert!(open(JAPAN, sgt((2015, 6, 18), (1, 59))));
-    assert!(!open(JAPAN, sgt((2015, 6, 18), (2, 0))));
-    assert!(!open(CHINA, sgt((2015, 6, 18), (2, 30))));
-    assert!(!open(SINGAPORE, sgt((2015, 6, 18), (3, 0))));
+    assert!(!open(CHINA, sgt((2015, 6, 17), (16, 10))));
+    assert!(open(CHINA, sgt((2015, 6, 17), (17, 0))));
 }
 
-/// The A50's T close widens on 2013-08-20 — the one boundary that is China's
-/// alone — while its T+1 open stays held.
+/// The Singapore 2013-08-26 row: T session, routine and both queues carried,
+/// the T+1 open pinned to its stated minute, mid-era too.
 #[test]
-fn the_a50_t_close_widens_on_2013_08_20_and_its_t_plus_one_open_does_not_narrow() {
-    assert!(
-        !open(CHINA, sgt((2013, 8, 19), (15, 40))),
-        "Monday: 15:25 close"
-    );
-    assert!(
-        open(CHINA, sgt((2013, 8, 20), (15, 40))),
-        "Tuesday: 15:55 close"
+fn the_2013_row_on_the_singapore_key() {
+    let mon = (2013, 8, 26);
+    assert_eq!(
+        state(SINGAPORE, sgt(mon, (8, 20))),
+        SessionState::OrderEntry
     );
     assert_eq!(
-        state(CHINA, sgt((2013, 8, 20), (15, 57))),
+        state(SINGAPORE, sgt(mon, (8, 30))),
+        SessionState::OpenRegular
+    );
+    assert_eq!(
+        state(SINGAPORE, sgt(mon, (17, 9))),
+        SessionState::OpenRegular
+    );
+    assert_eq!(
+        state(SINGAPORE, sgt(mon, (17, 10))),
         SessionState::OpenExtended
     );
-    assert!(
-        !open(CHINA, sgt((2013, 8, 20), (16, 50))),
-        "T+1 still held at 17:00"
+    assert_eq!(
+        state(SINGAPORE, sgt(mon, (17, 12))),
+        SessionState::OpenExtended
     );
-    assert!(open(CHINA, sgt((2013, 8, 20), (17, 5))));
-    assert!(
-        !open(CHINA, sgt((2013, 8, 21), (2, 30))),
-        "02:00 close persists"
+    assert_ne!(
+        state(SINGAPORE, sgt(mon, (17, 15))),
+        SessionState::OpenExtended,
+        "the routine ends 17:15"
     );
+    assert_eq!(
+        state(SINGAPORE, sgt(mon, (18, 5))),
+        SessionState::OrderEntry
+    );
+    assert_eq!(
+        state(SINGAPORE, sgt(mon, (18, 14))),
+        SessionState::OrderEntry
+    );
+    assert_eq!(
+        state(SINGAPORE, sgt(mon, (18, 15))),
+        SessionState::OpenRegular,
+        "T+1 opens 18:15: '6.15pm to 2.00am'"
+    );
+    let mid = (2015, 6, 17);
+    assert_eq!(
+        state(SINGAPORE, sgt(mid, (17, 12))),
+        SessionState::OpenExtended
+    );
+    assert_eq!(
+        state(SINGAPORE, sgt(mid, (18, 5))),
+        SessionState::OrderEntry
+    );
+    assert!(open(SINGAPORE, sgt(mid, (18, 15))));
+    assert!(open(SINGAPORE, sgt((2015, 6, 18), (1, 59))));
+    assert!(!open(SINGAPORE, sgt((2015, 6, 18), (2, 0))));
 }
 
 /// The State-A boundary is keyed to Monday 2017-07-10, not the Wednesday
@@ -340,7 +637,7 @@ fn the_t_plus_one_close_extends_to_05_15_on_2019_11_11_on_four_keys() {
 /// The 2019-11-11 rows (and Taiwan's launch row) carry the routines SGX's
 /// content API states on 2020-01-09 for every family on that grid.
 #[test]
-fn the_2020_rows_carry_the_content_api_routines_on_all_five_keys() {
+fn the_2019_11_11_rows_carry_the_content_api_routines_on_all_five_keys() {
     let day = (2022, 6, 15);
     for (key, order_entry, extended) in [
         (JAPAN, (7, 20), (14, 27)),

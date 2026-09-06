@@ -35,7 +35,8 @@ corrections (a venue's hours fixed against a primary source) go under
   disputed hour as maintenance, erring toward closed. CME Globex notices
   20260727, 20260824 and 20260831 confirm the Saturday window for channel 329
   after the cutover and date three one-day Saturday extensions (2026-08-01 to
-  09:00, 2026-08-29 to 06:00, 2026-09-19 to 08:00 CT), all modelled. The
+  09:00, 2026-08-29 to 06:00, 2026-09-19 to 08:00 CT), all modelled; the
+  cryptocurrency key models only the first (#61). The
   key-backed calendar joins the weekend pieces into one block and carries the
   following open business date, as for `globex_cryptocurrency`; unlike that
   key, the Pre-Opens stay `order_entry`. The ledger row is **Partial** with an

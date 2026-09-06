@@ -89,6 +89,17 @@ change to this standalone repository must follow.
   a genuine recurring-grid change to "just a holiday" to avoid the evidence
   work.
 
+- **LAW-FOLLOW-UPS-ARE-ISSUES** — a follow-up named anywhere — in a pull
+  request, a commit message, a review reply, a ledger row, a plan, or a
+  research note — is either done in that same change or opened as a GitHub
+  issue before the change merges, and the issue number is cited where the
+  follow-up is named. "Separate small PR", "later", "out of scope here" and
+  "not this PR" are not tracking; the issue is. This includes a source gap the
+  change discovers in a neighbouring row (a notice that also touches another
+  key's channel), a channel found exhausted, and a question a reviewer raised
+  that was answered with "follow-up". A follow-up that is never opened is a
+  claim that it was never needed, and the next reader will believe it.
+
 ## Modeling conventions
 
 - **UTC in, UTC out.** Every *timestamp* crossing the public boundary is a

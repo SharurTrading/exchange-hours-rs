@@ -2,6 +2,7 @@
 
 //! Dated-boundary fixtures organized by venue family.
 
+mod cme_bitcoin_event_contracts;
 mod cme_event_contracts;
 mod cme_families;
 mod cme_mini_grains;

@@ -13,6 +13,38 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Added
 
+- **`MarketHoursKey::GlobexEventContractsBtc`** — CME Event Contracts on
+  Bitcoin Futures (`ECBTC`), Rulebook Chapter 23, on the canonical wire name
+  `globex_event_contracts_btc`: the one event-contract root CME moved to 24/7
+  trading on 2026-05-29. The key carries the root's whole life so a caller
+  never switches keys on a date — sessionless before SER-9092's 2023-03-12
+  listing, the `globex_event_contracts` grid by reference to 2026-05-28, the
+  transition day, then 24/7. **Its weekday close is a sourced intersection.**
+  SER-9740R (28 May 2026) states a 16:00–16:02 CT maintenance window; CME's
+  client-systems wiki page for this root states "Close: 3:00:00 p.m. to 4:01:00
+  p.m. CT"; both give the 16:01–16:02 Pre-Open, the 16:02 open and the Saturday
+  02:00–04:00 window with its 03:45 Pre-Open. Confluence's version API shows
+  the wiki table entered at version 4 under the page's own "April 22, 2026"
+  revision row and was never revised — the earlier statement — while
+  SER-9740R's Table 2 is the cryptocurrency cell carried over ("No other
+  changes have been made to the original SER") whose "Current" column misstates
+  this root's own prior cell as printed in SER-9092 and rule filing 23-014;
+  rule filing 26-266 reproduces SER-9740R verbatim and is the same statement.
+  No CME channel has restated the window since, so the key serves what both
+  documents support — open 16:02→15:00 CT Monday–Friday — and withholds the
+  disputed hour as maintenance, erring toward closed. CME Globex notices
+  20260727, 20260824 and 20260831 confirm the Saturday window for channel 329
+  after the cutover and date three one-day Saturday extensions (2026-08-01 to
+  09:00, 2026-08-29 to 06:00, 2026-09-19 to 08:00 CT), all modelled; the
+  cryptocurrency key models only the first (#61). The
+  key-backed calendar joins the weekend pieces into one block and carries the
+  following open business date, as for `globex_cryptocurrency`; unlike that
+  key, the Pre-Opens stay `order_entry`. The ledger row is **Partial** with an
+  **executable** gap. `AGENTS.md`'s sourced-intersection convention now names
+  a source conflict as its second shape, with this root as the worked example.
+  The name was listed as rejected in `unsupported-families.md` from 2026-09-05
+  to 2026-09-06; that record now documents the resolution.
+
 - **`MarketHoursKey::GlobexEventContracts`** — CME Group Event Contracts on
   futures, CME/CBOT/NYMEX/COMEX Rulebook Chapter 23 and 23A, on the canonical
   wire name `globex_event_contracts`. The Chapter 23 roots are `ECES`, `ECNQ`,
@@ -52,10 +84,9 @@ corrections (a venue's hours fixed against a primary source) go under
   `ECBTC`) with no cutover asserted. `ECBTC` **leaves this key on 2026-05-29**,
   when SER-9740R moved that root alone to 24/7 trading and CME's client-systems
   wiki confirmed the scope — "Other event contracts will continue on the current
-  schedule." No key replaces it: those two sources disagree by an hour on the new
-  daily close (16:00 versus 15:00 CT) and the disputed hour is exactly the old
-  expiry instant, so post-cutover `ECBTC` is recorded as an unsupported family
-  rather than modelled. Excludes the Chapter 22 swap-based economic and
+  schedule." `globex_event_contracts_btc` carries the root from that day on the
+  sourced intersection of CME's two statements of its new close; see that
+  entry. Excludes the Chapter 22 swap-based economic and
   cryptocurrency event contracts and the CME FutureSports index contracts. The
   envelope is now identical to **two** other keys — `globex_spot_quoted` and
   `globex_weather` — while no history overlaps: weather closed 15:15 CT until

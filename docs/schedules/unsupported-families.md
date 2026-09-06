@@ -4,13 +4,12 @@
 
 `MarketHoursKey` identifies an exact product-family schedule, not an
 approximation selected from the same venue. Every family deferred from an
-earlier draft now ships with a primary-sourced profile. Two prospective names
-remain rejected, and both are rejected on evidence rather than on effort:
+earlier draft now ships with a primary-sourced profile. One prospective name
+remains rejected, on evidence rather than on effort:
 
 | Prospective identifier | Why it does not resolve |
 |---|---|
 | `sgx_equity_index` | SGX equity-index products do not share a session grid |
-| `globex_event_contracts_btc` | CME's own sources disagree on the post-2026-05-29 daily close |
 
 SGX runs five materially different grids, all `Asia/Singapore`:
 
@@ -35,49 +34,34 @@ calendar and its GIFT Connect product page state different T+1 start times
 (18:35 versus 19:05), so no profile is modelled from contradicting primary
 sources.
 
-## `ECBTC` after 2026-05-29
+## `ECBTC` after 2026-05-29 — resolved on 2026-09-06
 
-Event Contracts on Bitcoin Futures rode `globex_event_contracts` from their
-2023-03-12 listing to 2026-05-28. CME then moved that one root — and no other
-event contract — to 24/7 trading, so it genuinely leaves that key's grid on
-2026-05-29. Two CME primary sources describe the replacement grid and they
-agree everywhere except the boundary that matters most:
+This file listed `globex_event_contracts_btc` as rejected from 2026-09-05 to
+2026-09-06 because two CME primary sources — SER-9740R (28 May 2026) and the
+client-systems wiki page
+[Event-Based Contracts Expansion to 24-7 Trading](https://cmegroupclientsite.atlassian.net/wiki/spaces/EPICSANDBOX/pages/1394343937/Event-Based+Contracts+Expansion+to+24-7+Trading)
+(revised 22 April 2026) — disagree by an hour on the root's new weekday
+maintenance start, 16:00 versus 15:00 CT, while agreeing on everything else.
 
-| Source | Saturday maintenance | Weekday maintenance | Reopen |
-|---|---|---|---|
-| SER-9740R, 28 May 2026 | 02:00–04:00 CT | **16:00**–16:02 CT | 16:02 CT |
-| CME client-systems wiki, revised 22 April 2026 | 02:00–04:00 CT | **15:00**–16:01 CT | 16:02 CT |
+The name now resolves. `MarketHoursKey::GlobexEventContractsBtc` serves the
+**sourced intersection** of the two statements — open 16:02→15:00 CT
+Monday–Friday, Saturday 02:00–04:00 closed, Sunday open — and withholds the
+disputed hour, on the `AGENTS.md` convention that a source conflict is served
+the way an undated changeover is: what both documents support, and no more.
+What changed the call was establishing, from Confluence's own version API,
+that the wiki's figure is the *earlier* statement (its table entered at
+version 4 under the page's "April 22, 2026" revision row, and no later version
+exists), that SER-9740R's Table 2 is the cryptocurrency cell carried over
+unchanged and misstates this root's own prior hours, and that no CME channel
+has restated the window since — so there is no restatement to wait for.
+The ledger row and `bitcoin_event_contracts.rs` carry the full record.
 
-The disagreement is a full hour of executable time, five days a week. Encoding
-either number would assert a resolution neither document supports, and serving
-the intersection would ship a key whose entire daily close is disputed. So no key
-models this root after 2026-05-29; it is caller catalog data until CME
-republishes the cell.
-
-That the disputed hour coincides with this root's former Termination of Trading
-instant is **not** evidence either way, and an earlier revision of this file
-wrongly offered it as part of the reason. Under `LAW-SESSION-NOT-EXPIRY` an
-expiry is not a session boundary, so it can neither corroborate nor refute a
-close; instrument lifecycle belongs to the caller's catalog and its provider
-adapters. The coincidence is at most a hypothesis about *why* two CME documents
-diverge, and it is untested.
-
-**Cite the right wiki page.** The wiki figure in the table above is the
-`Close` cell of the row *"Monday through Friday Daily Maintenance Window (with
-Trade Date roll)"*, which reads verbatim `Close : 3:00:00 p.m. to 4:01:00 p.m.
-CT` (its `Pre-open` cell is `4:01:00 p.m. to 4:01:30 p.m. CT`, `No cancel`
-`4:01:30 p.m. to 4:02:00 p.m. CT`, `Open` `4:02:00 p.m. CT` — hence the shared
-16:02 reopen). It is on
-[Event-Based Contracts Expansion to 24-7 Trading](https://cmegroupclientsite.atlassian.net/wiki/spaces/EPICSANDBOX/pages/1394343937/Event-Based+Contracts+Expansion+to+24-7+Trading),
-version 4 of 2026-04-23, whose Product Scope table names `ECBTC` on channel 329
-and says "Other event contracts will continue on the current schedule".
-
-A near-identically titled neighbour,
+Two near-identically titled wiki pages give different windows; the figure
+above is from the page named in this section, not from
 [Swap-Based Event Contracts and 24-7 Trading](https://cmegroupclientsite.atlassian.net/wiki/spaces/EPICSANDBOX/pages/988020743/Swap-Based+Event+Contracts+and+24-7+Trading),
-covers a December-2025 launch of different products and gives the same row as
-`4:00 to 4:01 p.m. CT` — one minute from the SER, not an hour. Reading that page
-instead produces a confident and wrong conclusion that this row's conflict does
-not exist; it was reached once during review and corrected.
+which covers different products and reads `4:00 to 4:01 p.m. CT`. Reading the
+wrong page makes the conflict appear not to exist; that happened once during
+review and was corrected.
 
 The crate performs no symbol-to-family mapping; refusing an unsupported product
 belongs in the caller's instrument catalog.

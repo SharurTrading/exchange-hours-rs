@@ -15,7 +15,7 @@ use crate::calendar::schedules::timeline::{Revision, local_date, revisions, sele
 // 23A. The Chapter 23 roots are `ECES`, `ECNQ`, `ECRTY` and `ECYM` on the
 // equity indices, `EC6E` on EUR/USD, `ECCL` and `ECNG` on NYMEX energy, and
 // `ECGC`, `ECSI` and `ECHG` on COMEX metals, plus `ECBTC` on Bitcoin futures
-// until 2026-05-29 (see below). The Chapter 23A roots are the hourly
+// until 2026-05-29 (see below; `bitcoin_event_contracts.rs` carries that root). The Chapter 23A roots are the hourly
 // contracts `ECS10`-`ECS15`, `ECN10`-`ECN15`, `ECR10`-`ECR15`,
 // `ECD10`-`ECD15`, `ECC10`-`ECC16`, `ECH10`-`ECH16` and `ECG10`-`ECG16`.
 // https://www.cmegroup.com/notices/ser/2022/08/SER-8968R.pdf
@@ -138,23 +138,17 @@ use crate::calendar::schedules::timeline::{Revision, local_date, revisions, sele
 // rides this key from 2023-03-12 to 2026-05-28 and a caller must stop using it
 // for that root on 2026-05-29.
 //
-// NO PROFILE IS MODELLED FOR `ECBTC` AFTER THAT DAY, AND THE REASON IS A
-// CONFLICT, NOT AN ABSENCE. Two CME primary sources give its new daily
-// maintenance window different start times: SER-9740R says the halt runs 16:00
-// to 16:02 CT, and the client-systems wiki says "Monday through Friday | Daily
-// Maintenance Window (with Trade Date roll) | Close: 3:00:00 p.m. to 4:01:00
-// p.m. CT | Pre-open: 4:01:00 p.m. to 4:01:30 p.m. CT | No cancel: 4:01:30
-// p.m. to 4:02:00 p.m. CT | Open: 4:02:00 p.m. CT". They reconcile everywhere
-// else — both give Saturday 02:00-04:00 CT with a 03:45 Pre-Open, and both
-// resume matching at 16:02 — but they disagree by a full hour on the daily
-// executable close. That the disputed hour coincides with this root's old
-// expiry instant is not evidence either way: LAW-SESSION-NOT-EXPIRY puts
-// instrument lifecycle outside this crate, so an expiry can neither
-// corroborate nor refute a close. Encoding either number would assert a
-// resolution neither document supports, so no `globex_event_contracts_btc`
-// key exists and post-2026-05-29
-// `ECBTC` stays caller catalog data, recorded in
-// `docs/schedules/unsupported-families.md`.
+// `ECBTC` AFTER THAT DAY HAS ITS OWN KEY, AND ITS CLOSE IS AN INTERSECTION.
+// Two CME primary sources give the root's new daily maintenance window
+// different start times — SER-9740R says 16:00 to 16:02 CT, the client-systems
+// wiki says "Close: 3:00:00 p.m. to 4:01:00 p.m. CT" — and agree on everything
+// else. `bitcoin_event_contracts.rs` records the conflict, establishes from the
+// wiki's own version history that its figure is the earlier and never-revised
+// statement, and serves the window both documents support: open 16:02→15:00
+// CT, the disputed hour withheld. That the disputed hour coincides with this
+// root's old expiry instant is not evidence either way: LAW-SESSION-NOT-EXPIRY
+// puts instrument lifecycle outside this crate, so an expiry can neither
+// corroborate nor refute a close.
 // https://cmegroupclientsite.atlassian.net/wiki/spaces/EPICSANDBOX/pages/1394343937/Event-Based+Contracts+Expansion+to+24-7+Trading
 //
 // THE HOURLY CONTRACTS ARE IN SCOPE AND CHANGE NO CLOCK. CME rule filing

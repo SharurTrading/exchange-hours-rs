@@ -89,6 +89,17 @@ change to this standalone repository must follow.
   a genuine recurring-grid change to "just a holiday" to avoid the evidence
   work.
 
+- **LAW-FOLLOW-UPS-ARE-ISSUES** — a follow-up named anywhere — in a pull
+  request, a commit message, a review reply, a ledger row, a plan, or a
+  research note — is either done in that same change or opened as a GitHub
+  issue before the change merges, and the issue number is cited where the
+  follow-up is named. "Separate small PR", "later", "out of scope here" and
+  "not this PR" are not tracking; the issue is. This includes a source gap the
+  change discovers in a neighbouring row (a notice that also touches another
+  key's channel), a channel found exhausted, and a question a reviewer raised
+  that was answered with "follow-up". A follow-up that is never opened is a
+  claim that it was never needed, and the next reader will believe it.
+
 ## Modeling conventions
 
 - **UTC in, UTC out.** Every *timestamp* crossing the public boundary is a
@@ -186,7 +197,16 @@ change to this standalone repository must follow.
   16:15 at the floor and 16:00 currently, so 16:15-17:00 is carried from the
   floor with no cutover asserted and only the 16:00-16:15 quarter-hour waits on
   the undated 2012 move. Dropping the whole phase because part of it is disputed
-  under-reports the venue far more than the uncertainty warrants.
+  under-reports the venue far more than the uncertainty warrants. The same rule
+  governs a *source conflict* — two primaries describing one period differently,
+  neither superseding the other: serve what both state, withhold only what they
+  dispute, and record the conflict beside the table. `ECBTC` after 2026-05-29 is
+  that worked example: SER-9740R and CME's own client-systems wiki disagree by
+  an hour on the weekday close and agree on everything else, so its key serves
+  the agreed 16:02→15:00 CT window. Establish the order of the statements first
+  (a page's version history, a document's own date), and do not count a later
+  document that merely reproduces an earlier one — a rule filing reprinting a
+  SER as its exhibit — as a second statement or a tie-breaker.
 - **A knowledge boundary is the first source that lists the modelled product,**
   not merely the earliest source that survives. A document only sources a family
   if that family appears in it. SGX's FTSE Taiwan suite is the worked example:

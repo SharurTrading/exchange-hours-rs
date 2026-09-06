@@ -19,7 +19,7 @@ pub(super) fn joins_adjacent_same_kind(context: &QueryContext<'_>) -> bool {
     matches!(
         context.identity(),
         Some(CalendarSource::MarketHoursKey(
-            MarketHoursKey::GlobexCryptocurrency
+            MarketHoursKey::GlobexCryptocurrency | MarketHoursKey::GlobexEventContractsBtc
         ))
     )
 }
@@ -29,8 +29,9 @@ pub(super) fn joins_adjacent_same_kind(context: &QueryContext<'_>) -> bool {
 /// Most profiles use the local date of the final close. Three sourced
 /// exceptions survive: SET's after-midnight DR night phase belongs to its prior
 /// local opening date, CBOT Rough Rice's evening leg belongs to the following
-/// local date, and CME cryptocurrency's weekend blocks carry the following open
-/// business date.
+/// local date, and the weekend blocks of CME cryptocurrency and of `ECBTC` —
+/// whose documents both say the daily window rolls the trade date — carry the
+/// following open business date.
 pub(super) fn assign_normal(
     context: &QueryContext<'_>,
     open: DateTime<Utc>,
@@ -69,7 +70,9 @@ pub(super) fn assign_normal(
     }
     if !matches!(
         source,
-        CalendarSource::MarketHoursKey(MarketHoursKey::GlobexCryptocurrency)
+        CalendarSource::MarketHoursKey(
+            MarketHoursKey::GlobexCryptocurrency | MarketHoursKey::GlobexEventContractsBtc
+        )
     ) {
         return default;
     }

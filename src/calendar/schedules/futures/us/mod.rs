@@ -6,6 +6,7 @@
 //! point-in-time selectors. Current product-family slices are re-exported for
 //! the public [`MarketHoursKey`](crate::MarketHoursKey) profiles.
 
+mod bitcoin_event_contracts;
 mod cfe;
 mod cme_group;
 mod cryptocurrency;
@@ -34,6 +35,10 @@ mod ice_fcoj;
 
 mod ice_usdx;
 
+pub(crate) use bitcoin_event_contracts::{
+    BITCOIN_EVENT_CONTRACTS_EXTENDED_CURRENT, BITCOIN_EVENT_CONTRACTS_ORDER_ENTRY_CURRENT,
+    profile_at as bitcoin_event_contracts_profile_at,
+};
 pub(crate) use cfe::CFE_ORDER_ENTRY;
 pub(crate) use cfe::{CFE_EXTENDED, CFE_REGULAR, cfe_profile_at};
 pub(crate) use cme_group::CME_ORDER_ENTRY_CURRENT;

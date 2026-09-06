@@ -362,6 +362,11 @@ fn the_bitcoin_root_leaving_scope_does_not_move_this_key() {
     let saturday = ct((2026, 5, 30), (12, 0, 0));
     assert!(!hours_for_market_hours_key(EVENT_CONTRACTS, saturday).is_open(saturday));
     assert!(hours_for_market_hours_key(CRYPTOCURRENCY, saturday).is_open(saturday));
+    assert!(
+        hours_for_market_hours_key(MarketHoursKey::GlobexEventContractsBtc, saturday)
+            .is_open(saturday),
+        "the departed root is served by its own key from that day"
+    );
 }
 
 /// Envelope match is not family identity, and this key now shares its envelope
@@ -516,11 +521,9 @@ fn event_contracts_key_round_trips_through_its_canonical_name() {
             .expect("key deserializes"),
         EVENT_CONTRACTS
     );
-    for rejected in [
-        "globex_event_contracts_btc",
-        "globex_event_contracts_hourly",
-        "event_contracts",
-    ] {
+    // `globex_event_contracts_btc` is no longer a near-miss: it resolves to the
+    // departed root's own key, and its own suite fences that round-trip.
+    for rejected in ["globex_event_contracts_hourly", "event_contracts"] {
         assert!(
             rejected.parse::<MarketHoursKey>().is_err(),
             "{rejected}: a near-miss name must be rejected, never mapped to the \

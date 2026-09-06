@@ -62,12 +62,19 @@ close; instrument lifecycle belongs to the caller's catalog and its provider
 adapters. The coincidence is at most a hypothesis about *why* two CME documents
 diverge, and it is untested.
 
-**Cite the right wiki page.** The Close row above is on *"Event-Based Contracts
-Expansion to 24-7 Trading"* (`.../pages/1394343937`, v4 of 2026-04-23), whose
-Product Scope table names `ECBTC` on channel 329 and says "Other event contracts
-will continue on the current schedule". A near-identically titled neighbour,
-*"Swap-Based Event Contracts and 24-7 Trading"* (`.../pages/988020743`), covers a
-December-2025 launch of different products and gives the weekday window as
+**Cite the right wiki page.** The wiki figure in the table above is the
+`Close` cell of the row *"Monday through Friday Daily Maintenance Window (with
+Trade Date roll)"*, which reads verbatim `Close : 3:00:00 p.m. to 4:01:00 p.m.
+CT` (its `Pre-open` cell is `4:01:00 p.m. to 4:01:30 p.m. CT`, `No cancel`
+`4:01:30 p.m. to 4:02:00 p.m. CT`, `Open` `4:02:00 p.m. CT` — hence the shared
+16:02 reopen). It is on
+[Event-Based Contracts Expansion to 24-7 Trading](https://cmegroupclientsite.atlassian.net/wiki/spaces/EPICSANDBOX/pages/1394343937/Event-Based+Contracts+Expansion+to+24-7+Trading),
+version 4 of 2026-04-23, whose Product Scope table names `ECBTC` on channel 329
+and says "Other event contracts will continue on the current schedule".
+
+A near-identically titled neighbour,
+[Swap-Based Event Contracts and 24-7 Trading](https://cmegroupclientsite.atlassian.net/wiki/spaces/EPICSANDBOX/pages/988020743/Swap-Based+Event+Contracts+and+24-7+Trading),
+covers a December-2025 launch of different products and gives the same row as
 `4:00 to 4:01 p.m. CT` — one minute from the SER, not an hour. Reading that page
 instead produces a confident and wrong conclusion that this row's conflict does
 not exist; it was reached once during review and corrected.

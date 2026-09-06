@@ -155,7 +155,7 @@ use crate::calendar::schedules::timeline::{Revision, local_date, revisions, sele
 // key exists and post-2026-05-29
 // `ECBTC` stays caller catalog data, recorded in
 // `docs/schedules/unsupported-families.md`.
-// https://cmegroupclientsite.atlassian.net/wiki/display/EPICSANDBOX/Event-Based+Contracts+Expansion+to+24-7+Trading
+// https://cmegroupclientsite.atlassian.net/wiki/spaces/EPICSANDBOX/pages/1394343937/Event-Based+Contracts+Expansion+to+24-7+Trading
 //
 // THE HOURLY CONTRACTS ARE IN SCOPE AND CHANGE NO CLOCK. CME rule filing
 // 25-521 reproduces SER-9624's exhibit with an "Initial Listing Schedule" of

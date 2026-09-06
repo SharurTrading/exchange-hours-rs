@@ -75,12 +75,21 @@ era!(SGX_JAPAN_FROM_2017_07_10,
     extended: [(14, 25, 14, 30)],
     order_entry: [(7, 15, 7, 30), (14, 45, 14, 55)]);
 
-// 2024-11-04. SGX-DT Circular DT/AM 50 of 2024's "Revised Trading Hours"
-// column: "Pre-Opening: 7.15 am – 7.28 am / Non-Cancel: 7.28 am – 7.30 am /
-// Opening: 7.30 am – 2.55 pm / Pre-Closing: 2.55 pm – 2.59 pm / Non-Cancel:
-// 2.59 pm – 3.00 pm // Pre-Opening: 3.15 pm – 3.23 pm / Non-Cancel: 3.23 pm –
-// 3.25 pm / Opening: 3.25 pm – 5.15 am", "with effect from Monday, 4 November
-// 2024".
+// 2024-11-04. SGX-DT Circular No. DT/AM – 50 of 2024, "Extension of T-session
+// for SGX Japan Derivatives and Intraday Margin Cycle 2 Timing Change", 9
+// September 2024, signed Leno Lee, SVP Trading and Clearing Services, on
+// Singapore Exchange Derivatives Trading Limited letterhead: "with effect from
+// Monday, 4 November 2024, the T session trading hours for SGX Nikkei
+// derivatives and SGX FTSE Blossom Japan Index Futures will be extended by 30
+// minutes". Its "Revised Trading Hours" column: "Pre-Opening: 7.15 am – 7.28
+// am / Non-Cancel: 7.28 am – 7.30 am / Opening: 7.30 am – 2.55 pm /
+// Pre-Closing: 2.55 pm – 2.59 pm / Non-Cancel: 2.59 pm – 3.00 pm //
+// Pre-Opening: 3.15 pm – 3.23 pm / Non-Cancel: 3.23 pm – 3.25 pm / Opening:
+// 3.25 pm – 5.15 am". Read from the verbatim member-hosted copy (Fubon
+// Futures, via the web archive; the file carries SGX's own document metadata,
+// created and last saved 2024-09-09 17:53 Singapore time), as SGX publishes no
+// circular at a publicly reachable address - see `history`.
+// https://web.archive.org/web/20241114183232id_/https://www.fubon.com/futures/wcm/home/bulletin/bulletin_20240912_137396/SGXChange.pdf
 era!(SGX_JAPAN_FROM_2024_11_04,
     regular: [(7, 30, 14, 55), (15, 25, 5, 15)],
     extended: [(14, 55, 15, 0)],

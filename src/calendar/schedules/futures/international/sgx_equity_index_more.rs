@@ -249,6 +249,16 @@ static SGX_EQUITY_INDEX_NTR_USD_FROM_2018_04_16: StaticHoursProfile = StaticHour
 // contracts open before 20 July 2020 asserts a product SGX had not yet listed.
 // Dates before the launch are sessionless, which is exact rather than
 // conservative: the family was not trading.
+//
+// Launch release (Chinese rendering; the English page is now an empty shell),
+// the content API's 2020-06-02 payload (MSCI Taiwan only), its 2020-07-15
+// payload (the FTSE suite with its grid and routines), the 2021 edition that
+// first lists the suite in a calendar, and DT/AM 15's appendices:
+// https://web.archive.org/web/20201030164207id_/https://www.sgx.com/zh-hans/media-centre/20200701-sgx-introduce-sgx-ftse-taiwan-index-futures
+// https://web.archive.org/web/20200602051032id_/https://api2.sgx.com/content-api?queryId=00c0b9e1c305ecf3e85c714c61d2ecbe0d05faef%3Aderivatives_products_list&variables=%7B%22limit%22%3A10000%2C%22lang%22%3A%22EN%22%7D
+// https://web.archive.org/web/20200715061901id_/https://api2.sgx.com/content-api?queryId=c23ca146c2d59c41265ea30280b202dbdaaaae81%3Aderivatives_products_list&variables=%7B%22limit%22%3A100%2C%22offset%22%3A0%2C%22lang%22%3A%22EN%22%7D
+// https://api2.sgx.com/sites/default/files/2021-01/SGX%20Derivatives%20Trading%20Calendar%202021.pdf
+// https://www.citicsf.com.hk/attachment?aid=95&uid=a1207308-0e3a-4a16-a869-a4d1b808a2b3
 pub(crate) static SGX_EQUITY_INDEX_TAIWAN_REVISIONS: &[Revision] = revisions![
     (
         2020,
@@ -358,8 +368,18 @@ pub(crate) static SGX_EQUITY_INDEX_NTR_USD_BASELINE: StaticHoursProfile = Static
 // open from 19:00 to 18:45. Partial because the 2019 T+1 close move is undated
 // and served as an intersection.
 //
+// The 2018 (Apr) edition that first lists the suite, the 2019 edition, the
+// content API payloads that state the routines (2019-02-04 at 04:45,
+// 2020-01-09 at 05:15), the 2020 edition, and the current editions and
+// circular:
+// https://api2.sgx.com/sites/default/files/2018-05/SGX%20Derivatives%20Trading%20Calendar%202018%20%28Apr%29.pdf
+// https://api2.sgx.com/sites/default/files/2019-01/2019%20DT%20Calendar.pdf
+// https://web.archive.org/web/20190204200905id_/https://api2.sgx.com/content-api?queryId=9756cc24703868bca7da492a8e1aebd1268eaf70%3Aderivatives_products_list&variables=%7B%22limit%22%3A10000%2C%22lang%22%3A%22EN%22%7D
+// https://web.archive.org/web/20200109051211id_/https://api2.sgx.com/content-api?queryId=ef44c5f861fc84577240761863bf1f842f189d9f%3Aderivatives_products_list&variables=%7B%22limit%22%3A10000%2C%22lang%22%3A%22EN%22%7D
+// https://api2.sgx.com/sites/default/files/2020-01/SGX%20Derivatives%20Trading%20Calendar%202020.pdf
 // https://api2.sgx.com/sites/default/files/2026-01/SGX%20Calendar%202026_2.pdf
 // https://api2.sgx.com/sites/default/files/2025-07/DT%20Trading%20Calendar%202025%20%28updated%2031%20Jul%202025%29.pdf
+// https://www.citicsf.com.hk/attachment?aid=95&uid=a1207308-0e3a-4a16-a869-a4d1b808a2b3
 pub(crate) static SGX_EQUITY_INDEX_NTR_USD_REVISIONS: &[Revision] = revisions![
     (
         2018,

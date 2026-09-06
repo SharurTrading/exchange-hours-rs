@@ -131,8 +131,10 @@ would have invented six grids from one.
 unchanged). Its 2026-05-29 move to 24/7 is a real session change and a real
 divergence, so that root leaves the key's scope on that day — but no key
 replaces it, because `SER-9740R` and CME's client-systems wiki disagree by an
-hour on the new daily close and the disputed hour is exactly the old expiry
-instant. Recorded in `docs/schedules/unsupported-families.md`.
+hour on the new daily close. Recorded in
+`docs/schedules/unsupported-families.md`, which also names *which* wiki page —
+two near-identically titled ones give different windows, and reading the wrong
+one makes the conflict appear not to exist.
 
 The ledger row is **Partial / executable**: `SER-8968R` states the queues, the
 17:00 open and the relist at launch but no daily close, so 16:00 CT is carried

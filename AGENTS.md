@@ -48,6 +48,35 @@ change to this standalone repository must follow.
   falls at a stated intraday instant is an exact-instant cutover, never a
   day-level row rounded to local midnight. Amendment history is recorded back
   to **January 2010**; earlier changes are out of scope by design.
+- **LAW-SESSION-NOT-EXPIRY** — an instrument's **termination of trading,
+  expiration, settlement, marker or fixing instant is never a session
+  boundary**, and this crate does not model it at any resolution. The crate
+  answers when a *market* accepts and matches orders. When an individual
+  *contract* stops trading is instrument-lifecycle data, owned by the caller's
+  catalog and its provider adapters, and a profile that encodes one has
+  answered a question it was not asked.
+
+  A daily close enters a profile only when the operator states it in **session
+  language** — "trading halts", "trading ceases daily at", "a daily
+  maintenance period from X to Y", a `TRADING HOURS` row, or a venue feed's
+  own close/halt event. A **calculation window** ("the marker is calculated
+  from trade data from 12:34-12:35"), an **order-entry cutoff**, or a
+  **termination-of-trading row** is none of those, even when it is printed
+  adjacent to the hours and even when it is the only time on the page.
+
+  The tell is a table in which several products share one hours cell while
+  each carries its own end time: the shared cell is the session and the
+  per-product times are expiries. CME event contracts are the worked example —
+  `SER-9624` lists five contracts with five different Termination-of-Trading
+  times against a single `CME Globex` cell, and reading those five as daily
+  closes would have produced six product families where the operator publishes
+  one. Every trade-type shape surveyed in
+  `docs/plans/2026-09-05-cme-trade-type-handoff.md` closes at an instant that
+  is *also* a settlement or fixing instant for its asset class, so the
+  coincidence proves nothing on its own.
+
+  A source that states only an expiry leaves the session **unsourced**: withhold
+  it under LAW-PRIMARY-SOURCES rather than promoting the expiry to a close.
 - **LAW-HOLIDAY-SCOPE** — a change confined to a single trade date (or a
   bounded holiday run of dates) — an early final close, a late first open, or
   a full calendar-day closure — is a **holiday**, not a schedule. Holidays are

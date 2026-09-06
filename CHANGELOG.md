@@ -443,9 +443,13 @@ corrections (a venue's hours fixed against a primary source) go under
   **Taiwan** from its stated launch day, 2020-07-20, on the grid SGX's content
   API listed from 2020-07-15 (absent on 2020-06-02), five months before the
   2021 edition; **NTR (USD)** from Monday 2018-04-16, the Monday after the 2018
-  (Apr) edition that first lists the suite. The **2020-01-01** rows on all five
-  keys gain the Pre-Opening/Non-Cancel and Pre-Closing/Non-Cancel windows the
-  content API states inside that row's own interval (capture 2020-01-09). The
+  (Apr) edition that first lists the suite. The **2020** rows on all five keys
+  gain the Pre-Opening/Non-Cancel and Pre-Closing/Non-Cancel windows the
+  content API states inside that row's own interval (capture 2020-01-09), and
+  on the four keys whose overnight close lengthens there (04:45 → 05:15) the
+  row is keyed to **Monday 2020-01-06** rather than New Year's Day, so the
+  Tuesday evening leg is not reported running past the close it opened under.
+  The
   **Japan** key's 2020..2025-04-06 intersection era splits at **Monday
   2024-11-04** on SGX-DT Circular DT/AM 50 of 2024 (9 September 2024, "with
   effect from Monday, 4 November 2024, the T session trading hours for SGX

@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: MIT-0
 
-//! SGX equity-index families: the grids stay distinct, the sourced window
-//! precedes the current grid, and both dated boundaries hold on each side.
+//! SGX equity-index families: the grids stay distinct, the pre-2020 floor
+//! grids are carried, the dated 2024 Japan and 2025 boundaries hold on each
+//! side, and Taiwan starts on its launch day. The pre-2020 boundaries
+//! themselves are fenced in the sibling `sgx_equity_index_eras` module.
 
 use super::prelude::*;
 
@@ -30,17 +32,16 @@ fn sgx_equity_index_grids_do_not_collapse_onto_each_other() {
     );
 }
 
-/// SGX equity-index history: sessionless before the first sourced calendar
-/// edition, then one sourced window, then the current grid from the dated
-/// 2025-04-07 cutover.
+/// SGX equity-index history: the 2013 portal grid carried to the floor, the
+/// 04:45 grid from Monday 2017-07-10, the 05:15 close from Monday 2020-01-06,
+/// then — for Japan — the dated 2024-11-04 T-session extension, and the
+/// current grid from the dated 2025-04-07 cutover on every key.
 ///
-/// Nine editions of SGX's Derivatives Trading Calendar disagree in two places.
-/// The later disagreement is dated — SGX-DT Circular DT/AM 15 of 2025 puts it
-/// at Monday 7 April 2025 — but Japan's earlier T-session extension is not, so
-/// the first era serves the intersection of every state sourced inside it
-/// rather than keying a revision to an edition's year. Japan's T closes at
-/// 14:25 and its T+1 opens at 15:25 in that window, the narrowest bounds any
-/// edition gives.
+/// Both dated moves come from SGX-DT circulars: DT/AM 50 of 2024 lengthens
+/// Japan's T session to 14:55 and moves its T+1 open to 15:25 from Monday
+/// 4 November 2024; DT/AM 15 of 2025 pulls every family's T+1 open fifteen
+/// minutes earlier from Monday 7 April 2025. Between the 2020 row and DT/AM 50
+/// Japan's T closes at 14:25 and its T+1 opens at 14:55.
 ///
 /// Singapore has no DST, so 06:30Z is 14:30 SGT, 07:15Z is 15:15 SGT, 07:40Z is
 /// 15:40 SGT and 08:50Z is 16:50 SGT. 2026-09-16 falls after the cutover; the
@@ -153,21 +154,21 @@ fn sgx_equity_index_serves_the_sourced_window_then_the_verified_grid() {
     }
 }
 
-/// The FTSE Taiwan suite starts a year later than the other four SGX grids.
+/// The FTSE Taiwan suite starts on its own launch day, not at a calendar
+/// edition.
 ///
 /// SGX's 2020 Derivatives Trading Calendar contains no FTSE Taiwan contract at
-/// all — it lists only the MSCI Taiwan predecessors (`TW`, `TWO`, `NTW`), and
-/// "TWN" appears in that edition solely as the holiday country code for Taiwan
-/// (TWSE). The 2021 edition is the first to list "SGX FTSE Taiwan Index
-/// Futures" under the code `TWN`, so this family's sourced history starts
-/// there while the other four start at the 2020 edition.
-///
-/// The predecessor's hours were identical, so this boundary changes no served
-/// time — it stops the crate asserting that a contract the cited edition does
-/// not contain was open. 10:00 SGT is 02:00Z and sits inside the Taiwan T
-/// session (08:45–13:45) in every edition that lists it.
+/// all — it lists only the MSCI Taiwan predecessors (`TW`, `TWO`, `NTW`) — and
+/// the 2021 edition is the first calendar to list "SGX FTSE Taiwan Index
+/// Futures" under `TWN`. But SGX's own release states the launch, 20 July
+/// 2020, and SGX's content API lists the contract with its grid from
+/// 2020-07-15, so the family's history starts on 2020-07-20. The predecessor's
+/// hours were identical, so this boundary changes no served time on the day —
+/// it stops the crate asserting that a contract SGX had not yet listed was
+/// open. 10:00 SGT is 02:00Z and sits inside the Taiwan T session (08:45–13:45)
+/// in every artifact that lists it.
 #[test]
-fn sgx_taiwan_history_starts_at_the_first_edition_that_lists_the_ftse_suite() {
+fn sgx_taiwan_history_starts_on_its_stated_launch_day() {
     let taiwan = MarketHoursKey::SgxEquityIndexTaiwan;
     let inside_t_session_2020 = utc(2020, 6, 17, 2, 0);
     let inside_t_session_2021 = utc(2021, 1, 6, 2, 0);
@@ -181,9 +182,10 @@ fn sgx_taiwan_history_starts_at_the_first_edition_that_lists_the_ftse_suite() {
         "the 2021 edition lists SGX FTSE Taiwan Index Futures at 08:45-13:45 SGT"
     );
 
-    // The other four families are sourced from the 2020 edition, which does
-    // list them, so only Taiwan moves. Each probe is inside that family's own
-    // T session on the same 2020 Wednesday.
+    // The other four families were already trading on that 2020 Wednesday —
+    // Japan, China and Singapore on their 2017-07-10 grids and NTR on its
+    // 2018-04-16 one — so only Taiwan is sessionless there. Each probe is
+    // inside that family's own T session.
     for (key, hour, minute) in [
         (MarketHoursKey::SgxEquityIndexJapan, 2u32, 0u32),
         (MarketHoursKey::SgxEquityIndexChina, 2, 0),
@@ -192,7 +194,7 @@ fn sgx_taiwan_history_starts_at_the_first_edition_that_lists_the_ftse_suite() {
     ] {
         assert!(
             open_at(key, utc(2020, 6, 17, hour, minute)),
-            "{key:?} is listed in the 2020 edition and must keep its 2020 history"
+            "{key:?} was already trading in June 2020 and must serve its era"
         );
     }
 }

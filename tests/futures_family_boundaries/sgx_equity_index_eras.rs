@@ -81,6 +81,20 @@ fn the_floor_grids_are_carried_to_the_audit_floor_and_below() {
             state(SINGAPORE, sgt(date, (17, 12))),
             SessionState::OpenExtended
         );
+        // The floor eras serve no pre-open queue: no artifact of that era that
+        // has been read states its length (#65).
+        for (key, at) in [(JAPAN, (7, 20)), (SINGAPORE, (8, 20))] {
+            let phase = state(key, sgt(date, at));
+            assert_ne!(
+                phase,
+                SessionState::OrderEntry,
+                "{key:?} {date:?}: no queue is served"
+            );
+            assert!(
+                !open(key, sgt(date, at)),
+                "{key:?} {date:?}: and nothing matches"
+            );
+        }
         assert!(
             !open(TAIWAN, sgt(date, (10, 0))),
             "{date:?}: no FTSE Taiwan yet"
@@ -93,6 +107,11 @@ fn the_floor_grids_are_carried_to_the_audit_floor_and_below() {
         assert!(
             !open(CHINA, sgt(date, (15, 40))),
             "{date:?}: A50 floor T close 15:25"
+        );
+        assert_eq!(
+            state(CHINA, sgt(date, (15, 27))),
+            SessionState::OpenExtended,
+            "{date:?}: the Notes-stated closing routine follows the 15:25 close"
         );
     }
     assert!(
@@ -292,6 +311,28 @@ fn taiwan_starts_on_its_launch_day_and_ntr_on_its_first_listing() {
         state(NTR, sgt((2018, 4, 16), (18, 55))),
         SessionState::OrderEntry
     );
+}
+
+/// The 2020 rows lengthen the T+1 close from 04:45 to 05:15 and are keyed to
+/// Monday 2020-01-06, so the Thursday leg that opened under 04:45 still closes
+/// at 04:45 on Friday 2020-01-03 and the first leg to run to 05:15 opens on
+/// the Monday.
+#[test]
+fn the_2020_rows_lengthen_the_overnight_close_from_the_monday() {
+    for key in [JAPAN, CHINA, SINGAPORE, NTR] {
+        assert!(
+            !open(key, sgt((2020, 1, 3), (5, 0))),
+            "{key:?}: Friday leg closed at 04:45"
+        );
+        assert!(
+            open(key, sgt((2020, 1, 7), (5, 0))),
+            "{key:?}: Monday's leg runs to 05:15"
+        );
+        assert!(
+            !open(key, sgt((2020, 1, 7), (5, 15))),
+            "{key:?}: 05:15 closes end-exclusive"
+        );
+    }
 }
 
 /// The 2020 rows carry the routines SGX's content API states on 2020-01-09 for

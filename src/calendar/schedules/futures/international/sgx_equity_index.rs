@@ -119,14 +119,14 @@ use history::{
 // the January-2010 floor across every move, which made them the only rows in
 // the crate that could **over**-report. They no longer can: every undated move
 // is approached from the conservative side, every dated move begins on its
-// circular's stated day, and the two boundaries that lengthen a wrapping
-// overnight close are keyed to a Monday so no evening leg runs past the close
-// in force when it opened. Like every other Partial row in this crate they err
-// toward Closed, which is the safe direction for an order router. The one
-// place the floor rows can over-report is the first eight months of 2010,
-// where third-party press attests a 01:00 rather than 02:00 T+1 close; the
-// carry-back convention carries the sourced state anyway and this note is the
-// stated residual risk.
+// circular's stated day, and every boundary that lengthens a wrapping
+// overnight close — 2017-07-10 and 2018-04-16 (02:00 or sessionless to 04:45)
+// and 2020-01-06 (04:45 to 05:15) — is keyed to a Monday so no evening leg
+// runs past the close in force when it opened. Like every other Partial row
+// in this crate they err toward Closed, which is the safe direction for an
+// order router. The stated residual risk in the other direction is the first
+// eight months of 2010, where third-party press attests a 01:00 rather than
+// 02:00 T+1 close; the carry-back convention carries the sourced state anyway.
 //
 // https://api2.sgx.com/sites/default/files/2026-01/SGX%20Calendar%202026_2.pdf
 // https://api2.sgx.com/sites/default/files/2025-07/DT%20Trading%20Calendar%202025%20%28updated%2031%20Jul%202025%29.pdf
@@ -141,9 +141,9 @@ pub(crate) static SGX_EQUITY_INDEX_JAPAN_REVISIONS: &[Revision] = revisions![
     (
         2020,
         1,
-        1,
+        6,
         &SGX_EQUITY_INDEX_JAPAN_SOURCED_WINDOW,
-        "SGX Derivatives Trading Calendar 2020 edition: T+1 close 05:15"
+        "SGX Derivatives Trading Calendar 2020 edition: T+1 close 05:15, keyed to the Monday"
     ),
     (
         2024,
@@ -240,7 +240,8 @@ pub(crate) static SGX_EQUITY_INDEX_CHINA_BASELINE: StaticHoursProfile = StaticHo
 // Four rows, for the reasons recorded in the history note: the floor grid is
 // this key's baseline; 2013-08-20 widens the T close on that day's portal
 // table and specification; 2017-07-10 is the State-A knowledge boundary; the
-// 2020 row carries the 05:15 close and the routines; and the current grid
+// 2020 row, keyed to Monday 2020-01-06, carries the 05:15 close and the
+// routines; and the current grid
 // begins on the stated effective day of SGX-DT Circular DT/AM 15 of 2025,
 // which moved this family's T+1 open from 17:00 to 16:45. Partial because the
 // S0 -> A move and the 2019 T+1 close move are undated and served as
@@ -266,9 +267,9 @@ pub(crate) static SGX_EQUITY_INDEX_CHINA_REVISIONS: &[Revision] = revisions![
     (
         2020,
         1,
-        1,
+        6,
         &SGX_EQUITY_INDEX_CHINA_SOURCED_WINDOW,
-        "SGX Derivatives Trading Calendar 2020 edition: T+1 close 05:15"
+        "SGX Derivatives Trading Calendar 2020 edition: T+1 close 05:15, keyed to the Monday"
     ),
     (
         2025,
@@ -357,7 +358,8 @@ pub(crate) static SGX_EQUITY_INDEX_SINGAPORE_BASELINE: StaticHoursProfile = Stat
 // Five rows: the floor grid is this key's baseline; 2017-07-10 is the State-A
 // knowledge boundary; 2019-02-06 to 2019-06-10 serves the intersection across
 // the undated SiMSCI move and 2019-06-11 the state the content API first shows
-// it in; the 2020 row carries the 05:15 close; and the current grid begins on
+// it in; the 2020 row, keyed to Monday 2020-01-06, carries the 05:15 close; and
+// the current grid begins on
 // the stated effective day of SGX-DT Circular DT/AM 15 of 2025, which moved
 // this family's T+1 open from 17:50 to 17:35. Partial because three moves are
 // undated and served as intersections.
@@ -389,9 +391,9 @@ pub(crate) static SGX_EQUITY_INDEX_SINGAPORE_REVISIONS: &[Revision] = revisions!
     (
         2020,
         1,
-        1,
+        6,
         &SGX_EQUITY_INDEX_SINGAPORE_SOURCED_WINDOW,
-        "SGX Derivatives Trading Calendar 2020 edition: T+1 close 05:15"
+        "SGX Derivatives Trading Calendar 2020 edition: T+1 close 05:15, keyed to the Monday"
     ),
     (
         2025,

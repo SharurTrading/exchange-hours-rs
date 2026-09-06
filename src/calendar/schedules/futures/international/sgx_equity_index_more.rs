@@ -3,10 +3,12 @@
 //! SGX equity-index derivatives: Taiwan and NTR (USD) grids.
 //!
 //! Continuation of the `sgx_equity_index` module, which documents the shared
-//! shape of the SGX equity-index families, the Pre-Opening/Non-Cancel versus
-//! closing-routine classification applied below, and the evidence behind the
-//! two-era revision timelines these families share with it. Split out only to
-//! keep each production file within the source-reviewability ceiling.
+//! shape of the SGX equity-index families and the Pre-Opening/Non-Cancel
+//! versus closing-routine classification applied below; its `history`
+//! submodule holds the evidence behind every family's timeline, whose
+//! boundaries now differ per family (the FTSE Taiwan launch and the NTR (USD)
+//! suite's first calendar edition here). Split out only to keep each
+//! production file within the source-reviewability ceiling.
 
 use chrono_tz::Asia;
 
@@ -80,7 +82,9 @@ pub(crate) static SGX_EQUITY_INDEX_TAIWAN_BASELINE: StaticHoursProfile = StaticH
     has_weekend_close: true,
 };
 
-/// Sessionless profile for dates before the first sourced SGX calendar edition.
+/// Sessionless profile for dates before each family's own first sourced
+/// listing: the FTSE Taiwan suite's launch day and the NTR (USD) suite's
+/// first calendar edition.
 static SGX_EQUITY_INDEX_CLOSED: StaticHoursProfile = StaticHoursProfile {
     tz: Asia::Singapore,
     regular: &[],
@@ -284,14 +288,14 @@ pub(crate) fn sgx_equity_index_taiwan_profile_at(
 //
 // THE SUITE'S MEMBERSHIP GREW; ITS GRID DID NOT. The codes listed above are
 // today's. The 2018 (Apr) edition is the first to list the suite - thirteen
-// NTR (USD) rows including NSP and NSG, all on one 07:25-18:30 / 19:00-04:45
-// pair; neither 2017 portal table has an NTR row, and SGX's launch release of
-// 12 June 2017 names four contracts and no hours. The 2020 edition carries an
-// MSCI-branded suite (NJP, NTW, NSP), the FN* series appears from the 2021
-// edition and the MCN* series from the 2024 one. Every edition puts whichever
-// contracts it lists on the identical pair, and NSP is present in all of them,
-// so the grid this key models is continuously sourced from the 2018 (Apr)
-// edition. That is the difference from the FTSE Taiwan suite below, whose
+// NTR (USD) rows including NSG, one of the two codes this key names, all on
+// one 07:25-18:30 / 19:00-04:45 pair; neither 2017 portal table has an NTR
+// row, and SGX's launch release of 12 June 2017 names four contracts and no
+// hours. NSP joins at the 2020 edition, which carries an MSCI-branded suite
+// (NJP, NTW, NSP); the FN* series appears from the 2021 edition and the MCN*
+// series from the 2024 one. Every edition puts whichever contracts it lists on
+// the identical pair, and NSG is present in all of them, so the grid this key
+// models is continuously sourced from the 2018 (Apr) edition. That is the difference from the FTSE Taiwan suite below, whose
 // boundary is a launch day rather than a first listing.
 //
 // https://www.sgx.com/derivatives/products/sgxsimsci
@@ -348,7 +352,8 @@ pub(crate) static SGX_EQUITY_INDEX_NTR_USD_BASELINE: StaticHoursProfile = Static
 };
 
 // Three rows: the knowledge boundary at the 2018 (Apr) edition, the 2020 row
-// that carries the 05:15 close, then the current grid on the effective day
+// that carries the 05:15 close (keyed to Monday 2020-01-06, as every boundary
+// that lengthens the overnight close is), then the current grid on the effective day
 // stated by SGX-DT Circular DT/AM 15 of 2025, which moved this family's T+1
 // open from 19:00 to 18:45. Partial because the 2019 T+1 close move is undated
 // and served as an intersection.
@@ -366,9 +371,9 @@ pub(crate) static SGX_EQUITY_INDEX_NTR_USD_REVISIONS: &[Revision] = revisions![
     (
         2020,
         1,
-        1,
+        6,
         &SGX_EQUITY_INDEX_NTR_USD_SOURCED_WINDOW,
-        "SGX Derivatives Trading Calendar 2020 edition: T+1 close 05:15"
+        "SGX Derivatives Trading Calendar 2020 edition: T+1 close 05:15, keyed to the Monday"
     ),
     (
         2025,

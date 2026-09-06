@@ -32,7 +32,7 @@ use super::{MON_FRI, SessionRule, StaticHoursProfile};
 // 2018 (Apr) edition (PDF created 2018-04-11) and the 2019 edition ("accurate
 // as of 15 January 2019"). Both print the 04:45 T+1 close.
 //
-// THREE OF THE FOUR MOVES INSIDE THE MODELLED WINDOW ARE DATED.
+// TWO OF THE FOUR MOVES INSIDE THE MODELLED WINDOW ARE DATED.
 //
 // 2025-04-07. SGX-DT Circular DT/AM - 15 of 2025, "Revision of T+1 Session
 // Trading Hours for SGX Equity Index Futures/Options, Dividend Index Futures
@@ -124,10 +124,11 @@ use super::{MON_FRI, SessionRule, StaticHoursProfile};
 // wrapping overnight close, keyed mid-week, would report the previous
 // evening's leg running past the close in force when it opened - the running
 // session LAW-NO-FABRICATED-DATES says a boundary must not split - and no leg
-// wraps into a Monday morning. The NTR boundary moves to Monday 2018-04-16 for
-// the same reason. Boundaries that change only a daytime close (2013-08-20,
-// 2019-06-11) or narrow an overnight open (2019-02-06) keep their artifact's
-// date. A knowledge boundary may widen what is served and never narrow it:
+// wraps into a Monday morning. The NTR boundary moves to Monday 2018-04-16
+// and the 2020 rows, which lengthen the close from 04:45 to 05:15, to Monday
+// 2020-01-06 for the same reason. Boundaries that change only a daytime close
+// (2013-08-20, 2019-06-11) or narrow an overnight open (2019-02-06) keep their
+// artifact's date. A knowledge boundary may widen what is served and never narrow it:
 // the A50's T+1 open is sourced at 16:10, 16:40 and 17:00 across three undated
 // states, so 17:00 is held from the floor and only its T close, which widens,
 // moves at the boundaries.
@@ -152,8 +153,10 @@ use super::{MON_FRI, SessionRule, StaticHoursProfile};
 // close is five minutes later than NK's in every era and is not modelled, as
 // FCHO is not on the China grid. (4) The Mini Nikkei (NS) and Dividend Point
 // (ND) contracts ran their own later closes in W, S0 and - for ND - A before
-// joining the NK grid (NS by 2017-07-05, ND by the 2018 edition); the family
-// clock is the NK/NU grid throughout.
+// joining the NK grid (NS by 2017-07-05, ND by the 2018 edition), and the
+// Straits Times Index future opened 07:55 rather than 08:30 in W before
+// sharing the SiMSCI row from S0 on; each family's clock is its index future's
+// grid throughout.
 //
 // CHANNELS. SGX publishes no DT/AM circular at a publicly reachable sgx.com
 // address (regco.sgx.com's /circulars route answers `null`; the api2 file
@@ -177,17 +180,18 @@ use super::{MON_FRI, SessionRule, StaticHoursProfile};
 // https://web.archive.org/web/20130820090335id_/http://www.sgx.com/wps/portal/sgxweb/home/trading/derivatives/trading_hours_calendar
 // https://web.archive.org/web/20170705000242id_/http://sgx.com/wps/portal/sgxweb_ch/home/trading/derivatives/trading_hours_calendar
 // https://web.archive.org/web/20170927124017id_/http://www.sgx.com/wps/portal/sgxweb/home/trading/derivatives/trading_hours_calendar
-// https://web.archive.org/web/20190204200905id_/https://api2.sgx.com/content-api?queryId=00c0b9e1a1b4dc0b3e0a3a8f3b0c2d5e6f7a8b9c:derivatives_products_list
-// https://web.archive.org/web/20190611051800id_/https://api2.sgx.com/content-api
-// https://web.archive.org/web/20200109051211id_/https://api2.sgx.com/content-api
+// https://web.archive.org/web/20190116144725id_/https://api2.sgx.com/content-api?queryId=e8c4b75927723d2bae18ec762abab178e0efcd9a%3Apage&variables=%7B%22path%22%3A%22%2Fderivatives%2Fproducts%2Fchinaa50%22%2C%22lang%22%3A%22EN%22%7D
+// https://web.archive.org/web/20190204200905id_/https://api2.sgx.com/content-api?queryId=9756cc24703868bca7da492a8e1aebd1268eaf70%3Aderivatives_products_list&variables=%7B%22limit%22%3A10000%2C%22lang%22%3A%22EN%22%7D
+// https://web.archive.org/web/20190611051800id_/https://api2.sgx.com/content-api?queryId=5adaa923edc3b334f3d4a62a324e055c4be65025%3Aderivatives_products_list&variables=%7B%22limit%22%3A10000%2C%22lang%22%3A%22EN%22%7D
+// https://web.archive.org/web/20200109051211id_/https://api2.sgx.com/content-api?queryId=ef44c5f861fc84577240761863bf1f842f189d9f%3Aderivatives_products_list&variables=%7B%22limit%22%3A10000%2C%22lang%22%3A%22EN%22%7D
 // https://web.archive.org/web/20241114183232id_/https://www.fubon.com/futures/wcm/home/bulletin/bulletin_20240912_137396/SGXChange.pdf
 // https://www.citicsf.com.hk/attachment?aid=95&uid=a1207308-0e3a-4a16-a869-a4d1b808a2b3
 // https://www.sgx.com/titan-dt-dc-portal
 // https://api2.sgx.com/sites/default/files/2026-08/Derivatives+Products+Description+v17.6%20eff%2020260824,%2020260907.zip
 
-// THE 2020 ROWS. Session bounds from the 2020 edition; routines from the
-// content API's 2020-01-09 payload, which states them for every family on
-// this grid: Japan "Pre -Opening : 7.15 am - 7.28 am / Non -Cancel : 7.28 am -
+// THE 2020 ROWS, keyed to Monday 2020-01-06. Session bounds from the 2020
+// edition; routines from the content API's 2020-01-09 payload, which states
+// them for every family on this grid: Japan "Pre -Opening : 7.15 am - 7.28 am / Non -Cancel : 7.28 am -
 // 7.30 am / Opening : 7.30 am - 2.25 pm / Pre-Closing : 2.25 pm - 2.29 pm /
 // Non-Cancel : 2. 29 pm - 2.30 pm // Pre -Opening : 2.45 pm - 2.53 pm / Non
 // -Cancel : 2.53 pm - 2.55 pm / Opening : 2.55 pm - 5.15 am"; China "Pre -

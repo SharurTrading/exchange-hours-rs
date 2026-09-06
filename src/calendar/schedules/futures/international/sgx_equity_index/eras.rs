@@ -50,9 +50,9 @@ macro_rules! era {
 // its content to ~2012. The page's Notes state a "4-minute pre-closing
 // routine ... followed by a 1-minute non-cancel period at the end of the T
 // session" for every equity-index future, which is the 14:25-14:30 closing
-// auction; the pre-opening routine's length is stated nowhere for this era,
-// so no order-entry phase is served. Carried to the January-2010 floor as this
-// key's baseline: it asserts no revision row.
+// auction; no artifact of this era that has been read states the pre-opening
+// routine's length (#65), so no order-entry phase is served. Carried to the
+// January-2010 floor as this key's baseline: it asserts no revision row.
 // https://web.archive.org/web/20130820090335id_/http://www.sgx.com/wps/portal/sgxweb/home/trading/derivatives/trading_hours_calendar
 era!(SGX_JAPAN_FLOOR,
     regular: [(7, 45, 14, 25), (15, 15, 2, 0)],
@@ -99,12 +99,14 @@ era!(SGX_JAPAN_FROM_2024_11_04,
 // (16:10, 16:40 and 17:00), rather than granting 16:10 here and withdrawing it
 // at a capture. The A50 specification captured 2013-08-20 states the T
 // pre-opening routine ("Pre - Opening 8.45 am - 8.58 am / Non - Cancel 8.58 am
-// - 9.00 am"), carried with the grid.
+// - 9.00 am"), carried with the grid, and the page's Notes state the closing
+// routine for every equity-index future, so the 15:25-15:30 auction — open
+// under both states this floor intersects — is served as `extended`.
 // https://web.archive.org/web/20180711020353id_/http://www.sgx.com/wps/wcm/connect/mp_en/site/trading_on_sgx/derivatives_market/derivatives_trading_hours_and_calendar/Trading+Hours?%20noCache=1531274630984.837727.133108399
-// https://web.archive.org/web/20130820082329id_/http://www.sgx.com/wps/portal/sgxweb/home/products/derivatives/equity/chinaa50
+// https://web.archive.org/web/20130820082329id_/http://www.sgx.com/wps/portal/sgxweb/home/products/derivatives/equity/chinaa50/!ut/p/c5/04_SB8K8xLLM9MSSzPy8xBz9CP0os3gjR0cTDwNnA0t_AzMjA09Dz-CQADcvQyMfA6B8JG75YEOSdLu7G7oZeIaGhLk4hnkZu3qZEdDtpR-VnpOfBHSln0d-bqp-QW5oRKWjoiIAihb-kQ!!/dl3/d3/L0lDU0lKSWdra0EhIS9JTlJBQUlpQ2dBek15cUEhL1lCSlAxTkMxTktfMjd3ISEvN18yQUE0SDBDMDk4Mkc3MEkxNlFDMVRDMzBNMA!!/?WCM_PORTLET=PC_7_2AA4H0C0982G70I16QC1TC30M0017268_WCM&WCM_GLOBAL_CONTEXT=/wps/wcm/connect/sgx_en/home/products/derivatives/equity/chinaa50/specifications/
 era!(SGX_CHINA_FLOOR,
     regular: [(9, 0, 15, 25), (17, 0, 2, 0)],
-    extended: [],
+    extended: [(15, 25, 15, 30)],
     order_entry: [(8, 45, 9, 0)]);
 
 // 2013-08-20. The T close widens to 15:55 on the portal table and the
@@ -131,9 +133,11 @@ era!(SGX_CHINA_FROM_2017_07_10,
 // --- Singapore ---------------------------------------------------------------
 
 // THE FLOOR. "SGX MSCI Singapore Index Futures / SGX Straits Times Index
-// Futures | 8.30am to 5.10pm | 6.15pm to 2.00am" on the 2013-08-20 table, the
-// same in the ~2012 fragment. Closing routine from the page's Notes; the
-// pre-opening routine's length is unstated for this era.
+// Futures | 8.30am to 5.10pm | 6.15pm to 2.00am" on the 2013-08-20 table; the
+// ~2012 fragment prints the same bounds for MSCI Singapore and a 07:55 open
+// for the Straits Times future, which shares the SiMSCI row from 2013 on.
+// Closing routine from the page's Notes; no artifact of this era that has
+// been read states the pre-opening routine's length (#65).
 era!(SGX_SINGAPORE_FLOOR,
     regular: [(8, 30, 17, 10), (18, 15, 2, 0)],
     extended: [(17, 10, 17, 15)],

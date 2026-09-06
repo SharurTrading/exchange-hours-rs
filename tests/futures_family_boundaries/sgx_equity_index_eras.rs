@@ -137,6 +137,124 @@ fn the_floor_grids_are_the_2009_and_2013_intersection_carried_to_the_floor_and_b
     }
 }
 
+/// The floor grid's edges, exactly: the last open minute and the end-exclusive
+/// close of every bound the intersection sets, so a table off by a minute
+/// on any of them fails here rather than passing between loose probes.
+#[test]
+fn the_floor_edges_are_exact_on_the_japan_key() {
+    let date = (2011, 3, 16);
+    for key in [JAPAN, CHINA, SINGAPORE] {
+        assert!(
+            open(key, sgt(date, (22, 54))),
+            "{key:?}: last minute before 22:55"
+        );
+        assert!(
+            !open(key, sgt(date, (22, 55))),
+            "{key:?}: 22:55 closes end-exclusive"
+        );
+    }
+    assert_eq!(
+        state(JAPAN, sgt(date, (7, 29))),
+        SessionState::Closed,
+        "queue opens 07:30"
+    );
+    assert_eq!(state(JAPAN, sgt(date, (7, 30))), SessionState::OrderEntry);
+    assert_eq!(state(JAPAN, sgt(date, (7, 44))), SessionState::OrderEntry);
+    assert_eq!(state(JAPAN, sgt(date, (7, 45))), SessionState::OpenRegular);
+    assert_eq!(state(JAPAN, sgt(date, (14, 24))), SessionState::OpenRegular);
+    assert_eq!(
+        state(JAPAN, sgt(date, (14, 25))),
+        SessionState::OpenExtended
+    );
+    assert_eq!(
+        state(JAPAN, sgt(date, (14, 29))),
+        SessionState::OpenExtended
+    );
+    assert_eq!(state(JAPAN, sgt(date, (14, 30))), SessionState::Halt);
+    assert_eq!(
+        state(JAPAN, sgt(date, (15, 14))),
+        SessionState::Halt,
+        "T+1 queue opens 15:15"
+    );
+    assert_eq!(state(JAPAN, sgt(date, (15, 15))), SessionState::OrderEntry);
+    assert_eq!(state(JAPAN, sgt(date, (15, 29))), SessionState::OrderEntry);
+    assert_eq!(
+        state(JAPAN, sgt(date, (15, 30))),
+        SessionState::OpenRegular,
+        "T+1 opens 15:30"
+    );
+}
+
+/// The same exact edges on the China and Singapore keys.
+#[test]
+fn the_floor_edges_are_exact_on_the_china_and_singapore_keys() {
+    let date = (2011, 3, 16);
+    assert_eq!(
+        state(CHINA, sgt(date, (8, 59))),
+        SessionState::Closed,
+        "queue opens 09:00"
+    );
+    assert_eq!(state(CHINA, sgt(date, (9, 0))), SessionState::OrderEntry);
+    assert_eq!(state(CHINA, sgt(date, (9, 14))), SessionState::OrderEntry);
+    assert_eq!(
+        state(CHINA, sgt(date, (9, 15))),
+        SessionState::OpenRegular,
+        "T opens 09:15"
+    );
+    assert_eq!(state(CHINA, sgt(date, (15, 4))), SessionState::OpenRegular);
+    assert_eq!(
+        state(CHINA, sgt(date, (15, 5))),
+        SessionState::Halt,
+        "15:05 closes end-exclusive"
+    );
+    assert_eq!(
+        state(CHINA, sgt(date, (16, 59))),
+        SessionState::Halt,
+        "T+1 held at 17:00"
+    );
+    assert_eq!(state(CHINA, sgt(date, (17, 0))), SessionState::OpenRegular);
+    assert_eq!(
+        state(SINGAPORE, sgt(date, (8, 14))),
+        SessionState::Closed,
+        "queue opens 08:15"
+    );
+    assert_eq!(
+        state(SINGAPORE, sgt(date, (8, 15))),
+        SessionState::OrderEntry
+    );
+    assert_eq!(
+        state(SINGAPORE, sgt(date, (8, 30))),
+        SessionState::OpenRegular
+    );
+    assert_eq!(
+        state(SINGAPORE, sgt(date, (17, 9))),
+        SessionState::OpenRegular
+    );
+    assert_eq!(
+        state(SINGAPORE, sgt(date, (17, 10))),
+        SessionState::OpenExtended
+    );
+    assert_eq!(state(SINGAPORE, sgt(date, (17, 15))), SessionState::Halt);
+    assert_eq!(
+        state(SINGAPORE, sgt(date, (17, 59))),
+        SessionState::Halt,
+        "queue opens 18:00"
+    );
+    assert_eq!(
+        state(SINGAPORE, sgt(date, (18, 0))),
+        SessionState::OrderEntry
+    );
+    assert_eq!(
+        state(SINGAPORE, sgt(date, (18, 14))),
+        SessionState::OrderEntry
+    );
+    assert_eq!(
+        state(SINGAPORE, sgt(date, (18, 15))),
+        SessionState::OpenRegular,
+        "T+1 opens 18:15"
+    );
+}
+
 /// The 2013-08-20 table widens the A50's T close and lengthens every carried
 /// family's T+1 close from 22:55 to 02:00; because the row lengthens a
 /// wrapping overnight close it is keyed to Monday 2013-08-26, so the Friday

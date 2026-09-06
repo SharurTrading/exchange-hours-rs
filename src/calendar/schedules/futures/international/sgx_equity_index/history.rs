@@ -160,9 +160,10 @@ use super::{MON_FRI, SessionRule, StaticHoursProfile};
 // newsletter "Extended Trading Hours, Price Limits and Trade at Settlement"
 // of 27 July 2016 (listed on the Titan portal's public index; the file is
 // password-locked) and the Titan launch itself inside it. SGX's Futures
-// Trading Rules carry thirty "Amended on 14 November 2016" annotations for
-// that system cutover, none of them Rule 4.1.5, which delegates hours to the
-// contract specifications; the rulebook dates the system, not the grid. The
+// Trading Rules carry thirty-six dated annotations for that system cutover
+// ("Amended on 14 November 2016" and its variants), none of them Rule 4.1.5,
+// which delegates hours to the contract specifications; the rulebook dates
+// the system, not the grid. The
 // 21 September 2017 "Change of
 // Trading Hours" newsletter is not the move: captures straddle it and are
 // identical, and the change log's own entry for it (issued 2017-10-05, v3.3,
@@ -182,7 +183,9 @@ use super::{MON_FRI, SessionRule, StaticHoursProfile};
 // 15:05, with 09:00-09:15 as order entry for the same reason and its T+1 open
 // held at 17:00 (below). The 2009 pre-open queues are served where their
 // anchor did not move (Nikkei T 07:30-07:45; SiMSCI 08:15-08:30 and
-// 18:00-18:15) and withheld where it did (Nikkei T+1, A50 both sessions). The
+// 18:00-18:15) and withheld where it did (Nikkei T+1, A50 T+1); the A50's T
+// queue coincides with the 09:00-09:15 order-entry window the intersection
+// already serves. The
 // S0 state then arrives as a dated row on all three keys, keyed to Monday
 // 2013-08-26 rather than the Tuesday capture because it lengthens the wrapping
 // overnight close; its T+1 queues are withheld because S0 states no length
@@ -207,10 +210,11 @@ use super::{MON_FRI, SessionRule, StaticHoursProfile};
 // those rows carry them on all five keys, as do the earlier eras those
 // payloads, the 2013 A50 leaf and the 2009 pages source. They are sourced, not
 // carried, through the interval to 2025: all 22 archived payloads of 2021 to
-// 2024 (at least one per half-year, 2021-01-05 to 2024-10-07, across twelve
-// rotated query hashes) reproduce the 2020-01-09 strings for every key to the
-// minute, and the one edit SGX made to the catalogue in that span (the US
-// single-stock futures' T+1 session, 2023-11-27) touches no equity-index row.
+// 2024 (at least one per half-year, 2021-01-05 to 2024-10-07, across
+// rotating query hashes) reproduce the 2020-01-09 strings for every key to
+// the minute, and the edits SGX made to the catalogue in that span (the US
+// single-stock futures' T+1 session of 2023-11-27; the removal of the Nifty
+// rows) touch no equity-index row.
 // DT/AM 50 states Japan's routines on both sides of 2024-11-04, and SGX's own
 // server-rendered product pages corroborate it routine by routine across the
 // content API's 2024-10-07 to 2025-04-07 capture gap: nikkei225futuresoptions

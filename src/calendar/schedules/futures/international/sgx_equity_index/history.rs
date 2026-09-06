@@ -32,7 +32,8 @@ use super::{MON_FRI, SessionRule, StaticHoursProfile};
 // 2018 (Apr) edition (PDF created 2018-04-11) and the 2019 edition ("accurate
 // as of 15 January 2019"). Both print the 04:45 T+1 close.
 //
-// TWO OF THE FOUR MOVES INSIDE THE MODELLED WINDOW ARE DATED.
+// ALL FOUR MOVES INSIDE THE MODELLED WINDOW ARE DATED - TWO BY CIRCULARS, TWO BY
+// SGX'S OWN CHANGE LOG.
 //
 // 2025-04-07. SGX-DT Circular DT/AM - 15 of 2025, "Revision of T+1 Session
 // Trading Hours for SGX Equity Index Futures/Options, Dividend Index Futures
@@ -57,30 +58,34 @@ use super::{MON_FRI, SessionRule, StaticHoursProfile};
 // Word metadata (created and last saved 2024-09-09 17:53 Singapore time, the
 // circular's dateline) - the same channel DT/AM 15 came through, see below.
 //
-// TWO MOVES STAY UNDATED AND ARE SERVED AS INTERSECTIONS. The T+1 close moved
-// 04:45 -> 05:15 between SGX's content API of 2019-06-21 (04:45) and its
-// 2020-01-09 payload and the 2020 edition (05:15); SGX's Annual Report 2020
-// says "Our extension of trading hours in November 2019" and two SGX
-// factsheets in the api2 2019-11 and 2019-12 directories print 05:15, but no
-// SGX document reachable under the crate's laws states the day, so 04:45 is
-// served until the 2020 row. The SiMSCI T close and T+1 open moved 17:10 /
-// 17:40 -> 17:20 / 17:50 between the content API's 2019-02-04 and 2019-06-11
-// payloads; the Singapore key serves the window both hold in between.
-//
-// SGX'S OWN PRODUCT-CATALOGUE CHANGE LOG STATES BOTH DAYS. The "Derivatives
-// Products Description" workbook served from api2.sgx.com carries a dated,
-// SGX-authored change log (sheet read_me, header "Issue Date (mm/dd/yyyy) |
-// Version Number | Authors | Change Description", no merged cells, multi-row
-// entries partitioned by border styles in the file). Its entry issued
-// 2019-05-21, v6.1, reads "Amended trading hours for SGP, SGPO and ST eff 10
-// Jun"; its entry issued 2019-10-07, v6.9, reads "Effective 11 Nov:" / "(T+1)
-// session Closing hours to 5:15am all T+1 traded contracts"; and its later
-// entries "(eff 4 Nov)" and "(eff 7 Apr)" match DT/AM 50 and DT/AM 15 exactly.
-// Whether that channel may key a revision row is an open maintainer decision
-// (#45); until it is taken these two moves stay intersections, and the rows
-// that would change are exactly the Singapore 2019-02-06 and 2019-06-11 pair
-// (one dated Monday 2019-06-10) and the 05:15 close on all five keys (Monday
-// 2019-11-11 instead of the 2020 row).
+// 2019-06-10 AND 2019-11-11. SGX's "Derivatives Products Description" workbook,
+// served from api2.sgx.com, carries a dated, SGX-authored change log (sheet
+// read_me, header "Issue Date (mm/dd/yyyy) | Version Number | Authors | Change
+// Description", 167 dated entries from 2016-02-19, zero merged cells,
+// multi-row entries partitioned by border styles in the file). Its entry
+// issued 2019-05-21, v6.1, is one cell: "Amended trading hours for SGP, SGPO
+// and ST eff 10 Jun". Its entry issued 2019-10-07, v6.9, is four rows: "Effective
+// 11 Nov:" / "Editorial change Contracts_mainmenu:" / "(T+1) session Closing
+// hours to 5:15am all T+1 traded contracts" / "Editorial change
+// session_mainmenu: SURV_INT to 5:15, REMOVE_DAY_ORDERS to 5:20, ... CLOSE to
+// 5:30 all T+1 traded contracts". Its later entries "(eff 4 Nov)" (issued
+// 2024-11-04) and "(eff 7 Apr)" (issued 2025-03-19) match DT/AM 50 and DT/AM
+// 15 to the day. The log is admitted as a primary source for those two
+// effective days under the convention `AGENTS.md` records: operator-authored,
+// dated in the file, session language, calibrated. The one interpretive step
+// is on v6.9, where "Effective 11 Nov:" is a header row scoping the items
+// below it inside one file-encoded entry - SGX's own recurring convention in
+// that column (four of its six "Effective <day>:" headers share the items'
+// cell). Both days sit inside SGX-artifact brackets: the SiMSCI move between
+// the content API's 2019-02-04 payload (17:10 / 17:40) and its 2019-06-11
+// payload (17:20 / 17:50), the day after the stated 10 June; the 05:15 close
+// between the content API's 2019-06-21 payload (04:45) and SGX factsheets in
+// the api2 2019-11 and 2019-12 directories (05:15), with SGX's Annual Report
+// 2020 saying "Our extension of trading hours in November 2019". Both stated
+// days are Mondays, which is why neither needs the rounding applied below.
+// The channel was ruled out on 2026-09-05 as "bound only by cell-border
+// formatting"; parsing the OOXML showed the partition is the document's own
+// structure, and the ruling was reversed on 2026-09-06 (#45).
 //
 // BEFORE THE 2020 EDITION: THE STATES SGX PUBLISHED. All Singapore time, T and
 // T+1 session bounds, routines excluded per the pages' own footnote.
@@ -125,10 +130,10 @@ use super::{MON_FRI, SessionRule, StaticHoursProfile};
 // evening's leg running past the close in force when it opened - the running
 // session LAW-NO-FABRICATED-DATES says a boundary must not split - and no leg
 // wraps into a Monday morning. The NTR boundary moves to Monday 2018-04-16
-// and the 2020 rows, which lengthen the close from 04:45 to 05:15, to Monday
-// 2020-01-06 for the same reason. Boundaries that change only a daytime close
-// (2013-08-20, 2019-06-11) or narrow an overnight open (2019-02-06) keep their
-// artifact's date. A knowledge boundary may widen what is served and never narrow it:
+// for the same reason; the 2019-11-11 rows, which lengthen the close from
+// 04:45 to 05:15, need no rounding because the day SGX states is a Monday, as
+// is 2019-06-10. A boundary that changes only a daytime close (2013-08-20)
+// keeps its artifact's date. A knowledge boundary may widen what is served and never narrow it:
 // the A50's T+1 open is sourced at 16:10, 16:40 and 17:00 across three undated
 // states, so 17:00 is held from the floor and only its T close, which widens,
 // moves at the boundaries.
@@ -189,9 +194,10 @@ use super::{MON_FRI, SessionRule, StaticHoursProfile};
 // https://www.sgx.com/titan-dt-dc-portal
 // https://api2.sgx.com/sites/default/files/2026-08/Derivatives+Products+Description+v17.6%20eff%2020260824,%2020260907.zip
 
-// THE 2020 ROWS, keyed to Monday 2020-01-06. Session bounds from the 2020
-// edition; routines from the content API's 2020-01-09 payload, which states
-// them for every family on this grid: Japan "Pre -Opening : 7.15 am - 7.28 am / Non -Cancel : 7.28 am -
+// THE 2019-11-11 ROWS. The 05:15 T+1 close from the day SGX's change log
+// states; session bounds confirmed by the 2020 edition and routines from the
+// content API's 2020-01-09 payload, which states them for every family on this
+// grid: Japan "Pre -Opening : 7.15 am - 7.28 am / Non -Cancel : 7.28 am -
 // 7.30 am / Opening : 7.30 am - 2.25 pm / Pre-Closing : 2.25 pm - 2.29 pm /
 // Non-Cancel : 2. 29 pm - 2.30 pm // Pre -Opening : 2.45 pm - 2.53 pm / Non
 // -Cancel : 2.53 pm - 2.55 pm / Opening : 2.55 pm - 5.15 am"; China "Pre -
@@ -203,7 +209,7 @@ use super::{MON_FRI, SessionRule, StaticHoursProfile};
 // // Pre - Opening: 5:40 pm - 5:48 pm / Non - Cancel: 5:48 pm - 5:50 pm /
 // Opening: 5:50 pm - 5:15 am". Each Pre-Opening/Non-Cancel pair is one
 // order-entry window and each Pre-Closing/Non-Cancel pair one extended window.
-static SGX_EQUITY_INDEX_JAPAN_REGULAR_2020: &[SessionRule] = &[
+static SGX_EQUITY_INDEX_JAPAN_REGULAR_FROM_2019_11_11: &[SessionRule] = &[
     SessionRule {
         days: MON_FRI,
         open_ssm: 7 * 3600 + 30 * 60,
@@ -215,12 +221,12 @@ static SGX_EQUITY_INDEX_JAPAN_REGULAR_2020: &[SessionRule] = &[
         close_ssm: 5 * 3600 + 15 * 60,
     },
 ];
-static SGX_EQUITY_INDEX_JAPAN_EXTENDED_2020: &[SessionRule] = &[SessionRule {
+static SGX_EQUITY_INDEX_JAPAN_EXTENDED_FROM_2019_11_11: &[SessionRule] = &[SessionRule {
     days: MON_FRI,
     open_ssm: 14 * 3600 + 25 * 60,
     close_ssm: 14 * 3600 + 30 * 60,
 }];
-static SGX_EQUITY_INDEX_JAPAN_ORDER_ENTRY_2020: &[SessionRule] = &[
+static SGX_EQUITY_INDEX_JAPAN_ORDER_ENTRY_FROM_2019_11_11: &[SessionRule] = &[
     SessionRule {
         days: MON_FRI,
         open_ssm: 7 * 3600 + 15 * 60,
@@ -234,14 +240,14 @@ static SGX_EQUITY_INDEX_JAPAN_ORDER_ENTRY_2020: &[SessionRule] = &[
 ];
 pub(super) static SGX_EQUITY_INDEX_JAPAN_SOURCED_WINDOW: StaticHoursProfile = StaticHoursProfile {
     tz: Asia::Singapore,
-    regular: SGX_EQUITY_INDEX_JAPAN_REGULAR_2020,
-    extended: SGX_EQUITY_INDEX_JAPAN_EXTENDED_2020,
-    order_entry: SGX_EQUITY_INDEX_JAPAN_ORDER_ENTRY_2020,
+    regular: SGX_EQUITY_INDEX_JAPAN_REGULAR_FROM_2019_11_11,
+    extended: SGX_EQUITY_INDEX_JAPAN_EXTENDED_FROM_2019_11_11,
+    order_entry: SGX_EQUITY_INDEX_JAPAN_ORDER_ENTRY_FROM_2019_11_11,
     has_daily_close: true,
     has_weekend_close: true,
 };
 
-static SGX_EQUITY_INDEX_CHINA_REGULAR_2020: &[SessionRule] = &[
+static SGX_EQUITY_INDEX_CHINA_REGULAR_FROM_2019_11_11: &[SessionRule] = &[
     SessionRule {
         days: MON_FRI,
         open_ssm: 9 * 3600,
@@ -253,12 +259,12 @@ static SGX_EQUITY_INDEX_CHINA_REGULAR_2020: &[SessionRule] = &[
         close_ssm: 5 * 3600 + 15 * 60,
     },
 ];
-static SGX_EQUITY_INDEX_CHINA_EXTENDED_2020: &[SessionRule] = &[SessionRule {
+static SGX_EQUITY_INDEX_CHINA_EXTENDED_FROM_2019_11_11: &[SessionRule] = &[SessionRule {
     days: MON_FRI,
     open_ssm: 16 * 3600 + 30 * 60,
     close_ssm: 16 * 3600 + 35 * 60,
 }];
-static SGX_EQUITY_INDEX_CHINA_ORDER_ENTRY_2020: &[SessionRule] = &[
+static SGX_EQUITY_INDEX_CHINA_ORDER_ENTRY_FROM_2019_11_11: &[SessionRule] = &[
     SessionRule {
         days: MON_FRI,
         open_ssm: 8 * 3600 + 45 * 60,
@@ -272,14 +278,14 @@ static SGX_EQUITY_INDEX_CHINA_ORDER_ENTRY_2020: &[SessionRule] = &[
 ];
 pub(super) static SGX_EQUITY_INDEX_CHINA_SOURCED_WINDOW: StaticHoursProfile = StaticHoursProfile {
     tz: Asia::Singapore,
-    regular: SGX_EQUITY_INDEX_CHINA_REGULAR_2020,
-    extended: SGX_EQUITY_INDEX_CHINA_EXTENDED_2020,
-    order_entry: SGX_EQUITY_INDEX_CHINA_ORDER_ENTRY_2020,
+    regular: SGX_EQUITY_INDEX_CHINA_REGULAR_FROM_2019_11_11,
+    extended: SGX_EQUITY_INDEX_CHINA_EXTENDED_FROM_2019_11_11,
+    order_entry: SGX_EQUITY_INDEX_CHINA_ORDER_ENTRY_FROM_2019_11_11,
     has_daily_close: true,
     has_weekend_close: true,
 };
 
-static SGX_EQUITY_INDEX_SINGAPORE_REGULAR_2020: &[SessionRule] = &[
+static SGX_EQUITY_INDEX_SINGAPORE_REGULAR_FROM_2019_11_11: &[SessionRule] = &[
     SessionRule {
         days: MON_FRI,
         open_ssm: 8 * 3600 + 30 * 60,
@@ -291,12 +297,12 @@ static SGX_EQUITY_INDEX_SINGAPORE_REGULAR_2020: &[SessionRule] = &[
         close_ssm: 5 * 3600 + 15 * 60,
     },
 ];
-static SGX_EQUITY_INDEX_SINGAPORE_EXTENDED_2020: &[SessionRule] = &[SessionRule {
+static SGX_EQUITY_INDEX_SINGAPORE_EXTENDED_FROM_2019_11_11: &[SessionRule] = &[SessionRule {
     days: MON_FRI,
     open_ssm: 17 * 3600 + 20 * 60,
     close_ssm: 17 * 3600 + 25 * 60,
 }];
-static SGX_EQUITY_INDEX_SINGAPORE_ORDER_ENTRY_2020: &[SessionRule] = &[
+static SGX_EQUITY_INDEX_SINGAPORE_ORDER_ENTRY_FROM_2019_11_11: &[SessionRule] = &[
     SessionRule {
         days: MON_FRI,
         open_ssm: 8 * 3600 + 15 * 60,
@@ -311,9 +317,9 @@ static SGX_EQUITY_INDEX_SINGAPORE_ORDER_ENTRY_2020: &[SessionRule] = &[
 pub(super) static SGX_EQUITY_INDEX_SINGAPORE_SOURCED_WINDOW: StaticHoursProfile =
     StaticHoursProfile {
         tz: Asia::Singapore,
-        regular: SGX_EQUITY_INDEX_SINGAPORE_REGULAR_2020,
-        extended: SGX_EQUITY_INDEX_SINGAPORE_EXTENDED_2020,
-        order_entry: SGX_EQUITY_INDEX_SINGAPORE_ORDER_ENTRY_2020,
+        regular: SGX_EQUITY_INDEX_SINGAPORE_REGULAR_FROM_2019_11_11,
+        extended: SGX_EQUITY_INDEX_SINGAPORE_EXTENDED_FROM_2019_11_11,
+        order_entry: SGX_EQUITY_INDEX_SINGAPORE_ORDER_ENTRY_FROM_2019_11_11,
         has_daily_close: true,
         has_weekend_close: true,
     };

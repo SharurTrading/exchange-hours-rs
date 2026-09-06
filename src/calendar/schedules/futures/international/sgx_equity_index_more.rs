@@ -95,13 +95,13 @@ static SGX_EQUITY_INDEX_CLOSED: StaticHoursProfile = StaticHoursProfile {
 };
 
 // SGX EQUITY-INDEX HISTORY. The evidence, the calendar editions, the dated
-// cutovers, the undated moves and how each is served are recorded once in the
+// cutovers, the one undated move and how it is served are recorded once in the
 // `sgx_equity_index::history` module; that note governs these two families
 // exactly as it governs the other three. In short: each family serves its
 // sourced states from its own knowledge boundary - Taiwan from its 2020-07-20
-// launch, NTR (USD) from the 2018 (Apr) calendar edition - with the undated
-// 04:45 -> 05:15 T+1 close move served as an intersection until the 2020 row,
-// and from 2025-04-07 the current grid applies on the authority of SGX-DT
+// launch, NTR (USD) from the 2018 (Apr) calendar edition - with the 04:45 ->
+// 05:15 T+1 close from Monday 2019-11-11 on SGX's own change log, and from
+// 2025-04-07 the current grid applies on the authority of SGX-DT
 // Circular DT/AM 15 of 2025, which pulled both T+1 opens fifteen minutes
 // earlier. Routines are sourced for every era here from SGX's content API,
 // which states each family's Pre-Opening/Non-Cancel/Pre-Closing windows
@@ -361,22 +361,23 @@ pub(crate) static SGX_EQUITY_INDEX_NTR_USD_BASELINE: StaticHoursProfile = Static
     has_weekend_close: true,
 };
 
-// Three rows: the knowledge boundary at the 2018 (Apr) edition, the 2020 row
-// that carries the 05:15 close (keyed to Monday 2020-01-06, as every boundary
-// that lengthens the overnight close is), then the current grid on the effective day
+// Three rows: the knowledge boundary at the 2018 (Apr) edition, the 2019-11-11
+// row that carries the 05:15 close on the day SGX's change log states, then the
+// current grid on the effective day
 // stated by SGX-DT Circular DT/AM 15 of 2025, which moved this family's T+1
-// open from 19:00 to 18:45. Partial because the 2019 T+1 close move is undated
-// and served as an intersection.
+// open from 19:00 to 18:45. Partial because the family traded from its 12 June
+// 2017 launch with hours no artifact read states until the 2018 (Apr) edition.
 //
 // The 2018 (Apr) edition that first lists the suite, the 2019 edition, the
 // content API payloads that state the routines (2019-02-04 at 04:45,
-// 2020-01-09 at 05:15), the 2020 edition, and the current editions and
-// circular:
+// 2020-01-09 at 05:15), the 2020 edition, the change log that dates the
+// 05:15 close, and the current editions and circular:
 // https://api2.sgx.com/sites/default/files/2018-05/SGX%20Derivatives%20Trading%20Calendar%202018%20%28Apr%29.pdf
 // https://api2.sgx.com/sites/default/files/2019-01/2019%20DT%20Calendar.pdf
 // https://web.archive.org/web/20190204200905id_/https://api2.sgx.com/content-api?queryId=9756cc24703868bca7da492a8e1aebd1268eaf70%3Aderivatives_products_list&variables=%7B%22limit%22%3A10000%2C%22lang%22%3A%22EN%22%7D
 // https://web.archive.org/web/20200109051211id_/https://api2.sgx.com/content-api?queryId=ef44c5f861fc84577240761863bf1f842f189d9f%3Aderivatives_products_list&variables=%7B%22limit%22%3A10000%2C%22lang%22%3A%22EN%22%7D
 // https://api2.sgx.com/sites/default/files/2020-01/SGX%20Derivatives%20Trading%20Calendar%202020.pdf
+// https://api2.sgx.com/sites/default/files/2026-08/Derivatives+Products+Description+v17.6%20eff%2020260824,%2020260907.zip
 // https://api2.sgx.com/sites/default/files/2026-01/SGX%20Calendar%202026_2.pdf
 // https://api2.sgx.com/sites/default/files/2025-07/DT%20Trading%20Calendar%202025%20%28updated%2031%20Jul%202025%29.pdf
 // https://www.citicsf.com.hk/attachment?aid=95&uid=a1207308-0e3a-4a16-a869-a4d1b808a2b3
@@ -389,11 +390,11 @@ pub(crate) static SGX_EQUITY_INDEX_NTR_USD_REVISIONS: &[Revision] = revisions![
         "SGX Derivatives Trading Calendar 2018 (Apr) edition, the first listing the NTR (USD) suite"
     ),
     (
-        2020,
-        1,
-        6,
+        2019,
+        11,
+        11,
         &SGX_EQUITY_INDEX_NTR_USD_SOURCED_WINDOW,
-        "SGX Derivatives Trading Calendar 2020 edition: T+1 close 05:15, keyed to the Monday"
+        "SGX Derivatives Products Description change log v6.9: Effective 11 Nov, T+1 close 05:15"
     ),
     (
         2025,

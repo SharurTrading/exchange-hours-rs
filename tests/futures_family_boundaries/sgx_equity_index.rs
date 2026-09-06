@@ -33,15 +33,15 @@ fn sgx_equity_index_grids_do_not_collapse_onto_each_other() {
 }
 
 /// SGX equity-index history: the 2013 portal grid carried to the floor, the
-/// 04:45 grid from Monday 2017-07-10, the 05:15 close from Monday 2020-01-06,
+/// 04:45 grid from Monday 2017-07-10, the 05:15 close from Monday 2019-11-11,
 /// then — for Japan — the dated 2024-11-04 T-session extension, and the
 /// current grid from the dated 2025-04-07 cutover on every key.
 ///
 /// Both dated moves come from SGX-DT circulars: DT/AM 50 of 2024 lengthens
 /// Japan's T session to 14:55 and moves its T+1 open to 15:25 from Monday
 /// 4 November 2024; DT/AM 15 of 2025 pulls every family's T+1 open fifteen
-/// minutes earlier from Monday 7 April 2025. Between the 2020 row and DT/AM 50
-/// Japan's T closes at 14:25 and its T+1 opens at 14:55.
+/// minutes earlier from Monday 7 April 2025. Between the 2019-11-11 row and
+/// DT/AM 50 Japan's T closes at 14:25 and its T+1 opens at 14:55.
 ///
 /// Singapore has no DST, so 06:30Z is 14:30 SGT, 07:15Z is 15:15 SGT, 07:40Z is
 /// 15:40 SGT and 08:50Z is 16:50 SGT. 2026-09-16 falls after the cutover; the

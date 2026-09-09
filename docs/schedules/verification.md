@@ -50,10 +50,10 @@ section holds the method, the discrepancy list, and the two side-lists.
 
   **Classification complete, 2026-09-01; revised 2026-09-02 and 2026-09-05.**
   Every `Partial` row opens with its gap kind.
-  Of the 50, **34 are order-entry** — the trading session
+  Of the 52, **34 are order-entry** — the trading session
   is sourced and what is undated is a queue or post-close phase in which no trade
-  can print — and **16 are executable**, where the uncertainty touches a window
-  where trades print. The executable sixteen are the six ICE Futures U.S. keys
+  can print — and **18 are executable**, where the uncertainty touches a window
+  where trades print. The executable eighteen are the six ICE Futures U.S. keys
   (their pre-August-2011 grid is carried back, bounded by document availability),
   `globex_nikkei_225_dollar` (sessionless before its grid's first sourced
   appearance), the five SGX equity-index keys (a sourced intersection, sessionless
@@ -65,7 +65,7 @@ section holds the method, the discrepancy list, and the two side-lists.
   from CME's 2025 and 2026 statements of it to the family's 2022 launch, and
   `globex_event_contracts_btc`, added on 2026-09-06, whose 24/7 weekday close is
   the sourced intersection of two CME primaries that disagree by an hour. None of
-  the sixteen serves hours it cannot support; each is conservative in the direction
+  the eighteen serves hours it cannot support; each is conservative in the direction
   of `Closed`. The counts fell from 47/35/12 on 2026-09-02, when `nyse_arca`
   closed its gap and left the `Partial` set.
 - **Secondary** — the captured schedule relies on corroborating material rather
@@ -135,6 +135,8 @@ is exactly one row for every `Exchange` variant, in `Exchange::ALL` order.
 | `comex` | [energy_metals.rs](../../src/calendar/schedules/futures/us/energy_metals.rs) | [US-CME-GROUP](sources.md#us-cme-group) | Partial | 2026-08-29 | **Gap: order-entry** — the trading session is sourced; what is undated is a queue or post-close phase in which no trade can print. Compatibility default for the named COMEX metals/NYMEX energy family. Current matching and Pre-Open queues are primary-supported and the January-2010/2015 matching revisions are exact, but the Sunday queue's 16:15→16:00 onset day is unavailable: the 2026-08-31 review narrowed it to 2012-05-28..2012-06-07 with both CME notice channels silent across that window; dated profiles now serve the sourced Sunday 16:15–17:00 intersection from the January-2010 floor, leaving only the 16:00–16:15 quarter-hour undated. TAS/TAM/BTIC, options, and other clocks are excluded. |
 | `nymex` | [energy_metals.rs](../../src/calendar/schedules/futures/us/energy_metals.rs) | [US-CME-GROUP](sources.md#us-cme-group) | Partial | 2026-08-29 | **Gap: order-entry** — the trading session is sourced; what is undated is a queue or post-close phase in which no trade can print. Compatibility default for the named NYMEX energy/PGM and COMEX metals family. Current matching and Pre-Open queues are primary-supported and the January-2010/2015 matching revisions are exact, but the Sunday queue's 16:15→16:00 onset day is unavailable: the 2026-08-31 review narrowed it to 2012-05-28..2012-06-07 with both CME notice channels silent across that window; dated profiles now serve the sourced Sunday 16:15–17:00 intersection from the January-2010 floor, leaving only the 16:00–16:15 quarter-hour undated. TAS/TAM/BTIC, options, and other clocks are excluded. |
 | `cfe` | [cfe.rs](../../src/calendar/schedules/futures/us/cfe.rs) | [US-CFE](sources.md#us-cfe) | Primary | 2026-08-22 | VIX futures normal-week history is complete from January 2010. Old-system pre-opens have exact sourced onsets; randomized new-system queue starts use conservative latest edges of 16:00:03/16:45:03 from 2018-02-25 and 16:00:06/16:45:06 from 2018-08-12. |
+| `coinbase_derivatives` | [coinbase_derivatives.rs](../../src/calendar/schedules/futures/us/coinbase_derivatives.rs) | [US-COINBASE-DERIVATIVES](sources.md#us-coinbase-derivatives) | Partial | 2026-09-09 | **Gap: executable** — the current recurring non-24x7 futures grid is primary-sourced at 17:00–16:00 CT Sunday–Friday with a daily 16:00–17:00 break. Selected crypto products use a separate 24x7 grid with only Friday maintenance; no product-family key is claimed here. Earlier normal-week revision history remains unestablished, so the current venue default is carried back under the repository convention. |
+| `small_exchange` | [small_exchange.rs](../../src/calendar/schedules/futures/us/small_exchange.rs) | [US-SMALL-EXCHANGE](sources.md#us-small-exchange) | Partial | 2026-09-09 | **Gap: executable** — the CFTC-hosted exchange filing sources the S5C 08:30–15:00 CT Monday–Friday grid used as the venue default. Other product families and earlier normal-week history remain unestablished; the current default is carried back under the repository convention. |
 | `eurex` | [europe.rs](../../src/calendar/schedules/futures/international/europe.rs) | [EU-EUREX](sources.md#eu-eurex) | Primary | 2026-08-22 | FESX/FDAX/FDXM benchmark-index futures: the January-2010 baseline has 07:30–07:50 pre-trading and 07:50–22:00 continuous trading. From the sourced 2018-12-10 cutover, pre-trading/opening auction runs 01:00–01:15 CET or 02:00–02:15 CEST before continuous trading to 22:00. |
 | `eex` | [europe.rs](../../src/calendar/schedules/futures/international/europe.rs) | [EU-EEX](sources.md#eu-eex) | Primary | 2026-08-22 | Nordic Zonal Power Futures only: closed before the sourced 2024-03-25 launch, then 08:00–18:00 CE(S)T. |
 | `iceus` | [ice_us.rs](../../src/calendar/schedules/futures/us/ice_us.rs) | [ICE-DERIVATIVES](sources.md#ice-derivatives) | Primary | 2026-08-22 | NYSE FANG+ Index Futures only: closed before the sourced 2017-11-07 launch-eve 19:30 Pre-Open / 20:00 matching start. Current Pre-Open is Sunday 17:30–18:00 and Monday–Thursday 19:30–20:00; regular matching then runs through 18:00 the next day. |

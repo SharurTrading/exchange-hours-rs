@@ -31,8 +31,8 @@ quirks, is handled internally.
 The internal ownership and extension model is documented in
 [ARCHITECTURE.md](ARCHITECTURE.md).
 
-- **93 source-backed market identities**, plus the synthetic `Exchange::Unknown`
-  fallback (94 `Exchange` variants total) — covering US equities/options, US and
+- **95 source-backed market identities**, plus the synthetic `Exchange::Unknown`
+  fallback (96 `Exchange` variants total) — covering US equities/options, US and
   international futures, EU and Asia-Pacific equities, other major global cash
   markets, and always-open crypto, with independently fenced point-in-time
   revisions wherever primary evidence states an unconditional day-level boundary.
@@ -160,6 +160,7 @@ assert_eq!(calendar.exchange(), None);
 | US options | 18 | `America/New_York` | Ordinary individual-stock options trade 09:30–16:00 regular. Seventeen venues also expose their current generic order-acceptance queue as extended (06:00, 07:00, or 07:30 by operator); MEMX rejects orders before 09:30. Product-specific ETF, ETN, index, FLEX, floor-only, and designated sessions remain outside scope. Exact launch history is retained, while an unknown historical queue-onset day is disclosed as Partial rather than invented. |
 | CME Globex futures | 4 | `US/Central` | The count is four compatibility `Exchange` identities (CME, CBOT, COMEX, NYMEX); fourteen product-family keys cover scoped U.S. equity indexes, NYMEX energy/PGM and COMEX metals, standard-size CBOT grains, mini-sized CBOT grains, Rough Rice, standard-grid CME FX, CBOT/CME interest rates, CME livestock, Nikkei 225 Dollar, CME weather temperature-index futures, CME non-spot-quoted cryptocurrency futures, CME/CBOT Spot-Quoted Futures, CME Group event contracts, and Event Contracts on Bitcoin Futures. Fixed-current profiles include the published Pre-Open/order-entry and PCP phases. Dated selectors retain only source-dated phase changes, so thirteen of the fourteen key histories—and the four venue defaults that reuse the standard grids—are Partial where an older phase-onset day or a carried-back boundary is unavailable; `globex_spot_quoted` is the exception. Weather futures have no regular session and closed 15:15 CT until CME SER-9519 expanded them to 16:00 CT on 2025-04-13. Cryptocurrency moved from the five-day 17:00→16:00 grid to 24/7 trading on 2026-05-29. Its weekday maintenance is 16:00–16:02 with Pre-Open from 16:01; Saturday maintenance is 02:00–04:00 with Pre-Open from 03:45. Event Contracts on Bitcoin Futures moved to 24/7 the same day on the sourced intersection of two CME statements that disagree by an hour on the weekday close: open 16:02→15:00 CT, the 15:00–16:00 hour withheld, Saturday 02:00–04:00 with Pre-Open from 03:45. |
 | Cboe Futures (CFE) | 1 | `US/Central` | RTH 08:30–15:00 flows into post-settlement 15:00–16:00; conservative latest queue-acceptance edges are Sunday 16:00:06 and Monday–Thursday 16:45:06 before the 17:00→08:30 overnight wrap. |
+| Other U.S. futures venues | 2 | `America/Chicago` | Coinbase Derivatives defaults to its non-24x7 17:00→16:00 CT grid; selected crypto products require a separate 24x7 family. Small Exchange defaults to the filed S5C 08:30–15:00 CT weekday grid. |
 | EU equities | 14 | 11 European zones | 09:00–17:30 continuous as the continental default, with venue-owned phases: Xetra's DAX-share envelope includes participant-restricted Extended Retail from 07:00 to 22:00; LSE SETS includes 07:00 pre-trading, randomized opening/noon auctions, and CPX to 16:40; central Euronext profiles use the published nominal phase boundaries and exclude per-security randomized uncross seconds; SIX, BME, Vienna, and Nasdaq Nordic books keep their own phases and clocks. |
 | Asia-Pacific equities | 17 | 14 IANA zones | ASX, TMX Australia, NZX, TSE, NSE India, BSE India, HKEX, SGX Securities, Bursa Malaysia, SET, IDX, PSE, HOSE, SSE, SZSE, KRX, and TWSE. Venue unions include accepted block/crossing phases; SET also includes the sourced 2025 DR night session. Security eligibility may be narrower than the exchange envelope. |
 | Other major global equities | 6 | Toronto / Istanbul / Johannesburg / Riyadh / São Paulo / Mexico City | TSX, Borsa Istanbul, JSE's main/liquid ZA01 segment, Tadawul, B3, and BMV, including their pre-open, closing, trade-at-last, and accepted post-close order phases. B3/BMV grids are date-aware because they follow New York's offset relationship. |
@@ -194,6 +195,8 @@ The venue-keyed API retains these explicit defaults for compatibility:
 | `cbot` | `globex_grains` |
 | `comex`, `nymex` | `globex_energy` |
 | `cfe` | `cfe_vix` |
+| `coinbase_derivatives` | Non-24x7 futures venue default |
+| `small_exchange` | S5C futures venue default |
 | `eurex` | `eurex` |
 | `iceus` | `ice_us` |
 | `sgx` | `sgx` |
@@ -256,7 +259,7 @@ share one grid, so they ship as five separate keys and the ambiguous name
 See
 [Ambiguous futures families](docs/schedules/unsupported-families.md).
 
-The table contains 93 source-backed market identities. `Exchange::Unknown` is
+The table contains 95 source-backed market identities. `Exchange::Unknown` is
 an additional synthetic 24×7 UTC fallback and is not counted as an exchange or
 trading venue.
 
@@ -267,24 +270,24 @@ trading venue.
 That is the 93-identity ledger cutoff. Product-family keys were reviewed in the
 same pass and carry their own basis labels in the ledger.
 
-**Hours verified against the exchange at the review date:** `93 of 93` non-synthetic
+**Hours verified against the exchange at the review date:** `95 of 95` non-synthetic
 `Exchange` identities, within each row's documented normal-week scope.
 
-**Full dated history back to January 2010:** `67 of 93` non-synthetic
+**Full dated history back to January 2010:** `67 of 95` non-synthetic
 `Exchange` identities.
 
-**History complete except for one named gap:** `26 of 93` non-synthetic
+**History complete except for one named gap:** `28 of 95` non-synthetic
 `Exchange` identities.
 
 In plain terms:
 
-- **All 93 venues are right for today.** Every venue's present-day normal week
+- **All 95 venues are right for today.** Every venue's present-day normal week
   was compared against the operator's own published schedule, inside the scope
   its ledger row states. None is unreviewed, and none is known to be wrong.
 - **67 of them are also right for any date back to January 2010.** Ask one of
   these what the hours were on an arbitrary past date and every answer is
   carried by dated primary sources the whole way back.
-- **The other 26 are right for today, and right for the past except for one
+- **The other 28 are right for today, and right for the past except for one
   specific thing each.** Every one of those 26 rows names its own gap in the
   [ledger](docs/schedules/verification.md), and the gap is bounded: where a
   phase is sourced at both ends, the crate serves the part that is true under
@@ -296,9 +299,9 @@ reports a market as tradeable. A gap in an order-entry window only changes
 whether orders could be *queued* ahead of an open that is itself modelled
 correctly; no trade can print in one of those windows on any venue in this crate.
 Every `Partial` row states which kind it is, and the split is **34 order-entry
-to 16 executable** across the 50 rows in the ledger. The order-entry majority is
+to 18 executable** across the 52 rows in the ledger. The order-entry majority is
 the exact *day* an older queue or post-close phase started, with the trading
-session itself sourced. The executable sixteen — the ICE Futures U.S. keys, CME
+session itself sourced. The executable eighteen — the ICE Futures U.S. keys, CME
 Nikkei 225 Dollar, the SGX equity-index keys, `nyse` and `nyse_american`,
 whose January-2010 off-hours crossing phase was reclassified from order-entry on
 2026-09-02, `globex_event_contracts`, whose daily close is carried back to its
@@ -306,7 +309,7 @@ whose January-2010 off-hours crossing phase was reclassified from order-entry on
 intersection of two CME statements that disagree by an hour — are each served
 conservatively, erring toward closed rather than
 claiming hours they cannot support. A recent executable-only audit of all
-sixteen US futures product families found none of them withholding executable
+eighteen US futures product families found none of them withholding executable
 time that the current grid serves. Rows carry this distinction in the ledger, so
 check there before treating a `Partial` label as a reason to hesitate.
 
@@ -327,7 +330,7 @@ priority, ahead of any built-in holiday data — the exception-session engine
 ships, its data does not.
 
 Every non-synthetic identity was compared with its official current-hours or
-rulebook material and its notice/evidence channel. All 93 current profiles are
+rulebook material and its notice/evidence channel. All 95 current profiles are
 primary-supported within their stated scope. The 67 **Primary** rows have no
 known modeled-history gap since January 2010 or their sourced launch; 26
 **Partial** rows name an older queue, PCP phase, or exact onset that available
@@ -690,7 +693,7 @@ that callers do not also get (see [Architecture: Tests](ARCHITECTURE.md#tests)).
   baselines, amendment history, and the global bulk/name contract for TSX, Borsa Istanbul,
   JSE, Tadawul, B3, and BMV.
 - `tests/schedule_documentation.rs` and `tests/schedule_documentation/` — a
-  thin harness over contracts that keep all 94 `Exchange` rows (93
+  thin harness over contracts that keep all 96 `Exchange` rows (95
   non-synthetic plus `Unknown`) and 31 `MarketHoursKey` rows (30
   operator-derived plus `AlwaysOpen`) in canonical order; validates their
   review metadata and owner/source links; requires both current and

@@ -179,6 +179,22 @@ per-record review before any exception can drive runtime.
 - **Notices/evidence:** monitor the current [CFE regulatory circulars](https://www.cboe.com/markets/us/futures/regulation/circulars/cfe/regulatory/); retain [SR-CFE-2010-013](https://cdn.cboe.com/resources/regulation/rule_filings/approved/2010/SR-CFE-2010-013.pdf), [SR-CFE-2011-019](https://cdn.cboe.com/resources/regulation/rule_filings/approved/2011/SR-CFE-2011-019.pdf), the [2013 phased-hours announcement](https://ir.cboe.com/news/news-details/2013/CBOE-Futures-Exchange-Announces-Launch-Dates-For-VIX-Futures-Extended-Trading-Hours-09-30-2013/default.aspx), [IC13-041](https://cdn.cboe.com/resources/regulation/circulars/general/CFE-IC-2013-041.pdf) for the exact phase dates and weekday pre-open, the [official 2013 launch retrospective](https://ir.cboe.com/news/news-details/2014/2013-Trading-Volume-Reaches-New-All-Time-High-At-CBOE-Futures-Exchange-01-02-2014/default.aspx), [2014 round-the-clock launch announcement](https://ir.cboe.com/news/news-details/2014/CBOE-Futures-Exchange-Set-For-June-22-Launch-Of-24-Hour-VIX-Futures-Trading-06-09-2014/default.aspx), [SR-CFE-2014-010](https://cdn.cboe.com/resources/regulation/rule_filings/approved/2014/SR-CFE-2014-010.pdf), [IC14-036](https://cdn.cboe.com/resources/regulation/circulars/general/CFE-IC-2014-036.pdf) for the resulting Sunday and weekday pre-opens, [RG-CFE-2014-020](https://cdn.cboe.com/resources/regulation/circulars/regulatory/RG-CFE-2014-020.pdf) for the exact Sunday launch, [SR-CFE-2017-017](https://cdn.cboe.com/resources/regulation/rule_filings/approved/2017/SR-CFE-2017-017.pdf), [RG18-005](https://cdn.cboe.com/resources/regulation/circulars/regulatory/RG-CFE-2018-005.pdf) for the 2018-02-25 migration, [C2018071603](https://cdn.cboe.com/resources/release_notes/2018/Change-to-CFE-Pre-Open-Time-for-TAS-Contracts-and-Order-Submission-Commencement-Times.pdf) for the 2018-08-12 TAS queue change, and [CFE-2021-028](https://cdn.cboe.com/resources/regulation/rule_filings/pending/2021/21-028-VX-VXM-and-AMERIBOR-Trading-Hours.pdf) for the current queues and trading phases.
 - **Status:** Primary. VIX-futures normal-week history is primary-supported from the January-2010 floor, including the exact 2013 weekday and 2014 Sunday old-system pre-open onsets. Randomized queue starts after the 2018 migration use their conservative latest acceptance edges: three seconds after the nominal boundary from 2018-02-25, then six seconds from 2018-08-12 onward. The venue default is specifically VIX futures; other CFE contracts require their own check.
 
+<a id="us-coinbase-derivatives"></a>
+
+### `US-COINBASE-DERIVATIVES`
+
+- **Official current/rulebook:** [Coinbase Derivatives market hours](https://docs.cdp.coinbase.com/derivatives/introduction/market-hours) and the [exchange product directory](https://www.coinbase.com/derivatives).
+- **Notices/evidence:** monitor the exchange's [market notices](https://help.coinbase.com/derivatives/general/market-notices). The market-hours page dates selected crypto products' 24x7 extension to 2025-05-09 and separately states the recurring 23x5 grid retained by other futures.
+- **Status:** Partial. The venue default is the primary-sourced non-24x7 17:00–16:00 CT Sunday–Friday grid with a daily one-hour break. Selected 24x7 crypto products require a separate product-family key; their distinct schedule is deliberately not generalized to the exchange.
+
+<a id="us-small-exchange"></a>
+
+### `US-SMALL-EXCHANGE`
+
+- **Official current/rulebook:** the CFTC-hosted [Small S5C Equity Index Futures certification](https://www.cftc.gov/filings/ptc/ptc1121249243.pdf), filed by Small Exchange, Inc.
+- **Notices/evidence:** monitor the exchange's public [rule-filings directory](https://public.data.smallexchange.com/notices/rule-filings/).
+- **Status:** Partial. The filing states 08:30–15:00 CT Monday–Friday for S5C and that grid is the venue default. Other product families and prior recurring schedules remain unestablished.
+
 <a id="eu-eurex"></a>
 
 ### `EU-EUREX`

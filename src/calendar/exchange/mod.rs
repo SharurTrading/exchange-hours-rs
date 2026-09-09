@@ -168,6 +168,13 @@ exchanges! {
         /// CFE, the Cboe Futures Exchange; the venue default is the VIX
         /// profile.
         Cfe => "cfe",
+        /// Coinbase Derivatives Exchange; the venue default is its recurring
+        /// non-24x7 futures grid. Product-specific 24x7 contracts need their
+        /// own family key at the caller.
+        CoinbaseDerivatives => "coinbase_derivatives",
+        /// Small Exchange, Inc.; the venue default is the published S5C
+        /// futures session.
+        Smfe => "small_exchange",
         // European Futures / Energy
         /// Eurex FESX/FDAX/FDXM benchmark-index futures default.
         Eurex => "eurex",

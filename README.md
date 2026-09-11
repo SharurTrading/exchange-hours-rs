@@ -288,7 +288,7 @@ In plain terms:
   these what the hours were on an arbitrary past date and every answer is
   carried by dated primary sources the whole way back.
 - **The other 28 are right for today, and right for the past except for one
-  specific thing each.** Every one of those 26 rows names its own gap in the
+  specific thing each.** Every one of those 28 rows names its own gap in the
   [ledger](docs/schedules/verification.md), and the gap is bounded: where a
   phase is sourced at both ends, the crate serves the part that is true under
   every sourced state and withholds only the disputed remainder.
@@ -309,11 +309,11 @@ whose January-2010 off-hours crossing phase was reclassified from order-entry on
 intersection of two CME statements that disagree by an hour — are each served
 conservatively, erring toward closed rather than
 claiming hours they cannot support. A recent executable-only audit of all
-eighteen US futures product families found none of them withholding executable
+sixteen US futures product families found none of them withholding executable
 time that the current grid serves. Rows carry this distinction in the ledger, so
 check there before treating a `Partial` label as a reason to hesitate.
 
-Those 26 are not all the same, and the ledger says which kind each one is. Most
+Those 28 are not all the same, and the ledger says which kind each one is. Most
 are **knowledge-bound**: a real exchange change happened and no operator ever
 published the day, because the value was an operator system setting no filing
 ever fixed — searching harder will not close them. A few are **source-limited**:
@@ -325,17 +325,17 @@ wrote the 06:00 order-entry start into Rule 11.1(a)(1) have been identified and
 dated, and Direct Edge's own FIX and API specifications supply the earlier
 07:00 queue back to launch — leaving a knowledge-bound residue of four months
 in late 2010 and early 2011 during which the specifications move acceptance
-from 07:00 to 06:00 with no source naming the day. Closing all 26 is the current
+from 07:00 to 06:00 with no source naming the day. Closing all 28 is the current
 priority, ahead of any built-in holiday data — the exception-session engine
 ships, its data does not.
 
 Every non-synthetic identity was compared with its official current-hours or
 rulebook material and its notice/evidence channel. All 95 current profiles are
 primary-supported within their stated scope. The 67 **Primary** rows have no
-known modeled-history gap since January 2010 or their sourced launch; 26
+known modeled-history gap since January 2010 or their sourced launch; 28
 **Partial** rows name an older queue, PCP phase, or exact onset that available
 primary evidence cannot date. No row relies on Secondary, Pragmatic, or Known
-issue evidence. `Exchange::Unknown` is synthetic and is not one of the 93
+issue evidence. `Exchange::Unknown` is synthetic and is not one of the 95
 source-backed identities.
 
 The key surface was audited separately:

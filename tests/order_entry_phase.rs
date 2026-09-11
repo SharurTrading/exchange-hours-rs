@@ -191,7 +191,7 @@ fn a_closed_trade_date_removes_the_queue_that_feeds_it() {
 
 #[test]
 fn the_calendar_never_accepts_orders_the_fixed_profile_rejects() {
-    // Equality does NOT hold here and must not be asserted: 24 of 94 exchanges
+    // Equality does NOT hold here and must not be asserted: 24 of 96 exchanges
     // legitimately diverge, because a dated timeline omits phases whose onset
     // day cannot be sourced rather than inventing a cutover. Measured on a
     // current week, every one of those divergences is in the safe direction.

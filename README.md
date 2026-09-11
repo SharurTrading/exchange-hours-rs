@@ -160,7 +160,7 @@ assert_eq!(calendar.exchange(), None);
 | US options | 18 | `America/New_York` | Ordinary individual-stock options trade 09:30–16:00 regular. Seventeen venues also expose their current generic order-acceptance queue as extended (06:00, 07:00, or 07:30 by operator); MEMX rejects orders before 09:30. Product-specific ETF, ETN, index, FLEX, floor-only, and designated sessions remain outside scope. Exact launch history is retained, while an unknown historical queue-onset day is disclosed as Partial rather than invented. |
 | CME Globex futures | 4 | `US/Central` | The count is four compatibility `Exchange` identities (CME, CBOT, COMEX, NYMEX); fourteen product-family keys cover scoped U.S. equity indexes, NYMEX energy/PGM and COMEX metals, standard-size CBOT grains, mini-sized CBOT grains, Rough Rice, standard-grid CME FX, CBOT/CME interest rates, CME livestock, Nikkei 225 Dollar, CME weather temperature-index futures, CME non-spot-quoted cryptocurrency futures, CME/CBOT Spot-Quoted Futures, CME Group event contracts, and Event Contracts on Bitcoin Futures. Fixed-current profiles include the published Pre-Open/order-entry and PCP phases. Dated selectors retain only source-dated phase changes, so thirteen of the fourteen key histories—and the four venue defaults that reuse the standard grids—are Partial where an older phase-onset day or a carried-back boundary is unavailable; `globex_spot_quoted` is the exception. Weather futures have no regular session and closed 15:15 CT until CME SER-9519 expanded them to 16:00 CT on 2025-04-13. Cryptocurrency moved from the five-day 17:00→16:00 grid to 24/7 trading on 2026-05-29. Its weekday maintenance is 16:00–16:02 with Pre-Open from 16:01; Saturday maintenance is 02:00–04:00 with Pre-Open from 03:45. Event Contracts on Bitcoin Futures moved to 24/7 the same day on the sourced intersection of two CME statements that disagree by an hour on the weekday close: open 16:02→15:00 CT, the 15:00–16:00 hour withheld, Saturday 02:00–04:00 with Pre-Open from 03:45. |
 | Cboe Futures (CFE) | 1 | `US/Central` | RTH 08:30–15:00 flows into post-settlement 15:00–16:00; conservative latest queue-acceptance edges are Sunday 16:00:06 and Monday–Thursday 16:45:06 before the 17:00→08:30 overnight wrap. |
-| Other U.S. futures venues | 2 | `America/Chicago` | Coinbase Derivatives defaults to its non-24x7 17:00→16:00 CT grid; selected crypto products require a separate 24x7 family. Small Exchange defaults to the filed S5C 08:30–15:00 CT weekday grid. |
+| Other U.S. futures venues | 2 | `America/Chicago` | Coinbase Derivatives (FairX until 2022) defaults to its 23x5 grid, Sunday–Friday 17:00→16:00 CT with Pre-Open from 16:50, from its exact 2021-06-28 08:00 CT launch; most of its futures moved to a separate 24x7 family by 2026-05-04. Small Exchange traded 07:00–16:00 CT from its 2020-05-18 launch and 08:30–15:00 CT from November 2024, and is closed from 2025-03-24, after it delisted every contract. |
 | EU equities | 14 | 11 European zones | 09:00–17:30 continuous as the continental default, with venue-owned phases: Xetra's DAX-share envelope includes participant-restricted Extended Retail from 07:00 to 22:00; LSE SETS includes 07:00 pre-trading, randomized opening/noon auctions, and CPX to 16:40; central Euronext profiles use the published nominal phase boundaries and exclude per-security randomized uncross seconds; SIX, BME, Vienna, and Nasdaq Nordic books keep their own phases and clocks. |
 | Asia-Pacific equities | 17 | 14 IANA zones | ASX, TMX Australia, NZX, TSE, NSE India, BSE India, HKEX, SGX Securities, Bursa Malaysia, SET, IDX, PSE, HOSE, SSE, SZSE, KRX, and TWSE. Venue unions include accepted block/crossing phases; SET also includes the sourced 2025 DR night session. Security eligibility may be narrower than the exchange envelope. |
 | Other major global equities | 6 | Toronto / Istanbul / Johannesburg / Riyadh / São Paulo / Mexico City | TSX, Borsa Istanbul, JSE's main/liquid ZA01 segment, Tadawul, B3, and BMV, including their pre-open, closing, trade-at-last, and accepted post-close order phases. B3/BMV grids are date-aware because they follow New York's offset relationship. |
@@ -195,8 +195,8 @@ The venue-keyed API retains these explicit defaults for compatibility:
 | `cbot` | `globex_grains` |
 | `comex`, `nymex` | `globex_energy` |
 | `cfe` | `cfe_vix` |
-| `coinbase_derivatives` | Non-24x7 futures venue default |
-| `small_exchange` | S5C futures venue default |
+| `coinbase_derivatives` | 23x5 futures venue default |
+| `small_exchange` | Venue history; closed since 2025-03-24 |
 | `eurex` | `eurex` |
 | `iceus` | `ice_us` |
 | `sgx` | `sgx` |
@@ -298,15 +298,17 @@ trades print — the regular or extended session — would change whether the cr
 reports a market as tradeable. A gap in an order-entry window only changes
 whether orders could be *queued* ahead of an open that is itself modelled
 correctly; no trade can print in one of those windows on any venue in this crate.
-Every `Partial` row states which kind it is, and the split is **34 order-entry
-to 18 executable** across the 52 rows in the ledger. The order-entry majority is
+Every `Partial` row states which kind it is, and the split is **35 order-entry
+to 17 executable** across the 52 rows in the ledger. The order-entry majority is
 the exact *day* an older queue or post-close phase started, with the trading
-session itself sourced. The executable eighteen — the ICE Futures U.S. keys, CME
+session itself sourced. The executable seventeen — the ICE Futures U.S. keys, CME
 Nikkei 225 Dollar, the SGX equity-index keys, `nyse` and `nyse_american`,
 whose January-2010 off-hours crossing phase was reclassified from order-entry on
 2026-09-02, `globex_event_contracts`, whose daily close is carried back to its
-2022 launch, and `globex_event_contracts_btc`, whose 24/7 weekday close is the
-intersection of two CME statements that disagree by an hour — are each served
+2022 launch, `globex_event_contracts_btc`, whose 24/7 weekday close is the
+intersection of two CME statements that disagree by an hour, and
+`small_exchange`, whose 2024 move to 08:30–15:00 CT is undated inside
+2024-11-04..2024-11-21 — are each served
 conservatively, erring toward closed rather than
 claiming hours they cannot support. A recent executable-only audit of all
 sixteen US futures product families found none of them withholding executable

@@ -609,7 +609,8 @@ fn assert_key_basis_prose_matches_the_ledger(real_key_rows: &[&str]) {
 /// the audit's spelled-out Partial-key count. None of them was derived from the
 /// ledger, so every new key silently staled all three while the tests stayed
 /// green -- it happened on two consecutive product-family additions before this
-/// fence existed. Derive them here instead.
+/// fence existed. Derive them here instead, along with the executable tally the
+/// README and the ledger spell out beside the rows they name.
 #[test]
 fn the_gap_kind_split_is_quoted_consistently_everywhere() {
     let order_entry = VERIFICATION.matches("Gap: order-entry").count();
@@ -640,6 +641,20 @@ fn the_gap_kind_split_is_quoted_consistently_everywhere() {
         ledger.contains(&executable_claim),
         "the ledger's executable count drifted from its rows: expected {executable_claim:?}"
     );
+
+    // The same tally is spelled out beside the rows it names, where the digit
+    // claims above cannot see it.
+    let executable_words = number_words(executable);
+    for (text, claim) in [
+        (&readme, format!("The executable {executable_words} —")),
+        (&ledger, format!("The executable {executable_words} are")),
+        (&ledger, format!("None of the {executable_words} serves")),
+    ] {
+        assert!(
+            text.contains(&claim),
+            "a spelled-out executable count drifted from the ledger: expected {claim:?}"
+        );
+    }
 
     // The audit states its Partial product-family key count in words beside a
     // table that states it in digits; they drifted apart once already.

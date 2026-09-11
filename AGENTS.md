@@ -40,14 +40,24 @@ change to this standalone repository must follow.
   infrastructure rollout stays in the update-guide watch list and out of
   runtime selectors. An unconditional, fully sourced future date **may** be
   encoded ahead of its effective day, so instant-driven queries roll over
-  with no release in between; the row's review date is the day the evidence
-  was checked, and a slipped or cancelled change is corrected as a schedule
+  with no release in between; the row's review date is the UTC date the
+  evidence was checked (LAW-UTC-DATES), and a slipped or cancelled change is corrected as a schedule
   fix. Day-level revision rows are keyed to the local
   **opening day** of the first session they govern, and a day-level revision
   boundary never splits a running session; a sourced change whose boundary
   falls at a stated intraday instant is an exact-instant cutover, never a
   day-level row rounded to local midnight. Amendment history is recorded back
   to **January 2010**; earlier changes are out of scope by design.
+- **LAW-UTC-DATES** — every date the repository records about its own work is
+  the UTC calendar date on which that work happened: a ledger `Reviewed on`, a
+  knowledge-bound row's date and citation label, an audit or ledger amendment
+  note, a CHANGELOG release date. Never use the author's local date or the
+  commit's timezone offset. The crate is UTC in, UTC out, and its records keep
+  the same clock, so a date never depends on where a maintainer works or
+  whether they move; a recorded date later than the current UTC date is
+  future-dated and wrong. This governs the repository's own records only — an
+  exchange's effective dates remain venue-local civil dates keyed to the
+  opening day (LAW-NO-FABRICATED-DATES).
 - **LAW-SESSION-NOT-EXPIRY** — an instrument's **termination of trading,
   expiration, settlement, marker or fixing instant is never a session
   boundary**, and this crate does not model it at any resolution. The crate

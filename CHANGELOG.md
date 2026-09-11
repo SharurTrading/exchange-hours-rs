@@ -13,6 +13,31 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Added
 
+- **`Exchange::CoinbaseDerivatives`** — Coinbase Derivatives, the
+  CFTC-designated contract market that traded as FairX until March 2022, on the
+  canonical wire name `coinbase_derivatives`. The venue default is its 23x5
+  futures grid: Sunday–Friday 17:00→16:00 CT with a daily 16:00–17:00 break and
+  Pre-Open from 16:50. It is closed before the exact launch instant FairX's own
+  homepage announced, Monday 2021-06-28 at 08:00 CT; the first session opens at
+  the launch rather than at a Sunday 17:00 that never traded, and the full grid
+  applies from 2021-06-29. The four launch certifications state the grid and
+  every later dated filing restates it; the 16:50 Pre-Open, witnessed only
+  from 2025, enters at a knowledge-bound 2026-09-11 review row with no Pre-Open
+  before it. Since #2026-24 most CDE futures
+  trade 24x7, a family this default does not cover. The ledger row is
+  **Partial** with an **order-entry** gap.
+
+- **`Exchange::Smfe`** — Small Exchange, Inc., now Kraken Derivatives Exchange,
+  on the canonical wire name `small_exchange`. Closed before trade date
+  2020-05-18, when its first contracts listed and traded; 07:00–16:00 CT
+  Monday–Friday with Pre-Open from 06:30 from launch; 08:30–15:00 CT with
+  Pre-Open from 08:00 from 2024-11-04; closed from 2025-03-24, after SMFE
+  2025-001 delisted every contract at the 2025-03-21 close. The 2024 change is
+  undated between the info hub's 2024-11-03 capture and the S5C certification
+  of 2024-11-21, so the new grid, which lies inside the old one, is served from
+  2024-11-04 as the sourced intersection. The ledger row is **Partial** with an
+  **executable** gap.
+
 - **`MarketHoursKey::GlobexEventContractsBtc`** — CME Event Contracts on
   Bitcoin Futures (`ECBTC`), Rulebook Chapter 23, on the canonical wire name
   `globex_event_contracts_btc`: the one event-contract root CME moved to 24/7

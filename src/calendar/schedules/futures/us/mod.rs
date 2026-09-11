@@ -9,6 +9,7 @@
 mod bitcoin_event_contracts;
 mod cfe;
 mod cme_group;
+mod coinbase_derivatives;
 mod cryptocurrency;
 mod energy_metals;
 mod event_contracts;
@@ -20,6 +21,7 @@ mod interest_rates;
 mod livestock;
 mod mini_grains;
 mod rough_rice;
+mod small_exchange;
 mod spot_quoted;
 mod weather;
 
@@ -44,6 +46,7 @@ pub(crate) use cfe::{CFE_EXTENDED, CFE_REGULAR, cfe_profile_at};
 pub(crate) use cme_group::CME_ORDER_ENTRY_CURRENT;
 pub(crate) use cme_group::{CME_EXTENDED_CURRENT, CME_REGULAR, cme_profile_at};
 pub(crate) use cme_nikkei::{NKD_EXTENDED_CURRENT, NKD_REGULAR_CURRENT, nkd_profile_at};
+pub(crate) use coinbase_derivatives::profile_at as coinbase_derivatives_profile_at;
 pub(crate) use cryptocurrency::{
     CURRENT_FUTURES_PROFILE as CRYPTOCURRENCY_CURRENT, profile_at as cryptocurrency_profile_at,
 };
@@ -90,6 +93,7 @@ pub(crate) use rough_rice::{
     ROUGH_RICE_EXTENDED_CURRENT, ROUGH_RICE_ORDER_ENTRY_CURRENT, ROUGH_RICE_REGULAR_CURRENT,
     profile_at as rough_rice_profile_at,
 };
+pub(crate) use small_exchange::profile_at as small_exchange_profile_at;
 pub(crate) use spot_quoted::{
     SPOT_QUOTED_EXTENDED_CURRENT, SPOT_QUOTED_ORDER_ENTRY_CURRENT,
     profile_at as spot_quoted_profile_at,

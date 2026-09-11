@@ -609,7 +609,8 @@ fn assert_key_basis_prose_matches_the_ledger(real_key_rows: &[&str]) {
 /// the audit's spelled-out Partial-key count. None of them was derived from the
 /// ledger, so every new key silently staled all three while the tests stayed
 /// green -- it happened on two consecutive product-family additions before this
-/// fence existed. Derive them here instead.
+/// fence existed. Derive them here instead, along with the executable tally the
+/// README and the ledger spell out beside the rows they name.
 #[test]
 fn the_gap_kind_split_is_quoted_consistently_everywhere() {
     let order_entry = VERIFICATION.matches("Gap: order-entry").count();
@@ -640,6 +641,20 @@ fn the_gap_kind_split_is_quoted_consistently_everywhere() {
         ledger.contains(&executable_claim),
         "the ledger's executable count drifted from its rows: expected {executable_claim:?}"
     );
+
+    // The same tally is spelled out beside the rows it names, where the digit
+    // claims above cannot see it.
+    let executable_words = number_words(executable);
+    for (text, claim) in [
+        (&readme, format!("The executable {executable_words} —")),
+        (&ledger, format!("The executable {executable_words} are")),
+        (&ledger, format!("None of the {executable_words} serves")),
+    ] {
+        assert!(
+            text.contains(&claim),
+            "a spelled-out executable count drifted from the ledger: expected {claim:?}"
+        );
+    }
 
     // The audit states its Partial product-family key count in words beside a
     // table that states it in digits; they drifted apart once already.
@@ -689,4 +704,107 @@ fn the_gap_kind_split_is_quoted_consistently_everywhere() {
         audit.to_lowercase().contains(&audit_claim.to_lowercase()),
         "the audit's spelled-out Partial key count drifted from the ledger: expected {audit_claim:?}"
     );
+}
+
+/// Spells `n` the way the schedule prose writes a count: "six",
+/// "twenty-eight", "sixty-seven".
+fn number_words(n: usize) -> String {
+    const ONES: [&str; 20] = [
+        "zero",
+        "one",
+        "two",
+        "three",
+        "four",
+        "five",
+        "six",
+        "seven",
+        "eight",
+        "nine",
+        "ten",
+        "eleven",
+        "twelve",
+        "thirteen",
+        "fourteen",
+        "fifteen",
+        "sixteen",
+        "seventeen",
+        "eighteen",
+        "nineteen",
+    ];
+    const TENS: [&str; 10] = [
+        "", "", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety",
+    ];
+    assert!(n < 100, "extend the number words past {n}");
+    match (n / 10, n % 10) {
+        _ if n < 20 => ONES[n].to_owned(),
+        (tens, 0) => TENS[tens].to_owned(),
+        (tens, ones) => format!("{}-{}", TENS[tens], ONES[ones]),
+    }
+}
+
+/// Asserts every restatement of the `Exchange` basis counts in running prose.
+///
+/// `readme_and_audit_quantify_assurance_from_the_ledger` pins the headline
+/// form of each count, but the README restates both totals in running prose
+/// and the audit spells the basis counts out. Adding two venues on 2026-09-09
+/// updated every headline yet left four restatements at 26, one at 93, and the
+/// audit's "Twenty-six" behind while the tests stayed green. Derive them here
+/// instead.
+#[test]
+fn assurance_prose_restates_exchange_counts_from_the_ledger() {
+    let exchange_rows = exchange_rows();
+    let real_exchange_rows = exchange_rows
+        .iter()
+        .copied()
+        .filter(|row| wire_name(row) != "unknown")
+        .collect::<Vec<_>>();
+    let key_rows = market_hours_key_rows();
+    let real_key_rows = key_rows
+        .iter()
+        .copied()
+        .filter(|row| wire_name(row) != "always_open")
+        .collect::<Vec<_>>();
+    let basis_count =
+        |rows: &[&str], basis: &str| rows.iter().filter(|row| row_cells(row)[3] == basis).count();
+    let real = real_exchange_rows.len();
+    let primary = basis_count(&real_exchange_rows, "Primary");
+    let partial = basis_count(&real_exchange_rows, "Partial");
+
+    // README prose is hard-wrapped, so these claims straddle line breaks.
+    let flowed = |text: &str| text.split_whitespace().collect::<Vec<_>>().join(" ");
+    let readme = flowed(README);
+    for claim in [
+        format!("**All {real} venues are right for today.**"),
+        format!("**{primary} of them are also right for any date back to January 2010.**"),
+        format!("**The other {partial} are right for today,"),
+        format!("Every one of those {partial} rows names its own gap"),
+        format!("Those {partial} are not all the same"),
+        format!("Closing all {partial} is the current priority"),
+        format!("All {real} current profiles are primary-supported"),
+        format!("The {primary} **Primary** rows have no known modeled-history gap"),
+        format!("{partial} **Partial** rows name"),
+        format!("is not one of the {real} source-backed identities"),
+    ] {
+        assert!(
+            readme.contains(&claim),
+            "README assurance prose drifted from the ledger: expected {claim:?}"
+        );
+    }
+
+    // The audit spells both counts out, capitalized where a sentence opens.
+    let audit = flowed(AUDIT).to_lowercase();
+    for (exchanges, keys, basis) in [
+        (primary, basis_count(&real_key_rows, "Primary"), "primary"),
+        (partial, basis_count(&real_key_rows, "Partial"), "partial"),
+    ] {
+        let claim = format!(
+            "{} exchange rows and {} product-family keys are **{basis}**",
+            number_words(exchanges),
+            number_words(keys)
+        );
+        assert!(
+            audit.contains(&claim),
+            "the audit's spelled-out exchange count drifted from the ledger: expected {claim:?}"
+        );
+    }
 }

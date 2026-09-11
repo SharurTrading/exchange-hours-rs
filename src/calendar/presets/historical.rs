@@ -83,6 +83,8 @@ pub fn hours_for_exchange(exch: Exchange, as_of: DateTime<Utc>) -> MarketHours {
         Exchange::FinraTrfNyse => us::finra_trf_nyse_profile_at(as_of),
         Exchange::Cme => futures_us::cme_profile_at(as_of),
         Exchange::Cfe => futures_us::cfe_profile_at(as_of),
+        Exchange::CoinbaseDerivatives => futures_us::coinbase_derivatives_profile_at(as_of),
+        Exchange::Smfe => futures_us::small_exchange_profile_at(as_of),
         Exchange::Cbot => futures_us::cbot_profile_at(as_of),
         Exchange::Comex | Exchange::Nymex => futures_us::energy_metals_profile_at(as_of),
         Exchange::Iceus => futures_us::ice_us_fang_profile_at(as_of),

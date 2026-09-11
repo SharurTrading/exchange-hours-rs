@@ -24,7 +24,8 @@ source citations.
 
 ## What the dates mean
 
-`Reviewed on` is the day a human opened every required source set and compared
+`Reviewed on` is the UTC date (LAW-UTC-DATES) on which a human opened every
+required source set and compared
 the modeled normal-week boundaries with the published material. It is not an
 expiry date and does not promise that an exchange will remain unchanged after
 that day.
@@ -260,8 +261,8 @@ The pre-coding loop, once a day is confirmed unconditional:
 A venue or family whose verified-current profile carries a phase no reviewed
 source can date — an order-acceptance queue, a PCP window, an early session —
 records that gap as a **knowledge-bound row**: the final timeline row, dated
-at the repository review that verified the phase (2026-08-22 in the current
-tables), routing to the verified-current profile with the citation label
+at the UTC date of the repository review that verified the phase (2026-08-22
+for most current tables), routing to the verified-current profile with the citation label
 `"<date> review: verified current, onset undated"`. Instants before the row
 resolve to the conservative dated grid; instants on or after it resolve to the
 verified-current grid. The row makes no onset claim: its date never moves

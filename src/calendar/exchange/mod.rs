@@ -168,6 +168,13 @@ exchanges! {
         /// CFE, the Cboe Futures Exchange; the venue default is the VIX
         /// profile.
         Cfe => "cfe",
+        /// Coinbase Derivatives; the venue default is its recurring 23x5
+        /// futures grid from the 2021-06-28 launch. Its 24x7 futures need
+        /// their own family key at the caller.
+        CoinbaseDerivatives => "coinbase_derivatives",
+        /// Small Exchange, Inc., now Kraken Derivatives Exchange; closed since
+        /// every contract was delisted at the 2025-03-21 close.
+        Smfe => "small_exchange",
         // European Futures / Energy
         /// Eurex FESX/FDAX/FDXM benchmark-index futures default.
         Eurex => "eurex",

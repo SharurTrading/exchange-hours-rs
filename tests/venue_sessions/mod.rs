@@ -6,6 +6,7 @@ mod always_open_and_cross_venue;
 mod bounds_and_serde;
 mod candle_starts_and_profile_adapters;
 mod cboe_options;
+mod cde_smfe;
 mod cme_cbot;
 mod cme_families;
 mod commodities;

@@ -18,6 +18,9 @@ pub(super) const HISTORICAL_INSTANT_CUTOVERS: &[(Exchange, UtcYmdHms)] = &[
     // 2011-02-28 civil day, whose midnight falls inside the running Sunday
     // session: the sourced boundary is the 18:30 CT pre-open instant.
     (Exchange::IceCanada, (2011, 3, 1, 0, 30, 0)),
+    // FairX, now Coinbase Derivatives, opened for trading on Monday 2021-06-28
+    // at 09:00 ET (08:00 CT); no Sunday-evening session preceded it.
+    (Exchange::CoinbaseDerivatives, (2021, 6, 28, 13, 0, 0)),
 ];
 
 /// Every observable point-in-time profile change shipped by the crate.
@@ -248,6 +251,19 @@ pub(super) const HISTORICAL_CUTOVERS: &[(Exchange, Ymd, chrono_tz::Tz)] = &[
     (Exchange::Cfe, (2014, 6, 22), chrono_tz::US::Central),
     (Exchange::Cfe, (2018, 2, 25), chrono_tz::US::Central),
     (Exchange::Cfe, (2018, 8, 12), chrono_tz::US::Central),
+    (
+        Exchange::CoinbaseDerivatives,
+        (2021, 6, 29),
+        chrono_tz::America::Chicago,
+    ),
+    (
+        Exchange::CoinbaseDerivatives,
+        (2026, 9, 11),
+        chrono_tz::America::Chicago,
+    ),
+    (Exchange::Smfe, (2020, 5, 18), chrono_tz::America::Chicago),
+    (Exchange::Smfe, (2024, 11, 4), chrono_tz::America::Chicago),
+    (Exchange::Smfe, (2025, 3, 24), chrono_tz::America::Chicago),
     (Exchange::Cfe, (2021, 12, 6), chrono_tz::US::Central),
     (
         Exchange::NyseTexas,

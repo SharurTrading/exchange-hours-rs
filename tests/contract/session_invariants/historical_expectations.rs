@@ -256,6 +256,11 @@ pub(super) const HISTORICAL_CUTOVERS: &[(Exchange, Ymd, chrono_tz::Tz)] = &[
         (2021, 6, 29),
         chrono_tz::America::Chicago,
     ),
+    (
+        Exchange::CoinbaseDerivatives,
+        (2026, 9, 11),
+        chrono_tz::America::Chicago,
+    ),
     (Exchange::Smfe, (2020, 5, 18), chrono_tz::America::Chicago),
     (Exchange::Smfe, (2024, 11, 4), chrono_tz::America::Chicago),
     (Exchange::Smfe, (2025, 3, 24), chrono_tz::America::Chicago),

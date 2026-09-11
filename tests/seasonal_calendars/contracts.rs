@@ -38,7 +38,10 @@ fn every_fixed_venue_calendar_matches_the_current_market_hours_surface() {
         // the fixed profile is the exact current snapshot, while dated routing
         // retains only phases whose effective day is primary-sourced. CME,
         // COMEX, and NYMEX lack the Sunday queue-change day; CBOT additionally
-        // has unresolved post-2012 queue and PCP onset dates.
+        // has unresolved post-2012 queue and PCP onset dates. Coinbase
+        // Derivatives' 16:50 Pre-Open onset is undated, so its dated routing
+        // gains the queue only at the 2026-09-11 knowledge-bound row, after
+        // the 2026-08-22 fixture.
         let current_snapshot_may_differ = matches!(
             exchange,
             Exchange::B3
@@ -74,6 +77,7 @@ fn every_fixed_venue_calendar_matches_the_current_market_hours_surface() {
                 | Exchange::Cbot
                 | Exchange::Comex
                 | Exchange::Nymex
+                | Exchange::CoinbaseDerivatives
         );
         // Recurring selectors can reselect during a multi-day candle scan, and
         // SET's identified calendar assigns its post-midnight DR tail to the

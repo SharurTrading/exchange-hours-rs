@@ -7,7 +7,9 @@ use chrono_tz::America;
 use crate::calendar::SessionRule;
 use crate::calendar::rule::{MON_ONLY, MON_THU, SUN_PLUS_MON_THU};
 use crate::calendar::schedules::StaticHoursProfile;
-use crate::calendar::schedules::timeline::{effective_date, local_date};
+use crate::calendar::schedules::timeline::{
+    Revision, effective_date, local_date, revisions, select_revision,
+};
 
 // The venue default is CDE's recurring 23x5 futures grid: Sunday through
 // Friday, 17:00-16:00 CT, with the daily 16:00-17:00 break. The four launch
@@ -27,16 +29,27 @@ static REGULAR: &[SessionRule] = &[SessionRule {
 }];
 // ORDER ENTRY, NOT TRADING. Pre-Open quoting accepts orders for the coming
 // session and nothing matches until the 17:00 open. The Pre-Open phase is
-// documented from 2021 without a time; its 16:50 start is first witnessed in a
-// 2025 capture of the market-hours page and, with no source naming a change,
-// is carried back to launch.
+// documented from 2021 without a time, and its 16:50 start is first witnessed
+// in a 2025 capture of the market-hours page, so no source dates its onset: it
+// enters only at the knowledge-bound row below, and the dated profiles before
+// it carry no Pre-Open.
 static ORDER_ENTRY: &[SessionRule] = &[SessionRule {
     days: SUN_PLUS_MON_THU,
     open_ssm: 16 * 3600 + 50 * 60,
     close_ssm: 17 * 3600,
 }];
 
-static PROFILE: StaticHoursProfile = StaticHoursProfile {
+// The dated grid from launch: the sourced trading session, no Pre-Open.
+static DATED: StaticHoursProfile = StaticHoursProfile {
+    tz: America::Chicago,
+    regular: REGULAR,
+    extended: &[],
+    order_entry: &[],
+    has_daily_close: true,
+    has_weekend_close: true,
+};
+/// The verified-current grid: the dated grid plus the 16:50 Pre-Open.
+static CURRENT: StaticHoursProfile = StaticHoursProfile {
     tz: America::Chicago,
     regular: REGULAR,
     extended: &[],
@@ -67,16 +80,11 @@ static LAUNCH_DAY_REGULAR: &[SessionRule] = &[
         close_ssm: 16 * 3600,
     },
 ];
-static LAUNCH_DAY_ORDER_ENTRY: &[SessionRule] = &[SessionRule {
-    days: MON_THU,
-    open_ssm: 16 * 3600 + 50 * 60,
-    close_ssm: 17 * 3600,
-}];
 static LAUNCH_DAY: StaticHoursProfile = StaticHoursProfile {
     tz: America::Chicago,
     regular: LAUNCH_DAY_REGULAR,
     extended: &[],
-    order_entry: LAUNCH_DAY_ORDER_ENTRY,
+    order_entry: &[],
     has_daily_close: true,
     has_weekend_close: true,
 };
@@ -95,12 +103,26 @@ static CLOSED: StaticHoursProfile = StaticHoursProfile {
 const LAUNCH_UNIX_SECONDS: i64 = 1_624_885_200;
 const FIRST_FULL_DAY: chrono::NaiveDate = effective_date(2021, 6, 29);
 
+// Knowledge-bound row, dated at the UTC date of the review that verified the
+// 16:50 Pre-Open (LAW-UTC-DATES). It adds only that queue, makes no onset
+// claim, never moves forward, and a sourced onset day replaces it. One
+// consequence is visible in `tests/golden/normal_week_grids.txt`, whose
+// 2026-08-22 fixture instant renders the dated grid without the Pre-Open.
+static REVISIONS: &[Revision] = revisions![(
+    2026,
+    9,
+    11,
+    &CURRENT,
+    "2026-09-11 review: verified current, onset undated"
+)];
+
 pub(crate) fn profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {
+    let day = local_date(as_of, America::Chicago);
     if as_of.timestamp() < LAUNCH_UNIX_SECONDS {
         &CLOSED
-    } else if local_date(as_of, America::Chicago) < FIRST_FULL_DAY {
+    } else if day < FIRST_FULL_DAY {
         &LAUNCH_DAY
     } else {
-        &PROFILE
+        select_revision(day, &DATED, REVISIONS)
     }
 }

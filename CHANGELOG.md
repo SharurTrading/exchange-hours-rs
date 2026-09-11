@@ -21,8 +21,9 @@ corrections (a venue's hours fixed against a primary source) go under
   homepage announced, Monday 2021-06-28 at 08:00 CT; the first session opens at
   the launch rather than at a Sunday 17:00 that never traded, and the full grid
   applies from 2021-06-29. The four launch certifications state the grid and
-  every later dated filing restates it; the 16:50 Pre-Open start is witnessed
-  only from 2025 and is carried back to launch. Since #2026-24 most CDE futures
+  every later dated filing restates it; the 16:50 Pre-Open, witnessed only
+  from 2025, enters at a knowledge-bound 2026-09-11 review row with no Pre-Open
+  before it. Since #2026-24 most CDE futures
   trade 24x7, a family this default does not cover. The ledger row is
   **Partial** with an **order-entry** gap.
 

@@ -130,6 +130,8 @@ reviews:
         and out of runtime selectors until every condition is confirmed. Real
         undated changes remain disclosed Partial gaps. The audit floor is January
         2010; a later-launched identity is closed before its sourced launch.
+        A knowledge-bound row's date and citation label are the UTC date of the
+        review that verified the phase (AGENTS.md LAW-UTC-DATES).
 
         Holiday scope (LAW-HOLIDAY-SCOPE): a change confined to a single trade
         date or a bounded holiday run — an early final close, a late first open,
@@ -272,7 +274,9 @@ reviews:
         means current primary support with a precisely named history gap. Never
         promote from Partial on inference. The repository review cutoff is the
         minimum Reviewed on date across real exchange rows and is not an accuracy
-        guarantee or review-due date.
+        guarantee or review-due date. Every Reviewed on and amendment date is a
+        UTC calendar date (LAW-UTC-DATES): compare it with the current UTC date,
+        flag one that is later, and never ask for a maintainer's local date.
 
         Any changed schedule, scope, source, basis, row count, or review date must be
         reconciled across verification.md, sources.md, the dated audit, README,

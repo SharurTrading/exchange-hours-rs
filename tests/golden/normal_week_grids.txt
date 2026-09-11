@@ -219,7 +219,7 @@ cfe | order-en | MoTuWeTh------ | 16:45:06-17:00:00
 coinbase_derivatives | tz America/Chicago | week_open_seconds 414000
 coinbase_derivatives | regular  | MoTuWeTh----Su | 17:00:00-16:00:00 +1d
 coinbase_derivatives | extended | (none)
-coinbase_derivatives | order-en | MoTuWeTh----Su | 16:50:00-17:00:00
+coinbase_derivatives | order-en | (none)
 small_exchange | tz America/Chicago | week_open_seconds 0
 small_exchange | regular  | (none)
 small_exchange | extended | (none)

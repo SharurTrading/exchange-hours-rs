@@ -8,7 +8,8 @@ use super::prelude::*;
 // Coinbase Derivatives (traded as FairX until March 2022)
 //   Launch: Monday 2021-06-28 at 08:00 CT; no Sunday-evening session preceded
 //   it.
-//   Regular: Sun–Thu 17:00 → next day 16:00 CT; Pre-Open 16:50–17:00.
+//   Regular: Sun–Thu 17:00 → next day 16:00 CT. Pre-Open 16:50–17:00 from
+//   the 2026-09-11 knowledge-bound review row; its onset is undated.
 // ---------------------------------------------------------------------------
 
 fn cde(as_of: DateTime<Utc>) -> MarketHours {
@@ -38,7 +39,10 @@ fn coinbase_derivatives_first_session_opens_at_the_launch() {
         "the first session opens at the launch, not at a Sunday 17:00 that never traded"
     );
     assert!(!h.is_open(ct((2021, 6, 28), (16, 0, 0))));
-    assert!(h.is_order_entry_only(ct((2021, 6, 28), (16, 50, 0))));
+    assert!(
+        !h.is_order_entry_only(ct((2021, 6, 28), (16, 50, 0))),
+        "no Pre-Open before the knowledge-bound row"
+    );
     assert!(h.is_open_regular(ct((2021, 6, 28), (17, 0, 0))));
 }
 
@@ -61,16 +65,31 @@ fn coinbase_derivatives_weekly_grid_is_unchanged_since_launch() {
     let h = cde(ct((2021, 7, 11), (12, 0, 0)));
 
     assert!(!h.is_open(ct((2021, 7, 11), (16, 49, 59))));
-    assert!(h.is_order_entry_only(ct((2021, 7, 11), (16, 50, 0))));
+    assert!(!h.is_order_entry_only(ct((2021, 7, 11), (16, 50, 0))));
     assert!(h.is_open_regular(ct((2021, 7, 11), (17, 0, 0))));
     assert!(!h.is_open(ct((2021, 7, 12), (16, 0, 0))));
-    assert!(h.is_order_entry_only(ct((2021, 7, 12), (16, 50, 0))));
+    assert!(!h.is_order_entry_only(ct((2021, 7, 12), (16, 50, 0))));
     assert!(h.is_open_regular(ct((2021, 7, 16), (15, 59, 59))));
     assert!(!h.is_open(ct((2021, 7, 16), (16, 0, 0))));
     assert!(!h.is_order_entry_only(ct((2021, 7, 16), (16, 50, 0))));
     assert!(!h.is_open(ct((2021, 7, 18), (16, 0, 0))));
 
     assert_eq!(h, cde(ct((2026, 8, 24), (12, 0, 0))));
+}
+
+#[test]
+fn coinbase_derivatives_pre_open_starts_at_the_knowledge_bound_row() {
+    let row = ct((2026, 9, 11), (0, 0, 0));
+    let before = cde(row - chrono::Duration::seconds(1));
+    let after = cde(row);
+
+    assert!(before.order_entry.is_empty());
+    assert_eq!(before.regular, after.regular);
+    assert!(!after.is_open(ct((2026, 9, 13), (16, 49, 59))));
+    assert!(after.is_order_entry_only(ct((2026, 9, 13), (16, 50, 0))));
+    assert!(after.is_order_entry_only(ct((2026, 9, 14), (16, 50, 0))));
+    assert!(!after.is_order_entry_only(ct((2026, 9, 18), (16, 50, 0))));
+    assert!(after.is_open_regular(ct((2026, 9, 13), (17, 0, 0))));
 }
 
 // ---------------------------------------------------------------------------
@@ -125,7 +144,12 @@ fn small_exchange_is_closed_once_nothing_is_listed() {
     let last_listed_day = smfe(ct((2025, 3, 21), (12, 0, 0)));
     assert!(last_listed_day.is_open_regular(ct((2025, 3, 21), (12, 0, 0))));
 
-    let delisted = smfe(ct((2025, 3, 24), (0, 0, 0)));
+    let closure = ct((2025, 3, 24), (0, 0, 0));
+    assert_eq!(
+        smfe(closure - chrono::Duration::seconds(1)),
+        last_listed_day
+    );
+    let delisted = smfe(closure);
     assert!(delisted.regular.is_empty());
     assert!(delisted.order_entry.is_empty());
     assert_eq!(delisted, smfe(ct((2026, 8, 24), (12, 0, 0))));

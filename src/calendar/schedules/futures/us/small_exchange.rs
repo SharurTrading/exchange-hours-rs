@@ -12,9 +12,13 @@ use crate::calendar::schedules::timeline::{Revision, local_date, revisions, sele
 // Small Exchange listed its first contracts (SM75, SPRE and SFX) for trade
 // date Monday 2020-05-18, and trades executed that morning; the public opening
 // on 2020-06-01 came after. Its first grid was 07:00-16:00 CT Monday-Friday
-// with Pre-Open quoting from 06:30, and every surviving statement of the
-// venue's hours repeats it through the info hub's 2024-11-03 capture.
+// with Pre-Open quoting from 06:30: the operator's own instrument file for
+// that trade date states it in its TRADING_HOURS field
+// (`td=12345;...;0=p06300659n06590700r07001600`), and every surviving
+// statement of the venue's hours repeats it through the info hub's 2024-11-03
+// capture.
 // https://www.cftc.gov/filings/ptc/ptc051120smfedcm006.pdf
+// https://public.data.smallexchange.com/ipf/20200518/products-2020-05-18.csv
 // https://smallexchange-com.cdn.prismic.io/smallexchange-com/ebb1c3a8-4072-4f4e-88d5-122554f04687_MN-2020-106+Trade+Cancellation.pdf
 // https://web.archive.org/web/20200612014112/https://smallexchange.com/page-data/market-info-page/page-data.json
 // https://web.archive.org/web/20241103095322/https://smallexchange.com/reference/info-hub/
@@ -45,8 +49,10 @@ static LAUNCH: StaticHoursProfile = StaticHoursProfile {
 // off the old grid inside 2024-11-04..2024-11-21. The new grid lies inside the
 // old one - its session within the old session, its Pre-Open within old
 // trading hours, where orders were accepted either way - so it is the sourced
-// intersection, served from the first trade date the old grid is no longer
-// evidenced. Only 07:00-08:30 and 15:00-16:00 are withheld in that window.
+// intersection. As with the SGX equity-index rows, the undated move is
+// approached from the conservative side: the narrower grid is keyed to the
+// Monday after the old grid's last capture, 2024-11-04, and only 07:00-08:30
+// and 15:00-16:00 are withheld in the undated window.
 // https://www.cftc.gov/filings/ptc/ptc1121249243.pdf
 // https://web.archive.org/web/20250119163716/https://smallexchange.com/reference/info-hub/
 static S5C_REGULAR: &[SessionRule] = &[SessionRule {
@@ -97,7 +103,7 @@ static REVISIONS: &[Revision] = revisions![
         11,
         4,
         &S5C_ERA,
-        "info hub 2024-11-03 capture; SMFE 2024-010"
+        "SMFE info hub, last 07:00-16:00 capture 2024-11-03, keyed to the Monday; SMFE 2024-010"
     ),
     (2025, 3, 24, &CLOSED, "SMFE 2025-001 delisting"),
 ];

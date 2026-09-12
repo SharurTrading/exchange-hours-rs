@@ -5,6 +5,7 @@
 mod cme_bitcoin_event_contracts;
 mod cme_event_contracts;
 mod cme_families;
+mod cme_metals_tas;
 mod cme_mini_grains;
 mod cme_nikkei;
 mod cme_rough_rice;

@@ -19,7 +19,9 @@ mod ice_sugar;
 mod ice_us;
 mod interest_rates;
 mod livestock;
+mod metals_tas;
 mod mini_grains;
+mod pgm_tas;
 mod rough_rice;
 mod small_exchange;
 mod spot_quoted;
@@ -85,9 +87,19 @@ pub(crate) use interest_rates::{
 pub(crate) use livestock::{
     CURRENT_FUTURES_PROFILE as LIVESTOCK_CURRENT, profile_at as livestock_profile_at,
 };
+pub(crate) use metals_tas::{
+    COPPER_TAS_EXTENDED_CURRENT, GOLD_TAS_EXTENDED_CURRENT, METALS_TAS_ORDER_ENTRY_CURRENT,
+    SILVER_TAS_EXTENDED_CURRENT, copper_profile_at as copper_tas_profile_at,
+    gold_profile_at as gold_tas_profile_at, silver_profile_at as silver_tas_profile_at,
+};
 pub(crate) use mini_grains::{
     MINI_EXTENDED_CURRENT, MINI_ORDER_ENTRY_CURRENT, MINI_REGULAR_CURRENT,
     profile_at as mini_grains_profile_at,
+};
+pub(crate) use pgm_tas::{
+    PALLADIUM_TAS_EXTENDED_CURRENT, PGM_TAS_ORDER_ENTRY_CURRENT, PLATINUM_TAS_EXTENDED_CURRENT,
+    palladium_profile_at as palladium_tas_profile_at,
+    platinum_profile_at as platinum_tas_profile_at,
 };
 pub(crate) use rough_rice::{
     ROUGH_RICE_EXTENDED_CURRENT, ROUGH_RICE_ORDER_ENTRY_CURRENT, ROUGH_RICE_REGULAR_CURRENT,

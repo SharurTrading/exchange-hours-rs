@@ -365,7 +365,8 @@ per-record review before any exception can drive runtime.
 ### `APAC-KRX`
 
 - **Official current/rulebook:** [KRX cash-equity trading hours](https://global.krx.co.kr/contents/GLB/06/0602/0602020204/GLB0602020204T1.jsp) and [KRX rules](https://law.krx.co.kr/las/LawBon.jsp?lawid=000111).
-- **Notices/evidence:** use the official [KRX rules service](https://law.krx.co.kr/las/LawBon.jsp?lawid=000111) as the living entry point. [Financial Services Commission notice 73613](https://www.fsc.go.kr/po010106/73613) is the **2019 pre-market reduction**: it is dated 2019-04-03, titled 「장개시전 시간외시장 및 시가단일가 시간 단축」, and its own body gives the effective day and both moves the `2019-04-29` row encodes. The [KRX English brochure dated 2017-06-30](https://global.krx.co.kr/contents/GLB/01/0107/0107010000/20170630_eng_brochure.pdf) is the earliest dated artifact in the set and describes the post-2016 state, so it corroborates the `2016-08-01` regular-close extension without dating it; no artifact in this source set dates that day, which is recorded as a defect in [`krx.md`](../evidence/krx.md). (This entry was mis-corrected on 2026-09-12 to say 73613 dated the 2016 extension; the notice was then read and the claim reverted the same day.)
+- **Notices/evidence:** the official [KRX rules service](https://law.krx.co.kr/las/LawBon.jsp?lawid=000111) is the living entry point; the dated artifacts beside the revisions are [Financial Services Commission notice 73613](https://www.fsc.go.kr/po010106/73613) and the [KRX English brochure of 2017-06-30](https://global.krx.co.kr/contents/GLB/01/0107/0107010000/20170630_eng_brochure.pdf).
+- **Status:** which artifact dates which row, the reading of notice 73613, the unsourced 2016-08-01 day and this entry's 2026-09-12 correction are all in [`krx.md`](../evidence/krx.md).
 
 <a id="apac-twse"></a>
 

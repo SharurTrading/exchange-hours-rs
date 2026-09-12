@@ -588,11 +588,14 @@ fn every_handwritten_cutover_date_appears_in_its_evidence_file() {
                 panic!("{list} names an identity with no evidence file: {name}")
             });
 
-            let recorded = format!(
-                "{}{}",
-                section(text, "## Revision rows").unwrap_or_default(),
-                section(text, "## Dated selectors").unwrap_or_default()
-            );
+            let mut keyed = BTreeSet::new();
+            for heading in ["## Revision rows", "## Dated selectors"] {
+                let body = section(text, heading).unwrap_or_default();
+                for bullet in body.lines().filter(|line| line.starts_with("- ")) {
+                    keyed.extend(dated_bullet_key(&name, heading, bullet));
+                }
+            }
+
             let previous = day
                 .pred_opt()
                 .expect("a cutover date must have a previous day")
@@ -601,10 +604,11 @@ fn every_handwritten_cutover_date_appears_in_its_evidence_file() {
             let day = day.format("%Y-%m-%d").to_string();
 
             assert!(
-                recorded.contains(&day) || (allow_previous_day && recorded.contains(&previous)),
-                "{name} records no revision row or dated selector for the {day} cutover \
-                 that {list} holds for {wire}; add it under `## Revision rows` or \
-                 `## Dated selectors` with its document id"
+                keyed.contains(&day) || (allow_previous_day && keyed.contains(&previous)),
+                "{name} keys no revision row or dated selector to the {day} cutover \
+                 that {list} holds for {wire}; a date mentioned only in prose does not \
+                 count — add a bullet under `## Revision rows` or `## Dated selectors` \
+                 reading `- {day} \u{2014} T<n> \u{2014} <document id> \u{2014} <label>`"
             );
             checked = checked.saturating_add(1);
         }
@@ -614,6 +618,41 @@ fn every_handwritten_cutover_date_appears_in_its_evidence_file() {
         checked > 100,
         "the cutover lists must parse; only {checked} entries were read"
     );
+}
+
+/// Returns the ISO day a dated bullet is keyed to, if it is one.
+///
+/// The grammar is the revision-row grammar `assert_revision_bullet` enforces:
+/// `- YYYY-MM-DD — T<n> — <document id> — <label>`. A bullet that opens with an
+/// ISO day must carry the rest of it, so a cutover cannot be satisfied by a
+/// bullet that names a date without saying which document dates it; a bullet
+/// that opens with anything else is ordinary prose and is skipped.
+fn dated_bullet_key(name: &str, heading: &str, bullet: &str) -> Option<String> {
+    let rest = bullet.trim_start_matches("- ");
+    let day = rest.get(..10)?;
+    let mut parts = day.split('-');
+    let looks_dated = parts.clone().count() == 3
+        && parts.all(|field| !field.is_empty() && field.chars().all(|c| c.is_ascii_digit()));
+    if !looks_dated {
+        return None;
+    }
+
+    let fields = rest.splitn(4, " \u{2014} ").collect::<Vec<_>>();
+    assert_eq!(
+        fields.len(),
+        4,
+        "{name}: a bullet under `{heading}` that opens with an ISO day must read \
+         `- YYYY-MM-DD \u{2014} T<n> \u{2014} <document id> \u{2014} <label>`: {bullet}"
+    );
+    assert!(
+        matches!(fields[1], "T1" | "T2" | "T3" | "T4"),
+        "{name}: a dated bullet under `{heading}` must carry its own evidence tier: {bullet}"
+    );
+    assert!(
+        !fields[2].trim().is_empty(),
+        "{name}: a dated bullet under `{heading}` must name the document that dates it: {bullet}"
+    );
+    Some(day.to_owned())
 }
 
 /// Parses `(Exchange::Variant, (y, m, d), ..)` entries out of one cutover list.

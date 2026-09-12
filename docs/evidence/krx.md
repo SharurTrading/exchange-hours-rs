@@ -25,7 +25,7 @@ beside a source below, that date governs for that source, and dates are added
 as each source is re-verified.
 
 - <https://global.krx.co.kr/contents/GLB/06/0602/0602020204/GLB0602020204T1.jsp> — KRX cash-equity trading hours: continuous 09:00–15:20, closing call, and order/trading phases through 18:00.
-- <https://global.krx.co.kr/contents/GLB/01/0107/0107010000/20170630_eng_brochure.pdf> — KRX English brochure dated 2017-06-30, the earliest dated artifact in the set.
+- <https://global.krx.co.kr/contents/GLB/01/0107/0107010000/20170630_eng_brochure.pdf> — KRX English brochure dated 2017-06-30, the earliest dated artifact in the set. It describes the post-2016 state, so it corroborates the 2016-08-01 regular-close extension without dating it — T1.
 - <https://www.fsc.go.kr/po010106/73613> — Financial Services Commission notice 73613, 「장개시전 시간외시장 및 시가단일가 시간 단축」, **dated 2019-04-03 and retrieved 2026-09-12 (UTC)**; that retrieval date is later than this row's review date and governs for this source. It states the 2019-04-29 effective day and both pre-market moves, and says nothing about the regular close — T1.
 - <https://law.krx.co.kr/las/LawBon.jsp?lawid=000111> — KRX rulebook, law 000111.
 

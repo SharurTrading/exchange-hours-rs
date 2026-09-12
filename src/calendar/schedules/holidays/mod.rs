@@ -13,10 +13,12 @@
 //! its table through a match with no catch-all arm, so a new `Exchange` or
 //! `MarketHoursKey` cannot silently acquire or lose a table.
 //!
-//! **No family table ships in this wave.** `table_for` answers `None` for
-//! every identity, so the engine is inert and every answer is the normal-week
-//! answer. The caller's `DayPolicy` overlay remains the only holiday layer
-//! until the first table lands.
+//! **Tables ship for the served CME families and the 2026 venue block.**
+//! `table_for` answers with a table for the eight CME product families, for
+//! CFE, Eurex, ICE Futures U.S. and Coinbase Derivatives, and `None` for every
+//! other identity; where it answers `None` the caller's `DayPolicy` overlay
+//! remains the only holiday layer. Each table declares the trade-date window
+//! it audited, so a date outside that window is "no answer", not "normal".
 //!
 //! # Layering
 //!
@@ -34,7 +36,19 @@
 //! trading day shorter; a caller can never widen the crate's answer with a
 //! `DayPolicy`.
 
+mod cfe;
+mod coinbase_derivatives;
+mod eurex;
 pub(crate) mod fences;
+mod globex_cryptocurrency;
+mod globex_energy;
+mod globex_equity_index;
+mod globex_fx;
+mod globex_grains;
+mod globex_interest_rates;
+mod globex_livestock;
+mod globex_nikkei_225_dollar;
+mod ice_us;
 mod routing;
 
 pub(crate) use routing::table_for;
@@ -274,10 +288,6 @@ impl HolidayTable {
 /// The quotations, URLs, capture times and interpretive steps stay in
 /// `docs/evidence/<owner>.md` (LAW-EVIDENCE-FILES); the row carries only its
 /// tier and document id, and a fence checks that both appear there.
-#[expect(
-    unused_macros,
-    reason = "Wave 0 ships the engine with zero rows; the first invocation lands with Wave 1"
-)]
 macro_rules! holidays {
     (
         coverage: ($first_year:expr, $first_month:expr, $first_day:expr)
@@ -322,8 +332,4 @@ macro_rules! holidays {
     }};
 }
 
-#[expect(
-    unused_imports,
-    reason = "Wave 0 ships the engine with zero rows; the first invocation lands with Wave 1"
-)]
 pub(crate) use holidays;

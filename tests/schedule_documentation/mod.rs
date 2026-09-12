@@ -8,7 +8,9 @@ mod source_registry;
 mod trade_type_keys;
 
 use chrono::NaiveDate;
-use exchange_hours::Exchange;
+use exchange_hours::{
+    Exchange, MarketHoursKey, calendar_for_exchange, calendar_for_market_hours_key,
+};
 use std::path::Path;
 
 const README: &str = include_str!("../../README.md");
@@ -76,8 +78,9 @@ const VALID_SERVICE_TIERS: [&str; 2] = ["served", "dormant"];
 const VALID_CADENCES: [&str; 3] = ["monthly", "quarterly", "on demand"];
 
 /// Cells in one ledger row: identity, owner, source sets, basis, evidence
-/// tier, service, horizon, reviewed-on, cadence, basis note, evidence link.
-const LEDGER_CELLS: usize = 11;
+/// tier, service, horizon, holiday coverage, reviewed-on, cadence, basis note,
+/// evidence link.
+const LEDGER_CELLS: usize = 12;
 
 /// LAW-EVIDENCE-FILES caps the basis note at three sentences; everything else
 /// belongs in the row's evidence file.
@@ -210,6 +213,30 @@ fn evidence_target(row: &str) -> &str {
     name
 }
 
+/// Returns the ledger's Holidays cell for `wire_name`, derived from the table
+/// that identity actually ships.
+///
+/// This is the fence that makes the column a record rather than a claim: a
+/// family whose table lands, moves its coverage window, or is withdrawn fails
+/// the ledger until the cell is corrected, and no cell can name a window the
+/// crate does not answer over.
+fn shipped_holiday_window(wire_name: &str) -> String {
+    let coverage = wire_name
+        .parse::<Exchange>()
+        .ok()
+        .and_then(|exchange| calendar_for_exchange(exchange).holiday_coverage())
+        .or_else(|| {
+            wire_name
+                .parse::<MarketHoursKey>()
+                .ok()
+                .and_then(|key| calendar_for_market_hours_key(key).holiday_coverage())
+        });
+    coverage.map_or_else(
+        || "\u{2014}".to_owned(),
+        |window| format!("{}..{}", window.first(), window.last()),
+    )
+}
+
 /// Counts sentences in a basis note, ignoring ellipses and the abbreviations
 /// in `SENTENCE_ABBREVIATIONS`.
 fn basis_note_sentences(note: &str) -> usize {
@@ -243,7 +270,8 @@ fn assert_row_shape(row: &str, cutoff: NaiveDate, today: NaiveDate, synthetic_na
         "unexpected verification row shape: {row}"
     );
     let (basis, tier, service) = (cells[3], cells[4], cells[5]);
-    let (horizon, reviewed, cadence, note) = (cells[6], cells[7], cells[8], cells[9]);
+    let (horizon, holidays) = (cells[6], cells[7]);
+    let (reviewed, cadence, note) = (cells[8], cells[9], cells[10]);
 
     assert!(
         VALID_BASES.contains(&basis),
@@ -265,6 +293,12 @@ fn assert_row_shape(row: &str, cutoff: NaiveDate, today: NaiveDate, synthetic_na
     assert!(
         horizon == "\u{2014}" || NaiveDate::parse_from_str(horizon, "%Y-%m-%d").is_ok(),
         "horizon must be an ISO date or an em dash: {row}"
+    );
+    assert_eq!(
+        holidays,
+        shipped_holiday_window(wire_name(row)),
+        "LAW-HOLIDAY-SCOPE: the Holidays cell is the identity's own built-in \
+         coverage window, not a claim written by hand: {row}"
     );
     assert!(
         !note.contains("<br>"),
@@ -479,7 +513,7 @@ fn readme_and_review_dates_match_the_repository_cutoff() {
             LEDGER_CELLS,
             "unexpected verification row shape: {row}"
         );
-        let reviewed = NaiveDate::parse_from_str(cells[7], "%Y-%m-%d")
+        let reviewed = NaiveDate::parse_from_str(cells[8], "%Y-%m-%d")
             .expect("every non-synthetic Exchange identity must have an ISO review date");
         assert!(
             reviewed >= cutoff_date,
@@ -630,6 +664,38 @@ fn readme_and_audit_quantify_assurance_from_the_ledger() {
     assert!(
         README.contains("docs/schedules/audit-2026-08-22.md"),
         "README must link the dated audit report"
+    );
+}
+
+/// Asserts the README's holiday-coverage count derives from the ledger.
+///
+/// LAW-HOLIDAY-SCOPE makes a served identity owe a table, so the count moves
+/// every time a family's table lands. The README states it in prose twice, and
+/// the ledger's own Holidays column is already fenced against each identity's
+/// `holiday_coverage()`, so deriving the prose from that column chains the
+/// README to the shipped tables with nothing hand-maintained in between.
+#[test]
+fn readme_states_the_holiday_coverage_count_from_the_ledger() {
+    let rows = exchange_rows()
+        .into_iter()
+        .chain(market_hours_key_rows())
+        .collect::<Vec<_>>();
+    let with_a_table = rows
+        .iter()
+        .filter(|row| row_cells(row)[7] != "\u{2014}")
+        .count();
+    assert!(
+        with_a_table > 0,
+        "at least one identity must ship a holiday table"
+    );
+
+    // README prose is hard-wrapped, so the claim straddles line breaks.
+    let readme = README.split_whitespace().collect::<Vec<_>>().join(" ");
+    let claim = format!("{with_a_table} of the {} ledger rows", rows.len());
+    assert_eq!(
+        readme.matches(&claim).count(),
+        2,
+        "README holiday-coverage count drifted from the ledger: expected {claim:?} twice"
     );
 }
 

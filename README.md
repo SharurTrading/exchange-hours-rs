@@ -332,9 +332,10 @@ dated, and Direct Edge's own FIX and API specifications supply the earlier
 07:00 queue back to launch — leaving a knowledge-bound residue of four months
 in late 2010 and early 2011 during which the specifications move acceptance
 from 07:00 to 06:00 with no source naming the day. Closing all 28 is the current
-priority, alongside the per-family holiday and early-close tables that are now
-in scope for the crate; those tables land in a separate change, and the
-replacement-session engine ships today while its data does not.
+priority, alongside the per-family holiday and early-close tables the crate now
+carries: 22 of the 132 ledger rows ship one, each over its own audited
+trade-date window, and the rest still reach holidays only through the caller's
+`DayPolicy`.
 
 Every non-synthetic identity was compared with its official current-hours or
 rulebook material and its notice/evidence channel. All 95 current profiles are
@@ -375,8 +376,9 @@ will remain unchanged after the review date. They cover recurring weekday
 phases, time zones, lunch and maintenance gaps, and weekend boundaries. They
 exclude holidays, half-days, one-off closures or halts, severe-weather
 exceptions, and product-specific variations outside a row's stated scope:
-per-family holiday and early-close tables are in scope for the crate, but none
-ships yet and none is included in the counts above. A change confined to a
+per-family holiday and early-close tables ship for 22 of the 132 ledger rows,
+each over the trade-date window its Holidays cell names, and none of that data
+is included in the counts above, which are about normal weeks. A change confined to a
 single trade date — an early final close, a late first open, or a full
 calendar-day closure — is always a holiday, never a normal-week template
 change: the normal-week tables and their dated revisions encode only real,
@@ -486,10 +488,14 @@ closed interval before its 03:45–04:00 Pre-Open. Longer afternoon gaps, closed
 days, and weekends are closed.
 `is_maintenance` is exactly the maintenance-state predicate.
 
-The built-in profiles are normal-week schedules and ship no holiday data yet;
-per-family holiday and early-close tables are in scope for the crate and land
-in a separate change, with `DayPolicy` remaining the caller's overlay above
-them. Implement `DayPolicy`, or construct a validated `StaticDayPolicy` from
+The built-in profiles are normal-week schedules. Per-family holiday and
+early-close tables sit underneath the caller's overlays for the 22 identities
+whose ledger rows name a Holidays window; read one with
+`ExchangeCalendar::holiday_on(trade_date)` and its audited window with
+`ExchangeCalendar::holiday_coverage()`, or detach the layer entirely with the
+`const ExchangeCalendar::without_holidays()`. `DayPolicy` remains the caller's
+overlay above whatever a table carries, and it composes by tightening: a caller
+can always make a trading day shorter and never longer. Implement `DayPolicy`, or construct a validated `StaticDayPolicy` from
 hard-coded `DayOverride` records, then call
 `ExchangeCalendar::with_day_policy` to create a `PolicyCalendar`. It applies
 closed trade dates, early final closes, and late first opens to every
@@ -581,8 +587,8 @@ segment scope stated in the ledger. Rows labeled Primary have complete
 January-2010-or-launch history at that scope; Partial rows explicitly identify the older
 phase or onset that could not be dated. This crate is a **best-effort model, not an authority**:
 exchanges amend hours on short notice, publish product-level exceptions, and run holiday
-and half-day schedules that the built-in normal-week tables do not carry — the
-per-family holiday tables that will carry them land in a separate change.
+and half-day schedules; the built-in holiday tables carry those only for the
+identities and windows the ledger's Holidays column names.
 Supply boundary-level exceptions through `DayPolicy` when it can represent
 them exactly, and multi-phase holiday schedules through
 `SessionExceptionSource`; do not reduce a multi-phase holiday schedule to one
@@ -673,12 +679,13 @@ schedule, and migration record.
   `Exchange::Unknown`. A rename that changes one of these strings breaks
   persisted data. Neither identity enum uses variant ordinals, so adding or
   removing a row cannot silently reinterpret another identity.
-- **Normal week plus explicit overlays.** Built-in tables carry no holiday,
-  half-day, or product-level exception data yet; per-family holiday and
-  early-close tables are in scope for the crate and land in a separate change.
-  `DayPolicy` and the validated `StaticDayPolicy` helper let a caller overlay
-  sourced closed trade dates, early final closes, and late first opens above
-  whatever those tables carry, without changing `hours_at`.
+- **Normal week plus explicit overlays.** The normal-week tables carry no
+  holiday, half-day, or product-level exception data; per-family holiday and
+  early-close tables carry it separately, as static date tables keyed by the
+  crate's own venue-local trade date, for the identities whose ledger rows name
+  a Holidays window. `DayPolicy` and the validated `StaticDayPolicy` helper let
+  a caller overlay sourced closed trade dates, early final closes, and late
+  first opens above whatever those tables carry, without changing `hours_at`.
   Multi-phase exceptions are not approximated by that boundary API: they go
   through `SessionExceptionSource` and `StaticSessionExceptions`, which replace
   a whole trade date with an ordered block set and publish their own audited

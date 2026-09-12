@@ -9,10 +9,13 @@
 //! owes a table, a dormant one owes best effort — and a wildcard would hand it
 //! silently to whichever answer the wildcard happened to give.
 //!
-//! **Every arm is `None` in this wave.** Wave 0 ships the engine, the row
-//! types, the macro, the gate, the public accessors and the fences, and merges
-//! with zero rows and therefore zero behaviour change; the first family tables
-//! land beside this file as `holidays/<owner>.rs` modules in Wave 1.
+//! Each family that has a table owns a `holidays/<owner>.rs` module beside
+//! this file; an identity with no table answers `None` and is unaffected by
+//! the holiday layer entirely. The four `Exchange` venues CME routes to —
+//! `Cme`, `Cbot`, `Comex`, `Nymex` — deliberately stay `None`: a venue
+//! calendar's table is the intersection of the families that route to it, and
+//! that intersection is its own change (design memo D17, §5.2 Wave 7). Their
+//! evidence files say so.
 
 use super::HolidayTable;
 use crate::calendar::{CalendarSource, Exchange, MarketHoursKey};
@@ -85,12 +88,12 @@ const fn for_exchange(exchange: Exchange) -> Option<&'static HolidayTable> {
         Exchange::Cbot => None,
         Exchange::Comex => None,
         Exchange::Nymex => None,
-        Exchange::Cfe => None,
-        Exchange::CoinbaseDerivatives => None,
+        Exchange::Cfe => Some(super::cfe::TABLE),
+        Exchange::CoinbaseDerivatives => Some(super::coinbase_derivatives::TABLE),
         Exchange::Smfe => None,
-        Exchange::Eurex => None,
+        Exchange::Eurex => Some(super::eurex::TABLE),
         Exchange::Eex => None,
-        Exchange::Iceus => None,
+        Exchange::Iceus => Some(super::ice_us::VENUE),
         Exchange::Iceeu => None,
         Exchange::IceEuropeCommodities => None,
         Exchange::IceEuropeFinancials => None,
@@ -149,25 +152,25 @@ const fn for_exchange(exchange: Exchange) -> Option<&'static HolidayTable> {
 )]
 const fn for_market_hours_key(key: MarketHoursKey) -> Option<&'static HolidayTable> {
     match key {
-        MarketHoursKey::GlobexEquityIndex => None,
-        MarketHoursKey::GlobexEnergy => None,
-        MarketHoursKey::GlobexGrains => None,
+        MarketHoursKey::GlobexEquityIndex => Some(super::globex_equity_index::TABLE),
+        MarketHoursKey::GlobexEnergy => Some(super::globex_energy::TABLE),
+        MarketHoursKey::GlobexGrains => Some(super::globex_grains::TABLE),
         MarketHoursKey::GlobexMiniGrains => None,
-        MarketHoursKey::GlobexFx => None,
-        MarketHoursKey::GlobexInterestRates => None,
-        MarketHoursKey::GlobexLivestock => None,
-        MarketHoursKey::GlobexCryptocurrency => None,
-        MarketHoursKey::CfeVix => None,
-        MarketHoursKey::Eurex => None,
-        MarketHoursKey::IceUs => None,
-        MarketHoursKey::IceUsSugar => None,
-        MarketHoursKey::IceUsCoffee => None,
-        MarketHoursKey::IceUsCocoa => None,
-        MarketHoursKey::IceUsCotton => None,
-        MarketHoursKey::IceUsOrangeJuice => None,
-        MarketHoursKey::IceUsDollarIndex => None,
-        MarketHoursKey::GlobexNikkei225Dollar => None,
-        MarketHoursKey::EurexFixedIncome => None,
+        MarketHoursKey::GlobexFx => Some(super::globex_fx::TABLE),
+        MarketHoursKey::GlobexInterestRates => Some(super::globex_interest_rates::TABLE),
+        MarketHoursKey::GlobexLivestock => Some(super::globex_livestock::TABLE),
+        MarketHoursKey::GlobexCryptocurrency => Some(super::globex_cryptocurrency::TABLE),
+        MarketHoursKey::CfeVix => Some(super::cfe::TABLE),
+        MarketHoursKey::Eurex => Some(super::eurex::TABLE),
+        MarketHoursKey::IceUs => Some(super::ice_us::FANG),
+        MarketHoursKey::IceUsSugar => Some(super::ice_us::SUGAR_COFFEE_COCOA),
+        MarketHoursKey::IceUsCoffee => Some(super::ice_us::SUGAR_COFFEE_COCOA),
+        MarketHoursKey::IceUsCocoa => Some(super::ice_us::SUGAR_COFFEE_COCOA),
+        MarketHoursKey::IceUsCotton => Some(super::ice_us::COTTON),
+        MarketHoursKey::IceUsOrangeJuice => Some(super::ice_us::ORANGE_JUICE),
+        MarketHoursKey::IceUsDollarIndex => Some(super::ice_us::DOLLAR_INDEX),
+        MarketHoursKey::GlobexNikkei225Dollar => Some(super::globex_nikkei_225_dollar::TABLE),
+        MarketHoursKey::EurexFixedIncome => Some(super::eurex::TABLE),
         MarketHoursKey::SgxEquityIndexJapan => None,
         MarketHoursKey::SgxEquityIndexChina => None,
         MarketHoursKey::SgxEquityIndexSingapore => None,

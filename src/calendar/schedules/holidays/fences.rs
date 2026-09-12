@@ -8,11 +8,6 @@
 //! instants inside the `DayPolicy` ranges — is asserted during constant
 //! evaluation, so a violation is a build failure rather than a wrong answer.
 //! This copies the idiom `revisions!` established for schedule timelines.
-#![expect(
-    dead_code,
-    reason = "reached only through `holidays!`, whose first invocation lands with Wave 1's rows"
-)]
-
 use chrono::NaiveDate;
 
 use super::{EvidenceTier, HolidayKind, HolidayRow};

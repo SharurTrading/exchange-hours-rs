@@ -22,12 +22,22 @@ hard-coded `DayOverride` records. It supports:
 
 Records are exact dates, not inferred weekday or holiday rules. The table is
 opt-in: callers apply it with `ExchangeCalendar::with_day_policy`, and
-`hours_at` continues to return the unmodified normal-week profile. Today the
-crate ships no holiday data, so `DayPolicy` is the only holiday layer; under
-LAW-HOLIDAY-SCOPE it will sit *above* the crate's own per-family holiday
-tables once those ship, covering the dates the crate does not carry — it avoids
+`hours_at` continues to return the unmodified normal-week profile.
+
+**The overlay contract has not changed now that built-in tables exist.** Under
+LAW-HOLIDAY-SCOPE `DayPolicy` sits *above* the crate's own per-family holiday
+tables: it covers the identities and dates the crate does not carry, it avoids
 a different ad-hoc record shape in every consumer, and it stays the way an
-application states a closure the operator never published.
+application states a closure the operator never published. Where a built-in row
+and a caller's override both apply to one trade date they compose by
+**tightening** — `OR` on closures, `min` on early closes, `max` on late opens —
+so a caller can always make a trading day shorter and can never widen the
+crate's answer. Which identities carry a table, and over which trade-date
+window, is the Holidays column of
+[the verification ledger](verification.md); `ExchangeCalendar::holiday_on` and
+`ExchangeCalendar::holiday_coverage` report the same facts at runtime, and
+`ExchangeCalendar::without_holidays` detaches the layer for a caller who wants
+to own holidays outright.
 
 These scalar overrides are intentionally not described as a complete holiday
 calendar. They cannot express an extra intraday pause, a special reopen, a

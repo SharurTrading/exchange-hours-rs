@@ -13,6 +13,52 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Added
 
+- **Built-in holiday tables for the served CME families and the 2026 venue
+  block.** Twenty-two of the 132 ledger identities now carry per-family
+  holiday and early-close data underneath the caller's overlays
+  (LAW-HOLIDAY-SCOPE), as static date tables keyed by the crate's own
+  venue-local **trade date** rather than by the operator's event date:
+  - the eight served CME product families — `globex_equity_index`,
+    `globex_interest_rates`, `globex_fx`, `globex_energy`, `globex_grains`,
+    `globex_livestock`, `globex_cryptocurrency` and
+    `globex_nikkei_225_dollar` — over trade dates **2025-01-01 .. 2027-12-31**,
+    the end of CME's published future;
+  - `cfe` and `cfe_vix` over **2026-01-01 .. 2026-12-31**;
+  - `eurex`, `eurex_fixed_income` (and the `eurex` venue) over
+    **2026-01-01 .. 2026-12-31** — Eurex's 2027 calendar is published "on a
+    preliminary and indicative basis" and is therefore **not** encoded
+    (LAW-NO-FABRICATED-DATES);
+  - `iceus` and the six ICE Futures U.S. product keys over
+    **2026-01-01 .. 2028-01-03**; and
+  - `coinbase_derivatives` over **2026-01-01 .. 2026-09-07**.
+
+  Read a row with `ExchangeCalendar::holiday_on(trade_date)` and the audited
+  window with `ExchangeCalendar::holiday_coverage()`; inside that window a date
+  with no row is **audited normal**, and outside it the crate has no holiday
+  answer at all. `ExchangeCalendar::without_holidays()` detaches the layer for
+  a caller who owns holidays outright. The caller's `DayPolicy` still layers
+  above whatever a table carries and composes by tightening, so a caller can
+  always shorten a trading day and never widen one; an explicit
+  `Closed`/`ReplaceSessions` exception record still suppresses the built-in row
+  outright. Every row carries its evidence tier and document id, and every one
+  in this release is **T2** for the CME families (CME's own trading-hours
+  service, read as bytes and saved) and **T1** for the venue block. Quotations,
+  capture times, interpretive steps and every declared gap are in
+  `docs/evidence/<owner>.md` under `## Holidays`; the ledger's new **Holidays**
+  column states each identity's window and is derived by a fence from that
+  identity's own `holiday_coverage()`.
+
+  **The four CME venue calendars — `cme`, `cbot`, `comex`, `nymex` — carry no
+  table.** A venue's table is the intersection of the families that route to
+  it, most early closes do not agree across those families, and building that
+  intersection honestly is its own change; their evidence files say so.
+  Measured on an Apple M2 Max at 1.97.1: with a real table attached, `is_open`
+  inside a regular session far from any holiday costs **240.9 ns** against
+  236.9 ns with the table detached, the 4,999-probe cold chart frame is
+  **2.962 ms** against 3.138 ms detached, and `holiday_on` is a **5.04 ns**
+  binary search. On the ~13 dates a year a family has rows for, and on their
+  neighbours, the trading-day derivation runs and `is_open` costs about
+  **5.4 µs**; that path's remaining lever is tracked in #94.
 - **The built-in holiday-table engine, with zero rows.** `exchange-hours` can
   now carry per-family holiday and early-close tables underneath the caller's
   two overlays (LAW-HOLIDAY-SCOPE). This release ships the engine only: the row
@@ -23,11 +69,12 @@ corrections (a venue's hours fixed against a primary source) go under
   `ExchangeCalendar::holiday_on(trade_date)`,
   `ExchangeCalendar::holiday_coverage()` and the `const`
   `ExchangeCalendar::without_holidays()`, each mirrored on `PolicyCalendar`,
-  where they report the built-in row rather than the caller's layers. **No
-  family table ships in this version**, so every identity answers `None` to
-  both queries, `without_holidays` is the identity function, and no existing
-  answer changes — the caller's `DayPolicy` remains the only holiday layer.
-  When a table does ship it is the innermost layer: an explicit caller
+  where they report the built-in row rather than the caller's layers. The
+  engine landed on its own, with **zero rows** and therefore no behaviour
+  change at all; the tables above are the first data it carries, and an
+  identity the routing match still answers `None` for is unaffected by it —
+  the caller's `DayPolicy` remains that identity's only holiday layer.
+  A table is the innermost layer: an explicit caller
   `Closed`/`ReplaceSessions` record suppresses it, and the caller's `DayPolicy`
   then composes with it by tightening — `OR` on closures, `min` on early
   closes, `max` on late opens — so a caller can always shorten the crate's

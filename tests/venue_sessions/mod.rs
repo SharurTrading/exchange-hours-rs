@@ -64,3 +64,5 @@ mod prelude {
         zoned(Asia::Singapore, date, time)
     }
 }
+
+mod holidays_coinbase_derivatives;

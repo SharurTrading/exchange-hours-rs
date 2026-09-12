@@ -4,11 +4,12 @@
 //!
 //! Three groups, in the order the design memo's performance plan asks for them.
 //!
-//! `globex_equity_index` is the bare date-aware calendar across the four
-//! instant classes — regular, overnight, maintenance and closed weekend — plus
-//! the daily trading-day derivation. With no family holiday table shipped yet,
-//! these numbers are also the built-in-table numbers: the table resolves to
-//! `None`, so the identity carries no layer.
+//! `globex_equity_index` is the bare date-aware calendar across the six
+//! instant classes — regular, overnight, maintenance, closed weekend, and the
+//! two the design memo's §6.2 asks a shipped table to be split by, a trade date
+//! **adjacent** to a built-in row and one **on** it — plus the daily
+//! trading-day derivation. The family ships a table, so "bare" here means the
+//! built-in layer and nothing else: it is the cost a consumer actually pays.
 //!
 //! `overlay_layers` is the matrix that decides whether a built-in table can sit
 //! on the consumer's hot path. It measures the bare calendar, the
@@ -43,12 +44,19 @@ fn ct(date: (i32, u32, u32), time: (u32, u32)) -> Option<DateTime<Utc>> {
     )
 }
 
-/// The four instant classes, so the numbers line up with the recorded baseline.
+/// The six instant classes, so the numbers line up with the recorded baseline.
+///
+/// `adjacent` and `holiday` are both **regular-session** minutes, chosen so the
+/// only variable against `regular` is the date class the design memo's §6.2
+/// asks for. A holiday minute after the day's clipped close would instead
+/// measure the closed-instant scan, which is a different question.
 struct Instants {
     regular: DateTime<Utc>,
     overnight: DateTime<Utc>,
     maintenance: DateTime<Utc>,
     closed: DateTime<Utc>,
+    adjacent: DateTime<Utc>,
+    holiday: DateTime<Utc>,
 }
 
 fn instants() -> Option<Instants> {
@@ -61,6 +69,13 @@ fn instants() -> Option<Instants> {
         maintenance: ct((2026, 4, 20), (16, 30))?,
         // Saturday: the whole weekend shutdown.
         closed: ct((2026, 4, 18), (12, 0))?,
+        // Wednesday 2026-11-25, the trade date immediately before Thanksgiving:
+        // the gate opens on the neighbouring row and the search misses.
+        adjacent: ct((2026, 11, 25), (10, 0))?,
+        // Friday 2026-11-27, which the built-in table clips to a 12:15 CT final
+        // close: the gate opens, the search hits, and the clip applies, all
+        // while the minute is still inside the regular session.
+        holiday: ct((2026, 11, 27), (10, 0))?,
     })
 }
 
@@ -76,6 +91,8 @@ fn bench_queries(
         ("overnight", probes.overnight),
         ("maintenance", probes.maintenance),
         ("closed_weekend", probes.closed),
+        ("adjacent", probes.adjacent),
+        ("holiday", probes.holiday),
     ] {
         group.bench_function(format!("{label}/is_open/{class}"), |bencher| {
             bencher.iter(|| run(black_box(instant)));
@@ -119,6 +136,12 @@ fn calendar_queries(criterion: &mut Criterion) {
     });
     group.bench_function("is_open/closed_weekend", |bencher| {
         bencher.iter(|| calendar.is_open(black_box(probes.closed)));
+    });
+    group.bench_function("is_open/adjacent", |bencher| {
+        bencher.iter(|| calendar.is_open(black_box(probes.adjacent)));
+    });
+    group.bench_function("is_open/holiday", |bencher| {
+        bencher.iter(|| calendar.is_open(black_box(probes.holiday)));
     });
     group.bench_function("session_state/regular", |bencher| {
         bencher.iter(|| calendar.session_state(black_box(probes.regular)));

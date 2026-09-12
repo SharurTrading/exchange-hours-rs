@@ -2,16 +2,18 @@
 
 //! Public contracts for the built-in holiday-table engine (LAW-HOLIDAY-SCOPE).
 //!
-//! The engine ships in two halves. This wave is the first: the row types, the
-//! `holidays!` macro and its constant-evaluation fences, the coverage gate, the
-//! layering, the evidence fence and the three public accessors — with **zero
-//! rows**. So the fences here are of two kinds.
+//! The engine shipped first, on its own: the row types, the `holidays!` macro
+//! and its constant-evaluation fences, the coverage gate, the layering, the
+//! evidence fence and the three public accessors, with zero rows. Family tables
+//! land one at a time beside it. So the fences here are of two kinds.
 //!
-//! **The crate carries no holiday data.** `holiday_on` and `holiday_coverage`
-//! answer `None` for every identity and every date, `without_holidays` is the
-//! identity function on every answer, and the golden normal-week grids are
-//! untouched. That is the whole observable behaviour change of this wave:
-//! none.
+//! **What an identity's holiday layer may claim, whether or not it has one.**
+//! An identity the routing match answers `None` for reports no coverage window
+//! and no row at any date; an identity that does ship a table answers only
+//! inside the window it declares, and `without_holidays` detaches that table
+//! rather than merely declining to apply it. The per-identity rows themselves
+//! are fenced beside the families that own them, and the golden normal-week
+//! grids stay untouched either way.
 //!
 //! **The engine behaves as specified**, proved through what a caller can
 //! actually attach. The clip path a built-in row will take — an early close
@@ -36,8 +38,8 @@ use chrono::{DateTime, Days, NaiveDate, TimeDelta, TimeZone, Utc};
 use chrono_tz::US;
 use exchange_hours::{
     CalendarResolution, CalendarSource, DayOverride, DayPolicy, Exchange, ExchangeCalendar,
-    MarketHoursKey, PolicyCalendar, SessionExceptionRecord, SessionKind, StaticDayPolicy,
-    StaticSessionExceptions, calendar_for_exchange, calendar_for_market_hours_key,
+    Holiday, HolidayKind, MarketHoursKey, PolicyCalendar, SessionExceptionRecord, SessionKind,
+    StaticDayPolicy, StaticSessionExceptions, calendar_for_exchange, calendar_for_market_hours_key,
 };
 
 fn day(year: i32, month: u32, date: u32) -> NaiveDate {
@@ -144,27 +146,25 @@ fn assert_agrees(
 }
 
 // ---------------------------------------------------------------------------
-// The crate carries no holiday data.
+// What an identity's holiday layer may claim.
 // ---------------------------------------------------------------------------
 
-/// LAW-HOLIDAY-SCOPE: no table ships yet, so the caller's own overlay is still
-/// the only holiday layer, for every identity without exception.
+/// LAW-HOLIDAY-SCOPE: an identity the routing match answers `None` for carries
+/// no built-in holiday layer at all, so the caller's own overlay is still the
+/// only one there. Wave 0 shipped the engine with zero rows and this fence read
+/// "no identity ships a table"; families land one at a time, so what survives
+/// that is the claim about the identities that have not.
 #[test]
-fn no_identity_ships_a_holiday_table() {
-    for (label, calendar) in every_calendar() {
-        assert_eq!(
-            calendar.holiday_coverage(),
-            None,
-            "{label} claims a holiday coverage window, but no table ships"
-        );
-    }
-}
+fn an_identity_without_a_table_reports_no_row_anywhere() {
+    let calendars = every_calendar()
+        .into_iter()
+        .filter(|(_, calendar)| calendar.holiday_coverage().is_none())
+        .collect::<Vec<_>>();
+    assert!(
+        !calendars.is_empty(),
+        "the crate must still hold identities with no built-in table"
+    );
 
-/// A table with no coverage window can hold no row, at any date in or below
-/// the crate's horizon or above its published future.
-#[test]
-fn no_identity_reports_a_holiday_row() {
-    let calendars = every_calendar();
     let mut date = day(2009, 1, 1);
     let end = day(2029, 1, 1);
     while date < end {
@@ -172,7 +172,7 @@ fn no_identity_reports_a_holiday_row() {
             assert_eq!(
                 calendar.holiday_on(date),
                 None,
-                "{label} reports a holiday row on {date}, but no table ships"
+                "{label} reports a holiday row on {date} but declares no coverage window"
             );
         }
         date = date
@@ -181,47 +181,85 @@ fn no_identity_reports_a_holiday_row() {
     }
 }
 
-/// `without_holidays` is the exact A/B control the design memo's benchmark
-/// needs, so while no table ships it has to be the identity function — on the
-/// accessors and on every query.
+/// A table answers only inside the window it declares, for every identity that
+/// ships one. This is the crate-wide half of the per-family coverage fences:
+/// a row outside its own window would make "in coverage and no row means
+/// audited normal" false without any one family's test noticing.
 #[test]
-fn without_holidays_changes_no_answer_while_no_table_ships() {
+fn every_shipped_table_answers_only_inside_its_own_window() {
+    for (label, calendar) in every_calendar() {
+        let Some(coverage) = calendar.holiday_coverage() else {
+            continue;
+        };
+        assert!(
+            coverage.first() <= coverage.last(),
+            "{label} declares an inverted coverage window"
+        );
+        let mut date = day(2009, 1, 1);
+        let end = day(2029, 1, 1);
+        while date < end {
+            if !coverage.contains(date) {
+                assert_eq!(
+                    calendar.holiday_on(date),
+                    None,
+                    "{label} reports a holiday row on {date}, outside its coverage window"
+                );
+            }
+            date = date
+                .checked_add_days(Days::new(7))
+                .expect("the scan stays inside the representable calendar");
+        }
+        assert_eq!(calendar.without_holidays().holiday_coverage(), None);
+        assert_eq!(
+            calendar.without_holidays().holiday_on(coverage.first()),
+            None,
+            "{label}: without_holidays must detach the table, not merely stop applying it"
+        );
+    }
+}
+
+/// `without_holidays` is the exact A/B control the design memo's benchmark
+/// needs, so it has to be the identity function wherever no table ships and a
+/// live detachment wherever one does.
+///
+/// The probe window straddles Christmas, which every served CME family in this
+/// list carries rows for, so an identity with a table has to diverge somewhere
+/// inside it: a `without_holidays` that quietly kept applying the table would
+/// make the benchmark's A/B control measure the same path twice.
+#[test]
+fn without_holidays_is_the_identity_without_a_table_and_a_detachment_with_one() {
     for (label, calendar) in gate_window_classes() {
         let detached = calendar.without_holidays();
         assert_eq!(detached.source(), calendar.source());
         assert_eq!(detached.tz(), calendar.tz());
         assert_eq!(detached.holiday_coverage(), None);
 
+        let ships_a_table = calendar.holiday_coverage().is_some();
+        let mut diverged = false;
+
         let mut instant = ct((2025, 12, 19), (0, 0, 0));
         let end = ct((2026, 1, 5), (0, 0, 0));
         while instant < end {
-            assert_eq!(
-                detached.is_open(instant),
-                calendar.is_open(instant),
-                "{label}: is_open diverged at {instant}"
+            let agrees = detached.is_open(instant) == calendar.is_open(instant)
+                && detached.session_state(instant) == calendar.session_state(instant)
+                && detached.session_bounds(instant) == calendar.session_bounds(instant)
+                && detached.trade_date(instant) == calendar.trade_date(instant)
+                && detached.candle_end(instant, CalendarResolution::Daily)
+                    == calendar.candle_end(instant, CalendarResolution::Daily);
+            assert!(
+                agrees || ships_a_table,
+                "{label}: no built-in table ships, so detaching it must change \
+                 nothing, and an answer moved at {instant}"
             );
-            assert_eq!(
-                detached.session_state(instant),
-                calendar.session_state(instant),
-                "{label}: session_state diverged at {instant}"
-            );
-            assert_eq!(
-                detached.session_bounds(instant),
-                calendar.session_bounds(instant),
-                "{label}: session_bounds diverged at {instant}"
-            );
-            assert_eq!(
-                detached.trade_date(instant),
-                calendar.trade_date(instant),
-                "{label}: trade_date diverged at {instant}"
-            );
-            assert_eq!(
-                detached.candle_end(instant, CalendarResolution::Daily),
-                calendar.candle_end(instant, CalendarResolution::Daily),
-                "{label}: daily close diverged at {instant}"
-            );
+            diverged |= !agrees;
             instant += TimeDelta::minutes(43);
         }
+
+        assert_eq!(
+            diverged, ships_a_table,
+            "{label}: detaching a table that holds Christmas rows must change an \
+             answer, and detaching no table must change none"
+        );
     }
 }
 
@@ -247,9 +285,9 @@ fn without_holidays_is_idempotent_and_keeps_the_identity() {
 /// and detaching it keeps both overlays attached.
 #[test]
 fn policy_calendar_mirrors_the_builtin_accessors() {
-    let overrides = [DayOverride::closed(day(2025, 12, 25))];
+    let overrides = [DayOverride::closed(day(2025, 12, 26))];
     let policy = StaticDayPolicy::new(&overrides).expect("the fixture records are valid");
-    let records = [SessionExceptionRecord::known_normal(day(2025, 12, 24))];
+    let records = [SessionExceptionRecord::known_normal(day(2025, 12, 23))];
     let exceptions = StaticSessionExceptions::new(
         CalendarSource::MarketHoursKey(MarketHoursKey::GlobexEquityIndex),
         day(2025, 12, 1),
@@ -263,17 +301,33 @@ fn policy_calendar_mirrors_the_builtin_accessors() {
         .with_session_exceptions(&exceptions)
         .expect("the fixture is scoped to this calendar");
 
-    // The caller closed 2025-12-25 and audited 2025-12-24. Neither is a
-    // built-in row, and the built-in accessors say so.
-    assert_eq!(calendar.holiday_on(day(2025, 12, 25)), None);
-    assert_eq!(calendar.holiday_on(day(2025, 12, 24)), None);
-    assert_eq!(calendar.holiday_coverage(), None);
+    // The caller closed 2025-12-26 and audited 2025-12-23. Neither is a
+    // built-in row, and the built-in accessors report the crate's own table
+    // rather than the caller's layers, so both read as audited normal.
+    assert_eq!(calendar.holiday_on(day(2025, 12, 26)), None);
+    assert_eq!(calendar.holiday_on(day(2025, 12, 23)), None);
+
+    // The crate's own rows do come through the wrapper, with their window.
+    assert_eq!(
+        calendar.holiday_on(day(2025, 12, 25)).map(Holiday::kind),
+        Some(HolidayKind::Closed)
+    );
+    let coverage = calendar
+        .holiday_coverage()
+        .expect("the family ships a table");
+    assert_eq!(coverage.first(), day(2025, 1, 1));
+    assert_eq!(coverage.last(), day(2027, 12, 31));
 
     let detached = calendar.without_holidays();
     assert!(detached.has_day_policy());
     assert!(detached.has_session_exceptions());
     assert_eq!(detached.holiday_coverage(), None);
-    assert!(detached.is_closed_trade_date(day(2025, 12, 25), SessionKind::Both));
+    assert_eq!(
+        detached.holiday_on(day(2025, 12, 25)),
+        None,
+        "detaching the table must detach it under the overlays too"
+    );
+    assert!(detached.is_closed_trade_date(day(2025, 12, 26), SessionKind::Both));
 }
 
 // ---------------------------------------------------------------------------
@@ -597,13 +651,15 @@ fn an_out_of_range_boundary_is_unavailable_and_never_rolls_a_trade_date() {
         }
     }
 
-    // 2026-06-19 is a Friday inside the permanent 24/7 cryptocurrency era, and
+    // 2026-08-21 is a Friday inside the permanent 24/7 cryptocurrency era, and
     // its trading is continuous: the Thursday-evening block's trade date is
-    // what moves when a layer closes the Friday.
-    let friday = day(2026, 6, 19);
+    // what moves when a layer closes the Friday. The date carries no built-in
+    // row, so the only layer under test is the caller's.
+    let friday = day(2026, 8, 21);
     let base = calendar_for_market_hours_key(MarketHoursKey::GlobexCryptocurrency);
-    let probe = ct((2026, 6, 18), (20, 0, 0));
-    assert_eq!(base.trade_date(probe), Some(day(2026, 6, 19)));
+    let probe = ct((2026, 8, 20), (20, 0, 0));
+    assert_eq!(base.holiday_on(friday), None);
+    assert_eq!(base.trade_date(probe), Some(day(2026, 8, 21)));
 
     let invalid = OutOfRange(friday);
     let unavailable = base.with_day_policy(&invalid);
@@ -627,7 +683,7 @@ fn an_out_of_range_boundary_is_unavailable_and_never_rolls_a_trade_date() {
     );
     assert_eq!(
         closed.trade_date(probe),
-        Some(day(2026, 6, 22)),
+        Some(day(2026, 8, 24)),
         "a closed record rolls the continuous week to the next open business date"
     );
 }

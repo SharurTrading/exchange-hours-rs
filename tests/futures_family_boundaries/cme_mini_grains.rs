@@ -584,6 +584,13 @@ fn mini_grains_and_the_standard_grain_grid_disagree_outside_the_converged_eras()
 
     // After the convergence the two keys must answer identically — a full
     // week of probes, phases and states alike.
+    //
+    // The probed week contains Juneteenth 2026-06-19, and the two keys differ
+    // on the *holiday* layer rather than on the grid: `globex_grains` is served
+    // and ships a built-in table, `globex_mini_grains` is dormant and does not
+    // (LAW-SERVICE-TIERS; design memo §5.2). The claim under test is that the
+    // grids converged, so the state comparison detaches that layer from both;
+    // the divergence itself is recorded in the mini-grains evidence file.
     for day_offset in 0..7_i64 {
         for (hour, minute) in [
             (3, 0),
@@ -613,8 +620,12 @@ fn mini_grains_and_the_standard_grain_grid_disagree_outside_the_converged_eras()
                 "{instant}: the converged grids must agree on order acceptance"
             );
             assert_eq!(
-                calendar_for_market_hours_key(MINI).session_state(instant),
-                calendar_for_market_hours_key(GRAINS).session_state(instant),
+                calendar_for_market_hours_key(MINI)
+                    .without_holidays()
+                    .session_state(instant),
+                calendar_for_market_hours_key(GRAINS)
+                    .without_holidays()
+                    .session_state(instant),
                 "{instant}: the converged grids must agree on session state"
             );
         }

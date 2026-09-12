@@ -344,9 +344,14 @@ fn the_2012_notice_restores_the_shared_queue_onsets() {
             SessionState::OrderEntry,
             "{key:?}"
         );
-        // The row's own Sunday restores 16:15.
+        // The row's own Sunday restores 16:15 exactly.
         assert_eq!(
-            state_at(key, ct((2012, 4, 15), (16, 16, 0))),
+            state_at(key, ct((2012, 4, 15), (16, 14, 0))),
+            SessionState::Closed,
+            "{key:?}: the minute before the restored Sunday onset"
+        );
+        assert_eq!(
+            state_at(key, ct((2012, 4, 15), (16, 15, 0))),
             SessionState::OrderEntry,
             "{key:?}: the notice takes effect on its own opening day"
         );
@@ -360,9 +365,14 @@ fn the_2012_notice_restores_the_shared_queue_onsets() {
             SessionState::Closed,
             "{key:?}: which still reselects the stagger the week before"
         );
-        // And the weekday onset returns to 16:45.
+        // And the weekday onset returns to 16:45 exactly.
         assert_eq!(
-            state_at(key, ct((2012, 4, 16), (16, 46, 0))),
+            state_at(key, ct((2012, 4, 16), (16, 44, 0))),
+            SessionState::Closed,
+            "{key:?}: the minute before the restored weekday onset"
+        );
+        assert_eq!(
+            state_at(key, ct((2012, 4, 16), (16, 45, 0))),
             SessionState::OrderEntry,
             "{key:?}: 16:45 CT queues again"
         );
@@ -371,7 +381,11 @@ fn the_2012_notice_restores_the_shared_queue_onsets() {
             SessionState::Closed,
             "{key:?}: it did not, one week earlier"
         );
-        let _ = weekday_minute;
+        assert_eq!(
+            state_at(key, ct((2012, 4, 9), (16, weekday_minute, 0))),
+            SessionState::OrderEntry,
+            "{key:?}: the staggered weekday onset was still live"
+        );
     }
 }
 

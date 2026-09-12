@@ -48,7 +48,7 @@ section holds the method, the discrepancy list, and the two side-lists.
   the row was last fully reviewed, the later one is when that particular question
   was worked.
 
-  **Classification complete, 2026-09-01; revised 2026-09-02 and 2026-09-05.**
+  **Classification complete, 2026-09-01; revised 2026-09-02, 2026-09-05, 2026-09-06, 2026-09-09 and 2026-09-12.**
   Every `Partial` row opens with its gap kind.
   Of the 57, **35 are order-entry** — the trading session
   is sourced and what is undated is a queue or post-close phase in which no trade

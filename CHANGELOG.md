@@ -13,10 +13,11 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Added
 
-- **Five `MarketHoursKey` metals Trading at Settlement rows** —
-  `globex_gold_tas` (`GCT`), `globex_silver_tas` (`SIT`), `globex_copper_tas`
-  (`HGT`), `globex_platinum_tas` (`PLT`) and `globex_palladium_tas` (`PAT`),
-  the first trade-type keys in the crate. Each is Sunday–Thursday 17:00 CT
+- **Five `MarketHoursKey` metals Trading at Settlement rows** — five new
+  public `MarketHoursKey` variants, `globex_gold_tas` (`GCT`),
+  `globex_silver_tas` (`SIT`), `globex_copper_tas` (`HGT`),
+  `globex_platinum_tas` (`PLT`) and `globex_palladium_tas` (`PAT`), the first
+  trade-type keys in the crate. Each is Sunday–Thursday 17:00 CT
   wrapping to its own close — 12:30, 12:25, 12:00, 12:05 and 12:00 CT — with no
   Friday-evening reopen, an empty `regular` in every era, and its Pre-Open as
   `order_entry`. Every inter-trade-date gap exceeds four hours, so it is
@@ -35,7 +36,9 @@ corrections (a venue's hours fixed against a primary source) go under
   withhold 16:00–16:15, the undated 2012 move `globex_equity_index` already
   withholds; platinum and palladium launched after it and withhold nothing. All
   five ledger rows are **Partial** with an **executable** gap, each naming the
-  observation gap it carries a window across.
+  observation gap it carries a window across. Two follow-ups stay open: the
+  undated 2012 Sunday Pre-Open move the COMEX three share with
+  `globex_equity_index` (#79), and `HG0`'s undated listing day (#80).
 
 - **`Exchange::CoinbaseDerivatives`** — Coinbase Derivatives, the
   CFTC-designated contract market that traded as FairX until March 2022, on the

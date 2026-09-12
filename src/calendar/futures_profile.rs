@@ -356,8 +356,11 @@ market_hours_keys! {
         /// a TAS order only after its group's pre-open state begins.
         ///
         /// Members `MGT`, `QOT` and `1OT` joined later groups-side and are
-        /// caller catalog data. The 12:30 CT close has never moved; the two
-        /// dated revisions are queue-onset changes in 2011 and 2012. The
+        /// caller catalog data. Every dated observation from 2010 to today
+        /// states the 12:30 CT close, and the crate carries it across the
+        /// 2015-03-22 to 2019-11-18 gap in archived statements rather than
+        /// asserting a verified continuity; the two dated revisions are
+        /// queue-onset changes in 2011 and 2012. The
         /// Sunday queue serves the sourced 16:15-17:00 CT intersection and
         /// withholds 16:00-16:15, as
         /// [`GlobexEquityIndex`](Self::GlobexEquityIndex) does.
@@ -368,7 +371,8 @@ market_hours_keys! {
         ///
         /// Identical shape, closing 12:25 CT instead of 12:30, with the same
         /// empty `regular`, the same absent Friday-evening reopen, the same
-        /// two queue revisions and the same withheld Sunday quarter-hour. It
+        /// two queue revisions, the same carried 2015-2019 observation gap and
+        /// the same withheld Sunday quarter-hour. It
         /// is a separate key because the close differs; `MST` joined in 2025
         /// and is caller catalog data.
         GlobexSilverTas => "globex_silver_tas",
@@ -377,7 +381,8 @@ market_hours_keys! {
         /// and silver and on CME Globex only.
         ///
         /// Sunday-Thursday 17:00 CT wrapping to 12:00 CT, empty `regular`, no
-        /// Friday-evening reopen, and the same two queue revisions. Copper TAS
+        /// Friday-evening reopen, the same two queue revisions and the same
+        /// carried 2015-2019 observation gap. Copper TAS
         /// was **never** a pit product, which both COMEX SER-5542 and MRAN
         /// RA1107-4 state in terms.
         ///
@@ -391,8 +396,10 @@ market_hours_keys! {
         /// group PE), listed 2017-05-21 for trade date 2017-05-22.
         ///
         /// One era: Sunday-Thursday 17:00 CT wrapping to 12:05 CT, empty
-        /// `regular`, no Friday-evening reopen, and no revision of any kind
-        /// since launch. Because the root launched after CME's undated 2012
+        /// `regular`, no Friday-evening reopen, and no sourced revision since
+        /// launch; the close is carried across the 2021-04-11 to 2026-03-10
+        /// gap in archived statements. Because the root launched after CME's
+        /// undated 2012
         /// move of the Sunday TAS pause, its earliest sourced Sunday queue
         /// onset is 16:00 CT and nothing is withheld: Sunday 16:00-17:00 and
         /// Monday-Thursday 16:45-17:00 CT are both served.
@@ -402,7 +409,9 @@ market_hours_keys! {
         ///
         /// One era: Sunday-Thursday 17:00 CT wrapping to 12:00 CT, with the
         /// same empty `regular` and the same unwithheld queue as
-        /// [`GlobexPlatinumTas`](Self::GlobexPlatinumTas).
+        /// [`GlobexPlatinumTas`](Self::GlobexPlatinumTas); the close is
+        /// carried across the 2021-05-13 to 2026-05-27 gap in archived
+        /// statements.
         ///
         /// **There is no 16:00-17:00 CT daily break.** The clause CME's 2019
         /// specification printed on the TAS line is inherited boilerplate from

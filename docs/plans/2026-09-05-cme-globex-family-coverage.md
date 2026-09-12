@@ -142,7 +142,11 @@ The ledger row is **Partial / executable**: `SER-8968R` states the queues, the
 17:00 open and the relist at launch but no daily close, so 16:00 CT is carried
 back from the 2025 and 2026 statements of it with no cutover asserted.
 
-### 5. The 37-shape research queue — **DELIVERED**
+### 5. The 37-shape research queue — **DELIVERED**, then superseded
+
+> 2026-09-12 (UTC): the architectural review and the charter's LAW-SERVICE-TIERS put
+> trade-type variants out of scope until a consumer maps one; see
+> [2026-09-12-architectural-review.md](2026-09-12-architectural-review.md).
 Researched and adversarially challenged; the deliverable is
 [the trade-type handoff](2026-09-05-cme-trade-type-handoff.md), which carries the
 root-to-key table, the unresolved list with the document each needs, and the decision

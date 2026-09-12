@@ -1,5 +1,11 @@
 <!-- SPDX-License-Identifier: MIT-0 -->
 
+> **Superseded on 2026-09-12 (UTC)** by the architectural review
+> ([2026-09-12-architectural-review.md](2026-09-12-architectural-review.md)) and the
+> charter it produced in `AGENTS.md` (LAW-SERVICE-TIERS): trade-type variants are not
+> modelled as keys until a consumer maps one, so the PR sequence below is not executed beyond PR 1 (#78) and PR 2 (#83), which merge as dormant keys. The research behind it is kept in
+> the local research store and is not discarded.
+
 # CME trade-type and standalone-product keys — implementation plan
 
 Plan date: 2026-09-12 (UTC) · Planned against `main` @ `687e562` · Issue #58.

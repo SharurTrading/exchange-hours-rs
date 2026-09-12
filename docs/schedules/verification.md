@@ -16,7 +16,8 @@ method are in the [2026-08-22 audit report](audit-2026-08-22.md).
 Every non-synthetic `Exchange` row was reviewed through at least `2026-08-22`. A later review
 should change only the affected rows until all non-synthetic rows have caught
 up; the repository cutoff advances only when the complete ledger has been reviewed. Exact
-historical notices and effective-date evidence remain beside the owner code.
+historical notices and effective-date evidence remain beside the owner code
+until LAW-EVIDENCE-FILES moves that narrative to `docs/evidence/<owner>.md`.
 The source-set links below are the stable places from which the next review
 starts; see [sources.md](sources.md) and the repeatable
 [update workflow](updating.md).
@@ -27,6 +28,19 @@ runs. That is a separate question, answered row by row by the
 [system-coverage audit](#system-coverage-audit-phase-1) below: a row carries a
 `Systems in scope` clause once its enumeration has been done, and the audit
 section holds the method, the discrepancy list, and the two side-lists.
+
+**The row shape changes in a coming reshape.** Under LAW-EVIDENCE-FILES a
+ledger row becomes a fixed shape — key, owner, evidence tier, service tier,
+horizon, reviewed-on, gap kind, and at most three sentences of basis — with the
+narrative moving to `docs/evidence/<owner>.md`. The **service tier** is
+`served` or `dormant` (LAW-SERVICE-TIERS) and sets what the row owes: a served
+identity owes dated history to the January-2010 floor, a holiday table to the
+operator's published future, and the review **cadence** LAW-WATCH records
+beside it; a dormant identity owes correctness as of its last review and is
+re-reviewed on demand. The **horizon** is the date below which a row's grid is
+carried back rather than sourced. No row below carries those columns yet — the
+reshape, the evidence files, and the holiday tables are separate changes — so
+until then they are read from the row's basis prose and its scope note.
 
 ## Basis
 

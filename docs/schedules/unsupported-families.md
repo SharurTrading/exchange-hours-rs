@@ -169,9 +169,10 @@ roots in session language, on their own groups rather than the outrights'.
 
 These six `MarketHoursKey` names are **not** rejections. Each family exists, its
 grid is partly or wholly sourced, and what is missing is an unconditional,
-day-level effective date or a representation decision — so LAW-NO-FABRICATED-
-DATES, not the evidence, is what keeps them out. Each has an open issue, and
-each issue states the single artifact or decision that closes it.
+day-level effective date or a representation decision — so
+LAW-NO-FABRICATED-DATES, not the evidence, is what keeps them out. Each has an
+open issue, and each issue states the single artifact or decision that closes
+it.
 
 | Prospective identifier | What blocks it | Issue |
 |---|---|---|

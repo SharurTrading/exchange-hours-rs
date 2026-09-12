@@ -13,7 +13,7 @@ Deliberate UTC 24×7 fallback; not a venue.
 
 ## Revision rows
 
-None. `futures_profile.rs` holds a single static profile with no dated revision row.
+None. This identity resolves to the single `ALWAYS_OPEN_PROFILE` static in `schedules`, which has no dated revision row.
 
 ## Sources
 

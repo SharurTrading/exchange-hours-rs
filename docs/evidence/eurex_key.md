@@ -13,7 +13,7 @@ FESX/FDAX/FDXM benchmark-index futures; the dated key API reuses the sourced Jan
 
 ## Revision rows
 
-None. `europe.rs` holds a single static profile with no dated revision row.
+None. `europe.rs` carries no `revisions!` block for this identity; its 2018-12-10 Asian-hours cutover and the seasonal CET/CEST choice are encoded as comparisons inside `eurex_profile_at` instead.
 
 The key selects through the same `eurex_profile_at` function as the `eurex`
 exchange row: a date comparison against the 2018-12-10 Asian-hours cutover,

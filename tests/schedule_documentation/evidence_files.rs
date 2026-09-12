@@ -164,9 +164,9 @@ fn relative(path: &Path) -> String {
 
 /// Returns the contiguous `//` comment run immediately above a declaration.
 ///
-/// `prefix` ends at the `revisions![` token, so the walk first steps over the
-/// `static` line (and any attribute) the macro is bound to, then collects the
-/// comment run and stops at the first line that is neither.
+/// `prefix` ends at the `revisions![` token, so the walk steps over the binding
+/// line the macro sits on and any attribute stacked on it — nothing else — then
+/// collects the comment run and stops at the first line that is neither.
 fn comment_run(prefix: &str) -> Vec<String> {
     let mut lines: Vec<&str> = prefix.lines().collect();
     if lines.last().is_some_and(|line| line.trim().is_empty()) {
@@ -174,15 +174,19 @@ fn comment_run(prefix: &str) -> Vec<String> {
     }
     let mut run = Vec::new();
     let mut in_comments = false;
-    for line in lines.iter().rev() {
+    for (position, line) in lines.iter().rev().enumerate() {
         let trimmed = line.trim();
         if !in_comments {
             if trimmed.starts_with("//") {
                 in_comments = true;
-            } else if trimmed.is_empty() {
-                break;
-            } else {
+            } else if position == 0 || trimmed.starts_with('#') {
+                // Only the `static … =` line the macro is bound to, and any
+                // attribute stacked on it, may be stepped over. Anything else
+                // ends the run, so a block with no declaration of its own
+                // cannot inherit the preceding block's.
                 continue;
+            } else {
+                break;
             }
         }
         if trimmed.starts_with("//") {

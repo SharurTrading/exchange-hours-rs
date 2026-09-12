@@ -13,7 +13,7 @@ Library-defined UTC 24×7 profile. It has no final daily close, so its key calen
 
 ## Revision rows
 
-None. `profiles.rs` holds a single static profile with no dated revision row.
+None. This identity resolves to the single `ALWAYS_OPEN_PROFILE` static in `schedules`, which has no dated revision row.
 
 ## Sources
 

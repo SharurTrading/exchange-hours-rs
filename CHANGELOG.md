@@ -367,7 +367,9 @@ corrections (a venue's hours fixed against a primary source) go under
   `cryptocurrency.rs` 246 → 227, `cme_nikkei.rs` 247 → 163, `cfe.rs` 329 → 280,
   `coinbase_derivatives.rs` 128 → 119, `ice_us.rs` 116 → 111 and
   `europe.rs` 165 → 141, with 3,820 comment lines removed across 76 modules and
-  no rule datum changed. Each `revisions!` block gains one
+  no rule datum changed. Forty-one dormant modules still carry theirs and are
+  fenced as `NARRATIVE_DEBT`, a list that only ever shrinks; issue #85.
+  Each `revisions!` block gains one
   `// Evidence: docs/evidence/<file>.md` declaration naming the files its days
   belong to, which is what makes attribution exact for the 23 identities whose
   timeline lives in a `history.rs` sibling and the ten modules whose single

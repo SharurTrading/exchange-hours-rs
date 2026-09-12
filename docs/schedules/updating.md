@@ -26,9 +26,11 @@ The supporting records are:
 Exact historical notices and effective-date evidence live in the row's evidence
 file (LAW-EVIDENCE-FILES). A schedule module keeps its rule data, one citation
 line per revision row, and one `// Evidence: docs/evidence/<file>.md` line above
-each `revisions!` block naming the files that block's days belong to; it carries
-no narrative. The documentation here is a monitoring index, not a substitute for
-that record.
+each `revisions!` block naming the files that block's days belong to. A migrated
+module carries no narrative, and a new module never may; the forty-one modules
+whose narrative has not moved yet are listed in `NARRATIVE_DEBT` in
+`tests/schedule_documentation/evidence_files.rs` and tracked as issue #85. The
+documentation here is a monitoring index, not a substitute for that record.
 
 ## What the dates mean
 

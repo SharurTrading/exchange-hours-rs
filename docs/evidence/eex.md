@@ -13,7 +13,7 @@ Nordic Zonal Power Futures only: closed before the sourced 2024-03-25 launch, th
 
 ## Revision rows
 
-None. `europe.rs` holds a single static profile with no dated revision row.
+None. `europe.rs` carries no `revisions!` block for this identity; its 2024-03-25 Nordic Zonal Power Futures launch is encoded as a date comparison inside `eex_profile_at` instead.
 
 The 2024-03-25 launch is in `eex_profile_at` rather than in a `revisions!`
 block: before that venue-local day the profile is a sourced closure, on and

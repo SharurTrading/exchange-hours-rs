@@ -24,6 +24,6 @@ Venue union includes the 15:00–15:30 block-order/trading phase already operati
 
 ## Gaps and residual risks
 
-- The pre-2016 09:25–09:30 `order_entry` window rests on the 2013 revision of the SZSE Trading Rules, an artifact issued after the January-2010 floor. The state is carried back to the floor and the residual risk is recorded here (AGENTS.md, *Carry the earliest sourced state back to the floor*).
+- The pre-2016 09:25–09:30 `order_entry` window rests on the 2013 revision of the SZSE Trading Rules, an artifact issued after the January-2010 floor whose own effective day is not recorded here, so the horizon is carried below the first dated row, 2016-05-09 (AGENTS.md, *Carry the earliest sourced state back to the floor*). Sourcing that revision's effective day, or a floor-era SZSE trading rule stating the 09:15–09:25 opening call and the 09:25–09:30 blocking interval, would move the horizon earlier.
 - Block and fixed-price phases are `extended` by convention; not every security is eligible for them.
 - The 2026-07-06 generic fixed-price expansion is deliberately not a revision row: it changed eligibility inside the existing venue envelope, not the exchange-level close.

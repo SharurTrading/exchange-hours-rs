@@ -13,7 +13,7 @@ FESX/FDAX/FDXM benchmark-index futures: the January-2010 baseline has 07:30–07
 
 ## Revision rows
 
-None. `europe.rs` holds a single static profile with no dated revision row.
+None. `europe.rs` carries no `revisions!` block for this identity; its 2018-12-10 Asian-hours cutover and the seasonal CET/CEST choice are encoded as comparisons inside `eurex_profile_at` instead.
 
 The 2018-12-10 Asian-hours cutover and the seasonal CET/CEST selection are both
 in `eurex_profile_at` rather than in a `revisions!` block: the cutover is a

@@ -13,7 +13,7 @@
 
 ## Revision rows
 
-None. options/history.rs holds a single static profile with no dated revision row.
+None. `options/history.rs` holds a single static profile for this identity with no dated revision row; its `revisions!` blocks belong to the venues that launched after the floor.
 
 ## Sources
 

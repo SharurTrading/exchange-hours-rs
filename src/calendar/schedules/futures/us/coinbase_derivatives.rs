@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: MIT-0
 
 //! Coinbase Derivatives recurring 23x5 futures default.
+//!
+//! Narrative evidence, sources and residual risks:
+//! `docs/evidence/coinbase_derivatives.md` (LAW-EVIDENCE-FILES).
 
 use chrono_tz::America;
 
@@ -11,28 +14,18 @@ use crate::calendar::schedules::timeline::{
     Revision, effective_date, local_date, revisions, select_revision,
 };
 
-// The venue default is CDE's recurring 23x5 futures grid: Sunday through
-// Friday, 17:00-16:00 CT, with the daily 16:00-17:00 break. The four launch
-// certifications filed 2021-06-04 state that grid, and every later dated
-// filing through #2026-24 restates it, so no revision separates launch from
-// today. Since #2026-24 (on or after trade date 2026-05-04) most CDE futures
-// trade 24x7; this grid is the one copper, platinum, nano crude oil, natural
-// gas and Mag7 + Crypto equity index futures retain. The 24x7 family needs its
-// own product-family key at the caller.
-// https://www.cftc.gov/filings/ptc/ptc060421lmxdcm001.pdf
-// https://www.cftc.gov/filings/orgrules/rules0416261571.pdf
-// https://docs.cdp.coinbase.com/derivatives/introduction/market-hours
+// The venue default is CDE's recurring 23x5 futures grid: Sunday through Friday,
+// 17:00-16:00 CT, with the daily 16:00-17:00 break. It is sourced unchanged from
+// the 2021 launch certifications through filing #2026-24. The 24x7 family most
+// CDE futures joined since #2026-24 is out of scope and needs its own key.
 static REGULAR: &[SessionRule] = &[SessionRule {
     days: SUN_PLUS_MON_THU,
     open_ssm: 17 * 3600,
     close_ssm: 16 * 3600,
 }];
-// ORDER ENTRY, NOT TRADING. Pre-Open quoting accepts orders for the coming
-// session and nothing matches until the 17:00 open. The Pre-Open phase is
-// documented from 2021 without a time, and its 16:50 start is first witnessed
-// in a 2025 capture of the market-hours page, so no source dates its onset: it
-// enters only at the knowledge-bound row below, and the dated profiles before
-// it carry no Pre-Open.
+// ORDER ENTRY, NOT TRADING. Pre-Open quoting accepts orders and nothing matches
+// until the 17:00 open. No source dates its onset, so the queue enters only at
+// the knowledge-bound row below and the dated profiles carry no Pre-Open.
 static ORDER_ENTRY: &[SessionRule] = &[SessionRule {
     days: SUN_PLUS_MON_THU,
     open_ssm: 16 * 3600 + 50 * 60,
@@ -58,16 +51,11 @@ static CURRENT: StaticHoursProfile = StaticHoursProfile {
     has_weekend_close: true,
 };
 
-// FairX, as CDE then traded, opened for trading on Monday 2021-06-28 at 09:00
-// ET with no Sunday-evening session before it. The operator's homepage banner
-// names the day and time; its captures from 2021-06-22 fix the year, and the
-// 2021-08-02 capture reports the venue open. The launch-day profile starts
-// that first session at the launch instant, so its bounds never reach back to
-// a Sunday 17:00 that did not trade. The Monday-evening session that runs into
-// the next day is identical in both profiles, so the day-level switch to the
-// full grid never splits it.
-// https://web.archive.org/web/20210622222253/https://www.fairx.com/
-// https://web.archive.org/web/20210802230534/https://www.fairx.com/
+// FairX, as CDE then traded, opened on Monday 2021-06-28 at 09:00 ET with no
+// Sunday-evening session before it, so the launch-day profile starts that first
+// session at the launch instant rather than at a Sunday 17:00 that did not
+// trade. Its Monday-evening session is identical to the full grid's, so the
+// day-level switch never splits a running session.
 static LAUNCH_DAY_REGULAR: &[SessionRule] = &[
     SessionRule {
         days: MON_ONLY,
@@ -104,17 +92,20 @@ const LAUNCH_UNIX_SECONDS: i64 = 1_624_885_200;
 const FIRST_FULL_DAY: chrono::NaiveDate = effective_date(2021, 6, 29);
 
 // Knowledge-bound row, dated at the UTC date of the review that verified the
-// 16:50 Pre-Open (LAW-UTC-DATES). It adds only that queue, makes no onset
-// claim, never moves forward, and a sourced onset day replaces it. One
-// consequence is visible in `tests/golden/normal_week_grids.txt`, whose
-// 2026-08-22 fixture instant renders the dated grid without the Pre-Open.
-static REVISIONS: &[Revision] = revisions![(
-    2026,
-    9,
-    11,
-    &CURRENT,
-    "2026-09-11 review: verified current, onset undated"
-)];
+// 16:50 Pre-Open (LAW-UTC-DATES). It adds only that queue, makes no onset claim,
+// never moves forward, and a sourced onset day replaces it.
+// Evidence: docs/evidence/coinbase_derivatives.md
+static REVISIONS: &[Revision] = revisions![
+    // 2026-09-11 — T1 — 2026-09-11 review: verified current, onset undated —
+    // adds the 16:50-17:00 CT Pre-Open queue to the sourced 23x5 grid.
+    (
+        2026,
+        9,
+        11,
+        &CURRENT,
+        "2026-09-11 review: verified current, onset undated"
+    )
+];
 
 pub(crate) fn profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {
     let day = local_date(as_of, America::Chicago);

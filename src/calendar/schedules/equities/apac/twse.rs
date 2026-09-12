@@ -77,6 +77,7 @@ use crate::calendar::schedules::timeline::{Revision, local_date, revisions, sele
 
 pub(crate) const CURRENT: &StaticHoursProfile = &TWSE_PROFILE_CURRENT;
 
+// Evidence: docs/evidence/twse.md
 static REVISIONS: &[Revision] = revisions![(
     2020,
     3,

@@ -125,6 +125,7 @@ use crate::calendar::schedules::timeline::{Revision, local_date, revisions, sele
 
 pub(crate) const CURRENT: &StaticHoursProfile = &ASX_PROFILE_CURRENT;
 
+// Evidence: docs/evidence/asx.md
 static REVISIONS: &[Revision] = revisions![(
     2025,
     6,

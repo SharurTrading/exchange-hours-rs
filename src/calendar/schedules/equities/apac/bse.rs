@@ -142,6 +142,7 @@ use crate::calendar::schedules::timeline::{Revision, local_date, revisions, sele
 
 pub(crate) const CURRENT: &StaticHoursProfile = &BSE_PROFILE_CURRENT;
 
+// Evidence: docs/evidence/bse_india.md
 static REVISIONS: &[Revision] = revisions![
     (
         2010,

@@ -2,7 +2,7 @@
 
 //! Contract for the checked Databento venue crosswalk.
 
-use super::{DATABENTO_VENUES, README, exchange_rows, row_cells, wire_name};
+use super::{DATABENTO_VENUES, README, basis_of, exchange_rows, wire_name};
 use exchange_hours::Exchange;
 
 const EXPECTED_MAPPINGS: [(&str, &str, Exchange); 50] = [
@@ -153,8 +153,8 @@ fn supplied_venue_inventory_maps_every_distinct_label_to_a_real_exchange() {
             .into_iter()
             .find(|ledger_row| wire_name(ledger_row) == exchange.as_str())
             .expect("mapped exchange must have a verification-ledger row");
-        assert_eq!(row[4], row_cells(ledger_row)[3]);
-        assert!(matches!(row[4], "Primary" | "Partial"));
+        assert_eq!(row[4], basis_of(ledger_row));
+        assert!(row[4] == "Primary" || row[4].starts_with("Partial / "));
 
         let parsed = exchange
             .as_str()

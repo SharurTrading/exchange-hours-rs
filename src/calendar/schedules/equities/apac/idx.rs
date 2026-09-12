@@ -180,6 +180,7 @@ use crate::calendar::schedules::timeline::{Revision, local_date, revisions, sele
 
 pub(crate) const CURRENT: &StaticHoursProfile = &IDX_PROFILE_CURRENT;
 
+// Evidence: docs/evidence/idx.md
 static REVISIONS: &[Revision] = revisions![
     (
         2013,

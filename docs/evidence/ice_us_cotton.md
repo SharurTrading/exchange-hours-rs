@@ -1,0 +1,188 @@
+<!-- SPDX-License-Identifier: MIT-0 -->
+
+# `ice_us_cotton` — evidence
+
+- **Kind:** `MarketHoursKey`
+- **Owner module:** [`ice_cotton.rs`](../../src/calendar/schedules/futures/us/ice_cotton.rs)
+- **Source sets:** [`ICE-DERIVATIVES`](../schedules/sources.md#ice-derivatives)
+- **Ledger row:** [verification.md](../schedules/verification.md)
+
+## Ledger basis (moved from docs/schedules/verification.md on 2026-09-12 UTC)
+
+**Gap: executable** — the uncertainty touches a window where trades print, so this row's history is served conservatively and the basis below says how. Cotton No. 2 (`CT`) only. Current 21:00→14:20 NY wrap sourced, with dated 2014-02-03 and 2018-10-08 revisions. Partial because no ICE document names Sunday for Cotton. The 2026-08-31 review strengthened the basis for that omission from silence to contrast: both the AUGUST 2011 and JANUARY 2, 2013 master tables mark Cotton "21:00*" where `*` is "Trading commences on previous business day", while the Grains, Russell, USDX and currency rows carry `**` ("…and on Sunday evenings only trading commences at 18:00") and the energy rows `***`. ICE drew the Sunday distinction explicitly at two dated points and did not extend it to Cotton, so the Sunday evening open and its pre-open stay omitted. The tradeable week runs Monday 21:00 through Friday 14:20; the sourced Friday 14:50–18:00 post-close pre-open stays as the week's final order-entry window, feeding Monday's session. Its January 2010 to August 2011 baseline carries the same document-availability bound as the other ICE Futures U.S. rows: the 2026-09-01 review found no hours provision in any product rulebook chapter, so these hours are set administratively and the master hours table — earliest surviving edition August 2011 — is the only source.
+
+## Revision rows
+
+- 2014-02-03 — T1 — ICE ExNot 012714 hours — daily close moves from 14:30 to 14:20 NY; the 21:00 open on the previous day is unchanged.
+- 2018-10-08 — T1 — ICE PCPO notice 20180920 — post-close pre-open added, 14:50-18:00 NY.
+
+## Sources
+
+- <https://www.ice.com/publicdocs/futures_us/ICE_Futures_US_Regular_Trading_Hours.pdf> — ICE Futures U.S. Regular Trading Hours master table, live edition — the current grid.
+- <https://web.archive.org/web/20111212140120id_/https://www.theice.com/publicdocs/futures_us/ICE_Futures_US_Regular_Trading_Hours.pdf> — ICE Regular Trading Hours master table, AUGUST 2011 edition — captured 2011-12-12, the earliest surviving edition.
+- <https://web.archive.org/web/20130122132629id_/https://www.theice.com/publicdocs/futures_us/ICE_Futures_US_Regular_Trading_Hours.pdf> — ICE Regular Trading Hours master table, JANUARY 2, 2013 edition — captured 2013-01-22.
+- <https://www.ice.com/publicdocs/futures_us/exchange_notices/ICE_Futures_US_PCPO_Session_20180920.pdf> — ICE Futures U.S. notice, 20 September 2018, extension of the pre-open order entry session (PCPO).
+- <https://www.ice.com/publicdocs/futures_us/exchange_notices/ExNot012714Hours.pdf> — ICE Futures U.S. Exchange Notice, Changes to Daily Trading Hours, effective trade date 2014-02-03.
+- <https://www.ice.com/publicdocs/rulebooks/futures_us/4_Trading.pdf> — ICE Futures U.S. Rulebook chapter 4 (Trading) — Rule 4.22(a) confines the Pre-Trading Session to Limit order entry.
+- <https://web.archive.org/web/20111213011033id_/https://www.theice.com/publicdocs/rulebooks/futures_us/11_Sugar_11.pdf> — ICE Futures U.S. Rulebook chapter 11 (Sugar No. 11), captured December 2011 — no hours provision.
+- <https://web.archive.org/web/20111213011055id_/https://www.theice.com/publicdocs/rulebooks/futures_us/8_Coffee.pdf> — ICE Futures U.S. Rulebook chapter 8 (Coffee), captured December 2011 — no hours provision.
+- <https://web.archive.org/web/20111213011442id_/https://www.theice.com/publicdocs/rulebooks/futures_us/9_Cocoa.pdf> — ICE Futures U.S. Rulebook chapter 9 (Cocoa), captured December 2011 — no hours provision.
+- <https://www.ice.com/products/254/cotton-no-2-futures> — ICE Cotton No. 2 product page — 21:00 open, 14:20 close, `closeNextDay` true, 19:30 pre-open.
+- <https://www.ice.com/publicdocs/rulebooks/futures_us/10_Cotton.pdf> — ICE Futures U.S. Rulebook chapter 10 (Cotton) — live edition.
+- <https://web.archive.org/web/20111120214154id_/https://www.theice.com/publicdocs/rulebooks/futures_us/10_Cotton.pdf> — ICE Futures U.S. Rulebook chapter 10 (Cotton), captured November 2011 — no hours provision.
+- <https://www.ice.com/publicdocs/futures_us/exchange_notices/ICE_Futures_US_2021LaborDay_Holiday_20210713.pdf> — ICE 2021 Labor Day holiday notice — "Mon, Sep 6 Closed / Tue, Sep 7 Regular Hours".
+- <https://www.ice.com/publicdocs/futures_us/exchange_notices/ICE_Futures_US_2025_GoodFridayHoliday20250210.pdf> — ICE 2025 Good Friday holiday notice — Cotton "Regular Hours" on the Monday.
+- <https://www.ice.com/publicdocs/futures_us/exchange_notices/ICE_Futures_US_2025_Christmas_Holiday_20251031.pdf> — ICE 2025 Christmas holiday notice.
+
+## Gaps and residual risks
+
+- **executable** — the Sunday evening open and its pre-open are omitted, so the documented weekend boundary is Friday 14:20 to Monday 19:30 NY. A Sunday 21:00 open is the only reading consistent with the holiday notices, but no ICE sentence states it, and under LAW-PRIMARY-SOURCES an unasserted phase is omitted. The omission is positive evidence rather than mere silence: ICE marks Cotton "21:00*" at two dated points while the grains, Russell, USDX and currency rows carry "**" ("...and on Sunday evenings only trading commences at 18:00") and the energy rows "***". Closing condition: an ICE document naming Sunday for Cotton No. 2. Dormant identity, so recorded here rather than opened as an issue.
+- **executable** — January 2010 to August 2011 is unsourced. ICE Futures U.S. sets these hours administratively, not by rule: the product rulebook chapters captured December 2011 carry no hours provision at all and chapter 4 is trade-practice rules, so no SEC or CFTC filing fixes an ICE Futures U.S. trading hour and the master hours table is the only source. Its earliest surviving edition is AUGUST 2011 (captured 2011-12-12), enumerated exhaustively in the 2026-08-31 review. The gap is bounded by document availability rather than by an unfinished search, so the August-2011 carry-back is the terminal answer. Closing condition: an earlier edition of ICE's master hours table surfacing in a public archive. Dormant identity, so the gap is recorded here rather than opened as an issue (LAW-SERVICE-TIERS).
+- **horizon precision** — the AUGUST 2011 edition of the master table is month-dated by ICE and carries no day, so the ledger horizon is written as `2011-08-01`, the first day of the edition's own month. No ICE document states a day-level date for that edition.
+- **order-entry** — no primary ICE document inside the modelled window states a Cotton pre-open time earlier than the 19:30 on the product page and in the 2018 notice table, so the 19:30-21:00 pre-open is carried back unchanged rather than given an invented cutover.
+
+## Module narrative (moved from src/calendar/schedules/futures/us/ice_cotton.rs on 2026-09-12 UTC)
+
+Cotton No. 2 is a wrapping contract: the session for trade date D commences at
+21:00 NY on calendar day D-1 and closes at 14:20 NY on D. The ICE master hours
+table states the row verbatim as "Cotton No. 2(R)   21:00* - 14:20" with the
+footnote "*Trading commences on previous business day."; the product page
+carries the same 21:00 open, 14:20 close and `closeNextDay` true on
+America/New_York. Rulebook Rule 4.25(c)(ii) puts the last-trading-day close at
+the same clock ("for Cotton No. 2 Futures at 2:20 PM") and Rule 4.25(b)(iii)
+puts the daily settlement window at 14:14 - 14:15, so 14:20 is the session end
+on every trade date, not just ordinary ones.
+
+SUNDAY EVENING — A KNOWN GAP, NOT A MODELLED PHASE. The master-table row
+"*Trading commences on previous business day." pins Monday-Thursday
+evening opens: each of those evenings is the previous business day of the
+next trade date. No ICE primary document names Sunday in connection with
+Cotton No. 2 — the product page carries no day names, and the master
+table's explicit Sunday footnotes ("**... on Sunday evenings only trading
+commences at 18:00", "*** ... 17:50") belong to other products. A Sunday
+21:00 open is the only reading consistent with the holiday notices (the
+2021 Labor Day notice runs "Mon, Sep 6 Closed / Tue, Sep 7 Regular Hours",
+and the 2025 Good Friday notice gives Cotton "Regular Hours" on the Monday
+while the morning-opening softs take a late open), but that reading is
+assembled from indirect material rather than stated by any ICE sentence.
+
+2026-09-01: WHY THE 2010-2011 INTERVAL CANNOT BE SOURCED. ICE Futures U.S.
+sets these hours administratively, not by rule. Its product rulebook chapters
+- Sugar No. 11, Cotton No. 2, Coffee, Cocoa, FCOJ and USDX, all captured
+December 2011 - contain no hours provision at all, and chapter 4 is
+trade-practice rules. No SEC or CFTC filing therefore fixes an ICE Futures
+U.S. trading hour, and the master hours table is the only source; its earliest
+surviving edition is August 2011. This interval is bounded by document
+availability, not by an unfinished search, so the carry-back above is the
+terminal answer unless an earlier edition surfaces.
+https://web.archive.org/web/20111213011033id_/https://www.theice.com/publicdocs/rulebooks/futures_us/11_Sugar_11.pdf
+https://web.archive.org/web/20111213011055id_/https://www.theice.com/publicdocs/rulebooks/futures_us/8_Coffee.pdf
+https://web.archive.org/web/20111213011442id_/https://www.theice.com/publicdocs/rulebooks/futures_us/9_Cocoa.pdf
+https://web.archive.org/web/20111120214154id_/https://www.theice.com/publicdocs/rulebooks/futures_us/10_Cotton.pdf
+Confirmed independently on 2026-08-31: the JANUARY 2, 2013 edition of the
+master table repeats the same contrast - "Cotton No. 2(R)  21:00* - 14:30"
+against "Grains and Oilseeds", "Russell Index", "USDX(R)" and the currency
+rows all carrying "**", and the energy rows "***". ICE therefore drew the
+Sunday distinction explicitly at two independent dated points and did not
+extend it to Cotton, which is positive evidence for the omission rather than
+mere silence.
+Dated editions of ICE's own master table, official origin
+https://www.ice.com/publicdocs/futures_us/ICE_Futures_US_Regular_Trading_Hours.pdf
+delivered via
+https://web.archive.org/web/20111212140120id_/https://www.theice.com/publicdocs/futures_us/ICE_Futures_US_Regular_Trading_Hours.pdf
+https://web.archive.org/web/20130122132629id_/https://www.theice.com/publicdocs/futures_us/ICE_Futures_US_Regular_Trading_Hours.pdf
+Under LAW-PRIMARY-SOURCES an unasserted phase is omitted, so the Sunday
+evening open and its pre-open are modelled as closed; the documented
+weekend boundary is therefore Friday 14:20 to Monday 19:30 NY.
+
+WEEKEND WRAP: the tradeable week runs Monday 21:00 open through Friday
+14:20 close, with Monday-Thursday 19:30 pre-opens. There is no
+Friday-evening open, because a Friday 21:00 open would belong to a
+Saturday trade date, which does not exist. The Friday 14:50-18:00 PCPO is
+retained: the product-page footnote and the 2018 notice's worked example
+state it on the prior Exchange business day, so it remains the week's
+final order-entry window, feeding Monday's session — orders accepted
+there wait for the modelled Monday 21:00 open instead of the unsourced
+Sunday one.
+
+https://www.ice.com/publicdocs/futures_us/ICE_Futures_US_Regular_Trading_Hours.pdf
+https://www.ice.com/products/254/cotton-no-2-futures
+https://www.ice.com/publicdocs/rulebooks/futures_us/4_Trading.pdf
+https://www.ice.com/publicdocs/rulebooks/futures_us/10_Cotton.pdf
+https://www.ice.com/publicdocs/futures_us/exchange_notices/ICE_Futures_US_2021LaborDay_Holiday_20210713.pdf
+https://www.ice.com/publicdocs/futures_us/exchange_notices/ICE_Futures_US_2025_GoodFridayHoliday20250210.pdf
+https://www.ice.com/publicdocs/futures_us/exchange_notices/ICE_Futures_US_2025_Christmas_Holiday_20251031.pdf
+
+---
+
+Two order-entry-only phases, neither of them executable.
+
+The regular Pre-Open / Pre-Trading Session runs 19:30 - 21:00 NY immediately
+before each open, so it carries the same opening-day mask as the executable
+session. The product page gives Pre-Open "7:30 PM" / "19:30",
+and the 2018 PCPO notice's own table lists Cotton No. 2 with Pre-Open Start
+7:30 PM and End 9:00 PM. Only Limit orders are accepted (Rule 4.22(a):
+"Prior to the opening of a trading session for an Exchange Commodity
+Contract, there will be a Pre-Trading Session designated by the Exchange
+during which time only Limit orders may be entered."), with an Opening Match
+uncrossing between the Pre-Open and the open (Rules 4.22(b), 4.23).
+
+The Post-Close Pre-Open ("PCPO") runs 14:50 - 18:00 NY, 30 minutes after the
+14:20 close, "on the prior Exchange business day" - product page footnote
+verbatim: "**In addition to the Pre-Open start time shown above, there will be
+a Post-Close Pre-Open order entry session from 2:50 pm to 6:00 pm NY time on
+the prior Exchange business day." Every Monday-Friday business day is the
+prior business day of some trading day, so the mask is MON_FRI. The Friday leg
+is stated rather than inferred: the 2018 notice's own worked example places
+the PCPO for trade date Monday 8 October 2018 on Friday 5 October, making the
+Friday PCPO the last order-entry window of the week. The PCPO accepts GTC /
+GTD / GTD&T entry and amendment only; Day orders entered in it are killed at
+its end.
+
+https://www.ice.com/products/254/cotton-no-2-futures
+https://www.ice.com/publicdocs/futures_us/exchange_notices/ICE_Futures_US_PCPO_Session_20180920.pdf
+CLASSIFICATION. Both phases are order_entry, not extended. Rule 4.22(a)
+restricts the Pre-Trading Session to Limit order entry and puts the Opening
+Match at the open, so no trade prints between 19:30 and 21:00; the PCPO is an
+order entry/amendment window whose own Day orders are killed at its end, so
+no trade prints between 14:50 and 18:00 either. Cotton No. 2 publishes no
+tradeable phase outside its executable session, which leaves the extended
+slice empty.
+
+https://www.ice.com/publicdocs/rulebooks/futures_us/4_Trading.pdf
+
+---
+
+Baseline before 2014-02-03. The January 2014 notice moved only the close, from
+14:30 to 14:20 NY, and left the 21:00 open on the previous day untouched, so
+the baseline regular grid is the current one with the older close.
+
+The notice does not address order entry at all, and no primary ICE document
+inside the modelled window states a pre-open time for Cotton earlier than the
+19:30 on the product page and in the 2018 notice table. The 19:30 - 21:00
+Pre-Open is therefore carried back unchanged rather than inventing an earlier
+cutover for it; if ICE moved it at some point before 2014, no primary source
+dates that move.
+
+https://www.ice.com/publicdocs/futures_us/exchange_notices/ExNot012714Hours.pdf
+
+---
+
+2014-02-03: ICE Futures U.S. Exchange Notice, originally issued 6 January
+  2014, "Changes to Daily Trading Hours": "Effective with the start of trading
+  for trade date Monday, February 3, 2014, the Exchange will implement changes
+  to daily trading hours for Sugar No. 11, Coffee "C", Cocoa, Cotton No. 2 and
+  Sugar No. 16 futures and options contracts." Cotton's row moves the close
+  from 14:30 to 14:20; the 21:00 open on the previous day is unchanged.
+  https://www.ice.com/publicdocs/futures_us/exchange_notices/ExNot012714Hours.pdf
+2018-10-08: ICE Futures U.S. Notice, 20 September 2018, "EXTENSION OF THE
+  PRE-OPEN ORDER ENTRY SESSION FOR COFFEE "C", COTTON NO. 2, COCOA, FCOJ,
+  SUGAR NO. 11 AND SUGAR NO. 16 FUTURES CONTRACTS": "Commencing for trade date
+  Monday, October 8, 2018, the pre-open order entry session for Coffee "C",
+  Cotton No. 2, Cocoa, FCOJ, Sugar No. 11 and Sugar No. 16 futures contracts
+  will be enhanced by the addition of a new post-close pre-open ("PCPO")
+  session that will start at 30 minutes after the end of trading for the
+  contract and end at 6:00 pm on the Exchange business day prior to each
+  trading day." For Cotton the 14:20 close puts that start at 14:50.
+  https://www.ice.com/publicdocs/futures_us/exchange_notices/ICE_Futures_US_PCPO_Session_20180920.pdf
+Evidence: docs/evidence/ice_us_cotton.md

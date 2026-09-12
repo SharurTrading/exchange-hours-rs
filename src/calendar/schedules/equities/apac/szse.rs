@@ -91,6 +91,7 @@ use crate::calendar::schedules::timeline::{Revision, local_date, revisions, sele
 
 pub(crate) const CURRENT: &StaticHoursProfile = &SZSE_PROFILE_CURRENT;
 
+// Evidence: docs/evidence/szse.md
 static REVISIONS: &[Revision] = revisions![(
     2016,
     5,

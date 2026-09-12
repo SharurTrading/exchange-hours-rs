@@ -101,6 +101,7 @@ use crate::calendar::schedules::timeline::{Revision, local_date, revisions, sele
 
 pub(crate) const CURRENT: &StaticHoursProfile = &NZX_PROFILE;
 
+// Evidence: docs/evidence/nzx.md
 static REVISIONS: &[Revision] = revisions![(2020, 4, 6, &NZX_PROFILE, "NZX announcement 350919"),];
 
 pub(crate) fn profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {

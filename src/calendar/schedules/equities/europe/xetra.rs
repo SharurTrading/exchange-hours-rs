@@ -184,6 +184,7 @@ pub(crate) static XETRA_PROFILE: StaticHoursProfile = StaticHoursProfile {
     has_weekend_close: true,
 };
 
+// Evidence: docs/evidence/xetra.md
 static REVISIONS: &[Revision] = revisions![
     (
         2020,

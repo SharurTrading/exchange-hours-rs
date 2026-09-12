@@ -8,9 +8,10 @@ the URLs beneath the existing ID instead of renaming it. For a review, open
 both the living current/rulebook material and the notice/evidence channel.
 
 This is an index, not the evidence archive. Exact circulars, filings, historical
-tables, quotations, and day-level effective dates remain beside the profile in
-the linked owner code until LAW-EVIDENCE-FILES moves that narrative to
-`docs/evidence/<owner>.md` in a later change. A search result, HTTP success, or
+tables, quotations, and day-level effective dates live in the row's evidence
+file under [`docs/evidence/`](../evidence/), one per ledger row
+(LAW-EVIDENCE-FILES); the owner module keeps its rule data and one citation line
+per revision row, and the ledger row keeps at most three sentences. A search result, HTTP success, or
 third-party calendar is not verification. “Missing/uncited” below means the
 modeled literal does not yet have adjacent support at the tier
 LAW-PRIMARY-SOURCES requires — T1, the operator's own statement, or T2, the

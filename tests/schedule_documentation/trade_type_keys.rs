@@ -8,7 +8,8 @@
 //! (LAW-SERVICE-TIERS), so the handoff is a record, not a work list.
 
 use super::{
-    README, SOURCES, VERIFICATION, market_hours_key_rows, number_words, row_cells, wire_name,
+    README, SOURCES, VERIFICATION, exchange_rows, is_partial, market_hours_key_rows, number_words,
+    row_cells, wire_name,
 };
 use exchange_hours::MarketHoursKey;
 
@@ -95,10 +96,7 @@ fn cme_source_set_prose_counts_match_the_ledger() {
         !cme_rows.is_empty(),
         "no ledger key row references the US-CME-GROUP source set"
     );
-    let partial = cme_rows
-        .iter()
-        .filter(|row| row_cells(row)[3] == "Partial")
-        .count();
+    let partial = cme_rows.iter().filter(|row| is_partial(row)).count();
 
     let total_words = number_words(cme_rows.len());
     let sources = flowed(SOURCES);
@@ -131,9 +129,10 @@ fn cme_source_set_prose_counts_match_the_ledger() {
 /// `EXECUTABLE_COLLECTIVE_NAMES` and correct that phrase's count.
 #[test]
 fn every_executable_gap_row_is_named_in_the_prose() {
-    let executable = VERIFICATION
-        .lines()
-        .filter(|line| line.starts_with("| `") && line.contains("Gap: executable"))
+    let executable = exchange_rows()
+        .into_iter()
+        .chain(market_hours_key_rows())
+        .filter(|row| row_cells(row)[3] == "Partial / executable")
         .map(wire_name)
         .collect::<Vec<_>>();
     let words = number_words(executable.len());

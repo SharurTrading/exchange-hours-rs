@@ -217,6 +217,7 @@ pub(crate) static NASDAQ_CPH_PROFILE: StaticHoursProfile = StaticHoursProfile {
     has_weekend_close: true,
 };
 
+// Evidence: docs/evidence/nasdaq_stockholm.md
 static STO_REVISIONS: &[Revision] = revisions![(
     2015,
     11,
@@ -224,6 +225,8 @@ static STO_REVISIONS: &[Revision] = revisions![(
     &NASDAQ_STO_PROFILE,
     "Nasdaq INET notice 61/15"
 ),];
+
+// Evidence: docs/evidence/nasdaq_helsinki.md
 static HEL_REVISIONS: &[Revision] = revisions![(
     2015,
     11,
@@ -253,6 +256,7 @@ pub(crate) fn helsinki_profile_at(
     randomized_open_profile(as_of, Europe::Helsinki, &HEL_BASE_PROFILE, HEL_REVISIONS)
 }
 
+// Evidence: docs/evidence/nasdaq_copenhagen.md
 static CPH_REVISIONS: &[Revision] = revisions![
     (
         2015,

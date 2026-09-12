@@ -213,6 +213,7 @@ pub(crate) static EURONEXT_LIS_PROFILE: StaticHoursProfile = StaticHoursProfile 
 // distinguishes that legacy-markets date from Milan's 2023-03-27 migration.
 // https://connect.euronext.com/sites/default/files/it-documentation/Guide%20to%20Trading%20System%20-%20Borsa%20Italiana%20Migration%20to%20Optiq%20-%20Functional%20Changes%20v.2.0.pdf
 // https://connect.euronext.com/sites/default/files/it-documentation/Go-Live%20Weekend%20Guidelines%20-%20Borsa%20Italiana%20Optiq%20Migration.pdf
+// Evidence: docs/evidence/euronext_paris.md
 static PARIS_REVISIONS: &[Revision] = revisions![(
     2023,
     3,
@@ -220,6 +221,8 @@ static PARIS_REVISIONS: &[Revision] = revisions![(
     &EURONEXT_PARIS_PROFILE,
     "Euronext Go-Live Weekend Guidelines"
 ),];
+
+// Evidence: docs/evidence/euronext_amsterdam.md
 static AMSTERDAM_REVISIONS: &[Revision] = revisions![(
     2023,
     3,
@@ -227,6 +230,8 @@ static AMSTERDAM_REVISIONS: &[Revision] = revisions![(
     &EURONEXT_AMS_PROFILE,
     "Euronext Go-Live Weekend Guidelines"
 ),];
+
+// Evidence: docs/evidence/euronext_brussels.md
 static BRUSSELS_REVISIONS: &[Revision] = revisions![(
     2023,
     3,
@@ -234,6 +239,8 @@ static BRUSSELS_REVISIONS: &[Revision] = revisions![(
     &EURONEXT_BRU_PROFILE,
     "Euronext Go-Live Weekend Guidelines"
 ),];
+
+// Evidence: docs/evidence/euronext_lisbon.md
 static LISBON_REVISIONS: &[Revision] = revisions![(
     2023,
     3,

@@ -82,6 +82,7 @@ use crate::calendar::schedules::timeline::{Revision, local_date, revisions, sele
 // entry into force and expressly excludes only the separate Fixing system.
 // https://www.bolsasymercados.es/dam/descargas/regulacion/renta-variable/sociedad-de-bolsas/circular/2023/circular-1-23-english.pdf
 // https://www.bolsasymercados.es/dam/descargas/regulacion/renta-variable/sociedad-de-bolsas/instrucciones-operativas/2023/oi-47-2023-application-of-tal-phase-for-fixing-instruments.pdf
+// Evidence: docs/evidence/bme.md
 static REVISIONS: &[Revision] = revisions![(
     2023,
     12,

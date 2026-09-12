@@ -88,6 +88,7 @@ use crate::calendar::schedules::timeline::{Revision, local_date, revisions, sele
 
 pub(crate) const CURRENT: &StaticHoursProfile = &KRX_PROFILE_CURRENT;
 
+// Evidence: docs/evidence/krx.md
 static REVISIONS: &[Revision] = revisions![
     (2016, 8, 1, &KRX_PROFILE_POST_2016_08_01, "FSC notice 73613"),
     (2019, 4, 29, &KRX_PROFILE_CURRENT, "KRX rulebook law 000111"),

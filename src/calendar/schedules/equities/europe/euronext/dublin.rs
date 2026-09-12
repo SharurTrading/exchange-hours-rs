@@ -176,6 +176,7 @@ pub(crate) static EURONEXT_DUB_PROFILE: StaticHoursProfile = StaticHoursProfile 
     has_weekend_close: true,
 };
 
+// Evidence: docs/evidence/euronext_dublin.md
 static REVISIONS: &[Revision] = revisions![
     (
         2019,

@@ -141,6 +141,7 @@ use crate::calendar::schedules::timeline::{Revision, local_date, revisions, sele
 // Trading-At-Last launched with SMR8.2 on 2020-06-22. The readiness document
 // gives both the production date and the added 17:30-17:40 phase.
 // https://www.six-group.com/dam/download/the-swiss-stock-exchange/trading/participation/SWXess-maintenance-releases/smr82_participant_readiness.pdf
+// Evidence: docs/evidence/six.md
 static REVISIONS: &[Revision] = revisions![(
     2020,
     6,

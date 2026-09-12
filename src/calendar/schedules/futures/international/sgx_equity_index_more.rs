@@ -20,15 +20,9 @@ use crate::calendar::schedules::timeline::{Revision, local_date, revisions, sele
 // --- Taiwan (FTSE Taiwan suite: TWN, MTWN, TWNO, CTWN) -----------------------
 
 // T session trades continuously 08:45-13:45; the T+1 session reopens at 14:00
-// and runs to 05:15 the next calendar day, so it is encoded as a wrapping rule.
-// The Friday T+1 leg ends Saturday 05:15 and there is no Sunday session, so
-// both rules are Monday-Friday. SGX describes the combined result as "more than
-// 20 hours of trading across Asia, Europe and U.S. hours", which the 14:00
-// through 05:15 wrap plus the daytime session reproduces.
-//
-// https://www.sgx.com/derivatives/products/twnfc
-// https://www.sgx.com/asia-simplified/equity-derivatives
-// https://api2.sgx.com/sites/default/files/2026-01/SGX%20Calendar%202026_2.pdf
+// and runs to 05:15 the next calendar day, so it wraps. Both rules stay
+// Monday-Friday.
+// Narrative: docs/evidence/sgx_equity_index_taiwan.md
 pub(crate) static SGX_EQUITY_INDEX_TAIWAN_REGULAR_CURRENT: &[SessionRule] = &[
     SessionRule {
         days: MON_FRI,
@@ -51,13 +45,9 @@ pub(crate) static SGX_EQUITY_INDEX_TAIWAN_EXTENDED_CURRENT: &[SessionRule] = &[S
     close_ssm: 13 * 3600 + 50 * 60,
 }];
 
-// The two opening routines, "Pre - Opening: 8.30 am - 8.43 am / Non - Cancel:
-// 8.43 am - 8.45 am" and the T+1 "Pre - Opening: 1.55 pm - 1.58 pm / Non -
-// Cancel: 1.58 pm - 2.00 pm", each contiguous pair merged into one window. The
-// options variant publishes a single "Order Cancellation" window over the same
-// spans - 08:30-08:45 and 13:55-14:00 - so these windows cover both. Neither
-// matches: the opening matches land on the 08:45 and 14:00 session opens that
-// already begin `regular` windows, so both windows are `order_entry`.
+// The two opening routines, each contiguous Pre-Opening and Non-Cancel pair
+// merged into one window. Neither matches, so both are `order_entry`.
+// Narrative: docs/evidence/sgx_equity_index_taiwan.md
 pub(crate) static SGX_EQUITY_INDEX_TAIWAN_ORDER_ENTRY_CURRENT: &[SessionRule] = &[
     SessionRule {
         days: MON_FRI,
@@ -94,23 +84,10 @@ static SGX_EQUITY_INDEX_CLOSED: StaticHoursProfile = StaticHoursProfile {
     has_weekend_close: true,
 };
 
-// SGX EQUITY-INDEX HISTORY. The evidence, the calendar editions, the dated
-// cutovers, the one undated move and how it is served are recorded once in the
-// `sgx_equity_index::history` module; that note governs these two families
-// exactly as it governs the other three. In short: each family serves its
-// sourced states from its own knowledge boundary - Taiwan from its 2020-07-20
-// launch, NTR (USD) from the 2018 (Apr) calendar edition - with the 04:45 ->
-// 05:15 T+1 close from Monday 2019-11-11 on SGX's own change log, and from
-// 2025-04-07 the current grid applies on the authority of SGX-DT
-// Circular DT/AM 15 of 2025, which pulled both T+1 opens fifteen minutes
-// earlier. Routines are sourced for every era here from SGX's content API,
-// which states each family's Pre-Opening/Non-Cancel/Pre-Closing windows
-// (captures 2019-02-04, 2019-06-11, 2020-01-09 and 2020-07-15).
-//
-// https://api2.sgx.com/sites/default/files/2025-01/SGX%20Calendar%202025.pdf
-// https://api2.sgx.com/sites/default/files/2025-07/DT%20Trading%20Calendar%202025%20%28updated%2031%20Jul%202025%29.pdf
-// https://api2.sgx.com/sites/default/files/2026-01/SGX%20Calendar%202026_2.pdf
-// https://www.citicsf.com.hk/attachment?aid=95&uid=a1207308-0e3a-4a16-a869-a4d1b808a2b3
+// SGX EQUITY-INDEX HISTORY. The calendar editions, the dated circulars, the
+// content-API captures and the residual risks behind every era below live in
+// the evidence files; this module carries only the rule tables and timelines.
+// Narrative: docs/evidence/sgx_equity_index_taiwan.md
 static SGX_EQUITY_INDEX_TAIWAN_REGULAR_SOURCED_WINDOW: &[SessionRule] = &[
     SessionRule {
         days: MON_FRI,
@@ -198,21 +175,10 @@ static SGX_EQUITY_INDEX_NTR_USD_SOURCED_WINDOW: StaticHoursProfile = StaticHours
     has_weekend_close: true,
 };
 
-// 2018-04-16 to 2019-11-10: the suite's first listing. The 2018 (Apr) calendar
-// edition (PDF created 2018-04-11) prints thirteen NTR (USD) rows, every one
-// "7.25am to 6.30pm / 7.00pm to 4.45am", and the 2019 edition repeats them;
-// neither 2017 portal table lists the suite. Keyed to the Monday after the
-// edition's own creation date rather than to its edition year: SGX's product
-// change log records "Change of Trading Hours for EM and NTR suite" in an
-// entry issued 2017-12-29 with no day, so a 1 January key would carry the grid
-// across an undated change with no second state to intersect, and the row
-// creates a wrapping overnight close, which the history note explains is why
-// it lands on a Monday. Routines as above, from the content API's 2019-02-04
-// payload; the change log's entry issued 2019-08-14, v6.5, "Editorial change
-// Contracts_data: (T) session Closing hours and LTD Last Trade Time to
-// 6:35pm" for EM, NAU, NCH, NEA and the rest of the suite, restates the
-// closing routine's end (18:30 close, 18:30-18:35 pre-closing and non-cancel)
-// that the 2019 payloads already print, and names no day.
+// 2018-04-16 to 2019-11-10: the suite's first listing, T 07:25-18:30 and T+1
+// 19:00-04:45 from the 2018 (Apr) calendar edition, keyed to the Monday after
+// that edition's own creation date.
+// Narrative: docs/evidence/sgx_equity_index_taiwan.md
 static SGX_EQUITY_INDEX_NTR_USD_REGULAR_2018: &[SessionRule] = &[
     SessionRule {
         days: MON_FRI,
@@ -234,35 +200,11 @@ static SGX_EQUITY_INDEX_NTR_USD_FROM_2018_04_16: StaticHoursProfile = StaticHour
     has_weekend_close: true,
 };
 
-// https://api2.sgx.com/sites/default/files/2025-07/DT%20Trading%20Calendar%202025%20%28updated%2031%20Jul%202025%29.pdf
-// TAIWAN'S KNOWLEDGE BOUNDARY IS ITS OWN LAUNCH, NOT AN EDITION. This family's
-// contracts do not exist in the 2020 calendar edition, which lists only the
-// MSCI Taiwan predecessors - "SGX MSCI Taiwan Index Futures" (TW), its options
-// (TWO) and its NTR (USD) sibling (NTW) - and the 2021 edition is the first
-// calendar to list "SGX FTSE Taiwan Index Futures" under TWN. But an edition is
-// one channel: SGX's own media release of 1 July 2020 states the launch day
-// (20 July 2020), and SGX's content API lists "SGX FTSE Taiwan Index Futures"
-// with its full grid and routines on 2020-07-15 while its 2020-06-02 payload
-// still carries only MSCI Taiwan. So the family's sourced history starts on its
-// stated launch day, 2020-07-20, on the grid the content API prints, and the
-// months between the launch and the 2021 edition are no longer sessionless.
-//
-// The predecessor's hours were identical (T 08:45-13:45, T+1 14:15-05:15), so
-// starting at the 2020 edition would serve the right *times*. It would still be
-// wrong: this profile is scoped to the FTSE suite, and reporting those
-// contracts open before 20 July 2020 asserts a product SGX had not yet listed.
-// Dates before the launch are sessionless, which is exact rather than
-// conservative: the family was not trading.
-//
-// Launch release (Chinese rendering; the English page is now an empty shell),
-// the content API's 2020-06-02 payload (MSCI Taiwan only), its 2020-07-15
-// payload (the FTSE suite with its grid and routines), the 2021 edition that
-// first lists the suite in a calendar, and DT/AM 15's appendices:
-// https://web.archive.org/web/20201030164207id_/https://www.sgx.com/zh-hans/media-centre/20200701-sgx-introduce-sgx-ftse-taiwan-index-futures
-// https://web.archive.org/web/20200602051032id_/https://api2.sgx.com/content-api?queryId=00c0b9e1c305ecf3e85c714c61d2ecbe0d05faef%3Aderivatives_products_list&variables=%7B%22limit%22%3A10000%2C%22lang%22%3A%22EN%22%7D
-// https://web.archive.org/web/20200715061901id_/https://api2.sgx.com/content-api?queryId=c23ca146c2d59c41265ea30280b202dbdaaaae81%3Aderivatives_products_list&variables=%7B%22limit%22%3A100%2C%22offset%22%3A0%2C%22lang%22%3A%22EN%22%7D
-// https://api2.sgx.com/sites/default/files/2021-01/SGX%20Derivatives%20Trading%20Calendar%202021.pdf
-// https://www.citicsf.com.hk/attachment?aid=95&uid=a1207308-0e3a-4a16-a869-a4d1b808a2b3
+// Two rows: the launch grid from 2020-07-20 and the current grid from
+// 2025-04-07 on DT/AM 15 of 2025. Both rows are T1 for their day; the launch
+// grid itself comes from SGX's own content API at T2, and the captures,
+// quotations and URLs are in the evidence file.
+// Evidence: docs/evidence/sgx_equity_index_taiwan.md
 pub(crate) static SGX_EQUITY_INDEX_TAIWAN_REVISIONS: &[Revision] = revisions![
     (
         2020,
@@ -294,26 +236,10 @@ pub(crate) fn sgx_equity_index_taiwan_profile_at(
 // --- NTR (USD) / global index grid (NSG, NSP, FN*/F*/E*/MCN* series) ---------
 
 // The widest of the five SGX equity-index grids: the T session trades
-// continuously 07:25-18:30, and the T+1 session reopens at 18:45 and runs to
-// 05:15 the next calendar day, so it wraps. SGX's Calendar 2026 lists this
-// whole series uniformly as "7:25am 6:30pm 6:45pm 5:15am" (T start, T end, T+1
-// start, T+1 end), which is why one profile covers the entire NTR (USD) and
-// global-index family rather than one profile per contract code.
-//
-// THE SUITE'S MEMBERSHIP GREW; ITS GRID DID NOT. The codes listed above are
-// today's. The 2018 (Apr) edition is the first to list the suite - thirteen
-// NTR (USD) rows including NSG, one of the two codes this key names, all on
-// one 07:25-18:30 / 19:00-04:45 pair; neither 2017 portal table has an NTR
-// row, and SGX's launch release of 12 June 2017 names four contracts and no
-// hours. NSP joins at the 2020 edition, which carries an MSCI-branded suite
-// (NJP, NTW, NSP); the FN* series appears from the 2021 edition and the MCN*
-// series from the 2024 one. Every edition puts whichever contracts it lists on
-// the identical pair, and NSG is present in all of them, so the grid this key
-// models is continuously sourced from the 2018 (Apr) edition. That is the difference from the FTSE Taiwan suite below, whose
-// boundary is a launch day rather than a first listing.
-//
-// https://www.sgx.com/derivatives/products/sgxsimsci
-// https://api2.sgx.com/sites/default/files/2026-01/SGX%20Calendar%202026_2.pdf
+// continuously 07:25-18:30 and the T+1 session reopens at 18:45 and wraps to
+// 05:15. One profile covers the whole NTR (USD) and global-index family
+// because SGX lists every contract in it on the identical four instants.
+// Narrative: docs/evidence/sgx_equity_index_taiwan.md
 pub(crate) static SGX_EQUITY_INDEX_NTR_USD_REGULAR_CURRENT: &[SessionRule] = &[
     SessionRule {
         days: MON_FRI,
@@ -366,25 +292,10 @@ pub(crate) static SGX_EQUITY_INDEX_NTR_USD_BASELINE: StaticHoursProfile = Static
 };
 
 // Three rows: the knowledge boundary at the 2018 (Apr) edition, the 2019-11-11
-// row that carries the 05:15 close on the day SGX's change log states, then the
-// current grid on the effective day
-// stated by SGX-DT Circular DT/AM 15 of 2025, which moved this family's T+1
-// open from 19:00 to 18:45. Partial because the family traded from its 12 June
-// 2017 launch with hours no artifact read states until the 2018 (Apr) edition.
-//
-// The 2018 (Apr) edition that first lists the suite, the 2019 edition, the
-// content API payloads that state the routines (2019-02-04 at 04:45,
-// 2020-01-09 at 05:15), the 2020 edition, the change log that dates the
-// 05:15 close, and the current editions and circular:
-// https://api2.sgx.com/sites/default/files/2018-05/SGX%20Derivatives%20Trading%20Calendar%202018%20%28Apr%29.pdf
-// https://api2.sgx.com/sites/default/files/2019-01/2019%20DT%20Calendar.pdf
-// https://web.archive.org/web/20190204200905id_/https://api2.sgx.com/content-api?queryId=9756cc24703868bca7da492a8e1aebd1268eaf70%3Aderivatives_products_list&variables=%7B%22limit%22%3A10000%2C%22lang%22%3A%22EN%22%7D
-// https://web.archive.org/web/20200109051211id_/https://api2.sgx.com/content-api?queryId=ef44c5f861fc84577240761863bf1f842f189d9f%3Aderivatives_products_list&variables=%7B%22limit%22%3A10000%2C%22lang%22%3A%22EN%22%7D
-// https://api2.sgx.com/sites/default/files/2020-01/SGX%20Derivatives%20Trading%20Calendar%202020.pdf
-// https://api2.sgx.com/sites/default/files/2026-08/Derivatives+Products+Description+v17.6%20eff%2020260824,%2020260907.zip
-// https://api2.sgx.com/sites/default/files/2026-01/SGX%20Calendar%202026_2.pdf
-// https://api2.sgx.com/sites/default/files/2025-07/DT%20Trading%20Calendar%202025%20%28updated%2031%20Jul%202025%29.pdf
-// https://www.citicsf.com.hk/attachment?aid=95&uid=a1207308-0e3a-4a16-a869-a4d1b808a2b3
+// close move on SGX's own dated change log, and the current grid on DT/AM 15
+// of 2025. Every row is T1; the editions, payloads and URLs behind them are in
+// the evidence file.
+// Evidence: docs/evidence/sgx_equity_index_ntr_usd.md
 pub(crate) static SGX_EQUITY_INDEX_NTR_USD_REVISIONS: &[Revision] = revisions![
     (
         2018,

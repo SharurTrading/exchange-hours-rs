@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: MIT-0
 
 //! ICE Futures U.S. NYSE FANG+ Index futures schedules.
+//!
+//! Narrative evidence, sources and residual risks: `docs/evidence/iceus.md` and
+//! `docs/evidence/ice_us.md` (LAW-EVIDENCE-FILES).
 
 use chrono_tz::America;
 
@@ -10,17 +13,9 @@ use crate::calendar::schedules::timeline::{Revision, local_date, revisions, sele
 use crate::calendar::schedules::{CLOSED_NEW_YORK, StaticHoursProfile};
 
 // The `iceus` default is the NYSE FANG+ Index futures family, not a venue-wide
-// clock. ICE launched it for trade date 2017-11-08 with 20:00-18:00 ET hours
-// and an exceptional Sunday 18:00 open; the current product page and ICE's
-// June-2026 master table retain that grid. The launch notice starts Pre-Open
-// 30 minutes before each executable session, and the current product page
-// separately publishes the 17:30 Sunday and 19:30 weekday queue starts.
-//
-// Equal SessionRule endpoints encode one complete local-day span, so the
-// exceptional Sunday session remains continuous through Monday 18:00.
-// https://www.ice.com/publicdocs/futures_us/exchange_notices/ICE_Futures_US_FANG%2BFuture_20170926.pdf
-// https://www.ice.com/products/66380320/NYSE-FANG-Index-Future
-// https://www.ice.com/publicdocs/futures_us/ICE_Futures_US_Regular_Trading_Hours.pdf
+// clock: 20:00-18:00 ET hours with an exceptional Sunday 18:00 open. Equal
+// `SessionRule` endpoints encode one complete local-day span, so that Sunday
+// session remains continuous through Monday 18:00.
 pub(crate) static ICE_US_FANG_REGULAR_CURRENT: &[SessionRule] = &[
     SessionRule {
         days: SUN_ONLY,
@@ -33,13 +28,10 @@ pub(crate) static ICE_US_FANG_REGULAR_CURRENT: &[SessionRule] = &[
         close_ssm: 18 * 3600,
     },
 ];
-// ORDER ENTRY, NOT TRADING. The 17:30 Sunday and 19:30 weekday phases are the
-// Pre-Open queues the launch notice and product page describe: the platform
-// accepts, amends and cancels orders for the coming session, and nothing
-// matches until the 18:00 / 20:00 open. They are therefore classified as
-// order-entry phases rather than tradeable extended sessions. FANG publishes no
-// tradeable phase outside its executable session, so the extended slice is
-// empty.
+// ORDER ENTRY, NOT TRADING. The 17:30 Sunday and 19:30 weekday phases are
+// Pre-Open queues: orders rest, nothing matches until the 18:00 / 20:00 open.
+// FANG+ publishes no tradeable phase outside its executable session, so the
+// extended slice is empty.
 pub(crate) static ICE_US_FANG_EXTENDED_CURRENT: &[SessionRule] = &[];
 pub(crate) static ICE_US_FANG_ORDER_ENTRY_CURRENT: &[SessionRule] = &[
     SessionRule {
@@ -63,17 +55,15 @@ pub(crate) static ICE_US_FANG_CURRENT: StaticHoursProfile = StaticHoursProfile {
     has_weekend_close: true,
 };
 
-// The launch notice says trading began at the start of trade date 2017-11-08;
-// its 20:00 prior-day trading rule and 30-minute Pre-Open therefore pin the
-// first order-entry phase to Tuesday 2017-11-07 at 19:30 ET. This one-evening
-// profile avoids pretending the product accepted orders earlier that day.
+// Trading began at the start of trade date 2017-11-08, so the 20:00 prior-day
+// rule and the 30-minute Pre-Open pin the first order-entry phase to Tuesday
+// 2017-11-07 at 19:30 ET and nothing earlier that day.
 static ICE_US_FANG_LAUNCH_EVE_REGULAR: &[SessionRule] = &[SessionRule {
     days: TUE_ONLY,
     open_ssm: 20 * 3600,
     close_ssm: 18 * 3600,
 }];
-// Same Pre-Open queue as the current profile, so the same classification: this
-// is the launch evening's order-entry phase, not a tradeable session.
+// Same queue as the current profile, so the same classification.
 static ICE_US_FANG_LAUNCH_EVE_ORDER_ENTRY: &[SessionRule] = &[SessionRule {
     days: TUE_ONLY,
     open_ssm: 19 * 3600 + 30 * 60,
@@ -88,7 +78,10 @@ static ICE_US_FANG_LAUNCH_EVE: StaticHoursProfile = StaticHoursProfile {
     has_weekend_close: true,
 };
 
+// Evidence: docs/evidence/iceus.md, docs/evidence/ice_us.md
 static ICE_US_FANG_REVISIONS: &[Revision] = revisions![
+    // 2017-11-07 — T1 — ICE FANG+ launch notice 20170926 — launch-eve 19:30 ET
+    // Pre-Open and 20:00 ET matching start.
     (
         2017,
         11,
@@ -96,6 +89,8 @@ static ICE_US_FANG_REVISIONS: &[Revision] = revisions![
         &ICE_US_FANG_LAUNCH_EVE,
         "ICE FANG+ launch notice 20170926"
     ),
+    // 2017-11-08 — T1 — ICE FANG+ launch notice 20170926 — the full grid for
+    // trade date 2017-11-08.
     (
         2017,
         11,

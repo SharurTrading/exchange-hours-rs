@@ -159,6 +159,7 @@ use crate::calendar::schedules::timeline::{Revision, local_date, revisions, sele
 
 pub(crate) const CURRENT: &StaticHoursProfile = &BIST_PROFILE_CURRENT;
 
+// Evidence: docs/evidence/borsa_istanbul.md
 static REVISIONS: &[Revision] = revisions![
     (
         2012,

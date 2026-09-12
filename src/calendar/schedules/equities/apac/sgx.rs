@@ -203,6 +203,7 @@ use crate::calendar::schedules::timeline::{Revision, local_date, revisions, sele
 
 pub(crate) const CURRENT: &StaticHoursProfile = &SGX_SEC_PROFILE_CURRENT;
 
+// Evidence: docs/evidence/sgx_securities.md
 static REVISIONS: &[Revision] = revisions![
     (
         2011,

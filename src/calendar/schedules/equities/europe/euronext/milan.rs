@@ -159,6 +159,7 @@ pub(crate) static EURONEXT_MIL_PROFILE: StaticHoursProfile = StaticHoursProfile 
     has_weekend_close: true,
 };
 
+// Evidence: docs/evidence/euronext_milan.md
 static REVISIONS: &[Revision] = revisions![
     (
         2013,

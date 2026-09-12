@@ -76,6 +76,7 @@ static SGX_CURRENT: StaticHoursProfile = StaticHoursProfile {
     has_weekend_close: true,
 };
 
+// Evidence: docs/evidence/sgx.md, docs/evidence/sgx_key.md
 static SGX_REVISIONS: &[Revision] = revisions![(
     2024,
     7,

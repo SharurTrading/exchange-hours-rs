@@ -33,6 +33,7 @@ use crate::calendar::schedules::timeline::{effective_date, local_date, reference
 // https://www.ice.com/publicdocs/endex/circulars/E21013_attach_2.pdf
 // https://www.ice.com/publicdocs/endex/circulars/E26004.pdf
 // https://www.ice.com/products/27996665/Dutch-TTF-Gas-Futures
+// Evidence: docs/evidence/ice_endex.md
 static PRE_REGULAR: &[SessionRule] = &[SessionRule {
     days: MON_FRI,
     open_ssm: 8 * 3600,

@@ -90,6 +90,7 @@ static CLOSED: StaticHoursProfile = StaticHoursProfile {
     has_weekend_close: true,
 };
 
+// Evidence: docs/evidence/small_exchange.md
 static REVISIONS: &[Revision] = revisions![
     (
         2020,

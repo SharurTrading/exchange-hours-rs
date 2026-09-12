@@ -18,6 +18,10 @@ The operator's archived pre-floor timetable, successive ISE order-book models, a
 
 ## Sources
 
+Retrieval dates: these sources were last opened on the row's reviewed-on date
+(2026-08-22, UTC); per-source retrieval dates were not recorded before the
+2026-09-12 migration and are added as each source is re-verified.
+
 - <https://web.archive.org/web/20090930042026id_/http://www.ise.ie/index.asp?locID=311&docID=-1> — ISE's own archived trading-hours page, retrieved from the 2009-09-30 capture: the complete legacy grid before the January-2010 audit floor — pre-trading 06:30–07:50, opening auction to 08:00, continuous trading to 16:28, closing auction to 16:30, post-trading through 17:15.
 - <https://web.archive.org/web/20121004024422id_/http://www.ise.ie/Membership-and-Trading/Market-Infrastructure/Trading/ISE-Xetra%C2%AE/Release-11-1/ISE_Xetra_Rel_11_1_Market_Model_090511.pdf> — ISE Xetra Release 11.1 market model.
 - <https://web.archive.org/web/20120907001910id_/http://www.ise.ie/Membership-and-Trading/Market-Infrastructure/Trading/ISE-Xetra%C2%AE/Release-12/ISE_Xetra_Rel_12_Market_Model.pdf> — ISE Xetra Release 12 market model.

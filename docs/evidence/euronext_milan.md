@@ -19,6 +19,10 @@ Borsa Italiana principal-share history includes its January-2010 baseline, sourc
 
 ## Sources
 
+Retrieval dates: these sources were last opened on the row's reviewed-on date
+(2026-08-22, UTC); per-source retrieval dates were not recorded before the
+2026-09-12 migration and are added as each source is re-verified.
+
 - <https://www.borsaitaliana.it/borsaitaliana/ufficio-stampa/comunicati-stampa/2009/090908nuoviorari.htm> — Borsa Italiana press release, new hours effective 2009-09-29: the resulting January-2010 baseline starts pre-opening at 08:00, uncrosses randomly from 09:00–09:01, trades continuously through 17:25, and closes its randomized auction by 17:31.
 - <https://www.borsaitaliana.it/azioni/notiziedettaglio/cpx.en.htm> — Borsa Italiana Closing Price Cross launch notice, Monday 2013-09-30.
 - <https://www.borsaitaliana.it/borsaitaliana/regolamenti/avvisi/17016orarineg.pdf> — Borsa Italiana notice 17016, effective 2015-11-23.

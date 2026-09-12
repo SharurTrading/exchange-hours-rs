@@ -22,6 +22,10 @@
 
 ## Sources
 
+Retrieval dates: these sources were last opened on the row's reviewed-on date
+(2026-08-29, UTC); per-source retrieval dates were not recorded before the
+2026-09-12 migration and are added as each source is re-verified.
+
 - <https://www.cmegroup.com/media-room/press-releases/2009/6/05/cme_group_announcesadditionalagricultureethanolelectronictrading.html> — CME press release of 2009-06-05, the pre-floor grain electronic-hours expansion.
 - <https://www.cmegroup.com/tools-information/lookups/advisories/electronic-trading/20100315.html> — CME Globex notice 20100315, the March-2010 market-state table that supplies the then-live audit-floor queue and PCP phases.
 - <https://www.cmegroup.com/tools-information/lookups/advisories/market-data/Q2010-62.html> — CME market-data advisory Q2010-62.

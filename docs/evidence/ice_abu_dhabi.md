@@ -17,6 +17,10 @@ None. ice_abu_dhabi.rs encodes its dated cutovers as constants rather than revis
 
 ## Sources
 
+Retrieval dates: these sources were last opened on the row's reviewed-on date
+(2026-08-22, UTC); per-source retrieval dates were not recorded before the
+2026-09-12 migration and are added as each source is re-verified.
+
 - <https://www.ice.com/publicdocs/abu_dhabi/circulars/IFAD%20Circular%20-%2021003%20-%20Trading%20information%20publication.pdf> — IFAD circular 21/003, launching Murban Crude Oil Futures on 2021-03-29 and publishing the normal Monday–Friday grid plus the two-hour-earlier Monday trading-day open.
 - <https://www.ice.com/products/75443578/Murban-Crude-Oil-Futures/> — live contract page giving the same 20:00–18:00 New York schedule and 19:45 pre-open.
 - <https://www.ice.com/publicdocs/abu_dhabi/circulars/2026.03_-_IFAD_Trading_Hours_Change_Final.pdf> — IFAD annual daylight-time circular confirming that the grid follows US Eastern time when London and New York clocks are temporarily misaligned.

@@ -17,6 +17,10 @@
 
 ## Sources
 
+Retrieval dates: these sources were last opened on the row's reviewed-on date
+(2026-08-23, UTC); per-source retrieval dates were not recorded before the
+2026-09-12 migration and are added as each source is re-verified.
+
 - <https://www.ice.com/publicdocs/futures_us/ICE_Futures_US_Regular_Trading_Hours.pdf> — ICE Futures U.S. Regular Trading Hours master table, live edition — the current grid.
 - <https://web.archive.org/web/20111212140120id_/https://www.theice.com/publicdocs/futures_us/ICE_Futures_US_Regular_Trading_Hours.pdf> — ICE Regular Trading Hours master table, AUGUST 2011 edition — captured 2011-12-12, the earliest surviving edition.
 - <https://web.archive.org/web/20130122132629id_/https://www.theice.com/publicdocs/futures_us/ICE_Futures_US_Regular_Trading_Hours.pdf> — ICE Regular Trading Hours master table, JANUARY 2, 2013 edition — captured 2013-01-22.
@@ -108,7 +112,7 @@ https://www.ice.com/publicdocs/rulebooks/futures_us/4_Trading.pdf
 
 ---
 
-Baseline before 2018-10-08: the executable session is already today's
+Baseline before 2018-10-08: the executable session is already the 2026-08-23 review's
 08:00-14:00 grid, but the PCPO order-entry window does not exist yet, leaving
 the 20:00 pre-open as the only non-executable phase - order entry, like the
 current one, so this era carries no extended phase either.
@@ -134,7 +138,7 @@ https://www.ice.com/publicdocs/futures_us/exchange_notices/ExNot012714Hours.pdf
 
 FCOJ is named in the notice by contract, so the 14:00 close puts the FCOJ-A
 PCPO at 14:30-18:00, matching the 2:30 pm figure the product page footnote
-carries today. The executable session is untouched by this notice.
+carries at the 2026-08-23 review. The executable session is untouched by this notice.
 
 No other FCOJ-A schedule change inside the modelled window is dated by a
 primary ICE source. The pre-open start itself is only ever stated in undated

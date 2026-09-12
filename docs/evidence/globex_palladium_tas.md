@@ -17,6 +17,10 @@
 
 ## Sources
 
+Retrieval dates: these sources were last opened on the row's reviewed-on date
+(2026-09-12, UTC); per-source retrieval dates were not recorded before the
+2026-09-12 migration and are added as each source is re-verified.
+
 - <https://www.cmegroup.com/notices/electronic-trading/2017/05/20170508.html> — CME Globex notice 20170508 — "Effective Sunday, May 21 (trade date Monday, May 22), Platinum futures TAS will be listed for trading on CME Globex".
 - <https://web.archive.org/web/20260214165515id_/https://www.cmegroup.com/notices/electronic-trading/2017/05/20170508.html> — CME Globex notice 20170508, archived capture.
 - <https://www.cmegroup.com/notices/electronic-trading/2018/11/20181112.html> — CME Globex notice 20181112 — "Effective this Sunday, November 18 (trade date Monday, November 19), Palladium TAS will be listed for trading on CME Globex".
@@ -41,7 +45,7 @@
 - **the 2009-2015 NYMEX pit clause never reached this root.**
 - **state classification** — the inter-trade-date gap is 5h, so it is `Closed` rather than `Maintenance`.
 - **do not substitute `globex_copper_tas`** on the coincident 12:00 CT close: different exchange, different security group, launches seven years apart.
-- **evidence tier** — the ledger row is `T1`: every window this key serves is stated by a CME operator document (the listing notice and the contract specification captures). CME's live ContractSpecs API, a reference-data machine channel admissible at T2, corroborates the same instants today.
+- **evidence tier** — the ledger row is `T1`: every window this key serves is stated by a CME operator document (the listing notice and the contract specification captures). CME's live ContractSpecs API, a reference-data machine channel admissible at T2, corroborates the same instants at the 2026-09-12 review.
 - **channel** — the CFTC-hosted NYMEX and COMEX filings were fetched directly from cftc.gov, and the notices, hours pages, specification captures and archived ContractSpecs payloads through web.archive.org `id_` replay, so neither carries the reader caveat. Only the live ContractSpecs records and the live 2015 and 2025 notice pages were read as extracted text through a public reader in front of the cmegroup.com URLs, and no review date rests on that channel alone.
 
 > Shared module. The narrative for [`pgm_tas.rs`](../../src/calendar/schedules/futures/us/pgm_tas.rs)

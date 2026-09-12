@@ -24,7 +24,11 @@ a tuple. Nothing is carried below the launch, so the row's horizon is `—`.
 
 ## Sources
 
-The row was last reviewed on 2026-08-22; these are the documents behind it. The
+Retrieval dates: these sources were last opened on the row's reviewed-on date
+(2026-08-22, UTC); per-source retrieval dates were not recorded before the
+2026-09-12 migration and are added as each source is re-verified.
+
+The documents below stand behind the row. The
 module narrative that cites them lives in the anchor file for `europe.rs`.
 
 - <https://www.eex.com/fileadmin/Global/News/EEX/EEX_Customer_Information/2024/20240109_EEX_Customer_Information_Nordic_Zonal_Futures.pdf> — the EEX customer information for Nordic Zonal Power Futures, which gives the 2024-03-25 launch and the 08:00–18:00 CE(S)T trading table — T1.

@@ -17,8 +17,9 @@ Stable CHX/NYSE Chicago identity: 07:00–17:00 from the January-2010 floor, 06:
 
 ## Sources
 
-No per-URL retrieval date is recorded in this repository; every link below
-was read at or before the row's `Reviewed on` date in the ledger.
+Retrieval dates: these sources were last opened on the row's reviewed-on date
+(2026-08-22, UTC); per-source retrieval dates were not recorded before the
+2026-09-12 migration and are added as each source is re-verified.
 
 - <https://www.nyse.com/markets/nyse-texas> — the operator's NYSE Texas market page.
 - <https://www.nyse.com/trade/hours-calendars?os=.> — the current hours and calendars table.

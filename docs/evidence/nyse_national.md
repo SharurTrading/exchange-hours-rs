@@ -22,8 +22,9 @@
 
 ## Sources
 
-No per-URL retrieval date is recorded in this repository; every link below
-was read at or before the row's `Reviewed on` date in the ledger.
+Retrieval dates: these sources were last opened on the row's reviewed-on date
+(2026-08-22, UTC); per-source retrieval dates were not recorded before the
+2026-09-12 migration and are added as each source is re-verified.
 
 - <https://www.nyse.com/trade/hours-calendars?os=.> — NYSE National hours and calendars, the current 06:30–20:00 envelope.
 - <https://www.federalregister.gov/documents/2010/08/04/2010-19225/self-regulatory-organizations-national-stock-exchange-inc-notice-of-filing-and-immediate> — the operative 2010 filing dating the 18:30 to 20:00 extension.

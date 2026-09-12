@@ -21,8 +21,11 @@ row's horizon is `—` and nothing is carried back to the January-2010 floor.
 
 ## Sources
 
-The row was last reviewed on 2026-08-22; these are the documents behind it and
-behind the narrative moved below.
+Retrieval dates: these sources were last opened on the row's reviewed-on date
+(2026-08-22, UTC); per-source retrieval dates were not recorded before the
+2026-09-12 migration and are added as each source is re-verified.
+
+The documents below stand behind the row and behind the narrative moved below.
 
 - <https://www.ice.com/publicdocs/futures_us/exchange_notices/ICE_Futures_US_FANG%2BFuture_20170926.pdf> — the ICE Futures U.S. FANG+ launch notice of 2017-09-26, which states trading begins at the start of trade date 2017-11-08 with 20:00–18:00 ET hours, the exceptional Sunday 18:00 open, and a Pre-Open 30 minutes before each executable session — T1.
 - <https://www.ice.com/products/66380320/NYSE-FANG-Index-Future> — the current NYSE FANG+ Index Future product page, which retains the grid and separately publishes the 17:30 Sunday and 19:30 weekday queue starts — T1.

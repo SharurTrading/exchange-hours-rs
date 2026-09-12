@@ -17,8 +17,9 @@ Closed through the July 6–9 non-clearing test-symbol period; live NMS producti
 
 ## Sources
 
-No per-URL retrieval date is recorded in this repository; every link below
-was read at or before the row's `Reviewed on` date in the ledger.
+Retrieval dates: these sources were last opened on the row's reviewed-on date
+(2026-08-22, UTC); per-source retrieval dates were not recorded before the
+2026-09-12 migration and are added as each source is re-verified.
 
 - <https://www.txse.com/regulations> — the operator's regulation center and current regulatory alerts.
 - <https://www.txse.com/alerts/6a5e8e60-8753-4eac-906d-ecbbf8682df9> — the production launch schedule, which distinguishes the July 6–9 non-clearing test symbols from first live NMS trading on 2026-07-10.

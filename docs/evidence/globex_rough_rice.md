@@ -23,6 +23,10 @@
 
 ## Sources
 
+Retrieval dates: these sources were last opened on the row's reviewed-on date
+(2026-09-05, UTC); per-source retrieval dates were not recorded before the
+2026-09-12 migration and are added as each source is re-verified.
+
 - <https://www.cmegroup.com/content/dam/cmegroup/market-regulation/rule-filings/2018/01/18-001.pdf> — CBOT Submission 18-001 — "effective on Sunday, January 21, 2018 for trade date Monday, January 22, 2018", naming "Rough Rice Futures ZR 17" and "Rough Rice Options OZR 17A".
 - <https://web.archive.org/web/20240314032026id_/https://www.cmegroup.com/content/dam/cmegroup/market-regulation/rule-filings/2018/01/18-001.pdf> — CBOT Submission 18-001, archived capture — CME serves an anti-scraping block to automated clients.
 - <https://www.cmegroup.com/markets/agriculture/grains/rough-rice/specs> — CME Rough Rice contract specification, read 2026-09-05 — the current grid and both evening Pre-Opens.
@@ -36,6 +40,7 @@
 
 ## Gaps and residual risks
 
+- **Raised in review of the ledger-reshape PR (#87), 2026-09-12 — the queue withdrawal is routed at a day no source states for it.** The bullet above records that CBOT Submission 18-001 is silent on the queues; the reviewer's point is the routing consequence. `REVISIONS` in `src/calendar/schedules/futures/us/rough_rice.rs` withdraws the inherited 08:00–08:30 and 14:30–16:00 CT Pre-Opens **at** the 2018-01-21 executable-leg row, which means the crate asserts a day-level queue cutover on a day 18-001 states only for the evening leg. That is a dating claim the evidence does not carry, even though the direction of the error is safe. The reshape PR moved this text out of the owner module and changed no schedule rule, revision row, profile or routing; the withdrawal day is served exactly as before. Closing condition: either a CME artifact dating the `ZR` queue change — which makes the routing sourced — or a routing that keeps the queue change undated, for instance withholding both windows across the whole undated interval under the widen-only rule so no day-level queue cutover is asserted at all. Dormant identity, so recorded here rather than opened as an issue (LAW-FOLLOW-UPS-ARE-ISSUES).
 - **order-entry** — the inherited 21-hour regime of 2012-05-20..2013-04-06 carries the `globex_grains` row's undated queue gap: no source states the queue state for that era, so none is served.
 - **order-entry** — CBOT Submission 18-001 is silent on the queues. CME's Rough Rice specification publishes no morning Pre-Open and no post-close Pre-Open, so the profile withdraws the inherited 08:00-08:30 and 14:30-16:00 CT windows at the 2018-01-21 boundary — the only sourced day in the interval — without a source stating that day for the queue change. Withdrawing them under-reports queueing, which is the safe direction and leaves every matching window untouched, but the withdrawal day is a modelling choice and is recorded as such. Closing condition: a CME artifact dating the queue change for `ZR`. Dormant identity, so recorded here rather than opened as an issue.
 - **inherited, not independently sourced** — Rough Rice's own queue and RTH/ETH split were not sourced separately for the 2010, 2012, 2013 and 2015 eras; those are inherited from the reviewed grains encoding. The CBOT grain and oilseed reorganisations name Rough Rice in their product lists, and 18-001 itself confirms the outgoing state by quoting `ZR`'s then-current Sunday-Friday 19:00-07:45 CT extended leg.
@@ -85,7 +90,7 @@ states under TRADING HOURS: "CME Globex: Sunday - Thursday, 7:00 p.m. - 9:00
 p.m. CT / Pre-Open Sunday: 4:00 p.m. - 7:00 p.m. CT // Monday - Friday: 8:30
 a.m. - 1:20 p.m. CT / Pre-Open Monday - Thursday: 4:45 p.m. - 7:00 p.m. CT",
 with PRODUCT CODE "CME Globex: ZR" and EXCHANGE RULEBOOK "CBOT 17". It
-therefore sources every session time this profile serves today, and confirms
+therefore sources every session time this profile serves at the 2026-09-05 review, and confirms
 18-001's grid is still the live one.
 https://www.cmegroup.com/markets/agriculture/grains/rough-rice/specs
 
@@ -115,13 +120,13 @@ asserted anywhere in this timeline.
 What the queue set records instead is the sourced intersection over the
 interval that begins here. Two queue states are sourced for this contract:
 the standard grain set this profile inherits for the earlier eras, and the
-two evening pre-opens CME's Rough Rice specification publishes today. No
+two evening pre-opens CME's Rough Rice specification published at the 2026-09-05 review. No
 document dates a move between them, so the interval serves the set that
 holds under both -- the narrower one -- exactly as the crate's
 sourced-intersection convention requires.
 
 The alternative, carrying the inherited 08:00-08:30 and 14:30-16:00 CT
-windows forward, would make the dated surface report order acceptance today
+windows forward, would make the dated surface report order acceptance at the 2026-09-05 review
 that CME's current specification does not publish: an over-report of
 queueing, and in the present tense. Serving the intersection under-reports
 queueing for whatever part of the interval still had the wider set. That is

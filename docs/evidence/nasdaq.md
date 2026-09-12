@@ -17,8 +17,9 @@ Nasdaq Stock Market normal week; date-aware lookups retain the sourced 2013 07:0
 
 ## Sources
 
-No per-URL retrieval date is recorded in this repository; every link below
-was read at or before the row's `Reviewed on` date in the ledger.
+Retrieval dates: these sources were last opened on the row's reviewed-on date
+(2026-08-22, UTC); per-source retrieval dates were not recorded before the
+2026-09-12 migration and are added as each source is re-verified.
 
 - <https://listingcenter.nasdaq.com/rulebook/nasdaq/rules/Nasdaq%20Equity%202> — Nasdaq Equity 2, the rulebook provision behind the 04:00–20:00 System Hours.
 - <https://www.nasdaqtrader.com/content/technicalsupport/nasdaq_sys_hours.pdf> — *Nasdaq Systems — Hours of Operation*, the operator's system inventory and phase table (2020 edition; read through the web archive, see the ledger's channel notes).
@@ -37,9 +38,16 @@ was read at or before the row's `Reviewed on` date in the ledger.
   edition or trader alert that states the 07:00 System Hours open on a
   floor-era day.
 - **Watch item, not a gap.** The announced Night Session is monitored and
-  unencoded: Nasdaq Equity 1 conditions it on Equity Data Plan readiness and a
-  later Nasdaq readiness filing, so it has no unconditional effective day
-  (LAW-NO-FABRICATED-DATES). Current and future snapshots stay 04:00–20:00.
+  unencoded. Nasdaq Equity Trader Alert 2026-46 announces **2026-12-06** as the
+  date, but Nasdaq Equity 1 conditions commencement on Equity Data Plan
+  readiness and a later Nasdaq readiness filing, so that day is conditional and
+  not an unconditional effective day (LAW-NO-FABRICATED-DATES). A conditional
+  future date stays in the watch list and out of runtime selectors, so it keys
+  no revision row and current and future snapshots stay 04:00–20:00 until the
+  readiness filing confirms it. The watch entry is
+  [`Pending effective-date confirmations`](../schedules/updating.md#pending-effective-date-confirmations)
+  in `updating.md`; `nasdaq_unconfirmed_night_session_is_not_encoded` in
+  `tests/venue_sessions/nasdaq.rs` fences the non-encoding.
 - **System coverage (2026-09-02).** No discrepancy. ACT, Weblink ACT 2.0, ACES,
   the Nasdaq Testing Facility and index dissemination are excluded classes;
   Nasdaq Fixed Income and Nasdaq Futures belong to neither this SRO nor cash

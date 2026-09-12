@@ -17,14 +17,18 @@
 
 ## Sources
 
+Retrieval dates: these sources were last opened on the row's reviewed-on date
+(2026-08-22, UTC); per-source retrieval dates were not recorded before the
+2026-09-12 migration and are added as each source is re-verified.
+
 - <https://cdn.cboe.com/resources/press_releases/BATSOptionsGoesLive_FINAL.pdf> — BATS Options launch press release; BZX launched 2010-02-26 with cash-equity underliers among its 18 classes.
 - <https://cdn.cboe.com/resources/regulation/rule_book/BZX_Exchange_Rulebook.pdf> — Cboe BZX Exchange Rulebook; retains 09:30-16:00 ET RTH for this product family.
 - <https://www.cboe.com/about/hours/us-options> — Cboe US options hours page; the operator system setting behind the 07:30 ET order-acceptance queue.
 - SR-CboeBZX-2020-012 (85 FR 6246, 2020-02-04) — carries the same "same time ... today" language about the 07:30 order-acceptance start; the owner module carries no URL for it.
 
-The owner modules record no per-URL retrieval date. This row's source set was last
-reviewed on 2026-08-22 and the queue carry-back was decided on 2026-09-01; the retrieved
-bytes live in the research store beside the repository.
+The queue carry-back was decided on 2026-09-01, after the 2026-08-22 source-set review;
+that decision date is not a review date. The retrieved bytes live in the
+research store beside the repository.
 
 ## Gaps and residual risks
 

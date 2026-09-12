@@ -19,6 +19,10 @@ The archived 2010 baseline and sourced 2013 expansion, 2020 temporary shortening
 
 ## Sources
 
+Retrieval dates: these sources were last opened on the row's reviewed-on date
+(2026-08-22, UTC); per-source retrieval dates were not recorded before the
+2026-09-12 migration and are added as each source is re-verified.
+
 - <https://www.idx.id/en/products-services/trading-hours-and-mechanism/> — IDX trading hours and mechanism. Under Board decree II-A Kep-00196/BEI/12-2024 the table prints "Pre opening (Input) 08.45.00 – 08.57.59" and "Pre opening (Matching) 08.58.00 – 08.59.59"; the Cash and Negotiated Markets both start at 09.00.00.
 - <https://web.archive.org/web/20221220175625/https://www.idx.co.id/media/10022/peraturan_ii_a_perdagangan_efek_bersifat_ekuitas.pdf> — IDX rulebook Kep-00061/BEI/07-2021: "pukul 08.45.00 sampai dengan 08.55.00 digunakan oleh Anggota Bursa Efek untuk memasukkan penawaran jual dan/atau permintaan beli", followed by matching from 08.55.01. Clause IV.4.1.2 keeps the Negotiated Market running continuously to 16:30.
 - <https://www.idx.co.id/Media/1208/2013.pdf> — IDX 2013 annual report, dating the 2013 expansion and printing the prior continuous sessions.

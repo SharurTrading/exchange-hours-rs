@@ -18,8 +18,9 @@ Closed before the sourced 2020-09-29 live launch; the 2025-02-20 early/late expa
 
 ## Sources
 
-No per-URL retrieval date is recorded in this repository; every link below
-was read at or before the row's `Reviewed on` date in the ledger.
+Retrieval dates: these sources were last opened on the row's reviewed-on date
+(2026-08-22, UTC); per-source retrieval dates were not recorded before the
+2026-09-12 migration and are added as each source is re-verified.
 
 - <https://www.miaxglobal.com/company/markets/us-equities> — the official Pearl Equities market history, which records the 2020-09-29 live launch.
 - <https://www.miaxglobal.com/sites/default/files/circular-files/MIAX_Pearl_Equities_RC_2025_02_0.pdf> — Regulatory Circular 2025-02, the 2025-02-20 early/late expansion.
@@ -28,6 +29,7 @@ was read at or before the row's `Reviewed on` date in the ledger.
 
 ## Gaps and residual risks
 
+- **Raised in review of the ledger-reshape PR (#87), 2026-09-12 — the omitted 03:30–04:00 order-entry period needs its own PR.** The operator's trade-hours table opens a Live Order Window at 03:30 and the profile carries no `order_entry` phase, so the envelope under-reports order acceptance by thirty minutes; the bullet above records it, and it is discrepancy #5 on the system-coverage list. Closing it is a **schedule change**, not a documentation change: it adds an `order_entry` rule to the MIAX Pearl Equities profile, needs the operator artifact at T1 or T2, needs a knowledge-bound onset row because the window is published only on a mutable operator page, and needs its own public-surface tests and CHANGELOG entry. Under LAW-BOUNDED-WORK that is one pull request sized to a working day, and it is not this one: the reshape PR moved text out of the owner modules and changed no schedule rule, revision row, profile or routing. Closing condition: that separate PR. Dormant identity, so recorded here rather than opened as an issue (LAW-FOLLOW-UPS-ARE-ISSUES).
 - **Order-entry omission (discrepancy #5, 2026-09-02).** The operator's
   trade-hours table opens a Live Order Window at 03:30 — "Firms can send MEO and
   FIX orders" — thirty minutes before the 04:00 Early Trading Session, and this

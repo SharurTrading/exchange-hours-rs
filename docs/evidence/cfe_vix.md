@@ -27,7 +27,11 @@ same eight:
 
 ## Sources
 
-The row was last reviewed on 2026-08-22 and rests on the same `US-CFE`
+Retrieval dates: these sources were last opened on the row's reviewed-on date
+(2026-08-22, UTC); per-source retrieval dates were not recorded before the
+2026-09-12 migration and are added as each source is re-verified.
+
+The row rests on the same `US-CFE`
 documents as the `cfe` exchange row; the full annotated list is in
 [`cfe.md`](cfe.md#sources). The documents that key the rows above are:
 

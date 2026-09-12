@@ -17,13 +17,17 @@
 
 ## Sources
 
+Retrieval dates: these sources were last opened on the row's reviewed-on date
+(2026-08-22, UTC); per-source retrieval dates were not recorded before the
+2026-09-12 migration and are added as each source is re-verified.
+
 - <https://www.miaxglobal.com/sites/default/files/alert-files/MIAX_Press_Release_09102024.pdf> — MIAX press release; MIAX Sapphire launched 2024-08-12 with IBM.
 - <https://www.miaxglobal.com/markets/us-options/sapphire-options/trade-hours-calendar> — MIAX Sapphire trade hours calendar; the current 07:30 ET order-acceptance queue and 09:30-16:00 ET session.
 - <https://www.miaxglobal.com/markets/us-options/all-options-exchanges/trade-hours-calendar> — MIAX all-options-exchanges trade hours calendar; the operator system setting behind the queue.
 
-The owner modules record no per-URL retrieval date. This row's source set was last
-reviewed on 2026-08-22 and the queue carry-back was decided on 2026-09-01; the retrieved
-bytes live in the research store beside the repository.
+The queue carry-back was decided on 2026-09-01, after the 2026-08-22 source-set review;
+that decision date is not a review date. The retrieved bytes live in the
+research store beside the repository.
 
 ## Gaps and residual risks
 

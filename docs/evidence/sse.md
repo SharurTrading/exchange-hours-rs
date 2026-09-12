@@ -17,6 +17,10 @@ Venue union includes the 15:00–15:30 block-order/trading phase already operati
 
 ## Sources
 
+Retrieval dates: these sources were last opened on the row's reviewed-on date
+(2026-08-22, UTC); per-source retrieval dates were not recorded before the
+2026-09-12 migration and are added as each source is re-verified.
+
 - <https://www.sse.com.cn/lawandrules/sselawsrules2025/stocks/exchange/c/c_20260424_10816482.shtml> — current SSE trading rule, including the 15:00–15:30 block and fixed-price phase.
 - <https://www.sse.com.cn/lawandrules/sselawsrules2025/repeal/rules/c/c_20120918_10785158.shtml> — historical SSE block-trading rule, establishing that declarations have been accepted and confirmed through 15:30 since before the January-2010 audit floor.
 - <https://english.sse.com.cn/news/newsrelease/c/4947833.shtml> — SSE news release 4947833, adding the closing call auction on 2018-08-20.
@@ -24,5 +28,5 @@ Venue union includes the 15:00–15:30 block-order/trading phase already operati
 ## Gaps and residual risks
 
 - Block and fixed-price phases are `extended` by convention; not every security is eligible for them.
-- The 2026-07-06 generic fixed-price expansion is deliberately not a revision row: it changed eligibility inside the existing venue envelope, not the exchange-level close.
+- The generic fixed-price expansion is deliberately not a revision row: it changed eligibility inside the existing venue envelope, not the exchange-level close. Its effective day is **undated here**. A `2026-07-06` date stood in this file, in `sse.rs` and in the ledger row before the 2026-09-12 reshape; no artifact in this repository, in the owner module's pre-move comment, or in the research store cites it, so under LAW-NO-FABRICATED-DATES it is removed rather than kept unsourced. Closing condition: an SSE notice or rule stating the expansion's effective day; the expansion changes no exchange-level boundary, so nothing in the profile depends on it.
 - The pre-2018 profile's 15:00–15:30 block window is carried from the historical block-trading rule; the ledger records the venue union as January-2010-on for that reason.

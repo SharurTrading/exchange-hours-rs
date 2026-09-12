@@ -19,6 +19,10 @@ FTSE 100 Index Futures: closed before the sourced 2014-11-17 ICE migration, with
 
 ## Sources
 
+Retrieval dates: these sources were last opened on the row's reviewed-on date
+(2026-08-22, UTC); per-source retrieval dates were not recorded before the
+2026-09-12 migration and are added as each source is re-verified.
+
 - <https://www.ice.com/products/38716764/FTSE-100-INDEX-> — live ICE specification: 00:45 pre-open, 01:00–21:00 trading.
 - <https://www.ice.com/publicdocs/circulars/14146.pdf> — ICE Europe circular 14/146, the 2014-11-17 migration and first trade date.
 - <https://www.ice.com/publicdocs/circulars/15016.pdf> — ICE Europe circular 15/016. Its two FTSE tables read "Pre-open 06:03 | Open 08:00 | Close 21:00" before 16 February 2015 and "Pre-open 06:03 | Open 07:00 | Close 21:00" after it, which is why the 06:03 window is classified order entry rather than a session in which anything prints.

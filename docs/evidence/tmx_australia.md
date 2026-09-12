@@ -20,6 +20,10 @@ Venue envelope across auction-eligible and @Last/MOC products.
 
 ## Sources
 
+Retrieval dates: these sources were last opened on the row's reviewed-on date
+(2026-08-22, UTC); per-source retrieval dates were not recorded before the
+2026-09-12 migration and are added as each source is re-verified.
+
 - <https://www.tmxaustralia.com/about/hours> — TMX Australia hours page. It states that during the pre-market period "trade reports may be lodged in accordance with the Cboe Operating Rules and the Market Integrity Rules", which is why Pre-Open is tradeable `extended` rather than order-entry-only.
 - <https://cdn.cboe.com/resources/au/tmx/participant_resources/Operating_Rules_Procedures_Clean.pdf> — Operating Rules and Procedures.
 - <https://www.asic.gov.au/about-asic/news-centre/find-a-media-release/2012-releases/12-295mr-asic-releases-first-chi-x-assessment-report/> — ASIC media release 12-295MR, dating Chi-X Australia's launch to 2011-10-31.

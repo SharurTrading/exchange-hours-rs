@@ -18,6 +18,10 @@ Securities venue union: the executable Extended Morning Session is Regular under
 
 ## Sources
 
+Retrieval dates: these sources were last opened on the row's reviewed-on date
+(2026-08-22, UTC); per-source retrieval dates were not recorded before the
+2026-09-12 migration and are added as each source is re-verified.
+
 - <https://www.hkex.com.hk/Services/Trading-hours-and-Severe-Weather-Arrangements/Trading-Hours/Securities-Market?sc_lang=en> — HKEX securities-market trading hours: POS 09:00–09:30, continuous trading 09:30–16:00, then CAS with a randomized 16:08–16:10 close.
 - <https://www.hkex.com.hk/Global/Exchange/FAQ/Securities-Market/Trading/Pre_opening-Session?sc_lang=en> — HKEX Pre-opening Session FAQ. Orders "will be accumulated and updated but no matching will occur" during the order input and pre-order matching periods, so 09:00–09:20 is order entry.
 - <https://www.hkex.com.hk/-/media/HKEX-Market/Services/Rules-and-Forms-and-Fees/Rules/SEHK/Securities/Rule-Update_Rules-of-the-Exchange/05-11-SEHK-StampDuty-TradingHour_e.pdf> — SEHK rule update. Rule 501G divides the 09:00–09:30 POS into four named periods: order input 09:00–09:15, pre-order matching (renamed no-cancellation in 2020) 09:15–09:20, order matching from 09:20, then a blocking period to 09:30.

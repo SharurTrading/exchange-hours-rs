@@ -17,13 +17,17 @@
 
 ## Sources
 
+Retrieval dates: these sources were last opened on the row's reviewed-on date
+(2026-08-22, UTC); per-source retrieval dates were not recorded before the
+2026-09-12 migration and are added as each source is re-verified.
+
 - <https://www.nasdaqtrader.com/MicroNews.aspx?id=OTA2012-41> — Nasdaq OTA 2012-41; BX Options launched 2012-06-29 with five stock classes, including AA and INTC.
 - <https://listingcenter.nasdaq.com/rulebook/nasdaqtx/rules/NTX%20Options%203> — NTX Options 3, this SRO's rulebook under its current name; retains 09:30-16:00 ET RTH for this product family.
 - <https://nasdaqtrader.com/Content/BXOptions/BXOptions_FAQs.pdf> — BX Options FAQs; the operator system setting behind the 07:30 ET order-acceptance queue.
 
-The owner modules record no per-URL retrieval date. This row's source set was last
-reviewed on 2026-08-22 and the queue carry-back was decided on 2026-09-01; the retrieved
-bytes live in the research store beside the repository.
+The queue carry-back was decided on 2026-09-01, after the 2026-08-22 source-set review;
+that decision date is not a review date. The retrieved bytes live in the
+research store beside the repository.
 
 ## Gaps and residual risks
 

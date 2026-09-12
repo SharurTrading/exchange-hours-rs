@@ -19,6 +19,10 @@
 
 ## Sources
 
+Retrieval dates: these sources were last opened on the row's reviewed-on date
+(2026-09-12, UTC); per-source retrieval dates were not recorded before the
+2026-09-12 migration and are added as each source is re-verified.
+
 - <https://www.cftc.gov/sites/default/files/stellent/groups/public/@rulesandproducts/documents/ifdocs/rul031110nymexandcomex001.pdf> — NYMEX/COMEX Submission 10-070 with SER S-5166 attached — the gold and silver TAS launch, "on Globex on April 11 (for trade date April 12)".
 - <https://web.archive.org/web/20120512095523id_/http://www.cmegroup.com/rulebook/files/SER-5542__10-12-22__TAS_COMEX.pdf> — COMEX SER-5542 of 2010-12-22 — the copper TAS launch, "effective Sunday, January 23, 2011 for trade date Monday, January 24, 2011".
 - <https://www.cftc.gov/sites/default/files/stellent/groups/public/@rulesandproducts/documents/ifdocs/rul033111nymexandcomex001.pdf> — NYMEX & COMEX MRAN RA1104-4 — the 2011-04-10 staggered queue onsets.
@@ -59,7 +63,7 @@
 - **state classification** — every inter-trade-date gap is 4h30m, over the four-hour limit, so it is `Closed` rather than `Maintenance`.
 - **catalog, not schedule** — members `MGT` (2018-09-23), `QOT` and `1OT` (2025-07-27) are caller catalog data and date no revision.
 - **staleness, not a state** — the 2012-04-15 row's adoption is observed on the hours page at 2012-09-14 and 2013-09-02, so the stale 2012-06-16 weekday cell is evidenced as staleness rather than asserted over.
-- **evidence tier** — the ledger row is `T1`: every window this key serves is stated by a CME operator document (the MRAN filings, the metals hours page, the contract specification captures). CME's live ContractSpecs API, a reference-data machine channel admissible at T2, corroborates the same instants today.
+- **evidence tier** — the ledger row is `T1`: every window this key serves is stated by a CME operator document (the MRAN filings, the metals hours page, the contract specification captures). CME's live ContractSpecs API, a reference-data machine channel admissible at T2, corroborates the same instants at the 2026-09-12 review.
 - **channel** — the CFTC-hosted NYMEX and COMEX filings were fetched directly from cftc.gov, and the notices, hours pages, specification captures and archived ContractSpecs payloads through web.archive.org `id_` replay, so neither carries the reader caveat. Only the live ContractSpecs records and the live 2015 and 2025 notice pages were read as extracted text through a public reader in front of the cmegroup.com URLs, and no review date rests on that channel alone.
 
 > Anchor identity for [`metals_tas.rs`](../../src/calendar/schedules/futures/us/metals_tas.rs), which is shared with [`globex_silver_tas`](globex_silver_tas.md), [`globex_copper_tas`](globex_copper_tas.md).

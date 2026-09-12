@@ -18,6 +18,10 @@ Date-aware normal/early grids retain the sourced HD/ID post-close tails: `:06` t
 
 ## Sources
 
+Retrieval dates: these sources were last opened on the row's reviewed-on date
+(2026-08-22, UTC); per-source retrieval dates were not recorded before the
+2026-09-12 migration and are added as each source is re-verified.
+
 - <https://www.bmv.com.mx/docs-pub/MARCO_NORMATIVO/CTEN_MNBM/MANUAL_OPERATIVO.PDF> — BMV Manual Operativo, the living operator entry point.
 - <https://www.bmv.com.mx/docs-pub/MARCO_NORMATIVO/CTEN_MERMO/20260723_V1.97_Clarif_Dto.Aranceles_Ambiente_Pruerbas.pdf> — BMV Manual v1.97, printing the normal and US-daylight-time grids and the HD/ID post-close stages.
 - <https://web.archive.org/web/20130908220405id_/http://www.bmv.com.mx/wb3/wb/BMV/BMV_repositorio/_vtp/BMV/BMV_8aa_sistema_electronico_de_negocios/_rid/223/_mto/3/20100218_DST_Cambio_de_horario.pdf> — BMV daylight-time notice of 2010-02-18: the exact bounded early grid for 2010-03-16 to 2010-03-31 and the normal grid that resumes on 2010-04-01.

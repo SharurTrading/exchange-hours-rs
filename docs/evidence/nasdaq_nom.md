@@ -17,14 +17,18 @@ None. `options/history.rs` holds a single static profile for this identity with 
 
 ## Sources
 
+Retrieval dates: these sources were last opened on the row's reviewed-on date
+(2026-08-22, UTC); per-source retrieval dates were not recorded before the
+2026-09-12 migration and are added as each source is re-verified.
+
 - <https://www.sec.gov/rules/sro/nasdaq/2008/34-57478.pdf> — NOM's approved rules; set 09:30-16:00 ET for this family.
 - <https://www.nasdaqtrader.com/MicroNews.aspx?id=OTA2008-001> — NOM launch alert; identifies AMAT, an individual stock, among the 2008-03-31 launch classes.
 - <https://listingcenter.nasdaq.com/RuleBook/Nasdaq/rules/nasdaq-options-3> — Nasdaq Options 3; retains 09:30-16:00 ET RTH for this product family.
 - <https://www.nasdaq.com/docs/NOMSystemSettings> — Nasdaq NOM System Settings; "System begins accepting orders" at 07:30 ET.
 
-The owner modules record no per-URL retrieval date. This row's source set was last
-reviewed on 2026-08-22 and the queue carry-back was decided on 2026-09-01; the retrieved
-bytes live in the research store beside the repository.
+The queue carry-back was decided on 2026-09-01, after the 2026-08-22 source-set review;
+that decision date is not a review date. The retrieved bytes live in the
+research store beside the repository.
 
 ## Gaps and residual risks
 

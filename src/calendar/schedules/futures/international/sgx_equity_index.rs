@@ -163,7 +163,8 @@ pub(crate) fn sgx_equity_index_japan_profile_at(
 // and runs to 05:15 the next calendar day, so it wraps. Both rules stay
 // Monday-Friday: the T+1 leg starts on a Monday-Friday trade date and the
 // Friday leg ends Saturday 05:15.
-// Narrative: docs/evidence/sgx_equity_index_japan.md
+// Narrative: docs/evidence/sgx_equity_index_japan.md (this module's narrative
+//   anchor); this key's own evidence file is docs/evidence/sgx_equity_index_china.md
 pub(crate) static SGX_EQUITY_INDEX_CHINA_REGULAR_CURRENT: &[SessionRule] = &[
     SessionRule {
         days: MON_FRI,
@@ -268,7 +269,8 @@ pub(crate) fn sgx_equity_index_china_profile_at(
 
 // T session trades continuously 08:30-17:20; the T+1 session reopens at 17:35
 // and runs to 05:15 the next calendar day, so it wraps.
-// Narrative: docs/evidence/sgx_equity_index_japan.md
+// Narrative: docs/evidence/sgx_equity_index_japan.md (this module's narrative
+//   anchor); this key's own evidence file is docs/evidence/sgx_equity_index_singapore.md
 pub(crate) static SGX_EQUITY_INDEX_SINGAPORE_REGULAR_CURRENT: &[SessionRule] = &[
     SessionRule {
         days: MON_FRI,
@@ -295,7 +297,8 @@ pub(crate) static SGX_EQUITY_INDEX_SINGAPORE_EXTENDED_CURRENT: &[SessionRule] = 
 // merged into one window. Neither matches: the opening matches land on the
 // session opens that already begin `regular` windows, so both are
 // `order_entry`.
-// Narrative: docs/evidence/sgx_equity_index_japan.md
+// Narrative: docs/evidence/sgx_equity_index_japan.md (this module's narrative
+//   anchor); this key's own evidence file is docs/evidence/sgx_equity_index_singapore.md
 pub(crate) static SGX_EQUITY_INDEX_SINGAPORE_ORDER_ENTRY_CURRENT: &[SessionRule] = &[
     SessionRule {
         days: MON_FRI,

@@ -18,6 +18,10 @@ SETS January-2010 baseline, the 2012-04-30 CPX launch, and the 2016-03-21 random
 
 ## Sources
 
+Retrieval dates: these sources were last opened on the row's reviewed-on date
+(2026-08-22, UTC); per-source retrieval dates were not recorded before the
+2026-09-12 migration and are added as each source is re-verified.
+
 - <https://docs.londonstockexchange.com/sites/default/files/documents/compliance_update_mar_09.pdf> — LSE compliance update, March 2009: the 2009 compliance parameters behind the January-2010 SETS baseline.
 - <https://docs.londonstockexchange.com/sites/default/files/documents/live-001-300910-appendix-a.pdf> — LSE Millennium Exchange rehearsal timetable, September 2010, appendix A: pre-trading 07:00, opening call 07:50, randomized 08:00 uncross, closing call 16:30 to its latest 16:35:30 edge.
 - <https://docs.londonstockexchange.com/sites/default/files/documents/mit201-guide-to-the-trading-system-15-6-20240429.pdf> — LSE MIT201, Guide to the Trading System: section 4.4 lists pre-trading as a scheduled session preceding the opening auction call; section 4.5 calls CPX "a short, modified regular trading session"; its operator-maintained document history records the 2012-04-30 production functional release.

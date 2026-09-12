@@ -17,6 +17,10 @@ BME principal-share January-2010 phases use the sourced conservative 30-second a
 
 ## Sources
 
+Retrieval dates: these sources were last opened on the row's reviewed-on date
+(2026-08-22, UTC); per-source retrieval dates were not recorded before the
+2026-09-12 migration and are added as each source is re-verified.
+
 - <https://www.bolsasymercados.es/en/bme-exchange/trading-hours.html> — BME trading hours: opening auction 08:30–09:00, continuous trading 09:00–17:30, closing auction 17:30–17:35, Trading-at-Last to 17:45.
 - <https://www.bolsasymercados.es/dam/descargas/regulacion/renta-variable/sociedad-de-bolsas/circular/2001/c20011uk.pdf> — Sociedad de Bolsas Circular 1/2001: the same opening, continuous and closing-auction grid, established before the January-2010 history floor.
 - <https://www.bolsasymercados.es/es/sala-de-comunicacion/noticias/2023/las-subastas-en-la-bolsa-parte-2.html> — BME, "Las subastas en la Bolsa": SIBE auctions end in a random period of at most 30 seconds.

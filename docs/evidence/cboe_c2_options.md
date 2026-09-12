@@ -17,14 +17,18 @@
 
 ## Sources
 
+Retrieval dates: these sources were last opened on the row's reviewed-on date
+(2026-08-22, UTC); per-source retrieval dates were not recorded before the
+2026-09-12 migration and are added as each source is re-verified.
+
 - <https://cdn.cboe.com/resources/regulation/circulars/general/IC-CBOE-2010-168.pdf> — Cboe circular IC-CBOE-2010-168; C2 launched 2010-10-29 with Ford as its first class.
 - <https://cdn.cboe.com/resources/regulation/rule_book/C2_Exchange_Rule_Book.pdf> — Cboe C2 Exchange Rule Book; retains 09:30-16:00 ET RTH for this product family.
 - <https://www.cboe.com/about/hours/us-options> — Cboe US options hours page; the operator system setting behind the 07:30 ET order-acceptance queue.
 - SR-C2-2019-009 (84 FR 20673, 2019-05-10) — records the queuing period beginning at 07:30 as "the same time at which the System begins accepting orders and quotes today" while declining to change it; the owner module carries no URL for it.
 
-The owner modules record no per-URL retrieval date. This row's source set was last
-reviewed on 2026-08-22 and the queue carry-back was decided on 2026-09-01; the retrieved
-bytes live in the research store beside the repository.
+The queue carry-back was decided on 2026-09-01, after the 2026-08-22 source-set review;
+that decision date is not a review date. The retrieved bytes live in the
+research store beside the repository.
 
 ## Gaps and residual risks
 

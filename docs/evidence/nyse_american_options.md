@@ -17,13 +17,17 @@ None. `options/history.rs` holds a single static profile for this identity with 
 
 ## Sources
 
+Retrieval dates: these sources were last opened on the row's reviewed-on date
+(2026-08-22, UTC); per-source retrieval dates were not recorded before the
+2026-09-12 migration and are added as each source is re-verified.
+
 - <https://www.sec.gov/rules/sro/amex/2006/34-53244.pdf> — Amex 2006 rule change to the 16:00 ET close; the pre-floor baseline for the NYSE American execution grid.
 - <https://nyseamericanguide.srorules.com/rules> — NYSE American rules; retain 09:30-16:00 ET RTH for this product family.
 - <https://www.nyse.com/trade/hours-calendars?os=.> — NYSE hours and calendars page; publishes "Pre-Opening Session: 6:00 a.m. ET".
 
-The owner modules record no per-URL retrieval date. This row's source set was last
-reviewed on 2026-08-22 and the queue carry-back was decided on 2026-09-01; the retrieved
-bytes live in the research store beside the repository.
+The queue carry-back was decided on 2026-09-01, after the 2026-08-22 source-set review;
+that decision date is not a review date. The retrieved bytes live in the
+research store beside the repository.
 
 ## Gaps and residual risks
 

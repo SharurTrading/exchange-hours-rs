@@ -21,6 +21,10 @@ Vienna's eras are expressed as dated `NaiveDate` constants in `vienna.rs` rather
 
 ## Sources
 
+Retrieval dates: these sources were last opened on the row's reviewed-on date
+(2026-08-22, UTC); per-source retrieval dates were not recorded before the
+2026-09-12 migration and are added as each source is re-verified.
+
 - <https://web.archive.org/web/20090219151827id_/http://en.wienerborse.at/static/cms/sites/wbag/media/en/pdf/marketplace_products/feinspez_xetra_marktmodell.pdf> — Wiener Börse detailed Xetra 9.1 specification, effective 2009-01-02: the January-2010 ATX baseline. On ordinary days the auction market-balancing phases delayed continuous trading until 09:01 and 12:04 and the closing auction ended at 17:34; on derivatives-settlement days the corresponding latest boundaries were 09:02:30, 12:07:30 and 17:35:30.
 - <https://web.archive.org/web/20150529063952id_/http://en.wienerborse.at/static/cms/sites/wbag/media/en/pdf/marketplace_products/feinspez_xetra_marktmodell.pdf> — archived Wiener Börse specification capture: the same tables remain in the 2012, 2014 and 2015 editions.
 - <https://www.wienerborse.at/uploads/u/cms/files/trading/xetra-detailed-specifications-market-models.pdf> — Wiener Börse Xetra detailed specifications and market models, the T7 migration edition.

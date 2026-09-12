@@ -10,8 +10,8 @@ use crate::calendar::schedules::StaticHoursProfile;
 use crate::calendar::schedules::timeline::{Revision, local_date, revisions, select_revision};
 
 // NYMEX platinum-group Trading at Settlement books in America/Chicago: TAS on
-// platinum `PLT` and palladium `PAT`, one era each and no revision of any
-// kind. Each opens 17:00 CT Sunday through Thursday and wraps to its own close
+// platinum `PLT` and palladium `PAT`, one era each and no post-launch
+// revision. Each opens 17:00 CT Sunday through Thursday and wraps to its own close
 // with no Friday-evening reopen; `regular` is empty in every era as a sourced
 // absence, and each pre-launch era is a sourced closure.
 // Narrative: docs/evidence/globex_platinum_tas.md

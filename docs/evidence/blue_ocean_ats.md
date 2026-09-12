@@ -17,8 +17,9 @@ Production ATS new-order service only: closed before the sourced 2021-10-05 laun
 
 ## Sources
 
-No per-URL retrieval date is recorded in this repository; every link below
-was read at or before the row's `Reviewed on` date in the ledger.
+Retrieval dates: these sources were last opened on the row's reviewed-on date
+(2026-08-22, UTC); per-source retrieval dates were not recorded before the
+2026-09-12 migration and are added as each source is re-verified.
 
 - <https://www.sec.gov/Archives/edgar/data/1795131/000090266426001359/xslATS-N_X01/primary_doc.xml> — the live Blue Ocean Form ATS-N, which ends new-order acceptance at 04:00.
 - <https://www.sec.gov/about/divisions-offices/division-trading-markets/alternative-trading-systems/form-ats-n-filings-information> — the Form ATS-N filings index.
@@ -46,4 +47,4 @@ was read at or before the row's `Reviewed on` date in the ledger.
 > Shared module. The narrative for
 > [`ats.rs`](../../src/calendar/schedules/equities/us/ats.rs)
 > lives in [`iex`](iex.md#module-narrative-moved-from-srccalendarschedulesequitiesusatsrs-on-2026-09-12-utc).
-> No other identity shares this module.
+> Sibling identities: [`iex`](iex.md).

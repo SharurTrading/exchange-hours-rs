@@ -75,7 +75,9 @@ static GEMX_REVISIONS: &[Revision] = revisions![(
 ),];
 
 // Evidence: docs/evidence/nasdaq_mrx.md
-// 2016-02-16 — T1 — SEC 34-77256 — MRX launch.
+// 2016-02-16 — T3 — SEC 34-77256 — MRX launch. T3 because the release is
+//   filed under the SEC's `sro/bats/` path — a BATS fee filing, not this
+//   venue's own instrument. See docs/evidence/nasdaq_mrx.md.
 static MRX_REVISIONS: &[Revision] =
     revisions![(2016, 2, 16, &NASDAQ_MRX_OPTIONS_PROFILE, "SEC 34-77256"),];
 

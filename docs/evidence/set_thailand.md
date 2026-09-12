@@ -19,6 +19,10 @@ Venue union retains sourced auction edges and, from 2025-05-06, eligible Europe/
 
 ## Sources
 
+Retrieval dates: these sources were last opened on the row's reviewed-on date
+(2026-08-22, UTC); per-source retrieval dates were not recorded before the
+2026-09-12 migration and are added as each source is re-verified.
+
 - <https://www.set.or.th/en/market/information/trading-procedure/trading-hours> — SET published trading procedure. Each pre-open phase has a randomized end T: Pre-open I runs 09:30–T1 (T1 random 09:55–10:00), Pre-open II 13:30–T2 (T2 random 13:55–14:00) and the night Pre-open 18:45–T4 (T4 random 18:55–19:00); each is listed as order entry only, an auction order-collection phase with no matching and no trade reports. Pre-close 16:30–T3 (T3 random 16:35–16:40) and Off-hour T3–17:00 both admit Trade Reports.
 - <https://www.set.or.th/en/market/news-and-alert/newsdetails?id=95921400&symbol=SET> — SET notification 95921400, the 2025-05-06 night-session and continuous-DR launch.
 - <https://www.set.or.th/en/market/news-and-alert/newsdetails?id=86864800&symbol=SET> — SET notification 86864800, the 2024-03-25 afternoon-session move.

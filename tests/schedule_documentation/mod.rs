@@ -90,6 +90,30 @@ const SENTENCE_ABBREVIATIONS: [&str; 7] = ["U.S.", "No.", "Nos.", "St.", "Inc.",
 /// Evidence files live beside the ledger, one per row (LAW-EVIDENCE-FILES).
 const EVIDENCE_DIR: &str = "docs/evidence";
 
+/// Today's UTC calendar date, for the "no record is future-dated" bound.
+///
+/// LAW-UTC-DATES says a recorded date later than the current UTC date is
+/// future-dated and wrong, so the bound needs the real date. LAW-DETERMINISM
+/// binds *library* code, and `chrono` is built without its `clock` feature so
+/// `Utc::now` does not exist to call; tests are integration tests and may read
+/// a clock, so this reads the Unix timestamp and converts it with
+/// `from_timestamp`, which the feature gate does not remove.
+fn today_utc() -> NaiveDate {
+    #[expect(
+        clippy::disallowed_methods,
+        reason = "LAW-DETERMINISM binds library code; this fence is a test and must \
+                  compare the ledger's own recorded dates against the real UTC date"
+    )]
+    let since_epoch = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .expect("the system clock must be at or after the Unix epoch");
+    let seconds =
+        i64::try_from(since_epoch.as_secs()).expect("the Unix timestamp must fit in an i64");
+    chrono::DateTime::<chrono::Utc>::from_timestamp(seconds, 0)
+        .expect("the Unix timestamp must name a valid UTC instant")
+        .date_naive()
+}
+
 fn repository_cutoff() -> &'static str {
     const PREFIX: &str = "**Repository source-review cutoff:** `";
     let line = VERIFICATION
@@ -209,8 +233,9 @@ fn basis_note_sentences(note: &str) -> usize {
 ///
 /// `synthetic_name` is the one identity in this table whose profile is library
 /// policy rather than a venue schedule; every other row must be a real
-/// identity reviewed at or after the repository cutoff.
-fn assert_row_shape(row: &str, cutoff: NaiveDate, synthetic_name: &str) {
+/// identity reviewed at or after the repository cutoff and at or before
+/// `today`, the current UTC calendar date (LAW-UTC-DATES).
+fn assert_row_shape(row: &str, cutoff: NaiveDate, today: NaiveDate, synthetic_name: &str) {
     let cells = row_cells(row);
     assert_eq!(
         cells.len(),
@@ -288,6 +313,11 @@ fn assert_row_shape(row: &str, cutoff: NaiveDate, synthetic_name: &str) {
         assert!(
             reviewed >= cutoff,
             "review date predates repository cutoff: {row}"
+        );
+        assert!(
+            reviewed <= today,
+            "LAW-UTC-DATES: reviewed-on {reviewed} is later than today's UTC date \
+             {today}, so the row is future-dated: {row}"
         );
     }
 }
@@ -380,9 +410,10 @@ fn market_hours_key_selection_contract_is_explicit() {
 fn exchange_rows_have_complete_review_metadata() {
     let cutoff = NaiveDate::parse_from_str(repository_cutoff(), "%Y-%m-%d")
         .expect("repository cutoff must be an ISO calendar date");
+    let today = today_utc();
 
     for row in exchange_rows() {
-        assert_row_shape(row, cutoff, "unknown");
+        assert_row_shape(row, cutoff, today, "unknown");
     }
 }
 
@@ -390,9 +421,10 @@ fn exchange_rows_have_complete_review_metadata() {
 fn market_hours_key_rows_have_complete_review_metadata() {
     let cutoff = NaiveDate::parse_from_str(repository_cutoff(), "%Y-%m-%d")
         .expect("repository cutoff must be an ISO calendar date");
+    let today = today_utc();
 
     for row in market_hours_key_rows() {
-        assert_row_shape(row, cutoff, "always_open");
+        assert_row_shape(row, cutoff, today, "always_open");
     }
 }
 
@@ -423,6 +455,12 @@ fn readme_and_review_dates_match_the_repository_cutoff() {
     let cutoff = repository_cutoff();
     let cutoff_date = NaiveDate::parse_from_str(cutoff, "%Y-%m-%d")
         .expect("repository cutoff must be an ISO calendar date");
+    let today = today_utc();
+    assert!(
+        cutoff_date <= today,
+        "LAW-UTC-DATES: the repository source-review cutoff {cutoff_date} is later than \
+         today's UTC date {today}, so it is future-dated"
+    );
     let readme_claim = format!("**Repository-wide review completed:** `{cutoff}`");
 
     assert!(
@@ -446,6 +484,11 @@ fn readme_and_review_dates_match_the_repository_cutoff() {
         assert!(
             reviewed >= cutoff_date,
             "exchange review date predates repository cutoff: {row}"
+        );
+        assert!(
+            reviewed <= today,
+            "LAW-UTC-DATES: reviewed-on {reviewed} is later than today's UTC date \
+             {today}, so the row is future-dated: {row}"
         );
         minimum_reviewed =
             Some(minimum_reviewed.map_or(reviewed, |earliest| earliest.min(reviewed)));

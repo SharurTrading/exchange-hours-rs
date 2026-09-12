@@ -17,6 +17,10 @@ The operator's 2010 INET model supplies the baseline; the 2015-11-16 five-second
 
 ## Sources
 
+Retrieval dates: these sources were last opened on the row's reviewed-on date
+(2026-08-22, UTC); per-source retrieval dates were not recorded before the
+2026-09-12 migration and are added as each source is re-verified.
+
 - <https://www.globenewswire.com/news-release/2010/01/25/151379/0/en/INET-Nordic-NASDAQ-OMX-Market-Model.html> — Nasdaq OMX INET Nordic market-model notice, 2010-01-25: the migration is effective 2010-02-08 and does not materially change Nordic trading hours; it also identifies the existing randomized close.
 - <https://www.globenewswire.com/news-release/2010/02/05/153049/0/en/INET-Activities-re-migration-starts-today-5-February-at-17-30-CET.html> — Nasdaq OMX INET migration-activity notice, 2010-02-05.
 - <https://www.globenewswire.com/en/Attachment/DownloadAttachment?articleid=153059&fileId=93908&filename=market+model+version+1_1+januar+21+2010.pdf&filetype=3&islogo=0> — Nasdaq OMX Nordic Market Model version 1.1, 21 January 2010, attached to the migration notice: every exact January-2010 phase, including post-trading through 18:00 CET.
@@ -35,5 +39,9 @@ The operator's 2010 INET model supplies the baseline; the 2015-11-16 five-second
 
 > Shared module. [`nasdaq_nordics.rs`](../../src/calendar/schedules/equities/europe/nasdaq_nordics.rs) also carries
 > [`nasdaq_stockholm`](nasdaq_stockholm.md) and [`nasdaq_copenhagen`](nasdaq_copenhagen.md).
-> The anchor identity for this module is [`nasdaq_stockholm`](nasdaq_stockholm.md), which receives the
-> module narrative when LAW-EVIDENCE-FILES moves it; the module is not yet migrated.
+> Each of the three identities has its own evidence file and its own `// Evidence:`
+> declaration beside its `revisions!` block in the module, so the evidence-file
+> migration LAW-EVIDENCE-FILES requires is complete for all three.
+> [`nasdaq_stockholm`](nasdaq_stockholm.md) is the anchor: it receives the module's
+> remaining prose when `nasdaq_nordics.rs` is drained under issue #85, which is the
+> only part still outstanding.

@@ -17,8 +17,9 @@ The exchange identity is closed before its 2016-08-19 first production-symbol la
 
 ## Sources
 
-No per-URL retrieval date is recorded in this repository; every link below
-was read at or before the row's `Reviewed on` date in the ledger.
+Retrieval dates: these sources were last opened on the row's reviewed-on date
+(2026-08-22, UTC); per-source retrieval dates were not recorded before the
+2026-09-12 migration and are added as each source is re-verified.
 
 - <https://www.iex.io/resources/trading/trading-hours-holidays> — IEX trading hours and holidays, the current 08:00–17:00 System Hours.
 - <https://www.iex.io/resources/regulation> — the current IEX regulation and rule-book hub.

@@ -20,6 +20,10 @@ Legacy Winnipeg Canola: sourced January-2010, 2011 open, 2012/2013 close, and 20
 
 ## Sources
 
+Retrieval dates: these sources were last opened on the row's reviewed-on date
+(2026-08-22, UTC); per-source retrieval dates were not recorded before the
+2026-09-12 migration and are added as each source is re-verified.
+
 - <https://www.ice.com/publicdocs/futures_canada/member_notices/Trading_Calendar_2009.pdf> — the official 2009 trading calendar, pinning the January-2010 baseline: pre-open 19:00, continuous trading 20:00–13:15 CT.
 - <https://www.ice.com/publicdocs/futures_canada/member_notices/Feb1_2011_revised_trading_hours.pdf> — 2011 notice moving the pre-open/open to 18:30/19:00 on Monday 2011-02-28 for trade date 2011-03-01.
 - <https://www.ice.com/publicdocs/futures_canada/member_notices/June_13_2012_ICE_Futures_Canada_notice-Trading_Hours_and_Settlement_Time_Change.pdf> — 2012 notice moving the close to 14:00 for trade date 2012-06-25.

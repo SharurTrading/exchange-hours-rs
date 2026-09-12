@@ -13,23 +13,28 @@
 
 ## Revision rows
 
-- 2016-02-16 — T1 — SEC 34-77256 — MRX launch; the queue-carrying 06:00 and 09:30-16:00 ET profile takes effect over the pre-launch closure.
+- 2016-02-16 — T3 — SEC 34-77256 — MRX launch; the queue-carrying 06:00 and 09:30-16:00 ET profile takes effect over the pre-launch closure.
 
 ## Sources
 
-- <https://www.sec.gov/files/rules/sro/bats/2016/34-77256.pdf> — SEC 34-77256; fixes the exact MRX launch day of 2016-02-16.
+Retrieval dates: these sources were last opened on the row's reviewed-on date
+(2026-08-22, UTC); per-source retrieval dates were not recorded before the
+2026-09-12 migration and are added as each source is re-verified.
+
+- <https://www.sec.gov/files/rules/sro/bats/2016/34-77256.pdf> — SEC 34-77256; the artifact the 2016-02-16 launch row is keyed to. **T3, not T1**: the release is filed under the `sro/bats/` path — a BATS fee filing, not an ISE Mercury or MRX instrument — so it is a third party's statement about this venue's launch day, not the operator's own (LAW-PRIMARY-SOURCES). It has not been shown to mirror an operator document verbatim, which is the only way T3 may date a change.
 - <https://www.deutsche-boerse.com/resource/blob/324026/912f25fc1b9e0cdb916acbd69d4013fb/data/Detailed_volume_statistics_are_found_in_the_following_document-1.pdf> — operator volume statistics; report the MRX equity-and-ETF rollout.
 - <https://listingcenter.nasdaq.com/rulebook/mrx/rules/MRX%20Options%203> — MRX Options 3; retains 09:30-16:00 ET RTH for this product family.
 - <https://www.nasdaq.com/docs/MRXSystemSettings> — Nasdaq MRX System Settings; "System begins accepting orders" at 06:00 ET.
 - <https://www.sec.gov/rules-regulations/self-regulatory-organization-rulemaking/sr-mrx-2026-11> — SR-MRX-2026-11; the approved Options 3C session, unencoded until the required trader alert makes it operative.
 
-The owner modules record no per-URL retrieval date. This row's source set was last
-reviewed on 2026-08-22 and the queue carry-back was decided on 2026-09-01; the retrieved
-bytes live in the research store beside the repository.
+The queue carry-back was decided on 2026-09-01, after the 2026-08-22 source-set review;
+that decision date is not a review date. The retrieved bytes live in the
+research store beside the repository.
 
 ## Gaps and residual risks
 
 - **order-entry** — the day the 06:00 ET order-acceptance queue began is undated. No primary source states it: the queue is an operator *system setting* published on a mutable hours or system-settings page, not a rulebook boundary with a filed operative date. As of 2026-09-01 the queue is carried from this venue's sourced launch row rather than withheld, which asserts continuity no document states. Nothing matches in the queue, so the 09:30-16:00 ET execution history is unaffected. Closing condition: an operator artifact stating the queue's start in session language on a day-level effective date. Dormant identity, so the gap is recorded here rather than opened as an issue (LAW-FOLLOW-UPS-ARE-ISSUES).
+- **launch-row tier** — the 2016-02-16 launch boundary is keyed to SEC 34-77256, which is filed under the `sro/bats/` path as a BATS fee filing. It is therefore **T3**, marked as such on the revision-row line above and in the owner module's comment; the row itself is unchanged, because this PR makes no schedule change. The ledger row's `Evidence tier` cell stays `T1` and that is correct: that cell records the tier behind the row's *current* schedule, which rests on the MRX Options 3 rulebook and the Nasdaq MRX System Settings page, not on this filing. What would make the launch boundary T1: an ISE Mercury or MRX operator notice or trader alert naming the launch day, or an SR-ISEMercury/SR-MRX filing of this venue's own. Closing condition: either of those, read and substituted for the citation. Dormant identity, so the gap is recorded here rather than opened as an issue (LAW-FOLLOW-UPS-ARE-ISSUES).
 - **scope** — MRX's approved Options 3C session (SR-MRX-2026-11) stays unencoded until the required trader alert makes it operative (LAW-NO-FABRICATED-DATES). Closing condition: that operative trader alert.
 - **below the floor** — the 2006 coordinated SRO rule changes moved individual-stock options from a 16:02 to a 16:00 ET close before the January-2010 history floor, and that change is out of scope by design (LAW-NO-FABRICATED-DATES records amendment history back to January 2010). The 2006 filings are cited here because they are what sources the 09:30-16:00 ET grid through the floor.
 - **scope** — ETF, ETN, index, FLEX, floor-only and venue-designated extended-hours option classes are separate product families because their executable sessions vary, and this row does not cover them.

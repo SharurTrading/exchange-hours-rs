@@ -24,8 +24,11 @@ VIX futures normal-week history is complete from January 2010. Old-system pre-op
 
 ## Sources
 
-The row was last reviewed on 2026-08-22; these are the documents behind it and
-behind the narrative moved below. All times are Chicago time.
+Retrieval dates: these sources were last opened on the row's reviewed-on date
+(2026-08-22, UTC); per-source retrieval dates were not recorded before the
+2026-09-12 migration and are added as each source is re-verified.
+
+The documents below stand behind the row and behind the narrative moved below. All times are Chicago time.
 
 - <https://cdn.cboe.com/resources/regulation/rule_filings/approved/2010/SR-CFE-2010-013.pdf> — Cboe SR-CFE-2010-013, the 2010-12-10 extended-session filing — T1.
 - <https://cdn.cboe.com/resources/regulation/rule_filings/approved/2011/SR-CFE-2011-019.pdf> — Cboe SR-CFE-2011-019, the 2011-09-26 07:00 start — T1.
@@ -122,7 +125,9 @@ SR-CFE-2017-017 tied a revised VX schedule to CFE's system migration:
 16:00–16:45 weekday suspension, a 16:45–17:00 queue, then 17:00–08:30 ETH.
 Sunday has a 16:00–17:00 opening queue. The queues accept non-market orders
 that cannot execute until trading resumes, so the crate classifies them as
-extended under the order-entry-phase convention. The new-system opening
+`order_entry` under the order-entry-phase convention — `cfe.rs` puts all three
+(the 15:15–15:30 weekday queue and the Sunday 16:00 and weekday 16:45 opening
+queues) in `CFE_ORDER_ENTRY_2018_02_25`, never in `extended`. The new-system opening
 queues begin at randomized instants through three seconds after the nominal
 boundary, so their conservative edges are 16:00:03 and 16:45:03. RG18-005
 confirms that the migration completed Sunday 2018-02-25, for business date

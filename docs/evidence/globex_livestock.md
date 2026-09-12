@@ -20,6 +20,10 @@
 
 ## Sources
 
+Retrieval dates: these sources were last opened on the row's reviewed-on date
+(2026-08-29, UTC); per-source retrieval dates were not recorded before the
+2026-09-12 migration and are added as each source is re-verified.
+
 - <https://www.cmegroup.com/media-room/press-releases/2007/3/07/cme_to_offer_around-the-clocktradingofcommodityproductsoncmeglob.html> — CME press release of 2007-03-07, the around-the-clock launch that establishes the Monday 09:05 CT weekly open and the 16:00–17:00 CT daily halts.
 - <https://www.cmegroup.com/tools-information/lookups/advisories/market-data/Q2008-215.html> — CME market-data advisory Q2008-215, the pre-floor move of the Friday close to 13:55 CT.
 - <https://www.cmegroup.com/tools-information/lookups/advisories/ser/files/SER-7194.pdf> — CME SER-7194, the 2014-10-27 revision's source.

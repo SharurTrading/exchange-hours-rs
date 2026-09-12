@@ -17,10 +17,20 @@ Cash-market envelope; the pre-2025 staggered opening preserves both the earliest
 
 ## Sources
 
+Retrieval dates: these sources were last opened on the row's reviewed-on date
+(2026-08-22, UTC); per-source retrieval dates were not recorded before the
+2026-09-12 migration and are added as each source is re-verified.
+
 - <https://www.asx.com.au/markets/market-resources/trading-hours-calendar/cash-market-trading-hours> — ASX cash-market trading hours, the current phase timetable: Pre-open 07:00:00–09:59:00, Opening Single Price Auction 09:59:00–09:59:45, Open (Normal Trading) 09:59:45–16:00:00, Pre-CSPA 16:00:00–16:10:00, Closing Single Price Auction 16:10:00–16:11:00, Post Close 16:11:00–16:21:30.
 - <https://www.asxonline.com/public/notices/2025/may/0473.25.05.html> — ASX notice 0473.25.05, the Service Release 15 notice dating the change to 2025-06-23.
 - <https://www.asxonline.com/content/dam/asxonline/public/notices/2025/april/asx-sr15asx-operating-rule-procedure-amendments.pdf> — SR15 marked operating-rule procedure amendments, which carry the pre-SR15 text: five symbol groups opening at nominal times from 10:00 through 10:09, each randomized by ±15 seconds, with the CSPA ending at 16:12.
-- ASX Operating Rules Procedures Appendix 4013 — the operator's phase definitions for the cash market.
+- ASX Operating Rules Procedures Appendix 4013 — the operator's phase definitions
+  for the cash market. No URL for this appendix is recorded anywhere in this
+  repository — neither the owner module nor the `APAC-ASX` entry in
+  [sources.md](../schedules/sources.md#apac-asx) carries one — so the appendix
+  cannot be re-opened from a link here; re-verification goes through the
+  `APAC-ASX` operating-rules entry point in
+  [sources.md](../schedules/sources.md#apac-asx).
 
 ## Gaps and residual risks
 

@@ -25,6 +25,10 @@
 
 ## Sources
 
+Retrieval dates: these sources were last opened on the row's reviewed-on date
+(2026-09-06, UTC); per-source retrieval dates were not recorded before the
+2026-09-12 migration and are added as each source is re-verified.
+
 - <https://www.cmegroup.com/notices/ser/2017/12/SER-8051R.html> — CME SER-8051R, bitcoin futures launch, the 2017-12-17 revision's source.
 - <https://www.cmegroup.com/market-regulation/rule-filings/2017/12/17-417.pdf> — CME rule filing 17-417, the launch filing carrying the original 17:00–16:00 CT weekday grid.
 - <https://web.archive.org/web/20171214071544id_/http://www.cmegroup.com/trading/equity-index/us-index/bitcoin_contract_specifications.html> — CME bitcoin contract specification — capture 2017-12-14, carrying the launch statement and publishing the matching grid only.

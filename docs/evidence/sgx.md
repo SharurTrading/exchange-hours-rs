@@ -17,6 +17,10 @@ Three-Month SORA Futures only: closed before the sourced 2024-07-29 launch; curr
 
 ## Sources
 
+Retrieval dates: these sources were last opened on the row's reviewed-on date
+(2026-08-22, UTC); per-source retrieval dates were not recorded before the
+2026-09-12 migration and are added as each source is re-verified.
+
 - <https://links.sgx.com/1.0.0/corporate-announcements/LG3YO2RZCGZ92J0B/359e83de092b9d70d54305133c92a82e16f676fc43ef4aa06a6976d8bc771fdf> — SGX launch announcement giving the day-level 2024-07-29 launch.
 - <https://www.sgx.com/derivatives/products/stir-products?cc=SORA> — live product specification publishing the complete T and T+1 opening, non-cancel, continuous, pre-close and overnight routine.
 - <https://api2.sgx.com/sites/default/files/2026-01/SGX%20Calendar%202026_2.pdf> — SGX derivatives calendar 2026, independently retaining the same continuous windows.

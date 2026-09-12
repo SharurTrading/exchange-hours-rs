@@ -19,6 +19,10 @@ Venue envelope includes 2026 CAS-eligible and non-CAS states.
 
 ## Sources
 
+Retrieval dates: these sources were last opened on the row's reviewed-on date
+(2026-08-22, UTC); per-source retrieval dates were not recorded before the
+2026-09-12 migration and are added as each source is re-verified.
+
 - <https://www.bseindia.com/markets/MarketInfo/DispNewNoticesCirculars?page=20101014-8> — BSE operating notice for the 2010-10-18 call-auction launch: Order Entry Period 9:00am–9:07/08am with "Random stoppage between 7th and 8th minute" and "No trades are executed"; Order Matching & Confirmation Period 9:08am–9:12am; Buffer Period 9:12am–9:15am. The same notice records that the pre-open and continuous sessions "will not run concurrently" and that pre-open-ineligible stocks only trade from 9:15am.
 - <https://www.nseindia.com/static/products-services/equity-market-pre-open> — NSE pre-open page, documenting the identical structure and still current after the 2026-08-03 CAS cutover.
 - <https://www.nseindia.com/static/products-services/closing-auction-session> — NSE Closing Auction Session page.
@@ -33,5 +37,5 @@ Venue envelope includes 2026 CAS-eligible and non-CAS states.
 
 - The 2026-08-03 CAS row is keyed to a SEBI circular, the regulator's own binding instrument, rather than to a BSE notice; the BSE notices restate it. Recorded here for the same reason as on the NSE row.
 - BSE has no 2011 post-close cutover: its 15:40 start predates the audit floor, so the NSE-only 2011-10-03 row is deliberately absent from this timeline (LAW-NO-FABRICATED-DATES).
-- The pre-open order-entry boundary is set at 09:07, the earliest second a trade could print under the random stoppage, never later; 09:07–09:15 stays `extended`.
+- The pre-open order-entry boundary is set at 09:07, the conservative edge of the pre-open envelope: BSE notice 20101014-8 ends the Order Entry Period with a "Random stoppage between 7th and 8th minute" in which "[n]o trades are executed", and the first execution comes in the Order Matching & Confirmation Period that the same notice starts at 09:08. The crate serves 09:07 so the envelope never opens later than the operator's earliest stated stoppage second; 09:07–09:15 stays `extended`.
 - The 09:55 grid below 2010-01-04 is sourced by the December-2009 artifacts; nothing below the January-2010 floor is reviewed.

@@ -539,6 +539,74 @@ fn every_evidence_revision_line_exists_in_source() {
     }
 }
 
+/// The two directional fences above test membership only, so counts can drift:
+/// a file may repeat one evidence bullet, or carry one bullet for two timeline
+/// rows that share a day, and both directions still pass. Compare multisets of
+/// `(day, citation)` so the counts have to match as well.
+///
+/// Scope matches the reverse fence: a file no `revisions!` block declares has
+/// no source multiset to compare against and is checked for grammar only
+/// (issue #86).
+///
+/// Multiplicities add **within** one timeline and merge by maximum **across**
+/// timelines that declare the same file. A seasonal twin — `eurex_fixed_income`
+/// carries a CEST timeline and a CET one holding the identical two days — is
+/// two encodings of one dated change, and LAW-EVIDENCE-FILES asks for one
+/// bullet per change, not one per encoding.
+#[test]
+fn revision_rows_and_evidence_bullets_match_as_multisets() {
+    let mut declared: BTreeMap<String, BTreeMap<(String, String), usize>> = BTreeMap::new();
+    for block in revision_blocks() {
+        let mut per_block: BTreeMap<(String, String), usize> = BTreeMap::new();
+        for row in &block.rows {
+            let slot = per_block
+                .entry((row.day.clone(), row.citation.clone()))
+                .or_default();
+            *slot = slot.saturating_add(1);
+        }
+        for name in block.files {
+            let counts = declared.entry(name).or_default();
+            for (key, count) in &per_block {
+                let slot = counts.entry(key.clone()).or_default();
+                *slot = (*slot).max(*count);
+            }
+        }
+    }
+
+    let files = evidence_files();
+    for (name, expected) in &declared {
+        let text = files
+            .get(name)
+            .unwrap_or_else(|| panic!("missing evidence file: {name}"));
+        let rows = section(text, "## Revision rows")
+            .unwrap_or_else(|| panic!("{name} must carry a `## Revision rows` section"));
+
+        let mut recorded: BTreeMap<(String, String), usize> = BTreeMap::new();
+        for bullet in rows.lines().filter(|line| line.starts_with("- ")) {
+            let fields = bullet
+                .trim_start_matches("- ")
+                .splitn(4, " \u{2014} ")
+                .collect::<Vec<_>>();
+            assert_eq!(
+                fields.len(),
+                4,
+                "{name} revision line must read \
+                 `- YYYY-MM-DD \u{2014} T<n> \u{2014} <id> \u{2014} <label>`: {bullet}"
+            );
+            let slot = recorded
+                .entry((fields[0].to_owned(), fields[2].to_owned()))
+                .or_default();
+            *slot = slot.saturating_add(1);
+        }
+
+        assert_eq!(
+            &recorded, expected,
+            "{name}'s `## Revision rows` bullets must match its declaring timelines as a \
+             multiset, one bullet per row: left is the evidence file, right is the source"
+        );
+    }
+}
+
 /// Asserts one `## Revision rows` bullet parses and matches its source tuple.
 ///
 /// A module that encodes its dated cutovers as `NaiveDate` constants rather

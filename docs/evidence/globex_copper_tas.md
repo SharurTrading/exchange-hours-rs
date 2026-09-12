@@ -19,6 +19,10 @@
 
 ## Sources
 
+Retrieval dates: these sources were last opened on the row's reviewed-on date
+(2026-09-12, UTC); per-source retrieval dates were not recorded before the
+2026-09-12 migration and are added as each source is re-verified.
+
 - <https://www.cftc.gov/sites/default/files/stellent/groups/public/@rulesandproducts/documents/ifdocs/rul031110nymexandcomex001.pdf> — NYMEX/COMEX Submission 10-070 with SER S-5166 attached — the gold and silver TAS launch, "on Globex on April 11 (for trade date April 12)".
 - <https://web.archive.org/web/20120512095523id_/http://www.cmegroup.com/rulebook/files/SER-5542__10-12-22__TAS_COMEX.pdf> — COMEX SER-5542 of 2010-12-22 — the copper TAS launch, "effective Sunday, January 23, 2011 for trade date Monday, January 24, 2011".
 - <https://www.cftc.gov/sites/default/files/stellent/groups/public/@rulesandproducts/documents/ifdocs/rul033111nymexandcomex001.pdf> — NYMEX & COMEX MRAN RA1104-4 — the 2011-04-10 staggered queue onsets.
@@ -61,7 +65,7 @@
 - **state classification** — the inter-trade-date gap is 5h, so it is `Closed` rather than `Maintenance`.
 - **do not substitute `globex_palladium_tas`** on the coincident 12:00 CT close: different exchange (COMEX against NYMEX), different security group (HT against PX), launches seven years apart, different settlement determination ranges.
 - **catalog, not schedule, and an open question** — members `MHT` (2025-07-27) and `HG0`, the spot-month "TAS zero" root, are caller catalog data. `HG0`'s listing day is undated with an upper bound of 2018-08-10 only: CME's copper Product Code cell demonstrably drops TAS codes that exist, and all seventy archived weekly Globex notices from 2017-06-05 to 2018-08-27 name it nowhere. Closing condition: a COMEX rule filing or a CME Globex notice that names `HG0` on a stated day; CME's own search endpoints were unusable in that pass, so the CFTC rule-filing channel and the pre-2017 Globex notice archive are where to look next. This is a not-worked-up gap, not a no-source-exists finding; it dates no revision row and the listing is caller catalog data either way (#80).
-- **evidence tier** — the ledger row is `T1`: every window this key serves is stated by a CME operator document (the MRAN filings, the metals hours page, the contract specification captures). CME's live ContractSpecs API, a reference-data machine channel admissible at T2, corroborates the same instants today.
+- **evidence tier** — the ledger row is `T1`: every window this key serves is stated by a CME operator document (the MRAN filings, the metals hours page, the contract specification captures). CME's live ContractSpecs API, a reference-data machine channel admissible at T2, corroborates the same instants at the 2026-09-12 review.
 - **channel** — the CFTC-hosted NYMEX and COMEX filings were fetched directly from cftc.gov, and the notices, hours pages, specification captures and archived ContractSpecs payloads through web.archive.org `id_` replay, so neither carries the reader caveat. Only the live ContractSpecs records and the live 2015 and 2025 notice pages were read as extracted text through a public reader in front of the cmegroup.com URLs, and no review date rests on that channel alone.
 
 > Shared module. The narrative for [`metals_tas.rs`](../../src/calendar/schedules/futures/us/metals_tas.rs)

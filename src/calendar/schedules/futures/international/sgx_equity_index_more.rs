@@ -239,7 +239,8 @@ pub(crate) fn sgx_equity_index_taiwan_profile_at(
 // continuously 07:25-18:30 and the T+1 session reopens at 18:45 and wraps to
 // 05:15. One profile covers the whole NTR (USD) and global-index family
 // because SGX lists every contract in it on the identical four instants.
-// Narrative: docs/evidence/sgx_equity_index_taiwan.md
+// Narrative: docs/evidence/sgx_equity_index_taiwan.md (this module's narrative
+//   anchor); this key's own evidence file is docs/evidence/sgx_equity_index_ntr_usd.md
 pub(crate) static SGX_EQUITY_INDEX_NTR_USD_REGULAR_CURRENT: &[SessionRule] = &[
     SessionRule {
         days: MON_FRI,

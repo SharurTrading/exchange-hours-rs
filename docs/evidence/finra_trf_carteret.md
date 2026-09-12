@@ -17,8 +17,9 @@ Reporting facility; the 2026-03-30 04:00–20:00 revision is sourced. The announ
 
 ## Sources
 
-No per-URL retrieval date is recorded in this repository; every link below
-was read at or before the row's `Reviewed on` date in the ledger.
+Retrieval dates: these sources were last opened on the row's reviewed-on date
+(2026-08-22, UTC); per-source retrieval dates were not recorded before the
+2026-09-12 migration and are added as each source is re-verified.
 
 - <https://www.finra.org/filing-reporting/trade-reporting-facility-trf> — the FINRA TRF hub.
 - <https://www.finra.org/rules-guidance/rulebooks/finra-rules/6380a> — Rule 6380A, which requires the outside-RTH modifier.

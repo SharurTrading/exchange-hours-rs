@@ -17,6 +17,10 @@ None. ice_endex.rs encodes its dated cutovers as constants rather than revisions
 
 ## Sources
 
+Retrieval dates: these sources were last opened on the row's reviewed-on date
+(2026-08-22, UTC); per-source retrieval dates were not recorded before the
+2026-09-12 migration and are added as each source is re-verified.
+
 - <https://web.archive.org/web/20130831104114id_/https://www.theice.com/productguide/Search.shtml?tradingHours=> — ICE's 2013-08-31 WebICE hours table, showing the transferred contract's 07:45 pre-open / 08:00–18:00 CET grid immediately before the handoff.
 - <https://www.ice.com/publicdocs/circulars/10010%20attach%201%20-%20TTF%20Nat%20Gas%20Contract%20Spec.pdf> — ICE circular 10/010 attachment 1, TTF Natural Gas contract specification.
 - <https://www.ice.com/publicdocs/circulars/13107.pdf> — ICE circular 13/107, moving the equivalent contract to ICE Endex on 2013-10-07 and expressly keeping it on the same ICE platform.

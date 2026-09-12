@@ -9,7 +9,7 @@
 
 ## Ledger basis (moved from docs/schedules/verification.md on 2026-09-12 UTC)
 
-**Gap: order-entry** — the trading session is sourced; what is undated is a queue or post-close phase in which no trade can print. Closed before FairX's exact 2021-06-28 08:00 CT launch, which the operator's homepage banner states; the first session opens at the launch, with no Sunday-evening session before it. The 23x5 grid, Sunday–Friday 17:00–16:00 CT with a daily 16:00–17:00 break, is stated by the four 2021-06-04 launch certifications and restated by every later dated filing through #2026-24, so no revision separates launch from today. The Pre-Open phase is documented from 2021 without a time and its 16:50 CT start is first witnessed in a 2025 capture, so it enters at a knowledge-bound 2026-09-11 review row (verified current, onset undated); the dated profiles before it carry no Pre-Open. Since #2026-24 (on or after trade date 2026-05-04) most CDE futures trade 24x7; this default is the grid that copper, platinum, nano crude oil, natural gas and Mag7 + Crypto equity index futures retain. The 24x7 family, with its weekly Friday, quarterly weekend and ad-hoc maintenance windows, is out of scope; no product-family key is claimed.
+**Gap: order-entry** — the trading session is sourced; what is undated is a queue or post-close phase in which no trade can print. Closed before FairX's exact 2021-06-28 08:00 CT launch, which the operator's homepage banner states; the first session opens at the launch, with no Sunday-evening session before it. The 23x5 grid, Sunday–Friday 17:00–16:00 CT with a daily 16:00–17:00 break, is stated by the four 2021-06-04 launch certifications and restated by every later dated filing through #2026-24, so no revision separates the launch from the 2026-09-11 review date. The Pre-Open phase is documented from 2021 without a time and its 16:50 CT start is first witnessed in a 2025 capture, so it enters at a knowledge-bound 2026-09-11 review row (verified current, onset undated); the dated profiles before it carry no Pre-Open. Since #2026-24 (on or after trade date 2026-05-04) most CDE futures trade 24x7; this default is the grid that copper, platinum, nano crude oil, natural gas and Mag7 + Crypto equity index futures retain. The 24x7 family, with its weekly Friday, quarterly weekend and ad-hoc maintenance windows, is out of scope; no product-family key is claimed.
 
 ## Revision rows
 
@@ -31,12 +31,16 @@ splits a running session.
 
 ## Sources
 
-The row was last reviewed on 2026-09-11; these are the documents behind it and
-behind the narrative moved below.
+Retrieval dates: these sources were last opened on the row's reviewed-on date
+(2026-09-11, UTC); per-source retrieval dates were not recorded before the
+2026-09-12 migration and are added as each source is re-verified.
+
+The documents below stand behind the row and behind the narrative moved below.
 
 - <https://www.cftc.gov/filings/ptc/ptc060421lmxdcm001.pdf> — FairX launch certification #2021-06E, filed 2021-06-04, one of the four that state the 23x5 grid at launch — T1.
 - <https://www.cftc.gov/filings/orgrules/rules0416261571.pdf> — Coinbase Derivatives filing #2026-24, which states which products keep the 23x5 grid after the 24x7 move — T1.
-- <https://docs.cdp.coinbase.com/derivatives/introduction/market-hours> — the operator's market-hours documentation, the current-schedule entry point and the page whose 2025 capture first witnesses the 16:50 CT Pre-Open — T1.
+- <https://docs.cdp.coinbase.com/derivatives/introduction/market-hours> — the operator's market-hours documentation, the current-schedule entry point and the page that witnesses the 16:50 CT Pre-Open — T1. The page is CDE's "Derivatives Market Hours & 24x7" document, whose own opening sentence dates its content ("Starting May 9, 2025, Coinbase Derivatives, LLC (CDE) will enable 24x7 trading for select cryptocurrency futures products"); under **Regular Market Hours for 23x5 Crypto Products** and again under **Regular Market Hours for Energy and Metals Products** it states "Pre-open quoting begins daily at 4:50 PM CT, 10 minutes before the market opens."
+- Research-store artifact `holidays/raw/cfe-eurex-ice-cde-smfe-2026-2027/cde_market_hours.md` — the saved bytes of that page, **captured 2026-09-12 04:23 UTC** (sha256 `ff8cace80f2f6bb9e463c6ac762c8f50f79fa76ce7b205c14e42d29e847d13a5`), carrying both Pre-Open sentences quoted above — T1. This is the earliest capture of the page held in the research store; the "2025 capture" the basis note and the gap bullet refer to is the 2025-dated *content* of this document, not a separately saved 2025 retrieval. No archived 2025 capture is linked, because web.archive.org was unreachable for the whole 2026-09-12 retrieval session (recorded in that task's `INDEX.md`).
 - <https://www.coinbase.com/derivatives> — the exchange product directory — T1.
 - <https://help.coinbase.com/derivatives/general/market-notices> — the exchange's market notices, the watch channel — T1.
 - <https://web.archive.org/web/20210622222253/https://www.fairx.com/> — the 2021-06-22 capture of FairX's homepage banner, naming Monday 2021-06-28 at 09:00 ET and fixing the year — T1 through a verbatim public mirror.
@@ -71,7 +75,7 @@ The venue default is CDE's recurring 23x5 futures grid: Sunday through
 Friday, 17:00-16:00 CT, with the daily 16:00-17:00 break. The four launch
 certifications filed 2021-06-04 state that grid, and every later dated
 filing through #2026-24 restates it, so no revision separates launch from
-today. Since #2026-24 (on or after trade date 2026-05-04) most CDE futures
+the 2026-09-11 review date. Since #2026-24 (on or after trade date 2026-05-04) most CDE futures
 trade 24x7; this grid is the one copper, platinum, nano crude oil, natural
 gas and Mag7 + Crypto equity index futures retain. The 24x7 family needs its
 own product-family key at the caller.

@@ -17,9 +17,6 @@ None. This identity resolves to the single `ALWAYS_OPEN_PROFILE` static in `sche
 
 ## Sources
 
-No per-URL retrieval date is recorded in this repository; every link below
-was read at or before the row's `Reviewed on` date in the ledger.
-
 - None. `unknown` is deterministic library policy, not a venue schedule, and the
   `SYNTHETIC-24X7` source set records no operator document for it.
 

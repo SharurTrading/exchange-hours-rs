@@ -17,6 +17,10 @@
 
 ## Sources
 
+Retrieval dates: these sources were last opened on the row's reviewed-on date
+(2026-09-12, UTC); per-source retrieval dates were not recorded before the
+2026-09-12 migration and are added as each source is re-verified.
+
 - <https://www.cmegroup.com/notices/electronic-trading/2017/05/20170508.html> — CME Globex notice 20170508 — "Effective Sunday, May 21 (trade date Monday, May 22), Platinum futures TAS will be listed for trading on CME Globex".
 - <https://web.archive.org/web/20260214165515id_/https://www.cmegroup.com/notices/electronic-trading/2017/05/20170508.html> — CME Globex notice 20170508, archived capture.
 - <https://www.cmegroup.com/notices/electronic-trading/2018/11/20181112.html> — CME Globex notice 20181112 — "Effective this Sunday, November 18 (trade date Monday, November 19), Palladium TAS will be listed for trading on CME Globex".
@@ -41,7 +45,7 @@
 - **sourced absence** — `regular` is empty in every era. Rule 524.A enumerates the TAS execution routes as CME Globex plus Rule 526 block trades and Rule 538 EFP/EFR and names no other; all forty-five TAS records in CME's ProductSlate read floor "-" / floorVol "0" / venues "Globex ClearPort "; the ContractSpecs API's "Open Outcry:" venue label exists — it prints one for SOFR options — and is never attached to a TAS hours line; and the Daily Bulletin carries TAS as an ex-pit volume column, never a priced product row, which already held on the 2015-03-20 pit-era edition.
 - **the 2009-2015 NYMEX pit clause never reached this root** — RA1107-4 enumerates the pit-eligible TAS contracts as gold and silver only, and it ties the pit route to the underlying's own hours in any case.
 - **state classification** — the inter-trade-date gap is 4h55m, so it is `Closed` rather than `Maintenance`.
-- **evidence tier** — the ledger row is `T1`: every window this key serves is stated by a CME operator document (the listing notice and the contract specification captures). CME's live ContractSpecs API, a reference-data machine channel admissible at T2, corroborates the same instants today.
+- **evidence tier** — the ledger row is `T1`: every window this key serves is stated by a CME operator document (the listing notice and the contract specification captures). CME's live ContractSpecs API, a reference-data machine channel admissible at T2, corroborates the same instants at the 2026-09-12 review.
 - **channel** — the CFTC-hosted NYMEX and COMEX filings were fetched directly from cftc.gov, and the notices, hours pages, specification captures and archived ContractSpecs payloads through web.archive.org `id_` replay, so neither carries the reader caveat. Only the live ContractSpecs records and the live 2015 and 2025 notice pages were read as extracted text through a public reader in front of the cmegroup.com URLs, and no review date rests on that channel alone.
 
 > Anchor identity for [`pgm_tas.rs`](../../src/calendar/schedules/futures/us/pgm_tas.rs), which is shared with [`globex_palladium_tas`](globex_palladium_tas.md).
@@ -61,7 +65,7 @@ DO NOT MERGE COPPER AND PALLADIUM ON THEIR COINCIDENT 12:00 CT CLOSE.
 Different exchange (COMEX versus NYMEX), different security group (HT versus
 PX), launches seven years apart, and different settlement determination
 ranges. The `globex_mini_grains` precedent — three keys, one envelope, three
-histories — applies directly: matching today's envelope is not matching the
+histories — applies directly: matching the 2026-09-12 review's envelope is not matching the
 family.
 
 NO REGULAR SESSION. The same four channels as the COMEX TAS keys carry the

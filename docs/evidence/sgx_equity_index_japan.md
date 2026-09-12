@@ -21,6 +21,10 @@
 
 ## Sources
 
+Retrieval dates: these sources were last opened on the row's reviewed-on date
+(2026-09-06, UTC); per-source retrieval dates were not recorded before the
+2026-09-12 migration and are added as each source is re-verified.
+
 - <https://www.sgx.com/derivatives/products/nikkei225futuresoptions> — SGX Nikkei 225 futures and options product page.
 - <https://www.sgx.com/derivatives/products/chinaa50> — SGX FTSE China A50 product page.
 - <https://www.sgx.com/derivatives/products/chinah50> — SGX FTSE China H50 product page.
@@ -30,6 +34,40 @@
 - <https://api2.sgx.com/sites/default/files/2026-08/Derivatives+Products+Description+v17.6%20eff%2020260824,%2020260907.zip> — SGX Derivatives Products Description v17.6 — the operator's own dated product change log.
 - <https://api2.sgx.com/sites/default/files/2025-07/DT%20Trading%20Calendar%202025%20%28updated%2031%20Jul%202025%29.pdf> — SGX DT Trading Calendar 2025 (updated 31 July 2025).
 - <https://www.citicsf.com.hk/attachment?aid=95&uid=a1207308-0e3a-4a16-a869-a4d1b808a2b3> — SGX-DT Circular DT/AM 15 of 2025, served through a member mirror carrying SGX's own document metadata.
+
+The historical artifacts below were recovered on 2026-09-12 from the
+pre-reshape module comment
+(`git show main:src/calendar/schedules/futures/international/sgx_equity_index/history.rs`),
+which held the URL list this file's narrative relies on. Items marked
+**(shared)** are cited by all five SGX equity-index evidence files —
+[`japan`](sgx_equity_index_japan.md), [`china`](sgx_equity_index_china.md),
+[`singapore`](sgx_equity_index_singapore.md),
+[`taiwan`](sgx_equity_index_taiwan.md) and
+[`ntr_usd`](sgx_equity_index_ntr_usd.md) — because the calendar editions, the
+content-API payloads and the change-log workbook state every family's grid in
+one document.
+
+- <https://api2.sgx.com/sites/default/files/2018-05/SGX%20Derivatives%20Trading%20Calendar%202018%20%28Apr%29.pdf> — SGX Derivatives Trading Calendar 2018 (Apr) — PDF created 11 April 2018, served from api2.sgx.com and never archived; prints the 04:45 T+1 close and is the first edition listing the NTR (USD) suite — T1. **(shared)**
+- <https://api2.sgx.com/sites/default/files/2019-01/2019%20DT%20Calendar.pdf> — SGX DT Calendar 2019 — "accurate as of 15 January 2019"; repeats the 2018 rows and the 04:45 T+1 close — T1. **(shared)**
+- <https://api2.sgx.com/sites/default/files/2020-01/SGX%20Derivatives%20Trading%20Calendar%202020.pdf> — SGX Derivatives Trading Calendar 2020 — the first edition printing the 05:15 T+1 close — T1. **(shared)**
+- <https://api2.sgx.com/sites/default/files/2021-01/SGX%20Derivatives%20Trading%20Calendar%202021.pdf> — SGX Derivatives Trading Calendar 2021 — T1. **(shared)**
+- <https://api2.sgx.com/sites/default/files/2021-07/SGX_Derivatives%20Trading%20Calendar%202021%20%28Final%20-%20Jul%29.pdf> — SGX Derivatives Trading Calendar 2021 (Final - Jul) — T1. **(shared)**
+- <https://api2.sgx.com/sites/default/files/2022-06/DT%20Trading%20Calendar%202022%20%28Final%29.pdf> — SGX DT Trading Calendar 2022 (Final) — no text layer; read from rendered pages — T1. **(shared)**
+- <https://api2.sgx.com/sites/default/files/2024-01/SGX%20Calendar%202024.pdf> — SGX Calendar 2024 — T1. (No 2023 edition was located.) **(shared)**
+- <https://api2.sgx.com/sites/default/files/2025-01/SGX%20Calendar%202025.pdf> — SGX Calendar 2025 — the edition that moves the Japan T close to 14:55 — T1. **(shared)**
+- <https://web.archive.org/web/20190204200905id_/https://api2.sgx.com/content-api?queryId=9756cc24703868bca7da492a8e1aebd1268eaf70%3Aderivatives_products_list&variables=%7B%22limit%22%3A10000%2C%22lang%22%3A%22EN%22%7D> — SGX content API, capture 2019-02-04 — the per-family Pre-Opening / Non-Cancel / Pre-Closing routines the calendars exclude by footnote, with the 04:45 T+1 close — T1 through a verbatim public mirror. **(shared)**
+- <https://web.archive.org/web/20190611051800id_/https://api2.sgx.com/content-api?queryId=5adaa923edc3b334f3d4a62a324e055c4be65025%3Aderivatives_products_list&variables=%7B%22limit%22%3A10000%2C%22lang%22%3A%22EN%22%7D> — SGX content API, capture 2019-06-11 — the day after the change log's stated 10 June; brackets the SiMSCI move (17:10 / 17:40 to 17:20 / 17:50) from above — T1 through a verbatim public mirror. **(shared)**
+- <https://web.archive.org/web/20200109051211id_/https://api2.sgx.com/content-api?queryId=ef44c5f861fc84577240761863bf1f842f189d9f%3Aderivatives_products_list&variables=%7B%22limit%22%3A10000%2C%22lang%22%3A%22EN%22%7D> — SGX content API, capture 2020-01-09 — the same routines with the 05:15 close, stated inside the 2019-11-11 row's own interval — T1 through a verbatim public mirror. **(shared)**
+- <https://rulebook.sgx.com/rulebook/futures-trading-rules> — SGX Futures Trading Rules — thirty-six "Amended on 14 November 2016" annotations for the Titan system cutover, none of them Rule 4.1.5, which delegates hours to the contract specifications: the rulebook dates the system, not the grid. **(shared)**
+- <https://www.sgx.com/titan-dt-dc-portal> — SGX Titan DT/DC portal — the operator index that corroborates each member-mirrored circular's issue date, and whose 2017-06-17 capture shows the 27 July 2016 newsletter listed only as "Titan DTDC Newsletter - New Feature Overview 2". **(shared)**
+- <https://web.archive.org/web/20130820090335id_/http://www.sgx.com/wps/portal/sgxweb/home/trading/derivatives/trading_hours_calendar> — SGX portal Trading Hours table, capture 2013-08-20 — state S0, the artifact the 2013-08-26 rows are keyed to (keyed to the Monday because the row creates a wrapping overnight close) — T1 through a verbatim public mirror.
+- <https://web.archive.org/web/20170705000242id_/http://sgx.com/wps/portal/sgxweb_ch/home/trading/derivatives/trading_hours_calendar> — SGX portal Trading Hours table, capture 2017-07-05 — state A, the upper bound on the undated S0 to A move and the artifact behind the 2017-07-10 knowledge boundary — T1 through a verbatim public mirror.
+- <https://web.archive.org/web/20170927124017id_/http://www.sgx.com/wps/portal/sgxweb/home/trading/derivatives/trading_hours_calendar> — SGX portal Trading Hours table, capture 2017-09-27 — byte-identical to the 2017-07-05 capture, which is why the 21 September 2017 "Change of Trading Hours" newsletter is not the move — T1 through a verbatim public mirror.
+- <https://www.kgieworld.sg/docs/SGXDerivativesTradingCalendar2016_AUG.pdf> — SGX Derivatives Trading Calendar 2016 (Aug) — a verbatim SGX PDF (SGX cover and imprint, created 2016-08-31) served by KGI Futures (Singapore), an SGX-DT member; states "All dates and information are accurate as of 24 December 2015" and prints state S0, which is the lower bound of the S0 to A window — T1 through a verbatim member mirror, read at its as-of date and never its creation date.
+- <https://web.archive.org/web/20090308012135id_/http://sgx.com:80/psv/derivatives/futures_options/equity_index/SGX_Nikkei_225_Index.shtml> — SGX pre-portal psv contract-specification page for the Nikkei 225 Index, capture 2009-03-08 — state P: 07:45-14:25 / 15:30-22:55, with "Pre -Opening 7.30am -7.43 am / Non -Cancel Period 7.43am -7.45 am" and "Pre-Closing 2.25 pm- 2.29 pm / Non-Cancel Period 2. 29 pm - 2.30 pm". Below the January-2010 floor, and used only for the intersection the floor row serves — T1 through a verbatim public mirror.
+- <https://web.archive.org/web/20241007180652id_/https://www.sgx.com/derivatives/products/nikkei225futuresoptions?cc=NK> — SGX server-rendered Nikkei product page, `cc=NK`, capture 2024-10-07 — still prints "Opening : 7.30 am - 2.25 pm ... Opening : 2.55 pm - 5.15 am", the pre-2024-11-04 routines, across the content API's 2024-10-07 to 2025-04-07 capture gap — T1 through a verbatim public mirror.
+- <https://web.archive.org/web/20241114152443id_/https://www.sgx.com/derivatives/products/nikkei225futuresoptions?cc=NU> — SGX server-rendered Nikkei product page, `cc=NU`, capture 2024-11-14 — prints DT/AM 50's Revised column routine by routine, corroborating the 2024-11-04 row — T1 through a verbatim public mirror.
+- <https://web.archive.org/web/20241114183232id_/https://www.fubon.com/futures/wcm/home/bulletin/bulletin_20240912_137396/SGXChange.pdf> — SGX-DT Circular DT/AM 50 of 2024, "Extension of T-session for SGX Japan Derivatives and Intraday Margin Cycle 2 Timing Change", 9 September 2024, signed Leno Lee, SVP Trading and Clearing Services, on Singapore Exchange Derivatives Trading Limited letterhead — "with effect from Monday, 4 November 2024", listing NK, NKO, NR, ND, NU, NS, NC, EJRT and EJP with a Current to Revised table of every routine. Served through a verbatim member mirror (Fubon Futures) whose file carries SGX's own Word metadata (created and last saved 2024-09-09 17:53 Singapore time, the circular's dateline) — T1 through a verbatim member mirror. It names no China, Singapore, Taiwan or NTR contract, which is why only the Japan key splits there.
 
 ## Gaps and residual risks
 
@@ -67,7 +105,7 @@ admitted under the convention `AGENTS.md` records - but the S0 -> A move
 that the 2017-07-10 boundary bounds from above is not, and the floor eras
 rest on carry-back; the `history` module records each.
 
-DIRECTION OF THE ERROR. Before 2026-08-31 these rows carried today's grid to
+DIRECTION OF THE ERROR. Before 2026-08-31 these rows carried the 2026-09-06 review's grid to
 the January-2010 floor across every move, which made them the only rows in
 the crate that could **over**-report. They no longer can: every undated move
 is approached from the conservative side, every dated move begins on its

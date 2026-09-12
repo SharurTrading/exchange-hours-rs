@@ -17,13 +17,17 @@ Same ordinary individual-stock-options scope; closed before the sourced 2023-09-
 
 ## Sources
 
+Retrieval dates: these sources were last opened on the row's reviewed-on date
+(2026-08-22, UTC); per-source retrieval dates were not recorded before the
+2026-09-12 migration and are added as each source is re-verified.
+
 - <https://info.memxtrading.com/trader-alert-23-42-memx-options-exchange-schedule-update/> — MEMX trader alert 23-42; MEMX Options launched 2023-09-27 with stock classes SBUX and IMGN plus GLD.
 - <https://info.memxtrading.com/market-hours-and-holiday-schedule/> — MEMX market hours and holiday schedule; 09:30-16:00 ET with no pre-open order-acceptance window.
 - <https://info.memxtrading.com/wp-content/uploads/2023/05/MEMX-Options-User-Manual.pdf> — MEMX Options user manual; MEMX rejects orders before 09:30 ET.
 
-The owner modules record no per-URL retrieval date. This row's source set was last
-reviewed on 2026-08-22 and the queue carry-back was decided on 2026-09-01; the retrieved
-bytes live in the research store beside the repository.
+The queue carry-back was decided on 2026-09-01, after the 2026-08-22 source-set review;
+that decision date is not a review date. The retrieved bytes live in the
+research store beside the repository.
 
 ## Gaps and residual risks
 

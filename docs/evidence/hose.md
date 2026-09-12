@@ -19,6 +19,10 @@ The archived January-2010 grid and exact 2010/2012/2013 revisions are date-aware
 
 ## Sources
 
+Retrieval dates: these sources were last opened on the row's reviewed-on date
+(2026-08-22, UTC); per-source retrieval dates were not recorded before the
+2026-09-12 migration and are added as each source is re-verified.
+
 - <https://staticfile.hsx.vn/Uploads/UploadDocuments/2372209/2.Trading%20hours.pdf> — HOSE's current trading-hours table, explicitly printing the 13:00–15:00 put-through window.
 - <https://web.archive.org/web/20140501225025id_/http://www.hsx.vn:80/hsx_en/Modules/annual/annual_files/BCTN-ANNUAL%20REPORT%202013.pdf> — HOSE 2013 annual report, dating the 45-minute extension to 2013-07-22.
 - <https://staticfile.hsx.vn/Uploads/Annual/6dfe6cf6-93b2-4871-966f-2bb9bb92c110/10dd075f-c751-46d2-b598-022850e517f6> — HOSE 2012 annual report, printing the complete pilot schedule and dating its start to 2012-03-05.

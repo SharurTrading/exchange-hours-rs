@@ -25,6 +25,10 @@
 
 ## Sources
 
+Retrieval dates: these sources were last opened on the row's reviewed-on date
+(2026-09-06, UTC); per-source retrieval dates were not recorded before the
+2026-09-12 migration and are added as each source is re-verified.
+
 - <https://www.cmegroup.com/notices/ser/2023/02/SER-9092.pdf> — CME SER-9092 — the listing day and the root's own "Sunday 5:00 p.m.- Friday 3:00 p.m." CME Globex Trading Hours cell.
 - <https://www.cmegroup.com/content/dam/cmegroup/market-regulation/rule-filings/2023/2/23-014.pdf> — CME rule filing 23-014 — prints the same prior cell, separate from its Termination of Trading row.
 - <https://www.cmegroup.com/content/dam/cmegroup/notices/ser/2026/05/ser-9740r.pdf> — CME SER-9740R (28 May 2026) — "CME Globex: 24/7 with the exception of the following maintenance windows: Saturday 2:00 a.m. to 4:00 a.m. CT. Monday-Friday 4:00p.m. to 4:02 p.m. CT".

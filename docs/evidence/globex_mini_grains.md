@@ -23,6 +23,10 @@
 
 ## Sources
 
+Retrieval dates: these sources were last opened on the row's reviewed-on date
+(2026-09-05, UTC); per-source retrieval dates were not recorded before the
+2026-09-12 migration and are added as each source is re-verified.
+
 - <https://web.archive.org/web/20190718051357id_/https://www.cmegroup.com/tools-information/lookups/advisories/ser/SER-7044.html> — CME SER-7044, Mini-Sized KC HRW Wheat launch with the mini contracts' hours.
 - <https://web.archive.org/web/20150905115535id_/http://www.cmegroup.com/trading/agricultural/grain-and-oilseed/mini-sized-kc-hrw-wheat_contract_specifications.html> — CME Mini-Sized KC HRW Wheat contract specification — captured 2015-09-05, 08:30-13:45 CT.
 - <https://web.archive.org/web/20150905192450id_/http://www.cmegroup.com/trading/agricultural/grain-and-oilseed/kc-wheat_contract_specifications.html> — CME KC HRW Wheat contract specification — captured the same day, 08:30-13:20 CT.

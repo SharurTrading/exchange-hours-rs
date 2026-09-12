@@ -18,6 +18,10 @@ FGBL/FGBM/FGBS/FGBX fixed-income futures. Current continuous-trading and pre/pos
 
 ## Sources
 
+Retrieval dates: these sources were last opened on the row's reviewed-on date
+(2026-08-23, UTC); per-source retrieval dates were not recorded before the
+2026-09-12 migration and are added as each source is re-verified.
+
 - <https://www.eurex.com/resource/blob/2824010/044ff047cefd531f61ffe58d55404ca3/data/2026_08_17_eurex_d_kontraktspezifikationen_annexe_en.pdf> — Eurex Contract Specifications, Annex C as of 17.08.2026 — "01:10-22:00 MEZ / CET" and "02:10-22:00 MESZ / CEST", Post-Trading Period Until 22:10.
 - <https://www.eurex.com/resource/blob/4873184/0ca7669a8cb9a2f917d99a801fb3f2de/data/tradingcalendar_2026_en.pdf> — Eurex trading calendar 2026 — 01:10-22:00 with footnote 8 "02:10-22:00 CEST".
 - <https://www.eurex.com/ex-en/markets/int/long-term-interest-rates/fix/government-bonds/Euro-Bund-Futures-137298> — Eurex Euro-Bund Futures product page.
@@ -71,7 +75,7 @@ https://www.eurex.com/ex-en/trade/trading-hours/trading-phases
 
 ---
 
-2018-12-10 through 2019-02-24: the executable session is already today's
+2018-12-10 through 2019-02-24: the executable session is already the 2026-08-23 review's
 Asian-hours grid, but the post-trading phase still ran to 22:30 rather than
 22:10. The 22:30 value is the one the February 2019 Contract Specifications
 amendment records as the state it replaced. That whole window sits inside

@@ -17,6 +17,10 @@ None. `tsx.rs` holds a single static profile with no dated revision row.
 
 ## Sources
 
+Retrieval dates: these sources were last opened on the row's reviewed-on date
+(2026-08-22, UTC); per-source retrieval dates were not recorded before the
+2026-09-12 migration and are added as each source is re-verified.
+
 - <https://www.tsx.com/en/trading/calendars-and-trading-hours/trading-hours> — TSX trading hours: orders accepted from 07:00, continuous trading 09:30–16:00, the conditional Market-on-Close Price Movement Extension through 16:10, and Extended Trading at the last sale price 16:15–17:00. The venue's session table describes Pre-Open as a phase in which orders may be entered but will not be executed.
 - <https://www.osc.ca/sites/default/files/pdfs/bulletins/oscb_20050114_2802.pdf> — Ontario Securities Commission Bulletin of 2005-01-14, volume 28 issue 2: the regulator record establishing that both the Price Movement Extension and the last-sale session existed before the January-2010 history floor.
 

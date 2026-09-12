@@ -22,6 +22,10 @@ Current v4.09 and the 2026-08-17 release were checked; main/liquid ZA01 only, wi
 
 ## Sources
 
+Retrieval dates: these sources were last opened on the row's reviewed-on date
+(2026-08-22, UTC); per-source retrieval dates were not recorded before the
+2026-09-12 migration and are added as each source is re-verified.
+
 - <https://clientportal.jse.co.za/technical-library/trading-and-market-data-documentation> — JSE trading and market-data technical library, the stable source-set entry point.
 - <https://clientportal.jse.co.za/Content/JSE%20Contract%20Specification%20Items/Volume%2000E%20-%20Trading%20and%20Information%20Overview%20for%20Equity%20Market%20v4.09.pdf> — JSE Volume 00E, Trading and Information Overview for the Equity Market, v4.09: current ZA01 — opening auction 08:30–09:00, continuous 09:00–16:50, closing auction 16:50–17:00, publication gap, Closing Price Cross 17:02–17:10.
 - <https://clientportal.jse.co.za/Content/JSE%20Contract%20Specification%20Items/JSE%20Trading%20Session%20Times%20May%202026.xls> — JSE trading session times workbook, May 2026. Volume 00E v4.09 and this workbook were published with Release 7.8 on 2026-08-17; the release changed no ZA01 session boundary.

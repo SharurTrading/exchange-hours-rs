@@ -365,7 +365,7 @@ per-record review before any exception can drive runtime.
 ### `APAC-KRX`
 
 - **Official current/rulebook:** [KRX cash-equity trading hours](https://global.krx.co.kr/contents/GLB/06/0602/0602020204/GLB0602020204T1.jsp) and [KRX rules](https://law.krx.co.kr/las/LawBon.jsp?lawid=000111).
-- **Notices/evidence:** use the official [KRX rules service](https://law.krx.co.kr/las/LawBon.jsp?lawid=000111) as the living entry point; retain the [Financial Services Commission's 2019 pre-market reduction](https://www.fsc.go.kr/po010106/73613), and the exact 2016 brochure beside the revisions.
+- **Notices/evidence:** use the official [KRX rules service](https://law.krx.co.kr/las/LawBon.jsp?lawid=000111) as the living entry point. [Financial Services Commission notice 73613](https://www.fsc.go.kr/po010106/73613) is the citation the `2016-08-01` revision row carries — the regular close extending 14:50 to 15:20 — and KRX rulebook law 000111 is the citation the `2019-04-29` row carries, the pre-market block/basket reduction. The [KRX English brochure dated 2017-06-30](https://global.krx.co.kr/contents/GLB/01/0107/0107010000/20170630_eng_brochure.pdf), the earliest dated artifact in the set, is retained beside the revisions as corroboration of the post-2016 state. (Corrected 2026-09-12: this entry previously described notice 73613 as the 2019 pre-market reduction and the brochure as a 2016 document; see [`krx.md`](../evidence/krx.md).)
 
 <a id="apac-twse"></a>
 

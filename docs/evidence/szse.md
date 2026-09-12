@@ -17,6 +17,10 @@ Venue union includes the 15:00–15:30 block-order/trading phase already operati
 
 ## Sources
 
+Retrieval dates: these sources were last opened on the row's reviewed-on date
+(2026-08-22, UTC); per-source retrieval dates were not recorded before the
+2026-09-12 migration and are added as each source is re-verified.
+
 - <https://www.szse.cn/lawrules/rule/trade/current/t20260424_620190.html> — current SZSE trading rule, including the 15:00–15:30 block and fixed-price phase.
 - <https://www.szse.cn/disclosure/notice/general/t20060515_499577.html> — SZSE block-trading rule effective 2006-07-01, establishing block declarations through 15:30 before the January-2010 audit floor.
 - <https://docs.static.szse.cn/www/disclosure/notice/W020180328432928783546.pdf> — SZSE Trading Rules (2013 revision). Art. 2.4.2 sets the opening call auction at 09:15–09:25 and continuous auction from 09:30; Art. 3.3.1 adds "每个交易日 9:25 至 9:30，交易主机只接受申报，但不对买卖申报或撤销申报作处理" — from 09:25 to 09:30 the trading host only accepts declarations and processes neither orders nor cancellations.
@@ -26,4 +30,4 @@ Venue union includes the 15:00–15:30 block-order/trading phase already operati
 
 - The pre-2016 09:25–09:30 `order_entry` window rests on the 2013 revision of the SZSE Trading Rules, an artifact issued after the January-2010 floor whose own effective day is not recorded here, so the horizon is carried below the first dated row, 2016-05-09 (AGENTS.md, *Carry the earliest sourced state back to the floor*). Sourcing that revision's effective day, or a floor-era SZSE trading rule stating the 09:15–09:25 opening call and the 09:25–09:30 blocking interval, would move the horizon earlier.
 - Block and fixed-price phases are `extended` by convention; not every security is eligible for them.
-- The 2026-07-06 generic fixed-price expansion is deliberately not a revision row: it changed eligibility inside the existing venue envelope, not the exchange-level close.
+- The generic fixed-price expansion is deliberately not a revision row: it changed eligibility inside the existing venue envelope, not the exchange-level close. Its effective day is **undated here**. A `2026-07-06` date stood in this file and in `szse.rs` before the 2026-09-12 reshape; no artifact in this repository, in the owner module's pre-move comment, or in the research store cites it, so under LAW-NO-FABRICATED-DATES it is removed rather than kept unsourced. Closing condition: an SZSE notice or rule stating the expansion's effective day; the expansion changes no exchange-level boundary, so nothing in the profile depends on it.

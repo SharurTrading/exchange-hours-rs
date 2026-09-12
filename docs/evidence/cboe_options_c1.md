@@ -17,14 +17,18 @@ None. `options/history.rs` holds a single static profile for this identity with 
 
 ## Sources
 
+Retrieval dates: these sources were last opened on the row's reviewed-on date
+(2026-08-22, UTC); per-source retrieval dates were not recorded before the
+2026-09-12 migration and are added as each source is re-verified.
+
 - <https://www.sec.gov/rules/sro/cboe/2006/34-53246.pdf> — CBOE 2006 rule change moving individual-stock options from a 16:02 to a 16:00 ET close; the pre-floor baseline for the C1 execution grid.
 - <https://cdn.cboe.com/resources/regulation/rule_book/C1_Exchange_Rule_Book.pdf> — Cboe C1 Exchange Rule Book; retains 09:30-16:00 ET RTH for this product family.
 - <https://www.cboe.com/about/hours/us-options> — Cboe US options hours page; the operator system setting behind the 07:30 ET order-acceptance queue.
 - <https://cdn.cboe.com/resources/release_notes/2026/Schedule_Update_C1_Options_to_Offer_GTH_Sessions_for_Multi_List_Options_Series.html> — Cboe schedule update introducing C1 GTH sessions for venue-designated multi-list series; a separate product family, deliberately outside this profile's scope.
 
-The owner modules record no per-URL retrieval date. This row's source set was last
-reviewed on 2026-08-22 and the queue carry-back was decided on 2026-09-01; the retrieved
-bytes live in the research store beside the repository.
+The queue carry-back was decided on 2026-09-01, after the 2026-08-22 source-set review;
+that decision date is not a review date. The retrieved bytes live in the
+research store beside the repository.
 
 ## Gaps and residual risks
 

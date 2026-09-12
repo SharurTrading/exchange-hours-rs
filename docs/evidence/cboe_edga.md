@@ -19,8 +19,9 @@
 
 ## Sources
 
-No per-URL retrieval date is recorded in this repository; every link below
-was read at or before the row's `Reviewed on` date in the ledger.
+Retrieval dates: these sources were last opened on the row's reviewed-on date
+(2026-08-22, UTC); per-source retrieval dates were not recorded before the
+2026-09-12 migration and are added as each source is re-verified.
 
 - <https://www.sec.gov/file/34-62431> — the SEC phase-in record for the 2010-07-02 first production symbol.
 - <https://www.nasdaqtrader.com/TraderNews.aspx?id=uva2010-007> — the EDGA/EDGX first-production-symbol alert.

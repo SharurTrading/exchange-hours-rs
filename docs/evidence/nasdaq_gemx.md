@@ -17,13 +17,17 @@
 
 ## Sources
 
+Retrieval dates: these sources were last opened on the row's reviewed-on date
+(2026-08-22, UTC); per-source retrieval dates were not recorded before the
+2026-09-12 migration and are added as each source is re-verified.
+
 - <https://www.sec.gov/Archives/edgar/vprr/1601/16019242.pdf> — GEMX audited filing; calls it an equity-and-index-options exchange and states that it formally commenced trading on 2013-08-05.
 - <https://listingcenter.nasdaq.com/rulebook/gemx/rules/GEMX%20Options%203> — GEMX Options 3; retains 09:30-16:00 ET RTH for this product family.
 - <https://www.nasdaq.com/docs/GEMXSystemSettings.pdf> — Nasdaq GEMX System Settings; "System begins accepting orders" at 06:00 ET.
 
-The owner modules record no per-URL retrieval date. This row's source set was last
-reviewed on 2026-08-22 and the queue carry-back was decided on 2026-09-01; the retrieved
-bytes live in the research store beside the repository.
+The queue carry-back was decided on 2026-09-01, after the 2026-08-22 source-set review;
+that decision date is not a review date. The retrieved bytes live in the
+research store beside the repository.
 
 ## Gaps and residual risks
 

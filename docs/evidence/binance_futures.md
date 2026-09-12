@@ -17,6 +17,10 @@ None. binance.rs encodes its dated cutovers as constants rather than revisions! 
 
 ## Sources
 
+Retrieval dates: these sources were last opened on the row's reviewed-on date
+(2026-08-22, UTC); per-source retrieval dates were not recorded before the
+2026-09-12 migration and are added as each source is re-verified.
+
 - <https://arquivo.pt/noFrame/replay/20200608065459id_/https://www.binance.com/en/support/articles/360033314152> — Binance's archived official launch article, stating that Binance Futures went live at 2019-09-13 04:00 UTC.
 - <https://t.me/binance_announcements/799> — Binance announcement channel post for the launch.
 - <https://www.binance.com/en-TR/support/announcement/detail/2bfb6f8dccf447ada57165b7e6a4cf1b> — current USDⓈ-M perpetual launch specifications, publishing 24/7 trading.

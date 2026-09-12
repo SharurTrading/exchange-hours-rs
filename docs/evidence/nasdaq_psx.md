@@ -18,8 +18,9 @@ Closed before the sourced 2010-10-08 launch; 09:00–17:00 at launch and the 201
 
 ## Sources
 
-No per-URL retrieval date is recorded in this repository; every link below
-was read at or before the row's `Reviewed on` date in the ledger.
+Retrieval dates: these sources were last opened on the row's reviewed-on date
+(2026-08-22, UTC); per-source retrieval dates were not recorded before the
+2026-09-12 migration and are added as each source is re-verified.
 
 - <https://listingcenter.nasdaq.com/rulebook/phlx/rules/phlx-psx-legacy-3000> — the PSX legacy 3000-series rules behind the current 08:00–17:00 system hours.
 - <https://www.nasdaqtrader.com/TraderNews.aspx?id=ETA2010-56> — Nasdaq Equity Trader Alert 2010-56, the 2010-10-08 launch.

@@ -310,6 +310,52 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Changed
 
+- **Six documentation fences before the CME trade-type key sequence, and one
+  capacity fix.** Every artifact they guard was hand-written and restated a
+  ledger count that thirty-two planned key additions each change.
+  `ledger_covers_every_market_hours_key_variant` ties
+  `EXPECTED_MARKET_HOURS_KEY_NAMES` to `MarketHoursKey::ALL`, which nothing
+  did — the documentation suite did not import `MarketHoursKey` at all, so a
+  key forgotten in both the array and the ledger shipped with no Basis and no
+  source set. `handoff_keys_are_registered_or_rejected` requires every
+  `globex_*` name the trade-type handoff proposes to be a shipped key, a
+  rejection, or a scheduled one, and
+  `rejected_handoff_roots_are_named_in_the_register` requires every root of a
+  rejected row to be named. `cme_source_set_prose_counts_match_the_ledger`
+  derives the `US-CME-GROUP` status paragraph's two spelled-out counts;
+  `every_executable_gap_row_is_named_in_the_prose` requires every
+  `Gap: executable` row to appear in the two enumerations that follow the
+  executable tally, whose *count* was fenced while the list was not; and
+  `golden_header_identity_counts_match_the_ledger` derives the golden-grid
+  header's identity counts. The capacity fix reconciles two local number-word
+  lists against the module's own `number_words`: one stopped at twenty-five
+  and would have panicked on the first family PR, the other stopped at twenty
+  and silently fell back to digits, which is why the README read "Six key rows
+  are **Primary** and 24 are **Partial**" in one sentence. That sentence is now
+  spelled out.
+
+- **Three CME trade-type rejections and six blocked keys are recorded on
+  evidence** in `docs/schedules/unsupported-families.md`, which gains a stated
+  three-part structure. Rejected, because no CME document states their hours in
+  session language and LAW-SESSION-NOT-EXPIRY forbids promoting the adjacent
+  settlement or marker instant: **Treasury TAS** (`TNT`, `UBT`, `ZBT`, `ZFT`,
+  `ZNS`, `ZTT`), whose launch is dated but whose 14:00 CT close is feed-only and
+  equal to the stated settlement range end; **Dutch TTF TAS** (`TAS`, `TTS`),
+  absent from every retrieved hours statement and with its zone anchor
+  undecided; and **commodity-index BTIC** (`AWT`, `BAT`, `BET`, `BGT`, `BLT`,
+  `BMT`, `BPT`, `BST`, `CCT`), measured at 08:15–13:30 CT on their own Globex
+  groups against the one filing that tabulates a BTIC window for them, whose
+  AW row prints a 17:00 CT Globex start ("5:00 pm – 1:30pm CT", "No change").
+  Blocked rather than rejected, each with an open issue: the three
+  cryptocurrency BTIC keys, `globex_europe_index_btic`,
+  `globex_ftse_china_50_btic` and `globex_equity_index_btic_plus_taco_plus`.
+
+- **`docs/plans/2026-09-12-cme-trade-type-keys.md`** sequences the remaining
+  work: 13 PRs, 32 new `MarketHoursKey` rows, the decisions taken and the two
+  referred to the maintainer, and the conventions every PR in the sequence
+  follows. The full plan and the gate evidence stay in the local-only research
+  store.
+
 - **System-coverage audit: the US cash-equity tranche is enumerated, and the
   envelope union is not complete.** `AGENTS.md` has always defined a cash-equity
   profile as the availability union of the venue's automated order-capable

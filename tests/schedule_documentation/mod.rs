@@ -4,6 +4,7 @@
 
 mod databento;
 mod source_registry;
+mod trade_type_keys;
 
 use chrono::NaiveDate;
 use exchange_hours::Exchange;
@@ -552,40 +553,23 @@ fn assert_key_basis_prose_matches_the_ledger(real_key_rows: &[&str]) {
     // silently twice: README.md once said "Four key rows are Primary" while the
     // ledger held five, and the headline bullet said "11 operator-derived" long
     // after the count reached 24. Derive both from the ledger instead.
+    // Both counts are spelled out through `number_words`, which is valid below
+    // 100 and therefore covers the whole CME trade-type sequence. The local
+    // word list this replaced stopped at twenty and silently fell back to
+    // digits, which is how the README came to read "Six key rows are
+    // **Primary** and 24 are **Partial**" in one sentence.
     let key_primary = basis_count(real_key_rows, "Primary");
     let key_partial = basis_count(real_key_rows, "Partial");
-    let spelled = |n: usize| -> String {
-        const WORDS: [&str; 21] = [
-            "Zero",
-            "One",
-            "Two",
-            "Three",
-            "Four",
-            "Five",
-            "Six",
-            "Seven",
-            "Eight",
-            "Nine",
-            "Ten",
-            "Eleven",
-            "Twelve",
-            "Thirteen",
-            "Fourteen",
-            "Fifteen",
-            "Sixteen",
-            "Seventeen",
-            "Eighteen",
-            "Nineteen",
-            "Twenty",
-        ];
-        WORDS
-            .get(n)
-            .map_or_else(|| n.to_string(), ToString::to_string)
+    let capitalized = |word: String| -> String {
+        let mut chars = word.chars();
+        chars.next().map_or_else(String::new, |first| {
+            first.to_uppercase().collect::<String>() + chars.as_str()
+        })
     };
     let key_split = format!(
         "{} key rows are **Primary** and {} are **Partial**",
-        spelled(key_primary),
-        spelled(key_partial).to_lowercase()
+        capitalized(number_words(key_primary)),
+        number_words(key_partial)
     );
     // README prose is hard-wrapped, so these claims straddle line breaks.
     let flowed = README.split_whitespace().collect::<Vec<_>>().join(" ");
@@ -668,37 +652,12 @@ fn the_gap_kind_split_is_quoted_consistently_everywhere() {
         .iter()
         .filter(|row| row_cells(row)[3] == "Partial")
         .count();
-    let words = [
-        "zero",
-        "one",
-        "two",
-        "three",
-        "four",
-        "five",
-        "six",
-        "seven",
-        "eight",
-        "nine",
-        "ten",
-        "eleven",
-        "twelve",
-        "thirteen",
-        "fourteen",
-        "fifteen",
-        "sixteen",
-        "seventeen",
-        "eighteen",
-        "nineteen",
-        "twenty",
-        "twenty-one",
-        "twenty-two",
-        "twenty-three",
-        "twenty-four",
-        "twenty-five",
-    ];
-    let spelled = words
-        .get(partial_keys)
-        .unwrap_or_else(|| panic!("extend the number words past {partial_keys}"));
+    // This count used to be spelled from a local list that stopped at
+    // twenty-five and panicked past it. The ledger holds twenty-four Partial
+    // keys today and the CME trade-type sequence adds thirty-two rows, so the
+    // list would have panicked on the first of them, with a message that named
+    // the fix but not the cause. `number_words` is valid below 100.
+    let spelled = number_words(partial_keys);
     let audit_claim = format!("{spelled} product-family keys are **Partial**");
     assert!(
         audit.to_lowercase().contains(&audit_claim.to_lowercase()),

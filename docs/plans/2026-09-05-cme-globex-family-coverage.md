@@ -146,7 +146,11 @@ back from the 2025 and 2026 statements of it with no cutover asserted.
 Researched and adversarially challenged; the deliverable is
 [the trade-type handoff](2026-09-05-cme-trade-type-handoff.md), which carries the
 root-to-key table, the unresolved list with the document each needs, and the decision
-rule the survey produced. No new keys are authored from it yet.
+rule the survey produced. Eight research gates and nine adversarial verdicts have since
+run against it, and the keys are now sequenced in
+[the trade-type key plan](2026-09-12-cme-trade-type-keys.md): 13 PRs, 32 new keys, 6
+blocked, 3 rejections recorded on evidence. No key has been authored yet; the first PR
+in that sequence adds fences only.
 
 Rows 2, 3, 6–34 and 36–41 of the inventory: BTIC, TAS, TAM, TACO, TMAC, housing,
 dairy, lumber, commodity indexes. **Deliverable is a handoff table**

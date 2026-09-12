@@ -344,7 +344,7 @@ The key surface was audited separately:
 **Hours verified at the review date for each product family:** `30 of 30` operator-derived
 `MarketHoursKey` values. The key API provides fixed-current snapshots, an
 `as_of` selector, and a date-aware calendar for sourced histories. Six key
-rows are **Primary** and 24 are **Partial**, because a named historical
+rows are **Primary** and twenty-four are **Partial**, because a named historical
 queue, PCP amendment day, or undated venue transition cannot be dated from a
 primary source.
 

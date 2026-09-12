@@ -383,15 +383,18 @@ corrections (a venue's hours fixed against a primary source) go under
   store with its retrieval date and quoted in the evidence file. A member-portal
   document is still admissible as T1 only through a verbatim public mirror.
 
-  **LAW-HOLIDAY-SCOPE** puts holidays **in** scope. They live as per-family date
-  tables under `schedules/` — data, not templates — sourced from the operator's
-  published holiday calendar at T1, running from the January-2010 floor to the
-  operator's published future for a served identity and best-effort for a
-  dormant one, and the built-in calendars apply them by default. Each entry
-  records the date, the kind (closed, early close at an instant, late open at an
-  instant) and its document id. `DayPolicy` remains the caller's overlay above
-  the built-in table, and a day that changes internal phase topology is still
-  recorded as a gap and served by `SessionExceptionSource`.
+  **LAW-HOLIDAY-SCOPE** puts holidays **in** scope, as policy: they are to live
+  as per-family date tables under `schedules/` — data, not templates — sourced
+  from the operator's published holiday calendar at T1, running from the
+  January-2010 floor to the operator's published future for a served identity
+  and best-effort for a dormant one, and once a family's table ships the
+  built-in calendars will apply it by default. **No table ships in this
+  change**: the crate still carries no holiday data, and the caller's
+  `DayPolicy` and `SessionExceptionSource` overlays remain the only holiday
+  layers until the tables land in their own PR. Each entry will record the
+  date, the kind (closed, early close at an instant, late open at an instant)
+  and its document id; a day that changes internal phase topology stays a gap
+  served by `SessionExceptionSource`.
 
   **LAW-EVIDENCE-FILES** moves narrative evidence out of source modules and into
   `docs/evidence/<owner>.md`, one file per venue or key. A schedule module keeps

@@ -22,10 +22,11 @@ hard-coded `DayOverride` records. It supports:
 
 Records are exact dates, not inferred weekday or holiday rules. The table is
 opt-in: callers apply it with `ExchangeCalendar::with_day_policy`, and
-`hours_at` continues to return the unmodified normal-week profile. Under
-LAW-HOLIDAY-SCOPE this is the caller's overlay *above* the crate's own
-per-family holiday table, for the dates the crate does not carry — it avoids a
-different ad-hoc record shape in every consumer, and it stays the way an
+`hours_at` continues to return the unmodified normal-week profile. Today the
+crate ships no holiday data, so `DayPolicy` is the only holiday layer; under
+LAW-HOLIDAY-SCOPE it will sit *above* the crate's own per-family holiday
+tables once those ship, covering the dates the crate does not carry — it avoids
+a different ad-hoc record shape in every consumer, and it stays the way an
 application states a closure the operator never published.
 
 These scalar overrides are intentionally not described as a complete holiday

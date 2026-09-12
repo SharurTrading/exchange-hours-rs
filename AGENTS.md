@@ -16,8 +16,10 @@ time. For each supported identity the crate answers five questions, correctly
 for today and for every instant back to the January-2010 floor: is the market
 open now; where does this trading day begin and end; which trade date does an
 instant belong to; when does the next session open; is this gap a closure. It
-also answers which days are holidays or early closes for that identity. It is
-not an archive of exchange history for its own sake and it is not a public
+will also answer which days are holidays or early closes for that identity
+once the per-family holiday tables LAW-HOLIDAY-SCOPE calls for ship; until
+then holidays reach a calendar only through the caller's `DayPolicy` overlay.
+It is not an archive of exchange history for its own sake and it is not a public
 reference work; every rule below is judged against those five questions and
 the cost of keeping them true.
 
@@ -146,16 +148,19 @@ the cost of keeping them true.
   calendar-day closure — is a **holiday**, never a schedule: it never bends a
   normal-week template, adds a revision row, or deletes a valid phase, and a
   genuine recurring-grid change is never downgraded to "just a holiday" to
-  avoid the evidence work. Holidays are **in scope** for this crate. They live
-  in per-family date tables under `schedules/` (data, not templates), sourced
-  from the operator's published holiday calendar (T1), covering the
+  avoid the evidence work. Holidays are **in scope** for this crate. They will
+  live in per-family date tables under `schedules/` (data, not templates),
+  sourced from the operator's published holiday calendar (T1), covering the
   January-2010 floor to the operator's published future for served identities
-  and best-effort for dormant ones, and the built-in calendars apply them by
-  default. A holiday table entry records the date, the kind (closed, early
+  and best-effort for dormant ones; once a family's table ships, the built-in
+  calendars apply it by default. **No table ships yet**: until one does, the
+  crate carries no holiday data and the caller's `DayPolicy` overlay is the
+  only holiday layer. A holiday table entry records the date, the kind (closed, early
   close at an instant, late open at an instant), and its document id. A special
   day that changes internal phase topology is not representable by scalar
   boundaries and is recorded as a gap. `DayPolicy` remains the caller's overlay
-  for what the crate does not carry, layered above the built-in table. Holiday
+  for what the crate does not carry, layered above the built-in table once
+  there is one. Holiday
   lookups are bounded, allocation-free and cheap enough to sit on the
   consumer's hot path.
 - **LAW-EVIDENCE-FILES** — narrative evidence lives in

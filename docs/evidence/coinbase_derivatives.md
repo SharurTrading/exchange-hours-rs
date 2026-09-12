@@ -29,11 +29,24 @@ recurring 23x5 grid on 2021-06-29, the first full day, and the Monday-evening
 session that runs into the next day is identical in both, so the handover never
 splits a running session.
 
+## Dated selectors
+
+Day-level boundaries this identity's `profile_at` selects on directly, outside
+any `revisions!` block. They are invisible to the module-declaration fences, so
+they are recorded here in revision-row grammar and checked against
+`HISTORICAL_CUTOVERS` / `HISTORICAL_INSTANT_CUTOVERS` in
+`tests/contract/session_invariants/historical_expectations.rs`.
+
+- 2021-06-28 — T1 — FairX homepage banner, 2021-06-22 capture — an exact-instant boundary at 2021-06-28 13:00:00 UTC (08:00 CDT), selected in `profile_at` rather than as a tuple; `HISTORICAL_INSTANT_CUTOVERS` records the same instant.
+- 2021-06-29 — T1 — the same four 2021-06-04 launch certifications — the one-off launch-day profile hands over to the recurring 23x5 grid on the first full day; the Monday-evening session is identical in both, so the handover splits no running session.
+
 ## Sources
 
-Retrieval dates: these sources were last opened on the row's reviewed-on date
-(2026-09-11, UTC); per-source retrieval dates were not recorded before the
-2026-09-12 migration and are added as each source is re-verified.
+Row review: 2026-09-11 (UTC) is the date the ledger row was last reviewed as a
+whole. Per-source retrieval dates were not recorded before the 2026-09-12
+migration; where a later targeted review, capture or document date is recorded
+beside a source below, that date governs for that source, and dates are added
+as each source is re-verified.
 
 The documents below stand behind the row and behind the narrative moved below.
 

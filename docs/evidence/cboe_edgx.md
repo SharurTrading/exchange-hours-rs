@@ -21,9 +21,11 @@
 
 ## Sources
 
-Retrieval dates: these sources were last opened on the row's reviewed-on date
-(2026-08-22, UTC); per-source retrieval dates were not recorded before the
-2026-09-12 migration and are added as each source is re-verified.
+Row review: 2026-08-22 (UTC) is the date the ledger row was last reviewed as a
+whole. Per-source retrieval dates were not recorded before the 2026-09-12
+migration; where a later targeted review, capture or document date is recorded
+beside a source below, that date governs for that source, and dates are added
+as each source is re-verified.
 
 - <https://www.sec.gov/file/34-62431> — the SEC phase-in record for the 2010-07-02 first production symbol.
 - <https://www.nasdaqtrader.com/TraderNews.aspx?id=uva2010-007> — the EDGA/EDGX first-production-symbol alert.

@@ -19,9 +19,11 @@
 
 ## Sources
 
-Retrieval dates: these sources were last opened on the row's reviewed-on date
-(2026-09-06, UTC); per-source retrieval dates were not recorded before the
-2026-09-12 migration and are added as each source is re-verified.
+Row review: 2026-09-06 (UTC) is the date the ledger row was last reviewed as a
+whole. Per-source retrieval dates were not recorded before the 2026-09-12
+migration; where a later targeted review, capture or document date is recorded
+beside a source below, that date governs for that source, and dates are added
+as each source is re-verified.
 
 - <https://api2.sgx.com/sites/default/files/2018-05/SGX%20Derivatives%20Trading%20Calendar%202018%20%28Apr%29.pdf> — SGX Derivatives Trading Calendar 2018 (Apr) edition — PDF created 11 April 2018, never archived, fetched and hashed 2026-09-06; the first edition listing the NTR (USD) suite.
 - <https://api2.sgx.com/sites/default/files/2019-01/2019%20DT%20Calendar.pdf> — SGX DT Calendar 2019 — repeats the 2018 rows.

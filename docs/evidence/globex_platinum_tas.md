@@ -17,9 +17,11 @@
 
 ## Sources
 
-Retrieval dates: these sources were last opened on the row's reviewed-on date
-(2026-09-12, UTC); per-source retrieval dates were not recorded before the
-2026-09-12 migration and are added as each source is re-verified.
+Row review: 2026-09-12 (UTC) is the date the ledger row was last reviewed as a
+whole. Per-source retrieval dates were not recorded before the 2026-09-12
+migration; where a later targeted review, capture or document date is recorded
+beside a source below, that date governs for that source, and dates are added
+as each source is re-verified.
 
 - <https://www.cmegroup.com/notices/electronic-trading/2017/05/20170508.html> — CME Globex notice 20170508 — "Effective Sunday, May 21 (trade date Monday, May 22), Platinum futures TAS will be listed for trading on CME Globex".
 - <https://web.archive.org/web/20260214165515id_/https://www.cmegroup.com/notices/electronic-trading/2017/05/20170508.html> — CME Globex notice 20170508, archived capture.

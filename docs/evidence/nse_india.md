@@ -20,9 +20,11 @@ Venue envelope includes 2026 CAS-eligible and non-CAS states.
 
 ## Sources
 
-Retrieval dates: these sources were last opened on the row's reviewed-on date
-(2026-08-22, UTC); per-source retrieval dates were not recorded before the
-2026-09-12 migration and are added as each source is re-verified.
+Row review: 2026-08-22 (UTC) is the date the ledger row was last reviewed as a
+whole. Per-source retrieval dates were not recorded before the 2026-09-12
+migration; where a later targeted review, capture or document date is recorded
+beside a source below, that date governs for that source, and dates are added
+as each source is re-verified.
 
 - <https://www.nseindia.com/static/products-services/equity-market-pre-open> — NSE pre-open page. The session "is comprised of Order collection period and order matching period"; "the order collection period of 8* minutes shall be provided for order entry, modification and cancellation (* - System driven random closure between 7th and 8th minute)"; "order matching period starts immediately after completion of order collection period".
 - <https://www.bseindia.com/markets/MarketInfo/DispNewNoticesCirculars?page=20101014-8> — BSE's operating notice for the same 2010-10-18 launch, printing the grid outright: Order Entry Period 9:00am–9:07/08am with "No trades are executed", Order Matching & Confirmation Period 9:08am–9:12am, Buffer Period 9:12am–9:15am.

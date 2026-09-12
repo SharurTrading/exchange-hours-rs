@@ -22,9 +22,11 @@ Main Market including sourced temporary 2020 regime. The pre-2016 opening-auctio
 
 ## Sources
 
-Retrieval dates: these sources were last opened on the row's reviewed-on date
-(2026-08-24, UTC); per-source retrieval dates were not recorded before the
-2026-09-12 migration and are added as each source is re-verified.
+Row review: 2026-08-24 (UTC) is the date the ledger row was last reviewed as a
+whole. Per-source retrieval dates were not recorded before the 2026-09-12
+migration; where a later targeted review, capture or document date is recorded
+beside a source below, that date governs for that source, and dates are added
+as each source is re-verified.
 
 - <https://www.saudiexchange.sa/wps/portal/saudiexchange/rules-guidance/capital-market-overview/trading-cycle-and-times?locale=en> — Saudi Exchange trading cycle and times: current Main Market phases — opening-auction orders 09:30–10:00, continuous trading 10:00–15:00, closing auction 15:00–15:10, trade at last 15:10–15:20. The table starts "Trading in Equities" at 10:00 and notes only that the market opens on a variable basis within 30 seconds after 10:00. Auction uncrosses can be randomized by up to 30 seconds; the static profile uses the published nominal boundaries.
 - <https://www.spa.gov.sa/7e453de27d> — Saudi Press Agency release, the 2013-06-29 workweek change.

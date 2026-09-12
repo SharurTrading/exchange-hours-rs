@@ -17,9 +17,11 @@ Main Board; deterministic edges for randomized auctions.
 
 ## Sources
 
-Retrieval dates: these sources were last opened on the row's reviewed-on date
-(2026-08-22, UTC); per-source retrieval dates were not recorded before the
-2026-09-12 migration and are added as each source is re-verified.
+Row review: 2026-08-22 (UTC) is the date the ledger row was last reviewed as a
+whole. Per-source retrieval dates were not recorded before the 2026-09-12
+migration; where a later targeted review, capture or document date is recorded
+beside a source below, that date governs for that source, and dates are added
+as each source is re-verified.
 
 - <https://www.nzx.com/learning/help-reference/trading-hours> — NZX trading hours.
 - <https://www.nzx.com/learning/issuer-participant-resources/nzx-trading/anatomy-of-a-trading-day> — NZX Anatomy of a Trading Day. Of Pre-Open it says: "Orders can be placed, amended, and deleted. No trades execute until the opening auction. Off-market trades may be reported." Off-market reports print, so Pre-Open is tradeable `extended`, not order-entry-only.

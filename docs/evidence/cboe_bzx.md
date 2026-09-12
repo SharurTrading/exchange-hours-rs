@@ -20,9 +20,11 @@ Current venue envelope is 02:30–20:00. January-2010 trading, the exact 2014-12
 
 ## Sources
 
-Retrieval dates: these sources were last opened on the row's reviewed-on date
-(2026-08-24, UTC); per-source retrieval dates were not recorded before the
-2026-09-12 migration and are added as each source is re-verified.
+Row review: 2026-08-24 (UTC) is the date the ledger row was last reviewed as a
+whole. Per-source retrieval dates were not recorded before the 2026-09-12
+migration; where a later targeted review, capture or document date is recorded
+beside a source below, that date governs for that source, and dates are added
+as each source is re-verified.
 
 - <https://www.cboe.com/about/hours/> — Cboe's hours and holidays table, the current 02:30–20:00 envelope and its "Early Order Acceptance" phase.
 - <https://www.cboe.com/markets/us/equities/membership> — the US equities rule-book hub behind BZX Rule 11.1(a).

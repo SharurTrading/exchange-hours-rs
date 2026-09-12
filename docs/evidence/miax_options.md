@@ -18,9 +18,11 @@
 
 ## Sources
 
-Retrieval dates: these sources were last opened on the row's reviewed-on date
-(2026-08-22, UTC); per-source retrieval dates were not recorded before the
-2026-09-12 migration and are added as each source is re-verified.
+Row review: 2026-08-22 (UTC) is the date the ledger row was last reviewed as a
+whole. Per-source retrieval dates were not recorded before the 2026-09-12
+migration; where a later targeted review, capture or document date is recorded
+beside a source below, that date governs for that source, and dates are added
+as each source is re-verified.
 
 - <https://www.miaxglobal.com/alert/2012/12/06/miax-options-will-commence-trading-friday-december-7-2012> — MIAX launch alert; MIAX Options launched 2012-12-07 with stock class CLF.
 - <https://www.miaxglobal.com/markets/us-options/miax-options/trade-hours-calendar> — MIAX Options trade hours calendar; the current 07:30 ET order-acceptance queue and 09:30-16:00 ET session.

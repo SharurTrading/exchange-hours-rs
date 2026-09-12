@@ -19,9 +19,11 @@ Venue envelope includes 2026 CAS-eligible and non-CAS states.
 
 ## Sources
 
-Retrieval dates: these sources were last opened on the row's reviewed-on date
-(2026-08-22, UTC); per-source retrieval dates were not recorded before the
-2026-09-12 migration and are added as each source is re-verified.
+Row review: 2026-08-22 (UTC) is the date the ledger row was last reviewed as a
+whole. Per-source retrieval dates were not recorded before the 2026-09-12
+migration; where a later targeted review, capture or document date is recorded
+beside a source below, that date governs for that source, and dates are added
+as each source is re-verified.
 
 - <https://www.bseindia.com/markets/MarketInfo/DispNewNoticesCirculars?page=20101014-8> — BSE operating notice for the 2010-10-18 call-auction launch: Order Entry Period 9:00am–9:07/08am with "Random stoppage between 7th and 8th minute" and "No trades are executed"; Order Matching & Confirmation Period 9:08am–9:12am; Buffer Period 9:12am–9:15am. The same notice records that the pre-open and continuous sessions "will not run concurrently" and that pre-open-ineligible stocks only trade from 9:15am.
 - <https://www.nseindia.com/static/products-services/equity-market-pre-open> — NSE pre-open page, documenting the identical structure and still current after the 2026-08-03 CAS cutover.

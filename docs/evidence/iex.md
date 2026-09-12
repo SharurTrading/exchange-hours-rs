@@ -17,18 +17,20 @@ The exchange identity is closed before its 2016-08-19 first production-symbol la
 
 ## Sources
 
-Retrieval dates: these sources were last opened on the row's reviewed-on date
-(2026-08-22, UTC); per-source retrieval dates were not recorded before the
-2026-09-12 migration and are added as each source is re-verified.
+Row review: 2026-08-22 (UTC) is the date the ledger row was last reviewed as a
+whole. Per-source retrieval dates were not recorded before the 2026-09-12
+migration; where a later targeted review, capture or document date is recorded
+beside a source below, that date governs for that source, and dates are added
+as each source is re-verified.
 
 - <https://www.iex.io/resources/trading/trading-hours-holidays> — IEX trading hours and holidays, the current 08:00–17:00 System Hours.
 - <https://www.iex.io/resources/regulation> — the current IEX regulation and rule-book hub.
 - <https://www.sec.gov/files/rules/sro/iex/2016/34-78447.pdf> — the SEC's initial exchange-hours correction, which defines System Hours around the 09:30–16:00 regular session.
 - <https://iextrading.com/trading/alerts/2016/042/> — Trading Alert 2016-042, the 2016-08-19 first production-symbol launch and the symbol-by-symbol phase-in.
 - <https://iextrading.com/trading/alerts/2016/049/> — Trading Alert 2016-049, the 2016-09-02 all-symbol transition and predecessor-ATS cessation.
-- <https://www.federalregister.gov/documents/2026/08/25/2026-17281/> — an IEX Options filing captioned "Self-Regulatory Organizations; Investors Exchange LLC".
-- <https://www.federalregister.gov/documents/2026/08/12/2026-16383/> — a 2026-08-12 fee filing describing changes "in Preparation for the Launch of IEX Options Later This Year".
-- <https://www.federalregister.gov/documents/2026/09/01/2026-17806/> — the options listing plan amendment adding Investors Exchange LLC as a plan sponsor.
+- <https://www.federalregister.gov/documents/2026/08/25/2026-17281/> — an IEX Options filing captioned "Self-Regulatory Organizations; Investors Exchange LLC". **Federal Register document of 2026-08-25**, published after this row's 2026-08-22 review date, so that document date governs for this source rather than the row review.
+- <https://www.federalregister.gov/documents/2026/08/12/2026-16383/> — a fee filing describing changes "in Preparation for the Launch of IEX Options Later This Year". **Federal Register document of 2026-08-12**, which governs for this source.
+- <https://www.federalregister.gov/documents/2026/09/01/2026-17806/> — the options listing plan amendment adding Investors Exchange LLC as a plan sponsor. **Federal Register document of 2026-09-01**, published after this row's 2026-08-22 review date, so that document date governs for this source rather than the row review.
 - <https://www.iex.io/options> — the operator's IEX Options page, the watch source for a launch day.
 
 ## Gaps and residual risks

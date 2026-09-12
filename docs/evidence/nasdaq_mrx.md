@@ -17,9 +17,11 @@
 
 ## Sources
 
-Retrieval dates: these sources were last opened on the row's reviewed-on date
-(2026-08-22, UTC); per-source retrieval dates were not recorded before the
-2026-09-12 migration and are added as each source is re-verified.
+Row review: 2026-08-22 (UTC) is the date the ledger row was last reviewed as a
+whole. Per-source retrieval dates were not recorded before the 2026-09-12
+migration; where a later targeted review, capture or document date is recorded
+beside a source below, that date governs for that source, and dates are added
+as each source is re-verified.
 
 - <https://www.sec.gov/files/rules/sro/bats/2016/34-77256.pdf> — SEC 34-77256; the artifact the 2016-02-16 launch row is keyed to. **T3, not T1**: the release is filed under the `sro/bats/` path — a BATS fee filing, not an ISE Mercury or MRX instrument — so it is a third party's statement about this venue's launch day, not the operator's own (LAW-PRIMARY-SOURCES). It has not been shown to mirror an operator document verbatim, which is the only way T3 may date a change.
 - <https://www.deutsche-boerse.com/resource/blob/324026/912f25fc1b9e0cdb916acbd69d4013fb/data/Detailed_volume_statistics_are_found_in_the_following_document-1.pdf> — operator volume statistics; report the MRX equity-and-ETF rollout.

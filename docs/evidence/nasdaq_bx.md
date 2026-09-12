@@ -17,9 +17,11 @@ Stable wire identity for Nasdaq Texas; January-2010 08:00–19:00 hours and the 
 
 ## Sources
 
-Retrieval dates: these sources were last opened on the row's reviewed-on date
-(2026-08-22, UTC); per-source retrieval dates were not recorded before the
-2026-09-12 migration and are added as each source is re-verified.
+Row review: 2026-08-22 (UTC) is the date the ledger row was last reviewed as a
+whole. Per-source retrieval dates were not recorded before the 2026-09-12
+migration; where a later targeted review, capture or document date is recorded
+beside a source below, that date governs for that source, and dates are added
+as each source is re-verified.
 
 - <https://listingcenter.nasdaq.com/rulebook/nasdaqtx/rules/Nasdaq%20Texas%20Equity%201> — Nasdaq Texas Equity 1, the current rulebook for the renamed venue.
 - <https://www.nasdaqtrader.com/content/technicalsupport/nasdaq_sys_hours.pdf> — *Nasdaq Systems — Hours of Operation*, the 07:00–19:00 platform hours.

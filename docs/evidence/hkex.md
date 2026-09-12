@@ -18,9 +18,11 @@ Securities venue union: the executable Extended Morning Session is Regular under
 
 ## Sources
 
-Retrieval dates: these sources were last opened on the row's reviewed-on date
-(2026-08-22, UTC); per-source retrieval dates were not recorded before the
-2026-09-12 migration and are added as each source is re-verified.
+Row review: 2026-08-22 (UTC) is the date the ledger row was last reviewed as a
+whole. Per-source retrieval dates were not recorded before the 2026-09-12
+migration; where a later targeted review, capture or document date is recorded
+beside a source below, that date governs for that source, and dates are added
+as each source is re-verified.
 
 - <https://www.hkex.com.hk/Services/Trading-hours-and-Severe-Weather-Arrangements/Trading-Hours/Securities-Market?sc_lang=en> — HKEX securities-market trading hours: POS 09:00–09:30, continuous trading 09:30–16:00, then CAS with a randomized 16:08–16:10 close.
 - <https://www.hkex.com.hk/Global/Exchange/FAQ/Securities-Market/Trading/Pre_opening-Session?sc_lang=en> — HKEX Pre-opening Session FAQ. Orders "will be accumulated and updated but no matching will occur" during the order input and pre-order matching periods, so 09:00–09:20 is order entry.

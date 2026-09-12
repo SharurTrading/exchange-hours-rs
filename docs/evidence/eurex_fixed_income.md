@@ -18,9 +18,11 @@ FGBL/FGBM/FGBS/FGBX fixed-income futures. Current continuous-trading and pre/pos
 
 ## Sources
 
-Retrieval dates: these sources were last opened on the row's reviewed-on date
-(2026-08-23, UTC); per-source retrieval dates were not recorded before the
-2026-09-12 migration and are added as each source is re-verified.
+Row review: 2026-08-23 (UTC) is the date the ledger row was last reviewed as a
+whole. Per-source retrieval dates were not recorded before the 2026-09-12
+migration; where a later targeted review, capture or document date is recorded
+beside a source below, that date governs for that source, and dates are added
+as each source is re-verified.
 
 - <https://www.eurex.com/resource/blob/2824010/044ff047cefd531f61ffe58d55404ca3/data/2026_08_17_eurex_d_kontraktspezifikationen_annexe_en.pdf> — Eurex Contract Specifications, Annex C as of 17.08.2026 — "01:10-22:00 MEZ / CET" and "02:10-22:00 MESZ / CEST", Post-Trading Period Until 22:10.
 - <https://www.eurex.com/resource/blob/4873184/0ca7669a8cb9a2f917d99a801fb3f2de/data/tradingcalendar_2026_en.pdf> — Eurex trading calendar 2026 — 01:10-22:00 with footnote 8 "02:10-22:00 CEST".

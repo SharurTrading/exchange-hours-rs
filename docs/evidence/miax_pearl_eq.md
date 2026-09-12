@@ -18,9 +18,11 @@ Closed before the sourced 2020-09-29 live launch; the 2025-02-20 early/late expa
 
 ## Sources
 
-Retrieval dates: these sources were last opened on the row's reviewed-on date
-(2026-08-22, UTC); per-source retrieval dates were not recorded before the
-2026-09-12 migration and are added as each source is re-verified.
+Row review: 2026-08-22 (UTC) is the date the ledger row was last reviewed as a
+whole. Per-source retrieval dates were not recorded before the 2026-09-12
+migration; where a later targeted review, capture or document date is recorded
+beside a source below, that date governs for that source, and dates are added
+as each source is re-verified.
 
 - <https://www.miaxglobal.com/company/markets/us-equities> — the official Pearl Equities market history, which records the 2020-09-29 live launch.
 - <https://www.miaxglobal.com/sites/default/files/circular-files/MIAX_Pearl_Equities_RC_2025_02_0.pdf> — Regulatory Circular 2025-02, the 2025-02-20 early/late expansion.

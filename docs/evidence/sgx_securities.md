@@ -19,9 +19,11 @@ SGX-ST normal week; sourced 2011/2017/2019 phases.
 
 ## Sources
 
-Retrieval dates: these sources were last opened on the row's reviewed-on date
-(2026-08-22, UTC); per-source retrieval dates were not recorded before the
-2026-09-12 migration and are added as each source is re-verified.
+Row review: 2026-08-22 (UTC) is the date the ledger row was last reviewed as a
+whole. Per-source retrieval dates were not recorded before the 2026-09-12
+migration; where a later targeted review, capture or document date is recorded
+beside a source below, that date governs for that source, and dates are added
+as each source is re-verified.
 
 - <https://rulebook.sgx.com/rulebook/regulatory-notice-821-trading-hours-market-phases-application-market-phases-and-principles> — SGX-ST Regulatory Notice 8.2.1. Every routine has a Pre-Open/Pre-Close Phase that "allows order entry, order modification and withdrawal of orders but no matching of orders", and a Non-Cancel Phase in which "all existing orders that can be matched are matched at a single price".
 - <https://rulebook.sgx.com/sites/default/files/net_file_store/SGX_ST_Rules_August_1_2011.pdf> — SGX-ST Rules as at 2011-08-01, introducing continuous all-day trading. Its Practice Note 8.2.1 carries the pre-2017 routine boundaries used by the two oldest profiles: Pre-Open 08:30–08:59 / Non-Cancel 08:59–09:00, lunch-break Adjust 12:30–13:59 with no matching and its 13:59–14:00 match, and Pre-Close 17:00–17:05 / Non-Cancel 17:05–17:06.

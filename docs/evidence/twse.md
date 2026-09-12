@@ -17,9 +17,11 @@ Venue union is 08:00–17:00 across paired-block acceptance, regular pre-open/co
 
 ## Sources
 
-Retrieval dates: these sources were last opened on the row's reviewed-on date
-(2026-08-22, UTC); per-source retrieval dates were not recorded before the
-2026-09-12 migration and are added as each source is re-verified.
+Row review: 2026-08-22 (UTC) is the date the ledger row was last reviewed as a
+whole. Per-source retrieval dates were not recorded before the 2026-09-12
+migration; where a later targeted review, capture or document date is recorded
+beside a source below, that date governs for that source, and dates are added
+as each source is re-verified.
 
 - <https://www.twse.com.tw/en/products/system/trading.html> — TWSE trading-system page, splitting the 08:00–17:00 envelope: paired block trading 08:00–08:30 executing on quoted terms, then non-paired and paired block trading 09:00–17:00, with 08:30–09:00 the regular session's order-placing window whose call-auction match lands at 09:00.
 - <https://www.twse.com.tw/en/about/company/history.html> — TWSE company history, dating the continuous-trading launch to 2020-03-23.

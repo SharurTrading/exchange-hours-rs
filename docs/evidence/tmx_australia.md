@@ -20,9 +20,11 @@ Venue envelope across auction-eligible and @Last/MOC products.
 
 ## Sources
 
-Retrieval dates: these sources were last opened on the row's reviewed-on date
-(2026-08-22, UTC); per-source retrieval dates were not recorded before the
-2026-09-12 migration and are added as each source is re-verified.
+Row review: 2026-08-22 (UTC) is the date the ledger row was last reviewed as a
+whole. Per-source retrieval dates were not recorded before the 2026-09-12
+migration; where a later targeted review, capture or document date is recorded
+beside a source below, that date governs for that source, and dates are added
+as each source is re-verified.
 
 - <https://www.tmxaustralia.com/about/hours> — TMX Australia hours page. It states that during the pre-market period "trade reports may be lodged in accordance with the Cboe Operating Rules and the Market Integrity Rules", which is why Pre-Open is tradeable `extended` rather than order-entry-only.
 - <https://cdn.cboe.com/resources/au/tmx/participant_resources/Operating_Rules_Procedures_Clean.pdf> — Operating Rules and Procedures.

@@ -17,9 +17,11 @@ Venue union includes the 15:00–15:30 block-order/trading phase already operati
 
 ## Sources
 
-Retrieval dates: these sources were last opened on the row's reviewed-on date
-(2026-08-22, UTC); per-source retrieval dates were not recorded before the
-2026-09-12 migration and are added as each source is re-verified.
+Row review: 2026-08-22 (UTC) is the date the ledger row was last reviewed as a
+whole. Per-source retrieval dates were not recorded before the 2026-09-12
+migration; where a later targeted review, capture or document date is recorded
+beside a source below, that date governs for that source, and dates are added
+as each source is re-verified.
 
 - <https://www.szse.cn/lawrules/rule/trade/current/t20260424_620190.html> — current SZSE trading rule, including the 15:00–15:30 block and fixed-price phase.
 - <https://www.szse.cn/disclosure/notice/general/t20060515_499577.html> — SZSE block-trading rule effective 2006-07-01, establishing block declarations through 15:30 before the January-2010 audit floor.

@@ -22,11 +22,23 @@ for Nordic Zonal Power Futures states both the launch day and the trading
 table, so the boundary is T1 and unconditional even though it is not carried as
 a tuple. Nothing is carried below the launch, so the row's horizon is `—`.
 
+## Dated selectors
+
+Day-level boundaries this identity's `profile_at` selects on directly, outside
+any `revisions!` block. They are invisible to the module-declaration fences, so
+they are recorded here in revision-row grammar and checked against
+`HISTORICAL_CUTOVERS` / `HISTORICAL_INSTANT_CUTOVERS` in
+`tests/contract/session_invariants/historical_expectations.rs`.
+
+- 2024-03-25 — T1 — EEX customer information for Nordic Zonal Power Futures (`EEX_LAUNCH`) — the launch day, selected by a date comparison in `eex_profile_at`; the profile is a sourced closure before it and nothing is carried below.
+
 ## Sources
 
-Retrieval dates: these sources were last opened on the row's reviewed-on date
-(2026-08-22, UTC); per-source retrieval dates were not recorded before the
-2026-09-12 migration and are added as each source is re-verified.
+Row review: 2026-08-22 (UTC) is the date the ledger row was last reviewed as a
+whole. Per-source retrieval dates were not recorded before the 2026-09-12
+migration; where a later targeted review, capture or document date is recorded
+beside a source below, that date governs for that source, and dates are added
+as each source is re-verified.
 
 The documents below stand behind the row. The
 module narrative that cites them lives in the anchor file for `europe.rs`.

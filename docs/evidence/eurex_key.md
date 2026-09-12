@@ -21,11 +21,23 @@ then a UTC-offset comparison that picks the CET or CEST phase table. Eurex
 circular 088/2018 states the cutover day unconditionally at T1, so the date is
 sourced even though it is not carried as a tuple.
 
+## Dated selectors
+
+Day-level boundaries this identity's `profile_at` selects on directly, outside
+any `revisions!` block. They are invisible to the module-declaration fences, so
+they are recorded here in revision-row grammar and checked against
+`HISTORICAL_CUTOVERS` / `HISTORICAL_INSTANT_CUTOVERS` in
+`tests/contract/session_invariants/historical_expectations.rs`.
+
+- 2018-12-10 — T1 — Eurex circular 088/2018 (`EUREX_ASIAN_HOURS`) — the Asian-hours open. The key selects through the same `eurex_profile_at` function as the `eurex` exchange row, so the boundary is shared; the seasonal CET/CEST table is a UTC-offset comparison beside it and asserts no day.
+
 ## Sources
 
-Retrieval dates: these sources were last opened on the row's reviewed-on date
-(2026-08-22, UTC); per-source retrieval dates were not recorded before the
-2026-09-12 migration and are added as each source is re-verified.
+Row review: 2026-08-22 (UTC) is the date the ledger row was last reviewed as a
+whole. Per-source retrieval dates were not recorded before the 2026-09-12
+migration; where a later targeted review, capture or document date is recorded
+beside a source below, that date governs for that source, and dates are added
+as each source is re-verified.
 
 The row rests on the same `EU-EUREX`
 documents as the `eurex` exchange row; the full annotated list is in

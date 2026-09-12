@@ -17,9 +17,11 @@
 
 ## Sources
 
-Retrieval dates: these sources were last opened on the row's reviewed-on date
-(2026-08-22, UTC); per-source retrieval dates were not recorded before the
-2026-09-12 migration and are added as each source is re-verified.
+Row review: 2026-08-22 (UTC) is the date the ledger row was last reviewed as a
+whole. Per-source retrieval dates were not recorded before the 2026-09-12
+migration; where a later targeted review, capture or document date is recorded
+beside a source below, that date governs for that source, and dates are added
+as each source is re-verified.
 
 - <https://www.nasdaqtrader.com/MicroNews.aspx?id=OTA2012-41> — Nasdaq OTA 2012-41; BX Options launched 2012-06-29 with five stock classes, including AA and INTC.
 - <https://listingcenter.nasdaq.com/rulebook/nasdaqtx/rules/NTX%20Options%203> — NTX Options 3, this SRO's rulebook under its current name; retains 09:30-16:00 ET RTH for this product family.

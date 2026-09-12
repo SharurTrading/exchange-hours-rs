@@ -15,11 +15,23 @@ Murban Crude Oil Futures only: closed before the sourced 2021-03-29 launch; the 
 
 None. ice_abu_dhabi.rs encodes its dated cutovers as constants rather than revisions! tuples, so it has no dated revision row.
 
+## Dated selectors
+
+Day-level boundaries this identity's `profile_at` selects on directly, outside
+any `revisions!` block. They are invisible to the module-declaration fences, so
+they are recorded here in revision-row grammar and checked against
+`HISTORICAL_CUTOVERS` / `HISTORICAL_INSTANT_CUTOVERS` in
+`tests/contract/session_invariants/historical_expectations.rs`.
+
+- 2021-03-29 — T1 — IFAD circular 21/003 (`IFAD_LAUNCH`) — Murban Crude Oil Futures launch; the profile is a sourced closure before this day.
+
 ## Sources
 
-Retrieval dates: these sources were last opened on the row's reviewed-on date
-(2026-08-22, UTC); per-source retrieval dates were not recorded before the
-2026-09-12 migration and are added as each source is re-verified.
+Row review: 2026-08-22 (UTC) is the date the ledger row was last reviewed as a
+whole. Per-source retrieval dates were not recorded before the 2026-09-12
+migration; where a later targeted review, capture or document date is recorded
+beside a source below, that date governs for that source, and dates are added
+as each source is re-verified.
 
 - <https://www.ice.com/publicdocs/abu_dhabi/circulars/IFAD%20Circular%20-%2021003%20-%20Trading%20information%20publication.pdf> — IFAD circular 21/003, launching Murban Crude Oil Futures on 2021-03-29 and publishing the normal Monday–Friday grid plus the two-hour-earlier Monday trading-day open.
 - <https://www.ice.com/products/75443578/Murban-Crude-Oil-Futures/> — live contract page giving the same 20:00–18:00 New York schedule and 19:45 pre-open.

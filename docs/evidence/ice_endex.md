@@ -15,11 +15,25 @@ Post-combination Dutch TTF Natural Gas Futures: closed before the sourced 2013-1
 
 None. ice_endex.rs encodes its dated cutovers as constants rather than revisions! tuples, so it has no dated revision row.
 
+## Dated selectors
+
+Day-level boundaries this identity's `profile_at` selects on directly, outside
+any `revisions!` block. They are invisible to the module-declaration fences, so
+they are recorded here in revision-row grammar and checked against
+`HISTORICAL_CUTOVERS` / `HISTORICAL_INSTANT_CUTOVERS` in
+`tests/contract/session_invariants/historical_expectations.rs`.
+
+- 2013-10-07 — T1 — ICE circular 13/107 (`TRANSFER`) — the equivalent contract moves to ICE Endex and the profile opens over its sourced closure.
+- 2026-04-12 — T1 — ICE Endex circular E26/004 (`EXTENSION_OPENING_DAY`) — the one-day eve bridge, so the extension's Sunday leg does not appear before its first opening day.
+- 2026-04-13 — T1 — ICE Endex circular E26/004 (`EXTENSION`) — the 21-hour day begins, with the US/CET daylight-mismatch variant.
+
 ## Sources
 
-Retrieval dates: these sources were last opened on the row's reviewed-on date
-(2026-08-22, UTC); per-source retrieval dates were not recorded before the
-2026-09-12 migration and are added as each source is re-verified.
+Row review: 2026-08-22 (UTC) is the date the ledger row was last reviewed as a
+whole. Per-source retrieval dates were not recorded before the 2026-09-12
+migration; where a later targeted review, capture or document date is recorded
+beside a source below, that date governs for that source, and dates are added
+as each source is re-verified.
 
 - <https://web.archive.org/web/20130831104114id_/https://www.theice.com/productguide/Search.shtml?tradingHours=> — ICE's 2013-08-31 WebICE hours table, showing the transferred contract's 07:45 pre-open / 08:00–18:00 CET grid immediately before the handoff.
 - <https://www.ice.com/publicdocs/circulars/10010%20attach%201%20-%20TTF%20Nat%20Gas%20Contract%20Spec.pdf> — ICE circular 10/010 attachment 1, TTF Natural Gas contract specification.

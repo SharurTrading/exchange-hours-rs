@@ -20,9 +20,11 @@
 
 ## Sources
 
-Retrieval dates: these sources were last opened on the row's reviewed-on date
-(2026-08-29, UTC); per-source retrieval dates were not recorded before the
-2026-09-12 migration and are added as each source is re-verified.
+Row review: 2026-08-29 (UTC) is the date the ledger row was last reviewed as a
+whole. Per-source retrieval dates were not recorded before the 2026-09-12
+migration; where a later targeted review, capture or document date is recorded
+beside a source below, that date governs for that source, and dates are added
+as each source is re-verified.
 
 - <https://www.cmegroup.com/media-room/press-releases/2007/3/07/cme_to_offer_around-the-clocktradingofcommodityproductsoncmeglob.html> — CME press release of 2007-03-07, the around-the-clock launch that establishes the Monday 09:05 CT weekly open and the 16:00–17:00 CT daily halts.
 - <https://www.cmegroup.com/tools-information/lookups/advisories/market-data/Q2008-215.html> — CME market-data advisory Q2008-215, the pre-floor move of the Friday close to 13:55 CT.
@@ -36,6 +38,7 @@ Retrieval dates: these sources were last opened on the row's reviewed-on date
 - <https://www.cmegroup.com/notices/ser/2020/05/SER-8599R.pdf> — CME SER-8599R, the 2020-05-31 revision's source and the statement of the outgoing 06:00 CT value.
 - <https://www.cmegroup.com/market-regulation/rule-filings/2020/5/20-232.pdf> — CME rule filing 20-232.
 - <https://www.cmegroup.com/trading-hours/files/memorial-day-2023.pdf> — CME Memorial Day 2023 trading-hours sheet, current-grid corroboration.
+- <https://www.cmegroup.com/markets/agriculture/livestock/live-cattle.contractSpecs.html> — CME Live Cattle futures contract specification, the operator's own specification page and the channel the **2026-08-31 targeted review** checked as a second route into the 2016-11..2020-03 interval. Read live at that review, and through archived captures of the same page dated **2016-09-25, 2016-12-04, 2017-09-23 and 2018-04-19**, each of which renders only "CME ClearPort" and "Default" hours (Monday–Friday 08:30–13:05 CT) with no CME Globex Pre-Open or PCP row. Those dates are later than this row's review date and govern for this source. The archive replay URLs for the four captures are not recorded in this repository; re-verification starts from the live page above through the `US-CME-GROUP` entry point.
 - <https://www.cmegroup.com/education/lessons/live-cattle-product-overview> — CME Live Cattle product overview.
 
 ## Gaps and residual risks

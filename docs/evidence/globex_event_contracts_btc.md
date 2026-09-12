@@ -25,9 +25,11 @@
 
 ## Sources
 
-Retrieval dates: these sources were last opened on the row's reviewed-on date
-(2026-09-06, UTC); per-source retrieval dates were not recorded before the
-2026-09-12 migration and are added as each source is re-verified.
+Row review: 2026-09-06 (UTC) is the date the ledger row was last reviewed as a
+whole. Per-source retrieval dates were not recorded before the 2026-09-12
+migration; where a later targeted review, capture or document date is recorded
+beside a source below, that date governs for that source, and dates are added
+as each source is re-verified.
 
 - <https://www.cmegroup.com/notices/ser/2023/02/SER-9092.pdf> — CME SER-9092 — the listing day and the root's own "Sunday 5:00 p.m.- Friday 3:00 p.m." CME Globex Trading Hours cell.
 - <https://www.cmegroup.com/content/dam/cmegroup/market-regulation/rule-filings/2023/2/23-014.pdf> — CME rule filing 23-014 — prints the same prior cell, separate from its Termination of Trading row.

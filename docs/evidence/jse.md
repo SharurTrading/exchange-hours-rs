@@ -22,9 +22,11 @@ Current v4.09 and the 2026-08-17 release were checked; main/liquid ZA01 only, wi
 
 ## Sources
 
-Retrieval dates: these sources were last opened on the row's reviewed-on date
-(2026-08-22, UTC); per-source retrieval dates were not recorded before the
-2026-09-12 migration and are added as each source is re-verified.
+Row review: 2026-08-22 (UTC) is the date the ledger row was last reviewed as a
+whole. Per-source retrieval dates were not recorded before the 2026-09-12
+migration; where a later targeted review, capture or document date is recorded
+beside a source below, that date governs for that source, and dates are added
+as each source is re-verified.
 
 - <https://clientportal.jse.co.za/technical-library/trading-and-market-data-documentation> — JSE trading and market-data technical library, the stable source-set entry point.
 - <https://clientportal.jse.co.za/Content/JSE%20Contract%20Specification%20Items/Volume%2000E%20-%20Trading%20and%20Information%20Overview%20for%20Equity%20Market%20v4.09.pdf> — JSE Volume 00E, Trading and Information Overview for the Equity Market, v4.09: current ZA01 — opening auction 08:30–09:00, continuous 09:00–16:50, closing auction 16:50–17:00, publication gap, Closing Price Cross 17:02–17:10.

@@ -23,9 +23,11 @@
 
 ## Sources
 
-Retrieval dates: these sources were last opened on the row's reviewed-on date
-(2026-09-05, UTC); per-source retrieval dates were not recorded before the
-2026-09-12 migration and are added as each source is re-verified.
+Row review: 2026-09-05 (UTC) is the date the ledger row was last reviewed as a
+whole. Per-source retrieval dates were not recorded before the 2026-09-12
+migration; where a later targeted review, capture or document date is recorded
+beside a source below, that date governs for that source, and dates are added
+as each source is re-verified.
 
 - <https://www.cmegroup.com/content/dam/cmegroup/market-regulation/rule-filings/2018/01/18-001.pdf> — CBOT Submission 18-001 — "effective on Sunday, January 21, 2018 for trade date Monday, January 22, 2018", naming "Rough Rice Futures ZR 17" and "Rough Rice Options OZR 17A".
 - <https://web.archive.org/web/20240314032026id_/https://www.cmegroup.com/content/dam/cmegroup/market-regulation/rule-filings/2018/01/18-001.pdf> — CBOT Submission 18-001, archived capture — CME serves an anti-scraping block to automated clients.

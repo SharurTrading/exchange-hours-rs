@@ -19,9 +19,11 @@
 
 ## Sources
 
-Retrieval dates: these sources were last opened on the row's reviewed-on date
-(2026-09-11, UTC); per-source retrieval dates were not recorded before the
-2026-09-12 migration and are added as each source is re-verified.
+Row review: 2026-09-11 (UTC) is the date the ledger row was last reviewed as a
+whole. Per-source retrieval dates were not recorded before the 2026-09-12
+migration; where a later targeted review, capture or document date is recorded
+beside a source below, that date governs for that source, and dates are added
+as each source is re-verified.
 
 - <https://www.cftc.gov/filings/ptc/ptc051120smfedcm006.pdf> — SMFE launch certification (SM75, SPRE, SFX) for trade date 2020-05-18.
 - <https://public.data.smallexchange.com/ipf/20200518/products-2020-05-18.csv> — the operator's own instrument file for trade date 2020-05-18, whose `TRADING_HOURS` field reads `td=12345;...;0=p06300659n06590700r07001600`.

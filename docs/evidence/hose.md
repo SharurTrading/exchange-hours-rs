@@ -19,9 +19,11 @@ The archived January-2010 grid and exact 2010/2012/2013 revisions are date-aware
 
 ## Sources
 
-Retrieval dates: these sources were last opened on the row's reviewed-on date
-(2026-08-22, UTC); per-source retrieval dates were not recorded before the
-2026-09-12 migration and are added as each source is re-verified.
+Row review: 2026-08-22 (UTC) is the date the ledger row was last reviewed as a
+whole. Per-source retrieval dates were not recorded before the 2026-09-12
+migration; where a later targeted review, capture or document date is recorded
+beside a source below, that date governs for that source, and dates are added
+as each source is re-verified.
 
 - <https://staticfile.hsx.vn/Uploads/UploadDocuments/2372209/2.Trading%20hours.pdf> — HOSE's current trading-hours table, explicitly printing the 13:00–15:00 put-through window.
 - <https://web.archive.org/web/20140501225025id_/http://www.hsx.vn:80/hsx_en/Modules/annual/annual_files/BCTN-ANNUAL%20REPORT%202013.pdf> — HOSE 2013 annual report, dating the 45-minute extension to 2013-07-22.

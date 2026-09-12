@@ -19,9 +19,11 @@
 
 ## Sources
 
-Retrieval dates: these sources were last opened on the row's reviewed-on date
-(2026-08-29, UTC); per-source retrieval dates were not recorded before the
-2026-09-12 migration and are added as each source is re-verified.
+Row review: 2026-08-29 (UTC) is the date the ledger row was last reviewed as a
+whole. Per-source retrieval dates were not recorded before the 2026-09-12
+migration; where a later targeted review, capture or document date is recorded
+beside a source below, that date governs for that source, and dates are added
+as each source is re-verified.
 
 - <https://www.cmegroup.com/tools-information/lookups/advisories/electronic-trading/20080121.html> — CME Globex notice 20080121, the January-2008 CBOT migration notice establishing the 17:30–16:00 CT schedule.
 - <https://www.cmegroup.com/tools-information/lookups/advisories/electronic-trading/20090326.html> — CME Globex notice 20090326, the 2009 table that pins the audit-floor queues at Sunday 16:15 and weekdays 16:50.

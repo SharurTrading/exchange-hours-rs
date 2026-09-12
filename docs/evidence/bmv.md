@@ -16,11 +16,26 @@ Date-aware normal/early grids retain the sourced HD/ID post-close tails: `:06` t
 - 2010-03-16 — T1 — BMV DST notice 20100218 — the bounded early grid begins, 07:00–14:06 including the opening-auction stage and the HD/ID tail.
 - 2010-04-01 — T1 — BMV DST notice 20100218 — the normal grid resumes, 08:00–15:06.
 
+## Dated selectors
+
+Day-level boundaries this identity's `profile_at` selects on directly, outside
+any `revisions!` block. They are invisible to the module-declaration fences, so
+they are recorded here in revision-row grammar and checked against
+`HISTORICAL_CUTOVERS` / `HISTORICAL_INSTANT_CUTOVERS` in
+`tests/contract/session_invariants/historical_expectations.rs`.
+
+- 2010-11-01 — T1 — BMV notice 20101013 (`REFERENCE_GRID`) — the explicit 2010 bounded-exception rows end and the recurring New-York-offset selector begins.
+- 2016-09-05 — T1 — Grupo BMV annual report 2016 (`HD_EXTENSION_2016`) — the HD/ID post-close tail moves from `:06` to `:10`.
+- 2023-05-29 — T1 — BMV Manual v1.88 (`EARLY_HD_EXTENSION_2023`) — the early grid's tail extends to `:20` while the normal close stays at 15:10.
+- 2023-11-06 — T1 — BMV Manual v1.90 (`NORMAL_HD_EXTENSION_2023`) — the normal grid's tail extends to `:20`.
+
 ## Sources
 
-Retrieval dates: these sources were last opened on the row's reviewed-on date
-(2026-08-22, UTC); per-source retrieval dates were not recorded before the
-2026-09-12 migration and are added as each source is re-verified.
+Row review: 2026-08-22 (UTC) is the date the ledger row was last reviewed as a
+whole. Per-source retrieval dates were not recorded before the 2026-09-12
+migration; where a later targeted review, capture or document date is recorded
+beside a source below, that date governs for that source, and dates are added
+as each source is re-verified.
 
 - <https://www.bmv.com.mx/docs-pub/MARCO_NORMATIVO/CTEN_MNBM/MANUAL_OPERATIVO.PDF> — BMV Manual Operativo, the living operator entry point.
 - <https://www.bmv.com.mx/docs-pub/MARCO_NORMATIVO/CTEN_MERMO/20260723_V1.97_Clarif_Dto.Aranceles_Ambiente_Pruerbas.pdf> — BMV Manual v1.97, printing the normal and US-daylight-time grids and the HD/ID post-close stages.

@@ -17,9 +17,11 @@ SIX shares January-2010 phases, including the two-minute randomized opening and 
 
 ## Sources
 
-Retrieval dates: these sources were last opened on the row's reviewed-on date
-(2026-08-22, UTC); per-source retrieval dates were not recorded before the
-2026-09-12 migration and are added as each source is re-verified.
+Row review: 2026-08-22 (UTC) is the date the ledger row was last reviewed as a
+whole. Per-source retrieval dates were not recorded before the 2026-09-12
+migration; where a later targeted review, capture or document date is recorded
+beside a source below, that date governs for that source, and dates are added
+as each source is re-verified.
 
 - <https://www.six-group.com/en/products-services/the-swiss-stock-exchange/trading/trading-provisions/trading-hours.html> — SIX Group, "Trading hours": the current page confirms the two-minute opening slot.
 - <https://www.six-group.com/dam/download/the-swiss-stock-exchange/trading/trading-provisions/regulation/trading-guides/trading-guide.pdf> — SIX Swiss Exchange Trading Guide. Blue Chip Shares: "Trading Hours 09:00 - 17:30 CET / Continuous Trading 09:00 - 17:20 CET / Closing Auction 17:20 - 17:30 CET / Trading-At-Last Start: 17:30 - 17:32 CET End: 17:40 CET". Its segment row is "Blue Chip Shares 06:00 09:00 17:20 17:30 17:30 17:40 22:00". The trading-period overview runs Pre-Opening from 06:00 "until Opening" and permits no immediate-execution time in force in it (Immediate or Cancel and Fill or Kill are "No" for both Pre-Opening and Post Trading).

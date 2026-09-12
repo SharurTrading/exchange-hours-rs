@@ -19,9 +19,11 @@
 
 ## Sources
 
-Retrieval dates: these sources were last opened on the row's reviewed-on date
-(2026-09-12, UTC); per-source retrieval dates were not recorded before the
-2026-09-12 migration and are added as each source is re-verified.
+Row review: 2026-09-12 (UTC) is the date the ledger row was last reviewed as a
+whole. Per-source retrieval dates were not recorded before the 2026-09-12
+migration; where a later targeted review, capture or document date is recorded
+beside a source below, that date governs for that source, and dates are added
+as each source is re-verified.
 
 - <https://www.cftc.gov/sites/default/files/stellent/groups/public/@rulesandproducts/documents/ifdocs/rul031110nymexandcomex001.pdf> — NYMEX/COMEX Submission 10-070 with SER S-5166 attached — the gold and silver TAS launch, "on Globex on April 11 (for trade date April 12)".
 - <https://web.archive.org/web/20120512095523id_/http://www.cmegroup.com/rulebook/files/SER-5542__10-12-22__TAS_COMEX.pdf> — COMEX SER-5542 of 2010-12-22 — the copper TAS launch, "effective Sunday, January 23, 2011 for trade date Monday, January 24, 2011".

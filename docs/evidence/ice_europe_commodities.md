@@ -17,9 +17,11 @@ None. ice_europe.rs holds a single static profile for this identity with no date
 
 ## Sources
 
-Retrieval dates: these sources were last opened on the row's reviewed-on date
-(2026-08-22, UTC); per-source retrieval dates were not recorded before the
-2026-09-12 migration and are added as each source is re-verified.
+Row review: 2026-08-22 (UTC) is the date the ledger row was last reviewed as a
+whole. Per-source retrieval dates were not recorded before the 2026-09-12
+migration; where a later targeted review, capture or document date is recorded
+beside a source below, that date governs for that source, and dates are added
+as each source is re-verified.
 
 - <https://www.ice.com/products/219/Brent-Crude-Futures> — live Brent Crude Futures specification: 20:00–18:00 New York session, 19:45 pre-open, and the special Sunday 17:00 pre-open / 18:00 open.
 - <https://www.ice.com/publicdocs/futures/Trading_Schedule_Temporary_Trading_Hours_for_DST.pdf> — ICE trading schedule confirming that the published grid is locked to US Eastern time.

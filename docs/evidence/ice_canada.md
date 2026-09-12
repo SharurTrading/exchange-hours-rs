@@ -18,11 +18,23 @@ Legacy Winnipeg Canola: sourced January-2010, 2011 open, 2012/2013 close, and 20
 - 2016-01-24 — T1 — ICE Canada Jan 18 2016 reminder — close extended 13:15 → 13:20 CT beginning trade date 2016-01-25.
 - 2018-07-29 — T1 — ICE Futures US notice Canola 20180501 — Canola leaves ICE Futures Canada at the start of trading for trade date 2018-07-30; the identity is closed from that Sunday opening.
 
+## Dated selectors
+
+Day-level boundaries this identity's `profile_at` selects on directly, outside
+any `revisions!` block. They are invisible to the module-declaration fences, so
+they are recorded here in revision-row grammar and checked against
+`HISTORICAL_CUTOVERS` / `HISTORICAL_INSTANT_CUTOVERS` in
+`tests/contract/session_invariants/historical_expectations.rs`.
+
+- 2011-02-28 — T1 — ICE Canada notice of 1 February 2011, revised (`REVISED_HOURS_2011_UNIX_SECONDS`) — an exact-instant boundary: the pre-open/open move to 18:30/19:00 CT on Monday 2011-02-28 for trade date 2011-03-01, which is 2011-03-01 00:30:00 UTC. Local midnight of 2011-02-28 falls inside the running Sunday session, so the boundary is the pre-open instant and never a day-level row; `HISTORICAL_INSTANT_CUTOVERS` records the UTC instant.
+
 ## Sources
 
-Retrieval dates: these sources were last opened on the row's reviewed-on date
-(2026-08-22, UTC); per-source retrieval dates were not recorded before the
-2026-09-12 migration and are added as each source is re-verified.
+Row review: 2026-08-22 (UTC) is the date the ledger row was last reviewed as a
+whole. Per-source retrieval dates were not recorded before the 2026-09-12
+migration; where a later targeted review, capture or document date is recorded
+beside a source below, that date governs for that source, and dates are added
+as each source is re-verified.
 
 - <https://www.ice.com/publicdocs/futures_canada/member_notices/Trading_Calendar_2009.pdf> — the official 2009 trading calendar, pinning the January-2010 baseline: pre-open 19:00, continuous trading 20:00–13:15 CT.
 - <https://www.ice.com/publicdocs/futures_canada/member_notices/Feb1_2011_revised_trading_hours.pdf> — 2011 notice moving the pre-open/open to 18:30/19:00 on Monday 2011-02-28 for trade date 2011-03-01.

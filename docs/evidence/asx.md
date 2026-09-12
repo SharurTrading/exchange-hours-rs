@@ -17,9 +17,11 @@ Cash-market envelope; the pre-2025 staggered opening preserves both the earliest
 
 ## Sources
 
-Retrieval dates: these sources were last opened on the row's reviewed-on date
-(2026-08-22, UTC); per-source retrieval dates were not recorded before the
-2026-09-12 migration and are added as each source is re-verified.
+Row review: 2026-08-22 (UTC) is the date the ledger row was last reviewed as a
+whole. Per-source retrieval dates were not recorded before the 2026-09-12
+migration; where a later targeted review, capture or document date is recorded
+beside a source below, that date governs for that source, and dates are added
+as each source is re-verified.
 
 - <https://www.asx.com.au/markets/market-resources/trading-hours-calendar/cash-market-trading-hours> — ASX cash-market trading hours, the current phase timetable: Pre-open 07:00:00–09:59:00, Opening Single Price Auction 09:59:00–09:59:45, Open (Normal Trading) 09:59:45–16:00:00, Pre-CSPA 16:00:00–16:10:00, Closing Single Price Auction 16:10:00–16:11:00, Post Close 16:11:00–16:21:30.
 - <https://www.asxonline.com/public/notices/2025/may/0473.25.05.html> — ASX notice 0473.25.05, the Service Release 15 notice dating the change to 2025-06-23.

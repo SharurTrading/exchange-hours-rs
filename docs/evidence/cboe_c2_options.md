@@ -17,9 +17,11 @@
 
 ## Sources
 
-Retrieval dates: these sources were last opened on the row's reviewed-on date
-(2026-08-22, UTC); per-source retrieval dates were not recorded before the
-2026-09-12 migration and are added as each source is re-verified.
+Row review: 2026-08-22 (UTC) is the date the ledger row was last reviewed as a
+whole. Per-source retrieval dates were not recorded before the 2026-09-12
+migration; where a later targeted review, capture or document date is recorded
+beside a source below, that date governs for that source, and dates are added
+as each source is re-verified.
 
 - <https://cdn.cboe.com/resources/regulation/circulars/general/IC-CBOE-2010-168.pdf> — Cboe circular IC-CBOE-2010-168; C2 launched 2010-10-29 with Ford as its first class.
 - <https://cdn.cboe.com/resources/regulation/rule_book/C2_Exchange_Rule_Book.pdf> — Cboe C2 Exchange Rule Book; retains 09:30-16:00 ET RTH for this product family.

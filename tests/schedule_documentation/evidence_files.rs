@@ -17,6 +17,8 @@
 //! sibling and on the ten modules whose single timeline serves several rows.
 
 use super::{EVIDENCE_DIR, evidence_target, exchange_rows, market_hours_key_rows, wire_name};
+use chrono::NaiveDate;
+use exchange_hours::Exchange;
 use std::collections::{BTreeMap, BTreeSet};
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -43,7 +45,7 @@ const MAX_COMMENT_RUN: usize = 6;
 /// `modules_carry_no_narrative`, an unlisted one is asserted, and the list only
 /// ever shrinks — that is what makes "a new module never carries one" a fence
 /// rather than a hope. Tracked as issue #85.
-const NARRATIVE_DEBT: [&str; 41] = [
+const NARRATIVE_DEBT: [&str; 40] = [
     "src/calendar/schedules/equities/africa_middle_east/jse.rs",
     "src/calendar/schedules/equities/africa_middle_east/tadawul.rs",
     "src/calendar/schedules/equities/americas/b3.rs",
@@ -70,7 +72,6 @@ const NARRATIVE_DEBT: [&str; 41] = [
     "src/calendar/schedules/equities/europe/euronext.rs",
     "src/calendar/schedules/equities/europe/euronext/dublin.rs",
     "src/calendar/schedules/equities/europe/lse.rs",
-    "src/calendar/schedules/equities/europe/nasdaq_nordics.rs",
     "src/calendar/schedules/equities/europe/six.rs",
     "src/calendar/schedules/equities/europe/vienna.rs",
     "src/calendar/schedules/equities/europe/xetra.rs",
@@ -537,6 +538,143 @@ fn every_evidence_revision_line_exists_in_source() {
             assert_revision_bullet(&name, bullet, by_file.get(&name));
         }
     }
+}
+
+/// Day-level boundaries an identity's `profile_at` selects on directly — the
+/// `NaiveDate` and Unix-second constants in `eurex_profile_at`, `eex_profile_at`,
+/// `b3.rs`, `bmv.rs`, `ice_endex.rs`, `ice_abu_dhabi.rs`, `binance.rs`,
+/// `ice_canada.rs` and `coinbase_derivatives.rs` — never reach a `revisions!`
+/// block, so every fence above is blind to them: a selector could move a date
+/// with no evidence file recording it.
+///
+/// The handwritten cutover lists in
+/// `tests/contract/session_invariants/historical_expectations.rs` do see them,
+/// because they are compared against observable behaviour rather than generated
+/// from the timelines. Require every date they record for an `Exchange` to
+/// appear in that identity's evidence file, in its `## Revision rows` section
+/// or in a `## Dated selectors` section beside it.
+///
+/// `HISTORICAL_INSTANT_CUTOVERS` records a UTC instant, and an evening boundary
+/// belongs to the previous venue-local day (ICE Canada's 18:30 CT pre-open is
+/// `2011-03-01 00:30 UTC`), so either day satisfies the fence for those rows.
+///
+/// Scope: both lists are keyed by `Exchange`, so a `MarketHoursKey` whose file
+/// records the same shared selector — `eurex_key` against `eurex_profile_at`'s
+/// 2018-12-10 boundary — is not reached here. Its `## Dated selectors` line is
+/// kept for the reader; extending the cutover lists to keys is issue #86.
+#[test]
+fn every_handwritten_cutover_date_appears_in_its_evidence_file() {
+    const DAY_LIST: &str = "HISTORICAL_CUTOVERS:";
+    const INSTANT_LIST: &str = "HISTORICAL_INSTANT_CUTOVERS:";
+
+    let path =
+        repository_root().join("tests/contract/session_invariants/historical_expectations.rs");
+    let source = fs::read_to_string(&path).expect("cutover expectations must be readable");
+    let files = evidence_files();
+
+    let wire_names = Exchange::ALL
+        .iter()
+        .map(|exchange| (format!("{exchange:?}"), exchange.as_str()))
+        .collect::<BTreeMap<_, _>>();
+
+    let mut checked = 0_usize;
+    for (list, allow_previous_day) in [(DAY_LIST, false), (INSTANT_LIST, true)] {
+        for (variant, day) in cutover_entries(&source, list) {
+            let wire = wire_names
+                .get(&variant)
+                .unwrap_or_else(|| panic!("{list} names an unknown Exchange variant: {variant}"));
+            let name = format!("{wire}.md");
+            let text = files.get(&name).unwrap_or_else(|| {
+                panic!("{list} names an identity with no evidence file: {name}")
+            });
+
+            let recorded = format!(
+                "{}{}",
+                section(text, "## Revision rows").unwrap_or_default(),
+                section(text, "## Dated selectors").unwrap_or_default()
+            );
+            let previous = day
+                .pred_opt()
+                .expect("a cutover date must have a previous day")
+                .format("%Y-%m-%d")
+                .to_string();
+            let day = day.format("%Y-%m-%d").to_string();
+
+            assert!(
+                recorded.contains(&day) || (allow_previous_day && recorded.contains(&previous)),
+                "{name} records no revision row or dated selector for the {day} cutover \
+                 that {list} holds for {wire}; add it under `## Revision rows` or \
+                 `## Dated selectors` with its document id"
+            );
+            checked = checked.saturating_add(1);
+        }
+    }
+
+    assert!(
+        checked > 100,
+        "the cutover lists must parse; only {checked} entries were read"
+    );
+}
+
+/// Parses `(Exchange::Variant, (y, m, d), ..)` entries out of one cutover list.
+fn cutover_entries(source: &str, list: &str) -> Vec<(String, NaiveDate)> {
+    let start = source.find(list);
+    assert!(start.is_some(), "cutover expectations must declare {list}");
+    let start = start.expect("the list name was just asserted present");
+
+    let opening = source[start..].find("= &[");
+    assert!(opening.is_some(), "{list} must open a slice literal");
+    let open = opening
+        .expect("the slice literal was just asserted present")
+        .saturating_add(start)
+        .saturating_add(4);
+
+    let mut depth = 1_usize;
+    let mut end = open;
+    for (offset, byte) in source[open..].bytes().enumerate() {
+        match byte {
+            b'[' => depth = depth.saturating_add(1),
+            b']' => depth = depth.saturating_sub(1),
+            _ => {}
+        }
+        if depth == 0 {
+            end = open.saturating_add(offset);
+            break;
+        }
+    }
+
+    let mut entries = Vec::new();
+    let mut rest = &source[open..end];
+    while let Some(offset) = rest.find("Exchange::") {
+        let after = &rest[offset.saturating_add("Exchange::".len())..];
+        let variant = after
+            .chars()
+            .take_while(char::is_ascii_alphanumeric)
+            .collect::<String>();
+        let Some(tuple_start) = after.find('(') else {
+            break;
+        };
+        let Some(tuple_end) = after[tuple_start..].find(')') else {
+            break;
+        };
+        let numbers = after[tuple_start.saturating_add(1)..tuple_start.saturating_add(tuple_end)]
+            .split(',')
+            .filter_map(|field| field.trim().parse::<i32>().ok())
+            .collect::<Vec<_>>();
+        assert!(
+            numbers.len() >= 3,
+            "{list} entry for {variant} must open with (year, month, day)"
+        );
+        let date = NaiveDate::from_ymd_opt(
+            numbers[0],
+            u32::try_from(numbers[1]).expect("month must be non-negative"),
+            u32::try_from(numbers[2]).expect("day must be non-negative"),
+        )
+        .expect("every cutover entry must name a real calendar date");
+        entries.push((variant, date));
+        rest = &after[tuple_start.saturating_add(tuple_end)..];
+    }
+    entries
 }
 
 /// The two directional fences above test membership only, so counts can drift:

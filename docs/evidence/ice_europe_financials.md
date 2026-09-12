@@ -19,9 +19,11 @@ FTSE 100 Index Futures: closed before the sourced 2014-11-17 ICE migration, with
 
 ## Sources
 
-Retrieval dates: these sources were last opened on the row's reviewed-on date
-(2026-08-22, UTC); per-source retrieval dates were not recorded before the
-2026-09-12 migration and are added as each source is re-verified.
+Row review: 2026-08-22 (UTC) is the date the ledger row was last reviewed as a
+whole. Per-source retrieval dates were not recorded before the 2026-09-12
+migration; where a later targeted review, capture or document date is recorded
+beside a source below, that date governs for that source, and dates are added
+as each source is re-verified.
 
 - <https://www.ice.com/products/38716764/FTSE-100-INDEX-> — live ICE specification: 00:45 pre-open, 01:00–21:00 trading.
 - <https://www.ice.com/publicdocs/circulars/14146.pdf> — ICE Europe circular 14/146, the 2014-11-17 migration and first trade date.

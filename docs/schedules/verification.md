@@ -58,7 +58,7 @@ Every non-synthetic `Exchange` row was reviewed through at least `2026-08-22`. A
 should change only the affected rows until all non-synthetic rows have caught
 up; the repository cutoff advances only when the complete ledger has been reviewed. Exact
 historical notices and effective-date evidence live in the row's evidence
-file, not in the row. Forty-one schedule modules still carry their narrative
+file, not in the row. Forty schedule modules still carry their narrative
 beside the owner code; they are listed in `NARRATIVE_DEBT` in
 `tests/schedule_documentation/evidence_files.rs`, the list only ever shrinks,
 and draining it is issue #85.

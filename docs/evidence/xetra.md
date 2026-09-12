@@ -18,9 +18,11 @@ DAX constituent-share envelope with its January-2010 intraday auction, 2020-11-2
 
 ## Sources
 
-Retrieval dates: these sources were last opened on the row's reviewed-on date
-(2026-08-22, UTC); per-source retrieval dates were not recorded before the
-2026-09-12 migration and are added as each source is re-verified.
+Row review: 2026-08-22 (UTC) is the date the ledger row was last reviewed as a
+whole. Per-source retrieval dates were not recorded before the 2026-09-12
+migration; where a later targeted review, capture or document date is recorded
+beside a source below, that date governs for that source, and dates are added
+as each source is re-verified.
 
 - <https://cashmarket.deutsche-boerse.com/resource/blob/197910/0890768f3f753299e4c268b80fe7944d/data/207_08e.pdf> — Deutsche Börse circular 207/08, the January-2010-era market model.
 - <https://www.cashmarket.deutsche-boerse.com/resource/blob/1431340/a23cc3ff15d46a3b649bd23f1618b928/data/091_18e.pdf> — Deutsche Börse circular 091/18. With 207/08 it brackets the January-2010 baseline and confirms the DAX grid remained: pre-trading from 07:30, opening auction 08:50–09:00, intraday auction 13:00–13:02, continuous trading to 17:30, closing auction to 17:35, order-entry-only post-trading through 20:30.

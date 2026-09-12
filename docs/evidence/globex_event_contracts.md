@@ -17,9 +17,11 @@
 
 ## Sources
 
-Retrieval dates: these sources were last opened on the row's reviewed-on date
-(2026-09-05, UTC); per-source retrieval dates were not recorded before the
-2026-09-12 migration and are added as each source is re-verified.
+Row review: 2026-09-05 (UTC) is the date the ledger row was last reviewed as a
+whole. Per-source retrieval dates were not recorded before the 2026-09-12
+migration; where a later targeted review, capture or document date is recorded
+beside a source below, that date governs for that source, and dates are added
+as each source is re-verified.
 
 - <https://www.cmegroup.com/notices/ser/2022/08/SER-8968R.pdf> — CME SER-8968R — the 2022-09-18 launch, with the Pre-Opens and the 17:00 CT open but no daily close.
 - <https://www.cmegroup.com/notices/ser/2025/10/ser-9624.pdf> — CME SER-9624 (2025-10-15) — five Termination times against one Trading Hours cell, under the footnote "Termination of Trading is contingent on the Contract's Stated Expiration Time".

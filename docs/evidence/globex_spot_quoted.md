@@ -17,9 +17,11 @@ CME/CBOT Spot-Quoted Futures ("SQF"), Rulebook Chapter 24 — eight tradeable ro
 
 ## Sources
 
-Retrieval dates: these sources were last opened on the row's reviewed-on date
-(2026-09-05, UTC); per-source retrieval dates were not recorded before the
-2026-09-12 migration and are added as each source is re-verified.
+Row review: 2026-09-05 (UTC) is the date the ledger row was last reviewed as a
+whole. Per-source retrieval dates were not recorded before the 2026-09-12
+migration; where a later targeted review, capture or document date is recorded
+beside a source below, that date governs for that source, and dates are added
+as each source is re-verified.
 
 - <https://www.cmegroup.com/content/dam/cmegroup/notices/ser/2025/05/ser-9506r.pdf> — CME SER-9506R — "Effective Sunday, June 29, 2025 for trade date Monday, June 30, 2025", Exhibit 1.
 - <https://www.cmegroup.com/content/dam/cmegroup/notices/ser/2025/12/ser-9630rr.pdf> — CME SER-9630RR — QSOL and QXRP, hours cell byte-identical; member catalog data.

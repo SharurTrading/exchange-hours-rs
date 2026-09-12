@@ -18,9 +18,11 @@ The operator's 2010 INET model supplies the baseline; the 2015 randomized edge a
 
 ## Sources
 
-Retrieval dates: these sources were last opened on the row's reviewed-on date
-(2026-08-22, UTC); per-source retrieval dates were not recorded before the
-2026-09-12 migration and are added as each source is re-verified.
+Row review: 2026-08-22 (UTC) is the date the ledger row was last reviewed as a
+whole. Per-source retrieval dates were not recorded before the 2026-09-12
+migration; where a later targeted review, capture or document date is recorded
+beside a source below, that date governs for that source, and dates are added
+as each source is re-verified.
 
 - <https://www.globenewswire.com/news-release/2010/01/25/151379/0/en/INET-Nordic-NASDAQ-OMX-Market-Model.html> — Nasdaq OMX INET Nordic market-model notice, 2010-01-25: the migration is effective 2010-02-08 and does not materially change Nordic trading hours; it also identifies the existing randomized close.
 - <https://www.globenewswire.com/news-release/2010/02/05/153049/0/en/INET-Activities-re-migration-starts-today-5-February-at-17-30-CET.html> — Nasdaq OMX INET migration-activity notice, 2010-02-05.
@@ -41,9 +43,9 @@ Retrieval dates: these sources were last opened on the row's reviewed-on date
 
 > Shared module. [`nasdaq_nordics.rs`](../../src/calendar/schedules/equities/europe/nasdaq_nordics.rs) also carries
 > [`nasdaq_stockholm`](nasdaq_stockholm.md) and [`nasdaq_helsinki`](nasdaq_helsinki.md).
-> Each of the three identities has its own evidence file and its own `// Evidence:`
-> declaration beside its `revisions!` block in the module, so the evidence-file
-> migration LAW-EVIDENCE-FILES requires is complete for all three.
-> [`nasdaq_stockholm`](nasdaq_stockholm.md) is the anchor: it receives the module's
-> remaining prose when `nasdaq_nordics.rs` is drained under issue #85, which is the
-> only part still outstanding.
+> Each of the three identities has its own evidence file and its own per-row citation
+> lines and `// Evidence:` declaration beside its `revisions!` block in the module.
+> The anchor is [`nasdaq_stockholm`](nasdaq_stockholm.md), which received the module
+> narrative on 2026-09-12, so the migration LAW-EVIDENCE-FILES requires is complete
+> for this module:
+> [module narrative](nasdaq_stockholm.md#module-narrative-moved-from-srccalendarschedulesequitieseuropenasdaq_nordicsrs-on-2026-09-12-utc).

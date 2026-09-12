@@ -17,9 +17,11 @@ None. `options/history.rs` holds a single static profile for this identity with 
 
 ## Sources
 
-Retrieval dates: these sources were last opened on the row's reviewed-on date
-(2026-08-22, UTC); per-source retrieval dates were not recorded before the
-2026-09-12 migration and are added as each source is re-verified.
+Row review: 2026-08-22 (UTC) is the date the ledger row was last reviewed as a
+whole. Per-source retrieval dates were not recorded before the 2026-09-12
+migration; where a later targeted review, capture or document date is recorded
+beside a source below, that date governs for that source, and dates are added
+as each source is re-verified.
 
 - <https://www.sec.gov/rules/sro/bse/2006/34-53245.pdf> — BOX 2006 rule change to the 16:00 ET close; the pre-floor baseline for the BOX execution grid.
 - <https://rules.boxexchange.com> — BOX rulebook; retains 09:30-16:00 ET RTH for this product family.

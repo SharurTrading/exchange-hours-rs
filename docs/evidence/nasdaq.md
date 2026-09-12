@@ -17,9 +17,11 @@ Nasdaq Stock Market normal week; date-aware lookups retain the sourced 2013 07:0
 
 ## Sources
 
-Retrieval dates: these sources were last opened on the row's reviewed-on date
-(2026-08-22, UTC); per-source retrieval dates were not recorded before the
-2026-09-12 migration and are added as each source is re-verified.
+Row review: 2026-08-22 (UTC) is the date the ledger row was last reviewed as a
+whole. Per-source retrieval dates were not recorded before the 2026-09-12
+migration; where a later targeted review, capture or document date is recorded
+beside a source below, that date governs for that source, and dates are added
+as each source is re-verified.
 
 - <https://listingcenter.nasdaq.com/rulebook/nasdaq/rules/Nasdaq%20Equity%202> — Nasdaq Equity 2, the rulebook provision behind the 04:00–20:00 System Hours.
 - <https://www.nasdaqtrader.com/content/technicalsupport/nasdaq_sys_hours.pdf> — *Nasdaq Systems — Hours of Operation*, the operator's system inventory and phase table (2020 edition; read through the web archive, see the ledger's channel notes).

@@ -17,18 +17,20 @@
 
 ## Sources
 
-Retrieval dates: these sources were last opened on the row's reviewed-on date
-(2026-08-23, UTC); per-source retrieval dates were not recorded before the
-2026-09-12 migration and are added as each source is re-verified.
+Row review: 2026-08-23 (UTC) is the date the ledger row was last reviewed as a
+whole. Per-source retrieval dates were not recorded before the 2026-09-12
+migration; where a later targeted review, capture or document date is recorded
+beside a source below, that date governs for that source, and dates are added
+as each source is re-verified.
 
 - <https://www.ice.com/publicdocs/futures_us/ICE_Futures_US_Regular_Trading_Hours.pdf> — ICE Futures U.S. Regular Trading Hours master table, live edition — the current grid.
-- <https://web.archive.org/web/20111212140120id_/https://www.theice.com/publicdocs/futures_us/ICE_Futures_US_Regular_Trading_Hours.pdf> — ICE Regular Trading Hours master table, AUGUST 2011 edition — captured 2011-12-12, the earliest surviving edition.
-- <https://web.archive.org/web/20130122132629id_/https://www.theice.com/publicdocs/futures_us/ICE_Futures_US_Regular_Trading_Hours.pdf> — ICE Regular Trading Hours master table, JANUARY 2, 2013 edition — captured 2013-01-22.
+- <https://web.archive.org/web/20111212140120id_/https://www.theice.com/publicdocs/futures_us/ICE_Futures_US_Regular_Trading_Hours.pdf> — ICE Regular Trading Hours master table, AUGUST 2011 edition — captured 2011-12-12, the earliest surviving edition. **Re-read and enumerated exhaustively at the 2026-08-31 targeted review**, which is later than this row's review date and governs for this source.
+- <https://web.archive.org/web/20130122132629id_/https://www.theice.com/publicdocs/futures_us/ICE_Futures_US_Regular_Trading_Hours.pdf> — ICE Regular Trading Hours master table, JANUARY 2, 2013 edition — captured 2013-01-22. **Re-read and enumerated exhaustively at the 2026-08-31 targeted review**, which is later than this row's review date and governs for this source.
 - <https://www.ice.com/products/194/US-Dollar-Index-USDX-Futures> — ICE USDX product page 194 — "Market opens at 6:00 pm on Sunday for Monday's trade date. Pre-open at 5:30 pm Sunday, 7:30 pm Monday through Thursday.".
 - <https://www.ice.com/publicdocs/futures_us/ICE_Dollar_Index_FAQ.pdf> — ICE US Dollar Index FAQ — the Friday 17:00 wrap and the 30-minute order-entry window.
 - <https://web.archive.org/web/20110222135802/https://www.theice.com/publicdocs/futures_us/exchange_notices/ExNot020311DXhours.pdf> — ICE Futures U.S. Exchange Notice, "Change To Electronic Trading Hours For IFUS Currency Contracts", 7 February 2011 — retired from ice.com, cited from the archive capture.
 - <https://web.archive.org/web/20101224164411id_/https://www.theice.com/publicdocs/futures_us/exchange_notices/Currencies_Electronic_Trade.pdf> — ICE 2007 currencies release — states the currency-futures grid and never prints a USDX grid.
-- <https://web.archive.org/web/20111213003348id_/https://www.theice.com/publicdocs/rulebooks/futures_us/15_USDX.pdf> — ICE Futures U.S. Rulebook chapter 15 (USDX), captured December 2011 — no hours provision.
+- <https://web.archive.org/web/20111213003348id_/https://www.theice.com/publicdocs/rulebooks/futures_us/15_USDX.pdf> — ICE Futures U.S. Rulebook chapter 15 (USDX), captured December 2011 — no hours provision. **Read at the 2026-09-01 targeted review** that established these hours are set administratively rather than by rule; that date is later than this row's review date and governs for this source.
 
 ## Gaps and residual risks
 

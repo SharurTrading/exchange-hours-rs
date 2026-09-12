@@ -15,11 +15,23 @@ Binance USDⓈ-M perpetuals' normal 24×7 availability: closed before the archiv
 
 None. binance.rs encodes its dated cutovers as constants rather than revisions! tuples, so it has no dated revision row.
 
+## Dated selectors
+
+Day-level boundaries this identity's `profile_at` selects on directly, outside
+any `revisions!` block. They are invisible to the module-declaration fences, so
+they are recorded here in revision-row grammar and checked against
+`HISTORICAL_CUTOVERS` / `HISTORICAL_INSTANT_CUTOVERS` in
+`tests/contract/session_invariants/historical_expectations.rs`.
+
+- 2019-09-13 — T1 — Binance launch article, archived 2020-06-08 (`LAUNCH_UNIX_SECONDS`) — an exact-instant boundary at 2019-09-13 04:00:00 UTC, with a one-day launch profile to `LAUNCH_DAY_END_UNIX_SECONDS`; `HISTORICAL_INSTANT_CUTOVERS` records the same instant.
+
 ## Sources
 
-Retrieval dates: these sources were last opened on the row's reviewed-on date
-(2026-08-22, UTC); per-source retrieval dates were not recorded before the
-2026-09-12 migration and are added as each source is re-verified.
+Row review: 2026-08-22 (UTC) is the date the ledger row was last reviewed as a
+whole. Per-source retrieval dates were not recorded before the 2026-09-12
+migration; where a later targeted review, capture or document date is recorded
+beside a source below, that date governs for that source, and dates are added
+as each source is re-verified.
 
 - <https://arquivo.pt/noFrame/replay/20200608065459id_/https://www.binance.com/en/support/articles/360033314152> — Binance's archived official launch article, stating that Binance Futures went live at 2019-09-13 04:00 UTC.
 - <https://t.me/binance_announcements/799> — Binance announcement channel post for the launch.

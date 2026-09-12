@@ -17,9 +17,11 @@ Closed before first production symbols on 2020-08-28, then 08:00–17:00 ET with
 
 ## Sources
 
-Retrieval dates: these sources were last opened on the row's reviewed-on date
-(2026-08-22, UTC); per-source retrieval dates were not recorded before the
-2026-09-12 migration and are added as each source is re-verified.
+Row review: 2026-08-22 (UTC) is the date the ledger row was last reviewed as a
+whole. Per-source retrieval dates were not recorded before the 2026-09-12
+migration; where a later targeted review, capture or document date is recorded
+beside a source below, that date governs for that source, and dates are added
+as each source is re-verified.
 
 - <https://ltse.com/trading/trading-schedule> — LTSE's trading schedule, which publishes the 08:00–17:00 ET System Hours and their three phases.
 - <https://www.sec.gov/rules/sro/ltse/2020/34-88515.pdf> — the SEC's operative phase-rule approval.

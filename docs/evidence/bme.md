@@ -17,9 +17,11 @@ BME principal-share January-2010 phases use the sourced conservative 30-second a
 
 ## Sources
 
-Retrieval dates: these sources were last opened on the row's reviewed-on date
-(2026-08-22, UTC); per-source retrieval dates were not recorded before the
-2026-09-12 migration and are added as each source is re-verified.
+Row review: 2026-08-22 (UTC) is the date the ledger row was last reviewed as a
+whole. Per-source retrieval dates were not recorded before the 2026-09-12
+migration; where a later targeted review, capture or document date is recorded
+beside a source below, that date governs for that source, and dates are added
+as each source is re-verified.
 
 - <https://www.bolsasymercados.es/en/bme-exchange/trading-hours.html> — BME trading hours: opening auction 08:30–09:00, continuous trading 09:00–17:30, closing auction 17:30–17:35, Trading-at-Last to 17:45.
 - <https://www.bolsasymercados.es/dam/descargas/regulacion/renta-variable/sociedad-de-bolsas/circular/2001/c20011uk.pdf> — Sociedad de Bolsas Circular 1/2001: the same opening, continuous and closing-auction grid, established before the January-2010 history floor.

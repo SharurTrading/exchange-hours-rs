@@ -168,8 +168,9 @@ see D-6.
   `market_hours_keys!` table; the `hours_for_market_hours_key` arm; the
   date-aware `calendar_for_market_hours_key` surface (`AGENTS.md` item 3 — it
   reselects `hours_for_market_hours_key` for every candidate opening day, so
-  there is no arm to add, but every history and cutover test must exercise
-  the key through it, on both sides of the day); the
+  there is no arm to add, but the key's registration, history, cutover and
+  boundary tests — open, close and the instants either side — must exercise
+  it through that surface on both sides of the opening day); the
   `session_profile` arm and its `FuturesSessionProfile` static; the module's
   `pub(crate) use` re-exports; `EXPECTED_MARKET_HOURS_KEY_NAMES` (bump the
   array length); `EXPECTED_MARKET_HOURS_KEYS`; `SUPPORTED_FAMILY_NAMES`; the

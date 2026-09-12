@@ -110,7 +110,15 @@
 //! the engine, and the caller owns every record. Precedence is fixed — the
 //! exception layer resolves the trading day, then the policy overlays it
 //! exactly as it overlays a normal week, and two replacement layers never
-//! compose. Product-level variations
+//! compose.
+//!
+//! Per-family holiday tables are being added underneath those two layers, as
+//! the innermost one: [`ExchangeCalendar::holiday_on`] reports the built-in row
+//! for a trade date, [`ExchangeCalendar::holiday_coverage`] reports the window
+//! a family was audited over, and [`ExchangeCalendar::without_holidays`]
+//! detaches the table. **No family table ships in this version**, so all three
+//! answer for an empty engine: `None`, `None`, and the identity function.
+//! Product-level variations
 //! outside a profile remain out of scope. In particular, this crate does not
 //! map symbols, roots, product codes, or MICs to [`MarketHoursKey`] values; a
 //! caller's instrument catalog must select the exact supported family.

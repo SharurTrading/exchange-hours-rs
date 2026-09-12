@@ -13,6 +13,7 @@ use chrono_tz::Tz;
 
 use super::exceptions::{DateException, ExceptionScopeError, SessionExceptionSource};
 use super::query::{QueryContext, sessions, status};
+use super::schedules::holidays::{Holiday, HolidayCoverage};
 use super::{
     CalendarSource, Exchange, ExchangeCalendar, MarketHours, MarketHoursKey, SessionKind,
     SessionState,
@@ -184,6 +185,41 @@ impl<'a> PolicyCalendar<'a> {
     #[must_use]
     pub const fn calendar(self) -> ExchangeCalendar {
         self.calendar
+    }
+
+    /// Detaches the identity's built-in holiday table, keeping both overlays.
+    ///
+    /// See [`ExchangeCalendar::without_holidays`].
+    #[must_use]
+    pub const fn without_holidays(self) -> Self {
+        Self::new(
+            self.calendar.without_holidays(),
+            self.policy,
+            self.exceptions,
+        )
+    }
+
+    /// Returns the **built-in** holiday row for venue-local `trade_date`.
+    ///
+    /// This reports the crate's own table only, never the composed answer: the
+    /// caller's own layers are introspected through
+    /// [`Self::session_exception_on`] and through the [`DayPolicy`] the caller
+    /// already holds. See [`ExchangeCalendar::holiday_on`] for what `None`
+    /// means.
+    #[must_use]
+    pub fn holiday_on(self, trade_date: NaiveDate) -> Option<Holiday> {
+        self.calendar.holiday_on(trade_date)
+    }
+
+    /// Returns the **built-in** table's audited trade-date window, or `None`
+    /// when this identity has no table.
+    ///
+    /// This is the crate's own coverage claim; a caller's exception provider
+    /// publishes its own through
+    /// [`SessionExceptionSource::coverage`](crate::SessionExceptionSource::coverage).
+    #[must_use]
+    pub fn holiday_coverage(self) -> Option<HolidayCoverage> {
+        self.calendar.holiday_coverage()
     }
 
     /// Returns the schedule identity represented by this calendar.

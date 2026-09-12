@@ -13,6 +13,34 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Added
 
+- **The built-in holiday-table engine, with zero rows.** `exchange-hours` can
+  now carry per-family holiday and early-close tables underneath the caller's
+  two overlays (LAW-HOLIDAY-SCOPE). This release ships the engine only: the row
+  types `Holiday`, `HolidayKind` and `EvidenceTier`, the audited-window type
+  `HolidayCoverage`, a `holidays!` macro whose eight constant-evaluation fences
+  reject an out-of-order, out-of-window, uncited, sub-T2 or out-of-range row at
+  compile time, and three new accessors —
+  `ExchangeCalendar::holiday_on(trade_date)`,
+  `ExchangeCalendar::holiday_coverage()` and the `const`
+  `ExchangeCalendar::without_holidays()`, each mirrored on `PolicyCalendar`,
+  where they report the built-in row rather than the caller's layers. **No
+  family table ships in this version**, so every identity answers `None` to
+  both queries, `without_holidays` is the identity function, and no existing
+  answer changes — the caller's `DayPolicy` remains the only holiday layer.
+  When a table does ship it is the innermost layer: an explicit caller
+  `Closed`/`ReplaceSessions` record suppresses it, and the caller's `DayPolicy`
+  then composes with it by tightening — `OR` on closures, `min` on early
+  closes, `max` on late opens — so a caller can always shorten the crate's
+  answer and never widen it.
+- **A coverage gate on the overlay path.** Before deriving a trading day, the
+  engine asks every attached layer whether it holds a record for any trade date
+  the occurrence could be assigned to, which is bounded by the identity's own
+  convention. A `SessionExceptionSource` publishes a coverage window, so a date
+  outside it now exits on one comparison instead of two full daily-window
+  derivations per rule: measured on an Apple M2 Max at 1.97.1, `is_open` inside
+  a regular session with an out-of-coverage provider attached falls from 3.77 µs
+  to 242 ns, against 241 ns with no provider at all. A caller's `DayPolicy`
+  publishes no window and is unchanged.
 - **Five `MarketHoursKey` metals Trading at Settlement rows** — five new
   public `MarketHoursKey` variants, `globex_gold_tas` (`GCT`),
   `globex_silver_tas` (`SIT`), `globex_copper_tas` (`HGT`),

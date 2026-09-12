@@ -35,11 +35,12 @@ use super::schedules::futures::international::{
 };
 use super::schedules::futures::us::{
     bitcoin_event_contracts_profile_at, cbot_profile_at, cfe_profile_at, cme_profile_at,
-    cocoa_profile_at, coffee_profile_at, cotton_profile_at, cryptocurrency_profile_at,
-    energy_metals_profile_at, event_contracts_profile_at, fcoj_profile_at, fx_profile_at,
-    ice_us_fang_profile_at, ice_usdx_profile_at, interest_rates_profile_at, livestock_profile_at,
-    mini_grains_profile_at, nkd_profile_at, rough_rice_profile_at, spot_quoted_profile_at,
-    sugar_profile_at, weather_profile_at,
+    cocoa_profile_at, coffee_profile_at, copper_tas_profile_at, cotton_profile_at,
+    cryptocurrency_profile_at, energy_metals_profile_at, event_contracts_profile_at,
+    fcoj_profile_at, fx_profile_at, gold_tas_profile_at, ice_us_fang_profile_at,
+    ice_usdx_profile_at, interest_rates_profile_at, livestock_profile_at, mini_grains_profile_at,
+    nkd_profile_at, palladium_tas_profile_at, platinum_tas_profile_at, rough_rice_profile_at,
+    silver_tas_profile_at, spot_quoted_profile_at, sugar_profile_at, weather_profile_at,
 };
 use super::{Exchange, MarketHours, SessionRule};
 
@@ -344,6 +345,70 @@ market_hours_keys! {
         /// [`GlobexCryptocurrency`](Self::GlobexCryptocurrency). Unlike that
         /// key, this root's Pre-Opens stay `order_entry`.
         GlobexEventContractsBtc => "globex_event_contracts_btc",
+        /// COMEX Gold Trading at Settlement (`GCT`, CME Globex security group
+        /// TG), listed 2010-04-11 for trade date 2010-04-12.
+        ///
+        /// Sunday-Thursday 17:00 CT wrapping to 12:30 CT, with **no
+        /// Friday-evening reopen** and no regular session: the TAS book is
+        /// Globex-only, and CME's 2009-2015 pit route ran in the underlying's
+        /// pit on the underlying's hours. `regular` is therefore empty in
+        /// every era. The Pre-Open is `order_entry`, because Rule 524 permits
+        /// a TAS order only after its group's pre-open state begins.
+        ///
+        /// Members `MGT`, `QOT` and `1OT` joined later groups-side and are
+        /// caller catalog data. The 12:30 CT close has never moved; the two
+        /// dated revisions are queue-onset changes in 2011 and 2012. The
+        /// Sunday queue serves the sourced 16:15-17:00 CT intersection and
+        /// withholds 16:00-16:15, as
+        /// [`GlobexEquityIndex`](Self::GlobexEquityIndex) does.
+        GlobexGoldTas => "globex_gold_tas",
+        /// COMEX Silver Trading at Settlement (`SIT`, security group MT),
+        /// listed 2010-04-11 on the same COMEX self-certification as
+        /// [`GlobexGoldTas`](Self::GlobexGoldTas).
+        ///
+        /// Identical shape, closing 12:25 CT instead of 12:30, with the same
+        /// empty `regular`, the same absent Friday-evening reopen, the same
+        /// two queue revisions and the same withheld Sunday quarter-hour. It
+        /// is a separate key because the close differs; `MST` joined in 2025
+        /// and is caller catalog data.
+        GlobexSilverTas => "globex_silver_tas",
+        /// COMEX Copper Trading at Settlement (`HGT`, security group HT),
+        /// listed 2011-01-23 for trade date 2011-01-24, nine months after gold
+        /// and silver and on CME Globex only.
+        ///
+        /// Sunday-Thursday 17:00 CT wrapping to 12:00 CT, empty `regular`, no
+        /// Friday-evening reopen, and the same two queue revisions. Copper TAS
+        /// was **never** a pit product, which both COMEX SER-5542 and MRAN
+        /// RA1107-4 state in terms.
+        ///
+        /// Do not substitute
+        /// [`GlobexPalladiumTas`](Self::GlobexPalladiumTas) on the coincident
+        /// 12:00 CT close: different exchange, different security group and
+        /// launches seven years apart. Members `MHT` and `HG0` are caller
+        /// catalog data.
+        GlobexCopperTas => "globex_copper_tas",
+        /// NYMEX Trading at Settlement on Platinum Futures (`PLT`, security
+        /// group PE), listed 2017-05-21 for trade date 2017-05-22.
+        ///
+        /// One era: Sunday-Thursday 17:00 CT wrapping to 12:05 CT, empty
+        /// `regular`, no Friday-evening reopen, and no revision of any kind
+        /// since launch. Because the root launched after CME's undated 2012
+        /// move of the Sunday TAS pause, its earliest sourced Sunday queue
+        /// onset is 16:00 CT and nothing is withheld: Sunday 16:00-17:00 and
+        /// Monday-Thursday 16:45-17:00 CT are both served.
+        GlobexPlatinumTas => "globex_platinum_tas",
+        /// NYMEX Palladium Trading at Settlement (`PAT`, security group PX),
+        /// listed 2018-11-18 for trade date 2018-11-19.
+        ///
+        /// One era: Sunday-Thursday 17:00 CT wrapping to 12:00 CT, with the
+        /// same empty `regular` and the same unwithheld queue as
+        /// [`GlobexPlatinumTas`](Self::GlobexPlatinumTas).
+        ///
+        /// **There is no 16:00-17:00 CT daily break.** The clause CME's 2019
+        /// specification printed on the TAS line is inherited boilerplate from
+        /// the outright row — a book closed at 12:00 CT cannot break at 16:00
+        /// — and CME deleted it in 2020 while leaving the instants unchanged.
+        GlobexPalladiumTas => "globex_palladium_tas",
 
         /// SGX Three-Month SORA Futures current profile.
         Sgx => "sgx",
@@ -411,6 +476,11 @@ pub fn hours_for_market_hours_key(key: MarketHoursKey, as_of: DateTime<Utc>) -> 
         MarketHoursKey::GlobexSpotQuoted => spot_quoted_profile_at(as_of),
         MarketHoursKey::GlobexEventContracts => event_contracts_profile_at(as_of),
         MarketHoursKey::GlobexEventContractsBtc => bitcoin_event_contracts_profile_at(as_of),
+        MarketHoursKey::GlobexGoldTas => gold_tas_profile_at(as_of),
+        MarketHoursKey::GlobexSilverTas => silver_tas_profile_at(as_of),
+        MarketHoursKey::GlobexCopperTas => copper_tas_profile_at(as_of),
+        MarketHoursKey::GlobexPlatinumTas => platinum_tas_profile_at(as_of),
+        MarketHoursKey::GlobexPalladiumTas => palladium_tas_profile_at(as_of),
         MarketHoursKey::Sgx => sgx_profile_at(as_of),
         MarketHoursKey::AlwaysOpen => &ALWAYS_OPEN_PROFILE,
     };

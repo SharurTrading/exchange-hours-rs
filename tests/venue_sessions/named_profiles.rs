@@ -62,6 +62,11 @@ const EXPECTED_MARKET_HOURS_KEYS: &[(MarketHoursKey, &str)] = &[
         MarketHoursKey::GlobexEventContractsBtc,
         "globex_event_contracts_btc",
     ),
+    (MarketHoursKey::GlobexGoldTas, "globex_gold_tas"),
+    (MarketHoursKey::GlobexSilverTas, "globex_silver_tas"),
+    (MarketHoursKey::GlobexCopperTas, "globex_copper_tas"),
+    (MarketHoursKey::GlobexPlatinumTas, "globex_platinum_tas"),
+    (MarketHoursKey::GlobexPalladiumTas, "globex_palladium_tas"),
     (MarketHoursKey::Sgx, "sgx"),
     (MarketHoursKey::AlwaysOpen, "always_open"),
 ];

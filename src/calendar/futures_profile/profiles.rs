@@ -25,17 +25,20 @@ use crate::calendar::schedules::futures::us::{
     CFE_ORDER_ENTRY, CFE_REGULAR, CME_EXTENDED_CURRENT, CME_ORDER_ENTRY_CURRENT, CME_REGULAR,
     COCOA_EXTENDED_CURRENT, COCOA_ORDER_ENTRY_CURRENT, COCOA_REGULAR_CURRENT,
     COFFEE_EXTENDED_CURRENT, COFFEE_ORDER_ENTRY_CURRENT, COFFEE_REGULAR_CURRENT,
-    COTTON_EXTENDED_CURRENT, COTTON_ORDER_ENTRY_CURRENT, COTTON_REGULAR_CURRENT,
-    CRYPTOCURRENCY_CURRENT, ENERGY_METALS_EXTENDED_CURRENT, ENERGY_METALS_ORDER_ENTRY_CURRENT,
-    EVENT_CONTRACTS_EXTENDED_CURRENT, EVENT_CONTRACTS_ORDER_ENTRY_CURRENT, FCOJ_EXTENDED_CURRENT,
-    FCOJ_ORDER_ENTRY_CURRENT, FCOJ_REGULAR_CURRENT, FX_CURRENT, ICE_US_FANG_EXTENDED_CURRENT,
+    COPPER_TAS_EXTENDED_CURRENT, COTTON_EXTENDED_CURRENT, COTTON_ORDER_ENTRY_CURRENT,
+    COTTON_REGULAR_CURRENT, CRYPTOCURRENCY_CURRENT, ENERGY_METALS_EXTENDED_CURRENT,
+    ENERGY_METALS_ORDER_ENTRY_CURRENT, EVENT_CONTRACTS_EXTENDED_CURRENT,
+    EVENT_CONTRACTS_ORDER_ENTRY_CURRENT, FCOJ_EXTENDED_CURRENT, FCOJ_ORDER_ENTRY_CURRENT,
+    FCOJ_REGULAR_CURRENT, FX_CURRENT, GOLD_TAS_EXTENDED_CURRENT, ICE_US_FANG_EXTENDED_CURRENT,
     ICE_US_FANG_ORDER_ENTRY_CURRENT, ICE_US_FANG_REGULAR_CURRENT, ICE_USDX_EXTENDED_CURRENT,
     ICE_USDX_ORDER_ENTRY_CURRENT, ICE_USDX_REGULAR_CURRENT, INTEREST_RATES_CURRENT,
-    LIVESTOCK_CURRENT, MINI_EXTENDED_CURRENT, MINI_ORDER_ENTRY_CURRENT, MINI_REGULAR_CURRENT,
-    NKD_EXTENDED_CURRENT, NKD_REGULAR_CURRENT, ROUGH_RICE_EXTENDED_CURRENT,
-    ROUGH_RICE_ORDER_ENTRY_CURRENT, ROUGH_RICE_REGULAR_CURRENT, SPOT_QUOTED_EXTENDED_CURRENT,
-    SPOT_QUOTED_ORDER_ENTRY_CURRENT, SUGAR_EXTENDED_CURRENT, SUGAR_ORDER_ENTRY_CURRENT,
-    SUGAR_REGULAR_CURRENT, WEATHER_EXTENDED_CURRENT, WEATHER_ORDER_ENTRY_CURRENT,
+    LIVESTOCK_CURRENT, METALS_TAS_ORDER_ENTRY_CURRENT, MINI_EXTENDED_CURRENT,
+    MINI_ORDER_ENTRY_CURRENT, MINI_REGULAR_CURRENT, NKD_EXTENDED_CURRENT, NKD_REGULAR_CURRENT,
+    PALLADIUM_TAS_EXTENDED_CURRENT, PGM_TAS_ORDER_ENTRY_CURRENT, PLATINUM_TAS_EXTENDED_CURRENT,
+    ROUGH_RICE_EXTENDED_CURRENT, ROUGH_RICE_ORDER_ENTRY_CURRENT, ROUGH_RICE_REGULAR_CURRENT,
+    SILVER_TAS_EXTENDED_CURRENT, SPOT_QUOTED_EXTENDED_CURRENT, SPOT_QUOTED_ORDER_ENTRY_CURRENT,
+    SUGAR_EXTENDED_CURRENT, SUGAR_ORDER_ENTRY_CURRENT, SUGAR_REGULAR_CURRENT,
+    WEATHER_EXTENDED_CURRENT, WEATHER_ORDER_ENTRY_CURRENT,
 };
 
 static FUTURES_GLOBEX_EQUITY_INDEX: FuturesSessionProfile = FuturesSessionProfile {
@@ -132,6 +135,67 @@ static FUTURES_GLOBEX_EVENT_CONTRACTS_BTC: FuturesSessionProfile = FuturesSessio
     order_entry: BITCOIN_EVENT_CONTRACTS_ORDER_ENTRY_CURRENT,
     has_daily_close: true,
     has_weekend_close: false,
+};
+
+// The five metals Trading at Settlement books. `regular` is empty on all of
+// them: the TAS shape is Globex-only in CME's own Rule 524 route enumeration,
+// its ProductSlate records carry no Floor venue component, and the
+// ContractSpecs "Open Outcry:" label CME does publish is never attached to a
+// TAS hours line. Each opens 17:00 CT Sunday through Thursday and wraps to its
+// own close, with no Friday-evening reopen, so every inter-trade-date gap
+// exceeds four hours and is `Closed` rather than `Maintenance`.
+//
+// COMEX gold, silver and copper share the queue `metals_tas.rs` serves from
+// the sourced intersection — Sunday 16:15-17:00 CT with 16:00-16:15 withheld,
+// Monday-Thursday 16:45-17:00 — and that module holds their launches and the
+// two dated queue revisions. `pgm_tas.rs` holds NYMEX platinum and palladium,
+// which launched after the undated 2012 Sunday move and therefore serve the
+// full 16:00-17:00 CT Sunday queue with nothing withheld.
+static FUTURES_GLOBEX_GOLD_TAS: FuturesSessionProfile = FuturesSessionProfile {
+    tz: US::Central,
+    regular: &[],
+    extended: GOLD_TAS_EXTENDED_CURRENT,
+    order_entry: METALS_TAS_ORDER_ENTRY_CURRENT,
+    has_daily_close: true,
+    has_weekend_close: true,
+};
+
+static FUTURES_GLOBEX_SILVER_TAS: FuturesSessionProfile = FuturesSessionProfile {
+    tz: US::Central,
+    regular: &[],
+    extended: SILVER_TAS_EXTENDED_CURRENT,
+    order_entry: METALS_TAS_ORDER_ENTRY_CURRENT,
+    has_daily_close: true,
+    has_weekend_close: true,
+};
+
+static FUTURES_GLOBEX_COPPER_TAS: FuturesSessionProfile = FuturesSessionProfile {
+    tz: US::Central,
+    regular: &[],
+    extended: COPPER_TAS_EXTENDED_CURRENT,
+    order_entry: METALS_TAS_ORDER_ENTRY_CURRENT,
+    has_daily_close: true,
+    has_weekend_close: true,
+};
+
+static FUTURES_GLOBEX_PLATINUM_TAS: FuturesSessionProfile = FuturesSessionProfile {
+    tz: US::Central,
+    regular: &[],
+    extended: PLATINUM_TAS_EXTENDED_CURRENT,
+    order_entry: PGM_TAS_ORDER_ENTRY_CURRENT,
+    has_daily_close: true,
+    has_weekend_close: true,
+};
+
+// No 16:00-17:00 CT break: the specification clause that once implied one is
+// inherited boilerplate from the outright row, and CME deleted it in 2020.
+static FUTURES_GLOBEX_PALLADIUM_TAS: FuturesSessionProfile = FuturesSessionProfile {
+    tz: US::Central,
+    regular: &[],
+    extended: PALLADIUM_TAS_EXTENDED_CURRENT,
+    order_entry: PGM_TAS_ORDER_ENTRY_CURRENT,
+    has_daily_close: true,
+    has_weekend_close: true,
 };
 
 static FUTURES_GLOBEX_ROUGH_RICE: FuturesSessionProfile = FuturesSessionProfile {
@@ -347,6 +411,11 @@ pub fn session_profile(key: MarketHoursKey) -> &'static FuturesSessionProfile {
         MarketHoursKey::GlobexSpotQuoted => &FUTURES_GLOBEX_SPOT_QUOTED,
         MarketHoursKey::GlobexEventContracts => &FUTURES_GLOBEX_EVENT_CONTRACTS,
         MarketHoursKey::GlobexEventContractsBtc => &FUTURES_GLOBEX_EVENT_CONTRACTS_BTC,
+        MarketHoursKey::GlobexGoldTas => &FUTURES_GLOBEX_GOLD_TAS,
+        MarketHoursKey::GlobexSilverTas => &FUTURES_GLOBEX_SILVER_TAS,
+        MarketHoursKey::GlobexCopperTas => &FUTURES_GLOBEX_COPPER_TAS,
+        MarketHoursKey::GlobexPlatinumTas => &FUTURES_GLOBEX_PLATINUM_TAS,
+        MarketHoursKey::GlobexPalladiumTas => &FUTURES_GLOBEX_PALLADIUM_TAS,
         MarketHoursKey::Sgx => &FUTURES_SGX,
         MarketHoursKey::AlwaysOpen => &FUTURES_ALWAYS_OPEN,
     }

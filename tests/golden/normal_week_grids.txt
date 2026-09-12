@@ -679,6 +679,31 @@ globex_event_contracts_btc | extended | ----------Sa-- | 04:00:00-24:00:00
 globex_event_contracts_btc | extended | ------------Su | 00:00:00-24:00:00
 globex_event_contracts_btc | order-en | MoTuWeThFr---- | 16:01:00-16:02:00
 globex_event_contracts_btc | order-en | ----------Sa-- | 03:45:00-04:00:00
+globex_gold_tas | tz US/Central | week_open_seconds 351000
+globex_gold_tas | regular  | (none)
+globex_gold_tas | extended | MoTuWeTh----Su | 17:00:00-12:30:00 +1d
+globex_gold_tas | order-en | ------------Su | 16:15:00-17:00:00
+globex_gold_tas | order-en | MoTuWeTh------ | 16:45:00-17:00:00
+globex_silver_tas | tz US/Central | week_open_seconds 349500
+globex_silver_tas | regular  | (none)
+globex_silver_tas | extended | MoTuWeTh----Su | 17:00:00-12:25:00 +1d
+globex_silver_tas | order-en | ------------Su | 16:15:00-17:00:00
+globex_silver_tas | order-en | MoTuWeTh------ | 16:45:00-17:00:00
+globex_copper_tas | tz US/Central | week_open_seconds 342000
+globex_copper_tas | regular  | (none)
+globex_copper_tas | extended | MoTuWeTh----Su | 17:00:00-12:00:00 +1d
+globex_copper_tas | order-en | ------------Su | 16:15:00-17:00:00
+globex_copper_tas | order-en | MoTuWeTh------ | 16:45:00-17:00:00
+globex_platinum_tas | tz US/Central | week_open_seconds 343500
+globex_platinum_tas | regular  | (none)
+globex_platinum_tas | extended | MoTuWeTh----Su | 17:00:00-12:05:00 +1d
+globex_platinum_tas | order-en | ------------Su | 16:00:00-17:00:00
+globex_platinum_tas | order-en | MoTuWeTh------ | 16:45:00-17:00:00
+globex_palladium_tas | tz US/Central | week_open_seconds 342000
+globex_palladium_tas | regular  | (none)
+globex_palladium_tas | extended | MoTuWeTh----Su | 17:00:00-12:00:00 +1d
+globex_palladium_tas | order-en | ------------Su | 16:00:00-17:00:00
+globex_palladium_tas | order-en | MoTuWeTh------ | 16:45:00-17:00:00
 sgx | tz Asia/Singapore | week_open_seconds 388500
 sgx | regular  | MoTuWeThFr---- | 07:25:00-17:55:00
 sgx | regular  | MoTuWeThFr---- | 18:15:00-05:15:00 +1d

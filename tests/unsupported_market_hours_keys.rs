@@ -30,6 +30,11 @@ const SUPPORTED_FAMILY_NAMES: &[&str] = &[
     "globex_spot_quoted",
     "globex_event_contracts",
     "globex_event_contracts_btc",
+    "globex_gold_tas",
+    "globex_silver_tas",
+    "globex_copper_tas",
+    "globex_platinum_tas",
+    "globex_palladium_tas",
 ];
 
 /// Names that must never resolve, because no single venue-wide grid exists.

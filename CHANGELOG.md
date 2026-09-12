@@ -13,6 +13,30 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Added
 
+- **Five `MarketHoursKey` metals Trading at Settlement rows** —
+  `globex_gold_tas` (`GCT`), `globex_silver_tas` (`SIT`), `globex_copper_tas`
+  (`HGT`), `globex_platinum_tas` (`PLT`) and `globex_palladium_tas` (`PAT`),
+  the first trade-type keys in the crate. Each is Sunday–Thursday 17:00 CT
+  wrapping to its own close — 12:30, 12:25, 12:00, 12:05 and 12:00 CT — with no
+  Friday-evening reopen, an empty `regular` in every era, and its Pre-Open as
+  `order_entry`. Every inter-trade-date gap exceeds four hours, so it is
+  `Closed` rather than `Maintenance`. Every launch day is unconditional and
+  keyed to the local Sunday opening day: COMEX Submission 10-070 with SER
+  S-5166 lists gold and silver on 2010-04-11 for trade date 2010-04-12,
+  SER-5542 lists copper on 2011-01-23, and CME Globex notices 20170508 and
+  20181112 list platinum on 2017-05-21 and palladium on 2018-11-18. Each
+  pre-launch era is a sourced closure on CME's own complete TAS eligibility
+  lists, so nothing is carried back to the January-2010 floor. **There is not
+  one executable revision on any of the five.** The two dated revisions —
+  RA1104-4's per-product queue stagger on 2011-04-10 and Globex notice
+  20120409's return to one randomised minute on 2012-04-15 — move only the
+  order-entry onset, and the 2015-09-20 DCM-wide close move did not reach a
+  12:30 CT book. The COMEX three serve the Sunday queue from 16:15 CT and
+  withhold 16:00–16:15, the undated 2012 move `globex_equity_index` already
+  withholds; platinum and palladium launched after it and withhold nothing. All
+  five ledger rows are **Partial** with an **executable** gap, each naming the
+  observation gap it carries a window across.
+
 - **`Exchange::CoinbaseDerivatives`** — Coinbase Derivatives, the
   CFTC-designated contract market that traded as FairX until March 2022, on the
   canonical wire name `coinbase_derivatives`. The venue default is its 23x5

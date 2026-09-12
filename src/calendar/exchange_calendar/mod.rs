@@ -117,8 +117,14 @@ impl ExchangeCalendar {
     /// audited and found normal. [`Self::holiday_coverage`] separates them,
     /// which is why both exist and why neither is enough alone.
     ///
-    /// **No table ships in this version**, so this is `None` for every
-    /// identity and every date (LAW-HOLIDAY-SCOPE).
+    /// Tables ship for the served CME product families — Globex equity index,
+    /// energy, grains, FX, interest rates, livestock, cryptocurrency and
+    /// dollar Nikkei 225 — and for the 2026 venue block: CFE, Eurex, ICE
+    /// Futures U.S. and Coinbase Derivatives. Every other identity has no
+    /// table, answers `None` for every date, and leaves the caller's
+    /// [`DayPolicy`](crate::DayPolicy) overlay as its only holiday layer.
+    /// Which identities have a table, and over which trade-date window, is
+    /// the `Holidays` column of the verification ledger (LAW-HOLIDAY-SCOPE).
     #[must_use]
     pub fn holiday_on(self, trade_date: NaiveDate) -> Option<Holiday> {
         self.holiday_table()
@@ -132,8 +138,10 @@ impl ExchangeCalendar {
     /// crate has no holiday answer for this identity at all, and the
     /// normal-week schedule is served unmodified.
     ///
-    /// **No table ships in this version**, so this is `None` for every
-    /// identity (LAW-HOLIDAY-SCOPE).
+    /// Tables ship for the served CME product families and the 2026 venue
+    /// block; every other identity answers `None` here. Windows differ by
+    /// identity, so read this per identity rather than assuming one shared
+    /// window (LAW-HOLIDAY-SCOPE).
     #[must_use]
     pub fn holiday_coverage(self) -> Option<HolidayCoverage> {
         self.holiday_table().map(HolidayTable::coverage)

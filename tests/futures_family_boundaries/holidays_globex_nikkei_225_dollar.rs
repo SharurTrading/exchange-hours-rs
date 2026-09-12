@@ -240,7 +240,7 @@ fn the_table_ships_no_late_open_and_holds_exactly_its_audited_rows() {
         date = date.succ_opt().expect("coverage stays inside the calendar");
     }
 
-    assert_eq!(closed, 8, "eight full closures across 2025-2027");
+    assert_eq!(closed, 9, "nine full closures across 2025-2027");
     assert_eq!(early, 28, "twenty-eight early closes across 2025-2027");
 
     // Both post-closure reopens the family has, fenced on each side of the

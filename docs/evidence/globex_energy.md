@@ -97,19 +97,19 @@ trade date, Sunday through Thursday. Three shapes appear in this window:
 
 | Trade date | Kind | Instant as printed | Document | Tier | Derived from |
 |---|---|---|---|---|---|
-| 2025-01-01 | closed | `16:00 preopen; 17:00 open` — both 2025-01-02, so no session settles on 01-01 | `CME-SVC-2025-01-01` | T2 | eventDate 2024-12-31 `16:00 closed` CME trade date 2024-12-31 with no evening re-open, and eventDate 2025-01-01 CME trade date 2025-01-02 |
-| 2025-01-20 | early close | `13:30 preopen` — 13:30 CT; the 17:00 CT open that follows carries 2025-01-21 | `CME-SVC-2025-01-20` | T2 | eventDate 2025-01-20, CME trade date printed as 2025-01-21 |
-| 2025-02-17 | early close | `13:30 preopen` — 13:30 CT; 17:00 CT open carries 2025-02-18 | `CME-SVC-2025-02-17` | T2 | eventDate 2025-02-17, CME trade date printed as 2025-02-18 |
-| 2025-04-18 | closed | `no events published` | `CME-SVC-2025-04-18` | T2 | eventDate 2025-04-18, and eventDate 2025-04-17 `16:00 closed` CME trade date 2025-04-17 with no evening re-open |
-| 2025-05-26 | early close | `13:30 preopen` — 13:30 CT; 17:00 CT open carries 2025-05-27 | `CME-SVC-2025-05-26` | T2 | eventDate 2025-05-26, CME trade date printed as 2025-05-27 |
-| 2025-06-19 | early close | `13:30 preopen` — 13:30 CT; 17:00 CT open carries 2025-06-20 | `CME-SVC-2025-06-19` | T2 | eventDate 2025-06-19, CME trade date printed as 2025-06-20 |
-| 2025-07-04 | early close | `12:00 closed` — 12:00 CT | `CME-SVC-2025-07-04` | T2 | eventDate 2025-07-04, CME trade date 2025-07-04 |
-| 2025-09-01 | early close | `13:30 preopen` — 13:30 CT; 17:00 CT open carries 2025-09-02 | `CME-SVC-2025-09-01` | T2 | eventDate 2025-09-01, CME trade date printed as 2025-09-02 |
-| 2025-11-27 | early close | `13:30 preopen` — 13:30 CT; 17:00 CT open carries 2025-11-28 | `CME-SVC-2025-11-27` | T2 | eventDate 2025-11-27, CME trade date printed as 2025-11-28 |
-| 2025-11-28 | early close | `07:00 preopen; 07:30 open; 13:45 closed` — final close 13:45 CT | `CME-SVC-2025-11-28` | T2 | eventDate 2025-11-28, CME trade date 2025-11-28 |
-| 2025-11-29 | closed | `no events published` | `CME-SVC-2025-11-29` | T2 | eventDate 2025-11-29, the Thanksgiving window extended to the Saturday |
+| 2025-01-01 | closed | `16:00 preopen; 17:00 open` — both 2025-01-02, so no session settles on 01-01 | `CME-SVC-2024-12-31` | T2 | eventDate 2024-12-31 `16:00 closed` CME trade date 2024-12-31 with no evening re-open, and eventDate 2025-01-01 CME trade date 2025-01-02 |
+| 2025-01-20 | early close | `13:30 preopen` — 13:30 CT; the 17:00 CT open that follows carries 2025-01-21 | `CME-SVC-2025-01-19` | T2 | eventDate 2025-01-20, CME trade date printed as 2025-01-21 |
+| 2025-02-17 | early close | `13:30 preopen` — 13:30 CT; 17:00 CT open carries 2025-02-18 | `CME-SVC-2025-02-16` | T2 | eventDate 2025-02-17, CME trade date printed as 2025-02-18 |
+| 2025-04-18 | closed | `no events published` | `CME-SVC-2025-04-17` | T2 | eventDate 2025-04-18, and eventDate 2025-04-17 `16:00 closed` CME trade date 2025-04-17 with no evening re-open |
+| 2025-05-26 | early close | `13:30 preopen` — 13:30 CT; 17:00 CT open carries 2025-05-27 | `CME-SVC-2025-05-25` | T2 | eventDate 2025-05-26, CME trade date printed as 2025-05-27 |
+| 2025-06-19 | early close | `13:30 preopen` — 13:30 CT; 17:00 CT open carries 2025-06-20 | `CME-SVC-2025-06-18` | T2 | eventDate 2025-06-19, CME trade date printed as 2025-06-20 |
+| 2025-07-04 | early close | `12:00 closed` — 12:00 CT | `CME-SVC-2025-07-03` | T2 | eventDate 2025-07-04, CME trade date 2025-07-04 |
+| 2025-09-01 | early close | `13:30 preopen` — 13:30 CT; 17:00 CT open carries 2025-09-02 | `CME-SVC-2025-08-31` | T2 | eventDate 2025-09-01, CME trade date printed as 2025-09-02 |
+| 2025-11-27 | early close | `13:30 preopen` — 13:30 CT; 17:00 CT open carries 2025-11-28 | `CME-SVC-2025-11-26` | T2 | eventDate 2025-11-27, CME trade date printed as 2025-11-28 |
+| 2025-11-28 | early close | `07:00 preopen; 07:30 open; 13:45 closed` — final close 13:45 CT | `CME-SVC-2025-11-26` | T2 | eventDate 2025-11-28, CME trade date 2025-11-28 |
+| 2025-11-29 | closed | `no events published` | `CME-SVC-2025-11-26-SAT` | T2 | eventDate 2025-11-29, the Thanksgiving window extended to the Saturday |
 | 2025-12-24 | early close | `12:45 closed` — 12:45 CT, and no evening re-open | `CME-SVC-2025-12-24` | T2 | eventDate 2025-12-24, CME trade date 2025-12-24 |
-| 2025-12-25 | closed | `16:00 preopen; 17:00 open` — both 2025-12-26 | `CME-SVC-2025-12-25` | T2 | eventDate 2025-12-25, CME trade date 2025-12-26; the 2025-12-24 record carries no evening leg for 12-25 |
+| 2025-12-25 | closed | `16:00 preopen; 17:00 open` — both 2025-12-26 | `CME-SVC-2025-12-24` | T2 | eventDate 2025-12-25, CME trade date 2025-12-26; the 2025-12-24 record carries no evening leg for 12-25 |
 
 **Interpretive steps, 2025.** The 2025-01-01 and 2025-12-25 rows are the
 shape-2 conversion: CME publishes a pre-open and a 17:00 CT open on the holiday
@@ -149,18 +149,18 @@ CME's own 2025 Globex table states the Thanksgiving period as "27 - 29 November
 
 | Trade date | Kind | Instant as printed | Document | Tier | Derived from |
 |---|---|---|---|---|---|
-| 2026-01-01 | closed | `16:00 preopen; 17:00 open` — both 2026-01-02 | `CME-SVC-2026-01-01` | T2 | eventDate 2026-01-01, CME trade date 2026-01-02; eventDate 2025-12-31 `16:00 closed` with no evening re-open |
-| 2026-01-19 | early close | `13:30 preopen` — 13:30 CT; 17:00 CT open carries 2026-01-20 | `CME-SVC-2026-01-19` | T2 | eventDate 2026-01-19, CME trade date printed as 2026-01-20 |
-| 2026-02-16 | early close | `13:30 preopen` — 13:30 CT; 17:00 CT open carries 2026-02-17 | `CME-SVC-2026-02-16` | T2 | eventDate 2026-02-16, CME trade date printed as 2026-02-17 |
-| 2026-04-03 | closed | `no events published` | `CME-SVC-2026-04-03` | T2 | eventDate 2026-04-03, and eventDate 2026-04-02 `16:00 closed` CME trade date 2026-04-02 with no evening re-open |
-| 2026-05-25 | early close | `13:30 preopen` — 13:30 CT; 17:00 CT open carries 2026-05-26 | `CME-SVC-2026-05-25` | T2 | eventDate 2026-05-25, CME trade date printed as 2026-05-26 |
-| 2026-06-19 | early close | `12:00 closed` — 12:00 CT | `CME-SVC-2026-06-19` | T2 | eventDate 2026-06-19, CME trade date printed as 2026-06-22 |
+| 2026-01-01 | closed | `16:00 preopen; 17:00 open` — both 2026-01-02 | `CME-SVC-2025-12-31` | T2 | eventDate 2026-01-01, CME trade date 2026-01-02; eventDate 2025-12-31 `16:00 closed` with no evening re-open |
+| 2026-01-19 | early close | `13:30 preopen` — 13:30 CT; 17:00 CT open carries 2026-01-20 | `CME-SVC-2026-01-18` | T2 | eventDate 2026-01-19, CME trade date printed as 2026-01-20 |
+| 2026-02-16 | early close | `13:30 preopen` — 13:30 CT; 17:00 CT open carries 2026-02-17 | `CME-SVC-2026-02-15` | T2 | eventDate 2026-02-16, CME trade date printed as 2026-02-17 |
+| 2026-04-03 | closed | `no events published` | `CME-SVC-2026-04-01` | T2 | eventDate 2026-04-03, and eventDate 2026-04-02 `16:00 closed` CME trade date 2026-04-02 with no evening re-open |
+| 2026-05-25 | early close | `13:30 preopen` — 13:30 CT; 17:00 CT open carries 2026-05-26 | `CME-SVC-2026-05-24` | T2 | eventDate 2026-05-25, CME trade date printed as 2026-05-26 |
+| 2026-06-19 | early close | `12:00 closed` — 12:00 CT | `CME-SVC-2026-06-18` | T2 | eventDate 2026-06-19, CME trade date printed as 2026-06-22 |
 | 2026-07-03 | early close | `12:00 closed` — 12:00 CT | `CME-SVC-2026-07-03` | T2 | eventDate 2026-07-03, CME trade date printed as 2026-07-06 |
-| 2026-09-07 | early close | `13:30 preopen` — 13:30 CT; 17:00 CT open carries 2026-09-08 | `CME-SVC-2026-09-07` | T2 | eventDate 2026-09-07, CME trade date printed as 2026-09-08 |
-| 2026-11-26 | early close | `13:30 preopen` — 13:30 CT; 17:00 CT open carries 2026-11-27 | `CME-SVC-2026-11-26` | T2 | eventDate 2026-11-26, CME trade date printed as 2026-11-27 |
-| 2026-11-27 | early close | `13:45 closed` — 13:45 CT | `CME-SVC-2026-11-27` | T2 | eventDate 2026-11-27, CME trade date 2026-11-27 |
-| 2026-12-24 | early close | `12:45 closed` — 12:45 CT, and no evening re-open | `CME-SVC-2026-12-24` | T2 | eventDate 2026-12-24, CME trade date 2026-12-24 |
-| 2026-12-25 | closed | `no events published` | `CME-SVC-2026-12-25` | T2 | eventDate 2026-12-25; the 2026-12-24 record carries no evening leg for 12-25 |
+| 2026-09-07 | early close | `13:30 preopen` — 13:30 CT; 17:00 CT open carries 2026-09-08 | `CME-SVC-2026-09-06` | T2 | eventDate 2026-09-07, CME trade date printed as 2026-09-08 |
+| 2026-11-26 | early close | `13:30 preopen` — 13:30 CT; 17:00 CT open carries 2026-11-27 | `CME-SVC-2026-11-25` | T2 | eventDate 2026-11-26, CME trade date printed as 2026-11-27 |
+| 2026-11-27 | early close | `13:45 closed` — 13:45 CT | `CME-SVC-2026-11-25` | T2 | eventDate 2026-11-27, CME trade date 2026-11-27 |
+| 2026-12-24 | early close | `12:45 closed` — 12:45 CT, and no evening re-open | `CME-SVC-2026-12-22` | T2 | eventDate 2026-12-24, CME trade date 2026-12-24 |
+| 2026-12-25 | closed | `no events published` | `CME-SVC-2026-12-24` | T2 | eventDate 2026-12-25; the 2026-12-24 record carries no evening leg for 12-25 |
 
 **Interpretive steps, 2026.** The 2026-06-19 and 2026-07-03 rows are the
 Friday-holiday divergence. CME prints the final close on the Friday but dates
@@ -198,17 +198,17 @@ deleting it (design memo D9).
 
 | Trade date | Kind | Instant as printed | Document | Tier | Derived from |
 |---|---|---|---|---|---|
-| 2027-01-01 | closed | `no events published` | `CME-SVC-2027-01-01` | T2 | eventDate 2027-01-01, and eventDate 2026-12-31 `16:00 closed` CME trade date 2026-12-31 with no evening re-open |
-| 2027-01-18 | early close | `13:30 preopen` — 13:30 CT; 17:00 CT open carries 2027-01-19 | `CME-SVC-2027-01-18` | T2 | eventDate 2027-01-18, CME trade date printed as 2027-01-19 |
-| 2027-02-15 | early close | `13:30 preopen` — 13:30 CT; 17:00 CT open carries 2027-02-16 | `CME-SVC-2027-02-15` | T2 | eventDate 2027-02-15, CME trade date printed as 2027-02-16 |
-| 2027-03-26 | closed | `no events published` | `CME-SVC-2027-03-26` | T2 | eventDate 2027-03-26, and eventDate 2027-03-25 `16:00 closed` CME trade date 2027-03-25 with no evening re-open |
-| 2027-05-31 | early close | `13:30 preopen` — 13:30 CT; 17:00 CT open carries 2027-06-01 | `CME-SVC-2027-05-31` | T2 | eventDate 2027-05-31, CME trade date printed as 2027-06-01 |
-| 2027-06-18 | early close | `12:00 closed` — 12:00 CT | `CME-SVC-2027-06-18` | T2 | eventDate 2027-06-18, CME trade date printed as 2027-06-21 |
-| 2027-07-05 | early close | `13:30 preopen` — 13:30 CT; 17:00 CT open carries 2027-07-06 | `CME-SVC-2027-07-05` | T2 | eventDate 2027-07-05, CME trade date printed as 2027-07-06 |
-| 2027-09-06 | early close | `13:30 preopen` — 13:30 CT; 17:00 CT open carries 2027-09-07 | `CME-SVC-2027-09-06` | T2 | eventDate 2027-09-06, CME trade date printed as 2027-09-07 |
-| 2027-11-25 | early close | `13:30 preopen` — 13:30 CT; 17:00 CT open carries 2027-11-26 | `CME-SVC-2027-11-25` | T2 | eventDate 2027-11-25, CME trade date printed as 2027-11-26 |
-| 2027-11-26 | early close | `13:45 closed` — 13:45 CT | `CME-SVC-2027-11-26` | T2 | eventDate 2027-11-26, CME trade date 2027-11-26 |
-| 2027-12-24 | closed | `no events published` | `CME-SVC-2027-12-24` | T2 | eventDate 2027-12-24, and eventDate 2027-12-23 `16:00 closed` CME trade date 2027-12-23 with no evening re-open |
+| 2027-01-01 | closed | `no events published` | `CME-SVC-2026-12-31` | T2 | eventDate 2027-01-01, and eventDate 2026-12-31 `16:00 closed` CME trade date 2026-12-31 with no evening re-open |
+| 2027-01-18 | early close | `13:30 preopen` — 13:30 CT; 17:00 CT open carries 2027-01-19 | `CME-SVC-2027-01-17` | T2 | eventDate 2027-01-18, CME trade date printed as 2027-01-19 |
+| 2027-02-15 | early close | `13:30 preopen` — 13:30 CT; 17:00 CT open carries 2027-02-16 | `CME-SVC-2027-02-14` | T2 | eventDate 2027-02-15, CME trade date printed as 2027-02-16 |
+| 2027-03-26 | closed | `no events published` | `CME-SVC-2027-03-25` | T2 | eventDate 2027-03-26, and eventDate 2027-03-25 `16:00 closed` CME trade date 2027-03-25 with no evening re-open |
+| 2027-05-31 | early close | `13:30 preopen` — 13:30 CT; 17:00 CT open carries 2027-06-01 | `CME-SVC-2027-05-30` | T2 | eventDate 2027-05-31, CME trade date printed as 2027-06-01 |
+| 2027-06-18 | early close | `12:00 closed` — 12:00 CT | `CME-SVC-2027-06-17` | T2 | eventDate 2027-06-18, CME trade date printed as 2027-06-21 |
+| 2027-07-05 | early close | `13:30 preopen` — 13:30 CT; 17:00 CT open carries 2027-07-06 | `CME-SVC-2027-07-04` | T2 | eventDate 2027-07-05, CME trade date printed as 2027-07-06 |
+| 2027-09-06 | early close | `13:30 preopen` — 13:30 CT; 17:00 CT open carries 2027-09-07 | `CME-SVC-2027-09-05` | T2 | eventDate 2027-09-06, CME trade date printed as 2027-09-07 |
+| 2027-11-25 | early close | `13:30 preopen` — 13:30 CT; 17:00 CT open carries 2027-11-26 | `CME-SVC-2027-11-24` | T2 | eventDate 2027-11-25, CME trade date printed as 2027-11-26 |
+| 2027-11-26 | early close | `13:45 closed` — 13:45 CT | `CME-SVC-2027-11-24` | T2 | eventDate 2027-11-26, CME trade date 2027-11-26 |
+| 2027-12-24 | closed | `no events published` | `CME-SVC-2027-12-22` | T2 | eventDate 2027-12-24, and eventDate 2027-12-23 `16:00 closed` CME trade date 2027-12-23 with no evening re-open |
 
 **Interpretive steps, 2027.** 2027-06-18 is the third instance of the
 Friday-holiday divergence and is converted exactly as 2026-06-19 above.
@@ -225,7 +225,7 @@ closure removes is the Friday, so the only row is `Closed(2027-12-24)`.
 - **Black Friday finalisation** — 2027-11-26 is sourced from a pre-holiday
   publication; see the 2026 note.
 
-### Holiday documents
+### Documents
 
 Every id below resolves to one response of CME's trading-hours service for the
 stated event-date window, product id set `316,133,425,300,58,437,22,8478,5201,10191`.
@@ -234,47 +234,42 @@ Expand `[THBP-A]` to
 plus `&fromEventDate=…&toEventDate=…`, and `WA:<ts>` to
 `https://web.archive.org/web/<ts>id_/` in front of it. Bytes, hashes and the
 research-store code for each are in
-`exchange-hours-research/holidays/raw/cme-2025-2027*/INDEX.md`; the `Research`
-column names the code the retrieval used.
+`exchange-hours-research/holidays/raw/cme-2025-2027*/INDEX.md`.
 
-| Document | Window | Capture or retrieval (UTC) | sha256 | Research |
+| Document | Window | Capture or retrieval, UTC | Tier | sha256 |
 |---|---|---|---|---|
-| `CME-SVC-2025-01-01` | 2024-12-31 .. 2025-01-02 | archive 2024-12-20T15:53:40Z | `375c70eecd19c5c6204ecb408d1b3210a9da4c9a03b85ef1c7dbbcde1397ab63` | D01 |
-| `CME-SVC-2025-01-20` | 2025-01-19 .. 2025-01-21 | archive 2024-12-20T15:53:40Z | `4f2ab56af14e7b3a6978e7fa6db8e2cfc63a82d06428cd88844f0e5bcf534f40` | D02 |
-| `CME-SVC-2025-02-17` | 2025-02-16 .. 2025-02-18 | archive 2024-12-20T15:53:40Z | `5bec2ca6b4999a534e4d9818035aaa18ec8626b6c912cf7e3d2c57015536f2fa` | D03 |
-| `CME-SVC-2025-04-18` | 2025-04-17 .. 2025-04-19 | archive 2024-12-20T15:53:40Z | `865a1d4f08102e00151bd87ab2b8e8a7720e9203a17aaaba24627ade3ed26e74` | D04 |
-| `CME-SVC-2025-05-26` | 2025-05-25 .. 2025-05-27 | archive 2024-12-20T15:53:40Z | `5f42869879c826f5949b79236aabb3d26d74e7565d92d7cc5e8784c63973210b` | D05 |
-| `CME-SVC-2025-06-19` | 2025-06-18 .. 2025-06-20 | archive 2024-12-20T15:53:40Z | `a572706907175776255261103b393493ebdf5a8106ec5374d129145bdf89105e` | D06 |
-| `CME-SVC-2025-07-04` | 2025-07-03 .. 2025-07-05 | archive 2024-12-20T15:53:40Z | `b80cd4bfed0ae72865bfacc1936e107eb8febfcc94b37fcce1d05505c659147b` | D07 |
-| `CME-SVC-2025-09-01` | 2025-08-31 .. 2025-09-02 | archive 2024-12-20T15:53:40Z | `e075762ed34a86048d94900e10edba10d95b3d766052908ffbb5133f6b64bab0` | D08 |
-| `CME-SVC-2025-11-27` | 2025-11-26 .. 2025-11-28 | archive 2026-01-29T01:23:09Z | `6c4c598791058dd9a11aff0ddb072c761a436c6d1054b891def74c6935f020f1` | D09 |
-| `CME-SVC-2025-11-28` | 2025-11-26 .. 2025-11-28 | archive 2026-01-29T01:23:09Z | `6c4c598791058dd9a11aff0ddb072c761a436c6d1054b891def74c6935f020f1` | D09 |
-| `CME-SVC-2025-11-29` | 2025-11-26 .. 2025-11-29 | live 2026-09-12T08:55:12Z | `2e9f34f20085de3ccbdff1dc29cb7463bcff93713ef0c550740d6f15e0635ab7` | D65 |
-| `CME-SVC-2025-12-24` | 2025-12-24 .. 2025-12-26 | archive 2026-01-29T01:21:59Z | `322a2be989b67f5f4cc0ec12fd63a393383d574badd4aacc87a0c9637533d386` | D10 |
-| `CME-SVC-2025-12-25` | 2025-12-24 .. 2025-12-26 | archive 2026-01-29T01:21:59Z | `322a2be989b67f5f4cc0ec12fd63a393383d574badd4aacc87a0c9637533d386` | D10 |
-| `CME-SVC-2026-01-01` | 2025-12-31 .. 2026-01-02 | archive 2026-06-19T11:41:05Z | `0ed61f8328eda4746265cc8e197f10cd53aec06c2b393927bab27c913993d314` | D11 |
-| `CME-SVC-2026-01-19` | 2026-01-18 .. 2026-01-20 | archive 2026-06-19T11:41:05Z | `5e3ff08bdc7d07474b96b8dc8c18ed0d5e48d12dc4bcad81a5f68820cb2aa89e` | D12 |
-| `CME-SVC-2026-02-16` | 2026-02-15 .. 2026-02-17 | archive 2026-06-19T11:41:05Z | `5dd507dd959d0029e838ec88b1bdb63c32444ea36a121de002606f5d7b206e2f` | D13 |
-| `CME-SVC-2026-04-03` | 2026-04-01 .. 2026-04-03 | archive 2026-06-19T11:41:18Z | `54bcc271e9ba9737a99a2fe608e658de0c657075284d050fbfec4fe1aee2a2a5` | D14 |
-| `CME-SVC-2026-05-25` | 2026-05-24 .. 2026-05-26 | archive 2026-06-19T11:41:05Z | `f7e30d204ce2cbe08e5f486ded6518f623369159f3a36161288a4708288314da` | D15 |
-| `CME-SVC-2026-06-19` | 2026-06-18 .. 2026-06-20 | archive 2026-06-19T11:34:04Z | `97fd5da371309f4486a8fb49ff2105c6c1c2396939ab7c76f1a2a1097b6f015c` | D17 |
-| `CME-SVC-2026-07-03` | 2026-07-03 .. 2026-07-05 | archive 2026-06-19T11:41:08Z | `4b89a026358e998277f9c1ff7e095e5d4e625cdc45115fd141dc92201833155b` | D19 |
-| `CME-SVC-2026-09-07` | 2026-09-06 .. 2026-09-08 | live 2026-09-12T04:30Z | `01fb78ffaac10eac466fed53674214222f05aed518b9d93a4b42cf8957147bca` | D20 |
-| `CME-SVC-2026-11-26` | 2026-11-25 .. 2026-11-27 | live 2026-09-12T04:30Z | `e1f35a5623b3c5d15e7468b2cb4119e587411a9714f920605dab11bf688756d1` | D22 |
-| `CME-SVC-2026-11-27` | 2026-11-25 .. 2026-11-27 | live 2026-09-12T04:30Z | `e1f35a5623b3c5d15e7468b2cb4119e587411a9714f920605dab11bf688756d1` | D22 |
-| `CME-SVC-2026-12-24` | 2026-12-22 .. 2026-12-24 | live 2026-09-12T04:30Z | `c8c0267da8cf171409ad8ca188082b3aa326e8d04a89d12503dcf9f57bf3b7ab` | D24 |
-| `CME-SVC-2026-12-25` | 2026-12-24 .. 2026-12-26 | live 2026-09-12T04:30Z | `bdc1fe831adb794bcf8aeb7e99baf6af2009d1ff9969d0a48b18b2ebc2e1e829` | D26 |
-| `CME-SVC-2027-01-01` | 2026-12-31 .. 2027-01-02 | live 2026-09-12T04:30Z | `7162652821c16f1bd05e3ec533bd5b82af03833c7186a64c7734b0b650364dcd` | D29 |
-| `CME-SVC-2027-01-18` | 2027-01-17 .. 2027-01-19 | live 2026-09-12T04:30Z | `7155c4b7ee8b299b3033eb3daf002b6ceecf0fbd53f6f98a7036048022275743` | D30 |
-| `CME-SVC-2027-02-15` | 2027-02-14 .. 2027-02-16 | live 2026-09-12T04:30Z | `41f5aa8cde3879f8b10490386c134a294a0f1509edde2022a22ec3ffcaed1183` | D32 |
-| `CME-SVC-2027-03-26` | 2027-03-25 .. 2027-03-27 | live 2026-09-12T04:30Z | `9bd7225d440e00139f30892f3914c9b38beb8bf29d4272039b6cd8f2de926880` | D34 |
-| `CME-SVC-2027-05-31` | 2027-05-30 .. 2027-06-01 | live 2026-09-12T04:30Z | `1283649724c30163fa08ba7ab02d1230fa9a7dd0613b8b4b3d96cd1d9dc4febd` | D36 |
-| `CME-SVC-2027-06-18` | 2027-06-17 .. 2027-06-19 | live 2026-09-12T04:30Z | `60c9a2f5106d61039a616986b463cd852861ee4d3b91b11fac8badfa1b97b01c` | D38 |
-| `CME-SVC-2027-07-05` | 2027-07-04 .. 2027-07-06 | live 2026-09-12T04:30Z | `93ff8232886435c94be682bf968aa30749011cdf8dadeb7d2425a3b0b9e0bf71` | D40 |
-| `CME-SVC-2027-09-06` | 2027-09-05 .. 2027-09-07 | live 2026-09-12T04:30Z | `aa08a3bd102812928e69cf1ea4c8a84f738eaa5d14f967acee7d2571e74aedb9` | D42 |
-| `CME-SVC-2027-11-25` | 2027-11-24 .. 2027-11-26 | live 2026-09-12T04:30Z | `6aa7c0fd701a02480dabeac1fbae1a69b56e77643a29e3a9b2223c56e822ce9f` | D44 |
-| `CME-SVC-2027-11-26` | 2027-11-24 .. 2027-11-26 | live 2026-09-12T04:30Z | `6aa7c0fd701a02480dabeac1fbae1a69b56e77643a29e3a9b2223c56e822ce9f` | D44 |
-| `CME-SVC-2027-12-24` | 2027-12-22 .. 2027-12-25 | live 2026-09-12T04:30Z | `5edc4dd588a32faa74f841494c10a3df48692dca29843c3581bad3e18c30fef9` | D46 |
+| `CME-SVC-2024-12-31` | 2024-12-31 .. 2025-01-02 | archive capture 2024-12-20T15:53:40Z | T2 | `375c70eecd19c5c6204ecb408d1b3210a9da4c9a03b85ef1c7dbbcde1397ab63` |
+| `CME-SVC-2025-01-19` | 2025-01-19 .. 2025-01-21 | archive capture 2024-12-20T15:53:40Z | T2 | `4f2ab56af14e7b3a6978e7fa6db8e2cfc63a82d06428cd88844f0e5bcf534f40` |
+| `CME-SVC-2025-02-16` | 2025-02-16 .. 2025-02-18 | archive capture 2024-12-20T15:53:40Z | T2 | `5bec2ca6b4999a534e4d9818035aaa18ec8626b6c912cf7e3d2c57015536f2fa` |
+| `CME-SVC-2025-04-17` | 2025-04-17 .. 2025-04-19 | archive capture 2024-12-20T15:53:40Z | T2 | `865a1d4f08102e00151bd87ab2b8e8a7720e9203a17aaaba24627ade3ed26e74` |
+| `CME-SVC-2025-05-25` | 2025-05-25 .. 2025-05-27 | archive capture 2024-12-20T15:53:40Z | T2 | `5f42869879c826f5949b79236aabb3d26d74e7565d92d7cc5e8784c63973210b` |
+| `CME-SVC-2025-06-18` | 2025-06-18 .. 2025-06-20 | archive capture 2024-12-20T15:53:40Z | T2 | `a572706907175776255261103b393493ebdf5a8106ec5374d129145bdf89105e` |
+| `CME-SVC-2025-07-03` | 2025-07-03 .. 2025-07-05 | archive capture 2024-12-20T15:53:40Z | T2 | `b80cd4bfed0ae72865bfacc1936e107eb8febfcc94b37fcce1d05505c659147b` |
+| `CME-SVC-2025-08-31` | 2025-08-31 .. 2025-09-02 | archive capture 2024-12-20T15:53:40Z | T2 | `e075762ed34a86048d94900e10edba10d95b3d766052908ffbb5133f6b64bab0` |
+| `CME-SVC-2025-11-26` | 2025-11-26 .. 2025-11-28 | archive capture 2026-01-29T01:23:09Z | T2 | `6c4c598791058dd9a11aff0ddb072c761a436c6d1054b891def74c6935f020f1` |
+| `CME-SVC-2025-11-26-SAT` | 2025-11-26 .. 2025-11-29 | live retrieval 2026-09-12T08:55:12Z | T2 | `2e9f34f20085de3ccbdff1dc29cb7463bcff93713ef0c550740d6f15e0635ab7` |
+| `CME-SVC-2025-12-24` | 2025-12-24 .. 2025-12-26 | archive capture 2026-01-29T01:21:59Z | T2 | `322a2be989b67f5f4cc0ec12fd63a393383d574badd4aacc87a0c9637533d386` |
+| `CME-SVC-2025-12-31` | 2025-12-31 .. 2026-01-02 | archive capture 2026-06-19T11:41:05Z | T2 | `0ed61f8328eda4746265cc8e197f10cd53aec06c2b393927bab27c913993d314` |
+| `CME-SVC-2026-01-18` | 2026-01-18 .. 2026-01-20 | archive capture 2026-06-19T11:41:05Z | T2 | `5e3ff08bdc7d07474b96b8dc8c18ed0d5e48d12dc4bcad81a5f68820cb2aa89e` |
+| `CME-SVC-2026-02-15` | 2026-02-15 .. 2026-02-17 | archive capture 2026-06-19T11:41:05Z | T2 | `5dd507dd959d0029e838ec88b1bdb63c32444ea36a121de002606f5d7b206e2f` |
+| `CME-SVC-2026-04-01` | 2026-04-01 .. 2026-04-03 | archive capture 2026-06-19T11:41:18Z | T2 | `54bcc271e9ba9737a99a2fe608e658de0c657075284d050fbfec4fe1aee2a2a5` |
+| `CME-SVC-2026-05-24` | 2026-05-24 .. 2026-05-26 | archive capture 2026-06-19T11:41:05Z | T2 | `f7e30d204ce2cbe08e5f486ded6518f623369159f3a36161288a4708288314da` |
+| `CME-SVC-2026-06-18` | 2026-06-18 .. 2026-06-20 | archive capture 2026-06-19T11:34:04Z | T2 | `97fd5da371309f4486a8fb49ff2105c6c1c2396939ab7c76f1a2a1097b6f015c` |
+| `CME-SVC-2026-07-03` | 2026-07-03 .. 2026-07-05 | archive capture 2026-06-19T11:41:08Z | T2 | `4b89a026358e998277f9c1ff7e095e5d4e625cdc45115fd141dc92201833155b` |
+| `CME-SVC-2026-09-06` | 2026-09-06 .. 2026-09-08 | live retrieval 2026-09-12T04:30Z | T2 | `01fb78ffaac10eac466fed53674214222f05aed518b9d93a4b42cf8957147bca` |
+| `CME-SVC-2026-11-25` | 2026-11-25 .. 2026-11-27 | live retrieval 2026-09-12T04:30Z | T2 | `e1f35a5623b3c5d15e7468b2cb4119e587411a9714f920605dab11bf688756d1` |
+| `CME-SVC-2026-12-22` | 2026-12-22 .. 2026-12-24 | live retrieval 2026-09-12T04:30Z | T2 | `c8c0267da8cf171409ad8ca188082b3aa326e8d04a89d12503dcf9f57bf3b7ab` |
+| `CME-SVC-2026-12-24` | 2026-12-24 .. 2026-12-26 | live retrieval 2026-09-12T04:30Z | T2 | `bdc1fe831adb794bcf8aeb7e99baf6af2009d1ff9969d0a48b18b2ebc2e1e829` |
+| `CME-SVC-2026-12-31` | 2026-12-31 .. 2027-01-02 | live retrieval 2026-09-12T04:30Z | T2 | `7162652821c16f1bd05e3ec533bd5b82af03833c7186a64c7734b0b650364dcd` |
+| `CME-SVC-2027-01-17` | 2027-01-17 .. 2027-01-19 | live retrieval 2026-09-12T04:30Z | T2 | `7155c4b7ee8b299b3033eb3daf002b6ceecf0fbd53f6f98a7036048022275743` |
+| `CME-SVC-2027-02-14` | 2027-02-14 .. 2027-02-16 | live retrieval 2026-09-12T04:30Z | T2 | `41f5aa8cde3879f8b10490386c134a294a0f1509edde2022a22ec3ffcaed1183` |
+| `CME-SVC-2027-03-25` | 2027-03-25 .. 2027-03-27 | live retrieval 2026-09-12T04:30Z | T2 | `9bd7225d440e00139f30892f3914c9b38beb8bf29d4272039b6cd8f2de926880` |
+| `CME-SVC-2027-05-30` | 2027-05-30 .. 2027-06-01 | live retrieval 2026-09-12T04:30Z | T2 | `1283649724c30163fa08ba7ab02d1230fa9a7dd0613b8b4b3d96cd1d9dc4febd` |
+| `CME-SVC-2027-06-17` | 2027-06-17 .. 2027-06-19 | live retrieval 2026-09-12T04:30Z | T2 | `60c9a2f5106d61039a616986b463cd852861ee4d3b91b11fac8badfa1b97b01c` |
+| `CME-SVC-2027-07-04` | 2027-07-04 .. 2027-07-06 | live retrieval 2026-09-12T04:30Z | T2 | `93ff8232886435c94be682bf968aa30749011cdf8dadeb7d2425a3b0b9e0bf71` |
+| `CME-SVC-2027-09-05` | 2027-09-05 .. 2027-09-07 | live retrieval 2026-09-12T04:30Z | T2 | `aa08a3bd102812928e69cf1ea4c8a84f738eaa5d14f967acee7d2571e74aedb9` |
+| `CME-SVC-2027-11-24` | 2027-11-24 .. 2027-11-26 | live retrieval 2026-09-12T04:30Z | T2 | `6aa7c0fd701a02480dabeac1fbae1a69b56e77643a29e3a9b2223c56e822ce9f` |
+| `CME-SVC-2027-12-22` | 2027-12-22 .. 2027-12-25 | live retrieval 2026-09-12T04:30Z | T2 | `5edc4dd588a32faa74f841494c10a3df48692dca29843c3581bad3e18c30fef9` |
 
 ### Holiday coverage notes
 

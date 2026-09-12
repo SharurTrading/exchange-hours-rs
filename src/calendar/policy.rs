@@ -27,9 +27,10 @@ use super::{
 /// A sourced family convention can assign trading to the next open business
 /// date instead: CME cryptocurrency weekend trading remains open and rolls to
 /// Tuesday when Monday is closed. Implementations must be deterministic and
-/// should perform no I/O or clock reads. The crate ships no holiday data. A
-/// profile without a final daily close has no trade date, so its queries ignore
-/// this overlay rather than inventing one.
+/// should perform no I/O or clock reads. The crate's own per-family holiday
+/// tables are the innermost layer below this overlay, which only ever tightens
+/// what they answer. A profile without a final daily close has no trade date,
+/// so its queries ignore this overlay rather than inventing one.
 /// Callers with hard-coded records can use [`StaticDayPolicy`] instead of
 /// implementing this trait themselves. This boundary API cannot replace or
 /// split arbitrary intraday phases; a special day with different internal

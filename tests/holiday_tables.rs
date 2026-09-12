@@ -334,16 +334,20 @@ fn policy_calendar_mirrors_the_builtin_accessors() {
 // The coverage gate.
 // ---------------------------------------------------------------------------
 
-/// The gate is a *claim* about each identity's trade-date conventions: an
-/// occurrence can only be changed by a record for a date its own convention
-/// could assign it to. This is what makes the claim true rather than hoped.
+/// Attaching a provider that holds no record may not move an answer, whichever
+/// side of the gate it falls on.
 ///
 /// A provider whose window is remote must be gated out, and a provider whose
 /// window covers the grid must not be — and both must answer exactly as the
 /// bare calendar, because neither holds a record. Divergence in the first case
 /// is an unsound gate; divergence in the second is an unsound overlay path.
+///
+/// This is the weaker half of the pair. It probes one fortnight on which none
+/// of these identities carries a row, so it cannot detect an unsound gate
+/// *window*; `the_coverage_gate_is_sound_for_every_shipped_row` below is the
+/// fence that does.
 #[test]
-fn the_coverage_gate_is_sound_for_every_trade_date_convention() {
+fn attaching_an_irrelevant_exception_provider_changes_no_answer() {
     for (label, calendar) in gate_window_classes() {
         let source = calendar.source();
         let from = ct((2026, 4, 10), (0, 0, 0));
@@ -368,6 +372,194 @@ fn the_coverage_gate_is_sound_for_every_trade_date_convention() {
             .expect("the fixture is scoped to this calendar");
         assert_agrees(label, ungated, calendar, from, to);
     }
+}
+
+/// Gate soundness — the one that prevents a silent wrong answer (design memo
+/// §4.2). For **every** identity that ships a table, over a dense grid
+/// spanning every shipped row ±3 days, the gated path and an ungated reference
+/// path must agree exactly.
+///
+/// The reference is an empty `StaticSessionExceptions` whose coverage spans the
+/// sweep: it holds no record, so it can change no answer of its own, but it
+/// makes `any_layer_may_affect` true for every candidate day, so the full
+/// trading-day derivation — and with it the built-in clip — runs at every
+/// instant. A gate window narrower than what the derivation can actually
+/// derive therefore shows up here as a divergence, which is what makes the
+/// §2.3 window claim true rather than hoped.
+#[test]
+fn the_coverage_gate_is_sound_for_every_shipped_row() {
+    static NO_RECORDS: [SessionExceptionRecord<'static>; 0] = [];
+
+    let mut tabled = 0_usize;
+    for (label, calendar) in every_calendar() {
+        let Some(coverage) = calendar.holiday_coverage() else {
+            continue;
+        };
+        tabled += 1;
+        let reference_window = StaticSessionExceptions::new(
+            calendar.source(),
+            coverage
+                .first()
+                .checked_sub_days(Days::new(30))
+                .expect("the reference window stays representable"),
+            coverage
+                .last()
+                .checked_add_days(Days::new(30))
+                .expect("the reference window stays representable"),
+            &NO_RECORDS,
+        )
+        .expect("an empty record slice is valid");
+        let ungated = calendar
+            .with_session_exceptions(&reference_window)
+            .expect("the reference is scoped to this calendar");
+
+        // Adjacent rows — Thanksgiving Thursday through Saturday, Christmas Eve
+        // and Christmas Day — overlap in their ±3 days, so the probe runs over
+        // the merged spans rather than sweeping shared instants twice.
+        for (first, last) in merged_row_windows(calendar) {
+            assert_agrees(
+                &format!("{label} rows {first}..={last}"),
+                ungated,
+                calendar,
+                utc_midnight(first),
+                utc_midnight(last),
+            );
+        }
+    }
+    assert!(tabled > 0, "the crate must ship at least one holiday table");
+}
+
+/// Every shipped row ±3 days, as half-open UTC-midnight spans with overlapping
+/// neighbours merged.
+fn merged_row_windows(calendar: ExchangeCalendar) -> Vec<(NaiveDate, NaiveDate)> {
+    let Some(coverage) = calendar.holiday_coverage() else {
+        return Vec::new();
+    };
+    let mut spans: Vec<(NaiveDate, NaiveDate)> = Vec::new();
+    let mut date = coverage.first();
+    while date <= coverage.last() {
+        if calendar.holiday_on(date).is_some() {
+            let first = date
+                .checked_sub_days(Days::new(3))
+                .expect("the probe window stays representable");
+            let last = date
+                .checked_add_days(Days::new(4))
+                .expect("the probe window stays representable");
+            match spans.last_mut() {
+                Some(open) if open.1 >= first => open.1 = open.1.max(last),
+                _ => spans.push((first, last)),
+            }
+        }
+        date = date
+            .checked_add_days(Days::new(1))
+            .expect("the scan stays inside the representable calendar");
+    }
+    spans
+}
+
+/// The named regression behind the fence above: on `globex_grains`, a Friday
+/// 14:30 CT order-entry occurrence carries the following Monday's trade date,
+/// three local days past its opening day. When that Monday is a shipped
+/// closure, an answer that depends on whether an *unrelated* layer happens to
+/// be attached is a gate bug, not a policy.
+#[test]
+fn a_friday_order_entry_window_answers_the_same_with_and_without_an_empty_layer() {
+    static NO_RECORDS: [SessionExceptionRecord<'static>; 0] = [];
+
+    let calendar = calendar_for_market_hours_key(MarketHoursKey::GlobexGrains);
+    let probe = ct((2025, 1, 17), (14, 30, 0));
+    assert_eq!(
+        calendar.holiday_on(day(2025, 1, 20)).map(Holiday::kind),
+        Some(HolidayKind::Closed),
+        "the regression needs its shipped closure"
+    );
+
+    let empty_policy = StaticDayPolicy::new(&[]).expect("an empty override slice is valid");
+    let with_policy = calendar.with_day_policy(&empty_policy);
+    let zero_records = StaticSessionExceptions::new(
+        calendar.source(),
+        day(2025, 1, 1),
+        day(2025, 12, 31),
+        &NO_RECORDS,
+    )
+    .expect("an empty record slice is valid");
+    let with_exceptions = calendar
+        .with_session_exceptions(&zero_records)
+        .expect("the fixture is scoped to this calendar");
+
+    assert!(!calendar.is_accepting_orders(probe));
+    assert_eq!(calendar.trade_date(probe), None);
+    for (label, orders, state, trade_date) in [
+        (
+            "empty DayPolicy",
+            with_policy.is_accepting_orders(probe),
+            with_policy.session_state(probe),
+            with_policy.trade_date(probe),
+        ),
+        (
+            "zero-record StaticSessionExceptions",
+            with_exceptions.is_accepting_orders(probe),
+            with_exceptions.session_state(probe),
+            with_exceptions.trade_date(probe),
+        ),
+    ] {
+        assert_eq!(
+            orders,
+            calendar.is_accepting_orders(probe),
+            "{label} moved is_accepting_orders"
+        );
+        assert_eq!(
+            state,
+            calendar.session_state(probe),
+            "{label} moved session_state"
+        );
+        assert_eq!(
+            trade_date,
+            calendar.trade_date(probe),
+            "{label} moved trade_date"
+        );
+    }
+
+    // A caller's own record for that Monday must be applied identically
+    // whichever coverage window carries it.
+    let records = [SessionExceptionRecord::closed(day(2025, 1, 20))];
+    let narrow = StaticSessionExceptions::new(
+        calendar.source(),
+        day(2025, 1, 20),
+        day(2025, 1, 20),
+        &records,
+    )
+    .expect("the fixture table is valid");
+    let wide = StaticSessionExceptions::new(
+        calendar.source(),
+        day(2025, 1, 1),
+        day(2025, 12, 31),
+        &records,
+    )
+    .expect("the fixture table is valid");
+    let detached = calendar.without_holidays();
+    let narrow_view = detached
+        .with_session_exceptions(&narrow)
+        .expect("the fixture is scoped to this calendar");
+    let wide_view = detached
+        .with_session_exceptions(&wide)
+        .expect("the fixture is scoped to this calendar");
+    assert_eq!(
+        narrow_view.is_accepting_orders(probe),
+        wide_view.is_accepting_orders(probe),
+        "a caller's record must not depend on how wide its coverage window is"
+    );
+    assert_eq!(narrow_view.trade_date(probe), wide_view.trade_date(probe));
+    assert!(!narrow_view.is_accepting_orders(probe));
+}
+
+/// UTC midnight on `date`, the sweep's own grid anchor.
+fn utc_midnight(date: NaiveDate) -> DateTime<Utc> {
+    Utc.from_utc_datetime(
+        &date
+            .and_hms_opt(0, 0, 0)
+            .expect("midnight is a valid time of day"),
+    )
 }
 
 /// A window that ends the day before the grid starts still has to be consulted

@@ -151,7 +151,9 @@ the cost of keeping them true.
   genuine recurring-grid change is never downgraded to "just a holiday" to
   avoid the evidence work. Holidays are **in scope** for this crate. They live
   in per-family date tables under `schedules/` (data, not templates),
-  sourced from the operator's published holiday calendar (T1), covering the
+  sourced from the operator's own published holiday calendar at T1 or its own
+  machine channel at T2, at the tier LAW-PRIMARY-SOURCES requires and with that
+  tier carried in the row rather than only in a comment, covering the
   January-2010 floor to the operator's published future for served identities
   and best-effort for dormant ones; once a family's table ships, the built-in
   calendars apply it by default. **Which identities have a table, and over

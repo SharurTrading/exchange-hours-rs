@@ -84,6 +84,10 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
             T2,
             "CME-SVC-2025-11-26"
         ),
+        // 2025-11-29 — T2 — CME-SVC-2025-11-26-SAT — Thanksgiving Saturday: the
+        // service publishes an empty schedule for all ten products, and CME's
+        // 2025 Globex table states the period as "27 - 29 November 2025".
+        (2025, 11, 29, Closed, T2, "CME-SVC-2025-11-26-SAT"),
         // 2025-12-24 — T2 — CME-SVC-2025-12-24 — Christmas Eve: 12:15 CT, and
         // no evening re-open because 2025-12-25 is closed.
         (

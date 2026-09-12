@@ -87,7 +87,7 @@ fn christmas_2026_closes_the_whole_trade_date_and_its_previous_evening() {
         .expect("2026-12-25 ships a row");
     assert_eq!(holiday.kind(), HolidayKind::Closed);
     assert_eq!(holiday.tier(), EvidenceTier::T2);
-    assert_eq!(holiday.document_id(), "CME-SVC-2026-12-25");
+    assert_eq!(holiday.document_id(), "CME-SVC-2026-12-24");
 
     assert!(calendar.is_closed_trade_date(day(2026, 12, 25), SessionKind::Both));
     assert!(calendar.is_closed_all_day_on(day(2026, 12, 25), SessionKind::Both));

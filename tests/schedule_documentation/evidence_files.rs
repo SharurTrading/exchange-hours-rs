@@ -535,7 +535,9 @@ fn holiday_year<'a>(holidays: &'a str, year: &str) -> Option<&'a str> {
 /// the evidence file carries the instant as the operator printed it, the
 /// document's URL and capture, and the event-date-to-trade-date conversion
 /// that produced the row. This fence ties the two together in the forward
-/// direction, per family and per year — the unit a LAW-WATCH review works in.
+/// direction, per family and per year — the unit a LAW-WATCH review works in;
+/// `every_evidence_holiday_line_exists_in_its_module` closes the reverse
+/// direction.
 #[test]
 fn every_holiday_row_appears_in_its_evidence_file() {
     let files = evidence_files();
@@ -576,6 +578,212 @@ fn every_holiday_row_appears_in_its_evidence_file() {
                     row.document
                 );
             }
+        }
+    }
+}
+
+/// One row of an evidence file's fixed-shape `### Documents` table.
+struct DocumentRow {
+    id: String,
+    window: String,
+    sha: String,
+}
+
+/// The `### Documents` table of one evidence file, one entry per resolved id.
+///
+/// The table's shape is fixed — `| Document | Window | Capture or retrieval,
+/// UTC | Tier | sha256 |` — so a resolution is machine-readable and the three
+/// fences below can be written at all. A left cell may name several ids
+/// separated by `, ` when one artifact carries more than one.
+fn document_rows(text: &str) -> Vec<DocumentRow> {
+    let Some(body) = text.split_once("\n### Documents\n").map(|(_, rest)| rest) else {
+        return Vec::new();
+    };
+    let Some(table) = body.split_once(DOCUMENT_TABLE_HEADER) else {
+        return Vec::new();
+    };
+    let mut rows = Vec::new();
+    for line in table
+        .1
+        .lines()
+        .skip_while(|line| line.is_empty() || line.starts_with("|---"))
+    {
+        if !line.starts_with("| `") {
+            break;
+        }
+        let cells = line
+            .trim_start_matches('|')
+            .split('|')
+            .map(str::trim)
+            .collect::<Vec<_>>();
+        assert!(
+            cells.len() >= 5,
+            "a `### Documents` row reads {DOCUMENT_TABLE_HEADER}: {line}"
+        );
+        let window = cells[1].to_owned();
+        let sha = cells[4].trim_matches('`').to_owned();
+        for id in cells[0].split(", ") {
+            rows.push(DocumentRow {
+                id: id.trim().trim_matches('`').to_owned(),
+                window: window.clone(),
+                sha: sha.clone(),
+            });
+        }
+    }
+    rows
+}
+
+/// The one shape a `### Documents` table may take.
+const DOCUMENT_TABLE_HEADER: &str =
+    "| Document | Window | Capture or retrieval, UTC | Tier | sha256 |";
+
+/// Design memo section 3.2: document ids are unique repository-wide. An id that
+/// resolves to two artifacts stops keying the bytes its row rests on, which is
+/// the supersession-audit failure the id scheme exists to prevent (section 8.3,
+/// D15/D16).
+///
+/// The id names the artifact, so for a CME service window it is
+/// `CME-SVC-<first eventDate>` — never the trade date of a row that reads it,
+/// which two families can reach out of two different windows.
+#[test]
+fn every_document_id_resolves_to_one_artifact_repository_wide() {
+    let mut seen: BTreeMap<String, (String, String)> = BTreeMap::new();
+    let mut resolved = 0_usize;
+    for (name, text) in evidence_files() {
+        for row in document_rows(&text) {
+            resolved = resolved.saturating_add(1);
+            let artifact = format!("{} / {}", row.window, row.sha);
+            match seen.get(&row.id) {
+                None => {
+                    seen.insert(row.id.clone(), (artifact, name.clone()));
+                }
+                Some((first, first_file)) => {
+                    assert_eq!(
+                        *first, artifact,
+                        "`{}` resolves to two artifacts: {first} in {first_file}, \
+                         {artifact} in {name}",
+                        row.id
+                    );
+                }
+            }
+        }
+    }
+    assert!(
+        resolved > 0,
+        "docs/evidence must carry at least one `### Documents` table"
+    );
+}
+
+/// The inverse: one artifact, one id. Two ids on one sha256 make a supersession
+/// undiscoverable by id, which is the same audit failure read the other way.
+#[test]
+fn every_artifact_carries_one_document_id() {
+    let mut by_sha: BTreeMap<String, (String, String)> = BTreeMap::new();
+    for (name, text) in evidence_files() {
+        for row in document_rows(&text) {
+            match by_sha.get(&row.sha) {
+                None => {
+                    by_sha.insert(row.sha.clone(), (row.id.clone(), name.clone()));
+                }
+                Some((first, first_file)) => {
+                    assert_eq!(
+                        *first, row.id,
+                        "sha256 `{}` carries two ids: `{first}` in {first_file}, `{}` in {name}",
+                        row.sha, row.id
+                    );
+                }
+            }
+        }
+    }
+}
+
+/// Every id a module cites is resolved exactly once in its evidence file's
+/// `### Documents` table, so a citation always lands on bytes.
+///
+/// Scoped to the evidence files that carry such a table: the CME service
+/// windows, whose date-shaped ids are the ones a rename can collide. Extending
+/// the fixed shape to the remaining families is recorded in the research
+/// store's `DECISIONS.md` as W1-ASM-7 and tracked as issue #98.
+#[test]
+fn every_cited_document_id_is_resolved_exactly_once() {
+    let files = evidence_files();
+    for block in holiday_blocks() {
+        for name in &block.files {
+            let text = files.get(name).unwrap_or_else(|| {
+                panic!("{} declares a missing evidence file: {name}", block.module)
+            });
+            let rows = document_rows(text);
+            if rows.is_empty() {
+                continue;
+            }
+            for row in &block.rows {
+                let hits = rows
+                    .iter()
+                    .filter(|resolved| resolved.id == row.document)
+                    .count();
+                assert_eq!(
+                    hits, 1,
+                    "{name} resolves the document `{}` that {} cites for {} {hits} times, \
+                     not once",
+                    row.document, block.module, row.day
+                );
+            }
+        }
+    }
+}
+
+/// The reverse direction of the holiday evidence fence: an evidence file's
+/// holiday table is a claim about the rows the crate ships, so a row that
+/// leaves a module may not keep its quotation.
+///
+/// The forward fence only proves that every shipped row has evidence. It is
+/// blind to a row dropped while a long table is reordered: the module stops
+/// answering for that trade date, the evidence file still records it, and
+/// nothing fails. Design memo section 3.3 asks for both directions, so require
+/// every `| <trade date> |` line under a `## Holidays` heading to name a row of
+/// a module that declares the file. A date the crate deliberately does not
+/// carry is a declared gap, which is prose beside the year's table and never a
+/// line in it.
+#[test]
+fn every_evidence_holiday_line_exists_in_its_module() {
+    let mut by_file: BTreeMap<String, BTreeMap<String, BTreeSet<String>>> = BTreeMap::new();
+    for block in holiday_blocks() {
+        for name in &block.files {
+            let shipped = by_file.entry(name.clone()).or_default();
+            for row in &block.rows {
+                shipped
+                    .entry(row.day.clone())
+                    .or_default()
+                    .insert(row.document.clone());
+            }
+        }
+    }
+
+    for (name, text) in evidence_files() {
+        let Some(holidays) = section(&text, "## Holidays") else {
+            continue;
+        };
+        let shipped = by_file.get(&name);
+        for line in holidays.lines().filter(|line| line.starts_with("| 2")) {
+            let day = line
+                .trim_start_matches('|')
+                .split('|')
+                .next()
+                .map(str::trim)
+                .expect("a holiday line carries at least one cell");
+            let documents = shipped.and_then(|rows| rows.get(day)).unwrap_or_else(|| {
+                panic!(
+                    "{name} records a {day} holiday row that no holidays! block declaring \
+                     the file ships: restore the row, or move the date to the year's gaps"
+                )
+            });
+            assert!(
+                documents
+                    .iter()
+                    .any(|document| line.contains(&format!("`{document}`"))),
+                "{name}'s {day} row cites no document id the module ships for that \
+                 trade date: {line}"
+            );
         }
     }
 }

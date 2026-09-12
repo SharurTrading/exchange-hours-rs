@@ -10,8 +10,9 @@ The supporting records are:
 
 - [verification.md](verification.md): one fixed-shape row per public exchange
   and `MarketHoursKey` — owner modules, source sets, basis with its gap kind,
-  evidence tier, service tier, horizon, review date, cadence, a basis note of at
-  most three sentences, and a link to the row's evidence file;
+  evidence tier, service tier, horizon, holiday coverage window, review date,
+  cadence, a basis note of at most three sentences, and a link to the row's
+  evidence file;
 - [`docs/evidence/<owner>.md`](../evidence/): one file per ledger row, holding
   the quotations, URLs, retrieval dates, conflicts, interpretive steps and
   residual risks behind that row (LAW-EVIDENCE-FILES);
@@ -441,8 +442,8 @@ After the comparison is complete:
 1. Update the venue row's twelve cells: owner modules, source sets, basis with
    its gap kind, evidence tier, service tier, horizon, holiday coverage window,
    review date, cadence, the basis note of at most three sentences, and the
-   evidence link. Everything the
-   note cannot hold goes into the evidence file, including any revision row the
+   evidence link. Everything the note cannot hold goes into the evidence file,
+   including any revision row the
    change adds or removes and the `## Sources` bullet behind it.
 2. Add any newly found gap rather than hiding it behind a stronger status. For
    a served identity the gap is also a GitHub issue; for a dormant one,

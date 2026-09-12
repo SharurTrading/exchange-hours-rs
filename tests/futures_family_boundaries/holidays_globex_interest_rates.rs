@@ -53,7 +53,7 @@ fn a_closed_trade_date_removes_the_whole_christmas_trading_day() {
         .expect("2025-12-25 ships a row");
     assert_eq!(holiday.kind(), HolidayKind::Closed);
     assert_eq!(holiday.tier(), EvidenceTier::T2);
-    assert_eq!(holiday.document_id(), "CME-SVC-2025-12-25");
+    assert_eq!(holiday.document_id(), "CME-SVC-2025-12-24");
 
     assert!(calendar.is_closed_trade_date(day(2025, 12, 25), SessionKind::Both));
     // Three probes inside the civil day, none of them open.
@@ -109,7 +109,7 @@ fn the_day_after_thanksgiving_clips_a_session_opened_the_previous_evening() {
             close_ssm: 12 * 3_600 + 15 * 60
         }
     );
-    assert_eq!(holiday.document_id(), "CME-SVC-2025-11-28");
+    assert_eq!(holiday.document_id(), "CME-SVC-2025-11-26");
 
     // The instant before the close, and the close itself: closes are
     // end-exclusive.

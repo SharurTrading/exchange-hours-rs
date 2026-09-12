@@ -48,33 +48,35 @@ conversion can be re-checked.
 Mon–Thu `16:00 closed`, `16:45 preopen`, `17:00 open`; Fri `16:00 closed`;
 Sat none.
 
-### Document ids
+### Documents
 
 Each id resolves to one trading-hours-service response. Expand `[THBP-A]` to
 `https://www.cmegroup.com/services/trading-hours-by-product?id=316,133,425,300,58,437,22,8478,5201,10191&pageNumber=1&pageSize=999&sortAsc=true`
 and `WA:<ts>id_/` to `https://web.archive.org/web/<ts>id_/`. Bytes and hashes
 are in the research store under
-`exchange-hours-research/holidays/raw/cme-2025-2027*/INDEX.md`; the research
-file's own local code is given in brackets.
+`exchange-hours-research/holidays/raw/cme-2025-2027*/INDEX.md`, which also
+carries each document's own research-store code.
 
-- `CME-SVC-2025-01-01` — [D01] `WA:20241220155340id_/[THBP-A]&fromEventDate=2024-12-31&toEventDate=2025-01-02`, capture 2024-12-20T15:53:40Z, sha256 `375c70eecd19c5c6204ecb408d1b3210a9da4c9a03b85ef1c7dbbcde1397ab63`.
-- `CME-SVC-2025-04-18` — [D04] `WA:20241220155340id_/[THBP-A]&fromEventDate=2025-04-17&toEventDate=2025-04-19`, capture 2024-12-20T15:53:40Z, sha256 `865a1d4f08102e00151bd87ab2b8e8a7720e9203a17aaaba24627ade3ed26e74`.
-- `CME-SVC-2025-07-04` — [D07] `WA:20241220155340id_/[THBP-A]&fromEventDate=2025-07-03&toEventDate=2025-07-05`, capture 2024-12-20T15:53:40Z, sha256 `b80cd4bfed0ae72865bfacc1936e107eb8febfcc94b37fcce1d05505c659147b`.
-- `CME-SVC-2025-11-28` — [D09] `WA:20260129012309id_/[THBP-A]&fromEventDate=2025-11-26&toEventDate=2025-11-28`, capture 2026-01-29T01:23:09Z, sha256 `6c4c598791058dd9a11aff0ddb072c761a436c6d1054b891def74c6935f020f1` (decompressed bytes). The latest of 45 captures of this window and a post-holiday statement; the 2024-12-20 publication [D09P] is superseded and agrees on every instant.
-- `CME-SVC-2025-11-29` — [D65] `[THBP-A]&fromEventDate=2025-11-26&toEventDate=2025-11-29`, live retrieval 2026-09-12T08:55:12Z, sha256 `2e9f34f20085de3ccbdff1dc29cb7463bcff93713ef0c550740d6f15e0635ab7`. The Thanksgiving window extended to the Saturday; it reproduces D09's 2025-11-26/27/28 rows event for event.
-- `CME-SVC-2025-12-24`, `CME-SVC-2025-12-25` — [D10] `WA:20260129012159id_/[THBP-A]&fromEventDate=2025-12-24&toEventDate=2025-12-26`, capture 2026-01-29T01:21:59Z, sha256 `322a2be989b67f5f4cc0ec12fd63a393383d574badd4aacc87a0c9637533d386`.
-- `CME-SVC-2026-01-01` — [D11] `WA:20260619114105id_/[THBP-A]&fromEventDate=2025-12-31&toEventDate=2026-01-02`, capture 2026-06-19T11:41:05Z, sha256 `0ed61f8328eda4746265cc8e197f10cd53aec06c2b393927bab27c913993d314`.
-- `CME-SVC-2026-04-03` — [D14] `WA:20260619114118id_/[THBP-A]&fromEventDate=2026-04-01&toEventDate=2026-04-03`, capture 2026-06-19T11:41:18Z, sha256 `54bcc271e9ba9737a99a2fe608e658de0c657075284d050fbfec4fe1aee2a2a5`.
-- `CME-SVC-2026-06-19` — [D17] `WA:20260619113404id_/[THBP-A]&fromEventDate=2026-06-18&toEventDate=2026-06-20`, capture 2026-06-19T11:34:04Z, sha256 `97fd5da371309f4486a8fb49ff2105c6c1c2396939ab7c76f1a2a1097b6f015c`.
-- `CME-SVC-2026-07-03` — [D19] `WA:20260619114108id_/[THBP-A]&fromEventDate=2026-07-03&toEventDate=2026-07-05`, capture 2026-06-19T11:41:08Z, sha256 `4b89a026358e998277f9c1ff7e095e5d4e625cdc45115fd141dc92201833155b`.
-- `CME-SVC-2026-11-27` — [D22] `[THBP-A]&fromEventDate=2026-11-25&toEventDate=2026-11-27`, live retrieval 2026-09-12, sha256 `e1f35a5623b3c5d15e7468b2cb4119e587411a9714f920605dab11bf688756d1` (byte-identical to the 2026-08-30T14:29:04Z archive capture of the same window).
-- `CME-SVC-2026-12-24` — [D24] `[THBP-A]&fromEventDate=2026-12-22&toEventDate=2026-12-24`, live retrieval 2026-09-12, sha256 `c8c0267da8cf171409ad8ca188082b3aa326e8d04a89d12503dcf9f57bf3b7ab`.
-- `CME-SVC-2026-12-25` — [D26] `[THBP-A]&fromEventDate=2026-12-24&toEventDate=2026-12-26`, live retrieval 2026-09-12, sha256 `bdc1fe831adb794bcf8aeb7e99baf6af2009d1ff9969d0a48b18b2ebc2e1e829`.
-- `CME-SVC-2027-01-01` — [D29] `[THBP-A]&fromEventDate=2026-12-31&toEventDate=2027-01-02`, live retrieval 2026-09-12, sha256 `7162652821c16f1bd05e3ec533bd5b82af03833c7186a64c7734b0b650364dcd`.
-- `CME-SVC-2027-03-26` — [D34] `[THBP-A]&fromEventDate=2027-03-25&toEventDate=2027-03-27`, live retrieval 2026-09-12, sha256 `9bd7225d440e00139f30892f3914c9b38beb8bf29d4272039b6cd8f2de926880`.
-- `CME-SVC-2027-06-18` — [D38] `[THBP-A]&fromEventDate=2027-06-17&toEventDate=2027-06-19`, live retrieval 2026-09-12, sha256 `60c9a2f5106d61039a616986b463cd852861ee4d3b91b11fac8badfa1b97b01c`.
-- `CME-SVC-2027-11-26` — [D44] `[THBP-A]&fromEventDate=2027-11-24&toEventDate=2027-11-26`, live retrieval 2026-09-12, sha256 `6aa7c0fd701a02480dabeac1fbae1a69b56e77643a29e3a9b2223c56e822ce9f`.
-- `CME-SVC-2027-12-24` — [D46] `[THBP-A]&fromEventDate=2027-12-22&toEventDate=2027-12-25`, live retrieval 2026-09-12, sha256 `5edc4dd588a32faa74f841494c10a3df48692dca29843c3581bad3e18c30fef9`.
+| Document | Window | Capture or retrieval, UTC | Tier | sha256 |
+|---|---|---|---|---|
+| `CME-SVC-2024-12-31` | 2024-12-31 .. 2025-01-02 | archive capture 2024-12-20T15:53:40Z | T2 | `375c70eecd19c5c6204ecb408d1b3210a9da4c9a03b85ef1c7dbbcde1397ab63` |
+| `CME-SVC-2025-04-17` | 2025-04-17 .. 2025-04-19 | archive capture 2024-12-20T15:53:40Z | T2 | `865a1d4f08102e00151bd87ab2b8e8a7720e9203a17aaaba24627ade3ed26e74` |
+| `CME-SVC-2025-07-03` | 2025-07-03 .. 2025-07-05 | archive capture 2024-12-20T15:53:40Z | T2 | `b80cd4bfed0ae72865bfacc1936e107eb8febfcc94b37fcce1d05505c659147b` |
+| `CME-SVC-2025-11-26` | 2025-11-26 .. 2025-11-28 | archive capture 2026-01-29T01:23:09Z | T2 | `6c4c598791058dd9a11aff0ddb072c761a436c6d1054b891def74c6935f020f1` |
+| `CME-SVC-2025-11-26-SAT` | 2025-11-26 .. 2025-11-29 | live retrieval 2026-09-12T08:55:12Z | T2 | `2e9f34f20085de3ccbdff1dc29cb7463bcff93713ef0c550740d6f15e0635ab7` |
+| `CME-SVC-2025-12-24` | 2025-12-24 .. 2025-12-26 | archive capture 2026-01-29T01:21:59Z | T2 | `322a2be989b67f5f4cc0ec12fd63a393383d574badd4aacc87a0c9637533d386` |
+| `CME-SVC-2025-12-31` | 2025-12-31 .. 2026-01-02 | archive capture 2026-06-19T11:41:05Z | T2 | `0ed61f8328eda4746265cc8e197f10cd53aec06c2b393927bab27c913993d314` |
+| `CME-SVC-2026-04-01` | 2026-04-01 .. 2026-04-03 | archive capture 2026-06-19T11:41:18Z | T2 | `54bcc271e9ba9737a99a2fe608e658de0c657075284d050fbfec4fe1aee2a2a5` |
+| `CME-SVC-2026-06-18` | 2026-06-18 .. 2026-06-20 | archive capture 2026-06-19T11:34:04Z | T2 | `97fd5da371309f4486a8fb49ff2105c6c1c2396939ab7c76f1a2a1097b6f015c` |
+| `CME-SVC-2026-07-03` | 2026-07-03 .. 2026-07-05 | archive capture 2026-06-19T11:41:08Z | T2 | `4b89a026358e998277f9c1ff7e095e5d4e625cdc45115fd141dc92201833155b` |
+| `CME-SVC-2026-11-25` | 2026-11-25 .. 2026-11-27 | live retrieval 2026-09-12T04:30Z | T2 | `e1f35a5623b3c5d15e7468b2cb4119e587411a9714f920605dab11bf688756d1` |
+| `CME-SVC-2026-12-22` | 2026-12-22 .. 2026-12-24 | live retrieval 2026-09-12T04:30Z | T2 | `c8c0267da8cf171409ad8ca188082b3aa326e8d04a89d12503dcf9f57bf3b7ab` |
+| `CME-SVC-2026-12-24` | 2026-12-24 .. 2026-12-26 | live retrieval 2026-09-12T04:30Z | T2 | `bdc1fe831adb794bcf8aeb7e99baf6af2009d1ff9969d0a48b18b2ebc2e1e829` |
+| `CME-SVC-2026-12-31` | 2026-12-31 .. 2027-01-02 | live retrieval 2026-09-12T04:30Z | T2 | `7162652821c16f1bd05e3ec533bd5b82af03833c7186a64c7734b0b650364dcd` |
+| `CME-SVC-2027-03-25` | 2027-03-25 .. 2027-03-27 | live retrieval 2026-09-12T04:30Z | T2 | `9bd7225d440e00139f30892f3914c9b38beb8bf29d4272039b6cd8f2de926880` |
+| `CME-SVC-2027-06-17` | 2027-06-17 .. 2027-06-19 | live retrieval 2026-09-12T04:30Z | T2 | `60c9a2f5106d61039a616986b463cd852861ee4d3b91b11fac8badfa1b97b01c` |
+| `CME-SVC-2027-11-24` | 2027-11-24 .. 2027-11-26 | live retrieval 2026-09-12T04:30Z | T2 | `6aa7c0fd701a02480dabeac1fbae1a69b56e77643a29e3a9b2223c56e822ce9f` |
+| `CME-SVC-2027-12-22` | 2027-12-22 .. 2027-12-25 | live retrieval 2026-09-12T04:30Z | T2 | `5edc4dd588a32faa74f841494c10a3df48692dca29843c3581bad3e18c30fef9` |
 
 Corroborating, keying no row: [D50] `WA:20250830021420id_/https://www.cmegroup.com/trading-hours.html`, capture
 2025-08-30T02:14:20Z — the **T1** operator page, which names FX among the four
@@ -84,13 +86,13 @@ groups that traded on Good Friday 2026 but states no instants.
 
 | Trade date | Kind | Instant as printed | Document | Tier | Derived from |
 |---|---|---|---|---|---|
-| 2025-01-01 | closed | `16:00 preopen; 17:00 open` — both events carry CME trade date 2025-01-02, so no session belongs to trade date 2025-01-01 | `CME-SVC-2025-01-01` | T2 | eventDate 2024-12-31 (`16:00 closed`, CME trade date 2024-12-31, no evening re-open) and eventDate 2025-01-01, CME trade date 2025-01-02 |
-| 2025-04-18 | closed | `no events published` | `CME-SVC-2025-04-18` | T2 | eventDate 2025-04-17 (`16:00 closed`, CME trade date 2025-04-17, no evening re-open) and eventDate 2025-04-18 |
-| 2025-07-04 | early close | `12:00 closed` — 12:00 CT | `CME-SVC-2025-07-04` | T2 | eventDate 2025-07-04, CME trade date 2025-07-04 |
-| 2025-11-28 | early close | `07:00 preopen; 07:30 open; 13:45 closed` — 13:45 CT | `CME-SVC-2025-11-28` | T2 | eventDate 2025-11-28, CME trade date 2025-11-28 |
-| 2025-11-29 | closed | `no events published` | `CME-SVC-2025-11-29` | T2 | eventDate 2025-11-29 |
+| 2025-01-01 | closed | `16:00 preopen; 17:00 open` — both events carry CME trade date 2025-01-02, so no session belongs to trade date 2025-01-01 | `CME-SVC-2024-12-31` | T2 | eventDate 2024-12-31 (`16:00 closed`, CME trade date 2024-12-31, no evening re-open) and eventDate 2025-01-01, CME trade date 2025-01-02 |
+| 2025-04-18 | closed | `no events published` | `CME-SVC-2025-04-17` | T2 | eventDate 2025-04-17 (`16:00 closed`, CME trade date 2025-04-17, no evening re-open) and eventDate 2025-04-18 |
+| 2025-07-04 | early close | `12:00 closed` — 12:00 CT | `CME-SVC-2025-07-03` | T2 | eventDate 2025-07-04, CME trade date 2025-07-04 |
+| 2025-11-28 | early close | `07:00 preopen; 07:30 open; 13:45 closed` — 13:45 CT | `CME-SVC-2025-11-26` | T2 | eventDate 2025-11-28, CME trade date 2025-11-28 |
+| 2025-11-29 | closed | `no events published` | `CME-SVC-2025-11-26-SAT` | T2 | eventDate 2025-11-29 |
 | 2025-12-24 | early close | `12:45 closed` — 12:45 CT | `CME-SVC-2025-12-24` | T2 | eventDate 2025-12-24, CME trade date 2025-12-24 |
-| 2025-12-25 | closed | `16:00 preopen; 17:00 open` — both events carry CME trade date 2025-12-26 | `CME-SVC-2025-12-25` | T2 | eventDate 2025-12-25, CME trade date 2025-12-26 |
+| 2025-12-25 | closed | `16:00 preopen; 17:00 open` — both events carry CME trade date 2025-12-26 | `CME-SVC-2025-12-24` | T2 | eventDate 2025-12-25, CME trade date 2025-12-26 |
 
 **Interpretive steps, 2025.**
 
@@ -158,13 +160,13 @@ groups that traded on Good Friday 2026 but states no instants.
 
 | Trade date | Kind | Instant as printed | Document | Tier | Derived from |
 |---|---|---|---|---|---|
-| 2026-01-01 | closed | `16:00 preopen; 17:00 open` — both events carry CME trade date 2026-01-02 | `CME-SVC-2026-01-01` | T2 | eventDate 2025-12-31 (`16:00 closed`, CME trade date 2025-12-31, no evening re-open) and eventDate 2026-01-01, CME trade date 2026-01-02 |
-| 2026-04-03 | early close | `10:15 closed` — 10:15 CT | `CME-SVC-2026-04-03` | T2 | eventDate 2026-04-03, CME trade date 2026-04-03 |
-| 2026-06-19 | early close | `12:00 closed` — 12:00 CT | `CME-SVC-2026-06-19` | T2 | eventDate 2026-06-19, CME trade date 2026-06-22 |
+| 2026-01-01 | closed | `16:00 preopen; 17:00 open` — both events carry CME trade date 2026-01-02 | `CME-SVC-2025-12-31` | T2 | eventDate 2025-12-31 (`16:00 closed`, CME trade date 2025-12-31, no evening re-open) and eventDate 2026-01-01, CME trade date 2026-01-02 |
+| 2026-04-03 | early close | `10:15 closed` — 10:15 CT | `CME-SVC-2026-04-01` | T2 | eventDate 2026-04-03, CME trade date 2026-04-03 |
+| 2026-06-19 | early close | `12:00 closed` — 12:00 CT | `CME-SVC-2026-06-18` | T2 | eventDate 2026-06-19, CME trade date 2026-06-22 |
 | 2026-07-03 | early close | `12:00 closed` — 12:00 CT | `CME-SVC-2026-07-03` | T2 | eventDate 2026-07-03, CME trade date 2026-07-06 |
-| 2026-11-27 | early close | `13:45 closed` — 13:45 CT | `CME-SVC-2026-11-27` | T2 | eventDate 2026-11-27, CME trade date 2026-11-27 |
-| 2026-12-24 | early close | `12:45 closed` — 12:45 CT | `CME-SVC-2026-12-24` | T2 | eventDate 2026-12-24, CME trade date 2026-12-24 |
-| 2026-12-25 | closed | `no events published` | `CME-SVC-2026-12-25` | T2 | eventDate 2026-12-24 (early close above, no evening re-open) and eventDate 2026-12-25 |
+| 2026-11-27 | early close | `13:45 closed` — 13:45 CT | `CME-SVC-2026-11-25` | T2 | eventDate 2026-11-27, CME trade date 2026-11-27 |
+| 2026-12-24 | early close | `12:45 closed` — 12:45 CT | `CME-SVC-2026-12-22` | T2 | eventDate 2026-12-24, CME trade date 2026-12-24 |
+| 2026-12-25 | closed | `no events published` | `CME-SVC-2026-12-24` | T2 | eventDate 2026-12-24 (early close above, no evening re-open) and eventDate 2026-12-25 |
 
 **Interpretive steps, 2026.**
 
@@ -209,11 +211,11 @@ groups that traded on Good Friday 2026 but states no instants.
 
 | Trade date | Kind | Instant as printed | Document | Tier | Derived from |
 |---|---|---|---|---|---|
-| 2027-01-01 | closed | `no events published` | `CME-SVC-2027-01-01` | T2 | eventDate 2026-12-31 (`16:00 closed`, CME trade date 2026-12-31, no evening re-open) and eventDate 2027-01-01 |
-| 2027-03-26 | closed | `no events published` | `CME-SVC-2027-03-26` | T2 | eventDate 2027-03-25 (`16:00 closed`, CME trade date 2027-03-25, no evening re-open) and eventDate 2027-03-26 |
-| 2027-06-18 | early close | `12:00 closed` — 12:00 CT | `CME-SVC-2027-06-18` | T2 | eventDate 2027-06-18, CME trade date 2027-06-21 |
-| 2027-11-26 | early close | `13:45 closed` — 13:45 CT | `CME-SVC-2027-11-26` | T2 | eventDate 2027-11-26, CME trade date 2027-11-26 |
-| 2027-12-24 | closed | `no events published` | `CME-SVC-2027-12-24` | T2 | eventDate 2027-12-23 (`16:00 closed`, CME trade date 2027-12-23, no evening re-open) and eventDate 2027-12-24 |
+| 2027-01-01 | closed | `no events published` | `CME-SVC-2026-12-31` | T2 | eventDate 2026-12-31 (`16:00 closed`, CME trade date 2026-12-31, no evening re-open) and eventDate 2027-01-01 |
+| 2027-03-26 | closed | `no events published` | `CME-SVC-2027-03-25` | T2 | eventDate 2027-03-25 (`16:00 closed`, CME trade date 2027-03-25, no evening re-open) and eventDate 2027-03-26 |
+| 2027-06-18 | early close | `12:00 closed` — 12:00 CT | `CME-SVC-2027-06-17` | T2 | eventDate 2027-06-18, CME trade date 2027-06-21 |
+| 2027-11-26 | early close | `13:45 closed` — 13:45 CT | `CME-SVC-2027-11-24` | T2 | eventDate 2027-11-26, CME trade date 2027-11-26 |
+| 2027-12-24 | closed | `no events published` | `CME-SVC-2027-12-22` | T2 | eventDate 2027-12-23 (`16:00 closed`, CME trade date 2027-12-23, no evening re-open) and eventDate 2027-12-24 |
 
 **Interpretive steps, 2027.**
 

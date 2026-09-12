@@ -11,6 +11,64 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ## [Unreleased]
 
+### Fixed
+
+- **The coverage gate applied no built-in holiday row on six families' post-close
+  order-entry windows.** `resolve_rule_bounds` dates an occurrence by the local
+  date of the *trading day's* final close, never of the rule's own close, so an
+  occurrence that opens after its own trading day has closed — CBOT's
+  14:30-16:00 CT order-entry window on a Friday, ICE's 13:30/14:00/14:30-18:00 ET
+  post-close queues — belongs to the next trading day, three or more local days
+  later. The gate's window was `[D, D + 1]`, which is not a superset of that, so
+  `globex_grains`, `globex_livestock`, `ice_us_sugar`, `ice_us_coffee`,
+  `ice_us_cocoa` and `ice_us_orange_juice` answered `is_accepting_orders`,
+  `session_state` and `trade_date` as though the holiday did not exist on those
+  windows — and flipped their answer when an unrelated, empty caller layer was
+  attached. The window is now the span the derivation can actually walk,
+  `[D - 1, D + 19]`, and a new fence runs the design memo's gate-soundness sweep
+  over every shipped row of every identity that has a table. `is_open` was never
+  wrong; every diverging instant was order-entry-only. Restoring the ~97 %
+  fast-path exit rate behind a *proved* narrowing is tracked in #97.
+- **`globex_cryptocurrency` deleted about 23 hours of published trading on nine
+  five-day-era holidays.** CME printed a 16:00 CT pre-open in place of the 16:00
+  CT final close on 2025-01-20, 2025-02-17, 2025-05-26, 2025-06-19, 2025-09-01,
+  2025-11-27, 2026-01-19, 2026-02-16 and 2026-05-25, with every event carrying
+  the following business date. Matching ran through to 16:00 CT as on a normal
+  day and only the trade-date label moved; the five-day era's weekend close
+  short-circuits the business-date roll, so a `Closed` row deleted the whole
+  trading day instead. Those nine rows are withdrawn and the dates are declared
+  gaps — the scalar vocabulary cannot state a trade-date merge (#93) — which is
+  how `globex_fx` already read the same records.
+- **Saturday 2025-11-29 now ships in every CME family that routes to the venue.**
+  CME published the closure once, for both product sets, and five families
+  encoded it while three withheld it, so `holiday_on(2025-11-29)` contradicted
+  itself across one complex. `globex_equity_index`, `globex_cryptocurrency` and
+  `globex_nikkei_225_dollar` gain the row; the venue intersection (#95) now has
+  one uniform input. No runtime answer changes — none of the three has a Saturday
+  trade date in 2025.
+- **Six served identities that ship a holiday table move from a quarterly to a
+  monthly review cadence** (`cfe`, `eurex`, `iceus`, `globex_grains`,
+  `globex_livestock`, `globex_nikkei_225_dollar`), which is what LAW-WATCH and
+  the design memo direct for a family whose operator republishes its calendar
+  yearly and issues errata. A ledger fence now holds it there.
+- **Documentation.** The public rustdoc for `ExchangeCalendar::holiday_on` and
+  `holiday_coverage`, the crate-root Scope section, `DayPolicy` and the calendar
+  module overview still said no holiday table ships, which told the consumer that
+  `holiday_on` is always `None`. LAW-HOLIDAY-SCOPE in `AGENTS.md` and
+  `docs/schedules/sources.md` said holiday tables are sourced at T1, while every
+  shipped CME row is T2. Both are corrected.
+- **Evidence records.** Three `CME-SVC-*` document ids each resolved to two
+  different service windows in different owners' evidence files, so a row's cited
+  id no longer identified the bytes it rested on. Every CME service-window id is
+  now `CME-SVC-<first eventDate>` — the artifact's own name — and every CME
+  evidence file carries one `### Documents` table in one fixed shape, with
+  `globex_interest_rates.md` gaining the sha256 column it had never carried.
+  Three new fences assert that an id resolves to one artifact repository-wide,
+  that an artifact carries one id, and that every cited id resolves exactly once;
+  extending the fixed shape to the non-CME families is tracked in #98. A fourth
+  new fence closes the reverse direction of the holiday evidence check, so a row
+  dropped from a module can no longer keep its quotation.
+
 ### Added
 
 - **Built-in holiday tables for the served CME families and the 2026 venue

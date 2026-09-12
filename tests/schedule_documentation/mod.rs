@@ -294,6 +294,12 @@ fn assert_row_shape(row: &str, cutoff: NaiveDate, today: NaiveDate, synthetic_na
         horizon == "\u{2014}" || NaiveDate::parse_from_str(horizon, "%Y-%m-%d").is_ok(),
         "horizon must be an ISO date or an em dash: {row}"
     );
+    assert!(
+        service != "served" || holidays == "\u{2014}" || cadence == "monthly",
+        "LAW-WATCH: a served identity that ships a holiday table is reviewed \
+         monthly, because the operator republishes its calendar yearly and \
+         issues errata: {row}"
+    );
     assert_eq!(
         holidays,
         shipped_holiday_window(wire_name(row)),

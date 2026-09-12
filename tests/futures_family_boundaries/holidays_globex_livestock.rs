@@ -78,7 +78,7 @@ fn a_closed_trade_date_removes_the_whole_civil_day() {
         .holiday_on(christmas)
         .expect("2025-12-25 is a shipped row");
     assert_eq!(row.tier(), EvidenceTier::T2);
-    assert_eq!(row.document_id(), "CME-SVC-2025-12-25");
+    assert_eq!(row.document_id(), "CME-SVC-2025-12-24");
 
     assert!(calendar.is_closed_trade_date(christmas, SessionKind::Both));
     assert!(calendar.is_closed_all_day_on(christmas, SessionKind::Both));

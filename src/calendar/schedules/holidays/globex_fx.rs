@@ -50,24 +50,24 @@ use super::{EvidenceTier::T2, HolidayKind::Closed, HolidayTable, holidays};
 pub(crate) static TABLE: &HolidayTable = holidays! {
     coverage: (2025, 1, 1) ..= (2027, 12, 31),
     rows: [
-        // 2025-01-01 - T2 - CME-SVC-2025-01-01 - New Year's Day; no day session,
+        // 2025-01-01 - T2 - CME-SVC-2024-12-31 - New Year's Day; no day session,
         // only the 16:00 CT queue and 17:00 CT open for trade date 2025-01-02.
-        (2025, 1, 1, Closed, T2, "CME-SVC-2025-01-01"),
-        // 2025-04-18 - T2 - CME-SVC-2025-04-18 - Good Friday, no events published.
-        (2025, 4, 18, Closed, T2, "CME-SVC-2025-04-18"),
-        // 2025-07-04 - T2 - CME-SVC-2025-07-04 - Independence Day, 12:00 CT close.
-        (2025, 7, 4, early_close(12 * 3_600), T2, "CME-SVC-2025-07-04"),
-        // 2025-11-28 - T2 - CME-SVC-2025-11-28 - day after Thanksgiving, 13:45 CT close.
+        (2025, 1, 1, Closed, T2, "CME-SVC-2024-12-31"),
+        // 2025-04-18 - T2 - CME-SVC-2025-04-17 - Good Friday, no events published.
+        (2025, 4, 18, Closed, T2, "CME-SVC-2025-04-17"),
+        // 2025-07-04 - T2 - CME-SVC-2025-07-03 - Independence Day, 12:00 CT close.
+        (2025, 7, 4, early_close(12 * 3_600), T2, "CME-SVC-2025-07-03"),
+        // 2025-11-28 - T2 - CME-SVC-2025-11-26 - day after Thanksgiving, 13:45 CT close.
         (
             2025,
             11,
             28,
             early_close(13 * 3_600 + 45 * 60),
             T2,
-            "CME-SVC-2025-11-28"
+            "CME-SVC-2025-11-26"
         ),
-        // 2025-11-29 - T2 - CME-SVC-2025-11-29 - Thanksgiving Saturday, no events.
-        (2025, 11, 29, Closed, T2, "CME-SVC-2025-11-29"),
+        // 2025-11-29 - T2 - CME-SVC-2025-11-26-SAT - Thanksgiving Saturday, no events.
+        (2025, 11, 29, Closed, T2, "CME-SVC-2025-11-26-SAT"),
         // 2025-12-24 - T2 - CME-SVC-2025-12-24 - Christmas Eve, 12:45 CT close.
         (
             2025,
@@ -77,13 +77,13 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
             T2,
             "CME-SVC-2025-12-24"
         ),
-        // 2025-12-25 - T2 - CME-SVC-2025-12-25 - Christmas Day; no day session,
+        // 2025-12-25 - T2 - CME-SVC-2025-12-24 - Christmas Day; no day session,
         // only the 16:00 CT queue and 17:00 CT open for trade date 2025-12-26.
-        (2025, 12, 25, Closed, T2, "CME-SVC-2025-12-25"),
-        // 2026-01-01 - T2 - CME-SVC-2026-01-01 - New Year's Day; no day session,
+        (2025, 12, 25, Closed, T2, "CME-SVC-2025-12-24"),
+        // 2026-01-01 - T2 - CME-SVC-2025-12-31 - New Year's Day; no day session,
         // only the 16:00 CT queue and 17:00 CT open for trade date 2026-01-02.
-        (2026, 1, 1, Closed, T2, "CME-SVC-2026-01-01"),
-        // 2026-04-03 - T2 - CME-SVC-2026-04-03 - Good Friday, 10:15 CT close; CME's
+        (2026, 1, 1, Closed, T2, "CME-SVC-2025-12-31"),
+        // 2026-04-03 - T2 - CME-SVC-2026-04-01 - Good Friday, 10:15 CT close; CME's
         // own page names FX as one of the four groups that traded that morning.
         (
             2026,
@@ -91,48 +91,48 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
             3,
             early_close(10 * 3_600 + 15 * 60),
             T2,
-            "CME-SVC-2026-04-03"
+            "CME-SVC-2026-04-01"
         ),
-        // 2026-06-19 - T2 - CME-SVC-2026-06-19 - Juneteenth, 12:00 CT close.
-        (2026, 6, 19, early_close(12 * 3_600), T2, "CME-SVC-2026-06-19"),
+        // 2026-06-19 - T2 - CME-SVC-2026-06-18 - Juneteenth, 12:00 CT close.
+        (2026, 6, 19, early_close(12 * 3_600), T2, "CME-SVC-2026-06-18"),
         // 2026-07-03 - T2 - CME-SVC-2026-07-03 - Independence Day observed, 12:00 CT close.
         (2026, 7, 3, early_close(12 * 3_600), T2, "CME-SVC-2026-07-03"),
-        // 2026-11-27 - T2 - CME-SVC-2026-11-27 - day after Thanksgiving, 13:45 CT close.
+        // 2026-11-27 - T2 - CME-SVC-2026-11-25 - day after Thanksgiving, 13:45 CT close.
         (
             2026,
             11,
             27,
             early_close(13 * 3_600 + 45 * 60),
             T2,
-            "CME-SVC-2026-11-27"
+            "CME-SVC-2026-11-25"
         ),
-        // 2026-12-24 - T2 - CME-SVC-2026-12-24 - Christmas Eve, 12:45 CT close.
+        // 2026-12-24 - T2 - CME-SVC-2026-12-22 - Christmas Eve, 12:45 CT close.
         (
             2026,
             12,
             24,
             early_close(12 * 3_600 + 45 * 60),
             T2,
-            "CME-SVC-2026-12-24"
+            "CME-SVC-2026-12-22"
         ),
-        // 2026-12-25 - T2 - CME-SVC-2026-12-25 - Christmas Day, no events published.
-        (2026, 12, 25, Closed, T2, "CME-SVC-2026-12-25"),
-        // 2027-01-01 - T2 - CME-SVC-2027-01-01 - New Year's Day, no events published.
-        (2027, 1, 1, Closed, T2, "CME-SVC-2027-01-01"),
-        // 2027-03-26 - T2 - CME-SVC-2027-03-26 - Good Friday, no events published.
-        (2027, 3, 26, Closed, T2, "CME-SVC-2027-03-26"),
-        // 2027-06-18 - T2 - CME-SVC-2027-06-18 - Juneteenth observed, 12:00 CT close.
-        (2027, 6, 18, early_close(12 * 3_600), T2, "CME-SVC-2027-06-18"),
-        // 2027-11-26 - T2 - CME-SVC-2027-11-26 - day after Thanksgiving, 13:45 CT close.
+        // 2026-12-25 - T2 - CME-SVC-2026-12-24 - Christmas Day, no events published.
+        (2026, 12, 25, Closed, T2, "CME-SVC-2026-12-24"),
+        // 2027-01-01 - T2 - CME-SVC-2026-12-31 - New Year's Day, no events published.
+        (2027, 1, 1, Closed, T2, "CME-SVC-2026-12-31"),
+        // 2027-03-26 - T2 - CME-SVC-2027-03-25 - Good Friday, no events published.
+        (2027, 3, 26, Closed, T2, "CME-SVC-2027-03-25"),
+        // 2027-06-18 - T2 - CME-SVC-2027-06-17 - Juneteenth observed, 12:00 CT close.
+        (2027, 6, 18, early_close(12 * 3_600), T2, "CME-SVC-2027-06-17"),
+        // 2027-11-26 - T2 - CME-SVC-2027-11-24 - day after Thanksgiving, 13:45 CT close.
         (
             2027,
             11,
             26,
             early_close(13 * 3_600 + 45 * 60),
             T2,
-            "CME-SVC-2027-11-26"
+            "CME-SVC-2027-11-24"
         ),
-        // 2027-12-24 - T2 - CME-SVC-2027-12-24 - Christmas Friday closure, no events.
-        (2027, 12, 24, Closed, T2, "CME-SVC-2027-12-24"),
+        // 2027-12-24 - T2 - CME-SVC-2027-12-22 - Christmas Friday closure, no events.
+        (2027, 12, 24, Closed, T2, "CME-SVC-2027-12-22"),
     ],
 };

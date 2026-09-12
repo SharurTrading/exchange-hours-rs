@@ -83,18 +83,25 @@ fn a_closed_trade_date_has_no_session_and_no_trade_date() {
     assert!(!calendar.is_open(ct(2025, 12, 24, 17, 30)));
 }
 
-/// The Monday holidays of the five-day era behave the same way: the block that
-/// opened Sunday at 17:00 CT carried the Monday trade date and goes with it.
+/// The five-day era's `[N3]` holidays are a trade-date merge, not a closure:
+/// CME published a 16:00 CT pre-open in place of the 16:00 CT final close, with
+/// no `[N6]` predecessor on the preceding evening, so matching ran from Sunday
+/// 17:00 CT through to 16:00 CT as on a normal Monday and only the trade-date
+/// label moved. The table carries no row, and the normal week answers.
 #[test]
-fn a_closed_monday_removes_the_sunday_evening_block() {
+fn a_trade_date_merge_keeps_the_sunday_evening_block() {
     let calendar = crypto();
 
-    assert_eq!(kind_on(day(2025, 1, 20)), Some(HolidayKind::Closed));
-    assert!(!calendar.is_open(ct(2025, 1, 19, 18, 0)));
-    assert!(!calendar.is_open(ct(2025, 1, 20, 9, 0)));
-    assert_eq!(calendar.trade_date(ct(2025, 1, 20, 9, 0)), None);
-
-    // Monday's own 17:00 CT open feeds Tuesday and is untouched.
+    assert_eq!(kind_on(day(2025, 1, 20)), None);
+    for probe in [
+        ct(2025, 1, 19, 18, 0),
+        ct(2025, 1, 20, 9, 0),
+        ct(2025, 1, 20, 15, 0),
+    ] {
+        assert!(calendar.is_open(probe), "2025-01-20 matched at {probe}");
+        assert_eq!(calendar.trade_date(probe), Some(day(2025, 1, 20)));
+    }
+    assert!(!calendar.is_open(ct(2025, 1, 20, 16, 0)));
     assert!(calendar.is_open(ct(2025, 1, 20, 17, 30)));
     assert_eq!(
         calendar.trade_date(ct(2025, 1, 20, 17, 30)),
@@ -139,14 +146,14 @@ fn an_early_close_ends_a_day_that_opened_the_previous_evening() {
     assert!(!calendar.is_open(ct(2025, 7, 4, 18, 0)));
 }
 
-/// The day after Thanksgiving 2025 stops at 13:45 CT, and its own trade date
-/// survives even though the Thursday before it is closed.
+/// The day after Thanksgiving 2025 stops at 13:45 CT. The Thursday before it is
+/// a trade-date merge and carries no row, so the early close stands on its own.
 #[test]
-fn an_early_close_survives_a_closed_neighbour() {
+fn an_early_close_stands_without_a_closed_neighbour() {
     let calendar = crypto();
     let cutoff = ct(2025, 11, 28, 13, 45);
 
-    assert_eq!(kind_on(day(2025, 11, 27)), Some(HolidayKind::Closed));
+    assert_eq!(kind_on(day(2025, 11, 27)), None);
     assert_eq!(
         kind_on(day(2025, 11, 28)),
         Some(HolidayKind::EarlyClose {

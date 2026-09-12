@@ -35,13 +35,13 @@
 //!
 //! ## What this calendar is not
 //!
-//! Built-in profiles are **normal-week** models and ship no holiday data.
+//! Built-in profiles are **normal-week** models; a holiday never bends one.
 //! Callers can overlay their own deterministic, trade-date-keyed closures and
 //! early/late boundaries with [`DayPolicy`], [`StaticDayPolicy`], and
 //! [`PolicyCalendar`]. The [`schedules::holidays`] engine is the innermost
 //! layer those two overlay: it resolves a per-family table once per query and
-//! composes with the caller's `DayPolicy` by tightening, and it carries no rows
-//! yet (LAW-HOLIDAY-SCOPE). A special day that replaces or splits internal phases
+//! composes with the caller's `DayPolicy` by tightening, and it carries rows
+//! for the served CME families and the 2026 venue block (LAW-HOLIDAY-SCOPE). A special day that replaces or splits internal phases
 //! needs the exception layer instead: [`SessionExceptionSource`] and
 //! [`StaticSessionExceptions`] replace a whole trade date with an ordered
 //! [`ExceptionBlock`] set, and the caller's [`DayPolicy`] then overlays that

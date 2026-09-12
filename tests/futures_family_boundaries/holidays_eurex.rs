@@ -5,7 +5,12 @@
 //!
 //! Eurex publishes closures only — no early close and no late open — so §4.1
 //! cases 2, 3 and 4 have nothing to exercise here and the block says so rather
-//! than inventing a row. Coverage stops at 2026-12-31 because Eurex's 2027
+//! than inventing a row. Case 5's wrap removal and case 6's trade-date
+//! consequence are **not** vacuous: `eurex_fixed_income` carries Eurex's
+//! 22:00-22:10 CET post-trading phase, whose occurrence on local date `D`
+//! belongs to trade date `D + 1`, so a closure deletes the preceding evening's
+//! leg. The two benchmark-index identities run 02:15-22:00 CET and have no such
+//! leg; that absence is fenced below rather than assumed. Coverage stops at 2026-12-31 because Eurex's 2027
 //! calendar is published "on a preliminary and indicative basis", which
 //! LAW-NO-FABRICATED-DATES keeps out of a runtime table; the last test is the
 //! fence on that.
@@ -159,6 +164,63 @@ fn detaching_the_table_restores_the_normal_week() {
         assert_eq!(
             calendar.without_holidays().holiday_coverage(),
             None,
+            "{name}"
+        );
+    }
+}
+
+#[test]
+fn the_christmas_eve_closure_takes_the_evening_leg_off_its_trade_date() {
+    // §4.1 case 6, the trade-date consequence. `eurex_fixed_income` is the one
+    // Eurex identity with a post-close leg: its 22:00-22:10 CET order-entry
+    // window on 23 December carries trade date 2026-12-24, so the closure
+    // deletes it. The two benchmark-index identities have no such leg, and the
+    // absence is fenced rather than assumed.
+    let eve_evening = cet((2026, 12, 23), (22, 5, 0));
+    let control = cet((2026, 12, 22), (22, 5, 0));
+
+    let fixed_income = calendar_for_market_hours_key(MarketHoursKey::EurexFixedIncome);
+    assert_eq!(
+        fixed_income.without_holidays().trade_date(eve_evening),
+        Some(day(2026, 12, 24)),
+        "the eve's evening leg belongs to the holiday's trade date"
+    );
+    assert_eq!(
+        fixed_income.trade_date(eve_evening),
+        None,
+        "the 24 December closure removes it"
+    );
+    assert!(!fixed_income.is_accepting_orders(eve_evening));
+    assert!(
+        fixed_income
+            .without_holidays()
+            .is_accepting_orders(eve_evening)
+    );
+    // The same leg one day earlier carries an open trade date and survives.
+    assert_eq!(fixed_income.trade_date(control), Some(day(2026, 12, 23)));
+    assert!(fixed_income.is_accepting_orders(control));
+    // Inside 23 December the trade date is the civil date and is untouched.
+    assert_eq!(
+        fixed_income.trade_date(cet((2026, 12, 23), (12, 0, 0))),
+        Some(day(2026, 12, 23))
+    );
+
+    for (name, calendar) in [
+        ("Exchange::Eurex", calendar_for_exchange(Exchange::Eurex)),
+        (
+            "MarketHoursKey::Eurex",
+            calendar_for_market_hours_key(MarketHoursKey::Eurex),
+        ),
+    ] {
+        assert_eq!(
+            calendar.without_holidays().trade_date(eve_evening),
+            None,
+            "{name} has no post-close leg for a closure to remove"
+        );
+        assert_eq!(calendar.trade_date(eve_evening), None, "{name}");
+        assert_eq!(
+            calendar.trade_date(cet((2026, 12, 23), (12, 0, 0))),
+            Some(day(2026, 12, 23)),
             "{name}"
         );
     }

@@ -118,6 +118,25 @@ fn ledger_covers_every_market_hours_key_variant() {
     );
 }
 
+/// Returns whether `quoted` is a name the unsupported-family register
+/// *refuses*, as opposed to merely mentioning.
+///
+/// The register's own preamble says it "has three parts": the ambiguous name,
+/// the rejections on evidence, and the blocked keys. Only a first-cell table
+/// entry (the ambiguous and blocked tables) or a rejection-section heading
+/// puts a name in one of those three. A bare `contains` over the whole file
+/// also matches prose that says the opposite — the commodity-index BTIC
+/// section's "They must **not** ride `globex_bloomberg_commodity_index`" would
+/// answer for that name and let it be dropped from the plan unnoticed.
+fn names_in_unsupported_register(quoted: &str) -> bool {
+    UNSUPPORTED_FAMILIES.lines().any(|line| {
+        if line.starts_with("###") {
+            return line.contains(quoted);
+        }
+        line.starts_with("| ") && row_cells(line).first() == Some(&quoted)
+    })
+}
+
 /// Asserts every key name the trade-type handoff proposes is accounted for.
 ///
 /// Guards `docs/plans/2026-09-05-cme-trade-type-handoff.md` against the three
@@ -125,9 +144,14 @@ fn ledger_covers_every_market_hours_key_variant() {
 /// `MarketHoursKey` enum, the rejected/blocked register
 /// `docs/schedules/unsupported-families.md`, or the live work list
 /// `docs/plans/2026-09-12-cme-trade-type-keys.md`. The handoff proposes
-/// thirty-eight names the crate does not yet ship, delivered over thirteen
-/// PRs; without this fence a name can be quietly dropped between two of them
-/// and nothing says so.
+/// thirty-eight names the crate does not yet ship; thirty-one of them are
+/// answered by the work list alone. Presence there is textual and permanent —
+/// the plan is a dated record and no later PR in the sequence prunes it — so
+/// this fence cannot tell a key its PR shipped from one its PR silently
+/// skipped. What it does guarantee is that no surveyed name becomes
+/// unanswerable: removing a name from the work list or the register without
+/// authoring or rejecting the key goes red, which is how a deliberate drop
+/// (PR 12, gated on issue #72) is caught.
 ///
 /// A red here means a `globex_*` name appears in the handoff and nowhere else.
 /// **The correct response is to author or reject the key, never to edit the
@@ -146,7 +170,7 @@ fn handoff_keys_are_registered_or_rejected() {
     for name in proposed {
         let registered = name.parse::<MarketHoursKey>().is_ok();
         let quoted = format!("`{name}`");
-        let rejected = UNSUPPORTED_FAMILIES.contains(&quoted);
+        let rejected = names_in_unsupported_register(&quoted);
         let scheduled = TRADE_TYPE_PLAN.contains(&quoted);
 
         assert!(

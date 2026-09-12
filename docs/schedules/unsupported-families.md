@@ -84,19 +84,25 @@ close it.
 
 ### Treasury TAS — `TNT`, `UBT`, `ZBT`, `ZFT`, `ZNS`, `ZTT`
 
-The launch is dated — SER-8863, and CME Globex Notice 2021-10-18 for trade date
-2021-11-15 — but **no CME document states the hours**. The 14:00 CT close is
-feed-only and equals the end of CME's stated Treasuries settlement range,
-`13:59:30-14:00:00 CT`; under LAW-SESSION-NOT-EXPIRY that coincidence proves
-nothing about the session.
+Both CME documents that date the launch — SER-8863 and CME Globex Notice
+2021-10-18, each naming trade date 2021-11-15 — state that day
+**conditionally**, so whether either anchors an effective day is the referred
+question [#71](https://github.com/SharurTrading/exchange-hours-rs/issues/71).
+It does not matter for this verdict: **no CME document states the hours**
+either way. The 14:00 CT close is feed-only and equals the end of CME's stated
+Treasuries settlement range, `13:59:30-14:00:00 CT`; under
+LAW-SESSION-NOT-EXPIRY that coincidence proves nothing about the session.
 
 SER-8863 **was retrieved** (294,279 bytes) and states no hours anywhere — do
 not re-fetch it. Two further defects in it are recorded so the next reader does
 not re-derive them: its body is conditional
 (*"and pending all relevant CFTC regulatory review periods"*), so its header
-Effective Date is not an unconditional anchor on its own; and its summary table
-prints `ZNT` for the Ultra 10-Year where its own Exhibit 1 and the Globex
-Product Reference Sheet print `TNT`.
+Effective Date is not an unconditional anchor on its own, and the Globex Notice
+does not supply one either — its own sentence reads *"Effective Sunday,
+November 14 (trade date Monday, November 15), pending completion of all
+regulatory review periods"*; and its summary table prints `ZNT` for the Ultra
+10-Year where its own Exhibit 1 and the Globex Product Reference Sheet print
+`TNT`.
 
 These roots are **not** served by `globex_interest_rates`. That key's own doc
 says only *"Excludes options and separately specified interest-rate product

@@ -310,7 +310,7 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Changed
 
-- **Five documentation fences before the CME trade-type key sequence, and one
+- **Six documentation fences before the CME trade-type key sequence, and one
   capacity fix.** Every artifact they guard was hand-written and restated a
   ledger count that thirty-two planned key additions each change.
   `ledger_covers_every_market_hours_key_variant` ties
@@ -344,7 +344,8 @@ corrections (a venue's hours fixed against a primary source) go under
   absent from every retrieved hours statement and with its zone anchor
   undecided; and **commodity-index BTIC** (`AWT`, `BAT`, `BET`, `BGT`, `BLT`,
   `BMT`, `BPT`, `BST`, `CCT`), measured at 08:15–13:30 CT on their own Globex
-  groups against a filing whose only BTIC window for them is the ClearPort one.
+  groups against the one filing that tabulates a BTIC window for them, whose
+  AW row prints a 17:00 CT Globex start ("5:00 pm – 1:30pm CT", "No change").
   Blocked rather than rejected, each with an open issue: the three
   cryptocurrency BTIC keys, `globex_europe_index_btic`,
   `globex_ftse_china_50_btic` and `globex_equity_index_btic_plus_taco_plus`.

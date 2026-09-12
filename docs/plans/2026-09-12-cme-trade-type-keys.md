@@ -8,7 +8,7 @@ This authors [the trade-type handoff](2026-09-05-cme-trade-type-handoff.md),
 which was work item 5 of
 [the coverage plan](2026-09-05-cme-globex-family-coverage.md). The handoff said,
 per root, which `MarketHoursKey` should own it and what still needed sourcing.
-Eight research gates and their nine adversarial verdicts have since run against
+Nine research gates and their ten adversarial verdicts have since run against
 it.
 
 **Scope: 13 PRs, 32 new `MarketHoursKey` rows, 6 keys deliberately blocked,
@@ -17,7 +17,7 @@ later PR touches the same ledger and the same narrative counts.
 
 ## Where the full plan and the evidence live
 
-The 1,842-line plan, the eight gate result files and their nine verifier files
+The 1,842-line plan, the nine gate result files and their ten verifier files
 are in the **local-only research store**, which is deliberately not in this
 repository and is never committed (the coverage plan's "Where the research
 already lives" section states the reasoning and the convention). The store is
@@ -67,7 +67,7 @@ Each PR is independently mergeable and independently revertible.
 | 1 | Fences before the families | — | **yes** |
 | 2 | Metals TAS | `globex_gold_tas`, `globex_silver_tas`, `globex_copper_tas`, `globex_platinum_tas`, `globex_palladium_tas` | **yes** |
 | 3 | Grain and livestock TAS | `globex_grains_tas`, `globex_livestock_tas` | **yes** |
-| 4 | Cryptocurrency TAS | `globex_cryptocurrency_tas` | **yes**, after D-8's single retrieval |
+| 4 | Cryptocurrency TAS | `globex_cryptocurrency_tas` | **yes**, after D-8's single retrieval ([#73](https://github.com/SharurTrading/exchange-hours-rs/issues/73)) |
 | 5 | Energy and gasoil TAS | `globex_energy_tas`, `globex_gasoil_tas` | yes (D-5, D-6 taken) |
 | 6 | Commodity-index cash families | `globex_bloomberg_commodity_index`, `globex_ftse_crb_index`, `globex_housing_index` | yes (D-7c taken) |
 | 7 | Dairy, lumber, southern yellow pine | `globex_dairy`, `globex_lumber`, `globex_southern_yellow_pine` | yes |
@@ -78,7 +78,7 @@ Each PR is independently mergeable and independently revertible.
 | 12 | Metals TAM | `globex_gold_tam`, `globex_copper_tam` | **no** — waits on #72 |
 | 13 | TOPIX BTIC, Nikkei BTIC, FX BTIC | `globex_topix_btic`, `globex_nikkei_btic`, `globex_fx_btic_euro` | **no** — waits on #71 |
 
-PRs 9, 10 and 13 must each cite a resolution of the unexplained Saturday feed
+PRs 10 and 13 must each cite a resolution of the unexplained Saturday feed
 block, [#76](https://github.com/SharurTrading/exchange-hours-rs/issues/76).
 PRs 11–13 are the first seasonal keys, so the doc defect in
 [#77](https://github.com/SharurTrading/exchange-hours-rs/issues/77) must be
@@ -128,9 +128,11 @@ changing it:
   `unsupported-families.md` naming their two `closed@` values.
 
 **D-8** — whether the client-systems wiki's effective-day sentence scopes its
-BTIC tables as well as its TAS table — is one retrieval, runs alongside PR 1,
-and can cut either way: it either unblocks the crypto BTIC keys or forces PR 4
-to be re-examined before it merges.
+BTIC tables as well as its TAS table — is tracked as the first closing
+condition of
+[#73](https://github.com/SharurTrading/exchange-hours-rs/issues/73). It is one
+retrieval, runs alongside PR 1, and can cut either way: it either unblocks the
+crypto BTIC keys or forces PR 4 to be re-examined before it merges.
 
 ## Blocked keys
 

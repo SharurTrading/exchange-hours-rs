@@ -22,9 +22,12 @@ hard-coded `DayOverride` records. It supports:
 
 Records are exact dates, not inferred weekday or holiday rules. The table is
 opt-in: callers apply it with `ExchangeCalendar::with_day_policy`, and
-`hours_at` continues to return the unmodified normal-week profile. This keeps
-application-owned calendars outside the crate while avoiding a different ad-hoc
-record shape in every consumer.
+`hours_at` continues to return the unmodified normal-week profile. Today the
+crate ships no holiday data, so `DayPolicy` is the only holiday layer; under
+LAW-HOLIDAY-SCOPE it will sit *above* the crate's own per-family holiday
+tables once those ship, covering the dates the crate does not carry — it avoids
+a different ad-hoc record shape in every consumer, and it stays the way an
+application states a closure the operator never published.
 
 These scalar overrides are intentionally not described as a complete holiday
 calendar. They cannot express an extra intraday pause, a special reopen, a
@@ -66,8 +69,13 @@ but the gap stays visible rather than being implied away.
 ## The exception layer — shipped for caller-owned data
 
 The replacement-session engine and its public surface ship. **No exception data
-ships with them**, exactly as `DayPolicy` shipped: the crate provides the model,
-the validation, and the engine integration, and the caller owns every record.
+ships with them**: the crate provides the model, the validation, and the engine
+integration, and the caller owns every record. Scalar holidays are the separate
+case. Under LAW-HOLIDAY-SCOPE a closed date, an early final close, or a late
+first open is in scope as a per-family date table inside the crate, applied by
+the built-in calendars by default; this layer exists for what such a table
+cannot represent — a trade date whose internal phase topology changes — and
+that stays caller-owned.
 
 A provider implements `SessionExceptionSource` and distinguishes four states per
 venue-local trade date:
@@ -130,38 +138,51 @@ layer closes just as it skips one a `DayPolicy` closes. A profile with no final
 daily close has no trade-date identity, so it ignores both overlays rather than
 inventing one.
 
-**Sourcing policy, recorded 2026-08-31.** This project uses only publicly
-available operator and regulator material, and it encodes the schedule facts
-those documents state — opening and closing times, phase boundaries, effective
-days. Reading a published schedule and encoding the times it states is the use
-those publications are made for, and public availability of the source is what
-gates the work — nothing else does. This is the standard every new or revised
-literal is held to; it does not assert that every literal already in the crate
-meets it. Where adjacent primary support is still missing, the ledger says so on
-the row and [sources.md](sources.md) marks the source set "Missing/uncited",
-and those gaps stay visible rather than being papered over by this policy. A source behind a
-member portal or an authenticated feed is out of scope as a data source; its
-existence and publication date may still be cited as evidence that a change
-occurred, as the SGX Titan newsletters are.
+**Sourcing policy, recorded 2026-08-31; revised 2026-09-12.** This project
+prefers publicly available operator and regulator material — a public source is
+the only one a reader can re-verify — and it encodes the schedule facts those
+documents state: opening and closing times, phase boundaries, effective days.
+Reading a published schedule and encoding the times it states is the use those
+publications are made for. What gates the work now is the source's **tier**
+under LAW-PRIMARY-SOURCES: **T1** the operator's own statement, **T2** the
+operator's own machine channel, **T3** a member or vendor restatement, **T4**
+press. A current schedule needs T1 or T2. This is the standard every new or
+revised literal is held to; it does not assert that every literal already in
+the crate meets it. Where adjacent support at the required tier is still
+missing, the ledger says so on the row and [sources.md](sources.md) marks the
+source set "Missing/uncited", and those gaps stay visible rather than being
+papered over by this policy. A source behind authentication is admissible only
+as T2, only when it is the operator's own channel, and only when the retrieved
+artifact is saved in the research store with its retrieval date and quoted in
+the evidence file; a document on a member portal is admissible as T1 through a
+verbatim public mirror, and the portal's index entry alone still proves only
+that a document exists and when it was published, as the SGX Titan newsletters
+do.
 
-Built-in data is still not included, and that is a scope decision rather than a
-missing feature. A complete backfill is an evidence project, not a table-size
-problem:
+Built-in *replacement-session* data is still not included, and that is a scope
+decision rather than a missing feature: the crate's own tables carry closed
+dates, early closes, and late opens, and what stays caller-owned is the
+topology this layer exists for. Either way, a complete backfill is an evidence
+project, not a table-size problem:
 
 - holiday topology differs by venue, segment, and futures product family;
 - operator notices are sometimes revised;
 - exceptional closures such as weather events or national days of mourning
   must be retained explicitly;
-- a calendar that exists only behind authentication is out of scope under the
-  sourcing policy above, so its venue stays `OutOfCoverage` rather than being
-  filled from a non-public source; and
+- a calendar published only through the operator's authenticated channel is
+  admissible at T2 and only with the retrieved artifact saved, so a venue whose
+  calendar no admissible channel yields stays `OutOfCoverage` rather than being
+  filled from a restatement; and
 - a future calendar is finite and may change after publication.
 
 ## Future dates
 
-An announced holiday may be recorded as monitoring metadata, but it must not
-drive `is_open` until the operator's required conditions are satisfied and the
-detailed schedule has been revalidated. CME states on its
+The crate's own holiday table carries the operator's published future under
+LAW-HOLIDAY-SCOPE, and a date the operator later revises is corrected as a
+schedule fix, exactly as a slipped revision row is. For a caller's dataset the
+older rule holds: an announced holiday may be recorded as monitoring metadata,
+but it must not drive `is_open` until the operator's required conditions are
+satisfied and the detailed schedule has been revalidated. CME states on its
 [holiday and trading-hours page](https://www.cmegroup.com/trading-hours.html)
 that holiday schedules are subject to change and are usually finalized about
 two weeks before the holiday. NYSE publishes a longer forward calendar, while
@@ -181,10 +202,11 @@ For each exception dataset:
 4. Test every block edge, phase kind, trade-date assignment, daily/weekly bar
    boundary, and the first date outside coverage.
 5. Recheck future entries inside the operator's finalization window.
-6. Confirm the source is primary and publicly available without
-   authentication, and record that alongside its citation.
+6. Record the source's evidence tier alongside its citation, and prefer the
+   publicly available copy wherever one exists; an authenticated operator
+   channel is admissible only as T2, with its retrieved artifact saved.
 
-Complex holiday schedules remain caller-owned. Do not approximate them with
-normal-week profile revisions or with a scalar boundary override that deletes a
-valid phase — the replacement layer exists so that neither approximation is
-ever necessary.
+Phase-replacing holiday schedules remain caller-owned. Do not approximate them
+with normal-week profile revisions, with a holiday-table entry, or with a
+scalar boundary override that deletes a valid phase — the replacement layer
+exists so that none of those approximations is ever necessary.

@@ -1,30 +1,18 @@
 // SPDX-License-Identifier: MIT-0
 
-//! Fences for the CME trade-type key sequence (issue #58).
+//! Fences on hand-written counts and lists that every key addition restates.
 //!
-//! Five artifacts that the last two key additions restated by hand, and that
-//! the thirty-two additions planned in
-//! `docs/plans/2026-09-12-cme-trade-type-keys.md` each restate again. None of
-//! them was derived from the ledger before this module existed.
+//! Added with the trade-type sequence (issue #58); the two fences that read the
+//! trade-type handoff were retired on 2026-09-12 (UTC) when the charter put
+//! trade-type variants out of scope until a consumer maps one
+//! (LAW-SERVICE-TIERS), so the handoff is a record, not a work list.
 
 use super::{
-    README, SOURCES, UNSUPPORTED_FAMILIES, VERIFICATION, market_hours_key_rows, number_words,
-    row_cells, wire_name,
+    README, SOURCES, VERIFICATION, market_hours_key_rows, number_words, row_cells, wire_name,
 };
 use exchange_hours::MarketHoursKey;
 
-const HANDOFF: &str = include_str!("../../docs/plans/2026-09-05-cme-trade-type-handoff.md");
-const TRADE_TYPE_PLAN: &str = include_str!("../../docs/plans/2026-09-12-cme-trade-type-keys.md");
 const GOLDEN_GRIDS: &str = include_str!("../golden_grids.rs");
-
-/// The three handoff rows answered with a rejection on evidence, anchored on
-/// the first root of each.
-///
-/// Handwritten, because deciding that a row is a rejection rather than an open
-/// research item is a judgement and a fourth one must be made deliberately. The
-/// roots themselves are read out of the handoff, so a root added to one of
-/// these rows goes red until `unsupported-families.md` names it.
-const REJECTED_HANDOFF_ROWS: [&str; 3] = ["TNT", "TAS", "AWT"];
 
 /// Collective phrases the executable-gap enumerations use in place of naming
 /// every member key.
@@ -39,40 +27,6 @@ const EXECUTABLE_COLLECTIVE_NAMES: [(&str, &str); 3] = [
     ("sgx_equity_index_", "SGX equity-index keys"),
     ("globex_nikkei_225_dollar", "CME Nikkei 225 Dollar"),
 ];
-
-/// Returns every single-line span between a pair of backticks.
-fn backtick_spans(text: &str) -> Vec<&str> {
-    let mut spans = Vec::new();
-    let mut remainder = text;
-
-    while let Some((_, after_open)) = remainder.split_once('`') {
-        let Some((span, after_close)) = after_open.split_once('`') else {
-            break;
-        };
-        if !span.contains('\n') {
-            spans.push(span);
-        }
-        remainder = after_close;
-    }
-
-    spans
-}
-
-/// Returns every `globex_*` product-family name the handoff proposes.
-fn handoff_proposed_key_names() -> Vec<&'static str> {
-    let mut names: Vec<&str> = backtick_spans(HANDOFF)
-        .into_iter()
-        .filter(|span| {
-            span.starts_with("globex_")
-                && span
-                    .bytes()
-                    .all(|byte| byte.is_ascii_lowercase() || byte.is_ascii_digit() || byte == b'_')
-        })
-        .collect();
-    names.sort_unstable();
-    names.dedup();
-    names
-}
 
 /// Flows hard-wrapped prose onto one line so a claim can straddle line breaks.
 fn flowed(text: &str) -> String {
@@ -116,117 +70,6 @@ fn ledger_covers_every_market_hours_key_variant() {
         from_enum.as_slice(),
         "the handwritten ledger key list and MarketHoursKey::ALL disagree"
     );
-}
-
-/// Returns whether `quoted` is a name the unsupported-family register
-/// *refuses*, as opposed to merely mentioning.
-///
-/// The register's own preamble says it "has three parts": the ambiguous name,
-/// the rejections on evidence, and the blocked keys. Only a first-cell table
-/// entry (the ambiguous and blocked tables) or a rejection-section heading
-/// puts a name in one of those three. A bare `contains` over the whole file
-/// also matches prose that says the opposite — the commodity-index BTIC
-/// section's "They must **not** ride `globex_bloomberg_commodity_index`" would
-/// answer for that name and let it be dropped from the plan unnoticed.
-fn names_in_unsupported_register(quoted: &str) -> bool {
-    UNSUPPORTED_FAMILIES.lines().any(|line| {
-        if line.starts_with("###") {
-            return line.contains(quoted);
-        }
-        line.starts_with("| ") && row_cells(line).first() == Some(&quoted)
-    })
-}
-
-/// Asserts every key name the trade-type handoff proposes is accounted for.
-///
-/// Guards `docs/plans/2026-09-05-cme-trade-type-handoff.md` against the three
-/// registers a proposed name may legitimately live in: the shipped
-/// `MarketHoursKey` enum, the rejected/blocked register
-/// `docs/schedules/unsupported-families.md`, or the live work list
-/// `docs/plans/2026-09-12-cme-trade-type-keys.md`. The handoff proposes
-/// thirty-eight names the crate does not yet ship; thirty-one of them are
-/// answered by the work list alone. Presence there is textual and permanent —
-/// the plan is a dated record and no later PR in the sequence prunes it — so
-/// this fence cannot tell a key its PR shipped from one its PR silently
-/// skipped. What it does guarantee is that no surveyed name becomes
-/// unanswerable: removing a name from the work list or the register without
-/// authoring or rejecting the key goes red, which is how a deliberate drop
-/// (PR 12, gated on issue #72) is caught.
-///
-/// A red here means a `globex_*` name appears in the handoff and nowhere else.
-/// **The correct response is to author or reject the key, never to edit the
-/// handoff.** The handoff is a historical record that happens to be this work's
-/// list; deleting a name from it to get green would destroy the only statement
-/// that the family was ever surveyed.
-#[test]
-fn handoff_keys_are_registered_or_rejected() {
-    let proposed = handoff_proposed_key_names();
-    assert!(
-        proposed.len() >= 40,
-        "the handoff's proposed-key extraction collapsed: found only {}",
-        proposed.len()
-    );
-
-    for name in proposed {
-        let registered = name.parse::<MarketHoursKey>().is_ok();
-        let quoted = format!("`{name}`");
-        let rejected = names_in_unsupported_register(&quoted);
-        let scheduled = TRADE_TYPE_PLAN.contains(&quoted);
-
-        assert!(
-            registered || rejected || scheduled,
-            "the handoff proposes `{name}` and no register answers it: author the key, \
-             reject it in unsupported-families.md, or schedule it in the trade-type plan \
-             — never edit the handoff"
-        );
-    }
-}
-
-/// Asserts the register names every root of every rejected handoff row.
-///
-/// Guards the rejection sections of `docs/schedules/unsupported-families.md`
-/// against the handoff rows they answer. A rejection that names five of six
-/// roots reads as a decision and is a gap: the sixth root resolves nowhere and
-/// nothing says why.
-///
-/// A red here means a root was added to one of the three rejected handoff rows
-/// and the register did not follow, or a rejected row now names a key. Name the
-/// root in the register, or move the row out of the rejection set deliberately.
-#[test]
-fn rejected_handoff_roots_are_named_in_the_register() {
-    for anchor in REJECTED_HANDOFF_ROWS {
-        let matching = HANDOFF
-            .lines()
-            .filter(|line| line.starts_with("| "))
-            .filter(|line| {
-                let cells = row_cells(line);
-                cells.len() >= 2
-                    && cells[0]
-                        .split(',')
-                        .next()
-                        .is_some_and(|root| root == anchor)
-            })
-            .collect::<Vec<_>>();
-        assert_eq!(
-            matching.len(),
-            1,
-            "expected exactly one handoff row anchored on {anchor}"
-        );
-
-        let cells = row_cells(matching[0]);
-        assert!(
-            cells[1].contains("UNMAPPED"),
-            "{anchor}'s handoff row no longer reads UNMAPPED: {}",
-            cells[1]
-        );
-
-        for root in cells[0].split(',').map(str::trim) {
-            assert!(
-                UNSUPPORTED_FAMILIES.contains(&format!("`{root}`")),
-                "rejected root {root} is not named in the unsupported-family register"
-            );
-        }
-    }
 }
 
 /// Asserts the `US-CME-GROUP` source-set prose counts derive from the ledger.

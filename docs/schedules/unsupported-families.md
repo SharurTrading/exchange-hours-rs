@@ -6,12 +6,10 @@
 approximation selected from the same venue. This file is the register of names
 that deliberately do not resolve. It has three parts: one **ambiguous** name,
 whose products do not share a grid; the **rejections on evidence**, where a
-family exists but no primary source states its hours; and the **blocked** keys,
-where the family and its hours are known and an unconditional effective day is
-not. A name that is in none of the three, and is not a shipped key, has been
-dropped rather than decided — which is what
-`handoff_keys_are_registered_or_rejected` in `tests/schedule_documentation/`
-exists to prevent.
+family exists but no operator document states its hours at the tier
+LAW-PRIMARY-SOURCES requires; and the **trade-type variants**, which are out of
+scope until a consumer maps one (LAW-SERVICE-TIERS). A name that is in none of
+the three, and is not a shipped key, has been dropped rather than decided.
 
 Every family deferred from an earlier draft now ships with a primary-sourced
 profile. One prospective name remains **ambiguous**, on evidence rather than on
@@ -82,15 +80,22 @@ LAW-SESSION-NOT-EXPIRY a settlement, marker or fixing instant is never promoted
 to a session close to fill the gap. Each entry names the document that would
 close it.
 
+These three are now doubly out: LAW-SERVICE-TIERS does not model a trade-type
+variant as its own key until a consumer maps one, so nothing here is a work
+item. The evidence stands as the record, so that a consumer arriving later does
+not re-derive it.
+
 ### Treasury TAS — `TNT`, `UBT`, `ZBT`, `ZFT`, `ZNS`, `ZTT`
 
 Both CME documents that date the launch — SER-8863 and CME Globex Notice
 2021-10-18, each naming trade date 2021-11-15 — state that day
-**conditionally**, so whether either anchors an effective day is the referred
-question [#71](https://github.com/SharurTrading/exchange-hours-rs/issues/71).
-It does not matter for this verdict: **no CME document states the hours**
-either way. The 14:00 CT close is feed-only and equals the end of CME's stated
-Treasuries settlement range, `13:59:30-14:00:00 CT`; under
+**conditionally**. LAW-PRIMARY-SOURCES now answers the question that was
+referred as [#71](https://github.com/SharurTrading/exchange-hours-rs/issues/71)
+(closed 2026-09-12): a conditional clause on a day now past is discharged when
+a later operator artifact witnesses the new state, and the discharge is
+recorded beside the row. It does not matter for this verdict: **no CME document
+states the hours** either way. The 14:00 CT close is feed-only and equals the
+end of CME's stated Treasuries settlement range, `13:59:30-14:00:00 CT`; under
 LAW-SESSION-NOT-EXPIRY that coincidence proves nothing about the session.
 
 SER-8863 **was retrieved** (294,279 bytes) and states no hours anywhere — do
@@ -165,18 +170,28 @@ is not even a queue start on these groups.
 **What closes it:** a CME document stating the BTIC trading hours for these nine
 roots in session language, on their own groups rather than the outrights'.
 
-## Blocked, not rejected
+## Trade-type variants — out of scope until a consumer maps one
 
 These six `MarketHoursKey` names are **not** rejections: each family exists and
-its grid is partly or wholly sourced. What keeps each one out is a named
-evidence gap — an undated cutover, a missing launch certification, an
-unresolved source conflict, a zone anchor the retrieved source does not state,
-or a weekend shape the adopted selector cannot yet express — and the gaps
-differ per key, so each row lists every artifact or decision its key still
-needs. The issue beside each row carries the same list and is where a closure
-is recorded.
+its grid is partly or wholly sourced. They are also not work items. Under
+LAW-SERVICE-TIERS a trade-type variant (TAS, TAM, BTIC, TACO, TMAC) is not
+modelled as a key until a consumer maps one; until then the consumer maps the
+variant to its underlying family with a disclosed variant flag, and a variant
+carrying more structure than its underlying — a second window, a London break,
+an extra stop — stays on that flagged fallback rather than earning a key. Issues
+[#73](https://github.com/SharurTrading/exchange-hours-rs/issues/73),
+[#74](https://github.com/SharurTrading/exchange-hours-rs/issues/74) and
+[#75](https://github.com/SharurTrading/exchange-hours-rs/issues/75) are closed
+on that basis, and this table is now the record they pointed at.
 
-| Prospective identifier | What blocks it | What closes it | Issue |
+What each name would still need, if a consumer ever maps it, is unchanged: a
+named evidence gap — an undated cutover, a missing launch certification, an
+unresolved source conflict, a zone anchor the retrieved source does not state,
+or a weekend shape the adopted selector cannot yet express. The gaps differ per
+key, so each row lists every artifact or decision its key would need. Research
+already done is kept here and in the research store rather than discarded.
+
+| Prospective identifier | What it would still need | What closes it | Issue (closed 2026-09-12) |
 |---|---|---|---|
 | `globex_cryptocurrency_btic_new_york` | The date question is settled (D-8, 2026-09-12 UTC): CME's client-systems wiki states "Starting at 4 p.m. Central Time on Friday, May 29, 2026" at page scope, above all seven schedule tables, with the three "24/7 Crypto BTIC" tables as siblings of the TAS table and the page's only carve-out naming twelve spot-quoted futures. What remains is citation, not retrieval: the statement is an instant, so the boundary is an exact-instant cutover; the page's day-one 30-minute maintenance row covers the futures and options books only; the page names no BTIC product code; and the wiki's 16:01–16:02 CT daily stop is absent from BTC's ContractSpecs | (1) the one-day bridge row at 2026-05-29 and the steady state from 2026-05-30, as `globex_cryptocurrency_tas` is written, with the day-one reopen withheld; (2) product membership cited per root from ContractSpecs and the trading-hours service files in the research store; (3) the 16:01–16:02 CT conflict served as the sourced intersection and recorded beside the table, as `globex_event_contracts_btc` does | [#73](https://github.com/SharurTrading/exchange-hours-rs/issues/73) |
 | `globex_cryptocurrency_btic_london` | Everything the New York row lists, plus two more: the 24/7 weekend block runs from Saturday about 04:00 CT to Monday and so spans the mismatched US and London DST transitions, and the adopted two-profile selector resolves on the **opening** day and would serve up to an hour of false-closed executable window in the transition weeks (U-8 verdict N1); and CME's BTIC-on-Cryptocurrency FAQ states a 30-minute daily stop at 16:00 London against the feed's 5-minute restart | (1) to (3) as New York; (4) a representation for the weekend block — a close-day anchor, a split of the block at the transition, or the key stays unmapped; (5) the 25 disputed minutes withheld and the FAQ-versus-feed conflict recorded | [#73](https://github.com/SharurTrading/exchange-hours-rs/issues/73) |
@@ -185,9 +200,10 @@ is recorded.
 | `globex_ftse_china_50_btic` | Same gate gap. The zone is re-derived first-hand as 16:00 `Asia/Hong_Kong` in both DST states, but no launch day was retrieved, and FTC's own product page's flat "5:00 p.m. - 3:00 a.m. CT" contradicts a boundary that moves with Hong Kong | (1) the FT5 BTIC launch certification; (2) the FTC page's flat CT statement recorded as a source conflict beside the table, with the ContractSpecs 7955 Hong Kong statement controlling | [#74](https://github.com/SharurTrading/exchange-hours-rs/issues/74) |
 | `globex_equity_index_btic_plus_taco_plus` | Two CME documents give two different conditional launch days — Globex Notice 2019-08-26's "Effective Sunday, September 8 (trade date Monday, September 9)" against the BTIC+/TACO+ FAQ's "October 7". That is a conflict, not a condition, so no discharge argument rescues it, and there is no window to intersect when the disputed thing is a launch day. Rule 524 is not a channel for it ("BTIC+ and TACO+ are not governed by Rule 524") | (1) the SER confirming which day took effect; (2) when written, an empty `regular` resting on the ProductSlate (ES1 8689, ES2 8690, EQ1 8691), the ContractSpecs venue label and the Daily Bulletin only, with Rule 524 named as the channel that does not reach it | [#75](https://github.com/SharurTrading/exchange-hours-rs/issues/75) |
 
-A blocked name behaves exactly like any other unregistered name: it does not
-parse and it is not substituted. The distinction is for the reader deciding
-whether to spend a retrieval.
+An out-of-scope name behaves exactly like any other unregistered name: it does
+not parse and it is not substituted. The distinction is for the reader deciding
+whether to spend a retrieval — and, now, for the consumer deciding whether to
+ask for the key at all.
 
 The crate performs no symbol-to-family mapping; refusing an unsupported product
 belongs in the caller's instrument catalog.

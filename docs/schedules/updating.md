@@ -3,8 +3,8 @@
 # Updating exchange schedules
 
 This is the repeatable workflow for reviewing or changing a built-in schedule.
-It complements the mandatory venue checklist in
-[AGENTS.md](../../AGENTS.md#adding-or-revising-a-venue).
+It complements the mandatory identity checklist in
+[AGENTS.md](../../AGENTS.md#adding-or-revising-an-identity).
 
 The supporting records are:
 
@@ -13,14 +13,17 @@ The supporting records are:
   gaps;
 - [sources.md](sources.md): stable operator/rulebook/notice entry points keyed
   by source-set ID;
-- [date-exceptions.md](date-exceptions.md): the boundary-overlay contract and
-  evidence requirements for future complete holiday calendars;
+- [date-exceptions.md](date-exceptions.md): the caller-overlay and
+  replacement-session contract that sits above the crate's own per-family
+  holiday tables;
 - [audit-2026-08-22.md](audit-2026-08-22.md): the dated repository-wide
   assurance result, method, corrections, and exclusions for the current cutoff.
 
 Exact historical notices and effective-date evidence remain beside the Rust
-tables. The documentation is a monitoring index, not a substitute for adjacent
-source citations.
+tables until LAW-EVIDENCE-FILES moves the narrative to
+`docs/evidence/<owner>.md` and leaves one citation line per revision row; that
+move is a separate change. The documentation here is a monitoring index, not a
+substitute for that record.
 
 ## What the dates mean
 
@@ -51,6 +54,14 @@ The evidence basis does not improve merely because a row was reviewed:
   longer identifies the modeled venue/profile; reconcile it before relying on
   the schedule.
 - **Synthetic** — a library policy rather than a real venue schedule.
+
+Under LAW-SERVICE-TIERS the row also says whether the identity is **served** —
+a consumer instrument can reach it — or **dormant**. A served row owes the
+review cadence its ledger row records (LAW-WATCH); a dormant row is correct as
+of its last review and is re-reviewed only on demand, so a lapsed date on one
+is not a defect. When the ledger is reshaped under LAW-EVIDENCE-FILES the row
+will state that service tier, its evidence tier, its horizon and its cadence
+explicitly; until then they live in the row's basis prose.
 
 If a required source is inaccessible, record that fact and do not advance the
 row's review date.
@@ -126,8 +137,14 @@ by automated retrieval, which changes how a review must be run:
   and remember that neither is an effective date (LAW-NO-FABRICATED-DATES).
 
 Search engines and industry summaries can locate evidence, but they do not
-establish a schedule. Final literals and day-level cutovers require an exchange,
-operator, or regulator source under LAW-PRIMARY-SOURCES.
+establish a schedule. LAW-PRIMARY-SOURCES records every literal at a **tier**:
+**T1** is the operator's own statement, **T2** the operator's own machine
+channel — a session-schedule feed, a trading-hours service, a reference-data
+API — read as bytes and saved, **T3** a member, vendor or index publisher's
+restatement, and **T4** press. A current schedule needs T1 or T2, and a
+day-level cutover needs an unconditional day stated at one of those two tiers;
+T3 may date a change only where it mirrors an operator document verbatim, and
+T4 never keys a row. Record the tier beside every literal.
 
 Prefer a living rulebook/current-hours page plus a dated notice. A mutable page
 shows today's state; the dated artifact proves when a historical row began. If
@@ -169,9 +186,10 @@ Check the complete model rather than only the headline open and close:
 - cancellation-only, reporting-only, negotiated, or administrative phases
   that the profile intentionally excludes.
 
-Record the comparison in the owner module next to the literal rules. Keep the
-source registry concise: stable monitoring entry points belong there, while
-exact evidence belongs with the code it supports.
+Record the comparison beside the rules it governs — one citation line in the
+owner module and the narrative in `docs/evidence/<owner>.md` under
+LAW-EVIDENCE-FILES. Keep the source registry concise: stable monitoring entry
+points belong there, while the evidence belongs in the owner's evidence file.
 
 ## 3. Classify the change
 
@@ -221,16 +239,27 @@ exact evidence belongs with the code it supports.
   symbols, roots, product codes, or MICs inside this crate. A product that
   joins an already-live family normally has a caller-owned listing date, not a
   revision of the shared family clock. If its hours differ, it needs a separate
-  key.
-- **Holiday or special-day data:** keep it out of the built-in normal-week
-  tables. A caller supplies sourced boundary-level records through `DayPolicy`
-  or `StaticDayPolicy`. A closed date normally removes its complete trading
-  day, including a prior-evening wrap. Preserve a different
+  key — and under LAW-SERVICE-TIERS it earns one only when a consumer can reach
+  it or the maintainer names the market it is planned for. A trade-type variant
+  (TAS, TAM, BTIC, TACO, TMAC) is not modelled as a key until a consumer maps
+  one; until then the consumer maps the variant to its underlying family with a
+  disclosed variant flag.
+- **Holiday or special-day data:** keep it out of the normal-week template and
+  put it in the family's own holiday table. Under LAW-HOLIDAY-SCOPE holidays
+  are in scope for this crate: a closed date, an early final close, or a late
+  first open is a per-family date-table entry recording the date, the kind, and
+  its document id, sourced from the operator's published holiday calendar at
+  T1, from the January-2010 floor to the operator's published future for a
+  served identity and best-effort for a dormant one. (The tables themselves
+  land in a later change; the law states the policy now.) A caller's
+  `DayPolicy` or `StaticDayPolicy` record remains the overlay *above* that
+  table, for what the crate does not carry. A closed date normally removes its
+  complete trading day, including a prior-evening wrap. Preserve a different
   following-business-day assignment only when the operator sources it; CME
-  cryptocurrency weekend trading rolls into Tuesday when policy closes Monday.
-  Do not describe this scalar overlay as a complete holiday calendar: phase
-  replacement, coverage status, and evidence finality are separate requirements
-  documented in
+  cryptocurrency weekend trading rolls into Tuesday when a closure takes
+  Monday. A special day that changes internal phase topology is not
+  representable by scalar boundaries: record it as a gap and route the caller
+  to the replacement-session layer in
   [date-exceptions.md](date-exceptions.md).
 
 Equal `SessionRule` endpoints represent one complete local-day session. Use
@@ -319,8 +348,13 @@ forward, and only a sourced onset day replaces it.
 ## 4. Implement in the owner module
 
 For an existing venue, its file under `src/calendar/schedules/` owns current
-rules, history, caveats, and citations. Ordinary revisions use the shared
-timeline helper; exceptional recurrence stays local to the venue.
+rules and history. Under LAW-EVIDENCE-FILES the narrative — quotations, URLs,
+retrieval dates, conflicts, interpretive steps, residual risks — belongs in
+`docs/evidence/<owner>.md`, and the module keeps one line beside each revision
+row: the effective day, the tier, the document id, a short label, and a link to
+that file. A module touched for any reason moves its remaining narrative out in
+the same change; a new module never carries one. Ordinary revisions use the
+shared timeline helper; exceptional recurrence stays local to the venue.
 
 Then follow every independent fence in AGENTS.md:
 
@@ -343,9 +377,12 @@ entry point is found. Update code citations and the registry in the same change.
 
 After the comparison is complete:
 
-1. Update the venue row's source sets, evidence basis, review date, history
-   status, and scope note.
-2. Add any newly found gap rather than hiding it behind a stronger status.
+1. Update the venue row's source sets, evidence basis and tier, service tier,
+   horizon, review date and cadence, history status, and scope note.
+2. Add any newly found gap rather than hiding it behind a stronger status. For
+   a served identity the gap is also a GitHub issue; for a dormant one,
+   recording it and its closing condition in the evidence file discharges
+   LAW-FOLLOW-UPS-ARE-ISSUES.
 3. Advance the repository cutoff in [verification.md](verification.md) and the
    README only if every non-synthetic `Exchange` row has reached that date.
 4. For a repository-wide review, create a new dated audit report, update the

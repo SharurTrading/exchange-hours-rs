@@ -178,9 +178,10 @@ corrections (a venue's hours fixed against a primary source) go under
   history are identical, **not** because their published grids never differ:
   CME's trading-hours service gives the equity roots and the cryptocurrency
   roots different half-day closes (12:00 against 13:45 CT on 2026-11-27, 12:15
-  against 12:45 CT on 2026-12-24). Those are caller-owned date exceptions under
-  LAW-HOLIDAY-SCOPE and lie outside the key, but a caller attaching exception
-  data to `globex_spot_quoted` must build it separately for the two subgroups.
+  against 12:45 CT on 2026-12-24). Those are date exceptions rather than clock
+  revisions: under LAW-HOLIDAY-SCOPE the key's own holiday table, and any
+  exception data a caller attaches to `globex_spot_quoted`, must be built
+  separately for the two subgroups.
 
 - **`MarketHoursKey::GlobexWeather`** — CME weather temperature-index
   **futures** (CME Globex security group `HW`): the HDD, CDD and CAT monthly,
@@ -337,6 +338,101 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Changed
 
+- **`AGENTS.md` is rewritten as a charter after an architectural review.** The
+  review and the maintainer's decisions on it are recorded in
+  [`docs/plans/2026-09-12-architectural-review.md`](docs/plans/2026-09-12-architectural-review.md).
+  Law names were kept wherever a law's intent survived, so the citations already
+  written into code comments and ledger rows stay valid. Eight things change.
+
+  A new **Purpose** section states what the crate is for: the live session
+  calendar for the instruments its consumer can route, answering five questions
+  — is the market open now, where does this trading day begin and end, which
+  trade date does an instant belong to, when does the next session open, is this
+  gap a closure — for each supported identity. It is not an archive of exchange
+  history for its own sake and it is not a public reference work, and every
+  other rule is now judged against that.
+
+  **LAW-SERVICE-TIERS** makes every `Exchange` and `MarketHoursKey` either
+  **served** — a consumer instrument can reach it — or **dormant**: kept,
+  correct as of its last review, never deleted, and re-reviewed only when a
+  consumer reaches it or the maintainer names it as a planned market. History
+  depth, holiday coverage, review cadence and follow-up tracking are all stated
+  per tier. An identity is admitted on demand or for a planned market, so a
+  trade-type variant — TAS, TAM, BTIC, TACO, TMAC — is not modelled as a key
+  until a consumer maps one; until then the consumer maps the variant to its
+  underlying family with a disclosed variant flag.
+
+  **LAW-PRIMARY-SOURCES** replaces "primary sources only" with recorded evidence
+  **tiers**: **T1** the operator's own statement, **T2** the operator's own
+  machine channel read as bytes and saved, **T3** a member, vendor or index
+  publisher's restatement, **T4** press. A current schedule needs T1 or T2; a
+  dated change needs an unconditional operator-stated day at T1 or T2; T3 may
+  date a change only where it mirrors an operator document verbatim; T4 never
+  keys a row. The law now also settles what were referred questions: a venue
+  feed's labelled close or halt event is session language unless the operator's
+  prose contradicts it (#72), a conditional launch clause on a day now past is
+  discharged when a later operator artifact witnesses the new state and the
+  discharge is recorded beside the row (#71), and two conflicting operator
+  statements are settled by document lineage, served as the sourced
+  intersection, and both recorded. Both issues close on the charter.
+
+  **LAW-PUBLIC-SOURCES** prefers public sources rather than requiring them: they
+  remain the only ones a reader can re-verify, so they are cited wherever they
+  exist, but a source behind authentication is admissible as **T2** when it is
+  the operator's own channel and the retrieved artifact is saved in the research
+  store with its retrieval date and quoted in the evidence file. A member-portal
+  document is still admissible as T1 only through a verbatim public mirror.
+
+  **LAW-HOLIDAY-SCOPE** puts holidays **in** scope, as policy: they are to live
+  as per-family date tables under `schedules/` — data, not templates — sourced
+  from the operator's published holiday calendar at T1, running from the
+  January-2010 floor to the operator's published future for a served identity
+  and best-effort for a dormant one, and once a family's table ships the
+  built-in calendars will apply it by default. **No table ships in this
+  change**: the crate still carries no holiday data, and the caller's
+  `DayPolicy` and `SessionExceptionSource` overlays remain the only holiday
+  layers until the tables land in their own PR. Each entry will record the
+  date, the kind (closed, early close at an instant, late open at an instant)
+  and its document id; a day that changes internal phase topology stays a gap
+  served by `SessionExceptionSource`.
+
+  **LAW-EVIDENCE-FILES** moves narrative evidence out of source modules and into
+  `docs/evidence/<owner>.md`, one file per venue or key. A schedule module keeps
+  its rule data and one line beside each revision row — effective day, tier,
+  document id, short label, link — and the verification ledger row becomes a
+  fixed shape: key, owner, tier, service tier, horizon, reviewed-on, gap kind,
+  and at most three sentences of basis.
+
+  **LAW-BOUNDED-WORK** sizes adding or revising an identity to one pull request
+  and one working day, and records what a bounded task cannot source as a gap
+  rather than escalating into a research programme. **LAW-WATCH** gives a served
+  identity a review cadence recorded in its ledger row — monthly for a family
+  that changed within the last year or trades a 24/7 grid, quarterly otherwise —
+  a confirm-by date on every forward-dated row, and a tagged release with a
+  CHANGELOG entry for every schedule change, so the consumer pins a version and
+  never a commit. A new **consumer contract** section states what SharurPlatform
+  owns: the root-to-key and namespace-to-`Exchange` maps, the variant flag on a
+  mapped trade-type variant, the clamp to an instrument's own listing window,
+  and the dependency on a tagged release.
+
+  Kept as they were: the January-2010 floor, carry-back, the sourced
+  intersection, LAW-DETERMINISM, LAW-PANIC, LAW-NO-FABRICATED-DATES,
+  LAW-SESSION-NOT-EXPIRY, LAW-UTC-DATES, and LAW-FOLLOW-UPS-ARE-ISSUES, which
+  now also lets a dormant identity discharge a follow-up by recording the gap
+  and its closing condition in the evidence file.
+
+  Two consequences land with this change.
+  `docs/plans/2026-09-12-cme-trade-type-keys.md` is **superseded** — its
+  thirty-two-key sequence is not work any more — and
+  `docs/schedules/unsupported-families.md` now records the six remaining
+  trade-type names as out of scope until a consumer maps a variant, with issues
+  #73, #74 and #75 closed on that basis and the table left standing as the
+  record they pointed at. Paid-for work is kept rather than discarded: #78 and
+  #83 land, the five metals Trading at Settlement keys as **dormant**
+  identities. The ledger reshape, the evidence files and the per-family holiday
+  tables each follow in their own pull request; this change moves no schedule
+  literal and no count.
+
 - **Six documentation fences before the CME trade-type key sequence, and one
   capacity fix.** Every artifact they guard was hand-written and restated a
   ledger count that thirty-two planned key additions each change.
@@ -359,11 +455,19 @@ corrections (a venue's hours fixed against a primary source) go under
   and would have panicked on the first family PR, the other stopped at twenty
   and silently fell back to digits, which is why the README read "Six key rows
   are **Primary** and 24 are **Partial**" in one sentence. That sentence is now
-  spelled out.
+  spelled out. **Two of the six were retired the same day.**
+  `handoff_keys_are_registered_or_rejected` and
+  `rejected_handoff_roots_are_named_in_the_register` read the trade-type handoff
+  as a work list; the charter put trade-type variants out of scope until a
+  consumer maps one (LAW-SERVICE-TIERS), so the handoff is a record and not a
+  plan, and the four remaining fences ship.
 
-- **Three CME trade-type rejections and six blocked keys are recorded on
-  evidence** in `docs/schedules/unsupported-families.md`, which gains a stated
-  three-part structure. Rejected, because no CME document states their hours in
+- **Three CME trade-type rejections and six further trade-type names are
+  recorded on evidence** in `docs/schedules/unsupported-families.md`, which
+  gains a stated three-part structure. The six were recorded as *blocked* on an
+  evidence gap; the charter makes them out of scope until a consumer maps a
+  variant (LAW-SERVICE-TIERS), and their rows now stand as the record rather
+  than as a work list, with issues #73, #74 and #75 closed. Rejected, because no CME document states their hours in
   session language and LAW-SESSION-NOT-EXPIRY forbids promoting the adjacent
   settlement or marker instant: **Treasury TAS** (`TNT`, `UBT`, `ZBT`, `ZFT`,
   `ZNS`, `ZTT`), whose launch is dated but whose 14:00 CT close is feed-only and

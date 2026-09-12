@@ -40,8 +40,8 @@ The internal ownership and extension model is documented in
 - **Product-family calendars** — all 35 operator-derived `MarketHoursKey`
   values have fixed, point-in-time, and date-aware query surfaces.
 - **Caller-supplied day policy** — whole trade-date closures, early final
-  closes, and late first opens can be overlaid without putting mutable or
-  bundled operator data in this crate. `StaticDayPolicy` provides a validated
+  closes, and late first opens can be overlaid on any built-in profile, for the
+  dates the crate does not yet carry. `StaticDayPolicy` provides a validated
   hard-coded table format for these boundary-level exceptions.
 - **Caller-supplied exception sessions** — a trade date that pauses and
   reopens, ends regular trading while extended continues, or spans several
@@ -332,8 +332,9 @@ dated, and Direct Edge's own FIX and API specifications supply the earlier
 07:00 queue back to launch — leaving a knowledge-bound residue of four months
 in late 2010 and early 2011 during which the specifications move acceptance
 from 07:00 to 06:00 with no source naming the day. Closing all 28 is the current
-priority, ahead of any built-in holiday data — the exception-session engine
-ships, its data does not.
+priority, alongside the per-family holiday and early-close tables that are now
+in scope for the crate; those tables land in a separate change, and the
+replacement-session engine ships today while its data does not.
 
 Every non-synthetic identity was compared with its official current-hours or
 rulebook material and its notice/evidence channel. All 95 current profiles are
@@ -362,15 +363,17 @@ covered by the counts above.
 These are backward-looking evidence statements, not promises that an exchange
 will remain unchanged after the review date. They cover recurring weekday
 phases, time zones, lunch and maintenance gaps, and weekend boundaries. They
-exclude built-in holidays, half-days, one-off closures or halts,
-severe-weather exceptions, and product-specific variations outside a row's
-stated scope. A change confined to a single trade date — an early final
-close, a late first open, or a full calendar-day closure — is always a
-holiday-class date exception, never a normal-week template change: the
-built-in tables and their dated revisions encode only real, recurring
-exchange behavior. Callers can apply their own sourced closed-day,
-early-close, and late-open boundary data through `DayPolicy`, and holiday
-arrangements that replace or split phases through `SessionExceptionSource`.
+exclude holidays, half-days, one-off closures or halts, severe-weather
+exceptions, and product-specific variations outside a row's stated scope:
+per-family holiday and early-close tables are in scope for the crate, but none
+ships yet and none is included in the counts above. A change confined to a
+single trade date — an early final close, a late first open, or a full
+calendar-day closure — is always a holiday, never a normal-week template
+change: the normal-week tables and their dated revisions encode only real,
+recurring exchange behavior. Callers can apply their own sourced closed-day,
+early-close, and late-open boundary data through `DayPolicy`, above whatever
+the built-in tables carry, and holiday arrangements that replace or split
+phases through `SessionExceptionSource`.
 An early close or a late open is exactly a clipped boundary on an otherwise
 normal session, which is what `DayPolicy` applies. An arrangement that
 replaces or splits phases is not, and is never approximated by clipping: it
@@ -473,8 +476,10 @@ closed interval before its 03:45–04:00 Pre-Open. Longer afternoon gaps, closed
 days, and weekends are closed.
 `is_maintenance` is exactly the maintenance-state predicate.
 
-The built-in profiles remain normal-week schedules and ship no holiday data.
-Implement `DayPolicy`, or construct a validated `StaticDayPolicy` from
+The built-in profiles are normal-week schedules and ship no holiday data yet;
+per-family holiday and early-close tables are in scope for the crate and land
+in a separate change, with `DayPolicy` remaining the caller's overlay above
+them. Implement `DayPolicy`, or construct a validated `StaticDayPolicy` from
 hard-coded `DayOverride` records, then call
 `ExchangeCalendar::with_day_policy` to create a `PolicyCalendar`. It applies
 closed trade dates, early final closes, and late first opens to every
@@ -566,7 +571,8 @@ segment scope stated in the ledger. Rows labeled Primary have complete
 January-2010-or-launch history at that scope; Partial rows explicitly identify the older
 phase or onset that could not be dated. This crate is a **best-effort model, not an authority**:
 exchanges amend hours on short notice, publish product-level exceptions, and run holiday
-and half-day schedules that the built-in normal-week tables deliberately omit.
+and half-day schedules that the built-in normal-week tables do not carry — the
+per-family holiday tables that will carry them land in a separate change.
 Supply boundary-level exceptions through `DayPolicy` when it can represent
 them exactly, and multi-phase holiday schedules through
 `SessionExceptionSource`; do not reduce a multi-phase holiday schedule to one
@@ -657,15 +663,17 @@ schedule, and migration record.
   `Exchange::Unknown`. A rename that changes one of these strings breaks
   persisted data. Neither identity enum uses variant ordinals, so adding or
   removing a row cannot silently reinterpret another identity.
-- **Normal week plus explicit overlays.** Built-in tables contain no holiday,
-  half-day, or product-level exception data. `DayPolicy` and the validated
-  `StaticDayPolicy` helper let a caller overlay sourced closed trade dates,
-  early final closes, and late first opens without changing `hours_at`.
+- **Normal week plus explicit overlays.** Built-in tables carry no holiday,
+  half-day, or product-level exception data yet; per-family holiday and
+  early-close tables are in scope for the crate and land in a separate change.
+  `DayPolicy` and the validated `StaticDayPolicy` helper let a caller overlay
+  sourced closed trade dates, early final closes, and late first opens above
+  whatever those tables carry, without changing `hours_at`.
   Multi-phase exceptions are not approximated by that boundary API: they go
   through `SessionExceptionSource` and `StaticSessionExceptions`, which replace
   a whole trade date with an ordered block set and publish their own audited
-  coverage window. Both layers are caller-owned; verify contract specs before
-  trading on a profile outside its explicitly stated scope.
+  coverage window. Both overlay layers are caller-owned; verify contract specs
+  before trading on a profile outside its explicitly stated scope.
 - **No panics, and absence is `None`.** The public surface is total, and boundary queries
   (`session_bounds*`, `next_session_after*`, `candle_start*`/`candle_end*`,
   `time_end_of_day`) return `Option`: a profile with no session of the requested kind in

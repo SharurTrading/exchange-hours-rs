@@ -12,21 +12,9 @@ use crate::calendar::SessionRule;
 use crate::calendar::rule::MON_FRI;
 use crate::calendar::schedules::timeline::{Revision, local_date, revisions, select_revision};
 
-// Nasdaq's Jan-2010 INET notices made the migration effective 2010-02-08 and
-// explicitly state that it did not materially change Nordic trading hours.
-// They also identify the existing randomized close. The operator's 2015 INET
-// notice says the opening uncross had previously occurred exactly at 09:00 CET
-// and introduced its five-second randomization effective 2015-11-16.
-// https://www.globenewswire.com/news-release/2010/01/25/151379/0/en/INET-Nordic-NASDAQ-OMX-Market-Model.html
-// https://www.globenewswire.com/news-release/2010/02/05/153049/0/en/INET-Activities-re-migration-starts-today-5-February-at-17-30-CET.html
-// The operator-authored Market Model 1.1 attached to the migration notice gives
-// every exact Jan-2010 phase below, including post-trading through 18:00 CET
-// (17:20 CET for Copenhagen).
-// https://www.globenewswire.com/en/Attachment/DownloadAttachment?articleid=153059&fileId=93908&filename=market+model+version+1_1+januar+21+2010.pdf&filetype=3&islogo=0
-// https://www.globenewswire.com/news-release/2015/11/16/787323/0/en/IT-INET-REMINDER-Introduction-of-functional-changes-to-INET-auctions-61-15.html
-// The current Market Model confirms the resulting five-second opening edge and
-// each principal-share continuous and closing phase used below.
-// https://www.nasdaq.com/docs/2026/06/17/Nasdaq_Nordic_Market_Model_2026_03_Clean.pdf
+// The January-2010 baseline phases, the February-2010 INET migration and the
+// 2015 five-second opening randomization are evidenced in the anchor file.
+// Narrative: docs/evidence/nasdaq_stockholm.md
 
 static STO_BASE_REGULAR: &[SessionRule] = &[SessionRule {
     days: MON_FRI,
@@ -188,12 +176,9 @@ static CPH_RANDOM_PROFILE: StaticHoursProfile = StaticHoursProfile {
     has_weekend_close: true,
 };
 
-// Nasdaq Copenhagen launched executable Trading@Closing Price for its main
-// market on 2019-05-01, adding the executable 17:00-17:10 CET phase before
-// post-trading resumes through 17:20. The current Nordic Market Model confirms
-// all three principal-share grids and the five-second randomized opening edge.
-// https://view.news.eu.nasdaq.com/view?id=b6276fe1aed34c7412a4d454976025d2d&lang=da
-// https://www.nasdaq.com/docs/2026/06/17/Nasdaq_Nordic_Market_Model_2026_03_Clean.pdf
+// Copenhagen's executable 17:00-17:10 CET Trading@Closing Price phase.
+// Narrative: docs/evidence/nasdaq_stockholm.md
+//   This key's own evidence file is docs/evidence/nasdaq_copenhagen.md
 static CPH_CURRENT_EXTENDED: &[SessionRule] = &[
     CPH_RANDOM_EXTENDED[0],
     CPH_RANDOM_EXTENDED[1],
@@ -217,6 +202,9 @@ pub(crate) static NASDAQ_CPH_PROFILE: StaticHoursProfile = StaticHoursProfile {
     has_weekend_close: true,
 };
 
+// 2015-11-16 — T1 — Nasdaq INET notice 61/15 — five-second randomization
+//   moves the earliest continuous-trading edge to 09:00:05.
+// Evidence: docs/evidence/nasdaq_stockholm.md
 static STO_REVISIONS: &[Revision] = revisions![(
     2015,
     11,
@@ -224,6 +212,10 @@ static STO_REVISIONS: &[Revision] = revisions![(
     &NASDAQ_STO_PROFILE,
     "Nasdaq INET notice 61/15"
 ),];
+
+// 2015-11-16 — T1 — Nasdaq INET notice 61/15 — five-second randomization
+//   moves the earliest continuous-trading edge to 10:00:05 Helsinki local time.
+// Evidence: docs/evidence/nasdaq_helsinki.md
 static HEL_REVISIONS: &[Revision] = revisions![(
     2015,
     11,
@@ -253,6 +245,12 @@ pub(crate) fn helsinki_profile_at(
     randomized_open_profile(as_of, Europe::Helsinki, &HEL_BASE_PROFILE, HEL_REVISIONS)
 }
 
+// 2015-11-16 — T1 — Nasdaq INET notice 61/15 — five-second randomization
+//   moves the earliest continuous-trading edge to 09:00:05.
+// 2019-05-01 — T1 — Nasdaq Copenhagen Trading@Closing Price announcement —
+//   executable Trading@Closing Price, 17:00-17:10 CET, before post-trading
+//   resumes through 17:20.
+// Evidence: docs/evidence/nasdaq_copenhagen.md
 static CPH_REVISIONS: &[Revision] = revisions![
     (
         2015,

@@ -180,6 +180,7 @@ use crate::calendar::schedules::timeline::{
 // baseline. Circular 127/2015-DP introduced the recurring pair from
 // 2015-12-21 and tied it to the Brazil/New York daylight-time relationship.
 // https://www.b3.com.br/data/files/CF/31/79/3D/611B25107399EA25790D8AA8/127-2015DP.pdf
+// Evidence: docs/evidence/b3.md
 static EXPLICIT_REVISIONS: &[Revision] = revisions![
     (2010, 3, 15, &B3_PROFILE_OLD_SHORT, "B3 OC 009/2010-DP"),
     (2010, 10, 18, &B3_PROFILE_OLD_LONG, "B3 OC 002/2010-DO"),

@@ -19,6 +19,7 @@ use crate::calendar::schedules::timeline::{effective_date, local_date, reference
 // https://www.ice.com/products/75443578/Murban-Crude-Oil-Futures/
 // https://www.ice.com/publicdocs/abu_dhabi/circulars/2026.03_-_IFAD_Trading_Hours_Change_Final.pdf
 // `EARLY` is the Dubai translation while New York observes daylight time.
+// Evidence: docs/evidence/ice_abu_dhabi.md
 static EARLY_REGULAR: &[SessionRule] = &[
     SessionRule {
         days: MON_ONLY,

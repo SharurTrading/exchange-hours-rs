@@ -49,6 +49,7 @@ static BRENT_ORDER_ENTRY: &[SessionRule] = &[
     },
 ];
 
+// Evidence: docs/evidence/iceeu.md, docs/evidence/ice_europe_commodities.md
 pub(crate) static ICEEU_CURRENT: StaticHoursProfile =
     brent_profile(BRENT_REGULAR, BRENT_ORDER_ENTRY);
 pub(crate) static ICE_EUROPE_COMMODITIES_CURRENT: StaticHoursProfile =
@@ -148,6 +149,7 @@ const fn london_profile(
     }
 }
 
+// Evidence: docs/evidence/ice_europe_financials.md
 static FTSE_REVISIONS: &[Revision] = revisions![
     (2014, 11, 17, &FTSE_0800, "ICE Europe circular 14/146"),
     (2015, 2, 16, &FTSE_0700, "ICE Europe circular 15/016"),

@@ -8,9 +8,13 @@ It complements the mandatory identity checklist in
 
 The supporting records are:
 
-- [verification.md](verification.md): one row per public exchange and
-  `MarketHoursKey`, with its owner, evidence basis, review date, and known
-  gaps;
+- [verification.md](verification.md): one fixed-shape row per public exchange
+  and `MarketHoursKey` — owner modules, source sets, basis with its gap kind,
+  evidence tier, service tier, horizon, review date, cadence, a basis note of at
+  most three sentences, and a link to the row's evidence file;
+- [`docs/evidence/<owner>.md`](../evidence/): one file per ledger row, holding
+  the quotations, URLs, retrieval dates, conflicts, interpretive steps and
+  residual risks behind that row (LAW-EVIDENCE-FILES);
 - [sources.md](sources.md): stable operator/rulebook/notice entry points keyed
   by source-set ID;
 - [date-exceptions.md](date-exceptions.md): the caller-overlay and
@@ -19,11 +23,14 @@ The supporting records are:
 - [audit-2026-08-22.md](audit-2026-08-22.md): the dated repository-wide
   assurance result, method, corrections, and exclusions for the current cutoff.
 
-Exact historical notices and effective-date evidence remain beside the Rust
-tables until LAW-EVIDENCE-FILES moves the narrative to
-`docs/evidence/<owner>.md` and leaves one citation line per revision row; that
-move is a separate change. The documentation here is a monitoring index, not a
-substitute for that record.
+Exact historical notices and effective-date evidence live in the row's evidence
+file (LAW-EVIDENCE-FILES). A schedule module keeps its rule data, one citation
+line per revision row, and one `// Evidence: docs/evidence/<file>.md` line above
+each `revisions!` block naming the files that block's days belong to. A migrated
+module carries no narrative, and a new module never may; the forty modules
+whose narrative has not moved yet are listed in `NARRATIVE_DEBT` in
+`tests/schedule_documentation/evidence_files.rs` and tracked as issue #85. The
+documentation here is a monitoring index, not a substitute for that record.
 
 ## What the dates mean
 
@@ -43,25 +50,27 @@ exchange-wide cutoff.
 
 The evidence basis does not improve merely because a row was reviewed:
 
-- **Primary** — current boundaries are supported by an exchange, operator, or
-  regulator source, with no known modeled-history gap since January 2010.
-- **Partial** — current data has primary support, but a modeled historical era
-  or exact cutover remains unsourced.
-- **Secondary** — the best captured evidence is corroborating rather than
-  primary.
-- **Pragmatic** — an intentionally broad exchange/product-family default.
-- **Known issue** — current primary material conflicts with, supersedes, or no
-  longer identifies the modeled venue/profile; reconcile it before relying on
-  the schedule.
+- **Primary** — current boundaries are sourced at T1 or T2, with no known
+  modeled-history gap since January 2010 or since the sourced launch.
+- **Partial / executable** — a named gap touching a window in which a trade can
+  print (`regular`/`extended`).
+- **Partial / order-entry** — a named gap confined to an `order_entry` or
+  post-close window in which no trade can print.
 - **Synthetic** — a library policy rather than a real venue schedule.
 
-Under LAW-SERVICE-TIERS the row also says whether the identity is **served** —
-a consumer instrument can reach it — or **dormant**. A served row owes the
-review cadence its ledger row records (LAW-WATCH); a dormant row is correct as
-of its last review and is re-reviewed only on demand, so a lapsed date on one
-is not a defect. When the ledger is reshaped under LAW-EVIDENCE-FILES the row
-will state that service tier, its evidence tier, its horizon and its cadence
-explicitly; until then they live in the row's basis prose.
+The vocabulary is closed at those four values; **Secondary**, **Pragmatic** and
+**Known issue** were retired unused on 2026-09-12 (UTC). A row that would need
+one of them is a defect to fix, not a label to restore.
+
+Under LAW-SERVICE-TIERS the row's **Service** cell says whether the identity is
+`served` — a consumer instrument can reach it — or `dormant`. A served row owes
+the **Cadence** its row records (LAW-WATCH): `monthly` when it changed within
+the last year or trades a 24/7 grid, `quarterly` otherwise. A dormant row reads
+`on demand`: it is correct as of its last review and is re-reviewed only when a
+consumer reaches it, so a lapsed date on one is not a defect. The **Evidence
+tier** cell is the tier behind the row's current schedule, and the **Horizon**
+cell is the date below which its grid is carried rather than sourced, or `—`
+when nothing is carried.
 
 If a required source is inaccessible, record that fact and do not advance the
 row's review date.
@@ -206,8 +215,9 @@ points belong there, while the evidence belongs in the owner's evidence file.
   boundary has a primary day-level source.
 - **Recurring/cross-zone rule:** use a date-aware selector such as B3/BMV and
   test every transition; do not freeze one seasonal snapshot. If the current
-  profile format can express only a static local-time approximation, keep the
-  ledger basis pragmatic and state which season differs.
+  profile format can express only a static local-time approximation, record the
+  approximation as a named gap in the row's evidence file and say which season
+  differs; the basis vocabulary no longer has a label for it.
 - **One-off holiday, halt, weather closure, or half-day:** never force it into
   the normal-week profile. A whole trade-date closure, later first open, or
   earlier final close can use a sourced `DayPolicy`/`StaticDayPolicy` record.
@@ -352,7 +362,10 @@ rules and history. Under LAW-EVIDENCE-FILES the narrative — quotations, URLs,
 retrieval dates, conflicts, interpretive steps, residual risks — belongs in
 `docs/evidence/<owner>.md`, and the module keeps one line beside each revision
 row: the effective day, the tier, the document id, a short label, and a link to
-that file. A module touched for any reason moves its remaining narrative out in
+that file. Every `revisions!` block also carries one
+`// Evidence: docs/evidence/<file>.md` declaration immediately above it, naming
+every file that block's days belong to; the fences in
+`tests/schedule_documentation/evidence_files.rs` read it. A module touched for any reason moves its remaining narrative out in
 the same change; a new module never carries one. Ordinary revisions use the
 shared timeline helper; exceptional recurrence stays local to the venue.
 
@@ -377,8 +390,11 @@ entry point is found. Update code citations and the registry in the same change.
 
 After the comparison is complete:
 
-1. Update the venue row's source sets, evidence basis and tier, service tier,
-   horizon, review date and cadence, history status, and scope note.
+1. Update the venue row's eleven cells: owner modules, source sets, basis with
+   its gap kind, evidence tier, service tier, horizon, review date, cadence, the
+   basis note of at most three sentences, and the evidence link. Everything the
+   note cannot hold goes into the evidence file, including any revision row the
+   change adds or removes and the `## Sources` bullet behind it.
 2. Add any newly found gap rather than hiding it behind a stronger status. For
    a served identity the gap is also a GitHub issue; for a dormant one,
    recording it and its closing condition in the evidence file discharges
@@ -387,8 +403,9 @@ After the comparison is complete:
    README only if every non-synthetic `Exchange` row has reached that date.
 4. For a repository-wide review, create a new dated audit report, update the
    README link, and update the documentation contract's included audit path.
-   The contract derives Primary, Partial, Pragmatic, and Known-issue counts from
-   the ledger; do not copy forward old assurance numbers without that check.
+   The contract derives the Primary, Partial / executable, Partial / order-entry
+   and Synthetic counts from the ledger; do not copy forward old assurance
+   numbers without that check.
 5. Record schedule changes under `[Unreleased]` / **Fixed** and new venues under
    **Added** in `CHANGELOG.md`. If a version has already been cut but is not yet
    tagged or published, put final preparation fixes in that pending version

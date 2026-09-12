@@ -16,66 +16,12 @@ use super::grains::{
     CBOT_REGULAR_0930_1315, CBOT_REGULAR_CURRENT,
 };
 
-// Rough Rice futures (CME Globex `ZR`) and Rough Rice options (`OZR`), CBOT
-// Rulebook chapters 17 and 17A, in America/Chicago.
-//
-// INHERITED PRE-2018 ERAS — NOT INDEPENDENTLY SOURCED FOR ROUGH RICE.
-// Rough Rice ran on the standard CBOT grain and oilseed grid from the
-// January-2010 audit floor until it diverged permanently on 2018-01-21, so the
-// six eras before that day reuse the `CBOT_*` rule tables in `grains.rs` and
-// the primary sources quoted there (2010-04-19, 2011-12-27, 2012-05-20,
-// 2013-04-07, 2013-08-18, 2015-07-05). The CBOT grain and oilseed
-// reorganisations name Rough Rice in their product lists, and 18-001 itself
-// confirms the outgoing state by quoting ZR's then-current Sunday-Friday
-// 19:00-07:45 CT extended leg — the grid `grains.rs` already serves for that
-// day. What this crate has *not* done is source Rough Rice's own queue and
-// RTH/ETH split separately for the 2010, 2012, 2013 and 2015 eras: those are
-// inherited from the reviewed grains encoding, including its own undated
-// 2012-05-20..2013-04-06 queue gap and its 08:00-08:30 CT morning Pre-Open.
-// A later Rough Rice-specific finding repoints one era below; it must not
-// edit the grains tables.
-//
-// 2018-01-21 — THE DIVERGENCE. CBOT Submission 18-001 certifies "the reduction
-// of the extended trading hours on the CME Globex electronic trading platform
-// for the Rough Rice Futures and Rough Rice Options contracts (the
-// \"Contracts\") effective on Sunday, January 21, 2018 for trade date Monday,
-// January 22, 2018", naming "Rough Rice Futures ZR 17" and "Rough Rice Options
-// OZR 17A". Its table, headed "Current Extended Trading Hours" against
-// "Extended Trading Hours Effective on Trade Date January 22, 2018", moves the
-// leg from "Sunday - Friday, 7:00 p.m. - 7:45 a.m. CT" to "Sunday - Thursday,
-// 7:00 p.m. - 9:00 p.m. CT". This is an unconditional day-level effective date
-// keyed to the venue-local opening Sunday, and the operator's own column
-// heading classifies the evening leg as extended. Regular trading hours are
-// untouched, so the 08:30-13:20 CT session carries through from SER-7395R.
-// From this row Rough Rice has no midnight-wrapping session at all.
-// https://www.cmegroup.com/content/dam/cmegroup/market-regulation/rule-filings/2018/01/18-001.pdf
-// Archived, CME serves an anti-scraping block to automated clients:
-// https://web.archive.org/web/20240314032026id_/https://www.cmegroup.com/content/dam/cmegroup/market-regulation/rule-filings/2018/01/18-001.pdf
-//
-// CURRENT GRID. CME's Rough Rice contract specification, read 2026-09-05,
-// states under TRADING HOURS: "CME Globex: Sunday - Thursday, 7:00 p.m. - 9:00
-// p.m. CT / Pre-Open Sunday: 4:00 p.m. - 7:00 p.m. CT // Monday - Friday: 8:30
-// a.m. - 1:20 p.m. CT / Pre-Open Monday - Thursday: 4:45 p.m. - 7:00 p.m. CT",
-// with PRODUCT CODE "CME Globex: ZR" and EXCHANGE RULEBOOK "CBOT 17". It
-// therefore sources every session time this profile serves today, and confirms
-// 18-001's grid is still the live one.
-// https://www.cmegroup.com/markets/agriculture/grains/rough-rice/specs
-//
-// NO MORNING PRE-OPEN AND NO POST-CLOSE PRE-OPEN ARE MODELLED FROM 2018-01-21.
-// Standard grains carry an 08:00-08:30 CT morning Pre-Open and a 14:30-16:00 CT
-// post-close Pre-Open; CME's Rough Rice specification publishes neither, and no
-// other primary source retrieved states either one for `ZR`. This profile
-// therefore claims only the two evening queues the specification does publish,
-// and drops the inherited grains morning Pre-Open and PCP at the divergence.
-// Two things about that are worth stating plainly rather than hiding behind the
-// basis label. First, omitting an order-entry window under-reports queueing,
-// which is the safe direction: no window in which a trade can print is
-// affected, so under the executable-windows-first rule this is the cheap error
-// to make. Second, 18-001 is silent on the queues, so the day on which the
-// morning Pre-Open and PCP stopped applying to Rough Rice is *not* sourced;
-// attaching their withdrawal to the one sourced day in the interval is a
-// modelling choice, not evidence, and it is why the ledger row is `Partial`
-// rather than `Primary`.
+// Rough Rice futures (CME Globex `ZR`) and options (`OZR`), CBOT Rulebook
+// chapters 17 and 17A, in America/Chicago. The six eras before 2018-01-21 are
+// inherited from the standard CBOT grain and oilseed grid in `grains.rs`, not
+// sourced independently for Rough Rice; from that day the family has its own
+// non-wrapping evening leg and no morning or post-close Pre-Open.
+// Narrative: docs/evidence/globex_rough_rice.md
 
 /// The extended leg CBOT Submission 18-001 established: Sunday through Thursday
 /// evenings, 19:00-21:00 CT. `close_ssm` exceeds `open_ssm`, so this rule does
@@ -162,46 +108,20 @@ static FROM_2015_07_05: StaticHoursProfile = profile(
 );
 // The divergence. 18-001 dates ONE thing: the executable evening leg, which
 // stops wrapping and becomes 19:00-21:00 CT. It is silent on the queues, so
-// nothing here claims the queues changed on 2018-01-21 and no queue cutover is
-// asserted anywhere in this timeline.
-//
-// What the queue set records instead is the sourced intersection over the
-// interval that begins here. Two queue states are sourced for this contract:
-// the standard grain set this profile inherits for the earlier eras, and the
-// two evening pre-opens CME's Rough Rice specification publishes today. No
-// document dates a move between them, so the interval serves the set that
-// holds under both -- the narrower one -- exactly as the crate's
-// sourced-intersection convention requires.
-//
-// The alternative, carrying the inherited 08:00-08:30 and 14:30-16:00 CT
-// windows forward, would make the dated surface report order acceptance today
-// that CME's current specification does not publish: an over-report of
-// queueing, and in the present tense. Serving the intersection under-reports
-// queueing for whatever part of the interval still had the wider set. That is
-// the safe direction and it touches no window in which a trade can print.
+// this interval serves the sourced intersection of the two queue states — the
+// narrower one — and no queue cutover is asserted anywhere in this timeline.
+// Narrative: docs/evidence/globex_rough_rice.md
 static DATED_CURRENT: StaticHoursProfile = profile(
     ROUGH_RICE_REGULAR_CURRENT,
     ROUGH_RICE_EXTENDED_CURRENT,
     ROUGH_RICE_ORDER_ENTRY_CURRENT,
 );
 
-// Revision evidence — each row's day-level effective date and the primary
-// source that states it. The first six are the CBOT grain and oilseed chain
+// Every revision row below is T1; each row's effective day and citation
+// literal are its own fields, and the document, quotation and URL behind each
+// are in the evidence file. The first six are the CBOT grain and oilseed chain
 // Rough Rice shared; their full quotations sit in `grains.rs`.
-//   2010-04-19 "CME Globex notice 20100405"
-//     https://www.cmegroup.com/tools-information/lookups/advisories/electronic-trading/20100405.html
-//   2011-12-27 "CFTC filing rul120711cbot001"
-//     https://www.cftc.gov/stellent/groups/public/%40rulesandproducts/documents/ifdocs/rul120711cbot001.pdf
-//   2012-05-20 "CME market-data advisory 20120518"
-//     https://www.cmegroup.com/tools-information/lookups/advisories/market-data/20120518.html
-//   2013-04-07 "CME SER-6617 and GCC notice 2013-03-22"
-//     https://www.cmegroup.com/rulebook/files/ser_6617_cbot_grain_oilseed_hours_2013_final.pdf
-//   2013-08-18 "CME market-data advisory 20130812"
-//     https://www.cmegroup.com/tools-information/lookups/advisories/market-data/20130812.html
-//   2015-07-05 "CME SER-7395R"
-//     https://www.cmegroup.com/tools-information/lookups/advisories/ser/SER-7395R.html
-//   2018-01-21 "CBOT Submission 18-001"
-//     https://www.cmegroup.com/content/dam/cmegroup/market-regulation/rule-filings/2018/01/18-001.pdf
+// Evidence: docs/evidence/globex_rough_rice.md
 static REVISIONS: &[Revision] = revisions![
     (2010, 4, 19, &FROM_2010_04_19, "CME Globex notice 20100405"),
     (

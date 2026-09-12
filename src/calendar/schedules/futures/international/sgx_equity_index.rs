@@ -32,16 +32,11 @@ use crate::calendar::schedules::timeline::{Revision, local_date, revisions, sele
 
 // --- Japan (Nikkei 225 suite: NK, NS, NU, NC, NR, ND, EJP, EJRT) -------------
 
-// Two executable phases per trade date. The T session trades continuously
-// 07:30-14:55; the T+1 (night) session reopens at 15:10 and runs to 05:15 the
-// following calendar day, so it is encoded as a wrapping rule. The Friday T+1
-// session therefore ends Saturday 05:15 and no Sunday session exists, which is
-// why both rules are Monday-Friday. The 14:55-15:00 closing routine matches at
-// a single price rather than trading continuously, so it is modelled as an
-// extended phase, not as part of the continuous T session.
-//
-// https://www.sgx.com/derivatives/products/nikkei225futuresoptions
-// https://api2.sgx.com/sites/default/files/2026-01/SGX%20Calendar%202026_2.pdf
+// Two executable phases per trade date: the T session, and the T+1 session
+// that reopens in the afternoon and wraps past local midnight. The closing
+// routine matches at a single price and stays `extended`; the two opening
+// routines match at the session opens, so they are `order_entry`.
+// Narrative: docs/evidence/sgx_equity_index_japan.md
 pub(crate) static SGX_EQUITY_INDEX_JAPAN_REGULAR_CURRENT: &[SessionRule] = &[
     SessionRule {
         days: MON_FRI,
@@ -108,31 +103,11 @@ use history::{
     SGX_EQUITY_INDEX_SINGAPORE_SOURCED_WINDOW,
 };
 
-// WHY THESE ROWS STAY PARTIAL. Every move inside the modelled window is now
-// dated - two by circulars, two by SGX's own product-catalogue change log,
-// admitted under the convention `AGENTS.md` records - but the S0 -> A move
-// that the 2017-07-10 boundary bounds from above is not, and the floor eras
-// rest on carry-back; the `history` module records each.
-//
-// DIRECTION OF THE ERROR. Before 2026-08-31 these rows carried today's grid to
-// the January-2010 floor across every move, which made them the only rows in
-// the crate that could **over**-report. They no longer can: every undated move
-// is approached from the conservative side, every dated move begins on its
-// stated day, and every boundary that creates or lengthens a wrapping overnight close —
-// 2013-08-26 (22:55 the same day to 02:00), 2017-07-10 and 2018-04-16 (02:00 or
-// sessionless to 04:45) and 2019-11-11 (04:45 to 05:15, the Monday SGX itself
-// chose) — falls on a Monday so no
-// evening leg runs past the close in force when it opened. Like every other
-// Partial row in this crate they err toward Closed, which is the safe
-// direction for an order router. Nothing remains in the other direction:
-// third-party press attests the T+1 close moving 22:55 -> 01:00 on
-// 2010-01-11 and 01:00 -> 02:00 on 2010-08-30, both inadmissible for a row,
-// and the floor serves 22:55 to 2013-08-25, so those days are under-reported
-// by up to three hours too and never over-reported.
-//
-// https://api2.sgx.com/sites/default/files/2026-01/SGX%20Calendar%202026_2.pdf
-// https://api2.sgx.com/sites/default/files/2026-08/Derivatives+Products+Description+v17.6%20eff%2020260824,%2020260907.zip
-// https://api2.sgx.com/sites/default/files/2025-07/DT%20Trading%20Calendar%202025%20%28updated%2031%20Jul%202025%29.pdf
+// Six eras, five of them dated; the one undated move is the close and open
+// between the 2013 table and the 2017 captures. Every revision row below is
+// T1; each row's effective day and citation literal are its own fields, and
+// the quotations, captures and residual risks are in the evidence file.
+// Evidence: docs/evidence/sgx_equity_index_japan.md
 pub(crate) static SGX_EQUITY_INDEX_JAPAN_REVISIONS: &[Revision] = revisions![
     (
         2013,
@@ -185,15 +160,11 @@ pub(crate) fn sgx_equity_index_japan_profile_at(
 // --- China (FTSE China A50 / H50: CN, FCH, FCHO) -----------------------------
 
 // T session trades continuously 09:00-16:30; the T+1 session reopens at 16:45
-// and runs to 05:15 the next calendar day, so it wraps. SGX's own A50 page
-// notes the contract "is available for trading everyday other than New Year's
-// Day", but that describes holiday coverage, not a weekend session: the T+1
-// leg still starts on a Monday-Friday trade date and the Friday leg ends
-// Saturday 05:15, so both rules stay Monday-Friday.
-//
-// https://www.sgx.com/derivatives/products/chinaa50
-// https://www.sgx.com/derivatives/products/chinah50
-// https://api2.sgx.com/sites/default/files/2026-01/SGX%20Calendar%202026_2.pdf
+// and runs to 05:15 the next calendar day, so it wraps. Both rules stay
+// Monday-Friday: the T+1 leg starts on a Monday-Friday trade date and the
+// Friday leg ends Saturday 05:15.
+// Narrative: docs/evidence/sgx_equity_index_japan.md (this module's narrative
+//   anchor); this key's own evidence file is docs/evidence/sgx_equity_index_china.md
 pub(crate) static SGX_EQUITY_INDEX_CHINA_REGULAR_CURRENT: &[SessionRule] = &[
     SessionRule {
         days: MON_FRI,
@@ -247,17 +218,11 @@ pub(crate) static SGX_EQUITY_INDEX_CHINA_BASELINE: StaticHoursProfile = StaticHo
     has_weekend_close: true,
 };
 
-// Four rows, for the reasons recorded in the history note: the floor grid is
-// this key's baseline; 2013-08-26 widens the T close and creates the wrapping T+1
-// close on the 2013-08-20 portal table and specification; 2017-07-10 is the State-A knowledge boundary; the
-// 2019-11-11 row, dated by SGX's change log, carries the 05:15 close and the
-// routines; and the current grid begins on the stated effective day of SGX-DT
-// Circular DT/AM 15 of 2025, which moved this family's T+1 open from 17:00 to
-// 16:45. Partial because the S0 -> A move is undated.
-//
-// https://api2.sgx.com/sites/default/files/2026-01/SGX%20Calendar%202026_2.pdf
-// https://api2.sgx.com/sites/default/files/2026-08/Derivatives+Products+Description+v17.6%20eff%2020260824,%2020260907.zip
-// https://api2.sgx.com/sites/default/files/2025-07/DT%20Trading%20Calendar%202025%20%28updated%2031%20Jul%202025%29.pdf
+// Four rows: the floor grid is this key's baseline, 2013-08-26 widens the T
+// close and creates the wrapping T+1 close, 2017-07-10 is a knowledge
+// boundary, 2019-11-11 carries the 05:15 close, and the current grid begins on
+// DT/AM 15 of 2025. Every row is T1; the evidence file holds the quotations.
+// Evidence: docs/evidence/sgx_equity_index_china.md
 pub(crate) static SGX_EQUITY_INDEX_CHINA_REVISIONS: &[Revision] = revisions![
     (
         2013,
@@ -303,13 +268,9 @@ pub(crate) fn sgx_equity_index_china_profile_at(
 // --- Singapore (SiMSCI / STI / S-REIT: SGP, SGPO, ST, SRT, AJRT) -------------
 
 // T session trades continuously 08:30-17:20; the T+1 session reopens at 17:35
-// and runs to 05:15 the next calendar day, so it wraps. SGX MSCI Singapore NTR
-// (USD) futures (NSG, NSP) do not share this grid and are modelled separately
-// in the sibling module.
-//
-// https://www.sgx.com/derivatives/products/sgxsimsci
-// https://www.sgx.com/derivatives/products/sgxsti
-// https://api2.sgx.com/sites/default/files/2026-01/SGX%20Calendar%202026_2.pdf
+// and runs to 05:15 the next calendar day, so it wraps.
+// Narrative: docs/evidence/sgx_equity_index_japan.md (this module's narrative
+//   anchor); this key's own evidence file is docs/evidence/sgx_equity_index_singapore.md
 pub(crate) static SGX_EQUITY_INDEX_SINGAPORE_REGULAR_CURRENT: &[SessionRule] = &[
     SessionRule {
         days: MON_FRI,
@@ -332,14 +293,12 @@ pub(crate) static SGX_EQUITY_INDEX_SINGAPORE_EXTENDED_CURRENT: &[SessionRule] = 
     close_ssm: 17 * 3600 + 25 * 60,
 }];
 
-// The two opening routines, "Pre - Opening: 8:15 am - 8:28 am / Non - Cancel:
-// 8:28 am - 8:30 am" and "Pre - Opening: 5:30 pm - 5:33 pm / Non - Cancel: 5:33
-// pm - 5:35 pm", each contiguous pair merged into one window. The options
-// variant (CSGP) publishes a single "Order Cancellation" window over the same
-// spans - 08:15-08:30 and 17:30-17:35 - so these windows cover futures and
-// options alike. Neither matches: the opening matches land on the 08:30 and
-// 17:35 session opens that already begin `regular` windows, so both windows are
+// The two opening routines, each contiguous Pre-Opening and Non-Cancel pair
+// merged into one window. Neither matches: the opening matches land on the
+// session opens that already begin `regular` windows, so both are
 // `order_entry`.
+// Narrative: docs/evidence/sgx_equity_index_japan.md (this module's narrative
+//   anchor); this key's own evidence file is docs/evidence/sgx_equity_index_singapore.md
 pub(crate) static SGX_EQUITY_INDEX_SINGAPORE_ORDER_ENTRY_CURRENT: &[SessionRule] = &[
     SessionRule {
         days: MON_FRI,
@@ -364,17 +323,11 @@ pub(crate) static SGX_EQUITY_INDEX_SINGAPORE_BASELINE: StaticHoursProfile = Stat
     has_weekend_close: true,
 };
 
-// Five rows: the floor grid is this key's baseline; 2013-08-26 creates the wrapping
-// T+1 close on the 2013-08-20 table; 2017-07-10 is the State-A knowledge
-// boundary; 2019-06-10 is the SiMSCI move SGX's change log dates;
-// the 2019-11-11 row, dated by the same log, carries the 05:15 close; and the
-// current grid begins on the stated effective day of SGX-DT Circular DT/AM 15
-// of 2025, which moved this family's T+1 open from 17:50 to 17:35. Partial
-// because the S0 -> A move is undated.
-//
-// https://api2.sgx.com/sites/default/files/2026-01/SGX%20Calendar%202026_2.pdf
-// https://api2.sgx.com/sites/default/files/2026-08/Derivatives+Products+Description+v17.6%20eff%2020260824,%2020260907.zip
-// https://api2.sgx.com/sites/default/files/2025-07/DT%20Trading%20Calendar%202025%20%28updated%2031%20Jul%202025%29.pdf
+// Five rows: the floor grid is this key's baseline, 2013-08-26 creates the
+// wrapping T+1 close, 2017-07-10 is a knowledge boundary, 2019-06-10 and
+// 2019-11-11 come from SGX's own dated change log, and the current grid begins
+// on DT/AM 15 of 2025. Every row is T1; the evidence file holds the quotations.
+// Evidence: docs/evidence/sgx_equity_index_singapore.md
 pub(crate) static SGX_EQUITY_INDEX_SINGAPORE_REVISIONS: &[Revision] = revisions![
     (
         2013,

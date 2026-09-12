@@ -8,9 +8,10 @@ the URLs beneath the existing ID instead of renaming it. For a review, open
 both the living current/rulebook material and the notice/evidence channel.
 
 This is an index, not the evidence archive. Exact circulars, filings, historical
-tables, quotations, and day-level effective dates remain beside the profile in
-the linked owner code until LAW-EVIDENCE-FILES moves that narrative to
-`docs/evidence/<owner>.md` in a later change. A search result, HTTP success, or
+tables, quotations, and day-level effective dates live in the row's evidence
+file under [`docs/evidence/`](../evidence/), one per ledger row
+(LAW-EVIDENCE-FILES); the owner module keeps its rule data and one citation line
+per revision row, and the ledger row keeps at most three sentences. A search result, HTTP success, or
 third-party calendar is not verification. “Missing/uncited” below means the
 modeled literal does not yet have adjacent support at the tier
 LAW-PRIMARY-SOURCES requires — T1, the operator's own statement, or T2, the
@@ -364,7 +365,8 @@ per-record review before any exception can drive runtime.
 ### `APAC-KRX`
 
 - **Official current/rulebook:** [KRX cash-equity trading hours](https://global.krx.co.kr/contents/GLB/06/0602/0602020204/GLB0602020204T1.jsp) and [KRX rules](https://law.krx.co.kr/las/LawBon.jsp?lawid=000111).
-- **Notices/evidence:** use the official [KRX rules service](https://law.krx.co.kr/las/LawBon.jsp?lawid=000111) as the living entry point; retain the [Financial Services Commission's 2019 pre-market reduction](https://www.fsc.go.kr/po010106/73613), and the exact 2016 brochure beside the revisions.
+- **Notices/evidence:** the official [KRX rules service](https://law.krx.co.kr/las/LawBon.jsp?lawid=000111) is the living entry point; the dated artifacts beside the revisions are [Financial Services Commission notice 73613](https://www.fsc.go.kr/po010106/73613) and the [KRX English brochure of 2017-06-30](https://global.krx.co.kr/contents/GLB/01/0107/0107010000/20170630_eng_brochure.pdf).
+- **Status:** which artifact dates which row, the reading of notice 73613, the unsourced 2016-08-01 day and this entry's 2026-09-12 correction are all in [`krx.md`](../evidence/krx.md).
 
 <a id="apac-twse"></a>
 

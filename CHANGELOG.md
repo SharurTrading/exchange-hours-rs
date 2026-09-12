@@ -338,6 +338,56 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Changed
 
+- **The verification ledger is reshaped and the narrative moves to
+  `docs/evidence/`** (LAW-EVIDENCE-FILES). Every one of the 132 ledger rows in
+  [`docs/schedules/verification.md`](docs/schedules/verification.md) now carries
+  the same eleven cells — identity, owner modules, source sets, basis, evidence
+  tier, service tier, horizon, reviewed-on, cadence, a basis note of at most
+  three sentences, and a link to the row's evidence file — in place of a single
+  free-text notes cell that had grown to ten sentences on some rows. The basis
+  vocabulary closes at four values: the gap kind moves out of the note and into
+  the cell as `Partial / executable` or `Partial / order-entry`, and the unused
+  `Secondary`, `Pragmatic` and `Known issue` labels are retired, with a
+  retired-labels note in the ledger so an older citation still resolves. No
+  count moves: the 67/3/25/1 and 6/19/10/1 distributions, the 35-to-22
+  order-entry-to-executable split, and every review date are unchanged, and the
+  repository cutoff stays `2026-08-22`. Two columns are new facts rather than
+  restatements: the **service tier** (16 rows `served`, 116 `dormant`, from
+  LAW-SERVICE-TIERS) with the LAW-WATCH **cadence** it implies, and the
+  **horizon**, the date below which a row's grid is carried rather than sourced.
+
+  The narrative those rows used to carry — quotations, URLs, retrieval dates,
+  conflicts, interpretive steps, `Systems in scope` enumerations and residual
+  risks — now lives in `docs/evidence/<owner>.md`, one file per row, 132 files
+  in a bijection with the ledger. A shared module's narrative is written once,
+  in the anchor identity's file, and each sharer cross-references it. The same
+  move empties the served families' modules: `cme_group.rs` 321 → 245 lines,
+  `energy_metals.rs` 181 → 122, `grains.rs` 325 → 269, `fx.rs` 178 → 125,
+  `interest_rates.rs` 234 → 173, `livestock.rs` 217 → 185,
+  `cryptocurrency.rs` 246 → 227, `cme_nikkei.rs` 247 → 163, `cfe.rs` 329 → 280,
+  `coinbase_derivatives.rs` 128 → 119, `ice_us.rs` 116 → 111 and
+  `europe.rs` 165 → 141, with 3,820 comment lines removed across 76 modules and
+  no rule datum changed. Forty-one dormant modules still carry theirs and are
+  fenced as `NARRATIVE_DEBT`, a list that only ever shrinks; issue #85.
+  Each `revisions!` block gains one
+  `// Evidence: docs/evidence/<file>.md` declaration naming the files its days
+  belong to, which is what makes attribution exact for the 23 identities whose
+  timeline lives in a `history.rs` sibling and the ten modules whose single
+  timeline serves several rows.
+
+  Two new fences enforce the split, in
+  [`tests/schedule_documentation/evidence_files.rs`](tests/schedule_documentation/evidence_files.rs):
+  every revision row's effective day appears in the `## Revision rows` section
+  of every evidence file its block declares (and every evidence line traces back
+  to a tuple on that day with that citation literal), and every ledger row links
+  an existing evidence file with every evidence file linked exactly once. Six
+  further fences in the same file check the declarations, the required sections,
+  the `Kind:` line, and that a migrated schedule module carries no narrative
+  comment run. `docs/schedules/databento-venues.md`,
+  `docs/schedules/audit-2026-08-22.md`, `docs/schedules/updating.md`,
+  `docs/schedules/sources.md` and the README follow the new shape; the README's
+  service-tier split is derived by a fence like every other count it states.
+
 - **`AGENTS.md` is rewritten as a charter after an architectural review.** The
   review and the maintainer's decisions on it are recorded in
   [`docs/plans/2026-09-12-architectural-review.md`](docs/plans/2026-09-12-architectural-review.md).

@@ -129,6 +129,7 @@ pub(crate) static LSE_PROFILE: StaticHoursProfile = StaticHoursProfile {
     has_weekend_close: true,
 };
 
+// Evidence: docs/evidence/lse.md
 static REVISIONS: &[Revision] = revisions![
     (2012, 4, 30, &CPX_PROFILE, "LSE MIT201 document history"),
     (2016, 3, 21, &LSE_PROFILE, "LSE notice N01/16"),

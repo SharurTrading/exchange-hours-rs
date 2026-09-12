@@ -3,6 +3,7 @@
 //! Documentation fences for the schedule-review ledger.
 
 mod databento;
+mod evidence_files;
 mod source_registry;
 mod trade_type_keys;
 
@@ -58,14 +59,60 @@ const EXPECTED_MARKET_HOURS_KEY_NAMES: [&str; 36] = [
     "always_open",
 ];
 
-const VALID_BASES: [&str; 6] = [
+/// The closed basis vocabulary (LAW-EVIDENCE-FILES). `Secondary`, `Pragmatic`
+/// and `Known issue` were retired on 2026-09-12 (UTC); a row that would need
+/// one of them is a defect to fix, not a label to restore.
+const VALID_BASES: [&str; 4] = [
     "Primary",
-    "Partial",
-    "Secondary",
-    "Pragmatic",
-    "Known issue",
+    "Partial / executable",
+    "Partial / order-entry",
     "Synthetic",
 ];
+
+const VALID_EVIDENCE_TIERS: [&str; 4] = ["T1", "T2", "T3", "T4"];
+
+const VALID_SERVICE_TIERS: [&str; 2] = ["served", "dormant"];
+
+const VALID_CADENCES: [&str; 3] = ["monthly", "quarterly", "on demand"];
+
+/// Cells in one ledger row: identity, owner, source sets, basis, evidence
+/// tier, service, horizon, reviewed-on, cadence, basis note, evidence link.
+const LEDGER_CELLS: usize = 11;
+
+/// LAW-EVIDENCE-FILES caps the basis note at three sentences; everything else
+/// belongs in the row's evidence file.
+const MAX_BASIS_SENTENCES: usize = 3;
+
+/// Abbreviations whose period is not a sentence terminator. Without these the
+/// count trips on ICE's own product names ("ICE Futures U.S. Sugar No. 11").
+const SENTENCE_ABBREVIATIONS: [&str; 7] = ["U.S.", "No.", "Nos.", "St.", "Inc.", "Ltd.", "Co."];
+
+/// Evidence files live beside the ledger, one per row (LAW-EVIDENCE-FILES).
+const EVIDENCE_DIR: &str = "docs/evidence";
+
+/// Today's UTC calendar date, for the "no record is future-dated" bound.
+///
+/// LAW-UTC-DATES says a recorded date later than the current UTC date is
+/// future-dated and wrong, so the bound needs the real date. LAW-DETERMINISM
+/// binds *library* code, and `chrono` is built without its `clock` feature so
+/// `Utc::now` does not exist to call; tests are integration tests and may read
+/// a clock, so this reads the Unix timestamp and converts it with
+/// `from_timestamp`, which the feature gate does not remove.
+fn today_utc() -> NaiveDate {
+    #[expect(
+        clippy::disallowed_methods,
+        reason = "LAW-DETERMINISM binds library code; this fence is a test and must \
+                  compare the ledger's own recorded dates against the real UTC date"
+    )]
+    let since_epoch = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .expect("the system clock must be at or after the Unix epoch");
+    let seconds =
+        i64::try_from(since_epoch.as_secs()).expect("the Unix timestamp must fit in an i64");
+    chrono::DateTime::<chrono::Utc>::from_timestamp(seconds, 0)
+        .expect("the Unix timestamp must name a valid UTC instant")
+        .date_naive()
+}
 
 fn repository_cutoff() -> &'static str {
     const PREFIX: &str = "**Repository source-review cutoff:** `";
@@ -114,11 +161,165 @@ fn wire_name(row: &str) -> &str {
         .expect("wire names must be backtick-delimited")
 }
 
-fn owner_target(owner: &str) -> &str {
-    owner
-        .split_once("](")
-        .and_then(|(_, target)| target.strip_suffix(')'))
-        .expect("owner cell must contain one Markdown file link")
+/// Returns every module link destination in an owner cell.
+///
+/// The cell is `<br>`-separated because 23 identities keep their `revisions!`
+/// block in a sibling of the module that holds their profiles; both files are
+/// named, timeline module last, so a reader lands on the timeline the row's
+/// history actually comes from.
+fn owner_targets(owner: &str) -> Vec<&str> {
+    let targets = owner
+        .split("<br>")
+        .map(|link| {
+            link.split_once("](")
+                .and_then(|(_, target)| target.strip_suffix(')'))
+                .expect("owner cell must contain Markdown file links")
+        })
+        .collect::<Vec<_>>();
+    assert!(
+        !targets.is_empty(),
+        "owner cell must name at least one module: {owner}"
+    );
+    targets
+}
+
+/// The row's Basis cell: one of `VALID_BASES`.
+fn basis_of(row: &str) -> &str {
+    row_cells(row)[3]
+}
+
+/// Whether the row names a gap, in either window kind.
+fn is_partial(row: &str) -> bool {
+    basis_of(row).starts_with("Partial")
+}
+
+/// Returns the evidence file a row links, asserting the cell's exact form.
+fn evidence_target(row: &str) -> &str {
+    let cell = row_cells(row)[LEDGER_CELLS - 1];
+    let name = cell
+        .strip_prefix("[evidence](../evidence/")
+        .and_then(|rest| rest.strip_suffix(')'))
+        .expect("evidence cell must be exactly [evidence](../evidence/<name>.md)");
+    assert!(
+        Path::new(name)
+            .extension()
+            .is_some_and(|extension| extension.eq_ignore_ascii_case("md"))
+            && !name.contains('/'),
+        "evidence link must name one file in docs/evidence: {cell}"
+    );
+    name
+}
+
+/// Counts sentences in a basis note, ignoring ellipses and the abbreviations
+/// in `SENTENCE_ABBREVIATIONS`.
+fn basis_note_sentences(note: &str) -> usize {
+    let mut text = note.replace("...", " ").replace('\u{2026}', " ");
+    for abbreviation in SENTENCE_ABBREVIATIONS {
+        text = text.replace(abbreviation, abbreviation.trim_end_matches('.'));
+    }
+    let mut chars = text.chars().peekable();
+    let mut sentences = 0_usize;
+    while let Some(character) = chars.next() {
+        if matches!(character, '.' | '!' | '?')
+            && chars.peek().is_none_or(|next| next.is_whitespace())
+        {
+            sentences = sentences.saturating_add(1);
+        }
+    }
+    sentences
+}
+
+/// Asserts one ledger row carries the fixed eleven-cell shape.
+///
+/// `synthetic_name` is the one identity in this table whose profile is library
+/// policy rather than a venue schedule; every other row must be a real
+/// identity reviewed at or after the repository cutoff and at or before
+/// `today`, the current UTC calendar date (LAW-UTC-DATES).
+fn assert_row_shape(row: &str, cutoff: NaiveDate, today: NaiveDate, synthetic_name: &str) {
+    let cells = row_cells(row);
+    assert_eq!(
+        cells.len(),
+        LEDGER_CELLS,
+        "unexpected verification row shape: {row}"
+    );
+    let (basis, tier, service) = (cells[3], cells[4], cells[5]);
+    let (horizon, reviewed, cadence, note) = (cells[6], cells[7], cells[8], cells[9]);
+
+    assert!(
+        VALID_BASES.contains(&basis),
+        "unrecognized verification basis: {row}"
+    );
+    assert!(
+        VALID_SERVICE_TIERS.contains(&service),
+        "service tier must be served or dormant: {row}"
+    );
+    assert!(
+        VALID_CADENCES.contains(&cadence),
+        "review cadence must be monthly, quarterly or on demand: {row}"
+    );
+    assert_eq!(
+        service == "dormant",
+        cadence == "on demand",
+        "LAW-WATCH: a dormant identity is reviewed on demand and a served one is not: {row}"
+    );
+    assert!(
+        horizon == "\u{2014}" || NaiveDate::parse_from_str(horizon, "%Y-%m-%d").is_ok(),
+        "horizon must be an ISO date or an em dash: {row}"
+    );
+    assert!(
+        !note.contains("<br>"),
+        "basis note must be plain prose, not a line-broken cell: {row}"
+    );
+    let sentences = basis_note_sentences(note);
+    assert!(
+        (1..=MAX_BASIS_SENTENCES).contains(&sentences),
+        "basis note must hold one to three sentences, found {sentences}: {row}"
+    );
+    assert!(
+        !note.contains("Gap: executable") && !note.contains("Gap: order-entry"),
+        "the gap kind lives in the Basis cell, never in the note: {row}"
+    );
+    evidence_target(row);
+
+    if wire_name(row) == synthetic_name {
+        assert_eq!(basis, "Synthetic", "{synthetic_name} must remain synthetic");
+        for (label, value) in [
+            ("evidence tier", tier),
+            ("horizon", horizon),
+            ("review date", reviewed),
+        ] {
+            assert_eq!(
+                value, "\u{2014}",
+                "a synthetic profile has no {label}: {row}"
+            );
+        }
+        assert_eq!(service, "dormant", "a synthetic profile is never served");
+        assert_eq!(cadence, "on demand", "a synthetic profile has no cadence");
+    } else {
+        assert_ne!(
+            basis, "Synthetic",
+            "non-synthetic identity cannot be synthetic: {row}"
+        );
+        assert!(
+            VALID_EVIDENCE_TIERS.contains(&tier),
+            "unrecognized evidence tier: {row}"
+        );
+        assert!(
+            matches!(tier, "T1" | "T2"),
+            "LAW-PRIMARY-SOURCES: a current schedule at T3 or T4 is a defect: {row}"
+        );
+        let reviewed = NaiveDate::parse_from_str(reviewed, "%Y-%m-%d")
+            .expect("every non-synthetic identity must have an ISO review date");
+        assert!(
+            reviewed >= cutoff,
+            "review date predates repository cutoff: {row}"
+        );
+        assert!(
+            reviewed <= today,
+            "LAW-UTC-DATES: reviewed-on {reviewed} is later than today's UTC date \
+             {today}, so the row is future-dated: {row}"
+        );
+    }
 }
 
 fn validated_source_link_count(text: &str) -> u16 {
@@ -209,34 +410,10 @@ fn market_hours_key_selection_contract_is_explicit() {
 fn exchange_rows_have_complete_review_metadata() {
     let cutoff = NaiveDate::parse_from_str(repository_cutoff(), "%Y-%m-%d")
         .expect("repository cutoff must be an ISO calendar date");
+    let today = today_utc();
 
     for row in exchange_rows() {
-        let cells = row_cells(row);
-        assert_eq!(cells.len(), 6, "unexpected verification row shape: {row}");
-
-        let name = wire_name(row);
-        let basis = cells[3];
-        let reviewed = cells[4];
-        assert!(
-            VALID_BASES.contains(&basis),
-            "unrecognized verification basis: {row}"
-        );
-
-        if name == "unknown" {
-            assert_eq!(basis, "Synthetic", "unknown must remain synthetic");
-            assert_eq!(reviewed, "—", "synthetic profiles have no review date");
-        } else {
-            assert_ne!(
-                basis, "Synthetic",
-                "non-synthetic Exchange identity cannot be synthetic: {row}"
-            );
-            let reviewed = NaiveDate::parse_from_str(reviewed, "%Y-%m-%d")
-                .expect("every non-synthetic Exchange identity must have an ISO review date");
-            assert!(
-                reviewed >= cutoff,
-                "exchange review date predates repository cutoff: {row}"
-            );
-        }
+        assert_row_shape(row, cutoff, today, "unknown");
     }
 }
 
@@ -244,34 +421,10 @@ fn exchange_rows_have_complete_review_metadata() {
 fn market_hours_key_rows_have_complete_review_metadata() {
     let cutoff = NaiveDate::parse_from_str(repository_cutoff(), "%Y-%m-%d")
         .expect("repository cutoff must be an ISO calendar date");
+    let today = today_utc();
 
     for row in market_hours_key_rows() {
-        let cells = row_cells(row);
-        assert_eq!(cells.len(), 6, "unexpected verification row shape: {row}");
-
-        let name = wire_name(row);
-        let basis = cells[3];
-        let reviewed = cells[4];
-        assert!(
-            VALID_BASES.contains(&basis),
-            "unrecognized verification basis: {row}"
-        );
-
-        if name == "always_open" {
-            assert_eq!(basis, "Synthetic", "always_open must remain synthetic");
-            assert_eq!(reviewed, "—", "synthetic profiles have no review date");
-        } else {
-            assert_ne!(
-                basis, "Synthetic",
-                "real profile cannot be synthetic: {row}"
-            );
-            let reviewed = NaiveDate::parse_from_str(reviewed, "%Y-%m-%d")
-                .expect("every real MarketHoursKey profile must have an ISO review date");
-            assert!(
-                reviewed >= cutoff,
-                "MarketHoursKey review date predates repository cutoff: {row}"
-            );
-        }
+        assert_row_shape(row, cutoff, today, "always_open");
     }
 }
 
@@ -281,13 +434,18 @@ fn every_market_hours_key_owner_and_source_link_resolves() {
 
     for row in market_hours_key_rows() {
         let cells = row_cells(row);
-        assert_eq!(cells.len(), 6, "unexpected verification row shape: {row}");
-
-        let owner = owner_target(cells[1]);
-        assert!(
-            docs_dir.join(owner).is_file(),
-            "MarketHoursKey owner link does not resolve: {owner}"
+        assert_eq!(
+            cells.len(),
+            LEDGER_CELLS,
+            "unexpected verification row shape: {row}"
         );
+
+        for owner in owner_targets(cells[1]) {
+            assert!(
+                docs_dir.join(owner).is_file(),
+                "MarketHoursKey owner link does not resolve: {owner}"
+            );
+        }
         assert_source_links_resolve(cells[2], row);
     }
 }
@@ -297,6 +455,12 @@ fn readme_and_review_dates_match_the_repository_cutoff() {
     let cutoff = repository_cutoff();
     let cutoff_date = NaiveDate::parse_from_str(cutoff, "%Y-%m-%d")
         .expect("repository cutoff must be an ISO calendar date");
+    let today = today_utc();
+    assert!(
+        cutoff_date <= today,
+        "LAW-UTC-DATES: the repository source-review cutoff {cutoff_date} is later than \
+         today's UTC date {today}, so it is future-dated"
+    );
     let readme_claim = format!("**Repository-wide review completed:** `{cutoff}`");
 
     assert!(
@@ -310,12 +474,21 @@ fn readme_and_review_dates_match_the_repository_cutoff() {
         .filter(|row| wire_name(row) != "unknown")
     {
         let cells = row_cells(row);
-        assert_eq!(cells.len(), 6, "unexpected verification row shape: {row}");
-        let reviewed = NaiveDate::parse_from_str(cells[4], "%Y-%m-%d")
+        assert_eq!(
+            cells.len(),
+            LEDGER_CELLS,
+            "unexpected verification row shape: {row}"
+        );
+        let reviewed = NaiveDate::parse_from_str(cells[7], "%Y-%m-%d")
             .expect("every non-synthetic Exchange identity must have an ISO review date");
         assert!(
             reviewed >= cutoff_date,
             "exchange review date predates repository cutoff: {row}"
+        );
+        assert!(
+            reviewed <= today,
+            "LAW-UTC-DATES: reviewed-on {reviewed} is later than today's UTC date \
+             {today}, so the row is future-dated: {row}"
         );
         minimum_reviewed =
             Some(minimum_reviewed.map_or(reviewed, |earliest| earliest.min(reviewed)));
@@ -373,21 +546,17 @@ fn readme_and_audit_quantify_assurance_from_the_ledger() {
         .collect::<Vec<_>>();
 
     let basis_count =
-        |rows: &[&str], basis: &str| rows.iter().filter(|row| row_cells(row)[3] == basis).count();
+        |rows: &[&str], basis: &str| rows.iter().filter(|row| basis_of(row) == basis).count();
+    let partial_count = |rows: &[&str]| rows.iter().filter(|row| is_partial(row)).count();
 
     let primary = basis_count(&real_exchange_rows, "Primary");
-    let partial = basis_count(&real_exchange_rows, "Partial");
+    let partial = partial_count(&real_exchange_rows);
     let verified = primary + partial;
-    let secondary = basis_count(&exchange_rows, "Secondary");
-    let pragmatic = basis_count(&exchange_rows, "Pragmatic");
-    let known_issues = basis_count(&real_exchange_rows, "Known issue");
-    let history_gap_rows = partial
-        + basis_count(&real_exchange_rows, "Secondary")
-        + basis_count(&real_exchange_rows, "Pragmatic")
-        + known_issues;
+    let executable = basis_count(&exchange_rows, "Partial / executable");
+    let order_entry = basis_count(&exchange_rows, "Partial / order-entry");
+    let history_gap_rows = partial;
     let synthetic = basis_count(&exchange_rows, "Synthetic");
-    let verified_keys =
-        basis_count(&real_key_rows, "Primary") + basis_count(&real_key_rows, "Partial");
+    let verified_keys = basis_count(&real_key_rows, "Primary") + partial_count(&real_key_rows);
 
     let readme_identity_claims = [
         format!(
@@ -438,18 +607,15 @@ fn readme_and_audit_quantify_assurance_from_the_ledger() {
     }
 
     let exchange_distribution = format!(
-        "| {} `Exchange` identifiers | {primary} | {partial} | {secondary} | {pragmatic} | \
-         {known_issues} | {synthetic} |",
+        "| {} `Exchange` identifiers | {primary} | {executable} | {order_entry} | {synthetic} |",
         exchange_rows.len()
     );
     let key_distribution = format!(
-        "| {} `MarketHoursKey` values | {} | {} | {} | {} | {} | {} |",
+        "| {} `MarketHoursKey` values | {} | {} | {} | {} |",
         key_rows.len(),
         basis_count(&key_rows, "Primary"),
-        basis_count(&key_rows, "Partial"),
-        basis_count(&key_rows, "Secondary"),
-        basis_count(&key_rows, "Pragmatic"),
-        basis_count(&key_rows, "Known issue"),
+        basis_count(&key_rows, "Partial / executable"),
+        basis_count(&key_rows, "Partial / order-entry"),
         basis_count(&key_rows, "Synthetic")
     );
     assert!(
@@ -467,6 +633,37 @@ fn readme_and_audit_quantify_assurance_from_the_ledger() {
     );
 }
 
+/// Asserts the README's service-tier split derives from the ledger.
+///
+/// LAW-SERVICE-TIERS decides what a row owes, and the README states the split
+/// in prose. Nothing derived it, so the first identity a consumer reaches — or
+/// stops reaching — would leave the sentence stale while the tests stayed
+/// green, exactly as the basis and gap-kind counts did before their fences.
+#[test]
+fn readme_states_the_service_tier_split_from_the_ledger() {
+    let rows = exchange_rows()
+        .into_iter()
+        .chain(market_hours_key_rows())
+        .collect::<Vec<_>>();
+    let served = rows
+        .iter()
+        .filter(|row| row_cells(row)[5] == "served")
+        .count();
+    let dormant = rows.len().saturating_sub(served);
+
+    // README prose is hard-wrapped, so these claims straddle line breaks.
+    let readme = README.split_whitespace().collect::<Vec<_>>().join(" ");
+    for claim in [
+        format!("{served} of the {} rows are `served`", rows.len()),
+        format!("and {dormant} are `dormant`"),
+    ] {
+        assert!(
+            readme.contains(&claim),
+            "README service-tier split drifted from the ledger: expected {claim:?}"
+        );
+    }
+}
+
 #[test]
 fn every_ledger_source_link_has_a_registry_anchor() {
     assert!(
@@ -481,11 +678,12 @@ fn every_exchange_owner_link_resolves() {
 
     for row in exchange_rows() {
         let cells = row_cells(row);
-        let owner = owner_target(cells[1]);
-        assert!(
-            docs_dir.join(owner).is_file(),
-            "exchange owner link does not resolve: {owner}"
-        );
+        for owner in owner_targets(cells[1]) {
+            assert!(
+                docs_dir.join(owner).is_file(),
+                "exchange owner link does not resolve: {owner}"
+            );
+        }
     }
 }
 
@@ -553,7 +751,7 @@ fn date_exception_contract_distinguishes_boundaries_coverage_and_finality() {
 /// that test inside the crate's 100-line function limit.
 fn assert_key_basis_prose_matches_the_ledger(real_key_rows: &[&str]) {
     let basis_count =
-        |rows: &[&str], basis: &str| rows.iter().filter(|row| row_cells(row)[3] == basis).count();
+        |rows: &[&str], basis: &str| rows.iter().filter(|row| basis_of(row) == basis).count();
     // The prose Primary/Partial split for keys is written in words, and drifted
     // silently twice: README.md once said "Four key rows are Primary" while the
     // ledger held five, and the headline bullet said "11 operator-derived" long
@@ -564,7 +762,7 @@ fn assert_key_basis_prose_matches_the_ledger(real_key_rows: &[&str]) {
     // digits, which is how the README came to read "Six key rows are
     // **Primary** and 24 are **Partial**" in one sentence.
     let key_primary = basis_count(real_key_rows, "Primary");
-    let key_partial = basis_count(real_key_rows, "Partial");
+    let key_partial = real_key_rows.iter().filter(|row| is_partial(row)).count();
     let capitalized = |word: String| -> String {
         let mut chars = word.chars();
         chars.next().map_or_else(String::new, |first| {
@@ -602,8 +800,13 @@ fn assert_key_basis_prose_matches_the_ledger(real_key_rows: &[&str]) {
 /// README and the ledger spell out beside the rows they name.
 #[test]
 fn the_gap_kind_split_is_quoted_consistently_everywhere() {
-    let order_entry = VERIFICATION.matches("Gap: order-entry").count();
-    let executable = VERIFICATION.matches("Gap: executable").count();
+    let rows = exchange_rows()
+        .into_iter()
+        .chain(market_hours_key_rows())
+        .collect::<Vec<_>>();
+    let count = |basis: &str| rows.iter().filter(|row| basis_of(row) == basis).count();
+    let order_entry = count("Partial / order-entry");
+    let executable = count("Partial / executable");
     let partial_rows = order_entry + executable;
 
     let flowed = |text: &str| text.split_whitespace().collect::<Vec<_>>().join(" ");
@@ -651,12 +854,9 @@ fn the_gap_kind_split_is_quoted_consistently_everywhere() {
     let real_keys: Vec<&str> = key_rows
         .iter()
         .copied()
-        .filter(|row| row_cells(row)[3] != "Synthetic")
+        .filter(|row| basis_of(row) != "Synthetic")
         .collect();
-    let partial_keys = real_keys
-        .iter()
-        .filter(|row| row_cells(row)[3] == "Partial")
-        .count();
+    let partial_keys = real_keys.iter().filter(|row| is_partial(row)).count();
     // This count used to be spelled from a local list that stopped at
     // twenty-five and panicked past it. The ledger holds twenty-four Partial
     // keys today and the CME trade-type sequence adds thirty-two rows, so the
@@ -729,10 +929,11 @@ fn assurance_prose_restates_exchange_counts_from_the_ledger() {
         .filter(|row| wire_name(row) != "always_open")
         .collect::<Vec<_>>();
     let basis_count =
-        |rows: &[&str], basis: &str| rows.iter().filter(|row| row_cells(row)[3] == basis).count();
+        |rows: &[&str], basis: &str| rows.iter().filter(|row| basis_of(row) == basis).count();
+    let partial_count = |rows: &[&str]| rows.iter().filter(|row| is_partial(row)).count();
     let real = real_exchange_rows.len();
     let primary = basis_count(&real_exchange_rows, "Primary");
-    let partial = basis_count(&real_exchange_rows, "Partial");
+    let partial = partial_count(&real_exchange_rows);
 
     // README prose is hard-wrapped, so these claims straddle line breaks.
     let flowed = |text: &str| text.split_whitespace().collect::<Vec<_>>().join(" ");
@@ -759,7 +960,7 @@ fn assurance_prose_restates_exchange_counts_from_the_ledger() {
     let audit = flowed(AUDIT).to_lowercase();
     for (exchanges, keys, basis) in [
         (primary, basis_count(&real_key_rows, "Primary"), "primary"),
-        (partial, basis_count(&real_key_rows, "Partial"), "partial"),
+        (partial, partial_count(&real_key_rows), "partial"),
     ] {
         let claim = format!(
             "{} exchange rows and {} product-family keys are **{basis}**",

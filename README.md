@@ -298,8 +298,8 @@ trades print — the regular or extended session — would change whether the cr
 reports a market as tradeable. A gap in an order-entry window only changes
 whether orders could be *queued* ahead of an open that is itself modelled
 correctly; no trade can print in one of those windows on any venue in this crate.
-Every `Partial` row states which kind it is, and the split is **35 order-entry
-to 22 executable** across the 57 rows in the ledger. The order-entry majority is
+Every `Partial` row states which kind it is in its Basis cell, and the split is
+**35 order-entry to 22 executable** across the 57 rows in the ledger. The order-entry majority is
 the exact *day* an older queue or post-close phase started, with the trading
 session itself sourced. The executable twenty-two — the ICE Futures U.S. keys, CME
 Nikkei 225 Dollar, the SGX equity-index keys, `nyse` and `nyse_american`,
@@ -341,9 +341,19 @@ rulebook material and its notice/evidence channel. All 95 current profiles are
 primary-supported within their stated scope. The 67 **Primary** rows have no
 known modeled-history gap since January 2010 or their sourced launch; 28
 **Partial** rows name an older queue, PCP phase, or exact onset that available
-primary evidence cannot date. No row relies on Secondary, Pragmatic, or Known
-issue evidence. `Exchange::Unknown` is synthetic and is not one of the 95
-source-backed identities.
+primary evidence cannot date. The basis vocabulary is closed at four values —
+**Primary**, **Partial / executable**, **Partial / order-entry** and
+**Synthetic** — so a row that cannot be sourced at the operator's own tier is a
+defect to fix, not a weaker label to wear. `Exchange::Unknown` is synthetic and
+is not one of the 95 source-backed identities.
+
+Every row also states its **service tier** (LAW-SERVICE-TIERS): 16 of the 132
+rows are `served` — a consumer instrument can reach them, so they owe dated
+history to the January-2010 floor and a monthly or quarterly review — and 116
+are `dormant`, kept correct as of their last review and re-reviewed on demand.
+Each row carries its evidence tier, the horizon below which its grid is carried
+rather than sourced, its review cadence, and a link to the evidence file holding
+the quotations and URLs behind it.
 
 The key surface was audited separately:
 **Hours verified at the review date for each product family:** `35 of 35` operator-derived

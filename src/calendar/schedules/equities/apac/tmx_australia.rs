@@ -115,6 +115,7 @@ use crate::calendar::schedules::timeline::{Revision, local_date, revisions, sele
 
 pub(crate) const CURRENT: &StaticHoursProfile = &TMX_AU_PROFILE_CURRENT;
 
+// Evidence: docs/evidence/tmx_australia.md
 static REVISIONS: &[Revision] = revisions![
     (
         2011,

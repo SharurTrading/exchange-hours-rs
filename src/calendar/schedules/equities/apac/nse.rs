@@ -163,6 +163,7 @@ use crate::calendar::schedules::timeline::{Revision, local_date, revisions, sele
 
 pub(crate) const CURRENT: &StaticHoursProfile = &NSE_PROFILE_CURRENT;
 
+// Evidence: docs/evidence/nse_india.md
 static REVISIONS: &[Revision] = revisions![
     (
         2010,

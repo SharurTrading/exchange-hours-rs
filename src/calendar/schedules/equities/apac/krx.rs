@@ -88,8 +88,20 @@ use crate::calendar::schedules::timeline::{Revision, local_date, revisions, sele
 
 pub(crate) const CURRENT: &StaticHoursProfile = &KRX_PROFILE_CURRENT;
 
+// Evidence: docs/evidence/krx.md
 static REVISIONS: &[Revision] = revisions![
-    (2016, 8, 1, &KRX_PROFILE_POST_2016_08_01, "FSC notice 73613"),
+    // The 2016-08-01 label names no document on purpose: FSC notice 73613 was
+    // read on 2026-09-12 and dates the 2019-04-29 pre-market reduction, not
+    // this row. No artifact in this source set dates the 2016 extension; the
+    // defect is recorded in docs/evidence/krx.md. The day and the rules are
+    // unchanged pending a re-sourcing change.
+    (
+        2016,
+        8,
+        1,
+        &KRX_PROFILE_POST_2016_08_01,
+        "2016-08-01 KRX regular-close extension, artifact unrecovered"
+    ),
     (2019, 4, 29, &KRX_PROFILE_CURRENT, "KRX rulebook law 000111"),
 ];
 

@@ -14,11 +14,9 @@ use super::equities::{
 use crate::calendar::schedules::CLOSED_NEW_YORK;
 use crate::calendar::schedules::timeline::{Revision, local_date, revisions, select_revision};
 
-// Nasdaq Equity Trader Alert 2013-21 moved the pre-market open from 07:00 to
-// 04:00 ET effective Monday 2013-03-18. Future Night Session announcements are
-// monitored in the schedule update guide but are not selected until Nasdaq's
-// required readiness filing supplies an unconditional effective day.
-// https://www.nasdaqtrader.com/TraderNews.aspx?id=ETA2013-21
+// 2013-03-18 — T1 — Nasdaq Equity Trader Alert 2013-21 — the pre-market open
+//   moves from 07:00 to 04:00 ET.
+// Evidence: docs/evidence/nasdaq.md
 static NASDAQ_REVISIONS: &[Revision] = revisions![(
     2013,
     3,
@@ -37,11 +35,9 @@ pub(crate) fn nasdaq_profile_at(
     )
 }
 
-// Nasdaq Equity Trader Alert 2011-20 states that BX began accepting and
-// executing orders at 07:00 ET on Monday 2011-04-18. The official launch alert
-// supplies the 08:00 ET predecessor open and unchanged 19:00 close.
-// https://www.nasdaqtrader.com/TraderNews.aspx?id=ETA2009-003
-// https://www.nasdaqtrader.com/TraderNews.aspx?id=ETA2011-20
+// 2011-04-18 — T1 — Nasdaq Equity Trader Alert 2011-20 — the system-hours open
+//   moves from 08:00 to 07:00 ET; the 19:00 close is unchanged.
+// Evidence: docs/evidence/nasdaq_bx.md
 static NASDAQ_BX_REVISIONS: &[Revision] = revisions![(
     2011,
     4,
@@ -60,14 +56,10 @@ pub(crate) fn nasdaq_bx_profile_at(
     )
 }
 
-// Nasdaq's launch alert dates PSX production to 2010-10-08. The initial rules
-// operated 09:00–17:00 ET; SR-Phlx-2010-172 explicitly identifies 2010-12-13
-// as the implementation date for the 08:00 ET opening.
-// Row evidence:
-//   2010-10-08 "Nasdaq Equity Trader Alert 2010-56"
-//     https://www.nasdaqtrader.com/TraderNews.aspx?id=ETA2010-56
-//   2010-12-13 "SEC SR-Phlx-2010-172"
-//     https://www.sec.gov/files/rules/sro/phlx/2010/34-63492.pdf
+// 2010-10-08 — T1 — Nasdaq Equity Trader Alert 2010-56 — PSX launches on
+//   09:00–17:00 ET.
+// 2010-12-13 — T1 — SEC SR-Phlx-2010-172 — the 08:00 ET opening.
+// Evidence: docs/evidence/nasdaq_psx.md
 static NASDAQ_PSX_REVISIONS: &[Revision] = revisions![
     (
         2010,
@@ -89,27 +81,12 @@ pub(crate) fn nasdaq_psx_profile_at(
     )
 }
 
-// MEMX began live trading on 2020-09-21. It shortened the Post-Market Session
-// from 20:00 to 17:00 ET on 2020-10-05 and restored the 20:00 close on
-// 2023-02-01. Its own 2025-06-06 retrospective identifies 2025-05-19 as the
-// actual launch of its 04:00 ET pre-market. The earlier rule filing proposed a
-// March date, so the exchange's stated production launch is the operative
-// boundary.
-// https://memx.com/insights/day-1
-// https://info.memxtrading.com/trader-alert-20-06-memx-market-hours-change/
-// https://www.sec.gov/files/rules/sro/memx/2023/34-96773.pdf
-// https://info.memxtrading.com/trader-alert-23-04-memx-trading-hours-change/
-// https://memx.com/insights/pre-market-share-gains-and-new-options-active-risk-feature
-// Row evidence:
-//   2020-09-21 "MEMX Day 1 retrospective"
-//     https://memx.com/insights/day-1
-//   2020-10-05 "MEMX trader alert 20-06"
-//     https://info.memxtrading.com/trader-alert-20-06-memx-market-hours-change/
-//   2023-02-01 "MEMX trader alert 23-04"
-//     https://info.memxtrading.com/trader-alert-23-04-memx-trading-hours-change/
-//     https://www.sec.gov/files/rules/sro/memx/2023/34-96773.pdf
-//   2025-05-19 "MEMX retrospective 2025-06-06"
-//     https://memx.com/insights/pre-market-share-gains-and-new-options-active-risk-feature
+// 2020-09-21 — T1 — MEMX Day 1 retrospective — live launch, 07:00–20:00 ET.
+// 2020-10-05 — T1 — MEMX trader alert 20-06 — the post-market close moves from
+//   20:00 to 17:00 ET.
+// 2023-02-01 — T1 — MEMX trader alert 23-04 — the 20:00 close is restored.
+// 2025-05-19 — T1 — MEMX retrospective 2025-06-06 — the 04:00 pre-market opens.
+// Evidence: docs/evidence/memx_eq.md
 static MEMX_REVISIONS: &[Revision] = revisions![
     (
         2020,
@@ -149,17 +126,11 @@ pub(crate) fn memx_profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static 
     )
 }
 
-// MIAX Pearl Equities launched on 2020-09-29. Regulatory Circular 2025-02
-// later made the Early Trading Session (04:00–09:30 ET) and Late Trading
-// Session (16:00–20:00 ET) available beginning 2025-02-20. Before that
-// amendment the exchange-level profile contains Regular Trading Hours only.
-// https://www.miaxglobal.com/company/markets/us-equities
-// https://www.miaxglobal.com/sites/default/files/circular-files/MIAX_Pearl_Equities_RC_2025_02_0.pdf
-// Row evidence:
-//   2020-09-29 "MIAX Pearl Equities launch notice"
-//     https://www.miaxglobal.com/company/markets/us-equities
-//   2025-02-20 "MIAX Pearl Regulatory Circular 2025-02"
-//     https://www.miaxglobal.com/sites/default/files/circular-files/MIAX_Pearl_Equities_RC_2025_02_0.pdf
+// 2020-09-29 — T1 — MIAX Pearl Equities launch notice — launch on Regular
+//   Trading Hours only.
+// 2025-02-20 — T1 — MIAX Pearl Regulatory Circular 2025-02 — the Early
+//   (04:00–09:30) and Late (16:00–20:00) Trading Sessions become available.
+// Evidence: docs/evidence/miax_pearl_eq.md
 static MIAX_PEARL_REVISIONS: &[Revision] = revisions![
     (
         2020,

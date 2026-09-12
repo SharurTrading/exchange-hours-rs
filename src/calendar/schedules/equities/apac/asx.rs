@@ -9,10 +9,12 @@ use crate::calendar::SessionRule;
 use crate::calendar::rule::MON_FRI;
 
 // ASX cash market, from ASX Operating Rules Procedures Appendix 4013 and the
-// cash-market hours page. Service Release 15 replaced symbol-group staggered
-// opens with one randomized 09:59:45–10:00 opening and added Post Close on
-// 2025-06-23. A deterministic venue default conservatively starts continuous
-// trading at 10:00; the opening process and close-side trading are extended.
+// cash-market hours page. Service Release 15 replaced the symbol-group
+// staggered opens with one Opening Single Price Auction and added Post Close
+// on 2025-06-23. ASX prints the auction at 09:59:00-09:59:45 and Normal
+// Trading from 09:59:45, both nominal; the uncross is randomised per security,
+// so `regular` starts at 10:00, the latest instant continuous trading can have
+// begun, and the whole opening minute is extended. See docs/evidence/asx.md.
 // Sources:
 // https://www.asx.com.au/markets/market-resources/trading-hours-calendar/cash-market-trading-hours
 // https://www.asxonline.com/public/notices/2025/may/0473.25.05.html
@@ -27,9 +29,11 @@ static ASX_REGULAR: &[SessionRule] = &[SessionRule {
 // Open (Normal Trading) 09:59:45–16:00:00, Pre-CSPA 16:00:00–16:10:00, Closing
 // Single Price Auction 16:10:00–16:11:00 and Post Close 16:11:00–16:21:30. Both
 // single-price auctions match, and in Post Close "ASX matches orders at the CSPA
-// price", so the auction and Post Close windows are tradeable; the deterministic
-// venue default still defers continuous trading to 10:00, so 09:59–10:00 stays
-// extended rather than regular.
+// price", so the auction and Post Close windows are tradeable. The rule below
+// therefore spans the whole opening minute 09:59:00-10:00:00 rather than
+// stopping at the nominal 09:59:45 Normal Trading start, and `regular` begins
+// at 10:00:00: an exchange-level envelope that never implies a per-security
+// uncross second.
 static ASX_EXTENDED_CURRENT: &[SessionRule] = &[
     // Pre-open: ASX Trade does not match here, but overnight and overseas
     // trades report until 09:45 and other allowable trades may be reported
@@ -125,6 +129,7 @@ use crate::calendar::schedules::timeline::{Revision, local_date, revisions, sele
 
 pub(crate) const CURRENT: &StaticHoursProfile = &ASX_PROFILE_CURRENT;
 
+// Evidence: docs/evidence/asx.md
 static REVISIONS: &[Revision] = revisions![(
     2025,
     6,

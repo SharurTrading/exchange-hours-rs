@@ -136,6 +136,7 @@ pub(crate) static ICE_CANADA_PROFILE: StaticHoursProfile = StaticHoursProfile {
 //     https://www.ice.com/publicdocs/futures_canada/member_notices/2016_01_18_Reminder_Canola_Trade_At_Settlement.pdf
 //   2018-07-29 "ICE Futures US notice Canola 20180501"
 //     https://www.ice.com/publicdocs/futures_us/exchange_notices/ICE_Futures_US-Notice-Canola-20180501.pdf
+// Evidence: docs/evidence/ice_canada.md
 static ICE_CANADA_REVISIONS: &[Revision] = revisions![
     (
         2012,

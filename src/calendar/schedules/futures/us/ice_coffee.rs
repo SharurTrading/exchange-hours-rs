@@ -10,41 +10,22 @@ use crate::calendar::schedules::StaticHoursProfile;
 use crate::calendar::schedules::timeline::{Revision, local_date, revisions, select_revision};
 
 // Coffee "C" runs one same-day executable session; the ICE master hours table
-// carries no footnote marker on its row, so nothing commences on the previous
-// calendar evening. Order entry is a separate, non-matching phase.
-//
-// The master table lists the row as "Coffee "C" and Coffee "C" Metric" on a
-// single line, so both instruments share this grid.
-//
-// The 20:00 pre-open is modelled Monday-Thursday. ICE runs it "on the prior
-// Exchange business day", so a Monday trade date is fed by the preceding Friday
-// evening. That leg is not expressible here: a wrapping SessionRule always
-// wraps into the NEXT local day, so a Friday rule would assert order entry on
-// Saturday morning rather than carrying through to Monday. The Friday PCPO is
-// unaffected and is modelled MON_FRI, because it opens and closes inside one
-// local day. The omission is a limit of the normal-week rule model, not a claim
-// that ICE closes order entry over the weekend.
-//
-// https://www.ice.com/publicdocs/futures_us/ICE_Futures_US_Regular_Trading_Hours.pdf
-// https://www.ice.com/products/15/Coffee-C-Futures
+// carries no footnote marker on its row, and lists "Coffee "C" and Coffee "C"
+// Metric" on a single line, so both instruments share this grid. The 20:00
+// pre-open is modelled Monday-Thursday because a wrapping rule cannot carry a
+// Friday evening across the weekend.
+// Narrative: docs/evidence/ice_us_coffee.md
 pub(crate) static COFFEE_REGULAR_CURRENT: &[SessionRule] = &[SessionRule {
     days: MON_FRI,
     open_ssm: 4 * 3600 + 15 * 60,
     close_ssm: 13 * 3600 + 30 * 60,
 }];
 
-// Two order-entry-only phases: the post-close pre-open ("PCPO") beginning 30
-// minutes after the 13:30 close, and the regular pre-open from 20:00 running to
-// the next morning's open.
-//
-// Both are classified order_entry, not extended: nothing matches in either. The
-// 2018 notice creating the PCPO calls it an extension of the "pre-open order
-// entry session" and kills Day orders entered in it at its end, and the
-// pre-open only accepts orders ahead of the Opening Match at the open itself.
-// Coffee "C" publishes no tradeable phase outside its executable session, so
-// the extended slice is empty.
-//
-// https://www.ice.com/publicdocs/futures_us/exchange_notices/ICE_Futures_US_PCPO_Session_20180920.pdf
+// Two order-entry-only phases, neither of which matches: the post-close
+// pre-open ("PCPO") from 30 minutes after the 13:30 close, and the 20:00
+// pre-open running to the next morning's open. Coffee "C" publishes no
+// tradeable phase outside its executable session, so `extended` is empty.
+// Narrative: docs/evidence/ice_us_coffee.md
 pub(crate) static COFFEE_EXTENDED_CURRENT: &[SessionRule] = &[];
 pub(crate) static COFFEE_ORDER_ENTRY_CURRENT: &[SessionRule] = &[
     SessionRule {
@@ -89,46 +70,10 @@ static COFFEE_2014: StaticHoursProfile = StaticHoursProfile {
     has_weekend_close: true,
 };
 
-// Baseline before 2014-02-03: open 03:30 NY, close 14:00 NY.
-//
-// Sourcing caveat, stated plainly: the January 2014 notice prints only the NEW
-// grid, marking in bold which of those figures moved. It never prints the times
-// it replaced.
-//
-//
-// 2026-09-01: WHY THE 2010-2011 INTERVAL CANNOT BE SOURCED. ICE Futures U.S.
-// sets these hours administratively, not by rule. Its product rulebook chapters
-// - Sugar No. 11, Cotton No. 2, Coffee, Cocoa, FCOJ and USDX, all captured
-// December 2011 - contain no hours provision at all, and chapter 4 is
-// trade-practice rules. No SEC or CFTC filing therefore fixes an ICE Futures
-// U.S. trading hour, and the master hours table is the only source; its earliest
-// surviving edition is August 2011. This interval is bounded by document
-// availability, not by an unfinished search, so the carry-back above is the
-// terminal answer unless an earlier edition surfaces.
-// https://web.archive.org/web/20111213011033id_/https://www.theice.com/publicdocs/rulebooks/futures_us/11_Sugar_11.pdf
-// https://web.archive.org/web/20111213011055id_/https://www.theice.com/publicdocs/rulebooks/futures_us/8_Coffee.pdf
-// https://web.archive.org/web/20111213011442id_/https://www.theice.com/publicdocs/rulebooks/futures_us/9_Cocoa.pdf
-// SOURCING CAVEAT SUPERSEDED 2026-08-31. The pre-2014 grid is no longer merely
-// corroborated: two dated editions of ICE's own "ICE Futures U.S. Regular
-// Trading Hours" master table print it outright. The AUGUST 2011 edition and
-// the JANUARY 2, 2013 edition both read "Coffee "C"(R)   3:30 - 14:00", so the
-// 03:30 open and 14:00 close are stated by primary ICE documents at two dated
-// points spanning up to the 2014-02-03 change. Because no primary document
-// dates a cutover earlier than 2014-02-03 inside the modelled window, this grid
-// is still carried back as the baseline rather than inventing an earlier
-// revision; the residual gap is January 2010 to August 2011, for which no
-// edition of the master table survives in the archive.
-// Dated editions of ICE's own master table, official origin
-// https://www.ice.com/publicdocs/futures_us/ICE_Futures_US_Regular_Trading_Hours.pdf
-// delivered via
-// https://web.archive.org/web/20111212140120id_/https://www.theice.com/publicdocs/futures_us/ICE_Futures_US_Regular_Trading_Hours.pdf
-// https://web.archive.org/web/20130122132629id_/https://www.theice.com/publicdocs/futures_us/ICE_Futures_US_Regular_Trading_Hours.pdf
-//
-// The pre-open likewise runs from 20:00 on the prior Exchange business day; only
-// its end differs, tracking the 03:30 open of this era. It is order entry, not
-// trading, so it sits in the order_entry slice.
-//
-// https://www.ice.com/publicdocs/futures_us/exchange_notices/ExNot012714Hours.pdf
+// Baseline before 2014-02-03: open 03:30 NY, close 14:00 NY, printed outright
+// by the AUGUST 2011 and JANUARY 2, 2013 editions of ICE's master hours table
+// and carried back. The residual gap is January 2010 to August 2011.
+// Narrative: docs/evidence/ice_us_coffee.md
 static COFFEE_REGULAR_BASELINE: &[SessionRule] = &[SessionRule {
     days: MON_FRI,
     open_ssm: 3 * 3600 + 30 * 60,
@@ -150,18 +95,10 @@ pub(crate) static COFFEE_BASELINE: StaticHoursProfile = StaticHoursProfile {
     has_weekend_close: true,
 };
 
-// 2014-02-03: "Effective with the start of trading for trade date Monday,
-//   February 3, 2014, the Exchange will implement changes to daily trading hours
-//   for Sugar No. 11, Coffee "C", Cocoa, Cotton No. 2 and Sugar No. 16 futures
-//   and option contracts. ... Coffee "C" 4:15 13:30"
-//   https://www.ice.com/publicdocs/futures_us/exchange_notices/ExNot012714Hours.pdf
-// 2018-10-08: "Commencing for trade date Monday, October 8, 2018, the pre-open
-//   order entry session for Coffee "C", Cotton No. 2, Cocoa, FCOJ, Sugar No. 11
-//   and Sugar No. 16 futures contracts will be enhanced by the addition of a new
-//   post-close pre-open ("PCPO") session that will start at 30 minutes after the
-//   end of trading for the contract and end at 6:00 pm on the Exchange business
-//   day prior to each trading day."
-//   https://www.ice.com/publicdocs/futures_us/exchange_notices/ICE_Futures_US_PCPO_Session_20180920.pdf
+// Both revision rows are T1; each row's effective day and citation literal are
+// its own fields, and the notice, quotation and URL behind each are in the
+// evidence file.
+// Evidence: docs/evidence/ice_us_coffee.md
 pub(crate) static COFFEE_REVISIONS: &[Revision] = revisions![
     (2014, 2, 3, &COFFEE_2014, "ICE ExNot 012714 hours"),
     (2018, 10, 8, &COFFEE_CURRENT, "ICE PCPO notice 20180920"),

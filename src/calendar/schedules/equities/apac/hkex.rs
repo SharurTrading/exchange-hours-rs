@@ -104,6 +104,7 @@ use crate::calendar::schedules::timeline::{Revision, local_date, revisions, sele
 
 pub(crate) const CURRENT: &StaticHoursProfile = &HKEX_PROFILE_CURRENT;
 
+// Evidence: docs/evidence/hkex.md
 static REVISIONS: &[Revision] = revisions![
     (
         2011,

@@ -20,6 +20,7 @@ use crate::calendar::rule::MON_FRI;
 // https://www.bursamalaysia.com/sites/5bb54be15f36ca0af339077a/assets/5bb55ab65f36ca0c3028d8c2/1._Amendments_to_the_Rules_of_Bursa_Malaysia_Securities_Berhad_in_relation_to_Market_Making_and_Margin_Financing.pdf
 // https://www.bursamalaysia.com/sites/5d809dcf39fba22790cad230/assets/60b1b8e85b711a63ee7f1395/POs_Trading_Manual_v28n_29.pdf
 // https://www.bursamalaysia.com/sites/5d809dcf39fba22790cad230/assets/65ead6cbe6414a1e16de8b8e/POs_Trading_Manual_v36_4_March_2024.pdf
+// Evidence: docs/evidence/bursa_malaysia.md
 static BURSA_REGULAR: &[SessionRule] = &[
     SessionRule {
         days: MON_FRI,

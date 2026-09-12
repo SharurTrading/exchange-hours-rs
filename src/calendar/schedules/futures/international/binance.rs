@@ -16,6 +16,7 @@ use crate::calendar::rule::ALL_DAYS;
 // https://arquivo.pt/noFrame/replay/20200608065459id_/https://www.binance.com/en/support/articles/360033314152
 // https://t.me/binance_announcements/799
 // https://www.binance.com/en-TR/support/announcement/detail/2bfb6f8dccf447ada57165b7e6a4cf1b
+// Evidence: docs/evidence/binance_futures.md
 static ALWAYS_OPEN: &[SessionRule] = &[SessionRule {
     days: ALL_DAYS,
     open_ssm: 0,

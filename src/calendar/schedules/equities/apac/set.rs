@@ -191,6 +191,7 @@ use crate::calendar::schedules::timeline::{Revision, local_date, revisions, sele
 
 pub(crate) const CURRENT: &StaticHoursProfile = &SET_PROFILE_CURRENT;
 
+// Evidence: docs/evidence/set_thailand.md
 static REVISIONS: &[Revision] = revisions![
     (
         2024,

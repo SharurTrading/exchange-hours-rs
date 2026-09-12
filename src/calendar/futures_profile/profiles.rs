@@ -138,19 +138,11 @@ static FUTURES_GLOBEX_EVENT_CONTRACTS_BTC: FuturesSessionProfile = FuturesSessio
 };
 
 // The five metals Trading at Settlement books. `regular` is empty on all of
-// them: the TAS shape is Globex-only in CME's own Rule 524 route enumeration,
-// its ProductSlate records carry no Floor venue component, and the
-// ContractSpecs "Open Outcry:" label CME does publish is never attached to a
-// TAS hours line. Each opens 17:00 CT Sunday through Thursday and wraps to its
-// own close, with no Friday-evening reopen, so every inter-trade-date gap
-// exceeds four hours and is `Closed` rather than `Maintenance`.
-//
-// COMEX gold, silver and copper share the queue `metals_tas.rs` serves from
-// the sourced intersection — Sunday 16:15-17:00 CT with 16:00-16:15 withheld,
-// Monday-Thursday 16:45-17:00 — and that module holds their launches and the
-// two dated queue revisions. `pgm_tas.rs` holds NYMEX platinum and palladium,
-// which launched after the undated 2012 Sunday move and therefore serve the
-// full 16:00-17:00 CT Sunday queue with nothing withheld.
+// them: the TAS shape is Globex-only in CME's own Rule 524 route enumeration.
+// Each opens 17:00 CT Sunday through Thursday and wraps to its own close with
+// no Friday-evening reopen, so every inter-trade-date gap exceeds four hours
+// and is `Closed`. COMEX gold, silver and copper share one queue in
+// `metals_tas.rs`; `pgm_tas.rs` holds NYMEX platinum and palladium.
 static FUTURES_GLOBEX_GOLD_TAS: FuturesSessionProfile = FuturesSessionProfile {
     tz: US::Central,
     regular: &[],

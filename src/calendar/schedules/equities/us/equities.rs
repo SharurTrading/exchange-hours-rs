@@ -31,16 +31,15 @@ pub(crate) static US_EQUITY_EXTENDED: &[SessionRule] = &[
     },
 ];
 
-// Nasdaq, MEMX, and MIAX Pearl publish the 04:00–20:00 shape. Sources: Nasdaq
-// Equity Rules Equity 2 § 8; MEMX market-hours notice; MIAX Pearl Equities
-// alert 2024-11-13 and its trading-hours page.
+// Nasdaq, MEMX and MIAX Pearl publish the same 04:00–20:00 shape.
+// See docs/evidence/nasdaq.md, docs/evidence/memx_eq.md and
+// docs/evidence/miax_pearl_eq.md.
 pub(crate) static NASDAQ_PROFILE: StaticHoursProfile = equity_profile(US_EQUITY_EXTENDED);
 pub(crate) static MEMX_EQ_PROFILE: StaticHoursProfile = equity_profile(US_EQUITY_EXTENDED);
 pub(crate) static MIAX_PEARL_EQ_PROFILE: StaticHoursProfile = equity_profile(US_EQUITY_EXTENDED);
 
-// Nasdaq operated 07:00–20:00 ET before moving its pre-market open to 04:00
-// effective 2013-03-18.
-// https://www.nasdaqtrader.com/TraderNews.aspx?id=ETA2013-21
+// Nasdaq's pre-2013-03-18 grid: 07:00–20:00 ET.
+// See docs/evidence/nasdaq.md.
 pub(super) static NASDAQ_PROFILE_PRE_2013_03_18: StaticHoursProfile =
     equity_profile(EXTENDED_0700_2000);
 
@@ -48,15 +47,7 @@ pub(super) static NASDAQ_PROFILE_PRE_2013_03_18: StaticHoursProfile =
 // NYSE Texas venue, whose profile lives in `nyse.rs`. The stable public
 // identity here remains `nasdaq_bx`. The venue publishes 07:00–19:00 ET system
 // hours around the 09:30–16:00 core session.
-// An official 2009 circular proves an 08:00–19:00 January-2010 baseline, and
-// SR-BX-2011-016 proves the later 08:00→07:00 system-hours change, and Equity
-// Trader Alert 2011-20 makes its production date Monday 2011-04-18. A
-// March-2014 Nasdaq data notice independently confirms the 07:00 platform open.
-// https://www.nasdaqtrader.com/content/technicalsupport/nasdaq_sys_hours.pdf
-// https://www.nasdaqtrader.com/TraderNews.aspx?id=ETA2009-003
-// https://www.sec.gov/rules/sro/bx/2011/34-64105.pdf
-// https://www.nasdaqtrader.com/TraderNews.aspx?id=ETA2011-20
-// https://www.nasdaqtrader.com/TraderNews.aspx?id=dtn2014-08
+// See docs/evidence/nasdaq_bx.md.
 static NASDAQ_BX_EXTENDED: &[SessionRule] = &[
     SessionRule {
         days: MON_FRI,
@@ -85,11 +76,8 @@ static NASDAQ_BX_EXTENDED_PRE_2011_04_18: &[SessionRule] = &[
 pub(super) static NASDAQ_BX_PROFILE_PRE_2011_04_18: StaticHoursProfile =
     equity_profile(NASDAQ_BX_EXTENDED_PRE_2011_04_18);
 
-// Nasdaq PSX currently publishes 08:00–17:00 ET system hours. PSX launched
-// with a 09:00 ET start and kept the same 17:00 close before the 2010-12-13
-// expansion.
-// https://listingcenter.nasdaq.com/rulebook/phlx/rules/phlx-psx-legacy-3000
-// https://www.sec.gov/files/rules/sro/phlx/2010/34-63492.pdf
+// Nasdaq PSX publishes 08:00–17:00 ET system hours; it launched with a 09:00
+// ET start and kept the same 17:00 close. See docs/evidence/nasdaq_psx.md.
 static NASDAQ_PSX_EXTENDED: &[SessionRule] = &[
     SessionRule {
         days: MON_FRI,
@@ -137,10 +125,8 @@ static EXTENDED_0700_2000: &[SessionRule] = &[
     },
 ];
 
-// MEMX shortened its executable Post-Market Session from 20:00 to 17:00 ET
-// effective 2020-10-05, then restored the 20:00 close on 2023-02-01.
-// https://info.memxtrading.com/trader-alert-20-06-memx-market-hours-change/
-// https://info.memxtrading.com/trader-alert-23-04-memx-trading-hours-change/
+// MEMX's 2020-10-05 to 2023-02-01 Post-Market Session close: 17:00 ET.
+// See docs/evidence/memx_eq.md.
 static EXTENDED_0700_1700: &[SessionRule] = &[
     EXTENDED_0700_2000[0],
     SessionRule {

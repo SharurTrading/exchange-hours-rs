@@ -70,11 +70,14 @@ const DAY_OPEN: u32 = 8 * 3_600 + 30 * 60;
 /// window.
 const HALF_DAY_CLOSE: u32 = 12 * 3_600 + 5 * 60;
 
-/// The family's built-in holiday rows and the window they were audited over.
+/// The family's built-in holiday rows and the windows they were audited over.
 ///
-/// Coverage runs to 2027-12-31, the end of the operator's published future
-/// (LAW-NO-FABRICATED-DATES permits encoding it ahead of its effective day);
-/// CME's 2028-01-01 record sits outside the window and ships no row.
+/// Two audited eras: 2010-2012 at T1 and 2025-2027 at T2. The 2013-2024
+/// interval between them is audited by neither, so `holiday_on` has no answer
+/// there rather than reporting a normal date. Coverage ends at 2027-12-31, the
+/// end of the operator's published future (LAW-NO-FABRICATED-DATES permits
+/// encoding it ahead of its effective day); CME's 2028-01-01 record sits
+/// outside both windows and ships no row.
 // Evidence: docs/evidence/globex_grains.md
 pub(crate) static TABLE: &HolidayTable = holidays! {
     coverage: [(2010, 1, 1) ..= (2012, 12, 31), (2025, 1, 1) ..= (2027, 12, 31)],

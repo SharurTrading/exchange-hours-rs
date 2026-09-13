@@ -63,12 +63,15 @@ use super::{
     HolidayTable, holidays,
 };
 
-/// The family's built-in holiday rows and the window they were audited over.
+/// The family's built-in holiday rows and the windows they were audited over.
 ///
-/// Coverage runs to 2027-12-31, the end of the operator's published future;
-/// CME's 2028-01-01 record sits outside it and ships no row. Inside the window
-/// a date with no row is audited normal, including Columbus Day and Veterans
-/// Day, which are not CME Globex holidays at all.
+/// Two audited eras: 2010-2012 at T1 and 2025-2027 at T2. The 2013-2024
+/// interval between them is audited by neither, so `holiday_on` has no answer
+/// there rather than reporting a normal date. Coverage ends at 2027-12-31, the
+/// end of the operator's published future, and CME's 2028-01-01 record sits
+/// outside both windows and ships no row. Inside a window a date with no row is
+/// audited normal, including Columbus Day and Veterans Day, which are not CME
+/// Globex holidays at all.
 // Evidence: docs/evidence/globex_energy.md
 pub(crate) static TABLE: &HolidayTable = holidays! {
     coverage: [(2010, 1, 1) ..= (2012, 12, 31), (2025, 1, 1) ..= (2027, 12, 31)],

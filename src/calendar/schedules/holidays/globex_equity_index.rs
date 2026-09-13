@@ -62,12 +62,15 @@ const QUARTER_PAST_NOON: u32 = 12 * 3_600 + 15 * 60;
 /// 08:15 CT, the Good Friday 2026 equity-index final close.
 const QUARTER_PAST_EIGHT: u32 = 8 * 3_600 + 15 * 60;
 
-/// The family's built-in holiday rows and the window they were audited over.
+/// The family's built-in holiday rows and the windows they were audited over.
 ///
-/// Coverage runs to the operator's published future: CME's trading-hours
-/// service answers through New Year 2028, and LAW-NO-FABRICATED-DATES permits
-/// encoding an unconditional, fully sourced future ahead of its effective day.
-/// Inside the window a date with no row was audited and found normal.
+/// Two audited eras: 2010-2012 at T1 and 2025-2027 at T2. The 2013-2024
+/// interval between them is audited by neither, so `holiday_on` has no answer
+/// there rather than reporting a normal date. Coverage ends at the operator's
+/// published future: CME's trading-hours service answers through New Year 2028,
+/// and LAW-NO-FABRICATED-DATES permits encoding an unconditional, fully sourced
+/// future ahead of its effective day. Inside a window a date with no row was
+/// audited and found normal.
 // Evidence: docs/evidence/globex_equity_index.md
 pub(crate) static TABLE: &HolidayTable = holidays! {
     coverage: [(2010, 1, 1) ..= (2012, 12, 31), (2025, 1, 1) ..= (2027, 12, 31)],

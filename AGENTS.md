@@ -453,6 +453,73 @@ The MSRV job builds on a second toolchain, so it is a separate command:
 cargo +1.95 check --all-targets
 ```
 
+## Reviewing a change
+
+A review is a second retrieval, not a reading of the first. The reviewer did
+not write the change, verifies every claim against the bytes the change cites
+rather than against the pull request's description or its own tests, and
+writes the report from what the reviewer reproduced. A value invented anywhere
+— a table row, an evidence-file cell, a sentence of prose, a pull-request body
+— fails the review whatever the test status, because this crate's only product
+is the claim that its values are sourced. To run one: give the reviewer this
+section, the pull-request number and the research store path.
+
+1. **Work in a worktree at the head commit**, never in the main checkout
+   (`git worktree add --detach <path> origin/<branch>`). Run the full
+   Verification chain there and record the head hash the verdict applies to;
+   a later push is a new review.
+2. **Classify every changed file**: data (schedule or holiday module), evidence
+   file, test, ledger or README or CHANGELOG, plan, charter. Each class has its
+   own checks below, and a charter or plan edit is called out in the report as
+   such even when it is right.
+3. **Retrieved rows.** For every row of a table under a hundred rows, and for
+   every row of an unusual kind plus one row in five of the rest of a larger
+   one, chosen by the reviewer: resolve the document id through the evidence
+   file's `### Documents` table to the research-store artifact, confirm its
+   sha256 reproduces, find the verbatim in the bytes, and compare date, kind,
+   instant, tier and the event-date-to-trade-date conversion. A quoted string
+   that is not in the cited artifact is a defect even when the value is right.
+4. **Derived rows.** Recompute the derivation with the reviewer's own parser
+   from the input tables at the head commit — the ones step 3 has already
+   verified where the change touched them — never by reading the change's
+   routing constants or test lists back, and compare row by row; every derived
+   row's document
+   id must be one an input row cites on that date. A handwritten list in a
+   test is a fence only when it is compared against something independent of
+   the module; a list that copies the module fences nothing and the report
+   says so.
+5. **Prose is data.** Every instant, date, kind, count, family name, document
+   id and window in an evidence file's prose, a module's doc comment, the
+   CHANGELOG and the pull-request body is checked against the module, the
+   family files or the artifact, exactly as a row is. A `no row` or
+   `audited normal` claim is checked against the artifact, which prints the
+   ordinary grid. A sentence that says "read from", "verified", "confirmed",
+   "the operator prints" or "per production" names its source, and the
+   reviewer re-derives it from that source; a routing claim is checked against
+   the consumer's map (read-only) and the crate's `hours_for_*` arms.
+6. **Counts and windows.** Recompute every number in the ledger row, the
+   README, the CHANGELOG and the pull-request body; the README counts must
+   match what the fences derive, and the `Holidays` cell must match the
+   module's coverage. Check the cadence cell against LAW-WATCH.
+7. **Laws.** LAW-NO-FABRICATED-DATES (a capture dates the observation, never
+   the state; rows keyed to the local opening day), LAW-UTC-DATES for every
+   repository date, LAW-SESSION-NOT-EXPIRY, LAW-PRIMARY-SOURCES (the tier in the
+   row is the tier of the cited document), and LAW-FOLLOW-UPS-ARE-ISSUES: every
+   follow-up named anywhere in the change has an issue number or, for a
+   dormant identity, a gap with a closing condition in the evidence file.
+8. **Mutation.** Flip one shipped row in the worktree (a kind, an instant or a
+   date) and confirm a test fails; if none does, the row is unfenced and the
+   report names it.
+9. **The report** states the verdict and the head hash; what was recomputed,
+   with what tool, from which inputs, and the resulting counts; and each
+   defect as file, cell or sentence, the value in the change, the value in the
+   source, and the source's path. Data defects and prose defects that state a
+   wrong instant, date, status, count or sourcing basis block the merge;
+   everything else is advisory. A fix is accepted only by re-running the
+   affected checks on the pushed commit, never from its description.
+10. **Record** the review in the research store's `STATUS.md` (head hash,
+    verdict, defects) and post it on the pull request.
+
 ## Housekeeping
 
 - Record user-visible changes under `[Unreleased]` in `CHANGELOG.md`; session

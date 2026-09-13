@@ -46,10 +46,10 @@ without the context of that session, following `AGENTS.md` (the charter) and thi
   of §3 is the map, and each issue carries a comment naming its place. #36 (the
   whole-ledger coverage audit) was closed on 2026-09-13: dormant rows are not audited
   under the charter.
-- This plan is executed by one agent and reviewed by another at the end of each stage;
-  the executing agent posts a stage summary on the PR that closes the stage, listing
-  the issues closed and any gap recorded, and does not start the next stage until the
-  review is done.
+- This plan is executed by one agent and reviewed by another at the end of each stage,
+  following `AGENTS.md` **Reviewing a change**; the executing agent posts a stage
+  summary on the PR that closes the stage, listing the issues closed and any gap
+  recorded, and does not start the next stage until the review is done.
 - Research store map: `architecture-review/` (the review and its four fact reports),
   `holidays/` (seven verified holiday-schedule blocks 2010–2027 as JSON, their verdicts,
   raw artifacts, and `DESIGN-holiday-tables.md`, the design the engine implements),

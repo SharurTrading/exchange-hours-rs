@@ -12,9 +12,12 @@
 //! compromise between them.
 //!
 //! Every row here is **derived, not retrieved**. The operator statements behind
-//! them are the `CME-SVC-*` documents the family tables already cite — CME
-//! Group's own `trading-hours-by-product` service at tier T2 — and nothing in
-//! this module rests on an artifact a family module does not already carry.
+//! them are the documents the family tables already cite: CME Group's own
+//! holiday-calendar PDFs, at tier **T1** for the 2010-2012 rows, and its
+//! `trading-hours-by-product` service, at tier **T2** for the 2025-2027 ones.
+//! Nothing in this module rests on an artifact a family module does not already
+//! carry, and each venue declares the two eras as two coverage windows — the
+//! 2013-2024 interval between them is audited by neither and ships no row.
 //! There is accordingly no venue evidence of its own to add: the four venue
 //! evidence files record the derivation, the routing, the intersection rule and
 //! every date the intersection drops.
@@ -46,15 +49,16 @@
 //! # Two kinds of row
 //!
 //! **Where every routed family states the same row**, the venue ships that row.
-//! In 2025-2027 that is the nine Globex full closures: all six CME families,
-//! both CBOT families, or the single energy family behind COMEX/NYMEX agree to
-//! the status, and the venue is closed.
+//! In 2025-2027 that is the nine Globex full closures; in 2010-2012 it is the
+//! six that CME published for those years. On each, all six CME families, both
+//! CBOT families, or the single energy family behind COMEX/NYMEX agree to the
+//! status, and the venue is closed.
 //!
 //! **Where they disagree**, the venue ships [`HolidayKind::Unsourced`]. That is
-//! neither silence nor a compromise instant. The coverage window is contiguous,
-//! so a date carrying no row is the positive claim that it was audited normal,
-//! which on these dates is false; and any single instant would be wrong for
-//! someone, because on 2026-12-24 the families' sourced closes are 12:05, 12:15
+//! neither silence nor a compromise instant. An audited window is contiguous,
+//! so a date carrying no row inside one is the positive claim that it was
+//! audited normal, which on these dates is false; and any single instant would
+//! be wrong for someone, because on 2026-12-24 the families' sourced closes are 12:05, 12:15
 //! and 12:45 CT at once, so a row at either end stops someone early or runs
 //! someone past their own close. `Unsourced`
 //! clips nothing, answers nothing, and tells the caller what the crate knows:

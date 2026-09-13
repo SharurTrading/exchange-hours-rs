@@ -29,6 +29,19 @@
 //! * The three days after Thanksgiving carry both — no prior-evening leg and a
 //!   12:05 CT final close — and are the only `LateOpenAndEarlyClose` rows here.
 //!
+//! The 2025-2027 rows below are T2.
+//!
+//! **2010-2012.** CME's own holiday-calendar PDFs are the T1 source. The era's
+//! grid is an 18:00 CT evening leg (17:00 from 2012-05-20) into a 09:30-13:15 CT
+//! day session. Rows are ten **full closures** (New Year's Day, Christmas Day,
+//! both Good Fridays, 2011's Good Friday, Independence Day and Thanksgiving
+//! 2012, and the observed days around them), **early closes** at 12:00 CT on
+//! the four year-end half-days and 2012-07-03, and **late opens** where CME
+//! states one: 09:30 CT on 2011-12-27, 2012-01-03, 2012-07-05 and 2012-12-26,
+//! and 19:00 CT on 2012-05-28 and 2012-09-03 after the grid moved. The 2012 day
+//! after Thanksgiving carries both. Dates on which the stated re-open is the
+//! family's ordinary evening open ship no row and are listed in the evidence
+//! file.
 //! Every row is **T2**: CME's trading-hours service, the endpoint
 //! `cmegroup.com/trading-hours.html` itself calls, read as bytes and saved.
 //! CME publishes no T1 per-asset-class rendering of these instants; that gap,

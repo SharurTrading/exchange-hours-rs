@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT-0
 
-//! CME standard-grid FX futures holiday rows, 2025-2027.
+//! CME standard-grid FX futures holiday rows, 2010-2012 and 2025-2027
+//! (LAW-HOLIDAY-SCOPE).
 //!
 //! Keyed by the crate's own venue-local trade date in `America/Chicago`
 //! (design memo D1). The conversion is **not** the identity for this family:
@@ -11,7 +12,22 @@
 //! row of its own, unless the eve carries an early close of its *own* trade
 //! date — which is exactly what Christmas Eve does.
 //!
-//! The rows come from CME's trading-hours service — the endpoint
+//! The 2025-2027 rows below are T2.
+//!
+//! **2010-2012.** CME's own holiday-calendar PDFs (`2010-martin-luther-king.pdf`
+//! and its siblings) are the T1 source for the era, whose grid is the same
+//! wrapping 17:00 -> 16:00 CT block. Four shapes: a **full closure** (New
+//! Year's Day, Christmas Day, 2011's Good Friday and the observed days around
+//! them); an **early close** at 15:15 CT on a Friday-holiday eve, at 12:00 CT
+//! on the Monday and Thursday holidays, at 10:15 CT on the Good Fridays of 2010
+//! and 2012, and at 12:15 CT on the year-end half-days; and a **late open** at
+//! 05:00 CT on 2011-12-27, 2012-01-03 and 2012-12-26, the trade dates CME
+//! reopened five hours after the normal evening open would have run. A stated
+//! re-open that lands exactly on the family's ordinary 17:00 CT evening open
+//! moves no answer and ships no row, and the evidence file lists those dates.
+//! (The operator prints that re-open above the next trade date's name.)
+//!
+//! The 2025-2027 rows come from CME's trading-hours service — the endpoint
 //! `cmegroup.com/trading-hours.html` itself calls — read as bytes and saved,
 //! so the whole block is **T2** under LAW-PRIMARY-SOURCES. CME publishes no T1
 //! per-asset-class rendering for these years; that, the eight 2025 windows that

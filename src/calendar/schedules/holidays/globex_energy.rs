@@ -26,6 +26,16 @@
 //!   CME's own legend, so matching ended at 13:30 CT: that is the trade date's
 //!   final close and the row is an `EarlyClose` at 13:30 CT.
 //!
+//! The 2025-2027 rows below are T2.
+//!
+//! **2010-2012.** CME's own holiday-calendar PDFs (`2010-martin-luther-king.pdf`
+//! and its siblings) are the T1 source for the era. The rows are eight **full
+//! closures** (New Year's Day, Christmas Day, both Good Fridays of that shape,
+//! 2011's Good Friday and the observed days around them) and thirty **early
+//! closes**: 15:15 CT on the eight 2010 Friday-holiday eves, 12:15 CT on the
+//! eighteen holiday Mondays and Thursdays, and 12:45 CT on the four year-end
+//! half-days. The dates on which CME reopened at the family's ordinary 17:00 CT
+//! evening open ship no row.
 //! On the three Friday holidays of 2026 and 2027 CME prints the early close
 //! but dates it to the following Monday. The crate assigns a session to the
 //! venue-local date of its own final close, so the row stays on the Friday and

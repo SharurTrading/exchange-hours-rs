@@ -12,6 +12,15 @@
 //! CME's event-date records therefore key one row each, and the operator's own
 //! printed trade date corroborates every one of them.
 //!
+//! The 2025-2027 rows below are T2.
+//!
+//! **2010-2012.** CME's own holiday-calendar PDFs are the T1 source. This
+//! family's era grid is a wrapping 17:00 -> 16:00 CT block, and its rows are
+//! sixteen **full closures** (New Year's Day, Christmas Day, both Good Fridays,
+//! 2011's Good Friday and the ten Monday and Thursday holidays CME kept the
+//! family closed on), **early closes** at 13:55 CT on the Good Fridays of 2011
+//! and 2012 and at 12:00/12:15 CT on the year-end half-days, and **late opens**
+//! at 09:05 CT on 2011-12-27, 2012-01-03, 2012-07-05 and 2012-12-26.
 //! The rows come from CME's trading-hours service — the endpoint
 //! `cmegroup.com/trading-hours.html` itself calls — read as bytes and saved,
 //! so the whole block is **T2** under LAW-PRIMARY-SOURCES. CME publishes no T1

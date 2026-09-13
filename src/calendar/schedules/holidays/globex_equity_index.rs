@@ -3,16 +3,36 @@
 //! `globex_equity_index` holiday rows, venue-local trade dates
 //! 2010-01-01 .. 2012-12-31 and 2025-01-01 .. 2027-12-31 (LAW-HOLIDAY-SCOPE).
 //!
-//! The family's grid in this window is the one CME Globex notice 20210621 put
-//! in force on 2021-06-27: a trading day for venue-local trade date `D` opens
-//! 17:00 CT on the preceding business evening, runs continuously through the
-//! 08:30-15:15 CT regular session and the 15:15-16:00 CT extended leg, and
-//! ends at its 16:00 CT final close on `D`. Every row below is therefore
-//! stated on the day the trading day *closes*, never on the operator's event
-//! date, so a session that opened the previous evening is clipped on the
-//! correct civil day.
+//! **2010-2012.** CME published one holiday-calendar PDF per holiday
+//! (`2010-martin-luther-king.pdf` and its siblings), retrieved from the
+//! Internet Archive at **T1**. The grid of the era is the family's ordinary
+//! 08:30-15:15 CT day session inside a wrapped 17:00 CT evening leg, whose
+//! final close is 15:15 CT. Three shapes appear, all keyed to the trade date
+//! CME prints:
 //!
-//! Two conversions are worth naming because every row depends on them.
+//! * a **full closure** — New Year's Day, Christmas Day, 2011's Good Friday and
+//!   the observed days around them — which removes the trading day and the
+//!   prior-evening leg that fed it;
+//! * a **holiday morning session that halts early**: every Monday holiday from
+//!   2010 through 2012, plus Wednesday 2012-07-04, prints a `1030 CT` halt, so
+//!   the row is an early close at 10:30 CT; Good Friday 2010 and 2012 close
+//!   their day sessions at 08:15 CT, and the Friday-holiday eves at 15:15 CT;
+//! * a **late open** on the trade date after a closure — 2011-12-27, 2012-01-03
+//!   and 2012-12-26 print `0500 CT - CME Globex open for trade date ...`, five
+//!   hours after the normal 17:00 CT evening open would have run.
+//!
+//! **2025-2027.** The family's grid in this window is the one CME Globex
+//! notice 20210621 put in force on 2021-06-27: a trading day for venue-local
+//! trade date `D` opens 17:00 CT on the preceding business evening, runs
+//! continuously through the 08:30-15:15 CT regular session and the
+//! 15:15-16:00 CT extended leg, and ends at its 16:00 CT final close on `D`.
+//! Every row is therefore stated on the day the trading day *closes*, never on
+//! the operator's event date, so a session that opened the previous evening is
+//! clipped on the correct civil day. These rows are **T2**, from the operator's
+//! own trading-hours service.
+//!
+//! Two conversions are worth naming because every row in that window depends
+//! on them.
 //!
 //! An **early close** replaces that 16:00 CT final close. On the Monday and
 //! Thursday holidays CME publishes the instant as a `preopen` rather than a
@@ -26,7 +46,7 @@
 //! (`16:00 preopen; 17:00 open`, carrying the next trade date).
 //!
 //! The evidence, the operator's printed instants, the event-date-to-trade-date
-//! conversion behind each row and this window's declared gaps are in
+//! conversion behind each row and these windows' declared gaps are in
 //! [`docs/evidence/globex_equity_index.md`](../../../../../docs/evidence/globex_equity_index.md).
 
 use super::EvidenceTier::{T1, T2};

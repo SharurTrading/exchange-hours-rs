@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT-0
 
-//! Built-in holiday rows for `globex_interest_rates` (LAW-HOLIDAY-SCOPE).
+//! Built-in holiday rows for `globex_interest_rates`, venue-local trade dates
+//! 2010-01-01 .. 2012-12-31 and 2025-01-01 .. 2027-12-31 (LAW-HOLIDAY-SCOPE).
 //!
 //! Every row is keyed by the crate's own venue-local trade date in
 //! `America/Chicago`, converted from the operator's event date: CME publishes
@@ -8,17 +9,30 @@
 //! is the one that opened at 17:00 CT the previous evening, so the row lands on
 //! the trade date the clip has to be stated on.
 //!
-//! The rows are the CME Group trading-hours service's Interest Rates line —
-//! the ZN 10-Year T-Note schedule CME itself uses to render that group — at
-//! tier T2. Quotations, document URLs, capture timestamps, the event-date to
-//! trade-date conversion and the declared gaps live in
-//! `docs/evidence/globex_interest_rates.md`.
+//! **2025-2027.** Those rows are the CME Group trading-hours service's Interest
+//! Rates line — the ZN 10-Year T-Note schedule CME itself uses to render that
+//! group — at tier **T2**. The family's grid in that window is one wrapping leg
+//! per trade date, Sunday to Thursday 17:00 CT into a 16:00 CT close the next
+//! local day, so a full closure deletes the previous evening's wrap and an
+//! early close clips a session that opened the evening before. Both follow from
+//! the trade-date key; neither needs a mechanism of its own.
 //!
-//! The family's 2025-2027 grid is one wrapping leg per trade date, Sunday to
-//! Thursday 17:00 CT into a 16:00 CT close the next local day, so a full
-//! closure deletes the previous evening's wrap and an early close clips a
-//! session that opened the evening before. Both follow from the trade-date
-//! key; neither needs a mechanism of its own.
+//! **2010-2012.** CME's own holiday-calendar PDFs (`2010-martin-luther-king.pdf`
+//! and its siblings) are the T1 source for the era. The grid is the era's
+//! 17:30 CT wrapped leg into a 16:00 CT close, so the rows that move an answer
+//! are the full closures (New Year's Day, Christmas Day, 2011's Good Friday and
+//! the observed days around them), the eves of a Friday holiday — 2010-01-15,
+//! 2010-02-12, 2010-05-28, 2010-07-02, 2010-09-03 and 2010-10-08 — on which CME
+//! prints `1515 CT - Early CME Globex close`, and the Good Fridays of 2010 and
+//! 2012 at 10:15 CT. On the Monday holidays of those years CME prints a `1200
+//! CT` halt and a `1700 CT` resume carrying the *next* trade date; the crate's
+//! own grid for the era carries no session for the Monday trade date at all, so
+//! the instant cannot move an answer and the dates are recorded as gaps in the
+//! evidence file (#101).
+//!
+//! Quotations, document URLs, capture timestamps, the event-date to trade-date
+//! conversion and the declared gaps live in
+//! `docs/evidence/globex_interest_rates.md`.
 
 use super::EvidenceTier::{T1, T2};
 use super::HolidayKind::Closed;

@@ -23,8 +23,8 @@
 //! at 09:05 CT on 2011-12-27, 2012-01-03, 2012-07-05 and 2012-12-26.
 //! The rows come from CME's trading-hours service — the endpoint
 //! `cmegroup.com/trading-hours.html` itself calls — read as bytes and saved,
-//! so the whole block is **T2** under LAW-PRIMARY-SOURCES. CME publishes no T1
-//! per-asset-class rendering for these years; that, the eight 2025 windows that
+//! so those rows are **T2** under LAW-PRIMARY-SOURCES. CME publishes no T1
+//! per-asset-class rendering for them; that, the eight 2025 windows that
 //! survive only in a pre-holiday capture, and the two Saturday sessions this
 //! family never had are recorded as gaps in
 //! [`docs/evidence/globex_livestock.md`](../../../../../docs/evidence/globex_livestock.md).

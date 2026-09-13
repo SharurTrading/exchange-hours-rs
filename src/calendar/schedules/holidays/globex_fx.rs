@@ -29,8 +29,8 @@
 //!
 //! The 2025-2027 rows come from CME's trading-hours service — the endpoint
 //! `cmegroup.com/trading-hours.html` itself calls — read as bytes and saved,
-//! so the whole block is **T2** under LAW-PRIMARY-SOURCES. CME publishes no T1
-//! per-asset-class rendering for these years; that, the eight 2025 windows that
+//! so those rows are **T2** under LAW-PRIMARY-SOURCES. CME publishes no T1
+//! per-asset-class rendering for them; that, the eight 2025 windows that
 //! survive only in a pre-holiday capture, the six Saturday and holiday spans
 //! whose topology the scalar vocabulary cannot state, and the sixteen dates on
 //! which CME merges the holiday into the next business day's trade date are

@@ -52,7 +52,7 @@
 //!
 //! Scope is the standard-size CBOT grain and oilseed complex — corn, soybeans
 //! and wheat. CME's service answers for `ZC`, `ZS` and `ZW` separately and the
-//! three agree on every date in this window, so the family takes one table.
+//! three agree on every date the table audits, so the family takes one table.
 //! Mini grains are a separate key and a separate table.
 
 use super::fences::{early_close, late_open, late_open_and_early_close};

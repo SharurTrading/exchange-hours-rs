@@ -10,8 +10,8 @@
 //! date's session begins the evening before and CME's event-date records must
 //! be converted before they can key a row.
 //!
-//! The conversion has three shapes in this window, and each one is recorded
-//! per year in the evidence file:
+//! The conversion has three shapes in the 2025-2027 window, and each one is
+//! recorded per year in the evidence file:
 //!
 //! - CME publishes a final close on the date at an instant earlier than 16:00
 //!   CT — `12:00`, `12:45`, `13:45` — which is an `EarlyClose` on that trade
@@ -43,17 +43,18 @@
 //! `Closed` row there would delete roughly nineteen hours of sourced trading,
 //! because this family has a weekend close and no following-business-day roll.
 //!
-//! Every row is **T2** under LAW-PRIMARY-SOURCES: CME's trading-hours service,
-//! the endpoint `cmegroup.com/trading-hours.html` itself calls, read as bytes
-//! and saved. No T1 per-asset-class rendering exists for these years. That,
+//! Every 2025-2027 row is **T2** under LAW-PRIMARY-SOURCES: CME's
+//! trading-hours service, the endpoint `cmegroup.com/trading-hours.html` itself
+//! calls, read as bytes and saved. No T1 per-asset-class rendering exists for
+//! those years. That,
 //! the Saturday sessions after the Friday holidays, the 2025-11-28 morning
 //! re-open pair, the order-entry deviations and the eight 2025 windows that
 //! survive only in a pre-holiday capture are gaps recorded in
 //! [`docs/evidence/globex_energy.md`](../../../../../docs/evidence/globex_energy.md).
 //!
 //! Energy and metals are one key and CME prints them as one product-group row
-//! on every date in this window, so the memo's D17 intersection rule is never
-//! reached: the two halves agree everywhere.
+//! on every date either table audits, so the memo's D17 intersection rule is
+//! never reached: the two halves agree everywhere.
 
 use super::fences::early_close;
 use super::{

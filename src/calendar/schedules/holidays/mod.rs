@@ -50,6 +50,7 @@ mod globex_livestock;
 mod globex_nikkei_225_dollar;
 mod ice_us;
 mod routing;
+mod venues;
 
 pub(crate) use routing::table_for;
 

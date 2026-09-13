@@ -71,9 +71,9 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Added
 
-- **Built-in holiday tables for the served CME families and the 2026 venue
-  block.** Twenty-two of the 132 ledger identities now carry per-family
-  holiday and early-close data underneath the caller's overlays
+- **Built-in holiday tables for the served CME families, the four CME venues
+  and the 2026 venue block.** Twenty-six of the 132 ledger identities now carry
+  per-family holiday and early-close data underneath the caller's overlays
   (LAW-HOLIDAY-SCOPE), as static date tables keyed by the crate's own
   venue-local **trade date** rather than by the operator's event date:
   - the eight served CME product families — `globex_equity_index`,
@@ -81,6 +81,9 @@ corrections (a venue's hours fixed against a primary source) go under
     `globex_livestock`, `globex_cryptocurrency` and
     `globex_nikkei_225_dollar` — over trade dates **2025-01-01 .. 2027-12-31**,
     the end of CME's published future;
+  - the four CME venue calendars — the `cme`, `cbot`, `comex` and `nymex`
+    `Exchange` identities — over the same window, as the intersection of the
+    families that route to each;
   - `cfe` and `cfe_vix` over **2026-01-01 .. 2026-12-31**;
   - `eurex`, `eurex_fixed_income` (and the `eurex` venue) over
     **2026-01-01 .. 2026-12-31** — Eurex's 2027 calendar is published "on a
@@ -106,10 +109,18 @@ corrections (a venue's hours fixed against a primary source) go under
   column states each identity's window and is derived by a fence from that
   identity's own `holiday_coverage()`.
 
-  **The four CME venue calendars — `cme`, `cbot`, `comex`, `nymex` — carry no
-  table.** A venue's table is the intersection of the families that route to
-  it, most early closes do not agree across those families, and building that
-  intersection honestly is its own change; their evidence files say so.
+  **The four CME venue calendars — `cme`, `cbot`, `comex` and `nymex` — carry
+  the intersection of the families that route to them** over
+  **2025-01-01 .. 2027-12-31** at T2. A venue row may be stated only where every
+  routed family states the same row, which in this window means the nine Globex
+  full closures. Every other special date carries `Unsourced` rather than a
+  scheduling row: the coverage window is contiguous, so silence would claim the
+  date was audited normal, and any single instant would clip one routed family's
+  sourced trading — a 12:00 CT row would delete the grain and livestock day
+  sessions, a 13:30 CT row would delete the energy family's post-close phase.
+  COMEX and NYMEX route the one `globex_energy` key and so carry its table whole
+  (36 rows); CBOT drops its thirty-one half-days and CME its thirty-two, each
+  with the disagreement named per date in that venue's evidence file.
   Measured on an Apple M2 Max at 1.97.1: with a real table attached, `is_open`
   inside a regular session far from any holiday costs **240.9 ns** against
   236.9 ns with the table detached, the 4,999-probe cold chart frame is

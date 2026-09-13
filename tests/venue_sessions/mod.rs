@@ -65,4 +65,5 @@ mod prelude {
     }
 }
 
+mod holidays_cme_venues;
 mod holidays_coinbase_derivatives;

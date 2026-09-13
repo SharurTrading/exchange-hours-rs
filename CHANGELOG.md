@@ -174,10 +174,11 @@ corrections (a venue's hours fixed against a primary source) go under
   end stops one family early or runs another past its own close. **COMEX** and
   **NYMEX** route the one `globex_energy` key, whose metals and energy halves CME
   prints as a single product row, so their intersections drop nothing and they
-  carry that family's table whole (36 rows each, no `Unsourced`). CBOT ships 9
-  stated rows against its thirty-one `Unsourced` dates and CME 9 against
-  thirty-two, each with the disagreement named per date in that venue's evidence
-  file. The family list behind each intersection is a decision recorded there,
+  carry that family's table whole (36 rows each in this era, no `Unsourced`).
+  CBOT ships 9 stated rows against its thirty-one `Unsourced` dates and CME 9
+  against thirty-two, each with the disagreement named per date in that venue's
+  evidence file. Over both eras the four venue tables carry 96, 79, 74 and 74
+  rows; the numbers in this paragraph are the 2025-2027 era's. The family list behind each intersection is a decision recorded there,
   not something the crate can derive: the map from product families to venues
   belongs to the consumer. **This change also amends `AGENTS.md`**: the charter's
   LAW-HOLIDAY-SCOPE gains one sentence stating the venue-intersection rule, so

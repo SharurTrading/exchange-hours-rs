@@ -126,10 +126,18 @@ pub(crate) const fn window_last(windows: &[(i32, u32, u32, i32, u32, u32)]) -> N
 }
 
 /// Fails the build unless the coverage windows ascend without overlapping.
+///
+/// Both endpoints of **every** window are built here, not only the outer ones:
+/// [`day_key`] cannot tell month 13 from a real date, so a window whose invalid
+/// endpoint is not the outermost would otherwise survive the build and then be
+/// silently rejected by [`HolidayCoverage::contains`] while `windows()` still
+/// listed a bound derived from the outermost pair.
 const fn assert_ordered_windows(windows: &[(i32, u32, u32, i32, u32, u32)]) {
     let mut index = 0;
     while index < windows.len() {
         let (first_year, first_month, first_day, last_year, last_month, last_day) = windows[index];
+        let _first = holiday_date(first_year, first_month, first_day);
+        let _last = holiday_date(last_year, last_month, last_day);
         let first = day_key((first_year, first_month, first_day));
         let last = day_key((last_year, last_month, last_day));
         assert!(
@@ -149,6 +157,9 @@ const fn assert_ordered_windows(windows: &[(i32, u32, u32, i32, u32, u32)]) {
 }
 
 /// Whether one raw date triple lies inside any coverage window.
+///
+/// The endpoints have already been built by [`assert_ordered_windows`], so the
+/// comparisons here are between real dates.
 const fn in_windows(windows: &[(i32, u32, u32, i32, u32, u32)], date: (i32, u32, u32)) -> bool {
     let key = day_key(date);
     let mut index = 0;

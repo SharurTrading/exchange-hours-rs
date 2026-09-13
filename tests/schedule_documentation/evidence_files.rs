@@ -850,10 +850,38 @@ fn every_holiday_table_states_its_coverage_window() {
                     block.module
                 )
             });
+            // Exactly one coverage declaration, and its date list must be the
+            // table's own: the line may continue with the window's scope and
+            // tier, but the text right after the marker is the list, and a
+            // second declaration is a second claim.
+            let expected = format!("**Coverage:** {windows}");
+            let declarations = holidays
+                .lines()
+                .map(str::trim)
+                .filter(|line| line.starts_with("**Coverage:**"))
+                .collect::<Vec<_>>();
+            assert_eq!(
+                declarations.len(),
+                1,
+                "{name} must state {}'s coverage windows exactly once",
+                block.module
+            );
+            // The list must be the whole list: the line may continue with the
+            // window's scope and tier, but not with another window and not with
+            // another bare date, either of which would be a coverage claim the
+            // table does not make.
+            let declared = declarations[0];
+            let rest = declared.strip_prefix(&expected).unwrap_or("").trim_start();
             assert!(
-                holidays.contains(&format!("**Coverage:** {windows}")),
+                rest.is_empty() || rest.starts_with('('),
                 "{name} must state {}'s coverage windows as \
-                 `**Coverage:** {windows}`",
+                 `**Coverage:** {windows}` followed by its scope, not {declared:?}",
+                block.module
+            );
+            assert!(
+                !rest.contains("20") || !rest.contains('-'),
+                "{name} states a second coverage window ({declared:?}) that \
+                 {} does not audit",
                 block.module
             );
         }

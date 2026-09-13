@@ -135,13 +135,17 @@ re-verified in the research store's block (the repaired copy and the repair
 script are in `.wave6-scratch/`, which the PR removes; the committed record is
 the evidence files' quotations). Outcome per family, over trade dates
 2010-01-01 .. 2012-12-31, all **T1** from CME's own holiday-calendar PDFs:
-`globex_equity_index` 33 rows, `globex_interest_rates` 33, `globex_fx` 45,
-`globex_energy` 30, `globex_grains` 12, `globex_livestock` 11 — **153 rows**,
-extending those six families' coverage to 2010-01-01 .. 2027-12-31. The four CME
+`globex_equity_index` 28 rows, `globex_interest_rates` 27, `globex_fx` 45,
+`globex_energy` 30, `globex_grains` 12, `globex_livestock` 11 — **153 rows**.
+Each family's table then declares **two audited windows**, `2010-01-01 ..
+2012-12-31` and `2025-01-01 .. 2027-12-31`: the intervening 2013-2024 interval is
+audited by neither wave's documents, so it is named as the remaining stages'
+work rather than counted as normal (`HolidayCoverage::windows`). The four CME
 venue tables extend over the same years by the same D17 intersection rule:
-COMEX and NYMEX carry 30 agreed rows each, while CBOT and CME state nothing
-(37 and 54 `Unsourced` dates, the disagreement named per date in their evidence
-files). `globex_cryptocurrency` is deliberately left at its 2025-2027 window —
+COMEX and NYMEX carry 30 agreed rows each and nothing withheld, while CBOT
+states nothing on 31 dates and CME on 49 — `Unsourced` rows, the disagreement
+named per date in their evidence files. Over both eras CBOT therefore carries 71
+rows (9 stated, 62 `Unsourced`) and CME 90 (9 stated, 81 `Unsourced`). `globex_cryptocurrency` is deliberately left at its 2025-2027 window —
 CME listed no cryptocurrency product before 2017-12-17, so a 2010-2012 window
 would assert an audit of years in which the family did not exist — and
 `globex_nikkei_225_dollar` keeps its window because the era's sheets print one

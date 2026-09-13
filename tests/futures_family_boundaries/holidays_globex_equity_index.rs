@@ -308,6 +308,13 @@ fn the_coverage_window_is_exactly_2010_through_2027() {
     assert!(coverage.contains(day(2027, 12, 31)));
     assert!(!coverage.contains(day(2009, 12, 31)));
     assert!(!coverage.contains(day(2028, 1, 1)));
+    // The table audits two eras; the 2013-2024 interval between them is not
+    // audited by either, so `contains` is false there and `holiday_on` has no
+    // answer rather than calling the date normal.
+    assert!(!coverage.contains(day(2013, 6, 14)));
+    assert!(!coverage.contains(day(2024, 12, 31)));
+    assert_eq!(calendar.holiday_on(day(2013, 6, 14)), None);
+    assert_eq!(calendar.holiday_on(day(2024, 12, 31)), None);
 
     assert_eq!(calendar.holiday_on(day(2009, 12, 31)), None);
     assert_eq!(calendar.holiday_on(day(2028, 1, 1)), None);
@@ -443,10 +450,10 @@ fn era_early_closes_end_the_wrapped_trading_day_at_the_stated_instant() {
     assert_eq!(calendar.trade_date(ct((2010, 4, 2), (8, 15, 0))), None);
 }
 
-/// Every late open the era ships states an instant *earlier* than the family's
-/// normal 17:00 CT first open, so the cutoff lands on the trade date itself:
-/// the Monday-evening leg that would have opened trade date 2011-12-27 did not
-/// run, and matching starts at 05:00 CT on the Tuesday.
+/// Every late open the era ships states exactly 05:00 CT, which is *earlier* than
+/// the family's normal 17:00 CT first open, so the cutoff lands on the trade date
+/// itself: the Monday-evening leg that would have opened trade date 2011-12-27
+/// did not run, and matching starts at 05:00 CT on the Tuesday.
 ///
 /// The two Good Friday eves the retrieval also states a `1530 CT - Regular CME
 /// Globex open` for — 2010-04-01 and 2012-04-05 — ship **no** row: the crate's
@@ -463,13 +470,25 @@ fn era_late_opens_land_on_the_trade_date_itself() {
         let row = calendar
             .holiday_on(day(year, month, date))
             .unwrap_or_else(|| panic!("{year}-{month:02}-{date:02} ships a row"));
-        let open_ssm = match row.kind() {
-            HolidayKind::LateOpen { open_ssm } => open_ssm,
-            other => panic!("{year}-{month:02}-{date:02} ships {other:?}, not a late open"),
-        };
+        assert_eq!(
+            row.kind(),
+            HolidayKind::LateOpen {
+                open_ssm: 5 * 3_600
+            },
+            "{year}-{month:02}-{date:02} must state the operator's 05:00 CT first open"
+        );
         assert!(
-            open_ssm < 17 * 3_600,
-            "{year}-{month:02}-{date:02}: {open_ssm} is not earlier than the era's 17:00 CT open"
+            !calendar.is_open(ct((year, month, date), (4, 59, 59))),
+            "{year}-{month:02}-{date:02}: matching has not started one second before 05:00 CT"
+        );
+        assert!(
+            calendar.is_open(ct((year, month, date), (5, 0, 0))),
+            "{year}-{month:02}-{date:02}: matching starts at 05:00 CT"
+        );
+        assert_eq!(
+            calendar.trade_date(ct((year, month, date), (9, 0, 0))),
+            Some(day(year, month, date)),
+            "{year}-{month:02}-{date:02}: the late open is stated on its own trade date"
         );
     }
     for (year, month, date) in [(2010, 4, 1), (2012, 4, 5)] {

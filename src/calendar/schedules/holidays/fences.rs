@@ -42,20 +42,25 @@ const fn day_key(date: (i32, u32, u32)) -> i64 {
 /// `dates` carries the same trade dates as `rows`, in the same order, as raw
 /// `(year, month, day)` triples: `NaiveDate`'s comparison operators are not
 /// const-callable, so ordering is decided on [`day_key`] scalars instead.
+///
+/// `windows` is the table's coverage, one inclusive span per audited era. It is
+/// checked ordered and non-overlapping, and every row must fall inside one of
+/// them, because a row outside every window would be a date the table answers
+/// for while claiming not to have audited it.
 pub(crate) const fn assert_table(
-    first: (i32, u32, u32),
-    last: (i32, u32, u32),
+    windows: &[(i32, u32, u32, i32, u32, u32)],
     dates: &[(i32, u32, u32)],
     rows: &[HolidayRow],
 ) {
     assert!(
-        day_key(first) <= day_key(last),
-        "holiday coverage window is inverted: its last trade date precedes its first"
+        !windows.is_empty(),
+        "a holiday table must declare at least one coverage window"
     );
     assert!(
         dates.len() == rows.len(),
         "holiday fence received a different number of trade dates than rows"
     );
+    assert_ordered_windows(windows);
 
     let mut index = 0;
     while index < dates.len() {
@@ -67,8 +72,8 @@ pub(crate) const fn assert_table(
             );
         }
         assert!(
-            day_key(dates[index]) >= day_key(first) && day_key(dates[index]) <= day_key(last),
-            "holiday row falls outside its table's coverage window"
+            in_windows(windows, dates[index]),
+            "holiday row falls outside every coverage window its table declares"
         );
         assert!(
             !rows[index].document.as_str().is_empty(),
@@ -82,6 +87,81 @@ pub(crate) const fn assert_table(
         assert_instants(rows[index].kind);
         index += 1;
     }
+}
+
+/// The earliest `first` among a table's coverage windows.
+pub(crate) const fn window_first(windows: &[(i32, u32, u32, i32, u32, u32)]) -> NaiveDate {
+    assert!(
+        !windows.is_empty(),
+        "a holiday table must declare at least one coverage window"
+    );
+    let mut best = (windows[0].0, windows[0].1, windows[0].2);
+    let mut index = 1;
+    while index < windows.len() {
+        let candidate = (windows[index].0, windows[index].1, windows[index].2);
+        if day_key(candidate) < day_key(best) {
+            best = candidate;
+        }
+        index += 1;
+    }
+    holiday_date(best.0, best.1, best.2)
+}
+
+/// The latest `last` among a table's coverage windows.
+pub(crate) const fn window_last(windows: &[(i32, u32, u32, i32, u32, u32)]) -> NaiveDate {
+    assert!(
+        !windows.is_empty(),
+        "a holiday table must declare at least one coverage window"
+    );
+    let mut best = (windows[0].3, windows[0].4, windows[0].5);
+    let mut index = 1;
+    while index < windows.len() {
+        let candidate = (windows[index].3, windows[index].4, windows[index].5);
+        if day_key(candidate) > day_key(best) {
+            best = candidate;
+        }
+        index += 1;
+    }
+    holiday_date(best.0, best.1, best.2)
+}
+
+/// Fails the build unless the coverage windows ascend without overlapping.
+const fn assert_ordered_windows(windows: &[(i32, u32, u32, i32, u32, u32)]) {
+    let mut index = 0;
+    while index < windows.len() {
+        let (first_year, first_month, first_day, last_year, last_month, last_day) = windows[index];
+        let first = day_key((first_year, first_month, first_day));
+        let last = day_key((last_year, last_month, last_day));
+        assert!(
+            first <= last,
+            "a holiday coverage window is inverted: its last date precedes its first"
+        );
+        if index > 0 {
+            let (_, _, _, prev_last_year, prev_last_month, prev_last_day) = windows[index - 1];
+            assert!(
+                day_key((prev_last_year, prev_last_month, prev_last_day)) < first,
+                "holiday coverage windows overlap or are out of order; a table \
+                 ships one window per audited era, ascending"
+            );
+        }
+        index += 1;
+    }
+}
+
+/// Whether one raw date triple lies inside any coverage window.
+const fn in_windows(windows: &[(i32, u32, u32, i32, u32, u32)], date: (i32, u32, u32)) -> bool {
+    let key = day_key(date);
+    let mut index = 0;
+    while index < windows.len() {
+        let (first_year, first_month, first_day, last_year, last_month, last_day) = windows[index];
+        if day_key((first_year, first_month, first_day)) <= key
+            && key <= day_key((last_year, last_month, last_day))
+        {
+            return true;
+        }
+        index += 1;
+    }
+    false
 }
 
 /// Fails the build when a row's instants leave the `DayPolicy` ranges.

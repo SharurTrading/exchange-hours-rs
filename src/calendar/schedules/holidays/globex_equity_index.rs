@@ -48,7 +48,7 @@ const QUARTER_PAST_EIGHT: u32 = 8 * 3_600 + 15 * 60;
 /// Inside the window a date with no row was audited and found normal.
 // Evidence: docs/evidence/globex_equity_index.md
 pub(crate) static TABLE: &HolidayTable = holidays! {
-    coverage: (2010, 1, 1) ..= (2027, 12, 31),
+    coverage: [(2010, 1, 1) ..= (2012, 12, 31), (2025, 1, 1) ..= (2027, 12, 31)],
     rows: [
         // --- 2010-2012, CME Group holiday calendars, tier T1 ---
         // 2010-01-18 - T1 - 2010-martin-luther-king.pdf - early close.

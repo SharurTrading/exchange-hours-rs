@@ -63,7 +63,7 @@ const HALF_DAY_CLOSE: u32 = 12 * 3_600 + 5 * 60;
 /// CME's 2028-01-01 record sits outside the window and ships no row.
 // Evidence: docs/evidence/globex_grains.md
 pub(crate) static TABLE: &HolidayTable = holidays! {
-    coverage: (2010, 1, 1) ..= (2027, 12, 31),
+    coverage: [(2010, 1, 1) ..= (2012, 12, 31), (2025, 1, 1) ..= (2027, 12, 31)],
     rows: [
         // --- 2010-2012, CME Group holiday calendars, tier T1 ---
         // 2010-11-26 - T1 - 2010-thanksgiving.pdf - early close.

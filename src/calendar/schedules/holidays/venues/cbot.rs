@@ -26,12 +26,16 @@ use super::super::{
 ///
 /// The two families trade the same building around different sessions, and the
 /// day session is where they touch: every one of the nine full closures below
-/// keeps both closed, while every CBOT holiday early close moves the two by a
-/// different amount — the grain day session ends at 12:05 CT while the rates
-/// overnight leg halts at 12:00 CT — so those dates ship `Unsourced`.
+/// keeps both closed, while a holiday early close moves the two by a different
+/// amount — the grain day session ends at 12:05 CT or 12:00 CT while the rate
+/// leg halts at 15:15, 12:00, 10:15 or 13:30 CT by date — so those dates ship
+/// `Unsourced`. Seventy-one rows over two audited eras: nine stated and
+/// sixty-two `Unsourced` (thirty-one in 2025-2027 and thirty-one in
+/// 2010-2012), with the 2013-2024 interval between the eras outside every
+/// declared window.
 // Evidence: docs/evidence/cbot.md
 pub(crate) static CBOT: &HolidayTable = holidays! {
-    coverage: (2010, 1, 1) ..= (2027, 12, 31),
+    coverage: [(2010, 1, 1) ..= (2012, 12, 31), (2025, 1, 1) ..= (2027, 12, 31)],
     rows: [
         // 2010-01-15 - T1 - 2010-martin-luther-king.pdf - disagreement: grains no row, interest rates early close 15:15 CT.
         (2010, 1, 15, Unsourced, T1, "2010-martin-luther-king.pdf @2010-03-31T06:42:26Z"),

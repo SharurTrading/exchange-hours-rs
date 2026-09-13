@@ -89,10 +89,18 @@ with the research store's `holidays/raw/` indexes.
 
 ## Holidays
 
-**Coverage:** 2010-01-01 .. 2027-12-31 (inclusive venue-local trade dates in
+**Coverage:** 2010-01-01..2012-12-31, 2025-01-01..2027-12-31 (inclusive venue-local trade dates in
 `America/Chicago`), audited per era: **T1** for 2010-2012 in the per-year sections
 below and **T2** for 2025-2027. Inside the window a date with no row is audited
 normal; outside it this table has no answer at all.
+
+**Two audited eras, and a gap between them.** The table declares two coverage
+windows: `2010-01-01..2012-12-31`, from this era's documents, and
+`2025-01-01..2027-12-31`, from the trading-hours service. The 2013-2024 interval
+is audited by neither — those years are the remaining stage-2.2 waves — so it
+lies outside every declared window and `holiday_on` has **no answer** there
+rather than reporting an unaudited date as normal. `HolidayCoverage::windows()`
+lists the two, and `contains` answers per date.
 
 ### 2010
 

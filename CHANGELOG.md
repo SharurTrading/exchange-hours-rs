@@ -71,13 +71,24 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Added
 
+- **A holiday table now declares one coverage window per audited era.**
+  `HolidayCoverage` gains `windows()`, and `contains` asks it rather than a
+  single span: the built-in tables are built one operator-era wave at a time,
+  and a wave's documents audit that wave's years alone, so a table that claimed
+  one span from its floor to its published future would report every date in the
+  gap between two waves as audited normal. Each table lists the eras it actually
+  audited; `first()` and `last()` still bound them, and `HolidayCoverage::contains`
+  is the authority on one date. No answer changes: a date outside every window
+  already had no holiday answer at all.
 - **The served CME families' holiday tables now reach the January-2010 floor.**
   `globex_equity_index`, `globex_interest_rates`, `globex_fx`, `globex_energy`,
   `globex_grains` and `globex_livestock` gain **153 rows over venue-local trade
   dates 2010-01-01 .. 2012-12-31**, and the four CME venue calendars (`cme`,
   `cbot`, `comex`, `nymex`) extend over the same years by the same intersection
   rule, so every served CME identity's `Holidays` cell now reads
-  **2010-01-01 .. 2027-12-31**. The rows are **T1**: CME Group's own published
+  **2010-01-01..2012-12-31, 2025-01-01..2027-12-31** — two audited eras with the
+  unworked 2013-2024 interval between them named as the next stages' work rather
+  than counted as normal. The rows are **T1**: CME Group's own published
   holiday-calendar PDFs (`2010-martin-luther-king.pdf` and its siblings, one
   document per holiday per year), retrieved through the Internet Archive, saved
   and quoted in each owner's `docs/evidence/<owner>.md`. Coverage starts at the

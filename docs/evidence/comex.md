@@ -83,11 +83,18 @@ with the research store's `holidays/raw/` indexes.
 
 ## Holidays
 
-**Coverage:** 2010-01-01 .. 2027-12-31 (inclusive venue-local trade dates in
+**Coverage:** 2010-01-01..2012-12-31, 2025-01-01..2027-12-31 (inclusive venue-local trade dates in
 `America/Chicago`). Tier: **T1** for 2010-2012, from CME's own holiday-calendar
 PDFs, and **T2** for 2025-2027, from the operator's trading-hours service. Inside
 the window a date with no row is audited normal; outside it this table has no answer
 at all.
+
+**Two audited eras, and a gap between them.** The table declares two coverage
+windows: `2010-01-01..2012-12-31`, from the families' 2010-2012 documents, and
+`2025-01-01..2027-12-31`, from the trading-hours service. The 2013-2024 interval
+is audited by neither — those years are the remaining stage-2.2 waves — so it
+lies outside every declared window and `holiday_on` has **no answer** there
+rather than reporting an unaudited date as normal.
 
 ### 2010
 
@@ -279,9 +286,8 @@ Official origin of the trading-hours captures: <http://www.cmegroup.com/trading_
 - **order-entry** — the Sunday Pre-Open's move from 16:15 to 16:00 CT has no operator-stated effective day. The 2026-08-31 review narrowed the bracket to 2012-05-28..2012-06-07 from CME's own trading-hours captures and read both CME dated notice channels in full across that window without finding an announcement, so the dated profiles serve the sourced 16:15–17:00 CT intersection and withhold only the 16:00–16:15 CT quarter-hour. Closing condition: a CME document that states the new Sunday Pre-Open in session language on a day-level effective date. Served identity, so tracked as an issue (LAW-FOLLOW-UPS-ARE-ISSUES).
 - **residual risk** — the only Sunday inside the narrowed bracket is 2012-06-03; that is an observation about the bracket, not a source-stated effective day, so LAW-NO-FABRICATED-DATES keeps it out of the tables.
 - **scope** — TAS/TAM/BTIC, options and other product clocks are excluded; they take their own keys when a consumer maps one.
-- **holidays** — this venue ships the intersection of the families that route to it; see `
-
-## Holidays` above. The intersection is total in this window, so nothing is dropped, and the cross-wave agreement audit that memo §7 follow-up 10 asks for (#95) is still open: it closes with the last stage-2.2 family wave, when the same assertion can be re-run over 2010-2027 rather than over this window alone.
+- **holidays** — this venue ships the intersection of the families that route to
+  it; see the `## Holidays` section above. The intersection is total in this window, so nothing is dropped, and the cross-wave agreement audit that memo §7 follow-up 10 asks for (#95) is still open: it closes with the last stage-2.2 family wave, when the same assertion can be re-run over 2010-2027 rather than over this window alone.
 
 ## Module narrative (moved from src/calendar/schedules/futures/us/energy_metals.rs on 2026-09-12 UTC)
 

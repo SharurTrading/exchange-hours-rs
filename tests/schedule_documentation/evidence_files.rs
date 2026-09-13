@@ -406,7 +406,7 @@ fn revision_blocks() -> Vec<RevisionBlock> {
 struct HolidayBlock {
     module: String,
     files: Vec<String>,
-    coverage: (String, String),
+    coverage: Vec<String>,
     rows: Vec<HolidayRow>,
 }
 
@@ -426,8 +426,12 @@ fn on_comment_line(text: &str, offset: usize) -> bool {
     text[line_start..offset].trim_start().starts_with("//")
 }
 
-/// Parses the `coverage: (y, m, d) ..= (y, m, d)` clause of one block.
-fn holiday_coverage(body: &str, module: &str) -> (String, String) {
+/// Parses the `coverage: [(y, m, d) ..= (y, m, d), …]` clause of one block.
+///
+/// Returns each audited window as `"<first>..<last>"`, in source order: the
+/// built-in tables ship one window per audited operator era, and a gap between
+/// two of them is a span no document audited.
+fn holiday_coverage(body: &str, module: &str) -> Vec<String> {
     let opened = body.split_once("coverage:");
     assert!(
         opened.is_some(),
@@ -442,10 +446,9 @@ fn holiday_coverage(body: &str, module: &str) -> (String, String) {
         "{module}: a holidays! block must declare its rows"
     );
     let bounds = macro_tuples(closed.expect("the rows list was just asserted present").0);
-    assert_eq!(
-        bounds.len(),
-        2,
-        "{module}: a coverage window reads `(year, month, day) ..= (year, month, day)`"
+    assert!(
+        !bounds.is_empty() && bounds.len().is_multiple_of(2),
+        "{module}: coverage lists one or more `(year, month, day) ..= (year, month, day)` windows"
     );
     let day = |tuple: &str| {
         let fields = tuple_fields(tuple);
@@ -461,7 +464,10 @@ fn holiday_coverage(body: &str, module: &str) -> (String, String) {
         let date: u32 = fields[2].parse().expect("coverage day must be an integer");
         format!("{year:04}-{month:02}-{date:02}")
     };
-    (day(bounds[0]), day(bounds[1]))
+    bounds
+        .chunks_exact(2)
+        .map(|pair| format!("{}..{}", day(pair[0]), day(pair[1])))
+        .collect()
 }
 
 /// Parses the `rows: [ … ]` list of one block, with the module's own named
@@ -833,7 +839,7 @@ fn every_holiday_table_states_its_coverage_window() {
     let files = evidence_files();
 
     for block in holiday_blocks() {
-        let (first, last) = &block.coverage;
+        let windows = block.coverage.join(", ");
         for name in &block.files {
             let text = files.get(name).unwrap_or_else(|| {
                 panic!("{} declares a missing evidence file: {name}", block.module)
@@ -845,9 +851,9 @@ fn every_holiday_table_states_its_coverage_window() {
                 )
             });
             assert!(
-                holidays.contains(&format!("**Coverage:** {first} .. {last}")),
-                "{name} must state {}'s coverage window as \
-                 `**Coverage:** {first} .. {last}`",
+                holidays.contains(&format!("**Coverage:** {windows}")),
+                "{name} must state {}'s coverage windows as \
+                 `**Coverage:** {windows}`",
                 block.module
             );
         }

@@ -93,11 +93,18 @@ with the research store's `holidays/raw/` indexes.
 
 ## Holidays
 
-**Coverage:** 2010-01-01 .. 2027-12-31 (inclusive venue-local trade dates in
+**Coverage:** 2010-01-01..2012-12-31, 2025-01-01..2027-12-31 (inclusive venue-local trade dates in
 `America/Chicago`). Tier: **T1** for 2010-2012, from CME's own holiday-calendar
 PDFs, and **T2** for 2025-2027, from the operator's trading-hours service. Inside
 the window a date with no row is audited normal; outside it this table has no answer
 at all.
+
+**Two audited eras, and a gap between them.** The table declares two coverage
+windows: `2010-01-01..2012-12-31`, from the families' 2010-2012 documents, and
+`2025-01-01..2027-12-31`, from the trading-hours service. The 2013-2024 interval
+is audited by neither — those years are the remaining stage-2.2 waves — so it
+lies outside every declared window and `holiday_on` has **no answer** there
+rather than reporting an unaudited date as normal.
 
 ### 2010
 
@@ -322,9 +329,8 @@ Official origin of the trading-hours captures: <http://www.cmegroup.com/trading_
 - **order-entry** — the queue and PCP states of the 21-hour 2012-05-20..2013-04-06 regime have no operator-stated onset day. The 2026-08-31 review sourced the states themselves from CME's own trading-hours captures of 2012-05-28 and 2012-06-07 against the pre-expansion 2012-05-11 capture, which brackets the switch to 2012-05-11..2012-05-28; CME market-data advisory 20120518 states only the new matching hours and never the queue times, so no queue revision is keyed to 2012-05-20. Closing condition: a CME document that states those queue times in session language on a day-level effective date. Served identity, so tracked as an issue (LAW-FOLLOW-UPS-ARE-ISSUES).
 - **residual risk** — the baseline queue and PCP phases rest on the operator's March-2010 market-state table, which states them as then-live rather than dating them, so they are carried back from 2010-03-15 to the January-2010 floor.
 - **scope** — mini-sized Corn, Soybean, Wheat and KC HRW Wheat diverged on 2012-09-16 and are owned by `mini_grains.rs`; Rough Rice borrows the pre-2018 eras but owns its own timeline in `rough_rice.rs`.
-- **holidays** — this venue ships the intersection of the families that route to it; see `
-
-## Holidays` above. Every date the intersection drops is named there, and the cross-wave agreement audit that memo §7 follow-up 10 asks for (#95) is still open: it closes with the last stage-2.2 family wave, when the same assertion can be re-run over 2010-2027 rather than over this window alone.
+- **holidays** — this venue ships the intersection of the families that route to
+  it; see the `## Holidays` section above. Every date the intersection drops is named there, and the cross-wave agreement audit that memo §7 follow-up 10 asks for (#95) is still open: it closes with the last stage-2.2 family wave, when the same assertion can be re-run over 2010-2027 rather than over this window alone.
 
 ## Module narrative (moved from src/calendar/schedules/futures/us/grains.rs on 2026-09-12 UTC)
 

@@ -24,13 +24,15 @@ use super::super::{
 
 /// The `Exchange::Cme` table: the intersection of the six CME families.
 ///
-/// Nine rows state a status — the Globex full closures — and the other
-/// thirty-two are `Unsourced`. Coverage runs to 2027-12-31, the end of the
-/// families' own audited window; 2028-01-01 sits outside it in every family
-/// table and ships no row here either.
+/// Ninety rows over two audited eras. Nine state a status — the Globex full
+/// closures — and eighty-one are `Unsourced`: thirty-two in 2025-2027 and
+/// forty-nine in 2010-2012, where the families disagree in kind rather than by
+/// minutes. The two eras are declared as two coverage windows, and the
+/// 2013-2024 interval between them is audited by neither, so it ships no row
+/// and reports no answer rather than a normal one.
 // Evidence: docs/evidence/cme.md
 pub(crate) static CME: &HolidayTable = holidays! {
-    coverage: (2010, 1, 1) ..= (2027, 12, 31),
+    coverage: [(2010, 1, 1) ..= (2012, 12, 31), (2025, 1, 1) ..= (2027, 12, 31)],
     rows: [
         // 2010-01-15 - T1 - 2010-martin-luther-king.pdf - disagreement: equity index no row, interest rates early close 15:15 CT, FX early close 15:15 CT, energy and metals early close 15:15 CT, grains no row, livestock no row.
         (2010, 1, 15, Unsourced, T1, "2010-martin-luther-king.pdf @2010-03-31T06:42:26Z"),

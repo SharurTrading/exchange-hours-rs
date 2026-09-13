@@ -20,7 +20,7 @@
 
 ## Holidays
 
-**Coverage:** 2025-01-01 .. 2027-12-31 (inclusive trade dates). Tier: T2 throughout —
+**Coverage:** 2025-01-01..2027-12-31 (inclusive trade dates). Tier: T2 throughout —
 CME's own trading-hours service, read as bytes and saved. No T1 per-asset-class rendering
 exists for these years; `cme-2025-2027.json` `missing[3]` records that the operator's
 trading-hours page renders only the next upcoming holiday and its holiday selector cannot

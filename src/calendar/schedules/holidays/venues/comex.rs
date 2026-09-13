@@ -26,11 +26,13 @@ use super::super::{
 /// The `Exchange::Comex` table: the COMEX metals half of `globex_energy`.
 ///
 /// Metals and energy are one key and the operator prints them as one product
-/// row on every date in this window, so the intersection is total: the venue
-/// carries the family's thirty-six rows unchanged, and no date is withheld.
+/// row on every date the table audits, so the intersection is total: the venue
+/// carries the family's sixty-six rows unchanged — thirty from 2010-2012 and
+/// thirty-six from 2025-2027 — and withholds no date. The 2013-2024 interval
+/// between the two eras is outside every declared window and ships no row.
 // Evidence: docs/evidence/comex.md
 pub(crate) static COMEX: &HolidayTable = holidays! {
-    coverage: (2010, 1, 1) ..= (2027, 12, 31),
+    coverage: [(2010, 1, 1) ..= (2012, 12, 31), (2025, 1, 1) ..= (2027, 12, 31)],
     rows: [
         // 2010-01-15 - T1 - 2010-martin-luther-king.pdf - early close 15:15 CT.
         (2010, 1, 15, early_close(54900), T1, "2010-martin-luther-king.pdf @2010-03-31T06:42:26Z"),

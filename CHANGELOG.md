@@ -112,15 +112,19 @@ corrections (a venue's hours fixed against a primary source) go under
   **The four CME venue calendars — `cme`, `cbot`, `comex` and `nymex` — carry
   the intersection of the families that route to them** over
   **2025-01-01 .. 2027-12-31** at T2. A venue row may be stated only where every
-  routed family states the same row, which in this window means the nine Globex
-  full closures. Every other special date carries `Unsourced` rather than a
-  scheduling row: the coverage window is contiguous, so silence would claim the
-  date was audited normal, and any single instant would clip one routed family's
-  sourced trading — a 12:00 CT row would delete the grain and livestock day
-  sessions, a 13:30 CT row would delete the energy family's post-close phase.
-  COMEX and NYMEX route the one `globex_energy` key and so carry its table whole
-  (36 rows); CBOT drops its thirty-one half-days and CME its thirty-two, each
-  with the disagreement named per date in that venue's evidence file.
+  routed family states the same row. For the multi-family venues that means the
+  nine Globex full closures, which are the only dates all six CME families — or
+  both CBOT families — are closed; every other special date there carries
+  `Unsourced` rather than a scheduling row, because the coverage window is
+  contiguous and any single instant would clip one routed family's sourced
+  trading — a 12:00 CT row would delete the grain and livestock day sessions, a
+  13:30 CT row would delete the energy family's post-close phase. **COMEX** and
+  **NYMEX** route the one `globex_energy` key, whose metals and energy halves CME
+  prints as a single product row, so their intersections drop nothing and they
+  carry that family's table whole (36 rows each, no `Unsourced`). CBOT ships 9
+  stated rows against its thirty-one `Unsourced` dates and CME 9 against
+  thirty-two, each with the disagreement named per date in that venue's evidence
+  file.
   Measured on an Apple M2 Max at 1.97.1: with a real table attached, `is_open`
   inside a regular session far from any holiday costs **240.9 ns** against
   236.9 ns with the table detached, the 4,999-probe cold chart frame is

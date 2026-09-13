@@ -363,9 +363,13 @@ pub(crate) static COMEX: &HolidayTable = holidays! {
 
 /// The `Exchange::Nymex` table: the NYMEX energy half of `globex_energy`.
 ///
-/// Byte-identical to [`COMEX`] by construction rather than by copying: the two
-/// venues route the same single family, because the operator publishes the
-/// metals and energy halves as one row on every date in this window.
+/// The same rows as [`COMEX`], because the two venues route the same single
+/// family: the operator publishes the metals and energy halves as one product
+/// row on every date in this window. They stay separate tables rather than one
+/// shared binding, matching the one-arm-per-identity rule the routing match
+/// states — a venue's table is a decision about that venue, not an alias — and
+/// `the_energy_venues_carry_the_family_table_unchanged` holds each of them
+/// against the family's own answers.
 // Evidence: docs/evidence/nymex.md
 pub(crate) static NYMEX: &HolidayTable = holidays! {
     coverage: (2025, 1, 1) ..= (2027, 12, 31),

@@ -123,10 +123,12 @@ rests on a document the family module does not carry.
   `energy_metals_profile_at`, the same selector `globex_energy` resolves to; the test
   `the_venue_table_is_the_intersection_of_its_families` recomputes the table from that
   key's public `holiday_on` answers on every run.
-- **The two venue tables are identical by construction, not by copying.** Both are
-  derived from the one key, so a change to `globex_energy` reaches both or neither,
-  and a divergence between the two venue tables cannot be introduced by an edit to one
-  of them that the family table does not justify.
+- **The two venue tables hold the same rows, and each is fenced on its own.** Both
+  derive from the one key, so a change to `globex_energy` reaches both or neither.
+  They are separate tables rather than one shared binding, because a venue's table is
+  a decision about that venue; `the_energy_venues_carry_the_family_table_unchanged`
+  holds each against the family's own answers, so an edit to one that the family table
+  does not justify fails the gate.
 - **`comex` and `nymex` already carry a `monthly` ledger cadence**, so this change
   moves no cadence cell for them; it moves only their `Holidays` cell.
 

@@ -345,9 +345,10 @@ fn a_venue_closure_removes_the_trading_day_it_names() {
     let closure = day(2025, 12, 25);
 
     assert!(venue.is_closed_trade_date(closure, SessionKind::Both));
-    // No *trade date* 2025-12-25 exists: the 12-25 day session is gone, and so
-    // is the 12-25 17:00 CT leg that would have settled trade date 12-26. Both
-    // instants fall inside the trade date the row names.
+    // Trade date 2025-12-25 opens at 17:00 CT on 12-24 and closes at 16:00 CT on
+    // 12-25. The row deletes the whole of it, so both of these probes — the
+    // 12-25 day session and the 15:15-16:00 CT extended phase behind it — are
+    // outside any session and carry no trade date.
     for probe in [
         ct((2025, 12, 25), (10, 0, 0)),
         ct((2025, 12, 25), (15, 30, 0)),
@@ -355,19 +356,22 @@ fn a_venue_closure_removes_the_trading_day_it_names() {
         assert!(!venue.is_open(probe), "{probe} is inside the removed day");
         assert_eq!(venue.trade_date(probe), None, "{probe}");
     }
-    // The evening of the *following* civil day belongs to trade date 12-26,
-    // which no row names, so it survives.
+    // The 17:00 CT leg that opens on the evening of 12-25 belongs to trade date
+    // 12-26, which no row names, so it survives.
     let post_holiday_eve = ct((2025, 12, 25), (17, 30, 0));
     assert!(venue.is_open(post_holiday_eve), "{post_holiday_eve}");
     assert_eq!(venue.trade_date(post_holiday_eve), Some(day(2025, 12, 26)));
     // 2025-12-24's own session is untouched: the row names the *next* trade
-    // date, so it cannot clip the one before it.
+    // date, so it cannot clip the one before it. What the row does remove is
+    // that day's 17:00 CT leg, which would have settled trade date 12-25.
     assert!(venue.is_open(ct((2025, 12, 24), (12, 0, 0))));
     assert_eq!(
         venue.trade_date(ct((2025, 12, 24), (12, 0, 0))),
         Some(day(2025, 12, 24))
     );
-    // The next session after the closure opens at 2025-12-25 17:00 CT.
+    assert!(!venue.is_open(ct((2025, 12, 24), (17, 30, 0))));
+    assert_eq!(venue.trade_date(ct((2025, 12, 24), (17, 30, 0))), None);
+    // The next session after the closure is that same 12-25 17:00 CT open.
     assert_eq!(
         venue.next_session_after(ct((2025, 12, 25), (12, 0, 0))),
         Some((

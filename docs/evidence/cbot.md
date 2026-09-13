@@ -37,17 +37,20 @@ event-date-to-trade-date conversions are in those two files.
 building around different sessions, and the day session is where they touch. On a
 full Globex closure both are closed and the venue states it: **nine dates** in this
 window qualify, and they are the only rows here that state a status. On every CBOT
-holiday early close the two move by different amounts — the grain and oilseed day
-session ends at 12:05 CT while the interest-rate overnight leg halts at 12:00 CT, a
-five-minute difference that is nonetheless a difference — so the venue states no
-instant and the date carries `unsourced`. That is **thirty-one dates**.
+holiday early close the two move by different amounts, and by a different pair on
+different dates: the grain and oilseed day session ends at 12:05 CT on
+2025-11-28, 2025-12-24, 2026-11-27, 2026-12-24 and 2027-11-26, while the
+interest-rate overnight leg halts at 12:15 CT on those five dates and at 12:00 CT,
+10:15 CT or 13:30 CT on the others. Five minutes apart or three hours apart, a
+difference is a difference, so the venue states no instant and each of those dates
+carries `unsourced`. That is **thirty-one dates**.
 
 **`unsourced` is neither silence nor a compromise.** The coverage window is
 contiguous, so a date carrying no row is the positive claim that it was audited
-normal, which is false on every one of these dates. Nor is a compromise available: a
-row at 12:05 CT would leave the rates family trading five minutes after the venue
-said it stopped, and a row at 12:00 CT would cut the grain day session short five
-minutes before its own sourced close. `unsourced` clips nothing and tells a caller
+normal, which is false on every one of these dates. Nor is a compromise available: on
+2025-11-28 a row at 12:05 CT would leave the rates family trading ten minutes after
+the venue said it stopped, and a row at 12:15 CT would cut the grain day session
+short at its own sourced close. `unsourced` clips nothing and tells a caller
 what the crate knows. `iceus`, whose venue table shipped first, is the precedent.
 
 **Cite the family, not the venue, for holiday behaviour.** A caller that needs
@@ -113,8 +116,12 @@ on.
 **Gaps, 2025-2027.**
 
 - **The thirty-one `unsourced` dates are the intersection's residue, not a research
-  gap.** Each is a date on which the two families state different rows, and the
-  disagreement is printed per date in the `Derived from` column above. Every
+  gap.** Each is a date on which the two families disagree — by stating different
+  rows, or by one of them stating a row while the other states none, which is the
+  `late open` shape of 2025-01-02, 2025-12-26, 2026-01-02 and 2027-07-06. A family
+  with no row has **audited the date normal**, which is a different answer rather
+  than a missing one. The disagreement is printed per date in the `Derived from`
+  column above. Every
   underlying row is sourced; what is missing is a single venue-wide answer, which no
   operator document states and which the crate will not invent. Closing condition: an
   operator statement of CBOT-wide holiday hours — CME's holiday-hours table on

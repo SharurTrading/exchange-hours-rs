@@ -119,10 +119,12 @@ the product-family key: `globex_equity_index` knows what CME equity index does o
 **Gaps, 2025-2027.**
 
 - **The thirty-two `unsourced` dates are the intersection's residue, not a research
-  gap.** Each one is a date on which at least two of the six families state different
-  rows, and the disagreement is printed per date in the `Derived from` column above.
-  Every underlying row is sourced; what is missing is a single venue-wide answer,
-  which no operator document states and which the crate will not invent. Closing
+  gap.** Each one is a date on which the six families disagree — by stating different
+  rows, or by one of them stating a row while another states none. A family with no
+  row has **audited the date normal**, which is a different answer rather than a
+  missing one. The disagreement is printed per date in the `Derived from` column
+  above. Every underlying row is sourced; what is missing is a single venue-wide
+  answer, which no operator document states and which the crate will not invent. Closing
   condition: an operator statement of venue-wide holiday hours — CME's holiday-hours
   table on `cmegroup.com/trading-hours.html` is per asset class, not per venue — or a
   `DayPolicy`-shaped boundary that can express a per-family answer inside one venue

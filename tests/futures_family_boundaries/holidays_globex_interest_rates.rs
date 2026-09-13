@@ -10,7 +10,7 @@
 //! day, so a clip stated on a trade date lands on a session that opened the
 //! previous evening and a closure deletes that evening leg.
 
-use chrono::{DateTime, NaiveDate, TimeZone as _, Utc};
+use chrono::{DateTime, Days, NaiveDate, TimeZone as _, Utc};
 use chrono_tz::US;
 use exchange_hours::{
     CalendarResolution, EvidenceTier, ExchangeCalendar, Holiday, HolidayKind, MarketHoursKey,
@@ -229,26 +229,32 @@ fn no_late_open_ships_and_the_post_closure_reopen_is_the_normal_open() {
     assert!(calendar.is_open(ct((2026, 1, 1), (17, 0, 0))));
     assert_eq!(calendar.holiday_on(day(2026, 1, 2)), None);
 
-    // Every trade date the table names resolves to a closure or an early
-    // close; none of them is a late open of either branch.
-    for date in [
-        day(2025, 1, 1),
-        day(2025, 1, 20),
-        day(2025, 12, 25),
-        day(2026, 4, 3),
-        day(2026, 12, 25),
-        day(2027, 6, 18),
-        day(2027, 12, 24),
-    ] {
-        let kind = calendar
-            .holiday_on(date)
-            .map(Holiday::kind)
-            .expect("each named date ships a row");
-        assert!(
-            matches!(kind, HolidayKind::Closed | HolidayKind::EarlyClose { .. }),
-            "{date} is not one of the two kinds this family ships: {kind:?}"
-        );
+    // Over the whole coverage window, every row is a closure or an early
+    // close and none is a late open of either branch; the counts pin the
+    // table's shape, so a row on a date no test names fails here.
+    let coverage = calendar
+        .holiday_coverage()
+        .expect("this family ships a table");
+    let (mut closed, mut early) = (0_usize, 0_usize);
+    let mut date = coverage.first();
+    while date <= coverage.last() {
+        match calendar.holiday_on(date).map(Holiday::kind) {
+            None => {}
+            Some(HolidayKind::Closed) => closed += 1,
+            Some(HolidayKind::EarlyClose { .. }) => early += 1,
+            Some(other) => {
+                panic!("{date} is not one of the two kinds this family ships: {other:?}")
+            }
+        }
+        date = date
+            .checked_add_days(Days::new(1))
+            .expect("the coverage window stays inside the representable calendar");
     }
+    assert_eq!(
+        (closed, early),
+        (9, 27),
+        "closed and early-close rows, 2025-2027"
+    );
 }
 
 // ---------------------------------------------------------------------------

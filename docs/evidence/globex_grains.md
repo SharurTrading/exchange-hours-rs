@@ -320,7 +320,7 @@ codes and the archive replay URLs are in
 - **No T1 rendering of the instants**, as for 2025 and 2026.
 - **2027-12-26 .. 2027-12-29 are not covered by a service window.** No retrieved window spans
   them. They are audited normal on the T1 holiday list alone — CME's 2027 Globex table names
-  no holiday between 2027-12-24 and 2027-01-01 — and no instant for them is asserted from the
+  no holiday between 2027-12-24 and 2028-01-01 — and no instant for them is asserted from the
   service. Closing condition: a service window covering 2027-12-26 .. 2027-12-29.
 
 

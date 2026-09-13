@@ -50,8 +50,9 @@ The columns, in order:
   scope. This is a backward-looking review date, not an expiry date or a
   promise about future exchange changes.
 - **Cadence** — the LAW-WATCH review cadence: `monthly` for a served identity
-  that changed within the last year or trades a 24/7 grid, `quarterly` for
-  every other served identity, `on demand` for a dormant one.
+  that changed within the last year, trades a 24/7 grid or ships a built-in
+  holiday table, `quarterly` for every other served identity, `on demand` for a
+  dormant one.
 - **Basis note** — at most three sentences: what the identity is and what its
   current grid is, what the dated history rests on or what is undated, and the
   one thing a reader must know before relying on the row.

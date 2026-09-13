@@ -117,9 +117,9 @@ corrections (a venue's hours fixed against a primary source) go under
   binary search. On the ~13 dates a year a family has rows for, and on their
   neighbours, the trading-day derivation runs and `is_open` costs about
   **5.4 µs**; that path's remaining lever is tracked in #94.
-- **The built-in holiday-table engine, with zero rows.** `exchange-hours` can
-  now carry per-family holiday and early-close tables underneath the caller's
-  two overlays (LAW-HOLIDAY-SCOPE). This release ships the engine only: the row
+- **The built-in holiday-table engine.** `exchange-hours` can now carry
+  per-family holiday and early-close tables underneath the caller's two
+  overlays (LAW-HOLIDAY-SCOPE). Wave 0 shipped the engine on its own: the row
   types `Holiday`, `HolidayKind` and `EvidenceTier`, the audited-window type
   `HolidayCoverage`, a `holidays!` macro whose eight constant-evaluation fences
   reject an out-of-order, out-of-window, uncited, sub-T2 or out-of-range row at
@@ -127,9 +127,9 @@ corrections (a venue's hours fixed against a primary source) go under
   `ExchangeCalendar::holiday_on(trade_date)`,
   `ExchangeCalendar::holiday_coverage()` and the `const`
   `ExchangeCalendar::without_holidays()`, each mirrored on `PolicyCalendar`,
-  where they report the built-in row rather than the caller's layers. The
-  engine landed on its own, with **zero rows** and therefore no behaviour
-  change at all; the tables above are the first data it carries, and an
+  where they report the built-in row rather than the caller's layers. Wave 0
+  landed with **zero rows** and therefore no behaviour change; this release
+  adds the first sourced rows, the tables above, and an
   identity the routing match still answers `None` for is unaffected by it —
   the caller's `DayPolicy` remains that identity's only holiday layer.
   A table is the innermost layer: an explicit caller

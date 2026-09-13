@@ -66,7 +66,8 @@ one of them is a defect to fix, not a label to restore.
 Under LAW-SERVICE-TIERS the row's **Service** cell says whether the identity is
 `served` — a consumer instrument can reach it — or `dormant`. A served row owes
 the **Cadence** its row records (LAW-WATCH): `monthly` when it changed within
-the last year or trades a 24/7 grid, `quarterly` otherwise. A dormant row reads
+the last year, trades a 24/7 grid or ships a built-in holiday table,
+`quarterly` otherwise. A dormant row reads
 `on demand`: it is correct as of its last review and is re-reviewed only when a
 consumer reaches it, so a lapsed date on one is not a defect. The **Evidence
 tier** cell is the tier behind the row's current schedule, and the **Horizon**

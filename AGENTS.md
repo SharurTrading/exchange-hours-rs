@@ -59,7 +59,7 @@ the cost of keeping them true.
   | Current schedule sourced at T1 or T2 | required | required at last review |
   | Dated history to the January-2010 floor | required | best-effort, labelled |
   | Holiday and early-close table | required, floor to published future | best-effort |
-  | Review cadence (LAW-WATCH) | monthly if high-churn, else quarterly | on demand |
+  | Review cadence (LAW-WATCH) | monthly if high-churn, 24/7 or holiday-bearing, else quarterly | on demand |
   | Follow-ups tracked as issues | required | recorded in the evidence file |
 
 - **LAW-PRIMARY-SOURCES** — every session time, every dated change and every
@@ -153,12 +153,14 @@ the cost of keeping them true.
   in per-family date tables under `schedules/` (data, not templates),
   sourced from the operator's own published holiday calendar at T1 or its own
   machine channel at T2, at the tier LAW-PRIMARY-SOURCES requires and with that
-  tier carried in the row rather than only in a comment, covering the
-  January-2010 floor to the operator's published future for served identities
-  and best-effort for dormant ones; once a family's table ships, the built-in
-  calendars apply it by default. **Which identities have a table, and over
-  which trade-date window, is the `Holidays` column of the verification
-  ledger**, derived by a fence from each identity's own `holiday_coverage()`;
+  tier carried in the row rather than only in a comment. The **target** is
+  the January-2010 floor to the operator's published future for served
+  identities, best-effort for dormant ones: an obligation the tables are built
+  towards, not a statement of what ships. Once a family's table ships, the
+  built-in calendars apply it by default. **What ships — which identities have
+  a table, and over which trade-date window — is the `Holidays` column of the
+  verification ledger**, derived by a fence from each identity's own
+  `holiday_coverage()`, which returns the audited window;
   an identity with no table carries no holiday data and the caller's
   `DayPolicy` overlay is its only holiday layer. Inside a table's window a date
   with no row is audited normal; outside it the crate has no holiday answer at
@@ -194,8 +196,10 @@ the cost of keeping them true.
   research store beside the repository holds retrieved artifacts and working
   notes; only the evidence file is committed.
 - **LAW-WATCH** — a served identity is reviewed on a cadence recorded in its
-  ledger row: monthly for a family that has changed within the last year or
-  trades on a 24/7 grid, quarterly otherwise. A forward-dated row carries a
+  ledger row: monthly for a family that has changed within the last year,
+  trades on a 24/7 grid, or ships a built-in holiday table (the operator
+  republishes its holiday calendar yearly and issues errata), quarterly
+  otherwise. A forward-dated row carries a
   confirm-by date and is confirmed against the operator before its effective
   day. Every schedule change ships in a tagged release with a CHANGELOG entry,
   so the consumer pins a version, never a commit. The monitoring entry points in

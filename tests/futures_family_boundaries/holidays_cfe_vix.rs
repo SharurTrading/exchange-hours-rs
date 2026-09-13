@@ -226,3 +226,33 @@ fn the_venue_and_the_key_answer_from_the_same_table() {
         assert_eq!(venue.holiday_on(date), key.holiday_on(date), "{date}");
     }
 }
+
+/// §4.1 case 4, as a negative over the whole window: the table ships only
+/// closures and early closes, two and ten of them, and no late open.
+#[test]
+fn the_2026_window_ships_only_closures_and_early_closes() {
+    let calendar = cfe();
+    let coverage = calendar
+        .holiday_coverage()
+        .expect("CFE ships a built-in table");
+    let (mut closed, mut early) = (0_usize, 0_usize);
+    let mut date = coverage.first();
+    while date <= coverage.last() {
+        match calendar.holiday_on(date).map(Holiday::kind) {
+            None => {}
+            Some(HolidayKind::Closed) => closed += 1,
+            Some(HolidayKind::EarlyClose { .. }) => early += 1,
+            Some(other) => {
+                panic!("{date} ships a kind CFE's 2026 schedule does not state: {other:?}")
+            }
+        }
+        date = date
+            .checked_add_days(Days::new(1))
+            .expect("the coverage window stays inside the representable calendar");
+    }
+    assert_eq!(
+        (closed, early),
+        (2, 10),
+        "closed and early-close rows, 2026"
+    );
+}

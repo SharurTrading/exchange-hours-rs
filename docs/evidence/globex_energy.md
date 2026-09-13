@@ -75,7 +75,8 @@ a disagreement between the two halves.
 
 **How an event date becomes a trade date.** The family's trading day wraps: one
 occurrence opens 17:00 CT on the previous local day and closes 16:00 CT on the
-trade date, Sunday through Thursday. Three shapes appear in this window:
+trade date, Sunday through Thursday. Three scalar shapes appear in this
+window, and one intraday topology the scalar vocabulary cannot state:
 
 1. a final `closed` event on the date at an instant earlier than 16:00 CT — an
    `EarlyClose` on that trade date, clipping the occurrence that opened the
@@ -92,6 +93,11 @@ trade date, Sunday through Thursday. Three shapes appear in this window:
    row is an `EarlyClose` at 13:30 CT. This is the `[N16]` shape of the
    retrieval and the same reading the design memo applies to the Equity Index
    `12:00 preopen` row of 2025-01-20.
+4. an intraday `preopen`/`open` pair on the date ahead of an early close, on a
+   trading day that already opened the previous evening — 2025-11-28 prints
+   `07:00 preopen; 07:30 open; 13:45 closed`. The row carries only the 13:45 CT
+   `EarlyClose`; the implied halt is a topology change, recorded under
+   **Gaps, 2025** below and not modelled.
 
 ### 2025
 

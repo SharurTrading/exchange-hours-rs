@@ -10,7 +10,9 @@
 
 use chrono::{Days, NaiveDate, TimeZone as _, Utc};
 use chrono_tz::US;
-use exchange_hours::{Exchange, ExchangeCalendar, HolidayKind, SessionKind, calendar_for_exchange};
+use exchange_hours::{
+    Exchange, ExchangeCalendar, Holiday, HolidayKind, SessionKind, calendar_for_exchange,
+};
 
 fn cde() -> ExchangeCalendar {
     calendar_for_exchange(Exchange::CoinbaseDerivatives)
@@ -144,5 +146,32 @@ fn detaching_the_table_restores_the_normal_week() {
     assert_eq!(
         calendar.without_holidays().holiday_on(day(2026, 9, 7)),
         None
+    );
+}
+
+/// The module's claim, fenced over the whole coverage window: every row is a
+/// full closure and there are exactly the eight the notices published, so an
+/// early close or a ninth row on a date no test names fails here.
+#[test]
+fn every_row_in_the_window_is_a_full_closure() {
+    let calendar = cde();
+    let coverage = calendar
+        .holiday_coverage()
+        .expect("Coinbase Derivatives ships a built-in table");
+    let mut closed = 0_usize;
+    let mut date = coverage.first();
+    while date <= coverage.last() {
+        match calendar.holiday_on(date).map(Holiday::kind) {
+            None => {}
+            Some(HolidayKind::Closed) => closed += 1,
+            Some(other) => panic!("{date} ships a kind other than a full closure: {other:?}"),
+        }
+        date = date
+            .checked_add_days(Days::new(1))
+            .expect("the coverage window stays inside the representable calendar");
+    }
+    assert_eq!(
+        closed, 8,
+        "the eight published closures, 2026-01-01..2026-09-07"
     );
 }

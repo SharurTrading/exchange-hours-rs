@@ -295,8 +295,10 @@ research blocks, which is why the crate re-keys every citation to the
 - **Eurex-style preliminary calendars do not apply here**, but the general rule
   does: CME's 2027 rows are the operator's published future, stated
   unconditionally, which LAW-NO-FABRICATED-DATES permits encoding ahead of the
-  effective day. Each is confirmed against the operator before its effective day
-  under LAW-WATCH.
+  effective day. They record the schedule as published when retrieved on
+  2026-09-12 (UTC) and are not a guarantee that it holds: each must be
+  revalidated against the operator before its effective day under LAW-WATCH,
+  and a revised or withdrawn date is corrected as a schedule fix.
 
 
 ## Sources

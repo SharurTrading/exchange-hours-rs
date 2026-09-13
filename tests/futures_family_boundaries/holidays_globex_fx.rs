@@ -15,7 +15,7 @@
 //! absence is fenced rather than skipped: every shipped row's kind is asserted,
 //! so a late open cannot appear without a test changing.
 
-use chrono::{DateTime, NaiveDate, TimeDelta, TimeZone as _, Utc};
+use chrono::{DateTime, Days, NaiveDate, TimeDelta, TimeZone as _, Utc};
 use chrono_tz::US;
 use exchange_hours::{
     CalendarResolution, EvidenceTier, ExchangeCalendar, HolidayKind, MarketHoursKey, SessionKind,
@@ -187,6 +187,26 @@ fn good_friday_2026_closes_at_1015_ct_while_2025_and_2027_are_shut() {
 #[test]
 fn the_family_ships_no_late_open_and_reopens_at_the_normal_1700_ct() {
     let calendar = fx();
+    // Walk the whole coverage window, so a row on a date the fence does not
+    // name fails here too: the shipped rows are exactly the handwritten list.
+    let coverage = calendar
+        .holiday_coverage()
+        .expect("this family ships a table");
+    let mut walked = Vec::new();
+    let mut date = coverage.first();
+    while date <= coverage.last() {
+        if let Some(row) = calendar.holiday_on(date) {
+            walked.push((date, row.kind()));
+        }
+        date = date
+            .checked_add_days(Days::new(1))
+            .expect("the coverage window stays inside the representable calendar");
+    }
+    assert_eq!(
+        walked,
+        shipped_rows(),
+        "the table's rows over its whole window are exactly the handwritten fence"
+    );
     for (date, kind) in shipped_rows() {
         let row = calendar
             .holiday_on(date)

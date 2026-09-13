@@ -350,8 +350,16 @@ fn query_surface(criterion: &mut Criterion) {
         };
         bencher.iter(|| calendar.is_closed_trade_date(black_box(day), SessionKind::Both));
     });
-    group.bench_function("holiday_on", |bencher| {
+    // An in-coverage date with no row (the binary search misses) and a date
+    // that carries a row (it hits), so a regression in either outcome shows.
+    group.bench_function("holiday_on/miss", |bencher| {
         let Some(day) = NaiveDate::from_ymd_opt(2026, 4, 20) else {
+            return;
+        };
+        bencher.iter(|| calendar.holiday_on(black_box(day)));
+    });
+    group.bench_function("holiday_on/hit", |bencher| {
+        let Some(day) = NaiveDate::from_ymd_opt(2026, 11, 27) else {
             return;
         };
         bencher.iter(|| calendar.holiday_on(black_box(day)));

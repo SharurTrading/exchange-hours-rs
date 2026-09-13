@@ -144,6 +144,15 @@ fn cotton_carries_its_own_monday_late_open_row() {
         cotton.trade_date(ny((2026, 7, 6), (21, 30, 0))),
         Some(day(2026, 7, 7))
     );
+    // Answer-neutrality, against the detached calendar: over the whole span
+    // around the row, every instant answers exactly as it would with no table.
+    let bare = cotton.without_holidays();
+    let mut probe = ny((2026, 7, 5), (12, 0, 0));
+    while probe <= ny((2026, 7, 7), (18, 0, 0)) {
+        assert_eq!(cotton.is_open(probe), bare.is_open(probe), "{probe}");
+        assert_eq!(cotton.trade_date(probe), bare.trade_date(probe), "{probe}");
+        probe += TimeDelta::minutes(30);
+    }
 }
 
 #[test]

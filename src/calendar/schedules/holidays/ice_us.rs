@@ -25,6 +25,9 @@
 //! [`docs/evidence/iceus.md`](../../../../../docs/evidence/iceus.md).
 //!
 //! Coverage runs to 2028-01-03, the last trade date the 2027 calendar names.
+//! Its last two dates are audited normal: 2027-12-31 is not on ICE's calendar,
+//! and on 2028-01-03 (New Year's Day observed) every group a crate identity
+//! routes to prints `open`; the evidence files record both.
 
 use super::fences::{early_close, late_open, late_open_and_early_close};
 use super::{

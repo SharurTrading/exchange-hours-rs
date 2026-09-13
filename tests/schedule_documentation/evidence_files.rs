@@ -853,10 +853,8 @@ fn every_evidence_holiday_line_is_well_formed() {
             );
             let day = cells[0];
             assert!(
-                day.len() == 10
-                    && day.split('-').count() == 3
-                    && day.chars().all(|c| c.is_ascii_digit() || c == '-'),
-                "{name}: a holiday line must open with an ISO trade date: {line}"
+                day.len() == 10 && NaiveDate::parse_from_str(day, "%Y-%m-%d").is_ok(),
+                "{name}: a holiday line must open with a real ISO calendar date: {line}"
             );
             assert!(
                 matches!(
@@ -1130,6 +1128,10 @@ fn dated_bullet_key(name: &str, heading: &str, bullet: &str) -> Option<String> {
     if !looks_dated {
         return None;
     }
+    assert!(
+        NaiveDate::parse_from_str(day, "%Y-%m-%d").is_ok(),
+        "{name}: a `{heading}` bullet opens with {day}, which is not a real calendar date: {bullet}"
+    );
 
     let fields = rest.splitn(4, " \u{2014} ").collect::<Vec<_>>();
     assert_eq!(

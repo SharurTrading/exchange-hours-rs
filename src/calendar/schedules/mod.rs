@@ -9,6 +9,7 @@
 
 pub(crate) mod equities;
 pub(crate) mod futures;
+pub(crate) mod holidays;
 mod profile;
 pub(crate) mod timeline;
 

@@ -308,13 +308,14 @@ fn tuple_fields(tuple: &str) -> Vec<&str> {
     fields
 }
 
-/// Parses every tuple of one `revisions!` body.
+/// Splits a macro body into its top-level `( … )` tuples.
 ///
 /// Reads the tuples rather than the source lines because rustfmt wraps most of
-/// them across five lines; brace matching survives that, and survives a
-/// citation literal that itself contains a comma or a bracket.
-fn revision_rows(body: &str) -> Vec<RevisionRow> {
-    let mut rows = Vec::new();
+/// them across five lines; paren matching survives that, survives a literal
+/// that itself contains a comma or a bracket, and survives a nested call in a
+/// field — a holiday row's `early_close(12 * 3_600)` kind.
+fn macro_tuples(body: &str) -> Vec<&str> {
+    let mut tuples = Vec::new();
     let mut depth = 0_usize;
     let mut in_string = false;
     let mut escaped = false;
@@ -341,13 +342,21 @@ fn revision_rows(body: &str) -> Vec<RevisionRow> {
             ')' => {
                 depth = depth.saturating_sub(1);
                 if depth == 0 {
-                    rows.push(parse_revision_tuple(&body[start..index]));
+                    tuples.push(&body[start..index]);
                 }
             }
             _ => {}
         }
     }
-    rows
+    tuples
+}
+
+/// Parses every tuple of one `revisions!` body.
+fn revision_rows(body: &str) -> Vec<RevisionRow> {
+    macro_tuples(body)
+        .into_iter()
+        .map(parse_revision_tuple)
+        .collect()
 }
 
 fn parse_revision_tuple(tuple: &str) -> RevisionRow {
@@ -391,6 +400,489 @@ fn revision_blocks() -> Vec<RevisionBlock> {
         }
     }
     blocks
+}
+
+/// One `holidays!` block, with the evidence files its module declares for it.
+struct HolidayBlock {
+    module: String,
+    files: Vec<String>,
+    coverage: (String, String),
+    rows: Vec<HolidayRow>,
+}
+
+/// One `holidays!` tuple, reduced to what the evidence file has to record.
+struct HolidayRow {
+    day: String,
+    document: String,
+}
+
+/// Returns whether the byte at `offset` sits on a comment line.
+///
+/// `holidays/mod.rs` prints a worked invocation inside the macro's own doc
+/// comment, and the macro's arms name its own tokens; neither is a table.
+fn on_comment_line(text: &str, offset: usize) -> bool {
+    let line_start = text[..offset].rfind('\n').map_or(0, |index| index + 1);
+    text[line_start..offset].trim_start().starts_with("//")
+}
+
+/// Parses the `coverage: (y, m, d) ..= (y, m, d)` clause of one block.
+fn holiday_coverage(body: &str, module: &str) -> (String, String) {
+    let opened = body.split_once("coverage:");
+    assert!(
+        opened.is_some(),
+        "{module}: a holidays! block must declare its coverage window"
+    );
+    let clause = opened
+        .expect("the coverage clause was just asserted present")
+        .1;
+    let closed = clause.split_once("rows:");
+    assert!(
+        closed.is_some(),
+        "{module}: a holidays! block must declare its rows"
+    );
+    let bounds = macro_tuples(closed.expect("the rows list was just asserted present").0);
+    assert_eq!(
+        bounds.len(),
+        2,
+        "{module}: a coverage window reads `(year, month, day) ..= (year, month, day)`"
+    );
+    let day = |tuple: &str| {
+        let fields = tuple_fields(tuple);
+        assert_eq!(
+            fields.len(),
+            3,
+            "{module}: a coverage bound reads `(year, month, day)`: {tuple}"
+        );
+        let year: i32 = fields[0].parse().expect("coverage year must be an integer");
+        let month: u32 = fields[1]
+            .parse()
+            .expect("coverage month must be an integer");
+        let date: u32 = fields[2].parse().expect("coverage day must be an integer");
+        format!("{year:04}-{month:02}-{date:02}")
+    };
+    (day(bounds[0]), day(bounds[1]))
+}
+
+/// Parses the `rows: [ … ]` list of one block.
+fn holiday_rows(body: &str) -> Vec<HolidayRow> {
+    let list = body
+        .split_once("rows:")
+        .expect("a holidays! block must declare its rows")
+        .1;
+    macro_tuples(macro_body(list))
+        .into_iter()
+        .map(|tuple| {
+            let fields = tuple_fields(tuple);
+            assert_eq!(
+                fields.len(),
+                6,
+                "a holidays! tuple is (year, month, day, kind, tier, document): {tuple}"
+            );
+            let year: i32 = fields[0].parse().expect("holiday year must be an integer");
+            let month: u32 = fields[1].parse().expect("holiday month must be an integer");
+            let day: u32 = fields[2].parse().expect("holiday day must be an integer");
+            let document = fields[5]
+                .strip_prefix('"')
+                .and_then(|literal| literal.strip_suffix('"'))
+                .expect("a holidays! tuple ends with its document-id literal");
+            HolidayRow {
+                day: format!("{year:04}-{month:02}-{day:02}"),
+                document: document.to_owned(),
+            }
+        })
+        .collect()
+}
+
+/// Every `holidays!` block in the crate, with its declared evidence files.
+///
+/// Empty while no family table ships, which is what makes the two fences below
+/// pass trivially in the wave that introduces them.
+fn holiday_blocks() -> Vec<HolidayBlock> {
+    const MARKER: &str = "holidays! {";
+    let mut blocks = Vec::new();
+    for path in crate_sources() {
+        let text = fs::read_to_string(&path).expect("source file must be readable");
+        let module = relative(&path);
+        let mut searched = 0_usize;
+        while let Some(offset) = text[searched..].find(MARKER) {
+            let start = searched.saturating_add(offset);
+            searched = start.saturating_add(MARKER.len());
+            if on_comment_line(&text, start) {
+                continue;
+            }
+            let body = &text[start..];
+            blocks.push(HolidayBlock {
+                module: module.clone(),
+                files: declared_evidence_files(&comment_run(&text[..start]), &module),
+                coverage: holiday_coverage(body, &module),
+                rows: holiday_rows(body),
+            });
+        }
+    }
+    blocks
+}
+
+/// Returns a `## Holidays` subsection's body, from `### <year>` to the next
+/// `### ` heading.
+fn holiday_year<'a>(holidays: &'a str, year: &str) -> Option<&'a str> {
+    let (_, rest) = holidays.split_once(&format!("\n### {year}\n"))?;
+    Some(rest.split("\n### ").next().unwrap_or(rest))
+}
+
+/// LAW-EVIDENCE-FILES for holiday rows: a row ships only with its quotation.
+///
+/// The module carries the trade date, the kind, the tier and the document id;
+/// the evidence file carries the instant as the operator printed it, the
+/// document's URL and capture, and the event-date-to-trade-date conversion
+/// that produced the row. This fence ties the two together in the forward
+/// direction, per family and per year — the unit a LAW-WATCH review works in;
+/// `every_evidence_holiday_line_exists_in_its_module` closes the reverse
+/// direction.
+#[test]
+fn every_holiday_row_appears_in_its_evidence_file() {
+    let files = evidence_files();
+
+    for block in holiday_blocks() {
+        for name in &block.files {
+            let text = files.get(name).unwrap_or_else(|| {
+                panic!("{} declares a missing evidence file: {name}", block.module)
+            });
+            let holidays = section(text, "## Holidays").unwrap_or_else(|| {
+                panic!(
+                    "{name} must carry a `## Holidays` section: {} ships holiday rows",
+                    block.module
+                )
+            });
+            for row in &block.rows {
+                let year = row
+                    .day
+                    .get(..4)
+                    .expect("a formatted holiday day opens with its year");
+                let body = holiday_year(holidays, year).unwrap_or_else(|| {
+                    panic!("{name} must carry a `### {year}` holiday subsection")
+                });
+                let prefix = format!("| {} |", row.day);
+                let recorded = body
+                    .lines()
+                    .find(|line| line.starts_with(&prefix))
+                    .unwrap_or_else(|| {
+                        panic!(
+                            "{name} does not record the {} holiday row of {} under `### {year}`",
+                            row.day, block.module
+                        )
+                    });
+                assert!(
+                    recorded.contains(&format!("`{}`", row.document)),
+                    "{name}'s {} row does not cite the module's document id `{}`: {recorded}",
+                    row.day,
+                    row.document
+                );
+            }
+        }
+    }
+}
+
+/// One row of an evidence file's fixed-shape `### Documents` table.
+struct DocumentRow {
+    id: String,
+    window: String,
+    sha: String,
+}
+
+/// The `### Documents` table of one evidence file, one entry per resolved id.
+///
+/// The table's shape is fixed — `| Document | Window | Capture or retrieval,
+/// UTC | Tier | sha256 |` — so a resolution is machine-readable and the three
+/// fences below can be written at all. A left cell may name several ids
+/// separated by `, ` when one artifact carries more than one.
+fn document_rows(text: &str) -> Vec<DocumentRow> {
+    let Some(body) = text.split_once("\n### Documents\n").map(|(_, rest)| rest) else {
+        return Vec::new();
+    };
+    let Some(table) = body.split_once(DOCUMENT_TABLE_HEADER) else {
+        return Vec::new();
+    };
+    let mut rows = Vec::new();
+    for line in table
+        .1
+        .lines()
+        .skip_while(|line| line.is_empty() || line.starts_with("|---"))
+    {
+        if !line.starts_with("| `") {
+            break;
+        }
+        let cells = line
+            .trim_start_matches('|')
+            .split('|')
+            .map(str::trim)
+            .collect::<Vec<_>>();
+        assert!(
+            cells.len() >= 5,
+            "a `### Documents` row reads {DOCUMENT_TABLE_HEADER}: {line}"
+        );
+        let window = cells[1].to_owned();
+        let sha = cells[4].trim_matches('`').to_owned();
+        for id in cells[0].split(", ") {
+            rows.push(DocumentRow {
+                id: id.trim().trim_matches('`').to_owned(),
+                window: window.clone(),
+                sha: sha.clone(),
+            });
+        }
+    }
+    rows
+}
+
+/// The one shape a `### Documents` table may take.
+const DOCUMENT_TABLE_HEADER: &str =
+    "| Document | Window | Capture or retrieval, UTC | Tier | sha256 |";
+
+/// Design memo section 3.2: document ids are unique repository-wide. An id that
+/// resolves to two artifacts stops keying the bytes its row rests on, which is
+/// the supersession-audit failure the id scheme exists to prevent (section 8.3,
+/// D15/D16).
+///
+/// The id names the artifact, so for a CME service window it is
+/// `CME-SVC-<first eventDate>` — never the trade date of a row that reads it,
+/// which two families can reach out of two different windows.
+#[test]
+fn every_document_id_resolves_to_one_artifact_repository_wide() {
+    let mut seen: BTreeMap<String, (String, String)> = BTreeMap::new();
+    let mut resolved = 0_usize;
+    for (name, text) in evidence_files() {
+        for row in document_rows(&text) {
+            resolved = resolved.saturating_add(1);
+            let artifact = format!("{} / {}", row.window, row.sha);
+            match seen.get(&row.id) {
+                None => {
+                    seen.insert(row.id.clone(), (artifact, name.clone()));
+                }
+                Some((first, first_file)) => {
+                    assert_eq!(
+                        *first, artifact,
+                        "`{}` resolves to two artifacts: {first} in {first_file}, \
+                         {artifact} in {name}",
+                        row.id
+                    );
+                }
+            }
+        }
+    }
+    assert!(
+        resolved > 0,
+        "docs/evidence must carry at least one `### Documents` table"
+    );
+}
+
+/// The inverse: one artifact, one id. Two ids on one sha256 make a supersession
+/// undiscoverable by id, which is the same audit failure read the other way.
+#[test]
+fn every_artifact_carries_one_document_id() {
+    let mut by_sha: BTreeMap<String, (String, String)> = BTreeMap::new();
+    for (name, text) in evidence_files() {
+        for row in document_rows(&text) {
+            match by_sha.get(&row.sha) {
+                None => {
+                    by_sha.insert(row.sha.clone(), (row.id.clone(), name.clone()));
+                }
+                Some((first, first_file)) => {
+                    assert_eq!(
+                        *first, row.id,
+                        "sha256 `{}` carries two ids: `{first}` in {first_file}, `{}` in {name}",
+                        row.sha, row.id
+                    );
+                }
+            }
+        }
+    }
+}
+
+/// Every id a module cites is resolved exactly once in its evidence file's
+/// `### Documents` table, so a citation always lands on bytes.
+///
+/// Scoped to the evidence files that carry such a table: the CME service
+/// windows, whose date-shaped ids are the ones a rename can collide. Extending
+/// the fixed shape to the remaining families is recorded in the research
+/// store's `DECISIONS.md` as W1-ASM-7 and tracked as issue #98.
+#[test]
+fn every_cited_document_id_is_resolved_exactly_once() {
+    let files = evidence_files();
+    for block in holiday_blocks() {
+        for name in &block.files {
+            let text = files.get(name).unwrap_or_else(|| {
+                panic!("{} declares a missing evidence file: {name}", block.module)
+            });
+            let rows = document_rows(text);
+            if rows.is_empty() {
+                continue;
+            }
+            for row in &block.rows {
+                let hits = rows
+                    .iter()
+                    .filter(|resolved| resolved.id == row.document)
+                    .count();
+                assert_eq!(
+                    hits, 1,
+                    "{name} resolves the document `{}` that {} cites for {} {hits} times, \
+                     not once",
+                    row.document, block.module, row.day
+                );
+            }
+        }
+    }
+}
+
+/// The reverse direction of the holiday evidence fence: an evidence file's
+/// holiday table is a claim about the rows the crate ships, so a row that
+/// leaves a module may not keep its quotation.
+///
+/// The forward fence only proves that every shipped row has evidence. It is
+/// blind to a row dropped while a long table is reordered: the module stops
+/// answering for that trade date, the evidence file still records it, and
+/// nothing fails. Design memo section 3.3 asks for both directions, so require
+/// every `| <trade date> |` line under a `## Holidays` heading to name a row of
+/// a module that declares the file. A date the crate deliberately does not
+/// carry is a declared gap, which is prose beside the year's table and never a
+/// line in it.
+#[test]
+fn every_evidence_holiday_line_exists_in_its_module() {
+    let mut by_file: BTreeMap<String, BTreeMap<String, BTreeSet<String>>> = BTreeMap::new();
+    for block in holiday_blocks() {
+        for name in &block.files {
+            let shipped = by_file.entry(name.clone()).or_default();
+            for row in &block.rows {
+                shipped
+                    .entry(row.day.clone())
+                    .or_default()
+                    .insert(row.document.clone());
+            }
+        }
+    }
+
+    for (name, text) in evidence_files() {
+        let Some(holidays) = section(&text, "## Holidays") else {
+            continue;
+        };
+        let shipped = by_file.get(&name);
+        for line in holidays.lines().filter(|line| line.starts_with("| 2")) {
+            let day = line
+                .trim_start_matches('|')
+                .split('|')
+                .next()
+                .map(str::trim)
+                .expect("a holiday line carries at least one cell");
+            let documents = shipped.and_then(|rows| rows.get(day)).unwrap_or_else(|| {
+                panic!(
+                    "{name} records a {day} holiday row that no holidays! block declaring \
+                     the file ships: restore the row, or move the date to the year's gaps"
+                )
+            });
+            assert!(
+                documents
+                    .iter()
+                    .any(|document| line.contains(&format!("`{document}`"))),
+                "{name}'s {day} row cites no document id the module ships for that \
+                 trade date: {line}"
+            );
+        }
+    }
+}
+
+/// A table's coverage window is a claim, so it is recorded where a reader can
+/// check it.
+///
+/// Inside the window a date with no row means "audited and normal". That is a
+/// statement about every date in the range, not only about the rows, so the
+/// range itself has to be stated in the evidence file rather than inferred
+/// from the module.
+#[test]
+fn every_holiday_table_states_its_coverage_window() {
+    let files = evidence_files();
+
+    for block in holiday_blocks() {
+        let (first, last) = &block.coverage;
+        for name in &block.files {
+            let text = files.get(name).unwrap_or_else(|| {
+                panic!("{} declares a missing evidence file: {name}", block.module)
+            });
+            let holidays = section(text, "## Holidays").unwrap_or_else(|| {
+                panic!(
+                    "{name} must carry a `## Holidays` section: {} ships holiday rows",
+                    block.module
+                )
+            });
+            assert!(
+                holidays.contains(&format!("**Coverage:** {first} .. {last}")),
+                "{name} must state {}'s coverage window as \
+                 `**Coverage:** {first} .. {last}`",
+                block.module
+            );
+        }
+    }
+}
+
+/// The evidence file's own holiday tables must parse, whether or not a fence
+/// above reached them.
+///
+/// The forward fences check the rows a module ships. This one checks the shape
+/// of everything written under `## Holidays`, so a malformed row — a missing
+/// document id, a tier LAW-PRIMARY-SOURCES does not admit for a holiday, a
+/// date that is not an ISO day — fails even before the module that needs it
+/// exists.
+#[test]
+fn every_evidence_holiday_line_is_well_formed() {
+    for (name, text) in evidence_files() {
+        let Some(holidays) = section(&text, "## Holidays") else {
+            continue;
+        };
+        assert!(
+            holidays.contains("**Coverage:** "),
+            "{name}'s `## Holidays` section must open with its coverage window"
+        );
+        for line in holidays.lines().filter(|line| line.starts_with("| 2")) {
+            let cells = line
+                .trim_start_matches('|')
+                .split('|')
+                .map(str::trim)
+                .collect::<Vec<_>>();
+            assert!(
+                cells.len() >= 6,
+                "{name}: a holiday line reads \
+                 `| trade date | kind | instant as printed | document | tier | derived from |`: \
+                 {line}"
+            );
+            let day = cells[0];
+            assert!(
+                day.len() == 10 && NaiveDate::parse_from_str(day, "%Y-%m-%d").is_ok(),
+                "{name}: a holiday line must open with a real ISO calendar date: {line}"
+            );
+            assert!(
+                matches!(
+                    cells[1],
+                    "closed"
+                        | "early close"
+                        | "late open"
+                        | "late open and early close"
+                        | "unsourced"
+                ),
+                "{name}: a holiday line's kind must be one the crate can represent: {line}"
+            );
+            assert!(
+                cells[3].starts_with('`') && cells[3].ends_with('`') && cells[3].len() > 2,
+                "{name}: a holiday line must name its document id in backticks: {line}"
+            );
+            assert!(
+                matches!(cells[4], "T1" | "T2"),
+                "{name}: a holiday line must carry tier T1 or T2; \
+                 LAW-PRIMARY-SOURCES admits nothing lower for a holiday row: {line}"
+            );
+            assert!(
+                !cells[5].is_empty(),
+                "{name}: a holiday line must record the operator event dates it was \
+                 derived from: {line}"
+            );
+        }
+    }
 }
 
 fn evidence_dir() -> PathBuf {
@@ -636,6 +1128,10 @@ fn dated_bullet_key(name: &str, heading: &str, bullet: &str) -> Option<String> {
     if !looks_dated {
         return None;
     }
+    assert!(
+        NaiveDate::parse_from_str(day, "%Y-%m-%d").is_ok(),
+        "{name}: a `{heading}` bullet opens with {day}, which is not a real calendar date: {bullet}"
+    );
 
     let fields = rest.splitn(4, " \u{2014} ").collect::<Vec<_>>();
     assert_eq!(

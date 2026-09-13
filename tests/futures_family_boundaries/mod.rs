@@ -11,6 +11,9 @@ mod cme_nikkei;
 mod cme_rough_rice;
 mod cme_spot_quoted;
 mod cme_weather;
+mod holidays_globex_energy;
+mod holidays_globex_equity_index;
+mod holidays_globex_grains;
 mod ice;
 mod sgx_equity_index;
 mod sgx_equity_index_eras;
@@ -44,3 +47,11 @@ mod prelude {
         hours_for_market_hours_key(key, instant).session_state(instant) == SessionState::OpenRegular
     }
 }
+mod holidays_cfe_vix;
+mod holidays_eurex;
+mod holidays_globex_cryptocurrency;
+mod holidays_globex_fx;
+mod holidays_globex_interest_rates;
+mod holidays_globex_livestock;
+mod holidays_globex_nikkei_225_dollar;
+mod holidays_ice_us;

@@ -16,9 +16,10 @@ time. For each supported identity the crate answers five questions, correctly
 for today and for every instant back to the January-2010 floor: is the market
 open now; where does this trading day begin and end; which trade date does an
 instant belong to; when does the next session open; is this gap a closure. It
-will also answer which days are holidays or early closes for that identity
-once the per-family holiday tables LAW-HOLIDAY-SCOPE calls for ship; until
-then holidays reach a calendar only through the caller's `DayPolicy` overlay.
+also answers which days are holidays or early closes for that identity
+wherever the per-family holiday tables LAW-HOLIDAY-SCOPE calls for have
+shipped; where they have not, holidays reach a calendar only through the
+caller's `DayPolicy` overlay.
 It is not an archive of exchange history for its own sake and it is not a public
 reference work; every rule below is judged against those five questions and
 the cost of keeping them true.
@@ -57,8 +58,8 @@ the cost of keeping them true.
   |---|---|---|
   | Current schedule sourced at T1 or T2 | required | required at last review |
   | Dated history to the January-2010 floor | required | best-effort, labelled |
-  | Holiday and early-close table | required, floor to published future | best-effort |
-  | Review cadence (LAW-WATCH) | monthly if high-churn, else quarterly | on demand |
+  | Holiday and early-close table | required, floor to published future | required after the served tier; refreshed on demand |
+  | Review cadence (LAW-WATCH) | monthly if high-churn, 24/7 or holiday-bearing, else quarterly | on demand |
   | Follow-ups tracked as issues | required | recorded in the evidence file |
 
 - **LAW-PRIMARY-SOURCES** — every session time, every dated change and every
@@ -148,14 +149,27 @@ the cost of keeping them true.
   calendar-day closure — is a **holiday**, never a schedule: it never bends a
   normal-week template, adds a revision row, or deletes a valid phase, and a
   genuine recurring-grid change is never downgraded to "just a holiday" to
-  avoid the evidence work. Holidays are **in scope** for this crate. They will
-  live in per-family date tables under `schedules/` (data, not templates),
-  sourced from the operator's published holiday calendar (T1), covering the
-  January-2010 floor to the operator's published future for served identities
-  and best-effort for dormant ones; once a family's table ships, the built-in
-  calendars apply it by default. **No table ships yet**: until one does, the
-  crate carries no holiday data and the caller's `DayPolicy` overlay is the
-  only holiday layer. A holiday table entry records the date, the kind (closed, early
+  avoid the evidence work. Holidays are **in scope** for this crate. They live
+  in per-family date tables under `schedules/` (data, not templates),
+  sourced from the operator's own published holiday calendar at T1 or its own
+  machine channel at T2, at the tier LAW-PRIMARY-SOURCES requires and with that
+  tier carried in the row rather than only in a comment. The **target** is
+  the January-2010 floor, or the identity's first trading day if later, to
+  whatever the operator had published unconditionally as of the table's
+  inspection date, for every identity: served identities first, dormant ones
+  after them. It is an obligation the tables are built towards, not a
+  statement of what ships. Where the operator's own documents, archives
+  included, do not reach the floor, the table starts where they do and the
+  evidence file names the gap; an identity whose operator observes no holidays
+  says so in its evidence file instead of shipping a table. Once a family's table ships, the
+  built-in calendars apply it by default. **What ships — which identities have
+  a table, and over which trade-date window — is the `Holidays` column of the
+  verification ledger**, derived by a fence from each identity's own
+  `holiday_coverage()`, which returns the audited window;
+  an identity with no table carries no holiday data and the caller's
+  `DayPolicy` overlay is its only holiday layer. Inside a table's window a date
+  with no row is audited normal; outside it the crate has no holiday answer at
+  all. A holiday table entry records the date, the kind (closed, early
   close at an instant, late open at an instant), and its document id. A special
   day that changes internal phase topology is not representable by scalar
   boundaries and is recorded as a gap. `DayPolicy` remains the caller's overlay
@@ -187,8 +201,10 @@ the cost of keeping them true.
   research store beside the repository holds retrieved artifacts and working
   notes; only the evidence file is committed.
 - **LAW-WATCH** — a served identity is reviewed on a cadence recorded in its
-  ledger row: monthly for a family that has changed within the last year or
-  trades on a 24/7 grid, quarterly otherwise. A forward-dated row carries a
+  ledger row: monthly for a family that has changed within the last year,
+  trades on a 24/7 grid, or ships a built-in holiday table (the operator
+  republishes its holiday calendar yearly and issues errata), quarterly
+  otherwise. A forward-dated row carries a
   confirm-by date and is confirmed against the operator before its effective
   day. Every schedule change ships in a tagged release with a CHANGELOG entry,
   so the consumer pins a version, never a commit. The monitoring entry points in

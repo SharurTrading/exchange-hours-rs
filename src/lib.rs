@@ -102,16 +102,29 @@
 //!
 //! # Scope
 //!
-//! Built-in profiles are **normal-week** calendars and contain no holiday or
-//! half-day data. A caller can overlay sourced closed trade dates, early final
-//! closes, and late first opens through [`DayPolicy`], and complete replacement
+//! Built-in profiles are **normal-week** templates; a holiday never bends one,
+//! and holidays reach a calendar through the per-family tables described below
+//! and through the caller's own layers. A caller can overlay sourced closed
+//! trade dates, early final closes, and late first opens through
+//! [`DayPolicy`], and complete replacement
 //! trading days through [`SessionExceptionSource`]. Both layers ship with
 //! **zero** built-in data: the crate provides the model, the validation, and
 //! the engine, and the caller owns every record. Precedence is fixed — the
 //! exception layer resolves the trading day, then the policy overlays it
 //! exactly as it overlays a normal week, and two replacement layers never
-//! compose. Product-level variations
-//! outside a profile remain out of scope. In particular, this crate does not
+//! compose.
+//!
+//! Per-family holiday tables sit underneath those two layers, as the innermost
+//! one: [`ExchangeCalendar::holiday_on`] reports the built-in row for a trade
+//! date, [`ExchangeCalendar::holiday_coverage`] reports the window a family was
+//! audited over, and [`ExchangeCalendar::without_holidays`] detaches the table.
+//! Tables ship for the served CME product families and the 2026 venue block;
+//! an identity with no table answers `None` from both readers and is
+//! unaffected by the layer. The `Holidays` column of the verification ledger is
+//! the authority on which identities carry one and over which window.
+//!
+//! Product-level variations outside a profile remain out of scope. In
+//! particular, this crate does not
 //! map symbols, roots, product codes, or MICs to [`MarketHoursKey`] values; a
 //! caller's instrument catalog must select the exact supported family.
 //!

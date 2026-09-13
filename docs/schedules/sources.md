@@ -22,11 +22,15 @@ its basis.
 
 The normal-week source sets below do not imply holiday coverage. Under
 LAW-HOLIDAY-SCOPE a family's holiday and early-close table is in scope for the
-crate and is sourced from the operator's own published calendar at T1; the
+crate and is sourced from the operator's own published calendar at T1 or the
+operator's own machine channel at T2, the tier recorded in each row; the
 entry points for those calendars are listed here, and the caller-overlay and
 replacement-session contract that sits above them is in
-[date-exceptions.md](date-exceptions.md). Stable T1 monitoring entry
-points include [CME holiday and trading hours](https://www.cmegroup.com/trading-hours.html),
+[date-exceptions.md](date-exceptions.md). Stable monitoring entry
+points include [CME holiday and trading hours](https://www.cmegroup.com/trading-hours.html)
+— whose backing trading-hours service, not the page itself, is the **T2**
+channel every shipped CME holiday row rests on, since the page publishes no T1
+per-asset-class rendering for 2024-2027 —
 [NYSE hours and calendars](https://www.nyse.com/trade/hours-calendars),
 [Nasdaq's trading calendar](https://www.nasdaqtrader.com/Trader.aspx?id=calendar),
 and [Cboe hours and holidays](https://www.cboe.com/about/hours). Detailed

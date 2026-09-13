@@ -10,8 +10,9 @@ The supporting records are:
 
 - [verification.md](verification.md): one fixed-shape row per public exchange
   and `MarketHoursKey` — owner modules, source sets, basis with its gap kind,
-  evidence tier, service tier, horizon, review date, cadence, a basis note of at
-  most three sentences, and a link to the row's evidence file;
+  evidence tier, service tier, horizon, holiday coverage window, review date,
+  cadence, a basis note of at most three sentences, and a link to the row's
+  evidence file;
 - [`docs/evidence/<owner>.md`](../evidence/): one file per ledger row, holding
   the quotations, URLs, retrieval dates, conflicts, interpretive steps and
   residual risks behind that row (LAW-EVIDENCE-FILES);
@@ -65,7 +66,8 @@ one of them is a defect to fix, not a label to restore.
 Under LAW-SERVICE-TIERS the row's **Service** cell says whether the identity is
 `served` — a consumer instrument can reach it — or `dormant`. A served row owes
 the **Cadence** its row records (LAW-WATCH): `monthly` when it changed within
-the last year or trades a 24/7 grid, `quarterly` otherwise. A dormant row reads
+the last year, trades a 24/7 grid or ships a built-in holiday table,
+`quarterly` otherwise. A dormant row reads
 `on demand`: it is correct as of its last review and is re-reviewed only when a
 consumer reaches it, so a lapsed date on one is not a defect. The **Evidence
 tier** cell is the tier behind the row's current schedule, and the **Horizon**
@@ -219,8 +221,10 @@ points belong there, while the evidence belongs in the owner's evidence file.
   approximation as a named gap in the row's evidence file and say which season
   differs; the basis vocabulary no longer has a label for it.
 - **One-off holiday, halt, weather closure, or half-day:** never force it into
-  the normal-week profile. A whole trade-date closure, later first open, or
-  earlier final close can use a sourced `DayPolicy`/`StaticDayPolicy` record.
+  the normal-week profile (LAW-HOLIDAY-SCOPE). A whole trade-date closure,
+  later first open, or earlier final close belongs in the family's own built-in
+  holiday table — see *Adding a holiday year* below — or, for data the crate
+  does not carry, in a sourced `DayPolicy`/`StaticDayPolicy` record.
   If regular and extended phases change differently, the day pauses and
   reopens, or its trade-date assignment changes, the scalar overlay is not
   exact; follow [date-exceptions.md](date-exceptions.md) and wait for a complete
@@ -259,9 +263,11 @@ points belong there, while the evidence belongs in the owner's evidence file.
   are in scope for this crate: a closed date, an early final close, or a late
   first open is a per-family date-table entry recording the date, the kind, and
   its document id, sourced from the operator's published holiday calendar at
-  T1, from the January-2010 floor to the operator's published future for a
-  served identity and best-effort for a dormant one. (The tables themselves
-  land in a later change; the law states the policy now.) A caller's
+  T1 or its own machine channel at T2, from the January-2010 floor (or the
+  identity's first trading day, if later) to what the operator had published
+  as of the inspection date: served identities first, dormant ones after. The
+  ledger's `Holidays` column shows which identities ship a table and over
+  which window. A caller's
   `DayPolicy` or `StaticDayPolicy` record remains the overlay *above* that
   table, for what the crate does not carry. A closed date normally removes its
   complete trading day, including a prior-evening wrap. Preserve a different
@@ -369,6 +375,52 @@ every file that block's days belong to; the fences in
 the same change; a new module never carries one. Ordinary revisions use the
 shared timeline helper; exceptional recurrence stays local to the venue.
 
+### Adding a holiday year
+
+A holiday table is **data, never a template edit**: it changes one trade date
+or a bounded run of them and never bends the normal week, adds a revision row,
+or deletes a valid phase. One module per family under
+`src/calendar/schedules/holidays/`, and five steps.
+
+1. **Retrieve the operator's calendar.** T1 is the operator's own holiday
+   calendar, notice or circular; T2 is the operator's own machine channel — a
+   trading-hours service or session-schedule feed, read as bytes and saved in
+   the research store with its URL, retrieval time in UTC and sha256. T3 and T4
+   never key a row (LAW-PRIMARY-SOURCES). Cover a **continuous** range,
+   including the dates the operator confirms normal: the coverage window is a
+   claim that every date inside it was audited.
+2. **Convert to the crate's trade date.** Rows are keyed by the crate's own
+   venue-local trade date — the local date of the trading day's final close —
+   never by the operator's event date. On a wrapping grid the two differ, and
+   an operator's printed trade date is what settles a record that could be read
+   two ways. A holiday eve whose only change is a withheld evening leg ships
+   **no** row: that leg belongs to the holiday's trade date, which the
+   neighbouring closure already deletes.
+3. **Encode.** Invoke `holidays!` with a `coverage:` window and ascending
+   `rows:`, each `(year, month, day, kind, tier, "<document id>")`. The macro's
+   constant-evaluation fences reject an out-of-order, out-of-window, uncited,
+   sub-T2 or out-of-range row at compile time. Only what the scalar vocabulary
+   states may be a row — closed, early close at an instant, late open at an
+   instant, or both; a day that changes internal phase topology is a **gap** in
+   the evidence file, never an approximation. Declare the module in
+   `holidays/mod.rs` and add its arm to the no-catch-all match in
+   `holidays/routing.rs`.
+4. **Write the evidence section.** `docs/evidence/<owner>.md` gains a
+   `## Holidays` section with a `### <year>` subsection per year, a `Documents`
+   table resolving every document id to its URL, capture or retrieval time in
+   UTC, tier and sha256, the interpretive steps, and every declared gap with
+   what would close it. The fence in
+   `tests/schedule_documentation/evidence_files.rs` fails the build unless every
+   shipped row appears under its own year.
+5. **Test and record.** Per family: a closed day, both sides of an early close,
+   both late-open branches, the wrap removal, the trade-date consequence, and
+   both sides of the coverage window — and where the family has no row of some
+   kind, fence the **absence** rather than skipping the case. Then the ledger's
+   Holidays cell (derived by a fence from the identity's own
+   `holiday_coverage()`, so it cannot be written by hand), the README count,
+   and a `CHANGELOG.md` entry under `[Unreleased]` / **Added** naming the
+   identities and the years.
+
 Then follow every independent fence in AGENTS.md:
 
 - exhaustive current routing and historical routing;
@@ -390,10 +442,11 @@ entry point is found. Update code citations and the registry in the same change.
 
 After the comparison is complete:
 
-1. Update the venue row's eleven cells: owner modules, source sets, basis with
-   its gap kind, evidence tier, service tier, horizon, review date, cadence, the
-   basis note of at most three sentences, and the evidence link. Everything the
-   note cannot hold goes into the evidence file, including any revision row the
+1. Update the venue row's twelve cells: owner modules, source sets, basis with
+   its gap kind, evidence tier, service tier, horizon, holiday coverage window,
+   review date, cadence, the basis note of at most three sentences, and the
+   evidence link. Everything the note cannot hold goes into the evidence file,
+   including any revision row the
    change adds or removes and the `## Sources` bullet behind it.
 2. Add any newly found gap rather than hiding it behind a stronger status. For
    a served identity the gap is also a GitHub issue; for a dormant one,

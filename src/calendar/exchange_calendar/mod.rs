@@ -9,6 +9,7 @@ use chrono::{DateTime, NaiveDate, Utc};
 use chrono_tz::Tz;
 
 use super::query::{QueryContext, sessions, status};
+use super::schedules::holidays::{self, Holiday, HolidayCoverage, HolidayTable};
 use super::{
     Exchange, MarketHours, MarketHoursKey, SessionKind, SessionState, hours_for_exchange,
     hours_for_market_hours_key,
@@ -57,26 +58,102 @@ impl From<MarketHoursKey> for CalendarSource {
 /// `O(D * (R + log H))` work.
 /// Caller work inside a [`DayPolicy`](super::DayPolicy) is outside this
 /// performance guarantee. The normal-week duration helper is also excluded
-/// because it collects and sorts temporary intervals.
+/// because it collects and sorts temporary intervals. A built-in holiday
+/// table, where the identity has one, is a binary search over a sorted static
+/// table and is gated so a date the table says nothing about costs only that
+/// search.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct ExchangeCalendar {
     source: CalendarSource,
+    holidays: bool,
 }
 
 impl ExchangeCalendar {
     /// Creates a date-aware calendar for `exchange`.
+    ///
+    /// The identity's built-in holiday table, if it has one, applies to every
+    /// query; [`Self::without_holidays`] detaches it.
     #[must_use]
     pub const fn new(exchange: Exchange) -> Self {
         Self {
             source: CalendarSource::Exchange(exchange),
+            holidays: true,
         }
     }
 
     /// Creates a date-aware calendar for `key`.
+    ///
+    /// The family's built-in holiday table, if it has one, applies to every
+    /// query; [`Self::without_holidays`] detaches it.
     #[must_use]
     pub const fn for_market_hours_key(key: MarketHoursKey) -> Self {
         Self {
             source: CalendarSource::MarketHoursKey(key),
+            holidays: true,
+        }
+    }
+
+    /// Detaches this identity's built-in holiday table from every query.
+    ///
+    /// The result answers exactly as the crate did before any table shipped:
+    /// the sourced normal week, plus whatever the caller's own overlays say.
+    /// This is the consumer's escape hatch when a shipped row is wrong and a
+    /// release cannot wait, and the exact A/B control for measuring what the
+    /// table costs. A detached calendar also reports no
+    /// [`Self::holiday_on`] row and no [`Self::holiday_coverage`] window: it
+    /// has no table, rather than a table it declines to apply.
+    #[must_use]
+    pub const fn without_holidays(self) -> Self {
+        Self {
+            source: self.source,
+            holidays: false,
+        }
+    }
+
+    /// Returns the built-in holiday row for venue-local `trade_date`.
+    ///
+    /// `None` means one of three different things — this identity has no
+    /// table, the date is outside the table's coverage window, or the date was
+    /// audited and found normal. [`Self::holiday_coverage`] separates them,
+    /// which is why both exist and why neither is enough alone.
+    ///
+    /// Tables ship for the served CME product families — Globex equity index,
+    /// energy, grains, FX, interest rates, livestock, cryptocurrency and
+    /// dollar Nikkei 225 — and for the 2026 venue block: CFE, Eurex, ICE
+    /// Futures U.S. and Coinbase Derivatives. Every other identity has no
+    /// table, answers `None` for every date, and leaves the caller's
+    /// [`DayPolicy`](crate::DayPolicy) overlay as its only holiday layer.
+    /// Which identities have a table, and over which trade-date window, is
+    /// the `Holidays` column of the verification ledger (LAW-HOLIDAY-SCOPE).
+    #[must_use]
+    pub fn holiday_on(self, trade_date: NaiveDate) -> Option<Holiday> {
+        self.holiday_table()
+            .and_then(|table| table.holiday_on(trade_date))
+    }
+
+    /// Returns the inclusive trade-date window this identity's built-in table
+    /// audited, or `None` when it has no table.
+    ///
+    /// Inside the window, a date with no row is audited normal. Outside it the
+    /// crate has no holiday answer for this identity at all, and the
+    /// normal-week schedule is served unmodified.
+    ///
+    /// Tables ship for the served CME product families and the 2026 venue
+    /// block; every other identity answers `None` here. Windows differ by
+    /// identity, so read this per identity rather than assuming one shared
+    /// window (LAW-HOLIDAY-SCOPE).
+    #[must_use]
+    pub fn holiday_coverage(self) -> Option<HolidayCoverage> {
+        self.holiday_table().map(HolidayTable::coverage)
+    }
+
+    /// Resolves this identity's built-in table, honouring
+    /// [`Self::without_holidays`].
+    pub(super) const fn holiday_table(self) -> Option<&'static HolidayTable> {
+        if self.holidays {
+            holidays::table_for(self.source)
+        } else {
+            None
         }
     }
 

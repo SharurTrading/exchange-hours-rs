@@ -116,15 +116,19 @@ corrections (a venue's hours fixed against a primary source) go under
   nine Globex full closures, which are the only dates all six CME families — or
   both CBOT families — are closed; every other special date there carries
   `Unsourced` rather than a scheduling row, because the coverage window is
-  contiguous and any single instant would clip one routed family's sourced
-  trading — a 12:00 CT row would delete the grain and livestock day sessions, a
-  13:30 CT row would delete the energy family's post-close phase. **COMEX** and
+  contiguous and no single instant is true of every family: on 2026-12-24 the
+  sourced closes are 12:05, 12:15 and 12:45 CT at once, so a venue row at either
+  end stops one family early or runs another past its own close. **COMEX** and
   **NYMEX** route the one `globex_energy` key, whose metals and energy halves CME
   prints as a single product row, so their intersections drop nothing and they
   carry that family's table whole (36 rows each, no `Unsourced`). CBOT ships 9
   stated rows against its thirty-one `Unsourced` dates and CME 9 against
   thirty-two, each with the disagreement named per date in that venue's evidence
-  file.
+  file. The family list behind each intersection is a decision recorded there,
+  not something the crate can derive: the map from product families to venues
+  belongs to the consumer. **This change also amends `AGENTS.md`**: the charter's
+  LAW-HOLIDAY-SCOPE gains one sentence stating the venue-intersection rule, so
+  the law and the shipped tables say the same thing.
   Measured on an Apple M2 Max at 1.97.1: with a real table attached, `is_open`
   inside a regular session far from any holiday costs **240.9 ns** against
   236.9 ns with the table detached, the 4,999-probe cold chart frame is

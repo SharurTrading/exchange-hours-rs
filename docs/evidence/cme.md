@@ -37,10 +37,12 @@ this section records the derivation, the routing, every date the intersection dr
 and the interpretive steps that produced both.
 
 **The intersection rule (design memo D17).** A `MarketHoursKey` holiday row is a
-statement about one family's clock, and the six families do not share one: on a
-holiday Monday the equity-index and interest-rate families halt matching at 12:00 CT,
-energy and metals at 13:30 CT, the grain and oilseed day session ends at 12:05 CT or
-not at all, and livestock prints a 13:05 CT close. A venue row may therefore be stated
+statement about one family's clock, and the six families do not share one. On the
+Monday holidays the equity-index and interest-rate families halt matching at 12:00 CT
+while the grain and livestock families are **closed outright**; on the Friday holidays
+the equity-index and interest-rate closes move to 12:15 CT, energy and FX to 13:45 CT,
+grains to 12:05 CT and livestock to 12:05 CT; on Christmas Eve 2026 the same date
+carries 12:05, 12:15 and 12:45 CT closes at once. A venue row may therefore be stated
 only where every routed family states the same row. **Nine dates** qualify in this
 window — the Globex full closures — and the other **thirty-two** dates carry
 `unsourced`.
@@ -48,10 +50,19 @@ window — the Globex full closures — and the other **thirty-two** dates carry
 **`unsourced` is neither silence nor a compromise.** The coverage window is
 contiguous, so a date carrying no row is the positive claim that it was audited
 normal, which is false on every one of these dates. Nor can the venue state an
-instant: a row copying the shallowest early close (12:00 CT) would delete the grain
-and livestock families' sourced 12:05-13:05 CT trading, and one copying the deepest
-would delete the energy family's 13:30-16:00 CT session and the equity-index family's
-15:15-16:00 CT extended phase. `unsourced` clips nothing, changes no answer, and tells
+instant, because the families' sourced closes differ on every date on which a venue
+row would have to pick one. **The Christmas Eves are the widest:** on 2026-12-24 the
+grain and livestock day sessions end at 12:05 CT, the equity-index and interest-rate
+families at 12:15 CT, and energy and FX at 12:45 CT — a forty-minute spread. **The
+Friday holidays are nearly as wide:** on the three days after Thanksgiving the grain
+and livestock sessions end at 12:05 CT, the equity-index and interest-rate families at
+12:15 CT, and energy and FX at 13:45 CT. **The Monday holidays disagree in kind rather
+than by minutes:** the equity-index and interest-rate families halt at 12:00 CT, energy
+and FX at 13:30 CT, and grains and livestock are closed outright. A venue row at the
+shallowest close would stop trading the families that run later; one at the deepest
+would run the families that stop earlier past their own sourced close.
+
+`unsourced` clips nothing, changes no answer, and tells
 a caller what the crate knows: the date is special and the venue has no single answer
 for it. `iceus`, whose venue table shipped first, is the precedent.
 
@@ -75,7 +86,7 @@ the product-family key: `globex_equity_index` knows what CME equity index does o
 | 2025-07-04 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2025-07-03` | T2 | equity index early close 12:00 CT; energy early close 12:00 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed |
 | 2025-09-01 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2025-08-31` | T2 | equity index early close 12:00 CT; energy early close 13:30 CT; grains closed; interest rates early close 12:00 CT; livestock closed; no row in FX |
 | 2025-11-27 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2025-11-26-SAT` | T2 | equity index early close 12:00 CT; energy early close 13:30 CT; grains closed; interest rates early close 12:00 CT; livestock closed; no row in FX |
-| 2025-11-28 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2025-11-26` | T2 | equity index early close 12:15 CT; energy early close 13:45 CT; FX early close 13:45 CT; grains late open 00:10 CT and early close 12:05 CT; interest rates early close 12:15 CT; livestock early close 12:05 CT |
+| 2025-11-28 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2025-11-26` | T2 | equity index early close 12:15 CT; energy early close 13:45 CT; FX early close 13:45 CT; grains late open 08:30 CT and early close 12:05 CT; interest rates early close 12:15 CT; livestock early close 12:05 CT |
 | 2025-11-29 | closed | `no events published` | `CME-SVC-2025-11-26-SAT` | T2 | equity index closed; energy closed; FX closed; grains closed; interest rates closed; livestock closed |
 | 2025-12-24 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2025-12-24` | T2 | equity index early close 12:15 CT; energy early close 12:45 CT; FX early close 12:45 CT; grains early close 12:05 CT; interest rates early close 12:15 CT; livestock early close 12:15 CT |
 | 2025-12-25 | closed | `no events published` | `CME-SVC-2025-12-24` | T2 | equity index closed; energy closed; FX closed; grains closed; interest rates closed; livestock closed |
@@ -95,7 +106,7 @@ the product-family key: `globex_equity_index` knows what CME equity index does o
 | 2026-07-03 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2026-07-03` | T2 | equity index early close 12:00 CT; energy early close 12:00 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed |
 | 2026-09-07 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2026-09-06` | T2 | equity index early close 12:00 CT; energy early close 13:30 CT; grains closed; interest rates early close 12:00 CT; livestock closed; no row in FX |
 | 2026-11-26 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2026-11-25` | T2 | equity index early close 12:00 CT; energy early close 13:30 CT; grains closed; interest rates early close 12:00 CT; livestock closed; no row in FX |
-| 2026-11-27 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2026-11-25` | T2 | equity index early close 12:15 CT; energy early close 13:45 CT; FX early close 13:45 CT; grains late open 00:10 CT and early close 12:05 CT; interest rates early close 12:15 CT; livestock early close 12:05 CT |
+| 2026-11-27 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2026-11-25` | T2 | equity index early close 12:15 CT; energy early close 13:45 CT; FX early close 13:45 CT; grains late open 08:30 CT and early close 12:05 CT; interest rates early close 12:15 CT; livestock early close 12:05 CT |
 | 2026-12-24 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2026-12-22` | T2 | equity index early close 12:15 CT; energy early close 12:45 CT; FX early close 12:45 CT; grains early close 12:05 CT; interest rates early close 12:15 CT; livestock early close 12:05 CT |
 | 2026-12-25 | closed | `no events published` | `CME-SVC-2026-12-24` | T2 | equity index closed; energy closed; FX closed; grains closed; interest rates closed; livestock closed |
 
@@ -113,7 +124,7 @@ the product-family key: `globex_equity_index` knows what CME equity index does o
 | 2027-07-06 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2027-07-04` | T2 | grains late open 08:30 CT; no row in equity index, energy, FX, interest rates, livestock |
 | 2027-09-06 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2027-09-05` | T2 | equity index early close 12:00 CT; energy early close 13:30 CT; grains closed; interest rates early close 12:00 CT; livestock closed; no row in FX |
 | 2027-11-25 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2027-11-24` | T2 | equity index early close 12:00 CT; energy early close 13:30 CT; grains closed; interest rates early close 12:00 CT; livestock closed; no row in FX |
-| 2027-11-26 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2027-11-24` | T2 | equity index early close 12:15 CT; energy early close 13:45 CT; FX early close 13:45 CT; grains late open 00:10 CT and early close 12:05 CT; interest rates early close 12:15 CT; livestock early close 12:05 CT |
+| 2027-11-26 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2027-11-24` | T2 | equity index early close 12:15 CT; energy early close 13:45 CT; FX early close 13:45 CT; grains late open 08:30 CT and early close 12:05 CT; interest rates early close 12:15 CT; livestock early close 12:05 CT |
 | 2027-12-24 | closed | `no events published` | `CME-SVC-2027-12-22` | T2 | equity index closed; energy closed; FX closed; grains closed; interest rates closed; livestock closed |
 
 **Gaps, 2025-2027.**
@@ -163,15 +174,30 @@ the product-family key: `globex_equity_index` knows what CME equity index does o
 
 **Interpretive steps, 2025-2027.**
 
-- **The routing is read from production, not assumed.** `hours_for_exchange`'s
-  `Exchange::Cme` arm resolves to `cme_profile_at`, and the six keys above are the
-  `MarketHoursKey` values whose own tables cover the products that profile serves;
-  `globex_cryptocurrency`, `globex_nikkei_225_dollar`, the five metals TAS keys and
-  the dormant CME keys route elsewhere or ship no table, so they are not part of the
-  intersection and a disagreement with them cannot drop a venue row. The test
-  `the_venue_table_is_the_intersection_of_its_families` recomputes the whole table
-  from the six families' public `holiday_on` answers on every run, so this list and
-  the table cannot drift apart silently.
+- **The family list is a decision this crate cannot derive, and it is recorded as
+  such.** `hours_for_exchange`'s `Exchange::Cme` arm resolves to `cme_profile_at`,
+  which is a schedule and not a membership list: the crate holds no map from product
+  families to venues, because by the consumer contract that map belongs to
+  SharurPlatform. The six families above are therefore the plan's Wave 7 decision
+  ("`cme` = the intersection of the six families that route to it"), and the file at
+  `docs/plans/2026-09-12-path-to-release.md` §3 2.1 is where it is written down.
+  Eight CME families ship tables; the two left out are `globex_cryptocurrency` and
+  `globex_nikkei_225_dollar`.
+- **What adding each of the two would cost is known, and they differ.** Nikkei agrees
+  with `globex_equity_index` on all thirty-seven dates in this window, so adding it
+  would change nothing at all. Cryptocurrency shares the same **nine** closures — its
+  `Closed` rows cover every one of them — so it would not touch the nine stated rows.
+  What it would change is the residue: it ships twenty-four rows against this list's
+  forty-one dates, because it trades 24/7 and states no closure on the other
+  seventeen, so on each of those seventeen it has **audited the date normal** while
+  another routed family states a closure or an early close. Those seventeen dates
+  carry `unsourced` either way, so the venue's answers would be unchanged and only the
+  evidence would record one more family as party to each disagreement. The choice is
+  therefore not load-bearing for any answer in this window, which is exactly why it
+  has to be written down rather than inferred.
+  Closing condition: the consumer's own root map, disclosed and reviewed against this
+  list — the audit `#95` carries into the stage-2.2 waves. The crate cannot settle it,
+  and this file states both readings so a reviewer can.
 - **A disagreement ships `unsourced` rather than nothing.** This is the one place the
   module departs from D17's literal "ships no venue row", and it follows `iceus`,
   which shipped first and states the reason: with a contiguous coverage window,

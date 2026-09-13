@@ -19,17 +19,27 @@
 //!
 //! # The routing
 //!
-//! | Venue | Families | Where that routing is decided |
+//! The routing is a **decision recorded here, not a fact the crate can derive**.
+//! `hours_for_exchange(Exchange::Cme, _)` resolves to a schedule, not to a
+//! membership list, and by the consumer contract the map from product families
+//! to venues belongs to `SharurPlatform`. The list below is the plan's Wave 7
+//! decision (`docs/plans/2026-09-12-path-to-release.md` §3 2.1); each venue's
+//! evidence file states what the choice costs and what would change it.
+//!
+//! | Venue | Families | Why these |
 //! |---|---|---|
-//! | `cme` | `globex_equity_index`, `globex_energy`, `globex_fx`, `globex_grains`, `globex_interest_rates`, `globex_livestock` | every key resolving to a CME-owned profile |
-//! | `cbot` | `globex_grains`, `globex_interest_rates` | `hours_for_exchange`'s `Cbot` arm |
-//! | `comex` | `globex_energy`, metals half | `hours_for_exchange`'s `Comex` arm |
-//! | `nymex` | `globex_energy`, energy half | `hours_for_exchange`'s `Nymex` arm |
+//! | `cme` | `globex_equity_index`, `globex_energy`, `globex_fx`, `globex_grains`, `globex_interest_rates`, `globex_livestock` | the plan's six; `globex_nikkei_225_dollar` agrees with the equity-index family on every date in this window, and `globex_cryptocurrency` shares all nine closures and states nothing on seventeen of the other dates, so either addition would leave every answer here unchanged and only widen the recorded disagreements |
+//! | `cbot` | `globex_grains`, `globex_interest_rates` | the two families whose sessions the venue profile is built from |
+//! | `comex` | `globex_energy`, metals half | the venue's documented scope |
+//! | `nymex` | `globex_energy`, energy half | the venue's documented scope |
 //!
 //! COMEX and NYMEX share one family key, because CME prints the two halves as
 //! one product row on every date in this window: no date is dropped for a
-//! disagreement between `GC` and `CL`, and the two venues' tables are identical
-//! by construction rather than by copying.
+//! disagreement between `GC` and `CL`. Their two tables hold the same rows —
+//! they are separate tables rather than one alias, because a venue's table is a
+//! decision about that venue — and
+//! `the_energy_venues_carry_the_family_table_unchanged` holds each against the
+//! family's own answers.
 //!
 //! # Two kinds of row
 //!
@@ -42,9 +52,9 @@
 //! neither silence nor a compromise instant. The coverage window is contiguous,
 //! so a date carrying no row is the positive claim that it was audited normal,
 //! which on these dates is false; and any single instant would be wrong for
-//! someone, because a venue row that copied the shallowest early close would
-//! delete the deepest family's sourced trading while one that copied the
-//! deepest would delete the shallowest family's post-close phase. `Unsourced`
+//! someone, because on 2026-12-24 the families' sourced closes are 12:05, 12:15
+//! and 12:45 CT at once, so a row at either end stops someone early or runs
+//! someone past their own close. `Unsourced`
 //! clips nothing, answers nothing, and tells the caller what the crate knows:
 //! the date is special and the venue has no one answer for it. ICE Futures
 //! U.S.'s venue table, which shipped first, is the precedent, and the

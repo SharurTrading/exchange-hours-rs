@@ -30,7 +30,9 @@ without the context of that session, following `AGENTS.md` (the charter) and thi
    resolve every thread before merging.
 6. Every date you write about the repository's own work is the UTC date from `date -u`
    (LAW-UTC-DATES). Exchange effective days stay venue-local.
-7. Stop and ask the maintainer only at the points marked **DECISION**.
+7. Stop and ask the maintainer only at the points marked **DECISION**. The release
+   itself waits until every stage before it is finished and reviewed; it is not started
+   early for any reason.
 
 ## 1. Where things stand
 
@@ -40,8 +42,14 @@ without the context of that session, following `AGENTS.md` (the charter) and thi
   identities: the eight served CME families for 2025-01-01..2027-12-31 at T2, and CFE,
   Eurex, ICE Futures U.S. and Coinbase Derivatives from 2026 at T1. CI is green and every
   CodeRabbit thread is resolved at `8ae30df`.
-- Fifteen issues are open. Every one is placed at a stage below; the index at the top
-  of §3 is the map, and each issue carries a comment naming its place.
+- Fourteen issues are open. Every one is placed at a stage below; the index at the top
+  of §3 is the map, and each issue carries a comment naming its place. #36 (the
+  whole-ledger coverage audit) was closed on 2026-09-13: dormant rows are not audited
+  under the charter.
+- This plan is executed by one agent and reviewed by another at the end of each stage;
+  the executing agent posts a stage summary on the PR that closes the stage, listing
+  the issues closed and any gap recorded, and does not start the next stage until the
+  review is done.
 - Research store map: `architecture-review/` (the review and its four fact reports),
   `holidays/` (seven verified holiday-schedule blocks 2010–2027 as JSON, their verdicts,
   raw artifacts, and `DESIGN-holiday-tables.md`, the design the engine implements),
@@ -89,7 +97,6 @@ holiday accessors, and documentation.
 | #79 equity-index 2012 Sunday queue | 3 | no (order-entry gap; stays open if unsourced) |
 | #77 seasonal-key doc sentences | 3 | yes (doc-only) |
 | #86 cutovers outside `revisions!` | 3 | yes (served venues `coinbase_derivatives`, `eurex`) |
-| #36 coverage audit | 3, **DECISION** | no |
 | #94 `DayPolicy::may_affect` | 3, may follow the release | no (additive trait method) |
 | #93 fifth `HolidayKind` | 3, may follow the release | no (`HolidayKind` is `#[non_exhaustive]`; the Saturday rows stay declared gaps) |
 | #85 narrative debt | 4, drained by the PRs that touch each module | no (dormant) |
@@ -184,9 +191,6 @@ appears in the trading-hours service, Coinbase Derivatives' Thanksgiving and Chr
   `is_open`.
 - **#77**: fix the `session_profile` and `hours_for_market_hours_key` doc sentences so
   they say which state a seasonal key's static table holds. Doc-only PR.
-- **#36**: under the charter the remaining 74 unaudited rows are dormant; narrow the
-  issue to the served identities (all reviewed since 2026-08-22) and close it, or keep
-  it as a dormant backlog. **DECISION (maintainer).**
 - **#97, before stage 4 starts**: prove the `[D, D+1]` narrowing of the coverage gate
   and re-measure. With 2010–2027 history nearly every day sits within 19 days of some
   row, so the sound `[D-1, D+19]` window opens the gate almost always and the memo's

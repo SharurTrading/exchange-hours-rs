@@ -36,14 +36,22 @@ event-date-to-trade-date conversions are in those two files.
 **The intersection rule (design memo D17).** The two families trade the same
 building around different sessions, and the day session is where they touch. On a
 full Globex closure both are closed and the venue states it: **nine dates** in this
-window qualify, and they are the only rows here that state a status. On every CBOT
-holiday early close the two move by different amounts, and by a different pair on
-different dates: the grain and oilseed day session ends at 12:05 CT on
-2025-11-28, 2025-12-24, 2026-11-27, 2026-12-24 and 2027-11-26, while the
-interest-rate overnight leg halts at 12:15 CT on those five dates and at 12:00 CT,
-10:15 CT or 13:30 CT on the others. Five minutes apart or three hours apart, a
-difference is a difference, so the venue states no instant and each of those dates
-carries `unsourced`. That is **thirty-one dates**.
+window qualify, and they are the only rows here with a sourced **closure** status.
+The other **thirty-one** dates carry `unsourced`, in two shapes:
+
+- **Twenty-seven are close disagreements.** On every CBOT holiday early close the two
+  families move by different amounts, and by a different pair on different dates: the
+  grain and oilseed day session ends at 12:05 CT on 2025-11-28, 2025-12-24,
+  2026-11-27, 2026-12-24 and 2027-11-26, while the interest-rate overnight leg halts
+  at 12:15 CT on those five dates and at 12:00 CT, 10:15 CT or 13:30 CT on the others.
+  Five minutes apart or three hours apart, a difference is a difference, so the venue
+  states no instant.
+- **Four are late-open-only.** 2025-01-02, 2025-12-26, 2026-01-02 and 2027-07-06 open
+  the grain day session at 08:30 CT with no prior-evening leg, while
+  `globex_interest_rates` states nothing at all: its overnight leg runs straight
+  through. One family states a row and the other has audited the date normal, which is
+  a different answer rather than a missing one, so the venue cannot state the late open
+  as its own either.
 
 **`unsourced` is neither silence nor a compromise.** The coverage window is
 contiguous, so a date carrying no row is the positive claim that it was audited

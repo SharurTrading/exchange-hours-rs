@@ -169,7 +169,12 @@ the cost of keeping them true.
   an identity with no table carries no holiday data and the caller's
   `DayPolicy` overlay is its only holiday layer. Inside a table's window a date
   with no row is audited normal; outside it the crate has no holiday answer at
-  all. A holiday table entry records the date, the kind (closed, early
+  all. **A venue `Exchange` that several families route to takes the
+  intersection of their tables**: a row ships only where every routed family
+  states the same one, and a date on which they disagree carries `Unsourced`
+  rather than a scheduling row, because inside a contiguous window silence is
+  the positive claim that the date was audited normal. A holiday table entry
+  records the date, the kind (closed, early
   close at an instant, late open at an instant), and its document id. A special
   day that changes internal phase topology is not representable by scalar
   boundaries and is recorded as a gap. `DayPolicy` remains the caller's overlay

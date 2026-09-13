@@ -71,9 +71,9 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Added
 
-- **Built-in holiday tables for the served CME families and the 2026 venue
-  block.** Twenty-two of the 132 ledger identities now carry per-family
-  holiday and early-close data underneath the caller's overlays
+- **Built-in holiday tables for the served CME families, the four CME venues
+  and the 2026 venue block.** Twenty-six of the 132 ledger identities now carry
+  per-family holiday and early-close data underneath the caller's overlays
   (LAW-HOLIDAY-SCOPE), as static date tables keyed by the crate's own
   venue-local **trade date** rather than by the operator's event date:
   - the eight served CME product families — `globex_equity_index`,
@@ -81,6 +81,9 @@ corrections (a venue's hours fixed against a primary source) go under
     `globex_livestock`, `globex_cryptocurrency` and
     `globex_nikkei_225_dollar` — over trade dates **2025-01-01 .. 2027-12-31**,
     the end of CME's published future;
+  - the four CME venue calendars — the `cme`, `cbot`, `comex` and `nymex`
+    `Exchange` identities — over the same window, as the intersection of the
+    families that route to each;
   - `cfe` and `cfe_vix` over **2026-01-01 .. 2026-12-31**;
   - `eurex`, `eurex_fixed_income` (and the `eurex` venue) over
     **2026-01-01 .. 2026-12-31** — Eurex's 2027 calendar is published "on a
@@ -106,10 +109,26 @@ corrections (a venue's hours fixed against a primary source) go under
   column states each identity's window and is derived by a fence from that
   identity's own `holiday_coverage()`.
 
-  **The four CME venue calendars — `cme`, `cbot`, `comex`, `nymex` — carry no
-  table.** A venue's table is the intersection of the families that route to
-  it, most early closes do not agree across those families, and building that
-  intersection honestly is its own change; their evidence files say so.
+  **The four CME venue calendars — `cme`, `cbot`, `comex` and `nymex` — carry
+  the intersection of the families that route to them** over
+  **2025-01-01 .. 2027-12-31** at T2. A venue row may be stated only where every
+  routed family states the same row. For the multi-family venues that means the
+  nine Globex full closures, which are the only dates all six CME families — or
+  both CBOT families — are closed; every other special date there carries
+  `Unsourced` rather than a scheduling row, because the coverage window is
+  contiguous and no single instant is true of every family: on 2026-12-24 the
+  sourced closes are 12:05, 12:15 and 12:45 CT at once, so a venue row at either
+  end stops one family early or runs another past its own close. **COMEX** and
+  **NYMEX** route the one `globex_energy` key, whose metals and energy halves CME
+  prints as a single product row, so their intersections drop nothing and they
+  carry that family's table whole (36 rows each, no `Unsourced`). CBOT ships 9
+  stated rows against its thirty-one `Unsourced` dates and CME 9 against
+  thirty-two, each with the disagreement named per date in that venue's evidence
+  file. The family list behind each intersection is a decision recorded there,
+  not something the crate can derive: the map from product families to venues
+  belongs to the consumer. **This change also amends `AGENTS.md`**: the charter's
+  LAW-HOLIDAY-SCOPE gains one sentence stating the venue-intersection rule, so
+  the law and the shipped tables say the same thing.
   Measured on an Apple M2 Max at 1.97.1: with a real table attached, `is_open`
   inside a regular session far from any holiday costs **240.9 ns** against
   236.9 ns with the table detached, the 4,999-probe cold chart frame is

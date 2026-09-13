@@ -12,10 +12,10 @@
 //! Each family that has a table owns a `holidays/<owner>.rs` module beside
 //! this file; an identity with no table answers `None` and is unaffected by
 //! the holiday layer entirely. The four `Exchange` venues CME routes to —
-//! `Cme`, `Cbot`, `Comex`, `Nymex` — deliberately stay `None`: a venue
-//! calendar's table is the intersection of the families that route to it, and
-//! that intersection is its own change (design memo D17, §5.2 Wave 7). Their
-//! evidence files say so.
+//! `Cme`, `Cbot`, `Comex`, `Nymex` — share `holidays/venues.rs`, because their
+//! tables are not retrieved at all: each is the **intersection** of the
+//! families that route to the venue (design memo D17), so the four are one
+//! derivation over one corpus rather than four independent bodies of evidence.
 
 use super::HolidayTable;
 use crate::calendar::{CalendarSource, Exchange, MarketHoursKey};
@@ -84,10 +84,10 @@ const fn for_exchange(exchange: Exchange) -> Option<&'static HolidayTable> {
         Exchange::MiaxSapphireOptions => None,
         Exchange::BoxOptions => None,
         Exchange::MemxOptions => None,
-        Exchange::Cme => None,
-        Exchange::Cbot => None,
-        Exchange::Comex => None,
-        Exchange::Nymex => None,
+        Exchange::Cme => Some(super::venues::CME),
+        Exchange::Cbot => Some(super::venues::CBOT),
+        Exchange::Comex => Some(super::venues::COMEX),
+        Exchange::Nymex => Some(super::venues::NYMEX),
         Exchange::Cfe => Some(super::cfe::TABLE),
         Exchange::CoinbaseDerivatives => Some(super::coinbase_derivatives::TABLE),
         Exchange::Smfe => None,

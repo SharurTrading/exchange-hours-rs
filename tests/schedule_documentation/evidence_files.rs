@@ -413,6 +413,7 @@ struct HolidayBlock {
 /// One `holidays!` tuple, reduced to what the evidence file has to record.
 struct HolidayRow {
     day: String,
+    kind: String,
     document: String,
 }
 
@@ -463,8 +464,39 @@ fn holiday_coverage(body: &str, module: &str) -> (String, String) {
     (day(bounds[0]), day(bounds[1]))
 }
 
-/// Parses the `rows: [ … ]` list of one block.
-fn holiday_rows(body: &str) -> Vec<HolidayRow> {
+/// Parses the `rows: [ … ]` list of one block, with the module's own named
+/// instants substituted in.
+///
+/// A family may name an instant it uses twice as a `const … : u32`, so the kind
+/// has to be reduced to arithmetic before it can be compared with prose. Only
+/// the module-local definitions are substituted; an unresolved name is a failed
+/// assertion in `stated_instants` rather than a silently skipped row.
+fn holiday_rows(body: &str, module_source: &str) -> Vec<HolidayRow> {
+    let mut constants: Vec<(String, String)> = module_source
+        .lines()
+        .filter_map(|line| {
+            let rest = line.trim().strip_prefix("const ")?;
+            let (name, definition) = rest.split_once(':')?;
+            let (_, value) = definition.split_once('=')?;
+            let value = value.trim().trim_end_matches(';').trim();
+            Some((name.trim().to_owned(), value.to_owned()))
+        })
+        .collect();
+    // `SECONDS_PER_DAY` and friends live in `fences.rs` and are not instants;
+    // substituting them can only ever turn a valid row into a comparison this
+    // fence rejects, so they are left alone.
+    constants.retain(|(name, _)| name != "SECONDS_PER_DAY");
+    // Longest first: `NOON` is a prefix of `QUARTER_PAST_NOON`, so substituting
+    // the short name first would leave `QUARTER_PAST_12 * 3_600`.
+    constants.sort_by_key(|(name, _)| std::cmp::Reverse(name.len()));
+    let reduce = |kind: &str| {
+        let mut reduced = kind.to_owned();
+        for (name, value) in &constants {
+            reduced = reduced.replace(name.as_str(), value.as_str());
+        }
+        reduced
+    };
+
     let list = body
         .split_once("rows:")
         .expect("a holidays! block must declare its rows")
@@ -487,6 +519,7 @@ fn holiday_rows(body: &str) -> Vec<HolidayRow> {
                 .expect("a holidays! tuple ends with its document-id literal");
             HolidayRow {
                 day: format!("{year:04}-{month:02}-{day:02}"),
+                kind: reduce(fields[3]),
                 document: document.to_owned(),
             }
         })
@@ -515,7 +548,7 @@ fn holiday_blocks() -> Vec<HolidayBlock> {
                 module: module.clone(),
                 files: declared_evidence_files(&comment_run(&text[..start]), &module),
                 coverage: holiday_coverage(body, &module),
-                rows: holiday_rows(body),
+                rows: holiday_rows(body, &text),
             });
         }
     }
@@ -881,6 +914,260 @@ fn every_evidence_holiday_line_is_well_formed() {
                 "{name}: a holiday line must record the operator event dates it was \
                  derived from: {line}"
             );
+        }
+    }
+}
+
+/// Returns the instants one row's kind states, as `hh:mm` strings.
+///
+/// A `late_open_and_early_close` states both; a `Closed` or `Unsourced` row
+/// states neither, because it names no boundary at all. The kind arrives as
+/// source text, so the arithmetic is read rather than evaluated: every instant
+/// in a `holidays!` row is written `h * 3_600 + m * 60`, `h * 3_600` or
+/// `m * 60`, and a family's named constant has already been substituted away by
+/// the time this runs only if the test resolved it — so an unresolved name is a
+/// failed assertion rather than a silent skip.
+#[expect(
+    clippy::panic,
+    reason = "a module whose instant is not the integer expression the macro grammar \
+              takes has already failed the build; this fence reads every shipped \
+              module and must fail loudly rather than mis-read one"
+)]
+fn stated_instants(kind: &str) -> Vec<String> {
+    /// Reads one `h * 3_600 + m * 60` expression as minutes since midnight.
+    fn minutes(expression: &str) -> u32 {
+        expression
+            .split('+')
+            .map(|term| {
+                let factors = term
+                    .split('*')
+                    .map(|factor| {
+                        factor
+                            .trim()
+                            .replace('_', "")
+                            .parse::<u32>()
+                            .unwrap_or_else(|_| {
+                                panic!("a holiday instant is an integer expression: {expression}")
+                            })
+                    })
+                    .collect::<Vec<_>>();
+                match factors.as_slice() {
+                    [hours, 3_600] => hours * 60,
+                    [count, 60] => *count,
+                    _ => panic!("a holiday instant reads `h * 3_600 + m * 60`: {expression}"),
+                }
+            })
+            .fold(0_u32, u32::saturating_add)
+    }
+
+    /// Reads the arguments of `name(a)` or `name(a, b)`.
+    fn arguments<'a>(kind: &'a str, name: &str) -> Vec<&'a str> {
+        kind.strip_prefix(name)
+            .and_then(|rest| rest.strip_suffix(')'))
+            .unwrap_or_else(|| panic!("a holiday kind reads `{name}…`: {kind}"))
+            .split(',')
+            .collect()
+    }
+
+    let stamp = |expression: &str| {
+        let total = minutes(expression);
+        format!("{:02}:{:02}", total / 60, total % 60)
+    };
+    match kind {
+        // Both spellings occur in the crate: a module that imports the variant
+        // writes `Closed`, one that does not writes `HolidayKind::Closed`.
+        "Closed" | "Unsourced" | "HolidayKind::Closed" | "HolidayKind::Unsourced" => Vec::new(),
+        text if text.starts_with("early_close(") => arguments(text, "early_close(")
+            .iter()
+            .map(|a| stamp(a))
+            .collect(),
+        text if text.starts_with("late_open_and_early_close(") => {
+            arguments(text, "late_open_and_early_close(")
+                .iter()
+                .map(|a| stamp(a))
+                .collect()
+        }
+        text if text.starts_with("late_open(") => arguments(text, "late_open(")
+            .iter()
+            .map(|a| stamp(a))
+            .collect(),
+        other => panic!("unrecognized holiday kind in a module: {other}"),
+    }
+}
+
+/// The families each venue's exported table intersects, as
+/// `(venue evidence file, [(family, the family's own evidence file)])`.
+///
+/// This mirrors `holidays/venues.rs`'s routing table. The venue tests fence that
+/// table against `hours_for_exchange`; this list exists so a venue's evidence can
+/// be read against **its own** families' rows rather than against the whole
+/// crate's holiday corpus. A family whose evidence file no longer resolves is a
+/// failed lookup below, not a silently smaller set.
+type VenueFamilies = (&'static str, &'static [(&'static str, &'static str)]);
+
+const VENUE_FAMILIES: [VenueFamilies; 4] = [
+    (
+        "cme.md",
+        &[
+            ("globex_equity_index", "globex_equity_index.md"),
+            ("globex_energy", "globex_energy.md"),
+            ("globex_fx", "globex_fx.md"),
+            ("globex_grains", "globex_grains.md"),
+            ("globex_interest_rates", "globex_interest_rates.md"),
+            ("globex_livestock", "globex_livestock.md"),
+        ],
+    ),
+    (
+        "cbot.md",
+        &[
+            ("globex_grains", "globex_grains.md"),
+            ("globex_interest_rates", "globex_interest_rates.md"),
+        ],
+    ),
+    ("comex.md", &[("globex_energy", "globex_energy.md")]),
+    ("nymex.md", &[("globex_energy", "globex_energy.md")]),
+];
+
+/// Splits a summary into the claims it makes and the evidence behind them.
+///
+/// A summary states its row, then the operator record behind it. The two are
+/// separated by an em dash or by the first `eventDate`; a semicolon separates
+/// two **claims** of the same row, so it is not a boundary. What follows the
+/// boundary may name the family's ordinary grid — "the normal Thursday 17:00 CT"
+/// — which is a fact about the week, not about this row.
+fn summary_claims(summary: &str) -> &str {
+    let mut end = summary.len();
+    for marker in ["\u{2014}", "eventDate"] {
+        if let Some(at) = summary.find(marker) {
+            end = end.min(at);
+        }
+    }
+    &summary[..end]
+}
+
+/// Every ISO date a summary names, with the row's own trade date first.
+fn summary_days(summary: &str, own: &str) -> Vec<String> {
+    let mut found = vec![own.to_owned()];
+    let bytes = summary.as_bytes();
+    let mut index = 0;
+    while index + 10 <= bytes.len() {
+        let window = &summary[index..index + 10];
+        let looks_like_a_day = window.as_bytes()[4] == b'-'
+            && window.as_bytes()[7] == b'-'
+            && window
+                .chars()
+                .enumerate()
+                .all(|(at, character)| at == 4 || at == 7 || character.is_ascii_digit());
+        if looks_like_a_day && NaiveDate::parse_from_str(window, "%Y-%m-%d").is_ok() {
+            if !found.iter().any(|day| day == window) {
+                found.push(window.to_owned());
+            }
+            index += 10;
+        } else {
+            index += 1;
+        }
+    }
+    found
+}
+
+/// Every `hh:mm` a text states, ignoring digits inside a longer number.
+fn stated_times(text: &str) -> Vec<String> {
+    let bytes = text.as_bytes();
+    let mut found = Vec::new();
+    let mut index = 0;
+    while index + 5 <= bytes.len() {
+        let window = &text[index..index + 5];
+        let looks_like_an_instant = window.as_bytes()[2] == b':'
+            && window[..2].chars().all(|c| c.is_ascii_digit())
+            && window[3..].chars().all(|c| c.is_ascii_digit());
+        let bounded = index == 0 || !bytes[index - 1].is_ascii_digit();
+        if looks_like_an_instant && bounded {
+            found.push(window.to_owned());
+            index += 5;
+        } else {
+            index += 1;
+        }
+    }
+    found
+}
+
+/// Every instant the given families' tables state, by trade date, as `hh:mm`
+/// strings.
+///
+/// `families` are `(name, evidence file)` pairs: a block belongs to a family
+/// when it declares that family's evidence file, which is how the family module
+/// attributes its own rows. The venue module declares the venue's file instead,
+/// so its `Unsourced` rows — which state no instant — cannot enter the set.
+fn stated_instants_for(families: &[(&str, &str)]) -> BTreeMap<String, BTreeSet<String>> {
+    let mut stated: BTreeMap<String, BTreeSet<String>> = BTreeMap::new();
+    let mut resolved: BTreeSet<&str> = BTreeSet::new();
+    for block in holiday_blocks() {
+        let owned = families
+            .iter()
+            .filter(|(_, file)| block.files.iter().any(|declared| declared == file))
+            .map(|(name, _)| *name)
+            .collect::<Vec<_>>();
+        if owned.is_empty() {
+            continue;
+        }
+        resolved.extend(owned);
+        for row in &block.rows {
+            let entry = stated.entry(row.day.clone()).or_default();
+            for instant in stated_instants(&row.kind) {
+                entry.insert(instant);
+            }
+        }
+    }
+    for (name, _) in families {
+        assert!(
+            resolved.contains(name),
+            "no holidays! block declares {name}'s evidence file, so this fence would \
+             check the venue against a family it never read"
+        );
+    }
+    stated
+}
+
+#[test]
+fn every_instant_a_venue_summary_cites_is_one_its_families_state() {
+    let files = evidence_files();
+    for (file, families) in VENUE_FAMILIES {
+        let text = files
+            .get(file)
+            .unwrap_or_else(|| panic!("{file} must exist in docs/evidence"));
+        let stated = stated_instants_for(families);
+        assert!(
+            !stated.is_empty(),
+            "{file}: the fence reads the family tables, so at least one must ship rows"
+        );
+        let holidays = section(text, "## Holidays")
+            .unwrap_or_else(|| panic!("{file} must carry a `## Holidays` section"));
+        for line in holidays.lines().filter(|line| line.starts_with("| 2")) {
+            let cells = line
+                .trim_start_matches('|')
+                .split('|')
+                .map(str::trim)
+                .collect::<Vec<_>>();
+            if cells.len() < 6 {
+                continue;
+            }
+            let (day, summary) = (cells[0], cells[5]);
+            let named = summary_days(summary, day);
+            let covered = named
+                .iter()
+                .filter_map(|named| stated.get(named))
+                .collect::<Vec<_>>();
+            if covered.is_empty() {
+                continue;
+            }
+            for instant in stated_times(summary_claims(summary)) {
+                assert!(
+                    covered.iter().any(|set| set.contains(&instant)),
+                    "{file}: the {day} row's summary states {instant} CT, but none of the \
+                     families this venue routes states it on any covered date the summary \
+                     names ({named:?}). Summary: {summary}"
+                );
+            }
         }
     }
 }

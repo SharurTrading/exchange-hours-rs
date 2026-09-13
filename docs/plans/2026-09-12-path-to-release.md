@@ -143,10 +143,34 @@ named items in the block's JSON, encode the families by copying the wave-1 patte
 **2.1 CME venue tables for 2025–2027 — no retrieval.** Derive `cbot` (grains ∩ interest
 rates), `comex` and `nymex` (the metals and energy halves of `globex_energy`) and `cme`
 (the six families that route to it) from the family rows #96 already ships, by memo D17:
-full closures agree across families; a date on which families disagree ships no venue
-row and is a named gap in the venue's evidence file. This gives the four served
+full closures agree across families; a date on which the families disagree emits
+`HolidayKind::Unsourced` rather than a venue row, and the disagreement is named in the
+venue's evidence file. This gives the four served
 identities without a table their first rows and starts #95; the D17 agreement
 assumption is audited wave by wave, so #95 closes with the last 2.2 wave.
+
+**Landed 2026-09-13 (UTC)** (`holidays/venues.rs`, one module for the four tables).
+The rule above was the one implemented; what follows is how its two operative phrases
+were read, and both readings follow the `iceus` venue table that shipped first:
+
+- **A disagreement ships `Unsourced`, not silence.** `HolidayCoverage` defines a date
+  inside the window with no row as **audited normal**, so dropping a disputed date
+  would make the crate positively claim the date was ordinary — false on every one of
+  them. `HolidayKind::Unsourced` clips nothing and answers nothing while telling the
+  caller the date is special. It was already in the vocabulary and already used by
+  `iceus`; nothing in D17's intent is given up, and the reverse evidence fence
+  (`every_evidence_holiday_line_exists_in_its_module`) requires the row to exist before
+  a venue evidence file may list the date at all.
+- **"Disagree" includes a family that states nothing.** A family with no row on a date
+  on which another family states one has *audited the date normal*, which is a
+  different answer, not a missing one. Counting those as disagreements is what makes
+  the `no row in FX` dates unsourced; the closing condition is recorded in `cme.md`.
+
+Result: `cme` 9 `Closed` + 32 `Unsourced`; `cbot` 9 + 31; `comex` and `nymex` 36 rows
+each with no disagreement at all, because metals and energy are one key and CME prints
+them as one product row. `cbot`'s ledger cadence moves `quarterly` → `monthly`
+(LAW-WATCH: a served identity that ships a holiday table), and the README's
+holiday-coverage count moves 22 → 26.
 
 **2.2 CME family waves, most-ready first.** Every wave PR also extends the four venue
 tables over its own years by the rule in 2.1, so there is no separate venue wave.

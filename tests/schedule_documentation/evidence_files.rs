@@ -871,7 +871,16 @@ fn every_holiday_table_states_its_coverage_window() {
             // another bare date, either of which would be a coverage claim the
             // table does not make.
             let declared = declarations[0];
-            let rest = declared.strip_prefix(&expected).unwrap_or("").trim_start();
+            let rest = declared
+                .strip_prefix(&expected)
+                .unwrap_or_else(|| {
+                    panic!(
+                        "{name} must state {}'s coverage windows as \
+                         `**Coverage:** {windows}`, not {declared:?}",
+                        block.module
+                    )
+                })
+                .trim_start();
             assert!(
                 rest.is_empty() || rest.starts_with('('),
                 "{name} must state {}'s coverage windows as \

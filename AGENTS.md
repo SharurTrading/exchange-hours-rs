@@ -480,8 +480,10 @@ section, the pull-request number and the research store path.
    instant, tier and the event-date-to-trade-date conversion. A quoted string
    that is not in the cited artifact is a defect even when the value is right.
 4. **Derived rows.** Recompute the derivation with the reviewer's own parser
-   from the inputs on `main` — never by reading the change's routing constants
-   or test lists back — and compare row by row; every derived row's document
+   from the input tables at the head commit — the ones step 3 has already
+   verified where the change touched them — never by reading the change's
+   routing constants or test lists back, and compare row by row; every derived
+   row's document
    id must be one an input row cites on that date. A handwritten list in a
    test is a fence only when it is compared against something independent of
    the module; a list that copies the module fences nothing and the report

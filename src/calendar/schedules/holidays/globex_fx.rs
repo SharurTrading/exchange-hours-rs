@@ -56,6 +56,8 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
     rows: [
         // --- 2010-2012, CME Group holiday calendars, tier T1 ---
         // 2010-01-15 - T1 - 2010-martin-luther-king.pdf - early close.
+        // 2010-01-01 - T1 - 2010-new-years.pdf - closed: new year's day 2010.
+        (2010, 1, 1, Closed, T1, "2010-new-years.pdf @2010-02-15T05:16:52Z"),
         (2010, 1, 15, early_close(15 * 3_600 + 15 * 60), T1, "2010-martin-luther-king.pdf @2010-03-31T06:42:26Z"),
         // 2010-01-18 - T1 - 2010-martin-luther-king.pdf - early close.
         (2010, 1, 18, early_close(12 * 3_600), T1, "2010-martin-luther-king.pdf @2010-03-31T06:42:26Z"),
@@ -84,6 +86,8 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         // 2010-11-26 - T1 - 2010-thanksgiving.pdf - early close.
         (2010, 11, 26, early_close(12 * 3_600 + 15 * 60), T1, "2010-thanksgiving.pdf @2010-11-22T09:40:12Z"),
         // 2010-12-31 - T1 - 2011-new-years.pdf - early close.
+        // 2010-12-24 - T1 - 2010-christmas.pdf - closed: christmas day 2010 observed.
+        (2010, 12, 24, Closed, T1, "2010-christmas.pdf @2010-12-14T06:12:38Z"),
         (2010, 12, 31, early_close(12 * 3_600 + 15 * 60), T1, "2011-new-years.pdf @2011-11-01T14:39:45Z"),
         // 2011-01-14 - T1 - 2011-martin-luther-king.pdf - early close.
         (2011, 1, 14, early_close(15 * 3_600 + 15 * 60), T1, "2011-martin-luther-king.pdf @2011-10-28T02:34:29Z"),
@@ -94,6 +98,8 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         // 2011-02-21 - T1 - 2011-presidents-day.pdf - early close.
         (2011, 2, 21, early_close(12 * 3_600), T1, "2011-presidents-day.pdf @2011-10-28T02:35:16Z"),
         // 2011-05-27 - T1 - 2011-memorial-day.pdf - early close.
+        // 2011-04-22 - T1 - 2011-good-friday.pdf - closed: good friday 2011.
+        (2011, 4, 22, Closed, T1, "2011-good-friday.pdf @2011-10-28T02:37:07Z"),
         (2011, 5, 27, early_close(15 * 3_600 + 15 * 60), T1, "2011-memorial-day.pdf @2013-09-30T10:56:52Z"),
         // 2011-05-30 - T1 - 2011-memorial-day.pdf - early close.
         (2011, 5, 30, early_close(12 * 3_600), T1, "2011-memorial-day.pdf @2013-09-30T10:56:52Z"),
@@ -112,8 +118,12 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         // 2011-11-25 - T1 - 2011-thanksgiving.pdf - early close.
         (2011, 11, 25, early_close(12 * 3_600 + 15 * 60), T1, "2011-thanksgiving.pdf @2011-11-24T18:52:46Z"),
         // 2011-12-27 - T1 - 2011-christmas.pdf - late open.
+        // 2011-12-26 - T1 - 2011-christmas.pdf - closed: christmas day 2011 observed.
+        (2011, 12, 26, Closed, T1, "2011-christmas.pdf @2012-01-25T02:05:48Z"),
         (2011, 12, 27, late_open(5 * 3_600), T1, "2011-christmas.pdf @2012-01-25T02:05:48Z"),
         // 2012-01-03 - T1 - 2012-new-years.pdf - late open.
+        // 2012-01-02 - T1 - 2012-new-years.pdf - closed: new year's day 2012 observed.
+        (2012, 1, 2, Closed, T1, "2012-new-years.pdf @2012-01-25T02:54:30Z"),
         (2012, 1, 3, late_open(5 * 3_600), T1, "2012-new-years.pdf @2012-01-25T02:54:30Z"),
         // 2012-01-13 - T1 - 2012-martin-luther-king.pdf - early close.
         (2012, 1, 13, early_close(15 * 3_600 + 15 * 60), T1, "2012-martin-luther-king.pdf @2012-05-05T16:15:26Z"),
@@ -144,6 +154,8 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         // 2012-12-24 - T1 - 2012-christmas.pdf - early close.
         (2012, 12, 24, early_close(12 * 3_600 + 15 * 60), T1, "2012-christmas.pdf @2013-04-14T19:40:27Z"),
         // 2012-12-26 - T1 - 2012-christmas.pdf - late open.
+        // 2012-12-25 - T1 - 2012-christmas.pdf - closed: christmas day 2012.
+        (2012, 12, 25, Closed, T1, "2012-christmas.pdf @2013-04-14T19:40:27Z"),
         (2012, 12, 26, late_open(5 * 3_600), T1, "2012-christmas.pdf @2013-04-14T19:40:27Z"),
         (2025, 1, 1, Closed, T2, "CME-SVC-2024-12-31"),
         // 2025-04-18 - T2 - CME-SVC-2025-04-17 - Good Friday, no events published.

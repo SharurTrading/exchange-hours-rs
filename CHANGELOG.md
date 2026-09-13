@@ -82,7 +82,7 @@ corrections (a venue's hours fixed against a primary source) go under
   already had no holiday answer at all.
 - **The served CME families' holiday tables now reach the January-2010 floor.**
   `globex_equity_index`, `globex_interest_rates`, `globex_fx`, `globex_energy`,
-  `globex_grains` and `globex_livestock` gain **153 rows over venue-local trade
+  `globex_grains` and `globex_livestock` gain **205 rows over venue-local trade
   dates 2010-01-01 .. 2012-12-31**, and the four CME venue calendars (`cme`,
   `cbot`, `comex`, `nymex`) extend over the same years by the same intersection
   rule, so every served CME identity's `Holidays` cell now reads
@@ -95,7 +95,11 @@ corrections (a venue's hours fixed against a primary source) go under
   floor because CME's own documents reach it — no year is filled from another
   year, a vendor or the press.
 
-  What the era states, keyed to the trade date CME prints: an **early close**
+  What the era states, keyed to the trade date CME prints: a **full closure**
+  on the six Globex holidays of those years (New Year's Day, Christmas Day,
+  2011's Good Friday and the observed days around them) plus the family-specific
+  ones — eight for energy and metals, ten for grains, sixteen for livestock; an
+  **early close**
   on a holiday morning at 10:30 CT equity / 12:00 CT rates and FX / 12:15 CT
   energy and metals; an **early close** at 12:00-12:45 CT on the year-end
   half-days and the day after Thanksgiving; **Good Friday** closed outright

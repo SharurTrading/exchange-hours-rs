@@ -224,7 +224,7 @@ fn the_table_ships_no_late_open_in_this_window() {
             .expect("the coverage window stays inside the representable calendar");
     }
 
-    assert_eq!(closed, 31, "closed rows over the whole 2010-2027 window");
+    assert_eq!(closed, 47, "closed rows over the whole 2010-2027 window");
     assert_eq!(
         early, 12,
         "early-close rows over the whole 2010-2027 window"
@@ -489,15 +489,20 @@ fn era_early_closes_end_the_wrapped_trading_day_at_the_stated_instant() {
         );
     }
 
-    // The Good Friday 2011 close is probed in full: 13:55 CT ends the trade
-    // date, and the ordinary 17:00 CT leg then opens the next one.
+    // The Good Friday 2011 early close is probed in full: 13:55 CT ends the
+    // trade date, and the Thursday-evening leg is the next thing the Good
+    // Friday 2011 closure removes.
     assert!(calendar.is_open(ct((2011, 4, 21), (13, 54, 59))));
     assert!(!calendar.is_open(ct((2011, 4, 21), (13, 55, 0))));
     assert_eq!(calendar.trade_date(ct((2011, 4, 21), (13, 55, 0))), None);
     assert_eq!(
-        calendar.trade_date(ct((2011, 4, 21), (18, 0, 0))),
-        Some(day((2011, 4, 22)))
+        calendar
+            .holiday_on(day((2011, 4, 22)))
+            .expect("2011-04-22 ships a row")
+            .kind(),
+        HolidayKind::Closed
     );
+    assert!(!calendar.is_open(ct((2011, 4, 21), (18, 0, 0))));
 
     // Christmas Eve 2012 falls on a Monday, whose trade date has no
     // Sunday-evening leg on this era's grid: it opens at the era's own 09:05
@@ -557,32 +562,31 @@ fn era_late_opens_land_on_the_trade_date_itself() {
     );
 }
 
-/// Good Friday 2010 ships no row in this family — the 2010 block is only the
-/// Thanksgiving and New Year's Eve half-days — so the crate serves the normal
-/// week, whose Thursday-evening leg already runs to the era's own 13:55 CT
-/// Friday close. The probe is the row set: the detached calendar agrees.
+/// Good Friday 2010 is a **full closure** for this family: CME's 2010 sheet
+/// names livestock among the products that stay closed until their regularly
+/// scheduled Monday open, so the crate removes the trade date and the
+/// Thursday-evening leg that fed it.
 #[test]
-fn era_good_friday_2010_ships_no_row_and_is_audited_normal() {
+fn era_good_friday_2010_is_a_full_closure() {
     let calendar = calendar();
 
-    assert_eq!(calendar.holiday_on(day((2010, 4, 2))), None);
-    assert_eq!(calendar.holiday_on(day((2010, 4, 1))), None);
-    assert!(calendar.is_open(ct((2010, 4, 1), (17, 0, 0))));
-    assert!(calendar.is_open(ct((2010, 4, 2), (9, 0, 0))));
     assert_eq!(
-        calendar.session_bounds(ct((2010, 4, 2), (9, 0, 0))),
-        Some((ct((2010, 4, 1), (17, 0, 0)), ct((2010, 4, 2), (13, 55, 0))))
+        calendar
+            .holiday_on(day((2010, 4, 2)))
+            .expect("2010-04-02 ships a row")
+            .kind(),
+        HolidayKind::Closed
     );
+    assert!(!calendar.is_open(ct((2010, 4, 1), (17, 0, 0))));
+    assert!(!calendar.is_open(ct((2010, 4, 2), (9, 5, 0))));
+    assert_eq!(calendar.trade_date(ct((2010, 4, 2), (9, 5, 0))), None);
+    // Monday 2010-04-05 opens normally and carries its own trade date.
     assert_eq!(
-        calendar.next_session_open_after(ct((2010, 4, 2), (14, 0, 0))),
-        Some(ct((2010, 4, 5), (9, 5, 0)))
-    );
-    assert_eq!(
-        calendar.is_open(ct((2010, 4, 2), (9, 0, 0))),
-        bare().is_open(ct((2010, 4, 2), (9, 0, 0)))
+        calendar.trade_date(ct((2010, 4, 5), (9, 5, 0))),
+        Some(day((2010, 4, 5)))
     );
 
-    // A plain trading day in the same year answers the same way.
+    // A plain trading day in the same year answers the normal week.
     assert_eq!(calendar.holiday_on(day((2010, 6, 15))), None);
     assert_eq!(
         calendar.session_bounds(ct((2010, 6, 15), (9, 0, 0))),

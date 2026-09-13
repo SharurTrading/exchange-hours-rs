@@ -368,13 +368,14 @@ fn era_early_closes_end_the_wrapped_trading_day_at_the_stated_instant() {
 #[test]
 fn era_ships_no_late_open_and_reopens_at_the_normal_1700_ct() {
     let calendar = calendar();
-    let (mut early_closes, mut date) = (0_usize, day((2010, 1, 1)));
+    let (mut early_closes, mut closures, mut date) = (0_usize, 0_usize, day((2010, 1, 1)));
     let last = day((2012, 12, 31));
 
     while date <= last {
         if let Some(row) = calendar.holiday_on(date) {
             match row.kind() {
                 HolidayKind::EarlyClose { .. } => early_closes += 1,
+                HolidayKind::Closed => closures += 1,
                 other => panic!("{date} ships an unexpected holiday kind: {other:?}"),
             }
         }
@@ -383,6 +384,7 @@ fn era_ships_no_late_open_and_reopens_at_the_normal_1700_ct() {
             .expect("the era stays inside the representable calendar");
     }
     assert_eq!(early_closes, 30, "early closes, 2010-2012");
+    assert_eq!(closures, 8, "full closures, 2010-2012");
 
     // New Year's Eve 2010 is one of the 15:15 CT cuts, and the next open after
     // it is the ordinary Sunday 17:00 CT leg, not a moved one.

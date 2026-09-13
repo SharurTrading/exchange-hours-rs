@@ -100,48 +100,60 @@ rather than reporting an unaudited date as normal.
 
 | trade date | kind | instant as printed | document | tier | derived from |
 |---|---|---|---|---|---|
-| 2010-01-15 | early close | `1515 CT / 1615 ET` | `2010-martin-luther-king.pdf @2010-03-31T06:42:26Z` | T1 | every routed family states this row, so the intersection is total |
-| 2010-01-18 | early close | `1215 CT / 1315 ET` | `2010-martin-luther-king.pdf @2010-03-31T06:42:26Z` | T1 | every routed family states this row, so the intersection is total |
-| 2010-02-12 | early close | `1515 CT / 1615 ET` | `2010-presidents-day.pdf @2010-02-15T06:46:41Z` | T1 | every routed family states this row, so the intersection is total |
-| 2010-02-15 | early close | `1215 CT / 1315 ET` | `2010-presidents-day.pdf @2010-02-15T06:46:41Z` | T1 | every routed family states this row, so the intersection is total |
-| 2010-05-28 | early close | `1515 CT / 1615 ET` | `2010-memorial-day.pdf @2010-06-01T09:42:25Z` | T1 | every routed family states this row, so the intersection is total |
-| 2010-05-31 | early close | `1215 CT / 1315 ET` | `2010-memorial-day.pdf @2010-06-01T09:42:25Z` | T1 | every routed family states this row, so the intersection is total |
-| 2010-07-02 | early close | `1515 CT / 1615 ET` | `2010-4th-of-july.pdf @2010-06-02T00:56:37Z` | T1 | every routed family states this row, so the intersection is total |
-| 2010-07-05 | early close | `1215 CT / 1315 ET` | `2010-4th-of-july.pdf @2010-06-02T00:56:37Z` | T1 | every routed family states this row, so the intersection is total |
-| 2010-09-03 | early close | `1515 CT / 1615 ET` | `2010-labor-day.pdf @2010-06-02T00:56:41Z` | T1 | every routed family states this row, so the intersection is total |
-| 2010-09-06 | early close | `1215 CT / 1315 ET` | `2010-labor-day.pdf @2010-06-02T00:56:41Z` | T1 | every routed family states this row, so the intersection is total |
-| 2010-10-08 | early close | `1515 CT / 1615 ET` | `2010-columbus-day.pdf @2010-08-21T13:31:22Z` | T1 | every routed family states this row, so the intersection is total |
-| 2010-11-25 | early close | `1215 CT / 1315 ET` | `2010-thanksgiving.pdf @2010-11-22T09:40:12Z` | T1 | every routed family states this row, so the intersection is total |
-| 2010-11-26 | early close | `1245 CT / 1345 ET` | `2010-thanksgiving.pdf @2010-11-22T09:40:12Z` | T1 | every routed family states this row, so the intersection is total |
-| 2010-12-31 | early close | `1515 CT / 1615 ET` | `2011-new-years.pdf @2011-11-01T14:39:45Z` | T1 | every routed family states this row, so the intersection is total |
+| 2010-01-01 | closed | `CME Globex is closed` | `2010-new-years.pdf @2010-02-15T05:16:52Z` | T1 | CME prints `Jan 1` above it as a closed day; the year comes from the document's own identity, because the annual sheets print no year |
+| 2010-01-15 | early close | `15:15 CT` | `2010-martin-luther-king.pdf @2010-03-31T06:42:26Z` | T1 | `15:15 CT` is the date's own final close; CME prints `Jan 15` above it, and the year comes from the document's own identity |
+| 2010-01-18 | early close | `12:15 CT` | `2010-martin-luther-king.pdf @2010-03-31T06:42:26Z` | T1 | `12:15 CT` is the date's own final close; CME prints `Jan 18` above it, and the year comes from the document's own identity |
+| 2010-02-12 | early close | `15:15 CT` | `2010-presidents-day.pdf @2010-02-15T06:46:41Z` | T1 | `15:15 CT` is the date's own final close; CME prints `Feb 12` above it, and the year comes from the document's own identity |
+| 2010-02-15 | early close | `12:15 CT` | `2010-presidents-day.pdf @2010-02-15T06:46:41Z` | T1 | `12:15 CT` is the date's own final close; CME prints `Feb 15` above it, and the year comes from the document's own identity |
+| 2010-04-02 | closed | `CME Globex is closed` | `2010-good-friday.pdf @2010-06-01T11:19:16Z` | T1 | CME prints `Apr 2` above it as a closed day; the year comes from the document's own identity, because the annual sheets print no year |
+| 2010-05-28 | early close | `15:15 CT` | `2010-memorial-day.pdf @2010-06-01T09:42:25Z` | T1 | `15:15 CT` is the date's own final close; CME prints `May 28` above it, and the year comes from the document's own identity |
+| 2010-05-31 | early close | `12:15 CT` | `2010-memorial-day.pdf @2010-06-01T09:42:25Z` | T1 | `12:15 CT` is the date's own final close; CME prints `May 31` above it, and the year comes from the document's own identity |
+| 2010-07-02 | early close | `15:15 CT` | `2010-4th-of-july.pdf @2010-06-02T00:56:37Z` | T1 | `15:15 CT` is the date's own final close; CME prints `Jul 2` above it, and the year comes from the document's own identity |
+| 2010-07-05 | early close | `12:15 CT` | `2010-4th-of-july.pdf @2010-06-02T00:56:37Z` | T1 | `12:15 CT` is the date's own final close; CME prints `Jul 5` above it, and the year comes from the document's own identity |
+| 2010-09-03 | early close | `15:15 CT` | `2010-labor-day.pdf @2010-06-02T00:56:41Z` | T1 | `15:15 CT` is the date's own final close; CME prints `Sep 3` above it, and the year comes from the document's own identity |
+| 2010-09-06 | early close | `12:15 CT` | `2010-labor-day.pdf @2010-06-02T00:56:41Z` | T1 | `12:15 CT` is the date's own final close; CME prints `Sep 6` above it, and the year comes from the document's own identity |
+| 2010-10-08 | early close | `15:15 CT` | `2010-columbus-day.pdf @2010-08-21T13:31:22Z` | T1 | `15:15 CT` is the date's own final close; CME prints `Oct 8` above it, and the year comes from the document's own identity |
+| 2010-11-25 | early close | `12:15 CT` | `2010-thanksgiving.pdf @2010-11-22T09:40:12Z` | T1 | `12:15 CT` is the date's own final close; CME prints `Nov 25` above it, and the year comes from the document's own identity |
+| 2010-11-26 | early close | `12:45 CT` | `2010-thanksgiving.pdf @2010-11-22T09:40:12Z` | T1 | `12:45 CT` is the date's own final close; CME prints `Nov 26` above it, and the year comes from the document's own identity |
+| 2010-12-24 | closed | `CME Globex is closed` | `2010-christmas.pdf @2010-12-14T06:12:38Z` | T1 | CME prints `Dec 24` above it as a closed day; the year comes from the document's own identity, because the annual sheets print no year |
+| 2010-12-31 | early close | `15:15 CT` | `2011-new-years.pdf @2011-11-01T14:39:45Z` | T1 | `15:15 CT` is the date's own final close; CME prints `Dec 31` above it, and the year comes from the document's own identity |
 
 ### 2011
 
 | trade date | kind | instant as printed | document | tier | derived from |
 |---|---|---|---|---|---|
-| 2011-01-14 | early close | `1515 CT / 1615 ET` | `2011-martin-luther-king.pdf @2011-10-28T02:34:29Z` | T1 | every routed family states this row, so the intersection is total |
-| 2011-01-17 | early close | `1215 CT / 1315 ET` | `2011-martin-luther-king.pdf @2011-10-28T02:34:29Z` | T1 | every routed family states this row, so the intersection is total |
-| 2011-02-21 | early close | `1215 CT / 1315 ET` | `2011-presidents-day.pdf @2011-10-28T02:35:16Z` | T1 | every routed family states this row, so the intersection is total |
-| 2011-05-30 | early close | `1215 CT / 1315 ET` | `2011-memorial-day.pdf @2013-09-30T10:56:52Z` | T1 | every routed family states this row, so the intersection is total |
-| 2011-07-04 | early close | `1215 CT / 1315 ET` | `2011-4th-of-july.pdf @2011-11-01T14:40:54Z` | T1 | every routed family states this row, so the intersection is total |
-| 2011-09-05 | early close | `1215 CT / 1315 ET` | `2011-labor-day.pdf @2011-11-01T14:43:45Z` | T1 | every routed family states this row, so the intersection is total |
-| 2011-11-24 | early close | `1215 CT / 1315 ET` | `2011-thanksgiving.pdf @2011-11-24T18:52:46Z` | T1 | every routed family states this row, so the intersection is total |
-| 2011-11-25 | early close | `1245 CT / 1345 ET` | `2011-thanksgiving.pdf @2011-11-24T18:52:46Z` | T1 | every routed family states this row, so the intersection is total |
+| 2011-01-14 | early close | `15:15 CT` | `2011-martin-luther-king.pdf @2011-10-28T02:34:29Z` | T1 | `15:15 CT` is the date's own final close; CME prints `Jan 14` above it, and the year comes from the document's own identity |
+| 2011-01-17 | early close | `12:15 CT` | `2011-martin-luther-king.pdf @2011-10-28T02:34:29Z` | T1 | `12:15 CT` is the date's own final close; CME prints `Jan 17` above it, and the year comes from the document's own identity |
+| 2011-02-21 | early close | `12:15 CT` | `2011-presidents-day.pdf @2011-10-28T02:35:16Z` | T1 | `12:15 CT` is the date's own final close; CME prints `Feb 21` above it, and the year comes from the document's own identity |
+| 2011-04-22 | closed | `CME Globex is closed` | `2011-good-friday.pdf @2011-10-28T02:37:07Z` | T1 | CME prints `Apr 22` above it as a closed day; the year comes from the document's own identity, because the annual sheets print no year |
+| 2011-05-30 | early close | `12:15 CT` | `2011-memorial-day.pdf @2013-09-30T10:56:52Z` | T1 | `12:15 CT` is the date's own final close; CME prints `May 30` above it, and the year comes from the document's own identity |
+| 2011-07-04 | early close | `12:15 CT` | `2011-4th-of-july.pdf @2011-11-01T14:40:54Z` | T1 | `12:15 CT` is the date's own final close; CME prints `Jul 4` above it, and the year comes from the document's own identity |
+| 2011-09-05 | early close | `12:15 CT` | `2011-labor-day.pdf @2011-11-01T14:43:45Z` | T1 | `12:15 CT` is the date's own final close; CME prints `Sep 5` above it, and the year comes from the document's own identity |
+| 2011-11-24 | early close | `12:15 CT` | `2011-thanksgiving.pdf @2011-11-24T18:52:46Z` | T1 | `12:15 CT` is the date's own final close; CME prints `Nov 24` above it, and the year comes from the document's own identity |
+| 2011-11-25 | early close | `12:45 CT` | `2011-thanksgiving.pdf @2011-11-24T18:52:46Z` | T1 | `12:45 CT` is the date's own final close; CME prints `Nov 25` above it, and the year comes from the document's own identity |
+| 2011-12-26 | closed | `CME Globex is closed` | `2011-christmas.pdf @2012-01-25T02:05:48Z` | T1 | CME prints `Dec 26` above it as a closed day; the year comes from the document's own identity, because the annual sheets print no year |
 
 ### 2012
 
 | trade date | kind | instant as printed | document | tier | derived from |
 |---|---|---|---|---|---|
-| 2012-01-16 | early close | `1215 CT / 1315 ET` | `2012-martin-luther-king.pdf @2012-05-05T16:15:26Z` | T1 | every routed family states this row, so the intersection is total |
-| 2012-02-20 | early close | `1215 CT / 1315 ET` | `2012-presidents-day.pdf @2012-05-05T16:15:39Z` | T1 | every routed family states this row, so the intersection is total |
-| 2012-05-28 | early close | `1215 CT / 1315 ET` | `2012-memorial-day.pdf @2012-09-15T00:37:14Z` | T1 | every routed family states this row, so the intersection is total |
-| 2012-07-04 | early close | `1215 CT / 1315 ET` | `2012-4th-of-july.pdf @2012-09-15T00:39:23Z` | T1 | every routed family states this row, so the intersection is total |
-| 2012-09-03 | early close | `1215 CT / 1315 ET` | `2012-labor-day.pdf @2012-09-15T00:34:37Z` | T1 | every routed family states this row, so the intersection is total |
-| 2012-11-22 | early close | `1215 CT / 1315 ET` | `2012-thanksgiving.pdf @2013-01-27T22:39:01Z` | T1 | every routed family states this row, so the intersection is total |
-| 2012-11-23 | early close | `1245 CT / 1345 ET` | `2012-thanksgiving.pdf @2013-01-27T22:39:01Z` | T1 | every routed family states this row, so the intersection is total |
-| 2012-12-24 | early close | `1245 CT / 1345 ET` | `2012-christmas.pdf @2013-04-14T19:40:27Z` | T1 | every routed family states this row, so the intersection is total |
+| 2012-01-02 | closed | `CME Globex is closed` | `2012-new-years.pdf @2012-01-25T02:54:30Z` | T1 | CME prints `Jan 2` above it as a closed day; the year comes from the document's own identity, because the annual sheets print no year |
+| 2012-01-16 | early close | `12:15 CT` | `2012-martin-luther-king.pdf @2012-05-05T16:15:26Z` | T1 | `12:15 CT` is the date's own final close; CME prints `Jan 16` above it, and the year comes from the document's own identity |
+| 2012-02-20 | early close | `12:15 CT` | `2012-presidents-day.pdf @2012-05-05T16:15:39Z` | T1 | `12:15 CT` is the date's own final close; CME prints `Feb 20` above it, and the year comes from the document's own identity |
+| 2012-04-06 | closed | `CME Globex is closed` | `2012-good-friday.pdf @2012-04-17T00:42:47Z` | T1 | CME prints `Apr 6` above it as a closed day; the year comes from the document's own identity, because the annual sheets print no year |
+| 2012-05-28 | early close | `12:15 CT` | `2012-memorial-day.pdf @2012-09-15T00:37:14Z` | T1 | `12:15 CT` is the date's own final close; CME prints `May 28` above it, and the year comes from the document's own identity |
+| 2012-07-04 | early close | `12:15 CT` | `2012-4th-of-july.pdf @2012-09-15T00:39:23Z` | T1 | `12:15 CT` is the date's own final close; CME prints `Jul 4` above it, and the year comes from the document's own identity |
+| 2012-09-03 | early close | `12:15 CT` | `2012-labor-day.pdf @2012-09-15T00:34:37Z` | T1 | `12:15 CT` is the date's own final close; CME prints `Sep 3` above it, and the year comes from the document's own identity |
+| 2012-11-22 | early close | `12:15 CT` | `2012-thanksgiving.pdf @2013-01-27T22:39:01Z` | T1 | `12:15 CT` is the date's own final close; CME prints `Nov 22` above it, and the year comes from the document's own identity |
+| 2012-11-23 | early close | `12:45 CT` | `2012-thanksgiving.pdf @2013-01-27T22:39:01Z` | T1 | `12:45 CT` is the date's own final close; CME prints `Nov 23` above it, and the year comes from the document's own identity |
+| 2012-12-24 | early close | `12:45 CT` | `2012-christmas.pdf @2013-04-14T19:40:27Z` | T1 | `12:45 CT` is the date's own final close; CME prints `Dec 24` above it, and the year comes from the document's own identity |
+| 2012-12-25 | closed | `CME Globex is closed` | `2012-christmas.pdf @2013-04-14T19:40:27Z` | T1 | CME prints `Dec 25` above it as a closed day; the year comes from the document's own identity, because the annual sheets print no year |
 
 ### 2025-2027 (T2)
+
+**Counts in this subsection are the 2025-2027 era's.** The table as a whole
+carries 74 rows over its two audited windows: 36 in this era and 38 in
+2010-2012. The intersection is total in both eras, so nothing is withheld.
 
 **This table is derived, not retrieved, and the intersection is total.** It is the
 intersection of the families that route to `Exchange::Nymex` — which is one family,

@@ -253,7 +253,7 @@ fn no_late_open_ships_and_the_post_closure_reopen_is_the_normal_open() {
     }
     assert_eq!(
         (closed, early, late),
-        (9, 51, 3),
+        (15, 51, 3),
         "closed, early-close and late-open rows over the whole 2010-2027 window"
     );
 }

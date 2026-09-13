@@ -6,8 +6,10 @@
 //! it; a disagreement ships [`HolidayKind::Unsourced`], which clips nothing
 //! and tells the caller the date is special without inventing an instant.
 //!
-//! Coverage runs from the January-2010 floor; 2010-2012 rows are T1 (CME's own
-//! holiday-calendar PDFs), 2025-2027 rows are T2 (the trading-hours service).
+//! Coverage is two audited eras: 2010-2012, whose rows are T1 (CME's own
+//! holiday-calendar PDFs), and 2025-2027, whose rows are T2 (the trading-hours
+//! service). The 2013-2024 interval between them is audited by neither and lies
+//! outside every declared window.
 //! The derivation, the instant disagreements and every dropped date are in the
 //! venue's own evidence file, and the per-family rows are in the family files.
 //!
@@ -29,75 +31,91 @@ use super::super::{
 /// keeps both closed, while a holiday early close moves the two by a different
 /// amount — the grain day session ends at 12:05 CT or 12:00 CT while the rate
 /// leg halts at 15:15, 12:00, 10:15 or 13:30 CT by date — so those dates ship
-/// `Unsourced`. Seventy-one rows over two audited eras: nine stated and
-/// sixty-two `Unsourced` (thirty-one in 2025-2027 and thirty-one in
+/// `Unsourced`. Seventy-nine rows over two audited eras: fifteen stated and
+/// sixty-four `Unsourced` (thirty-one in 2025-2027 and thirty-three in
 /// 2010-2012), with the 2013-2024 interval between the eras outside every
 /// declared window.
 // Evidence: docs/evidence/cbot.md
 pub(crate) static CBOT: &HolidayTable = holidays! {
     coverage: [(2010, 1, 1) ..= (2012, 12, 31), (2025, 1, 1) ..= (2027, 12, 31)],
     rows: [
-        // 2010-01-15 - T1 - 2010-martin-luther-king.pdf - disagreement: grains no row, interest rates early close 15:15 CT.
+        // 2010-01-01 - T1 - 2010-new-years.pdf - closed.
+        (2010, 1, 1, Closed, T1, "2010-new-years.pdf @2010-02-15T05:16:52Z"),
+        // 2010-01-15 - T1 - 2010-martin-luther-king.pdf - disagreement: grains no row; interest rates early close 15:15 CT.
         (2010, 1, 15, Unsourced, T1, "2010-martin-luther-king.pdf @2010-03-31T06:42:26Z"),
-        // 2010-02-12 - T1 - 2010-presidents-day.pdf - disagreement: grains no row, interest rates early close 15:15 CT.
+        // 2010-02-12 - T1 - 2010-presidents-day.pdf - disagreement: grains no row; interest rates early close 15:15 CT.
         (2010, 2, 12, Unsourced, T1, "2010-presidents-day.pdf @2010-02-15T06:46:41Z"),
-        // 2010-04-02 - T1 - 2010-good-friday.pdf - disagreement: grains no row, interest rates early close 10:15 CT.
+        // 2010-04-02 - T1 - 2010-good-friday.pdf - disagreement: grains closed; interest rates early close 10:15 CT.
         (2010, 4, 2, Unsourced, T1, "2010-good-friday.pdf @2010-06-01T11:19:16Z"),
-        // 2010-05-28 - T1 - 2010-memorial-day.pdf - disagreement: grains no row, interest rates early close 15:15 CT.
+        // 2010-05-28 - T1 - 2010-memorial-day.pdf - disagreement: grains no row; interest rates early close 15:15 CT.
         (2010, 5, 28, Unsourced, T1, "2010-memorial-day.pdf @2010-06-01T09:42:25Z"),
-        // 2010-07-02 - T1 - 2010-4th-of-july.pdf - disagreement: grains no row, interest rates early close 15:15 CT.
+        // 2010-07-02 - T1 - 2010-4th-of-july.pdf - disagreement: grains no row; interest rates early close 15:15 CT.
         (2010, 7, 2, Unsourced, T1, "2010-4th-of-july.pdf @2010-06-02T00:56:37Z"),
-        // 2010-09-03 - T1 - 2010-labor-day.pdf - disagreement: grains no row, interest rates early close 15:15 CT.
+        // 2010-09-03 - T1 - 2010-labor-day.pdf - disagreement: grains no row; interest rates early close 15:15 CT.
         (2010, 9, 3, Unsourced, T1, "2010-labor-day.pdf @2010-06-02T00:56:41Z"),
-        // 2010-10-08 - T1 - 2010-columbus-day.pdf - disagreement: grains no row, interest rates early close 15:15 CT.
+        // 2010-10-08 - T1 - 2010-columbus-day.pdf - disagreement: grains no row; interest rates early close 15:15 CT.
         (2010, 10, 8, Unsourced, T1, "2010-columbus-day.pdf @2010-08-21T13:31:22Z"),
-        // 2010-11-26 - T1 - 2010-thanksgiving.pdf - disagreement: grains early close 12:00 CT, interest rates early close 12:15 CT.
+        // 2010-11-26 - T1 - 2010-thanksgiving.pdf - disagreement: grains early close 12:00 CT; interest rates early close 12:15 CT.
         (2010, 11, 26, Unsourced, T1, "2010-thanksgiving.pdf @2010-11-22T09:40:12Z"),
-        // 2010-12-31 - T1 - 2011-new-years.pdf - disagreement: grains early close 12:00 CT, interest rates early close 12:15 CT.
+        // 2010-12-24 - T1 - 2010-christmas.pdf - closed.
+        (2010, 12, 24, Closed, T1, "2010-christmas.pdf @2010-12-14T06:12:38Z"),
+        // 2010-12-31 - T1 - 2011-new-years.pdf - disagreement: grains early close 12:00 CT; interest rates early close 12:15 CT.
         (2010, 12, 31, Unsourced, T1, "2011-new-years.pdf @2011-11-01T14:39:45Z"),
-        // 2011-01-14 - T1 - 2011-martin-luther-king.pdf - disagreement: grains no row, interest rates early close 15:15 CT.
+        // 2011-01-14 - T1 - 2011-martin-luther-king.pdf - disagreement: grains no row; interest rates early close 15:15 CT.
         (2011, 1, 14, Unsourced, T1, "2011-martin-luther-king.pdf @2011-10-28T02:34:29Z"),
-        // 2011-02-18 - T1 - 2011-presidents-day.pdf - disagreement: grains no row, interest rates early close 15:15 CT.
+        // 2011-02-18 - T1 - 2011-presidents-day.pdf - disagreement: grains no row; interest rates early close 15:15 CT.
         (2011, 2, 18, Unsourced, T1, "2011-presidents-day.pdf @2011-10-28T02:35:16Z"),
-        // 2011-05-27 - T1 - 2011-memorial-day.pdf - disagreement: grains no row, interest rates early close 15:15 CT.
+        // 2011-04-22 - T1 - 2011-good-friday.pdf - closed.
+        (2011, 4, 22, Closed, T1, "2011-good-friday.pdf @2011-10-28T02:37:07Z"),
+        // 2011-05-27 - T1 - 2011-memorial-day.pdf - disagreement: grains no row; interest rates early close 15:15 CT.
         (2011, 5, 27, Unsourced, T1, "2011-memorial-day.pdf @2013-09-30T10:56:52Z"),
-        // 2011-07-01 - T1 - 2011-4th-of-july.pdf - disagreement: grains no row, interest rates early close 15:15 CT.
+        // 2011-07-01 - T1 - 2011-4th-of-july.pdf - disagreement: grains no row; interest rates early close 15:15 CT.
         (2011, 7, 1, Unsourced, T1, "2011-4th-of-july.pdf @2011-11-01T14:40:54Z"),
-        // 2011-09-02 - T1 - 2011-labor-day.pdf - disagreement: grains no row, interest rates early close 15:15 CT.
+        // 2011-09-02 - T1 - 2011-labor-day.pdf - disagreement: grains no row; interest rates early close 15:15 CT.
         (2011, 9, 2, Unsourced, T1, "2011-labor-day.pdf @2011-11-01T14:43:45Z"),
-        // 2011-10-07 - T1 - 2011-columbus-day.pdf - disagreement: grains no row, interest rates early close 15:15 CT.
+        // 2011-10-07 - T1 - 2011-columbus-day.pdf - disagreement: grains no row; interest rates early close 15:15 CT.
         (2011, 10, 7, Unsourced, T1, "2011-columbus-day.pdf @2011-11-01T14:39:16Z"),
-        // 2011-11-25 - T1 - 2011-thanksgiving.pdf - disagreement: grains early close 12:00 CT, interest rates early close 12:15 CT.
+        // 2011-11-25 - T1 - 2011-thanksgiving.pdf - disagreement: grains early close 12:00 CT; interest rates early close 12:15 CT.
         (2011, 11, 25, Unsourced, T1, "2011-thanksgiving.pdf @2011-11-24T18:52:46Z"),
-        // 2011-12-27 - T1 - 2011-christmas.pdf - disagreement: grains late open 09:30 CT, interest rates late open 05:00 CT.
+        // 2011-12-26 - T1 - 2011-christmas.pdf - closed.
+        (2011, 12, 26, Closed, T1, "2011-christmas.pdf @2012-01-25T02:05:48Z"),
+        // 2011-12-27 - T1 - 2011-christmas.pdf - disagreement: grains late open 09:30 CT; interest rates late open 05:00 CT.
         (2011, 12, 27, Unsourced, T1, "2011-christmas.pdf @2012-01-25T02:05:48Z"),
-        // 2012-01-03 - T1 - 2012-new-years.pdf - disagreement: grains late open 09:30 CT, interest rates late open 05:00 CT.
+        // 2012-01-02 - T1 - 2012-new-years.pdf - closed.
+        (2012, 1, 2, Closed, T1, "2012-new-years.pdf @2012-01-25T02:54:30Z"),
+        // 2012-01-03 - T1 - 2012-new-years.pdf - disagreement: grains late open 09:30 CT; interest rates late open 05:00 CT.
         (2012, 1, 3, Unsourced, T1, "2012-new-years.pdf @2012-01-25T02:54:30Z"),
-        // 2012-01-13 - T1 - 2012-martin-luther-king.pdf - disagreement: grains no row, interest rates early close 15:15 CT.
+        // 2012-01-13 - T1 - 2012-martin-luther-king.pdf - disagreement: grains no row; interest rates early close 15:15 CT.
         (2012, 1, 13, Unsourced, T1, "2012-martin-luther-king.pdf @2012-05-05T16:15:26Z"),
-        // 2012-02-17 - T1 - 2012-presidents-day.pdf - disagreement: grains no row, interest rates early close 15:15 CT.
+        // 2012-02-17 - T1 - 2012-presidents-day.pdf - disagreement: grains no row; interest rates early close 15:15 CT.
         (2012, 2, 17, Unsourced, T1, "2012-presidents-day.pdf @2012-05-05T16:15:39Z"),
-        // 2012-04-06 - T1 - 2012-good-friday.pdf - disagreement: grains no row, interest rates early close 10:15 CT.
-        (2012, 4, 6, Unsourced, T1, "2012-good-friday.pdf @2012-05-05T16:16:49Z"),
-        // 2012-05-25 - T1 - 2012-memorial-day.pdf - disagreement: grains no row, interest rates early close 15:15 CT.
+        // 2012-04-06 - T1 - 2012-good-friday.pdf - disagreement: grains closed; interest rates early close 10:15 CT.
+        (2012, 4, 6, Unsourced, T1, "2012-good-friday.pdf @2012-04-17T00:42:47Z"),
+        // 2012-05-25 - T1 - 2012-memorial-day.pdf - disagreement: grains no row; interest rates early close 15:15 CT.
         (2012, 5, 25, Unsourced, T1, "2012-memorial-day.pdf @2012-09-15T00:37:14Z"),
-        // 2012-05-28 - T1 - 2012-memorial-day.pdf - disagreement: grains late open 19:00 CT, interest rates no row.
+        // 2012-05-28 - T1 - 2012-memorial-day.pdf - disagreement: grains late open 19:00 CT; interest rates no row.
         (2012, 5, 28, Unsourced, T1, "2012-memorial-day.pdf @2012-09-15T00:37:14Z"),
-        // 2012-07-03 - T1 - 2012-4th-of-july.pdf - disagreement: grains early close 12:00 CT, interest rates no row.
+        // 2012-07-03 - T1 - 2012-4th-of-july.pdf - disagreement: grains early close 12:00 CT; interest rates no row.
         (2012, 7, 3, Unsourced, T1, "2012-4th-of-july.pdf @2012-09-15T00:39:23Z"),
-        // 2012-07-05 - T1 - 2012-4th-of-july.pdf - disagreement: grains late open 09:30 CT, interest rates no row.
+        // 2012-07-04 - T1 - 2012-4th-of-july.pdf - disagreement: grains closed; interest rates no row.
+        (2012, 7, 4, Unsourced, T1, "2012-4th-of-july.pdf @2012-09-15T00:39:23Z"),
+        // 2012-07-05 - T1 - 2012-4th-of-july.pdf - disagreement: grains late open 09:30 CT; interest rates no row.
         (2012, 7, 5, Unsourced, T1, "2012-4th-of-july.pdf @2012-09-15T00:39:23Z"),
-        // 2012-08-31 - T1 - 2012-labor-day.pdf - disagreement: grains no row, interest rates early close 15:15 CT.
+        // 2012-08-31 - T1 - 2012-labor-day.pdf - disagreement: grains no row; interest rates early close 15:15 CT.
         (2012, 8, 31, Unsourced, T1, "2012-labor-day.pdf @2012-09-15T00:34:37Z"),
-        // 2012-09-03 - T1 - 2012-labor-day.pdf - disagreement: grains late open 19:00 CT, interest rates no row.
+        // 2012-09-03 - T1 - 2012-labor-day.pdf - disagreement: grains late open 19:00 CT; interest rates no row.
         (2012, 9, 3, Unsourced, T1, "2012-labor-day.pdf @2012-09-15T00:34:37Z"),
-        // 2012-10-05 - T1 - 2012-columbus-day.pdf - disagreement: grains no row, interest rates early close 15:15 CT.
+        // 2012-10-05 - T1 - 2012-columbus-day.pdf - disagreement: grains no row; interest rates early close 15:15 CT.
         (2012, 10, 5, Unsourced, T1, "2012-columbus-day.pdf @2012-09-15T00:15:14Z"),
-        // 2012-11-23 - T1 - 2012-thanksgiving.pdf - disagreement: grains late open 09:30 CT and early close 12:00 CT, interest rates early close 12:15 CT.
+        // 2012-11-22 - T1 - 2012-thanksgiving.pdf - disagreement: grains closed; interest rates no row.
+        (2012, 11, 22, Unsourced, T1, "2012-thanksgiving.pdf @2013-01-27T22:39:01Z"),
+        // 2012-11-23 - T1 - 2012-thanksgiving.pdf - disagreement: grains late open 09:30 CT and early close 12:00 CT; interest rates early close 12:15 CT.
         (2012, 11, 23, Unsourced, T1, "2012-thanksgiving.pdf @2013-01-27T22:39:01Z"),
-        // 2012-12-24 - T1 - 2012-christmas.pdf - disagreement: grains early close 12:00 CT, interest rates early close 12:15 CT.
+        // 2012-12-24 - T1 - 2012-christmas.pdf - disagreement: grains early close 12:00 CT; interest rates early close 12:15 CT.
         (2012, 12, 24, Unsourced, T1, "2012-christmas.pdf @2013-04-14T19:40:27Z"),
-        // 2012-12-26 - T1 - 2012-christmas.pdf - disagreement: grains late open 09:30 CT, interest rates late open 05:00 CT.
+        // 2012-12-25 - T1 - 2012-christmas.pdf - closed.
+        (2012, 12, 25, Closed, T1, "2012-christmas.pdf @2013-04-14T19:40:27Z"),
+        // 2012-12-26 - T1 - 2012-christmas.pdf - disagreement: grains late open 09:30 CT; interest rates late open 05:00 CT.
         (2012, 12, 26, Unsourced, T1, "2012-christmas.pdf @2013-04-14T19:40:27Z"),
         (2025, 1, 1, Closed, T2, "CME-SVC-2024-12-31"),
         // 2025-01-02 - T2 - CME-SVC-2024-12-31 - grains late open 08:30 CT;

@@ -352,13 +352,18 @@ fn era_early_closes_end_the_day_session_at_1200_central() {
 /// lands on the preceding local date.
 ///
 /// 2011-12-27 states 09:30 CT, earlier than the era's 18:00 CT evening open,
-/// so trade date 2011-12-27 begins on its own civil day. 2012-05-28 states
-/// 19:00 CT, at or after the 17:00 CT open in force from 2012-05-20, so the
-/// cutoff lands on 2012-05-27 — FINDING: the row's own evidence records CME's
-/// statement as "Mon May 28, for trade date Tue May 29", and the crate applies
-/// it to the Sunday evening before the holiday instead, which also leaves the
-/// holiday's own Monday 19:00 reopen unapplied (the Monday evening leg opens
-/// at the ordinary 17:00 CT for trade date 2012-05-29). Fenced at that answer.
+/// so trade date 2011-12-27 begins on its own civil day.
+///
+/// 2012-05-28 states 19:00 CT, at or after the 17:00 CT open in force from
+/// 2012-05-20, so the cutoff lands on the preceding local date. That is exactly
+/// what CME states: the sheet prints `1900 CT (Mon May 28, for trade date
+/// Tue May 29)`, and the crate's grid opens the evening leg *for trade date D*
+/// at 17:00 CT on `D - 1`, so on 05-28 itself the 19:00 instant withholds the
+/// Sunday-evening leg that would have fed 05-28 and the ordinary 17:00 CT leg
+/// still opens 05-29. Keying the row to 05-29 instead would put the cutoff at
+/// 19:00 on 05-28 — precisely when that evening leg opens — and change no
+/// answer at all. The residual, that CME prints 05-29 as the instant's own
+/// trade date, is recorded in the family's evidence file.
 #[test]
 fn era_late_opens_land_where_the_normal_first_open_puts_them() {
     let calendar = calendar_for_market_hours_key(ZC);
@@ -444,9 +449,16 @@ fn era_late_open_and_early_close_2012_11_23_is_one_0930_to_1200_block() {
         calendar.next_session_open_after(ct((2012, 11, 23), (12, 10, 0))),
         Some(ct((2012, 11, 25), (17, 0, 0)))
     );
-    // Thanksgiving Day itself keeps its own normal session; only its evening
-    // leg is withheld.
-    assert!(open_at(ct((2012, 11, 22), (9, 0, 0))));
+    // Thanksgiving Day itself is a full closure in this family: CME's 2012
+    // sheet prints the reopening for Friday 2012-11-23 at 09:30 CT.
+    assert_eq!(
+        calendar
+            .holiday_on(day((2012, 11, 22)))
+            .expect("2012-11-22 ships a row")
+            .kind(),
+        HolidayKind::Closed
+    );
+    assert!(!open_at(ct((2012, 11, 22), (9, 0, 0))));
 }
 
 /// A date inside the widened window with no row is audited normal under both of

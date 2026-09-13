@@ -25,11 +25,11 @@
 //! The per-family rows themselves are fenced beside the families that own them
 //! (`holidays_globex_*.rs`); nothing here re-tests a family's instants.
 
-use chrono::{DateTime, Days, NaiveDate, TimeZone as _, Utc};
+use chrono::{DateTime, Datelike as _, Days, NaiveDate, TimeZone as _, Utc};
 use chrono_tz::US;
 use exchange_hours::{
-    CalendarSource, Exchange, ExchangeCalendar, Holiday, HolidayKind, MarketHoursKey, SessionKind,
-    calendar_for_exchange, calendar_for_market_hours_key,
+    CalendarSource, EvidenceTier, Exchange, ExchangeCalendar, Holiday, HolidayKind, MarketHoursKey,
+    SessionKind, calendar_for_exchange, calendar_for_market_hours_key,
 };
 
 /// The four venues this change gives a table, with the families each routes.
@@ -198,7 +198,15 @@ fn the_venue_table_is_the_intersection_of_its_families() {
 /// family closed, and nothing outside these sets may make it.
 #[test]
 fn a_closed_venue_row_is_a_unanimous_closure() {
-    const UNANIMOUS: [(i32, u32, u32); 9] = [
+    const UNANIMOUS: [(i32, u32, u32); 15] = [
+        // 2010-2012: the six Globex full closures CME published for those years
+        (2010, 1, 1),
+        (2010, 12, 24),
+        (2011, 4, 22),
+        (2011, 12, 26),
+        (2012, 1, 2),
+        (2012, 12, 25),
+        // 2025-2027: the nine the trading-hours service states
         (2025, 1, 1),
         (2025, 4, 18),
         (2025, 11, 29),
@@ -209,9 +217,9 @@ fn a_closed_venue_row_is_a_unanimous_closure() {
         (2027, 3, 26),
         (2027, 12, 24),
     ];
-    /// The energy family's own extra closure: a six-family venue cannot state
-    /// it, and `Exchange::Comex`/`Nymex` can.
-    const ENERGY_ONLY: (i32, u32, u32) = (2026, 4, 3);
+    /// The energy family's own extra closures: a six-family venue cannot state
+    /// them, and `Exchange::Comex`/`Nymex` can.
+    const ENERGY_ONLY: [(i32, u32, u32); 3] = [(2010, 4, 2), (2012, 4, 6), (2026, 4, 3)];
 
     for (exchange, families) in VENUES {
         let single_family = matches!(exchange, Exchange::Comex | Exchange::Nymex);
@@ -224,10 +232,26 @@ fn a_closed_venue_row_is_a_unanimous_closure() {
                 coverage.contains(closure),
                 "{exchange:?}: {closure} is inside the audited window"
             );
+            let row = venue
+                .holiday_on(closure)
+                .unwrap_or_else(|| panic!("{exchange:?}: {closure} ships no row"));
             assert_eq!(
-                venue.holiday_on(closure).map(Holiday::kind),
-                Some(HolidayKind::Closed),
+                row.kind(),
+                HolidayKind::Closed,
                 "{exchange:?}: {closure} is a unanimous closure"
+            );
+            // The tier travels in the row, so it is fenced with it: 2010-2012
+            // rows are the families' T1 holiday calendars, 2025-2027 rows their
+            // T2 service responses.
+            let expected_tier = if closure.year() <= 2012 {
+                EvidenceTier::T1
+            } else {
+                EvidenceTier::T2
+            };
+            assert_eq!(
+                row.tier(),
+                expected_tier,
+                "{exchange:?}: {closure} must carry its era's tier"
             );
             assert!(
                 venue.is_closed_trade_date(closure, SessionKind::Both),
@@ -240,7 +264,7 @@ fn a_closed_venue_row_is_a_unanimous_closure() {
             if venue.holiday_on(date).map(Holiday::kind) == Some(HolidayKind::Closed) {
                 let unanimous = UNANIMOUS.iter().any(|(y, m, d)| day(*y, *m, *d) == date);
                 let energy_only =
-                    single_family && date == day(ENERGY_ONLY.0, ENERGY_ONLY.1, ENERGY_ONLY.2);
+                    single_family && ENERGY_ONLY.iter().any(|(y, m, d)| day(*y, *m, *d) == date);
                 assert!(
                     unanimous || energy_only,
                     "{exchange:?}: {date} ships a `Closed` row but is not a closure every \
@@ -275,13 +299,13 @@ fn a_closed_venue_row_is_a_unanimous_closure() {
         // `Exchange` is `#[non_exhaustive]`, so the count is keyed off the
         // routing list this module already pins rather than off the variant.
         // 2025-2027 contributes 32 (CME) or 31 (CBOT) unsourced dates and
-        // 2010-2012 another 49 and 37; the single-family venues have none.
+        // 2010-2012 another 49 and 33; the single-family venues have none.
         let expected = if single_family {
             0
         } else if families.len() == 6 {
             81
         } else {
-            62
+            64
         };
         assert_eq!(unsigned, expected, "{exchange:?}: unsourced row count");
     }

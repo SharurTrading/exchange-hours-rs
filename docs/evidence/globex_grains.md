@@ -130,28 +130,38 @@ lists the two, and `contains` answers per date.
 
 | trade date | kind | instant as printed | document | tier | derived from |
 |---|---|---|---|---|---|
-| 2010-11-26 | early close | `1200 CT CBOT/KCBT grain futures & options; 1215 CT MGEX; 1230 CT CBOT mini-sized grain futures` | `2010-thanksgiving.pdf @2010-11-22T09:40:12Z` | T1 | `1200 CT CBOT/KCBT grain futures & options; 1215 CT MGEX; 1230 CT CBOT mini-sized grain futures` is the date's own final close; CME prints trade date 2010-11-26 beside it |
-| 2010-12-31 | early close | `1200 CT CBOT/KCBT grains; 1215 CT MGEX; 1230 CT CBOT mini grains` | `2011-new-years.pdf @2011-11-01T14:39:45Z` | T1 | `1200 CT CBOT/KCBT grains; 1215 CT MGEX; 1230 CT CBOT mini grains` is the date's own final close; CME prints trade date 2010-12-31 beside it |
+| 2010-01-01 | closed | `CME Globex is closed` | `2010-new-years.pdf @2010-02-15T05:16:52Z` | T1 | CME prints `Jan 1` above it as a closed day; the year comes from the document's own identity, because the annual sheets print no year |
+| 2010-04-02 | closed | `CME Globex is closed` | `2010-good-friday.pdf @2010-06-01T11:19:16Z` | T1 | CME prints `Apr 2` above it as a closed day; the year comes from the document's own identity, because the annual sheets print no year |
+| 2010-11-26 | early close | `12:00 CT` | `2010-thanksgiving.pdf @2010-11-22T09:40:12Z` | T1 | `12:00 CT` is the date's own final close; CME prints `Nov 26` above it, and the year comes from the document's own identity |
+| 2010-12-24 | closed | `CME Globex is closed` | `2010-christmas.pdf @2010-12-14T06:12:38Z` | T1 | CME prints `Dec 24` above it as a closed day; the year comes from the document's own identity, because the annual sheets print no year |
+| 2010-12-31 | early close | `12:00 CT` | `2011-new-years.pdf @2011-11-01T14:39:45Z` | T1 | `12:00 CT` is the date's own final close; CME prints `Dec 31` above it, and the year comes from the document's own identity |
 
 ### 2011
 
 | trade date | kind | instant as printed | document | tier | derived from |
 |---|---|---|---|---|---|
-| 2011-11-25 | early close | `1200 CT CBOT/KCBT; 1215 CT MGEX; 1230 CT CBOT mini-sized grain futures` | `2011-thanksgiving.pdf @2011-11-24T18:52:46Z` | T1 | `1200 CT CBOT/KCBT; 1215 CT MGEX; 1230 CT CBOT mini-sized grain futures` is the date's own final close; CME prints trade date 2011-11-25 beside it |
-| 2011-12-27 | late open | `0930 CT` | `2011-christmas.pdf @2012-01-25T02:05:48Z` | T1 | `0930 CT` is the trade date's own first open; the evening leg that would have opened earlier did not run |
+| 2011-04-22 | closed | `CME Globex is closed` | `2011-good-friday.pdf @2011-10-28T02:37:07Z` | T1 | CME prints `Apr 22` above it as a closed day; the year comes from the document's own identity, because the annual sheets print no year |
+| 2011-11-25 | early close | `12:00 CT` | `2011-thanksgiving.pdf @2011-11-24T18:52:46Z` | T1 | `12:00 CT` is the date's own final close; CME prints `Nov 25` above it, and the year comes from the document's own identity |
+| 2011-12-26 | closed | `CME Globex is closed` | `2011-christmas.pdf @2012-01-25T02:05:48Z` | T1 | CME prints `Dec 26` above it as a closed day; the year comes from the document's own identity, because the annual sheets print no year |
+| 2011-12-27 | late open | `09:30 CT` | `2011-christmas.pdf @2012-01-25T02:05:48Z` | T1 | `09:30 CT` is the trade date's own first open; the evening leg that would have opened earlier did not run |
 
 ### 2012
 
 | trade date | kind | instant as printed | document | tier | derived from |
 |---|---|---|---|---|---|
-| 2012-01-03 | late open | `0930 CT` | `2012-new-years.pdf @2012-01-25T02:54:30Z` | T1 | `0930 CT` is the trade date's own first open; the evening leg that would have opened earlier did not run |
-| 2012-05-28 | late open | `1900 CT (Mon May 28, for trade date Tue May 29)` | `2012-memorial-day.pdf @2012-09-15T00:37:14Z` | T1 | `1900 CT (Mon May 28, for trade date Tue May 29)` is the trade date's own first open; the evening leg that would have opened earlier did not run |
-| 2012-07-03 | early close | `1200 CT CBOT/KCBT; 1215 CT MGEX` | `2012-4th-of-july.pdf @2012-09-15T00:39:23Z` | T1 | `1200 CT CBOT/KCBT; 1215 CT MGEX` is the date's own final close; CME prints trade date 2012-07-03 beside it |
-| 2012-07-05 | late open | `0930 CT` | `2012-4th-of-july.pdf @2012-09-15T00:39:23Z` | T1 | `0930 CT` is the trade date's own first open; the evening leg that would have opened earlier did not run |
-| 2012-09-03 | late open | `1900 CT (Mon Sep 3, for trade date Tue Sep 4)` | `2012-labor-day.pdf @2012-09-15T00:34:37Z` | T1 | `1900 CT (Mon Sep 3, for trade date Tue Sep 4)` is the trade date's own first open; the evening leg that would have opened earlier did not run |
-| 2012-11-23 | late open and early close | `1200 CT CBOT/KCBT; 1215 CT MGEX; 1230 CT CBOT mini-sized grain; re-open 0930 CT` | `2012-thanksgiving.pdf @2013-01-27T22:39:01Z` | T1 | `1200 CT CBOT/KCBT; 1215 CT MGEX; 1230 CT CBOT mini-sized grain` closes this trade date and `0930 CT` is its own first open |
-| 2012-12-24 | early close | `1200 CT CBOT/KCBT; 1215 CT MGEX; 1230 CT CBOT mini-sized grain` | `2012-christmas.pdf @2013-04-14T19:40:27Z` | T1 | `1200 CT CBOT/KCBT; 1215 CT MGEX; 1230 CT CBOT mini-sized grain` is the date's own final close; CME prints trade date 2012-12-24 beside it |
-| 2012-12-26 | late open | `0930 CT (MGEX Apple Juice 0700 CT)` | `2012-christmas.pdf @2013-04-14T19:40:27Z` | T1 | `0930 CT (MGEX Apple Juice 0700 CT)` is the trade date's own first open; the evening leg that would have opened earlier did not run |
+| 2012-01-02 | closed | `CME Globex is closed` | `2012-new-years.pdf @2012-01-25T02:54:30Z` | T1 | CME prints `Jan 2` above it as a closed day; the year comes from the document's own identity, because the annual sheets print no year |
+| 2012-01-03 | late open | `09:30 CT` | `2012-new-years.pdf @2012-01-25T02:54:30Z` | T1 | `09:30 CT` is the trade date's own first open; the evening leg that would have opened earlier did not run |
+| 2012-04-06 | closed | `CME Globex is closed` | `2012-good-friday.pdf @2012-04-17T00:42:47Z` | T1 | CME prints `Apr 6` above it as a closed day; the year comes from the document's own identity, because the annual sheets print no year |
+| 2012-05-28 | late open | `19:00 CT` | `2012-memorial-day.pdf @2012-09-15T00:37:14Z` | T1 | `19:00 CT` is the trade date's own first open; the evening leg that would have opened earlier did not run |
+| 2012-07-03 | early close | `12:00 CT` | `2012-4th-of-july.pdf @2012-09-15T00:39:23Z` | T1 | `12:00 CT` is the date's own final close; CME prints `Jul 3` above it, and the year comes from the document's own identity |
+| 2012-07-04 | closed | `CME Globex is closed` | `2012-4th-of-july.pdf @2012-09-15T00:39:23Z` | T1 | CME prints `Jul 4` above it as a closed day; the year comes from the document's own identity, because the annual sheets print no year |
+| 2012-07-05 | late open | `09:30 CT` | `2012-4th-of-july.pdf @2012-09-15T00:39:23Z` | T1 | `09:30 CT` is the trade date's own first open; the evening leg that would have opened earlier did not run |
+| 2012-09-03 | late open | `19:00 CT` | `2012-labor-day.pdf @2012-09-15T00:34:37Z` | T1 | `19:00 CT` is the trade date's own first open; the evening leg that would have opened earlier did not run |
+| 2012-11-22 | closed | `CME Globex is closed` | `2012-thanksgiving.pdf @2013-01-27T22:39:01Z` | T1 | CME prints `Nov 22` above it as a closed day; the year comes from the document's own identity, because the annual sheets print no year |
+| 2012-11-23 | late open and early close | `12:00 CT` | `2012-thanksgiving.pdf @2013-01-27T22:39:01Z` | T1 | `12:00 CT` closes this trade date and its own first open is stated on it |
+| 2012-12-24 | early close | `12:00 CT` | `2012-christmas.pdf @2013-04-14T19:40:27Z` | T1 | `12:00 CT` is the date's own final close; CME prints `Dec 24` above it, and the year comes from the document's own identity |
+| 2012-12-25 | closed | `CME Globex is closed` | `2012-christmas.pdf @2013-04-14T19:40:27Z` | T1 | CME prints `Dec 25` above it as a closed day; the year comes from the document's own identity, because the annual sheets print no year |
+| 2012-12-26 | late open | `09:30 CT` | `2012-christmas.pdf @2013-04-14T19:40:27Z` | T1 | `09:30 CT` is the trade date's own first open; the evening leg that would have opened earlier did not run |
 
 ### 2025-2027 (T2)
 

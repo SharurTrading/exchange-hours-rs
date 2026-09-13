@@ -1,4 +1,4 @@
-//! The `Exchange::Comex` table holiday rows — the the COMEX metals half of `globex_energy`.
+//! The `Exchange::Comex` table holiday rows — the COMEX metals half of `globex_energy`.
 //!
 //! Derived, not retrieved: the rows are the intersection of the families that
 //! route to this venue, by the rule and routing recorded in
@@ -6,8 +6,10 @@
 //! it; a disagreement ships [`HolidayKind::Unsourced`], which clips nothing
 //! and tells the caller the date is special without inventing an instant.
 //!
-//! Coverage runs from the January-2010 floor; 2010-2012 rows are T1 (CME's own
-//! holiday-calendar PDFs), 2025-2027 rows are T2 (the trading-hours service).
+//! Coverage is two audited eras: 2010-2012, whose rows are T1 (CME's own
+//! holiday-calendar PDFs), and 2025-2027, whose rows are T2 (the trading-hours
+//! service). The 2013-2024 interval between them is audited by neither and lies
+//! outside every declared window.
 //! The derivation, the instant disagreements and every dropped date are in the
 //! venue's own evidence file, and the per-family rows are in the family files.
 //!
@@ -27,73 +29,89 @@ use super::super::{
 ///
 /// Metals and energy are one key and the operator prints them as one product
 /// row on every date the table audits, so the intersection is total: the venue
-/// carries the family's sixty-six rows unchanged — thirty from 2010-2012 and
-/// thirty-six from 2025-2027 — and withholds no date. The 2013-2024 interval
+/// carries the family's seventy-four rows unchanged — thirty-eight from
+/// 2010-2012 and thirty-six from 2025-2027 — and withholds no date. The 2013-2024 interval
 /// between the two eras is outside every declared window and ships no row.
 // Evidence: docs/evidence/comex.md
 pub(crate) static COMEX: &HolidayTable = holidays! {
     coverage: [(2010, 1, 1) ..= (2012, 12, 31), (2025, 1, 1) ..= (2027, 12, 31)],
     rows: [
+        // 2010-01-01 - T1 - 2010-new-years.pdf - closed.
+        (2010, 1, 1, Closed, T1, "2010-new-years.pdf @2010-02-15T05:16:52Z"),
         // 2010-01-15 - T1 - 2010-martin-luther-king.pdf - early close 15:15 CT.
-        (2010, 1, 15, early_close(54900), T1, "2010-martin-luther-king.pdf @2010-03-31T06:42:26Z"),
+        (2010, 1, 15, early_close(15 * 3_600 + 15 * 60), T1, "2010-martin-luther-king.pdf @2010-03-31T06:42:26Z"),
         // 2010-01-18 - T1 - 2010-martin-luther-king.pdf - early close 12:15 CT.
-        (2010, 1, 18, early_close(44100), T1, "2010-martin-luther-king.pdf @2010-03-31T06:42:26Z"),
+        (2010, 1, 18, early_close(12 * 3_600 + 15 * 60), T1, "2010-martin-luther-king.pdf @2010-03-31T06:42:26Z"),
         // 2010-02-12 - T1 - 2010-presidents-day.pdf - early close 15:15 CT.
-        (2010, 2, 12, early_close(54900), T1, "2010-presidents-day.pdf @2010-02-15T06:46:41Z"),
+        (2010, 2, 12, early_close(15 * 3_600 + 15 * 60), T1, "2010-presidents-day.pdf @2010-02-15T06:46:41Z"),
         // 2010-02-15 - T1 - 2010-presidents-day.pdf - early close 12:15 CT.
-        (2010, 2, 15, early_close(44100), T1, "2010-presidents-day.pdf @2010-02-15T06:46:41Z"),
+        (2010, 2, 15, early_close(12 * 3_600 + 15 * 60), T1, "2010-presidents-day.pdf @2010-02-15T06:46:41Z"),
+        // 2010-04-02 - T1 - 2010-good-friday.pdf - closed.
+        (2010, 4, 2, Closed, T1, "2010-good-friday.pdf @2010-06-01T11:19:16Z"),
         // 2010-05-28 - T1 - 2010-memorial-day.pdf - early close 15:15 CT.
-        (2010, 5, 28, early_close(54900), T1, "2010-memorial-day.pdf @2010-06-01T09:42:25Z"),
+        (2010, 5, 28, early_close(15 * 3_600 + 15 * 60), T1, "2010-memorial-day.pdf @2010-06-01T09:42:25Z"),
         // 2010-05-31 - T1 - 2010-memorial-day.pdf - early close 12:15 CT.
-        (2010, 5, 31, early_close(44100), T1, "2010-memorial-day.pdf @2010-06-01T09:42:25Z"),
+        (2010, 5, 31, early_close(12 * 3_600 + 15 * 60), T1, "2010-memorial-day.pdf @2010-06-01T09:42:25Z"),
         // 2010-07-02 - T1 - 2010-4th-of-july.pdf - early close 15:15 CT.
-        (2010, 7, 2, early_close(54900), T1, "2010-4th-of-july.pdf @2010-06-02T00:56:37Z"),
+        (2010, 7, 2, early_close(15 * 3_600 + 15 * 60), T1, "2010-4th-of-july.pdf @2010-06-02T00:56:37Z"),
         // 2010-07-05 - T1 - 2010-4th-of-july.pdf - early close 12:15 CT.
-        (2010, 7, 5, early_close(44100), T1, "2010-4th-of-july.pdf @2010-06-02T00:56:37Z"),
+        (2010, 7, 5, early_close(12 * 3_600 + 15 * 60), T1, "2010-4th-of-july.pdf @2010-06-02T00:56:37Z"),
         // 2010-09-03 - T1 - 2010-labor-day.pdf - early close 15:15 CT.
-        (2010, 9, 3, early_close(54900), T1, "2010-labor-day.pdf @2010-06-02T00:56:41Z"),
+        (2010, 9, 3, early_close(15 * 3_600 + 15 * 60), T1, "2010-labor-day.pdf @2010-06-02T00:56:41Z"),
         // 2010-09-06 - T1 - 2010-labor-day.pdf - early close 12:15 CT.
-        (2010, 9, 6, early_close(44100), T1, "2010-labor-day.pdf @2010-06-02T00:56:41Z"),
+        (2010, 9, 6, early_close(12 * 3_600 + 15 * 60), T1, "2010-labor-day.pdf @2010-06-02T00:56:41Z"),
         // 2010-10-08 - T1 - 2010-columbus-day.pdf - early close 15:15 CT.
-        (2010, 10, 8, early_close(54900), T1, "2010-columbus-day.pdf @2010-08-21T13:31:22Z"),
+        (2010, 10, 8, early_close(15 * 3_600 + 15 * 60), T1, "2010-columbus-day.pdf @2010-08-21T13:31:22Z"),
         // 2010-11-25 - T1 - 2010-thanksgiving.pdf - early close 12:15 CT.
-        (2010, 11, 25, early_close(44100), T1, "2010-thanksgiving.pdf @2010-11-22T09:40:12Z"),
+        (2010, 11, 25, early_close(12 * 3_600 + 15 * 60), T1, "2010-thanksgiving.pdf @2010-11-22T09:40:12Z"),
         // 2010-11-26 - T1 - 2010-thanksgiving.pdf - early close 12:45 CT.
-        (2010, 11, 26, early_close(45900), T1, "2010-thanksgiving.pdf @2010-11-22T09:40:12Z"),
+        (2010, 11, 26, early_close(12 * 3_600 + 45 * 60), T1, "2010-thanksgiving.pdf @2010-11-22T09:40:12Z"),
+        // 2010-12-24 - T1 - 2010-christmas.pdf - closed.
+        (2010, 12, 24, Closed, T1, "2010-christmas.pdf @2010-12-14T06:12:38Z"),
         // 2010-12-31 - T1 - 2011-new-years.pdf - early close 15:15 CT.
-        (2010, 12, 31, early_close(54900), T1, "2011-new-years.pdf @2011-11-01T14:39:45Z"),
+        (2010, 12, 31, early_close(15 * 3_600 + 15 * 60), T1, "2011-new-years.pdf @2011-11-01T14:39:45Z"),
         // 2011-01-14 - T1 - 2011-martin-luther-king.pdf - early close 15:15 CT.
-        (2011, 1, 14, early_close(54900), T1, "2011-martin-luther-king.pdf @2011-10-28T02:34:29Z"),
+        (2011, 1, 14, early_close(15 * 3_600 + 15 * 60), T1, "2011-martin-luther-king.pdf @2011-10-28T02:34:29Z"),
         // 2011-01-17 - T1 - 2011-martin-luther-king.pdf - early close 12:15 CT.
-        (2011, 1, 17, early_close(44100), T1, "2011-martin-luther-king.pdf @2011-10-28T02:34:29Z"),
+        (2011, 1, 17, early_close(12 * 3_600 + 15 * 60), T1, "2011-martin-luther-king.pdf @2011-10-28T02:34:29Z"),
         // 2011-02-21 - T1 - 2011-presidents-day.pdf - early close 12:15 CT.
-        (2011, 2, 21, early_close(44100), T1, "2011-presidents-day.pdf @2011-10-28T02:35:16Z"),
+        (2011, 2, 21, early_close(12 * 3_600 + 15 * 60), T1, "2011-presidents-day.pdf @2011-10-28T02:35:16Z"),
+        // 2011-04-22 - T1 - 2011-good-friday.pdf - closed.
+        (2011, 4, 22, Closed, T1, "2011-good-friday.pdf @2011-10-28T02:37:07Z"),
         // 2011-05-30 - T1 - 2011-memorial-day.pdf - early close 12:15 CT.
-        (2011, 5, 30, early_close(44100), T1, "2011-memorial-day.pdf @2013-09-30T10:56:52Z"),
+        (2011, 5, 30, early_close(12 * 3_600 + 15 * 60), T1, "2011-memorial-day.pdf @2013-09-30T10:56:52Z"),
         // 2011-07-04 - T1 - 2011-4th-of-july.pdf - early close 12:15 CT.
-        (2011, 7, 4, early_close(44100), T1, "2011-4th-of-july.pdf @2011-11-01T14:40:54Z"),
+        (2011, 7, 4, early_close(12 * 3_600 + 15 * 60), T1, "2011-4th-of-july.pdf @2011-11-01T14:40:54Z"),
         // 2011-09-05 - T1 - 2011-labor-day.pdf - early close 12:15 CT.
-        (2011, 9, 5, early_close(44100), T1, "2011-labor-day.pdf @2011-11-01T14:43:45Z"),
+        (2011, 9, 5, early_close(12 * 3_600 + 15 * 60), T1, "2011-labor-day.pdf @2011-11-01T14:43:45Z"),
         // 2011-11-24 - T1 - 2011-thanksgiving.pdf - early close 12:15 CT.
-        (2011, 11, 24, early_close(44100), T1, "2011-thanksgiving.pdf @2011-11-24T18:52:46Z"),
+        (2011, 11, 24, early_close(12 * 3_600 + 15 * 60), T1, "2011-thanksgiving.pdf @2011-11-24T18:52:46Z"),
         // 2011-11-25 - T1 - 2011-thanksgiving.pdf - early close 12:45 CT.
-        (2011, 11, 25, early_close(45900), T1, "2011-thanksgiving.pdf @2011-11-24T18:52:46Z"),
+        (2011, 11, 25, early_close(12 * 3_600 + 45 * 60), T1, "2011-thanksgiving.pdf @2011-11-24T18:52:46Z"),
+        // 2011-12-26 - T1 - 2011-christmas.pdf - closed.
+        (2011, 12, 26, Closed, T1, "2011-christmas.pdf @2012-01-25T02:05:48Z"),
+        // 2012-01-02 - T1 - 2012-new-years.pdf - closed.
+        (2012, 1, 2, Closed, T1, "2012-new-years.pdf @2012-01-25T02:54:30Z"),
         // 2012-01-16 - T1 - 2012-martin-luther-king.pdf - early close 12:15 CT.
-        (2012, 1, 16, early_close(44100), T1, "2012-martin-luther-king.pdf @2012-05-05T16:15:26Z"),
+        (2012, 1, 16, early_close(12 * 3_600 + 15 * 60), T1, "2012-martin-luther-king.pdf @2012-05-05T16:15:26Z"),
         // 2012-02-20 - T1 - 2012-presidents-day.pdf - early close 12:15 CT.
-        (2012, 2, 20, early_close(44100), T1, "2012-presidents-day.pdf @2012-05-05T16:15:39Z"),
+        (2012, 2, 20, early_close(12 * 3_600 + 15 * 60), T1, "2012-presidents-day.pdf @2012-05-05T16:15:39Z"),
+        // 2012-04-06 - T1 - 2012-good-friday.pdf - closed.
+        (2012, 4, 6, Closed, T1, "2012-good-friday.pdf @2012-04-17T00:42:47Z"),
         // 2012-05-28 - T1 - 2012-memorial-day.pdf - early close 12:15 CT.
-        (2012, 5, 28, early_close(44100), T1, "2012-memorial-day.pdf @2012-09-15T00:37:14Z"),
+        (2012, 5, 28, early_close(12 * 3_600 + 15 * 60), T1, "2012-memorial-day.pdf @2012-09-15T00:37:14Z"),
         // 2012-07-04 - T1 - 2012-4th-of-july.pdf - early close 12:15 CT.
-        (2012, 7, 4, early_close(44100), T1, "2012-4th-of-july.pdf @2012-09-15T00:39:23Z"),
+        (2012, 7, 4, early_close(12 * 3_600 + 15 * 60), T1, "2012-4th-of-july.pdf @2012-09-15T00:39:23Z"),
         // 2012-09-03 - T1 - 2012-labor-day.pdf - early close 12:15 CT.
-        (2012, 9, 3, early_close(44100), T1, "2012-labor-day.pdf @2012-09-15T00:34:37Z"),
+        (2012, 9, 3, early_close(12 * 3_600 + 15 * 60), T1, "2012-labor-day.pdf @2012-09-15T00:34:37Z"),
         // 2012-11-22 - T1 - 2012-thanksgiving.pdf - early close 12:15 CT.
-        (2012, 11, 22, early_close(44100), T1, "2012-thanksgiving.pdf @2013-01-27T22:39:01Z"),
+        (2012, 11, 22, early_close(12 * 3_600 + 15 * 60), T1, "2012-thanksgiving.pdf @2013-01-27T22:39:01Z"),
         // 2012-11-23 - T1 - 2012-thanksgiving.pdf - early close 12:45 CT.
-        (2012, 11, 23, early_close(45900), T1, "2012-thanksgiving.pdf @2013-01-27T22:39:01Z"),
+        (2012, 11, 23, early_close(12 * 3_600 + 45 * 60), T1, "2012-thanksgiving.pdf @2013-01-27T22:39:01Z"),
         // 2012-12-24 - T1 - 2012-christmas.pdf - early close 12:45 CT.
-        (2012, 12, 24, early_close(45900), T1, "2012-christmas.pdf @2013-04-14T19:40:27Z"),
+        (2012, 12, 24, early_close(12 * 3_600 + 45 * 60), T1, "2012-christmas.pdf @2013-04-14T19:40:27Z"),
+        // 2012-12-25 - T1 - 2012-christmas.pdf - closed.
+        (2012, 12, 25, Closed, T1, "2012-christmas.pdf @2013-04-14T19:40:27Z"),
         (2025, 1, 1, Closed, T2, "CME-SVC-2024-12-31"),
         // 2025-01-20 - T2 - CME-SVC-2025-01-19 - metals early close 13:30 CT.
         (2025, 1, 20, early_close(13 * 3_600 + 30 * 60), T2, "CME-SVC-2025-01-19"),

@@ -263,9 +263,11 @@ points belong there, while the evidence belongs in the owner's evidence file.
   are in scope for this crate: a closed date, an early final close, or a late
   first open is a per-family date-table entry recording the date, the kind, and
   its document id, sourced from the operator's published holiday calendar at
-  T1, from the January-2010 floor to the operator's published future for a
-  served identity and best-effort for a dormant one. (The tables themselves
-  land in a later change; the law states the policy now.) A caller's
+  T1 or its own machine channel at T2, from the January-2010 floor (or the
+  identity's first trading day, if later) to what the operator had published
+  as of the inspection date: served identities first, dormant ones after. The
+  ledger's `Holidays` column shows which identities ship a table and over
+  which window. A caller's
   `DayPolicy` or `StaticDayPolicy` record remains the overlay *above* that
   table, for what the crate does not carry. A closed date normally removes its
   complete trading day, including a prior-evening wrap. Preserve a different

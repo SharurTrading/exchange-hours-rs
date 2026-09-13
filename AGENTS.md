@@ -58,7 +58,7 @@ the cost of keeping them true.
   |---|---|---|
   | Current schedule sourced at T1 or T2 | required | required at last review |
   | Dated history to the January-2010 floor | required | best-effort, labelled |
-  | Holiday and early-close table | required, floor to published future | best-effort |
+  | Holiday and early-close table | required, floor to published future | required after the served tier; refreshed on demand |
   | Review cadence (LAW-WATCH) | monthly if high-churn, 24/7 or holiday-bearing, else quarterly | on demand |
   | Follow-ups tracked as issues | required | recorded in the evidence file |
 
@@ -154,9 +154,14 @@ the cost of keeping them true.
   sourced from the operator's own published holiday calendar at T1 or its own
   machine channel at T2, at the tier LAW-PRIMARY-SOURCES requires and with that
   tier carried in the row rather than only in a comment. The **target** is
-  the January-2010 floor to the operator's published future for served
-  identities, best-effort for dormant ones: an obligation the tables are built
-  towards, not a statement of what ships. Once a family's table ships, the
+  the January-2010 floor, or the identity's first trading day if later, to
+  whatever the operator had published unconditionally as of the table's
+  inspection date, for every identity: served identities first, dormant ones
+  after them. It is an obligation the tables are built towards, not a
+  statement of what ships. Where the operator's own documents, archives
+  included, do not reach the floor, the table starts where they do and the
+  evidence file names the gap; an identity whose operator observes no holidays
+  says so in its evidence file instead of shipping a table. Once a family's table ships, the
   built-in calendars apply it by default. **What ships — which identities have
   a table, and over which trade-date window — is the `Holidays` column of the
   verification ledger**, derived by a fence from each identity's own

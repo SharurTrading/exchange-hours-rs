@@ -35,7 +35,7 @@ they are recorded here in revision-row grammar and checked against
 
 ## Holidays
 
-**Coverage:** 2026-01-01 .. 2026-12-31 (inclusive trade dates). Tier: T1 throughout.
+**Coverage:** 2026-01-01..2026-12-31 (inclusive trade dates). Tier: T1 throughout.
 
 One table serves `Exchange::Eurex`, the `eurex` key and the `eurex_fixed_income` key. The operator states the closure for “all derivatives”, which covers FESX, FDAX and FDXM behind the index rows and FGBL, FGBM, FGBS and FGBX behind the fixed-income rows alike, so the venue intersection is the same table.
 

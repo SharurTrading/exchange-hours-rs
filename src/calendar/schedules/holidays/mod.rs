@@ -163,36 +163,83 @@ impl Holiday {
     }
 }
 
-/// The inclusive venue-local trade-date window a built-in table audited.
+/// The venue-local trade-date windows a built-in table audited.
 ///
 /// Mirrors [`ExceptionCoverage`](crate::ExceptionCoverage), and for the same
-/// reason: inside the window a date with no row is **audited normal**, while
-/// outside it the table has no answer at all. That is the distinction
+/// reason: inside an audited window a date with no row is **audited normal**,
+/// while outside one the table has no answer at all. That is the distinction
 /// [`ExchangeCalendar::holiday_on`](crate::ExchangeCalendar::holiday_on) alone
 /// cannot express, which is why both accessors exist.
+///
+/// A table may hold **more than one window**. The built-in holiday tables are
+/// built one operator-era wave at a time, and a wave's years are audited from
+/// that wave's documents alone; a decade between two waves is not audited by
+/// either, so claiming one contiguous span across it would report every date in
+/// the gap as audited normal. [`Self::windows`] names the audited spans,
+/// [`Self::first`] and [`Self::last`] bound them, and [`Self::contains`] is the
+/// authority on whether one date was audited.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct HolidayCoverage {
     first: NaiveDate,
     last: NaiveDate,
+    windows: &'static [(i32, u32, u32, i32, u32, u32)],
 }
 
 impl HolidayCoverage {
-    /// Returns the first audited trade date.
+    /// Returns the earliest audited trade date.
     #[must_use]
     pub const fn first(self) -> NaiveDate {
         self.first
     }
 
-    /// Returns the last audited trade date.
+    /// Returns the latest audited trade date.
     #[must_use]
     pub const fn last(self) -> NaiveDate {
         self.last
     }
 
-    /// Returns whether `trade_date` falls inside the audited window.
+    /// Returns every audited span as `(first, last)` date pairs, ascending and
+    /// non-overlapping.
+    ///
+    /// A caller that needs to know whether a *particular* date was audited
+    /// should ask [`Self::contains`]; this is for a caller that reports the
+    /// coverage itself, or that wants to size a scan. An invalid window literal
+    /// has already failed the build, so the conversion is total.
+    #[must_use]
+    pub fn windows(self) -> Vec<(NaiveDate, NaiveDate)> {
+        self.windows
+            .iter()
+            .map(
+                |(first_year, first_month, first_day, last_year, last_month, last_day)| {
+                    (
+                        chrono::NaiveDate::from_ymd_opt(*first_year, *first_month, *first_day)
+                            .unwrap_or(self.first),
+                        chrono::NaiveDate::from_ymd_opt(*last_year, *last_month, *last_day)
+                            .unwrap_or(self.last),
+                    )
+                },
+            )
+            .collect()
+    }
+
+    /// Returns whether `trade_date` falls inside an audited window.
     #[must_use]
     pub fn contains(self, trade_date: NaiveDate) -> bool {
-        self.first <= trade_date && trade_date <= self.last
+        use chrono::Datelike as _;
+
+        let key = trade_date.num_days_from_ce();
+        self.windows.iter().any(
+            |(first_year, first_month, first_day, last_year, last_month, last_day)| {
+                let first = chrono::NaiveDate::from_ymd_opt(*first_year, *first_month, *first_day);
+                let last = chrono::NaiveDate::from_ymd_opt(*last_year, *last_month, *last_day);
+                match (first, last) {
+                    (Some(first), Some(last)) => {
+                        first.num_days_from_ce() <= key && key <= last.num_days_from_ce()
+                    }
+                    _ => false,
+                }
+            },
+        )
     }
 }
 
@@ -208,20 +255,24 @@ pub(crate) struct HolidayRow {
     pub(crate) document: SourceRef,
 }
 
-/// One family's holiday rows plus the window they were audited over.
+/// One family's holiday rows plus the windows they were audited over.
 #[derive(Clone, Copy)]
 pub(crate) struct HolidayTable {
-    pub(crate) first: NaiveDate,
-    pub(crate) last: NaiveDate,
+    pub(crate) windows: &'static [(i32, u32, u32, i32, u32, u32)],
     pub(crate) rows: &'static [HolidayRow],
 }
 
 impl HolidayTable {
-    /// Returns the audited trade-date window.
+    /// Returns the audited trade-date windows.
+    ///
+    /// `first` and `last` are the outermost dates the table answers for, which
+    /// its own fenced rows bound: every window holds at least one row and every
+    /// row lies inside a window.
     pub(crate) const fn coverage(&self) -> HolidayCoverage {
         HolidayCoverage {
-            first: self.first,
-            last: self.last,
+            first: crate::calendar::schedules::holidays::fences::window_first(self.windows),
+            last: crate::calendar::schedules::holidays::fences::window_last(self.windows),
+            windows: self.windows,
         }
     }
 
@@ -262,7 +313,7 @@ impl HolidayTable {
 ///
 /// ```text
 /// holidays! {
-///     coverage: (2025, 1, 1) ..= (2027, 12, 31),
+///     coverage: [(2025, 1, 1) ..= (2027, 12, 31)],
 ///     rows: [
 ///         (2025, 1, 20, early_close(12 * 3_600), T2, "CME-SVC-2025-01-20"),
 ///         (2025, 12, 25, HolidayKind::Closed, T2, "CME-HOL-2025-CHRISTMAS"),
@@ -270,14 +321,22 @@ impl HolidayTable {
 /// }
 /// ```
 ///
-/// where each row is `(year, month, day, kind, tier, document id)`. Constant
-/// evaluation fails the build unless:
+/// where each row is `(year, month, day, kind, tier, document id)` and
+/// `coverage` lists one or more inclusive trade-date windows. **A table ships
+/// one window per era it was audited over.** The built-in holiday tables are
+/// built one operator-era wave at a time, and each wave's documents audit that
+/// wave's years alone; a decade between two waves is audited by neither, so a
+/// single span across it would make every date in the gap read as audited
+/// normal. Listing the eras separately keeps that claim true, and
+/// [`HolidayCoverage::contains`] answers per date.
 ///
-/// 1. the coverage window is ordered — `last` does not precede `first`;
+/// Constant evaluation fails the build unless:
+///
+/// 1. the windows are non-empty, ascending and non-overlapping;
 /// 2. trade dates are strictly ascending, so `HolidayTable::may_affect`'s
 ///    partition-point search and `HolidayTable::holiday_on`'s binary search
 ///    see a total order and no row is shadowed by a duplicate;
-/// 3. every row lies inside the coverage window, the rule
+/// 3. every row lies inside one of the coverage windows, the rule
 ///    [`StaticSessionExceptions`](crate::StaticSessionExceptions) enforces for
 ///    a caller's records;
 /// 4. every row carries a non-empty document id, so a holiday can never exist
@@ -291,8 +350,8 @@ impl HolidayTable {
 /// tier and document id, and a fence checks that both appear there.
 macro_rules! holidays {
     (
-        coverage: ($first_year:expr, $first_month:expr, $first_day:expr)
-            ..= ($last_year:expr, $last_month:expr, $last_day:expr),
+        coverage: [$(($first_year:expr, $first_month:expr, $first_day:expr)
+            ..= ($last_year:expr, $last_month:expr, $last_day:expr)),* $(,)?],
         rows: [
             $( ($year:expr, $month:expr, $day:expr, $kind:expr, $tier:expr, $document:literal) ),*
             $(,)?
@@ -310,24 +369,19 @@ macro_rules! holidays {
                 }
             ),*
         ];
+        const WINDOW_DATES: &[(i32, u32, u32, i32, u32, u32)] = &[
+            $(
+                ($first_year, $first_month, $first_day, $last_year, $last_month, $last_day)
+            ),*
+        ];
         const TABLE: &$crate::calendar::schedules::holidays::HolidayTable =
             &$crate::calendar::schedules::holidays::HolidayTable {
-                first: $crate::calendar::schedules::holidays::fences::holiday_date(
-                    $first_year, $first_month, $first_day,
-                ),
-                last: $crate::calendar::schedules::holidays::fences::holiday_date(
-                    $last_year, $last_month, $last_day,
-                ),
+                windows: WINDOW_DATES,
                 rows: ROWS,
             };
         const _: () = {
             const DATES: &[(i32, u32, u32)] = &[$(($year, $month, $day)),*];
-            $crate::calendar::schedules::holidays::fences::assert_table(
-                ($first_year, $first_month, $first_day),
-                ($last_year, $last_month, $last_day),
-                DATES,
-                ROWS,
-            );
+            $crate::calendar::schedules::holidays::fences::assert_table(WINDOW_DATES, DATES, ROWS);
         };
         TABLE
     }};

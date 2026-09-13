@@ -25,7 +25,7 @@
 
 ## Holidays
 
-**Coverage:** 2025-01-01 .. 2027-12-31 (inclusive venue-local trade dates). Tier:
+**Coverage:** 2025-01-01..2027-12-31 (inclusive venue-local trade dates). Tier:
 T2 throughout — CME's own trading-hours service, the machine channel the
 operator's `trading-hours.html` calls to render its per-asset-class Holiday
 Hours table, read as bytes and saved. Rows: 24 — 20 `closed`, 4 `early close`,

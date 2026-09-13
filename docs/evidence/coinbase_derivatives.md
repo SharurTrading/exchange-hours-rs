@@ -42,7 +42,7 @@ they are recorded here in revision-row grammar and checked against
 
 ## Holidays
 
-**Coverage:** 2026-01-01 .. 2026-09-07 (inclusive trade dates). Tier: T1 throughout.
+**Coverage:** 2026-01-01..2026-09-07 (inclusive trade dates). Tier: T1 throughout.
 
 **Documents.**
 

@@ -996,32 +996,36 @@ fn stated_instants(kind: &str) -> Vec<String> {
 }
 
 /// The families each venue's exported table intersects, as
-/// `(evidence file name, families)`.
+/// `(venue evidence file, [(family, the family's own evidence file)])`.
 ///
 /// This mirrors `holidays/venues.rs`'s routing table. The venue tests fence that
-/// table against `hours_for_exchange`; this list exists so the evidence files can
-/// be read against the right families.
-const VENUE_EVIDENCE_FAMILIES: [(&str, &[exchange_hours::MarketHoursKey]); 4] = [
+/// table against `hours_for_exchange`; this list exists so a venue's evidence can
+/// be read against **its own** families' rows rather than against the whole
+/// crate's holiday corpus. A family whose evidence file no longer resolves is a
+/// failed lookup below, not a silently smaller set.
+type VenueFamilies = (&'static str, &'static [(&'static str, &'static str)]);
+
+const VENUE_FAMILIES: [VenueFamilies; 4] = [
     (
         "cme.md",
         &[
-            exchange_hours::MarketHoursKey::GlobexEquityIndex,
-            exchange_hours::MarketHoursKey::GlobexEnergy,
-            exchange_hours::MarketHoursKey::GlobexFx,
-            exchange_hours::MarketHoursKey::GlobexGrains,
-            exchange_hours::MarketHoursKey::GlobexInterestRates,
-            exchange_hours::MarketHoursKey::GlobexLivestock,
+            ("globex_equity_index", "globex_equity_index.md"),
+            ("globex_energy", "globex_energy.md"),
+            ("globex_fx", "globex_fx.md"),
+            ("globex_grains", "globex_grains.md"),
+            ("globex_interest_rates", "globex_interest_rates.md"),
+            ("globex_livestock", "globex_livestock.md"),
         ],
     ),
     (
         "cbot.md",
         &[
-            exchange_hours::MarketHoursKey::GlobexGrains,
-            exchange_hours::MarketHoursKey::GlobexInterestRates,
+            ("globex_grains", "globex_grains.md"),
+            ("globex_interest_rates", "globex_interest_rates.md"),
         ],
     ),
-    ("comex.md", &[exchange_hours::MarketHoursKey::GlobexEnergy]),
-    ("nymex.md", &[exchange_hours::MarketHoursKey::GlobexEnergy]),
+    ("comex.md", &[("globex_energy", "globex_energy.md")]),
+    ("nymex.md", &[("globex_energy", "globex_energy.md")]),
 ];
 
 /// Splits a summary into the claims it makes and the evidence behind them.
@@ -1087,10 +1091,26 @@ fn stated_times(text: &str) -> Vec<String> {
     found
 }
 
-/// Every instant a family table states, by trade date, as `hh:mm` strings.
-fn stated_instants_by_day() -> BTreeMap<String, BTreeSet<String>> {
+/// Every instant the given families' tables state, by trade date, as `hh:mm`
+/// strings.
+///
+/// `families` are `(name, evidence file)` pairs: a block belongs to a family
+/// when it declares that family's evidence file, which is how the family module
+/// attributes its own rows. The venue module declares the venue's file instead,
+/// so its `Unsourced` rows — which state no instant — cannot enter the set.
+fn stated_instants_for(families: &[(&str, &str)]) -> BTreeMap<String, BTreeSet<String>> {
     let mut stated: BTreeMap<String, BTreeSet<String>> = BTreeMap::new();
+    let mut resolved: BTreeSet<&str> = BTreeSet::new();
     for block in holiday_blocks() {
+        let owned = families
+            .iter()
+            .filter(|(_, file)| block.files.iter().any(|declared| declared == file))
+            .map(|(name, _)| *name)
+            .collect::<Vec<_>>();
+        if owned.is_empty() {
+            continue;
+        }
+        resolved.extend(owned);
         for row in &block.rows {
             let entry = stated.entry(row.day.clone()).or_default();
             for instant in stated_instants(&row.kind) {
@@ -1098,24 +1118,28 @@ fn stated_instants_by_day() -> BTreeMap<String, BTreeSet<String>> {
             }
         }
     }
+    for (name, _) in families {
+        assert!(
+            resolved.contains(name),
+            "no holidays! block declares {name}'s evidence file, so this fence would \
+             check the venue against a family it never read"
+        );
+    }
     stated
 }
 
 #[test]
 fn every_instant_a_venue_summary_cites_is_one_its_families_state() {
     let files = evidence_files();
-    let stated = stated_instants_by_day();
-    assert!(
-        !stated.is_empty(),
-        "the fence reads the family tables, so at least one must ship rows"
-    );
-
-    for (file, _families) in VENUE_EVIDENCE_FAMILIES {
+    for (file, families) in VENUE_FAMILIES {
         let text = files
             .get(file)
             .unwrap_or_else(|| panic!("{file} must exist in docs/evidence"));
-        // The venue module's own rows are in `stated` too, and its `Unsourced`
-        // rows state no instant, so they contribute nothing and need no case.
+        let stated = stated_instants_for(families);
+        assert!(
+            !stated.is_empty(),
+            "{file}: the fence reads the family tables, so at least one must ship rows"
+        );
         let holidays = section(text, "## Holidays")
             .unwrap_or_else(|| panic!("{file} must carry a `## Holidays` section"));
         for line in holidays.lines().filter(|line| line.starts_with("| 2")) {
@@ -1139,9 +1163,9 @@ fn every_instant_a_venue_summary_cites_is_one_its_families_state() {
             for instant in stated_times(summary_claims(summary)) {
                 assert!(
                     covered.iter().any(|set| set.contains(&instant)),
-                    "{file}: the {day} row's summary states {instant} CT, but no family row \
-                     states that instant on any covered date the summary names ({named:?}). \
-                     Summary: {summary}"
+                    "{file}: the {day} row's summary states {instant} CT, but none of the \
+                     families this venue routes states it on any covered date the summary \
+                     names ({named:?}). Summary: {summary}"
                 );
             }
         }

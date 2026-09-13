@@ -50,17 +50,33 @@ window — the Globex full closures — and the other **thirty-two** dates carry
 **`unsourced` is neither silence nor a compromise.** The coverage window is
 contiguous, so a date carrying no row is the positive claim that it was audited
 normal, which is false on every one of these dates. Nor can the venue state an
-instant, because the families' sourced closes differ on every date on which a venue
-row would have to pick one. **The Christmas Eves are the widest:** on 2026-12-24 the
-grain and livestock day sessions end at 12:05 CT, the equity-index and interest-rate
-families at 12:15 CT, and energy and FX at 12:45 CT — a forty-minute spread. **The
-Friday holidays are nearly as wide:** on the three days after Thanksgiving the grain
-and livestock sessions end at 12:05 CT, the equity-index and interest-rate families at
-12:15 CT, and energy and FX at 13:45 CT. **The Monday holidays disagree in kind rather
-than by minutes:** the equity-index and interest-rate families halt at 12:00 CT, energy
-and FX at 13:30 CT, and grains and livestock are closed outright. A venue row at the
-shallowest close would stop trading the families that run later; one at the deepest
-would run the families that stop earlier past their own sourced close.
+instant. A venue row would have to pick one, and on these dates there is no single
+one to pick, in either of two shapes: two families state **different boundaries**, or
+one family states a boundary while another has **audited the date normal** — and the
+second shape blocks a venue row just as firmly, because an audited normal is a
+different answer rather than a missing one.
+
+The shapes are counted from the six tables rather than assumed. **Ten** of the
+thirty-two dates have all six families stating a boundary that they do not agree on.
+**Twenty-two** have at least one family silent, and five of those are the sharpest
+case, where exactly **one** family states anything at all: 2025-01-02, 2025-12-26,
+2026-01-02 and 2027-07-06, where only `globex_grains` states a late open, and
+2025-07-03, where only `globex_equity_index` states an early close. The other
+seventeen are a mixture in between. Here is what the boundary disagreements look like
+across the three shapes of holiday, which is why no single instant can stand for one.
+
+**The Christmas Eves are the widest** (a ten-date shape): on 2026-12-24 the grain and
+livestock day sessions end at 12:05 CT, the equity-index and interest-rate families at
+12:15 CT, and energy and FX at 12:45 CT — a forty-minute spread. **The Friday holidays
+are nearly as wide** (again all six, except that grains and livestock carry a late
+open as well): on the three days after Thanksgiving the grain and livestock sessions
+end at 12:05 CT, the equity-index and interest-rate families at 12:15 CT, and energy
+and FX at 13:45 CT. **The Monday holidays disagree in kind rather than by minutes**
+(these are the five-silent shape — `globex_fx` states nothing): the equity-index and
+interest-rate families halt at 12:00 CT, energy at 13:30 CT, and grains and livestock
+are closed outright. A venue row at the shallowest close would stop trading the
+families that run later; one at the deepest would run the families that stop earlier
+past their own sourced close.
 
 `unsourced` clips nothing, changes no answer, and tells
 a caller what the crate knows: the date is special and the venue has no single answer

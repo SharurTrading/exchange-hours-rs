@@ -28,7 +28,7 @@
 //!
 //! | Venue | Families | Why these |
 //! |---|---|---|
-//! | `cme` | `globex_equity_index`, `globex_energy`, `globex_fx`, `globex_grains`, `globex_interest_rates`, `globex_livestock` | the plan's six; `globex_nikkei_225_dollar` agrees with the equity-index family on every date in this window, and `globex_cryptocurrency` shares all nine closures and states nothing on seventeen of the other dates, so either addition would leave every answer here unchanged and only widen the recorded disagreements |
+//! | `cme` | `globex_equity_index`, `globex_energy`, `globex_fx`, `globex_grains`, `globex_interest_rates`, `globex_livestock` | the plan's six. `globex_nikkei_225_dollar` is left out because it agrees with `globex_equity_index` on every date in this window, so it would change neither an answer nor a recorded disagreement; `globex_cryptocurrency` is left out because, although it shares all nine closures, it states nothing on seventeen of the other dates and would therefore join seventeen more disagreements without moving an answer |
 //! | `cbot` | `globex_grains`, `globex_interest_rates` | the two families whose sessions the venue profile is built from |
 //! | `comex` | `globex_energy`, metals half | the venue's documented scope |
 //! | `nymex` | `globex_energy`, energy half | the venue's documented scope |

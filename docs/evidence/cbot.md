@@ -195,8 +195,9 @@ The other **thirty-one** dates carry `unsourced`, in two shapes:
   as its own either.
 
 **`unsourced` is neither silence nor a compromise.** The coverage window is
-contiguous, so a date carrying no row is the positive claim that it was audited
-normal, which is false on every one of these dates. Nor is a compromise available: on
+contiguous **within each audited window**, so a date carrying no row there is the
+positive claim that it was audited normal, which is false on every one of these
+dates. Nor is a compromise available: on
 2025-11-28 a row at 12:05 CT would leave the rates family trading ten minutes after
 the venue said it stopped, and a row at 12:15 CT would cut the grain day session
 short at its own sourced close. `unsourced` clips nothing and tells a caller

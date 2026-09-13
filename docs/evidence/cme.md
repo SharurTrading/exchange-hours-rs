@@ -206,8 +206,9 @@ window — the Globex full closures — and the other **thirty-two** dates carry
 `unsourced`.
 
 **`unsourced` is neither silence nor a compromise.** The coverage window is
-contiguous, so a date carrying no row is the positive claim that it was audited
-normal, which is false on every one of these dates. Nor can the venue state an
+contiguous **within each audited window**, so a date carrying no row there is the
+positive claim that it was audited normal, which is false on every one of these
+dates. Nor can the venue state an
 instant. A venue row would have to pick one, and on these dates there is no single
 one to pick, in either of two shapes: two families state **different boundaries**, or
 one family states a boundary while another has **audited the date normal** — and the

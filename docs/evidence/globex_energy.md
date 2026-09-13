@@ -50,13 +50,124 @@ Official origin of the trading-hours captures: <http://www.cmegroup.com/trading_
 - **residual risk** — the only Sunday inside the narrowed bracket is 2012-06-03; that is an observation about the bracket, not a source-stated effective day, so LAW-NO-FABRICATED-DATES keeps it out of the tables.
 - **scope** — named NYMEX energy/PGM and COMEX metals roots only; TAS/TAM/BTIC, options and different product clocks are excluded.
 
+## Evidence documents
+
+Every id below resolves to one saved artifact behind this file's holiday rows.
+The 2010-2012 ids are CME Group's own holiday-calendar PDFs at tier T1, retrieved
+through the Internet Archive and saved; the 2025-2027 ids are responses of CME's
+own `trading-hours-by-product` service at tier T2. Byte counts, capture times and
+sha256 are in each id's row, so a row can be re-verified from this file together
+with the research store's `holidays/raw/` indexes.
+
+| Document | Window | Capture or retrieval, UTC | Tier | sha256 |
+|---|---|---|---|---|
+| `2010-martin-luther-king.pdf @2010-03-31T06:42:26Z` | `2010-martin-luther-king.pdf` | Internet Archive raw replay of http://www.cmegroup.com/tools-information/holiday-calendar/files/2010-martin-luther-king.pdf, capture 2010-03-31T06:42:26Z, 54521 bytes | T1 | `11af96423f788565a434209ebb94a82f69dd2c129621927cd898c2ff6c0978d3` |
+| `2010-presidents-day.pdf @2010-02-15T06:46:41Z` | `2010-presidents-day.pdf` | Internet Archive raw replay of http://www.cmegroup.com/tools-information/holiday-calendar/files/2010-presidents-day.pdf, capture 2010-02-15T06:46:41Z, 49335 bytes | T1 | `ba379a7fa57efef43820583ada0002ea6cd8ccf0caf1b650d1cb6e8561f84253` |
+| `2010-memorial-day.pdf @2010-06-01T09:42:25Z` | `2010-memorial-day.pdf` | Internet Archive raw replay of http://www.cmegroup.com/tools-information/holiday-calendar/files/2010-memorial-day.pdf, capture 2010-06-01T09:42:25Z, 90478 bytes | T1 | `46a2f00f0f23c82189d86953092ee1171e0ec1c460891bda3ef0578518d12859` |
+| `2010-4th-of-july.pdf @2010-06-02T00:56:37Z` | `2010-4th-of-july.pdf` | Internet Archive raw replay of http://www.cmegroup.com/tools-information/holiday-calendar/files/2010-4th-of-july.pdf, capture 2010-06-02T00:56:37Z, 49205 bytes | T1 | `c6a0f8c0b079b85e4500d30d942247bc9aa14d6c70fe3ed73d6d77b21b65ee2c` |
+| `2010-labor-day.pdf @2010-06-02T00:56:41Z` | `2010-labor-day.pdf` | Internet Archive raw replay of http://www.cmegroup.com/tools-information/holiday-calendar/files/2010-labor-day.pdf, capture 2010-06-02T00:56:41Z, 48708 bytes | T1 | `2aecfe737c9613f82b975a01812607e96c9284638e8bd9b9bd403edfae510620` |
+| `2010-columbus-day.pdf @2010-08-21T13:31:22Z` | `2010-columbus-day.pdf` | Internet Archive raw replay of http://www.cmegroup.com/tools-information/holiday-calendar/files/2010-columbus-day.pdf, capture 2010-08-21T13:31:22Z, 43838 bytes | T1 | `e8fbf61d914ebd3cd74de611a7b2d9a4d13a67e1233045ccc2fcbb57556be3f9` |
+| `2010-thanksgiving.pdf @2010-11-22T09:40:12Z` | `2010-thanksgiving.pdf` | Internet Archive raw replay of http://www.cmegroup.com/tools-information/holiday-calendar/files/2010-thanksgiving.pdf, capture 2010-11-22T09:40:12Z, 97946 bytes | T1 | `4732afab4ca78ce21b3640f8ac41ced714123179c7cee1cb2b8c044bf9f2e2b5` |
+| `2011-new-years.pdf @2011-11-01T14:39:45Z` | `2011-new-years.pdf` | Internet Archive raw replay of http://www.cmegroup.com/tools-information/holiday-calendar/files/2011-new-years.pdf, capture 2011-11-01T14:39:45Z, 125412 bytes | T1 | `42c289804cd3fa0830556ecb7fcc31493c452ba9e7325ebe7d7ce29613e41476` |
+| `2011-martin-luther-king.pdf @2011-10-28T02:34:29Z` | `2011-martin-luther-king.pdf` | Internet Archive raw replay of http://www.cmegroup.com/tools-information/holiday-calendar/files/2011-martin-luther-king.pdf, capture 2011-10-28T02:34:29Z, 126115 bytes | T1 | `2e389e2688d6760705220a11657329e76a9eb3a88d78664b4775eb7481be7b17` |
+| `2011-presidents-day.pdf @2011-10-28T02:35:16Z` | `2011-presidents-day.pdf` | Internet Archive raw replay of http://www.cmegroup.com/tools-information/holiday-calendar/files/2011-presidents-day.pdf, capture 2011-10-28T02:35:16Z, 146317 bytes | T1 | `0342359e135acada5cfaa1b74f806477f759924a0b40625e035242c7e81321d4` |
+| `2011-memorial-day.pdf @2013-09-30T10:56:52Z` | `2011-memorial-day.pdf` | Internet Archive raw replay of http://www.cmegroup.com/tools-information/holiday-calendar/files/2011-memorial-day.pdf, capture 2013-09-30T10:56:52Z, 66172 bytes | T1 | `5482f7bf47e0ee61448cf5f60fd4a5373cc39cb0e46220150c1f6a2ab2d6caec` |
+| `2011-4th-of-july.pdf @2011-11-01T14:40:54Z` | `2011-4th-of-july.pdf` | Internet Archive raw replay of http://www.cmegroup.com/tools-information/holiday-calendar/files/2011-4th-of-july.pdf, capture 2011-11-01T14:40:54Z, 126279 bytes | T1 | `4c3bfbbe927ed799006edce76b5f263b6299bab29be7ff1eb06326e184a9b443` |
+| `2011-labor-day.pdf @2011-11-01T14:43:45Z` | `2011-labor-day.pdf` | Internet Archive raw replay of http://www.cmegroup.com/tools-information/holiday-calendar/files/2011-labor-day.pdf, capture 2011-11-01T14:43:45Z, 129524 bytes | T1 | `03f38fea761a6da7633c3e636a40de61431c866a87f2229f270685bf9bb4470b` |
+| `2011-thanksgiving.pdf @2011-11-24T18:52:46Z` | `2011-thanksgiving.pdf` | Internet Archive raw replay of http://www.cmegroup.com/tools-information/holiday-calendar/files/2011-thanksgiving.pdf, capture 2011-11-24T18:52:46Z, 131748 bytes | T1 | `bf75c3e0d3e18cbb8599458574bc7232513b737a664582454a7b34ca2b6caeb5` |
+| `2012-martin-luther-king.pdf @2012-05-05T16:15:26Z` | `2012-martin-luther-king.pdf` | Internet Archive raw replay of http://www.cmegroup.com/tools-information/holiday-calendar/files/2012-martin-luther-king.pdf, capture 2012-05-05T16:15:26Z, 153369 bytes | T1 | `458c94af0fd7b7d8445c229de6bbe05648ea588c2fea88180eefe46486e4d265` |
+| `2012-presidents-day.pdf @2012-05-05T16:15:39Z` | `2012-presidents-day.pdf` | Internet Archive raw replay of http://www.cmegroup.com/tools-information/holiday-calendar/files/2012-presidents-day.pdf, capture 2012-05-05T16:15:39Z, 208816 bytes | T1 | `4b5daad7813d41cdd9a104cca3a656bf303672f03c6c51ff5a13771d840ef131` |
+| `2012-memorial-day.pdf @2012-09-15T00:37:14Z` | `2012-memorial-day.pdf` | Internet Archive raw replay of http://www.cmegroup.com/tools-information/holiday-calendar/files/2012-memorial-day.pdf, capture 2012-09-15T00:37:14Z, 70132 bytes | T1 | `5dc5cf9883232978ec1e80bd5bd50a2043535e93d7e52acddf4fd7e68938e848` |
+| `2012-4th-of-july.pdf @2012-09-15T00:39:23Z` | `2012-4th-of-july.pdf` | Internet Archive raw replay of http://www.cmegroup.com/tools-information/holiday-calendar/files/2012-4th-of-july.pdf, capture 2012-09-15T00:39:23Z, 68805 bytes | T1 | `9b35b802ff0e399226ac0811761fc7e03487d8dec401c19a7e383750cbca5faf` |
+| `2012-labor-day.pdf @2012-09-15T00:34:37Z` | `2012-labor-day.pdf` | Internet Archive raw replay of http://www.cmegroup.com/tools-information/holiday-calendar/files/2012-labor-day.pdf, capture 2012-09-15T00:34:37Z, 71440 bytes | T1 | `2f951bede1d6084977c8bed2f1cc4c993ebedd904aa0d56027668d2cb808ee39` |
+| `2012-thanksgiving.pdf @2013-01-27T22:39:01Z` | `2012-thanksgiving.pdf` | Internet Archive raw replay of http://www.cmegroup.com/tools-information/holiday-calendar/files/2012-thanksgiving.pdf, capture 2013-01-27T22:39:01Z, 73205 bytes | T1 | `052e381bbd4eb0790c6d38e3866874738d6da081da62643e525c25674b2608e1` |
+| `2012-christmas.pdf @2013-04-14T19:40:27Z` | `2012-christmas.pdf` | Internet Archive raw replay of http://www.cmegroup.com/tools-information/holiday-calendar/files/2012-christmas.pdf, capture 2013-04-14T19:40:27Z, 125821 bytes | T1 | `de3b16aaae2ef887e46c965f902d8d0e43afa6e18dc1f721baaa40ea6b18b5e9` |
+| `CME-SVC-2024-12-31` | 2024-12-31 .. 2025-01-02 | archive capture 2024-12-20T15:53:40Z | T2 | `375c70eecd19c5c6204ecb408d1b3210a9da4c9a03b85ef1c7dbbcde1397ab63` |
+| `CME-SVC-2025-01-19` | 2025-01-19 .. 2025-01-21 | archive capture 2024-12-20T15:53:40Z | T2 | `4f2ab56af14e7b3a6978e7fa6db8e2cfc63a82d06428cd88844f0e5bcf534f40` |
+| `CME-SVC-2025-02-16` | 2025-02-16 .. 2025-02-18 | archive capture 2024-12-20T15:53:40Z | T2 | `5bec2ca6b4999a534e4d9818035aaa18ec8626b6c912cf7e3d2c57015536f2fa` |
+| `CME-SVC-2025-04-17` | 2025-04-17 .. 2025-04-19 | archive capture 2024-12-20T15:53:40Z | T2 | `865a1d4f08102e00151bd87ab2b8e8a7720e9203a17aaaba24627ade3ed26e74` |
+| `CME-SVC-2025-05-25` | 2025-05-25 .. 2025-05-27 | archive capture 2024-12-20T15:53:40Z | T2 | `5f42869879c826f5949b79236aabb3d26d74e7565d92d7cc5e8784c63973210b` |
+| `CME-SVC-2025-06-18` | 2025-06-18 .. 2025-06-20 | archive capture 2024-12-20T15:53:40Z | T2 | `a572706907175776255261103b393493ebdf5a8106ec5374d129145bdf89105e` |
+| `CME-SVC-2025-07-03` | 2025-07-03 .. 2025-07-05 | archive capture 2024-12-20T15:53:40Z | T2 | `b80cd4bfed0ae72865bfacc1936e107eb8febfcc94b37fcce1d05505c659147b` |
+| `CME-SVC-2025-08-31` | 2025-08-31 .. 2025-09-02 | archive capture 2024-12-20T15:53:40Z | T2 | `e075762ed34a86048d94900e10edba10d95b3d766052908ffbb5133f6b64bab0` |
+| `CME-SVC-2025-11-26` | 2025-11-26 .. 2025-11-28 | archive capture 2026-01-29T01:23:09Z | T2 | `6c4c598791058dd9a11aff0ddb072c761a436c6d1054b891def74c6935f020f1` |
+| `CME-SVC-2025-11-26-SAT` | 2025-11-26 .. 2025-11-29 | live retrieval 2026-09-12T08:55:12Z | T2 | `2e9f34f20085de3ccbdff1dc29cb7463bcff93713ef0c550740d6f15e0635ab7` |
+| `CME-SVC-2025-12-24` | 2025-12-24 .. 2025-12-26 | archive capture 2026-01-29T01:21:59Z | T2 | `322a2be989b67f5f4cc0ec12fd63a393383d574badd4aacc87a0c9637533d386` |
+| `CME-SVC-2025-12-31` | 2025-12-31 .. 2026-01-02 | archive capture 2026-06-19T11:41:05Z | T2 | `0ed61f8328eda4746265cc8e197f10cd53aec06c2b393927bab27c913993d314` |
+| `CME-SVC-2026-01-18` | 2026-01-18 .. 2026-01-20 | archive capture 2026-06-19T11:41:05Z | T2 | `5e3ff08bdc7d07474b96b8dc8c18ed0d5e48d12dc4bcad81a5f68820cb2aa89e` |
+| `CME-SVC-2026-02-15` | 2026-02-15 .. 2026-02-17 | archive capture 2026-06-19T11:41:05Z | T2 | `5dd507dd959d0029e838ec88b1bdb63c32444ea36a121de002606f5d7b206e2f` |
+| `CME-SVC-2026-04-01` | 2026-04-01 .. 2026-04-03 | archive capture 2026-06-19T11:41:18Z | T2 | `54bcc271e9ba9737a99a2fe608e658de0c657075284d050fbfec4fe1aee2a2a5` |
+| `CME-SVC-2026-05-24` | 2026-05-24 .. 2026-05-26 | archive capture 2026-06-19T11:41:05Z | T2 | `f7e30d204ce2cbe08e5f486ded6518f623369159f3a36161288a4708288314da` |
+| `CME-SVC-2026-06-18` | 2026-06-18 .. 2026-06-20 | archive capture 2026-06-19T11:34:04Z | T2 | `97fd5da371309f4486a8fb49ff2105c6c1c2396939ab7c76f1a2a1097b6f015c` |
+| `CME-SVC-2026-07-03` | 2026-07-03 .. 2026-07-05 | archive capture 2026-06-19T11:41:08Z | T2 | `4b89a026358e998277f9c1ff7e095e5d4e625cdc45115fd141dc92201833155b` |
+| `CME-SVC-2026-09-06` | 2026-09-06 .. 2026-09-08 | live retrieval 2026-09-12T04:30Z | T2 | `01fb78ffaac10eac466fed53674214222f05aed518b9d93a4b42cf8957147bca` |
+| `CME-SVC-2026-11-25` | 2026-11-25 .. 2026-11-27 | live retrieval 2026-09-12T04:30Z | T2 | `e1f35a5623b3c5d15e7468b2cb4119e587411a9714f920605dab11bf688756d1` |
+| `CME-SVC-2026-12-22` | 2026-12-22 .. 2026-12-24 | live retrieval 2026-09-12T04:30Z | T2 | `c8c0267da8cf171409ad8ca188082b3aa326e8d04a89d12503dcf9f57bf3b7ab` |
+| `CME-SVC-2026-12-24` | 2026-12-24 .. 2026-12-26 | live retrieval 2026-09-12T04:30Z | T2 | `bdc1fe831adb794bcf8aeb7e99baf6af2009d1ff9969d0a48b18b2ebc2e1e829` |
+| `CME-SVC-2026-12-31` | 2026-12-31 .. 2027-01-02 | live retrieval 2026-09-12T04:30Z | T2 | `7162652821c16f1bd05e3ec533bd5b82af03833c7186a64c7734b0b650364dcd` |
+| `CME-SVC-2027-01-17` | 2027-01-17 .. 2027-01-19 | live retrieval 2026-09-12T04:30Z | T2 | `7155c4b7ee8b299b3033eb3daf002b6ceecf0fbd53f6f98a7036048022275743` |
+| `CME-SVC-2027-02-14` | 2027-02-14 .. 2027-02-16 | live retrieval 2026-09-12T04:30Z | T2 | `41f5aa8cde3879f8b10490386c134a294a0f1509edde2022a22ec3ffcaed1183` |
+| `CME-SVC-2027-03-25` | 2027-03-25 .. 2027-03-27 | live retrieval 2026-09-12T04:30Z | T2 | `9bd7225d440e00139f30892f3914c9b38beb8bf29d4272039b6cd8f2de926880` |
+| `CME-SVC-2027-05-30` | 2027-05-30 .. 2027-06-01 | live retrieval 2026-09-12T04:30Z | T2 | `1283649724c30163fa08ba7ab02d1230fa9a7dd0613b8b4b3d96cd1d9dc4febd` |
+| `CME-SVC-2027-06-17` | 2027-06-17 .. 2027-06-19 | live retrieval 2026-09-12T04:30Z | T2 | `60c9a2f5106d61039a616986b463cd852861ee4d3b91b11fac8badfa1b97b01c` |
+| `CME-SVC-2027-07-04` | 2027-07-04 .. 2027-07-06 | live retrieval 2026-09-12T04:30Z | T2 | `93ff8232886435c94be682bf968aa30749011cdf8dadeb7d2425a3b0b9e0bf71` |
+| `CME-SVC-2027-09-05` | 2027-09-05 .. 2027-09-07 | live retrieval 2026-09-12T04:30Z | T2 | `aa08a3bd102812928e69cf1ea4c8a84f738eaa5d14f967acee7d2571e74aedb9` |
+| `CME-SVC-2027-11-24` | 2027-11-24 .. 2027-11-26 | live retrieval 2026-09-12T04:30Z | T2 | `6aa7c0fd701a02480dabeac1fbae1a69b56e77643a29e3a9b2223c56e822ce9f` |
+| `CME-SVC-2027-12-22` | 2027-12-22 .. 2027-12-25 | live retrieval 2026-09-12T04:30Z | T2 | `5edc4dd588a32faa74f841494c10a3df48692dca29843c3581bad3e18c30fef9` |
+
 ## Holidays
 
-**Coverage:** 2025-01-01 .. 2027-12-31 (inclusive venue-local trade dates,
-`America/Chicago`). Tier: **T2** throughout — CME's own trading-hours service,
-the endpoint `cmegroup.com/trading-hours.html` itself calls, read as bytes and
-saved. No T1 per-asset-class rendering exists for these years; that is a named
-gap below, not a reason to withhold the rows.
+**Coverage:** 2010-01-01 .. 2027-12-31 (inclusive venue-local trade dates in
+`America/Chicago`), audited per era: **T1** for 2010-2012 in the per-year sections
+below and **T2** for 2025-2027. Inside the window a date with no row is audited
+normal; outside it this table has no answer at all.
+
+### 2010
+
+| trade date | kind | instant as printed | document | tier | derived from |
+|---|---|---|---|---|---|
+| 2010-01-15 | early close | `1515 CT / 1615 ET` | `2010-martin-luther-king.pdf @2010-03-31T06:42:26Z` | T1 | `1515 CT / 1615 ET` is the date's own final close; CME prints trade date 2010-01-15 beside it |
+| 2010-01-18 | early close | `1215 CT / 1315 ET` | `2010-martin-luther-king.pdf @2010-03-31T06:42:26Z` | T1 | `1215 CT / 1315 ET` is the date's own final close; CME prints trade date 2010-01-18 beside it |
+| 2010-02-12 | early close | `1515 CT / 1615 ET` | `2010-presidents-day.pdf @2010-02-15T06:46:41Z` | T1 | `1515 CT / 1615 ET` is the date's own final close; CME prints trade date 2010-02-12 beside it |
+| 2010-02-15 | early close | `1215 CT / 1315 ET` | `2010-presidents-day.pdf @2010-02-15T06:46:41Z` | T1 | `1215 CT / 1315 ET` is the date's own final close; CME prints trade date 2010-02-15 beside it |
+| 2010-05-28 | early close | `1515 CT / 1615 ET` | `2010-memorial-day.pdf @2010-06-01T09:42:25Z` | T1 | `1515 CT / 1615 ET` is the date's own final close; CME prints trade date 2010-05-28 beside it |
+| 2010-05-31 | early close | `1215 CT / 1315 ET` | `2010-memorial-day.pdf @2010-06-01T09:42:25Z` | T1 | `1215 CT / 1315 ET` is the date's own final close; CME prints trade date 2010-05-31 beside it |
+| 2010-07-02 | early close | `1515 CT / 1615 ET` | `2010-4th-of-july.pdf @2010-06-02T00:56:37Z` | T1 | `1515 CT / 1615 ET` is the date's own final close; CME prints trade date 2010-07-02 beside it |
+| 2010-07-05 | early close | `1215 CT / 1315 ET` | `2010-4th-of-july.pdf @2010-06-02T00:56:37Z` | T1 | `1215 CT / 1315 ET` is the date's own final close; CME prints trade date 2010-07-05 beside it |
+| 2010-09-03 | early close | `1515 CT / 1615 ET` | `2010-labor-day.pdf @2010-06-02T00:56:41Z` | T1 | `1515 CT / 1615 ET` is the date's own final close; CME prints trade date 2010-09-03 beside it |
+| 2010-09-06 | early close | `1215 CT / 1315 ET` | `2010-labor-day.pdf @2010-06-02T00:56:41Z` | T1 | `1215 CT / 1315 ET` is the date's own final close; CME prints trade date 2010-09-06 beside it |
+| 2010-10-08 | early close | `1515 CT / 1615 ET` | `2010-columbus-day.pdf @2010-08-21T13:31:22Z` | T1 | `1515 CT / 1615 ET` is the date's own final close; CME prints trade date 2010-10-08 beside it |
+| 2010-11-25 | early close | `1215 CT / 1315 ET` | `2010-thanksgiving.pdf @2010-11-22T09:40:12Z` | T1 | `1215 CT / 1315 ET` is the date's own final close; CME prints trade date 2010-11-25 beside it |
+| 2010-11-26 | early close | `1245 CT / 1345 ET` | `2010-thanksgiving.pdf @2010-11-22T09:40:12Z` | T1 | `1245 CT / 1345 ET` is the date's own final close; CME prints trade date 2010-11-26 beside it |
+| 2010-12-31 | early close | `1515 CT / 1615 ET` | `2011-new-years.pdf @2011-11-01T14:39:45Z` | T1 | `1515 CT / 1615 ET` is the date's own final close; CME prints trade date 2010-12-31 beside it |
+
+### 2011
+
+| trade date | kind | instant as printed | document | tier | derived from |
+|---|---|---|---|---|---|
+| 2011-01-14 | early close | `1515 CT / 1615 ET` | `2011-martin-luther-king.pdf @2011-10-28T02:34:29Z` | T1 | `1515 CT / 1615 ET` is the date's own final close; CME prints trade date 2011-01-14 beside it |
+| 2011-01-17 | early close | `1215 CT / 1315 ET` | `2011-martin-luther-king.pdf @2011-10-28T02:34:29Z` | T1 | `1215 CT / 1315 ET` is the date's own final close; CME prints trade date 2011-01-17 beside it |
+| 2011-02-21 | early close | `1215 CT / 1315 ET` | `2011-presidents-day.pdf @2011-10-28T02:35:16Z` | T1 | `1215 CT / 1315 ET` is the date's own final close; CME prints trade date 2011-02-21 beside it |
+| 2011-05-30 | early close | `1215 CT / 1315 ET` | `2011-memorial-day.pdf @2013-09-30T10:56:52Z` | T1 | `1215 CT / 1315 ET` is the date's own final close; CME prints trade date 2011-05-30 beside it |
+| 2011-07-04 | early close | `1215 CT / 1315 ET` | `2011-4th-of-july.pdf @2011-11-01T14:40:54Z` | T1 | `1215 CT / 1315 ET` is the date's own final close; CME prints trade date 2011-07-04 beside it |
+| 2011-09-05 | early close | `1215 CT / 1315 ET` | `2011-labor-day.pdf @2011-11-01T14:43:45Z` | T1 | `1215 CT / 1315 ET` is the date's own final close; CME prints trade date 2011-09-05 beside it |
+| 2011-11-24 | early close | `1215 CT / 1315 ET` | `2011-thanksgiving.pdf @2011-11-24T18:52:46Z` | T1 | `1215 CT / 1315 ET` is the date's own final close; CME prints trade date 2011-11-24 beside it |
+| 2011-11-25 | early close | `1245 CT / 1345 ET` | `2011-thanksgiving.pdf @2011-11-24T18:52:46Z` | T1 | `1245 CT / 1345 ET` is the date's own final close; CME prints trade date 2011-11-25 beside it |
+
+### 2012
+
+| trade date | kind | instant as printed | document | tier | derived from |
+|---|---|---|---|---|---|
+| 2012-01-16 | early close | `1215 CT / 1315 ET` | `2012-martin-luther-king.pdf @2012-05-05T16:15:26Z` | T1 | `1215 CT / 1315 ET` is the date's own final close; CME prints trade date 2012-01-16 beside it |
+| 2012-02-20 | early close | `1215 CT / 1315 ET` | `2012-presidents-day.pdf @2012-05-05T16:15:39Z` | T1 | `1215 CT / 1315 ET` is the date's own final close; CME prints trade date 2012-02-20 beside it |
+| 2012-05-28 | early close | `1215 CT / 1315 ET` | `2012-memorial-day.pdf @2012-09-15T00:37:14Z` | T1 | `1215 CT / 1315 ET` is the date's own final close; CME prints trade date 2012-05-28 beside it |
+| 2012-07-04 | early close | `1215 CT / 1315 ET` | `2012-4th-of-july.pdf @2012-09-15T00:39:23Z` | T1 | `1215 CT / 1315 ET` is the date's own final close; CME prints trade date 2012-07-04 beside it |
+| 2012-09-03 | early close | `1215 CT / 1315 ET` | `2012-labor-day.pdf @2012-09-15T00:34:37Z` | T1 | `1215 CT / 1315 ET` is the date's own final close; CME prints trade date 2012-09-03 beside it |
+| 2012-11-22 | early close | `1215 CT / 1315 ET` | `2012-thanksgiving.pdf @2013-01-27T22:39:01Z` | T1 | `1215 CT / 1315 ET` is the date's own final close; CME prints trade date 2012-11-22 beside it |
+| 2012-11-23 | early close | `1245 CT / 1345 ET` | `2012-thanksgiving.pdf @2013-01-27T22:39:01Z` | T1 | `1245 CT / 1345 ET` is the date's own final close; CME prints trade date 2012-11-23 beside it |
+| 2012-12-24 | early close | `1245 CT / 1345 ET` | `2012-christmas.pdf @2013-04-14T19:40:27Z` | T1 | `1245 CT / 1345 ET` is the date's own final close; CME prints trade date 2012-12-24 beside it |
+
+### 2025-2027 (T2)
 
 **Zone.** CME prints no Eastern column in this channel. The operator states the
 zone once, on the page the service backs, quoted verbatim: "Trading hours are
@@ -231,52 +342,6 @@ closure removes is the Friday, so the only row is `Closed(2027-12-24)`.
 - **Black Friday finalisation** — 2027-11-26 is sourced from a pre-holiday
   publication; see the 2026 note.
 
-### Documents
-
-Every id below resolves to one response of CME's trading-hours service for the
-stated event-date window, product id set `316,133,425,300,58,437,22,8478,5201,10191`.
-Expand `[THBP-A]` to
-<https://www.cmegroup.com/services/trading-hours-by-product?id=316,133,425,300,58,437,22,8478,5201,10191&pageNumber=1&pageSize=999&sortAsc=true>
-plus `&fromEventDate=…&toEventDate=…`, and `WA:<ts>` to
-`https://web.archive.org/web/<ts>id_/` in front of it. Bytes, hashes and the
-research-store code for each are in
-`exchange-hours-research/holidays/raw/cme-2025-2027*/INDEX.md`.
-
-| Document | Window | Capture or retrieval, UTC | Tier | sha256 |
-|---|---|---|---|---|
-| `CME-SVC-2024-12-31` | 2024-12-31 .. 2025-01-02 | archive capture 2024-12-20T15:53:40Z | T2 | `375c70eecd19c5c6204ecb408d1b3210a9da4c9a03b85ef1c7dbbcde1397ab63` |
-| `CME-SVC-2025-01-19` | 2025-01-19 .. 2025-01-21 | archive capture 2024-12-20T15:53:40Z | T2 | `4f2ab56af14e7b3a6978e7fa6db8e2cfc63a82d06428cd88844f0e5bcf534f40` |
-| `CME-SVC-2025-02-16` | 2025-02-16 .. 2025-02-18 | archive capture 2024-12-20T15:53:40Z | T2 | `5bec2ca6b4999a534e4d9818035aaa18ec8626b6c912cf7e3d2c57015536f2fa` |
-| `CME-SVC-2025-04-17` | 2025-04-17 .. 2025-04-19 | archive capture 2024-12-20T15:53:40Z | T2 | `865a1d4f08102e00151bd87ab2b8e8a7720e9203a17aaaba24627ade3ed26e74` |
-| `CME-SVC-2025-05-25` | 2025-05-25 .. 2025-05-27 | archive capture 2024-12-20T15:53:40Z | T2 | `5f42869879c826f5949b79236aabb3d26d74e7565d92d7cc5e8784c63973210b` |
-| `CME-SVC-2025-06-18` | 2025-06-18 .. 2025-06-20 | archive capture 2024-12-20T15:53:40Z | T2 | `a572706907175776255261103b393493ebdf5a8106ec5374d129145bdf89105e` |
-| `CME-SVC-2025-07-03` | 2025-07-03 .. 2025-07-05 | archive capture 2024-12-20T15:53:40Z | T2 | `b80cd4bfed0ae72865bfacc1936e107eb8febfcc94b37fcce1d05505c659147b` |
-| `CME-SVC-2025-08-31` | 2025-08-31 .. 2025-09-02 | archive capture 2024-12-20T15:53:40Z | T2 | `e075762ed34a86048d94900e10edba10d95b3d766052908ffbb5133f6b64bab0` |
-| `CME-SVC-2025-11-26` | 2025-11-26 .. 2025-11-28 | archive capture 2026-01-29T01:23:09Z | T2 | `6c4c598791058dd9a11aff0ddb072c761a436c6d1054b891def74c6935f020f1` |
-| `CME-SVC-2025-11-26-SAT` | 2025-11-26 .. 2025-11-29 | live retrieval 2026-09-12T08:55:12Z | T2 | `2e9f34f20085de3ccbdff1dc29cb7463bcff93713ef0c550740d6f15e0635ab7` |
-| `CME-SVC-2025-12-24` | 2025-12-24 .. 2025-12-26 | archive capture 2026-01-29T01:21:59Z | T2 | `322a2be989b67f5f4cc0ec12fd63a393383d574badd4aacc87a0c9637533d386` |
-| `CME-SVC-2025-12-31` | 2025-12-31 .. 2026-01-02 | archive capture 2026-06-19T11:41:05Z | T2 | `0ed61f8328eda4746265cc8e197f10cd53aec06c2b393927bab27c913993d314` |
-| `CME-SVC-2026-01-18` | 2026-01-18 .. 2026-01-20 | archive capture 2026-06-19T11:41:05Z | T2 | `5e3ff08bdc7d07474b96b8dc8c18ed0d5e48d12dc4bcad81a5f68820cb2aa89e` |
-| `CME-SVC-2026-02-15` | 2026-02-15 .. 2026-02-17 | archive capture 2026-06-19T11:41:05Z | T2 | `5dd507dd959d0029e838ec88b1bdb63c32444ea36a121de002606f5d7b206e2f` |
-| `CME-SVC-2026-04-01` | 2026-04-01 .. 2026-04-03 | archive capture 2026-06-19T11:41:18Z | T2 | `54bcc271e9ba9737a99a2fe608e658de0c657075284d050fbfec4fe1aee2a2a5` |
-| `CME-SVC-2026-05-24` | 2026-05-24 .. 2026-05-26 | archive capture 2026-06-19T11:41:05Z | T2 | `f7e30d204ce2cbe08e5f486ded6518f623369159f3a36161288a4708288314da` |
-| `CME-SVC-2026-06-18` | 2026-06-18 .. 2026-06-20 | archive capture 2026-06-19T11:34:04Z | T2 | `97fd5da371309f4486a8fb49ff2105c6c1c2396939ab7c76f1a2a1097b6f015c` |
-| `CME-SVC-2026-07-03` | 2026-07-03 .. 2026-07-05 | archive capture 2026-06-19T11:41:08Z | T2 | `4b89a026358e998277f9c1ff7e095e5d4e625cdc45115fd141dc92201833155b` |
-| `CME-SVC-2026-09-06` | 2026-09-06 .. 2026-09-08 | live retrieval 2026-09-12T04:30Z | T2 | `01fb78ffaac10eac466fed53674214222f05aed518b9d93a4b42cf8957147bca` |
-| `CME-SVC-2026-11-25` | 2026-11-25 .. 2026-11-27 | live retrieval 2026-09-12T04:30Z | T2 | `e1f35a5623b3c5d15e7468b2cb4119e587411a9714f920605dab11bf688756d1` |
-| `CME-SVC-2026-12-22` | 2026-12-22 .. 2026-12-24 | live retrieval 2026-09-12T04:30Z | T2 | `c8c0267da8cf171409ad8ca188082b3aa326e8d04a89d12503dcf9f57bf3b7ab` |
-| `CME-SVC-2026-12-24` | 2026-12-24 .. 2026-12-26 | live retrieval 2026-09-12T04:30Z | T2 | `bdc1fe831adb794bcf8aeb7e99baf6af2009d1ff9969d0a48b18b2ebc2e1e829` |
-| `CME-SVC-2026-12-31` | 2026-12-31 .. 2027-01-02 | live retrieval 2026-09-12T04:30Z | T2 | `7162652821c16f1bd05e3ec533bd5b82af03833c7186a64c7734b0b650364dcd` |
-| `CME-SVC-2027-01-17` | 2027-01-17 .. 2027-01-19 | live retrieval 2026-09-12T04:30Z | T2 | `7155c4b7ee8b299b3033eb3daf002b6ceecf0fbd53f6f98a7036048022275743` |
-| `CME-SVC-2027-02-14` | 2027-02-14 .. 2027-02-16 | live retrieval 2026-09-12T04:30Z | T2 | `41f5aa8cde3879f8b10490386c134a294a0f1509edde2022a22ec3ffcaed1183` |
-| `CME-SVC-2027-03-25` | 2027-03-25 .. 2027-03-27 | live retrieval 2026-09-12T04:30Z | T2 | `9bd7225d440e00139f30892f3914c9b38beb8bf29d4272039b6cd8f2de926880` |
-| `CME-SVC-2027-05-30` | 2027-05-30 .. 2027-06-01 | live retrieval 2026-09-12T04:30Z | T2 | `1283649724c30163fa08ba7ab02d1230fa9a7dd0613b8b4b3d96cd1d9dc4febd` |
-| `CME-SVC-2027-06-17` | 2027-06-17 .. 2027-06-19 | live retrieval 2026-09-12T04:30Z | T2 | `60c9a2f5106d61039a616986b463cd852861ee4d3b91b11fac8badfa1b97b01c` |
-| `CME-SVC-2027-07-04` | 2027-07-04 .. 2027-07-06 | live retrieval 2026-09-12T04:30Z | T2 | `93ff8232886435c94be682bf968aa30749011cdf8dadeb7d2425a3b0b9e0bf71` |
-| `CME-SVC-2027-09-05` | 2027-09-05 .. 2027-09-07 | live retrieval 2026-09-12T04:30Z | T2 | `aa08a3bd102812928e69cf1ea4c8a84f738eaa5d14f967acee7d2571e74aedb9` |
-| `CME-SVC-2027-11-24` | 2027-11-24 .. 2027-11-26 | live retrieval 2026-09-12T04:30Z | T2 | `6aa7c0fd701a02480dabeac1fbae1a69b56e77643a29e3a9b2223c56e822ce9f` |
-| `CME-SVC-2027-12-22` | 2027-12-22 .. 2027-12-25 | live retrieval 2026-09-12T04:30Z | T2 | `5edc4dd588a32faa74f841494c10a3df48692dca29843c3581bad3e18c30fef9` |
-
 ### Holiday coverage notes
 
 - **Dates with no row are audited normal.** Columbus Day and Veterans Day are
@@ -292,7 +357,6 @@ research-store code for each are in
   backwards to the January-2010 floor; until then `holiday_coverage` says so
   and `holiday_on` answers nothing below 2025.
 - **Reviewed on** 2026-09-12 (UTC).
-
 
 > Shared module. The narrative for
 > [`energy_metals.rs`](../../src/calendar/schedules/futures/us/energy_metals.rs) lives in

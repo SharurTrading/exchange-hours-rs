@@ -274,12 +274,14 @@ fn a_closed_venue_row_is_a_unanimous_closure() {
         }
         // `Exchange` is `#[non_exhaustive]`, so the count is keyed off the
         // routing list this module already pins rather than off the variant.
+        // 2025-2027 contributes 32 (CME) or 31 (CBOT) unsourced dates and
+        // 2010-2012 another 49 and 37; the single-family venues have none.
         let expected = if single_family {
             0
         } else if families.len() == 6 {
-            32
+            81
         } else {
-            31
+            62
         };
         assert_eq!(unsigned, expected, "{exchange:?}: unsourced row count");
     }
@@ -498,7 +500,7 @@ fn every_venue_answers_only_inside_its_own_window() {
     for (exchange, _) in VENUES {
         let venue = calendar_for_exchange(exchange);
         let coverage = venue.holiday_coverage().expect("the venue ships a table");
-        assert_eq!(coverage.first(), day(2025, 1, 1), "{exchange:?}");
+        assert_eq!(coverage.first(), day(2010, 1, 1), "{exchange:?}");
         assert_eq!(coverage.last(), day(2027, 12, 31), "{exchange:?}");
 
         let before = coverage

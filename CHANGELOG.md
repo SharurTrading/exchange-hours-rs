@@ -71,6 +71,44 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Added
 
+- **The served CME families' holiday tables now reach the January-2010 floor.**
+  `globex_equity_index`, `globex_interest_rates`, `globex_fx`, `globex_energy`,
+  `globex_grains` and `globex_livestock` gain **153 rows over venue-local trade
+  dates 2010-01-01 .. 2012-12-31**, and the four CME venue calendars (`cme`,
+  `cbot`, `comex`, `nymex`) extend over the same years by the same intersection
+  rule, so every served CME identity's `Holidays` cell now reads
+  **2010-01-01 .. 2027-12-31**. The rows are **T1**: CME Group's own published
+  holiday-calendar PDFs (`2010-martin-luther-king.pdf` and its siblings, one
+  document per holiday per year), retrieved through the Internet Archive, saved
+  and quoted in each owner's `docs/evidence/<owner>.md`. Coverage starts at the
+  floor because CME's own documents reach it — no year is filled from another
+  year, a vendor or the press.
+
+  What the era states, keyed to the trade date CME prints: an **early close**
+  on a holiday morning at 10:30 CT equity / 12:00 CT rates and FX / 12:15 CT
+  energy and metals; an **early close** at 12:00-12:45 CT on the year-end
+  half-days and the day after Thanksgiving; **Good Friday** closed outright
+  except in 2010 and 2012, where equity closed at 08:15 CT and rates and FX at
+  10:15 CT; and a **late open** on the trade dates CME reopened after a closure
+  — 09:30 CT grains, 09:05 CT livestock, 05:00 CT equity/rates/FX on
+  2011-12-27, 2012-01-03 and 2012-12-26, and 19:00 CT grains on two 2012
+  holiday Mondays after the grid moved. Every instant the vocabulary cannot
+  represent — an order-entry deviation, a stated re-open that lands exactly on
+  the family's ordinary open, the interest-rate Monday holidays the crate's own
+  17:30 CT grid carries no session for — is recorded as a named gap in the
+  family's evidence file rather than approximated.
+
+  Also in this change: the family-module documentation now states each era and
+  its grid separately; `src/calendar/schedules/holidays/venues.rs` becomes the
+  parent of a `venues/` module with **one file per venue**, because the
+  2010-2012 rows took the combined file past the 500-line reviewability guard
+  (no row moved between venues); and each venue evidence file gains its own
+  per-year 2010-2012 tables with the disagreement behind every `Unsourced` date
+  named per family. `globex_cryptocurrency` is deliberately **not** extended:
+  CME listed no cryptocurrency product before 2017-12-17, so a 2010-2012 window
+  would assert an audit of years in which the family did not exist;
+  `globex_nikkei_225_dollar` keeps its 2025-2027 window because CME's 2010-2012
+  sheets print one Nikkei line, and the family's evidence file records why.
 - **Built-in holiday tables for the served CME families, the four CME venues
   and the 2026 venue block.** Twenty-six of the 132 ledger identities now carry
   per-family holiday and early-close data underneath the caller's overlays

@@ -212,9 +212,9 @@ fn the_coverage_window_bounds_every_answer_the_table_gives() {
         .holiday_coverage()
         .expect("globex_energy ships a holiday table");
 
-    assert_eq!(coverage.first(), day((2025, 1, 1)));
+    assert_eq!(coverage.first(), day((2010, 1, 1)));
     assert_eq!(coverage.last(), day((2027, 12, 31)));
-    assert!(coverage.contains(day((2025, 1, 1))));
+    assert!(coverage.contains(day((2010, 1, 1))));
     assert!(coverage.contains(day((2027, 12, 31))));
 
     assert_eq!(
@@ -297,4 +297,155 @@ fn without_holidays_restores_the_normal_week_answer() {
             );
         }
     }
+}
+
+// ---------------------------------------------------------------------------
+// The 2010-2012 rows.
+// ---------------------------------------------------------------------------
+
+/// The era's early closes clip a trading day that opened 17:00 CT the previous
+/// evening: 15:15 CT on the Martin Luther King Jr. Day eve, 12:15 CT on the
+/// holiday itself, and 12:45 CT on the day after Thanksgiving.
+#[test]
+fn era_early_closes_end_the_wrapped_trading_day_at_the_stated_instant() {
+    let calendar = calendar();
+
+    for (date, previous_day, close_ssm) in [
+        ((2010, 1, 15), (2010, 1, 14), 15 * 3_600 + 15 * 60),
+        ((2010, 1, 18), (2010, 1, 17), 12 * 3_600 + 15 * 60),
+        ((2010, 11, 26), (2010, 11, 25), 12 * 3_600 + 45 * 60),
+    ] {
+        let row = calendar
+            .holiday_on(day(date))
+            .unwrap_or_else(|| panic!("{date:?} ships a row"));
+        assert_eq!(row.kind(), HolidayKind::EarlyClose { close_ssm });
+
+        // The evening leg that feeds this trade date is clipped, not deleted.
+        assert!(calendar.is_open(ct(previous_day, 17, 0)), "{date:?}");
+        assert!(
+            calendar.is_open(one_second_before(ct(
+                date,
+                close_ssm / 3_600,
+                (close_ssm % 3_600) / 60
+            ))),
+            "{date:?}: {close_ssm} is too early"
+        );
+        assert!(
+            !calendar.is_open(ct(date, close_ssm / 3_600, (close_ssm % 3_600) / 60)),
+            "{date:?}: {close_ssm} is not end-exclusive"
+        );
+        assert_eq!(
+            calendar.session_bounds(ct(date, 9, 0)),
+            Some((
+                ct(previous_day, 17, 0),
+                ct(date, close_ssm / 3_600, (close_ssm % 3_600) / 60)
+            )),
+            "{date:?}"
+        );
+    }
+
+    // The Monday holiday's same-evening 17:00 CT leg still opens the next
+    // trade date, untouched.
+    assert_eq!(
+        calendar.trade_date(ct((2010, 1, 18), 18, 0)),
+        Some(day((2010, 1, 19)))
+    );
+    // After the Thanksgiving Friday cut, the next open is the Sunday leg.
+    assert_eq!(
+        calendar.next_session_open_after(ct((2010, 11, 26), 13, 0)),
+        Some(ct((2010, 11, 28), 17, 0))
+    );
+}
+
+/// No 2010-2012 row moves a first open: the block is 30 early closes and
+/// nothing else, so every post-holiday reopen is the family's ordinary 17:00
+/// CT leg.
+///
+/// The absence is the assertion. A late open is the one kind whose branch
+/// choice is data-dependent — a statement at or after 17:00 CT resolves on the
+/// preceding local date — so its absence in this block is fenced by walking
+/// every date of it, not assumed.
+#[test]
+fn era_ships_no_late_open_and_reopens_at_the_normal_1700_ct() {
+    let calendar = calendar();
+    let (mut early_closes, mut date) = (0_usize, day((2010, 1, 1)));
+    let last = day((2012, 12, 31));
+
+    while date <= last {
+        if let Some(row) = calendar.holiday_on(date) {
+            match row.kind() {
+                HolidayKind::EarlyClose { .. } => early_closes += 1,
+                other => panic!("{date} ships an unexpected holiday kind: {other:?}"),
+            }
+        }
+        date = date
+            .checked_add_days(Days::new(1))
+            .expect("the era stays inside the representable calendar");
+    }
+    assert_eq!(early_closes, 30, "early closes, 2010-2012");
+
+    // New Year's Eve 2010 is one of the 15:15 CT cuts, and the next open after
+    // it is the ordinary Sunday 17:00 CT leg, not a moved one.
+    assert_eq!(
+        calendar.next_session_open_after(ct((2010, 12, 31), 16, 0)),
+        Some(ct((2011, 1, 2), 17, 0))
+    );
+}
+
+/// A date inside the widened window with no row is audited normal: the crate
+/// serves the profile's own 2010 week, and the detached calendar agrees, so
+/// the answer comes from the row set and not from a profile change.
+#[test]
+fn era_dates_without_rows_are_audited_normal() {
+    let calendar = calendar();
+    let detached = calendar.without_holidays();
+
+    for (date, previous_day, time) in [
+        ((2010, 6, 15), (2010, 6, 14), (10, 0)),
+        ((2011, 3, 9), (2011, 3, 8), (9, 0)),
+        ((2012, 10, 10), (2012, 10, 9), (14, 0)),
+    ] {
+        assert_eq!(
+            calendar.holiday_on(day(date)),
+            None,
+            "{date:?} must ship no row"
+        );
+        for probe in [(previous_day, 17_u32), (date, time.0)] {
+            assert!(
+                calendar.is_open(ct(probe.0, probe.1, 0)),
+                "{:?} {:02}:00 CT is an ordinary trading instant",
+                probe.0,
+                probe.1
+            );
+            assert_eq!(
+                calendar.is_open(ct(probe.0, probe.1, 0)),
+                detached.is_open(ct(probe.0, probe.1, 0)),
+                "the row set must not change {:?}",
+                probe.0
+            );
+        }
+    }
+}
+
+/// The widened window's edges answer as the module declares: 2010-01-01 to
+/// 2027-12-31, with Christmas Day 2009 — a real CME closure one year below it —
+/// not applied and the detached calendar agreeing.
+#[test]
+fn era_window_edges_answer_as_the_module_declares() {
+    let calendar = calendar();
+    let detached = calendar.without_holidays();
+    let coverage = calendar
+        .holiday_coverage()
+        .expect("globex_energy ships a table");
+
+    assert_eq!(coverage.first(), day((2010, 1, 1)));
+    assert_eq!(coverage.last(), day((2027, 12, 31)));
+    assert!(!coverage.contains(day((2009, 12, 25))));
+
+    assert_eq!(calendar.holiday_on(day((2009, 12, 25))), None);
+    assert!(calendar.is_open(ct((2009, 12, 25), 10, 0)));
+    assert_eq!(
+        calendar.is_open(ct((2009, 12, 25), 10, 0)),
+        detached.is_open(ct((2009, 12, 25), 10, 0))
+    );
 }

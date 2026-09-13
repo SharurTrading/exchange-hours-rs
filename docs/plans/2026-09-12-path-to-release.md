@@ -130,6 +130,28 @@ of the holiday work and may interleave with it.
   five-day era has no business-date roll (memo D9 is amended in the PR's Review
   section); CME document ids are `CME-SVC-<first eventDate>`.
 
+**Wave 1 landed 2026-09-13 (UTC).** The eight verifier defects are repaired and
+re-verified in the research store's block (the repaired copy and the repair
+script are in `.wave6-scratch/`, which the PR removes; the committed record is
+the evidence files' quotations). Outcome per family, over trade dates
+2010-01-01 .. 2012-12-31, all **T1** from CME's own holiday-calendar PDFs:
+`globex_equity_index` 33 rows, `globex_interest_rates` 33, `globex_fx` 45,
+`globex_energy` 30, `globex_grains` 12, `globex_livestock` 11 — **153 rows**,
+extending those six families' coverage to 2010-01-01 .. 2027-12-31. The four CME
+venue tables extend over the same years by the same D17 intersection rule:
+COMEX and NYMEX carry 30 agreed rows each, while CBOT and CME state nothing
+(37 and 54 `Unsourced` dates, the disagreement named per date in their evidence
+files). `globex_cryptocurrency` is deliberately left at its 2025-2027 window —
+CME listed no cryptocurrency product before 2017-12-17, so a 2010-2012 window
+would assert an audit of years in which the family did not exist — and
+`globex_nikkei_225_dollar` keeps its window because the era's sheets print one
+Nikkei line. Three instant shapes the scalar vocabulary cannot state are named
+as gaps rather than approximated: the Good Friday eves' 15:30/17:00 stated
+re-opens, the 2012-07-03 equity 15:30 re-open, and the eighteen interest-rate
+Monday holidays (#101, a normal-week finding the wave surfaced). `venues.rs` is
+split into one module per venue because the added rows took it past the 500-line
+reviewability guard; no row moved.
+
 ### Stage 2 — Served holidays to the floor (release-blocking)
 
 The design memo (`holidays/DESIGN-holiday-tables.md`, §5.1–5.2) names, per block, the
@@ -177,7 +199,7 @@ tables over its own years by the rule in 2.1, so there is no separate venue wave
 
 | Order | Years | State of the evidence (memo §5.1) | Do first |
 |---|---|---|---|
-| 1 | 2010–2012 (#92) | round 1 PASS; nothing load-bearing | fix the eight non-blocking defects (quoting convention, the `nikkei 2010-02-15` label, the 2012 Good Friday capture, the 2010-12-23 energy source, the count typo); this wave lands the January-2010 floor |
+| 1 | 2010–2012 (#92) | round 1 PASS; nothing load-bearing | fix the eight non-blocking defects (quoting convention, the `nikkei 2010-02-15` label, the 2012 Good Friday capture, the 2010-12-23 energy source, the count typo); this wave lands the January-2010 floor — **landed 2026-09-13 (UTC), see the wave note below** |
 | 2 | 2016–2018 (#89) | one narrow load-bearing item; "no instant, status or family-level value is wrong" | correct the three Grains verbatims that quote the deleted MGEX Apple Juice row |
 | 3 | 2022–2024 (#90) | two state-neutral load-bearing items | repair the 2023-11-23 grains verbatim and the zone-provenance sentence; ship 2023 MLK/Presidents'/Good Friday and the 13 Nikkei 2024 rows as `Unsourced` |
 | 4 | 2019–2021 (#91) | no value wrong in 440 rows; evidence discipline only | re-extract the 314 hard-truncated verbatim fields from the saved bytes; withdraw the false "no standalone 2020 Good Friday workbook" claim; Juneteenth 2019–2021 is `Unsourced` |

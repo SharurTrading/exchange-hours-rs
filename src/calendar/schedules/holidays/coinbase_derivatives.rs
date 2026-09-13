@@ -27,7 +27,7 @@ use super::{EvidenceTier::T1, HolidayKind::Closed, HolidayTable, holidays};
 /// The venue's built-in holiday rows and the window they were audited over.
 // Evidence: docs/evidence/coinbase_derivatives.md
 pub(crate) static TABLE: &HolidayTable = holidays! {
-    coverage: (2026, 1, 1) ..= (2026, 9, 7),
+    coverage: [(2026, 1, 1) ..= (2026, 9, 7)],
     rows: [
         // 2026-01-01 - T1 - CDE-MN-25-42 - New Year's Day, Energy & Metal and
         // Equity closed for holiday; trade date 1/2 opens 1/1 17:00 CT.

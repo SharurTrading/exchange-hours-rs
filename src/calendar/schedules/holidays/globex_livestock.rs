@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT-0
 
-//! CME Live Cattle, Feeder Cattle and Lean Hog holiday rows, 2025-2027.
+//! CME Live Cattle, Feeder Cattle and Lean Hog holiday rows, 2010-2012 and
+//! 2025-2027 (LAW-HOLIDAY-SCOPE).
 //!
 //! Keyed by the crate's own venue-local trade date in `America/Chicago`
 //! (design memo D1). The conversion is the identity for this family and is the
@@ -11,10 +12,19 @@
 //! CME's event-date records therefore key one row each, and the operator's own
 //! printed trade date corroborates every one of them.
 //!
+//! The 2025-2027 rows below are T2.
+//!
+//! **2010-2012.** CME's own holiday-calendar PDFs are the T1 source. This
+//! family's era grid is a wrapping 17:00 -> 16:00 CT block, and its rows are
+//! sixteen **full closures** (New Year's Day, Christmas Day, both Good Fridays,
+//! 2011's Good Friday and the ten Monday and Thursday holidays CME kept the
+//! family closed on), **early closes** at 13:55 CT on the Good Fridays of 2011
+//! and 2012 and at 12:00/12:15 CT on the year-end half-days, and **late opens**
+//! at 09:05 CT on 2011-12-27, 2012-01-03, 2012-07-05 and 2012-12-26.
 //! The rows come from CME's trading-hours service — the endpoint
 //! `cmegroup.com/trading-hours.html` itself calls — read as bytes and saved,
-//! so the whole block is **T2** under LAW-PRIMARY-SOURCES. CME publishes no T1
-//! per-asset-class rendering for these years; that, the eight 2025 windows that
+//! so those rows are **T2** under LAW-PRIMARY-SOURCES. CME publishes no T1
+//! per-asset-class rendering for them; that, the eight 2025 windows that
 //! survive only in a pre-holiday capture, and the two Saturday sessions this
 //! family never had are recorded as gaps in
 //! [`docs/evidence/globex_livestock.md`](../../../../../docs/evidence/globex_livestock.md).
@@ -24,18 +34,67 @@
 //! window, and no row whose internal phase topology the scalar vocabulary
 //! cannot state.
 
-use super::fences::early_close;
-use super::{EvidenceTier::T2, HolidayKind::Closed, HolidayTable, holidays};
+use super::fences::{early_close, late_open};
+use super::{
+    EvidenceTier::{T1, T2},
+    HolidayKind::Closed,
+    HolidayTable, holidays,
+};
 
-/// The family's built-in holiday rows and the window they were audited over.
+/// The family's built-in holiday rows and the windows they were audited over.
 ///
-/// Coverage runs to 2027-12-31, the end of the operator's published future;
-/// CME's 2028-01-01 record sits outside it and ships no row.
+/// Two audited eras: 2010-2012 at T1 and 2025-2027 at T2. The 2013-2024
+/// interval between them is audited by neither, so `holiday_on` has no answer
+/// there rather than reporting a normal date. Coverage ends at 2027-12-31, the
+/// end of the operator's published future, and CME's 2028-01-01 record sits
+/// outside both windows and ships no row.
 // Evidence: docs/evidence/globex_livestock.md
 pub(crate) static TABLE: &HolidayTable = holidays! {
-    coverage: (2025, 1, 1) ..= (2027, 12, 31),
+    coverage: [(2010, 1, 1) ..= (2012, 12, 31), (2025, 1, 1) ..= (2027, 12, 31)],
     rows: [
-        // 2025-01-01 - T2 - CME-SVC-2024-12-31 - New Year's Day, no events published.
+        // 2010-01-01 - T1 - 2010-new-years.pdf - closed: new year's day 2010.
+        (2010, 1, 1, Closed, T1, "2010-new-years.pdf @2010-02-15T05:16:52Z"),
+        // 2010-04-02 - T1 - 2010-good-friday.pdf - closed: good friday 2010.
+        (2010, 4, 2, Closed, T1, "2010-good-friday.pdf @2010-06-01T11:19:16Z"),
+        (2010, 11, 26, early_close(12 * 3_600), T1, "2010-thanksgiving.pdf @2010-11-22T09:40:12Z"),
+        // 2010-12-24 - T1 - 2010-christmas.pdf - closed: christmas day 2010 observed.
+        (2010, 12, 24, Closed, T1, "2010-christmas.pdf @2010-12-14T06:12:38Z"),
+        (2010, 12, 31, early_close(12 * 3_600 + 15 * 60), T1, "2011-new-years.pdf @2011-11-01T14:39:45Z"),
+        (2011, 4, 21, early_close(13 * 3_600 + 55 * 60), T1, "2011-good-friday.pdf @2011-10-28T02:37:07Z"),
+        // 2011-04-22 - T1 - 2011-good-friday.pdf - closed: good friday 2011.
+        (2011, 4, 22, Closed, T1, "2011-good-friday.pdf @2011-10-28T02:37:07Z"),
+        // 2011-05-30 - T1 - 2011-memorial-day.pdf - closed: memorial day 2011.
+        (2011, 5, 30, Closed, T1, "2011-memorial-day.pdf @2013-09-30T10:56:52Z"),
+        // 2011-07-04 - T1 - 2011-4th-of-july.pdf - closed: independence day 2011.
+        (2011, 7, 4, Closed, T1, "2011-4th-of-july.pdf @2011-11-01T14:40:54Z"),
+        // 2011-09-05 - T1 - 2011-labor-day.pdf - closed: labor day 2011.
+        (2011, 9, 5, Closed, T1, "2011-labor-day.pdf @2011-11-01T14:43:45Z"),
+        (2011, 11, 25, early_close(12 * 3_600 + 15 * 60), T1, "2011-thanksgiving.pdf @2011-11-24T18:52:46Z"),
+        // 2011-12-26 - T1 - 2011-christmas.pdf - closed: christmas day 2011 observed.
+        (2011, 12, 26, Closed, T1, "2011-christmas.pdf @2012-01-25T02:05:48Z"),
+        (2011, 12, 27, late_open(9 * 3_600 + 5 * 60), T1, "2011-christmas.pdf @2012-01-25T02:05:48Z"),
+        // 2012-01-02 - T1 - 2012-new-years.pdf - closed: new year's day 2012 observed.
+        (2012, 1, 2, Closed, T1, "2012-new-years.pdf @2012-01-25T02:54:30Z"),
+        (2012, 1, 3, late_open(9 * 3_600 + 5 * 60), T1, "2012-new-years.pdf @2012-01-25T02:54:30Z"),
+        // 2012-01-16 - T1 - 2012-martin-luther-king.pdf - closed: martin luther king jr. day 2012.
+        (2012, 1, 16, Closed, T1, "2012-martin-luther-king.pdf @2012-05-05T16:15:26Z"),
+        // 2012-02-20 - T1 - 2012-presidents-day.pdf - closed: presidents' day 2012.
+        (2012, 2, 20, Closed, T1, "2012-presidents-day.pdf @2012-05-05T16:15:39Z"),
+        (2012, 4, 5, early_close(13 * 3_600 + 55 * 60), T1, "2012-good-friday.pdf @2012-05-05T16:16:49Z"),
+        // 2012-04-06 - T1 - 2012-good-friday.pdf - closed: good friday 2012.
+        (2012, 4, 6, Closed, T1, "2012-good-friday.pdf @2012-04-17T00:42:47Z"),
+        // 2012-05-28 - T1 - 2012-memorial-day.pdf - closed: memorial day 2012.
+        (2012, 5, 28, Closed, T1, "2012-memorial-day.pdf @2012-09-15T00:37:14Z"),
+        // 2012-07-04 - T1 - 2012-4th-of-july.pdf - closed: independence day 2012.
+        (2012, 7, 4, Closed, T1, "2012-4th-of-july.pdf @2012-09-15T00:39:23Z"),
+        (2012, 7, 5, late_open(9 * 3_600 + 5 * 60), T1, "2012-4th-of-july.pdf @2012-09-15T00:39:23Z"),
+        // 2012-09-03 - T1 - 2012-labor-day.pdf - closed: labor day 2012.
+        (2012, 9, 3, Closed, T1, "2012-labor-day.pdf @2012-09-15T00:34:37Z"),
+        (2012, 11, 23, early_close(12 * 3_600 + 15 * 60), T1, "2012-thanksgiving.pdf @2013-01-27T22:39:01Z"),
+        (2012, 12, 24, early_close(12 * 3_600 + 15 * 60), T1, "2012-christmas.pdf @2013-04-14T19:40:27Z"),
+        // 2012-12-25 - T1 - 2012-christmas.pdf - closed: christmas day 2012.
+        (2012, 12, 25, Closed, T1, "2012-christmas.pdf @2013-04-14T19:40:27Z"),
+        (2012, 12, 26, late_open(9 * 3_600 + 5 * 60), T1, "2012-christmas.pdf @2013-04-14T19:40:27Z"),
         (2025, 1, 1, Closed, T2, "CME-SVC-2024-12-31"),
         // 2025-01-20 - T2 - CME-SVC-2025-01-19 - Martin Luther King Jr. Day, no events.
         (2025, 1, 20, Closed, T2, "CME-SVC-2025-01-19"),

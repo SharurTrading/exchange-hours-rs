@@ -41,7 +41,7 @@ use super::{
 // Evidence: docs/evidence/ice_us_sugar.md, docs/evidence/ice_us_coffee.md,
 // docs/evidence/ice_us_cocoa.md
 pub(crate) static SUGAR_COFFEE_COCOA: &HolidayTable = holidays! {
-    coverage: (2026, 1, 1) ..= (2028, 1, 3),
+    coverage: [(2026, 1, 1) ..= (2028, 1, 3)],
     rows: [
         // 2026-01-01 - T1 - IFUS-CAL-2026 - New Year's Day.
         (2026, 1, 1, Closed, T1, "IFUS-CAL-2026"),
@@ -93,7 +93,7 @@ pub(crate) static SUGAR_COFFEE_COCOA: &HolidayTable = holidays! {
 /// the Good Friday notice gives to Sugar, Coffee and Cocoa only.
 // Evidence: docs/evidence/ice_us_orange_juice.md
 pub(crate) static ORANGE_JUICE: &HolidayTable = holidays! {
-    coverage: (2026, 1, 1) ..= (2028, 1, 3),
+    coverage: [(2026, 1, 1) ..= (2028, 1, 3)],
     rows: [
         // 2026-01-01 - T1 - IFUS-CAL-2026 - New Year's Day.
         (2026, 1, 1, Closed, T1, "IFUS-CAL-2026"),
@@ -141,7 +141,7 @@ pub(crate) static ORANGE_JUICE: &HolidayTable = holidays! {
 /// Cotton No. 2: the softs calendar group, plus its own 2026-07-06 late open.
 // Evidence: docs/evidence/ice_us_cotton.md
 pub(crate) static COTTON: &HolidayTable = holidays! {
-    coverage: (2026, 1, 1) ..= (2028, 1, 3),
+    coverage: [(2026, 1, 1) ..= (2028, 1, 3)],
     rows: [
         // 2026-01-01 - T1 - IFUS-CAL-2026 - New Year's Day.
         (2026, 1, 1, Closed, T1, "IFUS-CAL-2026"),
@@ -197,7 +197,7 @@ pub(crate) static COTTON: &HolidayTable = holidays! {
 /// do not spell it out is recorded per year in the evidence file.
 // Evidence: docs/evidence/ice_us.md
 pub(crate) static FANG: &HolidayTable = holidays! {
-    coverage: (2026, 1, 1) ..= (2028, 1, 3),
+    coverage: [(2026, 1, 1) ..= (2028, 1, 3)],
     rows: [
         // 2026-01-01 - T1 - IFUS-CAL-2026 - New Year's Day.
         (2026, 1, 1, Closed, T1, "IFUS-CAL-2026"),
@@ -255,7 +255,7 @@ pub(crate) static FANG: &HolidayTable = holidays! {
 /// absent because ICE published regular hours for the family that day.
 // Evidence: docs/evidence/ice_us_dollar_index.md
 pub(crate) static DOLLAR_INDEX: &HolidayTable = holidays! {
-    coverage: (2026, 1, 1) ..= (2028, 1, 3),
+    coverage: [(2026, 1, 1) ..= (2028, 1, 3)],
     rows: [
         // 2026-01-01 - T1 - IFUS-CAL-2026 - New Year's Day.
         (2026, 1, 1, Closed, T1, "IFUS-CAL-2026"),
@@ -313,7 +313,7 @@ pub(crate) static DOLLAR_INDEX: &HolidayTable = holidays! {
 /// the silence that would claim the date was audited normal.
 // Evidence: docs/evidence/iceus.md
 pub(crate) static VENUE: &HolidayTable = holidays! {
-    coverage: (2026, 1, 1) ..= (2028, 1, 3),
+    coverage: [(2026, 1, 1) ..= (2028, 1, 3)],
     rows: [
         // 2026-01-01 - T1 - IFUS-CAL-2026 - New Year's Day, every family closed.
         (2026, 1, 1, Closed, T1, "IFUS-CAL-2026"),

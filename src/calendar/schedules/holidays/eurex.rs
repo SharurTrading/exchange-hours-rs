@@ -30,7 +30,7 @@ use super::{EvidenceTier::T1, HolidayKind::Closed, HolidayTable, holidays};
 // Evidence: docs/evidence/eurex.md, docs/evidence/eurex_key.md,
 // docs/evidence/eurex_fixed_income.md
 pub(crate) static TABLE: &HolidayTable = holidays! {
-    coverage: (2026, 1, 1) ..= (2026, 12, 31),
+    coverage: [(2026, 1, 1) ..= (2026, 12, 31)],
     rows: [
         // 2026-01-01 - T1 - EUREX-HOLREG-2026 - New Year's Day, trading and clearing.
         (2026, 1, 1, Closed, T1, "EUREX-HOLREG-2026"),

@@ -42,7 +42,7 @@ use super::{EvidenceTier::T2, HolidayKind, HolidayTable, holidays};
 /// withhold the rows.
 // Evidence: docs/evidence/globex_cryptocurrency.md
 pub(crate) static TABLE: &HolidayTable = holidays! {
-    coverage: (2025, 1, 1) ..= (2027, 12, 31),
+    coverage: [(2025, 1, 1) ..= (2027, 12, 31)],
     rows: [
         // 2025-01-01 — T2 — CME-SVC-2024-12-31 — New Year's Day; only a 16:00 CT
         // pre-open and a 17:00 CT open, both carrying trade date 2025-01-02.

@@ -33,7 +33,7 @@ use super::{EvidenceTier::T2, HolidayKind::Closed, HolidayTable, holidays};
 /// CME's 2028-01-01 record is a Saturday outside it and ships no row.
 // Evidence: docs/evidence/globex_nikkei_225_dollar.md
 pub(crate) static TABLE: &HolidayTable = holidays! {
-    coverage: (2025, 1, 1) ..= (2027, 12, 31),
+    coverage: [(2025, 1, 1) ..= (2027, 12, 31)],
     rows: [
         // 2025-01-01 - T2 - CME-SVC-2024-12-31 - New Year's Day, no trade date of its own.
         (2025, 1, 1, Closed, T2, "CME-SVC-2024-12-31"),

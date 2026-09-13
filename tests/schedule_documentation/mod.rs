@@ -233,7 +233,14 @@ fn shipped_holiday_window(wire_name: &str) -> String {
         });
     coverage.map_or_else(
         || "\u{2014}".to_owned(),
-        |window| format!("{}..{}", window.first(), window.last()),
+        |coverage| {
+            coverage
+                .windows()
+                .iter()
+                .map(|(first, last)| format!("{first}..{last}"))
+                .collect::<Vec<_>>()
+                .join(", ")
+        },
     )
 }
 

@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT-0
 
-//! CBOT standard-size grain and oilseed futures holiday rows, 2025-2027.
+//! CBOT standard-size grain and oilseed futures holiday rows, 2010-2012 and
+//! 2025-2027 (LAW-HOLIDAY-SCOPE).
 //!
 //! Keyed by the crate's own venue-local trade date in `America/Chicago`
 //! (design memo D1), never by CME's event date. That conversion is not the
@@ -28,6 +29,19 @@
 //! * The three days after Thanksgiving carry both — no prior-evening leg and a
 //!   12:05 CT final close — and are the only `LateOpenAndEarlyClose` rows here.
 //!
+//! The 2025-2027 rows below are T2.
+//!
+//! **2010-2012.** CME's own holiday-calendar PDFs are the T1 source. The era's
+//! grid is an 18:00 CT evening leg (17:00 from 2012-05-20) into a 09:30-13:15 CT
+//! day session. Rows are ten **full closures** (New Year's Day, Christmas Day,
+//! both Good Fridays, 2011's Good Friday, Independence Day and Thanksgiving
+//! 2012, and the observed days around them), **early closes** at 12:00 CT on
+//! the four year-end half-days and 2012-07-03, and **late opens** where CME
+//! states one: 09:30 CT on 2011-12-27, 2012-01-03, 2012-07-05 and 2012-12-26,
+//! and 19:00 CT on 2012-05-28 and 2012-09-03 after the grid moved. The 2012 day
+//! after Thanksgiving carries both. Dates on which the stated re-open is the
+//! family's ordinary evening open ship no row and are listed in the evidence
+//! file.
 //! Every row is **T2**: CME's trading-hours service, the endpoint
 //! `cmegroup.com/trading-hours.html` itself calls, read as bytes and saved.
 //! CME publishes no T1 per-asset-class rendering of these instants; that gap,
@@ -38,11 +52,15 @@
 //!
 //! Scope is the standard-size CBOT grain and oilseed complex — corn, soybeans
 //! and wheat. CME's service answers for `ZC`, `ZS` and `ZW` separately and the
-//! three agree on every date in this window, so the family takes one table.
+//! three agree on every date the table audits, so the family takes one table.
 //! Mini grains are a separate key and a separate table.
 
 use super::fences::{early_close, late_open, late_open_and_early_close};
-use super::{EvidenceTier::T2, HolidayKind::Closed, HolidayTable, holidays};
+use super::{
+    EvidenceTier::{T1, T2},
+    HolidayKind::Closed,
+    HolidayTable, holidays,
+};
 
 /// 08:30 CT, the day session's own open and the late-open instant every
 /// evening-leg-less trade date in this block falls back to.
@@ -52,16 +70,50 @@ const DAY_OPEN: u32 = 8 * 3_600 + 30 * 60;
 /// window.
 const HALF_DAY_CLOSE: u32 = 12 * 3_600 + 5 * 60;
 
-/// The family's built-in holiday rows and the window they were audited over.
+/// The family's built-in holiday rows and the windows they were audited over.
 ///
-/// Coverage runs to 2027-12-31, the end of the operator's published future
-/// (LAW-NO-FABRICATED-DATES permits encoding it ahead of its effective day);
-/// CME's 2028-01-01 record sits outside the window and ships no row.
+/// Two audited eras: 2010-2012 at T1 and 2025-2027 at T2. The 2013-2024
+/// interval between them is audited by neither, so `holiday_on` has no answer
+/// there rather than reporting a normal date. Coverage ends at 2027-12-31, the
+/// end of the operator's published future (LAW-NO-FABRICATED-DATES permits
+/// encoding it ahead of its effective day); CME's 2028-01-01 record sits
+/// outside both windows and ships no row.
 // Evidence: docs/evidence/globex_grains.md
 pub(crate) static TABLE: &HolidayTable = holidays! {
-    coverage: (2025, 1, 1) ..= (2027, 12, 31),
+    coverage: [(2010, 1, 1) ..= (2012, 12, 31), (2025, 1, 1) ..= (2027, 12, 31)],
     rows: [
-        // 2025-01-01 - T2 - CME-SVC-2024-12-31 - New Year's Day, no events published.
+        // 2010-01-01 - T1 - 2010-new-years.pdf - closed: new year's day 2010.
+        (2010, 1, 1, Closed, T1, "2010-new-years.pdf @2010-02-15T05:16:52Z"),
+        // 2010-04-02 - T1 - 2010-good-friday.pdf - closed: good friday 2010.
+        (2010, 4, 2, Closed, T1, "2010-good-friday.pdf @2010-06-01T11:19:16Z"),
+        (2010, 11, 26, early_close(12 * 3_600), T1, "2010-thanksgiving.pdf @2010-11-22T09:40:12Z"),
+        // 2010-12-24 - T1 - 2010-christmas.pdf - closed: christmas day 2010 observed.
+        (2010, 12, 24, Closed, T1, "2010-christmas.pdf @2010-12-14T06:12:38Z"),
+        (2010, 12, 31, early_close(12 * 3_600), T1, "2011-new-years.pdf @2011-11-01T14:39:45Z"),
+        // 2011-04-22 - T1 - 2011-good-friday.pdf - closed: good friday 2011.
+        (2011, 4, 22, Closed, T1, "2011-good-friday.pdf @2011-10-28T02:37:07Z"),
+        (2011, 11, 25, early_close(12 * 3_600), T1, "2011-thanksgiving.pdf @2011-11-24T18:52:46Z"),
+        // 2011-12-26 - T1 - 2011-christmas.pdf - closed: christmas day 2011 observed.
+        (2011, 12, 26, Closed, T1, "2011-christmas.pdf @2012-01-25T02:05:48Z"),
+        (2011, 12, 27, late_open(9 * 3_600 + 30 * 60), T1, "2011-christmas.pdf @2012-01-25T02:05:48Z"),
+        // 2012-01-02 - T1 - 2012-new-years.pdf - closed: new year's day 2012 observed.
+        (2012, 1, 2, Closed, T1, "2012-new-years.pdf @2012-01-25T02:54:30Z"),
+        (2012, 1, 3, late_open(9 * 3_600 + 30 * 60), T1, "2012-new-years.pdf @2012-01-25T02:54:30Z"),
+        // 2012-04-06 - T1 - 2012-good-friday.pdf - closed: good friday 2012.
+        (2012, 4, 6, Closed, T1, "2012-good-friday.pdf @2012-04-17T00:42:47Z"),
+        (2012, 5, 28, late_open(19 * 3_600), T1, "2012-memorial-day.pdf @2012-09-15T00:37:14Z"),
+        (2012, 7, 3, early_close(12 * 3_600), T1, "2012-4th-of-july.pdf @2012-09-15T00:39:23Z"),
+        // 2012-07-04 - T1 - 2012-4th-of-july.pdf - closed: independence day 2012.
+        (2012, 7, 4, Closed, T1, "2012-4th-of-july.pdf @2012-09-15T00:39:23Z"),
+        (2012, 7, 5, late_open(9 * 3_600 + 30 * 60), T1, "2012-4th-of-july.pdf @2012-09-15T00:39:23Z"),
+        (2012, 9, 3, late_open(19 * 3_600), T1, "2012-labor-day.pdf @2012-09-15T00:34:37Z"),
+        // 2012-11-22 - T1 - 2012-thanksgiving.pdf - closed: thanksgiving day 2012.
+        (2012, 11, 22, Closed, T1, "2012-thanksgiving.pdf @2013-01-27T22:39:01Z"),
+        (2012, 11, 23, late_open_and_early_close(9 * 3_600 + 30 * 60, 12 * 3_600), T1, "2012-thanksgiving.pdf @2013-01-27T22:39:01Z"),
+        (2012, 12, 24, early_close(12 * 3_600), T1, "2012-christmas.pdf @2013-04-14T19:40:27Z"),
+        // 2012-12-25 - T1 - 2012-christmas.pdf - closed: christmas day 2012.
+        (2012, 12, 25, Closed, T1, "2012-christmas.pdf @2013-04-14T19:40:27Z"),
+        (2012, 12, 26, late_open(9 * 3_600 + 30 * 60), T1, "2012-christmas.pdf @2013-04-14T19:40:27Z"),
         (2025, 1, 1, Closed, T2, "CME-SVC-2024-12-31"),
         // 2025-01-02 - T2 - CME-SVC-2024-12-31 - no prior-evening leg; matching opens 08:30 CT.
         (2025, 1, 2, late_open(DAY_OPEN), T2, "CME-SVC-2024-12-31"),

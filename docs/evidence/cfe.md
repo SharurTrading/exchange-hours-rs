@@ -24,7 +24,7 @@ VIX futures normal-week history is complete from January 2010. Old-system pre-op
 
 ## Holidays
 
-**Coverage:** 2026-01-01 .. 2026-12-31 (inclusive trade dates). Tier: T1 throughout.
+**Coverage:** 2026-01-01..2026-12-31 (inclusive trade dates). Tier: T1 throughout.
 
 One table serves the `cfe` venue and the `cfe_vix` key: Cboe publishes one holiday schedule for all CFE futures, and VIX futures are the only family the crate routes to the venue, so the venue intersection is that one family's own table.
 

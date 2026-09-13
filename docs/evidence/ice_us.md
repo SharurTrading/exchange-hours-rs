@@ -24,7 +24,7 @@ row's horizon is `—`.
 
 ## Holidays
 
-**Coverage:** 2026-01-01 .. 2028-01-03 (inclusive trade dates). Tier: T1 throughout.
+**Coverage:** 2026-01-01..2028-01-03 (inclusive trade dates). Tier: T1 throughout.
 
 **Documents.**
 

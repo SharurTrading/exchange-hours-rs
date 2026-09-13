@@ -33,7 +33,7 @@ use super::{EvidenceTier::T1, HolidayKind::Closed, HolidayTable, holidays};
 /// holidays.
 // Evidence: docs/evidence/cfe.md, docs/evidence/cfe_vix.md
 pub(crate) static TABLE: &HolidayTable = holidays! {
-    coverage: (2026, 1, 1) ..= (2026, 12, 31),
+    coverage: [(2026, 1, 1) ..= (2026, 12, 31)],
     rows: [
         // 2026-01-01 - T1 - CBOE-HOURS-USFUT-2026 - New Year's Day: regular
         // `None`, and the only extended block printed is the Thursday-evening

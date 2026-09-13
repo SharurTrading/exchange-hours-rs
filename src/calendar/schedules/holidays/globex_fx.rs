@@ -16,13 +16,15 @@
 //!
 //! **2010-2012.** CME's own holiday-calendar PDFs (`2010-martin-luther-king.pdf`
 //! and its siblings) are the T1 source for the era, whose grid is the same
-//! wrapping 17:00 -> 16:00 CT block. Four shapes: a **full closure** (New
+//! wrapping 17:00 -> 16:00 CT block. Three shapes: a **full closure** (New
 //! Year's Day, Christmas Day, 2011's Good Friday and the observed days around
 //! them); an **early close** at 15:15 CT on a Friday-holiday eve, at 12:00 CT
 //! on the Monday and Thursday holidays, at 10:15 CT on the Good Fridays of 2010
-//! and 2012, and at 12:15 CT on the year-end half-days; and a **late open** at
-//! 05:00 CT on 2011-12-27, 2012-01-03 and 2012-12-26, the trade dates CME
-//! reopened five hours after the normal evening open would have run. A stated
+//! and 2012, and at 12:15 CT on the year-end half-days; and a **late open** on
+//! 2011-12-27, 2012-01-03 and 2012-12-26, where the closure removed the
+//! prior-evening leg and CME states `0500 CT - CME Globex open for trade date
+//! ...`, so that trade date's first open is 05:00 CT on the trade date itself
+//! instead of the ordinary 17:00 CT on the eve — twelve hours later. A stated
 //! re-open that lands exactly on the family's ordinary 17:00 CT evening open
 //! moves no answer and ships no row, and the evidence file lists those dates.
 //! (The operator prints that re-open above the next trade date's name.)

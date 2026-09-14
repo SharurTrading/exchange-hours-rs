@@ -228,6 +228,21 @@ GRIDS = {
 #: T2 document ids are `CME-SVC-<first fromEventDate in the queried window>`.
 T2_ID_PREFIX = "CME-SVC-"
 
+#: The time tokens a family's ordinary week prints, used to flag an entry whose
+#: prose mentions an instant its own normal week does not have even though the
+#: row it yields ships nothing.
+ORDINARY_TOKENS = {
+    "globex_equity_index": {"17:00", "16:45", "16:15", "16:00", "15:15", "08:30"},
+    "globex_energy": {"17:00", "16:45", "16:15", "16:00"},
+    "globex_fx": {"17:00", "16:45", "16:15", "16:00"},
+    "globex_interest_rates": {"17:00", "16:45", "16:15", "16:00"},
+    "globex_cryptocurrency": {"17:00", "16:45", "16:15", "16:00"},
+    "globex_nikkei_225_dollar": {"17:00", "16:45", "16:15", "16:00"},
+    "globex_grains": {"19:00", "16:45", "16:00", "14:30", "13:20", "13:30",
+                      "08:30", "08:00", "07:45"},
+    "globex_livestock": {"08:30", "13:05", "14:30", "16:00", "08:00"},
+}
+
 #: 08:30 CT, when every one of these families' US day session is under way.  A
 #: printed instant below it falls in the small hours of the trade date, where a
 #: close on this trade date and a reopen belonging to the previous local date
@@ -380,6 +395,45 @@ def _label_matches(clause, anchor):
                     MONTHS[groups[0][:3].lower()], int(groups[1]), anchor)
 
 
+def _is_editorial(text):
+    """Whether a block fragment is the round-N note rather than operator bytes."""
+    stripped = text.strip()
+    if stripped.startswith("]") or stripped.startswith("[r"):
+        return True
+    return bool(re.search(r"pdftotext|bbox| x \d|x=\d", stripped))
+
+
+def clause_for(entry, date, anchor, token=None):
+    """The operator's own printed clause the trade date owns.
+
+    Bracketed material in the block is editorial (the round-0/round-1/round-2
+    notes about where a token sits in the bytes), so candidates made only of it
+    are dropped; among the rest, clauses printing the row's own token are
+    preferred, and the fullest such clause is returned.
+    """
+    clauses = []
+    for clause in re.split(r";;", entry.get("verbatim", "") or ""):
+        spans = [(match.start(), match.end())
+                 for match in re.finditer(r"\[[^\]]*\]?", clause)]
+        for start, label in _label_matches(clause, anchor):
+            if label != date:
+                continue
+            if any(first <= start < last for first, last in spans):
+                continue
+            clauses.append(clause[start:].strip())
+            break
+    clauses = [clause for clause in clauses if not _is_editorial(clause)]
+    if not clauses:
+        return None
+    if token:
+        clock = token.split()[0]
+        with_token = [clause for clause in clauses if clock in clause]
+        if with_token:
+            clauses = with_token
+    return max(clauses,
+               key=lambda text: len(re.sub(r"\[[^\]]*\]?", "", text).strip()))
+
+
 def prior_leg_ran(entry, date, group, anchor):
     """Whether the trade date's own printed text shows its prior-evening leg ran.
 
@@ -469,7 +523,8 @@ class Row:
 
     def __init__(self, trade_date, group, kind, ssm_close=None, ssm_open=None,
                  entry=None, rationale="", role="", unsourced_reason="",
-                 prior_leg=None, entry_date=None):
+                 prior_leg=None, entry_date=None, printed_token=None,
+                 clause=None):
         self.trade_date = trade_date
         self.group = group
         self.kind = kind  # Closed | EarlyClose | LateOpen | LateOpenAndEarlyClose | Unsourced
@@ -481,6 +536,8 @@ class Row:
         self.unsourced_reason = unsourced_reason
         self.prior_leg = prior_leg
         self.entry_date = entry_date if entry_date is not None else trade_date
+        self.printed_token = printed_token
+        self.clause = clause
 
     def key(self):
         return (self.kind, self.ssm_open, self.ssm_close)
@@ -598,6 +655,36 @@ def derive_group(entry, group, block_date, sink):
 
     if status in ("early_close", "late_open", "modified"):
         shipped_close, drop_reason = record_close()
+        if (shipped_close is not None and grid.wrapped
+                and shipped_close < DAY_SESSION_START):
+            # RULED (2026-09-15, the maintainer): an instant in the small hours
+            # of a wrapped trade date is not this identity's final close.  The
+            # block's only instance is the merged `Nikkei & BTIC` line on
+            # 2022-05-30, whose printed 01:00 is the BTIC line's close; the
+            # crate models the outright Nikkei, whose own close the document
+            # does not state for that date.  Withhold rather than ship a
+            # sourced-looking value that is wrong for the identity.
+            sink["rows"].append(Row(
+                block_date, group, "Unsourced", entry=entry,
+                role="small-hours-close", entry_date=block_date,
+                unsourced_reason=(
+                    "the only instant printed for this identity on the date is "
+                    "`%s CT`, in the small hours of the trade date: the sheet "
+                    "merges the outright and BTIC Nikkei lines under one label "
+                    "and prints the BTIC line's close, and no operator document "
+                    "states the outright Nikkei's own close for the date"
+                    % ssm_token(shipped_close)),
+            ))
+            sink["drops"].append((
+                block_date, group,
+                "RULED: the printed close %s CT falls in the small hours of the "
+                "wrapped trade date (before the %s CT day session) and is the "
+                "merged BTIC line's close, not this identity's, so the row ships "
+                "`Unsourced` instead of `early_close(%s)`"
+                % (ssm_token(shipped_close), ssm_token(DAY_SESSION_START),
+                   ssm_expr(shipped_close)),
+                entry))
+            shipped_close = None
         if shipped_close is not None:
             sink["rows"].append(Row(
                 block_date, group, "EarlyClose", ssm_close=shipped_close,
@@ -610,10 +697,12 @@ def derive_group(entry, group, block_date, sink):
             sink["drops"].append((block_date, group, drop_reason, entry))
         target, shipped_open, note, prior = record_open()
         if shipped_open is not None and target is not None:
+            token = _printed_token(entry.get("open_instant"), shipped_open)
             sink["rows"].append(Row(
                 target, group, "LateOpen", ssm_open=shipped_open, entry=entry,
                 role="open-of-" + status, rationale=note, prior_leg=prior,
-                entry_date=block_date,
+                entry_date=block_date, printed_token=token,
+                clause=clause_for(entry, target, block_date, token),
             ))
         elif note:
             sink["drops"].append(
@@ -628,10 +717,12 @@ def derive_group(entry, group, block_date, sink):
                                           "this date"))
         target, shipped_open, note, prior = record_open()
         if shipped_open is not None and target is not None:
+            token = _printed_token(entry.get("open_instant"), shipped_open)
             sink["rows"].append(Row(
                 target, group, "LateOpen", ssm_open=shipped_open, entry=entry,
                 role="reopen-after-closed", rationale=note, prior_leg=prior,
-                entry_date=block_date,
+                entry_date=block_date, printed_token=token,
+                clause=clause_for(entry, target, block_date, token),
             ))
         elif note:
             sink["drops"].append((target or block_date, group, "reopen: " + note, entry))
@@ -692,6 +783,7 @@ def merge_family(group_rows, sink):
                               % sorted(ssm_token(v) for v in open_values)))
             continue
         close = closes[0] if closes else None
+        opens.sort(key=lambda r: (r.clause is None, r.entry_date))
         late = opens[0] if opens else None
         if closed and (close or late):
             conflicts.append((trade_date, "a closure and a boundary move on the "
@@ -713,6 +805,8 @@ def merge_family(group_rows, sink):
                                      ssm_close=close.ssm_close, ssm_open=late.ssm_open,
                                      entry=close.entry, role="combined",
                                      entry_date=close.entry_date,
+                                     printed_token=late.printed_token,
+                                     clause=late.clause,
                                      rationale=late.rationale + "; " + close.rationale)
         elif close:
             merged[trade_date] = close
@@ -786,9 +880,9 @@ def kind_rust(row):
 
 def kind_words(row):
     if row.kind == "Closed":
-        return "closed"
+        return "closed: no trade date"
     if row.kind == "Unsourced":
-        return "unsourced"
+        return "unsourced: no operator document covers this date"
     if row.kind == "EarlyClose":
         return "early close %s CT" % ssm_token(row.ssm_close)
     if row.kind == "LateOpen":
@@ -1214,6 +1308,85 @@ def main(argv=None):
     with open(os.path.join(out_dir, "documents.md"), "w", encoding="utf-8") as handle:
         handle.write("".join(doc_lines))
 
+    # ROWS.json -- the machine-readable plan the encoder works from.
+    def row_object(row):
+        source = "block %s %s" % (iso(row.entry_date), row.group)
+        line = row.entry.get("line")
+        if line:
+            source += " (%s)" % line
+        if row.entry_date != row.trade_date:
+            source = "derived: reopen printed in %s" % source
+        printed = instant_cell(row).replace("`", "")
+        return {
+            "date": iso(row.trade_date),
+            "kind": row.kind,
+            "open_ssm": row.ssm_open,
+            "close_ssm": row.ssm_close,
+            "tier": row.entry["tier"],
+            "document": row.doc_id,
+            "reason": kind_words(row),
+            "printed": printed,
+            "source": source,
+        }
+
+    rows_json = {
+        "task": block.get("task"),
+        "tool": "tools/wave3_rows.py",
+        "block": {"path": os.path.basename(block_path),
+                  "sha256": sha256_of(block_path)},
+        "window": [iso(WINDOW[0]), iso(WINDOW[1])],
+        "coverage_clause": "[(2022, 1, 1) ..= (2024, 12, 31)]",
+        "families": [
+            {
+                "family": family,
+                "coverage": [[2022, 1, 1, 2024, 12, 31]],
+                "rows": [row_object(family_rows[family][date])
+                         for date in sorted(family_rows[family])],
+            }
+            for family in FAMILIES
+        ],
+        "documents": [
+            {
+                "id": doc_id,
+                "file": used_docs[doc_id]["file"],
+                "sha256": used_docs[doc_id]["sha256"],
+                "url": replay_url(used_docs[doc_id]["capture"],
+                                  used_docs[doc_id]["url"]),
+                "capture_utc": used_docs[doc_id]["capture"],
+                "tier": used_docs[doc_id]["tier"],
+            }
+            for doc_id in sorted(used_docs,
+                                 key=lambda d: (used_docs[d]["capture"],
+                                                used_docs[d]["file"]))
+        ],
+        "counts": {},
+    }
+    rows_per_family = {}
+    rows_per_kind = {}
+    rows_per_tier = {}
+    rows_per_year = {}
+    for family in FAMILIES:
+        rows_per_family[family] = 0
+        for date, row in family_rows[family].items():
+            rows_per_family[family] += 1
+            rows_per_kind[row.kind] = rows_per_kind.get(row.kind, 0) + 1
+            tier = row.entry["tier"]
+            rows_per_tier[tier] = rows_per_tier.get(tier, 0) + 1
+            year = str(date.year)
+            rows_per_year[year] = rows_per_year.get(year, 0) + 1
+    rows_json["counts"] = {
+        "total": sum(rows_per_family.values()),
+        "rows_per_family": rows_per_family,
+        "rows_per_kind": rows_per_kind,
+        "rows_per_tier": rows_per_tier,
+        "rows_per_year": rows_per_year,
+        "documents": len(used_docs),
+    }
+    rows_json["questions_for_review"] = for_review
+    with open(os.path.join(out_dir, "ROWS.json"), "w", encoding="utf-8") as handle:
+        json.dump(rows_json, handle, indent=1, sort_keys=True)
+        handle.write("\n")
+
     # per-family evidence tables
     for family in FAMILIES:
         grid = GRIDS[family]
@@ -1514,20 +1687,26 @@ def build_questions(family_rows, fold_report, drops, entries_by_date,
 
     # 5. closures whose reopen the documents do not record.
     gaps = {}
-    for date, group, reason, entry in drops:
-        if entry.get("status") == "closed" and entry.get("open_instant") in (None, "-"):
-            gaps.setdefault(group, []).append(iso(date))
+    for date, group, reason, entry in drops + [
+            (r.trade_date, f, r.rationale, r.entry) for f in FAMILIES
+            for d, r in family_rows[f].items()]:
+        if (entry.get("status") in ("closed", "early_close", "modified")
+                and entry.get("open_instant") in (None, "-")):
+            gaps.setdefault(group, set()).add(iso(date))
+    gaps = {group: sorted(dates) for group, dates in gaps.items()}
     if gaps:
         ask(
-            "%d closure entries print no reopen at all."
+            "%d entries print no reopen instant at all."
             % sum(len(v) for v in gaps.values()),
             "The 2024 Good Friday windows are the cause: the T2 service was read "
             "for 2024-03-28 .. 2024-03-30, so the Sunday 2024-03-31 reopen (and "
             "with it whether the trade date 2024-04-01 lost its prior-evening leg, "
             "which matters for `globex_grains`) is outside the document. The tool "
-            "ships no row for 2024-04-01. Per group: %s."
-            % "; ".join("%s: %s" % (g, ", ".join(v)) for g, v in sorted(gaps.items())),
-            "ship nothing for 2024-04-01 and record the gap")
+            "ships no row for 2024-04-01. Every one is listed per group in the "
+            "family evidence files' `No row, and why` section. Per group: %s."
+            % "; ".join("%s: %s" % (g, ", ".join(v))
+                        for g, v in sorted(gaps.items())),
+            "ship nothing where no reopen is printed and record the gap")
 
     # 6. the Unsourced citation convention.
     if unsourced_from_missing:
@@ -1562,7 +1741,110 @@ def build_questions(family_rows, fold_report, drops, entries_by_date,
             "coverage to 2022-01-01..2023-12-31 and let 2024 be 'no answer'?",
             "keep the contiguous window with `Unsourced` rows")
 
-    # 8. tier provenance of the negative controls.
+    # 7b. the ruled small-hours instant.
+    small_hours = [(family, date, row)
+                   for family in FAMILIES
+                   for date, row in sorted(family_rows[family].items())
+                   if row.role == "small-hours-close"]
+    if small_hours:
+        ask(
+            "`%s` on %s ships `Unsourced`, not the printed small-hours close."
+            % (small_hours[0][0], iso(small_hours[0][1])),
+            "The 2022 Memorial Day workbook prints a merged `Nikkei & BTIC` "
+            "line whose Friday close is the BTIC-style `1:00`; the same sheet's "
+            "`Equity Products` row and the MLK and Presidents Day sheets print "
+            "the outright Nikkei's `16:00` Friday close and a separate "
+            "`Nikkei BTIC` row. The crate models the outright Nikkei, so the "
+            "date is withheld as `Unsourced` at T1 rather than given an "
+            "`early_close(1 * 3_600)` that would read as sourced and is wrong "
+            "for the identity. Closing condition: a CME document that states "
+            "the outright Nikkei's own close on a Memorial Day, or a tiling "
+            "that separates the two lines.",
+            "ship `Unsourced` at T1 with the workbook's document id",
+            ["globex_nikkei_225_dollar"])
+        items[-1]["scan"] = [{"date": iso(date), "family": family,
+                              "role": row.role}
+                             for family, date, row in small_hours]
+
+    # 8. dates where a family ships no row but the entry's prose prints an
+    #    instant its ordinary week does not have.
+    prose_hints = []
+    for date, holiday in sorted(entries_by_date.items()):
+        for entry in holiday["families"]:
+            family = entry["family"]
+            if family not in FAMILIES or date in family_rows[family]:
+                continue
+            # Only the text the scanned date owns: an entry's verbatim often
+            # carries its neighbours' events too, and those already have rows.
+            clause = clause_for(entry, date, date) or entry.get("verbatim", "")
+            text = " ".join([clause or "",
+                             entry.get("close_instant", "") or "",
+                             entry.get("open_instant", "") or ""])
+            tokens = sorted(set(re.findall(r"\b\d{1,2}:\d{2}\b", text)))
+            ordinary = {parse_instant("%s CT" % token)[0]
+                        for token in ORDINARY_TOKENS[family]}
+            unusual = [token for token in tokens
+                       if parse_instant("%s CT" % token)[0] not in ordinary]
+            if unusual:
+                prose_hints.append({
+                    "date": iso(date), "family": family,
+                    "status": entry["status"], "tokens": unusual,
+                })
+    if prose_hints:
+        ask(
+            "%d date/family entries ship no row yet print an instant outside the "
+            "family's ordinary week." % len(prose_hints),
+            "The scan reads the text each scanned date owns (not its "
+            "neighbours' events) and lists every (date, family) that ships no "
+            "row while printing an `HH:MM` its ordinary week does not contain: "
+            "%s. Reading them: (a) the 2022 New Year's sheet prints the "
+            "`Nikkei/TOPIX BTIC` line's `Close 00:00`, a BTIC close on the next "
+            "trade date, which this crate does not model; (b) the 2023 and 2024 "
+            "Independence Day / New Year grain entries print the next trade "
+            "date's `06:00 (PREOPEN)`, which is exactly the no-evening-leg "
+            "marker that gives 2023-07-05 a `late_open` row; (c) the 2024-12-31 "
+            "grains note points at `2025-01-02 06:00 preopen`, outside this "
+            "wave's window, so no row ships and the 2025-2027 wave must state "
+            "that trade date's late open. None of the three moves a boundary "
+            "inside 2022-2024 that this family's scalar row vocabulary can "
+            "state."
+            % "; ".join("%s %s prints %s" % (item["date"], item["family"],
+                                             ", ".join("`%s`" % t
+                                                       for t in item["tokens"]))
+                        for item in prose_hints[:12]),
+            "ship no row for any of them; record the tokens as normal-week notes",
+            sorted({item["family"] for item in prose_hints}))
+        items[-1]["scan"] = prose_hints
+
+    # 9. the maintainer's five-row list versus the six rows the rule produces.
+    late_dates = sorted({iso(date) for family in FAMILIES
+                         for date, row in family_rows[family].items()
+                         if family == "globex_grains"
+                         and row.kind in ("LateOpen", "LateOpenAndEarlyClose")
+                         and row.entry_date != date})
+    ruled_five = ["2022-07-05", "2023-12-26", "2024-01-02", "2024-07-05",
+                  "2024-12-26"]
+    extra = [date for date in late_dates if date not in ruled_five]
+    if extra:
+        ask(
+            "The day-after-closure rule produces one more `globex_grains` row "
+            "than the maintainer's five-date list: %s." % ", ".join(extra),
+            "`%s` is the same shape as the five accepted dates: the closure "
+            "date prints no evening leg and the next trade date opens with the "
+            "day session. Its clause is `%s`, and the Monday before it prints "
+            "the regular day session and PCP with no `16:45 preopen` / `19:00 "
+            "open`. Dropping the row would leave trade date %s opening at the "
+            "ordinary `19:00 CT` on the holiday itself, i.e. through the "
+            "closure. Recommendation: keep it; if the ruling is to drop it, "
+            "say so and the row goes."
+            % (", ".join(extra),
+               (family_rows["globex_grains"][dt.date.fromisoformat(extra[0])].clause
+                or "")[:200],
+               extra[0]),
+            "keep the row",
+            ["globex_grains"])
+
+    # 10. tier provenance of the negative controls.
     default_tier_docs = sorted(
         doc_id for doc_id, doc in used_docs.items()
         if doc.get("tier_source") == "index-default")
@@ -1591,6 +1873,8 @@ def build_questions(family_rows, fold_report, drops, entries_by_date,
             "correctly ships nothing, rather than being an earlier round's gap.",
             "ship nothing")
 
+    for index, item in enumerate(items):
+        item["n"] = index + 1
     return items
 
 
@@ -1603,8 +1887,13 @@ def write_decisions(out_dir, summary, family_rows, fold_report, drops, used_docs
     add("Generated by `tools/wave3_rows.py`; every number below is recomputed by\n")
     add("re-running it. The rows themselves are in `<family>.rows.rs`, the\n")
     add("per-family evidence tables in `<family>.evidence.md`, the row citations in\n")
-    add("`documents.md`, and the machine-readable copy of everything here in\n")
-    add("`SUMMARY.json`.\n\n")
+    add("`documents.md`, the row-level encoding plan in `ROWS.json`, and the\n")
+    add("machine-readable copy of everything here in `SUMMARY.json`. Regenerate\n")
+    add("with `python3 tools/wave3_rows.py` (it prints\n")
+    add("to stdout and rewrites `tools/out/`); verify with\n")
+    add("`python3 tools/check_wave3.py`, which re-runs the generator into a scratch\n")
+    add("directory, diffs every emitted byte and re-derives the structural checks\n")
+    add("from the outputs.\n\n")
 
     add("## 1. Inputs\n\n")
     add("| input | sha256 | notes |\n|---|---|---|\n")
@@ -1680,9 +1969,33 @@ def write_decisions(out_dir, summary, family_rows, fold_report, drops, used_docs
                 % (family, iso(date), kind_words(row), row.doc_id))
     if not created:
         add("| — | — | — | none |\n")
-    add("\nThese are the day-after-closure late opens: the closure entry's printed\n")
-    add("open is the successor trade date's own day-session open, and the trade\n")
-    add("date is inside the wave window.\n\n")
+    add("\n**The late-open ruling.** A day-after-closure row ships only where CME\n")
+    add("printed **no evening leg on the closure date**; where the holiday itself\n")
+    add("carries the ordinary evening reopen, the next trade date is ordinary and\n")
+    add("ships nothing. Each row below was re-read from the block's own printed\n")
+    add("reopen token (`%s`, in place of the usual `%s`):\n\n"
+        % (", ".join(sorted({row.printed_token for family in FAMILIES
+                             for row in family_rows[family].values()
+                             if row.printed_token})),
+           "07:45 paused"))
+    add("| family | trade date | printed reopen token | the clause it is read from | document |\n|---|---|---|---|---|\n")
+    late_rows = [(family, date, row) for family in FAMILIES
+                 for date, row in sorted(family_rows[family].items())
+                 if row.kind in ("LateOpen", "LateOpenAndEarlyClose")]
+    for family, date, row in late_rows:
+        clause = (row.clause or "").replace("|", "/").strip()
+        if len(clause) > 150:
+            clause = clause[:147].rstrip() + "..."
+        add("| `%s` | %s | `%s` | %s | `%s` |\n"
+            % (family, iso(date), row.printed_token, clause, row.doc_id))
+    add("\nThe counter-example, so the rule is not read as \"every closure is\n")
+    add("followed by a late open\": the 2022 Christmas grains entry prints\n")
+    add("`Monday, December 26 \"Globex Closed\", Pre-opening** 16:00, Open 19:00`,\n")
+    add("i.e. the holiday itself carries the ordinary `19:00 CT` evening leg for\n")
+    add("trade date 2022-12-27, so 2022-12-27 ships **no** row. 2022-01-17,\n")
+    add("2022-02-21, 2022-04-15, 2022-05-30, 2022-06-20, 2022-09-05, 2023-01-02,\n")
+    add("2023-05-29, 2023-06-19, 2023-09-04, 2024-01-15, 2024-02-19, 2024-05-27\n")
+    add("and 2024-06-19 are the same shape and also ship no successor row.\n\n")
 
     add("## 4. What was dropped, and why\n\n")
     add("`status: normal` ships no row. A printed instant that equals the family's\n")
@@ -1725,7 +2038,16 @@ def write_decisions(out_dir, summary, family_rows, fold_report, drops, used_docs
         add("| %s | `%s` | %s |\n"
             % (item["date"], item["document"],
                item["reason"].split(" - ")[0][:160]))
-    add("\nThe thirteen `globex_nikkei_225_dollar` `unknown` dates are the 2024\n")
+    add("\n**RULED: the small-hours instant on 2022-05-30 is withheld.** The 2022\n")
+    add("Memorial Day sheet prints a merged `Nikkei & BTIC` line whose Friday close\n")
+    add("is the BTIC-style `1:00`; the sheet's own `Equity Products` row and the\n")
+    add("MLK and Presidents Day sheets print the outright Nikkei's `16:00` Friday\n")
+    add("close and a separate `Nikkei BTIC` row. The crate models the outright\n")
+    add("Nikkei, and `01:00 CT` is not its close, so the date ships `Unsourced` at\n")
+    add("T1 rather than an `early_close(1 * 3_600)` that would read as sourced.\n")
+    add("Closing condition: a CME document that states the outright Nikkei's own\n")
+    add("close for a Memorial Day, or a separate tiling of the outright line.\n\n")
+    add("The thirteen `globex_nikkei_225_dollar` `unknown` dates are the 2024\n")
     add("windows the T2 service answers for ten representative products, none of\n")
     add("them Nikkei; they ship `Unsourced` at T2 as well. The `Unsourced` kind\n")
     add("clips nothing, so every one of these dates still resolves to the family's\n")
@@ -1791,6 +2113,11 @@ def write_decisions(out_dir, summary, family_rows, fold_report, drops, used_docs
     add("  distinct local name (`2022-thanksgiving-holiday-schedule.FINAL-20221122.xls`)\n")
     add("  and its id uses that name, so the preliminary capture of the same URL\n")
     add("  cannot be confused with it. The preliminary vintage keys no row.\n")
+    add("- `tools/out/ROWS.json` carries one object per family (`date`, `kind`,\n")
+    add("  `open_ssm`, `close_ssm`, `tier`, `document`, `reason`, `printed`,\n")
+    add("  `source`), the per-family/per-kind/per-tier/per-year counts and the\n")
+    add("  resolution of every id any row cites; `tools/check_wave3.py` parses it\n")
+    add("  and the eight `.rows.rs` files and asserts they agree row for row.\n")
     add("- Every id used by a row appears in `tools/out/documents.md` and nowhere\n")
     add("  else: %d ids, %d T1 and %d T2.\n"
         % (summary["documents"]["count"], summary["documents"]["t1"],

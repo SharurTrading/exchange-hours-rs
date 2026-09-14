@@ -67,13 +67,13 @@ they ship `Unsourced` rather than reading as audited normal.
 to this family's rows is stated in `tools/out/DECISIONS.md`;
 these bear on this family and need the maintainer's ruling:
 
-- **Q3.** The `lumber` -> `globex_livestock` fold joins two different clocks. Default: keep the fold for status only; the crate family's instants stand
-- **Q8.** Fold disagreement on 2024-12-24: `lumber` says early close 12:05 CT, `globex_livestock` says early close 12:15 CT. Default: ship the crate family's row and record the disagreement
-- **Q11.** 14 closure entries print no reopen at all. Default: ship nothing for 2024-04-01 and record the gap
-- **Q12.** The 3 uncovered 2023 dates cite the operator's own negative control as their document id. Default: cite the negative control, keep one 2022-2024 window
-- **Q13.** `globex_nikkei_225_dollar` ships 16 `Unsourced` rows, 13 of them the whole 2024 window. Default: keep the contiguous window with `Unsourced` rows
-- **Q14.** 3 document ids take their tier from the INDEX's channel statement, not from a per-row tier token. Default: accept the file-level tier statement
-- **Q15.** The wave's dates 2022-01-01 carry `normal` for all ten product groups, so no family ships any row for them. Default: ship nothing
+- **Q2.** The `lumber` -> `globex_livestock` fold joins two different clocks. Default: keep the fold for status only; the crate family's instants stand
+- **Q7.** Fold disagreement on 2024-12-24: `lumber` says early close 12:05 CT, `globex_livestock` says early close 12:15 CT. Default: ship the crate family's row and record the disagreement
+- **Q10.** 37 entries print no reopen instant at all. Default: ship nothing where no reopen is printed and record the gap
+- **Q11.** The 3 uncovered 2023 dates cite the operator's own negative control as their document id. Default: cite the negative control, keep one 2022-2024 window
+- **Q12.** `globex_nikkei_225_dollar` ships 17 `Unsourced` rows, 13 of them the whole 2024 window. Default: keep the contiguous window with `Unsourced` rows
+- **Q16.** 3 document ids take their tier from the INDEX's channel statement, not from a per-row tier token. Default: accept the file-level tier statement
+- **Q17.** The wave's dates 2022-01-01 carry `normal` for all ten product groups, so no family ships any row for them. Default: ship nothing
 
 **No row, and why.** A status that changes no answer ships
 nothing. For this family the block's entries were read as:

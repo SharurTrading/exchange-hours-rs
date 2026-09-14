@@ -41,7 +41,7 @@ event date; the conversion is stated per row in `derived from`.
 | 2023-07-04 | closed | `no entries` | `4th-of-july-2023.pdf @2023-06-27T12:50:57Z` | T1 | CME prints the closure for this date, so the session whose final close would have fallen here — the one that opened `19:00 CT` the previous evening — is removed with it, and the crate's trade date is the operator's event date. |
 | 2023-07-05 | late open | `08:30 CT` | `4th-of-july-2023.pdf @2023-06-27T12:50:57Z` | T1 | The prior-evening leg of trade date 2023-07-05 did not run: CME's next open is the day session's own `08:30 CT` on that date, and `08:30` is earlier than this family's ordinary `19:00 CT` first open, so the cutoff lands on the trade date itself rather than the preceding local date. |
 | 2023-09-04 | closed | `closed` | `labor-day-2023.pdf @2023-08-02T19:24:46Z` | T1 | CME prints the closure for this date, so the session whose final close would have fallen here — the one that opened `19:00 CT` the previous evening — is removed with it, and the crate's trade date is the operator's event date. |
-| 2023-11-23 | closed | `no time events` | `thanksgiving-day-2023.pdf @2023-12-03T20:59:29Z` | T1 | CME prints the closure for this date, so the session whose final close would have fallen here — the one that opened `19:00 CT` the previous evening — is removed with it, and the crate's trade date is the operator's event date. |
+| 2023-11-23 | closed | `no entries` | `thanksgiving-day-2023.pdf @2023-12-03T20:59:29Z` | T1 | CME prints the closure for this date, so the session whose final close would have fallen here — the one that opened `19:00 CT` the previous evening — is removed with it, and the crate's trade date is the operator's event date. |
 | 2023-11-24 | late open and early close | `08:30 CT` / `12:05 CT` | `thanksgiving-day-2023.pdf @2023-12-03T20:59:29Z` | T1 | CME withdrew the prior-evening leg and printed the day session's own `08:30 CT` open beside the `12:05 CT` final close on trade date 2023-11-24, so both boundaries move; `08:30` is earlier than this family's ordinary `19:00 CT` first open, so the cutoff lands on the trade date itself rather than the preceding local date. |
 | 2023-12-25 | closed | `no time events` | `christmas-day-2023.pdf @2026-07-19T09:52:48Z` | T1 | CME prints the closure for this date, so the session whose final close would have fallen here — the one that opened `19:00 CT` the previous evening — is removed with it, and the crate's trade date is the operator's event date. |
 | 2023-12-26 | late open | `08:30 CT` | `christmas-day-2023.pdf @2026-07-19T09:52:48Z` | T1 | The prior-evening leg of trade date 2023-12-26 did not run: CME's next open is the day session's own `08:30 CT` on that date, and `08:30` is earlier than this family's ordinary `19:00 CT` first open, so the cutoff lands on the trade date itself rather than the preceding local date. |
@@ -73,18 +73,20 @@ they ship `Unsourced` rather than reading as audited normal.
 to this family's rows is stated in `tools/out/DECISIONS.md`;
 these bear on this family and need the maintainer's ruling:
 
-- **Q2.** The `dairy` -> `globex_grains` fold joins two different clocks. Default: keep the fold for status only; the crate family's instants stand
-- **Q4.** Fold disagreement on 2022-11-25: `dairy` says closed, `globex_grains` says late open 08:30 CT and early close 12:05 CT. Default: ship the crate family's row and record the disagreement
-- **Q5.** Fold disagreement on 2023-11-24: `dairy` says closed, `globex_grains` says late open 08:30 CT and early close 12:05 CT. Default: ship the crate family's row and record the disagreement
-- **Q6.** Fold disagreement on 2024-11-29: `dairy` says closed, `globex_grains` says late open 08:30 CT and early close 12:05 CT. Default: ship the crate family's row and record the disagreement
-- **Q7.** Fold disagreement on 2024-12-24: `dairy` says early close 12:00 CT, `globex_grains` says early close 12:05 CT. Default: ship the crate family's row and record the disagreement
-- **Q9.** The day-after-closure late opens on 2022-07-05, 2023-07-05, 2023-12-26, 2024-01-02, 2024-07-05, 2024-12-26 have no counterpart in the folded group. Default: ship the crate family's `LateOpen` rows
-- **Q10.** 6 rows are keyed to trade dates the block has no entry for. Default: keep the created rows
-- **Q11.** 14 closure entries print no reopen at all. Default: ship nothing for 2024-04-01 and record the gap
-- **Q12.** The 3 uncovered 2023 dates cite the operator's own negative control as their document id. Default: cite the negative control, keep one 2022-2024 window
-- **Q13.** `globex_nikkei_225_dollar` ships 16 `Unsourced` rows, 13 of them the whole 2024 window. Default: keep the contiguous window with `Unsourced` rows
-- **Q14.** 3 document ids take their tier from the INDEX's channel statement, not from a per-row tier token. Default: accept the file-level tier statement
-- **Q15.** The wave's dates 2022-01-01 carry `normal` for all ten product groups, so no family ships any row for them. Default: ship nothing
+- **Q1.** The `dairy` -> `globex_grains` fold joins two different clocks. Default: keep the fold for status only; the crate family's instants stand
+- **Q3.** Fold disagreement on 2022-11-25: `dairy` says closed: no trade date, `globex_grains` says late open 08:30 CT and early close 12:05 CT. Default: ship the crate family's row and record the disagreement
+- **Q4.** Fold disagreement on 2023-11-24: `dairy` says closed: no trade date, `globex_grains` says late open 08:30 CT and early close 12:05 CT. Default: ship the crate family's row and record the disagreement
+- **Q5.** Fold disagreement on 2024-11-29: `dairy` says closed: no trade date, `globex_grains` says late open 08:30 CT and early close 12:05 CT. Default: ship the crate family's row and record the disagreement
+- **Q6.** Fold disagreement on 2024-12-24: `dairy` says early close 12:00 CT, `globex_grains` says early close 12:05 CT. Default: ship the crate family's row and record the disagreement
+- **Q8.** The day-after-closure late opens on 2022-07-05, 2023-07-05, 2023-12-26, 2024-01-02, 2024-07-05, 2024-12-26 have no counterpart in the folded group. Default: ship the crate family's `LateOpen` rows
+- **Q9.** 6 rows are keyed to trade dates the block has no entry for. Default: keep the created rows
+- **Q10.** 37 entries print no reopen instant at all. Default: ship nothing where no reopen is printed and record the gap
+- **Q11.** The 3 uncovered 2023 dates cite the operator's own negative control as their document id. Default: cite the negative control, keep one 2022-2024 window
+- **Q12.** `globex_nikkei_225_dollar` ships 17 `Unsourced` rows, 13 of them the whole 2024 window. Default: keep the contiguous window with `Unsourced` rows
+- **Q14.** 3 date/family entries ship no row yet print an instant outside the family's ordinary week. Default: ship no row for any of them; record the tokens as normal-week notes
+- **Q15.** The day-after-closure rule produces one more `globex_grains` row than the maintainer's five-date list: 2023-07-05. Default: keep the row
+- **Q16.** 3 document ids take their tier from the INDEX's channel statement, not from a per-row tier token. Default: accept the file-level tier statement
+- **Q17.** The wave's dates 2022-01-01 carry `normal` for all ten product groups, so no family ships any row for them. Default: ship nothing
 
 **No row, and why.** A status that changes no answer ships
 nothing. For this family the block's entries were read as:

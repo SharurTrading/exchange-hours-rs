@@ -71,6 +71,61 @@ def sha256_of(path):
         return hashlib.sha256(handle.read()).hexdigest()
 
 
+def kind_name(expr):
+    """The plan's kind name for a kind expression."""
+    if expr == "Closed":
+        return "Closed"
+    if expr == "Unsourced":
+        return "Unsourced"
+    if expr.startswith("early_close("):
+        return "EarlyClose"
+    if expr.startswith("late_open_and_early_close("):
+        return "LateOpenAndEarlyClose"
+    return "LateOpen"
+
+
+def kind_label(kind):
+    """The evidence table's `kind` word for a kind expression."""
+    if kind == "Closed":
+        return "closed"
+    if kind == "Unsourced":
+        return "unsourced"
+    if kind.startswith("early_close("):
+        return "early close"
+    if kind.startswith("late_open_and_early_close("):
+        return "late open and early close"
+    return "late open"
+
+
+def ssm_of(token):
+    """Seconds since midnight for an ``HH:MM CT`` token, else ``None``."""
+    match = re.fullmatch(r"(\d{1,2}):(\d{2})\s*CT", token)
+    if not match:
+        return None
+    return int(match.group(1)) * 3600 + int(match.group(2)) * 60
+
+
+def expr_ssm(expr):
+    """Seconds since midnight for a `H * 3_600 + M * 60` expression."""
+    hours = re.search(r"(\d+) \* 3_600", expr)
+    minutes = re.search(r"\+ (\d+) \* 60", expr)
+    return (int(hours.group(1)) if hours else 0) * 3600 + \
+        (int(minutes.group(1)) if minutes else 0) * 60
+
+
+def kind_ssms(kind):
+    """The instants a kind expression encodes, as a list."""
+    if kind in ("Closed", "Unsourced"):
+        return []
+    if kind.startswith("early_close("):
+        return [expr_ssm(kind[len("early_close("):-1])]
+    if kind.startswith("late_open("):
+        return [expr_ssm(kind[len("late_open("):-1])]
+    inner = kind[len("late_open_and_early_close("):-1]
+    head, tail = inner.split(", ", 1)
+    return [expr_ssm(head), expr_ssm(tail)]
+
+
 def main():
     root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     out = os.path.join(root, "tools", "out")
@@ -202,8 +257,8 @@ def main():
             match = EVIDENCE_ROW_RE.match(line)
             if not match:
                 continue
-            date, _kind, cell, doc_id, tier = match.groups()
-            rows[date] = (cell, doc_id, tier)
+            date, label, cell, doc_id, tier = match.groups()
+            rows[date] = (cell, doc_id, tier, label)
             entry = (entries.get(family) or {}).get(date)
             # A row keyed to a trade date that follows a closure cites the
             # closure entry, so the haystack is that entry: the block's own text
@@ -231,13 +286,130 @@ def main():
             ok(key in rows, "%s %s: shipped row has no evidence-table row"
                % (family, key))
             if key in rows:
-                ok(rows[key][1] == doc and rows[key][2] == tier,
+                cell, cell_doc, cell_tier, cell_label = rows[key]
+                ok(cell_label == kind_label(kind),
+                   "%s %s: evidence kind %r does not match %s"
+                   % (family, key, cell_label, kind))
+                ok(cell_doc == doc and cell_tier == tier,
                    "%s %s: evidence row cites %s/%s, tuple cites %s/%s"
-                   % (family, key, rows[key][1], rows[key][2], doc, tier))
+                   % (family, key, cell_doc, cell_tier, doc, tier))
+                printed = [ssm_of(token)
+                           for token in re.findall(r"`([^`]+)`", cell)]
+                printed = [value for value in printed if value is not None]
+                expected = kind_ssms(kind)
+                if kind in ("Closed", "Unsourced"):
+                    ok(not printed,
+                       "%s %s: %s row prints an instant" % (family, key, kind))
+                else:
+                    ok(sorted(printed) == sorted(expected),
+                       "%s %s: %s encodes %s but the evidence row prints %s"
+                       % (family, key, kind, sorted(expected), sorted(printed)))
         for key in rows:
             ok(any(row[0].isoformat() == key for row in tuples[family]),
                "%s %s: evidence table lists a row that is not emitted"
                % (family, key))
+
+    # 6b. ROWS.json is the encoding contract and must agree with the .rows.rs ----
+    with open(os.path.join(out, "ROWS.json"), "r", encoding="utf-8") as handle:
+        plan = json.load(handle)
+    ok(plan["window"] == ["2022-01-01", "2024-12-31"],
+       "ROWS.json: window is %r" % (plan["window"],))
+    planned_rows = 0
+    per_kind = {}
+    per_tier = {}
+    per_year = {}
+    per_family = {}
+    for family_plan in plan["families"]:
+        family = family_plan["family"]
+        ok(family in FAMILIES, "ROWS.json: unknown family %r" % family)
+        ok(family_plan["coverage"] == [[2022, 1, 1, 2024, 12, 31]],
+           "ROWS.json %s: coverage is %r" % (family, family_plan["coverage"]))
+        planned = family_plan["rows"]
+        emitted = tuples.get(family, [])
+        ok(len(planned) == len(emitted),
+           "ROWS.json %s: %d planned rows, %d emitted"
+           % (family, len(planned), len(emitted)))
+        documents_in_plan = {row["document"] for row in planned}
+        for doc_id in documents_in_plan:
+            ok(doc_id in documents,
+               "ROWS.json %s: document %r is not in documents.md"
+               % (family, doc_id))
+        dates = [dt.date.fromisoformat(row["date"]) for row in planned]
+        ok(dates == sorted(set(dates)),
+           "ROWS.json %s: dates are not strictly ascending" % family)
+        for row in planned:
+            date = dt.date.fromisoformat(row["date"])
+            ok(dt.date(2022, 1, 1) <= date <= dt.date(2024, 12, 31),
+               "ROWS.json %s: %s is outside the window" % (family, row["date"]))
+            open_ssm, close_ssm = row["open_ssm"], row["close_ssm"]
+            if row["kind"] == "Closed" or row["kind"] == "Unsourced":
+                ok(open_ssm is None and close_ssm is None,
+                   "ROWS.json %s %s: %s carries an instant"
+                   % (family, row["date"], row["kind"]))
+            elif row["kind"] == "EarlyClose":
+                ok(open_ssm is None and isinstance(close_ssm, int)
+                   and 0 <= close_ssm <= 86400,
+                   "ROWS.json %s %s: EarlyClose instants are %r/%r"
+                   % (family, row["date"], open_ssm, close_ssm))
+            elif row["kind"] == "LateOpen":
+                ok(close_ssm is None and isinstance(open_ssm, int)
+                   and 0 <= open_ssm < 86400,
+                   "ROWS.json %s %s: LateOpen instants are %r/%r"
+                   % (family, row["date"], open_ssm, close_ssm))
+            elif row["kind"] == "LateOpenAndEarlyClose":
+                ok(isinstance(open_ssm, int) and isinstance(close_ssm, int)
+                   and 0 <= open_ssm < 86400 and 0 <= close_ssm <= 86400,
+                   "ROWS.json %s %s: combined instants are %r/%r"
+                   % (family, row["date"], open_ssm, close_ssm))
+            else:
+                ok(False, "ROWS.json %s %s: unknown kind %r"
+                   % (family, row["date"], row["kind"]))
+            ok(row["printed"].strip() != "" and row["reason"].strip() != ""
+               and row["source"].strip() != "",
+               "ROWS.json %s %s: printed/reason/source is empty"
+               % (family, row["date"]))
+            planned_rows += 1
+            per_kind[row["kind"]] = per_kind.get(row["kind"], 0) + 1
+            per_tier[row["tier"]] = per_tier.get(row["tier"], 0) + 1
+            per_year[row["date"][:4]] = per_year.get(row["date"][:4], 0) + 1
+        per_family[family] = len(planned)
+        # row-for-row agreement with the emitted tuple lines
+        for row, (date, kind, tier, doc, _) in zip(planned, emitted):
+            ok(row["date"] == date.isoformat() and row["kind"] == kind_name(kind)
+               and row["tier"] == tier and row["document"] == doc,
+               "ROWS.json %s %s disagrees with the emitted tuple (%s/%s/%s/%s)"
+               % (family, row["date"], row["kind"], row["tier"],
+                  row["document"], kind))
+            reason = row["reason"]
+            with open(os.path.join(out, "%s.rows.rs" % family), "r",
+                      encoding="utf-8") as handle:
+                body = handle.read()
+            ok(reason in body,
+               "ROWS.json %s %s: reason %r is not in the row file"
+               % (family, row["date"], reason))
+    for key, value in (("rows_per_family", per_family),
+                       ("rows_per_kind", per_kind),
+                       ("rows_per_tier", per_tier),
+                       ("rows_per_year", per_year)):
+        ok(plan["counts"][key] == value,
+           "ROWS.json counts.%s is %r, recomputed %r"
+           % (key, plan["counts"][key], value))
+    ok(plan["counts"]["total"] == planned_rows,
+       "ROWS.json counts.total is %r, recomputed %d"
+       % (plan["counts"]["total"], planned_rows))
+    ok(len(plan["families"]) == len(FAMILIES),
+       "ROWS.json: %d families" % len(plan["families"]))
+    plan_docs = {doc["id"]: doc for doc in plan["documents"]}
+    ok(set(plan_docs) == set(documents),
+       "ROWS.json documents differ from documents.md: %r"
+       % (sorted(set(plan_docs) ^ set(documents)),))
+    for doc_id, doc in plan_docs.items():
+        if doc_id in documents:
+            file, url, capture, tier, sha = documents[doc_id]
+            ok(doc["file"] == file and doc["url"] == url
+               and doc["capture_utc"] == capture and doc["tier"] == tier
+               and doc["sha256"] == sha,
+               "ROWS.json %s: document row disagrees with documents.md" % doc_id)
 
     # 7. the emitted rows match the real `holidays!` macro's fragment shape ----
     rustc = shutil.which("rustc")

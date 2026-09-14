@@ -15,11 +15,17 @@
 //!
 //! On the 2016-2018 era's thirty-six dates this table states nine `Closed`
 //! rows — the dates every routed family shut — and withholds the other
-//! twenty-seven as [`HolidayKind::Unsourced`], because `globex_grains` states a
-//! row on all thirty-six while the five financial families state one on
-//! thirty-four and the two do not state the same row. `globex_livestock` has no
-//! holiday table for that era, so it **abstains**: it has no answer there and
-//! neither supplies nor withholds a venue row.
+//! twenty-seven as [`HolidayKind::Unsourced`]. Eighteen are the Monday and
+//! Thursday holidays, where the four financial families halt at 12:00 CT and
+//! `globex_grains` is shut outright; four are the three Thanksgiving Fridays
+//! and 2018-12-24, where grains' 12:05 CT close, equity's 12:15 CT close and
+//! energy's 12:45 CT close all differ; and five are dates on which
+//! `globex_grains` states a row the other families do not match — 2017-07-03
+//! and 2018-07-03, where equity closes at 12:15 CT, and 2018-12-26, where
+//! equity reopens at 15:30 CT, plus 2016-12-23 and 2017-12-22, which grains
+//! states alone. `globex_livestock` has no holiday table for that era, so it
+//! **abstains**: it has no answer there and neither supplies nor withholds a
+//! venue row.
 //!
 //! The derivation, the instant disagreements and every dropped date are in the
 //! venue's own evidence file, and the per-family rows are in the family files.

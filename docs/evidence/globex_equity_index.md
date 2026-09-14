@@ -67,9 +67,9 @@ Official origin of the four trading-hours captures: <http://www.cmegroup.com/tra
 Every id below resolves to one saved artifact behind this file's holiday rows.
 The 2010-2012 ids are CME Group's own holiday-calendar PDFs at tier T1, retrieved
 through the Internet Archive and saved; the 2025-2027 ids are responses of CME's
-own `trading-hours-by-product` service at tier T2. Byte counts, capture times and
-sha256 are in each id's row, so a row can be re-verified from this file together
-with the research store's `holidays/raw/` indexes.
+own `trading-hours-by-product` service at tier T2. Capture times and sha256 are in
+each id's row, and the byte counts, URLs and archive timestamps behind them are in
+the research store's `holidays/raw/` indexes.
 
 | Document | Window | Capture or retrieval, UTC | Tier | sha256 |
 |---|---|---|---|---|
@@ -167,13 +167,15 @@ holiday schedules; **T2** for 2025-2027, from its trading-hours service. Inside 
 window a date with no row is audited normal; outside every window this table has no
 answer at all.
 
-**Two audited eras, and a gap between them.** The table declares two coverage
-windows: `2010-01-01..2012-12-31`, from this era's documents, and
-`2025-01-01..2027-12-31`, from the trading-hours service. The 2013-2024 interval
-is audited by neither — those years are the remaining stage-2.2 waves — so it
-lies outside every declared window and `holiday_on` has **no answer** there
-rather than reporting an unaudited date as normal. `HolidayCoverage::windows()`
-lists the two, and `contains` answers per date.
+**Three audited eras, and two gaps between them.** The table declares three
+coverage windows: `2010-01-01..2012-12-31` and `2016-01-01..2018-12-31`, from the
+operators' own published holiday schedules at **T1**, and
+`2025-01-01..2027-12-31`, from the trading-hours service at **T2**. The
+2013-2015 and 2019-2024 intervals are audited by neither — those years are the
+remaining stage-2.2 waves — so they lie outside every declared window and
+`holiday_on` has **no answer** there rather than reporting an unaudited date as
+normal. `HolidayCoverage::windows()` lists the three, and `contains` answers per
+date.
 
 ### 2010
 
@@ -288,7 +290,9 @@ lists the two, and `contains` answers per date.
 | 2018-11-23 | early close | `12:15 CT / 13:15 ET` | `2018-holiday-calendars.zip#2018-thanksgiving-holiday-schedule.xls @2026-08-30` | T1 | CME prints this date's own final close; the session that opened the previous evening is clipped here, and trade date = the operator's event date |
 | 2018-12-24 | early close | `12:15 CT / 13:15 ET` | `2018-holiday-calendars.zip#2018-christmas-holiday-schedule.xls @2026-08-30` | T1 | CME prints this date's own final close; the session that opened the previous evening is clipped here, and trade date = the operator's event date |
 | 2018-12-25 | closed | `no session printed` | `2018-holiday-calendars.zip#2018-christmas-holiday-schedule.xls @2026-08-30` | T1 | CME prints the closure for this date; trade date = the operator's event date |
-| 2018-12-26 | late open | `15:30 CT / 16:30 ET (Wednesday, December 26)` | `2018-holiday-calendars.zip#2018-christmas-holiday-schedule.xls @2026-08-30` | T1 | CME prints this date's own first open after the holiday; trade date = the operator's event date |
+| 2018-12-26 | late open | `15:30 CT / 16:30 ET (Wednesday, December 26)` | `2018-holiday-calendars.zip#2018-christmas-holiday-schedule.xls @2026-08-30` | T1 | the operator prints this date's own first open after the holiday; the row is keyed to the trade date that open belongs to |
+
+**Interpretive step, 2018-12-26:** the block records this date's status as `normal`, and the crate ships a row for it. The sheet prints the Equity line's `Pre-opening` 15:15 and `Open` 15:30 on 26 December against a 16:00 CT close, so the trade date's first open is later than the grid's and the row is a late open. The same sheet also prints the Tuesday 17:00 CT open, which is where this trade date begins; the 15:15/15:30 pair is the era's routine extended-session handoff, printed explicitly on a date CME had shut the day before. The row is keyed to 2018-12-26 because that is the date whose first open it states.
 
 ### 2025-2027 (T2)
 

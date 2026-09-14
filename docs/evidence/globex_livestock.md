@@ -23,9 +23,9 @@
 Every id below resolves to one saved artifact behind this file's holiday rows.
 The 2010-2012 ids are CME Group's own holiday-calendar PDFs at tier T1, retrieved
 through the Internet Archive and saved; the 2025-2027 ids are responses of CME's
-own `trading-hours-by-product` service at tier T2. Byte counts, capture times and
-sha256 are in each id's row, so a row can be re-verified from this file together
-with the research store's `holidays/raw/` indexes.
+own `trading-hours-by-product` service at tier T2. Capture times and sha256 are in
+each id's row, and the byte counts, URLs and archive timestamps behind them are in
+the research store's `holidays/raw/` indexes.
 
 | Document | Window | Capture or retrieval, UTC | Tier | sha256 |
 |---|---|---|---|---|

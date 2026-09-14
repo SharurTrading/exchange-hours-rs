@@ -14,12 +14,15 @@
 //! lie outside every declared window.
 //!
 //! On the 2016-2018 era's thirty-six dates this table states nine `Closed`
-//! rows and withholds the other twenty-seven as [`HolidayKind::Unsourced`]:
-//! `globex_grains` states a row on all thirty-six of the block's dates while
-//! `globex_interest_rates` states one on thirty-one, and where the two share a
-//! date their day sessions close at different instants — 12:05 CT against 12:00
-//! or 12:15 CT — so no unanimous venue row exists. Both routed families cover
-//! the era, so neither abstains.
+//! rows and withholds the other twenty-seven as [`HolidayKind::Unsourced`].
+//! Four are the three Thanksgiving Fridays and 2018-12-24, where the grain day
+//! session closes at 12:05 CT and the rate leg at 12:15 CT; the other
+//! twenty-three are dates `globex_grains` states a row on and
+//! `globex_interest_rates` audited normal — the eighteen Monday and Thursday
+//! holidays, on which grains is shut and the rate leg trades its ordinary
+//! hours, and 2016-12-23, 2017-07-03, 2017-12-22, 2018-07-03 and 2018-12-26,
+//! the agricultural half-days and the day after Christmas. Both routed families
+//! cover the era, so neither abstains.
 //!
 //! The derivation, the instant disagreements and every dropped date are in the
 //! venue's own evidence file, and the per-family rows are in the family files.

@@ -99,9 +99,11 @@ corrections (a venue's hours fixed against a primary source) go under
   on the nine dates CME shut Globex outright in those years (New Year's Day
   2016, 2017 and 2018 and their observed days, both Good Fridays of each year,
   and Christmas Day 2016, 2017 and 2018 and its observed day); an **early
-  close** at 12:00 CT on the Monday and Thursday holidays, at 12:15 CT on the
-  three Thanksgiving Fridays, the three Independence Day eves and the two
-  Christmas Eves, and at 12:45 CT on energy's year-end half-days; a **late
+  close** at 12:00 CT on the eighteen Monday and Thursday holidays, at 12:15 CT
+  on the three Thanksgiving Fridays — and, for `globex_equity_index` only, on
+  the two Independence Day eves, 2017-07-03 and 2018-07-03 — at 12:15 CT on
+  2018-12-24 for equity index, interest rates and FX, and at 12:45 CT on
+  energy's three Thanksgiving Fridays and 2018-12-24; a **late
   open** on the five dates CME withdrew the prior-evening leg and printed the
   morning session instead — 15:30 CT on 2018-12-26 for equity index and Nikkei,
   08:30 CT for grains on that same date and, with an early close beside it at

@@ -29,15 +29,28 @@
 //! nine `Closed` rows — the dates every routed family shut — and withhold the
 //! other twenty-seven as [`HolidayKind::Unsourced`], while `comex` and `nymex`
 //! carry `globex_energy`'s thirty-one rows unchanged. A date is disputed
-//! wherever the routed families do not state the same row: on eighteen of them
-//! the four financial families halt at 12:00 CT while `globex_grains` is shut
-//! outright, on the three Thanksgiving Fridays and 2018-12-24 the families'
-//! closes are 12:05, 12:15 and 12:45 CT at once, and on 2016-12-23, 2017-12-22,
-//! 2017-07-03, 2018-07-03 and 2018-12-26 `globex_grains` states a row every
-//! financial family audited normal. A routed family **with no table for an
-//! era abstains** rather than disputing: `globex_livestock` covers 2010-2012
-//! and 2025-2027 and not 2016-2018, so it neither supplies nor withholds a
-//! venue row there, and the families that do cover the era decide each date.
+//! wherever the routed families do not state the same row, and the two tables
+//! dispute different dates, because they route different families.
+//!
+//! **CME's twenty-seven** are three shapes: eighteen dates on which the four
+//! financial families halt at 12:00 CT while `globex_grains` is shut outright;
+//! four on which `globex_grains` closes at 12:05 CT or reopens at 08:30 CT
+//! while `globex_equity_index` closes at 12:15 CT or reopens at 15:30 CT and
+//! `globex_energy` closes at 12:45 CT — the three Thanksgiving Fridays and
+//! 2018-12-24; and five on which `globex_grains` alone states a row and
+//! `globex_equity_index` states a *different* one, a 12:15 CT close on
+//! 2017-07-03 and 2018-07-03 or a 15:30 CT open on 2018-12-26, with the other
+//! four families audited normal (2016-12-23 and 2017-12-22 are grains' alone,
+//! every financial family having audited them normal).
+//!
+//! **CBOT's twenty-seven** are the two families' own disagreements:
+//! `globex_grains` closes at 12:05 CT where `globex_interest_rates` closes at
+//! 12:15 CT — the three Thanksgiving Fridays and 2018-12-24 — and states a row
+//! on 2016-12-23, 2017-07-03, 2017-12-22, 2018-07-03 and 2018-12-26, dates the
+//! rate leg audited normal. A routed family **with no table for an era
+//! abstains** rather than disputing: `globex_livestock` covers 2010-2012 and
+//! 2025-2027 and not 2016-2018, so it neither supplies nor withholds a venue
+//! row there, and the families that do cover the era decide each date.
 //! Metals and energy are one key and CME prints them as one product row, so the
 //! `globex_energy` rows carry through untouched.
 //!

@@ -331,7 +331,9 @@ are the reason the Nikkei line exists at all from Thanksgiving 2025 onward.
 | 2018-11-23 | early close | `12:15 CT / 13:15 ET` | `2018-holiday-calendars.zip#2018-thanksgiving-holiday-schedule.xls @2026-08-30` | T1 | CME prints this date's own final close; the session that opened the previous evening is clipped here, and trade date = the operator's event date |
 | 2018-12-24 | early close | `12:15 CT / 13:15 ET` | `2018-holiday-calendars.zip#2018-christmas-holiday-schedule.xls @2026-08-30` | T1 | CME prints this date's own final close; the session that opened the previous evening is clipped here, and trade date = the operator's event date |
 | 2018-12-25 | closed | `no session printed` | `2018-holiday-calendars.zip#2018-christmas-holiday-schedule.xls @2026-08-30` | T1 | CME prints the closure for this date; trade date = the operator's event date |
-| 2018-12-26 | late open | `15:30 CT / 16:30 ET (Wednesday, December 26)` | `2018-holiday-calendars.zip#2018-christmas-holiday-schedule.xls @2026-08-30` | T1 | CME prints this date's own first open after the holiday; trade date = the operator's event date |
+| 2018-12-26 | late open | `15:30 CT / 16:30 ET (Wednesday, December 26)` | `2018-holiday-calendars.zip#2018-christmas-holiday-schedule.xls @2026-08-30` | T1 | the operator prints this date's own first open after the holiday; the row is keyed to the trade date that open belongs to |
+
+**Interpretive step, 2018-12-26:** the block records this date's status as `normal`, and the crate ships a row for it. No Nikkei-specific line is printed; the family is governed by the Equity line, whose sheet prints `Pre-opening` 15:15 and `Open` 15:30 on 26 December against a 16:00 CT close. That is the era's routine extended-session handoff and the trade date's first open is later than the grid's, so the row is a late open keyed to 2018-12-26.
 
 ## Sources
 

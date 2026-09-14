@@ -202,24 +202,24 @@ fn good_friday_2026_closes_at_the_equity_index_instant_not_the_rates_instant() {
     );
 }
 
-/// Case 4 — the family ships no late open, and the table says so.
+/// Case 4 — the 2025-2027 era ships no late open, and the table says so.
 ///
-/// Every CME re-open after one of these closures is the grid's own 17:00 CT
-/// evening open, so there is no row to push an occurrence later. The memo's
-/// late-open case is therefore vacuous here, and this is the fence that keeps
-/// it honest: it walks every date in the coverage window, so a late open
-/// introduced by a later edit fails immediately rather than going untested.
+/// Every CME re-open in that era is the grid's own 17:00 CT evening open, so
+/// there is no row to push an occurrence later. The memo's late-open case is
+/// therefore vacuous there, and this is the fence that keeps it honest: it
+/// walks every date of that era, so a late open introduced by a later edit
+/// fails immediately rather than going untested. The 2016-2018 era's one late
+/// open — 2018-12-26 at 15:30 CT — is asserted by
+/// `wave2_early_close_and_late_open_bounds_are_end_and_start_exclusive`.
 #[test]
 fn the_table_ships_no_late_open_and_holds_exactly_its_audited_rows() {
     let nkd = nkd();
-    let coverage = nkd
-        .holiday_coverage()
-        .expect("the family ships a built-in table");
 
     let mut closed = 0_usize;
     let mut early = 0_usize;
-    let mut date = coverage.first();
-    while date <= coverage.last() {
+    let mut date = day(2025, 1, 1);
+    let last = day(2027, 12, 31);
+    while date <= last {
         if let Some(holiday) = nkd.holiday_on(date) {
             assert_eq!(
                 holiday.tier(),
@@ -242,6 +242,31 @@ fn the_table_ships_no_late_open_and_holds_exactly_its_audited_rows() {
 
     assert_eq!(closed, 9, "nine full closures across 2025-2027");
     assert_eq!(early, 28, "twenty-eight early closes across 2025-2027");
+
+    // The 2016-2018 era is the other shape: 34 rows, all T1.
+    let (mut closed, mut early, mut late) = (0_usize, 0_usize, 0_usize);
+    let mut date = day(2016, 1, 1);
+    while date <= day(2018, 12, 31) {
+        if let Some(holiday) = nkd.holiday_on(date) {
+            assert_eq!(
+                holiday.tier(),
+                EvidenceTier::T1,
+                "{date} is a CME published schedule"
+            );
+            match holiday.kind() {
+                HolidayKind::Closed => closed += 1,
+                HolidayKind::EarlyClose { .. } => early += 1,
+                HolidayKind::LateOpen { .. } => late += 1,
+                other => panic!("{date} ships an unexpected holiday kind: {other:?}"),
+            }
+        }
+        date = date.succ_opt().expect("coverage stays inside the calendar");
+    }
+    assert_eq!(
+        (closed, early, late),
+        (9, 24, 1),
+        "nine closures, twenty-four early closes and one late open across 2016-2018"
+    );
 
     // Both post-closure reopens the family has, fenced on each side of the
     // ordinary 17:00 CT open: a late open would move one of them.
@@ -352,12 +377,17 @@ fn holiday_coverage_bounds_what_the_table_answers_for() {
         .holiday_coverage()
         .expect("the family ships a built-in table");
 
-    assert_eq!(coverage.first(), day(2025, 1, 1));
+    assert_eq!(coverage.first(), day(2016, 1, 1));
     assert_eq!(coverage.last(), day(2027, 12, 31));
     assert!(coverage.contains(day(2026, 4, 3)));
+    assert!(coverage.contains(day(2016, 1, 1)));
+    assert!(!coverage.contains(day(2015, 12, 31)));
+    assert!(!coverage.contains(day(2019, 1, 1)));
     assert!(!coverage.contains(day(2024, 12, 31)));
     assert!(!coverage.contains(day(2028, 1, 1)));
 
+    assert!(nkd.holiday_on(day(2015, 12, 31)).is_none());
+    assert!(nkd.holiday_on(day(2019, 1, 1)).is_none());
     assert!(nkd.holiday_on(day(2024, 12, 31)).is_none());
     assert!(nkd.holiday_on(day(2028, 1, 1)).is_none());
     assert!(
@@ -541,4 +571,102 @@ fn the_published_saturday_sessions_are_declared_gaps_and_report_closed() {
         );
         assert!(nkd.holiday_on(day(year, month, date)).is_none());
     }
+}
+
+// ---------------------------------------------------------------------------
+// The 2016-2018 rows.
+// ---------------------------------------------------------------------------
+
+/// The era is governed by the Equity Index line, and its nine closures and
+/// 24 early closes land on the same trade dates as that line's.
+#[test]
+fn wave2_rows_follow_the_equity_index_line() {
+    let calendar = nkd();
+    let equity = calendar_for_market_hours_key(MarketHoursKey::GlobexEquityIndex);
+
+    let mut closures = Vec::new();
+    let mut date = day(2016, 1, 1);
+    while date <= day(2018, 12, 31) {
+        assert_eq!(
+            kind_on(calendar, date),
+            kind_on(equity, date),
+            "{date}: NKD and the Equity Index line agree in this era"
+        );
+        if kind_on(calendar, date) == Some(HolidayKind::Closed) {
+            closures.push(date);
+        }
+        date = date.succ_opt().expect("the era ends well before the bound");
+    }
+    assert_eq!(
+        closures,
+        [
+            day(2016, 1, 1),
+            day(2016, 3, 25),
+            day(2016, 12, 26),
+            day(2017, 1, 2),
+            day(2017, 4, 14),
+            day(2017, 12, 25),
+            day(2018, 1, 1),
+            day(2018, 3, 30),
+            day(2018, 12, 25),
+        ]
+    );
+}
+
+/// The era's early closes and its one late open, probed on both sides of the
+/// printed instant.
+#[test]
+fn wave2_early_close_and_late_open_bounds_are_end_and_start_exclusive() {
+    let calendar = nkd();
+
+    let noon = ct(2016, 1, 18, 12, 0, 0);
+    assert_eq!(
+        kind_on(calendar, day(2016, 1, 18)),
+        Some(HolidayKind::EarlyClose {
+            close_ssm: 12 * 3_600
+        })
+    );
+    assert!(calendar.is_open(noon - Duration::seconds(1)));
+    assert!(!calendar.is_open(noon));
+    assert!(calendar.is_open(ct(2016, 1, 17, 18, 0, 0)));
+
+    // 2018-12-26: the Christmas sheet's Equity line opens the trade date at
+    // 15:30 CT rather than the grid's 15:15.
+    let late = ct(2018, 12, 26, 15, 30, 0);
+    assert_eq!(
+        kind_on(calendar, day(2018, 12, 26)),
+        Some(HolidayKind::LateOpen {
+            open_ssm: 15 * 3_600 + 30 * 60
+        })
+    );
+    assert!(!calendar.is_open(late - Duration::seconds(1)));
+    assert!(calendar.is_open(late));
+    assert_eq!(calendar.trade_date(late), Some(day(2018, 12, 26)));
+}
+
+/// The era's own window edges, and the interval below it.
+#[test]
+fn wave2_window_edges_answer_as_declared() {
+    let calendar = nkd();
+    let bare = calendar.without_holidays();
+    let coverage = calendar
+        .holiday_coverage()
+        .expect("the family ships a table");
+
+    assert!(coverage.contains(day(2016, 1, 1)));
+    assert!(coverage.contains(day(2018, 12, 31)));
+    assert!(!coverage.contains(day(2015, 12, 31)));
+    assert!(!coverage.contains(day(2019, 1, 1)));
+    for date in [(2013, 6, 14), (2015, 12, 25), (2019, 1, 1)] {
+        assert_eq!(
+            calendar.holiday_on(day(date.0, date.1, date.2)),
+            None,
+            "{date:?}"
+        );
+    }
+    assert!(calendar.is_open(ct(2015, 12, 25, 10, 0, 0)));
+    assert_eq!(
+        calendar.is_open(ct(2015, 12, 25, 10, 0, 0)),
+        bare.is_open(ct(2015, 12, 25, 10, 0, 0))
+    );
 }

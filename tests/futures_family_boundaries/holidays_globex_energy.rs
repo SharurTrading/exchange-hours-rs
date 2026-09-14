@@ -19,7 +19,7 @@
 use chrono::{DateTime, Days, NaiveDate, TimeDelta, TimeZone as _, Utc};
 use chrono_tz::US;
 use exchange_hours::{
-    CalendarResolution, ExchangeCalendar, HolidayKind, MarketHoursKey, SessionKind,
+    CalendarResolution, ExchangeCalendar, Holiday, HolidayKind, MarketHoursKey, SessionKind,
     calendar_for_market_hours_key,
 };
 
@@ -450,4 +450,77 @@ fn era_window_edges_answer_as_the_module_declares() {
         calendar.is_open(ct((2009, 12, 25), 10, 0)),
         detached.is_open(ct((2009, 12, 25), 10, 0))
     );
+}
+
+// ---------------------------------------------------------------------------
+// The 2016-2018 rows.
+// ---------------------------------------------------------------------------
+
+/// The era's early closes clip the wrapped trading day at the printed instant,
+/// including the three year-end half-days that close at 12:45 CT rather than
+/// the financial families' 12:15.
+#[test]
+fn wave2_early_closes_end_the_wrapped_trading_day_at_the_printed_instant() {
+    let calendar = calendar();
+
+    for (date, previous_day, close_ssm) in [
+        ((2016, 1, 18), (2016, 1, 17), 12 * 3_600),
+        ((2017, 7, 4), (2017, 7, 3), 12 * 3_600),
+        ((2016, 11, 25), (2016, 11, 24), 12 * 3_600 + 45 * 60),
+        ((2018, 12, 24), (2018, 12, 23), 12 * 3_600 + 45 * 60),
+    ] {
+        assert_eq!(
+            calendar.holiday_on(day(date)).map(Holiday::kind),
+            Some(HolidayKind::EarlyClose { close_ssm }),
+            "{date:?}"
+        );
+        let cutoff = ct(date, close_ssm / 3_600, (close_ssm % 3_600) / 60);
+        assert!(calendar.is_open(ct(previous_day, 17, 0)), "{date:?}");
+        assert!(calendar.is_open(cutoff - TimeDelta::seconds(1)), "{date:?}");
+        assert!(!calendar.is_open(cutoff), "{date:?}: end-exclusive");
+        assert_eq!(
+            calendar.candle_end(ct(date, 9, 0), CalendarResolution::Daily),
+            Some(cutoff),
+            "{date:?}"
+        );
+    }
+
+    // 2017-07-03 and 2018-07-03 print the family's ordinary 16:00 CT close.
+    for date in [(2017, 7, 3), (2018, 7, 3)] {
+        assert_eq!(calendar.holiday_on(day(date)), None, "{date:?}");
+        assert!(calendar.is_open(ct(date, 15, 30)), "{date:?}");
+    }
+}
+
+/// A closure removes its trade date and the prior-evening leg; the era ships
+/// no late open and no `Unsourced` row.
+#[test]
+fn wave2_closures_remove_the_trade_date_and_ship_no_late_open() {
+    let calendar = calendar();
+
+    assert_eq!(
+        calendar.holiday_on(day((2016, 3, 25))).map(Holiday::kind),
+        Some(HolidayKind::Closed)
+    );
+    assert!(!calendar.is_open(ct((2016, 3, 24), 18, 0)));
+    assert!(!calendar.is_open(ct((2016, 3, 25), 10, 0)));
+    assert_eq!(
+        calendar.next_session_open_after(ct((2016, 3, 25), 10, 0)),
+        Some(ct((2016, 3, 27), 17, 0))
+    );
+
+    let mut date = day((2016, 1, 1));
+    let mut closures = 0_usize;
+    let mut early_closes = 0_usize;
+    while date <= day((2018, 12, 31)) {
+        match calendar.holiday_on(date).map(Holiday::kind) {
+            Some(HolidayKind::Closed) => closures += 1,
+            Some(HolidayKind::EarlyClose { .. }) => early_closes += 1,
+            None => {}
+            Some(other) => panic!("{date}: the era ships no {other:?}"),
+        }
+        date = date.succ_opt().expect("the era ends well before the bound");
+    }
+    assert_eq!(closures, 9, "2016-2018 closures");
+    assert_eq!(early_closes, 22, "2016-2018 early closes");
 }

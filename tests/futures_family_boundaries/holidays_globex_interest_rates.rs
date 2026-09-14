@@ -10,7 +10,7 @@
 //! day, so a clip stated on a trade date lands on a session that opened the
 //! previous evening and a closure deletes that evening leg.
 
-use chrono::{DateTime, Days, NaiveDate, TimeZone as _, Utc};
+use chrono::{DateTime, Days, Duration, NaiveDate, TimeZone as _, Utc};
 use chrono_tz::US;
 use exchange_hours::{
     CalendarResolution, EvidenceTier, ExchangeCalendar, Holiday, HolidayKind, MarketHoursKey,
@@ -229,9 +229,9 @@ fn no_late_open_ships_and_the_post_closure_reopen_is_the_normal_open() {
     assert!(calendar.is_open(ct((2026, 1, 1), (17, 0, 0))));
     assert_eq!(calendar.holiday_on(day(2026, 1, 2)), None);
 
-    // Over the whole coverage window, every row is a closure or an early
-    // close and none is a late open of either branch; the counts pin the
-    // table's shape, so a row on a date no test names fails here.
+    // Over every audited window, every row is a closure or an early close and
+    // the three late opens are the 2010-2012 ones; the counts pin the shape of
+    // all three eras, so a row on a date no test names fails here.
     let coverage = calendar
         .holiday_coverage()
         .expect("this family ships a table");
@@ -253,8 +253,8 @@ fn no_late_open_ships_and_the_post_closure_reopen_is_the_normal_open() {
     }
     assert_eq!(
         (closed, early, late),
-        (15, 51, 3),
-        "closed, early-close and late-open rows over the whole 2010-2027 window"
+        (24, 73, 3),
+        "closed, early-close and late-open rows over 2010-2012, 2016-2018 and 2025-2027"
     );
 }
 
@@ -565,5 +565,155 @@ fn era_window_edges_answer_as_the_module_declares() {
     assert_eq!(
         calendar.is_open(ct((2009, 12, 25), (10, 0, 0))),
         bare.is_open(ct((2009, 12, 25), (10, 0, 0)))
+    );
+}
+
+// ---------------------------------------------------------------------------
+// The 2016-2018 rows.
+// ---------------------------------------------------------------------------
+
+/// The era's early closes clip a trading day that opened 17:00 CT the previous
+/// evening, and the operator's own 17:00 CT evening leg begins the next trade
+/// date untouched.
+#[test]
+fn wave2_early_closes_end_the_wrapped_trading_day_at_the_printed_instant() {
+    let calendar = rates();
+
+    for (date, previous_day, close_ssm) in [
+        ((2016, 1, 18), (2016, 1, 17), NOON),
+        ((2017, 11, 23), (2017, 11, 22), NOON),
+        ((2016, 11, 25), (2016, 11, 24), 12 * 3_600 + 15 * 60),
+        ((2018, 12, 24), (2018, 12, 23), 12 * 3_600 + 15 * 60),
+    ] {
+        assert_eq!(
+            calendar
+                .holiday_on(day(date.0, date.1, date.2))
+                .map(Holiday::kind),
+            Some(HolidayKind::EarlyClose { close_ssm }),
+            "{date:?}"
+        );
+        let cutoff = ct(date, (close_ssm / 3_600, (close_ssm % 3_600) / 60, 0));
+        assert!(calendar.is_open(ct(previous_day, (17, 0, 0))), "{date:?}");
+        assert!(
+            calendar.is_open(cutoff - Duration::seconds(1)),
+            "{date:?}: the second before the close is still open"
+        );
+        assert!(!calendar.is_open(cutoff), "{date:?}: end-exclusive");
+        assert_eq!(
+            calendar.candle_end(ct(date, (9, 0, 0)), CalendarResolution::Daily),
+            Some(cutoff),
+            "{date:?}"
+        );
+        assert_eq!(
+            calendar.trade_date(ct(date, (9, 0, 0))),
+            Some(day(date.0, date.1, date.2))
+        );
+    }
+
+    // Independence Day 2017 and 2018 are ordinary trading days for this
+    // family: CME prints the normal 16:00 CT close, so no row ships.
+    for date in [(2017, 7, 3), (2018, 7, 3)] {
+        assert_eq!(
+            calendar.holiday_on(day(date.0, date.1, date.2)),
+            None,
+            "{date:?}"
+        );
+        assert!(calendar.is_open(ct(date, (15, 0, 0))), "{date:?}");
+    }
+    // Independence Day itself is a noon cut, not a closure.
+    assert_eq!(
+        calendar.holiday_on(day(2017, 7, 4)).map(Holiday::kind),
+        Some(HolidayKind::EarlyClose { close_ssm: NOON })
+    );
+    // And every closure in the era is exactly these nine dates.
+    let mut closures = Vec::new();
+    let mut date = day(2016, 1, 1);
+    while date <= day(2018, 12, 31) {
+        if calendar.holiday_on(date).map(Holiday::kind) == Some(HolidayKind::Closed) {
+            closures.push(date);
+        }
+        date = date.succ_opt().expect("the era ends well before the bound");
+    }
+    assert_eq!(
+        closures,
+        [
+            day(2016, 1, 1),
+            day(2016, 3, 25),
+            day(2016, 12, 26),
+            day(2017, 1, 2),
+            day(2017, 4, 14),
+            day(2017, 12, 25),
+            day(2018, 1, 1),
+            day(2018, 3, 30),
+            day(2018, 12, 25),
+        ]
+    );
+}
+
+/// A closure removes its trade date and the leg that opened the previous
+/// evening; the family ships no late open in the era, so every re-open CME
+/// states is the ordinary 17:00 CT one.
+#[test]
+fn wave2_closures_remove_the_trade_date_and_ship_no_late_open() {
+    let calendar = rates();
+
+    assert_eq!(
+        calendar.holiday_on(day(2016, 3, 25)).map(Holiday::kind),
+        Some(HolidayKind::Closed)
+    );
+    assert!(calendar.is_closed_trade_date(day(2016, 3, 25), SessionKind::Both));
+    assert!(!calendar.is_open(ct((2016, 3, 24), (18, 0, 0))));
+    assert!(!calendar.is_open(ct((2016, 3, 25), (10, 0, 0))));
+    assert_eq!(
+        calendar.next_session_open_after(ct((2016, 3, 25), (10, 0, 0))),
+        Some(ct((2016, 3, 27), (17, 0, 0)))
+    );
+    assert_eq!(
+        calendar.trade_date(ct((2016, 3, 27), (18, 0, 0))),
+        Some(day(2016, 3, 28))
+    );
+
+    // The era ships two shapes only, and no late open.
+    let mut date = day(2016, 1, 1);
+    while date <= day(2018, 12, 31) {
+        if let Some(holiday) = calendar.holiday_on(date) {
+            assert!(
+                matches!(
+                    holiday.kind(),
+                    HolidayKind::Closed | HolidayKind::EarlyClose { .. }
+                ),
+                "{date}: the era ships closures and early closes only, not {:?}",
+                holiday.kind()
+            );
+        }
+        date = date.succ_opt().expect("the era ends well before the bound");
+    }
+}
+
+/// The era's own window edges, and the two unaudited intervals either side.
+#[test]
+fn wave2_window_edges_and_unaudited_neighbours_answer_as_declared() {
+    let calendar = rates();
+    let bare = calendar.without_holidays();
+    let coverage = calendar
+        .holiday_coverage()
+        .expect("the family ships a table");
+
+    assert!(coverage.contains(day(2016, 1, 1)));
+    assert!(coverage.contains(day(2018, 12, 31)));
+    assert!(!coverage.contains(day(2015, 12, 31)));
+    assert!(!coverage.contains(day(2019, 1, 1)));
+    for date in [(2013, 6, 14), (2015, 12, 25), (2019, 1, 1)] {
+        assert_eq!(
+            calendar.holiday_on(day(date.0, date.1, date.2)),
+            None,
+            "{date:?}"
+        );
+    }
+    // Christmas 2015 is a CME closure one week below the era: not applied.
+    assert!(calendar.is_open(ct((2015, 12, 25), (10, 0, 0))));
+    assert_eq!(
+        calendar.is_open(ct((2015, 12, 25), (10, 0, 0))),
+        bare.is_open(ct((2015, 12, 25), (10, 0, 0)))
     );
 }

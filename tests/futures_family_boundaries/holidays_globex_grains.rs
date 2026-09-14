@@ -16,7 +16,7 @@
 //! Monday whose trade date does not exist, while the Monday 19:00 CT open that
 //! begins Tuesday's trade date runs normally).
 
-use chrono::{DateTime, Duration, NaiveDate, TimeZone as _, Utc};
+use chrono::{DateTime, Days, Duration, NaiveDate, TimeZone as _, Utc};
 use chrono_tz::US;
 use exchange_hours::{
     CalendarResolution, Holiday, HolidayKind, MarketHoursKey, SessionKind,
@@ -507,5 +507,177 @@ fn era_window_edges_answer_as_the_module_declares() {
     assert_eq!(
         open_at(ct((2009, 12, 25), (10, 0, 0))),
         detached.is_open(ct((2009, 12, 25), (10, 0, 0)))
+    );
+}
+
+// ---------------------------------------------------------------------------
+// The 2016-2018 rows.
+// ---------------------------------------------------------------------------
+
+/// 08:30 CT is this era's day-session open, and the three day-after-Thanksgiving
+/// rows carry it as a late open beside the 12:05 CT early close: CME withdrew
+/// the prior-evening leg and printed the morning session instead.
+#[test]
+fn wave2_day_after_thanksgiving_opens_late_and_closes_early() {
+    let calendar = calendar_for_market_hours_key(ZC);
+
+    for date in [(2016, 11, 25), (2017, 11, 24), (2018, 11, 23)] {
+        assert_eq!(
+            calendar.holiday_on(day(date)).map(Holiday::kind),
+            Some(HolidayKind::LateOpenAndEarlyClose {
+                open_ssm: 8 * 3_600 + 30 * 60,
+                close_ssm: 12 * 3_600 + 5 * 60,
+            }),
+            "{date:?}"
+        );
+        assert!(
+            !open_at(ct(date, (8, 29, 0))),
+            "{date:?}: the day opens at 08:30"
+        );
+        assert!(open_at(ct(date, (8, 30, 0))), "{date:?}");
+        assert!(
+            open_at(ct(date, (12, 4, 0))),
+            "{date:?}: 12:05 is end-exclusive"
+        );
+        assert!(!open_at(ct(date, (12, 5, 0))), "{date:?}");
+        // The prior-evening leg that would have fed this trade date is gone:
+        // the evening before is the holiday itself.
+        let eve = (date.0, date.1, date.2 - 1);
+        assert!(
+            !open_at(ct(eve, (19, 30, 0))),
+            "{date:?}: the holiday evening carries no leg"
+        );
+        assert!(
+            calendar.holiday_on(day(eve)).map(Holiday::kind) == Some(HolidayKind::Closed),
+            "{date:?}: the eve must ship the closure"
+        );
+        // These three dates are Fridays: the grid has no Friday-evening leg,
+        // so the next session is the Sunday 19:00 CT open into Monday's trade
+        // date, exactly as CME publishes it.
+        assert!(
+            open_at(ct((date.0, date.1, date.2 + 3), (19, 30, 0))),
+            "{date:?}"
+        );
+        assert_eq!(
+            calendar_for_market_hours_key(ZC)
+                .trade_date(ct((date.0, date.1, date.2 + 3), (19, 30, 0))),
+            Some(day((date.0, date.1, date.2 + 4))),
+            "{date:?}"
+        );
+    }
+}
+
+/// The era's plain early closes are 12:05 CT with the ordinary evening leg
+/// intact, and 2018-12-26 opens late at 08:30 CT after the Christmas closure.
+#[test]
+fn wave2_early_closes_and_the_late_open_land_on_the_printed_instants() {
+    let calendar = calendar_for_market_hours_key(ZC);
+
+    for (date, eve) in [
+        ((2016, 12, 23), (2016, 12, 22)),
+        ((2017, 7, 3), (2017, 7, 2)),
+        ((2018, 7, 3), (2018, 7, 2)),
+        ((2018, 12, 24), (2018, 12, 23)),
+    ] {
+        assert_eq!(
+            calendar.holiday_on(day(date)).map(Holiday::kind),
+            Some(HolidayKind::EarlyClose {
+                close_ssm: 12 * 3_600 + 5 * 60
+            }),
+            "{date:?}"
+        );
+        assert!(
+            open_at(ct(eve, (19, 30, 0))),
+            "{date:?}: the eve leg is intact"
+        );
+        assert!(open_at(ct(date, (12, 4, 0))), "{date:?}");
+        assert!(!open_at(ct(date, (12, 5, 0))), "{date:?}");
+    }
+
+    assert_eq!(
+        calendar.holiday_on(day((2018, 12, 26))).map(Holiday::kind),
+        Some(HolidayKind::LateOpen {
+            open_ssm: 8 * 3_600 + 30 * 60
+        })
+    );
+    assert!(!open_at(ct((2018, 12, 26), (8, 29, 0))));
+    assert!(open_at(ct((2018, 12, 26), (8, 30, 0))));
+    assert_eq!(
+        calendar.trade_date(ct((2018, 12, 26), (9, 0, 0))),
+        Some(day((2018, 12, 26)))
+    );
+}
+
+/// Every early close the era ships states 12:05 CT, and every combined row states
+/// 08:30 CT beside it: the instants, not only the kinds, are the fence.
+///
+/// The venue tables and the family counts both survive a one-minute change to an
+/// early close's instant, so this walks the era and pins each one.
+#[test]
+fn wave2_every_early_close_instant_is_the_printed_one() {
+    let calendar = calendar_for_market_hours_key(ZC);
+    let (mut plain, mut combined) = (0_usize, 0_usize);
+    let mut date = day((2016, 1, 1));
+    while date <= day((2018, 12, 31)) {
+        match calendar.holiday_on(date).map(Holiday::kind) {
+            Some(HolidayKind::EarlyClose { close_ssm }) => {
+                assert_eq!(close_ssm, 12 * 3_600 + 5 * 60, "{date}");
+                plain += 1;
+            }
+            Some(HolidayKind::LateOpenAndEarlyClose {
+                open_ssm,
+                close_ssm,
+            }) => {
+                assert_eq!(open_ssm, 8 * 3_600 + 30 * 60, "{date}");
+                assert_eq!(close_ssm, 12 * 3_600 + 5 * 60, "{date}");
+                combined += 1;
+            }
+            Some(HolidayKind::LateOpen { open_ssm }) => {
+                assert_eq!(open_ssm, 8 * 3_600 + 30 * 60, "{date}");
+            }
+            _ => {}
+        }
+        date = date
+            .checked_add_days(Days::new(1))
+            .expect("the era stays inside the representable calendar");
+    }
+    assert_eq!((plain, combined), (5, 3), "the era's early closes");
+}
+
+/// The era's shape counts, and its closures.
+#[test]
+fn wave2_ships_twenty_seven_closures_and_no_unsourced_row() {
+    let calendar = calendar_for_market_hours_key(ZC);
+    let (mut closures, mut early_closes, mut late_opens, mut combined) = (0, 0, 0, 0);
+    let mut date = day((2016, 1, 1));
+    while date <= day((2018, 12, 31)) {
+        match calendar.holiday_on(date).map(Holiday::kind) {
+            Some(HolidayKind::Closed) => closures += 1,
+            Some(HolidayKind::EarlyClose { .. }) => early_closes += 1,
+            Some(HolidayKind::LateOpen { .. }) => late_opens += 1,
+            Some(HolidayKind::LateOpenAndEarlyClose { .. }) => combined += 1,
+            None => {}
+            Some(other) => panic!("{date}: the era ships no {other:?}"),
+        }
+        date = date
+            .checked_add_days(Days::new(1))
+            .expect("the era stays inside the representable calendar");
+    }
+    assert_eq!(
+        (closures, early_closes, late_opens, combined),
+        (27, 5, 1, 3)
+    );
+
+    // A closure removes the day session and the prior-evening leg, and the
+    // Monday-evening leg that follows still opens the next trade date.
+    assert_eq!(
+        calendar.holiday_on(day((2016, 3, 25))).map(Holiday::kind),
+        Some(HolidayKind::Closed)
+    );
+    assert!(!open_at(ct((2016, 3, 24), (19, 30, 0))));
+    assert!(!open_at(ct((2016, 3, 25), (9, 0, 0))));
+    assert_eq!(
+        calendar.trade_date(ct((2016, 3, 27), (20, 0, 0))),
+        Some(day((2016, 3, 28)))
     );
 }

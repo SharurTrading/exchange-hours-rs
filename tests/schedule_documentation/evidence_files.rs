@@ -635,39 +635,41 @@ struct DocumentRow {
 /// fences below can be written at all. A left cell may name several ids
 /// separated by `, ` when one artifact carries more than one.
 fn document_rows(text: &str) -> Vec<DocumentRow> {
-    let Some(body) = text.split_once("\n### Documents\n").map(|(_, rest)| rest) else {
-        return Vec::new();
-    };
-    let Some(table) = body.split_once(DOCUMENT_TABLE_HEADER) else {
-        return Vec::new();
-    };
+    // An owner may carry more than one documents table — the CME families keep a
+    // 2010-2012 table and a 2016-2018 one — so every table is read, in file
+    // order, and a file with no such table is skipped by the caller.
     let mut rows = Vec::new();
-    for line in table
-        .1
-        .lines()
-        .skip_while(|line| line.is_empty() || line.starts_with("|---"))
-    {
-        if !line.starts_with("| `") {
-            break;
+    let mut remaining = text;
+    while let Some(at) = remaining.find(DOCUMENT_TABLE_HEADER) {
+        let table = &remaining[at + DOCUMENT_TABLE_HEADER.len()..];
+        let end = table.find("\n\n").unwrap_or(table.len());
+        for line in table[..end]
+            .lines()
+            .skip_while(|line| line.is_empty() || line.starts_with("|---"))
+        {
+            if !line.starts_with("| `") {
+                break;
+            }
+            let cells = line
+                .trim_start_matches('|')
+                .split('|')
+                .map(str::trim)
+                .collect::<Vec<_>>();
+            assert!(
+                cells.len() >= 5,
+                "a documents row reads {DOCUMENT_TABLE_HEADER}: {line}"
+            );
+            let window = cells[1].to_owned();
+            let sha = cells[4].trim_matches('`').to_owned();
+            for id in cells[0].split(", ") {
+                rows.push(DocumentRow {
+                    id: id.trim().trim_matches('`').to_owned(),
+                    window: window.clone(),
+                    sha: sha.clone(),
+                });
+            }
         }
-        let cells = line
-            .trim_start_matches('|')
-            .split('|')
-            .map(str::trim)
-            .collect::<Vec<_>>();
-        assert!(
-            cells.len() >= 5,
-            "a `### Documents` row reads {DOCUMENT_TABLE_HEADER}: {line}"
-        );
-        let window = cells[1].to_owned();
-        let sha = cells[4].trim_matches('`').to_owned();
-        for id in cells[0].split(", ") {
-            rows.push(DocumentRow {
-                id: id.trim().trim_matches('`').to_owned(),
-                window: window.clone(),
-                sha: sha.clone(),
-            });
-        }
+        remaining = &table[end..];
     }
     rows
 }
@@ -1094,7 +1096,12 @@ fn summary_days(summary: &str, own: &str) -> Vec<String> {
     let bytes = summary.as_bytes();
     let mut index = 0;
     while index + 10 <= bytes.len() {
-        let window = &summary[index..index + 10];
+        // A byte window that does not split a character: the summary carries
+        // em dashes, so a fixed ten-byte slice can land inside one.
+        let Some(window) = summary.get(index..index + 10) else {
+            index += 1;
+            continue;
+        };
         let looks_like_a_day = window.as_bytes()[4] == b'-'
             && window.as_bytes()[7] == b'-'
             && window

@@ -80,6 +80,52 @@ corrections (a venue's hours fixed against a primary source) go under
   audited; `first()` and `last()` still bound them, and `HolidayCoverage::contains`
   is the authority on one date. No answer changes: a date outside every window
   already had no holiday answer at all.
+- **The served CME families' holiday tables now cover 2016-2018, and the four
+  CME venue calendars with them.** The same six families —
+  `globex_equity_index`, `globex_nikkei_225_dollar`, `globex_interest_rates`,
+  `globex_fx`, `globex_energy` and `globex_grains` — gain **197 rows over
+  venue-local trade dates 2016-01-01 .. 2018-12-31**, at tier **T1** from CME
+  Group's own published Globex holiday schedules: the per-holiday PDFs inside
+  CME's 2016 annual holiday-calendar bundle plus the standalone 2016 New Year's
+  PDF, and, for 2017 and 2018, the per-product-group Excel sheets whose annual
+  bundles carry CME's final revisions. Where a bundle copy is byte-identical to
+  the per-file capture, the per-file citation is kept. Every served CME
+  identity's `Holidays` cell now reads
+  **2010-01-01..2012-12-31, 2016-01-01..2018-12-31, 2025-01-01..2027-12-31** —
+  three audited eras, with the unworked 2013-2015 and 2019-2024 intervals named
+  as the remaining stage-2.2 waves' work rather than counted as normal.
+
+  What the era states, keyed to the crate's own trade date: a **full closure**
+  on the nine dates CME shut Globex outright in those years (New Year's Day
+  2016, 2017 and 2018 and their observed days, both Good Fridays of each year,
+  and Christmas Day 2016, 2017 and 2018 and its observed day); an **early
+  close** at 12:00 CT on the Monday and Thursday holidays, at 12:15 CT on the
+  three Thanksgiving Fridays, the three Independence Day eves and the two
+  Christmas Eves, and at 12:45 CT on energy's year-end half-days; a **late
+  open** on the five dates CME withdrew the prior-evening leg and printed the
+  morning session instead — 15:30 CT on 2018-12-26 for equity index and Nikkei,
+  08:30 CT for grains on that same date and, with an early close beside it at
+  12:05 CT, on the three days after Thanksgiving. Dates on which the stated
+  re-open is the family's ordinary evening open ship no row and are recorded as
+  audited normal.
+
+  Also in this change: the block's three round-3 evidence defects are repaired
+  in the research store before any row ships — the 2018-07-03, 2018-11-23 and
+  2018-12-24 `globex_grains` quotations no longer cite an `MGEX Apple Juice`
+  row CME deleted in the very revisions those rows were keyed to, the coverage
+  prose declares every normalisation it applies, and the 2018-11-23 metals note
+  is quoted symmetrically with grains'; the four CME venue tables extend over
+  the era by the same D17 intersection rule: `cme` and `cbot` ship nine
+  `Closed` rows — the dates every routed family shut — and 27 `Unsourced` ones,
+  and `comex` and `nymex` carry `globex_energy`'s 31 rows unchanged. A routed
+  family with no table for the era, `globex_livestock`, **abstains** rather
+  than disputing: it has no answer for 2016-2018, so it neither supplies nor
+  withholds a venue row, and the families that do cover the era decide each
+  date. Where only one family states a row and the others audited the date
+  normal — 2016-12-23 and 2017-12-22, agricultural half-days CME prints alone —
+  the venue still withholds, because a family's silence inside its own window
+  is the positive claim that the date was ordinary. The family modules, their
+  evidence files and their public tests each state the era's own shapes.
 - **The served CME families' holiday tables now reach the January-2010 floor.**
   `globex_equity_index`, `globex_interest_rates`, `globex_fx`, `globex_energy`,
   `globex_grains` and `globex_livestock` gain **205 rows over venue-local trade

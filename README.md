@@ -489,7 +489,7 @@ days, and weekends are closed.
 `is_maintenance` is exactly the maintenance-state predicate.
 
 The built-in profiles are normal-week schedules. Per-family holiday and
-early-close tables sit underneath the caller's overlays for the 22 identities
+early-close tables sit underneath the caller's overlays for the 26 identities
 whose ledger rows name a Holidays window; read one with
 `ExchangeCalendar::holiday_on(trade_date)` and its audited window with
 `ExchangeCalendar::holiday_coverage()`, or detach the layer entirely with the

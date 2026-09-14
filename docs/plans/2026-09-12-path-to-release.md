@@ -206,10 +206,32 @@ tables over its own years by the rule in 2.1, so there is no separate venue wave
 | Order | Years | State of the evidence (memo §5.1) | Do first |
 |---|---|---|---|
 | 1 | 2010–2012 (#92) | round 1 PASS; nothing load-bearing | fix the eight non-blocking defects (quoting convention, the `nikkei 2010-02-15` label, the 2012 Good Friday capture, the 2010-12-23 energy source, the count typo); this wave lands the January-2010 floor — **landed 2026-09-13 (UTC), see the wave note below** |
-| 2 | 2016–2018 (#89) | one narrow load-bearing item; "no instant, status or family-level value is wrong" | correct the three Grains verbatims that quote the deleted MGEX Apple Juice row |
+| 2 | 2016–2018 (#89) | one narrow load-bearing item; "no instant, status or family-level value is wrong" | correct the three Grains verbatims that quote the deleted MGEX Apple Juice row — **landed 2026-09-14 (UTC), see the wave note below** |
 | 3 | 2022–2024 (#90) | two state-neutral load-bearing items | repair the 2023-11-23 grains verbatim and the zone-provenance sentence; ship 2023 MLK/Presidents'/Good Friday and the 13 Nikkei 2024 rows as `Unsourced` |
 | 4 | 2019–2021 (#91) | no value wrong in 440 rows; evidence discipline only | re-extract the 314 hard-truncated verbatim fields from the saved bytes; withdraw the false "no standalone 2020 Good Friday workbook" claim; Juneteenth 2019–2021 is `Unsourced` |
 | 5 | 2013–2015 (#88) | five load-bearing items; needs a retrieval | retrieve `2013-4th-of-july-done.pdf` (it changes 2013-07-03 for livestock, dairy and lumber) and the 42 unretrieved earlier captures, then fix the other named items; no 2013-07-03 row ships before that document is read |
+
+**Wave 2 landed 2026-09-14 (UTC).** The three round-3 defects are repaired in the
+research store's block before any row shipped (the three Grains verbatims re-read from
+the annual-bundle revisions they cite, the coverage's normalisation sentence completed,
+the 2018-11-23 metals note quoted symmetrically), and the block's rows are encoded at
+**T1** over trade dates 2016-01-01 .. 2018-12-31: **197 rows** across the six CME
+families — equity index 34, Nikkei 225 (dollar) 34, interest rates 31, FX 31, energy 31,
+grains 36 — with each family declaring a **third** audited window, so the two remaining
+holes are 2013-2015 (wave 5, #88) and 2019-2024 (waves 3 and 4, #90 and #91). The four
+venue tables extend over the same years by D17: `cme` and `cbot` ship nine `Closed` rows
+and 27 `Unsourced` ones, and `comex`/`nymex` carry `globex_energy`'s 31 rows unchanged. A
+routed family with no table for the era, `globex_livestock`, **abstains** rather than
+disputing — it has no answer for 2016-2018 — so the families that cover the era decide
+each date; the 27 withheld dates are the ones where grains and the financial families
+state different rows, plus 2016-12-23 and 2017-12-22, which CME prints as agricultural
+half-days alone and every financial family audited normal. Two shapes the 2010-2012 wave first met recur here and
+are encoded the same way: an `EarlyClose` is stated on the trade date it ends rather than
+on CME's event date, and the stated re-open that lands on the family's ordinary evening
+open ships no row. One shape is new: five `LateOpen` rows, of which 2018-12-26's 15:30 CT
+equity and Nikkei pair comes from the Christmas sheet's own printed `Pre-opening 15:15 /
+Open 15:30` and the three grain dates after Thanksgiving carry an 08:30 CT open beside
+their 12:05 CT close.
 
 **2.3 Served non-CME venues back to the floor — new retrieval.** Nothing below 2026 was
 ever retrieved for these. One PR per venue, split by year range if it exceeds a day,

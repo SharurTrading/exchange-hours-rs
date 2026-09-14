@@ -80,7 +80,7 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2012, 1, 16, Closed, T1, "2012-martin-luther-king.pdf @2012-05-05T16:15:26Z"),
         // 2012-02-20 - T1 - 2012-presidents-day.pdf - closed: presidents' day 2012.
         (2012, 2, 20, Closed, T1, "2012-presidents-day.pdf @2012-05-05T16:15:39Z"),
-        (2012, 4, 5, early_close(13 * 3_600 + 55 * 60), T1, "2012-good-friday.pdf @2012-05-05T16:16:49Z"),
+        (2012, 4, 5, early_close(13 * 3_600 + 55 * 60), T1, "2012-good-friday.pdf @2012-04-17T00:42:47Z"),
         // 2012-04-06 - T1 - 2012-good-friday.pdf - closed: good friday 2012.
         (2012, 4, 6, Closed, T1, "2012-good-friday.pdf @2012-04-17T00:42:47Z"),
         // 2012-05-28 - T1 - 2012-memorial-day.pdf - closed: memorial day 2012.

@@ -18,8 +18,8 @@
 use chrono::{DateTime, Days, NaiveDate, TimeDelta, TimeZone as _, Utc};
 use chrono_tz::US;
 use exchange_hours::{
-    CalendarResolution, EvidenceTier, ExchangeCalendar, HolidayKind, MarketHoursKey, SessionKind,
-    calendar_for_market_hours_key,
+    CalendarResolution, EvidenceTier, ExchangeCalendar, Holiday, HolidayKind, MarketHoursKey,
+    SessionKind, calendar_for_market_hours_key,
 };
 
 /// The family under test, as a date-aware calendar.
@@ -623,5 +623,94 @@ fn era_window_edges_answer_as_the_module_declares() {
     assert_eq!(
         calendar.is_open(ct((2009, 12, 25), (10, 0, 0))),
         bare.is_open(ct((2009, 12, 25), (10, 0, 0)))
+    );
+}
+
+// ---------------------------------------------------------------------------
+// The 2016-2018 rows.
+// ---------------------------------------------------------------------------
+
+/// The era's early closes clip the wrapped trading day at the printed instant,
+/// and the three Independence Day eves CME prints no row for stay ordinary
+/// trading days.
+#[test]
+fn wave2_early_closes_end_the_wrapped_trading_day_at_the_printed_instant() {
+    let calendar = fx();
+
+    for (date, previous_day, close_ssm) in [
+        ((2016, 2, 15), (2016, 2, 14), 12 * 3_600),
+        ((2017, 11, 23), (2017, 11, 22), 12 * 3_600),
+        ((2016, 11, 25), (2016, 11, 24), 12 * 3_600 + 15 * 60),
+        ((2018, 12, 24), (2018, 12, 23), 12 * 3_600 + 15 * 60),
+    ] {
+        assert_eq!(
+            calendar
+                .holiday_on(day(date.0, date.1, date.2))
+                .map(Holiday::kind),
+            Some(HolidayKind::EarlyClose { close_ssm }),
+            "{date:?}"
+        );
+        let cutoff = ct(date, (close_ssm / 3_600, (close_ssm % 3_600) / 60, 0));
+        assert!(calendar.is_open(ct(previous_day, (17, 0, 0))), "{date:?}");
+        assert!(calendar.is_open(cutoff - TimeDelta::seconds(1)), "{date:?}");
+        assert!(!calendar.is_open(cutoff), "{date:?}: end-exclusive");
+        assert_eq!(
+            calendar.candle_end(ct(date, (9, 0, 0)), CalendarResolution::Daily),
+            Some(cutoff),
+            "{date:?}"
+        );
+    }
+
+    // 2017-07-03 and 2018-07-03 are ordinary 16:00 CT days for this family.
+    for date in [(2017, 7, 3), (2018, 7, 3)] {
+        assert_eq!(
+            calendar.holiday_on(day(date.0, date.1, date.2)),
+            None,
+            "{date:?}"
+        );
+        assert!(calendar.is_open(ct(date, (15, 30, 0))), "{date:?}");
+    }
+}
+
+/// A closure removes its trade date and the prior-evening leg, and the era
+/// ships no late open.
+#[test]
+fn wave2_closures_remove_the_trade_date_and_ship_no_late_open() {
+    let calendar = fx();
+
+    assert_eq!(
+        calendar.holiday_on(day(2016, 3, 25)).map(Holiday::kind),
+        Some(HolidayKind::Closed)
+    );
+    assert!(!calendar.is_open(ct((2016, 3, 24), (18, 0, 0))));
+    assert!(!calendar.is_open(ct((2016, 3, 25), (10, 0, 0))));
+    assert_eq!(
+        calendar.next_session_open_after(ct((2016, 3, 25), (10, 0, 0))),
+        Some(ct((2016, 3, 27), (17, 0, 0)))
+    );
+
+    let mut closures = Vec::new();
+    let mut date = day(2016, 1, 1);
+    while date <= day(2018, 12, 31) {
+        match calendar.holiday_on(date).map(Holiday::kind) {
+            Some(HolidayKind::Closed) => closures.push(date),
+            Some(HolidayKind::EarlyClose { .. }) | None => {}
+            Some(other) => panic!("{date}: the era ships no {other:?}"),
+        }
+        date = date.succ_opt().expect("the era ends well before the bound");
+    }
+    assert_eq!(
+        closures,
+        [
+            day(2016, 1, 1),
+            day(2016, 3, 25),
+            day(2016, 12, 26),
+            day(2017, 1, 2),
+            day(2017, 4, 14),
+            day(2017, 12, 25),
+            day(2018, 1, 1),
+            day(2018, 3, 30),
+            day(2018, 12, 25),
+        ]
     );
 }

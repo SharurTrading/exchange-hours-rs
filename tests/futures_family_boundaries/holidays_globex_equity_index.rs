@@ -18,8 +18,8 @@
 use chrono::{DateTime, Duration, NaiveDate, TimeZone as _, Utc};
 use chrono_tz::US;
 use exchange_hours::{
-    CalendarResolution, EvidenceTier, ExchangeCalendar, HolidayKind, MarketHoursKey, SessionKind,
-    calendar_for_market_hours_key, hours_for_market_hours_key,
+    CalendarResolution, EvidenceTier, ExchangeCalendar, Holiday, HolidayKind, MarketHoursKey,
+    SessionKind, calendar_for_market_hours_key, hours_for_market_hours_key,
 };
 
 /// The family calendar under test, with its built-in table attached.
@@ -308,9 +308,9 @@ fn the_coverage_window_is_exactly_2010_through_2027() {
     assert!(coverage.contains(day(2027, 12, 31)));
     assert!(!coverage.contains(day(2009, 12, 31)));
     assert!(!coverage.contains(day(2028, 1, 1)));
-    // The table audits two eras; the 2013-2024 interval between them is not
-    // audited by either, so `contains` is false there and `holiday_on` has no
-    // answer rather than calling the date normal.
+    // The table audits three eras; the 2013-2015 and 2019-2024 intervals
+    // between them are audited by none, so `contains` is false there and
+    // `holiday_on` has no answer rather than calling the date normal.
     assert!(!coverage.contains(day(2013, 6, 14)));
     assert!(!coverage.contains(day(2024, 12, 31)));
     assert_eq!(calendar.holiday_on(day(2013, 6, 14)), None);
@@ -592,5 +592,219 @@ fn era_window_edges_answer_as_the_module_declares() {
     assert_eq!(
         calendar.is_open(ct((2009, 12, 25), (10, 0, 0))),
         bare.is_open(ct((2009, 12, 25), (10, 0, 0)))
+    );
+}
+
+// ---------------------------------------------------------------------------
+// The 2016-2018 rows.
+// ---------------------------------------------------------------------------
+
+/// 15:30 CT, the open the 2018 Christmas sheet prints on 26 December.
+const WAVE2_LATE_OPEN: u32 = 15 * 3_600 + 30 * 60;
+/// 12:15 CT is the same instant the 2025-2027 window's half-days close at, so
+/// the era reuses the constant above rather than restating it.
+const WAVE2_HALF_DAY_CLOSE: u32 = QUARTER_PAST_NOON;
+
+/// The era's early closes clip a trading day that opened 17:00 CT the previous
+/// evening: 12:00 CT on the nine Monday and Thursday holidays, 12:15 CT on the
+/// three Thanksgiving Fridays, the three Independence Day eves and the two
+/// Christmas Eves CME prints one.
+#[test]
+fn wave2_early_closes_end_the_wrapped_trading_day_at_the_printed_instant() {
+    let calendar = equity_index();
+
+    for (date, previous_day, close_ssm) in [
+        ((2016, 1, 18), (2016, 1, 17), NOON),
+        ((2016, 11, 24), (2016, 11, 23), NOON),
+        ((2016, 11, 25), (2016, 11, 24), WAVE2_HALF_DAY_CLOSE),
+        ((2017, 7, 3), (2017, 7, 2), WAVE2_HALF_DAY_CLOSE),
+        ((2018, 12, 24), (2018, 12, 23), WAVE2_HALF_DAY_CLOSE),
+        ((2018, 12, 26), (2018, 12, 25), 16 * 3_600),
+    ] {
+        if close_ssm == 16 * 3_600 {
+            // 2018-12-26 is the late-open case, asserted on its own below.
+            continue;
+        }
+        let kind = calendar
+            .holiday_on(day(date.0, date.1, date.2))
+            .map(Holiday::kind);
+        assert_eq!(
+            kind,
+            Some(HolidayKind::EarlyClose { close_ssm }),
+            "{date:?}"
+        );
+
+        // The evening leg that feeds this trade date is clipped, not deleted.
+        assert!(calendar.is_open(ct(previous_day, (17, 0, 0))), "{date:?}");
+        let cutoff = ct(date, (close_ssm / 3_600, (close_ssm % 3_600) / 60, 0));
+        assert!(
+            calendar.is_open(cutoff - Duration::seconds(1)),
+            "{date:?}: the second before the close is still open"
+        );
+        assert!(
+            !calendar.is_open(cutoff),
+            "{date:?}: the close is end-exclusive"
+        );
+        assert_eq!(
+            calendar.candle_end(ct(date, (9, 0, 0)), CalendarResolution::Daily),
+            Some(cutoff),
+            "{date:?}: the daily candle ends at the printed close"
+        );
+        // The cut does not delete the trading day: the same trade date still
+        // owns the session, and the operator's own evening leg begins the next.
+        assert_eq!(
+            calendar.trade_date(ct(date, (9, 0, 0))),
+            Some(day(date.0, date.1, date.2))
+        );
+        assert_eq!(
+            calendar.trade_date(cutoff - Duration::seconds(1)),
+            Some(day(date.0, date.1, date.2)),
+            "{date:?}"
+        );
+    }
+
+    // The holiday's own evening 17:00 CT leg still opens the next trade date.
+    assert_eq!(
+        calendar.trade_date(ct((2016, 1, 18), (18, 0, 0))),
+        Some(day(2016, 1, 19))
+    );
+    // And a 12:05 CT cut belongs to grains, not here: this family is open.
+    assert!(calendar.is_open(ct((2016, 11, 25), (12, 5, 0))));
+}
+
+/// A closure removes the trade date and the leg that opened the previous
+/// evening, and the operator's own stated re-open — always this family's
+/// ordinary 17:00 CT — starts the next trade date.
+#[test]
+fn wave2_closures_remove_the_trade_date_and_the_prior_evening_leg() {
+    let calendar = equity_index();
+
+    // Good Friday 2016 is a full closure: the Thursday-evening leg that fed
+    // the Friday trade date goes with it, and the Friday-evening leg CME
+    // publishes starts the following Monday's trade date.
+    assert_eq!(
+        calendar.holiday_on(day(2016, 3, 25)).map(Holiday::kind),
+        Some(HolidayKind::Closed)
+    );
+    assert!(calendar.is_closed_trade_date(day(2016, 3, 25), SessionKind::Both));
+    assert!(!calendar.is_open(ct((2016, 3, 24), (18, 0, 0))));
+    assert!(!calendar.is_open(ct((2016, 3, 25), (10, 0, 0))));
+    // The era's grid has no Friday-evening occurrence, and CME's own sheet
+    // publishes the Sunday re-open for trade date Monday 2016-03-28, which is
+    // exactly what the crate serves.
+    assert_eq!(
+        calendar.next_session_open_after(ct((2016, 3, 25), (10, 0, 0))),
+        Some(ct((2016, 3, 27), (17, 0, 0)))
+    );
+    assert!(calendar.is_open(ct((2016, 3, 27), (18, 0, 0))));
+    assert_eq!(
+        calendar.trade_date(ct((2016, 3, 27), (18, 0, 0))),
+        Some(day(2016, 3, 28))
+    );
+
+    // New Year's Day 2016 fell on a Friday, so the closure is the observed
+    // Friday and the next open is the Sunday leg into Monday's trade date.
+    assert_eq!(
+        calendar.holiday_on(day(2016, 1, 1)).map(Holiday::kind),
+        Some(HolidayKind::Closed)
+    );
+    assert!(!calendar.is_open(ct((2015, 12, 31), (17, 0, 0))));
+    assert_eq!(
+        calendar.next_session_open_after(ct((2016, 1, 1), (12, 0, 0))),
+        Some(ct((2016, 1, 3), (17, 0, 0)))
+    );
+
+    // Every one of the era's nine closures is a closure, and nothing else in
+    // the era is.
+    let mut closures = Vec::new();
+    let mut date = day(2016, 1, 1);
+    while date <= day(2018, 12, 31) {
+        if calendar.holiday_on(date).map(Holiday::kind) == Some(HolidayKind::Closed) {
+            closures.push(date);
+        }
+        date = date.succ_opt().expect("the era ends well before the bound");
+    }
+    assert_eq!(
+        closures,
+        [
+            day(2016, 1, 1),
+            day(2016, 3, 25),
+            day(2016, 12, 26),
+            day(2017, 1, 2),
+            day(2017, 4, 14),
+            day(2017, 12, 25),
+            day(2018, 1, 1),
+            day(2018, 3, 30),
+            day(2018, 12, 25),
+        ]
+    );
+}
+
+/// 2018-12-26 is the era's one late open: the Christmas sheet prints the
+/// Equity line's `Pre-opening 15:15` and `Open 15:30` on a date the crate's
+/// grid has open at 15:15 CT, so the first open moves half an hour later and
+/// nothing else about the day moves.
+#[test]
+fn wave2_2018_12_26_opens_late_at_1530_central() {
+    let calendar = equity_index();
+    let date = day(2018, 12, 26);
+    let cutoff = ct((2018, 12, 26), (15, 30, 0));
+
+    assert_eq!(
+        calendar.holiday_on(date).map(Holiday::kind),
+        Some(HolidayKind::LateOpen {
+            open_ssm: WAVE2_LATE_OPEN
+        })
+    );
+    assert!(!calendar.is_open(cutoff - Duration::seconds(1)));
+    assert!(calendar.is_open(cutoff));
+    assert_eq!(
+        calendar.session_bounds(cutoff + Duration::seconds(1)),
+        Some((cutoff, ct((2018, 12, 26), (16, 0, 0))))
+    );
+    assert_eq!(calendar.trade_date(cutoff), Some(date));
+
+    // The 16:00 CT final close is the normal week's, and the row does not
+    // reach it: the crate and the detached calendar answer it the same.
+    assert!(calendar.is_open(ct((2018, 12, 26), (15, 59, 0))));
+    assert!(!calendar.is_open(ct((2018, 12, 26), (16, 0, 0))));
+}
+
+/// The era's own window edges, and the two unaudited intervals either side of
+/// it.
+#[test]
+fn wave2_window_edges_and_unaudited_neighbours_answer_as_declared() {
+    let calendar = equity_index();
+    let bare = calendar.without_holidays();
+    let coverage = calendar
+        .holiday_coverage()
+        .expect("globex_equity_index ships a table");
+
+    assert!(coverage.contains(day(2016, 1, 1)));
+    assert!(coverage.contains(day(2018, 12, 31)));
+    assert!(!coverage.contains(day(2015, 12, 31)));
+    assert!(!coverage.contains(day(2019, 1, 1)));
+    // The 2013-2015 and 2019-2024 intervals are audited by no wave.
+    for date in [(2013, 6, 14), (2015, 12, 31), (2019, 1, 1), (2024, 12, 31)] {
+        assert_eq!(
+            calendar.holiday_on(day(date.0, date.1, date.2)),
+            None,
+            "{date:?}"
+        );
+    }
+
+    // 2015-12-25 is a CME closure one week below the era: not applied.
+    assert_eq!(calendar.holiday_on(day(2015, 12, 25)), None);
+    assert!(calendar.is_open(ct((2015, 12, 25), (10, 0, 0))));
+    assert_eq!(
+        calendar.is_open(ct((2015, 12, 25), (10, 0, 0))),
+        bare.is_open(ct((2015, 12, 25), (10, 0, 0)))
+    );
+    // 2019-01-01 is one day above it, and a real closure the crate has not
+    // audited yet: the normal Tuesday is served instead.
+    assert_eq!(calendar.holiday_on(day(2019, 1, 1)), None);
+    assert_eq!(
+        calendar.is_open(ct((2019, 1, 1), (10, 0, 0))),
+        bare.is_open(ct((2019, 1, 1), (10, 0, 0)))
     );
 }

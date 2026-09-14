@@ -686,7 +686,8 @@ fn document_rows(text: &str) -> Vec<DocumentRow> {
 ///
 /// Design memo section 3.2: an id resolves to **URL, capture time in UTC, sha256
 /// and tier**, which is what the six columns carry.
-const DOCUMENT_TABLE_HEADER: &str = "| Document | Window | Internet Archive raw replay | Capture or retrieval, UTC | Tier | sha256 |";
+const DOCUMENT_TABLE_HEADER: &str =
+    "| Document | Window | Replay or service URL | Capture or retrieval, UTC | Tier | sha256 |";
 
 /// Design memo section 3.2: document ids are unique repository-wide. An id that
 /// resolves to two artifacts stops keying the bytes its row rests on, which is

@@ -27,7 +27,7 @@
 //! removes the trade date with its prior-evening leg, and every stated re-open
 //! at the ordinary 17:00 CT evening open ships no row. The thirty-four rows
 //! carry the same shape and instants as `globex_equity_index`'s own 2016-2018
-//! window: nine closures, twenty-four early closes — 12:00 CT on the nine
+//! window: nine closures, twenty-four early closes — 12:00 CT on the eighteen
 //! Monday and Thursday holidays and 12:15 CT on the three Thanksgiving Fridays
 //! and three year-end half-days — and one late open.
 //!

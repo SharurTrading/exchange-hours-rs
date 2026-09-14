@@ -123,10 +123,11 @@ with the research store's `holidays/raw/` indexes.
 
 ## Holidays
 
-**Coverage:** 2010-01-01..2012-12-31, 2016-01-01..2018-12-31, 2025-01-01..2027-12-31 (inclusive venue-local trade dates). Tier: **T1** for the fixed-history eras and **T2** for the service window, plus the second line of the existing paragraph below.
-`America/Chicago`). Tier: **T1** for 2010-2012, from CME's own holiday-calendar
-PDFs, and **T2** for 2025-2027, from the operator's trading-hours service. Inside
-the window a date with no row is audited normal; outside it this table has no answer
+**Coverage:** 2010-01-01..2012-12-31, 2016-01-01..2018-12-31, 2025-01-01..2027-12-31 (inclusive venue-local trade dates).
+Tier: **T1** for 2010-2012 and 2016-2018, from the operator's own published
+holiday schedules; **T2** for 2025-2027, from its trading-hours service. Inside a
+window a date with no row is audited normal; outside every window this table has no
+answer at all.
 at all.
 
 **Two audited eras, and a gap between them.** The table declares two coverage

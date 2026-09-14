@@ -650,10 +650,12 @@ fn without_holidays_restores_the_normal_week_for_every_venue() {
 // ---------------------------------------------------------------------------
 
 /// The era's intersection is the block's own shape: the nine dates every
-/// routed family states a closure for ship `Closed`, and the other 27 ship
-/// `Unsourced` — `globex_grains` states a row on all 36 of the block's dates
-/// while the five financial families state one on 34, and `globex_livestock`,
-/// a routed family, has no table for 2016-2018 at all, so no date is unanimous.
+/// covered family states a closure for ship `Closed`, and the other 27 ship
+/// `Unsourced`, because `globex_grains` states a row on all 36 of the block's
+/// dates while the five financial families state one on 34 and the two do not
+/// state the same row. `globex_livestock`, a routed family, has no table for
+/// 2016-2018: it **abstains**, so it neither supplies nor withholds a row and
+/// the covered families decide each date — it is not what withholds the 27.
 #[test]
 fn wave2_venue_rows_are_closed_on_the_nine_and_unsourced_on_the_rest() {
     const WAVE2_CLOSURES: [(i32, u32, u32); 9] = [

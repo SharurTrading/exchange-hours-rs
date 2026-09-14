@@ -161,10 +161,11 @@ with the research store's `holidays/raw/` indexes.
 
 ## Holidays
 
-**Coverage:** 2010-01-01..2012-12-31, 2016-01-01..2018-12-31, 2025-01-01..2027-12-31 (inclusive venue-local trade dates). Tier: **T1** for the fixed-history eras and **T2** for the service window, plus the second line of the existing paragraph below.
-`America/Chicago`), audited per era: **T1** for 2010-2012 in the per-year sections
-below and **T2** for 2025-2027. Inside the window a date with no row is audited
-normal; outside it this table has no answer at all.
+**Coverage:** 2010-01-01..2012-12-31, 2016-01-01..2018-12-31, 2025-01-01..2027-12-31 (inclusive venue-local trade dates).
+Tier: **T1** for 2010-2012 and 2016-2018, from the operator's own published
+holiday schedules; **T2** for 2025-2027, from its trading-hours service. Inside a
+window a date with no row is audited normal; outside every window this table has no
+answer at all.
 
 **Two audited eras, and a gap between them.** The table declares two coverage
 windows: `2010-01-01..2012-12-31`, from this era's documents, and
@@ -287,7 +288,7 @@ lists the two, and `contains` answers per date.
 | 2018-11-23 | early close | `12:15 CT / 13:15 ET` | `2018-holiday-calendars.zip#2018-thanksgiving-holiday-schedule.xls @2026-08-30` | T1 | CME prints this date's own final close; the session that opened the previous evening is clipped here, and trade date = the operator's event date |
 | 2018-12-24 | early close | `12:15 CT / 13:15 ET` | `2018-holiday-calendars.zip#2018-christmas-holiday-schedule.xls @2026-08-30` | T1 | CME prints this date's own final close; the session that opened the previous evening is clipped here, and trade date = the operator's event date |
 | 2018-12-25 | closed | `no session printed` | `2018-holiday-calendars.zip#2018-christmas-holiday-schedule.xls @2026-08-30` | T1 | CME prints the closure for this date; trade date = the operator's event date |
-| 2018-12-26 | late open | `16:00 CT / 17:00 ET` | `2018-holiday-calendars.zip#2018-christmas-holiday-schedule.xls @2026-08-30` | T1 | CME prints this date's own first open after the holiday; trade date = the operator's event date |
+| 2018-12-26 | late open | `15:30 CT / 16:30 ET (Wednesday, December 26)` | `2018-holiday-calendars.zip#2018-christmas-holiday-schedule.xls @2026-08-30` | T1 | CME prints this date's own first open after the holiday; trade date = the operator's event date |
 
 ### 2025-2027 (T2)
 

@@ -39,9 +39,10 @@
 //! trading day's final close, so an early close is the printed final close
 //! stated on the trade date it ends and a closure removes the trade date with
 //! its prior-evening leg. Thirty-six rows: twenty-seven closures, five early
-//! closes at 12:05 CT, three of them also carrying an 08:30 CT late open — the
-//! day after Thanksgiving in 2016, 2017 and 2018, where the prior-evening leg
-//! was withdrawn — and one late open alone, 2018-12-26 at 08:30 CT. The dates
+//! closes at 12:05 CT, three **late-open-and-early-close** rows on the day
+//! after Thanksgiving in 2016, 2017 and 2018, where CME withdrew the
+//! prior-evening leg and printed an 08:30 CT open beside the 12:05 CT close,
+//! and one late open alone, 2018-12-26 at 08:30 CT. The dates
 //! are the thirty-four the financial families state plus 2016-12-23 and
 //! 2017-12-22.
 //!

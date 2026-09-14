@@ -13,11 +13,13 @@
 //! 2013-2015 and 2019-2024 intervals between them are audited by no wave and
 //! lie outside every declared window.
 //!
-//! On the 2016-2018 era's thirty-six dates this table ships
-//! [`HolidayKind::Unsourced`] on every one: `globex_grains` states a row on all
-//! thirty-six of the block's dates while the five financial families together
-//! state one on thirty-four, and `globex_livestock` has no holiday table for that era at
-//! all, so the venue has no unanimous answer to state.
+//! On the 2016-2018 era's thirty-six dates this table states nine `Closed`
+//! rows — the dates every routed family shut — and withholds the other
+//! twenty-seven as [`HolidayKind::Unsourced`], because `globex_grains` states a
+//! row on all thirty-six while the five financial families state one on
+//! thirty-four and the two do not state the same row. `globex_livestock` has no
+//! holiday table for that era, so it **abstains**: it has no answer there and
+//! neither supplies nor withholds a venue row.
 //!
 //! The derivation, the instant disagreements and every dropped date are in the
 //! venue's own evidence file, and the per-family rows are in the family files.

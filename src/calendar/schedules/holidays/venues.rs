@@ -71,9 +71,12 @@
 //! In 2025-2027 that is the nine Globex full closures; in 2010-2012 it is the
 //! six that CME published for those years. On each, all six CME families, both
 //! CBOT families, or the single energy family behind COMEX/NYMEX agree to the
-//! status, and the venue is closed. 2016-2018 ships no such row: a routed family
-//! with no answer in an era leaves the venue without a unanimous one either, so
-//! those dates take the `Unsourced` treatment below.
+//! status, and the venue is closed — in 2016-2018 that is nine dates. A routed
+//! family whose table does not cover an era **abstains** there: it has no
+//! answer, so it cannot make the families that do cover the era dispute one,
+//! and it neither supplies nor withholds a venue row. A family whose table does
+//! cover a date and holds no row has audited it normal, which is an answer and
+//! does dispute a row.
 //!
 //! **Where they disagree**, the venue ships [`HolidayKind::Unsourced`]. That is
 //! neither silence nor a compromise instant. An audited window is contiguous,

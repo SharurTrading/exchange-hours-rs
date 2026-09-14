@@ -656,11 +656,19 @@ fn document_rows(text: &str) -> Vec<DocumentRow> {
                 .map(str::trim)
                 .collect::<Vec<_>>();
             assert!(
-                cells.len() >= 5,
+                cells.len() >= 6,
                 "a documents row reads {DOCUMENT_TABLE_HEADER}: {line}"
             );
             let window = cells[1].to_owned();
-            let sha = cells[4].trim_matches('`').to_owned();
+            let url = cells[2]
+                .trim()
+                .trim_start_matches('<')
+                .trim_end_matches('>');
+            assert!(
+                url.starts_with("https://"),
+                "a documents row resolves its id to an https URL, not {url:?}: {line}"
+            );
+            let sha = cells[5].trim_matches('`').to_owned();
             for id in cells[0].split(", ") {
                 rows.push(DocumentRow {
                     id: id.trim().trim_matches('`').to_owned(),
@@ -675,8 +683,10 @@ fn document_rows(text: &str) -> Vec<DocumentRow> {
 }
 
 /// The one shape a `### Documents` table may take.
-const DOCUMENT_TABLE_HEADER: &str =
-    "| Document | Window | Capture or retrieval, UTC | Tier | sha256 |";
+///
+/// Design memo section 3.2: an id resolves to **URL, capture time in UTC, sha256
+/// and tier**, which is what the six columns carry.
+const DOCUMENT_TABLE_HEADER: &str = "| Document | Window | Internet Archive raw replay | Capture or retrieval, UTC | Tier | sha256 |";
 
 /// Design memo section 3.2: document ids are unique repository-wide. An id that
 /// resolves to two artifacts stops keying the bytes its row rests on, which is

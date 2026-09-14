@@ -224,15 +224,12 @@ venue tables extend over the same years by D17: `cme` and `cbot` ship nine `Clos
 and 27 `Unsourced` ones, and `comex`/`nymex` carry `globex_energy`'s 31 rows unchanged. A
 routed family with no table for the era, `globex_livestock`, **abstains** rather than
 disputing — it has no answer for 2016-2018 — so the families that cover the era decide
-each date; the 27 withheld dates are the ones where grains and the financial families
-state different rows, plus 2016-12-23 and 2017-12-22, which CME prints as agricultural
-half-days alone and every financial family audited normal. Two shapes the 2010-2012 wave first met recur here and
-are encoded the same way: an `EarlyClose` is stated on the trade date it ends rather than
-on CME's event date, and the stated re-open that lands on the family's ordinary evening
-open ships no row. One shape is new: five `LateOpen` rows, of which 2018-12-26's 15:30 CT
-equity and Nikkei pair comes from the Christmas sheet's own printed `Pre-opening 15:15 /
-Open 15:30` and the three grain dates after Thanksgiving carry an 08:30 CT open beside
-their 12:05 CT close.
+each date. The 27 dates `cme` withholds are the 22 on which every covered family states its own
+boundary and they disagree, plus 5 on which `globex_grains` is unmatched: 2016-12-23 and
+2017-12-22, agricultural half-days every financial family audited normal, and 2017-07-03,
+2018-07-03 and 2018-12-26, where `globex_equity_index` states a *different* row (a 12:15 CT
+close, a 12:15 CT close, and a 15:30 CT open). `cbot` withholds the same 27 by a different
+split, because it routes `globex_interest_rates` rather than the other four.
 
 **2.3 Served non-CME venues back to the floor — new retrieval.** Nothing below 2026 was
 ever retrieved for these. One PR per venue, split by year range if it exceeds a day,

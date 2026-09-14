@@ -233,9 +233,10 @@ reporting an unaudited date as normal.
 ### 2025-2027 (T2)
 
 **Counts in this subsection are the 2025-2027 era's.** The table as a whole
-carries 74 rows over its two audited windows: 36 in this era (10 stated closures
-and 26 early closes) and 38 in 2010-2012 (8 stated closures and 30 early
-closes). The intersection is total in both eras, so nothing is withheld.
+carries 105 rows over its three audited windows: 36 in this era (10 stated closures
+and 26 early closes), 31 in 2016-2018 (9 stated closures and 22 early closes) and
+38 in 2010-2012 (8 stated closures and 30 early closes). The intersection is total
+in all three eras, so nothing is withheld.
 
 **This table is derived, not retrieved, and the intersection is total.** It is the
 intersection of the families that route to `Exchange::Comex` — which is one family,

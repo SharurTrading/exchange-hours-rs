@@ -233,8 +233,9 @@ reporting an unaudited date as normal.
 ### 2025-2027 (T2)
 
 **Counts in this subsection are the 2025-2027 era's.** The table as a whole
-carries 74 rows over its two audited windows: 36 in this era and 38 in
-2010-2012. The intersection is total in both eras, so nothing is withheld.
+carries 105 rows over its three audited windows: 36 in this era, 31 in 2016-2018
+and 38 in 2010-2012. The intersection is total in all three eras, so nothing is
+withheld.
 
 **This table is derived, not retrieved, and the intersection is total.** It is the
 intersection of the families that route to `Exchange::Nymex` — which is one family,

@@ -576,6 +576,7 @@ fn wave2_early_closes_and_the_late_open_land_on_the_printed_instants() {
     for (date, eve) in [
         ((2016, 12, 23), (2016, 12, 22)),
         ((2017, 7, 3), (2017, 7, 2)),
+        ((2018, 7, 3), (2018, 7, 2)),
         ((2018, 12, 24), (2018, 12, 23)),
     ] {
         assert_eq!(
@@ -605,6 +606,42 @@ fn wave2_early_closes_and_the_late_open_land_on_the_printed_instants() {
         calendar.trade_date(ct((2018, 12, 26), (9, 0, 0))),
         Some(day((2018, 12, 26)))
     );
+}
+
+/// Every early close the era ships states 12:05 CT, and every combined row states
+/// 08:30 CT beside it: the instants, not only the kinds, are the fence.
+///
+/// The venue tables and the family counts both survive a one-minute change to an
+/// early close's instant, so this walks the era and pins each one.
+#[test]
+fn wave2_every_early_close_instant_is_the_printed_one() {
+    let calendar = calendar_for_market_hours_key(ZC);
+    let (mut plain, mut combined) = (0_usize, 0_usize);
+    let mut date = day((2016, 1, 1));
+    while date <= day((2018, 12, 31)) {
+        match calendar.holiday_on(date).map(Holiday::kind) {
+            Some(HolidayKind::EarlyClose { close_ssm }) => {
+                assert_eq!(close_ssm, 12 * 3_600 + 5 * 60, "{date}");
+                plain += 1;
+            }
+            Some(HolidayKind::LateOpenAndEarlyClose {
+                open_ssm,
+                close_ssm,
+            }) => {
+                assert_eq!(open_ssm, 8 * 3_600 + 30 * 60, "{date}");
+                assert_eq!(close_ssm, 12 * 3_600 + 5 * 60, "{date}");
+                combined += 1;
+            }
+            Some(HolidayKind::LateOpen { open_ssm }) => {
+                assert_eq!(open_ssm, 8 * 3_600 + 30 * 60, "{date}");
+            }
+            _ => {}
+        }
+        date = date
+            .checked_add_days(Days::new(1))
+            .expect("the era stays inside the representable calendar");
+    }
+    assert_eq!((plain, combined), (5, 3), "the era's early closes");
 }
 
 /// The era's shape counts, and its closures.

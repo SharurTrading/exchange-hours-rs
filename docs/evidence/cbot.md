@@ -245,8 +245,9 @@ reporting an unaudited date as normal.
 ### 2025-2027 (T2)
 
 **Counts in this subsection are the 2025-2027 era's.** The table as a whole
-carries 79 rows over its two audited windows: 40 in this era (9 stated closures
-and 31 `Unsourced`) and 39 in 2010-2012 (6 stated closures and 33 `Unsourced`).
+carries 115 rows over its three audited windows: 40 in this era (9 stated
+closures and 31 `Unsourced`), 36 in 2016-2018 (9 stated closures and 27
+`Unsourced`) and 39 in 2010-2012 (6 stated closures and 33 `Unsourced`).
 The derivation rule is the same in both; only the documents differ.
 
 **This table is derived, not retrieved.** It is the **intersection** of the two

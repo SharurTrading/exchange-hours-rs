@@ -210,7 +210,7 @@ date.
 | 2016-07-04 | closed | `no session printed` | `2016-holiday-calendars.zip#2016-4th-of-july-holiday-schedule.pdf @2017-06-28` | T1 | CME prints the closure for this date; trade date = the operator's event date |
 | 2016-09-05 | closed | `no session printed` | `2016-holiday-calendars.zip#2016-labor-day-holiday-schedule.pdf @2017-06-28` | T1 | CME prints the closure for this date; trade date = the operator's event date |
 | 2016-11-24 | closed | `no session printed` | `2016-holiday-calendars.zip#2016-thanksgiving-holiday-schedule.pdf @2017-06-28` | T1 | CME prints the closure for this date; trade date = the operator's event date |
-| 2016-11-25 | early close | `1205 CT / 1305 ET / 1805 UTC` | `2016-holiday-calendars.zip#2016-thanksgiving-holiday-schedule.pdf @2017-06-28` | T1 | CME prints this date's own final close; the session that opened the previous evening is clipped here, and trade date = the operator's event date |
+| 2016-11-25 | late open and early close | `0830 CT / 0930 ET / 1430 UTC` | `2016-holiday-calendars.zip#2016-thanksgiving-holiday-schedule.pdf @2017-06-28` | T1 | the operator prints this date's own first open after the holiday; the row is keyed to the trade date that open belongs to |
 | 2016-12-23 | early close | `1205 CT / 1305 ET / 1805 UTC` | `2016-holiday-calendars.zip#2016-christmas-holiday-schedule.pdf @2017-06-28` | T1 | CME prints this date's own final close; the session that opened the previous evening is clipped here, and trade date = the operator's event date |
 | 2016-12-26 | closed | `Globex closed` | `2016-holiday-calendars.zip#2016-christmas-holiday-schedule.pdf @2017-06-28` | T1 | CME prints the closure for this date; trade date = the operator's event date |
 
@@ -227,7 +227,7 @@ date.
 | 2017-07-04 | closed | `no session printed` | `2017-4th-of-july-holiday-schedule.xls @2017-10-25` | T1 | CME prints the closure for this date; trade date = the operator's event date |
 | 2017-09-04 | closed | `no session printed` | `2017-labor-day-holiday-schedule.xls @2017-10-25` | T1 | CME prints the closure for this date; trade date = the operator's event date |
 | 2017-11-23 | closed | `no session printed` | `2017-holiday-calendars.zip#2017-thanksgiving-holiday-schedule.xls @2021-01-26` | T1 | CME prints the closure for this date; trade date = the operator's event date |
-| 2017-11-24 | early close | `12:05 CT / 13:05 ET` | `2017-holiday-calendars.zip#2017-thanksgiving-holiday-schedule.xls @2021-01-26` | T1 | CME prints this date's own final close; the session that opened the previous evening is clipped here, and trade date = the operator's event date |
+| 2017-11-24 | late open and early close | `08:30 CT / 09:30 ET` | `2017-holiday-calendars.zip#2017-thanksgiving-holiday-schedule.xls @2021-01-26` | T1 | the operator prints this date's own first open after the holiday; the row is keyed to the trade date that open belongs to |
 | 2017-12-22 | early close | `12:05 CT / 13:05 ET` | `2017-holiday-calendars.zip#2017-christmas-holiday-schedule.xls @2021-01-26` | T1 | CME prints this date's own final close; the session that opened the previous evening is clipped here, and trade date = the operator's event date |
 | 2017-12-25 | closed | `no session printed` | `2017-holiday-calendars.zip#2017-christmas-holiday-schedule.xls @2021-01-26` | T1 | CME prints the closure for this date; trade date = the operator's event date |
 
@@ -244,12 +244,12 @@ date.
 | 2018-07-04 | closed | `no session printed` | `2018-holiday-calendars.zip#2018-4th-of-july-holiday-schedule.xls @2026-08-30` | T1 | CME prints the closure for this date; trade date = the operator's event date |
 | 2018-09-03 | closed | `no session printed` | `2018-holiday-calendars.zip#2018-labor-day-holiday-schedule.xls @2026-08-30` | T1 | CME prints the closure for this date; trade date = the operator's event date |
 | 2018-11-22 | closed | `no session printed` | `2018-holiday-calendars.zip#2018-thanksgiving-holiday-schedule.xls @2026-08-30` | T1 | CME prints the closure for this date; trade date = the operator's event date |
-| 2018-11-23 | early close | `12:05 CT / 13:05 ET` | `2018-holiday-calendars.zip#2018-thanksgiving-holiday-schedule.xls @2026-08-30` | T1 | CME prints this date's own final close; the session that opened the previous evening is clipped here, and trade date = the operator's event date |
+| 2018-11-23 | late open and early close | `08:30 CT / 09:30 ET` | `2018-holiday-calendars.zip#2018-thanksgiving-holiday-schedule.xls @2026-08-30` | T1 | the operator prints this date's own first open after the holiday; the row is keyed to the trade date that open belongs to |
 | 2018-12-24 | early close | `12:05 CT / 13:05 ET` | `2018-holiday-calendars.zip#2018-christmas-holiday-schedule.xls @2026-08-30` | T1 | CME prints this date's own final close; the session that opened the previous evening is clipped here, and trade date = the operator's event date |
 | 2018-12-25 | closed | `no session printed` | `2018-holiday-calendars.zip#2018-christmas-holiday-schedule.xls @2026-08-30` | T1 | CME prints the closure for this date; trade date = the operator's event date |
 | 2018-12-26 | late open | `08:30 CT / 09:30 ET (Wednesday, December 26)` | `2018-holiday-calendars.zip#2018-christmas-holiday-schedule.xls @2026-08-30` | T1 | the operator prints this date's own first open after the holiday; the row is keyed to the trade date that open belongs to |
 
-**Interpretive step, 2018-12-26:** the block records this date's status as `normal`, and the crate ships a row for it. The Christmas sheet prints no Tuesday-evening grain leg — `Tuesday, December 25` carries `Globex Closed` — and prints the Wednesday session as `Pre-opening` 06:00, `Open` 08:30, `Close` 13:20, so the trade date's first open is 08:30 CT and the row is a late open.
+**Interpretive step, 2018-12-26:** the block records this date's status as `normal`, and the crate ships a row for it. The Christmas sheet prints no Tuesday-evening grain leg — `Tuesday, December 25` carries `Globex Closed` — and prints the Wednesday session as `Pre-opening` 06:00, `Open` 08:30, `Close` 13:20, so the trade date's first open is 08:30 CT and the row is a late open. **Interpretive step, the three days after Thanksgiving:** their kind is `late open and early close`, not a plain early close: CME withdrew the prior-evening leg and printed the day session's own 08:30 CT open beside the 12:05 CT close.
 
 ### 2025-2027 (T2)
 

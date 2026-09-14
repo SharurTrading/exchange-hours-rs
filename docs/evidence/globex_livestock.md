@@ -84,6 +84,15 @@ the research store's `holidays/raw/` indexes.
 
 ## Holidays
 
+**Gap — the 2016-2018 era is evidence-ready and unencoded.** This family ships no
+2016-2018 table, so `Exchange::Cme` treats it as abstaining for that era rather than as
+disputing it (see `docs/evidence/cme.md`). The evidence is not missing: the research block
+`holidays/cme-2016-2018.json` carries thirty-six `Livestock` rows for those years from the
+same CME documents the other six families are encoded from. Encoding them was out of this
+change's scope — the wave is the served CME product families — and closing condition is
+stage 4.1 of the release plan, which already names the dormant CME Globex keys. It changes
+no CME answer today: the venue has no unanimous row on any of the era's dates either way.
+
 **Coverage:** 2010-01-01..2012-12-31, 2025-01-01..2027-12-31 (inclusive venue-local trade dates).
 Tier: **T1** for 2010-2012 and 2016-2018, from the operator's own published
 holiday schedules; **T2** for 2025-2027, from its trading-hours service. Inside a

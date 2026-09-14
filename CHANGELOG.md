@@ -96,20 +96,21 @@ corrections (a venue's hours fixed against a primary source) go under
   as the remaining stage-2.2 waves' work rather than counted as normal.
 
   What the era states, keyed to the crate's own trade date: a **full closure**
-  on the nine dates CME shut Globex outright in those years (New Year's Day
-  2016, 2017 and 2018 and their observed days, both Good Fridays of each year,
-  and Christmas Day 2016, 2017 and 2018 and its observed day); an **early
-  close** at 12:00 CT on the eighteen Monday and Thursday holidays, at 12:15 CT
-  on the three Thanksgiving Fridays — and, for `globex_equity_index` only, on
-  the two Independence Day eves, 2017-07-03 and 2018-07-03 — at 12:15 CT on
-  2018-12-24 for equity index, interest rates and FX, and at 12:45 CT on
-  energy's three Thanksgiving Fridays and 2018-12-24; a **late
-  open** on the five dates CME withdrew the prior-evening leg and printed the
-  morning session instead — 15:30 CT on 2018-12-26 for equity index and Nikkei,
-  08:30 CT for grains on that same date and, with an early close beside it at
-  12:05 CT, on the three days after Thanksgiving. Dates on which the stated
-  re-open is the family's ordinary evening open ship no row and are recorded as
-  audited normal.
+  on the nine dates CME shut Globex outright in those years — New Year's Day
+  2016, 2017 and 2018 and their observed days, each year's Good Friday, and
+  Christmas Day 2016, 2017 and 2018 and its observed day; an **early close** at
+  12:00 CT on the eighteen Monday and Thursday holidays, at 12:15 CT on the
+  three Thanksgiving Fridays — and, for `globex_equity_index` only, on the two
+  Independence Day eves, 2017-07-03 and 2018-07-03 — at 12:15 CT on 2018-12-24
+  for equity index, interest rates and FX, and at 12:45 CT on energy's three
+  Thanksgiving Fridays and 2018-12-24; and a **late open** on the five dates
+  CME withdrew the prior-evening leg and printed the morning session instead:
+  15:30 CT on 2018-12-26 for equity index and Nikkei, 08:30 CT for grains on
+  that same date, and 08:30 CT beside a 12:05 CT early close for grains on the
+  three days after Thanksgiving, whose row is therefore
+  `LateOpenAndEarlyClose` rather than a plain early close. Dates on which the
+  stated re-open is the family's ordinary evening open ship no row and are
+  recorded as audited normal.
 
   Also in this change: the block's three round-3 evidence defects are repaired
   in the research store before any row ships — the 2018-07-03, 2018-11-23 and

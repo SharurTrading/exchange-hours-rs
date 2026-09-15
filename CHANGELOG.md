@@ -76,9 +76,13 @@ corrections (a venue's hours fixed against a primary source) go under
   venue-local trade dates 2022-01-01 .. 2024-12-31** — `globex_equity_index` 35,
   `globex_energy` 33, `globex_fx` 14, `globex_grains` 39,
   `globex_interest_rates` 33, `globex_livestock` 33, `globex_cryptocurrency`
-  14 and `globex_nikkei_225_dollar` 36 — so every one of them declares a fourth
-  audited window and the 2019-2021 and 2013-2015 intervals are the only years
-  the tables do not answer for. The 2022 rows are **T1** from CME Group's own
+  14 and `globex_nikkei_225_dollar` 36 — each declaring the new window and, for
+  the five families that already had three, a fourth audited era alongside it.
+  `globex_livestock` now declares three windows (it never had 2016-2018),
+  `globex_cryptocurrency` two (its product has no earlier era) and
+  `globex_nikkei_225_dollar` three (it never had 2010-2012), so the years no
+  table answers for remain 2013-2015 and 2019-2021 for the families whose
+  history reaches back that far. The 2022 rows are **T1** from CME Group's own
   per-asset-class holiday workbooks, the 2023 rows are **T1** where CME
   published a holiday schedule for the date — the New Year workbook and the
   one-pagers from Memorial Day onward — and the 2023 dates it published nothing

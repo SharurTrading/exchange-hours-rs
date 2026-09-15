@@ -290,7 +290,7 @@ stage-2.2 waves — so they lie outside every declared window and `holiday_on` h
 | 2018-12-25 | closed | `every routed family states a closure` | `2018-holiday-calendars.zip#2018-christmas-holiday-schedule.xls @2026-08-30` | T1 | the intersection of the families routed to this venue |
 | 2018-12-26 | unsourced | `—` | `2018-holiday-calendars.zip#2018-christmas-holiday-schedule.xls @2026-08-30` | T1 | the intersection of the families routed to this venue |
 
-### 2022-2024 (T1)
+### 2022-2024 (T1/T2)
 
 **Counts in this subsection are the 2022-2024 era's.** The table as a whole
 carries 173 rows over its four audited windows: 41 in this era (7 stated closures

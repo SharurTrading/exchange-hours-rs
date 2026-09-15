@@ -1013,23 +1013,54 @@ fn wave3_unsourced_shapes_are_the_families_own_answers() {
             Exchange::Comex,
             Exchange::Nymex,
         ] {
-            let venue = calendar_for_exchange(exchange);
-            let row = venue
-                .holiday_on(date)
-                .unwrap_or_else(|| panic!("{exchange:?}: {date} ships the agreed marker"));
-            assert_eq!(row.kind(), HolidayKind::Unsourced, "{exchange:?}: {date}");
-            assert_eq!(
-                Some(row.document_id()),
-                equity.holiday_on(date).map(Holiday::document_id),
-                "{exchange:?}: {date} must cite the family's own artifact"
-            );
-            assert_eq!(
-                Some(row.tier()),
-                equity.holiday_on(date).map(Holiday::tier),
-                "{exchange:?}: {date} must carry the family's own tier"
-            );
+            agreed_marker_cites_a_routed_family(exchange, date)
+                .unwrap_or_else(|missing| panic!("{missing} (holiday_on date lookup)"));
         }
     }
+}
+
+/// A venue row shipping the families' agreed `Unsourced` marker must cite an
+/// artifact one of **its own** routed families states for that date.
+///
+/// Equity index specifically is not the bar: CBOT routes grains and interest
+/// rates, COMEX and NYMEX route energy alone, and a venue row citing any routed
+/// family is as well grounded as one citing equity index. The routed families'
+/// ids agree on these three markers today, which this also pins — if they ever
+/// stop agreeing, the row must follow a routed family and the assertion says so.
+///
+/// The missing row is returned rather than panicked on, so the caller — a test
+/// body — owns the failure message this repository's lint configuration expects
+/// there.
+fn agreed_marker_cites_a_routed_family(exchange: Exchange, date: NaiveDate) -> Result<(), String> {
+    let venue = calendar_for_exchange(exchange);
+    let Some(row) = venue.holiday_on(date) else {
+        return Err(format!("{exchange:?}: {date} ships no row"));
+    };
+    assert_eq!(row.kind(), HolidayKind::Unsourced, "{exchange:?}: {date}");
+
+    let keys = VENUES
+        .iter()
+        .find_map(|(venue, keys)| (*venue == exchange).then_some(*keys))
+        .unwrap_or(&[]);
+    let matches = keys
+        .iter()
+        .filter_map(|key| {
+            let holiday = calendar_for_market_hours_key(*key).holiday_on(date);
+            (holiday.map(Holiday::document_id) == Some(row.document_id())).then_some((key, holiday))
+        })
+        .collect::<Vec<_>>();
+    assert!(
+        !matches.is_empty(),
+        "{exchange:?}: {date} cites {}, which no family this venue routes states",
+        row.document_id()
+    );
+    assert!(
+        matches
+            .iter()
+            .all(|(_, holiday)| holiday.map(Holiday::tier) == Some(row.tier())),
+        "{exchange:?}: {date} carries a tier none of the families citing that artifact states"
+    );
+    Ok(())
 }
 
 /// An `Unsourced` row in the new era is reported, closes nothing, and leaves
@@ -1128,9 +1159,12 @@ fn wave3_energy_early_close_instants_are_the_familys_own() {
         (day(2024, 3, 29), EvidenceTier::T2),
         (day(2024, 12, 25), EvidenceTier::T2),
     ] {
-        let row = cme
-            .holiday_on(date)
-            .unwrap_or_else(|| panic!("2024-01-01, 2024-03-29 and 2024-12-25 ship rows"));
+        let row = cme.holiday_on(date).unwrap_or_else(|| {
+            panic!(
+                "Exchange::Cme: {date} must ship a closure row (holiday_on date lookup; \
+                 SessionKind and CalendarResolution do not apply)"
+            )
+        });
         assert_eq!(row.kind(), HolidayKind::Closed, "{date}");
         assert_eq!(row.tier(), tier, "{date} must carry its artifact's tier");
     }

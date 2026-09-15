@@ -129,9 +129,13 @@ def kind_ssms(kind):
 def main():
     root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     out = os.path.join(root, "tools", "out")
-    research = os.environ.get(
-        "WAVE3_RESEARCH",
-        "/Users/agedvagabond/Developer/exchange-hours-research")
+    research = os.environ.get("WAVE3_RESEARCH")
+    if not research:
+        raise SystemExit(
+            "set WAVE3_RESEARCH to the research store's root (the directory holding "
+            "`holidays/cme-2022-2024.r2.json` and `holidays/raw/`); this wave's block "
+            "and every artifact it cites live there and are deliberately not committed"
+        )
     holidays = os.path.join(research, "holidays")
     r2 = os.path.join(holidays, "cme-2022-2024.r2.json")
     block_path = r2 if os.path.exists(r2) else os.path.join(
@@ -153,7 +157,7 @@ def main():
     try:
         subprocess.run(
             [sys.executable, os.path.join(root, "tools", "wave3_rows.py"),
-             "--quiet", "--out", scratch],
+             "--quiet", "--out", scratch, "--research", research],
             check=True, capture_output=True,
         )
         names = sorted(os.listdir(out))
@@ -199,7 +203,7 @@ def main():
                % (family, date, kind))
             ok(tier in ("T1", "T2"), "%s %s: tier %r" % (family, date, tier))
             ok(doc.strip() != "", "%s %s: empty document id" % (family, date))
-            ok(comment_count <= len(comments),
+            ok(comment_count >= 1,
                "%s %s: tuple has no citation comment" % (family, date))
             if comment_count:
                 cdate, ctier, cdoc = comments[comment_count - 1]

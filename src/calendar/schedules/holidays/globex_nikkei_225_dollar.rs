@@ -21,7 +21,9 @@
 //! day are recorded in
 //! [`docs/evidence/globex_nikkei_225_dollar.md`](../../../../../docs/evidence/globex_nikkei_225_dollar.md).
 //! From 2022 through 2024 the service answered for ten representative products
-//! and no `NKD` or `NIY` line, so no 2024 date below has a scheduling answer.
+//! and no `NKD` or `NIY` line, so the service supplies no scheduling answer for
+//! a 2024 date; the 2024-01-01 row is the one exception, and it is T1 from the
+//! operator's own New Year's one-pager rather than from the service.
 //!
 //! **2016-2018.** The era's rows are **T1**, CME's own published Globex holiday
 //! schedules, and the grid is the wrapped `17:00 CT -> 16:00 CT` leg: an early

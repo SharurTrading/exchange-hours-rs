@@ -473,10 +473,17 @@ def emit_evidence(tables: dict[str, Table], era: tuple[dt.date, dt.date]) -> Non
             else:
                 printed = f"`{instant_cell(kind)}`"
                 cell_kind = document_kind(kind)
-                side = "metals" if venue == "comex" else "energy"
-                derived = human_kind(kind).replace("early close", f"{side} early close", 1).replace(
-                    "late open", f"{side} late open", 1
-                )
+                # Only the single-family energy venues have a side to name:
+                # COMEX routes the metals half and NYMEX the energy half, while
+                # CME and CBOT route several families and have no one side. A
+                # label invented for them would name a family the venue does not
+                # route (CBOT routes no energy at all).
+                side = {"comex": "metals", "nymex": "energy"}.get(venue)
+                derived = human_kind(kind)
+                if side is not None:
+                    derived = derived.replace(
+                        "early close", f"{side} early close", 1
+                    ).replace("late open", f"{side} late open", 1)
             print(
                 f"| {date} | {cell_kind} | {printed} | `{joint.document}` | "
                 f"{joint.tier} | {derived} |"

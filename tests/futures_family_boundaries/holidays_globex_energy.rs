@@ -995,7 +995,7 @@ fn era_2022_2024_close_instants_are_the_energy_venues_not_the_financial_ones() {
     assert!(energy.is_open(ct((2022, 11, 25), 12, 44)));
     assert!(!energy.is_open(ct((2022, 11, 25), 12, 45)));
 
-    // 2024-11-29: the one 13:45 CT close, half an hour after 2024-12-24's.
+    // 2024-11-29: the one 13:45 CT close, one hour after 2024-12-24's.
     assert!(energy.is_open(ct((2024, 11, 29), 13, 44)));
     assert!(!energy.is_open(ct((2024, 11, 29), 13, 45)));
     assert!(energy.is_open(ct((2024, 12, 24), 12, 44)));

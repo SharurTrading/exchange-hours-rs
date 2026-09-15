@@ -723,27 +723,33 @@ fn all_key_calendars_match_dated_snapshots_over_two_years() {
             let bar_era = calendar
                 .session_bounds(instant)
                 .map(|(open, _)| exchange_hours::hours_for_market_hours_key(key, open));
-            let explained_by_revision = bar_era.as_ref() != Some(&snapshot);
-            let crossing_a_holiday = {
+            // A **missing** bound or a **missing** bar is not an explanation.
+            // `session_bounds` answers for the containing or next session within
+            // 14 local days, so `None` there means the calendar places no session
+            // near the instant: no opening session exists whose profile could
+            // differ, and the revision excuse does not apply. The same reasoning
+            // rules out a missing bar as a holiday span — there is nothing to
+            // walk.
+            let explained_by_revision =
+                calendar_bar.is_some() && bar_era.as_ref().is_some_and(|era| *era != snapshot);
+            let crossing_a_holiday = calendar_bar.is_some_and(|close| {
                 // From the instant's own local date to the day the bar ends: a
                 // closure sits *between* the opening session and the bar's
                 // close, so asking only about the opening session's own dates
-                // misses it. A bar with no bound cannot span a closure at all.
-                let Some(last) = calendar_bar.map(|close| close.date_naive()) else {
-                    continue;
-                };
+                // misses it.
+                let last = close.date_naive();
                 let mut date = instant.date_naive();
-                let mut found = false;
                 while date <= last {
                     if calendar.holiday_on(date).is_some() {
-                        found = true;
-                        break;
+                        return true;
                     }
-                    let Some(next) = date.succ_opt() else { break };
+                    let Some(next) = date.succ_opt() else {
+                        return false;
+                    };
                     date = next;
                 }
-                found
-            };
+                false
+            });
             assert!(
                 crossing_a_holiday || explained_by_revision,
                 "{key} at {instant}: the calendar's daily bar {calendar_bar:?} disagrees with \

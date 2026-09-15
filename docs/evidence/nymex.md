@@ -263,7 +263,7 @@ stage-2.2 waves — so they lie outside every declared window and `holiday_on` h
 | 2018-12-24 | early close | `12:45 CT` | `2018-holiday-calendars.zip#2018-christmas-holiday-schedule.xls @2026-08-30` | T1 | the intersection of the families routed to this venue |
 | 2018-12-25 | closed | `every routed family states a closure` | `2018-holiday-calendars.zip#2018-christmas-holiday-schedule.xls @2026-08-30` | T1 | the intersection of the families routed to this venue |
 
-### 2022-2024 (T1)
+### 2022-2024 (T1/T2)
 
 **Counts in this subsection are the 2022-2024 era's.** The table as a whole
 carries 138 rows over its four audited windows: 33 in this era (7 stated closures,
@@ -274,7 +274,7 @@ the documents differ.
 **The venue drops no date.** Metals and energy are one key and the operator prints
 them as one product row on every date this table audits, so its one routed family
 decides each date and the intersection is total. Twenty-three dates are early
-closes — nineteen at 13:30 CT (the Monday and Thursday holidays), 2022-11-25,
+closes — nineteen at 13:30 CT (the Monday and Thursday holidays together with 2023-07-04 and 2024-06-19), 2022-11-25,
 2023-11-24 and 2024-12-24 at 12:45 CT, and 2024-11-29 at 13:45 CT — and seven are
 the full closures. Three are the family's own `Unsourced` markers, 2023-01-16,
 2023-02-20 and 2023-04-07: the wave retrieved no document for those 2023 sheets,

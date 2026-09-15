@@ -52,10 +52,12 @@
 //! 08:30-13:20 CT day session. Thirty-nine rows: twenty-six closures, the
 //! three `LateOpenAndEarlyClose` days after Thanksgiving, whose 08:30 CT open is
 //! the same late open a removed leg produces, one early close at 12:05 CT on
-//! 2024-12-24, and the six late opens on 2022-07-05, 2023-07-05, 2023-12-26,
-//! 2024-01-02, 2024-07-05 and 2024-12-26. The 2022 rows and the 2023 rows CME
-//! published a holiday schedule for are **T1**; the three 2023 dates it
-//! published nothing for and all of 2024 are **T2**.
+//! 2024-12-24, the six late opens on 2022-07-05, 2023-07-05, 2023-12-26,
+//! 2024-01-02, 2024-07-05 and 2024-12-26, and the three `Unsourced` dates below
+//! that the operator published nothing for. The 2022 rows, the 2023 rows CME
+//! published a holiday schedule for, and the 2024 New Year's Day row are
+//! **T1**; the three 2023 dates it published nothing for and the rest of 2024
+//! are **T2**.
 //!
 //! **2010-2012.** CME's own holiday-calendar PDFs are the T1 source. The era's
 //! grid is an 18:00 CT evening leg (17:00 from 2012-05-20) into a 09:30-13:15 CT

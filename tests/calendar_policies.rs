@@ -730,8 +730,15 @@ fn all_key_calendars_match_dated_snapshots_over_two_years() {
             // differ, and the revision excuse does not apply. The same reasoning
             // rules out a missing bar as a holiday span — there is nothing to
             // walk.
+            // A **missing** bar or a **missing** bound is not an explanation
+            // either: with `session_bounds` answering for the containing or next
+            // session within 14 local days, `None` there means the calendar
+            // places no session near the instant, so there is no opening session
+            // whose profile could differ and nothing for a closure to span. Both
+            // cases therefore fall through to the assertion below rather than
+            // being excused; the equality test is written so they cannot be.
             let explained_by_revision =
-                calendar_bar.is_some() && bar_era.as_ref().is_some_and(|era| *era != snapshot);
+                calendar_bar.is_some() && bar_era.as_ref() != Some(&snapshot);
             let crossing_a_holiday = calendar_bar.is_some_and(|close| {
                 // From the instant's own local date to the day the bar ends: a
                 // closure sits *between* the opening session and the bar's

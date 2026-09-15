@@ -28,7 +28,6 @@ requires. The byte counts and, for a bundle member, the artifact's path inside t
 are in the research store's `holidays/raw/` indexes.
 
 | Document | Window | Replay or service URL | Capture or retrieval, UTC | Tier | sha256 |
-
 |---|---|---|---|---|---|
 | `2010-new-years.pdf @2010-02-15T05:16:52Z` | `2010-new-years.pdf` | <https://web.archive.org/web/20100215051652id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2010-new-years.pdf> | archive capture 2010-02-15T05:16:52Z | T1 | `c30a6cef73fca23c54b25907f307ad52a2922d1e4b76c0a12de126dc6fc31a6d` |
 | `2010-martin-luther-king.pdf @2010-03-31T06:42:26Z` | `2010-martin-luther-king.pdf` | <https://web.archive.org/web/20100331064226id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2010-martin-luther-king.pdf> | archive capture 2010-03-31T06:42:26Z | T1 | `11af96423f788565a434209ebb94a82f69dd2c129621927cd898c2ff6c0978d3` |
@@ -85,6 +84,35 @@ are in the research store's `holidays/raw/` indexes.
 | `2018-holiday-calendars.zip#2018-labor-day-holiday-schedule.xls @2026-08-30` | `2018-labor-day-holiday-schedule.xls` | <https://web.archive.org/web/20260830id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2018-labor-day-holiday-schedule.xls> | 2026-08-30T10:02:25Z | T1 | `9b8c892dd3faba6900aae949f7f0c63b525191a76dccc938aa9859920b71b40d` |
 | `2018-holiday-calendars.zip#2018-thanksgiving-holiday-schedule.xls @2026-08-30` | `2018-thanksgiving-holiday-schedule.xls` | <https://web.archive.org/web/20260830id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2018-thanksgiving-holiday-schedule.xls> | 2026-08-30T10:02:25Z | T1 | `31fc95f5b27f8689477b4abb557f14b2cf9ac481262926e30b78adf1455adff1` |
 | `2018-holiday-calendars.zip#2018-christmas-holiday-schedule.xls @2026-08-30` | `2018-christmas-holiday-schedule.xls` | <https://web.archive.org/web/20260830id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2018-christmas-holiday-schedule.xls> | 2026-08-30T10:02:25Z | T1 | `b97ee5f47d55c4383c7f1fa7d554eba3c7f0e8ded18343aadd06d7908d9e7a91` |
+| `2022-christmas-holiday-schedule.xls @2022-07-04T06:54:30Z` | 2022-01-01 .. 2024-12-31 | <https://web.archive.org/web/20220704065430id_/https://www.cmegroup.com/tools-information/holiday-calendar/files/2022-christmas-holiday-schedule.xls> | archive capture 2022-07-04T06:54:30Z | T1 | `2dd1d531514989845dcb6ce6d767db5dd3f956ac6777ab1cfe36d6843f3762e7` |
+| `2022-good-friday-holiday-schedule.xls @2022-07-04T06:55:01Z` | 2022-01-01 .. 2024-12-31 | <https://web.archive.org/web/20220704065501id_/https://www.cmegroup.com/tools-information/holiday-calendar/files/2022-good-friday-holiday-schedule.xls> | archive capture 2022-07-04T06:55:01Z | T1 | `a82936ab14d1b1f7041583123289c4de401c66ace4eea7e90fa9f60c1a3f3b7e` |
+| `2022-independence-day-holiday-schedule.xls @2022-07-04T06:54:50Z` | 2022-01-01 .. 2024-12-31 | <https://web.archive.org/web/20220704065450id_/https://www.cmegroup.com/tools-information/holiday-calendar/files/2022-independence-day-holiday-schedule.xls> | archive capture 2022-07-04T06:54:50Z | T1 | `1ea0459d8aa0fd7ec5147614855f6d0d43607efefdc3aa9c6b1e18ddbfd54fde` |
+| `2022-juneteenth-holiday-schedule.xls @2022-06-20T20:02:10Z` | 2022-01-01 .. 2024-12-31 | <https://web.archive.org/web/20220620200210id_/https://www.cmegroup.com/tools-information/holiday-calendar/files/2022-juneteenth-holiday-schedule.xls> | archive capture 2022-06-20T20:02:10Z | T1 | `bc9f2caf26a73a13029f177fcc6468bdc8662899ff935f44329ee1a95c8b667b` |
+| `2022-labor-day-holiday-schedule.xls @2022-07-04T06:54:41Z` | 2022-01-01 .. 2024-12-31 | <https://web.archive.org/web/20220704065441id_/https://www.cmegroup.com/tools-information/holiday-calendar/files/2022-labor-day-holiday-schedule.xls> | archive capture 2022-07-04T06:54:41Z | T1 | `28d533f25d1af74af043e411635f1933fd4ff6359c80c049f87f019d2f1d57d0` |
+| `2022-memorial-day-holiday-schedule.xls @2022-07-04T06:54:38Z` | 2022-01-01 .. 2024-12-31 | <https://web.archive.org/web/20220704065438id_/https://www.cmegroup.com/tools-information/holiday-calendar/files/2022-memorial-day-holiday-schedule.xls> | archive capture 2022-07-04T06:54:38Z | T1 | `0d1b1f89a315cae22a5857a7027a514e3086c1cccfee42fddddff3caba0c2230` |
+| `2022-mlk-day-holiday-schedule.xls @2022-01-17T21:22:30Z` | 2022-01-01 .. 2024-12-31 | <https://web.archive.org/web/20220117212230id_/https://www.cmegroup.com/tools-information/holiday-calendar/files/2022-mlk-day-holiday-schedule.xls> | archive capture 2022-01-17T21:22:30Z | T1 | `896944fa701062e2e1ee305f8adb696ba8ab03655a96874c7885f2328177626e` |
+| `2022-presidents-day-holiday-schedule.xls @2022-07-04T07:38:10Z` | 2022-01-01 .. 2024-12-31 | <https://web.archive.org/web/20220704073810id_/https://www.cmegroup.com/tools-information/holiday-calendar/files/2022-presidents-day-holiday-schedule.xls> | archive capture 2022-07-04T07:38:10Z | T1 | `07932975d04ccabad0fb53f33f946f1a6fd8a696bafdb21f95f030ede9a84516` |
+| `2022-thanksgiving-holiday-schedule.FINAL-20221122.xls @2022-11-22T06:08:01Z` | 2022-01-01 .. 2024-12-31 | <https://web.archive.org/web/20221122060801id_/https://www.cmegroup.com/tools-information/holiday-calendar/files/2022-thanksgiving-holiday-schedule.xls> | archive capture 2022-11-22T06:08:01Z | T1 | `64341a65350de982a6a05760504132e173611151ae3164c6f9437509a406edcb` |
+| `2023-new-years-holiday-schedule.xls @2022-07-04T06:55:01Z` | 2022-01-01 .. 2024-12-31 | <https://web.archive.org/web/20220704065501id_/https://www.cmegroup.com/tools-information/holiday-calendar/files/2023-new-years-holiday-schedule.xls> | archive capture 2022-07-04T06:55:01Z | T1 | `eefafd1066f406edbe6167ddf8ad13c0697b124a337c0893ce5a5da200c783d3` |
+| `christmas-day-2023.pdf @2026-07-19T09:52:48Z` | 2022-01-01 .. 2024-12-31 | <https://web.archive.org/web/20260719095248id_/https://www.cmegroup.com/trading-hours/files/christmas-day-2023.pdf> | archive capture 2026-07-19T09:52:48Z | T1 | `edcde0fcf61d3414cee2a332453db861e0e2d7edf81d89a5f379c44b2e72d5cf` |
+| `juneteenth-2023.pdf @2023-06-13T18:59:49Z` | 2022-01-01 .. 2024-12-31 | <https://web.archive.org/web/20230613185949id_/https://www.cmegroup.com/trading-hours/files/juneteenth-2023.pdf> | archive capture 2023-06-13T18:59:49Z | T1 | `831f7f63e197ce58436780830aa515cb08dcf92bdf82a540265c2d21a4bffa43` |
+| `labor-day-2023.pdf @2023-08-02T19:24:46Z` | 2022-01-01 .. 2024-12-31 | <https://web.archive.org/web/20230802192446id_/https://www.cmegroup.com/trading-hours/files/labor-day-2023.pdf> | archive capture 2023-08-02T19:24:46Z | T1 | `39a4c075437fdc7134166328eca730e3cabf3bea00ab369466dff63c99f8e948` |
+| `memorial-day-2023.pdf @2023-04-20T22:40:18Z` | 2022-01-01 .. 2024-12-31 | <https://web.archive.org/web/20230420224018id_/https://www.cmegroup.com/trading-hours/files/memorial-day-2023.pdf> | archive capture 2023-04-20T22:40:18Z | T1 | `7657bc8089ca669cfd244c2e3e697b47a7e650f5d957efe5b32da001622acb35` |
+| `thanksgiving-day-2023.pdf @2023-12-03T20:59:29Z` | 2022-01-01 .. 2024-12-31 | <https://web.archive.org/web/20231203205929id_/https://www.cmegroup.com/trading-hours/files/thanksgiving-day-2023.pdf> | archive capture 2023-12-03T20:59:29Z | T1 | `99e187b3f3899e1062d662e148d5978e0cd075b961e6fc79550d4393812307e8` |
+| `CME-SVC-2023-01-15` | 2022-01-01 .. 2024-12-31 | <https://web.archive.org/web/20240708161438id_/https://www.cmegroup.com/services/trading-hours-by-product?id=316,133,425,300,58,437,22,8478,5201,10191&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2023-01-15&toEventDate=2023-01-17&isProtected&_t=1720455278636> | archive capture 2024-07-08T16:14:38Z | T2 | `507fd196a7654ddd916218b2aa24a146eeaca4e1f7cb7daded4e7a9c689cda82` |
+| `CME-SVC-2023-02-19` | 2022-01-01 .. 2024-12-31 | <https://web.archive.org/web/20240708161438id_/https://www.cmegroup.com/services/trading-hours-by-product?id=316,133,425,300,58,437,22,8478,5201,10191&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2023-02-19&toEventDate=2023-02-21&isProtected&_t=1720455278640> | archive capture 2024-07-08T16:14:38Z | T2 | `d063238a83e8cb84d4484a86b26cb1d976f1ccfdb91972eecc08dcc0cec49412` |
+| `CME-SVC-2023-04-06` | 2022-01-01 .. 2024-12-31 | <https://web.archive.org/web/20240708161438id_/https://www.cmegroup.com/services/trading-hours-by-product?id=316,133,425,300,58,437,22,8478,5201,10191&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2023-04-06&toEventDate=2023-04-08&isProtected&_t=1720455278642> | archive capture 2024-07-08T16:14:38Z | T2 | `0543d5f6d2efd4aa6f4132ce9f5425b9ba9f64de08eccd677b78d6b43c6e9d4f` |
+| `new-years-day-2024.pdf @2026-08-11T16:57:16Z` | 2022-01-01 .. 2024-12-31 | <https://web.archive.org/web/20260811165716id_/https://www.cmegroup.com/trading-hours/files/new-years-day-2024.pdf> | archive capture 2026-08-11T16:57:16Z | T1 | `34e60f8c97623df30e00f0ad8e4eeda20b99001b6c35d64f735828fecec5b9b8` |
+| `CME-SVC-2024-01-14` | 2022-01-01 .. 2024-12-31 | <https://web.archive.org/web/20240708161439id_/https://www.cmegroup.com/services/trading-hours-by-product?id=316,133,425,300,58,437,22,8478,5201,10191&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2024-01-14&toEventDate=2024-01-16&isProtected&_t=1720455278663> | archive capture 2024-07-08T16:14:39Z | T2 | `a8fe0f3eed4c67939d3add5fa656173bc4119c3765174b084c0622a1934e0d22` |
+| `CME-SVC-2024-02-18` | 2022-01-01 .. 2024-12-31 | <https://web.archive.org/web/20240708161439id_/https://www.cmegroup.com/services/trading-hours-by-product?id=316,133,425,300,58,437,22,8478,5201,10191&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2024-02-18&toEventDate=2024-02-20&isProtected&_t=1720455278669> | archive capture 2024-07-08T16:14:39Z | T2 | `af5ddb57cfa8bd6d377a0784fcdd33589e2055ede0a09b7fe4ae3e41d0d20f9a` |
+| `CME-SVC-2024-03-28` | 2022-01-01 .. 2024-12-31 | <https://web.archive.org/web/20240708161439id_/https://www.cmegroup.com/services/trading-hours-by-product?id=316,133,425,300,58,437,22,8478,5201,10191&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2024-03-28&toEventDate=2024-03-30&isProtected&_t=1720455278672> | archive capture 2024-07-08T16:14:39Z | T2 | `9b41709219e36f56296843fe589e362a7513e9a98132a682a1b956f2e40c593b` |
+| `CME-SVC-2024-05-26` | 2022-01-01 .. 2024-12-31 | <https://web.archive.org/web/20240708161439id_/https://www.cmegroup.com/services/trading-hours-by-product?id=316,133,425,300,58,437,22,8478,5201,10191&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2024-05-26&toEventDate=2024-05-28&isProtected&_t=1720455278675> | archive capture 2024-07-08T16:14:39Z | T2 | `ccff9685aac5670c5eb4a7e2b86cf1d78a5c2c08325cd03673ab8c1e6f560138` |
+| `CME-SVC-2024-06-18` | 2022-01-01 .. 2024-12-31 | <https://web.archive.org/web/20240708161439id_/https://www.cmegroup.com/services/trading-hours-by-product?id=316,133,425,300,58,437,22,8478,5201,10191&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2024-06-18&toEventDate=2024-06-20&isProtected&_t=1720455278677> | archive capture 2024-07-08T16:14:39Z | T2 | `57acecac3e1ad1a50dda8e3bcd6ca926b4d4c6c2ebc9d8324eb73332ed6a20ec` |
+| `CME-SVC-2024-07-03` | 2022-01-01 .. 2024-12-31 | <https://web.archive.org/web/20240708161439id_/https://www.cmegroup.com/services/trading-hours-by-product?id=316,133,425,300,58,437,22,8478,5201,10191&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2024-07-03&toEventDate=2024-07-05&isProtected&_t=1720455278680> | archive capture 2024-07-08T16:14:39Z | T2 | `6ef0e2b055c349249f5cc7ea7c98132a31111a01ce7af028e13584c0f82d4d38` |
+| `CME-SVC-2024-09-01` | 2022-01-01 .. 2024-12-31 | <https://web.archive.org/web/20240708161439id_/https://www.cmegroup.com/services/trading-hours-by-product?id=316,133,425,300,58,437,22,8478,5201,10191&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2024-09-01&toEventDate=2024-09-03&isProtected&_t=1720455278683> | archive capture 2024-07-08T16:14:39Z | T2 | `bbe6c78555cba0437fe4b9c6eac0063983ecae49056877db618ed2b29c109546` |
+| `CME-SVC-2024-11-27` | 2022-01-01 .. 2024-12-31 | <https://web.archive.org/web/20240708161439id_/https://www.cmegroup.com/services/trading-hours-by-product?id=316,133,425,300,58,437,22,8478,5201,10191&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2024-11-27&toEventDate=2024-11-29&isProtected&_t=1720455278685> | archive capture 2024-07-08T16:14:39Z | T2 | `f6a15f26991d25f8c6821fa6c967d0e76b2ad3f775bed62a2a001ec2fd7e389a` |
+| `CME-SVC-2024-12-24` | 2022-01-01 .. 2024-12-31 | <https://web.archive.org/web/20241220155340id_/https://www.cmegroup.com/services/trading-hours-by-product?id=316,133,425,300,58,437,22,8478,5201,10191&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2024-12-24&toEventDate=2024-12-26&isProtected&_t=1734710019537> | archive capture 2024-12-20T15:53:40Z | T2 | `183c85160e31d53fde30c422048b8e778937d8866f3ea1c45e2dd570ea9db1c8` |
+| `4th-of-july-2023.pdf @2023-06-27T12:50:57Z` | 2022-01-01 .. 2024-12-31 | <https://web.archive.org/web/20230627125057id_/https://www.cmegroup.com/trading-hours/files/4th-of-july-2023.pdf> | archive capture 2023-06-27T12:50:57Z | T1 | `ccbc1f1fc39ba2219fd748372faa985798fee7eaffabf69f08956f5465a769e3` |
 | `CME-SVC-2024-12-31` | 2024-12-31 .. 2025-01-02 | <https://web.archive.org/web/20241220155340id_/https://www.cmegroup.com/services/trading-hours-by-product?id=316,133,425,300,58,437,22,8478,5201,10191&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2024-12-31&toEventDate=2025-01-02> | archive capture 2024-12-20T15:53:40Z | T2 | `375c70eecd19c5c6204ecb408d1b3210a9da4c9a03b85ef1c7dbbcde1397ab63` |
 | `CME-SVC-2025-01-19` | 2025-01-19 .. 2025-01-21 | <https://web.archive.org/web/20241220155340id_/https://www.cmegroup.com/services/trading-hours-by-product?id=316,133,425,300,58,437,22,8478,5201,10191&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2025-01-19&toEventDate=2025-01-21> | archive capture 2024-12-20T15:53:40Z | T2 | `4f2ab56af14e7b3a6978e7fa6db8e2cfc63a82d06428cd88844f0e5bcf534f40` |
 | `CME-SVC-2025-02-16` | 2025-02-16 .. 2025-02-18 | <https://web.archive.org/web/20241220155340id_/https://www.cmegroup.com/services/trading-hours-by-product?id=316,133,425,300,58,437,22,8478,5201,10191&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2025-02-16&toEventDate=2025-02-18> | archive capture 2024-12-20T15:53:40Z | T2 | `5bec2ca6b4999a534e4d9818035aaa18ec8626b6c912cf7e3d2c57015536f2fa` |
@@ -120,19 +148,21 @@ are in the research store's `holidays/raw/` indexes.
 
 ## Holidays
 
-**Coverage:** 2010-01-01..2012-12-31, 2016-01-01..2018-12-31, 2025-01-01..2027-12-31 (inclusive venue-local trade dates).
-Tier: **T1** for 2010-2012 and 2016-2018, from the operator's own published
-holiday schedules; **T2** for 2025-2027, from its trading-hours service. Inside a
-window a date with no row is audited normal; outside every window this table has no
-answer at all.
+**Coverage:** 2010-01-01..2012-12-31, 2016-01-01..2018-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 (inclusive venue-local trade dates).
+Tier: **T1** for 2010-2012, 2016-2018 and the 2022-2024 rows taken from the
+operator's own published holiday schedules; **T2** for the three 2023 markers and
+eleven 2024 dates this table takes from its trading-hours service, and for
+2025-2027. Inside a window a date with no row is audited normal; outside every
+window this table has no answer at all.
 
-**Three audited eras, and two gaps between them.** The table declares three
-coverage windows: `2010-01-01..2012-12-31` and `2016-01-01..2018-12-31`, from the
-families' own published holiday schedules at **T1**, and `2025-01-01..2027-12-31`,
-from the trading-hours service at **T2**. The 2013-2015 and 2019-2024 intervals are
-audited by neither — those years are the remaining stage-2.2 waves — so they lie
-outside every declared window and `holiday_on` has **no answer** there rather than
-reporting an unaudited date as normal.
+**Four audited eras, and two gaps between them.** The table declares four coverage
+windows: `2010-01-01..2012-12-31`, `2016-01-01..2018-12-31` and
+`2022-01-01..2024-12-31`, from the families' own published holiday schedules at
+**T1** (with the 2023 markers and the 2024 service dates at **T2**), and
+`2025-01-01..2027-12-31`, from the trading-hours service at **T2**. The 2013-2015
+and 2019-2021 intervals are audited by neither — those years are the remaining
+stage-2.2 waves — so they lie outside every declared window and `holiday_on` has
+**no answer** there rather than reporting an unaudited date as normal.
 
 ### 2010
 
@@ -233,12 +263,77 @@ reporting an unaudited date as normal.
 | 2018-12-24 | early close | `12:45 CT` | `2018-holiday-calendars.zip#2018-christmas-holiday-schedule.xls @2026-08-30` | T1 | the intersection of the families routed to this venue |
 | 2018-12-25 | closed | `every routed family states a closure` | `2018-holiday-calendars.zip#2018-christmas-holiday-schedule.xls @2026-08-30` | T1 | the intersection of the families routed to this venue |
 
+### 2022-2024 (T1)
+
+**Counts in this subsection are the 2022-2024 era's.** The table as a whole
+carries 138 rows over its four audited windows: 33 in this era (7 stated closures,
+23 stated early closes and 3 `Unsourced` markers), 31 in 2016-2018, 36 in
+2025-2027 and 38 in 2010-2012. The derivation rule is the same in all four; only
+the documents differ.
+
+**The venue drops no date.** Metals and energy are one key and the operator prints
+them as one product row on every date this table audits, so its one routed family
+decides each date and the intersection is total. Twenty-three dates are early
+closes — nineteen at 13:30 CT (the Monday and Thursday holidays), 2022-11-25,
+2023-11-24 and 2024-12-24 at 12:45 CT, and 2024-11-29 at 13:45 CT — and seven are
+the full closures. Three are the family's own `Unsourced` markers, 2023-01-16,
+2023-02-20 and 2023-04-07: the wave retrieved no document for those 2023 sheets,
+so `globex_energy` states the crate's not-worked-up marker. The venue repeats the
+family's answer rather than inventing a row or claiming the dates were audited
+normal — the same treatment a disagreement gets, for the opposite reason: there is
+no second family to disagree with.
+
+### 2022
+| trade date | kind | instant as printed | document | tier | derived from |
+|---|---|---|---|---|---|
+| 2022-01-17 | early close | `13:30 CT` | `2022-mlk-day-holiday-schedule.xls @2022-01-17T21:22:30Z` | T1 | energy early close 13:30 CT |
+| 2022-02-21 | early close | `13:30 CT` | `2022-presidents-day-holiday-schedule.xls @2022-07-04T07:38:10Z` | T1 | energy early close 13:30 CT |
+| 2022-04-15 | closed | `every routed family states a closure` | `2022-good-friday-holiday-schedule.xls @2022-07-04T06:55:01Z` | T1 | the intersection of the families routed to this venue |
+| 2022-05-30 | early close | `13:30 CT` | `2022-memorial-day-holiday-schedule.xls @2022-07-04T06:54:38Z` | T1 | energy early close 13:30 CT |
+| 2022-06-20 | early close | `13:30 CT` | `2022-juneteenth-holiday-schedule.xls @2022-06-20T20:02:10Z` | T1 | energy early close 13:30 CT |
+| 2022-07-04 | early close | `13:30 CT` | `2022-independence-day-holiday-schedule.xls @2022-07-04T06:54:50Z` | T1 | energy early close 13:30 CT |
+| 2022-09-05 | early close | `13:30 CT` | `2022-labor-day-holiday-schedule.xls @2022-07-04T06:54:41Z` | T1 | energy early close 13:30 CT |
+| 2022-11-24 | early close | `13:30 CT` | `2022-thanksgiving-holiday-schedule.FINAL-20221122.xls @2022-11-22T06:08:01Z` | T1 | energy early close 13:30 CT |
+| 2022-11-25 | early close | `12:45 CT` | `2022-thanksgiving-holiday-schedule.FINAL-20221122.xls @2022-11-22T06:08:01Z` | T1 | energy early close 12:45 CT |
+| 2022-12-26 | closed | `every routed family states a closure` | `2022-christmas-holiday-schedule.xls @2022-07-04T06:54:30Z` | T1 | the intersection of the families routed to this venue |
+
+### 2023
+| trade date | kind | instant as printed | document | tier | derived from |
+|---|---|---|---|---|---|
+| 2023-01-02 | closed | `every routed family states a closure` | `2023-new-years-holiday-schedule.xls @2022-07-04T06:55:01Z` | T1 | the intersection of the families routed to this venue |
+| 2023-01-16 | unsourced | `—` | `CME-SVC-2023-01-15` | T2 | energy and metals states `Unsourced`: the wave retrieved no document for this date |
+| 2023-02-20 | unsourced | `—` | `CME-SVC-2023-02-19` | T2 | energy and metals states `Unsourced`: the wave retrieved no document for this date |
+| 2023-04-07 | unsourced | `—` | `CME-SVC-2023-04-06` | T2 | energy and metals states `Unsourced`: the wave retrieved no document for this date |
+| 2023-05-29 | early close | `13:30 CT` | `memorial-day-2023.pdf @2023-04-20T22:40:18Z` | T1 | energy early close 13:30 CT |
+| 2023-06-19 | early close | `13:30 CT` | `juneteenth-2023.pdf @2023-06-13T18:59:49Z` | T1 | energy early close 13:30 CT |
+| 2023-07-04 | early close | `13:30 CT` | `4th-of-july-2023.pdf @2023-06-27T12:50:57Z` | T1 | energy early close 13:30 CT |
+| 2023-09-04 | early close | `13:30 CT` | `labor-day-2023.pdf @2023-08-02T19:24:46Z` | T1 | energy early close 13:30 CT |
+| 2023-11-23 | early close | `13:30 CT` | `thanksgiving-day-2023.pdf @2023-12-03T20:59:29Z` | T1 | energy early close 13:30 CT |
+| 2023-11-24 | early close | `12:45 CT` | `thanksgiving-day-2023.pdf @2023-12-03T20:59:29Z` | T1 | energy early close 12:45 CT |
+| 2023-12-25 | closed | `every routed family states a closure` | `christmas-day-2023.pdf @2026-07-19T09:52:48Z` | T1 | the intersection of the families routed to this venue |
+
+### 2024
+| trade date | kind | instant as printed | document | tier | derived from |
+|---|---|---|---|---|---|
+| 2024-01-01 | closed | `every routed family states a closure` | `new-years-day-2024.pdf @2026-08-11T16:57:16Z` | T1 | the intersection of the families routed to this venue |
+| 2024-01-15 | early close | `13:30 CT` | `CME-SVC-2024-01-14` | T2 | energy early close 13:30 CT |
+| 2024-02-19 | early close | `13:30 CT` | `CME-SVC-2024-02-18` | T2 | energy early close 13:30 CT |
+| 2024-03-29 | closed | `every routed family states a closure` | `CME-SVC-2024-03-28` | T2 | the intersection of the families routed to this venue |
+| 2024-05-27 | early close | `13:30 CT` | `CME-SVC-2024-05-26` | T2 | energy early close 13:30 CT |
+| 2024-06-19 | early close | `13:30 CT` | `CME-SVC-2024-06-18` | T2 | energy early close 13:30 CT |
+| 2024-07-04 | early close | `13:30 CT` | `CME-SVC-2024-07-03` | T2 | energy early close 13:30 CT |
+| 2024-09-02 | early close | `13:30 CT` | `CME-SVC-2024-09-01` | T2 | energy early close 13:30 CT |
+| 2024-11-28 | early close | `13:30 CT` | `CME-SVC-2024-11-27` | T2 | energy early close 13:30 CT |
+| 2024-11-29 | early close | `13:45 CT` | `CME-SVC-2024-11-27` | T2 | energy early close 13:45 CT |
+| 2024-12-24 | early close | `12:45 CT` | `CME-SVC-2024-12-24` | T2 | energy early close 12:45 CT |
+| 2024-12-25 | closed | `every routed family states a closure` | `CME-SVC-2024-12-24` | T2 | the intersection of the families routed to this venue |
+
 ### 2025-2027 (T2)
 
 **Counts in this subsection are the 2025-2027 era's.** The table as a whole
-carries 105 rows over its three audited windows: 36 in this era, 31 in 2016-2018
-and 38 in 2010-2012. The intersection is total in all three eras, so nothing is
-withheld.
+carries 138 rows over its four audited windows: 36 in this era, 31 in 2016-2018,
+33 in 2022-2024 and 38 in 2010-2012. The intersection is total in all four eras,
+so nothing is withheld for a disagreement.
 
 **This table is derived, not retrieved, and the intersection is total.** It is the
 intersection of the families that route to `Exchange::Nymex` — which is one family,
@@ -325,11 +420,12 @@ rests on a document the family module does not carry.
   pre-holiday capture, and the Saturday sessions after the Friday holidays are gaps in
   `docs/evidence/globex_energy.md`; they are gaps here too, and that file is where
   their closing conditions live.
-- **The window is the family's window, not the venue's horizon.** Coverage starts
-  2025-01-01 because that is where the family's table starts. The 2010-2024 blocks land
-  in stage 2.2's waves, each of which extends this table over its own years; the
-  cross-wave agreement audit (#95) closes with the last of them, and it is what would
-  catch a future divergence between the two halves.
+- **The window is the family's window, not the venue's horizon.** This subsection
+  covers 2025-2027 because that is the era the trading-hours service reaches. The
+  2013-2015 and 2019-2021 blocks are the remaining stage-2.2 waves, each of which
+  extends this table over its own years; the cross-wave agreement audit (#95) closes
+  with the last of them, and it is what would catch a future divergence between the
+  two halves.
 - **2028-01-01 ships no row.** CME's service publishes a 2027-12-30 .. 2028-01-02
   window and the family's table ends at 2027-12-31, so the venue's window ends there
   too. Extending it is stage 2.4's refresh, not a gap in this change.

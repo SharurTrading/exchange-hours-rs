@@ -71,6 +71,49 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Added
 
+- **The served CME families' holiday tables now cover 2022-2024, and the four
+  CME venue calendars with them.** The same eight families gain **237 rows over
+  venue-local trade dates 2022-01-01 .. 2024-12-31** — `globex_equity_index` 35,
+  `globex_energy` 33, `globex_fx` 14, `globex_grains` 39,
+  `globex_interest_rates` 33, `globex_livestock` 33, `globex_cryptocurrency`
+  14 and `globex_nikkei_225_dollar` 36 — so every one of them declares a fourth
+  audited window and the 2019-2021 and 2013-2015 intervals are the only years
+  the tables do not answer for. The 2022 rows are **T1** from CME Group's own
+  per-asset-class holiday workbooks, the 2023 rows are **T1** where CME
+  published a holiday schedule for the date — the New Year workbook and the
+  one-pagers from Memorial Day onward — and the 2023 dates it published nothing
+  for, the 2024 New Year one-pager excepted, are **T2** from its
+  `trading-hours-by-product` service, read as bytes and saved.
+  Every family's `Holidays` cell now reads
+  **2010-01-01..2012-12-31, 2016-01-01..2018-12-31, 2022-01-01..2024-12-31,
+  2025-01-01..2027-12-31** (`globex_livestock` and `globex_cryptocurrency`
+  without the 2016-2018 window, `globex_nikkei_225_dollar` without
+  2010-2012).
+
+  What the era states, keyed to the crate's own trade date: a **full closure**
+  on the seven dates CME shut every routed family outright in those years —
+  2022-04-15, 2022-12-26, 2023-01-02, 2023-12-25, 2024-01-01, 2024-03-29 and
+  2024-12-25 — and on the whole run of Monday and Thursday holidays for
+  `globex_grains` and `globex_livestock`, which do not trade them at all; an
+  **early close** at the operator's printed halt instant — 12:00 CT on the
+  Monday and Thursday holidays, 12:15 CT on the Thanksgiving Fridays, 12:05 CT
+  for grains and livestock, 12:45 CT for energy and FX; **`globex_grains` alone
+  gains six late opens** on the trade dates whose prior-evening leg a closure
+  removed (2022-07-05, 2023-07-05, 2023-12-26, 2024-01-02, 2024-07-05,
+  2024-12-26) and three `LateOpenAndEarlyClose` rows on the days after
+  Thanksgiving, the 2016-2018 era's shapes; and **38 `Unsourced` rows**, which
+  clip nothing and answer nothing: the three 2023 dates the operator published
+  nothing this crate could read (2023-01-16, 2023-02-20, 2023-04-07, in every
+  family), thirteen 2024 dates for `globex_nikkei_225_dollar` whose service
+  window carries no Nikkei product, and 2022-05-30 for the same family, whose
+  sheet merges the outright and BTIC Nikkei lines under one printed 01:00 CT
+  close. `globex_nikkei_225_dollar` therefore states five closures rather than
+  seven: 2024-03-29 is one of the three dates its operator's window does not
+  cover. `dairy` and `lumber` rows, which have no crate key, fold into
+  `globex_grains` and `globex_livestock`; the four dates on which their own
+  printed instants differ are named in those two evidence files as divergences
+  of unmodelled product groups. The four venue tables extend over the era by
+  D17, the disagreements recorded as `Unsourced` in each venue's evidence file.
 - **A holiday table now declares one coverage window per audited era.**
   `HolidayCoverage` gains `windows()`, and `contains` asks it rather than a
   single span: the built-in tables are built one operator-era wave at a time,

@@ -672,11 +672,26 @@ fn all_key_calendars_match_dated_snapshots_over_two_years() {
         for &key in MarketHoursKey::ALL {
             let calendar = calendar_for_market_hours_key(key);
             let snapshot = exchange_hours::hours_for_market_hours_key(key, instant);
-            assert_eq!(
-                calendar.is_open(instant),
-                snapshot.is_open(instant),
-                "{key}"
-            );
+            // The fixed surface carries the identity's normal week and no
+            // holiday table, while the date-aware calendar applies the table.
+            // Inside an audited window the two may therefore disagree on the
+            // state in exactly one direction: the snapshot reports a market
+            // open that the table's row clips or deletes, never the reverse.
+            // Outside every audited window the table has no row for either
+            // surface to apply, so the two must agree exactly, and an inverted
+            // disagreement is a defect wherever it happens.
+            if calendar.is_open(instant) != snapshot.is_open(instant) {
+                let audited = calendar
+                    .holiday_coverage()
+                    .is_some_and(|coverage| coverage.contains(instant.date_naive()));
+                assert!(
+                    audited && !calendar.is_open(instant) && snapshot.is_open(instant),
+                    "{key} at {instant}: the date-aware calendar reports open={} where the \
+                     fixed snapshot reports open={}, outside any audited holiday window",
+                    calendar.is_open(instant),
+                    snapshot.is_open(instant)
+                );
+            }
             let calendar_bar = calendar.candle_end(instant, CalendarResolution::Daily);
             let snapshot_bar =
                 exchange_hours::candle_end(&snapshot, instant, CalendarResolution::Daily);
@@ -687,23 +702,52 @@ fn all_key_calendars_match_dated_snapshots_over_two_years() {
                 rough_rice_daily_bars_diverged = true;
                 continue;
             }
-            // Open/closed state agrees everywhere, but a daily bar can
-            // legitimately diverge inside a revision's shadow: the fixed
-            // snapshot projects its own era onto the containing-or-next trade
-            // date, while the calendar re-selects the product-family profile
-            // for every candidate opening day. That shadow is exactly where
-            // the snapshot taken at the bar's opening session differs from the
-            // snapshot taken at the instant, so require every disagreement to
-            // be explained that way and nothing else. The revisions themselves
-            // are fenced by each family's boundary tests.
+            // A daily bar can legitimately diverge for either of two
+            // structural reasons, and nothing else.
+            //
+            // **A revision's shadow.** The fixed snapshot projects its own era
+            // onto the containing-or-next trade date, while the calendar
+            // re-selects the product-family profile for every candidate opening
+            // day. That shadow is exactly where the snapshot taken at the bar's
+            // opening session differs from the snapshot taken at the instant,
+            // so a bar whose opening session resolves to a different profile is
+            // explained and any other disagreement is not. The revisions
+            // themselves are fenced by each family's boundary tests.
+            //
+            // **A holiday row.** The fixed snapshot is the identity's rule set
+            // and knows nothing of the table, so a bar that runs across a
+            // closure the table applies — the grains bar over Martin Luther
+            // King Jr. Day 2022, say — is the calendar's correct answer and the
+            // snapshot's stale one. The row must exist for a date the bar
+            // actually spans, so an unexplained divergence still fails.
             let bar_era = calendar
                 .session_bounds(instant)
                 .map(|(open, _)| exchange_hours::hours_for_market_hours_key(key, open));
-            assert_ne!(
-                bar_era.as_ref(),
-                Some(&snapshot),
+            let explained_by_revision = bar_era.as_ref() != Some(&snapshot);
+            let crossing_a_holiday = {
+                // From the instant's own local date to the day the bar ends: a
+                // closure sits *between* the opening session and the bar's
+                // close, so asking only about the opening session's own dates
+                // misses it. A bar with no bound cannot span a closure at all.
+                let Some(last) = calendar_bar.map(|close| close.date_naive()) else {
+                    continue;
+                };
+                let mut date = instant.date_naive();
+                let mut found = false;
+                while date <= last {
+                    if calendar.holiday_on(date).is_some() {
+                        found = true;
+                        break;
+                    }
+                    let Some(next) = date.succ_opt() else { break };
+                    date = next;
+                }
+                found
+            };
+            assert!(
+                crossing_a_holiday || explained_by_revision,
                 "{key} at {instant}: the calendar's daily bar {calendar_bar:?} disagrees with \
-                 the dated snapshot outside any revision shadow"
+                 the dated snapshot outside any revision or holiday shadow"
             );
         }
         instant += Duration::hours(1);

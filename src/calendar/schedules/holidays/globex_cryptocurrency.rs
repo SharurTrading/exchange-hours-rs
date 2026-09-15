@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT-0
 
-//! CME cryptocurrency holiday rows, venue-local trade dates 2025-01-01 to
-//! 2027-12-31 (LAW-HOLIDAY-SCOPE).
+//! CME cryptocurrency holiday rows, venue-local trade dates 2022-01-01 to
+//! 2024-12-31 and 2025-01-01 to 2027-12-31 (LAW-HOLIDAY-SCOPE).
 //!
 //! Every row is keyed by the crate's own America/Chicago trade date, never by
 //! CME's event date: the operator publishes a holiday as an event list on a
@@ -27,24 +27,72 @@
 //!   16:00 CT final close is either omitted or printed with the following
 //!   Monday's trade date.
 //!
-//! Quotations, capture times, the event-date-to-trade-date conversion and the
-//! declared gaps: `docs/evidence/globex_cryptocurrency.md`.
+//! **2022-2024.** The era sits inside the five-day 17:00-16:00 CT era, so each
+//! of its `Closed` rows deletes a complete trading day. Fourteen rows: seven
+//! closures, four early closes at 12:45 CT — on 2022-11-25, 2023-11-24,
+//! 2024-11-29 and 2024-12-24 — and three `Unsourced` rows. The 2022 rows
+//! and the 2023 rows CME published a holiday schedule for are **T1**; the
+//! three 2023 dates it published nothing for and all of 2024 are **T2**. The
+//! three `Unsourced` dates — 2023-01-16, 2023-02-20 and 2023-04-07 — mean the
+//! operator published nothing this crate could read, not that no holiday fell
+//! on them; an operator document stating each date in session language would
+//! close them.
+//!
+//! The 2025-2027 block is **T2**: CME's own trading-hours service, the channel
+//! the operator's trading-hours page calls to render its per-asset-class holiday
+//! table, read as bytes and saved. The quotations, capture times, the
+//! event-date-to-trade-date conversion and the declared gaps are in
+//! `docs/evidence/globex_cryptocurrency.md`.
 
 use super::fences::early_close;
-use super::{EvidenceTier::T2, HolidayKind, HolidayTable, holidays};
+use super::{
+    EvidenceTier::{T1, T2},
+    HolidayKind,
+    HolidayKind::{Closed, Unsourced},
+    HolidayTable, holidays,
+};
 
-/// The family's audited trade-date window and its rows.
+/// The family's built-in holiday rows and the windows they were audited over.
 ///
-/// Source: CME's own trading-hours service, the channel the operator's
-/// trading-hours page calls to render its per-asset-class holiday table, read
-/// as bytes and saved — T2 under LAW-PRIMARY-SOURCES. No T1 per-asset-class
-/// rendering exists for these years; that is a declared gap, not a reason to
-/// withhold the rows.
+/// Two audited eras: 2022-2024 at T1 and T2, and 2025-2027 at T2. The 2013-2021
+/// interval before them has no table at all, so `holiday_on` has no answer
+/// there rather than reporting a normal date. Coverage ends at 2027-12-31, the
+/// end of the operator's published future. Inside a window a date with no row
+/// is audited normal, except where an `Unsourced` row marks the operator's
+/// silence instead.
 // Evidence: docs/evidence/globex_cryptocurrency.md
 pub(crate) static TABLE: &HolidayTable = holidays! {
-    coverage: [(2025, 1, 1) ..= (2027, 12, 31)],
+    coverage: [(2022, 1, 1) ..= (2024, 12, 31), (2025, 1, 1) ..= (2027, 12, 31)],
     rows: [
-        // 2025-01-01 — T2 — CME-SVC-2024-12-31 — New Year's Day; only a 16:00 CT
+
+        // 2022-04-15 - T1 - 2022-good-friday-holiday-schedule.xls @2022-07-04T06:55:01Z - closed: no trade date.
+        (2022, 4, 15, Closed, T1, "2022-good-friday-holiday-schedule.xls @2022-07-04T06:55:01Z"),
+        // 2022-11-25 - T1 - 2022-thanksgiving-holiday-schedule.FINAL-20221122.xls @2022-11-22T06:08:01Z - early close 12:45 CT.
+        (2022, 11, 25, early_close(12 * 3_600 + 45 * 60), T1, "2022-thanksgiving-holiday-schedule.FINAL-20221122.xls @2022-11-22T06:08:01Z"),
+        // 2022-12-26 - T1 - 2022-christmas-holiday-schedule.xls @2022-07-04T06:54:30Z - closed: no trade date.
+        (2022, 12, 26, Closed, T1, "2022-christmas-holiday-schedule.xls @2022-07-04T06:54:30Z"),
+        // 2023-01-02 - T1 - 2023-new-years-holiday-schedule.xls @2022-07-04T06:55:01Z - closed: no trade date.
+        (2023, 1, 2, Closed, T1, "2023-new-years-holiday-schedule.xls @2022-07-04T06:55:01Z"),
+        // 2023-01-16 - T2 - CME-SVC-2023-01-15 - unsourced: no operator document covers this date.
+        (2023, 1, 16, Unsourced, T2, "CME-SVC-2023-01-15"),
+        // 2023-02-20 - T2 - CME-SVC-2023-02-19 - unsourced: no operator document covers this date.
+        (2023, 2, 20, Unsourced, T2, "CME-SVC-2023-02-19"),
+        // 2023-04-07 - T2 - CME-SVC-2023-04-06 - unsourced: no operator document covers this date.
+        (2023, 4, 7, Unsourced, T2, "CME-SVC-2023-04-06"),
+        // 2023-11-24 - T1 - thanksgiving-day-2023.pdf @2023-12-03T20:59:29Z - early close 12:45 CT.
+        (2023, 11, 24, early_close(12 * 3_600 + 45 * 60), T1, "thanksgiving-day-2023.pdf @2023-12-03T20:59:29Z"),
+        // 2023-12-25 - T1 - christmas-day-2023.pdf @2026-07-19T09:52:48Z - closed: no trade date.
+        (2023, 12, 25, Closed, T1, "christmas-day-2023.pdf @2026-07-19T09:52:48Z"),
+        // 2024-01-01 - T1 - new-years-day-2024.pdf @2026-08-11T16:57:16Z - closed: no trade date.
+        (2024, 1, 1, Closed, T1, "new-years-day-2024.pdf @2026-08-11T16:57:16Z"),
+        // 2024-03-29 - T2 - CME-SVC-2024-03-28 - closed: no trade date.
+        (2024, 3, 29, Closed, T2, "CME-SVC-2024-03-28"),
+        // 2024-11-29 - T2 - CME-SVC-2024-11-27 - early close 12:45 CT.
+        (2024, 11, 29, early_close(12 * 3_600 + 45 * 60), T2, "CME-SVC-2024-11-27"),
+        // 2024-12-24 - T2 - CME-SVC-2024-12-24 - early close 12:45 CT.
+        (2024, 12, 24, early_close(12 * 3_600 + 45 * 60), T2, "CME-SVC-2024-12-24"),
+        // 2024-12-25 - T2 - CME-SVC-2024-12-24 - closed: no trade date.
+        (2024, 12, 25, Closed, T2, "CME-SVC-2024-12-24"),        // 2025-01-01 — T2 — CME-SVC-2024-12-31 — New Year's Day; only a 16:00 CT
         // pre-open and a 17:00 CT open, both carrying trade date 2025-01-02.
         (2025, 1, 1, HolidayKind::Closed, T2, "CME-SVC-2024-12-31"),
         // 2025-04-18 — T2 — CME-SVC-2025-04-17 — Good Friday; no events published.

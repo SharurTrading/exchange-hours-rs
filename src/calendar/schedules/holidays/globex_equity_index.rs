@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: MIT-0
 
 //! `globex_equity_index` holiday rows, venue-local trade dates
-//! 2010-01-01 .. 2012-12-31, 2016-01-01 .. 2018-12-31 and
-//! 2025-01-01 .. 2027-12-31 (LAW-HOLIDAY-SCOPE).
+//! 2010-01-01 .. 2012-12-31, 2016-01-01 .. 2018-12-31,
+//! 2022-01-01 .. 2024-12-31 and 2025-01-01 .. 2027-12-31
+//! (LAW-HOLIDAY-SCOPE).
 //!
 //! **2010-2012.** CME published one holiday-calendar PDF per holiday
 //! (`2010-martin-luther-king.pdf` and its siblings), retrieved from the
@@ -34,6 +35,18 @@
 //! closures, twenty-four early closes — 12:00 CT on the nine Monday and
 //! Thursday holidays and 12:15 CT on the three Thanksgiving Fridays and three
 //! year-end half-days — and one late open.
+//!
+//! **2022-2024.** The grid is one wrapped `17:00 CT -> 16:00 CT` leg per trade
+//! date, the same shape the 2016-2018 era states, and its two conversions are
+//! the same. Thirty-five rows: seven closures, twenty-five early closes — 12:00
+//! CT on the nineteen Monday and Thursday holidays and 12:15 CT on 2022-11-25,
+//! 2023-07-03, 2023-11-24, 2024-07-03, 2024-11-29 and 2024-12-24 — no late open,
+//! and three `Unsourced` rows. The 2022 rows and the 2023 rows CME published a holiday
+//! schedule for are **T1**; the three 2023 dates it published nothing for and
+//! all of 2024 are **T2**. The three `Unsourced` dates — 2023-01-16,
+//! 2023-02-20 and 2023-04-07 — mean the operator published nothing this crate
+//! could read, not that no holiday fell on them; an operator document stating
+//! each date in session language would close them.
 //!
 //! **2025-2027.** The family's grid in this window is the one CME Globex
 //! notice 20210621 put in force on 2021-06-27: a trading day for venue-local
@@ -69,7 +82,7 @@
 //! between sources, and it is encoded as a late open at 15:30 CT.
 
 use super::EvidenceTier::{T1, T2};
-use super::HolidayKind::Closed;
+use super::HolidayKind::{Closed, Unsourced};
 use super::fences::{early_close, late_open};
 use super::{HolidayTable, holidays};
 
@@ -82,17 +95,18 @@ const QUARTER_PAST_EIGHT: u32 = 8 * 3_600 + 15 * 60;
 
 /// The family's built-in holiday rows and the windows they were audited over.
 ///
-/// Three audited eras: 2010-2012 at T1, 2016-2018 at T1 and 2025-2027 at T2.
-/// The 2013-2015 and 2019-2024 intervals between them are audited by no wave
-/// and lie outside every window, so `holiday_on` has no answer there rather
-/// than reporting a normal date. Coverage ends at the operator's published
-/// future: CME's trading-hours service answers through New Year 2028, and
-/// LAW-NO-FABRICATED-DATES permits encoding an unconditional, fully sourced
-/// future ahead of its effective day. Inside a window a date with no row was
-/// audited and found normal.
+/// Four audited eras: 2010-2012 at T1, 2016-2018 at T1, 2022-2024 at T1 and T2,
+/// and 2025-2027 at T2. The 2013-2015 and 2019-2021 intervals between them are
+/// audited by no wave and lie outside every window, so `holiday_on` has no
+/// answer there rather than reporting a normal date. Coverage ends at the
+/// operator's published future: CME's trading-hours service answers through New
+/// Year 2028, and LAW-NO-FABRICATED-DATES permits encoding an unconditional,
+/// fully sourced future ahead of its effective day. Inside a window a date with
+/// no row was audited and found normal, except where an `Unsourced` row marks
+/// the operator's silence instead.
 // Evidence: docs/evidence/globex_equity_index.md
 pub(crate) static TABLE: &HolidayTable = holidays! {
-    coverage: [(2010, 1, 1) ..= (2012, 12, 31), (2016, 1, 1) ..= (2018, 12, 31), (2025, 1, 1) ..= (2027, 12, 31)],
+    coverage: [(2010, 1, 1) ..= (2012, 12, 31), (2016, 1, 1) ..= (2018, 12, 31), (2022, 1, 1) ..= (2024, 12, 31), (2025, 1, 1) ..= (2027, 12, 31)],
     rows: [
         // 2010-01-01 - T1 - 2010-new-years.pdf - closed: new year's day 2010.
         (2010, 1, 1, Closed, T1, "2010-new-years.pdf @2010-02-15T05:16:52Z"),
@@ -202,6 +216,76 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2018, 12, 25, Closed, T1, "2018-holiday-calendars.zip#2018-christmas-holiday-schedule.xls @2026-08-30"),
         // 2018-12-26 - T1 - 2018-holiday-calendars.zip#2018-christmas-holiday-schedule.xls @2026-08-30 - late open 15:30 CT: no prior-evening leg.
         (2018, 12, 26, late_open(15 * 3_600 + 30 * 60), T1, "2018-holiday-calendars.zip#2018-christmas-holiday-schedule.xls @2026-08-30"),
+        // 2022-01-17 - T1 - 2022-mlk-day-holiday-schedule.xls @2022-01-17T21:22:30Z - early close 12:00 CT.
+        (2022, 1, 17, early_close(12 * 3_600), T1, "2022-mlk-day-holiday-schedule.xls @2022-01-17T21:22:30Z"),
+        // 2022-02-21 - T1 - 2022-presidents-day-holiday-schedule.xls @2022-07-04T07:38:10Z - early close 12:00 CT.
+        (2022, 2, 21, early_close(12 * 3_600), T1, "2022-presidents-day-holiday-schedule.xls @2022-07-04T07:38:10Z"),
+        // 2022-04-15 - T1 - 2022-good-friday-holiday-schedule.xls @2022-07-04T06:55:01Z - closed: no trade date.
+        (2022, 4, 15, Closed, T1, "2022-good-friday-holiday-schedule.xls @2022-07-04T06:55:01Z"),
+        // 2022-05-30 - T1 - 2022-memorial-day-holiday-schedule.xls @2022-07-04T06:54:38Z - early close 12:00 CT.
+        (2022, 5, 30, early_close(12 * 3_600), T1, "2022-memorial-day-holiday-schedule.xls @2022-07-04T06:54:38Z"),
+        // 2022-06-20 - T1 - 2022-juneteenth-holiday-schedule.xls @2022-06-20T20:02:10Z - early close 12:00 CT.
+        (2022, 6, 20, early_close(12 * 3_600), T1, "2022-juneteenth-holiday-schedule.xls @2022-06-20T20:02:10Z"),
+        // 2022-07-04 - T1 - 2022-independence-day-holiday-schedule.xls @2022-07-04T06:54:50Z - early close 12:00 CT.
+        (2022, 7, 4, early_close(12 * 3_600), T1, "2022-independence-day-holiday-schedule.xls @2022-07-04T06:54:50Z"),
+        // 2022-09-05 - T1 - 2022-labor-day-holiday-schedule.xls @2022-07-04T06:54:41Z - early close 12:00 CT.
+        (2022, 9, 5, early_close(12 * 3_600), T1, "2022-labor-day-holiday-schedule.xls @2022-07-04T06:54:41Z"),
+        // 2022-11-24 - T1 - 2022-thanksgiving-holiday-schedule.FINAL-20221122.xls @2022-11-22T06:08:01Z - early close 12:00 CT.
+        (2022, 11, 24, early_close(12 * 3_600), T1, "2022-thanksgiving-holiday-schedule.FINAL-20221122.xls @2022-11-22T06:08:01Z"),
+        // 2022-11-25 - T1 - 2022-thanksgiving-holiday-schedule.FINAL-20221122.xls @2022-11-22T06:08:01Z - early close 12:15 CT.
+        (2022, 11, 25, early_close(12 * 3_600 + 15 * 60), T1, "2022-thanksgiving-holiday-schedule.FINAL-20221122.xls @2022-11-22T06:08:01Z"),
+        // 2022-12-26 - T1 - 2022-christmas-holiday-schedule.xls @2022-07-04T06:54:30Z - closed: no trade date.
+        (2022, 12, 26, Closed, T1, "2022-christmas-holiday-schedule.xls @2022-07-04T06:54:30Z"),
+        // 2023-01-02 - T1 - 2023-new-years-holiday-schedule.xls @2022-07-04T06:55:01Z - closed: no trade date.
+        (2023, 1, 2, Closed, T1, "2023-new-years-holiday-schedule.xls @2022-07-04T06:55:01Z"),
+        // 2023-01-16 - T2 - CME-SVC-2023-01-15 - unsourced: no operator document covers this date.
+        (2023, 1, 16, Unsourced, T2, "CME-SVC-2023-01-15"),
+        // 2023-02-20 - T2 - CME-SVC-2023-02-19 - unsourced: no operator document covers this date.
+        (2023, 2, 20, Unsourced, T2, "CME-SVC-2023-02-19"),
+        // 2023-04-07 - T2 - CME-SVC-2023-04-06 - unsourced: no operator document covers this date.
+        (2023, 4, 7, Unsourced, T2, "CME-SVC-2023-04-06"),
+        // 2023-05-29 - T1 - memorial-day-2023.pdf @2023-04-20T22:40:18Z - early close 12:00 CT.
+        (2023, 5, 29, early_close(12 * 3_600), T1, "memorial-day-2023.pdf @2023-04-20T22:40:18Z"),
+        // 2023-06-19 - T1 - juneteenth-2023.pdf @2023-06-13T18:59:49Z - early close 12:00 CT.
+        (2023, 6, 19, early_close(12 * 3_600), T1, "juneteenth-2023.pdf @2023-06-13T18:59:49Z"),
+        // 2023-07-03 - T1 - 4th-of-july-2023.pdf @2023-06-27T12:50:57Z - early close 12:15 CT.
+        (2023, 7, 3, early_close(12 * 3_600 + 15 * 60), T1, "4th-of-july-2023.pdf @2023-06-27T12:50:57Z"),
+        // 2023-07-04 - T1 - 4th-of-july-2023.pdf @2023-06-27T12:50:57Z - early close 12:00 CT.
+        (2023, 7, 4, early_close(12 * 3_600), T1, "4th-of-july-2023.pdf @2023-06-27T12:50:57Z"),
+        // 2023-09-04 - T1 - labor-day-2023.pdf @2023-08-02T19:24:46Z - early close 12:00 CT.
+        (2023, 9, 4, early_close(12 * 3_600), T1, "labor-day-2023.pdf @2023-08-02T19:24:46Z"),
+        // 2023-11-23 - T1 - thanksgiving-day-2023.pdf @2023-12-03T20:59:29Z - early close 12:00 CT.
+        (2023, 11, 23, early_close(12 * 3_600), T1, "thanksgiving-day-2023.pdf @2023-12-03T20:59:29Z"),
+        // 2023-11-24 - T1 - thanksgiving-day-2023.pdf @2023-12-03T20:59:29Z - early close 12:15 CT.
+        (2023, 11, 24, early_close(12 * 3_600 + 15 * 60), T1, "thanksgiving-day-2023.pdf @2023-12-03T20:59:29Z"),
+        // 2023-12-25 - T1 - christmas-day-2023.pdf @2026-07-19T09:52:48Z - closed: no trade date.
+        (2023, 12, 25, Closed, T1, "christmas-day-2023.pdf @2026-07-19T09:52:48Z"),
+        // 2024-01-01 - T1 - new-years-day-2024.pdf @2026-08-11T16:57:16Z - closed: no trade date.
+        (2024, 1, 1, Closed, T1, "new-years-day-2024.pdf @2026-08-11T16:57:16Z"),
+        // 2024-01-15 - T2 - CME-SVC-2024-01-14 - early close 12:00 CT.
+        (2024, 1, 15, early_close(12 * 3_600), T2, "CME-SVC-2024-01-14"),
+        // 2024-02-19 - T2 - CME-SVC-2024-02-18 - early close 12:00 CT.
+        (2024, 2, 19, early_close(12 * 3_600), T2, "CME-SVC-2024-02-18"),
+        // 2024-03-29 - T2 - CME-SVC-2024-03-28 - closed: no trade date.
+        (2024, 3, 29, Closed, T2, "CME-SVC-2024-03-28"),
+        // 2024-05-27 - T2 - CME-SVC-2024-05-26 - early close 12:00 CT.
+        (2024, 5, 27, early_close(12 * 3_600), T2, "CME-SVC-2024-05-26"),
+        // 2024-06-19 - T2 - CME-SVC-2024-06-18 - early close 12:00 CT.
+        (2024, 6, 19, early_close(12 * 3_600), T2, "CME-SVC-2024-06-18"),
+        // 2024-07-03 - T2 - CME-SVC-2024-07-03 - early close 12:15 CT.
+        (2024, 7, 3, early_close(12 * 3_600 + 15 * 60), T2, "CME-SVC-2024-07-03"),
+        // 2024-07-04 - T2 - CME-SVC-2024-07-03 - early close 12:00 CT.
+        (2024, 7, 4, early_close(12 * 3_600), T2, "CME-SVC-2024-07-03"),
+        // 2024-09-02 - T2 - CME-SVC-2024-09-01 - early close 12:00 CT.
+        (2024, 9, 2, early_close(12 * 3_600), T2, "CME-SVC-2024-09-01"),
+        // 2024-11-28 - T2 - CME-SVC-2024-11-27 - early close 12:00 CT.
+        (2024, 11, 28, early_close(12 * 3_600), T2, "CME-SVC-2024-11-27"),
+        // 2024-11-29 - T2 - CME-SVC-2024-11-27 - early close 12:15 CT.
+        (2024, 11, 29, early_close(12 * 3_600 + 15 * 60), T2, "CME-SVC-2024-11-27"),
+        // 2024-12-24 - T2 - CME-SVC-2024-12-24 - early close 12:15 CT.
+        (2024, 12, 24, early_close(12 * 3_600 + 15 * 60), T2, "CME-SVC-2024-12-24"),
+        // 2024-12-25 - T2 - CME-SVC-2024-12-24 - closed: no trade date.
+        (2024, 12, 25, Closed, T2, "CME-SVC-2024-12-24"),
         (2025, 1, 1, Closed, T2, "CME-SVC-2024-12-31"),
         // 2025-01-20 — T2 — CME-SVC-2025-01-19 — Martin Luther King Jr. Day:
         // matching stops 12:00 CT, published as a preopen.

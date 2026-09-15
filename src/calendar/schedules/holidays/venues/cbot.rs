@@ -6,12 +6,13 @@
 //! it; a disagreement ships [`HolidayKind::Unsourced`], which clips nothing
 //! and tells the caller the date is special without inventing an instant.
 //!
-//! Coverage is three audited eras: 2010-2012, whose rows are T1 (CME's own
-//! holiday-calendar PDFs); 2016-2018, whose rows are the D17 intersection of
-//! the routed families' T1 rows from CME's own published Globex holiday
-//! schedules; and 2025-2027, whose rows are T2 (the trading-hours service). The
-//! 2013-2015 and 2019-2024 intervals between them are audited by no wave and
-//! lie outside every declared window.
+//! Coverage is four audited eras: 2010-2012, whose rows are T1 (CME's own
+//! holiday-calendar PDFs); 2016-2018 and 2022-2024, whose rows are the D17
+//! intersection of the routed families' T1 rows from CME's own published Globex
+//! holiday schedules, except for the three 2023 markers and the 2024 dates the
+//! trading-hours service answers; and 2025-2027, whose rows are T2 (that
+//! service). The 2013-2015 and 2019-2021 intervals between them are audited by
+//! no wave and lie outside every declared window.
 //!
 //! On the 2016-2018 era's thirty-six dates this table states nine `Closed`
 //! rows and withholds the other twenty-seven as [`HolidayKind::Unsourced`].
@@ -23,6 +24,18 @@
 //! hours, and 2016-12-23, 2017-07-03, 2017-12-22, 2018-07-03 and 2018-12-26,
 //! the agricultural half-days and the day after Christmas. Both routed families
 //! cover the era, so neither abstains.
+//!
+//! On the 2022-2024 era's **thirty-nine dates** this table states seven `Closed`
+//! rows and withholds the other thirty-two as [`HolidayKind::Unsourced`]. Four
+//! are the three Thanksgiving Fridays and 2024-12-24, where the grain day
+//! session closes at 12:05 CT and the rate leg at 12:15 CT; nineteen are the
+//! Monday and Thursday holidays, on which grains is shut while the rate leg
+//! halts at 12:00 CT; six are dates grains states a late open on and the rate
+//! leg audited normal (2022-07-05, 2023-07-05, 2023-12-26, 2024-01-02,
+//! 2024-07-05 and 2024-12-26); and three are 2023-01-16, 2023-02-20 and
+//! 2023-04-07, where both routed families state `Unsourced` — the wave did not
+//! work those dates up — so the venue ships the families' own marker rather
+//! than a dispute.
 //!
 //! The derivation, the instant disagreements and every dropped date are in the
 //! venue's own evidence file, and the per-family rows are in the family files.
@@ -41,17 +54,17 @@ use super::super::{
 /// The `Exchange::Cbot` table: `globex_grains` ∩ `globex_interest_rates`.
 ///
 /// The two families trade the same building around different sessions, and the
-/// day session is where they touch: every one of the nine full closures below
-/// keeps both closed, while a holiday early close moves the two by a different
-/// amount — the grain day session ends at 12:05 CT or 12:00 CT while the rate
-/// leg halts at 15:15, 12:00, 10:15 or 13:30 CT by date — so those dates ship
-/// `Unsourced`. 115 rows over three audited eras: twenty-four stated and 91
-/// `Unsourced` (33 in 2010-2012, 27 in 2016-2018, and 31 in 2025-2027), with
-/// the 2013-2015 and 2019-2024 intervals between the eras outside every
-/// declared window.
+/// day session is where they touch: every one of the thirty-one full closures
+/// below keeps both closed, while a holiday early close moves the two by a
+/// different amount — the grain day session ends at 12:05 CT or 12:00 CT while
+/// the rate leg halts at 15:15, 12:00, 10:15 or 13:30 CT by date — so those
+/// dates ship `Unsourced`. 154 rows over four audited eras: thirty-one stated
+/// and 123 `Unsourced` (33 in 2010-2012, 27 in 2016-2018, 32 in 2022-2024 and
+/// 31 in 2025-2027), with the 2013-2015 and 2019-2021 intervals between the
+/// eras outside every declared window.
 // Evidence: docs/evidence/cbot.md
 pub(crate) static CBOT: &HolidayTable = holidays! {
-    coverage: [(2010, 1, 1) ..= (2012, 12, 31), (2016, 1, 1) ..= (2018, 12, 31), (2025, 1, 1) ..= (2027, 12, 31)],
+    coverage: [(2010, 1, 1) ..= (2012, 12, 31), (2016, 1, 1) ..= (2018, 12, 31), (2022, 1, 1) ..= (2024, 12, 31), (2025, 1, 1) ..= (2027, 12, 31)],
     rows: [
         // 2010-01-01 - T1 - 2010-new-years.pdf - closed.
         (2010, 1, 1, Closed, T1, "2010-new-years.pdf @2010-02-15T05:16:52Z"),
@@ -203,6 +216,84 @@ pub(crate) static CBOT: &HolidayTable = holidays! {
         (2018, 12, 25, Closed, T1, "2018-holiday-calendars.zip#2018-christmas-holiday-schedule.xls @2026-08-30"),
         // 2018-12-26 - T1 - 2018-holiday-calendars.zip#2018-christmas-holiday-schedule.xls @2026-08-30 - disagreement: grains late open 08:30 CT; interest rates no row.
         (2018, 12, 26, Unsourced, T1, "2018-holiday-calendars.zip#2018-christmas-holiday-schedule.xls @2026-08-30"),
+        // 2022-01-17 - T1 - 2022-mlk-day-holiday-schedule.xls @2022-01-17T21:22:30Z - disagreement: grains closed; interest rates early close 12:00 CT.
+        (2022, 1, 17, Unsourced, T1, "2022-mlk-day-holiday-schedule.xls @2022-01-17T21:22:30Z"),
+        // 2022-02-21 - T1 - 2022-presidents-day-holiday-schedule.xls @2022-07-04T07:38:10Z - disagreement: grains closed; interest rates early close 12:00 CT.
+        (2022, 2, 21, Unsourced, T1, "2022-presidents-day-holiday-schedule.xls @2022-07-04T07:38:10Z"),
+        // 2022-04-15 - T1 - 2022-good-friday-holiday-schedule.xls @2022-07-04T06:55:01Z - closed: no trade date.
+        (2022, 4, 15, Closed, T1, "2022-good-friday-holiday-schedule.xls @2022-07-04T06:55:01Z"),
+        // 2022-05-30 - T1 - 2022-memorial-day-holiday-schedule.xls @2022-07-04T06:54:38Z - disagreement: grains closed; interest rates early close 12:00 CT.
+        (2022, 5, 30, Unsourced, T1, "2022-memorial-day-holiday-schedule.xls @2022-07-04T06:54:38Z"),
+        // 2022-06-20 - T1 - 2022-juneteenth-holiday-schedule.xls @2022-06-20T20:02:10Z - disagreement: grains closed; interest rates early close 12:00 CT.
+        (2022, 6, 20, Unsourced, T1, "2022-juneteenth-holiday-schedule.xls @2022-06-20T20:02:10Z"),
+        // 2022-07-04 - T1 - 2022-independence-day-holiday-schedule.xls @2022-07-04T06:54:50Z - disagreement: grains closed; interest rates early close 12:00 CT.
+        (2022, 7, 4, Unsourced, T1, "2022-independence-day-holiday-schedule.xls @2022-07-04T06:54:50Z"),
+        // 2022-07-05 - T1 - 2022-independence-day-holiday-schedule.xls @2022-07-04T06:54:50Z - disagreement: grains late open 08:30 CT; interest rates no row.
+        (2022, 7, 5, Unsourced, T1, "2022-independence-day-holiday-schedule.xls @2022-07-04T06:54:50Z"),
+        // 2022-09-05 - T1 - 2022-labor-day-holiday-schedule.xls @2022-07-04T06:54:41Z - disagreement: grains closed; interest rates early close 12:00 CT.
+        (2022, 9, 5, Unsourced, T1, "2022-labor-day-holiday-schedule.xls @2022-07-04T06:54:41Z"),
+        // 2022-11-24 - T1 - 2022-thanksgiving-holiday-schedule.FINAL-20221122.xls @2022-11-22T06:08:01Z - disagreement: grains closed; interest rates early close 12:00 CT.
+        (2022, 11, 24, Unsourced, T1, "2022-thanksgiving-holiday-schedule.FINAL-20221122.xls @2022-11-22T06:08:01Z"),
+        // 2022-11-25 - T1 - 2022-thanksgiving-holiday-schedule.FINAL-20221122.xls @2022-11-22T06:08:01Z - disagreement: grains late open 08:30 CT and early close 12:05 CT; interest rates early close 12:15 CT.
+        (2022, 11, 25, Unsourced, T1, "2022-thanksgiving-holiday-schedule.FINAL-20221122.xls @2022-11-22T06:08:01Z"),
+        // 2022-12-26 - T1 - 2022-christmas-holiday-schedule.xls @2022-07-04T06:54:30Z - closed: no trade date.
+        (2022, 12, 26, Closed, T1, "2022-christmas-holiday-schedule.xls @2022-07-04T06:54:30Z"),
+        // 2023-01-02 - T1 - 2023-new-years-holiday-schedule.xls @2022-07-04T06:55:01Z - closed: no trade date.
+        (2023, 1, 2, Closed, T1, "2023-new-years-holiday-schedule.xls @2022-07-04T06:55:01Z"),
+        // 2023-01-16 - T2 - CME-SVC-2023-01-15 - unsourced: the routed families state the date is not worked up.
+        (2023, 1, 16, Unsourced, T2, "CME-SVC-2023-01-15"),
+        // 2023-02-20 - T2 - CME-SVC-2023-02-19 - unsourced: the routed families state the date is not worked up.
+        (2023, 2, 20, Unsourced, T2, "CME-SVC-2023-02-19"),
+        // 2023-04-07 - T2 - CME-SVC-2023-04-06 - unsourced: the routed families state the date is not worked up.
+        (2023, 4, 7, Unsourced, T2, "CME-SVC-2023-04-06"),
+        // 2023-05-29 - T1 - memorial-day-2023.pdf @2023-04-20T22:40:18Z - disagreement: grains closed; interest rates early close 12:00 CT.
+        (2023, 5, 29, Unsourced, T1, "memorial-day-2023.pdf @2023-04-20T22:40:18Z"),
+        // 2023-06-19 - T1 - juneteenth-2023.pdf @2023-06-13T18:59:49Z - disagreement: grains closed; interest rates early close 12:00 CT.
+        (2023, 6, 19, Unsourced, T1, "juneteenth-2023.pdf @2023-06-13T18:59:49Z"),
+        // 2023-07-04 - T1 - 4th-of-july-2023.pdf @2023-06-27T12:50:57Z - disagreement: grains closed; interest rates early close 12:00 CT.
+        (2023, 7, 4, Unsourced, T1, "4th-of-july-2023.pdf @2023-06-27T12:50:57Z"),
+        // 2023-07-05 - T1 - 4th-of-july-2023.pdf @2023-06-27T12:50:57Z - disagreement: grains late open 08:30 CT; interest rates no row.
+        (2023, 7, 5, Unsourced, T1, "4th-of-july-2023.pdf @2023-06-27T12:50:57Z"),
+        // 2023-09-04 - T1 - labor-day-2023.pdf @2023-08-02T19:24:46Z - disagreement: grains closed; interest rates early close 12:00 CT.
+        (2023, 9, 4, Unsourced, T1, "labor-day-2023.pdf @2023-08-02T19:24:46Z"),
+        // 2023-11-23 - T1 - thanksgiving-day-2023.pdf @2023-12-03T20:59:29Z - disagreement: grains closed; interest rates early close 12:00 CT.
+        (2023, 11, 23, Unsourced, T1, "thanksgiving-day-2023.pdf @2023-12-03T20:59:29Z"),
+        // 2023-11-24 - T1 - thanksgiving-day-2023.pdf @2023-12-03T20:59:29Z - disagreement: grains late open 08:30 CT and early close 12:05 CT; interest rates early close 12:15 CT.
+        (2023, 11, 24, Unsourced, T1, "thanksgiving-day-2023.pdf @2023-12-03T20:59:29Z"),
+        // 2023-12-25 - T1 - christmas-day-2023.pdf @2026-07-19T09:52:48Z - closed: no trade date.
+        (2023, 12, 25, Closed, T1, "christmas-day-2023.pdf @2026-07-19T09:52:48Z"),
+        // 2023-12-26 - T1 - christmas-day-2023.pdf @2026-07-19T09:52:48Z - disagreement: grains late open 08:30 CT; interest rates no row.
+        (2023, 12, 26, Unsourced, T1, "christmas-day-2023.pdf @2026-07-19T09:52:48Z"),
+        // 2024-01-01 - T1 - new-years-day-2024.pdf @2026-08-11T16:57:16Z - closed: no trade date.
+        (2024, 1, 1, Closed, T1, "new-years-day-2024.pdf @2026-08-11T16:57:16Z"),
+        // 2024-01-02 - T1 - new-years-day-2024.pdf @2026-08-11T16:57:16Z - disagreement: grains late open 08:30 CT; interest rates no row.
+        (2024, 1, 2, Unsourced, T1, "new-years-day-2024.pdf @2026-08-11T16:57:16Z"),
+        // 2024-01-15 - T2 - CME-SVC-2024-01-14 - disagreement: grains closed; interest rates early close 12:00 CT.
+        (2024, 1, 15, Unsourced, T2, "CME-SVC-2024-01-14"),
+        // 2024-02-19 - T2 - CME-SVC-2024-02-18 - disagreement: grains closed; interest rates early close 12:00 CT.
+        (2024, 2, 19, Unsourced, T2, "CME-SVC-2024-02-18"),
+        // 2024-03-29 - T2 - CME-SVC-2024-03-28 - closed: no trade date.
+        (2024, 3, 29, Closed, T2, "CME-SVC-2024-03-28"),
+        // 2024-05-27 - T2 - CME-SVC-2024-05-26 - disagreement: grains closed; interest rates early close 12:00 CT.
+        (2024, 5, 27, Unsourced, T2, "CME-SVC-2024-05-26"),
+        // 2024-06-19 - T2 - CME-SVC-2024-06-18 - disagreement: grains closed; interest rates early close 12:00 CT.
+        (2024, 6, 19, Unsourced, T2, "CME-SVC-2024-06-18"),
+        // 2024-07-04 - T2 - CME-SVC-2024-07-03 - disagreement: grains closed; interest rates early close 12:00 CT.
+        (2024, 7, 4, Unsourced, T2, "CME-SVC-2024-07-03"),
+        // 2024-07-05 - T2 - CME-SVC-2024-07-03 - disagreement: grains late open 08:30 CT; interest rates no row.
+        (2024, 7, 5, Unsourced, T2, "CME-SVC-2024-07-03"),
+        // 2024-09-02 - T2 - CME-SVC-2024-09-01 - disagreement: grains closed; interest rates early close 12:00 CT.
+        (2024, 9, 2, Unsourced, T2, "CME-SVC-2024-09-01"),
+        // 2024-11-28 - T2 - CME-SVC-2024-11-27 - disagreement: grains closed; interest rates early close 12:00 CT.
+        (2024, 11, 28, Unsourced, T2, "CME-SVC-2024-11-27"),
+        // 2024-11-29 - T2 - CME-SVC-2024-11-27 - disagreement: grains late open 08:30 CT and early close 12:05 CT; interest rates early close 12:15 CT.
+        (2024, 11, 29, Unsourced, T2, "CME-SVC-2024-11-27"),
+        // 2024-12-24 - T2 - CME-SVC-2024-12-24 - disagreement: grains early close 12:05 CT; interest rates early close 12:15 CT.
+        (2024, 12, 24, Unsourced, T2, "CME-SVC-2024-12-24"),
+        // 2024-12-25 - T2 - CME-SVC-2024-12-24 - closed: no trade date.
+        (2024, 12, 25, Closed, T2, "CME-SVC-2024-12-24"),
+        // 2024-12-26 - T2 - CME-SVC-2024-12-24 - disagreement: grains late open 08:30 CT; interest rates no row.
+        (2024, 12, 26, Unsourced, T2, "CME-SVC-2024-12-24"),
         (2025, 1, 1, Closed, T2, "CME-SVC-2024-12-31"),
         // 2025-01-02 - T2 - CME-SVC-2024-12-31 - grains late open 08:30 CT;
         // no row in interest rates.

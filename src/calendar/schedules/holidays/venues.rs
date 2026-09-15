@@ -14,13 +14,15 @@
 //! Every row here is **derived, not retrieved**. The operator statements behind
 //! them are the documents the family tables already cite: CME Group's own
 //! holiday-calendar PDFs, at tier **T1** for the 2010-2012 rows; CME's own
-//! published Globex holiday schedules, at tier **T1** for the 2016-2018 rows,
-//! which are the design memo's D17 intersection of the routed families' T1 rows
-//! rather than a retrieval of their own; and its `trading-hours-by-product`
-//! service, at tier **T2** for the 2025-2027 ones. Nothing in this module rests
-//! on an artifact a family module does not already carry, and each venue
-//! declares the three eras as three coverage windows — the 2013-2015 and
-//! 2019-2024 intervals between them are audited by no wave and ship no row.
+//! published Globex holiday schedules, at tier **T1** for the 2016-2018 and
+//! 2022-2024 rows, which are the design memo's D17 intersection of the routed
+//! families' T1 rows rather than a retrieval of their own, except for the dates
+//! the trading-hours service answers (the three 2023 `Unsourced` markers every
+//! venue table carries, and the 2024 service dates, whose count differs by
+//! venue); and that service, at tier **T2** for the 2025-2027 ones. Nothing in
+//! this module rests on an artifact a family module does not already carry, and
+//! each venue declares the four eras as four coverage windows — the 2013-2015
+//! and 2019-2021 intervals between them are audited by no wave and ship no row.
 //! There is accordingly no venue evidence of its own to add: the four venue
 //! evidence files record the derivation, the routing, the intersection rule and
 //! every date the intersection drops.
@@ -54,6 +56,23 @@
 //! Metals and energy are one key and CME prints them as one product row, so the
 //! `globex_energy` rows carry through untouched.
 //!
+//! On the 2022-2024 era's **forty-one dates** the CME table states seven
+//! `Closed` rows — the same shape as 2016-2018 — and withholds the other
+//! thirty-four as [`HolidayKind::Unsourced`]; `comex` and `nymex` carry
+//! `globex_energy`'s thirty-three rows unchanged, three of which are that
+//! family's own `Unsourced` markers. A withheld date is not automatically a
+//! dispute: on three of them — 2023-01-16, 2023-02-20 and 2023-04-07 — every
+//! routed family states the same `Unsourced` marker, so the venue repeats their
+//! agreement. That leaves **CME thirty-one disputes**: nineteen Monday and
+//! Thursday holidays, four half-days (2022-11-25, 2023-11-24, 2024-11-29 and
+//! 2024-12-24), and eight dates on which one family states a row the others
+//! audited normal. **CBOT's twenty-nine** are the same nineteen Monday and
+//! Thursday holidays, the same four half-days, and the same six
+//! `globex_grains` half-days the rate leg audited normal; it does not see the
+//! two equity-only dates, because it routes `globex_interest_rates` rather than
+//! `globex_equity_index`. Each table withholds its own dispute count plus the
+//! same three agreed markers.
+//!
 //! # The routing
 //!
 //! The routing is a **decision recorded here, not a fact the crate can derive**.
@@ -65,7 +84,7 @@
 //!
 //! | Venue | Families | Why these |
 //! |---|---|---|
-//! | `cme` | `globex_equity_index`, `globex_energy`, `globex_fx`, `globex_grains`, `globex_interest_rates`, `globex_livestock` | the plan's six. `globex_nikkei_225_dollar` is left out because it agrees with `globex_equity_index` on every date the two now share — the same thirty-four rows in 2016-2018 and the same thirty-one in 2025-2027 — so it would change neither an answer nor a recorded disagreement; `globex_cryptocurrency` is left out because, although it shares all nine 2025-2027 closures, it states nothing on seventeen of the other dates and would therefore join seventeen more disagreements without moving an answer |
+//! | `cme` | `globex_equity_index`, `globex_energy`, `globex_fx`, `globex_grains`, `globex_interest_rates`, `globex_livestock` | the plan's six. The two CME families left out are `globex_nikkei_225_dollar` and `globex_cryptocurrency`; what each would cost is stated below |
 //! | `cbot` | `globex_grains`, `globex_interest_rates` | the two families whose sessions the venue profile is built from |
 //! | `comex` | `globex_energy`, metals half | the venue's documented scope |
 //! | `nymex` | `globex_energy`, energy half | the venue's documented scope |
@@ -78,13 +97,30 @@
 //! `the_energy_venues_carry_the_family_table_unchanged` holds each against the
 //! family's own answers.
 //!
+//! **What the two excluded families would cost is known, and the 2022-2024 era
+//! changed the answer.** `globex_nikkei_225_dollar` agrees with
+//! `globex_equity_index` row for row in 2016-2018 (the same thirty-four rows)
+//! and in 2025-2027 (the same thirty-seven), so routing it would have moved no
+//! answer in either era. In 2022-2024 it is **not** answer-neutral: its thirteen
+//! 2024 `Unsourced` rows — the wave did not retrieve the 2024 Nikkei channel —
+//! would turn the era's two service-answered closures, 2024-03-29 and
+//! 2024-12-25, into `Unsourced`, and would add a third on 2024-12-31, a date
+//! the six-family intersection audits normal. Those three dates therefore rest
+//! on the routing decision rather than on the intersection alone, and a
+//! re-routing that admitted Nikkei would have to state them differently.
+//! `globex_cryptocurrency` moves no answer in any era: it shares all nine
+//! 2025-2027 closures and its fourteen 2022-2024 rows change nothing, while it
+//! states nothing on seventeen of the other 2025-2027 dates and would join
+//! seventeen more disagreements without moving an answer.
+//!
 //! # Two kinds of row
 //!
 //! **Where every routed family states the same row**, the venue ships that row.
 //! In 2025-2027 that is the nine Globex full closures; in 2010-2012 it is the
-//! six that CME published for those years. On each, all six CME families, both
-//! CBOT families, or the single energy family behind COMEX/NYMEX agree to the
-//! status, and the venue is closed — in 2016-2018 that is nine dates. A routed
+//! six that CME published for those years; in 2016-2018 and 2022-2024 it is
+//! nine and seven dates. On each, all six CME families, both CBOT families, or
+//! the single energy family behind COMEX/NYMEX agree to the status, and the
+//! venue is closed. A routed
 //! family whose table does not cover an era **abstains** there: it has no
 //! answer, so it cannot make the families that do cover the era dispute one,
 //! and it neither supplies nor withholds a venue row. A family whose table does
@@ -101,7 +137,11 @@
 //! clips nothing, answers nothing, and tells the caller what the crate knows:
 //! the date is special and the venue has no one answer for it. ICE Futures
 //! U.S.'s venue table, which shipped first, is the precedent, and the
-//! disagreement behind each row is named in the venue's evidence file.
+//! disagreement behind each row is named in the venue's evidence file. The same
+//! marker ships where every routed family states `Unsourced` itself — the three
+//! 2023 dates of the 2022-2024 era — because that is agreement too: the
+//! families say the same thing, and the venue repeats their answer rather than
+//! inventing a row or claiming the date was audited normal.
 //!
 //! Evidence: [`docs/evidence/cme.md`](../../../../../docs/evidence/cme.md),
 //! [`cbot.md`](../../../../../docs/evidence/cbot.md),

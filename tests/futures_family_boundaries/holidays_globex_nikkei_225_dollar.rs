@@ -15,7 +15,7 @@
 //! `the_trade_date_follows_the_clipped_close`, `holiday_coverage_*` and
 //! `without_holidays_restores_the_normal_week`.
 
-use chrono::{Duration, NaiveDate, TimeZone as _, Utc};
+use chrono::{DateTime, Datelike as _, Days, Duration, NaiveDate, TimeZone as _, Utc, Weekday};
 use chrono_tz::US;
 use exchange_hours::{
     CalendarResolution, EvidenceTier, ExchangeCalendar, Holiday, HolidayKind, MarketHoursKey,
@@ -368,8 +368,8 @@ fn the_2025_rows_inferred_from_the_equity_index_line_clip_the_same_way() {
 ///
 /// Inside the window a date with no row is audited normal; outside it the
 /// crate has no holiday answer at all and serves the normal week. Christmas
-/// 2024 is the proof that the table does not silently extend below its first
-/// audited date.
+/// 2021 is the proof that the table does not silently extend into the
+/// 2019-2021 interval no wave audited.
 #[test]
 fn holiday_coverage_bounds_what_the_table_answers_for() {
     let nkd = nkd();
@@ -383,24 +383,37 @@ fn holiday_coverage_bounds_what_the_table_answers_for() {
     assert!(coverage.contains(day(2016, 1, 1)));
     assert!(!coverage.contains(day(2015, 12, 31)));
     assert!(!coverage.contains(day(2019, 1, 1)));
-    assert!(!coverage.contains(day(2024, 12, 31)));
+    // 2024-12-31 entered the table with the 2022-2024 wave, as an `Unsourced`
+    // statement: inside a window, so `contains` is true and the row is the
+    // family's own note that no document covered the date.
+    assert!(coverage.contains(day(2024, 12, 31)));
     assert!(!coverage.contains(day(2028, 1, 1)));
 
     assert!(nkd.holiday_on(day(2015, 12, 31)).is_none());
     assert!(nkd.holiday_on(day(2019, 1, 1)).is_none());
-    assert!(nkd.holiday_on(day(2024, 12, 31)).is_none());
+    assert_eq!(
+        kind_on(nkd, day(2024, 12, 31)),
+        Some(HolidayKind::Unsourced)
+    );
     assert!(nkd.holiday_on(day(2028, 1, 1)).is_none());
     assert!(
         nkd.holiday_on(day(2025, 1, 1)).is_some(),
         "the first audited date is inside the window"
     );
 
-    // Christmas 2024 is a Wednesday one week below the window. CME shut Globex
-    // that day too, but the table does not audit it, so the crate serves the
-    // normal week rather than guessing.
+    // Christmas 2021 is a Friday the operator shut, and it sits in the
+    // 2019-2021 interval no wave audited: the crate serves the normal week
+    // rather than guessing. (Christmas 2024, which this probe used before the
+    // 2022-2024 wave shipped, is now an `Unsourced` row inside the window; it
+    // clips nothing, so the normal week still answers there too.)
+    assert_eq!(nkd.holiday_on(day(2021, 12, 24)), None);
     assert!(
-        nkd.is_open(ct(2024, 12, 25, 10, 0, 0)),
+        nkd.is_open(ct(2021, 12, 24, 10, 0, 0)),
         "a holiday below the coverage window is not applied"
+    );
+    assert_eq!(
+        nkd.is_open(ct(2021, 12, 24, 10, 0, 0)),
+        nkd.without_holidays().is_open(ct(2021, 12, 24, 10, 0, 0))
     );
 }
 
@@ -669,4 +682,483 @@ fn wave2_window_edges_answer_as_declared() {
         calendar.is_open(ct(2015, 12, 25, 10, 0, 0)),
         bare.is_open(ct(2015, 12, 25, 10, 0, 0))
     );
+}
+
+// ---------------------------------------------------------------------------
+// The 2022-2024 rows.
+// ---------------------------------------------------------------------------
+
+/// 12:00 CT, the era's Monday and Thursday holiday close.
+const ERA_NOON: u32 = 12 * 3_600;
+/// 12:15 CT, the era's Independence Day eve, Thanksgiving Friday and Christmas
+/// Eve close.
+const ERA_QUARTER_PAST_NOON: u32 = 12 * 3_600 + 15 * 60;
+
+/// Every row the 2022-2024 window ships, in table order: the venue-local trade
+/// date, the kind with the instant the module's own `early_close(..)` payload
+/// carries, and the tier beside the row.
+///
+/// This is the era-wide instant fence: the sweep below walks the whole window
+/// and compares against this list row for row, so a dropped, added or moved
+/// row fails as loudly as a wrong instant. A sample would let a slipped close
+/// move unnoticed on the dates nobody probed. The seventeen `Unsourced` rows
+/// are the honest half of the wave: the T2 service answers for ten
+/// representative products and no Nikkei is among them.
+const ERA_ROWS: &[((i32, u32, u32), HolidayKind, EvidenceTier)] = &[
+    (
+        (2022, 1, 17),
+        HolidayKind::EarlyClose {
+            close_ssm: ERA_NOON,
+        },
+        EvidenceTier::T1,
+    ),
+    (
+        (2022, 2, 21),
+        HolidayKind::EarlyClose {
+            close_ssm: ERA_NOON,
+        },
+        EvidenceTier::T1,
+    ),
+    ((2022, 4, 15), HolidayKind::Closed, EvidenceTier::T1),
+    ((2022, 5, 30), HolidayKind::Unsourced, EvidenceTier::T1),
+    (
+        (2022, 6, 20),
+        HolidayKind::EarlyClose {
+            close_ssm: ERA_NOON,
+        },
+        EvidenceTier::T1,
+    ),
+    (
+        (2022, 7, 4),
+        HolidayKind::EarlyClose {
+            close_ssm: ERA_NOON,
+        },
+        EvidenceTier::T1,
+    ),
+    (
+        (2022, 9, 5),
+        HolidayKind::EarlyClose {
+            close_ssm: ERA_NOON,
+        },
+        EvidenceTier::T1,
+    ),
+    (
+        (2022, 11, 24),
+        HolidayKind::EarlyClose {
+            close_ssm: ERA_NOON,
+        },
+        EvidenceTier::T1,
+    ),
+    (
+        (2022, 11, 25),
+        HolidayKind::EarlyClose {
+            close_ssm: ERA_QUARTER_PAST_NOON,
+        },
+        EvidenceTier::T1,
+    ),
+    ((2022, 12, 26), HolidayKind::Closed, EvidenceTier::T1),
+    ((2023, 1, 2), HolidayKind::Closed, EvidenceTier::T1),
+    ((2023, 1, 16), HolidayKind::Unsourced, EvidenceTier::T2),
+    ((2023, 2, 20), HolidayKind::Unsourced, EvidenceTier::T2),
+    ((2023, 4, 7), HolidayKind::Unsourced, EvidenceTier::T2),
+    (
+        (2023, 5, 29),
+        HolidayKind::EarlyClose {
+            close_ssm: ERA_NOON,
+        },
+        EvidenceTier::T1,
+    ),
+    (
+        (2023, 6, 19),
+        HolidayKind::EarlyClose {
+            close_ssm: ERA_NOON,
+        },
+        EvidenceTier::T1,
+    ),
+    (
+        (2023, 7, 3),
+        HolidayKind::EarlyClose {
+            close_ssm: ERA_QUARTER_PAST_NOON,
+        },
+        EvidenceTier::T1,
+    ),
+    (
+        (2023, 7, 4),
+        HolidayKind::EarlyClose {
+            close_ssm: ERA_NOON,
+        },
+        EvidenceTier::T1,
+    ),
+    (
+        (2023, 9, 4),
+        HolidayKind::EarlyClose {
+            close_ssm: ERA_NOON,
+        },
+        EvidenceTier::T1,
+    ),
+    (
+        (2023, 11, 23),
+        HolidayKind::EarlyClose {
+            close_ssm: ERA_NOON,
+        },
+        EvidenceTier::T1,
+    ),
+    (
+        (2023, 11, 24),
+        HolidayKind::EarlyClose {
+            close_ssm: ERA_QUARTER_PAST_NOON,
+        },
+        EvidenceTier::T1,
+    ),
+    ((2023, 12, 25), HolidayKind::Closed, EvidenceTier::T1),
+    ((2024, 1, 1), HolidayKind::Closed, EvidenceTier::T1),
+    ((2024, 1, 15), HolidayKind::Unsourced, EvidenceTier::T2),
+    ((2024, 2, 19), HolidayKind::Unsourced, EvidenceTier::T2),
+    ((2024, 3, 29), HolidayKind::Unsourced, EvidenceTier::T2),
+    ((2024, 5, 27), HolidayKind::Unsourced, EvidenceTier::T2),
+    ((2024, 6, 19), HolidayKind::Unsourced, EvidenceTier::T2),
+    ((2024, 7, 3), HolidayKind::Unsourced, EvidenceTier::T2),
+    ((2024, 7, 4), HolidayKind::Unsourced, EvidenceTier::T2),
+    ((2024, 9, 2), HolidayKind::Unsourced, EvidenceTier::T2),
+    ((2024, 11, 28), HolidayKind::Unsourced, EvidenceTier::T2),
+    ((2024, 11, 29), HolidayKind::Unsourced, EvidenceTier::T2),
+    ((2024, 12, 24), HolidayKind::Unsourced, EvidenceTier::T2),
+    ((2024, 12, 25), HolidayKind::Unsourced, EvidenceTier::T2),
+    ((2024, 12, 31), HolidayKind::Unsourced, EvidenceTier::T2),
+];
+
+/// `ct` for a date the walk computed rather than spelled, so day arithmetic
+/// cannot drift out of step with a hand-written tuple.
+fn ct_on(date: NaiveDate, time: (u32, u32, u32)) -> DateTime<Utc> {
+    ct(
+        date.year(),
+        date.month(),
+        date.day(),
+        time.0,
+        time.1,
+        time.2,
+    )
+}
+
+fn day_before(date: NaiveDate) -> NaiveDate {
+    date.checked_sub_days(Days::new(1))
+        .expect("the era is far from the representable bound")
+}
+
+fn day_after(date: NaiveDate) -> NaiveDate {
+    date.checked_add_days(Days::new(1))
+        .expect("the era is far from the representable bound")
+}
+
+/// The ordinary 17:00 CT evening open that follows a closed trade date: this
+/// civil date's own leg when the week has one, otherwise the Sunday evening
+/// that opens the next week — the grid has no Friday-evening occurrence.
+fn era_reopen_after_closure(date: NaiveDate) -> DateTime<Utc> {
+    let reopen = if date.weekday() == Weekday::Fri {
+        date.checked_add_days(Days::new(2))
+            .expect("the era is far from the representable bound")
+    } else {
+        date
+    };
+    ct_on(reopen, (17, 0, 0))
+}
+
+/// The era-wide sweep: every shipped date's kind, instant and tier, with both
+/// sides of every moved boundary and the trading day's stated end.
+#[test]
+fn era_2022_2024_sweeps_every_row_kind_tier_and_instant() {
+    let calendar = nkd();
+    let mut index = 0_usize;
+    let (mut noons, mut quarter_past_noon) = (0_usize, 0);
+    let (mut closures, mut unsourced) = (0_usize, 0);
+    let mut date = day(2022, 1, 1);
+    while date <= day(2024, 12, 31) {
+        if let Some(row) = calendar.holiday_on(date) {
+            let (expected, kind, tier) = ERA_ROWS[index];
+            assert_eq!(
+                (date.year(), date.month(), date.day()),
+                expected,
+                "the era's rows must ship in order, with none added"
+            );
+            assert_eq!(row.kind(), kind, "{date}");
+            assert_eq!(row.tier(), tier, "{date}");
+            match kind {
+                HolidayKind::EarlyClose { close_ssm } => {
+                    match close_ssm {
+                        ERA_NOON => noons += 1,
+                        ERA_QUARTER_PAST_NOON => quarter_past_noon += 1,
+                        other => panic!("{date}: the era ships no {other} CT close"),
+                    }
+                    let cutoff = ct_on(
+                        date,
+                        (close_ssm / 3_600, (close_ssm % 3_600) / 60, close_ssm % 60),
+                    );
+                    // The wrap that opened this trade date is clipped, not
+                    // deleted, and it still carries the trade date.
+                    assert!(
+                        calendar.is_open(ct_on(day_before(date), (17, 0, 0))),
+                        "{date}"
+                    );
+                    assert!(
+                        calendar.is_open(ct_on(day_before(date), (19, 30, 0))),
+                        "{date}"
+                    );
+                    assert_eq!(
+                        calendar.trade_date(ct_on(day_before(date), (18, 0, 0))),
+                        Some(date),
+                        "{date}"
+                    );
+                    // One second before the close is open; at it, closed.
+                    assert!(calendar.is_open(cutoff - Duration::seconds(1)), "{date}");
+                    assert!(!calendar.is_open(cutoff), "{date}: end-exclusive");
+                    // The trading day's bounds end at the printed instant, and
+                    // so does the daily candle.
+                    assert_eq!(
+                        calendar.session_bounds(ct_on(date, (9, 0, 0))),
+                        Some((ct_on(day_before(date), (17, 0, 0)), cutoff)),
+                        "{date}"
+                    );
+                    assert_eq!(
+                        calendar.candle_end(ct_on(date, (9, 0, 0)), CalendarResolution::Daily),
+                        Some(cutoff),
+                        "{date}"
+                    );
+                    assert_eq!(
+                        calendar.trade_date(cutoff - Duration::seconds(1)),
+                        Some(date),
+                        "{date}"
+                    );
+                }
+                HolidayKind::Closed => closures += 1,
+                HolidayKind::Unsourced => unsourced += 1,
+                other => panic!("{date}: the era ships no {other:?}"),
+            }
+            index += 1;
+        }
+        date = date.succ_opt().expect("the era ends well before the bound");
+    }
+    assert_eq!(index, ERA_ROWS.len(), "every planned row ships");
+    assert_eq!(
+        (noons, quarter_past_noon, closures, unsourced),
+        (11, 3, 5, 17),
+        "the era's shape"
+    );
+}
+
+/// A closure deletes the trade date and the leg that opened it the previous
+/// evening, and whatever the crate offers next is the ordinary 17:00 CT
+/// evening open — named here so a shifted reopen fails.
+#[test]
+fn era_2022_2024_closures_remove_the_trading_day_and_the_prior_evening_wrap() {
+    let calendar = nkd();
+    let mut closures = 0_usize;
+    for (date, kind, _) in ERA_ROWS {
+        if *kind != HolidayKind::Closed {
+            continue;
+        }
+        closures += 1;
+        let date = day(date.0, date.1, date.2);
+        assert!(
+            calendar.is_closed_trade_date(date, SessionKind::Both),
+            "{date}"
+        );
+        // The evening leg that would have carried this trade date is gone.
+        assert!(
+            !calendar.is_open(ct_on(day_before(date), (17, 0, 0))),
+            "{date}"
+        );
+        assert!(
+            !calendar.is_open(ct_on(day_before(date), (19, 30, 0))),
+            "{date}"
+        );
+        // And so is the trade date's own civil day.
+        assert!(!calendar.is_open(ct_on(date, (9, 0, 0))), "{date}");
+        assert!(!calendar.is_open(ct_on(date, (15, 59, 0))), "{date}");
+        assert_eq!(calendar.trade_date(ct_on(date, (10, 0, 0))), None, "{date}");
+
+        let reopen = era_reopen_after_closure(date);
+        assert_eq!(
+            calendar.next_session_open_after(ct_on(date, (10, 0, 0))),
+            Some(reopen),
+            "{date}: the next session is the ordinary evening open"
+        );
+        if reopen == ct_on(date, (17, 0, 0)) {
+            assert_eq!(calendar.trade_date(reopen), Some(day_after(date)), "{date}");
+        }
+    }
+    assert_eq!(closures, 5, "the era's closures");
+}
+
+/// Every query about an `Unsourced` date answers exactly as the detached
+/// calendar does: the row states that the date was audited, makes no
+/// scheduling claim, and clips nothing.
+///
+/// One exception is structural rather than a clip: a query that looks *past*
+/// the date — `next_session_open_after`, and a probe inside the evening leg
+/// that opens the next trade date — is answered by the **next** date's row. On
+/// 2024-12-31 that successor is 2025-01-01, a real closure in the 2025-2027
+/// window, so those two answers differ from the detached calendar for a reason
+/// that has nothing to do with this date's `Unsourced` statement. They are
+/// compared only where the successor carries no such row.
+fn assert_unsourced_changes_nothing(date: NaiveDate, row: Holiday, tier: EvidenceTier) {
+    let calendar = nkd();
+    let detached = calendar.without_holidays();
+    assert_eq!(row.kind(), HolidayKind::Unsourced, "{date}");
+    assert_eq!(row.tier(), tier, "{date}");
+    assert!(
+        !calendar.is_closed_trade_date(date, SessionKind::Both),
+        "{date} must not be reported closed"
+    );
+
+    let successor_clips = calendar
+        .holiday_on(day_after(date))
+        .is_some_and(|next| next.kind() != HolidayKind::Unsourced);
+    let mut probes = vec![
+        ct_on(day_before(date), (18, 0, 0)),
+        ct_on(date, (9, 0, 0)),
+        ct_on(date, (15, 59, 0)),
+    ];
+    if !successor_clips {
+        probes.push(ct_on(date, (18, 0, 0)));
+    }
+
+    for probe in probes {
+        assert_eq!(calendar.is_open(probe), detached.is_open(probe), "{probe}");
+        assert_eq!(
+            calendar.trade_date(probe),
+            detached.trade_date(probe),
+            "{probe}"
+        );
+        assert_eq!(
+            calendar.session_bounds(probe),
+            detached.session_bounds(probe),
+            "{probe}"
+        );
+        assert_eq!(
+            calendar.candle_end(probe, CalendarResolution::Daily),
+            detached.candle_end(probe, CalendarResolution::Daily),
+            "{probe}"
+        );
+        if !successor_clips {
+            assert_eq!(
+                calendar.next_session_open_after(probe),
+                detached.next_session_open_after(probe),
+                "{probe}"
+            );
+        }
+    }
+
+    if successor_clips {
+        // The difference the guard skips is the successor's, and it is exactly
+        // the successor's row: with that one date detached too, the answers
+        // agree again — here asserted through the successor's own closure.
+        let next = day_after(date);
+        assert!(
+            calendar.is_closed_trade_date(next, SessionKind::Both),
+            "{next} must be the row that moves the forward-looking answer"
+        );
+        assert!(
+            !calendar.is_open(ct_on(date, (18, 0, 0))),
+            "{date}: the evening leg into the closed successor is gone"
+        );
+        assert!(detached.is_open(ct_on(date, (18, 0, 0))));
+    }
+}
+
+/// All seventeen `Unsourced` dates, not a sample: the identity's answers are
+/// exactly the detached calendar's on each of them.
+#[test]
+fn era_2022_2024_unsourced_rows_change_no_answer() {
+    let calendar = nkd();
+    let mut checked = 0_usize;
+    for (date, kind, tier) in ERA_ROWS {
+        if *kind == HolidayKind::Unsourced {
+            let date = day(date.0, date.1, date.2);
+            let row = calendar
+                .holiday_on(date)
+                .unwrap_or_else(|| panic!("{date} ships a row"));
+            assert_unsourced_changes_nothing(date, row, *tier);
+            checked += 1;
+        }
+    }
+    assert_eq!(checked, 17, "every unsourced row is fenced");
+}
+
+/// The 2022-05-30 merged `Nikkei & BTIC` line and one 2024 T2 window: both
+/// ship `Unsourced` with the document that failed to state the outright
+/// Nikkei's own instant, and neither moves an answer.
+#[test]
+fn era_2022_2024_unsourced_rows_cite_the_document_that_withheld_the_instant() {
+    let calendar = nkd();
+
+    let merged = calendar
+        .holiday_on(day(2022, 5, 30))
+        .expect("2022-05-30 ships a row");
+    assert_eq!(merged.kind(), HolidayKind::Unsourced);
+    assert_eq!(merged.tier(), EvidenceTier::T1);
+    assert_eq!(
+        merged.document_id(),
+        "2022-memorial-day-holiday-schedule.xls @2022-07-04T06:54:38Z"
+    );
+    // The sheet prints the merged line's BTIC-style 01:00 CT Friday close; the
+    // outright Nikkei's own close is not stated, so no early close ships and
+    // the ordinary Monday answers instead.
+    assert!(calendar.is_open(ct(2022, 5, 30, 10, 0, 0)));
+    assert_eq!(
+        calendar.is_open(ct(2022, 5, 30, 10, 0, 0)),
+        calendar
+            .without_holidays()
+            .is_open(ct(2022, 5, 30, 10, 0, 0))
+    );
+
+    let service = calendar
+        .holiday_on(day(2024, 7, 3))
+        .expect("2024-07-03 ships a row");
+    assert_eq!(service.kind(), HolidayKind::Unsourced);
+    assert_eq!(service.tier(), EvidenceTier::T2);
+    assert_eq!(service.document_id(), "CME-SVC-2024-07-03");
+    assert!(calendar.is_open(ct(2024, 7, 3, 15, 59, 0)));
+}
+
+/// The new window sits second in the declared coverage, its edges answer, and
+/// the 2019-2021 interval between it and the 2016-2018 wave stays unaudited.
+#[test]
+fn era_2022_2024_window_sits_second_and_the_2019_2021_interval_is_unaudited() {
+    let calendar = nkd();
+    let bare = calendar.without_holidays();
+    let coverage = calendar
+        .holiday_coverage()
+        .expect("the family ships a table");
+
+    assert_eq!(
+        coverage.windows(),
+        vec![
+            (day(2016, 1, 1), day(2018, 12, 31)),
+            (day(2022, 1, 1), day(2024, 12, 31)),
+            (day(2025, 1, 1), day(2027, 12, 31)),
+        ]
+    );
+    assert!(coverage.contains(day(2022, 1, 1)));
+    assert!(coverage.contains(day(2024, 12, 31)));
+    assert!(!coverage.contains(day(2021, 12, 31)));
+    assert_eq!(calendar.holiday_on(day(2022, 1, 1)), None);
+    assert_eq!(
+        kind_on(calendar, day(2024, 12, 31)),
+        Some(HolidayKind::Unsourced)
+    );
+
+    for date in [(2019, 1, 1), (2020, 12, 25), (2021, 7, 5)] {
+        assert!(!coverage.contains(day(date.0, date.1, date.2)), "{date:?}");
+        assert_eq!(
+            calendar.holiday_on(day(date.0, date.1, date.2)),
+            None,
+            "{date:?}"
+        );
+    }
+    // Christmas 2020 is a real CME closure no wave audited; the ordinary
+    // Friday answers, and the detached calendar answers it the same.
+    for probe in [ct(2020, 12, 25, 10, 0, 0), ct(2020, 12, 24, 18, 0, 0)] {
+        assert!(calendar.is_open(probe), "{probe}");
+        assert_eq!(calendar.is_open(probe), bare.is_open(probe), "{probe}");
+    }
 }

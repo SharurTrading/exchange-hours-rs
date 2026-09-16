@@ -6,11 +6,13 @@
 //! it; a disagreement ships [`HolidayKind::Unsourced`], which clips nothing
 //! and tells the caller the date is special without inventing an instant.
 //!
-//! Coverage is three audited eras: 2010-2012, whose rows are T1 (CME's own
-//! holiday-calendar PDFs); 2016-2018, whose rows are `globex_energy`'s, at T1
-//! from CME's own published Globex holiday schedules; and 2025-2027, whose rows
-//! are T2 (the trading-hours service). The 2013-2015 and 2019-2024 intervals
-//! between them are audited by no wave and lie outside every declared window.
+//! Coverage is four audited eras: 2010-2012, whose rows are T1 (CME's own
+//! holiday-calendar PDFs); 2016-2018 and 2022-2024, whose rows are
+//! `globex_energy`'s, at T1 from CME's own published Globex holiday schedules
+//! except for the three 2023 markers and the 2024 dates the trading-hours
+//! service answers; and 2025-2027, whose rows are T2 (that service). The
+//! 2013-2015 and 2019-2021 intervals between them are audited by no wave and
+//! lie outside every declared window.
 //! The derivation, the instant disagreements and every dropped date are in the
 //! venue's own evidence file, and the per-family rows are in the family files.
 //!
@@ -21,6 +23,7 @@
 use super::super::{
     EvidenceTier::{T1, T2},
     HolidayKind::Closed,
+    HolidayKind::Unsourced,
     HolidayTable,
     fences::early_close,
     holidays,
@@ -30,13 +33,15 @@ use super::super::{
 ///
 /// Metals and energy are one key and the operator prints them as one product
 /// row on every date the table audits, so the intersection is total: the venue
-/// carries the family's 105 rows unchanged — 38 from 2010-2012, 31 from
-/// 2016-2018 and 36 from 2025-2027 — and withholds no date. The 2013-2015 and
-/// 2019-2024 intervals between the eras are outside every declared window and
-/// ship no row.
+/// carries the family's 138 rows unchanged — 38 from 2010-2012, 31 from
+/// 2016-2018, 33 from 2022-2024 and 36 from 2025-2027 — and drops no date. On
+/// the 2022-2024 era's three 2023 dates the family itself states `Unsourced`,
+/// and the venue carries that marker because the family says so, not because
+/// anything disputes it. The 2013-2015 and 2019-2021 intervals between the eras
+/// are outside every declared window and ship no row.
 // Evidence: docs/evidence/comex.md
 pub(crate) static COMEX: &HolidayTable = holidays! {
-    coverage: [(2010, 1, 1) ..= (2012, 12, 31), (2016, 1, 1) ..= (2018, 12, 31), (2025, 1, 1) ..= (2027, 12, 31)],
+    coverage: [(2010, 1, 1) ..= (2012, 12, 31), (2016, 1, 1) ..= (2018, 12, 31), (2022, 1, 1) ..= (2024, 12, 31), (2025, 1, 1) ..= (2027, 12, 31)],
     rows: [
         // 2010-01-01 - T1 - 2010-new-years.pdf - closed.
         (2010, 1, 1, Closed, T1, "2010-new-years.pdf @2010-02-15T05:16:52Z"),
@@ -176,6 +181,72 @@ pub(crate) static COMEX: &HolidayTable = holidays! {
         (2018, 12, 24, early_close(12 * 3_600 + 45 * 60), T1, "2018-holiday-calendars.zip#2018-christmas-holiday-schedule.xls @2026-08-30"),
         // 2018-12-25 - T1 - 2018-holiday-calendars.zip#2018-christmas-holiday-schedule.xls @2026-08-30 - closed: no trade date.
         (2018, 12, 25, Closed, T1, "2018-holiday-calendars.zip#2018-christmas-holiday-schedule.xls @2026-08-30"),
+        // 2022-01-17 - T1 - 2022-mlk-day-holiday-schedule.xls @2022-01-17T21:22:30Z - metals early close 13:30 CT.
+        (2022, 1, 17, early_close(13 * 3_600 + 30 * 60), T1, "2022-mlk-day-holiday-schedule.xls @2022-01-17T21:22:30Z"),
+        // 2022-02-21 - T1 - 2022-presidents-day-holiday-schedule.xls @2022-07-04T07:38:10Z - metals early close 13:30 CT.
+        (2022, 2, 21, early_close(13 * 3_600 + 30 * 60), T1, "2022-presidents-day-holiday-schedule.xls @2022-07-04T07:38:10Z"),
+        // 2022-04-15 - T1 - 2022-good-friday-holiday-schedule.xls @2022-07-04T06:55:01Z - closed: metals closed.
+        (2022, 4, 15, Closed, T1, "2022-good-friday-holiday-schedule.xls @2022-07-04T06:55:01Z"),
+        // 2022-05-30 - T1 - 2022-memorial-day-holiday-schedule.xls @2022-07-04T06:54:38Z - metals early close 13:30 CT.
+        (2022, 5, 30, early_close(13 * 3_600 + 30 * 60), T1, "2022-memorial-day-holiday-schedule.xls @2022-07-04T06:54:38Z"),
+        // 2022-06-20 - T1 - 2022-juneteenth-holiday-schedule.xls @2022-06-20T20:02:10Z - metals early close 13:30 CT.
+        (2022, 6, 20, early_close(13 * 3_600 + 30 * 60), T1, "2022-juneteenth-holiday-schedule.xls @2022-06-20T20:02:10Z"),
+        // 2022-07-04 - T1 - 2022-independence-day-holiday-schedule.xls @2022-07-04T06:54:50Z - metals early close 13:30 CT.
+        (2022, 7, 4, early_close(13 * 3_600 + 30 * 60), T1, "2022-independence-day-holiday-schedule.xls @2022-07-04T06:54:50Z"),
+        // 2022-09-05 - T1 - 2022-labor-day-holiday-schedule.xls @2022-07-04T06:54:41Z - metals early close 13:30 CT.
+        (2022, 9, 5, early_close(13 * 3_600 + 30 * 60), T1, "2022-labor-day-holiday-schedule.xls @2022-07-04T06:54:41Z"),
+        // 2022-11-24 - T1 - 2022-thanksgiving-holiday-schedule.FINAL-20221122.xls @2022-11-22T06:08:01Z - metals early close 13:30 CT.
+        (2022, 11, 24, early_close(13 * 3_600 + 30 * 60), T1, "2022-thanksgiving-holiday-schedule.FINAL-20221122.xls @2022-11-22T06:08:01Z"),
+        // 2022-11-25 - T1 - 2022-thanksgiving-holiday-schedule.FINAL-20221122.xls @2022-11-22T06:08:01Z - metals early close 12:45 CT.
+        (2022, 11, 25, early_close(12 * 3_600 + 45 * 60), T1, "2022-thanksgiving-holiday-schedule.FINAL-20221122.xls @2022-11-22T06:08:01Z"),
+        // 2022-12-26 - T1 - 2022-christmas-holiday-schedule.xls @2022-07-04T06:54:30Z - closed: metals closed.
+        (2022, 12, 26, Closed, T1, "2022-christmas-holiday-schedule.xls @2022-07-04T06:54:30Z"),
+        // 2023-01-02 - T1 - 2023-new-years-holiday-schedule.xls @2022-07-04T06:55:01Z - closed: metals closed.
+        (2023, 1, 2, Closed, T1, "2023-new-years-holiday-schedule.xls @2022-07-04T06:55:01Z"),
+        // 2023-01-16 - T2 - CME-SVC-2023-01-15 - unsourced: the routed families state the date is not worked up.
+        (2023, 1, 16, Unsourced, T2, "CME-SVC-2023-01-15"),
+        // 2023-02-20 - T2 - CME-SVC-2023-02-19 - unsourced: the routed families state the date is not worked up.
+        (2023, 2, 20, Unsourced, T2, "CME-SVC-2023-02-19"),
+        // 2023-04-07 - T2 - CME-SVC-2023-04-06 - unsourced: the routed families state the date is not worked up.
+        (2023, 4, 7, Unsourced, T2, "CME-SVC-2023-04-06"),
+        // 2023-05-29 - T1 - memorial-day-2023.pdf @2023-04-20T22:40:18Z - metals early close 13:30 CT.
+        (2023, 5, 29, early_close(13 * 3_600 + 30 * 60), T1, "memorial-day-2023.pdf @2023-04-20T22:40:18Z"),
+        // 2023-06-19 - T1 - juneteenth-2023.pdf @2023-06-13T18:59:49Z - metals early close 13:30 CT.
+        (2023, 6, 19, early_close(13 * 3_600 + 30 * 60), T1, "juneteenth-2023.pdf @2023-06-13T18:59:49Z"),
+        // 2023-07-04 - T1 - 4th-of-july-2023.pdf @2023-06-27T12:50:57Z - metals early close 13:30 CT.
+        (2023, 7, 4, early_close(13 * 3_600 + 30 * 60), T1, "4th-of-july-2023.pdf @2023-06-27T12:50:57Z"),
+        // 2023-09-04 - T1 - labor-day-2023.pdf @2023-08-02T19:24:46Z - metals early close 13:30 CT.
+        (2023, 9, 4, early_close(13 * 3_600 + 30 * 60), T1, "labor-day-2023.pdf @2023-08-02T19:24:46Z"),
+        // 2023-11-23 - T1 - thanksgiving-day-2023.pdf @2023-12-03T20:59:29Z - metals early close 13:30 CT.
+        (2023, 11, 23, early_close(13 * 3_600 + 30 * 60), T1, "thanksgiving-day-2023.pdf @2023-12-03T20:59:29Z"),
+        // 2023-11-24 - T1 - thanksgiving-day-2023.pdf @2023-12-03T20:59:29Z - metals early close 12:45 CT.
+        (2023, 11, 24, early_close(12 * 3_600 + 45 * 60), T1, "thanksgiving-day-2023.pdf @2023-12-03T20:59:29Z"),
+        // 2023-12-25 - T1 - christmas-day-2023.pdf @2026-07-19T09:52:48Z - closed: metals closed.
+        (2023, 12, 25, Closed, T1, "christmas-day-2023.pdf @2026-07-19T09:52:48Z"),
+        // 2024-01-01 - T1 - new-years-day-2024.pdf @2026-08-11T16:57:16Z - closed: metals closed.
+        (2024, 1, 1, Closed, T1, "new-years-day-2024.pdf @2026-08-11T16:57:16Z"),
+        // 2024-01-15 - T2 - CME-SVC-2024-01-14 - metals early close 13:30 CT.
+        (2024, 1, 15, early_close(13 * 3_600 + 30 * 60), T2, "CME-SVC-2024-01-14"),
+        // 2024-02-19 - T2 - CME-SVC-2024-02-18 - metals early close 13:30 CT.
+        (2024, 2, 19, early_close(13 * 3_600 + 30 * 60), T2, "CME-SVC-2024-02-18"),
+        // 2024-03-29 - T2 - CME-SVC-2024-03-28 - closed: metals closed.
+        (2024, 3, 29, Closed, T2, "CME-SVC-2024-03-28"),
+        // 2024-05-27 - T2 - CME-SVC-2024-05-26 - metals early close 13:30 CT.
+        (2024, 5, 27, early_close(13 * 3_600 + 30 * 60), T2, "CME-SVC-2024-05-26"),
+        // 2024-06-19 - T2 - CME-SVC-2024-06-18 - metals early close 13:30 CT.
+        (2024, 6, 19, early_close(13 * 3_600 + 30 * 60), T2, "CME-SVC-2024-06-18"),
+        // 2024-07-04 - T2 - CME-SVC-2024-07-03 - metals early close 13:30 CT.
+        (2024, 7, 4, early_close(13 * 3_600 + 30 * 60), T2, "CME-SVC-2024-07-03"),
+        // 2024-09-02 - T2 - CME-SVC-2024-09-01 - metals early close 13:30 CT.
+        (2024, 9, 2, early_close(13 * 3_600 + 30 * 60), T2, "CME-SVC-2024-09-01"),
+        // 2024-11-28 - T2 - CME-SVC-2024-11-27 - metals early close 13:30 CT.
+        (2024, 11, 28, early_close(13 * 3_600 + 30 * 60), T2, "CME-SVC-2024-11-27"),
+        // 2024-11-29 - T2 - CME-SVC-2024-11-27 - metals early close 13:45 CT.
+        (2024, 11, 29, early_close(13 * 3_600 + 45 * 60), T2, "CME-SVC-2024-11-27"),
+        // 2024-12-24 - T2 - CME-SVC-2024-12-24 - metals early close 12:45 CT.
+        (2024, 12, 24, early_close(12 * 3_600 + 45 * 60), T2, "CME-SVC-2024-12-24"),
+        // 2024-12-25 - T2 - CME-SVC-2024-12-24 - closed: metals closed.
+        (2024, 12, 25, Closed, T2, "CME-SVC-2024-12-24"),
         (2025, 1, 1, Closed, T2, "CME-SVC-2024-12-31"),
         // 2025-01-20 - T2 - CME-SVC-2025-01-19 - metals early close 13:30 CT.
         (2025, 1, 20, early_close(13 * 3_600 + 30 * 60), T2, "CME-SVC-2025-01-19"),

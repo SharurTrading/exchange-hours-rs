@@ -208,7 +208,7 @@ tables over its own years by the rule in 2.1, so there is no separate venue wave
 | 1 | 2010–2012 (#92) | round 1 PASS; nothing load-bearing | fix the eight non-blocking defects (quoting convention, the `nikkei 2010-02-15` label, the 2012 Good Friday capture, the 2010-12-23 energy source, the count typo); this wave lands the January-2010 floor — **landed 2026-09-13 (UTC), see the wave note below** |
 | 2 | 2016–2018 (#89) | one narrow load-bearing item; "no instant, status or family-level value is wrong" | correct the three Grains verbatims that quote the deleted MGEX Apple Juice row — **landed 2026-09-14 (UTC) as #103; see the wave note below** |
 | 3 | 2022–2024 (#90) | two state-neutral load-bearing items | repair the 2023-11-23 grains verbatim and the zone-provenance sentence; ship 2023 MLK/Presidents'/Good Friday and the 13 Nikkei 2024 rows as `Unsourced` — **in progress on `cme-holidays-2022-2024` (opened 2026-09-15 UTC); see the wave note below** |
-| 4 | 2019–2021 (#91) | no value wrong in 440 rows; evidence discipline only | re-extract the 314 hard-truncated verbatim fields from the saved bytes; withdraw the false "no standalone 2020 Good Friday workbook" claim; Juneteenth 2019–2021 is `Unsourced` |
+| 4 | 2019–2021 (#91) | no value wrong in 440 rows; evidence discipline only | re-extract the 314 hard-truncated verbatim fields from the saved bytes; withdraw the false "no standalone 2020 Good Friday workbook" claim; Juneteenth 2019–2021 is `Unsourced` — **landed 2026-09-16 (UTC); see the wave note below** |
 | 5 | 2013–2015 (#88) | five load-bearing items; needs a retrieval | retrieve `2013-4th-of-july-done.pdf` (it changes 2013-07-03 for livestock, dairy and lumber) and the 42 unretrieved earlier captures, then fix the other named items; no 2013-07-03 row ships before that document is read |
 
 **Wave 2 landed 2026-09-14 (UTC) as #103** (merge of `9e08430`). The three round-3
@@ -231,8 +231,7 @@ boundary and they disagree, plus 5 on which `globex_grains` is unmatched: 2016-1
 close, a 12:15 CT close, and a 15:30 CT open). `cbot` withholds the same 27 by a different
 split, because it routes `globex_interest_rates` rather than the other four.
 
-**Wave 3 is in progress on `cme-holidays-2022-2024`, opened 2026-09-15 (UTC); the
-landing date is recorded at merge.** Six round-2 defects were repaired in the research
+**Wave 3 landed 2026-09-16 (UTC) as #104** (merge of `0a2de80`, the wave-4 branch point). Six round-2 defects were repaired in the research
 store's block before any row shipped — the `2023-11-23` GRAINS verbatim, which quoted a
 `TRADE DATE: FRI 24 NOV` label out of the *FX* row's Thursday cell rather than the
 grains row's empty one; the zone-provenance sentence (four of the seven 2023/2024
@@ -262,6 +261,66 @@ that have no crate key, `dairy` and `lumber`, fold into `globex_grains` and
 in those two evidence files, and the closing condition is a consumer that maps them.
 The four venue tables extend over the era by D17 and their disagreements are recorded
 per venue.
+
+
+**Wave 4 landed 2026-09-16 (UTC) as this change** (branch `cme-holidays-2019-2021`).
+The round-2 verdict on `cme-2019-2021` failed the block on evidence discipline alone — no
+date, status, tier or instant value wrong in any of the 440 family rows — and the four
+discrepancies were repaired in the research store before a row shipped, in
+`holidays/cme-2019-2021.r2.json` plus `holidays/cme-2019-2021.repair.json`, with round 1
+kept byte-identical. **N4, the issue's headline item:** all **314** `verbatim`/instant
+fields that ended in a mid-token ellipsis were re-emitted at full length *from the saved
+bytes* in `raw/cme-2019-2021/text/`, not extended from context. The remaining 96
+`verbatim` fields that still mixed a quotation with a column label, an elided cell or an
+appended note were re-emitted as the printed row too, with the editorial material moved to
+a new `note` field on the entry, so **every non-Nikkei `verbatim` in the block is now a
+literal line of its cited sheet** — an independent checker re-derives that for all 352
+entries and finds zero exceptions. The NOTATION paragraph was amended to say exactly that,
+and no string in the block ends in an ellipsis.
+The two fields that had lost part of a printed instant (2019-01-01 `globex_grains`
+`open_instant`, 2020-12-25 `globex_livestock` `open_instant`) now carry the whole cell.
+**N1:** the false "no standalone 2020 Good Friday workbook" claim is withdrawn in both raw
+`INDEX.md` files and in the block, replaced by the exact-URL CDX result and the 2024-12-02
+capture of `2020-good-friday-schedule.xls`, and the absence claim was re-checked with a
+fresh prefix crawl `from=2018 to=2027` (369 rows, 340 distinct filenames). **N2:** the
+enumerated paraphrased instant fields take the verdict's own wording (the 2021-07-05 grains
+cell, the seven lumber `9:00CT` cells, the 2019-01-01 grains cell, the 2020-12-25 livestock
+cell) and the surviving class is answered by the amended NOTATION paragraph. **N3:**
+`shasum.txt` carries the verdict's preamble and still verifies 86/86.
+
+The repaired block then encoded at **T1** over venue-local trade dates
+2019-01-01 .. 2021-12-31: **292 rows** — equity index 36, energy 35, FX 35, grains 42,
+interest rates 35, livestock 37, cryptocurrency 36, Nikkei 225 (dollar) 36 — each family
+declaring a fifth (livestock, Nikkei: fourth; cryptocurrency: third) audited window, so the
+only interval no wave has audited is **2013-2015 (#88)**. Shapes: 103 full closures, 157
+early closes, eight `globex_grains` late opens — five day-after-closure `late_open(08:30)`
+rows (2019-01-02, 2019-07-05, 2019-12-26, 2020-01-02, 2021-07-06) and three
+`late_open_and_early_close(08:30, 12:05)` rows on the day after Thanksgiving — and 24
+`Unsourced` rows, three per family, for **Juneteenth 2019, 2020 and 2021**, each cited to
+that year's own consolidated bundle. The 2021 Juneteenth is a Saturday with no trade date;
+the row clips nothing and is keyed to the operator's own calendar date rather than to an
+observed date CME never states. **Columbus Day and Veterans Day 2019-2021** (six dates)
+carry no row and are named gaps: CME published settlement and clearing advisories for them
+and never a Globex trading schedule. `globex_nikkei_225_dollar` follows the quoted
+`Equity`/`Equity Products` line on all 44 block dates — an interpretive step stated in its
+evidence file, with the five `modified` dates where CME's own Nikkei-labelled BTIC row
+diverges recorded beside it. `dairy` and `lumber` fold into `globex_grains` and
+`globex_livestock` for reporting only, with every divergent date named.
+
+The four venue tables extend over the era by D17: `cme` 42 rows (8 `Closed` + 34
+`Unsourced`), `cbot` 42 (8 + 34), and `comex`/`nymex` 35 each, carrying
+`globex_energy`'s rows unchanged. Each withheld date's disagreement is named per venue in
+its evidence file. Two pre-existing documentation defects surfaced while the era's
+evidence was written and are fixed here: the eight families' evidence files repeated a
+whole era's document ids inside the next era's `### Documents` table (201 duplicate rows),
+hidden from the "one id resolves once" fence because every one of those tables carried a
+blank line between its header and its separator, which made the fence read zero rows and
+skip the file; and `cbot.rs`'s 2016-2018 paragraph said `globex_interest_rates` "audited
+normal" the eighteen Monday and Thursday holidays, where it in fact states an early close
+at 12:00 CT — which is why those dates are disputed. `tools/wave4_rows.py`, `tools/check_wave4.py`,
+`tools/venue_intersection_wave4.py`, `tools/encode_wave4.py`, `tools/wave4_repair.py` and
+`tools/evidence_wave4.py` reproduce the rows, the venue tables and the evidence from the
+research store; `tools/README.md` documents the `WAVE4_RESEARCH` variable they read.
 
 **2.3 Served non-CME venues back to the floor — new retrieval.** Nothing below 2026 was
 ever retrieved for these. One PR per venue, split by year range if it exceeds a day,

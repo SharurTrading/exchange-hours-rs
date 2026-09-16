@@ -6,24 +6,43 @@
 //! it; a disagreement ships [`HolidayKind::Unsourced`], which clips nothing
 //! and tells the caller the date is special without inventing an instant.
 //!
-//! Coverage is four audited eras: 2010-2012, whose rows are T1 (CME's own
-//! holiday-calendar PDFs); 2016-2018 and 2022-2024, whose rows are the D17
-//! intersection of the routed families' T1 rows from CME's own published Globex
-//! holiday schedules, except for the three 2023 markers and the 2024 dates the
-//! trading-hours service answers; and 2025-2027, whose rows are T2 (that
-//! service). The 2013-2015 and 2019-2021 intervals between them are audited by
-//! no wave and lie outside every declared window.
+//! Coverage is five audited eras: 2010-2012, whose rows are T1 (CME's own
+//! holiday-calendar PDFs); 2016-2018, 2019-2021 and 2022-2024, whose rows are
+//! the D17 intersection of the routed families' T1 rows from CME's own
+//! published Globex holiday schedules — all of 2019-2021 at T1, and 2022-2024
+//! except for the three 2023 markers and the 2024 dates the trading-hours
+//! service answers; and 2025-2027, whose rows are T2 (that service). The
+//! 2013-2015 interval between them is audited by no wave and lies outside
+//! every declared window.
 //!
 //! On the 2016-2018 era's thirty-six dates this table states nine `Closed`
 //! rows and withholds the other twenty-seven as [`HolidayKind::Unsourced`].
 //! Four are the three Thanksgiving Fridays and 2018-12-24, where the grain day
-//! session closes at 12:05 CT and the rate leg at 12:15 CT; the other
-//! twenty-three are dates `globex_grains` states a row on and
-//! `globex_interest_rates` audited normal — the eighteen Monday and Thursday
-//! holidays, on which grains is shut and the rate leg trades its ordinary
-//! hours, and 2016-12-23, 2017-07-03, 2017-12-22, 2018-07-03 and 2018-12-26,
-//! the agricultural half-days and the day after Christmas. Both routed families
+//! session closes at 12:05 CT and the rate leg at 12:15 CT. The other
+//! twenty-three split two ways: the eighteen Monday and Thursday holidays, on
+//! which `globex_grains` is shut outright while `globex_interest_rates` states an
+//! early close at 12:00 CT — different answers, so the date is disputed — and
+//! 2016-12-23, 2017-07-03, 2017-12-22, 2018-07-03 and 2018-12-26, the
+//! agricultural half-days and the day after Christmas, on which `globex_grains`
+//! states a row and the rate leg audited the date normal. Both routed families
 //! cover the era, so neither abstains.
+//!
+//! On the 2019-2021 era's **forty-two dates** this table states eight `Closed`
+//! rows and withholds the other thirty-four as [`HolidayKind::Unsourced`].
+//! Eighteen are the Monday and Thursday holidays, on which grains is shut while
+//! the rate leg halts at 12:00 CT; five are dates grains states a late open at
+//! 08:30 CT on and the rate leg audited normal (2019-01-02, 2019-07-05,
+//! 2019-12-26, 2020-01-02 and 2021-07-06); eight are the two families' own
+//! disagreements — the three Thanksgiving Fridays, on which grains reopens at
+//! 08:30 CT and closes at 12:05 CT while the rate leg halts at 12:15 CT; the
+//! two Christmas Eves, on which grains closes at 12:05 CT and the rate leg at
+//! 12:15 CT; 2019-07-03 and 2020-07-02, on which grains closes at 12:05 CT and
+//! the rate leg audited the date normal; and 2021-04-02, on which grains is
+//! shut and the rate leg closes at 10:15 CT; and three are 2019-06-19,
+//! 2020-06-19 and 2021-06-19, where both routed families state `Unsourced` —
+//! the wave did not work those dates up — so the venue ships the families' own
+//! marker rather than a dispute. Both routed families cover the era, so
+//! neither abstains.
 //!
 //! On the 2022-2024 era's **thirty-nine dates** this table states seven `Closed`
 //! rows and withholds the other thirty-two as [`HolidayKind::Unsourced`]. Four
@@ -54,17 +73,17 @@ use super::super::{
 /// The `Exchange::Cbot` table: `globex_grains` ∩ `globex_interest_rates`.
 ///
 /// The two families trade the same building around different sessions, and the
-/// day session is where they touch: every one of the thirty-one full closures
+/// day session is where they touch: every one of the thirty-nine full closures
 /// below keeps both closed, while a holiday early close moves the two by a
 /// different amount — the grain day session ends at 12:05 CT or 12:00 CT while
 /// the rate leg halts at 15:15, 12:00, 10:15 or 13:30 CT by date — so those
-/// dates ship `Unsourced`. 154 rows over four audited eras: thirty-one stated
-/// and 123 `Unsourced` (33 in 2010-2012, 27 in 2016-2018, 32 in 2022-2024 and
-/// 31 in 2025-2027), with the 2013-2015 and 2019-2021 intervals between the
-/// eras outside every declared window.
+/// dates ship `Unsourced`. 196 rows over five audited eras: thirty-nine
+/// stated and 157 `Unsourced` (33 in 2010-2012, 27 in 2016-2018,
+/// 34 in 2019-2021, 32 in 2022-2024 and 31 in 2025-2027), with the
+/// 2013-2015 interval between the eras outside every declared window.
 // Evidence: docs/evidence/cbot.md
 pub(crate) static CBOT: &HolidayTable = holidays! {
-    coverage: [(2010, 1, 1) ..= (2012, 12, 31), (2016, 1, 1) ..= (2018, 12, 31), (2022, 1, 1) ..= (2024, 12, 31), (2025, 1, 1) ..= (2027, 12, 31)],
+    coverage: [(2010, 1, 1) ..= (2012, 12, 31), (2016, 1, 1) ..= (2018, 12, 31), (2019, 1, 1) ..= (2021, 12, 31), (2022, 1, 1) ..= (2024, 12, 31), (2025, 1, 1) ..= (2027, 12, 31)],
     rows: [
         // 2010-01-01 - T1 - 2010-new-years.pdf - closed.
         (2010, 1, 1, Closed, T1, "2010-new-years.pdf @2010-02-15T05:16:52Z"),
@@ -217,6 +236,90 @@ pub(crate) static CBOT: &HolidayTable = holidays! {
         // 2018-12-26 - T1 - 2018-holiday-calendars.zip#2018-christmas-holiday-schedule.xls @2026-08-30 - disagreement: grains late open 08:30 CT; interest rates no row.
         (2018, 12, 26, Unsourced, T1, "2018-holiday-calendars.zip#2018-christmas-holiday-schedule.xls @2026-08-30"),
         // 2022-01-17 - T1 - 2022-mlk-day-holiday-schedule.xls @2022-01-17T21:22:30Z - disagreement: grains closed; interest rates early close 12:00 CT.
+        // 2019-01-01 - T1 - 2019-new-years-holiday-schedule-compact.xls @2018-01-07T04:13:43Z - closed: no trade date.
+        (2019, 1, 1, Closed, T1, "2019-new-years-holiday-schedule-compact.xls @2018-01-07T04:13:43Z"),
+        // 2019-01-02 - T1 - 2019-new-years-holiday-schedule-compact.xls @2018-01-07T04:13:43Z - disagreement: grains late open 08:30 CT; interest rates no row.
+        (2019, 1, 2, Unsourced, T1, "2019-new-years-holiday-schedule-compact.xls @2018-01-07T04:13:43Z"),
+        // 2019-01-21 - T1 - 2019-holiday-calendars.zip#globex-trading-schedules/2019-martin-luther-king-holiday-schedule-compact.xls @2021-01-26T09:48:37Z - disagreement: grains closed; interest rates early close 12:00 CT.
+        (2019, 1, 21, Unsourced, T1, "2019-holiday-calendars.zip#globex-trading-schedules/2019-martin-luther-king-holiday-schedule-compact.xls @2021-01-26T09:48:37Z"),
+        // 2019-02-18 - T1 - 2019-holiday-calendars.zip#globex-trading-schedules/2019-presidents-day-holiday-schedule-compact.xls @2021-01-26T09:48:37Z - disagreement: grains closed; interest rates early close 12:00 CT.
+        (2019, 2, 18, Unsourced, T1, "2019-holiday-calendars.zip#globex-trading-schedules/2019-presidents-day-holiday-schedule-compact.xls @2021-01-26T09:48:37Z"),
+        // 2019-04-19 - T1 - 2019-holiday-calendars.zip#globex-trading-schedules/2019-good-friday-holiday-compact.xls @2021-01-26T09:48:37Z - closed: no trade date.
+        (2019, 4, 19, Closed, T1, "2019-holiday-calendars.zip#globex-trading-schedules/2019-good-friday-holiday-compact.xls @2021-01-26T09:48:37Z"),
+        // 2019-05-27 - T1 - 2019-holiday-calendars.zip#globex-trading-schedules/2019-memorial-day-holiday-schedule-compact.xls @2021-01-26T09:48:37Z - disagreement: grains closed; interest rates early close 12:00 CT.
+        (2019, 5, 27, Unsourced, T1, "2019-holiday-calendars.zip#globex-trading-schedules/2019-memorial-day-holiday-schedule-compact.xls @2021-01-26T09:48:37Z"),
+        // 2019-06-19 - T1 - 2019-holiday-calendars.zip @2021-01-26T09:48:37Z - unsourced: the routed families state the date is not worked up.
+        (2019, 6, 19, Unsourced, T1, "2019-holiday-calendars.zip @2021-01-26T09:48:37Z"),
+        // 2019-07-03 - T1 - 2019-holiday-calendars.zip#globex-trading-schedules/2019-4th-of-july-holiday-schedule-compact.xls @2021-01-26T09:48:37Z - disagreement: grains early close 12:05 CT; interest rates no row.
+        (2019, 7, 3, Unsourced, T1, "2019-holiday-calendars.zip#globex-trading-schedules/2019-4th-of-july-holiday-schedule-compact.xls @2021-01-26T09:48:37Z"),
+        // 2019-07-04 - T1 - 2019-holiday-calendars.zip#globex-trading-schedules/2019-4th-of-july-holiday-schedule-compact.xls @2021-01-26T09:48:37Z - disagreement: grains closed; interest rates early close 12:00 CT.
+        (2019, 7, 4, Unsourced, T1, "2019-holiday-calendars.zip#globex-trading-schedules/2019-4th-of-july-holiday-schedule-compact.xls @2021-01-26T09:48:37Z"),
+        // 2019-07-05 - T1 - 2019-holiday-calendars.zip#globex-trading-schedules/2019-4th-of-july-holiday-schedule-compact.xls @2021-01-26T09:48:37Z - disagreement: grains late open 08:30 CT; interest rates no row.
+        (2019, 7, 5, Unsourced, T1, "2019-holiday-calendars.zip#globex-trading-schedules/2019-4th-of-july-holiday-schedule-compact.xls @2021-01-26T09:48:37Z"),
+        // 2019-09-02 - T1 - 2019-holiday-calendars.zip#globex-trading-schedules/2019-labor-day-holiday-schedule-compact.xls @2021-01-26T09:48:37Z - disagreement: grains closed; interest rates early close 12:00 CT.
+        (2019, 9, 2, Unsourced, T1, "2019-holiday-calendars.zip#globex-trading-schedules/2019-labor-day-holiday-schedule-compact.xls @2021-01-26T09:48:37Z"),
+        // 2019-11-28 - T1 - 2019-holiday-calendars.zip#globex-trading-schedules/2019-thanksgiving-holiday-schedule-compact.xls @2021-01-26T09:48:37Z - disagreement: grains closed; interest rates early close 12:00 CT.
+        (2019, 11, 28, Unsourced, T1, "2019-holiday-calendars.zip#globex-trading-schedules/2019-thanksgiving-holiday-schedule-compact.xls @2021-01-26T09:48:37Z"),
+        // 2019-11-29 - T1 - 2019-holiday-calendars.zip#globex-trading-schedules/2019-thanksgiving-holiday-schedule-compact.xls @2021-01-26T09:48:37Z - disagreement: grains late open 08:30 CT and early close 12:05 CT; interest rates early close 12:15 CT.
+        (2019, 11, 29, Unsourced, T1, "2019-holiday-calendars.zip#globex-trading-schedules/2019-thanksgiving-holiday-schedule-compact.xls @2021-01-26T09:48:37Z"),
+        // 2019-12-24 - T1 - 2019-holiday-calendars.zip#globex-trading-schedules/2019-christmas-holiday-schedule-compact.xls @2021-01-26T09:48:37Z - disagreement: grains early close 12:05 CT; interest rates early close 12:15 CT.
+        (2019, 12, 24, Unsourced, T1, "2019-holiday-calendars.zip#globex-trading-schedules/2019-christmas-holiday-schedule-compact.xls @2021-01-26T09:48:37Z"),
+        // 2019-12-25 - T1 - 2019-holiday-calendars.zip#globex-trading-schedules/2019-christmas-holiday-schedule-compact.xls @2021-01-26T09:48:37Z - closed: no trade date.
+        (2019, 12, 25, Closed, T1, "2019-holiday-calendars.zip#globex-trading-schedules/2019-christmas-holiday-schedule-compact.xls @2021-01-26T09:48:37Z"),
+        // 2019-12-26 - T1 - 2019-holiday-calendars.zip#globex-trading-schedules/2019-christmas-holiday-schedule-compact.xls @2021-01-26T09:48:37Z - disagreement: grains late open 08:30 CT; interest rates no row.
+        (2019, 12, 26, Unsourced, T1, "2019-holiday-calendars.zip#globex-trading-schedules/2019-christmas-holiday-schedule-compact.xls @2021-01-26T09:48:37Z"),
+        // 2020-01-01 - T1 - 2019-holiday-calendars.zip#globex-trading-schedules/2019-new-years-holiday-schedule-compact.xls @2021-01-26T09:48:37Z - closed: no trade date.
+        (2020, 1, 1, Closed, T1, "2019-holiday-calendars.zip#globex-trading-schedules/2019-new-years-holiday-schedule-compact.xls @2021-01-26T09:48:37Z"),
+        // 2020-01-02 - T1 - 2019-holiday-calendars.zip#globex-trading-schedules/2019-new-years-holiday-schedule-compact.xls @2021-01-26T09:48:37Z - disagreement: grains late open 08:30 CT; interest rates no row.
+        (2020, 1, 2, Unsourced, T1, "2019-holiday-calendars.zip#globex-trading-schedules/2019-new-years-holiday-schedule-compact.xls @2021-01-26T09:48:37Z"),
+        // 2020-01-20 - T1 - 2020-holiday-calendars.zip#2020-martin-luther-king-holiday-schedule-compact.xls @2026-07-30T11:18:34Z - disagreement: grains closed; interest rates early close 12:00 CT.
+        (2020, 1, 20, Unsourced, T1, "2020-holiday-calendars.zip#2020-martin-luther-king-holiday-schedule-compact.xls @2026-07-30T11:18:34Z"),
+        // 2020-02-17 - T1 - 2020-holiday-calendars.zip#2020-presidents-day-holiday-schedule-compact.xls @2026-07-30T11:18:34Z - disagreement: grains closed; interest rates early close 12:00 CT.
+        (2020, 2, 17, Unsourced, T1, "2020-holiday-calendars.zip#2020-presidents-day-holiday-schedule-compact.xls @2026-07-30T11:18:34Z"),
+        // 2020-04-10 - T1 - 2020-holiday-calendars.zip#2020-good-friday-holiday-compact.xls @2026-07-30T11:18:34Z - closed: no trade date.
+        (2020, 4, 10, Closed, T1, "2020-holiday-calendars.zip#2020-good-friday-holiday-compact.xls @2026-07-30T11:18:34Z"),
+        // 2020-05-25 - T1 - 2020-holiday-calendars.zip#2020-memorial-day-holiday-schedule-compact.xls @2026-07-30T11:18:34Z - disagreement: grains closed; interest rates early close 12:00 CT.
+        (2020, 5, 25, Unsourced, T1, "2020-holiday-calendars.zip#2020-memorial-day-holiday-schedule-compact.xls @2026-07-30T11:18:34Z"),
+        // 2020-06-19 - T1 - 2020-holiday-calendars.zip @2026-07-30T11:18:34Z - unsourced: the routed families state the date is not worked up.
+        (2020, 6, 19, Unsourced, T1, "2020-holiday-calendars.zip @2026-07-30T11:18:34Z"),
+        // 2020-07-02 - T1 - 2020-holiday-calendars.zip#2020-4th-of-july-holiday-schedule-compact.xls @2026-07-30T11:18:34Z - disagreement: grains early close 12:05 CT; interest rates no row.
+        (2020, 7, 2, Unsourced, T1, "2020-holiday-calendars.zip#2020-4th-of-july-holiday-schedule-compact.xls @2026-07-30T11:18:34Z"),
+        // 2020-07-03 - T1 - 2020-holiday-calendars.zip#2020-4th-of-july-holiday-schedule-compact.xls @2026-07-30T11:18:34Z - disagreement: grains closed; interest rates early close 12:00 CT.
+        (2020, 7, 3, Unsourced, T1, "2020-holiday-calendars.zip#2020-4th-of-july-holiday-schedule-compact.xls @2026-07-30T11:18:34Z"),
+        // 2020-09-07 - T1 - 2020-holiday-calendars.zip#2020-labor-day-holiday-schedule-compact.xls @2026-07-30T11:18:34Z - disagreement: grains closed; interest rates early close 12:00 CT.
+        (2020, 9, 7, Unsourced, T1, "2020-holiday-calendars.zip#2020-labor-day-holiday-schedule-compact.xls @2026-07-30T11:18:34Z"),
+        // 2020-11-26 - T1 - 2020-holiday-calendars.zip#2020-thanksgiving-holiday-schedule-compact.xls @2026-07-30T11:18:34Z - disagreement: grains closed; interest rates early close 12:00 CT.
+        (2020, 11, 26, Unsourced, T1, "2020-holiday-calendars.zip#2020-thanksgiving-holiday-schedule-compact.xls @2026-07-30T11:18:34Z"),
+        // 2020-11-27 - T1 - 2020-holiday-calendars.zip#2020-thanksgiving-holiday-schedule-compact.xls @2026-07-30T11:18:34Z - disagreement: grains late open 08:30 CT and early close 12:05 CT; interest rates early close 12:15 CT.
+        (2020, 11, 27, Unsourced, T1, "2020-holiday-calendars.zip#2020-thanksgiving-holiday-schedule-compact.xls @2026-07-30T11:18:34Z"),
+        // 2020-12-24 - T1 - 2020-holiday-calendars.zip#2020-christmas-holiday-schedule-compact.xls @2026-07-30T11:18:34Z - disagreement: grains early close 12:05 CT; interest rates early close 12:15 CT.
+        (2020, 12, 24, Unsourced, T1, "2020-holiday-calendars.zip#2020-christmas-holiday-schedule-compact.xls @2026-07-30T11:18:34Z"),
+        // 2020-12-25 - T1 - 2020-holiday-calendars.zip#2020-christmas-holiday-schedule-compact.xls @2026-07-30T11:18:34Z - closed: no trade date.
+        (2020, 12, 25, Closed, T1, "2020-holiday-calendars.zip#2020-christmas-holiday-schedule-compact.xls @2026-07-30T11:18:34Z"),
+        // 2021-01-01 - T1 - 2020-holiday-calendars.zip#2021-new-years-holiday-schedule-compact.xls @2026-07-30T11:18:34Z - closed: no trade date.
+        (2021, 1, 1, Closed, T1, "2020-holiday-calendars.zip#2021-new-years-holiday-schedule-compact.xls @2026-07-30T11:18:34Z"),
+        // 2021-01-18 - T1 - 2021-holiday-calendars.zip#2021-mlk-day-schedule-compact.xls @2026-08-30T10:03:27Z - disagreement: grains closed; interest rates early close 12:00 CT.
+        (2021, 1, 18, Unsourced, T1, "2021-holiday-calendars.zip#2021-mlk-day-schedule-compact.xls @2026-08-30T10:03:27Z"),
+        // 2021-02-15 - T1 - 2021-holiday-calendars.zip#2021-presidents-day-holiday-schedule-compact.xls @2026-08-30T10:03:27Z - disagreement: grains closed; interest rates early close 12:00 CT.
+        (2021, 2, 15, Unsourced, T1, "2021-holiday-calendars.zip#2021-presidents-day-holiday-schedule-compact.xls @2026-08-30T10:03:27Z"),
+        // 2021-04-02 - T1 - 2021-holiday-calendars.zip#2021-good-friday-holiday-schedule-compact.xls @2026-08-30T10:03:27Z - disagreement: grains closed; interest rates early close 10:15 CT.
+        (2021, 4, 2, Unsourced, T1, "2021-holiday-calendars.zip#2021-good-friday-holiday-schedule-compact.xls @2026-08-30T10:03:27Z"),
+        // 2021-05-31 - T1 - 2021-holiday-calendars.zip#2021-memorial-day-holiday-schedule-compact.xls @2026-08-30T10:03:27Z - disagreement: grains closed; interest rates early close 12:00 CT.
+        (2021, 5, 31, Unsourced, T1, "2021-holiday-calendars.zip#2021-memorial-day-holiday-schedule-compact.xls @2026-08-30T10:03:27Z"),
+        // 2021-06-19 - T1 - 2021-holiday-calendars.zip @2026-08-30T10:03:27Z - unsourced: the routed families state the date is not worked up.
+        (2021, 6, 19, Unsourced, T1, "2021-holiday-calendars.zip @2026-08-30T10:03:27Z"),
+        // 2021-07-05 - T1 - 2021-holiday-calendars.zip#2021-independence-day-holiday-schedule-compact.xls @2026-08-30T10:03:27Z - disagreement: grains closed; interest rates early close 12:00 CT.
+        (2021, 7, 5, Unsourced, T1, "2021-holiday-calendars.zip#2021-independence-day-holiday-schedule-compact.xls @2026-08-30T10:03:27Z"),
+        // 2021-07-06 - T1 - 2021-holiday-calendars.zip#2021-independence-day-holiday-schedule-compact.xls @2026-08-30T10:03:27Z - disagreement: grains late open 08:30 CT; interest rates no row.
+        (2021, 7, 6, Unsourced, T1, "2021-holiday-calendars.zip#2021-independence-day-holiday-schedule-compact.xls @2026-08-30T10:03:27Z"),
+        // 2021-09-06 - T1 - 2021-holiday-calendars.zip#2021-labor-day-holiday-schedule-compact.xls @2026-08-30T10:03:27Z - disagreement: grains closed; interest rates early close 12:00 CT.
+        (2021, 9, 6, Unsourced, T1, "2021-holiday-calendars.zip#2021-labor-day-holiday-schedule-compact.xls @2026-08-30T10:03:27Z"),
+        // 2021-11-25 - T1 - 2021-holiday-calendars.zip#2021-thanksgiving-holiday-schedule-compact.xls @2026-08-30T10:03:27Z - disagreement: grains closed; interest rates early close 12:00 CT.
+        (2021, 11, 25, Unsourced, T1, "2021-holiday-calendars.zip#2021-thanksgiving-holiday-schedule-compact.xls @2026-08-30T10:03:27Z"),
+        // 2021-11-26 - T1 - 2021-holiday-calendars.zip#2021-thanksgiving-holiday-schedule-compact.xls @2026-08-30T10:03:27Z - disagreement: grains late open 08:30 CT and early close 12:05 CT; interest rates early close 12:15 CT.
+        (2021, 11, 26, Unsourced, T1, "2021-holiday-calendars.zip#2021-thanksgiving-holiday-schedule-compact.xls @2026-08-30T10:03:27Z"),
+        // 2021-12-24 - T1 - 2021-holiday-calendars.zip#2021-christmas-holiday-schedule-compact.xls @2026-08-30T10:03:27Z - closed: no trade date.
+        (2021, 12, 24, Closed, T1, "2021-holiday-calendars.zip#2021-christmas-holiday-schedule-compact.xls @2026-08-30T10:03:27Z"),
         (2022, 1, 17, Unsourced, T1, "2022-mlk-day-holiday-schedule.xls @2022-01-17T21:22:30Z"),
         // 2022-02-21 - T1 - 2022-presidents-day-holiday-schedule.xls @2022-07-04T07:38:10Z - disagreement: grains closed; interest rates early close 12:00 CT.
         (2022, 2, 21, Unsourced, T1, "2022-presidents-day-holiday-schedule.xls @2022-07-04T07:38:10Z"),

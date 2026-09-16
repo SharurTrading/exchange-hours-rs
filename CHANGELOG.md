@@ -13,6 +13,14 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Fixed
 
+- **Documentation.** The eight CME families' holiday evidence files repeated a whole
+  era's document ids inside the *next* era's `### Documents` table, and every one
+  of those tables carried a blank line between its header and its `|---|`
+  separator — which is what hid the duplication: the evidence fence reads a table
+  up to its first blank line, so it read zero rows from each of them and skipped
+  the file entirely. The 201 duplicate rows are gone, the tables parse, and
+  `every_cited_document_id_is_resolved_exactly_once` now holds these files to the
+  one-artifact-one-id rule the CME service windows already met.
 - **The coverage gate applied no built-in holiday row on six families' post-close
   order-entry windows.** `resolve_rule_bounds` dates an occurrence by the local
   date of the *trading day's* final close, never of the rule's own close, so an
@@ -71,6 +79,29 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Added
 
+- **The served CME families' holiday tables now cover 2019-2021, and the four
+  CME venue calendars with them.** The same eight families gain **292 rows over
+  venue-local trade dates 2019-01-01 .. 2021-12-31** — `globex_equity_index` 36,
+  `globex_energy` 35, `globex_fx` 35, `globex_grains` 42,
+  `globex_interest_rates` 35, `globex_livestock` 37, `globex_cryptocurrency` 36
+  and `globex_nikkei_225_dollar` 36 — every one at **T1**, from CME Group's own
+  published Globex holiday schedules: the compact per-holiday sheets inside the
+  2019, 2020 and 2021 consolidated annual bundles, plus the December-2018
+  supplement that governs 1-2 January 2019. Each family declares the era as a
+  new window in date order, so the only interval no wave has audited is
+  2013-2015 (#88). The rows are 103 full closures, 157 early closes, eight
+  `globex_grains` late opens (five day-after-closure `late_open(08:30)` rows and
+  three `late_open_and_early_close(08:30, 12:05)` rows on the day after
+  Thanksgiving) and 24 `Unsourced` rows. `globex_grains` is the only family the
+  era's non-scalar shapes reach: every other wrapped family's sheet prints an
+  ordinary evening open on the day after a closure. The four venue tables
+  extend over the same years by the D17 intersection — `cme` 42 rows (8 `Closed`
+  and 34 `Unsourced`), `cbot` 42 (8 and 34), and `comex`/`nymex` 35 each,
+  carrying `globex_energy`'s rows unchanged. `globex_nikkei_225_dollar` is keyed
+  to the `Equity`/`Equity Products` line on every date, which that family's
+  evidence file states as the interpretive step it is. Columbus Day and Veterans
+  Day 2019-2021 carry no row and are named gaps: CME published only settlement
+  and clearing advisories for them, which is not session language.
 - **The served CME families' holiday tables now cover 2022-2024, and the four
   CME venue calendars with them.** The same eight families gain **237 rows over
   venue-local trade dates 2022-01-01 .. 2024-12-31** — `globex_equity_index` 35,

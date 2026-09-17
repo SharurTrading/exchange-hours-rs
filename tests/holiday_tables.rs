@@ -703,6 +703,20 @@ fn every_shipped_session_occurrence_is_dated_by_its_own_open_or_the_next_day() {
     // 987,848 occurrences. The counts are the observed ones at the 2026-09-17
     // head: 128 of 128 identities, 1,195,680 occurrences, and 125 identities
     // carrying trade dates because the other three ship an always-open profile.
+    //
+    // The population itself is pinned off the two enums, so a filter that
+    // quietly starts dropping identities fails here as well as in the ledger:
+    // `Exchange::ALL` is compared element-by-element with the handwritten
+    // `ALL_EXCHANGES` / `EXCHANGE_VARIANT_COUNT`
+    // (`tests/contract/session_invariants/identity_expectations.rs`), every
+    // `MarketHoursKey` the ledger names must resolve, and the verification
+    // ledger states one row per identity. This count is that ledger's 132 rows
+    // less the four sourced trade-date conventions the sweep excludes.
+    assert_eq!(
+        close_dated_calendars().len(),
+        128,
+        "132 ledger identities less this fence's four excluded conventions"
+    );
     assert_eq!(
         swept_identities,
         close_dated_calendars().len(),

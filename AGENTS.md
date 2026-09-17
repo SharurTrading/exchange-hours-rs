@@ -221,6 +221,23 @@ the cost of keeping them true.
   follow-up is named. For a dormant identity the same obligation is met by
   recording the gap and its closing condition in the evidence file. A
   follow-up that is never recorded is a claim that it was never needed.
+- **LAW-AGENT-ATTRIBUTION** — an AI agent reaches this repository through a
+  human's account, so every GitHub artifact it authors **opens by naming the
+  exact model that wrote it**, before the substance rather than after it: a
+  pull-request or issue title and body, a comment, a review, a review reply, an
+  inline review comment, a release note, or any other post. The statement names
+  the model, and the harness when the harness is what a reader would otherwise
+  have to guess: *"Posted by an AI agent running as `<model>` (`<harness>`),
+  using the maintainer's GitHub login."* The rule binds **coding agents and
+  review agents alike** — a review report reads as the maintainer's own
+  judgement to everyone who does not already know, which is the whole reason the
+  law exists — and it binds from its adoption onward, so history is never
+  rewritten to satisfy it. An agent's commit message carries the same
+  attribution as a `Model:` trailer naming the exact model. **The crate's own
+  files never carry it**: a changelog entry, an evidence file, a plan note and a
+  code comment record the work and the date it was done (LAW-UTC-DATES), never
+  the worker, because the attribution belongs to the post and not to the
+  product.
 
 ## The consumer contract
 
@@ -523,7 +540,9 @@ section, the pull-request number and the research store path.
    everything else is advisory. A fix is accepted only by re-running the
    affected checks on the pushed commit, never from its description.
 10. **Record** the review in the research store's `STATUS.md` (head hash,
-    verdict, defects) and post it on the pull request.
+    verdict, defects) and post it on the pull request, which — like every other
+    post an agent makes through the maintainer's account — opens by naming the
+    exact model that wrote it (LAW-AGENT-ATTRIBUTION).
 
 ## Housekeeping
 

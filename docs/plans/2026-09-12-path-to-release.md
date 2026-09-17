@@ -29,7 +29,11 @@ without the context of that session, following `AGENTS.md` (the charter) and thi
    identity's evidence file (`docs/evidence/<owner>.md`) and say so in the reply;
    resolve every thread before merging.
 6. Every date you write about the repository's own work is the UTC date from `date -u`
-   (LAW-UTC-DATES). Exchange effective days stay venue-local.
+   (LAW-UTC-DATES). Exchange effective days stay venue-local. Every GitHub post you make
+   through the maintainer's account — a pull-request body, a comment, a review, a reply, an
+   inline comment — opens by naming your exact model, because you are speaking as the
+   maintainer (LAW-AGENT-ATTRIBUTION); the same attribution rides a `Model:` trailer on the
+   commits you author.
 7. Stop and ask the maintainer only at the points marked **DECISION**. The release
    itself waits until every stage before it is finished and reviewed; it is not started
    early for any reason.

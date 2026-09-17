@@ -699,7 +699,7 @@ def instant_cell(row):
     def sanitize(value):
         if " | " in value:
             return (value.replace(" | ", " \u00b7 ")
-                    + " (CME's cell separator is written `\u00b7` here)")
+                    + " (CME's cell separator is written as U+00B7 here)")
         return value
 
     if row.kind == "Unsourced":

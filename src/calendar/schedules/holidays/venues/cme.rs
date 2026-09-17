@@ -12,8 +12,7 @@
 //! the D17 intersection of the routed families' T1 rows from CME's own
 //! published Globex holiday schedules — all of 2019-2021 at T1, and 2022-2024
 //! except for the three 2023 markers and the 2024 dates the trading-hours
-//! service answers; and 2025-2027, whose rows are T2 (that service). The
-
+//! service answers; and 2025-2027, whose rows are T2 (that service).
 //!
 //! On the 2016-2018 era's thirty-six dates this table states nine `Closed`
 //! rows — the dates every routed family shut — and withholds the other
@@ -82,13 +81,12 @@ use super::super::{
 
 /// The `Exchange::Cme` table: the intersection of the six CME families.
 ///
-/// Two hundred and fifteen rows over five audited eras. Thirty-nine state a status — the Globex
-/// full closures — and 176 are `Unsourced`: 49 in 2010-2012, where the
-/// families disagree in kind rather than by minutes, 27 in 2016-2018, 34 in
-/// 2019-2021, 34 in 2022-2024, and 32 in 2025-2027. The five eras are
-/// declared as five coverage windows, and the 2013-2015 interval between them is
-/// audited by no wave, so it ships no row and reports no answer rather than a
-/// normal one.
+/// Two hundred and seventy-two rows over six audited eras. Forty-seven state a status — the
+/// Globex full closures — and 225 are `Unsourced`: 49 in 2010-2012, where the
+/// families disagree in kind rather than by minutes, 49 in 2013-2015, 27 in
+/// 2016-2018, 34 in 2019-2021, 34 in 2022-2024, and 32 in 2025-2027. The six
+/// eras are declared as six coverage windows, and outside them the table reports
+/// no answer rather than a normal one.
 // Evidence: docs/evidence/cme.md
 pub(crate) static CME: &HolidayTable = holidays! {
     coverage: [(2010, 1, 1) ..= (2012, 12, 31), (2013, 1, 1) ..= (2015, 12, 31), (2016, 1, 1) ..= (2018, 12, 31), (2019, 1, 1) ..= (2021, 12, 31), (2022, 1, 1) ..= (2024, 12, 31), (2025, 1, 1) ..= (2027, 12, 31)],

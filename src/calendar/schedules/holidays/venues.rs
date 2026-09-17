@@ -21,9 +21,9 @@
 //! `Unsourced` markers every venue table carries, and the 2024 service dates,
 //! whose count differs by venue); and that service, at tier **T2** for the
 //! 2025-2027 ones. Nothing in this module rests on an artifact a family module
-//! does not already carry, and each venue declares the five eras as five
-//! coverage windows — the 2013-2015 interval between them is audited by no wave
-//! and ships no row. There is accordingly no venue evidence of its own to add:
+//! does not already carry, and each venue declares the six eras as six
+//! coverage windows — every interval from 2010-01-01 to 2027-12-31 is inside
+//! one of them. There is accordingly no venue evidence of its own to add:
 //! the four venue evidence files record the derivation, the routing, the
 //! intersection rule and every date the intersection drops.
 //!

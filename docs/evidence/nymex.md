@@ -343,7 +343,7 @@ Every interval from 2010-01-01 is declared, so the whole span has an answer; the
 | 2015-12-25 | closed | `every routed family states a closure` | `2015-christmas-holiday-schedule.pdf @2015-11-23T06:15:20Z` | T1 | the intersection of the families routed to this venue |
 
 ### 2019-2021 (T1)
-**This era declares the venue's fifth audited window.** The table as a whole carries 173 rows over 5 windows — 2010-01-01..2012-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 — and this era's share is **35 rows**: 9 stated closures and 3 `Unsourced` rows. The remaining 23 rows state the era's early closes. Every row is the intersection of the families routed here — `globex_energy` alone — by the D17 rule `venues.rs` states: a closure ships only where every routed family states the same one, and a date on which they differ, or on which one states a row while another has audited the date normal, ships `Unsourced`, with the disagreement named per date below. `comex` and `nymex` route `globex_energy` alone, so their rows are that family's own, unchanged. The three Juneteenth dates ship `Unsourced` because every routed family states the crate's not-worked-up marker there.
+**This era brought the venue to five audited windows; the 2013-2015 wave has since added a sixth.** The table as a whole carries 206 rows over 6 windows — 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 — and this era's share is **35 rows**: 9 stated closures and 3 `Unsourced` rows. The remaining 23 rows state the era's early closes. Every row is the intersection of the families routed here — `globex_energy` alone — by the D17 rule `venues.rs` states: a closure ships only where every routed family states the same one, and a date on which they differ, or on which one states a row while another has audited the date normal, ships `Unsourced`, with the disagreement named per date below. `comex` and `nymex` route `globex_energy` alone, so their rows are that family's own, unchanged. The three Juneteenth dates ship `Unsourced` because every routed family states the crate's not-worked-up marker there.
 
 ### Documents
 | Document | Window | Replay or service URL | Capture or retrieval, UTC | Tier | sha256 |
@@ -425,12 +425,12 @@ Every interval from 2010-01-01 is declared, so the whole span has an answer; the
 | 2021-12-24 | closed | `every routed family states a closure` | `2021-holiday-calendars.zip#2021-christmas-holiday-schedule-compact.xls @2026-08-30T10:03:27Z` | T1 | the intersection of the families routed to this venue |
 ### 2022-2024 (T1/T2)
 
-**Counts in this subsection are the 2022-2024 era's.** The table as a whole carries 173 rows over
-its five audited windows: 38 in 2010-2012 (8 stated closures and 30 early closes), 31 in 2016-2018
-(9 stated closures and 22 early closes), 35 in 2019-2021 (9 stated closures, 23 early closes and 3
-`Unsourced`), 33 in this era (7 stated closures, 23 early closes and 3 `Unsourced`) and 36 in
-2025-2027 (10 stated closures and 26 early closes). The derivation rule is the same in all five;
-only the documents differ.
+**Counts in this subsection are the 2022-2024 era's.** The table as a whole carries 206 rows over
+its six audited windows: 38 in 2010-2012 (8 stated closures and 30 early closes), 33 in 2013-2015
+(9 stated closures and 24 early closes), 31 in 2016-2018 (9 stated closures and 22 early closes),
+35 in 2019-2021 (9 stated closures, 23 early closes and 3 `Unsourced`), 33 in this era (7 stated
+closures, 23 early closes and 3 `Unsourced`) and 36 in 2025-2027 (10 stated closures and 26 early
+closes). The derivation rule is the same in all six; only the documents differ.
 
 **The venue drops no date.** Metals and energy are one key and the operator prints
 them as one product row on every date this table audits, so its one routed family
@@ -491,12 +491,12 @@ no second family to disagree with.
 
 ### 2025-2027 (T2)
 
-**Counts in this subsection are the 2025-2027 era's.** The table as a whole carries 173 rows over
-its five audited windows: 38 in 2010-2012 (8 stated closures and 30 early closes), 31 in 2016-2018
-(9 stated closures and 22 early closes), 35 in 2019-2021 (9 stated closures, 23 early closes and 3
-`Unsourced`), 33 in 2022-2024 (7 stated closures, 23 early closes and 3 `Unsourced`) and 36 in
-this era (10 stated closures and 26 early closes). The intersection is total in all five eras, so
-nothing is withheld for a disagreement.
+**Counts in this subsection are the 2025-2027 era's.** The table as a whole carries 206 rows over
+its six audited windows: 38 in 2010-2012 (8 stated closures and 30 early closes), 33 in 2013-2015
+(9 stated closures and 24 early closes), 31 in 2016-2018 (9 stated closures and 22 early closes),
+35 in 2019-2021 (9 stated closures, 23 early closes and 3 `Unsourced`), 33 in 2022-2024 (7 stated
+closures, 23 early closes and 3 `Unsourced`) and 36 in this era (10 stated closures and 26 early
+closes). The intersection is total in all six eras, so nothing is withheld for a disagreement.
 
 **This table is derived, not retrieved, and the intersection is total.** It is the
 intersection of the families that route to `Exchange::Nymex` — which is one family,

@@ -57,6 +57,19 @@
 # and is not committed, because every value that matters lives in the modules and
 # in `docs/evidence/`.
 #
+# `check_wave5.py` is the wave's independent fence and shares no code with the
+# generators. Its ~30,000 re-derivations cover every era row (date, kind and
+# tier, re-derived from the repaired block and from the crate's own 2013-2015
+# grids, which the checker restates from the modules), the coverage window and
+# row order, every cited document resolved to saved bytes whose sha256 is the
+# one recorded, the D17 intersection over 2013-2015 and over 2010-2027 for #95,
+# the test fences, and — since the prose carries counts that no Rust fence
+# reads — every whole-table total, per-era share, per-window breakdown and
+# venue table-doc figure the evidence files and the module docs state. That last
+# check is what catches an over-summed total: the crate's count for a table is
+# its `holidays!` block, and a row wrapped over several lines by rustfmt is
+# still one row.
+#
 # ## Wave 4 — the 2019-2021 era (issue #91)
 #
 #   python3 tools/wave4_repair.py       # repair the block -> tools/out/repair/*

@@ -122,7 +122,7 @@ corrections (a venue's hours fixed against a primary source) go under
   is what the rows were read from. Columbus Day and Veterans Day 2013-2015
   carry no row: CME's own sheets state in session language that Globex ran a
   normal schedule.
-, and the four
+- **The served CME families' holiday tables now cover 2019-2021, and the four
   CME venue calendars with them.** The same eight families gain **292 rows over
   venue-local trade dates 2019-01-01 .. 2021-12-31** — `globex_equity_index` 36,
   `globex_energy` 35, `globex_fx` 35, `globex_grains` 42,
@@ -134,7 +134,7 @@ corrections (a venue's hours fixed against a primary source) go under
   new window in date order, and each evidence file states the intervals its own
   table does not answer for. At the time of this entry `2013-2015` (#88) was still
   to land; it has since shipped, and the one gap left for these families is
-  `globex_livestock`'s 2016-2018 era. The rows are 103 full
+  `globex_livestock`'s 2016-2018 era (#110). The rows are 103 full
   closures, 157 early closes, eight
   `globex_grains` late opens (five day-after-closure `late_open(08:30)` rows and
   three `late_open_and_early_close(08:30, 12:05)` rows on the day after

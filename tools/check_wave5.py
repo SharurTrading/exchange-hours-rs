@@ -552,6 +552,228 @@ def check_cross_wave(block, modules):
 # Check 6: the fences
 # --------------------------------------------------------------------------
 
+ERA_WORDS = {"three": 3, "four": 4, "five": 5, "six": 6, "seven": 7}
+
+
+def table_doc(text):
+    """The `///` block immediately above the table, without its evidence line."""
+    lines = text.splitlines()
+    stop = next(i for i, line in enumerate(lines) if line.startswith("// Evidence:"))
+    start = stop
+    while start > 0 and lines[start - 1].startswith("///"):
+        start -= 1
+    return "\n".join(lines[start:stop])
+
+
+def window_counts(module):
+    """(total, {window: (rows, stated, withheld)}) for one parsed module."""
+    windows, rows = module
+    per = {}
+    for window in windows:
+        inside = [r for r in rows if window[0] <= r["date"] <= window[1]]
+        stated = [r for r in inside if r["kind"].lower() != "unsourced"]
+        per[window] = (len(inside), len(stated), len(inside) - len(stated))
+    return len(rows), per
+
+
+UNITS = {"one": 1, "two": 2, "three": 3, "four": 4, "five": 5, "six": 6, "seven": 7,
+         "eight": 8, "nine": 9, "ten": 10, "eleven": 11, "twelve": 12, "thirteen": 13,
+         "fourteen": 14, "fifteen": 15, "sixteen": 16, "seventeen": 17, "eighteen": 18,
+         "nineteen": 19}
+TENS = {"twenty": 20, "thirty": 30, "forty": 40, "fifty": 50, "sixty": 60,
+        "seventy": 70, "eighty": 80, "ninety": 90}
+
+
+def word_number(text):
+    """`Thirty-four` / `Two hundred and seventy-two` -> int; a digit string too."""
+    text = text.strip().lower().strip("*-").strip()
+    if text.isdigit():
+        return int(text)
+    words = text.replace("-", " ").replace(" and ", " ").split()
+    total = 0
+    current = 0
+    for word in words:
+        if word in UNITS:
+            current += UNITS[word]
+        elif word in TENS:
+            current += TENS[word]
+        elif word == "hundred":
+            current = max(current, 1) * 100
+        else:
+            return None
+    return total + current
+
+
+def check_era_shapes(modules):
+    """Each family module header's per-era shape sentence names that era's row count."""
+    check = 8
+    derived = 0
+    for family in FAMILIES:
+        path = os.path.join(HOLIDAYS, "%s.rs" % family)
+        text = open(path, encoding="utf-8").read()
+        header = text[:text.index("holidays! {")]
+        windows, _ = modules[family]
+        paragraphs = re.split(r"^//! \*\*(\d{4})-(\d{4})\.\*\*", header, flags=re.M)
+        for i in range(1, len(paragraphs), 3):
+            span = (dt.date(int(paragraphs[i]), 1, 1), dt.date(int(paragraphs[i + 1]), 12, 31))
+            if span not in windows:
+                continue
+            body = paragraphs[i + 2]
+            value = None
+            claim = ""
+            for found in re.finditer(
+                    r"(?:^|\.\s|\n)\s*\*{0,2}([A-Za-z][A-Za-z-]*|\d+)\*{0,2} rows\b", body):
+                parsed = word_number(found.group(1))
+                if parsed is not None:
+                    value, claim = parsed, found.group(1)
+                    break
+            if value is None:
+                continue
+            derived += 1
+            inside = [r for r in modules[family][1] if span[0] <= r["date"] <= span[1]]
+            if value != len(inside):
+                fail(check, "%s: the %s-%s shape sentence says %r rows, the module has %d"
+                     % (path, paragraphs[i], paragraphs[i + 1], claim, len(inside)))
+    return derived
+
+
+def check_prose_counts(modules):
+    """Every row count the prose states is re-derived from the module it describes.
+
+    Whole-table totals, window counts, per-era shares and the per-window
+    breakdowns in the venue files' `Counts in this subsection` paragraphs are
+    recomputed here; a wave that adds a window moves all of them, and an
+    over-summed total is exactly the defect this catches.
+    """
+    check = 7
+    derived = 0
+    owners = list(FAMILIES) + list(ROUTING)
+    for owner in owners:
+        module = modules[owner] if owner in modules else modules["venues"][owner]
+        total, per = window_counts(module)
+        windows = module[0]
+        evidence = os.path.join(ROOT, "docs", "evidence", "%s.md" % owner)
+        text = open(evidence, encoding="utf-8").read()
+        # 1. every "carries N rows over M windows"
+        for found in re.finditer(r"carries (\d+) rows over (\w+) windows", text):
+            derived += 1
+            if int(found.group(1)) != total:
+                fail(check, "%s: prose says %s rows, the module has %d"
+                     % (evidence, found.group(1), total))
+            if int(found.group(2)) != len(windows):
+                fail(check, "%s: prose says %s windows, the module declares %d"
+                     % (evidence, found.group(2), len(windows)))
+        # 2. per-era shares, keyed by the era section they sit in
+        for section in re.split(r"^### ", text, flags=re.M)[1:]:
+            title = section.split("\n", 1)[0]
+            found = re.search(r"(\d{4})-(\d{4})", title)
+            if not found:
+                continue
+            span = (dt.date(int(found.group(1)), 1, 1), dt.date(int(found.group(2)), 12, 31))
+            if span not in per:
+                continue
+            share = re.search(r"this era's share is \*\*(\d+) rows\*\*", section)
+            if share:
+                derived += 1
+                if int(share.group(1)) != per[span][0]:
+                    fail(check, "%s/%s: share says %s, the module has %d"
+                         % (evidence, title, share.group(1), per[span][0]))
+        # 3. the venue files' per-window breakdown paragraphs
+        for paragraph in re.finditer(
+                r"\*\*Counts in this subsection are the (20\d\d-20\d\d) era's\.\*\*(.*?)(?:\n\n|\Z)",
+                text, re.S):
+            stated_era = paragraph.group(1)
+            body = paragraph.group(2)
+            named = 0
+            for found in re.finditer(r"(\d+)\s+in\s+(20\d\d-20\d\d|this era)", body):
+                era = stated_era if found.group(2) == "this era" else found.group(2)
+                span = (dt.date(int(era[:4]), 1, 1), dt.date(int(era[5:]), 12, 31))
+                if span not in per:
+                    continue
+                named += 1
+                derived += 1
+                if int(found.group(1)) != per[span][0]:
+                    fail(check, "%s: the %s breakdown says %s rows for %s, the module has %d"
+                         % (evidence, paragraph.group(1), found.group(1), era, per[span][0]))
+            derived += 1
+            if named != len(windows):
+                fail(check, "%s: the %s breakdown names %d of %d windows"
+                     % (evidence, paragraph.group(1), named, len(windows)))
+        # 4. the module's own table doc: totals, tiers and per-era figures
+        module_path = (os.path.join(HOLIDAYS, "%s.rs" % owner) if owner in FAMILIES
+                       else os.path.join(HOLIDAYS, "venues", "%s.rs" % owner))
+        doc = re.sub(r"\s*///\s*", " ", table_doc(open(module_path, encoding="utf-8").read()))
+        counted = re.search(r"(\d+)(?: rows)? over (\w+) audited eras", doc)
+        if counted:
+            derived += 2
+            if int(counted.group(1)) != total:
+                fail(check, "%s: the table doc says %s rows, the module has %d"
+                     % (module_path, counted.group(1), total))
+            if ERA_WORDS.get(counted.group(2)) != len(windows):
+                fail(check, "%s: the table doc says %s eras, the module declares %d"
+                     % (module_path, counted.group(2), len(windows)))
+        else:
+            worded = re.search(r"([A-Za-z][A-Za-z -]*) rows over (\w+) audited eras", doc)
+            if worded:
+                derived += 1
+                value = word_number(worded.group(1))
+                if value is None:
+                    fail(check, "%s: unparsed row total %r" % (module_path, worded.group(0)))
+                elif value != total:
+                    fail(check, "%s: the table doc says %s rows, the module has %d"
+                         % (module_path, worded.group(1), total))
+        for found in re.finditer(r"(\d+) (?:are|stated and \d+ are) `Unsourced`", doc):
+            derived += 1
+            withheld = sum(part[2] for part in per.values())
+            if int(found.group(1)) != withheld:
+                fail(check, "%s: the table doc says %s Unsourced, the module has %d"
+                     % (module_path, found.group(1), withheld))
+        for found in re.finditer(r"(\d+) stated and (\d+) `Unsourced`", doc):
+            derived += 2
+            if int(found.group(1)) != total - sum(p[2] for p in per.values()):
+                fail(check, "%s: the table doc says %s stated, the module has %d"
+                     % (module_path, found.group(1), total - sum(p[2] for p in per.values())))
+            if int(found.group(2)) != sum(p[2] for p in per.values()):
+                fail(check, "%s: the table doc says %s Unsourced, the module has %d"
+                     % (module_path, found.group(2), sum(p[2] for p in per.values())))
+        for found in re.finditer(r"(\d+) from (20\d\d)-(20\d\d)", doc):
+            span = (dt.date(int(found.group(2)), 1, 1), dt.date(int(found.group(3)), 12, 31))
+            if span not in per:
+                continue
+            derived += 1
+            if int(found.group(1)) != per[span][0]:
+                fail(check, "%s: the table doc says %s rows for %s, the module has %d"
+                     % (module_path, found.group(1), found.group(0)[-9:], per[span][0]))
+        withheld_series = doc.rpartition("`Unsourced`")[2]
+        if withheld_series:
+            seen = 0
+            for found in re.finditer(r"(\d+)\s+in\s+(20\d\d)-(20\d\d)", withheld_series):
+                span = (dt.date(int(found.group(2)), 1, 1),
+                        dt.date(int(found.group(3)), 12, 31))
+                if span not in per:
+                    continue
+                seen += 1
+                derived += 1
+                if int(found.group(1)) != per[span][2]:
+                    fail(check, "%s: the table doc says %s withheld for %s, the module has %d"
+                         % (module_path, found.group(1), found.group(0)[-9:], per[span][2]))
+            if seen:
+                derived += 1
+                if seen != len(windows):
+                    fail(check, "%s: the withheld series names %d of %d windows"
+                         % (module_path, seen, len(windows)))
+        # 5. the "N audited eras: a at Tx, b at Tx, ..." summary line
+        flat = re.sub(r"\s*///\s*", " ", doc)
+        summary = re.search(r"([A-Za-z-]+) audited eras?: ((?:(?:and )?20\d\d-20\d\d at \w+[,. ]*)+)", flat)
+        if summary:
+            named = re.findall(r"(20\d\d)-(20\d\d) at", summary.group(2))
+            derived += 1
+            if len(named) != len(windows):
+                fail(check, "%s: the summary names %d eras, the module declares %d"
+                     % (module_path, len(named), len(windows)))
+    return derived
+
+
 def check_fences():
     check = 6
     derived = 0
@@ -614,6 +836,8 @@ def main(argv=None):
     total += check_venues(modules)
     total += check_cross_wave(block, modules)
     total += check_fences()
+    total += check_prose_counts(modules)
+    total += check_era_shapes(modules)
 
     for check, message in FAILURES:
         print("FAIL[%d] %s" % (check, message))

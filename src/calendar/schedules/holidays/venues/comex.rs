@@ -12,8 +12,8 @@
 //! `globex_energy`'s, at T1 from CME's own published Globex holiday schedules
 //! — all of 2019-2021 at T1, and 2022-2024 except for the three 2023 markers
 //! and the 2024 dates the trading-hours service answers; and 2025-2027, whose
-//! rows are T2 (that service). The 2013-2015 interval between them is audited
-//! by no wave and lies outside every declared window.
+//! rows are T2 (that service). The six eras are contiguous from 2010-01-01 to
+//! 2027-12-31, so no interval between them is unaudited.
 //!
 //! On the 2019-2021 era's **thirty-five rows** the venue carries
 //! `globex_energy` unchanged: nine closures, twenty-three early closes and
@@ -45,13 +45,13 @@ use super::super::{
 ///
 /// Metals and energy are one key and the operator prints them as one product
 /// row on every date the table audits, so the intersection is total: the venue
-/// carries the family's 173 rows unchanged — 38 from 2010-2012,
-/// 31 from 2016-2018, 35 from 2019-2021, 33 from 2022-2024 and
+/// carries the family's 206 rows unchanged — 38 from 2010-2012, 33 from
+/// 2013-2015, 31 from 2016-2018, 35 from 2019-2021, 33 from 2022-2024 and
 /// 36 from 2025-2027 — and drops no date. On the 2022-2024 era's three 2023
 /// dates and the 2019-2021 era's three Juneteenth dates the family itself states
 /// `Unsourced`, and the venue carries that marker because the family says so, not
-/// because anything disputes it. The 2013-2015 interval between the eras is
-/// outside every declared window and ships no row.
+/// because anything disputes it. Every era from 2010-01-01 to 2027-12-31 is a
+/// declared window, so no interval between the eras is unaudited.
 // Evidence: docs/evidence/comex.md
 pub(crate) static COMEX: &HolidayTable = holidays! {
     coverage: [(2010, 1, 1) ..= (2012, 12, 31), (2013, 1, 1) ..= (2015, 12, 31), (2016, 1, 1) ..= (2018, 12, 31), (2019, 1, 1) ..= (2021, 12, 31), (2022, 1, 1) ..= (2024, 12, 31), (2025, 1, 1) ..= (2027, 12, 31)],

@@ -224,6 +224,23 @@ GRIDS = {
     ),
 }
 
+#: The label the compact sheet prints for each family's row. The evidence
+#: tables name it, so a row that cites a combined Globex holiday sheet — every
+#: compact sheet carries one line per product group — says which printed line
+#: its instant comes from.
+SHEET_LABEL = {
+    "globex_equity_index": "Equity",
+    "globex_energy": "Energy, Metals & DME",
+    "globex_fx": "FX",
+    "globex_grains": "Grain & Oilseed",
+    "globex_interest_rates": "Interest Rate",
+    "globex_livestock": "Livestock",
+    "globex_cryptocurrency": "Bitcoin",
+    "globex_nikkei_225_dollar": "Equity",
+    "dairy_same_page": "Dairy",
+    "lumber_same_page": "Lumber Futures&Options",
+}
+
 # --------------------------------------------------------------------------
 # Document codes -> the crate's document id
 # --------------------------------------------------------------------------
@@ -675,23 +692,26 @@ def instant_cell(row):
 
     A quoted full-sheet row carries CME's own cell separator, a vertical bar,
     which would split this pipe-separated table; where that happens the bar is
-    written `\u00b7` and named, so the quotation stays checkable against the
-    block.
+    written `\u00b7` and named inside the quotation, so the cell stays checkable
+    against the block.
     """
+
+    def sanitize(value):
+        if " | " in value:
+            return (value.replace(" | ", " \u00b7 ")
+                    + " (CME's cell separator is written `\u00b7` here)")
+        return value
+
     if row.kind == "Unsourced":
         return "no CME document covers this date (see `%s`)" % row.doc_id
-    tokens = []
+    printed = []
     if row.open_ssm is not None:
-        tokens.append("`%s`" % (row.printed_open or (ssm_token(row.open_ssm) + " CT")))
+        printed.append(row.printed_open or (ssm_token(row.open_ssm) + " CT"))
     if row.close_ssm is not None:
-        tokens.append("`%s`" % (row.printed_close or (ssm_token(row.close_ssm) + " CT")))
-    if tokens:
-        return " / ".join(tokens)
-    text = row.printed_close or "closed"
-    if " | " in text:
-        text = (text.replace(" | ", " \u00b7 ")
-                + " (CME's cell separator is written `\u00b7` here)")
-    return "`%s`" % text
+        printed.append(row.printed_close or (ssm_token(row.close_ssm) + " CT"))
+    if not printed:
+        printed = [row.printed_close or "closed"]
+    return " / ".join("`%s`" % sanitize(value) for value in printed)
 
 
 def kind_words(row):
@@ -750,15 +770,17 @@ def derived_from(row, grid):
     if row.kind == "EarlyClose":
         if grid.wrapped:
             return (
-                "CME prints `%s CT` as this date's own final close, so the leg "
-                "that opened the previous evening at %s CT is clipped there and the "
-                "crate's trade date is the date that close falls on — the "
-                "operator's event date."
-                % (ssm_token(row.close_ssm), ssm_token(grid.first_open)))
+                "The cited sheet's `%s` line prints `%s CT` as this date's own final "
+                "close, so the leg that opened the previous evening at %s CT is "
+                "clipped there and the crate's trade date is the date that close "
+                "falls on — the operator's event date."
+                % (SHEET_LABEL[row.group], ssm_token(row.close_ssm),
+                   ssm_token(grid.first_open)))
         return (
-            "CME prints `%s CT` as this date's own final close inside one civil "
-            "day, so the operator's event date is the crate's trade date."
-            % ssm_token(row.close_ssm))
+            "The cited sheet's `%s` line prints `%s CT` as this date's own final "
+            "close inside one civil day, so the operator's event date is the "
+            "crate's trade date."
+            % (SHEET_LABEL[row.group], ssm_token(row.close_ssm)))
     if row.kind == "LateOpen":
         return (
             "CME's next open for trade date %s is the day session's own `%s CT` on "

@@ -617,10 +617,14 @@ fn the_gate_window_reaches_the_neighbouring_trade_dates() {
 /// `next_session_open_after` enumerates every `Regular` and `Extended` rule
 /// occurrence in opening order, and the cursor advances one second past each
 /// open so an *adjacent* phase boundary — which opens exactly where the
-/// previous one closed — is visited rather than skipped. The sweep covers every
-/// identity's every era: each timeline's rows are dated at or after the
-/// January-2010 floor (LAW-NO-FABRICATED-DATES), the earliest sourced profile
-/// stands below it, and profile tables run no further than 2027.
+/// previous one closed — is visited rather than skipped. That enumeration is
+/// raw for exactly the identities this fence sweeps: same-kind coalescing
+/// (`joins_adjacent_same_kind`) applies only to `globex_cryptocurrency` and
+/// `globex_event_contracts_btc`, which are also excluded here, so no opening can
+/// be merged behind the cursor and lost. The sweep covers every identity's every
+/// era: each timeline's rows are dated at or after the January-2010 floor
+/// (LAW-NO-FABRICATED-DATES), the earliest sourced profile stands below it, and
+/// profile tables run no further than 2027.
 ///
 /// An identity whose occurrences carry no trade date is an always-open profile:
 /// `resolve_rule_bounds` returns before deriving one for it, so the window

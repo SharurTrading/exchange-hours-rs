@@ -20,9 +20,9 @@
 //!
 //! `cold_axis` reproduces the consumer's cold chart frame: 4,999 `is_open`
 //! probes plus one daily close over a 5,000-point window. That is the figure
-//! that decides whether a frame drops. `hot_path_year` probes the same hot path
-//! every 15 minutes through a whole year against the detached control, so the
-//! coverage gate's exit rate is a measured ratio and not a claim.
+//! that decides whether a frame drops. `hot_path_year` measures the same hot
+//! path across a whole year against the detached control, which is the year's
+//! cost rather than the coverage gate's exit rate — see the group's own note.
 
 use std::hint::black_box;
 
@@ -331,14 +331,22 @@ fn cold_axis(criterion: &mut Criterion) {
     group.finish();
 }
 
-/// A year of hot-path probes: what the table costs once the gate exits.
+/// A year of hot-path probes: what the built-in table costs across a year of
+/// the consumer's hot path.
 ///
 /// §6.3's targets are per-instant, and the expensive instant they cap is
 /// measured by the `adjacent` and `holiday` classes above. What the self-dated
-/// narrowing (issue #97) changes is how *often* that instant is reached, which
-/// a per-instant benchmark cannot show: this group probes `is_open` every 15
-/// minutes through a year of the shipped table and through the same year with
-/// the table detached, so the ratio is the exit rate's own figure.
+/// narrowing (issue #97) changes is how *often* that instant is reached, and
+/// this group reports exactly one thing about it: the elapsed time of 35,040
+/// `is_open` probes through a year of the shipped table, against the same probes
+/// with the table detached.
+///
+/// It does **not** count gate exits or binary searches — `year_scan` neither
+/// sees nor reports them, and the crate publishes no counter for a benchmark to
+/// read. The ratio therefore measures the year's cost, which is the quantity an
+/// exit rate is supposed to protect; an exit rate itself is a statement about
+/// the shipped rows and the gate's window, computed in the research store's
+/// `holiday-tables/BENCH-wave1.md` §8 rather than measured here.
 fn hot_path_year(criterion: &mut Criterion) {
     let Some(start) = ct((2026, 1, 1), (0, 0)) else {
         return;

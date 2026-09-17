@@ -103,8 +103,9 @@ corrections (a venue's hours fixed against a primary source) go under
   `globex_grains` 44, `globex_interest_rates` 47 and `globex_livestock` 41 —
   every one at **T1**, from CME Group's own published Globex holiday schedules:
   the 32 per-holiday PDFs plus the 2013-2015 `.xls` workbooks and annual
-  masters. Each family declares the era as a new window in date order, so no
-  interval from the January-2010 floor is unaudited for those six. The rows are
+  masters. Each family declares the era as a new window in date order; every
+  interval from the January-2010 floor is now audited for five of the six, while
+  `globex_livestock` keeps its 2016-2018 gap (#110). The rows are
   87 full closures, 139 early closes, 20 late opens and four
   `late_open_and_early_close` rows. `globex_livestock` carries the era's
   non-scalar shapes because its grid changes inside the window: CME SER-7194

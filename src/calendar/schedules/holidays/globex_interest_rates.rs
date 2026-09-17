@@ -70,7 +70,7 @@ use super::{HolidayTable, holidays};
 /// The family's built-in holiday rows and the windows they were audited over.
 ///
 ///  Six audited eras: 2010-2012 at T1, 2013-2015 at T1, 2016-2018 at T1,
-/// 2019-2021 at T1, 2022-2024 at T1 and 2025-2027 at T1.
+/// 2019-2021 at T1, 2022-2024 at T1/T2 and 2025-2027 at T2.
 ///  Every audited interval is contiguous, and nothing before 2010-01-01
 /// has a table at all: that span lies outside every window, so
 /// `holiday_on` has no answer there rather than reporting a normal date.

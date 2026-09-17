@@ -42,6 +42,9 @@ EVIDENCE = os.path.join(ROOT, "docs", "evidence")
 
 ERA = (2013, 2015)
 
+CARDINAL_WORD = {1: "one", 2: "two", 3: "three", 4: "four", 5: "five",
+                 6: "six", 7: "seven"}
+
 NUMBER_WORD = {1: "first", 2: "second", 3: "third", 4: "fourth", 5: "fifth",
                6: "sixth", 7: "seventh"}
 CARDINAL = {1: "one", 2: "two", 3: "three", 4: "four", 5: "five", 6: "six",
@@ -319,10 +322,10 @@ def insert_before(text, marker, block):
 
 def family_gaps_text(windows, all_rows, mine, extra):
     """The `### Gaps and residual risks, 2013-2015` block for one family."""
-    parts = ["**This era declares the family's %s audited window.** The table "
+    parts = ["**This era brings the family to %s audited windows.** The table "
              "as a whole carries %d rows over %d windows — %s — and this era's "
              "share is **%d rows**: %s. Every row is at T1."
-             % (NUMBER_WORD[len(windows)], len(all_rows), len(windows),
+             % (CARDINAL_WORD[len(windows)], len(all_rows), len(windows),
                 window_list(windows), len(mine), kinds_phrase(mine))]
     if extra:
         parts.append(extra)
@@ -510,11 +513,11 @@ def main(argv=None):
                      "kind": row["kind"], "tier": row["tier"],
                      "document": row["document"], "reason": row["reason"],
                      "printed_close": None, "printed_open": None}
-            for key, value in printed.items():
-                if value["document"] and R.document_id(value["document"], block) == row["document"]:
-                    entry["printed_close"] = value.get("close_instant")
-                    entry["printed_open"] = value.get("open_instant")
-                    break
+            # The plan carries the instants the block printed for this row's
+            # own trade date; matching a document id alone would hand a row the
+            # instant of whichever date of a multi-date sheet came first.
+            entry["printed_close"] = row.get("printed_close")
+            entry["printed_open"] = row.get("printed_open")
             enriched.append(entry)
         derived[family] = enriched
 
@@ -601,7 +604,7 @@ def venue_text(venue, windows, all_rows, mine):
     stated = len(mine) - counts["Unsourced"]
     routed = ", ".join("`%s`" % name for name in ROUTING[venue])
     return (
-        "**This era declares the venue's %s audited window.** The table as a "
+        "**This era brings the venue to %s audited windows.** The table as a "
         "whole carries %d rows over %d windows — %s — and this era's share is "
         "**%d rows**: %d stated %s and %d `Unsourced` %s. Every row is the "
         "intersection of the families routed here — %s — by the D17 rule "
@@ -609,7 +612,7 @@ def venue_text(venue, windows, all_rows, mine):
         "the same one, and a date on which they differ, or on which one states "
         "a row while another has audited the date normal, ships `Unsourced`, "
         "with the disagreement named per date in the three year tables below."
-        % (NUMBER_WORD[len(windows)], len(all_rows), len(windows),
+        % (CARDINAL_WORD[len(windows)], len(all_rows), len(windows),
            window_list(windows), len(mine), stated,
            "row" if stated == 1 else "rows", counts["Unsourced"],
            "row" if counts["Unsourced"] == 1 else "rows", routed))
@@ -654,13 +657,7 @@ def family_extra(name, summary, derived):
             "(LAW-SESSION-NOT-EXPIRY).")
     if name == "globex_energy":
         return (
-            "**2015-04-03 is this family's one Good Friday closure.** CME's "
-            "2013 and 2014 Good Friday sheets halt the `NYMEX, COMEX & DME` "
-            "line at 12:15 CT and resume at 17:00 CT; the 2015 sheet prints no "
-            "session on the date, so 2015-04-03 ships `Closed`. The 2013 and "
-            "2014 dates ship no row: their 16:15 CT line is ordinary for the "
-            "era, and the 12:15 CT halt is the trade date's final close only "
-            "if it were stated as one, which those sheets do not do.")
+            "**Good Friday closes the energy and metals line in all three years.** CME's 2013 Good Friday sheet prints `CME Globex is closed` for 2013-03-29 under the `NYMEX & COMEX® and Dubai Mercantile (DME) Products` heading, and its 2014 and 2015 sheets print the same line for 2014-04-18 and 2015-04-03 under `Energy, Metals & DME Products`, so all three ship `Closed`. The Thursday before each is ordinary for the era, which the same sheets state as `1615 CT / 1715 ET - Regular close`, so those dates ship no row.")
     if name == "globex_interest_rates" or name == "globex_fx":
         return (
             "**The Friday eves of the Monday holidays close at 15:15 CT.** "

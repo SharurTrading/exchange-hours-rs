@@ -149,10 +149,10 @@ are in the research store's `holidays/raw/` indexes.
 ## Holidays
 
 **Coverage:** 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 (inclusive venue-local trade dates).
-Tier: **T1** for 2010-2012, 2016-2018, 2019-2021 and the 2022-2024 rows taken from
-the operator's own published holiday schedules; **T2** for the three 2023 markers and
-eleven 2024 dates this table takes from its trading-hours service, and for
-2025-2027. Inside a window a date with no row is audited normal; outside every
+Tier: **T1** for 2010-2012, 2013-2015, 2016-2018, 2019-2021 and the 2022-2024 rows
+taken from the operator's own published holiday schedules; **T2** for the three 2023
+markers and eleven 2024 dates this table takes from its trading-hours service, and
+for 2025-2027. Inside a window a date with no row is audited normal; outside every
 window this table has no answer at all.
 
 **Six audited eras, with no gap between them.** The table declares 6 coverage windows: `2010-01-01..2012-12-31`, `2013-01-01..2015-12-31`, `2016-01-01..2018-12-31`, `2019-01-01..2021-12-31`, `2022-01-01..2024-12-31`, `2025-01-01..2027-12-31`.
@@ -260,7 +260,7 @@ Every interval from 2010-01-01 is declared, so the whole span has an answer; the
 
 
 ### 2013-2015 (T1)
-**This era declares the venue's sixth audited window.** The table as a whole carries 206 rows over 6 windows — 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 — and this era's share is **33 rows**: 33 stated rows and 0 `Unsourced` rows. Every row is the intersection of the families routed here — `globex_energy` — by the D17 rule `venues.rs` states: a row ships only where every routed family states the same one, and a date on which they differ, or on which one states a row while another has audited the date normal, ships `Unsourced`, with the disagreement named per date in the three year tables below.
+**This era brings the venue to six audited windows.** The table as a whole carries 206 rows over 6 windows — 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 — and this era's share is **33 rows**: 33 stated rows and 0 `Unsourced` rows. Every row is the intersection of the families routed here — `globex_energy` — by the D17 rule `venues.rs` states: a row ships only where every routed family states the same one, and a date on which they differ, or on which one states a row while another has audited the date normal, ships `Unsourced`, with the disagreement named per date in the three year tables below.
 
 ### Documents
 | Document | Window | Replay or service URL | Capture or retrieval, UTC | Tier | sha256 |

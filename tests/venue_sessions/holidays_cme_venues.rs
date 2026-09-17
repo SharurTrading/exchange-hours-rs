@@ -25,7 +25,7 @@
 //! The per-family rows themselves are fenced beside the families that own them
 //! (`holidays_globex_*.rs`); nothing here re-tests a family's instants.
 
-use chrono::{DateTime, Datelike as _, Days, NaiveDate, TimeZone as _, Utc};
+use chrono::{DateTime, Datelike as _, Days, Duration, NaiveDate, TimeZone as _, Utc};
 use chrono_tz::US;
 use exchange_hours::{
     CalendarSource, EvidenceTier, Exchange, ExchangeCalendar, Holiday, HolidayKind, MarketHoursKey,
@@ -1315,6 +1315,53 @@ fn wave5_venue_era_counts_match_the_families_they_route() {
                 "{exchange:?} {year}: the era's shape"
             );
         }
+    }
+}
+
+/// The era's early closes are end-exclusive on the venue calendars too.
+///
+/// `wave5_venue_era_counts_match_the_families_they_route` pins the era's shape
+/// but counts every non-closure as "an instant". This walks the two
+/// single-family energy venues over the era and, on each `EarlyClose` row,
+/// checks the venue's own answers around the printed instant: open one second
+/// before it, closed at it, and still carrying the row's own trade date. The
+/// instant is `globex_energy`'s, read back through the venue calendar — that
+/// the venue states it at all is the routing claim, and
+/// `the_energy_venues_carry_the_family_table_unchanged` holds the two together.
+#[test]
+fn wave5_venue_era_early_closes_are_end_exclusive() {
+    for exchange in [Exchange::Comex, Exchange::Nymex] {
+        let venue = calendar_for_exchange(exchange);
+        let mut probes = 0_usize;
+        let mut date = day(2013, 1, 1);
+        while date <= day(2015, 12, 31) {
+            if let Some(HolidayKind::EarlyClose { close_ssm }) =
+                venue.holiday_on(date).map(Holiday::kind)
+            {
+                let (hour, minute, second) =
+                    (close_ssm / 3_600, (close_ssm % 3_600) / 60, close_ssm % 60);
+                let cutoff = ct(
+                    (date.year(), date.month(), date.day()),
+                    (hour, minute, second),
+                );
+                assert!(
+                    venue.is_open(cutoff - Duration::seconds(1)),
+                    "{exchange:?} {date}: open one second before the printed close"
+                );
+                assert!(
+                    !venue.is_open(cutoff),
+                    "{exchange:?} {date}: closed at the printed close"
+                );
+                assert_eq!(
+                    venue.trade_date(cutoff - Duration::seconds(1)),
+                    Some(date),
+                    "{exchange:?} {date}: the trade date holds until the close"
+                );
+                probes += 1;
+            }
+            date = date.succ_opt().expect("the era ends well before the bound");
+        }
+        assert_eq!(probes, 24, "{exchange:?}: the era's early closes");
     }
 }
 

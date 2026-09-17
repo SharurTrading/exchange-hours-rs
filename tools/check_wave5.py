@@ -15,10 +15,19 @@ re-derives, checking each against what shipped:
      is the one the block and the evidence file record, and every instant the
      row states appears in that artifact's dump;
   4. **venues** — the D17 intersection recomputed over the era from the family
-     tables alone, plus the cross-wave audit over 2010-2027 that closes #95;
-  5. **fences** — that each family's test suite pins its era's dates (a
+     tables alone;
+  5. **cross-wave** — the same intersection recomputed over 2010-2027, the audit
+     that closes #95;
+  6. **fences** — that each family's test suite pins its era's dates (a
      handwritten table, not a count alone) and that the venue suite pins the
-     venue shape.
+     venue shape;
+  7. **prose counts** — every whole-table total, per-era share, per-window
+     breakdown and venue table-doc figure the evidence files and module docs
+     state, re-derived from the module each describes;
+  8. **era shapes** — each family module header's per-era shape sentence against
+     that era's own row count;
+  9. **printed cells** — every era table's `instant as printed` cell against the
+     block's own string for that row's date.
 
 Usage:  WAVE5_RESEARCH=... python3 tools/check_wave5.py
 Exit:   0 every derivation agrees; 1 a disagreement; 2 a missing input.
@@ -273,8 +282,15 @@ def expected_rows(block):
                     continue
                 close = parse_clock(entry.get("close_instant"))
                 if close is not None and close < close_at(family, date):
-                    slot[date] = ("early_close", None, close, entry["document"],
-                                  entry["tier"])
+                    existing = slot.get(date)
+                    if existing and existing[0] == "late_open":
+                        # The re-open cell was recorded first: merge rather than
+                        # drop the late open the same date already carries.
+                        slot[date] = ("late_open_and_early_close", existing[1], close,
+                                      entry["document"], entry["tier"])
+                    else:
+                        slot[date] = ("early_close", None, close, entry["document"],
+                                      entry["tier"])
                 cell = entry.get("open_instant") or ""
                 if not cell:
                     continue
@@ -295,12 +311,6 @@ def expected_rows(block):
                 else:
                     slot[target] = ("late_open", opened, None, entry["document"],
                                     entry["tier"])
-    # an early close that lands on a date a late open already claimed merges
-    for family, slot in out.items():
-        for date, value in list(slot.items()):
-            kind, opened, closed, document, tier = value
-            if kind == "late_open" and closed is None:
-                continue
     return out
 
 
@@ -514,7 +524,7 @@ def check_venues(modules):
     return derived
 
 
-def check_cross_wave(block, modules):
+def check_cross_wave(modules):
     """The #95 audit: the venue tables equal the intersection over 2010-2027."""
     check = 5
     derived = 0
@@ -715,13 +725,16 @@ def check_prose_counts(modules):
         else:
             worded = re.search(r"([A-Za-z][A-Za-z -]*) rows over (\w+) audited eras", doc)
             if worded:
-                derived += 1
+                derived += 2
                 value = word_number(worded.group(1))
                 if value is None:
                     fail(check, "%s: unparsed row total %r" % (module_path, worded.group(0)))
                 elif value != total:
                     fail(check, "%s: the table doc says %s rows, the module has %d"
                          % (module_path, worded.group(1), total))
+                if ERA_WORDS.get(worded.group(2)) != len(windows):
+                    fail(check, "%s: the table doc says %s eras, the module declares %d"
+                         % (module_path, worded.group(2), len(windows)))
         for found in re.finditer(r"(\d+) (?:are|stated and \d+ are) `Unsourced`", doc):
             derived += 1
             withheld = sum(part[2] for part in per.values())
@@ -764,13 +777,100 @@ def check_prose_counts(modules):
                          % (module_path, seen, len(windows)))
         # 5. the "N audited eras: a at Tx, b at Tx, ..." summary line
         flat = re.sub(r"\s*///\s*", " ", doc)
-        summary = re.search(r"([A-Za-z-]+) audited eras?: ((?:(?:and )?20\d\d-20\d\d at \w+[,. ]*)+)", flat)
+        summary = re.search(r"([A-Za-z-]+) audited eras?: ((?:(?:and )?20\d\d-20\d\d at [\w/]+[,. ]*)+)", flat)
         if summary:
             named = re.findall(r"(20\d\d)-(20\d\d) at", summary.group(2))
             derived += 1
             if len(named) != len(windows):
                 fail(check, "%s: the summary names %d eras, the module declares %d"
                      % (module_path, len(named), len(windows)))
+    return derived
+
+
+def closure_token(entry):
+    """The block's own closed-day wording, as the evidence cell quotes it."""
+    for token in re.split(r"[/\n]", entry.get("verbatim", "")):
+        if re.search(r"\bclosed\b", token, re.IGNORECASE):
+            return token.strip()
+    return entry.get("status", "")
+
+
+def sanitize_cell(text):
+    return (text or "").replace("|", "\u00b7").replace("`", "")
+
+
+def printed_cells(block):
+    """family -> date -> the `instant as printed` cell the block states.
+
+    CME publishes one sheet per holiday covering several trade dates, so a row's
+    instant belongs to the row's own date: a closure must never show another
+    date's early close, and a late open must show the re-open cell that names
+    its date. This re-derives each cell from the entry that produces the row.
+    """
+    produced = collections.defaultdict(dict)
+    for holiday in block["holidays"]:
+        date = dt.date.fromisoformat(holiday["date"])
+        for entry in holiday["families"]:
+            group = entry["family"]
+            for family in GROUP_FAMILIES.get(group, ()):
+                slot = produced[family].setdefault(date, {"close": None, "open": None})
+                if entry["status"] == "closed":
+                    slot["close"] = closure_token(entry)
+                    continue
+                close = parse_clock(entry.get("close_instant"))
+                if close is not None and close < close_at(family, date):
+                    slot["close"] = entry["close_instant"]
+                cells = list(entry.get("reopens") or [])
+                if entry.get("open_instant"):
+                    cells.insert(0, entry["open_instant"])
+                for cell in cells:
+                    opened = parse_clock(cell)
+                    if opened is None:
+                        continue
+                    target = named_day(cell, date) or date
+                    if (opened - first_open_at(family, target)) % 86_400 < LATE_OPEN_GRACE:
+                        continue
+                    produced[family].setdefault(
+                        target, {"close": None, "open": None})["open"] = cell
+    cells = {}
+    for family, dates in produced.items():
+        for date, slot in dates.items():
+            parts = []
+            if slot["close"]:
+                parts.append("`%s`" % sanitize_cell(slot["close"]))
+            if slot["open"]:
+                parts.append("`%s`" % sanitize_cell(slot["open"]))
+            cells[(family, date)] = " / ".join(parts) if parts else "\u2014"
+    return cells
+
+
+def check_printed_cells(block):
+    """The evidence table's `instant as printed` cell is the block's own string."""
+    check = 9
+    derived = 0
+    want = printed_cells(block)
+    pattern = re.compile(r"^\| (\d{4}-\d\d-\d\d) \| ([^|]+) \| ([^|]*) \|")
+    for family in FAMILIES:
+        path = os.path.join(ROOT, "docs", "evidence", "%s.md" % family)
+        text = open(path, encoding="utf-8").read()
+        seen = 0
+        for line in text.splitlines():
+            found = pattern.match(line)
+            if not found:
+                continue
+            date = dt.date.fromisoformat(found.group(1))
+            if not (WINDOW[0] <= date <= WINDOW[1]):
+                continue
+            expected = want.get((family, date))
+            if expected is None:
+                continue
+            seen += 1
+            derived += 1
+            if found.group(3).strip() != expected:
+                fail(check, "%s %s: the cell says %r, the block states %r"
+                     % (path, date, found.group(3).strip(), expected))
+        if seen == 0:
+            fail(check, "%s: no 2013-2015 row carries an instant cell" % path)
     return derived
 
 
@@ -834,10 +934,11 @@ def main(argv=None):
     total += check_coverage(modules)
     total += check_bytes(root, block, modules)
     total += check_venues(modules)
-    total += check_cross_wave(block, modules)
+    total += check_cross_wave(modules)
     total += check_fences()
     total += check_prose_counts(modules)
     total += check_era_shapes(modules)
+    total += check_printed_cells(block)
 
     for check, message in FAILURES:
         print("FAIL[%d] %s" % (check, message))

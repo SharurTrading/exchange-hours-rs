@@ -13,9 +13,9 @@ the family rows.
 Usage::
 
     python3 tools/venue_intersection_wave5.py                 # the 2013-2015 report
-    python3 tools/venue_intersection_wave4.py --era 2016 2018  # any audited era
-    python3 tools/venue_intersection.py --emit          # Rust rows + citations
-    python3 tools/venue_intersection.py --check         # compare with venues.rs
+    python3 tools/venue_intersection_wave5.py --era 2016 2018  # any audited era
+    python3 tools/venue_intersection_wave5.py --emit     # Rust rows + citations
+    python3 tools/venue_intersection_wave5.py --check    # compare with venues.rs
 
 Deterministic: same files in, same text out.
 """

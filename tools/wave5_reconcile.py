@@ -72,6 +72,8 @@ def repr_of(path):
     """The comparison key: section kind -> sorted distinct CT tokens per day."""
     out = collections.defaultdict(lambda: collections.defaultdict(set))
     for section, day, lines in W.blocks(path):
+        if section is None:
+            continue  # a day heading before any section heading carries no lines
         kind = W.section_kind(section)
         for line in lines:
             for token in W.ct_clocks(line):

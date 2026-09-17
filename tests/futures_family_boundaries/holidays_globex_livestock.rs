@@ -196,16 +196,16 @@ fn each_early_close_carries_its_own_sourced_instant() {
     assert!(!calendar.is_open(ct((2026, 12, 24), (12, 14, 59))));
 }
 
-/// Case 4, as a negative: no row in this window moves a first open.
+/// The table's shape over every audited window.
 ///
 /// A late open is the one kind whose branch choice is data-dependent and
-/// silently 24 hours wrong if it flips, so its absence is asserted rather than
-/// assumed. The walk also fixes the table's shape over every audited window:
+/// silently 24 hours wrong if it flips, so its count is asserted rather than
+/// assumed. The walk fixes the table's shape over every audited window:
 /// 127 closures, 33 early closes, seven late opens (the four 2010-2012 ones and
 /// the three 2013 year-end reopenings), one combined late-open-and-early-close
 /// row and the six `Unsourced` statements, nothing else.
 #[test]
-fn the_table_ships_no_late_open_in_this_window() {
+fn the_table_ships_the_audited_kind_distribution() {
     let calendar = calendar();
     let mut closed = 0_usize;
     let mut early = 0_usize;
@@ -947,12 +947,12 @@ fn era_2022_2024_unsourced_rows_change_no_answer() {
     }
 }
 
-/// The 2022-2024 window sits third in the declared coverage, its edges
-/// answer, and the unaudited 2013-2018 interval below it stays unaudited. (The
-/// 2019-2021 interval this test used to fence became a window of its own when
-/// that wave shipped; the section below fences it.)
+/// The 2022-2024 window sits fourth in the declared coverage, its edges
+/// answer, and the 2013-2015 interval below it is a window of its own since this
+/// wave shipped. (The 2019-2021 interval this test used to fence became a window
+/// of its own when that wave shipped; the section below fences it.)
 #[test]
-fn era_2022_2024_window_sits_third_and_the_2016_2018_interval_is_unaudited() {
+fn era_2022_2024_window_sits_fourth_and_the_2016_2018_interval_is_unaudited() {
     let calendar = calendar();
     let coverage = calendar
         .holiday_coverage()
@@ -1471,10 +1471,14 @@ fn era_2013_2015_window_edges_answer_as_the_module_declares() {
         "the era's last day is inside the declared window"
     );
     // The neighbouring dates are their own eras' business: 2012-12-31 is
-    // audited normal by the wave below, 2016-01-01 belongs to the wave above,
-    // and neither is this era.
+    // audited normal by the wave below, and 2016-01-01 opens the 2016-2018
+    // interval this family has no window for, so the table is silent there.
     assert_eq!(venue.holiday_on(day((2012, 12, 31))), None);
-    assert!(!(era.0 <= day((2016, 1, 1)) && day((2016, 1, 1)) <= era.1));
+    assert!(
+        !coverage.contains(day((2016, 1, 1))),
+        "2016-01-01 falls in this family's 2016-2018 gap (#110)"
+    );
+    assert_eq!(venue.holiday_on(day((2016, 1, 1))), None);
     // A date below the January-2010 floor is outside every window, so this
     // table has no answer for it at all.
     assert!(!coverage.contains(day((2009, 12, 31))));

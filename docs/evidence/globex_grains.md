@@ -151,8 +151,10 @@ are in the research store's `holidays/raw/` indexes.
 
 **Coverage:** 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 (inclusive venue-local trade dates).
 This wave is 39 rows over 2022-01-01..2024-12-31, **23 at T1** and **16 at T2**. The T1 rows are read from the 2022 per-asset-class workbooks, the 2023 one-pagers, and the two 2024 entries CME's own cmegroup.com worksheets `new-years-day-2024.pdf` and `christmas-day-2023.pdf` serve; the T2 rows are the operator's own `trading-hours-by-product` responses, which carry the rest of 2024 and the three 2023 holiday dates its one-pagers do not cover. 3 of the 39 are `unsourced`.
-Tier: **T1** for 2010-2012 and 2016-2018, from the operator's own published
-holiday schedules; **T2** for 2025-2027, from its trading-hours service. Inside a
+Tier: **T1** for 2010-2012, 2013-2015, 2016-2018, 2019-2021 and the 2022-2024
+rows read from the operator's own published holiday schedules; **T2** for
+2025-2027 and the 2022-2024 rows the operator's trading-hours service
+answers, since those dates have no published schedule this crate could read. Inside a
 window a date with no row is audited normal; outside every window this table has no
 answer at all.
 
@@ -203,60 +205,60 @@ Every interval from 2010-01-01 is declared, so the whole span has an answer; the
 
 | trade date | kind | instant as printed | document | tier | derived from |
 |---|---|---|---|---|---|
-| 2013-01-01 | closed | — | `2013-new-years.pdf @2013-04-14T19:41:46Z` | T1 | CME prints no session running through this date |
-| 2013-01-02 | late open | — | `2013-new-years.pdf @2013-04-14T19:41:46Z` | T1 | the trade date's first open is 9:30 CT: the evening leg that would have opened earlier did not run |
-| 2013-01-21 | closed | — | `2013-martin-luther-king.pdf @2012-11-19T00:16:09Z` | T1 | CME prints no session running through this date |
-| 2013-02-18 | closed | — | `2013-presidents-day.pdf @2013-03-09T11:53:37Z` | T1 | CME prints no session running through this date |
-| 2013-03-29 | closed | — | `2013-good-friday.pdf @2013-06-23T19:59:25Z` | T1 | CME prints no session running through this date |
-| 2013-05-27 | closed | — | `2013-memorial-day.pdf @2013-06-23T20:36:04Z` | T1 | CME prints no session running through this date |
-| 2013-07-03 | early close | `1215 CT` / `1700 CT` | `2013-4th-of-july.pdf @2013-06-23T20:58:25Z` | T1 | the printed final close 12:00 CT is earlier than the family's ordinary 13:15 CT |
-| 2013-07-04 | closed | `1215 CT` / `1700 CT` | `2013-4th-of-july.pdf @2013-06-23T20:58:25Z` | T1 | CME prints no session running through this date |
-| 2013-07-05 | late open | `1215 CT` / `1700 CT` | `2013-4th-of-july.pdf @2013-06-23T20:58:25Z` | T1 | the trade date's first open is 8:30 CT: the evening leg that would have opened earlier did not run |
-| 2013-09-02 | closed | — | `2013-labor-day.pdf @2013-09-02T17:08:41Z` | T1 | CME prints no session running through this date |
-| 2013-11-28 | closed | — | `2013-thanksgiving.pdf @2014-02-14T06:28:36Z` | T1 | CME prints no session running through this date |
-| 2013-11-29 | late open and early close | — | `2013-thanksgiving.pdf @2014-02-14T06:28:36Z` | T1 | the trade date's first open is 8:30 CT: the evening leg that would have opened earlier did not run; the printed final close 12:00 CT is earlier than the family's ordinary 13:15 CT |
-| 2013-12-24 | early close | `1215 CT` | `2013-christmas.pdf @2014-04-12T06:24:28Z` | T1 | the printed final close 12:00 CT is earlier than the family's ordinary 13:15 CT |
-| 2013-12-25 | closed | `1215 CT` | `2013-christmas.pdf @2014-04-12T06:24:28Z` | T1 | CME prints no session running through this date |
-| 2013-12-26 | late open | `1215 CT` | `2013-christmas.pdf @2014-04-12T06:24:28Z` | T1 | the trade date's first open is 8:30 CT: the evening leg that would have opened earlier did not run |
+| 2013-01-01 | closed | `New Years Observed - Globex closed` | `2013-new-years.pdf @2013-04-14T19:41:46Z` | T1 | CME prints no session running through this date |
+| 2013-01-02 | late open | `930 CT` | `2013-new-years.pdf @2013-04-14T19:41:46Z` | T1 | the trade date's first open is 9:30 CT: the evening leg that would have opened earlier did not run |
+| 2013-01-21 | closed | `closed` | `2013-martin-luther-king.pdf @2012-11-19T00:16:09Z` | T1 | CME prints no session running through this date |
+| 2013-02-18 | closed | `closed` | `2013-presidents-day.pdf @2013-03-09T11:53:37Z` | T1 | CME prints no session running through this date |
+| 2013-03-29 | closed | `CME Globex is closed` | `2013-good-friday.pdf @2013-06-23T19:59:25Z` | T1 | CME prints no session running through this date |
+| 2013-05-27 | closed | `closed` | `2013-memorial-day.pdf @2013-06-23T20:36:04Z` | T1 | CME prints no session running through this date |
+| 2013-07-03 | early close | `1200 CT (CBOT & KCBT); 1230 CT (CBOT Mini-Sized grain)` | `2013-4th-of-july.pdf @2013-06-23T20:58:25Z` | T1 | the printed final close 12:00 CT is earlier than the family's ordinary 13:15 CT |
+| 2013-07-04 | closed | `closed` | `2013-4th-of-july.pdf @2013-06-23T20:58:25Z` | T1 | CME prints no session running through this date |
+| 2013-07-05 | late open | `830 CT` | `2013-4th-of-july.pdf @2013-06-23T20:58:25Z` | T1 | the trade date's first open is 8:30 CT: the evening leg that would have opened earlier did not run |
+| 2013-09-02 | closed | `closed` | `2013-labor-day.pdf @2013-09-02T17:08:41Z` | T1 | CME prints no session running through this date |
+| 2013-11-28 | closed | `closed` | `2013-thanksgiving.pdf @2014-02-14T06:28:36Z` | T1 | CME prints no session running through this date |
+| 2013-11-29 | late open and early close | `1200 CT (CBOT & KCBT); 1230 CT (CBOT Mini-Sized grain)` / `830 CT` | `2013-thanksgiving.pdf @2014-02-14T06:28:36Z` | T1 | the trade date's first open is 8:30 CT: the evening leg that would have opened earlier did not run; the printed final close 12:00 CT is earlier than the family's ordinary 13:15 CT |
+| 2013-12-24 | early close | `1200 CT (CBOT & KCBT); 1230 CT (CBOT Mini-Sized grain)` | `2013-christmas.pdf @2014-04-12T06:24:28Z` | T1 | the printed final close 12:00 CT is earlier than the family's ordinary 13:15 CT |
+| 2013-12-25 | closed | `Christmas Day Observed - Globex closed` | `2013-christmas.pdf @2014-04-12T06:24:28Z` | T1 | CME prints no session running through this date |
+| 2013-12-26 | late open | `830 CT` | `2013-christmas.pdf @2014-04-12T06:24:28Z` | T1 | the trade date's first open is 8:30 CT: the evening leg that would have opened earlier did not run |
 
 ### 2014
 
 | trade date | kind | instant as printed | document | tier | derived from |
 |---|---|---|---|---|---|
-| 2014-01-01 | closed | — | `2014-new-years.pdf @2013-10-07T20:58:00Z` | T1 | CME prints no session running through this date |
-| 2014-01-02 | late open | — | `2014-new-years.pdf @2013-10-07T20:58:00Z` | T1 | the trade date's first open is 8:30 CT: the evening leg that would have opened earlier did not run |
-| 2014-01-20 | closed | — | `2014-martin-luther-king-holiday-schedule.pdf @2014-03-26T16:02:15Z` | T1 | CME prints no session running through this date |
-| 2014-02-17 | closed | — | `2014-presidents-day-holiday-schedule.pdf @2014-02-14T19:23:32Z` | T1 | CME prints no session running through this date |
-| 2014-04-18 | closed | — | `2014-good-friday-holiday-schedule.pdf @2014-03-26T15:27:35Z` | T1 | CME prints no session running through this date |
-| 2014-05-26 | closed | — | `2014-memorial-day-holiday-schedule.pdf @2014-07-08T02:01:55Z` | T1 | CME prints no session running through this date |
-| 2014-07-03 | early close | `1215 CT / 1315 ET / 1715 UTC` / `1700 CT / 1800 ET / 2200 UTC` | `2014-4th-of-july-holiday-schedule.pdf @2014-07-08T01:57:36Z` | T1 | the printed final close 12:00 CT is earlier than the family's ordinary 13:15 CT |
-| 2014-07-04 | closed | `1215 CT / 1315 ET / 1715 UTC` / `1700 CT / 1800 ET / 2200 UTC` | `2014-4th-of-july-holiday-schedule.pdf @2014-07-08T01:57:36Z` | T1 | CME prints no session running through this date |
-| 2014-07-07 | late open | `1215 CT / 1315 ET / 1715 UTC` / `1700 CT / 1800 ET / 2200 UTC` | `2014-4th-of-july-holiday-schedule.pdf @2014-07-08T01:57:36Z` | T1 | the trade date's first open is 8:30 CT: the evening leg that would have opened earlier did not run |
-| 2014-09-01 | closed | — | `2014-labor-day-holiday-schedule.pdf @2014-09-12T07:16:08Z` | T1 | CME prints no session running through this date |
-| 2014-11-27 | closed | — | `2014-thanksgiving-holiday-schedule.pdf @2015-01-21T14:54:56Z` | T1 | CME prints no session running through this date |
-| 2014-11-28 | late open and early close | — | `2014-thanksgiving-holiday-schedule.pdf @2015-01-21T14:54:56Z` | T1 | the trade date's first open is 8:30 CT: the evening leg that would have opened earlier did not run; the printed final close 12:00 CT is earlier than the family's ordinary 13:15 CT |
-| 2014-12-24 | early close | `1215 CT / 1315 ET / 1815 UTC` | `2014-christmas-holiday-schedule.pdf @2015-01-21T14:10:00Z` | T1 | the printed final close 12:00 CT is earlier than the family's ordinary 13:15 CT |
-| 2014-12-25 | closed | `1215 CT / 1315 ET / 1815 UTC` | `2014-christmas-holiday-schedule.pdf @2015-01-21T14:10:00Z` | T1 | CME prints no session running through this date |
-| 2014-12-26 | late open | `1215 CT / 1315 ET / 1815 UTC` | `2014-christmas-holiday-schedule.pdf @2015-01-21T14:10:00Z` | T1 | the trade date's first open is 8:30 CT: the evening leg that would have opened earlier did not run |
+| 2014-01-01 | closed | `New Year's Observed - Globex closed` | `2014-new-years.pdf @2013-10-07T20:58:00Z` | T1 | CME prints no session running through this date |
+| 2014-01-02 | late open | `830 CT` | `2014-new-years.pdf @2013-10-07T20:58:00Z` | T1 | the trade date's first open is 8:30 CT: the evening leg that would have opened earlier did not run |
+| 2014-01-20 | closed | `closed` | `2014-martin-luther-king-holiday-schedule.pdf @2014-03-26T16:02:15Z` | T1 | CME prints no session running through this date |
+| 2014-02-17 | closed | `closed` | `2014-presidents-day-holiday-schedule.pdf @2014-02-14T19:23:32Z` | T1 | CME prints no session running through this date |
+| 2014-04-18 | closed | `CME Globex is closed` | `2014-good-friday-holiday-schedule.pdf @2014-03-26T15:27:35Z` | T1 | CME prints no session running through this date |
+| 2014-05-26 | closed | `closed` | `2014-memorial-day-holiday-schedule.pdf @2014-07-08T02:01:55Z` | T1 | CME prints no session running through this date |
+| 2014-07-03 | early close | `1200 CT / 1300 ET / 1700 UTC (1230 CT for Mini-Sized grain)` | `2014-4th-of-july-holiday-schedule.pdf @2014-07-08T01:57:36Z` | T1 | the printed final close 12:00 CT is earlier than the family's ordinary 13:15 CT |
+| 2014-07-04 | closed | `All products closed` | `2014-4th-of-july-holiday-schedule.pdf @2014-07-08T01:57:36Z` | T1 | CME prints no session running through this date |
+| 2014-07-07 | late open | `830 CT / 0930 ET / 1330 UTC` | `2014-4th-of-july-holiday-schedule.pdf @2014-07-08T01:57:36Z` | T1 | the trade date's first open is 8:30 CT: the evening leg that would have opened earlier did not run |
+| 2014-09-01 | closed | `closed` | `2014-labor-day-holiday-schedule.pdf @2014-09-12T07:16:08Z` | T1 | CME prints no session running through this date |
+| 2014-11-27 | closed | `closed` | `2014-thanksgiving-holiday-schedule.pdf @2015-01-21T14:54:56Z` | T1 | CME prints no session running through this date |
+| 2014-11-28 | late open and early close | `1200 CT / 1300 ET / 1800 UTC (1230 CT for Mini-Sized grain)` / `830 CT / 0930 ET / 1430 UTC` | `2014-thanksgiving-holiday-schedule.pdf @2015-01-21T14:54:56Z` | T1 | the trade date's first open is 8:30 CT: the evening leg that would have opened earlier did not run; the printed final close 12:00 CT is earlier than the family's ordinary 13:15 CT |
+| 2014-12-24 | early close | `1200 CT / 1300 ET / 1800 UTC (1230 CT for Mini-Sized grain)` | `2014-christmas-holiday-schedule.pdf @2015-01-21T14:10:00Z` | T1 | the printed final close 12:00 CT is earlier than the family's ordinary 13:15 CT |
+| 2014-12-25 | closed | `Christmas Day Observed - Globex closed` | `2014-christmas-holiday-schedule.pdf @2015-01-21T14:10:00Z` | T1 | CME prints no session running through this date |
+| 2014-12-26 | late open | `830 CT / 0930 ET / 1430 UTC` | `2014-christmas-holiday-schedule.pdf @2015-01-21T14:10:00Z` | T1 | the trade date's first open is 8:30 CT: the evening leg that would have opened earlier did not run |
 
 ### 2015
 
 | trade date | kind | instant as printed | document | tier | derived from |
 |---|---|---|---|---|---|
-| 2015-01-01 | closed | — | `2015-new-years-holiday-schedule.pdf @2015-01-21T14:10:43Z` | T1 | CME prints no session running through this date |
-| 2015-01-02 | late open | — | `2015-new-years-holiday-schedule.pdf @2015-01-21T14:10:43Z` | T1 | the trade date's first open is 8:30 CT: the evening leg that would have opened earlier did not run |
-| 2015-01-19 | closed | — | `2015-martin-luther-king-holiday-schedule.pdf @2015-01-21T14:10:12Z` | T1 | CME prints no session running through this date |
-| 2015-02-16 | closed | — | `2015-presidents-day-holiday-schedule.pdf @2015-01-21T19:24:01Z` | T1 | CME prints no session running through this date |
-| 2015-04-03 | closed | — | `2015-good-friday-holiday-schedule.pdf @2015-09-05T22:32:30Z` | T1 | CME prints no session running through this date |
-| 2015-05-25 | closed | — | `2015-memorial-day-holiday-schedule.pdf @2015-03-26T11:39:38Z` | T1 | CME prints no session running through this date |
-| 2015-07-02 | early close | — | `2015-4th-of-july-holiday-schedule.pdf @2015-09-05T22:27:33Z` | T1 | the printed final close 12:00 CT is earlier than the family's ordinary 13:15 CT |
-| 2015-07-03 | closed | — | `2015-4th-of-july-holiday-schedule.pdf @2015-09-05T22:27:33Z` | T1 | CME prints no session running through this date |
-| 2015-07-06 | late open | — | `2015-4th-of-july-holiday-schedule.pdf @2015-09-05T22:27:33Z` | T1 | the trade date's first open is 8:30 CT: the evening leg that would have opened earlier did not run |
-| 2015-09-07 | closed | — | `2015-labor-day-holiday-schedule.pdf @2015-08-24T02:30:39Z` | T1 | CME prints no session running through this date |
-| 2015-11-26 | closed | — | `2015-thanksgiving-holiday-schedule.pdf @2016-02-05T16:25:19Z` | T1 | CME prints no session running through this date |
-| 2015-11-27 | late open and early close | — | `2015-thanksgiving-holiday-schedule.pdf @2016-02-05T16:25:19Z` | T1 | the trade date's first open is 8:30 CT: the evening leg that would have opened earlier did not run; the printed final close 12:05 CT is earlier than the family's ordinary 13:20 CT |
-| 2015-12-24 | early close | `1215 CT / 1315 ET / 1815 UTC` | `2015-christmas-holiday-schedule.pdf @2015-11-23T06:15:20Z` | T1 | the printed final close 12:05 CT is earlier than the family's ordinary 13:20 CT |
-| 2015-12-25 | closed | `1215 CT / 1315 ET / 1815 UTC` | `2015-christmas-holiday-schedule.pdf @2015-11-23T06:15:20Z` | T1 | CME prints no session running through this date |
+| 2015-01-01 | closed | `New Year's Observed - Globex closed` | `2015-new-years-holiday-schedule.pdf @2015-01-21T14:10:43Z` | T1 | CME prints no session running through this date |
+| 2015-01-02 | late open | `830 CT / 0930 ET / 1430 UTC` | `2015-new-years-holiday-schedule.pdf @2015-01-21T14:10:43Z` | T1 | the trade date's first open is 8:30 CT: the evening leg that would have opened earlier did not run |
+| 2015-01-19 | closed | `closed` | `2015-martin-luther-king-holiday-schedule.pdf @2015-01-21T14:10:12Z` | T1 | CME prints no session running through this date |
+| 2015-02-16 | closed | `closed` | `2015-presidents-day-holiday-schedule.pdf @2015-01-21T19:24:01Z` | T1 | CME prints no session running through this date |
+| 2015-04-03 | closed | `CME Globex is closed` | `2015-good-friday-holiday-schedule.pdf @2015-09-05T22:32:30Z` | T1 | CME prints no session running through this date |
+| 2015-05-25 | closed | `closed` | `2015-memorial-day-holiday-schedule.pdf @2015-03-26T11:39:38Z` | T1 | CME prints no session running through this date |
+| 2015-07-02 | early close | `1200 CT / 1300 ET / 1700 UTC (1230 CT for Mini-Sized grain)` | `2015-4th-of-july-holiday-schedule.pdf @2015-09-05T22:27:33Z` | T1 | the printed final close 12:00 CT is earlier than the family's ordinary 13:15 CT |
+| 2015-07-03 | closed | `All products closed` | `2015-4th-of-july-holiday-schedule.pdf @2015-09-05T22:27:33Z` | T1 | CME prints no session running through this date |
+| 2015-07-06 | late open | `830 CT / 0930 ET / 1330 UTC` | `2015-4th-of-july-holiday-schedule.pdf @2015-09-05T22:27:33Z` | T1 | the trade date's first open is 8:30 CT: the evening leg that would have opened earlier did not run |
+| 2015-09-07 | closed | `closed` | `2015-labor-day-holiday-schedule.pdf @2015-08-24T02:30:39Z` | T1 | CME prints no session running through this date |
+| 2015-11-26 | closed | `closed` | `2015-thanksgiving-holiday-schedule.pdf @2016-02-05T16:25:19Z` | T1 | CME prints no session running through this date |
+| 2015-11-27 | late open and early close | `1205 CT / 1305 ET / 1805 UTC (1230 CT for Mini-Sized grain)` / `830 CT / 0930 ET / 1430 UTC` | `2015-thanksgiving-holiday-schedule.pdf @2016-02-05T16:25:19Z` | T1 | the trade date's first open is 8:30 CT: the evening leg that would have opened earlier did not run; the printed final close 12:05 CT is earlier than the family's ordinary 13:20 CT |
+| 2015-12-24 | early close | `1205 CT / 1305 ET / 1805 UTC (1230 CT for Mini-Sized grain)` | `2015-christmas-holiday-schedule.pdf @2015-11-23T06:15:20Z` | T1 | the printed final close 12:05 CT is earlier than the family's ordinary 13:20 CT |
+| 2015-12-25 | closed | `Christmas Day Observed - Globex closed` | `2015-christmas-holiday-schedule.pdf @2015-11-23T06:15:20Z` | T1 | CME prints no session running through this date |
 
 ### Documents
 | Document | Window | Replay or service URL | Capture or retrieval, UTC | Tier | sha256 |
@@ -292,9 +294,9 @@ Every interval from 2010-01-01 is declared, so the whole span has an answer; the
 
 ### Gaps and residual risks, 2013-2015
 
-**This era declares the family's sixth audited window.** The table as a whole carries 223 rows over 6 windows — 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 — and this era's share is **44 rows**: 27 stated closures, 6 early closes, 8 late opens and 3 combined late-open-and-early-close rows. Every row is at T1.
+**This era brings the family to six audited windows.** The table as a whole carries 223 rows over 6 windows — 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 — and this era's share is **44 rows**: 27 stated closures, 6 early closes, 8 late opens and 3 combined late-open-and-early-close rows. Every row is at T1.
 
-**The grains day session does not run on the Monday and Thursday holidays, so those dates are `Closed`.** CME halts the `Grain, Oilseed & MGEX Products` line at 12:00 CT on the holiday itself and reopens it at 19:00 CT the same evening for the next trade date: the holiday's own trade date has no final close of its own, and the closure removes it with the evening leg that would have opened it. The three `late_open_and_early_close` rows are the Thanksgiving Fridays, where the 08:30 CT reopen is the printed first open and 12:00 CT the printed final close. The grains close is 13:15 CT through 2015-07-04 and 13:20 CT from 2015-07-05 (CME SER-7395R), which is why 2015-12-24's 12:05 CT differs from the 12:00 CT of the two earlier years.
+**The grains day session does not run on the Monday and Thursday holidays, so those dates are `Closed`.** CME halts the `Grain, Oilseed & MGEX Products` line at 12:00 CT on the holiday itself and reopens it at 19:00 CT the same evening for the next trade date: the holiday's own trade date has no final close of its own, and the closure removes it with the evening leg that would have opened it. The three `late_open_and_early_close` rows are the Thanksgiving Fridays, where the 08:30 CT reopen is the printed first open and the printed final close is 12:00 CT in 2013 and 2014 and 12:05 CT in 2015. The grains close is 13:15 CT through 2015-07-04 and 13:20 CT from 2015-07-05 (CME SER-7395R), which is why both 2015-11-27 and 2015-12-24 read 12:05 CT where the two earlier years read 12:00 CT.
 
 ### 2016
 

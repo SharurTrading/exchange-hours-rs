@@ -57,7 +57,7 @@ use super::{
 /// The family's built-in holiday rows and the windows they were audited over.
 ///
 ///  Five audited eras: 2010-2012 at T1, 2013-2015 at T1, 2019-2021 at T1,
-/// 2022-2024 at T1 and 2025-2027 at T1.
+/// 2022-2024 at T1/T2 and 2025-2027 at T2.
 ///  The 2016-2018 interval between them is audited by no wave and lies
 /// outside every window, so `holiday_on` has no answer there rather than
 /// reporting a normal date.

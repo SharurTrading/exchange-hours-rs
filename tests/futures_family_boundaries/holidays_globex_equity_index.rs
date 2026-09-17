@@ -308,11 +308,11 @@ fn the_coverage_window_is_exactly_2010_through_2027() {
     assert!(coverage.contains(day(2027, 12, 31)));
     assert!(!coverage.contains(day(2009, 12, 31)));
     assert!(!coverage.contains(day(2028, 1, 1)));
-    // The table audits five eras; the 2013-2015 interval between the first two
-    // is audited by none, so `contains` is false there and `holiday_on` has no
-    // answer rather than calling the date normal. The 2019-2021 interval
-    // joined the table when that wave shipped, and the 2024-12-31 edge moved
-    // in with the 2022-2024 wave: both are now audited, and a date with no row
+    // The table audits six eras from 2010 through 2027 with no gap between
+    // them, so `contains` is true on every date from 2010-01-01 to 2027-12-31
+    // and false only outside the first and last window. The 2013-2015 and
+    // 2019-2021 intervals joined the table when those waves shipped, and the
+    // 2024-12-31 edge moved in with the 2022-2024 wave: a date with no row
     // inside a window answers `None` as an audited normal date rather than as
     // silence.
     assert!(!coverage.contains(day(2009, 12, 31)));
@@ -1199,12 +1199,13 @@ fn era_2022_2024_unsourced_rows_change_no_answer() {
     }
 }
 
-/// The 2022-2024 window sits fourth in the declared coverage, its edges
-/// answer, and the 2013-2015 interval below the 2016-2018 wave stays
-/// unaudited. (The 2019-2021 interval this test used to fence became a window
-/// of its own when that wave shipped; the section below fences it.)
+/// The 2022-2024 window sits fifth in the declared coverage, its edges
+/// answer, and the 2013-2015 interval below the 2016-2018 wave is a window of
+/// its own since this wave shipped. (The 2019-2021 interval this test used to
+/// fence became a window of its own when that wave shipped; the section below
+/// fences it.)
 #[test]
-fn era_2022_2024_window_sits_fourth_and_the_2013_2015_era_is_audited() {
+fn era_2022_2024_window_sits_fifth_and_the_2013_2015_era_is_audited() {
     let calendar = equity_index();
     let coverage = calendar
         .holiday_coverage()
@@ -1850,10 +1851,13 @@ fn era_2013_2015_window_edges_answer_as_the_module_declares() {
         "the era's last day is inside the declared window"
     );
     // The neighbouring dates are their own eras' business: 2012-12-31 is
-    // audited normal by the wave below, 2016-01-01 belongs to the wave above,
-    // and neither is this era.
+    // audited normal by the wave below, 2016-01-01 opens the next declared
+    // window, and neither is this era.
     assert_eq!(venue.holiday_on(day(2012, 12, 31)), None);
-    assert!(!(era.0 <= day(2016, 1, 1) && day(2016, 1, 1) <= era.1));
+    assert!(
+        coverage.contains(day(2016, 1, 1)),
+        "2016-01-01 is the next declared window's first day"
+    );
     // A date below the January-2010 floor is outside every window, so this
     // table has no answer for it at all.
     assert!(!coverage.contains(day(2009, 12, 31)));

@@ -371,13 +371,19 @@ def main(argv=None):
         if old_claim not in block["coverage"]:
             raise SystemExit("item 5: the coverage clause does not carry the "
                              "claim the verdict quotes")
-        block["coverage"] = block["coverage"].replace(
-            old_claim,
-            "across all 42 workbooks, 57 of the 58 sheets that carry both rows "
-            "give them identical values in every column (the exception is "
-            "X13GFPD sheet 'Good Fri.', item 5 of the round-2 repair)")
+        # The corrected claim is carried once, by `XLS_GROUPING`, which the
+        # rebuilt coverage prose prepends below; the stale clause is removed
+        # here, with its `, and` connector, rather than replaced, so the block
+        # does not state the same thing twice in two spellings.
+        stale = ", and " + old_claim
+        rebuilt = block["coverage"].replace(stale, "")
+        if rebuilt == block["coverage"]:
+            raise SystemExit("item 5: the stale clause does not carry its connector")
+        block["coverage"] = rebuilt
         repairs.add(5, "coverage clause (1)", "coverage", old_claim,
-                    "the 57-of-58 statement", {"artifact": "coverage"})
+                    "the stale clause is dropped; the 57-of-58 statement is "
+                    "carried once by the rebuilt coverage prose",
+                    {"artifact": "coverage"})
 
     # ----------------------------------------------------- items 3, 7, 10, 5
     coverage = block["coverage"]
@@ -678,6 +684,11 @@ def main(argv=None):
     # sha256 exactly one label. The block records that label for it, so this
     # era's rows cite the artifact exactly as the older wave does.
     block["documents"]["D16NY"]["capture_label"] = "2016-01-08"
+    # The count the repair record states is the round-1 residue, so it is taken
+    # before the loop below assigns the digests it is counting.
+    missing_sha256_before = sum(
+        1 for code, entry in block["documents"].items()
+        if code != "D13J4D" and not entry.get("sha256"))
     registry_hashed = []
     for code, entry in sorted(block["documents"].items()):
         # The capture must travel with the filename: several URLs carry more
@@ -695,9 +706,7 @@ def main(argv=None):
         entry["sha256"] = digest
         entry["bytes"] = size
     repairs.add(1, "documents registry", "sha256/bytes/D13J4D",
-                "%d documents carried no sha256"
-                % sum(1 for c, e in block["documents"].items()
-                      if c != "D13J4D" and not e.get("sha256")),
+                "%d documents carried no sha256" % missing_sha256_before,
                 "every document carries the sha256 and byte count of the "
                 "bytes this round re-hashed; D13J4D added",
                 {"artifact": "holidays/raw/",

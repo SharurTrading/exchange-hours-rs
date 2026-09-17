@@ -481,8 +481,8 @@ def main(argv=None):
         # The era tests subtract instants, so `Duration` must be in scope.
         if "Duration" not in text.split("fn ")[0]:
             text, added = re.subn(
-                r"^(use chrono::\{)([^}]*)(\};)$",
-                lambda m: "%s%s, Duration%s" % (m.group(1), m.group(2), m.group(3)),
+                r"^(use chrono::\{)(\s*)",
+                lambda m: "%s%sDuration, " % (m.group(1), m.group(2)),
                 text, count=1, flags=re.M)
             if added == 0:
                 raise SystemExit("%s: no `use chrono::` line to widen" % path)

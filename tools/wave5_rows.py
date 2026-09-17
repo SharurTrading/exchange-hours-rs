@@ -206,7 +206,7 @@ def _livestock_dated_close(date):
 GRID_LIVESTOCK_FLOOR = Grid(
     "livestock-floor", False, _livestock_floor_first_open, _livestock_floor_close,
     "one flat session inside a single civil day: 09:05-16:00 CT on Mondays, "
-    "17:00-16:00 CT on Tuesday-Thursday and 17:00-13:55 CT on Thursdays",
+    "17:00-16:00 CT on Tuesday and Wednesday and 17:00-13:55 CT on Thursdays",
     "livestock.rs PROFILE_AT_2010_FLOOR (2007 around-the-clock schedule)",
     "16:00 CT (13:55 CT on Thursdays)", day_open=_c(9, 5),
 )
@@ -752,6 +752,13 @@ def main(argv=None):
                 "tier": row.tier,
                 "document": document_id(row.document, block),
                 "reason": row.reason,
+                # What CME printed for this row's own trade date. The row
+                # carries them from the block entry that produced it — for a
+                # late open, the re-open cell of the entry that states it — so
+                # the evidence file's `instant as printed` cell never has to
+                # guess which date of a multi-date sheet a row belongs to.
+                "printed_close": row.printed_close,
+                "printed_open": row.printed_open,
             })
         used_codes |= used
         plan["families"][family] = plan_rows

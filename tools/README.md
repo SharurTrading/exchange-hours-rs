@@ -10,15 +10,15 @@
 # ## Wave 5 — the 2013-2015 era (issues #88 and #95), the last CME family wave
 #
 #   WAVE5_RESEARCH=... python3 tools/wave5_repair.py       # repair the block -> tools/out/wave5/repair/*
-#   python3 tools/wave5_reconcile.py    # the 42 earlier PDF captures vs the cited ones
+#   WAVE5_RESEARCH=... python3 tools/wave5_reconcile.py   # the 42 earlier PDF captures vs the cited ones
 #   WAVE5_RESEARCH=... python3 tools/wave5_rows.py         # repaired block -> tools/out/wave5/*
 #   python3 tools/encode_wave5.py . tools/out/wave5/ROWS.json  # plan -> the six modules
 #   python3 tools/venue_intersection_wave5.py --check      # D17 venue tables
 #   WAVE5_RESEARCH=... python3 tools/evidence_wave5.py     # modules + tools/out/wave5 -> docs/evidence/*
 #   WAVE5_RESEARCH=... python3 tools/gen_wave5_tests.py    # plan -> the six era test blocks
 #
-# **`WAVE5_RESEARCH` is required** by `wave5_repair.py`, `wave5_rows.py` and
-# `evidence_wave5.py`, and must name the research store's root — the directory
+# **`WAVE5_RESEARCH` is required** by `wave5_repair.py`, `wave5_reconcile.py`,
+# `wave5_rows.py` and `evidence_wave5.py`, and must name the research store's root — the directory
 # holding `holidays/cme-2013-2015.json` (round 1, byte-identical to the block the
 # verdict reviewed), `holidays/cme-2013-2015.r2.json` (the repaired block the rows
 # are read from) and `holidays/raw/`. That store is deliberately not committed,
@@ -34,6 +34,7 @@
 #      tools/out/wave5/repair/cme-2013-2015.repair.json "$WAVE5_RESEARCH/holidays/"
 #   # (the repair is installed in the research store; wave5_rows.py reads it there)
 #   WAVE5_RESEARCH=... python3 tools/wave5_rows.py
+#   WAVE5_RESEARCH=... python3 tools/wave5_reconcile.py   # writes reconciliation.json
 #   python3 tools/venue_intersection_wave5.py --check
 #   WAVE5_RESEARCH=... python3 tools/evidence_wave5.py
 #   WAVE5_RESEARCH=... python3 tools/gen_wave5_tests.py

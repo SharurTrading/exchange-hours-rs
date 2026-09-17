@@ -14,18 +14,18 @@
 //! Every row here is **derived, not retrieved**. The operator statements behind
 //! them are the documents the family tables already cite: CME Group's own
 //! holiday-calendar PDFs, at tier **T1** for the 2010-2012 rows; CME's own
-//! published Globex holiday schedules, at tier **T1** for the 2016-2018 and
-//! 2022-2024 rows, which are the design memo's D17 intersection of the routed
-//! families' T1 rows rather than a retrieval of their own, except for the dates
-//! the trading-hours service answers (the three 2023 `Unsourced` markers every
-//! venue table carries, and the 2024 service dates, whose count differs by
-//! venue); and that service, at tier **T2** for the 2025-2027 ones. Nothing in
-//! this module rests on an artifact a family module does not already carry, and
-//! each venue declares the four eras as four coverage windows — the 2013-2015
-//! and 2019-2021 intervals between them are audited by no wave and ship no row.
-//! There is accordingly no venue evidence of its own to add: the four venue
-//! evidence files record the derivation, the routing, the intersection rule and
-//! every date the intersection drops.
+//! published Globex holiday schedules, at tier **T1** for the 2016-2018,
+//! 2019-2021 and 2022-2024 rows, which are the design memo's D17 intersection
+//! of the routed families' T1 rows rather than a retrieval of their own, except
+//! for the 2022-2024 dates the trading-hours service answers (the three 2023
+//! `Unsourced` markers every venue table carries, and the 2024 service dates,
+//! whose count differs by venue); and that service, at tier **T2** for the
+//! 2025-2027 ones. Nothing in this module rests on an artifact a family module
+//! does not already carry, and each venue declares the five eras as five
+//! coverage windows — the 2013-2015 interval between them is audited by no wave
+//! and ships no row. There is accordingly no venue evidence of its own to add:
+//! the four venue evidence files record the derivation, the routing, the
+//! intersection rule and every date the intersection drops.
 //!
 //! On the 2016-2018 era's **thirty-six dates** the CME and CBOT tables state
 //! nine `Closed` rows — the dates every routed family shut — and withhold the
@@ -55,6 +55,41 @@
 //! row there, and the families that do cover the era decide each date.
 //! Metals and energy are one key and CME prints them as one product row, so the
 //! `globex_energy` rows carry through untouched.
+//!
+//! On the 2019-2021 era's **forty-two dates** the CME and CBOT tables state
+//! eight `Closed` rows — the same eight on both, the dates every routed family
+//! shut — and withhold the other thirty-four as [`HolidayKind::Unsourced`],
+//! while `comex` and `nymex` carry `globex_energy`'s thirty-five rows
+//! unchanged: nine closures, twenty-three early closes and the family's own
+//! three `Unsourced` markers. Every row in the era is **T1**, from CME's own
+//! published Globex holiday schedules — the compact sheets inside the 2019,
+//! 2020 and 2021 annual bundles, plus the December-2018 supplement that
+//! carries 1-2 January 2019 — so unlike 2022-2024 no date here rests on the
+//! trading-hours service and the era holds no T2 row. All six CME families and
+//! both CBOT families cover the era, so no routed family abstains.
+//!
+//! **CME's thirty-four** are four shapes: eighteen Monday and Thursday
+//! holidays, on which the four financial families halt at 12:00 CT while
+//! `globex_grains` and `globex_livestock` are shut outright; five on which
+//! `globex_grains` alone states a day-after-closure `late_open(08:30)` and the
+//! other five families audited the date normal (2019-01-02, 2019-07-05,
+//! 2019-12-26, 2020-01-02 and 2021-07-06); eight dates whose families state
+//! different rows — the three Thanksgiving Fridays, the two Christmas Eves and
+//! the two July days 2019-07-03 and 2020-07-02 on differing instants, and
+//! 2021-04-02, where equity closes at 08:15 CT and FX and rates at 10:15 CT
+//! while energy, grains and livestock are shut all day; and the three Juneteenth dates, 2019-06-19, 2020-06-19 and
+//! 2021-06-19, on which every routed family states the same `Unsourced` marker,
+//! so the venue repeats their agreement rather than treating it as a dispute.
+//!
+//! **CBOT's thirty-four** are the same eighteen Monday and Thursday holidays,
+//! the same five grains-only late opens, the same three Juneteenth agreements,
+//! and eight dates on which its two families state different rows: the three
+//! Thanksgiving Fridays, where the grain day session reopens at 08:30 CT and
+//! closes at 12:05 CT while the rate leg halts at 12:15 CT; the two Christmas
+//! Eves, where grains closes at 12:05 CT and the rate leg at 12:15 CT;
+//! 2019-07-03 and 2020-07-02, where grains closes at 12:05 CT and the rate leg
+//! audited the date normal; and 2021-04-02, where grains is shut and the rate
+//! leg closes at 10:15 CT.
 //!
 //! On the 2022-2024 era's **forty-one dates** the CME table states seven
 //! `Closed` rows — the same shape as 2016-2018 — and withholds the other

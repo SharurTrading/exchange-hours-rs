@@ -227,10 +227,10 @@ fn the_venue_table_is_the_intersection_of_its_families() {
 }
 
 /// The dates the intersection states a single status on, each with the tier the
-/// venue row carries: 2010-2012, 2016-2018 and 2022-2024 are T1 (CME's own
-/// published schedules, except the two 2024 dates the trading-hours service
-/// answers), and 2025-2027 is T2 (that service).
-const UNANIMOUS_CLOSURES: [((i32, u32, u32), EvidenceTier); 31] = [
+/// venue row carries: 2010-2012, 2016-2018, 2019-2021 and 2022-2024 are T1
+/// (CME's own published schedules, except the two 2024 dates the trading-hours
+/// service answers), and 2025-2027 is T2 (that service).
+const UNANIMOUS_CLOSURES: [((i32, u32, u32), EvidenceTier); 39] = [
     // 2010-2012: the six Globex full closures CME published for those years
     ((2010, 1, 1), EvidenceTier::T1),
     ((2010, 12, 24), EvidenceTier::T1),
@@ -248,6 +248,18 @@ const UNANIMOUS_CLOSURES: [((i32, u32, u32), EvidenceTier); 31] = [
     ((2018, 1, 1), EvidenceTier::T1),
     ((2018, 3, 30), EvidenceTier::T1),
     ((2018, 12, 25), EvidenceTier::T1),
+    // 2019-2021: the eight the era's own published compact schedules state.
+    // Good Friday 2021 is **not** one: the energy complex closed that day while
+    // the financial families halted early, so the six-family venues state
+    // `Unsourced` and only COMEX and NYMEX close.
+    ((2019, 1, 1), EvidenceTier::T1),
+    ((2019, 4, 19), EvidenceTier::T1),
+    ((2019, 12, 25), EvidenceTier::T1),
+    ((2020, 1, 1), EvidenceTier::T1),
+    ((2020, 4, 10), EvidenceTier::T1),
+    ((2020, 12, 25), EvidenceTier::T1),
+    ((2021, 1, 1), EvidenceTier::T1),
+    ((2021, 12, 24), EvidenceTier::T1),
     // 2022-2024: the seven the era's own published schedules state. Five are
     // T1 sheets; 2024-03-29 and 2024-12-25 are the two the trading-hours
     // service answers, so their rows carry T2.
@@ -271,8 +283,10 @@ const UNANIMOUS_CLOSURES: [((i32, u32, u32), EvidenceTier); 31] = [
 ];
 
 /// The energy family's own extra closures: a six-family venue cannot state
-/// them, and `Exchange::Comex`/`Nymex` can.
-const ENERGY_ONLY_CLOSURES: [(i32, u32, u32); 3] = [(2010, 4, 2), (2012, 4, 6), (2026, 4, 3)];
+/// them, and `Exchange::Comex`/`Nymex` can. Good Friday 2021 joins the two
+/// 2010-2012 Good Fridays and 2026-04-03.
+const ENERGY_ONLY_CLOSURES: [(i32, u32, u32); 4] =
+    [(2010, 4, 2), (2012, 4, 6), (2021, 4, 2), (2026, 4, 3)];
 
 /// A `Closed` venue row may only stand where every routed family states a
 /// closure: the sets below are the operator-facing statement of that.
@@ -377,14 +391,15 @@ fn a_closed_venue_row_is_a_unanimous_closure() {
         // `Exchange` is `#[non_exhaustive]`, so the count is keyed off the
         // routing list this module already pins rather than off the variant.
         // 2010-2012 contributes 49 (CME) or 33 (CBOT) unsourced dates,
-        // 2016-2018 another 27 each, 2022-2024 34 and 32, and 2025-2027 32
-        // and 31; the single-family venues have three, all 2022-2024.
+        // 2016-2018 another 27 each, 2019-2021 34 each, 2022-2024 34 and 32,
+        // and 2025-2027 32 and 31; the single-family venues have six, the
+        // three 2019-2021 Juneteenth markers and the three 2023 dates.
         let expected = if single_family {
-            3
+            6
         } else if families.len() == 6 {
-            142
+            176
         } else {
-            123
+            157
         };
         assert_eq!(unsigned, expected, "{exchange:?}: unsourced row count");
     }
@@ -1171,8 +1186,8 @@ fn wave3_energy_early_close_instants_are_the_familys_own() {
 }
 
 /// Every venue's declared window is the union of the windows the families it
-/// routes declare, and the 2022-2024 window's edges are an era's edges rather
-/// than part of one contiguous 2010-2027 claim.
+/// routes declare, and each era's window edge is an era's edge rather than part
+/// of one contiguous 2010-2027 claim.
 #[test]
 fn every_venue_window_is_the_union_of_its_families_windows() {
     fn union(windows: &mut Vec<(NaiveDate, NaiveDate)>) -> Vec<(NaiveDate, NaiveDate)> {
@@ -1208,13 +1223,354 @@ fn every_venue_window_is_the_union_of_its_families_windows() {
             coverage.contains(day(2022, 1, 1)) && coverage.contains(day(2024, 12, 31)),
             "{exchange:?}: the 2022-2024 era is inside the window"
         );
+        // The 2019-2021 interval became a window of its own when that wave
+        // shipped: it is audited for every venue here, and the gaps that
+        // remain are 2013-2015 and, for livestock's family, 2016-2018.
         assert!(
-            !coverage.contains(day(2021, 12, 31)) && !coverage.contains(day(2019, 1, 1)),
-            "{exchange:?}: the 2019-2021 interval is audited by no wave"
+            coverage.contains(day(2019, 1, 1)) && coverage.contains(day(2021, 12, 31)),
+            "{exchange:?}: the 2019-2021 era is inside the window"
         );
         assert!(
             coverage.contains(day(2025, 1, 1)),
             "{exchange:?}: the 2025-2027 window is still declared"
         );
+    }
+}
+
+// ---------------------------------------------------------------------------
+// The 2019-2021 rows.
+// ---------------------------------------------------------------------------
+
+/// The era's rows, counted per year and per kind.
+///
+/// The numbers are handwritten — the era's own shape — while the rows are read
+/// through the venue's public surface; the intersection fence above already
+/// recomputes the kinds from the families, so a wrong count here and a wrong
+/// derivation there cannot both pass. CME and CBOT state no single status on
+/// any era date, so their rows are closures and `Unsourced` markers only; the
+/// single-family energy venues state the family's own 23 early closes.
+#[test]
+fn wave4_venue_era_counts_match_the_families_they_route() {
+    for (exchange, closed, unsourced, instants) in [
+        (
+            Exchange::Cme,
+            [3_usize, 3, 2],
+            [13_usize, 11, 10],
+            [0_usize, 0, 0],
+        ),
+        (Exchange::Cbot, [3, 3, 2], [13, 11, 10], [0, 0, 0]),
+        (Exchange::Comex, [3, 3, 3], [1, 1, 1], [8, 8, 7]),
+        (Exchange::Nymex, [3, 3, 3], [1, 1, 1], [8, 8, 7]),
+    ] {
+        let venue = calendar_for_exchange(exchange);
+        for (index, year) in [2019, 2020, 2021].into_iter().enumerate() {
+            let (mut year_closed, mut year_unsourced, mut year_instants) =
+                (0_usize, 0_usize, 0_usize);
+            let mut date = day(year, 1, 1);
+            while date <= day(year, 12, 31) {
+                if let Some(kind) = venue.holiday_on(date).map(Holiday::kind) {
+                    // `HolidayKind` is `#[non_exhaustive]`: anything that is
+                    // neither a closure nor the not-worked-up marker states an
+                    // instant, which is the third count below.
+                    match kind {
+                        HolidayKind::Closed => year_closed += 1,
+                        HolidayKind::Unsourced => year_unsourced += 1,
+                        _ => year_instants += 1,
+                    }
+                }
+                date = date
+                    .checked_add_days(Days::new(1))
+                    .expect("the era is representable");
+            }
+            assert_eq!(year_closed, closed[index], "{exchange:?} {year} closures");
+            assert_eq!(
+                year_unsourced, unsourced[index],
+                "{exchange:?} {year} withheld dates"
+            );
+            assert_eq!(
+                year_instants, instants[index],
+                "{exchange:?} {year} rows stating an instant"
+            );
+        }
+    }
+
+    // The era's totals: 42 rows each for the two multi-family venues — 8
+    // closures and 34 `Unsourced` — and the energy family's own 35 for the
+    // single-family ones, 9 of them closures.
+    for (exchange, total, closures) in [
+        (Exchange::Cme, 42_usize, 8_usize),
+        (Exchange::Cbot, 42, 8),
+        (Exchange::Comex, 35, 9),
+        (Exchange::Nymex, 35, 9),
+    ] {
+        let venue = calendar_for_exchange(exchange);
+        let (mut rows, mut closed) = (0_usize, 0_usize);
+        let mut date = day(2019, 1, 1);
+        while date <= day(2021, 12, 31) {
+            if let Some(kind) = venue.holiday_on(date).map(Holiday::kind) {
+                rows += 1;
+                if kind == HolidayKind::Closed {
+                    closed += 1;
+                }
+            }
+            date = date
+                .checked_add_days(Days::new(1))
+                .expect("the era is representable");
+        }
+        assert_eq!(rows, total, "{exchange:?}: 2019-2021 rows");
+        assert_eq!(closed, closures, "{exchange:?}: 2019-2021 closures");
+    }
+}
+
+/// The era's window is the families' intersection, recomputed from the
+/// families' own public answers over 2019-01-01..2021-12-31.
+///
+/// `the_venue_table_is_the_intersection_of_its_families` walks the whole
+/// declared coverage; this states the same fact inside the era the wave added,
+/// so a venue row that drifted there cannot hide behind a passing global walk.
+#[test]
+fn wave4_venue_table_is_the_families_intersection_over_the_new_era() {
+    for (exchange, families) in VENUES {
+        let venue = calendar_for_exchange(exchange);
+        let intersection = family_intersection(families);
+        let mut date = day(2019, 1, 1);
+        while date <= day(2021, 12, 31) {
+            let joint = intersection
+                .iter()
+                .find_map(|(day, joint)| (*day == date).then_some(*joint))
+                .unwrap_or_else(|| panic!("{exchange:?}: {date} is outside the recomputed window"));
+            let stated = venue.holiday_on(date).map(Holiday::kind);
+            match joint {
+                Joint::AuditedNormal => assert_eq!(
+                    stated, None,
+                    "{exchange:?}: no routed family states a row on {date}"
+                ),
+                Joint::Agreed(kind) => assert_eq!(
+                    stated,
+                    Some(kind),
+                    "{exchange:?}: every routed family states {kind:?} on {date}"
+                ),
+                Joint::Disputed => assert_eq!(
+                    stated,
+                    Some(HolidayKind::Unsourced),
+                    "{exchange:?}: the routed families disagree on {date}"
+                ),
+            }
+            date = date
+                .checked_add_days(Days::new(1))
+                .expect("the era is representable");
+        }
+    }
+}
+
+/// The era's closures, derived from the families rather than listed by hand.
+///
+/// A date is a closure exactly when **every** routed family states `Closed` on
+/// it, so the venue's `Closed` rows are compared with the families' own answers
+/// through the public surface: a handwritten set would agree with the venue
+/// module by construction and fence nothing. Good Friday 2021 is the era's
+/// proof that the two single-family venues are not the six-family ones.
+#[test]
+fn wave4_closures_are_the_dates_every_family_states_closed() {
+    for (exchange, families) in VENUES {
+        let venue = calendar_for_exchange(exchange);
+        let mut date = day(2019, 1, 1);
+        while date <= day(2021, 12, 31) {
+            let unanimous = families.iter().all(|key| {
+                calendar_for_market_hours_key(*key)
+                    .holiday_on(date)
+                    .map(Holiday::kind)
+                    == Some(HolidayKind::Closed)
+            });
+            assert_eq!(
+                venue.holiday_on(date).map(Holiday::kind) == Some(HolidayKind::Closed),
+                unanimous,
+                "{exchange:?}: {date} is a closure exactly where every routed family says so"
+            );
+            date = date
+                .checked_add_days(Days::new(1))
+                .expect("the era is representable");
+        }
+    }
+
+    // 2021-04-02 is the era's energy-only closure: the complex shut while the
+    // financial families halted early, so only the single-family venues close.
+    for exchange in [Exchange::Comex, Exchange::Nymex] {
+        assert_eq!(
+            calendar_for_exchange(exchange)
+                .holiday_on(day(2021, 4, 2))
+                .map(Holiday::kind),
+            Some(HolidayKind::Closed),
+            "{exchange:?}: the energy family closed on Good Friday 2021"
+        );
+    }
+    for exchange in [Exchange::Cme, Exchange::Cbot] {
+        assert_eq!(
+            calendar_for_exchange(exchange)
+                .holiday_on(day(2021, 4, 2))
+                .map(Holiday::kind),
+            Some(HolidayKind::Unsourced),
+            "{exchange:?}: the six-family venues cannot state one status there"
+        );
+    }
+}
+
+/// Every venue row's document id and tier are a routed family's own, on the
+/// same date.
+///
+/// `wave4_venue_table_is_the_families_intersection_over_the_new_era` compares
+/// kinds; this closes the other two fields over the era, so a venue row can
+/// neither invent an artifact nor re-tier one it read.
+#[test]
+fn wave4_venue_rows_cite_a_family_row_on_the_same_date() {
+    for (exchange, families) in VENUES {
+        let venue = calendar_for_exchange(exchange);
+        let mut date = day(2019, 1, 1);
+        while date <= day(2021, 12, 31) {
+            if let Some(row) = venue.holiday_on(date) {
+                let stated = families
+                    .iter()
+                    .filter_map(|key| calendar_for_market_hours_key(*key).holiday_on(date))
+                    .collect::<Vec<_>>();
+                assert!(
+                    !stated.is_empty(),
+                    "{exchange:?}: the venue states a row on {date} that no routed family states"
+                );
+                let matching = stated
+                    .iter()
+                    .find(|family| family.document_id() == row.document_id())
+                    .unwrap_or_else(|| {
+                        panic!(
+                            "{exchange:?}: {date} cites `{}`, which no routed family cites on \
+                             that date ({:?})",
+                            row.document_id(),
+                            stated
+                                .iter()
+                                .map(|family| family.document_id())
+                                .collect::<Vec<_>>()
+                        )
+                    });
+                assert_eq!(
+                    row.tier(),
+                    matching.tier(),
+                    "{exchange:?}: {date} must carry the tier of the family row it cites"
+                );
+            }
+            date = date
+                .checked_add_days(Days::new(1))
+                .expect("the era is representable");
+        }
+    }
+}
+
+/// The era's three `Unsourced` shapes, each read from the families' own rows.
+///
+/// **One** — two families state different instants. **Two** — one family states
+/// a row while another audited the date normal, which is an answer and not a
+/// missing one. **Three** — every covering family states `Unsourced`, the
+/// wave's marker for a date inside the window it did not work up: they agree,
+/// so the venue ships their marker rather than a dispute, and on the
+/// single-family energy venues it is the family's own statement.
+#[test]
+fn wave4_unsourced_shapes_are_the_families_own_answers() {
+    let cme = calendar_for_exchange(Exchange::Cme);
+    let cbot = calendar_for_exchange(Exchange::Cbot);
+    let equity = calendar_for_market_hours_key(MarketHoursKey::GlobexEquityIndex);
+    let energy = calendar_for_market_hours_key(MarketHoursKey::GlobexEnergy);
+    let grains = calendar_for_market_hours_key(MarketHoursKey::GlobexGrains);
+
+    // Shape one: the Friday after Thanksgiving 2019. The financial families
+    // halt at 12:15 CT, energy at 12:45 and grains closes 08:30-12:05 — no one
+    // instant stands for the venue.
+    let thanksgiving_friday = day(2019, 11, 29);
+    assert_eq!(
+        equity.holiday_on(thanksgiving_friday).map(Holiday::kind),
+        Some(HolidayKind::EarlyClose {
+            close_ssm: 12 * 3_600 + 15 * 60
+        }),
+        "equity index halts at 12:15 CT"
+    );
+    assert_eq!(
+        energy.holiday_on(thanksgiving_friday).map(Holiday::kind),
+        Some(HolidayKind::EarlyClose {
+            close_ssm: 12 * 3_600 + 45 * 60
+        }),
+        "energy halts at 12:45 CT"
+    );
+    assert_eq!(
+        grains.holiday_on(thanksgiving_friday).map(Holiday::kind),
+        Some(HolidayKind::LateOpenAndEarlyClose {
+            open_ssm: 8 * 3_600 + 30 * 60,
+            close_ssm: 12 * 3_600 + 5 * 60,
+        }),
+        "grains reopens at 08:30 CT and closes at 12:05 CT"
+    );
+    for venue in [cme, cbot] {
+        assert_eq!(
+            venue.holiday_on(thanksgiving_friday).map(Holiday::kind),
+            Some(HolidayKind::Unsourced),
+            "the routed families state different instants"
+        );
+    }
+
+    // Shape two: 2019-07-05, where only grains states a row — a late open at
+    // 08:30 CT — and every financial family audited the date normal.
+    let grains_only = day(2019, 7, 5);
+    assert_eq!(
+        grains.holiday_on(grains_only).map(Holiday::kind),
+        Some(HolidayKind::LateOpen {
+            open_ssm: 8 * 3_600 + 30 * 60
+        }),
+        "grains opens late on 2019-07-05"
+    );
+    assert_eq!(
+        equity.holiday_on(grains_only),
+        None,
+        "equity index audited 2019-07-05 normal, which disputes grains' row"
+    );
+    for venue in [cme, cbot] {
+        assert_eq!(
+            venue.holiday_on(grains_only).map(Holiday::kind),
+            Some(HolidayKind::Unsourced),
+            "one family's row against another's audited normal is a dispute"
+        );
+    }
+    assert_eq!(
+        cbot.holiday_on(grains_only).map(Holiday::document_id),
+        grains.holiday_on(grains_only).map(Holiday::document_id),
+        "the venue cites the family row behind the date"
+    );
+
+    // Shape three: the three 2019-2021 Juneteenth dates this wave did not work
+    // up. Every covering family states `Unsourced`, so the venue ships the
+    // marker the families agree on — and the single-family energy venues carry
+    // it too, because their one family states it, not because anyone disputes
+    // it.
+    for date in [day(2019, 6, 19), day(2020, 6, 19), day(2021, 6, 19)] {
+        for key in [
+            MarketHoursKey::GlobexEquityIndex,
+            MarketHoursKey::GlobexEnergy,
+            MarketHoursKey::GlobexFx,
+            MarketHoursKey::GlobexGrains,
+            MarketHoursKey::GlobexInterestRates,
+            MarketHoursKey::GlobexLivestock,
+        ] {
+            assert_eq!(
+                calendar_for_market_hours_key(key)
+                    .holiday_on(date)
+                    .map(Holiday::kind),
+                Some(HolidayKind::Unsourced),
+                "{key:?} must state `Unsourced` on {date}"
+            );
+        }
+        for exchange in [
+            Exchange::Cme,
+            Exchange::Cbot,
+            Exchange::Comex,
+            Exchange::Nymex,
+        ] {
+            agreed_marker_cites_a_routed_family(exchange, date)
+                .unwrap_or_else(|missing| panic!("{missing} (holiday_on date lookup)"));
+        }
     }
 }

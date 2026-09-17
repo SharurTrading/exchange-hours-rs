@@ -910,6 +910,59 @@ fn every_holiday_table_states_its_coverage_window() {
     }
 }
 
+/// The module header names every window its `holidays!` block declares.
+///
+/// The fences above check *rows* against declared windows, so an **omitted**
+/// window has nothing to fail against: the 2019-2021 wave updated every
+/// `holidays!` summary in the eight family modules and none of their file
+/// headers, and every fence stayed green. This is a drift alarm, not a prose
+/// validator: each declared window's first and last year must appear somewhere
+/// in the file's leading doc comment, which is the coverage statement a
+/// consumer reads first.
+///
+/// A module that declares a single window is exempt from nothing — its years
+/// are cheap to state — but a module whose header names them in any form
+/// (`2019-2021`, `2019-01-01 .. 2021-12-31`) passes, because the check is that
+/// the years are present, not that the prose matches a shape.
+#[test]
+fn every_holiday_module_header_names_its_declared_windows() {
+    for block in holiday_blocks() {
+        let text = fs::read_to_string(&block.module).expect("source file must be readable");
+        // The file's leading comment block: the SPDX line, then the module doc.
+        // It ends at the first line that is neither a comment nor blank.
+        let mut documented = Vec::new();
+        for line in text.lines() {
+            if line.starts_with("//") {
+                if line.starts_with("//!") {
+                    documented.push(line);
+                }
+            } else if !line.trim().is_empty() {
+                break;
+            }
+        }
+        let header = documented.join("\n");
+        assert!(
+            !header.is_empty(),
+            "{} declares a holidays! block and must carry a module header",
+            block.module
+        );
+        for window in &block.coverage {
+            let (first, last) = window
+                .split_once("..")
+                .unwrap_or_else(|| panic!("{}: a window is `first..last`: {window}", block.module));
+            let years = [&first[..4], &last[..4]];
+            for year in years {
+                assert!(
+                    header.contains(year),
+                    "{} declares the {window} window and its module header does not name \
+                     {year}: {header:?}",
+                    block.module
+                );
+            }
+        }
+    }
+}
+
 /// The evidence file's own holiday tables must parse, whether or not a fence
 /// above reached them.
 ///

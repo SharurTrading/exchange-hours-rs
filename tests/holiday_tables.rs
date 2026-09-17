@@ -626,6 +626,13 @@ fn the_gate_window_reaches_the_neighbouring_trade_dates() {
 /// (LAW-NO-FABRICATED-DATES), the earliest sourced profile stands below it, and
 /// profile tables run no further than 2027.
 ///
+/// The search behind `next_session_open_after` is bounded to fourteen
+/// venue-local days, so `None` there means "no session in the next fortnight",
+/// not "no session ever": a launch-dated identity answers `None` for every
+/// cursor before its first session. The cursor steps a week forward on `None`
+/// and keeps going, which is what makes the population claim true rather than
+/// approximately true.
+///
 /// An identity whose occurrences carry no trade date is an always-open profile:
 /// `resolve_rule_bounds` returns before deriving one for it, so the window
 /// cannot change its answer, and it is counted rather than asserted against.
@@ -639,6 +646,7 @@ fn every_shipped_session_occurrence_is_dated_by_its_own_open_or_the_next_day() {
     let from = utc_midnight(day(2010, 1, 1));
     let to = utc_midnight(day(2028, 1, 1));
     let mut dated_identities = 0_usize;
+    let mut swept_identities = 0_usize;
     let mut occurrences = 0_usize;
 
     for (label, bare) in close_dated_calendars() {
@@ -649,11 +657,23 @@ fn every_shipped_session_occurrence_is_dated_by_its_own_open_or_the_next_day() {
         let mut cursor = from;
         while cursor < to {
             let Some(open) = calendar.next_session_open_after(cursor) else {
-                break;
+                // Nothing in the next fortnight: step over the gap and ask
+                // again, so a launch-dated identity is still swept.
+                let Some(next) = cursor.checked_add_signed(TimeDelta::days(7)) else {
+                    break;
+                };
+                cursor = next;
+                continue;
             };
             let opened = open.with_timezone(&tz).date_naive();
             match calendar.trade_date(open) {
                 Some(trade_date) => {
+                    // The forward half of the narrow window, restated here
+                    // rather than imported: `identity::trade_date_window` keeps
+                    // its own `SELF_DATED_AFTER` private, and a fence that read
+                    // the constant back would fence nothing. The two are a
+                    // deliberate pair — widening one without the other is
+                    // exactly what this assertion catches.
                     let next = opened
                         .checked_add_days(Days::new(1))
                         .expect("the sweep stays inside the representable calendar");
@@ -673,12 +693,29 @@ fn every_shipped_session_occurrence_is_dated_by_its_own_open_or_the_next_day() {
             "{label}: a trade date is defined on all of an identity's sessions or on none",
         );
         dated_identities += usize::from(dated > 0);
+        swept_identities += usize::from(dated + undated > 0);
     }
 
-    assert!(occurrences > 0, "the crate must ship at least one session");
+    // The population's size is part of the claim: a sweep that silently covered
+    // a fraction of the identities, or stopped at the first long gap, satisfied
+    // every per-occurrence assertion above while proving nothing — which is
+    // what this fence did before the gap handling, at 83 of 128 identities and
+    // 987,848 occurrences. The counts are the observed ones at the 2026-09-17
+    // head: 128 of 128 identities, 1,195,680 occurrences, and 125 identities
+    // carrying trade dates because the other three ship an always-open profile.
+    assert_eq!(
+        swept_identities,
+        close_dated_calendars().len(),
+        "every close-dated identity must ship a session inside the span"
+    );
     assert!(
-        dated_identities > 0,
-        "the sweep must reach identities whose sessions carry a trade date"
+        occurrences > 1_100_000,
+        "the sweep must cover the shipped population, saw {occurrences}"
+    );
+    assert!(
+        dated_identities >= 125,
+        "only an always-open profile may carry no trade date; the bound is the \
+         count observed at this head, saw {dated_identities}"
     );
 }
 

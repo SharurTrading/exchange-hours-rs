@@ -524,8 +524,8 @@ pub(super) fn resolve_rule_bounds(
     // conventions, so ask every layer whether it holds a record in that window
     // before paying for any of it. When a session opening on this day still
     // reaches `raw_open` the occurrence is dated by its own trading day and the
-    // window is one local day either side; otherwise it is the close walk's own
-    // reach, `[D - 1, D + 19]` — see
+    // window is `[D, D + 1]`; otherwise it is the close walk's own reach,
+    // `[D - 1, D + 19]` — see
     // [`identity::trade_date_window`](super::identity::trade_date_window).
     // This sits above the daily-close guard because all three of these branches
     // return the same unmodified bounds, and the guard resolves a profile to

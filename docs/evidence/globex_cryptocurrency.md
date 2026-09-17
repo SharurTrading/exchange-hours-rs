@@ -33,9 +33,10 @@
 responses at **T2**; and `2025-01-01..2027-12-31`, from the trading-hours service at T2. They are
 adjacent, so no gap lies between them. Everything before 2019 lies outside every declared window,
 and `holiday_on` therefore has **no answer** there rather than reporting an unaudited date as
-normal: 2013-2015 is the one stage-2.2 wave that never reached this family, the years before its
-2017-12-17 launch list no cryptocurrency futures at all, and the eras before 2010 are out of scope
-below the crate's January-2010 floor. `HolidayCoverage::windows()` lists the 3, and `contains`
+normal: the 2013-2015 era is declared by the six families CME published a holiday schedule for,
+but not by this one, because the years before its 2017-12-17 launch list no cryptocurrency futures
+at all and no crypto line exists on any 2013-2015 sheet to source; the eras before 2010 are out of
+scope below the crate's January-2010 floor. `HolidayCoverage::windows()` lists the 3, and `contains`
 answers per date.
 **Zone.** Verbatim from the operator page: "Trading hours are subject to change
 and are in U.S. Central Time unless otherwise stated." This channel prints no

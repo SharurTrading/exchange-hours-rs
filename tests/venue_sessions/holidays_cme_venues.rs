@@ -25,7 +25,7 @@
 //! The per-family rows themselves are fenced beside the families that own them
 //! (`holidays_globex_*.rs`); nothing here re-tests a family's instants.
 
-use chrono::{DateTime, Days, NaiveDate, TimeZone as _, Utc};
+use chrono::{DateTime, Datelike as _, Days, NaiveDate, TimeZone as _, Utc};
 use chrono_tz::US;
 use exchange_hours::{
     CalendarSource, EvidenceTier, Exchange, ExchangeCalendar, Holiday, HolidayKind, MarketHoursKey,
@@ -230,7 +230,7 @@ fn the_venue_table_is_the_intersection_of_its_families() {
 /// venue row carries: 2010-2012, 2016-2018, 2019-2021 and 2022-2024 are T1
 /// (CME's own published schedules, except the two 2024 dates the trading-hours
 /// service answers), and 2025-2027 is T2 (that service).
-const UNANIMOUS_CLOSURES: [((i32, u32, u32), EvidenceTier); 39] = [
+const UNANIMOUS_CLOSURES: [((i32, u32, u32), EvidenceTier); 47] = [
     // 2010-2012: the six Globex full closures CME published for those years
     ((2010, 1, 1), EvidenceTier::T1),
     ((2010, 12, 24), EvidenceTier::T1),
@@ -260,6 +260,15 @@ const UNANIMOUS_CLOSURES: [((i32, u32, u32), EvidenceTier); 39] = [
     ((2020, 12, 25), EvidenceTier::T1),
     ((2021, 1, 1), EvidenceTier::T1),
     ((2021, 12, 24), EvidenceTier::T1),
+    // 2013-2015: the eight the era's own published schedules state, all T1.
+    ((2013, 1, 1), EvidenceTier::T1),
+    ((2013, 3, 29), EvidenceTier::T1),
+    ((2013, 12, 25), EvidenceTier::T1),
+    ((2014, 1, 1), EvidenceTier::T1),
+    ((2014, 4, 18), EvidenceTier::T1),
+    ((2014, 12, 25), EvidenceTier::T1),
+    ((2015, 1, 1), EvidenceTier::T1),
+    ((2015, 12, 25), EvidenceTier::T1),
     // 2022-2024: the seven the era's own published schedules state. Five are
     // T1 sheets; 2024-03-29 and 2024-12-25 are the two the trading-hours
     // service answers, so their rows carry T2.
@@ -283,10 +292,15 @@ const UNANIMOUS_CLOSURES: [((i32, u32, u32), EvidenceTier); 39] = [
 ];
 
 /// The energy family's own extra closures: a six-family venue cannot state
-/// them, and `Exchange::Comex`/`Nymex` can. Good Friday 2021 joins the two
-/// 2010-2012 Good Fridays and 2026-04-03.
-const ENERGY_ONLY_CLOSURES: [(i32, u32, u32); 4] =
-    [(2010, 4, 2), (2012, 4, 6), (2021, 4, 2), (2026, 4, 3)];
+/// them, and `Exchange::Comex`/`Nymex` can. Good Friday 2015 and 2021 join the
+/// two 2010-2012 Good Fridays and 2026-04-03.
+const ENERGY_ONLY_CLOSURES: [(i32, u32, u32); 5] = [
+    (2010, 4, 2),
+    (2012, 4, 6),
+    (2015, 4, 3),
+    (2021, 4, 2),
+    (2026, 4, 3),
+];
 
 /// A `Closed` venue row may only stand where every routed family states a
 /// closure: the sets below are the operator-facing statement of that.
@@ -391,15 +405,16 @@ fn a_closed_venue_row_is_a_unanimous_closure() {
         // `Exchange` is `#[non_exhaustive]`, so the count is keyed off the
         // routing list this module already pins rather than off the variant.
         // 2010-2012 contributes 49 (CME) or 33 (CBOT) unsourced dates,
-        // 2016-2018 another 27 each, 2019-2021 34 each, 2022-2024 34 and 32,
-        // and 2025-2027 32 and 31; the single-family venues have six, the
-        // three 2019-2021 Juneteenth markers and the three 2023 dates.
+        // 2013-2015 another 49 or 47, 2016-2018 27 each, 2019-2021 34 each,
+        // 2022-2024 34 and 32, and 2025-2027 32 and 31; the single-family
+        // venues have six, the three 2019-2021 Juneteenth markers and the
+        // three 2023 dates.
         let expected = if single_family {
             6
         } else if families.len() == 6 {
-            176
+            225
         } else {
-            157
+            204
         };
         assert_eq!(unsigned, expected, "{exchange:?}: unsourced row count");
     }
@@ -1223,9 +1238,10 @@ fn every_venue_window_is_the_union_of_its_families_windows() {
             coverage.contains(day(2022, 1, 1)) && coverage.contains(day(2024, 12, 31)),
             "{exchange:?}: the 2022-2024 era is inside the window"
         );
-        // The 2019-2021 interval became a window of its own when that wave
-        // shipped: it is audited for every venue here, and the gaps that
-        // remain are 2013-2015 and, for livestock's family, 2016-2018.
+        // Every stage-2.2 family wave has now shipped, so 2013-2015 is a
+        // window of its own too. The one gap that remains is 2016-2018, and
+        // only for `globex_livestock`: it never declared that era, and the
+        // venue's window set is the union of its routed families'.
         assert!(
             coverage.contains(day(2019, 1, 1)) && coverage.contains(day(2021, 12, 31)),
             "{exchange:?}: the 2019-2021 era is inside the window"
@@ -1235,6 +1251,128 @@ fn every_venue_window_is_the_union_of_its_families_windows() {
             "{exchange:?}: the 2025-2027 window is still declared"
         );
     }
+}
+
+// ---------------------------------------------------------------------------
+// The 2013-2015 rows.
+// ---------------------------------------------------------------------------
+
+/// The era's rows, counted per year and per kind.
+///
+/// The numbers are handwritten — the era's own shape — while the rows are read
+/// through the venue's public surface; the intersection fence above already
+/// recomputes the kinds from the families, so a wrong count here and a wrong
+/// derivation there cannot both pass. CME and CBOT state no single status on
+/// any era date, so their rows are closures and `Unsourced` markers only; the
+/// single-family energy venues carry `globex_energy`'s own early closes.
+#[test]
+fn wave5_venue_era_counts_match_the_families_they_route() {
+    for (exchange, closed, unsourced, instants) in [
+        (
+            Exchange::Cme,
+            [3_usize, 3, 2],
+            [16_usize, 16, 17],
+            [0_usize, 0, 0],
+        ),
+        (
+            Exchange::Cbot,
+            [3_usize, 3, 2],
+            [16_usize, 16, 15],
+            [0_usize, 0, 0],
+        ),
+        (
+            Exchange::Comex,
+            [3_usize, 3, 3],
+            [0_usize, 0, 0],
+            [8_usize, 8, 8],
+        ),
+        (
+            Exchange::Nymex,
+            [3_usize, 3, 3],
+            [0_usize, 0, 0],
+            [8_usize, 8, 8],
+        ),
+    ] {
+        let venue = calendar_for_exchange(exchange);
+        for (index, year) in [2013, 2014, 2015].into_iter().enumerate() {
+            let (mut found_closed, mut found_unsourced, mut found_instants) = (0_usize, 0, 0);
+            let mut date = day(year, 1, 1);
+            while date.year() == year {
+                if let Some(row) = venue.holiday_on(date) {
+                    match row.kind() {
+                        HolidayKind::Closed => found_closed += 1,
+                        HolidayKind::Unsourced => found_unsourced += 1,
+                        _ => found_instants += 1,
+                    }
+                }
+                date = date
+                    .succ_opt()
+                    .expect("the year ends well before the bound");
+            }
+            assert_eq!(
+                (found_closed, found_unsourced, found_instants),
+                (closed[index], unsourced[index], instants[index]),
+                "{exchange:?} {year}: the era's shape"
+            );
+        }
+    }
+}
+
+/// An `Unsourced` era row is a disagreement, never a scheduling claim.
+///
+/// The row says the date is special and the venue has no single instant for it;
+/// it clips nothing and changes no answer. What it must therefore never be is a
+/// closure the families actually agree on — that is what `Closed` is for. The
+/// fence checks both halves on every one of the era's `Unsourced` rows: some
+/// routed family states a row the others do not match, and the row is not a
+/// unanimous closure.
+#[test]
+fn wave5_venue_era_unsourced_rows_are_disagreements_not_closures() {
+    let mut probes = 0_usize;
+    for (exchange, keys) in VENUES {
+        let venue = calendar_for_exchange(exchange);
+        let mut date = day(2013, 1, 1);
+        while date <= day(2015, 12, 31) {
+            if let Some(row) = venue.holiday_on(date) {
+                if row.kind() != HolidayKind::Unsourced {
+                    date = date.succ_opt().expect("the era ends well before the bound");
+                    continue;
+                }
+                let family_rows: Vec<Option<Holiday>> = keys
+                    .iter()
+                    .map(|key| calendar_for_market_hours_key(*key).holiday_on(date))
+                    .collect();
+                // Never a unanimous closure: that is `Closed`'s own shape.
+                let unanimous = family_rows
+                    .iter()
+                    .all(|family| family.is_some_and(|f| f.kind() == HolidayKind::Closed));
+                assert!(
+                    !unanimous,
+                    "{exchange:?} {date}: a unanimous closure ships `Closed`, \
+                     never `Unsourced`"
+                );
+                // And it really is a disagreement: at least one family states
+                // a scheduling row, or is silent where another states one.
+                let scheduled = family_rows
+                    .iter()
+                    .filter(|family| {
+                        family.is_some_and(|f| {
+                            !matches!(f.kind(), HolidayKind::Closed | HolidayKind::Unsourced)
+                        })
+                    })
+                    .count();
+                let silent = family_rows.iter().filter(|family| family.is_none()).count();
+                assert!(
+                    scheduled + silent > 0,
+                    "{exchange:?} {date}: an `Unsourced` row must rest on a \
+                     disagreement the families state"
+                );
+                probes += 1;
+            }
+            date = date.succ_opt().expect("the era ends well before the bound");
+        }
+    }
+    assert_eq!(probes, 96, "the era's `Unsourced` rows were swept");
 }
 
 // ---------------------------------------------------------------------------

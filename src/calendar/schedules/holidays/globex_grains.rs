@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: MIT-0
 
 //! CBOT standard-size grain and oilseed futures holiday rows, 2010-2012,
-//! 2016-2018, 2019-2021, 2022-2024 and 2025-2027 (LAW-HOLIDAY-SCOPE).
+//! 2013-2015, 2016-2018, 2019-2021, 2022-2024 and 2025-2027
+//! (LAW-HOLIDAY-SCOPE).
 //!
 //! Keyed by the crate's own venue-local trade date in `America/Chicago`
 //! (design memo D1), never by CME's event date. That conversion is not the
@@ -100,11 +101,11 @@ const HALF_DAY_CLOSE: u32 = 12 * 3_600 + 5 * 60;
 
 /// The family's built-in holiday rows and the windows they were audited over.
 ///
-/// Five audited eras: 2010-2012 at T1, 2016-2018 at T1, 2019-2021 at T1,
-/// 2022-2024 at T1/T2 and 2025-2027 at T2.
-/// The 2013-01-01 .. 2015-12-31 interval between them is audited by no
-/// wave and lies outside every window, so `holiday_on` has no answer
-/// there rather than reporting a normal date.
+///  Six audited eras: 2010-2012 at T1, 2013-2015 at T1, 2016-2018 at T1,
+/// 2019-2021 at T1, 2022-2024 at T1 and 2025-2027 at T1.
+///  Every audited interval is contiguous, and nothing before 2010-01-01
+/// has a table at all: that span lies outside every window, so
+/// `holiday_on` has no answer there rather than reporting a normal date.
 ///
 /// Coverage ends at
 /// 2027-12-31, the end of the operator's published future
@@ -112,7 +113,7 @@ const HALF_DAY_CLOSE: u32 = 12 * 3_600 + 5 * 60;
 /// CME's 2028-01-01 record sits outside every window and ships no row.
 // Evidence: docs/evidence/globex_grains.md
 pub(crate) static TABLE: &HolidayTable = holidays! {
-    coverage: [(2010, 1, 1) ..= (2012, 12, 31), (2016, 1, 1) ..= (2018, 12, 31), (2019, 1, 1) ..= (2021, 12, 31), (2022, 1, 1) ..= (2024, 12, 31), (2025, 1, 1) ..= (2027, 12, 31)],
+    coverage: [(2010, 1, 1) ..= (2012, 12, 31), (2013, 1, 1) ..= (2015, 12, 31), (2016, 1, 1) ..= (2018, 12, 31), (2019, 1, 1) ..= (2021, 12, 31), (2022, 1, 1) ..= (2024, 12, 31), (2025, 1, 1) ..= (2027, 12, 31)],
     rows: [
         // 2010-01-01 - T1 - 2010-new-years.pdf - closed: new year's day 2010.
         (2010, 1, 1, Closed, T1, "2010-new-years.pdf @2010-02-15T05:16:52Z"),
@@ -146,6 +147,94 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         // 2012-12-25 - T1 - 2012-christmas.pdf - closed: christmas day 2012.
         (2012, 12, 25, Closed, T1, "2012-christmas.pdf @2013-04-14T19:40:27Z"),
         (2012, 12, 26, late_open(9 * 3_600 + 30 * 60), T1, "2012-christmas.pdf @2013-04-14T19:40:27Z"),
+        // 2013-01-01 - T1 - 2013-new-years.pdf @2013-04-14T19:41:46Z - CME prints no session running through this date.
+        (2013, 1, 1, Closed, T1, "2013-new-years.pdf @2013-04-14T19:41:46Z"),
+        // 2013-01-02 - T1 - 2013-new-years.pdf @2013-04-14T19:41:46Z - the trade date's first open is 9:30 CT: the evening leg that would have opened earlier did not run.
+        (2013, 1, 2, late_open(9 * 3_600 + 30 * 60), T1, "2013-new-years.pdf @2013-04-14T19:41:46Z"),
+        // 2013-01-21 - T1 - 2013-martin-luther-king.pdf @2012-11-19T00:16:09Z - CME prints no session running through this date.
+        (2013, 1, 21, Closed, T1, "2013-martin-luther-king.pdf @2012-11-19T00:16:09Z"),
+        // 2013-02-18 - T1 - 2013-presidents-day.pdf @2013-03-09T11:53:37Z - CME prints no session running through this date.
+        (2013, 2, 18, Closed, T1, "2013-presidents-day.pdf @2013-03-09T11:53:37Z"),
+        // 2013-03-29 - T1 - 2013-good-friday.pdf @2013-06-23T19:59:25Z - CME prints no session running through this date.
+        (2013, 3, 29, Closed, T1, "2013-good-friday.pdf @2013-06-23T19:59:25Z"),
+        // 2013-05-27 - T1 - 2013-memorial-day.pdf @2013-06-23T20:36:04Z - CME prints no session running through this date.
+        (2013, 5, 27, Closed, T1, "2013-memorial-day.pdf @2013-06-23T20:36:04Z"),
+        // 2013-07-03 - T1 - 2013-4th-of-july.pdf @2013-06-23T20:58:25Z - the printed final close 12:00 CT is earlier than the family's ordinary 13:15 CT.
+        (2013, 7, 3, early_close(12 * 3_600), T1, "2013-4th-of-july.pdf @2013-06-23T20:58:25Z"),
+        // 2013-07-04 - T1 - 2013-4th-of-july.pdf @2013-06-23T20:58:25Z - CME prints no session running through this date.
+        (2013, 7, 4, Closed, T1, "2013-4th-of-july.pdf @2013-06-23T20:58:25Z"),
+        // 2013-07-05 - T1 - 2013-4th-of-july.pdf @2013-06-23T20:58:25Z - the trade date's first open is 8:30 CT: the evening leg that would have opened earlier did not run.
+        (2013, 7, 5, late_open(8 * 3_600 + 30 * 60), T1, "2013-4th-of-july.pdf @2013-06-23T20:58:25Z"),
+        // 2013-09-02 - T1 - 2013-labor-day.pdf @2013-09-02T17:08:41Z - CME prints no session running through this date.
+        (2013, 9, 2, Closed, T1, "2013-labor-day.pdf @2013-09-02T17:08:41Z"),
+        // 2013-11-28 - T1 - 2013-thanksgiving.pdf @2014-02-14T06:28:36Z - CME prints no session running through this date.
+        (2013, 11, 28, Closed, T1, "2013-thanksgiving.pdf @2014-02-14T06:28:36Z"),
+        // 2013-11-29 - T1 - 2013-thanksgiving.pdf @2014-02-14T06:28:36Z - the trade date's first open is 8:30 CT: the evening leg that would have opened earlier did not run; the printed final close 12:00 CT is earlier than the family's ordinary 13:15 CT.
+        (2013, 11, 29, late_open_and_early_close(8 * 3_600 + 30 * 60, 12 * 3_600), T1, "2013-thanksgiving.pdf @2014-02-14T06:28:36Z"),
+        // 2013-12-24 - T1 - 2013-christmas.pdf @2014-04-12T06:24:28Z - the printed final close 12:00 CT is earlier than the family's ordinary 13:15 CT.
+        (2013, 12, 24, early_close(12 * 3_600), T1, "2013-christmas.pdf @2014-04-12T06:24:28Z"),
+        // 2013-12-25 - T1 - 2013-christmas.pdf @2014-04-12T06:24:28Z - CME prints no session running through this date.
+        (2013, 12, 25, Closed, T1, "2013-christmas.pdf @2014-04-12T06:24:28Z"),
+        // 2013-12-26 - T1 - 2013-christmas.pdf @2014-04-12T06:24:28Z - the trade date's first open is 8:30 CT: the evening leg that would have opened earlier did not run.
+        (2013, 12, 26, late_open(8 * 3_600 + 30 * 60), T1, "2013-christmas.pdf @2014-04-12T06:24:28Z"),
+        // 2014-01-01 - T1 - 2014-new-years.pdf @2013-10-07T20:58:00Z - CME prints no session running through this date.
+        (2014, 1, 1, Closed, T1, "2014-new-years.pdf @2013-10-07T20:58:00Z"),
+        // 2014-01-02 - T1 - 2014-new-years.pdf @2013-10-07T20:58:00Z - the trade date's first open is 8:30 CT: the evening leg that would have opened earlier did not run.
+        (2014, 1, 2, late_open(8 * 3_600 + 30 * 60), T1, "2014-new-years.pdf @2013-10-07T20:58:00Z"),
+        // 2014-01-20 - T1 - 2014-martin-luther-king-holiday-schedule.pdf @2014-03-26T16:02:15Z - CME prints no session running through this date.
+        (2014, 1, 20, Closed, T1, "2014-martin-luther-king-holiday-schedule.pdf @2014-03-26T16:02:15Z"),
+        // 2014-02-17 - T1 - 2014-presidents-day-holiday-schedule.pdf @2014-02-14T19:23:32Z - CME prints no session running through this date.
+        (2014, 2, 17, Closed, T1, "2014-presidents-day-holiday-schedule.pdf @2014-02-14T19:23:32Z"),
+        // 2014-04-18 - T1 - 2014-good-friday-holiday-schedule.pdf @2014-03-26T15:27:35Z - CME prints no session running through this date.
+        (2014, 4, 18, Closed, T1, "2014-good-friday-holiday-schedule.pdf @2014-03-26T15:27:35Z"),
+        // 2014-05-26 - T1 - 2014-memorial-day-holiday-schedule.pdf @2014-07-08T02:01:55Z - CME prints no session running through this date.
+        (2014, 5, 26, Closed, T1, "2014-memorial-day-holiday-schedule.pdf @2014-07-08T02:01:55Z"),
+        // 2014-07-03 - T1 - 2014-4th-of-july-holiday-schedule.pdf @2014-07-08T01:57:36Z - the printed final close 12:00 CT is earlier than the family's ordinary 13:15 CT.
+        (2014, 7, 3, early_close(12 * 3_600), T1, "2014-4th-of-july-holiday-schedule.pdf @2014-07-08T01:57:36Z"),
+        // 2014-07-04 - T1 - 2014-4th-of-july-holiday-schedule.pdf @2014-07-08T01:57:36Z - CME prints no session running through this date.
+        (2014, 7, 4, Closed, T1, "2014-4th-of-july-holiday-schedule.pdf @2014-07-08T01:57:36Z"),
+        // 2014-07-07 - T1 - 2014-4th-of-july-holiday-schedule.pdf @2014-07-08T01:57:36Z - the trade date's first open is 8:30 CT: the evening leg that would have opened earlier did not run.
+        (2014, 7, 7, late_open(8 * 3_600 + 30 * 60), T1, "2014-4th-of-july-holiday-schedule.pdf @2014-07-08T01:57:36Z"),
+        // 2014-09-01 - T1 - 2014-labor-day-holiday-schedule.pdf @2014-09-12T07:16:08Z - CME prints no session running through this date.
+        (2014, 9, 1, Closed, T1, "2014-labor-day-holiday-schedule.pdf @2014-09-12T07:16:08Z"),
+        // 2014-11-27 - T1 - 2014-thanksgiving-holiday-schedule.pdf @2015-01-21T14:54:56Z - CME prints no session running through this date.
+        (2014, 11, 27, Closed, T1, "2014-thanksgiving-holiday-schedule.pdf @2015-01-21T14:54:56Z"),
+        // 2014-11-28 - T1 - 2014-thanksgiving-holiday-schedule.pdf @2015-01-21T14:54:56Z - the trade date's first open is 8:30 CT: the evening leg that would have opened earlier did not run; the printed final close 12:00 CT is earlier than the family's ordinary 13:15 CT.
+        (2014, 11, 28, late_open_and_early_close(8 * 3_600 + 30 * 60, 12 * 3_600), T1, "2014-thanksgiving-holiday-schedule.pdf @2015-01-21T14:54:56Z"),
+        // 2014-12-24 - T1 - 2014-christmas-holiday-schedule.pdf @2015-01-21T14:10:00Z - the printed final close 12:00 CT is earlier than the family's ordinary 13:15 CT.
+        (2014, 12, 24, early_close(12 * 3_600), T1, "2014-christmas-holiday-schedule.pdf @2015-01-21T14:10:00Z"),
+        // 2014-12-25 - T1 - 2014-christmas-holiday-schedule.pdf @2015-01-21T14:10:00Z - CME prints no session running through this date.
+        (2014, 12, 25, Closed, T1, "2014-christmas-holiday-schedule.pdf @2015-01-21T14:10:00Z"),
+        // 2014-12-26 - T1 - 2014-christmas-holiday-schedule.pdf @2015-01-21T14:10:00Z - the trade date's first open is 8:30 CT: the evening leg that would have opened earlier did not run.
+        (2014, 12, 26, late_open(8 * 3_600 + 30 * 60), T1, "2014-christmas-holiday-schedule.pdf @2015-01-21T14:10:00Z"),
+        // 2015-01-01 - T1 - 2015-new-years-holiday-schedule.pdf @2015-01-21T14:10:43Z - CME prints no session running through this date.
+        (2015, 1, 1, Closed, T1, "2015-new-years-holiday-schedule.pdf @2015-01-21T14:10:43Z"),
+        // 2015-01-02 - T1 - 2015-new-years-holiday-schedule.pdf @2015-01-21T14:10:43Z - the trade date's first open is 8:30 CT: the evening leg that would have opened earlier did not run.
+        (2015, 1, 2, late_open(8 * 3_600 + 30 * 60), T1, "2015-new-years-holiday-schedule.pdf @2015-01-21T14:10:43Z"),
+        // 2015-01-19 - T1 - 2015-martin-luther-king-holiday-schedule.pdf @2015-01-21T14:10:12Z - CME prints no session running through this date.
+        (2015, 1, 19, Closed, T1, "2015-martin-luther-king-holiday-schedule.pdf @2015-01-21T14:10:12Z"),
+        // 2015-02-16 - T1 - 2015-presidents-day-holiday-schedule.pdf @2015-01-21T19:24:01Z - CME prints no session running through this date.
+        (2015, 2, 16, Closed, T1, "2015-presidents-day-holiday-schedule.pdf @2015-01-21T19:24:01Z"),
+        // 2015-04-03 - T1 - 2015-good-friday-holiday-schedule.pdf @2015-09-05T22:32:30Z - CME prints no session running through this date.
+        (2015, 4, 3, Closed, T1, "2015-good-friday-holiday-schedule.pdf @2015-09-05T22:32:30Z"),
+        // 2015-05-25 - T1 - 2015-memorial-day-holiday-schedule.pdf @2015-03-26T11:39:38Z - CME prints no session running through this date.
+        (2015, 5, 25, Closed, T1, "2015-memorial-day-holiday-schedule.pdf @2015-03-26T11:39:38Z"),
+        // 2015-07-02 - T1 - 2015-4th-of-july-holiday-schedule.pdf @2015-09-05T22:27:33Z - the printed final close 12:00 CT is earlier than the family's ordinary 13:15 CT.
+        (2015, 7, 2, early_close(12 * 3_600), T1, "2015-4th-of-july-holiday-schedule.pdf @2015-09-05T22:27:33Z"),
+        // 2015-07-03 - T1 - 2015-4th-of-july-holiday-schedule.pdf @2015-09-05T22:27:33Z - CME prints no session running through this date.
+        (2015, 7, 3, Closed, T1, "2015-4th-of-july-holiday-schedule.pdf @2015-09-05T22:27:33Z"),
+        // 2015-07-06 - T1 - 2015-4th-of-july-holiday-schedule.pdf @2015-09-05T22:27:33Z - the trade date's first open is 8:30 CT: the evening leg that would have opened earlier did not run.
+        (2015, 7, 6, late_open(8 * 3_600 + 30 * 60), T1, "2015-4th-of-july-holiday-schedule.pdf @2015-09-05T22:27:33Z"),
+        // 2015-09-07 - T1 - 2015-labor-day-holiday-schedule.pdf @2015-08-24T02:30:39Z - CME prints no session running through this date.
+        (2015, 9, 7, Closed, T1, "2015-labor-day-holiday-schedule.pdf @2015-08-24T02:30:39Z"),
+        // 2015-11-26 - T1 - 2015-thanksgiving-holiday-schedule.pdf @2016-02-05T16:25:19Z - CME prints no session running through this date.
+        (2015, 11, 26, Closed, T1, "2015-thanksgiving-holiday-schedule.pdf @2016-02-05T16:25:19Z"),
+        // 2015-11-27 - T1 - 2015-thanksgiving-holiday-schedule.pdf @2016-02-05T16:25:19Z - the trade date's first open is 8:30 CT: the evening leg that would have opened earlier did not run; the printed final close 12:05 CT is earlier than the family's ordinary 13:20 CT.
+        (2015, 11, 27, late_open_and_early_close(8 * 3_600 + 30 * 60, 12 * 3_600 + 5 * 60), T1, "2015-thanksgiving-holiday-schedule.pdf @2016-02-05T16:25:19Z"),
+        // 2015-12-24 - T1 - 2015-christmas-holiday-schedule.pdf @2015-11-23T06:15:20Z - the printed final close 12:05 CT is earlier than the family's ordinary 13:20 CT.
+        (2015, 12, 24, early_close(12 * 3_600 + 5 * 60), T1, "2015-christmas-holiday-schedule.pdf @2015-11-23T06:15:20Z"),
+        // 2015-12-25 - T1 - 2015-christmas-holiday-schedule.pdf @2015-11-23T06:15:20Z - CME prints no session running through this date.
+        (2015, 12, 25, Closed, T1, "2015-christmas-holiday-schedule.pdf @2015-11-23T06:15:20Z"),
         // 2016-01-01 - T1 - 2016-new-years-holiday-schedule.pdf @2016-01-08 - closed: no day session and no prior-evening leg.
         (2016, 1, 1, Closed, T1, "2016-new-years-holiday-schedule.pdf @2016-01-08"),
         // 2016-01-18 - T1 - 2016-holiday-calendars.zip#2016-martin-luther-king-holiday-schedule.pdf @2017-06-28 - closed: no day session and no prior-evening leg.

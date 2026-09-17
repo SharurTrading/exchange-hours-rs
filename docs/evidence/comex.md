@@ -609,6 +609,12 @@ rests on a document the family module does not carry.
 - **`comex` and `nymex` already carry a `monthly` ledger cadence**, so this change
   moves no cadence cell for them; it moves only their `Holidays` cell.
 
+### The cross-wave D17 audit (#95)
+
+**The intersection is re-derived over every audited era, not only this wave's.** `tools/check_wave5.py` recomputes the D17 rule over 2010-01-01..2027-12-31 — every date on which at least one routed family declares a window — and compares the result with the tables above date by date: **206 rows over the six windows**, 52 closures, 148 early closes and 6 withheld as `Unsourced` (the three 2019-2021 and three 2022-2024 dates `globex_energy` itself marks not worked up). This is the agreement audit memo §7 follow-up 10 asks for (#95).
+
+**The venue routes one family, so the intersection is that family's table.** Metals and energy are one key and CME prints them as one product row on every date the table audits, so nothing abstains and nothing is withheld for a disagreement; the audit's job here is to confirm the venue ships `globex_energy`'s rows unchanged, which it does, date by date, over all 206.
+
 ## Sources
 
 Row review: 2026-08-29 (UTC) is the date the ledger row was last reviewed as a
@@ -643,7 +649,7 @@ Official origin of the trading-hours captures: <http://www.cmegroup.com/trading_
 - **residual risk** — the only Sunday inside the narrowed bracket is 2012-06-03; that is an observation about the bracket, not a source-stated effective day, so LAW-NO-FABRICATED-DATES keeps it out of the tables.
 - **scope** — TAS/TAM/BTIC, options and other product clocks are excluded; they take their own keys when a consumer maps one.
 - **holidays** — this venue ships the intersection of the families that route to
-  it; see the `## Holidays` section above. The intersection is total in this window, so nothing is dropped, and the cross-wave agreement audit that memo §7 follow-up 10 asks for (#95) is still open: it closes with the last stage-2.2 family wave, when the same assertion can be re-run over 2010-2027 rather than over this window alone.
+  it; see the `## Holidays` section above. The intersection is total in this window, so nothing is dropped, and the cross-wave agreement audit that memo §7 follow-up 10 asks for (#95) is recorded in *The cross-wave D17 audit (#95)* above, where the same assertion is recomputed over 2010-2027.
 
 ## Module narrative (moved from src/calendar/schedules/futures/us/energy_metals.rs on 2026-09-12 UTC)
 

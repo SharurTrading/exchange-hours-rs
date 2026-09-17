@@ -16,8 +16,9 @@ re-derives, checking each against what shipped:
      row states appears in that artifact's dump;
   4. **venues** — the D17 intersection recomputed over the era from the family
      tables alone;
-  5. **cross-wave** — the same intersection recomputed over 2010-2027, the audit
-     that closes #95;
+  5. **cross-wave** — the same intersection recomputed over 2010-2027 for the
+     audit that closes #95, on every date at least one routed family covers (a
+     family with no window there abstains, and the covered families decide);
   6. **fences** — that each family's test suite pins its era's dates (a
      handwritten table, not a count alone) and that the venue suite pins the
      venue shape;
@@ -28,6 +29,9 @@ re-derives, checking each against what shipped:
      that era's own row count;
   9. **printed cells** — every era table's `instant as printed` cell against the
      block's own string for that row's date.
+
+The crate is the checkout this script lives in (`tools/..`); only the research
+store is a parameter.
 
 Usage:  WAVE5_RESEARCH=... python3 tools/check_wave5.py
 Exit:   0 every derivation agrees; 1 a disagreement; 2 a missing input.
@@ -536,12 +540,16 @@ def check_cross_wave(modules):
         last = max(w[1] for w in windows)
         date = first
         while date <= last:
-            covered = all(any(a <= date <= b for a, b in modules[f][0])
-                          for f in families)
-            if not covered:
+            # D17: a family with no window for the date abstains, and the
+            # families that do cover it decide. Only a date no routed family
+            # covers is skipped — the 2016-2018 era, where globex_livestock has
+            # no table, still has rows the five that cover it determine.
+            active = [f for f in families
+                      if any(a <= date <= b for a, b in modules[f][0])]
+            if not active:
                 date += dt.timedelta(days=1)
                 continue
-            kind, document = joint(tables, families, date)
+            kind, document = joint(tables, active, date)
             found = venue_rows.get(date)
             derived += 1
             if kind is None:
@@ -709,6 +717,33 @@ def check_prose_counts(modules):
             if named != len(windows):
                 fail(check, "%s: the %s breakdown names %d of %d windows"
                      % (evidence, paragraph.group(1), named, len(windows)))
+        # 3b. the cross-wave audit section's whole-table figures
+        kinds = collections.Counter(row["kind"].split("(")[0] for row in module[1])
+        withheld = sum(part[2] for part in per.values())
+        for found in re.finditer(r"(\d+) rows over the (\w+) windows", text):
+            derived += 2
+            if int(found.group(1)) != total:
+                fail(check, "%s: the audit says %s rows, the module has %d"
+                     % (evidence, found.group(1), total))
+            if ERA_WORDS.get(found.group(2)) != len(windows):
+                fail(check, "%s: the audit says %s windows, the module declares %d"
+                     % (evidence, found.group(2), len(windows)))
+        for found in re.finditer(r"(\d+) withheld as `Unsourced`", text):
+            derived += 1
+            if int(found.group(1)) != withheld:
+                fail(check, "%s: the audit says %s withheld, the module has %d"
+                     % (evidence, found.group(1), withheld))
+        for found in re.finditer(
+                r"(\d+) closures, (\d+) early closes and (\d+) withheld", text):
+            derived += 3
+            for value, kind in ((int(found.group(1)), "Closed"),
+                                (int(found.group(2)), "early_close"),
+                                (int(found.group(3)), "withheld")):
+                want = withheld if kind == "withheld" else kinds.get(kind, 0)
+                if value != want:
+                    fail(check, "%s: the audit says %d %s, the module has %d"
+                         % (evidence, value, kind, want))
+
         # 4. the module's own table doc: totals, tiers and per-era figures
         module_path = (os.path.join(HOLIDAYS, "%s.rs" % owner) if owner in FAMILIES
                        else os.path.join(HOLIDAYS, "venues", "%s.rs" % owner))
@@ -910,7 +945,6 @@ def check_fences():
 def main(argv=None):
     parser = argparse.ArgumentParser()
     parser.add_argument("--research", default=os.environ.get("WAVE5_RESEARCH"))
-    parser.add_argument("--crate", default=ROOT)
     args = parser.parse_args(argv)
     if not args.research or not os.path.isdir(args.research):
         print("WAVE5_RESEARCH must name the research store root", file=sys.stderr)

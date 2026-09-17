@@ -801,6 +801,12 @@ the product-family key: `globex_equity_index` knows what CME equity index does o
   Saturday session to remove, so the row changes no answer for this venue; it ships
   because the operator answered, exactly as the family table records.
 
+### The cross-wave D17 audit (#95)
+
+**The intersection is re-derived over every audited era, not only this wave's.** `tools/check_wave5.py` recomputes the D17 rule over 2010-01-01..2027-12-31 — every date on which at least one routed family declares a window — and compares the result with the tables above date by date: **272 rows over the six windows**, 47 the routed families state `Closed` and 225 withheld as `Unsourced`. This is the agreement audit memo §7 follow-up 10 asks for (#95).
+
+**Abstention and audited-normal silence are both states the audit reads.** A family with no window on a date abstains and the families that cover it decide: `globex_livestock` has no 2016-2018 table, so the other five decide that era's 36 dates — 9 closures and 27 withheld. Inside a window a family that states no row has audited the date normal, which is not the same state as silence: a date one family states and another audited normal is a disagreement and ships `Unsourced`, which is where the 225 withheld rows come from, with the per-date reasons named in the year tables above.
+
 ## Sources
 
 Row review: 2026-08-29 (UTC) is the date the ledger row was last reviewed as a
@@ -841,9 +847,8 @@ Official origin of the four trading-hours captures: <http://www.cmegroup.com/tra
 - **holidays** — this venue ships the intersection of the six CME families'
   holiday tables; see the `## Holidays` section above. Every date the
   intersection drops is named there, and the cross-wave agreement audit that
-  memo section 7 follow-up 10 asks for (#95) is still open: it closes with the
-  last stage-2.2 family wave, when the same assertion can be re-run over
-  2010-2027 rather than over this window alone.
+  memo section 7 follow-up 10 asks for (#95) is recorded in *The cross-wave D17
+  audit (#95)* above, where the same assertion is recomputed over 2010-2027.
 
 ## Module narrative (moved from src/calendar/schedules/futures/us/cme_group.rs on 2026-09-12 UTC)
 

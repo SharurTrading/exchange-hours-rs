@@ -703,6 +703,12 @@ on.
   served identity that ships a holiday table a monthly review, and the operator
   republishes its calendar yearly and issues errata.
 
+### The cross-wave D17 audit (#95)
+
+**The intersection is re-derived over every audited era, not only this wave's.** `tools/check_wave5.py` recomputes the D17 rule over 2010-01-01..2027-12-31 — every date on which at least one routed family declares a window — and compares the result with the tables above date by date: **251 rows over the six windows**, 47 the two routed families state `Closed` and 204 withheld as `Unsourced`. This is the agreement audit memo §7 follow-up 10 asks for (#95).
+
+**Audited-normal silence is a state the audit reads.** Both routed families cover all six windows, so nothing abstains here; inside a window a family that states no row has audited the date normal, and a date one family states while the other audited normal is a disagreement and ships `Unsourced` — which is where the 204 withheld rows come from. The grain day session ends at 12:05 CT or 12:00 CT on a holiday and the rate leg at 15:15, 12:00, 10:15 or 13:30 CT by date, so on a shortened day the two rarely state the same instant.
+
 ## Sources
 
 Row review: 2026-08-29 (UTC) is the date the ledger row was last reviewed as a
@@ -736,7 +742,7 @@ Official origin of the trading-hours captures: <http://www.cmegroup.com/trading_
 - **residual risk** — the baseline queue and PCP phases rest on the operator's March-2010 market-state table, which states them as then-live rather than dating them, so they are carried back from 2010-03-15 to the January-2010 floor.
 - **scope** — mini-sized Corn, Soybean, Wheat and KC HRW Wheat diverged on 2012-09-16 and are owned by `mini_grains.rs`; Rough Rice borrows the pre-2018 eras but owns its own timeline in `rough_rice.rs`.
 - **holidays** — this venue ships the intersection of the families that route to
-  it; see the `## Holidays` section above. Every date the intersection drops is named there, and the cross-wave agreement audit that memo §7 follow-up 10 asks for (#95) is still open: it closes with the last stage-2.2 family wave, when the same assertion can be re-run over 2010-2027 rather than over this window alone.
+  it; see the `## Holidays` section above. Every date the intersection drops is named there, and the cross-wave agreement audit that memo §7 follow-up 10 asks for (#95) is recorded in *The cross-wave D17 audit (#95)* above, where the same assertion is recomputed over 2010-2027.
 
 ## Module narrative (moved from src/calendar/schedules/futures/us/grains.rs on 2026-09-12 UTC)
 

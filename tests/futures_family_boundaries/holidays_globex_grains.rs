@@ -1793,6 +1793,14 @@ fn era_2013_2015_sweeps_every_shipped_row_kind_and_instant() {
                     late += 1;
                     let (h, m, s) = (open_ssm / 3_600, (open_ssm % 3_600) / 60, open_ssm % 60);
                     let open = ct_on(date, (h, m, s));
+                    // The leg that would have carried this trade date opened at
+                    // 19:00 CT the evening before: the row's whole point is that
+                    // it did not run, so probe that hour rather than one the
+                    // ordinary grid is shut at anyway.
+                    assert!(
+                        !venue.is_open(ct_at(day_before(date), ERA_EVENING_OPEN)),
+                        "{date}: the prior evening's leg was removed"
+                    );
                     assert!(!venue.is_open(open - Duration::seconds(1)), "{date}");
                     assert!(
                         venue.is_open(open),
@@ -1814,6 +1822,10 @@ fn era_2013_2015_sweeps_every_shipped_row_kind_and_instant() {
                         (close_ssm / 3_600, (close_ssm % 3_600) / 60, close_ssm % 60);
                     let open = ct_on(date, (oh, om, os));
                     let cutoff = ct_on(date, (ch, cm, cs));
+                    assert!(
+                        !venue.is_open(ct_at(day_before(date), ERA_EVENING_OPEN)),
+                        "{date}: the prior evening's leg was removed"
+                    );
                     assert!(!venue.is_open(open - Duration::seconds(1)), "{date}");
                     assert!(venue.is_open(open), "{date}");
                     assert!(venue.is_open(cutoff - Duration::seconds(1)), "{date}");

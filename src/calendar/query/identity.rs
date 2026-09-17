@@ -9,10 +9,19 @@
 
 use chrono::{DateTime, Datelike, Duration, NaiveDate, Timelike, Utc, Weekday};
 
-use super::schedule::QueryContext;
+use super::schedule::{QueryContext, RuleSet, rules};
+use crate::calendar::local_time::mk_local_close;
+use crate::calendar::rule::SessionKind;
 use crate::calendar::{CalendarSource, Exchange, MarketHoursKey};
 
 const TRADE_DATE_LOOKAHEAD_DAYS: usize = 14;
+
+/// The forward half of a **self-dated** occurrence's window.
+///
+/// A session that opens on the occurrence's own local day and still closes
+/// after `raw_open` is what makes the occurrence self-dated; see
+/// [`trade_date_window`] for why its trade date cannot leave `[D, D + 1]`.
+const SELF_DATED_AFTER: i64 = 1;
 
 /// How far past the close walk's own reach a rolling family's trade date can
 /// land.
@@ -22,7 +31,8 @@ const TRADE_DATE_LOOKAHEAD_DAYS: usize = 14;
 /// covers the close-date default's own wrap: `3 + 14 + 1`.
 const ROLLING_WINDOW_DAYS: i64 = 18;
 
-/// The span `resolve_rule_bounds` can derive a trade date over.
+/// The close walk's own reach — the window every occurrence that is not
+/// self-dated gets.
 ///
 /// The trade date is the local date of the **trading day's** final close
 /// (`candle_end_with(.., Daily, Both)`), never of the rule's own close, so an
@@ -37,18 +47,42 @@ const DERIVED_BEFORE: i64 = 1;
 /// The forward half of [`DERIVED_BEFORE`]'s bound.
 const DERIVED_AFTER: i64 = 19;
 
-/// Returns the inclusive trade-date window an occurrence opening on `open_day`
-/// can be assigned to.
+/// Returns the inclusive trade-date window an occurrence can be assigned to.
 ///
 /// This is the coverage gate's search window, and it is a claim about what the
 /// derivation can reach rather than an estimate: a day-level layer can only
 /// change this occurrence's answer by holding a record for a date
 /// [`assign_normal`] could return for it, and `assign_normal` is applied on top
-/// of a trade date the close walk has already produced. The bound is therefore
-/// the walk's own reach, `[D - 1, D + 19]`, widened by each identity
-/// convention's own documented offset: SET Thailand's night phase can step one
-/// further back, and the business-date roll of CME cryptocurrency and `ECBTC`
-/// can step [`ROLLING_WINDOW_DAYS`] further forward.
+/// of a trade date the close walk has already produced. The gate's whole
+/// question is therefore which trade dates this occurrence can carry, and there
+/// are two answers.
+///
+/// **A self-dated occurrence takes `[D, D + 1]`.** When a `Regular` or
+/// `Extended` rule that is active on `open_day` still closes after `raw_open`,
+/// the occurrence lies inside — or before the end of — a tradeable block that
+/// opened on its own local day. The close walk then stops at that block's own
+/// final close, whose local date is the trade date, and no shipped session
+/// occurrence is dated more than one local day past its own open
+/// (`every_shipped_session_occurrence_is_dated_by_its_own_open_or_the_next_day`
+/// fences that), so the trade date is `D` or `D + 1`. The layers cannot move
+/// it: the walk runs over [`QueryContext::baseline`], which holds no layer at
+/// all, and the close-date default reads nothing but that walk.
+///
+/// A tradeable rule answers that question with its own close, so the test costs
+/// nothing on the session path; an order-entry rule is not a session and the
+/// day's sessions have to be asked instead.
+///
+/// **Everything else takes the walk's full reach.** An occurrence whose own
+/// trading day has already closed — CBOT's Friday 14:30 CT order-entry window,
+/// ICE's post-close queues — is dated by the *next* trading day, three or more
+/// local days later over a weekend. That is
+/// `next_daily_close_and_trade_date_after_with`'s own span: it starts one local
+/// day back and walks `CLOSE_LOOKAHEAD_DAYS` forward, so it is `[D - 1, D +
+/// 19]`, widened by each identity convention's own documented offset — SET
+/// Thailand's night phase can step one further back, and the business-date roll
+/// of CME cryptocurrency and `ECBTC` can step [`ROLLING_WINDOW_DAYS`] further
+/// forward *and* is itself layer-sensitive, because it skips the dates the
+/// caller's layers close.
 ///
 /// `None` means the window could not be formed at the extremes of the
 /// representable calendar, which sends the caller down the ungated path — the
@@ -56,7 +90,15 @@ const DERIVED_AFTER: i64 = 19;
 pub(super) fn trade_date_window(
     context: &QueryContext<'_>,
     open_day: NaiveDate,
+    set: RuleSet,
+    raw_open: DateTime<Utc>,
 ) -> Option<(NaiveDate, NaiveDate)> {
+    if assigns_by_close_date(context) && is_self_dated(context, open_day, set, raw_open) {
+        return Some((
+            open_day,
+            open_day.checked_add_signed(Duration::days(SELF_DATED_AFTER))?,
+        ));
+    }
     let (before, after) = match context.identity() {
         Some(CalendarSource::Exchange(Exchange::SetThailand)) => {
             (DERIVED_BEFORE + 1, DERIVED_AFTER)
@@ -69,6 +111,92 @@ pub(super) fn trade_date_window(
     let first = open_day.checked_sub_signed(Duration::days(before))?;
     let last = open_day.checked_add_signed(Duration::days(after))?;
     Some((first, last))
+}
+
+/// Returns whether [`assign_normal`] dates an occurrence by its close's own
+/// local date.
+///
+/// The three sourced conventions move a trade date away from that default —
+/// SET Thailand's night phase belongs to its prior local opening date, CBOT
+/// Rough Rice's evening leg to the following local date, and the
+/// cryptocurrency and `ECBTC` roll to the following open business date — so
+/// those identities keep the walk's full window. The self-dated narrowing is a
+/// statement about the close-date default only.
+fn assigns_by_close_date(context: &QueryContext<'_>) -> bool {
+    !matches!(
+        context.identity(),
+        Some(
+            CalendarSource::Exchange(Exchange::SetThailand)
+                | CalendarSource::MarketHoursKey(
+                    MarketHoursKey::GlobexRoughRice
+                        | MarketHoursKey::GlobexCryptocurrency
+                        | MarketHoursKey::GlobexEventContractsBtc
+                )
+        )
+    )
+}
+
+/// Returns whether this occurrence is dated by its own trading day.
+///
+/// A tradeable rule's own occurrence is what makes `raw_open` self-dated: the
+/// rule is active on `open_day`, and the caller has already rejected
+/// `raw_open >= raw_close`, so its close reaches past `raw_open` without a
+/// lookup — which is why the session path, the one every `is_open`,
+/// `session_state` and `session_bounds` query walks, pays nothing for the
+/// narrowing.
+///
+/// An order-entry rule is not a session: it never joins the union the close
+/// walk reads, so its occurrence is dated by the trading day its own day's
+/// sessions belong to, and those have to be asked directly.
+fn is_self_dated(
+    context: &QueryContext<'_>,
+    open_day: NaiveDate,
+    set: RuleSet,
+    raw_open: DateTime<Utc>,
+) -> bool {
+    matches!(set, RuleSet::Sessions(_)) || a_session_reaches(context, open_day, raw_open)
+}
+
+/// Returns whether a session active on `open_day` still closes after `raw_open`.
+///
+/// The test is asked of the profile selected for `open_day` — the same profile
+/// [`find_occurrence`](super::schedule::find_occurrence) resolves the
+/// occurrence from — and of each rule's *raw* close, which is exactly what the
+/// walk's own baseline sees: the rules the caller's layers clip are still the
+/// rules that end the trading day for the trade-date assignment, because that
+/// assignment runs above the clip.
+///
+/// Deliberately not inlined: only an order-entry rule reaches it, and letting
+/// it into [`trade_date_window`]'s own body moves the multi-candidate queries —
+/// `trade_date`, `candle_end`, the closed-instant `is_open` scan — by tens of
+/// percent, because every session occurrence resolves through the same
+/// function. `benches/calendar_queries.rs` measures both.
+#[inline(never)]
+fn a_session_reaches(
+    context: &QueryContext<'_>,
+    open_day: NaiveDate,
+    raw_open: DateTime<Utc>,
+) -> bool {
+    let tz = context.tz();
+    let weekday = open_day.weekday().num_days_from_monday() as usize;
+    let selected = context.profile_for_open_day(open_day);
+    for rule in rules(selected.as_ref(), RuleSet::Sessions(SessionKind::Both)) {
+        if !rule.days[weekday] {
+            continue;
+        }
+        let close_day = if rule.wraps_to_next_day() {
+            let Some(next) = open_day.succ_opt() else {
+                continue;
+            };
+            next
+        } else {
+            open_day
+        };
+        if mk_local_close(tz, close_day, rule.close_ssm).with_timezone(&Utc) > raw_open {
+            return true;
+        }
+    }
+    false
 }
 
 /// Returns whether this identified calendar joins storage-only rule pieces.

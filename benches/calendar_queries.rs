@@ -20,7 +20,9 @@
 //!
 //! `cold_axis` reproduces the consumer's cold chart frame: 4,999 `is_open`
 //! probes plus one daily close over a 5,000-point window. That is the figure
-//! that decides whether a frame drops.
+//! that decides whether a frame drops. `hot_path_year` measures the same hot
+//! path across a whole year against the detached control, which is the year's
+//! cost rather than the coverage gate's exit rate — see the group's own note.
 
 use std::hint::black_box;
 
@@ -70,7 +72,10 @@ fn instants() -> Option<Instants> {
         // Saturday: the whole weekend shutdown.
         closed: ct((2026, 4, 18), (12, 0))?,
         // Wednesday 2026-11-25, the trade date immediately before Thanksgiving:
-        // the gate opens on the neighbouring row and the search misses.
+        // the gate opens on the neighbouring row and the search misses. It is
+        // the *wrapped* evening occurrence opening that day — 17:00 CT to
+        // Thursday 08:30 CT — that carries Thanksgiving's trade date, so the
+        // narrowed window still has to reach Thursday (issue #97).
         adjacent: ct((2026, 11, 25), (10, 0))?,
         // Friday 2026-11-27, which the built-in table clips to a 12:15 CT final
         // close: the gate opens, the search hits, and the clip applies, all
@@ -326,6 +331,59 @@ fn cold_axis(criterion: &mut Criterion) {
     group.finish();
 }
 
+/// A year of hot-path probes: what the built-in table costs across a year of
+/// the consumer's hot path.
+///
+/// §6.3's targets are per-instant, and the expensive instant they cap is
+/// measured by the `adjacent` and `holiday` classes above. What the self-dated
+/// narrowing (issue #97) changes is how *often* that instant is reached, and
+/// this group reports exactly one thing about it: the elapsed time of 35,040
+/// `is_open` probes through a year of the shipped table, against the same probes
+/// with the table detached.
+///
+/// It does **not** count gate exits or binary searches — `year_scan` neither
+/// sees nor reports them, and the crate publishes no counter for a benchmark to
+/// read. The ratio therefore measures the year's cost, which is the quantity an
+/// exit rate is supposed to protect; an exit rate itself is a statement about
+/// the shipped rows and the gate's window, computed in the research store's
+/// `holiday-tables/BENCH-wave1.md` §8 rather than measured here.
+fn hot_path_year(criterion: &mut Criterion) {
+    let Some(start) = ct((2026, 1, 1), (0, 0)) else {
+        return;
+    };
+    let calendar = calendar_for_market_hours_key(MarketHoursKey::GlobexEquityIndex);
+    let detached = calendar.without_holidays();
+
+    let mut group = criterion.benchmark_group("hot_path_year");
+    group.sample_size(30);
+    group.bench_function("none", |bencher| {
+        bencher.iter(|| year_scan(calendar, black_box(start)));
+    });
+    group.bench_function("without_holidays", |bencher| {
+        bencher.iter(|| year_scan(detached, black_box(start)));
+    });
+    group.finish();
+}
+
+/// Counts the open instants of one year at 15-minute steps.
+fn year_scan(calendar: ExchangeCalendar, start: DateTime<Utc>) -> usize {
+    let Some(end) = start.checked_add_signed(TimeDelta::days(365)) else {
+        return 0;
+    };
+    let mut open = 0_usize;
+    let mut instant = start;
+    while instant < end {
+        if calendar.is_open(instant) {
+            open = open.saturating_add(1);
+        }
+        let Some(next) = instant.checked_add_signed(TimeDelta::minutes(15)) else {
+            break;
+        };
+        instant = next;
+    }
+    open
+}
+
 /// The five-query surface the design memo asks for, on the bare calendar.
 ///
 /// `is_open` is the hot path and gets its own instant classes above; these are
@@ -373,6 +431,7 @@ criterion_group!(
     calendar_queries,
     overlay_layers,
     cold_axis,
+    hot_path_year,
     query_surface
 );
 criterion_main!(benches);

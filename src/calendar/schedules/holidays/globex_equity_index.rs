@@ -2,8 +2,8 @@
 
 //! `globex_equity_index` holiday rows, venue-local trade dates
 //! 2010-01-01 .. 2012-12-31, 2016-01-01 .. 2018-12-31,
-//! 2022-01-01 .. 2024-12-31 and 2025-01-01 .. 2027-12-31
-//! (LAW-HOLIDAY-SCOPE).
+//! 2019-01-01 .. 2021-12-31, 2022-01-01 .. 2024-12-31 and
+//! 2025-01-01 .. 2027-12-31 (LAW-HOLIDAY-SCOPE).
 //!
 //! **2010-2012.** CME published one holiday-calendar PDF per holiday
 //! (`2010-martin-luther-king.pdf` and its siblings), retrieved from the

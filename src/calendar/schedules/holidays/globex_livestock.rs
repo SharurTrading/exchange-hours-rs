@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT-0
 
 //! CME Live Cattle, Feeder Cattle and Lean Hog holiday rows, 2010-2012,
-//! 2022-2024 and 2025-2027 (LAW-HOLIDAY-SCOPE).
+//! 2019-2021, 2022-2024 and 2025-2027 (LAW-HOLIDAY-SCOPE).
 //!
 //! Keyed by the crate's own venue-local trade date in `America/Chicago`
 //! (design memo D1). The conversion is the identity for this family and is the

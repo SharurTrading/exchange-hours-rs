@@ -37,14 +37,15 @@
 //! which `globex_grains` alone states a day-after-closure late open at 08:30 CT
 //! and the other five families audited the date normal (2019-01-02,
 //! 2019-07-05, 2019-12-26, 2020-01-02 and 2021-07-06); eight are the dates
-//! whose stated instants all differ — the three Thanksgiving Fridays and the
+//! whose families state different rows — the three Thanksgiving Fridays and the
 //! two Christmas Eves, where grains closes at 12:05 CT, energy at 12:45 CT,
 //! livestock at 12:15 CT in 2019 and 12:05 CT after, and equity, FX and rates
 //! at 12:15 CT, with grains reopening at 08:30 CT on the Thanksgiving Fridays;
 //! 2019-07-03 and 2020-07-02, where grains' 12:05 CT and livestock's 12:15 CT
 //! are the only rows stated and the other four families audited the date
-//! normal; and 2021-04-02, the Good Friday on which equity closes at 08:15 CT,
-//! FX and rates at 10:15 CT, and energy, grains and livestock are shut all day;
+//! normal; and 2021-04-02, the one date of the eight that is not an instant
+//! disagreement at all — equity closes at 08:15 CT and FX and rates at 10:15
+//! CT, while energy, grains and livestock are shut all day;
 //! and three are 2019-06-19, 2020-06-19 and 2021-06-19, where every routed
 //! family states `Unsourced` — the wave did not work those dates up — so the
 //! venue ships the families' own marker rather than a dispute. All six routed

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT-0
 
-//! CME standard-grid FX futures holiday rows, 2010-2012, 2016-2018, 2022-2024
-//! and 2025-2027 (LAW-HOLIDAY-SCOPE).
+//! CME standard-grid FX futures holiday rows, 2010-2012, 2016-2018, 2019-2021,
+//! 2022-2024 and 2025-2027 (LAW-HOLIDAY-SCOPE).
 //!
 //! Keyed by the crate's own venue-local trade date in `America/Chicago`
 //! (design memo D1). The conversion is **not** the identity for this family:

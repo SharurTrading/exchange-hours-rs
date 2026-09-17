@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT-0
 
 //! CME Nikkei 225 Dollar (`NKD`) holiday and early-close rows, 2016-2018,
-//! 2022-2024 and 2025-2027.
+//! 2019-2021, 2022-2024 and 2025-2027.
 //!
 //! Keyed by the crate's own venue-local trade date in `America/Chicago`
 //! (design memo D1). The conversion is never the identity here: the family

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT-0
 
 //! CBOT standard-size grain and oilseed futures holiday rows, 2010-2012,
-//! 2016-2018, 2022-2024 and 2025-2027 (LAW-HOLIDAY-SCOPE).
+//! 2016-2018, 2019-2021, 2022-2024 and 2025-2027 (LAW-HOLIDAY-SCOPE).
 //!
 //! Keyed by the crate's own venue-local trade date in `America/Chicago`
 //! (design memo D1), never by CME's event date. That conversion is not the

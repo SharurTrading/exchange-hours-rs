@@ -73,11 +73,11 @@
 //! `globex_grains` and `globex_livestock` are shut outright; five on which
 //! `globex_grains` alone states a day-after-closure `late_open(08:30)` and the
 //! other five families audited the date normal (2019-01-02, 2019-07-05,
-//! 2019-12-26, 2020-01-02 and 2021-07-06); eight dates whose stated instants
-//! all differ — the three Thanksgiving Fridays, the two Christmas Eves, the two
-//! July days 2019-07-03 and 2020-07-02, and 2021-04-02, on which equity closes
-//! at 08:15 CT, FX and rates at 10:15 CT, and energy, grains and livestock are
-//! shut all day; and the three Juneteenth dates, 2019-06-19, 2020-06-19 and
+//! 2019-12-26, 2020-01-02 and 2021-07-06); eight dates whose families state
+//! different rows — the three Thanksgiving Fridays, the two Christmas Eves and
+//! the two July days 2019-07-03 and 2020-07-02 on differing instants, and
+//! 2021-04-02, where equity closes at 08:15 CT and FX and rates at 10:15 CT
+//! while energy, grains and livestock are shut all day; and the three Juneteenth dates, 2019-06-19, 2020-06-19 and
 //! 2021-06-19, on which every routed family states the same `Unsourced` marker,
 //! so the venue repeats their agreement rather than treating it as a dispute.
 //!

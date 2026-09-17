@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: MIT-0
 
-//! CME cryptocurrency holiday rows, venue-local trade dates 2022-01-01 to
-//! 2024-12-31 and 2025-01-01 to 2027-12-31 (LAW-HOLIDAY-SCOPE).
+//! CME cryptocurrency holiday rows, venue-local trade dates 2019-01-01 to
+//! 2021-12-31, 2022-01-01 to 2024-12-31 and 2025-01-01 to 2027-12-31
+//! (LAW-HOLIDAY-SCOPE).
 //!
 //! Every row is keyed by the crate's own America/Chicago trade date, never by
 //! CME's event date: the operator publishes a holiday as an event list on a

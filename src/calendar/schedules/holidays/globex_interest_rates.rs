@@ -2,8 +2,8 @@
 
 //! Built-in holiday rows for `globex_interest_rates`, venue-local trade dates
 //! 2010-01-01 .. 2012-12-31, 2016-01-01 .. 2018-12-31,
-//! 2022-01-01 .. 2024-12-31 and 2025-01-01 .. 2027-12-31
-//! (LAW-HOLIDAY-SCOPE).
+//! 2019-01-01 .. 2021-12-31, 2022-01-01 .. 2024-12-31 and
+//! 2025-01-01 .. 2027-12-31 (LAW-HOLIDAY-SCOPE).
 //!
 //! Every row is keyed by the crate's own venue-local trade date in
 //! `America/Chicago`, converted from the operator's event date: CME publishes

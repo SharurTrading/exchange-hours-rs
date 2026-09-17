@@ -488,7 +488,7 @@ pub(super) fn find_occurrence<T>(
     for rule in rules(selected.as_ref(), set)
         .filter(|rule| rule.days[weekday] && (!wrapped_only || rule.wraps_to_next_day()))
     {
-        if let Some((open, close)) = resolve_rule_bounds(context, open_day, rule)
+        if let Some((open, close)) = resolve_rule_bounds(context, open_day, set, rule)
             && let Some(found) = probe(open, close)
         {
             return Some(found);
@@ -501,6 +501,7 @@ pub(super) fn find_occurrence<T>(
 pub(super) fn resolve_rule_bounds(
     context: &QueryContext<'_>,
     open_day: NaiveDate,
+    set: RuleSet,
     rule: &SessionRule,
 ) -> Option<(DateTime<Utc>, DateTime<Utc>)> {
     let close_day = if rule.wraps_to_next_day() {
@@ -521,10 +522,15 @@ pub(super) fn resolve_rule_bounds(
     // trading day below costs a full daily window per rule; the set of trade
     // dates this occurrence can be assigned to is bounded by the identity's own
     // conventions, so ask every layer whether it holds a record in that window
-    // before paying for any of it. This sits above the daily-close guard
-    // because all three of these branches return the same unmodified bounds,
-    // and the guard resolves a profile to answer.
-    if let Some((first, last)) = identity::trade_date_window(context, open_day)
+    // before paying for any of it. When a session opening on this day still
+    // reaches `raw_open` the occurrence is dated by its own trading day and the
+    // window is one local day either side; otherwise it is the close walk's own
+    // reach, `[D - 1, D + 19]` — see
+    // [`identity::trade_date_window`](super::identity::trade_date_window).
+    // This sits above the daily-close guard because all three of these branches
+    // return the same unmodified bounds, and the guard resolves a profile to
+    // answer.
+    if let Some((first, last)) = identity::trade_date_window(context, open_day, set, raw_open)
         && !context.any_layer_may_affect(first, last)
     {
         return Some((raw_open, raw_close));

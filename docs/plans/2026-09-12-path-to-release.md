@@ -358,11 +358,21 @@ appears in the trading-hours service, Coinbase Derivatives' Thanksgiving and Chr
   `is_open`.
 - **#77**: fix the `session_profile` and `hours_for_market_hours_key` doc sentences so
   they say which state a seasonal key's static table holds. Doc-only PR.
-- **#97, before stage 4 starts**: prove the `[D, D+1]` narrowing of the coverage gate
-  and re-measure. With 2010–2027 history nearly every day sits within 19 days of some
-  row, so the sound `[D-1, D+19]` window opens the gate almost always and the memo's
-  hot-path claim does not hold; the fence
-  `the_coverage_gate_is_sound_for_every_shipped_row` must stay green.
+- **#97, before stage 4 starts — landed 2026-09-17 (UTC), see the PR that closes it**:
+  the `[D, D+1]` narrowing of the coverage gate is proved and re-measured. With
+  2010–2027 history nearly every day sat within 19 days of some row, so the sound
+  `[D-1, D+19]` window opened the gate almost always and the memo's hot-path claim did
+  not hold. An occurrence that a session opening on its own local day still closes
+  after is dated by that trading day, so its window is `[D, D + 1]`; only an occurrence
+  whose own trading day has already closed — CBOT's Friday 14:30 CT order-entry window,
+  ICE's post-close queues — and the three sourced trade-date conventions keep the walk's
+  full reach. A new fence sweeps every session occurrence of every close-dated identity
+  from the January-2010 floor through 2027 and holds the premise the narrow window
+  rests on, and `the_coverage_gate_is_sound_for_every_shipped_row` stays green over
+  every shipped row. §6's re-measured figures are in the research store's
+  `holiday-tables/BENCH-wave1.md`; the per-instant cost that remains, and the
+  per-*occurrence* window that would remove the last adjacent-day opens, are
+  tracked in **#107**, the follow-up the re-measurement opened.
 - **#86**: give the evidence-day fence a second source of dated boundaries, so the
   cutovers `coinbase_derivatives` and `eurex` encode as constants are fenced like a
   `revisions!` row.

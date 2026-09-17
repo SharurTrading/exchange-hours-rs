@@ -41,7 +41,9 @@ fn latest_close_for_trade_date(
     let mut latest = None;
 
     for rule in rules(today.as_ref(), RuleSet::Sessions(kind)).filter(|rule| rule.days[weekday]) {
-        if let Some((open, close)) = resolve_rule_bounds(context, day, rule) {
+        if let Some((open, close)) =
+            resolve_rule_bounds(context, day, RuleSet::Sessions(kind), rule)
+        {
             update_latest(context, day, kind, &mut latest, open, close, ceiling);
         }
     }
@@ -52,7 +54,9 @@ fn latest_close_for_trade_date(
         for rule in rules(previous.as_ref(), RuleSet::Sessions(kind))
             .filter(|rule| rule.days[previous_weekday])
         {
-            if let Some((open, close)) = resolve_rule_bounds(context, yesterday, rule) {
+            if let Some((open, close)) =
+                resolve_rule_bounds(context, yesterday, RuleSet::Sessions(kind), rule)
+            {
                 update_latest(context, day, kind, &mut latest, open, close, ceiling);
             }
         }
@@ -63,7 +67,9 @@ fn latest_close_for_trade_date(
         for rule in
             rules(next.as_ref(), RuleSet::Sessions(kind)).filter(|rule| rule.days[next_weekday])
         {
-            if let Some((open, close)) = resolve_rule_bounds(context, tomorrow, rule) {
+            if let Some((open, close)) =
+                resolve_rule_bounds(context, tomorrow, RuleSet::Sessions(kind), rule)
+            {
                 update_latest(context, day, kind, &mut latest, open, close, ceiling);
             }
         }

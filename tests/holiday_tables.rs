@@ -22,7 +22,10 @@
 //! of its two branches — is the same code a caller's `DayPolicy` drives, so a
 //! synthetic `StaticDayPolicy` exercises it now. The coverage gate is live in
 //! this wave for a caller's exception provider, so it is fenced against an
-//! ungated reference in both directions.
+//! ungated reference in both directions, and the window it is asked about is
+//! itself fenced: `every_shipped_session_occurrence_is_dated_by_its_own_open_or_the_next_day`
+//! holds the premise of the self-dated narrowing over every shipped session
+//! occurrence (issue #97).
 //!
 //! Per-family row fences (§4.1 of the design memo: a closed day, both sides of
 //! an early close, both late-open branches, the wrap removal, the trade-date
@@ -590,6 +593,113 @@ fn the_gate_window_reaches_the_neighbouring_trade_dates() {
     assert!(!overlaid.is_open(ct((2026, 4, 20), (10, 0, 0))));
     // The Monday-evening leg belongs to Tuesday and is untouched.
     assert!(overlaid.is_open(ct((2026, 4, 20), (18, 0, 0))));
+}
+
+// ---------------------------------------------------------------------------
+// The self-dated narrowing's premise (issue #97).
+// ---------------------------------------------------------------------------
+
+/// The narrowed window's premise: every session occurrence the crate ships is
+/// dated by its own opening local day or the next one.
+///
+/// `identity::trade_date_window` answers `[D, D + 1]` for an occurrence that a
+/// session opening on its own local day still closes after (issue #97), and
+/// that is only sound while this holds. Such an occurrence lies inside — or
+/// before the end of — a tradeable block that opened on its own local day, so
+/// the close walk stops at that block's own final close and the trade date it
+/// returns is that close's local date. The block opened no earlier than the
+/// session occurrence probed here, so a trade date more than one local day past
+/// the occurrence's own open is exactly the case the gate would miss: a layer
+/// record outside the window could still have moved it. A block longer than a
+/// local day fails here first.
+///
+/// The probe is the whole population of occurrence openings, not a sample:
+/// `next_session_open_after` enumerates every `Regular` and `Extended` rule
+/// occurrence in opening order, and the cursor advances one second past each
+/// open so an *adjacent* phase boundary — which opens exactly where the
+/// previous one closed — is visited rather than skipped. The sweep covers every
+/// identity's every era: each timeline's rows are dated at or after the
+/// January-2010 floor (LAW-NO-FABRICATED-DATES), the earliest sourced profile
+/// stands below it, and profile tables run no further than 2027.
+///
+/// An identity whose occurrences carry no trade date is an always-open profile:
+/// `resolve_rule_bounds` returns before deriving one for it, so the window
+/// cannot change its answer, and it is counted rather than asserted against.
+///
+/// The probe runs against `without_holidays()`, the sourced normal week: a
+/// built-in clip shortens or removes a block and never extends one, so the
+/// baseline is where a block that outlives a local day would show, and it is
+/// the profile `trade_date_window` reads.
+#[test]
+fn every_shipped_session_occurrence_is_dated_by_its_own_open_or_the_next_day() {
+    let from = utc_midnight(day(2010, 1, 1));
+    let to = utc_midnight(day(2028, 1, 1));
+    let mut dated_identities = 0_usize;
+    let mut occurrences = 0_usize;
+
+    for (label, bare) in close_dated_calendars() {
+        let calendar = bare.without_holidays();
+        let tz = calendar.tz();
+        let mut dated = 0_usize;
+        let mut undated = 0_usize;
+        let mut cursor = from;
+        while cursor < to {
+            let Some(open) = calendar.next_session_open_after(cursor) else {
+                break;
+            };
+            let opened = open.with_timezone(&tz).date_naive();
+            match calendar.trade_date(open) {
+                Some(trade_date) => {
+                    let next = opened
+                        .checked_add_days(Days::new(1))
+                        .expect("the sweep stays inside the representable calendar");
+                    assert!(
+                        trade_date == opened || trade_date == next,
+                        "{label}: the session opening {open} on {opened} carries {trade_date}"
+                    );
+                    dated += 1;
+                }
+                None => undated += 1,
+            }
+            occurrences += 1;
+            cursor = open + TimeDelta::seconds(1);
+        }
+        assert!(
+            dated == 0 || undated == 0,
+            "{label}: a trade date is defined on all of an identity's sessions or on none",
+        );
+        dated_identities += usize::from(dated > 0);
+    }
+
+    assert!(occurrences > 0, "the crate must ship at least one session");
+    assert!(
+        dated_identities > 0,
+        "the sweep must reach identities whose sessions carry a trade date"
+    );
+}
+
+/// The identities whose trade date is the close-date default — every identity
+/// the self-dated narrowing applies to.
+///
+/// The three sourced conventions — SET Thailand's prior opening date, CBOT
+/// Rough Rice's following local date, and the cryptocurrency and `ECBTC`
+/// business-date roll — keep the close walk's full window, so they are the
+/// calendars this fence does not speak for.
+fn close_dated_calendars() -> Vec<(String, ExchangeCalendar)> {
+    every_calendar()
+        .into_iter()
+        .filter(|(_, calendar)| {
+            !matches!(
+                calendar.source(),
+                CalendarSource::Exchange(Exchange::SetThailand)
+                    | CalendarSource::MarketHoursKey(
+                        MarketHoursKey::GlobexRoughRice
+                            | MarketHoursKey::GlobexCryptocurrency
+                            | MarketHoursKey::GlobexEventContractsBtc
+                    )
+            )
+        })
+        .collect()
 }
 
 // ---------------------------------------------------------------------------

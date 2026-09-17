@@ -35,8 +35,25 @@ corrections (a venue's hours fixed against a primary source) go under
   attached. The window is now the span the derivation can actually walk,
   `[D - 1, D + 19]`, and a new fence runs the design memo's gate-soundness sweep
   over every shipped row of every identity that has a table. `is_open` was never
-  wrong; every diverging instant was order-entry-only. Restoring the ~97 %
-  fast-path exit rate behind a *proved* narrowing is tracked in #97.
+  wrong; every diverging instant was order-entry-only.
+- **The coverage gate is narrow again where the derivation allows it, so a shipped
+  table is back on the hot path.** The sound window above costs a derivation on
+  roughly every day within nineteen of a row, which is not the design memo's §6
+  exit rate. An occurrence that a session opening on its own local day still closes
+  after is dated by *that* trading day — the close walk cannot pass a block that
+  opened on the same local day, and no shipped session occurrence is dated more than
+  one local day past its own open — so its window is `[D, D + 1]`. Only an
+  occurrence whose own trading day has already closed, CBOT's Friday 14:30 CT
+  order-entry window and ICE's post-close queues among them, keeps the walk's full
+  reach, and the three sourced trade-date conventions (SET Thailand, CBOT Rough
+  Rice, CME cryptocurrency and `ECBTC`) keep it as well. A new fence sweeps every
+  session occurrence of every close-dated identity from the January-2010 floor
+  through 2027 and holds the premise that makes the narrow window sound;
+  `the_coverage_gate_is_sound_for_every_shipped_row` still derives both paths over
+  every shipped row, so no answer moves. §6's re-measured figures are recorded in
+  the research store's `holiday-tables/BENCH-wave1.md` (#97); the per-instant cost
+  that remains on a row's own date, and the per-*occurrence* window that would
+  remove the last adjacent-day opens, are #107.
 - **`globex_cryptocurrency` deleted about 23 hours of published trading on nine
   five-day-era holidays.** CME printed a 16:00 CT pre-open in place of the 16:00
   CT final close on 2025-01-20, 2025-02-17, 2025-05-26, 2025-06-19, 2025-09-01,

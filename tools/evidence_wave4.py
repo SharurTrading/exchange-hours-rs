@@ -293,7 +293,7 @@ def main():
         table = open(os.path.join(OUT, "venue_%s.evidence.md" % venue),
                      encoding="utf-8").read().rstrip()
         block = ["\n### 2019-2021 (T1)\n",
-                 venue_text(venue, mine, closes, unsourced),
+                 venue_text(venue, mine, closes, unsourced, len(windows)),
                  "\n### Documents\n", documents, "\n",
                  "### 2019\n", year_slice(table, "2019"), "\n",
                  "### 2020\n", year_slice(table, "2020"), "\n",
@@ -372,7 +372,7 @@ def fold_text(group, items):
            len(items), "\n".join(lines)))
 
 
-def venue_text(venue, rows, closes, unsourced):
+def venue_text(venue, rows, closes, unsourced, windows=5):
     routed = {
         "cme": "`globex_equity_index`, `globex_energy`, `globex_fx`, `globex_grains`, "
                "`globex_interest_rates` and `globex_livestock`",
@@ -391,8 +391,7 @@ def venue_text(venue, rows, closes, unsourced):
         "`comex` and `nymex` route `globex_energy` alone, so their rows are that "
         "family's own, unchanged. The three Juneteenth dates ship `Unsourced` because "
         "every routed family states the crate's not-worked-up marker there.\n"
-        % (ORDINAL[2] if venue in ("comex", "nymex") else ORDINAL[5],
-           len(rows), closes, unsourced, routed))
+        % (ORDINAL[windows], len(rows), closes, unsourced, routed))
 
 
 JUNETEENTH_TEXT = (

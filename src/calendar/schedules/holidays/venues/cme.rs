@@ -274,7 +274,6 @@ pub(crate) static CME: &HolidayTable = holidays! {
         (2018, 12, 25, Closed, T1, "2018-holiday-calendars.zip#2018-christmas-holiday-schedule.xls @2026-08-30"),
         // 2018-12-26 - T1 - 2018-holiday-calendars.zip#2018-christmas-holiday-schedule.xls @2026-08-30 - disagreement: equity index late open 15:30 CT; energy and metals no row; FX no row; grains late open 08:30 CT; interest rates no row; livestock no row.
         (2018, 12, 26, Unsourced, T1, "2018-holiday-calendars.zip#2018-christmas-holiday-schedule.xls @2026-08-30"),
-        // 2022-01-17 - T1 - 2022-mlk-day-holiday-schedule.xls @2022-01-17T21:22:30Z - disagreement: equity index early close 12:00 CT; energy and metals early close 13:30 CT; FX no row; grains closed; interest rates early close 12:00 CT; livestock closed.
         // 2019-01-01 - T1 - 2019-new-years-holiday-schedule-compact.xls @2018-01-07T04:13:43Z - closed: no trade date.
         (2019, 1, 1, Closed, T1, "2019-new-years-holiday-schedule-compact.xls @2018-01-07T04:13:43Z"),
         // 2019-01-02 - T1 - 2019-new-years-holiday-schedule-compact.xls @2018-01-07T04:13:43Z - disagreement: equity index no row; energy and metals no row; FX no row; grains late open 08:30 CT; interest rates no row; livestock no row.
@@ -359,6 +358,7 @@ pub(crate) static CME: &HolidayTable = holidays! {
         (2021, 11, 26, Unsourced, T1, "2021-holiday-calendars.zip#2021-thanksgiving-holiday-schedule-compact.xls @2026-08-30T10:03:27Z"),
         // 2021-12-24 - T1 - 2021-holiday-calendars.zip#2021-christmas-holiday-schedule-compact.xls @2026-08-30T10:03:27Z - closed: no trade date.
         (2021, 12, 24, Closed, T1, "2021-holiday-calendars.zip#2021-christmas-holiday-schedule-compact.xls @2026-08-30T10:03:27Z"),
+        // 2022-01-17 - T1 - 2022-mlk-day-holiday-schedule.xls @2022-01-17T21:22:30Z - disagreement: equity index early close 12:00 CT; energy and metals early close 13:30 CT; FX no row; grains closed; interest rates early close 12:00 CT; livestock closed.
         (2022, 1, 17, Unsourced, T1, "2022-mlk-day-holiday-schedule.xls @2022-01-17T21:22:30Z"),
         // 2022-02-21 - T1 - 2022-presidents-day-holiday-schedule.xls @2022-07-04T07:38:10Z - disagreement: equity index early close 12:00 CT; energy and metals early close 13:30 CT; FX no row; grains closed; interest rates early close 12:00 CT; livestock closed.
         (2022, 2, 21, Unsourced, T1, "2022-presidents-day-holiday-schedule.xls @2022-07-04T07:38:10Z"),
@@ -440,6 +440,7 @@ pub(crate) static CME: &HolidayTable = holidays! {
         (2024, 12, 25, Closed, T2, "CME-SVC-2024-12-24"),
         // 2024-12-26 - T2 - CME-SVC-2024-12-24 - disagreement: equity index no row; energy and metals no row; FX no row; grains late open 08:30 CT; interest rates no row; livestock no row.
         (2024, 12, 26, Unsourced, T2, "CME-SVC-2024-12-24"),
+        // 2025-01-01 - T2 - CME-SVC-2024-12-31 - closed: no trade date.
         (2025, 1, 1, Closed, T2, "CME-SVC-2024-12-31"),
         // 2025-01-02 - T2 - CME-SVC-2024-12-31 - grains late open 08:30 CT;
         // no row in equity index, energy, FX, interest rates or livestock.

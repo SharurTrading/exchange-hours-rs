@@ -26,9 +26,29 @@
 #
 # `wave4_repair.py` is new to this wave: `cme-2019-2021` is the one block the
 # verifier failed on evidence discipline alone, so its 314 truncated
-# `verbatim`/instant fields were re-emitted at full length from the saved bytes,
-# and the two `INDEX.md` files and `shasum.txt` preamble were corrected, before
-# any row or evidence file was written from it.
+# `verbatim`/instant fields were re-emitted at full length from the saved bytes —
+# and the 96 that still mixed a quotation with a note re-emitted as the printed
+# row with the annotation moved to a `note` field — and the two `INDEX.md` files
+# and the `shasum.txt` preamble were corrected, before any row or evidence file
+# was written from it.
+#
+# The two handoffs between the tools are file copies, and the venue evidence
+# tables are split out of one stream:
+#
+#   python3 tools/wave4_repair.py --research "$WAVE4_RESEARCH"
+#   cp tools/out/repair/cme-2019-2021.r2.json "$WAVE4_RESEARCH/holidays/"
+#   cp tools/out/repair/cme-2019-2021.repair.json "$WAVE4_RESEARCH/holidays/"
+#   # (the repair is installed in the research store; wave4_rows.py reads it there)
+#   WAVE4_RESEARCH=... python3 tools/wave4_rows.py
+#   python3 tools/venue_intersection_wave4.py --emit-evidence | \
+#     awk '/^\/\/ ---- /{ if (out) close(out);
+#              name=$0; sub(/^.*docs\/evidence\//,"",name); sub(/\.md.*$/,"",name);
+#              out="tools/out/wave4/venue_" name ".evidence.md" }
+#           out{ print > out }'
+#   python3 tools/evidence_wave4.py
+#
+# `evidence_wave4.py` reads the eight `<family>.evidence.md` tables, that
+# `documents.md`, and those four `venue_<venue>.evidence.md` files.
 #
 # ## Wave 3 — the 2022-2024 era (issue #90), kept so those rows stay reproducible
 #

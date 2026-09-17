@@ -1291,3 +1291,215 @@ fn era_2019_2021_window_is_declared_in_order_and_bounds_every_row() {
         assert_eq!(calendar.holiday_on(probe), None, "{probe}");
     }
 }
+
+/// The 2019-2021 rows as the block records them: date, kind and tier in order,
+/// handwritten here rather than read back from the module. The era-wide sweep
+/// counts kinds and instants, which a row moved to another audited date with
+/// the same kind and instant would leave unchanged; this pins the date set
+/// itself, in the order `holiday_on` must answer it.
+const ERA_2019_2021_ROWS: &[((i32, u32, u32), HolidayKind, EvidenceTier)] = &[
+    ((2019, 1, 1), HolidayKind::Closed, EvidenceTier::T1),
+    (
+        (2019, 1, 21),
+        HolidayKind::EarlyClose {
+            close_ssm: 12 * 3_600,
+        },
+        EvidenceTier::T1,
+    ),
+    (
+        (2019, 2, 18),
+        HolidayKind::EarlyClose {
+            close_ssm: 12 * 3_600,
+        },
+        EvidenceTier::T1,
+    ),
+    ((2019, 4, 19), HolidayKind::Closed, EvidenceTier::T1),
+    (
+        (2019, 5, 27),
+        HolidayKind::EarlyClose {
+            close_ssm: 12 * 3_600,
+        },
+        EvidenceTier::T1,
+    ),
+    ((2019, 6, 19), HolidayKind::Unsourced, EvidenceTier::T1),
+    (
+        (2019, 7, 4),
+        HolidayKind::EarlyClose {
+            close_ssm: 12 * 3_600,
+        },
+        EvidenceTier::T1,
+    ),
+    (
+        (2019, 9, 2),
+        HolidayKind::EarlyClose {
+            close_ssm: 12 * 3_600,
+        },
+        EvidenceTier::T1,
+    ),
+    (
+        (2019, 11, 28),
+        HolidayKind::EarlyClose {
+            close_ssm: 12 * 3_600,
+        },
+        EvidenceTier::T1,
+    ),
+    (
+        (2019, 11, 29),
+        HolidayKind::EarlyClose {
+            close_ssm: 12 * 3_600 + 15 * 60,
+        },
+        EvidenceTier::T1,
+    ),
+    (
+        (2019, 12, 24),
+        HolidayKind::EarlyClose {
+            close_ssm: 12 * 3_600 + 15 * 60,
+        },
+        EvidenceTier::T1,
+    ),
+    ((2019, 12, 25), HolidayKind::Closed, EvidenceTier::T1),
+    ((2020, 1, 1), HolidayKind::Closed, EvidenceTier::T1),
+    (
+        (2020, 1, 20),
+        HolidayKind::EarlyClose {
+            close_ssm: 12 * 3_600,
+        },
+        EvidenceTier::T1,
+    ),
+    (
+        (2020, 2, 17),
+        HolidayKind::EarlyClose {
+            close_ssm: 12 * 3_600,
+        },
+        EvidenceTier::T1,
+    ),
+    ((2020, 4, 10), HolidayKind::Closed, EvidenceTier::T1),
+    (
+        (2020, 5, 25),
+        HolidayKind::EarlyClose {
+            close_ssm: 12 * 3_600,
+        },
+        EvidenceTier::T1,
+    ),
+    ((2020, 6, 19), HolidayKind::Unsourced, EvidenceTier::T1),
+    (
+        (2020, 7, 3),
+        HolidayKind::EarlyClose {
+            close_ssm: 12 * 3_600,
+        },
+        EvidenceTier::T1,
+    ),
+    (
+        (2020, 9, 7),
+        HolidayKind::EarlyClose {
+            close_ssm: 12 * 3_600,
+        },
+        EvidenceTier::T1,
+    ),
+    (
+        (2020, 11, 26),
+        HolidayKind::EarlyClose {
+            close_ssm: 12 * 3_600,
+        },
+        EvidenceTier::T1,
+    ),
+    (
+        (2020, 11, 27),
+        HolidayKind::EarlyClose {
+            close_ssm: 12 * 3_600 + 15 * 60,
+        },
+        EvidenceTier::T1,
+    ),
+    (
+        (2020, 12, 24),
+        HolidayKind::EarlyClose {
+            close_ssm: 12 * 3_600 + 15 * 60,
+        },
+        EvidenceTier::T1,
+    ),
+    ((2020, 12, 25), HolidayKind::Closed, EvidenceTier::T1),
+    ((2021, 1, 1), HolidayKind::Closed, EvidenceTier::T1),
+    (
+        (2021, 1, 18),
+        HolidayKind::EarlyClose {
+            close_ssm: 12 * 3_600,
+        },
+        EvidenceTier::T1,
+    ),
+    (
+        (2021, 2, 15),
+        HolidayKind::EarlyClose {
+            close_ssm: 12 * 3_600,
+        },
+        EvidenceTier::T1,
+    ),
+    (
+        (2021, 4, 2),
+        HolidayKind::EarlyClose {
+            close_ssm: 10 * 3_600 + 15 * 60,
+        },
+        EvidenceTier::T1,
+    ),
+    (
+        (2021, 5, 31),
+        HolidayKind::EarlyClose {
+            close_ssm: 12 * 3_600,
+        },
+        EvidenceTier::T1,
+    ),
+    ((2021, 6, 19), HolidayKind::Unsourced, EvidenceTier::T1),
+    (
+        (2021, 7, 5),
+        HolidayKind::EarlyClose {
+            close_ssm: 12 * 3_600,
+        },
+        EvidenceTier::T1,
+    ),
+    (
+        (2021, 9, 6),
+        HolidayKind::EarlyClose {
+            close_ssm: 12 * 3_600,
+        },
+        EvidenceTier::T1,
+    ),
+    (
+        (2021, 11, 25),
+        HolidayKind::EarlyClose {
+            close_ssm: 12 * 3_600,
+        },
+        EvidenceTier::T1,
+    ),
+    (
+        (2021, 11, 26),
+        HolidayKind::EarlyClose {
+            close_ssm: 12 * 3_600 + 15 * 60,
+        },
+        EvidenceTier::T1,
+    ),
+    ((2021, 12, 24), HolidayKind::Closed, EvidenceTier::T1),
+];
+
+/// The era's audited date, kind and tier set, in order.
+#[test]
+fn era_2019_2021_rows_are_the_audited_date_kind_and_tier_set() {
+    let calendar = fx();
+    let mut index = 0_usize;
+    let mut date = day(2019, 1, 1);
+    while date <= day(2021, 12, 31) {
+        if let Some(row) = calendar.holiday_on(date) {
+            let (expected, kind, tier) = *ERA_2019_2021_ROWS.get(index).unwrap_or_else(|| {
+                panic!("{date}: a row ships in the 2019-2021 window that the block does not record")
+            });
+            assert_eq!(
+                (date.year(), date.month(), date.day()),
+                expected,
+                "the 2019-2021 rows must ship in order, with none added"
+            );
+            assert_eq!(row.kind(), kind, "{date}");
+            assert_eq!(row.tier(), tier, "{date}");
+            index += 1;
+        }
+        date = date.succ_opt().expect("the era ends well before the bound");
+    }
+    assert_eq!(index, ERA_2019_2021_ROWS.len(), "every recorded row ships");
+}

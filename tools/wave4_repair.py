@@ -688,7 +688,6 @@ def main(argv=None) -> int:
     payload = {
         "task": "cme-2019-2021.repair",
         "repaired_on_utc": "2026-09-16",
-        "repaired_at_utc": dt.datetime.now(dt.UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "verdict": "holidays/cme-2019-2021.verify.json (round 2, FAIL on evidence "
                    "discipline only, 4 discrepancies N1-N4)",
         "round_1_block": source_path,

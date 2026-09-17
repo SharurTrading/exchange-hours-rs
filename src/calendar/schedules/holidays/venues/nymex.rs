@@ -197,7 +197,6 @@ pub(crate) static NYMEX: &HolidayTable = holidays! {
         (2018, 12, 24, early_close(12 * 3_600 + 45 * 60), T1, "2018-holiday-calendars.zip#2018-christmas-holiday-schedule.xls @2026-08-30"),
         // 2018-12-25 - T1 - 2018-holiday-calendars.zip#2018-christmas-holiday-schedule.xls @2026-08-30 - closed: no trade date.
         (2018, 12, 25, Closed, T1, "2018-holiday-calendars.zip#2018-christmas-holiday-schedule.xls @2026-08-30"),
-        // 2022-01-17 - T1 - 2022-mlk-day-holiday-schedule.xls @2022-01-17T21:22:30Z - energy early close 13:30 CT.
         // 2019-01-01 - T1 - 2019-new-years-holiday-schedule-compact.xls @2018-01-07T04:13:43Z - closed: energy closed.
         (2019, 1, 1, Closed, T1, "2019-new-years-holiday-schedule-compact.xls @2018-01-07T04:13:43Z"),
         // 2019-01-21 - T1 - 2019-holiday-calendars.zip#globex-trading-schedules/2019-martin-luther-king-holiday-schedule-compact.xls @2021-01-26T09:48:37Z - energy early close 12:00 CT.
@@ -268,6 +267,7 @@ pub(crate) static NYMEX: &HolidayTable = holidays! {
         (2021, 11, 26, early_close(12 * 3_600 + 45 * 60), T1, "2021-holiday-calendars.zip#2021-thanksgiving-holiday-schedule-compact.xls @2026-08-30T10:03:27Z"),
         // 2021-12-24 - T1 - 2021-holiday-calendars.zip#2021-christmas-holiday-schedule-compact.xls @2026-08-30T10:03:27Z - closed: energy closed.
         (2021, 12, 24, Closed, T1, "2021-holiday-calendars.zip#2021-christmas-holiday-schedule-compact.xls @2026-08-30T10:03:27Z"),
+        // 2022-01-17 - T1 - 2022-mlk-day-holiday-schedule.xls @2022-01-17T21:22:30Z - energy early close 13:30 CT.
         (2022, 1, 17, early_close(13 * 3_600 + 30 * 60), T1, "2022-mlk-day-holiday-schedule.xls @2022-01-17T21:22:30Z"),
         // 2022-02-21 - T1 - 2022-presidents-day-holiday-schedule.xls @2022-07-04T07:38:10Z - energy early close 13:30 CT.
         (2022, 2, 21, early_close(13 * 3_600 + 30 * 60), T1, "2022-presidents-day-holiday-schedule.xls @2022-07-04T07:38:10Z"),
@@ -333,6 +333,7 @@ pub(crate) static NYMEX: &HolidayTable = holidays! {
         (2024, 12, 24, early_close(12 * 3_600 + 45 * 60), T2, "CME-SVC-2024-12-24"),
         // 2024-12-25 - T2 - CME-SVC-2024-12-24 - closed: energy closed.
         (2024, 12, 25, Closed, T2, "CME-SVC-2024-12-24"),
+        // 2025-01-01 - T2 - CME-SVC-2024-12-31 - closed: no trade date.
         (2025, 1, 1, Closed, T2, "CME-SVC-2024-12-31"),
         // 2025-01-20 - T2 - CME-SVC-2025-01-19 - energy early close 13:30 CT.
         (2025, 1, 20, early_close(13 * 3_600 + 30 * 60), T2, "CME-SVC-2025-01-19"),

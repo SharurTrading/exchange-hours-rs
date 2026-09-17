@@ -88,8 +88,12 @@ corrections (a venue's hours fixed against a primary source) go under
   published Globex holiday schedules: the compact per-holiday sheets inside the
   2019, 2020 and 2021 consolidated annual bundles, plus the December-2018
   supplement that governs 1-2 January 2019. Each family declares the era as a
-  new window in date order, so the only interval no wave has audited is
-  2013-2015 (#88). The rows are 103 full closures, 157 early closes, eight
+  new window in date order. The one interval no family wave has reached is now
+  `2013-2015` (#88) — for the five families whose history reaches the floor;
+  `globex_livestock` also has no 2016-2018 table, `globex_nikkei_225_dollar`
+  none before 2016 and `globex_cryptocurrency` none before 2019, and each
+  evidence file states its own unaudited intervals. The rows are 103 full
+  closures, 157 early closes, eight
   `globex_grains` late opens (five day-after-closure `late_open(08:30)` rows and
   three `late_open_and_early_close(08:30, 12:05)` rows on the day after
   Thanksgiving) and 24 `Unsourced` rows. `globex_grains` is the only family the

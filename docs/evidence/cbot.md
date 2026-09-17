@@ -367,12 +367,11 @@ normal.
 | 2021-12-24 | closed | `every routed family states a closure` | `2021-holiday-calendars.zip#2021-christmas-holiday-schedule-compact.xls @2026-08-30T10:03:27Z` | T1 | the intersection of the families routed to this venue |
 ### 2022-2024 (T1/T2)
 
-**Counts in this subsection are the 2022-2024 era's.** The table as a whole
-carries 154 rows over its four audited windows: 39 in this era (7 stated closures
-and 32 `Unsourced`), 36 in 2016-2018 (9 stated closures and 27 `Unsourced`), 40 in
-2025-2027 (9 stated closures and 31 `Unsourced`) and 39 in 2010-2012 (6 stated
-closures and 33 `Unsourced`). The derivation rule is the same in all four; only the
-documents differ.
+**Counts in this subsection are the 2022-2024 era's.** The table as a whole carries 196 rows over
+its five audited windows: 39 in 2010-2012 (6 stated closures and 33 `Unsourced`), 36 in 2016-2018
+(9 stated closures and 27 `Unsourced`), 42 in 2019-2021 (8 stated closures and 34 `Unsourced`), 39
+in this era (7 stated closures and 32 `Unsourced`) and 40 in 2025-2027 (9 stated closures and 31
+`Unsourced`). The derivation rule is the same in all five; only the documents differ.
 
 **This era's rows are derived, not retrieved.** They are the **intersection** of
 the two families that route to `Exchange::Cbot`, and every id they cite is one of
@@ -453,12 +452,11 @@ and 2024-01-01, 2024-03-29 and 2024-12-25. The other thirty-two carry
 
 ### 2025-2027 (T2)
 
-**Counts in this subsection are the 2025-2027 era's.** The table as a whole
-carries 154 rows over its four audited windows: 40 in this era (9 stated
-closures and 31 `Unsourced`), 36 in 2016-2018 (9 stated closures and 27
-`Unsourced`), 39 in 2022-2024 (7 stated closures and 32 `Unsourced`) and 39 in
-2010-2012 (6 stated closures and 33 `Unsourced`). The derivation rule is the same
-in all four; only the documents differ.
+**Counts in this subsection are the 2025-2027 era's.** The table as a whole carries 196 rows over
+its five audited windows: 39 in 2010-2012 (6 stated closures and 33 `Unsourced`), 36 in 2016-2018
+(9 stated closures and 27 `Unsourced`), 42 in 2019-2021 (8 stated closures and 34 `Unsourced`), 39
+in 2022-2024 (7 stated closures and 32 `Unsourced`) and 40 in this era (9 stated closures and 31
+`Unsourced`). The derivation rule is the same in all five; only the documents differ.
 
 **This table is derived, not retrieved.** It is the **intersection** of the two
 families that route to `Exchange::Cbot` — `globex_grains` and

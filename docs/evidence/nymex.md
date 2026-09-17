@@ -348,11 +348,12 @@ normal.
 | 2021-12-24 | closed | `every routed family states a closure` | `2021-holiday-calendars.zip#2021-christmas-holiday-schedule-compact.xls @2026-08-30T10:03:27Z` | T1 | the intersection of the families routed to this venue |
 ### 2022-2024 (T1/T2)
 
-**Counts in this subsection are the 2022-2024 era's.** The table as a whole
-carries 138 rows over its four audited windows: 33 in this era (7 stated closures,
-23 stated early closes and 3 `Unsourced` markers), 31 in 2016-2018, 36 in
-2025-2027 and 38 in 2010-2012. The derivation rule is the same in all four; only
-the documents differ.
+**Counts in this subsection are the 2022-2024 era's.** The table as a whole carries 173 rows over
+its five audited windows: 38 in 2010-2012 (8 stated closures and 30 early closes), 31 in 2016-2018
+(9 stated closures and 22 early closes), 35 in 2019-2021 (9 stated closures, 23 early closes and 3
+`Unsourced`), 33 in this era (7 stated closures, 23 early closes and 3 `Unsourced`) and 36 in
+2025-2027 (10 stated closures and 26 early closes). The derivation rule is the same in all five;
+only the documents differ.
 
 **The venue drops no date.** Metals and energy are one key and the operator prints
 them as one product row on every date this table audits, so its one routed family
@@ -413,10 +414,12 @@ no second family to disagree with.
 
 ### 2025-2027 (T2)
 
-**Counts in this subsection are the 2025-2027 era's.** The table as a whole
-carries 138 rows over its four audited windows: 36 in this era, 31 in 2016-2018,
-33 in 2022-2024 and 38 in 2010-2012. The intersection is total in all four eras,
-so nothing is withheld for a disagreement.
+**Counts in this subsection are the 2025-2027 era's.** The table as a whole carries 173 rows over
+its five audited windows: 38 in 2010-2012 (8 stated closures and 30 early closes), 31 in 2016-2018
+(9 stated closures and 22 early closes), 35 in 2019-2021 (9 stated closures, 23 early closes and 3
+`Unsourced`), 33 in 2022-2024 (7 stated closures, 23 early closes and 3 `Unsourced`) and 36 in
+this era (10 stated closures and 26 early closes). The intersection is total in all five eras, so
+nothing is withheld for a disagreement.
 
 **This table is derived, not retrieved, and the intersection is total.** It is the
 intersection of the families that route to `Exchange::Nymex` — which is one family,

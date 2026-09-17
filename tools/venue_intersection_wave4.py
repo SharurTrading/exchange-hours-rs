@@ -570,6 +570,10 @@ def insert(tables: dict[str, Table], era: tuple[dt.date, dt.date]) -> None:
             if re.match(r"^        \((\d{4}), ", line)
             and int(re.match(r"^        \((\d{4}), ", line).group(1)) >= era[0].year
         )
+        # A row's citation comment sits on the lines directly above it, so the
+        # block goes above that comment block, never between the two.
+        while first > 0 and lines[first - 1].lstrip().startswith("//"):
+            first -= 1
         lines.insert(first, "".join(block))
         coverage_index = next(
             index for index, line in enumerate(lines) if "coverage:" in line

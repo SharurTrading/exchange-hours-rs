@@ -761,15 +761,17 @@ def main(argv=None):
                     continue
                 fixed = value
                 for found in CLOCK_FIELD.finditer(value):
-                    padded = "0%s CT" % found.group(2)
-                    bare = "%s CT" % found.group(2)
-                    has_padded = re.search(r"\b%s" % re.escape(padded), text)
-                    has_bare = re.search(r"\b%s" % re.escape(bare), text)
+                    # Named `four`/`three`, not `padded`/`bare`: item 10 above
+                    # keeps its own `padded` list and `main` prints its length.
+                    four = "0%s CT" % found.group(2)
+                    three = "%s CT" % found.group(2)
+                    has_padded = re.search(r"\b%s" % re.escape(four), text)
+                    has_bare = re.search(r"\b%s" % re.escape(three), text)
                     current = found.group(0)
                     if has_padded and not has_bare:
-                        fixed = fixed.replace(current, padded)
+                        fixed = fixed.replace(current, four)
                     elif has_bare and not has_padded:
-                        fixed = fixed.replace(current, bare)
+                        fixed = fixed.replace(current, three)
                     else:
                         ambiguous.append((holiday["date"], row["family"], field,
                                           current,

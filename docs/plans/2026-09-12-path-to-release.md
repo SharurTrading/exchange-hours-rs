@@ -348,9 +348,10 @@ CME's own workbook rather than inferred across years; and the Interest-Rate/FX g
 claim becomes 57 of 58 sheets with the X13GFPD `Good Fri.` exception stated. The rest are
 record hygiene — the unmodelled printed product lines are named as gaps with their closing
 conditions, the two document-title quotations regain the registered-trademark glyph, the
-29 zero-padded three-digit clock times are re-emitted as CME printed them (a later pass
-settled all 80 against the artifact each row cites, re-padding the 48 that CME prints with
-a leading zero), and the
+80 zero-padded clock fields are re-emitted as CME printed them — item 10 de-pads every
+`*_instant` field the round-1 block had padded, and item 13 settles each against the artifact
+its row cites, re-padding the 48 that CME prints with a leading zero and leaving 32 bare —
+and the
 round-0 `INDEX.md` gains a dated amendment pointer. Every repair is guarded by a `before`
 check, so the tool cannot run silently against a different block.
 

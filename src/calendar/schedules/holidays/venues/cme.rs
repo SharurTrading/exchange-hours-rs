@@ -221,7 +221,7 @@ pub(crate) static CME: &HolidayTable = holidays! {
         (2013, 5, 24, Unsourced, T1, "2013-memorial-day.pdf @2013-06-23T20:36:04Z"),
         // 2013-05-27 - T1 - 2013-memorial-day.pdf @2013-06-23T20:36:04Z - disagreement: equity index early close 10:30 CT; energy and metals early close 12:15 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed.
         (2013, 5, 27, Unsourced, T1, "2013-memorial-day.pdf @2013-06-23T20:36:04Z"),
-        // 2013-07-03 - T1 - 2013-4th-of-july.pdf @2013-06-23T20:58:25Z - disagreement: equity index early close 12:15 CT; energy and metals no row; FX no row; grains early close 12:00 CT; interest rates no row; livestock early close 12:00 CT.
+        // 2013-07-03 - T1 - 2013-4th-of-july.pdf @2013-06-23T20:58:25Z - disagreement: equity index early close 12:15 CT; energy and metals no row; FX no row; grains early close 12:00 CT; interest rates no row; livestock early close 12:15 CT.
         (2013, 7, 3, Unsourced, T1, "2013-4th-of-july.pdf @2013-06-23T20:58:25Z"),
         // 2013-07-04 - T1 - 2013-4th-of-july.pdf @2013-06-23T20:58:25Z - disagreement: equity index early close 10:30 CT; energy and metals early close 12:15 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed.
         (2013, 7, 4, Unsourced, T1, "2013-4th-of-july.pdf @2013-06-23T20:58:25Z"),

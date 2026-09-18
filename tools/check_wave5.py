@@ -30,7 +30,9 @@ re-derives, checking each against what shipped:
   9. **printed cells** — every era table's `instant as printed` cell against the
      block's own string for that row's date;
  10. **statements** — every block statement accounted for: a non-`normal` one
-     produced a row, a `normal` one produced none.
+     produced a row, a `normal` one produced none;
+ 11. **grids** — the restated era grids against the crate's own `livestock.rs`
+     rule table, so a restatement cannot drift from the profile it models.
 
 The crate is the checkout this script lives in (`tools/..`); only the research
 store is a parameter.
@@ -380,12 +382,19 @@ def check_statements(block):
                         target = named_day(cell, date) or date
                         if (opened - first_open_at(family, target)) % 86_400 >= LATE_OPEN_GRACE:
                             wanted.append((target, "late_open"))
+                cells = list(entry.get("reopens") or [])
+                if entry.get("open_instant"):
+                    cells.insert(0, entry["open_instant"])
                 derived += 1
                 if entry["status"] == "normal":
                     if wanted:
                         fail(check, "%s %s: the block audits the date normal, its own "
                                     "instants state %s" % (family, date, wanted[0][1]))
                     continue
+                if not wanted and not cells and not entry.get("close_instant"):
+                    fail(check, "%s %s: the block states %s with no instant at all, so "
+                                "the derivation ships nothing"
+                         % (family, date, entry["status"]))
                 for target, kind in wanted:
                     derived += 1
                     if slot.get(target) is None:
@@ -986,6 +995,47 @@ def check_printed_cells(block):
             fail(check, "%s: no 2013-2015 row carries an instant cell" % path)
     return derived
 
+def check_grids():
+    """The checker's restatement of the era grids is anchored to the crate's rules.
+
+    `close_at` and `first_open_at` restate the 2013-2015 ordinary grids from the
+    profiles' own rule tables. They were restated wrong once — the floor grid's
+    13:55 CT short day was put on Thursday instead of Friday, which is what let
+    2013-03-28 and 2014-04-17 drop silently — so the restatement is checked
+    against the crate's `livestock.rs` rules here: the Monday open at 09:05 CT,
+    the MON_WED close at 16:00 CT and the THU_ONLY close at 13:55 CT.
+    """
+    check = 11
+    path = os.path.join(ROOT, "src", "calendar", "schedules", "futures", "us",
+                        "livestock.rs")
+    text = open(path, encoding="utf-8").read()
+    floor = text[text.index("static REGULAR_AT_2010_FLOOR"):]
+    floor = floor[:floor.index("];")]
+    rules = {}
+    for found in re.finditer(r"days:\s*(\w+),(?:(?!\}).)*?open_ssm:\s*([^,]+),\s*"
+                             r"close_ssm:\s*([^,\n]+),", floor, re.S):
+        rules[found.group(1)] = (parse_rule(found.group(2)), parse_rule(found.group(3)))
+    derived = 0
+    for name, open_ssm, close_ssm in (("MON_ONLY", 9 * 3_600 + 5 * 60, 16 * 3_600),
+                                      ("MON_WED", 17 * 3_600, 16 * 3_600),
+                                      ("THU_ONLY", 17 * 3_600, 13 * 3_600 + 55 * 60)):
+        derived += 1
+        if rules.get(name) != (open_ssm, close_ssm):
+            fail(check, "%s: the crate's %s rule is %r, the restatement assumes %r"
+                 % (path, name, rules.get(name), (open_ssm, close_ssm)))
+    # a Thursday's own close comes from the MON_WED open the evening before, and
+    # the 13:55 short day belongs to Friday
+    derived += 1
+    thursday = dt.date(2013, 3, 28)
+    if close_at("globex_livestock", thursday) != 16 * 3_600:
+        fail(check, "a Thursday's ordinary close is restated as %s, not 16:00 CT"
+             % close_at("globex_livestock", thursday))
+    derived += 1
+    if close_at("globex_livestock", dt.date(2013, 3, 29)) != 13 * 3_600 + 55 * 60:
+        fail(check, "a Friday's ordinary close is restated as %s, not 13:55 CT"
+             % close_at("globex_livestock", dt.date(2013, 3, 29)))
+    return derived
+
 
 def check_fences():
     check = 6
@@ -1044,6 +1094,7 @@ def main(argv=None):
     total = 0
     total += check_rows(block, modules)
     total += check_statements(block)
+    total += check_grids()
     total += check_coverage(modules)
     total += check_bytes(root, block, modules)
     total += check_venues(modules)

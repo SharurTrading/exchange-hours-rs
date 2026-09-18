@@ -32,7 +32,10 @@ re-derives, checking each against what shipped:
  10. **statements** — every block statement accounted for: a non-`normal` one
      produced a row, a `normal` one produced none;
  11. **grids** — the restated era grids against the crate's own `livestock.rs`
-     rule table, so a restatement cannot drift from the profile it models.
+     rule table, so a restatement cannot drift from the profile it models;
+ 12. **re-open lines** — every block `open_instant` against the cited sheet's
+     own `<clock> CT ... open for trade date` line, so a row cannot call the
+     next morning's ordinary handoff the first open.
 
 The crate is the checkout this script lives in (`tools/..`); only the research
 store is a parameter.
@@ -344,6 +347,86 @@ def expected_rows(block):
                     slot[target] = ("late_open", opened, None, entry["document"],
                                     entry["tier"])
     return out
+
+
+#: The hour each family's ordinary evening session opens at in this era.
+EVENING_HOUR = {
+    "globex_grains": 19,
+    "globex_equity_index": 17,
+    "globex_energy": 17,
+    "globex_fx": 17,
+    "globex_interest_rates": 17,
+    "globex_livestock": 17,
+}
+
+MONTHS = {name: number for number, name in enumerate(
+    ("January", "February", "March", "April", "May", "June", "July", "August",
+     "September", "October", "November", "December"), start=1)}
+
+#: `1900 CT / 2000 ET / 0000 UTC - Regular open for trade date Monday, July 6`
+REOPEN_LINE = re.compile(
+    r"(\d{3,4})\s*CT[^\n]*?for trade date\s+(\w+),\s+(\w+)\s+(\d{1,2})")
+
+
+def check_reopen_lines(root, block):
+    """A sheet's own `open for trade date` line is that date's first open.
+
+    CME prints the evening line that opens a trade date as `<clock> CT ... open
+    for trade date <weekday>, <month> <day>`. Where a row's `open_instant` is
+    later than such a line naming its own date, the row is reading the next
+    morning's ordinary pre-open handoff as the first open — the defect the
+    2015-07-06 grains row had, whose sheet prints `1900 CT ... Regular open for
+    trade date Monday, July 6`.
+
+    Two families can be checked without parsing the sheets into sections:
+    `globex_grains`, whose 19:00 CT evening open is the era's only 19:00 line,
+    and `globex_livestock`, whose lines are labelled (`Livestock markets open`).
+    The other four share the 17:00 CT evening line and are left alone: a 17:00
+    line naming the date may belong to a different family's heading, so the
+    check would report a row it cannot actually contradict.
+    """
+    check = 12
+    derived = 0
+    for holiday in block["holidays"]:
+        date = dt.date.fromisoformat(holiday["date"])
+        for row in holiday["families"]:
+            cell = row.get("open_instant")
+            if not cell:
+                continue
+            families = GROUP_FAMILIES.get(row["family"], ())
+            if "globex_grains" not in families and "globex_livestock" not in families:
+                continue
+            entry = block["documents"].get(row.get("document"))
+            if entry is None:
+                continue
+            name = os.path.basename(entry["file"])
+            stamp = re.sub(r"[^0-9]", "", entry["capture_utc"])
+            path = locate(root, name, stamp)
+            if path is None:
+                continue
+            stated = parse_clock(cell)
+            if stated is None:
+                continue
+            stated_clock = (stated // 3_600) * 100 + (stated % 3_600) // 60
+            with open(path, encoding="utf-8", errors="replace") as handle:
+                text = handle.read()
+            for found in REOPEN_LINE.finditer(text):
+                line = found.group(0)
+                clock = int(found.group(1))
+                if "globex_grains" in families:
+                    if clock // 100 != EVENING_HOUR["globex_grains"]:
+                        continue
+                elif "livestock" not in line.lower():
+                    continue
+                month = MONTHS.get(found.group(3))
+                if month != date.month or int(found.group(4)) != date.day:
+                    continue
+                derived += 1
+                if stated_clock < clock:
+                    fail(check, "%s %s %s: the cited sheet opens the trade date "
+                                "at %s CT and the row states %s"
+                         % (name, date, row["family"], found.group(1), cell))
+    return derived
 
 
 def check_statements(block):
@@ -1023,17 +1106,18 @@ def check_grids():
         if rules.get(name) != (open_ssm, close_ssm):
             fail(check, "%s: the crate's %s rule is %r, the restatement assumes %r"
                  % (path, name, rules.get(name), (open_ssm, close_ssm)))
-    # a Thursday's own close comes from the MON_WED open the evening before, and
-    # the 13:55 short day belongs to Friday
-    derived += 1
-    thursday = dt.date(2013, 3, 28)
-    if close_at("globex_livestock", thursday) != 16 * 3_600:
-        fail(check, "a Thursday's ordinary close is restated as %s, not 16:00 CT"
-             % close_at("globex_livestock", thursday))
-    derived += 1
-    if close_at("globex_livestock", dt.date(2013, 3, 29)) != 13 * 3_600 + 55 * 60:
-        fail(check, "a Friday's ordinary close is restated as %s, not 13:55 CT"
-             % close_at("globex_livestock", dt.date(2013, 3, 29)))
+    # A Thursday's own close comes from the MON_WED open the evening before and
+    # the 13:55 short day belongs to Friday. The probes are ordinary weekdays —
+    # 2013-03-21 is a Thursday, 2013-03-22 a Friday — so they pin the rule on
+    # days the family actually trades rather than on a holiday.
+    for label, probe, expected in (
+            ("Thursday", dt.date(2013, 3, 21), 16 * 3_600),
+            ("Friday", dt.date(2013, 3, 22), 13 * 3_600 + 55 * 60),
+            ("Wednesday", dt.date(2013, 3, 20), 16 * 3_600)):
+        derived += 1
+        if close_at("globex_livestock", probe) != expected:
+            fail(check, "a %s's ordinary close is restated as %s, not %s"
+                 % (label, close_at("globex_livestock", probe), expected))
     return derived
 
 
@@ -1095,6 +1179,7 @@ def main(argv=None):
     total += check_rows(block, modules)
     total += check_statements(block)
     total += check_grids()
+    total += check_reopen_lines(root, block)
     total += check_coverage(modules)
     total += check_bytes(root, block, modules)
     total += check_venues(modules)

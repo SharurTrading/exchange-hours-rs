@@ -647,7 +647,7 @@ def family_extra(name, summary, derived):
         return (
             "**The three late opens are the year-end reopenings.** 2013-01-02, "
             "2013-12-26 and 2014-01-02 each print `0500 CT - CME Globex open "
-            "for trade date`, which is sixteen hours after the trade date's "
+            "for trade date`, which is twelve hours after the trade date's "
             "ordinary 17:00 CT first open on the closed day, so each ships "
             "`late_open(5 * 3_600)`. 2015-01-02 ships no late open: the 2015 "
             "New Year's sheet prints no reopening line at all, so the crate "
@@ -658,16 +658,20 @@ def family_extra(name, summary, derived):
             "(LAW-SESSION-NOT-EXPIRY).")
     if name == "globex_energy":
         return (
-            "**Good Friday closes the energy and metals line in all three years.** CME's 2013 Good Friday sheet prints `CME Globex is closed` for 2013-03-29 under the `NYMEX & COMEX® and Dubai Mercantile (DME) Products` heading, and its 2014 and 2015 sheets print the same line for 2014-04-18 and 2015-04-03 under `Energy, Metals & DME Products`, so all three ship `Closed`. The Thursday before each is ordinary for the era, which the same sheets state as `1615 CT / 1715 ET - Regular close`, so those dates ship no row.")
+            "**Good Friday closes the energy and metals line in all three years.** CME's 2013 Good Friday sheet prints `CME Globex is closed` for 2013-03-29 under the `NYMEX & COMEX® and Dubai Mercantile (DME) Products` heading, and its 2014 and 2015 sheets print the same line for 2014-04-18 and 2015-04-03 under `Energy, Metals & DME Products`, so all three ship `Closed`. The Thursday before each is ordinary for the era — the 2013 sheet states it as `1615 CT / 1715 ET - Regular close`, the 2014 and 2015 sheets as the three-zone `1615 CT / 1715 ET / 2115 UTC – Regular close` — so those dates ship no row.")
     if name == "globex_interest_rates" or name == "globex_fx":
         return (
             "**The Friday eves of the Monday holidays close at 15:15 CT.** "
-            "Every 2013-2015 holiday schedule prints `1515 CT - Early close` "
-            "for the Interest Rate and FX lines on the Friday before a Monday "
-            "holiday, an hour and a quarter earlier than the family's ordinary "
-            "16:00 CT close, while the Equity line on the same sheet prints "
-            "its ordinary 16:15 CT. The rows are that printed early close. "
-            "From 2014 the same line is `1515 CT / 1615 ET / 2115 UTC`; the "
+            "Eleven of the era's twelve holiday schedules print "
+            "`1515 CT - Early close` for the Interest Rate and FX lines on the "
+            "Friday before a Monday holiday — 45 minutes earlier than the "
+            "family's ordinary 16:00 CT close — while the Equity line on the "
+            "same sheet prints its ordinary 16:15 CT; the twelfth, 2015-09-04 "
+            "before Labor Day, prints `1600 CT / 1700 ET / 2100 UTC – Regular "
+            "close`, which is why that date ships no row. The rows are that "
+            "printed early close. From 2014 the same line carries a UTC column "
+            "that follows DST — `1515 CT / 1615 ET / 2015 UTC` in summer "
+            "(2014-05-23, 2014-08-29, 2015-05-22) and `2115 UTC` in winter; the "
             "2014 Martin Luther King sheet's UTC column reads `2215 UTC` where "
             "1515 CT is 2115 UTC, and the block records CME's printed value "
             "with the arithmetic flagged rather than correcting it, so the "

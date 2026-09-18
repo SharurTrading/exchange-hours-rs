@@ -1838,7 +1838,7 @@ fn era_2013_2015_sweeps_every_shipped_row_kind_and_instant() {
     }
     assert_eq!(
         (closed, early, late, both),
-        (27, 6, 8, 3),
+        (27, 6, 7, 3),
         "the era's shape"
     );
 }
@@ -1915,7 +1915,7 @@ fn era_2013_2015_window_is_declared_in_order_and_bounds_every_row() {
         }
         date = date.succ_opt().expect("the era ends well before the bound");
     }
-    assert_eq!(rows, 44, "the era's rows");
+    assert_eq!(rows, 43, "the era's rows");
     assert_eq!(venue.holiday_on(day((2012, 12, 31))), None);
     assert!(!coverage.contains(day((2028, 1, 1))));
     assert_eq!(venue.holiday_on(day((2028, 1, 1))), None);
@@ -2051,13 +2051,6 @@ const ERA_2013_2015_ROWS: &[((i32, u32, u32), HolidayKind, EvidenceTier)] = &[
         EvidenceTier::T1,
     ),
     ((2015, 7, 3), HolidayKind::Closed, EvidenceTier::T1),
-    (
-        (2015, 7, 6),
-        HolidayKind::LateOpen {
-            open_ssm: 8 * 3_600 + 30 * 60,
-        },
-        EvidenceTier::T1,
-    ),
     ((2015, 9, 7), HolidayKind::Closed, EvidenceTier::T1),
     ((2015, 11, 26), HolidayKind::Closed, EvidenceTier::T1),
     (

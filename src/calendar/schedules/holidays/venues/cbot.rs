@@ -76,8 +76,8 @@ use super::super::{
 /// below keeps both closed, while a holiday early close moves the two by a
 /// different amount — the grain day session ends at 12:05 CT or 12:00 CT while
 /// the rate leg halts at 15:15, 12:00, 10:15 or 13:30 CT by date — so those
-/// dates ship `Unsourced`. 251 rows over six audited eras: forty-seven
-/// stated and 204 `Unsourced` (33 in 2010-2012, 47 in 2013-2015,
+/// dates ship `Unsourced`. 250 rows over six audited eras: forty-seven
+/// stated and 203 `Unsourced` (33 in 2010-2012, 46 in 2013-2015,
 /// 27 in 2016-2018, 34 in 2019-2021, 32 in 2022-2024 and 31 in 2025-2027).
 // Evidence: docs/evidence/cbot.md
 pub(crate) static CBOT: &HolidayTable = holidays! {
@@ -259,8 +259,6 @@ pub(crate) static CBOT: &HolidayTable = holidays! {
         (2015, 7, 2, Unsourced, T1, "2015-4th-of-july-holiday-schedule.pdf @2015-09-05T22:27:33Z"),
         // 2015-07-03 - T1 - 2015-4th-of-july-holiday-schedule.pdf @2015-09-05T22:27:33Z - disagreement: grains closed; interest rates early close 12:00 CT.
         (2015, 7, 3, Unsourced, T1, "2015-4th-of-july-holiday-schedule.pdf @2015-09-05T22:27:33Z"),
-        // 2015-07-06 - T1 - 2015-4th-of-july-holiday-schedule.pdf @2015-09-05T22:27:33Z - disagreement: grains late open 08:30 CT; interest rates no row.
-        (2015, 7, 6, Unsourced, T1, "2015-4th-of-july-holiday-schedule.pdf @2015-09-05T22:27:33Z"),
         // 2015-09-07 - T1 - 2015-labor-day-holiday-schedule.pdf @2015-08-24T02:30:39Z - disagreement: grains closed; interest rates early close 12:00 CT.
         (2015, 9, 7, Unsourced, T1, "2015-labor-day-holiday-schedule.pdf @2015-08-24T02:30:39Z"),
         // 2015-11-26 - T1 - 2015-thanksgiving-holiday-schedule.pdf @2016-02-05T16:25:19Z - disagreement: grains closed; interest rates early close 12:00 CT.

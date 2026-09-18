@@ -307,7 +307,7 @@ Every interval from 2010-01-01 is declared, so the whole span has an answer; the
 
 **This era brings the family to six audited windows.** The table as a whole carries 206 rows over 6 windows — 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 — and this era's share is **33 rows**: 9 stated closures and 24 early closes. Every row is at T1.
 
-**Good Friday closes the energy and metals line in all three years.** CME's 2013 Good Friday sheet prints `CME Globex is closed` for 2013-03-29 under the `NYMEX & COMEX® and Dubai Mercantile (DME) Products` heading, and its 2014 and 2015 sheets print the same line for 2014-04-18 and 2015-04-03 under `Energy, Metals & DME Products`, so all three ship `Closed`. The Thursday before each is ordinary for the era, which the same sheets state as `1615 CT / 1715 ET - Regular close`, so those dates ship no row.
+**Good Friday closes the energy and metals line in all three years.** CME's 2013 Good Friday sheet prints `CME Globex is closed` for 2013-03-29 under the `NYMEX & COMEX® and Dubai Mercantile (DME) Products` heading, and its 2014 and 2015 sheets print the same line for 2014-04-18 and 2015-04-03 under `Energy, Metals & DME Products`, so all three ship `Closed`. The Thursday before each is ordinary for the era — the 2013 sheet states it as `1615 CT / 1715 ET - Regular close`, and the 2014 and 2015 sheets as the three-zone `1615 CT / 1715 ET / 2115 UTC – Regular close` — so those dates ship no row.
 
 ### 2016
 

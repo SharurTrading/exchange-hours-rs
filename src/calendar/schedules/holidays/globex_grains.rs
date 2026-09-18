@@ -223,8 +223,6 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2015, 7, 2, early_close(12 * 3_600), T1, "2015-4th-of-july-holiday-schedule.pdf @2015-09-05T22:27:33Z"),
         // 2015-07-03 - T1 - 2015-4th-of-july-holiday-schedule.pdf @2015-09-05T22:27:33Z - CME prints no session running through this date.
         (2015, 7, 3, Closed, T1, "2015-4th-of-july-holiday-schedule.pdf @2015-09-05T22:27:33Z"),
-        // 2015-07-06 - T1 - 2015-4th-of-july-holiday-schedule.pdf @2015-09-05T22:27:33Z - the trade date's first open is 8:30 CT: the evening leg that would have opened earlier did not run.
-        (2015, 7, 6, late_open(8 * 3_600 + 30 * 60), T1, "2015-4th-of-july-holiday-schedule.pdf @2015-09-05T22:27:33Z"),
         // 2015-09-07 - T1 - 2015-labor-day-holiday-schedule.pdf @2015-08-24T02:30:39Z - CME prints no session running through this date.
         (2015, 9, 7, Closed, T1, "2015-labor-day-holiday-schedule.pdf @2015-08-24T02:30:39Z"),
         // 2015-11-26 - T1 - 2015-thanksgiving-holiday-schedule.pdf @2016-02-05T16:25:19Z - CME prints no session running through this date.

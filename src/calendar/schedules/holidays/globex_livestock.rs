@@ -136,7 +136,7 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2013, 9, 2, Closed, T1, "2013-labor-day.pdf @2013-09-02T17:08:41Z"),
         // 2013-11-28 - T1 - 2013-thanksgiving.pdf @2014-02-14T06:28:36Z - CME prints no session running through this date.
         (2013, 11, 28, Closed, T1, "2013-thanksgiving.pdf @2014-02-14T06:28:36Z"),
-        // 2013-11-29 - T1 - 2013-thanksgiving.pdf @2014-02-14T06:28:36Z - the trade date's first open is 9:05 CT: the evening leg that would have opened earlier did not run; the printed final close 12:15 CT is earlier than the family's ordinary 16:00 CT.
+        // 2013-11-29 - T1 - 2013-thanksgiving.pdf @2014-02-14T06:28:36Z - the trade date's first open is 9:05 CT: the evening leg that would have opened earlier did not run; the printed final close 12:15 CT is earlier than the family's ordinary 13:55 CT.
         (2013, 11, 29, late_open_and_early_close(9 * 3_600 + 5 * 60, 12 * 3_600 + 15 * 60), T1, "2013-thanksgiving.pdf @2014-02-14T06:28:36Z"),
         // 2013-12-24 - T1 - 2013-christmas.pdf @2014-04-12T06:24:28Z - the printed final close 12:15 CT is earlier than the family's ordinary 16:00 CT.
         (2013, 12, 24, early_close(12 * 3_600 + 15 * 60), T1, "2013-christmas.pdf @2014-04-12T06:24:28Z"),

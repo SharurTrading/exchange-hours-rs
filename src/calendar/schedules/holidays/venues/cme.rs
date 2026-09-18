@@ -81,9 +81,9 @@ use super::super::{
 
 /// The `Exchange::Cme` table: the intersection of the six CME families.
 ///
-/// Two hundred and seventy-four rows over six audited eras. Forty-seven state a status — the
-/// Globex full closures — and 227 are `Unsourced`: 49 in 2010-2012, where the
-/// families disagree in kind rather than by minutes, 51 in 2013-2015, 27 in
+/// Two hundred and seventy-three rows over six audited eras. Forty-seven state a status — the
+/// Globex full closures — and 226 are `Unsourced`: 49 in 2010-2012, where the
+/// families disagree in kind rather than by minutes, 50 in 2013-2015, 27 in
 /// 2016-2018, 34 in 2019-2021, 34 in 2022-2024, and 32 in 2025-2027. The six
 /// eras are declared as six coverage windows, and outside them the table reports
 /// no answer rather than a normal one.
@@ -305,8 +305,6 @@ pub(crate) static CME: &HolidayTable = holidays! {
         (2015, 7, 2, Unsourced, T1, "2015-4th-of-july-holiday-schedule.pdf @2015-09-05T22:27:33Z"),
         // 2015-07-03 - T1 - 2015-4th-of-july-holiday-schedule.pdf @2015-09-05T22:27:33Z - disagreement: equity index early close 12:00 CT; energy and metals early close 12:00 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed.
         (2015, 7, 3, Unsourced, T1, "2015-4th-of-july-holiday-schedule.pdf @2015-09-05T22:27:33Z"),
-        // 2015-07-06 - T1 - 2015-4th-of-july-holiday-schedule.pdf @2015-09-05T22:27:33Z - disagreement: equity index no row; energy and metals no row; FX no row; grains late open 08:30 CT; interest rates no row; livestock no row.
-        (2015, 7, 6, Unsourced, T1, "2015-4th-of-july-holiday-schedule.pdf @2015-09-05T22:27:33Z"),
         // 2015-09-07 - T1 - 2015-labor-day-holiday-schedule.pdf @2015-08-24T02:30:39Z - disagreement: equity index early close 12:00 CT; energy and metals early close 12:00 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed.
         (2015, 9, 7, Unsourced, T1, "2015-labor-day-holiday-schedule.pdf @2015-08-24T02:30:39Z"),
         // 2015-11-26 - T1 - 2015-thanksgiving-holiday-schedule.pdf @2016-02-05T16:25:19Z - disagreement: equity index early close 12:00 CT; energy and metals early close 12:00 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed.

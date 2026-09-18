@@ -611,6 +611,44 @@ def main(argv=None):
                      "December 31, 2012 to January 2, 2013",
                      "r048 | All times are CT"]})
 
+    # --------------------------------------------------------------- item 14
+    # The 2015-07-06 grains entry reads the Monday pre-open/reopen pair as the
+    # trade date's first open. The same sheet's Grain, Oilseed & MGEX section
+    # prints `Sunday, July 5 / 1900 CT ... Regular open for trade date Monday,
+    # July 6`, so the evening leg ran and the Monday 0830 CT line is the era's
+    # ordinary handoff; the twin 2015-12-28 entry — the same pair six months
+    # later — is already `normal` for exactly this reason.
+    j4_entry = entry_on(block, "2015-07-06")
+    j4_grain = find(j4_entry, "grains_oilseeds")
+    repairs.guard(14, "2015-07-06 grains_oilseeds", j4_grain["status"], "late_open")
+    j4_path = ("cme-2013-2015-repair-r2/txt/"
+               "2015-4th-of-july-holiday-schedule__20150905222733.txt")
+    _, j4_text = read_text(root, j4_path)
+    j4_literal = "1900 CT / 2000 ET / 0000 UTC"
+    for needed in (j4_literal, "Regular open for trade date Monday, July 6"):
+        if needed not in j4_text:
+            raise SystemExit("item 14: %r is not in %s" % (needed, j4_path))
+    j4_before = {"status": j4_grain["status"],
+                 "open_instant": j4_grain.get("open_instant")}
+    j4_grain["status"] = "normal"
+    j4_grain.pop("open_instant", None)
+    j4_grain.setdefault("other_statements", []).append({
+        "document": "D15J4",
+        "relation": "correction",
+        "verbatim": ("[the same sheet's Grain, Oilseed & MGEX Products section] "
+                     "Sunday, July 5 / 1900 CT / 2000 ET / 0000 UTC - Regular "
+                     "open for trade date Monday, July 6 / Grain, Oilseed & "
+                     "MGEX products"),
+        "note": ("The trade date's first open is the Sunday 19:00 CT line, so "
+                 "the Monday 08:30 CT line is the era's ordinary pre-open to "
+                 "reopen handoff and this date is normal with no row. The "
+                 "2015-12-28 entry, the same pair six months later, is read the "
+                 "same way.")})
+    repairs.add(14, "holidays 2015-07-06 grains_oilseeds",
+                "status/open_instant", j4_before,
+                {"status": "normal", "open_instant": None},
+                {"artifact": j4_path, "literal": j4_literal})
+
     # ---------------------------------------------------------------- item 6
     missing = block["missing"]
     # item 4 — the Good Friday zone gap is closed.

@@ -6,13 +6,14 @@
 //! it; a disagreement ships [`HolidayKind::Unsourced`], which clips nothing
 //! and tells the caller the date is special without inventing an instant.
 //!
-//! Coverage is five audited eras: 2010-2012, whose rows are T1 (CME's own
-//! holiday-calendar PDFs); 2016-2018, 2019-2021 and 2022-2024, whose rows are
+//! Coverage is 6 audited eras: 2010-2012 and 2013-2015, whose rows are T1
+//! (CME's own holiday-calendar PDFs and .xls workbooks); 2016-2018, 2019-2021
+//! and 2022-2024, whose rows are
 //! `globex_energy`'s, at T1 from CME's own published Globex holiday schedules
 //! — all of 2019-2021 at T1, and 2022-2024 except for the three 2023 markers
 //! and the 2024 dates the trading-hours service answers; and 2025-2027, whose
-//! rows are T2 (that service). The 2013-2015 interval between them is audited
-//! by no wave and lies outside every declared window.
+//! rows are T2 (that service). The six eras are contiguous from 2010-01-01 to
+//! 2027-12-31, so no interval between them is unaudited.
 //!
 //! On the 2019-2021 era's **thirty-five rows** the venue carries
 //! `globex_energy` unchanged: nine closures, twenty-three early closes and
@@ -42,9 +43,9 @@ use super::super::{
 
 /// The `Exchange::Nymex` table: the NYMEX energy half of `globex_energy`.
 ///
-/// The same rows as [`COMEX`] — 173 over five audited eras, 38 from 2010-2012,
-/// 31 from 2016-2018, 35 from 2019-2021, 33 from 2022-2024 and 36 from
-/// 2025-2027 — because the two venues route the same single family: the operator
+/// The same rows as [`COMEX`] — 206 over six audited eras, 38 from 2010-2012,
+/// 33 from 2013-2015, 31 from 2016-2018, 35 from 2019-2021, 33 from 2022-2024
+/// and 36 from 2025-2027 — because the two venues route the same single family: the operator
 /// publishes the metals and energy halves as one product row on every date the
 /// table audits. They stay separate tables rather than one shared binding,
 /// matching the one-arm-per-identity rule the routing match states — a venue's
@@ -53,11 +54,11 @@ use super::super::{
 /// against the family's own answers. On the 2022-2024 era's three 2023 dates and
 /// the 2019-2021 era's three Juneteenth dates the family itself states
 /// `Unsourced`, and the venue carries that marker because the family says so, not
-/// because anything disputes it. The 2013-2015 interval between the eras is
-/// outside every declared window and ships no row.
+/// because anything disputes it. Every era from 2010-01-01 to 2027-12-31 is a
+/// declared window, so no interval between the eras is unaudited.
 // Evidence: docs/evidence/nymex.md
 pub(crate) static NYMEX: &HolidayTable = holidays! {
-    coverage: [(2010, 1, 1) ..= (2012, 12, 31), (2016, 1, 1) ..= (2018, 12, 31), (2019, 1, 1) ..= (2021, 12, 31), (2022, 1, 1) ..= (2024, 12, 31), (2025, 1, 1) ..= (2027, 12, 31)],
+    coverage: [(2010, 1, 1) ..= (2012, 12, 31), (2013, 1, 1) ..= (2015, 12, 31), (2016, 1, 1) ..= (2018, 12, 31), (2019, 1, 1) ..= (2021, 12, 31), (2022, 1, 1) ..= (2024, 12, 31), (2025, 1, 1) ..= (2027, 12, 31)],
     rows: [
         // 2010-01-01 - T1 - 2010-new-years.pdf - closed.
         (2010, 1, 1, Closed, T1, "2010-new-years.pdf @2010-02-15T05:16:52Z"),
@@ -135,6 +136,72 @@ pub(crate) static NYMEX: &HolidayTable = holidays! {
         (2012, 12, 24, early_close(12 * 3_600 + 45 * 60), T1, "2012-christmas.pdf @2013-04-14T19:40:27Z"),
         // 2012-12-25 - T1 - 2012-christmas.pdf - closed.
         (2012, 12, 25, Closed, T1, "2012-christmas.pdf @2013-04-14T19:40:27Z"),
+        // 2013-01-01 - T1 - 2013-new-years.pdf @2013-04-14T19:41:46Z - closed: energy closed.
+        (2013, 1, 1, Closed, T1, "2013-new-years.pdf @2013-04-14T19:41:46Z"),
+        // 2013-01-21 - T1 - 2013-martin-luther-king.pdf @2012-11-19T00:16:09Z - energy early close 12:15 CT.
+        (2013, 1, 21, early_close(12 * 3_600 + 15 * 60), T1, "2013-martin-luther-king.pdf @2012-11-19T00:16:09Z"),
+        // 2013-02-18 - T1 - 2013-presidents-day.pdf @2013-03-09T11:53:37Z - energy early close 12:15 CT.
+        (2013, 2, 18, early_close(12 * 3_600 + 15 * 60), T1, "2013-presidents-day.pdf @2013-03-09T11:53:37Z"),
+        // 2013-03-29 - T1 - 2013-good-friday.pdf @2013-06-23T19:59:25Z - closed: energy closed.
+        (2013, 3, 29, Closed, T1, "2013-good-friday.pdf @2013-06-23T19:59:25Z"),
+        // 2013-05-27 - T1 - 2013-memorial-day.pdf @2013-06-23T20:36:04Z - energy early close 12:15 CT.
+        (2013, 5, 27, early_close(12 * 3_600 + 15 * 60), T1, "2013-memorial-day.pdf @2013-06-23T20:36:04Z"),
+        // 2013-07-04 - T1 - 2013-4th-of-july.pdf @2013-06-23T20:58:25Z - energy early close 12:15 CT.
+        (2013, 7, 4, early_close(12 * 3_600 + 15 * 60), T1, "2013-4th-of-july.pdf @2013-06-23T20:58:25Z"),
+        // 2013-09-02 - T1 - 2013-labor-day.pdf @2013-09-02T17:08:41Z - energy early close 12:15 CT.
+        (2013, 9, 2, early_close(12 * 3_600 + 15 * 60), T1, "2013-labor-day.pdf @2013-09-02T17:08:41Z"),
+        // 2013-11-28 - T1 - 2013-thanksgiving.pdf @2014-02-14T06:28:36Z - energy early close 12:15 CT.
+        (2013, 11, 28, early_close(12 * 3_600 + 15 * 60), T1, "2013-thanksgiving.pdf @2014-02-14T06:28:36Z"),
+        // 2013-11-29 - T1 - 2013-thanksgiving.pdf @2014-02-14T06:28:36Z - energy early close 12:45 CT.
+        (2013, 11, 29, early_close(12 * 3_600 + 45 * 60), T1, "2013-thanksgiving.pdf @2014-02-14T06:28:36Z"),
+        // 2013-12-24 - T1 - 2013-christmas.pdf @2014-04-12T06:24:28Z - energy early close 12:45 CT.
+        (2013, 12, 24, early_close(12 * 3_600 + 45 * 60), T1, "2013-christmas.pdf @2014-04-12T06:24:28Z"),
+        // 2013-12-25 - T1 - 2013-christmas.pdf @2014-04-12T06:24:28Z - closed: energy closed.
+        (2013, 12, 25, Closed, T1, "2013-christmas.pdf @2014-04-12T06:24:28Z"),
+        // 2014-01-01 - T1 - 2014-new-years.pdf @2013-10-07T20:58:00Z - closed: energy closed.
+        (2014, 1, 1, Closed, T1, "2014-new-years.pdf @2013-10-07T20:58:00Z"),
+        // 2014-01-20 - T1 - 2014-martin-luther-king-holiday-schedule.pdf @2014-03-26T16:02:15Z - energy early close 12:15 CT.
+        (2014, 1, 20, early_close(12 * 3_600 + 15 * 60), T1, "2014-martin-luther-king-holiday-schedule.pdf @2014-03-26T16:02:15Z"),
+        // 2014-02-17 - T1 - 2014-presidents-day-holiday-schedule.pdf @2014-02-14T19:23:32Z - energy early close 12:15 CT.
+        (2014, 2, 17, early_close(12 * 3_600 + 15 * 60), T1, "2014-presidents-day-holiday-schedule.pdf @2014-02-14T19:23:32Z"),
+        // 2014-04-18 - T1 - 2014-good-friday-holiday-schedule.pdf @2014-03-26T15:27:35Z - closed: energy closed.
+        (2014, 4, 18, Closed, T1, "2014-good-friday-holiday-schedule.pdf @2014-03-26T15:27:35Z"),
+        // 2014-05-26 - T1 - 2014-memorial-day-holiday-schedule.pdf @2014-07-08T02:01:55Z - energy early close 12:00 CT.
+        (2014, 5, 26, early_close(12 * 3_600), T1, "2014-memorial-day-holiday-schedule.pdf @2014-07-08T02:01:55Z"),
+        // 2014-07-04 - T1 - 2014-4th-of-july-holiday-schedule.pdf @2014-07-08T01:57:36Z - energy early close 12:00 CT.
+        (2014, 7, 4, early_close(12 * 3_600), T1, "2014-4th-of-july-holiday-schedule.pdf @2014-07-08T01:57:36Z"),
+        // 2014-09-01 - T1 - 2014-labor-day-holiday-schedule.pdf @2014-09-12T07:16:08Z - energy early close 12:00 CT.
+        (2014, 9, 1, early_close(12 * 3_600), T1, "2014-labor-day-holiday-schedule.pdf @2014-09-12T07:16:08Z"),
+        // 2014-11-27 - T1 - 2014-thanksgiving-holiday-schedule.pdf @2015-01-21T14:54:56Z - energy early close 12:00 CT.
+        (2014, 11, 27, early_close(12 * 3_600), T1, "2014-thanksgiving-holiday-schedule.pdf @2015-01-21T14:54:56Z"),
+        // 2014-11-28 - T1 - 2014-thanksgiving-holiday-schedule.pdf @2015-01-21T14:54:56Z - energy early close 12:45 CT.
+        (2014, 11, 28, early_close(12 * 3_600 + 45 * 60), T1, "2014-thanksgiving-holiday-schedule.pdf @2015-01-21T14:54:56Z"),
+        // 2014-12-24 - T1 - 2014-christmas-holiday-schedule.pdf @2015-01-21T14:10:00Z - energy early close 12:45 CT.
+        (2014, 12, 24, early_close(12 * 3_600 + 45 * 60), T1, "2014-christmas-holiday-schedule.pdf @2015-01-21T14:10:00Z"),
+        // 2014-12-25 - T1 - 2014-christmas-holiday-schedule.pdf @2015-01-21T14:10:00Z - closed: energy closed.
+        (2014, 12, 25, Closed, T1, "2014-christmas-holiday-schedule.pdf @2015-01-21T14:10:00Z"),
+        // 2015-01-01 - T1 - 2015-new-years-holiday-schedule.pdf @2015-01-21T14:10:43Z - closed: energy closed.
+        (2015, 1, 1, Closed, T1, "2015-new-years-holiday-schedule.pdf @2015-01-21T14:10:43Z"),
+        // 2015-01-19 - T1 - 2015-martin-luther-king-holiday-schedule.pdf @2015-01-21T14:10:12Z - energy early close 12:00 CT.
+        (2015, 1, 19, early_close(12 * 3_600), T1, "2015-martin-luther-king-holiday-schedule.pdf @2015-01-21T14:10:12Z"),
+        // 2015-02-16 - T1 - 2015-presidents-day-holiday-schedule.pdf @2015-01-21T19:24:01Z - energy early close 12:00 CT.
+        (2015, 2, 16, early_close(12 * 3_600), T1, "2015-presidents-day-holiday-schedule.pdf @2015-01-21T19:24:01Z"),
+        // 2015-04-03 - T1 - 2015-good-friday-holiday-schedule.pdf @2015-09-05T22:32:30Z - closed: energy closed.
+        (2015, 4, 3, Closed, T1, "2015-good-friday-holiday-schedule.pdf @2015-09-05T22:32:30Z"),
+        // 2015-05-25 - T1 - 2015-memorial-day-holiday-schedule.pdf @2015-03-26T11:39:38Z - energy early close 12:00 CT.
+        (2015, 5, 25, early_close(12 * 3_600), T1, "2015-memorial-day-holiday-schedule.pdf @2015-03-26T11:39:38Z"),
+        // 2015-07-03 - T1 - 2015-4th-of-july-holiday-schedule.pdf @2015-09-05T22:27:33Z - energy early close 12:00 CT.
+        (2015, 7, 3, early_close(12 * 3_600), T1, "2015-4th-of-july-holiday-schedule.pdf @2015-09-05T22:27:33Z"),
+        // 2015-09-07 - T1 - 2015-labor-day-holiday-schedule.pdf @2015-08-24T02:30:39Z - energy early close 12:00 CT.
+        (2015, 9, 7, early_close(12 * 3_600), T1, "2015-labor-day-holiday-schedule.pdf @2015-08-24T02:30:39Z"),
+        // 2015-11-26 - T1 - 2015-thanksgiving-holiday-schedule.pdf @2016-02-05T16:25:19Z - energy early close 12:00 CT.
+        (2015, 11, 26, early_close(12 * 3_600), T1, "2015-thanksgiving-holiday-schedule.pdf @2016-02-05T16:25:19Z"),
+        // 2015-11-27 - T1 - 2015-thanksgiving-holiday-schedule.pdf @2016-02-05T16:25:19Z - energy early close 12:45 CT.
+        (2015, 11, 27, early_close(12 * 3_600 + 45 * 60), T1, "2015-thanksgiving-holiday-schedule.pdf @2016-02-05T16:25:19Z"),
+        // 2015-12-24 - T1 - 2015-christmas-holiday-schedule.pdf @2015-11-23T06:15:20Z - energy early close 12:45 CT.
+        (2015, 12, 24, early_close(12 * 3_600 + 45 * 60), T1, "2015-christmas-holiday-schedule.pdf @2015-11-23T06:15:20Z"),
+        // 2015-12-25 - T1 - 2015-christmas-holiday-schedule.pdf @2015-11-23T06:15:20Z - closed: energy closed.
+        (2015, 12, 25, Closed, T1, "2015-christmas-holiday-schedule.pdf @2015-11-23T06:15:20Z"),
         // 2016-01-01 - T1 - 2016-new-years-holiday-schedule.pdf @2016-01-08 - closed: no trade date.
         (2016, 1, 1, Closed, T1, "2016-new-years-holiday-schedule.pdf @2016-01-08"),
         // 2016-01-18 - T1 - 2016-holiday-calendars.zip#2016-martin-luther-king-holiday-schedule.pdf @2017-06-28 - early close 12:00 CT.

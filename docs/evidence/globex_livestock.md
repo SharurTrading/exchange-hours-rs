@@ -33,6 +33,7 @@ are in the research store's `holidays/raw/` indexes.
 
 | Document | Window | Replay or service URL | Capture or retrieval, UTC | Tier | sha256 |
 |---|---|---|---|---|---|
+| `2016-new-years-holiday-schedule.pdf @2016-01-08` | `2016-new-years-holiday-schedule.pdf` | <https://web.archive.org/web/20160108203007id_/http://www.cmegroup.com:80/tools-information/holiday-calendar/files/2016-new-years-holiday-schedule.pdf> | archive capture 2016-01-08T20:30:07Z | T1 | `118196a469dd40ad6a40594da273f726f6cb3e503f9cc1b8fd2057cf2fa32c61` |
 | `2010-new-years.pdf @2010-02-15T05:16:52Z` | `2010-new-years.pdf` | <https://web.archive.org/web/20100215051652id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2010-new-years.pdf> | archive capture 2010-02-15T05:16:52Z | T1 | `c30a6cef73fca23c54b25907f307ad52a2922d1e4b76c0a12de126dc6fc31a6d` |
 | `2010-good-friday.pdf @2010-06-01T11:19:16Z` | `2010-good-friday.pdf` | <https://web.archive.org/web/20100601111916id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2010-good-friday.pdf> | archive capture 2010-06-01T11:19:16Z | T1 | `d196ca746c20ecd416d38f8f95020e2e7d6cb7fa9ead089e0d58c88bed0ab1f5` |
 | `2010-thanksgiving.pdf @2010-11-22T09:40:12Z` | `2010-thanksgiving.pdf` | <https://web.archive.org/web/20101122094012id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2010-thanksgiving.pdf> | archive capture 2010-11-22T09:40:12Z | T1 | `4732afab4ca78ce21b3640f8ac41ced714123179c7cee1cb2b8c044bf9f2e2b5` |
@@ -88,33 +89,31 @@ are in the research store's `holidays/raw/` indexes.
 
 ## Holidays
 
-**Coverage:** 2010-01-01..2012-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 (inclusive venue-local trade dates).
+**Coverage:** 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 (inclusive venue-local trade dates).
 This wave is 33 rows over 2022-01-01..2024-12-31, **19 at T1** and **14 at T2**. The T1 rows are read from the 2022 per-asset-class workbooks, the 2023 one-pagers, and the two 2024 entries CME's own cmegroup.com worksheets `new-years-day-2024.pdf` and `christmas-day-2023.pdf` serve; the T2 rows are the operator's own `trading-hours-by-product` responses, which carry the rest of 2024 and the three 2023 holiday dates its one-pagers do not cover. 3 of the 33 are `unsourced`.
-Tier: **T1** for 2010-2012, from the operator's own published holiday schedules;
-**T2** for 2025-2027, from its trading-hours service. The 2016-2018 era is not a window
+Tier: **T1** for 2010-2012, 2013-2015, 2019-2021 and the 2022-2024 rows read from the
+operator's own published holiday schedules; **T2** for 2025-2027 and the 2022-2024 rows
+the operator's trading-hours service answers. The 2016-2018 era is not a window
 of this table; the gap note below records why. Inside a window a date with no row is
 audited normal; outside every window this table has no answer at all.
 
 **Gap — the 2016-2018 era is evidence-ready and unencoded.** This family ships no
 2016-2018 table, so `Exchange::Cme` treats it as abstaining for that era rather than as
-disputing it (see `docs/evidence/cme.md`). The evidence is not missing: the research block
-`holidays/cme-2016-2018.json` carries thirty-six `Livestock` rows for those years from the
-same CME documents the other six families are encoded from. Encoding them was out of this
-change's scope — the wave is the served CME product families — and closing condition is
-stage 4.1 of the release plan, which already names the dormant CME Globex keys. It changes
-no CME answer today: the venue has no unanimous row on any of the era's dates either way.
+disputing it: the venue table's module doc
+(`src/calendar/schedules/holidays/venues/cme.rs`) records that this family has no holiday
+table for the era and so neither supplies nor withholds a venue row. The evidence is not
+missing: the research block `holidays/cme-2016-2018.json` carries thirty-six `Livestock`
+rows for those years from the same CME documents the other six families are encoded from.
+Encoding them was out of this change's scope — the wave is the 2013-2015 era of the served
+CME product families — and the gap is tracked as **issue #110**, whose closing condition is
+that encoding. It changes no CME answer today: the venue has no unanimous row on any of the
+era's dates either way.
 
-**Four audited eras, with 2013-2018 between the first and the second.** The table declares 4
-coverage windows: `2010-01-01..2012-12-31`, from the operators' own published holiday schedules at
-**T1**; `2019-01-01..2021-12-31`, from CME's own published Globex holiday schedules at **T1**;
-`2022-01-01..2024-12-31`, from the 2022 workbooks and 2023 one-pagers at T1 and CME's service
-responses at **T2**; and `2025-01-01..2027-12-31`, from the trading-hours service at T2. The one
-interval outside every declared window is `2013-2018`: `holiday_on` has **no answer** there rather
-than reporting an unaudited date as normal. That interval spans the one remaining unworked
-stage-2.2 wave — 2013-2015 — and 2016-2018 belongs to it too, because this family never declared
-that era: CME's published schedule for it is not the one the other six families are encoded from,
-as the gap above records. The eras before 2010 are out of scope below the crate's January-2010
-floor. `HolidayCoverage::windows()` lists the 4, and `contains` answers per date.
+**Five audited eras, and one interval no era covers.** The table declares 5 coverage windows: `2010-01-01..2012-12-31`, `2013-01-01..2015-12-31`, `2019-01-01..2021-12-31`, `2022-01-01..2024-12-31`, `2025-01-01..2027-12-31`.
+The eras through 2023 are the operator's own published holiday schedules at **T1**, from CME's per-holiday PDFs and .xls workbooks; 2024 shares T1 and the operator's `trading-hours-by-product` responses at **T2**; and 2025-2027 is that service alone, at T2.
+The one interval outside every declared window is `2016-2018`: `holiday_on` has **no answer** there rather than reporting an unaudited date as normal.
+`HolidayCoverage::windows()` lists the 5, and `contains` answers per date.
+
 ### 2010
 
 | trade date | kind | instant as printed | document | tier | derived from |
@@ -245,7 +244,7 @@ This era's rows cite the ids below — CME Group's own Globex holiday schedules,
 | `2021-holiday-calendars.zip#2021-presidents-day-holiday-schedule-compact.xls @2026-08-30T10:03:27Z` | 2019-01-01 .. 2021-12-31 | <https://web.archive.org/web/20260830100327id_/https://www.cmegroup.com/tools-information/holiday-calendar/files/2021-holiday-calendars.zip> | archive capture 2026-08-30T10:03:27Z | T1 | `7a8d5ce35c639998abf64723de2cc2d649dc015b1aa6cfc3bc326ab5cdfd0c4f` |
 | `2021-holiday-calendars.zip#2021-thanksgiving-holiday-schedule-compact.xls @2026-08-30T10:03:27Z` | 2019-01-01 .. 2021-12-31 | <https://web.archive.org/web/20260830100327id_/https://www.cmegroup.com/tools-information/holiday-calendar/files/2021-holiday-calendars.zip> | archive capture 2026-08-30T10:03:27Z | T1 | `df6cdbc4c996109fe5a5829b5e8aaf622c20c6f16f1464dcdd9d5250c4163a47` |
 ### Gaps and residual risks, 2019-2021
-**This era declares the family's fourth audited window.** The table as a whole carries 133 rows over 4 windows — 2010-01-01..2012-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 — and this era's share is **37 rows**: 27 full closures, 7 early closes and 3 `Unsourced` rows. Every row is at T1. The interval 2013-01-01 .. 2018-12-31 remains audited by no wave, so `holiday_coverage` reports it as outside every window rather than as audited normal.
+**This era brought the family to four audited windows; the 2013-2015 wave has since added a fifth.** The table as a whole carries 176 rows over 5 windows — 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 — and this era's share is **37 rows**: 27 full closures, 7 early closes and 3 `Unsourced` rows. Every row is at T1. The interval 2016-01-01 .. 2018-12-31 remains audited by no wave, so `holiday_coverage` reports it as outside every window rather than as audited normal.
 **Juneteenth 2019, 2020 and 2021 — three `Unsourced` rows.** CME published no Juneteenth schedule in any of the three years. Each row cites that year's own consolidated bundle — `2019-holiday-calendars.zip @2021-01-26T09:48:37Z`, `2020-holiday-calendars.zip @2026-07-30T11:18:34Z` and `2021-holiday-calendars.zip @2026-08-30T10:03:27Z` — whose member lists are CME's own account of every Globex holiday schedule it published that year and which carry no Juneteenth sheet; the four archived `holiday-calendar.html` index pages name none either, and a fresh 2018-2027 prefix CDX enumeration (`raw/cme-2019-2021-fix/cdx/cdx-files-2018-2027.json`, 369 rows, 340 distinct filenames) finds no `juneteenth` filename before 2022. Inside a contiguous window silence is the positive claim that a date was audited normal, which is false for a date the operator later marks as a holiday, so all three ship `Unsourced`, which clips nothing. 2021-06-19 is a **Saturday**: no family has a trade date there and the row changes no answer, and the row is keyed to the operator's own calendar date for the holiday rather than to an observed date CME never states. Closing condition: a CME holiday schedule naming Juneteenth in one of these three years.
 **Columbus Day and Veterans Day — six dates with no row.** 2019-10-14, 2019-11-11, 2020-10-12, 2020-11-11, 2021-10-11 and 2021-11-11 lie inside this window and carry no row, so the family's ordinary week stands there. CME published settlement-time and OTC-clearing advisories for these dates — the 2019 ZIP's `settlement-notices/*-settlement-times.pdf` members and, for example, `2021-veterans-day-advisory.pdf` — but never a Globex trading schedule for them. A settlement notice is not session language (LAW-SESSION-NOT-EXPIRY), so no row is keyed to one and the block's `missing` register records the dates as gaps rather than as sourced normality. Closing condition: a CME Globex holiday schedule naming one of these dates.
 **The two `late_open` entries this era does not ship.** The block marks 2019-12-26 and 2020-01-02 `late_open` for this family with the printed cell `Open 8:30 CT /14:30 UTC` and `Open 8:30 CT /14:30 UTC`. This family's session is a flat 08:30-13:05 CT block inside one civil day, so the printed 08:30 CT *is* its ordinary first open and moves no boundary; the two dates carry no row and the ordinary week stands there. The same reading applies to the 2019-11-28 and 2020-11-26 reopen cells, which name the next trade date's day session as `Regular per Product`.
@@ -473,6 +472,108 @@ recorded below. Nothing in the verdict disputes a Livestock instant or status.
 - **2027-12-23 is audited normal and ships no row.** CME's holiday date for Christmas 2027 is Thursday 2027-12-23, but the Livestock line that day prints `08:00 preopen; 08:30 open; 13:05 closed; 14:30 pcp; 16:00 closed` for trade date 2027-12-23 — the family's ordinary Thursday grid, instant for instant, against the reference week 2026-10-18 .. 2026-10-24. Under design memo D3 a row exists only where an answer changes, so the date is recorded here as audited and carries none. The Globex closure is the following day, 2027-12-24, which does ship one; 2027-12-25 is a Saturday.
 - **2028-01-01 is outside coverage.** The operator's published future reaches it — CME's 2027-12-30 .. 2028-01-02 response prints no Livestock events for that Saturday — but the declared window ends at 2027-12-31, so no row is keyed to it and `holiday_on` answers `None` there. Extending the window is a later wave's decision, not a gap in this one.
 - Lean Hogs (`HE`) corroborates every 2027 row from `raw/cme-2025-2027/live/extra/extra_2027-*.json`.
+
+
+### 2013
+
+| trade date | kind | instant as printed | document | tier | derived from |
+|---|---|---|---|---|---|
+| 2013-01-01 | closed | `New Years Observed - Globex closed` | `2013-new-years.pdf @2013-04-14T19:41:46Z` | T1 | CME prints no session running through this date |
+| 2013-01-02 | late open | `0905 CT` | `2013-new-years.pdf @2013-04-14T19:41:46Z` | T1 | the trade date's first open is 9:05 CT: the evening leg that would have opened earlier did not run |
+| 2013-01-21 | closed | `Livestock will remain closed until its scheduled opening 0905 CT on Tuesday` | `2013-martin-luther-king.pdf @2012-11-19T00:16:09Z` | T1 | CME prints no session running through this date |
+| 2013-02-18 | closed | `Livestock will remain closed until its scheduled opening 0905 CT on Tuesday` | `2013-presidents-day.pdf @2013-03-09T11:53:37Z` | T1 | CME prints no session running through this date |
+| 2013-03-28 | early close | `1355 CT` | `2013-good-friday.pdf @2013-06-23T19:59:25Z` | T1 | the printed final close 13:55 CT is earlier than the family's ordinary 16:00 CT |
+| 2013-03-29 | closed | `CME Globex is closed` | `2013-good-friday.pdf @2013-06-23T19:59:25Z` | T1 | CME prints no session running through this date |
+| 2013-05-27 | closed | `Livestock will remain closed until its scheduled opening 0905 CT on Tuesday` | `2013-memorial-day.pdf @2013-06-23T20:36:04Z` | T1 | CME prints no session running through this date |
+| 2013-07-03 | early close | `1215 CT (Livestock Futures & Options)` | `2013-4th-of-july-done.pdf @2013-07-17T05:03:33Z` | T1 | the printed final close 12:15 CT is earlier than the family's ordinary 16:00 CT; the same revision's 12:00 CT is the Dairy and Lumber line, which this key does not model |
+| 2013-07-04 | closed | `Livestock will remain closed until its scheduled opening 0905 CT on Friday` | `2013-4th-of-july.pdf @2013-06-23T20:58:25Z` | T1 | CME prints no session running through this date |
+| 2013-09-02 | closed | `Livestock will remain closed until its scheduled opening 0905 CT on Tuesday` | `2013-labor-day.pdf @2013-09-02T17:08:41Z` | T1 | CME prints no session running through this date |
+| 2013-11-28 | closed | `Livestock will remain closed until 0905 CT on Friday, Nov 29` | `2013-thanksgiving.pdf @2014-02-14T06:28:36Z` | T1 | CME prints no session running through this date |
+| 2013-11-29 | late open and early close | `1215 CT` / `0905 CT` | `2013-thanksgiving.pdf @2014-02-14T06:28:36Z` | T1 | the trade date's first open is 9:05 CT: the evening leg that would have opened earlier did not run; the printed final close 12:15 CT is earlier than the family's ordinary 13:55 CT |
+| 2013-12-24 | early close | `1215 CT` | `2013-christmas.pdf @2014-04-12T06:24:28Z` | T1 | the printed final close 12:15 CT is earlier than the family's ordinary 16:00 CT |
+| 2013-12-25 | closed | `Christmas Day Observed - Globex closed` | `2013-christmas.pdf @2014-04-12T06:24:28Z` | T1 | CME prints no session running through this date |
+| 2013-12-26 | late open | `0905 CT` | `2013-christmas.pdf @2014-04-12T06:24:28Z` | T1 | the trade date's first open is 9:05 CT: the evening leg that would have opened earlier did not run |
+
+### 2014
+
+| trade date | kind | instant as printed | document | tier | derived from |
+|---|---|---|---|---|---|
+| 2014-01-01 | closed | `New Years Observed - Globex closed` | `2014-new-years.pdf @2013-10-07T20:58:00Z` | T1 | CME prints no session running through this date |
+| 2014-01-02 | late open | `0905 CT` | `2014-new-years.pdf @2013-10-07T20:58:00Z` | T1 | the trade date's first open is 9:05 CT: the evening leg that would have opened earlier did not run |
+| 2014-01-20 | closed | `closed` | `2014-martin-luther-king-holiday-schedule.pdf @2014-03-26T16:02:15Z` | T1 | CME prints no session running through this date |
+| 2014-02-17 | closed | `closed` | `2014-presidents-day-holiday-schedule.pdf @2014-02-14T19:23:32Z` | T1 | CME prints no session running through this date |
+| 2014-04-17 | early close | `1355 CT / 1455 ET / 1855 UTC` | `2014-good-friday-holiday-schedule.pdf @2014-03-26T15:27:35Z` | T1 | the printed final close 13:55 CT is earlier than the family's ordinary 16:00 CT |
+| 2014-04-18 | closed | `CME Globex is closed` | `2014-good-friday-holiday-schedule.pdf @2014-03-26T15:27:35Z` | T1 | CME prints no session running through this date |
+| 2014-05-26 | closed | `closed` | `2014-memorial-day-holiday-schedule.pdf @2014-07-08T02:01:55Z` | T1 | CME prints no session running through this date |
+| 2014-07-03 | early close | `1215 CT / 1315 ET / 1715 UTC` | `2014-4th-of-july-holiday-schedule.pdf @2014-07-08T01:57:36Z` | T1 | the printed final close 12:15 CT is earlier than the family's ordinary 16:00 CT |
+| 2014-07-04 | closed | `All products closed` | `2014-4th-of-july-holiday-schedule.pdf @2014-07-08T01:57:36Z` | T1 | CME prints no session running through this date |
+| 2014-09-01 | closed | `closed` | `2014-labor-day-holiday-schedule.pdf @2014-09-12T07:16:08Z` | T1 | CME prints no session running through this date |
+| 2014-11-27 | closed | `closed` | `2014-thanksgiving-holiday-schedule.pdf @2015-01-21T14:54:56Z` | T1 | CME prints no session running through this date |
+| 2014-11-28 | early close | `1215 CT / 1315 ET / 1815 UTC` | `2014-thanksgiving-holiday-schedule.pdf @2015-01-21T14:54:56Z` | T1 | the printed final close 12:15 CT is earlier than the family's ordinary 13:55 CT |
+| 2014-12-24 | early close | `1215 CT / 1315 ET / 1815 UTC` | `2014-christmas-holiday-schedule.pdf @2015-01-21T14:10:00Z` | T1 | the printed final close 12:15 CT is earlier than the family's ordinary 16:00 CT |
+| 2014-12-25 | closed | `Christmas Day Observed - Globex closed` | `2014-christmas-holiday-schedule.pdf @2015-01-21T14:10:00Z` | T1 | CME prints no session running through this date |
+
+### 2015
+
+| trade date | kind | instant as printed | document | tier | derived from |
+|---|---|---|---|---|---|
+| 2015-01-01 | closed | `New Years Observed - Globex closed` | `2015-new-years-holiday-schedule.pdf @2015-01-21T14:10:43Z` | T1 | CME prints no session running through this date |
+| 2015-01-19 | closed | `closed` | `2015-martin-luther-king-holiday-schedule.pdf @2015-01-21T14:10:12Z` | T1 | CME prints no session running through this date |
+| 2015-02-16 | closed | `closed` | `2015-presidents-day-holiday-schedule.pdf @2015-01-21T19:24:01Z` | T1 | CME prints no session running through this date |
+| 2015-04-02 | early close | `1355 CT / 1455 ET / 1855 UTC` | `2015-good-friday-holiday-schedule.pdf @2015-09-05T22:32:30Z` | T1 | the printed final close 13:55 CT is earlier than the family's ordinary 16:00 CT |
+| 2015-04-03 | closed | `CME Globex is closed` | `2015-good-friday-holiday-schedule.pdf @2015-09-05T22:32:30Z` | T1 | CME prints no session running through this date |
+| 2015-05-25 | closed | `closed` | `2015-memorial-day-holiday-schedule.pdf @2015-03-26T11:39:38Z` | T1 | CME prints no session running through this date |
+| 2015-07-02 | early close | `1215 CT / 1315 ET / 1715 UTC` | `2015-4th-of-july-holiday-schedule.pdf @2015-09-05T22:27:33Z` | T1 | the printed final close 12:15 CT is earlier than the family's ordinary 16:00 CT |
+| 2015-07-03 | closed | `All products closed` | `2015-4th-of-july-holiday-schedule.pdf @2015-09-05T22:27:33Z` | T1 | CME prints no session running through this date |
+| 2015-09-07 | closed | `closed` | `2015-labor-day-holiday-schedule.pdf @2015-08-24T02:30:39Z` | T1 | CME prints no session running through this date |
+| 2015-11-26 | closed | `closed` | `2015-thanksgiving-holiday-schedule.pdf @2016-02-05T16:25:19Z` | T1 | CME prints no session running through this date |
+| 2015-11-27 | early close | `1215 CT / 1315 ET / 1815 UTC` | `2015-thanksgiving-holiday-schedule.pdf @2016-02-05T16:25:19Z` | T1 | the printed final close 12:15 CT is earlier than the family's ordinary 13:55 CT |
+| 2015-12-24 | early close | `1215 CT / 1315 ET / 1815 UTC` | `2015-christmas-holiday-schedule.pdf @2015-11-23T06:15:20Z` | T1 | the printed final close 12:15 CT is earlier than the family's ordinary 16:00 CT |
+| 2015-12-25 | closed | `Christmas Day Observed - Globex closed` | `2015-christmas-holiday-schedule.pdf @2015-11-23T06:15:20Z` | T1 | CME prints no session running through this date |
+| 2015-12-31 | early close | `1355 CT / 1455 ET / 1955 UTC` | `2016-new-years-holiday-schedule.pdf @2016-01-08` | T1 | the printed final close 13:55 CT is earlier than the family's ordinary 16:00 CT |
+
+### Documents
+| Document | Window | Replay or service URL | Capture or retrieval, UTC | Tier | sha256 |
+|---|---|---|---|---|---|
+| `2013-4th-of-july-done.pdf @2013-07-17T05:03:33Z` | 2013-01-01 .. 2015-12-31 | <https://web.archive.org/web/20130717050333id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2013-4th-of-july-done.pdf> | archive capture 2013-07-17T05:03:33Z | T1 | `768c7813542459dbc5443e79e514bb12fd511d93284beeb880af167f6049e0f0` |
+| `2013-4th-of-july.pdf @2013-06-23T20:58:25Z` | 2013-01-01 .. 2015-12-31 | <https://web.archive.org/web/20130623205825id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2013-4th-of-july.pdf> | archive capture 2013-06-23T20:58:25Z | T1 | `52c62e72329866f12726363d762335c8dadfdd3407c3643f38d7ed74608e8eb7` |
+| `2013-christmas.pdf @2014-04-12T06:24:28Z` | 2013-01-01 .. 2015-12-31 | <https://web.archive.org/web/20140412062428id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2013-christmas.pdf> | archive capture 2014-04-12T06:24:28Z | T1 | `1389ade6b120383d05e8d6e8ed9c38f1e2394dd250c86b19606548618285e848` |
+| `2013-columbus-day.pdf @2012-11-19T00:15:54Z` | 2013-01-01 .. 2015-12-31 | <https://web.archive.org/web/20121119001554id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2013-columbus-day.pdf> | archive capture 2012-11-19T00:15:54Z | T1 | `9679853fc45be642403cf58cac17852bd267f228706a696128223f7093005d2d` |
+| `2013-good-friday.pdf @2013-06-23T19:59:25Z` | 2013-01-01 .. 2015-12-31 | <https://web.archive.org/web/20130623195925id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2013-good-friday.pdf> | archive capture 2013-06-23T19:59:25Z | T1 | `c05e590c950581e19ac2e8ee5327ebcfb4fc111b231b506abefae44534ee9b68` |
+| `2013-labor-day.pdf @2013-09-02T17:08:41Z` | 2013-01-01 .. 2015-12-31 | <https://web.archive.org/web/20130902170841id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2013-labor-day.pdf> | archive capture 2013-09-02T17:08:41Z | T1 | `8f22671fa723d33fe36d58bb29e80ebd15370d3bf9000a9b45d56a0cab0608ef` |
+| `2013-martin-luther-king.pdf @2012-11-19T00:16:09Z` | 2013-01-01 .. 2015-12-31 | <https://web.archive.org/web/20121119001609id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2013-martin-luther-king.pdf> | archive capture 2012-11-19T00:16:09Z | T1 | `43a646480cc7ffca137890901c0fc716ed04403e0dabc1ef07749d2b21b70c4c` |
+| `2013-memorial-day.pdf @2013-06-23T20:36:04Z` | 2013-01-01 .. 2015-12-31 | <https://web.archive.org/web/20130623203604id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2013-memorial-day.pdf> | archive capture 2013-06-23T20:36:04Z | T1 | `7cc47e352ff4874614fdb583cecd41b3ac3fcf95be6199ea5d489b8b34d2afe7` |
+| `2013-new-years.pdf @2013-04-14T19:41:46Z` | 2013-01-01 .. 2015-12-31 | <https://web.archive.org/web/20130414194146id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2013-new-years.pdf> | archive capture 2013-04-14T19:41:46Z | T1 | `e29c2c968cdf20883d55acd13bab50e9df02c547826bca9d2867f5bf9b2df3f7` |
+| `2013-presidents-day.pdf @2013-03-09T11:53:37Z` | 2013-01-01 .. 2015-12-31 | <https://web.archive.org/web/20130309115337id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2013-presidents-day.pdf> | archive capture 2013-03-09T11:53:37Z | T1 | `e1242116eec5b7f3c5748e61adbf5bf7a809f48739ad456391f1d8b4bafceff6` |
+| `2013-thanksgiving.pdf @2014-02-14T06:28:36Z` | 2013-01-01 .. 2015-12-31 | <https://web.archive.org/web/20140214062836id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2013-thanksgiving.pdf> | archive capture 2014-02-14T06:28:36Z | T1 | `1f7f6428990a5bd01065f31c4388bf5aeeb12d9219e5af6d16b1cec86bbc158b` |
+| `2014-4th-of-july-holiday-schedule.pdf @2014-07-08T01:57:36Z` | 2013-01-01 .. 2015-12-31 | <https://web.archive.org/web/20140708015736id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2014-4th-of-july-holiday-schedule.pdf> | archive capture 2014-07-08T01:57:36Z | T1 | `34faa82435c6d8bb1088593c8945b6a5faaaa67b36c6a6422a24e4a25572ba77` |
+| `2014-christmas-holiday-schedule.pdf @2015-01-21T14:10:00Z` | 2013-01-01 .. 2015-12-31 | <https://web.archive.org/web/20150121141000id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2014-christmas-holiday-schedule.pdf> | archive capture 2015-01-21T14:10:00Z | T1 | `8125a18c9cad9b770be39b89c3193ee419240d409e39aa510d6eb3e8eba94e25` |
+| `2014-good-friday-holiday-schedule.pdf @2014-03-26T15:27:35Z` | 2013-01-01 .. 2015-12-31 | <https://web.archive.org/web/20140326152735id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2014-good-friday-holiday-schedule.pdf> | archive capture 2014-03-26T15:27:35Z | T1 | `4e8593e96eb42af2cde99f6ed906d4fe4a2ea8f976fc9f8d8f561f3049cc7f0e` |
+| `2014-labor-day-holiday-schedule.pdf @2014-09-12T07:16:08Z` | 2013-01-01 .. 2015-12-31 | <https://web.archive.org/web/20140912071608id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2014-labor-day-holiday-schedule.pdf> | archive capture 2014-09-12T07:16:08Z | T1 | `dfd92a530d114a1f1c68dd52be4315fd307d8f8cfb344d71de78334b9c73e4d6` |
+| `2014-martin-luther-king-holiday-schedule.pdf @2014-03-26T16:02:15Z` | 2013-01-01 .. 2015-12-31 | <https://web.archive.org/web/20140326160215id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2014-martin-luther-king-holiday-schedule.pdf> | archive capture 2014-03-26T16:02:15Z | T1 | `5069a46a6acfb69bf05261abc23097fd675d159cf55e45361fb7e1e41dc0dcd4` |
+| `2014-memorial-day-holiday-schedule.pdf @2014-07-08T02:01:55Z` | 2013-01-01 .. 2015-12-31 | <https://web.archive.org/web/20140708020155id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2014-memorial-day-holiday-schedule.pdf> | archive capture 2014-07-08T02:01:55Z | T1 | `a8e020149657b4e4730c2a357015d096a9fd47e2054ca59a85d6e6548ccb6023` |
+| `2014-new-years.pdf @2013-10-07T20:58:00Z` | 2013-01-01 .. 2015-12-31 | <https://web.archive.org/web/20131007205800id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2014-new-years.pdf> | archive capture 2013-10-07T20:58:00Z | T1 | `ca6da5edc26537d341b5148781c43c8ef00e33e832c8e602b97c57d6508b8f28` |
+| `2014-presidents-day-holiday-schedule.pdf @2014-02-14T19:23:32Z` | 2013-01-01 .. 2015-12-31 | <https://web.archive.org/web/20140214192332id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2014-presidents-day-holiday-schedule.pdf> | archive capture 2014-02-14T19:23:32Z | T1 | `b689b4f8e9f62ba6f8c32bba46d35923a4017d1edbc83cc9ffcc2a85baded4fb` |
+| `2014-thanksgiving-holiday-schedule.pdf @2015-01-21T14:54:56Z` | 2013-01-01 .. 2015-12-31 | <https://web.archive.org/web/20150121145456id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2014-thanksgiving-holiday-schedule.pdf> | archive capture 2015-01-21T14:54:56Z | T1 | `a90ae1f39414337f1a8600f55bf3a0a587214d987074885a47cfea307bc8054a` |
+| `2014-veterans-day-holiday-schedule.pdf @2014-11-13T19:34:50Z` | 2013-01-01 .. 2015-12-31 | <https://web.archive.org/web/20141113193450id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2014-veterans-day-holiday-schedule.pdf> | archive capture 2014-11-13T19:34:50Z | T1 | `53ea2a8b03d8b71640a2a054eb1d4cc5dd220d4ebc0fd21f7f2890e21a55c2b6` |
+| `2015-4th-of-july-holiday-schedule.pdf @2015-09-05T22:27:33Z` | 2013-01-01 .. 2015-12-31 | <https://web.archive.org/web/20150905222733id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2015-4th-of-july-holiday-schedule.pdf> | archive capture 2015-09-05T22:27:33Z | T1 | `1013e6ebea1829591946c9aa513ec6e3f99c64d99be14814610e601bb5dcc0fb` |
+| `2015-christmas-holiday-schedule.pdf @2015-11-23T06:15:20Z` | 2013-01-01 .. 2015-12-31 | <https://web.archive.org/web/20151123061520id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2015-christmas-holiday-schedule.pdf> | archive capture 2015-11-23T06:15:20Z | T1 | `7fde46210798f2cb4299903400b41ef6e2cb9aa287f8d3d360ba59d835b482ec` |
+| `2015-good-friday-holiday-schedule.pdf @2015-09-05T22:32:30Z` | 2013-01-01 .. 2015-12-31 | <https://web.archive.org/web/20150905223230id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2015-good-friday-holiday-schedule.pdf> | archive capture 2015-09-05T22:32:30Z | T1 | `67873caa987c9eee8de38d02a5c18d8f7d46fd82a486bab34821f6e6f6363e0b` |
+| `2015-labor-day-holiday-schedule.pdf @2015-08-24T02:30:39Z` | 2013-01-01 .. 2015-12-31 | <https://web.archive.org/web/20150824023039id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2015-labor-day-holiday-schedule.pdf> | archive capture 2015-08-24T02:30:39Z | T1 | `4aab7fdb5e57420a243bbc26be6ecfa00a6317937afe3b772dfcdd8db1dd50fd` |
+| `2015-martin-luther-king-holiday-schedule.pdf @2015-01-21T14:10:12Z` | 2013-01-01 .. 2015-12-31 | <https://web.archive.org/web/20150121141012id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2015-martin-luther-king-holiday-schedule.pdf> | archive capture 2015-01-21T14:10:12Z | T1 | `67395dcb63d86b6e1f573a5aa37269a685dfe1b17d23edd7d95449899bce090a` |
+| `2015-memorial-day-holiday-schedule.pdf @2015-03-26T11:39:38Z` | 2013-01-01 .. 2015-12-31 | <https://web.archive.org/web/20150326113938id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2015-memorial-day-holiday-schedule.pdf> | archive capture 2015-03-26T11:39:38Z | T1 | `4ad4398fa092393fa77cd8ed9c58ecc0f1669a41fd38a9b4cab5b05790d2dfec` |
+| `2015-new-years-holiday-schedule.pdf @2015-01-21T14:10:43Z` | 2013-01-01 .. 2015-12-31 | <https://web.archive.org/web/20150121141043id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2015-new-years-holiday-schedule.pdf> | archive capture 2015-01-21T14:10:43Z | T1 | `196b4ec04bcfce2cfd9783262023afe9da73bcdef1b983c8c4b464b2e115bb8a` |
+| `2015-presidents-day-holiday-schedule.pdf @2015-01-21T19:24:01Z` | 2013-01-01 .. 2015-12-31 | <https://web.archive.org/web/20150121192401id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2015-presidents-day-holiday-schedule.pdf> | archive capture 2015-01-21T19:24:01Z | T1 | `c81b04bcf43dbfd2b7c2f7aba559992cde8bb8eee59e7b310b643b636d290b94` |
+| `2015-thanksgiving-holiday-schedule.pdf @2016-02-05T16:25:19Z` | 2013-01-01 .. 2015-12-31 | <https://web.archive.org/web/20160205162519id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2015-thanksgiving-holiday-schedule.pdf> | archive capture 2016-02-05T16:25:19Z | T1 | `ef96d05289667c635f435884a0a2407bcbec63149ff96e802b719100c85c887f` |
+| `2015-veterans-day-schedule.pdf @2015-11-22T23:09:20Z` | 2013-01-01 .. 2015-12-31 | <https://web.archive.org/web/20151122230920id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2015-veterans-day-schedule.pdf> | archive capture 2015-11-22T23:09:20Z | T1 | `50300dd36faff3b7d52128ea48a04e4c27012a78985b6c390ea9883e1696f98e` |
+
+### Gaps and residual risks, 2013-2015
+
+**This era brings the family to five audited windows.** The table as a whole carries 176 rows over 5 windows — 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 — and this era's share is **43 rows**: 27 stated closures, 12 early closes, 3 late opens and 1 combined late-open-and-early-close row. Every row is at T1.
+
+**Columbus Day 2013 and Veterans Day 2014 and 2015 carry no row.** CME's own sheets for those three dates state in session language that Globex ran a normal schedule — `Products listed on Globex are unaffected and will run on a normal schedule` for 2013-10-14 (`2013-columbus-day.pdf @2012-11-19T00:15:54Z`) and `Regular CME Globex trading hours will be in effect` for 2014-11-11 and 2015-11-11 (`2014-veterans-day-holiday-schedule.pdf @2014-11-13T19:34:50Z` and `2015-veterans-day-schedule.pdf @2015-11-22T23:09:20Z`) — so the block records each as `normal` and this table ships nothing: inside a declared window silence is the positive claim that the date was audited normal, and these dates are audited rather than skipped. The three sheets have no row of their own to cite, so they are listed in this era's `### Documents` table without being any row's document.
+
+**The grid changes inside the window.** Through 2014-10-26 `livestock.rs PROFILE_AT_2010_FLOOR` runs the around-the-clock grid: a Monday 09:05-16:00 CT session, Monday-Wednesday 17:00 CT opens that close at 16:00 CT the following civil day (so a Thursday trade date runs from Wednesday 17:00 to Thursday 16:00), and a Thursday 17:00 CT open carrying Friday's 13:55 CT short-day close. From 2014-10-27 (CME SER-7194) the evening sessions are gone and every trade date opens on its own civil date: 08:00 CT on Fridays and 09:05 CT on Mondays. **Four dates ship no row although the block records a reopen instant for them** — 2014-07-07 and 2015-07-06, whose printed 09:05 CT is the Monday ordinary open, and 2014-12-26 and 2015-01-02, whose printed 08:00 CT is the Friday ordinary open. The 2015-12-24 and 2015-12-31 rows carry CME's `Livestock, Dairy & Lumber Products` line; 2015-12-31 is the year-end half-day at 13:55 CT.
 
 ## Sources
 

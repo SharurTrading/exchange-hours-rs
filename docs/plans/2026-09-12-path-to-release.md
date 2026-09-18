@@ -295,8 +295,8 @@ cell) and the surviving class is answered by the amended NOTATION paragraph. **N
 The repaired block then encoded at **T1** over venue-local trade dates
 2019-01-01 .. 2021-12-31: **292 rows** — equity index 36, energy 35, FX 35, grains 42,
 interest rates 35, livestock 37, cryptocurrency 36, Nikkei 225 (dollar) 36 — each family
-declaring a fifth (livestock, Nikkei: fourth; cryptocurrency: third) audited window, so the
-only interval no wave has audited is **2013-2015 (#88)**. Shapes: 103 full closures, 157
+declaring a fifth (livestock, Nikkei: fourth; cryptocurrency: third) audited window, which
+left **2013-2015 (#88)** as the one interval no wave had audited — since closed by wave 5. Shapes: 103 full closures, 157
 early closes, eight `globex_grains` late opens — five day-after-closure `late_open(08:30)`
 rows (2019-01-02, 2019-07-05, 2019-12-26, 2020-01-02, 2021-07-06) and three
 `late_open_and_early_close(08:30, 12:05)` rows on the day after Thanksgiving — and 24
@@ -325,6 +325,68 @@ at 12:00 CT — which is why those dates are disputed. `tools/wave4_rows.py`, `t
 `tools/venue_intersection_wave4.py`, `tools/encode_wave4.py`, `tools/wave4_repair.py` and
 `tools/evidence_wave4.py` reproduce the rows, the venue tables and the evidence from the
 research store; `tools/README.md` documents the `WAVE4_RESEARCH` variable they read.
+
+**Wave 5 landed 2026-09-17 (UTC) as this change** (branch `cme-holidays-2013-2015`).
+The round-2 verdict on `cme-2013-2015` failed the block on **twelve** discrepancies, five
+of them load-bearing, and all twelve were repaired in the research store before a row
+shipped, in `holidays/cme-2013-2015.r2.json` plus `holidays/cme-2013-2015.repair.json`,
+with round 1 kept byte-identical (`sha256 7628c599…`). The headline item is the one the
+plan recorded as a blocker: **CME revised the 2013 Independence Day schedule after the
+capture the block cited**, at a sibling URL the earlier rounds never retrieved
+(`2013-4th-of-july-done.pdf`, footer `Last updated 7/2/2013`). The verifier had already
+pulled and saved it; the repair re-derives the 2013-07-03 `livestock+dairy+lumber` row
+from it — `early_close` at 12:00 CT (Dairy, Lumber), 12:02 CT (Lumber Options) and
+12:15 CT (Livestock Futures & Options), where the cited 6/4/2013 revision had all three
+inside a `Regular Close - Per each product schedule` list — and demotes the earlier
+statement to a `superseded` lineage entry. The other load-bearing items: the same
+revision's `1215 CT - Early MGEX Wheat & Apple Juice close` replaces the superseded
+`Early MGEX Wheat close` line; the completeness claim is rewritten to the PDF half of
+CME's in-place revision history, whose **42 earlier distinct-digest captures** were
+retrieved and reconciled line by line (`tools/wave5_reconcile.py`, output in the crate's
+`tools/out/wave5/reconciliation.json`); the Good Friday 2013 zone gap is closed from
+CME's own workbook rather than inferred across years; and the Interest-Rate/FX grouping
+claim becomes 57 of 58 sheets with the X13GFPD `Good Fri.` exception stated. The rest are
+record hygiene — the unmodelled printed product lines are named as gaps with their closing
+conditions, the two document-title quotations regain the registered-trademark glyph, the
+the round-1 block's zero-padded clock fields are re-emitted as CME printed them — item 10
+de-pads all 80 the round-1 block had padded, and item 13 settles each against the artifact its
+row cites, re-padding the 48 that CME prints with a leading zero and leaving 32 bare —
+and the
+round-0 `INDEX.md` gains a dated amendment pointer. Every repair is guarded by a `before`
+check, so the tool cannot run silently against a different block.
+
+The repaired block then encoded at **T1** over venue-local trade dates
+2013-01-01 .. 2015-12-31: **251 rows** — equity index 38, energy 33, FX 47, grains 43,
+interest rates 47, livestock 43 — so every interval from the January-2010 floor is audited
+for five of those six families, while `globex_livestock` keeps its 2016-2018 gap (issue
+#110). Shapes: 87 full closures, 141 early closes, 19 late opens and four
+`late_open_and_early_close` rows. The review of this wave added the two Maundy-Thursday
+early closes 2013-03-28 and 2014-04-17 that the first encoding dropped, and re-keyed
+2013-07-03's livestock row to its own line's 12:15 CT rather than Dairy's 12:00 CT.
+`globex_livestock` carries the non-scalar shapes because its grid changes *inside* the
+window: CME SER-7194 removed the evening sessions on 2014-10-27, so the 2013 year-end
+reopenings at 09:05 CT are late opens while the 2014 and 2015 ones at 08:00 CT are the
+grid's ordinary open and ship nothing. `globex_grains`' day session does not run on the
+Monday and Thursday holidays, so those are `Closed` where the financial families state an
+early close — the same distinction the 2016-2018 era records. `globex_cryptocurrency` and
+`globex_nikkei_225_dollar` declare no 2013-2015 window and ship no row for it: no crypto
+product existed before 2017-12-18, and no Nikkei-specific line is printed on any
+2013-2015 sheet, both recorded in their evidence files. **Columbus Day and Veterans Day
+2013-2015** carry no row: CME's own sheets state in session language that Globex ran a
+normal schedule.
+
+The four venue tables extend over the era by D17: `cme` 58 rows (8 `Closed` + 50
+`Unsourced`), `cbot` 54 (8 + 46), and `comex`/`nymex` 33 each, carrying
+`globex_energy`'s rows unchanged — and over 2010-2027 as a whole `cme` carries 273 rows
+(47 stated, 226 withheld), `cbot` 250 (47, 203) and `comex`/`nymex` 206 each. **#95 closes
+with this wave**: `tools/check_wave5.py` recomputes the intersection from the families' own
+tables over every date from 2010-01-01 to 2027-12-31 on which at least one routed family
+declares a window (a family with no window there abstains and the covered families decide),
+compares row by row, and the result is recorded in the four venue evidence files. The wave's tools are
+`tools/wave5_repair.py`, `tools/wave5_reconcile.py`, `tools/wave5_rows.py`,
+`tools/check_wave5.py`, `tools/encode_wave5.py`, `tools/venue_intersection_wave5.py`,
+`tools/evidence_wave5.py` and `tools/gen_wave5_tests.py`; `tools/README.md` documents the
+`WAVE5_RESEARCH` variable they read.
 
 **2.3 Served non-CME venues back to the floor — new retrieval.** Nothing below 2026 was
 ever retrieved for these. One PR per venue, split by year range if it exceeds a day,

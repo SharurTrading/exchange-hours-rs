@@ -6,14 +6,13 @@
 //! it; a disagreement ships [`HolidayKind::Unsourced`], which clips nothing
 //! and tells the caller the date is special without inventing an instant.
 //!
-//! Coverage is five audited eras: 2010-2012, whose rows are T1 (CME's own
-//! holiday-calendar PDFs); 2016-2018, 2019-2021 and 2022-2024, whose rows are
+//! Coverage is 6 audited eras: 2010-2012 and 2013-2015, whose rows are T1
+//! (CME's own holiday-calendar PDFs and .xls workbooks); 2016-2018, 2019-2021
+//! and 2022-2024, whose rows are
 //! the D17 intersection of the routed families' T1 rows from CME's own
 //! published Globex holiday schedules — all of 2019-2021 at T1, and 2022-2024
 //! except for the three 2023 markers and the 2024 dates the trading-hours
-//! service answers; and 2025-2027, whose rows are T2 (that service). The
-//! 2013-2015 interval between them is audited by no wave and lies outside
-//! every declared window.
+//! service answers; and 2025-2027, whose rows are T2 (that service).
 //!
 //! On the 2016-2018 era's thirty-six dates this table states nine `Closed`
 //! rows — the dates every routed family shut — and withholds the other
@@ -82,16 +81,15 @@ use super::super::{
 
 /// The `Exchange::Cme` table: the intersection of the six CME families.
 ///
-/// Two hundred and fifteen rows over five audited eras. Thirty-nine state a status — the Globex
-/// full closures — and 176 are `Unsourced`: 49 in 2010-2012, where the
-/// families disagree in kind rather than by minutes, 27 in 2016-2018, 34 in
-/// 2019-2021, 34 in 2022-2024, and 32 in 2025-2027. The five eras are
-/// declared as five coverage windows, and the 2013-2015 interval between them is
-/// audited by no wave, so it ships no row and reports no answer rather than a
-/// normal one.
+/// Two hundred and seventy-three rows over six audited eras. Forty-seven state a status — the
+/// Globex full closures — and 226 are `Unsourced`: 49 in 2010-2012, where the
+/// families disagree in kind rather than by minutes, 50 in 2013-2015, 27 in
+/// 2016-2018, 34 in 2019-2021, 34 in 2022-2024, and 32 in 2025-2027. The six
+/// eras are declared as six coverage windows, and outside them the table reports
+/// no answer rather than a normal one.
 // Evidence: docs/evidence/cme.md
 pub(crate) static CME: &HolidayTable = holidays! {
-    coverage: [(2010, 1, 1) ..= (2012, 12, 31), (2016, 1, 1) ..= (2018, 12, 31), (2019, 1, 1) ..= (2021, 12, 31), (2022, 1, 1) ..= (2024, 12, 31), (2025, 1, 1) ..= (2027, 12, 31)],
+    coverage: [(2010, 1, 1) ..= (2012, 12, 31), (2013, 1, 1) ..= (2015, 12, 31), (2016, 1, 1) ..= (2018, 12, 31), (2019, 1, 1) ..= (2021, 12, 31), (2022, 1, 1) ..= (2024, 12, 31), (2025, 1, 1) ..= (2027, 12, 31)],
     rows: [
         // 2010-01-01 - T1 - 2010-new-years.pdf - closed.
         (2010, 1, 1, Closed, T1, "2010-new-years.pdf @2010-02-15T05:16:52Z"),
@@ -203,6 +201,122 @@ pub(crate) static CME: &HolidayTable = holidays! {
         (2012, 12, 25, Closed, T1, "2012-christmas.pdf @2013-04-14T19:40:27Z"),
         // 2012-12-26 - T1 - 2012-christmas.pdf - disagreement: equity index late open 05:00 CT; interest rates late open 05:00 CT; FX late open 05:00 CT; energy and metals no row; grains late open 09:30 CT; livestock late open 09:05 CT.
         (2012, 12, 26, Unsourced, T1, "2012-christmas.pdf @2013-04-14T19:40:27Z"),
+        // 2013-01-01 - T1 - 2013-new-years.pdf @2013-04-14T19:41:46Z - closed: no trade date.
+        (2013, 1, 1, Closed, T1, "2013-new-years.pdf @2013-04-14T19:41:46Z"),
+        // 2013-01-02 - T1 - 2013-new-years.pdf @2013-04-14T19:41:46Z - disagreement: equity index late open 05:00 CT; energy and metals no row; FX late open 05:00 CT; grains late open 09:30 CT; interest rates late open 05:00 CT; livestock late open 09:05 CT.
+        (2013, 1, 2, Unsourced, T1, "2013-new-years.pdf @2013-04-14T19:41:46Z"),
+        // 2013-01-18 - T1 - 2013-martin-luther-king.pdf @2012-11-19T00:16:09Z - disagreement: equity index no row; energy and metals no row; FX early close 15:15 CT; grains no row; interest rates early close 15:15 CT; livestock no row.
+        (2013, 1, 18, Unsourced, T1, "2013-martin-luther-king.pdf @2012-11-19T00:16:09Z"),
+        // 2013-01-21 - T1 - 2013-martin-luther-king.pdf @2012-11-19T00:16:09Z - disagreement: equity index early close 10:30 CT; energy and metals early close 12:15 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed.
+        (2013, 1, 21, Unsourced, T1, "2013-martin-luther-king.pdf @2012-11-19T00:16:09Z"),
+        // 2013-02-15 - T1 - 2013-presidents-day.pdf @2013-03-09T11:53:37Z - disagreement: equity index no row; energy and metals no row; FX early close 15:15 CT; grains no row; interest rates early close 15:15 CT; livestock no row.
+        (2013, 2, 15, Unsourced, T1, "2013-presidents-day.pdf @2013-03-09T11:53:37Z"),
+        // 2013-02-18 - T1 - 2013-presidents-day.pdf @2013-03-09T11:53:37Z - disagreement: equity index early close 10:30 CT; energy and metals early close 12:15 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed.
+        (2013, 2, 18, Unsourced, T1, "2013-presidents-day.pdf @2013-03-09T11:53:37Z"),
+        // 2013-03-29 - T1 - 2013-good-friday.pdf @2013-06-23T19:59:25Z - closed: no trade date.
+        // 2013-03-28 - T1 - 2013-good-friday.pdf @2013-06-23T19:59:25Z - disagreement: equity index no row; energy and metals no row; FX no row; grains no row; interest rates no row; livestock early close 13:55 CT.
+        (2013, 3, 28, Unsourced, T1, "2013-good-friday.pdf @2013-06-23T19:59:25Z"),
+        (2013, 3, 29, Closed, T1, "2013-good-friday.pdf @2013-06-23T19:59:25Z"),
+        // 2013-05-24 - T1 - 2013-memorial-day.pdf @2013-06-23T20:36:04Z - disagreement: equity index no row; energy and metals no row; FX early close 15:15 CT; grains no row; interest rates early close 15:15 CT; livestock no row.
+        (2013, 5, 24, Unsourced, T1, "2013-memorial-day.pdf @2013-06-23T20:36:04Z"),
+        // 2013-05-27 - T1 - 2013-memorial-day.pdf @2013-06-23T20:36:04Z - disagreement: equity index early close 10:30 CT; energy and metals early close 12:15 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed.
+        (2013, 5, 27, Unsourced, T1, "2013-memorial-day.pdf @2013-06-23T20:36:04Z"),
+        // 2013-07-03 - T1 - 2013-4th-of-july.pdf @2013-06-23T20:58:25Z - disagreement: equity index early close 12:15 CT; energy and metals no row; FX no row; grains early close 12:00 CT; interest rates no row; livestock early close 12:15 CT.
+        (2013, 7, 3, Unsourced, T1, "2013-4th-of-july.pdf @2013-06-23T20:58:25Z"),
+        // 2013-07-04 - T1 - 2013-4th-of-july.pdf @2013-06-23T20:58:25Z - disagreement: equity index early close 10:30 CT; energy and metals early close 12:15 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed.
+        (2013, 7, 4, Unsourced, T1, "2013-4th-of-july.pdf @2013-06-23T20:58:25Z"),
+        // 2013-07-05 - T1 - 2013-4th-of-july.pdf @2013-06-23T20:58:25Z - disagreement: equity index no row; energy and metals no row; FX no row; grains late open 08:30 CT; interest rates no row; livestock no row.
+        (2013, 7, 5, Unsourced, T1, "2013-4th-of-july.pdf @2013-06-23T20:58:25Z"),
+        // 2013-08-30 - T1 - 2013-labor-day.pdf @2013-09-02T17:08:41Z - disagreement: equity index no row; energy and metals no row; FX early close 15:15 CT; grains no row; interest rates early close 15:15 CT; livestock no row.
+        (2013, 8, 30, Unsourced, T1, "2013-labor-day.pdf @2013-09-02T17:08:41Z"),
+        // 2013-09-02 - T1 - 2013-labor-day.pdf @2013-09-02T17:08:41Z - disagreement: equity index early close 10:30 CT; energy and metals early close 12:15 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed.
+        (2013, 9, 2, Unsourced, T1, "2013-labor-day.pdf @2013-09-02T17:08:41Z"),
+        // 2013-11-28 - T1 - 2013-thanksgiving.pdf @2014-02-14T06:28:36Z - disagreement: equity index early close 10:30 CT; energy and metals early close 12:15 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed.
+        (2013, 11, 28, Unsourced, T1, "2013-thanksgiving.pdf @2014-02-14T06:28:36Z"),
+        // 2013-11-29 - T1 - 2013-thanksgiving.pdf @2014-02-14T06:28:36Z - disagreement: equity index early close 12:15 CT; energy and metals early close 12:45 CT; FX early close 12:15 CT; grains late open 08:30 CT and early close 12:00 CT; interest rates early close 12:15 CT; livestock late open 09:05 CT and early close 12:15 CT.
+        (2013, 11, 29, Unsourced, T1, "2013-thanksgiving.pdf @2014-02-14T06:28:36Z"),
+        // 2013-12-24 - T1 - 2013-christmas.pdf @2014-04-12T06:24:28Z - disagreement: equity index early close 12:15 CT; energy and metals early close 12:45 CT; FX early close 12:15 CT; grains early close 12:00 CT; interest rates early close 12:15 CT; livestock early close 12:15 CT.
+        (2013, 12, 24, Unsourced, T1, "2013-christmas.pdf @2014-04-12T06:24:28Z"),
+        // 2013-12-25 - T1 - 2013-christmas.pdf @2014-04-12T06:24:28Z - closed: no trade date.
+        (2013, 12, 25, Closed, T1, "2013-christmas.pdf @2014-04-12T06:24:28Z"),
+        // 2013-12-26 - T1 - 2013-christmas.pdf @2014-04-12T06:24:28Z - disagreement: equity index late open 05:00 CT; energy and metals no row; FX late open 05:00 CT; grains late open 08:30 CT; interest rates late open 05:00 CT; livestock late open 09:05 CT.
+        (2013, 12, 26, Unsourced, T1, "2013-christmas.pdf @2014-04-12T06:24:28Z"),
+        // 2014-01-01 - T1 - 2014-new-years.pdf @2013-10-07T20:58:00Z - closed: no trade date.
+        (2014, 1, 1, Closed, T1, "2014-new-years.pdf @2013-10-07T20:58:00Z"),
+        // 2014-01-02 - T1 - 2014-new-years.pdf @2013-10-07T20:58:00Z - disagreement: equity index late open 05:00 CT; energy and metals no row; FX late open 05:00 CT; grains late open 08:30 CT; interest rates late open 05:00 CT; livestock late open 09:05 CT.
+        (2014, 1, 2, Unsourced, T1, "2014-new-years.pdf @2013-10-07T20:58:00Z"),
+        // 2014-01-17 - T1 - 2014-martin-luther-king-holiday-schedule.pdf @2014-03-26T16:02:15Z - disagreement: equity index no row; energy and metals no row; FX early close 15:15 CT; grains no row; interest rates early close 15:15 CT; livestock no row.
+        (2014, 1, 17, Unsourced, T1, "2014-martin-luther-king-holiday-schedule.pdf @2014-03-26T16:02:15Z"),
+        // 2014-01-20 - T1 - 2014-martin-luther-king-holiday-schedule.pdf @2014-03-26T16:02:15Z - disagreement: equity index early close 10:30 CT; energy and metals early close 12:15 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed.
+        (2014, 1, 20, Unsourced, T1, "2014-martin-luther-king-holiday-schedule.pdf @2014-03-26T16:02:15Z"),
+        // 2014-02-14 - T1 - 2014-presidents-day-holiday-schedule.pdf @2014-02-14T19:23:32Z - disagreement: equity index no row; energy and metals no row; FX early close 15:15 CT; grains no row; interest rates early close 15:15 CT; livestock no row.
+        (2014, 2, 14, Unsourced, T1, "2014-presidents-day-holiday-schedule.pdf @2014-02-14T19:23:32Z"),
+        // 2014-02-17 - T1 - 2014-presidents-day-holiday-schedule.pdf @2014-02-14T19:23:32Z - disagreement: equity index early close 10:30 CT; energy and metals early close 12:15 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed.
+        (2014, 2, 17, Unsourced, T1, "2014-presidents-day-holiday-schedule.pdf @2014-02-14T19:23:32Z"),
+        // 2014-04-18 - T1 - 2014-good-friday-holiday-schedule.pdf @2014-03-26T15:27:35Z - closed: no trade date.
+        // 2014-04-17 - T1 - 2014-good-friday-holiday-schedule.pdf @2014-03-26T15:27:35Z - disagreement: equity index no row; energy and metals no row; FX no row; grains no row; interest rates no row; livestock early close 13:55 CT.
+        (2014, 4, 17, Unsourced, T1, "2014-good-friday-holiday-schedule.pdf @2014-03-26T15:27:35Z"),
+        (2014, 4, 18, Closed, T1, "2014-good-friday-holiday-schedule.pdf @2014-03-26T15:27:35Z"),
+        // 2014-05-23 - T1 - 2014-memorial-day-holiday-schedule.pdf @2014-07-08T02:01:55Z - disagreement: equity index no row; energy and metals no row; FX early close 15:15 CT; grains no row; interest rates early close 15:15 CT; livestock no row.
+        (2014, 5, 23, Unsourced, T1, "2014-memorial-day-holiday-schedule.pdf @2014-07-08T02:01:55Z"),
+        // 2014-05-26 - T1 - 2014-memorial-day-holiday-schedule.pdf @2014-07-08T02:01:55Z - disagreement: equity index early close 12:00 CT; energy and metals early close 12:00 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed.
+        (2014, 5, 26, Unsourced, T1, "2014-memorial-day-holiday-schedule.pdf @2014-07-08T02:01:55Z"),
+        // 2014-07-03 - T1 - 2014-4th-of-july-holiday-schedule.pdf @2014-07-08T01:57:36Z - disagreement: equity index early close 12:15 CT; energy and metals no row; FX no row; grains early close 12:00 CT; interest rates no row; livestock early close 12:15 CT.
+        (2014, 7, 3, Unsourced, T1, "2014-4th-of-july-holiday-schedule.pdf @2014-07-08T01:57:36Z"),
+        // 2014-07-04 - T1 - 2014-4th-of-july-holiday-schedule.pdf @2014-07-08T01:57:36Z - disagreement: equity index early close 12:00 CT; energy and metals early close 12:00 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed.
+        (2014, 7, 4, Unsourced, T1, "2014-4th-of-july-holiday-schedule.pdf @2014-07-08T01:57:36Z"),
+        // 2014-07-07 - T1 - 2014-4th-of-july-holiday-schedule.pdf @2014-07-08T01:57:36Z - disagreement: equity index no row; energy and metals no row; FX no row; grains late open 08:30 CT; interest rates no row; livestock no row.
+        (2014, 7, 7, Unsourced, T1, "2014-4th-of-july-holiday-schedule.pdf @2014-07-08T01:57:36Z"),
+        // 2014-08-29 - T1 - 2014-labor-day-holiday-schedule.pdf @2014-09-12T07:16:08Z - disagreement: equity index no row; energy and metals no row; FX early close 15:15 CT; grains no row; interest rates early close 15:15 CT; livestock no row.
+        (2014, 8, 29, Unsourced, T1, "2014-labor-day-holiday-schedule.pdf @2014-09-12T07:16:08Z"),
+        // 2014-09-01 - T1 - 2014-labor-day-holiday-schedule.pdf @2014-09-12T07:16:08Z - disagreement: equity index early close 12:00 CT; energy and metals early close 12:00 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed.
+        (2014, 9, 1, Unsourced, T1, "2014-labor-day-holiday-schedule.pdf @2014-09-12T07:16:08Z"),
+        // 2014-11-27 - T1 - 2014-thanksgiving-holiday-schedule.pdf @2015-01-21T14:54:56Z - disagreement: equity index early close 12:00 CT; energy and metals early close 12:00 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed.
+        (2014, 11, 27, Unsourced, T1, "2014-thanksgiving-holiday-schedule.pdf @2015-01-21T14:54:56Z"),
+        // 2014-11-28 - T1 - 2014-thanksgiving-holiday-schedule.pdf @2015-01-21T14:54:56Z - disagreement: equity index early close 12:15 CT; energy and metals early close 12:45 CT; FX early close 12:15 CT; grains late open 08:30 CT and early close 12:00 CT; interest rates early close 12:15 CT; livestock early close 12:15 CT.
+        (2014, 11, 28, Unsourced, T1, "2014-thanksgiving-holiday-schedule.pdf @2015-01-21T14:54:56Z"),
+        // 2014-12-24 - T1 - 2014-christmas-holiday-schedule.pdf @2015-01-21T14:10:00Z - disagreement: equity index early close 12:15 CT; energy and metals early close 12:45 CT; FX early close 12:15 CT; grains early close 12:00 CT; interest rates early close 12:15 CT; livestock early close 12:15 CT.
+        (2014, 12, 24, Unsourced, T1, "2014-christmas-holiday-schedule.pdf @2015-01-21T14:10:00Z"),
+        // 2014-12-25 - T1 - 2014-christmas-holiday-schedule.pdf @2015-01-21T14:10:00Z - closed: no trade date.
+        (2014, 12, 25, Closed, T1, "2014-christmas-holiday-schedule.pdf @2015-01-21T14:10:00Z"),
+        // 2014-12-26 - T1 - 2014-christmas-holiday-schedule.pdf @2015-01-21T14:10:00Z - disagreement: equity index no row; energy and metals no row; FX no row; grains late open 08:30 CT; interest rates no row; livestock no row.
+        (2014, 12, 26, Unsourced, T1, "2014-christmas-holiday-schedule.pdf @2015-01-21T14:10:00Z"),
+        // 2015-01-01 - T1 - 2015-new-years-holiday-schedule.pdf @2015-01-21T14:10:43Z - closed: no trade date.
+        (2015, 1, 1, Closed, T1, "2015-new-years-holiday-schedule.pdf @2015-01-21T14:10:43Z"),
+        // 2015-01-02 - T1 - 2015-new-years-holiday-schedule.pdf @2015-01-21T14:10:43Z - disagreement: equity index no row; energy and metals no row; FX no row; grains late open 08:30 CT; interest rates no row; livestock no row.
+        (2015, 1, 2, Unsourced, T1, "2015-new-years-holiday-schedule.pdf @2015-01-21T14:10:43Z"),
+        // 2015-01-16 - T1 - 2015-martin-luther-king-holiday-schedule.pdf @2015-01-21T14:10:12Z - disagreement: equity index no row; energy and metals no row; FX early close 15:15 CT; grains no row; interest rates early close 15:15 CT; livestock no row.
+        (2015, 1, 16, Unsourced, T1, "2015-martin-luther-king-holiday-schedule.pdf @2015-01-21T14:10:12Z"),
+        // 2015-01-19 - T1 - 2015-martin-luther-king-holiday-schedule.pdf @2015-01-21T14:10:12Z - disagreement: equity index early close 12:00 CT; energy and metals early close 12:00 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed.
+        (2015, 1, 19, Unsourced, T1, "2015-martin-luther-king-holiday-schedule.pdf @2015-01-21T14:10:12Z"),
+        // 2015-02-13 - T1 - 2015-presidents-day-holiday-schedule.pdf @2015-01-21T19:24:01Z - disagreement: equity index no row; energy and metals no row; FX early close 15:15 CT; grains no row; interest rates early close 15:15 CT; livestock no row.
+        (2015, 2, 13, Unsourced, T1, "2015-presidents-day-holiday-schedule.pdf @2015-01-21T19:24:01Z"),
+        // 2015-02-16 - T1 - 2015-presidents-day-holiday-schedule.pdf @2015-01-21T19:24:01Z - disagreement: equity index early close 12:00 CT; energy and metals early close 12:00 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed.
+        (2015, 2, 16, Unsourced, T1, "2015-presidents-day-holiday-schedule.pdf @2015-01-21T19:24:01Z"),
+        // 2015-04-02 - T1 - 2015-good-friday-holiday-schedule.pdf @2015-09-05T22:32:30Z - disagreement: equity index no row; energy and metals no row; FX no row; grains no row; interest rates no row; livestock early close 13:55 CT.
+        (2015, 4, 2, Unsourced, T1, "2015-good-friday-holiday-schedule.pdf @2015-09-05T22:32:30Z"),
+        // 2015-04-03 - T1 - 2015-good-friday-holiday-schedule.pdf @2015-09-05T22:32:30Z - disagreement: equity index early close 08:15 CT; energy and metals closed; FX early close 10:15 CT; grains closed; interest rates early close 10:15 CT; livestock closed.
+        (2015, 4, 3, Unsourced, T1, "2015-good-friday-holiday-schedule.pdf @2015-09-05T22:32:30Z"),
+        // 2015-05-22 - T1 - 2015-memorial-day-holiday-schedule.pdf @2015-03-26T11:39:38Z - disagreement: equity index no row; energy and metals no row; FX early close 15:15 CT; grains no row; interest rates early close 15:15 CT; livestock no row.
+        (2015, 5, 22, Unsourced, T1, "2015-memorial-day-holiday-schedule.pdf @2015-03-26T11:39:38Z"),
+        // 2015-05-25 - T1 - 2015-memorial-day-holiday-schedule.pdf @2015-03-26T11:39:38Z - disagreement: equity index early close 12:00 CT; energy and metals early close 12:00 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed.
+        (2015, 5, 25, Unsourced, T1, "2015-memorial-day-holiday-schedule.pdf @2015-03-26T11:39:38Z"),
+        // 2015-07-02 - T1 - 2015-4th-of-july-holiday-schedule.pdf @2015-09-05T22:27:33Z - disagreement: equity index no row; energy and metals no row; FX no row; grains early close 12:00 CT; interest rates no row; livestock early close 12:15 CT.
+        (2015, 7, 2, Unsourced, T1, "2015-4th-of-july-holiday-schedule.pdf @2015-09-05T22:27:33Z"),
+        // 2015-07-03 - T1 - 2015-4th-of-july-holiday-schedule.pdf @2015-09-05T22:27:33Z - disagreement: equity index early close 12:00 CT; energy and metals early close 12:00 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed.
+        (2015, 7, 3, Unsourced, T1, "2015-4th-of-july-holiday-schedule.pdf @2015-09-05T22:27:33Z"),
+        // 2015-09-07 - T1 - 2015-labor-day-holiday-schedule.pdf @2015-08-24T02:30:39Z - disagreement: equity index early close 12:00 CT; energy and metals early close 12:00 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed.
+        (2015, 9, 7, Unsourced, T1, "2015-labor-day-holiday-schedule.pdf @2015-08-24T02:30:39Z"),
+        // 2015-11-26 - T1 - 2015-thanksgiving-holiday-schedule.pdf @2016-02-05T16:25:19Z - disagreement: equity index early close 12:00 CT; energy and metals early close 12:00 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed.
+        (2015, 11, 26, Unsourced, T1, "2015-thanksgiving-holiday-schedule.pdf @2016-02-05T16:25:19Z"),
+        // 2015-11-27 - T1 - 2015-thanksgiving-holiday-schedule.pdf @2016-02-05T16:25:19Z - disagreement: equity index early close 12:15 CT; energy and metals early close 12:45 CT; FX early close 12:15 CT; grains late open 08:30 CT and early close 12:05 CT; interest rates early close 12:15 CT; livestock early close 12:15 CT.
+        (2015, 11, 27, Unsourced, T1, "2015-thanksgiving-holiday-schedule.pdf @2016-02-05T16:25:19Z"),
+        // 2015-12-24 - T1 - 2015-christmas-holiday-schedule.pdf @2015-11-23T06:15:20Z - disagreement: equity index early close 12:15 CT; energy and metals early close 12:45 CT; FX early close 12:15 CT; grains early close 12:05 CT; interest rates early close 12:15 CT; livestock early close 12:15 CT.
+        (2015, 12, 24, Unsourced, T1, "2015-christmas-holiday-schedule.pdf @2015-11-23T06:15:20Z"),
+        // 2015-12-25 - T1 - 2015-christmas-holiday-schedule.pdf @2015-11-23T06:15:20Z - closed: no trade date.
+        (2015, 12, 25, Closed, T1, "2015-christmas-holiday-schedule.pdf @2015-11-23T06:15:20Z"),
+        // 2015-12-31 - T1 - 2016-new-years-holiday-schedule.pdf @2016-01-08 - disagreement: equity index no row; energy and metals no row; FX no row; grains no row; interest rates no row; livestock early close 13:55 CT.
+        (2015, 12, 31, Unsourced, T1, "2016-new-years-holiday-schedule.pdf @2016-01-08"),
         // 2016-01-01 - T1 - 2016-new-years-holiday-schedule.pdf @2016-01-08 - closed: no trade date.
         (2016, 1, 1, Closed, T1, "2016-new-years-holiday-schedule.pdf @2016-01-08"),
         // 2016-01-18 - T1 - 2016-holiday-calendars.zip#2016-martin-luther-king-holiday-schedule.pdf @2017-06-28 - disagreement: equity index early close 12:00 CT; energy and metals early close 12:00 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock no row.

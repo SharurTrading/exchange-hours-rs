@@ -645,20 +645,30 @@ def patch_venue_doc(venue, windows, all_rows, mine):
 def family_extra(name, summary, derived):
     if name == "globex_equity_index":
         return (
-            "**The three late opens are the year-end reopenings.** 2013-01-02, "
-            "2013-12-26 and 2014-01-02 each print `0500 CT - CME Globex open "
-            "for trade date`, which is twelve hours after the trade date's "
-            "ordinary 17:00 CT first open on the closed day, so each ships "
-            "`late_open(5 * 3_600)`. 2015-01-02 ships no late open: the 2015 "
-            "New Year's sheet prints no reopening line at all, so the crate "
-            "carries the ordinary grid there and the evidence records the "
-            "silence rather than an instant. 2013-12-26 additionally prints "
-            "`0515 CT - Regular open - USD - Ibovespa Futures`, which is the "
-            "Ibovespa contract's own open and not this family's "
-            "(LAW-SESSION-NOT-EXPIRY).")
+            "**The three late opens are the year-end reopenings.** 2013-01-02 "
+            "prints `0500 CT – CME Globex open for trade date Wednesday, Jan "
+            "2`, and 2013-12-26 and 2014-01-02 print `0500 CT – Modified open` "
+            "— the same instant without the `open for trade date` clause. Each "
+            "is twelve hours after the trade date's ordinary 17:00 CT first "
+            "open on the closed day, so each ships `late_open(5 * 3_600)`. "
+            "2015-01-02 ships no late open: the 2015 New Year's sheet prints no "
+            "reopening line at all, so the crate carries the ordinary grid "
+            "there and the evidence records the silence rather than an instant. "
+            "2013-12-26 additionally prints `0515 CT - Regular open - USD - "
+            "Ibovespa Futures`, which is the Ibovespa contract's own open and "
+            "not this family's (LAW-SESSION-NOT-EXPIRY).")
     if name == "globex_energy":
         return (
-            "**Good Friday closes the energy and metals line in all three years.** CME's 2013 Good Friday sheet prints `CME Globex is closed` for 2013-03-29 under the `NYMEX & COMEX® and Dubai Mercantile (DME) Products` heading, and its 2014 and 2015 sheets print the same line for 2014-04-18 and 2015-04-03 under `Energy, Metals & DME Products`, so all three ship `Closed`. The Thursday before each is ordinary for the era — the 2013 sheet states it as `1615 CT / 1715 ET - Regular close`, the 2014 and 2015 sheets as the three-zone `1615 CT / 1715 ET / 2115 UTC – Regular close` — so those dates ship no row.")
+            "**Good Friday closes the energy and metals line in all three "
+            "years.** CME's 2013 Good Friday sheet prints `CME Globex is "
+            "closed` for 2013-03-29 under the `NYMEX & COMEX® and Dubai "
+            "Mercantile (DME) Products` heading, and its 2014 and 2015 sheets "
+            "print the same line for 2014-04-18 and 2015-04-03 under `Energy, "
+            "Metals & DME Products`, so all three ship `Closed`. The Thursday "
+            "before each is ordinary for the era — the 2013 sheet states it as "
+            "`1615 CT / 1715 ET - Regular close`, and the 2014 and 2015 sheets "
+            "as the three-zone `1615 CT / 1715 ET / 2115 UTC – Regular close` — "
+            "so those dates ship no row.")
     if name == "globex_interest_rates" or name == "globex_fx":
         return (
             "**The Friday eves of the Monday holidays close at 15:15 CT.** "
@@ -679,31 +689,35 @@ def family_extra(name, summary, derived):
     if name == "globex_grains":
         return (
             "**The grains day session does not run on the Monday and Thursday "
-            "holidays, so those dates are `Closed`.** CME halts the "
-            "`Grain, Oilseed & MGEX Products` line at 12:00 CT on the holiday "
-            "itself and reopens it at 19:00 CT the same evening for the next "
-            "trade date: the holiday's own trade date has no final close of "
-            "its own, and the closure removes it with the evening leg that "
-            "would have opened it. The three `late_open_and_early_close` rows "
-            "are the Thanksgiving Fridays, where the 08:30 CT reopen is the "
-            "printed first open and 12:00 CT the printed final close. The "
-            "grains close is 13:15 CT through 2015-07-04 and 13:20 CT from "
-            "2015-07-05 (CME SER-7395R), which is why 2015-12-24's 12:05 CT "
-            "differs from the 12:00 CT of the two earlier years.")
+            "holidays, so those dates are `Closed`.** CME halts the `Grain, "
+            "Oilseed & MGEX Products` line at 12:00 CT on the holiday itself "
+            "and reopens it at 19:00 CT the same evening for the next trade "
+            "date: the holiday's own trade date has no final close of its own, "
+            "and the closure removes it with the evening leg that would have "
+            "opened it. The three `late_open_and_early_close` rows are the "
+            "Thanksgiving Fridays, where the 08:30 CT reopen is the printed "
+            "first open and the printed final close is 12:00 CT in 2013 and "
+            "2014 and 12:05 CT in 2015. The grains close is 13:15 CT through "
+            "2015-07-04 and 13:20 CT from 2015-07-05 (CME SER-7395R), which is "
+            "why both 2015-11-27 and 2015-12-24 read 12:05 CT where the two "
+            "earlier years read 12:00 CT.")
     if name == "globex_livestock":
         return (
             "**The grid changes inside the window.** Through 2014-10-26 "
-            "`livestock.rs PROFILE_AT_2010_FLOOR` runs an around-the-clock "
-            "grid: a Monday 09:05-16:00 CT session, Tuesday-Thursday "
-            "17:00-16:00 CT and a Thursday 17:00-13:55 CT short day, all "
-            "inside a single civil day, so the era's `late_open` rows sit at "
-            "09:05 CT on the trade date after a closure and its `Closed` rows "
-            "are outright. From 2014-10-27 (CME SER-7194) the evening sessions "
-            "are gone and the same dates' printed 08:00 CT is the ordinary "
-            "open, so 2014-12-26, 2015-01-02 and 2015-07-06 ship no row even "
-            "though the block records a reopen instant for them. The 2015-12-24 "
-            "and 2015-12-31 rows carry CME's `Livestock, Dairy & Lumber "
-            "Products` line; 2015-12-31 is the year-end half-day at 13:55 CT.")
+            "`livestock.rs PROFILE_AT_2010_FLOOR` runs the around-the-clock "
+            "grid: a Monday 09:05-16:00 CT session, Monday-Wednesday 17:00 CT "
+            "opens that close at 16:00 CT the following civil day (so a "
+            "Thursday trade date runs from Wednesday 17:00 to Thursday 16:00), "
+            "and a Thursday 17:00 CT open carrying Friday's 13:55 CT short-day "
+            "close. From 2014-10-27 (CME SER-7194) the evening sessions are "
+            "gone and every trade date opens on its own civil date: 08:00 CT on "
+            "Fridays and 09:05 CT on Mondays. **Four dates ship no row although "
+            "the block records a reopen instant for them** — 2014-07-07 and "
+            "2015-07-06, whose printed 09:05 CT is the Monday ordinary open, and "
+            "2014-12-26 and 2015-01-02, whose printed 08:00 CT is the Friday "
+            "ordinary open. The 2015-12-24 and 2015-12-31 rows carry CME's "
+            "`Livestock, Dairy & Lumber Products` line; 2015-12-31 is the "
+            "year-end half-day at 13:55 CT.")
     return None
 
 

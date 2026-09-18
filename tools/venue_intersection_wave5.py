@@ -217,6 +217,11 @@ def parse_table_text(text: str) -> Table:
     }
     body = text[text.index("holidays! {") :]
     coverage_body, _, rest = body.partition("rows:")
+    # Row comments are prose and may contain parentheses — the 2013-07-03
+    # livestock row's names the line it keys to — so they are dropped before the
+    # tuple scan rather than parsed as one.
+    rest = re.sub(r"(?m)^\s*//.*$", "", rest)
+    coverage_body = re.sub(r"(?m)^\s*//.*$", "", coverage_body)
     windows = [
         (
             dt.date(int(match[0]), int(match[1]), int(match[2])),

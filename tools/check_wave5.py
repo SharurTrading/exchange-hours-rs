@@ -28,7 +28,9 @@ re-derives, checking each against what shipped:
   8. **era shapes** — each family module header's per-era shape sentence against
      that era's own row count;
   9. **printed cells** — every era table's `instant as printed` cell against the
-     block's own string for that row's date.
+     block's own string for that row's date;
+ 10. **statements** — every block statement accounted for: a non-`normal` one
+     produced a row, a `normal` one produced none.
 
 The crate is the checkout this script lives in (`tools/..`); only the research
 store is a parameter.
@@ -239,10 +241,10 @@ def named_day(cell, anchor):
 
 def close_at(family, date):
     if family == "globex_livestock":
-        # The 2007 around-the-clock grid keeps a 13:55 CT Thursday short day
-        # until 2014-10-26; the 2014-10-27 grid keeps a 13:55 CT Friday one.
-        if date < dt.date(2014, 10, 27):
-            return 13 * 3_600 + 55 * 60 if date.weekday() == 3 else 16 * 3_600
+        # `REGULAR_AT_2010_FLOOR` is MON_ONLY 09:05-16:00, MON_WED 17:00-16:00
+        # and THU_ONLY 17:00-13:55, so a Thursday's own close comes from
+        # Wednesday's 17:00 open (16:00) and the 13:55 CT short day is Friday's.
+        # The 2014-10-27 grid keeps a Friday 13:55 too.
         return 13 * 3_600 + 55 * 60 if date.weekday() == 4 else 16 * 3_600
     value = ORDINARY_CLOSE[family][1]
     for first, moved in CLOSE_REVISIONS.get(family, ()):
@@ -267,6 +269,30 @@ def first_open_at(family, date):
 # Check 1-2: rows and coverage, re-derived from the block alone
 # --------------------------------------------------------------------------
 
+#: The product line each family models inside a roll-up group's clock field;
+#: see `tools/wave5_rows.py` for the block's one compound case (2013-07-03).
+MODELLED_LINE = {
+    "globex_livestock": re.compile(r"livestock", re.IGNORECASE),
+    "globex_grains": re.compile(r"cbot|kcb|grain", re.IGNORECASE),
+    "globex_energy": re.compile(r"energy|metals|nymex|comex", re.IGNORECASE),
+    "globex_equity_index": re.compile(r"equity", re.IGNORECASE),
+    "globex_fx": re.compile(r"\bFX\b", re.IGNORECASE),
+    "globex_interest_rates": re.compile(r"interest", re.IGNORECASE),
+}
+
+
+def modelled_clause(cell, family):
+    """The clock CME printed for the line this family models."""
+    if not cell or ";" not in cell:
+        return cell
+    pattern = MODELLED_LINE.get(family)
+    if pattern is not None:
+        for clause in cell.split(";"):
+            if pattern.search(clause):
+                return clause.strip()
+    return cell
+
+
 def expected_rows(block):
     """The rows the block states, re-derived with the crate's grids."""
     out = collections.defaultdict(dict)
@@ -284,7 +310,7 @@ def expected_rows(block):
                     slot[date] = ("Closed", None, None, entry["document"],
                                   entry["tier"])
                     continue
-                close = parse_clock(entry.get("close_instant"))
+                close = parse_clock(modelled_clause(entry.get("close_instant"), family))
                 if close is not None and close < close_at(family, date):
                     existing = slot.get(date)
                     if existing and existing[0] == "late_open":
@@ -316,6 +342,57 @@ def expected_rows(block):
                     slot[target] = ("late_open", opened, None, entry["document"],
                                     entry["tier"])
     return out
+
+
+def check_statements(block):
+    """Every block statement is accounted for, not just every shipped row.
+
+    `check_rows` walks the module and re-derives each row from the block, which
+    catches a value that was mis-encoded. It cannot see a statement that never
+    became a row, so this walks the block instead: a statement whose status is
+    not `normal` must have produced a row on its own date or on the date its
+    re-open cell names, and a `normal` statement must have produced none. The
+    2013-03-28 and 2014-04-17 livestock early closes were invisible to the
+    one-directional pass; this is the direction that sees them.
+    """
+    check = 10
+    derived = 0
+    expected = expected_rows(block)
+    for holiday in block["holidays"]:
+        date = dt.date.fromisoformat(holiday["date"])
+        for entry in holiday["families"]:
+            for family in GROUP_FAMILIES.get(entry["family"], ()):
+                slot = expected[family]
+                wanted = []
+                if entry["status"] == "closed":
+                    wanted.append((date, "Closed"))
+                else:
+                    close = parse_clock(modelled_clause(entry.get("close_instant"), family))
+                    if close is not None and close < close_at(family, date):
+                        wanted.append((date, "early_close"))
+                    cells = list(entry.get("reopens") or [])
+                    if entry.get("open_instant"):
+                        cells.insert(0, entry["open_instant"])
+                    for cell in cells:
+                        opened = parse_clock(cell)
+                        if opened is None:
+                            continue
+                        target = named_day(cell, date) or date
+                        if (opened - first_open_at(family, target)) % 86_400 >= LATE_OPEN_GRACE:
+                            wanted.append((target, "late_open"))
+                derived += 1
+                if entry["status"] == "normal":
+                    if wanted:
+                        fail(check, "%s %s: the block audits the date normal, its own "
+                                    "instants state %s" % (family, date, wanted[0][1]))
+                    continue
+                for target, kind in wanted:
+                    derived += 1
+                    if slot.get(target) is None:
+                        fail(check, "%s %s: the block states %s on %s and the "
+                                    "derivation ships no row there"
+                             % (family, date, kind, target))
+    return derived
 
 
 def check_rows(block, modules):
@@ -852,9 +929,10 @@ def printed_cells(block):
                 if entry["status"] == "closed":
                     slot["close"] = closure_token(entry)
                     continue
-                close = parse_clock(entry.get("close_instant"))
+                close = parse_clock(modelled_clause(entry.get("close_instant"), family))
                 if close is not None and close < close_at(family, date):
-                    slot["close"] = entry["close_instant"]
+                    # The family's own line, as in the row derivation above.
+                    slot["close"] = modelled_clause(entry["close_instant"], family)
                 cells = list(entry.get("reopens") or [])
                 if entry.get("open_instant"):
                     cells.insert(0, entry["open_instant"])
@@ -965,6 +1043,7 @@ def main(argv=None):
 
     total = 0
     total += check_rows(block, modules)
+    total += check_statements(block)
     total += check_coverage(modules)
     total += check_bytes(root, block, modules)
     total += check_venues(modules)

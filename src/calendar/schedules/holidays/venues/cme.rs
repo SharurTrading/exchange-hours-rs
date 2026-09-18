@@ -81,9 +81,9 @@ use super::super::{
 
 /// The `Exchange::Cme` table: the intersection of the six CME families.
 ///
-/// Two hundred and seventy-two rows over six audited eras. Forty-seven state a status — the
-/// Globex full closures — and 225 are `Unsourced`: 49 in 2010-2012, where the
-/// families disagree in kind rather than by minutes, 49 in 2013-2015, 27 in
+/// Two hundred and seventy-four rows over six audited eras. Forty-seven state a status — the
+/// Globex full closures — and 227 are `Unsourced`: 49 in 2010-2012, where the
+/// families disagree in kind rather than by minutes, 51 in 2013-2015, 27 in
 /// 2016-2018, 34 in 2019-2021, 34 in 2022-2024, and 32 in 2025-2027. The six
 /// eras are declared as six coverage windows, and outside them the table reports
 /// no answer rather than a normal one.
@@ -214,6 +214,8 @@ pub(crate) static CME: &HolidayTable = holidays! {
         // 2013-02-18 - T1 - 2013-presidents-day.pdf @2013-03-09T11:53:37Z - disagreement: equity index early close 10:30 CT; energy and metals early close 12:15 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed.
         (2013, 2, 18, Unsourced, T1, "2013-presidents-day.pdf @2013-03-09T11:53:37Z"),
         // 2013-03-29 - T1 - 2013-good-friday.pdf @2013-06-23T19:59:25Z - closed: no trade date.
+        // 2013-03-28 - T1 - 2013-good-friday.pdf @2013-06-23T19:59:25Z - disagreement: equity index no row; energy and metals no row; FX no row; grains no row; interest rates no row; livestock early close 13:55 CT.
+        (2013, 3, 28, Unsourced, T1, "2013-good-friday.pdf @2013-06-23T19:59:25Z"),
         (2013, 3, 29, Closed, T1, "2013-good-friday.pdf @2013-06-23T19:59:25Z"),
         // 2013-05-24 - T1 - 2013-memorial-day.pdf @2013-06-23T20:36:04Z - disagreement: equity index no row; energy and metals no row; FX early close 15:15 CT; grains no row; interest rates early close 15:15 CT; livestock no row.
         (2013, 5, 24, Unsourced, T1, "2013-memorial-day.pdf @2013-06-23T20:36:04Z"),
@@ -252,6 +254,8 @@ pub(crate) static CME: &HolidayTable = holidays! {
         // 2014-02-17 - T1 - 2014-presidents-day-holiday-schedule.pdf @2014-02-14T19:23:32Z - disagreement: equity index early close 10:30 CT; energy and metals early close 12:15 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed.
         (2014, 2, 17, Unsourced, T1, "2014-presidents-day-holiday-schedule.pdf @2014-02-14T19:23:32Z"),
         // 2014-04-18 - T1 - 2014-good-friday-holiday-schedule.pdf @2014-03-26T15:27:35Z - closed: no trade date.
+        // 2014-04-17 - T1 - 2014-good-friday-holiday-schedule.pdf @2014-03-26T15:27:35Z - disagreement: equity index no row; energy and metals no row; FX no row; grains no row; interest rates no row; livestock early close 13:55 CT.
+        (2014, 4, 17, Unsourced, T1, "2014-good-friday-holiday-schedule.pdf @2014-03-26T15:27:35Z"),
         (2014, 4, 18, Closed, T1, "2014-good-friday-holiday-schedule.pdf @2014-03-26T15:27:35Z"),
         // 2014-05-23 - T1 - 2014-memorial-day-holiday-schedule.pdf @2014-07-08T02:01:55Z - disagreement: equity index no row; energy and metals no row; FX early close 15:15 CT; grains no row; interest rates early close 15:15 CT; livestock no row.
         (2014, 5, 23, Unsourced, T1, "2014-memorial-day-holiday-schedule.pdf @2014-07-08T02:01:55Z"),

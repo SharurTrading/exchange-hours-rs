@@ -192,7 +192,11 @@ def _livestock_floor_first_open(date):
 
 
 def _livestock_floor_close(date):
-    return _c(13, 55) if date.weekday() == 3 else _c(16, 0)
+    # `REGULAR_AT_2010_FLOOR` is MON_ONLY 09:05-16:00, MON_WED 17:00-16:00 and
+    # THU_ONLY 17:00-13:55. A Thursday's own close therefore comes from
+    # Wednesday's 17:00 open (16:00), and the 13:55 short day is Friday's,
+    # carried by Thursday's open.
+    return _c(13, 55) if date.weekday() == 4 else _c(16, 0)
 
 
 def _livestock_dated_first_open(date):
@@ -206,7 +210,8 @@ def _livestock_dated_close(date):
 GRID_LIVESTOCK_FLOOR = Grid(
     "livestock-floor", False, _livestock_floor_first_open, _livestock_floor_close,
     "one flat session inside a single civil day: 09:05-16:00 CT on Mondays, "
-    "17:00-16:00 CT on Tuesday and Wednesday and 17:00-13:55 CT on Thursdays",
+    "17:00-16:00 CT on Tuesday, Wednesday and Thursday and 17:00-13:55 CT on "
+    "Fridays",
     "livestock.rs PROFILE_AT_2010_FLOOR (2007 around-the-clock schedule)",
     "16:00 CT (13:55 CT on Thursdays)", day_open=_c(9, 5),
 )
@@ -416,13 +421,39 @@ def closure_token(entry):
     return entry.get("status", "")
 
 
+#: The product line each crate family models inside a roll-up group's printed
+#: clock field. CME's 2013-07-03 revision prints four lines in one
+#: `close_instant` — `1200 CT (Dairy); 1200 CT (Lumber); 1202 CT (Lumber
+#: Options); 1215 CT (Livestock Futures & Options)` — and the family's own line
+#: is the one its row is keyed to, not whichever clause came first.
+MODELLED_LINE = {
+    "globex_livestock": re.compile(r"livestock", re.IGNORECASE),
+    "globex_grains": re.compile(r"cbot|kcb|grain", re.IGNORECASE),
+    "globex_energy": re.compile(r"energy|metals|nymex|comex", re.IGNORECASE),
+    "globex_equity_index": re.compile(r"equity", re.IGNORECASE),
+    "globex_fx": re.compile(r"\bFX\b", re.IGNORECASE),
+    "globex_interest_rates": re.compile(r"interest", re.IGNORECASE),
+}
+
+
+def modelled_clause(cell, family):
+    """The clock CME printed for the line this family models."""
+    if not cell or ";" not in cell:
+        return cell
+    pattern = MODELLED_LINE.get(family)
+    if pattern is not None:
+        for clause in cell.split(";"):
+            if pattern.search(clause):
+                return clause.strip()
+    return cell
+
+
 def derive_group(entry, group, crate_families, folded, sink):
     """Expands one block row onto the crate families the group covers."""
     date = dt.date.fromisoformat(entry["date"])
     status = entry["status"]
     document = entry["document"]
     tier = entry["tier"]
-    close = parse_clock(entry.get("close_instant"))
     reopens = list(entry.get("reopens") or [])
     if entry.get("open_instant"):
         # The round-2 repaired block folds a single re-open back into
@@ -430,6 +461,8 @@ def derive_group(entry, group, crate_families, folded, sink):
         reopens.insert(0, entry["open_instant"])
 
     for family in crate_families:
+        # The family's own line, not the roll-up group's first clause.
+        close = parse_clock(modelled_clause(entry.get("close_instant"), family))
         grid = grid_at(family, date)
         ordinary_close = grid.ordinary_close(date)
         rows = sink.setdefault(family, {}).setdefault(date, [])
@@ -465,7 +498,8 @@ def derive_group(entry, group, crate_families, folded, sink):
                     "the printed final close %s is earlier than the family's "
                     "ordinary %s" % (clock_cell(close),
                                      clock_cell(ordinary_close)),
-                    printed_close=entry.get("close_instant"), group=group))
+                    printed_close=modelled_clause(
+                        entry.get("close_instant"), family), group=group))
 
         for cell in reopens:
             open_ssm = parse_clock(cell)

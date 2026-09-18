@@ -231,7 +231,7 @@ fn the_table_ships_the_audited_kind_distribution() {
     }
 
     assert_eq!(closed, 127, "closed rows over every audited window");
-    assert_eq!(early, 33, "early-close rows over every audited window");
+    assert_eq!(early, 35, "early-close rows over every audited window");
     assert_eq!(
         late, 7,
         "late-open rows, the 2010-2012 four and the 2013 reopenings"
@@ -1438,7 +1438,7 @@ fn era_2013_2015_sweeps_every_shipped_row_kind_and_instant() {
     }
     assert_eq!(
         (closed, early, late, both),
-        (27, 10, 3, 1),
+        (27, 12, 3, 1),
         "the era's shape"
     );
 }
@@ -1515,7 +1515,7 @@ fn era_2013_2015_window_is_declared_in_order_and_bounds_every_row() {
         }
         date = date.succ_opt().expect("the era ends well before the bound");
     }
-    assert_eq!(rows, 41, "the era's rows");
+    assert_eq!(rows, 43, "the era's rows");
     assert_eq!(venue.holiday_on(day((2012, 12, 31))), None);
     assert!(!coverage.contains(day((2028, 1, 1))));
     assert_eq!(venue.holiday_on(day((2028, 1, 1))), None);
@@ -1537,12 +1537,19 @@ const ERA_2013_2015_ROWS: &[((i32, u32, u32), HolidayKind, EvidenceTier)] = &[
     ),
     ((2013, 1, 21), HolidayKind::Closed, EvidenceTier::T1),
     ((2013, 2, 18), HolidayKind::Closed, EvidenceTier::T1),
+    (
+        (2013, 3, 28),
+        HolidayKind::EarlyClose {
+            close_ssm: 13 * 3_600 + 55 * 60,
+        },
+        EvidenceTier::T1,
+    ),
     ((2013, 3, 29), HolidayKind::Closed, EvidenceTier::T1),
     ((2013, 5, 27), HolidayKind::Closed, EvidenceTier::T1),
     (
         (2013, 7, 3),
         HolidayKind::EarlyClose {
-            close_ssm: 12 * 3_600,
+            close_ssm: 12 * 3_600 + 15 * 60,
         },
         EvidenceTier::T1,
     ),
@@ -1582,6 +1589,13 @@ const ERA_2013_2015_ROWS: &[((i32, u32, u32), HolidayKind, EvidenceTier)] = &[
     ),
     ((2014, 1, 20), HolidayKind::Closed, EvidenceTier::T1),
     ((2014, 2, 17), HolidayKind::Closed, EvidenceTier::T1),
+    (
+        (2014, 4, 17),
+        HolidayKind::EarlyClose {
+            close_ssm: 13 * 3_600 + 55 * 60,
+        },
+        EvidenceTier::T1,
+    ),
     ((2014, 4, 18), HolidayKind::Closed, EvidenceTier::T1),
     ((2014, 5, 26), HolidayKind::Closed, EvidenceTier::T1),
     (

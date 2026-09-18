@@ -195,7 +195,7 @@ Every interval from 2010-01-01 is declared, so the whole span has an answer; the
 | trade date | kind | instant as printed | document | tier | derived from |
 |---|---|---|---|---|---|
 | 2013-01-01 | closed | `New Years Observed - Globex closed` | `2013-new-years.pdf @2013-04-14T19:41:46Z` | T1 | CME prints no session running through this date |
-| 2013-01-02 | late open | `500 CT` | `2013-new-years.pdf @2013-04-14T19:41:46Z` | T1 | the trade date's first open is 5:00 CT: the evening leg that would have opened earlier did not run |
+| 2013-01-02 | late open | `0500 CT` | `2013-new-years.pdf @2013-04-14T19:41:46Z` | T1 | the trade date's first open is 5:00 CT: the evening leg that would have opened earlier did not run |
 | 2013-01-18 | early close | `1515 CT` | `2013-martin-luther-king.pdf @2012-11-19T00:16:09Z` | T1 | the printed final close 15:15 CT is earlier than the family's ordinary 16:00 CT |
 | 2013-01-21 | early close | `1200 CT` | `2013-martin-luther-king.pdf @2012-11-19T00:16:09Z` | T1 | the printed final close 12:00 CT is earlier than the family's ordinary 16:00 CT |
 | 2013-02-15 | early close | `1515 CT` | `2013-presidents-day.pdf @2013-03-09T11:53:37Z` | T1 | the printed final close 15:15 CT is earlier than the family's ordinary 16:00 CT |
@@ -210,14 +210,14 @@ Every interval from 2010-01-01 is declared, so the whole span has an answer; the
 | 2013-11-29 | early close | `1215 CT` | `2013-thanksgiving.pdf @2014-02-14T06:28:36Z` | T1 | the printed final close 12:15 CT is earlier than the family's ordinary 16:00 CT |
 | 2013-12-24 | early close | `1215 CT` | `2013-christmas.pdf @2014-04-12T06:24:28Z` | T1 | the printed final close 12:15 CT is earlier than the family's ordinary 16:00 CT |
 | 2013-12-25 | closed | `Christmas Day Observed - Globex closed` | `2013-christmas.pdf @2014-04-12T06:24:28Z` | T1 | CME prints no session running through this date |
-| 2013-12-26 | late open | `500 CT` | `2013-christmas.pdf @2014-04-12T06:24:28Z` | T1 | the trade date's first open is 5:00 CT: the evening leg that would have opened earlier did not run |
+| 2013-12-26 | late open | `0500 CT` | `2013-christmas.pdf @2014-04-12T06:24:28Z` | T1 | the trade date's first open is 5:00 CT: the evening leg that would have opened earlier did not run |
 
 ### 2014
 
 | trade date | kind | instant as printed | document | tier | derived from |
 |---|---|---|---|---|---|
 | 2014-01-01 | closed | `New Year's Observed - Globex closed` | `2014-new-years.pdf @2013-10-07T20:58:00Z` | T1 | CME prints no session running through this date |
-| 2014-01-02 | late open | `500 CT` | `2014-new-years.pdf @2013-10-07T20:58:00Z` | T1 | the trade date's first open is 5:00 CT: the evening leg that would have opened earlier did not run |
+| 2014-01-02 | late open | `0500 CT` | `2014-new-years.pdf @2013-10-07T20:58:00Z` | T1 | the trade date's first open is 5:00 CT: the evening leg that would have opened earlier did not run |
 | 2014-01-17 | early close | `1515 CT / 1615 ET / 2215 UTC (UTC as printed; 1515 CT is 2115 UTC - the document's UTC column is wrong on this line)` | `2014-martin-luther-king-holiday-schedule.pdf @2014-03-26T16:02:15Z` | T1 | the printed final close 15:15 CT is earlier than the family's ordinary 16:00 CT |
 | 2014-01-20 | early close | `1200 CT / 1300 ET / 1800 UTC` | `2014-martin-luther-king-holiday-schedule.pdf @2014-03-26T16:02:15Z` | T1 | the printed final close 12:00 CT is earlier than the family's ordinary 16:00 CT |
 | 2014-02-14 | early close | `1515 CT / 1615 ET / 2115 UTC` | `2014-presidents-day-holiday-schedule.pdf @2014-02-14T19:23:32Z` | T1 | the printed final close 15:15 CT is earlier than the family's ordinary 16:00 CT |

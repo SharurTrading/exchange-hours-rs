@@ -610,8 +610,9 @@ def venue_text(venue, windows, all_rows, mine):
         "intersection of the families routed here — %s — by the D17 rule "
         "`venues.rs` states: a row ships only where every routed family states "
         "the same one, and a date on which they differ, or on which one states "
-        "a row while another has audited the date normal, ships `Unsourced`, "
-        "with the disagreement named per date in the three year tables below."
+        "a row while another has audited the date normal, ships `Unsourced`; "
+        "the three year tables below carry every date's row, its instant as "
+        "printed and the id it is derived from."
         % (CARDINAL_WORD[len(windows)], len(all_rows), len(windows),
            window_list(windows), len(mine), stated,
            "row" if stated == 1 else "rows", counts["Unsourced"],

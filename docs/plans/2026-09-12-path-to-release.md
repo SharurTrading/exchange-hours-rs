@@ -348,15 +348,20 @@ CME's own workbook rather than inferred across years; and the Interest-Rate/FX g
 claim becomes 57 of 58 sheets with the X13GFPD `Good Fri.` exception stated. The rest are
 record hygiene — the unmodelled printed product lines are named as gaps with their closing
 conditions, the two document-title quotations regain the registered-trademark glyph, the
-29 zero-padded three-digit clock times are re-emitted as CME printed them, and the
+29 zero-padded three-digit clock times are re-emitted as CME printed them (a later pass
+settled all 80 against the artifact each row cites, re-padding the 48 that CME prints with
+a leading zero), and the
 round-0 `INDEX.md` gains a dated amendment pointer. Every repair is guarded by a `before`
 check, so the tool cannot run silently against a different block.
 
 The repaired block then encoded at **T1** over venue-local trade dates
-2013-01-01 .. 2015-12-31: **250 rows** — equity index 38, energy 33, FX 47, grains 44,
-interest rates 47, livestock 41 — so each of those six families now declares the era and
-**no interval from the January-2010 floor is unaudited for them**. Shapes: 87 full
-closures, 139 early closes, 20 late opens and four `late_open_and_early_close` rows.
+2013-01-01 .. 2015-12-31: **252 rows** — equity index 38, energy 33, FX 47, grains 44,
+interest rates 47, livestock 43 — so every interval from the January-2010 floor is audited
+for five of those six families, while `globex_livestock` keeps its 2016-2018 gap (issue
+#110). Shapes: 87 full closures, 141 early closes, 20 late opens and four
+`late_open_and_early_close` rows. The review of this wave added the two Maundy-Thursday
+early closes 2013-03-28 and 2014-04-17 that the first encoding dropped, and re-keyed
+2013-07-03's livestock row to its own line's 12:15 CT rather than Dairy's 12:00 CT.
 `globex_livestock` carries the non-scalar shapes because its grid changes *inside* the
 window: CME SER-7194 removed the evening sessions on 2014-10-27, so the 2013 year-end
 reopenings at 09:05 CT are late opens while the 2014 and 2015 ones at 08:00 CT are the
@@ -369,12 +374,14 @@ product existed before 2017-12-18, and no Nikkei-specific line is printed on any
 2013-2015** carry no row: CME's own sheets state in session language that Globex ran a
 normal schedule.
 
-The four venue tables extend over the era by D17: `cme` 57 rows (8 `Closed` + 49
+The four venue tables extend over the era by D17: `cme` 59 rows (8 `Closed` + 51
 `Unsourced`), `cbot` 55 (8 + 47), and `comex`/`nymex` 33 each, carrying
-`globex_energy`'s rows unchanged. **#95 closes with this wave**: `tools/check_wave5.py`
-recomputes the intersection from the families' own tables over every date from 2010-01-01
-to 2027-12-31 on which all routed families declare a window and compares row by row, and
-the result is recorded in the four venue evidence files. The wave's tools are
+`globex_energy`'s rows unchanged — and over 2010-2027 as a whole `cme` carries 274 rows
+(47 stated, 227 withheld), `cbot` 251 (47, 204) and `comex`/`nymex` 206 each. **#95 closes
+with this wave**: `tools/check_wave5.py` recomputes the intersection from the families' own
+tables over every date from 2010-01-01 to 2027-12-31 on which at least one routed family
+declares a window (a family with no window there abstains and the covered families decide),
+compares row by row, and the result is recorded in the four venue evidence files. The wave's tools are
 `tools/wave5_repair.py`, `tools/wave5_reconcile.py`, `tools/wave5_rows.py`,
 `tools/check_wave5.py`, `tools/encode_wave5.py`, `tools/venue_intersection_wave5.py`,
 `tools/evidence_wave5.py` and `tools/gen_wave5_tests.py`; `tools/README.md` documents the

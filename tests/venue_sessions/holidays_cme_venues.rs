@@ -412,7 +412,7 @@ fn a_closed_venue_row_is_a_unanimous_closure() {
         let expected = if single_family {
             6
         } else if families.len() == 6 {
-            225
+            227
         } else {
             204
         };
@@ -1271,7 +1271,7 @@ fn wave5_venue_era_counts_match_the_families_they_route() {
         (
             Exchange::Cme,
             [3_usize, 3, 2],
-            [16_usize, 16, 17],
+            [17_usize, 17, 17],
             [0_usize, 0, 0],
         ),
         (
@@ -1419,7 +1419,7 @@ fn wave5_venue_era_unsourced_rows_are_disagreements_not_closures() {
             date = date.succ_opt().expect("the era ends well before the bound");
         }
     }
-    assert_eq!(probes, 96, "the era's `Unsourced` rows were swept");
+    assert_eq!(probes, 98, "the era's `Unsourced` rows were swept");
 }
 
 // ---------------------------------------------------------------------------

@@ -98,21 +98,21 @@ corrections (a venue's hours fixed against a primary source) go under
 
 - **The served CME families' holiday tables now cover 2013-2015, and the four
   CME venue calendars with them — the last CME family wave.** Six families gain
-  **250 rows over venue-local trade dates 2013-01-01 .. 2015-12-31** —
+  **252 rows over venue-local trade dates 2013-01-01 .. 2015-12-31** —
   `globex_equity_index` 38, `globex_energy` 33, `globex_fx` 47,
-  `globex_grains` 44, `globex_interest_rates` 47 and `globex_livestock` 41 —
+  `globex_grains` 44, `globex_interest_rates` 47 and `globex_livestock` 43 —
   every one at **T1**, from CME Group's own published Globex holiday schedules:
   the 32 per-holiday PDFs plus the 2013-2015 `.xls` workbooks and annual
   masters. Each family declares the era as a new window in date order; every
   interval from the January-2010 floor is now audited for five of the six, while
   `globex_livestock` keeps its 2016-2018 gap (#110). The rows are
-  87 full closures, 139 early closes, 20 late opens and four
+  87 full closures, 141 early closes, 20 late opens and four
   `late_open_and_early_close` rows. `globex_livestock` carries the era's
   non-scalar shapes because its grid changes inside the window: CME SER-7194
   removed the evening sessions on 2014-10-27, so the 2013 year-end reopenings
   at 09:05 CT are late opens while the 2014 and 2015 ones at 08:00 CT are the
   grid's ordinary open and ship nothing. The four venue tables extend by the
-  D17 intersection — `cme` 57 rows (8 `Closed` and 49 `Unsourced`), `cbot` 55
+  D17 intersection — `cme` 59 rows (8 `Closed` and 51 `Unsourced`), `cbot` 55
   (8 and 47), and `comex`/`nymex` 33 each, carrying `globex_energy`'s rows
   unchanged. `globex_cryptocurrency` and `globex_nikkei_225_dollar` declare no
   2013-2015 window and ship no row for it: no crypto product existed before

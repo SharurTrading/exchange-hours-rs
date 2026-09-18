@@ -122,12 +122,14 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2013, 1, 21, Closed, T1, "2013-martin-luther-king.pdf @2012-11-19T00:16:09Z"),
         // 2013-02-18 - T1 - 2013-presidents-day.pdf @2013-03-09T11:53:37Z - CME prints no session running through this date.
         (2013, 2, 18, Closed, T1, "2013-presidents-day.pdf @2013-03-09T11:53:37Z"),
+        // 2013-03-28 - T1 - 2013-good-friday.pdf @2013-06-23T19:59:25Z - the printed final close 13:55 CT is earlier than the family's ordinary 16:00 CT.
+        (2013, 3, 28, early_close(13 * 3_600 + 55 * 60), T1, "2013-good-friday.pdf @2013-06-23T19:59:25Z"),
         // 2013-03-29 - T1 - 2013-good-friday.pdf @2013-06-23T19:59:25Z - CME prints no session running through this date.
         (2013, 3, 29, Closed, T1, "2013-good-friday.pdf @2013-06-23T19:59:25Z"),
         // 2013-05-27 - T1 - 2013-memorial-day.pdf @2013-06-23T20:36:04Z - CME prints no session running through this date.
         (2013, 5, 27, Closed, T1, "2013-memorial-day.pdf @2013-06-23T20:36:04Z"),
-        // 2013-07-03 - T1 - 2013-4th-of-july-done.pdf @2013-07-17T05:03:33Z - the printed final close 12:00 CT is earlier than the family's ordinary 16:00 CT.
-        (2013, 7, 3, early_close(12 * 3_600), T1, "2013-4th-of-july-done.pdf @2013-07-17T05:03:33Z"),
+        // 2013-07-03 - T1 - 2013-4th-of-july-done.pdf @2013-07-17T05:03:33Z - the printed final close 12:15 CT for the Livestock Futures & Options line is earlier than the family's ordinary 16:00 CT; the same revision's 12:00 CT is the Dairy and Lumber line, which this key does not model.
+        (2013, 7, 3, early_close(12 * 3_600 + 15 * 60), T1, "2013-4th-of-july-done.pdf @2013-07-17T05:03:33Z"),
         // 2013-07-04 - T1 - 2013-4th-of-july.pdf @2013-06-23T20:58:25Z - CME prints no session running through this date.
         (2013, 7, 4, Closed, T1, "2013-4th-of-july.pdf @2013-06-23T20:58:25Z"),
         // 2013-09-02 - T1 - 2013-labor-day.pdf @2013-09-02T17:08:41Z - CME prints no session running through this date.
@@ -150,11 +152,13 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2014, 1, 20, Closed, T1, "2014-martin-luther-king-holiday-schedule.pdf @2014-03-26T16:02:15Z"),
         // 2014-02-17 - T1 - 2014-presidents-day-holiday-schedule.pdf @2014-02-14T19:23:32Z - CME prints no session running through this date.
         (2014, 2, 17, Closed, T1, "2014-presidents-day-holiday-schedule.pdf @2014-02-14T19:23:32Z"),
+        // 2014-04-17 - T1 - 2014-good-friday-holiday-schedule.pdf @2014-03-26T15:27:35Z - the printed final close 13:55 CT is earlier than the family's ordinary 16:00 CT.
+        (2014, 4, 17, early_close(13 * 3_600 + 55 * 60), T1, "2014-good-friday-holiday-schedule.pdf @2014-03-26T15:27:35Z"),
         // 2014-04-18 - T1 - 2014-good-friday-holiday-schedule.pdf @2014-03-26T15:27:35Z - CME prints no session running through this date.
         (2014, 4, 18, Closed, T1, "2014-good-friday-holiday-schedule.pdf @2014-03-26T15:27:35Z"),
         // 2014-05-26 - T1 - 2014-memorial-day-holiday-schedule.pdf @2014-07-08T02:01:55Z - CME prints no session running through this date.
         (2014, 5, 26, Closed, T1, "2014-memorial-day-holiday-schedule.pdf @2014-07-08T02:01:55Z"),
-        // 2014-07-03 - T1 - 2014-4th-of-july-holiday-schedule.pdf @2014-07-08T01:57:36Z - the printed final close 12:15 CT is earlier than the family's ordinary 13:55 CT.
+        // 2014-07-03 - T1 - 2014-4th-of-july-holiday-schedule.pdf @2014-07-08T01:57:36Z - the printed final close 12:15 CT is earlier than the family's ordinary 16:00 CT.
         (2014, 7, 3, early_close(12 * 3_600 + 15 * 60), T1, "2014-4th-of-july-holiday-schedule.pdf @2014-07-08T01:57:36Z"),
         // 2014-07-04 - T1 - 2014-4th-of-july-holiday-schedule.pdf @2014-07-08T01:57:36Z - CME prints no session running through this date.
         (2014, 7, 4, Closed, T1, "2014-4th-of-july-holiday-schedule.pdf @2014-07-08T01:57:36Z"),

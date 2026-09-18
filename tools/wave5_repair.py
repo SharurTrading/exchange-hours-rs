@@ -213,6 +213,28 @@ def locate(root, relpath):
     return None
 
 
+CLOCK_FIELD = re.compile(r"\b(0?)(\d{3}) CT\b")
+
+#: The directories a saved `pdftotext -layout` / xlrd dump can live in.
+DUMP_ROOTS = ("cme-2013-2015/txt", "cme-2013-2015-fix/txt",
+              "cme-2013-2015-repair-r2/txt", "cme-2013-2015-verify/txt",
+              "cme-2013-2015-verify-r2/txt")
+
+
+def dump_for(root, code, documents):
+    """The saved text dump for a block document code, or None."""
+    entry = documents.get(code)
+    if entry is None:
+        return None
+    stem, _, stamp = entry["doc_id_long"].partition("@")
+    for directory in DUMP_ROOTS:
+        for name in ("%s__%s.txt" % (stem, stamp), "%s.txt" % stem):
+            path = os.path.join(root, directory, name)
+            if os.path.isfile(path):
+                return path
+    return None
+
+
 class Repairs:
     def __init__(self):
         self.items = []
@@ -588,6 +610,61 @@ def main(argv=None):
                      "r000 | CME Group Globex New Year's Holiday Schedule: "
                      "December 31, 2012 to January 2, 2013",
                      "r048 | All times are CT"]})
+
+    # --------------------------------------------------------------- item 13
+    # Item 10 stripped the leading zero from every clock the round-1 block had
+    # padded. CME prints the padded form on most 2013, 2014 and several 2015
+    # sheets, so each field is settled against the artifact its own row cites: a
+    # clock is padded when that dump prints the four-digit form and not the
+    # three-digit one, left bare when it prints only the three-digit form, and
+    # anything else is recorded rather than guessed at.
+    reflowed = []
+    ambiguous = []
+    for holiday in block["holidays"]:
+        for row in holiday["families"]:
+            row_dump = dump_for(root, row.get("document"), block["documents"])
+            text = None
+            if row_dump:
+                with open(row_dump, encoding="utf-8") as handle:
+                    text = handle.read()
+            for field in ("close_instant", "open_instant"):
+                value = row.get(field)
+                if not value:
+                    continue
+                if text is None:
+                    ambiguous.append((holiday["date"], row["family"], field,
+                                      value, "no saved dump"))
+                    continue
+                fixed = value
+                for found in CLOCK_FIELD.finditer(value):
+                    padded = "0%s CT" % found.group(2)
+                    bare = "%s CT" % found.group(2)
+                    has_padded = re.search(r"\b%s" % re.escape(padded), text)
+                    has_bare = re.search(r"\b%s" % re.escape(bare), text)
+                    current = found.group(0)
+                    if has_padded and not has_bare:
+                        fixed = fixed.replace(current, padded)
+                    elif has_bare and not has_padded:
+                        fixed = fixed.replace(current, bare)
+                    else:
+                        ambiguous.append((holiday["date"], row["family"], field,
+                                          current,
+                                          "the dump prints both forms or neither"))
+                if fixed != value:
+                    reflowed.append((holiday["date"], row["family"], field,
+                                     value, fixed, row_dump))
+                    row[field] = fixed
+    repairs.add(13, "%d *_instant fields" % len(reflowed),
+                "close_instant/open_instant",
+                "the round-1 clocks, stripped of CME's leading zero by item 10",
+                "every clock re-emitted in the form the cited artifact prints",
+                {"artifact": "the cited artifact's own txt dump",
+                 "ambiguous": [{"date": d, "family": f, "field": fl,
+                                "value": v, "why": why}
+                               for d, f, fl, v, why in ambiguous],
+                 "fields": [{"date": d, "family": f, "field": fl,
+                             "before": b, "after": a, "dump": path}
+                            for d, f, fl, b, a, path in reflowed]})
 
     # ---------------------------------------------------------------- item 6
     missing = block["missing"]

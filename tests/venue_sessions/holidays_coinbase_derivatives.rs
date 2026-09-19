@@ -219,14 +219,16 @@ fn a_later_closing_group_does_not_widen_the_venue_row() {
 fn the_two_unreadable_thanksgiving_dates_clip_nothing() {
     let calendar = cde();
 
-    for date in [day(2022, 11, 24), day(2022, 11, 25)] {
+    for (date, instant) in [
+        (day(2022, 11, 24), ct((2022, 11, 24), (10, 0, 0))),
+        (day(2022, 11, 25), ct((2022, 11, 25), (10, 0, 0))),
+    ] {
         let row = calendar
             .holiday_on(date)
             .unwrap_or_else(|| panic!("{date} must carry an Unsourced row"));
         assert_eq!(row.kind(), HolidayKind::Unsourced, "{date}");
         assert_eq!(row.document_id(), "CDE-NOTICES-INDEX-2026-09-19", "{date}");
         // Unsourced changes no answer: the normal 23x5 grid applies.
-        let instant = ct((2022, 11, 24), (10, 0, 0));
         assert_eq!(
             calendar.is_open(instant),
             calendar.without_holidays().is_open(instant),

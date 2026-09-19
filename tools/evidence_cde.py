@@ -38,7 +38,14 @@ def flat(text):
 by_date = {}
 for notice, event, group, status, cell, trade_date, kind in OPS:
     by_date.setdefault(trade_date, []).append(
-        {"notice": notice, "event": event, "group": group, "status": status, "cell": flat(cell)}
+        {
+            "notice": notice,
+            "event": event,
+            "group": group,
+            "status": status,
+            "cell": flat(cell),
+            "kind": kind,
+        }
     )
 
 # Each notice's own governed trade-date window, from the statements it carries.
@@ -56,10 +63,39 @@ def pretty(day):
 
 KIND_CELL = {"closed": "closed", "early_close": "early close", "unsourced": "unsourced"}
 
+STAMP = re.compile(r"(\d{2})/(\d{2})\s+(\d{2}):(\d{2})\s+CT")
+
+
+def earliest_stamp(cell):
+    """The last `MM/DD HH:MM CT` on a printed cell, in local seconds."""
+    hits = STAMP.findall(cell)
+    assert hits, f"an early-close cell must print an instant: {cell!r}"
+    _month, _day, hours, minutes = hits[-1]
+    return int(hours) * 3_600 + int(minutes) * 60
+
+
 rows = []
 for r in block["crate_rows"]:
     day, kind, doc = r["trade_date"], r["kind"], r["document"]
     entries = by_date.get(day, [])
+    # A block row must be reproducible from the operator statements: refuse to
+    # render evidence for a row the saved notices do not carry.
+    contributed = [e for e in entries if e["kind"] is not None]
+    if kind == "unsourced":
+        assert not contributed, (
+            f"{day}: the block ships Unsourced but the notices carry "
+            + ", ".join(f"{e['notice']}:{e['status']}" for e in contributed)
+        )
+    else:
+        assert contributed, f"{day}: the block ships {kind} with no supporting notice"
+        kinds = {e["kind"] for e in contributed}
+        assert kinds == {kind}, f"{day}: the block ships {kind} but the notices derive {kinds}"
+        if kind == "early_close":
+            derived = min(earliest_stamp(e["cell"]) for e in contributed)
+            assert derived == r["close_ssm"], (
+                f"{day}: the block carries close_ssm {r['close_ssm']} but the earliest "
+                f"printed close is {derived}"
+            )
     if kind == "unsourced":
         printed = "&mdash; no status claimed"
         derived = (
@@ -69,7 +105,8 @@ for r in block["crate_rows"]:
         )
     elif kind == "closed":
         cells = sorted({e["cell"] for e in entries if e["status"] == "closed"})
-        printed = "; ".join(f"`{c}`" for c in cells) or "`Closed for holiday`"
+        assert cells, f"{day}: a closed row must quote the notice's own cell"
+        printed = "; ".join(f"`{c}`" for c in cells)
         groups = ", ".join(sorted({e["group"] for e in entries if e["status"] == "closed"}))
         if entries and entries[0]["notice"] in ("21-03", "21-04"):
             printed = f"`{cells[0]}`"

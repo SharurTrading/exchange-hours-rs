@@ -402,6 +402,12 @@ ahead of this):
 | 3 | `iceus` | `ice_us` and the six `ice_us_*` product keys |
 | 4 | `eurex` | the `eurex` key and `eurex_fixed_income` |
 
+**Landed, order 1 (2026-09-19 UTC).** `coinbase_derivatives` now ships 58 rows over
+2021-06-28 .. 2026-09-07 — 50 closures, six early closes and two `Unsourced` dates — all T1 from
+the operator's own Market Notices, whose listing reaches back to the venue's launch. The 2026-09-08
+onward notices stay with §2.4. Its evidence file carries the fixed `### Documents` table, so #98
+is four files lighter but still open on CFE, Eurex and ICE.
+
 **2.4 Refresh the published future.** Within the month of the release, re-inspect every
 served operator and extend each table to what it has now published: CME 2028 once it
 appears in the trading-hours service, Coinbase Derivatives' Thanksgiving and Christmas

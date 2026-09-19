@@ -729,7 +729,7 @@ corrections (a venue's hours fixed against a primary source) go under
   can print; each group's own instant is quoted beside it in the evidence file.
   Trade dates 2022-11-24 and 2022-11-25 are `Unsourced`: the operator lists
   notice 22-10 but its `info.fairx.com` link is dead and no capture survives, so
-  the dates are carried as not audited rather than claimed closed. 2025-01-09
+  the dates are carried as not audited rather than claimed closed (#112). 2025-01-09
   ships no row because notice 24-27 states it observes a normal trading day.
   `docs/evidence/coinbase_derivatives.md` gains the `### Documents` table in the
   fixed six-column shape, so its 54 documents now resolve to URLs, capture times

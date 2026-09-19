@@ -112,7 +112,8 @@ HEADER = '''// SPDX-License-Identifier: MIT-0
 //! window in which no product can print; each group's own instant is in the
 //! evidence file. Six dates carry an early close and two are `Unsourced`:
 //! 2022-11-24 and 2022-11-25, whose notice 22-10 the operator lists but whose
-//! PDF is unreachable, so the crate declines to claim those dates either way.
+//! PDF is unreachable (issue #112), so the crate declines to claim those dates
+//! either way.
 //! Trade date 2025-01-09 ships no row because notice 24-27 states it "will
 //! observe a normal trading day", and notice 24-26 records an unplanned
 //! technical early close rather than a published holiday schedule.

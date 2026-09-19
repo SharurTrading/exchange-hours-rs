@@ -217,7 +217,7 @@ time and sha256 per artifact in its `INDEX.md`; the operator statements behind e
   operator lists it at T1 with a posted date of 06/05/2024 and its grid is unambiguous, and a
   closure shipped in error errs toward closed rather than toward reporting a window in which no
   product traded, so the row stands. Residual risk: a later final revision is not held. Closing
-  condition: a non-draft copy of notice 24-12.
+  condition: a non-draft copy of notice 24-12. Tracked as issue #112.
 
 - **Trade dates 2022-11-24 and 2022-11-25 ship `Unsourced`.** The operator's own listing carries
   notice 22-10, "Market Notice - Thanksgiving Holiday Schedule 2022", category Holiday, posted
@@ -228,7 +228,8 @@ time and sha256 per artifact in its `INDEX.md`; the operator statements behind e
   artifacts from 21-01 to 25-45 and none of them is 22-10, and a query over `info.fairx.com*`
   returns exactly one unrelated 2022 capture. `Unsourced` clips nothing, so the 23x5 grid applies
   unchanged; the crate simply declines to certify the date. Closing condition: any surviving copy
-  of notice 22-10, or a later notice that restates the outgoing 2022 schedule.
+  of notice 22-10, or a later notice that restates the outgoing 2022 schedule. Tracked as issue
+  #112.
 - **Trade date 2021-12-31 is carried as audited normal and ships no row.** The operator published
   no notice for it: the 2021 listing runs 21-01 to 21-07 with no gaps, and 21-07 (issued
   2021-12-21, the last 2021 notice) covers Christmas only. New Year's Day 2022 fell on a Saturday

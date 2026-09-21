@@ -2,6 +2,13 @@
 
 # Date exceptions and holiday calendars
 
+**Migration note, 2026-09-21 UTC:** this page describes the current implementation.
+The [adopted release plan](../plans/2026-09-12-path-to-release.md) requires complete
+2025-onward served calendars, including built-in replacement sessions (#93) and
+explicit errors for unsupported coverage (#115). Those changes and their data
+(#116) are separate implementation stages. No built-in exception-block data or
+new error-returning query API ships as part of the plan amendment.
+
 Normal-week profiles and date exceptions solve different problems. A permanent
 or recurring change to a venue's weekday phases belongs in its sourced profile
 timeline. A closure, delayed first open, shortened final close, emergency halt,
@@ -85,7 +92,9 @@ case. Under LAW-HOLIDAY-SCOPE a closed date, an early final close, or a late
 first open is in scope as a per-family date table inside the crate, applied by
 the built-in calendars by default; this layer exists for what such a table
 cannot represent — a trade date whose internal phase topology changes — and
-that stays caller-owned.
+that is currently caller-owned. The adopted charter makes built-in data for
+these arrangements a release requirement for complete served scopes; Stage 3
+adds its representation and Stage 4 supplies the evidence-backed records.
 
 A provider implements `SessionExceptionSource` and distinguishes four states per
 venue-local trade date:
@@ -169,11 +178,11 @@ verbatim public mirror, and the portal's index entry alone still proves only
 that a document exists and when it was published, as the SGX Titan newsletters
 do.
 
-Built-in *replacement-session* data is still not included, and that is a scope
-decision rather than a missing feature: the crate's own tables carry closed
-dates, early closes, and late opens, and what stays caller-owned is the
-topology this layer exists for. Either way, a complete backfill is an evidence
-project, not a table-size problem:
+Built-in *replacement-session* data is not included in the current implementation.
+The 2026-09-21 amendment supersedes the earlier caller-only scope decision:
+#93 adds built-in block support and #116 supplies complete served data from 2025.
+The current tables still carry scalar arrangements. Completing the new window
+requires evidence as well as representation:
 
 - holiday topology differs by venue, segment, and futures product family;
 - operator notices are sometimes revised;
@@ -216,7 +225,8 @@ For each exception dataset:
    publicly available copy wherever one exists; an authenticated operator
    channel is admissible only as T2, with its retrieved artifact saved.
 
-Phase-replacing holiday schedules remain caller-owned. Do not approximate them
-with normal-week profile revisions, with a holiday-table entry, or with a
-scalar boundary override that deletes a valid phase — the replacement layer
-exists so that none of those approximations is ever necessary.
+Phase-replacing holiday schedules currently require caller-owned blocks; the
+planned built-in block rows will use the same complete-session representation.
+Do not approximate them with normal-week revisions or scalar holiday boundaries
+that delete a valid phase. The adopted release gate requires the built-in data
+for complete served scopes, with unresolved dates explicitly outside completeness.

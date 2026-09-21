@@ -47,8 +47,9 @@ Every count is taken over the identity's **own routed table** - the one `holiday
 selects for it - and not over the module that table lives in. The distinction is load-bearing:
 `src/calendar/schedules/holidays/ice_us.rs` holds six tables, of which only `VENUE` backs the
 served `iceus` identity, while `FANG`, `DOLLAR_INDEX`, `SUGAR_COFFEE_COCOA`, `COTTON` and
-`ORANGE_JUICE` back dormant `MarketHoursKey`s with far larger tables. A module-wide count would
-have reported those dormant rows - 129 dates rather than the 24 `iceus` actually answers for.
+`ORANGE_JUICE` back dormant `MarketHoursKey`s. Those five tables are individually smaller than
+`VENUE`, but together they hold 105 further rows, and a count over the module would have reported
+129 rows where the served identity answers for 24 dates.
 
 ## Inventory
 
@@ -128,9 +129,12 @@ retrieval. `comex` and `nymex` route a single family and so reproduce it row for
 ### 1. Three served scopes ship no 2025 holiday coverage at all
 
 `cfe` and `eurex` ship a single 2026 window and `iceus` a 2026-01-01..2028-01-03 window, so all three
-answer no holiday question over any part of 2025. `iceus` is the narrowest: its own table holds only
-**24** trade dates, **20** of them `Unsourced`, because ICE Futures U.S. publishes so few. These are
-the one-operator scopes whose instruments reach the venue calendar directly through
+answer no holiday question over any part of 2025. `iceus` is the narrowest at **24** trade dates: its
+table is the D17 intersection of the seven ICE Futures U.S. families routed to the venue, so it states
+a row only where all seven agree - the four full closures in its window - and withholds the other
+**20** dates as `Unsourced`, the shape of a date on which the softs close while the index families
+trade shortened hours. These are the one-operator scopes whose instruments
+reach the venue calendar directly through
 `ExchangeFallback` rather than through a family key, so the gap is on the
 path a real instrument takes. Stage 4's PR order (section 8, items 3-5) already anticipates these
 three, and their evidence files are also the three that still lack the fixed `### Documents` shape
@@ -188,8 +192,9 @@ Two checks were run, and both are reported as they came out.
 **Full sweep of the evidence corpus.** Every Markdown table whose header carries a `sha256` column
 was parsed across the thirteen owner evidence files that carry such a table: **43 tables and 1,941
 rows**, resolving **256 distinct document ids**, whose quoted digests are in bijection with 256
-distinct digests and with **257 stored paths** - one id, `2016-new-years-holiday-schedule.pdf
-@2016-01-08`, is saved byte-identically under two eras’ directories -
+distinct digests. Those same bytes are saved more than once: a walk of the store found all 256 at
+**400 loose paths**, with 111 of the digests present at more than one path and 95 under more than
+one era directory, so a digest resolves to bytes that more than one location carries -
 including the members of 14 zip bundles. Every quoted digest was
 recomputed from the bytes: **1,941 of 1,941 reproduce, with 0 mismatches, 0 unlocatable artifacts
 and 0 unparseable rows.** A second independent pass re-hashed every distinct artifact from raw

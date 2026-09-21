@@ -19,9 +19,9 @@ corrections (a venue's hours fixed against a primary source) go under
   dates it answers for in 2025 and later, the dates it withholds as `Unsourced`, what
   it cannot answer, and the issues that close each gap. It changes no runtime data.
   A new fence, `tests/schedule_documentation/coverage_inventory.rs`, re-derives the
-  membership, the windows, both count columns and the completeness verdicts from the
-  shipped tables through the public API, so the page cannot drift from the data it
-  describes.
+  membership, the windows and both count columns from the shipped tables through the
+  public API, and refuses a verdict that claims completeness for a row recording a
+  tracked gap, so the page cannot drift from the data it describes.
 
 ### Changed
 

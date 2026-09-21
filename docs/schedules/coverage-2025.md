@@ -33,7 +33,6 @@ consequences drive every verdict below.
 |---|---|
 | Identity | canonical wire name from `Exchange::as_str` / `MarketHoursKey::as_str` |
 | Owner | shipped module carrying the normal-week timeline |
-| Routing | how a consumer instrument selects the identity |
 | Normal week | sourced `revisions!` timeline: earliest…latest effective day and row count |
 | Horizon | ledger carried-below date; `—` when nothing is carried |
 | Holidays | this scope's shipped windows from `holiday_coverage()` |
@@ -134,7 +133,8 @@ are `Unsourced`, the shape of a date on which the softs close while the index fa
 shortened hours. These are the one-operator scopes whose instruments reach the venue calendar
 directly through `ExchangeFallback` rather than through a family key, so the gap is on the path a
 real instrument takes. Stage 4's PR order (section 8, items 3-5) already anticipates these three,
-and they are the three served scopes whose evidence files still lack that shape.
+and they are the three served scopes whose evidence files still lack the fixed
+`### Documents` shape that #98 tracks.
 
 ### 2. Two venue intersections carry `Unsourced` dates inside 2025+
 
@@ -198,8 +198,8 @@ bytes, re-extracting the zip members, and reproduced every one.
 
 **Load-bearing endpoints.** For each scope, the artifact establishing the state in force at the 2025
 floor (**baseline**) and the one establishing its **horizon** were resolved through the owner
-evidence file's document tables (`### Documents`, or `## Evidence documents` for the venue
-files) to saved bytes, and their digests recomputed by this stage:
+evidence file's document tables - a `### Documents` section, or the file's `## Evidence
+documents` section - to saved bytes, and their digests recomputed by this stage:
 
 | Identity | Baseline document | Tier | Baseline artifact and digest | Horizon document | Tier | Horizon artifact and digest |
 |---|---|---|---|---|---|---|

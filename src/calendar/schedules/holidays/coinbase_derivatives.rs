@@ -11,17 +11,29 @@
 //!
 //! The venue default this table attaches to is CDE's recurring 23x5 futures
 //! grid - Sunday to Friday, 17:00-16:00 CT with the daily 16:00-17:00 break -
-//! so every row states what the notices state for the product groups on that
-//! grid. CDE lists other tiers on other clocks: the 24x7 crypto tier, which
-//! trades through these dates, and, from 2026, a 24x5 equity-index PSF group.
-//! Neither is out of scope by accident - the venue profile models the 23x5
-//! grid and those tiers claim no key - and both are recorded in
+//! so every row is the **intersection** of the product groups the notices list
+//! on that grid: where any group on it closes for the date the row is
+//! `Closed`, and where none closes but any ends early the row carries the
+//! **earliest** of those closes. Either way the venue never reports a window
+//! in which no product on the grid can print, and each group's own printed
+//! cell is quoted on the evidence row, so a session the venue row withholds
+//! stays visible.
+//!
+//! That intersection has teeth on three dates. On 2023-06-19 and 2024-06-19
+//! the notices close Equity and Energy - and Metal - while their `Crypto
+//! Products` row prints a full `06/18 17:00 CT 06/19 16:00 CT` session; crypto
+//! was still on this same 23x5 clock then, because CDE did not enable 24x7
+//! trading until 2025-05-09. On 2025-06-19 a `23x5 Crypto` row prints that same
+//! session beside the closed `Energy & Metal` row, with a separate `24x7
+//! Crypto` row open as well. All three ship `Closed` and withhold a session
+//! that did trade on this grid.
+//!
+//! The tiers off this grid - the 24x7 crypto tier from 2025-05-09, and a 24x5
+//! equity-index PSF group from 2026 - claim no key and add no row of their own.
+//! All of it is recorded in
 //! [`docs/evidence/coinbase_derivatives.md`](../../../../../docs/evidence/coinbase_derivatives.md).
 //!
-//! On a half day the groups listed on that grid can print different instants.
-//! A row then carries the **earliest** of them, so the venue never reports a
-//! window in which no product can print; each group's own instant is in the
-//! evidence file. Six dates carry an early close and two are `Unsourced`:
+//! Six dates carry an early close and two are `Unsourced`:
 //! 2022-11-24 and 2022-11-25, whose notice 22-10 the operator lists but whose
 //! PDF is unreachable (issue #112), so the crate declines to claim those dates
 //! either way.

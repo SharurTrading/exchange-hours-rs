@@ -723,10 +723,16 @@ corrections (a venue's hours fixed against a primary source) go under
   Market Notices: **50 full closures, six early closes and two `Unsourced`
   dates**. The early closes are the half days on which the product groups
   listed on the venue's 23x5 grid printed different instants — the 2021-11-26,
-  2023-11-24 and 2025-11-28 Thanksgiving Fridays, 2024-11-29, and the
-  2024-12-24 and 2025-12-24 Christmas Eves. The row carries the **earliest**
+  2023-11-24 and 2025-11-28 Thanksgiving Fridays and the 2024-12-24 and
+  2025-12-24 Christmas Eves; the sixth, 2024-11-29, is a half day on which every
+  group printed the same 13:45 CT close. The row carries the **earliest**
   instant so the venue never reports a window in which no product on the grid
   can print; each group's own instant is quoted beside it in the evidence file.
+  A closure is that intersection too: where any group on the grid closes for the
+  date the row is `Closed`, and the evidence row names the groups that printed a
+  full session anyway — 2023-06-19, 2024-06-19 and 2025-06-19, where a crypto
+  group traded a normal `06/18 17:00 CT 06/19 16:00 CT` session on that same
+  23x5 clock. The venue row withholds those sessions and says so.
   Trade dates 2022-11-24 and 2022-11-25 are `Unsourced`: the operator lists
   notice 22-10 but its `info.fairx.com` link is dead and no capture survives, so
   the dates are carried as not audited rather than claimed closed (#112). 2025-01-09

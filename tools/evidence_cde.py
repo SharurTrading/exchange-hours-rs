@@ -104,21 +104,36 @@ for r in block["crate_rows"]:
             "carried as not audited rather than claimed closed"
         )
     elif kind == "closed":
-        cells = sorted({e["cell"] for e in entries if e["status"] == "closed"})
-        assert cells, f"{day}: a closed row must quote the notice's own cell"
-        printed = "; ".join(f"`{c}`" for c in cells)
-        groups = ", ".join(sorted({e["group"] for e in entries if e["status"] == "closed"}))
-        if entries and entries[0]["notice"] in ("21-03", "21-04"):
-            printed = f"`{cells[0]}`"
+        closing = [e for e in entries if e["status"] == "closed"]
+        assert closing, f"{day}: a closed row must quote the notice's own cell"
+        if entries[0]["notice"] in ("21-03", "21-04"):
+            printed = f"`{entries[0]['cell']}`"
             derived = (
                 f"{pretty(day)} is the observed holiday the notice's subject names; markets are "
                 f"closed from 16:00 CT the preceding Friday to 17:00 CT that Monday, and the "
                 f"Monday-evening session that follows belongs to the next trade date"
             )
         else:
+            # Name every group, not only the closing ones: a group that prints a
+            # full session on the same grid is a session the venue row withholds.
+            parts = []
+            for e in sorted(entries, key=lambda e: e["group"]):
+                if e["status"] == "closed":
+                    parts.append(f"{e['group']} `{e['cell']}`")
+                else:
+                    parts.append(
+                        f"{e['group']} prints a full session `{e['cell']}` on the same 23x5 clock"
+                    )
+            printed = "; ".join(parts)
+            withheld = len(closing) < len(entries)
             derived = (
-                f"CDE's own Trade Date column names {pretty(day)}; its OPEN and CLOSE cells both "
-                f"print the quoted text for {groups}"
+                f"CDE's own Trade Date column names {pretty(day)}; the venue row carries the "
+                f"intersection, so the whole trade date is closed"
+                + (
+                    " and the session quoted above as printing is withheld"
+                    if withheld
+                    else ", its OPEN and CLOSE cells printing the quoted text"
+                )
             )
     else:
         parts = [f"{e['group']} `{e['cell']}`" for e in entries if e["status"] == "early_close"]
@@ -167,10 +182,24 @@ section = f"""## Holidays
 
 **Coverage:** 2021-06-28..2026-09-07 (inclusive trade dates). Tier: T1 throughout.
 
-The venue profile is CDE's recurring 23x5 futures grid, so every row states what the operator's
-notice states for the product groups on that grid. The window opens at the venue's first trade
-date, FairX's launch Monday 2021-06-28, and closes at 2026-09-07, where the table the crate first
-shipped stopped; the notices for 2026-09-08 onward belong to the published-future refresh.
+The venue profile is CDE's recurring 23x5 futures grid, so every row is the **intersection** of
+the product groups the operator's notices list on that grid. Where any group on it closes for the
+date the row is **closed**; where none closes but any ends early the row is an **early close** at
+the earliest printed instant. Either way the venue never reports a window in which no product on
+the grid can print, and every group's own printed cell is quoted on the row, so a session the
+venue row withholds stays visible.
+
+Three closures exercise the first half of that rule and each names the session it withholds. On
+2023-06-19 and 2024-06-19 the notices close Equity and Energy (and, in 2024, Metal) while their
+`Crypto Products` row prints a full `06/18 17:00 CT 06/19 16:00 CT` session — and crypto was on
+**this same 23x5 clock** then, because CDE did not enable 24x7 trading until 2025-05-09. On
+2025-06-19 a `23x5 Crypto` row prints that same session beside the closed `Energy & Metal` row,
+with a separate `24x7 Crypto` row open as well. All three ship `closed` in the module; the module
+doc comment says so too.
+
+The window opens at the venue's first trade date, FairX's launch Monday 2021-06-28, and closes at
+2026-09-07, where the table the crate first shipped stopped; the notices for 2026-09-08 onward
+belong to the published-future refresh.
 
 On a half day the groups can print different instants. Ordinary half days are the Friday after
 Thanksgiving, Christmas Eve and New Year's Eve: in 2021-11-26, 2023-11-24, 2025-11-28 and
@@ -243,7 +272,7 @@ time and sha256 per artifact in its `INDEX.md`; the operator statements behind e
   `info.fairx.com/coinbase-derivatives-market-notice-22-10-thanksgiving-holiday-schedule-2022`,
   where the host no longer completes a TLS handshake, and the Wayback Machine holds no capture of
   it: a CDX prefix query over `assets.ctfassets.net/k3n74unfin40*` returns 144 `Market_Notice`
-  artifacts from 21-01 to 25-45 and none of them is 22-10, and a query over `info.fairx.com*`
+  artifacts spanning ids 21-01 through 26-13, and none of them is 22-10, and a query over `info.fairx.com*`
   returns exactly one unrelated 2022 capture. `Unsourced` clips nothing, so the 23x5 grid applies
   unchanged; the crate simply declines to certify the date. Closing condition: any surviving copy
   of notice 22-10, or a later notice that restates the outgoing 2022 schedule. Tracked as issue
@@ -260,8 +289,9 @@ time and sha256 per artifact in its `INDEX.md`; the operator statements behind e
 - **Notice 24-27 keys no row.** It states that the 2025-01-09 session (a National Day of Mourning)
   "will observe a normal trading day", so 2025-01-09 is an audited-normal date.
 - **The half-day rows under-report the later-closing groups.** See the `## Holidays` preamble: the
-  venue row carries the earliest instant on 2021-11-26, 2023-11-24, 2024-11-29, 2024-12-24,
-  2025-11-28 and 2025-12-24. A caller trading a group that prints a later close on those dates
+  venue row carries the earliest instant on 2021-11-26, 2023-11-24, 2024-12-24, 2025-11-28 and
+  2025-12-24, five of the six early closes. The sixth, 2024-11-29, is not a disagreement: all
+  three groups printed 13:45 CT, so nothing is under-reported there. A caller trading a group that prints a later close on those dates
   should use its own key; no key is claimed for the 24x7 crypto tier or the 24x5 equity-index PSF
   group.
 - **Trade date 2021-09-03 is carried as audited normal.** Notice 21-04 says markets are "closed

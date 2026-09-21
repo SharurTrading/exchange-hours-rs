@@ -44,10 +44,24 @@ they are recorded here in revision-row grammar and checked against
 
 **Coverage:** 2021-06-28..2026-09-07 (inclusive trade dates). Tier: T1 throughout.
 
-The venue profile is CDE's recurring 23x5 futures grid, so every row states what the operator's
-notice states for the product groups on that grid. The window opens at the venue's first trade
-date, FairX's launch Monday 2021-06-28, and closes at 2026-09-07, where the table the crate first
-shipped stopped; the notices for 2026-09-08 onward belong to the published-future refresh.
+The venue profile is CDE's recurring 23x5 futures grid, so every row is the **intersection** of
+the product groups the operator's notices list on that grid. Where any group on it closes for the
+date the row is **closed**; where none closes but any ends early the row is an **early close** at
+the earliest printed instant. Either way the venue never reports a window in which no product on
+the grid can print, and every group's own printed cell is quoted on the row, so a session the
+venue row withholds stays visible.
+
+Three closures exercise the first half of that rule and each names the session it withholds. On
+2023-06-19 and 2024-06-19 the notices close Equity and Energy (and, in 2024, Metal) while their
+`Crypto Products` row prints a full `06/18 17:00 CT 06/19 16:00 CT` session — and crypto was on
+**this same 23x5 clock** then, because CDE did not enable 24x7 trading until 2025-05-09. On
+2025-06-19 a `23x5 Crypto` row prints that same session beside the closed `Energy & Metal` row,
+with a separate `24x7 Crypto` row open as well. All three ship `closed` in the module; the module
+doc comment says so too.
+
+The window opens at the venue's first trade date, FairX's launch Monday 2021-06-28, and closes at
+2026-09-07, where the table the crate first shipped stopped; the notices for 2026-09-08 onward
+belong to the published-future refresh.
 
 On a half day the groups can print different instants. Ordinary half days are the Friday after
 Thanksgiving, Christmas Eve and New Year's Eve: in 2021-11-26, 2023-11-24, 2025-11-28 and
@@ -128,87 +142,87 @@ time and sha256 per artifact in its `INDEX.md`; the operator statements behind e
 |---|---|---|---|---|---|
 | 2021-07-05 | closed | `Markets will be closed from 16:00 CT Friday, July 2nd` | `CDE-MN-21-03` | T1 | Monday 7/5 is the observed holiday the notice's subject names; markets are closed from 16:00 CT the preceding Friday to 17:00 CT that Monday, and the Monday-evening session that follows belongs to the next trade date |
 | 2021-09-06 | closed | `Markets will be closed from 16:00 CT Friday, September 2nd` | `CDE-MN-21-04` | T1 | Monday 9/6 is the observed holiday the notice's subject names; markets are closed from 16:00 CT the preceding Friday to 17:00 CT that Monday, and the Monday-evening session that follows belongs to the next trade date |
-| 2021-11-25 | closed | `Closed for holiday` | `CDE-MN-21-06` | T1 | CDE's own Trade Date column names Thursday 11/25; its OPEN and CLOSE cells both print the quoted text for Energy Products, Equity Products |
+| 2021-11-25 | closed | Energy Products `Closed for holiday`; Equity Products `Closed for holiday` | `CDE-MN-21-06` | T1 | CDE's own Trade Date column names Thursday 11/25; the venue row carries the intersection, so the whole trade date is closed, its OPEN and CLOSE cells printing the quoted text |
 | 2021-11-26 | early close | Equity Products `11/26 12:15 CT`; Energy Products `11/26 12:45 CT` | `CDE-MN-21-06` | T1 | CDE's own Trade Date column names Friday 11/26; the venue row takes the earliest close among the groups on the 23x5 grid (Energy Products, Equity Products), so it never reports a window in which no product prints |
-| 2021-12-24 | closed | `Closed for holiday` | `CDE-MN-21-07` | T1 | CDE's own Trade Date column names Friday 12/24; its OPEN and CLOSE cells both print the quoted text for Energy Products, Equity Products |
+| 2021-12-24 | closed | Energy Products `Closed for holiday`; Equity Products `Closed for holiday` | `CDE-MN-21-07` | T1 | CDE's own Trade Date column names Friday 12/24; the venue row carries the intersection, so the whole trade date is closed, its OPEN and CLOSE cells printing the quoted text |
 
 ### 2022
 
 | Trade date | Kind | Instant as printed | Document | Tier | Derived from |
 |---|---|---|---|---|---|
-| 2022-01-17 | closed | `Closed for holiday` | `CDE-MN-22-01` | T1 | CDE's own Trade Date column names Monday 1/17; its OPEN and CLOSE cells both print the quoted text for Equity Products |
-| 2022-02-21 | closed | `Closed for holiday` | `CDE-MN-22-02` | T1 | CDE's own Trade Date column names Monday 2/21; its OPEN and CLOSE cells both print the quoted text for Equity Products |
-| 2022-04-15 | closed | `Closed for holiday` | `CDE-MN-22-04` | T1 | CDE's own Trade Date column names Friday 4/15; its OPEN and CLOSE cells both print the quoted text for Equity Products |
-| 2022-05-30 | closed | `Closed for holiday` | `CDE-MN-22-05` | T1 | CDE's own Trade Date column names Monday 5/30; its OPEN and CLOSE cells both print the quoted text for Equity Products |
-| 2022-06-20 | closed | `Closed for holiday` | `CDE-MN-22-06` | T1 | CDE's own Trade Date column names Monday 6/20; its OPEN and CLOSE cells both print the quoted text for Equity Products |
-| 2022-07-04 | closed | `Closed for holiday` | `CDE-MN-22-07` | T1 | CDE's own Trade Date column names Monday 7/4; its OPEN and CLOSE cells both print the quoted text for Equity Products |
-| 2022-09-05 | closed | `Closed for holiday` | `CDE-MN-22-08` | T1 | CDE's own Trade Date column names Monday 9/5; its OPEN and CLOSE cells both print the quoted text for Crypto Products, Equity Products |
+| 2022-01-17 | closed | Equity Products `Closed for holiday` | `CDE-MN-22-01` | T1 | CDE's own Trade Date column names Monday 1/17; the venue row carries the intersection, so the whole trade date is closed, its OPEN and CLOSE cells printing the quoted text |
+| 2022-02-21 | closed | Equity Products `Closed for holiday` | `CDE-MN-22-02` | T1 | CDE's own Trade Date column names Monday 2/21; the venue row carries the intersection, so the whole trade date is closed, its OPEN and CLOSE cells printing the quoted text |
+| 2022-04-15 | closed | Equity Products `Closed for holiday` | `CDE-MN-22-04` | T1 | CDE's own Trade Date column names Friday 4/15; the venue row carries the intersection, so the whole trade date is closed, its OPEN and CLOSE cells printing the quoted text |
+| 2022-05-30 | closed | Equity Products `Closed for holiday` | `CDE-MN-22-05` | T1 | CDE's own Trade Date column names Monday 5/30; the venue row carries the intersection, so the whole trade date is closed, its OPEN and CLOSE cells printing the quoted text |
+| 2022-06-20 | closed | Equity Products `Closed for holiday` | `CDE-MN-22-06` | T1 | CDE's own Trade Date column names Monday 6/20; the venue row carries the intersection, so the whole trade date is closed, its OPEN and CLOSE cells printing the quoted text |
+| 2022-07-04 | closed | Equity Products `Closed for holiday` | `CDE-MN-22-07` | T1 | CDE's own Trade Date column names Monday 7/4; the venue row carries the intersection, so the whole trade date is closed, its OPEN and CLOSE cells printing the quoted text |
+| 2022-09-05 | closed | Crypto Products `Closed for holiday`; Equity Products `Closed for holiday` | `CDE-MN-22-08` | T1 | CDE's own Trade Date column names Monday 9/5; the venue row carries the intersection, so the whole trade date is closed, its OPEN and CLOSE cells printing the quoted text |
 | 2022-11-24 | unsourced | &mdash; no status claimed | `CDE-NOTICES-INDEX-2026-09-19` | T1 | notice `CDE-MN-22-10` ("Market Notice - Thanksgiving Holiday Schedule 2022") governs this date; the operator lists it but its PDF is unreachable, so the date is carried as not audited rather than claimed closed |
 | 2022-11-25 | unsourced | &mdash; no status claimed | `CDE-NOTICES-INDEX-2026-09-19` | T1 | notice `CDE-MN-22-10` ("Market Notice - Thanksgiving Holiday Schedule 2022") governs this date; the operator lists it but its PDF is unreachable, so the date is carried as not audited rather than claimed closed |
-| 2022-12-26 | closed | `Closed for holiday` | `CDE-MN-22-11` | T1 | CDE's own Trade Date column names Monday 12/26; its OPEN and CLOSE cells both print the quoted text for Equity Products |
+| 2022-12-26 | closed | Equity Products `Closed for holiday` | `CDE-MN-22-11` | T1 | CDE's own Trade Date column names Monday 12/26; the venue row carries the intersection, so the whole trade date is closed, its OPEN and CLOSE cells printing the quoted text |
 
 ### 2023
 
 | Trade date | Kind | Instant as printed | Document | Tier | Derived from |
 |---|---|---|---|---|---|
-| 2023-01-02 | closed | `Closed for holiday` | `CDE-MN-23-01` | T1 | CDE's own Trade Date column names Monday 1/2; its OPEN and CLOSE cells both print the quoted text for Equity Products |
-| 2023-01-16 | closed | `Closed for holiday` | `CDE-MN-23-02` | T1 | CDE's own Trade Date column names Monday 1/16; its OPEN and CLOSE cells both print the quoted text for Equity Products |
-| 2023-02-20 | closed | `Closed for holiday` | `CDE-MN-23-03` | T1 | CDE's own Trade Date column names Monday 2/20; its OPEN and CLOSE cells both print the quoted text for Equity Products |
-| 2023-04-07 | closed | `Closed for holiday` | `CDE-MN-23-07` | T1 | CDE's own Trade Date column names Friday 4/7; its OPEN and CLOSE cells both print the quoted text for Equity Products |
-| 2023-05-29 | closed | `Closed for holiday` | `CDE-MN-23-09` | T1 | CDE's own Trade Date column names Monday 5/29; its OPEN and CLOSE cells both print the quoted text for Equity Products |
-| 2023-06-19 | closed | `Closed for holiday` | `CDE-MN-23-10` | T1 | CDE's own Trade Date column names Monday 6/19; its OPEN and CLOSE cells both print the quoted text for Equity Products |
-| 2023-07-04 | closed | `Closed for holiday` | `CDE-MN-23-11` | T1 | CDE's own Trade Date column names Tuesday 7/4; its OPEN and CLOSE cells both print the quoted text for Equity Products |
-| 2023-09-04 | closed | `Closed for holiday` | `CDE-MN-23-13` | T1 | CDE's own Trade Date column names Monday 9/4; its OPEN and CLOSE cells both print the quoted text for Equity Products |
-| 2023-11-23 | closed | `Closed for holiday` | `CDE-MN-23-16` | T1 | CDE's own Trade Date column names Thursday 11/23; its OPEN and CLOSE cells both print the quoted text for Equity Products |
+| 2023-01-02 | closed | Equity Products `Closed for holiday` | `CDE-MN-23-01` | T1 | CDE's own Trade Date column names Monday 1/2; the venue row carries the intersection, so the whole trade date is closed, its OPEN and CLOSE cells printing the quoted text |
+| 2023-01-16 | closed | Equity Products `Closed for holiday` | `CDE-MN-23-02` | T1 | CDE's own Trade Date column names Monday 1/16; the venue row carries the intersection, so the whole trade date is closed, its OPEN and CLOSE cells printing the quoted text |
+| 2023-02-20 | closed | Equity Products `Closed for holiday` | `CDE-MN-23-03` | T1 | CDE's own Trade Date column names Monday 2/20; the venue row carries the intersection, so the whole trade date is closed, its OPEN and CLOSE cells printing the quoted text |
+| 2023-04-07 | closed | Equity Products `Closed for holiday` | `CDE-MN-23-07` | T1 | CDE's own Trade Date column names Friday 4/7; the venue row carries the intersection, so the whole trade date is closed, its OPEN and CLOSE cells printing the quoted text |
+| 2023-05-29 | closed | Equity Products `Closed for holiday` | `CDE-MN-23-09` | T1 | CDE's own Trade Date column names Monday 5/29; the venue row carries the intersection, so the whole trade date is closed, its OPEN and CLOSE cells printing the quoted text |
+| 2023-06-19 | closed | Crypto Products prints a full session `06/18 17:00 CT 06/19 16:00 CT` on the same 23x5 clock; Equity Products `Closed for holiday` | `CDE-MN-23-10` | T1 | CDE's own Trade Date column names Monday 6/19; the venue row carries the intersection, so the whole trade date is closed and the session quoted above as printing is withheld |
+| 2023-07-04 | closed | Equity Products `Closed for holiday` | `CDE-MN-23-11` | T1 | CDE's own Trade Date column names Tuesday 7/4; the venue row carries the intersection, so the whole trade date is closed, its OPEN and CLOSE cells printing the quoted text |
+| 2023-09-04 | closed | Equity Products `Closed for holiday` | `CDE-MN-23-13` | T1 | CDE's own Trade Date column names Monday 9/4; the venue row carries the intersection, so the whole trade date is closed, its OPEN and CLOSE cells printing the quoted text |
+| 2023-11-23 | closed | Equity Products `Closed for holiday` | `CDE-MN-23-16` | T1 | CDE's own Trade Date column names Thursday 11/23; the venue row carries the intersection, so the whole trade date is closed, its OPEN and CLOSE cells printing the quoted text |
 | 2023-11-24 | early close | Equity Products `11/24 12:15 CT`; Energy Products `11/24 12:45 CT`; Crypto Products `11/24 12:45 CT` | `CDE-MN-23-16` | T1 | CDE's own Trade Date column names Friday 11/24; the venue row takes the earliest close among the groups on the 23x5 grid (Crypto Products, Energy Products, Equity Products), so it never reports a window in which no product prints |
-| 2023-12-25 | closed | `Closed for holiday` | `CDE-MN-23-19` | T1 | CDE's own Trade Date column names Monday 12/25; its OPEN and CLOSE cells both print the quoted text for Equity Products |
+| 2023-12-25 | closed | Equity Products `Closed for holiday` | `CDE-MN-23-19` | T1 | CDE's own Trade Date column names Monday 12/25; the venue row carries the intersection, so the whole trade date is closed, its OPEN and CLOSE cells printing the quoted text |
 
 ### 2024
 
 | Trade date | Kind | Instant as printed | Document | Tier | Derived from |
 |---|---|---|---|---|---|
-| 2024-01-01 | closed | `Closed for holiday` | `CDE-MN-23-20` | T1 | CDE's own Trade Date column names Monday 1/1; its OPEN and CLOSE cells both print the quoted text for Equity Products |
-| 2024-01-15 | closed | `Closed for` | `CDE-MN-24-01` | T1 | CDE's own Trade Date column names Monday 1/15; its OPEN and CLOSE cells both print the quoted text for Crypto Products |
-| 2024-02-19 | closed | `Closed for` | `CDE-MN-24-02` | T1 | CDE's own Trade Date column names Monday 2/19; its OPEN and CLOSE cells both print the quoted text for Crypto Products |
-| 2024-03-29 | closed | `Closed for holiday` | `CDE-MN-24-04` | T1 | CDE's own Trade Date column names Friday 3/29; its OPEN and CLOSE cells both print the quoted text for Crypto Products |
-| 2024-05-27 | closed | `Closed for` | `CDE-MN-24-09` | T1 | CDE's own Trade Date column names Monday 5/27; its OPEN and CLOSE cells both print the quoted text for Crypto Products |
-| 2024-06-19 | closed | `Closed for` | `CDE-MN-24-12` | T1 | CDE's own Trade Date column names Wednesday 6/19; its OPEN and CLOSE cells both print the quoted text for Energy Products |
-| 2024-07-04 | closed | `Closed for` | `CDE-MN-24-13` | T1 | CDE's own Trade Date column names Thursday 7/4; its OPEN and CLOSE cells both print the quoted text for Energy Products |
-| 2024-09-02 | closed | `Closed for` | `CDE-MN-24-16` | T1 | CDE's own Trade Date column names Monday 9/2; its OPEN and CLOSE cells both print the quoted text for Energy Products |
-| 2024-11-28 | closed | `Closed for` | `CDE-MN-24-21` | T1 | CDE's own Trade Date column names Thursday 11/28; its OPEN and CLOSE cells both print the quoted text for Energy Products |
+| 2024-01-01 | closed | Equity Products `Closed for holiday` | `CDE-MN-23-20` | T1 | CDE's own Trade Date column names Monday 1/1; the venue row carries the intersection, so the whole trade date is closed, its OPEN and CLOSE cells printing the quoted text |
+| 2024-01-15 | closed | Crypto Products `Closed for` | `CDE-MN-24-01` | T1 | CDE's own Trade Date column names Monday 1/15; the venue row carries the intersection, so the whole trade date is closed, its OPEN and CLOSE cells printing the quoted text |
+| 2024-02-19 | closed | Crypto Products `Closed for` | `CDE-MN-24-02` | T1 | CDE's own Trade Date column names Monday 2/19; the venue row carries the intersection, so the whole trade date is closed, its OPEN and CLOSE cells printing the quoted text |
+| 2024-03-29 | closed | Crypto Products `Closed for holiday` | `CDE-MN-24-04` | T1 | CDE's own Trade Date column names Friday 3/29; the venue row carries the intersection, so the whole trade date is closed, its OPEN and CLOSE cells printing the quoted text |
+| 2024-05-27 | closed | Crypto Products `Closed for` | `CDE-MN-24-09` | T1 | CDE's own Trade Date column names Monday 5/27; the venue row carries the intersection, so the whole trade date is closed, its OPEN and CLOSE cells printing the quoted text |
+| 2024-06-19 | closed | Crypto Products prints a full session `06/18 17:00 CT 06/19 16:00 CT` on the same 23x5 clock; Energy Products `Closed for` | `CDE-MN-24-12` | T1 | CDE's own Trade Date column names Wednesday 6/19; the venue row carries the intersection, so the whole trade date is closed and the session quoted above as printing is withheld |
+| 2024-07-04 | closed | Energy Products `Closed for` | `CDE-MN-24-13` | T1 | CDE's own Trade Date column names Thursday 7/4; the venue row carries the intersection, so the whole trade date is closed, its OPEN and CLOSE cells printing the quoted text |
+| 2024-09-02 | closed | Energy Products `Closed for` | `CDE-MN-24-16` | T1 | CDE's own Trade Date column names Monday 9/2; the venue row carries the intersection, so the whole trade date is closed, its OPEN and CLOSE cells printing the quoted text |
+| 2024-11-28 | closed | Energy Products `Closed for` | `CDE-MN-24-21` | T1 | CDE's own Trade Date column names Thursday 11/28; the venue row carries the intersection, so the whole trade date is closed, its OPEN and CLOSE cells printing the quoted text |
 | 2024-11-29 | early close | Energy Products `11/29 13:45 CT`; Metal Products `11/29 13:45 CT`; Crypto Products `11/29 13:45 CT` | `CDE-MN-24-21` | T1 | CDE's own Trade Date column names Friday 11/29; the venue row takes the earliest close among the groups on the 23x5 grid (Crypto Products, Energy Products, Metal Products), so it never reports a window in which no product prints |
 | 2024-12-24 | early close | Energy Products `12/24 12:45 CT`; Metal Products `12/24 12:45 CT`; Crypto Products trades to 16:00 CT (`12/23 17:00 CT 12/24 16:00 CT`) | `CDE-MN-24-23` | T1 | CDE's own Trade Date column names Tuesday 12/24; the venue row takes the earliest close among the groups on the 23x5 grid (Crypto Products, Energy Products, Metal Products), so it never reports a window in which no product prints |
-| 2024-12-25 | closed | `Closed for` | `CDE-MN-24-23` | T1 | CDE's own Trade Date column names Wednesday 12/25; its OPEN and CLOSE cells both print the quoted text for Energy Products |
+| 2024-12-25 | closed | Energy Products `Closed for` | `CDE-MN-24-23` | T1 | CDE's own Trade Date column names Wednesday 12/25; the venue row carries the intersection, so the whole trade date is closed, its OPEN and CLOSE cells printing the quoted text |
 
 ### 2025
 
 | Trade date | Kind | Instant as printed | Document | Tier | Derived from |
 |---|---|---|---|---|---|
-| 2025-01-01 | closed | `Closed for holiday` | `CDE-MN-24-25` | T1 | CDE's own Trade Date column names Wednesday 1/1; its OPEN and CLOSE cells both print the quoted text for Crypto Products |
-| 2025-01-20 | closed | `Closed for` | `CDE-MN-25-01` | T1 | CDE's own Trade Date column names Monday 1/20; its OPEN and CLOSE cells both print the quoted text for Energy Products |
-| 2025-02-17 | closed | `Closed for` | `CDE-MN-25-03` | T1 | CDE's own Trade Date column names Monday 2/17; its OPEN and CLOSE cells both print the quoted text for Energy Products |
-| 2025-04-18 | closed | `Closed for` | `CDE-MN-25-15` | T1 | CDE's own Trade Date column names Friday 4/18; its OPEN and CLOSE cells both print the quoted text for Energy Products |
-| 2025-05-26 | closed | `Closed for` | `CDE-MN-25-18` | T1 | CDE's own Trade Date column names Monday 5/26; its OPEN and CLOSE cells both print the quoted text for Energy & Metal |
-| 2025-06-19 | closed | `Closed for holiday` | `CDE-MN-25-20` | T1 | CDE's own Trade Date column names Thursday 6/19; its OPEN and CLOSE cells both print the quoted text for Energy & Metal |
-| 2025-07-04 | closed | `Closed for holiday` | `CDE-MN-25-21` | T1 | CDE's own Trade Date column names Friday 7/4; its OPEN and CLOSE cells both print the quoted text for Energy & Metal |
-| 2025-09-01 | closed | `Closed for holiday` | `CDE-MN-25-29` | T1 | CDE's own Trade Date column names Monday 9/1; its OPEN and CLOSE cells both print the quoted text for Energy & Metal |
-| 2025-11-27 | closed | `Closed for holiday` | `CDE-MN-25-37` | T1 | CDE's own Trade Date column names Thursday 11/27; its OPEN and CLOSE cells both print the quoted text for Energy & Metal |
+| 2025-01-01 | closed | Crypto Products `Closed for holiday` | `CDE-MN-24-25` | T1 | CDE's own Trade Date column names Wednesday 1/1; the venue row carries the intersection, so the whole trade date is closed, its OPEN and CLOSE cells printing the quoted text |
+| 2025-01-20 | closed | Energy Products `Closed for` | `CDE-MN-25-01` | T1 | CDE's own Trade Date column names Monday 1/20; the venue row carries the intersection, so the whole trade date is closed, its OPEN and CLOSE cells printing the quoted text |
+| 2025-02-17 | closed | Energy Products `Closed for` | `CDE-MN-25-03` | T1 | CDE's own Trade Date column names Monday 2/17; the venue row carries the intersection, so the whole trade date is closed, its OPEN and CLOSE cells printing the quoted text |
+| 2025-04-18 | closed | Energy Products `Closed for` | `CDE-MN-25-15` | T1 | CDE's own Trade Date column names Friday 4/18; the venue row carries the intersection, so the whole trade date is closed, its OPEN and CLOSE cells printing the quoted text |
+| 2025-05-26 | closed | Energy & Metal `Closed for` | `CDE-MN-25-18` | T1 | CDE's own Trade Date column names Monday 5/26; the venue row carries the intersection, so the whole trade date is closed, its OPEN and CLOSE cells printing the quoted text |
+| 2025-06-19 | closed | 23x5 Crypto prints a full session `06/18 17:00 CT 06/19 16:00 CT` on the same 23x5 clock; Energy & Metal `Closed for holiday` | `CDE-MN-25-20` | T1 | CDE's own Trade Date column names Thursday 6/19; the venue row carries the intersection, so the whole trade date is closed and the session quoted above as printing is withheld |
+| 2025-07-04 | closed | Energy & Metal `Closed for holiday` | `CDE-MN-25-21` | T1 | CDE's own Trade Date column names Friday 7/4; the venue row carries the intersection, so the whole trade date is closed, its OPEN and CLOSE cells printing the quoted text |
+| 2025-09-01 | closed | Energy & Metal `Closed for holiday` | `CDE-MN-25-29` | T1 | CDE's own Trade Date column names Monday 9/1; the venue row carries the intersection, so the whole trade date is closed, its OPEN and CLOSE cells printing the quoted text |
+| 2025-11-27 | closed | Energy & Metal `Closed for holiday` | `CDE-MN-25-37` | T1 | CDE's own Trade Date column names Thursday 11/27; the venue row carries the intersection, so the whole trade date is closed, its OPEN and CLOSE cells printing the quoted text |
 | 2025-11-28 | early close | Energy & Metal `11/28 13:45 CT`; Equity `11/28 12:15 CT`; 23x5 Crypto trades to 16:00 CT (`11/27 17:00 CT 11/28 16:00 CT`) | `CDE-MN-25-37` | T1 | CDE's own Trade Date column names Friday 11/28; the venue row takes the earliest close among the groups on the 23x5 grid (23x5 Crypto, Energy & Metal, Equity), so it never reports a window in which no product prints |
 | 2025-12-24 | early close | Energy & Metal `12/24 12:45 CT`; Equity `12/24 12:15 CT` | `CDE-MN-25-41` | T1 | CDE's own Trade Date column names Wednesday 12/24; the venue row takes the earliest close among the groups on the 23x5 grid (Energy & Metal, Equity), so it never reports a window in which no product prints |
-| 2025-12-25 | closed | `Closed for holiday` | `CDE-MN-25-41` | T1 | CDE's own Trade Date column names Thursday 12/25; its OPEN and CLOSE cells both print the quoted text for Energy & Metal |
+| 2025-12-25 | closed | Energy & Metal `Closed for holiday` | `CDE-MN-25-41` | T1 | CDE's own Trade Date column names Thursday 12/25; the venue row carries the intersection, so the whole trade date is closed, its OPEN and CLOSE cells printing the quoted text |
 
 ### 2026
 
 | Trade date | Kind | Instant as printed | Document | Tier | Derived from |
 |---|---|---|---|---|---|
-| 2026-01-01 | closed | `Closed for holiday` | `CDE-MN-25-42` | T1 | CDE's own Trade Date column names Thursday 1/1; its OPEN and CLOSE cells both print the quoted text for Energy & Metal |
-| 2026-01-19 | closed | `Closed for holiday` | `CDE-MN-26-01` | T1 | CDE's own Trade Date column names Monday 1/19; its OPEN and CLOSE cells both print the quoted text for Energy, Metal & Equity |
-| 2026-02-16 | closed | `Closed for holiday` | `CDE-MN-26-05` | T1 | CDE's own Trade Date column names Monday 2/16; its OPEN and CLOSE cells both print the quoted text for Energy, Metal & Equity |
-| 2026-04-03 | closed | `Closed for holiday` | `CDE-MN-26-12` | T1 | CDE's own Trade Date column names Friday 4/3; its OPEN and CLOSE cells both print the quoted text for Energy, Metal & Equity |
-| 2026-05-25 | closed | `Closed for holiday` | `CDE-MN-26-23` | T1 | CDE's own Trade Date column names Monday 5/25; its OPEN and CLOSE cells both print the quoted text for Energy, Metal & Equity |
-| 2026-06-19 | closed | `Closed for holiday` | `CDE-MN-26-27.1` | T1 | CDE's own Trade Date column names Friday 6/19; its OPEN and CLOSE cells both print the quoted text for 23x5 Products |
-| 2026-07-03 | closed | `Closed for holiday` | `CDE-MN-26-29` | T1 | CDE's own Trade Date column names Friday 7/3; its OPEN and CLOSE cells both print the quoted text for 23x5 Products |
-| 2026-09-07 | closed | `Closed for holiday` | `CDE-MN-26-36` | T1 | CDE's own Trade Date column names Monday 9/7; its OPEN and CLOSE cells both print the quoted text for 23x5 Products |
+| 2026-01-01 | closed | Energy & Metal `Closed for holiday` | `CDE-MN-25-42` | T1 | CDE's own Trade Date column names Thursday 1/1; the venue row carries the intersection, so the whole trade date is closed, its OPEN and CLOSE cells printing the quoted text |
+| 2026-01-19 | closed | Energy, Metal & Equity `Closed for holiday` | `CDE-MN-26-01` | T1 | CDE's own Trade Date column names Monday 1/19; the venue row carries the intersection, so the whole trade date is closed, its OPEN and CLOSE cells printing the quoted text |
+| 2026-02-16 | closed | Energy, Metal & Equity `Closed for holiday` | `CDE-MN-26-05` | T1 | CDE's own Trade Date column names Monday 2/16; the venue row carries the intersection, so the whole trade date is closed, its OPEN and CLOSE cells printing the quoted text |
+| 2026-04-03 | closed | Energy, Metal & Equity `Closed for holiday` | `CDE-MN-26-12` | T1 | CDE's own Trade Date column names Friday 4/3; the venue row carries the intersection, so the whole trade date is closed, its OPEN and CLOSE cells printing the quoted text |
+| 2026-05-25 | closed | Energy, Metal & Equity `Closed for holiday` | `CDE-MN-26-23` | T1 | CDE's own Trade Date column names Monday 5/25; the venue row carries the intersection, so the whole trade date is closed, its OPEN and CLOSE cells printing the quoted text |
+| 2026-06-19 | closed | 23x5 Products `Closed for holiday` | `CDE-MN-26-27.1` | T1 | CDE's own Trade Date column names Friday 6/19; the venue row carries the intersection, so the whole trade date is closed, its OPEN and CLOSE cells printing the quoted text |
+| 2026-07-03 | closed | 23x5 Products `Closed for holiday` | `CDE-MN-26-29` | T1 | CDE's own Trade Date column names Friday 7/3; the venue row carries the intersection, so the whole trade date is closed, its OPEN and CLOSE cells printing the quoted text |
+| 2026-09-07 | closed | 23x5 Products `Closed for holiday` | `CDE-MN-26-36` | T1 | CDE's own Trade Date column names Monday 9/7; the venue row carries the intersection, so the whole trade date is closed, its OPEN and CLOSE cells printing the quoted text |
 
 ### Gaps and residual risks, 2021-2026
 
@@ -225,7 +239,7 @@ time and sha256 per artifact in its `INDEX.md`; the operator statements behind e
   `info.fairx.com/coinbase-derivatives-market-notice-22-10-thanksgiving-holiday-schedule-2022`,
   where the host no longer completes a TLS handshake, and the Wayback Machine holds no capture of
   it: a CDX prefix query over `assets.ctfassets.net/k3n74unfin40*` returns 144 `Market_Notice`
-  artifacts from 21-01 to 25-45 and none of them is 22-10, and a query over `info.fairx.com*`
+  artifacts spanning ids 21-01 through 26-13, and none of them is 22-10, and a query over `info.fairx.com*`
   returns exactly one unrelated 2022 capture. `Unsourced` clips nothing, so the 23x5 grid applies
   unchanged; the crate simply declines to certify the date. Closing condition: any surviving copy
   of notice 22-10, or a later notice that restates the outgoing 2022 schedule. Tracked as issue
@@ -242,8 +256,9 @@ time and sha256 per artifact in its `INDEX.md`; the operator statements behind e
 - **Notice 24-27 keys no row.** It states that the 2025-01-09 session (a National Day of Mourning)
   "will observe a normal trading day", so 2025-01-09 is an audited-normal date.
 - **The half-day rows under-report the later-closing groups.** See the `## Holidays` preamble: the
-  venue row carries the earliest instant on 2021-11-26, 2023-11-24, 2024-11-29, 2024-12-24,
-  2025-11-28 and 2025-12-24. A caller trading a group that prints a later close on those dates
+  venue row carries the earliest instant on 2021-11-26, 2023-11-24, 2024-12-24, 2025-11-28 and
+  2025-12-24, five of the six early closes. The sixth, 2024-11-29, is not a disagreement: all
+  three groups printed 13:45 CT, so nothing is under-reported there. A caller trading a group that prints a later close on those dates
   should use its own key; no key is claimed for the 24x7 crypto tier or the 24x5 equity-index PSF
   group.
 - **Trade date 2021-09-03 is carried as audited normal.** Notice 21-04 says markets are "closed

@@ -8,13 +8,16 @@
 //! corrected. It is the contract the ledger's `Holidays` column already
 //! carries, extended to the inventory's two count columns.
 //!
-//! The count columns are **distinct trade dates**, not rows. A family that
-//! states one date once per product group — `iceus` does — collapses to a
-//! single answer per date on this surface, and a date is also what
-//! completeness is a claim about. The inventory writes the date count first and
-//! adds the row count in brackets where the two differ; that bracketed row
-//! count comes from the owner's holiday table and is deliberately **not**
-//! re-derived here, because the public surface cannot see it.
+//! The count columns are **trade dates** this scope answers for, which is what
+//! completeness is a claim about. One row per date is the shape of every table
+//! shipping today, so the date count is also the row count; the fence does not
+//! assume that, it counts whatever the surface returns.
+//!
+//! Only a **routed** table is counted. A module may hold several — `ice_us.rs`
+//! carries the served venue table beside five dormant family tables — and a
+//! count taken over the whole file reports those dormant rows under the served
+//! identity. Going through the identity's own calendar is what keeps the two
+//! apart, and it is why this fence queries rather than reading module text.
 
 use super::VERIFICATION;
 use chrono::NaiveDate;
@@ -160,6 +163,28 @@ fn inventory_windows_and_date_counts_match_the_shipped_tables() {
             leading(&row[6]).expect("an Unsourced cell"),
             unsourced,
             "2025+ trade dates withheld as Unsourced, for {name}"
+        );
+    }
+}
+
+/// A row that names a tracked issue in its `Missing / disputed` cell has an
+/// unresolved gap, and LAW-COVERAGE does not let that row read as complete.
+///
+/// The inventory's own definition is "no unresolved normal-week, required-phase,
+/// holiday or special-session gap in the claimed interval", so a scope carrying
+/// the #79 quarter-hour or the #93 special sessions cannot say `complete to ...`
+/// however far its coverage window reaches. A horizon that simply stops before
+/// the inspection date is not a tracked gap and is left alone.
+#[test]
+fn a_row_recording_a_tracked_gap_does_not_claim_completeness() {
+    for (name, row) in inventory_rows() {
+        let (missing, verdict) = (&row[7], &row[8]);
+        if !missing.contains('#') {
+            continue;
+        }
+        assert!(
+            verdict.contains("incomplete"),
+            "{name} records a tracked gap ({missing}) but its verdict reads {verdict}"
         );
     }
 }

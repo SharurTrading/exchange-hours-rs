@@ -716,6 +716,34 @@ corrections (a venue's hours fixed against a primary source) go under
   The order-entry predicates already existed on `ExchangeCalendar`; an overlay
   calendar could previously only reach them through `session_state`.
 
+- **The Coinbase Derivatives holiday table now runs from the venue's first trade
+  date, 2021-06-28, to 2026-09-07.** The venue shipped eight 2026 rows and
+  nothing below them; it now ships **58 rows over venue-local trade dates
+  2021-06-28 .. 2026-09-07**, every one at **T1**, from the operator's own
+  Market Notices: **50 full closures, six early closes and two `Unsourced`
+  dates**. The early closes are the half days on which the product groups
+  listed on the venue's 23x5 grid printed different instants — the 2021-11-26,
+  2023-11-24 and 2025-11-28 Thanksgiving Fridays and the 2024-12-24 and
+  2025-12-24 Christmas Eves; the sixth, 2024-11-29, is a half day on which every
+  group printed the same 13:45 CT close. The row carries the **earliest**
+  instant so the venue never reports a window in which no product on the grid
+  can print; each group's own instant is quoted beside it in the evidence file.
+  A closure is that intersection too: where any group on the grid closes for the
+  date the row is `Closed`, and the evidence row names the groups that printed a
+  full session anyway — 2023-06-19, 2024-06-19 and 2025-06-19, where a crypto
+  group traded a normal `06/18 17:00 CT 06/19 16:00 CT` session on that same
+  23x5 clock. The venue row withholds those sessions and says so.
+  Trade dates 2022-11-24 and 2022-11-25 are `Unsourced`: the operator lists
+  notice 22-10 but its `info.fairx.com` link is dead and no capture survives, so
+  the dates are carried as not audited rather than claimed closed (#112). 2025-01-09
+  ships no row because notice 24-27 states it observes a normal trading day.
+  `docs/evidence/coinbase_derivatives.md` gains the `### Documents` table in the
+  fixed six-column shape, so its 54 documents now resolve to URLs, capture times
+  and sha256 under the repository-wide id fences (#98). The block
+  (`holidays/cde-2021-2026.json`) was re-derived independently from its 53 saved
+  notice PDFs before encoding, and the verdict is `matches: true` with zero
+  discrepancies.
+
 ### Changed
 
 - **The verification ledger is reshaped and the narrative moves to

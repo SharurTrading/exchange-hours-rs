@@ -37,15 +37,15 @@ consequences drive every verdict below.
 | Normal week | sourced `revisions!` timeline: earliest…latest effective day and row count |
 | Horizon | ledger carried-below date; `—` when nothing is carried |
 | Holidays | this scope's shipped windows from `holiday_coverage()` |
-| 2025+ | holiday rows at or after 2025-01-01 |
-| `Unsrc` 2025+ | `Unsourced` **rows** at or after 2025-01-01, and the distinct dates they cover where those differ; any one fails completeness |
+| `2025+ dates` | distinct trade dates at or after 2025-01-01 carrying a holiday row, with the row count in brackets where a family states one date once per product group |
+| `Unsrc` 2025+ dates | distinct `Unsourced` trade dates at or after 2025-01-01, same bracketing; any one fails completeness |
 | Missing / disputed | what the scope cannot answer inside 2025+, and its issue |
 | Complete? | verdict over the 2025-onward interval |
 | Closing issues | open issues to discharge for this scope |
 
 ## Inventory
 
-| Identity | Owner | Normal week | Horizon | Holidays | 2025+ | `Unsrc` 2025+ | Missing / disputed | Complete? | Closing issues |
+| Identity | Owner | Normal week | Horizon | Holidays | 2025+ dates | `Unsrc` 2025+ dates | Missing / disputed | Complete? | Closing issues |
 |---|---|---|---|---|---|---|---|---|---|
 | `cme` | [cme_group.rs](../../src/calendar/schedules/futures/us/cme_group.rs) | 2010-11-15 … 2026-08-22 (5 rows) | 2012-05-03 | 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 41 | 32 | all of 2025-2027 on 32 disputed dates (2025-01-02 … 2027-11-26) | **incomplete**: 32 `Unsourced` in 2025+ | #116, #117 |
 | `cbot` | [grains.rs](../../src/calendar/schedules/futures/us/grains.rs) | 2010-04-19 … 2015-07-05 (6 rows) | 2010-03-15 | 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 40 | 31 | all of 2025-2027 on 31 disputed dates (2025-01-02 … 2027-11-26) | **incomplete**: 31 `Unsourced` in 2025+ | #116, #117 |
@@ -54,14 +54,14 @@ consequences drive every verdict below.
 | `cfe` | [cfe.rs](../../src/calendar/schedules/futures/us/cfe.rs) | 2010-12-10 … 2021-12-06 (8 rows) | 2010-01-01 | 2026-01-01..2026-12-31 | 12 | — | all of 2025; the window opens 2026-01-01 | **no 2025 coverage** | #98, #116 |
 | `coinbase_derivatives` | [coinbase_derivatives.rs](../../src/calendar/schedules/futures/us/coinbase_derivatives.rs) | 2026-09-11 … 2026-09-11 (1 row) | — | 2021-06-28..2026-09-07 | 20 | — | 2026-09-08 onward (past the horizon) | complete to 2026-09-07; **horizon before inspection** | #86, #98, #116 |
 | `eurex` | [europe.rs](../../src/calendar/schedules/futures/international/europe.rs) | seasonal selector, no `revisions!` timeline | 2010-01-01 | 2026-01-01..2026-12-31 | 7 | — | all of 2025; the window opens 2026-01-01 | **no 2025 coverage** | #77, #86, #98, #116 |
-| `iceus` | [ice_us.rs](../../src/calendar/schedules/futures/us/ice_us.rs) | 2017-11-07 … 2017-11-08 (2 rows) | — | 2026-01-01..2028-01-03 | 129 | 46 rows / 20 dates | all of 2025, plus 46 `Unsourced` rows over 20 dates in 2026-2027 | **no 2025 coverage** | #98, #116 |
-| `globex_equity_index` | [cme_group.rs](../../src/calendar/schedules/futures/us/cme_group.rs) | 2010-11-15 … 2026-08-22 (5 rows) | 2012-05-03 | 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 31 | — | the 16:00-16:15 CT Sunday quarter-hour, carried (#79) | complete to 2027-12-31 | #79, #116, #117 |
+| `iceus` | [ice_us.rs](../../src/calendar/schedules/futures/us/ice_us.rs) | 2017-11-07 … 2017-11-08 (2 rows) | — | 2026-01-01..2028-01-03 | 24 (129 rows) | 20 (46 rows) | all of 2025, plus 20 `Unsourced` trade dates (46 rows) in 2026-2027 | **no 2025 coverage** | #98, #116 |
+| `globex_equity_index` | [cme_group.rs](../../src/calendar/schedules/futures/us/cme_group.rs) | 2010-11-15 … 2026-08-22 (5 rows) | 2012-05-03 | 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 37 | — | the 16:00-16:15 CT Sunday quarter-hour, carried (#79) | complete to 2027-12-31 | #79, #116, #117 |
 | `globex_energy` | [energy_metals.rs](../../src/calendar/schedules/futures/us/energy_metals.rs) | 2015-09-20 … 2026-08-22 (2 rows) | 2012-05-11 | 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 36 | — | none in 2025+ | complete to 2027-12-31 | #116, #117 |
-| `globex_grains` | [grains.rs](../../src/calendar/schedules/futures/us/grains.rs) | 2010-04-19 … 2015-07-05 (6 rows) | 2010-03-15 | 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 37 | — | none in 2025+ | complete to 2027-12-31 | #116, #117 |
-| `globex_fx` | [fx.rs](../../src/calendar/schedules/futures/us/fx.rs) | 2010-11-15 … 2026-08-22 (2 rows) | 2012-05-03 | 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 13 | — | special-session dates the scalar layer cannot state (#93) | complete to 2027-12-31 | #93, #116, #117 |
+| `globex_grains` | [grains.rs](../../src/calendar/schedules/futures/us/grains.rs) | 2010-04-19 … 2015-07-05 (6 rows) | 2010-03-15 | 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 40 | — | none in 2025+ | complete to 2027-12-31 | #116, #117 |
+| `globex_fx` | [fx.rs](../../src/calendar/schedules/futures/us/fx.rs) | 2010-11-15 … 2026-08-22 (2 rows) | 2012-05-03 | 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 19 | — | special-session dates the scalar layer cannot state (#93) | complete to 2027-12-31 | #93, #116, #117 |
 | `globex_interest_rates` | [interest_rates.rs](../../src/calendar/schedules/futures/us/interest_rates.rs) | 2010-11-15 … 2026-08-22 (3 rows) | 2010-01-01 | 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 36 | — | none in 2025+ | complete to 2027-12-31 | #116, #117 |
 | `globex_livestock` | [livestock.rs](../../src/calendar/schedules/futures/us/livestock.rs) | 2014-10-27 … 2020-05-31 (4 rows) | 2010-01-01 | 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 36 | — | none in 2025+ | complete to 2027-12-31 | #116, #117 |
-| `globex_cryptocurrency` | [cryptocurrency.rs](../../src/calendar/schedules/futures/us/cryptocurrency.rs) | 2017-12-17 … 2026-09-20 (9 rows) | — | 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 21 | — | special-session dates the scalar layer cannot state (#93) | complete to 2027-12-31 | #93, #116, #117 |
+| `globex_cryptocurrency` | [cryptocurrency.rs](../../src/calendar/schedules/futures/us/cryptocurrency.rs) | 2017-12-17 … 2026-09-20 (9 rows) | — | 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 24 | — | special-session dates the scalar layer cannot state (#93) | complete to 2027-12-31 | #93, #116, #117 |
 | `globex_nikkei_225_dollar` | [cme_nikkei.rs](../../src/calendar/schedules/futures/us/cme_nikkei.rs) | 2011-01-12 … 2015-09-20 (4 rows) | — | 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 37 | — | none in 2025+ | complete to 2027-12-31 | #116, #117 |
 
 ## Consumer routing
@@ -118,8 +118,9 @@ retrieval. `comex` and `nymex` route a single family and so reproduce it row for
 ### 1. Three served scopes ship no 2025 holiday coverage at all
 
 `cfe` and `eurex` ship a single 2026 window and `iceus` a 2026-01-01..2028-01-03 window, so all three
-answer no holiday question over any part of 2025. `iceus` additionally carries **46** `Unsourced`
-rows over **20** distinct dates inside its own window. These are the one-operator scopes whose
+answer no holiday question over any part of 2025. `iceus` states 129 holiday rows over only **24**
+trade dates, **20** of them `Unsourced` (46 rows), because its table names a date once per
+product group. These are the one-operator scopes whose
 instruments reach the venue
 calendar directly through `ExchangeFallback` rather than through a family key, so the gap is on the
 path a real instrument takes. Stage 4's PR order (section 8, items 3-5) already anticipates these

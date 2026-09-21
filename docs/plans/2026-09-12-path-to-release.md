@@ -1,561 +1,388 @@
 <!-- SPDX-License-Identifier: MIT-0 -->
 
-# Path to the 1.0 release — a plan a smaller agent can execute
+# Path to release — complete 2025-onward calendars
 
-Written 2026-09-12 (UTC) at the end of the charter session; re-ordered 2026-09-13 (UTC)
-on the maintainer's instruction that **everything is handled in order of importance
-before the release, and every identity's holiday table runs from 2010 to whatever the
-operator had published as of its inspection date, quick wins first**. This is the
-hand-over: everything below is doable one bounded pull request at a time, by an agent
-without the context of that session, following `AGENTS.md` (the charter) and this plan.
+Amended 2026-09-21 (UTC). This is the active staged development plan. It replaces
+remaining instructions in the September 12–19 plan; that plan and its completed
+wave records are preserved in the [historical archive](archive/2026-09-12-path-to-release-before-2025-amendment.md).
+The historical archive and the untracked wave/stage handoff prompts are context,
+not instructions to restart pre-2025 research. Follow [AGENTS.md](../../AGENTS.md).
 
-## 0. How to use this plan
+## 1. Decision and current implementation
 
-1. Read `AGENTS.md` in full first, every time. It is short and it is the law.
-2. Read the last twenty lines of `STATUS.md` in the research store
-   (`$EXCHANGE_HOURS_RESEARCH`, default `../exchange-hours-research`) — it records what
-   was in flight when the previous session stopped and where each artifact is.
-3. Do one numbered item per pull request. A PR is sized to a working day
-   (LAW-BOUNDED-WORK); split an item by year range if it is bigger. Where this plan says
-   "repair X", X is named precisely and is a few hours of work. Where it says "retrieve",
-   the unit is one research block: fetch the operator's own documents (live site first,
-   then web-archive captures), save the bytes and their sha256 in the research store,
-   have one independent reader try to refute every row against those bytes, then encode.
-   Never fill a year from another year, a vendor, or the press.
-4. Before every push: `cargo fmt --all --check && cargo clippy --all-targets -- -D warnings && cargo nextest run --all-targets && cargo test --doc && RUSTDOCFLAGS="-D warnings" cargo doc --no-deps && cargo deny check && cargo +1.95 check --all-targets`.
-   Run it as a bash script (the shell is zsh; `PIPESTATUS` differs).
-5. CodeRabbit reviews every PR. Fix what it finds when it is right; when it asks for a
-   schedule change inside a documentation PR, record the point as a gap in the
-   identity's evidence file (`docs/evidence/<owner>.md`) and say so in the reply;
-   resolve every thread before merging.
-6. Every date you write about the repository's own work is the UTC date from `date -u`
-   (LAW-UTC-DATES). Exchange effective days stay venue-local. Every GitHub post you make
-   through the maintainer's account — a pull-request body, a comment, a review, a reply, an
-   inline comment — opens by naming your exact model, because you are speaking as the
-   maintainer (LAW-AGENT-ATTRIBUTION); the same attribution rides a `Model:` trailer on the
-   commits you author.
-7. Stop and ask the maintainer only at the points marked **DECISION**. The release
-   itself waits until every stage before it is finished and reviewed; it is not started
-   early for any reason.
+The maintainer adopted these decisions on 2026-09-21 UTC:
 
-## 1. Where things stand
+- The support floor is permanently **2025-01-01**. It does not advance each year;
+  retain 2025 and every subsequent year as the history grows.
+- Complete coverage is required for each consumer-reachable instrument's exact
+  family or documented venue scope. Dormant completeness does not block release;
+  complete a dormant scope before activating it. Broad venue intersections keep
+  their explicit limitations and cannot replace a complete family calendar.
+- Completeness includes normal-week changes, required order-entry phases, holidays,
+  early/late boundaries, pauses, reopenings, extra sessions and trade-date changes.
+  An audited window with an `Unsourced` date or a missing phase is not complete.
+- Extend each scope through the operator's sufficiently specified, unconditional
+  publications. An annual holiday name without session details, an indicative
+  calendar or an unpublished year is not proof of ordinary trading. Preserve
+  publication dates, exchange effective dates and UTC retrieval dates separately.
+- Identity-backed date-aware queries must report unsupported coverage as an error.
+  Missing evidence is neither an open market, a closed market, nor an absent session.
+- Remove pre-2025 runtime history in Stage 5. Retain the sourced state in force at
+  the floor, later revisions, seasonal behavior and boundary context. An older
+  document may prove that state; 2025-01-01 is not an invented exchange cutover.
+- Reuse captured evidence for 2025 onward. Do not delete research artifacts or
+  rewrite Git history; do not repeat old retrieval waves or copy another year's
+  holiday pattern into a missing year.
 
-- `main` is at the merge of #87 (ledger reshape + `docs/evidence/`). The charter (#84),
-  the five dormant metals TAS keys (#83) and the fences (#78) are on main.
-- #96 `holiday-tables` (this plan's PR) adds the holiday engine plus 427 rows over 22
-  identities: the eight served CME families for 2025-01-01..2027-12-31 at T2, and CFE,
-  Eurex, ICE Futures U.S. and Coinbase Derivatives from 2026 at T1. CI is green and every
-  CodeRabbit thread is resolved at `8ae30df`.
-- Fourteen issues are open. Every one is placed at a stage below; the index at the top
-  of §3 is the map, and each issue carries a comment naming its place. #36 (the
-  whole-ledger coverage audit) was closed on 2026-09-13: dormant rows are not audited
-  under the charter.
-- This plan is executed by one agent and reviewed by another at the end of each stage,
-  following `AGENTS.md` **Reviewing a change**; the executing agent posts a stage
-  summary on the PR that closes the stage, listing the issues closed and any gap
-  recorded, and does not start the next stage until the review is done.
-- Research store map: `architecture-review/` (the review and its four fact reports),
-  `holidays/` (seven verified holiday-schedule blocks 2010–2027 as JSON, their verdicts,
-  raw artifacts, and `DESIGN-holiday-tables.md`, the design the engine implements),
-  `holiday-tables/` (implementation results), `ledger-reshape/`, `cme-globex/`,
-  `sgx-pre2020/`, `ecbtc/`.
-- The ledger's `Service` column is the authority on tiers (LAW-SERVICE-TIERS). Today it
-  lists 16 served identities: the eight keys SharurPlatform maps
-  (`globex_equity_index`, `globex_energy`, `globex_grains`, `globex_fx`,
-  `globex_interest_rates`, `globex_livestock`, `globex_cryptocurrency`,
-  `globex_nikkei_225_dollar`) and the venues `cme`, `cbot`, `comex`, `nymex`, `cfe`,
-  `eurex`, `iceus` and `coinbase_derivatives`. Small Exchange (SMFE) is dormant: it has
-  been closed since 2025-03-24. Every other identity is dormant.
-- Holiday coverage today, from the ledger's `Holidays` column:
+**Current state, inspected at `66b5f59` on 2026-09-21 UTC:** the crate still contains
+pre-2025 history, existing infallible/`Option` query signatures, scalar built-in
+holiday tables and a caller-owned replacement-session engine. No built-in
+replacement-session data ships. The ledger's windows, gaps and counts remain
+facts about those tables. This plan/charter PR implements none of Stages 1–7.
 
-  | Tier | With a table | Without |
-  |---|---|---|
-  | Served | 12 (none reaches 2010) | 4: `cme`, `cbot`, `comex`, `nymex` |
-  | Dormant | 10 (from 2026 only) | 106 |
+The pending manifest version is `1.0.0`; inspected repository tags end at `v0.2.2`.
+Do not infer crates.io publication state from local tags. Stage 7 checks both:
+use the pending `1.0.0` only if unpublished; a published 1.x contract requires a
+major version for the approved breaking query migration. Never reuse a tag.
 
-## 2. The release target
+## 2. Execution contract and handoff
 
-`Cargo.toml` says `1.0.0`, `CHANGELOG.md` has a `[1.0.0] - 2026-08-22` section, and no
-`v1.0.0` tag exists (tags stop at `v0.2.2`): 1.0.0 was cut and never published, and a
-large `[Unreleased]` section sits on top of it. **DECISION (maintainer):** release
-everything as **1.0.0** on the release date (fold `[Unreleased]` into the pending
-`[1.0.0]` section and re-date it — the repository's own housekeeping rule says a cut but
-unpublished version absorbs its preparation), or bump to 1.1.0. The plan assumes 1.0.0.
-Nothing in the unreleased work breaks the 1.0.0 API: the additions are keys, the three
-holiday accessors, and documentation.
+Read this section before each stage. The unit is **one bounded PR**, normally no
+more than a working day. A stage with named sub-PRs is not permission to combine
+them. Dependencies must be reviewed before dependent work begins. This plan is
+intended to be executable without the conversation that produced it.
 
-## 3. Stages, in order of importance
+1. Read the charter, this plan, the stage's issue, the actual implementation and
+   relevant tests. Read the research store's `STATUS.md` for the latest reviewed
+   head, completed work and artifact corrections. Prefer current files and reviewed
+   verdicts over stale handoff claims.
+2. Use a fresh worktree based on the reviewed dependency commit. Preserve unrelated
+   changes. The research root must be explicit: `EXCHANGE_HOURS_RESEARCH` points to
+   the directory holding `STATUS.md` and `holidays/`. The main checkout's sibling
+   is `/Users/agedvagabond/Developer/exchange-hours-research`; a managed worktree's
+   `../exchange-hours-research` is usually wrong. Raw artifacts are not committed.
+3. Read saved artifact bytes and their corrected indexes/verdicts before retrieving
+   again. Follow the operator/live/archive channel order in the maintenance guide.
+   A source refusal twice ends that channel attempt. Record the exact gap and
+   closing condition; bounded effort does not waive the release completeness gate.
+4. Keep every PR compiling, with its own tests, evidence and documentation. Run
+   [the full verification chain](#verification-for-every-pr) before declaring it
+   complete. Tests exercise only the public surface. Benchmark engine changes.
+5. Follow the charter's independent review procedure against the exact PR head.
+   Resolve blocking findings and re-run affected checks after fixes. The implementing
+   agent must not call its own source reading an independent review. No repeated
+   multi-agent research cycles are required.
+6. Before handing off, update the stage issue and research-store `STATUS.md` with:
+   stage/sub-PR; branch and PR; exact head and review verdict; artifacts and digests;
+   checks and results; acceptance items met; remaining issue numbers; next stage and
+   its entry conditions. Name the exact runtime model in GitHub posts and commit
+   trailers under LAW-AGENT-ATTRIBUTION, never in product files.
+7. A stage is complete only when all its acceptance conditions hold. An issue may
+   track a gap without resolving it. Stop dependent work on an unresolved blocker;
+   continue only independent work already authorized by the stage.
 
-**Issue index.** Every open issue, its stage, and whether the tag waits for it.
+### Verification for every PR
 
-| Issue | Stage | Blocks the tag |
+Run the quality checks in this order, then the separate MSRV check:
+
+```bash
+cargo fmt --all --check
+cargo clippy --all-targets -- -D warnings
+cargo nextest run --all-targets
+cargo test --doc
+RUSTDOCFLAGS="-D warnings" cargo doc --no-deps
+cargo deny check
+cargo +1.95 check --all-targets
+```
+
+Run the shell as bash with `set -euo pipefail`, so the first failure stops the
+chain and no later success masks it. For engine changes also run
+`cargo bench --bench calendar_queries` and record the comparison. Use the full
+[release procedure](../../RELEASING.md) for package/tag/publish checks in Stage 7.
+
+## 3. Stage and issue index
+
+| Stage | Tracking issue | PR units | Depends on | Release gate |
+|---|---|---|---|---|
+| 0 — plan and charter | this documentation PR | one documentation PR | maintainer decisions above | plan reviewed |
+| 1 — evidence/coverage inventory | [#114](https://github.com/SharurTrading/exchange-hours-rs/issues/114) | one inventory PR | Stage 0 | yes |
+| 2 — explicit coverage contract | [#115](https://github.com/SharurTrading/exchange-hours-rs/issues/115) | 2A metadata/types; 2B query/adaptor migration | Stage 1 | yes |
+| 3 — built-in special sessions | [#93](https://github.com/SharurTrading/exchange-hours-rs/issues/93) | one engine PR; data follows in Stage 4 | Stage 2 | yes |
+| 4 — complete served data | [#116](https://github.com/SharurTrading/exchange-hours-rs/issues/116) | one operator/family per PR | Stages 1–2; Stage 3 for blocks | yes |
+| 5 — remove obsolete history | [#117](https://github.com/SharurTrading/exchange-hours-rs/issues/117) | CME; other served; dormant cleanup PRs | Stages 1–2; preserve Stage 4 corrections | yes |
+| 6 — consumer migration | [#118](https://github.com/SharurTrading/exchange-hours-rs/issues/118) | separate SharurPlatform PR | Stage 2; validate final Stage 4–5 candidate | yes, candidate before tag; published pin after |
+| 7 — release verification | [#119](https://github.com/SharurTrading/exchange-hours-rs/issues/119) | release PR, then published consumer pin | reviewed Stages 1–6 | final gate |
+
+Stage 4 scalar/source work and Stage 5 pruning may proceed independently after
+Stage 2, provided each PR rebases on any overlapping reviewed change. Do not split
+one day's exception implementation between scalar and replacement layers across
+PRs. Stage 6 validates with the release candidate before publication and pins the
+published version afterwards, avoiding a dependency cycle with Stage 7.
+
+Existing issues retain these dispositions; links to completed historic work live
+in the archived plan. This table changes priority, not the truth of a report.
+
+| Issue | New disposition | Blocks the new release |
 |---|---|---|
-| #95 CME venue intersections | 2.1, then every 2.2 wave | yes |
-| #92 wave 2010–2012 fix round | 2.2 order 1 | yes |
-| #89 wave 2016–2018 verbatims | 2.2 order 2 | yes |
-| #90 wave 2022–2024 verbatims | 2.2 order 3 | yes |
-| #91 wave 2019–2021 truncation | 2.2 order 4 | yes |
-| #88 wave 2013–2015 retrieval | 2.2 order 5 | yes |
-| #98 fixed `### Documents` shape for the non-CME venues | 2.3, or a doc-only PR before it | yes |
-| #97 coverage-gate narrowing | 3, before stage 4 starts | yes |
-| #79 equity-index 2012 Sunday queue | 3 | no (order-entry gap; stays open if unsourced) |
-| #77 seasonal-key doc sentences | 3 | yes (doc-only) |
-| #86 cutovers outside `revisions!` | 3 | yes (served venues `coinbase_derivatives`, `eurex`) |
-| #94 `DayPolicy::may_affect` | 3, may follow the release | no (additive trait method) |
-| #93 fifth `HolidayKind` | 3, may follow the release | no (`HolidayKind` is `#[non_exhaustive]`; the Saturday rows stay declared gaps) |
-| #85 narrative debt | 4, drained by the PRs that touch each module | no (dormant) |
+| [#93](https://github.com/SharurTrading/exchange-hours-rs/issues/93) special-session blocks | Stage 3; exact data in Stage 4 | yes |
+| [#98](https://github.com/SharurTrading/exchange-hours-rs/issues/98) non-CME document-id tables | Stage 4, for remaining touched evidence | yes for served evidence |
+| [#77](https://github.com/SharurTrading/exchange-hours-rs/issues/77) seasonal snapshot documentation | Stage 2B; name the static state and retain seasonal tests | yes |
+| [#79](https://github.com/SharurTrading/exchange-hours-rs/issues/79) undated 2012 Sunday queue | Stage 1/4 baseline audit; no search for the old cutover solely for its own sake | yes if a 2025-onward phase is still withheld; otherwise historical only |
+| [#86](https://github.com/SharurTrading/exchange-hours-rs/issues/86) cutovers outside `revisions!` | Stage 2B/5 audit all retained post-floor or boundary-context selectors | yes for any retained unfenced boundary |
+| [#105](https://github.com/SharurTrading/exchange-hours-rs/issues/105) dairy/lumber scope mismatch | Stage 1/4/6 check actual consumer mapping and 2025-onward rows | yes if a served instrument uses the wrong family; otherwise dormant evidence |
+| [#85](https://github.com/SharurTrading/exchange-hours-rs/issues/85) narrative debt | move narrative when Stage 4/5 touches its module | only the touched-module obligation |
+| [#94](https://github.com/SharurTrading/exchange-hours-rs/issues/94) overlay coverage optimization | keep as a separate performance follow-up | no, unless a correctness defect is found |
+| [#107](https://github.com/SharurTrading/exchange-hours-rs/issues/107) per-occurrence optimization/benchmark target | preserve soundness fences; benchmark in Stage 2/3/5 | no numeric performance target is newly imposed |
+| [#89](https://github.com/SharurTrading/exchange-hours-rs/issues/89) pre-2025 quotations | superseded research scope; preserve disclosure until Stage 5 removes the affected shipped claims | no new retrieval; [#117](https://github.com/SharurTrading/exchange-hours-rs/issues/117) owns removal |
+| [#101](https://github.com/SharurTrading/exchange-hours-rs/issues/101) 2010–2012 interest-rate holiday grid | superseded research scope; Stage 5 removes the affected era | no new retrieval; [#117](https://github.com/SharurTrading/exchange-hours-rs/issues/117) owns removal |
+| [#110](https://github.com/SharurTrading/exchange-hours-rs/issues/110) 2016–2018 livestock encoding | superseded; do not encode another old era | no |
+| [#112](https://github.com/SharurTrading/exchange-hours-rs/issues/112) 2022/2024 Coinbase source defects | superseded research scope; preserve disclosure until Stage 5 removes affected rows | no new retrieval; [#117](https://github.com/SharurTrading/exchange-hours-rs/issues/117) owns removal |
 
-**The ordering rule.** Served before dormant; inside a tier, quick wins first, meaning
-work whose evidence is already retrieved and verified comes before work that needs a new
-retrieval. Nothing is tagged until stage 6's gate holds. Stages 3 and 5 are independent
-of the holiday work and may interleave with it.
+Do not close historical issues as “fixed” when scope merely changed. Keep their
+existing bodies and artifact references. Stage 5 may close them as superseded once
+no affected shipped claim remains. Do not close mixed-scope #79/#86/#105 by date alone.
 
-**Two definitions every holiday PR uses.**
+## 4. Stage 0 — plan PR only
 
-- **Floor.** Coverage starts on 2010-01-01, or on the identity's first trading day if
-  that is later (for example Coinbase Derivatives or MEMX). A venue that has stopped
-  trading ends on its last trading day (Small Exchange: 2025-03-21). If the operator's
-  own documents, archives included, do not reach the floor, the table starts where they
-  do and the evidence file names the gap and what would close it (the amended
-  LAW-HOLIDAY-SCOPE).
-- **Published future as of the inspection date.** The inspection date is the UTC date
-  the operator's calendar was last read for that identity; the `retrieved` stamps on the
-  evidence file's documents carry it, and the `## Holidays` section's opening paragraph
-  states it. Coverage ends on the last date the operator had published unconditionally
-  at that inspection. A "preliminary", "indicative" or "to be announced" calendar is not
-  published: Eurex 2027 is the precedent, and it does not ship.
+**Entry / inputs:** the maintainer decisions above, the current charter/release
+plan, actual source and ledger state, and current issue bodies.
 
-### Stage 1 — Land #96
+**Edits:** amend this plan and the charter; align maintenance and release guidance;
+add explicit transition notices where current APIs differ from the target. Preserve
+all runtime data and coverage counts. Preserve completed stages in the archive.
+Create/link #114–#119, reuse #93, and record the issue dispositions above.
 
-- Merge (squash) once CI and CodeRabbit are green on the head commit. Stage 1 is done
-  when this file is on `main`.
-- Background for later waves, in `holiday-tables/ASSEMBLE-result.md`: the gate window
-  is `[D-1, D+19]`; nine `globex_cryptocurrency` Closed rows were withdrawn because the
-  five-day era has no business-date roll (memo D9 is amended in the PR's Review
-  section); CME document ids are `CME-SVC-<first eventDate>`.
+**Tests / acceptance:** documentation links and stage dependencies are consistent;
+all future work has an issue; current capabilities are not described as already
+migrated; no Rust, runtime table, consumer or package-version change is present;
+full verification passes. Open and attach the attributed PR and leave it unmerged.
+The next agent begins Stage 1 only after plan review.
 
-**Wave 1 landed 2026-09-13 (UTC).** The eight verifier defects are repaired and
-re-verified in the research store's block (the repaired copy and the repair
-script are in `.wave6-scratch/`, which the PR removes; the committed record is
-the evidence files' quotations). Outcome per family, over trade dates
-2010-01-01 .. 2012-12-31, all **T1** from CME's own holiday-calendar PDFs:
-`globex_equity_index` 34 rows, `globex_interest_rates` 33, `globex_fx` 51,
-`globex_energy` 38, `globex_grains` 22, `globex_livestock` 27 — **205 rows**.
-Each family's table then declares **two audited windows**, `2010-01-01 ..
-2012-12-31` and `2025-01-01 .. 2027-12-31`: the intervening 2013-2024 interval is
-audited by neither wave's documents, so it is named as the remaining stages'
-work rather than counted as normal (`HolidayCoverage::windows`). The four CME
-venue tables extend over the same years by the same D17 intersection rule:
-COMEX and NYMEX carry 38 agreed rows each and nothing withheld, while CBOT
-states nothing on 33 dates and CME on 49 — `Unsourced` rows, the disagreement
-named per date in their evidence files. Over both eras CBOT therefore carries 79
-rows (15 stated, 64 `Unsourced`) and CME 96 (15 stated, 81 `Unsourced`). The
-agreed rows include the six Globex full closures of 2010-2012, which are the
-first closures the intersection has stated below 2025. `globex_cryptocurrency` is deliberately left at its 2025-2027 window —
-CME listed no cryptocurrency product before 2017-12-17, so a 2010-2012 window
-would assert an audit of years in which the family did not exist — and
-`globex_nikkei_225_dollar` keeps its window because the era's sheets print one
-Nikkei line. Three instant shapes the scalar vocabulary cannot state are named
-as gaps rather than approximated: the Good Friday eves' 15:30/17:00 stated
-re-opens, the 2012-07-03 equity 15:30 re-open, and the eighteen interest-rate
-Monday holidays (#101, a normal-week finding the wave surfaced). `venues.rs` is
-split into one module per venue because the added rows took it past the 500-line
-reviewability guard; no row moved.
+**Handoff:** PR/head, checks, review status, issue map and explicit “Stage 1 next”.
 
-### Stage 2 — Served holidays to the floor (release-blocking)
+## 5. Stage 1 — inventory saved evidence (#114)
 
-The design memo (`holidays/DESIGN-holiday-tables.md`, §5.1–5.2) names, per block, the
-evidence repairs that must happen before its rows ship. The verdict in
-`<block>.verify.json` wins over `<block>.json` on any row. Each CME wave is: repair the
-named items in the block's JSON, encode the families by copying the wave-1 pattern
-(`src/calendar/schedules/holidays/<family>.rs`, the `## Holidays` section in
-`docs/evidence/<family>.md`, the seven required tests per family in
-`tests/futures_family_boundaries/holidays_<family>.rs`), run the gates, open the PR.
+**Entry:** reviewed Stage 0. **Inputs:** actual consumer family/admission maps;
+`docs/schedules/verification.md`; owner modules, holiday tables and evidence files;
+the following paths relative to `EXCHANGE_HOURS_RESEARCH`:
 
-**2.1 CME venue tables for 2025–2027 — no retrieval.** Derive `cbot` (grains ∩ interest
-rates), `comex` and `nymex` (the metals and energy halves of `globex_energy`) and `cme`
-(the six families that route to it) from the family rows #96 already ships, by memo D17:
-full closures agree across families; a date on which the families disagree emits
-`HolidayKind::Unsourced` rather than a venue row, and the disagreement is named in the
-venue's evidence file. This gives the four served
-identities without a table their first rows and starts #95; the D17 agreement
-assumption is audited wave by wave, so #95 closes with the last 2.2 wave.
+| Saved input | Reuse boundary |
+|---|---|
+| `holidays/cme-2025-2027.json`, its `.r0`/`.r2` and `.verify`/`.verify.r1` siblings | use corrections/verdicts to identify authoritative rows; do not assume a suffix alone means final |
+| `holidays/raw/cme-2025-2027-fix/` and `holidays/raw/cme-2025-2027-repair/` | resolve cited bytes, indexes and digests before trusting transformed rows |
+| `holidays/cde-2021-2026.json`, its `.verify.json`, `holidays/raw/cde-2021-2025/` | only 2025 onward contributes historical coverage; retain earlier baseline evidence when needed |
+| `holidays/cfe-eurex-ice-cde-smfe-2026-2027.json`, verdicts, raw/fix indexes | reuse each scope's actual saved years; retrieve missing 2025 material separately |
+| `holidays/DESIGN-holiday-tables.md`, `holiday-tables/DECISIONS.md`, owner evidence files | distinguish implemented scalar behavior from the approved block/error work |
 
-**Landed 2026-09-13 (UTC)** (`holidays/venues.rs`, one module for the four tables).
-The rule above was the one implemented; what follows is how its two operative phrases
-were read, and both readings follow the `iceus` venue table that shipped first:
+**One inventory PR:** add `docs/schedules/coverage-2025.md` with one row per served
+instrument scope: canonical identity, consumer routing evidence, baseline source,
+normal-week and holiday audited ranges, actually complete ranges, missing/disputed
+dates or phases, special-session needs, publication horizon, document ids and
+artifact locations/digests, and closing issues. Identify no-holiday and synthetic
+scopes explicitly. Keep lengthy quotations in owner evidence files. Check #79 and
+#105 for effects that survive the new floor; do not copy old served counts.
 
-- **A disagreement ships `Unsourced`, not silence.** `HolidayCoverage` defines a date
-  inside the window with no row as **audited normal**, so dropping a disputed date
-  would make the crate positively claim the date was ordinary — false on every one of
-  them. `HolidayKind::Unsourced` clips nothing and answers nothing while telling the
-  caller the date is special. It was already in the vocabulary and already used by
-  `iceus`; nothing in D17's intent is given up, and the reverse evidence fence
-  (`every_evidence_holiday_line_exists_in_its_module`) requires the row to exist before
-  a venue evidence file may list the date at all.
-- **"Disagree" includes a family that states nothing.** A family with no row on a date
-  on which another family states one has *audited the date normal*, which is a
-  different answer, not a missing one. Counting those as disagreements is what makes
-  the `no row in FX` dates unsourced; the closing condition is recorded in `cme.md`.
+**Tests / acceptance:** resolve every cited inventory artifact and its digest;
+compare inventory membership with the ledger and actual consumer map; account for
+`Unsourced` rows and narrative gaps separately from outer coverage bounds. Record
+missing source bytes as missing, not verified. No runtime changes. Full gates pass.
 
-Result: `cme` 9 `Closed` + 32 `Unsourced`; `cbot` 9 + 31; `comex` and `nymex` 36 rows
-each with no disagreement at all, because metals and energy are one key and CME prints
-them as one product row. `cbot`'s ledger cadence moves `quarterly` → `monthly`
-(LAW-WATCH: a served identity that ships a holiday table), and the README's
-holiday-coverage count moves 22 → 26.
+**Handoff:** inventory commit, evidence corrections, missing inputs/issues, and the
+specific identity list Stage 2 coverage metadata must cover.
 
-**2.2 CME family waves, most-ready first.** Every wave PR also extends the four venue
-tables over its own years by the rule in 2.1, so there is no separate venue wave.
+## 6. Stage 2 — coverage errors (#115)
 
-| Order | Years | State of the evidence (memo §5.1) | Do first |
-|---|---|---|---|
-| 1 | 2010–2012 (#92) | round 1 PASS; nothing load-bearing | fix the eight non-blocking defects (quoting convention, the `nikkei 2010-02-15` label, the 2012 Good Friday capture, the 2010-12-23 energy source, the count typo); this wave lands the January-2010 floor — **landed 2026-09-13 (UTC), see the wave note below** |
-| 2 | 2016–2018 (#89) | one narrow load-bearing item; "no instant, status or family-level value is wrong" | correct the three Grains verbatims that quote the deleted MGEX Apple Juice row — **landed 2026-09-14 (UTC) as #103; see the wave note below** |
-| 3 | 2022–2024 (#90) | two state-neutral load-bearing items | repair the 2023-11-23 grains verbatim and the zone-provenance sentence; ship 2023 MLK/Presidents'/Good Friday and the 13 Nikkei 2024 rows as `Unsourced` — **in progress on `cme-holidays-2022-2024` (opened 2026-09-15 UTC); see the wave note below** |
-| 4 | 2019–2021 (#91) | no value wrong in 440 rows; evidence discipline only | re-extract the 314 hard-truncated verbatim fields from the saved bytes; withdraw the false "no standalone 2020 Good Friday workbook" claim; Juneteenth 2019–2021 is `Unsourced` — **landed 2026-09-16 (UTC); see the wave note below** |
-| 5 | 2013–2015 (#88) | five load-bearing items; needs a retrieval | retrieve `2013-4th-of-july-done.pdf` (it changes 2013-07-03 for livestock, dairy and lumber) and the 42 unretrieved earlier captures, then fix the other named items; no 2013-07-03 row ships before that document is read |
+**Entry:** reviewed inventory. **Inputs:** `ExchangeCalendar`, `PolicyCalendar`,
+`CalendarSource`, `QueryContext`, holiday/exception coverage, identity profile
+routing, bulk builders, and the public session/candle/period adapters.
 
-**Wave 2 landed 2026-09-14 (UTC) as #103** (merge of `9e08430`). The three round-3
-defects are repaired in the
-research store's block before any row shipped (the three Grains verbatims re-read from
-the annual-bundle revisions they cite, the coverage's normalisation sentence completed,
-the 2018-11-23 metals note quoted symmetrically), and the block's rows are encoded at
-**T1** over trade dates 2016-01-01 .. 2018-12-31: **197 rows** across the six CME
-families — equity index 34, Nikkei 225 (dollar) 34, interest rates 31, FX 31, energy 31,
-grains 36 — with each family declaring a **third** audited window, so the two remaining
-holes are 2013-2015 (wave 5, #88) and 2019-2024 (waves 3 and 4, #90 and #91). The four
-venue tables extend over the same years by D17: `cme` and `cbot` ship nine `Closed` rows
-and 27 `Unsourced` ones, and `comex`/`nymex` carry `globex_energy`'s 31 rows unchanged. A
-routed family with no table for the era, `globex_livestock`, **abstains** rather than
-disputing — it has no answer for 2016-2018 — so the families that cover the era decide
-each date. The 27 dates `cme` withholds are the 22 on which every covered family states its own
-boundary and they disagree, plus 5 on which `globex_grains` is unmatched: 2016-12-23 and
-2017-12-22, agricultural half-days every financial family audited normal, and 2017-07-03,
-2018-07-03 and 2018-12-26, where `globex_equity_index` states a *different* row (a 12:15 CT
-close, a 12:15 CT close, and a 15:30 CT open). `cbot` withholds the same 27 by a different
-split, because it routes `globex_interest_rates` rather than the other four.
+**2A — metadata and error types, one PR.** Add documented, non-exhaustive public
+coverage/error types. Store sourced normal-week ranges separately from complete
+calendar ranges and known internal gaps. Reuse sorted static data; an empty holiday
+table needs an explicit audited-normal/no-holiday assertion, not fabricated rows.
+Metadata includes the identity and supported ranges; errors distinguish unsupported
+coverage from bounded search exhaustion. Inspectable metadata is not permission to
+return a fabricated schedule.
 
-**Wave 3 landed 2026-09-16 (UTC) as #104** (merge of `0a2de80`, the wave-4 branch point). Six round-2 defects were repaired in the research
-store's block before any row shipped — the `2023-11-23` GRAINS verbatim, which quoted a
-`TRADE DATE: FRI 24 NOV` label out of the *FX* row's Thursday cell rather than the
-grains row's empty one; the zone-provenance sentence (four of the seven 2023/2024
-one-pagers print the Central Time line twice, three once in the header only); the 2022
-UTC-offset enumeration (five daylight-time sheets at `ET +1  UTC  +5`, six
-standard-time at `+6`); the truncated `2024-09-02` ZC verbatim, which listed seven of
-that eventDate's nine events; the `'closed'` rule's wording, which read literally
-swallowed `modified` and `early_close`; and one `SUPERSEDED IN PART` pointer on the
-round-0 INDEX. Verifying the first of those took two independent re-derivations and a
-correction to this plan's own reviewer: the label is byte-present, but it sits in the
-FX row's cell, which is why the round-1 attribution was the over-claim. The block's
-rows then encoded at **T1** (2022 workbooks, 2023 one-pagers) and **T2** (2024 service
-windows) over trade dates 2022-01-01 .. 2024-12-31: **237 rows** — equity index 35,
-energy 33, FX 14, grains 39, interest rates 33, livestock 33, cryptocurrency 14, Nikkei
-225 (dollar) 36 — so each family declares a **fourth** audited window and the remaining
-holes are 2019-2021 (wave 4, #91) and 2013-2015 (wave 5, #88). `globex_grains` alone
-gains the six day-after-closure late opens and three `LateOpenAndEarlyClose` rows, and
-**38 rows ship `Unsourced`**: the three 2023 dates
-(2023-01-16, 2023-02-20, 2023-04-07) CME published nothing this crate could read in any
-family, each cited to the T2 capture that proves the service returns an empty event list
-for that window, thirteen 2024 dates for the Nikkei key whose
-service window carries no Nikkei product, and 2022-05-30 for that key, whose sheet
-merges the outright and BTIC lines under one printed `01:00` close — the crate
-withholds the instant rather than assert the BTIC leg's. Two product groups CME prints
-that have no crate key, `dairy` and `lumber`, fold into `globex_grains` and
-`globex_livestock`; the four dates on which their own printed instants differ are named
-in those two evidence files, and the closing condition is a consumer that maps them.
-The four venue tables extend over the era by D17 and their disagreements are recorded
-per venue.
+**2B — query and adapter migration, one compiling PR.** Identity-backed date-aware
+queries return `Result<existing_value, CalendarQueryError>`; preserve existing
+`Option` inside `Ok` where it means genuine absence. Propagate errors through status,
+orders, boundaries, trade dates, next sessions, candles, weeks/months and caller
+layers. Do not swallow errors with `.ok()`, `unwrap_or(false)` or a default grid.
+Migrate all in-crate callers, examples and applicable tests together. Resolve #77's
+static-season documentation and #86's retained-boundary fence obligations.
 
+The implementation contract is:
 
-**Wave 4 landed 2026-09-16 (UTC) as this change** (branch `cme-holidays-2019-2021`).
-The round-2 verdict on `cme-2019-2021` failed the block on evidence discipline alone — no
-date, status, tier or instant value wrong in any of the 440 family rows — and the four
-discrepancies were repaired in the research store before a row shipped, in
-`holidays/cme-2019-2021.r2.json` plus `holidays/cme-2019-2021.repair.json`, with round 1
-kept byte-identical. **N4, the issue's headline item:** all **314** `verbatim`/instant
-fields that ended in a mid-token ellipsis were re-emitted at full length *from the saved
-bytes* in `raw/cme-2019-2021/text/`, not extended from context. The remaining 96
-`verbatim` fields that still mixed a quotation with a column label, an elided cell or an
-appended note were re-emitted as the printed row too, with the editorial material moved to
-a new `note` field on the entry, so **every non-Nikkei `verbatim` in the block is now a
-literal line of its cited sheet** — an independent checker re-derives that for all 352
-entries and finds zero exceptions. The NOTATION paragraph was amended to say exactly that,
-and no string in the block ends in an ellipsis.
-The two fields that had lost part of a printed instant (2019-01-01 `globex_grains`
-`open_instant`, 2020-12-25 `globex_livestock` `open_instant`) now carry the whole cell.
-**N1:** the false "no standalone 2020 Good Friday workbook" claim is withdrawn in both raw
-`INDEX.md` files and in the block, replaced by the exact-URL CDX result and the 2024-12-02
-capture of `2020-good-friday-schedule.xls`, and the absence claim was re-checked with a
-fresh prefix crawl `from=2018 to=2027` (369 rows, 340 distinct filenames). **N2:** the
-enumerated paraphrased instant fields take the verdict's own wording (the 2021-07-05 grains
-cell, the seven lumber `9:00CT` cells, the 2019-01-01 grains cell, the 2020-12-25 livestock
-cell) and the surviving class is answered by the amended NOTATION paragraph. **N3:**
-`shasum.txt` carries the verdict's preamble and still verifies 86/86.
+- The instant-query floor is venue-local midnight at the start of 2025; existing
+  date-keyed APIs use 2025-01-01 in their documented local-date domain. Public
+  timestamps remain UTC. Do not impose a single UTC midnight on every venue.
+- Retain enough earlier internal context to answer an in-range query's full
+  session/gap; a returned session opening may precede the floor. Direct earlier
+  identity queries still error. Neither a floor nor an upper bound truncates a
+  real session to manufacture a result.
+- Check dates needed to establish the answer, not just the supplied instant.
+  Searches cannot skip an unknown date to claim the next known session is next.
+  Period bounds needing unknown days error. Do not reject on speculative internal
+  probes unrelated to the result; fence the actual dependency window.
+- `hours_at`/`hours_for_*` and bulk snapshot selection check normal-week coverage
+  only and retain their no-holiday contract. Detached caller-supplied `MarketHours`
+  queries remain unchanged. `session_profile` remains a static table accessor.
+  Resolve invariant timezone metadata without querying a pre-floor epoch snapshot.
+- `without_holidays` explicitly selects the normal-week contract, not complete
+  calendar coverage. `DayPolicy` alone cannot certify unknown dates. A correctly
+  scoped full caller replacement may supply a missing date above the floor;
+  `KnownNormal` still needs a sourced baseline. Caller data never improves the
+  built-in ledger, and no overlay bypasses the identity floor.
+- Synthetic calendars keep their explicitly documented mathematical semantics;
+  real no-holiday calendars require evidence. Preserve sourced pre-launch closures
+  within the supported date domain as known closures, not missing evidence.
 
-The repaired block then encoded at **T1** over venue-local trade dates
-2019-01-01 .. 2021-12-31: **292 rows** — equity index 36, energy 35, FX 35, grains 42,
-interest rates 35, livestock 37, cryptocurrency 36, Nikkei 225 (dollar) 36 — each family
-declaring a fifth (livestock, Nikkei: fourth; cryptocurrency: third) audited window, which
-left **2013-2015 (#88)** as the one interval no wave had audited — since closed by wave 5. Shapes: 103 full closures, 157
-early closes, eight `globex_grains` late opens — five day-after-closure `late_open(08:30)`
-rows (2019-01-02, 2019-07-05, 2019-12-26, 2020-01-02, 2021-07-06) and three
-`late_open_and_early_close(08:30, 12:05)` rows on the day after Thanksgiving — and 24
-`Unsourced` rows, three per family, for **Juneteenth 2019, 2020 and 2021**, each cited to
-that year's own consolidated bundle. The 2021 Juneteenth is a Saturday with no trade date;
-the row clips nothing and is keyed to the operator's own calendar date rather than to an
-observed date CME never states. **Columbus Day and Veterans Day 2019-2021** (six dates)
-carry no row and are named gaps: CME published settlement and clearing advisories for them
-and never a Globex trading schedule. `globex_nikkei_225_dollar` follows the quoted
-`Equity`/`Equity Products` line on all 44 block dates — an interpretive step stated in its
-evidence file, with the five `modified` dates where CME's own Nikkei-labelled BTIC row
-diverges recorded beside it. `dairy` and `lumber` fold into `globex_grains` and
-`globex_livestock` for reporting only, with every divergent date named.
+**Tests / acceptance:** public integration cases for before/at the floor in opposing
+zones, crossing sessions, post-close queues, future bounds, internal gaps, lookahead,
+periods, overlays and synthetic/no-holiday scopes. Supported results remain stable.
+Keep `Copy + Send + Sync`, deterministic total functions and bounded allocation-free
+built-in queries. Both PRs pass full gates; 2B includes benchmark comparison.
 
-The four venue tables extend over the era by D17: `cme` 42 rows (8 `Closed` + 34
-`Unsourced`), `cbot` 42 (8 + 34), and `comex`/`nymex` 35 each, carrying
-`globex_energy`'s rows unchanged. Each withheld date's disagreement is named per venue in
-its evidence file. Two pre-existing documentation defects surfaced while the era's
-evidence was written and are fixed here: the eight families' evidence files repeated a
-whole era's document ids inside the next era's `### Documents` table (201 duplicate rows),
-hidden from the "one id resolves once" fence because every one of those tables carried a
-blank line between its header and its separator, which made the fence read zero rows and
-skip the file; and `cbot.rs`'s 2016-2018 paragraph said `globex_interest_rates` "audited
-normal" the eighteen Monday and Thursday holidays, where it in fact states an early close
-at 12:00 CT — which is why those dates are disputed. `tools/wave4_rows.py`, `tools/check_wave4.py`,
-`tools/venue_intersection_wave4.py`, `tools/encode_wave4.py`, `tools/wave4_repair.py` and
-`tools/evidence_wave4.py` reproduce the rows, the venue tables and the evidence from the
-research store; `tools/README.md` documents the `WAVE4_RESEARCH` variable they read.
+**Handoff:** complete signature migration map, error semantics, tested boundary
+cases and the supported metadata fixtures Stage 3 and the consumer will use.
 
-**Wave 5 landed 2026-09-17 (UTC) as this change** (branch `cme-holidays-2013-2015`).
-The round-2 verdict on `cme-2013-2015` failed the block on **twelve** discrepancies, five
-of them load-bearing, and all twelve were repaired in the research store before a row
-shipped, in `holidays/cme-2013-2015.r2.json` plus `holidays/cme-2013-2015.repair.json`,
-with round 1 kept byte-identical (`sha256 7628c599…`). The headline item is the one the
-plan recorded as a blocker: **CME revised the 2013 Independence Day schedule after the
-capture the block cited**, at a sibling URL the earlier rounds never retrieved
-(`2013-4th-of-july-done.pdf`, footer `Last updated 7/2/2013`). The verifier had already
-pulled and saved it; the repair re-derives the 2013-07-03 `livestock+dairy+lumber` row
-from it — `early_close` at 12:00 CT (Dairy, Lumber), 12:02 CT (Lumber Options) and
-12:15 CT (Livestock Futures & Options), where the cited 6/4/2013 revision had all three
-inside a `Regular Close - Per each product schedule` list — and demotes the earlier
-statement to a `superseded` lineage entry. The other load-bearing items: the same
-revision's `1215 CT - Early MGEX Wheat & Apple Juice close` replaces the superseded
-`Early MGEX Wheat close` line; the completeness claim is rewritten to the PDF half of
-CME's in-place revision history, whose **42 earlier distinct-digest captures** were
-retrieved and reconciled line by line (`tools/wave5_reconcile.py`, output in the crate's
-`tools/out/wave5/reconciliation.json`); the Good Friday 2013 zone gap is closed from
-CME's own workbook rather than inferred across years; and the Interest-Rate/FX grouping
-claim becomes 57 of 58 sheets with the X13GFPD `Good Fri.` exception stated. The rest are
-record hygiene — the unmodelled printed product lines are named as gaps with their closing
-conditions, the two document-title quotations regain the registered-trademark glyph, the
-the round-1 block's zero-padded clock fields are re-emitted as CME printed them — item 10
-de-pads all 80 the round-1 block had padded, and item 13 settles each against the artifact its
-row cites, re-padding the 48 that CME prints with a leading zero and leaving 32 bare —
-and the
-round-0 `INDEX.md` gains a dated amendment pointer. Every repair is guarded by a `before`
-check, so the tool cannot run silently against a different block.
+## 7. Stage 3 — built-in special sessions (#93)
 
-The repaired block then encoded at **T1** over venue-local trade dates
-2013-01-01 .. 2015-12-31: **251 rows** — equity index 38, energy 33, FX 47, grains 43,
-interest rates 47, livestock 43 — so every interval from the January-2010 floor is audited
-for five of those six families, while `globex_livestock` keeps its 2016-2018 gap (issue
-#110). Shapes: 87 full closures, 141 early closes, 19 late opens and four
-`late_open_and_early_close` rows. The review of this wave added the two Maundy-Thursday
-early closes 2013-03-28 and 2014-04-17 that the first encoding dropped, and re-keyed
-2013-07-03's livestock row to its own line's 12:15 CT rather than Dairy's 12:00 CT.
-`globex_livestock` carries the non-scalar shapes because its grid changes *inside* the
-window: CME SER-7194 removed the evening sessions on 2014-10-27, so the 2013 year-end
-reopenings at 09:05 CT are late opens while the 2014 and 2015 ones at 08:00 CT are the
-grid's ordinary open and ship nothing. `globex_grains`' day session does not run on the
-Monday and Thursday holidays, so those are `Closed` where the financial families state an
-early close — the same distinction the 2016-2018 era records. `globex_cryptocurrency` and
-`globex_nikkei_225_dollar` declare no 2013-2015 window and ship no row for it: no crypto
-product existed before 2017-12-18, and no Nikkei-specific line is printed on any
-2013-2015 sheet, both recorded in their evidence files. **Columbus Day and Veterans Day
-2013-2015** carry no row: CME's own sheets state in session language that Globex ran a
-normal schedule.
+**Entry:** reviewed Stage 2. **Inputs:** `ExceptionBlock`, `SessionExceptionSource`,
+`StaticSessionExceptions`, `query/replacement.rs`, `HolidayKind`, holiday macro/fences,
+and the exact unresolved 2025-onward shapes in the inventory and #93.
 
-The four venue tables extend over the era by D17: `cme` 58 rows (8 `Closed` + 50
-`Unsourced`), `cbot` 54 (8 + 46), and `comex`/`nymex` 33 each, carrying
-`globex_energy`'s rows unchanged — and over 2010-2027 as a whole `cme` carries 273 rows
-(47 stated, 226 withheld), `cbot` 250 (47, 203) and `comex`/`nymex` 206 each. **#95 closes
-with this wave**: `tools/check_wave5.py` recomputes the intersection from the families' own
-tables over every date from 2010-01-01 to 2027-12-31 on which at least one routed family
-declares a window (a family with no window there abstains and the covered families decide),
-compares row by row, and the result is recorded in the four venue evidence files. The wave's tools are
-`tools/wave5_repair.py`, `tools/wave5_reconcile.py`, `tools/wave5_rows.py`,
-`tools/check_wave5.py`, `tools/encode_wave5.py`, `tools/venue_intersection_wave5.py`,
-`tools/evidence_wave5.py` and `tools/gen_wave5_tests.py`; `tools/README.md` documents the
-`WAVE5_RESEARCH` variable they read.
+**One engine PR:** extend built-in holiday data with a static replacement-block kind,
+reusing the existing replacement resolver and validation. Each row retains its tier
+and document id. Built-in blocks replace the complete trade date; explicit caller
+`Closed`/`ReplaceSessions` wins over that arrangement, then `DayPolicy` clips the
+chosen result. Do not apply a scalar row a second time to an already replaced date.
+`without_holidays` detaches all built-in date exceptions. Add fixtures, not invented
+exchange data; operator-specific rows land in Stage 4 with their evidence.
 
-**2.3 Served non-CME venues back to the floor — new retrieval.** Nothing below 2026 was
-ever retrieved for these. One PR per venue, split by year range if it exceeds a day,
-smallest history first. Each carries its dormant sibling keys, which read the same
-operator documents, and each brings the venue's evidence files into the fixed
-`### Documents` shape so the id fences cover them (#98; a doc-only PR may close #98
-ahead of this):
+**Tests / acceptance:** public `session_exceptions` and holiday/policy suites cover
+pause/reopen, regular-only closure, added Saturday sessions, multi-day and reassigned
+trade dates, order-entry changes, DST and precedence. Validate block ordering, bounds,
+scope and citations. Every query family observes the same replacement. Full gates and
+benchmark comparison pass. An unstated halt instant remains a source gap even when
+the new representation could encode a hypothetical value.
 
-| Order | Venue | Rides along |
-|---|---|---|
-| 1 | `coinbase_derivatives` (from its first trading day) | — |
-| 2 | `cfe` | `cfe_vix` |
-| 3 | `iceus` | `ice_us` and the six `ice_us_*` product keys |
-| 4 | `eurex` | the `eurex` key and `eurex_fixed_income` |
+**Handoff:** supported block format, fixture coverage, performance result and exact
+inventory rows now representable; unresolved evidence stays linked to #116.
 
-**Landed, order 1 (2026-09-19 UTC).** `coinbase_derivatives` now ships 58 rows over
-2021-06-28 .. 2026-09-07 — 50 closures, six early closes and two `Unsourced` dates — all T1 from
-the operator's own Market Notices, whose listing reaches back to the venue's launch. The 2026-09-08
-onward notices stay with §2.4. Its evidence file carries the fixed `### Documents` table, so #98
-is four files lighter but still open on CFE, Eurex and ICE.
+## 8. Stage 4 — complete served calendars (#116)
 
-**2.4 Refresh the published future.** Within the month of the release, re-inspect every
-served operator and extend each table to what it has now published: CME 2028 once it
-appears in the trading-hours service, Coinbase Derivatives' Thanksgiving and Christmas
-2026 notices, ICE's and Cboe's next calendars, Eurex 2027 once it is final.
+**Entry:** reviewed inventory and Stage 2; Stage 3 before any block rows. **Inputs:**
+Stage 1's exact scopes and artifacts, current family/venue modules, source registry,
+operator publications and per-family public integration suites.
 
-### Stage 3 — Served-key hygiene
+**PR order:** (1) one CME family per PR, reusing its captured 2025–2027 artifacts;
+(2) Coinbase 2025 onward and new notices; (3) CFE 2025 and refreshed future;
+(4) ICE Futures U.S. 2025 and refreshed future; (5) Eurex 2025 and refreshed future.
+A shared operator PR may carry sibling keys using the same evidence if bounded.
+For every PR:
 
-- **Time-bound first:** `globex_cryptocurrency`'s 2026-09-19 Saturday row is a
-  forward-dated **Scheduled** row. After that day, confirm against CME that it happened
-  and clear the marker, or remove the row and record the correction (RELEASING.md
-  step 5).
-- **#79**: source the 2012 Sunday Pre-Open move (16:15→16:00 CT) for
-  `globex_equity_index` from CME's own channels (the 2012 trading-hours captures are in
-  the research store under `cme-globex/`), or leave the 16:00–16:15 quarter-hour
-  withheld and keep the issue open. This is an order-entry gap; it does not affect
-  `is_open`.
-- **#77**: fix the `session_profile` and `hours_for_market_hours_key` doc sentences so
-  they say which state a seasonal key's static table holds. Doc-only PR.
-- **#97, before stage 4 starts — landed 2026-09-17 (UTC), see the PR that closes it**:
-  the `[D, D+1]` narrowing of the coverage gate is proved and re-measured. With
-  2010–2027 history nearly every day sat within 19 days of some row, so the sound
-  `[D-1, D+19]` window opened the gate almost always and the memo's hot-path claim did
-  not hold. An occurrence that a session opening on its own local day still closes
-  after is dated by that trading day, so its window is `[D, D + 1]`; only an occurrence
-  whose own trading day has already closed — CBOT's Friday 14:30 CT order-entry window,
-  ICE's post-close queues — and the three sourced trade-date conventions keep the walk's
-  full reach. A new fence sweeps every session occurrence of every close-dated identity
-  from the January-2010 floor through 2027 and holds the premise the narrow window
-  rests on, and `the_coverage_gate_is_sound_for_every_shipped_row` stays green over
-  every shipped row. §6's re-measured figures are in the research store's
-  `holiday-tables/BENCH-wave1.md`; the per-instant cost that remains, and the
-  per-*occurrence* window that would remove the last adjacent-day opens, are
-  tracked in **#107**, the follow-up the re-measurement opened.
-- **#86**: give the evidence-day fence a second source of dated boundaries, so the
-  cutovers `coinbase_derivatives` and `eurex` encode as constants are fenced like a
-  `revisions!` row.
-- **#94** and **#93** are additive API (a provided trait method; a variant on a
-  `#[non_exhaustive]` enum). Do them if time allows; they may follow the release.
+- Reconcile published normal-week changes, baseline and required phases as well as
+  every holiday arrangement. Include known one-off market/session exceptions within
+  the documented scope; per-instrument expiry and ticker-level events remain out.
+- Encode only exact sourced scalar or replacement rows; resolve gaps rather than
+  expanding a window over them. Update complete coverage only when all its claims
+  hold. #98 covers the remaining non-CME document-id tables. #105 requires exact
+  product-scope handling; shared branding is not proof of matching hours.
+- Keep broad venue intersections derived from agreed family data and explicitly
+  partial on disagreement. Do not weaken their meaning to make a release counter pass.
+- Preserve every artifact id/digest and write evidence, tests, ledger cells and
+  CHANGELOG together. Reinspect future publications; do not assume all operators
+  expose the same next year or final session details.
 
-### Stage 4 — Dormant holidays to the floor (release-blocking, after stage 2)
+**Tests / acceptance:** independently derive row expectations from cited bytes;
+cover every retained cutover, holiday kind, required phase, end-exclusive boundary,
+wrap, weekend and trade-date consequence. Mutation-check each changed behavior.
+Every served instrument scope is complete from the floor/later launch through its
+stated unconditional publication horizon, including today as of its review. A shorter
+historical window or unresolved in-window gap blocks completion; record the precise
+missing source instead of passing the gate. Full checks pass per PR.
 
-Same definitions and the same one-block-per-PR unit. Dormant tables are refreshed on
-demand after the release (LAW-WATCH); `holiday_coverage()` tells a caller where each
-one ends.
+**Handoff:** per-scope complete windows, verified publication horizon, reviewed heads
+and remaining issues; do not mark the parent stage complete before every scope passes.
 
-**4.1 Quick wins from evidence already saved.**
+## 9. Stage 5 — remove obsolete history (#117)
 
-- The eleven dormant CME Globex keys (`globex_*_tas`, `globex_mini_grains`,
-  `globex_rough_rice`, `globex_weather`, `globex_event_contracts`,
-  `globex_event_contracts_btc`, `globex_spot_quoted`) from the CME holiday corpus in
-  `holidays/`, for every year that corpus prints the key's own products. Where it does
-  not, retrieve; the memo already names Weather and Mini-Sized Grains as carrying
-  distinct instants.
-- `small_exchange`: its own notices, from 2010 or its first trading day to its last
-  trading day, 2025-03-21.
+**Entry:** reviewed Stage 1 baseline inventory and Stage 2 errors. **Inputs:** retained
+profiles/seasonal selectors, revision and exact-instant fences, golden grids, owner
+evidence, coverage records and any overlapping Stage 4 corrections.
 
-**4.2 Shared calendars: one research block serves many identities.** Each operator's own
-statement is the source for its own identities; one operator's calendar is never the
-source for another's.
+**Separate cleanup PRs:** CME owners, other served owners, then dormant owners; split
+further by cohesive module if required. Retain the state sourced at the 2025 floor,
+all later changes and enough context for complete New Year session/gap answers.
+Remove obsolete earlier runtime profiles/revisions and historical identity coverage
+expectations. Do not rename identities, rewrite wire names, freeze seasonal behavior,
+reset a real launch, or add a fictitious January-2025 exchange revision. Retain cited
+older documents needed for the baseline and all raw research. Move touched narrative
+under #85 and reconcile retained dated selectors under #86.
 
-| Order | Group | Identities |
-|---|---|---|
-| 1 | U.S. equities and equity options | 40, in operator PRs: NYSE group, Nasdaq group, Cboe group, MIAX, MEMX, BOX, IEX, LTSE, TXSE, 24X, Blue Ocean ATS, FINRA TRF. Check options close times and the overnight venues cell by cell |
-| 2 | SGX | the SGX derivatives identities (`sgx` and the five `sgx_equity_index_*` keys); `sgx_securities` from SGX's securities calendar |
-| 3 | Euronext | the six `euronext_*` venues |
-| 4 | ICE Europe group | `iceeu`, `ice_europe_commodities`, `ice_europe_financials`, `ice_endex`, `ice_abu_dhabi`, `ice_canada` |
-| 5 | Nasdaq Nordic | `nasdaq_copenhagen`, `nasdaq_helsinki`, `nasdaq_stockholm` |
-| 6 | Shared national calendars | `sse` and `szse`; `nse_india` and `bse_india` |
+**Tests / acceptance:** preserve independently captured in-range public results across
+representative normal weeks, all retained cutovers/holiday rows and boundary context;
+justify intentional corrections with separate sources. Test unsupported earlier
+identity requests. Retain generic date-arithmetic and detached-snapshot fixtures even
+when their dates precede 2025. Update golden/history fences only for genuinely removed
+coverage claims. Remove affected shipped claims before retiring #89/#101/#112 as
+superseded; do not implement #110's old encoding task. Check #79's surviving baseline
+consequences separately. Full gates and relevant benchmarks pass per PR.
 
-**4.3 Single venues, larger markets first:** `lse`, `xetra`, `eex`, `six`, `tse`,
-`hkex`, `krx`, `twse`, `asx`, `tmx_australia`, `tsx`, `b3`, `bmv`, `bme`,
-`borsa_istanbul`, `vienna`, `jse`, `tadawul`, `nzx`, `bursa_malaysia`, `set_thailand`,
-`idx`, `pse`, `hose`.
+**Handoff:** owners pruned, retained baseline citations and boundary dependencies,
+closed/surviving issue numbers, regression results and remaining owners.
 
-Every stage-4 PR that touches a module listed in `NARRATIVE_DEBT` moves that module's
-narrative into its evidence file in the same change (LAW-EVIDENCE-FILES); #85 closes
-when the list is empty.
+## 10. Stage 6 — consumer migration (#118)
 
-**4.4 No holidays by nature.** `always_open` and `unknown` are synthetic;
-`binance_futures` trades 24/7 (confirm from Binance's own documents that it observes no
-closures; a maintenance window is not a holiday). Each evidence file says so in a
-`## Holidays` section, and its ledger `Holidays` cell stays `—`.
+**Entry:** reviewed Stage 2; final validation uses the Stage 4/5 candidate. **Inputs:**
+the actual SharurPlatform adapter maps, query call sites, listing windows and history
+walks. This work belongs in a separate consumer PR, not this repository's plan PR.
 
-**Size, for planning.** Stage 2 is about a dozen PRs, half of them needing no new
-retrieval. Stage 4 is roughly forty to fifty, almost all needing one.
+**Edits:** map each reachable instrument to a complete exact family/documented scope;
+resolve still-present ICE/Eurex routing gaps. Propagate coverage errors to an explicit
+unavailable-data path; do not translate them into market closure or silently skip
+history. Clamp walks to both listing bounds and supported calendar bounds. Preserve
+trade-type disclosure. Use a temporary local candidate dependency only for validation;
+the final consumer dependency must pin the published version.
 
-### Stage 5 — Consumer-side tasks (SharurPlatform, not this repository)
+**Tests / acceptance:** consumer tests cover live and historical successful answers,
+out-of-coverage and listing boundaries, future search exhaustion and exact family
+selection. Validate the candidate before the release; link the consumer PR/head in
+#118/#119. Stage 7 publishes, then completes the tagged dependency pin and verifies
+it in the consumer. Do not require an unpublished tag to exist before candidate tests.
 
-Hand these to the platform; they are the charter's consumer contract. Only item 1 waits
-for the tag.
+**Handoff:** consumer PR/head, candidate crate head, validation results and the exact
+pin change waiting for publication.
 
-1. Pin the tagged release instead of a commit (`Cargo.toml` `exchange-hours = "=1.0.0"`).
-2. Clamp the daily-chart backward walk to the contract's activation date
-   (`crates/app/src/history.rs`, the walk in `window_reach.rs`); today it reaches 2007.
-3. Add root tables for ICE Futures U.S. softs and Eurex fixed income — Rithmic admits
-   those namespaces and the crate has the keys; today those instruments silently get
-   NYSE FANG+ / FESX hours.
-4. Map any trade-type variant it ever admits to its underlying family with the variant
-   flag, never to a new key.
-5. Decide how its `DayPolicy` seam layers over the crate's built-in holiday tables (the
-   crate applies its table by default; the seam remains an override).
+## 11. Stage 7 — release verification (#119)
 
-### Stage 6 — The release (RELEASING.md, followed exactly)
+**Entry:** reviewed Stages 1–5 and the Stage 6 candidate migration. **Inputs:** their
+handoffs, current ledger/coverage inventory, operator publication horizons, outstanding
+issue dispositions and [RELEASING.md](../../RELEASING.md).
 
-0. **The holiday gate.** Every ledger row's `Holidays` cell starts at 2010-01-01, or at
-   a later start its evidence file justifies (first trading day, or a named gap where
-   the operator's archives stop), and ends at the published future of an inspection
-   made in the release's month. The only rows allowed `—` are stage 4.4's. Stages 2, 3
-   and 4 are done. If any row fails, do not tag.
-1. Branch `release/1.0.0` from `main`; set the version in `Cargo.toml` and `Cargo.lock`
-   (already 1.0.0 if the decision in §2 holds); move `[Unreleased]` into `[1.0.0]` with
-   the release UTC date; restore an empty `[Unreleased]`; update comparison links.
-2. README: installation and migration text; the coverage and assurance prose are derived
-   by fences — run the suite and fix what the failure messages print. Do not advance the
-   schedule-review cutoff unless every non-synthetic row was reviewed through the new
-   date.
-3. Clear or correct every **Scheduled** marker whose effective day has passed (stage 3).
-4. Gates, then `cargo publish --dry-run --locked` and `cargo package --list --locked`
-   (check that `docs/evidence/` and the holiday tables are in the package and that
-   nothing repository-only leaked).
-5. `cargo bench --bench calendar_queries` — informational; call out a regression. The
-   holiday tables will have grown by an order of magnitude; the coverage gate should
-   keep a no-row day at one binary search.
-6. Open the release PR; merge; from a clean checkout of the merge commit rerun the gates
-   and the dry run; `cargo owner --list exchange-hours` and `gh auth status`; tag
-   `v1.0.0` annotated; `cargo publish --locked`; GitHub release with the changelog
-   section. **DECISION (maintainer): the publish step needs the crates.io credential.**
+**Release PR:** re-inspect every served operator in the release month; incorporate
+new sufficiently specified future publications and errata. Confirm elapsed Scheduled
+rows, including any old marker still present after pruning. Update actual coverage,
+README and API migration documentation; do not advance a global review date merely
+because this narrower programme finished. Verify registry and tag state before
+choosing the breaking release version described in section 1.
 
-### Stage 7 — After the release
+**Release gate:** every actual consumer instrument maps to a complete scope from
+2025/later launch through its stated publication horizon, covering the inspection
+present. No unresolved required phase, normal-week or holiday gap may be hidden by
+an outer window, an issue, a caller overlay or a broad venue intersection. Dormant
+completion is not required; Stage 5's obsolete-runtime cleanup is required. Track
+#94/#107 as performance follow-ups without inventing a new numeric release target.
 
-- LAW-WATCH cadence: monthly for served identities that are high-churn, 24/7 or
-  holiday-bearing (after stage 2 that is every served identity); dormant on demand. A
-  review is: open the monitoring entry points in `docs/schedules/sources.md`, compare,
-  bump the ledger row's reviewed-on (UTC) if unchanged, otherwise a schedule-fix PR.
-- Each new holiday year: retrieve each served operator's calendar when it is published
-  (CME publishes one to two years ahead), encode per the wave pattern, one PR.
-- Keep the research store as the artifact cache; commit only evidence files.
+**Tests / acceptance:** full quality/MSRV checks, `cargo publish --dry-run --locked`,
+`cargo package --list --locked`, engine benchmarks and candidate consumer validation.
+Follow the existing reviewed-release/clean-checkout/authentication/tag/publish sequence;
+never tag from the plan PR or an unreviewed implementation branch. Verify the actual
+published crate/docs, finish Stage 6's version pin and run consumer checks again.
 
-## 4. Things that bite
-
-- A `|` inside a ledger cell breaks the row splitter; use " / ".
-- Every count in README and the ledger prose is derived by a fence; the failure message
-  prints the expected string — copy it, do not hand-count.
-- Production files ≤ 500 lines of code, functions ≤ 100 lines (clippy fails the build).
-- `///` doc comments need backticks around identifiers (`doc_markdown`).
-- A revision row needs an operator-stated, unconditional, day-level date (T1 or T2);
-  a capture dates the observation, never the state; rows are keyed to the local opening
-  day (Sunday for a Monday trade date on a 17:00 CT grid).
-- Never edit the working tree while a background agent owns it; use a worktree.
-- The research store is local; a fresh clone has none of it, and the plan still works
-  from the evidence files alone.
+**Handoff:** release version, crate/consumer heads, tag, publication verification,
+per-scope horizons and remaining non-blocking issue links. Monthly served-calendar
+reviews and updates as final operator publications arrive continue under LAW-WATCH;
+no year is dropped from the 2025-onward history.

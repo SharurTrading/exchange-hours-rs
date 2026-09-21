@@ -6,6 +6,13 @@ This is the repeatable workflow for reviewing or changing a built-in schedule.
 It complements the mandatory identity checklist in
 [AGENTS.md](../../AGENTS.md#adding-or-revising-an-identity).
 
+**2026-09-21 UTC transition:** the [amended release plan](../plans/2026-09-12-path-to-release.md)
+adopts complete served-scope coverage from the permanent 2025 floor. This guide
+uses that target for new work. The current Rust API, older runtime history,
+scalar tables and ledger counts are unchanged by the plan PR. Coverage errors
+(#115), built-in special sessions (#93), complete data (#116) and pruning (#117)
+are staged implementation work; follow the relevant stage before changing them.
+
 The supporting records are:
 
 - [verification.md](verification.md): one fixed-shape row per public exchange
@@ -52,7 +59,10 @@ exchange-wide cutoff.
 The evidence basis does not improve merely because a row was reviewed:
 
 - **Primary** — current boundaries are sourced at T1 or T2, with no known
-  modeled-history gap since January 2010 or since the sourced launch.
+  modeled-history gap over the recorded history. Existing rows still reflect
+  the earlier January-2010 obligation; do not upgrade them merely because the
+  target floor changed. Stage 5 updates records with the pruned data. A complete
+  2025-onward calendar additionally requires every holiday and required phase.
 - **Partial / executable** — a named gap touching a window in which a trade can
   print (`regular`/`extended`).
 - **Partial / order-entry** — a named gap confined to an `order_entry` or
@@ -227,8 +237,10 @@ points belong there, while the evidence belongs in the owner's evidence file.
   does not carry, in a sourced `DayPolicy`/`StaticDayPolicy` record.
   If regular and extended phases change differently, the day pauses and
   reopens, or its trade-date assignment changes, the scalar overlay is not
-  exact; follow [date-exceptions.md](date-exceptions.md) and wait for a complete
-  replacement-session provider instead of deleting valid trading.
+  exact. The current caller replacement engine can state these arrangements;
+  Stage 3 (#93) adds built-in block support and Stage 4 (#116) supplies its sourced
+  data. Follow [date-exceptions.md](date-exceptions.md); retain the gap until both
+  representation and evidence exist, and do not call the affected range complete.
 - **Per-security randomized auction uncross:** this is microstructure, not an
   exchange closure. Use the operator's published nominal phase boundary when
   the random delay only shifts an adjacent auction/continuous handoff and the
@@ -263,9 +275,10 @@ points belong there, while the evidence belongs in the owner's evidence file.
   are in scope for this crate: a closed date, an early final close, or a late
   first open is a per-family date-table entry recording the date, the kind, and
   its document id, sourced from the operator's published holiday calendar at
-  T1 or its own machine channel at T2, from the January-2010 floor (or the
-  identity's first trading day, if later) to what the operator had published
-  as of the inspection date: served identities first, dormant ones after. The
+  T1 or its own machine channel at T2, from the permanent 2025 floor (or the
+  identity's first trading day, if later) through sufficiently specified,
+  unconditional publications as of inspection. Served instrument scopes must be
+  complete; dormant scopes become complete before consumer activation. The
   ledger's `Holidays` column shows which identities ship a table and over
   which window. A caller's
   `DayPolicy` or `StaticDayPolicy` record remains the overlay *above* that
@@ -274,9 +287,10 @@ points belong there, while the evidence belongs in the owner's evidence file.
   following-business-day assignment only when the operator sources it; CME
   cryptocurrency weekend trading rolls into Tuesday when a closure takes
   Monday. A special day that changes internal phase topology is not
-  representable by scalar boundaries: record it as a gap and route the caller
-  to the replacement-session layer in
-  [date-exceptions.md](date-exceptions.md).
+  representable by scalar boundaries: use built-in replacement blocks once
+  Stage 3 lands, or record the unresolved gap until then. The caller replacement
+  layer already exists in [date-exceptions.md](date-exceptions.md); its existence
+  does not discharge the built-in served-scope obligation.
 
 Equal `SessionRule` endpoints represent one complete local-day session. Use
 that shape when a sourced session opens and closes at the same wall-clock time
@@ -380,7 +394,10 @@ shared timeline helper; exceptional recurrence stays local to the venue.
 A holiday table is **data, never a template edit**: it changes one trade date
 or a bounded run of them and never bends the normal week, adds a revision row,
 or deletes a valid phase. One module per family under
-`src/calendar/schedules/holidays/`, and five steps.
+`src/calendar/schedules/holidays/`, and five steps. Reuse the captured 2025-onward
+artifacts and their corrected verdicts from Stage 1 (#114) before retrieving new
+material. Older source documents may establish the baseline or New Year context;
+do not restart historical backfill below 2025.
 
 1. **Retrieve the operator's calendar.** T1 is the operator's own holiday
    calendar, notice or circular; T2 is the operator's own machine channel — a
@@ -400,9 +417,10 @@ or deletes a valid phase. One module per family under
    `rows:`, each `(year, month, day, kind, tier, "<document id>")`. The macro's
    constant-evaluation fences reject an out-of-order, out-of-window, uncited,
    sub-T2 or out-of-range row at compile time. Only what the scalar vocabulary
-   states may be a row — closed, early close at an instant, late open at an
-   instant, or both; a day that changes internal phase topology is a **gap** in
-   the evidence file, never an approximation. Declare the module in
+   states may currently be a scalar row — closed, early close at an instant,
+   late open at an instant, or both. After #93, encode other sourced arrangements
+   as complete replacement blocks with their own tier and document id. Until then
+   they remain gaps, never approximations or complete coverage. Declare the module in
    `holidays/mod.rs` and add its arm to the no-catch-all match in
    `holidays/routing.rs`.
 4. **Write the evidence section.** `docs/evidence/<owner>.md` gains a
@@ -448,7 +466,9 @@ After the comparison is complete:
    evidence link. Everything the note cannot hold goes into the evidence file,
    including any revision row the
    change adds or removes and the `## Sources` bullet behind it.
-2. Add any newly found gap rather than hiding it behind a stronger status. For
+2. Assess complete coverage separately from the table's outer audited bounds;
+   `Unsourced` dates and unresolved phase gaps cannot pass Stage 7 (#119).
+   Add any newly found gap rather than hiding it behind a stronger status. For
    a served identity the gap is also a GitHub issue; for a dormant one,
    recording it and its closing condition in the evidence file discharges
    LAW-FOLLOW-UPS-ARE-ISSUES.

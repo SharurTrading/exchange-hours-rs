@@ -5,6 +5,27 @@
 Releases are cut from a pull request and published manually. The crate has no
 credentialed release workflow; CI remains read-only.
 
+## Coverage gate for the planned 2025-onward release
+
+The 2026-09-21 UTC [plan amendment](docs/plans/2026-09-12-path-to-release.md)
+is documentation only; its new contract is not implemented yet. Before the
+release tracked by #119, require reviewed Stages 1–5 and candidate consumer
+validation from Stage 6 (#118). Every served instrument must have an exact
+family or documented venue scope with complete schedules, required phases and
+all holiday arrangements from 2025 (or later launch) through its sufficiently
+specified, unconditional publication horizon, including the inspection present.
+An unresolved in-window gap blocks this gate. Dormant completeness and broad
+venue intersections do not block it; their limitations remain explicit.
+
+Check both repository tags and crates.io before choosing the version. The
+planned identity-query `Result` migration (#115) is breaking: an unpublished
+pending 1.0.0 may absorb it, but a published 1.x contract requires a major
+version. Preserve detached snapshot compatibility and identity wire names.
+Run consumer tests against the candidate before publication; pin and verify
+the published version afterwards so the release and consumer gates do not
+wait on each other's nonexistent tag. Source refresh and actual coverage
+claims belong to the implementation/release changes, not the plan PR.
+
 ## Release pull request
 
 1. Start from an up-to-date `main` and create `release/X.Y.Z`.

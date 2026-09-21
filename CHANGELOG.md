@@ -11,6 +11,16 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ## [Unreleased]
 
+### Changed
+
+- **Development plan (2026-09-21 UTC).** Adopt a permanent 2025 history floor,
+  complete served instrument calendars including all holiday arrangements,
+  explicit unsupported-coverage errors, and staged removal of older runtime
+  history. The charter and release roadmap now specify bounded implementation
+  PRs that reuse captured 2025-onward evidence. This amendment changes no Rust
+  API, runtime table, coverage count or package version; #114–#119 and #93 track
+  the implementation and release gates.
+
 ### Fixed
 
 - **Documentation.** The eight CME families' holiday evidence files repeated a whole

@@ -4,6 +4,12 @@
 
 **Repository source-review cutoff:** `2026-08-22`
 
+**2026-09-21 UTC planning amendment:** the [release plan](../plans/2026-09-12-path-to-release.md)
+now targets complete served instrument scopes from 2025 onward. This amendment
+changes no ledger row, count, reviewed-on date or shipped coverage window. Older
+history, partial ranges and existing API behavior remain until the staged changes
+land. Audited windows containing `Unsourced` dates are not complete coverage.
+
 Every row below is a fixed shape (LAW-EVIDENCE-FILES): identity, owner module,
 source sets, basis with its gap kind, evidence tier, service tier, horizon,
 holiday coverage window, reviewed-on date, review cadence, at most three
@@ -27,15 +33,19 @@ The columns, in order:
   carried interval is a residual risk in the evidence file, not a downgrade
   here; a non-synthetic row at `T3` or `T4` is a defect, not a label.
 - **Service** — `served` or `dormant` (LAW-SERVICE-TIERS). An identity is
-  served when a consumer instrument can reach it; it owes dated history to the
-  January-2010 floor, a holiday table to the operator's published future, and
-  the cadence recorded beside it. A dormant identity owes correctness as of its
-  last review and is re-reviewed on demand.
+  served when a consumer instrument can reach it. The adopted target is complete
+  2025-onward history and all holiday arrangements for each exact instrument
+  scope through sufficiently specified published future, with the recorded cadence.
+  Broad venue intersections remain explicitly partial. Dormant completeness is
+  required before activation, not before release; existing rows retain their actual
+  data and evidence status during the migration.
 - **Horizon** — the venue-local date below which this identity's rows are
   carried rather than sourced, or `—` when nothing is carried: a sourced launch
   closure below the first row, or a grid that begins at its own first source.
-  `2010-01-01` means the baseline is sourced at or through the January-2010
-  floor; nothing below the floor is reviewed.
+  Existing `2010-01-01` values describe baselines sourced at or through the
+  former January-2010 floor; nothing below that historical floor was reviewed.
+  Stage 5 (#117) updates the records together with runtime pruning. A later
+  policy decision does not retroactively improve any row's sourcing.
 - **Holidays** — the inclusive venue-local **trade-date window** this
   identity's built-in holiday table audited (LAW-HOLIDAY-SCOPE), written
   `first..last`, or an em dash when no table ships for it. Inside the window a

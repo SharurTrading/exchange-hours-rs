@@ -6,20 +6,37 @@ This file states what the crate is for, the named laws that code comments and
 ledger rows cite, and the rules any change to this repository must follow. It
 was rewritten on 2026-09-12 (UTC) after an architectural review
 (`docs/plans/2026-09-12-architectural-review.md`); law names were kept wherever
-a law's intent survived so that existing citations stay valid.
+a law's intent survived so that existing citations stay valid. The 2026-09-21
+(UTC) amendment adopts a permanent 2025 floor and complete served-scope coverage;
+its implementation is staged in
+[the release plan](docs/plans/2026-09-12-path-to-release.md).
+
+## Migration status — 2026-09-21 UTC
+
+The 2025 contract below is the **adopted target**, not a claim about the current
+implementation. The documentation amendment changes no Rust API or runtime data.
+Earlier history still ships; identity queries still use their existing return
+shapes and fallback behavior; built-in holidays remain scalar and the crate ships
+no built-in replacement-session data. The ledger records what actually ships.
+Explicit coverage errors (#115), built-in special sessions (#93), complete served
+data (#116), and removal of obsolete history (#117) land in separate reviewed
+changes before the new release gate (#119) is satisfied. Do not implement those
+stages as incidental cleanup in a documentation change.
 
 ## Purpose
 
 `exchange-hours` is the live session calendar for the instruments its consumer
 can route. Its consumer is SharurPlatform, which will support more markets over
-time. For each supported identity the crate answers five questions, correctly
-for today and for every instant back to the January-2010 floor: is the market
-open now; where does this trading day begin and end; which trade date does an
-instant belong to; when does the next session open; is this gap a closure. It
-also answers which days are holidays or early closes for that identity
-wherever the per-family holiday tables LAW-HOLIDAY-SCOPE calls for have
-shipped; where they have not, holidays reach a calendar only through the
-caller's `DayPolicy` overlay.
+time. For every served instrument's exact family or documented venue scope,
+the target is complete coverage from the permanent **1 January 2025** floor
+(or its later sourced launch) through the operator's sufficiently specified,
+unconditional publications. Each later year stays in the supported history.
+Within that coverage the crate answers five questions: is the market open now;
+where does this trading day begin and end; which trade date does an instant
+belong to; when does the next session open; is this gap a closure. Complete
+coverage includes normal-week changes, required phases and every holiday or
+special-session arrangement in LAW-HOLIDAY-SCOPE. Unsupported coverage must be
+an explicit error, never a claim that a market is open or closed.
 It is not an archive of exchange history for its own sake and it is not a public
 reference work; every rule below is judged against those five questions and
 the cost of keeping them true.
@@ -57,11 +74,28 @@ the cost of keeping them true.
   | Obligation | Served | Dormant |
   |---|---|---|
   | Current schedule sourced at T1 or T2 | required | required at last review |
-  | Dated history to the January-2010 floor | required | best-effort, labelled |
-  | Holiday and early-close table | required, floor to published future | required after the served tier; refreshed on demand |
+  | Dated history from the permanent 2025 floor | complete for each served instrument scope | labelled coverage; complete before activation |
+  | All holiday and special-session data | complete, floor to sufficiently specified published future | on demand; complete before activation |
   | Review cadence (LAW-WATCH) | monthly if high-churn, 24/7 or holiday-bearing, else quarterly | on demand |
   | Follow-ups tracked as issues | required | recorded in the evidence file |
 
+  A broad venue intersection is not a substitute for an instrument's exact
+  calendar. Its disagreement dates remain explicitly partial and do not block
+  release when every reachable instrument has complete family/scope coverage.
+  Dormant completeness does not block release. A dormant identity's runtime
+  pruning still belongs to #117; its wire identity and archived evidence stay.
+
+- **LAW-COVERAGE** — the support floor is fixed at 2025-01-01, never a rolling
+  previous-year window. Complete coverage means no unresolved normal-week,
+  required-phase, holiday or special-session gap in the claimed interval. An
+  audited window containing `Unsourced` dates is not complete. Identity-backed
+  date-aware queries return explicit coverage errors before the support floor,
+  outside covered ranges, within unresolved gaps, or when a result requires an
+  unknown date during a bounded search. A known closure, absent session and
+  search exhaustion remain distinct from missing evidence. Normal-week
+  snapshots retain their no-holiday contract, and detached caller-supplied
+  `MarketHours` snapshots remain exactly their supplied rules. Stage 2 (#115)
+  implements this contract; existing APIs do not yet enforce it.
 - **LAW-PRIMARY-SOURCES** — every session time, every dated change and every
   holiday in this crate is backed by evidence at a recorded **tier**:
   - **T1**, the operator's own statement — rulebook, notice, circular,
@@ -114,8 +148,9 @@ the cost of keeping them true.
   revision boundary never splits a running session; a sourced change whose
   boundary falls at a stated intraday instant is an exact-instant cutover,
   never a day-level row rounded to local midnight. Amendment history is
-  recorded back to **January 2010**; earlier changes are out of scope by
-  design.
+  maintained from **January 2025**. Earlier documents may prove the baseline
+  and the context needed for complete sessions crossing the support boundary;
+  the boundary itself is not an exchange cutover and never earns a revision row.
 - **LAW-UTC-DATES** — every date the repository records about its own work is
   the UTC calendar date on which that work happened: a ledger `Reviewed on`, a
   knowledge-bound row's date and citation label, an audit or ledger amendment
@@ -144,44 +179,43 @@ the cost of keeping them true.
   T1 statement or a T2 feed observes it as one; the coincidence neither proves
   nor disqualifies it. A source that states only an expiry leaves the session
   unsourced.
-- **LAW-HOLIDAY-SCOPE** — a change confined to a single trade date or a
-  bounded run of dates — an early final close, a late first open, or a full
-  calendar-day closure — is a **holiday**, never a schedule: it never bends a
-  normal-week template, adds a revision row, or deletes a valid phase, and a
-  genuine recurring-grid change is never downgraded to "just a holiday" to
-  avoid the evidence work. Holidays are **in scope** for this crate. They live
-  in per-family date tables under `schedules/` (data, not templates),
-  sourced from the operator's own published holiday calendar at T1 or its own
-  machine channel at T2, at the tier LAW-PRIMARY-SOURCES requires and with that
-  tier carried in the row rather than only in a comment. The **target** is
-  the January-2010 floor, or the identity's first trading day if later, to
-  whatever the operator had published unconditionally as of the table's
-  inspection date, for every identity: served identities first, dormant ones
-  after them. It is an obligation the tables are built towards, not a
-  statement of what ships. Where the operator's own documents, archives
-  included, do not reach the floor, the table starts where they do and the
-  evidence file names the gap; an identity whose operator observes no holidays
-  says so in its evidence file instead of shipping a table. Once a family's table ships, the
-  built-in calendars apply it by default. **What ships — which identities have
-  a table, and over which trade-date window — is the `Holidays` column of the
-  verification ledger**, derived by a fence from each identity's own
-  `holiday_coverage()`, which returns the audited window;
-  an identity with no table carries no holiday data and the caller's
-  `DayPolicy` overlay is its only holiday layer. Inside a table's window a date
-  with no row is audited normal; outside it the crate has no holiday answer at
-  all. **A venue `Exchange` that several families route to takes the
-  intersection of their tables**: a row ships only where every routed family
-  states the same one, and a date on which they disagree carries `Unsourced`
-  rather than a scheduling row, because inside a contiguous window silence is
-  the positive claim that the date was audited normal. A holiday table entry
-  records the date, the kind (closed, early
-  close at an instant, late open at an instant), and its document id. A special
-  day that changes internal phase topology is not representable by scalar
-  boundaries and is recorded as a gap. `DayPolicy` remains the caller's overlay
-  for what the crate does not carry, layered above the built-in table once
-  there is one. Holiday
-  lookups are bounded, allocation-free and cheap enough to sit on the
-  consumer's hot path.
+- **LAW-HOLIDAY-SCOPE** — a change confined to one trade date or a bounded
+  run of dates is date-exception data, never a normal-week revision. This
+  includes full closures, early closes, late opens, pauses, reopenings, extra
+  sessions, trade-date reassignments and changes to regular, extended or
+  order-entry phases. An actual recurring-grid change remains a schedule change.
+  All these arrangements are in scope for complete served calendars. Data lives
+  in per-family static tables under `schedules/`, sourced at T1 or T2 with its
+  tier and document id in each row. Scalar boundaries represent only what they
+  can state exactly; complete replacement blocks represent other arrangements
+  through the existing `ExceptionBlock` engine (#93). Until those rows ship,
+  their absence remains a gap, not a complete calendar or an approximation.
+
+  The target is the permanent 2025 floor, or the identity's later sourced
+  launch, through what the operator has published unconditionally and with
+  enough detail to state the sessions. Publication horizons are per scope;
+  preliminary dates and missing hours do not certify ordinary trading. Reuse
+  captured 2025-onward evidence and retrieve missing or revised material. An
+  unavailable source is a recorded gap with a closing condition and, for a
+  served scope, a blocking issue; it does not waive the completeness gate.
+  Operators that observe no holidays need affirmative evidence instead of an
+  invented table. Dormant calendars are completed before consumer activation.
+
+  **What ships is the verification ledger's `Holidays` column**, fenced against
+  each identity's `holiday_coverage()`. Keep these actual audited windows and
+  counts unchanged until their data changes. Within a window, a date without
+  a row is audited normal, while `Unsourced` expressly withholds that claim;
+  outside the window the table has no answer. Complete coverage must account
+  for those gaps and any replacement data, not merely the window endpoints.
+  Built-in data applies by default. A venue `Exchange` combining families
+  retains only their agreed holiday rows; disagreement is `Unsourced`, never
+  silence. Such broad intersections remain labelled partial and cannot stand
+  in for a served instrument's complete family/scope calendar.
+
+  An explicit caller `Closed` or `ReplaceSessions` record takes precedence over
+  the built-in date arrangement; the caller's `DayPolicy` then clips the result.
+  Caller data does not improve the built-in ledger's completeness claim.
+  Lookups remain bounded and allocation-free on the built-in hot path.
 - **LAW-EVIDENCE-FILES** — narrative evidence lives in
   `docs/evidence/<owner>.md`, one file per venue or key, and never in a source
   module. A schedule module carries its rule data and, beside each revision
@@ -202,8 +236,10 @@ the cost of keeping them true.
   multi-agent adversarial cycles, no channel tunnelled around after it has
   refused twice, no archaeology beyond what the tier obliges. What a bounded
   task cannot source is recorded as a gap with what would close it, and for a
-  served identity that gap becomes an issue (LAW-FOLLOW-UPS-ARE-ISSUES). The
-  research store beside the repository holds retrieved artifacts and working
+  served identity that gap becomes an issue (LAW-FOLLOW-UPS-ARE-ISSUES). A
+  bounded research attempt can end with a gap; the served-scope completeness
+  claim and release gate cannot pass over it. The research store beside the
+  repository holds retrieved artifacts and working
   notes; only the evidence file is committed.
 - **LAW-WATCH** — a served identity is reviewed on a cadence recorded in its
   ledger row: monthly for a family that has changed within the last year,
@@ -246,9 +282,11 @@ venue namespaces to `Exchange`; this crate never maps symbols, roots, product
 codes or MICs. The consumer must cover every venue namespace its adapters admit
 with a family map, must mark a trade-type variant with its variant flag when it
 maps one to its underlying family, must clamp historical walks to the
-instrument's own listing window, and must depend on a tagged release. The
-crate's ledger tells the consumer which identities are served, which are
-dormant, and each identity's horizon and holiday coverage.
+instrument's own listing window and the supported calendar floor, and must
+depend on a tagged release. The consumer must handle coverage errors explicitly
+and route each instrument to its exact supported family or documented venue
+scope, not a partial broad intersection (#118). The ledger and coverage API
+state actual supported ranges; an unknown date is not a market closure.
 
 ## Modeling conventions
 
@@ -299,24 +337,26 @@ dormant, and each identity's horizon and holiday coverage.
   the randomized seconds only move an adjacent phase handoff; use a
   conservative envelope when that is the profile's stated scope. Never imply
   exact ticker-level uncross timing.
-- **Below the January-2010 floor, the earliest sourced profile stands.**
-  `select_revision` returns a venue's baseline for any date before its first
-  revision, so an instant before the floor resolves to the oldest profile on
-  record — for a launch-dated identity its pre-launch closure, for others the
-  earliest grid the crate holds. Do not add a lower bound to the timelines.
-  Nothing below the floor is reviewed.
+- **A support boundary never splits a session.** During #117 retain the sourced
+  baseline in force at the 2025 floor, all later changes, seasonal selectors,
+  and the context needed to return complete sessions crossing New Year. Remove
+  obsolete earlier runtime eras and their historical coverage expectations,
+  not source artifacts or Git history. Requests before the floor use the
+  explicit error contract from #115. Genuine later launch closures remain
+  known closures, distinct from unsourced dates. Generic fixed-snapshot and
+  date-arithmetic tests may still use dates before 2025.
 - **Executable windows are the priority.** A gap in a phase where a trade can
   print is materially more serious than a gap in an `order_entry` window.
   Close executable-hours gaps first, and when recording a gap say which kind
   it is.
-- **Carry the earliest sourced state back to the floor.** When a phase is
-  sourced at some instant and no admissible source names a cutover between the
-  floor and that instant, extend it backwards rather than modelling the
-  interval as sessionless; this asserts no revision row. Where a lower-tier
-  source attests a change inside the carried interval, carry the state anyway
-  and record the residual risk in the evidence file. Each identity's ledger row
-  states its **horizon**: the date below which its rows are carried rather
-  than sourced.
+- **A sourced baseline is not automatic carry-back.** Establish the state in
+  force at the 2025 floor from admissible evidence, including earlier documents
+  when needed. A later observation alone does not prove the intervening period
+  complete. Preserve existing carried/intersection states with their disclosed
+  gaps during migration; they must not become complete merely because earlier
+  years were removed. Each ledger row's **horizon** continues to describe where
+  its existing rows are carried rather than sourced until #117 updates the
+  data and its records together.
 - **Prefer the sourced intersection to omission.** When a phase's endpoints
   are sourced at two values and only the changeover day is undated, serve the
   window that holds under every sourced state and withhold only the disputed
@@ -388,8 +428,10 @@ dormant, and each identity's horizon and holiday coverage.
   remains the one static current-*table* accessor; it selects no era and, for
   a seasonal or cross-zone identity, is documented as the state it holds. This
   is what makes backtest and live one code path; do not reintroduce a second
-  selector. The public fixed-snapshot query adapters remain compatibility
-  contracts.
+  selector. Detached fixed-snapshot query adapters remain compatibility
+  contracts. The approved identity-backed coverage migration (#115) changes
+  return types to `Result` with a documented breaking release and consumer
+  migration (#118); do not remove identities or change their wire formats.
 
 ## Adding or revising an identity
 

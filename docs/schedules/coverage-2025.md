@@ -63,7 +63,7 @@ served `iceus` identity, while `FANG`, `DOLLAR_INDEX`, `SUGAR_COFFEE_COCOA`, `CO
 | `coinbase_derivatives` | [coinbase_derivatives.rs](../../src/calendar/schedules/futures/us/coinbase_derivatives.rs) | 2026-09-11 … 2026-09-11 (1 row) | — | 2021-06-28..2026-09-07 | 20 | — | 2026-09-08 onward (past the horizon) | complete to 2026-09-07; **horizon before inspection** | #86, #98, #116 |
 | `eurex` | [europe.rs](../../src/calendar/schedules/futures/international/europe.rs) | seasonal selector, no `revisions!` timeline | 2010-01-01 | 2026-01-01..2026-12-31 | 7 | — | all of 2025; the window opens 2026-01-01 | **no 2025 coverage** | #77, #86, #98, #116 |
 | `iceus` | [ice_us.rs](../../src/calendar/schedules/futures/us/ice_us.rs) | 2017-11-07 … 2017-11-08 (2 rows) | — | 2026-01-01..2028-01-03 | 24 | 20 | all of 2025, plus 20 `Unsourced` dates in 2026-2027 | **no 2025 coverage** | #98, #116 |
-| `globex_equity_index` | [cme_group.rs](../../src/calendar/schedules/futures/us/cme_group.rs) | 2010-11-15 … 2026-08-22 (5 rows) | 2012-05-03 | 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 37 | — | the 16:00-16:15 CT Sunday quarter-hour, carried (#79) | **incomplete**: the Sunday 16:00-16:15 CT quarter-hour is carried, not sourced (#79) | #79, #116, #117 |
+| `globex_equity_index` | [cme_group.rs](../../src/calendar/schedules/futures/us/cme_group.rs) | 2010-11-15 … 2026-08-22 (5 rows) | 2012-05-03 | 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 37 | — | the 16:00-16:15 CT Sunday quarter-hour, withheld (#79) | **incomplete**: the Sunday 16:00-16:15 CT quarter-hour is withheld (#79) | #79, #116, #117 |
 | `globex_energy` | [energy_metals.rs](../../src/calendar/schedules/futures/us/energy_metals.rs) | 2015-09-20 … 2026-08-22 (2 rows) | 2012-05-11 | 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 36 | — | none in 2025+ | complete to 2027-12-31 | #116, #117 |
 | `globex_grains` | [grains.rs](../../src/calendar/schedules/futures/us/grains.rs) | 2010-04-19 … 2015-07-05 (6 rows) | 2010-03-15 | 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 40 | — | none in 2025+ | complete to 2027-12-31 | #116, #117 |
 | `globex_fx` | [fx.rs](../../src/calendar/schedules/futures/us/fx.rs) | 2010-11-15 … 2026-08-22 (2 rows) | 2012-05-03 | 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 19 | — | special-session dates the scalar layer cannot state (#93) | **incomplete**: special-session dates the scalar layer cannot state (#93) | #93, #116, #117 |
@@ -79,12 +79,10 @@ to a site in SharurPlatform. The consumer owns both maps; this crate maps no sym
 
 **Venue identities.** The consumer's only venue-namespace → `Exchange` map is `NAMESPACES` in
 `crates/adapters/rithmic/src/catalog.rs` (lines 61-174), consumed by
-`translate::exchange_for_rithmic_code`. All eight venue identities below are reached there, and each
-one is reached there. The four CME-group venues also hold many authored roots in `static PRODUCTS`,
-so their mapped instruments resolve as `SessionHoursBasis::ProductFamily`; only `cfe`, `eurex`,
-`iceus` and `coinbase_derivatives` have no authored root and so reach the venue calendar through
-`ExchangeFallback`. Every
-row covers their roots.
+`translate::exchange_for_rithmic_code`, and all eight are reached there. The four CME-group
+venues also hold many authored roots in `static PRODUCTS`, so their mapped instruments resolve as
+`SessionHoursBasis::ProductFamily`; only `cfe`, `eurex`, `iceus` and `coinbase_derivatives` have no
+authored root and so reach the venue calendar through `ExchangeFallback`.
 
 | Identity | Namespace | Authored root rows | Other consumer sites |
 |---|---|---|---|
@@ -129,16 +127,14 @@ retrieval. `comex` and `nymex` route a single family and so reproduce it row for
 ### 1. Three served scopes ship no 2025 holiday coverage at all
 
 `cfe` and `eurex` ship a single 2026 window and `iceus` a 2026-01-01..2028-01-03 window, so all three
-answer no holiday question over any part of 2025. `iceus` is the narrowest at **24** trade dates: its
-table is the D17 intersection of the seven ICE Futures U.S. families routed to the venue, so it states
-a row only where all seven agree - the four full closures in its window - and withholds the other
-**20** dates as `Unsourced`, the shape of a date on which the softs close while the index families
-trade shortened hours. These are the one-operator scopes whose instruments
-reach the venue calendar directly through
-`ExchangeFallback` rather than through a family key, so the gap is on the
-path a real instrument takes. Stage 4's PR order (section 8, items 3-5) already anticipates these
-three, and their evidence files are also the three that still lack the fixed `### Documents` shape
-that #98 tracks.
+answer no holiday question over any part of 2025. `iceus` ships only four scheduling rows: its
+table is the D17 intersection of the seven ICE Futures U.S. families routed to the venue, so a row
+ships only where all seven agree - the four full closures in its window - and the other **20** dates
+are `Unsourced`, the shape of a date on which the softs close while the index families trade
+shortened hours. These are the one-operator scopes whose instruments reach the venue calendar
+directly through `ExchangeFallback` rather than through a family key, so the gap is on the path a
+real instrument takes. Stage 4's PR order (section 8, items 3-5) already anticipates these three,
+and they are the three served scopes whose evidence files still lack that shape.
 
 ### 2. Two venue intersections carry `Unsourced` dates inside 2025+
 
@@ -159,7 +155,7 @@ no answer, and Stage 4 item 2 refreshes it.
 
 `comex`, `nymex`, `globex_energy`, `globex_grains`, `globex_interest_rates`, `globex_livestock` and
 `globex_nikkei_225_dollar` reach 2027-12-31 with no `Unsourced` row at or after 2025-01-01. The other
-three covered scopes are **not** complete: `globex_equity_index` carries the quarter-hour in §5 and
+three covered scopes are **not** complete: `globex_equity_index` records the withheld quarter-hour in §5 and
 `globex_fx` and `globex_cryptocurrency` the unstateable special sessions in §6, so their verdicts say so.
 `comex` and `nymex` are intersections too, but each routes one family's grid, so they
 match it row for row and their six `Unsourced` rows all fall in 2019-2023, outside the new floor.
@@ -168,8 +164,8 @@ match it row for row and their six `Unsourced` rows all fall in 2019-2023, outsi
 
 - **#79 - still blocks.** `globex_equity_index`'s timeline ends in a knowledge-bound row (2026-08-22)
   that *widens* the Sunday queue to 16:00-17:00 CT, and the module records that only the disputed
-  16:00-16:15 CT quarter-hour depends on the undated 2012 move. A 2025-onward phase is therefore
-  carried rather than sourced, which is the plan's stated condition for #79 still blocking.
+16:00-16:15 CT quarter-hour depends on the undated 2012 move, so that phase is withheld rather
+than sourced and the scope is not complete. The plan's condition for #79 is therefore met.
 - **#105 - dormant, not blocking.** CME's `dairy` and `lumber` product groups have no
   `MarketHoursKey` and fold into `globex_grains` and `globex_livestock`. Neither group is reachable:
   no root for either appears in `static PRODUCTS` (which maps `LE` to livestock - live cattle, not
@@ -195,14 +191,15 @@ rows**, resolving **256 distinct document ids**, whose quoted digests are in bij
 distinct digests. Those same bytes are saved more than once: a walk of the store found all 256 at
 **400 loose paths**, with 111 of the digests present at more than one path and 95 under more than
 one era directory, so a digest resolves to bytes that more than one location carries -
-including the members of 14 zip bundles. Every quoted digest was
+including loose copies of members of the store's 14 zip bundles. Every quoted digest was
 recomputed from the bytes: **1,941 of 1,941 reproduce, with 0 mismatches, 0 unlocatable artifacts
 and 0 unparseable rows.** A second independent pass re-hashed every distinct artifact from raw
 bytes, re-extracting the zip members, and reproduced every one.
 
 **Load-bearing endpoints.** For each scope, the artifact establishing the state in force at the 2025
 floor (**baseline**) and the one establishing its **horizon** were resolved through the owner
-evidence file's `### Documents` table to saved bytes, and their digests recomputed by this stage:
+evidence file's document tables (`### Documents`, or `## Evidence documents` for the venue
+files) to saved bytes, and their digests recomputed by this stage:
 
 | Identity | Baseline document | Tier | Baseline artifact and digest | Horizon document | Tier | Horizon artifact and digest |
 |---|---|---|---|---|---|---|
@@ -230,7 +227,8 @@ The three that show no endpoint are a shape gap, not a missing source:
   digests (`CBOE-HOURS-USFUT-2026`, `EUREX-HOLREG-2026`, `IFUS-CAL-2026`, `IFUS-CAL-2027` and the
   ICE notices) are quoted inline in prose bullets, so the fixed `### Documents` shape
   LAW-EVIDENCE-FILES describes has not reached these three files and they contribute no rows to
-  the sweep. This is independent corroboration that #98's remaining scope is exactly these three -
+  the sweep. They are the three **served scopes** that still lack it - #98 itself names more, the
+  dormant CFE and Eurex keys and the six ICE Futures U.S. family files among them -
   which are also the three scopes that ship no 2025 holiday coverage. Their digests are **not
   machine-verified by this stage**; closing that needs the sweep rule widened to prose-quoted
   digests, and it is recorded as unverified rather than verified.

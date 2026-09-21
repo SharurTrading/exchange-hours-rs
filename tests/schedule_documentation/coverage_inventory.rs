@@ -118,8 +118,9 @@ fn count_from_floor(calendar: ExchangeCalendar, last: NaiveDate) -> (usize, usiz
     (dated, unsourced)
 }
 
-/// Reads the leading count from an inventory count cell: `41`,
-/// `24 (129 rows)`, or the em dash that means none.
+/// Reads the count from an inventory count cell: `41`, or the em dash that
+/// means none. Every served table states one row per date, so no cell carries
+/// a bracketed secondary count.
 fn leading(cell: &str) -> Option<usize> {
     if cell.starts_with('\u{2014}') {
         return Some(0);

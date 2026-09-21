@@ -184,24 +184,24 @@ bytes, re-extracting the zip members, and reproduced all 257.
 floor (**baseline**) and the one establishing its **horizon** were resolved through the owner
 evidence file's `### Documents` table to saved bytes, and their digests recomputed by this stage:
 
-| Identity | Baseline document | Tier | Digest | Horizon document | Tier | Digest |
+| Identity | Baseline document | Tier | Baseline artifact and digest | Horizon document | Tier | Horizon artifact and digest |
 |---|---|---|---|---|---|---|
-| `cme` | `CME-SVC-2024-12-31` | T2 | reproduces | `CME-SVC-2027-12-22` | T2 | reproduces |
-| `cbot` | `CME-SVC-2024-12-31` | T2 | reproduces | `CME-SVC-2027-12-22` | T2 | reproduces |
-| `comex` | `CME-SVC-2024-12-31` | T2 | reproduces | `CME-SVC-2027-12-22` | T2 | reproduces |
-| `nymex` | `CME-SVC-2024-12-31` | T2 | reproduces | `CME-SVC-2027-12-22` | T2 | reproduces |
+| `cme` | `CME-SVC-2024-12-31` | T2 | `holidays/raw/cme-2025-2027/arc/thbp_2024-12-31_2025-01-02_20241220155340.json` - sha256 reproduces | `CME-SVC-2027-12-22` | T2 | `holidays/raw/cme-2025-2027/live/thbp/thbp_2027-12-22_2027-12-25.json` - sha256 reproduces |
+| `cbot` | `CME-SVC-2024-12-31` | T2 | `holidays/raw/cme-2025-2027/arc/thbp_2024-12-31_2025-01-02_20241220155340.json` - sha256 reproduces | `CME-SVC-2027-12-22` | T2 | `holidays/raw/cme-2025-2027/live/thbp/thbp_2027-12-22_2027-12-25.json` - sha256 reproduces |
+| `comex` | `CME-SVC-2024-12-31` | T2 | `holidays/raw/cme-2025-2027/arc/thbp_2024-12-31_2025-01-02_20241220155340.json` - sha256 reproduces | `CME-SVC-2027-12-22` | T2 | `holidays/raw/cme-2025-2027/live/thbp/thbp_2027-12-22_2027-12-25.json` - sha256 reproduces |
+| `nymex` | `CME-SVC-2024-12-31` | T2 | `holidays/raw/cme-2025-2027/arc/thbp_2024-12-31_2025-01-02_20241220155340.json` - sha256 reproduces | `CME-SVC-2027-12-22` | T2 | `holidays/raw/cme-2025-2027/live/thbp/thbp_2027-12-22_2027-12-25.json` - sha256 reproduces |
 | `cfe` | `CBOE-HOURS-USFUT-2026` | - | no `### Documents` table | `CBOE-HOURS-USFUT-2026` | - | no `### Documents` table |
-| `coinbase_derivatives` | `CDE-MN-24-25` | T1 | reproduces | `CDE-MN-26-36` | T1 | reproduces |
+| `coinbase_derivatives` | `CDE-MN-24-25` | T1 | `holidays/raw/cde-2021-2025/pdf/24-25.pdf` - sha256 reproduces | `CDE-MN-26-36` | T1 | `holidays/raw/cde-2021-2025/pdf/26-36.pdf` - sha256 reproduces |
 | `eurex` | `EUREX-HOLREG-2026` | - | no `### Documents` table | `EUREX-HOLREG-2026` | - | no `### Documents` table |
 | `iceus` | `IFUS-CAL-2026` | - | no `### Documents` table | `IFUS-CAL-2027` | - | no `### Documents` table |
-| `globex_equity_index` | `CME-SVC-2024-12-31` | T2 | reproduces | `CME-SVC-2027-12-22` | T2 | reproduces |
-| `globex_energy` | `CME-SVC-2024-12-31` | T2 | reproduces | `CME-SVC-2027-12-22` | T2 | reproduces |
-| `globex_grains` | `CME-SVC-2024-12-31` | T2 | reproduces | `CME-SVC-2027-12-22` | T2 | reproduces |
-| `globex_fx` | `CME-SVC-2024-12-31` | T2 | reproduces | `CME-SVC-2027-12-22` | T2 | reproduces |
-| `globex_interest_rates` | `CME-SVC-2024-12-31` | T2 | reproduces | `CME-SVC-2027-12-22` | T2 | reproduces |
-| `globex_livestock` | `CME-SVC-2024-12-31` | T2 | reproduces | `CME-SVC-2027-12-22` | T2 | reproduces |
-| `globex_cryptocurrency` | `CME-SVC-2024-12-31` | T2 | reproduces | `CME-SVC-2027-12-22` | T2 | reproduces |
-| `globex_nikkei_225_dollar` | `CME-SVC-2024-12-31` | T2 | reproduces | `CME-SVC-B-2027-12-22` | T2 | reproduces |
+| `globex_equity_index` | `CME-SVC-2024-12-31` | T2 | `holidays/raw/cme-2025-2027/arc/thbp_2024-12-31_2025-01-02_20241220155340.json` - sha256 reproduces | `CME-SVC-2027-12-22` | T2 | `holidays/raw/cme-2025-2027/live/thbp/thbp_2027-12-22_2027-12-25.json` - sha256 reproduces |
+| `globex_energy` | `CME-SVC-2024-12-31` | T2 | `holidays/raw/cme-2025-2027/arc/thbp_2024-12-31_2025-01-02_20241220155340.json` - sha256 reproduces | `CME-SVC-2027-12-22` | T2 | `holidays/raw/cme-2025-2027/live/thbp/thbp_2027-12-22_2027-12-25.json` - sha256 reproduces |
+| `globex_grains` | `CME-SVC-2024-12-31` | T2 | `holidays/raw/cme-2025-2027/arc/thbp_2024-12-31_2025-01-02_20241220155340.json` - sha256 reproduces | `CME-SVC-2027-12-22` | T2 | `holidays/raw/cme-2025-2027/live/thbp/thbp_2027-12-22_2027-12-25.json` - sha256 reproduces |
+| `globex_fx` | `CME-SVC-2024-12-31` | T2 | `holidays/raw/cme-2025-2027/arc/thbp_2024-12-31_2025-01-02_20241220155340.json` - sha256 reproduces | `CME-SVC-2027-12-22` | T2 | `holidays/raw/cme-2025-2027/live/thbp/thbp_2027-12-22_2027-12-25.json` - sha256 reproduces |
+| `globex_interest_rates` | `CME-SVC-2024-12-31` | T2 | `holidays/raw/cme-2025-2027/arc/thbp_2024-12-31_2025-01-02_20241220155340.json` - sha256 reproduces | `CME-SVC-2027-12-22` | T2 | `holidays/raw/cme-2025-2027/live/thbp/thbp_2027-12-22_2027-12-25.json` - sha256 reproduces |
+| `globex_livestock` | `CME-SVC-2024-12-31` | T2 | `holidays/raw/cme-2025-2027/arc/thbp_2024-12-31_2025-01-02_20241220155340.json` - sha256 reproduces | `CME-SVC-2027-12-22` | T2 | `holidays/raw/cme-2025-2027/live/thbp/thbp_2027-12-22_2027-12-25.json` - sha256 reproduces |
+| `globex_cryptocurrency` | `CME-SVC-2024-12-31` | T2 | `holidays/raw/cme-2025-2027/arc/thbp_2024-12-31_2025-01-02_20241220155340.json` - sha256 reproduces | `CME-SVC-2027-12-22` | T2 | `holidays/raw/cme-2025-2027/live/thbp/thbp_2027-12-22_2027-12-25.json` - sha256 reproduces |
+| `globex_nikkei_225_dollar` | `CME-SVC-2024-12-31` | T2 | `holidays/raw/cme-2025-2027/arc/thbp_2024-12-31_2025-01-02_20241220155340.json` - sha256 reproduces | `CME-SVC-B-2027-12-22` | T2 | `holidays/raw/cme-2025-2027/live/extra/extra_2027-12-22_2027-12-25.json` - sha256 reproduces |
 
 All twenty-six endpoints of the thirteen scopes that carry a `### Documents` table reproduce.
 The three that show no endpoint are a shape gap, not a missing source:

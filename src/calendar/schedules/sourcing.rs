@@ -26,8 +26,11 @@
 //! `DeclaredSourcing::phase_gaps` is the sibling assertion for
 //! **phase-level** gaps: the shapes `docs/schedules/coverage-2025.md`'s
 //! `Missing / disputed` column records but no date walk can find, because the
-//! arrangement the operator publishes applies to every date the claim covers
-//! rather than to a span of dates. `CoverageGapReason::NormalWeekPhaseWithheld`
+//! arrangement the operator publishes is missing from the whole span the
+//! declaration names rather than from the dates a boundary falls between — the
+//! whole claimed interval when the declaration carries no bound, and the era
+//! before `PhaseGap::until` when the identity's own knowledge-bound row begins
+//! serving it. `CoverageGapReason::NormalWeekPhaseWithheld`
 //! is the required-phase shape (#79) and
 //! `CoverageGapReason::SpecialSessionUnrepresentable` the special-session shape
 //! (#93). Each declaration carries the issue whose closure discharges it, so the
@@ -53,7 +56,7 @@
 
 use chrono::NaiveDate;
 
-use super::timeline::horizon;
+use super::timeline::{effective_date, horizon};
 use crate::calendar::coverage::{CoverageGapReason, PhaseGap};
 use crate::calendar::{CalendarSource, Exchange, MarketHoursKey};
 
@@ -121,7 +124,8 @@ impl DeclaredSourcing {
     ///
     /// The declarations below are the ones `docs/schedules/coverage-2025.md`
     /// calls incomplete for a reason its date columns cannot show, so each also
-    /// carries that page's closing issue.
+    /// carries the closing issue that page's `Closing issues` cell names for the
+    /// scope.
     const fn nothing_carried_with(phase_gaps: &'static [PhaseGap]) -> Self {
         Self {
             carried_below: None,
@@ -153,7 +157,7 @@ impl DeclaredSourcing {
 }
 
 /// The required-phase gap seven scopes carry: CME's Sunday 16:00-16:15 CT
-/// quarter-hour is withheld (#79).
+/// quarter-hour is withheld (#79) until the era that serves it.
 ///
 /// `docs/schedules/coverage-2025.md` records it as "the 16:00-16:15 CT Sunday
 /// quarter-hour, withheld (#79)" and `docs/evidence/cme.md` plus each family's
@@ -163,8 +167,18 @@ impl DeclaredSourcing {
 /// without an operator-stated day, and the same grid governs every scope here:
 /// `cme`, `comex`, `nymex`, `globex_energy`, `globex_equity_index`, `globex_fx`
 /// and `globex_interest_rates`.
+///
+/// **Bounded to the dated era.** Each of the seven modules ends its timeline in a
+/// knowledge-bound 2026-08-22 row whose profile widens the Sunday queue to
+/// 16:00-17:00 CT, so from that day the withheld quarter-hour *is* served and the
+/// gap no longer holds: the declaration's bound is that row's day, verified per
+/// module rather than assumed. Before it — 2025-01-01 through 2026-08-21 — the
+/// crate serves only the 16:15-17:00 CT intersection, which is exactly what the
+/// declaration records. A whole-domain declaration here would deny the current era
+/// coverage the profiles actually serve.
 const fn withheld_sunday_quarter_hour() -> PhaseGap {
     PhaseGap::new(CoverageGapReason::NormalWeekPhaseWithheld, "#79")
+        .until(effective_date(2026, 8, 22))
 }
 
 /// The special-session gap `globex_fx` and `globex_cryptocurrency` carry: CME
@@ -184,13 +198,17 @@ const fn unstateable_special_sessions() -> PhaseGap {
 /// records the closing condition — "a CME artifact that states the Pre-Open in
 /// session language on a day-level effective date" — after the 2026-08-31
 /// review confirmed the 2017-12-14, 2017-12-22 and 2018-01-04 specification
-/// captures publish the matching grid only. That evidence file says the gap is
-/// "tracked as an issue" but names no issue number, so this declaration cites
-/// the scope's own `Closing issues` cell in `docs/schedules/coverage-2025.md`
-/// (#116, Stage 4's complete-served-data issue) rather than invent one:
-/// LAW-FOLLOW-UPS-ARE-ISSUES wants a dedicated issue for this gap, and the
-/// evidence file's claim that one is tracked is not yet backed by a number
-/// anywhere in the repository.
+/// captures publish the matching grid only. That evidence file said the gap was
+/// "tracked as an issue" and named no issue number, so #123 was opened for it and
+/// is now cited here, in `docs/schedules/coverage-2025.md`'s `Closing issues` cell
+/// for this scope and in that evidence file's own gap note:
+/// LAW-FOLLOW-UPS-ARE-ISSUES is discharged rather than waived, and the issue
+/// exists rather than being promised.
+///
+/// **No era bound.** The gap is a property of the five-day era's grid, and the
+/// evidence records no day on which the operator published the Pre-Open, so
+/// there is no row keyed to a day the gap stops applying (LAW-NO-FABRICATED-DATES).
+/// It stays whole-domain until a source states that day.
 const fn undated_five_day_pre_open() -> PhaseGap {
     PhaseGap::new(CoverageGapReason::NormalWeekPhaseWithheld, "#123")
 }

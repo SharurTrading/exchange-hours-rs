@@ -449,6 +449,52 @@ fn every_identity_reports_bounded_consistent_metadata() {
     }
 }
 
+/// Asserts one identity's declared phase-level gaps are part of its partition:
+/// it answers nothing completely exactly while a whole-domain declaration
+/// applies, and every record a declaration is the answer for carries it.
+fn check_declarations(
+    coverage: CalendarCoverage,
+    complete: &[DateRange],
+    gaps: &[CoverageGap],
+    identity: CalendarSource,
+) {
+    let whole_domain = coverage
+        .phase_gaps()
+        .iter()
+        .any(|gap| gap.applies_until().is_none());
+    if coverage.phase_gaps().is_empty() {
+        assert!(
+            gaps.iter().all(|gap| gap.phase_gap().is_none()),
+            "{identity:?} declares nothing, so no gap may carry a declaration"
+        );
+        return;
+    }
+    assert_eq!(
+        complete.is_empty(),
+        whole_domain,
+        "{identity:?}: no complete span exactly while a whole-domain declaration applies"
+    );
+    assert!(
+        gaps.iter().any(|gap| gap.phase_gap().is_some()),
+        "{identity:?} reports its declarations among its records"
+    );
+    for gap in gaps {
+        let Some(declaration) = gap.phase_gap() else {
+            continue;
+        };
+        assert_eq!(
+            coverage
+                .gaps()
+                .find(|candidate| candidate.range() == gap.range()
+                    && candidate.phase_gap() == Some(declaration)),
+            Some(*gap),
+            "{identity:?}: the declaration's record is what the walk reports there"
+        );
+        assert!(declaration.applies_on(gap.range().first()), "{identity:?}");
+        assert!(declaration.applies_on(gap.range().last()), "{identity:?}");
+    }
+}
+
 /// Asserts one identity's metadata is total, bounded and a partition of the
 /// supported domain.
 fn check_metadata(calendar: ExchangeCalendar, identity: CalendarSource) {
@@ -469,38 +515,31 @@ fn check_metadata(calendar: ExchangeCalendar, identity: CalendarSource) {
         complete.len() < 128,
         "{identity:?} reports a bounded span count"
     );
+    assert!(
+        gaps.len() <= exchange_hours::CoverageGaps::capacity(),
+        "{identity:?} reports {} gaps, past the capacity the walk precomputes \
+         ({}) — the records past it are still walked, but the declaration records \
+         would stop being merged across their date-level edges",
+        gaps.len(),
+        exchange_hours::CoverageGaps::capacity()
+    );
     assert!(gaps.len() < 128, "{identity:?} reports a bounded gap count");
 
-    // An identity that declares phase-level gaps answers nothing completely, and
-    // reports one whole-domain record per declaration rather than a date walk.
-    if coverage.phase_gaps().is_empty() {
-        assert!(
-            gaps.iter().all(|gap| gap.phase_gap().is_none()),
-            "{identity:?} declares nothing, so no gap may carry a declaration"
-        );
-    } else {
-        assert!(
-            complete.is_empty(),
-            "{identity:?} answers no date completely"
-        );
-        assert_eq!(
-            gaps.len(),
-            coverage.phase_gaps().len(),
-            "{identity:?} reports one gap record per declaration"
-        );
-    }
+    // A declared phase-level gap is part of the partition, not a special case
+    // beside it: the identity answers nothing completely exactly while a
+    // whole-domain declaration applies, and the records a declaration is the
+    // answer for carry it.
+    check_declarations(coverage, &complete, &gaps, identity);
 
-    // The two walks partition [floor, NaiveDate::MAX]: no hole, no overlap. An
-    // identity that declares several phase-level gaps repeats the whole-domain
-    // span once per declaration, so coincident records are deduplicated before
-    // the partition is checked.
+    // The two walks partition [floor, NaiveDate::MAX]: no hole, no overlap. A
+    // declaration record is one of the gap records, so no extra span enters the
+    // partition and no deduplication is needed.
     let mut runs: Vec<(DateRange, bool)> = complete
         .iter()
         .map(|range| (*range, false))
         .chain(gaps.iter().map(|gap| (gap.range(), true)))
         .collect();
     runs.sort_by_key(|(range, _)| range.first());
-    runs.dedup();
     let mut next = SUPPORT_FLOOR;
     for (index, (range, _)) in runs.iter().enumerate() {
         assert_eq!(range.first(), next, "a hole or overlap for {identity:?}");
@@ -582,8 +621,98 @@ fn a_complete_scope_answers_every_day_inside_its_span() {
     }
 }
 
+/// Asserts one fixture's declared phase-level gaps, the era each covers, and the
+/// records they produce.
+///
+/// `complete_after_the_bound` says whether the identity answers the era that
+/// begins on `bound` completely: true when its only bounded declaration is the
+/// quarter-hour, false when a whole-domain gap still applies there.
+fn check_declared_gap_era(
+    key: MarketHoursKey,
+    expected: &[(CoverageGapReason, &str)],
+    complete_after_the_bound: bool,
+    sample: NaiveDate,
+    bound: NaiveDate,
+    after: NaiveDate,
+) {
+    let coverage = key_coverage(key);
+    let declared: Vec<(CoverageGapReason, &str)> = coverage
+        .phase_gaps()
+        .iter()
+        .map(|gap| (gap.reason(), gap.closing_condition()))
+        .collect();
+    assert_eq!(declared, expected, "{key:?}");
+
+    // Inside the dated era the declaration applies, the horizon the ledger
+    // declares is untouched, and the verdict is the phase-level one: a phase gap
+    // is additional information, not a re-dating.
+    assert!(!coverage.is_complete_on(sample), "{key:?} on {sample}");
+    assert_eq!(
+        coverage.coverage_on(sample),
+        DateCoverage::OutsideCoveredRange
+    );
+
+    // Only the quarter-hour declaration is bounded, and only where it is the last
+    // one: `globex_fx` and `globex_cryptocurrency` also carry a whole-domain gap.
+    // The quarter-hour declaration is the only bounded one in these fixtures, and
+    // it is bounded for every scope that declares it — including `globex_fx`,
+    // whose second, whole-domain declaration is what keeps the era it opens from
+    // being complete.
+    for declaration in coverage.phase_gaps() {
+        assert_eq!(
+            declaration.applies_until(),
+            (declaration.closing_condition() == "#79").then_some(bound),
+            "{key:?}: only the quarter-hour declaration is bounded"
+        );
+    }
+    assert_eq!(
+        coverage.is_complete_on(after),
+        complete_after_the_bound,
+        "{key:?}: a scope whose only bounded declaration is the quarter-hour answers the era it \
+         opens"
+    );
+    assert_eq!(
+        coverage.complete_ranges().count() == 0,
+        !complete_after_the_bound,
+        "{key:?}"
+    );
+
+    // Reportable: a record for each declaration the accessor names on some date,
+    // each with its own reason and closing condition. A whole-domain declaration
+    // that an earlier one already covers on every date is reported by
+    // `phase_gaps` alone, because no date has it as its answer.
+    let gaps: Vec<CoverageGap> = coverage.gaps().collect();
+    for (reason, closing) in expected {
+        let Some(gap) = gaps
+            .iter()
+            .find(|gap| gap.closing_condition() == Some(*closing))
+        else {
+            continue;
+        };
+        assert_eq!(gap.reason(), *reason, "{key:?}");
+        assert_eq!(
+            gap.phase_gap()
+                .map(exchange_hours::PhaseGap::closing_condition),
+            Some(*closing),
+            "{key:?}"
+        );
+        assert!(
+            coverage
+                .phase_gaps()
+                .iter()
+                .find(|candidate| candidate.closing_condition() == *closing)
+                .is_some_and(|declaration| declaration.applies_on(gap.range().first())),
+            "{key:?}: the record starts inside its own declaration's dates"
+        );
+    }
+    assert!(
+        gaps.iter().filter(|gap| gap.phase_gap().is_some()).count() <= expected.len(),
+        "{key:?} reports no more declaration records than it declares"
+    );
+}
+
 #[test]
-fn a_declared_phase_gap_denies_completeness_across_the_whole_domain() {
+fn a_declared_phase_gap_is_era_aware_and_reported_once_per_declaration() {
     // The scopes whose gap is a property of the normal week or the calendar
     // rather than of a span of dates. A date walk over an identity's tables
     // cannot find them, which is exactly why they are declared beside the
@@ -596,10 +725,13 @@ fn a_declared_phase_gap_denies_completeness_across_the_whole_domain() {
     // sessions the scalar layer cannot state; `globex_cryptocurrency` carries
     // the special sessions plus its five-day era's undated Pre-Open onset.
     let sample = date(2025, 6, 10);
+    let bound = date(2026, 8, 22);
+    let after = date(2026, 8, 23);
     let fixtures = [
         (
             MarketHoursKey::GlobexEquityIndex,
             vec![(CoverageGapReason::NormalWeekPhaseWithheld, "#79")],
+            true,
         ),
         (
             MarketHoursKey::GlobexFx,
@@ -607,6 +739,7 @@ fn a_declared_phase_gap_denies_completeness_across_the_whole_domain() {
                 (CoverageGapReason::NormalWeekPhaseWithheld, "#79"),
                 (CoverageGapReason::SpecialSessionUnrepresentable, "#93"),
             ],
+            false,
         ),
         (
             MarketHoursKey::GlobexCryptocurrency,
@@ -614,54 +747,23 @@ fn a_declared_phase_gap_denies_completeness_across_the_whole_domain() {
                 (CoverageGapReason::SpecialSessionUnrepresentable, "#93"),
                 (CoverageGapReason::NormalWeekPhaseWithheld, "#123"),
             ],
+            false,
         ),
     ];
-    for (key, expected) in fixtures {
-        let coverage = key_coverage(key);
-        let declared: Vec<(CoverageGapReason, &str)> = coverage
-            .phase_gaps()
-            .iter()
-            .map(|gap| (gap.reason(), gap.closing_condition()))
-            .collect();
-        assert_eq!(declared, expected, "{key:?}");
-
-        // Nowhere in the supported domain, and the horizon the ledger declares
-        // is untouched: a phase gap is additional information, not a re-dating.
-        assert!(!coverage.is_complete_on(sample), "{key:?} on {sample}");
-        assert!(
-            !coverage.is_complete_on(SUPPORT_FLOOR),
-            "{key:?} at the floor"
+    for (key, expected, complete_after_the_bound) in fixtures {
+        check_declared_gap_era(
+            key,
+            &expected,
+            complete_after_the_bound,
+            sample,
+            bound,
+            after,
         );
-        assert_eq!(coverage.complete_ranges().count(), 0, "{key:?}");
-        assert_eq!(
-            coverage.coverage_on(sample),
-            DateCoverage::OutsideCoveredRange,
-            "{key:?}"
-        );
-
-        // Reportable, one record per declaration, each with its own reason and
-        // closing condition over the whole supported domain.
-        let gaps: Vec<CoverageGap> = coverage.gaps().collect();
-        assert_eq!(gaps.len(), expected.len(), "{key:?}");
-        for (gap, (reason, closing)) in gaps.iter().zip(&expected) {
-            assert_eq!(gap.range(), unbounded(SUPPORT_FLOOR), "{key:?}");
-            assert_eq!(gap.reason(), *reason, "{key:?}");
-            assert_eq!(gap.closing_condition(), Some(*closing), "{key:?}");
-            assert_eq!(
-                gap.phase_gap()
-                    .map(exchange_hours::PhaseGap::closing_condition),
-                Some(*closing),
-                "{key:?}"
-            );
-        }
     }
 
     // The scopes the quarter-hour probe cleared declare nothing, so a
     // declaration cannot leak onto a profile whose grid simply has no session in
-    // the disputed window: `cbot`, `cfe` and `globex_grains` accept orders at
-    // 16:05 CT on a Sunday, and `coinbase_derivatives`, `eurex`, `iceus`,
-    // `globex_livestock` and `globex_nikkei_225_dollar` are closed at both 16:05
-    // and 16:20 CT. The behavioural half of that claim is fenced in
+    // the disputed window. The behavioural half of that claim is fenced in
     // `tests/schedule_documentation/coverage_inventory.rs`.
     for key in [
         MarketHoursKey::GlobexGrains,
@@ -690,9 +792,12 @@ fn a_declared_phase_gap_denies_completeness_across_the_whole_domain() {
         "globex_cryptocurrency is closed at both 16:05 and 16:20 CT, so it must \
          not declare the quarter-hour the probe cleared it of"
     );
+}
 
-    // A date-shaped gap carries no closing condition: this vocabulary does not
-    // invent an issue number for a gap the crate's own data closes.
+#[test]
+fn a_date_shaped_gap_carries_no_closing_condition() {
+    // A date-shaped gap is closed by data rather than by an issue, so this
+    // vocabulary does not invent a number for it.
     let complete = key_coverage(MarketHoursKey::GlobexGrains);
     let trailing = complete
         .gaps()
@@ -701,13 +806,26 @@ fn a_declared_phase_gap_denies_completeness_across_the_whole_domain() {
     assert_eq!(trailing.closing_condition(), None);
     assert_eq!(trailing.phase_gap(), None);
     assert!(complete.phase_gaps().is_empty());
+}
 
-    // Detaching the holiday table does not manufacture or hide a phase gap: it
-    // is a fact about the identity, not about which layer this calendar consults.
+#[test]
+fn detaching_the_holiday_table_neither_hides_nor_manufactures_a_phase_gap() {
+    // A declared gap is a fact about the identity, not about which layer this
+    // calendar consults.
     let attached = key_coverage(MarketHoursKey::GlobexFx);
     let detached = calendar_for_market_hours_key(MarketHoursKey::GlobexFx)
         .without_holidays()
         .coverage();
     assert_eq!(detached.phase_gaps(), attached.phase_gaps());
-    assert_eq!(detached.gaps().count(), attached.phase_gaps().len());
+    assert_eq!(
+        detached
+            .gaps()
+            .filter(|gap| gap.phase_gap().is_some())
+            .count(),
+        attached
+            .gaps()
+            .filter(|gap| gap.phase_gap().is_some())
+            .count(),
+        "the detached view reports the same declaration records"
+    );
 }

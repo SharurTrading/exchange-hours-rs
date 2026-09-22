@@ -53,15 +53,16 @@ corrections (a venue's hours fixed against a primary source) go under
   under #79 on `cme`, `comex`, `nymex`, `globex_energy`, `globex_equity_index`,
   `globex_fx` and `globex_interest_rates`; the special sessions of #93 on `globex_fx` and
   `globex_cryptocurrency`; and `globex_cryptocurrency`'s undated five-day-era Pre-Open
-  onset under #116, the scope's own closing issue, because its evidence file records the
-  gap but names no dedicated issue. The first revision of this entry declared the
+  onset under #123, the dedicated issue opened for it after its evidence file recorded the
+  gap and named no issue number. The first revision of this entry declared the
   quarter-hour on `globex_equity_index` alone, while `cme`, `comex`, `nymex`,
   `globex_energy` and `globex_interest_rates` withheld the same phase and `globex_fx` did
   not declare it either: all seven ship the same Sunday queue, and their own ledger basis
-  notes already recorded the withheld quarter-hour. A declared phase gap is checked before
-  the date-level facts, so such a scope reports no complete range anywhere in its
-  supported domain and reports one whole-domain gap record per declaration, each with its
-  own reason and closing condition.
+  notes already recorded the withheld quarter-hour. Where a declaration applies, its reason
+  is checked before the date-level facts, so no date the declaration covers is answered
+  from a complete normal week or calendar, and `gaps()` reports one record per declaration
+  over the span that declaration is the answer for, each with its own reason and closing
+  condition.
   `CalendarCoverage::is_complete_on`, `complete_ranges()` and `gaps()` reflect it; no
   existing query signature changed and every date-shaped gap behaves exactly as before.
   `docs/schedules/coverage-2025.md` carried the same error — its `Missing / disputed` cells
@@ -72,7 +73,29 @@ corrections (a venue's hours fixed against a primary source) go under
   metadata are compared in `tests/schedule_documentation/coverage_inventory.rs`, so the
   two records cannot disagree again. A second, independent fence in the same file observes
   the shipped profiles at 16:05 and 16:20 CT on Sunday 2025-06-08 and requires the #79
-  declaration exactly where the quarter-hour is withheld, and nowhere else.
+  declaration exactly where the quarter-hour is withheld, and nowhere else; a third probes
+  both sides of each scope's era bound, which is the check the era correction below needed.
+- **Era-bounded phase gaps (2026-09-22 UTC).** The declarations above originally applied to
+  the whole supported domain, which was wrong for the current era: each of the seven scopes
+  withholding CME's Sunday 16:00-16:15 CT quarter-hour ends its timeline in a
+  knowledge-bound 2026-08-22 row whose profile *widens* the Sunday queue to 16:00-17:00 CT,
+  so from that day the quarter-hour **is** served and the quarter-hour gap no longer holds.
+  Declaring it across the whole domain made `coverage_on`, `is_complete_on` and
+  `complete_ranges()` deny seven served scopes the era their own profiles serve — including
+  the current one. `PhaseGap` gains an optional end bound (`PhaseGap::until`, read back
+  through `applies_until` and `applies_on`), the seven #79 declarations carry each module's
+  own `2026-08-22` knowledge-bound day, and the metadata follows it: before the bound the
+  declared gap applies, and at or after it the ordinary date-level facts decide, so
+  `comex`'s 2026-08-23 is `Covered` while its 2026-08-16 is not. `gaps()` reports the
+  bounded era rather than the whole domain. The `#93` special-session and `#123` Pre-Open
+  declarations stay whole-domain: `globex_fx` publishes Saturday sessions on both sides of
+  2026-08-22 and `globex_cryptocurrency`'s evidence dates no day the Pre-Open stopped being
+  withheld, so neither has an era to bound. The fence in
+  `tests/schedule_documentation/coverage_inventory.rs` now probes **both** sides of every
+  scope's bound — the last Sunday its dated profile covers and the first its current one
+  does — and requires the profile's own behaviour and the metadata's verdict to agree on
+  every Sunday across the boundary. Still no runtime data change: no schedule module,
+  profile, timeline, holiday row, ledger row, window or count moved.
 
 ### Changed
 

@@ -4,7 +4,11 @@
 
 Stage 1 of the [release plan](../plans/2026-09-12-path-to-release.md) (section 5), tracking issue
 [#114](https://github.com/SharurTrading/exchange-hours-rs/issues/114). Inspected at `3353d13` on
-2026-09-21 UTC.
+2026-09-21 UTC. The `Missing / disputed`, `Complete?` and `Closing issues` cells of the seven rows
+whose scope withholds the Sunday 16:00-16:15 CT quarter-hour, `globex_cryptocurrency`'s `Closing
+issues` cell, and the §4 verdict were corrected on 2026-09-22 UTC when the phase-level declarations
+shipped; the inspection statement above still describes the revision the values were first derived
+at.
 
 One row per served instrument scope, recording what the crate actually ships against the adopted
 2025 floor. This is a **record, not a claim**: no runtime change accompanies it and it moves no
@@ -166,12 +170,14 @@ routes one family's grid, so they match it row for row and their six `Unsourced`
 
 ### 5. Issues checked for an effect that survives the new floor
 
-- **#79 - still blocks, for seven scopes.** `cme`, `comex`, `nymex`, `globex_energy`,
-  `globex_equity_index`, `globex_fx` and `globex_interest_rates` each end their timeline in a
-  knowledge-bound row (2026-08-22) that *widens* the Sunday queue to 16:00-17:00 CT, and each module
-  and ledger basis note records that only the disputed 16:00-16:15 CT quarter-hour depends on the
-  undated 2012 move, so that phase is withheld rather than sourced and none of the seven is complete.
-  The plan's condition for #79 is therefore met.
+- **#79 - still blocks, for seven scopes, but only in the dated era.** `cme`, `comex`, `nymex`,
+  `globex_energy`, `globex_equity_index`, `globex_fx` and `globex_interest_rates` each end their
+  timeline in a knowledge-bound row (2026-08-22) that *widens* the Sunday queue to 16:00-17:00 CT, and
+  each module and ledger basis note records that only the disputed 16:00-16:15 CT quarter-hour depends
+  on the undated 2012 move, so that phase is withheld rather than sourced and none of the seven is
+  complete in the era before it. From 2026-08-22 on, each profile serves the quarter-hour, and the
+  metadata's declarations are bounded there: those dates report `Covered` rather than withheld. The
+  plan's condition for #79 is met, and the gap it names survives to the floor.
 - **#105 - dormant, not blocking.** CME's `dairy` and `lumber` product groups have no
   `MarketHoursKey` and fold into `globex_grains` and `globex_livestock`. Neither group is reachable:
   no root for either appears in `static PRODUCTS` (which maps `LE` to livestock - live cattle, not

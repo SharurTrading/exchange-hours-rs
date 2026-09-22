@@ -39,9 +39,10 @@ use chrono::NaiveDate;
 /// declaration adds two more, so this is generous headroom rather than a limit
 /// anything ships near: the largest shipped identity reports **32** — `cbot`, which
 /// withholds 31 dates and adds the window's trailing gap — so the capacity is eight
-/// times the worst case today. The effect of exceeding it is only that a
-/// declaration's record is not merged across its date-level edges, never a missing
-/// or a wrong span, and `tests/coverage_metadata.rs` holds every identity to it.
+/// times the worst case today, and `tests/coverage_metadata.rs` holds every
+/// identity to it. Exceeding it is unreachable with the shipped tables; were it
+/// reached, a declaration's record would not be merged across its date-level
+/// edges, so the bound is headroom rather than a correctness guarantee.
 pub(super) const GAP_RECORD_CAPACITY: usize = 256;
 /// Walks the supported domain once in maximal runs of one verdict.
 ///

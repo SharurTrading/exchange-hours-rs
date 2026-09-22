@@ -46,19 +46,33 @@ corrections (a venue's hours fixed against a primary source) go under
   intersection that holds under every sourced state) and `SpecialSessionUnrepresentable`
   (the special-session shape: a session the scalar vocabulary has no slot for), and a new
   `PhaseGap` value carries each one's **closing condition** — the issue whose closure
-  discharges it. An identity declares one beside its horizon in `schedules/sourcing.rs`,
-  the same no-wildcard match that already restates the ledger per identity, as an
-  affirmative assertion and never an inference. Three scopes declare one today:
-  `globex_equity_index` the Sunday 16:00-16:15 CT quarter-hour withheld under #79, and
-  `globex_fx` and `globex_cryptocurrency` the special sessions of #93. A declared phase
-  gap is checked before the date-level facts, so such a scope reports no complete range
-  anywhere in its supported domain and its one gap spans that domain with the closing
-  issue attached — the verdicts `docs/schedules/coverage-2025.md` already states.
+  discharges it. An identity declares a **list** of them beside its horizon in
+  `schedules/sourcing.rs`, the same no-wildcard match that already restates the ledger per
+  identity, as an affirmative assertion and never an inference. Eight scopes declare one
+  or more today, ten declarations in all: the Sunday 16:00-16:15 CT quarter-hour withheld
+  under #79 on `cme`, `comex`, `nymex`, `globex_energy`, `globex_equity_index`,
+  `globex_fx` and `globex_interest_rates`; the special sessions of #93 on `globex_fx` and
+  `globex_cryptocurrency`; and `globex_cryptocurrency`'s undated five-day-era Pre-Open
+  onset under #116, the scope's own closing issue, because its evidence file records the
+  gap but names no dedicated issue. The first revision of this entry declared the
+  quarter-hour on `globex_equity_index` alone, while `cme`, `comex`, `nymex`,
+  `globex_energy` and `globex_interest_rates` withheld the same phase and `globex_fx` did
+  not declare it either: all seven ship the same Sunday queue, and their own ledger basis
+  notes already recorded the withheld quarter-hour. A declared phase gap is checked before
+  the date-level facts, so such a scope reports no complete range anywhere in its
+  supported domain and reports one whole-domain gap record per declaration, each with its
+  own reason and closing condition.
   `CalendarCoverage::is_complete_on`, `complete_ranges()` and `gaps()` reflect it; no
   existing query signature changed and every date-shaped gap behaves exactly as before.
-  The inventory's `Complete?` cells and the metadata are now compared in
-  `tests/schedule_documentation/coverage_inventory.rs`, so the two records cannot
-  disagree again.
+  `docs/schedules/coverage-2025.md` carried the same error — its `Missing / disputed` cells
+  for `cme`, `comex`, `nymex`, `globex_energy`, `globex_interest_rates` and `globex_fx`
+  omitted the quarter-hour, and `comex`, `nymex`, `globex_energy` and
+  `globex_interest_rates` read `complete to 2027-12-31` — so that page's cells and its §4
+  verdict count are corrected here too, and the inventory's `Complete?` cells and the
+  metadata are compared in `tests/schedule_documentation/coverage_inventory.rs`, so the
+  two records cannot disagree again. A second, independent fence in the same file observes
+  the shipped profiles at 16:05 and 16:20 CT on Sunday 2025-06-08 and requires the #79
+  declaration exactly where the quarter-hour is withheld, and nowhere else.
 
 ### Changed
 

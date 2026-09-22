@@ -20,10 +20,11 @@
 //! apart, and it is why this fence queries rather than reading module text.
 
 use super::VERIFICATION;
-use chrono::NaiveDate;
+use chrono::{NaiveDate, TimeZone as _, Utc};
+use chrono_tz::US::Central;
 use exchange_hours::{
-    CoverageGapReason, Exchange, ExchangeCalendar, Holiday, HolidayKind, MarketHoursKey,
-    calendar_for_exchange, calendar_for_market_hours_key,
+    CoverageGap, CoverageGapReason, Exchange, ExchangeCalendar, Holiday, HolidayKind,
+    MarketHoursKey, calendar_for_exchange, calendar_for_market_hours_key,
 };
 
 const INVENTORY: &str = include_str!("../../docs/schedules/coverage-2025.md");
@@ -257,9 +258,11 @@ fn withheld(calendar: ExchangeCalendar, date: NaiveDate) -> bool {
 /// page rather than asserted by this list. It is a fence only while the
 /// `Unsrc 2025+ dates` column it is compared against is re-derived from the
 /// shipped tables — which `inventory_windows_and_date_counts_match_the_shipped_tables`
-/// does in the same file.
+/// does in the same file. `cme` is deliberately absent: it withholds 32 dates
+/// **and** the Sunday quarter-hour (#79), so its denial of completeness is no
+/// longer date-shaped.
 fn date_level_incompleteness() -> &'static [(&'static str, usize)] {
-    &[("cme", 32), ("cbot", 31)]
+    &[("cbot", 31)]
 }
 
 /// `is_complete_on(SAMPLE)` agrees with the inventory's `Complete?` cell for all
@@ -270,7 +273,11 @@ fn date_level_incompleteness() -> &'static [(&'static str, usize)] {
 /// text: `is_complete_on(2025-06-10)` returned `true` for `globex_equity_index`,
 /// `globex_fx` and `globex_cryptocurrency` — three scopes the same page calls
 /// incomplete — because a **phase-level** gap is invisible to a date walk over
-/// the identity's tables.
+/// the identity's tables. Five more scopes were wrong the other way round, and
+/// this fence is what made the correction to the page and the metadata land
+/// together: `cme`, `comex`, `nymex`, `globex_energy` and
+/// `globex_interest_rates` each withheld the Sunday 16:00-16:15 CT quarter-hour
+/// their own ledger basis notes record, while their cells here read complete.
 ///
 /// The cell is an interval verdict and the API is a per-date verdict, so the rule
 /// is stated in two parts rather than assumed to be one-to-one:
@@ -286,9 +293,9 @@ fn date_level_incompleteness() -> &'static [(&'static str, usize)] {
 ///    the table withholding it. A scope cannot read incomplete for a reason the
 ///    API does not report.
 ///
-/// Between them the three phase-gap scopes fail on the page's own words before
-/// their declarations exist, and the metadata must carry a cause that accounts
-/// for every denial.
+/// Between them the phase-gap scopes fail on the page's own words before their
+/// declarations exist, and the metadata must carry a cause that accounts for
+/// every denial.
 #[test]
 fn inventory_completeness_verdicts_match_the_metadata() {
     let day = sample();
@@ -340,7 +347,7 @@ fn inventory_completeness_verdicts_match_the_metadata() {
         // cause for: a declared phase-level gap, a gap span covering the sample,
         // or the table withholding it.
         if !expected {
-            let declared = coverage.phase_gap().is_some();
+            let declared = !coverage.phase_gaps().is_empty();
             let contained = coverage.gaps().any(|gap| gap.range().contains(day));
             assert!(
                 declared || contained || withheld(calendar, day),
@@ -351,85 +358,241 @@ fn inventory_completeness_verdicts_match_the_metadata() {
     }
     assert_eq!(
         (complete, incomplete, no_coverage),
-        (8, 5, 3),
-        "the inventory's verdict shapes: eight complete, five incomplete, three with no 2025 \
+        (4, 9, 3),
+        "the inventory's verdict shapes: four complete, nine incomplete, three with no 2025 \
          coverage"
     );
 }
 
-/// The three scopes the defect was reproduced on, pinned by name.
+/// Every declared phase-level gap, by served wire name: the reason it records
+/// and the issue its own evidence names as the closing condition.
+///
+/// A served scope with no entry declares none. The table is compared against the
+/// page's `Missing / disputed` and `Closing issues` cells below, so neither
+/// record can move without the other, and the shipped profiles are checked
+/// against it in `the_sunday_quarter_hour_is_declared_exactly_where_the_profiles_withhold_it`.
+///
+/// `globex_cryptocurrency`'s second gap is the one entry whose issue number is
+/// not the evidence file's own: `docs/evidence/globex_cryptocurrency.md` records
+/// the undated five-day-era Pre-Open onset and its closing condition ("a CME
+/// artifact that states the Pre-Open in session language on a day-level effective
+/// date"), but says only that the gap is "tracked as an issue" and names no
+/// number. The declaration therefore cites **#116**, the scope's own
+/// `Closing issues` cell — Stage 4's complete-served-data issue — rather than
+/// inventing a dedicated one. LAW-FOLLOW-UPS-ARE-ISSUES wants that dedicated
+/// issue opened; that is reported with this change, not done in it.
+fn declared_phase_gaps() -> Vec<(&'static str, Vec<(CoverageGapReason, &'static str)>)> {
+    let quarter_hour = (CoverageGapReason::NormalWeekPhaseWithheld, "#79");
+    let special_sessions = (CoverageGapReason::SpecialSessionUnrepresentable, "#93");
+    let pre_open_onset = (CoverageGapReason::NormalWeekPhaseWithheld, "#116");
+    vec![
+        ("cme", vec![quarter_hour]),
+        ("comex", vec![quarter_hour]),
+        ("nymex", vec![quarter_hour]),
+        ("globex_energy", vec![quarter_hour]),
+        ("globex_equity_index", vec![quarter_hour]),
+        ("globex_fx", vec![quarter_hour, special_sessions]),
+        ("globex_interest_rates", vec![quarter_hour]),
+        (
+            "globex_cryptocurrency",
+            vec![special_sessions, pre_open_onset],
+        ),
+    ]
+}
+
+/// The eight scopes that declare a phase-level gap declare exactly the ones
+/// advertised, each reportable with its own reason and closing issue, and each
+/// issue is one the scope's own row names.
 ///
 /// `inventory_completeness_verdicts_match_the_metadata` compares the metadata
 /// against the page, so it would pass if the page were edited to agree with a
-/// wrong API. This names the scopes and the reason each carries, so neither side
-/// can move silently: the required-phase shape is `#79` and the special-session
-/// shape is `#93`, and each scope reports the closing condition its own
-/// `Missing / disputed` cell cites.
+/// wrong API. This names the scopes and what each declares, so neither side can
+/// move silently.
 #[test]
-fn the_three_phase_level_gaps_are_declared_with_their_closing_issues() {
+fn the_declared_phase_level_gaps_match_the_inventory() {
     let day = sample();
-    let fixtures = [
-        (
-            "globex_equity_index",
-            CoverageGapReason::NormalWeekPhaseWithheld,
-            "#79",
-        ),
-        (
-            "globex_fx",
-            CoverageGapReason::SpecialSessionUnrepresentable,
-            "#93",
-        ),
-        (
-            "globex_cryptocurrency",
-            CoverageGapReason::SpecialSessionUnrepresentable,
-            "#93",
-        ),
-    ];
-    for (name, reason, closing) in fixtures {
+    let expected_table = declared_phase_gaps();
+    let rows = inventory_rows();
+    let mut declaring = 0_usize;
+    let mut declarations = 0_usize;
+    for (name, row) in &rows {
         let coverage = calendar_for(name)
-            .expect("the fixture names a served identity")
+            .expect("the inventory names a known identity")
             .coverage();
+        let expected = expected_table
+            .iter()
+            .find(|(scope, _)| scope == name)
+            .map_or_else(Vec::new, |(_, gaps)| gaps.clone());
+        let actual: Vec<(CoverageGapReason, &str)> = coverage
+            .phase_gaps()
+            .iter()
+            .map(|gap| (gap.reason(), gap.closing_condition()))
+            .collect();
+        assert_eq!(actual, expected, "{name}");
+        if expected.is_empty() {
+            continue;
+        }
+        declaring += 1;
+        declarations += expected.len();
+
+        // A phase-level gap leaves no complete date anywhere, and the horizon
+        // the ledger declares is untouched: it is additional information, not a
+        // re-dating.
         assert!(
             !coverage.is_complete_on(day),
             "{name} carries a phase-level gap, so no date is complete"
         );
-        let declared = coverage
-            .phase_gap()
-            .unwrap_or_else(|| panic!("{name} must declare its phase-level gap"));
-        assert_eq!(declared.reason(), reason, "{name}");
-        assert_eq!(declared.closing_condition(), closing, "{name}");
-
-        // The gap is reportable, and it spans the whole supported domain rather
-        // than a span of dates inside it.
-        let gaps: Vec<exchange_hours::CoverageGap> = coverage.gaps().collect();
-        assert_eq!(gaps.len(), 1, "{name} reports exactly its declared gap");
-        assert_eq!(gaps[0].range().first(), floor(), "{name}");
-        assert!(gaps[0].range().is_open_ended(), "{name}");
-        assert_eq!(gaps[0].reason(), reason, "{name}");
-        assert_eq!(gaps[0].closing_condition(), Some(closing), "{name}");
         assert_eq!(coverage.complete_ranges().count(), 0, "{name}");
-    }
 
-    // The seven scopes the same page calls complete are untouched: a declaration
-    // must not leak to a scope that carries no gap.
+        // Reportable, one whole-domain record per declaration, and the page
+        // names the issue each declaration would take to discharge it.
+        let gaps: Vec<CoverageGap> = coverage.gaps().collect();
+        assert_eq!(gaps.len(), expected.len(), "{name}");
+        for (gap, (reason, closing)) in gaps.iter().zip(&expected) {
+            assert_eq!(gap.range().first(), floor(), "{name}");
+            assert!(gap.range().is_open_ended(), "{name}");
+            assert_eq!(gap.reason(), *reason, "{name}");
+            assert_eq!(gap.closing_condition(), Some(*closing), "{name}");
+            assert!(
+                row[7].contains(closing) || row[9].contains(closing),
+                "{name}'s Missing / disputed and Closing issues cells must name {closing}: \
+                 {:?} / {:?}",
+                row[7],
+                row[9]
+            );
+        }
+    }
+    assert_eq!(
+        (declaring, declarations),
+        (8, 10),
+        "eight served scopes declare a phase-level gap today, ten declarations in all: seven \
+         quarter-hour scopes, one of which also publishes the #93 special sessions, and \
+         `globex_cryptocurrency`'s two"
+    );
+
+    // The scopes the quarter-hour probe cleared of the disputed window declare
+    // nothing at all: a declaration must not leak onto a profile whose grid has
+    // no session there. Whether each is complete is the `Complete?` cell's
+    // question, answered by the test above.
     for name in [
-        "comex",
-        "nymex",
-        "globex_energy",
+        "cbot",
+        "cfe",
+        "coinbase_derivatives",
+        "eurex",
+        "iceus",
         "globex_grains",
-        "globex_interest_rates",
         "globex_livestock",
         "globex_nikkei_225_dollar",
     ] {
-        let coverage = calendar_for(name)
-            .expect("the fixture names a served identity")
-            .coverage();
-        assert_eq!(coverage.phase_gap(), None, "{name}");
         assert!(
-            coverage.is_complete_on(day),
-            "{name} is complete on the sample"
+            calendar_for(name)
+                .expect("the fixture names a served scope")
+                .coverage()
+                .phase_gaps()
+                .is_empty(),
+            "{name} declares no phase-level gap"
         );
     }
+}
+
+/// 16:05 or 16:20 CT on Sunday 2025-06-08, the instants the quarter-hour probe
+/// uses: 16:05 falls inside CME's disputed 16:00-16:15 CT window and 16:20
+/// inside the sourced 16:15-17:00 intersection it is served from.
+fn chicago(hour: u32, minute: u32) -> chrono::DateTime<Utc> {
+    Central
+        .with_ymd_and_hms(2025, 6, 8, hour, minute, 0)
+        .single()
+        .expect("2025-06-08 is a Sunday with one 16:05/16:20 CT instant")
+        .with_timezone(&Utc)
+}
+
+/// The withheld Sunday quarter-hour, fenced on the shipped profiles themselves.
+///
+/// `is_complete_on` is derived from the declarations, so on its own it cannot
+/// tell a scope that withholds a required phase from one whose grid simply has no
+/// session at 16:05 CT. This fence observes the profiles instead: a scope that
+/// withholds the quarter-hour is closed at 16:05 CT and **accepting orders** at
+/// 16:20 CT, and exactly the scopes that show that signature declare #79 —
+/// `cme`, `comex`, `nymex`, `globex_energy`, `globex_equity_index`, `globex_fx`
+/// and `globex_interest_rates`. The three that accept at 16:05 CT are genuinely
+/// fine, and the six closed at both instants have a different grid rather than a
+/// withheld quarter-hour, so neither group may carry the declaration.
+///
+/// This is the independent half of the fence the defect needed: it reads the
+/// profiles rather than the prose, so a scope silently dropped from the
+/// declaration list fails here even if the inventory is edited to match.
+#[test]
+fn the_sunday_quarter_hour_is_declared_exactly_where_the_profiles_withhold_it() {
+    let inside = chicago(16, 5);
+    let after = chicago(16, 20);
+    let mut withholding = Vec::new();
+    let mut accepts_inside = Vec::new();
+    let mut closed_at_both = Vec::new();
+    for (name, _) in inventory_rows() {
+        let calendar = calendar_for(&name).expect("the inventory names a known identity");
+        let declares = calendar
+            .coverage()
+            .phase_gaps()
+            .iter()
+            .any(|gap| gap.closing_condition() == "#79");
+        let closed_inside = !calendar.is_accepting_orders(inside);
+        let open_after = calendar.is_accepting_orders(after);
+        assert_eq!(
+            declares,
+            closed_inside && open_after,
+            "{name} is {} at 16:05 CT and {} at 16:20 CT on {inside} ({}), so it must {}declare the \
+             withheld Sunday quarter-hour (#79)",
+            if closed_inside {
+                "closed"
+            } else {
+                "accepting orders"
+            },
+            if open_after {
+                "accepting orders"
+            } else {
+                "closed"
+            },
+            inside.with_timezone(&Central),
+            if declares { "" } else { "not " }
+        );
+        if declares {
+            withholding.push(name);
+        } else if !closed_inside {
+            accepts_inside.push(name);
+        } else {
+            closed_at_both.push(name);
+        }
+    }
+    assert_eq!(
+        withholding,
+        [
+            "cme",
+            "comex",
+            "nymex",
+            "globex_equity_index",
+            "globex_energy",
+            "globex_fx",
+            "globex_interest_rates"
+        ],
+        "the seven scopes whose Sunday queue withholds the 16:00-16:15 CT quarter-hour"
+    );
+    assert_eq!(
+        accepts_inside,
+        ["cbot", "cfe", "globex_grains"],
+        "these accept orders inside the disputed window, so no gap is declared for them"
+    );
+    assert_eq!(
+        closed_at_both,
+        [
+            "coinbase_derivatives",
+            "eurex",
+            "iceus",
+            "globex_livestock",
+            "globex_cryptocurrency",
+            "globex_nikkei_225_dollar"
+        ],
+        "these are closed at both instants: a different grid, not a withheld quarter-hour"
+    );
 }
 
 /// The sample date is a date every scope's audit actually reaches.

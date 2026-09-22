@@ -10,9 +10,10 @@
 //! allocates nothing, never sorts, and cannot disagree with the per-date
 //! accessor beside it.
 //!
-//! A declared phase-level gap has no interior edge at all: the walk then reports
-//! a single run from the support floor to the end of the domain, carrying the
-//! identity's own declaration with it.
+//! A declared phase-level gap has no interior edge at all: the identity
+//! answers no date completely, so [`CoverageGaps`] reports one whole-domain
+//! record per declaration instead of walking — the declarations are the answer,
+//! and repeating them through the run walk could only ever report the first.
 
 use super::{CalendarCoverage, CoverageGap, CoverageGapReason, DateRange, SUPPORT_FLOOR};
 use chrono::NaiveDate;
@@ -89,12 +90,15 @@ impl Iterator for CompleteRanges {
 /// Ascending iterator over the spans an identity cannot answer completely, each
 /// with its reason.
 ///
-/// Produced by [`CalendarCoverage::gaps`]. An identity that declares a
-/// phase-level gap reports one span covering the whole supported domain, and its
-/// [`closing_condition`](CoverageGap::closing_condition) is the issue that would
-/// discharge it.
+/// Produced by [`CalendarCoverage::gaps`]. An identity that declares
+/// phase-level gaps reports one whole-domain span per declaration, each with its
+/// own reason and [`closing_condition`](CoverageGap::closing_condition); the
+/// declaration list itself is [`CalendarCoverage::phase_gaps`].
 #[derive(Debug)]
 pub struct CoverageGaps {
+    coverage: CalendarCoverage,
+    /// How many of the identity's declared phase-level gaps have been reported.
+    declared: usize,
     runs: Runs,
 }
 
@@ -102,6 +106,8 @@ impl CoverageGaps {
     /// Starts the walk this iterator reports.
     pub(super) const fn new(coverage: CalendarCoverage) -> Self {
         Self {
+            coverage,
+            declared: 0,
             runs: Runs::new(coverage),
         }
     }
@@ -111,10 +117,29 @@ impl Iterator for CoverageGaps {
     type Item = CoverageGap;
 
     fn next(&mut self) -> Option<CoverageGap> {
+        // A declared phase-level gap applies to every date the claim covers, so
+        // one identity answers nothing completely: its declarations are the whole
+        // answer, reported one record each in declaration order. A date walk here
+        // could only repeat the first declaration's reason over the whole domain
+        // and would never surface the rest.
+        if let Some(gap) = self.coverage.phase_gaps().get(self.declared) {
+            self.declared = self.declared.saturating_add(1);
+            return Some(CoverageGap {
+                range: DateRange {
+                    first: SUPPORT_FLOOR,
+                    last: NaiveDate::MAX,
+                },
+                reason: gap.reason(),
+                phase_gap: Some(*gap),
+            });
+        }
+        if !self.coverage.phase_gaps().is_empty() {
+            return None;
+        }
         loop {
             let (range, reason) = self.runs.next_run()?;
             if let Some(reason) = reason {
-                return Some(super::gap_of(self.runs.coverage, range, reason));
+                return Some(super::gap_of(range, reason));
             }
         }
     }

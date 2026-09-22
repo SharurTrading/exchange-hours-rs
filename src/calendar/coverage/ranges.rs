@@ -106,12 +106,12 @@ pub struct CompleteRanges {
 }
 
 impl CompleteRanges {
-    /// Returns the most records this iterator can report.
+    /// Returns the recorded bound on the records this iterator reports.
     ///
     /// This iterator always walks the runs and holds no precomputed store, so the
-    /// bound is what a caller sizing a buffer should use and what a fence uses to
-    /// notice when the shipped tables outgrow it. Exceeding it truncates no
-    /// record: the walk continues past the capacity.
+    /// bound is a sizing hint and a growth signal rather than a hard cap: the walk
+    /// continues past it. `tests/coverage_metadata.rs` holds every identity to
+    /// it.
     #[must_use]
     pub const fn capacity() -> usize {
         GAP_RECORD_CAPACITY
@@ -194,8 +194,8 @@ impl CoverageGaps {
         }
     }
 
-    /// Records one phase-level gap per declaration, over the whole span that
-    /// declaration answers for.
+    /// Records one phase-level gap per declaration that no earlier one shadows,
+    /// over the whole span that declaration answers for.
     ///
     /// The span is the union of the runs the declaration answers for, which is
     /// contiguous because its own bound is a run edge: the era before it for the

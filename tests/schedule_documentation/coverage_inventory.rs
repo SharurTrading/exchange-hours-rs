@@ -35,7 +35,7 @@ const INVENTORY: &str = include_str!("../../docs/schedules/coverage-2025.md");
 /// audit — not a withheld `Unsourced` date and not before a window opens — or the
 /// comparison would be measuring something other than the verdict. 2025-06-10 is
 /// a **Tuesday** inside every shipped audited window (`2025-01-01..2027-12-31`
-/// reaches it for the fourteen scopes that answer 2025, and the three that open
+/// reaches it for the thirteen scopes that answer 2025, and the three that open
 /// later are asserted below to answer it as incomplete anyway), and it is not a
 /// date any served table withholds:
 /// `inventory_sample_date_is_inside_every_scopes_audit` re-derives both claims

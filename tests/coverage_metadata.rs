@@ -154,10 +154,11 @@ fn scopes_without_2025_holiday_coverage_report_outside_range() {
 #[test]
 fn withheld_dates_are_unresolved_gaps_inside_an_audited_window() {
     // `cme` is deliberately absent: it now declares the Sunday quarter-hour
-    // phase-level gap (#79), which is checked before the date-level facts, so its
-    // per-date verdict for a withheld date is `OutsideCoveredRange` rather than
-    // `UnresolvedGap`. The withheld-date shape is unaffected and is what these
-    // two intersections still show.
+    // phase-level gap (#79), which is checked before the date-level facts, so
+    // inside the dated era its per-date verdict for a withheld date is
+    // `OutsideCoveredRange` rather than `UnresolvedGap`. From 2026-08-22 the
+    // declaration is retired and 13 of its 32 withheld dates again answer
+    // `UnresolvedGap`; neither is the plain shape these two intersections show.
     let fixtures = [
         (Exchange::Cbot, date(2025, 1, 2), date(2025, 1, 3)),
         (Exchange::Iceus, date(2026, 1, 19), date(2026, 1, 20)),

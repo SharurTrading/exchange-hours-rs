@@ -47,7 +47,8 @@
 //! [`CalendarCoverage::is_complete_on`], [`CalendarCoverage::complete_ranges`]
 //! and [`CalendarCoverage::gaps`] agree on where the gap stops. A whole-domain
 //! declaration (no bound) leaves an identity incomplete everywhere, as does
-//! shipping no holiday table at all, which most identities do.
+//! shipping no holiday table at all — most identities do, though the three whose
+//! own definition observes no holidays are complete without one.
 //!
 //! Nothing here changes an existing query's signature. Inspectable metadata is
 //! not permission to return a fabricated schedule: a date this module reports as
@@ -334,9 +335,10 @@ impl PhaseGap {
 /// answer for: the whole supported domain for a declaration with no bound, the era
 /// before its [`PhaseGap::until`] day for a bounded one, and what a bounded
 /// declaration left for a whole-domain one that follows it. Because the shapes
-/// stack, an identity declaring two gaps reports two records, each with its own
-/// reason and closing condition ([`CalendarCoverage::phase_gaps`] is the
-/// declaration list itself).
+/// stack, a declaration that no earlier one shadows reports its own record; a
+/// shadowed one has none, so `globex_cryptocurrency`'s `#93` precedes its `#123`
+/// and only `#93` reaches [`CalendarCoverage::gaps`].
+/// [`CalendarCoverage::phase_gaps`] is the declaration list itself.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct CoverageGap {
     range: DateRange,
@@ -371,8 +373,9 @@ impl CoverageGap {
     /// requires a gap to carry: the issue whose closure would discharge it, as the
     /// declaration in `schedules/sourcing.rs` and
     /// `docs/schedules/coverage-2025.md` write it. A record reports one
-    /// declaration, so an identity that declares several gaps reports one record
-    /// per declaration; read [`CalendarCoverage::phase_gaps`] for the whole list
+    /// declaration, and only the first one applying to a date reaches
+    /// [`CalendarCoverage::gaps`] — a declaration an earlier one shadows has no
+    /// record there, so read [`CalendarCoverage::phase_gaps`] for the whole list
     /// at once.
     #[must_use]
     pub const fn phase_gap(self) -> Option<PhaseGap> {
@@ -575,9 +578,9 @@ impl CalendarCoverage {
     ///
     /// A scope can carry several because the shapes stack: `globex_fx`
     /// withholds the Sunday quarter-hour *and* publishes special sessions the
-    /// scalar layer cannot state. Every declaration is reported with its own
-    /// reason and closing condition, each as a record over the span its own bound
-    /// gives it, from [`Self::gaps`].
+    /// scalar layer cannot state. Each of these carries its own reason and
+    /// closing condition. [`Self::gaps`] reports a declaration over the span it
+    /// answers for, and only where no earlier declaration shadows it.
     #[must_use]
     pub const fn phase_gaps(self) -> &'static [PhaseGap] {
         self.phase_gaps
@@ -668,8 +671,9 @@ impl CalendarCoverage {
     /// no covered date whatever its tables say. A declaration an era bound has
     /// retired ([`PhaseGap::until`]) is not consulted for a later date at all, so
     /// the date is decided by the ordinary facts. The first declaration applying
-    /// to the date supplies the reason; every declaration is reported by
-    /// [`Self::gaps`] and [`Self::phase_gaps`].
+    /// to the date supplies the reason; every declaration is listed by
+    /// [`Self::phase_gaps`], and by [`Self::gaps`] where no earlier one shadows
+    /// it.
     pub(super) fn gap_reason_on(self, date: NaiveDate) -> Option<CoverageGapReason> {
         if date < SUPPORT_FLOOR {
             return None;

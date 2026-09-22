@@ -33,7 +33,7 @@ corrections (a venue's hours fixed against a primary source) go under
   `OutsideCoveredRange`, `UnresolvedGap` and `SearchExhausted` variants keep unsupported
   coverage separate from bounded search exhaustion. `ExchangeCalendar::coverage()`
   reports it per identity and honours `without_holidays()` by selecting the normal-week
-  contract. Each identity's horizon is declared once in `schedules/sourcing.rs` and
+  contract — unchanged for the identities that assert they observe no holidays. Each identity's horizon is declared once in `schedules/sourcing.rs` and
   fenced against the ledger by `tests/schedule_documentation/horizons.rs`. This is
   **preparation for a breaking change** — the 2B migration of identity-backed queries to
   `Result` (#115) — and is itself additive.

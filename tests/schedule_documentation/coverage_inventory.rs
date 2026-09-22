@@ -828,7 +828,9 @@ const QUARTER_HOUR_ERAS: [QuarterHourEra; 7] = [
 /// 2. **the profile agrees**: orders are refused inside the dated era and accepted
 ///    after it;
 /// 3. **the metadata agrees with the profile**: the earlier Sunday is outside the
-///    covered range and the later one is covered, and the two verdicts are
+///    covered range for every declaring scope, and after the bound each scope's
+///    verdict is the one its own declarations imply - `Covered` where `#79` was
+///    the only gap, still outside it for `globex_fx`, whose `#93` is unbounded -
 ///    compared date by date across the boundary rather than only at its ends.
 ///
 /// The bound each module carries is a table cell here rather than an assumption, so

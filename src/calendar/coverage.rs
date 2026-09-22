@@ -45,8 +45,9 @@
 //! the bound keep the phase-level reason, and dates at or after it fall through
 //! to the ordinary date-level facts — so [`CalendarCoverage::coverage_on`],
 //! [`CalendarCoverage::is_complete_on`], [`CalendarCoverage::complete_ranges`]
-//! and [`CalendarCoverage::gaps`] agree on where the gap stops. Only a genuinely
-//! whole-domain declaration (no bound) leaves an identity incomplete everywhere.
+//! and [`CalendarCoverage::gaps`] agree on where the gap stops. A whole-domain
+//! declaration (no bound) leaves an identity incomplete everywhere, as does
+//! shipping no holiday table at all, which most identities do.
 //!
 //! Nothing here changes an existing query's signature. Inspectable metadata is
 //! not permission to return a fabricated schedule: a date this module reports as
@@ -136,7 +137,8 @@ pub enum DateCoverage {
     BeforeSupportFloor,
     /// The date is at or after the floor but outside the ranges this identity
     /// has a sourced answer for: its weekday profile is carried backwards
-    /// there, or its holiday layer has no answer.
+    /// there, its holiday layer has no answer, or a declared phase-level gap
+    /// applies on the date.
     OutsideCoveredRange,
     /// The date is inside an audited window on a date the identity explicitly
     /// withholds as [`HolidayKind::Unsourced`](crate::HolidayKind::Unsourced).
@@ -461,12 +463,16 @@ impl HolidayContract {
 /// [`Self::coverage_on`] is the per-date verdict, [`Self::complete_ranges`] the
 /// spans that answer completely, and [`Self::gaps`] the rest with their
 /// reasons. An identity that declares a **whole-domain phase-level** gap in
-/// `schedules/sourcing.rs` reports no complete range at all and one whole-domain
-/// gap record per such declaration ([`Self::phase_gaps`]); a declaration bounded
-/// by [`PhaseGap::until`] stops applying from that day on, and its records stop
-/// there. Bounding one declaration does not make the identity complete: one that
-/// also carries an unbounded declaration is still outside covered range after the
-/// bound, which is `globex_fx`'s shape.
+/// `schedules/sourcing.rs` reports no complete range at all. Its `#79`-style
+/// declarations are reported from [`Self::gaps`] only where they are the answer;
+/// from the day such a declaration stops applying the date-level walk supplies
+/// the records instead, so `cme` reports both its declaration's span and its own
+/// withheld dates. Where several declarations overlap, the one that answers first
+/// takes the span and a shadowed one has no record of its own — which is
+/// `globex_cryptocurrency`'s shape, whose `#93` precedes its `#123`. Bounding one
+/// declaration does not make the identity complete: one that also carries an
+/// unbounded declaration is still outside covered range after the bound, which is
+/// `globex_fx`'s shape.
 ///
 /// The spans are **derived, not duplicated**: the iterators walk the identity's
 /// static timeline horizon and holiday-window edges in ascending order and stop
@@ -799,9 +805,10 @@ impl Eq for CalendarCoverage {}
 
 /// Returns the gap one maximal run of `reason` reports.
 ///
-/// The date walk only runs for an identity that declares no phase-level gap —
-/// [`CoverageGaps`](super::CoverageGaps) reports the declarations instead, one
-/// whole-domain record each — so a walk record never carries a declaration.
+/// Declarations are reported from [`CoverageGaps`](super::CoverageGaps) before
+/// the walk, and the walk still runs for the days no declaration answers, so a
+/// walk record never carries a declaration and a declaring identity reports
+/// both — `cme` yields its declaration's span and its own withheld dates.
 const fn gap_of(range: DateRange, reason: CoverageGapReason) -> CoverageGap {
     CoverageGap {
         range,

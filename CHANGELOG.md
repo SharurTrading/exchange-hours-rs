@@ -60,9 +60,9 @@ corrections (a venue's hours fixed against a primary source) go under
   not declare it either: all seven ship the same Sunday queue, and their own ledger basis
   notes already recorded the withheld quarter-hour. Where a declaration applies, its reason
   is checked before the date-level facts, so no date the declaration covers is answered
-  from a complete normal week or calendar, and `gaps()` reports one record per declaration
-  over the span that declaration is the answer for, each with its own reason and closing
-  condition.
+  from a complete normal week or calendar, and `gaps()` reports each declaration
+  over the span it answers for, with the date-level walk supplying the records where no
+  declaration applies, each with its own reason and closing condition.
   `CalendarCoverage::is_complete_on`, `complete_ranges()` and `gaps()` reflect it; no
   existing query signature changed and every date-shaped gap behaves exactly as before.
   `docs/schedules/coverage-2025.md` carried the same error — its `Missing / disputed` cells

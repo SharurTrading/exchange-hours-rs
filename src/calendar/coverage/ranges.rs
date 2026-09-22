@@ -97,9 +97,9 @@ impl Runs {
 
 /// Ascending iterator over the spans an identity answers completely.
 ///
-/// Produced by [`CalendarCoverage::complete_ranges`]. An identity whose
-/// declarations are all unbounded reports no span at all; one that bounds a
-/// declaration to an era reports the spans from that era on.
+/// Produced by [`CalendarCoverage::complete_ranges`]. An identity with any
+/// unbounded declaration reports no span at all, however many it bounds; one
+/// whose declarations are all bounded reports the spans from the last bound on.
 #[derive(Debug)]
 pub struct CompleteRanges {
     runs: Runs,

@@ -51,8 +51,9 @@ pub enum CalendarQueryError {
     /// has a sourced answer for.
     ///
     /// Either the weekday profile is carried backwards below the identity's
-    /// recorded horizon, or the date falls outside every holiday window the
-    /// identity's built-in table audited. The reason is available from
+    /// recorded horizon, the date falls outside every holiday window the
+    /// identity's built-in table audited, or a declared phase-level gap applies
+    /// on the date. The reason is available from
     /// [`CalendarCoverage::gaps`](super::CalendarCoverage::gaps), which reports
     /// the same derivation as spans.
     OutsideCoveredRange {

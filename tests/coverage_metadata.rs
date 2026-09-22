@@ -546,3 +546,89 @@ fn a_complete_scope_answers_every_day_inside_its_span() {
         assert_eq!(gap_reason_on(coverage, day), None, "{day}");
     }
 }
+
+#[test]
+fn a_declared_phase_gap_denies_completeness_across_the_whole_domain() {
+    // The three scopes whose gap is a property of the normal week or the
+    // calendar rather than of a span of dates. A date walk over an identity's
+    // tables cannot find them, which is exactly why they are declared beside the
+    // horizon: before this declaration `is_complete_on(2025-06-10)` answered
+    // `true` for all three while `docs/schedules/coverage-2025.md` called each
+    // one incomplete.
+    let fixtures = [
+        (
+            MarketHoursKey::GlobexEquityIndex,
+            CoverageGapReason::NormalWeekPhaseWithheld,
+            "#79",
+        ),
+        (
+            MarketHoursKey::GlobexFx,
+            CoverageGapReason::SpecialSessionUnrepresentable,
+            "#93",
+        ),
+        (
+            MarketHoursKey::GlobexCryptocurrency,
+            CoverageGapReason::SpecialSessionUnrepresentable,
+            "#93",
+        ),
+    ];
+    let sample = date(2025, 6, 10);
+    for (key, reason, closing) in fixtures {
+        let coverage = key_coverage(key);
+        let declared = coverage
+            .phase_gap()
+            .unwrap_or_else(|| panic!("{key:?} declares a phase-level gap"));
+        assert_eq!(declared.reason(), reason, "{key:?}");
+        assert_eq!(declared.closing_condition(), closing, "{key:?}");
+
+        // Nowhere in the supported domain, and the horizon the ledger declares
+        // is untouched: a phase gap is additional information, not a re-dating.
+        assert!(!coverage.is_complete_on(sample), "{key:?} on {sample}");
+        assert!(
+            !coverage.is_complete_on(SUPPORT_FLOOR),
+            "{key:?} at the floor"
+        );
+        assert_eq!(coverage.complete_ranges().count(), 0, "{key:?}");
+        assert_eq!(
+            coverage.coverage_on(sample),
+            DateCoverage::OutsideCoveredRange,
+            "{key:?}"
+        );
+
+        // Reportable, with the closing condition on the reported gap.
+        let gaps: Vec<CoverageGap> = coverage.gaps().collect();
+        assert_eq!(gaps.len(), 1, "{key:?}");
+        assert_eq!(gaps[0].range(), unbounded(SUPPORT_FLOOR), "{key:?}");
+        assert_eq!(gaps[0].reason(), reason, "{key:?}");
+        assert_eq!(gaps[0].closing_condition(), Some(closing), "{key:?}");
+        assert_eq!(
+            gaps[0]
+                .phase_gap()
+                .map(exchange_hours::PhaseGap::closing_condition),
+            Some(closing),
+            "{key:?}"
+        );
+    }
+
+    // A date-shaped gap carries no closing condition: this vocabulary does not
+    // invent an issue number for a gap the crate's own data closes.
+    let comex = exchange_coverage(Exchange::Comex);
+    let trailing = comex.gaps().next().expect("Comex has a trailing gap");
+    assert_eq!(trailing.closing_condition(), None);
+    assert_eq!(trailing.phase_gap(), None);
+    assert_eq!(comex.phase_gap(), None);
+
+    // Detaching the holiday table does not manufacture or hide a phase gap: it
+    // is a fact about the identity, not about which layer this calendar consults.
+    let detached = calendar_for_market_hours_key(MarketHoursKey::GlobexFx)
+        .without_holidays()
+        .coverage();
+    assert_eq!(
+        detached.phase_gap(),
+        key_coverage(MarketHoursKey::GlobexFx).phase_gap()
+    );
+    assert_eq!(
+        detached.gaps().next().map(CoverageGap::reason),
+        Some(CoverageGapReason::SpecialSessionUnrepresentable)
+    );
+}

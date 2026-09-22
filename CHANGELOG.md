@@ -37,6 +37,28 @@ corrections (a venue's hours fixed against a primary source) go under
   fenced against the ledger by `tests/schedule_documentation/horizons.rs`. This is
   **preparation for a breaking change** — the 2B migration of identity-backed queries to
   `Result` (#115) — and is itself additive.
+- **Phase-level coverage gaps (2026-09-22 UTC).** The coverage vocabulary above described
+  gaps as spans of dates, and LAW-COVERAGE's completeness test also counts a gap in a
+  required **phase** or in a **special session** — arrangements that apply to every date
+  the claim covers rather than to particular ones, so a date walk over an identity's
+  tables cannot see them. `CoverageGapReason` gains `NormalWeekPhaseWithheld` (the
+  required-phase shape: the operator publishes the phase and the crate serves only the
+  intersection that holds under every sourced state) and `SpecialSessionUnrepresentable`
+  (the special-session shape: a session the scalar vocabulary has no slot for), and a new
+  `PhaseGap` value carries each one's **closing condition** — the issue whose closure
+  discharges it. An identity declares one beside its horizon in `schedules/sourcing.rs`,
+  the same no-wildcard match that already restates the ledger per identity, as an
+  affirmative assertion and never an inference. Three scopes declare one today:
+  `globex_equity_index` the Sunday 16:00-16:15 CT quarter-hour withheld under #79, and
+  `globex_fx` and `globex_cryptocurrency` the special sessions of #93. A declared phase
+  gap is checked before the date-level facts, so such a scope reports no complete range
+  anywhere in its supported domain and its one gap spans that domain with the closing
+  issue attached — the verdicts `docs/schedules/coverage-2025.md` already states.
+  `CalendarCoverage::is_complete_on`, `complete_ranges()` and `gaps()` reflect it; no
+  existing query signature changed and every date-shaped gap behaves exactly as before.
+  The inventory's `Complete?` cells and the metadata are now compared in
+  `tests/schedule_documentation/coverage_inventory.rs`, so the two records cannot
+  disagree again.
 
 ### Changed
 

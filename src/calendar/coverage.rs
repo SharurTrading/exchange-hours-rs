@@ -25,12 +25,18 @@
 //! [`CalendarQueryError`] is the explicit error vocabulary Stage 2B's
 //! identity-backed queries return instead of answering an unsupported date.
 //!
-//! Completeness here is **date-coverage** completeness: it does not certify that
-//! every arrangement inside a covered range is representable. A withheld phase
-//! boundary (#79) or a special session the scalar normal week cannot state
-//! (#93) is recorded in the verification ledger's `Missing / disputed` column
-//! and in the owner's evidence file, and `docs/schedules/coverage-2025.md`
-//! weighs those when it states a scope's verdict.
+//! A **date-shaped** gap is what the three facts above decide, and
+//! [`CoverageGapReason::NormalWeekCarried`], [`CoverageGapReason::NoHolidayTable`],
+//! [`CoverageGapReason::NoHolidayCoverage`], [`CoverageGapReason::WithheldDate`]
+//! and [`CoverageGapReason::NormalWeekOnly`] name its five kinds. A **phase-level**
+//! gap is not date-shaped at all: the operator publishes the arrangement, and the
+//! crate's own static vocabulary cannot state it, on *every* date the claim
+//! covers. `schedules/sourcing.rs` declares those per identity, and this module
+//! reports them as [`CoverageGapReason::NormalWeekPhaseWithheld`] (#79) and
+//! [`CoverageGapReason::SpecialSessionUnrepresentable`] (#93). An identity
+//! carrying one is **not complete anywhere in its supported domain**, so its
+//! complete ranges are empty and its single gap spans the whole domain — the
+//! verdict LAW-COVERAGE and `docs/schedules/coverage-2025.md` already state.
 //!
 //! Nothing here changes an existing query's signature. Inspectable metadata is
 //! not permission to return a fabricated schedule: a date this module reports as
@@ -38,8 +44,10 @@
 //! the only layer that can supply one.
 
 mod error;
+mod ranges;
 
 pub use error::CalendarQueryError;
+pub use ranges::{CompleteRanges, CoverageGaps};
 
 use chrono::NaiveDate;
 
@@ -130,6 +138,14 @@ pub enum DateCoverage {
 }
 
 /// Why a span inside the supported domain is not complete.
+///
+/// Five variants are **date-shaped**: they describe a span of venue-local dates
+/// and are derived from the identity's own timeline and holiday table. Two are
+/// **phase-level**, declared once per identity in `schedules/sourcing.rs`
+/// (LAW-COVERAGE's required-phase and special-session gaps): they apply to every
+/// date in the claimed interval, so a date walk over the tables can never find
+/// them. An identity carrying a phase-level gap is incomplete everywhere, and
+/// [`CoverageGap::closing_condition`] names what would discharge it.
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum CoverageGapReason {
@@ -147,6 +163,87 @@ pub enum CoverageGapReason {
     /// The calendar detached its built-in holiday table with
     /// [`without_holidays`](crate::ExchangeCalendar::without_holidays).
     NormalWeekOnly,
+    /// **Declared phase-level.** The identity's sourced normal week contains a
+    /// required phase the calendar withholds, so no date in the claimed interval
+    /// is answered from a complete normal week.
+    ///
+    /// The shape is a slice of one phase's boundary: the operator publishes the
+    /// phase, the crate's scalar rules serve only the part of it that holds under
+    /// every sourced state, and the remainder depends on a change this crate
+    /// cannot date (LAW-NO-FABRICATED-DATES). `globex_equity_index` is the one
+    /// shipped case — CME's Sunday 16:00-16:15 CT quarter-hour, withheld in
+    /// favour of the 16:15-17:00 CT intersection the crate carries from its 2010
+    /// floor (#79) — and the owner's evidence file records the 2012 move the
+    /// disputed quarter-hour depends on.
+    ///
+    /// Because the withheld slice lies inside a phase on a recurring grid rather
+    /// than on one trade date, this is not [`Self::WithheldDate`]: it is not a
+    /// date-level exception, it cannot be discharged by an
+    /// [`ExceptionBlock`](crate::ExceptionBlock) row alone, and it does not move
+    /// with the identity's holidays.
+    NormalWeekPhaseWithheld,
+    /// **Declared phase-level.** The identity's operator publishes at least one
+    /// session this crate's scalar vocabulary cannot state, so no date in the
+    /// claimed interval is answered from a complete calendar.
+    ///
+    /// The shape is a *whole session that the modelled week has no slot for* —
+    /// an extra session on a weekday the normal week does not trade, or a
+    /// trade-date arrangement the scalar rows cannot key. Unlike the rest of this
+    /// vocabulary it is not a withheld answer on a date the caller can see: the
+    /// date may be answered plausibly by the ordinary week, which is exactly why
+    /// it is a completeness gap rather than an error at query time. The closing
+    /// condition is the replacement-block engine of LAW-HOLIDAY-SCOPE (#93), and
+    /// [`ExceptionBlock`](crate::ExceptionBlock) already reaches callers, so a
+    /// caller can supply the session the crate cannot.
+    ///
+    /// `globex_fx` and `globex_cryptocurrency` are the shipped cases: CME's
+    /// Saturday sessions and merged trade dates, recorded in each owner's
+    /// evidence file.
+    SpecialSessionUnrepresentable,
+}
+
+/// A phase-level completeness gap one identity declares about itself: a known
+/// internal gap that no date walk over the identity's tables can find.
+///
+/// Declared in `schedules/sourcing.rs` beside the identity it belongs to, never
+/// inferred from a timeline or a holiday table. LAW-COVERAGE requires complete
+/// coverage to contain "no unresolved normal-week, required-phase, holiday or
+/// special-session gap"; the first two of those are shapes the tables under
+/// `schedules/` cannot express today, so they are stated affirmatively, exactly
+/// as `observes_no_holidays` states the absence of holiday closures.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct PhaseGap {
+    /// Which phase-level gap the identity carries.
+    reason: CoverageGapReason,
+    /// The issue whose closure would discharge it, as it is written in the
+    /// verification ledger and the coverage inventory (`#79`, `#93`).
+    closing_condition: &'static str,
+}
+
+impl PhaseGap {
+    /// Declares a phase-level gap and the issue that closes it.
+    pub(crate) const fn new(reason: CoverageGapReason, closing_condition: &'static str) -> Self {
+        Self {
+            reason,
+            closing_condition,
+        }
+    }
+
+    /// Returns which phase-level gap the identity carries.
+    #[must_use]
+    pub const fn reason(self) -> CoverageGapReason {
+        self.reason
+    }
+
+    /// Returns the issue whose closure would discharge the gap, as the ledger
+    /// and `docs/schedules/coverage-2025.md` write it.
+    ///
+    /// A static string, never a `String`: the metadata stays allocation-free and
+    /// `Copy`.
+    #[must_use]
+    pub const fn closing_condition(self) -> &'static str {
+        self.closing_condition
+    }
 }
 
 /// One span inside the supported domain this identity cannot answer completely.
@@ -154,10 +251,16 @@ pub enum CoverageGapReason {
 pub struct CoverageGap {
     range: DateRange,
     reason: CoverageGapReason,
+    phase_gap: Option<PhaseGap>,
 }
 
 impl CoverageGap {
     /// Returns the venue-local span the gap covers.
+    ///
+    /// A **date-shaped** gap spans the dates its reason applies to. A
+    /// **phase-level** gap declared per identity spans the whole supported
+    /// domain, because the arrangement it records is missing on every date the
+    /// claim covers and not merely on the dates a boundary falls between.
     #[must_use]
     pub const fn range(self) -> DateRange {
         self.range
@@ -167,6 +270,32 @@ impl CoverageGap {
     #[must_use]
     pub const fn reason(self) -> CoverageGapReason {
         self.reason
+    }
+
+    /// Returns the declared phase-level gap this span reports, or `None` when
+    /// the span is date-shaped.
+    ///
+    /// This is where a caller finds the **closing condition** LAW-COVERAGE
+    /// requires a gap to carry: the issue whose closure would discharge it, as
+    /// the verification ledger and `docs/schedules/coverage-2025.md` write it.
+    #[must_use]
+    pub const fn phase_gap(self) -> Option<PhaseGap> {
+        self.phase_gap
+    }
+
+    /// Returns the issue whose closure would discharge this gap, or `None` when
+    /// the gap is date-shaped and no single issue owns it.
+    ///
+    /// A date-shaped gap is closed by data — a sourced row, a wider audited
+    /// window, a holiday table the identity does not have yet — and this
+    /// vocabulary does not invent an issue number for it. A phase-level gap is
+    /// declared with exactly one.
+    #[must_use]
+    pub const fn closing_condition(self) -> Option<&'static str> {
+        match self.phase_gap {
+            Some(phase_gap) => Some(phase_gap.closing_condition()),
+            None => None,
+        }
     }
 }
 
@@ -237,7 +366,9 @@ impl HolidayContract {
 ///
 /// [`Self::coverage_on`] is the per-date verdict, [`Self::complete_ranges`] the
 /// spans that answer completely, and [`Self::gaps`] the rest with their
-/// reasons.
+/// reasons. An identity that declares a **phase-level** gap in
+/// `schedules/sourcing.rs` reports no complete range at all and one gap spanning
+/// the whole domain ([`Self::phase_gap`]).
 ///
 /// The spans are **derived, not duplicated**: the iterators walk the identity's
 /// static timeline horizon and holiday-window edges in ascending order and stop
@@ -248,6 +379,7 @@ impl HolidayContract {
 pub struct CalendarCoverage {
     source: CalendarSource,
     carried_below: Option<NaiveDate>,
+    phase_gap: Option<PhaseGap>,
     holidays: HolidayContract,
     table: Option<&'static HolidayTable>,
 }
@@ -273,6 +405,7 @@ impl CalendarCoverage {
         Self {
             source,
             carried_below: declared.carried_below,
+            phase_gap: declared.phase_gap,
             holidays,
             table: if holidays_attached { shipped } else { None },
         }
@@ -324,7 +457,30 @@ impl CalendarCoverage {
         self.holidays
     }
 
+    /// Returns the phase-level gap this identity declares about itself, or
+    /// `None` when it declares none.
+    ///
+    /// This is the completeness fact no date walk can derive: the identity's
+    /// normal week or calendar carries an arrangement its own static vocabulary
+    /// cannot state, so it is incomplete on **every** date in the claimed
+    /// interval. `None` is an affirmative "no such gap declared", not missing
+    /// data — the declaration lives in `schedules/sourcing.rs`, one arm per
+    /// identity, and is never inferred from a timeline or a holiday table.
+    #[must_use]
+    pub const fn phase_gap(self) -> Option<PhaseGap> {
+        self.phase_gap
+    }
+
     /// Returns the coverage verdict for venue-local `date`.
+    ///
+    /// A date inside a declared **phase-level** gap reports
+    /// [`DateCoverage::OutsideCoveredRange`], not a new verdict: LAW-COVERAGE
+    /// makes an unresolved normal-week or special-session gap the same
+    /// "no sourced answer" case as a carried horizon, and Stage 2B maps it to
+    /// the same [`CalendarQueryError::OutsideCoveredRange`]. The distinction
+    /// between the two lives in [`Self::gaps`], which carries the closing
+    /// condition a caller needs in order to tell "not worked up yet" from
+    /// "answered, and the answer is ordinary".
     #[must_use]
     pub fn coverage_on(self, date: NaiveDate) -> DateCoverage {
         if date < SUPPORT_FLOOR {
@@ -337,7 +493,9 @@ impl CalendarCoverage {
             Some(
                 CoverageGapReason::NormalWeekCarried
                 | CoverageGapReason::NoHolidayTable
-                | CoverageGapReason::NoHolidayCoverage,
+                | CoverageGapReason::NoHolidayCoverage
+                | CoverageGapReason::NormalWeekPhaseWithheld
+                | CoverageGapReason::SpecialSessionUnrepresentable,
             ) => DateCoverage::OutsideCoveredRange,
         }
     }
@@ -356,9 +514,7 @@ impl CalendarCoverage {
     /// be open-ended.
     #[must_use]
     pub fn complete_ranges(self) -> CompleteRanges {
-        CompleteRanges {
-            runs: Runs::new(self),
-        }
+        CompleteRanges::new(self)
     }
 
     /// Iterates the maximal spans, at or after the support floor, that this
@@ -368,17 +524,22 @@ impl CalendarCoverage {
     /// The spans are disjoint and separated by [`Self::complete_ranges`].
     #[must_use]
     pub fn gaps(self) -> CoverageGaps {
-        CoverageGaps {
-            runs: Runs::new(self),
-        }
+        CoverageGaps::new(self)
     }
 
     /// Returns the reason `date` is not complete, or `None` when it is.
     ///
-    /// Below the floor nothing is a gap: the supported domain starts there.
-    fn gap_reason_on(self, date: NaiveDate) -> Option<CoverageGapReason> {
+    /// Below the floor nothing is a gap: the supported domain starts there. A
+    /// declared phase-level gap is checked **first**, because it is a fact about
+    /// the whole claimed interval rather than about a span of dates inside it: an
+    /// identity that carries one has no covered date, whatever its timeline and
+    /// its holiday windows say.
+    pub(super) fn gap_reason_on(self, date: NaiveDate) -> Option<CoverageGapReason> {
         if date < SUPPORT_FLOOR {
             return None;
+        }
+        if let Some(phase_gap) = self.phase_gap {
+            return Some(phase_gap.reason());
         }
         if let Some(carried_below) = self.carried_below
             && date < carried_below
@@ -417,7 +578,14 @@ impl CalendarCoverage {
     /// The candidates are the support floor, the carried-below horizon, both
     /// edges of every audited window and the two dates around every withheld
     /// row — all static and bounded, so the walk allocates nothing.
+    ///
+    /// A declared phase-level gap has no boundary at all: the same reason holds
+    /// from the floor to the end of the domain, so the walk returns `None`
+    /// immediately rather than visiting edges that cannot change the verdict.
     fn next_boundary_after(self, date: NaiveDate) -> Option<NaiveDate> {
+        if self.phase_gap.is_some() {
+            return None;
+        }
         let mut best: Option<NaiveDate> = None;
         let mut consider = |candidate: Option<NaiveDate>| {
             best = [best, candidate].into_iter().flatten().min();
@@ -455,7 +623,7 @@ impl CalendarCoverage {
 
     /// Returns the last date of the run starting at `first`, or
     /// [`NaiveDate::MAX`] when the run has no later boundary.
-    fn run_end(self, first: NaiveDate) -> NaiveDate {
+    pub(super) fn run_end(self, first: NaiveDate) -> NaiveDate {
         match self
             .next_boundary_after(first)
             .and_then(|boundary| boundary.pred_opt())
@@ -472,6 +640,7 @@ impl core::fmt::Debug for CalendarCoverage {
             .field("identity", &self.source)
             .field("support_floor", &SUPPORT_FLOOR)
             .field("normal_week_sourced_from", &self.carried_below)
+            .field("phase_gap", &self.phase_gap)
             .field("holidays", &self.holidays)
             .finish_non_exhaustive()
     }
@@ -481,88 +650,28 @@ impl PartialEq for CalendarCoverage {
     fn eq(&self, other: &Self) -> bool {
         self.source == other.source
             && self.carried_below == other.carried_below
+            && self.phase_gap == other.phase_gap
             && self.holidays == other.holidays
     }
 }
 
 impl Eq for CalendarCoverage {}
 
-/// Walks the supported domain once in maximal runs of one verdict.
+/// Returns the gap one maximal run of `reason` reports, or `None` when the run
+/// is complete.
 ///
-/// Every run boundary is a static table edge, so the walk is bounded by the
-/// identity's window and row counts and allocates nothing.
-#[derive(Debug, Clone, Copy)]
-struct Runs {
+/// A run inside a declared phase-level gap carries the identity's declaration
+/// with it, so [`CoverageGap::closing_condition`] is readable from the walk
+/// rather than only from [`CalendarCoverage::phase_gap`]. The two are the same
+/// value by construction: the reason came from that declaration.
+const fn gap_of(
     coverage: CalendarCoverage,
-    cursor: NaiveDate,
-    done: bool,
-}
-
-impl Runs {
-    /// Starts a walk at the support floor.
-    const fn new(coverage: CalendarCoverage) -> Self {
-        Self {
-            coverage,
-            cursor: SUPPORT_FLOOR,
-            done: false,
-        }
-    }
-
-    /// Returns the next run and its reason, or `None` once the domain is walked.
-    fn next_run(&mut self) -> Option<(DateRange, Option<CoverageGapReason>)> {
-        if self.done {
-            return None;
-        }
-        let first = self.cursor;
-        let reason = self.coverage.gap_reason_on(first);
-        let last = self.coverage.run_end(first);
-        match last.succ_opt() {
-            Some(next) => self.cursor = next,
-            None => self.done = true,
-        }
-        Some((DateRange { first, last }, reason))
-    }
-}
-
-/// Ascending iterator over the spans an identity answers completely.
-///
-/// Produced by [`CalendarCoverage::complete_ranges`].
-#[derive(Debug)]
-pub struct CompleteRanges {
-    runs: Runs,
-}
-
-impl Iterator for CompleteRanges {
-    type Item = DateRange;
-
-    fn next(&mut self) -> Option<DateRange> {
-        loop {
-            let (range, reason) = self.runs.next_run()?;
-            if reason.is_none() {
-                return Some(range);
-            }
-        }
-    }
-}
-
-/// Ascending iterator over the spans an identity cannot answer completely, each
-/// with its reason.
-///
-/// Produced by [`CalendarCoverage::gaps`].
-#[derive(Debug)]
-pub struct CoverageGaps {
-    runs: Runs,
-}
-
-impl Iterator for CoverageGaps {
-    type Item = CoverageGap;
-
-    fn next(&mut self) -> Option<CoverageGap> {
-        loop {
-            let (range, reason) = self.runs.next_run()?;
-            if let Some(reason) = reason {
-                return Some(CoverageGap { range, reason });
-            }
-        }
+    range: DateRange,
+    reason: CoverageGapReason,
+) -> CoverageGap {
+    CoverageGap {
+        range,
+        reason,
+        phase_gap: coverage.phase_gap,
     }
 }

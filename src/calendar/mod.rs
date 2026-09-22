@@ -77,7 +77,7 @@ pub use bulk::{
 pub use candle::{candle_end, candle_end_with, candle_start, candle_start_with, time_end_of_day};
 pub use coverage::{
     CalendarCoverage, CalendarQueryError, CompleteRanges, CoverageGap, CoverageGapReason,
-    CoverageGaps, DateCoverage, DateRange, HolidayContract, SUPPORT_FLOOR,
+    CoverageGaps, DateCoverage, DateRange, HolidayContract, PhaseGap, SUPPORT_FLOOR,
 };
 pub use exceptions::{
     DateException, ExceptionBlock, ExceptionBlockKind, ExceptionCoverage, ExceptionScopeError,

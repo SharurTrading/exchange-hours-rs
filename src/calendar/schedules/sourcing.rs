@@ -23,12 +23,33 @@
 //! scopes whose own definition has no holiday closures, an affirmative
 //! assertion (LAW-HOLIDAY-SCOPE) and never an inference from a missing table.
 //!
+//! `DeclaredSourcing::phase_gap` is the sibling assertion for
+//! **phase-level** gaps: the shapes `docs/schedules/coverage-2025.md`'s
+//! `Missing / disputed` column records but no date walk can find, because the
+//! arrangement the operator publishes applies to every date the claim covers
+//! rather than to a span of dates. `CoverageGapReason::NormalWeekPhaseWithheld`
+//! is the required-phase shape (#79) and
+//! `CoverageGapReason::SpecialSessionUnrepresentable` the special-session shape
+//! (#93). Each declaration carries the issue whose closure discharges it, so the
+//! metadata reports a gap with a closing condition rather than a bare verdict —
+//! LAW-COVERAGE's "a recorded gap with a closing condition", asserted by the
+//! crate rather than inferred from its data.
+//!
+//! Only an identity whose gap survives the permanent 2025 floor is declared
+//! here, because that is the interval the completeness claim covers: a scope
+//! whose withheld phase or unstateable session lies entirely before 2025 is not
+//! incomplete in the claimed interval and must not be declared. Three scopes
+//! carry one today, and the fence in
+//! `tests/schedule_documentation/coverage_inventory.rs` holds them to the
+//! inventory's own verdicts.
+//!
 //! `tests/schedule_documentation/horizons.rs` re-reads the ledger and fails if
 //! any arm here drifts from the cell it restates.
 
 use chrono::NaiveDate;
 
 use super::timeline::horizon;
+use crate::calendar::coverage::{CoverageGapReason, PhaseGap};
 use crate::calendar::{CalendarSource, Exchange, MarketHoursKey};
 
 /// What one identity declares about its own sourcing.
@@ -43,6 +64,14 @@ pub(crate) struct DeclaredSourcing {
     /// from the absence of a holiday table: an identity with no table and no
     /// such assertion reports that it has no holiday answer at all.
     pub(crate) observes_no_holidays: bool,
+    /// The phase-level gap this identity carries into the 2025-onward claim, or
+    /// `None` when it carries none.
+    ///
+    /// Like `observes_no_holidays`, this is an affirmative assertion and never
+    /// an inference: an identity with no declaration reports no phase-level gap,
+    /// and the inventory's `Missing / disputed` cell is what a reviewer reads
+    /// before adding one.
+    pub(crate) phase_gap: Option<PhaseGap>,
 }
 
 impl DeclaredSourcing {
@@ -56,6 +85,7 @@ impl DeclaredSourcing {
         Self {
             carried_below: horizon,
             observes_no_holidays: false,
+            phase_gap: None,
         }
     }
 
@@ -65,6 +95,7 @@ impl DeclaredSourcing {
         Self {
             carried_below: None,
             observes_no_holidays: false,
+            phase_gap: None,
         }
     }
 
@@ -75,8 +106,53 @@ impl DeclaredSourcing {
         Self {
             carried_below: None,
             observes_no_holidays: true,
+            phase_gap: None,
         }
     }
+
+    /// `nothing_carried()`, plus the phase-level gap the identity declares.
+    ///
+    /// The three declarations below are the ones `docs/schedules/coverage-2025.md`
+    /// calls incomplete for a reason its date columns cannot show, so each also
+    /// carries that page's closing issue.
+    const fn nothing_carried_with(phase_gap: PhaseGap) -> Self {
+        Self {
+            carried_below: None,
+            observes_no_holidays: false,
+            phase_gap: Some(phase_gap),
+        }
+    }
+
+    /// `carried_below(horizon)`, plus the phase-level gap the identity declares.
+    const fn carried_below_with(horizon: Option<NaiveDate>, phase_gap: PhaseGap) -> Self {
+        Self {
+            carried_below: horizon,
+            observes_no_holidays: false,
+            phase_gap: Some(phase_gap),
+        }
+    }
+}
+
+/// The required-phase gap `globex_equity_index` carries: CME's Sunday
+/// 16:00-16:15 CT quarter-hour is withheld (#79).
+///
+/// `docs/schedules/coverage-2025.md` records it as "the 16:00-16:15 CT Sunday
+/// quarter-hour, withheld (#79)" and `docs/evidence/cme.md` plus the family's
+/// own module record that only the disputed quarter-hour depends on the undated
+/// 2012 move, so the crate serves the sourced 16:15-17:00 CT intersection
+/// instead.
+const fn withheld_sunday_quarter_hour() -> PhaseGap {
+    PhaseGap::new(CoverageGapReason::NormalWeekPhaseWithheld, "#79")
+}
+
+/// The special-session gap `globex_fx` and `globex_cryptocurrency` carry: CME
+/// publishes sessions the scalar layer cannot state (#93).
+///
+/// `docs/schedules/coverage-2025.md` records both scopes as "special-session
+/// dates the scalar layer cannot state (#93)"; each owner's evidence file lists
+/// the Saturday sessions and merged trade dates behind that verdict.
+const fn unstateable_special_sessions() -> PhaseGap {
+    PhaseGap::new(CoverageGapReason::SpecialSessionUnrepresentable, "#93")
 }
 
 /// Returns what `source` declares about its own sourcing.
@@ -238,17 +314,29 @@ const fn for_exchange(exchange: Exchange) -> DeclaredSourcing {
 )]
 const fn for_market_hours_key(key: MarketHoursKey) -> DeclaredSourcing {
     match key {
-        MarketHoursKey::GlobexEquityIndex => DeclaredSourcing::carried_below(horizon!(2012, 5, 3)),
+        // The Sunday 16:00-16:15 CT quarter-hour is withheld, so no date in the
+        // 2025-onward claim is answered from a complete normal week (#79).
+        MarketHoursKey::GlobexEquityIndex => DeclaredSourcing::carried_below_with(
+            horizon!(2012, 5, 3),
+            withheld_sunday_quarter_hour(),
+        ),
         MarketHoursKey::GlobexEnergy => DeclaredSourcing::carried_below(horizon!(2012, 5, 11)),
         MarketHoursKey::GlobexGrains => DeclaredSourcing::carried_below(horizon!(2010, 3, 15)),
         MarketHoursKey::GlobexMiniGrains => DeclaredSourcing::carried_below(horizon!(2010, 4, 5)),
-        MarketHoursKey::GlobexFx => DeclaredSourcing::carried_below(horizon!(2012, 5, 3)),
+        // CME publishes FX sessions the scalar layer cannot state (#93).
+        MarketHoursKey::GlobexFx => DeclaredSourcing::carried_below_with(
+            horizon!(2012, 5, 3),
+            unstateable_special_sessions(),
+        ),
         MarketHoursKey::GlobexInterestRates => {
             DeclaredSourcing::carried_below(horizon!(2010, 1, 1))
         }
         MarketHoursKey::GlobexLivestock => DeclaredSourcing::carried_below(horizon!(2010, 1, 1)),
-        // `—`: closed before the exact 2017-12-17 launch grid.
-        MarketHoursKey::GlobexCryptocurrency => DeclaredSourcing::nothing_carried(),
+        // `—`: closed before the exact 2017-12-17 launch grid. CME publishes
+        // cryptocurrency sessions the scalar layer cannot state (#93).
+        MarketHoursKey::GlobexCryptocurrency => {
+            DeclaredSourcing::nothing_carried_with(unstateable_special_sessions())
+        }
         MarketHoursKey::CfeVix => DeclaredSourcing::carried_below(horizon!(2010, 1, 1)),
         MarketHoursKey::Eurex => DeclaredSourcing::carried_below(horizon!(2010, 1, 1)),
         // `—`: closed before the sourced 2017-11-07 launch-eve opening.

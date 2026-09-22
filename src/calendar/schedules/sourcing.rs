@@ -168,9 +168,10 @@ impl DeclaredSourcing {
 /// `cme`, `comex`, `nymex`, `globex_energy`, `globex_equity_index`, `globex_fx`
 /// and `globex_interest_rates`.
 ///
-/// **Bounded to the dated era.** Each of the seven modules ends its timeline in a
-/// knowledge-bound 2026-08-22 row whose profile widens the Sunday queue to
-/// 16:00-17:00 CT, so from that day the withheld quarter-hour *is* served and the
+/// **Bounded to the dated era.** The four modules these seven scopes route to —
+/// `cme_group.rs`, `energy_metals.rs`, `fx.rs` and `interest_rates.rs` — each end
+/// their timelines in a knowledge-bound 2026-08-22 row whose profile widens the
+/// Sunday queue to 16:00-17:00 CT, so from that day the withheld quarter-hour *is* served and the
 /// gap no longer holds: the declaration's bound is that row's day, verified per
 /// module rather than assumed. Before it — 2025-01-01 through 2026-08-21 — the
 /// crate serves only the 16:15-17:00 CT intersection, which is exactly what the

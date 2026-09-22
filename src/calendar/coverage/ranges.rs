@@ -38,10 +38,9 @@ use chrono::NaiveDate;
 ///
 /// The walk's own edges are bounded by the identity's window and row counts, and a
 /// declaration adds two more, so this is generous headroom rather than a limit
-/// anything ships near: the largest shipped identity reports **32** — `cbot`, which
-/// withholds 31 dates and adds the window's trailing gap — so the capacity is eight
-/// times the worst case today, and `tests/coverage_metadata.rs` holds every
-/// identity to it. Exceeding it is unreachable with the shipped tables; were it
+/// anything ships near: the most declarations any shipped identity carries is
+/// **2** (`globex_fx`), against a bound of 256, and
+/// `tests/coverage_metadata.rs` holds every identity's record count to it. Exceeding it is unreachable with the shipped tables; were it
 /// reached, a declaration's record would be dropped while the walk still skipped
 /// the dates it claimed, leaving a hole in both iterators — so the bound is
 /// headroom that a fence guards, not a correctness guarantee.
@@ -109,11 +108,11 @@ pub struct CompleteRanges {
 }
 
 impl CompleteRanges {
-    /// Returns the recorded bound on the records this iterator reports.
+    /// Returns the walk's declaration-record bound.
     ///
-    /// This iterator always walks the runs and holds no precomputed store, so the
-    /// bound is a sizing hint and a growth signal rather than a hard cap: the walk
-    /// continues past it. `tests/coverage_metadata.rs` holds every identity to
+    /// This iterator reports complete spans, never declaration records, and holds
+    /// no precomputed store; the constant bounds its sibling's store. Exposed so a
+    /// caller can size a buffer against the same number the fence uses. `tests/coverage_metadata.rs` holds every identity to
     /// it.
     #[must_use]
     pub const fn capacity() -> usize {
@@ -174,12 +173,12 @@ pub struct CoverageGaps {
 }
 
 impl CoverageGaps {
-    /// Returns the most records this iterator can report before it falls back to
-    /// walking the remaining runs one at a time.
+    /// Returns the walk's declaration-record bound.
     ///
-    /// A caller sizing a buffer for [`CalendarCoverage::gaps`] needs the bound, and
-    /// a fence needs it to notice when the shipped tables outgrow it. Exceeding it
-    /// truncates no record: the walk continues past the capacity.
+    /// It bounds the declaration records the walk stores, not the records
+    /// [`CalendarCoverage::gaps`] reports: the date-level runs are walked a run at
+    /// a time and are not stored. Exceeding it drops declaration records, so the
+    /// fence holds the shipped tables under it.
     #[must_use]
     pub const fn capacity() -> usize {
         GAP_RECORD_CAPACITY
@@ -265,10 +264,10 @@ impl Iterator for CoverageGaps {
             self.next += 1;
             return Some(gap);
         }
-        // Anything past the capacity is still walked here, so a record is never
-        // dropped — only the declaration records, which are computed first and are
-        // the fewest, could be truncated, and the capacity leaves room for many
-        // times the three bounds the shipped tables declare.
+        // Past the capacity a declaration record is dropped, and its dates are
+        // still skipped as claimed, so `GAP_RECORD_CAPACITY` is a fence-guarded
+        // headroom rather than a guarantee. Date-level runs are never stored, so
+        // they are unaffected.
         loop {
             let (range, reason) = self.runs.next_run()?;
             if let Some(reason) = reason {

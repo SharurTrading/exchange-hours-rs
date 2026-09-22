@@ -719,7 +719,7 @@ impl CalendarCoverage {
     /// verdict can change, or `None` when no later boundary exists.
     ///
     /// The candidates are the support floor, the carried-below horizon, both
-    /// edges of every audited window, the two dates around every withheld row and
+    /// edges of every audited window, every withheld date and the day after it, and
     /// **both edges of every declaration that carries a bound** — all static and
     /// bounded, so the walk allocates nothing.
     ///

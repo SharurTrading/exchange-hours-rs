@@ -612,7 +612,7 @@ fn a_declared_phase_gap_denies_completeness_across_the_whole_domain() {
             MarketHoursKey::GlobexCryptocurrency,
             vec![
                 (CoverageGapReason::SpecialSessionUnrepresentable, "#93"),
-                (CoverageGapReason::NormalWeekPhaseWithheld, "#116"),
+                (CoverageGapReason::NormalWeekPhaseWithheld, "#123"),
             ],
         ),
     ];

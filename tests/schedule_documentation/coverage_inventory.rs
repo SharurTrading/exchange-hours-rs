@@ -372,19 +372,17 @@ fn inventory_completeness_verdicts_match_the_metadata() {
 /// record can move without the other, and the shipped profiles are checked
 /// against it in `the_sunday_quarter_hour_is_declared_exactly_where_the_profiles_withhold_it`.
 ///
-/// `globex_cryptocurrency`'s second gap is the one entry whose issue number is
-/// not the evidence file's own: `docs/evidence/globex_cryptocurrency.md` records
+/// `globex_cryptocurrency`'s second gap is the one entry whose issue number the
+/// evidence file did not supply: `docs/evidence/globex_cryptocurrency.md` records
 /// the undated five-day-era Pre-Open onset and its closing condition ("a CME
 /// artifact that states the Pre-Open in session language on a day-level effective
-/// date"), but says only that the gap is "tracked as an issue" and names no
-/// number. The declaration therefore cites **#116**, the scope's own
-/// `Closing issues` cell — Stage 4's complete-served-data issue — rather than
-/// inventing a dedicated one. LAW-FOLLOW-UPS-ARE-ISSUES wants that dedicated
-/// issue opened; that is reported with this change, not done in it.
+/// date"), but said only that the gap is "tracked as an issue" and named no
+/// number. #123 was opened for it, and the declaration cites that, so
+/// LAW-FOLLOW-UPS-ARE-ISSUES is discharged rather than waived.
 fn declared_phase_gaps() -> Vec<(&'static str, Vec<(CoverageGapReason, &'static str)>)> {
     let quarter_hour = (CoverageGapReason::NormalWeekPhaseWithheld, "#79");
     let special_sessions = (CoverageGapReason::SpecialSessionUnrepresentable, "#93");
-    let pre_open_onset = (CoverageGapReason::NormalWeekPhaseWithheld, "#116");
+    let pre_open_onset = (CoverageGapReason::NormalWeekPhaseWithheld, "#123");
     vec![
         ("cme", vec![quarter_hour]),
         ("comex", vec![quarter_hour]),

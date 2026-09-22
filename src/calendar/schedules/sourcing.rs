@@ -192,7 +192,7 @@ const fn unstateable_special_sessions() -> PhaseGap {
 /// evidence file's claim that one is tracked is not yet backed by a number
 /// anywhere in the repository.
 const fn undated_five_day_pre_open() -> PhaseGap {
-    PhaseGap::new(CoverageGapReason::NormalWeekPhaseWithheld, "#116")
+    PhaseGap::new(CoverageGapReason::NormalWeekPhaseWithheld, "#123")
 }
 
 /// The one-declaration list the six quarter-hour scopes other than `globex_fx`
@@ -394,7 +394,7 @@ const fn for_market_hours_key(key: MarketHoursKey) -> DeclaredSourcing {
         MarketHoursKey::GlobexLivestock => DeclaredSourcing::carried_below(horizon!(2010, 1, 1)),
         // `—`: closed before the exact 2017-12-17 launch grid. CME publishes
         // cryptocurrency sessions the scalar layer cannot state (#93), and the
-        // five-day era's Sunday and weekday Pre-Open onset is undated (#116).
+        // five-day era's Sunday and weekday Pre-Open onset is undated (#123).
         MarketHoursKey::GlobexCryptocurrency => {
             DeclaredSourcing::nothing_carried_with(&GLOBEX_CRYPTOCURRENCY_GAPS)
         }

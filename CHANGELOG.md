@@ -22,6 +22,21 @@ corrections (a venue's hours fixed against a primary source) go under
   membership, the windows and both count columns from the shipped tables through the
   public API, and refuses a verdict that claims completeness for a row recording a
   tracked gap, so the page cannot drift from the data it describes.
+- **Coverage metadata and error types (2026-09-22 UTC).** Stage 2A of the release plan
+  adds the public surface a coverage-aware query needs, and changes **no query
+  signature**: `SUPPORT_FLOOR` (1 January 2025 in each venue's own local-date domain),
+  `CalendarCoverage` carrying the `CalendarSource` identity, the sourced normal-week
+  start taken from the verification ledger's `Horizon` column, a `HolidayContract` that
+  keeps an audited window — including a zero-row audited-normal claim — distinct from a
+  no-holiday assertion and from no table, ascending `complete_ranges()` and `gaps()`
+  with a `CoverageGapReason`, and `CalendarQueryError`, whose `BeforeSupportFloor`,
+  `OutsideCoveredRange`, `UnresolvedGap` and `SearchExhausted` variants keep unsupported
+  coverage separate from bounded search exhaustion. `ExchangeCalendar::coverage()`
+  reports it per identity and honours `without_holidays()` by selecting the normal-week
+  contract. Each identity's horizon is declared once in `schedules/sourcing.rs` and
+  fenced against the ledger by `tests/schedule_documentation/horizons.rs`. This is
+  **preparation for a breaking change** — the 2B migration of identity-backed queries to
+  `Result` (#115) — and is itself additive.
 
 ### Changed
 

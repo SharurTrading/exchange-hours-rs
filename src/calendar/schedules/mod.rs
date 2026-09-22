@@ -11,6 +11,7 @@ pub(crate) mod equities;
 pub(crate) mod futures;
 pub(crate) mod holidays;
 mod profile;
+pub(crate) mod sourcing;
 pub(crate) mod timeline;
 
 pub(in crate::calendar::schedules) use profile::CLOSED_NEW_YORK;

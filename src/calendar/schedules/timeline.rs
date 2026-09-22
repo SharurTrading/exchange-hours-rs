@@ -79,6 +79,38 @@ macro_rules! revisions {
 
 pub(crate) use revisions;
 
+/// Declares one identity's **carried-below horizon**, the sibling of
+/// [`revisions!`].
+///
+/// The verification ledger's `Horizon` column records, per identity, the
+/// venue-local date below which that identity's normal-week rows are *carried*
+/// rather than *sourced*, or an em dash when nothing is carried. The ledger is
+/// prose; this macro is that column in the type system, so a reader of the code
+/// sees the same boundary the reviewer recorded:
+///
+/// - `horizon!(2012, 5, 3)` — the ledger's `2012-05-03`: rows below that day
+///   are carried backwards, not sourced.
+/// - `horizon!(none)` — the ledger's `—`: nothing is carried below the
+///   identity's own first row, so its weekday profile is sourced wherever its
+///   own timeline governs.
+///
+/// A malformed date fails constant evaluation through [`effective_date`],
+/// exactly as a [`revisions!`] row does. The values live beside their identity
+/// in `schedules/sourcing.rs`; that module's header names the ledger cell each
+/// one restates.
+macro_rules! horizon {
+    (none) => {
+        None
+    };
+    ($year:expr, $month:expr, $day:expr $(,)?) => {
+        Some($crate::calendar::schedules::timeline::effective_date(
+            $year, $month, $day,
+        ))
+    };
+}
+
+pub(crate) use horizon;
+
 /// Fails the build when a timeline's effective dates are not strictly
 /// ascending.
 ///

@@ -11,6 +11,7 @@
 //! | Layer | Modules | Owns |
 //! |---|---|---|
 //! | Values | [`exchange`], [`rule`], [`resolution`], [`hours`], [`exchange_calendar`] | Venue identity, session slices, fixed and date-aware calendar values |
+//! | Coverage | [`coverage`] | What each identity can answer, and the explicit error for what it cannot |
 //! | Overlays | [`policy`], [`exceptions`] | Caller-owned boundary overrides and replacement trading days |
 //! | Schedules | [`schedules`], [`futures_profile`], [`presets`] | Sourced static tables, revisions, and exhaustive venue routing |
 //! | Civil time | [`local_time`] | The one place a local wall-clock becomes a UTC instant |
@@ -52,6 +53,7 @@
 
 mod bulk;
 mod candle;
+mod coverage;
 mod exceptions;
 mod exchange;
 mod exchange_calendar;
@@ -73,6 +75,10 @@ pub use bulk::{
     hours_map_global_equities, hours_map_us_equities,
 };
 pub use candle::{candle_end, candle_end_with, candle_start, candle_start_with, time_end_of_day};
+pub use coverage::{
+    CalendarCoverage, CalendarQueryError, CompleteRanges, CoverageGap, CoverageGapReason,
+    CoverageGaps, DateCoverage, DateRange, HolidayContract, SUPPORT_FLOOR,
+};
 pub use exceptions::{
     DateException, ExceptionBlock, ExceptionBlockKind, ExceptionCoverage, ExceptionScopeError,
     SessionExceptionRecord, SessionExceptionSource, StaticSessionExceptions,

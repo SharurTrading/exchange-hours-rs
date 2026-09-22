@@ -11,6 +11,18 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ## [Unreleased]
 
+### Added
+
+- **Coverage inventory (2026-09-21 UTC).** `docs/schedules/coverage-2025.md` records,
+  for each of the 16 served identities, what the crate actually ships against the
+  adopted 2025-01-01 floor: its normal-week timeline, its holiday windows, the trade
+  dates it answers for in 2025 and later, the dates it withholds as `Unsourced`, what
+  it cannot answer, and the issues that close each gap. It changes no runtime data.
+  A new fence, `tests/schedule_documentation/coverage_inventory.rs`, re-derives the
+  membership, the windows and both count columns from the shipped tables through the
+  public API, and refuses a verdict that claims completeness for a row recording a
+  tracked gap, so the page cannot drift from the data it describes.
+
 ### Changed
 
 - **Development plan (2026-09-21 UTC).** Adopt a permanent 2025 history floor,

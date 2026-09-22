@@ -2,6 +2,7 @@
 
 //! Documentation fences for the schedule-review ledger.
 
+mod coverage_inventory;
 mod databento;
 mod evidence_files;
 mod source_registry;

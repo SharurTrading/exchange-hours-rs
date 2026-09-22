@@ -73,7 +73,7 @@ corrections (a venue's hours fixed against a primary source) go under
   metadata are compared in `tests/schedule_documentation/coverage_inventory.rs`, so the
   two records cannot disagree again. A second, independent fence in the same file observes
   the shipped profiles at 16:05 and 16:20 CT on Sunday 2025-06-08 and requires the #79
-  declaration exactly where the quarter-hour is withheld, and nowhere else; a third probes
+  declaration exactly where the quarter-hour is withheld among the served scopes, and nowhere else there; four dormant identities show the same shape and record it in their evidence files instead; a third probes
   both sides of each scope's era bound, which is the check the era correction below needed.
 - **Era-bounded phase gaps (2026-09-22 UTC).** The declarations above originally applied to
   the whole supported domain, which was wrong for the current era: each of the seven scopes

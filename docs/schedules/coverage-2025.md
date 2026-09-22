@@ -4,11 +4,12 @@
 
 Stage 1 of the [release plan](../plans/2026-09-12-path-to-release.md) (section 5), tracking issue
 [#114](https://github.com/SharurTrading/exchange-hours-rs/issues/114). Inspected at `3353d13` on
-2026-09-21 UTC. The `Missing / disputed`, `Complete?` and `Closing issues` cells of the seven rows
-whose scope withholds the Sunday 16:00-16:15 CT quarter-hour, `globex_cryptocurrency`'s `Closing
-issues` cell, and the §4 verdict were corrected on 2026-09-22 UTC when the phase-level declarations
-shipped; the inspection statement above still describes the revision the values were first derived
-at.
+2026-09-21 UTC. Seven rows' `Missing / disputed`, `Complete?` and `Closing issues` cells were
+corrected on 2026-09-22 UTC when the phase-level declarations shipped — six whose scope withholds the
+Sunday 16:00-16:15 CT quarter-hour, and `globex_cryptocurrency`, whose three cells moved with them —
+together with §4's verdict count and §5's `#79` bullet. The inspection statement above still
+describes the revision the values were first derived at; the counts, windows and horizons it covers
+are unchanged.
 
 One row per served instrument scope, recording what the crate actually ships against the adopted
 2025 floor. This is a **record, not a claim**: no runtime change accompanies it and it moves no
@@ -176,8 +177,11 @@ routes one family's grid, so they match it row for row and their six `Unsourced`
   each module and ledger basis note records that only the disputed 16:00-16:15 CT quarter-hour depends
   on the undated 2012 move, so that phase is withheld rather than sourced and none of the seven is
   complete in the era before it. From 2026-08-22 on, each profile serves the quarter-hour, and the
-  metadata's declarations are bounded there: those dates report `Covered` rather than withheld. The
-  plan's condition for #79 is met, and the gap it names survives to the floor.
+  metadata's `#79` declarations are bounded there, so those dates stop being withheld. Six of the
+  seven then report `Covered`; `globex_fx` stays outside covered range because it carries a second,
+  whole-domain gap (`#93`, the special sessions the scalar layer cannot state) that no era bound
+  reaches. The plan's condition for #79 is met for all seven, and the gap it names survives to the
+  floor.
 - **#105 - dormant, not blocking.** CME's `dairy` and `lumber` product groups have no
   `MarketHoursKey` and fold into `globex_grains` and `globex_livestock`. Neither group is reachable:
   no root for either appears in `static PRODUCTS` (which maps `LE` to livestock - live cattle, not

@@ -106,12 +106,12 @@ pub struct CompleteRanges {
 }
 
 impl CompleteRanges {
-    /// Returns the most records this iterator can report before it falls back to
-    /// walking the remaining runs one at a time.
+    /// Returns the most records this iterator can report.
     ///
-    /// A caller sizing a buffer for [`CalendarCoverage::gaps`] needs the bound, and
-    /// a fence needs it to notice when the shipped tables outgrow it. Exceeding it
-    /// truncates no record: the walk continues past the capacity.
+    /// This iterator always walks the runs and holds no precomputed store, so the
+    /// bound is what a caller sizing a buffer should use and what a fence uses to
+    /// notice when the shipped tables outgrow it. Exceeding it truncates no
+    /// record: the walk continues past the capacity.
     #[must_use]
     pub const fn capacity() -> usize {
         GAP_RECORD_CAPACITY

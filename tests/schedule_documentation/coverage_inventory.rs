@@ -615,7 +615,7 @@ fn sundays_between(first: NaiveDate, last: NaiveDate) -> Vec<NaiveDate> {
 /// tell a scope that withholds a required phase from one whose grid simply has no
 /// session at 16:05 CT. This fence observes the profiles instead: a scope that
 /// withholds the quarter-hour is closed at 16:05 CT and **accepting orders** at
-/// 16:20 CT, and exactly the scopes that show that signature declare #79 —
+/// 16:20 CT, and exactly the served scopes that show that signature declare #79 - four dormant identities show it too and declare nothing, so the invariant is scoped to the inventory's sixteen rows —
 /// `cme`, `comex`, `nymex`, `globex_energy`, `globex_equity_index`, `globex_fx`
 /// and `globex_interest_rates`. The three that accept at 16:05 CT are genuinely
 /// fine, and the six closed at both instants have a different grid rather than a

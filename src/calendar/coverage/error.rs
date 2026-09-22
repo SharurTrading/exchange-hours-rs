@@ -18,8 +18,9 @@ use crate::calendar::exchange_calendar::CalendarSource;
 /// - [`Self::BeforeSupportFloor`] — the instant or date precedes the permanent
 ///   2025-01-01 local-date floor;
 /// - [`Self::OutsideCoveredRange`] — at or after the floor, but the identity has
-///   no sourced answer there: its weekday profile is carried backwards, or its
-///   holiday layer has no audited answer for the date;
+///   no sourced answer there: its weekday profile is carried backwards, its
+///   holiday layer has no audited answer for the date, or it declares a
+///   phase-level gap that applies on the date;
 /// - [`Self::UnresolvedGap`] — inside a covered range on a date the identity
 ///   explicitly withholds as `Unsourced`;
 /// - [`Self::SearchExhausted`] — a bounded forward or period search needed a

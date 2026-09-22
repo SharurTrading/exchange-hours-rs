@@ -181,12 +181,18 @@ pub enum CoverageGapReason {
     /// The shape is a slice of one phase's boundary: the operator publishes the
     /// phase, the crate's scalar rules serve only the part of it that holds under
     /// every sourced state, and the remainder depends on a change this crate
-    /// cannot date (LAW-NO-FABRICATED-DATES). Seven scopes are the shipped case
-    /// for the same quarter-hour — CME's Sunday 16:00-16:15 CT queue, withheld in
-    /// favour of the 16:15-17:00 CT intersection the crate carries from its 2010
-    /// floor (#79) — and the owners' evidence files record the undated 2012 move
-    /// it depends on: `cme`, `comex`, `nymex`, `globex_energy`,
-    /// `globex_equity_index`, `globex_fx` and `globex_interest_rates`. Each
+    /// cannot date (LAW-NO-FABRICATED-DATES). Seven **served** scopes are the
+    /// declared case for the same quarter-hour — CME's Sunday 16:00-16:15 CT
+    /// queue, withheld in favour of the 16:15-17:00 CT intersection the crate
+    /// carries from its 2010 floor (#79) — and the owners' evidence files record
+    /// the undated 2012 move it depends on: `cme`, `comex`, `nymex`,
+    /// `globex_energy`, `globex_equity_index`, `globex_fx` and
+    /// `globex_interest_rates`. Four **dormant** identities show the same shape
+    /// and declare nothing, their gaps recorded in their own evidence files
+    /// instead: `globex_weather`, `globex_gold_tas`, `globex_silver_tas` and
+    /// `globex_copper_tas`. Dormant coverage does not block release, and their
+    /// eras differ — `globex_weather`'s knowledge-bound row is 2026-09-05, not
+    /// 2026-08-22 — so the shared bound below is not theirs to reuse. Each
     /// declaration is **bounded to the dated era before each module's own
     /// knowledge-bound 2026-08-22 row**, which widens the queue to 16:00-17:00 CT
     /// and therefore serves the quarter-hour from that day on.
@@ -456,9 +462,11 @@ impl HolidayContract {
 /// spans that answer completely, and [`Self::gaps`] the rest with their
 /// reasons. An identity that declares a **whole-domain phase-level** gap in
 /// `schedules/sourcing.rs` reports no complete range at all and one whole-domain
-/// gap record per such declaration ([`Self::phase_gaps`]); one whose declaration is
-/// bounded by [`PhaseGap::until`] answers completely from that day on, and its
-/// records stop there.
+/// gap record per such declaration ([`Self::phase_gaps`]); a declaration bounded
+/// by [`PhaseGap::until`] stops applying from that day on, and its records stop
+/// there. Bounding one declaration does not make the identity complete: one that
+/// also carries an unbounded declaration is still outside covered range after the
+/// bound, which is `globex_fx`'s shape.
 ///
 /// The spans are **derived, not duplicated**: the iterators walk the identity's
 /// static timeline horizon and holiday-window edges in ascending order and stop

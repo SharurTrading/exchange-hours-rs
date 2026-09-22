@@ -97,12 +97,13 @@ authored root and so reach the venue calendar through `ExchangeFallback`.
 **Product-family identities.** The eight `globex_*` keys are reached by instrument root through
 `static PRODUCTS` in `crates/domain/src/globex_products.rs` (104 roots), so a mapped root returns
 `SessionHoursBasis::ProductFamily(key)`. The curated UI lists reach seven of the eight:
-`GLOBEX_MARKETS` in `crates/ui/src/market_clock/sets.rs` and `FAMILIES` in
-`crates/ui/src/platform_settings/window.rs` name the equity-index, energy, grains, FX,
-interest-rate, livestock and crypto keys; `globex_nikkei_225_dollar` is reached only through the
-authored root table. Note that `FAMILIES` also names `GlobexMiniGrains`, which the ledger carries as
-**dormant** and which no authored root reaches; that is a routing question for Stage 6 (#118), not a
-coverage gap here, and it is recorded rather than resolved in this stage.
+`GLOBEX_MARKETS` in `crates/ui/src/market_clock/sets.rs` names the equity-index, energy, grains,
+FX, interest-rate, livestock and crypto keys, while `FAMILIES` in
+`crates/ui/src/platform_settings/window.rs` names six of those - the same list without crypto -
+plus `GlobexMiniGrains`; `globex_nikkei_225_dollar` is reached only through the authored root
+table. `GlobexMiniGrains` is one the ledger carries as **dormant** and which no authored root
+reaches; that is a routing question for Stage 6 (#118), not a coverage gap here, and it is
+recorded rather than resolved in this stage.
 
 ### No-holiday and synthetic scopes
 

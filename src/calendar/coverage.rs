@@ -497,6 +497,9 @@ impl CalendarCoverage {
     /// `holidays_attached` is the calendar's own flag: a detached calendar
     /// reports the normal-week contract ([`HolidayContract::NormalWeekOnly`])
     /// and claims no complete calendar, while its normal-week side is unchanged.
+    /// An identity whose own definition observes no holidays keeps
+    /// [`HolidayContract::NoHolidays`] either way — there is no table to detach —
+    /// and keeps its complete range.
     pub(crate) const fn new(source: CalendarSource, holidays_attached: bool) -> Self {
         let declared = sourcing::declared(source);
         let shipped = holidays::table_for(source);
@@ -649,8 +652,8 @@ impl CalendarCoverage {
     /// reason that applies inside it.
     ///
     /// The spans are disjoint and separated by [`Self::complete_ranges`]. Each
-    /// declared **phase-level** gap is reported once, over the span that
-    /// declaration is the answer for — the era before its [`PhaseGap::until`] day
+    /// declared **phase-level** gap that some date has as its answer is reported
+    /// once, over the span it is the answer for — the era before its [`PhaseGap::until`] day
     /// for a bounded declaration, the whole supported domain for one that carries
     /// no bound and has none before it, or what a bounded predecessor left for a
     /// whole-domain declaration that follows one. A whole-domain declaration an

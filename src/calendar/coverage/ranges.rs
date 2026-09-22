@@ -32,8 +32,9 @@
 use super::{CalendarCoverage, CoverageGap, CoverageGapReason, DateRange, SUPPORT_FLOOR};
 use chrono::NaiveDate;
 
-/// The most gap records one identity may report before the walk falls back to
-/// reporting its remaining runs a run at a time.
+/// The most declaration records the walk's store holds. The date-level runs are
+/// always reported a run at a time and are not stored, so this bounds
+/// declarations only.
 ///
 /// The walk's own edges are bounded by the identity's window and row counts, and a
 /// declaration adds two more, so this is generous headroom rather than a limit
@@ -41,8 +42,9 @@ use chrono::NaiveDate;
 /// withholds 31 dates and adds the window's trailing gap — so the capacity is eight
 /// times the worst case today, and `tests/coverage_metadata.rs` holds every
 /// identity to it. Exceeding it is unreachable with the shipped tables; were it
-/// reached, a declaration's record would not be merged across its date-level
-/// edges, so the bound is headroom rather than a correctness guarantee.
+/// reached, a declaration's record would be dropped while the walk still skipped
+/// the dates it claimed, leaving a hole in both iterators — so the bound is
+/// headroom that a fence guards, not a correctness guarantee.
 pub(super) const GAP_RECORD_CAPACITY: usize = 256;
 /// Walks the supported domain once in maximal runs of one verdict.
 ///

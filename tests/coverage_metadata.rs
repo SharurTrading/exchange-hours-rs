@@ -519,8 +519,8 @@ fn check_metadata(calendar: ExchangeCalendar, identity: CalendarSource) {
     assert!(
         gaps.len() <= exchange_hours::CoverageGaps::capacity(),
         "{identity:?} reports {} gaps, past the capacity the walk precomputes \
-         ({}) — the records past it are still walked, but the declaration records \
-         would stop being merged across their date-level edges",
+         ({}) — past it a declaration's record would be dropped while the walk \
+         still skipped the dates it claimed, leaving a hole",
         gaps.len(),
         exchange_hours::CoverageGaps::capacity()
     );
@@ -713,7 +713,7 @@ fn check_declared_gap_era(
 }
 
 #[test]
-fn a_declared_phase_gap_is_era_aware_and_reported_once_per_declaration() {
+fn a_declared_phase_gap_is_era_aware_and_reported_for_the_span_it_answers() {
     // The scopes whose gap is a property of the normal week or the calendar
     // rather than of a span of dates. A date walk over an identity's tables
     // cannot find them, which is exactly why they are declared beside the

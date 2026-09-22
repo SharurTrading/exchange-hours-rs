@@ -159,8 +159,9 @@
 //! - [`ExchangeCalendar::coverage`] — what an identity's calendar can answer:
 //!   its sourced normal-week start, its holiday layer's contract, the
 //!   venue-local ranges it covers completely, and the ranges it does not, each
-//!   with a reason. [`ExchangeCalendar::without_holidays`] narrows it to the
-//!   normal-week contract. Paired with [`CalendarQueryError`], the four
+//!   with a reason. For an identity that ships a table,
+//!   [`ExchangeCalendar::without_holidays`] narrows it to the normal-week
+//!   contract; the identities without one are unchanged. Paired with [`CalendarQueryError`], the four
 //!   coverage error cases a caller must keep apart.
 //! - [`ExchangeCalendar::with_day_policy`] — a borrowed [`PolicyCalendar`]
 //!   overlay for caller-supplied closed days, early closes, and late opens.

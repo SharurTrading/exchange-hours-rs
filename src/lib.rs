@@ -123,6 +123,15 @@
 //! unaffected by the layer. The `Holidays` column of the verification ledger is
 //! the authority on which identities carry one and over which window.
 //!
+//! The coverage contract sits above all of those layers. [`SUPPORT_FLOOR`] is
+//! the permanent floor, 1 January 2025 in the venue's own local-date domain;
+//! [`ExchangeCalendar::coverage`] reports, for one identity, where its normal
+//! week is sourced rather than carried, what its holiday layer asserts, and
+//! which venue-local ranges it answers completely; and [`CalendarQueryError`]
+//! is the vocabulary for the dates it does not. The metadata is **additive**:
+//! no existing query signature changed with it, and an unsupported date is
+//! still whatever that query returns today rather than an error.
+//!
 //! Product-level variations outside a profile remain out of scope. In
 //! particular, this crate does not
 //! map symbols, roots, product codes, or MICs to [`MarketHoursKey`] values; a
@@ -147,6 +156,13 @@
 //!   cryptocurrency's multi-day weekend bounds and following-business-day
 //!   assignment, is available here; a detached fixed snapshot preserves exact
 //!   open/closed state but not those coalesced bounds or trade dates.
+//! - [`ExchangeCalendar::coverage`] — what an identity's calendar can answer:
+//!   its sourced normal-week start, its holiday layer's contract, the
+//!   venue-local ranges it covers completely, and the ranges it does not, each
+//!   with a reason. For an identity that ships a table,
+//!   [`ExchangeCalendar::without_holidays`] narrows it to the normal-week
+//!   contract; the identities without one are unchanged. Paired with [`CalendarQueryError`], the four
+//!   coverage error cases a caller must keep apart.
 //! - [`ExchangeCalendar::with_day_policy`] — a borrowed [`PolicyCalendar`]
 //!   overlay for caller-supplied closed days, early closes, and late opens.
 //! - [`ExchangeCalendar::with_session_exceptions`] — the same overlay carrying

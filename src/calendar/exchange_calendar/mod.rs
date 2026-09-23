@@ -11,8 +11,8 @@ use chrono_tz::Tz;
 use super::query::{QueryContext, sessions, status};
 use super::schedules::holidays::{self, Holiday, HolidayCoverage, HolidayTable};
 use super::{
-    Exchange, MarketHours, MarketHoursKey, SessionKind, SessionState, hours_for_exchange,
-    hours_for_market_hours_key,
+    CalendarCoverage, Exchange, MarketHours, MarketHoursKey, SessionKind, SessionState,
+    hours_for_exchange, hours_for_market_hours_key,
 };
 
 /// A venue's zone is invariant across its revision eras, so any fixed instant
@@ -155,6 +155,35 @@ impl ExchangeCalendar {
         } else {
             None
         }
+    }
+
+    /// Returns what this identity's calendar can and cannot answer
+    /// (LAW-COVERAGE).
+    ///
+    /// The metadata reports, separately: the identity; the venue-local date
+    /// below which its normal week is carried rather than sourced (the
+    /// verification ledger's `Horizon` column); the holiday layer's own
+    /// contract, including an audited window a date with no row is normal
+    /// inside; the venue-local ranges it answers completely; and the ranges it
+    /// does not, each with a reason.
+    /// [`CalendarQueryError`](crate::CalendarQueryError) is the matching error
+    /// vocabulary, and the crate's support floor is
+    /// [`SUPPORT_FLOOR`](crate::SUPPORT_FLOOR).
+    ///
+    /// [`Self::without_holidays`] is respected: where the identity ships a
+    /// table, a detached calendar reports the **normal-week contract** rather
+    /// than complete calendar coverage — its complete ranges are empty and its
+    /// holiday contract is
+    /// [`HolidayContract::NormalWeekOnly`](crate::HolidayContract::NormalWeekOnly)
+    /// — while the normal-week side is unchanged. An identity with no table is
+    /// unaffected either way.
+    ///
+    /// The value borrows static tables, allocates nothing, and is
+    /// `Copy + Send + Sync + 'static`. Inspecting it changes no query: the
+    /// metadata is not permission to return a fabricated schedule.
+    #[must_use]
+    pub const fn coverage(self) -> CalendarCoverage {
+        CalendarCoverage::new(self.source, self.holidays)
     }
 
     /// Returns the schedule identity represented by this calendar.

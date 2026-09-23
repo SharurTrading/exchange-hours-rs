@@ -79,7 +79,7 @@ corrections (a venue's hours fixed against a primary source) go under
   the whole supported domain, which was wrong for the current era: each of the seven scopes
   withholding CME's Sunday 16:00-16:15 CT quarter-hour ends its timeline in a
   knowledge-bound 2026-08-22 row whose profile *widens* the Sunday queue to 16:00-17:00 CT,
-  so from that day the quarter-hour **is** served and the quarter-hour gap no longer holds.
+  so from that day the Sunday queue serves the quarter-hour and the gap no longer holds.
   Declaring it across the whole domain made `coverage_on`, `is_complete_on` and
   `complete_ranges()` deny seven served scopes the era their own profiles serve — including
   the current one. `PhaseGap` gains an optional end bound (`PhaseGap::until`, read back

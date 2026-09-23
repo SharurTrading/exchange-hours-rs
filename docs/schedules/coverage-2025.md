@@ -157,7 +157,7 @@ scope.
 covered future stops 14 days before this inspection (2026-09-21). The interval after 2026-09-07 has
 no answer, and Stage 4 item 2 refreshes it.
 
-### 4. Three scopes are complete to their stated horizon
+### 4. Three scopes are complete to 2027-12-31
 
 `globex_grains`, `globex_livestock` and `globex_nikkei_225_dollar` reach 2027-12-31 with no
 `Unsourced` row at or after 2025-01-01. The other nine scopes that reach that date are **not**
@@ -176,8 +176,9 @@ routes one family's grid, so they match it row for row and their six `Unsourced`
   timeline in a knowledge-bound row (2026-08-22) that *widens* the Sunday queue to 16:00-17:00 CT, and
   each module and ledger basis note records that only the disputed 16:00-16:15 CT quarter-hour depends
   on the undated 2012 move, so that phase is withheld rather than sourced and none of the seven is
-  complete in the era before it. From 2026-08-22 on, each profile serves the quarter-hour, and the
-  metadata's `#79` declarations are bounded there, so those dates stop being withheld. Six of the
+  complete in the era before it. From 2026-08-22 on — a Saturday, so the first Sunday the bound
+  governs is 2026-08-23 — each profile's Sunday queue serves the quarter-hour, and the metadata's
+  `#79` declarations are bounded there, so those dates stop being withheld. Six of the
   seven then report `Covered`; `globex_fx` stays outside covered range because it carries a second,
   whole-domain gap (`#93`, the special sessions the scalar layer cannot state) that no era bound
   reaches. The plan's condition for #79 is met for all seven, and the gap it names survives to the

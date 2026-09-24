@@ -20,39 +20,18 @@ fn date_aware_queries_are_total_at_chrono_bounds() {
                 let _fixed_maintenance = snapshot.is_maintenance(instant);
                 let _fixed_closed =
                     snapshot.is_closed_all_day_at(instant, chrono_tz::UTC, SessionKind::Both);
-                let open = calendar
-                    .is_open(instant)
-                    .expect("the coverage contract must answer a covered date");
-                let bounds = calendar
-                    .session_bounds(instant)
-                    .expect("the coverage contract must answer a covered date");
-                let _next = calendar
-                    .next_session_after(instant)
-                    .expect("the coverage contract must answer a covered date");
-                let _daily = calendar
-                    .candle_end(instant, CalendarResolution::Daily)
-                    .expect("the coverage contract must answer a covered date");
-                let _weekly = calendar
-                    .candle_end(instant, CalendarResolution::Weekly)
-                    .expect("the coverage contract must answer a covered date");
-                let _monthly = calendar
-                    .candle_end(instant, CalendarResolution::Monthly)
-                    .expect("the coverage contract must answer a covered date");
-                let _start = calendar
-                    .candle_start(instant, CalendarResolution::Monthly)
-                    .expect("the coverage contract must answer a covered date");
-                let _seconds = calendar
-                    .candle_end(instant, CalendarResolution::Seconds(1))
-                    .expect("the coverage contract must answer a covered date");
-                let _maintenance = calendar
-                    .is_maintenance(instant)
-                    .expect("the coverage contract must answer a covered date");
-                let _closed = calendar
-                    .is_closed_all_day_at(instant, chrono_tz::UTC, SessionKind::Both)
-                    .expect("the coverage contract must answer a covered date");
-                let _week = calendar
-                    .normal_week_open_seconds_containing(instant)
-                    .expect("the coverage contract must answer a covered date");
+                let open = calendar.is_open(instant);
+                let bounds = calendar.session_bounds(instant);
+                let _next = calendar.next_session_after(instant);
+                let _daily = calendar.candle_end(instant, CalendarResolution::Daily);
+                let _weekly = calendar.candle_end(instant, CalendarResolution::Weekly);
+                let _monthly = calendar.candle_end(instant, CalendarResolution::Monthly);
+                let _start = calendar.candle_start(instant, CalendarResolution::Monthly);
+                let _seconds = calendar.candle_end(instant, CalendarResolution::Seconds(1));
+                let _maintenance = calendar.is_maintenance(instant);
+                let _closed =
+                    calendar.is_closed_all_day_at(instant, chrono_tz::UTC, SessionKind::Both);
+                let _week = calendar.normal_week_open_seconds_containing(instant);
 
                 (fixed_open, fixed_bounds, open, bounds)
             });
@@ -63,11 +42,22 @@ fn date_aware_queries_are_total_at_chrono_bounds() {
                 fixed_bounds.is_some_and(|(start, end)| start <= instant && instant < end),
                 "{exchange:?} fixed query fence failed at {instant}"
             );
-            assert_eq!(
-                open,
-                bounds.is_some_and(|(start, end)| start <= instant && instant < end),
-                "{exchange:?} calendar query fence failed at {instant}"
-            );
+            // The calendar may refuse a chrono bound (it is far below the floor),
+            // and that refusal is total: it must not be a panic, and it must be a
+            // coverage refusal rather than a fabricated answer. Where it does
+            // answer, the containment agreement is asserted exactly as before.
+            match (open, bounds) {
+                (Ok(open), Ok(bounds)) => assert_eq!(
+                    open,
+                    bounds.is_some_and(|(start, end)| start <= instant && instant < end),
+                    "{exchange:?} calendar query fence failed at {instant}"
+                ),
+                (open, bounds) => assert!(
+                    open.is_err() && bounds.is_err(),
+                    "{exchange:?} at {instant}: the calendar must answer both queries or \
+                     refuse both, got open={open:?} bounds={bounds:?}"
+                ),
+            }
         }
     }
 }

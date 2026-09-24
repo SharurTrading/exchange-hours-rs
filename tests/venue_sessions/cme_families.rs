@@ -20,16 +20,30 @@ fn interest_rates_current_profile_is_the_extended_17_to_16_grid() {
     assert!(profile.is_order_entry_only(ct((2026, 4, 20), (16, 45, 0))));
     assert!(profile.is_open(ct((2026, 4, 20), (17, 0, 0))));
     assert!(!profile.is_open(ct((2026, 4, 25), (12, 0, 0))));
-    assert_eq!(
+    // `globex_interest_rates` declares the `#79` phase-level gap for the Sunday
+    // 16:00-16:15 CT quarter-hour, so it has no complete range before the
+    // 2026-08-22 knowledge-bound row (LAW-COVERAGE). The queue scan therefore
+    // refuses the whole day rather than reporting the 16:30 CT maintenance gap
+    // as a closure — what is no longer claimable through the calendar is a
+    // `SessionState` there. The grid itself, including that 16:00→16:45 CT
+    // maintenance gap, stays asserted above through `session_profile`, and the
+    // two queries that do not read the withheld phase still answer below.
+    assert_refused(
         calendar.session_state(ct((2026, 4, 20), (16, 30, 0))),
-        SessionState::Maintenance,
+        DateCoverage::OutsideCoveredRange,
+        calendar,
+        ct((2026, 4, 20), (16, 30, 0)),
     );
     assert_eq!(
-        calendar.candle_end(ct((2026, 4, 20), (10, 0, 0)), CalendarResolution::Daily,),
+        calendar
+            .candle_end(ct((2026, 4, 20), (10, 0, 0)), CalendarResolution::Daily,)
+            .expect("the coverage contract must answer a covered date"),
         Some(ct((2026, 4, 20), (16, 0, 0))),
     );
     assert_eq!(
-        calendar.next_session_open_after(ct((2026, 4, 24), (16, 30, 0))),
+        calendar
+            .next_session_open_after(ct((2026, 4, 24), (16, 30, 0)))
+            .expect("the coverage contract must answer a covered date"),
         Some(ct((2026, 4, 26), (17, 0, 0))),
     );
 }
@@ -39,11 +53,15 @@ fn interest_rates_keep_central_wall_clock_across_dst() {
     let calendar = calendar_for_market_hours_key(MarketHoursKey::GlobexInterestRates);
 
     assert_eq!(
-        calendar.session_bounds(ct((2026, 3, 1), (18, 0, 0))),
+        calendar
+            .session_bounds(ct((2026, 3, 1), (18, 0, 0)))
+            .expect("the coverage contract must answer a covered date"),
         Some((ct((2026, 3, 1), (17, 0, 0)), ct((2026, 3, 2), (16, 0, 0)))),
     );
     assert_eq!(
-        calendar.session_bounds(ct((2026, 3, 8), (18, 0, 0))),
+        calendar
+            .session_bounds(ct((2026, 3, 8), (18, 0, 0)))
+            .expect("the coverage contract must answer a covered date"),
         Some((ct((2026, 3, 8), (17, 0, 0)), ct((2026, 3, 9), (16, 0, 0)))),
     );
 }
@@ -192,16 +210,24 @@ fn livestock_current_profile_is_the_weekday_day_session() {
     assert!(!profile.is_open(ct((2026, 4, 20), (16, 0, 0))));
     assert!(!profile.is_open(ct((2026, 4, 25), (10, 0, 0))));
     assert_eq!(
-        calendar.next_session_open_after(ct((2026, 4, 24), (13, 5, 0))),
+        calendar
+            .next_session_open_after(ct((2026, 4, 24), (13, 5, 0)))
+            .expect("the coverage contract must answer a covered date"),
         // 08:00 is livestock's pre-open queue; the session opens at 08:30.
         Some(ct((2026, 4, 27), (8, 30, 0))),
     );
     assert_eq!(
-        calendar.candle_end(ct((2026, 4, 20), (9, 0, 0)), CalendarResolution::Daily,),
+        calendar
+            .candle_end(ct((2026, 4, 20), (9, 0, 0)), CalendarResolution::Daily,)
+            .expect("the coverage contract must answer a covered date"),
         Some(ct((2026, 4, 20), (13, 5, 0))),
     );
     let saturday = chrono::NaiveDate::from_ymd_opt(2026, 4, 25).expect("valid fixture date");
-    assert!(calendar.is_closed_all_day_on(saturday, SessionKind::Both));
+    assert!(
+        calendar
+            .is_closed_all_day_on(saturday, SessionKind::Both)
+            .expect("the coverage contract must answer a covered date")
+    );
 }
 
 #[test]
@@ -261,14 +287,24 @@ fn dated_cme_calendars_expose_the_undated_phase_limit_without_inventing_cutovers
             "{key:?} fixed current queue"
         );
         assert!(
-            !dated.is_open(sunday_queue),
+            !dated
+                .is_open(sunday_queue)
+                .expect("the coverage contract must answer a covered date"),
             "{key:?} dated history omits the queue whose onset day is unsourced"
         );
     }
 
     let crypto_dated = calendar_for_market_hours_key(MarketHoursKey::GlobexCryptocurrency);
-    assert!(!crypto_dated.is_open(ct((2025, 4, 20), (16, 30, 0))));
-    assert!(crypto_dated.is_open(ct((2025, 4, 20), (17, 0, 0))));
+    assert!(
+        !crypto_dated
+            .is_open(ct((2025, 4, 20), (16, 30, 0)))
+            .expect("the coverage contract must answer a covered date")
+    );
+    assert!(
+        crypto_dated
+            .is_open(ct((2025, 4, 20), (17, 0, 0)))
+            .expect("the coverage contract must answer a covered date")
+    );
 }
 
 #[test]
@@ -374,11 +410,23 @@ fn cryptocurrency_calendar_joins_weekend_pieces_and_assigns_monday_trade_date() 
 
     for instant in [ct((2026, 6, 5), (17, 0, 0)), ct((2026, 6, 6), (1, 0, 0))] {
         assert_eq!(
-            calendar.session_bounds_with(instant, SessionKind::Extended),
+            calendar
+                .session_bounds_with(instant, SessionKind::Extended)
+                .expect("the coverage contract must answer a covered date"),
             Some(first_block),
         );
-        assert_eq!(calendar.session_bounds(instant), Some(first_block));
-        assert_eq!(calendar.trade_date(instant), Some(monday));
+        assert_eq!(
+            calendar
+                .session_bounds(instant)
+                .expect("the coverage contract must answer a covered date"),
+            Some(first_block)
+        );
+        assert_eq!(
+            calendar
+                .trade_date(instant)
+                .expect("the coverage contract must answer a covered date"),
+            Some(monday)
+        );
     }
 
     for instant in [
@@ -387,20 +435,51 @@ fn cryptocurrency_calendar_joins_weekend_pieces_and_assigns_monday_trade_date() 
         ct((2026, 6, 8), (10, 0, 0)),
     ] {
         assert_eq!(
-            calendar.session_bounds_with(instant, SessionKind::Extended),
+            calendar
+                .session_bounds_with(instant, SessionKind::Extended)
+                .expect("the coverage contract must answer a covered date"),
             Some(second_block),
         );
-        assert_eq!(calendar.session_bounds(instant), Some(second_block));
-        assert_eq!(calendar.trade_date(instant), Some(monday));
+        assert_eq!(
+            calendar
+                .session_bounds(instant)
+                .expect("the coverage contract must answer a covered date"),
+            Some(second_block)
+        );
+        assert_eq!(
+            calendar
+                .trade_date(instant)
+                .expect("the coverage contract must answer a covered date"),
+            Some(monday)
+        );
     }
 
-    assert_eq!(calendar.trade_date(ct((2026, 6, 6), (3, 0, 0))), None);
-    assert_eq!(
-        calendar.session_state(ct((2026, 6, 6), (3, 0, 0))),
-        SessionState::Maintenance,
-        "CME designates the short break inside its continuous week as maintenance",
+    // `globex_cryptocurrency` declares `#93` for the Saturday sessions its
+    // scalar vocabulary cannot state, so the identity claims no complete date
+    // in the supported domain and the maintenance-gap queries on Saturday
+    // 2026-06-06 are refused as `OutsideCoveredRange` rather than answered. The
+    // claims that survive are stated above and below: the fixed snapshot names
+    // the same `Maintenance` state without key identity, and the session,
+    // trade-date and candle queries that do not read the withheld day still
+    // resolve.
+    assert_refused(
+        calendar.trade_date(ct((2026, 6, 6), (3, 0, 0))),
+        DateCoverage::OutsideCoveredRange,
+        calendar,
+        ct((2026, 6, 6), (3, 0, 0)),
     );
-    assert!(calendar.is_maintenance(ct((2026, 6, 6), (3, 0, 0))));
+    assert_refused(
+        calendar.session_state(ct((2026, 6, 6), (3, 0, 0))),
+        DateCoverage::OutsideCoveredRange,
+        calendar,
+        ct((2026, 6, 6), (3, 0, 0)),
+    );
+    assert_refused(
+        calendar.is_maintenance(ct((2026, 6, 6), (3, 0, 0))),
+        DateCoverage::OutsideCoveredRange,
+        calendar,
+        ct((2026, 6, 6), (3, 0, 0)),
+    );
     let fixed = hours_for_market_hours_key(
         MarketHoursKey::GlobexCryptocurrency,
         chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
@@ -411,11 +490,15 @@ fn cryptocurrency_calendar_joins_weekend_pieces_and_assigns_monday_trade_date() 
         "the source-designated exception is exact without carrying key identity",
     );
     assert_eq!(
-        calendar.next_session_after(ct((2026, 6, 5), (17, 0, 0))),
+        calendar
+            .next_session_after(ct((2026, 6, 5), (17, 0, 0)))
+            .expect("the coverage contract must answer a covered date"),
         Some(second_block),
     );
     assert_eq!(
-        calendar.next_session_after(ct((2026, 6, 6), (5, 0, 0))),
+        calendar
+            .next_session_after(ct((2026, 6, 6), (5, 0, 0)))
+            .expect("the coverage contract must answer a covered date"),
         Some((ct((2026, 6, 8), (16, 1, 0)), ct((2026, 6, 9), (16, 0, 0)),)),
     );
 
@@ -426,11 +509,15 @@ fn cryptocurrency_calendar_joins_weekend_pieces_and_assigns_monday_trade_date() 
         ct((2026, 6, 8), (10, 0, 0)),
     ] {
         assert_eq!(
-            calendar.candle_start(instant, CalendarResolution::Daily),
+            calendar
+                .candle_start(instant, CalendarResolution::Daily)
+                .expect("the coverage contract must answer a covered date"),
             Some(ct((2026, 6, 5), (16, 1, 0))),
         );
         assert_eq!(
-            calendar.candle_end(instant, CalendarResolution::Daily),
+            calendar
+                .candle_end(instant, CalendarResolution::Daily)
+                .expect("the coverage contract must answer a covered date"),
             Some(ct((2026, 6, 8), (16, 0, 0))),
         );
     }
@@ -441,21 +528,29 @@ fn cryptocurrency_calendar_joins_weekend_pieces_and_assigns_monday_trade_date() 
         ct((2026, 6, 11), (10, 0, 0)),
     ] {
         assert_eq!(
-            calendar.candle_start(instant, CalendarResolution::Weekly),
+            calendar
+                .candle_start(instant, CalendarResolution::Weekly)
+                .expect("the coverage contract must answer a covered date"),
             Some(ct((2026, 6, 5), (16, 1, 0))),
         );
         assert_eq!(
-            calendar.candle_end(instant, CalendarResolution::Weekly),
+            calendar
+                .candle_end(instant, CalendarResolution::Weekly)
+                .expect("the coverage contract must answer a covered date"),
             Some(ct((2026, 6, 12), (16, 0, 0))),
         );
     }
 
     assert_eq!(
-        calendar.candle_start(ct((2026, 6, 5), (15, 0, 0)), CalendarResolution::Weekly),
+        calendar
+            .candle_start(ct((2026, 6, 5), (15, 0, 0)), CalendarResolution::Weekly)
+            .expect("the coverage contract must answer a covered date"),
         Some(ct((2026, 5, 29), (16, 1, 0))),
     );
     assert_eq!(
-        calendar.candle_end(ct((2026, 6, 5), (15, 0, 0)), CalendarResolution::Weekly),
+        calendar
+            .candle_end(ct((2026, 6, 5), (15, 0, 0)), CalendarResolution::Weekly)
+            .expect("the coverage contract must answer a covered date"),
         Some(ct((2026, 6, 5), (16, 0, 0))),
     );
 
@@ -589,25 +684,74 @@ fn cryptocurrency_models_the_later_saturday_extensions() {
 #[test]
 fn family_calendars_reselect_the_new_cme_histories() {
     let interest = calendar_for_market_hours_key(MarketHoursKey::GlobexInterestRates);
-    assert!(!interest.is_open(ct((2011, 9, 25), (16, 14, 59))));
-    assert!(interest.is_order_entry_only(ct((2011, 9, 25), (16, 15, 0))));
-    assert!(!interest.is_open(ct((2011, 10, 2), (16, 59, 59))));
-    assert!(interest.is_open(ct((2011, 10, 2), (17, 0, 0))));
+    // 2011-09-25 and 2011-10-02 are the two sides of the family's Sunday-queue
+    // revision, and both are pre-floor: the date-aware calendar refuses them as
+    // `BeforeSupportFloor` rather than confirming the reselection. The dated
+    // selector's own answers stay asserted through `hours_for_market_hours_key`,
+    // which is the surface these revision rows are sourced from.
+    assert_refuses_before_floor(
+        interest.is_open(ct((2011, 9, 25), (16, 14, 59))),
+        interest,
+        ct((2011, 9, 25), (16, 14, 59)),
+    );
+    assert_refuses_before_floor(
+        interest.is_order_entry_only(ct((2011, 9, 25), (16, 15, 0))),
+        interest,
+        ct((2011, 9, 25), (16, 15, 0)),
+    );
+    assert_refuses_before_floor(
+        interest.is_open(ct((2011, 10, 2), (16, 59, 59))),
+        interest,
+        ct((2011, 10, 2), (16, 59, 59)),
+    );
+    assert_refuses_before_floor(
+        interest.is_open(ct((2011, 10, 2), (17, 0, 0))),
+        interest,
+        ct((2011, 10, 2), (17, 0, 0)),
+    );
 
+    // The livestock revision is dated 2014-10-20 and its era is pre-floor, so
+    // the date-aware calendar refuses both sides of it as
+    // `BeforeSupportFloor`. The revision's own answers stay asserted through
+    // `hours_for_market_hours_key`, which is the surface its row is sourced
+    // from.
     let livestock = calendar_for_market_hours_key(MarketHoursKey::GlobexLivestock);
-    assert!(livestock.is_open(ct((2014, 10, 20), (17, 0, 0))));
-    assert!(!livestock.is_open(ct((2014, 10, 27), (17, 0, 0))));
+    assert_refuses_before_floor(
+        livestock.is_open(ct((2014, 10, 20), (17, 0, 0))),
+        livestock,
+        ct((2014, 10, 20), (17, 0, 0)),
+    );
+    assert_refuses_before_floor(
+        livestock.is_open(ct((2014, 10, 27), (17, 0, 0))),
+        livestock,
+        ct((2014, 10, 27), (17, 0, 0)),
+    );
 
     let crypto = calendar_for_market_hours_key(MarketHoursKey::GlobexCryptocurrency);
-    assert!(!crypto.is_open(ct((2026, 5, 29), (16, 0, 59))));
-    assert!(crypto.is_open_extended(ct((2026, 5, 29), (16, 1, 0))));
-    assert!(crypto.is_open(ct((2026, 5, 29), (16, 2, 0))));
+    assert!(
+        !crypto
+            .is_open(ct((2026, 5, 29), (16, 0, 59)))
+            .expect("the coverage contract must answer a covered date")
+    );
+    assert!(
+        crypto
+            .is_open_extended(ct((2026, 5, 29), (16, 1, 0)))
+            .expect("the coverage contract must answer a covered date")
+    );
+    assert!(
+        crypto
+            .is_open(ct((2026, 5, 29), (16, 2, 0)))
+            .expect("the coverage contract must answer a covered date")
+    );
     assert_eq!(
-        crypto.session_bounds(ct((2026, 5, 29), (15, 0, 0))),
+        crypto
+            .session_bounds(ct((2026, 5, 29), (15, 0, 0)))
+            .expect("the coverage contract must answer a covered date"),
         Some((ct((2026, 5, 28), (17, 0, 0)), ct((2026, 5, 29), (16, 0, 0)),)),
     );
     let next = crypto
         .session_bounds(ct((2026, 5, 29), (16, 0, 0)))
+        .expect("the coverage contract must answer a covered date")
         .expect("the date-aware calendar reopens Friday");
     assert_eq!(next.0, ct((2026, 5, 29), (16, 1, 0)));
 }

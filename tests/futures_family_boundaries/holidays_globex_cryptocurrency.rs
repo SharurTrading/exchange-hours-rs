@@ -22,13 +22,46 @@
 use chrono::{DateTime, Datelike as _, Days, Duration, NaiveDate, TimeZone as _, Utc, Weekday};
 use chrono_tz::US;
 use exchange_hours::{
-    CalendarResolution, EvidenceTier, ExchangeCalendar, Holiday, HolidayKind, MarketHoursKey,
-    SessionKind, calendar_for_market_hours_key,
+    CalendarQueryError, CalendarResolution, EvidenceTier, ExchangeCalendar, Holiday, HolidayKind,
+    MarketHoursKey, SUPPORT_FLOOR, SessionKind, calendar_for_market_hours_key,
 };
 
 /// The family under test, as a date-aware calendar.
 fn crypto() -> ExchangeCalendar {
     calendar_for_market_hours_key(MarketHoursKey::GlobexCryptocurrency)
+}
+
+/// Asserts a date-aware query refused with `BeforeSupportFloor`, the verdict the
+/// permanent 2025 floor gives a date below it (LAW-COVERAGE). The error must
+/// name a venue-local day that really is below the floor, so a refusal for an
+/// unrelated day or reason fails here, and an `Ok` answer fails the
+/// `expect_err` above rather than being tolerated.
+fn assert_before_floor<T: core::fmt::Debug>(result: Result<T, CalendarQueryError>, claim: &str) {
+    let error = result.expect_err(claim);
+    assert!(
+        matches!(
+            error,
+            CalendarQueryError::BeforeSupportFloor { date, .. } if date < SUPPORT_FLOOR
+        ),
+        "{claim}: a date below the 2025 floor must refuse with BeforeSupportFloor; got {error}"
+    );
+}
+
+/// Asserts a date-aware query refused with `OutsideCoveredRange`: the date's own
+/// unsourced span, its missing holiday-layer answer, or a declared phase-level
+/// gap (LAW-COVERAGE), on a date **at or above** the support floor.
+///
+/// The floor is checked first by every entry point, including the order-entry
+/// scans: a pre-floor date reports `BeforeSupportFloor` and never the phase
+/// verdict, because no range has been claimed below the floor for a phase gap to
+/// be outside of. Use `assert_before_floor` for those probes.
+fn assert_outside_range<T: core::fmt::Debug>(result: Result<T, CalendarQueryError>, claim: &str) {
+    let error = result.expect_err(claim);
+    assert!(
+        matches!(error, CalendarQueryError::OutsideCoveredRange { .. }),
+        "{claim}: the date is outside this identity's covered ranges, so the query must \
+         refuse it with OutsideCoveredRange; got {error}"
+    );
 }
 
 /// An America/Chicago wall clock, converted to the UTC the surface takes.
@@ -55,12 +88,22 @@ fn kind_on(date: NaiveDate) -> Option<HolidayKind> {
 /// Christmas 2025 falls in the five-day era, where a closed trade date removes
 /// the complete trading day — including the Wednesday-evening block that would
 /// have fed it.
+///
+/// The civil-day half of that claim still answers (`is_open` is false on the
+/// whole day, and on the eve's leg). The trade-date half does not: resolving an
+/// instant on the closed day reads a phase the family declares it cannot state,
+/// so Stage 2B refuses it as `OutsideCoveredRange` rather than answering "no
+/// trade date".
 #[test]
 fn a_closed_trade_date_has_no_session_and_no_trade_date() {
     let calendar = crypto();
 
     assert_eq!(kind_on(day(2025, 12, 25)), Some(HolidayKind::Closed));
-    assert!(calendar.is_closed_trade_date(day(2025, 12, 25), SessionKind::Both));
+    assert!(
+        calendar
+            .is_closed_trade_date(day(2025, 12, 25), SessionKind::Both)
+            .expect("the coverage contract must answer a covered date")
+    );
 
     for probe in [
         ct(2025, 12, 25, 0, 30),
@@ -68,19 +111,31 @@ fn a_closed_trade_date_has_no_session_and_no_trade_date() {
         ct(2025, 12, 25, 15, 0),
     ] {
         assert!(
-            !calendar.is_open(probe),
+            !calendar
+                .is_open(probe)
+                .expect("the coverage contract must answer a covered date"),
             "2025-12-25 must be shut at {probe}"
         );
-        assert_eq!(
+        // The trade-date half of this test's name is no longer claimable:
+        // resolving an instant on this closed day reads an order-entry phase
+        // the family declares it cannot state (#93/#123), so the query refuses
+        // the date rather than reporting "no trade date".
+        assert_outside_range(
             calendar.trade_date(probe),
-            None,
-            "a closed instant carries no trade date"
+            "2025-12-25's trade date is refused, not stated as absent",
         );
     }
 
     // The eve's own 17:00 CT open would carry trade date 2025-12-25, so the
-    // closure deletes it rather than leaving an orphaned evening leg.
-    assert!(!calendar.is_open(ct(2025, 12, 24, 17, 30)));
+    // closure deletes it rather than leaving an orphaned evening leg. This
+    // one still answers — the deletion is a fact about the shipped row, not
+    // about the phase-gapped order-entry window.
+    assert!(
+        !calendar
+            .is_open(ct(2025, 12, 24, 17, 30))
+            .expect("the coverage contract must answer a covered date"),
+        "the eve's evening leg belongs to the closed trade date"
+    );
 }
 
 /// The five-day era's `[N3]` holidays are a trade-date merge, not a closure:
@@ -98,13 +153,33 @@ fn a_trade_date_merge_keeps_the_sunday_evening_block() {
         ct(2025, 1, 20, 9, 0),
         ct(2025, 1, 20, 15, 0),
     ] {
-        assert!(calendar.is_open(probe), "2025-01-20 matched at {probe}");
-        assert_eq!(calendar.trade_date(probe), Some(day(2025, 1, 20)));
+        assert!(
+            calendar
+                .is_open(probe)
+                .expect("the coverage contract must answer a covered date"),
+            "2025-01-20 matched at {probe}"
+        );
+        assert_eq!(
+            calendar
+                .trade_date(probe)
+                .expect("the coverage contract must answer a covered date"),
+            Some(day(2025, 1, 20))
+        );
     }
-    assert!(!calendar.is_open(ct(2025, 1, 20, 16, 0)));
-    assert!(calendar.is_open(ct(2025, 1, 20, 17, 30)));
+    assert!(
+        !calendar
+            .is_open(ct(2025, 1, 20, 16, 0))
+            .expect("the coverage contract must answer a covered date")
+    );
+    assert!(
+        calendar
+            .is_open(ct(2025, 1, 20, 17, 30))
+            .expect("the coverage contract must answer a covered date")
+    );
     assert_eq!(
-        calendar.trade_date(ct(2025, 1, 20, 17, 30)),
+        calendar
+            .trade_date(ct(2025, 1, 20, 17, 30))
+            .expect("the coverage contract must answer a covered date"),
         Some(day(2025, 1, 21))
     );
 }
@@ -128,22 +203,41 @@ fn an_early_close_ends_a_day_that_opened_the_previous_evening() {
         })
     );
 
-    assert!(calendar.is_open(cutoff - Duration::seconds(1)));
-    assert!(!calendar.is_open(cutoff));
+    assert!(
+        calendar
+            .is_open(cutoff - Duration::seconds(1))
+            .expect("the coverage contract must answer a covered date")
+    );
+    assert!(
+        !calendar
+            .is_open(cutoff)
+            .expect("the coverage contract must answer a covered date")
+    );
 
     let (open, close) = calendar
         .session_bounds(ct(2025, 7, 4, 9, 0))
-        .expect("the shortened day is still a session");
+        .expect("the coverage contract must answer a covered date")
+        .expect("a covered date must resolve the queried value");
     assert_eq!(open, ct(2025, 7, 3, 17, 0));
     assert_eq!(close, cutoff);
     assert_eq!(
-        calendar.candle_end(ct(2025, 7, 4, 9, 0), CalendarResolution::Daily),
+        calendar
+            .candle_end(ct(2025, 7, 4, 9, 0), CalendarResolution::Daily)
+            .expect("the coverage contract must answer a covered date"),
         Some(cutoff)
     );
 
     // Nothing re-opens behind the cutoff on that civil day.
-    assert!(!calendar.is_open(ct(2025, 7, 4, 13, 0)));
-    assert!(!calendar.is_open(ct(2025, 7, 4, 18, 0)));
+    assert!(
+        !calendar
+            .is_open(ct(2025, 7, 4, 13, 0))
+            .expect("the coverage contract must answer a covered date")
+    );
+    assert!(
+        !calendar
+            .is_open(ct(2025, 7, 4, 18, 0))
+            .expect("the coverage contract must answer a covered date")
+    );
 }
 
 /// The day after Thanksgiving 2025 stops at 13:45 CT. The Thursday before it is
@@ -161,15 +255,29 @@ fn an_early_close_stands_without_a_closed_neighbour() {
         })
     );
 
-    assert!(calendar.is_open(cutoff - Duration::seconds(1)));
-    assert!(!calendar.is_open(cutoff));
+    assert!(
+        calendar
+            .is_open(cutoff - Duration::seconds(1))
+            .expect("the coverage contract must answer a covered date")
+    );
+    assert!(
+        !calendar
+            .is_open(cutoff)
+            .expect("the coverage contract must answer a covered date")
+    );
     assert_eq!(
-        calendar.trade_date(cutoff - Duration::seconds(1)),
+        calendar
+            .trade_date(cutoff - Duration::seconds(1))
+            .expect("the coverage contract must answer a covered date"),
         Some(day(2025, 11, 28))
     );
     // Thursday's 17:00 CT open feeds Friday's trade date, so the Thanksgiving
     // closure must not take it.
-    assert!(calendar.is_open(ct(2025, 11, 27, 18, 0)));
+    assert!(
+        calendar
+            .is_open(ct(2025, 11, 27, 18, 0))
+            .expect("the coverage contract must answer a covered date")
+    );
 }
 
 // ---------------------------------------------------------------------------
@@ -239,13 +347,26 @@ fn a_closure_removes_the_previous_evenings_wrap() {
         })
     );
 
-    assert!(calendar.is_open(ct(2025, 12, 24, 12, 44)));
-    assert!(!calendar.is_open(ct(2025, 12, 24, 12, 45)));
-    assert!(!calendar.is_open(ct(2025, 12, 24, 17, 30)));
+    assert!(
+        calendar
+            .is_open(ct(2025, 12, 24, 12, 44))
+            .expect("the coverage contract must answer a covered date")
+    );
+    assert!(
+        !calendar
+            .is_open(ct(2025, 12, 24, 12, 45))
+            .expect("the coverage contract must answer a covered date")
+    );
+    assert!(
+        !calendar
+            .is_open(ct(2025, 12, 24, 17, 30))
+            .expect("the coverage contract must answer a covered date")
+    );
 
     let (open, _close) = calendar
         .next_session_after(ct(2025, 12, 24, 12, 20))
-        .expect("trading resumes inside the bounded search");
+        .expect("the coverage contract must answer a covered date")
+        .expect("a covered date must resolve the queried value");
     assert_eq!(open, ct(2025, 12, 25, 17, 0));
 }
 
@@ -260,15 +381,21 @@ fn the_five_day_era_keeps_the_holidays_own_trade_dates() {
     let calendar = crypto();
 
     assert_eq!(
-        calendar.trade_date(ct(2025, 7, 4, 9, 0)),
+        calendar
+            .trade_date(ct(2025, 7, 4, 9, 0))
+            .expect("the coverage contract must answer a covered date"),
         Some(day(2025, 7, 4))
     );
     assert_eq!(
-        calendar.trade_date(ct(2025, 12, 23, 18, 0)),
+        calendar
+            .trade_date(ct(2025, 12, 23, 18, 0))
+            .expect("the coverage contract must answer a covered date"),
         Some(day(2025, 12, 24))
     );
     assert_eq!(
-        calendar.trade_date(ct(2025, 12, 25, 17, 30)),
+        calendar
+            .trade_date(ct(2025, 12, 25, 17, 30))
+            .expect("the coverage contract must answer a covered date"),
         Some(day(2025, 12, 26))
     );
 }
@@ -293,11 +420,15 @@ fn the_twenty_four_seven_era_rolls_the_trade_date_without_deleting_a_day() {
         (ct(2027, 12, 24, 9, 0), day(2027, 12, 27)),
     ] {
         assert!(
-            calendar.is_open(probe),
+            calendar
+                .is_open(probe)
+                .expect("the coverage contract must answer a covered date"),
             "24/7 cryptocurrency must keep trading at {probe}"
         );
         assert_eq!(
-            calendar.trade_date(probe),
+            calendar
+                .trade_date(probe)
+                .expect("the coverage contract must answer a covered date"),
             Some(rolled_to),
             "the business-date roll must skip the closed trade date at {probe}"
         );
@@ -310,15 +441,25 @@ fn the_twenty_four_seven_era_rolls_the_trade_date_without_deleting_a_day() {
         day(2027, 12, 24),
     ] {
         assert_eq!(kind_on(closed), Some(HolidayKind::Closed));
-        assert!(calendar.is_closed_trade_date(closed, SessionKind::Both));
+        assert!(
+            calendar
+                .is_closed_trade_date(closed, SessionKind::Both)
+                .expect("the coverage contract must answer a covered date")
+        );
         // The charter's own surprise: a full closure is not a closed civil day
         // for this family, because trading never stops.
-        assert!(!calendar.is_closed_all_day_on(closed, SessionKind::Both));
+        assert!(
+            !calendar
+                .is_closed_all_day_on(closed, SessionKind::Both)
+                .expect("the coverage contract must answer a covered date")
+        );
     }
 
     // The Thursday before the closed 2027-12-24 settles its own trade date.
     assert_eq!(
-        calendar.trade_date(ct(2027, 12, 23, 9, 0)),
+        calendar
+            .trade_date(ct(2027, 12, 23, 9, 0))
+            .expect("the coverage contract must answer a covered date"),
         Some(day(2027, 12, 23))
     );
 }
@@ -330,6 +471,11 @@ fn the_twenty_four_seven_era_rolls_the_trade_date_without_deleting_a_day() {
 /// Inside the window a date with no row is audited normal; outside it the table
 /// has no answer at all, and must not silently extend to a neighbouring year's
 /// holidays.
+///
+/// The date-aware side of that edge is a refusal, not an answer: 2018-12-25
+/// precedes the 2025 floor and 2028-01-01 lies outside every audited window, so
+/// each earns its own variant — and the detached snapshot answers the normal
+/// week only for the post-floor one.
 #[test]
 fn the_coverage_window_has_two_hard_edges() {
     let calendar = crypto();
@@ -360,22 +506,41 @@ fn the_coverage_window_has_two_hard_edges() {
     );
 
     // Christmas 2018 is a CME closure below the window and no wave has audited
-    // it. Below the window the answer is the pure normal-week answer, not a
-    // guess.
+    // it. What is gone is the old reading that the identity then answers the
+    // pure normal-week result: the date precedes the 2025 floor, so the
+    // identity and the detached snapshot both refuse it, and the identity
+    // refuses the trade-date question with the same verdict.
     let bare = calendar.without_holidays();
     for probe in [ct(2018, 12, 25, 9, 0), ct(2018, 12, 25, 18, 0)] {
-        assert_eq!(calendar.is_open(probe), bare.is_open(probe), "{probe}");
-        assert_eq!(
+        assert_before_floor(
+            calendar.is_open(probe),
+            "a pre-floor date is refused, not answered from the normal week",
+        );
+        assert_before_floor(
             calendar.trade_date(probe),
-            bare.trade_date(probe),
-            "{probe}"
+            "a pre-floor trade date is refused",
+        );
+        assert_before_floor(
+            bare.is_open(probe),
+            "detaching the table does not lift the floor",
         );
     }
     assert_eq!(calendar.holiday_on(day(2018, 12, 25)), None);
 
-    // One day past the window the table is equally silent.
+    // One day past the window the table is equally silent, but 2028-01-01 is
+    // above the floor: the identity refuses the date its holiday layer has no
+    // answer for, while the detached snapshot — which claims no coverage —
+    // still answers the normal week.
     for probe in [ct(2028, 1, 1, 9, 0), ct(2028, 1, 1, 20, 0)] {
-        assert_eq!(calendar.is_open(probe), bare.is_open(probe));
+        assert_outside_range(
+            calendar.is_open(probe),
+            "2028-01-01 is outside every audited window",
+        );
+        assert!(
+            bare.is_open(probe)
+                .expect("a detached snapshot claims no coverage"),
+            "{probe}: the normal week trades once the table is detached"
+        );
     }
 }
 
@@ -394,29 +559,48 @@ fn without_holidays_restores_the_normal_week_answer() {
     assert_eq!(bare.holiday_on(day(2026, 12, 25)), None);
 
     // Five-day era: the deleted Christmas day comes back.
-    assert!(!crypto().is_open(ct(2025, 12, 25, 9, 0)));
-    assert!(bare.is_open(ct(2025, 12, 25, 9, 0)));
+    assert!(
+        !crypto()
+            .is_open(ct(2025, 12, 25, 9, 0))
+            .expect("the coverage contract must answer a covered date")
+    );
+    assert!(
+        bare.is_open(ct(2025, 12, 25, 9, 0))
+            .expect("the coverage contract must answer a covered date")
+    );
     assert_eq!(
-        bare.trade_date(ct(2025, 12, 25, 9, 0)),
+        bare.trade_date(ct(2025, 12, 25, 9, 0))
+            .expect("the coverage contract must answer a covered date"),
         Some(day(2025, 12, 25))
     );
 
     // Five-day era: the clipped Independence Day runs to its normal 16:00 CT.
-    assert!(!crypto().is_open(ct(2025, 7, 4, 13, 0)));
-    assert!(bare.is_open(ct(2025, 7, 4, 13, 0)));
+    assert!(
+        !crypto()
+            .is_open(ct(2025, 7, 4, 13, 0))
+            .expect("the coverage contract must answer a covered date")
+    );
+    assert!(
+        bare.is_open(ct(2025, 7, 4, 13, 0))
+            .expect("the coverage contract must answer a covered date")
+    );
     assert_eq!(
         bare.session_bounds(ct(2025, 7, 4, 13, 0))
+            .expect("the coverage contract must answer a covered date")
             .map(|(_open, close)| close),
         Some(ct(2025, 7, 4, 16, 0))
     );
 
     // 24/7 era: the business-date roll stops rolling.
     assert_eq!(
-        crypto().trade_date(ct(2026, 12, 25, 9, 0)),
+        crypto()
+            .trade_date(ct(2026, 12, 25, 9, 0))
+            .expect("the coverage contract must answer a covered date"),
         Some(day(2026, 12, 28))
     );
     assert_eq!(
-        bare.trade_date(ct(2026, 12, 25, 9, 0)),
+        bare.trade_date(ct(2026, 12, 25, 9, 0))
+            .expect("the coverage contract must answer a covered date"),
         Some(day(2026, 12, 25))
     );
 }
@@ -488,27 +672,13 @@ fn day_before(date: NaiveDate) -> NaiveDate {
         .expect("the era is far from the representable bound")
 }
 
-fn day_after(date: NaiveDate) -> NaiveDate {
-    date.checked_add_days(Days::new(1))
-        .expect("the era is far from the representable bound")
-}
-
-/// The ordinary 17:00 CT evening open that follows a closed trade date: this
-/// civil date's own leg when the week has one, otherwise the Sunday evening
-/// that opens the next week — the five-day grid closes over the weekend and has
-/// no Friday-evening occurrence.
-fn era_reopen_after_closure(date: NaiveDate) -> DateTime<Utc> {
-    let reopen = if date.weekday() == Weekday::Fri {
-        date.checked_add_days(Days::new(2))
-            .expect("the era is far from the representable bound")
-    } else {
-        date
-    };
-    ct_on(reopen, 17, 0)
-}
-
 /// The era-wide sweep: every shipped date's kind, instant and tier, with both
-/// sides of every moved boundary and the trading day's stated end.
+/// sides of every moved boundary and the trading day's stated end derived from
+/// the row itself.
+///
+/// The era precedes the 2025 floor, so each derived instant is fenced by the
+/// refusal it earns — `BeforeSupportFloor` — instead of by the open state,
+/// bounds or candle the crate used to state for it.
 #[test]
 fn era_2022_2024_sweeps_every_row_kind_tier_and_instant() {
     let calendar = crypto();
@@ -527,36 +697,42 @@ fn era_2022_2024_sweeps_every_row_kind_tier_and_instant() {
             assert_eq!(row.tier(), tier, "{date}");
             match kind {
                 HolidayKind::EarlyClose { close_ssm } => {
+                    // The row's own payload is intact and still asserted: the
+                    // kind, the printed instant and the tier are the table's
+                    // claim, not the calendar's answer.
                     assert_eq!(close_ssm, ERA_TWELVE_FORTY_FIVE, "{date}");
                     twelve_forty_five += 1;
                     let cutoff = ct_on(date, 12, 45);
-                    // The wrap that opened this trade date is clipped, not
-                    // deleted, and it still carries the trade date.
-                    assert!(calendar.is_open(ct_on(day_before(date), 17, 0)), "{date}");
-                    assert!(calendar.is_open(ct_on(day_before(date), 19, 30)), "{date}");
-                    assert_eq!(
+                    // Every date-aware answer this branch used to state —
+                    // the clipped wrap and its trade date, the end-exclusive
+                    // boundary, the trading day's bounds and its daily candle
+                    // — is refused: the era precedes the 2025 floor, so the
+                    // identity has no sourced answer to give. The refusal, not
+                    // the answer, is what this fence can now hold.
+                    for (probe, what) in [
+                        (ct_on(day_before(date), 17, 0), "the wrap's open"),
+                        (ct_on(day_before(date), 19, 30), "the wrap two hours in"),
+                        (cutoff - Duration::seconds(1), "one second before the close"),
+                        (cutoff, "the printed close itself"),
+                        (ct_on(date, 9, 0), "the trade date's own morning"),
+                    ] {
+                        assert_before_floor(calendar.is_open(probe), what);
+                    }
+                    assert_before_floor(
                         calendar.trade_date(ct_on(day_before(date), 18, 0)),
-                        Some(date),
-                        "{date}"
+                        "the wrap's trade date",
                     );
-                    // One second before the close is open; at it, closed.
-                    assert!(calendar.is_open(cutoff - Duration::seconds(1)), "{date}");
-                    assert!(!calendar.is_open(cutoff), "{date}: end-exclusive");
-                    // The trading day's bounds end at the printed instant.
-                    assert_eq!(
+                    assert_before_floor(
                         calendar.session_bounds(ct_on(date, 9, 0)),
-                        Some((ct_on(day_before(date), 17, 0), cutoff)),
-                        "{date}"
+                        "the trading day's bounds",
                     );
-                    assert_eq!(
+                    assert_before_floor(
                         calendar.candle_end(ct_on(date, 9, 0), CalendarResolution::Daily),
-                        Some(cutoff),
-                        "{date}"
+                        "the trading day's daily candle",
                     );
-                    assert_eq!(
+                    assert_before_floor(
                         calendar.trade_date(cutoff - Duration::seconds(1)),
-                        Some(date),
-                        "{date}"
+                        "the trade date one second before the close",
                     );
                 }
                 HolidayKind::Closed => closures += 1,
@@ -575,10 +751,15 @@ fn era_2022_2024_sweeps_every_row_kind_tier_and_instant() {
     );
 }
 
-/// The five-day weekend roll is intact on every closure: the trade date's whole
-/// trading day goes, including the evening block that opened it, and the next
-/// session the family offers is the ordinary 17:00 CT evening open — on a
-/// Friday closure that is Sunday's leg into the next week's first trade date.
+/// The five-day weekend roll on every closure: the trade date's whole trading
+/// day goes, including the evening block that opened it, and the next session
+/// the family offers is the ordinary 17:00 CT evening open — on a Friday closure
+/// that is Sunday's leg into the next week's first trade date.
+///
+/// Every closure this era ships precedes the 2025 floor, so each of those
+/// answers is refused now. The fence holds the trade-date refusal
+/// (`OutsideCoveredRange`, from the withheld Pre-Open phase) and the floor
+/// refusal beside it.
 #[test]
 fn era_2022_2024_closures_keep_the_five_day_weekend_roll() {
     let calendar = crypto();
@@ -589,34 +770,42 @@ fn era_2022_2024_closures_keep_the_five_day_weekend_roll() {
         }
         closures += 1;
         let date = day(date.0, date.1, date.2);
-        assert!(
+        // A closure's trade-date answer rests on the trading day that opened
+        // the previous evening; both dates precede the 2025 floor, so every
+        // answer this test used to state — the closed trade date, the deleted
+        // evening block and civil day, the absent trade date, the reopening
+        // session and the Friday/Monday asymmetry — is now the same refusal.
+        assert_before_floor(
             calendar.is_closed_trade_date(date, SessionKind::Both),
-            "{date}"
+            "a pre-floor closure is refused, not reported closed",
         );
-        // The evening block that would have carried this trade date is gone,
-        // and so is the trade date's own civil day.
-        assert!(!calendar.is_open(ct_on(day_before(date), 17, 0)), "{date}");
-        assert!(!calendar.is_open(ct_on(day_before(date), 19, 30)), "{date}");
-        assert!(!calendar.is_open(ct_on(date, 9, 0)), "{date}");
-        assert!(!calendar.is_open(ct_on(date, 15, 59)), "{date}");
-        assert_eq!(calendar.trade_date(ct_on(date, 10, 0)), None, "{date}");
-
-        let reopen = era_reopen_after_closure(date);
-        assert_eq!(
-            calendar.next_session_open_after(ct_on(date, 10, 0)),
-            Some(reopen),
-            "{date}: the next session is the ordinary evening open"
-        );
-        // A Friday closure takes the whole civil day; a Monday one leaves its
-        // own evening leg, which opens the next trade date.
-        assert_eq!(
-            calendar.is_closed_all_day_on(date, SessionKind::Both),
-            date.weekday() == Weekday::Fri,
-            "{date}"
-        );
-        if reopen == ct_on(date, 17, 0) {
-            assert_eq!(calendar.trade_date(reopen), Some(day_after(date)), "{date}");
+        for probe in [
+            ct_on(day_before(date), 17, 0),
+            ct_on(day_before(date), 19, 30),
+            ct_on(date, 9, 0),
+            ct_on(date, 15, 59),
+        ] {
+            assert_before_floor(
+                calendar.is_open(probe),
+                "the closed trading day's own instants",
+            );
         }
+        // Resolving the trade date reads the family's Pre-Open phase, and this
+        // identity's whole-domain phase gap (#93/#123) refuses that before the
+        // floor is ever reached — so this one refusal is `OutsideCoveredRange`
+        // even though the date itself is pre-floor.
+        assert_before_floor(
+            calendar.trade_date(ct_on(date, 10, 0)),
+            "the closed day's trade date",
+        );
+        assert_before_floor(
+            calendar.next_session_open_after(ct_on(date, 10, 0)),
+            "the reopening session after the closure",
+        );
+        assert_before_floor(
+            calendar.is_closed_all_day_on(date, SessionKind::Both),
+            "the civil-day question about the closure",
+        );
     }
     assert_eq!(closures, 7, "the era's closures");
 }
@@ -624,6 +813,10 @@ fn era_2022_2024_closures_keep_the_five_day_weekend_roll() {
 /// The era's four early closes are 12:45 CT, all on days that opened the
 /// previous evening at 17:00 CT, and each deletes the rest of the ordinary
 /// 17:00-16:00 CT grid up to the next 17:00 open.
+///
+/// The rows' payloads are fenced as before; the grid consequences are refused,
+/// because the era precedes the 2025 floor. The plain-Friday tail of the test
+/// is refused the same way.
 #[test]
 fn era_2022_2024_early_closes_are_twelve_forty_five_central() {
     let calendar = crypto();
@@ -643,90 +836,110 @@ fn era_2022_2024_early_closes_are_twelve_forty_five_central() {
             }),
             "{date:?}"
         );
-        // The ordinary 16:00 CT final close is not reached.
-        assert!(
-            !calendar.is_open(ct(date.0, date.1, date.2, 16, 0)),
-            "{date:?}"
-        );
-        assert!(
-            !calendar.is_open(ct(date.0, date.1, date.2, 13, 0)),
-            "{date:?}"
-        );
-        assert!(
-            calendar.is_open(ct(date.0, date.1, date.2, 12, 44)),
-            "{date:?}"
-        );
+        // The row's printed instant is what survives: the calendar cannot
+        // state the 16:00 CT final close that is not reached, the 13:00 CT
+        // probe that is past the cut, or the 12:44 CT probe that is before it,
+        // because all four 2022-2024 dates precede the 2025 floor.
+        for time in [(16, 0), (13, 0), (12, 44)] {
+            assert_before_floor(
+                calendar.is_open(ct(date.0, date.1, date.2, time.0, time.1)),
+                "a pre-floor early-close probe",
+            );
+        }
     }
 
-    // The era's weekend roll on a plain Friday: the 16:00 CT close ends the
-    // trade date, no evening block follows, and Sunday 17:00 CT opens Monday.
-    assert!(calendar.is_open(ct(2022, 4, 14, 15, 59)));
-    assert!(!calendar.is_open(ct(2022, 4, 14, 16, 0)));
-    assert_eq!(
+    // The era's weekend roll on a plain Friday — the 16:00 CT close ending the
+    // trade date, the Friday/Saturday/Sunday shutdown, and Sunday 17:00 CT
+    // opening Monday — is refused with the rest of the era: every instant here
+    // is a pre-floor date.
+    for (probe, what) in [
+        (
+            ct(2022, 4, 14, 15, 59),
+            "the last second of Thursday's session",
+        ),
+        (ct(2022, 4, 14, 16, 0), "Thursday's final close"),
+        (ct(2022, 4, 15, 17, 0), "Good Friday's evening"),
+        (ct(2022, 4, 16, 12, 0), "Saturday"),
+        (ct(2022, 4, 17, 12, 0), "Sunday midday"),
+        (ct(2022, 4, 17, 17, 0), "Sunday's reopening leg"),
+    ] {
+        assert_before_floor(calendar.is_open(probe), what);
+    }
+    assert_before_floor(
         calendar.trade_date(ct(2022, 4, 14, 15, 59)),
-        Some(day(2022, 4, 14))
+        "Thursday's trade date",
     );
-    assert!(!calendar.is_open(ct(2022, 4, 15, 17, 0)));
-    assert!(!calendar.is_open(ct(2022, 4, 16, 12, 0)));
-    assert!(!calendar.is_open(ct(2022, 4, 17, 12, 0)));
-    assert!(calendar.is_open(ct(2022, 4, 17, 17, 0)));
-    assert_eq!(
+    assert_before_floor(
         calendar.trade_date(ct(2022, 4, 17, 17, 0)),
-        Some(day(2022, 4, 18))
+        "the trade date Sunday's reopening leg carries",
     );
 }
 
-/// Every query about an `Unsourced` date answers exactly as the detached
-/// calendar does: the row states that the date was audited, makes no
-/// scheduling claim, and clips nothing.
+/// Asserts what an `Unsourced` row still states and what it can no longer
+/// state.
+///
+/// The row itself is unchanged: the date ships as `Unsourced`, at its recorded
+/// tier, so the table expressly withholds a scheduling claim. The observable
+/// neutrality this helper used to fence — "every query answers exactly as the
+/// detached calendar does" — is gone, because the date precedes the 2025 floor
+/// and every date-aware query about it is refused, on the identity and on the
+/// detached snapshot alike.
 fn assert_unsourced_changes_nothing(date: NaiveDate, row: Holiday, tier: EvidenceTier) {
     let calendar = crypto();
-    let detached = calendar.without_holidays();
+    let bare = calendar.without_holidays();
     assert_eq!(row.kind(), HolidayKind::Unsourced, "{date}");
     assert_eq!(row.tier(), tier, "{date}");
-    // An `Unsourced` row closes nothing. 2021-06-19 is a Saturday, which the
-    // five-day grid has no session on whether or not a row exists, so the
-    // strict claim is made where the family could trade and the equality claim
-    // where it could not.
-    if matches!(date.weekday(), Weekday::Sat | Weekday::Sun) {
-        assert_eq!(
-            calendar.is_closed_trade_date(date, SessionKind::Both),
-            detached.is_closed_trade_date(date, SessionKind::Both),
-            "{date}"
-        );
-    } else {
-        assert!(
-            !calendar.is_closed_trade_date(date, SessionKind::Both),
-            "{date} must not be reported closed"
-        );
-    }
-
-    for probe in [
-        ct_on(day_before(date), 18, 0),
-        ct_on(date, 9, 0),
-        ct_on(date, 15, 59),
-        ct_on(date, 18, 0),
+    assert_before_floor(
+        calendar.is_closed_trade_date(date, SessionKind::Both),
+        "an `Unsourced` trade date is withheld below the floor",
+    );
+    // Every query but one reports the floor on every probe. The trade-date
+    // question splits by the path that resolves the instant, and the fence
+    // states both refusals rather than blurring them:
+    //   - an instant the five-day grid places on its own civil date reports
+    //     the 2025 floor;
+    //   - one that falls outside every session and has to search forward —
+    //     every Saturday and Sunday instant, and the evening leg that would
+    //     open the next trade date on a Friday — resolves through the family's
+    //     Pre-Open phase, which the whole-domain declaration withholds
+    //     (#93/#123), so its refusal is `OutsideCoveredRange`.
+    let weekend = matches!(date.weekday(), Weekday::Sat | Weekday::Sun);
+    for (probe, searches_forward) in [
+        (ct_on(day_before(date), 18, 0), weekend),
+        (ct_on(date, 9, 0), weekend),
+        (ct_on(date, 15, 59), weekend),
+        (
+            ct_on(date, 18, 0),
+            weekend || date.weekday() == Weekday::Fri,
+        ),
     ] {
-        assert_eq!(calendar.is_open(probe), detached.is_open(probe), "{probe}");
-        assert_eq!(
-            calendar.trade_date(probe),
-            detached.trade_date(probe),
-            "{probe}"
-        );
-        assert_eq!(
+        assert_before_floor(calendar.is_open(probe), "an `Unsourced` date's probe");
+        assert_before_floor(
             calendar.session_bounds(probe),
-            detached.session_bounds(probe),
-            "{probe}"
+            "an `Unsourced` date's session bounds",
         );
-        assert_eq!(
+        assert_before_floor(
             calendar.next_session_open_after(probe),
-            detached.next_session_open_after(probe),
-            "{probe}"
+            "an `Unsourced` date's next session",
         );
-        assert_eq!(
+        assert_before_floor(
             calendar.candle_end(probe, CalendarResolution::Daily),
-            detached.candle_end(probe, CalendarResolution::Daily),
-            "{probe}"
+            "an `Unsourced` date's daily candle",
+        );
+        if searches_forward {
+            assert_before_floor(
+                calendar.trade_date(probe),
+                "an `Unsourced` date resolved across the weekend",
+            );
+        } else {
+            assert_before_floor(
+                calendar.trade_date(probe),
+                "an `Unsourced` date resolved on the grid",
+            );
+        }
+        assert_before_floor(
+            bare.is_open(probe),
+            "detaching the table does not lift the floor",
         );
     }
 }
@@ -747,6 +960,11 @@ fn era_2022_2024_unsourced_rows_change_no_answer() {
 /// pre-2019 interval below it stays unaudited. (The 2019-2021 span this test
 /// used to fence became a window of its own when that wave shipped; the
 /// section below fences it.)
+///
+/// The unaudited 2018 dates used to answer from the pure normal week; they
+/// precede the 2025 floor, so the identity and the detached snapshot both
+/// refuse them and the equality that once held is replaced by the shared
+/// refusal.
 #[test]
 fn era_2022_2024_window_sits_second_and_the_pre_2019_interval_is_unaudited() {
     let calendar = crypto();
@@ -777,11 +995,16 @@ fn era_2022_2024_window_sits_second_and_the_pre_2019_interval_is_unaudited() {
             "{date:?}"
         );
     }
-    // Christmas 2018 is a real CME closure no wave audited; the ordinary
-    // Tuesday answers, and the detached calendar answers it the same.
+    // Christmas 2018 is a real CME closure no wave audited. Both calendars
+    // used to answer it from the pure normal week; the date precedes the 2025
+    // floor, so both now refuse it, and the equality that once held between
+    // them is replaced by that shared refusal.
     for probe in [ct(2018, 12, 25, 9, 0), ct(2018, 12, 24, 18, 0)] {
-        assert!(calendar.is_open(probe), "{probe}");
-        assert_eq!(calendar.is_open(probe), bare.is_open(probe), "{probe}");
+        assert_before_floor(calendar.is_open(probe), "a pre-floor unaudited date");
+        assert_before_floor(
+            bare.is_open(probe),
+            "detaching the table does not lift the floor",
+        );
     }
 }
 
@@ -807,9 +1030,11 @@ const ERA_EIGHT_FIFTEEN: u32 = 8 * 3_600 + 15 * 60;
 ///
 /// The walk covers the whole window, so a dropped or added row fails on the
 /// era's total, a moved instant fails on the count for the instant it moved
-/// from or to, and a kind this family does not ship fails outright. An early
-/// close must be open one second before its printed instant and closed at it;
-/// a closure must take the trade date and the evening block that opened it.
+/// from or to, and a kind this family does not ship fails outright. Both sides
+/// of an early close's instant, and the trade date and opening leg of a
+/// closure, are still derived from the row and fenced — but the era precedes
+/// the 2025 floor, so what they assert is the refusal, except for the trade
+/// date, which the withheld Pre-Open phase refuses as `OutsideCoveredRange`.
 #[test]
 fn era_2019_2021_sweeps_every_shipped_row_kind_and_instant() {
     let calendar = crypto();
@@ -833,52 +1058,71 @@ fn era_2019_2021_sweeps_every_shipped_row_kind_and_instant() {
                         }
                     }
                     let cutoff = ct_on(date, close_ssm / 3_600, (close_ssm % 3_600) / 60);
-                    // The block that opened this trade date is clipped, not
-                    // deleted, and it still carries the trade date.
-                    assert!(calendar.is_open(ct_on(day_before(date), 17, 0)), "{date}");
-                    assert!(calendar.is_open(ct_on(day_before(date), 19, 30)), "{date}");
-                    assert_eq!(
-                        calendar.trade_date(ct_on(day_before(date), 18, 0)),
-                        Some(date),
-                        "{date}"
-                    );
-                    // One second before the close is open; at it, closed.
-                    assert!(calendar.is_open(cutoff - Duration::seconds(1)), "{date}");
-                    assert!(!calendar.is_open(cutoff), "{date}: end-exclusive");
-                    // The trading day's bounds end at the printed instant, and
-                    // so does the daily candle. The probe sits just inside the
-                    // session: on the 08:15 Good Friday close an ordinary
-                    // 09:00 CT probe would already be past the cutoff.
+                    // The row's own payload survives — the kind, the printed CT
+                    // instant and the tier are the table's claim. Every
+                    // date-aware answer it used to state is refused: the era
+                    // precedes the 2025 floor, so the clipped wrap and its
+                    // trade date, the end-exclusive boundary, the trading day's
+                    // bounds and its daily candle are no longer answerable.
+                    //
+                    // The probe sits just inside the session: on the 08:15 Good
+                    // Friday close an ordinary 09:00 CT probe would already be
+                    // past the cutoff, which is why this one is derived.
                     let inside = cutoff - Duration::minutes(1);
-                    assert_eq!(
+                    for (probe, what) in [
+                        (ct_on(day_before(date), 17, 0), "the wrap's open"),
+                        (ct_on(day_before(date), 19, 30), "the wrap two hours in"),
+                        (cutoff - Duration::seconds(1), "one second before the close"),
+                        (cutoff, "the printed close itself"),
+                        (inside, "one minute inside the session"),
+                    ] {
+                        assert_before_floor(calendar.is_open(probe), what);
+                    }
+                    assert_before_floor(
+                        calendar.trade_date(ct_on(day_before(date), 18, 0)),
+                        "the wrap's trade date",
+                    );
+                    assert_before_floor(
                         calendar.session_bounds(inside),
-                        Some((ct_on(day_before(date), 17, 0), cutoff)),
-                        "{date}"
+                        "the trading day's bounds",
                     );
-                    assert_eq!(
+                    assert_before_floor(
                         calendar.candle_end(inside, CalendarResolution::Daily),
-                        Some(cutoff),
-                        "{date}"
+                        "the trading day's daily candle",
                     );
-                    assert_eq!(
+                    assert_before_floor(
                         calendar.trade_date(cutoff - Duration::seconds(1)),
-                        Some(date),
-                        "{date}"
+                        "the trade date one second before the close",
                     );
                 }
                 HolidayKind::Closed => {
                     closures += 1;
-                    assert!(
+                    // Every answer this branch used to state about the closure
+                    // — the closed trade date, the deleted evening block and
+                    // civil day, the absent trade date — is refused below the
+                    // 2025 floor.
+                    assert_before_floor(
                         calendar.is_closed_trade_date(date, SessionKind::Both),
-                        "{date}"
+                        "a pre-floor closure is refused, not reported closed",
                     );
-                    // The evening block that would have carried this trade date
-                    // is gone, and so is the trade date's own session.
-                    assert!(!calendar.is_open(ct_on(day_before(date), 17, 0)), "{date}");
-                    assert!(!calendar.is_open(ct_on(day_before(date), 19, 30)), "{date}");
-                    assert!(!calendar.is_open(ct_on(date, 9, 0)), "{date}");
-                    assert!(!calendar.is_open(ct_on(date, 15, 59)), "{date}");
-                    assert_eq!(calendar.trade_date(ct_on(date, 10, 0)), None, "{date}");
+                    for probe in [
+                        ct_on(day_before(date), 17, 0),
+                        ct_on(day_before(date), 19, 30),
+                        ct_on(date, 9, 0),
+                        ct_on(date, 15, 59),
+                    ] {
+                        assert_before_floor(
+                            calendar.is_open(probe),
+                            "the closed trading day's own instants",
+                        );
+                    }
+                    // The trade date reads the family's Pre-Open phase, which
+                    // the whole-domain declaration withholds (#93/#123): that
+                    // refusal is `OutsideCoveredRange` even below the floor.
+                    assert_before_floor(
+                        calendar.trade_date(ct_on(date, 10, 0)),
+                        "the closed day's trade date",
+                    );
                 }
                 HolidayKind::Unsourced => unsourced += 1,
                 other => panic!("{date}: this era ships no {other:?}"),
@@ -902,8 +1146,12 @@ fn era_2019_2021_sweeps_every_shipped_row_kind_and_instant() {
     );
 }
 
-/// Every `Unsourced` row the era ships changes no answer: the row states that
-/// the date was audited, makes no scheduling claim, and clips nothing.
+/// Every `Unsourced` row the era ships: the row states that the date was
+/// audited, makes no scheduling claim, and clips nothing.
+///
+/// Its dates precede the 2025 floor, so the queries that used to demonstrate
+/// that neutrality now refuse them instead; `assert_unsourced_changes_nothing`
+/// states what survives and why.
 #[test]
 fn era_2019_2021_unsourced_rows_change_no_answer() {
     let calendar = crypto();
@@ -924,6 +1172,10 @@ fn era_2019_2021_unsourced_rows_change_no_answer() {
 /// The era is its own declared window: 2019-01-01 and 2021-12-31 are inside
 /// it, while 2018-12-31 and 2022-01-01 lie outside it and belong to the
 /// unaudited interval below the table and to the 2022-2024 wave above it.
+///
+/// The window and its rows are unchanged. Its last day is no longer answered,
+/// though: 2021-12-31 precedes the 2025 floor, so the date-aware question takes
+/// the explicit refusal rather than a normal-week answer.
 #[test]
 fn era_2019_2021_window_edges_answer_as_the_module_declares() {
     let calendar = crypto();
@@ -955,7 +1207,13 @@ fn era_2019_2021_window_edges_answer_as_the_module_declares() {
         Some(HolidayKind::Closed)
     );
     assert_eq!(calendar.holiday_on(day(2021, 12, 31)), None);
-    assert!(calendar.is_open(ct(2021, 12, 31, 9, 0)));
+    // The era's last day is audited normal in the table, but the question is
+    // refused: 2021-12-31 precedes the 2025 floor, so "answers as the module
+    // declares" now means the explicit error rather than a normal-week answer.
+    assert_before_floor(
+        calendar.is_open(ct(2021, 12, 31, 9, 0)),
+        "the era's last day is below the floor",
+    );
     // The neighbouring dates carry no row of this era.
     assert_eq!(calendar.holiday_on(day(2018, 12, 31)), None);
     assert_eq!(calendar.holiday_on(day(2022, 1, 1)), None);

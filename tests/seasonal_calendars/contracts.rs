@@ -197,18 +197,24 @@ fn date_aware_cross_query_fence_holds_for_every_exchange() {
                 SessionKind::Extended,
                 SessionKind::Both,
             ] {
-                let bounds = calendar.session_bounds_with(instant, kind);
+                let bounds = calendar
+                    .session_bounds_with(instant, kind)
+                    .expect("the coverage contract must answer a covered date");
                 let contained =
                     bounds.is_some_and(|(open, close)| open <= instant && instant < close);
                 assert_eq!(
-                    calendar.is_open_with(instant, kind),
+                    calendar
+                        .is_open_with(instant, kind)
+                        .expect("the coverage contract must answer a covered date"),
                     contained,
                     "{exchange:?}/{kind:?} disagrees at {instant}"
                 );
                 if !contained {
                     assert_eq!(
                         bounds,
-                        calendar.next_session_after_with(instant, kind),
+                        calendar
+                            .next_session_after_with(instant, kind)
+                            .expect("the coverage contract must answer a covered date"),
                         "{exchange:?}/{kind:?} next-session mismatch at {instant}"
                     );
                 }

@@ -17,37 +17,89 @@ fn b3_selects_current_short_and_northern_winter_long_grids() {
         calendar.hours_at(local(tz, short_day, (12, 0, 0)))
     );
 
-    assert!(!calendar.is_open(local(tz, short_day, (9, 44, 59))));
+    assert!(
+        !calendar
+            .is_open(local(tz, short_day, (9, 44, 59)))
+            .expect("the coverage contract must answer a covered date")
+    );
     // B3 pre-abertura: order entry ahead of the opening call.
-    assert!(calendar.is_order_entry_only(local(tz, short_day, (9, 45, 0))));
-    assert!(calendar.is_open_regular(local(tz, short_day, (10, 0, 0))));
-    assert!(!calendar.is_open_regular(local(tz, short_day, (16, 55, 0))));
-    assert!(calendar.is_open_extended(local(tz, short_day, (16, 55, 0))));
-    assert!(!calendar.is_open(local(tz, short_day, (17, 0, 0))));
-    assert!(calendar.is_open_extended(local(tz, short_day, (17, 30, 0))));
-    assert!(!calendar.is_open(local(tz, short_day, (18, 0, 0))));
+    assert!(
+        calendar
+            .is_order_entry_only(local(tz, short_day, (9, 45, 0)))
+            .expect("the coverage contract must answer a covered date")
+    );
+    assert!(
+        calendar
+            .is_open_regular(local(tz, short_day, (10, 0, 0)))
+            .expect("the coverage contract must answer a covered date")
+    );
+    assert!(
+        !calendar
+            .is_open_regular(local(tz, short_day, (16, 55, 0)))
+            .expect("the coverage contract must answer a covered date")
+    );
+    assert!(
+        calendar
+            .is_open_extended(local(tz, short_day, (16, 55, 0)))
+            .expect("the coverage contract must answer a covered date")
+    );
+    assert!(
+        !calendar
+            .is_open(local(tz, short_day, (17, 0, 0)))
+            .expect("the coverage contract must answer a covered date")
+    );
+    assert!(
+        calendar
+            .is_open_extended(local(tz, short_day, (17, 30, 0)))
+            .expect("the coverage contract must answer a covered date")
+    );
+    assert!(
+        !calendar
+            .is_open(local(tz, short_day, (18, 0, 0)))
+            .expect("the coverage contract must answer a covered date")
+    );
     assert_eq!(
         regular_window(&calendar.hours_at(local(tz, short_day, (12, 0, 0)))),
         (10 * 3600, 16 * 3600 + 55 * 60)
     );
     assert_eq!(
-        calendar.normal_week_open_seconds_containing(local(tz, short_day, (12, 0, 0))),
+        calendar
+            .normal_week_open_seconds_containing(local(tz, short_day, (12, 0, 0)))
+            .expect("the coverage contract must answer a covered date"),
         // Down 4_500s from 139_500: the five daily 15-minute pre-abertura windows
         // are order entry and no longer count as scheduled open time.
         135_000
     );
 
     let long_day = (2026, 1, 14);
-    assert!(calendar.is_open_regular(local(tz, long_day, (17, 30, 0))));
-    assert!(!calendar.is_open_regular(local(tz, long_day, (17, 55, 0))));
-    assert!(calendar.is_open_extended(local(tz, long_day, (17, 55, 0))));
-    assert!(!calendar.is_open(local(tz, long_day, (18, 0, 0))));
+    assert!(
+        calendar
+            .is_open_regular(local(tz, long_day, (17, 30, 0)))
+            .expect("the coverage contract must answer a covered date")
+    );
+    assert!(
+        !calendar
+            .is_open_regular(local(tz, long_day, (17, 55, 0)))
+            .expect("the coverage contract must answer a covered date")
+    );
+    assert!(
+        calendar
+            .is_open_extended(local(tz, long_day, (17, 55, 0)))
+            .expect("the coverage contract must answer a covered date")
+    );
+    assert!(
+        !calendar
+            .is_open(local(tz, long_day, (18, 0, 0)))
+            .expect("the coverage contract must answer a covered date")
+    );
     assert_eq!(
         regular_window(&calendar.hours_at(local(tz, long_day, (12, 0, 0)))),
         (10 * 3600, 17 * 3600 + 55 * 60)
     );
     assert_eq!(
-        calendar.normal_week_open_seconds_containing(local(tz, long_day, (12, 0, 0))),
+        calendar
+            .normal_week_open_seconds_containing(local(tz, long_day, (12, 0, 0)))
+            .expect("the coverage contract must answer a covered date"),
         // Down 4_500s: the daily pre-abertura windows are order entry now.
         144_000
     );
@@ -118,20 +170,68 @@ fn b3_explicit_2010_to_2012_grids_and_cutovers_are_preserved() {
     let old_long_day = (2010, 1, 6);
     // The 2010 long-session grid's pre-abertura window is not primary-sourced,
     // so 10:45 reads closed rather than order entry.
-    assert!(!calendar.is_accepting_orders(local(tz, old_long_day, (10, 45, 0))));
-    assert!(calendar.is_open_regular(local(tz, old_long_day, (11, 0, 0))));
-    assert!(calendar.is_open_extended(local(tz, old_long_day, (17, 55, 0))));
-    assert!(calendar.is_open_extended(local(tz, old_long_day, (18, 30, 0))));
-    assert!(!calendar.is_open(local(tz, old_long_day, (19, 30, 0))));
+    assert!(
+        !calendar
+            .is_accepting_orders(local(tz, old_long_day, (10, 45, 0)))
+            .expect("the coverage contract must answer a covered date")
+    );
+    assert!(
+        calendar
+            .is_open_regular(local(tz, old_long_day, (11, 0, 0)))
+            .expect("the coverage contract must answer a covered date")
+    );
+    assert!(
+        calendar
+            .is_open_extended(local(tz, old_long_day, (17, 55, 0)))
+            .expect("the coverage contract must answer a covered date")
+    );
+    assert!(
+        calendar
+            .is_open_extended(local(tz, old_long_day, (18, 30, 0)))
+            .expect("the coverage contract must answer a covered date")
+    );
+    assert!(
+        !calendar
+            .is_open(local(tz, old_long_day, (19, 30, 0)))
+            .expect("the coverage contract must answer a covered date")
+    );
 
     let old_short_day = (2010, 4, 1);
-    assert!(calendar.is_order_entry_only(local(tz, old_short_day, (9, 45, 0))));
-    assert!(calendar.is_open_regular(local(tz, old_short_day, (10, 0, 0))));
-    assert!(calendar.is_open_extended(local(tz, old_short_day, (17, 30, 0))));
-    assert!(!calendar.is_open(local(tz, old_short_day, (19, 0, 0))));
+    assert!(
+        calendar
+            .is_order_entry_only(local(tz, old_short_day, (9, 45, 0)))
+            .expect("the coverage contract must answer a covered date")
+    );
+    assert!(
+        calendar
+            .is_open_regular(local(tz, old_short_day, (10, 0, 0)))
+            .expect("the coverage contract must answer a covered date")
+    );
+    assert!(
+        calendar
+            .is_open_extended(local(tz, old_short_day, (17, 30, 0)))
+            .expect("the coverage contract must answer a covered date")
+    );
+    assert!(
+        !calendar
+            .is_open(local(tz, old_short_day, (19, 0, 0)))
+            .expect("the coverage contract must answer a covered date")
+    );
 
     let interim_day = (2013, 1, 9);
-    assert!(!calendar.is_open(local(tz, interim_day, (17, 30, 0))));
-    assert!(calendar.is_open_extended(local(tz, interim_day, (18, 0, 0))));
-    assert!(!calendar.is_open(local(tz, interim_day, (19, 30, 0))));
+    assert!(
+        !calendar
+            .is_open(local(tz, interim_day, (17, 30, 0)))
+            .expect("the coverage contract must answer a covered date")
+    );
+    assert!(
+        calendar
+            .is_open_extended(local(tz, interim_day, (18, 0, 0)))
+            .expect("the coverage contract must answer a covered date")
+    );
+    assert!(
+        !calendar
+            .is_open(local(tz, interim_day, (19, 30, 0)))
+            .expect("the coverage contract must answer a covered date")
+    );
 }

@@ -12,19 +12,23 @@ fn seasonal_daily_candles_use_the_profile_for_each_trading_day() {
     let b3_long = local(sao_paulo, (2026, 1, 14), (10, 30, 0));
 
     assert_eq!(
-        b3.candle_end_with(b3_short, CalendarResolution::Daily, SessionKind::Regular),
+        b3.candle_end_with(b3_short, CalendarResolution::Daily, SessionKind::Regular)
+            .expect("the coverage contract must answer a covered date"),
         Some(local(sao_paulo, (2026, 8, 19), (16, 55, 0)))
     );
     assert_eq!(
-        b3.candle_end_with(b3_long, CalendarResolution::Daily, SessionKind::Regular),
+        b3.candle_end_with(b3_long, CalendarResolution::Daily, SessionKind::Regular)
+            .expect("the coverage contract must answer a covered date"),
         Some(local(sao_paulo, (2026, 1, 14), (17, 55, 0)))
     );
     assert_eq!(
-        b3.time_end_of_day(b3_short),
+        b3.time_end_of_day(b3_short)
+            .expect("the coverage contract must answer a covered date"),
         Some(local(sao_paulo, (2026, 8, 19), (18, 0, 0)))
     );
     assert_eq!(
-        b3.time_end_of_day(b3_long),
+        b3.time_end_of_day(b3_long)
+            .expect("the coverage contract must answer a covered date"),
         Some(local(sao_paulo, (2026, 1, 14), (18, 0, 0)))
     );
 
@@ -33,32 +37,64 @@ fn seasonal_daily_candles_use_the_profile_for_each_trading_day() {
     let normal = local(mexico, (2024, 3, 8), (10, 0, 0));
     let early = local(mexico, (2024, 3, 11), (10, 0, 0));
     assert_eq!(
-        bmv.candle_end(normal, CalendarResolution::Daily),
+        bmv.candle_end(normal, CalendarResolution::Daily)
+            .expect("the coverage contract must answer a covered date"),
         Some(local(mexico, (2024, 3, 8), (15, 20, 0)))
     );
     assert_eq!(
-        bmv.candle_end(early, CalendarResolution::Daily),
+        bmv.candle_end(early, CalendarResolution::Daily)
+            .expect("the coverage contract must answer a covered date"),
         Some(local(mexico, (2024, 3, 11), (14, 20, 0)))
     );
-    assert!(bmv.is_open_extended(local(mexico, (2024, 3, 8), (15, 19, 59))));
-    assert!(bmv.is_open_extended(local(mexico, (2024, 3, 11), (14, 19, 59))));
-    assert!(!bmv.is_open(local(mexico, (2024, 3, 8), (15, 20, 0))));
-    assert!(!bmv.is_open(local(mexico, (2024, 3, 11), (14, 20, 0))));
+    assert!(
+        bmv.is_open_extended(local(mexico, (2024, 3, 8), (15, 19, 59)))
+            .expect("the coverage contract must answer a covered date")
+    );
+    assert!(
+        bmv.is_open_extended(local(mexico, (2024, 3, 11), (14, 19, 59)))
+            .expect("the coverage contract must answer a covered date")
+    );
+    assert!(
+        !bmv.is_open(local(mexico, (2024, 3, 8), (15, 20, 0)))
+            .expect("the coverage contract must answer a covered date")
+    );
+    assert!(
+        !bmv.is_open(local(mexico, (2024, 3, 11), (14, 20, 0)))
+            .expect("the coverage contract must answer a covered date")
+    );
 }
 
 #[test]
 fn seasonal_calendars_keep_weekends_and_closes_end_exclusive() {
     let b3 = calendar_for_exchange(Exchange::B3);
     let sao_paulo = America::Sao_Paulo;
-    assert!(!b3.is_open(local(sao_paulo, (2026, 8, 21), (18, 0, 0))));
-    assert!(!b3.is_open(local(sao_paulo, (2026, 8, 22), (12, 0, 0))));
-    assert!(b3.is_closed_all_day_on(day((2026, 8, 22)), SessionKind::Both));
+    assert!(
+        !b3.is_open(local(sao_paulo, (2026, 8, 21), (18, 0, 0)))
+            .expect("the coverage contract must answer a covered date")
+    );
+    assert!(
+        !b3.is_open(local(sao_paulo, (2026, 8, 22), (12, 0, 0)))
+            .expect("the coverage contract must answer a covered date")
+    );
+    assert!(
+        b3.is_closed_all_day_on(day((2026, 8, 22)), SessionKind::Both)
+            .expect("the coverage contract must answer a covered date")
+    );
 
     let bmv = calendar_for_exchange(Exchange::Bmv);
     let mexico = America::Mexico_City;
-    assert!(!bmv.is_open(local(mexico, (2026, 8, 21), (14, 20, 0))));
-    assert!(!bmv.is_open(local(mexico, (2026, 8, 22), (10, 0, 0))));
-    assert!(bmv.is_closed_all_day_on(day((2026, 8, 22)), SessionKind::Both));
+    assert!(
+        !bmv.is_open(local(mexico, (2026, 8, 21), (14, 20, 0)))
+            .expect("the coverage contract must answer a covered date")
+    );
+    assert!(
+        !bmv.is_open(local(mexico, (2026, 8, 22), (10, 0, 0)))
+            .expect("the coverage contract must answer a covered date")
+    );
+    assert!(
+        bmv.is_closed_all_day_on(day((2026, 8, 22)), SessionKind::Both)
+            .expect("the coverage contract must answer a covered date")
+    );
 }
 
 #[test]
@@ -67,11 +103,13 @@ fn launch_day_candle_starts_do_not_require_a_prelaunch_close() {
     let eex = calendar_for_exchange(Exchange::Eex);
     let eex_instant = local(berlin, (2024, 3, 25), (10, 0, 0));
     assert_eq!(
-        eex.candle_start(eex_instant, CalendarResolution::Daily),
+        eex.candle_start(eex_instant, CalendarResolution::Daily)
+            .expect("the coverage contract must answer a covered date"),
         Some(local(berlin, (2024, 3, 25), (8, 0, 0)))
     );
     assert_eq!(
-        eex.candle_end(eex_instant, CalendarResolution::Daily),
+        eex.candle_end(eex_instant, CalendarResolution::Daily)
+            .expect("the coverage contract must answer a covered date"),
         Some(local(berlin, (2024, 3, 25), (18, 0, 0)))
     );
 
@@ -79,13 +117,15 @@ fn launch_day_candle_starts_do_not_require_a_prelaunch_close() {
     let sgx = calendar_for_exchange(Exchange::Sgx);
     let sgx_instant = local(singapore, (2024, 7, 29), (12, 0, 0));
     assert_eq!(
-        sgx.candle_start(sgx_instant, CalendarResolution::Daily),
+        sgx.candle_start(sgx_instant, CalendarResolution::Daily)
+            .expect("the coverage contract must answer a covered date"),
         // The daily bar now opens at the first tradeable instant rather than at
         // the 07:10 pre-opening routine.
         Some(local(singapore, (2024, 7, 29), (7, 25, 0)))
     );
     assert_eq!(
-        sgx.candle_end(sgx_instant, CalendarResolution::Daily),
+        sgx.candle_end(sgx_instant, CalendarResolution::Daily)
+            .expect("the coverage contract must answer a covered date"),
         Some(local(singapore, (2024, 7, 29), (18, 0, 0)))
     );
 }

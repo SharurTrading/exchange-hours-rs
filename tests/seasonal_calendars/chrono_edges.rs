@@ -20,18 +20,39 @@ fn date_aware_queries_are_total_at_chrono_bounds() {
                 let _fixed_maintenance = snapshot.is_maintenance(instant);
                 let _fixed_closed =
                     snapshot.is_closed_all_day_at(instant, chrono_tz::UTC, SessionKind::Both);
-                let open = calendar.is_open(instant);
-                let bounds = calendar.session_bounds(instant);
-                let _next = calendar.next_session_after(instant);
-                let _daily = calendar.candle_end(instant, CalendarResolution::Daily);
-                let _weekly = calendar.candle_end(instant, CalendarResolution::Weekly);
-                let _monthly = calendar.candle_end(instant, CalendarResolution::Monthly);
-                let _start = calendar.candle_start(instant, CalendarResolution::Monthly);
-                let _seconds = calendar.candle_end(instant, CalendarResolution::Seconds(1));
-                let _maintenance = calendar.is_maintenance(instant);
-                let _closed =
-                    calendar.is_closed_all_day_at(instant, chrono_tz::UTC, SessionKind::Both);
-                let _week = calendar.normal_week_open_seconds_containing(instant);
+                let open = calendar
+                    .is_open(instant)
+                    .expect("the coverage contract must answer a covered date");
+                let bounds = calendar
+                    .session_bounds(instant)
+                    .expect("the coverage contract must answer a covered date");
+                let _next = calendar
+                    .next_session_after(instant)
+                    .expect("the coverage contract must answer a covered date");
+                let _daily = calendar
+                    .candle_end(instant, CalendarResolution::Daily)
+                    .expect("the coverage contract must answer a covered date");
+                let _weekly = calendar
+                    .candle_end(instant, CalendarResolution::Weekly)
+                    .expect("the coverage contract must answer a covered date");
+                let _monthly = calendar
+                    .candle_end(instant, CalendarResolution::Monthly)
+                    .expect("the coverage contract must answer a covered date");
+                let _start = calendar
+                    .candle_start(instant, CalendarResolution::Monthly)
+                    .expect("the coverage contract must answer a covered date");
+                let _seconds = calendar
+                    .candle_end(instant, CalendarResolution::Seconds(1))
+                    .expect("the coverage contract must answer a covered date");
+                let _maintenance = calendar
+                    .is_maintenance(instant)
+                    .expect("the coverage contract must answer a covered date");
+                let _closed = calendar
+                    .is_closed_all_day_at(instant, chrono_tz::UTC, SessionKind::Both)
+                    .expect("the coverage contract must answer a covered date");
+                let _week = calendar
+                    .normal_week_open_seconds_containing(instant)
+                    .expect("the coverage contract must answer a covered date");
 
                 (fixed_open, fixed_bounds, open, bounds)
             });
@@ -98,13 +119,21 @@ fn exercise_every_resolution(
             key,
             instant,
             &format!("ExchangeCalendar::candle_end({resolution:?})"),
-            || calendar.candle_end(instant, resolution),
+            || {
+                calendar
+                    .candle_end(instant, resolution)
+                    .expect("the coverage contract must answer a covered date")
+            },
         );
         total(
             key,
             instant,
             &format!("ExchangeCalendar::candle_start({resolution:?})"),
-            || calendar.candle_start(instant, resolution),
+            || {
+                calendar
+                    .candle_start(instant, resolution)
+                    .expect("the coverage contract must answer a covered date")
+            },
         );
     }
 }
@@ -152,22 +181,34 @@ fn exercise_calendar_surface(
     calendar: ExchangeCalendar,
 ) -> OpenAndBounds {
     let open = total(key, instant, "ExchangeCalendar::is_open", || {
-        calendar.is_open(instant)
+        calendar
+            .is_open(instant)
+            .expect("the coverage contract must answer a covered date")
     });
     let bounds = total(key, instant, "ExchangeCalendar::session_bounds", || {
-        calendar.session_bounds(instant)
+        calendar
+            .session_bounds(instant)
+            .expect("the coverage contract must answer a covered date")
     });
     total(key, instant, "ExchangeCalendar::next_session_after", || {
-        calendar.next_session_after(instant)
+        calendar
+            .next_session_after(instant)
+            .expect("the coverage contract must answer a covered date")
     });
     total(key, instant, "ExchangeCalendar::is_maintenance", || {
-        calendar.is_maintenance(instant)
+        calendar
+            .is_maintenance(instant)
+            .expect("the coverage contract must answer a covered date")
     });
     total(key, instant, "ExchangeCalendar::trade_date", || {
-        calendar.trade_date(instant)
+        calendar
+            .trade_date(instant)
+            .expect("the coverage contract must answer a covered date")
     });
     total(key, instant, "normal_week_open_seconds_containing", || {
-        calendar.normal_week_open_seconds_containing(instant)
+        calendar
+            .normal_week_open_seconds_containing(instant)
+            .expect("the coverage contract must answer a covered date")
     });
     for kind in [
         SessionKind::Regular,
@@ -178,7 +219,11 @@ fn exercise_calendar_surface(
             key,
             instant,
             &format!("ExchangeCalendar::is_closed_all_day_at({kind:?})"),
-            || calendar.is_closed_all_day_at(instant, chrono_tz::UTC, kind),
+            || {
+                calendar
+                    .is_closed_all_day_at(instant, chrono_tz::UTC, kind)
+                    .expect("the coverage contract must answer a covered date")
+            },
         );
     }
     (open, bounds)
@@ -235,13 +280,19 @@ fn synthetic_always_open_utc_profile_has_exact_chrono_edge_sessions() {
         .expect("one day after chrono minimum is representable");
 
     assert!(fixed.is_open(minimum));
-    assert!(calendar.is_open(minimum));
+    assert!(
+        calendar
+            .is_open(minimum)
+            .expect("the coverage contract must answer a covered date")
+    );
     assert_eq!(
         session_bounds(&fixed, minimum),
         Some((minimum, next_midnight))
     );
     assert_eq!(
-        calendar.session_bounds(minimum),
+        calendar
+            .session_bounds(minimum)
+            .expect("the coverage contract must answer a covered date"),
         Some((minimum, next_midnight))
     );
     for resolution in [
@@ -251,15 +302,29 @@ fn synthetic_always_open_utc_profile_has_exact_chrono_edge_sessions() {
     ] {
         assert_eq!(candle_start(&fixed, minimum, resolution), None);
         assert_eq!(candle_end(&fixed, minimum, resolution), None);
-        assert_eq!(calendar.candle_start(minimum, resolution), None);
-        assert_eq!(calendar.candle_end(minimum, resolution), None);
+        assert_eq!(
+            calendar
+                .candle_start(minimum, resolution)
+                .expect("the coverage contract must answer a covered date"),
+            None
+        );
+        assert_eq!(
+            calendar
+                .candle_end(minimum, resolution)
+                .expect("the coverage contract must answer a covered date"),
+            None
+        );
     }
 
     let near_maximum = DateTime::<Utc>::MAX_UTC
         .checked_sub_signed(Duration::days(1))
         .expect("one day before chrono maximum is representable");
     assert!(fixed.is_open(near_maximum));
-    assert!(calendar.is_open(near_maximum));
+    assert!(
+        calendar
+            .is_open(near_maximum)
+            .expect("the coverage contract must answer a covered date")
+    );
 }
 
 #[test]
@@ -288,14 +353,26 @@ fn negative_offset_scan_keeps_the_first_session_at_chrono_minimum() {
 
     assert_eq!(next_session_after(&fixed, minimum), expected);
     assert_eq!(session_bounds(&fixed, minimum), expected);
-    assert_eq!(calendar.next_session_after(minimum), expected);
-    assert_eq!(calendar.session_bounds(minimum), expected);
+    assert_eq!(
+        calendar
+            .next_session_after(minimum)
+            .expect("the coverage contract must answer a covered date"),
+        expected
+    );
+    assert_eq!(
+        calendar
+            .session_bounds(minimum)
+            .expect("the coverage contract must answer a covered date"),
+        expected
+    );
     assert_eq!(
         candle_end(&fixed, minimum, CalendarResolution::Daily),
         Some(close)
     );
     assert_eq!(
-        calendar.candle_end(minimum, CalendarResolution::Daily),
+        calendar
+            .candle_end(minimum, CalendarResolution::Daily)
+            .expect("the coverage contract must answer a covered date"),
         Some(close)
     );
 }
@@ -311,8 +388,18 @@ fn maximum_hour_resolution_clamps_without_losing_a_bar() {
 
     assert_eq!(candle_start(&fixed, instant, resolution), Some(instant));
     assert_eq!(candle_end(&fixed, instant, resolution), Some(close));
-    assert_eq!(calendar.candle_start(instant, resolution), Some(instant));
-    assert_eq!(calendar.candle_end(instant, resolution), Some(close));
+    assert_eq!(
+        calendar
+            .candle_start(instant, resolution)
+            .expect("the coverage contract must answer a covered date"),
+        Some(instant)
+    );
+    assert_eq!(
+        calendar
+            .candle_end(instant, resolution)
+            .expect("the coverage contract must answer a covered date"),
+        Some(close)
+    );
 }
 
 #[test]
@@ -333,12 +420,16 @@ fn dynamic_period_walks_keep_the_last_close_near_chrono_maximum() {
 
     let mut last_close = calendar
         .candle_end(instant, CalendarResolution::Daily)
+        .expect("the coverage contract must answer a covered date")
         .expect("the final representable week has a daily close");
     for _ in 0..8 {
         let Some(probe) = last_close.checked_add_signed(Duration::nanoseconds(1)) else {
             break;
         };
-        let Some(next) = calendar.candle_end(probe, CalendarResolution::Daily) else {
+        let Some(next) = calendar
+            .candle_end(probe, CalendarResolution::Daily)
+            .expect("the coverage contract must answer a covered date")
+        else {
             break;
         };
         assert!(next > last_close);
@@ -349,15 +440,20 @@ fn dynamic_period_walks_keep_the_last_close_near_chrono_maximum() {
             .checked_add_signed(Duration::nanoseconds(1))
             .is_none_or(|probe| calendar
                 .candle_end(probe, CalendarResolution::Daily)
+                .expect("the coverage contract must answer a covered date")
                 .is_none())
     );
 
     assert_eq!(
-        calendar.candle_end(instant, CalendarResolution::Weekly),
+        calendar
+            .candle_end(instant, CalendarResolution::Weekly)
+            .expect("the coverage contract must answer a covered date"),
         Some(last_close)
     );
     assert_eq!(
-        calendar.candle_end(instant, CalendarResolution::Monthly),
+        calendar
+            .candle_end(instant, CalendarResolution::Monthly)
+            .expect("the coverage contract must answer a covered date"),
         Some(last_close)
     );
 }

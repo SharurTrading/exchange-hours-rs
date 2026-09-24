@@ -455,15 +455,103 @@ fn vienna_third_friday_settlement_grid_is_date_aware() {
     let tz = Europe::Vienna;
     let calendar = exchange_hours::calendar_for_exchange(Exchange::Vienna);
 
+    // The grid itself belongs to the **fixed snapshot**: which profile an
+    // instant resolves to is a dated selection, and `hours_for_exchange` states
+    // it whether or not the identity has an audited answer for the calendar
+    // date. Every grid probe below therefore reads that surface, exactly as the
+    // other Vienna fixtures in this file do through `cutover_sides`.
+    let hours = |instant| hours_for_exchange(Exchange::Vienna, instant);
+
     let ordinary = local(tz, (2026, 8, 14), (12, 4, 0));
     let third_friday = local(tz, (2026, 8, 21), (12, 4, 0));
-    assert!(calendar.is_open_regular(ordinary));
-    assert!(!calendar.is_open_regular(third_friday));
-    assert!(calendar.is_open_extended(third_friday));
+    assert!(
+        hours(ordinary).is_open_regular(ordinary),
+        "an ordinary Friday still trades in the regular session at 12:04"
+    );
+    assert!(
+        !hours(third_friday).is_open_regular(third_friday),
+        "the third Friday's settlement grid leaves the regular session at 12:04"
+    );
+    assert!(
+        hours(third_friday).is_open_extended(third_friday),
+        "and the same instant is extended instead"
+    );
 
     let legacy_ordinary = local(tz, (2010, 1, 8), (9, 1, 30));
     let legacy_third_friday = local(tz, (2010, 1, 15), (9, 1, 30));
-    assert!(calendar.is_open_regular(legacy_ordinary));
-    assert!(!calendar.is_open_regular(legacy_third_friday));
-    assert!(calendar.is_open_extended(legacy_third_friday));
+    assert!(
+        hours(legacy_ordinary).is_open_regular(legacy_ordinary),
+        "the 2010 grid's ordinary Friday trades at 09:01:30"
+    );
+    assert!(
+        !hours(legacy_third_friday).is_open_regular(legacy_third_friday),
+        "and its third Friday does not"
+    );
+    assert!(
+        hours(legacy_third_friday).is_open_extended(legacy_third_friday),
+        "the 2010 third Friday is extended at the same instant"
+    );
+
+    // The identity-backed calendar states none of it, for the two reasons the
+    // coverage contract names: 2026-08-14 is inside no audited Vienna window,
+    // and 2010-01-08 precedes the permanent 2025 floor (LAW-COVERAGE). A
+    // refusal is never a closure, so a date-aware consumer must handle both.
+    assert_outside_coverage(
+        calendar.is_open_regular(ordinary),
+        CalendarSource::Exchange(Exchange::Vienna),
+        NaiveDate::from_ymd_opt(2026, 8, 14).expect("fixture date"),
+        "the third-Friday grid in 2026",
+    );
+    assert_before_floor(
+        calendar.is_open_regular(legacy_ordinary),
+        CalendarSource::Exchange(Exchange::Vienna),
+        NaiveDate::from_ymd_opt(2010, 1, 8).expect("fixture date"),
+        "the third-Friday grid in 2010",
+    );
+}
+
+/// Asserts an identity-backed query returns exactly `expected`, the coverage
+/// error the shipped data declares. The variant, identity and date are all part
+/// of the contract: a refusal that named the wrong day would be as wrong as an
+/// answer.
+fn assert_refusal<T>(
+    answer: Result<T, CalendarQueryError>,
+    expected: CalendarQueryError,
+    label: &str,
+) {
+    assert_eq!(
+        answer.err(),
+        Some(expected),
+        "{label}: the query must state the refusal its identity declares"
+    );
+}
+
+/// Asserts a query refuses `date` because the identity has no sourced answer for
+/// it at or above the floor.
+fn assert_outside_coverage<T: std::fmt::Debug>(
+    answer: Result<T, CalendarQueryError>,
+    source: CalendarSource,
+    date: NaiveDate,
+    label: &str,
+) {
+    assert_refusal(
+        answer,
+        CalendarQueryError::OutsideCoveredRange { source, date },
+        label,
+    );
+}
+
+/// Asserts a query refuses `date` because the venue-local day precedes the
+/// permanent 2025 support floor (LAW-COVERAGE).
+fn assert_before_floor<T: std::fmt::Debug>(
+    answer: Result<T, CalendarQueryError>,
+    source: CalendarSource,
+    date: NaiveDate,
+    label: &str,
+) {
+    assert_refusal(
+        answer,
+        CalendarQueryError::BeforeSupportFloor { source, date },
+        label,
+    );
 }

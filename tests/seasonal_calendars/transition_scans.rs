@@ -12,15 +12,20 @@ fn date_aware_scan_reselects_bmv_grid_over_spring_and_fall_weekends() {
     let spring_friday_close = local(tz, (2024, 3, 8), (15, 20, 0));
     let spring_next = calendar
         .next_session_after(spring_friday_close)
+        .expect("the coverage contract must answer a covered date")
         .expect("BMV reopens Monday");
     assert_eq!(spring_next.0, local(tz, (2024, 3, 11), (7, 0, 0)));
     assert_eq!(spring_next.1, local(tz, (2024, 3, 11), (7, 30, 0)));
     assert_eq!(
-        calendar.session_bounds(spring_friday_close),
+        calendar
+            .session_bounds(spring_friday_close)
+            .expect("the coverage contract must answer a covered date"),
         Some(spring_next)
     );
     assert_eq!(
-        calendar.next_session_after_with(spring_friday_close, SessionKind::Regular),
+        calendar
+            .next_session_after_with(spring_friday_close, SessionKind::Regular)
+            .expect("the coverage contract must answer a covered date"),
         Some((
             local(tz, (2024, 3, 11), (7, 30, 0)),
             local(tz, (2024, 3, 11), (14, 0, 0)),
@@ -29,14 +34,18 @@ fn date_aware_scan_reselects_bmv_grid_over_spring_and_fall_weekends() {
 
     let fall_friday_close = local(tz, (2024, 11, 1), (14, 20, 0));
     assert_eq!(
-        calendar.next_session_after(fall_friday_close),
+        calendar
+            .next_session_after(fall_friday_close)
+            .expect("the coverage contract must answer a covered date"),
         Some((
             local(tz, (2024, 11, 4), (8, 0, 0)),
             local(tz, (2024, 11, 4), (8, 30, 0)),
         ))
     );
     assert_eq!(
-        calendar.next_session_after_with(fall_friday_close, SessionKind::Regular),
+        calendar
+            .next_session_after_with(fall_friday_close, SessionKind::Regular)
+            .expect("the coverage contract must answer a covered date"),
         Some((
             local(tz, (2024, 11, 4), (8, 30, 0)),
             local(tz, (2024, 11, 4), (15, 0, 0)),
@@ -52,15 +61,26 @@ fn resolved_snapshot_is_exact_at_its_instant_but_not_across_a_transition() {
     let friday_snapshot = hours_for_exchange(Exchange::Bmv, friday);
 
     assert_eq!(calendar.hours_at(friday), friday_snapshot);
-    assert_eq!(calendar.is_open(friday), friday_snapshot.is_open(friday));
+    assert_eq!(
+        calendar
+            .is_open(friday)
+            .expect("the coverage contract must answer a covered date"),
+        friday_snapshot.is_open(friday)
+    );
 
     let monday = local(tz, (2024, 3, 11), (7, 45, 0));
-    assert!(calendar.is_open_regular(monday));
+    assert!(
+        calendar
+            .is_open_regular(monday)
+            .expect("the coverage contract must answer a covered date")
+    );
     assert!(!friday_snapshot.is_open_regular(monday));
 
     let friday_close = local(tz, (2024, 3, 8), (15, 20, 0));
     assert_eq!(
-        calendar.next_session_open_after(friday_close),
+        calendar
+            .next_session_open_after(friday_close)
+            .expect("the coverage contract must answer a covered date"),
         Some(local(tz, (2024, 3, 11), (7, 0, 0)))
     );
     assert_eq!(

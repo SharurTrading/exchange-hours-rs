@@ -1842,3 +1842,136 @@ fn longest_comment_run(text: &str) -> usize {
     }
     longest
 }
+
+/// One dated cutover encoded as a `NaiveDate` constant outside a `revisions!`
+/// block (issue #86).
+struct DatedConstant {
+    /// Repository-relative source file that declares it.
+    module: String,
+    /// The constant's own name, as the source writes it.
+    name: String,
+    /// The cutover day it states, as `YYYY-MM-DD`.
+    day: String,
+}
+
+/// Returns every `const NAME: NaiveDate = effective_date(y, m, d);` in `src/`.
+///
+/// A module that encodes a dated cutover this way declares no `revisions!`
+/// block, so `every_revision_row_day_appears_in_its_evidence_file` cannot see
+/// its day and nothing proves the source and the evidence agree. This is the
+/// second source of dated boundaries that fence needs (issue #86).
+///
+/// Only the `effective_date(y, m, d)` form is collected. A cutover written as a
+/// date comparison against a literal inside a selector, or as a `NaiveDate`
+/// built another way, is **not** covered here; those remain open on #86 and the
+/// fence deliberately does not pretend otherwise.
+fn dated_constants() -> Vec<DatedConstant> {
+    let mut found = Vec::new();
+    for path in crate_sources() {
+        let text = fs::read_to_string(&path).expect("source file must be readable");
+        let module = relative(&path);
+        for line in text.lines() {
+            let trimmed = line.trim();
+            let Some(rest) = trimmed.strip_prefix("const ") else {
+                continue;
+            };
+            let Some((name, value)) = rest.split_once(": NaiveDate = ") else {
+                continue;
+            };
+            let Some(args) = value
+                .trim_end_matches(';')
+                .strip_prefix("effective_date(")
+                .and_then(|inner| inner.strip_suffix(')'))
+            else {
+                continue;
+            };
+            let parts = args.split(',').map(str::trim).collect::<Vec<_>>();
+            let [year, month, day] = parts.as_slice() else {
+                continue;
+            };
+            found.push(DatedConstant {
+                module: module.clone(),
+                name: name.trim().to_owned(),
+                day: format!(
+                    "{:0>4}-{:0>2}-{:0>2}",
+                    year.parse::<i32>().expect("a year literal"),
+                    month.parse::<u32>().expect("a month literal"),
+                    day.parse::<u32>().expect("a day literal"),
+                ),
+            });
+        }
+    }
+    found
+}
+
+/// The evidence files one module's dated constants are recorded in.
+///
+/// A module without an `// Evidence:` declaration falls back to the convention
+/// that its own file name is its evidence file, which is how the single-family
+/// modules are laid out; `vienna` is the shipped exception, its three era
+/// boundaries being written up in `vienna.md`.
+fn evidence_files_for_dated_constants(
+    module: &str,
+    files: &BTreeMap<String, String>,
+) -> Vec<String> {
+    let stem = module
+        .rsplit('/')
+        .next()
+        .and_then(|name| name.strip_suffix(".rs"))
+        .expect("a Rust source file ends in .rs");
+    let conventional = format!("{stem}.md");
+    if files.contains_key(&conventional) {
+        return vec![conventional];
+    }
+    match stem {
+        "vienna" => vec!["vienna.md".to_owned(), "vienna_equities.md".to_owned()],
+        other => panic!(
+            "{module} declares a dated NaiveDate constant but no evidence file can be \
+             located for it (looked for {other}.md); add the file or extend this map"
+        ),
+    }
+}
+
+#[test]
+fn every_dated_constant_day_appears_in_its_evidence_file() {
+    let files = evidence_files();
+    let constants = dated_constants();
+    assert!(
+        !constants.is_empty(),
+        "the fence must find at least the shipped dated constants; a matcher that \
+         matches nothing would pass vacuously"
+    );
+
+    for constant in &constants {
+        let candidates = evidence_files_for_dated_constants(&constant.module, &files);
+        let recorded = candidates.iter().any(|name| {
+            files
+                .get(name)
+                .and_then(|text| section(text, "## Revision rows"))
+                .is_some_and(|rows| rows.contains(&format!("- {} \u{2014}", constant.day)))
+        });
+        assert!(
+            recorded,
+            "{} declares `const {}` as {} but no declared evidence file records \
+             that day under `## Revision rows` (checked {candidates:?})",
+            constant.module, constant.name, constant.day
+        );
+    }
+}
+
+#[test]
+fn the_dated_constant_fence_reads_every_shipped_constant() {
+    // A guard on the fence itself: the collection is pinned non-empty and the
+    // three Vienna era boundaries are named, so a future refactor that renames
+    // `effective_date` or moves a constant cannot silently empty it.
+    let days = dated_constants()
+        .into_iter()
+        .map(|constant| constant.day)
+        .collect::<Vec<_>>();
+    for day in ["2017-07-31", "2019-05-02", "2020-12-01"] {
+        assert!(
+            days.iter().any(|found| found == day),
+            "the Vienna era boundary {day} must be collected by the fence"
+        );
+    }
+}

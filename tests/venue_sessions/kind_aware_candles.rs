@@ -102,25 +102,33 @@ fn adjacent_different_session_kinds_remain_distinct_bounds() {
     let at_handoff = ct((2026, 4, 20), (8, 30, 0));
 
     assert_eq!(
-        calendar.session_bounds_with(before_handoff, SessionKind::Extended),
+        calendar
+            .session_bounds_with(before_handoff, SessionKind::Extended)
+            .expect("the coverage contract must answer a covered date"),
         Some((ct((2026, 4, 19), (17, 0, 0)), ct((2026, 4, 20), (8, 30, 0)),)),
     );
     assert_eq!(
-        calendar.session_bounds(before_handoff),
+        calendar
+            .session_bounds(before_handoff)
+            .expect("the coverage contract must answer a covered date"),
         Some((ct((2026, 4, 19), (17, 0, 0)), ct((2026, 4, 20), (8, 30, 0)),)),
     );
     assert_eq!(
-        calendar.session_bounds(at_handoff),
+        calendar
+            .session_bounds(at_handoff)
+            .expect("the coverage contract must answer a covered date"),
         Some((
             ct((2026, 4, 20), (8, 30, 0)),
             ct((2026, 4, 20), (15, 15, 0)),
         )),
     );
     assert_eq!(
-        calendar.candle_end(
-            ct((2026, 4, 20), (8, 28, 0)),
-            CalendarResolution::Minutes(5),
-        ),
+        calendar
+            .candle_end(
+                ct((2026, 4, 20), (8, 28, 0)),
+                CalendarResolution::Minutes(5),
+            )
+            .expect("the coverage contract must answer a covered date"),
         Some(at_handoff),
         "the natural 08:33 grid end is clamped at the session handoff",
     );

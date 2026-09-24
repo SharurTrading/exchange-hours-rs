@@ -259,9 +259,24 @@ fn cfe_morning_extension_began_on_2010_12_10() {
     assert!(after.is_open_extended(ct((2010, 12, 10), (7, 20, 0))));
     assert!(after.is_open_regular(ct((2010, 12, 10), (8, 30, 0))));
 
+    // The era this cutover governs is entirely before the 2025-01-01 support
+    // floor, so the date-aware calendar cannot confirm the fixed snapshot's
+    // answers: `calendar_for_exchange(Cfe)` refuses the venue-local day as
+    // `BeforeSupportFloor` rather than reporting the refusal as a closure
+    // (LAW-COVERAGE). What is no longer claimable through the calendar is a
+    // `bool`; the grid itself stays asserted above through
+    // `hours_for_exchange`, which is the surface these fixtures source.
     let calendar = calendar_for_exchange(Exchange::Cfe);
-    assert!(!calendar.is_open(ct((2010, 12, 10), (7, 19, 59))));
-    assert!(calendar.is_open_extended(ct((2010, 12, 10), (7, 20, 0))));
+    assert_refuses_before_floor(
+        calendar.is_open(ct((2010, 12, 10), (7, 19, 59))),
+        calendar,
+        ct((2010, 12, 10), (7, 19, 59)),
+    );
+    assert_refuses_before_floor(
+        calendar.is_open_extended(ct((2010, 12, 10), (7, 20, 0))),
+        calendar,
+        ct((2010, 12, 10), (7, 20, 0)),
+    );
 }
 
 // SR-CFE-2011-019 moved the VX extended-session start from 07:20 to 07:00 CT
@@ -279,9 +294,24 @@ fn cfe_morning_extension_moved_to_0700_on_2011_09_26() {
     assert!(after.is_open_extended(ct((2011, 9, 26), (7, 0, 0))));
     assert!(after.is_open_regular(ct((2011, 9, 26), (8, 30, 0))));
 
+    // The era this cutover governs is entirely before the 2025-01-01 support
+    // floor, so the date-aware calendar cannot confirm the fixed snapshot's
+    // answers: `calendar_for_exchange(Cfe)` refuses the venue-local day as
+    // `BeforeSupportFloor` rather than reporting the refusal as a closure
+    // (LAW-COVERAGE). What is no longer claimable through the calendar is a
+    // `bool`; the grid itself stays asserted above through
+    // `hours_for_exchange`, which is the surface these fixtures source.
     let calendar = calendar_for_exchange(Exchange::Cfe);
-    assert!(!calendar.is_open(ct((2011, 9, 26), (6, 59, 59))));
-    assert!(calendar.is_open_extended(ct((2011, 9, 26), (7, 0, 0))));
+    assert_refuses_before_floor(
+        calendar.is_open(ct((2011, 9, 26), (6, 59, 59))),
+        calendar,
+        ct((2011, 9, 26), (6, 59, 59)),
+    );
+    assert_refuses_before_floor(
+        calendar.is_open_extended(ct((2011, 9, 26), (7, 0, 0))),
+        calendar,
+        ct((2011, 9, 26), (7, 0, 0)),
+    );
 }
 
 // CFE IC13-041 pins the two phases to 2013-10-28 and 2013-11-04 and publishes
@@ -311,10 +341,29 @@ fn cfe_afternoon_extension_launched_on_2013_10_28() {
         "the new afternoon period ran Monday–Thursday, not Friday"
     );
 
+    // The era this cutover governs is entirely before the 2025-01-01 support
+    // floor, so the date-aware calendar cannot confirm the fixed snapshot's
+    // answers: `calendar_for_exchange(Cfe)` refuses the venue-local day as
+    // `BeforeSupportFloor` rather than reporting the refusal as a closure
+    // (LAW-COVERAGE). What is no longer claimable through the calendar is a
+    // `bool`; the grid itself stays asserted above through
+    // `hours_for_exchange`, which is the surface these fixtures source.
     let calendar = calendar_for_exchange(Exchange::Cfe);
-    assert!(!calendar.is_open(ct((2013, 10, 28), (15, 28, 59))));
-    assert!(calendar.is_order_entry_only(ct((2013, 10, 28), (15, 29, 0))));
-    assert!(calendar.is_open_extended(ct((2013, 10, 28), (15, 30, 0))));
+    assert_refuses_before_floor(
+        calendar.is_open(ct((2013, 10, 28), (15, 28, 59))),
+        calendar,
+        ct((2013, 10, 28), (15, 28, 59)),
+    );
+    assert_refuses_before_floor(
+        calendar.is_order_entry_only(ct((2013, 10, 28), (15, 29, 0))),
+        calendar,
+        ct((2013, 10, 28), (15, 29, 0)),
+    );
+    assert_refuses_before_floor(
+        calendar.is_open_extended(ct((2013, 10, 28), (15, 30, 0))),
+        calendar,
+        ct((2013, 10, 28), (15, 30, 0)),
+    );
 }
 
 #[test]
@@ -334,9 +383,24 @@ fn cfe_morning_extension_launched_on_2013_11_04() {
     assert!(after.is_open_regular(ct((2013, 11, 4), (8, 30, 0))));
     assert!(after.is_order_entry_only(ct((2013, 11, 4), (15, 29, 0))));
 
+    // The era this cutover governs is entirely before the 2025-01-01 support
+    // floor, so the date-aware calendar cannot confirm the fixed snapshot's
+    // answers: `calendar_for_exchange(Cfe)` refuses the venue-local day as
+    // `BeforeSupportFloor` rather than reporting the refusal as a closure
+    // (LAW-COVERAGE). What is no longer claimable through the calendar is a
+    // `bool`; the grid itself stays asserted above through
+    // `hours_for_exchange`, which is the surface these fixtures source.
     let calendar = calendar_for_exchange(Exchange::Cfe);
-    assert!(!calendar.is_open(ct((2013, 11, 4), (1, 59, 59))));
-    assert!(calendar.is_open_extended(ct((2013, 11, 4), (2, 0, 0))));
+    assert_refuses_before_floor(
+        calendar.is_open(ct((2013, 11, 4), (1, 59, 59))),
+        calendar,
+        ct((2013, 11, 4), (1, 59, 59)),
+    );
+    assert_refuses_before_floor(
+        calendar.is_open_extended(ct((2013, 11, 4), (2, 0, 0))),
+        calendar,
+        ct((2013, 11, 4), (2, 0, 0)),
+    );
 }
 
 // CFE-2014-010 records the continuous Mon–Thu 15:30→08:30 schedule. IC14-036
@@ -367,11 +431,34 @@ fn cfe_nearly_24_hour_week_launched_on_2014_06_22() {
     assert!(after.is_open_extended(ct((2014, 6, 23), (16, 30, 0))));
     assert!(after.is_open_extended(ct((2014, 6, 24), (2, 0, 0))));
 
+    // The era this cutover governs is entirely before the 2025-01-01 support
+    // floor, so the date-aware calendar cannot confirm the fixed snapshot's
+    // answers: `calendar_for_exchange(Cfe)` refuses the venue-local day as
+    // `BeforeSupportFloor` rather than reporting the refusal as a closure
+    // (LAW-COVERAGE). What is no longer claimable through the calendar is a
+    // `bool`; the grid itself stays asserted above through
+    // `hours_for_exchange`, which is the surface these fixtures source.
     let calendar = calendar_for_exchange(Exchange::Cfe);
-    assert!(!calendar.is_open(ct((2014, 6, 22), (16, 14, 59))));
-    assert!(calendar.is_order_entry_only(ct((2014, 6, 22), (16, 15, 0))));
-    assert!(calendar.is_order_entry_only(ct((2014, 6, 22), (16, 59, 59))));
-    assert!(calendar.is_open_extended(ct((2014, 6, 22), (17, 0, 0))));
+    assert_refuses_before_floor(
+        calendar.is_open(ct((2014, 6, 22), (16, 14, 59))),
+        calendar,
+        ct((2014, 6, 22), (16, 14, 59)),
+    );
+    assert_refuses_before_floor(
+        calendar.is_order_entry_only(ct((2014, 6, 22), (16, 15, 0))),
+        calendar,
+        ct((2014, 6, 22), (16, 15, 0)),
+    );
+    assert_refuses_before_floor(
+        calendar.is_order_entry_only(ct((2014, 6, 22), (16, 59, 59))),
+        calendar,
+        ct((2014, 6, 22), (16, 59, 59)),
+    );
+    assert_refuses_before_floor(
+        calendar.is_open_extended(ct((2014, 6, 22), (17, 0, 0))),
+        calendar,
+        ct((2014, 6, 22), (17, 0, 0)),
+    );
 }
 
 // SR-CFE-2017-017 tied the 16:00–16:45 CT suspension and randomized opening
@@ -403,11 +490,34 @@ fn cfe_system_migration_restored_daily_gap_on_2018_02_25() {
     assert!(after.is_order_entry_only(ct(monday, (16, 59, 59))));
     assert!(after.is_open_extended(ct(monday, (17, 0, 0))));
 
+    // The era this cutover governs is entirely before the 2025-01-01 support
+    // floor, so the date-aware calendar cannot confirm the fixed snapshot's
+    // answers: `calendar_for_exchange(Cfe)` refuses the venue-local day as
+    // `BeforeSupportFloor` rather than reporting the refusal as a closure
+    // (LAW-COVERAGE). What is no longer claimable through the calendar is a
+    // `bool`; the grid itself stays asserted above through
+    // `hours_for_exchange`, which is the surface these fixtures source.
     let calendar = calendar_for_exchange(Exchange::Cfe);
-    assert!(!calendar.is_open(ct(monday, (16, 30, 0))));
-    assert!(!calendar.is_open(ct(monday, (16, 45, 2))));
-    assert!(calendar.is_order_entry_only(ct(monday, (16, 45, 3))));
-    assert!(calendar.is_open_extended(ct(monday, (17, 0, 0))));
+    assert_refuses_before_floor(
+        calendar.is_open(ct(monday, (16, 30, 0))),
+        calendar,
+        ct(monday, (16, 30, 0)),
+    );
+    assert_refuses_before_floor(
+        calendar.is_open(ct(monday, (16, 45, 2))),
+        calendar,
+        ct(monday, (16, 45, 2)),
+    );
+    assert_refuses_before_floor(
+        calendar.is_order_entry_only(ct(monday, (16, 45, 3))),
+        calendar,
+        ct(monday, (16, 45, 3)),
+    );
+    assert_refuses_before_floor(
+        calendar.is_open_extended(ct(monday, (17, 0, 0))),
+        calendar,
+        ct(monday, (17, 0, 0)),
+    );
 }
 
 // C2018071603 moved TAS opening-queue starts into the three-to-six-second
@@ -434,7 +544,22 @@ fn cfe_queue_envelope_widened_on_2018_08_12() {
         assert!(after.is_order_entry_only(ct((2018, 8, 13), (16, 45, 6))));
     }
 
+    // The era this cutover governs is entirely before the 2025-01-01 support
+    // floor, so the date-aware calendar cannot confirm the fixed snapshot's
+    // answers: `calendar_for_exchange(Cfe)` refuses the venue-local day as
+    // `BeforeSupportFloor` rather than reporting the refusal as a closure
+    // (LAW-COVERAGE). What is no longer claimable through the calendar is a
+    // `bool`; the grid itself stays asserted above through
+    // `hours_for_exchange`, which is the surface these fixtures source.
     let calendar = calendar_for_exchange(Exchange::Cfe);
-    assert!(!calendar.is_open(ct((2018, 8, 12), (16, 0, 5))));
-    assert!(calendar.is_order_entry_only(ct((2018, 8, 12), (16, 0, 6))));
+    assert_refuses_before_floor(
+        calendar.is_open(ct((2018, 8, 12), (16, 0, 5))),
+        calendar,
+        ct((2018, 8, 12), (16, 0, 5)),
+    );
+    assert_refuses_before_floor(
+        calendar.is_order_entry_only(ct((2018, 8, 12), (16, 0, 6))),
+        calendar,
+        ct((2018, 8, 12), (16, 0, 6)),
+    );
 }

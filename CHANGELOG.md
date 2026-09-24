@@ -11,6 +11,61 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ## [Unreleased]
 
+### Changed
+
+- **Identity-backed queries return `Result` (2026-09-23 UTC) — BREAKING.** Stage 2B of
+  the release plan makes every date-aware query on `ExchangeCalendar` and
+  `PolicyCalendar` answer the coverage contract Stage 2A published instead of
+  returning a bare value. Each returns `Result<existing_value, CalendarQueryError>`,
+  with `Option` preserved inside `Ok` where it still means genuine absence: the
+  status predicates (`is_open`, `is_open_with`, `is_open_regular`,
+  `is_open_extended`, `is_accepting_orders`, `is_order_entry_only`,
+  `is_maintenance`), `session_state`, the boundary and scan queries
+  (`session_bounds`, `session_bounds_with`, `next_session_after`,
+  `next_session_after_with`, `next_session_open_after`), the trade-date queries
+  (`trade_date`, `is_closed_trade_date`, `is_closed_all_day_in_calendar`,
+  `is_closed_all_day_on`, `is_closed_all_day_at`), the candle adapters
+  (`candle_end`, `candle_end_with`, `candle_start`, `candle_start_with`,
+  `time_end_of_day`) and `normal_week_open_seconds_containing`. A query now
+  **refuses** a venue-local date before the 2025-01-01 support floor
+  (`BeforeSupportFloor`), a date inside the claimed interval the identity cannot
+  answer (`OutsideCoveredRange`), a date the identity withholds as `Unsourced`
+  (`UnresolvedGap`), and a bounded forward search that runs out of window on a day
+  it cannot establish (`SearchExhausted`). An error is never converted to `false`,
+  `None`, or a default grid: callers must handle it explicitly (#115, #118).
+  **Unchanged by design:** detached caller-supplied `MarketHours` snapshots (the
+  free `session_bounds*`, `next_session_after*`, `candle_*` and `time_end_of_day`
+  functions, and every method on `MarketHours` itself) keep their exact signatures
+  and no-holiday contract, because a detached snapshot carries no identity and
+  therefore claims no coverage; `hours_at` / `hours_for_*` / `session_profile` check
+  normal-week coverage only; `holiday_on`, `holiday_coverage`, `source`,
+  `exchange`, `market_hours_key` and `coverage` resolve no date and keep theirs. A
+  calendar detached with `without_holidays()` selects the normal-week contract and
+  answers inside its sourced normal week rather than refusing.
+- **Dated cutovers outside `revisions!` are now fenced (2026-09-23 UTC).** Issue #86:
+  a module that encodes a dated cutover as a `const NAME: NaiveDate =
+  effective_date(y, m, d)` declares no `revisions!` block, so
+  `every_revision_row_day_appears_in_its_evidence_file` could not see its day and
+  nothing proved the source and the evidence agreed.
+  `tests/schedule_documentation/evidence_files.rs` gains
+  `every_dated_constant_day_appears_in_its_evidence_file`, which collects every
+  such constant in `src/`, maps it to its evidence file (by the module's own
+  `// Evidence:` declaration, or by the single-family naming convention), and
+  requires the day to appear under that file's `## Revision rows`. A second
+  assertion pins the collection non-empty and names the three shipped Vienna era
+  boundaries, so a renamed helper cannot make the fence pass vacuously. **Partial
+  by design:** a cutover written as a date comparison against a literal inside a
+  selector, or as a `NaiveDate` built another way, is still not collected and
+  remains open on #86; the fence does not claim otherwise.
+- **Seasonal profile documentation corrected (2026-09-23 UTC).** `session_profile`
+  claimed to equal the revision timeline's selection at every instant, and
+  `hours_for_market_hours_key` claimed that a key with no in-scope recorded change
+  resolves to its one grid at every instant. Both were false for the two **seasonal**
+  keys, `Eurex` and `EurexFixedIncome`, whose grids follow a foreign clock and switch
+  with the venue's own offset while shipping the summer grid as `*_CURRENT`. The
+  documentation now names the exception and the two keys; no runtime data changed
+  (#77).
+
 ### Added
 
 - **Coverage inventory (2026-09-21 UTC).** `docs/schedules/coverage-2025.md` records,

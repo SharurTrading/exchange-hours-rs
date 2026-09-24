@@ -302,12 +302,38 @@ fn iceus_fang_profile_is_closed_before_its_sourced_launch() {
     let full_week = hours_for_exchange(Exchange::Iceus, et((2017, 11, 8), (0, 0, 0)));
     assert!(full_week.is_open_regular(et((2017, 11, 8), (20, 0, 0))));
 
+    // The FANG launch is pre-floor, so the date-aware calendar states no
+    // trading on its first evening: 2017-11-07 and 2017-11-08 both precede the
+    // 2025-01-01 floor and every probe is refused as `BeforeSupportFloor`. The
+    // launch sequence — closed, 19:30 order entry, 20:00 regular open and the
+    // 18:00 close — stays asserted above through `hours_for_exchange`, which is
+    // the surface this notice is sourced from.
     let calendar = calendar_for_exchange(Exchange::Iceus);
-    assert!(!calendar.is_open(et((2017, 11, 7), (19, 29, 59))));
-    assert!(calendar.is_order_entry_only(et((2017, 11, 7), (19, 30, 0))));
-    assert!(calendar.is_open_regular(et((2017, 11, 7), (20, 0, 0))));
-    assert!(!calendar.is_open(et((2017, 11, 8), (18, 0, 0))));
-    assert!(calendar.is_open_regular(et((2017, 11, 8), (20, 0, 0))));
+    assert_refuses_before_floor(
+        calendar.is_open(et((2017, 11, 7), (19, 29, 59))),
+        calendar,
+        et((2017, 11, 7), (19, 29, 59)),
+    );
+    assert_refuses_before_floor(
+        calendar.is_order_entry_only(et((2017, 11, 7), (19, 30, 0))),
+        calendar,
+        et((2017, 11, 7), (19, 30, 0)),
+    );
+    assert_refuses_before_floor(
+        calendar.is_open_regular(et((2017, 11, 7), (20, 0, 0))),
+        calendar,
+        et((2017, 11, 7), (20, 0, 0)),
+    );
+    assert_refuses_before_floor(
+        calendar.is_open(et((2017, 11, 8), (18, 0, 0))),
+        calendar,
+        et((2017, 11, 8), (18, 0, 0)),
+    );
+    assert_refuses_before_floor(
+        calendar.is_open_regular(et((2017, 11, 8), (20, 0, 0))),
+        calendar,
+        et((2017, 11, 8), (20, 0, 0)),
+    );
 }
 
 #[test]
@@ -338,16 +364,44 @@ fn ice_canada_canola_2011_opening_change_uses_actual_opening_day() {
     assert!(after.is_order_entry_only(ct((2011, 2, 28), (18, 30, 0))));
     assert!(after.is_open_regular(ct((2011, 2, 28), (19, 0, 0))));
 
+    // The 2011 opening change is dated 2011-02-27/28, both pre-floor. The
+    // claim the calendar used to carry — that the Sunday-opened session runs
+    // whole through local midnight — is no longer stateable through the
+    // date-aware surface: 2011-02-28 precedes the 2025-01-01 floor and every
+    // probe is refused as `BeforeSupportFloor`. The session's shape at the
+    // cutover stays asserted above through `hours_for_exchange`, whose Sunday
+    // 20:00 CT snapshot spans that midnight without splitting.
     let calendar = calendar_for_exchange(Exchange::IceCanada);
-    // The Sunday-opened session runs 20:00 CT through Monday 13:15 CT; local
-    // midnight of 2011-02-28 falls inside it and must not split or truncate
-    // it.
-    assert!(calendar.is_open_regular(ct((2011, 2, 28), (0, 0, 0))));
-    assert!(calendar.is_open_regular(ct((2011, 2, 28), (12, 0, 0))));
-    assert!(!calendar.is_open(ct((2011, 2, 28), (13, 15, 0))));
-    assert!(!calendar.is_open(ct((2011, 2, 28), (18, 29, 59))));
-    assert!(calendar.is_order_entry_only(ct((2011, 2, 28), (18, 30, 0))));
-    assert!(calendar.is_open_regular(ct((2011, 2, 28), (19, 0, 0))));
+    assert_refuses_before_floor(
+        calendar.is_open_regular(ct((2011, 2, 28), (0, 0, 0))),
+        calendar,
+        ct((2011, 2, 28), (0, 0, 0)),
+    );
+    assert_refuses_before_floor(
+        calendar.is_open_regular(ct((2011, 2, 28), (12, 0, 0))),
+        calendar,
+        ct((2011, 2, 28), (12, 0, 0)),
+    );
+    assert_refuses_before_floor(
+        calendar.is_open(ct((2011, 2, 28), (13, 15, 0))),
+        calendar,
+        ct((2011, 2, 28), (13, 15, 0)),
+    );
+    assert_refuses_before_floor(
+        calendar.is_open(ct((2011, 2, 28), (18, 29, 59))),
+        calendar,
+        ct((2011, 2, 28), (18, 29, 59)),
+    );
+    assert_refuses_before_floor(
+        calendar.is_order_entry_only(ct((2011, 2, 28), (18, 30, 0))),
+        calendar,
+        ct((2011, 2, 28), (18, 30, 0)),
+    );
+    assert_refuses_before_floor(
+        calendar.is_open_regular(ct((2011, 2, 28), (19, 0, 0))),
+        calendar,
+        ct((2011, 2, 28), (19, 0, 0)),
+    );
 }
 
 #[test]
@@ -363,11 +417,32 @@ fn ice_canada_canola_2012_close_extension_and_2013_restoration() {
     assert!(restored.is_open_regular(ct((2013, 4, 8), (13, 14, 59))));
     assert!(!restored.is_open(ct((2013, 4, 8), (13, 15, 0))));
 
+    // Both revision days are pre-floor, so the date-aware calendar refuses them
+    // as `BeforeSupportFloor` rather than confirming the extension and its
+    // restoration. Those two answers stay asserted above through
+    // `hours_for_exchange`, which is the surface the revision rows are sourced
+    // from.
     let calendar = calendar_for_exchange(Exchange::IceCanada);
-    assert!(calendar.is_open_regular(ct((2012, 6, 25), (13, 59, 59))));
-    assert!(!calendar.is_open(ct((2012, 6, 25), (14, 0, 0))));
-    assert!(calendar.is_open_regular(ct((2013, 4, 8), (13, 14, 59))));
-    assert!(!calendar.is_open(ct((2013, 4, 8), (13, 15, 0))));
+    assert_refuses_before_floor(
+        calendar.is_open_regular(ct((2012, 6, 25), (13, 59, 59))),
+        calendar,
+        ct((2012, 6, 25), (13, 59, 59)),
+    );
+    assert_refuses_before_floor(
+        calendar.is_open(ct((2012, 6, 25), (14, 0, 0))),
+        calendar,
+        ct((2012, 6, 25), (14, 0, 0)),
+    );
+    assert_refuses_before_floor(
+        calendar.is_open_regular(ct((2013, 4, 8), (13, 14, 59))),
+        calendar,
+        ct((2013, 4, 8), (13, 14, 59)),
+    );
+    assert_refuses_before_floor(
+        calendar.is_open(ct((2013, 4, 8), (13, 15, 0))),
+        calendar,
+        ct((2013, 4, 8), (13, 15, 0)),
+    );
 }
 
 #[test]
@@ -379,9 +454,22 @@ fn ice_canada_canola_2016_close_extension_and_2018_transfer() {
     assert!(extended.is_open_regular(ct((2016, 1, 25), (13, 19, 59))));
     assert!(!extended.is_open(ct((2016, 1, 25), (13, 20, 0))));
 
+    // The 2016 extension and the 2018 transfer to ICE US are both pre-floor, so
+    // the date-aware calendar refuses them as `BeforeSupportFloor` rather than
+    // confirming the extended close or the closed post-transfer day. Those
+    // answers stay asserted above through `hours_for_exchange`, which is the
+    // surface the revision rows are sourced from.
     let calendar = calendar_for_exchange(Exchange::IceCanada);
-    assert!(calendar.is_open_regular(ct((2016, 1, 25), (13, 19, 59))));
-    assert!(!calendar.is_open(ct((2016, 1, 25), (13, 20, 0))));
+    assert_refuses_before_floor(
+        calendar.is_open_regular(ct((2016, 1, 25), (13, 19, 59))),
+        calendar,
+        ct((2016, 1, 25), (13, 19, 59)),
+    );
+    assert_refuses_before_floor(
+        calendar.is_open(ct((2016, 1, 25), (13, 20, 0))),
+        calendar,
+        ct((2016, 1, 25), (13, 20, 0)),
+    );
 
     let transfer_opening = ct((2018, 7, 29), (0, 0, 0));
     let legacy = hours_for_exchange(
@@ -394,7 +482,11 @@ fn ice_canada_canola_2016_close_extension_and_2018_transfer() {
     assert!(closed.regular.is_empty());
     assert!(closed.extended.is_empty());
     assert_eq!(closed.tz, America::Winnipeg);
-    assert!(!calendar.is_open(ct((2018, 7, 29), (19, 0, 0))));
+    assert_refuses_before_floor(
+        calendar.is_open(ct((2018, 7, 29), (19, 0, 0))),
+        calendar,
+        ct((2018, 7, 29), (19, 0, 0)),
+    );
 
     let current = hours_for_exchange(
         Exchange::IceCanada,

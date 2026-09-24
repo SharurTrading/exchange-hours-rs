@@ -29,7 +29,10 @@ pub fn session_bounds_with(
     instant: DateTime<Utc>,
     kind: SessionKind,
 ) -> Option<(DateTime<Utc>, DateTime<Utc>)> {
-    sessions::session_bounds_with(&QueryContext::fixed(hours), instant, kind)
+    // A detached fixed snapshot carries no identity, so no day can be refused:
+    // the error arm is unreachable by construction (LAW-COVERAGE governs
+    // identity-backed queries; this profile is exactly its supplied rules).
+    sessions::session_bounds_with(&QueryContext::fixed(hours), instant, kind).unwrap_or(None)
 }
 
 /// Returns [`session_bounds_with`] over regular and extended sessions.
@@ -53,7 +56,8 @@ pub fn next_session_after_with(
     instant: DateTime<Utc>,
     kind: SessionKind,
 ) -> Option<(DateTime<Utc>, DateTime<Utc>)> {
-    sessions::next_session_after_with(&QueryContext::fixed(hours), instant, kind)
+    // See `session_bounds_with`: a fixed snapshot has no coverage verdict.
+    sessions::next_session_after_with(&QueryContext::fixed(hours), instant, kind).unwrap_or(None)
 }
 
 /// Returns [`next_session_after_with`] over regular and extended sessions.

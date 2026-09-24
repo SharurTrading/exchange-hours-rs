@@ -12,11 +12,12 @@ use chrono::{DateTime, NaiveDate, Utc};
 use chrono_tz::Tz;
 
 use super::exceptions::{DateException, ExceptionScopeError, SessionExceptionSource};
+use super::exchange_calendar::SessionWindow;
 use super::query::{QueryContext, sessions, status};
 use super::schedules::holidays::{Holiday, HolidayCoverage};
 use super::{
-    CalendarSource, Exchange, ExchangeCalendar, MarketHours, MarketHoursKey, SessionKind,
-    SessionState,
+    CalendarQueryError, CalendarSource, Exchange, ExchangeCalendar, MarketHours, MarketHoursKey,
+    SessionKind, SessionState,
 };
 
 /// Day-level schedule overrides supplied by a caller.
@@ -254,26 +255,78 @@ impl<'a> PolicyCalendar<'a> {
     }
 
     /// Returns whether any effective regular or extended session is open.
-    #[must_use]
-    pub fn is_open(self, instant: DateTime<Utc>) -> bool {
+    ///
+    /// # Errors
+    ///
+    /// Returns [`CalendarQueryError::BeforeSupportFloor`] when the venue-local
+    /// day this query is addressed to precedes
+    /// [`SUPPORT_FLOOR`](crate::SUPPORT_FLOOR),
+    /// [`CalendarQueryError::OutsideCoveredRange`] when the identity has no
+    /// sourced answer for a day the query depends on,
+    /// [`CalendarQueryError::UnresolvedGap`] when that day is one the identity
+    /// withholds as `Unsourced`, and
+    /// [`CalendarQueryError::SearchExhausted`] when a bounded forward search
+    /// runs out of window on a day it cannot establish. An error is never
+    /// reported as `false`, `None`, or a default schedule (LAW-COVERAGE).
+    pub fn is_open(self, instant: DateTime<Utc>) -> Result<bool, CalendarQueryError> {
         self.is_open_with(instant, SessionKind::Both)
     }
 
     /// Returns whether the effective selected session kind is open.
-    #[must_use]
-    pub fn is_open_with(self, instant: DateTime<Utc>, kind: SessionKind) -> bool {
+    ///
+    /// # Errors
+    ///
+    /// Returns [`CalendarQueryError::BeforeSupportFloor`] when the venue-local
+    /// day this query is addressed to precedes
+    /// [`SUPPORT_FLOOR`](crate::SUPPORT_FLOOR),
+    /// [`CalendarQueryError::OutsideCoveredRange`] when the identity has no
+    /// sourced answer for a day the query depends on,
+    /// [`CalendarQueryError::UnresolvedGap`] when that day is one the identity
+    /// withholds as `Unsourced`, and
+    /// [`CalendarQueryError::SearchExhausted`] when a bounded forward search
+    /// runs out of window on a day it cannot establish. An error is never
+    /// reported as `false`, `None`, or a default schedule (LAW-COVERAGE).
+    pub fn is_open_with(
+        self,
+        instant: DateTime<Utc>,
+        kind: SessionKind,
+    ) -> Result<bool, CalendarQueryError> {
         status::is_open_with(&self.context(), instant, kind)
     }
 
     /// Returns whether an effective regular session is open.
-    #[must_use]
-    pub fn is_open_regular(self, instant: DateTime<Utc>) -> bool {
+    ///
+    /// # Errors
+    ///
+    /// Returns [`CalendarQueryError::BeforeSupportFloor`] when the venue-local
+    /// day this query is addressed to precedes
+    /// [`SUPPORT_FLOOR`](crate::SUPPORT_FLOOR),
+    /// [`CalendarQueryError::OutsideCoveredRange`] when the identity has no
+    /// sourced answer for a day the query depends on,
+    /// [`CalendarQueryError::UnresolvedGap`] when that day is one the identity
+    /// withholds as `Unsourced`, and
+    /// [`CalendarQueryError::SearchExhausted`] when a bounded forward search
+    /// runs out of window on a day it cannot establish. An error is never
+    /// reported as `false`, `None`, or a default schedule (LAW-COVERAGE).
+    pub fn is_open_regular(self, instant: DateTime<Utc>) -> Result<bool, CalendarQueryError> {
         self.is_open_with(instant, SessionKind::Regular)
     }
 
     /// Returns whether an effective extended session is open.
-    #[must_use]
-    pub fn is_open_extended(self, instant: DateTime<Utc>) -> bool {
+    ///
+    /// # Errors
+    ///
+    /// Returns [`CalendarQueryError::BeforeSupportFloor`] when the venue-local
+    /// day this query is addressed to precedes
+    /// [`SUPPORT_FLOOR`](crate::SUPPORT_FLOOR),
+    /// [`CalendarQueryError::OutsideCoveredRange`] when the identity has no
+    /// sourced answer for a day the query depends on,
+    /// [`CalendarQueryError::UnresolvedGap`] when that day is one the identity
+    /// withholds as `Unsourced`, and
+    /// [`CalendarQueryError::SearchExhausted`] when a bounded forward search
+    /// runs out of window on a day it cannot establish. An error is never
+    /// reported as `false`, `None`, or a default schedule (LAW-COVERAGE).
+    pub fn is_open_extended(self, instant: DateTime<Utc>) -> Result<bool, CalendarQueryError> {
         self.is_open_with(instant, SessionKind::Extended)
     }
 
@@ -283,63 +336,165 @@ impl<'a> PolicyCalendar<'a> {
     /// tradeable session. A closed trade date removes the queue that feeds it;
     /// a replaced trade date serves only the order-entry blocks the caller
     /// supplied for it.
-    #[must_use]
-    pub fn is_accepting_orders(self, instant: DateTime<Utc>) -> bool {
+    ///
+    /// # Errors
+    ///
+    /// Returns [`CalendarQueryError::BeforeSupportFloor`] when the venue-local
+    /// day this query is addressed to precedes
+    /// [`SUPPORT_FLOOR`](crate::SUPPORT_FLOOR),
+    /// [`CalendarQueryError::OutsideCoveredRange`] when the identity has no
+    /// sourced answer for a day the query depends on,
+    /// [`CalendarQueryError::UnresolvedGap`] when that day is one the identity
+    /// withholds as `Unsourced`, and
+    /// [`CalendarQueryError::SearchExhausted`] when a bounded forward search
+    /// runs out of window on a day it cannot establish. An error is never
+    /// reported as `false`, `None`, or a default schedule (LAW-COVERAGE).
+    pub fn is_accepting_orders(self, instant: DateTime<Utc>) -> Result<bool, CalendarQueryError> {
         status::is_accepting_orders(&self.context(), instant)
     }
 
     /// Returns whether `instant` falls in an effective order-entry-only phase.
     ///
     /// Mutually exclusive with [`Self::is_open`].
-    #[must_use]
-    pub fn is_order_entry_only(self, instant: DateTime<Utc>) -> bool {
+    ///
+    /// # Errors
+    ///
+    /// Returns [`CalendarQueryError::BeforeSupportFloor`] when the venue-local
+    /// day this query is addressed to precedes
+    /// [`SUPPORT_FLOOR`](crate::SUPPORT_FLOOR),
+    /// [`CalendarQueryError::OutsideCoveredRange`] when the identity has no
+    /// sourced answer for a day the query depends on,
+    /// [`CalendarQueryError::UnresolvedGap`] when that day is one the identity
+    /// withholds as `Unsourced`, and
+    /// [`CalendarQueryError::SearchExhausted`] when a bounded forward search
+    /// runs out of window on a day it cannot establish. An error is never
+    /// reported as `false`, `None`, or a default schedule (LAW-COVERAGE).
+    pub fn is_order_entry_only(self, instant: DateTime<Utc>) -> Result<bool, CalendarQueryError> {
         status::is_order_entry_only(&self.context(), instant)
     }
 
     /// Returns the containing or next effective session bounds.
-    #[must_use]
-    pub fn session_bounds(self, instant: DateTime<Utc>) -> Option<(DateTime<Utc>, DateTime<Utc>)> {
+    ///
+    /// # Errors
+    ///
+    /// Returns [`CalendarQueryError::BeforeSupportFloor`] when the venue-local
+    /// day this query is addressed to precedes
+    /// [`SUPPORT_FLOOR`](crate::SUPPORT_FLOOR),
+    /// [`CalendarQueryError::OutsideCoveredRange`] when the identity has no
+    /// sourced answer for a day the query depends on,
+    /// [`CalendarQueryError::UnresolvedGap`] when that day is one the identity
+    /// withholds as `Unsourced`, and
+    /// [`CalendarQueryError::SearchExhausted`] when a bounded forward search
+    /// runs out of window on a day it cannot establish. An error is never
+    /// reported as `false`, `None`, or a default schedule (LAW-COVERAGE).
+    pub fn session_bounds(
+        self,
+        instant: DateTime<Utc>,
+    ) -> Result<Option<SessionWindow>, CalendarQueryError> {
         self.session_bounds_with(instant, SessionKind::Both)
     }
 
     /// Returns the containing or next effective bounds for `kind`.
-    #[must_use]
+    ///
+    /// # Errors
+    ///
+    /// Returns [`CalendarQueryError::BeforeSupportFloor`] when the venue-local
+    /// day this query is addressed to precedes
+    /// [`SUPPORT_FLOOR`](crate::SUPPORT_FLOOR),
+    /// [`CalendarQueryError::OutsideCoveredRange`] when the identity has no
+    /// sourced answer for a day the query depends on,
+    /// [`CalendarQueryError::UnresolvedGap`] when that day is one the identity
+    /// withholds as `Unsourced`, and
+    /// [`CalendarQueryError::SearchExhausted`] when a bounded forward search
+    /// runs out of window on a day it cannot establish. An error is never
+    /// reported as `false`, `None`, or a default schedule (LAW-COVERAGE).
     pub fn session_bounds_with(
         self,
         instant: DateTime<Utc>,
         kind: SessionKind,
-    ) -> Option<(DateTime<Utc>, DateTime<Utc>)> {
+    ) -> Result<Option<SessionWindow>, CalendarQueryError> {
         sessions::session_bounds_with(&self.context(), instant, kind)
     }
 
     /// Returns the first effective regular/extended session after `instant`.
-    #[must_use]
+    ///
+    /// # Errors
+    ///
+    /// Returns [`CalendarQueryError::BeforeSupportFloor`] when the venue-local
+    /// day this query is addressed to precedes
+    /// [`SUPPORT_FLOOR`](crate::SUPPORT_FLOOR),
+    /// [`CalendarQueryError::OutsideCoveredRange`] when the identity has no
+    /// sourced answer for a day the query depends on,
+    /// [`CalendarQueryError::UnresolvedGap`] when that day is one the identity
+    /// withholds as `Unsourced`, and
+    /// [`CalendarQueryError::SearchExhausted`] when a bounded forward search
+    /// runs out of window on a day it cannot establish. An error is never
+    /// reported as `false`, `None`, or a default schedule (LAW-COVERAGE).
     pub fn next_session_after(
         self,
         instant: DateTime<Utc>,
-    ) -> Option<(DateTime<Utc>, DateTime<Utc>)> {
+    ) -> Result<Option<SessionWindow>, CalendarQueryError> {
         self.next_session_after_with(instant, SessionKind::Both)
     }
 
     /// Returns the first effective session of `kind` after `instant`.
-    #[must_use]
+    ///
+    /// # Errors
+    ///
+    /// Returns [`CalendarQueryError::BeforeSupportFloor`] when the venue-local
+    /// day this query is addressed to precedes
+    /// [`SUPPORT_FLOOR`](crate::SUPPORT_FLOOR),
+    /// [`CalendarQueryError::OutsideCoveredRange`] when the identity has no
+    /// sourced answer for a day the query depends on,
+    /// [`CalendarQueryError::UnresolvedGap`] when that day is one the identity
+    /// withholds as `Unsourced`, and
+    /// [`CalendarQueryError::SearchExhausted`] when a bounded forward search
+    /// runs out of window on a day it cannot establish. An error is never
+    /// reported as `false`, `None`, or a default schedule (LAW-COVERAGE).
     pub fn next_session_after_with(
         self,
         instant: DateTime<Utc>,
         kind: SessionKind,
-    ) -> Option<(DateTime<Utc>, DateTime<Utc>)> {
+    ) -> Result<Option<SessionWindow>, CalendarQueryError> {
         sessions::next_session_after_with(&self.context(), instant, kind)
     }
 
     /// Returns only the next effective regular-or-extended session open.
-    #[must_use]
-    pub fn next_session_open_after(self, instant: DateTime<Utc>) -> Option<DateTime<Utc>> {
-        self.next_session_after(instant).map(|(open, _close)| open)
+    ///
+    /// # Errors
+    ///
+    /// Returns [`CalendarQueryError::BeforeSupportFloor`] when the venue-local
+    /// day this query is addressed to precedes
+    /// [`SUPPORT_FLOOR`](crate::SUPPORT_FLOOR),
+    /// [`CalendarQueryError::OutsideCoveredRange`] when the identity has no
+    /// sourced answer for a day the query depends on,
+    /// [`CalendarQueryError::UnresolvedGap`] when that day is one the identity
+    /// withholds as `Unsourced`, and
+    /// [`CalendarQueryError::SearchExhausted`] when a bounded forward search
+    /// runs out of window on a day it cannot establish. An error is never
+    /// reported as `false`, `None`, or a default schedule (LAW-COVERAGE).
+    pub fn next_session_open_after(
+        self,
+        instant: DateTime<Utc>,
+    ) -> Result<Option<DateTime<Utc>>, CalendarQueryError> {
+        Ok(self.next_session_after(instant)?.map(|(open, _close)| open))
     }
 
     /// Returns whether `instant` is in a documented short maintenance gap.
-    #[must_use]
-    pub fn is_maintenance(self, instant: DateTime<Utc>) -> bool {
+    ///
+    /// # Errors
+    ///
+    /// Returns [`CalendarQueryError::BeforeSupportFloor`] when the venue-local
+    /// day this query is addressed to precedes
+    /// [`SUPPORT_FLOOR`](crate::SUPPORT_FLOOR),
+    /// [`CalendarQueryError::OutsideCoveredRange`] when the identity has no
+    /// sourced answer for a day the query depends on,
+    /// [`CalendarQueryError::UnresolvedGap`] when that day is one the identity
+    /// withholds as `Unsourced`, and
+    /// [`CalendarQueryError::SearchExhausted`] when a bounded forward search
+    /// runs out of window on a day it cannot establish. An error is never
+    /// reported as `false`, `None`, or a default schedule (LAW-COVERAGE).
+    pub fn is_maintenance(self, instant: DateTime<Utc>) -> Result<bool, CalendarQueryError> {
         status::is_maintenance(&self.context(), instant)
     }
 
@@ -348,8 +503,20 @@ impl<'a> PolicyCalendar<'a> {
     /// Maintenance normally separates trade dates within the four-hour bound;
     /// a continuously traded-week profile can retain an operator-designated
     /// short maintenance gap inside one trade date.
-    #[must_use]
-    pub fn session_state(self, instant: DateTime<Utc>) -> SessionState {
+    ///
+    /// # Errors
+    ///
+    /// Returns [`CalendarQueryError::BeforeSupportFloor`] when the venue-local
+    /// day this query is addressed to precedes
+    /// [`SUPPORT_FLOOR`](crate::SUPPORT_FLOOR),
+    /// [`CalendarQueryError::OutsideCoveredRange`] when the identity has no
+    /// sourced answer for a day the query depends on,
+    /// [`CalendarQueryError::UnresolvedGap`] when that day is one the identity
+    /// withholds as `Unsourced`, and
+    /// [`CalendarQueryError::SearchExhausted`] when a bounded forward search
+    /// runs out of window on a day it cannot establish. An error is never
+    /// reported as `false`, `None`, or a default schedule (LAW-COVERAGE).
+    pub fn session_state(self, instant: DateTime<Utc>) -> Result<SessionState, CalendarQueryError> {
         status::session_state(&self.context(), instant)
     }
 
@@ -358,8 +525,23 @@ impl<'a> PolicyCalendar<'a> {
     /// An identified following-business-day schedule skips policy-closed dates;
     /// CME cryptocurrency weekend trading therefore returns Tuesday when its
     /// usual Monday trade date is closed.
-    #[must_use]
-    pub fn trade_date(self, instant: DateTime<Utc>) -> Option<NaiveDate> {
+    ///
+    /// # Errors
+    ///
+    /// Returns [`CalendarQueryError::BeforeSupportFloor`] when the venue-local
+    /// day this query is addressed to precedes
+    /// [`SUPPORT_FLOOR`](crate::SUPPORT_FLOOR),
+    /// [`CalendarQueryError::OutsideCoveredRange`] when the identity has no
+    /// sourced answer for a day the query depends on,
+    /// [`CalendarQueryError::UnresolvedGap`] when that day is one the identity
+    /// withholds as `Unsourced`, and
+    /// [`CalendarQueryError::SearchExhausted`] when a bounded forward search
+    /// runs out of window on a day it cannot establish. An error is never
+    /// reported as `false`, `None`, or a default schedule (LAW-COVERAGE).
+    pub fn trade_date(
+        self,
+        instant: DateTime<Utc>,
+    ) -> Result<Option<NaiveDate>, CalendarQueryError> {
         status::trade_date(&self.context(), instant)
     }
 
@@ -368,19 +550,47 @@ impl<'a> PolicyCalendar<'a> {
     /// Profiles without a trade-date concept return `true` because no session
     /// can be assigned to the requested trade date. Use the civil-day queries
     /// when asking whether trading intersects a calendar date instead.
-    #[must_use]
-    pub fn is_closed_trade_date(self, day: NaiveDate, kind: SessionKind) -> bool {
+    ///
+    /// # Errors
+    ///
+    /// Returns [`CalendarQueryError::BeforeSupportFloor`] when the venue-local
+    /// day this query is addressed to precedes
+    /// [`SUPPORT_FLOOR`](crate::SUPPORT_FLOOR),
+    /// [`CalendarQueryError::OutsideCoveredRange`] when the identity has no
+    /// sourced answer for a day the query depends on,
+    /// [`CalendarQueryError::UnresolvedGap`] when that day is one the identity
+    /// withholds as `Unsourced`, and
+    /// [`CalendarQueryError::SearchExhausted`] when a bounded forward search
+    /// runs out of window on a day it cannot establish. An error is never
+    /// reported as `false`, `None`, or a default schedule (LAW-COVERAGE).
+    pub fn is_closed_trade_date(
+        self,
+        day: NaiveDate,
+        kind: SessionKind,
+    ) -> Result<bool, CalendarQueryError> {
         status::is_closed_trade_date(&self.context(), day, kind)
     }
 
     /// Returns whether no effective session intersects `day` in `calendar_tz`.
-    #[must_use]
+    ///
+    /// # Errors
+    ///
+    /// Returns [`CalendarQueryError::BeforeSupportFloor`] when the venue-local
+    /// day this query is addressed to precedes
+    /// [`SUPPORT_FLOOR`](crate::SUPPORT_FLOOR),
+    /// [`CalendarQueryError::OutsideCoveredRange`] when the identity has no
+    /// sourced answer for a day the query depends on,
+    /// [`CalendarQueryError::UnresolvedGap`] when that day is one the identity
+    /// withholds as `Unsourced`, and
+    /// [`CalendarQueryError::SearchExhausted`] when a bounded forward search
+    /// runs out of window on a day it cannot establish. An error is never
+    /// reported as `false`, `None`, or a default schedule (LAW-COVERAGE).
     pub fn is_closed_all_day_in_calendar(
         self,
         day: NaiveDate,
         calendar_tz: Tz,
         kind: SessionKind,
-    ) -> bool {
+    ) -> Result<bool, CalendarQueryError> {
         status::is_closed_all_day_in_calendar(&self.context(), day, calendar_tz, kind)
     }
 
@@ -389,19 +599,47 @@ impl<'a> PolicyCalendar<'a> {
     /// This remains a calendar-date overlap query. Closing Monday's trade date
     /// does not make Monday wholly closed when Tuesday's session opens Monday
     /// evening; use [`Self::is_closed_trade_date`] for that question.
-    #[must_use]
-    pub fn is_closed_all_day_on(self, day: NaiveDate, kind: SessionKind) -> bool {
+    ///
+    /// # Errors
+    ///
+    /// Returns [`CalendarQueryError::BeforeSupportFloor`] when the venue-local
+    /// day this query is addressed to precedes
+    /// [`SUPPORT_FLOOR`](crate::SUPPORT_FLOOR),
+    /// [`CalendarQueryError::OutsideCoveredRange`] when the identity has no
+    /// sourced answer for a day the query depends on,
+    /// [`CalendarQueryError::UnresolvedGap`] when that day is one the identity
+    /// withholds as `Unsourced`, and
+    /// [`CalendarQueryError::SearchExhausted`] when a bounded forward search
+    /// runs out of window on a day it cannot establish. An error is never
+    /// reported as `false`, `None`, or a default schedule (LAW-COVERAGE).
+    pub fn is_closed_all_day_on(
+        self,
+        day: NaiveDate,
+        kind: SessionKind,
+    ) -> Result<bool, CalendarQueryError> {
         self.is_closed_all_day_in_calendar(day, self.tz(), kind)
     }
 
     /// Returns whether no effective session intersects the selected calendar day.
-    #[must_use]
+    ///
+    /// # Errors
+    ///
+    /// Returns [`CalendarQueryError::BeforeSupportFloor`] when the venue-local
+    /// day this query is addressed to precedes
+    /// [`SUPPORT_FLOOR`](crate::SUPPORT_FLOOR),
+    /// [`CalendarQueryError::OutsideCoveredRange`] when the identity has no
+    /// sourced answer for a day the query depends on,
+    /// [`CalendarQueryError::UnresolvedGap`] when that day is one the identity
+    /// withholds as `Unsourced`, and
+    /// [`CalendarQueryError::SearchExhausted`] when a bounded forward search
+    /// runs out of window on a day it cannot establish. An error is never
+    /// reported as `false`, `None`, or a default schedule (LAW-COVERAGE).
     pub fn is_closed_all_day_at(
         self,
         instant: DateTime<Utc>,
         calendar_tz: Tz,
         kind: SessionKind,
-    ) -> bool {
+    ) -> Result<bool, CalendarQueryError> {
         status::is_closed_all_day_at(&self.context(), instant, calendar_tz, kind)
     }
 }

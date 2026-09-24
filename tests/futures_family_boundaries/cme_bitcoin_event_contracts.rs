@@ -13,8 +13,8 @@
 use chrono::{DateTime, NaiveDate, TimeZone as _, Utc};
 use chrono_tz::US;
 use exchange_hours::{
-    MarketHoursKey, SessionKind, SessionState, calendar_for_market_hours_key,
-    hours_for_market_hours_key, session_profile,
+    CalendarQueryError, MarketHoursKey, SessionKind, SessionState, calendar_for_market_hours_key,
+    hours_for_market_hours_key, session_bounds_with, session_profile,
 };
 
 const BTC_EVENTS: MarketHoursKey = MarketHoursKey::GlobexEventContractsBtc;
@@ -38,8 +38,46 @@ fn open_at(key: MarketHoursKey, instant: DateTime<Utc>) -> bool {
     hours_for_market_hours_key(key, instant).is_open(instant)
 }
 
+/// The state the **fixed snapshot** reports, which is the surface these grid
+/// assertions are about.
+///
+/// `GlobexEventContractsBtc` is dormant (LAW-SERVICE-TIERS): CME publishes no
+/// holiday table in the crate for it, so its date-aware coverage is empty above
+/// the 2025 floor and the calendar-backed surface refuses every date rather
+/// than answering. The published grid is still a sourced fact and
+/// `hours_for_market_hours_key` states it, so the boundary and classification
+/// assertions below keep their force through that surface; `assert_refused` is
+/// how the calendar-backed surface is asserted to refuse the same dates.
 fn state_at(instant: DateTime<Utc>) -> SessionState {
-    calendar_for_market_hours_key(BTC_EVENTS).session_state(instant)
+    hours_for_market_hours_key(BTC_EVENTS, instant).session_state(instant)
+}
+
+/// Returns the venue-local date of the close of the extended session enclosing
+/// `instant`, which is the trade date the close-date convention names.
+fn close_trade_date(hours: &exchange_hours::MarketHours, instant: DateTime<Utc>) -> NaiveDate {
+    session_bounds_with(hours, instant, SessionKind::Extended)
+        .expect("the fixed snapshot states the enclosing session")
+        .1
+        .with_timezone(&US::Central)
+        .date_naive()
+}
+
+/// Asserts the answer a **dormant** identity's date-aware surface gives.
+///
+/// No date is sourced for this key: one at or after the permanent 2025 floor
+/// has no covered range, and one before it precedes the floor. Either way the
+/// calendar-backed surface refuses instead of naming a schedule
+/// (LAW-COVERAGE), which is the fact these tests now state in place of the
+/// schedule they used to read back out of it.
+fn assert_refused<T: core::fmt::Debug + Copy>(answer: Result<T, CalendarQueryError>, label: &str) {
+    assert!(
+        matches!(
+            answer,
+            Err(CalendarQueryError::BeforeSupportFloor { .. }
+                | CalendarQueryError::OutsideCoveredRange { .. })
+        ),
+        "{label}: a dormant identity must refuse, got {answer:?}"
+    );
 }
 
 /// The root did not exist before SER-9092's listing day and rode the
@@ -62,9 +100,18 @@ fn the_shared_era_is_the_event_contract_grid_by_reference() {
     let mut instant = ct((2024, 6, 9), (0, 0, 0));
     let end = ct((2024, 6, 16), (0, 0, 0));
     while instant < end {
-        assert_eq!(
-            own.session_state(instant),
+        // 2024 precedes the permanent floor, so neither date-aware surface
+        // answers: both refuse rather than stating the shared era. The grid
+        // comparison the probe makes is therefore read from the two fixed
+        // snapshots, which are the surface that still states it.
+        assert_refused(own.session_state(instant), &format!("{instant} btc"));
+        assert_refused(
             shared.session_state(instant),
+            &format!("{instant} event contracts"),
+        );
+        assert_eq!(
+            hours_for_market_hours_key(BTC_EVENTS, instant).session_state(instant),
+            hours_for_market_hours_key(EVENT_CONTRACTS, instant).session_state(instant),
             "{instant}: the shared era must be the event-contract grid exactly"
         );
         instant += chrono::Duration::minutes(30);
@@ -157,32 +204,57 @@ fn the_weekday_close_is_the_intersection_and_the_disputed_hour_is_withheld() {
 #[test]
 fn the_weekend_block_is_joined_and_carries_mondays_trade_date() {
     let calendar = calendar_for_market_hours_key(BTC_EVENTS);
+    let hours = hours_for_market_hours_key(BTC_EVENTS, ct((2026, 6, 8), (10, 0, 0)));
     let monday = day((2026, 6, 8));
-    let first_block = (ct((2026, 6, 5), (16, 2, 0)), ct((2026, 6, 6), (2, 0, 0)));
-    let second_block = (ct((2026, 6, 6), (4, 0, 0)), ct((2026, 6, 8), (15, 0, 0)));
 
-    for instant in [ct((2026, 6, 5), (17, 0, 0)), ct((2026, 6, 6), (1, 0, 0))] {
-        assert_eq!(
-            calendar.session_bounds_with(instant, SessionKind::Extended),
-            Some(first_block)
-        );
-        assert_eq!(calendar.trade_date(instant), Some(monday));
-    }
+    // The key is dormant, so the date-aware surface refuses the whole query set
+    // this probe used to read: the joined block's bounds, the trade date it
+    // carries and the forward scan. What the fixed snapshot still states is
+    // that every one of these instants is executable, and — through the
+    // close-date convention — that the piece the weekend ends in closes on the
+    // Monday the block carries.
     for instant in [
+        ct((2026, 6, 5), (17, 0, 0)),
+        ct((2026, 6, 6), (1, 0, 0)),
         ct((2026, 6, 6), (5, 0, 0)),
         ct((2026, 6, 7), (12, 0, 0)),
         ct((2026, 6, 8), (10, 0, 0)),
     ] {
-        assert_eq!(
+        let snapshot = hours_for_market_hours_key(BTC_EVENTS, instant);
+        assert_refused(
             calendar.session_bounds_with(instant, SessionKind::Extended),
-            Some(second_block)
+            &format!("{instant} joined bounds"),
         );
-        assert_eq!(calendar.trade_date(instant), Some(monday));
+        assert_refused(
+            calendar.trade_date(instant),
+            &format!("{instant} trade date"),
+        );
+        assert!(
+            snapshot.is_open(instant),
+            "{instant}: inside the weekend block"
+        );
     }
-    assert_eq!(calendar.trade_date(ct((2026, 6, 6), (3, 0, 0))), None);
+    // The 02:00-04:00 CT window between Friday's leg and Saturday's reopen is
+    // the operator's maintenance period, not a closure. It has no trade date,
+    // and the date-aware surface refuses to name one.
     assert_eq!(
+        state_at(ct((2026, 6, 6), (3, 0, 0))),
+        SessionState::Maintenance
+    );
+    assert_refused(
+        calendar.trade_date(ct((2026, 6, 6), (3, 0, 0))),
+        "the maintenance window's trade date",
+    );
+    assert_refused(
         calendar.next_session_after(ct((2026, 6, 6), (5, 0, 0))),
-        Some((ct((2026, 6, 8), (16, 2, 0)), ct((2026, 6, 9), (15, 0, 0))))
+        "the weekend forward scan",
+    );
+    // The block's final piece closes Monday 15:00 CT, which is the trade date
+    // the close-date convention names.
+    assert_eq!(
+        close_trade_date(&hours, ct((2026, 6, 8), (10, 0, 0))),
+        monday,
+        "the piece the weekend ends in closes on Monday's trade date"
     );
 }
 
@@ -205,36 +277,69 @@ fn the_joined_weekend_block_survives_both_dst_transitions() {
             "{saturday:?}: block length"
         );
         let sunday_noon = open + chrono::Duration::hours(32);
+        let snapshot = hours_for_market_hours_key(BTC_EVENTS, open);
+        // The joined bounds and the trade date are date-aware conventions this
+        // dormant key no longer states, so each probe asserts that refusal.
+        // What the fixed snapshot still states is that the block is executable
+        // at the same instants, which is the DST claim: neither the fall-back's
+        // extra hour nor the spring-forward's missing one drops it.
         for instant in [open, sunday_noon, close - chrono::Duration::seconds(1)] {
-            assert_eq!(
+            assert_refused(
                 calendar.session_bounds_with(instant, SessionKind::Extended),
-                Some((open, close)),
-                "{saturday:?}: the weekend block is one joined session across the clock change"
+                &format!("{saturday:?} joined bounds"),
             );
-            assert_eq!(calendar.trade_date(instant), Some(day(monday)));
-            assert!(calendar.is_open(instant));
+            assert_refused(
+                calendar.trade_date(instant),
+                &format!("{saturday:?} trade date"),
+            );
+            assert!(
+                snapshot.is_open(instant),
+                "{saturday:?}: the weekend block is executable across the clock change"
+            );
         }
+        // The block's final piece closes on the Monday it carries.
+        assert_eq!(
+            close_trade_date(&snapshot, close - chrono::Duration::seconds(1)),
+            day(monday)
+        );
+        assert_refused(calendar.is_open(close), &format!("{monday:?} close"));
         assert!(
-            !calendar.is_open(close),
+            !snapshot.is_open(close),
             "{monday:?}: 15:00 CT closes end-exclusive"
         );
-        assert_eq!(
+        assert_refused(
             calendar.session_state(ct(monday, (15, 30, 0))),
+            &format!("{monday:?} maintenance"),
+        );
+        assert_eq!(
+            hours_for_market_hours_key(BTC_EVENTS, ct(monday, (15, 30, 0)))
+                .session_state(ct(monday, (15, 30, 0))),
             SessionState::Maintenance
         );
-        assert!(
+        assert_refused(
             calendar.is_open(ct(monday, (16, 2, 0))),
+            &format!("{monday:?} reopen"),
+        );
+        assert!(
+            hours_for_market_hours_key(BTC_EVENTS, ct(monday, (16, 2, 0)))
+                .is_open(ct(monday, (16, 2, 0))),
             "{monday:?}: 16:02 CT reopens"
         );
-        // The Friday evening block ahead of it also lands on the right side.
+        // The Friday evening block ahead of it is executable on the right side
+        // of the clock change too.
         let friday = (saturday.0, saturday.1, saturday.2 - 1);
-        assert_eq!(
-            calendar.session_bounds_with(ct(friday, (20, 0, 0)), SessionKind::Extended),
-            Some((ct(friday, (16, 2, 0)), ct(saturday, (2, 0, 0))))
+        let friday_evening = ct(friday, (20, 0, 0));
+        assert_refused(
+            calendar.session_bounds_with(friday_evening, SessionKind::Extended),
+            &format!("{friday:?} Friday-evening bounds"),
         );
-        assert_eq!(
-            calendar.trade_date(ct(friday, (20, 0, 0))),
-            Some(day(monday))
+        assert_refused(
+            calendar.trade_date(friday_evening),
+            &format!("{friday:?} Friday-evening trade date"),
+        );
+        assert!(
+            hours_for_market_hours_key(BTC_EVENTS, friday_evening).is_open(friday_evening),
+            "{friday:?}: Friday evening is executable"
         );
     }
 }
@@ -295,8 +400,15 @@ fn neither_the_event_contract_nor_the_cryptocurrency_key_can_stand_in() {
 
     let sunday_queue = ct((2024, 6, 9), (16, 30, 0));
     assert_eq!(state_at(sunday_queue), SessionState::OrderEntry);
-    assert_ne!(
+    // 2024 precedes the floor, so the cryptocurrency calendar refuses the
+    // instant rather than answering; the comparison the claim needs is stated
+    // by the same key's fixed snapshot.
+    assert_refused(
         calendar_for_market_hours_key(CRYPTOCURRENCY).session_state(sunday_queue),
+        "the cryptocurrency five-day probe",
+    );
+    assert_ne!(
+        hours_for_market_hours_key(CRYPTOCURRENCY, sunday_queue).session_state(sunday_queue),
         SessionState::OrderEntry,
         "the cryptocurrency key has no sourced five-day Pre-Open"
     );

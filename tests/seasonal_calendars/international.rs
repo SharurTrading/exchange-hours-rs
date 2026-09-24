@@ -11,7 +11,9 @@ fn eurex_calendar_scans_reselect_the_fixed_utc_asian_start() {
 
     let spring_close = local(berlin, (2026, 3, 27), (22, 0, 0));
     assert_eq!(
-        calendar.next_session_after(spring_close),
+        calendar
+            .next_session_after(spring_close)
+            .expect("the coverage contract must answer a covered date"),
         // Eurex pre-trading 02:00-02:10 CEST is order entry, so the session
         // itself now begins at the 02:10 opening auction.
         Some((
@@ -19,17 +21,27 @@ fn eurex_calendar_scans_reselect_the_fixed_utc_asian_start() {
             local(berlin, (2026, 3, 30), (2, 15, 0)),
         ))
     );
-    assert!(calendar.is_open_regular(local(berlin, (2026, 3, 30), (2, 15, 0))));
+    assert!(
+        calendar
+            .is_open_regular(local(berlin, (2026, 3, 30), (2, 15, 0)))
+            .expect("the coverage contract must answer a covered date")
+    );
 
     let autumn_close = local(berlin, (2026, 10, 23), (22, 0, 0));
     assert_eq!(
-        calendar.next_session_after(autumn_close),
+        calendar
+            .next_session_after(autumn_close)
+            .expect("the coverage contract must answer a covered date"),
         Some((
             local(berlin, (2026, 10, 26), (1, 10, 0)),
             local(berlin, (2026, 10, 26), (1, 15, 0)),
         ))
     );
-    assert!(calendar.is_open_regular(local(berlin, (2026, 10, 26), (1, 15, 0))));
+    assert!(
+        calendar
+            .is_open_regular(local(berlin, (2026, 10, 26), (1, 15, 0)))
+            .expect("the coverage contract must answer a covered date")
+    );
 }
 
 #[test]
@@ -61,13 +73,23 @@ fn endex_calendar_scans_reselect_both_mismatch_entries_and_exits() {
 
     for (prior_close, expected_open, expected_close) in cases {
         assert_eq!(
-            calendar.next_session_after(prior_close),
+            calendar
+                .next_session_after(prior_close)
+                .expect("the coverage contract must answer a covered date"),
             Some((expected_open, expected_close))
         );
         // The 10 minutes before the open are the pre-open queue: order entry,
         // not a tradeable session.
-        assert!(calendar.is_order_entry_only(expected_open - Duration::nanoseconds(1)));
-        assert!(calendar.is_open(expected_open));
+        assert!(
+            calendar
+                .is_order_entry_only(expected_open - Duration::nanoseconds(1))
+                .expect("the coverage contract must answer a covered date")
+        );
+        assert!(
+            calendar
+                .is_open(expected_open)
+                .expect("the coverage contract must answer a covered date")
+        );
     }
 }
 
@@ -78,7 +100,9 @@ fn murban_calendar_scans_reselect_new_york_dst_in_dubai() {
 
     let spring_close = local(dubai, (2026, 3, 7), (3, 0, 0));
     assert_eq!(
-        calendar.next_session_after(spring_close),
+        calendar
+            .next_session_after(spring_close)
+            .expect("the coverage contract must answer a covered date"),
         Some((
             local(dubai, (2026, 3, 9), (2, 0, 0)),
             local(dubai, (2026, 3, 10), (2, 0, 0)),
@@ -87,7 +111,9 @@ fn murban_calendar_scans_reselect_new_york_dst_in_dubai() {
 
     let autumn_close = local(dubai, (2026, 10, 31), (2, 0, 0));
     assert_eq!(
-        calendar.next_session_after(autumn_close),
+        calendar
+            .next_session_after(autumn_close)
+            .expect("the coverage contract must answer a covered date"),
         Some((
             local(dubai, (2026, 11, 2), (3, 0, 0)),
             local(dubai, (2026, 11, 3), (3, 0, 0)),

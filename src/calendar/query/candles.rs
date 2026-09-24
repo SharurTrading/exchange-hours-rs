@@ -10,6 +10,7 @@ use super::periods::{
 };
 use super::schedule::QueryContext;
 use super::sessions::{next_session_after_with, session_bounds_with};
+use crate::calendar::CalendarQueryError;
 use crate::calendar::resolution::CalendarResolution;
 use crate::calendar::rule::SessionKind;
 
@@ -22,23 +23,23 @@ pub(in crate::calendar) fn candle_end_with(
     instant: DateTime<Utc>,
     resolution: CalendarResolution,
     kind: SessionKind,
-) -> Option<DateTime<Utc>> {
+) -> Result<Option<DateTime<Utc>>, CalendarQueryError> {
     if is_zero_interval(resolution) {
-        return None;
+        return Ok(None);
     }
     if matches!(
         resolution,
         CalendarResolution::Daily | CalendarResolution::Monthly
     ) && !context.has_daily_close_at(instant)
     {
-        return None;
+        return Ok(None);
     }
     if resolution == CalendarResolution::Weekly && !context.has_weekly_close_at(instant) {
-        return None;
+        return Ok(None);
     }
     match resolution {
         CalendarResolution::Seconds(seconds) => {
-            instant.checked_add_signed(Duration::seconds(i64::from(seconds)))
+            Ok(instant.checked_add_signed(Duration::seconds(i64::from(seconds))))
         }
         CalendarResolution::Minutes(minutes) => fixed_grid_end(
             context,
@@ -60,18 +61,18 @@ pub(in crate::calendar) fn candle_start_with(
     instant: DateTime<Utc>,
     resolution: CalendarResolution,
     kind: SessionKind,
-) -> Option<DateTime<Utc>> {
+) -> Result<Option<DateTime<Utc>>, CalendarQueryError> {
     if is_zero_interval(resolution) {
-        return None;
+        return Ok(None);
     }
     match resolution {
-        CalendarResolution::Seconds(seconds) => instant
+        CalendarResolution::Seconds(seconds) => Ok(instant
             .checked_add_signed(Duration::seconds(i64::from(seconds)))
-            .map(|_| instant),
-        CalendarResolution::Minutes(_) | CalendarResolution::Hours(_) => {
-            let (open, _close) = session_bounds_with(context, instant, kind)?;
-            Some(instant.max(open))
-        }
+            .map(|_| instant)),
+        CalendarResolution::Minutes(_) | CalendarResolution::Hours(_) => Ok(session_bounds_with(
+            context, instant, kind,
+        )?
+        .map(|(open, _close)| instant.max(open))),
         CalendarResolution::Daily | CalendarResolution::Weekly | CalendarResolution::Monthly => {
             period_start(context, instant, resolution, kind)
         }
@@ -92,14 +93,16 @@ fn fixed_grid_end(
     instant: DateTime<Utc>,
     step: Duration,
     kind: SessionKind,
-) -> Option<DateTime<Utc>> {
-    let (open, close) = session_bounds_with(context, instant, kind)?;
-    Some(
+) -> Result<Option<DateTime<Utc>>, CalendarQueryError> {
+    let Some((open, close)) = session_bounds_with(context, instant, kind)? else {
+        return Ok(None);
+    };
+    Ok(Some(
         instant
             .max(open)
             .checked_add_signed(step)
             .map_or(close, |end| end.min(close)),
-    )
+    ))
 }
 
 fn period_start(
@@ -107,9 +110,13 @@ fn period_start(
     instant: DateTime<Utc>,
     resolution: CalendarResolution,
     kind: SessionKind,
-) -> Option<DateTime<Utc>> {
-    let end = candle_end_with(context, instant, resolution, kind)?;
-    let end_day = trade_date_for_daily_close(context, end, kind)?;
+) -> Result<Option<DateTime<Utc>>, CalendarQueryError> {
+    let Some(end) = candle_end_with(context, instant, resolution, kind)? else {
+        return Ok(None);
+    };
+    let Some(end_day) = trade_date_for_daily_close(context, end, kind)? else {
+        return Ok(None);
+    };
     let end_week = end_day.iso_week();
     let end_month = (end_day.year(), end_day.month());
     let mut first_close = end;
@@ -130,7 +137,7 @@ fn period_start(
             if !same_period {
                 break;
             }
-            if let Some(close) = daily_close_for_trade_date(context, day, kind) {
+            if let Some(close) = daily_close_for_trade_date(context, day, kind)? {
                 first_close = close;
                 first_trade_date = day;
             }
@@ -146,7 +153,7 @@ fn period_start(
     };
     let mut previous_close = None;
     for _ in 0..PREVIOUS_CLOSE_LOOKBACK_DAYS {
-        if let Some(close) = daily_close_for_trade_date(context, day, kind)
+        if let Some(close) = daily_close_for_trade_date(context, day, kind)?
             && close < first_close
         {
             previous_close = Some(close);
@@ -160,29 +167,37 @@ fn period_start(
     let Some(previous_close) = previous_close else {
         return first_open_without_previous_close(context, first_close, kind);
     };
-    let probe = previous_close.checked_sub_signed(Duration::nanoseconds(1))?;
-    let (open, _close) = next_session_after_with(context, probe, kind)?;
-    (open < first_close).then_some(open)
+    let Some(probe) = previous_close.checked_sub_signed(Duration::nanoseconds(1)) else {
+        return Ok(None);
+    };
+    let Some((open, _close)) = next_session_after_with(context, probe, kind)? else {
+        return Ok(None);
+    };
+    Ok((open < first_close).then_some(open))
 }
 
 fn first_open_without_previous_close(
     context: &QueryContext<'_>,
     first_close: DateTime<Utc>,
     kind: SessionKind,
-) -> Option<DateTime<Utc>> {
+) -> Result<Option<DateTime<Utc>>, CalendarQueryError> {
     let Some(probe) = first_close.checked_sub_signed(Duration::days(FIRST_OPEN_LOOKBACK_DAYS))
     else {
         return first_representable_period_open(context, first_close, kind);
     };
-    let (open, _close) = next_session_after_with(context, probe, kind)?;
-    (open < first_close).then_some(open)
+    let Some((open, _close)) = next_session_after_with(context, probe, kind)? else {
+        return Ok(None);
+    };
+    Ok((open < first_close).then_some(open))
 }
 
 fn first_representable_period_open(
     context: &QueryContext<'_>,
     first_close: DateTime<Utc>,
     kind: SessionKind,
-) -> Option<DateTime<Utc>> {
-    let (open, _close) = session_bounds_with(context, DateTime::<Utc>::MIN_UTC, kind)?;
-    (open < first_close).then_some(open)
+) -> Result<Option<DateTime<Utc>>, CalendarQueryError> {
+    let Some((open, _close)) = session_bounds_with(context, DateTime::<Utc>::MIN_UTC, kind)? else {
+        return Ok(None);
+    };
+    Ok((open < first_close).then_some(open))
 }

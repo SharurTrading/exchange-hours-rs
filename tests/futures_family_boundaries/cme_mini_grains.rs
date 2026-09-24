@@ -13,8 +13,9 @@
 use chrono::{DateTime, NaiveDate, TimeZone as _, Utc};
 use chrono_tz::US;
 use exchange_hours::{
-    CalendarResolution, MarketHoursKey, SessionState, calendar_for_market_hours_key,
-    hours_for_market_hours_key, session_profile,
+    CalendarQueryError, CalendarResolution, MarketHoursKey, SessionState,
+    calendar_for_market_hours_key, candle_end, hours_for_market_hours_key, next_session_open_after,
+    session_profile,
 };
 
 const MINI: MarketHoursKey = MarketHoursKey::GlobexMiniGrains;
@@ -37,8 +38,47 @@ fn hours_at(date: (i32, u32, u32)) -> exchange_hours::MarketHours {
     hours_for_market_hours_key(MINI, ct(date, (0, 0, 0)))
 }
 
+/// The state the **fixed snapshot** reports, which is the surface these grid
+/// assertions are about.
+///
+/// `GlobexMiniGrains` is dormant (LAW-SERVICE-TIERS): CME publishes no holiday
+/// table for the mini-sized family, so its date-aware coverage is empty above
+/// the 2025 floor and the calendar-backed surface refuses every date rather
+/// than answering. The published grid is still a sourced fact and
+/// `hours_for_market_hours_key` states it, so the boundary and classification
+/// assertions below keep their force through that surface; `assert_refused` is
+/// how the calendar-backed surface is asserted to refuse the same dates.
 fn state_at(instant: DateTime<Utc>) -> SessionState {
-    calendar_for_market_hours_key(MINI).session_state(instant)
+    hours_for_market_hours_key(MINI, instant).session_state(instant)
+}
+
+/// Returns the venue-local date of the daily bar that closes out of `instant`.
+///
+/// This is the trade date the close-date convention names: a wrapping leg
+/// belongs to the day its close falls on.
+fn close_trade_date(hours: &exchange_hours::MarketHours, instant: DateTime<Utc>) -> NaiveDate {
+    candle_end(hours, instant, CalendarResolution::Daily)
+        .expect("the fixed snapshot states the daily close")
+        .with_timezone(&US::Central)
+        .date_naive()
+}
+
+/// Asserts the answer a **dormant** identity's date-aware surface gives.
+///
+/// No date is sourced for this key: one at or after the permanent 2025 floor
+/// has no covered range, and one before it precedes the floor. Either way the
+/// calendar-backed surface refuses instead of naming a schedule
+/// (LAW-COVERAGE), which is the fact these tests now state in place of the
+/// schedule they used to read back out of it.
+fn assert_refused<T: core::fmt::Debug + Copy>(answer: Result<T, CalendarQueryError>, label: &str) {
+    assert!(
+        matches!(
+            answer,
+            Err(CalendarQueryError::BeforeSupportFloor { .. }
+                | CalendarQueryError::OutsideCoveredRange { .. })
+        ),
+        "{label}: a dormant identity must refuse, got {answer:?}"
+    );
 }
 
 /// The published current grid, boundary by boundary. SER-9049's Pre-Open
@@ -112,35 +152,68 @@ fn mini_grains_serves_the_published_grid_with_end_exclusive_closes() {
 #[test]
 fn the_wrapping_grid_needs_no_trade_date_exception() {
     let calendar = calendar_for_market_hours_key(MINI);
+    let hours = hours_for_market_hours_key(MINI, ct((2026, 6, 14), (20, 0, 0)));
 
-    assert_eq!(
+    // The identity is dormant, so its date-aware surface refuses to name a
+    // trade date or a daily bar. The close-date convention is still a sourced
+    // fact, and the fixed snapshot states it: the venue-local date of each
+    // daily bar's close is the trade date the calendar would have named.
+    assert_refused(
         calendar.trade_date(ct((2026, 6, 14), (20, 0, 0))),
-        Some(day((2026, 6, 15))),
-        "the Sunday-evening leg wraps, so it belongs to Monday's trade date"
+        "the Sunday-evening leg",
     );
     assert_eq!(
+        close_trade_date(&hours, ct((2026, 6, 14), (20, 0, 0))),
+        day((2026, 6, 15)),
+        "the Sunday-evening leg wraps, so it belongs to Monday's trade date"
+    );
+    assert_refused(
         calendar.trade_date(ct((2026, 6, 15), (12, 0, 0))),
-        Some(day((2026, 6, 15))),
+        "Monday midday",
+    );
+    assert_eq!(
+        close_trade_date(&hours, ct((2026, 6, 15), (12, 0, 0))),
+        day((2026, 6, 15)),
     );
     // The queues run up to the next session, whose close names the trade date
     // they attach to: Monday's PCP and evening queue precede the leg that
     // closes Tuesday 13:20 CT.
-    assert_eq!(
+    assert_refused(
         calendar.trade_date(ct((2026, 6, 15), (15, 0, 0))),
-        Some(day((2026, 6, 16))),
+        "Monday's PCP",
     );
     assert_eq!(
+        close_trade_date(&hours, ct((2026, 6, 15), (15, 0, 0))),
+        day((2026, 6, 16)),
+    );
+    assert_refused(
         calendar.trade_date(ct((2026, 6, 15), (17, 0, 0))),
-        Some(day((2026, 6, 16))),
+        "Monday's evening queue",
+    );
+    assert_eq!(
+        close_trade_date(&hours, ct((2026, 6, 15), (17, 0, 0))),
+        day((2026, 6, 16)),
     );
 
     // One daily bar spans the Sunday 19:00 CT open through Monday 13:20 CT.
-    assert_eq!(
+    assert_refused(
         calendar.candle_end(ct((2026, 6, 14), (20, 0, 0)), CalendarResolution::Daily),
+        "the Sunday-evening daily bar",
+    );
+    assert_eq!(
+        candle_end(
+            &hours,
+            ct((2026, 6, 14), (20, 0, 0)),
+            CalendarResolution::Daily
+        ),
         Some(ct((2026, 6, 15), (13, 20, 0))),
     );
     assert_eq!(
-        calendar.candle_end(ct((2026, 6, 15), (12, 0, 0)), CalendarResolution::Daily),
+        candle_end(
+            &hours,
+            ct((2026, 6, 15), (12, 0, 0)),
+            CalendarResolution::Daily
+        ),
         Some(ct((2026, 6, 15), (13, 20, 0))),
     );
 
@@ -183,8 +256,15 @@ fn the_week_reopens_on_sunday_evening_after_the_weekend_close() {
         );
     }
 
-    assert_eq!(
+    // The forward scan is a date-aware query, so the dormant identity refuses
+    // it rather than reporting the next session; the fixed snapshot still
+    // states that next open.
+    assert_refused(
         calendar.next_session_open_after(ct((2026, 6, 19), (13, 20, 0))),
+        "the weekend forward scan",
+    );
+    assert_eq!(
+        next_session_open_after(&hours, ct((2026, 6, 19), (13, 20, 0))),
         Some(ct((2026, 6, 21), (19, 0, 0))),
         "the week reopens on Sunday evening, not Friday evening"
     );
@@ -589,8 +669,10 @@ fn mini_grains_and_the_standard_grain_grid_disagree_outside_the_converged_eras()
     // on the *holiday* layer rather than on the grid: `globex_grains` is served
     // and ships a built-in table, `globex_mini_grains` is dormant and does not
     // (LAW-SERVICE-TIERS; design memo §5.2). The claim under test is that the
-    // grids converged, so the state comparison detaches that layer from both;
-    // the divergence itself is recorded in the mini-grains evidence file.
+    // grids converged, so the state comparison runs on the fixed snapshot of
+    // each key — the surface that states the grid without either holiday layer
+    // — and the date-aware state of the dormant side is asserted to refuse.
+    // The divergence itself is recorded in the mini-grains evidence file.
     for day_offset in 0..7_i64 {
         for (hour, minute) in [
             (3, 0),
@@ -619,13 +701,13 @@ fn mini_grains_and_the_standard_grain_grid_disagree_outside_the_converged_eras()
                 grains.is_accepting_orders(instant),
                 "{instant}: the converged grids must agree on order acceptance"
             );
+            assert_refused(
+                calendar_for_market_hours_key(MINI).session_state(instant),
+                &format!("{instant} mini date-aware state"),
+            );
             assert_eq!(
-                calendar_for_market_hours_key(MINI)
-                    .without_holidays()
-                    .session_state(instant),
-                calendar_for_market_hours_key(GRAINS)
-                    .without_holidays()
-                    .session_state(instant),
+                mini.session_state(instant),
+                grains.session_state(instant),
                 "{instant}: the converged grids must agree on session state"
             );
         }

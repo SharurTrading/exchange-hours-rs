@@ -5,6 +5,7 @@
 use chrono::{DateTime, Datelike, Duration, Timelike, Utc};
 
 use super::schedule::{QueryContext, RuleSet, find_occurrence, rules};
+use crate::calendar::CalendarQueryError;
 use crate::calendar::hours::MarketHours;
 use crate::calendar::local_time::bounded_utc;
 use crate::calendar::rule::{SECONDS_PER_NORMAL_WEEK, SessionKind, normal_week_rule_intervals};
@@ -44,13 +45,13 @@ pub(in crate::calendar) fn fixed_normal_week_open_seconds(hours: &MarketHours) -
 pub(in crate::calendar) fn normal_week_open_seconds_containing(
     context: &QueryContext<'_>,
     instant: DateTime<Utc>,
-) -> u64 {
+) -> Result<u64, CalendarQueryError> {
     let tz = context.tz();
     let local_day = bounded_utc(instant, tz).with_timezone(&tz).date_naive();
     let weekday = i64::from(local_day.weekday().num_days_from_monday());
     let Some(monday) = local_day.checked_sub_signed(Duration::days(weekday)) else {
         let selected = context.profile_for_open_day(local_day);
-        return fixed_normal_week_open_seconds(selected.as_ref());
+        return Ok(fixed_normal_week_open_seconds(selected.as_ref()));
     };
     let mut intervals = Vec::new();
 
@@ -90,7 +91,7 @@ pub(in crate::calendar) fn normal_week_open_seconds_containing(
                 }
                 None
             },
-        );
+        )?;
     }
-    union_seconds(intervals)
+    Ok(union_seconds(intervals))
 }

@@ -215,37 +215,37 @@ fn overlay_layers(criterion: &mut Criterion) {
     bench_queries(
         &mut group,
         "none",
-        |instant| calendar.is_open(instant),
+        |instant| calendar.is_open(instant).unwrap_or(false),
         &probes,
     );
     bench_queries(
         &mut group,
         "without_holidays",
-        |instant| detached.is_open(instant),
+        |instant| detached.is_open(instant).unwrap_or(false),
         &probes,
     );
     bench_queries(
         &mut group,
         "exceptions_gated",
-        |instant| gated.is_open(instant),
+        |instant| gated.is_open(instant).unwrap_or(false),
         &probes,
     );
     bench_queries(
         &mut group,
         "exceptions_in_coverage",
-        |instant| ungated.is_open(instant),
+        |instant| ungated.is_open(instant).unwrap_or(false),
         &probes,
     );
     bench_queries(
         &mut group,
         "day_policy_elsewhere",
-        |instant| policy_elsewhere.is_open(instant),
+        |instant| policy_elsewhere.is_open(instant).unwrap_or(false),
         &probes,
     );
     bench_queries(
         &mut group,
         "day_policy_on_date",
-        |instant| policy_on_date.is_open(instant),
+        |instant| policy_on_date.is_open(instant).unwrap_or(false),
         &probes,
     );
 
@@ -256,18 +256,18 @@ fn overlay_layers(criterion: &mut Criterion) {
         ("exceptions_gated", &|| {
             gated
                 .candle_start(probes.regular, CalendarResolution::Daily)
-                .is_some()
+                .is_ok_and(|value| value.is_some())
                 && gated
                     .candle_end(probes.regular, CalendarResolution::Daily)
-                    .is_some()
+                    .is_ok_and(|value| value.is_some())
         }),
         ("day_policy_elsewhere", &|| {
             policy_elsewhere
                 .candle_start(probes.regular, CalendarResolution::Daily)
-                .is_some()
+                .is_ok_and(|value| value.is_some())
                 && policy_elsewhere
                     .candle_end(probes.regular, CalendarResolution::Daily)
-                    .is_some()
+                    .is_ok_and(|value| value.is_some())
         }),
     ];
     for (label, run) in windows {
@@ -283,10 +283,10 @@ fn overlay_layers(criterion: &mut Criterion) {
 fn daily_window(calendar: ExchangeCalendar, instant: DateTime<Utc>) -> bool {
     calendar
         .candle_start(instant, CalendarResolution::Daily)
-        .is_some()
+        .is_ok_and(|value| value.is_some())
         && calendar
             .candle_end(instant, CalendarResolution::Daily)
-            .is_some()
+            .is_ok_and(|value| value.is_some())
 }
 
 /// One cold chart frame: `FRAME_POINTS - 1` open probes plus one daily close.
@@ -296,13 +296,13 @@ fn frame(calendar: ExchangeCalendar, start: DateTime<Utc>) -> usize {
         let Some(instant) = start.checked_add_signed(TimeDelta::minutes(step)) else {
             break;
         };
-        if calendar.is_open(instant) {
+        if calendar.is_open(instant).unwrap_or(false) {
             open = open.saturating_add(1);
         }
     }
     if calendar
         .candle_end(start, CalendarResolution::Daily)
-        .is_some()
+        .is_ok_and(|value| value.is_some())
     {
         open = open.saturating_add(1);
     }
@@ -373,7 +373,7 @@ fn year_scan(calendar: ExchangeCalendar, start: DateTime<Utc>) -> usize {
     let mut open = 0_usize;
     let mut instant = start;
     while instant < end {
-        if calendar.is_open(instant) {
+        if calendar.is_open(instant).unwrap_or(false) {
             open = open.saturating_add(1);
         }
         let Some(next) = instant.checked_add_signed(TimeDelta::minutes(15)) else {

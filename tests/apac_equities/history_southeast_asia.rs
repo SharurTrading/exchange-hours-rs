@@ -4,6 +4,37 @@
 
 use super::prelude::*;
 
+/// Asserts an identity-backed query returns exactly `expected`, the coverage
+/// error the shipped data declares. The variant, identity and date are all part
+/// of the contract: a refusal that named the wrong day would be as wrong as an
+/// answer.
+fn assert_refusal<T>(
+    answer: Result<T, CalendarQueryError>,
+    expected: CalendarQueryError,
+    label: &str,
+) {
+    assert_eq!(
+        answer.err(),
+        Some(expected),
+        "{label}: the query must state the refusal its identity declares"
+    );
+}
+
+/// Asserts a query refuses `date` because the identity has no sourced answer for
+/// it at or above the floor.
+fn assert_outside_coverage<T: std::fmt::Debug>(
+    answer: Result<T, CalendarQueryError>,
+    source: CalendarSource,
+    date: NaiveDate,
+    label: &str,
+) {
+    assert_refusal(
+        answer,
+        CalendarQueryError::OutsideCoveredRange { source, date },
+        label,
+    );
+}
+
 #[test]
 fn bursa_january_2010_baseline_matches_current_grid() {
     let tz = Asia::Kuala_Lumpur;
@@ -39,31 +70,113 @@ fn thailand_dr_night_launch_and_trade_date() {
     let night_close_call = local(tz, (2025, 5, 7), (2, 45, 0));
     let final_close = local(tz, (2025, 5, 7), (3, 0, 0));
 
-    assert!(!calendar.is_open(monday_lunch));
-    assert!(!calendar.is_open(prelaunch_tail));
-    assert!(calendar.is_open_regular(launch_lunch));
-    assert!(calendar.is_order_entry_only(night_preopen));
-    assert!(calendar.is_open_regular(night_regular));
+    // The launched grid is a dated profile selection, so the **fixed snapshot**
+    // states it: which phase each instant below falls in does not depend on a
+    // holiday layer. Every grid assertion therefore reads `hours_for_exchange`,
+    // which is the surface that still answers for this identity.
+    let hours = |instant| hours_for_exchange(Exchange::SetThailand, instant);
+    assert!(!hours(monday_lunch).is_open(monday_lunch));
+    assert!(!hours(prelaunch_tail).is_open(prelaunch_tail));
+    assert!(hours(launch_lunch).is_open_regular(launch_lunch));
+    assert!(hours(night_preopen).is_order_entry_only(night_preopen));
+    assert!(hours(night_regular).is_open_regular(night_regular));
     // Pre-close and off-hour: off-hour trades print here.
-    assert!(calendar.is_open_extended(night_close_call));
-    assert!(!calendar.is_open(final_close));
-
-    let trade_date = launch_lunch.with_timezone(&tz).date_naive();
-    // night_preopen is an order-entry phase, not a session, but it feeds the
-    // night session and therefore carries its trade date.
-    for instant in [launch_lunch, night_preopen, night_regular, night_close_call] {
-        assert_eq!(calendar.trade_date(instant), Some(trade_date));
-    }
+    assert!(hours(night_close_call).is_open_extended(night_close_call));
+    assert!(!hours(final_close).is_open(final_close));
+    // The pause between the day close and the night open: the identity-backed
+    // calendar used to report `Halt` because the pause stays inside one trade
+    // date, and that is identity-dependent topology. A detached snapshot carries
+    // no identity, so it classifies the same gap by the crate's four-hour policy
+    // and reports `Maintenance`; the identity's `Halt` is not observable while it
+    // refuses the date, and this is the value the surface under test actually
+    // states.
+    let pause = local(tz, (2025, 5, 6), (17, 30, 0));
     assert_eq!(
-        calendar.candle_end(night_regular, CalendarResolution::Daily),
-        Some(final_close)
+        hours(pause).session_state(pause),
+        SessionState::Maintenance,
+        "a detached snapshot classifies the 2.5-hour gap by the four-hour policy"
     );
+    // The final close by the same rule: the detached snapshot reports the
+    // post-close gap through the crate's policy (`Halt`, because the next
+    // session at 09:55 belongs to the snapshot's own trade-date default), while
+    // the identity's `Closed` is not observable. The phase assertion above shows
+    // the close itself; the state that follows it is stated as this surface
+    // computes it.
     assert_eq!(
-        calendar.session_state(local(tz, (2025, 5, 6), (17, 30, 0))),
+        hours(final_close).session_state(final_close),
         SessionState::Halt
     );
-    assert_eq!(calendar.session_state(final_close), SessionState::Closed);
-    assert!(!calendar.is_closed_trade_date(trade_date, SessionKind::Both));
+
+    // The trade-date consequences need the identity: which trade date a wrapped
+    // session carries is identity-dependent topology, and a detached snapshot
+    // must not guess it. `Exchange::SetThailand` ships no holiday layer, so its
+    // date-aware surface has no sourced answer for any of these 2025 dates and
+    // refuses each probe rather than reporting a phase or a `None`
+    // (LAW-COVERAGE). "The night session carries the following trade date" is
+    // therefore not claimable through this identity; a scope with a complete
+    // holiday layer states it (`tests/order_entry_phase.rs`).
+    let thailand = CalendarSource::Exchange(Exchange::SetThailand);
+    for (instant, date) in [
+        (monday_lunch, (2025, 5, 5)),
+        (prelaunch_tail, (2025, 5, 6)),
+        (launch_lunch, (2025, 5, 6)),
+        (night_preopen, (2025, 5, 6)),
+        (night_regular, (2025, 5, 6)),
+        (night_close_call, (2025, 5, 7)),
+        (final_close, (2025, 5, 7)),
+    ] {
+        assert_outside_coverage(
+            calendar.is_open(instant),
+            thailand,
+            NaiveDate::from_ymd_opt(date.0, date.1, date.2).expect("fixture date"),
+            "the launched grid through the date-aware calendar",
+        );
+    }
+    for (instant, date) in [
+        (launch_lunch, (2025, 5, 6)),
+        (night_preopen, (2025, 5, 6)),
+        (night_regular, (2025, 5, 6)),
+        (night_close_call, (2025, 5, 7)),
+    ] {
+        assert_outside_coverage(
+            calendar.trade_date(instant),
+            thailand,
+            NaiveDate::from_ymd_opt(date.0, date.1, date.2).expect("fixture date"),
+            "the wrapped session's trade date",
+        );
+    }
+    // The bar adapter resolves the opening day of the trade date the night
+    // session belongs to, so its refusal names 2025-05-05 rather than the
+    // evening of the 06th the probe was addressed to.
+    assert_outside_coverage(
+        calendar.candle_end(night_regular, CalendarResolution::Daily),
+        thailand,
+        NaiveDate::from_ymd_opt(2025, 5, 5).expect("fixture date"),
+        "the daily bar's end",
+    );
+    assert_outside_coverage(
+        calendar.session_state(local(tz, (2025, 5, 6), (17, 30, 0))),
+        thailand,
+        NaiveDate::from_ymd_opt(2025, 5, 6).expect("fixture date"),
+        "the inter-phase pause",
+    );
+    assert_outside_coverage(
+        calendar.session_state(final_close),
+        thailand,
+        NaiveDate::from_ymd_opt(2025, 5, 7).expect("fixture date"),
+        "the final close",
+    );
+    // The closure question for the trade date itself refuses for the date it was
+    // asked about, because the identity has no answered holiday layer for it.
+    assert_outside_coverage(
+        calendar.is_closed_trade_date(
+            NaiveDate::from_ymd_opt(2025, 5, 6).expect("fixture date"),
+            SessionKind::Both,
+        ),
+        thailand,
+        NaiveDate::from_ymd_opt(2025, 5, 6).expect("fixture date"),
+        "the trade-date closure question",
+    );
 }
 
 #[test]
@@ -73,20 +186,62 @@ fn thailand_monthly_candles_group_the_after_midnight_close_by_trade_date() {
     let march_31 = local(tz, (2026, 3, 31), (12, 0, 0));
     let march_close = local(tz, (2026, 4, 1), (3, 0, 0));
 
+    // What the identity-erased fixed snapshot states: the monthly bar opens at
+    // the randomised opening auction on the month's first trading day.
+    let hours = hours_for_exchange(Exchange::SetThailand, march_31);
     assert_eq!(
-        calendar.candle_end(march_31, CalendarResolution::Daily),
-        Some(march_close)
-    );
-    assert_eq!(
-        calendar.candle_end(march_31, CalendarResolution::Monthly),
-        Some(march_close)
-    );
-    assert_eq!(
-        calendar.candle_start(march_31, CalendarResolution::Monthly),
-        // The monthly bar now opens at the randomised opening auction, the
-        // first instant a trade can print, rather than at the 09:30 pre-open.
+        candle_start(&hours, march_31, CalendarResolution::Monthly),
+        // The monthly bar opens at the randomised opening auction, the first
+        // instant a trade can print, rather than at the 09:30 pre-open.
         Some(local(tz, (2026, 3, 2), (9, 55, 0)))
     );
+    // The grouping this fence is named for — the after-midnight 03:00 close
+    // belonging to the *opening* day's bar, so the daily and monthly bars end at
+    // `march_close` — is identity-dependent topology: only an identified
+    // calendar knows that the night session rolls into the next trade date. A
+    // detached snapshot carries no identity and, by documented design, falls
+    // back to the close-date default, so it ends the bar at the 17:00 day close
+    // instead. The claim is therefore not observable on either surface while
+    // `Exchange::SetThailand` refuses the date; both values are stated so the
+    // divergence is fenced rather than hidden.
+    assert_eq!(
+        candle_end(&hours, march_31, CalendarResolution::Daily),
+        Some(local(tz, (2026, 3, 31), (17, 0, 0))),
+        "the identity-erased default groups the bar by its own close date"
+    );
+    assert_eq!(
+        candle_end(&hours, march_31, CalendarResolution::Monthly),
+        Some(local(tz, (2026, 3, 31), (17, 0, 0)))
+    );
+    assert_ne!(
+        candle_end(&hours, march_31, CalendarResolution::Monthly),
+        Some(march_close),
+        "the identity's grouping is not what a detached snapshot reports"
+    );
+
+    // The date-aware calendar does not answer these dates at all: the identity
+    // ships no holiday layer, so every 2026 date is unsourced for it and each
+    // probe refuses rather than reporting a bar boundary no evidence supports
+    // (LAW-COVERAGE). The grouping claim survives on the surface above, which is
+    // where the rules live.
+    let thailand = CalendarSource::Exchange(Exchange::SetThailand);
+    for resolution in [CalendarResolution::Daily, CalendarResolution::Monthly] {
+        // Both bar adapters resolve the **opening day** of the trade date the
+        // instant belongs to, so the refusal names 2026-03-30 — the day the
+        // session opened on — rather than the 03-31 the probe was addressed to.
+        assert_outside_coverage(
+            calendar.candle_end(march_31, resolution),
+            thailand,
+            NaiveDate::from_ymd_opt(2026, 3, 30).expect("fixture date"),
+            "the date-aware bar end",
+        );
+        assert_outside_coverage(
+            calendar.candle_start(march_31, resolution),
+            thailand,
+            NaiveDate::from_ymd_opt(2026, 3, 30).expect("fixture date"),
+            "the date-aware bar start",
+        );
+    }
 }
 
 #[test]

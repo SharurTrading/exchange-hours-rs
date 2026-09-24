@@ -88,7 +88,19 @@ fn twenty_four_x_conditional_overnight_session_is_not_encoded() {
 
     assert!(!fixed.is_open(sunday_night));
     assert!(!future.is_open(sunday_night));
-    assert!(!calendar_for_exchange(Exchange::TwentyFourX).is_open(sunday_night));
+
+    // `TwentyFourX` ships no holiday table and claims none, so the date-aware
+    // calendar has no complete range above the floor and refuses this probe as
+    // `OutsideCoveredRange` rather than answering it. The "no conditional
+    // overnight session is encoded" claim stays asserted by the two fixed
+    // snapshots above, which retain 04:00-20:00 for the same future date.
+    let calendar = calendar_for_exchange(Exchange::TwentyFourX);
+    assert_refused(
+        calendar.is_open(sunday_night),
+        DateCoverage::OutsideCoveredRange,
+        calendar,
+        sunday_night,
+    );
 }
 
 #[test]

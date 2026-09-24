@@ -591,7 +591,7 @@ impl CalendarCoverage {
 
     /// Returns the first declaration that applies to venue-local `date`, or
     /// `None` when none does.
-    pub(super) fn phase_gap_on(self, date: NaiveDate) -> Option<PhaseGap> {
+    pub(in crate::calendar) fn phase_gap_on(self, date: NaiveDate) -> Option<PhaseGap> {
         self.phase_gaps
             .iter()
             .copied()
@@ -683,6 +683,25 @@ impl CalendarCoverage {
         }
         if let Some(phase_gap) = self.phase_gap_on(date) {
             return Some(phase_gap.reason());
+        }
+        self.date_level_gap_on(date)
+    }
+
+    /// Returns the **date-level** reason `date` is not complete, ignoring any
+    /// declared phase-level gap.
+    ///
+    /// A declared gap describes a withheld **phase**, not a withheld date, so it
+    /// cannot by itself make a whole venue-local day unanswerable: the crate
+    /// still serves that day's normal week and holiday layer, and only a query
+    /// whose answer *is* that phase has no sourced value. Stage 2B's query gate
+    /// therefore consults this method — never [`Self::gap_reason_on`] — because
+    /// refusing a Tuesday afternoon for a Sunday queue that the Tuesday query
+    /// never reads is exactly the "coverage error read as a market closure"
+    /// failure LAW-COVERAGE exists to prevent. The entry points that do probe
+    /// the withheld phase ask [`Self::phase_gap_on`] themselves.
+    pub(super) fn date_level_gap_on(self, date: NaiveDate) -> Option<CoverageGapReason> {
+        if date < SUPPORT_FLOOR {
+            return None;
         }
         if let Some(carried_below) = self.carried_below
             && date < carried_below

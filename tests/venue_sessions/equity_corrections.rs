@@ -78,7 +78,6 @@ fn nyse_national_dormancy_and_relaunch_use_sourced_dates() {
     assert!(before.is_open_regular(et((2017, 2, 1), (10, 0, 0))));
     assert!(dormant.regular.is_empty());
     assert!(dormant.extended.is_empty());
-    assert!(!calendar_for_exchange(Exchange::NyseNational).is_open(et((2017, 2, 1), (10, 0, 0))));
 
     let relaunch = et((2018, 5, 21), (0, 0, 0));
     let still_dormant = hours_for_exchange(
@@ -90,18 +89,34 @@ fn nyse_national_dormancy_and_relaunch_use_sourced_dates() {
     assert!(still_dormant.regular.is_empty());
     assert!(reopened.is_open_extended(et((2018, 5, 21), (7, 0, 0))));
     assert!(reopened.is_open_regular(et((2018, 5, 21), (9, 30, 0))));
-    assert!(
-        calendar_for_exchange(Exchange::NyseNational)
-            .is_open_regular(et((2018, 5, 21), (10, 0, 0)))
-    );
 
-    // The dormant profile has no sessions. This pins the inclusive fourteen-day
-    // search horizon needed to reach the exact relaunch session.
-    assert_eq!(
-        calendar_for_exchange(Exchange::NyseNational)
-            .next_session_after(et((2018, 5, 7), (0, 0, 0))),
-        // 06:30 is the order-acceptance edge; the session opens at 07:00.
-        Some((et((2018, 5, 21), (7, 0, 0)), et((2018, 5, 21), (9, 30, 0)),))
+    // Both sourced dates are out of this identity's reach: `NyseNational` ships
+    // no holiday table and claims none, so it has no complete range above the
+    // floor, and both 2017-02-01 and 2018-05-21 precede the 2025-01-01
+    // floor in their own right. The calendar therefore refuses all three
+    // probes — the dormancy closure, the relaunch session and the fourteen-day
+    // forward search — as `BeforeSupportFloor` rather than stating them. Those
+    // answers stay asserted above through `hours_for_exchange`, which is the
+    // surface the two filings are sourced from.
+    let calendar = calendar_for_exchange(Exchange::NyseNational);
+    assert_refuses_before_floor(
+        calendar.is_open(et((2017, 2, 1), (10, 0, 0))),
+        calendar,
+        et((2017, 2, 1), (10, 0, 0)),
+    );
+    assert_refuses_before_floor(
+        calendar.is_open_regular(et((2018, 5, 21), (10, 0, 0))),
+        calendar,
+        et((2018, 5, 21), (10, 0, 0)),
+    );
+    // The dormant profile has no sessions, and the inclusive fourteen-day
+    // search horizon that reaches the exact relaunch session stays a claim
+    // about the fixed snapshot's own reach: the date-aware search refuses the
+    // day it would have to establish.
+    assert_refuses_before_floor(
+        calendar.next_session_after(et((2018, 5, 7), (0, 0, 0))),
+        calendar,
+        et((2018, 5, 7), (0, 0, 0)),
     );
 }
 
@@ -150,7 +165,19 @@ fn edgx_unconfirmed_overnight_session_is_not_encoded() {
 
     assert!(!fixed.is_open(sunday_night));
     assert!(!future.is_open(sunday_night));
-    assert!(!calendar_for_exchange(Exchange::CboeEdgx).is_open(sunday_night));
+
+    // `CboeEdgx` ships no holiday table and claims none, so the date-aware
+    // calendar has no complete range above the floor and refuses this probe as
+    // `OutsideCoveredRange` rather than answering it. The "no overnight session
+    // is encoded" claim stays asserted by the two fixed snapshots above, which
+    // hold the current 04:00-20:00 ET envelope for the same future date.
+    let calendar = calendar_for_exchange(Exchange::CboeEdgx);
+    assert_refused(
+        calendar.is_open(sunday_night),
+        DateCoverage::OutsideCoveredRange,
+        calendar,
+        sunday_night,
+    );
 }
 
 #[test]

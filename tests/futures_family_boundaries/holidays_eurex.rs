@@ -18,8 +18,8 @@
 use chrono::{DateTime, Days, NaiveDate, TimeZone as _, Utc};
 use chrono_tz::Europe;
 use exchange_hours::{
-    Exchange, ExchangeCalendar, Holiday, HolidayKind, MarketHoursKey, SessionKind,
-    calendar_for_exchange, calendar_for_market_hours_key,
+    CalendarQueryError, Exchange, ExchangeCalendar, Holiday, HolidayKind, MarketHoursKey,
+    SessionKind, calendar_for_exchange, calendar_for_market_hours_key,
 };
 
 fn identities() -> [(&'static str, ExchangeCalendar); 3] {
@@ -66,8 +66,29 @@ fn every_eurex_identity_ships_the_same_seven_closures() {
                 Some(HolidayKind::Closed),
                 "{name} must be closed on {date}"
             );
+            if date == day(2026, 1, 1) {
+                // A trade-date query rests on the trading day that opened the
+                // previous evening, and New Year's Day's predecessor
+                // (2025-12-31) is one day below the audited 2026 window. Stage
+                // 2B refuses the query there, so the closure's trade-date
+                // consequence is no longer claimable for this row even though
+                // the row itself ships.
+                assert!(
+                    matches!(
+                        calendar.is_closed_trade_date(date, SessionKind::Both),
+                        Err(CalendarQueryError::OutsideCoveredRange {
+                            date: dependency,
+                            ..
+                        }) if dependency == day(2025, 12, 31)
+                    ),
+                    "{name} on {date}: the answer depends on the unaudited 2025-12-31"
+                );
+                continue;
+            }
             assert!(
-                calendar.is_closed_trade_date(date, SessionKind::Both),
+                calendar
+                    .is_closed_trade_date(date, SessionKind::Both)
+                    .expect("the trade date's own day is inside the audited window"),
                 "{name} on {date}"
             );
         }
@@ -79,17 +100,26 @@ fn the_christmas_closures_delete_their_trading_days() {
     for (name, calendar) in identities() {
         for probe in [(9, 0, 0), (12, 0, 0), (17, 0, 0)] {
             assert!(
-                !calendar.is_open(cet((2026, 12, 24), probe)),
+                !calendar
+                    .is_open(cet((2026, 12, 24), probe))
+                    .expect("the coverage contract must answer a covered date"),
                 "{name}: 24 December is a full trading closure, not a half day, at {probe:?}"
             );
             assert!(
-                !calendar.is_open(cet((2026, 12, 25), probe)),
+                !calendar
+                    .is_open(cet((2026, 12, 25), probe))
+                    .expect("the coverage contract must answer a covered date"),
                 "{name}: 25 December at {probe:?}"
             );
         }
         // 23 December is inside coverage with no row: audited normal.
         assert_eq!(calendar.holiday_on(day(2026, 12, 23)), None, "{name}");
-        assert!(calendar.is_open(cet((2026, 12, 23), (12, 0, 0))), "{name}");
+        assert!(
+            calendar
+                .is_open(cet((2026, 12, 23), (12, 0, 0)))
+                .expect("the coverage contract must answer a covered date"),
+            "{name}"
+        );
     }
 }
 
@@ -98,6 +128,7 @@ fn trading_resumes_on_the_first_open_day_after_the_christmas_block() {
     for (name, calendar) in identities() {
         let next = calendar
             .next_session_after(cet((2026, 12, 23), (21, 0, 0)))
+            .expect("the coverage contract must answer a covered date")
             .expect("a reopening must exist inside the bounded search");
         assert_eq!(
             next.0.with_timezone(&Europe::Berlin).date_naive(),
@@ -110,8 +141,31 @@ fn trading_resumes_on_the_first_open_day_after_the_christmas_block() {
 #[test]
 fn new_years_day_is_closed_and_the_second_of_january_is_not() {
     for (name, calendar) in identities() {
-        assert!(!calendar.is_open(cet((2026, 1, 1), (12, 0, 0))), "{name}");
-        assert!(calendar.is_open(cet((2026, 1, 2), (12, 0, 0))), "{name}");
+        // The closure row itself is unchanged, but the 2026-01-01 probe cannot
+        // be answered: resolving it reads the local date 2025-12-31, one day
+        // below the audited 2026 window, and Stage 2B refuses rather than
+        // answering from a normal week the window did not audit.
+        assert_eq!(
+            calendar.holiday_on(day(2026, 1, 1)).map(Holiday::kind),
+            Some(HolidayKind::Closed),
+            "{name}"
+        );
+        assert!(
+            matches!(
+                calendar.is_open(cet((2026, 1, 1), (12, 0, 0))),
+                Err(CalendarQueryError::OutsideCoveredRange {
+                    date,
+                    ..
+                }) if date == day(2025, 12, 31)
+            ),
+            "{name}: 2026-01-01 depends on the unaudited 2025-12-31"
+        );
+        assert!(
+            calendar
+                .is_open(cet((2026, 1, 2), (12, 0, 0)))
+                .expect("2026-01-02 and its predecessor are inside the audited window"),
+            "{name}"
+        );
     }
 }
 
@@ -145,13 +199,29 @@ fn the_indicative_2027_calendar_does_not_ship() {
             None,
             "{name}"
         );
+        // Nor does the identity answer the date: with the table attached, the
+        // holiday layer has no audited window over 2027, so Stage 2B refuses
+        // it. The old claim — that the identity answers the pure normal week
+        // outside its coverage window — is no longer claimable; the detached
+        // snapshot, which claims no coverage, is where the normal week shows.
         let outside = cet((2027, 1, 1), (12, 0, 0));
-        assert_eq!(
-            calendar.is_open(outside),
-            calendar.without_holidays().is_open(outside),
-            "{name} must answer the pure normal week outside its coverage window"
+        assert!(
+            matches!(
+                calendar.is_open(outside),
+                Err(CalendarQueryError::OutsideCoveredRange {
+                    date,
+                    ..
+                }) if date == day(2027, 1, 1)
+            ),
+            "{name}: 2027-01-01 is outside the audited 2026 window"
         );
-        assert!(calendar.is_open(outside), "{name}");
+        assert!(
+            calendar
+                .without_holidays()
+                .is_open(outside)
+                .expect("a detached snapshot claims no coverage"),
+            "{name} answers the pure normal week only once the table is detached"
+        );
     }
 }
 
@@ -159,8 +229,19 @@ fn the_indicative_2027_calendar_does_not_ship() {
 fn detaching_the_table_restores_the_normal_week() {
     for (name, calendar) in identities() {
         let good_friday = cet((2026, 4, 3), (12, 0, 0));
-        assert!(!calendar.is_open(good_friday), "{name}");
-        assert!(calendar.without_holidays().is_open(good_friday), "{name}");
+        assert!(
+            !calendar
+                .is_open(good_friday)
+                .expect("the coverage contract must answer a covered date"),
+            "{name}"
+        );
+        assert!(
+            calendar
+                .without_holidays()
+                .is_open(good_friday)
+                .expect("the coverage contract must answer a covered date"),
+            "{name}"
+        );
         assert_eq!(
             calendar.without_holidays().holiday_coverage(),
             None,
@@ -181,27 +262,48 @@ fn the_christmas_eve_closure_takes_the_evening_leg_off_its_trade_date() {
 
     let fixed_income = calendar_for_market_hours_key(MarketHoursKey::EurexFixedIncome);
     assert_eq!(
-        fixed_income.without_holidays().trade_date(eve_evening),
+        fixed_income
+            .without_holidays()
+            .trade_date(eve_evening)
+            .expect("the coverage contract must answer a covered date"),
         Some(day(2026, 12, 24)),
         "the eve's evening leg belongs to the holiday's trade date"
     );
     assert_eq!(
-        fixed_income.trade_date(eve_evening),
+        fixed_income
+            .trade_date(eve_evening)
+            .expect("the coverage contract must answer a covered date"),
         None,
         "the 24 December closure removes it"
     );
-    assert!(!fixed_income.is_accepting_orders(eve_evening));
+    assert!(
+        !fixed_income
+            .is_accepting_orders(eve_evening)
+            .expect("the coverage contract must answer a covered date")
+    );
     assert!(
         fixed_income
             .without_holidays()
             .is_accepting_orders(eve_evening)
+            .expect("the coverage contract must answer a covered date")
     );
     // The same leg one day earlier carries an open trade date and survives.
-    assert_eq!(fixed_income.trade_date(control), Some(day(2026, 12, 23)));
-    assert!(fixed_income.is_accepting_orders(control));
+    assert_eq!(
+        fixed_income
+            .trade_date(control)
+            .expect("the coverage contract must answer a covered date"),
+        Some(day(2026, 12, 23))
+    );
+    assert!(
+        fixed_income
+            .is_accepting_orders(control)
+            .expect("the coverage contract must answer a covered date")
+    );
     // Inside 23 December the trade date is the civil date and is untouched.
     assert_eq!(
-        fixed_income.trade_date(cet((2026, 12, 23), (12, 0, 0))),
+        fixed_income
+            .trade_date(cet((2026, 12, 23), (12, 0, 0)))
+            .expect("the coverage contract must answer a covered date"),
         Some(day(2026, 12, 23))
     );
 
@@ -213,13 +315,24 @@ fn the_christmas_eve_closure_takes_the_evening_leg_off_its_trade_date() {
         ),
     ] {
         assert_eq!(
-            calendar.without_holidays().trade_date(eve_evening),
+            calendar
+                .without_holidays()
+                .trade_date(eve_evening)
+                .expect("the coverage contract must answer a covered date"),
             None,
             "{name} has no post-close leg for a closure to remove"
         );
-        assert_eq!(calendar.trade_date(eve_evening), None, "{name}");
         assert_eq!(
-            calendar.trade_date(cet((2026, 12, 23), (12, 0, 0))),
+            calendar
+                .trade_date(eve_evening)
+                .expect("the coverage contract must answer a covered date"),
+            None,
+            "{name}"
+        );
+        assert_eq!(
+            calendar
+                .trade_date(cet((2026, 12, 23), (12, 0, 0)))
+                .expect("the coverage contract must answer a covered date"),
             Some(day(2026, 12, 23)),
             "{name}"
         );

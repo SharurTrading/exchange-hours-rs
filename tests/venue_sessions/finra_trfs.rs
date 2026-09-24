@@ -41,17 +41,45 @@ fn assert_2026_opening_cutover(exchange: Exchange) {
     assert!(after.is_open_extended(et(effective_day, (4, 0, 0))));
     assert!(!after.is_open_regular(et(effective_day, (4, 0, 0))));
 
+    // The FINRA TRFs ship no holiday table and claim none, so they have no
+    // complete range at all above the floor and every post-floor date is
+    // `OutsideCoveredRange`. The date-aware calendar therefore refuses both
+    // probes rather than confirming the fixed snapshot: `2026-03-27` is
+    // pre-cutover and `2026-03-30` post-cutover, but neither is a date this
+    // identity can state. What is no longer claimable through the calendar is a
+    // `bool`; the 04:00 ET move itself stays asserted above through
+    // `hours_for_exchange`.
     let calendar = calendar_for_exchange(exchange);
-    assert!(!calendar.is_open(et(prior_business_day, (4, 0, 0))));
-    assert!(calendar.is_open_extended(et(effective_day, (4, 0, 0))));
+    assert_refused(
+        calendar.is_open(et(prior_business_day, (4, 0, 0))),
+        DateCoverage::OutsideCoveredRange,
+        calendar,
+        et(prior_business_day, (4, 0, 0)),
+    );
+    assert_refused(
+        calendar.is_open_extended(et(effective_day, (4, 0, 0))),
+        DateCoverage::OutsideCoveredRange,
+        calendar,
+        et(effective_day, (4, 0, 0)),
+    );
 }
 
 fn assert_unconfirmed_overnight_is_not_encoded(exchange: Exchange) {
     let sunday_night = et((2026, 12, 6), (21, 0, 0));
     let future = hours_for_exchange(exchange, et((2026, 12, 7), (12, 0, 0)));
 
+    // The claim is "no overnight session is encoded", and the fixed snapshot
+    // states it. The calendar cannot confirm it on this date: the TRFs claim no
+    // holiday coverage, so 2026-12-06 is `OutsideCoveredRange` and the query is
+    // refused rather than answered `false`.
     assert!(!future.is_open(sunday_night));
-    assert!(!calendar_for_exchange(exchange).is_open(sunday_night));
+    let calendar = calendar_for_exchange(exchange);
+    assert_refused(
+        calendar.is_open(sunday_night),
+        DateCoverage::OutsideCoveredRange,
+        calendar,
+        sunday_night,
+    );
 }
 
 // FINRA Regulatory Notice 25-15 states that Carteret, Chicago, and the NYSE
@@ -95,9 +123,17 @@ fn finra_trf_chicago_is_closed_before_its_sourced_launch() {
     assert!(launched.is_open_extended(et((2018, 9, 10), (8, 0, 0))));
     assert!(launched.is_open_regular(et((2018, 9, 10), (9, 30, 0))));
     assert!(!launched.is_open(et((2018, 9, 10), (20, 0, 0))));
-    assert!(
-        calendar_for_exchange(Exchange::FinraTrfChicago)
-            .is_open_regular(et((2018, 9, 10), (10, 0, 0)))
+
+    // The launch day is pre-floor, so the date-aware calendar states no session
+    // there: `2018-09-10` precedes the 2025-01-01 floor and the query is
+    // refused as `BeforeSupportFloor`. The regular-session claim stays asserted
+    // above through `hours_for_exchange`, which is the surface this launch is
+    // sourced from.
+    let calendar = calendar_for_exchange(Exchange::FinraTrfChicago);
+    assert_refuses_before_floor(
+        calendar.is_open_regular(et((2018, 9, 10), (10, 0, 0))),
+        calendar,
+        et((2018, 9, 10), (10, 0, 0)),
     );
 }
 

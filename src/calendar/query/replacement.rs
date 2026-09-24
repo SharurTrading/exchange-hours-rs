@@ -137,6 +137,10 @@ pub(super) fn resolve_block_bounds(
 /// Scans the fixed offset window rather than the record table, so the work per
 /// opening day is bounded by the offset range and independent of how many
 /// exception records the caller supplied.
+///
+/// This layer answers from caller-supplied records only, so it can never
+/// refuse a date: it returns `Option` rather than the `Result` its caller uses,
+/// and the caller applies its own coverage verdict to the day before asking.
 pub(super) fn find_occurrence<T>(
     context: &QueryContext<'_>,
     open_day: NaiveDate,

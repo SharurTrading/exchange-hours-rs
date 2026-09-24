@@ -362,12 +362,21 @@ static FUTURES_ALWAYS_OPEN: FuturesSessionProfile = FuturesSessionProfile {
 };
 /// Returns the fixed-current normal-week futures session profile for `key`.
 ///
-/// This is the static current table, not a time selection: it equals the
-/// revision timeline's selection at any instant on or after the family's
+/// This is the static current table, not a time selection: it is the family's
+/// **summer** grid and is selected by no instant. For most keys that is also
+/// the revision timeline's selection at every instant on or after the family's
 /// knowledge-bound row (the 2026-08-22 repository review for families whose
-/// current order-entry queues have no sourced onset day). Use
-/// [`super::hours_for_market_hours_key`] to resolve the family at a caller's
-/// instant, and
+/// current order-entry queues have no sourced onset day).
+///
+/// Two keys are the documented exception, and they are **seasonal**: their
+/// grids follow a foreign clock, so the profile in force changes with the
+/// venue's own offset even though no revision row dates the change. `Eurex`
+/// and `EurexFixedIncome` each ship two grids, and
+/// [`super::hours_for_market_hours_key`] selects between them by the Berlin
+/// offset — so on a CET (winter) day every morning phase sits one hour off this
+/// table ([#77](https://github.com/SharurTrading/exchange-hours-rs/issues/77)).
+/// Use [`super::hours_for_market_hours_key`] to resolve the family at a
+/// caller's instant, and
 /// [`crate::calendar::calendar_for_market_hours_key`], which reselects the
 /// product-family profile for every candidate opening day, for scans that
 /// cross a transition.

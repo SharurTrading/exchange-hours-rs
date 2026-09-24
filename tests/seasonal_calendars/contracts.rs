@@ -197,20 +197,36 @@ fn date_aware_cross_query_fence_holds_for_every_exchange() {
                 SessionKind::Extended,
                 SessionKind::Both,
             ] {
+                // The cross-query agreement is stated over whatever each query
+                // actually produced: where the identity answers, the containment
+                // and next-session relation must hold exactly; where it refuses,
+                // every one of the three must refuse, because an unsourced date
+                // has no answer for any of them (LAW-COVERAGE).
                 let bounds = calendar.session_bounds_with(instant, kind);
-                let contained =
-                    bounds.is_some_and(|(open, close)| open <= instant && instant < close);
-                assert_eq!(
-                    calendar.is_open_with(instant, kind),
-                    contained,
-                    "{exchange:?}/{kind:?} disagrees at {instant}"
-                );
-                if !contained {
-                    assert_eq!(
-                        bounds,
-                        calendar.next_session_after_with(instant, kind),
-                        "{exchange:?}/{kind:?} next-session mismatch at {instant}"
-                    );
+                let open = calendar.is_open_with(instant, kind);
+                let next = calendar.next_session_after_with(instant, kind);
+
+                match (&bounds, &open, &next) {
+                    (Ok(bounds), Ok(open), Ok(next)) => {
+                        let contained =
+                            bounds.is_some_and(|(open, close)| open <= instant && instant < close);
+                        assert_eq!(
+                            *open, contained,
+                            "{exchange:?} {instant}: is_open must agree with session_bounds"
+                        );
+                        if !contained {
+                            assert_eq!(
+                                bounds, next,
+                                "{exchange:?} {instant}: a closed instant's bounds are the \
+                                 next session"
+                            );
+                        }
+                    }
+                    _ => assert!(
+                        bounds.is_err() && open.is_err() && next.is_err(),
+                        "{exchange:?} {instant}: the three queries must refuse together, got \
+                         bounds={bounds:?} open={open:?} next={next:?}"
+                    ),
                 }
             }
         }

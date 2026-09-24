@@ -47,13 +47,21 @@ fn binance_futures_opens_at_its_exact_sourced_launch_instant() {
     assert!(after.is_open_regular(launch));
     assert!(after.is_open_regular(launch + chrono::Duration::nanoseconds(1)));
 
+    // The launch is dated 2019-09-13, which precedes the 2025-01-01 floor, so
+    // the date-aware calendar states neither side of this exact-instant cutover
+    // and refuses all three probes as `BeforeSupportFloor`. What is no longer
+    // claimable through the calendar is a `bool`, or the first session's
+    // `utc((2019, 9, 14), (0, 0, 0))` close; the launch instant and its first
+    // session stay asserted above through `hours_for_exchange`, which is the
+    // surface the launch notice is sourced from.
     let calendar = calendar_for_exchange(Exchange::BinanceFutures);
-    assert!(!calendar.is_open(launch - chrono::Duration::nanoseconds(1)));
-    assert!(calendar.is_open_regular(launch));
-    assert_eq!(
-        calendar.session_bounds(launch),
-        Some((launch, utc((2019, 9, 14), (0, 0, 0))))
+    assert_refuses_before_floor(
+        calendar.is_open(launch - chrono::Duration::nanoseconds(1)),
+        calendar,
+        launch - chrono::Duration::nanoseconds(1),
     );
+    assert_refuses_before_floor(calendar.is_open_regular(launch), calendar, launch);
+    assert_refuses_before_floor(calendar.session_bounds(launch), calendar, launch);
 }
 
 #[test]
@@ -94,9 +102,16 @@ fn always_open_no_daily_or_weekend_close() {
     }
 
     let calendar = calendar_for_exchange(Exchange::BinanceFutures);
-    assert_eq!(calendar.time_end_of_day(instant), None);
     assert_eq!(
-        calendar.candle_end(instant, CalendarResolution::Weekly),
+        calendar
+            .time_end_of_day(instant)
+            .expect("the coverage contract must answer a covered date"),
+        None
+    );
+    assert_eq!(
+        calendar
+            .candle_end(instant, CalendarResolution::Weekly)
+            .expect("the coverage contract must answer a covered date"),
         None
     );
 }

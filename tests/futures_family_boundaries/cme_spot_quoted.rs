@@ -15,8 +15,9 @@
 use chrono::{DateTime, NaiveDate, TimeZone as _, Utc};
 use chrono_tz::US;
 use exchange_hours::{
-    CalendarResolution, DayOverride, MarketHoursKey, SessionState, StaticDayPolicy,
-    calendar_for_market_hours_key, hours_for_market_hours_key, session_profile,
+    CalendarQueryError, CalendarResolution, DayOverride, MarketHoursKey, SessionState,
+    StaticDayPolicy, calendar_for_market_hours_key, candle_end, hours_for_market_hours_key,
+    next_session_open_after, session_bounds, session_profile,
 };
 
 const SPOT_QUOTED: MarketHoursKey = MarketHoursKey::GlobexSpotQuoted;
@@ -41,8 +42,36 @@ fn hours_at(date: (i32, u32, u32)) -> exchange_hours::MarketHours {
     hours_for_market_hours_key(SPOT_QUOTED, ct(date, (0, 0, 0)))
 }
 
+/// The state the **fixed snapshot** reports, which is the surface these grid
+/// assertions are about.
+///
+/// `GlobexSpotQuoted` is dormant (LAW-SERVICE-TIERS): it ships no holiday
+/// table, so its date-aware coverage is empty above the 2025 floor and the
+/// calendar-backed surface refuses every date rather than answering. The
+/// published grid is still a sourced fact and `hours_for_market_hours_key`
+/// states it, so the boundary and classification assertions below keep their
+/// force through that surface; `assert_refused` is how the calendar-backed
+/// surface is asserted to refuse the same dates.
 fn state_at(instant: DateTime<Utc>) -> SessionState {
-    calendar_for_market_hours_key(SPOT_QUOTED).session_state(instant)
+    hours_for_market_hours_key(SPOT_QUOTED, instant).session_state(instant)
+}
+
+/// Asserts the answer a **dormant** identity's date-aware surface gives.
+///
+/// No date is sourced for this key: one at or after the permanent 2025 floor
+/// has no covered range, and one before it precedes the floor. Either way the
+/// calendar-backed surface refuses instead of naming a schedule
+/// (LAW-COVERAGE), which is the fact these tests now state in place of the
+/// schedule they used to read back out of it.
+fn assert_refused<T: core::fmt::Debug + Copy>(answer: Result<T, CalendarQueryError>, label: &str) {
+    assert!(
+        matches!(
+            answer,
+            Err(CalendarQueryError::BeforeSupportFloor { .. }
+                | CalendarQueryError::OutsideCoveredRange { .. })
+        ),
+        "{label}: a dormant identity must refuse, got {answer:?}"
+    );
 }
 
 /// The published current grid, boundary by boundary. CME's contract
@@ -97,7 +126,7 @@ fn spot_quoted_serves_the_published_grid_with_end_exclusive_closes() {
     );
     assert!(hours.is_open(ct((2026, 9, 14), (17, 0, 0))));
 
-    // The fixed snapshot must answer identically to the dated selector.
+    // The static current table must state the same grid as the instant selector.
     let profile = session_profile(SPOT_QUOTED);
     assert!(profile.is_order_entry_only(ct((2026, 9, 13), (16, 0, 0))));
     assert!(profile.is_open(ct((2026, 9, 13), (17, 0, 0))));
@@ -114,27 +143,63 @@ fn spot_quoted_serves_the_published_grid_with_end_exclusive_closes() {
 #[test]
 fn the_wrapping_leg_takes_its_closing_trade_date() {
     let calendar = calendar_for_market_hours_key(SPOT_QUOTED);
+    let hours = hours_for_market_hours_key(SPOT_QUOTED, ct((2026, 9, 13), (20, 0, 0)));
 
-    assert_eq!(
+    // The identity is dormant, so its date-aware surface refuses to name a
+    // trade date, a daily bar or a session. The wrap's shape is still a sourced
+    // fact, and the fixed snapshot states it: one daily bar runs Sunday 17:00
+    // CT to Monday 16:00 CT, and that close's venue-local date is the trade
+    // date the calendar would have named.
+    assert_refused(
         calendar.trade_date(ct((2026, 9, 13), (20, 0, 0))),
-        Some(day((2026, 9, 14))),
+        "the Sunday-evening leg",
+    );
+    assert_refused(
+        calendar.candle_end(ct((2026, 9, 13), (20, 0, 0)), CalendarResolution::Daily),
+        "the Sunday-evening daily bar",
+    );
+    assert_eq!(
+        candle_end(
+            &hours,
+            ct((2026, 9, 13), (20, 0, 0)),
+            CalendarResolution::Daily
+        ),
+        Some(ct((2026, 9, 14), (16, 0, 0))),
         "the Sunday-evening leg wraps, so it belongs to Monday's trade date"
     );
-    assert_eq!(
+    assert_refused(
         calendar.trade_date(ct((2026, 9, 14), (12, 0, 0))),
-        Some(day((2026, 9, 14))),
+        "Monday midday",
     );
     assert_eq!(
-        calendar.trade_date(ct((2026, 9, 14), (16, 45, 0))),
-        Some(day((2026, 9, 15))),
-        "Monday's evening queue feeds the session that closes Tuesday"
-    );
-    assert_eq!(
-        calendar.candle_end(ct((2026, 9, 13), (20, 0, 0)), CalendarResolution::Daily),
+        candle_end(
+            &hours,
+            ct((2026, 9, 14), (12, 0, 0)),
+            CalendarResolution::Daily
+        ),
         Some(ct((2026, 9, 14), (16, 0, 0))),
     );
+    // Monday's evening queue feeds the session that closes Tuesday, so the
+    // queue's own daily bar ends on Tuesday's 16:00 CT close.
+    assert_refused(
+        calendar.trade_date(ct((2026, 9, 14), (16, 45, 0))),
+        "Monday's evening queue",
+    );
     assert_eq!(
+        candle_end(
+            &hours,
+            ct((2026, 9, 14), (16, 45, 0)),
+            CalendarResolution::Daily
+        ),
+        Some(ct((2026, 9, 15), (16, 0, 0))),
+        "Monday's evening queue feeds the session that closes Tuesday"
+    );
+    assert_refused(
         calendar.session_bounds(ct((2026, 9, 14), (12, 0, 0))),
+        "Monday's session bounds",
+    );
+    assert_eq!(
+        session_bounds(&hours, ct((2026, 9, 14), (12, 0, 0))),
         Some((ct((2026, 9, 13), (17, 0, 0)), ct((2026, 9, 14), (16, 0, 0)))),
     );
 }
@@ -167,8 +232,15 @@ fn the_week_reopens_on_sunday_evening_with_no_friday_evening_leg() {
         SessionState::Closed,
         "the weekend gap outruns the four-hour maintenance ceiling"
     );
-    assert_eq!(
+    // The forward scan is a date-aware query, so the dormant identity refuses
+    // it rather than reporting the next session; the fixed snapshot still
+    // states that next open.
+    assert_refused(
         calendar.next_session_open_after(ct((2026, 9, 18), (16, 0, 0))),
+        "the weekend forward scan",
+    );
+    assert_eq!(
+        next_session_open_after(&hours, ct((2026, 9, 18), (16, 0, 0))),
         Some(ct((2026, 9, 20), (17, 0, 0))),
         "the week reopens on Sunday evening, not Friday evening"
     );
@@ -215,13 +287,15 @@ fn the_family_opens_for_the_first_time_on_2025_06_29() {
         "the first session closes 16:00 CT end-exclusive on the stated trade date"
     );
 
-    // The dated calendar agrees across the boundary rather than only the
-    // snapshot: the first open it can find after the launch-eve Saturday is
-    // the sourced Sunday-evening one.
-    assert_eq!(
+    // The dated calendar refuses the launch-eve Saturday rather than scanning
+    // forward for a session: the identity claims no coverage, so "the first
+    // open it can find" is not an answer it gives. The launch boundary itself
+    // stays fenced by the snapshot probes above — the eve accepts nothing and
+    // the launch evening answers the published grid in full.
+    assert_refused(
         calendar_for_market_hours_key(SPOT_QUOTED)
             .next_session_open_after(ct((2025, 6, 28), (12, 0, 0))),
-        Some(ct((2025, 6, 29), (17, 0, 0))),
+        "the launch-eve forward scan",
     );
 }
 
@@ -336,10 +410,19 @@ fn neither_the_equity_index_nor_the_cryptocurrency_key_can_stand_in() {
     assert!(hours_for_market_hours_key(EQUITY_INDEX, midday).is_open(midday));
     assert!(hours_for_market_hours_key(SPOT_QUOTED, midday).is_open(midday));
     assert_eq!(
-        calendar_for_market_hours_key(EQUITY_INDEX).session_state(midday),
+        calendar_for_market_hours_key(EQUITY_INDEX)
+            .session_state(midday)
+            .expect("the coverage contract must answer a covered date"),
         SessionState::OpenRegular,
     );
-    assert_eq!(calendar.session_state(midday), SessionState::OpenExtended);
+    // This key is dormant, so the classification it publishes is stated by the
+    // fixed snapshot: the whole executable window is extended, never regular.
+    assert_refused(calendar.session_state(midday), "the midday state");
+    assert_eq!(
+        state_at(midday),
+        SessionState::OpenExtended,
+        "the fixed snapshot classifies the whole executable window as extended"
+    );
 
     // The equity-index history is inapplicable as well: it was trading a
     // sourced grid a decade before this family was listed.
@@ -401,32 +484,46 @@ fn day_policy_overlays_a_closed_date_and_a_subgroup_early_close() {
     let calendar = calendar_for_market_hours_key(SPOT_QUOTED).with_day_policy(&policy);
     let plain = calendar_for_market_hours_key(SPOT_QUOTED);
 
-    // Tuesday's whole trading day goes, including Monday's evening leg.
-    for (date, time) in [((2026, 9, 14), (20, 0, 0)), ((2026, 9, 15), (12, 0, 0))] {
+    // The overlay mechanism itself is exercised on served identities elsewhere
+    // (`tests/static_day_policy.rs`, `tests/calendar_policies.rs`). What this
+    // identity can state is the negative: `GlobexSpotQuoted` is dormant, so
+    // neither the bare calendar nor the same calendar carrying a caller's
+    // `DayPolicy` has a sourced answer, and a policy — which can only tighten a
+    // day — never manufactures coverage the identity does not claim
+    // (LAW-COVERAGE).
+    for (date, time) in [
+        ((2026, 9, 14), (20, 0, 0)),
+        ((2026, 9, 15), (12, 0, 0)),
+        ((2026, 9, 15), (20, 0, 0)),
+        ((2026, 9, 16), (11, 59, 59)),
+        ((2026, 9, 16), (12, 0, 0)),
+    ] {
+        let instant = ct(date, time);
+        assert_refused(plain.is_open(instant), &format!("{instant} bare"));
+        assert_refused(calendar.is_open(instant), &format!("{instant} overlaid"));
+    }
+    assert_refused(
+        calendar.session_bounds(ct((2026, 9, 16), (10, 0, 0))),
+        "the overlaid boundary query",
+    );
+
+    // The grid the overlay would have modified is still stated by the fixed
+    // snapshot: Monday's evening leg and Tuesday's session are open, and
+    // Wednesday's session runs past the 12:00 final close the overlay names —
+    // which is what makes that close the caller's, not the profile's.
+    for (date, time) in [
+        ((2026, 9, 14), (20, 0, 0)),
+        ((2026, 9, 15), (12, 0, 0)),
+        ((2026, 9, 15), (20, 0, 0)),
+        ((2026, 9, 16), (11, 59, 59)),
+        ((2026, 9, 16), (12, 0, 0)),
+    ] {
         let instant = ct(date, time);
         assert!(
-            plain.is_open(instant),
+            hours_for_market_hours_key(SPOT_QUOTED, instant).is_open(instant),
             "{instant}: open on the normal-week grid"
         );
-        assert!(
-            !calendar.is_open(instant),
-            "{instant}: a closed Tuesday removes the trade date it belongs to"
-        );
     }
-    // Tuesday's own evening leg belongs to Wednesday and survives.
-    assert!(calendar.is_open(ct((2026, 9, 15), (20, 0, 0))));
-
-    // Wednesday's session ends at the overridden 12:00 CT.
-    assert!(calendar.is_open(ct((2026, 9, 16), (11, 59, 59))));
-    assert!(!calendar.is_open(ct((2026, 9, 16), (12, 0, 0))));
-    assert!(
-        plain.is_open(ct((2026, 9, 16), (12, 0, 0))),
-        "the override, not the profile, is what closed Wednesday early"
-    );
-    assert_eq!(
-        calendar.session_bounds(ct((2026, 9, 16), (10, 0, 0))),
-        Some((ct((2026, 9, 15), (17, 0, 0)), ct((2026, 9, 16), (12, 0, 0)))),
-    );
 }
 
 /// The wire identity round-trips through every public spelling.

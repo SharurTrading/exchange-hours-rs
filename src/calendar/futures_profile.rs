@@ -435,8 +435,13 @@ market_hours_keys! {
 /// the caller's instant (LAW-DETERMINISM), so a backtest and a live query run
 /// identical code. Sourced histories are selected independently for each
 /// product family, including CME Group equity-index, energy/metals, grains,
-/// FX, interest-rate, livestock, and cryptocurrency grids. Keys with no
-/// in-scope recorded change resolve to their one grid at every instant. Dates
+/// FX, interest-rate, livestock, and cryptocurrency grids. A key with no
+/// in-scope recorded change and **no seasonal grid** resolves to its one grid
+/// at every instant; `Eurex` and `EurexFixedIncome` are the two keys that carry
+/// two grids with no dated change between them, and this function selects the
+/// one in force at `as_of` by the venue's own offset — a seasonal switch, not a
+/// revision ([#77](https://github.com/SharurTrading/exchange-hours-rs/issues/77)).
+/// Dates
 /// before the January-2010 audit floor receive the oldest audited profile. For
 /// launch-dated families — CME cryptocurrency, CME/CBOT spot-quoted, CME Group
 /// event contracts, ICE U.S.

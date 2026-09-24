@@ -47,7 +47,10 @@ pub fn candle_end_with(
     resolution: CalendarResolution,
     kind: SessionKind,
 ) -> Option<DateTime<Utc>> {
-    candles::candle_end_with(&QueryContext::fixed(hours), instant, resolution, kind)
+    // A detached snapshot carries no identity, so no day can be refused and the
+    // error arm is unreachable by construction (LAW-COVERAGE governs
+    // identity-backed queries; a fixed snapshot is exactly its supplied rules).
+    candles::candle_end_with(&QueryContext::fixed(hours), instant, resolution, kind).unwrap_or(None)
 }
 
 /// Returns [`candle_end_with`] over regular and extended sessions.
@@ -73,7 +76,9 @@ pub fn candle_start_with(
     resolution: CalendarResolution,
     kind: SessionKind,
 ) -> Option<DateTime<Utc>> {
+    // See `candle_end_with`: a fixed snapshot has no coverage verdict to fail.
     candles::candle_start_with(&QueryContext::fixed(hours), instant, resolution, kind)
+        .unwrap_or(None)
 }
 
 /// Returns [`candle_start_with`] over regular and extended sessions.

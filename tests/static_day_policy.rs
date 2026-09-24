@@ -165,10 +165,26 @@ fn combined_override_clips_a_wrapped_globex_trade_date() {
     let calendar =
         calendar_for_market_hours_key(MarketHoursKey::GlobexEquityIndex).with_day_policy(&policy);
 
-    assert!(!calendar.is_open(ct((2026, 4, 19), (17, 29, 59))));
-    assert!(calendar.is_open(ct((2026, 4, 19), (17, 30, 0))));
-    assert!(calendar.is_open(ct((2026, 4, 20), (12, 14, 59))));
-    assert!(!calendar.is_open(ct((2026, 4, 20), (12, 15, 0))));
+    assert!(
+        !calendar
+            .is_open(ct((2026, 4, 19), (17, 29, 59)))
+            .expect("the coverage contract must answer a covered date")
+    );
+    assert!(
+        calendar
+            .is_open(ct((2026, 4, 19), (17, 30, 0)))
+            .expect("the coverage contract must answer a covered date")
+    );
+    assert!(
+        calendar
+            .is_open(ct((2026, 4, 20), (12, 14, 59)))
+            .expect("the coverage contract must answer a covered date")
+    );
+    assert!(
+        !calendar
+            .is_open(ct((2026, 4, 20), (12, 15, 0)))
+            .expect("the coverage contract must answer a covered date")
+    );
 }
 
 #[test]
@@ -180,14 +196,26 @@ fn closed_crypto_monday_uses_the_identity_specific_rollover() {
     let calendar = calendar_for_market_hours_key(MarketHoursKey::GlobexCryptocurrency)
         .with_day_policy(&policy);
 
-    assert!(calendar.is_open(ct((2026, 6, 7), (12, 0, 0))));
+    assert!(
+        calendar
+            .is_open(ct((2026, 6, 7), (12, 0, 0)))
+            .expect("the coverage contract must answer a covered date")
+    );
     assert_eq!(
-        calendar.trade_date(ct((2026, 6, 7), (12, 0, 0))),
+        calendar
+            .trade_date(ct((2026, 6, 7), (12, 0, 0)))
+            .expect("the coverage contract must answer a covered date"),
         Some(tuesday)
     );
-    assert!(calendar.is_open(ct((2026, 6, 8), (10, 0, 0))));
+    assert!(
+        calendar
+            .is_open(ct((2026, 6, 8), (10, 0, 0)))
+            .expect("the coverage contract must answer a covered date")
+    );
     assert_eq!(
-        calendar.trade_date(ct((2026, 6, 8), (10, 0, 0))),
+        calendar
+            .trade_date(ct((2026, 6, 8), (10, 0, 0)))
+            .expect("the coverage contract must answer a covered date"),
         Some(tuesday)
     );
 }

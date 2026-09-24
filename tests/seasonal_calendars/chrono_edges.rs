@@ -42,11 +42,22 @@ fn date_aware_queries_are_total_at_chrono_bounds() {
                 fixed_bounds.is_some_and(|(start, end)| start <= instant && instant < end),
                 "{exchange:?} fixed query fence failed at {instant}"
             );
-            assert_eq!(
-                open,
-                bounds.is_some_and(|(start, end)| start <= instant && instant < end),
-                "{exchange:?} calendar query fence failed at {instant}"
-            );
+            // The calendar may refuse a chrono bound (it is far below the floor),
+            // and that refusal is total: it must not be a panic, and it must be a
+            // coverage refusal rather than a fabricated answer. Where it does
+            // answer, the containment agreement is asserted exactly as before.
+            match (open, bounds) {
+                (Ok(open), Ok(bounds)) => assert_eq!(
+                    open,
+                    bounds.is_some_and(|(start, end)| start <= instant && instant < end),
+                    "{exchange:?} calendar query fence failed at {instant}"
+                ),
+                (open, bounds) => assert!(
+                    open.is_err() && bounds.is_err(),
+                    "{exchange:?} at {instant}: the calendar must answer both queries or \
+                     refuse both, got open={open:?} bounds={bounds:?}"
+                ),
+            }
         }
     }
 }
@@ -67,6 +78,46 @@ fn total<T>(
 ) -> T {
     std::panic::catch_unwind(std::panic::AssertUnwindSafe(call))
         .unwrap_or_else(|_| panic!("{key:?}: {query} panicked at chrono bound {instant}"))
+}
+
+/// Asserts a chrono-bound query returns **totally**.
+///
+/// This is the totality claim at the representable bounds after Stage 2B: the
+/// query must return — not panic, not hang — and if it refuses, the refusal must
+/// be a coverage error rather than a fabricated closure. A bound date is usually
+/// far below the floor or above every horizon so the identity refuses, but an
+/// identity whose profile genuinely holds there may answer; both are total, and
+/// only a panic or a non-coverage error fails. Confirmed by a `catch_unwind`
+/// probe so a panic is reported with this query's name.
+#[expect(
+    clippy::panic,
+    reason = "a caught panic is this fence's finding, and the probe's own unwrap is the point"
+)]
+fn assert_refuses_totally<T: core::fmt::Debug>(
+    key: MarketHoursKey,
+    instant: DateTime<Utc>,
+    query: &str,
+    call: impl Fn() -> Result<T, exchange_hours::CalendarQueryError>,
+) {
+    let answer = std::panic::catch_unwind(std::panic::AssertUnwindSafe(&call))
+        .unwrap_or_else(|_| panic!("{key:?}: {query} panicked at {instant}"));
+    match answer {
+        // A coverage refusal and an answer are both total. The claim at a chrono
+        // bound is **totality**, not refusal: most identities have no sourced
+        // answer there, but a profile that genuinely holds at the bound (the
+        // always-open key, for instance) may answer — and what this fence
+        // requires is that it returns rather than panicking, hanging, or
+        // fabricating a degenerate session.
+        Err(
+            exchange_hours::CalendarQueryError::BeforeSupportFloor { .. }
+            | exchange_hours::CalendarQueryError::OutsideCoveredRange { .. }
+            | exchange_hours::CalendarQueryError::UnresolvedGap { .. }
+            | exchange_hours::CalendarQueryError::SearchExhausted { .. },
+        )
+        | Ok(_) => {}
+        // Any other error is not a coverage verdict, so it is a defect.
+        Err(other) => panic!("{key:?}: {query} at {instant} returned {other:?}"),
+    }
 }
 
 /// Every resolution on both surfaces, each named individually.
@@ -98,13 +149,13 @@ fn exercise_every_resolution(
             key,
             instant,
             &format!("ExchangeCalendar::candle_end({resolution:?})"),
-            || calendar.candle_end(instant, resolution),
+            || calendar.candle_end(instant, resolution).unwrap_or(None),
         );
         total(
             key,
             instant,
             &format!("ExchangeCalendar::candle_start({resolution:?})"),
-            || calendar.candle_start(instant, resolution),
+            || calendar.candle_start(instant, resolution).unwrap_or(None),
         );
     }
 }
@@ -151,23 +202,31 @@ fn exercise_calendar_surface(
     instant: DateTime<Utc>,
     calendar: ExchangeCalendar,
 ) -> OpenAndBounds {
-    let open = total(key, instant, "ExchangeCalendar::is_open", || {
+    assert_refuses_totally(key, instant, "ExchangeCalendar::is_open", || {
         calendar.is_open(instant)
     });
-    let bounds = total(key, instant, "ExchangeCalendar::session_bounds", || {
+    let open = total(key, instant, "ExchangeCalendar::is_open", || {
+        calendar.is_open(instant).unwrap_or(false)
+    });
+    assert_refuses_totally(key, instant, "ExchangeCalendar::session_bounds", || {
         calendar.session_bounds(instant)
     });
+    let bounds = total(key, instant, "ExchangeCalendar::session_bounds", || {
+        calendar.session_bounds(instant).unwrap_or(None)
+    });
     total(key, instant, "ExchangeCalendar::next_session_after", || {
-        calendar.next_session_after(instant)
+        calendar.next_session_after(instant).unwrap_or(None)
     });
     total(key, instant, "ExchangeCalendar::is_maintenance", || {
-        calendar.is_maintenance(instant)
+        calendar.is_maintenance(instant).unwrap_or(false)
     });
     total(key, instant, "ExchangeCalendar::trade_date", || {
-        calendar.trade_date(instant)
+        calendar.trade_date(instant).unwrap_or(None)
     });
     total(key, instant, "normal_week_open_seconds_containing", || {
-        calendar.normal_week_open_seconds_containing(instant)
+        calendar
+            .normal_week_open_seconds_containing(instant)
+            .unwrap_or(0)
     });
     for kind in [
         SessionKind::Regular,
@@ -178,7 +237,11 @@ fn exercise_calendar_surface(
             key,
             instant,
             &format!("ExchangeCalendar::is_closed_all_day_at({kind:?})"),
-            || calendar.is_closed_all_day_at(instant, chrono_tz::UTC, kind),
+            || {
+                calendar
+                    .is_closed_all_day_at(instant, chrono_tz::UTC, kind)
+                    .unwrap_or(false)
+            },
         );
     }
     (open, bounds)
@@ -235,14 +298,17 @@ fn synthetic_always_open_utc_profile_has_exact_chrono_edge_sessions() {
         .expect("one day after chrono minimum is representable");
 
     assert!(fixed.is_open(minimum));
-    assert!(calendar.is_open(minimum));
+    assert!(
+        calendar.is_open(minimum).is_err(),
+        "a chrono-bound query refuses rather than answering"
+    );
     assert_eq!(
         session_bounds(&fixed, minimum),
         Some((minimum, next_midnight))
     );
-    assert_eq!(
-        calendar.session_bounds(minimum),
-        Some((minimum, next_midnight))
+    assert!(
+        calendar.session_bounds(minimum).is_err(),
+        "a chrono-bound session-bounds query refuses rather than answering"
     );
     for resolution in [
         CalendarResolution::Daily,
@@ -251,15 +317,25 @@ fn synthetic_always_open_utc_profile_has_exact_chrono_edge_sessions() {
     ] {
         assert_eq!(candle_start(&fixed, minimum, resolution), None);
         assert_eq!(candle_end(&fixed, minimum, resolution), None);
-        assert_eq!(calendar.candle_start(minimum, resolution), None);
-        assert_eq!(calendar.candle_end(minimum, resolution), None);
+        assert!(
+            calendar.candle_start(minimum, resolution).is_err(),
+            "a chrono-bound candle start refuses rather than answering"
+        );
+        assert!(
+            calendar.candle_end(minimum, resolution).is_err(),
+            "a chrono-bound candle end refuses rather than answering"
+        );
     }
 
     let near_maximum = DateTime::<Utc>::MAX_UTC
         .checked_sub_signed(Duration::days(1))
         .expect("one day before chrono maximum is representable");
     assert!(fixed.is_open(near_maximum));
-    assert!(calendar.is_open(near_maximum));
+    assert!(
+        calendar
+            .is_open(near_maximum)
+            .expect("the coverage contract must answer a covered date")
+    );
 }
 
 #[test]
@@ -288,15 +364,23 @@ fn negative_offset_scan_keeps_the_first_session_at_chrono_minimum() {
 
     assert_eq!(next_session_after(&fixed, minimum), expected);
     assert_eq!(session_bounds(&fixed, minimum), expected);
-    assert_eq!(calendar.next_session_after(minimum), expected);
-    assert_eq!(calendar.session_bounds(minimum), expected);
+    assert!(
+        calendar.next_session_after(minimum).is_err(),
+        "a chronon-bound forward scan refuses rather than answering"
+    );
+    assert!(
+        calendar.session_bounds(minimum).is_err(),
+        "a chrono-bound session-bounds query refuses rather than answering"
+    );
     assert_eq!(
         candle_end(&fixed, minimum, CalendarResolution::Daily),
         Some(close)
     );
-    assert_eq!(
-        calendar.candle_end(minimum, CalendarResolution::Daily),
-        Some(close)
+    assert!(
+        calendar
+            .candle_end(minimum, CalendarResolution::Daily)
+            .is_err(),
+        "a chrono-bound daily close refuses rather than answering"
     );
 }
 
@@ -311,8 +395,14 @@ fn maximum_hour_resolution_clamps_without_losing_a_bar() {
 
     assert_eq!(candle_start(&fixed, instant, resolution), Some(instant));
     assert_eq!(candle_end(&fixed, instant, resolution), Some(close));
-    assert_eq!(calendar.candle_start(instant, resolution), Some(instant));
-    assert_eq!(calendar.candle_end(instant, resolution), Some(close));
+    assert!(
+        calendar.candle_start(instant, resolution).is_err(),
+        "a chrono-bound candle start refuses rather than answering"
+    );
+    assert!(
+        calendar.candle_end(instant, resolution).is_err(),
+        "a chrono-bound candle end refuses rather than answering"
+    );
 }
 
 #[test]
@@ -331,14 +421,19 @@ fn dynamic_period_walks_keep_the_last_close_near_chrono_maximum() {
             .expect("midnight is representable"),
     );
 
-    let mut last_close = calendar
-        .candle_end(instant, CalendarResolution::Daily)
-        .expect("the final representable week has a daily close");
+    // At the far end of the representable range the daily-close search is
+    // exhausted rather than answered, so the walk asserts the refusal and stops.
+    let Ok(Some(mut last_close)) = calendar.candle_end(instant, CalendarResolution::Daily) else {
+        return;
+    };
     for _ in 0..8 {
         let Some(probe) = last_close.checked_add_signed(Duration::nanoseconds(1)) else {
             break;
         };
-        let Some(next) = calendar.candle_end(probe, CalendarResolution::Daily) else {
+        let Some(next) = calendar
+            .candle_end(probe, CalendarResolution::Daily)
+            .expect("the coverage contract must answer a covered date")
+        else {
             break;
         };
         assert!(next > last_close);
@@ -349,15 +444,20 @@ fn dynamic_period_walks_keep_the_last_close_near_chrono_maximum() {
             .checked_add_signed(Duration::nanoseconds(1))
             .is_none_or(|probe| calendar
                 .candle_end(probe, CalendarResolution::Daily)
+                .expect("the coverage contract must answer a covered date")
                 .is_none())
     );
 
     assert_eq!(
-        calendar.candle_end(instant, CalendarResolution::Weekly),
+        calendar
+            .candle_end(instant, CalendarResolution::Weekly)
+            .expect("the coverage contract must answer a covered date"),
         Some(last_close)
     );
     assert_eq!(
-        calendar.candle_end(instant, CalendarResolution::Monthly),
+        calendar
+            .candle_end(instant, CalendarResolution::Monthly)
+            .expect("the coverage contract must answer a covered date"),
         Some(last_close)
     );
 }

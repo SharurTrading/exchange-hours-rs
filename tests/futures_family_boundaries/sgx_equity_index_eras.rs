@@ -7,10 +7,24 @@
 //! wall-clock and converted once. Each boundary is probed on both sides at an
 //! instant that only one side serves, so a row keyed a day early or late — or
 //! to the capture's weekday instead of the following Monday — fails here.
+//!
+//! Every era probed here precedes the permanent 2025 floor, so the
+//! identity-backed calendar refuses these dates (LAW-COVERAGE) and the
+//! assertion surface is the instant selector, `hours_for_market_hours_key`.
+//! That selector still states every open, close and order-entry window below,
+//! so the boundary fences keep their force; what it cannot state below the
+//! floor is the **kind** of a gap, because the crate derives that from a trade
+//! date and withholds trade dates below the floor. Each former `Halt` or
+//! `Maintenance` probe therefore asserts the refusal beside the executable
+//! fact that survives — nothing in the gap trades or queues — and names what
+//! is no longer claimable.
 
 use chrono::{DateTime, TimeZone as _, Utc};
 use chrono_tz::Asia;
-use exchange_hours::{MarketHoursKey, SessionState, hours_for_market_hours_key};
+use exchange_hours::{
+    CalendarQueryError, MarketHoursKey, SessionState, calendar_for_market_hours_key,
+    hours_for_market_hours_key,
+};
 
 const JAPAN: MarketHoursKey = MarketHoursKey::SgxEquityIndexJapan;
 const CHINA: MarketHoursKey = MarketHoursKey::SgxEquityIndexChina;
@@ -33,6 +47,39 @@ fn open(key: MarketHoursKey, at: DateTime<Utc>) -> bool {
 
 fn state(key: MarketHoursKey, at: DateTime<Utc>) -> SessionState {
     hours_for_market_hours_key(key, at).session_state(at)
+}
+
+/// Whether a trade or a queued order is possible at `at` on the instant
+/// selector, which is the executable fact a gap probe can still state.
+fn accepts(key: MarketHoursKey, at: DateTime<Utc>) -> bool {
+    hours_for_market_hours_key(key, at).is_accepting_orders(at)
+}
+
+/// Asserts that the identity-backed calendar refuses a pre-floor probe.
+///
+/// Asserts a pre-floor gap **is** the kind this module names, and that the
+/// identity-backed surface refuses to say so.
+///
+/// Every date in this module precedes the permanent 2025 floor, so the
+/// date-aware calendar has no sourced answer and refuses with
+/// `BeforeSupportFloor` rather than naming a session (LAW-COVERAGE). The
+/// detached instant selector is a different matter: it carries no identity and
+/// therefore claims nothing about coverage, so it keeps the classification its
+/// own rules derive — including the `Halt`/`Maintenance` kind, which is read
+/// from a trade date. Both halves are asserted here, so the pair cannot drift:
+/// a change that makes the snapshot lose the kind, or the calendar start
+/// answering the date, fails this helper.
+fn assert_withheld_kind(key: MarketHoursKey, at: DateTime<Utc>, kind: SessionState, label: &str) {
+    let answer = calendar_for_market_hours_key(key).session_state(at);
+    assert!(
+        matches!(answer, Err(CalendarQueryError::BeforeSupportFloor { .. })),
+        "{label}: a pre-floor date must be refused by the identity surface, got {answer:?}"
+    );
+    assert_eq!(
+        hours_for_market_hours_key(key, at).session_state(at),
+        kind,
+        "{label}: the detached snapshot must keep the kind its own rules derive"
+    );
 }
 
 /// The floor grids: the intersection of SGX's 2009 specification pages and
@@ -170,11 +217,29 @@ fn the_floor_edges_are_exact_on_the_japan_key() {
         state(JAPAN, sgt(date, (14, 29))),
         SessionState::OpenExtended
     );
-    assert_eq!(state(JAPAN, sgt(date, (14, 30))), SessionState::Halt);
-    assert_eq!(
-        state(JAPAN, sgt(date, (15, 14))),
+    // The 14:25-15:15 routine. The identity surface refuses to name it, because
+    // a pre-floor trade date is withheld; the detached snapshot still derives
+    // the kind from its own rules (see `assert_withheld_kind`), and the fences on
+    // either side of this probe are unchanged.
+    assert_withheld_kind(
+        JAPAN,
+        sgt(date, (14, 30)),
         SessionState::Halt,
-        "T+1 queue opens 15:15"
+        "the 14:25-15:15 routine",
+    );
+    assert!(
+        !accepts(JAPAN, sgt(date, (14, 30))),
+        "the routine admits no trade and no queued order"
+    );
+    assert_withheld_kind(
+        JAPAN,
+        sgt(date, (15, 14)),
+        SessionState::Halt,
+        "the minute before T+1",
+    );
+    assert!(
+        !accepts(JAPAN, sgt(date, (15, 14))),
+        "the T+1 queue opens 15:15"
     );
     assert_eq!(state(JAPAN, sgt(date, (15, 15))), SessionState::OrderEntry);
     assert_eq!(state(JAPAN, sgt(date, (15, 29))), SessionState::OrderEntry);
@@ -203,28 +268,51 @@ fn the_floor_edges_are_exact_on_the_china_key() {
         "T opens 09:15"
     );
     assert_eq!(state(CHINA, sgt(date, (11, 34))), SessionState::OpenRegular);
-    assert_eq!(
-        state(CHINA, sgt(date, (11, 35))),
+    // The seven withheld edge minutes: the 2009 lunch break, its resumption
+    // boundary and the hold before T+1. The identity surface refuses each one
+    // (see `assert_withheld_kind`), and the detached snapshot still states the
+    // kind; the 2009 lunch remains a gap that accepts nothing, and the session
+    // boundaries around it are unchanged.
+    assert_withheld_kind(
+        CHINA,
+        sgt(date, (11, 35)),
         SessionState::Halt,
+        "the 2009 lunch break",
+    );
+    assert!(
+        !accepts(CHINA, sgt(date, (11, 35))),
         "the 2009 lunch break closes 11:35"
     );
-    assert_eq!(state(CHINA, sgt(date, (12, 59))), SessionState::Halt);
+    assert_withheld_kind(
+        CHINA,
+        sgt(date, (12, 59)),
+        SessionState::Halt,
+        "the lunch break",
+    );
+    assert!(!accepts(CHINA, sgt(date, (12, 59))));
     assert_eq!(
         state(CHINA, sgt(date, (13, 0))),
         SessionState::OpenRegular,
         "the T session resumes 13:00"
     );
     assert_eq!(state(CHINA, sgt(date, (15, 4))), SessionState::OpenRegular);
-    assert_eq!(
-        state(CHINA, sgt(date, (15, 5))),
+    assert_withheld_kind(
+        CHINA,
+        sgt(date, (15, 5)),
         SessionState::Halt,
+        "the end-exclusive T close",
+    );
+    assert!(
+        !accepts(CHINA, sgt(date, (15, 5))),
         "15:05 closes end-exclusive"
     );
-    assert_eq!(
-        state(CHINA, sgt(date, (16, 59))),
+    assert_withheld_kind(
+        CHINA,
+        sgt(date, (16, 59)),
         SessionState::Halt,
-        "T+1 held at 17:00"
+        "the T+1 hold",
     );
+    assert!(!accepts(CHINA, sgt(date, (16, 59))), "T+1 held at 17:00");
     assert_eq!(state(CHINA, sgt(date, (17, 0))), SessionState::OpenRegular);
 }
 
@@ -253,10 +341,25 @@ fn the_floor_edges_are_exact_on_the_singapore_key() {
         state(SINGAPORE, sgt(date, (17, 10))),
         SessionState::OpenExtended
     );
-    assert_eq!(state(SINGAPORE, sgt(date, (17, 15))), SessionState::Halt);
-    assert_eq!(
-        state(SINGAPORE, sgt(date, (17, 59))),
+    // The 17:10-18:00 routine and the minute before the T+1 queue. The identity
+    // surface refuses them (see `assert_withheld_kind`) while the detached
+    // snapshot still derives the kind; that nothing accepts orders in them, and
+    // that the boundaries around them hold, is unchanged.
+    assert_withheld_kind(
+        SINGAPORE,
+        sgt(date, (17, 15)),
         SessionState::Halt,
+        "the 17:10-18:00 routine",
+    );
+    assert!(!accepts(SINGAPORE, sgt(date, (17, 15))));
+    assert_withheld_kind(
+        SINGAPORE,
+        sgt(date, (17, 59)),
+        SessionState::Halt,
+        "the minute before T+1",
+    );
+    assert!(
+        !accepts(SINGAPORE, sgt(date, (17, 59))),
         "queue opens 18:00"
     );
     assert_eq!(
@@ -324,9 +427,20 @@ fn the_2013_row_on_the_japan_key() {
         SessionState::OrderEntry,
         "T+1 queue withheld"
     );
-    assert_eq!(
-        state(JAPAN, sgt(mon, (15, 14))),
+    // The minute before the T+1 open is maintenance under the joined-profile
+    // reading; below the 2025 floor the crate withholds the trade date the
+    // identity surface would derive that distinction from, so it refuses the
+    // probe, while the detached snapshot still derives it (see
+    // `assert_withheld_kind`). What holds either way is that the minute accepts
+    // nothing while the next one opens the T+1 session.
+    assert_withheld_kind(
+        JAPAN,
+        sgt(mon, (15, 14)),
         SessionState::Maintenance,
+        "the minute before the T+1 open",
+    );
+    assert!(
+        !accepts(JAPAN, sgt(mon, (15, 14))),
         "the minute before the T+1 open"
     );
     assert_eq!(

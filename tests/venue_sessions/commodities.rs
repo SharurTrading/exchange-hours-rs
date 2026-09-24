@@ -166,8 +166,22 @@ fn comex_and_nymex_close_change_applies_to_the_2015_09_21_trade_date() {
         assert!(after.is_open(ct((2015, 9, 20), (17, 0, 0))), "{exchange:?}");
         assert!(!after.is_open(ct(monday, (16, 0, 0))), "{exchange:?}");
 
+        // The cutover trade date is pre-floor, so the date-aware calendar
+        // cannot confirm either side of it: 2015-09-21 is a venue-local date
+        // before the 2025-01-01 floor and both probes are refused as
+        // `BeforeSupportFloor`. The old and new `is_open` answers stay asserted
+        // above through `hours_for_exchange`, which is the surface this
+        // advisory is sourced from.
         let calendar = calendar_for_exchange(exchange);
-        assert!(calendar.is_open(ct(monday, (15, 59, 59))), "{exchange:?}");
-        assert!(!calendar.is_open(ct(monday, (16, 0, 0))), "{exchange:?}");
+        assert_refuses_before_floor(
+            calendar.is_open(ct(monday, (15, 59, 59))),
+            calendar,
+            ct(monday, (15, 59, 59)),
+        );
+        assert_refuses_before_floor(
+            calendar.is_open(ct(monday, (16, 0, 0))),
+            calendar,
+            ct(monday, (16, 0, 0)),
+        );
     }
 }

@@ -312,7 +312,18 @@ fn cme_post_halt_session_changed_on_2012_11_18() {
     assert!(!after.is_open(ct(monday, (16, 15, 0))));
     assert!(after.is_open_extended(ct(friday, (15, 30, 0))));
     assert!(!after.is_open(ct(friday, (16, 15, 0))));
-    assert!(calendar_for_exchange(Exchange::Cme).is_open_extended(ct(monday, (15, 30, 0))));
+
+    // The 2012 cutover trade date is pre-floor, so the date-aware calendar
+    // cannot confirm the added Friday slice: 2012-11-19 is a venue-local date
+    // before the 2025-01-01 floor and the query is refused as
+    // `BeforeSupportFloor`. The slice itself stays asserted above through
+    // `hours_for_exchange`, which is the surface Chadv12-423 is sourced from.
+    let calendar = calendar_for_exchange(Exchange::Cme);
+    assert_refuses_before_floor(
+        calendar.is_open_extended(ct(monday, (15, 30, 0))),
+        calendar,
+        ct(monday, (15, 30, 0)),
+    );
 }
 
 // CME moved the CME Equity close from 16:15 to 16:00 CT effective Sunday,
@@ -341,11 +352,22 @@ fn cme_equity_close_moved_with_the_2015_09_20_sunday_session() {
     assert!(after.is_open_extended(ct(monday, (15, 59, 59))));
     assert!(!after.is_open(ct(monday, (16, 0, 0))));
 
+    // The 2015-09-21 trade date is pre-floor, so the date-aware calendar states
+    // neither the close nor the daily candle there: the venue-local day
+    // precedes the 2025-01-01 floor and both probes are refused as
+    // `BeforeSupportFloor`. The 16:15→16:00 move and its daily candle stay
+    // asserted above through `hours_for_exchange` / `candle_end` on the fixed
+    // snapshot, which is the surface this advisory is sourced from.
     let calendar = calendar_for_exchange(Exchange::Cme);
-    assert!(!calendar.is_open(ct(monday, (16, 0, 0))));
-    assert_eq!(
+    assert_refuses_before_floor(
+        calendar.is_open(ct(monday, (16, 0, 0))),
+        calendar,
+        ct(monday, (16, 0, 0)),
+    );
+    assert_refuses_before_floor(
         calendar.candle_end(sunday_open, CalendarResolution::Daily),
-        Some(ct(monday, (16, 0, 0)))
+        calendar,
+        sunday_open,
     );
 }
 
@@ -398,8 +420,16 @@ fn cbot_2012_matching_revision_omits_order_phases_without_sourced_onsets() {
     assert!(after.is_open_extended(ct(monday, (13, 15, 0))));
     assert!(after.is_open_extended(ct(monday, (13, 59, 59))));
     assert!(!after.is_open(ct(monday, (14, 0, 0))));
-    assert!(!calendar_for_exchange(Exchange::Cbot).is_open(ct((2026, 4, 19), (17, 0, 0))));
-    assert!(calendar_for_exchange(Exchange::Cbot).is_open_extended(ct((2026, 4, 19), (19, 0, 0))));
+    assert!(
+        !calendar_for_exchange(Exchange::Cbot)
+            .is_open(ct((2026, 4, 19), (17, 0, 0)))
+            .expect("the coverage contract must answer a covered date")
+    );
+    assert!(
+        calendar_for_exchange(Exchange::Cbot)
+            .is_open_extended(ct((2026, 4, 19), (19, 0, 0)))
+            .expect("the coverage contract must answer a covered date")
+    );
 }
 
 // CME Group SER-6617 set 19:00–07:45 and 08:30–13:15 CT effective Sunday
@@ -438,5 +468,14 @@ fn cbot_1320_close_started_with_the_2015_07_06_trade_date() {
     assert!(!after.is_open(ct(monday, (13, 20, 0))));
 
     let calendar = calendar_for_exchange(Exchange::Cbot);
-    assert!(calendar.is_open_regular(ct(monday, (13, 15, 0))));
+    // The 2015-07-06 trade date is pre-floor, so the date-aware calendar cannot
+    // confirm the 13:20 close: the venue-local day precedes the 2025-01-01
+    // floor and the query is refused as `BeforeSupportFloor`. The close itself
+    // stays asserted above through `hours_for_exchange`, which is the surface
+    // SER-7395R is sourced from.
+    assert_refuses_before_floor(
+        calendar.is_open_regular(ct(monday, (13, 15, 0))),
+        calendar,
+        ct(monday, (13, 15, 0)),
+    );
 }

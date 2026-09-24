@@ -23,8 +23,8 @@ use super::VERIFICATION;
 use chrono::{Datelike as _, NaiveDate, TimeZone as _, Utc, Weekday};
 use chrono_tz::US::Central;
 use exchange_hours::{
-    CoverageGap, CoverageGapReason, DateCoverage, Exchange, ExchangeCalendar, Holiday, HolidayKind,
-    MarketHoursKey, calendar_for_exchange, calendar_for_market_hours_key,
+    CalendarQueryError, CoverageGap, CoverageGapReason, DateCoverage, Exchange, ExchangeCalendar,
+    Holiday, HolidayKind, MarketHoursKey, calendar_for_exchange, calendar_for_market_hours_key,
 };
 
 const INVENTORY: &str = include_str!("../../docs/schedules/coverage-2025.md");
@@ -586,6 +586,53 @@ fn chicago_on(date: NaiveDate) -> chrono::DateTime<Utc> {
         .with_timezone(&Utc)
 }
 
+/// Asserts the identity-backed order-acceptance answer is exactly the verdict
+/// the identity publishes for `date` (LAW-COVERAGE).
+///
+/// The served quarter-hour answers as an acceptance where the scope declares no
+/// remaining gap; a scope still withholding the date refuses with the error its
+/// own `coverage_on` names. This keeps the era fence honest without assuming
+/// that #79 is every scope's only declaration: `globex_fx` carries an unbounded
+/// `#93` too, so the same 16:05 CT instant answers for one scope and refuses for
+/// the other, and both are correct.
+fn assert_acceptance_matches_coverage(
+    calendar: ExchangeCalendar,
+    instant: chrono::DateTime<Utc>,
+    date: NaiveDate,
+    label: &str,
+) {
+    let answer = calendar.is_accepting_orders(instant);
+    let source = calendar.source();
+    let verdict = calendar.coverage().coverage_on(date);
+    // `DateCoverage` is `#[non_exhaustive]`; a verdict this fence does not know
+    // cannot be mapped to an expected answer, so it fails here rather than
+    // letting the comparison below pass by accident.
+    assert!(
+        matches!(
+            verdict,
+            DateCoverage::Covered
+                | DateCoverage::BeforeSupportFloor
+                | DateCoverage::UnresolvedGap
+                | DateCoverage::OutsideCoveredRange
+        ),
+        "{label}: unrecognised coverage verdict {verdict:?}, got {answer:?}"
+    );
+    let expected = match verdict {
+        DateCoverage::Covered => Ok(true),
+        DateCoverage::BeforeSupportFloor => {
+            Err(CalendarQueryError::BeforeSupportFloor { source, date })
+        }
+        DateCoverage::UnresolvedGap => Err(CalendarQueryError::UnresolvedGap { source, date }),
+        DateCoverage::OutsideCoveredRange | _ => {
+            Err(CalendarQueryError::OutsideCoveredRange { source, date })
+        }
+    };
+    assert_eq!(
+        answer, expected,
+        "{label}: the query must state the verdict its identity publishes"
+    );
+}
+
 /// A venue-local date for the era probe.
 fn day(year: i32, month: u32, day: u32) -> NaiveDate {
     NaiveDate::from_ymd_opt(year, month, day).expect("the era probe uses valid dates")
@@ -638,8 +685,15 @@ fn the_sunday_quarter_hour_is_declared_exactly_where_the_profiles_withhold_it() 
             .phase_gaps()
             .iter()
             .any(|gap| gap.closing_condition() == "#79");
-        let closed_inside = !calendar.is_accepting_orders(inside);
-        let open_after = calendar.is_accepting_orders(after);
+        // The grid this fence reads is the **fixed snapshot's**, because that is
+        // the surface which still states it: the identity-backed query refuses
+        // the very quarter-hour the declaring scopes withhold (LAW-COVERAGE), so
+        // asking it here would measure the refusal rather than the profile. The
+        // snapshot carries no identity and no coverage verdict, and
+        // `ExchangeCalendar::hours_at` is documented as the identity's sourced
+        // profile at the instant.
+        let closed_inside = !calendar.hours_at(inside).is_accepting_orders(inside);
+        let open_after = calendar.hours_at(after).is_accepting_orders(after);
         assert_eq!(
             declares,
             closed_inside && open_after,
@@ -658,6 +712,19 @@ fn the_sunday_quarter_hour_is_declared_exactly_where_the_profiles_withhold_it() 
             inside.with_timezone(&Central),
             if declares { "" } else { "not " }
         );
+        // And the identity-backed answer is asserted for what it now says: a
+        // declaring scope refuses the withheld quarter-hour outright, so a
+        // caller can never read the withholding as a grid.
+        if declares {
+            assert_eq!(
+                calendar.is_accepting_orders(inside),
+                Err(CalendarQueryError::OutsideCoveredRange {
+                    source: calendar.source(),
+                    date: inside.with_timezone(&Central).date_naive(),
+                }),
+                "{name} must refuse the withheld Sunday quarter-hour, not answer it"
+            );
+        }
         if declares {
             withholding.push(name);
         } else if !closed_inside {
@@ -826,7 +893,10 @@ const QUARTER_HOUR_ERAS: [QuarterHourEra; 7] = [
 ///    back through [`exchange_hours::PhaseGap::applies_until`], and it applies on
 ///    the earlier Sunday and not on the later;
 /// 2. **the profile agrees**: orders are refused inside the dated era and accepted
-///    after it;
+///    after it — read from the fixed snapshot, which is the surface that still
+///    states a grid the identity withholds, with the identity's own answer
+///    asserted beside it (a coverage refusal inside the era, and whatever its
+///    published verdict says after the bound);
 /// 3. **the metadata agrees with the profile**: the earlier Sunday is outside the
 ///    covered range for every declaring scope, and after the bound each scope's
 ///    verdict is the one its own declarations imply - `Covered` where `#79` was
@@ -877,15 +947,46 @@ fn the_sunday_quarter_hour_gap_ends_at_the_knowledge_bound_row() {
         );
 
         // 2. The profiles: shut at 16:05 CT inside the dated era, open after it.
+        //
+        //    The grid comes from the fixed snapshot, which still states it; the
+        //    identity-backed answer on the dated Sunday is the coverage refusal
+        //    the withheld quarter-hour now earns, and that refusal is asserted
+        //    rather than assumed. After the bound the identity answers, and its
+        //    answer is an acceptance.
+        let dated_instant = chicago_on(dated);
         assert!(
-            !calendar.is_accepting_orders(chicago_on(dated)),
+            !calendar
+                .hours_at(dated_instant)
+                .is_accepting_orders(dated_instant),
             "{name} must not accept orders at 16:05 CT on {dated}: its dated profile withholds \
              the 16:00-16:15 CT quarter-hour"
         );
+        assert_eq!(
+            calendar.is_accepting_orders(dated_instant),
+            Err(CalendarQueryError::OutsideCoveredRange {
+                source: calendar.source(),
+                date: dated,
+            }),
+            "{name} withholds the quarter-hour on {dated}, so its own answer is the coverage \
+             refusal and never a closed grid"
+        );
         assert!(
-            calendar.is_accepting_orders(chicago_on(after)),
+            calendar
+                .hours_at(chicago_on(after))
+                .is_accepting_orders(chicago_on(after)),
             "{name} accepts orders at 16:05 CT on {after}: its {bound} knowledge-bound row \
              widened the Sunday queue to 16:00-17:00 CT"
+        );
+        // The identity states the widened grid only where #79 was its only
+        // declared gap; a scope carrying another declared phase gap still
+        // withholds the date, and the answer is then that refusal. The expected
+        // answer is driven from the scope's own published coverage rather than
+        // assumed, so both cases are stated exactly.
+        assert_acceptance_matches_coverage(
+            calendar,
+            chicago_on(after),
+            after,
+            &format!("{name} after its {bound} knowledge-bound row"),
         );
 
         // 3. The metadata follows the profiles on every Sunday across the
@@ -894,7 +995,20 @@ fn the_sunday_quarter_hour_gap_ends_at_the_knowledge_bound_row() {
         //    other weekday the CRITICAL window is long closed, so `is_accepting_orders`
         //    would say nothing about the quarter-hour.
         for sunday in sundays_between(dated, after) {
-            let served = calendar.is_accepting_orders(chicago_on(sunday));
+            let instant = chicago_on(sunday);
+            // The profile's own answer, from the surface that states it.
+            let served = calendar.hours_at(instant).is_accepting_orders(instant);
+            // The identity's answer, driven from its own published verdict for
+            // the date: the served quarter-hour answers (a scope with no other
+            // declared gap accepts orders; `globex_fx`'s unbounded `#93` still
+            // withholds the date), and the withheld quarter-hour before the
+            // bound refuses. A refusal is never read as a closed grid.
+            assert_acceptance_matches_coverage(
+                calendar,
+                instant,
+                sunday,
+                &format!("{name} at 16:05 CT on {sunday}"),
+            );
             let verdict = coverage.coverage_on(sunday);
             // The profile must serve the quarter-hour exactly from the bound on,
             // and the #79 declaration must be the reason the metadata withholds

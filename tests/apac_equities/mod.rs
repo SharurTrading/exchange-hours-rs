@@ -11,12 +11,12 @@ mod history_singapore_korea_taiwan;
 mod history_southeast_asia;
 
 mod prelude {
-    pub(super) use chrono::Duration;
+    pub(super) use chrono::{Duration, NaiveDate};
     pub(super) use chrono_tz::{Asia, Australia, Pacific, Tz};
     pub(super) use exchange_hours::{
-        CalendarResolution, Exchange, MarketHours, SessionKind, SessionState,
-        calendar_for_exchange, hours_for_apac_equities, hours_for_exchange,
-        hours_map_apac_equities,
+        CalendarQueryError, CalendarResolution, CalendarSource, Exchange, MarketHours, SessionKind,
+        SessionState, calendar_for_exchange, candle_end, candle_start, hours_for_apac_equities,
+        hours_for_exchange, hours_map_apac_equities,
     };
 
     pub(super) use crate::support::local;

@@ -64,7 +64,19 @@ fn nasdaq_0400_premarket_started_on_2013_03_18() {
     assert!(before.is_open_extended(et((2013, 3, 18), (7, 0, 0))));
     assert!(!after.is_open(et((2013, 3, 18), (3, 59, 59))));
     assert!(after.is_open_extended(et((2013, 3, 18), (4, 0, 0))));
-    assert!(calendar_for_exchange(Exchange::Nasdaq).is_open_extended(et((2013, 3, 18), (4, 0, 0))));
+
+    // The cutover era is entirely pre-floor, so the date-aware calendar cannot
+    // confirm the fixed snapshot: `2013-03-18` is a venue-local date before the
+    // 2025-01-01 floor and the calendar refuses it as `BeforeSupportFloor`
+    // rather than reporting the refusal as a closure. What is no longer
+    // claimable through the calendar is a `bool`; the 04:00 ET extended open
+    // itself stays asserted above through `hours_for_exchange`.
+    let calendar = calendar_for_exchange(Exchange::Nasdaq);
+    assert_refuses_before_floor(
+        calendar.is_open_extended(et((2013, 3, 18), (4, 0, 0))),
+        calendar,
+        et((2013, 3, 18), (4, 0, 0)),
+    );
 }
 
 #[test]
@@ -94,8 +106,17 @@ fn nasdaq_psx_launch_and_0800_expansion_use_sourced_dates() {
 
     assert!(!before.is_open(et((2010, 12, 13), (8, 0, 0))));
     assert!(after.is_open_extended(et((2010, 12, 13), (8, 0, 0))));
-    assert!(
-        calendar_for_exchange(Exchange::NasdaqPsx).is_open_extended(et((2010, 12, 13), (8, 0, 0)))
+
+    // Both dated changes are pre-floor, so the date-aware calendar state them
+    // nowhere: `2010-12-13` is a venue-local date before the 2025-01-01 floor
+    // and the calendar refuses it as `BeforeSupportFloor`. The 08:00 ET
+    // expansion stays asserted above through `hours_for_exchange`, which is the
+    // surface this cutover is sourced from.
+    let calendar = calendar_for_exchange(Exchange::NasdaqPsx);
+    assert_refuses_before_floor(
+        calendar.is_open_extended(et((2010, 12, 13), (8, 0, 0))),
+        calendar,
+        et((2010, 12, 13), (8, 0, 0)),
     );
 }
 
@@ -121,5 +142,24 @@ fn nasdaq_unconfirmed_night_session_is_not_encoded() {
         assert!(!hours.is_open(et((2026, 12, 7), (20, 0, 0))));
         assert!(!hours.is_open(et((2026, 12, 7), (21, 0, 0))));
     }
-    assert!(!calendar_for_exchange(Exchange::Nasdaq).is_open(et((2026, 12, 6), (21, 0, 0))));
+    // `Nasdaq` ships no holiday table and claims none, so it has no complete
+    // range at all above the floor: every post-floor date is
+    // `OutsideCoveredRange`. The date-aware calendar therefore refuses this
+    // probe rather than answering it, and the "no night session is encoded"
+    // claim is stated by the fixed snapshot in the loop above — the same fact
+    // the calendar's `hours_at` still reports.
+    let calendar = calendar_for_exchange(Exchange::Nasdaq);
+    assert_refused(
+        calendar.is_open(et((2026, 12, 6), (21, 0, 0))),
+        DateCoverage::OutsideCoveredRange,
+        calendar,
+        et((2026, 12, 6), (21, 0, 0)),
+    );
+    assert!(
+        !calendar
+            .hours_at(et((2026, 12, 6), (21, 0, 0)))
+            .is_open(et((2026, 12, 6), (21, 0, 0))),
+        "the selected profile still holds the current 04:00-20:00 ET envelope, \
+         so the conditional Night Session is not encoded"
+    );
 }

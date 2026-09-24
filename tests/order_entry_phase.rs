@@ -13,10 +13,104 @@
 
 use chrono::{DateTime, NaiveDate, TimeZone as _, Utc};
 use exchange_hours::{
-    CalendarResolution, DayOverride, Exchange, MarketHoursKey, SessionState, StaticDayPolicy,
-    calendar_for_exchange, calendar_for_market_hours_key, hours_for_exchange,
-    hours_for_market_hours_key,
+    CalendarQueryError, CalendarResolution, CalendarSource, DateCoverage, DayOverride, Exchange,
+    ExchangeCalendar, MarketHoursKey, SessionState, StaticDayPolicy, calendar_for_exchange,
+    calendar_for_market_hours_key, hours_for_exchange, hours_for_market_hours_key,
 };
+
+/// Asserts an identity-backed query returns exactly `expected`, the coverage
+/// error the shipped data declares. The variant, identity and date are all part
+/// of the contract: a refusal that named the wrong day would be as wrong as an
+/// answer.
+fn assert_refusal<T>(
+    answer: Result<T, CalendarQueryError>,
+    expected: CalendarQueryError,
+    label: &str,
+) {
+    assert_eq!(
+        answer.err(),
+        Some(expected),
+        "{label}: the query must state the refusal its identity declares"
+    );
+}
+
+/// Asserts a query refuses `date` because the venue-local day precedes the
+/// permanent 2025 support floor (LAW-COVERAGE).
+fn assert_before_floor<T: std::fmt::Debug>(
+    answer: Result<T, CalendarQueryError>,
+    source: CalendarSource,
+    date: NaiveDate,
+    label: &str,
+) {
+    assert_refusal(
+        answer,
+        CalendarQueryError::BeforeSupportFloor { source, date },
+        label,
+    );
+}
+
+/// Asserts a refusal is exactly the one `calendar` publishes for the day the
+/// query named, so a query verdict and the identity's own coverage metadata can
+/// never disagree.
+///
+/// Driving the expectation from
+/// [`exchange_hours::CalendarCoverage::coverage_on`] keeps a many-date sweep
+/// honest: the sweep states the verdict the shipped data declares rather than a
+/// hand-copied list of dates. `SearchExhausted` is the one refusal that is not a
+/// per-date verdict — a bounded walk ran out — so it is checked for the identity
+/// and for the documented shape of its report (`date` is the day the walk
+/// stopped on, and `bound` equals it).
+fn assert_published_refusal(error: CalendarQueryError, calendar: ExchangeCalendar, label: &str) {
+    assert_eq!(
+        error.source(),
+        calendar.source(),
+        "{label}: the refusal names the wrong identity"
+    );
+    let date = error.date();
+    let verdict = calendar.coverage().coverage_on(date);
+    // `DateCoverage` is `#[non_exhaustive]`. A verdict this file does not know
+    // cannot be mapped to a refusal, and comparing the error with itself would
+    // fence nothing, so it fails here, loudly, before the match below.
+    assert!(
+        matches!(
+            verdict,
+            DateCoverage::Covered
+                | DateCoverage::NormalWeekOnly
+                | DateCoverage::BeforeSupportFloor
+                | DateCoverage::OutsideCoveredRange
+                | DateCoverage::UnresolvedGap
+        ),
+        "{label}: unrecognised coverage verdict {verdict:?} for {date}, got {error:?}"
+    );
+    let declared = match verdict {
+        DateCoverage::OutsideCoveredRange => Some(CalendarQueryError::OutsideCoveredRange {
+            source: calendar.source(),
+            date,
+        }),
+        DateCoverage::UnresolvedGap => Some(CalendarQueryError::UnresolvedGap {
+            source: calendar.source(),
+            date,
+        }),
+        DateCoverage::BeforeSupportFloor => Some(CalendarQueryError::BeforeSupportFloor {
+            source: calendar.source(),
+            date,
+        }),
+        DateCoverage::Covered | DateCoverage::NormalWeekOnly | _ => None,
+    };
+    match declared {
+        Some(expected) => assert_eq!(
+            error, expected,
+            "{label}: the query must state the coverage verdict its identity publishes"
+        ),
+        None => assert!(
+            matches!(
+                error,
+                CalendarQueryError::SearchExhausted { date: stopped, bound, .. } if stopped == bound
+            ),
+            "{label}: only a bounded search may refuse a date the identity declares              complete, and it reports the day it stopped on as its bound, got {error:?}"
+        ),
+    }
+}
 
 fn utc(year: i32, month: u32, day: u32, hour: u32, minute: u32) -> DateTime<Utc> {
     Utc.with_ymd_and_hms(year, month, day, hour, minute, 0)
@@ -116,11 +210,26 @@ fn an_order_entry_window_is_never_reported_as_an_open_session() {
     for key in MarketHoursKey::ALL {
         let calendar = calendar_for_market_hours_key(*key);
         for instant in week_samples() {
-            if calendar.session_state(instant) == SessionState::OrderEntry {
+            let label = format!("{} at {instant}", key.as_str());
+            // The split is the coverage line (LAW-COVERAGE): where the identity
+            // answers the instant, the separation this fence is about is
+            // claimable; where it declares no answer for a day the instant needs
+            // — a scope with no holiday layer, or the withheld Sunday queue
+            // before its knowledge-bound era (#79) — the query refuses, and the
+            // refusal is asserted rather than read as a state.
+            let state = match calendar.session_state(instant) {
+                Ok(state) => state,
+                Err(error) => {
+                    assert_published_refusal(error, calendar, &label);
+                    continue;
+                }
+            };
+            if state == SessionState::OrderEntry {
                 assert!(
-                    !calendar.is_open(instant),
-                    "{}: OrderEntry state but is_open is true at {instant}",
-                    key.as_str()
+                    !calendar
+                        .is_open(instant)
+                        .expect("a state that answered answers is_open too"),
+                    "{label}: OrderEntry state but is_open is true"
                 );
                 // `candle_start` is forward-looking for any closed instant -
                 // it reports the next bar, exactly as it does during
@@ -128,12 +237,14 @@ fn an_order_entry_window_is_never_reported_as_an_open_session() {
                 // something, but that an order-entry window used to be treated
                 // as a session, so a bar STARTED inside it. Assert that no bar
                 // begins within the window.
-                if let Some(start) = calendar.candle_start(instant, CalendarResolution::Hours(1)) {
+                if let Some(start) = calendar
+                    .candle_start(instant, CalendarResolution::Hours(1))
+                    .expect("a state that answered answers the bar too")
+                {
                     assert!(
                         start > instant,
-                        "{}: an hourly candle starts at or before {instant}, inside an \
-                         order-entry window where no trade can print",
-                        key.as_str()
+                        "{label}: an hourly candle starts at or before {instant}, inside \
+                         an order-entry window where no trade can print"
                     );
                 }
             }
@@ -152,16 +263,43 @@ fn order_entry_queries_reselect_on_the_session_opening_day_across_a_revision() {
     // profile the instant's own civil date selects.
     let calendar = calendar_for_market_hours_key(MarketHoursKey::CfeVix);
 
+    // Every probe here is a venue-local 2018 date, before the permanent 2025
+    // floor, so the identity refuses each of them: which profile owns an opening
+    // day is no longer observable across this revision, and a refusal is not an
+    // order-entry answer (LAW-COVERAGE). The refusal names the instant's own
+    // local day, which is the date the query could not source.
+    let cfe = CalendarSource::MarketHoursKey(MarketHoursKey::CfeVix);
+
     // 22:10/22:20 UTC are 16:10/16:20 CT (CST). The prior regime's queue
     // starts 16:15.
-    assert!(!calendar.is_order_entry_only(utc(2018, 2, 18, 22, 10)));
-    assert!(calendar.is_order_entry_only(utc(2018, 2, 18, 22, 20)));
+    assert_before_floor(
+        calendar.is_order_entry_only(utc(2018, 2, 18, 22, 10)),
+        cfe,
+        NaiveDate::from_ymd_opt(2018, 2, 18).expect("fixture date"),
+        "the prior regime's queue, before its 16:15 onset",
+    );
+    assert_before_floor(
+        calendar.is_order_entry_only(utc(2018, 2, 18, 22, 20)),
+        cfe,
+        NaiveDate::from_ymd_opt(2018, 2, 18).expect("fixture date"),
+        "the prior regime's queue, after its 16:15 onset",
+    );
 
     // Sunday 2018-02-25, 22:01 UTC = 16:01 CT: the new regime already queues.
-    assert!(calendar.is_order_entry_only(utc(2018, 2, 25, 22, 1)));
+    assert_before_floor(
+        calendar.is_order_entry_only(utc(2018, 2, 25, 22, 1)),
+        cfe,
+        NaiveDate::from_ymd_opt(2018, 2, 25).expect("fixture date"),
+        "the new regime's queue",
+    );
     // Monday 2018-02-26, 14:00 UTC = 08:00 CT: the wrapped session opened
     // Sunday under the new profile and is still trading.
-    assert!(calendar.is_open(utc(2018, 2, 26, 14, 0)));
+    assert_before_floor(
+        calendar.is_open(utc(2018, 2, 26, 14, 0)),
+        cfe,
+        NaiveDate::from_ymd_opt(2018, 2, 26).expect("fixture date"),
+        "the wrapped Monday session",
+    );
 }
 
 #[test]
@@ -181,12 +319,19 @@ fn a_closed_trade_date_removes_the_queue_that_feeds_it() {
     // Sunday 2026-08-23, 21:30 UTC = 16:30 CT (CDT): inside the queue.
     let sunday_queue = utc(2026, 8, 23, 21, 30);
     assert_eq!(
-        calendar.session_state(sunday_queue),
+        calendar
+            .session_state(sunday_queue)
+            .expect("the coverage contract must answer a covered date"),
         SessionState::OrderEntry
     );
 
     let closed = calendar.with_day_policy(&policy);
-    assert_eq!(closed.session_state(sunday_queue), SessionState::Closed);
+    assert_eq!(
+        closed
+            .session_state(sunday_queue)
+            .expect("the coverage contract must answer a covered date"),
+        SessionState::Closed
+    );
 }
 
 #[test]

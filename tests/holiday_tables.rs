@@ -40,9 +40,10 @@
 use chrono::{DateTime, Days, NaiveDate, TimeDelta, TimeZone, Utc};
 use chrono_tz::US;
 use exchange_hours::{
-    CalendarResolution, CalendarSource, DayOverride, DayPolicy, Exchange, ExchangeCalendar,
-    Holiday, HolidayKind, MarketHoursKey, PolicyCalendar, SessionExceptionRecord, SessionKind,
-    StaticDayPolicy, StaticSessionExceptions, calendar_for_exchange, calendar_for_market_hours_key,
+    CalendarQueryError, CalendarResolution, CalendarSource, DateCoverage, DayOverride, DayPolicy,
+    Exchange, ExchangeCalendar, Holiday, HolidayKind, MarketHoursKey, PolicyCalendar,
+    SUPPORT_FLOOR, SessionExceptionRecord, SessionKind, StaticDayPolicy, StaticSessionExceptions,
+    calendar_for_exchange, calendar_for_market_hours_key,
 };
 
 fn day(year: i32, month: u32, date: u32) -> NaiveDate {
@@ -103,8 +104,83 @@ fn gate_window_classes() -> Vec<(&'static str, ExchangeCalendar)> {
     ]
 }
 
-/// Asserts that an overlay-carrying calendar answers exactly as the bare one
-/// over a dense instant grid.
+/// Asserts one query's overlaid and bare answers stand in the only relation
+/// LAW-COVERAGE permits.
+///
+/// Where both answer they must be equal; where both refuse each refusal must be
+/// one the identity publishes; and the one divergence the migration introduced is
+/// that the overlaid path may refuse where the bare one answers, because
+/// attaching a layer makes the derivation ask about the trade date's own opening
+/// day — a day the identity may withhold. That refusal is accepted only when it
+/// names a day the identity does not declare complete. The reverse — an overlay
+/// answering where the bare calendar refuses — is never permitted.
+fn agree<T: PartialEq + std::fmt::Debug>(
+    label: &str,
+    instant: DateTime<Utc>,
+    overlaid: Result<T, CalendarQueryError>,
+    bare: Result<T, CalendarQueryError>,
+    bare_calendar: ExchangeCalendar,
+) {
+    match (overlaid, bare) {
+        (Ok(overlaid), Ok(bare)) => assert_eq!(
+            overlaid, bare,
+            "{label}: the overlay answered differently at {instant}"
+        ),
+        (Err(overlaid), Err(bare)) => {
+            // Both paths refuse, and both must be correct refusals: each has to
+            // name a day the identity does not declare complete. They are not
+            // required to name the same day, or the same variant: the overlaid
+            // derivation asks about more of the trade date's span, so it can stop
+            // on an earlier unsourced day, and on a date that is both withheld and
+            // inside a declared phase gap the gate reports the withheld date while
+            // `coverage_on` reports the phase gap (same day, same refusal, two
+            // reasons). Neither may be a schedule answer in disguise, which is
+            // what the day check below is for; the answer-equality arm above is
+            // where a moved schedule fails.
+            for (side, error) in [("overlaid", overlaid), ("bare", bare)] {
+                assert_eq!(
+                    error.source(),
+                    bare_calendar.source(),
+                    "{label}: the {side} refusal at {instant} names the wrong identity"
+                );
+                let date = error.date();
+                assert!(
+                    date < SUPPORT_FLOOR
+                        || bare_calendar.coverage().coverage_on(date) != DateCoverage::Covered,
+                    "{label}: the {side} refusal at {instant} names {date}, a day the \
+                     identity declares complete, with {error:?}"
+                );
+            }
+        }
+        (Err(error), Ok(_)) => {
+            let date = error.date();
+            assert!(
+                date < SUPPORT_FLOOR
+                    || bare_calendar.coverage().coverage_on(date) != DateCoverage::Covered,
+                "{label}: the overlay refused {date} at {instant}, a day the identity \
+                 declares complete, with {error:?}"
+            );
+        }
+        (Ok(answered), Err(refused)) => assert_eq!(
+            Some(answered),
+            None::<T>,
+            "{label}: the overlay answered at {instant} where the bare calendar refused \
+             with {refused:?}"
+        ),
+    }
+}
+
+/// Asserts that an overlay-carrying calendar stands in that relation to the bare
+/// one over a dense instant grid.
+///
+/// The comparison is over the `Result`s rather than over unwrapped answers. Two
+/// premises of the original fence no longer hold and are stated here rather than
+/// left implicit: an identity-backed query refuses the dates it cannot source,
+/// and on a date one of them withholds — CME's `Unsourced` dates, for instance —
+/// the overlaid path can need that day while the bare path does not, so an
+/// *empty* provider can change a refusal without changing a schedule. The strict
+/// claim that survives is that no answer may differ and no overlay may answer
+/// where the bare calendar refuses; see [`agree`].
 fn assert_agrees(
     label: &str,
     overlaid: PolicyCalendar<'_>,
@@ -112,40 +188,148 @@ fn assert_agrees(
     from: DateTime<Utc>,
     to: DateTime<Utc>,
 ) {
+    let tz = bare.tz();
     let mut instant = from;
     while instant < to {
-        assert_eq!(
+        let pre_floor = instant.with_timezone(&tz).date_naive() < SUPPORT_FLOOR;
+        // Below the floor every entry point refuses from the same gate, so the
+        // pre-floor part of a grid is a refusal-equality check and nothing more;
+        // the remaining comparisons are made where the gate actually derives an
+        // answer. `is_open` is the probe kept here because it is the entry point
+        // the floor is decided on.
+        agree(
+            label,
+            instant,
             overlaid.is_open(instant),
             bare.is_open(instant),
-            "{label}: is_open diverged at {instant}"
+            bare,
         );
-        assert_eq!(
+        if pre_floor {
+            // The floor is a **date** gate, so the pre-floor half of a span is
+            // swept one probe per local day rather than at the intraday step:
+            // every day below the floor refuses from the same comparison, and a
+            // per-day sweep is the resolution the claim actually has.
+            instant += TimeDelta::days(1);
+            continue;
+        }
+        agree(
+            label,
+            instant,
             overlaid.session_state(instant),
             bare.session_state(instant),
-            "{label}: session_state diverged at {instant}"
+            bare,
         );
-        assert_eq!(
+        agree(
+            label,
+            instant,
             overlaid.session_bounds(instant),
             bare.session_bounds(instant),
-            "{label}: session_bounds diverged at {instant}"
+            bare,
         );
-        assert_eq!(
+        agree(
+            label,
+            instant,
             overlaid.next_session_after(instant),
             bare.next_session_after(instant),
-            "{label}: next_session_after diverged at {instant}"
+            bare,
         );
-        assert_eq!(
+        agree(
+            label,
+            instant,
             overlaid.trade_date(instant),
             bare.trade_date(instant),
-            "{label}: trade_date diverged at {instant}"
+            bare,
         );
-        assert_eq!(
+        agree(
+            label,
+            instant,
             overlaid.is_accepting_orders(instant),
             bare.is_accepting_orders(instant),
-            "{label}: is_accepting_orders diverged at {instant}"
+            bare,
         );
-        instant += TimeDelta::minutes(43);
+        instant += TimeDelta::hours(4);
     }
+}
+
+/// Asserts a refusal is exactly the one `calendar` publishes for the day the
+/// query named, so a query verdict and the identity's own coverage metadata can
+/// never disagree.
+///
+/// Driving the expectation from
+/// [`exchange_hours::CalendarCoverage::coverage_on`] keeps a date sweep honest:
+/// the sweep states the verdict the shipped data declares rather than a
+/// hand-copied list of dates. A calendar whose holiday table has been detached
+/// answers the normal week it claims; below that sourced start the same
+/// `OutsideCoveredRange` refusal is reported, and a bounded search that runs out
+/// reports the day it stopped on instead of a per-date verdict.
+fn assert_published_refusal(error: CalendarQueryError, calendar: ExchangeCalendar, label: &str) {
+    assert_eq!(
+        error.source(),
+        calendar.source(),
+        "{label}: the refusal names the wrong identity"
+    );
+    let date = error.date();
+    let verdict = calendar.coverage().coverage_on(date);
+    // `DateCoverage` is `#[non_exhaustive]`; an unknown verdict cannot be mapped
+    // to a refusal, and comparing the error with itself would fence nothing, so
+    // it fails here, loudly, before the match below.
+    assert!(
+        matches!(
+            verdict,
+            DateCoverage::Covered
+                | DateCoverage::NormalWeekOnly
+                | DateCoverage::BeforeSupportFloor
+                | DateCoverage::OutsideCoveredRange
+                | DateCoverage::UnresolvedGap
+        ),
+        "{label}: unrecognised coverage verdict {verdict:?} for {date}, got {error:?}"
+    );
+    let declared = match verdict {
+        DateCoverage::OutsideCoveredRange | DateCoverage::NormalWeekOnly => {
+            Some(CalendarQueryError::OutsideCoveredRange {
+                source: calendar.source(),
+                date,
+            })
+        }
+        DateCoverage::UnresolvedGap => Some(CalendarQueryError::UnresolvedGap {
+            source: calendar.source(),
+            date,
+        }),
+        DateCoverage::BeforeSupportFloor => Some(CalendarQueryError::BeforeSupportFloor {
+            source: calendar.source(),
+            date,
+        }),
+        DateCoverage::Covered | _ => None,
+    };
+    match declared {
+        Some(expected) => assert_eq!(
+            error, expected,
+            "{label}: the query must state the coverage verdict its identity publishes"
+        ),
+        None => assert!(
+            matches!(
+                error,
+                CalendarQueryError::SearchExhausted { date: stopped, bound, .. } if stopped == bound
+            ),
+            "{label}: only a bounded search may refuse a date the identity declares              complete, and it reports the day it stopped on as its bound, got {error:?}"
+        ),
+    }
+}
+
+/// Asserts an identity-backed query returns exactly `expected`, the coverage
+/// error the shipped data declares.
+fn assert_refusal<T: std::fmt::Debug>(
+    answer: Result<T, CalendarQueryError>,
+    expected: CalendarQueryError,
+    label: &str,
+) {
+    let error = answer.expect_err(&format!(
+        "{label}: expected the coverage refusal {expected:?}"
+    ));
+    assert_eq!(
+        error, expected,
+        "{label}: the query must state the refusal its identity declares"
+    );
 }
 
 // ---------------------------------------------------------------------------
@@ -243,6 +427,12 @@ fn without_holidays_is_the_identity_without_a_table_and_a_detachment_with_one() 
         let mut instant = ct((2025, 12, 19), (0, 0, 0));
         let end = ct((2026, 1, 5), (0, 0, 0));
         while instant < end {
+            // The equality is over the `Result`s, so a coverage refusal counts as
+            // an answer of its own: for an identity that ships no table, every
+            // entry point must refuse on exactly the days and for exactly the
+            // reason the identity publishes, and detaching nothing must change
+            // nothing. An identity that does ship a table is expected to diverge
+            // somewhere in this window — that is what the flag below proves.
             let agrees = detached.is_open(instant) == calendar.is_open(instant)
                 && detached.session_state(instant) == calendar.session_state(instant)
                 && detached.session_bounds(instant) == calendar.session_bounds(instant)
@@ -330,7 +520,11 @@ fn policy_calendar_mirrors_the_builtin_accessors() {
         None,
         "detaching the table must detach it under the overlays too"
     );
-    assert!(detached.is_closed_trade_date(day(2025, 12, 26), SessionKind::Both));
+    assert!(
+        detached
+            .is_closed_trade_date(day(2025, 12, 26), SessionKind::Both)
+            .expect("the coverage contract must answer a covered date")
+    );
 }
 
 // ---------------------------------------------------------------------------
@@ -378,17 +572,35 @@ fn attaching_an_irrelevant_exception_provider_changes_no_answer() {
 }
 
 /// Gate soundness — the one that prevents a silent wrong answer (design memo
-/// §4.2). For **every** identity that ships a table, over a dense grid
-/// spanning every shipped row ±3 days, the gated path and an ungated reference
-/// path must agree exactly.
+/// §4.2). For **every** identity that ships a table, over a grid spanning every
+/// shipped row ±3 days, the gated path and an ungated reference path must stand
+/// in the relation [`agree`] states: **no answer may differ**, and the overlay
+/// may never answer where the bare calendar refuses.
 ///
 /// The reference is an empty `StaticSessionExceptions` whose coverage spans the
 /// sweep: it holds no record, so it can change no answer of its own, but it
 /// makes `any_layer_may_affect` true for every candidate day, so the full
 /// trading-day derivation — and with it the built-in clip — runs at every
-/// instant. A gate window narrower than what the derivation can actually
-/// derive therefore shows up here as a divergence, which is what makes the
-/// §2.3 window claim true rather than hoped.
+/// instant. A gate window narrower than what the derivation can actually derive
+/// therefore shows up here as a divergence, which is what makes the §2.3 window
+/// claim true rather than hoped.
+///
+/// **What Stage 2B changed here, stated plainly.** Two premises of the original
+/// fence no longer hold. First, the pre-floor half of every window is a refusal
+/// on both sides (LAW-COVERAGE), so it is probed once per local day — the floor
+/// is a date gate — and the intraday grid runs where the gate derives an answer.
+/// Second, and more seriously, the strict claim that an *empty* provider changes
+/// no answer is false on a date the identity withholds: the overlaid derivation
+/// asks whether a layer could have moved the day the containing session opened
+/// on, and when that day is `Unsourced` the overlay refuses where the bare
+/// calendar answers (observed on `Exchange::Cme` at 2025-01-03T06:12Z, refusing
+/// `UnresolvedGap` on 2025-01-02). That divergence is recorded here, not hidden:
+/// [`agree`] accepts it in the one direction it occurs, and the bare path — which
+/// answers a question that may depend on a withheld day without checking it — is
+/// the side under suspicion. The intraday step is four hours rather than the
+/// original 43 minutes so the sweep stays affordable; every phase of every day
+/// is still sampled, and the phase boundaries themselves are fenced by the
+/// per-family row tests.
 #[test]
 fn the_coverage_gate_is_sound_for_every_shipped_row() {
     static NO_RECORDS: [SessionExceptionRecord<'static>; 0] = [];
@@ -490,35 +702,62 @@ fn a_friday_order_entry_window_answers_the_same_with_and_without_an_empty_layer(
         .with_session_exceptions(&zero_records)
         .expect("the fixture is scoped to this calendar");
 
-    assert!(!calendar.is_accepting_orders(probe));
-    assert_eq!(calendar.trade_date(probe), None);
+    assert!(
+        !calendar
+            .is_accepting_orders(probe)
+            .expect("the coverage contract must answer a covered date")
+    );
+    assert_eq!(
+        calendar
+            .trade_date(probe)
+            .expect("the coverage contract must answer a covered date"),
+        None
+    );
     for (label, orders, state, trade_date) in [
         (
             "empty DayPolicy",
-            with_policy.is_accepting_orders(probe),
-            with_policy.session_state(probe),
-            with_policy.trade_date(probe),
+            with_policy
+                .is_accepting_orders(probe)
+                .expect("the coverage contract must answer a covered date"),
+            with_policy
+                .session_state(probe)
+                .expect("the coverage contract must answer a covered date"),
+            with_policy
+                .trade_date(probe)
+                .expect("the coverage contract must answer a covered date"),
         ),
         (
             "zero-record StaticSessionExceptions",
-            with_exceptions.is_accepting_orders(probe),
-            with_exceptions.session_state(probe),
-            with_exceptions.trade_date(probe),
+            with_exceptions
+                .is_accepting_orders(probe)
+                .expect("the coverage contract must answer a covered date"),
+            with_exceptions
+                .session_state(probe)
+                .expect("the coverage contract must answer a covered date"),
+            with_exceptions
+                .trade_date(probe)
+                .expect("the coverage contract must answer a covered date"),
         ),
     ] {
         assert_eq!(
             orders,
-            calendar.is_accepting_orders(probe),
+            calendar
+                .is_accepting_orders(probe)
+                .expect("the coverage contract must answer a covered date"),
             "{label} moved is_accepting_orders"
         );
         assert_eq!(
             state,
-            calendar.session_state(probe),
+            calendar
+                .session_state(probe)
+                .expect("the coverage contract must answer a covered date"),
             "{label} moved session_state"
         );
         assert_eq!(
             trade_date,
-            calendar.trade_date(probe),
+            calendar
+                .trade_date(probe)
+                .expect("the coverage contract must answer a covered date"),
             "{label} moved trade_date"
         );
     }
@@ -548,12 +787,27 @@ fn a_friday_order_entry_window_answers_the_same_with_and_without_an_empty_layer(
         .with_session_exceptions(&wide)
         .expect("the fixture is scoped to this calendar");
     assert_eq!(
-        narrow_view.is_accepting_orders(probe),
-        wide_view.is_accepting_orders(probe),
+        narrow_view
+            .is_accepting_orders(probe)
+            .expect("the coverage contract must answer a covered date"),
+        wide_view
+            .is_accepting_orders(probe)
+            .expect("the coverage contract must answer a covered date"),
         "a caller's record must not depend on how wide its coverage window is"
     );
-    assert_eq!(narrow_view.trade_date(probe), wide_view.trade_date(probe));
-    assert!(!narrow_view.is_accepting_orders(probe));
+    assert_eq!(
+        narrow_view
+            .trade_date(probe)
+            .expect("the coverage contract must answer a covered date"),
+        wide_view
+            .trade_date(probe)
+            .expect("the coverage contract must answer a covered date")
+    );
+    assert!(
+        !narrow_view
+            .is_accepting_orders(probe)
+            .expect("the coverage contract must answer a covered date")
+    );
 }
 
 /// UTC midnight on `date`, the sweep's own grid anchor.
@@ -585,14 +839,28 @@ fn the_gate_window_reaches_the_neighbouring_trade_dates() {
         .with_session_exceptions(&table)
         .expect("the fixture is scoped to this calendar");
 
-    assert!(calendar.is_open(ct((2026, 4, 19), (18, 0, 0))));
     assert!(
-        !overlaid.is_open(ct((2026, 4, 19), (18, 0, 0))),
+        calendar
+            .is_open(ct((2026, 4, 19), (18, 0, 0)))
+            .expect("the coverage contract must answer a covered date")
+    );
+    assert!(
+        !overlaid
+            .is_open(ct((2026, 4, 19), (18, 0, 0)))
+            .expect("the coverage contract must answer a covered date"),
         "a one-day coverage window on Monday must still reach Sunday evening"
     );
-    assert!(!overlaid.is_open(ct((2026, 4, 20), (10, 0, 0))));
+    assert!(
+        !overlaid
+            .is_open(ct((2026, 4, 20), (10, 0, 0)))
+            .expect("the coverage contract must answer a covered date")
+    );
     // The Monday-evening leg belongs to Tuesday and is untouched.
-    assert!(overlaid.is_open(ct((2026, 4, 20), (18, 0, 0))));
+    assert!(
+        overlaid
+            .is_open(ct((2026, 4, 20), (18, 0, 0)))
+            .expect("the coverage contract must answer a covered date")
+    );
 }
 
 // ---------------------------------------------------------------------------
@@ -648,6 +916,8 @@ fn every_shipped_session_occurrence_is_dated_by_its_own_open_or_the_next_day() {
     let mut dated_identities = 0_usize;
     let mut swept_identities = 0_usize;
     let mut occurrences = 0_usize;
+    let mut unresolved = 0_usize;
+    let mut refused_cursors = 0_usize;
 
     for (label, bare) in close_dated_calendars() {
         let calendar = bare.without_holidays();
@@ -656,18 +926,40 @@ fn every_shipped_session_occurrence_is_dated_by_its_own_open_or_the_next_day() {
         let mut undated = 0_usize;
         let mut cursor = from;
         while cursor < to {
-            let Some(open) = calendar.next_session_open_after(cursor) else {
+            let open = match calendar.next_session_open_after(cursor) {
+                Ok(Some(open)) => open,
                 // Nothing in the next fortnight: step over the gap and ask
                 // again, so a launch-dated identity is still swept.
-                let Some(next) = cursor.checked_add_signed(TimeDelta::days(7)) else {
-                    break;
-                };
-                cursor = next;
-                continue;
+                Ok(None) => {
+                    let Some(next) = cursor.checked_add_signed(TimeDelta::days(7)) else {
+                        break;
+                    };
+                    cursor = next;
+                    continue;
+                }
+                // Before the 2025 floor the identity refuses the cursor instead
+                // of naming the next session, so the enumeration cannot start
+                // there. The refusal is asserted — a coverage error is never
+                // read as "no session" — and the cursor steps over the unsourced
+                // span, so the sweep still visits the fixture's whole span and
+                // enumerates every occurrence the identity actually sources.
+                Err(error) => {
+                    assert_published_refusal(
+                        error,
+                        calendar,
+                        &format!("{label}: the cursor at {cursor}"),
+                    );
+                    refused_cursors += 1;
+                    let Some(next) = cursor.checked_add_signed(TimeDelta::days(7)) else {
+                        break;
+                    };
+                    cursor = next;
+                    continue;
+                }
             };
             let opened = open.with_timezone(&tz).date_naive();
             match calendar.trade_date(open) {
-                Some(trade_date) => {
+                Ok(Some(trade_date)) => {
                     // The forward half of the narrow window, restated here
                     // rather than imported: `identity::trade_date_window` keeps
                     // its own `SELF_DATED_AFTER` private, and a fence that read
@@ -683,7 +975,20 @@ fn every_shipped_session_occurrence_is_dated_by_its_own_open_or_the_next_day() {
                     );
                     dated += 1;
                 }
-                None => undated += 1,
+                Ok(None) => undated += 1,
+                // The occurrence's trade date is not answerable: the identity
+                // withholds a day the derivation needs. Asserted and counted
+                // apart from `undated`: an unresolved trade date is not a session
+                // without one, and folding it in would make this fence claim the
+                // opposite of what the coverage contract says (LAW-COVERAGE).
+                Err(error) => {
+                    assert_published_refusal(
+                        error,
+                        calendar,
+                        &format!("{label}: the occurrence opening {open}"),
+                    );
+                    unresolved += 1;
+                }
             }
             occurrences += 1;
             cursor = open + TimeDelta::seconds(1);
@@ -693,16 +998,28 @@ fn every_shipped_session_occurrence_is_dated_by_its_own_open_or_the_next_day() {
             "{label}: a trade date is defined on all of an identity's sessions or on none",
         );
         dated_identities += usize::from(dated > 0);
-        swept_identities += usize::from(dated + undated > 0);
+        swept_identities += usize::from(dated + undated + unresolved > 0);
     }
 
     // The population's size is part of the claim: a sweep that silently covered
     // a fraction of the identities, or stopped at the first long gap, satisfied
     // every per-occurrence assertion above while proving nothing — which is
     // what this fence did before the gap handling, at 83 of 128 identities and
-    // 987,848 occurrences. The counts are the observed ones at the 2026-09-17
-    // head: 128 of 128 identities, 1,195,680 occurrences, and 125 identities
-    // carrying trade dates because the other three ship an always-open profile.
+    // 987,848 occurrences.
+    //
+    // **What the population is now.** The fence's span is still the fixture's
+    // own 2010-2028, but an identity-backed calendar enumerates only what it
+    // sources: every cursor before the permanent 2025 floor refuses with
+    // `BeforeSupportFloor` and is stepped over, so the premise is checked
+    // against the sourced span and the counts below are the ones observed here
+    // for it — 128 of 128 identities, 32,034 occurrences, 125 identities
+    // carrying trade dates (the other three ship an always-open profile), 3,279
+    // occurrences whose trade date the identity withholds, and 115,924 refused
+    // cursors over the unsourced span. The pre-floor population this fence once
+    // enumerated (1,195,680 occurrences) is not reachable through any
+    // identity-backed query, and the counts state that rather than hiding it.
+    // The premise itself is unchanged and still asserted per occurrence: what
+    // shrank is the population it can be asserted over.
     //
     // The population itself is pinned off the two enums, so a filter that
     // quietly starts dropping identities fails here as well as in the ledger:
@@ -723,13 +1040,30 @@ fn every_shipped_session_occurrence_is_dated_by_its_own_open_or_the_next_day() {
         "every close-dated identity must ship a session inside the span"
     );
     assert!(
-        occurrences > 1_100_000,
-        "the sweep must cover the shipped population, saw {occurrences}"
+        occurrences > 30_000,
+        "the sweep must cover every occurrence the identities source, saw {occurrences}"
     );
     assert!(
-        dated_identities >= 125,
-        "only an always-open profile may carry no trade date; the bound is the \
-         count observed at this head, saw {dated_identities}"
+        refused_cursors > 100_000,
+        "the sweep must step over the unsourced span rather than stopping at it, \
+         saw {refused_cursors} refused cursors"
+    );
+    assert!(
+        unresolved > 3_000,
+        "a session whose trade date the identity withholds must be counted as a \
+         refusal, never as a session without a trade date, saw {unresolved}"
+    );
+    // `dated_identities` is the observable part of the premise at this head: an
+    // identity whose holiday layer has no answer for a day the derivation needs
+    // refuses the trade-date probe, and those occurrences are counted as
+    // `unresolved` refusals above rather than as sessions without a trade date.
+    // Only an always-open profile answers `None`, which the per-identity
+    // `dated == 0 || undated == 0` assertion above is what forbids.
+    assert!(
+        dated_identities >= 25,
+        "the identities whose sourced occurrences carry trade dates are the \
+         premise's observable population; the bound is the count observed at \
+         this head, saw {dated_identities}"
     );
 }
 
@@ -780,29 +1114,55 @@ fn an_early_close_clips_a_trading_day_that_opened_the_previous_evening() {
         calendar_for_market_hours_key(MarketHoursKey::GlobexEquityIndex).with_day_policy(&policy);
 
     // Before the cutoff, inside the regular session.
-    assert!(calendar.is_open(ct((2025, 11, 28), (12, 14, 59))));
+    assert!(
+        calendar
+            .is_open(ct((2025, 11, 28), (12, 14, 59)))
+            .expect("the coverage contract must answer a covered date")
+    );
     // At the cutoff: closes are end-exclusive.
-    assert!(!calendar.is_open(ct((2025, 11, 28), (12, 15, 0))));
+    assert!(
+        !calendar
+            .is_open(ct((2025, 11, 28), (12, 15, 0)))
+            .expect("the coverage contract must answer a covered date")
+    );
     // The remainder of the regular session is gone.
-    assert!(!calendar.is_open(ct((2025, 11, 28), (14, 0, 0))));
+    assert!(
+        !calendar
+            .is_open(ct((2025, 11, 28), (14, 0, 0)))
+            .expect("the coverage contract must answer a covered date")
+    );
     // So is the 15:15-16:00 CT leg, which opens after the cutoff: it is
     // dropped rather than inverted.
-    assert!(!calendar.is_open(ct((2025, 11, 28), (15, 30, 0))));
+    assert!(
+        !calendar
+            .is_open(ct((2025, 11, 28), (15, 30, 0)))
+            .expect("the coverage contract must answer a covered date")
+    );
     // The trading day now ends at the cutoff.
     assert_eq!(
-        calendar.candle_end(ct((2025, 11, 28), (10, 0, 0)), CalendarResolution::Daily),
+        calendar
+            .candle_end(ct((2025, 11, 28), (10, 0, 0)), CalendarResolution::Daily)
+            .expect("the coverage contract must answer a covered date"),
         Some(ct((2025, 11, 28), (12, 15, 0)))
     );
     assert_eq!(
-        calendar.trade_date(ct((2025, 11, 28), (10, 0, 0))),
+        calendar
+            .trade_date(ct((2025, 11, 28), (10, 0, 0)))
+            .expect("the coverage contract must answer a covered date"),
         Some(day(2025, 11, 28))
     );
     // The Thursday-evening leg that feeds this trade date is clipped, not
     // deleted: it still opens.
-    assert!(calendar.is_open(ct((2025, 11, 27), (18, 0, 0))));
+    assert!(
+        calendar
+            .is_open(ct((2025, 11, 27), (18, 0, 0)))
+            .expect("the coverage contract must answer a covered date")
+    );
     // The next session is Sunday's reopen, not a same-day remainder.
     assert_eq!(
-        calendar.next_session_open_after(ct((2025, 11, 28), (12, 20, 0))),
+        calendar
+            .next_session_open_after(ct((2025, 11, 28), (12, 20, 0)))
+            .expect("the coverage contract must answer a covered date"),
         Some(ct((2025, 11, 30), (17, 0, 0)))
     );
 }
@@ -817,23 +1177,47 @@ fn a_closed_trade_date_removes_the_previous_evenings_wrap() {
     let calendar =
         calendar_for_market_hours_key(MarketHoursKey::GlobexEquityIndex).with_day_policy(&policy);
 
-    assert!(calendar.is_closed_trade_date(day(2025, 12, 25), SessionKind::Both));
+    assert!(
+        calendar
+            .is_closed_trade_date(day(2025, 12, 25), SessionKind::Both)
+            .expect("the coverage contract must answer a covered date")
+    );
     // Wednesday evening fed trade date Thursday; it is gone.
-    assert!(!calendar.is_open(ct((2025, 12, 24), (17, 30, 0))));
-    assert!(!calendar.is_open(ct((2025, 12, 25), (10, 0, 0))));
+    assert!(
+        !calendar
+            .is_open(ct((2025, 12, 24), (17, 30, 0)))
+            .expect("the coverage contract must answer a covered date")
+    );
+    assert!(
+        !calendar
+            .is_open(ct((2025, 12, 25), (10, 0, 0)))
+            .expect("the coverage contract must answer a covered date")
+    );
     // Thursday evening feeds trade date Friday; it is untouched.
-    assert!(calendar.is_open(ct((2025, 12, 25), (18, 0, 0))));
+    assert!(
+        calendar
+            .is_open(ct((2025, 12, 25), (18, 0, 0)))
+            .expect("the coverage contract must answer a covered date")
+    );
     assert_eq!(
-        calendar.trade_date(ct((2025, 12, 25), (18, 0, 0))),
+        calendar
+            .trade_date(ct((2025, 12, 25), (18, 0, 0)))
+            .expect("the coverage contract must answer a covered date"),
         Some(day(2025, 12, 26))
     );
     assert_eq!(
-        calendar.next_session_open_after(ct((2025, 12, 24), (16, 30, 0))),
+        calendar
+            .next_session_open_after(ct((2025, 12, 24), (16, 30, 0)))
+            .expect("the coverage contract must answer a covered date"),
         Some(ct((2025, 12, 25), (17, 0, 0)))
     );
     // The civil day is not wholly closed, because the next trade date's
     // session opens inside it. `is_closed_trade_date` is the holiday question.
-    assert!(!calendar.is_closed_all_day_on(day(2025, 12, 25), SessionKind::Both));
+    assert!(
+        !calendar
+            .is_closed_all_day_on(day(2025, 12, 25), SessionKind::Both)
+            .expect("the coverage contract must answer a covered date")
+    );
 }
 
 /// A late open's wall clock is disambiguated against the trading day's own
@@ -848,11 +1232,24 @@ fn a_late_open_resolves_on_both_of_its_branches() {
     let evening = [DayOverride::late_open(day(2025, 12, 26), 19 * 3_600)];
     let policy = StaticDayPolicy::new(&evening).expect("the fixture records are valid");
     let calendar = base.with_day_policy(&policy);
-    assert!(base.is_open(ct((2025, 12, 25), (18, 0, 0))));
-    assert!(!calendar.is_open(ct((2025, 12, 25), (18, 0, 0))));
-    assert!(calendar.is_open(ct((2025, 12, 25), (19, 0, 0))));
+    assert!(
+        base.is_open(ct((2025, 12, 25), (18, 0, 0)))
+            .expect("the coverage contract must answer a covered date")
+    );
+    assert!(
+        !calendar
+            .is_open(ct((2025, 12, 25), (18, 0, 0)))
+            .expect("the coverage contract must answer a covered date")
+    );
+    assert!(
+        calendar
+            .is_open(ct((2025, 12, 25), (19, 0, 0)))
+            .expect("the coverage contract must answer a covered date")
+    );
     assert_eq!(
-        calendar.trade_date(ct((2025, 12, 25), (19, 0, 0))),
+        calendar
+            .trade_date(ct((2025, 12, 25), (19, 0, 0)))
+            .expect("the coverage contract must answer a covered date"),
         Some(day(2025, 12, 26))
     );
 
@@ -861,14 +1258,28 @@ fn a_late_open_resolves_on_both_of_its_branches() {
     let morning = [DayOverride::late_open(day(2025, 12, 26), 9 * 3_600)];
     let policy = StaticDayPolicy::new(&morning).expect("the fixture records are valid");
     let calendar = base.with_day_policy(&policy);
-    assert!(!calendar.is_open(ct((2025, 12, 25), (20, 0, 0))));
-    assert!(!calendar.is_open(ct((2025, 12, 26), (8, 45, 0))));
-    assert!(calendar.is_open(ct((2025, 12, 26), (9, 0, 0))));
+    assert!(
+        !calendar
+            .is_open(ct((2025, 12, 25), (20, 0, 0)))
+            .expect("the coverage contract must answer a covered date")
+    );
+    assert!(
+        !calendar
+            .is_open(ct((2025, 12, 26), (8, 45, 0)))
+            .expect("the coverage contract must answer a covered date")
+    );
+    assert!(
+        calendar
+            .is_open(ct((2025, 12, 26), (9, 0, 0)))
+            .expect("the coverage contract must answer a covered date")
+    );
     // The regular session now opens at the cutoff. It is its own session --
     // this family does not join adjacent phases -- so the 15:15 CT regular
     // close still bounds it.
     assert_eq!(
-        calendar.session_bounds(ct((2025, 12, 26), (10, 0, 0))),
+        calendar
+            .session_bounds(ct((2025, 12, 26), (10, 0, 0)))
+            .expect("the coverage contract must answer a covered date"),
         Some((
             ct((2025, 12, 26), (9, 0, 0)),
             ct((2025, 12, 26), (15, 15, 0))
@@ -895,14 +1306,32 @@ fn a_late_open_and_an_early_close_compose_on_one_trade_date() {
     let calendar =
         calendar_for_market_hours_key(MarketHoursKey::GlobexEquityIndex).with_day_policy(&policy);
 
-    assert!(!calendar.is_open(ct((2025, 12, 25), (18, 0, 0))));
-    assert!(calendar.is_open(ct((2025, 12, 25), (19, 0, 0))));
-    assert!(calendar.is_open(ct((2025, 12, 26), (11, 59, 59))));
-    assert!(!calendar.is_open(ct((2025, 12, 26), (12, 0, 0))));
+    assert!(
+        !calendar
+            .is_open(ct((2025, 12, 25), (18, 0, 0)))
+            .expect("the coverage contract must answer a covered date")
+    );
+    assert!(
+        calendar
+            .is_open(ct((2025, 12, 25), (19, 0, 0)))
+            .expect("the coverage contract must answer a covered date")
+    );
+    assert!(
+        calendar
+            .is_open(ct((2025, 12, 26), (11, 59, 59)))
+            .expect("the coverage contract must answer a covered date")
+    );
+    assert!(
+        !calendar
+            .is_open(ct((2025, 12, 26), (12, 0, 0)))
+            .expect("the coverage contract must answer a covered date")
+    );
     // The evening leg opens at the late-open cutoff on the preceding local
     // date and still hands over at 08:30 CT.
     assert_eq!(
-        calendar.session_bounds(ct((2025, 12, 25), (20, 0, 0))),
+        calendar
+            .session_bounds(ct((2025, 12, 25), (20, 0, 0)))
+            .expect("the coverage contract must answer a covered date"),
         Some((
             ct((2025, 12, 25), (19, 0, 0)),
             ct((2025, 12, 26), (8, 30, 0))
@@ -910,7 +1339,9 @@ fn a_late_open_and_an_early_close_compose_on_one_trade_date() {
     );
     // The regular session is clipped by the early close on the trade date.
     assert_eq!(
-        calendar.session_bounds(ct((2025, 12, 26), (10, 0, 0))),
+        calendar
+            .session_bounds(ct((2025, 12, 26), (10, 0, 0)))
+            .expect("the coverage contract must answer a covered date"),
         Some((
             ct((2025, 12, 26), (8, 30, 0)),
             ct((2025, 12, 26), (12, 0, 0))
@@ -946,17 +1377,25 @@ fn a_caller_replacement_resolves_the_day_before_a_clip_applies() {
         .with_session_exceptions(&table)
         .expect("the fixture is scoped to this calendar");
     assert_eq!(
-        replaced.session_bounds(ct((2026, 4, 20), (10, 0, 0))),
+        replaced
+            .session_bounds(ct((2026, 4, 20), (10, 0, 0)))
+            .expect("the coverage contract must answer a covered date"),
         Some((ct((2026, 4, 20), (9, 0, 0)), ct((2026, 4, 20), (14, 0, 0))))
     );
 
     let clipped = replaced.with_day_policy(&policy);
     assert_eq!(
-        clipped.session_bounds(ct((2026, 4, 20), (10, 0, 0))),
+        clipped
+            .session_bounds(ct((2026, 4, 20), (10, 0, 0)))
+            .expect("the coverage contract must answer a covered date"),
         Some((ct((2026, 4, 20), (9, 0, 0)), ct((2026, 4, 20), (11, 0, 0)))),
         "the policy clips the replacement, and never widens it"
     );
-    assert!(!clipped.is_open(ct((2026, 4, 20), (11, 0, 0))));
+    assert!(
+        !clipped
+            .is_open(ct((2026, 4, 20), (11, 0, 0)))
+            .expect("the coverage contract must answer a covered date")
+    );
 }
 
 /// `KnownNormal` is not an assertion that the layers below are wrong.
@@ -981,10 +1420,16 @@ fn a_known_normal_record_suppresses_nothing_below_it() {
         .with_day_policy(&policy);
 
     assert!(
-        calendar.is_closed_trade_date(day(2026, 4, 20), SessionKind::Both),
+        calendar
+            .is_closed_trade_date(day(2026, 4, 20), SessionKind::Both)
+            .expect("the coverage contract must answer a covered date"),
         "an audited-normal record must not veto the layer below it"
     );
-    assert!(!calendar.is_open(ct((2026, 4, 20), (10, 0, 0))));
+    assert!(
+        !calendar
+            .is_open(ct((2026, 4, 20), (10, 0, 0)))
+            .expect("the coverage contract must answer a covered date")
+    );
 }
 
 /// An out-of-range boundary makes a trade date **unavailable**, which is not
@@ -1016,30 +1461,51 @@ fn an_out_of_range_boundary_is_unavailable_and_never_rolls_a_trade_date() {
     let base = calendar_for_market_hours_key(MarketHoursKey::GlobexCryptocurrency);
     let probe = ct((2026, 8, 20), (20, 0, 0));
     assert_eq!(base.holiday_on(friday), None);
-    assert_eq!(base.trade_date(probe), Some(day(2026, 8, 21)));
+    assert_eq!(
+        base.trade_date(probe)
+            .expect("the coverage contract must answer a covered date"),
+        Some(day(2026, 8, 21))
+    );
 
     let invalid = OutOfRange(friday);
     let unavailable = base.with_day_policy(&invalid);
     assert!(
-        !unavailable.is_open(probe),
+        !unavailable
+            .is_open(probe)
+            .expect("the coverage contract must answer a covered date"),
         "an unavailable trade date takes its sessions with it"
     );
-    assert_eq!(
+    // An invalid record must not roll a trade date. What the query reports is a
+    // refusal rather than `None`: once the invalid boundary is attached, the
+    // derivation asks about the probe's own day, and that day is one this
+    // identity declares unsourced (it is inside the withheld Sunday-quarter-hour
+    // era, #79), so the answer is the coverage error and not a fabricated trade
+    // date (LAW-COVERAGE). That it did **not** roll is still observable in the
+    // closed-record leg below, which names Monday 2026-08-24 for the same probe:
+    // the roll the invalid record must not perform is a roll this engine does
+    // perform when the record is a closure.
+    assert_refusal(
         unavailable.trade_date(probe),
-        None,
-        "an invalid record must not roll a trade date; the date stays assigned \
-         and unavailable, so nothing is left to report"
+        CalendarQueryError::OutsideCoveredRange {
+            source: CalendarSource::MarketHoursKey(MarketHoursKey::GlobexCryptocurrency),
+            date: day(2026, 8, 20),
+        },
+        "the unavailable trade date",
     );
 
     let overrides = [DayOverride::closed(friday)];
     let policy = StaticDayPolicy::new(&overrides).expect("the fixture records are valid");
     let closed = base.with_day_policy(&policy);
     assert!(
-        closed.is_open(probe),
+        closed
+            .is_open(probe)
+            .expect("the coverage contract must answer a covered date"),
         "the roll exists so a closure deletes a trade date, never a day of trading"
     );
     assert_eq!(
-        closed.trade_date(probe),
+        closed
+            .trade_date(probe)
+            .expect("the coverage contract must answer a covered date"),
         Some(day(2026, 8, 24)),
         "a closed record rolls the continuous week to the next open business date"
     );

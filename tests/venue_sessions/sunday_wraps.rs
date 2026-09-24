@@ -108,19 +108,27 @@ fn iceus_equal_endpoint_rule_is_one_continuous_sunday_session() {
     );
     let calendar = calendar_for_exchange(Exchange::Iceus);
     assert_eq!(
-        calendar.session_bounds(sunday_open),
+        calendar
+            .session_bounds(sunday_open)
+            .expect("the coverage contract must answer a covered date"),
         Some((sunday_open, monday_close))
     );
     assert_eq!(
-        calendar.candle_start(et((2026, 4, 20), (12, 0, 0)), CalendarResolution::Daily,),
+        calendar
+            .candle_start(et((2026, 4, 20), (12, 0, 0)), CalendarResolution::Daily,)
+            .expect("the coverage contract must answer a covered date"),
         Some(sunday_open)
     );
     assert_eq!(
-        calendar.candle_end(sunday_open, CalendarResolution::Daily),
+        calendar
+            .candle_end(sunday_open, CalendarResolution::Daily)
+            .expect("the coverage contract must answer a covered date"),
         Some(monday_close)
     );
     assert_eq!(
-        calendar.normal_week_open_seconds_containing(sunday_open),
+        calendar
+            .normal_week_open_seconds_containing(sunday_open)
+            .expect("the coverage contract must answer a covered date"),
         // Down 9_000s: the order-entry windows are no longer scheduled open time.
         112 * 3600
     );

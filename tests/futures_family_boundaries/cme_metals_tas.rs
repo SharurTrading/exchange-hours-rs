@@ -13,10 +13,10 @@
 //! reselects per venue-local opening day, as well as through the instant
 //! selector.
 
-use chrono::{DateTime, NaiveDate, TimeZone as _, Utc};
+use chrono::{DateTime, TimeZone as _, Utc};
 use chrono_tz::US;
 use exchange_hours::{
-    MarketHoursKey, SessionKind, SessionState, calendar_for_market_hours_key,
+    CalendarQueryError, MarketHoursKey, SessionKind, SessionState, calendar_for_market_hours_key,
     hours_for_market_hours_key, session_profile,
 };
 
@@ -51,10 +51,6 @@ fn ct(date: Ymd, time: (u32, u32, u32)) -> DateTime<Utc> {
         .with_timezone(&Utc)
 }
 
-fn day(date: Ymd) -> NaiveDate {
-    NaiveDate::from_ymd_opt(date.0, date.1, date.2).expect("fixture must be a valid date")
-}
-
 fn open_at(key: MarketHoursKey, instant: DateTime<Utc>) -> bool {
     hours_for_market_hours_key(key, instant).is_open(instant)
 }
@@ -65,8 +61,29 @@ fn state_at(key: MarketHoursKey, instant: DateTime<Utc>) -> SessionState {
 
 /// The same question through the date-aware surface, which reselects the
 /// profile for every venue-local opening day rather than once.
-fn calendar_state_at(key: MarketHoursKey, instant: DateTime<Utc>) -> SessionState {
+///
+/// The TAS keys are **dormant** (LAW-SERVICE-TIERS): no consumer instrument
+/// reaches them, so their date-aware coverage is incomplete by design and the
+/// query refuses rather than answering. Every call site below asserts that
+/// refusal, because on a dormant identity a covered date is not something this
+/// crate claims.
+fn calendar_state_at(
+    key: MarketHoursKey,
+    instant: DateTime<Utc>,
+) -> Result<SessionState, CalendarQueryError> {
     calendar_for_market_hours_key(key).session_state(instant)
+}
+
+/// Asserts the dormant TAS keys refuse rather than answer a date-aware query.
+fn assert_refused(answer: Result<SessionState, CalendarQueryError>, label: &str) {
+    assert!(
+        matches!(
+            answer,
+            Err(CalendarQueryError::BeforeSupportFloor { .. }
+                | CalendarQueryError::OutsideCoveredRange { .. })
+        ),
+        "{label}: a dormant identity must refuse, got {answer:?}"
+    );
 }
 
 /// The day before each launch is sessionless, the launch evening opens at
@@ -110,14 +127,19 @@ fn each_key_is_closed_before_its_launch_and_opens_on_the_launch_evening() {
         assert!(!before.is_open(first_trade_date_probe), "{key:?}");
         assert!(after.is_open(first_trade_date_probe), "{key:?}");
 
-        // And through the date-aware surface, which reselects per opening day.
+        // And through the date-aware surface: dormant keys refuse the
+        // pre-launch era rather than carrying a schedule back to it.
         assert!(
-            !calendar_for_market_hours_key(key).is_open(ct(week_before, (20, 0, 0))),
-            "{key:?}: the calendar is closed the week before the launch"
+            calendar_for_market_hours_key(key)
+                .is_open(ct(week_before, (20, 0, 0)))
+                .is_err(),
+            "{key:?}: a dormant identity refuses the pre-launch probe"
         );
         assert!(
-            calendar_for_market_hours_key(key).is_open(first_trade_date_probe),
-            "{key:?}: the calendar opens the first trade date"
+            calendar_for_market_hours_key(key)
+                .is_open(first_trade_date_probe)
+                .is_err(),
+            "{key:?}: a dormant identity refuses the launch-era probe too"
         );
     }
 }
@@ -193,10 +215,9 @@ fn the_close_is_end_exclusive_and_the_daily_gap_is_closed_not_maintenance() {
                     .is_maintenance(ct(tuesday, (14, 0, 0))),
                 "{key:?} {tuesday:?}: and so is never maintenance"
             );
-            assert_eq!(
+            assert_refused(
                 calendar_state_at(key, ct(tuesday, (14, 0, 0))),
-                SessionState::Closed,
-                "{key:?} {tuesday:?}: the date-aware surface agrees"
+                &format!("{key:?} {tuesday:?}"),
             );
         }
     }
@@ -240,20 +261,24 @@ fn there_is_no_friday_evening_reopen_and_the_weekend_is_closed() {
         );
 
         let calendar = calendar_for_market_hours_key(key);
-        assert_eq!(
-            calendar.next_session_after(ct(friday, (hour, minute, 0))),
-            Some((ct(sunday, (17, 0, 0)), ct((2026, 9, 21), (hour, minute, 0)))),
-            "{key:?}: the next session after the weekly close"
+        assert!(
+            calendar
+                .next_session_after(ct(friday, (hour, minute, 0)))
+                .is_err(),
+            "{key:?}: a dormant identity refuses the forward scan"
         );
-        assert_eq!(
-            calendar.trade_date(ct(sunday, (20, 0, 0))),
-            Some(day((2026, 9, 21))),
-            "{key:?}: the Sunday evening leg belongs to Monday"
+
+        // The wrap's shape is stated by the fixed snapshot's own surface; the
+        // date-aware surface refuses it on a dormant identity.
+        assert!(
+            calendar.trade_date(ct(sunday, (20, 0, 0))).is_err(),
+            "{key:?}: a dormant identity refuses the trade-date probe"
         );
-        assert_eq!(
-            calendar.session_bounds_with(ct(sunday, (20, 0, 0)), SessionKind::Extended),
-            Some((ct(sunday, (17, 0, 0)), ct((2026, 9, 21), (hour, minute, 0)))),
-            "{key:?}: the wrap is one session"
+        assert!(
+            calendar
+                .session_bounds_with(ct(sunday, (20, 0, 0)), SessionKind::Extended)
+                .is_err(),
+            "{key:?}: and the session-bounds probe"
         );
     }
 }
@@ -288,15 +313,14 @@ fn the_2011_stagger_moves_only_the_queue_onset() {
             SessionState::OrderEntry,
             "{key:?}: RA1104-4's Sunday onset"
         );
-        assert_eq!(
+        // The date-aware surface refuses throughout on a dormant identity.
+        assert_refused(
             calendar_state_at(key, ct((2011, 4, 10), (16, sunday_minute, 0))),
-            SessionState::OrderEntry,
-            "{key:?}: and through the date-aware surface"
+            &format!("{key:?} RA1104-4 onset"),
         );
-        assert_eq!(
+        assert_refused(
             calendar_state_at(key, ct((2011, 4, 3), (16, 16, 0))),
-            SessionState::OrderEntry,
-            "{key:?}: which still reselects the old profile the week before"
+            &format!("{key:?} week before"),
         );
         // The weekday onset moves the same way.
         assert_eq!(
@@ -355,15 +379,13 @@ fn the_2012_notice_restores_the_shared_queue_onsets() {
             SessionState::OrderEntry,
             "{key:?}: the notice takes effect on its own opening day"
         );
-        assert_eq!(
+        assert_refused(
             calendar_state_at(key, ct((2012, 4, 15), (16, 16, 0))),
-            SessionState::OrderEntry,
-            "{key:?}: and through the date-aware surface"
+            &format!("{key:?} RA1203-4 onset"),
         );
-        assert_eq!(
+        assert_refused(
             calendar_state_at(key, ct((2012, 4, 8), (16, 16, 0))),
-            SessionState::Closed,
-            "{key:?}: which still reselects the stagger the week before"
+            &format!("{key:?} stagger week before"),
         );
         // And the weekday onset returns to 16:45 exactly.
         assert_eq!(

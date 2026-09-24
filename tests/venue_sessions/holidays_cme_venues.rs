@@ -28,9 +28,12 @@
 use chrono::{DateTime, Datelike as _, Days, Duration, NaiveDate, TimeZone as _, Utc};
 use chrono_tz::US;
 use exchange_hours::{
-    CalendarSource, EvidenceTier, Exchange, ExchangeCalendar, Holiday, HolidayKind, MarketHoursKey,
-    SessionKind, calendar_for_exchange, calendar_for_market_hours_key,
+    CalendarQueryError, CalendarSource, DateCoverage, EvidenceTier, Exchange, ExchangeCalendar,
+    Holiday, HolidayKind, MarketHoursKey, SessionKind, calendar_for_exchange,
+    calendar_for_market_hours_key,
 };
+
+use super::prelude::{assert_refused_variant, assert_refuses_before_floor};
 
 /// The four venues this change gives a table, with the families each routes.
 ///
@@ -361,10 +364,32 @@ fn a_closed_venue_row_is_a_unanimous_closure() {
                 expected_tier,
                 "{exchange:?}: {closure} must carry its era's tier"
             );
-            assert!(
-                venue.is_closed_trade_date(closure, SessionKind::Both),
-                "{exchange:?}: {closure} closes the venue's trading day"
-            );
+            // The row's own statement is the table's; the date-aware query is a
+            // separate claim, and the two do not coincide here. Below the floor
+            // the calendar refuses the closure's trade date as
+            // `BeforeSupportFloor`; at or above it the query answers `Ok(true)`
+            // for a known closure — **unless** the answer also needs a date the
+            // table withholds, in which case the venue refuses with
+            // `UnresolvedGap` naming that date instead of reporting withheld
+            // evidence as a closure (LAW-COVERAGE). `false` is never an
+            // acceptable answer for a row in this set.
+            match venue.is_closed_trade_date(closure, SessionKind::Both) {
+                Ok(closed) => assert!(
+                    closed,
+                    "{exchange:?}: {closure} closes the venue's trading day"
+                ),
+                Err(error) => {
+                    assert!(
+                        matches!(
+                            error,
+                            CalendarQueryError::BeforeSupportFloor { .. }
+                                | CalendarQueryError::UnresolvedGap { .. }
+                        ),
+                        "{exchange:?}: {closure} may refuse only as below-floor or \
+                         withheld; got {error:?}"
+                    );
+                }
+            }
         }
 
         let mut date = coverage.first();
@@ -467,7 +492,11 @@ fn the_energy_venues_carry_the_family_table_unchanged() {
             venue.holiday_on(day(2026, 4, 3)).map(Holiday::kind),
             Some(HolidayKind::Closed),
         );
-        assert!(venue.is_closed_trade_date(day(2026, 4, 3), SessionKind::Both));
+        assert!(
+            venue
+                .is_closed_trade_date(day(2026, 4, 3), SessionKind::Both)
+                .expect("the coverage contract must answer a covered date")
+        );
         assert_eq!(
             calendar_for_exchange(Exchange::Cme)
                 .holiday_on(day(2026, 4, 3))
@@ -490,40 +519,71 @@ fn a_venue_closure_removes_the_trading_day_it_names() {
     let venue = calendar_for_exchange(Exchange::Cme);
     let closure = day(2025, 12, 25);
 
-    assert!(venue.is_closed_trade_date(closure, SessionKind::Both));
-    // Trade date 2025-12-25 opens at 17:00 CT on 12-24 and closes at 16:00 CT on
-    // 12-25. The row deletes the whole of it, so both of these probes — the
-    // 12-25 day session and the 15:15-16:00 CT extended phase behind it — are
-    // outside any session and carry no trade date.
+    // The **row's** statement is the table's, and it is asserted there: the
+    // venue ships a `Closed` row for trade date 2025-12-25, which is what
+    // "the row removes the whole trading day" means.
+    assert_eq!(
+        venue.holiday_on(closure).map(Holiday::kind),
+        Some(HolidayKind::Closed),
+    );
+
+    // The date-aware surface cannot confirm any of it. Every instant below
+    // resolves to a trade date this venue's 2025 table withholds — 2025-12-24
+    // for the 12-24 evening leg that would have settled 12-25, and 2025-12-25's
+    // own 17:00 leg for the day after — so each query is refused with
+    // `UnresolvedGap` naming the withheld date rather than answered. What is no
+    // longer claimable is a session observation on this holiday: no trade date,
+    // no session and no next session is stated. The row's kind above is the
+    // removal claim, the family tables carry the removed instants, and
+    // `tests/static_day_policy.rs` exercises the day-removal mechanism on dates
+    // this identity covers.
     for probe in [
         ct((2025, 12, 25), (10, 0, 0)),
         ct((2025, 12, 25), (15, 30, 0)),
     ] {
-        assert!(!venue.is_open(probe), "{probe} is inside the removed day");
-        assert_eq!(venue.trade_date(probe), None, "{probe}");
+        assert_refused_variant(
+            &venue.is_open(probe),
+            DateCoverage::UnresolvedGap,
+            &format!("{probe} is inside the removed day"),
+        );
+        assert_refused_variant(
+            &venue.trade_date(probe),
+            DateCoverage::UnresolvedGap,
+            &format!("{probe} trade date"),
+        );
     }
-    // The 17:00 CT leg that opens on the evening of 12-25 belongs to trade date
-    // 12-26, which no row names, so it survives.
-    let post_holiday_eve = ct((2025, 12, 25), (17, 30, 0));
-    assert!(venue.is_open(post_holiday_eve), "{post_holiday_eve}");
-    assert_eq!(venue.trade_date(post_holiday_eve), Some(day(2025, 12, 26)));
-    // 2025-12-24's own session is untouched: the row names the *next* trade
-    // date, so it cannot clip the one before it. What the row does remove is
-    // that day's 17:00 CT leg, which would have settled trade date 12-25.
-    assert!(venue.is_open(ct((2025, 12, 24), (12, 0, 0))));
-    assert_eq!(
-        venue.trade_date(ct((2025, 12, 24), (12, 0, 0))),
-        Some(day(2025, 12, 24))
+    assert_refused_variant(
+        &venue.is_closed_trade_date(closure, SessionKind::Both),
+        DateCoverage::UnresolvedGap,
+        "the closure's own trade date",
     );
-    assert!(!venue.is_open(ct((2025, 12, 24), (17, 30, 0))));
-    assert_eq!(venue.trade_date(ct((2025, 12, 24), (17, 30, 0))), None);
-    // The next session after the closure is that same 12-25 17:00 CT open.
-    assert_eq!(
-        venue.next_session_after(ct((2025, 12, 25), (12, 0, 0))),
-        Some((
-            ct((2025, 12, 25), (17, 0, 0)),
-            ct((2025, 12, 26), (8, 30, 0)),
-        )),
+    // The 17:00 CT leg that opens on the evening of 12-25 would have belonged to
+    // trade date 2025-12-26; 2025-12-24's own session would have been untouched,
+    // and only that day's 17:00 CT leg — the one that would have settled 12-25 —
+    // removed. None of that is stateable here, and the next session after the
+    // closure — the `ct((2025, 12, 25), (17, 0, 0))` open that runs to
+    // `ct((2025, 12, 26), (8, 30, 0))` — cannot be reported either: the search
+    // has to establish a withheld date to name it.
+    for probe in [
+        ct((2025, 12, 25), (17, 30, 0)),
+        ct((2025, 12, 24), (12, 0, 0)),
+        ct((2025, 12, 24), (17, 30, 0)),
+    ] {
+        assert_refused_variant(
+            &venue.is_open(probe),
+            DateCoverage::UnresolvedGap,
+            &format!("{probe}"),
+        );
+        assert_refused_variant(
+            &venue.trade_date(probe),
+            DateCoverage::UnresolvedGap,
+            &format!("{probe} trade date"),
+        );
+    }
+    assert_refused_variant(
+        &venue.next_session_after(ct((2025, 12, 25), (12, 0, 0))),
+        DateCoverage::UnresolvedGap,
+        "the session after the closure",
     );
 }
 
@@ -542,24 +602,43 @@ fn a_closure_on_a_non_session_day_changes_nothing() {
         Some(HolidayKind::Closed),
     );
 
+    // The neutrality claim is now a claim about the **detached** calendar, the
+    // only surface that answers here: every instant of this Saturday belongs to
+    // the trade date that opened Friday 2025-11-28, which the venue's own table
+    // withholds, so `venue` refuses the whole day with `UnresolvedGap`. The
+    // detached calendar carries no holiday layer to withhold anything and still
+    // states the ordinary normal-week answers the row must not move.
     let detached = venue.without_holidays();
     let start = US::Central
         .with_ymd_and_hms(2025, 11, 29, 0, 0, 0)
         .single()
         .expect("fixture must be a valid CT midnight")
         .with_timezone(&Utc);
+    // The ordinary schedule the row must not move: the next session after
+    // Saturday is the Sunday-evening leg that opens 2025-11-30 17:00 CT and
+    // closes 2025-12-01 08:30 CT.
+    assert_eq!(
+        detached
+            .session_bounds(start)
+            .expect("the detached calendar answers the normal week"),
+        Some((
+            ct((2025, 11, 30), (17, 0, 0)),
+            ct((2025, 12, 1), (8, 30, 0)),
+        )),
+        "the venue's ordinary schedule is in force across the closed Saturday"
+    );
     for step in 0..48 {
         let probe = start + chrono::TimeDelta::minutes(30 * step);
-        assert_eq!(venue.is_open(probe), detached.is_open(probe), "{probe}");
-        assert_eq!(
-            venue.session_bounds(probe),
-            detached.session_bounds(probe),
-            "{probe}"
+        assert_refused_variant(
+            &venue.is_open(probe),
+            DateCoverage::UnresolvedGap,
+            &format!("the 2025-11-29 closure must not be reported as a closure at {probe}"),
         );
-        assert_eq!(
-            venue.trade_date(probe),
-            detached.trade_date(probe),
-            "{probe}"
+        assert!(
+            !detached
+                .is_open(probe)
+                .expect("the detached calendar answers the normal week"),
+            "{probe}: the Saturday is outside the CME normal week"
         );
     }
 }
@@ -610,25 +689,38 @@ fn an_unsourced_venue_row_is_reported_and_clips_nothing() {
             Some(HolidayKind::Unsourced),
             "{exchange:?}: the routed families state different closes"
         );
-        assert!(
-            !venue.is_closed_trade_date(disputed, SessionKind::Both),
-            "{exchange:?}: `Unsourced` closes nothing"
+        // The venue's own date-aware surface cannot make this claim: an
+        // `Unsourced` row is a withheld date, so every query touching
+        // 2026-12-24 is refused with `UnresolvedGap` rather than answered. The
+        // ordinary schedule the row must leave alone is therefore read from the
+        // calendar with the holiday layer detached — the only surface that
+        // states it — and the `Unsourced` row's neutrality is that the venue
+        // neither claims the date is normal nor clips it.
+        assert_refused_variant(
+            &venue.is_closed_trade_date(disputed, SessionKind::Both),
+            DateCoverage::UnresolvedGap,
+            &format!("{exchange:?}: `Unsourced` closes nothing on {disputed}"),
         );
+        let detached = venue.without_holidays();
         for probe in probes {
             assert_eq!(
-                venue.trade_date(probe),
+                detached
+                    .trade_date(probe)
+                    .expect("the detached calendar answers the normal week"),
                 Some(disputed),
                 "{exchange:?}: {probe} still belongs to the disputed trade date"
             );
             assert!(
-                venue.is_open(probe),
+                detached
+                    .is_open(probe)
+                    .expect("the detached calendar answers the normal week"),
                 "{exchange:?}: {probe} is inside the venue's ordinary session; an \
                  `Unsourced` row must not clip it"
             );
-            assert_eq!(
-                venue.is_open(probe),
-                venue.without_holidays().is_open(probe),
-                "{exchange:?}: `Unsourced` moved is_open at {probe}"
+            assert_refused_variant(
+                &venue.is_open(probe),
+                DateCoverage::UnresolvedGap,
+                &format!("{exchange:?}: the disputed date is withheld at {probe}"),
             );
         }
     }
@@ -684,12 +776,29 @@ fn without_holidays_restores_the_normal_week_for_every_venue() {
         assert_eq!(detached.holiday_coverage(), None);
         assert_eq!(detached.without_holidays(), detached);
 
-        // Christmas Day itself: the layer is the only thing that closes it.
+        // Christmas Day itself: the layer is the only thing that closes the
+        // ordinary week, and the detached calendar states exactly that. The
+        // attached venue can only refuse on the day the 2025 holiday table
+        // withholds — 2025-12-24 for the six-family venues, whose 2025 rows are
+        // `Unsourced`, and no date at all for the two single-family energy
+        // venues, which answer it `Ok(false)` — so the closure is asserted where
+        // it is stated and the refusal is asserted as a refusal, never read as
+        // a closure (LAW-COVERAGE).
         let christmas = ct((2025, 12, 25), (10, 0, 0));
-        assert!(!venue.is_open(christmas), "{exchange:?}");
+        let venue_answer = venue.is_open(christmas);
+        match &venue_answer {
+            Ok(open) => assert!(!open, "{exchange:?}: the venue closes Christmas Day"),
+            Err(_) => assert_refused_variant(
+                &venue_answer,
+                DateCoverage::UnresolvedGap,
+                &format!("{exchange:?}: Christmas Day is withheld, not answered"),
+            ),
+        }
         assert!(
-            detached.is_open(christmas) || detached.session_bounds(christmas).is_none(),
-            "{exchange:?}: detaching must restore the normal-week answer"
+            detached
+                .is_open(christmas)
+                .expect("the detached calendar answers the normal week"),
+            "{exchange:?}: detaching restores the normal-week answer"
         );
     }
 }
@@ -1110,15 +1219,19 @@ fn wave3_unsourced_rows_clip_nothing() {
                 Some(HolidayKind::Unsourced),
                 "{exchange:?}: {date}"
             );
-            assert!(
-                !venue.is_closed_trade_date(date, SessionKind::Both),
-                "{exchange:?}: `Unsourced` closes nothing on {date}"
+            // Every date in this wave is pre-floor, so the venue's own queries
+            // are refused as `BeforeSupportFloor` and the row's neutrality has
+            // no observable date-aware consequence to assert: an `Unsourced`
+            // row states that the venue has no single instant for the date, and
+            // the row's own kind above is that statement. What survives is the
+            // refusal — the venue never reports the withheld evidence as a
+            // closure (LAW-COVERAGE).
+            assert_refuses_before_floor(
+                venue.is_closed_trade_date(date, SessionKind::Both),
+                venue,
+                probe,
             );
-            assert_eq!(
-                venue.is_open(probe),
-                venue.without_holidays().is_open(probe),
-                "{exchange:?}: `Unsourced` moved is_open at {probe}"
-            );
+            assert_refuses_before_floor(venue.is_open(probe), venue, probe);
         }
     }
 }
@@ -1344,18 +1457,24 @@ fn wave5_venue_era_early_closes_are_end_exclusive() {
                     (date.year(), date.month(), date.day()),
                     (hour, minute, second),
                 );
-                assert!(
-                    venue.is_open(cutoff - Duration::seconds(1)),
-                    "{exchange:?} {date}: open one second before the printed close"
-                );
-                assert!(
-                    !venue.is_open(cutoff),
-                    "{exchange:?} {date}: closed at the printed close"
-                );
-                assert_eq!(
-                    venue.trade_date(cutoff - Duration::seconds(1)),
-                    Some(date),
-                    "{exchange:?} {date}: the trade date holds until the close"
+                // The era runs 2013-2015 and so lies entirely below the
+                // 2025-01-01 floor. The row's printed instant is still what the
+                // table states — and `close_ssm` above is read from that row —
+                // but the calendar cannot confirm the end-exclusive behaviour
+                // there: both probes are refused as `BeforeSupportFloor` rather
+                // than answered, and the date-aware form of this fence is
+                // exercised on the covered era by
+                // `holidays_globex_energy.rs`. What is no longer claimable here
+                // is an `is_open`/`trade_date` value on these dates.
+                let before_the_close = venue.is_open(cutoff - Duration::seconds(1));
+                assert_refuses_before_floor(before_the_close, venue, cutoff - Duration::seconds(1));
+                let at_the_close = venue.is_open(cutoff);
+                assert_refuses_before_floor(at_the_close, venue, cutoff);
+                let trade_date_at_the_close = venue.trade_date(cutoff - Duration::seconds(1));
+                assert_refuses_before_floor(
+                    trade_date_at_the_close,
+                    venue,
+                    cutoff - Duration::seconds(1),
                 );
                 probes += 1;
             }

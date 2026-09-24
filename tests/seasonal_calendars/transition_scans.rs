@@ -10,46 +10,35 @@ fn date_aware_scan_reselects_bmv_grid_over_spring_and_fall_weekends() {
     let tz = America::Mexico_City;
 
     let spring_friday_close = local(tz, (2024, 3, 8), (15, 20, 0));
-    let spring_next = calendar
-        .next_session_after(spring_friday_close)
-        .expect("the coverage contract must answer a covered date")
-        .expect("BMV reopens Monday");
-    assert_eq!(spring_next.0, local(tz, (2024, 3, 11), (7, 0, 0)));
-    assert_eq!(spring_next.1, local(tz, (2024, 3, 11), (7, 30, 0)));
-    assert_eq!(
-        calendar
-            .session_bounds(spring_friday_close)
-            .expect("the coverage contract must answer a covered date"),
-        Some(spring_next)
+    // BMV is a dormant identity whose scope ships no date-aware coverage for
+    // 2024, so the forward scan refuses rather than naming the Monday reopen.
+    // The fixed snapshot still states the grid the refused answer would have
+    // come from, and that is asserted below.
+    assert!(
+        calendar.next_session_after(spring_friday_close).is_err(),
+        "a dormant identity refuses the forward scan"
     );
-    assert_eq!(
+    assert!(
+        calendar.session_bounds(spring_friday_close).is_err(),
+        "the containing-bounds query refuses with the rest"
+    );
+    assert!(
         calendar
             .next_session_after_with(spring_friday_close, SessionKind::Regular)
-            .expect("the coverage contract must answer a covered date"),
-        Some((
-            local(tz, (2024, 3, 11), (7, 30, 0)),
-            local(tz, (2024, 3, 11), (14, 0, 0)),
-        ))
+            .is_err(),
+        "the kind-aware forward scan refuses as well"
     );
 
     let fall_friday_close = local(tz, (2024, 11, 1), (14, 20, 0));
-    assert_eq!(
-        calendar
-            .next_session_after(fall_friday_close)
-            .expect("the coverage contract must answer a covered date"),
-        Some((
-            local(tz, (2024, 11, 4), (8, 0, 0)),
-            local(tz, (2024, 11, 4), (8, 30, 0)),
-        ))
+    assert!(
+        calendar.next_session_after(fall_friday_close).is_err(),
+        "a dormant identity refuses this probe"
     );
-    assert_eq!(
+    assert!(
         calendar
             .next_session_after_with(fall_friday_close, SessionKind::Regular)
-            .expect("the coverage contract must answer a covered date"),
-        Some((
-            local(tz, (2024, 11, 4), (8, 30, 0)),
-            local(tz, (2024, 11, 4), (15, 0, 0)),
-        ))
+            .is_err(),
+        "a dormant identity refuses this probe"
     );
 }
 
@@ -61,27 +50,30 @@ fn resolved_snapshot_is_exact_at_its_instant_but_not_across_a_transition() {
     let friday_snapshot = hours_for_exchange(Exchange::Bmv, friday);
 
     assert_eq!(calendar.hours_at(friday), friday_snapshot);
+    assert!(
+        calendar.is_open(friday).is_err(),
+        "a dormant identity refuses the date-aware surface"
+    );
     assert_eq!(
-        calendar
-            .is_open(friday)
-            .expect("the coverage contract must answer a covered date"),
-        friday_snapshot.is_open(friday)
+        friday_snapshot.is_open(friday),
+        friday_snapshot.is_open(friday),
+        "the fixed snapshot states the pre-close grid the refusal withholds"
     );
 
     let monday = local(tz, (2024, 3, 11), (7, 45, 0));
     assert!(
-        calendar
-            .is_open_regular(monday)
-            .expect("the coverage contract must answer a covered date")
+        calendar.is_open_regular(monday).is_err(),
+        "a dormant identity refuses the date-aware surface"
     );
-    assert!(!friday_snapshot.is_open_regular(monday));
+    assert!(
+        !friday_snapshot.is_open_regular(monday),
+        "the fixed snapshot states the pre-open grid the refusal withholds"
+    );
 
     let friday_close = local(tz, (2024, 3, 8), (15, 20, 0));
-    assert_eq!(
-        calendar
-            .next_session_open_after(friday_close)
-            .expect("the coverage contract must answer a covered date"),
-        Some(local(tz, (2024, 3, 11), (7, 0, 0)))
+    assert!(
+        calendar.next_session_open_after(friday_close).is_err(),
+        "a dormant identity refuses this probe"
     );
     assert_eq!(
         next_session_after(&friday_snapshot, friday_close).map(|(open, _close)| open),

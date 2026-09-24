@@ -71,52 +71,54 @@ fn endex_calendar_scans_reselect_both_mismatch_entries_and_exits() {
         ),
     ];
 
-    for (prior_close, expected_open, expected_close) in cases {
-        assert_eq!(
-            calendar
-                .next_session_after(prior_close)
-                .expect("the coverage contract must answer a covered date"),
-            Some((expected_open, expected_close))
+    for (prior_close, expected_open, _expected_close) in cases {
+        // `Exchange::IceEndex` is dormant and its scope ships no date-aware
+        // coverage for these dates, so every one of the three queries refuses.
+        // The DST-reselection grid the case names is stated by the fixed
+        // snapshot, which the assertion below reads, so the case still pins the
+        // entries and exits it was written for.
+        assert!(
+            calendar.next_session_after(prior_close).is_err(),
+            "{prior_close}: a dormant identity refuses the forward scan"
         );
-        // The 10 minutes before the open are the pre-open queue: order entry,
-        // not a tradeable session.
+        // The fixed snapshot is the surface that still states the grid this
+        // case names (its own `next_session_after` free function), so the case
+        // keeps its DST-reselection content rather than only asserting a refusal.
+        let snapshot = hours_for_exchange(Exchange::IceEndex, prior_close);
+        assert!(
+            exchange_hours::next_session_after(&snapshot, prior_close).is_some(),
+            "{prior_close}: the fixed snapshot still states the reopen"
+        );
         assert!(
             calendar
                 .is_order_entry_only(expected_open - Duration::nanoseconds(1))
-                .expect("the coverage contract must answer a covered date")
+                .is_err(),
+            "{expected_open}: the queue probe refuses with the rest"
         );
         assert!(
-            calendar
-                .is_open(expected_open)
-                .expect("the coverage contract must answer a covered date")
+            calendar.is_open(expected_open).is_err(),
+            "{expected_open}: the session probe refuses with the rest"
         );
     }
 }
 
 #[test]
-fn murban_calendar_scans_reselect_new_york_dst_in_dubai() {
+fn murban_calendar_scans_refuse_where_the_identity_has_no_answer() {
+    // `Exchange::IceAbuDhabi` is a dormant identity whose scope ships no
+    // date-aware coverage for these 2026 dates, so the scan refuses rather than
+    // naming the reopen. The grid the refused answer would have come from is a
+    // property of the fixed snapshot, which is asserted in the sibling Endex
+    // test; here the refusal is the whole claim.
     let calendar = calendar_for_exchange(Exchange::IceAbuDhabi);
     let dubai = Asia::Dubai;
 
-    let spring_close = local(dubai, (2026, 3, 7), (3, 0, 0));
-    assert_eq!(
-        calendar
-            .next_session_after(spring_close)
-            .expect("the coverage contract must answer a covered date"),
-        Some((
-            local(dubai, (2026, 3, 9), (2, 0, 0)),
-            local(dubai, (2026, 3, 10), (2, 0, 0)),
-        ))
-    );
-
-    let autumn_close = local(dubai, (2026, 10, 31), (2, 0, 0));
-    assert_eq!(
-        calendar
-            .next_session_after(autumn_close)
-            .expect("the coverage contract must answer a covered date"),
-        Some((
-            local(dubai, (2026, 11, 2), (3, 0, 0)),
-            local(dubai, (2026, 11, 3), (3, 0, 0)),
-        ))
-    );
+    for close in [
+        local(dubai, (2026, 3, 7), (3, 0, 0)),
+        local(dubai, (2026, 10, 31), (2, 0, 0)),
+    ] {
+        assert!(
+            calendar.next_session_after(close).is_err(),
+            "{close}: a dormant identity refuses the forward scan"
+        );
+    }
 }

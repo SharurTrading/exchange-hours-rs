@@ -28,6 +28,12 @@ allow-dbg-in-tests = true
 # 500-line source-reviewability guard for production modules, so the structural
 # rule in AGENTS.md is untouched: this loosens the pedantic *lint* for test
 # functions, not the reviewability budget for `src/`.
+#
+# STAGE 2 DEBT, not a permanent policy. Seventeen converted fences sit between
+# 100 and 145 counted lines, and the alternative was seventeen per-function
+# `#[expect]`s whose only content is the sentence above. Revert this to clippy's
+# default once the longest fences are split into per-subject helpers, so a future
+# 150-line test function fails the lint again rather than passing silently.
 too-many-lines-threshold = 160
 
 # LAW-DETERMINISM — this crate never reads a clock. `chrono`'s `clock` feature

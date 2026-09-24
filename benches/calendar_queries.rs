@@ -1,5 +1,20 @@
 // SPDX-License-Identifier: MIT-0
 
+// A benchmark probe is a measurement, not library code, so a query that refuses
+// one of its covered instants is a defect the run must report — not a state to
+// absorb. Every probe below therefore `expect`s its answer: if the coverage gate
+// ever refuses a 2026 instant (say a regression in `CalendarCoverage`), the bench
+// fails loudly instead of silently timing the refusal path and reporting a
+// improvement that is not real.
+//
+// `clippy.toml` exempts tests from the panic family through `allow-expect-in-tests`,
+// but clippy does not treat `--bench` as a test target, so the exemption is
+// restated here for this file alone rather than relaxing the lint repo-wide.
+#![expect(
+    clippy::expect_used,
+    reason = "a refused probe on a covered benchmark instant must fail the run, not be absorbed"
+)]
+
 //! Query-cost baseline for the Globex equity-index family calendar.
 //!
 //! Three groups, in the order the design memo's performance plan asks for them.
@@ -215,37 +230,61 @@ fn overlay_layers(criterion: &mut Criterion) {
     bench_queries(
         &mut group,
         "none",
-        |instant| calendar.is_open(instant).unwrap_or(false),
+        |instant| {
+            calendar
+                .is_open(instant)
+                .expect("a covered benchmark probe must answer")
+        },
         &probes,
     );
     bench_queries(
         &mut group,
         "without_holidays",
-        |instant| detached.is_open(instant).unwrap_or(false),
+        |instant| {
+            detached
+                .is_open(instant)
+                .expect("a covered benchmark probe must answer")
+        },
         &probes,
     );
     bench_queries(
         &mut group,
         "exceptions_gated",
-        |instant| gated.is_open(instant).unwrap_or(false),
+        |instant| {
+            gated
+                .is_open(instant)
+                .expect("a covered benchmark probe must answer")
+        },
         &probes,
     );
     bench_queries(
         &mut group,
         "exceptions_in_coverage",
-        |instant| ungated.is_open(instant).unwrap_or(false),
+        |instant| {
+            ungated
+                .is_open(instant)
+                .expect("a covered benchmark probe must answer")
+        },
         &probes,
     );
     bench_queries(
         &mut group,
         "day_policy_elsewhere",
-        |instant| policy_elsewhere.is_open(instant).unwrap_or(false),
+        |instant| {
+            policy_elsewhere
+                .is_open(instant)
+                .expect("a covered benchmark probe must answer")
+        },
         &probes,
     );
     bench_queries(
         &mut group,
         "day_policy_on_date",
-        |instant| policy_on_date.is_open(instant).unwrap_or(false),
+        |instant| {
+            policy_on_date
+                .is_open(instant)
+                .expect("a covered benchmark probe must answer")
+        },
         &probes,
     );
 
@@ -256,18 +295,22 @@ fn overlay_layers(criterion: &mut Criterion) {
         ("exceptions_gated", &|| {
             gated
                 .candle_start(probes.regular, CalendarResolution::Daily)
-                .is_ok_and(|value| value.is_some())
+                .expect("a covered benchmark probe must answer")
+                .is_some()
                 && gated
                     .candle_end(probes.regular, CalendarResolution::Daily)
-                    .is_ok_and(|value| value.is_some())
+                    .expect("a covered benchmark probe must answer")
+                    .is_some()
         }),
         ("day_policy_elsewhere", &|| {
             policy_elsewhere
                 .candle_start(probes.regular, CalendarResolution::Daily)
-                .is_ok_and(|value| value.is_some())
+                .expect("a covered benchmark probe must answer")
+                .is_some()
                 && policy_elsewhere
                     .candle_end(probes.regular, CalendarResolution::Daily)
-                    .is_ok_and(|value| value.is_some())
+                    .expect("a covered benchmark probe must answer")
+                    .is_some()
         }),
     ];
     for (label, run) in windows {
@@ -283,10 +326,12 @@ fn overlay_layers(criterion: &mut Criterion) {
 fn daily_window(calendar: ExchangeCalendar, instant: DateTime<Utc>) -> bool {
     calendar
         .candle_start(instant, CalendarResolution::Daily)
-        .is_ok_and(|value| value.is_some())
+        .expect("a covered benchmark probe must answer")
+        .is_some()
         && calendar
             .candle_end(instant, CalendarResolution::Daily)
-            .is_ok_and(|value| value.is_some())
+            .expect("a covered benchmark probe must answer")
+            .is_some()
 }
 
 /// One cold chart frame: `FRAME_POINTS - 1` open probes plus one daily close.
@@ -296,13 +341,17 @@ fn frame(calendar: ExchangeCalendar, start: DateTime<Utc>) -> usize {
         let Some(instant) = start.checked_add_signed(TimeDelta::minutes(step)) else {
             break;
         };
-        if calendar.is_open(instant).unwrap_or(false) {
+        if calendar
+            .is_open(instant)
+            .expect("a covered benchmark probe must answer")
+        {
             open = open.saturating_add(1);
         }
     }
     if calendar
         .candle_end(start, CalendarResolution::Daily)
-        .is_ok_and(|value| value.is_some())
+        .expect("a covered benchmark probe must answer")
+        .is_some()
     {
         open = open.saturating_add(1);
     }
@@ -373,7 +422,10 @@ fn year_scan(calendar: ExchangeCalendar, start: DateTime<Utc>) -> usize {
     let mut open = 0_usize;
     let mut instant = start;
     while instant < end {
-        if calendar.is_open(instant).unwrap_or(false) {
+        if calendar
+            .is_open(instant)
+            .expect("a covered benchmark probe must answer")
+        {
             open = open.saturating_add(1);
         }
         let Some(next) = instant.checked_add_signed(TimeDelta::minutes(15)) else {

@@ -11,10 +11,10 @@ use super::sessions::{
     containing_session_with, contains_in_session_with, next_session_after_with,
     previous_session_before_with,
 };
+use crate::calendar::CalendarQueryError;
 use crate::calendar::SessionState;
 use crate::calendar::local_time::{bounded_utc, mk_local_open};
 use crate::calendar::rule::SessionKind;
-use crate::calendar::{CalendarQueryError, SUPPORT_FLOOR};
 
 const MAX_MAINTENANCE_GAP: Duration = Duration::hours(4);
 
@@ -62,26 +62,32 @@ pub(in crate::calendar) fn trade_date(
     instant: DateTime<Utc>,
 ) -> Result<Option<NaiveDate>, CalendarQueryError> {
     // Resolve first, then judge -- and judge on **every** exit, including the
-    // early one. A containing session answers the instant, but its trade date
-    // is still a date this identity must have a sourced answer for: reporting
-    // `Ok(Some(2024-06-03))` for a pre-floor instant would hand a caller a
-    // trade date the identity cannot state (LAW-COVERAGE).
-    let answer = resolve_trade_date(context, instant)?;
-    let Some(day) = answer else {
+    // early one. A containing session answers the instant, but its trade date is
+    // still a date an identity must have a sourced answer for: reporting
+    // `Ok(Some(2024-06-03))` for a pre-floor instant would hand a caller a trade
+    // date the identity cannot state (LAW-COVERAGE).
+    //
+    // The two judgements differ by *what* is judged, which is why both are here:
+    //
+    // - no containing session: the answer is `None`, and the instant's own
+    //   venue-local day must clear the floor, or an unsourced day would be
+    //   reported as "no trade date" rather than as a refusal;
+    // - a containing session: the resolved **trade date** must clear the floor,
+    //   while the session's own opening day may legitimately precede it -- the
+    //   plan requires that an in-range instant whose session opened before the
+    //   floor is still answered whole (section 6).
+    //
+    // `require_floor` is the identity-only half: it returns `Ok` for a detached
+    // caller-supplied snapshot, which claims nothing about coverage. That is
+    // deliberate and load-bearing rather than an oversight — a snapshot keeps the
+    // pre-floor trade date its own rules derive, because withholding it would
+    // delete the `Halt`/`Maintenance` classification `session_state` reads from
+    // this answer and report a sourced gap as a plain closure.
+    let Some(day) = resolve_trade_date(context, instant)? else {
         context.require_floor_at(instant)?;
         return Ok(None);
     };
     context.require_floor(Some(day))?;
-    // The containing session's own opening day may precede the floor when the
-    // instant is in range, which the plan permits; only the *trade date* has to
-    // be one this identity can state. That is a claim only an **identity** makes:
-    // a detached caller-supplied snapshot claims nothing about coverage, so it
-    // keeps the trade date it derives. Withholding it there would delete the
-    // pre-floor `Halt`/`Maintenance` classification `session_state` reads from
-    // this answer, turning a sourced gap into a plain closure.
-    if context.is_identity_backed() && day < SUPPORT_FLOOR {
-        return Ok(None);
-    }
     Ok(Some(day))
 }
 

@@ -140,6 +140,52 @@ fn the_floor_answers_from_its_own_first_local_day() {
 
 // -------------------------------------------------- the query surface agrees
 
+/// A returned session is **complete**, never truncated at a date boundary.
+///
+/// The plan states the integrity rule in section 6: "neither a floor nor an
+/// upper bound truncates a real session to manufacture a result". The sharpest
+/// form of it is a wrapped overnight session, whose bounds open on the local day
+/// *before* the instant's own — a query addressed to 2025-01-03 00:30 CT is
+/// answered by a session that opened 2025-01-02 17:00 CT, because that is the
+/// session the instant is actually in.
+///
+/// Worth recording what this fixture is **not**: no shipped session spans the
+/// floor itself. New Year's Day is a closure for every Globex family, so the
+/// floor's first local day has no session reaching back into 2024, and a probe
+/// there correctly returns the *next* session instead. The truncation risk is
+/// therefore tested where it is observable, and the floor-adjacent behaviour is
+/// asserted separately below.
+#[test]
+fn a_returned_session_is_never_truncated_at_a_date_boundary() {
+    let calendar = calendar_for_market_hours_key(MarketHoursKey::GlobexGrains);
+
+    // Mid-coverage, so the answer is unambiguous: the containing session opened
+    // on the previous local day and is returned whole.
+    let in_span = ct((2025, 1, 3), (0, 30));
+    let bounds = calendar
+        .session_bounds(in_span)
+        .expect("a covered instant answers")
+        .expect("a session holds it");
+    assert!(
+        bounds.0 < ct((2025, 1, 3), (0, 0)),
+        "the containing session opens on the previous local day: {bounds:?}"
+    );
+    assert!(
+        bounds.0 <= in_span && in_span < bounds.1,
+        "and it genuinely contains the instant: {bounds:?}"
+    );
+
+    // The same query addressed a day before the floor still errors: the rule
+    // distinguishes what the caller addressed, not the days the answer walks.
+    assert!(
+        matches!(
+            calendar.session_bounds(ct((2024, 12, 31), (12, 0))),
+            Err(CalendarQueryError::BeforeSupportFloor { .. })
+        ),
+        "a query addressed before the floor still errors"
+    );
+}
+
 #[test]
 fn every_migrated_query_refuses_the_same_pre_floor_date() {
     let calendar = globex();

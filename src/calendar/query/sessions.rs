@@ -87,10 +87,14 @@ fn containing_occurrence_of_kind(
     if let Some(found) = find_occurrence(context, day, RuleSet::Sessions(kind), false, hit)? {
         return Ok(Some(found));
     }
-    // A wrapped occurrence belongs to the previous opening day, and this answer
-    // therefore depends on that day — so an instant on the floor's own first
-    // local day, where yesterday is below the floor, is refused rather than
-    // answered from an unsourced day (plan section 6).
+    // A wrapped occurrence belongs to the previous opening day, so an instant in
+    // the first hours of the floor's own first local day is answered from a
+    // pre-floor opening day. That is the spanning rule the plan requires: an
+    // in-range instant whose session opened before the floor is answered whole
+    // (section 6). `require_answerable` passes below the floor precisely so this
+    // probe can answer; only a query *addressed* to an earlier day is refused,
+    // and that verdict is taken at the entry point from the caller's own instant
+    // (see `status::is_open_with`).
     let Some(yesterday) = day.pred_opt() else {
         return Ok(None);
     };

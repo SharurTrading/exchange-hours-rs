@@ -309,22 +309,11 @@ impl<'a> QueryContext<'a> {
         }
     }
 
-    /// Returns whether this query resolves through a real identity.
-    ///
-    /// A detached caller-supplied [`MarketHours`](crate::MarketHours) snapshot
-    /// carries no identity and therefore claims nothing about coverage, which is
-    /// why every gate early-returns for it. Callers that make a *claim* rather
-    /// than a coverage check — withholding a pre-floor trade date, for instance —
-    /// must ask this first, or they will weaken a detached snapshot's answers.
-    pub(super) const fn is_identity_backed(self) -> bool {
-        self.coverage.is_some()
-    }
-
     /// Fails when the venue-local day containing `instant` precedes the floor.
     ///
-    /// Every instant-addressed query starts here, so the floor is decided once
-    /// from the caller's own instant rather than from each day a scan later
-    /// walks over (see [`Self::require_floor`]).
+    /// Every instant-addressed query starts here, so the floor is decided from
+    /// the caller's own instant rather than from each day a scan later walks over
+    /// (see [`Self::require_floor`]).
     pub(in crate::calendar) fn require_floor_at(
         self,
         instant: DateTime<Utc>,

@@ -619,8 +619,6 @@ pub(crate) static CME: &HolidayTable = holidays! {
         // Saturday-session replacement; the five financial families state
         // nothing, which is an audited-normal answer and so a dispute.
         (2026, 6, 22, Unsourced, T2, "CME-SVC-2026-06-18"),
-        // 2026-06-22 - T2 - CME-SVC-2026-06-18 - the energy family states a
-        // Saturday-session replacement and the five financial families do not.
         // 2026-07-03 - T2 - CME-SVC-2026-07-03 - as 2026-06-19.
         (2026, 7, 3, Unsourced, T2, "CME-SVC-2026-07-03"),
         // 2026-07-06 - T2 - CME-SVC-2026-07-03 - as 2026-06-22.

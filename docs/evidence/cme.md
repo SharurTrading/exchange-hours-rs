@@ -726,7 +726,7 @@ the product-family key: `globex_equity_index` knows what CME equity index does o
 
 **Gaps, 2025-2027.**
 
-- **The thirty-two `unsourced` dates are the intersection's residue, not a research
+- **The thirty-five `unsourced` dates are the intersection's residue, not a research
   gap.** Each one is a date on which the six families disagree — by stating different
   rows, or by one of them stating a row while another states none. A family with no
   row has **audited the date normal**, which is a different answer rather than a
@@ -737,7 +737,8 @@ the product-family key: `globex_equity_index` knows what CME equity index does o
   table on `cmegroup.com/trading-hours.html` is per asset class, not per venue — or a
   `DayPolicy`-shaped boundary that can express a per-family answer inside one venue
   calendar. Neither exists today.
-- **`no row in FX` on twenty-two of the thirty-two disputed dates.** `globex_fx`
+- **`no row in FX` on twenty-two of the older thirty-five disputed dates, plus the
+  three 2026-2027 Saturday-session dates it now states.** `globex_fx`
   carries no row on 2025-01-02, 2025-01-20, 2025-02-17, 2025-05-26, 2025-06-19,
   2025-07-03, 2025-09-01, 2025-11-27, 2025-12-26, 2026-01-02, 2026-01-19, 2026-02-16,
   2026-05-25, 2026-09-07, 2026-11-26, 2027-01-18, 2027-02-15, 2027-05-31, 2027-07-05,

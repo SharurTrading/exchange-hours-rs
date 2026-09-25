@@ -78,18 +78,17 @@ corrections (a venue's hours fixed against a primary source) go under
   states each of those three trade dates as a **complete** block set: the
   Saturday session at offset `-2`, the ordinary Sunday Pre-Open
   `16:00-17:00` CT at offset `-1`, and the ordinary Sunday-17:00-to-Monday-16:00
-  session at offset `-1`. Every instant is quoted from the service window the
-  row cites, and the rows state the whole day rather than the Saturday alone
-  because a replacement replaces the complete trade date: a Saturday-only set
-  would delete the Sunday-evening session that belongs to the same one. The
+  session at offset `-1`. The rows state the whole day rather than the Saturday
+  alone because a replacement replaces the complete trade date: a Saturday-only
+  set would delete the Sunday-evening session that belongs to the same one. The
+  Saturday instants come from the row's cited window, which stops at the
+  Saturday; the Sunday Pre-Open and the Sunday-Monday session come from the
+  window that starts on that Sunday, recorded in the owner's evidence file. The
   four CME venue intersection tables carry the derived consequence — `comex` and
   `nymex` reproduce the family's row because each routes one family, while `cme`
-  states `Unsourced` on 2026-07-06 and 2027-06-21 and on 2026-06-22, where the
-  five financial families state nothing and only energy does, and `cbot` states
-  nothing at all on the three dates because both of its families audited them
-  normal. This also fixes an evidence-citation defect the rows exposed:
-  `globex_energy.md` had cited a window for 2026-07-04 that contains no Crude
-  Oil product, and now cites one that carries the session.
+  states `Unsourced` on all three dates, where the five financial families state
+  nothing and only energy does, and `cbot` states nothing at all on them because
+  both of its families audited them normal.
 - **A built-in holiday row may state a replacement block set (2026-09-25 UTC).** Stage 3
   of the release plan adds `HolidayKind::ReplacementBlocks(&'static [ExceptionBlock])`,
   the vocabulary for a special session whose *internal* phase topology changes: an added

@@ -91,11 +91,19 @@ use crate::calendar::exceptions::ExceptionBlock;
 /// The complete trading day of the 2026-06-22, 2026-07-06 and 2027-06-21 trade
 /// dates, which CME states a Saturday session on.
 ///
-/// The equity-index envelope is the 2021-06-27 removal of the 15:15-15:30 halt:
-/// one continuous 17:00-16:00 CT matching span whose overnight leg opens the
-/// evening before, so the whole envelope is one block rather than the two the
-/// pre-2021 halt required. Splitting it at the regular session's boundaries
-/// would double-count 08:30-15:15, which is also `regular`.
+/// The equity-index day is one continuous 17:00-16:00 CT matching envelope, but
+/// it carries a **regular** session inside it: 08:30-15:15 CT is `regular` and
+/// the rest of the envelope is `extended`. The set therefore splits the envelope
+/// into three **ordered** blocks at the regular boundaries — extended, regular,
+/// extended — so that `is_open_regular`, `session_state` and the regular bounds
+/// keep answering on these dates exactly as they do on an ordinary week.
+///
+/// Stating the envelope as one `extended` block instead would answer
+/// `OpenExtended` at 10:00 CT where the normal week answers `OpenRegular`, and
+/// would move the regular session's bounds to the next trade date; a
+/// replacement replaces the complete trade date, and the scan selects blocks by
+/// kind. An independent review caught that, which is why the split is explicit
+/// and pinned by a test.
 ///
 /// The blocks state each date completely: the Saturday session at offset `-2`,
 /// the Sunday Pre-Open queue at offset `-1`, and the Sunday-17:00-through-
@@ -107,10 +115,12 @@ use crate::calendar::exceptions::ExceptionBlock;
 /// early close that ends the *previous* trade date's session — so there is no
 /// trading to claim, and a block there would put an open on the clock at an
 /// instant no operator document states.
-pub(crate) static SATURDAY_SESSION_BLOCKS: [ExceptionBlock; 3] = [
+pub(crate) static SATURDAY_SESSION_BLOCKS: [ExceptionBlock; 5] = [
     ExceptionBlock::extended(-2, 5 * 3_600, 17 * 3_600),
     ExceptionBlock::order_entry(-1, 16 * 3_600, 17 * 3_600),
-    ExceptionBlock::extended(-1, 17 * 3_600, 16 * 3_600),
+    ExceptionBlock::extended(-1, 17 * 3_600, 8 * 3_600 + 30 * 60),
+    ExceptionBlock::regular(0, 8 * 3_600 + 30 * 60, 15 * 3_600 + 15 * 60),
+    ExceptionBlock::extended(0, 15 * 3_600 + 15 * 60, 16 * 3_600),
 ];
 
 /// 12:00 CT, the Monday/Thursday-holiday and Independence-Day final close.

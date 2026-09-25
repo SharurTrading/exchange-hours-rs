@@ -1322,6 +1322,75 @@ fn every_instant_a_venue_summary_cites_is_one_its_families_state() {
     }
 }
 
+/// A replacement row's printed instants are the block bounds it ships.
+///
+/// A `ReplacementBlocks` row states a **complete** trading day, so every
+/// instant its evidence row quotes as printed is one of the row's own block
+/// bounds. The citation fence checks the document id and the reverse fence
+/// checks the trade date, but neither reads the instants: an evidence row whose
+/// prose moved a single phase — the Sunday Pre-Open, say — while the module
+/// kept the sourced one would pass both. This ties the printed cell to the
+/// bounds the module declares, so prose that drifts from the data fails. The
+/// other direction needs the family's own tests, because an instant can appear
+/// in two blocks of the same day (16:00 CT is both the queue's open and the
+/// following session's close), so membership alone cannot see the module move;
+/// `the_published_sunday_pre_open_queues_are_fenced_at_their_bounds` probes the
+/// phase through the public surface and does see it.
+#[test]
+fn a_replacement_rows_printed_instants_are_the_block_bounds_it_ships() {
+    let files = evidence_files();
+    let mut checked = 0_usize;
+
+    for block in holiday_blocks() {
+        for row in &block.rows {
+            if !row.kind.starts_with("ReplacementBlocks(") {
+                continue;
+            }
+            let stated = stated_instants(&row.kind, &block.source)
+                .into_iter()
+                .collect::<BTreeSet<_>>();
+            assert!(
+                !stated.is_empty(),
+                "{}: the {} replacement row states no instant at all",
+                block.module,
+                row.day
+            );
+            for name in &block.files {
+                let text = files
+                    .get(name)
+                    .unwrap_or_else(|| panic!("{name} must exist in docs/evidence"));
+                let holidays = section(text, "## Holidays")
+                    .unwrap_or_else(|| panic!("{name} must carry a `## Holidays` section"));
+                let line = holidays
+                    .lines()
+                    .find(|line| line.starts_with(&format!("| {} |", row.day)))
+                    .unwrap_or_else(|| panic!("{name} records no {} holiday row", row.day));
+                let printed = line
+                    .trim_start_matches('|')
+                    .split('|')
+                    .nth(2)
+                    .map(str::trim)
+                    .expect("a holiday line carries a printed-instant cell");
+                for instant in stated_times(printed) {
+                    assert!(
+                        stated.contains(&instant),
+                        "{name}: the {} row prints {instant} CT, but the block bounds the \
+                         module states on that trade date are {stated:?}. Printed cell: \
+                         {printed}",
+                        row.day
+                    );
+                }
+                checked += 1;
+            }
+        }
+    }
+
+    assert!(
+        checked > 0,
+        "no replacement row was checked, so this fence is vacuous"
+    );
+}
+
 fn evidence_dir() -> PathBuf {
     repository_root().join(EVIDENCE_DIR)
 }

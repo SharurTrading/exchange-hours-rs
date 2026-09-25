@@ -777,18 +777,24 @@ the product-family key: `globex_equity_index` knows what CME equity index does o
   `docs/plans/2026-09-12-path-to-release.md` §3 2.1 is where it is written down.
   Eight CME families ship tables; the two left out are `globex_cryptocurrency` and
   `globex_nikkei_225_dollar`.
-- **What adding each of the two would cost is known, and they differ.** Nikkei agrees
-  with `globex_equity_index` on all thirty-seven dates in this window, so adding it
-  would change nothing at all. Cryptocurrency shares the same **nine** closures — its
-  `Closed` rows cover every one of them — so it would not touch the nine stated rows.
+- **What adding each of the two would cost is known, and they differ.** On the
+  thirty-seven dates `globex_equity_index` states in this window Nikkei states the same
+  row, but Nikkei also ships three rows of its own — the Saturday trade dates
+  2026-06-22, 2026-07-06 and 2027-06-21 that Stage 4 (#116) added — which no other
+  routed family states. Adding it would therefore leave those thirty-seven dates alone
+  and turn each of the three Saturdays from an audited-normal date into a disagreement
+  the intersection can only ship as `unsourced`. Cryptocurrency shares the same **nine**
+  closures — its `Closed` rows cover every one of them — so it would not touch the nine
+  stated rows.
   What it would change is the residue: it ships twenty-four rows against this list's
   forty-one dates, because it trades 24/7 and states no closure on the other
   seventeen, so on each of those seventeen it has **audited the date normal** while
   another routed family states a closure or an early close. Those seventeen dates
   carry `unsourced` either way, so the venue's answers would be unchanged and only the
   evidence would record one more family as party to each disagreement. The choice is
-  therefore not load-bearing for any answer in this window, which is exactly why it
-  has to be written down rather than inferred.
+  therefore load-bearing for exactly three dates — Nikkei's three Saturdays, and only
+  between an audited-normal date and an `unsourced` one — which is exactly why it has to
+  be written down rather than inferred.
   Closing condition: the consumer's own root map, disclosed and reviewed against this
   list — the audit `#95` carries into the stage-2.2 waves. The crate cannot settle it,
   and this file states both readings so a reviewer can.

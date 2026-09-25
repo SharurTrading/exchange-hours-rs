@@ -99,6 +99,7 @@ date) orders are eliminated." `/TD` below is CME's own `tradingDate` field on ea
 | `CME-SVC-B-2026-04-01` | 2026-04-01 .. 2026-04-03 | <https://www.cmegroup.com/services/trading-hours-by-product?id=168,167,320,323,19,27&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2026-04-01&toEventDate=2026-04-03> | live retrieval 2026-09-12T08:55:08Z | T2 | `b4569c685450baab17749fbed20c8c0e37c40910b77c411f72b6c596cd3c0567` |
 | `CME-SVC-B-2026-05-24` | 2026-05-24 .. 2026-05-26 | <https://www.cmegroup.com/services/trading-hours-by-product?id=168,167,320,323,19,27&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2026-05-24&toEventDate=2026-05-26> | live retrieval 2026-09-12T08:55:09Z | T2 | `3c7628b898d8069067836a36c44769f2f2b76a1dee5edbd48225f76b363881d0` |
 | `CME-SVC-B-2026-06-18` | 2026-06-18 .. 2026-06-20 | <https://www.cmegroup.com/services/trading-hours-by-product?id=168,167,320,323,19,27&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2026-06-18&toEventDate=2026-06-20> | live retrieval 2026-09-12T08:55:10Z | T2 | `41791460e029bb7db0d280374048c36f015594fb71e9f1aae86a6145429ce2e5` |
+| `CME-SVC-B-2026-06-21` | 2026-06-21 .. 2026-06-23 | <https://www.cmegroup.com/services/trading-hours-by-product?id=168,167,320,323,19,27&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2026-06-21&toEventDate=2026-06-23> | live retrieval 2026-09-25T08:44:59Z via `https://r.jina.ai/` | T2 | `09714a527385207db4926843cda9df6d2a0ea6515356584e1f8e1f9f69b4f209` |
 | `CME-SVC-B-2026-07-03` | 2026-07-03 .. 2026-07-05 | <https://www.cmegroup.com/services/trading-hours-by-product?id=168,167,320,323,19,27&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2026-07-03&toEventDate=2026-07-05> | live retrieval 2026-09-12T08:55:11Z | T2 | `dfc4aff36f0e44fb8fdb78de59d13bad90707c0d108673094ad0a012cefad898` |
 | `CME-SVC-B-2026-09-06` | 2026-09-06 .. 2026-09-08 | <https://www.cmegroup.com/services/trading-hours-by-product?id=168,167,320,323,19,27&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2026-09-06&toEventDate=2026-09-08> | live retrieval 2026-09-12T04:30Z | T2 | `f7cc43f8d90b571b945901f826277ca43ec21c4438c36bbb26e231c859a83923` |
 | `CME-SVC-B-2026-11-25` | 2026-11-25 .. 2026-11-27 | <https://www.cmegroup.com/services/trading-hours-by-product?id=168,167,320,323,19,27&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2026-11-25&toEventDate=2026-11-27> | live retrieval 2026-09-12T04:30Z | T2 | `f6007a75d6009dada85fe6c57d660598f21ed8a8385364c454ee015565f94dd4` |
@@ -109,7 +110,6 @@ date) orders are eliminated." `/TD` below is CME's own `tradingDate` field on ea
 | `CME-SVC-B-2027-03-25` | 2027-03-25 .. 2027-03-27 | <https://www.cmegroup.com/services/trading-hours-by-product?id=168,167,320,323,19,27&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2027-03-25&toEventDate=2027-03-27> | live retrieval 2026-09-12T04:30Z | T2 | `022dcd1f61e54cc316a621e01f519bbb723a446c000323dd9725d2d6434effe8` |
 | `CME-SVC-B-2027-05-30` | 2027-05-30 .. 2027-06-01 | <https://www.cmegroup.com/services/trading-hours-by-product?id=168,167,320,323,19,27&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2027-05-30&toEventDate=2027-06-01> | live retrieval 2026-09-12T04:30Z | T2 | `1c28c61151bd26e844c5b2ea6f046102b6da45a5f88566e91a421604a8c566e6` |
 | `CME-SVC-B-2027-06-17` | 2027-06-17 .. 2027-06-19 | <https://www.cmegroup.com/services/trading-hours-by-product?id=168,167,320,323,19,27&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2027-06-17&toEventDate=2027-06-19> | live retrieval 2026-09-12T04:30Z | T2 | `011d4f666198a4427faa01d7e91ebf2412f4614ae27188ccd35f84c726a5d05d` |
-| `CME-SVC-B-2026-06-21` | 2026-06-21 .. 2026-06-23 | <https://www.cmegroup.com/services/trading-hours-by-product?id=168,167,320,323,19,27&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2026-06-21&toEventDate=2026-06-23> | live retrieval 2026-09-25T08:44:59Z via `https://r.jina.ai/` | T2 | `09714a527385207db4926843cda9df6d2a0ea6515356584e1f8e1f9f69b4f209` |
 | `CME-SVC-B-2027-06-20` | 2027-06-20 .. 2027-06-22 | <https://www.cmegroup.com/services/trading-hours-by-product?id=168,167,320,323,19,27&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2027-06-20&toEventDate=2027-06-22> | live retrieval 2026-09-25T08:44:59Z via `https://r.jina.ai/` | T2 | `173d07af2d7621480b4a6653d4c2295f3f2b83197c1df3b21ce3bf38179f0d12` |
 | `CME-SVC-B-2027-07-04` | 2027-07-04 .. 2027-07-06 | <https://www.cmegroup.com/services/trading-hours-by-product?id=168,167,320,323,19,27&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2027-07-04&toEventDate=2027-07-06> | live retrieval 2026-09-12T04:30Z | T2 | `1a9550357fbf3c1615fcbeefebbc64e271a6dfe0ad0ffdff10c770a7e2d77aaf` |
 | `CME-SVC-B-2027-09-05` | 2027-09-05 .. 2027-09-07 | <https://www.cmegroup.com/services/trading-hours-by-product?id=168,167,320,323,19,27&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2027-09-05&toEventDate=2027-09-07> | live retrieval 2026-09-12T04:30Z | T2 | `9ceb6df48d2278a807fd2e3081828eb41dd207cc64c389078b3a529f762da928` |
@@ -439,10 +439,13 @@ This era's rows cite the ids below: CME Group's own published holiday schedules 
   17:00 closed /TD 2026-06-22` and `05:00 open /TD 2026-07-06; 17:00 closed /TD 2026-07-06`,
   on a week whose normal grid has no Saturday session. The block rows #93 shipped supply the
   vocabulary and this table now states both trade dates, so the crate no longer reports these
-  Saturdays closed. The rows state the **complete** trade date — the Saturday from
-  `CME-SVC-B-2026-06-18` / `CME-SVC-B-2026-07-03`, and the Sunday Pre-Open and
-  Sunday-17:00-to-Monday-16:00 session from `CME-SVC-B-2026-06-21` / `CME-SVC-B-2026-07-05`,
-  which the Saturday windows do not themselves print.
+  Saturdays closed. Each row states the **complete** trade date. For 2026-06-22 the two
+  halves come from two windows: the Saturday from `CME-SVC-B-2026-06-18`, and the Sunday
+  Pre-Open and Sunday-17:00-to-Monday-16:00 session from `CME-SVC-B-2026-06-21`, because
+  that Saturday window stops at 2026-06-20 and prints no Sunday entry at all. For 2026-07-06
+  a single window carries both halves — `CME-SVC-B-2026-07-03`, which runs
+  2026-07-03 .. 2026-07-05, prints the Saturday `05:00 open; 17:00 closed` and the Sunday
+  Pre-Open and evening open itself.
 - **residual risk** — the trade-date divergence described under 2025 applies to 2026-01-19,
   2026-02-16, 2026-05-25, 2026-06-19, 2026-07-03, 2026-09-07 and 2026-11-26.
 - **audited, no row** — Saturday 2026-04-04, the day after Good Friday. CME's service
@@ -479,8 +482,9 @@ This era's rows cite the ids below: CME Group's own published holiday schedules 
 
 - **executable, was not representable — resolved 2026-09-25 UTC by Stage 4 (#116).** The
   Saturday session of 2027-06-19, `05:00 open /TD 2027-06-21; 17:00 closed /TD 2027-06-21`.
-  Same shape as the two 2026 Saturdays, and now a row on the same terms: the Saturday from
-  `CME-SVC-B-2027-06-17` and the Sunday legs from `CME-SVC-B-2027-06-20`.
+  Same shape as the two 2026 Saturdays, and now a row on the same terms as 2026-06-22: the
+  Saturday from `CME-SVC-B-2027-06-17`, whose window ends at 2027-06-19, and the Sunday legs
+  from `CME-SVC-B-2027-06-20`.
 - **residual risk** — the trade-date divergence described under 2025 applies to 2027-01-18,
   2027-02-15, 2027-05-31, 2027-06-18, 2027-07-05, 2027-09-06 and 2027-11-25.
 - **coverage limit** — CME's published future for this family ends with the 2027-12-30 ..

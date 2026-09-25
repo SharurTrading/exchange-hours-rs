@@ -19,7 +19,7 @@ use chrono::{DateTime, Datelike as _, Days, Duration, NaiveDate, TimeZone as _, 
 use chrono_tz::US;
 use exchange_hours::{
     CalendarQueryError, CalendarResolution, EvidenceTier, ExchangeCalendar, Holiday, HolidayKind,
-    MarketHoursKey, SUPPORT_FLOOR, SessionKind, calendar_for_market_hours_key,
+    MarketHoursKey, SUPPORT_FLOOR, SessionKind, SessionState, calendar_for_market_hours_key,
 };
 
 /// The family calendar under test, with its built-in table attached.
@@ -681,15 +681,16 @@ fn the_year_end_closures_delete_only_the_legs_the_operator_deleted() {
     );
 }
 
-/// The Saturday sessions CME publishes and this table cannot state.
+/// The Saturday sessions CME publishes, which this table states as rows.
 ///
 /// `2026-06-20`, `2026-07-04` and `2027-06-19` carry
-/// `05:00 open; 17:00 closed` in CME's own service. The family's normal week
-/// has no Saturday session, and a late open can only push an existing
-/// occurrence later, so they ship as declared gaps until the replacement-block
-/// vocabulary states them. Stage 4 (#116) moved all three to complete-day
-/// replacement rows keyed to the following Monday, so this fence now records
-/// the open session and its trade date rather than its absence.
+/// `05:00 open; 17:00 closed` in CME's own service, on a week whose normal grid
+/// has no Saturday session. Stage 4 (#116) gave the table the replacement-block
+/// vocabulary, so each is a complete-day row keyed to the following Monday
+/// (2026-06-22, 2026-07-06 and 2027-06-21) rather than a declared gap. This
+/// fence records the session's own bounds with its end-exclusive close, the
+/// trade date it carries, and that the row left the ordinary Sunday-Monday
+/// session intact.
 #[test]
 fn the_published_saturday_sessions_ship_as_rows_on_the_following_monday() {
     let nkd = nkd();
@@ -745,6 +746,94 @@ fn the_published_saturday_sessions_ship_as_rows_on_the_following_monday() {
             "{year}-{month:02}-{date:02}: the final close is end-exclusive"
         );
         assert!(nkd.holiday_on(day(year, month, date)).is_none());
+    }
+}
+
+/// The Sunday Pre-Open queue the same three rows state, fenced at its bounds.
+///
+/// CME prints `16:00 preopen; 17:00 open` on the Sunday between each published
+/// Saturday session and the ordinary Sunday-evening session, and the family's
+/// row states it as an order-entry block at offset `-1`. A queue is not a
+/// session, so the row's `session_bounds` alone do not state it: this fence
+/// pins the queue's own interval from both sides through `session_state`,
+/// confirms through `is_order_entry_only` that the interval is a queue and not
+/// a session, and confirms 17:00 CT hands it to the matching session. The
+/// family's *normal* week models no order-entry phase, so those two routes
+/// answer `false` everywhere else; here they answer for the row.
+#[test]
+fn the_published_sunday_pre_open_queues_are_fenced_at_their_bounds() {
+    let nkd = nkd();
+
+    for ((year, month, date), (ty, tm, td)) in [
+        ((2026, 6, 20), (2026, 6, 22)),
+        ((2026, 7, 4), (2026, 7, 6)),
+        ((2027, 6, 19), (2027, 6, 21)),
+    ] {
+        // The row's first half: the Saturday session's own bounds, through the
+        // same public query the sibling fence uses.
+        assert_eq!(
+            nkd.session_bounds(ct(year, month, date, 9, 0, 0))
+                .expect("the coverage contract must answer a covered date"),
+            Some((
+                ct(year, month, date, 5, 0, 0),
+                ct(year, month, date, 17, 0, 0)
+            )),
+            "{year}-{month:02}-{date:02}: the Saturday session's bounds are the published ones"
+        );
+
+        // The queue's interval, `[16:00, 17:00)` CT on the Sunday. A start that
+        // moved later fails the 16:00 and 16:59 probes; one that moved earlier
+        // fails the 15:59 probe; an end that moved earlier fails the 16:59 one.
+        let sunday = (year, month, date + 1);
+        let state = |hour, minute, second| {
+            nkd.session_state(ct(sunday.0, sunday.1, sunday.2, hour, minute, second))
+                .expect("the coverage contract must answer a covered date")
+        };
+        assert_ne!(
+            state(15, 59, 59),
+            SessionState::OrderEntry,
+            "{year}-{month:02}-{date:02}: no queue runs before its 16:00 CT open"
+        );
+        for (hour, minute, second) in [(16, 0, 0), (16, 59, 59)] {
+            let instant = ct(sunday.0, sunday.1, sunday.2, hour, minute, second);
+            assert_eq!(
+                state(hour, minute, second),
+                SessionState::OrderEntry,
+                "{year}-{month:02}-{date:02}: the queue runs at {hour:02}:{minute:02}:{second:02} CT"
+            );
+            assert!(
+                nkd.is_order_entry_only(instant)
+                    .expect("the coverage contract must answer a covered date"),
+                "{year}-{month:02}-{date:02}: the queue is order-entry-only at \
+                 {hour:02}:{minute:02}:{second:02} CT"
+            );
+            assert!(
+                !nkd.is_open(instant)
+                    .expect("the coverage contract must answer a covered date"),
+                "{year}-{month:02}-{date:02}: the queue matches no trade and stays out of is_open"
+            );
+        }
+        // 17:00 CT is the queue's end-exclusive close and the matching
+        // session's open: one instant, both statements.
+        assert_eq!(
+            state(17, 0, 0),
+            SessionState::OpenExtended,
+            "{year}-{month:02}-{date:02}: 17:00 CT hands the queue to the matching session"
+        );
+        assert!(
+            !nkd.is_order_entry_only(ct(sunday.0, sunday.1, sunday.2, 17, 0, 0))
+                .expect("the coverage contract must answer a covered date"),
+            "{year}-{month:02}-{date:02}: 17:00 CT is a tradeable session, not a queue"
+        );
+        assert_eq!(
+            nkd.session_bounds(ct(sunday.0, sunday.1, sunday.2, 16, 30, 0))
+                .expect("the coverage contract must answer a covered date"),
+            Some((
+                ct(sunday.0, sunday.1, sunday.2, 17, 0, 0),
+                ct(ty, tm, td, 16, 0, 0)
+            )),
+            "{year}-{month:02}-{date:02}: the queue feeds the Sunday-17:00-to-Monday-16:00 session"
+        );
     }
 }
 

@@ -38,7 +38,7 @@
 //! LAW-COVERAGE's "a recorded gap with a closing condition", asserted by the
 //! crate rather than inferred from its data. One identity can carry several: the
 //! shape recurs per phase rather than per scope, so `globex_fx` withholds the
-//! Sunday quarter-hour *and* publishes special sessions it cannot state, and
+//! Sunday quarter-hour *and* publishes special sessions no shipped row states, and
 //! `globex_cryptocurrency` carries the special sessions plus an undated Pre-Open
 //! onset of its own.
 //!
@@ -80,7 +80,7 @@ pub(crate) struct DeclaredSourcing {
     /// and the inventory's `Missing / disputed` cell is what a reviewer reads
     /// before adding one. A slice rather than an `Option`, because the shapes
     /// stack: one scope can withhold a required phase *and* publish a session
-    /// its vocabulary cannot state.
+    /// no shipped row states.
     pub(crate) phase_gaps: &'static [PhaseGap],
 }
 
@@ -224,7 +224,7 @@ const fn undated_five_day_pre_open() -> PhaseGap {
 const WITHHELD_QUARTER_HOUR: [PhaseGap; 1] = [withheld_sunday_quarter_hour()];
 
 /// `globex_fx` declares both of its gaps: the Sunday quarter-hour it withholds
-/// and the special sessions CME publishes that its vocabulary cannot state.
+/// and the special sessions CME publishes that no shipped row states.
 const GLOBEX_FX_GAPS: [PhaseGap; 2] = [
     withheld_sunday_quarter_hour(),
     unstateable_special_sessions(),
@@ -407,7 +407,7 @@ const fn for_market_hours_key(key: MarketHoursKey) -> DeclaredSourcing {
         }
         MarketHoursKey::GlobexGrains => DeclaredSourcing::carried_below(horizon!(2010, 3, 15)),
         MarketHoursKey::GlobexMiniGrains => DeclaredSourcing::carried_below(horizon!(2010, 4, 5)),
-        // CME publishes FX sessions the scalar layer cannot state (#93), and the
+        // CME publishes FX sessions no shipped row states (#93), and the
         // Sunday 16:00-16:15 CT quarter-hour is withheld (#79).
         MarketHoursKey::GlobexFx => {
             DeclaredSourcing::carried_below_with(horizon!(2012, 5, 3), &GLOBEX_FX_GAPS)
@@ -417,7 +417,7 @@ const fn for_market_hours_key(key: MarketHoursKey) -> DeclaredSourcing {
         }
         MarketHoursKey::GlobexLivestock => DeclaredSourcing::carried_below(horizon!(2010, 1, 1)),
         // `—`: closed before the exact 2017-12-17 launch grid. CME publishes
-        // cryptocurrency sessions the scalar layer cannot state (#93), and the
+        // cryptocurrency sessions no shipped row states (#93), and the
         // five-day era's Sunday and weekday Pre-Open onset is undated (#123).
         MarketHoursKey::GlobexCryptocurrency => {
             DeclaredSourcing::nothing_carried_with(&GLOBEX_CRYPTOCURRENCY_GAPS)

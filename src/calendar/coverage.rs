@@ -577,8 +577,8 @@ impl CalendarCoverage {
     /// declaration order; an empty slice means it declares none.
     ///
     /// This is the completeness fact no date walk can derive: the identity's
-    /// normal week or calendar carries an arrangement its own static vocabulary
-    /// cannot state, so it is incomplete on every date the declaration covers —
+    /// normal week or calendar carries an arrangement no shipped row states, so
+    /// it is incomplete on every date the declaration covers —
     /// the whole claimed interval unless [`PhaseGap::applies_until`] bounds it to
     /// the era in which the identity still withholds it. An empty slice is an
     /// affirmative "no such gap declared", not missing data — the declarations

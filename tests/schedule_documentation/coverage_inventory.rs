@@ -258,11 +258,11 @@ fn withheld(calendar: ExchangeCalendar, date: NaiveDate) -> bool {
 /// page rather than asserted by this list. It is a fence only while the
 /// `Unsrc 2025+ dates` column it is compared against is re-derived from the
 /// shipped tables — which `inventory_windows_and_date_counts_match_the_shipped_tables`
-/// does in the same file. `cme` is deliberately absent: it withholds 32 dates
+/// does in the same file. `cme` is deliberately absent: it withholds 35 dates
 /// **and** the Sunday quarter-hour (#79), so its denial of completeness is no
 /// longer date-shaped.
 fn date_level_incompleteness() -> &'static [(&'static str, usize)] {
-    &[("cbot", 31)]
+    &[("cbot", 34)]
 }
 
 /// `is_complete_on(SAMPLE)` agrees with the inventory's `Complete?` cell for all

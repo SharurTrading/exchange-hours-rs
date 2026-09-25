@@ -554,8 +554,12 @@ pub(crate) static CBOT: &HolidayTable = holidays! {
         (2026, 5, 25, Unsourced, T2, "CME-SVC-2026-05-24"),
         // 2026-06-19 - T2 - CME-SVC-2026-06-18 - as 2025-01-20.
         (2026, 6, 19, Unsourced, T2, "CME-SVC-2026-06-18"),
+        // 2026, 6, 22 - T2 - CME-SVC-2026-06-18 - interest rates states a Saturday-session replacement and grains states nothing, so the two routed families disagree.
+        (2026, 6, 22, Unsourced, T2, "CME-SVC-2026-06-18"),
         // 2026-07-03 - T2 - CME-SVC-2026-07-03 - as 2025-01-20.
         (2026, 7, 3, Unsourced, T2, "CME-SVC-2026-07-03"),
+        // 2026, 7, 6 - T2 - CME-SVC-2026-07-03 - interest rates states a Saturday-session replacement and grains states nothing, so the two routed families disagree.
+        (2026, 7, 6, Unsourced, T2, "CME-SVC-2026-07-03"),
         // 2026-09-07 - T2 - CME-SVC-2026-09-06 - as 2025-01-20.
         (2026, 9, 7, Unsourced, T2, "CME-SVC-2026-09-06"),
         // 2026-11-26 - T2 - CME-SVC-2026-11-25 - as 2025-01-20.
@@ -579,6 +583,8 @@ pub(crate) static CBOT: &HolidayTable = holidays! {
         (2027, 5, 31, Unsourced, T2, "CME-SVC-2027-05-30"),
         // 2027-06-18 - T2 - CME-SVC-2027-06-17 - as 2025-01-20.
         (2027, 6, 18, Unsourced, T2, "CME-SVC-2027-06-17"),
+        // 2027, 6, 21 - T2 - CME-SVC-2027-06-17 - interest rates states a Saturday-session replacement and grains states nothing, so the two routed families disagree.
+        (2027, 6, 21, Unsourced, T2, "CME-SVC-2027-06-17"),
         // 2027-07-05 - T2 - CME-SVC-2027-07-04 - grains closed, interest rates
         // early close 13:30 CT.
         (2027, 7, 5, Unsourced, T2, "CME-SVC-2027-07-04"),

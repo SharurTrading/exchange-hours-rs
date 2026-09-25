@@ -589,7 +589,9 @@ Sat none.
 | 2026-01-01 | closed | `16:00 preopen; 17:00 open` — both events carry CME trade date 2026-01-02 | `CME-SVC-2025-12-31` | T2 | eventDate 2025-12-31 (`16:00 closed`, CME trade date 2025-12-31, no evening re-open) and eventDate 2026-01-01, CME trade date 2026-01-02 |
 | 2026-04-03 | early close | `10:15 closed` — 10:15 CT | `CME-SVC-2026-04-01` | T2 | eventDate 2026-04-03, CME trade date 2026-04-03 |
 | 2026-06-19 | early close | `12:00 closed` — 12:00 CT | `CME-SVC-2026-06-18` | T2 | eventDate 2026-06-19, CME trade date 2026-06-22 |
+| 2026-06-22 | replacement blocks | `05:00 open; 17:00 closed` on the Saturday, `16:00 preopen; 17:00 open` on the Sunday, all carrying this trade date | `CME-SVC-2026-06-18` | T2 | the complete trade date: the Saturday session, the Sunday Pre-Open and the Sunday-17:00-to-Monday-16:00 session — the same trade-date attribution as the early-close row above |
 | 2026-07-03 | early close | `12:00 closed` — 12:00 CT | `CME-SVC-2026-07-03` | T2 | eventDate 2026-07-03, CME trade date 2026-07-06 |
+| 2026-07-06 | replacement blocks | `05:00 open; 17:00 closed` on the Saturday, `16:00 preopen; 17:00 open` on the Sunday, all carrying this trade date | `CME-SVC-2026-07-03` | T2 | the complete trade date: the Saturday session, the Sunday Pre-Open and the Sunday-17:00-to-Monday-16:00 session — the same trade-date attribution as the early-close row above |
 | 2026-11-27 | early close | `13:45 closed` — 13:45 CT | `CME-SVC-2026-11-25` | T2 | eventDate 2026-11-27, CME trade date 2026-11-27 |
 | 2026-12-24 | early close | `12:45 closed` — 12:45 CT | `CME-SVC-2026-12-22` | T2 | eventDate 2026-12-24, CME trade date 2026-12-24 |
 | 2026-12-25 | closed | `no events published` | `CME-SVC-2026-12-24` | T2 | eventDate 2026-12-24 (early close above, no evening re-open) and eventDate 2026-12-25 |
@@ -640,6 +642,7 @@ Sat none.
 | 2027-01-01 | closed | `no events published` | `CME-SVC-2026-12-31` | T2 | eventDate 2026-12-31 (`16:00 closed`, CME trade date 2026-12-31, no evening re-open) and eventDate 2027-01-01 |
 | 2027-03-26 | closed | `no events published` | `CME-SVC-2027-03-25` | T2 | eventDate 2027-03-25 (`16:00 closed`, CME trade date 2027-03-25, no evening re-open) and eventDate 2027-03-26 |
 | 2027-06-18 | early close | `12:00 closed` — 12:00 CT | `CME-SVC-2027-06-17` | T2 | eventDate 2027-06-18, CME trade date 2027-06-21 |
+| 2027-06-21 | replacement blocks | `05:00 open; 17:00 closed` on the Saturday, `16:00 preopen; 17:00 open` on the Sunday, all carrying this trade date | `CME-SVC-2027-06-17` | T2 | the complete trade date: the Saturday session, the Sunday Pre-Open and the Sunday-17:00-to-Monday-16:00 session — the same trade-date attribution as the early-close row above |
 | 2027-11-26 | early close | `13:45 closed` — 13:45 CT | `CME-SVC-2027-11-24` | T2 | eventDate 2027-11-26, CME trade date 2027-11-26 |
 | 2027-12-24 | closed | `no events published` | `CME-SVC-2027-12-22` | T2 | eventDate 2027-12-23 (`16:00 closed`, CME trade date 2027-12-23, no evening re-open) and eventDate 2027-12-24 |
 

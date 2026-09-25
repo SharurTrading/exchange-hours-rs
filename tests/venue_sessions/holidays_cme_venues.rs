@@ -431,13 +431,16 @@ fn a_closed_venue_row_is_a_unanimous_closure() {
         // routing list this module already pins rather than off the variant.
         // 2010-2012 contributes 49 (CME) or 33 (CBOT) unsourced dates,
         // 2013-2015 another 49 or 47, 2016-2018 27 each, 2019-2021 34 each,
-        // 2022-2024 34 and 32, and 2025-2027 32 and 31; the single-family
-        // venues have six, the three 2019-2021 Juneteenth markers and the
-        // three 2023 dates.
+        // 2022-2024 34 and 32, and 2025-2027 35 and 31 — the three CME-side
+        // dates on which only `globex_energy` states a row (the 2026-06-22,
+        // 2026-07-06 and 2027-06-21 Saturday-session trade dates) are disputes
+        // there and audited normal on the two-family CBOT intersection, so only
+        // the six-family venue's count moves; the single-family venues have six,
+        // the three 2019-2021 Juneteenth markers and the three 2023 dates.
         let expected = if single_family {
             6
         } else if families.len() == 6 {
-            226
+            229
         } else {
             203
         };

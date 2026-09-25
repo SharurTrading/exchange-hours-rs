@@ -95,16 +95,23 @@ corrections (a venue's hours fixed against a primary source) go under
   `05:00 open; 17:00 closed` on Saturday 2026-06-20, 2026-07-04 and 2027-06-19,
   each carrying the following Monday's trade date, on a grid whose normal week
   has no Saturday session. The family now states trade dates 2026-06-22,
-  2026-07-06 and 2027-06-21 as replacement block sets quoting the service window
-  that carries every instant: the Saturday session, the ordinary Sunday Pre-Open
+  2026-07-06 and 2027-06-21 as replacement block sets quoting the service windows
+  that print them: the Saturday session, the ordinary Sunday Pre-Open
   and the ordinary Sunday-17:00-to-Monday-16:00 matching span. Because this
   family's 2021-06-27 revision removed the 15:15-15:30 halt, that span is one
   continuous envelope of which 08:30-15:15 is also the family's `regular`
-  session — so it ships as **one** block rather than two, and the regular session
-  survives the replacement. The Friday-evening leg is deliberately not stated:
+  session — so each set splits the envelope into three **ordered** blocks at the
+  regular boundaries (`extended(-1, 17:00, 08:30)`, `regular(0, 08:30, 15:15)`,
+  `extended(0, 15:15, 16:00)`). A replacement replaces the complete trade date and
+  the scan selects blocks by kind, so stating the envelope as one `extended` block
+  would delete the regular phase and move its bounds to the next trade date. The
+  Friday-evening leg is deliberately not stated:
   CME publishes no Friday-evening open for these dates, the Friday carrying only
-  the early close that ends the previous trade date's session. A dedicated test
-  pins that the row leaves that earlier trade date's 12:00 close alone.
+  the early close that ends the previous trade date's session. Two of the three
+  rows span two windows — the Saturday window stops on its Saturday and prints no
+  Sunday entry at all — so each row names the window each half of the day comes
+  from. A dedicated test pins that the row leaves that earlier trade date's 12:00
+  close alone.
 - **A built-in holiday row may state a replacement block set (2026-09-25 UTC).** Stage 3
   of the release plan adds `HolidayKind::ReplacementBlocks(&'static [ExceptionBlock])`,
   the vocabulary for a special session whose *internal* phase topology changes: an added
@@ -554,11 +561,11 @@ corrections (a venue's hours fixed against a primary source) go under
   end stops one family early or runs another past its own close. **COMEX** and
   **NYMEX** route the one `globex_energy` key, whose metals and energy halves CME
   prints as a single product row, so their intersections drop nothing and they
-  carry that family's table whole (36 rows each in this era, no `Unsourced`).
+  carry that family's table whole (39 rows each in this era, no `Unsourced`).
   CBOT ships 9 stated rows against its thirty-one `Unsourced` dates and CME 9
-  against thirty-two, each with the disagreement named per date in that venue's
-  evidence file. Over both eras the four venue tables carry 96, 79, 74 and 74
-  rows; the numbers in this paragraph are the 2025-2027 era's. The family list behind each intersection is a decision recorded there,
+  against thirty-five, each with the disagreement named per date in that venue's
+  evidence file. Over the six audited eras the four venue tables carry 276, 250,
+  209 and 209 rows; the numbers in this paragraph are the 2025-2027 era's. The family list behind each intersection is a decision recorded there,
   not something the crate can derive: the map from product families to venues
   belongs to the consumer. **This change also amends `AGENTS.md`**: the charter's
   LAW-HOLIDAY-SCOPE gains one sentence stating the venue-intersection rule, so

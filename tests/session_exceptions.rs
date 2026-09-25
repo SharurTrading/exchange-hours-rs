@@ -2269,6 +2269,87 @@ fn a_replaced_day_with_no_regular_block_closes_regular_trading_only() {
     );
 }
 
+/// The last link of the precedence chain, above the floor: the replacement layer
+/// decides what the trading day is, and the caller's `DayPolicy` then clips that
+/// result exactly as it clips a normal week.
+///
+/// The suite's three fixtures for this all state 2011 dates, so since Stage 2B
+/// they assert `BeforeSupportFloor` and the composition is no longer observable
+/// through them — their own comments say so. This is the post-floor case, and it
+/// is differential: the same replacement is resolved twice, once with the policy
+/// and once without, so a policy that silently failed to clip would fail here
+/// rather than pass for the right-looking reason.
+static POLICY_CLIP_BLOCKS: [ExceptionBlock; 1] =
+    [ExceptionBlock::regular(0, 9 * 3_600, 17 * 3_600)];
+
+#[test]
+fn a_day_policy_clips_a_replaced_trading_day_above_the_floor() {
+    let trade_date = day(2026, 8, 27);
+    assert_eq!(trade_date.weekday(), chrono::Weekday::Thu);
+    let records = [SessionExceptionRecord::replace_sessions(
+        trade_date,
+        &POLICY_CLIP_BLOCKS,
+    )];
+    let table = StaticSessionExceptions::new(
+        CalendarSource::MarketHoursKey(MarketHoursKey::GlobexEnergy),
+        day(2026, 8, 1),
+        day(2026, 8, 31),
+        &records,
+    )
+    .expect("valid records");
+    let base = calendar_for_market_hours_key(MarketHoursKey::GlobexEnergy)
+        .with_session_exceptions(&table)
+        .expect("the fixture is scoped to this calendar");
+
+    let overrides = [DayOverride::early_close(trade_date, 13 * 3_600)];
+    let policy = StaticDayPolicy::new(&overrides).expect("valid override");
+    let clipped = base.with_day_policy(&policy);
+    assert!(clipped.has_session_exceptions());
+    assert!(clipped.has_day_policy());
+
+    let morning = ct((2026, 8, 27), (10, 0, 0));
+    let afternoon = ct((2026, 8, 27), (14, 0, 0));
+
+    // Unclipped, the replacement's own block stands: 09:00-17:00 CT.
+    assert_eq!(
+        base.session_bounds(morning)
+            .expect("the coverage contract must answer a covered date"),
+        Some((ct((2026, 8, 27), (9, 0, 0)), ct((2026, 8, 27), (17, 0, 0)))),
+        "the fixture's replacement block is not the session it claims"
+    );
+    assert!(
+        base.is_open(afternoon)
+            .expect("the coverage contract must answer a covered date"),
+        "the unclipped replacement must still be trading at {afternoon}"
+    );
+
+    // Clipped, the policy's 13:00 CT bound wins over the block's own close.
+    assert_eq!(
+        clipped
+            .session_bounds(morning)
+            .expect("the coverage contract must answer a covered date"),
+        Some((ct((2026, 8, 27), (9, 0, 0)), ct((2026, 8, 27), (13, 0, 0)))),
+        "the DayPolicy did not clip the replaced trading day"
+    );
+    assert!(
+        !clipped
+            .is_open(afternoon)
+            .expect("the coverage contract must answer a covered date"),
+        "the replaced day traded past the policy's clip"
+    );
+    // The clip is end-exclusive, like every other close.
+    assert!(
+        clipped
+            .is_open(ct((2026, 8, 27), (12, 59, 59)))
+            .expect("the coverage contract must answer a covered date")
+    );
+    assert!(
+        !clipped
+            .is_open(ct((2026, 8, 27), (13, 0, 0)))
+            .expect("the coverage contract must answer a covered date")
+    );
+}
+
 /// Every query family reads the same replacement, which is the failure mode
 /// Stage 2B's single gate makes possible to get wrong: a block visible to
 /// `is_open` but not to the candle edges, or to the trade date but not to the

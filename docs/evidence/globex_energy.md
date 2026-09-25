@@ -63,12 +63,15 @@ the capture time in UTC, the tier and the sha256, as the design memo's section 3
 requires. The byte counts and, for a bundle member, the artifact's path inside the bundle
 are in the research store's `holidays/raw/` indexes.
 
-`CME-SVC-2026-06-21` and `CME-SVC-2027-06-20` are **corroborating only**: they
-were retrieved on 2026-09-25 because no saved capture covered the Sunday evening
-of those two trade dates, and they confirm the Sunday Pre-Open and the following
-`16:00 closed` the replacement rows state. The rows themselves cite the archived
-windows above; these two exist so a reader can re-verify the Sunday leg without a
-fresh retrieval, and they are not any row's document.
+`CME-SVC-2026-06-21` and `CME-SVC-2027-06-20` are the **second window** of the
+2026-06-22 and 2027-06-21 trade dates below: they were retrieved on 2026-09-25
+because no saved capture covered the Sunday evening of those two trade dates, and
+they are the only saved artifacts that print the Sunday Pre-Open and the
+`16:00 closed` on the Monday. The windows those two rows are archived against —
+`CME-SVC-2026-06-18` and `CME-SVC-2027-06-17` — each stop at their own Saturday
+and print **no** Sunday entry at all, so the rows name the window each half of the
+day was read from. The 2026-07-06 row needs only its own window:
+`CME-SVC-2026-07-03` runs through the Sunday and prints both legs.
 
 | Document | Window | Replay or service URL | Capture or retrieval, UTC | Tier | sha256 |
 |---|---|---|---|---|---|
@@ -654,7 +657,7 @@ CME's own 2025 Globex table states the Thanksgiving period as "27 - 29 November
 | 2026-04-03 | closed | `no events published` | `CME-SVC-2026-04-01` | T2 | eventDate 2026-04-03, and eventDate 2026-04-02 `16:00 closed` CME trade date 2026-04-02 with no evening re-open |
 | 2026-05-25 | early close | `13:30 preopen` — 13:30 CT; 17:00 CT open carries 2026-05-26 | `CME-SVC-2026-05-24` | T2 | eventDate 2026-05-25, CME trade date printed as 2026-05-26 |
 | 2026-06-19 | early close | `12:00 closed` — 12:00 CT | `CME-SVC-2026-06-18` | T2 | eventDate 2026-06-19, CME trade date printed as 2026-06-22 |
-| 2026-06-22 | replacement blocks | `05:00 open; 17:00 closed` on eventDate 2026-06-20, all carrying trade date 2026-06-22; `16:00 preopen; 17:00 open` and `16:00 closed` on eventDate 2026-06-21 | `CME-SVC-2026-06-18` | T2 | eventDate 2026-06-20 Saturday session plus the ordinary Sunday Pre-Open and Sunday-17:00-to-Monday-16:00 session the same trade date owns |
+| 2026-06-22 | replacement blocks | `05:00 open; 17:00 closed` on eventDate 2026-06-20, all carrying trade date 2026-06-22 (`CME-SVC-2026-06-18`); `16:00 preopen; 17:00 open` on eventDate 2026-06-21 and `16:00 closed` on eventDate 2026-06-22, all carrying trade date 2026-06-22 (`CME-SVC-2026-06-21`) | `CME-SVC-2026-06-18` | T2 | eventDate 2026-06-20 Saturday session from the first window, plus the ordinary Sunday Pre-Open and Sunday-17:00-to-Monday-16:00 session the same trade date owns from the second — the first window stops at the Saturday and prints no Sunday entry at all |
 | 2026-07-03 | early close | `12:00 closed` — 12:00 CT | `CME-SVC-2026-07-03` | T2 | eventDate 2026-07-03, CME trade date printed as 2026-07-06 |
 | 2026-07-06 | replacement blocks | `05:00 open; 17:00 closed` on eventDate 2026-07-04; `16:00 preopen; 17:00 open` on eventDate 2026-07-05 | `CME-SVC-2026-07-03` | T2 | eventDate 2026-07-04 Saturday session plus the ordinary Sunday Pre-Open and Sunday-17:00-to-Monday-16:00 session the same trade date owns |
 | 2026-09-07 | early close | `13:30 preopen` — 13:30 CT; 17:00 CT open carries 2026-09-08 | `CME-SVC-2026-09-06` | T2 | eventDate 2026-09-07, CME trade date printed as 2026-09-08 |
@@ -714,7 +717,7 @@ deleting it (design memo D9).
 | 2027-03-26 | closed | `no events published` | `CME-SVC-2027-03-25` | T2 | eventDate 2027-03-26, and eventDate 2027-03-25 `16:00 closed` CME trade date 2027-03-25 with no evening re-open |
 | 2027-05-31 | early close | `13:30 preopen` — 13:30 CT; 17:00 CT open carries 2027-06-01 | `CME-SVC-2027-05-30` | T2 | eventDate 2027-05-31, CME trade date printed as 2027-06-01 |
 | 2027-06-18 | early close | `12:00 closed` — 12:00 CT | `CME-SVC-2027-06-17` | T2 | eventDate 2027-06-18, CME trade date printed as 2027-06-21 |
-| 2027-06-21 | replacement blocks | `05:00 open; 17:00 closed` on eventDate 2027-06-19; `16:00 preopen; 17:00 open` on eventDate 2027-06-20 | `CME-SVC-2027-06-17` | T2 | eventDate 2027-06-19 Saturday session plus the ordinary Sunday Pre-Open and Sunday-17:00-to-Monday-16:00 session the same trade date owns |
+| 2027-06-21 | replacement blocks | `05:00 open; 17:00 closed` on eventDate 2027-06-19, all carrying trade date 2027-06-21 (`CME-SVC-2027-06-17`); `16:00 preopen; 17:00 open` on eventDate 2027-06-20 and `16:00 closed` on eventDate 2027-06-21, all carrying trade date 2027-06-21 (`CME-SVC-2027-06-20`) | `CME-SVC-2027-06-17` | T2 | as 2026-06-22: the eventDate 2027-06-19 Saturday session from the first window and the Sunday legs from the second, which the first does not print |
 | 2027-07-05 | early close | `13:30 preopen` — 13:30 CT; 17:00 CT open carries 2027-07-06 | `CME-SVC-2027-07-04` | T2 | eventDate 2027-07-05, CME trade date printed as 2027-07-06 |
 | 2027-09-06 | early close | `13:30 preopen` — 13:30 CT; 17:00 CT open carries 2027-09-07 | `CME-SVC-2027-09-05` | T2 | eventDate 2027-09-06, CME trade date printed as 2027-09-07 |
 | 2027-11-25 | early close | `13:30 preopen` — 13:30 CT; 17:00 CT open carries 2027-11-26 | `CME-SVC-2027-11-24` | T2 | eventDate 2027-11-25, CME trade date printed as 2027-11-26 |

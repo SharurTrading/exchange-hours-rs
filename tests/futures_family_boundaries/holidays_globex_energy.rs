@@ -2261,3 +2261,53 @@ fn a_saturday_session_row_keeps_the_ordinary_sunday_queue() {
         );
     }
 }
+
+/// A Saturday-session row's Sunday legs must be sourced from a window that
+/// actually prints them.
+///
+/// Two of these rows span **two** windows: `CME-SVC-2026-06-18` and
+/// `CME-SVC-2027-06-17` each stop at their own Saturday and print no Sunday
+/// entry at all, so the Sunday Pre-Open and the Sunday-Monday session come from
+/// the window that starts on that Sunday, `CME-SVC-2026-06-21` and
+/// `CME-SVC-2027-06-20`. The third row's Saturday window, `CME-SVC-2026-07-03`,
+/// happens to run through its Sunday and does print the legs, so it needs only
+/// the one.
+///
+/// This fence exists because an independent review found the two-window rows
+/// claiming a Sunday pair their cited artifact does not contain. It pins the
+/// distinction the per-row citation check cannot see: a row may name a document
+/// that resolves to real bytes and still quote from a window those bytes are
+/// not.
+#[test]
+fn a_saturday_rows_sunday_legs_are_sourced_from_a_window_that_prints_them() {
+    // (trade date, Saturday window, the window that actually prints the Sunday legs)
+    for (trade_date, saturday_window, sunday_window) in [
+        ("2026-06-22", "CME-SVC-2026-06-18", "CME-SVC-2026-06-21"),
+        ("2026-07-06", "CME-SVC-2026-07-03", "CME-SVC-2026-07-03"),
+        ("2027-06-21", "CME-SVC-2027-06-17", "CME-SVC-2027-06-20"),
+    ] {
+        let evidence = std::fs::read_to_string(
+            std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("docs/evidence/globex_energy.md"),
+        )
+        .expect("the evidence file must be readable");
+        for window in [saturday_window, sunday_window] {
+            assert!(
+                evidence.contains(&format!("| `{window}` |")),
+                "{trade_date}: {window} must be a recorded document"
+            );
+        }
+        let row = evidence
+            .lines()
+            .find(|line| line.starts_with(&format!("| {trade_date} |")))
+            .unwrap_or_else(|| panic!("{trade_date} must have an evidence row"));
+        assert!(
+            row.contains(&format!("`{saturday_window}`")),
+            "{trade_date}: the row must cite the window that carries the Saturday session"
+        );
+        assert!(
+            row.contains(&format!("`{sunday_window}`")),
+            "{trade_date}: the row must name {sunday_window}, the window that prints \
+             the Sunday legs"
+        );
+    }
+}

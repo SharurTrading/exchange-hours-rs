@@ -80,9 +80,11 @@
 //! [`StaticDayPolicy`] is the validated hard-coded record format for those
 //! boundary-level overrides. A special day that scalar boundaries cannot state
 //! — an intraday pause and reopen, a regular-only early close while extended
-//! trading continues — goes through [`SessionExceptionSource`] instead, which
-//! replaces a whole trade date with an ordered [`ExceptionBlock`] set;
-//! [`StaticSessionExceptions`] is its validated table format.
+//! trading continues — is stated instead as an ordered [`ExceptionBlock`] set
+//! replacing a whole trade date, either by a built-in holiday row
+//! ([`HolidayKind::ReplacementBlocks`]) or through a caller's
+//! [`SessionExceptionSource`]; [`StaticSessionExceptions`] is that provider's
+//! validated table format.
 //! Three conventions decide every answer —
 //! weekdays are Monday = 0 through Sunday = 6; closes are **end-exclusive**, so
 //! the instant equal to a close is closed and adjacent sessions never overlap;

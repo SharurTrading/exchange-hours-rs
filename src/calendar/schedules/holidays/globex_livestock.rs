@@ -44,8 +44,8 @@
 //!
 //! Two shapes only: `Closed` on a full Globex closure, and `EarlyClose` on the
 //! half-days CME publishes for the family. The 2022-2024 and 2025-2027 windows
-//! have no late open, and no row whose internal phase topology the scalar
-//! vocabulary cannot state.
+//! have no late open, and no row whose internal phase topology they leave
+//! unstated.
 
 use super::fences::{early_close, late_open, late_open_and_early_close};
 use super::{

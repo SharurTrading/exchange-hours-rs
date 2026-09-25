@@ -75,7 +75,7 @@
 //! `cmegroup.com/trading-hours.html` itself calls, read as bytes and saved.
 //! CME publishes no T1 per-asset-class rendering of these instants; that gap,
 //! the eight 2025 windows that survive only in a pre-holiday capture, the
-//! order-entry deviations the scalar vocabulary cannot state, and the audited
+//! order-entry deviations no shipped row states, and the audited
 //! weekend dates that ship no row are all recorded in
 //! [`docs/evidence/globex_grains.md`](../../../../../docs/evidence/globex_grains.md).
 //!

@@ -25,10 +25,13 @@
 //! replaces any provider already attached.
 
 mod static_table;
+mod validation;
 
 pub use static_table::{
     SessionExceptionRecord, StaticSessionExceptions, StaticSessionExceptionsError,
 };
+
+pub(crate) use validation::{BlockViolation, first_block_violation};
 
 use chrono::NaiveDate;
 
@@ -171,8 +174,16 @@ pub enum DateException<'a> {
     Closed,
     /// The complete ordered set of blocks that replaces this trade date.
     ///
-    /// The slice is ordered by opening day and then open time, and it is never
-    /// empty: a trade date with no blocks is [`Self::Closed`].
+    /// The slice is ordered by opening day and then by open time, and it is
+    /// never empty: a trade date with no blocks is [`Self::Closed`].
+    ///
+    /// The order is **non-decreasing**, not strictly increasing. Two blocks may
+    /// state the same opening instant when they belong to different kinds — an
+    /// order-entry phase and a tradeable session that both begin at the same
+    /// wall clock, for instance — so a repeated `(open_day_offset, open_ssm)`
+    /// pair is a valid arrangement rather than a duplicate to reject. Blocks
+    /// that agree on both are distinguished by their kind, and every scan
+    /// selects by kind first.
     ReplaceSessions(&'a [ExceptionBlock]),
     /// The provider has no authoritative answer for this date.
     OutOfCoverage,

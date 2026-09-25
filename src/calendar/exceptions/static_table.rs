@@ -4,10 +4,11 @@
 
 use chrono::NaiveDate;
 
-use super::{DateException, ExceptionBlock, ExceptionCoverage, SessionExceptionSource};
+use super::{
+    BlockViolation, DateException, ExceptionBlock, ExceptionCoverage, SessionExceptionSource,
+    first_block_violation,
+};
 use crate::calendar::exchange_calendar::CalendarSource;
-
-const SECONDS_PER_DAY: u32 = 86_400;
 
 /// One caller-supplied record for a venue-local trade date.
 ///
@@ -256,50 +257,40 @@ const fn validate_blocks(
     index: usize,
     blocks: &[ExceptionBlock],
 ) -> Result<(), StaticSessionExceptionsError> {
-    if blocks.is_empty() {
-        return Err(StaticSessionExceptionsError::EmptyReplacement { index });
+    match first_block_violation(blocks) {
+        None => Ok(()),
+        Some(BlockViolation::Empty) => {
+            Err(StaticSessionExceptionsError::EmptyReplacement { index })
+        }
+        Some(BlockViolation::OffsetOutOfRange {
+            block,
+            open_day_offset,
+        }) => Err(StaticSessionExceptionsError::BlockOffsetOutOfRange {
+            index,
+            block,
+            open_day_offset,
+        }),
+        Some(BlockViolation::OpenOutOfRange { block, open_ssm }) => {
+            Err(StaticSessionExceptionsError::BlockOpenOutOfRange {
+                index,
+                block,
+                open_ssm,
+            })
+        }
+        Some(BlockViolation::CloseOutOfRange { block, close_ssm }) => {
+            Err(StaticSessionExceptionsError::BlockCloseOutOfRange {
+                index,
+                block,
+                close_ssm,
+            })
+        }
+        Some(BlockViolation::ClosesAfterTradeDate { block }) => {
+            Err(StaticSessionExceptionsError::BlockClosesAfterTradeDate { index, block })
+        }
+        Some(BlockViolation::NotOrdered { block }) => {
+            Err(StaticSessionExceptionsError::BlocksNotOrdered { index, block })
+        }
     }
-    let mut block = 0;
-    while block < blocks.len() {
-        let current = blocks[block];
-        if current.open_day_offset() < ExceptionBlock::MIN_DAY_OFFSET
-            || current.open_day_offset() > ExceptionBlock::MAX_DAY_OFFSET
-        {
-            return Err(StaticSessionExceptionsError::BlockOffsetOutOfRange {
-                index,
-                block,
-                open_day_offset: current.open_day_offset(),
-            });
-        }
-        if current.open_ssm() >= SECONDS_PER_DAY {
-            return Err(StaticSessionExceptionsError::BlockOpenOutOfRange {
-                index,
-                block,
-                open_ssm: current.open_ssm(),
-            });
-        }
-        if current.close_ssm() > SECONDS_PER_DAY {
-            return Err(StaticSessionExceptionsError::BlockCloseOutOfRange {
-                index,
-                block,
-                close_ssm: current.close_ssm(),
-            });
-        }
-        if current.open_day_offset() == 0 && current.wraps_to_next_day() {
-            return Err(StaticSessionExceptionsError::BlockClosesAfterTradeDate { index, block });
-        }
-        if block > 0 {
-            let previous = blocks[block - 1];
-            if current.open_day_offset() < previous.open_day_offset()
-                || (current.open_day_offset() == previous.open_day_offset()
-                    && current.open_ssm() < previous.open_ssm())
-            {
-                return Err(StaticSessionExceptionsError::BlocksNotOrdered { index, block });
-            }
-        }
-        block += 1;
-    }
-    Ok(())
 }
 
 impl SessionExceptionSource for StaticSessionExceptions<'_> {

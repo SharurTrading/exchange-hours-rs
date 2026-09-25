@@ -57,6 +57,7 @@ pub(crate) use routing::table_for;
 use chrono::NaiveDate;
 
 use super::timeline::SourceRef;
+use crate::calendar::exceptions::ExceptionBlock;
 
 /// The evidence tier behind one recorded fact (LAW-PRIMARY-SOURCES).
 ///
@@ -80,10 +81,18 @@ pub enum EvidenceTier {
 
 /// What a built-in table records about one venue-local trade date.
 ///
-/// The vocabulary is deliberately the scalar vocabulary of
-/// [`DayPolicy`](crate::DayPolicy): a special day whose *internal* phase
-/// topology changes is not representable here and is recorded as a gap in the
-/// owner's evidence file rather than approximated.
+/// The vocabulary is mostly the scalar vocabulary of
+/// [`DayPolicy`](crate::DayPolicy), with one deliberate exception: a special day
+/// whose *internal* phase topology changes cannot be expressed as boundary
+/// scalars, so [`Self::ReplacementBlocks`] carries a complete ordered block set
+/// instead. That set resolves through the same replacement layer a caller's
+/// [`SessionExceptionSource`](crate::SessionExceptionSource) uses, so the
+/// built-in table and a caller's records state a topology in one vocabulary.
+///
+/// A special session the table still cannot state — one whose halt instant the
+/// operator never published — remains a gap in the owner's evidence file rather
+/// than an approximation, however plainly the new representation could encode a
+/// hypothetical value.
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum HolidayKind {
@@ -117,6 +126,27 @@ pub enum HolidayKind {
         /// The replacement final close; see [`Self::EarlyClose`].
         close_ssm: u32,
     },
+    /// The trade date is replaced outright by a complete ordered set of blocks.
+    ///
+    /// This is the vocabulary for a special session whose *internal* phase
+    /// topology changes: a trading day that pauses and reopens, one that adds a
+    /// session on a normally empty day, one whose regular session ends while
+    /// extended trading continues, or one whose blocks carry a following
+    /// business date. The slice is ordered by opening day and then by open time,
+    /// and it is never empty; a trade date with no blocks is [`Self::Closed`].
+    /// The order is non-decreasing rather than strictly increasing, so two
+    /// blocks of different kinds may share one opening instant.
+    ///
+    /// A block row replaces the **complete** trade date: no scalar clip from the
+    /// same row is applied on top, and every query family resolves the
+    /// replacement through the one path
+    /// [`DateException::ReplaceSessions`](crate::DateException::ReplaceSessions)
+    /// already drives, so `is_open`, the boundaries, the trade date and the
+    /// candle edges cannot disagree about it. An explicit caller `Closed` or
+    /// `ReplaceSessions` record for the date wins over the built-in arrangement,
+    /// and the caller's [`DayPolicy`](crate::DayPolicy) then clips whatever
+    /// survives.
+    ReplacementBlocks(&'static [ExceptionBlock]),
     /// The date is inside the table's coverage window and is **not** audited
     /// normal: the operator published nothing this crate could read.
     ///
@@ -260,9 +290,25 @@ pub(crate) struct HolidayRow {
 pub(crate) struct HolidayTable {
     pub(crate) windows: &'static [(i32, u32, u32, i32, u32, u32)],
     pub(crate) rows: &'static [HolidayRow],
+    /// Whether any row carries a replacement block set.
+    ///
+    /// Decided during constant evaluation rather than by walking the rows per
+    /// query: the replacement scan is gated on this, so a table shipping no
+    /// block row must not pay for that scan, and one that ships a row must not
+    /// pay a table walk to discover it.
+    pub(crate) has_blocks: bool,
 }
 
 impl HolidayTable {
+    /// Returns whether any row of this table replaces a trade date with blocks.
+    ///
+    /// This is the one-bit gate in front of the replacement scan. It is `false`
+    /// for every table the crate ships today, which is what keeps Stage 3's new
+    /// kind off the hot path until Stage 4 ships a row that uses it.
+    pub(crate) const fn carries_replacement_blocks(&self) -> bool {
+        self.has_blocks
+    }
+
     /// Returns the audited trade-date windows.
     ///
     /// `first` and `last` are the outermost dates the table answers for, which
@@ -343,7 +389,14 @@ impl HolidayTable {
 ///    without a named artifact; and
 /// 5. every row's tier is [`EvidenceTier::T1`] or [`EvidenceTier::T2`], and
 ///    every instant is inside the `DayPolicy` ranges — a close in `0..=86_400`
-///    and an open in `0..86_400`.
+///    and an open in `0..86_400`; and
+/// 6. every replacement block set is non-empty, is ordered by opening day and
+///    then open time, keeps each offset inside the block day range and each
+///    instant inside the ranges above, and never opens on its own trade date
+///    while wrapping past it — the same rules
+///    [`StaticSessionExceptions`](crate::StaticSessionExceptions) applies to a
+///    caller's records, so a built-in row and a caller's record cannot state
+///    differently shaped topologies.
 ///
 /// The quotations, URLs, capture times and interpretive steps stay in
 /// `docs/evidence/<owner>.md` (LAW-EVIDENCE-FILES); the row carries only its
@@ -378,6 +431,7 @@ macro_rules! holidays {
             &$crate::calendar::schedules::holidays::HolidayTable {
                 windows: WINDOW_DATES,
                 rows: ROWS,
+                has_blocks: $crate::calendar::schedules::holidays::fences::any_blocks(ROWS),
             };
         const _: () = {
             const DATES: &[(i32, u32, u32)] = &[$(($year, $month, $day)),*];

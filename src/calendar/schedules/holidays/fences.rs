@@ -11,6 +11,7 @@
 use chrono::NaiveDate;
 
 use super::{EvidenceTier, HolidayKind, HolidayRow};
+use crate::calendar::exceptions::{BlockViolation, ExceptionBlock, first_block_violation};
 
 /// The upper bound of a venue-local seconds-since-midnight close.
 ///
@@ -177,6 +178,9 @@ const fn in_windows(windows: &[(i32, u32, u32, i32, u32, u32)], date: (i32, u32,
 
 /// Fails the build when a row's instants leave the `DayPolicy` ranges.
 ///
+/// A replacement row states no scalar instant of its own, so its complete block
+/// set is handed to [`assert_blocks`] instead; every other kind is checked here.
+///
 /// The numeric order of an open and a close on one row is deliberately **not**
 /// constrained: a wrapped trading day can open on the preceding local date at a
 /// numerically later wall clock than its final close on the trade date, which
@@ -192,6 +196,14 @@ const fn assert_instants(kind: HolidayKind) {
             open_ssm,
             close_ssm,
         } => (open_ssm, close_ssm),
+        // A replacement row states its instants block by block, so the whole
+        // set is validated here and the scalars below do not apply to it. The
+        // rule this arm exists for is the last one: a block set is the only
+        // kind that can state an instant on a day other than its trade date.
+        HolidayKind::ReplacementBlocks(set) => {
+            assert_blocks(set);
+            return;
+        }
     };
     assert!(
         open_ssm < SECONDS_PER_DAY,
@@ -218,5 +230,65 @@ pub(crate) const fn late_open_and_early_close(open_ssm: u32, close_ssm: u32) -> 
     HolidayKind::LateOpenAndEarlyClose {
         open_ssm,
         close_ssm,
+    }
+}
+
+/// Whether any row of a table states a replacement block set.
+///
+/// Resolved during constant evaluation so the query hot path reads one bit
+/// instead of walking the table: a table that ships no block row must not pay
+/// for the replacement scan, and the scan must not be reachable for it.
+pub(crate) const fn any_blocks(rows: &[HolidayRow]) -> bool {
+    let mut index = 0;
+    while index < rows.len() {
+        if matches!(rows[index].kind, HolidayKind::ReplacementBlocks(_)) {
+            return true;
+        }
+        index += 1;
+    }
+    false
+}
+
+/// Fails the build unless a row's replacement block set is well formed.
+///
+/// The rules are **not** restated here. They live in one place,
+/// [`first_block_violation`], which a caller's
+/// [`StaticSessionExceptions::new`](crate::StaticSessionExceptions::new) applies
+/// to its own records — so a built-in row and a caller's record are held to the
+/// same shape by construction, and the public tests that fence a caller's
+/// rejected records fence the built-in rows' rules too. This function only
+/// chooses what a violation means here: a build failure rather than a returned
+/// error.
+///
+/// Each variant gets its own literal message, because a `panic!` in constant
+/// evaluation cannot format, and the message is the whole diagnostic a reader
+/// gets from a failed build.
+#[expect(
+    clippy::panic,
+    reason = "const-eval only: a malformed built-in replacement row must fail the build"
+)]
+const fn assert_blocks(set: &[ExceptionBlock]) {
+    match first_block_violation(set) {
+        None => {}
+        Some(BlockViolation::Empty) => panic!(
+            "holiday replacement row carries an empty block set; a trade date with no \
+             blocks is HolidayKind::Closed"
+        ),
+        Some(BlockViolation::OffsetOutOfRange { .. }) => {
+            panic!("holiday replacement block's opening day offset is outside the block day range")
+        }
+        Some(BlockViolation::OpenOutOfRange { .. }) => {
+            panic!("holiday replacement block's open is outside 0..86_400")
+        }
+        Some(BlockViolation::CloseOutOfRange { .. }) => {
+            panic!("holiday replacement block's close is outside 0..=86_400")
+        }
+        Some(BlockViolation::ClosesAfterTradeDate { .. }) => panic!(
+            "holiday replacement block opens on its own trade date and closes after it; \
+             a trade date is the local date of its final close"
+        ),
+        Some(BlockViolation::NotOrdered { .. }) => {
+            panic!("holiday replacement blocks are not ordered by opening day and open time")
+        }
     }
 }

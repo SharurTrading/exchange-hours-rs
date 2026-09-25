@@ -19,8 +19,8 @@
 //!   trading at all carries a row. The Monday and Thursday holidays on which
 //!   CME published a 16:00 CT pre-open instead of a 16:00 CT final close are
 //!   not such dates: matching ran from the previous 17:00 CT to 16:00 CT as on
-//!   a normal day and only the trade-date label merged, which the scalar
-//!   vocabulary cannot state, so they carry no row and are declared gaps;
+//!   a normal day and only the trade-date label merged, which no shipped
+//!   row states, so they carry no row and are declared gaps;
 //! - in the 24/7 era from trade date 2026-05-30, where the family assigns a
 //!   block to the following open business date, a closed trade date is skipped
 //!   by that roll and the connected block survives, carrying the next business

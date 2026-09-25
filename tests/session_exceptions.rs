@@ -30,14 +30,14 @@
     reason = "fixture literals and validated static records must fail the test if malformed"
 )]
 
-use chrono::{DateTime, NaiveDate, TimeZone, Utc};
+use chrono::{DateTime, Datelike, NaiveDate, TimeZone, Utc};
 use chrono_tz::US;
 use exchange_hours::{
     CalendarQueryError, CalendarResolution, CalendarSource, DateCoverage, DateException,
-    DayOverride, ExceptionBlock, ExceptionBlockKind, ExceptionCoverage, Exchange, MarketHoursKey,
-    SessionExceptionRecord, SessionExceptionSource, SessionKind, StaticDayPolicy,
-    StaticSessionExceptions, StaticSessionExceptionsError, calendar_for_exchange,
-    calendar_for_market_hours_key, hours_for_exchange,
+    DayOverride, ExceptionBlock, ExceptionBlockKind, ExceptionCoverage, Exchange, Holiday,
+    HolidayKind, MarketHoursKey, SessionExceptionRecord, SessionExceptionSource, SessionKind,
+    SessionState, StaticDayPolicy, StaticSessionExceptions, StaticSessionExceptionsError,
+    calendar_for_exchange, calendar_for_market_hours_key, hours_for_exchange,
 };
 
 const fn day(year: i32, month: u32, date: u32) -> NaiveDate {
@@ -1836,4 +1836,677 @@ fn every_validation_error_renders_a_distinct_message() {
             "duplicate message {message}"
         );
     }
+}
+
+// ---------------------------------------------------------------------------
+// Stage 3 (#93): the topology shapes the fifth `HolidayKind` exists to state.
+//
+// The built-in kind itself cannot be exercised from here: the crate ships no
+// row that uses it, and Stage 4 (#116) lands the operator rows with their
+// evidence. What this section fences is the layer such a row is served by. A
+// built-in replacement row reaches every query through the same
+// `DateException::ReplaceSessions` arm a caller's record uses, so these
+// fixtures drive that one resolver over the shapes plan section 7 names -- a
+// session on a normally empty day, blocks spanning several civil dates, a
+// reassigned trade date, and a restated order-entry topology -- and assert that
+// every query family gives the same account of the day.
+//
+// Every fixture below is a caller-owned record. None of it is shipped data.
+// ---------------------------------------------------------------------------
+
+/// The shape #93 records for CME's published Saturday sessions: a block opening
+/// on a normally empty Saturday that carries the following Monday's trade date.
+///
+/// A scalar row cannot state this at all. `LateOpen` can only push an existing
+/// occurrence later, never create one, so before this vocabulary existed the
+/// date had to ship as a declared gap.
+static ADDED_SATURDAY_BLOCKS: [ExceptionBlock; 1] =
+    [ExceptionBlock::regular(-2, 5 * 3_600, 17 * 3_600)];
+
+#[test]
+fn an_added_session_on_a_normally_empty_day_carries_its_own_trade_date() {
+    let trade_date = day(2026, 8, 24);
+    assert_eq!(trade_date.weekday(), chrono::Weekday::Mon);
+    let saturday = day(2026, 8, 22);
+    assert_eq!(saturday.weekday(), chrono::Weekday::Sat);
+
+    let records = [SessionExceptionRecord::replace_sessions(
+        trade_date,
+        &ADDED_SATURDAY_BLOCKS,
+    )];
+    let table = StaticSessionExceptions::new(
+        CalendarSource::MarketHoursKey(MarketHoursKey::GlobexEnergy),
+        day(2026, 8, 1),
+        day(2026, 8, 31),
+        &records,
+    )
+    .expect("valid records");
+    let calendar = calendar_for_market_hours_key(MarketHoursKey::GlobexEnergy)
+        .with_session_exceptions(&table)
+        .expect("the fixture is scoped to this calendar");
+
+    let open = ct((2026, 8, 22), (5, 0, 0));
+    let close = ct((2026, 8, 22), (17, 0, 0));
+    let inside = ct((2026, 8, 22), (10, 0, 0));
+
+    assert_eq!(
+        calendar
+            .session_bounds(inside)
+            .expect("the coverage contract must answer a covered date"),
+        Some((open, close)),
+        "the added Saturday session did not resolve to its own block"
+    );
+    assert!(
+        calendar
+            .is_open(inside)
+            .expect("the coverage contract must answer a covered date")
+    );
+    // The block states its own trade-date assignment, which is the whole point
+    // of the shape: the session trades on a Saturday and belongs to the
+    // following Monday.
+    assert_eq!(
+        calendar
+            .trade_date(inside)
+            .expect("the coverage contract must answer a covered date"),
+        Some(trade_date)
+    );
+    // The trade date's own final close is the added block's close, because the
+    // replacement covers the *complete* trade date rather than only the day the
+    // block opens on.
+    assert_eq!(
+        calendar
+            .candle_start(inside, CalendarResolution::Daily)
+            .expect("the coverage contract must answer a covered date"),
+        Some(open)
+    );
+    assert_eq!(
+        calendar
+            .candle_end(inside, CalendarResolution::Daily)
+            .expect("the coverage contract must answer a covered date"),
+        Some(close)
+    );
+
+    // End-exclusive close, and closed before the open.
+    for instant in [ct((2026, 8, 22), (4, 59, 59)), close] {
+        assert!(
+            !calendar
+                .is_open(instant)
+                .expect("the coverage contract must answer a covered date"),
+            "the added Saturday session disagrees at {instant}"
+        );
+    }
+
+    // The normal week's own Monday trade date is gone with it: CME Globex would
+    // otherwise be trading on Sunday evening, and a session there would belong
+    // to the same trade date the block replaced.
+    assert!(
+        !calendar
+            .is_open(ct((2026, 8, 23), (18, 0, 0)))
+            .expect("the coverage contract must answer a covered date"),
+        "the replaced trade date kept its normal-week Sunday evening session"
+    );
+}
+
+/// Three blocks across three opening days: the shape a trade date takes when
+/// its sessions begin three local days before it and the weekend between them
+/// is normally empty. The gaps between the blocks are pauses inside one trade
+/// date, not closures between trade dates.
+///
+/// The blocks sit on days the normal week does not trade — Friday after the
+/// 16:00 CT close, Saturday, and the Monday itself — so each gap is genuinely
+/// the replacement's own, not a span the normal week would fill with a session
+/// belonging to some other trade date.
+static MULTI_DAY_BLOCKS: [ExceptionBlock; 3] = [
+    ExceptionBlock::regular(-3, 18 * 3_600, 20 * 3_600),
+    ExceptionBlock::regular(-2, 5 * 3_600, 17 * 3_600),
+    ExceptionBlock::regular(0, 7 * 3_600, 12 * 3_600),
+];
+
+#[test]
+fn a_trade_date_may_span_three_opening_days_with_pauses_between_them() {
+    let trade_date = day(2026, 8, 31);
+    assert_eq!(trade_date.weekday(), chrono::Weekday::Mon);
+    let records = [SessionExceptionRecord::replace_sessions(
+        trade_date,
+        &MULTI_DAY_BLOCKS,
+    )];
+    let table = StaticSessionExceptions::new(
+        CalendarSource::MarketHoursKey(MarketHoursKey::GlobexEnergy),
+        day(2026, 8, 1),
+        day(2026, 8, 31),
+        &records,
+    )
+    .expect("valid records");
+    let calendar = calendar_for_market_hours_key(MarketHoursKey::GlobexEnergy)
+        .with_session_exceptions(&table)
+        .expect("the fixture is scoped to this calendar");
+
+    // Friday 2026-08-28 18:00-20:00 CT, Saturday 2026-08-29 05:00-17:00 CT and
+    // Monday 2026-08-31 07:00-12:00 CT all belong to the one trade date.
+    for instant in [
+        ct((2026, 8, 28), (19, 0, 0)),
+        ct((2026, 8, 29), (10, 0, 0)),
+        ct((2026, 8, 31), (8, 0, 0)),
+    ] {
+        assert!(
+            calendar
+                .is_open(instant)
+                .expect("the coverage contract must answer a covered date"),
+            "one of the three blocks is not open at {instant}"
+        );
+        assert_eq!(
+            calendar
+                .trade_date(instant)
+                .expect("the coverage contract must answer a covered date"),
+            Some(trade_date),
+            "a block three opening days out lost its trade date at {instant}"
+        );
+    }
+
+    // The gaps are inside one trade date, so they are pauses rather than the
+    // closure that separates trade dates.
+    for instant in [
+        ct((2026, 8, 28), (21, 0, 0)),
+        ct((2026, 8, 29), (18, 0, 0)),
+        ct((2026, 8, 30), (12, 0, 0)),
+    ] {
+        assert!(
+            !calendar
+                .is_open(instant)
+                .expect("the coverage contract must answer a covered date"),
+            "a gap between two blocks of one trade date is reported open at {instant}"
+        );
+        assert_eq!(
+            calendar
+                .session_state(instant)
+                .expect("the coverage contract must answer a covered date"),
+            SessionState::Halt,
+            "a same-trade-date gap must read as a pause at {instant}"
+        );
+    }
+}
+
+/// The 2025-01-01 shape #93 records: the pre-open queue starts at 16:00 CT
+/// instead of the normal 16:45 CT, and the tradeable session is unchanged.
+static RESTATED_ORDER_ENTRY_BLOCKS: [ExceptionBlock; 2] = [
+    ExceptionBlock::order_entry(-1, 16 * 3_600, 16 * 3_600 + 45 * 60),
+    ExceptionBlock::regular(0, 9 * 3_600, 17 * 3_600),
+];
+
+#[test]
+fn a_replaced_day_restates_its_order_entry_topology() {
+    let trade_date = day(2026, 8, 27);
+    assert_eq!(trade_date.weekday(), chrono::Weekday::Thu);
+    let records = [SessionExceptionRecord::replace_sessions(
+        trade_date,
+        &RESTATED_ORDER_ENTRY_BLOCKS,
+    )];
+    let table = StaticSessionExceptions::new(
+        CalendarSource::MarketHoursKey(MarketHoursKey::GlobexEnergy),
+        day(2026, 8, 1),
+        day(2026, 8, 31),
+        &records,
+    )
+    .expect("valid records");
+    let calendar = calendar_for_market_hours_key(MarketHoursKey::GlobexEnergy)
+        .with_session_exceptions(&table)
+        .expect("the fixture is scoped to this calendar");
+
+    // The queue opens on the preceding local day, 2026-08-26 at 16:00 CT.
+    let queued = ct((2026, 8, 26), (16, 10, 0));
+    assert!(
+        calendar
+            .is_order_entry_only(queued)
+            .expect("the coverage contract must answer a covered date"),
+        "the restated queue is not active at {queued}"
+    );
+    assert!(
+        calendar
+            .is_accepting_orders(queued)
+            .expect("the coverage contract must answer a covered date")
+    );
+    assert_eq!(
+        calendar
+            .session_state(queued)
+            .expect("the coverage contract must answer a covered date"),
+        SessionState::OrderEntry
+    );
+    // An order-entry phase is not tradeable, and the normal week's own queue
+    // does not survive the replacement.
+    assert!(
+        !calendar
+            .is_open(queued)
+            .expect("the coverage contract must answer a covered date")
+    );
+
+    // 16:45 CT ends the restated queue; the normal 16:45 CT start would still
+    // be running here if the replacement had not replaced it.
+    let after = ct((2026, 8, 26), (16, 50, 0));
+    assert!(
+        !calendar
+            .is_order_entry_only(after)
+            .expect("the coverage contract must answer a covered date"),
+        "the restated queue outlived its own close at {after}"
+    );
+    assert!(
+        !calendar
+            .is_accepting_orders(after)
+            .expect("the coverage contract must answer a covered date")
+    );
+}
+
+/// A caller's replacement record suppresses the built-in holiday row for that
+/// trade date rather than composing with it.
+///
+/// This is the precedence Stage 3's new kind has to obey, fenced here on the
+/// half of it a caller can reach: `GlobexEnergy` ships a built-in early close at
+/// 13:45 CT on 2026-11-27, and a caller's `ReplaceSessions` record for the same
+/// date must win outright. If the two composed, the replaced day's blocks would
+/// be clipped back to 13:45 and one row would have been applied twice.
+static SUPPRESSES_BUILTIN_BLOCKS: [ExceptionBlock; 1] =
+    [ExceptionBlock::regular(0, 9 * 3_600, 16 * 3_600)];
+
+#[test]
+fn a_caller_replacement_suppresses_the_built_in_row_for_that_trade_date() {
+    let trade_date = day(2026, 11, 27);
+    assert_eq!(trade_date.weekday(), chrono::Weekday::Fri);
+
+    let bare = calendar_for_market_hours_key(MarketHoursKey::GlobexEnergy);
+    assert_eq!(
+        bare.holiday_on(trade_date).map(Holiday::kind),
+        Some(HolidayKind::EarlyClose {
+            close_ssm: 13 * 3_600 + 45 * 60
+        }),
+        "the fixture depends on this identity shipping an early close that day"
+    );
+
+    let records = [SessionExceptionRecord::replace_sessions(
+        trade_date,
+        &SUPPRESSES_BUILTIN_BLOCKS,
+    )];
+    let table = StaticSessionExceptions::new(
+        CalendarSource::MarketHoursKey(MarketHoursKey::GlobexEnergy),
+        day(2026, 11, 1),
+        day(2026, 11, 30),
+        &records,
+    )
+    .expect("valid records");
+    let calendar = bare
+        .with_session_exceptions(&table)
+        .expect("the fixture is scoped to this calendar");
+
+    // 14:30 CT is inside the caller's block and past the built-in early close.
+    // A composed answer would report it closed, so the bare calendar states the
+    // other half of the fence.
+    let after_builtin_close = ct((2026, 11, 27), (14, 30, 0));
+    assert!(
+        !bare
+            .is_open(after_builtin_close)
+            .expect("the coverage contract must answer a covered date"),
+        "the built-in early close must be what closes this instant"
+    );
+    assert_eq!(
+        calendar
+            .session_bounds(after_builtin_close)
+            .expect("the coverage contract must answer a covered date"),
+        Some((
+            ct((2026, 11, 27), (9, 0, 0)),
+            ct((2026, 11, 27), (16, 0, 0))
+        )),
+        "the built-in early close was applied on top of the caller's replacement"
+    );
+    assert!(
+        calendar
+            .is_open(after_builtin_close)
+            .expect("the coverage contract must answer a covered date")
+    );
+
+    // And the normal week's own session for this trade date is gone rather than
+    // shortened: the preceding evening would otherwise be trading.
+    assert!(
+        bare.is_open(ct((2026, 11, 26), (18, 0, 0)))
+            .expect("the coverage contract must answer a covered date"),
+        "the preceding evening must be open on the bare calendar for this to fence anything"
+    );
+    assert!(
+        !calendar
+            .is_open(ct((2026, 11, 26), (18, 0, 0)))
+            .expect("the coverage contract must answer a covered date"),
+        "the normal-week session belonging to the replaced trade date survived"
+    );
+}
+
+/// A replaced trade date with extended trading but **no** regular session: the
+/// plan's "regular-only closure", stated as blocks rather than as a scalar early
+/// close.
+///
+/// One wrapped extended block opens the preceding evening and closes at 03:00 CT
+/// on the trade date. The replacement suite's other post-floor fixtures state
+/// only regular and order-entry blocks, and the pre-floor Nasdaq half-day
+/// fixture that used to exercise this distinction now asserts a refusal, so this
+/// is the case that holds `query::replacement::selects` to its mapping of block
+/// kind to rule set.
+///
+/// Deliberately one block and not two: an evening block on the trade date would
+/// overlap the **following** trade date's normal session, which opens the same
+/// evening. No operator publishes two sessions over one instant, and a fixture
+/// that did would be asking which of them containment should report rather than
+/// testing the kind that is stated.
+static EXTENDED_ONLY_BLOCKS: [ExceptionBlock; 1] =
+    [ExceptionBlock::extended(-1, 17 * 3_600, 3 * 3_600)];
+
+#[test]
+fn a_replaced_day_with_no_regular_block_closes_regular_trading_only() {
+    let trade_date = day(2026, 8, 27);
+    assert_eq!(trade_date.weekday(), chrono::Weekday::Thu);
+    let records = [SessionExceptionRecord::replace_sessions(
+        trade_date,
+        &EXTENDED_ONLY_BLOCKS,
+    )];
+    let table = StaticSessionExceptions::new(
+        CalendarSource::MarketHoursKey(MarketHoursKey::GlobexEnergy),
+        day(2026, 8, 1),
+        day(2026, 8, 31),
+        &records,
+    )
+    .expect("valid records");
+    let calendar = calendar_for_market_hours_key(MarketHoursKey::GlobexEnergy)
+        .with_session_exceptions(&table)
+        .expect("the fixture is scoped to this calendar");
+
+    // 02:00 CT is inside the wrapped extended block that opened Wednesday
+    // evening. It is a real session, and it is not a regular one.
+    let overnight = ct((2026, 8, 27), (2, 0, 0));
+    assert!(
+        calendar
+            .is_open_extended(overnight)
+            .expect("the coverage contract must answer a covered date"),
+        "the extended block is not open at {overnight}"
+    );
+    assert!(
+        calendar
+            .is_open(overnight)
+            .expect("the coverage contract must answer a covered date"),
+        "a tradeable extended block must count as open at {overnight}"
+    );
+    assert!(
+        !calendar
+            .is_open_regular(overnight)
+            .expect("the coverage contract must answer a covered date"),
+        "an extended block was reported as a regular session at {overnight}"
+    );
+    assert_eq!(
+        calendar
+            .session_bounds_with(overnight, SessionKind::Extended)
+            .expect("the coverage contract must answer a covered date"),
+        Some((ct((2026, 8, 26), (17, 0, 0)), ct((2026, 8, 27), (3, 0, 0)))),
+        "the extended kind did not resolve the wrapped block"
+    );
+
+    // 10:00 CT is the middle of the trade date's ordinary regular session, and
+    // this replacement states no regular block at all. A consumer reading the
+    // regular kind must see the closure, and one reading the session as a whole
+    // must not be handed the ordinary week back.
+    let regular_hours = ct((2026, 8, 27), (10, 0, 0));
+    assert!(
+        !calendar
+            .is_open_regular(regular_hours)
+            .expect("the coverage contract must answer a covered date"),
+        "the replaced trade date kept a regular session it did not state"
+    );
+    assert!(
+        !calendar
+            .is_open(regular_hours)
+            .expect("the coverage contract must answer a covered date"),
+        "a regular-only closure was reported as open"
+    );
+    assert_eq!(
+        calendar
+            .session_bounds_with(regular_hours, SessionKind::Regular)
+            .expect("the coverage contract must answer a covered date"),
+        None,
+        "the regular kind resolved a session from an extended block"
+    );
+}
+
+/// The last link of the precedence chain, above the floor: the replacement layer
+/// decides what the trading day is, and the caller's `DayPolicy` then clips that
+/// result exactly as it clips a normal week.
+///
+/// The suite's three fixtures for this all state 2011 dates, so since Stage 2B
+/// they assert `BeforeSupportFloor` and the composition is no longer observable
+/// through them — their own comments say so. This is the post-floor case, and it
+/// is differential: the same replacement is resolved twice, once with the policy
+/// and once without, so a policy that silently failed to clip would fail here
+/// rather than pass for the right-looking reason.
+static POLICY_CLIP_BLOCKS: [ExceptionBlock; 1] =
+    [ExceptionBlock::regular(0, 9 * 3_600, 17 * 3_600)];
+
+#[test]
+fn a_day_policy_clips_a_replaced_trading_day_above_the_floor() {
+    let trade_date = day(2026, 8, 27);
+    assert_eq!(trade_date.weekday(), chrono::Weekday::Thu);
+    let records = [SessionExceptionRecord::replace_sessions(
+        trade_date,
+        &POLICY_CLIP_BLOCKS,
+    )];
+    let table = StaticSessionExceptions::new(
+        CalendarSource::MarketHoursKey(MarketHoursKey::GlobexEnergy),
+        day(2026, 8, 1),
+        day(2026, 8, 31),
+        &records,
+    )
+    .expect("valid records");
+    let base = calendar_for_market_hours_key(MarketHoursKey::GlobexEnergy)
+        .with_session_exceptions(&table)
+        .expect("the fixture is scoped to this calendar");
+
+    let overrides = [DayOverride::early_close(trade_date, 13 * 3_600)];
+    let policy = StaticDayPolicy::new(&overrides).expect("valid override");
+    let clipped = base.with_day_policy(&policy);
+    assert!(clipped.has_session_exceptions());
+    assert!(clipped.has_day_policy());
+
+    let morning = ct((2026, 8, 27), (10, 0, 0));
+    let afternoon = ct((2026, 8, 27), (14, 0, 0));
+
+    // Unclipped, the replacement's own block stands: 09:00-17:00 CT.
+    assert_eq!(
+        base.session_bounds(morning)
+            .expect("the coverage contract must answer a covered date"),
+        Some((ct((2026, 8, 27), (9, 0, 0)), ct((2026, 8, 27), (17, 0, 0)))),
+        "the fixture's replacement block is not the session it claims"
+    );
+    assert!(
+        base.is_open(afternoon)
+            .expect("the coverage contract must answer a covered date"),
+        "the unclipped replacement must still be trading at {afternoon}"
+    );
+
+    // Clipped, the policy's 13:00 CT bound wins over the block's own close.
+    assert_eq!(
+        clipped
+            .session_bounds(morning)
+            .expect("the coverage contract must answer a covered date"),
+        Some((ct((2026, 8, 27), (9, 0, 0)), ct((2026, 8, 27), (13, 0, 0)))),
+        "the DayPolicy did not clip the replaced trading day"
+    );
+    assert!(
+        !clipped
+            .is_open(afternoon)
+            .expect("the coverage contract must answer a covered date"),
+        "the replaced day traded past the policy's clip"
+    );
+    // The clip is end-exclusive, like every other close.
+    assert!(
+        clipped
+            .is_open(ct((2026, 8, 27), (12, 59, 59)))
+            .expect("the coverage contract must answer a covered date")
+    );
+    assert!(
+        !clipped
+            .is_open(ct((2026, 8, 27), (13, 0, 0)))
+            .expect("the coverage contract must answer a covered date")
+    );
+}
+
+/// Two blocks may state the same opening instant when they state different
+/// kinds: a regular session that ends at midday while extended trading runs on
+/// from the same open.
+///
+/// The ordering rule is non-decreasing, not strictly increasing, so this set is
+/// a valid arrangement rather than a duplicate. It is pinned here because the
+/// rule is shared with the built-in table's constant-evaluation fence from
+/// Stage 3 (#93), and a future reader tightening `<` to `<=` would reject a
+/// shape operators do publish without any other test noticing.
+///
+/// The two kinds carry different closes on purpose, so both blocks are
+/// observable from the one opening instant: the regular kind ends at 12:00 CT
+/// and the extended kind at 17:00 CT. A pair whose windows coincided would be
+/// accepted by validation but prove nothing about which block answered.
+static EQUAL_OPENING_BLOCKS: [ExceptionBlock; 2] = [
+    ExceptionBlock::regular(0, 9 * 3_600, 12 * 3_600),
+    ExceptionBlock::extended(0, 9 * 3_600, 17 * 3_600),
+];
+
+#[test]
+fn blocks_may_share_an_opening_instant_when_their_kinds_differ() {
+    let trade_date = day(2026, 8, 27);
+    let records = [SessionExceptionRecord::replace_sessions(
+        trade_date,
+        &EQUAL_OPENING_BLOCKS,
+    )];
+    // The point of the fixture: a set whose blocks agree on opening day and open
+    // time is accepted rather than reported as out of order.
+    let table = StaticSessionExceptions::new(
+        CalendarSource::MarketHoursKey(MarketHoursKey::GlobexEnergy),
+        day(2026, 8, 1),
+        day(2026, 8, 31),
+        &records,
+    )
+    .expect("two blocks of different kinds may share an opening instant");
+    let calendar = calendar_for_market_hours_key(MarketHoursKey::GlobexEnergy)
+        .with_session_exceptions(&table)
+        .expect("the fixture is scoped to this calendar");
+
+    // Both blocks are selected by their own kind from the one opening instant,
+    // and each keeps its own close.
+    let shared_open = ct((2026, 8, 27), (11, 0, 0));
+    assert!(
+        calendar
+            .is_open_regular(shared_open)
+            .expect("the coverage contract must answer a covered date"),
+        "the regular block was not selected at the shared opening instant"
+    );
+    assert!(
+        calendar
+            .is_open_extended(shared_open)
+            .expect("the coverage contract must answer a covered date"),
+        "the extended block was not selected at the shared opening instant"
+    );
+    assert_eq!(
+        calendar
+            .session_bounds_with(shared_open, SessionKind::Regular)
+            .expect("the coverage contract must answer a covered date"),
+        Some((ct((2026, 8, 27), (9, 0, 0)), ct((2026, 8, 27), (12, 0, 0)))),
+        "the regular kind did not resolve its own block"
+    );
+    assert_eq!(
+        calendar
+            .session_bounds_with(shared_open, SessionKind::Extended)
+            .expect("the coverage contract must answer a covered date"),
+        Some((ct((2026, 8, 27), (9, 0, 0)), ct((2026, 8, 27), (17, 0, 0)))),
+        "the extended kind did not resolve its own block"
+    );
+
+    // After 12:00 CT the regular block is done while extended trading runs on,
+    // which is the observable consequence of the two blocks being distinct and
+    // not one block counted twice.
+    let after_regular_close = ct((2026, 8, 27), (13, 0, 0));
+    assert!(
+        !calendar
+            .is_open_regular(after_regular_close)
+            .expect("the coverage contract must answer a covered date")
+    );
+    assert!(
+        calendar
+            .is_open_extended(after_regular_close)
+            .expect("the coverage contract must answer a covered date")
+    );
+    assert!(
+        calendar
+            .is_open(after_regular_close)
+            .expect("the coverage contract must answer a covered date")
+    );
+}
+
+/// Every query family reads the same replacement, which is the failure mode
+/// Stage 2B's single gate makes possible to get wrong: a block visible to
+/// `is_open` but not to the candle edges, or to the trade date but not to the
+/// session bounds, would be a schedule that disagrees with itself.
+#[test]
+fn every_query_family_gives_the_same_account_of_a_replaced_day() {
+    let trade_date = day(2026, 8, 24);
+    let records = [SessionExceptionRecord::replace_sessions(
+        trade_date,
+        &ADDED_SATURDAY_BLOCKS,
+    )];
+    let table = StaticSessionExceptions::new(
+        CalendarSource::MarketHoursKey(MarketHoursKey::GlobexEnergy),
+        day(2026, 8, 1),
+        day(2026, 8, 31),
+        &records,
+    )
+    .expect("valid records");
+    let calendar = calendar_for_market_hours_key(MarketHoursKey::GlobexEnergy)
+        .with_session_exceptions(&table)
+        .expect("the fixture is scoped to this calendar");
+
+    let open = ct((2026, 8, 22), (5, 0, 0));
+    let close = ct((2026, 8, 22), (17, 0, 0));
+    // Inside the added block, the boundary, the status, the trade date and the
+    // candle edges are five views of one resolved session.
+    let inside = ct((2026, 8, 22), (10, 0, 0));
+    let bounds = calendar
+        .session_bounds(inside)
+        .expect("the coverage contract must answer a covered date")
+        .expect("the added block is a session");
+    assert_eq!(bounds, (open, close));
+    assert!(
+        calendar
+            .is_open(inside)
+            .expect("the coverage contract must answer a covered date")
+    );
+    assert_eq!(
+        calendar
+            .session_state(inside)
+            .expect("the coverage contract must answer a covered date"),
+        SessionState::OpenRegular
+    );
+    assert_eq!(
+        calendar
+            .trade_date(inside)
+            .expect("the coverage contract must answer a covered date"),
+        Some(trade_date)
+    );
+    assert_eq!(
+        calendar
+            .candle_start(inside, CalendarResolution::Daily)
+            .expect("the coverage contract must answer a covered date"),
+        Some(open)
+    );
+    assert_eq!(
+        calendar
+            .candle_end(inside, CalendarResolution::Daily)
+            .expect("the coverage contract must answer a covered date"),
+        Some(close)
+    );
+    // The addition is visible as the trade date's own session, not as an
+    // absence: the day the block opens on is the trade date's only session.
+    assert!(
+        !calendar
+            .is_closed_trade_date(trade_date, SessionKind::Both)
+            .expect("the coverage contract must answer a covered date"),
+        "the trade date carrying the added session reads as closed"
+    );
 }

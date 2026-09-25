@@ -69,6 +69,15 @@ pub(in crate::calendar) struct QueryContext<'a> {
     /// that narrowing unchanged. Deriving it from the dropped table would make
     /// every overlay identity look table-less inside its own baseline walks.
     coverage: Option<CalendarCoverage>,
+    /// Whether some attached layer can supply a replacement trading day.
+    ///
+    /// Resolved once here rather than asked per scan. The caller's provider is
+    /// cheap to test, but a built-in table's answer lives behind its pointer, so
+    /// asking per occurrence would make the replacement gate dereference a
+    /// static table on the normal-week hot path — for a bit that cannot change
+    /// while the context lives. This is the shape [`Self::coverage`] already
+    /// has, and for the same reason.
+    replacement_layer: bool,
 }
 
 /// The scalar trade-date clip one layer contributes.
@@ -135,6 +144,19 @@ fn max_option(left: Option<u32>, right: Option<u32>) -> Option<u32> {
     }
 }
 
+/// Returns whether a built-in table can supply a replacement trading day.
+///
+/// The answer itself was decided during constant evaluation, so this is one
+/// field read behind the table pointer. It exists as a function only so the
+/// context constructors can cache it: asking it once per scan would put that
+/// pointer chase on the normal-week hot path.
+const fn table_can_replace(holidays: Option<&HolidayTable>) -> bool {
+    match holidays {
+        Some(table) => table.carries_replacement_blocks(),
+        None => false,
+    }
+}
+
 pub(super) enum ResolvedHours<'a> {
     Borrowed(&'a MarketHours),
     Selected(MarketHours),
@@ -162,17 +184,20 @@ impl<'a> QueryContext<'a> {
             policy: None,
             exceptions: None,
             coverage: None,
+            replacement_layer: false,
         }
     }
 
     pub(in crate::calendar) fn date_aware(calendar: ExchangeCalendar) -> Self {
+        let holidays = calendar.holiday_table();
         Self {
             source: ProfileSource::DateAware(calendar),
             tz: calendar.tz(),
-            holidays: calendar.holiday_table(),
+            holidays,
             policy: None,
             exceptions: None,
             coverage: Some(calendar.coverage()),
+            replacement_layer: table_can_replace(holidays),
         }
     }
 
@@ -181,13 +206,15 @@ impl<'a> QueryContext<'a> {
         policy: Option<&'a dyn DayPolicy>,
         exceptions: Option<&'a dyn SessionExceptionSource>,
     ) -> Self {
+        let holidays = calendar.holiday_table();
         Self {
             source: ProfileSource::DateAware(calendar),
             tz: calendar.tz(),
-            holidays: calendar.holiday_table(),
+            holidays,
             policy,
             exceptions,
             coverage: Some(calendar.coverage()),
+            replacement_layer: exceptions.is_some() || table_can_replace(holidays),
         }
     }
 
@@ -210,6 +237,10 @@ impl<'a> QueryContext<'a> {
             policy: None,
             exceptions: None,
             coverage: self.coverage,
+            // The baseline drops every layer that could supply a replacement, so
+            // the gate must drop with them or a baseline walk would re-enter the
+            // layer it exists to avoid.
+            replacement_layer: false,
         }
     }
 
@@ -543,21 +574,18 @@ impl<'a> QueryContext<'a> {
     /// Returns whether any attached layer can supply a replacement trading day.
     ///
     /// This is the gate in front of the replacement scan. It is deliberately a
-    /// one-bit question: the scan walks the fixed block-offset window and asks
-    /// for a record on each day of it, so running the scan for an identity whose
-    /// table ships no block row would put that walk on the hot path for nothing.
-    /// A table answers from a value decided during constant evaluation rather
-    /// than by walking its rows once per query.
+    /// one-bit question asked of a field: the scan walks the fixed block-offset
+    /// window and asks for a record on each day of it, and the normal-week paths
+    /// that decide whether to run the scan resolve one occurrence at a time, so
+    /// deriving the answer here would put a table dereference in that loop for a
+    /// bit that cannot change while the context lives.
     ///
-    /// Once Stage 4 ships a block row this becomes true for that identity, and
-    /// the scan is exactly the work the row requires. Until then it is `false`
-    /// for every shipped table, so the new kind costs the hot path one `bool`
-    /// load and no scan.
-    pub(super) fn has_replacement_layer(self) -> bool {
-        self.exceptions.is_some()
-            || self
-                .holidays
-                .is_some_and(HolidayTable::carries_replacement_blocks)
+    /// Once Stage 4 (#116) ships a block row this becomes true for that
+    /// identity, and the scan is exactly the work the row requires. Until then
+    /// it is `false` for every shipped table, so the new kind costs the hot path
+    /// this one field read.
+    pub(super) const fn has_replacement_layer(self) -> bool {
+        self.replacement_layer
     }
 
     /// Returns whether the exception layer replaces `trade_date` outright.

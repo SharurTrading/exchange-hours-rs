@@ -68,6 +68,28 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Added
 
+- **The first operator rows using the replacement-block vocabulary: CME's three
+  Globex Saturday sessions, 2026-06-22, 2026-07-06 and 2027-06-21 (2026-09-25 UTC).**
+  Stage 4 of the release plan (#116, #93's data). CME publishes `05:00 open;
+  17:00 closed` on Saturday 2026-06-20, 2026-07-04 and 2027-06-19, each session
+  carrying the following Monday's trade date, on a grid whose normal week has no
+  Saturday session at all — a shape no scalar row can state, because a boundary
+  row moves an existing occurrence and cannot create one. `globex_energy` now
+  states each of those three trade dates as a **complete** block set: the
+  Saturday session at offset `-2`, the ordinary Sunday Pre-Open
+  `16:00-17:00` CT at offset `-1`, and the ordinary Sunday-17:00-to-Monday-16:00
+  session at offset `-1`. Every instant is quoted from the service window the
+  row cites, and the rows state the whole day rather than the Saturday alone
+  because a replacement replaces the complete trade date: a Saturday-only set
+  would delete the Sunday-evening session that belongs to the same one. The
+  four CME venue intersection tables carry the derived consequence — `comex` and
+  `nymex` reproduce the family's row because each routes one family, while `cme`
+  states `Unsourced` on 2026-07-06 and 2027-06-21 and on 2026-06-22, where the
+  five financial families state nothing and only energy does, and `cbot` states
+  nothing at all on the three dates because both of its families audited them
+  normal. This also fixes an evidence-citation defect the rows exposed:
+  `globex_energy.md` had cited a window for 2026-07-04 that contains no Crude
+  Oil product, and now cites one that carries the session.
 - **`globex_equity_index` states CME's three Saturday sessions as complete trade
   dates (2026-09-25 UTC).** Stage 4 of the release plan (#116). CME publishes
   `05:00 open; 17:00 closed` on Saturday 2026-06-20, 2026-07-04 and 2027-06-19,

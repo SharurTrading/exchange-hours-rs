@@ -1106,10 +1106,10 @@ fn stated_instants(kind: &str, module_text: &str) -> Vec<String> {
             .map(|a| stamp(a))
             .collect(),
         // A replacement row states its instants in a named `ExceptionBlock`
-        // slice, so the instants it states are that slice's own instants. They
-        // are read from the declaration rather than from the row, so the fence
-        // keeps checking the family's real data: a row cannot name a slice that
-        // is not there, and the day cell is what the venue summary must match.
+        // slice, so the instants it states are that slice's own opens and
+        // closes. Reading them from the declaration rather than from the row
+        // keeps the fence checking the family's real data: a row cannot name
+        // instants the slice does not carry.
         text if text.starts_with("ReplacementBlocks(") => {
             let name = arguments(text, "ReplacementBlocks(").first().map_or_else(
                 || panic!("a replacement row names its block slice: {text}"),

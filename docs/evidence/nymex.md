@@ -554,6 +554,8 @@ rests on a document the family module does not carry.
 | 2026-04-03 | closed | `no events published` | `CME-SVC-2026-04-01` | T2 | energy closed |
 | 2026-05-25 | early close | `early close 13:30 CT` | `CME-SVC-2026-05-24` | T2 | energy early close 13:30 CT |
 | 2026-06-19 | early close | `early close 12:00 CT` | `CME-SVC-2026-06-18` | T2 | energy early close 12:00 CT |
+| 2026-06-22 | replacement blocks | `05:00 open; 17:00 closed` on eventDate 2026-06-20, all carrying trade date 2026-06-22; `16:00 preopen; 17:00 open` on eventDate 2026-06-21 | `CME-SVC-2026-06-18` | T2 | the energy family's own row: Saturday session plus the ordinary Sunday Pre-Open and Sunday-17:00-to-Monday-16:00 session |
+| 2026-07-06 | replacement blocks | `05:00 open; 17:00 closed` on eventDate 2026-07-04; `16:00 preopen; 17:00 open` on eventDate 2026-07-05 | `CME-SVC-2026-07-03` | T2 | the energy family's own row, as 2026-06-22 |
 | 2026-07-03 | early close | `early close 12:00 CT` | `CME-SVC-2026-07-03` | T2 | energy early close 12:00 CT |
 | 2026-09-07 | early close | `early close 13:30 CT` | `CME-SVC-2026-09-06` | T2 | energy early close 13:30 CT |
 | 2026-11-26 | early close | `early close 13:30 CT` | `CME-SVC-2026-11-25` | T2 | energy early close 13:30 CT |
@@ -571,6 +573,7 @@ rests on a document the family module does not carry.
 | 2027-03-26 | closed | `no events published` | `CME-SVC-2027-03-25` | T2 | energy closed |
 | 2027-05-31 | early close | `early close 13:30 CT` | `CME-SVC-2027-05-30` | T2 | energy early close 13:30 CT |
 | 2027-06-18 | early close | `early close 12:00 CT` | `CME-SVC-2027-06-17` | T2 | energy early close 12:00 CT |
+| 2027-06-21 | replacement blocks | `05:00 open; 17:00 closed` on eventDate 2027-06-19; `16:00 preopen; 17:00 open` on eventDate 2027-06-20 | `CME-SVC-2027-06-17` | T2 | the energy family's own row, as 2026-06-22 |
 | 2027-07-05 | early close | `early close 13:30 CT` | `CME-SVC-2027-07-04` | T2 | energy early close 13:30 CT |
 | 2027-09-06 | early close | `early close 13:30 CT` | `CME-SVC-2027-09-05` | T2 | energy early close 13:30 CT |
 | 2027-11-25 | early close | `early close 13:30 CT` | `CME-SVC-2027-11-24` | T2 | energy early close 13:30 CT |

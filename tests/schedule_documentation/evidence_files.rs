@@ -405,6 +405,9 @@ fn revision_blocks() -> Vec<RevisionBlock> {
 /// One `holidays!` block, with the evidence files its module declares for it.
 struct HolidayBlock {
     module: String,
+    /// The module's own source, so a row naming a static block slice can be
+    /// resolved to the instants that slice declares.
+    source: String,
     files: Vec<String>,
     coverage: Vec<String>,
     rows: Vec<HolidayRow>,
@@ -552,6 +555,7 @@ fn holiday_blocks() -> Vec<HolidayBlock> {
             let body = &text[start..];
             blocks.push(HolidayBlock {
                 module: module.clone(),
+                source: text.clone(),
                 files: declared_evidence_files(&comment_run(&text[..start]), &module),
                 coverage: holiday_coverage(body, &module),
                 rows: holiday_rows(body, &text),
@@ -1005,6 +1009,7 @@ fn every_evidence_holiday_line_is_well_formed() {
                         | "early close"
                         | "late open"
                         | "late open and early close"
+                        | "replacement blocks"
                         | "unsourced"
                 ),
                 "{name}: a holiday line's kind must be one the crate can represent: {line}"
@@ -1042,7 +1047,7 @@ fn every_evidence_holiday_line_is_well_formed() {
               takes has already failed the build; this fence reads every shipped \
               module and must fail loudly rather than mis-read one"
 )]
-fn stated_instants(kind: &str) -> Vec<String> {
+fn stated_instants(kind: &str, module_text: &str) -> Vec<String> {
     /// Reads one `h * 3_600 + m * 60` expression as minutes since midnight.
     fn minutes(expression: &str) -> u32 {
         expression
@@ -1100,6 +1105,37 @@ fn stated_instants(kind: &str) -> Vec<String> {
             .iter()
             .map(|a| stamp(a))
             .collect(),
+        // A replacement row states its instants in a named `ExceptionBlock`
+        // slice, so the instants it states are that slice's own opens and
+        // closes. Reading them from the declaration rather than from the row
+        // keeps the fence checking the family's real data: a row cannot name
+        // instants the slice does not carry.
+        text if text.starts_with("ReplacementBlocks(") => {
+            let name = arguments(text, "ReplacementBlocks(").first().map_or_else(
+                || panic!("a replacement row names its block slice: {text}"),
+                |a| a.trim_start_matches('&').trim(),
+            );
+            let declaration = format!("static {name}: [ExceptionBlock;");
+            let start = module_text
+                .find(&declaration)
+                .unwrap_or_else(|| panic!("{name} must be declared in the same module"));
+            let body = &module_text[start..];
+            let end = body
+                .find("];")
+                .unwrap_or_else(|| panic!("{name}'s declaration must terminate"));
+            let mut instants = Vec::new();
+            let mut rest = &body[..end];
+            while let Some(offset) = rest.find("ExceptionBlock::") {
+                let call = &rest[offset + "ExceptionBlock::".len()..];
+                let open = call.find('(').expect("a block constructor takes arguments");
+                let close = call.find(')').expect("a block constructor closes");
+                for value in call[open + 1..close].split(',').skip(1) {
+                    instants.push(stamp(value.trim()));
+                }
+                rest = &rest[offset + close + 1..];
+            }
+            instants
+        }
         other => panic!("unrecognized holiday kind in a module: {other}"),
     }
 }
@@ -1227,7 +1263,7 @@ fn stated_instants_for(families: &[(&str, &str)]) -> BTreeMap<String, BTreeSet<S
         resolved.extend(owned);
         for row in &block.rows {
             let entry = stated.entry(row.day.clone()).or_default();
-            for instant in stated_instants(&row.kind) {
+            for instant in stated_instants(&row.kind, &block.source) {
                 entry.insert(instant);
             }
         }

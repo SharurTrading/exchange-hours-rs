@@ -276,6 +276,9 @@ fn the_table_ships_no_late_open_and_holds_exactly_its_audited_rows() {
             match holiday.kind() {
                 HolidayKind::Closed => closed += 1,
                 HolidayKind::EarlyClose { .. } => early += 1,
+                // A complete-day replacement for a Saturday session: neither a
+                // closure nor a boundary move, so it counts in neither column.
+                HolidayKind::ReplacementBlocks(_) => {}
                 other => panic!("{date} ships an unexpected holiday kind: {other:?}"),
             }
         }
@@ -683,19 +686,63 @@ fn the_year_end_closures_delete_only_the_legs_the_operator_deleted() {
 /// `2026-06-20`, `2026-07-04` and `2027-06-19` carry
 /// `05:00 open; 17:00 closed` in CME's own service. The family's normal week
 /// has no Saturday session, and a late open can only push an existing
-/// occurrence later, so these are declared gaps in the evidence file rather
-/// than rows. This fence records the consequence a consumer sees, so the gap
-/// cannot be closed silently.
+/// occurrence later, so they ship as declared gaps until the replacement-block
+/// vocabulary states them. Stage 4 (#116) moved all three to complete-day
+/// replacement rows keyed to the following Monday, so this fence now records
+/// the open session and its trade date rather than its absence.
 #[test]
-fn the_published_saturday_sessions_are_declared_gaps_and_report_closed() {
+fn the_published_saturday_sessions_ship_as_rows_on_the_following_monday() {
     let nkd = nkd();
 
-    for (year, month, date) in [(2026, 6, 20), (2026, 7, 4), (2027, 6, 19)] {
+    for ((year, month, date), (ty, tm, td)) in [
+        ((2026, 6, 20), (2026, 6, 22)),
+        ((2026, 7, 4), (2026, 7, 6)),
+        ((2027, 6, 19), (2027, 6, 21)),
+    ] {
+        // The session's own bounds, not merely that it is open: the operator
+        // prints `05:00 open; 17:00 closed`, so a row that moved either
+        // boundary must fail here rather than pass on an interior probe.
+        let open = ct(year, month, date, 5, 0, 0);
+        let close = ct(year, month, date, 17, 0, 0);
         assert!(
-            !nkd.is_open(ct(year, month, date, 9, 0, 0))
+            nkd.is_open(open)
                 .expect("the coverage contract must answer a covered date"),
-            "{year}-{month:02}-{date:02} is a sourced Saturday session the scalar \
-             vocabulary cannot state"
+            "{year}-{month:02}-{date:02} is a sourced Saturday session and must be open at its own open"
+        );
+        assert_eq!(
+            nkd.session_bounds(ct(year, month, date, 9, 0, 0))
+                .expect("the coverage contract must answer a covered date"),
+            Some((open, close)),
+            "{year}-{month:02}-{date:02}: the session's bounds are the published ones"
+        );
+        assert!(
+            !nkd.is_open(close)
+                .expect("the coverage contract must answer a covered date"),
+            "{year}-{month:02}-{date:02}: the close is end-exclusive"
+        );
+        assert_eq!(
+            nkd.trade_date(ct(year, month, date, 9, 0, 0))
+                .expect("the coverage contract must answer a covered date"),
+            Some(day(ty, tm, td)),
+            "{year}-{month:02}-{date:02} must carry the following Monday"
+        );
+        // The ordinary Sunday-Monday session survives the row: its evening open
+        // and its trade date's day session are both intact.
+        let sunday = (year, month, date + 1);
+        assert!(
+            nkd.is_open(ct(sunday.0, sunday.1, sunday.2, 18, 0, 0))
+                .expect("the coverage contract must answer a covered date"),
+            "{year}-{month:02}-{date:02}: the Sunday-evening open was deleted by the row"
+        );
+        assert!(
+            nkd.is_open(ct(ty, tm, td, 10, 0, 0))
+                .expect("the coverage contract must answer a covered date"),
+            "{year}-{month:02}-{date:02}: the day session was deleted by the row"
+        );
+        assert!(
+            !nkd.is_open(ct(ty, tm, td, 16, 0, 0))
+                .expect("the coverage contract must answer a covered date"),
+            "{year}-{month:02}-{date:02}: the final close is end-exclusive"
         );
         assert!(nkd.holiday_on(day(year, month, date)).is_none());
     }

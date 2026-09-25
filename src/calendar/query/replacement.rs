@@ -180,12 +180,111 @@ pub(super) fn find_occurrence<T>(
     None
 }
 
+/// Returns whether an attached replacement block meets `window`.
+///
+/// A replacement block claims every instant inside its own resolved window.
+/// That claim must be visible to the **normal-week** scan as well as to the
+/// replacement scan, because a block may open on an instant that a normal-week
+/// occurrence of a *different* trade date also opens on — the shape issue #130
+/// records. The normal scan runs first, so without this test it answers such an
+/// instant from the neighbouring trade date's occurrence while
+/// [`replacement_trade_date`] assigns the block's own trade date to it, and a
+/// caller pairing `session_bounds` with `trade_date` receives two different
+/// sessions.
+///
+/// **What a replacement record means here.** A record states a complete trading
+/// day, so a block that meets a normal occurrence takes that occurrence's place
+/// rather than sharing the day with it: the occurrence is not reported, and the
+/// caller is answered from the replacement. A record whose blocks cover less
+/// than the normal week would otherwise leave a session with no stated opening,
+/// which is not an arrangement any operator publishes — a short day is stated as
+/// a block set that spans the day, not as a fragment of one. A caller that wants
+/// the normal week around a block fills the day with blocks instead of
+/// overlapping it.
+///
+/// The test is kind-aware: only a block of the same rule set displaces an
+/// occurrence, so an `order_entry` block never deletes the tradeable session
+/// opening at the same instant, and a replaced date stating only a tradeable
+/// block keeps its ordinary queue.
+///
+/// Resolution decides containment rather than a raw wall-clock comparison, so
+/// the test inherits the block's own wrap, DST bias and `DayPolicy` clip: a
+/// block the policy removed governs nothing.
+pub(super) fn governs_instant(
+    context: &QueryContext<'_>,
+    window: (DateTime<Utc>, DateTime<Utc>),
+    set: RuleSet,
+) -> bool {
+    if !context.has_replacement_layer() {
+        return false;
+    }
+    let (window_open, window_close) = window;
+    let tz = context.tz();
+    let first_day = bounded_utc(window_open, tz).with_timezone(&tz).date_naive();
+    let last_day = bounded_utc(window_close, tz)
+        .with_timezone(&tz)
+        .date_naive();
+    // A block meeting this occurrence opens in `[first_day + MIN, last_day +
+    // MAX]`. Walking the trade dates that reach those opening days visits each
+    // record once and asks it directly, rather than probing the record table
+    // once per offset.
+    let Some(first_trade_date) =
+        first_day.checked_add_signed(Duration::days(i64::from(ExceptionBlock::MIN_DAY_OFFSET)))
+    else {
+        return false;
+    };
+    let Some(last_trade_date) =
+        last_day.checked_add_signed(Duration::days(i64::from(ExceptionBlock::MAX_DAY_OFFSET)))
+    else {
+        return false;
+    };
+    let mut trade_date = first_trade_date;
+    loop {
+        if let DateException::ReplaceSessions(blocks) = context.exception_on(trade_date) {
+            // A block meeting this occurrence opens on one of its own local
+            // days or on the day before it; the resolved comparison below
+            // rejects the rest whatever they hold.
+            let span = trade_date
+                .signed_duration_since(first_day)
+                .num_days()
+                .clamp(0, i64::from(-ExceptionBlock::MIN_DAY_OFFSET));
+            let mut offset = -i8::try_from(span).unwrap_or(ExceptionBlock::MIN_DAY_OFFSET);
+            while offset <= ExceptionBlock::MAX_DAY_OFFSET {
+                for block in blocks
+                    .iter()
+                    .copied()
+                    .filter(|block| block.open_day_offset() == offset && selects(*block, set))
+                {
+                    if let Some((block_open, block_close)) =
+                        resolve_block_bounds(context, trade_date, blocks, block)
+                        && block_open < window_close
+                        && block_close > window_open
+                    {
+                        return true;
+                    }
+                }
+                offset += 1;
+            }
+        }
+        if trade_date >= last_trade_date {
+            return false;
+        }
+        let Some(next) = trade_date.succ_opt() else {
+            return false;
+        };
+        trade_date = next;
+    }
+}
+
 /// Returns the trade date a replacement block opening exactly at `open` carries.
 ///
 /// A replacement record states its own trade-date assignment, so it overrides
 /// every derived convention. The open instant identifies the block because a
-/// normal-week occurrence sharing that instant would belong to the replaced
-/// date too, and is therefore already suppressed.
+/// normal-week occurrence sharing that instant either belongs to the replaced
+/// date — and is therefore already suppressed by the normal scan's own
+/// replaced-trade-date test — or belongs to another trade date, in which case
+/// [`governs_instant`] kept that occurrence out of the normal scan's answer, so
+/// this assignment names the session the caller was given.
 pub(super) fn replacement_trade_date(
     context: &QueryContext<'_>,
     open: DateTime<Utc>,

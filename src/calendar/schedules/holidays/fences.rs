@@ -260,6 +260,17 @@ pub(crate) const fn any_blocks(rows: &[HolidayRow]) -> bool {
 /// chooses what a violation means here: a build failure rather than a returned
 /// error.
 ///
+/// **This is live rather than aspirational.** [`assert_table`] calls
+/// [`assert_instants`] for every row, and that calls this function for the one
+/// kind that states instants of its own; the call chain is `holidays!` →
+/// `assert_table` → `assert_instants` → `assert_blocks`, so a malformed block
+/// set fails the build of the module that declares it. Stage 3 shipped the path
+/// with no block row to exercise it, so
+/// `tests/session_exceptions.rs::malformed_block_sets_are_rejected_with_a_named_violation`
+/// pins the rules and their reporting order through the caller's identical
+/// predicate, and `assert_table`'s own call remains the only path a built-in row
+/// takes.
+///
 /// Each variant gets its own literal message, because a `panic!` in constant
 /// evaluation cannot format, and the message is the whole diagnostic a reader
 /// gets from a failed build.

@@ -2510,3 +2510,249 @@ fn every_query_family_gives_the_same_account_of_a_replaced_day() {
         "the trade date carrying the added session reads as closed"
     );
 }
+
+/// A block opening on an instant the **next** trade date's normal session also
+/// opens on: issue #130's shape, stated as the one invariant that shape broke.
+///
+/// The block below opens Thursday 19:00 CT, which is also the normal-week
+/// electronic open for *Friday* on this grid, so the two layers claim the same
+/// instant. Before the fix, `session_bounds` answered from the normal scan
+/// (Thursday 19:00 → Friday 07:45) while `trade_date` answered from the
+/// replacement scan (Thursday), and a caller pairing them received a window and
+/// a date naming two different sessions. The rule the fix states is that a
+/// replacement block meeting a normal occurrence takes its place, so both
+/// answers describe the replacement.
+#[test]
+fn a_block_meeting_the_next_trade_dates_open_replaces_it() {
+    static BLOCKS: [ExceptionBlock; 1] = [ExceptionBlock::extended(0, 19 * 3_600, 21 * 3_600)];
+    let trade_date = day(2026, 6, 11);
+    let records = [SessionExceptionRecord::replace_sessions(
+        trade_date, &BLOCKS,
+    )];
+    let table = StaticSessionExceptions::new(
+        CalendarSource::MarketHoursKey(MarketHoursKey::GlobexGrains),
+        day(2026, 6, 1),
+        day(2026, 6, 30),
+        &records,
+    )
+    .expect("valid records");
+    let calendar = calendar_for_market_hours_key(MarketHoursKey::GlobexGrains)
+        .with_session_exceptions(&table)
+        .expect("the fixture is scoped to this calendar");
+    let plain = calendar_for_market_hours_key(MarketHoursKey::GlobexGrains);
+
+    let open = ct((2026, 6, 11), (19, 0, 0));
+    let close = ct((2026, 6, 11), (21, 0, 0));
+    for instant in [
+        open,
+        ct((2026, 6, 11), (20, 0, 0)),
+        // The last instant inside the block, where the two candidate windows
+        // differ most: the normal occurrence would still have nearly twelve
+        // hours to run.
+        close - chrono::Duration::nanoseconds(1),
+    ] {
+        assert!(
+            calendar
+                .is_open(instant)
+                .expect("the coverage contract must answer a covered date"),
+            "the replacing block is not open at {instant}"
+        );
+        assert_eq!(
+            calendar
+                .session_bounds(instant)
+                .expect("the coverage contract must answer a covered date"),
+            Some((open, close)),
+            "session_bounds described the neighbouring trade date's session"
+        );
+        assert_eq!(
+            calendar
+                .trade_date(instant)
+                .expect("the coverage contract must answer a covered date"),
+            Some(trade_date),
+            "trade_date and session_bounds must describe one session"
+        );
+    }
+
+    // The cost of the rule is stated rather than hidden, and so is its reach.
+    // The extended occurrence the block met opened Thursday 19:00 and would have
+    // run to Friday 07:45; because the block takes that occurrence's place, the
+    // rest of the occurrence is not reported either, and an instant after the
+    // block reaches Friday's **regular** session instead. That session is a
+    // separate occurrence of a separate rule set, so the kind-aware test leaves
+    // it alone — the same rule that keeps a replaced date's queue when its
+    // record states only tradeable blocks. A caller that wants the ordinary week
+    // around a block states the whole day in blocks instead of a fragment.
+    let after = close + chrono::Duration::hours(1);
+    assert_eq!(
+        calendar
+            .session_bounds(after)
+            .expect("the coverage contract must answer a covered date"),
+        Some((
+            ct((2026, 6, 12), (8, 30, 0)),
+            ct((2026, 6, 12), (13, 20, 0))
+        )),
+        "the extended occurrence yielded, so the next session is Friday's regular one"
+    );
+    // `trade_date` at this instant is not asserted: this identity's declared
+    // gaps (#79, #93) make the answer a coverage verdict rather than a date, and
+    // that verdict is Stage 2B's contract, not this one's.
+    // Away from the replaced day the two calendars agree outright.
+    let elsewhere = ct((2026, 6, 17), (12, 0, 0));
+    assert_eq!(
+        calendar
+            .session_bounds(elsewhere)
+            .expect("the coverage contract must answer a covered date"),
+        plain
+            .session_bounds(elsewhere)
+            .expect("the coverage contract must answer a covered date")
+    );
+}
+
+/// The reach of the invariant, swept over every served identity.
+///
+/// A window `session_bounds` reports as containing the query is a session the
+/// identity says is open there, so the two queries cannot disagree about whether
+/// the instant has a trade date at all. This is the weak half of issue #130's
+/// invariant — the strong half, that the two answers name the *same* session, is
+/// fenced by the collision fixture above, which is where a shape exists to get it
+/// wrong — and it is swept here because it costs one extra call per open instant
+/// and would catch that disagreement for any identity.
+#[test]
+fn no_identity_is_open_where_it_reports_no_trade_date() {
+    let mut worst = String::new();
+    for &key in MarketHoursKey::ALL {
+        let calendar = calendar_for_market_hours_key(key);
+        for (year, month) in [(2025, 11_u32), (2026, 3), (2026, 8), (2027, 6)] {
+            for date in 1..=28 {
+                for hour in [1_u32, 7, 13, 19, 23] {
+                    let Some(instant) =
+                        Utc.with_ymd_and_hms(year, month, date, hour, 0, 0).single()
+                    else {
+                        continue;
+                    };
+                    let Ok(Some(bounds)) = calendar.session_bounds(instant) else {
+                        continue;
+                    };
+                    if !(bounds.0 <= instant && instant < bounds.1) {
+                        // `session_bounds` is "containing **or next**", so an
+                        // instant in a gap legitimately receives the session
+                        // that follows it.
+                        continue;
+                    }
+                    let Ok(open) = calendar.is_open(instant) else {
+                        continue;
+                    };
+                    let Ok(trade_date) = calendar.trade_date(instant) else {
+                        continue;
+                    };
+                    if open && trade_date.is_none() {
+                        worst = format!(
+                            "{key:?} at {instant}: the reported session {bounds:?} contains \
+                             this instant but the instant has no trade date"
+                        );
+                        break;
+                    }
+                }
+            }
+        }
+        assert!(worst.is_empty(), "{worst}");
+    }
+}
+
+/// The malformed block sets a built-in `holidays!` row would fail the build over.
+///
+/// `fences::assert_blocks` is reached from `assert_instants` for a
+/// `HolidayKind::ReplacementBlocks` row, and it applies exactly the check a
+/// caller's record meets here — one predicate, two verdicts. Stage 3 shipped
+/// that path with no row to exercise it, so this pins the rules it enforces and
+/// the order it reports them in; the built-in half is the same call in constant
+/// evaluation, where the verdict is a build failure rather than an `Err`.
+mod malformed_block_sets {
+    use super::*;
+
+    /// An empty set is a closure, not a replacement: `Closed` states it.
+    static EMPTY: [ExceptionBlock; 0] = [];
+    /// A block opening on the trade date may not wrap: the trade date is named
+    /// by the local date of its final close.
+    static WRAPS_AT_TRADE_DATE: [ExceptionBlock; 1] =
+        [ExceptionBlock::extended(0, 19 * 3_600, 3 * 3_600)];
+    /// Ordering is non-decreasing: a later block placed first is rejected.
+    static OUT_OF_ORDER: [ExceptionBlock; 2] = [
+        ExceptionBlock::extended(-1, 19 * 3_600, 21 * 3_600),
+        ExceptionBlock::extended(-2, 19 * 3_600, 21 * 3_600),
+    ];
+    /// Equal openings are legal when the kinds differ, which is why the rule is
+    /// non-decreasing rather than strictly increasing.
+    static SHARED_OPEN: [ExceptionBlock; 2] = [
+        ExceptionBlock::order_entry(-1, 16 * 3_600, 19 * 3_600),
+        ExceptionBlock::extended(-1, 16 * 3_600, 19 * 3_600),
+    ];
+    /// The offset domain is bounded, so the per-day replacement scan is too.
+    static OFFSET_TOO_EARLY: [ExceptionBlock; 1] =
+        [ExceptionBlock::extended(-8, 19 * 3_600, 21 * 3_600)];
+    /// Instants are held to the same ranges a caller's `DayPolicy` is.
+    static OPEN_TOO_LATE: [ExceptionBlock; 1] = [ExceptionBlock::extended(-1, 86_400, 86_400)];
+    /// A close one second past the end of a local day.
+    static CLOSE_TOO_LATE: [ExceptionBlock; 1] = [ExceptionBlock::extended(-1, 19 * 3_600, 86_401)];
+
+    #[test]
+    fn are_rejected_with_a_named_violation() {
+        let trade_date = day(2026, 6, 11);
+        // Validates one replacement record over `blocks`, which is how a
+        // built-in row is validated during constant evaluation. The table is not
+        // returned: it borrows the record slice built here, so the caller learns
+        // only what the one predicate `assert_blocks` also applies decided.
+        let validate = |blocks: &'static [ExceptionBlock]| {
+            let records = [SessionExceptionRecord::replace_sessions(trade_date, blocks)];
+            StaticSessionExceptions::new(
+                CalendarSource::MarketHoursKey(MarketHoursKey::GlobexGrains),
+                day(2026, 6, 1),
+                day(2026, 6, 30),
+                &records,
+            )
+            .err()
+        };
+
+        assert_eq!(
+            validate(&EMPTY),
+            Some(StaticSessionExceptionsError::EmptyReplacement { index: 0 })
+        );
+        assert_eq!(
+            validate(&WRAPS_AT_TRADE_DATE),
+            Some(StaticSessionExceptionsError::BlockClosesAfterTradeDate { index: 0, block: 0 })
+        );
+        assert_eq!(
+            validate(&OUT_OF_ORDER),
+            Some(StaticSessionExceptionsError::BlocksNotOrdered { index: 0, block: 1 })
+        );
+        assert_eq!(
+            validate(&SHARED_OPEN),
+            None,
+            "two kinds may state one opening instant"
+        );
+        assert_eq!(
+            validate(&OFFSET_TOO_EARLY),
+            Some(StaticSessionExceptionsError::BlockOffsetOutOfRange {
+                index: 0,
+                block: 0,
+                open_day_offset: -8,
+            })
+        );
+        assert_eq!(
+            validate(&OPEN_TOO_LATE),
+            Some(StaticSessionExceptionsError::BlockOpenOutOfRange {
+                index: 0,
+                block: 0,
+                open_ssm: 86_400,
+            })
+        );
+        assert_eq!(
+            validate(&CLOSE_TOO_LATE),
+            Some(StaticSessionExceptionsError::BlockCloseOutOfRange {
+                index: 0,
+                block: 0,
+                close_ssm: 86_401,
+            })
+        );
+    }
+}

@@ -68,6 +68,24 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Added
 
+- **A built-in holiday row may state a replacement block set (2026-09-25 UTC).** Stage 3
+  of the release plan adds `HolidayKind::ReplacementBlocks(&'static [ExceptionBlock])`,
+  the vocabulary for a special session whose *internal* phase topology changes: an added
+  session on a normally empty day, a trading day that pauses and reopens, one whose
+  blocks begin several local days before its trade date, or one whose order-entry phase
+  moves. `HolidayKind` is `#[non_exhaustive]`, so the variant is additive. A block row
+  replaces the **complete** trade date and resolves through the replacement layer a
+  caller's `SessionExceptions` record already drives, so the status predicates, the
+  session boundaries, the trade date, the session state and the candle edges cannot
+  disagree about it; it contributes no scalar clip of its own, an explicit caller
+  `Closed` or `ReplaceSessions` record for that date wins over it, and the caller's
+  `DayPolicy` then clips whatever survives. The rules deciding whether a block set is
+  well formed now live in one place, `exceptions::validation`, applied both by
+  `StaticSessionExceptions::new` and by the `holidays!` macro's constant-evaluation
+  fence, so a built-in row and a caller's record cannot state differently shaped
+  topologies. **Ships no rows:** the operator rows and their evidence are Stage 4
+  (#116), so every date these shapes cover remains a declared gap and no runtime answer
+  changes.
 - **Coverage inventory (2026-09-21 UTC).** `docs/schedules/coverage-2025.md` records,
   for each of the 16 served identities, what the crate actually ships against the
   adopted 2025-01-01 floor: its normal-week timeline, its holiday windows, the trade

@@ -59,7 +59,7 @@
 //! so those rows are **T2** under LAW-PRIMARY-SOURCES. CME publishes no T1
 //! per-asset-class rendering for them; that, the eight 2025 windows that
 //! survive only in a pre-holiday capture, the six Saturday and holiday spans
-//! whose topology the scalar vocabulary cannot state, and the sixteen dates on
+//! whose topology no shipped row states, and the sixteen dates on
 //! which CME merges the holiday into the next business day's trade date are
 //! recorded as gaps in
 //! [`docs/evidence/globex_fx.md`](../../../../../docs/evidence/globex_fx.md).
@@ -77,10 +77,9 @@
 //! 17:00 open`. Matching still stops at 16:00 CT and still resumes at 17:00 CT,
 //! so **no executable phase moves**; what changes is that the holiday has no
 //! final close of its own and the whole span carries the next business day's
-//! trade date, and that the queue opens 45 minutes early. Neither is
-//! representable by the scalar vocabulary this table shares with
-//! [`DayPolicy`](crate::DayPolicy), so both are declared gaps rather than rows
-//! — the design memo's §1.6 triage, applied to its own §1.1 worked example.
+//! trade date, and that the queue opens 45 minutes early. No shipped row
+//! states either, so both are declared gaps rather than rows — the design
+//! memo's §1.6 triage, applied to its own §1.1 worked example.
 
 use super::fences::{early_close, late_open};
 use super::{

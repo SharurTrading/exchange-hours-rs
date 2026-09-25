@@ -29,8 +29,8 @@
 //! [`CoverageGapReason::NormalWeekCarried`], [`CoverageGapReason::NoHolidayTable`],
 //! [`CoverageGapReason::NoHolidayCoverage`], [`CoverageGapReason::WithheldDate`]
 //! and [`CoverageGapReason::NormalWeekOnly`] name its five kinds. A **phase-level**
-//! gap is not date-shaped: the operator publishes the arrangement, and the crate's
-//! own static vocabulary cannot state it. `schedules/sourcing.rs` declares those
+//! gap is not date-shaped: the operator publishes the arrangement, and no shipped
+//! row states it. `schedules/sourcing.rs` declares those
 //! per identity, and this module reports them as
 //! [`CoverageGapReason::NormalWeekPhaseWithheld`] (#79) and
 //! [`CoverageGapReason::SpecialSessionUnrepresentable`] (#93).
@@ -210,18 +210,24 @@ pub enum CoverageGapReason {
     /// with the identity's holidays.
     NormalWeekPhaseWithheld,
     /// **Declared phase-level.** The identity's operator publishes at least one
-    /// session this crate's scalar vocabulary cannot state, so no date its
-    /// declaration covers is answered from a complete calendar.
+    /// session no shipped row states, so no date its declaration covers is
+    /// answered from a complete calendar.
     ///
     /// The shape is a *whole session that the modelled week has no slot for* —
     /// an extra session on a weekday the normal week does not trade, or a
     /// trade-date arrangement the scalar rows cannot key. Unlike the rest of this
     /// vocabulary it is not a withheld answer on a date the caller can see: the
     /// date may be answered plausibly by the ordinary week, which is exactly why
-    /// it is a completeness gap rather than an error at query time. The closing
-    /// condition is the replacement-block engine of LAW-HOLIDAY-SCOPE (#93), and
+    /// it is a completeness gap rather than an error at query time.
+    ///
+    /// The closing condition is a replacement-block row for the date. The
+    /// vocabulary such a row needs has shipped — the replacement-block engine of
+    /// LAW-HOLIDAY-SCOPE landed in Stage 3 (#93), and
     /// [`ExceptionBlock`](crate::ExceptionBlock) already reaches callers, so a
-    /// caller can supply the session the crate cannot.
+    /// caller can supply the session the crate has no row for — but the operator
+    /// rows and their evidence are Stage 4 (#116). Until those land this reason
+    /// stays declared, and the variant keeps the name it has always had, because
+    /// renaming it would break a consumer that matches on it.
     ///
     /// `globex_fx` and `globex_cryptocurrency` are the shipped cases: CME's
     /// Saturday sessions and merged trade dates, recorded in each owner's
@@ -580,8 +586,8 @@ impl CalendarCoverage {
     /// inferred from a timeline or a holiday table.
     ///
     /// A scope can carry several because the shapes stack: `globex_fx`
-    /// withholds the Sunday quarter-hour *and* publishes special sessions the
-    /// scalar layer cannot state. Each of these carries its own reason and
+    /// withholds the Sunday quarter-hour *and* publishes special sessions no
+    /// shipped row states. Each of these carries its own reason and
     /// closing condition. [`Self::gaps`] reports a declaration over the span it
     /// answers for, and only where no earlier declaration shadows it.
     #[must_use]

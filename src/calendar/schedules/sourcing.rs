@@ -183,7 +183,12 @@ const fn withheld_sunday_quarter_hour() -> PhaseGap {
 }
 
 /// The special-session gap `globex_fx` and `globex_cryptocurrency` carry: CME
-/// publishes sessions the scalar layer cannot state (#93).
+/// publishes sessions no shipped row states (#93).
+///
+/// The vocabulary a row needs for them shipped in Stage 3 (#93) — the fifth
+/// `HolidayKind` carries a replacement block set — so what this declaration
+/// still waits on is the operator row and its evidence, which is Stage 4
+/// (#116). Until that row lands the gap is real and this reason stays declared.
 ///
 /// `docs/schedules/coverage-2025.md` records both scopes as "special-session
 /// dates the scalar layer cannot state (#93)"; each owner's evidence file lists

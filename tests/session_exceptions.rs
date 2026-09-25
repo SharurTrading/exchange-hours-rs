@@ -2350,6 +2350,96 @@ fn a_day_policy_clips_a_replaced_trading_day_above_the_floor() {
     );
 }
 
+/// Two blocks may state the same opening instant when they state different
+/// kinds: a regular session that ends at midday while extended trading runs on
+/// from the same open.
+///
+/// The ordering rule is non-decreasing, not strictly increasing, so this set is
+/// a valid arrangement rather than a duplicate. It is pinned here because the
+/// rule is shared with the built-in table's constant-evaluation fence from
+/// Stage 3 (#93), and a future reader tightening `<` to `<=` would reject a
+/// shape operators do publish without any other test noticing.
+///
+/// The two kinds carry different closes on purpose, so both blocks are
+/// observable from the one opening instant: the regular kind ends at 12:00 CT
+/// and the extended kind at 17:00 CT. A pair whose windows coincided would be
+/// accepted by validation but prove nothing about which block answered.
+static EQUAL_OPENING_BLOCKS: [ExceptionBlock; 2] = [
+    ExceptionBlock::regular(0, 9 * 3_600, 12 * 3_600),
+    ExceptionBlock::extended(0, 9 * 3_600, 17 * 3_600),
+];
+
+#[test]
+fn blocks_may_share_an_opening_instant_when_their_kinds_differ() {
+    let trade_date = day(2026, 8, 27);
+    let records = [SessionExceptionRecord::replace_sessions(
+        trade_date,
+        &EQUAL_OPENING_BLOCKS,
+    )];
+    // The point of the fixture: a set whose blocks agree on opening day and open
+    // time is accepted rather than reported as out of order.
+    let table = StaticSessionExceptions::new(
+        CalendarSource::MarketHoursKey(MarketHoursKey::GlobexEnergy),
+        day(2026, 8, 1),
+        day(2026, 8, 31),
+        &records,
+    )
+    .expect("two blocks of different kinds may share an opening instant");
+    let calendar = calendar_for_market_hours_key(MarketHoursKey::GlobexEnergy)
+        .with_session_exceptions(&table)
+        .expect("the fixture is scoped to this calendar");
+
+    // Both blocks are selected by their own kind from the one opening instant,
+    // and each keeps its own close.
+    let shared_open = ct((2026, 8, 27), (11, 0, 0));
+    assert!(
+        calendar
+            .is_open_regular(shared_open)
+            .expect("the coverage contract must answer a covered date"),
+        "the regular block was not selected at the shared opening instant"
+    );
+    assert!(
+        calendar
+            .is_open_extended(shared_open)
+            .expect("the coverage contract must answer a covered date"),
+        "the extended block was not selected at the shared opening instant"
+    );
+    assert_eq!(
+        calendar
+            .session_bounds_with(shared_open, SessionKind::Regular)
+            .expect("the coverage contract must answer a covered date"),
+        Some((ct((2026, 8, 27), (9, 0, 0)), ct((2026, 8, 27), (12, 0, 0)))),
+        "the regular kind did not resolve its own block"
+    );
+    assert_eq!(
+        calendar
+            .session_bounds_with(shared_open, SessionKind::Extended)
+            .expect("the coverage contract must answer a covered date"),
+        Some((ct((2026, 8, 27), (9, 0, 0)), ct((2026, 8, 27), (17, 0, 0)))),
+        "the extended kind did not resolve its own block"
+    );
+
+    // After 12:00 CT the regular block is done while extended trading runs on,
+    // which is the observable consequence of the two blocks being distinct and
+    // not one block counted twice.
+    let after_regular_close = ct((2026, 8, 27), (13, 0, 0));
+    assert!(
+        !calendar
+            .is_open_regular(after_regular_close)
+            .expect("the coverage contract must answer a covered date")
+    );
+    assert!(
+        calendar
+            .is_open_extended(after_regular_close)
+            .expect("the coverage contract must answer a covered date")
+    );
+    assert!(
+        calendar
+            .is_open(after_regular_close)
+            .expect("the coverage contract must answer a covered date")
+    );
+}
+
 /// Every query family reads the same replacement, which is the failure mode
 /// Stage 2B's single gate makes possible to get wrong: a block visible to
 /// `is_open` but not to the candle edges, or to the trade date but not to the

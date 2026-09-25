@@ -132,8 +132,10 @@ pub enum HolidayKind {
     /// topology changes: a trading day that pauses and reopens, one that adds a
     /// session on a normally empty day, one whose regular session ends while
     /// extended trading continues, or one whose blocks carry a following
-    /// business date. The slice is ordered by opening day and then open time,
+    /// business date. The slice is ordered by opening day and then by open time,
     /// and it is never empty; a trade date with no blocks is [`Self::Closed`].
+    /// The order is non-decreasing rather than strictly increasing, so two
+    /// blocks of different kinds may share one opening instant.
     ///
     /// A block row replaces the **complete** trade date: no scalar clip from the
     /// same row is applied on top, and every query family resolves the

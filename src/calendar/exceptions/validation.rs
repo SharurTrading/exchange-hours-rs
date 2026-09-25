@@ -82,6 +82,14 @@ pub(crate) enum BlockViolation {
 /// records: the ordering rule is the order every replacement scan relies on, the
 /// instant ranges are the `DayPolicy` ranges, and the no-wrap rule at offset `0`
 /// is what keeps a trade date from closing after its own name.
+///
+/// The ordering rule is **non-decreasing**, deliberately: it rejects a block
+/// that starts before its predecessor and accepts one that starts at the same
+/// `(open_day_offset, open_ssm)`. Two blocks may legitimately share an opening
+/// instant when they state different kinds — an order-entry phase and the
+/// tradeable session that begins with it — so equality is not a duplicate. See
+/// [`DateException::ReplaceSessions`](crate::DateException::ReplaceSessions),
+/// which states the same contract to callers.
 pub(crate) const fn first_block_violation(blocks: &[ExceptionBlock]) -> Option<BlockViolation> {
     if blocks.is_empty() {
         return Some(BlockViolation::Empty);

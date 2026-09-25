@@ -78,6 +78,16 @@ pub(in crate::calendar) struct QueryContext<'a> {
     /// while the context lives. This is the shape [`Self::coverage`] already
     /// has, and for the same reason.
     replacement_layer: bool,
+    /// Whether the identity's own table carries a replacement block row.
+    ///
+    /// Separate from [`Self::replacement_layer`] because it answers a different
+    /// question: that one decides whether the replacement *scan* runs, this one
+    /// whether a lookup of the built-in table can contribute a replacement at
+    /// all. A context with a caller's provider and a table of scalar rows has
+    /// `replacement_layer == true` and `builtin_blocks == false`, and must not
+    /// pay a `holiday_on` binary search per occurrence to discover that its
+    /// table has nothing to add. Every table the crate ships answers `false`.
+    builtin_blocks: bool,
 }
 
 /// The scalar trade-date clip one layer contributes.
@@ -185,11 +195,13 @@ impl<'a> QueryContext<'a> {
             exceptions: None,
             coverage: None,
             replacement_layer: false,
+            builtin_blocks: false,
         }
     }
 
     pub(in crate::calendar) fn date_aware(calendar: ExchangeCalendar) -> Self {
         let holidays = calendar.holiday_table();
+        let builtin_blocks = table_can_replace(holidays);
         Self {
             source: ProfileSource::DateAware(calendar),
             tz: calendar.tz(),
@@ -197,7 +209,8 @@ impl<'a> QueryContext<'a> {
             policy: None,
             exceptions: None,
             coverage: Some(calendar.coverage()),
-            replacement_layer: table_can_replace(holidays),
+            replacement_layer: builtin_blocks,
+            builtin_blocks,
         }
     }
 
@@ -207,6 +220,7 @@ impl<'a> QueryContext<'a> {
         exceptions: Option<&'a dyn SessionExceptionSource>,
     ) -> Self {
         let holidays = calendar.holiday_table();
+        let builtin_blocks = table_can_replace(holidays);
         Self {
             source: ProfileSource::DateAware(calendar),
             tz: calendar.tz(),
@@ -214,7 +228,8 @@ impl<'a> QueryContext<'a> {
             policy,
             exceptions,
             coverage: Some(calendar.coverage()),
-            replacement_layer: exceptions.is_some() || table_can_replace(holidays),
+            replacement_layer: exceptions.is_some() || builtin_blocks,
+            builtin_blocks,
         }
     }
 
@@ -241,6 +256,7 @@ impl<'a> QueryContext<'a> {
             // the gate must drop with them or a baseline walk would re-enter the
             // layer it exists to avoid.
             replacement_layer: false,
+            builtin_blocks: false,
         }
     }
 
@@ -557,17 +573,37 @@ impl<'a> QueryContext<'a> {
     /// built-in row, exactly as they fall through to the built-in scalar clip:
     /// the crate's own table is sourced evidence about the date whether or not
     /// the caller's provider holds an opinion about it.
+    ///
+    /// The table is consulted only when it actually carries a block row
+    /// ([`Self::builtin_blocks`]). Every table the crate ships answers `false`,
+    /// so this returns the caller's answer after one virtual call and no
+    /// lookup — which matters because the callers of this method sit in the
+    /// per-occurrence path. Without that guard a bare calendar would pay a
+    /// `holiday_on` binary search per occurrence for a row that cannot exist.
+    ///
+    /// The `match` below lists every [`HolidayKind`] rather than falling through
+    /// on a wildcard, so a sixth kind that needs built-in handling here is a
+    /// build failure instead of a silent fall-through to the caller's answer.
     pub(super) fn exception_on(self, trade_date: NaiveDate) -> DateException<'a> {
         let caller = self.caller_exception_on(trade_date);
-        if matches!(
-            caller,
-            DateException::Closed | DateException::ReplaceSessions(_)
-        ) {
+        if !self.builtin_blocks
+            || matches!(
+                caller,
+                DateException::Closed | DateException::ReplaceSessions(_)
+            )
+        {
             return caller;
         }
         match self.holiday_on(trade_date).map(Holiday::kind) {
             Some(HolidayKind::ReplacementBlocks(set)) => DateException::ReplaceSessions(set),
-            _ => caller,
+            None
+            | Some(
+                HolidayKind::Closed
+                | HolidayKind::EarlyClose { .. }
+                | HolidayKind::LateOpen { .. }
+                | HolidayKind::LateOpenAndEarlyClose { .. }
+                | HolidayKind::Unsourced,
+            ) => caller,
         }
     }
 
@@ -838,8 +874,16 @@ pub(super) fn resolve_rule_bounds(
     // replaced or closed trade date deletes its normal-week occurrences, and
     // the replacement blocks -- the caller's record or the built-in table's
     // row, whichever governs the date -- stand in their place.
-    if context.trade_date_is_replaced(trade_date)
-        || matches!(context.exception_on(trade_date), DateException::Closed)
+    //
+    // The two probes run only when some layer can actually replace or close a
+    // date by record. `has_replacement_layer` false means neither a caller
+    // provider nor a block row is attached, and then `exception_on` can only
+    // answer `KnownNormal`, so both tests are already false. Skipping them keeps
+    // two virtual calls out of the per-occurrence path, which is where this
+    // function is called from.
+    if context.has_replacement_layer()
+        && (context.trade_date_is_replaced(trade_date)
+            || matches!(context.exception_on(trade_date), DateException::Closed))
     {
         return Ok(None);
     }

@@ -16,9 +16,9 @@
 //! so the 2025-2027 block is **T2** under LAW-PRIMARY-SOURCES. From Thanksgiving
 //! 2025 the service publishes `NKD` and `NIY` as their own line; through Labor
 //! Day 2025 it does not, and those nine rows are taken from the Equity Index
-//! line of the same capture. That interpretive step, the two Saturday sessions
-//! no shipped row states, and the one sourced intraday-topology
-//! day are recorded in
+//! line of the same capture. That interpretive step, the three Saturday sessions
+//! this table now states as complete-day replacement rows, and the one sourced
+//! intraday-topology day are recorded in
 //! [`docs/evidence/globex_nikkei_225_dollar.md`](../../../../../docs/evidence/globex_nikkei_225_dollar.md).
 //! From 2022 through 2024 the service answered for ten representative products
 //! and no `NKD` or `NIY` line, so the service supplies no scheduling answer for

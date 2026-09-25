@@ -352,12 +352,18 @@ fn no_late_open_row_ships_in_the_2025_2027_window() {
 
     while date <= last {
         if let Some(holiday) = calendar.holiday_on(date) {
+            // `ReplacementBlocks` joined the vocabulary in Stage 4: it states a
+            // complete trading day for a date a scalar row cannot describe, and
+            // it is not a late open. The fence this test draws is unchanged.
             assert!(
                 matches!(
                     holiday.kind(),
-                    HolidayKind::Closed | HolidayKind::EarlyClose { .. }
+                    HolidayKind::Closed
+                        | HolidayKind::EarlyClose { .. }
+                        | HolidayKind::ReplacementBlocks(_)
                 ),
-                "{date}: this window ships only closures and early closes, not {:?}",
+                "{date}: this window ships closures, early closes and complete-day \
+                 replacements, not {:?}",
                 holiday.kind()
             );
         }
@@ -366,17 +372,31 @@ fn no_late_open_row_ships_in_the_2025_2027_window() {
             .expect("the window ends well before the epoch bound");
     }
 
-    // The Saturday sessions are gaps, not rows, and the normal week has no
-    // Saturday: the crate answers closed on all three.
-    for saturday in [(2026, 6, 20), (2026, 7, 4), (2027, 6, 19)] {
+    // The Saturday sessions are rows now, on the trade date each carries: the
+    // session itself is stated by the following Monday's replacement row, and
+    // the Saturday holds no holiday row of its own.
+    for (saturday, trade_date) in [
+        ((2026, 6, 20), (2026, 6, 22)),
+        ((2026, 7, 4), (2026, 7, 6)),
+        ((2027, 6, 19), (2027, 6, 21)),
+    ] {
         assert!(
-            !calendar
+            calendar
                 .is_open(ct(saturday, (10, 0, 0)))
-                .expect("the coverage contract must answer a covered date")
+                .expect("the coverage contract must answer a covered date"),
+            "{saturday:?}: the Saturday session must be open"
+        );
+        assert_eq!(
+            calendar
+                .trade_date(ct(saturday, (10, 0, 0)))
+                .expect("the coverage contract must answer a covered date"),
+            Some(day(trade_date.0, trade_date.1, trade_date.2)),
+            "{saturday:?}: the session carries the following Monday"
         );
         assert_eq!(
             calendar.holiday_on(day(saturday.0, saturday.1, saturday.2)),
-            None
+            None,
+            "{saturday:?}: the session is stated on its trade date, not the Saturday"
         );
     }
 }
@@ -2229,4 +2249,170 @@ fn era_2013_2015_rows_are_the_audited_date_kind_and_tier_set() {
         date = date.succ_opt().expect("the era ends well before the bound");
     }
     assert_eq!(index, ERA_2013_2015_ROWS.len(), "every recorded row ships");
+}
+
+// ---------------------------------------------------------------------------
+// The Saturday-session trade dates (Stage 4, #116)
+//
+// CME states a Saturday session on three trade dates in this window, each
+// carrying the following Monday. Every expectation below is read from the
+// service window the row cites. The family's envelope is the 2021-06-27
+// removal of the 15:15-15:30 halt, so the overnight leg, the regular session
+// and the post-regular slice are one continuous matching span — which is why
+// the row states the Sunday-Monday part as a single block and why the regular
+// session must survive it.
+// ---------------------------------------------------------------------------
+
+/// A venue-local calendar date stated as `(year, month, day)`.
+type Ymd = (i32, u32, u32);
+
+/// The three trade dates CME states a Saturday session for, with the Saturday
+/// each session opens on and the Friday whose early close precedes it.
+const SATURDAY_SESSION_DATES: [(Ymd, Ymd, Ymd); 3] = [
+    ((2026, 6, 22), (2026, 6, 20), (2026, 6, 19)),
+    ((2026, 7, 6), (2026, 7, 4), (2026, 7, 3)),
+    ((2027, 6, 21), (2027, 6, 19), (2027, 6, 18)),
+];
+
+#[test]
+fn the_equity_index_states_its_saturday_sessions_on_the_trade_date() {
+    let calendar = equity_index();
+    for (trade_date, saturday, friday) in SATURDAY_SESSION_DATES {
+        assert_eq!(
+            day(saturday.0, saturday.1, saturday.2).weekday(),
+            Weekday::Sat
+        );
+        assert_eq!(
+            day(trade_date.0, trade_date.1, trade_date.2).weekday(),
+            Weekday::Mon
+        );
+        assert!(
+            matches!(
+                calendar
+                    .holiday_on(day(trade_date.0, trade_date.1, trade_date.2))
+                    .map(Holiday::kind),
+                Some(HolidayKind::ReplacementBlocks(_))
+            ),
+            "{trade_date:?} must carry a replacement row"
+        );
+        assert_eq!(
+            calendar
+                .holiday_on(day(trade_date.0, trade_date.1, trade_date.2))
+                .map(Holiday::document_id),
+            Some(match trade_date {
+                (2026, 6, 22) => "CME-SVC-2026-06-18",
+                (2026, 7, 6) => "CME-SVC-2026-07-03",
+                _ => "CME-SVC-2027-06-17",
+            }),
+            "{trade_date:?}: the row cites the window its instants were read from"
+        );
+
+        // The Saturday session: 05:00 open, 17:00 end-exclusive close, and the
+        // following Monday as its trade date.
+        let saturday_open = ct(saturday, (5, 0, 0));
+        let saturday_close = ct(saturday, (17, 0, 0));
+        assert!(
+            calendar
+                .is_open(saturday_open)
+                .expect("2026 and 2027 are covered dates"),
+            "{saturday:?}: the Saturday session is not open"
+        );
+        assert_eq!(
+            calendar
+                .session_bounds(ct(saturday, (10, 0, 0)))
+                .expect("2026 and 2027 are covered dates"),
+            Some((saturday_open, saturday_close)),
+            "{saturday:?}: the Saturday session's own bounds"
+        );
+        assert!(
+            !calendar
+                .is_open(saturday_close)
+                .expect("2026 and 2027 are covered dates"),
+            "{saturday:?}: the close is end-exclusive"
+        );
+        assert_eq!(
+            calendar
+                .trade_date(ct(saturday, (10, 0, 0)))
+                .expect("2026 and 2027 are covered dates"),
+            Some(day(trade_date.0, trade_date.1, trade_date.2))
+        );
+
+        // The Friday before it is a **different** trade date's session, closed
+        // early at 12:00, and this row must leave it alone: it is the row the
+        // family already ships for that Friday, and the Saturday-session row
+        // must not reach back over it.
+        assert!(
+            calendar
+                .is_open(ct(friday, (11, 0, 0)))
+                .expect("2026 and 2027 are covered dates"),
+            "{friday:?}: the eve must be open before the early close"
+        );
+        assert!(
+            !calendar
+                .is_open(ct(friday, (12, 0, 0)))
+                .expect("2026 and 2027 are covered dates"),
+            "{friday:?}: the early close is end-exclusive"
+        );
+        assert_eq!(
+            calendar
+                .trade_date(ct(friday, (11, 0, 0)))
+                .expect("2026 and 2027 are covered dates"),
+            Some(day(friday.0, friday.1, friday.2)),
+            "{friday:?}: the early-close morning belongs to its own trade date, \
+             not to the date the Saturday session carries"
+        );
+        // And no Friday-evening session is claimed: CME publishes none.
+        assert!(
+            !calendar
+                .is_open(ct(friday, (18, 0, 0)))
+                .expect("2026 and 2027 are covered dates"),
+            "{friday:?}: no Friday-evening open is published for these dates"
+        );
+
+        // The Sunday-Monday part survives the row, and its regular session does
+        // too: the envelope is one continuous span whose 08:30-15:15 slice is
+        // also the family's `regular` session, and the block must not have
+        // deleted it.
+        let sunday = (saturday.0, saturday.1, saturday.2 + 1);
+        assert!(
+            calendar
+                .is_open(ct(sunday, (18, 0, 0)))
+                .expect("2026 and 2027 are covered dates"),
+            "{sunday:?}: the Sunday-evening open was deleted by the row"
+        );
+        assert!(
+            calendar
+                .is_open(ct(trade_date, (10, 0, 0)))
+                .expect("2026 and 2027 are covered dates"),
+            "{trade_date:?}: the regular session was deleted by the row"
+        );
+        assert!(
+            calendar
+                .is_open(ct(trade_date, (15, 45, 0)))
+                .expect("2026 and 2027 are covered dates"),
+            "{trade_date:?}: the post-regular slice was deleted by the row"
+        );
+        assert!(
+            !calendar
+                .is_open(ct(trade_date, (16, 0, 0)))
+                .expect("2026 and 2027 are covered dates"),
+            "{trade_date:?}: the final close is end-exclusive"
+        );
+        assert_eq!(
+            calendar
+                .trade_date(ct(trade_date, (10, 0, 0)))
+                .expect("2026 and 2027 are covered dates"),
+            Some(day(trade_date.0, trade_date.1, trade_date.2))
+        );
+
+        // The gap between the Saturday session and the Sunday open is closed.
+        for hour in [17_u32, 20, 23] {
+            assert!(
+                !calendar
+                    .is_open(ct(saturday, (hour, 0, 0)))
+                    .expect("2026 and 2027 are covered dates"),
+                "{saturday:?}: {hour}:00 falls between the blocks and must not be open"
+            );
+        }
+    }
 }

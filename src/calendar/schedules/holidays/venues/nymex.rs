@@ -35,9 +35,10 @@
 use super::super::{
     EvidenceTier::{T1, T2},
     HolidayKind::Closed,
-    HolidayKind::Unsourced,
+    HolidayKind::{ReplacementBlocks, Unsourced},
     HolidayTable,
     fences::early_close,
+    globex_energy::SATURDAY_SESSION_BLOCKS,
     holidays,
 };
 
@@ -45,7 +46,7 @@ use super::super::{
 ///
 /// The same rows as [`COMEX`] — 206 over six audited eras, 38 from 2010-2012,
 /// 33 from 2013-2015, 31 from 2016-2018, 35 from 2019-2021, 33 from 2022-2024
-/// and 36 from 2025-2027 — because the two venues route the same single family: the operator
+/// and 39 from 2025-2027 — because the two venues route the same single family: the operator
 /// publishes the metals and energy halves as one product row on every date the
 /// table audits. They stay separate tables rather than one shared binding,
 /// matching the one-arm-per-identity rule the routing match states — a venue's
@@ -438,8 +439,13 @@ pub(crate) static NYMEX: &HolidayTable = holidays! {
         (2026, 5, 25, early_close(13 * 3_600 + 30 * 60), T2, "CME-SVC-2026-05-24"),
         // 2026-06-19 - T2 - CME-SVC-2026-06-18 - energy early close 12:00 CT.
         (2026, 6, 19, early_close(12 * 3_600), T2, "CME-SVC-2026-06-18"),
+        // 2026-06-22 - T2 - CME-SVC-2026-06-18 - the energy family's own
+        // Saturday-session replacement; one routed family cannot disagree.
+        (2026, 6, 22, ReplacementBlocks(&SATURDAY_SESSION_BLOCKS), T2, "CME-SVC-2026-06-18"),
         // 2026-07-03 - T2 - CME-SVC-2026-07-03 - energy early close 12:00 CT.
         (2026, 7, 3, early_close(12 * 3_600), T2, "CME-SVC-2026-07-03"),
+        // 2026-07-06 - T2 - CME-SVC-2026-07-03 - as 2026-06-22.
+        (2026, 7, 6, ReplacementBlocks(&SATURDAY_SESSION_BLOCKS), T2, "CME-SVC-2026-07-03"),
         // 2026-09-07 - T2 - CME-SVC-2026-09-06 - energy early close 13:30 CT.
         (2026, 9, 7, early_close(13 * 3_600 + 30 * 60), T2, "CME-SVC-2026-09-06"),
         // 2026-11-26 - T2 - CME-SVC-2026-11-25 - energy early close 13:30 CT.
@@ -462,6 +468,8 @@ pub(crate) static NYMEX: &HolidayTable = holidays! {
         (2027, 5, 31, early_close(13 * 3_600 + 30 * 60), T2, "CME-SVC-2027-05-30"),
         // 2027-06-18 - T2 - CME-SVC-2027-06-17 - energy early close 12:00 CT.
         (2027, 6, 18, early_close(12 * 3_600), T2, "CME-SVC-2027-06-17"),
+        // 2027-06-21 - T2 - CME-SVC-2027-06-17 - as 2026-06-22.
+        (2027, 6, 21, ReplacementBlocks(&SATURDAY_SESSION_BLOCKS), T2, "CME-SVC-2027-06-17"),
         // 2027-07-05 - T2 - CME-SVC-2027-07-04 - energy early close 13:30 CT.
         (2027, 7, 5, early_close(13 * 3_600 + 30 * 60), T2, "CME-SVC-2027-07-04"),
         // 2027-09-06 - T2 - CME-SVC-2027-09-05 - energy early close 13:30 CT.

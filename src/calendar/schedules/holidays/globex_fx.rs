@@ -82,9 +82,32 @@
 //! memo's §1.6 triage, applied to its own §1.1 worked example.
 
 use super::fences::{early_close, late_open};
+use crate::calendar::exceptions::ExceptionBlock;
+
+/// The complete trading day of the 2026-06-22, 2026-07-06 and 2027-06-21 trade
+/// dates, which CME states a Saturday session on.
+///
+/// CME published all three of the trading day's phases for each of these dates,
+/// so the row states the day rather than the Saturday alone. Stating only the
+/// Saturday would delete the Sunday-evening session that belongs to the same
+/// trade date, because a replacement row replaces the **complete** trade date.
+///
+/// - offset `-2`, Saturday 05:00-17:00 CT: the session itself.
+/// - offset `-1`, Sunday 16:00-17:00 CT: the Pre-Open queue, which no trade
+///   matches. The operator publishes 16:00 for these dates, which is the
+///   sourced intersection this family carries.
+/// - offset `-1`, Sunday 17:00 CT to Monday 16:00 CT: the matching session,
+///   wrapping one local midnight.
+///
+/// Evidence: `docs/evidence/globex_fx.md`.
+pub(crate) static SATURDAY_SESSION_BLOCKS: [ExceptionBlock; 3] = [
+    ExceptionBlock::extended(-2, 5 * 3_600, 17 * 3_600),
+    ExceptionBlock::order_entry(-1, 16 * 3_600, 17 * 3_600),
+    ExceptionBlock::extended(-1, 17 * 3_600, 16 * 3_600),
+];
 use super::{
     EvidenceTier::{T1, T2},
-    HolidayKind::{Closed, Unsourced},
+    HolidayKind::{Closed, ReplacementBlocks, Unsourced},
     HolidayTable, holidays,
 };
 
@@ -505,8 +528,10 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         ),
         // 2026-06-19 - T2 - CME-SVC-2026-06-18 - Juneteenth, 12:00 CT close.
         (2026, 6, 19, early_close(12 * 3_600), T2, "CME-SVC-2026-06-18"),
+        (2026, 6, 22, ReplacementBlocks(&SATURDAY_SESSION_BLOCKS), T2, "CME-SVC-2026-06-18"),
         // 2026-07-03 - T2 - CME-SVC-2026-07-03 - Independence Day observed, 12:00 CT close.
         (2026, 7, 3, early_close(12 * 3_600), T2, "CME-SVC-2026-07-03"),
+        (2026, 7, 6, ReplacementBlocks(&SATURDAY_SESSION_BLOCKS), T2, "CME-SVC-2026-07-03"),
         // 2026-11-27 - T2 - CME-SVC-2026-11-25 - day after Thanksgiving, 13:45 CT close.
         (
             2026,
@@ -533,6 +558,7 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2027, 3, 26, Closed, T2, "CME-SVC-2027-03-25"),
         // 2027-06-18 - T2 - CME-SVC-2027-06-17 - Juneteenth observed, 12:00 CT close.
         (2027, 6, 18, early_close(12 * 3_600), T2, "CME-SVC-2027-06-17"),
+        (2027, 6, 21, ReplacementBlocks(&SATURDAY_SESSION_BLOCKS), T2, "CME-SVC-2027-06-17"),
         // 2027-11-26 - T2 - CME-SVC-2027-11-24 - day after Thanksgiving, 13:45 CT close.
         (
             2027,

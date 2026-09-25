@@ -105,6 +105,24 @@ corrections (a venue's hours fixed against a primary source) go under
   CME publishes no Friday-evening open for these dates, the Friday carrying only
   the early close that ends the previous trade date's session. A dedicated test
   pins that the row leaves that earlier trade date's 12:00 close alone.
+- **`globex_interest_rates` and `globex_fx` state CME's three Saturday sessions
+  as complete trade dates (2026-09-25 UTC).** Stage 4 of the release plan (#116),
+  one shared-operator PR for two served families that route to `Exchange::Cme`
+  and take the same rows from the same documents. CME publishes `05:00 open;
+  17:00 closed` on Saturday 2026-06-20, 2026-07-04 and 2027-06-19, each carrying
+  the following Monday's trade date, on a week whose normal grid has no Saturday
+  session. Both families now state trade dates 2026-06-22, 2026-07-06 and
+  2027-06-21 as replacement block sets: the Saturday session at offset `-2`, the
+  operator's published Sunday Pre-Open `16:00-17:00` at offset `-1`, and the
+  ordinary Sunday-17:00-to-Monday-16:00 session at offset `-1`. The queue is
+  stated at the value the operator published for those dates rather than the
+  profile's own normal-week value, which differs for one of the two families.
+  The four CME venue tables move with them: `cme`'s three dates keep their
+  `Unsourced` rows (now supported by four stating families rather than two) and
+  `cbot`'s three become `Unsourced` for the first time, because interest rates
+  states a row where grains audited the date normal — so its withheld count moves
+  31 → 34 and `cme`'s moves 32 → 35. Every instant is quoted from the service
+  window its row cites, and each family's rows are mutation-checked three ways.
 - **A built-in holiday row may state a replacement block set (2026-09-25 UTC).** Stage 3
   of the release plan adds `HolidayKind::ReplacementBlocks(&'static [ExceptionBlock])`,
   the vocabulary for a special session whose *internal* phase topology changes: an added

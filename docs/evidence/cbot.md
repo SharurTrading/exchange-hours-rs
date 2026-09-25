@@ -635,6 +635,8 @@ on.
 | 2026-04-03 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2026-04-01` | T2 | grains closed; interest rates early close 10:15 CT |
 | 2026-05-25 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2026-05-24` | T2 | grains closed; interest rates early close 12:00 CT |
 | 2026-06-19 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2026-06-18` | T2 | grains closed; interest rates early close 12:00 CT |
+| 2026-06-22 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2026-06-18` | T2 | interest rates replacement blocks: Saturday 05:00-17:00 CT, the Sunday Pre-Open and the Sunday-17:00-to-Monday-16:00 session; grains audited the date normal |
+| 2026-07-06 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2026-07-03` | T2 | as 2026-06-22 |
 | 2026-07-03 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2026-07-03` | T2 | grains closed; interest rates early close 12:00 CT |
 | 2026-09-07 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2026-09-06` | T2 | grains closed; interest rates early close 12:00 CT |
 | 2026-11-26 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2026-11-25` | T2 | grains closed; interest rates early close 12:00 CT |
@@ -652,6 +654,7 @@ on.
 | 2027-03-26 | closed | `no events published` | `CME-SVC-2027-03-25` | T2 | grains closed; interest rates closed |
 | 2027-05-31 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2027-05-30` | T2 | grains closed; interest rates early close 12:00 CT |
 | 2027-06-18 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2027-06-17` | T2 | grains closed; interest rates early close 12:00 CT |
+| 2027-06-21 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2027-06-17` | T2 | as 2026-06-22 |
 | 2027-07-05 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2027-07-04` | T2 | grains closed; interest rates early close 13:30 CT |
 | 2027-07-06 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2027-07-04` | T2 | grains late open 08:30 CT; no row in interest rates |
 | 2027-09-06 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2027-09-05` | T2 | grains closed; interest rates early close 12:00 CT |

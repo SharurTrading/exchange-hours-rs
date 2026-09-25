@@ -2176,6 +2176,99 @@ fn a_caller_replacement_suppresses_the_built_in_row_for_that_trade_date() {
     );
 }
 
+/// A replaced trade date with extended trading but **no** regular session: the
+/// plan's "regular-only closure", stated as blocks rather than as a scalar early
+/// close.
+///
+/// One wrapped extended block opens the preceding evening and closes at 03:00 CT
+/// on the trade date. The replacement suite's other post-floor fixtures state
+/// only regular and order-entry blocks, and the pre-floor Nasdaq half-day
+/// fixture that used to exercise this distinction now asserts a refusal, so this
+/// is the case that holds `query::replacement::selects` to its mapping of block
+/// kind to rule set.
+///
+/// Deliberately one block and not two: an evening block on the trade date would
+/// overlap the **following** trade date's normal session, which opens the same
+/// evening. No operator publishes two sessions over one instant, and a fixture
+/// that did would be asking which of them containment should report rather than
+/// testing the kind that is stated.
+static EXTENDED_ONLY_BLOCKS: [ExceptionBlock; 1] =
+    [ExceptionBlock::extended(-1, 17 * 3_600, 3 * 3_600)];
+
+#[test]
+fn a_replaced_day_with_no_regular_block_closes_regular_trading_only() {
+    let trade_date = day(2026, 8, 27);
+    assert_eq!(trade_date.weekday(), chrono::Weekday::Thu);
+    let records = [SessionExceptionRecord::replace_sessions(
+        trade_date,
+        &EXTENDED_ONLY_BLOCKS,
+    )];
+    let table = StaticSessionExceptions::new(
+        CalendarSource::MarketHoursKey(MarketHoursKey::GlobexEnergy),
+        day(2026, 8, 1),
+        day(2026, 8, 31),
+        &records,
+    )
+    .expect("valid records");
+    let calendar = calendar_for_market_hours_key(MarketHoursKey::GlobexEnergy)
+        .with_session_exceptions(&table)
+        .expect("the fixture is scoped to this calendar");
+
+    // 02:00 CT is inside the wrapped extended block that opened Wednesday
+    // evening. It is a real session, and it is not a regular one.
+    let overnight = ct((2026, 8, 27), (2, 0, 0));
+    assert!(
+        calendar
+            .is_open_extended(overnight)
+            .expect("the coverage contract must answer a covered date"),
+        "the extended block is not open at {overnight}"
+    );
+    assert!(
+        calendar
+            .is_open(overnight)
+            .expect("the coverage contract must answer a covered date"),
+        "a tradeable extended block must count as open at {overnight}"
+    );
+    assert!(
+        !calendar
+            .is_open_regular(overnight)
+            .expect("the coverage contract must answer a covered date"),
+        "an extended block was reported as a regular session at {overnight}"
+    );
+    assert_eq!(
+        calendar
+            .session_bounds_with(overnight, SessionKind::Extended)
+            .expect("the coverage contract must answer a covered date"),
+        Some((ct((2026, 8, 26), (17, 0, 0)), ct((2026, 8, 27), (3, 0, 0)))),
+        "the extended kind did not resolve the wrapped block"
+    );
+
+    // 10:00 CT is the middle of the trade date's ordinary regular session, and
+    // this replacement states no regular block at all. A consumer reading the
+    // regular kind must see the closure, and one reading the session as a whole
+    // must not be handed the ordinary week back.
+    let regular_hours = ct((2026, 8, 27), (10, 0, 0));
+    assert!(
+        !calendar
+            .is_open_regular(regular_hours)
+            .expect("the coverage contract must answer a covered date"),
+        "the replaced trade date kept a regular session it did not state"
+    );
+    assert!(
+        !calendar
+            .is_open(regular_hours)
+            .expect("the coverage contract must answer a covered date"),
+        "a regular-only closure was reported as open"
+    );
+    assert_eq!(
+        calendar
+            .session_bounds_with(regular_hours, SessionKind::Regular)
+            .expect("the coverage contract must answer a covered date"),
+        None,
+        "the regular kind resolved a session from an extended block"
+    );
+}
+
 /// Every query family reads the same replacement, which is the failure mode
 /// Stage 2B's single gate makes possible to get wrong: a block visible to
 /// `is_open` but not to the candle edges, or to the trade date but not to the

@@ -2756,3 +2756,47 @@ mod malformed_block_sets {
         );
     }
 }
+
+/// A block opening **two or more** local days before its trade date is reached.
+///
+/// Found by an independent review after the first cut of #130's fix. The guard's
+/// trade-date walk was bounded by the window's last local day, but a block may
+/// open up to `-7` days before its trade date, so a record keyed at offset `-2`
+/// was never visited and the collision it was meant to settle survived: the
+/// normal occurrence answered `session_bounds` while `trade_date` reported the
+/// block's date. This fixture is the reviewer's reproducer.
+#[test]
+fn a_block_opening_two_days_early_still_governs_its_own_instant() {
+    static BLOCKS: [ExceptionBlock; 1] = [ExceptionBlock::extended(-2, 19 * 3_600, 21 * 3_600)];
+    let trade_date = day(2026, 6, 16);
+    let records = [SessionExceptionRecord::replace_sessions(
+        trade_date, &BLOCKS,
+    )];
+    let table = StaticSessionExceptions::new(
+        CalendarSource::MarketHoursKey(MarketHoursKey::GlobexGrains),
+        day(2026, 6, 1),
+        day(2026, 6, 30),
+        &records,
+    )
+    .expect("valid records");
+    let calendar = calendar_for_market_hours_key(MarketHoursKey::GlobexGrains)
+        .with_session_exceptions(&table)
+        .expect("the fixture is scoped to this calendar");
+
+    // 19:00-21:00 CT on 2026-06-14, the block's own opening day.
+    let instant = ct((2026, 6, 14), (19, 30, 0));
+    assert_eq!(
+        calendar
+            .session_bounds(instant)
+            .expect("the coverage contract must answer a covered date"),
+        Some((ct((2026, 6, 14), (19, 0, 0)), ct((2026, 6, 14), (21, 0, 0)))),
+        "the offset -2 block must answer for its own window"
+    );
+    assert_eq!(
+        calendar
+            .trade_date(instant)
+            .expect("the coverage contract must answer a covered date"),
+        Some(trade_date),
+        "and carry its own trade date"
+    );
+}

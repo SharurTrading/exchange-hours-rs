@@ -233,8 +233,15 @@ pub(super) fn governs_instant(
     else {
         return false;
     };
+    // The upper bound is `last_day - MIN_DAY_OFFSET`, not `last_day +
+    // MAX_DAY_OFFSET`: a block opening on day `D` belongs to a trade date in
+    // `[D, D - MIN_DAY_OFFSET]`, so a record keyed up to seven days after the
+    // window can still reach into it with a negative offset. Bounding at
+    // `last_day` alone misses every block that opens two or more local days
+    // before its trade date, which left #130's collision reachable for exactly
+    // the shapes a merged or multi-day trade date states.
     let Some(last_trade_date) =
-        last_day.checked_add_signed(Duration::days(i64::from(ExceptionBlock::MAX_DAY_OFFSET)))
+        last_day.checked_sub_signed(Duration::days(i64::from(ExceptionBlock::MIN_DAY_OFFSET)))
     else {
         return false;
     };

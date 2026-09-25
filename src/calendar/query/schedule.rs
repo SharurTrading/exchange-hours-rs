@@ -221,10 +221,6 @@ impl<'a> QueryContext<'a> {
         self.policy
     }
 
-    pub(super) const fn exceptions(self) -> Option<&'a dyn SessionExceptionSource> {
-        self.exceptions
-    }
-
     /// Returns whether any day-level layer is attached.
     ///
     /// A built-in family table counts: it is the innermost layer, it modifies
@@ -400,15 +396,26 @@ impl<'a> QueryContext<'a> {
     /// treating it as an assertion would silently disable the whole built-in
     /// table for every caller who attaches a provider. The per-date undo
     /// channel is `ReplaceSessions`; the coarse one is `without_holidays`.
+    ///
+    /// A built-in replacement-block row contributes **no** scalar clip: that
+    /// row's trade date is governed by the replacement layer, and clipping it
+    /// here as well would apply one row to its own date twice.
     fn builtin_clip(self, trade_date: NaiveDate) -> DayClip {
         if matches!(
-            self.exception_on(trade_date),
+            self.caller_exception_on(trade_date),
             DateException::Closed | DateException::ReplaceSessions(_)
         ) {
             return DayClip::NONE;
         }
         match self.holiday_on(trade_date).map(Holiday::kind) {
-            None | Some(HolidayKind::Unsourced) => DayClip::NONE,
+            // Three kinds contribute no scalar clip, for two different reasons.
+            // `None` is a date the table says nothing about and `Unsourced` is
+            // one it expressly withholds; a replacement row states its whole
+            // arrangement through the replacement layer, so clipping the normal
+            // week here as well would apply one row to its own date twice.
+            None | Some(HolidayKind::Unsourced | HolidayKind::ReplacementBlocks(_)) => {
+                DayClip::NONE
+            }
             Some(HolidayKind::Closed) => DayClip {
                 closed: true,
                 ..DayClip::NONE
@@ -492,12 +499,65 @@ impl<'a> QueryContext<'a> {
         }
     }
 
-    /// Returns what the caller's exception provider knows about `trade_date`.
-    pub(super) fn exception_on(self, trade_date: NaiveDate) -> DateException<'a> {
+    /// Returns what the caller's own exception provider knows about `trade_date`.
+    ///
+    /// This is the caller's layer alone, with the built-in table deliberately
+    /// excluded: [`Self::builtin_clip`] asks it whether the caller suppressed
+    /// the built-in row, and the composed answer would report a built-in row's
+    /// own blocks as if the caller had supplied them.
+    fn caller_exception_on(self, trade_date: NaiveDate) -> DateException<'a> {
         self.exceptions
             .map_or(DateException::KnownNormal, |provider| {
                 provider.exception_on(trade_date)
             })
+    }
+
+    /// Returns the replacement arrangement in force for `trade_date`.
+    ///
+    /// Precedence is fixed and one-directional. An explicit caller record wins
+    /// outright (D12), so a caller `Closed` or `ReplaceSessions` is returned
+    /// unchanged and the built-in table is not consulted. Otherwise a built-in
+    /// row carrying a replacement block set is served through the same
+    /// [`DateException::ReplaceSessions`] arm a caller's record uses, which is
+    /// what makes one resolver — `query::replacement` — answer for both layers,
+    /// so every query family observes the same trading day.
+    ///
+    /// A caller's `KnownNormal` and `OutOfCoverage` both fall through to the
+    /// built-in row, exactly as they fall through to the built-in scalar clip:
+    /// the crate's own table is sourced evidence about the date whether or not
+    /// the caller's provider holds an opinion about it.
+    pub(super) fn exception_on(self, trade_date: NaiveDate) -> DateException<'a> {
+        let caller = self.caller_exception_on(trade_date);
+        if matches!(
+            caller,
+            DateException::Closed | DateException::ReplaceSessions(_)
+        ) {
+            return caller;
+        }
+        match self.holiday_on(trade_date).map(Holiday::kind) {
+            Some(HolidayKind::ReplacementBlocks(set)) => DateException::ReplaceSessions(set),
+            _ => caller,
+        }
+    }
+
+    /// Returns whether any attached layer can supply a replacement trading day.
+    ///
+    /// This is the gate in front of the replacement scan. It is deliberately a
+    /// one-bit question: the scan walks the fixed block-offset window and asks
+    /// for a record on each day of it, so running the scan for an identity whose
+    /// table ships no block row would put that walk on the hot path for nothing.
+    /// A table answers from a value decided during constant evaluation rather
+    /// than by walking its rows once per query.
+    ///
+    /// Once Stage 4 ships a block row this becomes true for that identity, and
+    /// the scan is exactly the work the row requires. Until then it is `false`
+    /// for every shipped table, so the new kind costs the hot path one `bool`
+    /// load and no scan.
+    pub(super) fn has_replacement_layer(self) -> bool {
+        self.exceptions.is_some()
+            || self
+                .holidays
+                .is_some_and(HolidayTable::carries_replacement_blocks)
     }
 
     /// Returns whether the exception layer replaces `trade_date` outright.
@@ -746,9 +806,10 @@ pub(super) fn resolve_rule_bounds(
         None => raw_close,
     };
     let trade_date = context.normal_trade_date_for_bounds(raw_open, final_close);
-    // The caller's exception layer resolves the trading day before anything
-    // clips it: a replaced or closed trade date deletes its normal-week
-    // occurrences, and the caller's replacement blocks stand in their place.
+    // The exception layer resolves the trading day before anything clips it: a
+    // replaced or closed trade date deletes its normal-week occurrences, and
+    // the replacement blocks -- the caller's record or the built-in table's
+    // row, whichever governs the date -- stand in their place.
     if context.trade_date_is_replaced(trade_date)
         || matches!(context.exception_on(trade_date), DateException::Closed)
     {

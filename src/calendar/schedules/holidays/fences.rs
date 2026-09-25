@@ -11,6 +11,7 @@
 use chrono::NaiveDate;
 
 use super::{EvidenceTier, HolidayKind, HolidayRow};
+use crate::calendar::exceptions::ExceptionBlock;
 
 /// The upper bound of a venue-local seconds-since-midnight close.
 ///
@@ -177,6 +178,9 @@ const fn in_windows(windows: &[(i32, u32, u32, i32, u32, u32)], date: (i32, u32,
 
 /// Fails the build when a row's instants leave the `DayPolicy` ranges.
 ///
+/// A replacement row states no scalar instant of its own, so its complete block
+/// set is handed to [`assert_blocks`] instead; every other kind is checked here.
+///
 /// The numeric order of an open and a close on one row is deliberately **not**
 /// constrained: a wrapped trading day can open on the preceding local date at a
 /// numerically later wall clock than its final close on the trade date, which
@@ -192,6 +196,14 @@ const fn assert_instants(kind: HolidayKind) {
             open_ssm,
             close_ssm,
         } => (open_ssm, close_ssm),
+        // A replacement row states its instants block by block, so the whole
+        // set is validated here and the scalars below do not apply to it. The
+        // rule this arm exists for is the last one: a block set is the only
+        // kind that can state an instant on a day other than its trade date.
+        HolidayKind::ReplacementBlocks(set) => {
+            assert_blocks(set);
+            return;
+        }
     };
     assert!(
         open_ssm < SECONDS_PER_DAY,
@@ -218,5 +230,75 @@ pub(crate) const fn late_open_and_early_close(open_ssm: u32, close_ssm: u32) -> 
     HolidayKind::LateOpenAndEarlyClose {
         open_ssm,
         close_ssm,
+    }
+}
+
+/// Whether any row of a table states a replacement block set.
+///
+/// Resolved during constant evaluation so the query hot path reads one bit
+/// instead of walking the table: a table that ships no block row must not pay
+/// for the replacement scan, and the scan must not be reachable for it.
+pub(crate) const fn any_blocks(rows: &[HolidayRow]) -> bool {
+    let mut index = 0;
+    while index < rows.len() {
+        if matches!(rows[index].kind, HolidayKind::ReplacementBlocks(_)) {
+            return true;
+        }
+        index += 1;
+    }
+    false
+}
+
+/// Fails the build unless a row's replacement block set is well formed.
+///
+/// These are exactly the rules
+/// [`StaticSessionExceptions::new`](crate::StaticSessionExceptions::new)
+/// applies to a caller's records, so a built-in row and a caller's record can
+/// never state differently shaped topologies: the set is non-empty, every
+/// offset is inside the block day range, every instant is inside the
+/// `DayPolicy` ranges, no block opens on its own trade date and closes after it
+/// — a trade date is named by the local date of its final close — and the set
+/// is ordered by opening day and then open time, which is the order every
+/// replacement scan and the block-ordering rule below rely on.
+///
+/// Each rule is a separate `assert!` so the build failure names the rule that
+/// broke rather than only the row.
+const fn assert_blocks(set: &[ExceptionBlock]) {
+    assert!(
+        !set.is_empty(),
+        "holiday replacement row carries an empty block set; a trade date with no \
+         blocks is HolidayKind::Closed"
+    );
+    let mut index = 0;
+    while index < set.len() {
+        let current = set[index];
+        assert!(
+            current.open_day_offset() >= ExceptionBlock::MIN_DAY_OFFSET
+                && current.open_day_offset() <= ExceptionBlock::MAX_DAY_OFFSET,
+            "holiday replacement block's opening day offset is outside the block day range"
+        );
+        assert!(
+            current.open_ssm() < SECONDS_PER_DAY,
+            "holiday replacement block's open is outside 0..86_400"
+        );
+        assert!(
+            current.close_ssm() <= SECONDS_PER_DAY,
+            "holiday replacement block's close is outside 0..=86_400"
+        );
+        assert!(
+            !(current.open_day_offset() == 0 && current.wraps_to_next_day()),
+            "holiday replacement block opens on its own trade date and closes after it; \
+             a trade date is the local date of its final close"
+        );
+        if index > 0 {
+            let previous = set[index - 1];
+            assert!(
+                current.open_day_offset() > previous.open_day_offset()
+                    || (current.open_day_offset() == previous.open_day_offset()
+                        && current.open_ssm() >= previous.open_ssm()),
+                "holiday replacement blocks are not ordered by opening day and open time"
+            );
+        }
+        index += 1;
     }
 }

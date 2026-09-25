@@ -138,9 +138,15 @@ pub(super) fn resolve_block_bounds(
 /// opening day is bounded by the offset range and independent of how many
 /// exception records the caller supplied.
 ///
-/// This layer answers from caller-supplied records only, so it can never
-/// refuse a date: it returns `Option` rather than the `Result` its caller uses,
-/// and the caller applies its own coverage verdict to the day before asking.
+/// The records this reads are the composed answer
+/// [`QueryContext::exception_on`] gives, so a built-in table's replacement row
+/// and a caller's `ReplaceSessions` record are served by this one scan and
+/// cannot diverge between query families. The scan is entered only when some
+/// layer can actually supply a replacement, which is one bit on the context.
+///
+/// This layer answers from records only, so it can never refuse a date: it
+/// returns `Option` rather than the `Result` its caller uses, and the caller
+/// applies its own coverage verdict to the day before asking.
 pub(super) fn find_occurrence<T>(
     context: &QueryContext<'_>,
     open_day: NaiveDate,
@@ -148,7 +154,9 @@ pub(super) fn find_occurrence<T>(
     wrapped_only: bool,
     mut probe: impl FnMut(DateTime<Utc>, DateTime<Utc>) -> Option<T>,
 ) -> Option<T> {
-    context.exceptions()?;
+    if !context.has_replacement_layer() {
+        return None;
+    }
     let mut offset = ExceptionBlock::MIN_DAY_OFFSET;
     while offset <= ExceptionBlock::MAX_DAY_OFFSET {
         if let Some(trade_date) = open_day.checked_sub_signed(Duration::days(i64::from(offset)))
@@ -182,7 +190,9 @@ pub(super) fn replacement_trade_date(
     context: &QueryContext<'_>,
     open: DateTime<Utc>,
 ) -> Option<NaiveDate> {
-    context.exceptions()?;
+    if !context.has_replacement_layer() {
+        return None;
+    }
     let tz = context.tz();
     let local_day = bounded_utc(open, tz).with_timezone(&tz).date_naive();
     let mut offset = ExceptionBlock::MIN_DAY_OFFSET;

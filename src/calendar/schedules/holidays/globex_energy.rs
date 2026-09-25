@@ -90,18 +90,20 @@ use super::{
 };
 use crate::calendar::exceptions::ExceptionBlock;
 
-/// The complete trading day of the 2026-06-22 and 2027-06-21 trade dates, which
-/// CME states a Saturday session on.
+/// The complete trading day of the 2026-06-22, 2026-07-06 and 2027-06-21 trade
+/// dates, which CME states a Saturday session on.
 ///
 /// CME published all three of the trading day's phases for each of these dates,
 /// so the row states the day rather than the Saturday alone. Stating only the
 /// Saturday would delete the Sunday-evening session that belongs to the same
 /// trade date, because a replacement row replaces the **complete** trade date.
 ///
-/// Two windows are read, because the window that carries the Saturday stops
-/// there and prints no Sunday entry at all: `CME-SVC-2026-06-18` and
-/// `CME-SVC-2027-06-17` carry the Saturday session, and `CME-SVC-2026-06-21`
-/// and `CME-SVC-2027-06-20` carry the Sunday and Monday phases.
+/// The 2026-06-22 and 2027-06-21 trade dates read two windows, because the
+/// window that carries their Saturday stops there and prints no Sunday entry at
+/// all: `CME-SVC-2026-06-18` and `CME-SVC-2027-06-17` carry the Saturday
+/// session, and `CME-SVC-2026-06-21` and `CME-SVC-2027-06-20` carry the Sunday
+/// and Monday phases. The 2026-07-06 trade date needs one window only:
+/// `CME-SVC-2026-07-03` runs through its Sunday and prints both legs.
 ///
 /// - offset `-2`, Saturday 05:00-17:00 CT: the session itself.
 /// - offset `-1`, Sunday 16:00-17:00 CT: the ordinary Sunday Pre-Open queue,

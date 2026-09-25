@@ -81,10 +81,10 @@ use super::super::{
 
 /// The `Exchange::Cme` table: the intersection of the six CME families.
 ///
-/// Two hundred and seventy-three rows over six audited eras. Forty-seven state a status — the
-/// Globex full closures — and 226 are `Unsourced`: 49 in 2010-2012, where the
+/// Two hundred and seventy-six rows over six audited eras. Forty-seven state a status — the
+/// Globex full closures — and 229 are `Unsourced`: 49 in 2010-2012, where the
 /// families disagree in kind rather than by minutes, 50 in 2013-2015, 27 in
-/// 2016-2018, 34 in 2019-2021, 34 in 2022-2024, and 32 in 2025-2027. The six
+/// 2016-2018, 34 in 2019-2021, 34 in 2022-2024, and 35 in 2025-2027. The six
 /// eras are declared as six coverage windows, and outside them the table reports
 /// no answer rather than a normal one.
 // Evidence: docs/evidence/cme.md

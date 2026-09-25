@@ -11,7 +11,7 @@
 use chrono::NaiveDate;
 
 use super::{EvidenceTier, HolidayKind, HolidayRow};
-use crate::calendar::exceptions::ExceptionBlock;
+use crate::calendar::exceptions::{BlockViolation, ExceptionBlock, first_block_violation};
 
 /// The upper bound of a venue-local seconds-since-midnight close.
 ///
@@ -251,54 +251,44 @@ pub(crate) const fn any_blocks(rows: &[HolidayRow]) -> bool {
 
 /// Fails the build unless a row's replacement block set is well formed.
 ///
-/// These are exactly the rules
-/// [`StaticSessionExceptions::new`](crate::StaticSessionExceptions::new)
-/// applies to a caller's records, so a built-in row and a caller's record can
-/// never state differently shaped topologies: the set is non-empty, every
-/// offset is inside the block day range, every instant is inside the
-/// `DayPolicy` ranges, no block opens on its own trade date and closes after it
-/// — a trade date is named by the local date of its final close — and the set
-/// is ordered by opening day and then open time, which is the order every
-/// replacement scan and the block-ordering rule below rely on.
+/// The rules are **not** restated here. They live in one place,
+/// [`first_block_violation`], which a caller's
+/// [`StaticSessionExceptions::new`](crate::StaticSessionExceptions::new) applies
+/// to its own records — so a built-in row and a caller's record are held to the
+/// same shape by construction, and the public tests that fence a caller's
+/// rejected records fence the built-in rows' rules too. This function only
+/// chooses what a violation means here: a build failure rather than a returned
+/// error.
 ///
-/// Each rule is a separate `assert!` so the build failure names the rule that
-/// broke rather than only the row.
+/// Each variant gets its own literal message, because a `panic!` in constant
+/// evaluation cannot format, and the message is the whole diagnostic a reader
+/// gets from a failed build.
+#[expect(
+    clippy::panic,
+    reason = "const-eval only: a malformed built-in replacement row must fail the build"
+)]
 const fn assert_blocks(set: &[ExceptionBlock]) {
-    assert!(
-        !set.is_empty(),
-        "holiday replacement row carries an empty block set; a trade date with no \
-         blocks is HolidayKind::Closed"
-    );
-    let mut index = 0;
-    while index < set.len() {
-        let current = set[index];
-        assert!(
-            current.open_day_offset() >= ExceptionBlock::MIN_DAY_OFFSET
-                && current.open_day_offset() <= ExceptionBlock::MAX_DAY_OFFSET,
-            "holiday replacement block's opening day offset is outside the block day range"
-        );
-        assert!(
-            current.open_ssm() < SECONDS_PER_DAY,
-            "holiday replacement block's open is outside 0..86_400"
-        );
-        assert!(
-            current.close_ssm() <= SECONDS_PER_DAY,
-            "holiday replacement block's close is outside 0..=86_400"
-        );
-        assert!(
-            !(current.open_day_offset() == 0 && current.wraps_to_next_day()),
+    match first_block_violation(set) {
+        None => {}
+        Some(BlockViolation::Empty) => panic!(
+            "holiday replacement row carries an empty block set; a trade date with no \
+             blocks is HolidayKind::Closed"
+        ),
+        Some(BlockViolation::OffsetOutOfRange { .. }) => {
+            panic!("holiday replacement block's opening day offset is outside the block day range")
+        }
+        Some(BlockViolation::OpenOutOfRange { .. }) => {
+            panic!("holiday replacement block's open is outside 0..86_400")
+        }
+        Some(BlockViolation::CloseOutOfRange { .. }) => {
+            panic!("holiday replacement block's close is outside 0..=86_400")
+        }
+        Some(BlockViolation::ClosesAfterTradeDate { .. }) => panic!(
             "holiday replacement block opens on its own trade date and closes after it; \
              a trade date is the local date of its final close"
-        );
-        if index > 0 {
-            let previous = set[index - 1];
-            assert!(
-                current.open_day_offset() > previous.open_day_offset()
-                    || (current.open_day_offset() == previous.open_day_offset()
-                        && current.open_ssm() >= previous.open_ssm()),
-                "holiday replacement blocks are not ordered by opening day and open time"
-            );
+        ),
+        Some(BlockViolation::NotOrdered { .. }) => {
+            panic!("holiday replacement blocks are not ordered by opening day and open time")
         }
-        index += 1;
     }
 }

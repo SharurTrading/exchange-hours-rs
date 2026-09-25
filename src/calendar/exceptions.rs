@@ -25,10 +25,13 @@
 //! replaces any provider already attached.
 
 mod static_table;
+mod validation;
 
 pub use static_table::{
     SessionExceptionRecord, StaticSessionExceptions, StaticSessionExceptionsError,
 };
+
+pub(crate) use validation::{BlockViolation, first_block_violation};
 
 use chrono::NaiveDate;
 

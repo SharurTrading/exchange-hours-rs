@@ -182,6 +182,30 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Fixed
 
+- **A replacement block that opens on the next trade date's open no longer makes
+  `session_bounds` and `trade_date` describe different sessions (2026-09-25 UTC).**
+  Issue #130. A replacement record whose block opens at an instant the *following*
+  trade date's normal-week occurrence also opens on — a block keyed to the
+  evening its trade date begins, which is how a merged trade date or an added
+  session is stated — was claimed by both layers. The normal scan ran first, so
+  `session_bounds` answered with the neighbouring trade date's window (for the
+  reproducer, Thursday 17:00 → Friday 16:00 CT) while `trade_date` answered from
+  the replacement scan (Thursday), and a consumer pairing them received a window
+  and a date naming two different sessions. The rule is now stated and applied on
+  both layers: **a replacement block that meets a normal-week occurrence of the
+  same rule set takes that occurrence's place**, so the normal scan does not
+  report it and every query family answers from the replacement. The test is
+  kind-aware — an `order_entry` block never displaces the tradeable session that
+  opens at the same instant, and a replaced date stating only tradeable blocks
+  keeps its ordinary queue — and it leaves a normal occurrence of another kind
+  (`globex_grains`' Friday regular session, in the fixture) untouched. One
+  consequence is stated rather than hidden: a record whose blocks cover less than
+  the normal week it meets takes the whole overlapping occurrence's place instead
+  of fragmenting it, because a session with no stated opening is not an
+  arrangement an operator publishes. A single-block collision fixture and a
+  no-identity-is-open-without-a-trade-date sweep fence the invariant; removing
+  the guard fails the fixture. No shipped table carries a block row yet, so no
+  built-in answer moves; the caller-supplied path is the one that changes.
 - **Documentation.** The eight CME families' holiday evidence files repeated a whole
   era's document ids inside the *next* era's `### Documents` table, and every one
   of those tables carried a blank line between its header and its `|---|`

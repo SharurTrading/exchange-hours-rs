@@ -83,9 +83,35 @@
 //! between sources, and it is encoded as a late open at 15:30 CT.
 
 use super::EvidenceTier::{T1, T2};
-use super::HolidayKind::{Closed, Unsourced};
+use super::HolidayKind::{Closed, ReplacementBlocks, Unsourced};
 use super::fences::{early_close, late_open};
 use super::{HolidayTable, holidays};
+use crate::calendar::exceptions::ExceptionBlock;
+
+/// The complete trading day of the 2026-06-22, 2026-07-06 and 2027-06-21 trade
+/// dates, which CME states a Saturday session on.
+///
+/// The equity-index envelope is the 2021-06-27 removal of the 15:15-15:30 halt:
+/// one continuous 17:00-16:00 CT matching span whose overnight leg opens the
+/// evening before, so the whole envelope is one block rather than the two the
+/// pre-2021 halt required. Splitting it at the regular session's boundaries
+/// would double-count 08:30-15:15, which is also `regular`.
+///
+/// The blocks state each date completely: the Saturday session at offset `-2`,
+/// the Sunday Pre-Open queue at offset `-1`, and the Sunday-17:00-through-
+/// Monday-16:00 envelope at offset `-1`. Evidence:
+/// `docs/evidence/globex_equity_index.md`.
+///
+/// The Friday evening before the Saturday is deliberately **not** stated. CME
+/// publishes no Friday-evening open for these dates — the Friday carries the
+/// early close that ends the *previous* trade date's session — so there is no
+/// trading to claim, and a block there would put an open on the clock at an
+/// instant no operator document states.
+pub(crate) static SATURDAY_SESSION_BLOCKS: [ExceptionBlock; 3] = [
+    ExceptionBlock::extended(-2, 5 * 3_600, 17 * 3_600),
+    ExceptionBlock::order_entry(-1, 16 * 3_600, 17 * 3_600),
+    ExceptionBlock::extended(-1, 17 * 3_600, 16 * 3_600),
+];
 
 /// 12:00 CT, the Monday/Thursday-holiday and Independence-Day final close.
 const NOON: u32 = 12 * 3_600;
@@ -509,9 +535,15 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2026, 5, 25, early_close(NOON), T2, "CME-SVC-2026-05-24"),
         // 2026-06-19 — T2 — CME-SVC-2026-06-18 — Juneteenth: 12:00 CT.
         (2026, 6, 19, early_close(NOON), T2, "CME-SVC-2026-06-18"),
+        // 2026-06-22 — T2 — CME-SVC-2026-06-18 — Saturday session 05:00-17:00 CT
+        // carrying this trade date; the complete trading day is stated.
+        (2026, 6, 22, ReplacementBlocks(&SATURDAY_SESSION_BLOCKS), T2, "CME-SVC-2026-06-18"),
         // 2026-07-03 — T2 — CME-SVC-2026-07-03 — Independence Day observed:
         // 12:00 CT.
         (2026, 7, 3, early_close(NOON), T2, "CME-SVC-2026-07-03"),
+        // 2026-07-06 — T2 — CME-SVC-2026-07-03 — Saturday session 05:00-17:00 CT
+        // carrying this trade date; the complete trading day is stated.
+        (2026, 7, 6, ReplacementBlocks(&SATURDAY_SESSION_BLOCKS), T2, "CME-SVC-2026-07-03"),
         // 2026-09-07 — T2 — CME-SVC-2026-09-06 — Labor Day: 12:00 CT.
         (2026, 9, 7, early_close(NOON), T2, "CME-SVC-2026-09-06"),
         // 2026-11-26 — T2 — CME-SVC-2026-11-25 — Thanksgiving: 12:00 CT.
@@ -554,6 +586,9 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2027, 5, 31, early_close(NOON), T2, "CME-SVC-2027-05-30"),
         // 2027-06-18 — T2 — CME-SVC-2027-06-17 — Juneteenth observed: 12:00 CT.
         (2027, 6, 18, early_close(NOON), T2, "CME-SVC-2027-06-17"),
+        // 2027-06-21 — T2 — CME-SVC-2027-06-17 — Saturday session 05:00-17:00 CT
+        // carrying this trade date; the complete trading day is stated.
+        (2027, 6, 21, ReplacementBlocks(&SATURDAY_SESSION_BLOCKS), T2, "CME-SVC-2027-06-17"),
         // 2027-07-05 — T2 — CME-SVC-2027-07-04 — Independence Day observed:
         // 12:00 CT.
         (2027, 7, 5, early_close(NOON), T2, "CME-SVC-2027-07-04"),

@@ -68,6 +68,21 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Added
 
+- **`globex_equity_index` states CME's three Saturday sessions as complete trade
+  dates (2026-09-25 UTC).** Stage 4 of the release plan (#116). CME publishes
+  `05:00 open; 17:00 closed` on Saturday 2026-06-20, 2026-07-04 and 2027-06-19,
+  each carrying the following Monday's trade date, on a grid whose normal week
+  has no Saturday session. The family now states trade dates 2026-06-22,
+  2026-07-06 and 2027-06-21 as replacement block sets quoting the service window
+  that carries every instant: the Saturday session, the ordinary Sunday Pre-Open
+  and the ordinary Sunday-17:00-to-Monday-16:00 matching span. Because this
+  family's 2021-06-27 revision removed the 15:15-15:30 halt, that span is one
+  continuous envelope of which 08:30-15:15 is also the family's `regular`
+  session — so it ships as **one** block rather than two, and the regular session
+  survives the replacement. The Friday-evening leg is deliberately not stated:
+  CME publishes no Friday-evening open for these dates, the Friday carrying only
+  the early close that ends the previous trade date's session. A dedicated test
+  pins that the row leaves that earlier trade date's 12:00 close alone.
 - **A built-in holiday row may state a replacement block set (2026-09-25 UTC).** Stage 3
   of the release plan adds `HolidayKind::ReplacementBlocks(&'static [ExceptionBlock])`,
   the vocabulary for a special session whose *internal* phase topology changes: an added

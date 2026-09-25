@@ -628,7 +628,9 @@ Columbus Day and Veterans Day appear nowhere in CME's Globex holiday list and Gl
 | 2026-04-03 | early close | `08:15 closed` - 08:15 CT | `CME-SVC-2026-04-01` | T2 | eventDate 2026-04-03, CME trade date 2026-04-03; corroborated at T1 by CME-TRADING-HOURS-2025-08-30, which states no instant |
 | 2026-05-25 | early close | `12:00 preopen` - 12:00 CT | `CME-SVC-2026-05-24` | T2 | eventDate 2026-05-25, CME trade date 2026-05-26; note N15 |
 | 2026-06-19 | early close | `12:00 closed` - 12:00 CT | `CME-SVC-2026-06-18` | T2 | eventDate 2026-06-19, CME trade date 2026-06-22; see the 2026 interpretive steps |
+| 2026-06-22 | replacement blocks | `05:00 open; 17:00 closed` on eventDate 2026-06-20 and `16:00 preopen; 17:00 open` on eventDate 2026-06-21, all CME trade date 2026-06-22 | `CME-SVC-2026-06-18` | T2 | the complete trade date: the Saturday session, the Sunday Pre-Open and the Sunday-17:00-to-Monday-16:00 continuous envelope. The Friday 12:00 close on eventDate 2026-06-19 is **not** part of it — that instant ends the trade date the family's own early-close row already carries, and no Friday-evening open is published for this date |
 | 2026-07-03 | early close | `12:00 closed` - 12:00 CT | `CME-SVC-2026-07-03` | T2 | eventDate 2026-07-03, CME trade date 2026-07-06; see the 2026 interpretive steps |
+| 2026-07-06 | replacement blocks | `05:00 open; 17:00 closed` on eventDate 2026-07-04 and `16:00 preopen; 17:00 open` on eventDate 2026-07-05, all CME trade date 2026-07-06 | `CME-SVC-2026-07-03` | T2 | the complete trade date, as 2026-06-22 |
 | 2026-09-07 | early close | `12:00 preopen` - 12:00 CT | `CME-SVC-2026-09-06` | T2 | eventDate 2026-09-07, CME trade date 2026-09-08; note N15 |
 | 2026-11-26 | early close | `12:00 preopen` - 12:00 CT | `CME-SVC-2026-11-25` | T2 | eventDate 2026-11-26, CME trade date 2026-11-27; note N15 |
 | 2026-11-27 | early close | `12:15 closed` - 12:15 CT | `CME-SVC-2026-11-25` | T2 | eventDate 2026-11-27, CME trade date 2026-11-27 |
@@ -656,6 +658,7 @@ On 2026-06-19 and 2026-07-03 the `12:00 closed` event carries trade date 2026-06
 | 2027-03-26 | closed | `no events published` | `CME-SVC-2027-03-25` | T2 | eventDate 2027-03-26, no CME trade date; note N1 |
 | 2027-05-31 | early close | `12:00 preopen` - 12:00 CT | `CME-SVC-2027-05-30` | T2 | eventDate 2027-05-31, CME trade date 2027-06-01; note N15 |
 | 2027-06-18 | early close | `12:00 closed` - 12:00 CT | `CME-SVC-2027-06-17` | T2 | eventDate 2027-06-18, CME trade date 2027-06-21; see the 2027 interpretive steps |
+| 2027-06-21 | replacement blocks | `05:00 open; 17:00 closed` on eventDate 2027-06-19 and `16:00 preopen; 17:00 open` on eventDate 2027-06-20, all CME trade date 2027-06-21 | `CME-SVC-2027-06-17` | T2 | the complete trade date, as 2026-06-22 |
 | 2027-07-05 | early close | `12:00 preopen` - 12:00 CT | `CME-SVC-2027-07-04` | T2 | eventDate 2027-07-05, CME trade date 2027-07-06; note N15 |
 | 2027-09-06 | early close | `12:00 preopen` - 12:00 CT | `CME-SVC-2027-09-05` | T2 | eventDate 2027-09-06, CME trade date 2027-09-07; note N15 |
 | 2027-11-25 | early close | `12:00 preopen` - 12:00 CT | `CME-SVC-2027-11-24` | T2 | eventDate 2027-11-25, CME trade date 2027-11-26; note N15 |

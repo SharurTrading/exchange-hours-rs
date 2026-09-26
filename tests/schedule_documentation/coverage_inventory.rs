@@ -919,6 +919,60 @@ const QUARTER_HOUR_ERAS: [QuarterHourEra; 7] = [
 /// The bound each module carries is a table cell here rather than an assumption, so
 /// a module whose row moves fails this fence instead of silently disagreeing with
 /// `schedules/sourcing.rs`.
+/// The bound day itself, as a metadata statement (issue #124).
+///
+/// The behavioural walk above covers two Sundays, because 16:05 CT is the phase
+/// under test only on a Sunday: on `2026-08-22` — the knowledge-bound row's own
+/// day, and a Saturday — and on the six weekday dates after it, a 16:05 CT read
+/// measures that date's own sourced closure or the weekend rather than the phase
+/// bound. So the bound day was previously unprobed in either direction.
+///
+/// This asserts the *metadata* instead, which is what the declarations actually
+/// change: each scope answers for every date from the floor through its bound,
+/// and the day after the bound is the first the crate does not answer. It is a
+/// separate statement from the behavioural probe on purpose — a weekend date can
+/// never carry a phase reading, so the two questions are genuinely different.
+#[test]
+fn the_knowledge_bound_day_is_covered_and_the_day_before_it_is_not() {
+    let mut checked = 0_usize;
+    for era in QUARTER_HOUR_ERAS {
+        let QuarterHourEra { name, bound, .. } = era;
+        let bound = day(bound.0, bound.1, bound.2);
+        let calendar = calendar_for(name).expect("the fixture names a served scope");
+        let coverage = calendar.coverage();
+
+        assert_eq!(
+            coverage.coverage_on(bound),
+            DateCoverage::Covered,
+            "{name}: the knowledge-bound row's own day, {bound}, is inside the answered window"
+        );
+        // The declaration ends *at* the bound, so the bound is the first day the
+        // quarter-hour is served; nothing before it resolves through the
+        // declaration either, which is what makes the bound the era's edge.
+        let declaration = coverage
+            .phase_gaps()
+            .iter()
+            .find(|gap| gap.closing_condition() == "#79")
+            .unwrap_or_else(|| {
+                panic!("{name} must declare the withheld Sunday quarter-hour (#79)")
+            });
+        assert!(
+            !declaration.applies_on(bound),
+            "{name}: the #79 declaration must not apply on its own bound day, {bound}"
+        );
+        assert!(
+            declaration.applies_on(bound - chrono::Duration::days(1)),
+            "{name}: the #79 declaration applies on the day before {bound}"
+        );
+        checked += 1;
+    }
+    assert_eq!(
+        checked,
+        QUARTER_HOUR_ERAS.len(),
+        "every declaring scope must be checked"
+    );
+}
+
 #[test]
 fn the_sunday_quarter_hour_gap_ends_at_the_knowledge_bound_row() {
     let mut checked = 0_usize;

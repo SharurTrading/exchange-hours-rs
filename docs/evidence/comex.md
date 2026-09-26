@@ -141,6 +141,8 @@ are in the research store's `holidays/raw/` indexes.
 | `CME-SVC-2027-03-25` | 2027-03-25 .. 2027-03-27 | <https://www.cmegroup.com/services/trading-hours-by-product?id=316,133,425,300,58,437,22,8478,5201,10191&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2027-03-25&toEventDate=2027-03-27> | live retrieval 2026-09-12T04:30Z | T2 | `9bd7225d440e00139f30892f3914c9b38beb8bf29d4272039b6cd8f2de926880` |
 | `CME-SVC-2027-05-30` | 2027-05-30 .. 2027-06-01 | <https://www.cmegroup.com/services/trading-hours-by-product?id=316,133,425,300,58,437,22,8478,5201,10191&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2027-05-30&toEventDate=2027-06-01> | live retrieval 2026-09-12T04:30Z | T2 | `1283649724c30163fa08ba7ab02d1230fa9a7dd0613b8b4b3d96cd1d9dc4febd` |
 | `CME-SVC-2027-06-17` | 2027-06-17 .. 2027-06-19 | <https://www.cmegroup.com/services/trading-hours-by-product?id=316,133,425,300,58,437,22,8478,5201,10191&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2027-06-17&toEventDate=2027-06-19> | live retrieval 2026-09-12T04:30Z | T2 | `60c9a2f5106d61039a616986b463cd852861ee4d3b91b11fac8badfa1b97b01c` |
+| `CME-SVC-2026-06-21` | 2026-06-21 .. 2026-06-23 | <https://www.cmegroup.com/services/trading-hours-by-product?id=316,133,425,300,58,437,22,8478,5201,10191&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2026-06-21&toEventDate=2026-06-23> | live retrieval 2026-09-25 via `https://r.jina.ai/` | T2 | `91534cfd3ae56920ef744734216d2f5944cb9057c483d4b12f1550d91d91bcaf` |
+| `CME-SVC-2027-06-20` | 2027-06-20 .. 2027-06-22 | <https://www.cmegroup.com/services/trading-hours-by-product?id=316,133,425,300,58,437,22,8478,5201,10191&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2027-06-20&toEventDate=2027-06-22> | live retrieval 2026-09-25 via `https://r.jina.ai/` | T2 | `9ab30e85bb6947803f35369ed29e24cc98c20c86498bf48f87ec6515d8431107` |
 | `CME-SVC-2027-07-04` | 2027-07-04 .. 2027-07-06 | <https://www.cmegroup.com/services/trading-hours-by-product?id=316,133,425,300,58,437,22,8478,5201,10191&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2027-07-04&toEventDate=2027-07-06> | live retrieval 2026-09-12T04:30Z | T2 | `93ff8232886435c94be682bf968aa30749011cdf8dadeb7d2425a3b0b9e0bf71` |
 | `CME-SVC-2027-09-05` | 2027-09-05 .. 2027-09-07 | <https://www.cmegroup.com/services/trading-hours-by-product?id=316,133,425,300,58,437,22,8478,5201,10191&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2027-09-05&toEventDate=2027-09-07> | live retrieval 2026-09-12T04:30Z | T2 | `aa08a3bd102812928e69cf1ea4c8a84f738eaa5d14f967acee7d2571e74aedb9` |
 | `CME-SVC-2027-11-24` | 2027-11-24 .. 2027-11-26 | <https://www.cmegroup.com/services/trading-hours-by-product?id=316,133,425,300,58,437,22,8478,5201,10191&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2027-11-24&toEventDate=2027-11-26> | live retrieval 2026-09-12T04:30Z | T2 | `6aa7c0fd701a02480dabeac1fbae1a69b56e77643a29e3a9b2223c56e822ce9f` |
@@ -260,7 +262,7 @@ Every interval from 2010-01-01 is declared, so the whole span has an answer; the
 
 
 ### 2013-2015 (T1)
-**This era brings the venue to six audited windows.** The table as a whole carries 206 rows over 6 windows — 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 — and this era's share is **33 rows**: 33 stated rows and 0 `Unsourced` rows. Every row is the intersection of the families routed here — `globex_energy` — by the D17 rule `venues.rs` states: a row ships only where every routed family states the same one, and a date on which they differ, or on which one states a row while another has audited the date normal, ships `Unsourced`; the three year tables below carry every date's row, its instant as printed and the id it is derived from.
+**This era brings the venue to six audited windows.** The table as a whole carries 209 rows over 6 windows — 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 — and this era's share is **33 rows**: 33 stated rows and 0 `Unsourced` rows. Every row is the intersection of the families routed here — `globex_energy` — by the D17 rule `venues.rs` states: a row ships only where every routed family states the same one, and a date on which they differ, or on which one states a row while another has audited the date normal, ships `Unsourced`; the three year tables below carry every date's row, its instant as printed and the id it is derived from.
 
 **Columbus Day 2013 and Veterans Day 2014 and 2015 carry no row.** CME's own sheets for those three dates state in session language that Globex ran a normal schedule — `Products listed on Globex are unaffected and will run on a normal schedule` for 2013-10-14 (`2013-columbus-day.pdf @2012-11-19T00:15:54Z`) and `Regular CME Globex trading hours will be in effect` for 2014-11-11 and 2015-11-11 (`2014-veterans-day-holiday-schedule.pdf @2014-11-13T19:34:50Z` and `2015-veterans-day-schedule.pdf @2015-11-22T23:09:20Z`) — so the block records each as `normal` and this table ships nothing: inside a declared window silence is the positive claim that the date was audited normal, and these dates are audited rather than skipped. The three sheets have no row of their own to cite, so they are listed in this era's `### Documents` table without being any row's document.
 
@@ -348,7 +350,7 @@ Every interval from 2010-01-01 is declared, so the whole span has an answer; the
 | 2015-12-25 | closed | `every routed family states a closure` | `2015-christmas-holiday-schedule.pdf @2015-11-23T06:15:20Z` | T1 | the intersection of the families routed to this venue |
 
 ### 2019-2021 (T1)
-**This era brought the venue to five audited windows; the 2013-2015 wave has since added a sixth.** The table as a whole carries 206 rows over 6 windows — 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 — and this era's share is **35 rows**: 9 stated closures and 3 `Unsourced` rows. The remaining 23 rows state the era's early closes. Every row is the intersection of the families routed here — `globex_energy` alone — by the D17 rule `venues.rs` states: a closure ships only where every routed family states the same one, and a date on which they differ, or on which one states a row while another has audited the date normal, ships `Unsourced`, with the disagreement named per date below. `comex` and `nymex` route `globex_energy` alone, so their rows are that family's own, unchanged. The three Juneteenth dates ship `Unsourced` because every routed family states the crate's not-worked-up marker there.
+**This era brought the venue to five audited windows; the 2013-2015 wave has since added a sixth.** The table as a whole carries 209 rows over 6 windows — 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 — and this era's share is **35 rows**: 9 stated closures and 3 `Unsourced` rows. The remaining 23 rows state the era's early closes. Every row is the intersection of the families routed here — `globex_energy` alone — by the D17 rule `venues.rs` states: a closure ships only where every routed family states the same one, and a date on which they differ, or on which one states a row while another has audited the date normal, ships `Unsourced`, with the disagreement named per date below. `comex` and `nymex` route `globex_energy` alone, so their rows are that family's own, unchanged. The three Juneteenth dates ship `Unsourced` because every routed family states the crate's not-worked-up marker there.
 
 ### Documents
 | Document | Window | Replay or service URL | Capture or retrieval, UTC | Tier | sha256 |
@@ -430,12 +432,13 @@ Every interval from 2010-01-01 is declared, so the whole span has an answer; the
 | 2021-12-24 | closed | `every routed family states a closure` | `2021-holiday-calendars.zip#2021-christmas-holiday-schedule-compact.xls @2026-08-30T10:03:27Z` | T1 | the intersection of the families routed to this venue |
 ### 2022-2024 (T1/T2)
 
-**Counts in this subsection are the 2022-2024 era's.** The table as a whole carries 206 rows over
+**Counts in this subsection are the 2022-2024 era's.** The table as a whole carries 209 rows over
 its six audited windows: 38 in 2010-2012 (8 stated closures and 30 early closes), 33 in 2013-2015
 (9 stated closures and 24 early closes), 31 in 2016-2018 (9 stated closures and 22 early closes),
 35 in 2019-2021 (9 stated closures, 23 early closes and 3 `Unsourced`), 33 in this era (7 stated
-closures, 23 early closes and 3 `Unsourced`) and 36 in 2025-2027 (10 stated closures and 26 early
-closes). The derivation rule is the same in all six; only the documents differ.
+closures, 23 early closes and 3 `Unsourced`) and 39 in 2025-2027 (10 stated closures, 26 early
+closes and 3 `ReplacementBlocks`). The derivation rule is the same in all six; only the
+documents differ.
 
 **The venue drops no date.** Metals and energy are one key and the operator prints
 them as one product row on every date this table audits, so its one routed family
@@ -496,18 +499,19 @@ no second family to disagree with.
 
 ### 2025-2027 (T2)
 
-**Counts in this subsection are the 2025-2027 era's.** The table as a whole carries 206 rows over
+**Counts in this subsection are the 2025-2027 era's.** The table as a whole carries 209 rows over
 its six audited windows: 38 in 2010-2012 (8 stated closures and 30 early closes), 33 in 2013-2015
 (9 stated closures and 24 early closes), 31 in 2016-2018 (9 stated closures and 22 early closes),
 35 in 2019-2021 (9 stated closures, 23 early closes and 3 `Unsourced`), 33 in 2022-2024 (7 stated
-closures, 23 early closes and 3 `Unsourced`) and 36 in this era (10 stated closures and 26 early
-closes). The intersection is total in all six eras, so nothing is withheld for a disagreement.
+closures, 23 early closes and 3 `Unsourced`) and 39 in this era (10 stated closures, 26 early
+closes and 3 `ReplacementBlocks`). The intersection is total in all six eras, so nothing is
+withheld for a disagreement.
 
 **This table is derived, not retrieved, and the intersection is total.** It is the
 intersection of the families that route to `Exchange::Comex` — which is one family,
 `globex_energy`, whose metals half is this venue's documented scope — so there is no
 disagreement to withhold: the venue carries that family's table unchanged, all
-thirty-six rows, and every id resolves to the same CME Group
+thirty-nine rows, and every id resolves to the same CME Group
 `trading-hours-by-product` artifact `globex_energy`'s evidence file already records.
 The per-family rows, with their event-date-to-trade-date conversions and the
 `13:30 preopen` reading that turns CME's pre-open-only records into early closes,
@@ -525,6 +529,15 @@ them.
 **No date is dropped.** There is no `unsourced` row and no declared gap behind one in
 this window. The table is the family's own evidence at one remove, and nothing here
 rests on a document the family module does not carry.
+
+**Two rows read a second window.** The 2026-06-22 and 2027-06-21 replacement rows
+state a Sunday Pre-Open and a Sunday-17:00-to-Monday-16:00 session, and the windows
+those rows are archived against — `CME-SVC-2026-06-18` and `CME-SVC-2027-06-17` —
+each end on their own Saturday and print no Sunday entry at all. Those legs are
+printed by `CME-SVC-2026-06-21` and `CME-SVC-2027-06-20`, listed above beside the
+ids they extend, so the citation on each row names the half of the day it was read
+from. The 2026-07-06 row needs only its own window: `CME-SVC-2026-07-03` runs
+through the Sunday and prints both legs.
 
 ### 2025
 
@@ -554,6 +567,8 @@ rests on a document the family module does not carry.
 | 2026-04-03 | closed | `no events published` | `CME-SVC-2026-04-01` | T2 | energy closed |
 | 2026-05-25 | early close | `early close 13:30 CT` | `CME-SVC-2026-05-24` | T2 | energy early close 13:30 CT |
 | 2026-06-19 | early close | `early close 12:00 CT` | `CME-SVC-2026-06-18` | T2 | energy early close 12:00 CT |
+| 2026-06-22 | replacement blocks | `05:00 open; 17:00 closed` on eventDate 2026-06-20, all carrying trade date 2026-06-22 (`CME-SVC-2026-06-18`); `16:00 preopen; 17:00 open` on eventDate 2026-06-21 and `16:00 closed` on eventDate 2026-06-22, all carrying trade date 2026-06-22 (`CME-SVC-2026-06-21`) | `CME-SVC-2026-06-18` | T2 | the energy family's own row: the eventDate 2026-06-20 Saturday session from the first window, plus the ordinary Sunday Pre-Open and Sunday-17:00-to-Monday-16:00 session from the second, which the first does not print |
+| 2026-07-06 | replacement blocks | `05:00 open; 17:00 closed` on eventDate 2026-07-04; `16:00 preopen; 17:00 open` on eventDate 2026-07-05 | `CME-SVC-2026-07-03` | T2 | the energy family's own row, as 2026-06-22 |
 | 2026-07-03 | early close | `early close 12:00 CT` | `CME-SVC-2026-07-03` | T2 | energy early close 12:00 CT |
 | 2026-09-07 | early close | `early close 13:30 CT` | `CME-SVC-2026-09-06` | T2 | energy early close 13:30 CT |
 | 2026-11-26 | early close | `early close 13:30 CT` | `CME-SVC-2026-11-25` | T2 | energy early close 13:30 CT |
@@ -571,6 +586,7 @@ rests on a document the family module does not carry.
 | 2027-03-26 | closed | `no events published` | `CME-SVC-2027-03-25` | T2 | energy closed |
 | 2027-05-31 | early close | `early close 13:30 CT` | `CME-SVC-2027-05-30` | T2 | energy early close 13:30 CT |
 | 2027-06-18 | early close | `early close 12:00 CT` | `CME-SVC-2027-06-17` | T2 | energy early close 12:00 CT |
+| 2027-06-21 | replacement blocks | `05:00 open; 17:00 closed` on eventDate 2027-06-19, all carrying trade date 2027-06-21 (`CME-SVC-2027-06-17`); `16:00 preopen; 17:00 open` on eventDate 2027-06-20 and `16:00 closed` on eventDate 2027-06-21, all carrying trade date 2027-06-21 (`CME-SVC-2027-06-20`) | `CME-SVC-2027-06-17` | T2 | the energy family's own row, as 2026-06-22: the eventDate 2027-06-19 Saturday session from the first window and the Sunday legs from the second |
 | 2027-07-05 | early close | `early close 13:30 CT` | `CME-SVC-2027-07-04` | T2 | energy early close 13:30 CT |
 | 2027-09-06 | early close | `early close 13:30 CT` | `CME-SVC-2027-09-05` | T2 | energy early close 13:30 CT |
 | 2027-11-25 | early close | `early close 13:30 CT` | `CME-SVC-2027-11-24` | T2 | energy early close 13:30 CT |
@@ -616,9 +632,9 @@ rests on a document the family module does not carry.
 
 ### The cross-wave D17 audit (#95)
 
-**The intersection is re-derived over every audited era, not only this wave's.** `tools/check_wave5.py` recomputes the D17 rule over 2010-01-01..2027-12-31 — every date on which at least one routed family declares a window — and compares the result with the tables above date by date: **206 rows over the six windows**, 52 closures, 148 early closes and 6 withheld as `Unsourced` (the three 2019-2021 and three 2022-2024 dates `globex_energy` itself marks not worked up). This is the agreement audit memo §7 follow-up 10 asks for (#95).
+**The intersection is re-derived over every audited era, not only this wave's.** `tools/check_wave5.py` recomputes the D17 rule over 2010-01-01..2027-12-31 — every date on which at least one routed family declares a window — and compares the result with the tables above date by date: **209 rows over the six windows**, 52 closures, 148 early closes, 3 replacement blocks and 6 withheld as `Unsourced` (the three 2019-2021 and three 2022-2024 dates `globex_energy` itself marks not worked up). This is the agreement audit memo §7 follow-up 10 asks for (#95).
 
-**The venue routes one family, so the intersection is that family's table.** Metals and energy are one key and CME prints them as one product row on every date the table audits, so nothing abstains and nothing is withheld for a disagreement; the audit's job here is to confirm the venue ships `globex_energy`'s rows unchanged, which it does, date by date, over all 206.
+**The venue routes one family, so the intersection is that family's table.** Metals and energy are one key and CME prints them as one product row on every date the table audits, so nothing abstains and nothing is withheld for a disagreement; the audit's job here is to confirm the venue ships `globex_energy`'s rows unchanged, which it does, date by date, over all 209.
 
 ## Sources
 

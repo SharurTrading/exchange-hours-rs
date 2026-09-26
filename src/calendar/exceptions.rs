@@ -184,6 +184,24 @@ pub enum DateException<'a> {
     /// pair is a valid arrangement rather than a duplicate to reject. Blocks
     /// that agree on both are distinguished by their kind, and every scan
     /// selects by kind first.
+    ///
+    /// **A record replaces every normal-week occurrence its blocks meet, not
+    /// only the ones belonging to its own trade date.** A block keyed to the
+    /// evening its trade date begins states an opening at a wall clock the
+    /// *following* trade date's ordinary occurrence also opens at, and the block
+    /// governs that instant: a query there answers from the block and reports
+    /// the record's trade date, which is what keeps the session reported and the
+    /// trade date reported the same session. A block set that covers the trading
+    /// day it replaces — which is what "complete" means here — meets no other
+    /// occurrence in the first place.
+    ///
+    /// **A fragment is reported as a closure.** Because the met occurrence is
+    /// not reported at all, a set that covers *part* of the normal week it meets
+    /// makes the rest of that occurrence read as closed: with a two-hour block
+    /// opening at the venue's evening boundary, `is_open` turns false for the
+    /// remaining hours of a session the record never mentions and `trade_date`
+    /// returns `None` across them. State the complete trading day, as an
+    /// operator publishes it, rather than a fragment of one.
     ReplaceSessions(&'a [ExceptionBlock]),
     /// The provider has no authoritative answer for this date.
     OutOfCoverage,

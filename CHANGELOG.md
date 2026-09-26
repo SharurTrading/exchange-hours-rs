@@ -80,6 +80,53 @@ corrections (a venue's hours fixed against a primary source) go under
   so these instants were read from that set's windows — already saved in the
   research store, which the family's own evidence file records. The family's
   documented different *historical* grid does not reach these dates.
+- **The first operator rows using the replacement-block vocabulary: CME's three
+  Globex Saturday sessions, 2026-06-22, 2026-07-06 and 2027-06-21 (2026-09-25 UTC).**
+  Stage 4 of the release plan (#116, #93's data). CME publishes `05:00 open;
+  17:00 closed` on Saturday 2026-06-20, 2026-07-04 and 2027-06-19, each session
+  carrying the following Monday's trade date, on a grid whose normal week has no
+  Saturday session at all — a shape no scalar row can state, because a boundary
+  row moves an existing occurrence and cannot create one. `globex_energy` now
+  states each of those three trade dates as a **complete** block set: the
+  Saturday session at offset `-2`, the ordinary Sunday Pre-Open
+  `16:00-17:00` CT at offset `-1`, and the ordinary Sunday-17:00-to-Monday-16:00
+  session at offset `-1`. Every instant is quoted from the service window the
+  row cites, and the rows state the whole day rather than the Saturday alone
+  because a replacement replaces the complete trade date: a Saturday-only set
+  would delete the Sunday-evening session that belongs to the same one. The
+  Saturday instants come from the row's cited window, which stops at the
+  Saturday; the Sunday Pre-Open and the Sunday-Monday session come from the
+  window that starts on that Sunday, recorded in the owner's evidence file. The
+  four CME venue intersection tables carry the derived consequence — `comex` and
+  `nymex` reproduce the family's row because each routes one family, while `cme`
+  states `Unsourced` on all three dates, where the four other families state
+  nothing while energy and equity index state a Saturday-session replacement,
+  and `cbot` states nothing at all on them because both of its families audited
+  them normal. This also fixes an evidence-citation defect the rows exposed:
+  `globex_energy.md` had cited a window for 2026-07-04 that contains no Crude
+  Oil product, and now cites one that carries the session.
+- **`globex_equity_index` states CME's three Saturday sessions as complete trade
+  dates (2026-09-25 UTC).** Stage 4 of the release plan (#116). CME publishes
+  `05:00 open; 17:00 closed` on Saturday 2026-06-20, 2026-07-04 and 2027-06-19,
+  each carrying the following Monday's trade date, on a grid whose normal week
+  has no Saturday session. The family now states trade dates 2026-06-22,
+  2026-07-06 and 2027-06-21 as replacement block sets quoting the service windows
+  that print them: the Saturday session, the ordinary Sunday Pre-Open
+  and the ordinary Sunday-17:00-to-Monday-16:00 matching span. Because this
+  family's 2021-06-27 revision removed the 15:15-15:30 halt, that span is one
+  continuous envelope of which 08:30-15:15 is also the family's `regular`
+  session — so each set splits the envelope into three **ordered** blocks at the
+  regular boundaries (`extended(-1, 17:00, 08:30)`, `regular(0, 08:30, 15:15)`,
+  `extended(0, 15:15, 16:00)`). A replacement replaces the complete trade date and
+  the scan selects blocks by kind, so stating the envelope as one `extended` block
+  would delete the regular phase and move its bounds to the next trade date. The
+  Friday-evening leg is deliberately not stated:
+  CME publishes no Friday-evening open for these dates, the Friday carrying only
+  the early close that ends the previous trade date's session. Two of the three
+  rows span two windows — the Saturday window stops on its Saturday and prints no
+  Sunday entry at all — so each row names the window each half of the day comes
+  from. A dedicated test pins that the row leaves that earlier trade date's 12:00
+  close alone.
 - **A built-in holiday row may state a replacement block set (2026-09-25 UTC).** Stage 3
   of the release plan adds `HolidayKind::ReplacementBlocks(&'static [ExceptionBlock])`,
   the vocabulary for a special session whose *internal* phase topology changes: an added
@@ -194,6 +241,32 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Fixed
 
+- **A replacement block that opens on the next trade date's open no longer makes
+  `session_bounds` and `trade_date` describe different sessions (2026-09-25 UTC).**
+  Issue #130. A replacement record whose block opens at an instant the *following*
+  trade date's normal-week occurrence also opens on — a block keyed to the
+  evening its trade date begins, which is how a merged trade date or an added
+  session is stated — was claimed by both layers. The normal scan ran first, so
+  `session_bounds` answered with the neighbouring trade date's window (for the
+  reproducer, Thursday 17:00 → Friday 16:00 CT) while `trade_date` answered from
+  the replacement scan (Thursday), and a consumer pairing them received a window
+  and a date naming two different sessions. The rule is now stated and applied on
+  both layers: **a replacement block that meets a normal-week occurrence of the
+  same rule set takes that occurrence's place**, so the normal scan does not
+  report it and every query family answers from the replacement. The test is
+  kind-aware — an `order_entry` block never displaces the tradeable session that
+  opens at the same instant, and a replaced date stating only tradeable blocks
+  keeps its ordinary queue — and it leaves a normal occurrence of another kind
+  (`globex_grains`' Friday regular session, in the fixture) untouched. One
+  consequence is stated rather than hidden: a record whose blocks cover less than
+  the normal week it meets takes the whole overlapping occurrence's place instead
+  of fragmenting it, because a session with no stated opening is not an
+  arrangement an operator publishes. A single-block collision fixture and a
+  no-identity-is-open-without-a-trade-date sweep fence the invariant; removing
+  the guard fails the fixture. No shipped table carried a block row when this
+  guard was written, so no existing built-in answer moves; the block rows that
+  now ship are the six Saturday-session rows entered above, and the
+  caller-supplied path is the one that changes.
 - **Documentation.** The eight CME families' holiday evidence files repeated a whole
   era's document ids inside the *next* era's `### Documents` table, and every one
   of those tables carried a blank line between its header and its `|---|`
@@ -529,11 +602,11 @@ corrections (a venue's hours fixed against a primary source) go under
   end stops one family early or runs another past its own close. **COMEX** and
   **NYMEX** route the one `globex_energy` key, whose metals and energy halves CME
   prints as a single product row, so their intersections drop nothing and they
-  carry that family's table whole (36 rows each in this era, no `Unsourced`).
+  carry that family's table whole (39 rows each in this era, no `Unsourced`).
   CBOT ships 9 stated rows against its thirty-one `Unsourced` dates and CME 9
-  against thirty-two, each with the disagreement named per date in that venue's
-  evidence file. Over both eras the four venue tables carry 96, 79, 74 and 74
-  rows; the numbers in this paragraph are the 2025-2027 era's. The family list behind each intersection is a decision recorded there,
+  against thirty-five, each with the disagreement named per date in that venue's
+  evidence file. Over all six audited eras the four venue tables carry 276, 250, 209 and 209
+  rows; the composition counts in this paragraph are the 2025-2027 era's. The family list behind each intersection is a decision recorded there,
   not something the crate can derive: the map from product families to venues
   belongs to the consumer. **This change also amends `AGENTS.md`**: the charter's
   LAW-HOLIDAY-SCOPE gains one sentence stating the venue-intersection rule, so

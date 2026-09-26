@@ -1617,6 +1617,72 @@ fn a_replacement_rows_printed_instants_are_the_block_bounds_it_ships() {
     );
 }
 
+/// A Saturday-session trade date whose Sunday legs a venue file also states must
+/// cite the window that prints those legs.
+///
+/// `globex_energy`'s three replacement rows span two windows: the window cited
+/// for the Saturday session stops there and prints **no** Sunday entry, and the
+/// Sunday Pre-Open and Sunday-17:00-to-Monday-16:00 session come from the
+/// window that starts on the Sunday. The family's own test fences its file; the
+/// venue exports that repeat the row — `comex.md` and `nymex.md` — are read by
+/// no other fence's documents, only by their instants, and an independent review
+/// found both still quoting the Sunday pair against the Saturday-only window.
+///
+/// The table is keyed on the trade date and names the window that prints the
+/// legs, so the fence is a lookup rather than a reading: a row that omits it, or
+/// names a different one, fails here whatever the family's file says.
+#[test]
+fn a_venue_saturday_session_row_cites_the_window_that_prints_its_sunday_legs() {
+    // (trade date, Saturday window, the window that actually prints the Sunday legs)
+    const SUNDAY_LEG_WINDOWS: [(&str, &str, &str); 3] = [
+        ("2026-06-22", "CME-SVC-2026-06-18", "CME-SVC-2026-06-21"),
+        ("2026-07-06", "CME-SVC-2026-07-03", "CME-SVC-2026-07-03"),
+        ("2027-06-21", "CME-SVC-2027-06-17", "CME-SVC-2027-06-20"),
+    ];
+    let files = evidence_files();
+    for (file, _) in VENUE_FAMILIES {
+        let text = files
+            .get(file)
+            .unwrap_or_else(|| panic!("{file} must exist in docs/evidence"));
+        for (trade_date, saturday_window, sunday_window) in SUNDAY_LEG_WINDOWS {
+            // Only a venue file that states the row is checked; a venue whose
+            // intersection withholds the date ships no line for it.
+            let Some(row) = text
+                .lines()
+                .find(|line| line.starts_with(&format!("| {trade_date} |")))
+            else {
+                continue;
+            };
+            // A venue whose routed families disagree states no instant, so its
+            // `unsourced` row claims no event and cites no window for one.
+            if row
+                .split('|')
+                .nth(2)
+                .is_some_and(|kind| kind.trim() == "unsourced")
+            {
+                continue;
+            }
+            assert!(
+                row.contains(&format!("`{saturday_window}`")),
+                "{file}: the {trade_date} row must cite `{saturday_window}`, the window \
+                 that carries its Saturday session"
+            );
+            assert!(
+                row.contains(&format!("`{sunday_window}`")),
+                "{file}: the {trade_date} row states the Sunday legs, so it must name \
+                 `{sunday_window}`, the window that prints them: {row}"
+            );
+            for window in [saturday_window, sunday_window] {
+                assert!(
+                    text.contains(&format!("| `{window}` |")),
+                    "{file}: {window} must be a recorded document, so the row's citation \
+                     resolves: {trade_date}"
+                );
+            }
+        }
+    }
+}
+
 fn evidence_dir() -> PathBuf {
     repository_root().join(EVIDENCE_DIR)
 }

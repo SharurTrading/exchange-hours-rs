@@ -28,10 +28,10 @@ pub(crate) static NKD_REGULAR_CURRENT: &[SessionRule] = &[SessionRule {
     close_ssm: 16 * 3600,
 }];
 
-// CME publishes no normal-week pre-open or order-entry start time for NKD, and
-// BTIC (`NKT`) is separately scheduled on its own published hours, so no
-// extended phase is asserted. The 16:00-17:00 CT daily break is a maintenance
-// period, not an order-entry phase. See docs/evidence/globex_nikkei_225_dollar.md.
+// No order-entry phase is modelled, and BTIC (`NKT`) is separately scheduled, so
+// no extended phase is asserted. Whether the operator's `16:45 preopen` Mon-Thu
+// onset is an order-entry phase is open — #139. See
+// docs/evidence/globex_nikkei_225_dollar.md.
 pub(crate) static NKD_EXTENDED_CURRENT: &[SessionRule] = &[];
 
 pub(crate) static NKD_CURRENT: StaticHoursProfile = StaticHoursProfile {

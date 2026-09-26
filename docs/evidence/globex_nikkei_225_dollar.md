@@ -99,6 +99,7 @@ date) orders are eliminated." `/TD` below is CME's own `tradingDate` field on ea
 | `CME-SVC-B-2026-04-01` | 2026-04-01 .. 2026-04-03 | <https://www.cmegroup.com/services/trading-hours-by-product?id=168,167,320,323,19,27&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2026-04-01&toEventDate=2026-04-03> | live retrieval 2026-09-12T08:55:08Z | T2 | `b4569c685450baab17749fbed20c8c0e37c40910b77c411f72b6c596cd3c0567` |
 | `CME-SVC-B-2026-05-24` | 2026-05-24 .. 2026-05-26 | <https://www.cmegroup.com/services/trading-hours-by-product?id=168,167,320,323,19,27&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2026-05-24&toEventDate=2026-05-26> | live retrieval 2026-09-12T08:55:09Z | T2 | `3c7628b898d8069067836a36c44769f2f2b76a1dee5edbd48225f76b363881d0` |
 | `CME-SVC-B-2026-06-18` | 2026-06-18 .. 2026-06-20 | <https://www.cmegroup.com/services/trading-hours-by-product?id=168,167,320,323,19,27&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2026-06-18&toEventDate=2026-06-20> | live retrieval 2026-09-12T08:55:10Z | T2 | `41791460e029bb7db0d280374048c36f015594fb71e9f1aae86a6145429ce2e5` |
+| `CME-SVC-B-2026-06-21` | 2026-06-21 .. 2026-06-23 | <https://www.cmegroup.com/services/trading-hours-by-product?id=168,167,320,323,19,27&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2026-06-21&toEventDate=2026-06-23> | live retrieval 2026-09-25T08:44:59Z via `https://r.jina.ai/` | T2 | `09714a527385207db4926843cda9df6d2a0ea6515356584e1f8e1f9f69b4f209` |
 | `CME-SVC-B-2026-07-03` | 2026-07-03 .. 2026-07-05 | <https://www.cmegroup.com/services/trading-hours-by-product?id=168,167,320,323,19,27&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2026-07-03&toEventDate=2026-07-05> | live retrieval 2026-09-12T08:55:11Z | T2 | `dfc4aff36f0e44fb8fdb78de59d13bad90707c0d108673094ad0a012cefad898` |
 | `CME-SVC-B-2026-09-06` | 2026-09-06 .. 2026-09-08 | <https://www.cmegroup.com/services/trading-hours-by-product?id=168,167,320,323,19,27&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2026-09-06&toEventDate=2026-09-08> | live retrieval 2026-09-12T04:30Z | T2 | `f7cc43f8d90b571b945901f826277ca43ec21c4438c36bbb26e231c859a83923` |
 | `CME-SVC-B-2026-11-25` | 2026-11-25 .. 2026-11-27 | <https://www.cmegroup.com/services/trading-hours-by-product?id=168,167,320,323,19,27&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2026-11-25&toEventDate=2026-11-27> | live retrieval 2026-09-12T04:30Z | T2 | `f6007a75d6009dada85fe6c57d660598f21ed8a8385364c454ee015565f94dd4` |
@@ -109,6 +110,7 @@ date) orders are eliminated." `/TD` below is CME's own `tradingDate` field on ea
 | `CME-SVC-B-2027-03-25` | 2027-03-25 .. 2027-03-27 | <https://www.cmegroup.com/services/trading-hours-by-product?id=168,167,320,323,19,27&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2027-03-25&toEventDate=2027-03-27> | live retrieval 2026-09-12T04:30Z | T2 | `022dcd1f61e54cc316a621e01f519bbb723a446c000323dd9725d2d6434effe8` |
 | `CME-SVC-B-2027-05-30` | 2027-05-30 .. 2027-06-01 | <https://www.cmegroup.com/services/trading-hours-by-product?id=168,167,320,323,19,27&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2027-05-30&toEventDate=2027-06-01> | live retrieval 2026-09-12T04:30Z | T2 | `1c28c61151bd26e844c5b2ea6f046102b6da45a5f88566e91a421604a8c566e6` |
 | `CME-SVC-B-2027-06-17` | 2027-06-17 .. 2027-06-19 | <https://www.cmegroup.com/services/trading-hours-by-product?id=168,167,320,323,19,27&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2027-06-17&toEventDate=2027-06-19> | live retrieval 2026-09-12T04:30Z | T2 | `011d4f666198a4427faa01d7e91ebf2412f4614ae27188ccd35f84c726a5d05d` |
+| `CME-SVC-B-2027-06-20` | 2027-06-20 .. 2027-06-22 | <https://www.cmegroup.com/services/trading-hours-by-product?id=168,167,320,323,19,27&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2027-06-20&toEventDate=2027-06-22> | live retrieval 2026-09-25T08:44:59Z via `https://r.jina.ai/` | T2 | `173d07af2d7621480b4a6653d4c2295f3f2b83197c1df3b21ce3bf38179f0d12` |
 | `CME-SVC-B-2027-07-04` | 2027-07-04 .. 2027-07-06 | <https://www.cmegroup.com/services/trading-hours-by-product?id=168,167,320,323,19,27&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2027-07-04&toEventDate=2027-07-06> | live retrieval 2026-09-12T04:30Z | T2 | `1a9550357fbf3c1615fcbeefebbc64e271a6dfe0ad0ffdff10c770a7e2d77aaf` |
 | `CME-SVC-B-2027-09-05` | 2027-09-05 .. 2027-09-07 | <https://www.cmegroup.com/services/trading-hours-by-product?id=168,167,320,323,19,27&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2027-09-05&toEventDate=2027-09-07> | live retrieval 2026-09-12T04:30Z | T2 | `9ceb6df48d2278a807fd2e3081828eb41dd207cc64c389078b3a529f762da928` |
 | `CME-SVC-B-2027-11-24` | 2027-11-24 .. 2027-11-26 | <https://www.cmegroup.com/services/trading-hours-by-product?id=168,167,320,323,19,27&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2027-11-24&toEventDate=2027-11-26> | live retrieval 2026-09-12T04:30Z | T2 | `90320ed581b1d09f6c1b85d98da3a7a097b09d5f4eaac4abbb3d9368ee1cfdfa` |
@@ -386,7 +388,14 @@ This era's rows cite the ids below: CME Group's own published holiday schedules 
 - **not representable** — order-entry deviations. On 2025-01-01 and 2025-12-25 the pre-open
   starts at 16:00 CT rather than the normal 16:45 CT. The table's vocabulary is `DayPolicy`'s
   and has no order-entry boundary; the family models no order-entry phase at all, so this
-  changes nothing the crate reports.
+  changes nothing the crate reports. **That "normal 16:45 CT" is itself unmodelled, and is an
+  open question — #139.** The store's own normal-week capture for this family's product set,
+  `holidays/raw/cme-2025-2027/live/normal/normalweek_extra.json`, prints `16:45 preopen` and
+  `17:00 open` for Monday-Thursday and `16:00 preopen`/`17:00 open` on the opening Sunday, for
+  `NKD` (id 168) and `NIY` (id 167) alike. This file cited that artifact nowhere until #139,
+  which is why the module's claim that the operator publishes no normal-week onset went
+  unchallenged. #139 records both readings and the closing condition; until one is chosen, the
+  coverage row's `none in 2025+` / `complete` cells stand only for the phases the crate models.
 - **Saturday 2025-11-29 ships a row.** `CME-SVC-B-2025-11-26` publishes no events for it,
   the ten-product capture agrees, and CME's 2025 Globex table states the period as
   "27 - 29 November 2025", so it is a sourced closure. The family's grid has no
@@ -408,7 +417,9 @@ This era's rows cite the ids below: CME Group's own published holiday schedules 
 | 2026-04-03 | early close | `08:15 closed /TD 2026-04-03` — 08:15 CT | `CME-SVC-B-2026-04-01` | T2 | eventDate 2026-04-03, CME trade date 2026-04-03; `NKD` and `NIY` track the Equity Index instant here, not the 10:15 CT of `ZN`, `6E` and `BTC` |
 | 2026-05-25 | early close | `12:00 preopen /TD 2026-05-26; 17:00 open /TD 2026-05-26` — 12:00 CT | `CME-SVC-B-2026-05-24` | T2 | eventDate 2026-05-25, CME trade date 2026-05-26 |
 | 2026-06-19 | early close | `12:00 closed /TD 2026-06-22` — 12:00 CT | `CME-SVC-B-2026-06-18` | T2 | eventDate 2026-06-19, CME trade date 2026-06-22; the Thursday-evening leg opened 2026-06-18 17:00 CT |
+| 2026-06-22 | replacement blocks | `05:00 open; 17:00 closed /TD 2026-06-22` on eventDate 2026-06-20 (`CME-SVC-B-2026-06-18`); `16:00 preopen; 17:00 open /TD 2026-06-22` on eventDate 2026-06-21 and `16:00 closed /TD 2026-06-22` on eventDate 2026-06-22 (`CME-SVC-B-2026-06-21`) | `CME-SVC-B-2026-06-18` | T2 | the complete trade date: the Saturday session from the first window, and the Sunday Pre-Open and Sunday-17:00-to-Monday-16:00 session from the second — the first window stops at the Saturday and prints no Sunday entry at all |
 | 2026-07-03 | early close | `12:00 closed /TD 2026-07-06` — 12:00 CT | `CME-SVC-B-2026-07-03` | T2 | eventDate 2026-07-03, CME trade date 2026-07-06 |
+| 2026-07-06 | replacement blocks | `05:00 open; 17:00 closed /TD 2026-07-06` on eventDate 2026-07-04; `16:00 preopen; 17:00 open` on the Sunday, both CME trade date 2026-07-06 | `CME-SVC-B-2026-07-03` | T2 | the complete trade date: the Saturday session, the Sunday Pre-Open and the Sunday-17:00-to-Monday-16:00 session |
 | 2026-09-07 | early close | `12:00 preopen /TD 2026-09-08; 17:00 open /TD 2026-09-08` — 12:00 CT | `CME-SVC-B-2026-09-06` | T2 | eventDate 2026-09-07, CME trade date 2026-09-08 |
 | 2026-11-26 | early close | `12:00 preopen /TD 2026-11-27; 17:00 open /TD 2026-11-27` — 12:00 CT | `CME-SVC-B-2026-11-25` | T2 | eventDate 2026-11-26, CME trade date 2026-11-27 |
 | 2026-11-27 | early close | `12:15 closed /TD 2026-11-27` — 12:15 CT | `CME-SVC-B-2026-11-25` | T2 | eventDate 2026-11-27, CME trade date 2026-11-27 |
@@ -418,7 +429,7 @@ This era's rows cite the ids below: CME Group's own published holiday schedules 
 **Interpretive steps, 2026.**
 
 - Every row is the family's own published line: `NKD` and `NIY` appear in the `THBP-B`
-  captures for all twelve dates, so no inference from the Equity Index line is made anywhere
+  captures for all fourteen dates, so no inference from the Equity Index line is made anywhere
   in 2026.
 - Good Friday 2026 is the date that proves the 2025 inference rather than resting on it.
   `NKD` and `NIY` print `08:15 closed /TD 2026-04-03`; `ZN`, `6E` and `BTC` print 10:15 CT on
@@ -430,12 +441,18 @@ This era's rows cite the ids below: CME Group's own published holiday schedules 
 
 **Gaps, 2026.**
 
-- **executable, not representable** — the Saturday sessions of 2026-06-20 and 2026-07-04.
-  CME publishes `05:00 open /TD 2026-06-22; 17:00 closed /TD 2026-06-22` and
-  `05:00 open /TD 2026-07-06; 17:00 closed /TD 2026-07-06`. The family's normal week has no
-  Saturday session at all, and a late open can only push an existing occurrence later, never
-  create one (design memo D7), so neither is a row. The crate reports these Saturdays closed.
-  Closing condition: the block rows of design memo §7 follow-up 8 (#93).
+- **executable, was not representable — resolved 2026-09-25 UTC by Stage 4 (#116).** The
+  Saturday sessions of 2026-06-20 and 2026-07-04, `05:00 open /TD 2026-06-22;
+  17:00 closed /TD 2026-06-22` and `05:00 open /TD 2026-07-06; 17:00 closed /TD 2026-07-06`,
+  on a week whose normal grid has no Saturday session. The block rows #93 shipped supply the
+  vocabulary and this table now states both trade dates, so the crate no longer reports these
+  Saturdays closed. Each row states the **complete** trade date. For 2026-06-22 the two
+  halves come from two windows: the Saturday from `CME-SVC-B-2026-06-18`, and the Sunday
+  Pre-Open and Sunday-17:00-to-Monday-16:00 session from `CME-SVC-B-2026-06-21`, because
+  that Saturday window stops at 2026-06-20 and prints no Sunday entry at all. For 2026-07-06
+  a single window carries both halves — `CME-SVC-B-2026-07-03`, which runs
+  2026-07-03 .. 2026-07-05, prints the Saturday `05:00 open; 17:00 closed` and the Sunday
+  Pre-Open and evening open itself.
 - **residual risk** — the trade-date divergence described under 2025 applies to 2026-01-19,
   2026-02-16, 2026-05-25, 2026-06-19, 2026-07-03, 2026-09-07 and 2026-11-26.
 - **audited, no row** — Saturday 2026-04-04, the day after Good Friday. CME's service
@@ -451,6 +468,7 @@ This era's rows cite the ids below: CME Group's own published holiday schedules 
 | 2027-03-26 | closed | `no events published` | `CME-SVC-B-2027-03-25` | T2 | eventDates 2027-03-25 and 2027-03-26; CME prints `16:00 closed /TD 2027-03-25` with no evening re-open |
 | 2027-05-31 | early close | `12:00 preopen /TD 2027-06-01; 17:00 open /TD 2027-06-01` — 12:00 CT | `CME-SVC-B-2027-05-30` | T2 | eventDate 2027-05-31, CME trade date 2027-06-01 |
 | 2027-06-18 | early close | `12:00 closed /TD 2027-06-21` — 12:00 CT | `CME-SVC-B-2027-06-17` | T2 | eventDate 2027-06-18, CME trade date 2027-06-21; the Thursday-evening leg opened 2027-06-17 17:00 CT |
+| 2027-06-21 | replacement blocks | `05:00 open; 17:00 closed /TD 2027-06-21` on eventDate 2027-06-19 (`CME-SVC-B-2027-06-17`); `16:00 preopen; 17:00 open /TD 2027-06-21` on eventDate 2027-06-20 and `16:00 closed /TD 2027-06-21` on eventDate 2027-06-21 (`CME-SVC-B-2027-06-20`) | `CME-SVC-B-2027-06-17` | T2 | as 2026-06-22: the Saturday from the first window, the Sunday legs from the second |
 | 2027-07-05 | early close | `12:00 preopen /TD 2027-07-06; 17:00 open /TD 2027-07-06` — 12:00 CT | `CME-SVC-B-2027-07-04` | T2 | eventDate 2027-07-05, CME trade date 2027-07-06 |
 | 2027-09-06 | early close | `12:00 preopen /TD 2027-09-07; 17:00 open /TD 2027-09-07` — 12:00 CT | `CME-SVC-B-2027-09-05` | T2 | eventDate 2027-09-06, CME trade date 2027-09-07 |
 | 2027-11-25 | early close | `12:00 preopen /TD 2027-11-26; 17:00 open /TD 2027-11-26` — 12:00 CT | `CME-SVC-B-2027-11-24` | T2 | eventDate 2027-11-25, CME trade date 2027-11-26 |
@@ -459,8 +477,10 @@ This era's rows cite the ids below: CME Group's own published holiday schedules 
 
 **Interpretive steps, 2027.**
 
-- All eleven rows are the family's own published line, from the `THBP-B` live retrievals of
-  2026-09-12.
+- All twelve rows are the family's own published line. Eleven come from the `THBP-B` live
+  retrievals of 2026-09-12; the twelfth, 2027-06-21, takes its Saturday leg from
+  `CME-SVC-B-2027-06-17` (a 2026-09-12 retrieval) and its Sunday legs from `CME-SVC-B-2027-06-20`,
+  which was retrieved 2026-09-25.
 - 2027-12-23 is CME's own holiday date for Christmas 2027 but is **not** a crate row. Its
   daytime close is the ordinary 16:00 CT; what is missing is the Thursday-evening leg, and
   `Closed(2027-12-24)` already removes it. 2027-12-31 is likewise normal: `16:00 closed
@@ -469,9 +489,11 @@ This era's rows cite the ids below: CME Group's own published holiday schedules 
 
 **Gaps, 2027.**
 
-- **executable, not representable** — the Saturday session of 2027-06-19,
-  `05:00 open /TD 2027-06-21; 17:00 closed /TD 2027-06-21`. Same shape and same closing
-  condition as the two 2026 Saturdays.
+- **executable, was not representable — resolved 2026-09-25 UTC by Stage 4 (#116).** The
+  Saturday session of 2027-06-19, `05:00 open /TD 2027-06-21; 17:00 closed /TD 2027-06-21`.
+  Same shape as the two 2026 Saturdays, and now a row on the same terms as 2026-06-22: the
+  Saturday from `CME-SVC-B-2027-06-17`, whose window ends at 2027-06-19, and the Sunday legs
+  from `CME-SVC-B-2027-06-20`.
 - **residual risk** — the trade-date divergence described under 2025 applies to 2027-01-18,
   2027-02-15, 2027-05-31, 2027-06-18, 2027-07-05, 2027-09-06 and 2027-11-25.
 - **coverage limit** — CME's published future for this family ends with the 2027-12-30 ..

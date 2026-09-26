@@ -68,6 +68,18 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Added
 
+- **`globex_nikkei_225_dollar` states CME's three Saturday sessions as complete
+  trade dates (2026-09-25 UTC).** Stage 4 of the release plan (#116). CME
+  publishes `05:00 open; 17:00 closed` on Saturday 2026-06-20, 2026-07-04 and
+  2027-06-19, each carrying the following Monday's trade date, on a week whose
+  normal grid has no Saturday session. The family now states trade dates
+  2026-06-22, 2026-07-06 and 2027-06-21 as replacement block sets: the Saturday
+  session at offset `-2`, the Sunday Pre-Open `16:00-17:00` at offset `-1`, and
+  the ordinary Sunday-17:00-to-Monday-16:00 session at offset `-1`. `NKD` and
+  `NIY` are published in CME's second product set rather than the headline one,
+  so these instants were read from that set's windows — already saved in the
+  research store, which the family's own evidence file records. The family's
+  documented different *historical* grid does not reach these dates.
 - **The first operator rows using the replacement-block vocabulary: CME's three
   Globex Saturday sessions, 2026-06-22, 2026-07-06 and 2027-06-21 (2026-09-25 UTC).**
   Stage 4 of the release plan (#116, #93's data). CME publishes `05:00 open;

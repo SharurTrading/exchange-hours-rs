@@ -19,7 +19,7 @@ use chrono::{DateTime, Datelike as _, Days, Duration, NaiveDate, TimeZone as _, 
 use chrono_tz::US;
 use exchange_hours::{
     CalendarQueryError, CalendarResolution, EvidenceTier, ExchangeCalendar, Holiday, HolidayKind,
-    MarketHoursKey, SUPPORT_FLOOR, SessionKind, calendar_for_market_hours_key,
+    MarketHoursKey, SUPPORT_FLOOR, SessionKind, SessionState, calendar_for_market_hours_key,
 };
 
 /// The family calendar under test, with its built-in table attached.
@@ -276,6 +276,9 @@ fn the_table_ships_no_late_open_and_holds_exactly_its_audited_rows() {
             match holiday.kind() {
                 HolidayKind::Closed => closed += 1,
                 HolidayKind::EarlyClose { .. } => early += 1,
+                // A complete-day replacement for a Saturday session: neither a
+                // closure nor a boundary move, so it counts in neither column.
+                HolidayKind::ReplacementBlocks(_) => {}
                 other => panic!("{date} ships an unexpected holiday kind: {other:?}"),
             }
         }
@@ -678,26 +681,159 @@ fn the_year_end_closures_delete_only_the_legs_the_operator_deleted() {
     );
 }
 
-/// The Saturday sessions CME publishes and this table cannot state.
+/// The Saturday sessions CME publishes, which this table states as rows.
 ///
 /// `2026-06-20`, `2026-07-04` and `2027-06-19` carry
-/// `05:00 open; 17:00 closed` in CME's own service. The family's normal week
-/// has no Saturday session, and a late open can only push an existing
-/// occurrence later, so these are declared gaps in the evidence file rather
-/// than rows. This fence records the consequence a consumer sees, so the gap
-/// cannot be closed silently.
+/// `05:00 open; 17:00 closed` in CME's own service, on a week whose normal grid
+/// has no Saturday session. Stage 4 (#116) gave the table the replacement-block
+/// vocabulary, so each is a complete-day row keyed to the following Monday
+/// (2026-06-22, 2026-07-06 and 2027-06-21) rather than a declared gap. This
+/// fence records the session's own bounds with its end-exclusive close, the
+/// trade date it carries, and that the row left the ordinary Sunday-Monday
+/// session intact.
 #[test]
-fn the_published_saturday_sessions_are_declared_gaps_and_report_closed() {
+fn the_published_saturday_sessions_ship_as_rows_on_the_following_monday() {
     let nkd = nkd();
 
-    for (year, month, date) in [(2026, 6, 20), (2026, 7, 4), (2027, 6, 19)] {
+    for ((year, month, date), (ty, tm, td)) in [
+        ((2026, 6, 20), (2026, 6, 22)),
+        ((2026, 7, 4), (2026, 7, 6)),
+        ((2027, 6, 19), (2027, 6, 21)),
+    ] {
+        // The session's own bounds, not merely that it is open: the operator
+        // prints `05:00 open; 17:00 closed`, so a row that moved either
+        // boundary must fail here rather than pass on an interior probe.
+        let open = ct(year, month, date, 5, 0, 0);
+        let close = ct(year, month, date, 17, 0, 0);
         assert!(
-            !nkd.is_open(ct(year, month, date, 9, 0, 0))
+            nkd.is_open(open)
                 .expect("the coverage contract must answer a covered date"),
-            "{year}-{month:02}-{date:02} is a sourced Saturday session the scalar \
-             vocabulary cannot state"
+            "{year}-{month:02}-{date:02} is a sourced Saturday session and must be open at its own open"
+        );
+        assert_eq!(
+            nkd.session_bounds(ct(year, month, date, 9, 0, 0))
+                .expect("the coverage contract must answer a covered date"),
+            Some((open, close)),
+            "{year}-{month:02}-{date:02}: the session's bounds are the published ones"
+        );
+        assert!(
+            !nkd.is_open(close)
+                .expect("the coverage contract must answer a covered date"),
+            "{year}-{month:02}-{date:02}: the close is end-exclusive"
+        );
+        assert_eq!(
+            nkd.trade_date(ct(year, month, date, 9, 0, 0))
+                .expect("the coverage contract must answer a covered date"),
+            Some(day(ty, tm, td)),
+            "{year}-{month:02}-{date:02} must carry the following Monday"
+        );
+        // The ordinary Sunday-Monday session survives the row: its evening open
+        // and its trade date's day session are both intact.
+        let sunday = (year, month, date + 1);
+        assert!(
+            nkd.is_open(ct(sunday.0, sunday.1, sunday.2, 18, 0, 0))
+                .expect("the coverage contract must answer a covered date"),
+            "{year}-{month:02}-{date:02}: the Sunday-evening open was deleted by the row"
+        );
+        assert!(
+            nkd.is_open(ct(ty, tm, td, 10, 0, 0))
+                .expect("the coverage contract must answer a covered date"),
+            "{year}-{month:02}-{date:02}: the day session was deleted by the row"
+        );
+        assert!(
+            !nkd.is_open(ct(ty, tm, td, 16, 0, 0))
+                .expect("the coverage contract must answer a covered date"),
+            "{year}-{month:02}-{date:02}: the final close is end-exclusive"
         );
         assert!(nkd.holiday_on(day(year, month, date)).is_none());
+    }
+}
+
+/// The Sunday Pre-Open queue the same three rows state, fenced at its bounds.
+///
+/// CME prints `16:00 preopen; 17:00 open` on the Sunday between each published
+/// Saturday session and the ordinary Sunday-evening session, and the family's
+/// row states it as an order-entry block at offset `-1`. A queue is not a
+/// session, so the row's `session_bounds` alone do not state it: this fence
+/// pins the queue's own interval from both sides through `session_state`,
+/// confirms through `is_order_entry_only` that the interval is a queue and not
+/// a session, and confirms 17:00 CT hands it to the matching session. The
+/// family's *normal* week models no order-entry phase, so those two routes
+/// answer `false` everywhere else; here they answer for the row.
+#[test]
+fn the_published_sunday_pre_open_queues_are_fenced_at_their_bounds() {
+    let nkd = nkd();
+
+    for ((year, month, date), (ty, tm, td)) in [
+        ((2026, 6, 20), (2026, 6, 22)),
+        ((2026, 7, 4), (2026, 7, 6)),
+        ((2027, 6, 19), (2027, 6, 21)),
+    ] {
+        // The row's first half: the Saturday session's own bounds, through the
+        // same public query the sibling fence uses.
+        assert_eq!(
+            nkd.session_bounds(ct(year, month, date, 9, 0, 0))
+                .expect("the coverage contract must answer a covered date"),
+            Some((
+                ct(year, month, date, 5, 0, 0),
+                ct(year, month, date, 17, 0, 0)
+            )),
+            "{year}-{month:02}-{date:02}: the Saturday session's bounds are the published ones"
+        );
+
+        // The queue's interval, `[16:00, 17:00)` CT on the Sunday. A start that
+        // moved later fails the 16:00 and 16:59 probes; one that moved earlier
+        // fails the 15:59 probe; an end that moved earlier fails the 16:59 one.
+        let sunday = (year, month, date + 1);
+        let state = |hour, minute, second| {
+            nkd.session_state(ct(sunday.0, sunday.1, sunday.2, hour, minute, second))
+                .expect("the coverage contract must answer a covered date")
+        };
+        assert_ne!(
+            state(15, 59, 59),
+            SessionState::OrderEntry,
+            "{year}-{month:02}-{date:02}: no queue runs before its 16:00 CT open"
+        );
+        for (hour, minute, second) in [(16, 0, 0), (16, 59, 59)] {
+            let instant = ct(sunday.0, sunday.1, sunday.2, hour, minute, second);
+            assert_eq!(
+                state(hour, minute, second),
+                SessionState::OrderEntry,
+                "{year}-{month:02}-{date:02}: the queue runs at {hour:02}:{minute:02}:{second:02} CT"
+            );
+            assert!(
+                nkd.is_order_entry_only(instant)
+                    .expect("the coverage contract must answer a covered date"),
+                "{year}-{month:02}-{date:02}: the queue is order-entry-only at \
+                 {hour:02}:{minute:02}:{second:02} CT"
+            );
+            assert!(
+                !nkd.is_open(instant)
+                    .expect("the coverage contract must answer a covered date"),
+                "{year}-{month:02}-{date:02}: the queue matches no trade and stays out of is_open"
+            );
+        }
+        // 17:00 CT is the queue's end-exclusive close and the matching
+        // session's open: one instant, both statements.
+        assert_eq!(
+            state(17, 0, 0),
+            SessionState::OpenExtended,
+            "{year}-{month:02}-{date:02}: 17:00 CT hands the queue to the matching session"
+        );
+        assert!(
+            !nkd.is_order_entry_only(ct(sunday.0, sunday.1, sunday.2, 17, 0, 0))
+                .expect("the coverage contract must answer a covered date"),
+            "{year}-{month:02}-{date:02}: 17:00 CT is a tradeable session, not a queue"
+        );
+        assert_eq!(
+            nkd.session_bounds(ct(sunday.0, sunday.1, sunday.2, 16, 30, 0))
+                .expect("the coverage contract must answer a covered date"),
+            Some((
+                ct(sunday.0, sunday.1, sunday.2, 17, 0, 0),
+                ct(ty, tm, td, 16, 0, 0)
+            )),
+            "{year}-{month:02}-{date:02}: the queue feeds the Sunday-17:00-to-Monday-16:00 session"
+        );
     }
 }
 
@@ -1746,4 +1882,55 @@ fn era_2019_2021_rows_are_the_audited_date_kind_and_tier_set() {
         date = date.succ_opt().expect("the era ends well before the bound");
     }
     assert_eq!(index, ERA_2019_2021_ROWS.len(), "every recorded row ships");
+}
+
+/// A Saturday-session row's Sunday legs must be sourced from a window that
+/// actually prints them.
+///
+/// Two of these rows span **two** windows: the window that carries the Saturday
+/// session stops at that Saturday and prints no Sunday entry at all, so the
+/// Sunday Pre-Open and the Sunday-Monday session come from the window that
+/// starts on the Sunday. The third row's Saturday window happens to run through
+/// its Sunday and does print the legs, so it needs only the one.
+///
+/// This fence exists because an independent review found the two-window rows
+/// claiming a Sunday pair that their cited artifact does not contain. It pins
+/// the distinction that the per-row citation check cannot see.
+#[test]
+fn a_saturday_rows_sunday_legs_are_sourced_from_a_window_that_prints_them() {
+    // (trade date, Saturday window, the window that actually prints the Sunday legs)
+    for (trade_date, saturday_window, sunday_window) in [
+        ("2026-06-22", "CME-SVC-B-2026-06-18", "CME-SVC-B-2026-06-21"),
+        ("2026-07-06", "CME-SVC-B-2026-07-03", "CME-SVC-B-2026-07-03"),
+        ("2027-06-21", "CME-SVC-B-2027-06-17", "CME-SVC-B-2027-06-20"),
+    ] {
+        let evidence = std::fs::read_to_string(
+            std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+                .join("docs/evidence/globex_nikkei_225_dollar.md"),
+        )
+        .expect("the evidence file must be readable");
+        for window in [saturday_window, sunday_window] {
+            assert!(
+                evidence.contains(&format!("| `{window}` |")),
+                "{trade_date}: {window} must be a recorded document"
+            );
+        }
+        let row = evidence
+            .lines()
+            .find(|line| line.starts_with(&format!("| {trade_date} |")))
+            .unwrap_or_else(|| panic!("{trade_date} must have an evidence row"));
+        assert!(
+            row.contains(saturday_window),
+            "{trade_date}: the row must cite the Saturday session's window"
+        );
+        // Where the two differ, the row must name the second window too: the
+        // legs the first does not print are not in it.
+        if sunday_window != saturday_window {
+            assert!(
+                row.contains(sunday_window),
+                "{trade_date}: the row must name {sunday_window}, which is the window \
+                 that prints the Sunday legs"
+            );
+        }
+    }
 }

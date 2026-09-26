@@ -406,7 +406,8 @@ fn revision_blocks() -> Vec<RevisionBlock> {
 struct HolidayBlock {
     module: String,
     /// The module's own source, so a row naming a static block slice can be
-    /// resolved to the instants that slice declares.
+    /// resolved to the instants that slice declares — in this module, or, when
+    /// the row imports the slice, in the module that declares it.
     source: String,
     files: Vec<String>,
     coverage: Vec<String>,
@@ -1032,6 +1033,217 @@ fn every_evidence_holiday_line_is_well_formed() {
     }
 }
 
+/// Splits `text` at the commas that are not inside a `{}` group.
+///
+/// A `use` tree nests (`use a::{b::C, d::{E, F}};`), so the comma that
+/// separates two bindings is the one at the group's own depth.
+fn split_top_level(text: &str) -> Vec<&str> {
+    let mut parts = Vec::new();
+    let mut depth = 0_usize;
+    let mut start = 0_usize;
+    for (offset, character) in text.char_indices() {
+        match character {
+            '{' => depth = depth.saturating_add(1),
+            '}' => depth = depth.saturating_sub(1),
+            ',' if depth == 0 => {
+                parts.push(&text[start..offset]);
+                start = offset.saturating_add(1);
+            }
+            _ => {}
+        }
+    }
+    parts.push(&text[start..]);
+    parts
+}
+
+/// The `::`-separated segments of one `use` path fragment.
+fn path_segments(path: &str) -> Vec<String> {
+    path.split("::")
+        .map(str::trim)
+        .filter(|segment| !segment.is_empty())
+        .map(str::to_owned)
+        .collect()
+}
+
+/// Every binding one module's `use` statements introduce, as the full path that
+/// names the item and the name the module then writes for it.
+///
+/// A slice may be imported plainly (`use …::SATURDAY_SESSION_BLOCKS;`), out of a
+/// nested group (`use super::super::{…, globex_energy::SATURDAY_SESSION_BLOCKS,
+/// …};`) or under an alias (`use …::SATURDAY_SESSION_BLOCKS as SATURDAY;`), so
+/// all three forms have to reduce to `(path, binding)` before the module the
+/// path names can be found and the declaration read out of it.
+fn use_bindings(text: &str) -> Vec<(Vec<String>, String)> {
+    /// Flattens one `use` tree under the path a group shares.
+    fn flatten(tree: &str, prefix: &[String], into: &mut Vec<(Vec<String>, String)>) {
+        for item in split_top_level(tree) {
+            let item = item.trim();
+            if item.is_empty() {
+                continue;
+            }
+            if let Some(open) = item.find('{') {
+                let close = item
+                    .rfind('}')
+                    .expect("a use group must close on the statement that opens it");
+                let head = item[..open].trim().trim_end_matches("::");
+                let mut base = prefix.to_vec();
+                base.extend(path_segments(head));
+                flatten(&item[open.saturating_add(1)..close], &base, into);
+                continue;
+            }
+            let (path, alias) = item
+                .split_once(" as ")
+                .map_or((item, None), |(path, alias)| (path, Some(alias.trim())));
+            let mut segments = prefix.to_vec();
+            segments.extend(path_segments(path));
+            let Some(name) = segments.last() else {
+                continue;
+            };
+            let binding = alias.map_or_else(|| name.clone(), str::to_owned);
+            into.push((segments, binding));
+        }
+    }
+
+    let mut bindings = Vec::new();
+    let mut statement = String::new();
+    for line in text.lines() {
+        let trimmed = line.trim();
+        if statement.is_empty() {
+            let Some(rest) = ["pub(crate) use ", "pub use ", "use "]
+                .iter()
+                .find_map(|head| trimmed.strip_prefix(head))
+            else {
+                continue;
+            };
+            statement.push_str(rest);
+        } else {
+            statement.push(' ');
+            statement.push_str(trimmed);
+        }
+        if let Some(end) = statement.find(';') {
+            flatten(&statement[..end], &[], &mut bindings);
+            statement.clear();
+        }
+    }
+    bindings
+}
+
+/// The segments below `src` that name one crate module.
+///
+/// `…/globex_energy.rs` and `…/globex_energy/mod.rs` are the same module, so
+/// the trailing `mod` is dropped and the file stem is what usually names it.
+fn module_segments(module: &str) -> Vec<String> {
+    let path = module.strip_prefix("src/").unwrap_or(module);
+    let path = path.strip_suffix(".rs").unwrap_or(path);
+    let mut segments = path.split('/').map(str::to_owned).collect::<Vec<_>>();
+    if segments.last().is_some_and(|segment| segment == "mod") {
+        segments.pop();
+    }
+    segments
+}
+
+/// The candidate files a `use` path may resolve to, from one module.
+///
+/// `self`, `super` and `crate` are resolved against the importing module;
+/// the uniform-path form (`use globex_energy::…`) names an item in scope, which
+/// is a sibling module of the importing module or of one of its ancestors, so
+/// each of those directories is tried in turn. The candidates are returned in
+/// resolution order and the caller takes the first that declares the slice, so
+/// an ambiguous path costs a lookup rather than a wrong answer.
+fn use_candidates(path: &[String], module: &str) -> Vec<PathBuf> {
+    let here = module_segments(module);
+    let mut bases: Vec<Vec<String>> = Vec::new();
+    let mut rest = path;
+    match path.first().map(String::as_str) {
+        Some("crate") => {
+            bases.push(Vec::new());
+            rest = &path[1..];
+        }
+        Some("self") => {
+            bases.push(here.clone());
+            rest = &path[1..];
+        }
+        Some("super") => {
+            let mut base = here.clone();
+            while rest.first().is_some_and(|segment| segment == "super") {
+                base.pop();
+                rest = &rest[1..];
+            }
+            bases.push(base);
+        }
+        _ => {
+            let mut base = here.clone();
+            loop {
+                bases.push(base.clone());
+                if base.pop().is_none() {
+                    break;
+                }
+            }
+        }
+    }
+    let mut candidates = Vec::new();
+    for base in bases {
+        let mut named = base;
+        named.extend(rest.iter().cloned());
+        let Some(stem) = named.pop() else {
+            continue;
+        };
+        let mut parent = PathBuf::from("src");
+        for segment in &named {
+            parent.push(segment);
+        }
+        candidates.push(parent.join(format!("{stem}.rs")));
+        candidates.push(parent.join(&stem).join("mod.rs"));
+    }
+    candidates
+}
+
+/// The source text that declares one named `ExceptionBlock` slice.
+///
+/// A `holidays!` block either declares the slice beside its rows or imports the
+/// one its family already ships: `venues/comex.rs` and `venues/nymex.rs` route
+/// the energy family and name its `globex_energy::SATURDAY_SESSION_BLOCKS`. The
+/// lookup therefore reads the naming module first, then follows that module's
+/// own `use` statements — through a re-export when one module passes the name
+/// on, bounded by `depth`, and through a glob import — and reads the
+/// declaration where it is written. A
+/// slice that resolves nowhere returns `None`, which the caller asserts on: an
+/// unresolvable slice is a defect, never a row that goes unchecked.
+fn declaring_text(name: &str, module: &str, text: &str, depth: u32) -> Option<String> {
+    let declaration = format!("static {name}: [ExceptionBlock;");
+    if text.contains(&declaration) {
+        return Some(text.to_owned());
+    }
+    if depth == 0 {
+        return None;
+    }
+    for (path, binding) in use_bindings(text) {
+        // A glob (`use globex_energy::*;`) may bring the slice in unnamed, so
+        // the declaration is then looked for under the requested name in every
+        // module the path names; any other binding has to be the name itself.
+        let glob = binding == "*";
+        if !glob && binding != name {
+            continue;
+        }
+        let Some((last, module_path)) = path.split_last() else {
+            continue;
+        };
+        let declared = if glob { name } else { last };
+        for candidate in use_candidates(module_path, module) {
+            let Ok(candidate_text) = fs::read_to_string(repository_root().join(&candidate)) else {
+                continue;
+            };
+            let candidate_module = relative(&repository_root().join(&candidate));
+            if let Some(found) =
+                declaring_text(declared, &candidate_module, &candidate_text, depth - 1)
+            {
+                return Some(found);
+            }
+        }
+    }
+    None
+}
+
 /// Returns the instants one row's kind states, as `hh:mm` strings.
 ///
 /// A `late_open_and_early_close` states both; a `Closed` or `Unsourced` row
@@ -1041,13 +1253,17 @@ fn every_evidence_holiday_line_is_well_formed() {
 /// `m * 60`, and a family's named constant has already been substituted away by
 /// the time this runs only if the test resolved it — so an unresolved name is a
 /// failed assertion rather than a silent skip.
+///
+/// `module` is the naming module's repository-relative path: a replacement row
+/// may name a slice its module only imports, and the declaration is then read
+/// from the module that ships it (`declaring_text`).
 #[expect(
     clippy::panic,
     reason = "a module whose instant is not the integer expression the macro grammar \
               takes has already failed the build; this fence reads every shipped \
               module and must fail loudly rather than mis-read one"
 )]
-fn stated_instants(kind: &str, module_text: &str) -> Vec<String> {
+fn stated_instants(kind: &str, module: &str, module_text: &str) -> Vec<String> {
     /// Reads one `h * 3_600 + m * 60` expression as minutes since midnight.
     fn minutes(expression: &str) -> u32 {
         expression
@@ -1109,17 +1325,26 @@ fn stated_instants(kind: &str, module_text: &str) -> Vec<String> {
         // slice, so the instants it states are that slice's own opens and
         // closes. Reading them from the declaration rather than from the row
         // keeps the fence checking the family's real data: a row cannot name
-        // instants the slice does not carry.
+        // instants the slice does not carry. The slice may be declared beside
+        // the rows or imported from the family that owns the session, so the
+        // declaration is resolved through the naming module's own `use`
+        // statements rather than required to sit in the same file.
         text if text.starts_with("ReplacementBlocks(") => {
             let name = arguments(text, "ReplacementBlocks(").first().map_or_else(
                 || panic!("a replacement row names its block slice: {text}"),
                 |a| a.trim_start_matches('&').trim(),
             );
             let declaration = format!("static {name}: [ExceptionBlock;");
-            let start = module_text
+            let declaring = declaring_text(name, module, module_text, 4).unwrap_or_else(|| {
+                panic!(
+                    "{name} must be declared in {module}, or in a module {module} imports it \
+                     from"
+                )
+            });
+            let start = declaring
                 .find(&declaration)
-                .unwrap_or_else(|| panic!("{name} must be declared in the same module"));
-            let body = &module_text[start..];
+                .expect("the declaring text was found by its own declaration");
+            let body = &declaring[start..];
             let end = body
                 .find("];")
                 .unwrap_or_else(|| panic!("{name}'s declaration must terminate"));
@@ -1263,7 +1488,7 @@ fn stated_instants_for(families: &[(&str, &str)]) -> BTreeMap<String, BTreeSet<S
         resolved.extend(owned);
         for row in &block.rows {
             let entry = stated.entry(row.day.clone()).or_default();
-            for instant in stated_instants(&row.kind, &block.source) {
+            for instant in stated_instants(&row.kind, &block.module, &block.source) {
                 entry.insert(instant);
             }
         }
@@ -1320,6 +1545,76 @@ fn every_instant_a_venue_summary_cites_is_one_its_families_state() {
             }
         }
     }
+}
+
+/// A replacement row's printed instants are the block bounds it ships.
+///
+/// A `ReplacementBlocks` row states a **complete** trading day, so every
+/// instant its evidence row quotes as printed is one of the row's own block
+/// bounds. The citation fence checks the document id and the reverse fence
+/// checks the trade date, but neither reads the instants: an evidence row whose
+/// prose moved a single phase — the Sunday Pre-Open, say — while the module
+/// kept the sourced one would pass both. This ties the printed cell to the
+/// bounds the module declares — or imports from the family that declares them —
+/// so prose that drifts from the data fails. The
+/// other direction needs the family's own tests, because an instant can appear
+/// in two blocks of the same day (16:00 CT is both the queue's open and the
+/// following session's close), so membership alone cannot see the module move;
+/// `the_published_sunday_pre_open_queues_are_fenced_at_their_bounds` probes the
+/// phase through the public surface and does see it.
+#[test]
+fn a_replacement_rows_printed_instants_are_the_block_bounds_it_ships() {
+    let files = evidence_files();
+    let mut checked = 0_usize;
+
+    for block in holiday_blocks() {
+        for row in &block.rows {
+            if !row.kind.starts_with("ReplacementBlocks(") {
+                continue;
+            }
+            let stated = stated_instants(&row.kind, &block.module, &block.source)
+                .into_iter()
+                .collect::<BTreeSet<_>>();
+            assert!(
+                !stated.is_empty(),
+                "{}: the {} replacement row states no instant at all",
+                block.module,
+                row.day
+            );
+            for name in &block.files {
+                let text = files
+                    .get(name)
+                    .unwrap_or_else(|| panic!("{name} must exist in docs/evidence"));
+                let holidays = section(text, "## Holidays")
+                    .unwrap_or_else(|| panic!("{name} must carry a `## Holidays` section"));
+                let line = holidays
+                    .lines()
+                    .find(|line| line.starts_with(&format!("| {} |", row.day)))
+                    .unwrap_or_else(|| panic!("{name} records no {} holiday row", row.day));
+                let printed = line
+                    .trim_start_matches('|')
+                    .split('|')
+                    .nth(2)
+                    .map(str::trim)
+                    .expect("a holiday line carries a printed-instant cell");
+                for instant in stated_times(printed) {
+                    assert!(
+                        stated.contains(&instant),
+                        "{name}: the {} row prints {instant} CT, but the block bounds the \
+                         module states on that trade date are {stated:?}. Printed cell: \
+                         {printed}",
+                        row.day
+                    );
+                }
+                checked += 1;
+            }
+        }
+    }
+
+    assert!(
+        checked > 0,
+        "no replacement row was checked, so this fence is vacuous"
+    );
 }
 
 /// A Saturday-session trade date whose Sunday legs a venue file also states must

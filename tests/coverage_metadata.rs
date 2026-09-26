@@ -123,7 +123,12 @@ fn a_complete_scope_reports_one_complete_span_and_a_trailing_gap() {
 
 #[test]
 fn scopes_without_2025_holiday_coverage_report_outside_range() {
-    for exchange in [Exchange::Cfe, Exchange::Eurex, Exchange::Iceus] {
+    // `eurex` used to be the third scope here. Its 2025 rows shipped, so its
+    // window now opens at the 2025 floor: 2025-06-02 is `Covered` for it, and
+    // the reason its *verdict* is still not completeness is the operator's
+    // undated German closure scope, declared as `UnpublishedClosureDates` and
+    // asserted in `a_declared_phase_gap_is_era_aware_and_reported_for_the_span_it_answers`.
+    for exchange in [Exchange::Cfe, Exchange::Iceus] {
         let coverage = exchange_coverage(exchange);
         let day = date(2025, 6, 2);
         assert_eq!(
@@ -139,7 +144,7 @@ fn scopes_without_2025_holiday_coverage_report_outside_range() {
         let first_complete = coverage
             .complete_ranges()
             .next()
-            .expect("each of the three audited a 2026 window");
+            .expect("each of the two audited a 2026 window");
         assert_eq!(first_complete.first(), date(2026, 1, 1), "{exchange:?}");
         assert!(
             coverage
@@ -775,7 +780,6 @@ fn a_declared_phase_gap_is_era_aware_and_reported_for_the_span_it_answers() {
         Exchange::Cbot,
         Exchange::Cfe,
         Exchange::CoinbaseDerivatives,
-        Exchange::Eurex,
         Exchange::Iceus,
     ] {
         assert!(
@@ -783,6 +787,33 @@ fn a_declared_phase_gap_is_era_aware_and_reported_for_the_span_it_answers() {
             "{exchange:?}"
         );
     }
+
+    // `eurex` is the one *venue* that declares a gap, and it is the one shape
+    // that withholds no phase: the operator's German equity/equity-index
+    // closures are undated, so the site is incomplete on every date the
+    // declaration covers while its ordinary week and order-entry queues are
+    // still served. The reason travels with the declaration, because the query
+    // gate answers through this reason and refuses through the other two.
+    let eurex = exchange_coverage(Exchange::Eurex);
+    let declared: Vec<(CoverageGapReason, &str)> = eurex
+        .phase_gaps()
+        .iter()
+        .map(|gap| (gap.reason(), gap.closing_condition()))
+        .collect();
+    assert_eq!(
+        declared,
+        vec![(CoverageGapReason::UnpublishedClosureDates, "#157")]
+    );
+    assert!(
+        eurex
+            .phase_gaps()
+            .iter()
+            .all(|gap| gap.applies_until().is_none()),
+        "the German-scope note is unpublished in the 2026 edition too, so the \
+         declaration carries no era bound"
+    );
+    assert!(!eurex.is_complete_on(sample), "eurex on {sample}");
+    assert_eq!(eurex.coverage_on(sample), DateCoverage::OutsideCoveredRange);
     assert!(
         !key_coverage(MarketHoursKey::GlobexCryptocurrency)
             .phase_gaps()

@@ -68,6 +68,22 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Added
 
+- **Eurex's holiday table covers 2025 (2026-09-26 UTC).** `Exchange::Eurex` is
+  `served`, and its built-in table audited only `2026-01-01..2026-12-31`, so all
+  365 dates of 2025 answered `OutsideCoveredRange`. The table now audits
+  `2025-01-01..2026-12-31` and carries the operator's eight 2025 closures
+  (`EUREX-HOLREG-2025`, T1): 1 January, 18 April, 21 April, 1 May, 25 December
+  and 26 December are the trading-and-clearing rows, and 24 and 31 December the
+  trading-only ones — all eight `Closed`, because the crate answers when a
+  market accepts and matches orders and "no trading" removes every phase it
+  models. Eurex publishes no 2025 early close, reduced session or late open, so
+  no other row is added and every other 2025 date stays audited normal. The
+  identity's coverage is still **incomplete**: the 2025 and 2026 trading
+  calendars declare German equity and equity-index closures as `tba`, which the
+  crate records as an undated closure scope (#157), and 2027 is published once
+  unconditionally and once "on a preliminary and indicative basis … and are
+  subject to change", so it stays out of the table. Evidence:
+  `docs/evidence/eurex.md`.
 - **`globex_nikkei_225_dollar` states CME's three Saturday sessions as complete
   trade dates (2026-09-25 UTC).** Stage 4 of the release plan (#116). CME
   publishes `05:00 open; 17:00 closed` on Saturday 2026-06-20, 2026-07-04 and

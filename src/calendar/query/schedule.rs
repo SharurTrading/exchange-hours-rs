@@ -398,6 +398,17 @@ impl<'a> QueryContext<'a> {
     /// points whose answer *is* the arrangement a declared phase gap withholds:
     /// the order-entry queue scans. An identity that declares no phase gap is
     /// unaffected, so this costs one slice check on that path.
+    ///
+    /// Only a declaration that **withholds a phase** refuses here. A declared
+    /// gap withholds a queue exactly when its reason names one:
+    /// [`CoverageGapReason::NormalWeekPhaseWithheld`] and
+    /// [`CoverageGapReason::SpecialSessionUnrepresentable`] do, and
+    /// [`CoverageGapReason::UnpublishedClosureDates`] — `eurex`'s undated
+    /// German-scope closures — does not, because every phase the crate models
+    /// for that identity is served and that gap is a completeness fact alone
+    /// (LAW-COVERAGE: a coverage error is never reported where the crate has an
+    /// answer). An unrecognized reason refuses, which is the conservative
+    /// direction: a new declaration shape answers no queue until it says so.
     pub(super) fn require_phase_coverage(self, date: NaiveDate) -> Result<(), CalendarQueryError> {
         let Some(coverage) = self.coverage else {
             return Ok(());
@@ -418,6 +429,7 @@ impl<'a> QueryContext<'a> {
         self.require_answerable(date)?;
         match coverage.phase_gap_on(date) {
             None => Ok(()),
+            Some(gap) if gap.reason() == CoverageGapReason::UnpublishedClosureDates => Ok(()),
             Some(_gap) => Err(CalendarQueryError::OutsideCoveredRange {
                 source: coverage.identity(),
                 date,

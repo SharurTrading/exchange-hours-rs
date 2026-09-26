@@ -23,17 +23,19 @@
 //! scopes whose own definition has no holiday closures, an affirmative
 //! assertion (LAW-HOLIDAY-SCOPE) and never an inference from a missing table.
 //!
-//! `DeclaredSourcing::phase_gaps` is the sibling assertion for
-//! **phase-level** gaps: the shapes `docs/schedules/coverage-2025.md`'s
+//! `DeclaredSourcing::phase_gaps` is the sibling assertion for the **declared**
+//! gaps: the shapes `docs/schedules/coverage-2025.md`'s
 //! `Missing / disputed` column records but no date walk can find, because the
 //! arrangement the operator publishes is missing from the whole span the
 //! declaration names rather than from the dates a boundary falls between — the
 //! whole claimed interval when the declaration carries no bound, and the era
 //! before `PhaseGap::until` when the identity's own knowledge-bound row begins
 //! serving it. `CoverageGapReason::NormalWeekPhaseWithheld`
-//! is the required-phase shape (#79) and
+//! is the required-phase shape (#79),
 //! `CoverageGapReason::SpecialSessionUnrepresentable` the special-session shape
-//! (#93). Each declaration carries the issue whose closure discharges it, so the
+//! (#93) and `CoverageGapReason::UnpublishedClosureDates` the undated
+//! holiday-scope shape (#157), which withholds no phase at all. Each declaration
+//! carries the issue whose closure discharges it, so the
 //! metadata reports a gap with a closing condition rather than a bare verdict —
 //! LAW-COVERAGE's "a recorded gap with a closing condition", asserted by the
 //! crate rather than inferred from its data. One identity can carry several: the
@@ -46,8 +48,8 @@
 //! Only an identity whose gap survives the permanent 2025 floor is declared
 //! here, because that is the interval the completeness claim covers: a scope
 //! whose withheld phase or unstateable session lies entirely before 2025 is not
-//! incomplete in the claimed interval and must not be declared. Eight scopes
-//! declare one or more gaps today — nine declarations in all — and the fences in
+//! incomplete in the claimed interval and must not be declared. Nine scopes
+//! declare one or more gaps today — ten declarations in all — and the fences in
 //! `tests/schedule_documentation/coverage_inventory.rs` hold them to the
 //! inventory's own verdicts while `tests/coverage_metadata.rs` holds each
 //! declaration to the shipped profile's behaviour.
@@ -227,6 +229,32 @@ const fn undated_five_day_pre_open() -> PhaseGap {
 /// carry.
 const WITHHELD_QUARTER_HOUR: [PhaseGap; 1] = [withheld_sunday_quarter_hour()];
 
+/// The undated closure scope `eurex` declares: Eurex's own trading calendars say
+/// the German equity and equity-index scope closes on dates it has not published
+/// (#157).
+///
+/// `docs/schedules/coverage-2025.md` records the scope's verdict as incomplete
+/// for it and `docs/evidence/eurex.md` quotes both editions: the *Eurex trading
+/// calendar 2025* prints `Kein Handel und keine Ausübung in deutschen Aktien- und
+/// Aktienindex-derivaten sowie in ETF- und ETC-Derivaten, die auf
+/// Xetra@-Börsen-notierungen basieren: tba.`, and the 2026 edition carries the
+/// same note in English and still says `to be announced`. FDAX and FDXM are
+/// German equity-index derivatives behind this identity, so 2025 and 2026 could
+/// carry closures the shipped table cannot state.
+///
+/// **Whole-domain, and no phase.** The note is unpublished in the 2026 edition
+/// too, so no row is keyed to a day the gap stops applying
+/// (LAW-NO-FABRICATED-DATES). The gap withholds no phase — Eurex serves every
+/// phase it models on an ordinary day — so the declaration is a completeness
+/// fact rather than a reason to refuse an order-entry queue, and
+/// `CalendarQueryContext::require_phase_coverage` answers through it.
+const fn undated_german_closures() -> PhaseGap {
+    PhaseGap::new(CoverageGapReason::UnpublishedClosureDates, "#157")
+}
+
+/// `eurex`'s one declaration: the operator's undated German-scope closures.
+const EUREX_UNDATED_CLOSURES: [PhaseGap; 1] = [undated_german_closures()];
+
 /// `globex_cryptocurrency` declares both of its gaps: the special sessions and
 /// the five-day era's undated Pre-Open onset.
 const GLOBEX_CRYPTOCURRENCY_GAPS: [PhaseGap; 2] =
@@ -326,7 +354,9 @@ const fn for_exchange(exchange: Exchange) -> DeclaredSourcing {
         Exchange::CoinbaseDerivatives => DeclaredSourcing::nothing_carried(),
         // `—`: closed before its own 2020-05-18 first trade date, and closed from 2025-03-24.
         Exchange::Smfe => DeclaredSourcing::nothing_carried(),
-        Exchange::Eurex => DeclaredSourcing::carried_below(horizon!(2010, 1, 1)),
+        Exchange::Eurex => {
+            DeclaredSourcing::carried_below_with(horizon!(2010, 1, 1), &EUREX_UNDATED_CLOSURES)
+        }
         // `—`: closed before the sourced 2024-03-25 launch.
         Exchange::Eex => DeclaredSourcing::nothing_carried(),
         // `—`: closed before the sourced 2017-11-07 launch-eve opening.
@@ -421,7 +451,9 @@ const fn for_market_hours_key(key: MarketHoursKey) -> DeclaredSourcing {
             DeclaredSourcing::nothing_carried_with(&GLOBEX_CRYPTOCURRENCY_GAPS)
         }
         MarketHoursKey::CfeVix => DeclaredSourcing::carried_below(horizon!(2010, 1, 1)),
-        MarketHoursKey::Eurex => DeclaredSourcing::carried_below(horizon!(2010, 1, 1)),
+        MarketHoursKey::Eurex => {
+            DeclaredSourcing::carried_below_with(horizon!(2010, 1, 1), &EUREX_UNDATED_CLOSURES)
+        }
         // `—`: closed before the sourced 2017-11-07 launch-eve opening.
         MarketHoursKey::IceUs => DeclaredSourcing::nothing_carried(),
         MarketHoursKey::IceUsSugar => DeclaredSourcing::carried_below(horizon!(2011, 8, 1)),

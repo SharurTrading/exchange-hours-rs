@@ -418,6 +418,15 @@ impl<'a> QueryContext<'a> {
         self.require_answerable(date)?;
         match coverage.phase_gap_on(date) {
             None => Ok(()),
+            // A declaration whose phase the crate does **serve** withholds
+            // nothing, so it refuses nothing: the post-close queue's window and
+            // both of its verdicts are sourced, and only the trade date the
+            // queue is reported under is the crate's own convention rather than
+            // the operator's printed label. Refusing here would turn a labelling
+            // fact into a coverage error read as a closure on every covered date
+            // of two served scopes — the failure LAW-COVERAGE exists to prevent.
+            // Every other reason names a phase the crate does not carry at all.
+            Some(gap) if gap.reason() == CoverageGapReason::PostCloseQueueTradeDateLabel => Ok(()),
             Some(_gap) => Err(CalendarQueryError::OutsideCoveredRange {
                 source: coverage.identity(),
                 date,

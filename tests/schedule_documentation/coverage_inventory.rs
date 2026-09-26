@@ -262,7 +262,7 @@ fn withheld(calendar: ExchangeCalendar, date: NaiveDate) -> bool {
 /// **and** the Sunday quarter-hour (#79), so its denial of completeness is no
 /// longer date-shaped.
 fn date_level_incompleteness() -> &'static [(&'static str, usize)] {
-    &[("cbot", 47)]
+    &[("cbot", 61)]
 }
 
 /// `is_complete_on(SAMPLE)` agrees with the inventory's `Complete?` cell for all
@@ -360,8 +360,8 @@ fn inventory_completeness_verdicts_match_the_metadata() {
     }
     assert_eq!(
         (complete, incomplete, no_coverage),
-        (4, 9, 3),
-        "the inventory's verdict shapes: four complete, nine incomplete, three with no 2025 \
+        (2, 11, 3),
+        "the inventory's verdict shapes: two complete, eleven incomplete, three with no 2025 \
          coverage"
     );
 }
@@ -385,6 +385,7 @@ fn declared_phase_gaps() -> Vec<(&'static str, Vec<(CoverageGapReason, &'static 
     let quarter_hour = (CoverageGapReason::NormalWeekPhaseWithheld, "#79");
     let special_sessions = (CoverageGapReason::SpecialSessionUnrepresentable, "#93");
     let pre_open_onset = (CoverageGapReason::NormalWeekPhaseWithheld, "#123");
+    let post_close_label = (CoverageGapReason::PostCloseQueueTradeDateLabel, "#152");
     vec![
         ("cme", vec![quarter_hour]),
         ("comex", vec![quarter_hour]),
@@ -399,6 +400,12 @@ fn declared_phase_gaps() -> Vec<(&'static str, Vec<(CoverageGapReason, &'static 
             "globex_cryptocurrency",
             vec![special_sessions, pre_open_onset],
         ),
+        // The two scopes whose declaration serves its phase: the post-close
+        // queue is answered on every covered date, and only the trade date it
+        // reads under is the crate's convention rather than the operator's
+        // printing (#152).
+        ("globex_grains", vec![post_close_label]),
+        ("globex_livestock", vec![post_close_label]),
     ]
 }
 
@@ -533,9 +540,10 @@ fn the_declared_phase_level_gaps_match_the_inventory() {
     }
     assert_eq!(
         (declaring, declarations),
-        (8, 9),
-        "eight served scopes declare a phase-level gap today, nine declarations in all: seven \
-         quarter-hour scopes, and `globex_cryptocurrency`'s two"
+        (10, 11),
+        "ten served scopes declare a phase-level gap today, eleven declarations in all: seven \
+         quarter-hour scopes, `globex_cryptocurrency`'s two, and the post-close queue label \
+         `globex_grains` and `globex_livestock` declare"
     );
 
     // The scopes the quarter-hour probe cleared of the disputed window declare
@@ -548,8 +556,6 @@ fn the_declared_phase_level_gaps_match_the_inventory() {
         "coinbase_derivatives",
         "eurex",
         "iceus",
-        "globex_grains",
-        "globex_livestock",
         "globex_nikkei_225_dollar",
     ] {
         assert!(

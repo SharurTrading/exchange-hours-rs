@@ -81,16 +81,18 @@ fn the_support_floor_is_local_first_of_january_2025() {
 
 #[test]
 fn a_complete_scope_reports_one_complete_span_and_a_trailing_gap() {
-    // `globex_grains` is one of the three scopes that still reach 2027-12-31
-    // with nothing withheld: `comex`, `nymex`, `globex_energy` and
+    // `globex_nikkei_225_dollar` is the one scope that still reaches 2027-12-31
+    // with nothing withheld: it ships no order-entry phase at all, so the
+    // post-close queue label `globex_grains` and `globex_livestock` declare
+    // (#152) cannot apply to it, and `comex`, `nymex`, `globex_energy` and
     // `globex_interest_rates` are complete no longer, because each withholds the
     // Sunday 16:00-16:15 CT quarter-hour its ledger row records (#79).
-    let coverage = key_coverage(MarketHoursKey::GlobexGrains);
+    let coverage = key_coverage(MarketHoursKey::GlobexNikkei225Dollar);
     assert_eq!(
         coverage.identity(),
-        CalendarSource::MarketHoursKey(MarketHoursKey::GlobexGrains)
+        CalendarSource::MarketHoursKey(MarketHoursKey::GlobexNikkei225Dollar)
     );
-    assert_eq!(coverage.normal_week_sourced_from(), Some(date(2010, 3, 15)));
+    assert_eq!(coverage.normal_week_sourced_from(), None);
     assert_eq!(coverage.sourced_normal_week(), unbounded(SUPPORT_FLOOR));
 
     let complete: Vec<DateRange> = coverage.complete_ranges().collect();
@@ -117,7 +119,7 @@ fn a_complete_scope_reports_one_complete_span_and_a_trailing_gap() {
     assert!(matches!(contract, HolidayContract::Audited { .. }));
     assert!(contract.rows().is_some_and(|rows| rows > 0));
     assert!(contract.coverage().is_some_and(|windows| {
-        windows.first() == date(2010, 1, 1) && windows.last() == date(2027, 12, 31)
+        windows.first() == date(2016, 1, 1) && windows.last() == date(2027, 12, 31)
     }));
 }
 
@@ -613,9 +615,9 @@ fn check_metadata(calendar: ExchangeCalendar, identity: CalendarSource) {
 
 #[test]
 fn a_complete_scope_answers_every_day_inside_its_span() {
-    // A spot walk over one complete scope, so the span report and the per-date
-    // accessor are compared date by date rather than only at the edges.
-    let coverage = key_coverage(MarketHoursKey::GlobexGrains);
+    // A spot walk over the one complete scope, so the span report and the
+    // per-date accessor are compared date by date rather than only at the edges.
+    let coverage = key_coverage(MarketHoursKey::GlobexNikkei225Dollar);
     for day in days_from_floor(date(2027, 12, 31)) {
         assert!(coverage.is_complete_on(day), "{day}");
         assert_eq!(gap_reason_on(coverage, day), None, "{day}");
@@ -748,6 +750,19 @@ fn a_declared_phase_gap_is_era_aware_and_reported_for_the_span_it_answers() {
             ],
             false,
         ),
+        // The two scopes whose whole-domain declaration serves its phase: the
+        // post-close queue is answered, and only its trade-date label is the
+        // crate's own convention rather than the operator's printing (#152).
+        (
+            MarketHoursKey::GlobexGrains,
+            vec![(CoverageGapReason::PostCloseQueueTradeDateLabel, "#152")],
+            false,
+        ),
+        (
+            MarketHoursKey::GlobexLivestock,
+            vec![(CoverageGapReason::PostCloseQueueTradeDateLabel, "#152")],
+            false,
+        ),
     ];
     for (key, expected, complete_after_the_bound) in fixtures {
         check_declared_gap_era(
@@ -764,13 +779,13 @@ fn a_declared_phase_gap_is_era_aware_and_reported_for_the_span_it_answers() {
     // declaration cannot leak onto a profile whose grid simply has no session in
     // the disputed window. The behavioural half of that claim is fenced in
     // `tests/schedule_documentation/coverage_inventory.rs`.
-    for key in [
-        MarketHoursKey::GlobexGrains,
-        MarketHoursKey::GlobexLivestock,
-        MarketHoursKey::GlobexNikkei225Dollar,
-    ] {
-        assert!(key_coverage(key).phase_gaps().is_empty(), "{key:?}");
-    }
+    assert!(
+        key_coverage(MarketHoursKey::GlobexNikkei225Dollar)
+            .phase_gaps()
+            .is_empty(),
+        "globex_nikkei_225_dollar runs no order-entry phase, so the post-close \
+         queue label cannot apply to it"
+    );
     for exchange in [
         Exchange::Cbot,
         Exchange::Cfe,
@@ -797,11 +812,11 @@ fn a_declared_phase_gap_is_era_aware_and_reported_for_the_span_it_answers() {
 fn a_date_shaped_gap_carries_no_closing_condition() {
     // A date-shaped gap is closed by data rather than by an issue, so this
     // vocabulary does not invent a number for it.
-    let complete = key_coverage(MarketHoursKey::GlobexGrains);
+    let complete = key_coverage(MarketHoursKey::GlobexNikkei225Dollar);
     let trailing = complete
         .gaps()
         .next()
-        .expect("GlobexGrains has a trailing gap");
+        .expect("globex_nikkei_225_dollar has a trailing gap");
     assert_eq!(trailing.closing_condition(), None);
     assert_eq!(trailing.phase_gap(), None);
     assert!(complete.phase_gaps().is_empty());

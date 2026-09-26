@@ -556,14 +556,15 @@ globex_livestock | regular  | MoTuWeThFr---- | 08:30:00-13:05:00
 globex_livestock | extended | (none)
 globex_livestock | order-en | MoTuWeThFr---- | 08:00:00-08:30:00
 globex_livestock | order-en | MoTuWeThFr---- | 14:30:00-16:00:00
-globex_cryptocurrency | tz US/Central | week_open_seconds 598200
+globex_cryptocurrency | tz US/Central | week_open_seconds 597000
 globex_cryptocurrency | regular  | (none)
 globex_cryptocurrency | extended | MoTuWeThFr---- | 00:00:00-16:00:00
-globex_cryptocurrency | extended | MoTuWeThFr---- | 16:01:00-24:00:00
+globex_cryptocurrency | extended | MoTuWeThFr---- | 16:02:00-24:00:00
 globex_cryptocurrency | extended | ----------Sa-- | 00:00:00-02:00:00
-globex_cryptocurrency | extended | ----------Sa-- | 03:45:00-24:00:00
+globex_cryptocurrency | extended | ----------Sa-- | 04:00:00-24:00:00
 globex_cryptocurrency | extended | ------------Su | 00:00:00-24:00:00
-globex_cryptocurrency | order-en | (none)
+globex_cryptocurrency | order-en | MoTuWeThFr---- | 16:01:00-16:02:00
+globex_cryptocurrency | order-en | ----------Sa-- | 03:45:00-04:00:00
 cfe_vix | tz US/Central | week_open_seconds 414000
 cfe_vix | regular  | MoTuWeThFr---- | 08:30:00-15:00:00
 cfe_vix | extended | MoTuWeThFr---- | 15:00:00-16:00:00

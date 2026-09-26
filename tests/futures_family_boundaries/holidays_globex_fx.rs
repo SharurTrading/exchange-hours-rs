@@ -149,6 +149,7 @@ fn shipped_rows() -> Vec<(NaiveDate, HolidayKind)> {
     };
     let blocks = || HolidayKind::ReplacementBlocks(&BLOCKS);
     let merged = || HolidayKind::ReplacementBlocks(&MERGED);
+    let merged_early = || HolidayKind::ReplacementBlocks(&MERGED_EARLY_CLOSE);
     vec![
         (day(2025, 1, 1), HolidayKind::Closed),
         (day(2025, 1, 21), merged()),
@@ -169,19 +170,28 @@ fn shipped_rows() -> Vec<(NaiveDate, HolidayKind)> {
         (day(2025, 12, 24), early(12, 45)),
         (day(2025, 12, 25), HolidayKind::Closed),
         (day(2026, 1, 1), HolidayKind::Closed),
+        (day(2026, 1, 20), merged()),
+        (day(2026, 2, 17), merged()),
         (day(2026, 4, 3), early(10, 15)),
+        (day(2026, 5, 26), merged()),
         (day(2026, 6, 19), early(12, 0)),
         (day(2026, 6, 22), blocks()),
         (day(2026, 7, 3), early(12, 0)),
         (day(2026, 7, 6), blocks()),
-        (day(2026, 11, 27), early(13, 45)),
+        (day(2026, 9, 8), merged()),
+        (day(2026, 11, 27), merged_early()),
         (day(2026, 12, 24), early(12, 45)),
         (day(2026, 12, 25), HolidayKind::Closed),
         (day(2027, 1, 1), HolidayKind::Closed),
+        (day(2027, 1, 19), merged()),
+        (day(2027, 2, 16), merged()),
         (day(2027, 3, 26), HolidayKind::Closed),
+        (day(2027, 6, 1), merged()),
         (day(2027, 6, 18), early(12, 0)),
         (day(2027, 6, 21), blocks()),
-        (day(2027, 11, 26), early(13, 45)),
+        (day(2027, 7, 6), merged()),
+        (day(2027, 9, 7), merged()),
+        (day(2027, 11, 26), merged_early()),
         (day(2027, 12, 24), HolidayKind::Closed),
     ]
 }

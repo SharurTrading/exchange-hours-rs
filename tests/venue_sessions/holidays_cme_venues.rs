@@ -442,11 +442,14 @@ fn a_closed_venue_row_is_a_unanimous_closure() {
         // three; the single-family venues have six, the three 2019-2021
         // Juneteenth markers and the three 2023 dates. The 2025 five is
         // `globex_fx`'s merged trade dates (2025-01-21, 2025-02-18, 2025-05-27,
-        // 2025-06-20 and 2025-09-02), which that family alone states.
+        // 2025-06-20 and 2025-09-02), which that family alone states, and the
+        // 2026-2027 eight are the same shape at 2026-01-20, 2026-02-17,
+        // 2026-05-26, 2026-09-08, 2027-01-19, 2027-02-16, 2027-06-01 and
+        // 2027-09-07. 2026-11-27 and 2027-11-26 already carried venue rows.
         let expected = if single_family {
             6
         } else if families.len() == 6 {
-            234
+            242
         } else {
             206
         };

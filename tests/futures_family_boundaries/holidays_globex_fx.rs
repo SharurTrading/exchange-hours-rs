@@ -119,32 +119,79 @@ fn shipped_rows() -> Vec<(NaiveDate, HolidayKind)> {
         ExceptionBlock::order_entry(-1, 16 * 3_600, 17 * 3_600),
         ExceptionBlock::extended(-1, 17 * 3_600, 16 * 3_600),
     ];
+    // The merged trade dates: the Sunday-17:00-to-trade-date-16:00 span CME
+    // assigns to the day after a Monday or Thursday holiday, whose `-1` queue is
+    // the operator's holiday `16:00` rather than the family's weekday `16:45`.
+    static MERGED: [ExceptionBlock; 4] = [
+        ExceptionBlock::order_entry(-2, 16 * 3_600, 17 * 3_600),
+        ExceptionBlock::extended(-2, 17 * 3_600, 16 * 3_600),
+        ExceptionBlock::order_entry(-1, 16 * 3_600, 17 * 3_600),
+        ExceptionBlock::extended(-1, 17 * 3_600, 16 * 3_600),
+    ];
+    // Juneteenth 2025 falls on the Thursday, so the merged span opens on a
+    // Wednesday and its `-2` queue is the ordinary weekday `16:45`.
+    static MERGED_AFTER_WEEKDAY: [ExceptionBlock; 4] = [
+        ExceptionBlock::order_entry(-2, 16 * 3_600 + 45 * 60, 17 * 3_600),
+        ExceptionBlock::extended(-2, 17 * 3_600, 16 * 3_600),
+        ExceptionBlock::order_entry(-1, 16 * 3_600, 17 * 3_600),
+        ExceptionBlock::extended(-1, 17 * 3_600, 16 * 3_600),
+    ];
+    // Thanksgiving 2025: the merged span opens Wednesday evening and this trade
+    // date's own close is the day-after-Thanksgiving 13:45.
+    static MERGED_EARLY_CLOSE: [ExceptionBlock; 4] = [
+        ExceptionBlock::order_entry(-2, 16 * 3_600 + 45 * 60, 17 * 3_600),
+        ExceptionBlock::extended(-2, 17 * 3_600, 16 * 3_600),
+        ExceptionBlock::order_entry(-1, 16 * 3_600, 17 * 3_600),
+        ExceptionBlock::extended(-1, 17 * 3_600, 13 * 3_600 + 45 * 60),
+    ];
     let early = |hour: u32, minute: u32| HolidayKind::EarlyClose {
         close_ssm: hour * 3_600 + minute * 60,
     };
     let blocks = || HolidayKind::ReplacementBlocks(&BLOCKS);
+    let merged = || HolidayKind::ReplacementBlocks(&MERGED);
+    let merged_early = || HolidayKind::ReplacementBlocks(&MERGED_EARLY_CLOSE);
     vec![
         (day(2025, 1, 1), HolidayKind::Closed),
+        (day(2025, 1, 21), merged()),
+        (day(2025, 2, 18), merged()),
         (day(2025, 4, 18), HolidayKind::Closed),
+        (day(2025, 5, 27), merged()),
+        (
+            day(2025, 6, 20),
+            HolidayKind::ReplacementBlocks(&MERGED_AFTER_WEEKDAY),
+        ),
         (day(2025, 7, 4), early(12, 0)),
-        (day(2025, 11, 28), early(13, 45)),
+        (day(2025, 9, 2), merged()),
+        (
+            day(2025, 11, 28),
+            HolidayKind::ReplacementBlocks(&MERGED_EARLY_CLOSE),
+        ),
         (day(2025, 11, 29), HolidayKind::Closed),
         (day(2025, 12, 24), early(12, 45)),
         (day(2025, 12, 25), HolidayKind::Closed),
         (day(2026, 1, 1), HolidayKind::Closed),
+        (day(2026, 1, 20), merged()),
+        (day(2026, 2, 17), merged()),
         (day(2026, 4, 3), early(10, 15)),
+        (day(2026, 5, 26), merged()),
         (day(2026, 6, 19), early(12, 0)),
         (day(2026, 6, 22), blocks()),
         (day(2026, 7, 3), early(12, 0)),
         (day(2026, 7, 6), blocks()),
-        (day(2026, 11, 27), early(13, 45)),
+        (day(2026, 9, 8), merged()),
+        (day(2026, 11, 27), merged_early()),
         (day(2026, 12, 24), early(12, 45)),
         (day(2026, 12, 25), HolidayKind::Closed),
         (day(2027, 1, 1), HolidayKind::Closed),
+        (day(2027, 1, 19), merged()),
+        (day(2027, 2, 16), merged()),
         (day(2027, 3, 26), HolidayKind::Closed),
+        (day(2027, 6, 1), merged()),
         (day(2027, 6, 18), early(12, 0)),
         (day(2027, 6, 21), blocks()),
-        (day(2027, 11, 26), early(13, 45)),
+        (day(2027, 7, 6), merged()),
+        (day(2027, 9, 7), merged()),
+        (day(2027, 11, 26), merged_early()),
         (day(2027, 12, 24), HolidayKind::Closed),
     ]
 }
@@ -215,19 +262,25 @@ fn christmas_2026_closes_the_whole_trade_date_and_its_previous_evening() {
 // Cases 2 and 3 — an early close, on each side of its cutoff.
 // ---------------------------------------------------------------------------
 
-/// The day after Thanksgiving 2025 closes at 13:45 CT. The clip is stated on
-/// the trade date, so it lands on Friday even though the session opened on
-/// Thursday evening.
+/// The day after Thanksgiving 2025 closes at 13:45 CT. Thanksgiving itself
+/// publishes no final close, so the span that ends here opened on Wednesday
+/// evening and the whole of it carries trade date 2025-11-28 — which is why the
+/// row is a replacement rather than the bare `EarlyClose` it used to be, and the
+/// 13:45 is now the last block's end rather than the whole row's kind.
 #[test]
 fn the_2025_thanksgiving_friday_closes_at_1345_ct() {
+    static EXPECTED: [ExceptionBlock; 4] = [
+        ExceptionBlock::order_entry(-2, 16 * 3_600 + 45 * 60, 17 * 3_600),
+        ExceptionBlock::extended(-2, 17 * 3_600, 16 * 3_600),
+        ExceptionBlock::order_entry(-1, 16 * 3_600, 17 * 3_600),
+        ExceptionBlock::extended(-1, 17 * 3_600, 13 * 3_600 + 45 * 60),
+    ];
     let calendar = fx();
     assert_eq!(
         calendar
             .holiday_on(day(2025, 11, 28))
             .map(exchange_hours::Holiday::kind),
-        Some(HolidayKind::EarlyClose {
-            close_ssm: 13 * 3_600 + 45 * 60
-        })
+        Some(HolidayKind::ReplacementBlocks(&EXPECTED))
     );
 
     // Before the cutoff.
@@ -253,7 +306,6 @@ fn the_2025_thanksgiving_friday_closes_at_1345_ct() {
             .is_open(ct((2025, 11, 28), (18, 0, 0)))
             .expect("the coverage contract must answer a covered date")
     );
-
     // The trading day runs from Thursday's 17:00 CT open to the cutoff.
     assert_eq!(
         calendar
@@ -2552,6 +2604,63 @@ fn a_saturday_session_row_states_its_queue_and_evening_open() {
                 .windows(2)
                 .all(|pair| (pair[0].1, pair[0].2) <= (pair[1].1, pair[1].2)),
             "{trade_date:?}: the row's blocks are ordered by opening day then open time"
+        );
+    }
+}
+
+// ---------------------------------------------------------------------------
+// The 2025 merged trade dates.
+// ---------------------------------------------------------------------------
+
+/// A merged-date fixture: the eve the span opens on, the holiday whose own trade
+/// date disappears, and the trade date the operator assigns the span to.
+type MergedDates = ((i32, u32, u32), (i32, u32, u32), (i32, u32, u32));
+
+/// The six 2025 trade dates whose span CME merges with the session before the
+/// holiday: the holiday publishes no final close of its own, so the evening it
+/// would have closed is printed against the next business day instead.
+///
+/// Probes are the instants the rows cite, and the expectation is the operator's
+/// own `tradingDate` on those events — the eve's evening open and the holiday's
+/// own evening open both belong to the trade date that follows. The day *after*
+/// each merged date is probed too, because a replacement states the complete
+/// trade date and must not have swallowed the ordinary week that resumes there.
+#[test]
+fn the_2025_merged_trade_dates_carry_the_operator_label() {
+    let calendar = fx();
+    // (eve of the merged span, holiday, merged trade date)
+    let cases: [MergedDates; 6] = [
+        ((2025, 1, 19), (2025, 1, 20), (2025, 1, 21)),
+        ((2025, 2, 16), (2025, 2, 17), (2025, 2, 18)),
+        ((2025, 5, 25), (2025, 5, 26), (2025, 5, 27)),
+        ((2025, 6, 18), (2025, 6, 19), (2025, 6, 20)),
+        ((2025, 8, 31), (2025, 9, 1), (2025, 9, 2)),
+        ((2025, 11, 26), (2025, 11, 27), (2025, 11, 28)),
+    ];
+    for (eve, holiday, trade_date) in cases {
+        for probe in [eve, holiday] {
+            assert_eq!(
+                calendar
+                    .trade_date(ct(probe, (18, 0, 0)))
+                    .expect("the coverage contract must answer a covered date"),
+                Some(day(trade_date.0, trade_date.1, trade_date.2)),
+                "{probe:?} 18:00 CT is inside the merged span and must carry \
+                 the operator's trade date"
+            );
+            assert!(
+                calendar
+                    .is_open(ct(probe, (18, 0, 0)))
+                    .expect("the coverage contract must answer a covered date"),
+                "{probe:?} 18:00 CT is traded: the merge relabels the span, it \
+                 does not delete it"
+            );
+        }
+        // The holiday's own morning is inside the span the operator ran.
+        assert!(
+            calendar
+                .is_open(ct(holiday, (10, 0, 0)))
+                .expect("the coverage contract must answer a covered date"),
+            "{holiday:?} morning is inside the merged span"
         );
     }
 }

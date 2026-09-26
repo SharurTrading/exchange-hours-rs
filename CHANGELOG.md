@@ -269,6 +269,56 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Fixed
 
+- **`globex_interest_rates` now states CME's merged trade dates (2026-09-26
+  UTC).** The same shape as `globex_fx` and `globex_nikkei_225_dollar`, on
+  seventeen dates: 2025-01-21, 2025-02-18, 2025-05-27, 2025-06-20, 2025-09-02,
+  2025-11-28, 2026-01-20, 2026-02-17, 2026-05-26, 2026-09-08, 2026-11-27,
+  2027-01-19, 2027-02-16, 2027-06-01, 2027-07-06, 2027-09-07 and 2027-11-26.
+  Like nikkei, this family's Monday holidays carry a real early close, so each
+  merged span's evening leg ends at the holiday's own `12:00` CT close — except
+  **2027-07-06, whose holiday is the July 4 observed Monday and closes at
+  `13:30`**, a per-date value the crate already ships and that a set mirrored
+  from MLK would have got wrong by three and a half hours without any fence
+  noticing. The day-after-Thanksgiving rows end at `12:15`. **No `is_open` answer
+  changes**: the previously shipped holiday closes still hold at every instant,
+  and only the trade date moves. `cme` needed no new rows — the `globex_fx`
+  change had already made these dates disputed on that intersection — while
+  `cbot` gained thirteen `Unsourced` rows.
+
+- **`globex_nikkei_225_dollar` now states CME's merged trade dates (2026-09-26
+  UTC).** The same shape as `globex_fx` in the entry below, on twelve dates:
+  2025-11-28, 2026-01-20, 2026-02-17, 2026-05-26, 2026-09-08, 2026-11-27,
+  2027-01-19, 2027-02-16, 2027-06-01, 2027-07-06, 2027-09-07 and 2027-11-26. It
+  differs from `globex_fx` in one respect that matters: **this family's Monday
+  holidays carry a real early close**, so the merged span's evening leg ends at
+  `12:00` CT and the holiday queue opens there, rather than running through to
+  `16:00`. CME's own holiday schedules state that close at T1, and the crate has
+  shipped it since 2021. The day-after-Thanksgiving rows end at `12:15`, this
+  family's own close. **No `is_open` answer changes** — the previously shipped
+  holiday closes still hold at every instant, and the trade date is what moves.
+
+- **`globex_fx` now states CME's merged trade dates across the published future
+  (2026-09-26 UTC).** On a
+  Monday or Thursday holiday the operator publishes no final close for that
+  holiday's own trade date: the Sunday-or-Wednesday Pre-Open and the `17:00` open
+  are printed against the **next** business day, so the whole span through the
+  following `16:00` CT close carries one trade date. The crate kept its own label
+  and answered the holiday's, so `trade_date` contradicted the operator on the
+  whole span. Seventeen rows now state it, each as the complete trade date:
+  2025-01-21, 2025-02-18, 2025-05-27, 2025-06-20, 2025-09-02, 2025-11-28,
+  2026-01-20, 2026-02-17, 2026-05-26, 2026-09-08, 2026-11-27, 2027-01-19,
+  2027-02-16, 2027-06-01, 2027-07-06, 2027-09-07 and 2027-11-26 — with
+  the holiday's own Pre-Open read from the operator (`16:00` CT for this family,
+  not the ordinary weekday `16:45`). 2025-11-28 was previously a bare
+  `EarlyClose { 13:45 }`; it is now a replacement whose last block ends at that
+  same `13:45` (2026-11-27 and 2027-11-26 likewise). Three statics rather than
+  one, because the `-2` day's queue is the family's weekday `16:45` when the
+  holiday falls on a Thursday and `16:00` when it falls on a Monday, and the
+  holiday's own queue is `16:00` either way. No `is_open` answer changes — the
+  merge relabels a span, it does not delete one. `globex_fx` now agrees with the
+  operator's printed `tradingDate` everywhere the captured windows reach; the
+  same shape in the other four families is tracked as #140.
+
 - **The Saturday-session trade dates now state the Thursday-evening leg their
   Friday holiday closes (2026-09-26 UTC).** `globex_energy`,
   `globex_equity_index`, `globex_interest_rates`, `globex_fx` and

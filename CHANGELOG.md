@@ -68,6 +68,7 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Added
 
+- **`iceus` ships its 2025 holiday rows, so every served scope now answers 2025 (2026-09-26 UTC).** The venue table — the intersection of the five ICE Futures U.S. family tables the routed keys select — shipped a `2026-01-01..2028-01-03` window, so all 365 dates of 2025 returned `OutsideCoveredRange` for a served market. Every ICE US table now audits from the 2025 floor, with the 2025 rows read from the `July 5, 2024` — `2025 Trading Holiday Calendar` and ICE's per-holiday notices (MLK, Presidents Day, Good Friday, Memorial Day, Juneteenth, Labor Day and the revised Thanksgiving notice), including the two London-bank-holiday “Delayed Opens” dates 2025-05-05 and 2025-08-25 that the calendar does not list. The venue gains three `Closed` rows (2025-01-01, 2025-04-18, 2025-12-25) and fourteen `Unsourced` dates, so it answers 2025 and answers it incompletely. **Two 2025 notices were not retrievable** — Independence Day and Christmas / Boxing Day — so 2025-07-03, 2025-07-04, 2025-12-24 and 2025-12-26 are withheld for the index families rather than invented, and the 20 withheld 2026-2027 dates are unchanged; tracked as #168.
 - **`cfe` and `cfe_vix` gain their 2025 holiday rows (2026-09-26 UTC).** The CFE
   table shipped a 2026-only window, so all 365 dates of 2025 returned
   `OutsideCoveredRange` for a served market. It now audits

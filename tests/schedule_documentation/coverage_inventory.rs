@@ -260,9 +260,11 @@ fn withheld(calendar: ExchangeCalendar, date: NaiveDate) -> bool {
 /// shipped tables — which `inventory_windows_and_date_counts_match_the_shipped_tables`
 /// does in the same file. `cme` is deliberately absent: it withholds 48 dates
 /// **and** the Sunday quarter-hour (#79), so its denial of completeness is no
-/// longer date-shaped.
+/// longer date-shaped. `iceus` is the second entry: from 2026-09-26 UTC it audits
+/// from the 2025 floor and withholds 34 dates its routed families dispute, with
+/// no phase-level gap behind the denial.
 fn date_level_incompleteness() -> &'static [(&'static str, usize)] {
-    &[("cbot", 61)]
+    &[("cbot", 61), ("iceus", 34)]
 }
 
 /// `is_complete_on(SAMPLE)` agrees with the inventory's `Complete?` cell for all
@@ -360,8 +362,8 @@ fn inventory_completeness_verdicts_match_the_metadata() {
     }
     assert_eq!(
         (complete, incomplete, no_coverage),
-        (3, 12, 1),
-        "the inventory's verdict shapes: three complete, twelve incomplete, one with no 2025 \
+        (3, 13, 0),
+        "the inventory's verdict shapes: three complete, thirteen incomplete, none with no 2025 \
          coverage"
     );
 }

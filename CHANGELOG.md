@@ -269,6 +269,18 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Fixed
 
+- **`globex_equity_index` now states CME's merged trade dates (2026-09-26 UTC).**
+  The same family of rows as `globex_fx`, `globex_nikkei_225_dollar` and
+  `globex_interest_rates`, on seventeen dates: 2025-01-21, 2025-02-18,
+  2025-05-27, 2025-06-20, 2025-09-02, 2025-11-28, 2026-01-20, 2026-02-17,
+  2026-05-26, 2026-09-08, 2026-11-27, 2027-01-19, 2027-02-16, 2027-06-01,
+  2027-07-06, 2027-09-07 and 2027-11-26. Unlike the others this family's
+  envelopes carry a `regular` session, so each stated day splits at the regular
+  boundaries: the holiday's own morning answers `OpenRegular` up to its `12:00` CT
+  close, and the trade date's session keeps its ordinary 08:30-15:15 regular
+  slice. **No `is_open` answer changes**; only the trade date moves. `cme` needed
+  no new rows — the earlier changes had already made these dates disputed there.
+
 - **`globex_interest_rates` now states CME's merged trade dates (2026-09-26
   UTC).** The same shape as `globex_fx` and `globex_nikkei_225_dollar`, on
   seventeen dates: 2025-01-21, 2025-02-18, 2025-05-27, 2025-06-20, 2025-09-02,

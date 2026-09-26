@@ -735,6 +735,16 @@ fn the_published_saturday_sessions_ship_as_rows_on_the_following_monday() {
                 .expect("the coverage contract must answer a covered date"),
             "{year}-{month:02}-{date:02}: the Sunday-evening open was deleted by the row"
         );
+        // The Thursday-evening leg before the Friday holiday belongs to this row
+        // too: the operator prints the Friday noon early close against this trade
+        // date, so the session that opened Thursday 17:00 CT ends here.
+        let thursday = (year, month, date - 2);
+        assert_eq!(
+            nkd.trade_date(ct(thursday.0, thursday.1, thursday.2, 18, 0, 0))
+                .expect("the coverage contract must answer a covered date"),
+            Some(day(ty, tm, td)),
+            "{year}-{month:02}-{date:02}: the Thursday-evening leg before the holiday carries the Monday trade date"
+        );
         assert!(
             nkd.is_open(ct(ty, tm, td, 10, 0, 0))
                 .expect("the coverage contract must answer a covered date"),

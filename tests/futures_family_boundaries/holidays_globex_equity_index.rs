@@ -2342,10 +2342,9 @@ fn the_equity_index_states_its_saturday_sessions_on_the_trade_date() {
             Some(day(trade_date.0, trade_date.1, trade_date.2))
         );
 
-        // The Friday before it is a **different** trade date's session, closed
-        // early at 12:00, and this row must leave it alone: it is the row the
-        // family already ships for that Friday, and the Saturday-session row
-        // must not reach back over it.
+        // The Friday before it closes early at 12:00, ending the session that
+        // opened Thursday evening. The operator dates that session to this row's
+        // trade date, so the Friday morning is the Monday's, not the holiday's.
         assert!(
             calendar
                 .is_open(ct(friday, (11, 0, 0)))
@@ -2362,9 +2361,9 @@ fn the_equity_index_states_its_saturday_sessions_on_the_trade_date() {
             calendar
                 .trade_date(ct(friday, (11, 0, 0)))
                 .expect("2026 and 2027 are covered dates"),
-            Some(day(friday.0, friday.1, friday.2)),
-            "{friday:?}: the early-close morning belongs to its own trade date, \
-             not to the date the Saturday session carries"
+            Some(day(trade_date.0, trade_date.1, trade_date.2)),
+            "{friday:?}: the early-close morning belongs to the trade date the \
+             operator prints on it, which is the Saturday session's"
         );
         // And no Friday-evening session is claimed: CME publishes none.
         assert!(

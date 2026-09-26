@@ -269,6 +269,22 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Fixed
 
+- **The Saturday-session trade dates now state the Thursday-evening leg their
+  Friday holiday closes (2026-09-26 UTC).** `globex_energy`,
+  `globex_equity_index`, `globex_interest_rates`, `globex_fx` and
+  `globex_nikkei_225_dollar` ship CME's 2026-06-22, 2026-07-06 and 2027-06-21
+  Saturday sessions as replacement-block rows. Each row stated three of the
+  **five** phases the operator prints against those trade dates and omitted the
+  session that opens Thursday 17:00 CT and ends at the Friday holiday's early
+  close, so `trade_date` answered the *holiday's* date for that leg while the
+  events the row cites carry the Monday's. The rows now state the whole day, and
+  `docs/evidence/` records the Thursday events beside the Saturday ones.
+  `globex_equity_index`'s set splits both of its matching envelopes at the
+  regular boundaries, so its row carries eight ordered blocks where the other
+  four carry five; `comex` and `nymex` reproduce `globex_energy`'s row and follow
+  it. `cme` and `cbot` keep their `Unsourced` rows on these dates, because their
+  routed families still disagree there.
+
 - **A replacement block that opens on the next trade date's open no longer makes
   `session_bounds` and `trade_date` describe different sessions (2026-09-25 UTC).**
   Issue #130. A replacement record whose block opens at an instant the *following*

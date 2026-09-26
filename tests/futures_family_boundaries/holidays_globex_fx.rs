@@ -107,10 +107,14 @@ fn assert_refused<T: std::fmt::Debug>(
 /// the shipped table, never generated from it, so a row that appears, vanishes
 /// or changes kind fails here.
 fn shipped_rows() -> Vec<(NaiveDate, HolidayKind)> {
-    // The Saturday-session rows: Saturday 05:00-17:00 CT, the Sunday Pre-Open
-    // queue and the Sunday-17:00-to-Monday-16:00 matching session. The instants
-    // are the operator's, read from the window each row cites.
-    static BLOCKS: [ExceptionBlock; 3] = [
+    // The Saturday-session rows: Thursday 16:45-17:00 CT Pre-Open queue and the
+    // 17:00 CT session the Friday early close ends, Saturday 05:00-17:00 CT, the
+    // Sunday Pre-Open queue and the Sunday-17:00-to-Monday-16:00 matching
+    // session. The instants are the operator's, read from the window each row
+    // cites.
+    static BLOCKS: [ExceptionBlock; 5] = [
+        ExceptionBlock::order_entry(-4, 16 * 3_600 + 45 * 60, 17 * 3_600),
+        ExceptionBlock::extended(-4, 17 * 3_600, 12 * 3_600),
         ExceptionBlock::extended(-2, 5 * 3_600, 17 * 3_600),
         ExceptionBlock::order_entry(-1, 16 * 3_600, 17 * 3_600),
         ExceptionBlock::extended(-1, 17 * 3_600, 16 * 3_600),
@@ -468,13 +472,14 @@ fn the_holiday_rows_keep_the_trade_dates_the_operator_prints() {
             .expect("the coverage contract must answer a covered date"),
         Some(day(2025, 12, 26))
     );
-    // Juneteenth 2026: the Thursday-evening leg is clipped at Friday noon and
-    // still belongs to the crate's Friday trade date.
+    // Juneteenth 2026: the operator prints the Friday noon early close against
+    // this row's trade date, so the Thursday-evening leg that ends there belongs
+    // to Monday 2026-06-22 rather than to the holiday Friday.
     assert_eq!(
         calendar
             .trade_date(ct((2026, 6, 18), (20, 0, 0)))
             .expect("the coverage contract must answer a covered date"),
-        Some(day(2026, 6, 19))
+        Some(day(2026, 6, 22))
     );
     assert!(
         calendar
@@ -2520,10 +2525,19 @@ fn a_saturday_session_row_states_its_queue_and_evening_open() {
         );
 
         // The row's own block set, with the queue's interval read off it: the
-        // Saturday session at offset -2, the 16:00-17:00 CT Pre-Open queue the
-        // operator publishes for these dates at offset -1, and the ordinary
+        // Thursday 16:45-17:00 CT Pre-Open queue at offset -4 and the session it
+        // opens into, which ends at the Friday noon early close; the Saturday
+        // session at offset -2; the 16:00-17:00 CT Pre-Open queue the operator
+        // publishes for these dates at offset -1; and the ordinary
         // Sunday-17:00-to-Monday-16:00 session at offset -1.
         let expected = [
+            (
+                ExceptionBlockKind::OrderEntry,
+                -4,
+                16 * 3_600 + 45 * 60,
+                17 * 3_600,
+            ),
+            (ExceptionBlockKind::Extended, -4, 17 * 3_600, 12 * 3_600),
             (ExceptionBlockKind::Extended, -2, 5 * 3_600, 17 * 3_600),
             (ExceptionBlockKind::OrderEntry, -1, 16 * 3_600, 17 * 3_600),
             (ExceptionBlockKind::Extended, -1, 17 * 3_600, 16 * 3_600),

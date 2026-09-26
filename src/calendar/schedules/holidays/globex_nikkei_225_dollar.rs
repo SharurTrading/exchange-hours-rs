@@ -64,11 +64,15 @@ use crate::calendar::exceptions::ExceptionBlock;
 /// The complete trading day of the 2026-06-22, 2026-07-06 and 2027-06-21 trade
 /// dates, which CME states a Saturday session on.
 ///
-/// CME published all three of the trading day's phases for each of these dates,
+/// CME published all five of the trading day's phases for each of these dates,
 /// so the row states the day rather than the Saturday alone. Stating only the
-/// Saturday would delete the Sunday-evening session that belongs to the same
-/// trade date, because a replacement row replaces the **complete** trade date.
+/// Saturday would delete the Thursday-evening and Sunday-evening sessions that
+/// belong to the same trade date, because a replacement row replaces the
+/// **complete** trade date.
 ///
+/// - offset `-4`, Thursday 16:45-17:00 CT: the Pre-Open queue.
+/// - offset `-4`, Thursday 17:00 CT to Friday 12:00 CT: the session ending at
+///   the Friday holiday's early close.
 /// - offset `-2`, Saturday 05:00-17:00 CT: the session itself.
 /// - offset `-1`, Sunday 16:00-17:00 CT: the Pre-Open queue, which no trade
 ///   matches.
@@ -78,7 +82,9 @@ use crate::calendar::exceptions::ExceptionBlock;
 /// `NKD` and `NIY` are published in CME's second product set, not the headline
 /// one, so these instants come from that set's windows. Evidence:
 /// `docs/evidence/globex_nikkei_225_dollar.md`.
-pub(crate) static SATURDAY_SESSION_BLOCKS: [ExceptionBlock; 3] = [
+pub(crate) static SATURDAY_SESSION_BLOCKS: [ExceptionBlock; 5] = [
+    ExceptionBlock::order_entry(-4, 16 * 3_600 + 45 * 60, 17 * 3_600),
+    ExceptionBlock::extended(-4, 17 * 3_600, 12 * 3_600),
     ExceptionBlock::extended(-2, 5 * 3_600, 17 * 3_600),
     ExceptionBlock::order_entry(-1, 16 * 3_600, 17 * 3_600),
     ExceptionBlock::extended(-1, 17 * 3_600, 16 * 3_600),

@@ -520,7 +520,7 @@ fn trade_dates_follow_the_shortened_and_the_deleted_days() {
         calendar
             .trade_date(ct((2026, 6, 19), (10, 0, 0)))
             .expect("the coverage contract must answer a covered date"),
-        Some(day(2026, 6, 19))
+        Some(day(2026, 6, 22))
     );
 }
 
@@ -2793,10 +2793,19 @@ fn a_saturday_session_row_states_its_queue_and_evening_open() {
         }
 
         // The row's own block set, with the queue's interval read off it: the
-        // Saturday session at offset -2, the 16:00-17:00 CT Pre-Open queue the
-        // operator publishes for these dates at offset -1, and the ordinary
+        // Thursday 16:45-17:00 CT Pre-Open queue at offset -4 and the session it
+        // opens into, which ends at the Friday noon early close; the Saturday
+        // session at offset -2; the 16:00-17:00 CT Pre-Open queue the operator
+        // publishes for these dates at offset -1; and the ordinary
         // Sunday-17:00-to-Monday-16:00 session at offset -1.
         let expected = [
+            (
+                ExceptionBlockKind::OrderEntry,
+                -4,
+                16 * 3_600 + 45 * 60,
+                17 * 3_600,
+            ),
+            (ExceptionBlockKind::Extended, -4, 17 * 3_600, 12 * 3_600),
             (ExceptionBlockKind::Extended, -2, 5 * 3_600, 17 * 3_600),
             (ExceptionBlockKind::OrderEntry, -1, 16 * 3_600, 17 * 3_600),
             (ExceptionBlockKind::Extended, -1, 17 * 3_600, 16 * 3_600),

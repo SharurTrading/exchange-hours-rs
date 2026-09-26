@@ -93,10 +93,13 @@ use crate::calendar::exceptions::ExceptionBlock;
 ///
 /// The equity-index day is one continuous 17:00-16:00 CT matching envelope, but
 /// it carries a **regular** session inside it: 08:30-15:15 CT is `regular` and
-/// the rest of the envelope is `extended`. The set therefore splits the envelope
-/// into three **ordered** blocks at the regular boundaries — extended, regular,
-/// extended — so that `is_open_regular`, `session_state` and the regular bounds
-/// keep answering on these dates exactly as they do on an ordinary week.
+/// the rest of the envelope is `extended`. The set therefore splits each
+/// matching envelope at the regular boundaries — extended, regular, extended —
+/// so that `is_open_regular`, `session_state` and the regular bounds keep
+/// answering on these dates exactly as they do on an ordinary week. Two
+/// envelopes carry a split below: the Thursday-evening-to-Friday one, whose
+/// regular session the Friday early close cuts short at 12:00 CT, and the
+/// Sunday-evening-to-Monday one.
 ///
 /// Stating the envelope as one `extended` block instead would answer
 /// `OpenExtended` at 10:00 CT where the normal week answers `OpenRegular`, and
@@ -105,17 +108,23 @@ use crate::calendar::exceptions::ExceptionBlock;
 /// kind. An independent review caught that, which is why the split is explicit
 /// and pinned by a test.
 ///
-/// The blocks state each date completely: the Saturday session at offset `-2`,
-/// the Sunday Pre-Open queue at offset `-1`, and the Sunday-17:00-through-
-/// Monday-16:00 envelope at offset `-1`. Evidence:
+/// The blocks state each date completely: the Thursday Pre-Open queue and the
+/// session it opens into at offset `-4`, the Saturday session at offset `-2`,
+/// the Sunday Pre-Open queue at offset `-1`, and the
+/// Sunday-17:00-through-Monday-16:00 envelope at offset `-1`. Evidence:
 /// `docs/evidence/globex_equity_index.md`.
 ///
-/// The Friday evening before the Saturday is deliberately **not** stated. CME
-/// publishes no Friday-evening open for these dates — the Friday carries the
-/// early close that ends the *previous* trade date's session — so there is no
-/// trading to claim, and a block there would put an open on the clock at an
+/// The Thursday leg is stated because the operator assigns it to this trade
+/// date: its own window prints the Friday early close as an event carrying this
+/// date's trade date, so the session opening Thursday 17:00 CT and ending at
+/// that close belongs here and not to the holiday. The **Friday evening** after
+/// that close is deliberately not stated: CME publishes no Friday-evening open
+/// for these dates, so a block there would put an open on the clock at an
 /// instant no operator document states.
-pub(crate) static SATURDAY_SESSION_BLOCKS: [ExceptionBlock; 5] = [
+pub(crate) static SATURDAY_SESSION_BLOCKS: [ExceptionBlock; 8] = [
+    ExceptionBlock::order_entry(-4, 16 * 3_600 + 45 * 60, 17 * 3_600),
+    ExceptionBlock::extended(-4, 17 * 3_600, 8 * 3_600 + 30 * 60),
+    ExceptionBlock::regular(-3, 8 * 3_600 + 30 * 60, 12 * 3_600),
     ExceptionBlock::extended(-2, 5 * 3_600, 17 * 3_600),
     ExceptionBlock::order_entry(-1, 16 * 3_600, 17 * 3_600),
     ExceptionBlock::extended(-1, 17 * 3_600, 8 * 3_600 + 30 * 60),

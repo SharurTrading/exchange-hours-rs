@@ -235,12 +235,12 @@ fn the_2025_thanksgiving_early_close_stops_matching_at_13_30_and_reopens_at_17_0
     );
 }
 
-/// The Friday holidays of 2026 and 2027, where CME prints the early close but
-/// dates it to the following Monday. The crate keys the session to the
-/// venue-local date of its own final close, so the row stays on the Friday and
-/// the Thursday-evening leg it clips is kept rather than deleted.
+/// The Friday holidays of 2026 and 2027, where CME prints the early close on the
+/// Friday but dates its session to the following Monday. The row is keyed to the
+/// trade date the operator prints, so the Thursday-evening leg the close ends is
+/// kept and resolves to that Monday.
 #[test]
-fn juneteenth_2026_clips_the_friday_and_keeps_the_thursday_evening_leg() {
+fn juneteenth_2026_clips_the_friday_and_keys_the_thursday_leg_to_the_monday() {
     let calendar = calendar();
     let cutoff = ct((2026, 6, 19), 12, 0);
 
@@ -267,9 +267,15 @@ fn juneteenth_2026_clips_the_friday_and_keeps_the_thursday_evening_leg() {
     );
     assert_eq!(
         calendar
+            .trade_date(ct((2026, 6, 18), 18, 0))
+            .expect("the coverage contract must answer a covered date"),
+        Some(day((2026, 6, 22)))
+    );
+    assert_eq!(
+        calendar
             .trade_date(ct((2026, 6, 19), 9, 0))
             .expect("the coverage contract must answer a covered date"),
-        Some(day((2026, 6, 19)))
+        Some(day((2026, 6, 22)))
     );
 }
 

@@ -277,7 +277,7 @@ fn date_level_incompleteness() -> &'static [(&'static str, usize)] {
 /// `globex_interest_rates` each withheld the Sunday 16:00-16:15 CT quarter-hour
 /// their own ledger basis notes record, and this fence is what made the correction
 /// to the page and the metadata land together — but only **four** of the five had
-/// a cell reading complete: `cme`'s already denied it, for the 32 dates it
+/// a cell reading complete: `cme`'s already denied it, for the 35 dates it
 /// withholds as `Unsourced` in 2025+, so the quarter-hour corrected that scope's
 /// cause of incompleteness rather than its verdict.
 ///

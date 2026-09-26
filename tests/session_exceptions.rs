@@ -1007,7 +1007,7 @@ fn a_closed_crypto_monday_still_rolls_the_weekend_to_the_next_business_date() {
         calendar
             .candle_start(ct((2026, 6, 7), (12, 0, 0)), CalendarResolution::Daily)
             .expect("the coverage contract must answer a covered date"),
-        Some(ct((2026, 6, 5), (16, 1, 0)))
+        Some(ct((2026, 6, 5), (16, 2, 0)))
     );
     assert_eq!(
         calendar

@@ -22,11 +22,12 @@ const THU_ONLY: [bool; 7] = [false, false, false, true, false, false, false];
 // `SessionRule` spans at most one local midnight, so the multi-day weekend
 // session is stored in adjacent pieces. The key-backed calendar joins those at
 // query time, retaining the 02:00-03:45 Saturday closed break and the
-// 03:45-04:00 Pre-Open.
+// 03:45-04:00 Pre-Open, which is `order_entry` and not a session.
 
 // Both weekend blocks carry the following open business date: normally Monday,
 // or Tuesday when a caller policy closes Monday. The corresponding daily bar
-// runs from Friday 16:01 Pre-Open through that business date's 16:00 close.
+// runs from Friday 16:02, where matching resumes, through that business date's
+// 16:00 close.
 static FIVE_DAY_EXTENDED: &[SessionRule] = &[SessionRule {
     days: SUN_PLUS_MON_THU,
     open_ssm: 17 * 3600,
@@ -41,7 +42,7 @@ static CURRENT_EXTENDED: &[SessionRule] = &[
     },
     SessionRule {
         days: MON_FRI,
-        open_ssm: 16 * 3600 + 60,
+        open_ssm: 16 * 3600 + 120,
         close_ssm: 24 * 3600,
     },
     SessionRule {
@@ -51,13 +52,28 @@ static CURRENT_EXTENDED: &[SessionRule] = &[
     },
     SessionRule {
         days: SAT_ONLY,
-        open_ssm: 3 * 3600 + 45 * 60,
+        open_ssm: 4 * 3600,
         close_ssm: 24 * 3600,
     },
     SessionRule {
         days: SUN_ONLY,
         open_ssm: 0,
         close_ssm: 24 * 3600,
+    },
+];
+
+// The grid's two Pre-Open queues: weekday 16:01-16:02 CT and Saturday
+// 03:45-04:00 CT.
+static CURRENT_ORDER_ENTRY: &[SessionRule] = &[
+    SessionRule {
+        days: MON_FRI,
+        open_ssm: 16 * 3600 + 60,
+        close_ssm: 16 * 3600 + 120,
+    },
+    SessionRule {
+        days: SAT_ONLY,
+        open_ssm: 3 * 3600 + 45 * 60,
+        close_ssm: 4 * 3600,
     },
 ];
 
@@ -74,10 +90,17 @@ static EXTENDED_2026_05_29: &[SessionRule] = &[
     },
     SessionRule {
         days: FRI,
-        open_ssm: 16 * 3600 + 60,
+        open_ssm: 16 * 3600 + 120,
         close_ssm: 24 * 3600,
     },
 ];
+
+/// The bridge day's own Pre-Open queue, as on the permanent grid.
+static ORDER_ENTRY_2026_05_29: &[SessionRule] = &[SessionRule {
+    days: FRI,
+    open_ssm: 16 * 3600 + 60,
+    close_ssm: 16 * 3600 + 120,
+}];
 
 // One-day Saturday extensions: the weekday and Sunday pieces are the normal
 // grid; only the Saturday reopen moves, and no replacement Pre-Open is
@@ -92,7 +115,7 @@ macro_rules! saturday_extended_to {
             },
             SessionRule {
                 days: MON_FRI,
-                open_ssm: 16 * 3600 + 60,
+                open_ssm: 16 * 3600 + 120,
                 close_ssm: 24 * 3600,
             },
             SessionRule {
@@ -121,7 +144,7 @@ pub(crate) static CURRENT_FUTURES_PROFILE: FuturesSessionProfile = FuturesSessio
     tz: US::Central,
     regular: &[],
     extended: CURRENT_EXTENDED,
-    order_entry: &[],
+    order_entry: CURRENT_ORDER_ENTRY,
     has_daily_close: true,
     has_weekend_close: false,
 };
@@ -148,7 +171,7 @@ static CURRENT: StaticHoursProfile = StaticHoursProfile {
     tz: US::Central,
     regular: &[],
     extended: CURRENT_EXTENDED,
-    order_entry: &[],
+    order_entry: CURRENT_ORDER_ENTRY,
     has_daily_close: true,
     has_weekend_close: false,
 };
@@ -157,7 +180,7 @@ static TRANSITION_2026_05_29: StaticHoursProfile = StaticHoursProfile {
     tz: US::Central,
     regular: &[],
     extended: EXTENDED_2026_05_29,
-    order_entry: &[],
+    order_entry: ORDER_ENTRY_2026_05_29,
     has_daily_close: true,
     has_weekend_close: false,
 };

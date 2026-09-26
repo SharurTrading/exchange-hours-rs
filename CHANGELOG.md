@@ -271,6 +271,23 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Fixed
 
+- **`globex_cryptocurrency`'s Pre-Opens are order entry, not trading
+  (2026-09-26 UTC).** The family publishes two Pre-Open queues — weekday
+  `16:01-16:02` CT and Saturday `03:45-04:00` CT — and the crate carried both in
+  `extended`, so `is_open` answered `true` and `session_state` answered
+  `OpenExtended` for **60 seconds every day and 15 minutes every Saturday** in
+  windows CME defines as *"Order Entry, modification, and cancel are allowed. No
+  order matching."* Matching resumes at the `16:02` and `04:00` opens, as the
+  family's own evidence file already said: *"matching maintenance is 16:00-16:02 CT
+  Monday-Friday with Pre-Open from 16:01, and 02:00-04:00 CT Saturday with Pre-Open
+  from 03:45."* The code was the outlier. Both queues are now `order_entry` rules,
+  which is what `AGENTS.md` requires of a pre-open and what the crate's own `ECBTC`
+  profile — the same operator, the same two queues — already did. The weekly
+  executable envelope shrinks by 20 minutes (5 × 1 minute plus 15 minutes). No
+  trade date moves, and the one-day bridge of 2026-05-29 gets the same split. The
+  corrected queues are still **refused** rather than served while
+  `globex_cryptocurrency`'s `#93` declaration stands; discharging that is the
+  separate change below.
 - **`globex_fx` no longer declares a special-session gap (2026-09-26 UTC).** The
   family carried a whole-domain `#93` phase-level gap in `schedules/sourcing.rs`
   because CME publishes sessions this family's scalar vocabulary could not state.

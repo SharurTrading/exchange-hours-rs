@@ -368,15 +368,35 @@ This era's rows cite the ids below: CME Group's own published holiday schedules 
 
 **Gaps, 2025.**
 
-- **executable** — 2025-11-28 additionally prints `07:00 preopen /TD 2025-11-28; 07:30 open
-  /TD 2025-11-28` before the 12:15 CT close, with no `closed` or `paused` event between the
-  2025-11-27 17:00 CT open and that 07:00 pre-open. Read literally, matching stopped at some
-  unstated instant that morning and resumed at 07:30 CT. That is intraday topology, not a
-  scalar boundary, so LAW-HOLIDAY-SCOPE records it as a gap rather than approximating it;
-  the early-close row is unaffected. It is the only date in the whole 2025-2027 window where
-  this shape appears for this family — Thanksgiving 2026 and 2027 print the 12:15 CT close
-  alone. Closing condition: an operator statement naming the morning halt's start, or the
-  block rows of design memo §7 follow-up 8 (#93).
+- **The 2025-11-28 morning Pre-Open is served, and it is order entry.** `NKD` and `NIY`
+  themselves print `07:00 preopen /TD 2025-11-28; 07:30 open /TD 2025-11-28; 12:15 closed
+  /TD 2025-11-28` on eventDate 2025-11-28. CME's own event vocabulary defines `preopen` as
+  "Order Entry, modification, and cancel are allowed. No order matching." and `open` as
+  "Start of continuous trading phase. Order matching begins.", so `07:00-07:30` CT is a
+  queue and matching resumes at `07:30`. The row's
+  `MERGED_SESSION_EARLY_CLOSE_BLOCKS_2025_11_28` states exactly that: the overnight run is
+  carried as `extended` blocks ending at 07:00, the queue is an `order_entry` block, and
+  matching resumes in an `extended` block to the 12:15 close. Until this correction the
+  whole morning was one `extended` block, so `is_open` answered `true` in the operator's
+  queue. It is the only date in the whole 2025-2027 window where this shape appears for
+  this family — Thanksgiving 2026 and 2027 print the 12:15 CT close alone.
+- **witness gap, executable — the five 2025 merged trade dates ship no row.** 2025-01-21,
+  2025-02-18, 2025-05-27, 2025-06-20 and 2025-09-02 are the 2025 half of the seventeen
+  merged trade dates this family models, and this table ships **twelve** of the seventeen:
+  the twelve carry their own `NKD`/`NIY` witness bytes, these five carry none. The family
+  ships `early_close(12:00)` rows keyed to 2025-01-20, 2025-02-17, 2025-05-26, 2025-06-19
+  and 2025-09-01 instead, so at 2025-01-19 18:00 CT the four sibling families answer
+  `trade_date = 2025-01-21` while this family answers `2025-01-20`.
+  The gap is a channel limit, reproduced rather than assumed: five targeted `THBP-B`
+  captures requested exactly `id=168,167` over exactly these windows and returned an empty
+  event list for both products —
+  `raw/cme-2025-2027-repair/json/edgeB_2025-01-19_2025-01-21.json`,
+  `edgeB_2025-02-16_2025-02-18.json`, `edgeB_2025-05-25_2025-05-27.json`,
+  `edgeB_2025-06-18_2025-06-20.json` and `edgeB_2025-08-31_2025-09-02.json` (each with its
+  `live/edgeB_*.md` sibling carrying the request URL). No `NKD` or `NIY` event with any of
+  those five trade dates appears anywhere in the research store. Closing condition: a
+  `THBP-B` response (`id=168,167,320,323,19,27`) that carries an `NKD` or `NIY` event on any
+  of these five trade dates. Tracked as issue #162 (LAW-FOLLOW-UPS-ARE-ISSUES).
 - **residual risk** — the nine 2025 rows through Labor Day 2025 rest on the Equity Index
   line rather than on a published Nikkei line, because CME's channel no longer answers for
   those windows and no archived capture of the `THBP-B` id set exists for them. Closing

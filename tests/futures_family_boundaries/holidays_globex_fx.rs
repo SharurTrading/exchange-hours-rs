@@ -106,6 +106,12 @@ fn assert_refused<T: std::fmt::Debug>(
 /// This is the handwritten fence the charter asks for: it is compared against
 /// the shipped table, never generated from it, so a row that appears, vanishes
 /// or changes kind fails here.
+#[expect(
+    clippy::erasing_op,
+    clippy::identity_op,
+    reason = "midnight is written in the table fence's own `h * 3_600 + m * 60` grammar, \
+              because the fence rejects a bare zero"
+)]
 fn shipped_rows() -> Vec<(NaiveDate, HolidayKind)> {
     // The Saturday-session rows: Thursday 16:45-17:00 CT Pre-Open queue and the
     // 17:00 CT session the Friday early close ends, Saturday 05:00-17:00 CT, the
@@ -136,9 +142,23 @@ fn shipped_rows() -> Vec<(NaiveDate, HolidayKind)> {
         ExceptionBlock::order_entry(-1, 16 * 3_600, 17 * 3_600),
         ExceptionBlock::extended(-1, 17 * 3_600, 16 * 3_600),
     ];
-    // Thanksgiving 2025: the merged span opens Wednesday evening and this trade
-    // date's own close is the day-after-Thanksgiving 13:45.
-    static MERGED_EARLY_CLOSE: [ExceptionBlock; 4] = [
+    // Thanksgiving 2025: the merged span opens Wednesday evening, this trade
+    // date's own close is the day-after-Thanksgiving 13:45, and it is the one
+    // date in the window where the operator prints a second Pre-Open —
+    // `07:00 preopen; 07:30 open` — so matching runs in two pieces with a
+    // 30-minute queue between them. Carried in `extended`, that queue answered
+    // `is_open = true`.
+    static MERGED_EARLY_CLOSE: [ExceptionBlock; 7] = [
+        ExceptionBlock::order_entry(-2, 16 * 3_600 + 45 * 60, 17 * 3_600),
+        ExceptionBlock::extended(-2, 17 * 3_600, 16 * 3_600),
+        ExceptionBlock::order_entry(-1, 16 * 3_600, 17 * 3_600),
+        ExceptionBlock::extended(-1, 17 * 3_600, 24 * 3_600),
+        ExceptionBlock::extended(0, 0 * 3_600 + 0 * 60, 7 * 3_600),
+        ExceptionBlock::order_entry(0, 7 * 3_600, 7 * 3_600 + 30 * 60),
+        ExceptionBlock::extended(0, 7 * 3_600 + 30 * 60, 13 * 3_600 + 45 * 60),
+    ];
+    // The 2026 and 2027 Thanksgiving Fridays publish the 13:45 close alone.
+    static MERGED_EARLY_CLOSE_LATER: [ExceptionBlock; 4] = [
         ExceptionBlock::order_entry(-2, 16 * 3_600 + 45 * 60, 17 * 3_600),
         ExceptionBlock::extended(-2, 17 * 3_600, 16 * 3_600),
         ExceptionBlock::order_entry(-1, 16 * 3_600, 17 * 3_600),
@@ -149,7 +169,7 @@ fn shipped_rows() -> Vec<(NaiveDate, HolidayKind)> {
     };
     let blocks = || HolidayKind::ReplacementBlocks(&BLOCKS);
     let merged = || HolidayKind::ReplacementBlocks(&MERGED);
-    let merged_early = || HolidayKind::ReplacementBlocks(&MERGED_EARLY_CLOSE);
+    let merged_early = || HolidayKind::ReplacementBlocks(&MERGED_EARLY_CLOSE_LATER);
     vec![
         (day(2025, 1, 1), HolidayKind::Closed),
         (day(2025, 1, 21), merged()),
@@ -274,13 +294,22 @@ fn christmas_2026_closes_the_whole_trade_date_and_its_previous_evening() {
 /// evening and the whole of it carries trade date 2025-11-28 — which is why the
 /// row is a replacement rather than the bare `EarlyClose` it used to be, and the
 /// 13:45 is now the last block's end rather than the whole row's kind.
+#[expect(
+    clippy::erasing_op,
+    clippy::identity_op,
+    reason = "midnight is written in the table fence's own `h * 3_600 + m * 60` grammar, \
+              because the fence rejects a bare zero"
+)]
 #[test]
 fn the_2025_thanksgiving_friday_closes_at_1345_ct() {
-    static EXPECTED: [ExceptionBlock; 4] = [
+    static EXPECTED: [ExceptionBlock; 7] = [
         ExceptionBlock::order_entry(-2, 16 * 3_600 + 45 * 60, 17 * 3_600),
         ExceptionBlock::extended(-2, 17 * 3_600, 16 * 3_600),
         ExceptionBlock::order_entry(-1, 16 * 3_600, 17 * 3_600),
-        ExceptionBlock::extended(-1, 17 * 3_600, 13 * 3_600 + 45 * 60),
+        ExceptionBlock::extended(-1, 17 * 3_600, 24 * 3_600),
+        ExceptionBlock::extended(0, 0 * 3_600 + 0 * 60, 7 * 3_600),
+        ExceptionBlock::order_entry(0, 7 * 3_600, 7 * 3_600 + 30 * 60),
+        ExceptionBlock::extended(0, 7 * 3_600 + 30 * 60, 13 * 3_600 + 45 * 60),
     ];
     let calendar = fx();
     assert_eq!(
@@ -313,15 +342,46 @@ fn the_2025_thanksgiving_friday_closes_at_1345_ct() {
             .is_open(ct((2025, 11, 28), (18, 0, 0)))
             .expect("the coverage contract must answer a covered date")
     );
-    // The trading day runs from Thursday's 17:00 CT open to the cutoff.
+    // 2025-11-28 is the one trade date in the window where the operator prints
+    // a second Pre-Open (`07:00 preopen; 07:30 open`), so matching runs in two
+    // pieces and the afternoon piece is the one the 13:45 close ends.
     assert_eq!(
         calendar
             .session_bounds(ct((2025, 11, 28), (10, 0, 0)))
             .expect("the coverage contract must answer a covered date"),
         Some((
-            ct((2025, 11, 27), (17, 0, 0)),
+            ct((2025, 11, 28), (7, 30, 0)),
             ct((2025, 11, 28), (13, 45, 0))
         ))
+    );
+    // Before local midnight the same trading day is still in its holiday-evening
+    // piece, which opens at 17:00 CT; after midnight the piece runs from the
+    // civil day's start to the queue.
+    assert_eq!(
+        calendar
+            .session_bounds(ct((2025, 11, 27), (20, 0, 0)))
+            .expect("the coverage contract must answer a covered date"),
+        Some((
+            ct((2025, 11, 27), (17, 0, 0)),
+            ct((2025, 11, 28), (0, 0, 0))
+        ))
+    );
+    assert_eq!(
+        calendar
+            .session_bounds(ct((2025, 11, 28), (6, 0, 0)))
+            .expect("the coverage contract must answer a covered date"),
+        Some((ct((2025, 11, 28), (0, 0, 0)), ct((2025, 11, 28), (7, 0, 0))))
+    );
+    // The queue itself matches nothing.
+    assert!(
+        !calendar
+            .is_open(ct((2025, 11, 28), (7, 15, 0)))
+            .expect("the coverage contract must answer a covered date")
+    );
+    assert!(
+        calendar
+            .is_open(ct((2025, 11, 28), (7, 45, 0)))
+            .expect("the coverage contract must answer a covered date")
     );
     assert_eq!(
         calendar
@@ -2675,6 +2735,95 @@ fn the_2025_merged_trade_dates_carry_the_operator_label() {
                 .is_open(ct(holiday, (10, 0, 0)))
                 .expect("the coverage contract must answer a covered date"),
             "{holiday:?} morning is inside the merged span"
+        );
+    }
+}
+
+// ---------------------------------------------------------------------------
+// The 2025-11-28 morning Pre-Open: order entry, not trading (issue #156).
+// ---------------------------------------------------------------------------
+
+/// 2025-11-28 is the one trade date in this table where the operator publishes a
+/// second Pre-Open — `07:00 preopen; 07:30 open` — and CME's own event
+/// vocabulary defines `preopen` as *"Order Entry, modification, and cancel are
+/// allowed. **No order matching.**"*. The row therefore states `07:00-07:30` CT
+/// as an `order_entry` window and matching resumes at the `07:30` `open`.
+///
+/// This is the fence for that reading. Before the correction the whole morning
+/// was one continuous `extended` block, so `is_open` answered `true` at 07:15
+/// and `session_state` answered `OpenExtended`: the crate claimed matching in a
+/// window the operator prints as order-entry-only. The 2026 and 2027 Thanksgiving
+/// Fridays publish the close line alone, so they must NOT gain this queue — the
+/// per-row block assertions in this file's `shipped_rows` fence cover that, and
+/// the 2026-11-27 and 2027-11-26 probes below pin it behaviourally.
+#[test]
+fn the_2025_thanksgiving_friday_serves_its_0700_pre_open_as_order_entry_only() {
+    let calendar = fx();
+    let holiday = calendar
+        .holiday_on(day(2025, 11, 28))
+        .expect("2025-11-28 ships a row");
+    let HolidayKind::ReplacementBlocks(blocks) = holiday.kind() else {
+        panic!(
+            "2025-11-28 must be a replacement row, not {:?}",
+            holiday.kind()
+        );
+    };
+
+    // The row states the queue itself: one order-entry block covering exactly
+    // 07:00-07:30 CT on the trade date. Its `open_day_offset` is 0 because the
+    // Wednesday-evening run's wrapped block opens numerically later in the day,
+    // and the table fence requires the list to be non-decreasing by opening day
+    // then open time.
+    let queues: Vec<_> = blocks
+        .iter()
+        .filter(|block| {
+            block.kind() == ExceptionBlockKind::OrderEntry
+                && block.open_day_offset() == 0
+                && block.open_ssm() == 7 * 3_600
+                && block.close_ssm() == 7 * 3_600 + 30 * 60
+        })
+        .collect();
+    assert_eq!(
+        queues.len(),
+        1,
+        "the row must state exactly one 07:00-07:30 CT order-entry window"
+    );
+
+    // Matching is off in the queue and on after its `open`.
+    assert!(
+        !calendar
+            .is_open(ct((2025, 11, 28), (7, 15, 0)))
+            .expect("the coverage contract must answer a covered date"),
+        "07:15 CT is the operator's Pre-Open and must not report matching"
+    );
+    assert!(
+        calendar
+            .is_open(ct((2025, 11, 28), (7, 45, 0)))
+            .expect("the coverage contract must answer a covered date"),
+        "07:45 CT is inside continuous trading and must report matching"
+    );
+    // The trade date does not move: the day still carries 2025-11-28.
+    assert_eq!(
+        calendar
+            .trade_date(ct((2025, 11, 28), (6, 0, 0)))
+            .expect("the coverage contract must answer a covered date"),
+        Some(day(2025, 11, 28))
+    );
+    assert_eq!(
+        calendar
+            .trade_date(ct((2025, 11, 28), (10, 0, 0)))
+            .expect("the coverage contract must answer a covered date"),
+        Some(day(2025, 11, 28))
+    );
+
+    // The 2026 and 2027 Thanksgiving Fridays publish the final close alone, so
+    // the same morning must still report matching there.
+    for (year, month, date) in [(2026, 11, 27), (2027, 11, 26)] {
+        assert!(
+            calendar
+                .is_open(ct((year, month, date), (7, 15, 0)))
+                .expect("the coverage contract must answer a covered date"),
+            "{year}-{month:02}-{date:02} publishes no Pre-Open and must stay open at 07:15 CT"
         );
     }
 }

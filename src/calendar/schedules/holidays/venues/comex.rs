@@ -40,7 +40,8 @@ use super::super::{
     fences::early_close,
     globex_energy::{
         MERGED_SESSION_AFTER_WEEKDAY_BLOCKS, MERGED_SESSION_BLOCKS,
-        MERGED_SESSION_EARLY_CLOSE_BLOCKS, SATURDAY_SESSION_BLOCKS,
+        MERGED_SESSION_EARLY_CLOSE_BLOCKS, MERGED_SESSION_EARLY_CLOSE_BLOCKS_2025_11_28,
+        SATURDAY_SESSION_BLOCKS,
     },
     holidays,
 };
@@ -49,9 +50,9 @@ use super::super::{
 ///
 /// Metals and energy are one key and the operator prints them as one product
 /// row on every date the table audits, so the intersection is total: the venue
-/// carries the family's 209 rows unchanged — 38 from 2010-2012, 33 from
+/// carries the family's 223 rows unchanged — 38 from 2010-2012, 33 from
 /// 2013-2015, 31 from 2016-2018, 35 from 2019-2021, 33 from 2022-2024 and
-/// 39 from 2025-2027 — and drops no date. On the 2022-2024 era's three 2023
+/// 53 from 2025-2027 — and drops no date. On the 2022-2024 era's three 2023
 /// dates and the 2019-2021 era's three Juneteenth dates the family itself states
 /// `Unsourced`, and the venue carries that marker because the family says so, not
 /// because anything disputes it. Every era from 2010-01-01 to 2027-12-31 is a
@@ -469,7 +470,7 @@ pub(crate) static COMEX: &HolidayTable = holidays! {
             2025,
             11,
             28,
-            ReplacementBlocks(&MERGED_SESSION_EARLY_CLOSE_BLOCKS),
+            ReplacementBlocks(&MERGED_SESSION_EARLY_CLOSE_BLOCKS_2025_11_28),
             T2,
             "CME-SVC-2025-11-26"
         ),

@@ -537,7 +537,7 @@ Sat none.
 | 2025-06-20 | replacement blocks | `16:45 preopen; 17:00 open` on eventDate 2025-06-18 and `16:00 preopen; 17:00 open` on eventDate 2025-06-19, both carrying CME trade date 2025-06-20; `16:00 closed` on eventDate 2025-06-20, CME trade date 2025-06-20 | `CME-SVC-2025-06-18` | T2 | Juneteenth falls on the Thursday, so the merged span opens Wednesday evening. Its `-2` day is therefore an ordinary weekday and the row carries the family's weekday `16:45` Pre-Open there, where the Sunday-opening merges carry `16:00` |
 | 2025-07-04 | early close | `12:00 closed` — 12:00 CT | `CME-SVC-2025-07-03` | T2 | eventDate 2025-07-04, CME trade date 2025-07-04 |
 | 2025-09-02 | replacement blocks | `16:00 preopen; 17:00 open` on eventDate 2025-08-31 and on eventDate 2025-09-01, both carrying CME trade date 2025-09-02; `16:00 closed` on eventDate 2025-09-02, CME trade date 2025-09-02 | `CME-SVC-2025-08-31` | T2 | Labor Day; as 2025-01-21 |
-| 2025-11-28 | replacement blocks | `16:45 preopen; 17:00 open` on eventDate 2025-11-26 and `16:00 preopen; 17:00 open` on eventDate 2025-11-27, both carrying CME trade date 2025-11-28; `13:45 closed` on eventDate 2025-11-28, CME trade date 2025-11-28 | `CME-SVC-2025-11-26` | T2 | Thanksgiving Day publishes no final close of its own, so this trade date owns the span from Wednesday evening, and its own close is the operator's `13:45` CT. The `-2` day is a Wednesday, so that queue is the weekday `16:45`; the `07:00 preopen; 07:30 open` pair the earlier reading recorded is not a second session — the leg has been continuously open since Wednesday 17:00 |
+| 2025-11-28 | replacement blocks | `16:45 preopen; 17:00 open` on eventDate 2025-11-26 and `16:00 preopen; 17:00 open` on eventDate 2025-11-27, both carrying CME trade date 2025-11-28; `07:00 preopen; 07:30 open; 13:45 closed` on eventDate 2025-11-28, all three carrying CME trade date 2025-11-28 | `CME-SVC-2025-11-26` | T2 | Thanksgiving Day publishes no final close of its own, so this trade date owns the span from Wednesday evening, and its own close is the operator's `13:45` CT. The `-2` day is a Wednesday, so that queue is the weekday `16:45`. The Friday pair is the operator's own Pre-Open — `preopen` is "Order Entry, modification, and cancel are allowed. No order matching." — so `07:00-07:30` CT is order entry and `07:30` is where matching resumes, which is what the row's blocks state |
 | 2025-11-29 | closed | `no events published` | `CME-SVC-2025-11-26-SAT` | T2 | eventDate 2025-11-29 |
 | 2025-12-24 | early close | `12:45 closed` — 12:45 CT | `CME-SVC-2025-12-24` | T2 | eventDate 2025-12-24, CME trade date 2025-12-24 |
 | 2025-12-25 | closed | `16:00 preopen; 17:00 open` — both events carry CME trade date 2025-12-26 | `CME-SVC-2025-12-24` | T2 | eventDate 2025-12-25, CME trade date 2025-12-26 |
@@ -586,13 +586,22 @@ Sat none.
   table shares `DayPolicy`'s vocabulary, which has no order-entry boundary, so
   this is not representable. It changes no `is_open` answer, only
   `is_accepting_orders` and `is_order_entry_only`, for 45 minutes.
-- **Intraday topology — 2025-11-28.** CME's finalised publication additionally
-  prints `07:00 preopen; 07:30 open` on the morning of the early close. This
-  family has no separate regular open — the leg has been continuously open
-  since Thursday 17:00 CT — so the pair is neither a late open nor a second
-  session the scalar vocabulary can state. The early-close row is unaffected;
-  the superseded 2024-12-20 publication does not print the pair and agrees on
-  the 13:45 CT instant.
+- **The 2025-11-28 morning Pre-Open is served, and it is order entry.** CME's
+  finalised publication prints `07:00 preopen; 07:30 open; 13:45 closed` on
+  eventDate 2025-11-28, all three carrying CME trade date 2025-11-28. CME's own
+  event vocabulary defines `preopen` as "Order Entry, modification, and cancel
+  are allowed. No order matching." and `open` as "Start of continuous trading
+  phase. Order matching begins.", so `07:00-07:30` CT is a queue and matching
+  resumes at `07:30` — the trade date's matching runs in two pieces, not one.
+  This family has no separate regular open, which is why the pair sits inside
+  the overnight run rather than at a regular-open handoff, but the queue is
+  still a queue. The row's `MERGED_SESSION_EARLY_CLOSE_BLOCKS_2025_11_28` states
+  exactly that; until this correction the whole morning was one `extended` block
+  and `is_open` answered `true` in the operator's queue. It is the only date in
+  the 2025-2027 window with this shape: the 2026 and 2027 Thanksgiving Fridays
+  print the `13:45 closed` line alone and keep the four-block static. The
+  superseded 2024-12-20 publication does not print the pair and agrees on the
+  13:45 CT instant.
 - **Residual risk — 2025-01-01, 2025-04-18 and 2025-07-04.** These three rows
   rest on the single Wayback capture 2024-12-20T15:53:40Z of the service, i.e.
   CME's published future as of that date rather than a post-holiday statement;

@@ -133,12 +133,13 @@ corrections (a venue's hours fixed against a primary source) go under
   row states the profile's own value. The two multi-family venue tables are
   recomputed from the families: `cme` states `Unsourced` on all three dates,
   where energy, equity index, interest rates and FX state a row and grains and
-  livestock state none, so its withheld count moves 32 → 35, and `cbot` states
+  livestock state none, so its withheld count is unchanged at 35 — those three dates were already `Unsourced` there — and `cbot` states
   `Unsourced` on all three for the first time, because interest rates states a
-  row where grains states none, moving its count 31 → 34. Every
-  instant is quoted from a service window its row cites, and the two 2026 rows
-  and the 2027 row name the further window that prints their Sunday legs. Each
-  family's rows are mutation-checked.
+  row where grains states none, moving its count 31 → 34. Each
+  row's instants are quoted from the window that prints them: for 2026-06-22 and
+  2027-06-21 that is two windows, the Saturday session from the first and the
+  Sunday legs from the second, while 2026-07-06's single window runs through its
+  own Sunday and prints the whole day. Each family's rows are mutation-checked.
 
 
 - **A built-in holiday row may state a replacement block set (2026-09-25 UTC).** Stage 3

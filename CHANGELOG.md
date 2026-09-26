@@ -68,28 +68,51 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Added
 
-- **`globex_interest_rates` and `globex_fx` state CME's three Saturday sessions
-  as complete replacement days (2026-09-25 UTC).** Stage 4 of the release plan
-  (#116), one shared-operator PR for two served families that route to
-  `Exchange::Cme` and take the same rows from the same documents. CME publishes
-  `05:00 open; 17:00 closed` on Saturday 2026-06-20, 2026-07-04 and 2027-06-19,
-  each carrying the following Monday's trade date, on a week whose normal grid has
-  no Saturday session. Both families now state trade dates 2026-06-22, 2026-07-06
-  and 2027-06-21 as replacement block sets: the Saturday session at offset `-2`,
-  the operator's published Sunday Pre-Open `16:00-17:00` at offset `-1`, and the
-  ordinary Sunday-17:00-to-Monday-16:00 session at offset `-1`. The queue is
-  stated at the value the operator published for those dates. On 2026-06-22 and
-  2026-07-06 the profile in force for both families opens that queue at 16:15 CT,
-  so the rows depart from it; on 2027-06-21 the profile in force — the 2026-08-22
-  revision — already opens it at 16:00 CT, and there the row states the profile's
-  own value. Two CME venue tables move with them: `cme`'s three dates keep their
-  `Unsourced` rows, now because two stating families rather than one disagree with
-  the four that state no row, and `cbot`'s three become `Unsourced` for the first
-  time, because interest rates states a row where grains audited the date normal
-  — so `cbot`'s withheld count moves 31 → 34 and `cme`'s moves 32 → 35. Every
+- **The first operator rows using the replacement-block vocabulary: CME's three
+  Globex Saturday sessions, 2026-06-22, 2026-07-06 and 2027-06-21 (2026-09-25 UTC).**
+  Stage 4 of the release plan (#116, #93's data). CME publishes `05:00 open;
+  17:00 closed` on Saturday 2026-06-20, 2026-07-04 and 2027-06-19, each session
+  carrying the following Monday's trade date, on a grid whose normal week has no
+  Saturday session at all — a shape no scalar row can state, because a boundary
+  row moves an existing occurrence and cannot create one. `globex_energy` now
+  states each of those three trade dates as a **complete** block set: the
+  Saturday session at offset `-2`, the ordinary Sunday Pre-Open
+  `16:00-17:00` CT at offset `-1`, and the ordinary Sunday-17:00-to-Monday-16:00
+  session at offset `-1`. The rows state the whole day rather than the Saturday
+  alone because a replacement replaces the complete trade date: a Saturday-only
+  set would delete the Sunday-evening session that belongs to the same one. The
+  Saturday instants come from the row's cited window, which stops at the
+  Saturday; the Sunday Pre-Open and the Sunday-Monday session come from the
+  window that starts on that Sunday, recorded in the owner's evidence file. The
+  four CME venue intersection tables carry the derived consequence — `comex` and
+  `nymex` reproduce the family's row because each routes one family, while `cme`
+  states `Unsourced` on all three dates, where the five financial families state
+  nothing and only energy does, and `cbot` states nothing at all on them because
+  both of its families audited them normal.
+- **`globex_interest_rates` and `globex_fx` also state CME's three Saturday
+  sessions (2026-09-25 UTC).** Stage 4 of the release plan (#116), one
+  shared-operator PR for two more served families that route to `Exchange::Cme`
+  and take the same rows from the same documents the energy rows above use. CME
+  publishes `05:00 open; 17:00 closed` on Saturday 2026-06-20, 2026-07-04 and
+  2027-06-19, each carrying the following Monday's trade date, on a week whose
+  normal grid has no Saturday session. Both families now state trade dates
+  2026-06-22, 2026-07-06 and 2027-06-21 as replacement block sets: the Saturday
+  session at offset `-2`, the operator's published Sunday Pre-Open `16:00-17:00`
+  at offset `-1`, and the ordinary Sunday-17:00-to-Monday-16:00 session at offset
+  `-1`. The queue is stated at the value the operator published for those dates.
+  On 2026-06-22 and 2026-07-06 the profile in force for both families opens that
+  queue at 16:15 CT, so the rows depart from it; on 2027-06-21 the profile in
+  force — the 2026-08-22 revision — already opens it at 16:00 CT, and there the
+  row states the profile's own value. The two multi-family venue tables are
+  recomputed from the families: `cme` states `Unsourced` on all three dates,
+  where energy, interest rates and FX state a row and equity index, grains and
+  livestock state none, so its withheld count moves 32 → 35, and `cbot` states
+  `Unsourced` on all three for the first time, because interest rates states a
+  row where grains states none, moving its count 31 → 34. Every
   instant is quoted from a service window its row cites, and the two 2026 rows
   and the 2027 row name the further window that prints their Sunday legs. Each
   family's rows are mutation-checked.
+
 - **A built-in holiday row may state a replacement block set (2026-09-25 UTC).** Stage 3
   of the release plan adds `HolidayKind::ReplacementBlocks(&'static [ExceptionBlock])`,
   the vocabulary for a special session whose *internal* phase topology changes: an added
@@ -204,6 +227,30 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Fixed
 
+- **A replacement block that opens on the next trade date's open no longer makes
+  `session_bounds` and `trade_date` describe different sessions (2026-09-25 UTC).**
+  Issue #130. A replacement record whose block opens at an instant the *following*
+  trade date's normal-week occurrence also opens on — a block keyed to the
+  evening its trade date begins, which is how a merged trade date or an added
+  session is stated — was claimed by both layers. The normal scan ran first, so
+  `session_bounds` answered with the neighbouring trade date's window (for the
+  reproducer, Thursday 17:00 → Friday 16:00 CT) while `trade_date` answered from
+  the replacement scan (Thursday), and a consumer pairing them received a window
+  and a date naming two different sessions. The rule is now stated and applied on
+  both layers: **a replacement block that meets a normal-week occurrence of the
+  same rule set takes that occurrence's place**, so the normal scan does not
+  report it and every query family answers from the replacement. The test is
+  kind-aware — an `order_entry` block never displaces the tradeable session that
+  opens at the same instant, and a replaced date stating only tradeable blocks
+  keeps its ordinary queue — and it leaves a normal occurrence of another kind
+  (`globex_grains`' Friday regular session, in the fixture) untouched. One
+  consequence is stated rather than hidden: a record whose blocks cover less than
+  the normal week it meets takes the whole overlapping occurrence's place instead
+  of fragmenting it, because a session with no stated opening is not an
+  arrangement an operator publishes. A single-block collision fixture and a
+  no-identity-is-open-without-a-trade-date sweep fence the invariant; removing
+  the guard fails the fixture. No shipped table carries a block row yet, so no
+  built-in answer moves; the caller-supplied path is the one that changes.
 - **Documentation.** The eight CME families' holiday evidence files repeated a whole
   era's document ids inside the *next* era's `### Documents` table, and every one
   of those tables carried a blank line between its header and its `|---|`
@@ -539,11 +586,11 @@ corrections (a venue's hours fixed against a primary source) go under
   end stops one family early or runs another past its own close. **COMEX** and
   **NYMEX** route the one `globex_energy` key, whose metals and energy halves CME
   prints as a single product row, so their intersections drop nothing and they
-  carry that family's table whole (36 rows each in this era, no `Unsourced`).
+  carry that family's table whole (39 rows each in this era, no `Unsourced`).
   CBOT ships 9 stated rows against its thirty-one `Unsourced` dates and CME 9
-  against thirty-two, each with the disagreement named per date in that venue's
-  evidence file. Over both eras the four venue tables carry 96, 79, 74 and 74
-  rows; the numbers in this paragraph are the 2025-2027 era's. The family list behind each intersection is a decision recorded there,
+  against thirty-five, each with the disagreement named per date in that venue's
+  evidence file. Over all six audited eras the four venue tables carry 276, 250, 209 and 209
+  rows; the composition counts in this paragraph are the 2025-2027 era's. The family list behind each intersection is a decision recorded there,
   not something the crate can derive: the map from product families to venues
   belongs to the consumer. **This change also amends `AGENTS.md`**: the charter's
   LAW-HOLIDAY-SCOPE gains one sentence stating the venue-intersection rule, so

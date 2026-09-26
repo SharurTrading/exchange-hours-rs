@@ -145,8 +145,8 @@
 //! re-routing that admitted Nikkei would have to state them differently.
 //! `globex_cryptocurrency` moves no answer in any era: it shares all nine
 //! 2025-2027 closures and its fourteen 2022-2024 rows change nothing, while it
-//! states nothing on seventeen of the other 2025-2027 dates and would join
-//! seventeen more disagreements without moving an answer.
+//! states nothing on twenty of the other 2025-2027 dates and would join
+//! twenty more disagreements without moving an answer.
 //!
 //! # Two kinds of row
 //!

@@ -767,9 +767,13 @@ impl<'a> QueryContext<'a> {
 /// containment query needs when it looks back one opening day.
 ///
 /// Normal-week occurrences come first; a caller-supplied replacement day then
-/// contributes its own blocks. The two never overlap for one trade date:
+/// contributes its own blocks. No instant is claimed by both layers.
 /// [`resolve_rule_bounds`] drops every normal occurrence whose trade date the
-/// exception layer replaced or closed.
+/// exception layer replaced or closed, and the check below drops an occurrence
+/// of a *different* trade date whose window a replacement block of the same
+/// rule set overlaps — otherwise the normal scan would answer first with a
+/// session that [`QueryContext::trade_date_for_bounds`] does not assign to that
+/// block's trade date, which is issue #130.
 pub(super) fn find_occurrence<T>(
     context: &QueryContext<'_>,
     open_day: NaiveDate,
@@ -794,10 +798,19 @@ pub(super) fn find_occurrence<T>(
     for rule in rules(selected.as_ref(), set)
         .filter(|rule| rule.days[weekday] && (!wrapped_only || rule.wraps_to_next_day()))
     {
-        if let Some((open, close)) = resolve_rule_bounds(context, open_day, set, rule)?
-            && let Some(found) = probe(open, close)
-        {
-            return Ok(Some(found));
+        if let Some(bounds) = resolve_rule_bounds(context, open_day, set, rule)? {
+            // A block this occurrence meets takes its place: the plan's "a
+            // replaced trade date serves only its own blocks" applies to a
+            // neighbouring trade date's occurrence too, so the normal scan
+            // yields to the replacement scan below instead of answering with a
+            // session `trade_date_for_bounds` does not assign to that block
+            // (#130).
+            if replacement::governs_instant(context, bounds, set) {
+                continue;
+            }
+            if let Some(found) = probe(bounds.0, bounds.1) {
+                return Ok(Some(found));
+            }
         }
     }
     Ok(replacement::find_occurrence(

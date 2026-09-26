@@ -1446,15 +1446,26 @@ fn summary_days(summary: &str, own: &str) -> Vec<String> {
 }
 
 /// Every `hh:mm` a text states, ignoring digits inside a longer number.
+///
+/// The window is taken with `get` and the halves with `get` as well, because the
+/// prose carries em dashes: a fixed five-byte slice, or a `[3..]` split inside
+/// it, can land mid-character and panic rather than simply not match.
 fn stated_times(text: &str) -> Vec<String> {
     let bytes = text.as_bytes();
     let mut found = Vec::new();
     let mut index = 0;
     while index + 5 <= bytes.len() {
-        let window = &text[index..index + 5];
+        let Some(window) = text.get(index..index + 5) else {
+            index += 1;
+            continue;
+        };
         let looks_like_an_instant = window.as_bytes()[2] == b':'
-            && window[..2].chars().all(|c| c.is_ascii_digit())
-            && window[3..].chars().all(|c| c.is_ascii_digit());
+            && window
+                .get(..2)
+                .is_some_and(|hour| hour.chars().all(|c| c.is_ascii_digit()))
+            && window
+                .get(3..)
+                .is_some_and(|minute| minute.chars().all(|c| c.is_ascii_digit()));
         let bounded = index == 0 || !bytes[index - 1].is_ascii_digit();
         if looks_like_an_instant && bounded {
             found.push(window.to_owned());

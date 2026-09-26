@@ -135,23 +135,21 @@
 //! **What the two excluded families would cost is known, and the 2022-2024 era
 //! changed the answer.** `globex_nikkei_225_dollar` agrees with
 //! `globex_equity_index` row for row in 2016-2018 (the same thirty-four rows),
-//! and on each of the thirty-seven dates that family states in 2025-2027 it
-//! states the same row. It no longer carries the same *number* of rows there:
-//! it ships **forty** dated rows at 2025 and later against the equity index's
-//! thirty-seven, the three extra being exactly the Saturday trade dates
-//! 2026-06-22, 2026-07-06 and 2027-06-21 that Stage 4 (#116) added as
-//! complete-day replacement rows. Routing it would therefore have moved no
-//! answer in 2016-2018 and none on those thirty-seven shared dates, but the
-//! three Saturdays are dates this venue's six families audit normal, so
-//! admitting Nikkei would turn each of them into a disagreement the
-//! intersection can only ship as `Unsourced`. In 2022-2024 it is **not**
-//! answer-neutral: its thirteen 2024 `Unsourced` rows — the wave did not
-//! retrieve the 2024 Nikkei channel — would turn the era's two service-answered
-//! closures, 2024-03-29 and 2024-12-25, into `Unsourced`, and would add a third
-//! on 2024-12-31, a date the six-family intersection audits normal. Those three
-//! dates therefore rest on the routing decision rather than on the intersection
-//! alone, and a re-routing that admitted Nikkei would have to state them
-//! differently.
+//! and its 2025-2027 table differs from that family's on exactly three dates:
+//! the Saturday trade dates 2026-06-22, 2026-07-06 and 2027-06-21 that Stage 4
+//! (#116) added as complete-day replacement rows. It ships **forty** dated rows
+//! at 2025 and later, and on every other date the two both state, they state
+//! the same row. Routing it would therefore have moved no answer in 2016-2018
+//! and none on the dates the two state alike, and on the three Saturdays it can
+//! add no shipped row either: the families this venue routes do not all state
+//! Nikkei's row there, so the intersection can only report `Unsourced`. In
+//! 2022-2024 it is **not** answer-neutral: its thirteen 2024 `Unsourced` rows
+//! — the wave did not retrieve the 2024 Nikkei channel — would turn the era's
+//! two service-answered closures, 2024-03-29 and 2024-12-25, into `Unsourced`,
+//! and would add a third on 2024-12-31, a date the six-family intersection
+//! audits normal. Those three dates therefore rest on the routing decision
+//! rather than on the intersection alone, and a re-routing that admitted Nikkei
+//! would have to state them differently.
 //! `globex_cryptocurrency` moves no answer in any era: it shares all nine
 //! 2025-2027 closures and its fourteen 2022-2024 rows change nothing, while it
 //! states nothing on seventeen of the other 2025-2027 dates and would join

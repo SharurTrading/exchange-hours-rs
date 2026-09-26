@@ -258,7 +258,7 @@ fn withheld(calendar: ExchangeCalendar, date: NaiveDate) -> bool {
 /// page rather than asserted by this list. It is a fence only while the
 /// `Unsrc 2025+ dates` column it is compared against is re-derived from the
 /// shipped tables — which `inventory_windows_and_date_counts_match_the_shipped_tables`
-/// does in the same file. `cme` is deliberately absent: it withholds 35 dates
+/// does in the same file. `cme` is deliberately absent: it withholds 48 dates
 /// **and** the Sunday quarter-hour (#79), so its denial of completeness is no
 /// longer date-shaped.
 fn date_level_incompleteness() -> &'static [(&'static str, usize)] {
@@ -277,7 +277,7 @@ fn date_level_incompleteness() -> &'static [(&'static str, usize)] {
 /// `globex_interest_rates` each withheld the Sunday 16:00-16:15 CT quarter-hour
 /// their own ledger basis notes record, and this fence is what made the correction
 /// to the page and the metadata land together — but only **four** of the five had
-/// a cell reading complete: `cme`'s already denied it, for the 35 dates it
+/// a cell reading complete: `cme`'s already denied it, for the 48 dates it
 /// withholds as `Unsourced` in 2025+, so the quarter-hour corrected that scope's
 /// cause of incompleteness rather than its verdict.
 ///

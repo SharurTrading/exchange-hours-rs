@@ -13,6 +13,11 @@ are unchanged. The `eurex` row's `Holidays`, `2025+ dates`, `Missing / disputed`
 cells were corrected on 2026-09-26 UTC when its 2025 holiday rows shipped, together with §1's
 scope count and the `eurex` endpoint row and table-shape bullet in
 [Artifact resolution](#artifact-resolution).
+are unchanged. The `cme` and `cbot` rows' own prose counts, and §2's, were corrected on
+2026-09-26 UTC to the 48 and 47 their `Unsrc 2025+ dates` cells and the inventory fence derive, and
+`globex_cryptocurrency`'s `2025+ dates` count, `Missing / disputed` and `Complete?` cells moved on
+the same date, when its nine merged trade dates shipped as rows: the count is now 32 and the two
+cells name what remains open rather than the merges.
 
 One row per served instrument scope, recording what the crate actually ships against the adopted
 2025 floor. This is a **record, not a claim**: no runtime change accompanies it and it moves no
@@ -62,8 +67,8 @@ served `iceus` identity, while `FANG`, `DOLLAR_INDEX`, `SUGAR_COFFEE_COCOA`, `CO
 
 | Identity | Owner | Normal week | Horizon | Holidays | 2025+ dates | `Unsrc` 2025+ dates | Missing / disputed | Complete? | Closing issues |
 |---|---|---|---|---|---|---|---|---|---|
-| `cme` | [cme_group.rs](../../src/calendar/schedules/futures/us/cme_group.rs) | 2010-11-15 … 2026-08-22 (5 rows) | 2012-05-03 | 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 57 | 48 | all of 2025-2027 on 35 disputed dates (2025-01-02 … 2027-11-26); the Sunday 16:00-16:15 CT quarter-hour, withheld (#79) | **incomplete**: 35 `Unsourced` dates in 2025+ and the Sunday 16:00-16:15 CT quarter-hour is withheld (#79) | #79, #116, #117 |
-| `cbot` | [grains.rs](../../src/calendar/schedules/futures/us/grains.rs) | 2010-04-19 … 2015-07-05 (6 rows) | 2010-03-15 | 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 56 | 47 | all of 2025-2027 on 34 disputed dates (2025-01-02 … 2027-11-26) | **incomplete**: 34 `Unsourced` dates in 2025+ | #116, #117 |
+| `cme` | [cme_group.rs](../../src/calendar/schedules/futures/us/cme_group.rs) | 2010-11-15 … 2026-08-22 (5 rows) | 2012-05-03 | 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 57 | 48 | all of 2025-2027 on 48 disputed dates (2025-01-02 … 2027-11-26); the Sunday 16:00-16:15 CT quarter-hour, withheld (#79) | **incomplete**: 48 `Unsourced` dates in 2025+ and the Sunday 16:00-16:15 CT quarter-hour is withheld (#79) | #79, #116, #117 |
+| `cbot` | [grains.rs](../../src/calendar/schedules/futures/us/grains.rs) | 2010-04-19 … 2015-07-05 (6 rows) | 2010-03-15 | 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 56 | 47 | all of 2025-2027 on 47 disputed dates (2025-01-02 … 2027-11-26) | **incomplete**: 47 `Unsourced` dates in 2025+ | #116, #117 |
 | `comex` | [energy_metals.rs](../../src/calendar/schedules/futures/us/energy_metals.rs) | 2015-09-20 … 2026-08-22 (2 rows) | 2012-05-11 | 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 53 | — | the Sunday 16:00-16:15 CT quarter-hour, withheld (#79) | **incomplete**: the Sunday 16:00-16:15 CT quarter-hour is withheld (#79) | #79, #116, #117 |
 | `nymex` | [energy_metals.rs](../../src/calendar/schedules/futures/us/energy_metals.rs) | 2015-09-20 … 2026-08-22 (2 rows) | 2012-05-11 | 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 53 | — | the Sunday 16:00-16:15 CT quarter-hour, withheld (#79) | **incomplete**: the Sunday 16:00-16:15 CT quarter-hour is withheld (#79) | #79, #116, #117 |
 | `cfe` | [cfe.rs](../../src/calendar/schedules/futures/us/cfe.rs) | 2010-12-10 … 2021-12-06 (8 rows) | 2010-01-01 | 2026-01-01..2026-12-31 | 12 | — | all of 2025; the window opens 2026-01-01 | **no 2025 coverage** | #98, #116 |
@@ -76,7 +81,7 @@ served `iceus` identity, while `FANG`, `DOLLAR_INDEX`, `SUGAR_COFFEE_COCOA`, `CO
 | `globex_fx` | [fx.rs](../../src/calendar/schedules/futures/us/fx.rs) | 2010-11-15 … 2026-08-22 (2 rows) | 2012-05-03 | 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 36 | — | the Sunday 16:00-16:15 CT quarter-hour, withheld (#79) | **incomplete**: the Sunday 16:00-16:15 CT quarter-hour is withheld (#79) | #79, #116, #117 |
 | `globex_interest_rates` | [interest_rates.rs](../../src/calendar/schedules/futures/us/interest_rates.rs) | 2010-11-15 … 2026-08-22 (3 rows) | 2010-01-01 | 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 53 | — | the Sunday 16:00-16:15 CT quarter-hour, withheld (#79) | **incomplete**: the Sunday 16:00-16:15 CT quarter-hour is withheld (#79) | #79, #116, #117 |
 | `globex_livestock` | [livestock.rs](../../src/calendar/schedules/futures/us/livestock.rs) | 2014-10-27 … 2020-05-31 (4 rows) | 2010-01-01 | 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 36 | — | none in 2025+ | complete to 2027-12-31 | #116, #117 |
-| `globex_cryptocurrency` | [cryptocurrency.rs](../../src/calendar/schedules/futures/us/cryptocurrency.rs) | 2017-12-17 … 2026-09-20 (9 rows) | — | 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 24 | — | special-session dates the scalar layer cannot state (#93); the five-day era's Sunday and weekday Pre-Open onset is undated (#123) | **incomplete**: special-session dates the scalar layer cannot state (#93) and the five-day era's Pre-Open onset is undated (#123) | #93, #116, #117, #123 |
+| `globex_cryptocurrency` | [cryptocurrency.rs](../../src/calendar/schedules/futures/us/cryptocurrency.rs) | 2017-12-17 … 2026-09-20 (9 rows) | — | 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 32 | — | the 24/7 era's Monday and Thursday holidays omit the 16:00 CT close, so the 16:00-16:01 CT minute is served closed (#93); the five-day era's Sunday and weekday Pre-Open onset is undated (#123) | **incomplete**: the 24/7-era 16:00-16:01 CT minute is served closed (#93) and the five-day era's Pre-Open onset is undated (#123) | #93, #116, #117, #123 |
 | `globex_nikkei_225_dollar` | [cme_nikkei.rs](../../src/calendar/schedules/futures/us/cme_nikkei.rs) | 2011-01-12 … 2015-09-20 (4 rows) | — | 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 49 | — | none in 2025+ | complete to 2027-12-31 | #116, #117 |
 
 ## Consumer routing
@@ -147,7 +152,7 @@ whose evidence files still lack it, as #98 tracks.
 
 ### 2. Two venue intersections carry `Unsourced` dates inside 2025+
 
-`cme` withholds **35** dates and `cbot` **31** across 2025-2027, covering every US market holiday the
+`cme` withholds **48** dates and `cbot` **47** across 2025-2027, covering every US market holiday the
 routed families dispute. This is the intersection behaving as designed rather than a defect: the
 charter states that family disagreement is `Unsourced`, never silence, and that a broad intersection
 remains explicitly partial and cannot stand in for a complete family calendar. It does not by itself
@@ -167,8 +172,8 @@ no answer, and Stage 4 item 2 refreshes it.
 complete: `cbot` withholds disputed dates in §2 and `cme` those plus the Sunday 16:00-16:15 CT
 quarter-hour; `comex`, `nymex`, `globex_energy`, `globex_interest_rates` and `globex_equity_index`
 withhold that same quarter-hour in §5, and so does `globex_fx`; and
-`globex_cryptocurrency` publishes special sessions no row states and carries an undated five-day-era
-Pre-Open onset. `comex` and `nymex` are intersections too, but each
+`globex_cryptocurrency` loses the 24/7-era 16:00-16:01 CT minute to an unstateable gap and carries an
+undated five-day-era Pre-Open onset. `comex` and `nymex` are intersections too, but each
 routes one family's grid, so they match it row for row and their six `Unsourced` rows all fall in
 2019-2023, outside the new floor.
 
@@ -197,13 +202,15 @@ routes one family's grid, so they match it row for row and their six `Unsourced`
 
 Dates that change internal phase topology are not representable by the scalar vocabulary, so an
 affected scope declares them as a gap rather than approximating them. `globex_cryptocurrency` is the
-one scope that still does: its evidence file records Saturday sessions and merged trade dates no
-shipped row states, so they remain gaps for it alone and the dates and closing conditions stay in
-its evidence file. The other scopes this section used to name are covered — `globex_energy`,
-`globex_equity_index`, `globex_interest_rates` and `globex_fx` carry the three Saturday-session trade
-dates as built-in replacement-block rows, and `globex_fx` now carries its merged trade dates too, so
-every session CME publishes for it is stated and its `#93` declaration is gone. `globex_grains` and
-`globex_livestock` state no row on those Saturdays.
+one scope that still does, and it is the last of them: its nine five-day-era merged trade dates ship
+as built-in replacement rows (2026-09-26 UTC), so what remains unstated for it is the 24/7 era's
+16:00-16:01 CT minute, served closed, plus its own undated five-day-era Pre-Open onset (#123), and
+those closing conditions stay in its evidence file. The other scopes this section used to name are
+covered — `globex_energy`, `globex_equity_index`, `globex_fx`, `globex_interest_rates` and
+`globex_nikkei_225_dollar` carry the three Saturday-session trade dates as built-in replacement-block
+rows, as do `comex` and `nymex`, which route `globex_energy`'s table whole; and `globex_fx` now
+carries its merged trade dates too, so every session CME publishes for it is stated and its `#93`
+declaration is gone. `globex_grains` and `globex_livestock` state no row on those Saturdays.
 
 ## Artifact resolution
 

@@ -185,20 +185,23 @@ const fn withheld_sunday_quarter_hour() -> PhaseGap {
         .until(effective_date(2026, 8, 22))
 }
 
-/// The special-session gap `globex_cryptocurrency` still carries: CME publishes
-/// sessions no shipped row states (#93).
+/// The special-session gap `globex_cryptocurrency` still carries: CME's 24/7 era
+/// publishes sessions no shipped row states (#93).
 ///
 /// `globex_fx` carried this too, and no longer does. The vocabulary a row needs
 /// shipped in Stage 3 (#93), the fifth `HolidayKind` carrying a replacement block
-/// set; the operator rows and their evidence landed in Stage 4 (#116) and the
+/// set; the operator rows and their evidence landed in Stage 4 (#116), and the
 /// merged trade dates in Stage 5, so every session CME publishes for that family
-/// is now stated and its declaration is gone. What remains here is
-/// `globex_cryptocurrency` alone, whose 24/7-era sessions and merged trade dates
-/// are still unstated.
+/// is now stated and its declaration is gone. `globex_cryptocurrency` states its
+/// five-day-era merged trade dates the same way; what remains unstated is the
+/// **24/7-era half**, where CME omits its 16:00 CT final close on the Monday and
+/// Thursday holidays, so the 16:00-16:01 CT minute the operator runs is served
+/// closed. A block row on those trade dates remains the closing condition.
 ///
 /// `docs/schedules/coverage-2025.md` records the remaining scope as
-/// "special-session dates the scalar layer cannot state (#93)"; its owner's
-/// evidence file lists the trade dates behind that verdict.
+/// "the 24/7 era's Monday and Thursday holidays omit the 16:00 CT close, so the
+/// 16:00-16:01 CT minute is served closed (#93)"; its owner's evidence file lists
+/// the dates behind that verdict.
 const fn unstateable_special_sessions() -> PhaseGap {
     PhaseGap::new(CoverageGapReason::SpecialSessionUnrepresentable, "#93")
 }

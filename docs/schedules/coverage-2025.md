@@ -174,11 +174,19 @@ scope.
 covered future stops 14 days before this inspection (2026-09-21). The interval after 2026-09-07 has
 no answer, and Stage 4 item 2 refreshes it.
 
-### 4. One scope is complete to 2027-12-31
+### 4. One scope reports complete to 2027-12-31, and it carries a gap the API cannot state
 
-`globex_nikkei_225_dollar` reaches 2027-12-31 with no `Unsourced` row at or after 2025-01-01 and no
-declared phase-level gap. It is the only one: `globex_grains` and `globex_livestock` reach that date
-with no withheld date either, but both answer the post-close queue's trade date with the crate's own
+`globex_nikkei_225_dollar` is the only scope the coverage API reports complete to that date: it has
+no `Unsourced` row at or after 2025-01-01 and no declared phase-level gap. It nonetheless carries a
+**witness gap** the API has no representation for: it ships twelve of the seventeen merged trade
+dates and none of the 2025 five (2025-01-21, 2025-02-18, 2025-05-27, 2025-06-20, 2025-09-02),
+because no `NKD`/`NIY` witness exists for those windows and the channel that would carry one returns
+an empty event list for them. Those five dates are not `Unsourced` rows — nothing the operator
+published withholds them — they are dates this crate has not worked up, so the gap is recorded in
+[`docs/evidence/globex_nikkei_225_dollar.md`](../evidence/globex_nikkei_225_dollar.md) with its
+closing condition and tracked as issue #162, and `is_complete_on` cannot yet be taught to refuse
+them. `globex_grains` and `globex_livestock` are the two the API does **not** report complete: they reach
+that date with no withheld date either, but both answer the post-close queue's trade date with the crate's own
 convention rather than the operator's printed label on every covered date that carries the queue —
 746 of them for `globex_grains` — so both now read **incomplete** under #152. The other eleven scopes
 that reach that date are **not** complete either: `cbot` withholds disputed dates in §2 and `cme`

@@ -646,19 +646,25 @@ each document is in that `INDEX.md`.
 
 **Gaps, 2025.**
 
-- **Intraday topology, 2025-11-28 — unrepresentable, sourced.** The finalised
-  publication additionally prints `07:00 preopen; 07:30 open` on a trading day
-  that opened at 17:00 CT on 2025-11-27, i.e. a pause and re-open inside a
-  running session. The crate's scalar vocabulary states a first open and a final
-  close only, so the early close ships and the morning pair does not. No
-  `is_open` answer before 07:00 CT is asserted as a halt. LAW-HOLIDAY-SCOPE
-  records this as a gap; design memo §1.3 and §5.4 item 7 name it.
-- **Order-entry deviations — unrepresentable, sourced, no `is_open`
-  consequence.** On 2025-01-01 and 2025-12-25 the pre-open feeding the next
-  trade date starts at 16:00 CT instead of the family's normal 16:45 CT. The
-  built-in table copies `DayPolicy`'s vocabulary, which has no order-entry
-  boundary, so the deviation is recorded and not modelled. It changes
-  `is_accepting_orders` for 45 minutes and `is_open` never.
+- **The 2025-11-28 morning Pre-Open is served, and it is order entry.** The
+  finalised publication prints `07:00 preopen; 07:30 open; 12:15 closed` on
+  eventDate 2025-11-28, all three carrying CME trade date 2025-11-28. CME's own
+  event vocabulary defines `preopen` as "Order Entry, modification, and cancel
+  are allowed. No order matching." and `open` as "Start of continuous trading
+  phase. Order matching begins.", so `07:00-07:30` CT is a queue and matching
+  resumes at `07:30`. The row's
+  `MERGED_SESSION_EARLY_CLOSE_BLOCKS_2025_11_28` states exactly that: the
+  overnight run is carried as `extended` blocks ending at 07:00, the queue is an
+  `order_entry` block, and matching resumes in an `extended` block to the 12:15
+  close. Until this correction the whole morning was one `extended` block, so
+  `is_open` answered `true` in the operator's queue. It is the only date in the
+  2025-2027 window with this shape: the 2026 and 2027 Thanksgiving Fridays print
+  the close line alone and keep the four-block static.
+- **Order-entry deviations — sourced, no `is_open` consequence.** On 2025-01-01
+  and 2025-12-25 the pre-open feeding the next trade date starts at 16:00 CT
+  instead of the family's normal 16:45 CT. Those rows are scalar holiday kinds
+  with no block set of their own, so the boundary is not modelled there. It
+  changes `is_accepting_orders` for 45 minutes and `is_open` never.
 - **Residual risk — pre-finalisation publication.** The eight windows from New
   Year 2025 through Labor Day 2025 rest on the single archive capture
   `2024-12-20T15:53:40Z`, and CME states on the same page that trading hours are

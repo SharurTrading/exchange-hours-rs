@@ -344,6 +344,29 @@ corrections (a venue's hours fixed against a primary source) go under
   queries, so `is_open`, `is_accepting_orders`, `session_state`, `session_bounds`
   and every other answer stand exactly as before and only the completeness
   verdict moves.
+- **Five families served matching inside the published 2025-11-28 Pre-Open; a
+  sixth ships five un-witnessed merged dates (2026-09-26 UTC).** Two blocking
+  data defects an independent review reproduced against the source bytes.
+  (a) `globex_fx`, `globex_energy`, `globex_equity_index`,
+  `globex_interest_rates` and `globex_nikkei_225_dollar` each carried their
+  day-after-Thanksgiving replacement row as one continuous
+  `extended(-1, 17:00, close)` run, so `is_open` answered `true` at 07:00, 07:15,
+  07:29 and 07:30 CT on 2025-11-28 — a window the operator prints as
+  `07:00 preopen; 07:30 open` and defines as *"Order Entry, modification, and
+  cancel are allowed. **No order matching.**"* Each family now states the
+  `07:00-07:30` CT queue as an `order_entry` window and resumes matching at the
+  `07:30` `open`; `is_open` is `false` at 07:15 CT and `true` at 07:45 CT for all
+  five, and the trade date and final close do not move. The queue exists **only**
+  on 2025-11-28: the 2026-11-27 and 2027-11-26 dates that share the static
+  publish the close line alone, so they keep the original four-block row.
+  (b) `globex_nikkei_225_dollar` ships twelve of its seventeen merged trade
+  dates; the five 2025 dates (2025-01-21, 2025-02-18, 2025-05-27, 2025-06-20,
+  2025-09-02) have **no `NKD`/`NIY` witness anywhere in the research store** —
+  five targeted `THBP-B` captures requested exactly `id=168,167` over exactly
+  those windows and returned an empty event list for both products — so they are
+  recorded as a witness gap with a closing condition rather than invented from
+  the sibling families' line, and `docs/schedules/coverage-2025.md` no longer
+  calls the identity complete to 2027-12-31. Refs #156, #162.
 - **Stale counts and refuted sentences corrected against the shipped tables
   (2026-09-26 UTC).** An independent review and a coverage audit found numbers
   and sentences the merged-trade-date waves had outgrown; each was recomputed

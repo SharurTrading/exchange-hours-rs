@@ -422,7 +422,7 @@ This era's rows cite the ids below: CME Group's own published holiday schedules 
 **Interpretive steps, 2026.**
 
 - Every row is the family's own published line: `NKD` and `NIY` appear in the `THBP-B`
-  captures for all twelve dates, so no inference from the Equity Index line is made anywhere
+  captures for all fourteen dates, so no inference from the Equity Index line is made anywhere
   in 2026.
 - Good Friday 2026 is the date that proves the 2025 inference rather than resting on it.
   `NKD` and `NIY` print `08:15 closed /TD 2026-04-03`; `ZN`, `6E` and `BTC` print 10:15 CT on
@@ -470,8 +470,10 @@ This era's rows cite the ids below: CME Group's own published holiday schedules 
 
 **Interpretive steps, 2027.**
 
-- All eleven rows are the family's own published line, from the `THBP-B` live retrievals of
-  2026-09-12.
+- All twelve rows are the family's own published line. Eleven come from the `THBP-B` live
+  retrievals of 2026-09-12; the twelfth, 2027-06-21, takes its Saturday leg from
+  `CME-SVC-B-2027-06-17` (a 2026-09-12 retrieval) and its Sunday legs from `CME-SVC-B-2027-06-20`,
+  which was retrieved 2026-09-25.
 - 2027-12-23 is CME's own holiday date for Christmas 2027 but is **not** a crate row. Its
   daytime close is the ordinary 16:00 CT; what is missing is the Thursday-evening leg, and
   `Closed(2027-12-24)` already removes it. 2027-12-31 is likewise normal: `16:00 closed

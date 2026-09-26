@@ -361,7 +361,8 @@ fn the_family_ships_no_late_open_and_reopens_at_the_normal_1700_ct() {
                     | HolidayKind::EarlyClose { .. }
                     | HolidayKind::ReplacementBlocks(_)
             ),
-            "{date}: this family ships only closures and early closes"
+            "{date}: this family ships closures, early closes and the three \
+             Saturday-session block sets only"
         );
         assert_eq!(row.tier(), EvidenceTier::T2, "{date} must be sourced at T2");
     }

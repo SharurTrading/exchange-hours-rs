@@ -133,7 +133,8 @@ corrections (a venue's hours fixed against a primary source) go under
   row states the profile's own value. The two multi-family venue tables are
   recomputed from the families: `cme` states `Unsourced` on all three dates,
   where energy, equity index, interest rates and FX state a row and grains and
-  livestock state none, so its withheld count is unchanged at 35 — those three dates were already `Unsourced` there — and `cbot` states
+  livestock state none, so its withheld count is unchanged at 35 — those three
+  dates were already `Unsourced` there — and `cbot` states
   `Unsourced` on all three for the first time, because interest rates states a
   row where grains states none, moving its count 31 → 34. Each
   row's instants are quoted from the window that prints them: for 2026-06-22 and

@@ -1013,9 +1013,7 @@ fn wave2_closures_remove_the_trade_date_and_ship_no_late_open() {
             assert!(
                 matches!(
                     holiday.kind(),
-                    HolidayKind::Closed
-                        | HolidayKind::EarlyClose { .. }
-                        | HolidayKind::ReplacementBlocks(_)
+                    HolidayKind::Closed | HolidayKind::EarlyClose { .. }
                 ),
                 "{date}: the era ships closures and early closes only, not {:?}",
                 holiday.kind()

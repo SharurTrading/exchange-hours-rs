@@ -636,14 +636,15 @@ different answer rather than a missing one.
 
 The shapes are counted from the six tables rather than assumed. **Ten** of the
 thirty-five dates have all six families stating a boundary that they do not agree on.
-**Twenty-five** have at least one family silent, and eight of those are the sharpest
+**Twenty-five** have at least one family silent, and five of those are the sharpest
 case, where exactly **one** family states anything at all: 2025-01-02, 2025-12-26,
-2026-01-02 and 2027-07-06, where only `globex_grains` states a late open,
-2025-07-03, where only `globex_equity_index` states an early close, and 2026-06-22,
-2026-07-06 and 2027-06-21, where only `globex_energy` states the Saturday-session
-block. The other seventeen are a mixture in between. Here is what the boundary
-disagreements look like across the three shapes of holiday, which is why no single
-instant can stand for one.
+2026-01-02 and 2027-07-06, where only `globex_grains` states a late open, and
+2025-07-03, where only `globex_equity_index` states an early close. Three more —
+2026-06-22, 2026-07-06 and 2027-06-21 — are the two-family case: `globex_energy`
+and `globex_equity_index` both state the Saturday-session block and the other four
+state nothing. The remaining seventeen are a mixture in between. Here is what the
+boundary disagreements look like across the three shapes of holiday, which is why
+no single instant can stand for one.
 
 **The Christmas Eves are the widest** (a ten-date shape): on 2026-12-24 the grain and
 livestock day sessions end at 12:05 CT, the equity-index and interest-rate families at
@@ -699,7 +700,7 @@ the product-family key: `globex_equity_index` knows what CME equity index does o
 | 2026-04-03 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2026-04-01` | T2 | equity index early close 08:15 CT; energy closed; FX early close 10:15 CT; grains closed; interest rates early close 10:15 CT; livestock closed |
 | 2026-05-25 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2026-05-24` | T2 | equity index early close 12:00 CT; energy early close 13:30 CT; grains closed; interest rates early close 12:00 CT; livestock closed; no row in FX |
 | 2026-06-19 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2026-06-18` | T2 | equity index early close 12:00 CT; energy early close 12:00 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed |
-| 2026-06-22 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2026-06-18` | T2 | energy, interest rates and FX replacement blocks: Saturday 05:00-17:00 CT, the Sunday Pre-Open 16:00-17:00 CT and the Sunday-17:00-to-Monday-16:00 session; no row in equity index, grains or livestock |
+| 2026-06-22 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2026-06-18` | T2 | energy, equity index, interest rates and FX replacement blocks: Saturday 05:00-17:00 CT, the Sunday Pre-Open 16:00-17:00 CT and the Sunday-17:00-to-Monday-16:00 session; no row in grains or livestock |
 | 2026-07-06 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2026-07-03` | T2 | as 2026-06-22 |
 | 2026-07-03 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2026-07-03` | T2 | equity index early close 12:00 CT; energy early close 12:00 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed |
 | 2026-09-07 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2026-09-06` | T2 | equity index early close 12:00 CT; energy early close 13:30 CT; grains closed; interest rates early close 12:00 CT; livestock closed; no row in FX |
@@ -739,12 +740,13 @@ the product-family key: `globex_equity_index` knows what CME equity index does o
   table on `cmegroup.com/trading-hours.html` is per asset class, not per venue — or a
   `DayPolicy`-shaped boundary that can express a per-family answer inside one venue
   calendar. Neither exists today.
-- **`no row in FX` on twenty-two of the older thirty-two disputed dates, plus the
-  three 2026-2027 Saturday-session dates it now states.** `globex_fx`
+- **`no row in FX` on twenty-five of the thirty-five disputed dates** — twenty-two
+  of the older disputed dates, plus the three 2026-2027 Saturday-session dates.
+  `globex_fx`
   carries no row on 2025-01-02, 2025-01-20, 2025-02-17, 2025-05-26, 2025-06-19,
   2025-07-03, 2025-09-01, 2025-11-27, 2025-12-26, 2026-01-02, 2026-01-19, 2026-02-16,
-  2026-05-25, 2026-09-07, 2026-11-26, 2027-01-18, 2027-02-15, 2027-05-31, 2027-07-05,
-  2027-07-06, 2027-09-06 and 2027-11-25, while at least one of the other five families
+  2026-05-25, 2026-06-22, 2026-07-06, 2026-09-07, 2026-11-26, 2027-01-18, 2027-02-15,
+  2027-05-31, 2027-06-21, 2027-07-05, 2027-07-06, 2027-09-06 and 2027-11-25, while at least one of the other five families
   states a row on each of them. FX's own evidence file audits those dates normal: CME
   prints `16:00 closed` for `6E` as the family's **ordinary** final close, not a holiday
   halt. That is a row the FX family deliberately does not carry, so the venue sees a

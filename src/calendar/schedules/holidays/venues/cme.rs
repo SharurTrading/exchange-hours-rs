@@ -615,9 +615,9 @@ pub(crate) static CME: &HolidayTable = holidays! {
         // 2026-06-19 - T2 - CME-SVC-2026-06-18 - equity index, energy, FX and
         // interest rates early close 12:00 CT, grains and livestock closed.
         (2026, 6, 19, Unsourced, T2, "CME-SVC-2026-06-18"),
-        // 2026-06-22 - T2 - CME-SVC-2026-06-18 - energy, interest rates and FX
-        // state a Saturday-session replacement; the other three families state no
-        // row for the date, so the whole venue withholds it.
+        // 2026-06-22 - T2 - CME-SVC-2026-06-18 - energy, equity index, interest
+        // rates and FX state a Saturday-session replacement; grains and livestock
+        // state no row for the date, so the whole venue withholds it.
         (2026, 6, 22, Unsourced, T2, "CME-SVC-2026-06-18"),
         // 2026-07-03 - T2 - CME-SVC-2026-07-03 - as 2026-06-19.
         (2026, 7, 3, Unsourced, T2, "CME-SVC-2026-07-03"),

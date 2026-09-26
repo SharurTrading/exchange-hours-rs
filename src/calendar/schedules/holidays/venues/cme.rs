@@ -81,12 +81,12 @@ use super::super::{
 
 /// The `Exchange::Cme` table: the intersection of the six CME families.
 ///
-/// Two hundred and seventy-three rows over six audited eras. Forty-seven state a status — the
-/// Globex full closures — and 226 are `Unsourced`: 49 in 2010-2012, where the
-/// families disagree in kind rather than by minutes, 50 in 2013-2015, 27 in
-/// 2016-2018, 34 in 2019-2021, 34 in 2022-2024, and 32 in 2025-2027. The six
-/// eras are declared as six coverage windows, and outside them the table reports
-/// no answer rather than a normal one.
+/// Two hundred and seventy-six rows over six audited eras. Forty-seven state a
+/// status — the Globex full closures — and 229 are `Unsourced`: 49 in 2010-2012,
+/// where the families disagree in kind rather than by minutes, 50 in 2013-2015,
+/// 27 in 2016-2018, 34 in 2019-2021, 34 in 2022-2024, and 35 in 2025-2027. The
+/// six eras are declared as six coverage windows, and outside them the table
+/// reports no answer rather than a normal one.
 // Evidence: docs/evidence/cme.md
 pub(crate) static CME: &HolidayTable = holidays! {
     coverage: [(2010, 1, 1) ..= (2012, 12, 31), (2013, 1, 1) ..= (2015, 12, 31), (2016, 1, 1) ..= (2018, 12, 31), (2019, 1, 1) ..= (2021, 12, 31), (2022, 1, 1) ..= (2024, 12, 31), (2025, 1, 1) ..= (2027, 12, 31)],
@@ -615,11 +615,15 @@ pub(crate) static CME: &HolidayTable = holidays! {
         // 2026-06-19 - T2 - CME-SVC-2026-06-18 - equity index, energy, FX and
         // interest rates early close 12:00 CT, grains and livestock closed.
         (2026, 6, 19, Unsourced, T2, "CME-SVC-2026-06-18"),
-        // 2026, 6, 22 - T2 - CME-SVC-2026-06-18 - energy, equity index, interest rates and FX state a Saturday-session replacement; the other families state nothing, which is an audited-normal answer and so a dispute.
+        // 2026, 6, 22 - T2 - CME-SVC-2026-06-18 - interest rates and FX state a
+        // Saturday-session replacement; the other four families state no row for the
+        // date, so the whole venue withholds it.
         (2026, 6, 22, Unsourced, T2, "CME-SVC-2026-06-18"),
         // 2026-07-03 - T2 - CME-SVC-2026-07-03 - as 2026-06-19.
         (2026, 7, 3, Unsourced, T2, "CME-SVC-2026-07-03"),
-        // 2026, 7, 6 - T2 - CME-SVC-2026-07-03 - energy, equity index, interest rates and FX state a Saturday-session replacement; the other families state nothing, which is an audited-normal answer and so a dispute.
+        // 2026, 7, 6 - T2 - CME-SVC-2026-07-03 - interest rates and FX state a
+        // Saturday-session replacement; the other four families state no row for the
+        // date, so the whole venue withholds it.
         (2026, 7, 6, Unsourced, T2, "CME-SVC-2026-07-03"),
         // 2026-09-07 - T2 - CME-SVC-2026-09-06 - as 2025-01-20.
         (2026, 9, 7, Unsourced, T2, "CME-SVC-2026-09-06"),
@@ -644,7 +648,9 @@ pub(crate) static CME: &HolidayTable = holidays! {
         (2027, 5, 31, Unsourced, T2, "CME-SVC-2027-05-30"),
         // 2027-06-18 - T2 - CME-SVC-2027-06-17 - as 2026-06-19.
         (2027, 6, 18, Unsourced, T2, "CME-SVC-2027-06-17"),
-        // 2027, 6, 21 - T2 - CME-SVC-2027-06-17 - energy, equity index, interest rates and FX state a Saturday-session replacement; the other families state nothing, which is an audited-normal answer and so a dispute.
+        // 2027, 6, 21 - T2 - CME-SVC-2027-06-17 - interest rates and FX state a
+        // Saturday-session replacement; the other four families state no row for the
+        // date, so the whole venue withholds it.
         (2027, 6, 21, Unsourced, T2, "CME-SVC-2027-06-17"),
         // 2027-07-05 - T2 - CME-SVC-2027-07-04 - equity index 12:00 CT,
         // energy and interest rates 13:30 CT early close, grains and livestock

@@ -429,14 +429,15 @@ fn a_closed_venue_row_is_a_unanimous_closure() {
         }
         // `Exchange` is `#[non_exhaustive]`, so the count is keyed off the
         // routing list this module already pins rather than off the variant.
-        // 2010-2012 contributes 49 (CME) or 33 (CBOT) unsourced dates,
-        // 2013-2015 another 49 or 47, 2016-2018 27 each, 2019-2021 34 each,
-        // 2022-2024 34 and 32, and 2025-2027 32 and 34 — the three dates on
-        // which the energy, equity-index, interest-rate and FX families state a
-        // Saturday-session replacement (2026-06-22, 2026-07-06 and 2027-06-21)
-        // are disputes on both multi-family venues, so each gains three; the
-        // single-family venues have six, the three 2019-2021 Juneteenth markers
-        // and the three 2023 dates.
+        // Parsed from the two shipped tables window by window, 2010-2012
+        // contributes 49 (CME) or 33 (CBOT) unsourced dates, 2013-2015 another
+        // 50 or 46, 2016-2018 27 each, 2019-2021 34 each, 2022-2024 34 and 32,
+        // and 2025-2027 35 and 34 — the three dates on which `globex_fx` and
+        // `globex_interest_rates` state a Saturday-session replacement
+        // (2026-06-22, 2026-07-06 and 2027-06-21) are disputes on both
+        // multi-family venues, so each gains three; the single-family venues
+        // have six, the three 2019-2021 Juneteenth markers and the three 2023
+        // dates.
         let expected = if single_family {
             6
         } else if families.len() == 6 {

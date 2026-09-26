@@ -76,9 +76,9 @@ use super::super::{
 /// below keeps both closed, while a holiday early close moves the two by a
 /// different amount — the grain day session ends at 12:05 CT or 12:00 CT while
 /// the rate leg halts at 15:15, 12:00, 10:15 or 13:30 CT by date — so those
-/// dates ship `Unsourced`. 250 rows over six audited eras: forty-seven
-/// stated and 203 `Unsourced` (33 in 2010-2012, 46 in 2013-2015,
-/// 27 in 2016-2018, 34 in 2019-2021, 32 in 2022-2024 and 31 in 2025-2027).
+/// dates ship `Unsourced`. 253 rows over six audited eras: forty-seven
+/// stated and 206 `Unsourced` (33 in 2010-2012, 46 in 2013-2015,
+/// 27 in 2016-2018, 34 in 2019-2021, 32 in 2022-2024 and 34 in 2025-2027).
 // Evidence: docs/evidence/cbot.md
 pub(crate) static CBOT: &HolidayTable = holidays! {
     coverage: [(2010, 1, 1) ..= (2012, 12, 31), (2013, 1, 1) ..= (2015, 12, 31), (2016, 1, 1) ..= (2018, 12, 31), (2019, 1, 1) ..= (2021, 12, 31), (2022, 1, 1) ..= (2024, 12, 31), (2025, 1, 1) ..= (2027, 12, 31)],

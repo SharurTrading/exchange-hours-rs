@@ -58,17 +58,20 @@
 //! `cmegroup.com/trading-hours.html` itself calls — read as bytes and saved,
 //! so those rows are **T2** under LAW-PRIMARY-SOURCES. CME publishes no T1
 //! per-asset-class rendering for them; that, the eight 2025 windows that
-//! survive only in a pre-holiday capture, the six Saturday and holiday spans
-//! whose topology no shipped row states, and the sixteen dates on
-//! which CME merges the holiday into the next business day's trade date are
-//! recorded as gaps in
+//! survive only in a pre-holiday capture, the three Saturday sessions CME
+//! states in this window — each a `ReplacementBlocks` row carrying the
+//! following Monday's trade date — the holiday spans whose topology no shipped
+//! row states, and the sixteen dates on which CME merges the holiday into the
+//! next business day's trade date are recorded in
 //! [`docs/evidence/globex_fx.md`](../../../../../docs/evidence/globex_fx.md).
 //!
-//! Two shapes only: `Closed` on a full Globex closure, and `EarlyClose` on the
-//! half-days CME publishes for the family. The 2025-2027 window has **no** late
-//! open — CME never reopens this family after a closure there other than at its
-//! normal 17:00 CT — and it carries no `Unsourced` row, because every date
-//! inside its own coverage is answered by CME's own published schedule.
+//! Three shapes: `Closed` on a full Globex closure, `EarlyClose` on the
+//! half-days CME publishes for the family, and `ReplacementBlocks` on the three
+//! trade dates of 2026-06-22, 2026-07-06 and 2027-06-21, whose operator day
+//! carries a Saturday session. The 2025-2027 window has **no** late open — CME
+//! never reopens this family after a closure there other than at its normal
+//! 17:00 CT — and it carries no `Unsourced` row, because every date inside its
+//! own coverage is answered by CME's own published schedule.
 //!
 //! # What does not ship a row
 //!
@@ -79,7 +82,11 @@
 //! final close of its own and the whole span carries the next business day's
 //! trade date, and that the queue opens 45 minutes early. No shipped row
 //! states either, so both are declared gaps rather than rows — the design
-//! memo's §1.6 triage, applied to its own §1.1 worked example.
+//! memo's §1.6 triage, applied to its own §1.1 worked example. The three
+//! Saturday-session trade dates below are the one place this window states a
+//! queue time of its own: the operator's Sunday windows print `16:00 preopen`
+//! for them where the dated profile in force carries 16:15 CT for the two 2026
+//! dates.
 
 use super::fences::{early_close, late_open};
 use crate::calendar::exceptions::ExceptionBlock;
@@ -94,8 +101,9 @@ use crate::calendar::exceptions::ExceptionBlock;
 ///
 /// - offset `-2`, Saturday 05:00-17:00 CT: the session itself.
 /// - offset `-1`, Sunday 16:00-17:00 CT: the Pre-Open queue, which no trade
-///   matches. The operator publishes 16:00 for these dates, which is the
-///   sourced intersection this family carries.
+///   matches. The operator's Sunday window prints `16:00 preopen` for all three
+///   dates, so the row states that value and not the 16:15 CT the dated profile
+///   in force carries for the two 2026 dates.
 /// - offset `-1`, Sunday 17:00 CT to Monday 16:00 CT: the matching session,
 ///   wrapping one local midnight.
 ///

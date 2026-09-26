@@ -125,35 +125,64 @@ fn a_complete_scope_reports_one_complete_span_and_a_trailing_gap() {
 
 #[test]
 fn scopes_without_2025_holiday_coverage_report_outside_range() {
-    // `eurex` used to be the third scope here. Its 2025 rows shipped, so its
-    // window now opens at the 2025 floor: 2025-06-02 is `Covered` for it, and
-    // the reason its *verdict* is still not completeness is the operator's
-    // undated German closure scope, declared as `UnpublishedClosureDates` and
-    // asserted in `a_declared_phase_gap_is_era_aware_and_reported_for_the_span_it_answers`.
-    for exchange in [Exchange::Cfe, Exchange::Iceus] {
-        let coverage = exchange_coverage(exchange);
-        let day = date(2025, 6, 2);
+    // `cfe` and `eurex` both left this list when their 2025 rows landed in
+    // separate changes on 2026-09-26 UTC: each now audits 2025-01-01..2026-12-31,
+    // and `cfe_2025_holiday_rows_report_covered` below plus the Eurex
+    // declared-gap assertion in `a_declared_phase_gap_is_era_aware_and_reported_for_the_span_it_answers`
+    // are what hold them to the opposite claim. `iceus` is the last scope here.
+    let coverage = exchange_coverage(Exchange::Iceus);
+    let day = date(2025, 6, 2);
+    assert_eq!(
+        coverage.coverage_on(day),
+        DateCoverage::OutsideCoveredRange,
+        "iceus shipped no 2025 holiday coverage"
+    );
+    assert_eq!(
+        gap_reason_on(coverage, day),
+        Some(CoverageGapReason::NoHolidayCoverage),
+        "iceus answers no holiday question in 2025"
+    );
+    let first_complete = coverage
+        .complete_ranges()
+        .next()
+        .expect("iceus audits a 2026 window");
+    assert_eq!(first_complete.first(), date(2026, 1, 1));
+    assert!(
+        coverage
+            .holiday_contract()
+            .coverage()
+            .is_some_and(|windows| windows.first() >= date(2026, 1, 1)),
+    );
+}
+
+/// The reverse claim for the scope that left the list above.
+///
+/// A served market with no 2025 answer was the whole defect, so this asserts
+/// the public metadata now answers 2025 in both directions — through the venue
+/// and through the routed key — and cannot silently fall back out of its
+/// window.
+#[test]
+fn cfe_2025_holiday_rows_report_covered() {
+    let day = date(2025, 6, 2);
+    for calendar in [
+        calendar_for_exchange(Exchange::Cfe),
+        calendar_for_market_hours_key(MarketHoursKey::CfeVix),
+    ] {
+        let coverage = calendar.coverage();
+        assert_eq!(coverage.coverage_on(day), DateCoverage::Covered);
+        assert_eq!(gap_reason_on(coverage, day), None);
+        assert!(coverage.is_complete_on(day));
         assert_eq!(
-            coverage.coverage_on(day),
-            DateCoverage::OutsideCoveredRange,
-            "{exchange:?} shipped no 2025 holiday coverage"
+            coverage.complete_ranges().next().map(DateRange::first),
+            Some(date(2025, 1, 1))
         );
-        assert_eq!(
-            gap_reason_on(coverage, day),
-            Some(CoverageGapReason::NoHolidayCoverage),
-            "{exchange:?} answers no holiday question in 2025"
-        );
-        let first_complete = coverage
-            .complete_ranges()
-            .next()
-            .expect("each of the two audited a 2026 window");
-        assert_eq!(first_complete.first(), date(2026, 1, 1), "{exchange:?}");
         assert!(
             coverage
                 .holiday_contract()
                 .coverage()
-                .is_some_and(|windows| windows.first() >= date(2026, 1, 1)),
-            "{exchange:?}"
+                .is_some_and(|windows| windows.first() == date(2025, 1, 1)
+                    && windows.last() == date(2026, 12, 31)),
+            "cfe must audit the 2025 floor through the published 2026 schedule"
         );
     }
 }

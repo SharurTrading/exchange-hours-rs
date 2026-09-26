@@ -68,6 +68,22 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Added
 
+- **`cfe` and `cfe_vix` gain their 2025 holiday rows (2026-09-26 UTC).** The CFE
+  table shipped a 2026-only window, so all 365 dates of 2025 returned
+  `OutsideCoveredRange` for a served market. It now audits
+  `2025-01-01..2026-12-31` with fourteen 2025 rows read from Cboe's own
+  per-holiday notices under `cdn.cboe.com/resources/schedule_update/`: four
+  closures (2025-01-01, 2025-04-18, 2025-07-04, 2025-12-25), eight early closes
+  at 10:30 or 12:15 CT, and the National Day of Mourning 2025-01-09 as a
+  replacement block set — one extended session, 17:00 CT on 2025-01-08 to
+  08:30 CT, with no regular session at all. Two 2025 dates deliberately differ
+  from their 2026 shapes: Good Friday 2025-04-18 is a closure where 2026-04-03
+  is an early close, because the 2025 notice prints no Friday close and no
+  Friday trade date. **2027 is unpublished**, not withheld: Cboe's
+  `Hours & Holidays` page carries only a “2026 Futures Holiday Schedule”
+  (verified 2026-09-26 UTC), so coverage ends 2026-12-31 and the window extends
+  when that schedule is published.
+
 - **`globex_nikkei_225_dollar` states CME's three Saturday sessions as complete
   trade dates (2026-09-25 UTC).** Stage 4 of the release plan (#116). CME
   publishes `05:00 open; 17:00 closed` on Saturday 2026-06-20, 2026-07-04 and

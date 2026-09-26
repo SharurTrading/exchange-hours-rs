@@ -63,7 +63,7 @@ served `iceus` identity, while `FANG`, `DOLLAR_INDEX`, `SUGAR_COFFEE_COCOA`, `CO
 | `cbot` | [grains.rs](../../src/calendar/schedules/futures/us/grains.rs) | 2010-04-19 … 2015-07-05 (6 rows) | 2010-03-15 | 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 56 | 47 | all of 2025-2027 on 34 disputed dates (2025-01-02 … 2027-11-26) | **incomplete**: 34 `Unsourced` dates in 2025+ | #116, #117 |
 | `comex` | [energy_metals.rs](../../src/calendar/schedules/futures/us/energy_metals.rs) | 2015-09-20 … 2026-08-22 (2 rows) | 2012-05-11 | 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 53 | — | the Sunday 16:00-16:15 CT quarter-hour, withheld (#79) | **incomplete**: the Sunday 16:00-16:15 CT quarter-hour is withheld (#79) | #79, #116, #117 |
 | `nymex` | [energy_metals.rs](../../src/calendar/schedules/futures/us/energy_metals.rs) | 2015-09-20 … 2026-08-22 (2 rows) | 2012-05-11 | 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 53 | — | the Sunday 16:00-16:15 CT quarter-hour, withheld (#79) | **incomplete**: the Sunday 16:00-16:15 CT quarter-hour is withheld (#79) | #79, #116, #117 |
-| `cfe` | [cfe.rs](../../src/calendar/schedules/futures/us/cfe.rs) | 2010-12-10 … 2021-12-06 (8 rows) | 2010-01-01 | 2026-01-01..2026-12-31 | 12 | — | all of 2025; the window opens 2026-01-01 | **no 2025 coverage** | #98, #116 |
+| `cfe` | [cfe.rs](../../src/calendar/schedules/futures/us/cfe.rs) | 2010-12-10 … 2021-12-06 (8 rows) | 2010-01-01 | 2025-01-01..2026-12-31 | 26 | — | 2027 is not published by Cboe: verified 2026-09-26 UTC, the `Hours & Holidays` page carries only a “2026 Futures Holiday Schedule” and its CSV twin lists 2026 rows only, so nothing is withheld and nothing past 2026-12-31 is claimed | complete to 2026-12-31 (2025-2026 sourced; 2027 unpublished) | #98, #116 |
 | `coinbase_derivatives` | [coinbase_derivatives.rs](../../src/calendar/schedules/futures/us/coinbase_derivatives.rs) | 2026-09-11 … 2026-09-11 (1 row) | — | 2021-06-28..2026-09-07 | 20 | — | 2026-09-08 onward (past the horizon) | complete to 2026-09-07; **horizon before inspection** | #86, #98, #116 |
 | `eurex` | [europe.rs](../../src/calendar/schedules/futures/international/europe.rs) | seasonal selector, no `revisions!` timeline | 2010-01-01 | 2026-01-01..2026-12-31 | 7 | — | all of 2025; the window opens 2026-01-01 | **no 2025 coverage** | #77, #86, #98, #116 |
 | `iceus` | [ice_us.rs](../../src/calendar/schedules/futures/us/ice_us.rs) | 2017-11-07 … 2017-11-08 (2 rows) | — | 2026-01-01..2028-01-03 | 24 | 20 | all of 2025, plus 20 `Unsourced` dates in 2026-2027 | **no 2025 coverage** | #98, #116 |
@@ -129,18 +129,20 @@ retrieval. `comex` and `nymex` route a single family and so reproduce it row for
 
 ## Findings
 
-### 1. Three served scopes ship no 2025 holiday coverage at all
+### 1. Two served scopes ship no 2025 holiday coverage at all
 
-`cfe` and `eurex` ship a single 2026 window and `iceus` a 2026-01-01..2028-01-03 window, so all three
-answer no holiday question over any part of 2025. `iceus` ships only four scheduling rows: its
+`eurex` ships a single 2026 window and `iceus` a 2026-01-01..2028-01-03 window, so both answer no
+holiday question over any part of 2025. `cfe` shipped the same 2026-only window until its 2025 rows
+landed; it now audits 2025-01-01..2026-12-31. `iceus` ships only four scheduling rows: its
 table is the D17 intersection of the seven ICE Futures U.S. families routed to the venue, so a row
 ships only where all seven agree - the four full closures in its window - and the other **20** dates
 are `Unsourced`, the shape of a date on which the softs close while the index families trade
 shortened hours. These are the one-operator scopes whose instruments reach the venue calendar
 directly through `ExchangeFallback` rather than through a family key, so the gap is on the path a
-real instrument takes. Stage 4's PR order (section 8, items 3-5) already anticipates these three,
-and they are the three served scopes whose evidence files still lack the fixed
-`### Documents` shape that #98 tracks.
+real instrument takes. Stage 4's PR order (section 8, items 3-5) already anticipates them, and
+`eurex` and `iceus` are the two served scopes whose evidence files still lack the fixed
+`### Documents` shape that #98 tracks; `cfe` acquired that shape with its 2025 rows, so #98's
+remaining scope is the dormant CFE and Eurex keys and the six ICE Futures U.S. family files.
 
 ### 2. Two venue intersections carry `Unsourced` dates inside 2025+
 
@@ -228,7 +230,7 @@ documents` section - to saved bytes, and their digests recomputed by this stage:
 | `cbot` | `CME-SVC-2024-12-31` | T2 | `holidays/raw/cme-2025-2027/arc/thbp_2024-12-31_2025-01-02_20241220155340.json` - sha256 reproduces | `CME-SVC-2027-12-22` | T2 | `holidays/raw/cme-2025-2027/live/thbp/thbp_2027-12-22_2027-12-25.json` - sha256 reproduces |
 | `comex` | `CME-SVC-2024-12-31` | T2 | `holidays/raw/cme-2025-2027/arc/thbp_2024-12-31_2025-01-02_20241220155340.json` - sha256 reproduces | `CME-SVC-2027-12-22` | T2 | `holidays/raw/cme-2025-2027/live/thbp/thbp_2027-12-22_2027-12-25.json` - sha256 reproduces |
 | `nymex` | `CME-SVC-2024-12-31` | T2 | `holidays/raw/cme-2025-2027/arc/thbp_2024-12-31_2025-01-02_20241220155340.json` - sha256 reproduces | `CME-SVC-2027-12-22` | T2 | `holidays/raw/cme-2025-2027/live/thbp/thbp_2027-12-22_2027-12-25.json` - sha256 reproduces |
-| `cfe` | `CBOE-HOURS-USFUT-2026` | - | no `### Documents` table | `CBOE-HOURS-USFUT-2026` | - | no `### Documents` table |
+| `cfe` | `CBOE-SU-2025-NEW-YEAR` | T1 | `holidays/raw/cfe-2010-2025/live/2024__CFE-Modified-Trading-Hours-for-the-New-Year-s-Day-Holiday.pdf` - sha256 reproduces as `9bbaa3bb3f8484356a756bd3bd04677450d6215ff5e96c0e514a63a4aac3e7d7` | `CBOE-HOURS-USFUT-2026` | T1 | `holidays/raw/cfe-eurex-ice-cde-smfe-2026-2027/cboe_hours_us_futures.html` and `cboe_us_futures_holidays_2026.csv` - sha256 reproduces as `b1b38ba66a87…` and `cc98e21e97b8…`; it is the horizon document because Cboe has published no 2027 schedule |
 | `coinbase_derivatives` | `CDE-MN-24-25` | T1 | `holidays/raw/cde-2021-2025/pdf/24-25.pdf` - sha256 reproduces | `CDE-MN-26-36` | T1 | `holidays/raw/cde-2021-2025/pdf/26-36.pdf` - sha256 reproduces |
 | `eurex` | `EUREX-HOLREG-2026` | - | no `### Documents` table | `EUREX-HOLREG-2026` | - | no `### Documents` table |
 | `iceus` | `IFUS-CAL-2026` | - | no `### Documents` table | `IFUS-CAL-2027` | - | no `### Documents` table |
@@ -241,18 +243,26 @@ documents` section - to saved bytes, and their digests recomputed by this stage:
 | `globex_cryptocurrency` | `CME-SVC-2024-12-31` | T2 | `holidays/raw/cme-2025-2027/arc/thbp_2024-12-31_2025-01-02_20241220155340.json` - sha256 reproduces | `CME-SVC-2027-12-22` | T2 | `holidays/raw/cme-2025-2027/live/thbp/thbp_2027-12-22_2027-12-25.json` - sha256 reproduces |
 | `globex_nikkei_225_dollar` | `CME-SVC-2024-12-31` | T2 | `holidays/raw/cme-2025-2027/arc/thbp_2024-12-31_2025-01-02_20241220155340.json` - sha256 reproduces | `CME-SVC-B-2027-12-22` | T2 | `holidays/raw/cme-2025-2027/live/extra/extra_2027-12-22_2027-12-25.json` - sha256 reproduces |
 
-All twenty-six endpoints of the thirteen scopes that carry a `### Documents` table reproduce.
-The three that show no endpoint are a shape gap, not a missing source:
+All thirty endpoints of the fifteen scopes that carry a `### Documents` table reproduce.
+The two that show no endpoint are a shape gap, not a missing source:
 
-- `cfe`, `eurex` and `iceus` carry **no Markdown table with a `sha256` header at all**; their
-  digests (`CBOE-HOURS-USFUT-2026`, `EUREX-HOLREG-2026`, `IFUS-CAL-2026`, `IFUS-CAL-2027` and the
+- `eurex` and `iceus` carry **no Markdown table with a `sha256` header at all**; their
+  digests (`EUREX-HOLREG-2026`, `IFUS-CAL-2026`, `IFUS-CAL-2027` and the
   ICE notices) are quoted inline in prose bullets, so the fixed `### Documents` shape
-  LAW-EVIDENCE-FILES describes has not reached these three files and they contribute no rows to
-  the sweep. They are the three **served scopes** that still lack it - #98 itself names more, the
+  LAW-EVIDENCE-FILES describes has not reached these two files and they contribute no rows to
+  the sweep. They are the two **served scopes** that still lack it - #98 itself names more, the
   dormant CFE and Eurex keys and the six ICE Futures U.S. family files among them -
-  which are also the three scopes that ship no 2025 holiday coverage. Their digests are **not
-  machine-verified by this stage**; closing that needs the sweep rule widened to prose-quoted
-  digests, and it is recorded as unverified rather than verified.
+  and they are also two of the two scopes that ship no 2025 holiday coverage. Their digests are
+  **not machine-verified by this stage**; closing that needs the sweep rule widened to
+  prose-quoted digests, and it is recorded as unverified rather than verified.
+
+`cfe` acquired the fixed shape with its 2025 rows, so its baseline and horizon endpoints now
+resolve through it: the baseline is the 2025 New Year's notice, the first row of its 2025 window,
+and the horizon is the `2026 Futures Holiday Schedule` page, because Cboe has published nothing
+for 2027. Both digests were recomputed by this stage and reproduce. The baseline being a 2025
+holiday notice rather than the earlier `CBOE-HOURS-USFUT-2026` page is the substantive change:
+before it, `cfe`'s only resolved artifact was the horizon, so the sweep had nothing to compare
+the two ends against.
 - No artifact is recorded as missing: every document id this inventory cites resolves to bytes.
 
 ## What this stage does not do

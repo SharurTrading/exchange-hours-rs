@@ -123,7 +123,10 @@ fn a_complete_scope_reports_one_complete_span_and_a_trailing_gap() {
 
 #[test]
 fn scopes_without_2025_holiday_coverage_report_outside_range() {
-    for exchange in [Exchange::Cfe, Exchange::Eurex, Exchange::Iceus] {
+    // `cfe` left this list when its 2025 rows landed: it now audits
+    // 2025-01-01..2026-12-31, and `cfe_2025_holiday_rows_report_covered` below
+    // is what holds it to the opposite claim.
+    for exchange in [Exchange::Eurex, Exchange::Iceus] {
         let coverage = exchange_coverage(exchange);
         let day = date(2025, 6, 2);
         assert_eq!(
@@ -139,7 +142,7 @@ fn scopes_without_2025_holiday_coverage_report_outside_range() {
         let first_complete = coverage
             .complete_ranges()
             .next()
-            .expect("each of the three audited a 2026 window");
+            .expect("each of the two audited a 2026 window");
         assert_eq!(first_complete.first(), date(2026, 1, 1), "{exchange:?}");
         assert!(
             coverage
@@ -147,6 +150,38 @@ fn scopes_without_2025_holiday_coverage_report_outside_range() {
                 .coverage()
                 .is_some_and(|windows| windows.first() >= date(2026, 1, 1)),
             "{exchange:?}"
+        );
+    }
+}
+
+/// The reverse claim for the scope that left the list above.
+///
+/// A served market with no 2025 answer was the whole defect, so this asserts
+/// the public metadata now answers 2025 in both directions — through the venue
+/// and through the routed key — and cannot silently fall back out of its
+/// window.
+#[test]
+fn cfe_2025_holiday_rows_report_covered() {
+    let day = date(2025, 6, 2);
+    for calendar in [
+        calendar_for_exchange(Exchange::Cfe),
+        calendar_for_market_hours_key(MarketHoursKey::CfeVix),
+    ] {
+        let coverage = calendar.coverage();
+        assert_eq!(coverage.coverage_on(day), DateCoverage::Covered);
+        assert_eq!(gap_reason_on(coverage, day), None);
+        assert!(coverage.is_complete_on(day));
+        assert_eq!(
+            coverage.complete_ranges().next().map(DateRange::first),
+            Some(date(2025, 1, 1))
+        );
+        assert!(
+            coverage
+                .holiday_contract()
+                .coverage()
+                .is_some_and(|windows| windows.first() == date(2025, 1, 1)
+                    && windows.last() == date(2026, 12, 31)),
+            "cfe must audit the 2025 floor through the published 2026 schedule"
         );
     }
 }

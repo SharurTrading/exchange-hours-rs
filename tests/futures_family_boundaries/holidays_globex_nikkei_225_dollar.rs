@@ -286,7 +286,10 @@ fn the_table_ships_no_late_open_and_holds_exactly_its_audited_rows() {
     }
 
     assert_eq!(closed, 9, "nine full closures across 2025-2027");
-    assert_eq!(early, 28, "twenty-eight early closes across 2025-2027");
+    // Twenty-five: the three day-after-Thanksgiving Fridays became replacement
+    // rows, because Thanksgiving Day publishes no final close of its own and the
+    // span now carries the Friday's trade date.
+    assert_eq!(early, 25, "twenty-five early closes across 2025-2027");
 
     // The 2016-2018 era is the other shape: 34 rows, all T1.
     let (mut closed, mut early, mut late) = (0_usize, 0_usize, 0_usize);
@@ -388,10 +391,13 @@ fn the_trade_date_follows_the_clipped_close() {
         !nkd.is_open(ct(2026, 1, 19, 12, 0, 0))
             .expect("the coverage contract must answer a covered date")
     );
+    // The span through the holiday's own morning carries the *next* trade date:
+    // CME publishes no final close for the holiday, so the operator labels the
+    // whole Sunday-evening-to-Tuesday afternoon span with 2026-01-20.
     assert_eq!(
         nkd.trade_date(ct(2026, 1, 19, 10, 0, 0))
             .expect("the coverage contract must answer a covered date"),
-        Some(day(2026, 1, 19))
+        Some(day(2026, 1, 20))
     );
     assert_eq!(
         nkd.trade_date(ct(2026, 1, 19, 18, 0, 0))

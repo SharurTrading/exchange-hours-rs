@@ -208,13 +208,15 @@ corrections (a venue's hours fixed against a primary source) go under
   `PhaseGap` value carries each one's **closing condition** — the issue whose closure
   discharges it. An identity declares a **list** of them beside its horizon in
   `schedules/sourcing.rs`, the same no-wildcard match that already restates the ledger per
-  identity, as an affirmative assertion and never an inference. Eight scopes declare one
-  or more today, ten declarations in all: the Sunday 16:00-16:15 CT quarter-hour withheld
-  under #79 on `cme`, `comex`, `nymex`, `globex_energy`, `globex_equity_index`,
+  identity, as an affirmative assertion and never an inference. Eight scopes declared one
+  or more at the time, ten declarations in all: the Sunday 16:00-16:15 CT quarter-hour
+  withheld under #79 on `cme`, `comex`, `nymex`, `globex_energy`, `globex_equity_index`,
   `globex_fx` and `globex_interest_rates`; the special sessions of #93 on `globex_fx` and
   `globex_cryptocurrency`; and `globex_cryptocurrency`'s undated five-day-era Pre-Open
   onset under #123, the dedicated issue opened for it after its evidence file recorded the
-  gap and named no issue number. The first revision of this entry declared the
+  gap and named no issue number. `globex_fx`'s two have since become one — its special
+  sessions ship as rows and that declaration is removed under **Fixed** above, leaving
+  eight scopes and nine declarations. The first revision of this entry declared the
   quarter-hour on `globex_equity_index` alone, while `cme`, `comex`, `nymex`,
   `globex_energy` and `globex_interest_rates` withheld the same phase and `globex_fx` did
   not declare it either: all seven ship the same Sunday queue, and their own ledger basis
@@ -269,6 +271,22 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Fixed
 
+- **`globex_fx` no longer declares a special-session gap (2026-09-26 UTC).** The
+  family carried a whole-domain `#93` phase-level gap in `schedules/sourcing.rs`
+  because CME publishes sessions this family's scalar vocabulary could not state.
+  Every one of them now ships as a row — the 2026-06-20 and 2026-07-04 Saturday
+  sessions with the rows of Stage 4 (#116), and the merged trade dates of a Monday
+  or Thursday holiday with the entry below — so the declaration is removed and
+  `globex_fx` declares only the Sunday 16:00-16:15 CT quarter-hour (#79). **A
+  query answer changes with it:** the declaration was what made a `trade_date`
+  call on an instant CME holds no session for an `OutsideCoveredRange` refusal,
+  and the same call now answers `Ok(None)`. That is the correct reading of
+  LAW-COVERAGE — an absent session is not missing evidence — and the effect is
+  confined to instants no session contains, so no answer for an instant inside a
+  session moves. Verified across the whole published surface: a trade-date walk
+  from the 2025 floor to the operator's published future agrees with the printed
+  `tradingDate` on every date the family answers. `globex_cryptocurrency` is the
+  one scope that still declares `#93`.
 - **`globex_energy` now states CME's merged trade dates, and `comex`/`nymex`
   follow it (2026-09-26 UTC).** The last of the five Globex families to gain the
   merged rows, on seventeen dates: 2025-01-21, 2025-02-18, 2025-05-27, 2025-06-20,

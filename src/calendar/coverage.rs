@@ -224,14 +224,16 @@ pub enum CoverageGapReason {
     /// vocabulary such a row needs has shipped — the replacement-block engine of
     /// LAW-HOLIDAY-SCOPE landed in Stage 3 (#93), and
     /// [`ExceptionBlock`](crate::ExceptionBlock) already reaches callers, so a
-    /// caller can supply the session the crate has no row for — but the operator
-    /// rows and their evidence are Stage 4 (#116). Until those land this reason
-    /// stays declared, and the variant keeps the name it has always had, because
-    /// renaming it would break a consumer that matches on it.
+    /// caller can supply the session the crate has no row for. The variant keeps
+    /// the name it has always had, because renaming it would break a consumer
+    /// that matches on it.
     ///
-    /// `globex_fx` and `globex_cryptocurrency` are the shipped cases: CME's
-    /// Saturday sessions and merged trade dates, recorded in each owner's
-    /// evidence file.
+    /// `globex_cryptocurrency` is the remaining shipped case: its 24/7-era
+    /// sessions and merged trade dates are unstated. `globex_fx` carried this
+    /// reason until its rows landed — the operator rows and their evidence in
+    /// Stage 4 (#116), the merged trade dates in Stage 5 — after which every
+    /// session CME publishes for that family is stated and it declares only the
+    /// `#79` quarter-hour.
     SpecialSessionUnrepresentable,
 }
 

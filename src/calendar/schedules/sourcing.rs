@@ -31,25 +31,31 @@
 //! whole claimed interval when the declaration carries no bound, and the era
 //! before `PhaseGap::until` when the identity's own knowledge-bound row begins
 //! serving it. `CoverageGapReason::NormalWeekPhaseWithheld`
-//! is the required-phase shape (#79),
-//! `CoverageGapReason::SpecialSessionUnrepresentable` the special-session shape
-//! (#93) and `CoverageGapReason::UnpublishedClosureDates` the undated
+//! is the required-phase shape (#79 and #123),
+//! `CoverageGapReason::PostCloseQueueTradeDateLabel` the served-but-relabelled
+//! shape (#152) and `CoverageGapReason::UnpublishedClosureDates` the undated
 //! holiday-scope shape (#157), which withholds no phase at all. Each declaration
 //! carries the issue whose closure discharges it, so the
 //! metadata reports a gap with a closing condition rather than a bare verdict —
 //! LAW-COVERAGE's "a recorded gap with a closing condition", asserted by the
-//! crate rather than inferred from its data. One identity can carry several: the
-//! shape recurs per phase rather than per scope, so `globex_cryptocurrency`
-//! carries special sessions no shipped row states *and* an undated Pre-Open onset
-//! of its own. A declaration is removed when the rows that discharge it ship —
-//! `globex_fx` declared both the quarter-hour and the #93 special sessions until
-//! its merged trade dates landed, and now declares only the quarter-hour.
+//! crate rather than inferred from its data. One identity can carry several,
+//! because the shape recurs per phase rather than per scope: every scope here
+//! carries exactly one today, and the list stays a slice so the next phase that
+//! needs its own declaration does not need the type to change. A declaration is
+//! removed when the rows that discharge it ship, and
+//! `CoverageGapReason::SpecialSessionUnrepresentable` — the shape #93 named — is
+//! what that looks like when it has happened for every scope that declared it:
+//! `globex_fx` declared the quarter-hour and the #93 special sessions until its
+//! merged trade dates landed, and `globex_cryptocurrency` declared the #93 shape
+//! until its own merged trade dates landed on 2026-09-26 UTC. No arm below cites
+//! it now, and the reason stays on the enum because it is still the vocabulary a
+//! future special-session gap would use.
 //!
 //! Only an identity whose gap survives the permanent 2025 floor is declared
 //! here, because that is the interval the completeness claim covers: a scope
 //! whose withheld phase or unstateable session lies entirely before 2025 is not
-//! incomplete in the claimed interval and must not be declared. Nine scopes
-//! declare one or more gaps today — ten declarations in all — and the fences in
+//! incomplete in the claimed interval and must not be declared. Twelve identities
+//! declare one gap each today — twelve declarations in all — and the fences in
 //! `tests/schedule_documentation/coverage_inventory.rs` hold them to the
 //! inventory's own verdicts while `tests/coverage_metadata.rs` holds each
 //! declaration to the shipped profile's behaviour.
@@ -195,27 +201,6 @@ const fn withheld_sunday_quarter_hour() -> PhaseGap {
         .until(effective_date(2026, 8, 22))
 }
 
-/// The special-session gap `globex_cryptocurrency` still carries: CME's 24/7 era
-/// publishes sessions no shipped row states (#93).
-///
-/// `globex_fx` carried this too, and no longer does. The vocabulary a row needs
-/// shipped in Stage 3 (#93), the fifth `HolidayKind` carrying a replacement block
-/// set; the operator rows and their evidence landed in Stage 4 (#116), and the
-/// merged trade dates in Stage 5, so every session CME publishes for that family
-/// is now stated and its declaration is gone. `globex_cryptocurrency` states its
-/// five-day-era merged trade dates the same way; what remains unstated is the
-/// **24/7-era half**, where CME omits its 16:00 CT final close on the Monday and
-/// Thursday holidays, so the 16:00-16:01 CT minute the operator runs is served
-/// closed. A block row on those trade dates remains the closing condition.
-///
-/// `docs/schedules/coverage-2025.md` records the remaining scope as
-/// "the 24/7 era's Monday and Thursday holidays omit the 16:00 CT close, so the
-/// 16:00-16:01 CT minute is served closed (#93)"; its owner's evidence file lists
-/// the dates behind that verdict.
-const fn unstateable_special_sessions() -> PhaseGap {
-    PhaseGap::new(CoverageGapReason::SpecialSessionUnrepresentable, "#93")
-}
-
 /// The post-close queue's trade-date label, which `globex_grains` and
 /// `globex_livestock` both carry (#152).
 ///
@@ -258,12 +243,21 @@ const POST_CLOSE_QUEUE_LABEL: [PhaseGap; 1] = [post_close_queue_trade_date_label
 /// LAW-FOLLOW-UPS-ARE-ISSUES is discharged rather than waived, and the issue
 /// exists rather than being promised.
 ///
-/// **No era bound.** The gap is a property of the five-day era's grid, and the
-/// evidence records no day on which the operator published the Pre-Open, so
-/// there is no row keyed to a day the gap stops applying (LAW-NO-FABRICATED-DATES).
-/// It stays whole-domain until a source states that day.
+/// **Bounded to the five-day era.** The gap is a property of the five-day
+/// 17:00-16:00 CT grid, and that grid's own last day is dated at T1: CME filing
+/// 26-114 moves the family to the 24/7 grid on the 2026-05-29 bridge row, whose
+/// profile serves the operator's published Pre-Open for the first time
+/// (`ORDER_ENTRY_2026_05_29`, and the era's two queues from 2026-05-30). So the
+/// withheld phase stops being withheld on that row's day, exactly as the #79
+/// quarter-hour's bound is its own era's first serving row, and the declaration
+/// says so rather than denying the 24/7 era coverage its profiles serve. What
+/// the evidence never dates is the day the Pre-Open *began* in the five-day
+/// grid — the 2017-12-14, 2017-12-22 and 2018-01-04 specification captures
+/// publish the matching grid only — and an unbounded declaration would therefore
+/// be wrong in the other direction (LAW-NO-FABRICATED-DATES).
 const fn undated_five_day_pre_open() -> PhaseGap {
     PhaseGap::new(CoverageGapReason::NormalWeekPhaseWithheld, "#123")
+        .until(effective_date(2026, 5, 29))
 }
 
 /// The one-declaration list the six quarter-hour scopes other than `globex_fx`
@@ -296,10 +290,10 @@ const fn undated_german_closures() -> PhaseGap {
 /// `eurex`'s one declaration: the operator's undated German-scope closures.
 const EUREX_UNDATED_CLOSURES: [PhaseGap; 1] = [undated_german_closures()];
 
-/// `globex_cryptocurrency` declares both of its gaps: the special sessions and
-/// the five-day era's undated Pre-Open onset.
-const GLOBEX_CRYPTOCURRENCY_GAPS: [PhaseGap; 2] =
-    [unstateable_special_sessions(), undated_five_day_pre_open()];
+/// `globex_cryptocurrency` declares one gap: the five-day era's undated Pre-Open
+/// onset. Its 24/7-era merged trade dates shipped as rows on 2026-09-26 UTC, so
+/// the special-session declaration it carried until then is gone.
+const GLOBEX_CRYPTOCURRENCY_GAPS: [PhaseGap; 1] = [undated_five_day_pre_open()];
 
 /// Returns what `source` declares about its own sourcing.
 pub(crate) const fn declared(source: CalendarSource) -> DeclaredSourcing {
@@ -489,9 +483,9 @@ const fn for_market_hours_key(key: MarketHoursKey) -> DeclaredSourcing {
         MarketHoursKey::GlobexLivestock => {
             DeclaredSourcing::carried_below_with(horizon!(2010, 1, 1), &POST_CLOSE_QUEUE_LABEL)
         }
-        // `—`: closed before the exact 2017-12-17 launch grid. CME publishes
-        // cryptocurrency sessions no shipped row states (#93), and the
-        // five-day era's Sunday and weekday Pre-Open onset is undated (#123).
+        // `—`: closed before the exact 2017-12-17 launch grid. Both of this
+        // family's declared session shapes now ship as rows; what is left is
+        // the five-day era's Sunday and weekday Pre-Open onset (#123).
         MarketHoursKey::GlobexCryptocurrency => {
             DeclaredSourcing::nothing_carried_with(&GLOBEX_CRYPTOCURRENCY_GAPS)
         }

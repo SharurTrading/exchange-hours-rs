@@ -23,7 +23,12 @@ counts are the **61** each their `Unsrc 2025+ dates` cells now read. The `iceus`
 `2025+ dates`, `Unsrc 2025+ dates`, `Missing / disputed` and `Complete?` cells moved on 2026-09-26 UTC
 when its 2025 holiday rows shipped — the last scope whose window opened after the floor — together
 with §1's heading and body, §2's withheld count, and the `iceus` endpoint row and table-shape bullet
-in [Artifact resolution](#artifact-resolution). The inspection statement above
+in [Artifact resolution](#artifact-resolution). The `globex_cryptocurrency` `2025+ dates`,
+`Missing / disputed`, `Complete?` and `Closing issues` cells moved again on 2026-09-26 UTC when its
+eight 24/7-era merged trade dates shipped as `replacement blocks` rows: the scope states every
+session it publishes, so the `#93` declaration is gone, and the five-day era's Pre-Open declaration
+(#123) is bounded at the 2026-05-29 bridge row, which leaves the identity answering the whole 24/7
+era and withholding 2025-01-01..2026-05-28. The inspection statement above
 still describes the revision the values were first derived at; the counts, windows and horizons it
 covers are otherwise unchanged.
 
@@ -89,7 +94,7 @@ served `iceus` identity, while `FANG`, `DOLLAR_INDEX`, `SUGAR_COFFEE_COCOA`, `CO
 | `globex_fx` | [fx.rs](../../src/calendar/schedules/futures/us/fx.rs) | 2010-11-15 … 2026-08-22 (2 rows) | 2012-05-03 | 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 36 | — | the Sunday 16:00-16:15 CT quarter-hour, withheld (#79) | **incomplete**: the Sunday 16:00-16:15 CT quarter-hour is withheld (#79) | #79, #116, #117 |
 | `globex_interest_rates` | [interest_rates.rs](../../src/calendar/schedules/futures/us/interest_rates.rs) | 2010-11-15 … 2026-08-22 (3 rows) | 2010-01-01 | 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 53 | — | the Sunday 16:00-16:15 CT quarter-hour, withheld (#79) | **incomplete**: the Sunday 16:00-16:15 CT quarter-hour is withheld (#79) | #79, #116, #117 |
 | `globex_livestock` | [livestock.rs](../../src/calendar/schedules/futures/us/livestock.rs) | 2014-10-27 … 2020-05-31 (4 rows) | 2010-01-01 | 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 36 | — | the post-close queue's trade-date label: the crate dates the 14:30-16:00 CT queue by the session it feeds, so every covered date that carries it answers a trade date other than the operator's own printed one (#152) | **incomplete**: the post-close queue's trade-date label differs on every date that carries the queue (#152) | #116, #117, #152 |
-| `globex_cryptocurrency` | [cryptocurrency.rs](../../src/calendar/schedules/futures/us/cryptocurrency.rs) | 2017-12-17 … 2026-09-20 (9 rows) | — | 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 32 | — | the 24/7 era's Monday and Thursday holidays omit the 16:00 CT close, so the 16:00-16:01 CT minute is served closed (#93); the five-day era's Sunday and weekday Pre-Open onset is undated (#123) | **incomplete**: the 24/7-era 16:00-16:01 CT minute is served closed (#93) and the five-day era's Pre-Open onset is undated (#123) | #93, #116, #117, #123 |
+| `globex_cryptocurrency` | [cryptocurrency.rs](../../src/calendar/schedules/futures/us/cryptocurrency.rs) | 2017-12-17 … 2026-09-20 (9 rows) | — | 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 40 | — | the five-day era's Sunday and weekday Pre-Open onset is undated in the normal week, so the identity answers nothing before the 2026-05-29 bridge row its declaration is now bounded at (#123); its 24/7-era merged trade dates shipped as rows on 2026-09-26 UTC | **incomplete**: the five-day era's Pre-Open onset is undated, so the whole era before 2026-05-29 is withheld (#123) | #116, #117, #123 |
 | `globex_nikkei_225_dollar` | [cme_nikkei.rs](../../src/calendar/schedules/futures/us/cme_nikkei.rs) | 2011-01-12 … 2015-09-20 (4 rows) | — | 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 49 | — | none in 2025+ | complete to 2027-12-31 | #116, #117 |
 
 ## Consumer routing
@@ -203,8 +208,8 @@ convention rather than the operator's printed label on every covered date that c
 that reach that date are **not** complete either: `cbot` withholds disputed dates in §2 and `cme`
 those plus the Sunday 16:00-16:15 CT quarter-hour; `comex`, `nymex`, `globex_energy`,
 `globex_interest_rates` and `globex_equity_index` withhold that same quarter-hour in §5, and so does
-`globex_fx`; and `globex_cryptocurrency` loses the 24/7-era 16:00-16:01 CT minute to an
-unstateable gap and carries an undated five-day-era Pre-Open onset. `comex` and `nymex` are intersections too, but each routes one
+`globex_fx`; and `globex_cryptocurrency` carries an undated five-day-era Pre-Open onset, which
+withholds every date before the 2026-05-29 bridge row and leaves the whole 24/7 era answered. `comex` and `nymex` are intersections too, but each routes one
 family's grid, so they match it row for row and their six `Unsourced` rows all fall in 2019-2023,
 outside the new floor.
 
@@ -235,16 +240,17 @@ outside the new floor.
 ### 6. Special-session needs (Stage 3, #93)
 
 Dates that change internal phase topology are not representable by the scalar vocabulary, so an
-affected scope declares them as a gap rather than approximating them. `globex_cryptocurrency` is the
-one scope that still does, and it is the last of them: its nine five-day-era merged trade dates ship
-as built-in replacement rows (2026-09-26 UTC), so what remains unstated for it is the 24/7 era's
-16:00-16:01 CT minute, served closed, plus its own undated five-day-era Pre-Open onset (#123), and
-those closing conditions stay in its evidence file. The other scopes this section used to name are
-covered — `globex_energy`, `globex_equity_index`, `globex_fx`, `globex_interest_rates` and
+affected scope declares them as a gap rather than approximating them. **No scope declares that gap
+any more.** `globex_cryptocurrency` was the last: its nine five-day-era merged trade dates shipped as
+built-in replacement rows, and its eight 24/7-era ones followed on 2026-09-26 UTC, so every session
+CME publishes for the family is stated and its `#93` declaration is gone. What it still declares is
+its undated five-day-era Pre-Open onset (#123), which withholds the order-entry phase rather than a
+session and stops applying on the 2026-05-29 bridge row. The other scopes this section used to name
+are covered — `globex_energy`, `globex_equity_index`, `globex_fx`, `globex_interest_rates` and
 `globex_nikkei_225_dollar` carry the three Saturday-session trade dates as built-in replacement-block
 rows, as do `comex` and `nymex`, which route `globex_energy`'s table whole; and `globex_fx` now
-carries its merged trade dates too, so every session CME publishes for it is stated and its `#93`
-declaration is gone. `globex_grains` and `globex_livestock` state no row on those Saturdays.
+carries its merged trade dates too, so every session CME publishes for it is stated. `globex_grains`
+and `globex_livestock` state no row on those Saturdays.
 
 ## Artifact resolution
 

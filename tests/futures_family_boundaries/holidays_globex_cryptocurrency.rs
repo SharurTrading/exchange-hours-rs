@@ -804,6 +804,301 @@ fn the_twenty_four_seven_era_rolls_the_trade_date_without_deleting_a_day() {
 }
 
 // ---------------------------------------------------------------------------
+// 6c. The eight 24/7-era merged trade dates CME publishes.
+// ---------------------------------------------------------------------------
+
+/// One 24/7-era merged-date fixture: the holiday whose own trade date
+/// disappears, the trade date the operator assigns its merged span, and the
+/// pre-holiday weekday that span opens on.
+type Merged24x7Dates = ((i32, u32, u32), (i32, u32, u32), (i32, u32, u32));
+
+/// The eight 24/7-era merged trade dates, with the holiday between them and the
+/// weekday the merged span opens on.
+///
+/// Six Monday holidays roll the weekend block forward, so their spans open on
+/// the **pre-holiday Friday**; the two Thursday holidays open on the Wednesday.
+const MERGED_24X7_TRADE_DATES: [Merged24x7Dates; 8] = [
+    ((2026, 9, 4), (2026, 9, 7), (2026, 9, 8)),
+    ((2026, 11, 25), (2026, 11, 26), (2026, 11, 27)),
+    ((2027, 1, 15), (2027, 1, 18), (2027, 1, 19)),
+    ((2027, 2, 12), (2027, 2, 15), (2027, 2, 16)),
+    ((2027, 5, 28), (2027, 5, 31), (2027, 6, 1)),
+    ((2027, 7, 2), (2027, 7, 5), (2027, 7, 6)),
+    ((2027, 9, 3), (2027, 9, 6), (2027, 9, 7)),
+    ((2027, 11, 24), (2027, 11, 25), (2027, 11, 26)),
+];
+
+/// Every one of the eight rows ships the complete merged day, block for block,
+/// in two shapes.
+///
+/// A Monday holiday's merged day opens on the pre-holiday **Friday** 16:02 CT
+/// and runs to the Tuesday 16:00 CT close, so its blocks sit at offsets `-4`
+/// through `0`; a Thursday holiday's opens on the **Wednesday** 16:02 CT and
+/// runs to the Friday 16:00 CT close, at `-2` through `0`. The tuples are
+/// written out rather than derived from the module: they are compared against
+/// the captured service bytes, so a row whose queue, opening instant or close
+/// moves fails here even though `is_open` on the unmutated minutes would still
+/// agree.
+#[test]
+fn the_eight_24x7_merged_rows_state_the_operators_own_blocks() {
+    const MIDNIGHT: u32 = 0;
+    const SATURDAY_QUEUE: (ExceptionBlockKind, i8, u32, u32) = (
+        ExceptionBlockKind::OrderEntry,
+        -3,
+        3 * 3_600 + 45 * 60,
+        4 * 3_600,
+    );
+    const SATURDAY_SESSION: (ExceptionBlockKind, i8, u32, u32) =
+        (ExceptionBlockKind::Extended, -3, 4 * 3_600, 24 * 3_600);
+    const SUNDAY_SESSION: (ExceptionBlockKind, i8, u32, u32) =
+        (ExceptionBlockKind::Extended, -2, MIDNIGHT, 24 * 3_600);
+    const HOLIDAY_SESSION: (ExceptionBlockKind, i8, u32, u32) =
+        (ExceptionBlockKind::Extended, -1, MIDNIGHT, 16 * 3_600 + 60);
+    const HOLIDAY_QUEUE: (ExceptionBlockKind, i8, u32, u32) = (
+        ExceptionBlockKind::OrderEntry,
+        -1,
+        16 * 3_600 + 60,
+        16 * 3_600 + 120,
+    );
+    const HOLIDAY_EVENING: (ExceptionBlockKind, i8, u32, u32) = (
+        ExceptionBlockKind::Extended,
+        -1,
+        16 * 3_600 + 120,
+        24 * 3_600,
+    );
+    const TRADE_DATE_SESSION: (ExceptionBlockKind, i8, u32, u32) =
+        (ExceptionBlockKind::Extended, 0, MIDNIGHT, 16 * 3_600);
+    // The merged day's own opening blocks: the pre-holiday Friday's queue and
+    // evening session for a Monday holiday, the Wednesday's for a Thursday one.
+    let opening = |offset: i8| {
+        [
+            (
+                ExceptionBlockKind::OrderEntry,
+                offset,
+                16 * 3_600 + 60,
+                16 * 3_600 + 120,
+            ),
+            (
+                ExceptionBlockKind::Extended,
+                offset,
+                16 * 3_600 + 120,
+                24 * 3_600,
+            ),
+        ]
+    };
+
+    let mut checked = 0_usize;
+    for (eve, holiday, trade_date) in MERGED_24X7_TRADE_DATES {
+        let monday_holiday = day(holiday.0, holiday.1, holiday.2).weekday() == Weekday::Mon;
+        let mut expected = Vec::new();
+        if monday_holiday {
+            // Friday 16:01/16:02 and Friday evening, then the Saturday
+            // maintenance window with its queue and the Sunday session.
+            expected.extend(opening(-4));
+            expected.push((ExceptionBlockKind::Extended, -3, MIDNIGHT, 2 * 3_600));
+            expected.push(SATURDAY_QUEUE);
+            expected.push(SATURDAY_SESSION);
+            expected.push(SUNDAY_SESSION);
+        } else {
+            expected.extend(opening(-2));
+        }
+        expected.push(HOLIDAY_SESSION);
+        expected.push(HOLIDAY_QUEUE);
+        expected.push(HOLIDAY_EVENING);
+        expected.push(TRADE_DATE_SESSION);
+
+        assert_eq!(
+            declared_blocks(trade_date),
+            expected,
+            "{trade_date:?} (holiday {holiday:?}, opening {eve:?}): the row must state \
+             the operator's own complete merged day"
+        );
+        assert!(
+            declared_blocks(trade_date)
+                .windows(2)
+                .all(|pair| (pair[0].1, pair[0].2) <= (pair[1].1, pair[1].2)),
+            "{trade_date:?}: the row's blocks are ordered by opening day then open time"
+        );
+        checked += 1;
+    }
+    assert_eq!(checked, 8, "the 24/7 era's merged trade dates");
+}
+
+/// The 24/7-era holiday's own 16:00-16:01 CT minute is traded, because CME
+/// prints no `closed` event at 16:00 on those dates.
+///
+/// This is the acceptance question the captured bytes answer. The operator's
+/// service prints `16:01 preopen; 16:02 open` and no `16:00 closed` on the eight
+/// 24/7-era Monday and Thursday holidays, while printing the close on every
+/// ordinary weekday of the reference week and on all seven of the era's Friday
+/// holidays — so matching ran across the minute the ordinary week stops at, and
+/// `is_open` must answer true there. The 16:01-16:02 CT Pre-Open stays
+/// `order_entry`: it accepts orders and is not a session. The following trade
+/// date keeps the ordinary window unchanged, so the fix widens by one minute and
+/// no more.
+#[test]
+fn the_24x7_holidays_sixteen_hundred_minute_is_traded() {
+    let calendar = crypto();
+    let mut checked = 0_usize;
+
+    for (_eve, holiday, trade_date) in MERGED_24X7_TRADE_DATES {
+        let holiday_day = day(holiday.0, holiday.1, holiday.2);
+        let trade_day = day(trade_date.0, trade_date.1, trade_date.2);
+        assert_eq!(
+            kind_on(holiday_day),
+            Some(HolidayKind::Closed),
+            "{holiday_day}: the holiday itself still keys the Closed row the roll reads"
+        );
+        match crypto().holiday_on(trade_day).map(Holiday::kind) {
+            Some(HolidayKind::ReplacementBlocks(_)) => {}
+            other => panic!("{trade_day} must carry a replacement row, got {other:?}"),
+        }
+
+        let sixteen = ct(holiday.0, holiday.1, holiday.2, 16, 0);
+        // The whole minute the ordinary week breaks at, both ends included.
+        for probe in [sixteen, sixteen + Duration::seconds(59)] {
+            assert!(
+                calendar
+                    .is_open(probe)
+                    .expect("the coverage contract must answer a covered date"),
+                "the operator printed no 16:00 closed on {holiday_day}, so matching runs \
+                 at {probe}"
+            );
+            assert_eq!(
+                calendar
+                    .trade_date(probe)
+                    .expect("the coverage contract must answer a covered date"),
+                Some(trade_day),
+                "the minute carries the merged span's trade date at {probe}"
+            );
+        }
+
+        // The Pre-Open queue is the operator's `16:01 preopen`: order entry, no
+        // matching.
+        let queue = ct(holiday.0, holiday.1, holiday.2, 16, 1);
+        assert!(
+            !calendar
+                .is_open(queue)
+                .expect("the coverage contract must answer a covered date"),
+            "the 16:01-16:02 CT Pre-Open is an order-entry window at {queue}"
+        );
+        assert!(
+            calendar
+                .is_accepting_orders(queue)
+                .expect("the coverage contract must answer a covered date"),
+            "the Pre-Open accepts orders at {queue}"
+        );
+        assert!(
+            calendar
+                .is_open(ct(holiday.0, holiday.1, holiday.2, 16, 2))
+                .expect("the coverage contract must answer a covered date"),
+            "matching resumes at the operator's 16:02 open on {holiday_day}"
+        );
+
+        // Unchanged: the trade date's own 16:00 CT maintenance window, and the
+        // instant before it.
+        assert!(
+            calendar
+                .is_open(ct(trade_date.0, trade_date.1, trade_date.2, 15, 59))
+                .expect("the coverage contract must answer a covered date"),
+            "{trade_day} trades up to its own 16:00 CT close"
+        );
+        let close = ct(trade_date.0, trade_date.1, trade_date.2, 16, 0);
+        assert!(
+            !calendar
+                .is_open(close)
+                .expect("the coverage contract must answer a covered date"),
+            "the trade date's own 16:00 CT final close is end-exclusive at {close}"
+        );
+        checked += 1;
+    }
+    assert_eq!(checked, 8, "the 24/7 era's merged trade dates");
+}
+
+/// The instants around the fix that must **not** move.
+///
+/// An ordinary 24/7 weekday keeps the 16:00-16:02 CT window: no matching from
+/// 16:00, the queue at 16:01, matching from 16:02. A 24/7-era **Friday**
+/// holiday keeps its printed `16:00 closed` and so keeps the same window. And
+/// the Saturday maintenance window keeps its queue. If the merged rows' blocks
+/// were stated a minute wide, this is the fence that fails.
+#[test]
+fn the_ordinary_24x7_windows_are_unchanged() {
+    let calendar = crypto();
+
+    for (label, y, m, d) in [
+        ("an ordinary Tuesday", 2026, 10, 20),
+        ("Christmas Day 2026, a Friday holiday", 2026, 12, 25),
+    ] {
+        assert!(
+            !calendar
+                .is_open(ct(y, m, d, 16, 0))
+                .expect("the coverage contract must answer a covered date"),
+            "{label}: the operator prints a 16:00 closed, so matching stops"
+        );
+        assert!(
+            !calendar
+                .is_open(ct(y, m, d, 16, 0) + Duration::seconds(59))
+                .expect("the coverage contract must answer a covered date"),
+            "{label}: the 16:00-16:01 CT minute stays closed"
+        );
+        assert!(
+            calendar
+                .is_accepting_orders(ct(y, m, d, 16, 1))
+                .expect("the coverage contract must answer a covered date"),
+            "{label}: the 16:01-16:02 CT Pre-Open still accepts orders"
+        );
+        assert!(
+            !calendar
+                .is_open(ct(y, m, d, 16, 1))
+                .expect("the coverage contract must answer a covered date"),
+            "{label}: the Pre-Open is never a session"
+        );
+        assert!(
+            calendar
+                .is_open(ct(y, m, d, 16, 2))
+                .expect("the coverage contract must answer a covered date"),
+            "{label}: matching resumes at 16:02 CT"
+        );
+    }
+
+    // The era's Friday holiday settles no trade date of its own: every event it
+    // prints carries the following Monday, and the crate rolls it there.
+    assert_eq!(
+        calendar
+            .trade_date(ct(2026, 12, 25, 9, 0))
+            .expect("the coverage contract must answer a covered date"),
+        Some(day(2026, 12, 28))
+    );
+
+    // The Saturday maintenance window and its queue are untouched.
+    assert!(
+        !calendar
+            .is_open(ct(2026, 6, 6, 2, 0))
+            .expect("the coverage contract must answer a covered date"),
+        "the Saturday 02:00-04:00 CT maintenance window is unchanged"
+    );
+    assert!(
+        calendar
+            .is_accepting_orders(ct(2026, 6, 6, 3, 45))
+            .expect("the coverage contract must answer a covered date"),
+        "the Saturday 03:45-04:00 CT Pre-Open is unchanged"
+    );
+    assert!(
+        !calendar
+            .is_open(ct(2026, 6, 6, 3, 45))
+            .expect("the coverage contract must answer a covered date"),
+        "the Saturday Pre-Open is never a session"
+    );
+    assert!(
+        calendar
+            .is_open(ct(2026, 6, 6, 4, 0))
+            .expect("the coverage contract must answer a covered date"),
+        "Saturday matching resumes at 04:00 CT"
+    );
+}
+
+// ---------------------------------------------------------------------------
 // 7. Both edges of the coverage window.
 // ---------------------------------------------------------------------------
 
@@ -1352,10 +1647,10 @@ fn era_2022_2024_window_sits_second_and_the_pre_2019_interval_is_unaudited() {
 // ---------------------------------------------------------------------------
 
 /// 12:00 CT, the Monday and Thursday holiday close this era prints.
-const ERA_NOON: u32 = 12 * 3_600;
+const ERA_MIDNIGHT: u32 = 12 * 3_600;
 /// 12:15 CT, the Independence Day eve and Christmas Eve close, and the
 /// Thanksgiving Friday close of 2019 and 2020, that this era prints.
-const ERA_QUARTER_PAST_NOON: u32 = 12 * 3_600 + 15 * 60;
+const ERA_QUARTER_PAST_MIDNIGHT: u32 = 12 * 3_600 + 15 * 60;
 /// 12:45 CT, the Thanksgiving Friday close of **2021-11-26**: the one date CME
 /// moves this family half an hour later than the rest of the complex's 12:15 CT.
 /// The wave-3 constant of the same name and value is the 2022-2024 era's own.
@@ -1388,8 +1683,8 @@ fn era_2019_2021_sweeps_every_shipped_row_kind_and_instant() {
             match row.kind() {
                 HolidayKind::EarlyClose { close_ssm } => {
                     match close_ssm {
-                        ERA_NOON => noons += 1,
-                        ERA_QUARTER_PAST_NOON => quarters += 1,
+                        ERA_MIDNIGHT => noons += 1,
+                        ERA_QUARTER_PAST_MIDNIGHT => quarters += 1,
                         ERA_EIGHT_FIFTEEN => eight_fifteens += 1,
                         ERA_TWELVE_FORTY_FIVE_2021 => twelve_forty_fives += 1,
                         other => {

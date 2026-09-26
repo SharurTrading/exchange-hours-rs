@@ -376,16 +376,18 @@ fn inventory_completeness_verdicts_match_the_metadata() {
 /// record can move without the other, and the shipped profiles are checked
 /// against it in `the_sunday_quarter_hour_is_declared_exactly_where_the_profiles_withhold_it`.
 ///
-/// `globex_cryptocurrency`'s second gap is the one entry whose issue number the
+/// `globex_cryptocurrency`'s remaining gap is the one entry whose issue number the
 /// evidence file did not supply: `docs/evidence/globex_cryptocurrency.md` records
 /// the undated five-day-era Pre-Open onset and its closing condition ("a CME
 /// artifact that states the Pre-Open in session language on a day-level effective
 /// date"), but said only that the gap is "tracked as an issue" and named no
 /// number. #123 was opened for it, and the declaration cites that, so
-/// LAW-FOLLOW-UPS-ARE-ISSUES is discharged rather than waived.
+/// LAW-FOLLOW-UPS-ARE-ISSUES is discharged rather than waived. The
+/// `SpecialSessionUnrepresentable` shape #93 named has no entry at all since
+/// 2026-09-26 UTC: `globex_cryptocurrency`'s eight 24/7-era merged trade dates
+/// shipped as `replacement blocks` rows, so no served scope declares it.
 fn declared_phase_gaps() -> Vec<(&'static str, Vec<(CoverageGapReason, &'static str)>)> {
     let quarter_hour = (CoverageGapReason::NormalWeekPhaseWithheld, "#79");
-    let special_sessions = (CoverageGapReason::SpecialSessionUnrepresentable, "#93");
     let pre_open_onset = (CoverageGapReason::NormalWeekPhaseWithheld, "#123");
     let post_close_label = (CoverageGapReason::PostCloseQueueTradeDateLabel, "#152");
     let undated_closures = (CoverageGapReason::UnpublishedClosureDates, "#157");
@@ -399,10 +401,11 @@ fn declared_phase_gaps() -> Vec<(&'static str, Vec<(CoverageGapReason, &'static 
         // trade dates landed; every session CME publishes for it now ships as a row.
         ("globex_fx", vec![quarter_hour]),
         ("globex_interest_rates", vec![quarter_hour]),
-        (
-            "globex_cryptocurrency",
-            vec![special_sessions, pre_open_onset],
-        ),
+        // `globex_cryptocurrency` carried the #93 special-session declaration
+        // until its 24/7-era merged trade dates landed on 2026-09-26 UTC;
+        // every session CME publishes for it now ships as a row, and the
+        // declared Pre-Open onset is bounded at the 2026-05-29 bridge row.
+        ("globex_cryptocurrency", vec![pre_open_onset]),
         // The two scopes whose declaration serves its phase: the post-close
         // queue is answered on every covered date, and only the trade date it
         // reads under is the crate's convention rather than the operator's
@@ -428,11 +431,12 @@ fn declared_phase_gaps() -> Vec<(&'static str, Vec<(CoverageGapReason, &'static 
 /// Asserts one scope's declaration records match what it declares.
 ///
 /// A declaration the per-date accessor names on some date has a record, carrying
-/// its own reason and closing condition over the span it is the answer for: an era
-/// for a bounded declaration, the whole domain for one that carries no bound. A
-/// whole-domain declaration an earlier one already covers on every date — the
-/// second entry of `globex_cryptocurrency`'s stack — is reported by `phase_gaps`
-/// alone, because no date has it as its answer.
+/// its own reason and closing condition over the span it is the answer for: the
+/// era before its bound for a bounded declaration, the whole domain for one that
+/// carries no bound. Every served scope declares one gap today, so the records
+/// and the declarations correspond one to one; the helper still reads the
+/// `phase_gaps` stack rather than assuming that, because a scope that stacks two
+/// would report only the first through `gaps`.
 fn check_declaration_records(
     name: &str,
     coverage: exchange_hours::CalendarCoverage,
@@ -548,10 +552,11 @@ fn the_declared_phase_level_gaps_match_the_inventory() {
     }
     assert_eq!(
         (declaring, declarations),
-        (11, 12),
-        "eleven served scopes declare a gap today, twelve declarations in all: seven \
-         quarter-hour scopes, `globex_cryptocurrency`'s two, `eurex`'s undated closure scope, \
-         and the post-close queue label `globex_grains` and `globex_livestock` declare"
+        (11, 11),
+        "eleven served scopes declare a gap today, one declaration each: seven \
+         quarter-hour scopes, `globex_cryptocurrency`'s undated five-day-era Pre-Open \
+         onset, `eurex`'s undated closure scope, and the post-close queue label \
+         `globex_grains` and `globex_livestock` declare"
     );
 
     // The scopes the quarter-hour probe cleared of the disputed window declare

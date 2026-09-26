@@ -721,22 +721,22 @@ fn a_complete_scope_answers_every_day_inside_its_span() {
 /// Asserts one fixture's declared phase-level gaps, the era each covers, and the
 /// records they produce.
 ///
-/// `complete_after_the_bound` says whether the identity answers the era that
-/// begins on `bound` completely: true when its only bounded declaration is the
-/// quarter-hour, false when a whole-domain gap still applies there.
+/// Each expected declaration carries the day its `until` bound names, or `None`
+/// when it is whole-domain. `complete_after_the_bound` says whether the identity
+/// answers `after` completely: true when every declaration it carries has been
+/// retired by then, false when a whole-domain gap still applies.
 fn check_declared_gap_era(
     key: MarketHoursKey,
-    expected: &[(CoverageGapReason, &str)],
+    expected: &[(CoverageGapReason, &str, Option<NaiveDate>)],
     complete_after_the_bound: bool,
     sample: NaiveDate,
-    bound: NaiveDate,
     after: NaiveDate,
 ) {
     let coverage = key_coverage(key);
-    let declared: Vec<(CoverageGapReason, &str)> = coverage
+    let declared: Vec<(CoverageGapReason, &str, Option<NaiveDate>)> = coverage
         .phase_gaps()
         .iter()
-        .map(|gap| (gap.reason(), gap.closing_condition()))
+        .map(|gap| (gap.reason(), gap.closing_condition(), gap.applies_until()))
         .collect();
     assert_eq!(declared, expected, "{key:?}");
 
@@ -749,23 +749,10 @@ fn check_declared_gap_era(
         DateCoverage::OutsideCoveredRange
     );
 
-    // Only the quarter-hour declaration is bounded, and only where it is the last
-    // one: `globex_fx` and `globex_cryptocurrency` also carry a whole-domain gap.
-    // The quarter-hour declaration is the only bounded one in these fixtures, and
-    // it is bounded for every scope that declares it — including `globex_fx`,
-    // whose second, whole-domain declaration is what keeps the era it opens from
-    // being complete.
-    for declaration in coverage.phase_gaps() {
-        assert_eq!(
-            declaration.applies_until(),
-            (declaration.closing_condition() == "#79").then_some(bound),
-            "{key:?}: only the quarter-hour declaration is bounded"
-        );
-    }
     assert_eq!(
         coverage.is_complete_on(after),
         complete_after_the_bound,
-        "{key:?}: a scope whose only bounded declaration is the quarter-hour answers the era it \
+        "{key:?}: a scope every bounded declaration has been retired for answers the era it \
          opens"
     );
     assert_eq!(
@@ -779,7 +766,7 @@ fn check_declared_gap_era(
     // that an earlier one already covers on every date is reported by
     // `phase_gaps` alone, because no date has it as its answer.
     let gaps: Vec<CoverageGap> = coverage.gaps().collect();
-    for (reason, closing) in expected {
+    for (reason, closing, _) in expected {
         let Some(gap) = gaps
             .iter()
             .find(|gap| gap.closing_condition() == Some(*closing))
@@ -823,50 +810,68 @@ fn a_declared_phase_gap_is_era_aware_and_reported_for_the_span_it_answers() {
     // CME's `globex_fx` used to be the other; its merged trade dates now ship
     // as rows, so only the Sunday quarter-hour remains withheld.
     let sample = date(2025, 6, 10);
-    let bound = date(2026, 8, 22);
     let after = date(2026, 8, 23);
+    let quarter_hour = date(2026, 8, 22);
+    let twenty_four_seven = date(2026, 5, 29);
     let fixtures = [
         (
             MarketHoursKey::GlobexEquityIndex,
-            vec![(CoverageGapReason::NormalWeekPhaseWithheld, "#79")],
+            vec![(
+                CoverageGapReason::NormalWeekPhaseWithheld,
+                "#79",
+                Some(quarter_hour),
+            )],
             true,
         ),
         (
             MarketHoursKey::GlobexFx,
-            vec![(CoverageGapReason::NormalWeekPhaseWithheld, "#79")],
+            vec![(
+                CoverageGapReason::NormalWeekPhaseWithheld,
+                "#79",
+                Some(quarter_hour),
+            )],
             true,
         ),
+        // `globex_cryptocurrency` also carried the #93 special-session
+        // declaration until its 24/7-era merged trade dates shipped as rows on
+        // 2026-09-26 UTC. What is left is its five-day era's undated Pre-Open
+        // onset, and that declaration is now bounded: the gap is a property of
+        // the five-day 17:00-16:00 CT grid, whose own last day is the
+        // 2026-05-29 bridge row, so from that row's day the withheld phase is
+        // served and the identity answers again.
         (
             MarketHoursKey::GlobexCryptocurrency,
-            vec![
-                (CoverageGapReason::SpecialSessionUnrepresentable, "#93"),
-                (CoverageGapReason::NormalWeekPhaseWithheld, "#123"),
-            ],
-            false,
+            vec![(
+                CoverageGapReason::NormalWeekPhaseWithheld,
+                "#123",
+                Some(twenty_four_seven),
+            )],
+            true,
         ),
         // The two scopes whose whole-domain declaration serves its phase: the
         // post-close queue is answered, and only its trade-date label is the
         // crate's own convention rather than the operator's printing (#152).
         (
             MarketHoursKey::GlobexGrains,
-            vec![(CoverageGapReason::PostCloseQueueTradeDateLabel, "#152")],
+            vec![(
+                CoverageGapReason::PostCloseQueueTradeDateLabel,
+                "#152",
+                None,
+            )],
             false,
         ),
         (
             MarketHoursKey::GlobexLivestock,
-            vec![(CoverageGapReason::PostCloseQueueTradeDateLabel, "#152")],
+            vec![(
+                CoverageGapReason::PostCloseQueueTradeDateLabel,
+                "#152",
+                None,
+            )],
             false,
         ),
     ];
     for (key, expected, complete_after_the_bound) in fixtures {
-        check_declared_gap_era(
-            key,
-            &expected,
-            complete_after_the_bound,
-            sample,
-            bound,
-            after,
-        );
+        check_declared_gap_era(key, &expected, complete_after_the_bound, sample, after);
     }
 
     // The scopes the quarter-hour probe cleared declare nothing, so a

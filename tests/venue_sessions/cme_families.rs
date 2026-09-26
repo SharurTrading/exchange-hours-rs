@@ -459,31 +459,28 @@ fn cryptocurrency_calendar_joins_weekend_pieces_and_assigns_monday_trade_date() 
         );
     }
 
-    // `globex_cryptocurrency` declares `#93` for the Saturday sessions its
-    // scalar vocabulary cannot state, so the identity claims no complete date
-    // in the supported domain and the maintenance-gap queries on Saturday
-    // 2026-06-06 are refused as `OutsideCoveredRange` rather than answered. The
-    // claims that survive are stated above and below: the fixed snapshot names
-    // the same `Maintenance` state without key identity, and the session,
-    // trade-date and candle queries that do not read the withheld day still
-    // resolve.
-    assert_refused(
-        calendar.trade_date(ct((2026, 6, 6), (3, 0, 0))),
-        DateCoverage::OutsideCoveredRange,
-        calendar,
-        ct((2026, 6, 6), (3, 0, 0)),
+    // `globex_cryptocurrency` states every session it publishes from its
+    // 2026-05-29 bridge row on, so the maintenance-gap queries on Saturday
+    // 2026-06-06 are answered rather than refused: the 02:00-04:00 CT window is
+    // `Maintenance`, a gap that carries no trade date of its own, and the fixed
+    // snapshot names the same state without key identity.
+    assert_eq!(
+        calendar
+            .trade_date(ct((2026, 6, 6), (3, 0, 0)))
+            .expect("the coverage contract must answer a covered date"),
+        None,
+        "a maintenance gap carries no trade date of its own",
     );
-    assert_refused(
-        calendar.session_state(ct((2026, 6, 6), (3, 0, 0))),
-        DateCoverage::OutsideCoveredRange,
-        calendar,
-        ct((2026, 6, 6), (3, 0, 0)),
+    assert_eq!(
+        calendar
+            .session_state(ct((2026, 6, 6), (3, 0, 0)))
+            .expect("the coverage contract must answer a covered date"),
+        SessionState::Maintenance,
     );
-    assert_refused(
-        calendar.is_maintenance(ct((2026, 6, 6), (3, 0, 0))),
-        DateCoverage::OutsideCoveredRange,
-        calendar,
-        ct((2026, 6, 6), (3, 0, 0)),
+    assert!(
+        calendar
+            .is_maintenance(ct((2026, 6, 6), (3, 0, 0)))
+            .expect("the coverage contract must answer a covered date"),
     );
     let fixed = hours_for_market_hours_key(
         MarketHoursKey::GlobexCryptocurrency,

@@ -446,10 +446,11 @@ fn closed_crypto_monday_rolls_weekend_into_the_following_business_day() {
     let closed = calendar_for_market_hours_key(MarketHoursKey::GlobexCryptocurrency)
         .with_day_policy(&Closed);
     // An always-closed policy removes every session, so `session_bounds` still
-    // answers `None`. The trade date cannot be answered at all:
-    // `GlobexCryptocurrency` declares the span unsourced, so the query that
-    // would have to name a trade date refuses rather than reporting the removal
-    // as a missing date — a coverage refusal is never `None` (LAW-COVERAGE).
+    // answers `None`, and the trade date cannot be answered either: with the
+    // policy closing every date there is no session left to carry one, so the
+    // query reports the removal as `None` rather than naming a date. The
+    // identity covers the day, so the answer is an answer and not a coverage
+    // refusal (LAW-COVERAGE).
     let friday_evening = ct((2026, 6, 5), (17, 0, 0));
     assert_eq!(
         closed
@@ -457,11 +458,12 @@ fn closed_crypto_monday_rolls_weekend_into_the_following_business_day() {
             .expect("the covered instant still answers under a policy"),
         None
     );
-    assert_outside_coverage(
-        closed.trade_date(friday_evening),
-        CalendarSource::MarketHoursKey(MarketHoursKey::GlobexCryptocurrency),
-        day(2026, 6, 5),
-        "the trade date under an always-closed policy",
+    assert_eq!(
+        closed
+            .trade_date(friday_evening)
+            .expect("the covered instant still answers under a policy"),
+        None,
+        "an always-closed policy leaves no session to carry a trade date"
     );
 }
 

@@ -253,7 +253,11 @@ corrections (a venue's hours fixed against a primary source) go under
   onset under #123, the dedicated issue opened for it after its evidence file recorded the
   gap and named no issue number. `globex_fx`'s two have since become one — its special
   sessions ship as rows and that declaration is removed under **Fixed** above, leaving
-  eight scopes and nine declarations. The first revision of this entry declared the
+  eight scopes and nine declarations. **Since 2026-09-26 UTC** `globex_cryptocurrency`'s
+  special-session declaration is gone as well — its 24/7-era merged trade dates ship as
+  rows under **Fixed** above — and `eurex`'s undated closure scope plus the post-close
+  queue label `globex_grains` and `globex_livestock` declare have since joined, so eleven
+  served scopes declare one gap each today. The first revision of this entry declared the
   quarter-hour on `globex_equity_index` alone, while `cme`, `comex`, `nymex`,
   `globex_energy` and `globex_interest_rates` withheld the same phase and `globex_fx` did
   not declare it either: all seven ship the same Sunday queue, and their own ledger basis
@@ -289,7 +293,11 @@ corrections (a venue's hours fixed against a primary source) go under
   bounded era rather than the whole domain. The `#93` special-session and `#123` Pre-Open
   declarations stay whole-domain: `globex_fx` publishes Saturday sessions on both sides of
   2026-08-22 and `globex_cryptocurrency`'s evidence dates no day the Pre-Open stopped being
-  withheld, so neither has an era to bound. The fence in
+  withheld, so neither has an era to bound. **Since 2026-09-26 UTC** the `#93` declaration
+  is removed altogether and `#123` is bounded at the 2026-05-29 bridge row: what the
+  evidence never dated is the day the five-day grid's Pre-Open *began*, and the era that
+  gap is a property of ends on a day CME filing 26-114 states, so the declaration now names
+  the era it is about instead of the whole supported domain (**Fixed** above). The fence in
   `tests/schedule_documentation/coverage_inventory.rs` now probes **both** sides of every
   scope's bound — the last Sunday its dated profile covers and the first its current one
   does — and requires the profile's own behaviour and the metadata's verdict to agree on
@@ -308,6 +316,26 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Fixed
 
+- **`globex_cryptocurrency` states its 24/7-era merged trade dates, and the `#93`
+  special-session declaration is gone (2026-09-26 UTC).** CME's own trading-hours
+  service prints no `16:00 closed` on the eight 24/7-era Monday and Thursday
+  holidays — 2026-09-07, 2026-11-26, 2027-01-18, 2027-02-15, 2027-05-31,
+  2027-07-05, 2027-09-06 and 2027-11-25 — while printing it on every ordinary
+  weekday of the reference week and on all seven of the era's Friday holidays, so
+  matching ran across the crate's ordinary 16:00–16:02 CT maintenance window on
+  those dates and `is_open` answered `false` for a minute the operator published
+  as continuous. Each now ships a `ReplacementBlocks` row on the trade date its
+  merged span carries — a Monday holiday's day opens on the pre-holiday Friday
+  16:02 CT, so its blocks sit at offsets `-4` through `0`; a Thursday holiday's
+  opens on the Wednesday 16:02 CT, at `-2` through `0` — and the `Closed` row on
+  the holiday stays, because it is what makes the 24/7 roll skip the date. The
+  16:01–16:02 CT and 03:45–04:00 CT Pre-Open queues remain `order_entry`, so no
+  `is_open` answer widens beyond the minute the operator printed. With every
+  session CME publishes for the family stated, the `SpecialSessionUnrepresentable`
+  declaration (#93) is removed; the five-day era's undated Pre-Open onset (#123)
+  is the one declaration left and is now bounded at the 2026-05-29 bridge row
+  whose profile first serves the queue, so the identity answers the whole 24/7 era
+  instead of refusing the entire supported domain.
 - **`globex_grains` states eighteen more complete trading days (2026-09-26 UTC).**
   CME publishes a `14:30 pcp`/`16:00 closed` pair carrying the **eve's own trade
   date** on the fourteen eves whose following trade date is closed — 2025-04-17,

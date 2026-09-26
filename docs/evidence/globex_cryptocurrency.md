@@ -70,7 +70,7 @@ row it becomes. The retrieval's own status words map onto that as follows:
 | `closed` with `no events published` | `closed` |
 | `closed` `[N17]` — only a 16:00 CT pre-open and a 17:00 CT open, both already carrying the next business date | `closed` |
 | `modified` `[N3]` — no final close on the date and a 16:00 CT rather than 16:45 CT pre-open, the whole span rolling into the next business day | no row on the holiday; `replacement blocks` on that next business day |
-| `modified` `[N10]` — 24/7 era, Monday or Thursday holiday: the 16:00 CT final close is omitted outright | `closed` |
+| `modified` `[N10]` — 24/7 era, Monday or Thursday holiday: the 16:00 CT final close is omitted outright | `closed` on the holiday **and** `replacement blocks` on the following trade date |
 | `closed` `[N19]` — 24/7 era, Friday holiday: the 16:00 CT final close is printed but carries the following Monday's trade date | `closed` |
 | `early_close` with `close_instant` | `early close` at that instant |
 | `modified` `[N6]` — a normal final close with no evening re-open, the leg the *neighbouring* `closed` row already removes | no row |
@@ -100,7 +100,7 @@ and its schedule `groupCode` as `BF`).
 | `N3` | five-day era, Monday or Thursday holiday: the normal 16:00-17:00 CT matching pause is printed as a 16:00 CT `preopen` rather than as a final close, and every event on the span carries the following business day's trade date | no row on the holiday; the merged span ships as `HolidayKind::ReplacementBlocks` on that following business day |
 | `N6` | a final close at the normal 16:00 CT but no evening re-open | no row (the missing leg belongs to the neighbouring `closed` row) |
 | `N8` | the published event list — times, types and printed trade dates — equals the family's normal grid for that weekday | no row (audited normal) |
-| `N10` | 24/7 era, Monday or Thursday holiday: the 16:00 CT final close is omitted outright | `HolidayKind::Closed` on that trade date |
+| `N10` | 24/7 era, Monday or Thursday holiday: the 16:00 CT final close is omitted outright, so the holiday's own 16:00-16:01 CT minute carried no matching break | `HolidayKind::Closed` on the holiday, and `HolidayKind::ReplacementBlocks` on the following trade date |
 | `N17` | no day session: only a 16:00 CT pre-open and a 17:00 CT open, both already carrying the next business day's trade date | `HolidayKind::Closed` on that trade date |
 | `N18` | the published event times equal the normal grid, but the re-open carries a trade date that skips the following closed holiday | no row (the closure it rolls past carries one) |
 | `N19` | 24/7 era, Friday holiday: the 16:00 CT final close is printed but carries the following Monday's trade date | `HolidayKind::Closed` on that trade date |
@@ -184,7 +184,11 @@ and its schedule `groupCode` as `BF`).
   {"groupCode":"BF","eventDate":"2026-11-26","events":[{"tradingDate":"2026-11-27","eventTime":"16:01","marketEventType":"preopen"},{"tradingDate":"2026-11-27","eventTime":"16:02","marketEventType":"open"}]}
   ```
 
-- **Crate row.** `HolidayKind::Closed` on trade date 2026-09-07 — `(2026, 9, 7, HolidayKind::Closed, T2, "CME-SVC-2026-09-06")`, and the same kind for 2026-11-26 and for this file's 2027 Monday and Thursday holidays. This is the crate's interpretive step, and its honest limit is recorded under the 2026 gaps above: the operator prints **no** 16:00 CT event here at all, so the crate reads an omission, not a printed close. What makes the reading right is the trade dates the operator does print: both events that bracket the missing boundary carry 2026-09-08, so the holiday has no trade date of its own to key a row to, and the neighbouring record's own 16:00 CT close carries 2026-09-08 as well. `Closed` then makes the 24/7 roll skip the date, which is what the printed trade dates already show happening. The residue is the 60-second 16:00-16:01 CT maintenance minute the crate's normal week keeps, recorded as a gap; it is not a session boundary the operator printed.
+- **Crate row.** **Two** rows per date. `HolidayKind::Closed` on trade date 2026-09-07 — `(2026, 9, 7, HolidayKind::Closed, T2, "CME-SVC-2026-09-06")`, and the same kind on 2026-11-26 and on this file's six 2027 Monday and Thursday holidays — so the 24/7 roll skips the date, which is what the printed trade dates already show happening. And `HolidayKind::ReplacementBlocks` on the trade date the merged span carries — `(2026, 9, 8, ReplacementBlocks(&MERGED_24X7_AFTER_MONDAY_HOLIDAY_BLOCKS), T2, "CME-SVC-2026-09-06")`, with the same pair for 2026-11-27 and the six 2027 dates. This is the crate's interpretive step, and its honest limit is that the operator prints **no** 16:00 CT event here at all: the crate reads an omission, not a printed close. What makes the reading right is the trade dates the operator does print — both events that bracket the missing boundary carry 2026-09-08, so the holiday has no trade date of its own to key a row to — and the contrast inside the same era, which is what the block row now rests on:
+  - the same service prints the 16:00 CT `closed` on **all seven** of the era's Friday holidays (2026-06-19, 2026-07-03, 2026-12-25, 2027-01-01, 2027-03-26, 2027-06-18 and 2027-12-24) and on every ordinary weekday of the reference week, so the omission is a property of these eight dates rather than of a date that carries no trade date of its own;
+  - reading the published list as the day's **complete** set of state changes, no `closed` at 16:00 leaves matching running across that minute, and the 16:01 `preopen` is the state change the operator does publish.
+- **Block shape.** A Monday holiday's merged day runs from the pre-holiday Friday 16:02 CT to the following Tuesday 16:00 CT, so its blocks sit at offsets `-4` through `0`; a Thursday holiday's runs from the pre-holiday Wednesday 16:02 CT to the Friday 16:00 CT, at offsets `-2` through `0`. The shorter `-2..0` shape a five-day-era merged row uses was **probed rather than assumed** and is not sufficient here: a replacement record replaces every normal-week occurrence `assign_normal` gives its own trade date, and for a Monday holiday the closed Monday rolls the Friday-evening and whole-weekend blocks into that trade date too, so the record must restate them. Measured with a caller-supplied `ReplaceSessions` record on 2026-09-08 carrying only offsets `-2..0`, the crate answers `Closed` for every instant from 2026-09-04 16:02 CT through 2026-09-06 00:00 CT.
+- **Residual risk — the Monday rows' opening.** Every Monday-holiday retrieval starts on the **Sunday** (`fromEventDate` 2026-09-06, 2027-01-17, 2027-02-14, 2027-05-30, 2027-07-04 and 2027-09-05), so no captured window states the pre-holiday Friday and the Saturday those merged days open on. Those blocks restate the reference week's ordinary 24/7 grid and the following-business-date roll the operator's own Sunday-to-Tuesday events exhibit, rather than the same window's own bytes. The two Thursday rows have no such gap: `CME-SVC-2026-11-25` and `CME-SVC-2027-11-24` each cover their whole Wednesday-to-Friday span.
 
 - **Falsified by.** A CME publication printing the 16:00 CT final close on `eventDate` 2026-09-07, or any event on it carrying trade date 2026-09-07.
 
@@ -348,7 +352,7 @@ This era's rows cite the ids below — CME Group's own Globex holiday schedules,
 | `2021-holiday-calendars.zip#2021-presidents-day-holiday-schedule-compact.xls @2026-08-30T10:03:27Z` | 2019-01-01 .. 2021-12-31 | <https://web.archive.org/web/20260830100327id_/https://www.cmegroup.com/tools-information/holiday-calendar/files/2021-holiday-calendars.zip> | archive capture 2026-08-30T10:03:27Z | T1 | `7a8d5ce35c639998abf64723de2cc2d649dc015b1aa6cfc3bc326ab5cdfd0c4f` |
 | `2021-holiday-calendars.zip#2021-thanksgiving-holiday-schedule-compact.xls @2026-08-30T10:03:27Z` | 2019-01-01 .. 2021-12-31 | <https://web.archive.org/web/20260830100327id_/https://www.cmegroup.com/tools-information/holiday-calendar/files/2021-holiday-calendars.zip> | archive capture 2026-08-30T10:03:27Z | T1 | `df6cdbc4c996109fe5a5829b5e8aaf622c20c6f16f1464dcdd9d5250c4163a47` |
 ### Gaps and residual risks, 2019-2021
-**This era declares the family's third audited window.** The table as a whole carries 74 rows over 3 windows — 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 — and this era's share is **36 rows**: 8 full closures, 25 early closes and 3 `Unsourced` rows. Every row is at T1. Every date before the first window lies outside it, so `holiday_coverage` reports it as unaudited rather than as audited normal.
+**This era declares the family's third audited window.** The table as a whole carries 82 rows over 3 windows — 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 — and this era's share is **36 rows**: 8 full closures, 25 early closes and 3 `Unsourced` rows. Every row is at T1. Every date before the first window lies outside it, so `holiday_coverage` reports it as unaudited rather than as audited normal.
 **Juneteenth 2019, 2020 and 2021 — three `Unsourced` rows.** CME published no Juneteenth schedule in any of the three years. Each row cites that year's own consolidated bundle — `2019-holiday-calendars.zip @2021-01-26T09:48:37Z`, `2020-holiday-calendars.zip @2026-07-30T11:18:34Z` and `2021-holiday-calendars.zip @2026-08-30T10:03:27Z` — whose member lists are CME's own account of every Globex holiday schedule it published that year and which carry no Juneteenth sheet; the four archived `holiday-calendar.html` index pages name none either, and a fresh 2018-2027 prefix CDX enumeration (`raw/cme-2019-2021-fix/cdx/cdx-files-2018-2027.json`, 369 rows, 340 distinct filenames) finds no `juneteenth` filename before 2022. Inside a contiguous window silence is the positive claim that a date was audited normal, which is false for a date the operator later marks as a holiday, so all three ship `Unsourced`, which clips nothing. 2021-06-19 is a **Saturday**: no family has a trade date there and the row changes no answer, and the row is keyed to the operator's own calendar date for the holiday rather than to an observed date CME never states. Closing condition: a CME holiday schedule naming Juneteenth in one of these three years.
 **Columbus Day and Veterans Day — six dates with no row.** 2019-10-14, 2019-11-11, 2020-10-12, 2020-11-11, 2021-10-11 and 2021-11-11 lie inside this window and carry no row, so the family's ordinary week stands there. CME published settlement-time and OTC-clearing advisories for these dates — the 2019 ZIP's `settlement-notices/*-settlement-times.pdf` members and, for example, `2021-veterans-day-advisory.pdf` — but never a Globex trading schedule for them. A settlement notice is not session language (LAW-SESSION-NOT-EXPIRY), so no row is keyed to one and the block's `missing` register records the dates as gaps rather than as sourced normality. Closing condition: a CME Globex holiday schedule naming one of these dates.
 
@@ -512,7 +516,9 @@ skip the date.
 | 2026-06-19 | closed | `16:00 closed /TD 2026-06-22; 16:01 preopen /TD 2026-06-22; 16:02 open /TD 2026-06-22` — CT | `CME-SVC-2026-06-18` | T2 | eventDate 2026-06-19, CME trade date 2026-06-22 |
 | 2026-07-03 | closed | `16:00 closed /TD 2026-07-06; 16:01 preopen /TD 2026-07-06; 16:02 open /TD 2026-07-06` — CT | `CME-SVC-2026-07-03` | T2 | eventDate 2026-07-03, CME trade date 2026-07-06 |
 | 2026-09-07 | closed | `16:01 preopen; 16:02 open` — CT; the 16:00 CT final close is omitted | `CME-SVC-2026-09-06` | T2 | eventDate 2026-09-07, CME trade date 2026-09-08 |
+| 2026-09-08 | replacement blocks | `16:01 preopen; 16:02 open` on 2026-09-07, then `16:00 closed` on 2026-09-08 — CT; the pre-holiday Friday's `16:01 preopen; 16:02 open` and the Saturday's `02:00 closed; 03:45 preopen; 04:00 open` are the ordinary 24/7 grid this trade date's day opens with | `CME-SVC-2026-09-06` | T2 | eventDate 2026-09-06 prints no events, eventDate 2026-09-07 prints only `16:01 preopen` and `16:02 open` and eventDate 2026-09-08 prints `16:00 closed`, all three carrying CME trade date 2026-09-08; no event anywhere carries trade date 2026-09-07, so the span from the pre-holiday Friday 16:02 CT open through the Tuesday 16:00 CT close is this trade date |
 | 2026-11-26 | closed | `16:01 preopen; 16:02 open` — CT; the 16:00 CT final close is omitted | `CME-SVC-2026-11-25` | T2 | eventDate 2026-11-26, CME trade date 2026-11-27 |
+| 2026-11-27 | replacement blocks | `16:00 closed` on 2026-11-25 carrying this trade date, then `16:01 preopen; 16:02 open` on 2026-11-25, `16:01 preopen; 16:02 open` again on 2026-11-26 with no `16:00 closed`, and `16:00 closed` on 2026-11-27 — CT | `CME-SVC-2026-11-25` | T2 | eventDate 2026-11-25 prints `16:00 closed` for 2026-11-25 and then its own `16:01 preopen; 16:02 open` for CME trade date 2026-11-27; eventDate 2026-11-26 prints `16:01 preopen; 16:02 open` for 2026-11-27, and eventDate 2026-11-27 prints `16:00 closed` for 2026-11-27; the holiday 2026-11-26 has no final close of its own, so the span from the Wednesday 16:02 CT open through the Friday 16:00 CT close is this trade date |
 | 2026-12-25 | closed | `16:00 closed /TD 2026-12-28; 16:01 preopen /TD 2026-12-28; 16:02 open /TD 2026-12-28` — CT | `CME-SVC-2026-12-24` | T2 | eventDate 2026-12-25, CME trade date 2026-12-28 |
 
 **Interpretive steps, 2026.**
@@ -545,22 +551,25 @@ skip the date.
   already stated the correct geometry — matching maintenance 16:00-16:02 CT with the
   Pre-Open from 16:01 — so the code was the outlier, not the sources. Both queues are
   now `order_entry` rules, matching resumes at the 16:02 and 04:00 `open`s, and the
-  `ECBTC` profile reads the same two queues the same way. The corrected queues are
-  still *refused* rather than served while the `#93` declaration below stands.
+  `ECBTC` profile reads the same two queues the same way. The corrected queues were
+  *refused* rather than served until 2026-09-26 UTC, while the `#93` declaration
+  stood; with it discharged they are served, and the dates before 2026-05-29 are
+  withheld by the five-day era's own Pre-Open declaration (#123) instead.
 - **Order entry — the day that still carries no block row**, as 2025:
   2026-01-01. The three merged spans 2026-01-20, 2026-02-17 and 2026-05-26 state
   their own 16:00 CT queues as `order_entry` blocks, so the deviation is stated
   for them.
-- **Executable hours — the 60-second maintenance minute.** On the 24/7-era
-  Monday and Thursday holidays 2026-09-07 and 2026-11-26 CME omits the 16:00 CT
-  final close outright, so its ordinary 16:00–16:02 CT maintenance window is
-  absent that day. The crate's normal week keeps a 16:00–16:02 CT non-matching
-  window — the 16:01–16:02 CT order-entry queue sits inside it — so `is_open`
-  answers false for the 16:00–16:01 CT minute the operator published as
-  continuous. The scalar vocabulary cannot delete a gap; recorded, not modelled,
-  with a replacement row on the affected trade date the closing condition. This
-  is the half of #93 that survives the merged trade dates. The Friday
-  holidays are not affected — there the 16:00 CT close *is* printed.
+- **Executable hours — the 60-second maintenance minute: corrected 2026-09-26 UTC;
+  no longer a gap.** On the 24/7-era Monday and Thursday holidays 2026-09-07 and
+  2026-11-26 CME omits the 16:00 CT final close outright, so its ordinary
+  16:00–16:02 CT maintenance window is absent that day. Until this change the
+  crate's normal week kept a 16:00–16:02 CT non-matching window — the
+  16:01–16:02 CT order-entry queue sits inside it — so `is_open` answered false
+  for the 16:00–16:01 CT minute the operator published as continuous. Both dates
+  now carry a `replacement blocks` row on the trade date their merged span
+  carries (2026-09-08 and 2026-11-27), which states the complete day including
+  that minute; the `N10` note above records the shape and its residual risk. The
+  Friday holidays were never affected — there the 16:00 CT close *is* printed.
 - **Tier**, as 2025.
 
 **The trade-date merge, 2026.** The three five-day-era holidays 2026-01-19,
@@ -577,13 +586,19 @@ The whole year is the 24/7 era.
 |---|---|---|---|---|---|
 | 2027-01-01 | closed | `16:00 closed /TD 2027-01-04; 16:01 preopen /TD 2027-01-04; 16:02 open /TD 2027-01-04` — CT | `CME-SVC-2026-12-31` | T2 | eventDate 2027-01-01, CME trade date 2027-01-04 |
 | 2027-01-18 | closed | `16:01 preopen; 16:02 open` — CT; the 16:00 CT final close is omitted | `CME-SVC-2027-01-17` | T2 | eventDate 2027-01-18, CME trade date 2027-01-19 |
+| 2027-01-19 | replacement blocks | `16:01 preopen; 16:02 open` on 2027-01-18, then `16:00 closed` on 2027-01-19 — CT; the pre-holiday Friday's `16:01 preopen; 16:02 open` and the Saturday's `02:00 closed; 03:45 preopen; 04:00 open` are the ordinary 24/7 grid this trade date's day opens with | `CME-SVC-2027-01-17` | T2 | eventDate 2027-01-17 prints no events, eventDate 2027-01-18 prints only `16:01 preopen` and `16:02 open` and eventDate 2027-01-19 prints `16:00 closed`, all three carrying CME trade date 2027-01-19; as 2026-09-08 |
 | 2027-02-15 | closed | `16:01 preopen; 16:02 open` — CT; the 16:00 CT final close is omitted | `CME-SVC-2027-02-14` | T2 | eventDate 2027-02-15, CME trade date 2027-02-16 |
+| 2027-02-16 | replacement blocks | `16:01 preopen; 16:02 open` on 2027-02-15, then `16:00 closed` on 2027-02-16 — CT; the pre-holiday Friday's `16:01 preopen; 16:02 open` and the Saturday's `02:00 closed; 03:45 preopen; 04:00 open` are the ordinary 24/7 grid this trade date's day opens with | `CME-SVC-2027-02-14` | T2 | eventDate 2027-02-14 prints no events, eventDate 2027-02-15 prints only `16:01 preopen` and `16:02 open` and eventDate 2027-02-16 prints `16:00 closed`, all three carrying CME trade date 2027-02-16; as 2026-09-08 |
 | 2027-03-26 | closed | `16:00 closed /TD 2027-03-29; 16:01 preopen /TD 2027-03-29; 16:02 open /TD 2027-03-29` — CT | `CME-SVC-2027-03-25` | T2 | eventDate 2027-03-26, CME trade date 2027-03-29 |
 | 2027-05-31 | closed | `16:01 preopen; 16:02 open` — CT; the 16:00 CT final close is omitted | `CME-SVC-2027-05-30` | T2 | eventDate 2027-05-31, CME trade date 2027-06-01 |
+| 2027-06-01 | replacement blocks | `16:01 preopen; 16:02 open` on 2027-05-31, then `16:00 closed` on 2027-06-01 — CT; the pre-holiday Friday's `16:01 preopen; 16:02 open` and the Saturday's `02:00 closed; 03:45 preopen; 04:00 open` are the ordinary 24/7 grid this trade date's day opens with | `CME-SVC-2027-05-30` | T2 | eventDate 2027-05-30 prints no events, eventDate 2027-05-31 prints only `16:01 preopen` and `16:02 open` and eventDate 2027-06-01 prints `16:00 closed`, all three carrying CME trade date 2027-06-01; as 2026-09-08 |
 | 2027-06-18 | closed | `16:00 closed /TD 2027-06-21; 16:01 preopen /TD 2027-06-21; 16:02 open /TD 2027-06-21` — CT | `CME-SVC-2027-06-17` | T2 | eventDate 2027-06-18, CME trade date 2027-06-21 |
 | 2027-07-05 | closed | `16:01 preopen; 16:02 open` — CT; the 16:00 CT final close is omitted | `CME-SVC-2027-07-04` | T2 | eventDate 2027-07-05, CME trade date 2027-07-06 |
+| 2027-07-06 | replacement blocks | `16:01 preopen; 16:02 open` on 2027-07-05, then `16:00 closed` on 2027-07-06 — CT; the pre-holiday Friday's `16:01 preopen; 16:02 open` and the Saturday's `02:00 closed; 03:45 preopen; 04:00 open` are the ordinary 24/7 grid this trade date's day opens with | `CME-SVC-2027-07-04` | T2 | eventDate 2027-07-04 prints no events, eventDate 2027-07-05 prints only `16:01 preopen` and `16:02 open` and eventDate 2027-07-06 prints `16:00 closed`, all three carrying CME trade date 2027-07-06; as 2026-09-08 |
 | 2027-09-06 | closed | `16:01 preopen; 16:02 open` — CT; the 16:00 CT final close is omitted | `CME-SVC-2027-09-05` | T2 | eventDate 2027-09-06, CME trade date 2027-09-07 |
+| 2027-09-07 | replacement blocks | `16:01 preopen; 16:02 open` on 2027-09-06, then `16:00 closed` on 2027-09-07 — CT; the pre-holiday Friday's `16:01 preopen; 16:02 open` and the Saturday's `02:00 closed; 03:45 preopen; 04:00 open` are the ordinary 24/7 grid this trade date's day opens with | `CME-SVC-2027-09-05` | T2 | eventDate 2027-09-05 prints no events, eventDate 2027-09-06 prints only `16:01 preopen` and `16:02 open` and eventDate 2027-09-07 prints `16:00 closed`, all three carrying CME trade date 2027-09-07; as 2026-09-08 |
 | 2027-11-25 | closed | `16:01 preopen; 16:02 open` — CT; the 16:00 CT final close is omitted | `CME-SVC-2027-11-24` | T2 | eventDate 2027-11-25, CME trade date 2027-11-26 |
+| 2027-11-26 | replacement blocks | `16:00 closed` on 2027-11-24 carrying this trade date, then `16:01 preopen; 16:02 open` on 2027-11-24, `16:01 preopen; 16:02 open` again on 2027-11-25 with no `16:00 closed`, and `16:00 closed` on 2027-11-26 — CT | `CME-SVC-2027-11-24` | T2 | eventDate 2027-11-24 prints `16:00 closed` for 2027-11-24 and then its own `16:01 preopen; 16:02 open` for CME trade date 2027-11-26; eventDate 2027-11-25 prints `16:01 preopen; 16:02 open` for 2027-11-26, and eventDate 2027-11-26 prints `16:00 closed` for 2027-11-26; as 2026-11-27 |
 | 2027-12-24 | closed | `16:00 closed /TD 2027-12-23; 16:01 preopen /TD 2027-12-27; 16:02 open /TD 2027-12-27` — CT, on eventDate 2027-12-23 | `CME-SVC-2027-12-22` | T2 | eventDate 2027-12-23, CME trade date 2027-12-27 — the re-open skips 2027-12-24; the same document prints `no events published` for eventDate 2027-12-24 for the nine other product groups, with no cryptocurrency record because the 24/7 grid never stops |
 
 **Interpretive steps, 2027.**
@@ -603,8 +618,11 @@ The whole year is the 24/7 era.
 
 **Gaps, 2027.**
 
-- **Executable hours — the 60-second maintenance minute**, as 2026, on
-  2027-01-18, 2027-02-15, 2027-05-31, 2027-07-05, 2027-09-06 and 2027-11-25.
+- **Executable hours — the 60-second maintenance minute: corrected 2026-09-26 UTC;
+  no longer a gap**, as 2026, for 2027-01-18, 2027-02-15, 2027-05-31, 2027-07-05,
+  2027-09-06 and 2027-11-25. Each now carries a `replacement blocks` row on the
+  trade date its merged span carries — 2027-01-19, 2027-02-16, 2027-06-01,
+  2027-07-06, 2027-09-07 and 2027-11-26.
 - **Sourced but unrepresentable — the Saturday session 2027-06-19.** CME
   publishes `05:00 open; 17:00 closed` for trade date 2027-06-21 for the 24-hour
   groups after the Juneteenth Friday. Cryptocurrency is not among them and runs
@@ -689,9 +707,9 @@ Official origin of the specification capture: <http://www.cmegroup.com/trading/e
 
 ## Gaps and residual risks
 
-- **order-entry** — the five-day era's Sunday and weekday Pre-Open onset is undated in the normal week; the 2017-12-14, 2017-12-22 and 2018-01-04 contract-specification captures publish the matching grid only, and the 16:00 CT queues the six merged spans and 2025-11-28 publish are stated by their own `replacement blocks` rows rather than by the week. Closing condition: a CME artifact that states the Pre-Open in session language on a day-level effective date. Served identity, so tracked as issue [#123](https://github.com/SharurTrading/exchange-hours-rs/issues/123) (LAW-FOLLOW-UPS-ARE-ISSUES), which `schedules/sourcing.rs` cites as the declaration's closing condition and `docs/schedules/coverage-2025.md` names in this scope's `Closing issues` cell.
+- **order-entry** — the five-day era's Sunday and weekday Pre-Open onset is undated in the normal week; the 2017-12-14, 2017-12-22 and 2018-01-04 contract-specification captures publish the matching grid only, and the 16:00 CT queues the six merged spans and 2025-11-28 publish are stated by their own `replacement blocks` rows rather than by the week. Closing condition: a CME artifact that states the Pre-Open in session language on a day-level effective date. Served identity, so tracked as issue [#123](https://github.com/SharurTrading/exchange-hours-rs/issues/123) (LAW-FOLLOW-UPS-ARE-ISSUES), which `schedules/sourcing.rs` cites as the declaration's closing condition and `docs/schedules/coverage-2025.md` names in this scope's `Closing issues` cell. The declaration is **bounded at 2026-05-29**: the gap is a property of the five-day 17:00-16:00 CT grid, and that grid's own last day is the bridge row CME filing 26-114 introduced, whose profile serves the operator's published Pre-Open for the first time. From that row's day the withheld phase is served and the identity answers again, so the declaration names the era it is about rather than the whole supported domain.
 - **forward-dated row** — the 2026-09-19 Saturday extension is encoded ahead of its effective day on CME Globex notice 20260824, restated by notice 20260831. It must be confirmed against the operator before that day (LAW-WATCH).
-- **holidays** — the built-in holiday table covers trade dates 2025-01-01 .. 2027-12-31 at T2. Its per-year gaps, interpretive steps and residual risks are recorded under `## Holidays`, beside the rows they are about, rather than pooled here. The load-bearing ones: the 24/7 era's Monday and Thursday holidays serve the 16:00-16:01 CT minute closed (#93), the five-day era's Pre-Open onset is undated in the normal week (#123), five scalar closure dates still carry an unstated 16:00 CT queue, eight 2025 windows rest on a pre-holiday capture, and no T1 rendering of these hours exists.
+- **holidays** — the built-in holiday table covers trade dates 2025-01-01 .. 2027-12-31 at T2. Its per-year gaps, interpretive steps and residual risks are recorded under `## Holidays`, beside the rows they are about, rather than pooled here. The load-bearing ones: the five-day era's Pre-Open onset is undated in the normal week, so every date before the 2026-05-29 bridge row is withheld (#123); the six 24/7-era Monday merged rows restate a pre-holiday Friday and Saturday no captured window covers; five scalar closure dates still carry an unstated 16:00 CT queue; eight 2025 windows rest on a pre-holiday capture; and no T1 rendering of these hours exists.
 - **scope** — ETH, MBT and MET joined this already-live family in 2021 and later member-product listings remain catalog data; their individual launch dates are not family-clock revisions.
 
 ## Module narrative (moved from src/calendar/schedules/futures/us/cryptocurrency.rs on 2026-09-12 UTC)

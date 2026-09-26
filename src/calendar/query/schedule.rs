@@ -398,6 +398,17 @@ impl<'a> QueryContext<'a> {
     /// points whose answer *is* the arrangement a declared phase gap withholds:
     /// the order-entry queue scans. An identity that declares no phase gap is
     /// unaffected, so this costs one slice check on that path.
+    ///
+    /// Only a declaration that **withholds a phase** refuses here. A declared
+    /// gap withholds a queue exactly when its reason names one:
+    /// [`CoverageGapReason::NormalWeekPhaseWithheld`] and
+    /// [`CoverageGapReason::SpecialSessionUnrepresentable`] do, and
+    /// [`CoverageGapReason::UnpublishedClosureDates`] — `eurex`'s undated
+    /// German-scope closures — does not, because every phase the crate models
+    /// for that identity is served and that gap is a completeness fact alone
+    /// (LAW-COVERAGE: a coverage error is never reported where the crate has an
+    /// answer). An unrecognized reason refuses, which is the conservative
+    /// direction: a new declaration shape answers no queue until it says so.
     pub(super) fn require_phase_coverage(self, date: NaiveDate) -> Result<(), CalendarQueryError> {
         let Some(coverage) = self.coverage else {
             return Ok(());
@@ -418,15 +429,24 @@ impl<'a> QueryContext<'a> {
         self.require_answerable(date)?;
         match coverage.phase_gap_on(date) {
             None => Ok(()),
-            // A declaration whose phase the crate does **serve** withholds
-            // nothing, so it refuses nothing: the post-close queue's window and
-            // both of its verdicts are sourced, and only the trade date the
-            // queue is reported under is the crate's own convention rather than
-            // the operator's printed label. Refusing here would turn a labelling
-            // fact into a coverage error read as a closure on every covered date
-            // of two served scopes — the failure LAW-COVERAGE exists to prevent.
-            // Every other reason names a phase the crate does not carry at all.
-            Some(gap) if gap.reason() == CoverageGapReason::PostCloseQueueTradeDateLabel => Ok(()),
+            // A declaration that withholds no phase refuses nothing. The
+            // post-close queue's window and both of its verdicts are served, and
+            // only the trade date it is reported under is the crate's own
+            // convention rather than the operator's printed label; the undated
+            // German closures name no phase either, so an ordinary day's queues
+            // answer through them. Refusing here would turn a completeness fact
+            // into a coverage error read as a closure on every covered date —
+            // the failure LAW-COVERAGE exists to prevent. The two reasons above
+            // name phases the crate does not carry at all.
+            Some(gap)
+                if matches!(
+                    gap.reason(),
+                    CoverageGapReason::PostCloseQueueTradeDateLabel
+                        | CoverageGapReason::UnpublishedClosureDates
+                ) =>
+            {
+                Ok(())
+            }
             Some(_gap) => Err(CalendarQueryError::OutsideCoveredRange {
                 source: coverage.identity(),
                 date,

@@ -360,8 +360,8 @@ fn inventory_completeness_verdicts_match_the_metadata() {
     }
     assert_eq!(
         (complete, incomplete, no_coverage),
-        (2, 11, 3),
-        "the inventory's verdict shapes: two complete, eleven incomplete, three with no 2025 \
+        (2, 12, 2),
+        "the inventory's verdict shapes: two complete, twelve incomplete, two with no 2025 \
          coverage"
     );
 }
@@ -386,6 +386,7 @@ fn declared_phase_gaps() -> Vec<(&'static str, Vec<(CoverageGapReason, &'static 
     let special_sessions = (CoverageGapReason::SpecialSessionUnrepresentable, "#93");
     let pre_open_onset = (CoverageGapReason::NormalWeekPhaseWithheld, "#123");
     let post_close_label = (CoverageGapReason::PostCloseQueueTradeDateLabel, "#152");
+    let undated_closures = (CoverageGapReason::UnpublishedClosureDates, "#157");
     vec![
         ("cme", vec![quarter_hour]),
         ("comex", vec![quarter_hour]),
@@ -406,10 +407,15 @@ fn declared_phase_gaps() -> Vec<(&'static str, Vec<(CoverageGapReason, &'static 
         // printing (#152).
         ("globex_grains", vec![post_close_label]),
         ("globex_livestock", vec![post_close_label]),
+        // `eurex` withholds no *phase*: the operator declares German
+        // equity/equity-index closures it has not dated, so the declaration is
+        // a completeness fact the date walk cannot find and the order-entry
+        // scans still answer through it.
+        ("eurex", vec![undated_closures]),
     ]
 }
 
-/// The eight scopes that declare a phase-level gap declare exactly the ones
+/// The twelve scopes that declare a gap declare exactly the ones
 /// advertised, each reportable with its own reason and closing issue, and each
 /// issue is one the scope's own row names.
 ///
@@ -540,10 +546,10 @@ fn the_declared_phase_level_gaps_match_the_inventory() {
     }
     assert_eq!(
         (declaring, declarations),
-        (10, 11),
-        "ten served scopes declare a phase-level gap today, eleven declarations in all: seven \
-         quarter-hour scopes, `globex_cryptocurrency`'s two, and the post-close queue label \
-         `globex_grains` and `globex_livestock` declare"
+        (11, 12),
+        "eleven served scopes declare a gap today, twelve declarations in all: seven \
+         quarter-hour scopes, `globex_cryptocurrency`'s two, `eurex`'s undated closure scope, \
+         and the post-close queue label `globex_grains` and `globex_livestock` declare"
     );
 
     // The scopes the quarter-hour probe cleared of the disputed window declare
@@ -554,7 +560,6 @@ fn the_declared_phase_level_gaps_match_the_inventory() {
         "cbot",
         "cfe",
         "coinbase_derivatives",
-        "eurex",
         "iceus",
         "globex_nikkei_225_dollar",
     ] {

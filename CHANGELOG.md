@@ -271,6 +271,36 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Fixed
 
+- **`globex_cryptocurrency` now states CME's nine merged trade dates (2026-09-26
+  UTC).** On a Monday or Thursday holiday the operator publishes no final close
+  for that holiday's own trade date: its `16:00` CT pre-open and `17:00` CT open
+  are printed against the **next** business day, so the whole span through the
+  following `16:00` CT close carries one trade date. The crate kept its own label
+  and answered the holiday's, so `trade_date` contradicted the operator on nine
+  spans of the five-day era: 2025-01-21, 2025-02-18, 2025-05-27, 2025-06-20,
+  2025-09-02, 2025-11-28, 2026-01-20, 2026-02-17 and 2026-05-26. Each is now a
+  `ReplacementBlocks` row stating the complete trade date, with the holiday's own
+  queue read from the operator (`16:00` CT, not the ordinary weekday `16:45`) and
+  the Juneteenth span opened on its Wednesday evening at that `16:45`. The block
+  values were read from this family's own captured service windows: eight of the
+  nine rows are block for block what `globex_fx` already ships, and the ninth —
+  2025-11-28 — deliberately is not. **One `is_open` answer changes, and
+  deliberately:** the finalised publication for 2025-11-28 adds a `07:00 preopen;
+  07:30 open` pause the pre-holiday capture lacks, so that row carries six blocks,
+  its `-1` leg ends at `07:00` CT and `07:00`-`07:30` CT is closed where the
+  ordinary week matched. The `EarlyClose { 13:45 }` row it replaces ended at the
+  same `13:45`. `globex_fx`, `globex_energy`, `globex_equity_index` and
+  `globex_interest_rates` print that same pause for their own products and still
+  serve matching through it; that is **issue #156**, not part of this change.
+  Every other `is_open` answer holds, because the merge relabels a span rather than
+  deleting one.
+  `docs/schedules/coverage-2025.md` moves this scope's `2025+ dates` cell to 32
+  and its `Missing / disputed` and `Complete?` cells to what remains open — the
+  24/7 era's 16:00-16:01 CT minute, which CME publishes as traded and the crate
+  serves closed (#93), and the five-day era's undated Pre-Open onset (#123) — so the scope stays incomplete and `#93` stays
+  declared. Verified by an independent probe over every captured CME window:
+  `globex_cryptocurrency` goes from **9 trade-date mismatches to 0** with the
+  other seven scopes' tallies unchanged.
 - **`globex_cryptocurrency`'s Pre-Opens are order entry, not trading
   (2026-09-26 UTC).** The family publishes two Pre-Open queues — weekday
   `16:01-16:02` CT and Saturday `03:45-04:00` CT — and the crate carried both in
@@ -286,8 +316,8 @@ corrections (a venue's hours fixed against a primary source) go under
   executable envelope shrinks by 20 minutes (5 × 1 minute plus 15 minutes). No
   trade date moves, and the one-day bridge of 2026-05-29 gets the same split. The
   corrected queues are still **refused** rather than served while
-  `globex_cryptocurrency`'s `#93` declaration stands; discharging that is the
-  separate change below.
+  `globex_cryptocurrency`'s `#93` declaration stands; the declaration now covers the
+  24/7-era half of the gap alone.
 - **`globex_fx` no longer declares a special-session gap (2026-09-26 UTC).** The
   family carried a whole-domain `#93` phase-level gap in `schedules/sourcing.rs`
   because CME publishes sessions this family's scalar vocabulary could not state.

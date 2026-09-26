@@ -289,11 +289,17 @@ fn no_late_open_row_ships_in_the_published_window() {
         if let Some(holiday) = calendar.holiday_on(date) {
             // `Unsourced` joined the vocabulary with the 2022-2024 wave: it
             // states that a date inside a window was audited, clips nothing,
-            // and is not a late open. The fence this test draws is unchanged.
+            // and is not a late open. `ReplacementBlocks` joined it in Stage 4:
+            // it states a complete trading day, which is a closure of a
+            // different shape rather than a boundary move. The fence this test
+            // draws is unchanged — no row states a later first open.
             assert!(
                 matches!(
                     holiday.kind(),
-                    HolidayKind::Closed | HolidayKind::EarlyClose { .. } | HolidayKind::Unsourced
+                    HolidayKind::Closed
+                        | HolidayKind::EarlyClose { .. }
+                        | HolidayKind::ReplacementBlocks(_)
+                        | HolidayKind::Unsourced
                 ),
                 "globex_energy ships no late open: {date} is {:?}",
                 holiday.kind()
@@ -2057,4 +2063,251 @@ fn era_2013_2015_rows_are_the_audited_date_kind_and_tier_set() {
         date = date.succ_opt().expect("the era ends well before the bound");
     }
     assert_eq!(index, ERA_2013_2015_ROWS.len(), "every recorded row ships");
+}
+
+// ---------------------------------------------------------------------------
+// The Saturday-session trade dates (Stage 4, #116)
+//
+// CME states a Saturday session on three trade dates in this window, each
+// carrying the following Monday. Every expectation below is read from the
+// service window the row cites, not from the module's own tables: the operator
+// prints the Saturday `05:00 open; 17:00 closed`, the Sunday
+// `16:00 preopen; 17:00 open` and the following `16:00 closed`, all against the
+// one trade date. The row states that whole day in blocks, because a
+// replacement replaces the complete trade date.
+// ---------------------------------------------------------------------------
+
+/// The three trade dates CME states a Saturday session for, with the Saturday
+/// each session opens on.
+const SATURDAY_SESSION_TRADE_DATES: [(Ymd, Ymd); 3] = [
+    ((2026, 6, 22), (2026, 6, 20)),
+    ((2026, 7, 6), (2026, 7, 4)),
+    ((2027, 6, 21), (2027, 6, 19)),
+];
+
+#[test]
+fn a_saturday_session_row_states_the_complete_trade_date() {
+    let calendar = calendar();
+    for (trade_date, saturday) in SATURDAY_SESSION_TRADE_DATES {
+        assert_eq!(
+            day(saturday).weekday(),
+            Weekday::Sat,
+            "{saturday:?} must be the Saturday the session opens on"
+        );
+        assert_eq!(day(trade_date).weekday(), Weekday::Mon, "{trade_date:?}");
+        assert!(
+            matches!(
+                calendar.holiday_on(day(trade_date)).map(Holiday::kind),
+                Some(HolidayKind::ReplacementBlocks(_))
+            ),
+            "{trade_date:?} must carry a replacement row"
+        );
+
+        // The Saturday session itself: open on its first instant, open through
+        // its last, and closed at its end-exclusive close.
+        let saturday_open = ct(saturday, 5, 0);
+        let saturday_close = ct(saturday, 17, 0);
+        assert!(
+            calendar
+                .is_open(saturday_open)
+                .expect("2026 and 2027 are covered dates"),
+            "{trade_date:?}: the Saturday session is not open at {saturday_open}"
+        );
+        assert!(
+            calendar
+                .is_open(one_second_before(saturday_close))
+                .expect("2026 and 2027 are covered dates"),
+            "{trade_date:?}: the Saturday session closed early"
+        );
+        assert!(
+            !calendar
+                .is_open(saturday_close)
+                .expect("2026 and 2027 are covered dates"),
+            "{trade_date:?}: the Saturday close is end-exclusive"
+        );
+        assert_eq!(
+            calendar
+                .session_bounds(ct(saturday, 10, 0))
+                .expect("2026 and 2027 are covered dates"),
+            Some((saturday_open, saturday_close)),
+            "{trade_date:?}: the Saturday session's own bounds"
+        );
+
+        // Every instant of the day belongs to the following Monday, including
+        // the Saturday block and the ordinary Sunday-Monday session.
+        for (when, hour) in [
+            (saturday, 5_u32),
+            (saturday, 12),
+            ((saturday.0, saturday.1, saturday.2 + 1), 18),
+            (trade_date, 10),
+        ] {
+            assert_eq!(
+                calendar
+                    .trade_date(ct(when, hour, 0))
+                    .expect("2026 and 2027 are covered dates"),
+                Some(day(trade_date)),
+                "{trade_date:?}: {when:?} {hour}:00 must belong to the trade date"
+            );
+        }
+
+        // The ordinary Sunday-Monday session belongs to the same trade date and
+        // is not deleted by the row: it opens 17:00 CT the evening before and
+        // closes 16:00 CT on the trade date.
+        let session_open = ct((saturday.0, saturday.1, saturday.2 + 1), 17, 0);
+        let session_close = ct(trade_date, 16, 0);
+        assert!(
+            calendar
+                .is_open(ct(trade_date, 10, 0))
+                .expect("2026 and 2027 are covered dates"),
+            "{trade_date:?}: the Sunday-Monday session was deleted by the row"
+        );
+        assert_eq!(
+            calendar
+                .session_bounds(ct(trade_date, 10, 0))
+                .expect("2026 and 2027 are covered dates"),
+            Some((session_open, session_close)),
+            "{trade_date:?}: the Sunday-Monday session's bounds"
+        );
+        assert!(
+            !calendar
+                .is_open(session_close)
+                .expect("2026 and 2027 are covered dates"),
+            "{trade_date:?}: the session close is end-exclusive"
+        );
+
+        // The gap between the Saturday session and the Sunday one is a pause on
+        // a closed market, not a session of its own.
+        for hour in [17_u32, 20, 23] {
+            assert!(
+                !calendar
+                    .is_open(ct(saturday, hour, 0))
+                    .expect("2026 and 2027 are covered dates"),
+                "{trade_date:?}: {saturday:?} {hour}:00 falls between the blocks \
+                 and must not be open"
+            );
+        }
+    }
+}
+
+#[test]
+fn a_saturday_session_row_keeps_the_ordinary_sunday_queue() {
+    let calendar = calendar();
+    for (trade_date, saturday) in SATURDAY_SESSION_TRADE_DATES {
+        let sunday = (saturday.0, saturday.1, saturday.2 + 1);
+        // CME prints `16:00 preopen; 17:00 open` for these Sundays: the queue
+        // runs from 16:00 CT and no trade matches before the 17:00 open.
+        // The queue is stated by the row. Whether the order-entry **gate** will
+        // answer it is #132's subject: `contains_order_entry` asks
+        // `require_phase_coverage` about the local day the queue opens on, a
+        // Sunday, rather than about the trade date the queue belongs to, and
+        // whether that day is inside the published range depends on which
+        // revision is in force — so 2026-06-21 is refused here and 2027-06-20 is
+        // answered. The defect is pre-existing and independent of any block row
+        // (`is_open` answers the same instant on unmodified `main`), and #132
+        // owns its fix. Either verdict is accepted, so this test does not pin a
+        // defect as correct; what it does pin is that no **trade** prints in the
+        // queue and that a refusal is the coverage refusal rather than a wrong
+        // answer.
+        let queue_probe = ct(sunday, 16, 30);
+        match calendar.is_order_entry_only(queue_probe) {
+            Ok(order_entry_only) => assert!(
+                order_entry_only,
+                "{trade_date:?}: {queue_probe} is inside the stated queue but not \
+                 order-entry-only"
+            ),
+            Err(error) => assert!(
+                matches!(error, CalendarQueryError::OutsideCoveredRange { .. }),
+                "{trade_date:?}: the queue was refused for the wrong reason: {error:?}"
+            ),
+        }
+        assert!(
+            !calendar
+                .is_open(queue_probe)
+                .expect("2026 and 2027 are covered dates"),
+            "{trade_date:?}: no trade may print in the Sunday queue at {queue_probe}"
+        );
+        // The queue runs to the 17:00 CT open, and the session is open from it.
+        assert!(
+            !calendar
+                .is_open(ct(sunday, 16, 59))
+                .expect("2026 and 2027 are covered dates"),
+            "{trade_date:?}: the queue must not print a trade"
+        );
+        assert!(
+            calendar
+                .is_open(ct(sunday, 17, 0))
+                .expect("2026 and 2027 are covered dates"),
+            "{trade_date:?}: the Sunday session opens at 17:00 CT"
+        );
+
+        // The row's instants are the ones the operator prints, not the module's
+        // own: the block states a 16:00 CT queue, so the family's separately
+        // sourced 16:15 or 16:45 variant is not what answers here.
+        assert_eq!(
+            calendar
+                .holiday_on(day(trade_date))
+                .map(Holiday::document_id),
+            Some(match trade_date {
+                (2026, 6, 22) => "CME-SVC-2026-06-18",
+                (2026, 7, 6) => "CME-SVC-2026-07-03",
+                _ => "CME-SVC-2027-06-17",
+            }),
+            "{trade_date:?}: the row cites the window its instants were read from"
+        );
+        assert_eq!(
+            calendar.holiday_on(day(trade_date)).map(Holiday::tier),
+            Some(EvidenceTier::T2),
+            "{trade_date:?}: the row's tier"
+        );
+    }
+}
+
+/// A Saturday-session row's Sunday legs must be sourced from a window that
+/// actually prints them.
+///
+/// Two of these rows span **two** windows: `CME-SVC-2026-06-18` and
+/// `CME-SVC-2027-06-17` each stop at their own Saturday and print no Sunday
+/// entry at all, so the Sunday Pre-Open and the Sunday-Monday session come from
+/// the window that starts on that Sunday, `CME-SVC-2026-06-21` and
+/// `CME-SVC-2027-06-20`. The third row's Saturday window, `CME-SVC-2026-07-03`,
+/// happens to run through its Sunday and does print the legs, so it needs only
+/// the one.
+///
+/// This fence exists because an independent review found the two-window rows
+/// claiming a Sunday pair their cited artifact does not contain. It pins the
+/// distinction the per-row citation check cannot see: a row may name a document
+/// that resolves to real bytes and still quote from a window those bytes are
+/// not.
+#[test]
+fn a_saturday_rows_sunday_legs_are_sourced_from_a_window_that_prints_them() {
+    // (trade date, Saturday window, the window that actually prints the Sunday legs)
+    for (trade_date, saturday_window, sunday_window) in [
+        ("2026-06-22", "CME-SVC-2026-06-18", "CME-SVC-2026-06-21"),
+        ("2026-07-06", "CME-SVC-2026-07-03", "CME-SVC-2026-07-03"),
+        ("2027-06-21", "CME-SVC-2027-06-17", "CME-SVC-2027-06-20"),
+    ] {
+        let evidence = std::fs::read_to_string(
+            std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("docs/evidence/globex_energy.md"),
+        )
+        .expect("the evidence file must be readable");
+        for window in [saturday_window, sunday_window] {
+            assert!(
+                evidence.contains(&format!("| `{window}` |")),
+                "{trade_date}: {window} must be a recorded document"
+            );
+        }
+        let row = evidence
+            .lines()
+            .find(|line| line.starts_with(&format!("| {trade_date} |")))
+            .unwrap_or_else(|| panic!("{trade_date} must have an evidence row"));
+        assert!(
+            row.contains(&format!("`{saturday_window}`")),
+            "{trade_date}: the row must cite the window that carries the Saturday session"
+        );
+        assert!(
+            row.contains(&format!("`{sunday_window}`")),
+            "{trade_date}: the row must name {sunday_window}, the window that prints \
+             the Sunday legs"
+        );
+    }
 }

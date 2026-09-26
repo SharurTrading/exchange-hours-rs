@@ -405,6 +405,9 @@ fn revision_blocks() -> Vec<RevisionBlock> {
 /// One `holidays!` block, with the evidence files its module declares for it.
 struct HolidayBlock {
     module: String,
+    /// The module's own source, so a row naming a static block slice can be
+    /// resolved to the instants that slice declares.
+    source: String,
     files: Vec<String>,
     coverage: Vec<String>,
     rows: Vec<HolidayRow>,
@@ -552,6 +555,7 @@ fn holiday_blocks() -> Vec<HolidayBlock> {
             let body = &text[start..];
             blocks.push(HolidayBlock {
                 module: module.clone(),
+                source: text.clone(),
                 files: declared_evidence_files(&comment_run(&text[..start]), &module),
                 coverage: holiday_coverage(body, &module),
                 rows: holiday_rows(body, &text),
@@ -1005,6 +1009,7 @@ fn every_evidence_holiday_line_is_well_formed() {
                         | "early close"
                         | "late open"
                         | "late open and early close"
+                        | "replacement blocks"
                         | "unsourced"
                 ),
                 "{name}: a holiday line's kind must be one the crate can represent: {line}"
@@ -1042,7 +1047,7 @@ fn every_evidence_holiday_line_is_well_formed() {
               takes has already failed the build; this fence reads every shipped \
               module and must fail loudly rather than mis-read one"
 )]
-fn stated_instants(kind: &str) -> Vec<String> {
+fn stated_instants(kind: &str, module_text: &str) -> Vec<String> {
     /// Reads one `h * 3_600 + m * 60` expression as minutes since midnight.
     fn minutes(expression: &str) -> u32 {
         expression
@@ -1100,6 +1105,37 @@ fn stated_instants(kind: &str) -> Vec<String> {
             .iter()
             .map(|a| stamp(a))
             .collect(),
+        // A replacement row states its instants in a named `ExceptionBlock`
+        // slice, so the instants it states are that slice's own opens and
+        // closes. Reading them from the declaration rather than from the row
+        // keeps the fence checking the family's real data: a row cannot name
+        // instants the slice does not carry.
+        text if text.starts_with("ReplacementBlocks(") => {
+            let name = arguments(text, "ReplacementBlocks(").first().map_or_else(
+                || panic!("a replacement row names its block slice: {text}"),
+                |a| a.trim_start_matches('&').trim(),
+            );
+            let declaration = format!("static {name}: [ExceptionBlock;");
+            let start = module_text
+                .find(&declaration)
+                .unwrap_or_else(|| panic!("{name} must be declared in the same module"));
+            let body = &module_text[start..];
+            let end = body
+                .find("];")
+                .unwrap_or_else(|| panic!("{name}'s declaration must terminate"));
+            let mut instants = Vec::new();
+            let mut rest = &body[..end];
+            while let Some(offset) = rest.find("ExceptionBlock::") {
+                let call = &rest[offset + "ExceptionBlock::".len()..];
+                let open = call.find('(').expect("a block constructor takes arguments");
+                let close = call.find(')').expect("a block constructor closes");
+                for value in call[open + 1..close].split(',').skip(1) {
+                    instants.push(stamp(value.trim()));
+                }
+                rest = &rest[offset + close + 1..];
+            }
+            instants
+        }
         other => panic!("unrecognized holiday kind in a module: {other}"),
     }
 }
@@ -1227,7 +1263,7 @@ fn stated_instants_for(families: &[(&str, &str)]) -> BTreeMap<String, BTreeSet<S
         resolved.extend(owned);
         for row in &block.rows {
             let entry = stated.entry(row.day.clone()).or_default();
-            for instant in stated_instants(&row.kind) {
+            for instant in stated_instants(&row.kind, &block.source) {
                 entry.insert(instant);
             }
         }
@@ -1280,6 +1316,72 @@ fn every_instant_a_venue_summary_cites_is_one_its_families_state() {
                     "{file}: the {day} row's summary states {instant} CT, but none of the \
                      families this venue routes states it on any covered date the summary \
                      names ({named:?}). Summary: {summary}"
+                );
+            }
+        }
+    }
+}
+
+/// A Saturday-session trade date whose Sunday legs a venue file also states must
+/// cite the window that prints those legs.
+///
+/// `globex_energy`'s three replacement rows span two windows: the window cited
+/// for the Saturday session stops there and prints **no** Sunday entry, and the
+/// Sunday Pre-Open and Sunday-17:00-to-Monday-16:00 session come from the
+/// window that starts on the Sunday. The family's own test fences its file; the
+/// venue exports that repeat the row — `comex.md` and `nymex.md` — are read by
+/// no other fence's documents, only by their instants, and an independent review
+/// found both still quoting the Sunday pair against the Saturday-only window.
+///
+/// The table is keyed on the trade date and names the window that prints the
+/// legs, so the fence is a lookup rather than a reading: a row that omits it, or
+/// names a different one, fails here whatever the family's file says.
+#[test]
+fn a_venue_saturday_session_row_cites_the_window_that_prints_its_sunday_legs() {
+    // (trade date, Saturday window, the window that actually prints the Sunday legs)
+    const SUNDAY_LEG_WINDOWS: [(&str, &str, &str); 3] = [
+        ("2026-06-22", "CME-SVC-2026-06-18", "CME-SVC-2026-06-21"),
+        ("2026-07-06", "CME-SVC-2026-07-03", "CME-SVC-2026-07-03"),
+        ("2027-06-21", "CME-SVC-2027-06-17", "CME-SVC-2027-06-20"),
+    ];
+    let files = evidence_files();
+    for (file, _) in VENUE_FAMILIES {
+        let text = files
+            .get(file)
+            .unwrap_or_else(|| panic!("{file} must exist in docs/evidence"));
+        for (trade_date, saturday_window, sunday_window) in SUNDAY_LEG_WINDOWS {
+            // Only a venue file that states the row is checked; a venue whose
+            // intersection withholds the date ships no line for it.
+            let Some(row) = text
+                .lines()
+                .find(|line| line.starts_with(&format!("| {trade_date} |")))
+            else {
+                continue;
+            };
+            // A venue whose routed families disagree states no instant, so its
+            // `unsourced` row claims no event and cites no window for one.
+            if row
+                .split('|')
+                .nth(2)
+                .is_some_and(|kind| kind.trim() == "unsourced")
+            {
+                continue;
+            }
+            assert!(
+                row.contains(&format!("`{saturday_window}`")),
+                "{file}: the {trade_date} row must cite `{saturday_window}`, the window \
+                 that carries its Saturday session"
+            );
+            assert!(
+                row.contains(&format!("`{sunday_window}`")),
+                "{file}: the {trade_date} row states the Sunday legs, so it must name \
+                 `{sunday_window}`, the window that prints them: {row}"
+            );
+            for window in [saturday_window, sunday_window] {
+                assert!(
+                    text.contains(&format!("| `{window}` |")),
+                    "{file}: {window} must be a recorded document, so the row's citation \
+                     resolves: {trade_date}"
                 );
             }
         }

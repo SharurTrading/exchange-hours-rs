@@ -35,9 +35,10 @@
 use super::super::{
     EvidenceTier::{T1, T2},
     HolidayKind::Closed,
-    HolidayKind::Unsourced,
+    HolidayKind::{ReplacementBlocks, Unsourced},
     HolidayTable,
     fences::early_close,
+    globex_energy::SATURDAY_SESSION_BLOCKS,
     holidays,
 };
 
@@ -45,9 +46,9 @@ use super::super::{
 ///
 /// Metals and energy are one key and the operator prints them as one product
 /// row on every date the table audits, so the intersection is total: the venue
-/// carries the family's 206 rows unchanged — 38 from 2010-2012, 33 from
+/// carries the family's 209 rows unchanged — 38 from 2010-2012, 33 from
 /// 2013-2015, 31 from 2016-2018, 35 from 2019-2021, 33 from 2022-2024 and
-/// 36 from 2025-2027 — and drops no date. On the 2022-2024 era's three 2023
+/// 39 from 2025-2027 — and drops no date. On the 2022-2024 era's three 2023
 /// dates and the 2019-2021 era's three Juneteenth dates the family itself states
 /// `Unsourced`, and the venue carries that marker because the family says so, not
 /// because anything disputes it. Every era from 2010-01-01 to 2027-12-31 is a
@@ -434,8 +435,13 @@ pub(crate) static COMEX: &HolidayTable = holidays! {
         (2026, 5, 25, early_close(13 * 3_600 + 30 * 60), T2, "CME-SVC-2026-05-24"),
         // 2026-06-19 - T2 - CME-SVC-2026-06-18 - metals early close 12:00 CT.
         (2026, 6, 19, early_close(12 * 3_600), T2, "CME-SVC-2026-06-18"),
+        // 2026-06-22 - T2 - CME-SVC-2026-06-18 - the energy family's own
+        // Saturday-session replacement; one routed family cannot disagree.
+        (2026, 6, 22, ReplacementBlocks(&SATURDAY_SESSION_BLOCKS), T2, "CME-SVC-2026-06-18"),
         // 2026-07-03 - T2 - CME-SVC-2026-07-03 - metals early close 12:00 CT.
         (2026, 7, 3, early_close(12 * 3_600), T2, "CME-SVC-2026-07-03"),
+        // 2026-07-06 - T2 - CME-SVC-2026-07-03 - as 2026-06-22.
+        (2026, 7, 6, ReplacementBlocks(&SATURDAY_SESSION_BLOCKS), T2, "CME-SVC-2026-07-03"),
         // 2026-09-07 - T2 - CME-SVC-2026-09-06 - metals early close 13:30 CT.
         (2026, 9, 7, early_close(13 * 3_600 + 30 * 60), T2, "CME-SVC-2026-09-06"),
         // 2026-11-26 - T2 - CME-SVC-2026-11-25 - metals early close 13:30 CT.
@@ -458,6 +464,8 @@ pub(crate) static COMEX: &HolidayTable = holidays! {
         (2027, 5, 31, early_close(13 * 3_600 + 30 * 60), T2, "CME-SVC-2027-05-30"),
         // 2027-06-18 - T2 - CME-SVC-2027-06-17 - metals early close 12:00 CT.
         (2027, 6, 18, early_close(12 * 3_600), T2, "CME-SVC-2027-06-17"),
+        // 2027-06-21 - T2 - CME-SVC-2027-06-17 - as 2026-06-22.
+        (2027, 6, 21, ReplacementBlocks(&SATURDAY_SESSION_BLOCKS), T2, "CME-SVC-2027-06-17"),
         // 2027-07-05 - T2 - CME-SVC-2027-07-04 - metals early close 13:30 CT.
         (2027, 7, 5, early_close(13 * 3_600 + 30 * 60), T2, "CME-SVC-2027-07-04"),
         // 2027-09-06 - T2 - CME-SVC-2027-09-05 - metals early close 13:30 CT.

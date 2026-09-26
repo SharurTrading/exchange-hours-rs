@@ -68,6 +68,27 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Added
 
+- **The first operator rows using the replacement-block vocabulary: CME's three
+  Globex Saturday sessions, 2026-06-22, 2026-07-06 and 2027-06-21 (2026-09-25 UTC).**
+  Stage 4 of the release plan (#116, #93's data). CME publishes `05:00 open;
+  17:00 closed` on Saturday 2026-06-20, 2026-07-04 and 2027-06-19, each session
+  carrying the following Monday's trade date, on a grid whose normal week has no
+  Saturday session at all — a shape no scalar row can state, because a boundary
+  row moves an existing occurrence and cannot create one. `globex_energy` now
+  states each of those three trade dates as a **complete** block set: the
+  Saturday session at offset `-2`, the ordinary Sunday Pre-Open
+  `16:00-17:00` CT at offset `-1`, and the ordinary Sunday-17:00-to-Monday-16:00
+  session at offset `-1`. The rows state the whole day rather than the Saturday
+  alone because a replacement replaces the complete trade date: a Saturday-only
+  set would delete the Sunday-evening session that belongs to the same one. The
+  Saturday instants come from the row's cited window, which stops at the
+  Saturday; the Sunday Pre-Open and the Sunday-Monday session come from the
+  window that starts on that Sunday, recorded in the owner's evidence file. The
+  four CME venue intersection tables carry the derived consequence — `comex` and
+  `nymex` reproduce the family's row because each routes one family, while `cme`
+  states `Unsourced` on all three dates, where the five financial families state
+  nothing and only energy does, and `cbot` states nothing at all on them because
+  both of its families audited them normal.
 - **A built-in holiday row may state a replacement block set (2026-09-25 UTC).** Stage 3
   of the release plan adds `HolidayKind::ReplacementBlocks(&'static [ExceptionBlock])`,
   the vocabulary for a special session whose *internal* phase topology changes: an added
@@ -541,11 +562,11 @@ corrections (a venue's hours fixed against a primary source) go under
   end stops one family early or runs another past its own close. **COMEX** and
   **NYMEX** route the one `globex_energy` key, whose metals and energy halves CME
   prints as a single product row, so their intersections drop nothing and they
-  carry that family's table whole (36 rows each in this era, no `Unsourced`).
+  carry that family's table whole (39 rows each in this era, no `Unsourced`).
   CBOT ships 9 stated rows against its thirty-one `Unsourced` dates and CME 9
-  against thirty-two, each with the disagreement named per date in that venue's
-  evidence file. Over both eras the four venue tables carry 96, 79, 74 and 74
-  rows; the numbers in this paragraph are the 2025-2027 era's. The family list behind each intersection is a decision recorded there,
+  against thirty-five, each with the disagreement named per date in that venue's
+  evidence file. Over all six audited eras the four venue tables carry 276, 250, 209 and 209
+  rows; the composition counts in this paragraph are the 2025-2027 era's. The family list behind each intersection is a decision recorded there,
   not something the crate can derive: the map from product families to venues
   belongs to the consumer. **This change also amends `AGENTS.md`**: the charter's
   LAW-HOLIDAY-SCOPE gains one sentence stating the venue-intersection rule, so

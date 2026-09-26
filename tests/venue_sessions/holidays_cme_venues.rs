@@ -429,21 +429,24 @@ fn a_closed_venue_row_is_a_unanimous_closure() {
         }
         // `Exchange` is `#[non_exhaustive]`, so the count is keyed off the
         // routing list this module already pins rather than off the variant.
-        // 2010-2012 contributes 49 (CME) or 33 (CBOT) unsourced dates,
-        // 2013-2015 another 50 or 46, 2016-2018 27 each, 2019-2021 34 each,
-        // 2022-2024 34 and 32, and 2025-2027 35 and 31 — the three CME-side
-        // dates on which only the energy and equity-index families state a row
-        // (the 2026-06-22, 2026-07-06 and 2027-06-21 Saturday-session trade
-        // dates) are disputes there and audited normal on the two-family CBOT
-        // intersection, so only the six-family venue's count moves; the
-        // single-family venues have six, the three 2019-2021 Juneteenth markers
-        // and the three 2023 dates.
+        // Parsed from the shipped tables window by window, 2010-2012
+        // contributes 49 (CME) or 33 (CBOT) unsourced dates, 2013-2015 another
+        // 50 or 46, 2016-2018 27 each, 2019-2021 34 each, 2022-2024 34 and 32,
+        // and 2025-2027 35 and 34 — the three Saturday-session trade dates
+        // (2026-06-22, 2026-07-06 and 2027-06-21) carry a row in `globex_energy`,
+        // `globex_equity_index`, `globex_interest_rates` and `globex_fx`, so
+        // they are disputes on the six-family venue, which gains nothing here — its
+        // three dates were already `Unsourced` — while the two-family venue gains them; and
+        // because interest rates states one where grains states none they are
+        // disputes on the two-family CBOT intersection too, which also gains
+        // three; the single-family venues have six, the three 2019-2021
+        // Juneteenth markers and the three 2023 dates.
         let expected = if single_family {
             6
         } else if families.len() == 6 {
             229
         } else {
-            203
+            206
         };
         assert_eq!(unsigned, expected, "{exchange:?}: unsourced row count");
     }

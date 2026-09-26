@@ -87,10 +87,11 @@ corrections (a venue's hours fixed against a primary source) go under
   window that starts on that Sunday, recorded in the owner's evidence file. The
   four CME venue intersection tables carry the derived consequence — `comex` and
   `nymex` reproduce the family's row because each routes one family, while `cme`
-  states `Unsourced` on all three dates, where the four other families state
-  nothing while energy and equity index state a Saturday-session replacement,
-  and `cbot` states nothing at all on them because both of its families audited
-  them normal. This also fixes an evidence-citation defect the rows exposed:
+  states `Unsourced` on all three dates, where grains and livestock state no row
+  while energy, equity index, interest rates and FX state a Saturday-session
+  replacement, and `cbot` states `Unsourced` on them too because interest rates
+  states a row where grains states none. This also fixes an evidence-citation
+  defect the rows exposed:
   `globex_energy.md` had cited a window for 2026-07-04 that contains no Crude
   Oil product, and now cites one that carries the session.
 - **`globex_equity_index` states CME's three Saturday sessions as complete trade
@@ -115,6 +116,33 @@ corrections (a venue's hours fixed against a primary source) go under
   Sunday entry at all — so each row names the window each half of the day comes
   from. A dedicated test pins that the row leaves that earlier trade date's 12:00
   close alone.
+- **`globex_interest_rates` and `globex_fx` also state CME's three Saturday
+  sessions (2026-09-25 UTC).** Stage 4 of the release plan (#116), one
+  shared-operator PR for two more served families that route to `Exchange::Cme`
+  and take the same rows from the same documents the energy rows above use. CME
+  publishes `05:00 open; 17:00 closed` on Saturday 2026-06-20, 2026-07-04 and
+  2027-06-19, each carrying the following Monday's trade date, on a week whose
+  normal grid has no Saturday session. Both families now state trade dates
+  2026-06-22, 2026-07-06 and 2027-06-21 as replacement block sets: the Saturday
+  session at offset `-2`, the operator's published Sunday Pre-Open `16:00-17:00`
+  at offset `-1`, and the ordinary Sunday-17:00-to-Monday-16:00 session at offset
+  `-1`. The queue is stated at the value the operator published for those dates.
+  On 2026-06-22 and 2026-07-06 the profile in force for both families opens that
+  queue at 16:15 CT, so the rows depart from it; on 2027-06-21 the profile in
+  force — the 2026-08-22 revision — already opens it at 16:00 CT, and there the
+  row states the profile's own value. The two multi-family venue tables are
+  recomputed from the families: `cme` states `Unsourced` on all three dates,
+  where energy, equity index, interest rates and FX state a row and grains and
+  livestock state none, so its withheld count is unchanged at 35 — those three
+  dates were already `Unsourced` there — and `cbot` states
+  `Unsourced` on all three for the first time, because interest rates states a
+  row where grains states none, moving its count 31 → 34. Each
+  row's instants are quoted from the window that prints them: for 2026-06-22 and
+  2027-06-21 that is two windows, the Saturday session from the first and the
+  Sunday legs from the second, while 2026-07-06's single window runs through its
+  own Sunday and prints the whole day. Each family's rows are mutation-checked.
+
+
 - **A built-in holiday row may state a replacement block set (2026-09-25 UTC).** Stage 3
   of the release plan adds `HolidayKind::ReplacementBlocks(&'static [ExceptionBlock])`,
   the vocabulary for a special session whose *internal* phase topology changes: an added

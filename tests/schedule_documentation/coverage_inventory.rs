@@ -262,7 +262,7 @@ fn withheld(calendar: ExchangeCalendar, date: NaiveDate) -> bool {
 /// **and** the Sunday quarter-hour (#79), so its denial of completeness is no
 /// longer date-shaped.
 fn date_level_incompleteness() -> &'static [(&'static str, usize)] {
-    &[("cbot", 31)]
+    &[("cbot", 34)]
 }
 
 /// `is_complete_on(SAMPLE)` agrees with the inventory's `Complete?` cell for all

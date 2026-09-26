@@ -269,6 +269,22 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Fixed
 
+- **`globex_interest_rates` now states CME's merged trade dates (2026-09-26
+  UTC).** The same shape as `globex_fx` and `globex_nikkei_225_dollar`, on
+  seventeen dates: 2025-01-21, 2025-02-18, 2025-05-27, 2025-06-20, 2025-09-02,
+  2025-11-28, 2026-01-20, 2026-02-17, 2026-05-26, 2026-09-08, 2026-11-27,
+  2027-01-19, 2027-02-16, 2027-06-01, 2027-07-06, 2027-09-07 and 2027-11-26.
+  Like nikkei, this family's Monday holidays carry a real early close, so each
+  merged span's evening leg ends at the holiday's own `12:00` CT close — except
+  **2027-07-06, whose holiday is the July 4 observed Monday and closes at
+  `13:30`**, a per-date value the crate already ships and that a set mirrored
+  from MLK would have got wrong by three and a half hours without any fence
+  noticing. The day-after-Thanksgiving rows end at `12:15`. **No `is_open` answer
+  changes**: the previously shipped holiday closes still hold at every instant,
+  and only the trade date moves. `cme` needed no new rows — the `globex_fx`
+  change had already made these dates disputed on that intersection — while
+  `cbot` gained thirteen `Unsourced` rows.
+
 - **`globex_nikkei_225_dollar` now states CME's merged trade dates (2026-09-26
   UTC).** The same shape as `globex_fx` in the entry below, on twelve dates:
   2025-11-28, 2026-01-20, 2026-02-17, 2026-05-26, 2026-09-08, 2026-11-27,

@@ -335,6 +335,17 @@ skip the date.
 
 - **Trade-date merge — the five-day era's `[N3]` holidays (no row)**, as 2025:
   2026-01-19, 2026-02-16 and 2026-05-25. Same mechanism, same closing condition.
+- **Pre-Open served as executable — corrected 2026-09-26 UTC; no longer a gap.**
+  Until this change the crate carried both Pre-Open queues (weekday 16:01-16:02 CT,
+  Saturday 03:45-04:00 CT) in `extended`, so `is_open` answered true and
+  `session_state` answered `OpenExtended` for 60 seconds every day and 15 minutes
+  every Saturday in windows this file's own vocabulary calls *"Order Entry,
+  modification, and cancel are allowed. **No order matching.**"* The narrative above
+  already stated the correct geometry — matching maintenance 16:00-16:02 CT with the
+  Pre-Open from 16:01 — so the code was the outlier, not the sources. Both queues are
+  now `order_entry` rules, matching resumes at the 16:02 and 04:00 `open`s, and the
+  `ECBTC` profile reads the same two queues the same way. The corrected queues are
+  still *refused* rather than served while the `#93` declaration below stands.
 - **Executable hours — the 60-second maintenance minute.** On the 24/7-era
   Monday and Thursday holidays 2026-09-07 and 2026-11-26 CME omits the 16:00 CT
   final close outright, so its ordinary 16:00–16:02 CT maintenance window is

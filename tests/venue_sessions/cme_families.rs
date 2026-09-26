@@ -390,13 +390,18 @@ fn cryptocurrency_current_profile_preserves_exact_open_state() {
     assert!(profile.is_open(ct((2026, 6, 5), (15, 59, 59))));
     assert!(!profile.is_open(ct((2026, 6, 5), (16, 0, 0))));
     assert!(!profile.is_open(ct((2026, 6, 5), (16, 0, 59))));
-    assert!(profile.is_open(ct((2026, 6, 5), (16, 1, 0))));
-    assert!(hours.is_open_extended(ct((2026, 6, 5), (16, 1, 0))));
+    // 16:01-16:02 is the operator's Pre-Open: "Order Entry, modification, and
+    // cancel are allowed. No order matching." So it is order entry, not a
+    // session, and matching resumes at the 16:02 `open`.
+    assert!(!profile.is_open(ct((2026, 6, 5), (16, 1, 0))));
+    assert!(!hours.is_open_extended(ct((2026, 6, 5), (16, 1, 0))));
+    assert!(hours.is_order_entry_only(ct((2026, 6, 5), (16, 1, 0))));
     assert!(profile.is_open(ct((2026, 6, 5), (16, 2, 0))));
     assert!(profile.is_open(ct((2026, 6, 6), (1, 59, 59))));
     assert!(!profile.is_open(ct((2026, 6, 6), (2, 0, 0))));
     assert!(!profile.is_open(ct((2026, 6, 6), (3, 44, 59))));
-    assert!(hours.is_open_extended(ct((2026, 6, 6), (3, 45, 0))));
+    assert!(!hours.is_open_extended(ct((2026, 6, 6), (3, 45, 0))));
+    assert!(hours.is_order_entry_only(ct((2026, 6, 6), (3, 45, 0))));
     assert!(profile.is_open(ct((2026, 6, 6), (4, 0, 0))));
     assert!(profile.is_open(ct((2026, 6, 7), (0, 0, 0))));
 }
@@ -405,8 +410,8 @@ fn cryptocurrency_current_profile_preserves_exact_open_state() {
 fn cryptocurrency_calendar_joins_weekend_pieces_and_assigns_monday_trade_date() {
     let calendar = calendar_for_market_hours_key(MarketHoursKey::GlobexCryptocurrency);
     let monday = chrono::NaiveDate::from_ymd_opt(2026, 6, 8).expect("valid fixture date");
-    let first_block = (ct((2026, 6, 5), (16, 1, 0)), ct((2026, 6, 6), (2, 0, 0)));
-    let second_block = (ct((2026, 6, 6), (3, 45, 0)), ct((2026, 6, 8), (16, 0, 0)));
+    let first_block = (ct((2026, 6, 5), (16, 2, 0)), ct((2026, 6, 6), (2, 0, 0)));
+    let second_block = (ct((2026, 6, 6), (4, 0, 0)), ct((2026, 6, 8), (16, 0, 0)));
 
     for instant in [ct((2026, 6, 5), (17, 0, 0)), ct((2026, 6, 6), (1, 0, 0))] {
         assert_eq!(
@@ -499,7 +504,7 @@ fn cryptocurrency_calendar_joins_weekend_pieces_and_assigns_monday_trade_date() 
         calendar
             .next_session_after(ct((2026, 6, 6), (5, 0, 0)))
             .expect("the coverage contract must answer a covered date"),
-        Some((ct((2026, 6, 8), (16, 1, 0)), ct((2026, 6, 9), (16, 0, 0)),)),
+        Some((ct((2026, 6, 8), (16, 2, 0)), ct((2026, 6, 9), (16, 0, 0)),)),
     );
 
     for instant in [
@@ -512,7 +517,7 @@ fn cryptocurrency_calendar_joins_weekend_pieces_and_assigns_monday_trade_date() 
             calendar
                 .candle_start(instant, CalendarResolution::Daily)
                 .expect("the coverage contract must answer a covered date"),
-            Some(ct((2026, 6, 5), (16, 1, 0))),
+            Some(ct((2026, 6, 5), (16, 2, 0))),
         );
         assert_eq!(
             calendar
@@ -531,7 +536,7 @@ fn cryptocurrency_calendar_joins_weekend_pieces_and_assigns_monday_trade_date() 
             calendar
                 .candle_start(instant, CalendarResolution::Weekly)
                 .expect("the coverage contract must answer a covered date"),
-            Some(ct((2026, 6, 5), (16, 1, 0))),
+            Some(ct((2026, 6, 5), (16, 2, 0))),
         );
         assert_eq!(
             calendar
@@ -545,7 +550,7 @@ fn cryptocurrency_calendar_joins_weekend_pieces_and_assigns_monday_trade_date() 
         calendar
             .candle_start(ct((2026, 6, 5), (15, 0, 0)), CalendarResolution::Weekly)
             .expect("the coverage contract must answer a covered date"),
-        Some(ct((2026, 5, 29), (16, 1, 0))),
+        Some(ct((2026, 5, 29), (16, 2, 0))),
     );
     assert_eq!(
         calendar
@@ -589,7 +594,8 @@ fn cryptocurrency_history_covers_launch_24_7_and_temporary_maintenance() {
     );
     assert!(!five_day.is_open(ct((2026, 5, 29), (16, 1, 0))));
     assert!(!seven_day.is_open(ct((2026, 5, 29), (16, 0, 59))));
-    assert!(seven_day.is_open_extended(ct((2026, 5, 29), (16, 1, 0))));
+    assert!(!seven_day.is_open_extended(ct((2026, 5, 29), (16, 1, 0))));
+    assert!(seven_day.is_order_entry_only(ct((2026, 5, 29), (16, 1, 0))));
     assert!(seven_day.is_open_extended(ct((2026, 5, 29), (16, 2, 0))));
     assert_eq!(
         session_bounds(&seven_day, ct((2026, 5, 29), (15, 0, 0))),
@@ -598,7 +604,7 @@ fn cryptocurrency_history_covers_launch_24_7_and_temporary_maintenance() {
     );
     let next = session_bounds(&seven_day, ct((2026, 5, 29), (16, 0, 0)))
         .expect("the transition snapshot reopens Friday");
-    assert_eq!(next.0, ct((2026, 5, 29), (16, 1, 0)));
+    assert_eq!(next.0, ct((2026, 5, 29), (16, 2, 0)));
 
     let transition_day = hours_for_market_hours_key(
         MarketHoursKey::GlobexCryptocurrency,
@@ -620,7 +626,7 @@ fn cryptocurrency_history_covers_launch_24_7_and_temporary_maintenance() {
         MarketHoursKey::GlobexCryptocurrency,
         ct((2026, 8, 1), (0, 0, 0)),
     );
-    assert!(normal_before_temporary.is_open_extended(ct((2026, 8, 1), (3, 45, 0))));
+    assert!(!normal_before_temporary.is_open_extended(ct((2026, 8, 1), (3, 45, 0))));
     assert!(!temporary.is_open(ct((2026, 8, 1), (3, 45, 0))));
     assert!(!temporary.is_open(ct((2026, 8, 1), (8, 59, 59))));
     assert!(temporary.is_open_extended(ct((2026, 8, 1), (9, 0, 0))));
@@ -635,7 +641,8 @@ fn cryptocurrency_history_covers_launch_24_7_and_temporary_maintenance() {
     );
     assert!(!temporary_before_restoration.is_open(ct((2026, 8, 8), (3, 45, 0))));
     assert!(!restored.is_open(ct((2026, 8, 8), (3, 44, 59))));
-    assert!(restored.is_open_extended(ct((2026, 8, 8), (3, 45, 0))));
+    assert!(!restored.is_open_extended(ct((2026, 8, 8), (3, 45, 0))));
+    assert!(restored.is_open_extended(ct((2026, 8, 8), (4, 0, 0))));
 }
 
 /// Notice 20260824 names two more one-day Saturday extensions for the same
@@ -674,8 +681,15 @@ fn cryptocurrency_models_the_later_saturday_extensions() {
             !restored.is_open(ct(next_saturday, (3, 44, 59))),
             "{next_saturday:?}"
         );
+        // The extension notices name the window's end and publish no
+        // replacement Pre-Open, so the standard 03:45 queue is absent and the
+        // revert is to the 04:00 open.
         assert!(
-            restored.is_open_extended(ct(next_saturday, (3, 45, 0))),
+            !restored.is_open_extended(ct(next_saturday, (3, 45, 0))),
+            "{next_saturday:?}"
+        );
+        assert!(
+            restored.is_open_extended(ct(next_saturday, (4, 0, 0))),
             "{next_saturday:?}"
         );
     }
@@ -735,7 +749,7 @@ fn family_calendars_reselect_the_new_cme_histories() {
     );
     assert!(
         crypto
-            .is_open_extended(ct((2026, 5, 29), (16, 1, 0)))
+            .is_open_extended(ct((2026, 5, 29), (16, 2, 0)))
             .expect("the coverage contract must answer a covered date")
     );
     assert!(
@@ -753,5 +767,5 @@ fn family_calendars_reselect_the_new_cme_histories() {
         .session_bounds(ct((2026, 5, 29), (16, 0, 0)))
         .expect("the coverage contract must answer a covered date")
         .expect("the date-aware calendar reopens Friday");
-    assert_eq!(next.0, ct((2026, 5, 29), (16, 1, 0)));
+    assert_eq!(next.0, ct((2026, 5, 29), (16, 2, 0)));
 }

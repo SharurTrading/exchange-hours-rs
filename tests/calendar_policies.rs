@@ -409,12 +409,12 @@ fn closed_crypto_monday_rolls_weekend_into_the_following_business_day() {
     );
     assert!(
         calendar
-            .is_open(ct((2026, 6, 8), (16, 1, 0)))
+            .is_open(ct((2026, 6, 8), (16, 2, 0)))
             .expect("the coverage contract must answer a covered date")
     );
     assert_eq!(
         calendar
-            .trade_date(ct((2026, 6, 8), (16, 1, 0)))
+            .trade_date(ct((2026, 6, 8), (16, 2, 0)))
             .expect("the coverage contract must answer a covered date"),
         Some(tuesday)
     );
@@ -422,7 +422,7 @@ fn closed_crypto_monday_rolls_weekend_into_the_following_business_day() {
         calendar
             .candle_start(ct((2026, 6, 7), (12, 0, 0)), CalendarResolution::Daily,)
             .expect("the coverage contract must answer a covered date"),
-        Some(ct((2026, 6, 5), (16, 1, 0)))
+        Some(ct((2026, 6, 5), (16, 2, 0)))
     );
     assert_eq!(
         calendar
@@ -434,7 +434,7 @@ fn closed_crypto_monday_rolls_weekend_into_the_following_business_day() {
         calendar
             .candle_start(ct((2026, 6, 7), (12, 0, 0)), CalendarResolution::Weekly,)
             .expect("the coverage contract must answer a covered date"),
-        Some(ct((2026, 6, 5), (16, 1, 0)))
+        Some(ct((2026, 6, 5), (16, 2, 0)))
     );
     assert_eq!(
         calendar

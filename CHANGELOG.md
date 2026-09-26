@@ -68,6 +68,37 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Added
 
+- **`cfe` and `cfe_vix` gain their 2025 holiday rows (2026-09-26 UTC).** The CFE
+  table shipped a 2026-only window, so all 365 dates of 2025 returned
+  `OutsideCoveredRange` for a served market. It now audits
+  `2025-01-01..2026-12-31` with fourteen 2025 rows read from Cboe's own
+  per-holiday notices under `cdn.cboe.com/resources/schedule_update/`: four
+  closures (2025-01-01, 2025-04-18, 2025-07-04, 2025-12-25), eight early closes
+  at 10:30 or 12:15 CT, and the National Day of Mourning 2025-01-09 as a
+  replacement block set — one extended session, 17:00 CT on 2025-01-08 to
+  08:30 CT, with no regular session at all. Two 2025 dates deliberately differ
+  from their 2026 shapes: Good Friday 2025-04-18 is a closure where 2026-04-03
+  is an early close, because the 2025 notice prints no Friday close and no
+  Friday trade date. **2027 is unpublished**, not withheld: Cboe's
+  `Hours & Holidays` page carries only a “2026 Futures Holiday Schedule”
+  (verified 2026-09-26 UTC), so coverage ends 2026-12-31 and the window extends
+  when that schedule is published.
+- **Eurex's holiday table covers 2025 (2026-09-26 UTC).** `Exchange::Eurex` is
+  `served`, and its built-in table audited only `2026-01-01..2026-12-31`, so all
+  365 dates of 2025 answered `OutsideCoveredRange`. The table now audits
+  `2025-01-01..2026-12-31` and carries the operator's eight 2025 closures
+  (`EUREX-HOLREG-2025`, T1): 1 January, 18 April, 21 April, 1 May, 25 December
+  and 26 December are the trading-and-clearing rows, and 24 and 31 December the
+  trading-only ones — all eight `Closed`, because the crate answers when a
+  market accepts and matches orders and "no trading" removes every phase it
+  models. Eurex publishes no 2025 early close, reduced session or late open, so
+  no other row is added and every other 2025 date stays audited normal. The
+  identity's coverage is still **incomplete**: the 2025 and 2026 trading
+  calendars declare German equity and equity-index closures as `tba`, which the
+  crate records as an undated closure scope (#157), and 2027 is published once
+  unconditionally and once "on a preliminary and indicative basis … and are
+  subject to change", so it stays out of the table. Evidence:
+  `docs/evidence/eurex.md`.
 - **`globex_nikkei_225_dollar` states CME's three Saturday sessions as complete
   trade dates (2026-09-25 UTC).** Stage 4 of the release plan (#116). CME
   publishes `05:00 open; 17:00 closed` on Saturday 2026-06-20, 2026-07-04 and
@@ -294,6 +325,65 @@ corrections (a venue's hours fixed against a primary source) go under
   recorded as a witness gap with a closing condition rather than invented from
   the sibling families' line, and `docs/schedules/coverage-2025.md` no longer
   calls the identity complete to 2027-12-31. Refs #156, #162.
+- **Stale counts and refuted sentences corrected against the shipped tables
+  (2026-09-26 UTC).** An independent review and a coverage audit found numbers
+  and sentences the merged-trade-date waves had outgrown; each was recomputed
+  from the tables rather than matched to its neighbours. In
+  `docs/schedules/coverage-2025.md` the `cme` and `cbot` inventory rows and §2
+  now read **48** and **47** withheld 2025+ dates — the counts their `Unsrc`
+  cells and the inventory fence already derive — and §6 names all five families
+  that carry the three Saturday-session trade dates: `globex_energy`,
+  `globex_equity_index`, `globex_fx`, `globex_interest_rates` and
+  `globex_nikkei_225_dollar`, with `comex` and `nymex` routing `globex_energy`'s
+  table whole. The venue modules' own totals move with their rows — `cme` from
+  276 rows/229 `Unsourced`/35 in 2025-2027 to **289/242/48**, and `cbot` from
+  253/206/34 to **266/219/47**. `venues/cme.rs`'s merged-trade-date comments
+  claimed only `globex_fx` states a row; `globex_equity_index`, `globex_energy`
+  and `globex_interest_rates` state one too, each with a different
+  replacement-block set, and only `globex_grains` and `globex_livestock` state
+  none — the kind stays `Unsourced` because the families disagree, which is what
+  a venue intersection withholds. `globex_fx.rs`'s 2025-2027 notes now say
+  **seventeen** merged trade dates and no longer describe those spans as
+  unstated, and the `globex_fx` entry below says what #140 still tracks rather
+  than claiming the 2026 and 2027 shapes are unstated. `globex_livestock.md`'s
+  three Post-Close gap bullets state the `trade_date` consequence they omitted,
+  with the instants that show it (`14:30:00`-`15:59:59` CT answers the following
+  trade date). `docs/evidence/globex_equity_index.md` and
+  `docs/evidence/globex_livestock.md` gain an `### Interpretive notes` section
+  defining the `N1`/`N15`/`N17` and `N1`/`N8` retrieval codes their tables cite,
+  which until now were defined only in the uncommitted research store (#142). No
+  row, instant, window or runtime answer changes.
+- **`globex_cryptocurrency` now states CME's nine merged trade dates (2026-09-26
+  UTC).** On a Monday or Thursday holiday the operator publishes no final close
+  for that holiday's own trade date: its `16:00` CT pre-open and `17:00` CT open
+  are printed against the **next** business day, so the whole span through the
+  following `16:00` CT close carries one trade date. The crate kept its own label
+  and answered the holiday's, so `trade_date` contradicted the operator on nine
+  spans of the five-day era: 2025-01-21, 2025-02-18, 2025-05-27, 2025-06-20,
+  2025-09-02, 2025-11-28, 2026-01-20, 2026-02-17 and 2026-05-26. Each is now a
+  `ReplacementBlocks` row stating the complete trade date, with the holiday's own
+  queue read from the operator (`16:00` CT, not the ordinary weekday `16:45`) and
+  the Juneteenth span opened on its Wednesday evening at that `16:45`. The block
+  values were read from this family's own captured service windows: eight of the
+  nine rows are block for block what `globex_fx` already ships, and the ninth —
+  2025-11-28 — deliberately is not. **One `is_open` answer changes, and
+  deliberately:** the finalised publication for 2025-11-28 adds a `07:00 preopen;
+  07:30 open` pause the pre-holiday capture lacks, so that row carries six blocks,
+  its `-1` leg ends at `07:00` CT and `07:00`-`07:30` CT is closed where the
+  ordinary week matched. The `EarlyClose { 13:45 }` row it replaces ended at the
+  same `13:45`. `globex_fx`, `globex_energy`, `globex_equity_index`,
+  `globex_interest_rates` and `globex_nikkei_225_dollar` print that same pause for
+  their own products and still serve matching through it; that is **issue #156**,
+  not part of this change.
+  Every other `is_open` answer holds, because the merge relabels a span rather than
+  deleting one.
+  `docs/schedules/coverage-2025.md` moves this scope's `2025+ dates` cell to 32
+  and its `Missing / disputed` and `Complete?` cells to what remains open — the
+  24/7 era's 16:00-16:01 CT minute, which CME publishes as traded and the crate
+  serves closed (#93), and the five-day era's undated Pre-Open onset (#123) — so the scope stays incomplete and `#93` stays
+  declared. Verified by an independent probe over every captured CME window:
+  `globex_cryptocurrency` goes from **9 trade-date mismatches to 0** with the
+  other seven scopes' tallies unchanged.
 - **`globex_cryptocurrency`'s Pre-Opens are order entry, not trading
   (2026-09-26 UTC).** The family publishes two Pre-Open queues — weekday
   `16:01-16:02` CT and Saturday `03:45-04:00` CT — and the crate carried both in
@@ -309,8 +399,8 @@ corrections (a venue's hours fixed against a primary source) go under
   executable envelope shrinks by 20 minutes (5 × 1 minute plus 15 minutes). No
   trade date moves, and the one-day bridge of 2026-05-29 gets the same split. The
   corrected queues are still **refused** rather than served while
-  `globex_cryptocurrency`'s `#93` declaration stands; discharging that is the
-  separate change below.
+  `globex_cryptocurrency`'s `#93` declaration stands; the declaration now covers the
+  24/7-era half of the gap alone.
 - **`globex_fx` no longer declares a special-session gap (2026-09-26 UTC).** The
   family carried a whole-domain `#93` phase-level gap in `schedules/sourcing.rs`
   because CME publishes sessions this family's scalar vocabulary could not state.
@@ -400,7 +490,12 @@ corrections (a venue's hours fixed against a primary source) go under
   holiday's own queue is `16:00` either way. No `is_open` answer changes — the
   merge relabels a span, it does not delete one. `globex_fx` now agrees with the
   operator's printed `tradingDate` everywhere the captured windows reach; the
-  same shape in the other four families is tracked as #140.
+  same shape now ships in `globex_energy`, `globex_equity_index` and
+  `globex_interest_rates` too, and #140 is left tracking
+  `globex_nikkei_225_dollar`'s five unstated 2025 merged dates (2025-01-21,
+  2025-02-18, 2025-05-27, 2025-06-20 and 2025-09-02), the order-entry-only class
+  (2025-01-02, 2025-12-26 and 2026-01-02) and the `07:00 preopen; 07:30 open`
+  pair the 2025-11-28 rows do not split.
 
 - **The Saturday-session trade dates now state the Thursday-evening leg their
   Friday holiday closes (2026-09-26 UTC).** `globex_energy`,
@@ -779,10 +874,10 @@ corrections (a venue's hours fixed against a primary source) go under
   end stops one family early or runs another past its own close. **COMEX** and
   **NYMEX** route the one `globex_energy` key, whose metals and energy halves CME
   prints as a single product row, so their intersections drop nothing and they
-  carry that family's table whole (39 rows each in this era, no `Unsourced`).
-  CBOT ships 9 stated rows against its thirty-one `Unsourced` dates and CME 9
-  against thirty-five, each with the disagreement named per date in that venue's
-  evidence file. Over all six audited eras the four venue tables carry 276, 250, 209 and 209
+  carry that family's table whole (53 rows each in this era, no `Unsourced`).
+  CBOT ships 9 stated rows against its forty-seven `Unsourced` dates and CME 9
+  against forty-eight, each with the disagreement named per date in that venue's
+  evidence file. Over all six audited eras the four venue tables carry 289, 266, 223 and 223
   rows; the composition counts in this paragraph are the 2025-2027 era's. The family list behind each intersection is a decision recorded there,
   not something the crate can derive: the map from product families to venues
   belongs to the consumer. **This change also amends `AGENTS.md`**: the charter's

@@ -81,10 +81,10 @@ use super::super::{
 
 /// The `Exchange::Cme` table: the intersection of the six CME families.
 ///
-/// Two hundred and seventy-six rows over six audited eras. Forty-seven state a
-/// status — the Globex full closures — and 229 are `Unsourced`: 49 in 2010-2012,
+/// Two hundred and eighty-nine rows over six audited eras. Forty-seven state a
+/// status — the Globex full closures — and 242 are `Unsourced`: 49 in 2010-2012,
 /// where the families disagree in kind rather than by minutes, 50 in 2013-2015,
-/// 27 in 2016-2018, 34 in 2019-2021, 34 in 2022-2024, and 35 in 2025-2027. The
+/// 27 in 2016-2018, 34 in 2019-2021, 34 in 2022-2024, and 48 in 2025-2027. The
 /// six eras are declared as six coverage windows, and outside them the table
 /// reports no answer rather than a normal one.
 // Evidence: docs/evidence/cme.md
@@ -564,9 +564,11 @@ pub(crate) static CME: &HolidayTable = holidays! {
         // rates early close 12:00 CT, energy 13:30 CT, grains and livestock
         // closed, no row in FX.
         (2025, 1, 20, Unsourced, T2, "CME-SVC-2025-01-19"),
-        // 2025-01-21 - T2 - CME-SVC-2025-01-19 - FX states the merged trade date
-        // this holiday rolls into; the other five families state no row, so the
-        // venue cannot support either answer.
+        // 2025-01-21 - T2 - CME-SVC-2025-01-19 - the merged trade date: equity
+        // index, energy, interest rates and FX each state a replacement-block
+        // set for it and the four sets differ; the holiday halts at 12:00,
+        // 13:30, 12:00 and 16:00 CT respectively, while grains and livestock
+        // state no row.
         (2025, 1, 21, Unsourced, T2, "CME-SVC-2025-01-19"),
         // 2025-02-17 - T2 - CME-SVC-2025-02-16 - as 2025-01-20.
         (2025, 2, 17, Unsourced, T2, "CME-SVC-2025-02-16"),
@@ -616,8 +618,9 @@ pub(crate) static CME: &HolidayTable = holidays! {
         (2026, 1, 2, Unsourced, T2, "CME-SVC-2025-12-31"),
         // 2026-01-19 - T2 - CME-SVC-2026-01-18 - as 2025-01-20.
         (2026, 1, 19, Unsourced, T2, "CME-SVC-2026-01-18"),
-        // 2026-01-20 - T2 - CME-SVC-2026-01-18 - FX states the merged trade date
-        // this holiday rolls into; the other five families state no row.
+        // 2026-01-20 - T2 - CME-SVC-2026-01-18 - the merged trade date; as
+        // 2025-01-21: equity index, energy, interest rates and FX state four
+        // different replacement-block sets, and grains and livestock state none.
         (2026, 1, 20, Unsourced, T2, "CME-SVC-2026-01-18"),
         // 2026-02-16 - T2 - CME-SVC-2026-02-15 - as 2025-01-20.
         (2026, 2, 16, Unsourced, T2, "CME-SVC-2026-02-15"),
@@ -680,8 +683,10 @@ pub(crate) static CME: &HolidayTable = holidays! {
         // closed, no row in FX.
         (2027, 7, 5, Unsourced, T2, "CME-SVC-2027-07-04"),
         // 2027-07-06 - T2 - CME-SVC-2027-07-04 - grains late open 08:30 CT, and
-        // FX now states the merged trade date this observed holiday rolls into;
-        // no row in the other four families.
+        // equity index, energy, interest rates and FX each state a different
+        // replacement-block set for the merged trade date; the holiday halts at
+        // 12:00, 13:30, 13:30 and 16:00 CT respectively, and livestock states
+        // no row.
         (2027, 7, 6, Unsourced, T2, "CME-SVC-2027-07-04"),
         // 2027-09-06 - T2 - CME-SVC-2027-09-05 - as 2025-01-20.
         (2027, 9, 6, Unsourced, T2, "CME-SVC-2027-09-05"),

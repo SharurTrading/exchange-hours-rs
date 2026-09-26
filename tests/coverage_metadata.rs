@@ -123,30 +123,64 @@ fn a_complete_scope_reports_one_complete_span_and_a_trailing_gap() {
 
 #[test]
 fn scopes_without_2025_holiday_coverage_report_outside_range() {
-    for exchange in [Exchange::Cfe, Exchange::Eurex, Exchange::Iceus] {
-        let coverage = exchange_coverage(exchange);
-        let day = date(2025, 6, 2);
+    // `cfe` and `eurex` both left this list when their 2025 rows landed in
+    // separate changes on 2026-09-26 UTC: each now audits 2025-01-01..2026-12-31,
+    // and `cfe_2025_holiday_rows_report_covered` below plus the Eurex
+    // declared-gap assertion in `a_declared_phase_gap_is_era_aware_and_reported_for_the_span_it_answers`
+    // are what hold them to the opposite claim. `iceus` is the last scope here.
+    let coverage = exchange_coverage(Exchange::Iceus);
+    let day = date(2025, 6, 2);
+    assert_eq!(
+        coverage.coverage_on(day),
+        DateCoverage::OutsideCoveredRange,
+        "iceus shipped no 2025 holiday coverage"
+    );
+    assert_eq!(
+        gap_reason_on(coverage, day),
+        Some(CoverageGapReason::NoHolidayCoverage),
+        "iceus answers no holiday question in 2025"
+    );
+    let first_complete = coverage
+        .complete_ranges()
+        .next()
+        .expect("iceus audits a 2026 window");
+    assert_eq!(first_complete.first(), date(2026, 1, 1));
+    assert!(
+        coverage
+            .holiday_contract()
+            .coverage()
+            .is_some_and(|windows| windows.first() >= date(2026, 1, 1)),
+    );
+}
+
+/// The reverse claim for the scope that left the list above.
+///
+/// A served market with no 2025 answer was the whole defect, so this asserts
+/// the public metadata now answers 2025 in both directions — through the venue
+/// and through the routed key — and cannot silently fall back out of its
+/// window.
+#[test]
+fn cfe_2025_holiday_rows_report_covered() {
+    let day = date(2025, 6, 2);
+    for calendar in [
+        calendar_for_exchange(Exchange::Cfe),
+        calendar_for_market_hours_key(MarketHoursKey::CfeVix),
+    ] {
+        let coverage = calendar.coverage();
+        assert_eq!(coverage.coverage_on(day), DateCoverage::Covered);
+        assert_eq!(gap_reason_on(coverage, day), None);
+        assert!(coverage.is_complete_on(day));
         assert_eq!(
-            coverage.coverage_on(day),
-            DateCoverage::OutsideCoveredRange,
-            "{exchange:?} shipped no 2025 holiday coverage"
+            coverage.complete_ranges().next().map(DateRange::first),
+            Some(date(2025, 1, 1))
         );
-        assert_eq!(
-            gap_reason_on(coverage, day),
-            Some(CoverageGapReason::NoHolidayCoverage),
-            "{exchange:?} answers no holiday question in 2025"
-        );
-        let first_complete = coverage
-            .complete_ranges()
-            .next()
-            .expect("each of the three audited a 2026 window");
-        assert_eq!(first_complete.first(), date(2026, 1, 1), "{exchange:?}");
         assert!(
             coverage
                 .holiday_contract()
                 .coverage()
-                .is_some_and(|windows| windows.first() >= date(2026, 1, 1)),
-            "{exchange:?}"
+                .is_some_and(|windows| windows.first() == date(2025, 1, 1)
+                    && windows.last() == date(2026, 12, 31)),
+            "cfe must audit the 2025 floor through the published 2026 schedule"
         );
     }
 }
@@ -775,7 +809,6 @@ fn a_declared_phase_gap_is_era_aware_and_reported_for_the_span_it_answers() {
         Exchange::Cbot,
         Exchange::Cfe,
         Exchange::CoinbaseDerivatives,
-        Exchange::Eurex,
         Exchange::Iceus,
     ] {
         assert!(
@@ -783,6 +816,33 @@ fn a_declared_phase_gap_is_era_aware_and_reported_for_the_span_it_answers() {
             "{exchange:?}"
         );
     }
+
+    // `eurex` is the one *venue* that declares a gap, and it is the one shape
+    // that withholds no phase: the operator's German equity/equity-index
+    // closures are undated, so the site is incomplete on every date the
+    // declaration covers while its ordinary week and order-entry queues are
+    // still served. The reason travels with the declaration, because the query
+    // gate answers through this reason and refuses through the other two.
+    let eurex = exchange_coverage(Exchange::Eurex);
+    let declared: Vec<(CoverageGapReason, &str)> = eurex
+        .phase_gaps()
+        .iter()
+        .map(|gap| (gap.reason(), gap.closing_condition()))
+        .collect();
+    assert_eq!(
+        declared,
+        vec![(CoverageGapReason::UnpublishedClosureDates, "#157")]
+    );
+    assert!(
+        eurex
+            .phase_gaps()
+            .iter()
+            .all(|gap| gap.applies_until().is_none()),
+        "the German-scope note is unpublished in the 2026 edition too, so the \
+         declaration carries no era bound"
+    );
+    assert!(!eurex.is_complete_on(sample), "eurex on {sample}");
+    assert_eq!(eurex.coverage_on(sample), DateCoverage::OutsideCoveredRange);
     assert!(
         !key_coverage(MarketHoursKey::GlobexCryptocurrency)
             .phase_gaps()

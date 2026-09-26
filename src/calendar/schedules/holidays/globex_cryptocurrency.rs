@@ -19,8 +19,10 @@
 //!   trading at all carries a row. The Monday and Thursday holidays on which
 //!   CME published a 16:00 CT pre-open instead of a 16:00 CT final close are
 //!   not such dates: matching ran from the previous 17:00 CT to 16:00 CT as on
-//!   a normal day and only the trade-date label merged, which no shipped
-//!   row states, so they carry no row and are declared gaps;
+//!   a normal day and only the trade-date label merged. Such a holiday carries
+//!   no row of its own, because the operator assigns the span the following
+//!   business day's trade date: the span ships as a `ReplacementBlocks` row
+//!   keyed to that trade date, and its Pre-Open queue is stated with it;
 //! - in the 24/7 era from trade date 2026-05-30, where the family assigns a
 //!   block to the following open business date, a closed trade date is skipped
 //!   by that roll and the connected block survives, carrying the next business
@@ -41,17 +43,83 @@
 //!
 //! The 2025-2027 block is **T2**: CME's own trading-hours service, the channel
 //! the operator's trading-hours page calls to render its per-asset-class holiday
-//! table, read as bytes and saved. The quotations, capture times, the
-//! event-date-to-trade-date conversion and the declared gaps are in
+//! table, read as bytes and saved. It states nine merged trade dates as
+//! `ReplacementBlocks` rows and one six-block day-after-Thanksgiving row. What
+//! stays open is the 24/7 era's erased maintenance minute (#93) and the
+//! five-day era's undated Pre-Open onset (#123). The quotations, capture times,
+//! the event-date-to-trade-date conversion and those gaps are in
 //! `docs/evidence/globex_cryptocurrency.md`.
 
 use super::fences::early_close;
 use super::{
     EvidenceTier::{T1, T2},
     HolidayKind,
-    HolidayKind::{Closed, Unsourced},
+    HolidayKind::{Closed, ReplacementBlocks, Unsourced},
     HolidayTable, holidays,
 };
+use crate::calendar::exceptions::ExceptionBlock;
+
+/// The complete trading day of the trade dates CME merges with the session
+/// before a Monday or Thursday holiday.
+///
+/// The holiday publishes no final close of its own: the queue and evening
+/// session that would carry it are printed against the next business day
+/// instead, so the whole span from Sunday evening through the following
+/// afternoon carries one trade date. A `Closed` row on the holiday would
+/// delete a full evening and day of trading the operator ran.
+///
+/// - offset `-2`, 16:00-17:00 CT: the Pre-Open queue, on the Sunday this
+///   family's five-day week opens.
+/// - offset `-2`, 17:00 CT to offset `-1` 16:00 CT: the matching session.
+/// - offset `-1`, 16:00-17:00 CT: the holiday's own Pre-Open queue. CME
+///   publishes `16:00 preopen` on the holiday.
+/// - offset `-1`, 17:00 CT to trade date 16:00 CT: the matching session.
+///
+/// Evidence: `docs/evidence/globex_cryptocurrency.md`.
+pub(crate) static MERGED_SESSION_BLOCKS: [ExceptionBlock; 4] = [
+    ExceptionBlock::order_entry(-2, 16 * 3_600, 17 * 3_600),
+    ExceptionBlock::extended(-2, 17 * 3_600, 16 * 3_600),
+    ExceptionBlock::order_entry(-1, 16 * 3_600, 17 * 3_600),
+    ExceptionBlock::extended(-1, 17 * 3_600, 16 * 3_600),
+];
+
+/// The same merged day where the `-2` day is an ordinary weekday, so its queue
+/// opens at the operator's printed `16:45` CT.
+///
+/// The Juneteenth Thursday 2025-06-19 merge is the 2025 case: the span opens on
+/// the Wednesday evening, and the holiday's own queue still prints `16:00`.
+///
+/// Evidence: `docs/evidence/globex_cryptocurrency.md`.
+pub(crate) static MERGED_SESSION_AFTER_WEEKDAY_BLOCKS: [ExceptionBlock; 4] = [
+    ExceptionBlock::order_entry(-2, 16 * 3_600 + 45 * 60, 17 * 3_600),
+    ExceptionBlock::extended(-2, 17 * 3_600, 16 * 3_600),
+    ExceptionBlock::order_entry(-1, 16 * 3_600, 17 * 3_600),
+    ExceptionBlock::extended(-1, 17 * 3_600, 16 * 3_600),
+];
+
+/// The day after Thanksgiving, whose finalised publication adds a `07:00
+/// preopen; 07:30 open` pause the pre-holiday capture lacks.
+///
+/// The Thursday holiday publishes no final close, so this trade date owns the
+/// span from the Wednesday evening; the operator then ends matching at `07:00`
+/// CT on the trade date, reopens it at `07:30` and closes the day at `13:45`.
+///
+/// - offset `-2`, 16:45-17:00 CT: the Wednesday Pre-Open queue.
+/// - offset `-2`, 17:00 CT to offset `-1` 16:00 CT: the matching session.
+/// - offset `-1`, 16:00-17:00 CT: the Thursday holiday's own queue.
+/// - offset `-1`, 17:00 CT to trade date 07:00 CT: the matching session.
+/// - offset `0`, 07:00-07:30 CT: the pause's Pre-Open queue.
+/// - offset `0`, 07:30-13:45 CT: the final matching session.
+///
+/// Evidence: `docs/evidence/globex_cryptocurrency.md`.
+pub(crate) static MERGED_THANKSGIVING_FRIDAY_BLOCKS: [ExceptionBlock; 6] = [
+    ExceptionBlock::order_entry(-2, 16 * 3_600 + 45 * 60, 17 * 3_600),
+    ExceptionBlock::extended(-2, 17 * 3_600, 16 * 3_600),
+    ExceptionBlock::order_entry(-1, 16 * 3_600, 17 * 3_600),
+    ExceptionBlock::extended(-1, 17 * 3_600, 7 * 3_600),
+    ExceptionBlock::order_entry(0, 7 * 3_600, 7 * 3_600 + 30 * 60),
+    ExceptionBlock::extended(0, 7 * 3_600 + 30 * 60, 13 * 3_600 + 45 * 60),
+];
 
 /// The family's built-in holiday rows and the windows they were audited over.
 ///
@@ -172,18 +240,68 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2024, 12, 25, Closed, T2, "CME-SVC-2024-12-24"),        // 2025-01-01 — T2 — CME-SVC-2024-12-31 — New Year's Day; only a 16:00 CT
         // pre-open and a 17:00 CT open, both carrying trade date 2025-01-02.
         (2025, 1, 1, HolidayKind::Closed, T2, "CME-SVC-2024-12-31"),
+        // 2025-01-21 — T2 — CME-SVC-2025-01-19 — Martin Luther King Jr. Day; the
+        // holiday publishes no final close of its own, so the span from Sunday
+        // evening through Tuesday 16:00 CT carries this trade date.
+        (
+            2025,
+            1,
+            21,
+            ReplacementBlocks(&MERGED_SESSION_BLOCKS),
+            T2,
+            "CME-SVC-2025-01-19"
+        ),
+        // 2025-02-18 — T2 — CME-SVC-2025-02-16 — Presidents' Day; as 2025-01-21.
+        (
+            2025,
+            2,
+            18,
+            ReplacementBlocks(&MERGED_SESSION_BLOCKS),
+            T2,
+            "CME-SVC-2025-02-16"
+        ),
         // 2025-04-18 — T2 — CME-SVC-2025-04-17 — Good Friday; no events published.
         (2025, 4, 18, HolidayKind::Closed, T2, "CME-SVC-2025-04-17"),
+        // 2025-05-27 — T2 — CME-SVC-2025-05-25 — Memorial Day; as 2025-01-21.
+        (
+            2025,
+            5,
+            27,
+            ReplacementBlocks(&MERGED_SESSION_BLOCKS),
+            T2,
+            "CME-SVC-2025-05-25"
+        ),
+        // 2025-06-20 — T2 — CME-SVC-2025-06-18 — Juneteenth observed on the
+        // Thursday, so the merged span opens on the Wednesday evening and its
+        // offset -2 queue prints the operator's ordinary 16:45 CT.
+        (
+            2025,
+            6,
+            20,
+            ReplacementBlocks(&MERGED_SESSION_AFTER_WEEKDAY_BLOCKS),
+            T2,
+            "CME-SVC-2025-06-18"
+        ),
         // 2025-07-04 — T2 — CME-SVC-2025-07-03 — Independence Day; 12:00 CT final
         // close on its own trade date.
         (2025, 7, 4, early_close(12 * 3_600), T2, "CME-SVC-2025-07-03"),
-        // 2025-11-28 — T2 — CME-SVC-2025-11-26 — day after Thanksgiving; 13:45 CT
-        // final close on its own trade date.
+        // 2025-09-02 — T2 — CME-SVC-2025-08-31 — Labor Day; as 2025-01-21.
+        (
+            2025,
+            9,
+            2,
+            ReplacementBlocks(&MERGED_SESSION_BLOCKS),
+            T2,
+            "CME-SVC-2025-08-31"
+        ),
+        // 2025-11-28 — T2 — CME-SVC-2025-11-26 — day after Thanksgiving; the
+        // Thursday holiday publishes no final close, so this trade date owns the
+        // span from Wednesday evening, pauses at 07:00 CT and ends at 13:45 CT.
         (
             2025,
             11,
             28,
-            early_close(13 * 3_600 + 45 * 60),
+            ReplacementBlocks(&MERGED_THANKSGIVING_FRIDAY_BLOCKS),
             T2,
             "CME-SVC-2025-11-26"
         ),
@@ -206,6 +324,25 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         // 2026-01-01 — T2 — CME-SVC-2025-12-31 — New Year's Day; trade date
         // 2026-01-02 throughout.
         (2026, 1, 1, HolidayKind::Closed, T2, "CME-SVC-2025-12-31"),
+        // 2026-01-20 — T2 — CME-SVC-2026-01-18 — Martin Luther King Jr. Day; as
+        // 2025-01-21.
+        (
+            2026,
+            1,
+            20,
+            ReplacementBlocks(&MERGED_SESSION_BLOCKS),
+            T2,
+            "CME-SVC-2026-01-18"
+        ),
+        // 2026-02-17 — T2 — CME-SVC-2026-02-15 — Presidents' Day; as 2025-01-21.
+        (
+            2026,
+            2,
+            17,
+            ReplacementBlocks(&MERGED_SESSION_BLOCKS),
+            T2,
+            "CME-SVC-2026-02-15"
+        ),
         // 2026-04-03 — T2 — CME-SVC-2026-04-01 — Good Friday, the employment-report
         // exception; 10:15 CT final close on its own trade date.
         (
@@ -215,6 +352,15 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
             early_close(10 * 3_600 + 15 * 60),
             T2,
             "CME-SVC-2026-04-01"
+        ),
+        // 2026-05-26 — T2 — CME-SVC-2026-05-24 — Memorial Day; as 2025-01-21.
+        (
+            2026,
+            5,
+            26,
+            ReplacementBlocks(&MERGED_SESSION_BLOCKS),
+            T2,
+            "CME-SVC-2026-05-24"
         ),
         // 2026-06-19 — T2 — CME-SVC-2026-06-18 — Juneteenth, first of the 24/7-era
         // Friday holidays; the 16:00 CT close carries trade date 2026-06-22.

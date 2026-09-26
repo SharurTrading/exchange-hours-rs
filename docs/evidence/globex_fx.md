@@ -579,8 +579,16 @@ Sat none.
   replacement rows keyed to the operator's trade date — 2025-01-21, 2025-02-18,
   2025-05-27, 2025-06-20, 2025-09-02 and 2025-11-28 — and a `Closed` row is not
   used, because it would delete a full evening and day of trading CME in fact
-  ran. The 2026 and 2027 instances of the same shape are still unstated and are
-  tracked as #140.
+  ran. The 2026 and 2027 instances of the same shape now ship as replacement
+  rows too (2026-01-20, 2026-02-17, 2026-05-26, 2026-09-08, 2026-11-27,
+  2027-01-19, 2027-02-16, 2027-06-01, 2027-07-06, 2027-09-07 and 2027-11-26), so
+  #140 no longer tracks an unstated merge for this family. What is still open on
+  it is the order-entry-only class — 2025-01-02, 2025-12-26 and 2026-01-02,
+  whose queue opens at 16:00 CT rather than the ordinary 16:45 and whose trade
+  date is already correct, so a merge-template row would rewrite a right answer
+  — the `07:00 preopen; 07:30 open` pair this family's 2025-11-28 row does not
+  split (the intraday-topology gap below), and `globex_nikkei_225_dollar`,
+  which states only twelve of the seventeen.
 - **Order-entry window — the same six dates, plus 2025-01-01 and 2025-12-25.**
   The Globex pre-open opens at 16:00 CT instead of the normal 16:45 CT. The
   table shares `DayPolicy`'s vocabulary, which has no order-entry boundary, so

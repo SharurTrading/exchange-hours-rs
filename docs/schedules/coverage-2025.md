@@ -70,7 +70,7 @@ served `iceus` identity, while `FANG`, `DOLLAR_INDEX`, `SUGAR_COFFEE_COCOA`, `CO
 | `globex_equity_index` | [cme_group.rs](../../src/calendar/schedules/futures/us/cme_group.rs) | 2010-11-15 … 2026-08-22 (5 rows) | 2012-05-03 | 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 54 | — | the 16:00-16:15 CT Sunday quarter-hour, withheld (#79) | **incomplete**: the Sunday 16:00-16:15 CT quarter-hour is withheld (#79) | #79, #116, #117 |
 | `globex_energy` | [energy_metals.rs](../../src/calendar/schedules/futures/us/energy_metals.rs) | 2015-09-20 … 2026-08-22 (2 rows) | 2012-05-11 | 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 53 | — | the Sunday 16:00-16:15 CT quarter-hour, withheld (#79) | **incomplete**: the Sunday 16:00-16:15 CT quarter-hour is withheld (#79) | #79, #116, #117 |
 | `globex_grains` | [grains.rs](../../src/calendar/schedules/futures/us/grains.rs) | 2010-04-19 … 2015-07-05 (6 rows) | 2010-03-15 | 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 40 | — | none in 2025+ | complete to 2027-12-31 | #116, #117 |
-| `globex_fx` | [fx.rs](../../src/calendar/schedules/futures/us/fx.rs) | 2010-11-15 … 2026-08-22 (2 rows) | 2012-05-03 | 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 36 | — | the 2026-2027 merged trade dates and the New Year/Christmas Pre-Open; the Sunday 16:00-16:15 CT quarter-hour, withheld (#79) | **incomplete**: special-session dates the scalar layer cannot state (#93) and the Sunday 16:00-16:15 CT quarter-hour is withheld (#79) | #79, #93, #116, #117 |
+| `globex_fx` | [fx.rs](../../src/calendar/schedules/futures/us/fx.rs) | 2010-11-15 … 2026-08-22 (2 rows) | 2012-05-03 | 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 36 | — | the Sunday 16:00-16:15 CT quarter-hour, withheld (#79) | **incomplete**: the Sunday 16:00-16:15 CT quarter-hour is withheld (#79) | #79, #116, #117 |
 | `globex_interest_rates` | [interest_rates.rs](../../src/calendar/schedules/futures/us/interest_rates.rs) | 2010-11-15 … 2026-08-22 (3 rows) | 2010-01-01 | 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 53 | — | the Sunday 16:00-16:15 CT quarter-hour, withheld (#79) | **incomplete**: the Sunday 16:00-16:15 CT quarter-hour is withheld (#79) | #79, #116, #117 |
 | `globex_livestock` | [livestock.rs](../../src/calendar/schedules/futures/us/livestock.rs) | 2014-10-27 … 2020-05-31 (4 rows) | 2010-01-01 | 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 36 | — | none in 2025+ | complete to 2027-12-31 | #116, #117 |
 | `globex_cryptocurrency` | [cryptocurrency.rs](../../src/calendar/schedules/futures/us/cryptocurrency.rs) | 2017-12-17 … 2026-09-20 (9 rows) | — | 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 24 | — | special-session dates the scalar layer cannot state (#93); the five-day era's Sunday and weekday Pre-Open onset is undated (#123) | **incomplete**: special-session dates the scalar layer cannot state (#93) and the five-day era's Pre-Open onset is undated (#123) | #93, #116, #117, #123 |
@@ -163,9 +163,9 @@ no answer, and Stage 4 item 2 refreshes it.
 `Unsourced` row at or after 2025-01-01. The other nine scopes that reach that date are **not**
 complete: `cbot` withholds disputed dates in §2 and `cme` those plus the Sunday 16:00-16:15 CT
 quarter-hour; `comex`, `nymex`, `globex_energy`, `globex_interest_rates` and `globex_equity_index`
-withhold that same quarter-hour in §5; `globex_fx` withholds it as well as publishing the
-unstateable special sessions of §6; and `globex_cryptocurrency` publishes those special sessions and
-carries an undated five-day-era Pre-Open onset. `comex` and `nymex` are intersections too, but each
+withhold that same quarter-hour in §5, and so does `globex_fx`; and
+`globex_cryptocurrency` publishes special sessions no row states and carries an undated five-day-era
+Pre-Open onset. `comex` and `nymex` are intersections too, but each
 routes one family's grid, so they match it row for row and their six `Unsourced` rows all fall in
 2019-2023, outside the new floor.
 
@@ -178,11 +178,11 @@ routes one family's grid, so they match it row for row and their six `Unsourced`
   on the undated 2012 move, so that phase is withheld rather than sourced and none of the seven is
   complete in the era before it. From 2026-08-22 on — a Saturday, so the first Sunday the bound
   governs is 2026-08-23 — each profile's Sunday queue serves the quarter-hour, and the metadata's
-  `#79` declarations are bounded there, so those dates stop being withheld. Six of the
-  seven then report `Covered`; `globex_fx` stays outside covered range because it carries a second,
-  whole-domain gap (`#93`, the special sessions the scalar layer cannot state) that no era bound
-  reaches. The plan's condition for #79 is met for all seven, and the gap it names survives to the
-  floor.
+  `#79` declarations are bounded there, so those dates stop being withheld, and all seven then report
+  `Covered`. `globex_fx` used to be the exception, on account of the second, whole-domain `#93` gap it
+  carried; its merged trade dates now ship as rows (the last of them in Stage 5) and that declaration
+  is gone, so only the quarter-hour it names here remains. The plan's condition for #79 is met for all
+  seven, and the gap it names survives to the floor.
 - **#105 - dormant, not blocking.** CME's `dairy` and `lumber` product groups have no
   `MarketHoursKey` and fold into `globex_grains` and `globex_livestock`. Neither group is reachable:
   no root for either appears in `static PRODUCTS` (which maps `LE` to livestock - live cattle, not
@@ -192,15 +192,15 @@ routes one family's grid, so they match it row for row and their six `Unsourced`
 
 ### 6. Special-session needs (Stage 3, #93)
 
-Dates that change internal phase topology are not representable by the scalar vocabulary, and the
-affected scopes declare them as gaps rather than approximations. For the 2025 floor the ones that
-matter are `globex_cryptocurrency` and `globex_fx`, whose evidence files record Saturday sessions and
-merged trade dates the scalar layer cannot state. `globex_fx` is now covered: four families —
-`globex_energy`, `globex_equity_index`, `globex_interest_rates` and `globex_fx` — carry the three
-Saturday-session trade dates as built-in replacement-block rows, while `globex_grains` and
-`globex_livestock` state no row on them. `globex_cryptocurrency` is the one scope still carrying
-those dates as a gap, so they remain gaps for it alone; the dates and closing conditions stay in
-the owner evidence files.
+Dates that change internal phase topology are not representable by the scalar vocabulary, so an
+affected scope declares them as a gap rather than approximating them. `globex_cryptocurrency` is the
+one scope that still does: its evidence file records Saturday sessions and merged trade dates no
+shipped row states, so they remain gaps for it alone and the dates and closing conditions stay in
+its evidence file. The other scopes this section used to name are covered — `globex_energy`,
+`globex_equity_index`, `globex_interest_rates` and `globex_fx` carry the three Saturday-session trade
+dates as built-in replacement-block rows, and `globex_fx` now carries its merged trade dates too, so
+every session CME publishes for it is stated and its `#93` declaration is gone. `globex_grains` and
+`globex_livestock` state no row on those Saturdays.
 
 ## Artifact resolution
 

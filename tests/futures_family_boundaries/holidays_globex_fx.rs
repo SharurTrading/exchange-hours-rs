@@ -204,12 +204,13 @@ fn shipped_rows() -> Vec<(NaiveDate, HolidayKind)> {
 /// civil day: the leg that fed it opened Thursday evening and there is no
 /// Friday-evening leg on this grid to survive it.
 ///
-/// The row's own reading survives; what does not is the trade-date consequence.
-/// `trade_date` resolves the instant's containing session *before* it judges the
-/// date, and CME publishes holiday sessions this family's scalar vocabulary
-/// cannot state, declared as the whole-domain `#93` phase gap — so an instant
-/// with no containing session is refused rather than resolved through the
-/// order-entry phase that would name the next trade date.
+/// The row's own reading survives; the trade-date consequence is `None`, not an
+/// error. `trade_date` resolves the instant's containing session and only then
+/// judges the date, and no session contains a Christmas-Day instant on this
+/// grid — an absent session, which LAW-COVERAGE keeps distinct from missing
+/// evidence. The family declared a whole-domain `#93` phase gap until its
+/// merged trade dates shipped as rows; that declaration was what turned this
+/// absence into a refusal, and it is gone with the gap it described.
 #[test]
 fn christmas_2026_closes_the_whole_trade_date_and_its_previous_evening() {
     let calendar = fx();
@@ -238,7 +239,13 @@ fn christmas_2026_closes_the_whole_trade_date_and_its_previous_evening() {
                 .expect("the coverage contract must answer a covered date"),
             "Christmas Day must be closed at {instant}"
         );
-        assert_refused(calendar.trade_date(instant), OUTSIDE_COVERAGE);
+        assert_eq!(
+            calendar
+                .trade_date(instant)
+                .expect("the coverage contract must answer a covered date"),
+            None,
+            "no session contains {instant}, so it carries no trade date"
+        );
     }
 
     // The previous evening's normal 17:00 CT open fed trade date 2026-12-25, so
@@ -636,12 +643,13 @@ fn without_holidays_restores_the_normal_week() {
     // Away from the rows the two agree instant for instant. 2026-10-18 ..
     // 2026-10-24 is CME's own reference week for this family.
     //
-    // `is_open` and `session_bounds` answer everywhere in the week and are
-    // compared directly. `trade_date` does not: the identity's declared
-    // whole-domain `#93` gap withholds the order-entry phase, so it answers only
-    // where a session actually contains the instant and refuses the rest. The
-    // detached calendar carries the same declaration, so both refuse the same
-    // instants — which is itself the "the table changes nothing here" claim.
+    // All three answer everywhere in the week. `trade_date` is the one that can
+    // be `None`: where no session contains the instant it reports the absence,
+    // and the identity and the bare snapshot report the same one — which is
+    // itself the "the table changes nothing here" claim. The identity declared
+    // a whole-domain `#93` phase gap until this change; that declaration was
+    // what turned these absences into refusals, and it went with the merged
+    // trade dates it withheld.
     let mut instant = ct((2026, 10, 18), (0, 0, 0));
     let end = ct((2026, 10, 25), (0, 0, 0));
     while instant < end {
@@ -666,8 +674,14 @@ fn without_holidays_restores_the_normal_week() {
                 "trade_date diverged at {instant} on an ordinary week"
             );
         } else {
-            assert_refused(calendar.trade_date(instant), OUTSIDE_COVERAGE);
-            assert_refused(bare.trade_date(instant), OUTSIDE_COVERAGE);
+            assert_eq!(
+                calendar
+                    .trade_date(instant)
+                    .expect("the coverage contract must answer a covered date"),
+                bare.trade_date(instant)
+                    .expect("the detached calendar answers its own normal week"),
+                "trade_date diverged at {instant} on an ordinary week"
+            );
         }
         assert_eq!(
             calendar

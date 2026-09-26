@@ -37,16 +37,17 @@
 //! metadata reports a gap with a closing condition rather than a bare verdict —
 //! LAW-COVERAGE's "a recorded gap with a closing condition", asserted by the
 //! crate rather than inferred from its data. One identity can carry several: the
-//! shape recurs per phase rather than per scope, so `globex_fx` withholds the
-//! Sunday quarter-hour *and* publishes special sessions no shipped row states, and
-//! `globex_cryptocurrency` carries the special sessions plus an undated Pre-Open
-//! onset of its own.
+//! shape recurs per phase rather than per scope, so `globex_cryptocurrency`
+//! carries special sessions no shipped row states *and* an undated Pre-Open onset
+//! of its own. A declaration is removed when the rows that discharge it ship —
+//! `globex_fx` declared both the quarter-hour and the #93 special sessions until
+//! its merged trade dates landed, and now declares only the quarter-hour.
 //!
 //! Only an identity whose gap survives the permanent 2025 floor is declared
 //! here, because that is the interval the completeness claim covers: a scope
 //! whose withheld phase or unstateable session lies entirely before 2025 is not
 //! incomplete in the claimed interval and must not be declared. Eight scopes
-//! declare one or more gaps today, and the fences in
+//! declare one or more gaps today — nine declarations in all — and the fences in
 //! `tests/schedule_documentation/coverage_inventory.rs` hold them to the
 //! inventory's own verdicts while `tests/coverage_metadata.rs` holds each
 //! declaration to the shipped profile's behaviour.
@@ -182,17 +183,20 @@ const fn withheld_sunday_quarter_hour() -> PhaseGap {
         .until(effective_date(2026, 8, 22))
 }
 
-/// The special-session gap `globex_fx` and `globex_cryptocurrency` carry: CME
-/// publishes sessions no shipped row states (#93).
+/// The special-session gap `globex_cryptocurrency` still carries: CME publishes
+/// sessions no shipped row states (#93).
 ///
-/// The vocabulary a row needs for them shipped in Stage 3 (#93) — the fifth
-/// `HolidayKind` carries a replacement block set — so what this declaration
-/// still waits on is the operator row and its evidence, which is Stage 4
-/// (#116). Until that row lands the gap is real and this reason stays declared.
+/// `globex_fx` carried this too, and no longer does. The vocabulary a row needs
+/// shipped in Stage 3 (#93), the fifth `HolidayKind` carrying a replacement block
+/// set; the operator rows and their evidence landed in Stage 4 (#116) and the
+/// merged trade dates in Stage 5, so every session CME publishes for that family
+/// is now stated and its declaration is gone. What remains here is
+/// `globex_cryptocurrency` alone, whose 24/7-era sessions and merged trade dates
+/// are still unstated.
 ///
-/// `docs/schedules/coverage-2025.md` records both scopes as "special-session
-/// dates the scalar layer cannot state (#93)"; each owner's evidence file lists
-/// the Saturday sessions and merged trade dates behind that verdict.
+/// `docs/schedules/coverage-2025.md` records the remaining scope as
+/// "special-session dates the scalar layer cannot state (#93)"; its owner's
+/// evidence file lists the trade dates behind that verdict.
 const fn unstateable_special_sessions() -> PhaseGap {
     PhaseGap::new(CoverageGapReason::SpecialSessionUnrepresentable, "#93")
 }
@@ -222,13 +226,6 @@ const fn undated_five_day_pre_open() -> PhaseGap {
 /// The one-declaration list the six quarter-hour scopes other than `globex_fx`
 /// carry.
 const WITHHELD_QUARTER_HOUR: [PhaseGap; 1] = [withheld_sunday_quarter_hour()];
-
-/// `globex_fx` declares both of its gaps: the Sunday quarter-hour it withholds
-/// and the special sessions CME publishes that no shipped row states.
-const GLOBEX_FX_GAPS: [PhaseGap; 2] = [
-    withheld_sunday_quarter_hour(),
-    unstateable_special_sessions(),
-];
 
 /// `globex_cryptocurrency` declares both of its gaps: the special sessions and
 /// the five-day era's undated Pre-Open onset.
@@ -407,10 +404,11 @@ const fn for_market_hours_key(key: MarketHoursKey) -> DeclaredSourcing {
         }
         MarketHoursKey::GlobexGrains => DeclaredSourcing::carried_below(horizon!(2010, 3, 15)),
         MarketHoursKey::GlobexMiniGrains => DeclaredSourcing::carried_below(horizon!(2010, 4, 5)),
-        // CME publishes FX sessions no shipped row states (#93), and the
-        // Sunday 16:00-16:15 CT quarter-hour is withheld (#79).
+        // Only the Sunday 16:00-16:15 CT quarter-hour is withheld (#79): every
+        // special session CME publishes for this family now ships as a row, so
+        // the #93 declaration it used to carry is gone.
         MarketHoursKey::GlobexFx => {
-            DeclaredSourcing::carried_below_with(horizon!(2012, 5, 3), &GLOBEX_FX_GAPS)
+            DeclaredSourcing::carried_below_with_quarter_hour(horizon!(2012, 5, 3))
         }
         MarketHoursKey::GlobexInterestRates => {
             DeclaredSourcing::carried_below_with_quarter_hour(horizon!(2010, 1, 1))

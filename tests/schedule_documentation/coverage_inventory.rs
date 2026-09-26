@@ -391,7 +391,9 @@ fn declared_phase_gaps() -> Vec<(&'static str, Vec<(CoverageGapReason, &'static 
         ("nymex", vec![quarter_hour]),
         ("globex_energy", vec![quarter_hour]),
         ("globex_equity_index", vec![quarter_hour]),
-        ("globex_fx", vec![quarter_hour, special_sessions]),
+        // `globex_fx` carried the #93 special-session declaration until its merged
+        // trade dates landed; every session CME publishes for it now ships as a row.
+        ("globex_fx", vec![quarter_hour]),
         ("globex_interest_rates", vec![quarter_hour]),
         (
             "globex_cryptocurrency",
@@ -531,10 +533,9 @@ fn the_declared_phase_level_gaps_match_the_inventory() {
     }
     assert_eq!(
         (declaring, declarations),
-        (8, 10),
-        "eight served scopes declare a phase-level gap today, ten declarations in all: seven \
-         quarter-hour scopes, one of which also publishes the #93 special sessions, and \
-         `globex_cryptocurrency`'s two"
+        (8, 9),
+        "eight served scopes declare a phase-level gap today, nine declarations in all: seven \
+         quarter-hour scopes, and `globex_cryptocurrency`'s two"
     );
 
     // The scopes the quarter-hour probe cleared of the disputed window declare
@@ -592,9 +593,9 @@ fn chicago_on(date: NaiveDate) -> chrono::DateTime<Utc> {
 /// The served quarter-hour answers as an acceptance where the scope declares no
 /// remaining gap; a scope still withholding the date refuses with the error its
 /// own `coverage_on` names. This keeps the era fence honest without assuming
-/// that #79 is every scope's only declaration: `globex_fx` carries an unbounded
-/// `#93` too, so the same 16:05 CT instant answers for one scope and refuses for
-/// the other, and both are correct.
+/// that #79 is every scope's only declaration: `globex_cryptocurrency` carries an
+/// unbounded `#93` too, so the same 16:05 CT instant answers for one scope and
+/// refuses for the other, and both are correct.
 fn assert_acceptance_matches_coverage(
     calendar: ExchangeCalendar,
     instant: chrono::DateTime<Utc>,
@@ -900,8 +901,9 @@ const QUARTER_HOUR_ERAS: [QuarterHourEra; 7] = [
 /// 3. **the metadata agrees with the profile**: the earlier Sunday is outside the
 ///    covered range for every declaring scope, and after the bound each scope's
 ///    verdict is the one its own declarations imply - `Covered` where `#79` was
-///    the only gap, still outside it for `globex_fx`, whose `#93` is unbounded -
-///    compared date by date across the boundary rather than only at its ends.
+///    the only gap, still outside it for `globex_cryptocurrency`, whose `#93` and
+///    `#123` are unbounded - compared date by date across the boundary rather
+///    than only at its ends.
 ///
 /// The bound each module carries is a table cell here rather than an assumption, so
 /// a module whose row moves fails this fence instead of silently disagreeing with
@@ -1000,9 +1002,10 @@ fn the_sunday_quarter_hour_gap_ends_at_the_knowledge_bound_row() {
             let served = calendar.hours_at(instant).is_accepting_orders(instant);
             // The identity's answer, driven from its own published verdict for
             // the date: the served quarter-hour answers (a scope with no other
-            // declared gap accepts orders; `globex_fx`'s unbounded `#93` still
-            // withholds the date), and the withheld quarter-hour before the
-            // bound refuses. A refusal is never read as a closed grid.
+            // declared gap accepts orders; `globex_cryptocurrency`'s unbounded
+            // `#93` still withholds the date), and the withheld quarter-hour
+            // before the bound refuses. A refusal is never read as a closed
+            // grid.
             assert_acceptance_matches_coverage(
                 calendar,
                 instant,
@@ -1038,9 +1041,10 @@ fn the_sunday_quarter_hour_gap_ends_at_the_knowledge_bound_row() {
             "{name}: {dated} is inside the era its #79 declaration covers"
         );
         // A scope whose *only* declaration is the quarter-hour answers the later
-        // Sunday completely; `globex_fx` does not, because the whole-domain #93
-        // special-session gap it also declares still applies there. Both outcomes
-        // are read off the declaration list rather than assumed.
+        // Sunday completely; `globex_cryptocurrency` does not, because the
+        // whole-domain #93 special-session gap it also declares still applies
+        // there. Both outcomes are read off the declaration list rather than
+        // assumed.
         assert_eq!(
             coverage.is_complete_on(after),
             coverage.phase_gaps().len() == 1,

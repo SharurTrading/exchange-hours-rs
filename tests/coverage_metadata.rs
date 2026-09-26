@@ -721,10 +721,11 @@ fn a_declared_phase_gap_is_era_aware_and_reported_for_the_span_it_answers() {
     // `true` for several of them while `docs/schedules/coverage-2025.md` called
     // each one incomplete.
     //
-    // Two of them carry a **second** gap, so the declaration is a list: CME's
-    // `globex_fx` withholds the Sunday quarter-hour *and* publishes special
-    // sessions the scalar layer cannot state; `globex_cryptocurrency` carries
-    // the special sessions plus its five-day era's undated Pre-Open onset.
+    // One of them carries a **second** gap, so the declaration is a list:
+    // `globex_cryptocurrency` publishes special sessions the scalar layer
+    // cannot state *and* withholds its five-day era's undated Pre-Open onset.
+    // CME's `globex_fx` used to be the other; its merged trade dates now ship
+    // as rows, so only the Sunday quarter-hour remains withheld.
     let sample = date(2025, 6, 10);
     let bound = date(2026, 8, 22);
     let after = date(2026, 8, 23);
@@ -736,11 +737,8 @@ fn a_declared_phase_gap_is_era_aware_and_reported_for_the_span_it_answers() {
         ),
         (
             MarketHoursKey::GlobexFx,
-            vec![
-                (CoverageGapReason::NormalWeekPhaseWithheld, "#79"),
-                (CoverageGapReason::SpecialSessionUnrepresentable, "#93"),
-            ],
-            false,
+            vec![(CoverageGapReason::NormalWeekPhaseWithheld, "#79")],
+            true,
         ),
         (
             MarketHoursKey::GlobexCryptocurrency,

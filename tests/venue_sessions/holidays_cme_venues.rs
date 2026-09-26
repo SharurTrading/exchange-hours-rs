@@ -451,7 +451,7 @@ fn a_closed_venue_row_is_a_unanimous_closure() {
         } else if families.len() == 6 {
             242
         } else {
-            206
+            219
         };
         assert_eq!(unsigned, expected, "{exchange:?}: unsourced row count");
     }

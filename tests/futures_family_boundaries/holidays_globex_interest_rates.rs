@@ -13,8 +13,9 @@
 use chrono::{DateTime, Datelike as _, Days, Duration, NaiveDate, TimeZone as _, Utc, Weekday};
 use chrono_tz::US;
 use exchange_hours::{
-    CalendarQueryError, CalendarResolution, EvidenceTier, ExceptionBlockKind, ExchangeCalendar,
-    Holiday, HolidayKind, MarketHoursKey, SessionKind, SessionState, calendar_for_market_hours_key,
+    CalendarQueryError, CalendarResolution, EvidenceTier, ExceptionBlock, ExceptionBlockKind,
+    ExchangeCalendar, Holiday, HolidayKind, MarketHoursKey, SessionKind, SessionState,
+    calendar_for_market_hours_key,
 };
 
 /// The family under test, as a date-aware calendar.
@@ -198,6 +199,15 @@ fn a_closed_friday_hands_the_next_open_to_sunday_evening() {
 // 2 and 3. An early close, on both sides of the cutoff.
 // ---------------------------------------------------------------------------
 
+/// Thanksgiving Day publishes no final close, so 2025-11-28 now owns the span
+/// from Wednesday evening and ends at this family's own `12:15` CT close.
+static EXPECTED_2025_11_28: [ExceptionBlock; 4] = [
+    ExceptionBlock::order_entry(-2, 16 * 3_600 + 45 * 60, 17 * 3_600),
+    ExceptionBlock::extended(-2, 17 * 3_600, 12 * 3_600),
+    ExceptionBlock::order_entry(-1, 12 * 3_600, 17 * 3_600),
+    ExceptionBlock::extended(-1, 17 * 3_600, 12 * 3_600 + 15 * 60),
+];
+
 /// The day after Thanksgiving 2025 closes at 12:15 CT, and the clip is stated
 /// on the trade date, so it lands on a session that opened at 17:00 CT the
 /// previous evening.
@@ -209,9 +219,7 @@ fn the_day_after_thanksgiving_clips_a_session_opened_the_previous_evening() {
         .expect("2025-11-28 ships a row");
     assert_eq!(
         holiday.kind(),
-        HolidayKind::EarlyClose {
-            close_ssm: 12 * 3_600 + 15 * 60
-        }
+        HolidayKind::ReplacementBlocks(&EXPECTED_2025_11_28)
     );
     assert_eq!(holiday.document_id(), "CME-SVC-2025-11-26");
 
@@ -412,7 +420,7 @@ fn no_late_open_ships_and_the_post_closure_reopen_is_the_normal_open() {
     }
     assert_eq!(
         (closed, early, late, unsourced),
-        (47, 156, 6, 6),
+        (47, 153, 6, 6),
         "closed, early-close, late-open and unsourced rows over all six windows"
     );
 }
@@ -497,13 +505,14 @@ fn trade_dates_follow_the_shortened_and_the_deleted_days() {
             .expect("the coverage contract must answer a covered date"),
         Some(day(2025, 12, 26))
     );
-    // The noon halt of a Monday holiday shortens that Monday; the 17:00 CT
-    // open on the same civil day belongs to the next trade date.
+    // The noon halt of a Monday holiday shortens that Monday, and the whole span
+    // through it carries the *next* trade date: CME publishes no final close for
+    // the holiday, so the operator labels it 2025-01-21.
     assert_eq!(
         calendar
             .trade_date(ct((2025, 1, 20), (9, 0, 0)))
             .expect("the coverage contract must answer a covered date"),
-        Some(day(2025, 1, 20))
+        Some(day(2025, 1, 21))
     );
     assert!(
         calendar

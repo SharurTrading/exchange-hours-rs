@@ -37,6 +37,16 @@ they are recorded here in revision-row grammar and checked against
 
 **Coverage:** 2025-01-01..2026-12-31 (inclusive trade dates). Tier: T1 throughout.
 
+**The identity is `incomplete` across that whole window, and the refusal is deliberate.** The
+operator's undated German closure scope (below) is declared for this identity, so `coverage_on`
+reports `OutsideCoveredRange` for **every** date in the window — 2026 included, which the
+2026-only table this change replaced reported `Covered`. The sessions themselves are answered:
+`is_open` returns `Ok(true)` on an ordinary 2025 or 2026 weekday and `Ok(false)` on a closure,
+because the declaration states a completeness fact and withholds no phase. A consumer that
+reads `coverage_on` to decide whether to walk a range must therefore handle the error on dates
+the crate can in fact answer; that is the honest reading of an operator who declares closures
+and dates none of them, and it is the same shape as `globex_cryptocurrency`'s `#93` declaration.
+
 One table serves `Exchange::Eurex`, the `eurex` key and the `eurex_fixed_income` key. The operator states the closure for “all derivatives”, which covers FESX, FDAX and FDXM behind the index rows and FGBL, FGBM, FGBS and FGBX behind the fixed-income rows alike, so the venue intersection is the same table.
 
 The 2025 rows are the same page's **§ 2025, day by day**, read in its third and controlling 2025 state (`EUREX-HOLREG-2025`, Wayback capture 2025-09-13), corroborated by the operator's **Eurex trading calendar 2025** PDF (`EUREX-TC-2025`). The live page carries the 2026 section only, so the 2025 section is re-verifiable through the archived captures resolved in `### Documents` below.

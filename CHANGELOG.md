@@ -97,8 +97,13 @@ corrections (a venue's hours fixed against a primary source) go under
   calendars declare German equity and equity-index closures as `tba`, which the
   crate records as an undated closure scope (#157), and 2027 is published once
   unconditionally and once "on a preliminary and indicative basis … and are
-  subject to change", so it stays out of the table. Evidence:
-  `docs/evidence/eurex.md`.
+  subject to change", so it stays out of the table. **The declaration is
+  unbounded, so `coverage_on` now reports `OutsideCoveredRange` for every date in
+  the window — 2026 included, which the 2026-only table it replaces reported
+  `Covered`.** The sessions are unaffected: `is_open` answers on ordinary and
+  closed dates alike, because the declaration withholds no phase. Consumers that
+  read `coverage_on` must handle the error on dates the crate can answer.
+  Evidence: `docs/evidence/eurex.md`.
 - **`globex_nikkei_225_dollar` states CME's three Saturday sessions as complete
   trade dates (2026-09-25 UTC).** Stage 4 of the release plan (#116). CME
   publishes `05:00 open; 17:00 closed` on Saturday 2026-06-20, 2026-07-04 and

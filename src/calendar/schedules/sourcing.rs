@@ -171,6 +171,16 @@ impl DeclaredSourcing {
 /// `cme`, `comex`, `nymex`, `globex_energy`, `globex_equity_index`, `globex_fx`
 /// and `globex_interest_rates`.
 ///
+/// **The operative reason is narrower than "the 2012 change was never dated".** On the
+/// bytes, no sourced state has printed Sunday 16:15 CT since 2012-05-28: Globex
+/// notice 20120402 dates the old value at 2012-04-15, and notice 20121112 prints
+/// the new one. What the crate actually lacks is an admissible artifact whose own
+/// scope covers an **ordinary week inside the claimed interval** — its 2025
+/// evidence is holiday geometry, and its only ordinary-week artifact is
+/// 2026-10-18..24 — and the charter says a later observation alone does not prove
+/// the intervening period complete. The 2012 bracket is therefore a second,
+/// independent reason rather than the first.
+///
 /// **Bounded to the dated era.** The four modules these seven scopes route to —
 /// `cme_group.rs`, `energy_metals.rs`, `fx.rs` and `interest_rates.rs` — each end
 /// their timelines in a knowledge-bound 2026-08-22 row whose profile widens the

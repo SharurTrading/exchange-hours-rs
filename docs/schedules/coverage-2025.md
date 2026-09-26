@@ -203,7 +203,10 @@ outside the new floor.
   `globex_energy`, `globex_equity_index`, `globex_fx` and `globex_interest_rates` each end their
   timeline in a knowledge-bound row (2026-08-22) that *widens* the Sunday queue to 16:00-17:00 CT, and
   each module and ledger basis note records that only the disputed 16:00-16:15 CT quarter-hour depends
-  on the undated 2012 move, so that phase is withheld rather than sourced and none of the seven is
+  on the missing artifact — and the operative reason is narrower than the undated 2012 move: the crate
+  holds no admissible artifact whose own scope covers an ordinary week inside the claimed interval, and
+  no sourced state has printed 16:15 since 2012-05-28 (Globex notices 20120402 and 20121112 date the
+  two values). So that phase is withheld rather than sourced and none of the seven is
   complete in the era before it. From 2026-08-22 on — a Saturday, so the first Sunday the bound
   governs is 2026-08-23 — each profile's Sunday queue serves the quarter-hour, and the metadata's
   `#79` declarations are bounded there, so those dates stop being withheld, and all seven then report

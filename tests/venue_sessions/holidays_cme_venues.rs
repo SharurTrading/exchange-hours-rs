@@ -432,7 +432,10 @@ fn a_closed_venue_row_is_a_unanimous_closure() {
         // Parsed from the shipped tables window by window, 2010-2012
         // contributes 49 (CME) or 33 (CBOT) unsourced dates, 2013-2015 another
         // 50 or 46, 2016-2018 27 each, 2019-2021 34 each, 2022-2024 34 and 32,
-        // and 2025-2027 40 and 34 — the three Saturday-session trade dates
+        // and 2025-2027 53 and 48 — the closure-eve replacement rows
+        // `globex_grains` states on fourteen dates move both venues by those
+        // fourteen (CME's 2025-07-03 was already `Unsourced`), and the rest of
+        // the era's growth is the three Saturday-session trade dates
         // (2026-06-22, 2026-07-06 and 2027-06-21) carry a row in `globex_energy`,
         // `globex_equity_index`, `globex_interest_rates` and `globex_fx`, so
         // they are disputes on the six-family venue, which gains nothing here — its
@@ -449,9 +452,9 @@ fn a_closed_venue_row_is_a_unanimous_closure() {
         let expected = if single_family {
             6
         } else if families.len() == 6 {
-            242
+            255
         } else {
-            219
+            233
         };
         assert_eq!(unsigned, expected, "{exchange:?}: unsourced row count");
     }

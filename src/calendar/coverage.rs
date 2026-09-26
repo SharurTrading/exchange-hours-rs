@@ -29,12 +29,22 @@
 //! [`CoverageGapReason::NormalWeekCarried`], [`CoverageGapReason::NoHolidayTable`],
 //! [`CoverageGapReason::NoHolidayCoverage`], [`CoverageGapReason::WithheldDate`]
 //! and [`CoverageGapReason::NormalWeekOnly`] name its five kinds. A **declared**
-//! gap is not date-shaped: the operator publishes the arrangement, and no shipped
-//! row states it. `schedules/sourcing.rs` declares those
+//! gap is not date-shaped: the operator publishes an arrangement no shipped row
+//! states exactly. `schedules/sourcing.rs` declares those
 //! per identity, and this module reports them as
 //! [`CoverageGapReason::NormalWeekPhaseWithheld`] (#79),
-//! [`CoverageGapReason::SpecialSessionUnrepresentable`] (#93) and
+//! [`CoverageGapReason::SpecialSessionUnrepresentable`] (#93),
+//! [`CoverageGapReason::PostCloseQueueTradeDateLabel`] (#152) and
 //! [`CoverageGapReason::UnpublishedClosureDates`] (#157).
+//!
+//! Three of the four withhold something; the fourth does not. A **phase-level**
+//! declaration withholds a phase's own answer, and a query whose answer is that
+//! phase is refused. [`CoverageGapReason::PostCloseQueueTradeDateLabel`] and
+//! [`CoverageGapReason::UnpublishedClosureDates`] withhold no phase — the first
+//! states that one served answer, the trade date, is the crate's convention
+//! rather than the operator's printing, and the second that the operator names
+//! closures it has not dated — so both are completeness facts alone and the
+//! phase's own queries answer through them.
 //!
 //! A declared gap applies to the whole supported domain **unless its own
 //! declaration carries an end bound** ([`PhaseGap::until`]), because a profile can
@@ -239,6 +249,41 @@ pub enum CoverageGapReason {
     /// session CME publishes for that family is stated and it declares only the
     /// `#79` quarter-hour.
     SpecialSessionUnrepresentable,
+    /// **Declared phase-level.** The operator prints a trade date on its
+    /// post-close order-entry queue that the crate does not, so one answer a
+    /// caller reads from a covered date — the trade date — is the crate's own
+    /// convention rather than the operator's label.
+    ///
+    /// An order-entry occurrence is dated by the session it feeds
+    /// (`next_session_after_with`), so a date's `14:30-16:00` CT Post-Close
+    /// queue reads with the **next** trade date while CME's own service prints
+    /// it carrying the date the queue is printed on. The two answers are
+    /// deliberate and differ only in the label: CME's T1 description of the
+    /// Post-Close ("GTC and GTD orders may be entered, modified and cancelled
+    /// 1:45.30 - 4:00 p.m. CT / The markets will become unavailable at 4:00
+    /// p.m. CT") describes orders that persist into the next session, which is
+    /// what the crate's assignment states.
+    ///
+    /// **This reason withholds no answer, so it refuses no query.** The window,
+    /// its `is_open` verdict and its `is_accepting_orders` verdict are all
+    /// sourced and served; only the label differs, and a caller that needs the
+    /// operator's own label can read the queue's date and not the session's. The
+    /// gate in `query::schedule::require_phase_coverage` therefore passes this
+    /// reason through, unlike the two reasons above, whose phases the crate does
+    /// not carry at all. What the reason states is the completeness fact: a scope
+    /// that carries it is not claiming a calendar from which every answer matches
+    /// the operator's printings.
+    ///
+    /// A replacement-block row cannot close it. Three candidate row shapes were
+    /// measured and all were rejected: one leaves the label unchanged, and the
+    /// only shape that yields the operator's own label is `tradeable`, which
+    /// would assert matching in a window the operator marks `pcp`
+    /// (LAW-SESSION-NOT-EXPIRY).
+    ///
+    /// `globex_grains` and `globex_livestock` are the shipped scopes: both
+    /// publish a `14:30-16:00` CT post-close queue, and CME prints it with the
+    /// day's own trade date. Tracked as #152, which the declaration cites.
+    PostCloseQueueTradeDateLabel,
     /// **Declared, not phase-level.** The operator declares closures inside this
     /// identity's own product scope but has not dated them, so no date its
     /// declaration covers is certified complete.
@@ -275,13 +320,16 @@ pub enum CoverageGapReason {
 /// A completeness gap one identity declares about itself: a known internal gap
 /// that no date walk over the identity's tables can find.
 ///
-/// Two shapes are declared here. A **phase-level** gap withholds part of a
+/// Three shapes are declared here. A **phase-level** gap withholds part of a
 /// phase the crate's scalar rules do not serve
 /// ([`CoverageGapReason::NormalWeekPhaseWithheld`],
-/// [`CoverageGapReason::SpecialSessionUnrepresentable`]). A **holiday-scope**
-/// gap ([`CoverageGapReason::UnpublishedClosureDates`]) withholds no phase at
-/// all: the operator's calendar names dates it closes without publishing them,
-/// so the site is incomplete while every phase still answers.
+/// [`CoverageGapReason::SpecialSessionUnrepresentable`]). A **labelling** gap
+/// ([`CoverageGapReason::PostCloseQueueTradeDateLabel`]) serves every phase and
+/// states that one answer read from them, the trade date, is the crate's
+/// convention rather than the operator's printing. A **holiday-scope** gap
+/// ([`CoverageGapReason::UnpublishedClosureDates`]) withholds no phase at all:
+/// the operator's calendar names dates it closes without publishing them, so the
+/// site is incomplete while every phase still answers.
 ///
 /// Declared in `schedules/sourcing.rs` beside the identity it belongs to, never
 /// inferred from a timeline or a holiday table. LAW-COVERAGE requires complete
@@ -679,6 +727,7 @@ impl CalendarCoverage {
                 | CoverageGapReason::NoHolidayCoverage
                 | CoverageGapReason::NormalWeekPhaseWithheld
                 | CoverageGapReason::SpecialSessionUnrepresentable
+                | CoverageGapReason::PostCloseQueueTradeDateLabel
                 | CoverageGapReason::UnpublishedClosureDates,
             ) => DateCoverage::OutsideCoveredRange,
         }

@@ -575,12 +575,16 @@ pub(crate) static CME: &HolidayTable = holidays! {
         // 2025-02-18 - T2 - CME-SVC-2025-02-16 - as 2025-01-21.
         (2025, 2, 18, Unsourced, T2, "CME-SVC-2025-02-16"),
         // 2025-04-18 - T2 - CME-SVC-2025-04-17 - all six families closed.
+        // 2025-04-17 - T2 - CME-SVC-2025-04-17 - grains states the closure eve's replacement row; no row in any of the other five families.
+        (2025, 4, 17, Unsourced, T2, "CME-SVC-2025-04-17"),
         (2025, 4, 18, Closed, T2, "CME-SVC-2025-04-17"),
         // 2025-05-26 - T2 - CME-SVC-2025-05-25 - as 2025-01-20.
         (2025, 5, 26, Unsourced, T2, "CME-SVC-2025-05-25"),
         // 2025-05-27 - T2 - CME-SVC-2025-05-25 - as 2025-01-21.
         (2025, 5, 27, Unsourced, T2, "CME-SVC-2025-05-25"),
         // 2025-06-19 - T2 - CME-SVC-2025-06-18 - as 2025-01-20.
+        // 2025-06-18 - T2 - CME-SVC-2025-06-18 - grains states the closure eve's replacement row; no row in any of the other five families.
+        (2025, 6, 18, Unsourced, T2, "CME-SVC-2025-06-18"),
         (2025, 6, 19, Unsourced, T2, "CME-SVC-2025-06-18"),
         // 2025-06-20 - T2 - CME-SVC-2025-06-18 - as 2025-01-21.
         (2025, 6, 20, Unsourced, T2, "CME-SVC-2025-06-18"),
@@ -595,6 +599,8 @@ pub(crate) static CME: &HolidayTable = holidays! {
         // 2025-09-02 - T2 - CME-SVC-2025-08-31 - as 2025-01-21.
         (2025, 9, 2, Unsourced, T2, "CME-SVC-2025-08-31"),
         // 2025-11-27 - T2 - CME-SVC-2025-11-26-SAT - as 2025-01-20.
+        // 2025-11-26 - T2 - CME-SVC-2025-11-26-SAT - grains states the closure eve's replacement row; no row in any of the other five families.
+        (2025, 11, 26, Unsourced, T2, "CME-SVC-2025-11-26-SAT"),
         (2025, 11, 27, Unsourced, T2, "CME-SVC-2025-11-26-SAT"),
         // 2025-11-28 - T2 - CME-SVC-2025-11-26 - equity index, interest rates
         // and livestock early close 12:05-12:15 CT, energy and FX 13:45 CT,
@@ -612,6 +618,8 @@ pub(crate) static CME: &HolidayTable = holidays! {
         // no row in any of the other five families.
         (2025, 12, 26, Unsourced, T2, "CME-SVC-2025-12-24"),
         // 2026-01-01 - T2 - CME-SVC-2025-12-31 - all six families closed.
+        // 2025-12-31 - T2 - CME-SVC-2025-12-31 - grains states the closure eve's replacement row; no row in any of the other five families.
+        (2025, 12, 31, Unsourced, T2, "CME-SVC-2025-12-31"),
         (2026, 1, 1, Closed, T2, "CME-SVC-2025-12-31"),
         // 2026-01-02 - T2 - CME-SVC-2025-12-31 - grains late open 08:30 CT;
         // no row in any of the other five families.
@@ -629,6 +637,8 @@ pub(crate) static CME: &HolidayTable = holidays! {
         // 2026-04-03 - T2 - CME-SVC-2026-04-01 - equity index early close
         // 08:15 CT, FX and interest rates 10:15 CT, energy, grains and
         // livestock closed.
+        // 2026-04-02 - T2 - CME-SVC-2026-04-01 - grains states the closure eve's replacement row; no row in any of the other five families.
+        (2026, 4, 2, Unsourced, T2, "CME-SVC-2026-04-01"),
         (2026, 4, 3, Unsourced, T2, "CME-SVC-2026-04-01"),
         // 2026-05-25 - T2 - CME-SVC-2026-05-24 - as 2025-01-20.
         (2026, 5, 25, Unsourced, T2, "CME-SVC-2026-05-24"),
@@ -636,12 +646,16 @@ pub(crate) static CME: &HolidayTable = holidays! {
         (2026, 5, 26, Unsourced, T2, "CME-SVC-2026-05-24"),
         // 2026-06-19 - T2 - CME-SVC-2026-06-18 - equity index, energy, FX and
         // interest rates early close 12:00 CT, grains and livestock closed.
+        // 2026-06-18 - T2 - CME-SVC-2026-06-18 - grains states the closure eve's replacement row; no row in any of the other five families.
+        (2026, 6, 18, Unsourced, T2, "CME-SVC-2026-06-18"),
         (2026, 6, 19, Unsourced, T2, "CME-SVC-2026-06-18"),
         // 2026-06-22 - T2 - CME-SVC-2026-06-18 - energy, equity index, interest
         // rates and FX state a Saturday-session replacement; grains and livestock
         // state no row for the date, so the whole venue withholds it.
         (2026, 6, 22, Unsourced, T2, "CME-SVC-2026-06-18"),
         // 2026-07-03 - T2 - CME-SVC-2026-07-03 - as 2026-06-19.
+        // 2026-07-02 - T2 - CME-SVC-2026-07-02 - grains states the closure eve's replacement row; no row in any of the other five families.
+        (2026, 7, 2, Unsourced, T2, "CME-SVC-2026-07-02"),
         (2026, 7, 3, Unsourced, T2, "CME-SVC-2026-07-03"),
         // 2026-07-06 - T2 - CME-SVC-2026-07-03 - as 2026-06-22.
         (2026, 7, 6, Unsourced, T2, "CME-SVC-2026-07-03"),
@@ -650,6 +664,8 @@ pub(crate) static CME: &HolidayTable = holidays! {
         // 2026-09-08 - T2 - CME-SVC-2026-09-06 - as 2026-01-20.
         (2026, 9, 8, Unsourced, T2, "CME-SVC-2026-09-06"),
         // 2026-11-26 - T2 - CME-SVC-2026-11-25 - as 2025-01-20.
+        // 2026-11-25 - T2 - CME-SVC-2026-11-25 - grains states the closure eve's replacement row; no row in any of the other five families.
+        (2026, 11, 25, Unsourced, T2, "CME-SVC-2026-11-25"),
         (2026, 11, 26, Unsourced, T2, "CME-SVC-2026-11-25"),
         // 2026-11-27 - T2 - CME-SVC-2026-11-25 - as 2025-11-28.
         (2026, 11, 27, Unsourced, T2, "CME-SVC-2026-11-25"),
@@ -659,6 +675,8 @@ pub(crate) static CME: &HolidayTable = holidays! {
         // 2026-12-25 - T2 - CME-SVC-2026-12-24 - all six families closed.
         (2026, 12, 25, Closed, T2, "CME-SVC-2026-12-24"),
         // 2027-01-01 - T2 - CME-SVC-2026-12-31 - all six families closed.
+        // 2026-12-31 - T2 - CME-SVC-2026-12-31 - grains states the closure eve's replacement row; no row in any of the other five families.
+        (2026, 12, 31, Unsourced, T2, "CME-SVC-2026-12-31"),
         (2027, 1, 1, Closed, T2, "CME-SVC-2026-12-31"),
         // 2027-01-18 - T2 - CME-SVC-2027-01-17 - as 2025-01-20.
         (2027, 1, 18, Unsourced, T2, "CME-SVC-2027-01-17"),
@@ -669,12 +687,16 @@ pub(crate) static CME: &HolidayTable = holidays! {
         // 2027-02-16 - T2 - CME-SVC-2027-02-14 - as 2026-01-20.
         (2027, 2, 16, Unsourced, T2, "CME-SVC-2027-02-14"),
         // 2027-03-26 - T2 - CME-SVC-2027-03-25 - all six families closed.
+        // 2027-03-25 - T2 - CME-SVC-2027-03-25 - grains states the closure eve's replacement row; no row in any of the other five families.
+        (2027, 3, 25, Unsourced, T2, "CME-SVC-2027-03-25"),
         (2027, 3, 26, Closed, T2, "CME-SVC-2027-03-25"),
         // 2027-05-31 - T2 - CME-SVC-2027-05-30 - as 2025-01-20.
         (2027, 5, 31, Unsourced, T2, "CME-SVC-2027-05-30"),
         // 2027-06-01 - T2 - CME-SVC-2027-05-30 - as 2026-01-20.
         (2027, 6, 1, Unsourced, T2, "CME-SVC-2027-05-30"),
         // 2027-06-18 - T2 - CME-SVC-2027-06-17 - as 2026-06-19.
+        // 2027-06-17 - T2 - CME-SVC-2027-06-17 - grains states the closure eve's replacement row; no row in any of the other five families.
+        (2027, 6, 17, Unsourced, T2, "CME-SVC-2027-06-17"),
         (2027, 6, 18, Unsourced, T2, "CME-SVC-2027-06-17"),
         // 2027-06-21 - T2 - CME-SVC-2027-06-17 - as 2026-06-22.
         (2027, 6, 21, Unsourced, T2, "CME-SVC-2027-06-17"),
@@ -693,10 +715,14 @@ pub(crate) static CME: &HolidayTable = holidays! {
         // 2027-09-07 - T2 - CME-SVC-2027-09-05 - as 2026-01-20.
         (2027, 9, 7, Unsourced, T2, "CME-SVC-2027-09-05"),
         // 2027-11-25 - T2 - CME-SVC-2027-11-24 - as 2025-01-20.
+        // 2027-11-24 - T2 - CME-SVC-2027-11-24 - grains states the closure eve's replacement row; no row in any of the other five families.
+        (2027, 11, 24, Unsourced, T2, "CME-SVC-2027-11-24"),
         (2027, 11, 25, Unsourced, T2, "CME-SVC-2027-11-24"),
         // 2027-11-26 - T2 - CME-SVC-2027-11-24 - as 2025-11-28.
         (2027, 11, 26, Unsourced, T2, "CME-SVC-2027-11-24"),
         // 2027-12-24 - T2 - CME-SVC-2027-12-22 - all six families closed.
+        // 2027-12-23 - T2 - CME-SVC-2027-12-22 - grains states the closure eve's replacement row; no row in any of the other five families.
+        (2027, 12, 23, Unsourced, T2, "CME-SVC-2027-12-22"),
         (2027, 12, 24, Closed, T2, "CME-SVC-2027-12-22"),
     ],
 };

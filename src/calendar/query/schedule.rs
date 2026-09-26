@@ -429,7 +429,24 @@ impl<'a> QueryContext<'a> {
         self.require_answerable(date)?;
         match coverage.phase_gap_on(date) {
             None => Ok(()),
-            Some(gap) if gap.reason() == CoverageGapReason::UnpublishedClosureDates => Ok(()),
+            // A declaration that withholds no phase refuses nothing. The
+            // post-close queue's window and both of its verdicts are served, and
+            // only the trade date it is reported under is the crate's own
+            // convention rather than the operator's printed label; the undated
+            // German closures name no phase either, so an ordinary day's queues
+            // answer through them. Refusing here would turn a completeness fact
+            // into a coverage error read as a closure on every covered date —
+            // the failure LAW-COVERAGE exists to prevent. The two reasons above
+            // name phases the crate does not carry at all.
+            Some(gap)
+                if matches!(
+                    gap.reason(),
+                    CoverageGapReason::PostCloseQueueTradeDateLabel
+                        | CoverageGapReason::UnpublishedClosureDates
+                ) =>
+            {
+                Ok(())
+            }
             Some(_gap) => Err(CalendarQueryError::OutsideCoveredRange {
                 source: coverage.identity(),
                 date,

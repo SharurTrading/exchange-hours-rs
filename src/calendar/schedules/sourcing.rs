@@ -206,6 +206,34 @@ const fn unstateable_special_sessions() -> PhaseGap {
     PhaseGap::new(CoverageGapReason::SpecialSessionUnrepresentable, "#93")
 }
 
+/// The post-close queue's trade-date label, which `globex_grains` and
+/// `globex_livestock` both carry (#152).
+///
+/// CME's own trading-hours service prints a trade date on every `14:30 pcp`
+/// event, and on an ordinary date that is the date the queue is printed on. The
+/// crate dates an order-entry occurrence by the session it feeds, so the same
+/// queue reads with the **next** trade date instead — `D + 1` on a Monday to
+/// Thursday, `D + 3` over a weekend. Measured over 2025-01-01..2027-12-31,
+/// `globex_grains` serves the queue on **746** trade dates and answers all 746
+/// with a trade date other than the operator's label; `globex_livestock` serves
+/// the same queue on its own 08:30-13:05 CT grid.
+///
+/// The phase is served, so this declaration withholds no answer and refuses no
+/// query — see
+/// [`CoverageGapReason::PostCloseQueueTradeDateLabel`](crate::CoverageGapReason::PostCloseQueueTradeDateLabel),
+/// which also records why no data row can close it. What it states is that a
+/// covered date's trade date is the crate's convention rather than the
+/// operator's printing, which is why neither scope may claim a complete
+/// calendar. `docs/evidence/globex_grains.md` and
+/// `docs/evidence/globex_livestock.md` record it with the probe instants that
+/// show it; #152 is the issue that closes it.
+const fn post_close_queue_trade_date_label() -> PhaseGap {
+    PhaseGap::new(CoverageGapReason::PostCloseQueueTradeDateLabel, "#152")
+}
+
+/// The declaration `globex_grains` and `globex_livestock` both carry.
+const POST_CLOSE_QUEUE_LABEL: [PhaseGap; 1] = [post_close_queue_trade_date_label()];
+
 /// The second gap `globex_cryptocurrency` carries: the five-day era's Sunday and
 /// weekday Pre-Open onset is undated, so dated history omits those queues.
 ///
@@ -435,7 +463,9 @@ const fn for_market_hours_key(key: MarketHoursKey) -> DeclaredSourcing {
         MarketHoursKey::GlobexEnergy => {
             DeclaredSourcing::carried_below_with_quarter_hour(horizon!(2012, 5, 11))
         }
-        MarketHoursKey::GlobexGrains => DeclaredSourcing::carried_below(horizon!(2010, 3, 15)),
+        MarketHoursKey::GlobexGrains => {
+            DeclaredSourcing::carried_below_with(horizon!(2010, 3, 15), &POST_CLOSE_QUEUE_LABEL)
+        }
         MarketHoursKey::GlobexMiniGrains => DeclaredSourcing::carried_below(horizon!(2010, 4, 5)),
         // Only the Sunday 16:00-16:15 CT quarter-hour is withheld (#79): every
         // special session CME publishes for this family now ships as a row, so
@@ -446,7 +476,9 @@ const fn for_market_hours_key(key: MarketHoursKey) -> DeclaredSourcing {
         MarketHoursKey::GlobexInterestRates => {
             DeclaredSourcing::carried_below_with_quarter_hour(horizon!(2010, 1, 1))
         }
-        MarketHoursKey::GlobexLivestock => DeclaredSourcing::carried_below(horizon!(2010, 1, 1)),
+        MarketHoursKey::GlobexLivestock => {
+            DeclaredSourcing::carried_below_with(horizon!(2010, 1, 1), &POST_CLOSE_QUEUE_LABEL)
+        }
         // `—`: closed before the exact 2017-12-17 launch grid. CME publishes
         // cryptocurrency sessions no shipped row states (#93), and the
         // five-day era's Sunday and weekday Pre-Open onset is undated (#123).

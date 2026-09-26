@@ -136,6 +136,7 @@ are in the research store's `holidays/raw/` indexes.
 | `CME-SVC-2026-04-01` | 2026-04-01 .. 2026-04-03 | <https://web.archive.org/web/20260619114118id_/https://www.cmegroup.com/services/trading-hours-by-product?id=316,133,425,300,58,437,22,8478,5201,10191&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2026-04-01&toEventDate=2026-04-03> | archive capture 2026-06-19T11:41:18Z | T2 | `54bcc271e9ba9737a99a2fe608e658de0c657075284d050fbfec4fe1aee2a2a5` |
 | `CME-SVC-2026-05-24` | 2026-05-24 .. 2026-05-26 | <https://web.archive.org/web/20260619114105id_/https://www.cmegroup.com/services/trading-hours-by-product?id=316,133,425,300,58,437,22,8478,5201,10191&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2026-05-24&toEventDate=2026-05-26> | archive capture 2026-06-19T11:41:05Z | T2 | `f7e30d204ce2cbe08e5f486ded6518f623369159f3a36161288a4708288314da` |
 | `CME-SVC-2026-06-18` | 2026-06-18 .. 2026-06-20 | <https://web.archive.org/web/20260619113404id_/https://www.cmegroup.com/services/trading-hours-by-product?id=316,133,425,300,58,437,22,8478,5201,10191&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2026-06-18&toEventDate=2026-06-20> | archive capture 2026-06-19T11:34:04Z | T2 | `97fd5da371309f4486a8fb49ff2105c6c1c2396939ab7c76f1a2a1097b6f015c` |
+| `CME-SVC-2026-07-02` | 2026-07-02 .. 2026-07-04 | <https://web.archive.org/web/20260129012216id_/https://www.cmegroup.com/services/trading-hours-by-product?id=316,133,425,300,58,437,22,8478,5201,10191&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2026-07-02&toEventDate=2026-07-04> | archive capture 2026-01-29T01:22:16Z | T2 | `d97339fb9b8be15b7e1be70293a5b40afc38e8b09f136158f63bbccd75ea93d7` |
 | `CME-SVC-2026-07-03` | 2026-07-03 .. 2026-07-05 | <https://web.archive.org/web/20260619114108id_/https://www.cmegroup.com/services/trading-hours-by-product?id=316,133,425,300,58,437,22,8478,5201,10191&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2026-07-03&toEventDate=2026-07-05> | archive capture 2026-06-19T11:41:08Z | T2 | `4b89a026358e998277f9c1ff7e095e5d4e625cdc45115fd141dc92201833155b` |
 | `CME-SVC-2026-09-06` | 2026-09-06 .. 2026-09-08 | <https://www.cmegroup.com/services/trading-hours-by-product?id=316,133,425,300,58,437,22,8478,5201,10191&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2026-09-06&toEventDate=2026-09-08> | live retrieval 2026-09-12T04:30Z | T2 | `01fb78ffaac10eac466fed53674214222f05aed518b9d93a4b42cf8957147bca` |
 | `CME-SVC-2026-11-25` | 2026-11-25 .. 2026-11-27 | <https://www.cmegroup.com/services/trading-hours-by-product?id=316,133,425,300,58,437,22,8478,5201,10191&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2026-11-25&toEventDate=2026-11-27> | live retrieval 2026-09-12T04:30Z | T2 | `e1f35a5623b3c5d15e7468b2cb4119e587411a9714f920605dab11bf688756d1` |
@@ -556,11 +557,11 @@ and 2024-01-01, 2024-03-29 and 2024-12-25. The other thirty-two carry
 
 ### 2025-2027 (T2)
 
-**Counts in this subsection are the 2025-2027 era's.** The table as a whole carries 250 rows over
+**Counts in this subsection are the 2025-2027 era's.** The table as a whole carries 264 rows over
 its six audited windows: 39 in 2010-2012 (6 stated closures and 33 `Unsourced`), 54 in 2013-2015
 (8 stated closures and 46 `Unsourced`), 36 in 2016-2018 (9 stated closures and 27 `Unsourced`), 42
 in 2019-2021 (8 stated closures and 34 `Unsourced`), 39 in 2022-2024 (7 stated closures and 32
-`Unsourced`) and 40 in this era (9 stated closures and 31 `Unsourced`). The derivation rule is the
+`Unsourced`) and 54 in this era (9 stated closures and 45 `Unsourced`). The derivation rule is the
 same in all six; only the documents differ.
 
 **This table is derived, not retrieved.** It is the **intersection** of the two
@@ -574,7 +575,7 @@ event-date-to-trade-date conversions are in those two files.
 building around different sessions, and the day session is where they touch. On a
 full Globex closure both are closed and the venue states it: **nine dates** in this
 window qualify, and they are the only rows here with a sourced **closure** status.
-The other **thirty-one** dates carry `unsourced`, in two shapes:
+The other **forty-five** dates carry `unsourced`, in three shapes:
 
 - **Twenty-seven are close disagreements.** On every CBOT holiday early close the two
   families move by different amounts, and by a different pair on different dates: the
@@ -589,6 +590,13 @@ The other **thirty-one** dates carry `unsourced`, in two shapes:
   through. One family states a row and the other has audited the date normal, which is
   a different answer rather than a missing one, so the venue cannot state the late open
   as its own either.
+- **Fourteen are closure eves.** 2025-04-17, 2025-06-18, 2025-07-03, 2025-11-26,
+  2025-12-31, 2026-04-02, 2026-06-18, 2026-07-02, 2026-11-25, 2026-12-31, 2027-03-25,
+  2027-06-17, 2027-11-24 and 2027-12-23 are the eves of a CBOT closure, and
+  `globex_grains` states each one's **complete replacement-blocks day** — the operator
+  prints the eve's own `14:30 pcp` carrying the eve's trade date — while
+  `globex_interest_rates` audited every one of them normal. One family states the whole
+  day and the other states nothing, so the venue cannot adopt the day as its own.
 
 **`unsourced` is neither silence nor a compromise.** The coverage window is
 contiguous **within each audited window**, so a date carrying no row there is the
@@ -609,49 +617,59 @@ on.
 | Trade date | Kind | Instant as printed | Document | Tier | Derived from |
 |---|---|---|---|---|---|
 | 2025-01-01 | closed | `no events published` | `CME-SVC-2024-12-31` | T2 | grains closed; interest rates closed |
-| 2025-01-02 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2024-12-31` | T2 | grains late open 08:30 CT; no row in interest rates |
+| 2025-01-02 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2024-12-31` | T2 | grains replacement blocks: the whole day from CME's 06:00 pre-open; no row in interest rates |
 | 2025-01-20 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2025-01-19` | T2 | grains closed; interest rates early close 12:00 CT |
 | 2025-01-21 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2025-01-19` | T2 | interest rates states the merged trade date the holiday rolls into; grains states no row |
 | 2025-02-17 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2025-02-16` | T2 | grains closed; interest rates early close 12:00 CT |
 | 2025-02-18 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2025-02-16` | T2 | interest rates states the merged trade date the holiday rolls into; grains states no row |
+| 2025-04-17 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2025-04-17` | T2 | grains states the eve's complete replacement-blocks day, whose post-close queue carries this trade date; interest rates audited the date normal |
 | 2025-04-18 | closed | `no events published` | `CME-SVC-2025-04-17` | T2 | grains closed; interest rates closed |
 | 2025-05-26 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2025-05-25` | T2 | grains closed; interest rates early close 12:00 CT |
 | 2025-05-27 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2025-05-25` | T2 | interest rates states the merged trade date the holiday rolls into; grains states no row |
+| 2025-06-18 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2025-06-18` | T2 | grains states the eve's complete replacement-blocks day, whose post-close queue carries this trade date; interest rates audited the date normal |
 | 2025-06-19 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2025-06-18` | T2 | grains closed; interest rates early close 12:00 CT |
 | 2025-06-20 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2025-06-18` | T2 | interest rates states the merged trade date the holiday rolls into; grains states no row |
+| 2025-07-03 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2025-07-03` | T2 | grains states the eve's complete replacement-blocks day, whose post-close queue carries this trade date; interest rates audited the date normal |
 | 2025-07-04 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2025-07-03` | T2 | grains closed; interest rates early close 12:00 CT |
 | 2025-09-01 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2025-08-31` | T2 | grains closed; interest rates early close 12:00 CT |
 | 2025-09-02 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2025-08-31` | T2 | interest rates states the merged trade date the holiday rolls into; grains states no row |
+| 2025-11-26 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2025-11-26-SAT` | T2 | grains states the eve's complete replacement-blocks day, whose post-close queue carries this trade date; interest rates audited the date normal |
 | 2025-11-27 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2025-11-26-SAT` | T2 | grains closed; interest rates early close 12:00 CT |
 | 2025-11-28 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2025-11-26` | T2 | grains late open 08:30 CT and early close 12:05 CT; interest rates early close 12:15 CT |
 | 2025-11-29 | closed | `no events published` | `CME-SVC-2025-11-26-SAT` | T2 | grains closed; interest rates closed |
 | 2025-12-24 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2025-12-24` | T2 | grains early close 12:05 CT; interest rates early close 12:15 CT |
 | 2025-12-25 | closed | `no events published` | `CME-SVC-2025-12-24` | T2 | grains closed; interest rates closed |
-| 2025-12-26 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2025-12-24` | T2 | grains late open 08:30 CT; no row in interest rates |
+| 2025-12-26 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2025-12-24` | T2 | grains replacement blocks: the whole day from CME's 06:00 pre-open; no row in interest rates |
+| 2025-12-31 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2025-12-31` | T2 | grains states the eve's complete replacement-blocks day, whose post-close queue carries this trade date; interest rates audited the date normal |
 
 ### 2026
 
 | Trade date | Kind | Instant as printed | Document | Tier | Derived from |
 |---|---|---|---|---|---|
 | 2026-01-01 | closed | `no events published` | `CME-SVC-2025-12-31` | T2 | grains closed; interest rates closed |
-| 2026-01-02 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2025-12-31` | T2 | grains late open 08:30 CT; no row in interest rates |
+| 2026-01-02 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2025-12-31` | T2 | grains replacement blocks: the whole day from CME's 06:00 pre-open; no row in interest rates |
 | 2026-01-19 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2026-01-18` | T2 | grains closed; interest rates early close 12:00 CT |
 | 2026-01-20 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2026-01-18` | T2 | interest rates states the merged trade date the holiday rolls into; grains states no row |
 | 2026-02-16 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2026-02-15` | T2 | grains closed; interest rates early close 12:00 CT |
 | 2026-02-17 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2026-02-15` | T2 | interest rates states the merged trade date the holiday rolls into; grains states no row |
+| 2026-04-02 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2026-04-01` | T2 | grains states the eve's complete replacement-blocks day, whose post-close queue carries this trade date; interest rates audited the date normal |
 | 2026-04-03 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2026-04-01` | T2 | grains closed; interest rates early close 10:15 CT |
 | 2026-05-25 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2026-05-24` | T2 | grains closed; interest rates early close 12:00 CT |
 | 2026-05-26 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2026-05-24` | T2 | interest rates states the merged trade date the holiday rolls into; grains states no row |
+| 2026-06-18 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2026-06-18` | T2 | grains states the eve's complete replacement-blocks day, whose post-close queue carries this trade date; interest rates audited the date normal |
 | 2026-06-19 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2026-06-18` | T2 | grains closed; interest rates early close 12:00 CT |
 | 2026-06-22 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2026-06-18` | T2 | interest rates replacement blocks: Saturday 05:00-17:00 CT, the Sunday Pre-Open and the Sunday-17:00-to-Monday-16:00 session; grains audited the date normal |
+| 2026-07-02 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2026-07-02` | T2 | grains states the eve's complete replacement-blocks day, whose post-close queue carries this trade date; interest rates audited the date normal |
 | 2026-07-06 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2026-07-03` | T2 | as 2026-06-22 |
 | 2026-07-03 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2026-07-03` | T2 | grains closed; interest rates early close 12:00 CT |
 | 2026-09-07 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2026-09-06` | T2 | grains closed; interest rates early close 12:00 CT |
 | 2026-09-08 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2026-09-06` | T2 | interest rates states the merged trade date the holiday rolls into; grains states no row |
+| 2026-11-25 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2026-11-25` | T2 | grains states the eve's complete replacement-blocks day, whose post-close queue carries this trade date; interest rates audited the date normal |
 | 2026-11-26 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2026-11-25` | T2 | grains closed; interest rates early close 12:00 CT |
 | 2026-11-27 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2026-11-25` | T2 | grains late open 08:30 CT and early close 12:05 CT; interest rates early close 12:15 CT |
 | 2026-12-24 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2026-12-22` | T2 | grains early close 12:05 CT; interest rates early close 12:15 CT |
 | 2026-12-25 | closed | `no events published` | `CME-SVC-2026-12-24` | T2 | grains closed; interest rates closed |
+| 2026-12-31 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2026-12-31` | T2 | grains states the eve's complete replacement-blocks day, whose post-close queue carries this trade date; interest rates audited the date normal |
 
 ### 2027
 
@@ -662,17 +680,21 @@ on.
 | 2027-01-19 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2027-01-17` | T2 | interest rates states the merged trade date the holiday rolls into; grains states no row |
 | 2027-02-15 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2027-02-14` | T2 | grains closed; interest rates early close 12:00 CT |
 | 2027-02-16 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2027-02-14` | T2 | interest rates states the merged trade date the holiday rolls into; grains states no row |
+| 2027-03-25 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2027-03-25` | T2 | grains states the eve's complete replacement-blocks day, whose post-close queue carries this trade date; interest rates audited the date normal |
 | 2027-03-26 | closed | `no events published` | `CME-SVC-2027-03-25` | T2 | grains closed; interest rates closed |
 | 2027-05-31 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2027-05-30` | T2 | grains closed; interest rates early close 12:00 CT |
 | 2027-06-01 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2027-05-30` | T2 | interest rates states the merged trade date the holiday rolls into; grains states no row |
+| 2027-06-17 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2027-06-17` | T2 | grains states the eve's complete replacement-blocks day, whose post-close queue carries this trade date; interest rates audited the date normal |
 | 2027-06-18 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2027-06-17` | T2 | grains closed; interest rates early close 12:00 CT |
 | 2027-06-21 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2027-06-17` | T2 | as 2026-06-22 |
 | 2027-07-05 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2027-07-04` | T2 | grains closed; interest rates early close 13:30 CT |
-| 2027-07-06 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2027-07-04` | T2 | grains late open 08:30 CT; no row in interest rates |
+| 2027-07-06 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2027-07-04` | T2 | grains replacement blocks: the whole day from CME's 06:00 pre-open; no row in interest rates |
 | 2027-09-06 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2027-09-05` | T2 | grains closed; interest rates early close 12:00 CT |
 | 2027-09-07 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2027-09-05` | T2 | interest rates states the merged trade date the holiday rolls into; grains states no row |
+| 2027-11-24 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2027-11-24` | T2 | grains states the eve's complete replacement-blocks day, whose post-close queue carries this trade date; interest rates audited the date normal |
 | 2027-11-25 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2027-11-24` | T2 | grains closed; interest rates early close 12:00 CT |
 | 2027-11-26 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2027-11-24` | T2 | grains late open 08:30 CT and early close 12:05 CT; interest rates early close 12:15 CT |
+| 2027-12-23 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2027-12-22` | T2 | grains states the eve's complete replacement-blocks day, whose post-close queue carries this trade date; interest rates audited the date normal |
 | 2027-12-24 | closed | `no events published` | `CME-SVC-2027-12-22` | T2 | grains closed; interest rates closed |
 
 **Gaps, 2025-2027.**

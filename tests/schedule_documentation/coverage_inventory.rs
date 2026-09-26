@@ -262,7 +262,7 @@ fn withheld(calendar: ExchangeCalendar, date: NaiveDate) -> bool {
 /// **and** the Sunday quarter-hour (#79), so its denial of completeness is no
 /// longer date-shaped.
 fn date_level_incompleteness() -> &'static [(&'static str, usize)] {
-    &[("cbot", 47)]
+    &[("cbot", 61)]
 }
 
 /// `is_complete_on(SAMPLE)` agrees with the inventory's `Complete?` cell for all
@@ -360,8 +360,8 @@ fn inventory_completeness_verdicts_match_the_metadata() {
     }
     assert_eq!(
         (complete, incomplete, no_coverage),
-        (5, 10, 1),
-        "the inventory's verdict shapes: five complete, ten incomplete, one with no 2025 \
+        (3, 12, 1),
+        "the inventory's verdict shapes: three complete, twelve incomplete, one with no 2025 \
          coverage"
     );
 }
@@ -385,6 +385,7 @@ fn declared_phase_gaps() -> Vec<(&'static str, Vec<(CoverageGapReason, &'static 
     let quarter_hour = (CoverageGapReason::NormalWeekPhaseWithheld, "#79");
     let special_sessions = (CoverageGapReason::SpecialSessionUnrepresentable, "#93");
     let pre_open_onset = (CoverageGapReason::NormalWeekPhaseWithheld, "#123");
+    let post_close_label = (CoverageGapReason::PostCloseQueueTradeDateLabel, "#152");
     let undated_closures = (CoverageGapReason::UnpublishedClosureDates, "#157");
     vec![
         ("cme", vec![quarter_hour]),
@@ -400,6 +401,12 @@ fn declared_phase_gaps() -> Vec<(&'static str, Vec<(CoverageGapReason, &'static 
             "globex_cryptocurrency",
             vec![special_sessions, pre_open_onset],
         ),
+        // The two scopes whose declaration serves its phase: the post-close
+        // queue is answered on every covered date, and only the trade date it
+        // reads under is the crate's convention rather than the operator's
+        // printing (#152).
+        ("globex_grains", vec![post_close_label]),
+        ("globex_livestock", vec![post_close_label]),
         // `eurex` withholds no *phase*: the operator declares German
         // equity/equity-index closures it has not dated, so the declaration is
         // a completeness fact the date walk cannot find and the order-entry
@@ -408,7 +415,7 @@ fn declared_phase_gaps() -> Vec<(&'static str, Vec<(CoverageGapReason, &'static 
     ]
 }
 
-/// The nine scopes that declare a gap declare exactly the ones
+/// The twelve scopes that declare a gap declare exactly the ones
 /// advertised, each reportable with its own reason and closing issue, and each
 /// issue is one the scope's own row names.
 ///
@@ -539,9 +546,10 @@ fn the_declared_phase_level_gaps_match_the_inventory() {
     }
     assert_eq!(
         (declaring, declarations),
-        (9, 10),
-        "nine served scopes declare a gap today, ten declarations in all: seven \
-         quarter-hour scopes, `globex_cryptocurrency`'s two and `eurex`'s undated closure scope"
+        (11, 12),
+        "eleven served scopes declare a gap today, twelve declarations in all: seven \
+         quarter-hour scopes, `globex_cryptocurrency`'s two, `eurex`'s undated closure scope, \
+         and the post-close queue label `globex_grains` and `globex_livestock` declare"
     );
 
     // The scopes the quarter-hour probe cleared of the disputed window declare
@@ -553,8 +561,6 @@ fn the_declared_phase_level_gaps_match_the_inventory() {
         "cfe",
         "coinbase_derivatives",
         "iceus",
-        "globex_grains",
-        "globex_livestock",
         "globex_nikkei_225_dollar",
     ] {
         assert!(

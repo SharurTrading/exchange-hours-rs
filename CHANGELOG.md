@@ -302,6 +302,48 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Fixed
 
+- **`globex_grains` states eighteen more complete trading days (2026-09-26 UTC).**
+  CME publishes a `14:30 pcp`/`16:00 closed` pair carrying the **eve's own trade
+  date** on the fourteen eves whose following trade date is closed — 2025-04-17,
+  2025-06-18, 2025-07-03, 2025-11-26, 2025-12-31, 2026-04-02, 2026-06-18,
+  2026-07-02, 2026-11-25, 2026-12-31, 2027-03-25, 2027-06-17, 2027-11-24 and
+  2027-12-23 — and a `06:00 preopen` on the four dates that follow a mid-week
+  closure (2025-01-02, 2025-12-26, 2026-01-02 and 2027-07-06). The crate dated
+  the first group's queue by the session it feeds, so the queue belonged to the
+  closed holiday and the neighbouring `Closed` row deleted it: every instant of
+  the window CME publishes answered `is_accepting_orders = false` from 14:30 to
+  16:00 CT. Its `late_open` row on the second group moved the open correctly and
+  stated no queue at all, so the published `06:00` window answered the same way.
+  Each of the eighteen now ships a `ReplacementBlocks` row stating the
+  **complete** day: the ordinary prior-evening queue and leg, the morning queue —
+  the operator's `06:00` where it prints one — the `08:30-13:20` CT day session
+  and the `14:30-16:00` CT post-close queue. **No `is_open` answer regresses**,
+  the withheld evening instants stay closed, and each eve's own prior-evening leg
+  is still traded under the eve's trade date. The `cme` and `cbot` venue tables
+  move with them: the fourteen eves become `Unsourced`, because `globex_grains`
+  states a row where every other routed family audited the date normal.
+- **The post-close queue's trade-date label is declared, and two scopes stop
+  claiming completeness (2026-09-26 UTC).** `globex_grains` and `globex_livestock`
+  both serve a `14:30-16:00` CT post-close queue, and the crate dates an
+  order-entry occurrence by the session it feeds: every covered date carrying
+  that queue answers a trade date other than the one CME's own service prints on
+  the event — 746 dates for `globex_grains` over 2025-01-01..2027-12-31, `D + 1`
+  on a Monday to Thursday and `D + 3` over a weekend. The divergence is
+  deliberate (CME's T1 description of the Post-Close describes orders that
+  persist into the next session) and no data row can close it: of three measured
+  candidate row shapes, one leaves the label unchanged and the only one yielding
+  the operator's own label would assert matching in a window the operator marks
+  `pcp`. Both scopes now declare it whole-domain in `schedules/sourcing.rs`,
+  `docs/schedules/coverage-2025.md` reads both **incomplete**, the `cme` and
+  `cbot` inventory rows and §2 read **61** withheld 2025+ dates each — the counts
+  the closure-eve rows above move theirs to, and the ones their `Unsrc 2025+
+  dates` cells and the inventory fence derive — and
+  `globex_nikkei_225_dollar` — which has no order-entry phase at all — is the one
+  scope still complete to 2027-12-31. The declaration **withholds no answer**:
+  unlike the two existing phase-level reasons it does not gate the phase's own
+  queries, so `is_open`, `is_accepting_orders`, `session_state`, `session_bounds`
+  and every other answer stand exactly as before and only the completeness
+  verdict moves.
 - **Five families served matching inside the published 2025-11-28 Pre-Open; a
   sixth ships five un-witnessed merged dates (2026-09-26 UTC).** Two blocking
   data defects an independent review reproduced against the source bytes.
@@ -384,23 +426,6 @@ corrections (a venue's hours fixed against a primary source) go under
   declared. Verified by an independent probe over every captured CME window:
   `globex_cryptocurrency` goes from **9 trade-date mismatches to 0** with the
   other seven scopes' tallies unchanged.
-- **`globex_cryptocurrency`'s Pre-Opens are order entry, not trading
-  (2026-09-26 UTC).** The family publishes two Pre-Open queues — weekday
-  `16:01-16:02` CT and Saturday `03:45-04:00` CT — and the crate carried both in
-  `extended`, so `is_open` answered `true` and `session_state` answered
-  `OpenExtended` for **60 seconds every day and 15 minutes every Saturday** in
-  windows CME defines as *"Order Entry, modification, and cancel are allowed. No
-  order matching."* Matching resumes at the `16:02` and `04:00` opens, as the
-  family's own evidence file already said: *"matching maintenance is 16:00-16:02 CT
-  Monday-Friday with Pre-Open from 16:01, and 02:00-04:00 CT Saturday with Pre-Open
-  from 03:45."* The code was the outlier. Both queues are now `order_entry` rules,
-  which is what `AGENTS.md` requires of a pre-open and what the crate's own `ECBTC`
-  profile — the same operator, the same two queues — already did. The weekly
-  executable envelope shrinks by 20 minutes (5 × 1 minute plus 15 minutes). No
-  trade date moves, and the one-day bridge of 2026-05-29 gets the same split. The
-  corrected queues are still **refused** rather than served while
-  `globex_cryptocurrency`'s `#93` declaration stands; the declaration now covers the
-  24/7-era half of the gap alone.
 - **`globex_fx` no longer declares a special-session gap (2026-09-26 UTC).** The
   family carried a whole-domain `#93` phase-level gap in `schedules/sourcing.rs`
   because CME publishes sessions this family's scalar vocabulary could not state.

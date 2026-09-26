@@ -30,9 +30,10 @@
 use chrono::{DateTime, Datelike as _, Days, Duration, NaiveDate, TimeZone as _, Utc};
 use chrono_tz::US;
 use exchange_hours::{
-    CalendarQueryError, CalendarResolution, CalendarSource, DateCoverage, EvidenceTier,
-    ExchangeCalendar, Holiday, HolidayKind, MarketHoursKey, SessionKind, calendar_for_exchange,
-    calendar_for_market_hours_key, hours_for_market_hours_key,
+    CalendarQueryError, CalendarResolution, CalendarSource, CoverageGapReason, DateCoverage,
+    EvidenceTier, ExceptionBlockKind, ExchangeCalendar, Holiday, HolidayKind, MarketHoursKey,
+    SessionKind, SessionState, calendar_for_exchange, calendar_for_market_hours_key,
+    hours_for_market_hours_key,
 };
 
 const ZC: MarketHoursKey = MarketHoursKey::GlobexGrains;
@@ -344,24 +345,310 @@ fn coverage_window_is_declared_and_does_not_extend() {
     );
 }
 
-/// Case 7's inner half — a date inside coverage with no row is audited normal.
-/// Good Friday eve 2026 is one of the eleven dates on which CME publishes the
-/// whole day session and then withholds the evening leg; the leg belongs to the
-/// closed Friday's trade date and the `Closed` row alone removes it.
+/// The closure eves state the **complete** trading day, and the post-close queue
+/// CME publishes on each of them is served rather than deleted with the closure
+/// that follows.
+///
+/// The row is keyed to the eve's own trade date because the operator prints the
+/// eve's `14:30 pcp` carrying that date; the crate dates an order-entry
+/// occurrence by the session it feeds, so without the row the queue belongs to
+/// the closed holiday and the neighbouring `Closed` row removes it. The
+/// withheld evening instants stay closed and the eve's own prior-evening leg is
+/// still traded, both asserted here.
 #[test]
-fn good_friday_eve_2026_is_audited_normal_and_ships_no_row() {
+fn a_closure_eve_states_the_complete_day_and_keeps_its_post_close_queue() {
+    const EVES: [((i32, u32, u32), &str); 14] = [
+        ((2025, 4, 17), "CME-SVC-2025-04-17"),
+        ((2025, 6, 18), "CME-SVC-2025-06-18"),
+        ((2025, 7, 3), "CME-SVC-2025-07-03"),
+        ((2025, 11, 26), "CME-SVC-2025-11-26-SAT"),
+        ((2025, 12, 31), "CME-SVC-2025-12-31"),
+        ((2026, 4, 2), "CME-SVC-2026-04-01"),
+        ((2026, 6, 18), "CME-SVC-2026-06-18"),
+        ((2026, 7, 2), "CME-SVC-2026-07-02"),
+        ((2026, 11, 25), "CME-SVC-2026-11-25"),
+        ((2026, 12, 31), "CME-SVC-2026-12-31"),
+        ((2027, 3, 25), "CME-SVC-2027-03-25"),
+        ((2027, 6, 17), "CME-SVC-2027-06-17"),
+        ((2027, 11, 24), "CME-SVC-2027-11-24"),
+        ((2027, 12, 23), "CME-SVC-2027-12-22"),
+    ];
+    // The block set: the ordinary prior-evening queue and leg, the morning
+    // queue, the day session and the post-close queue.
+    const EXPECTED: [(ExceptionBlockKind, i8, u32, u32); 5] = [
+        (
+            ExceptionBlockKind::OrderEntry,
+            -1,
+            16 * 3_600 + 45 * 60,
+            19 * 3_600,
+        ),
+        (
+            ExceptionBlockKind::Extended,
+            -1,
+            19 * 3_600,
+            7 * 3_600 + 45 * 60,
+        ),
+        (
+            ExceptionBlockKind::OrderEntry,
+            0,
+            8 * 3_600,
+            8 * 3_600 + 30 * 60,
+        ),
+        (
+            ExceptionBlockKind::Regular,
+            0,
+            8 * 3_600 + 30 * 60,
+            13 * 3_600 + 20 * 60,
+        ),
+        (
+            ExceptionBlockKind::OrderEntry,
+            0,
+            14 * 3_600 + 30 * 60,
+            16 * 3_600,
+        ),
+    ];
     let calendar = calendar_for_market_hours_key(ZC);
+    for (eve, document) in EVES {
+        let row = calendar
+            .holiday_on(day(eve))
+            .unwrap_or_else(|| panic!("{eve:?} must ship a row"));
+        assert_eq!(row.tier(), EvidenceTier::T2, "{eve:?}");
+        assert_eq!(row.document_id(), document, "{eve:?} cites its own window");
+        let HolidayKind::ReplacementBlocks(blocks) = row.kind() else {
+            panic!("{eve:?} must state the whole day as replacement blocks");
+        };
+        assert_eq!(blocks.len(), EXPECTED.len(), "{eve:?}");
+        for (block, (kind, offset, open_ssm, close_ssm)) in blocks.iter().zip(EXPECTED) {
+            assert_eq!(
+                (
+                    block.kind(),
+                    block.open_day_offset(),
+                    block.open_ssm(),
+                    block.close_ssm()
+                ),
+                (kind, offset, open_ssm, close_ssm),
+                "{eve:?}"
+            );
+        }
 
-    assert_eq!(calendar.holiday_on(day((2026, 4, 2))), None);
-    assert!(open_at(ct((2026, 4, 2), (9, 0, 0))));
-    assert!(open_at(ct((2026, 4, 2), (13, 19, 0))));
-    assert!(!open_at(ct((2026, 4, 2), (13, 20, 0))));
-    // The 19:00 CT leg would have carried trade date 2026-04-03.
-    assert!(!open_at(ct((2026, 4, 2), (19, 30, 0))));
-    assert!(
-        calendar
-            .is_closed_trade_date(day((2026, 4, 3)), SessionKind::Both)
-            .expect("the coverage contract must answer a covered date")
+        // The queue CME publishes on the eve: 14:30-16:00 CT accepts orders and
+        // matches nothing, at both ends of the window.
+        for time in [(15, 0, 0), (15, 59, 59)] {
+            let instant = ct(eve, time);
+            assert_eq!(
+                calendar.session_state(instant),
+                Ok(SessionState::OrderEntry),
+                "{eve:?} at {time:?}"
+            );
+            assert_eq!(
+                calendar.is_accepting_orders(instant),
+                Ok(true),
+                "{eve:?} at {time:?}"
+            );
+            assert_eq!(
+                calendar.is_order_entry_only(instant),
+                Ok(true),
+                "{eve:?} at {time:?}"
+            );
+            assert!(!open_at(instant), "{eve:?} at {time:?} matches nothing");
+        }
+        // CME withholds the evening leg, and it stays withheld: the queue ends
+        // at 16:00 and the neighbouring closure owns everything after it.
+        for time in [(16, 45, 0), (17, 30, 0), (20, 0, 0)] {
+            assert!(
+                !open_at(ct(eve, time)),
+                "{eve:?} at {time:?} has no evening leg"
+            );
+        }
+        // The day session's own close is end-exclusive at 13:20 CT.
+        assert!(open_at(ct(eve, (13, 19, 59))), "{eve:?}");
+        assert!(!open_at(ct(eve, (13, 20, 0))), "{eve:?}");
+
+        // The eve's own prior-evening leg is still traded, and it belongs to the
+        // eve's trade date.
+        let prior = day(eve).pred_opt().expect("the eve has a preceding day");
+        let leg = US::Central
+            .from_local_datetime(
+                &prior
+                    .and_hms_opt(20, 0, 0)
+                    .expect("20:00 is a valid local time"),
+            )
+            .single()
+            .expect("the prior evening has one 20:00 CT instant")
+            .with_timezone(&Utc);
+        assert_eq!(
+            calendar.session_state(leg),
+            Ok(SessionState::OpenExtended),
+            "{eve:?}: the prior-evening leg"
+        );
+        assert_eq!(
+            calendar.trade_date(leg),
+            Ok(Some(day(eve))),
+            "{eve:?}: the prior-evening leg carries the eve's trade date"
+        );
+    }
+}
+
+/// The four trade dates after a mid-week closure state the `06:00 preopen` CME
+/// prints instead of the ordinary `08:00` one, then the ordinary day.
+///
+/// A scalar `late open` moved the open correctly and stated no queue at all, so
+/// every instant of the window the operator publishes answered "not accepting".
+#[test]
+fn the_day_after_a_closure_states_the_operators_pre_open() {
+    const DATES: [(i32, u32, u32); 4] = [(2025, 1, 2), (2025, 12, 26), (2026, 1, 2), (2027, 7, 6)];
+    let calendar = calendar_for_market_hours_key(ZC);
+    for date in DATES {
+        let row = calendar
+            .holiday_on(day(date))
+            .unwrap_or_else(|| panic!("{date:?} must ship a row"));
+        let HolidayKind::ReplacementBlocks(blocks) = row.kind() else {
+            panic!("{date:?} must state the whole day as replacement blocks");
+        };
+        assert_eq!(blocks.len(), 3, "{date:?}");
+        assert_eq!(
+            (
+                blocks[0].kind(),
+                blocks[0].open_day_offset(),
+                blocks[0].open_ssm(),
+                blocks[0].close_ssm(),
+            ),
+            (
+                ExceptionBlockKind::OrderEntry,
+                0,
+                6 * 3_600,
+                8 * 3_600 + 30 * 60
+            ),
+            "{date:?}: the operator's 06:00 CT pre-open"
+        );
+        assert_eq!(
+            (
+                blocks[1].kind(),
+                blocks[1].open_ssm(),
+                blocks[1].close_ssm(),
+            ),
+            (
+                ExceptionBlockKind::Regular,
+                8 * 3_600 + 30 * 60,
+                13 * 3_600 + 20 * 60,
+            ),
+            "{date:?}: the ordinary day session"
+        );
+
+        // The printed window is order entry at both ends, and the ordinary
+        // `08:00-08:30` queue is inside it rather than beside it.
+        for time in [(6, 0, 0), (6, 30, 0), (7, 59, 59), (8, 0, 0), (8, 29, 59)] {
+            assert_eq!(
+                calendar.is_order_entry_only(ct(date, time)),
+                Ok(true),
+                "{date:?} at {time:?}"
+            );
+            assert!(
+                !open_at(ct(date, time)),
+                "{date:?} at {time:?} matches nothing"
+            );
+        }
+        assert!(open_at(ct(date, (8, 30, 0))), "{date:?}");
+        assert!(open_at(ct(date, (13, 19, 59))), "{date:?}");
+        assert!(
+            !open_at(ct(date, (13, 20, 0))),
+            "{date:?}: end-exclusive close"
+        );
+
+        // The trade date's own post-close queue is stated too, and it is order
+        // entry rather than a session.
+        assert_eq!(
+            calendar.is_order_entry_only(ct(date, (15, 0, 0))),
+            Ok(true),
+            "{date:?}"
+        );
+        assert_eq!(
+            calendar.trade_date(ct(date, (10, 0, 0))),
+            Ok(Some(day(date))),
+            "{date:?}"
+        );
+
+        // No prior-evening leg ran. 2025-01-02's own evening falls on
+        // 2025-01-01, where every query refuses below the support floor and the
+        // refusal is a floor fact rather than this row's; the other three state
+        // the closure outright.
+        if date != (2025, 1, 2) {
+            let prior = day(date).pred_opt().expect("the date has a preceding day");
+            let leg = US::Central
+                .from_local_datetime(
+                    &prior
+                        .and_hms_opt(19, 30, 0)
+                        .expect("19:30 is a valid local time"),
+                )
+                .single()
+                .expect("the prior evening has one 19:30 CT instant")
+                .with_timezone(&Utc);
+            assert!(
+                !open_at(leg),
+                "{date:?}: the closure left no prior-evening leg"
+            );
+        }
+    }
+}
+
+/// The post-close queue's trade date is the session it feeds, not the date the
+/// queue is printed on.
+///
+/// This is the deliberate divergence `globex_grains` declares under #152: CME's
+/// service labels the `14:30 pcp` with the date it is printed on, and the crate
+/// answers the next trade date because that is the session the queued orders
+/// feed. The fence states both instants the evidence file quotes, so the
+/// divergence cannot change silently — and it asserts the declaration that makes
+/// the scope incomplete, so the inventory's `Complete?` cell cannot drift back.
+#[test]
+fn the_post_close_queue_carries_the_trade_date_of_the_session_it_feeds() {
+    let calendar = calendar_for_market_hours_key(ZC);
+    for (date, next) in [
+        ((2025, 6, 10), (2025, 6, 11)),
+        ((2025, 6, 13), (2025, 6, 16)),
+    ] {
+        for time in [(15, 0, 0), (15, 59, 59)] {
+            let instant = ct(date, time);
+            assert_eq!(
+                calendar.session_state(instant),
+                Ok(SessionState::OrderEntry),
+                "{date:?} at {time:?}"
+            );
+            assert_eq!(
+                calendar.is_accepting_orders(instant),
+                Ok(true),
+                "{date:?} at {time:?}"
+            );
+            assert_eq!(
+                calendar.trade_date(instant),
+                Ok(Some(day(next))),
+                "{date:?} at {time:?}: CME prints the queue's own date, the crate answers the \
+                 session it feeds"
+            );
+        }
+        assert!(
+            !calendar.coverage().is_complete_on(day(date)),
+            "{date:?}: the declared label divergence makes every covered date incomplete"
+        );
+        assert_eq!(
+            calendar.coverage().coverage_on(day(date)),
+            DateCoverage::OutsideCoveredRange,
+            "{date:?}"
+        );
+    }
+
+    // The declaration is whole-domain and withholds nothing: the queue's own
+    // window is answered on every covered date rather than refused.
+    let declared: Vec<_> = calendar
+        .coverage()
+        .phase_gaps()
+        .iter()
+        .map(|gap| (gap.reason(), gap.closing_condition()))
+        .collect();
+    assert_eq!(
+        declared,
+        vec![(CoverageGapReason::PostCloseQueueTradeDateLabel, "#152")],
+        "globex_grains declares exactly the post-close label divergence"
     );
 }
 

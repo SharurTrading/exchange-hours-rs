@@ -132,6 +132,7 @@ are in the research store's `holidays/raw/` indexes.
 | `CME-SVC-2026-04-01` | 2026-04-01 .. 2026-04-03 | <https://web.archive.org/web/20260619114118id_/https://www.cmegroup.com/services/trading-hours-by-product?id=316,133,425,300,58,437,22,8478,5201,10191&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2026-04-01&toEventDate=2026-04-03> | archive capture 2026-06-19T11:41:18Z | T2 | `54bcc271e9ba9737a99a2fe608e658de0c657075284d050fbfec4fe1aee2a2a5` |
 | `CME-SVC-2026-05-24` | 2026-05-24 .. 2026-05-26 | <https://web.archive.org/web/20260619114105id_/https://www.cmegroup.com/services/trading-hours-by-product?id=316,133,425,300,58,437,22,8478,5201,10191&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2026-05-24&toEventDate=2026-05-26> | archive capture 2026-06-19T11:41:05Z | T2 | `f7e30d204ce2cbe08e5f486ded6518f623369159f3a36161288a4708288314da` |
 | `CME-SVC-2026-06-18` | 2026-06-18 .. 2026-06-20 | <https://web.archive.org/web/20260619113404id_/https://www.cmegroup.com/services/trading-hours-by-product?id=316,133,425,300,58,437,22,8478,5201,10191&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2026-06-18&toEventDate=2026-06-20> | archive capture 2026-06-19T11:34:04Z | T2 | `97fd5da371309f4486a8fb49ff2105c6c1c2396939ab7c76f1a2a1097b6f015c` |
+| `CME-SVC-2026-07-02` | 2026-07-02 .. 2026-07-04 | <https://web.archive.org/web/20260129012216id_/https://www.cmegroup.com/services/trading-hours-by-product?id=316,133,425,300,58,437,22,8478,5201,10191&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2026-07-02&toEventDate=2026-07-04> | archive capture 2026-01-29T01:22:16Z | T2 | `d97339fb9b8be15b7e1be70293a5b40afc38e8b09f136158f63bbccd75ea93d7` |
 | `CME-SVC-2026-07-03` | 2026-07-03 .. 2026-07-05 | <https://web.archive.org/web/20260619114108id_/https://www.cmegroup.com/services/trading-hours-by-product?id=316,133,425,300,58,437,22,8478,5201,10191&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2026-07-03&toEventDate=2026-07-05> | archive capture 2026-06-19T11:41:08Z | T2 | `4b89a026358e998277f9c1ff7e095e5d4e625cdc45115fd141dc92201833155b` |
 | `CME-SVC-2026-09-06` | 2026-09-06 .. 2026-09-08 | <https://www.cmegroup.com/services/trading-hours-by-product?id=316,133,425,300,58,437,22,8478,5201,10191&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2026-09-06&toEventDate=2026-09-08> | live retrieval 2026-09-12T04:30Z | T2 | `01fb78ffaac10eac466fed53674214222f05aed518b9d93a4b42cf8957147bca` |
 | `CME-SVC-2026-11-25` | 2026-11-25 .. 2026-11-27 | <https://www.cmegroup.com/services/trading-hours-by-product?id=316,133,425,300,58,437,22,8478,5201,10191&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2026-11-25&toEventDate=2026-11-27> | live retrieval 2026-09-12T04:30Z | T2 | `e1f35a5623b3c5d15e7468b2cb4119e587411a9714f920605dab11bf688756d1` |
@@ -574,7 +575,8 @@ This era's rows cite the ids below: CME Group's own published holiday schedules 
 
 ### 2025-2027 (T2)
 
-**Rows:** 40 — 31 `closed`, 4 `late open`, 2 `early close`, 3 `late open and early close`, 0 `unsourced`.
+**Rows:** 54 — 31 `closed`, 2 `early close`, 3 `late open and early close`, 18
+`replacement blocks`, 0 `unsourced`.
 
 **Channel.** Every row comes from CME Group's own trading-hours service,
 `https://www.cmegroup.com/services/trading-hours-by-product`, the endpoint
@@ -618,14 +620,20 @@ and each row's `Derived from` cell records which one produced it.
 2. **An eve with the whole day session and no evening leg.** `07:45 paused; 08:00 preopen;
    08:30 open; 13:20 paused; 13:30 closed; 14:30 pcp; 16:00 closed` is the ordinary CBOT
    grain day. What is missing is the evening leg, and the neighbouring `closed` row already
-   removes it. Fourteen such dates in this block ship **no row**: 2025-04-17, 2025-06-18,
-   2025-07-03, 2025-11-26, 2025-12-31, 2026-04-02, 2026-06-18, 2026-07-02, 2026-11-25,
-   2026-12-31, 2027-03-25, 2027-06-17, 2027-11-24 and 2027-12-23.
+   removes it. Fourteen such dates in this block ship a `replacement blocks` row keyed to
+   the eve's own trade date, because the `14:30 pcp`/`16:00 closed` pair the operator prints
+   there carries **that trade date**: 2025-04-17, 2025-06-18, 2025-07-03, 2025-11-26,
+   2025-12-31, 2026-04-02, 2026-06-18, 2026-07-02, 2026-11-25, 2026-12-31, 2027-03-25,
+   2027-06-17, 2027-11-24 and 2027-12-23. The row states the ordinary prior-evening queue
+   and leg as well, so the eve's complete day is restated rather than a fragment of it; the
+   `Closed` row on the following date still removes that date's own prior-evening leg.
 3. **A day after a closure.** CME prints a `06:00 preopen` in place of the usual
-   `07:45 paused; 08:00 preopen` pair, so the prior-evening leg did not run and matching
-   still begins 08:30 CT. That is a `late open` at 08:30 CT stated on the trade date. 08:30 is
+   `07:45 paused; 08:00 preopen` pair, so the prior-evening leg did not run. `08:30` is
    numerically earlier than the trading day's normal 19:00 CT first open, so the cutoff lands
-   on the trade date itself and not on the preceding local date (memo D7).
+   on the trade date itself and not on the preceding local date (memo D7). Four such dates —
+   2025-01-02, 2025-12-26, 2026-01-02 and 2027-07-06 — also ship a `replacement blocks` row,
+   because a scalar `late open` cannot state the `06:00-08:30` order-entry window the
+   operator publishes beside the open.
 4. **The day after Thanksgiving.** No prior-evening leg *and* a 12:05 CT final close, so both
    boundaries move: `late open and early close`.
 
@@ -634,20 +642,25 @@ and each row's `Derived from` cell records which one produced it.
 | Trade date | Kind | Instant as printed | Document | Tier | Derived from |
 |---|---|---|---|---|---|
 | 2025-01-01 | closed | `2025-01-01: no events published` | `CME-SVC-2024-12-31` | T2 | eventDate 2025-01-01 -> TD none printed |
-| 2025-01-02 | late open | `2025-01-02: 06:00 preopen; 08:30 open; 13:20 paused; 13:30 closed; 14:30 pcp; 16:00 closed; 16:45 preopen; 19:00 open` | `CME-SVC-2024-12-31` | T2 | eventDate 2025-01-02 -> TD 2025-01-02, 2025-01-03 |
+| 2025-01-02 | replacement blocks | `06:00 preopen; 08:30 open; 13:20 paused; 14:30 pcp; 16:00 closed` on eventDate 2025-01-02, all carrying trade date 2025-01-02 | `CME-SVC-2024-12-31` | T2 | no prior-evening leg (eventDate 2025-01-01 is empty), so the day is the operator's `06:00` queue, the ordinary `08:30-13:20` CT day session and the ordinary post-close queue; the operator also prints `13:30 closed` beside the `13:20 paused`, its probe artefact |
 | 2025-01-20 | closed | `2025-01-19: 16:00 preopen / 2025-01-20: 19:00 open` | `CME-SVC-2025-01-19` | T2 | eventDate 2025-01-19 -> TD 2025-01-21; eventDate 2025-01-20 -> TD 2025-01-21 |
 | 2025-02-17 | closed | `2025-02-16: 16:00 preopen / 2025-02-17: 19:00 open` | `CME-SVC-2025-02-16` | T2 | eventDate 2025-02-16 -> TD 2025-02-18; eventDate 2025-02-17 -> TD 2025-02-18 |
+| 2025-04-17 | replacement blocks | `07:45 paused; 08:00 preopen; 08:30 open; 13:20 paused; 14:30 pcp; 16:00 closed` on eventDate 2025-04-17, all carrying trade date 2025-04-17 | `CME-SVC-2025-04-17` | T2 | Good Friday eve: the `14:30 pcp`/`16:00 closed` pair carries this trade date, so the whole day ships and the queue survives the next date's closure; the prior-evening queue and leg are the family's ordinary week; the operator also prints `13:30 closed` beside the `13:20 paused`, its probe artefact |
 | 2025-04-18 | closed | `2025-04-18: no events published` | `CME-SVC-2025-04-17` | T2 | eventDate 2025-04-18 -> TD none printed |
 | 2025-05-26 | closed | `2025-05-25: 16:00 preopen / 2025-05-26: 19:00 open` | `CME-SVC-2025-05-25` | T2 | eventDate 2025-05-25 -> TD 2025-05-27; eventDate 2025-05-26 -> TD 2025-05-27 |
+| 2025-06-18 | replacement blocks | `07:45 paused; 08:00 preopen; 08:30 open; 13:20 paused; 14:30 pcp; 16:00 closed` on eventDate 2025-06-18, all carrying trade date 2025-06-18 | `CME-SVC-2025-06-18` | T2 | Juneteenth eve, as 2025-04-17; the operator additionally prints a `16:45 preopen` carrying trade date 2025-06-20 on this eventDate, which this row does not state (the deviation recorded under Gaps) |
 | 2025-06-19 | closed | `2025-06-19: 19:00 open` | `CME-SVC-2025-06-18` | T2 | eventDate 2025-06-19 -> TD 2025-06-20 |
+| 2025-07-03 | replacement blocks | `07:45 paused; 08:00 preopen; 08:30 open; 13:20 paused; 14:30 pcp; 16:00 closed` on eventDate 2025-07-03, all carrying trade date 2025-07-03 | `CME-SVC-2025-07-03` | T2 | Independence Day eve, as 2025-04-17 |
 | 2025-07-04 | closed | `2025-07-04: no events published` | `CME-SVC-2025-07-03` | T2 | eventDate 2025-07-04 -> TD none printed |
 | 2025-09-01 | closed | `2025-08-31: 16:00 preopen / 2025-09-01: 19:00 open` | `CME-SVC-2025-08-31` | T2 | eventDate 2025-08-31 -> TD 2025-09-02; eventDate 2025-09-01 -> TD 2025-09-02 |
+| 2025-11-26 | replacement blocks | `07:45 paused; 08:00 preopen; 08:30 open; 13:20 paused; 14:30 pcp; 16:00 closed` on eventDate 2025-11-26, all carrying trade date 2025-11-26 | `CME-SVC-2025-11-26-SAT` | T2 | Thanksgiving eve, as 2025-04-17; the operator additionally prints a `16:45 preopen` carrying trade date 2025-11-28 on this eventDate, which this row does not state (the deviation recorded under Gaps) |
 | 2025-11-27 | closed | `2025-11-27: no events published` | `CME-SVC-2025-11-26-SAT` | T2 | eventDate 2025-11-27 -> TD none printed |
 | 2025-11-28 | late open and early close | `2025-11-28: 07:00 preopen; 08:30 open; 12:05 closed` | `CME-SVC-2025-11-26-SAT` | T2 | eventDate 2025-11-28 -> TD 2025-11-28 |
 | 2025-11-29 | closed | `2025-11-29: no events published` | `CME-SVC-2025-11-26-SAT` | T2 | eventDate 2025-11-29 -> TD none printed |
 | 2025-12-24 | early close | `2025-12-24: 07:45 paused; 08:00 preopen; 08:30 open; 12:05 closed` | `CME-SVC-2025-12-24` | T2 | eventDate 2025-12-24 -> TD 2025-12-24 |
 | 2025-12-25 | closed | `2025-12-25: no events published` | `CME-SVC-2025-12-24` | T2 | eventDate 2025-12-25 -> TD none printed |
-| 2025-12-26 | late open | `2025-12-26: 06:00 preopen; 08:30 open; 13:20 paused; 13:30 closed; 14:30 pcp; 16:00 closed` | `CME-SVC-2025-12-24` | T2 | eventDate 2025-12-26 -> TD 2025-12-26 |
+| 2025-12-26 | replacement blocks | `06:00 preopen; 08:30 open; 13:20 paused; 14:30 pcp; 16:00 closed` on eventDate 2025-12-26, all carrying trade date 2025-12-26 | `CME-SVC-2025-12-24` | T2 | no prior-evening leg (eventDate 2025-12-25 is empty), as 2025-01-02 |
+| 2025-12-31 | replacement blocks | `07:45 paused; 08:00 preopen; 08:30 open; 13:20 paused; 14:30 pcp; 16:00 closed` on eventDate 2025-12-31, all carrying trade date 2025-12-31 | `CME-SVC-2025-12-31` | T2 | New Year's Day eve, as 2025-04-17 |
 
 **Interpretive steps, 2025.**
 
@@ -680,6 +693,15 @@ and each row's `Derived from` cell records which one produced it.
   holiday hours; the T1 Globex table names the holidays and the periods but states no
   per-family instants. The rows are therefore T2 throughout. Closing condition: a CME notice,
   circular or PDF that prints the grain complex's holiday instants for these dates.
+- **2025-01-02 00:00-05:59:59 CT still refuses below the floor.** `session_state` and
+  `is_maintenance` walk back to the session that opened on 2024-12-31 for the gap that runs into
+  this trade date, so those instants answer `Err(BeforeSupportFloor { date: 2024-12-31 })` while
+  `trade_date` answers `Ok(None)` and `is_open` `Ok(false)`. That is the support-floor boundary
+  (#115), not this row: before it the row states nothing and the refusal is unchanged. The row
+  **does** change the printed window's own instants — 06:00:00 through 08:29:59 CT answered
+  `Err(BeforeSupportFloor { date: 2024-12-31 })` before it and answer `Ok(OrderEntry)` with
+  `trade_date = 2025-01-02` after it, which is the repair. Closing condition for the remainder: the
+  boundary contract #115 lands.
 - **Eight 2025 windows survive only in a pre-holiday publication.** New Year 2025 through
   Labor Day 2025 are sourced from the single Wayback capture 2024-12-20T15:53:40Z, and CME
   states on the same page that "Trading hours are usually finalized approximately two weeks
@@ -694,18 +716,23 @@ and each row's `Derived from` cell records which one produced it.
 | Trade date | Kind | Instant as printed | Document | Tier | Derived from |
 |---|---|---|---|---|---|
 | 2026-01-01 | closed | `2026-01-01: no events published` | `CME-SVC-2025-12-31` | T2 | eventDate 2026-01-01 -> TD none printed |
-| 2026-01-02 | late open | `2026-01-02: 06:00 preopen; 08:30 open; 13:20 paused; 13:30 closed; 14:30 pcp; 16:00 closed` | `CME-SVC-2025-12-31` | T2 | eventDate 2026-01-02 -> TD 2026-01-02 |
+| 2026-01-02 | replacement blocks | `06:00 preopen; 08:30 open; 13:20 paused; 14:30 pcp; 16:00 closed` on eventDate 2026-01-02, all carrying trade date 2026-01-02 | `CME-SVC-2025-12-31` | T2 | no prior-evening leg (eventDate 2026-01-01 is empty), as 2025-01-02 |
 | 2026-01-19 | closed | `2026-01-18: 16:00 preopen / 2026-01-19: 19:00 open` | `CME-SVC-2026-01-18` | T2 | eventDate 2026-01-18 -> TD 2026-01-20; eventDate 2026-01-19 -> TD 2026-01-20 |
 | 2026-02-16 | closed | `2026-02-15: 16:00 preopen / 2026-02-16: 19:00 open` | `CME-SVC-2026-02-15` | T2 | eventDate 2026-02-15 -> TD 2026-02-17; eventDate 2026-02-16 -> TD 2026-02-17 |
+| 2026-04-02 | replacement blocks | `07:45 paused; 08:00 preopen; 08:30 open; 13:20 paused; 14:30 pcp; 16:00 closed` on eventDate 2026-04-02, all carrying trade date 2026-04-02 | `CME-SVC-2026-04-01` | T2 | Good Friday eve, as 2025-04-17 |
 | 2026-04-03 | closed | `2026-04-03: no events published` | `CME-SVC-2026-04-01` | T2 | eventDate 2026-04-03 -> TD none printed |
 | 2026-05-25 | closed | `2026-05-24: 16:00 preopen / 2026-05-25: 19:00 open` | `CME-SVC-2026-05-24` | T2 | eventDate 2026-05-24 -> TD 2026-05-26; eventDate 2026-05-25 -> TD 2026-05-26 |
+| 2026-06-18 | replacement blocks | `07:45 paused; 08:00 preopen; 08:30 open; 13:20 paused; 14:30 pcp; 16:00 closed` on eventDate 2026-06-18, all carrying trade date 2026-06-18 | `CME-SVC-2026-06-18` | T2 | Juneteenth eve, as 2025-04-17 |
 | 2026-06-19 | closed | `2026-06-19: no events published` | `CME-SVC-2026-06-18` | T2 | eventDate 2026-06-19 -> TD none printed |
+| 2026-07-02 | replacement blocks | `07:45 paused; 08:00 preopen; 08:30 open; 13:20 paused; 14:30 pcp; 16:00 closed` on eventDate 2026-07-02, all carrying trade date 2026-07-02 | `CME-SVC-2026-07-02` | T2 | Independence Day eve, as 2025-04-17; the id is minted for the 2026-01-29 capture, whose window starts on this eventDate |
 | 2026-07-03 | closed | `2026-07-03: no events published` | `CME-SVC-2026-07-03` | T2 | eventDate 2026-07-03 -> TD none printed |
 | 2026-09-07 | closed | `2026-09-06: 16:00 preopen / 2026-09-07: 19:00 open` | `CME-SVC-2026-09-06` | T2 | eventDate 2026-09-06 -> TD 2026-09-08; eventDate 2026-09-07 -> TD 2026-09-08 |
+| 2026-11-25 | replacement blocks | `07:45 paused; 08:00 preopen; 08:30 open; 13:20 paused; 14:30 pcp; 16:00 closed` on eventDate 2026-11-25, all carrying trade date 2026-11-25 | `CME-SVC-2026-11-25` | T2 | Thanksgiving eve, as 2025-04-17; the operator additionally prints a `16:45 preopen` carrying trade date 2026-11-27 on this eventDate, which this row does not state (the deviation recorded under Gaps) |
 | 2026-11-26 | closed | `2026-11-26: no events published` | `CME-SVC-2026-11-25` | T2 | eventDate 2026-11-26 -> TD none printed |
 | 2026-11-27 | late open and early close | `2026-11-27: 08:30 open; 12:05 closed` | `CME-SVC-2026-11-25` | T2 | eventDate 2026-11-27 -> TD 2026-11-27 |
 | 2026-12-24 | early close | `2026-12-24: 07:45 paused; 08:00 preopen; 08:30 open; 12:05 closed` | `CME-SVC-2026-12-24` | T2 | eventDate 2026-12-24 -> TD 2026-12-24 |
 | 2026-12-25 | closed | `2026-12-25: no events published` | `CME-SVC-2026-12-24` | T2 | eventDate 2026-12-25 -> TD none printed |
+| 2026-12-31 | replacement blocks | `07:45 paused; 08:00 preopen; 08:30 open; 13:20 paused; 14:30 pcp; 16:00 closed` on eventDate 2026-12-31, all carrying trade date 2026-12-31 | `CME-SVC-2026-12-31` | T2 | New Year's Day eve, as 2025-04-17 |
 
 **Artifacts, 2026.** Files are relative to `exchange-hours-research/holidays/raw/`.
 
@@ -716,11 +743,13 @@ and each row's `Derived from` cell records which one produced it.
   `arc/thbp_2026-11-25_2026-11-27_20260830142904.json` and
   `arc/thbp_2026-12-24_2026-12-26_20260830142904.json`, all captured 2026-08-30 — so each row
   rests on two vintages of the same channel.
-- **Two windows cover Juneteenth and Independence Day 2026; the later one governs.**
-  `arc/thbp_2026-06-17_2026-06-19_20260129012310.json` and
-  `arc/thbp_2026-07-02_2026-07-04_20260129012216.json` (both captured 2026-01-29) print the
-  same `ZC` schedules as the cited 2026-06-19 captures. The later capture is cited; the
-  earlier one corroborates and is recorded here rather than beside the row.
+- **Two windows cover Juneteenth and Independence Day 2026.** `arc/thbp_2026-06-17_2026-06-19_20260129012310.json`
+  and `arc/thbp_2026-07-02_2026-07-04_20260129012216.json` (both captured 2026-01-29) print the
+  same `ZC` schedules as the cited 2026-06-19 captures. For the two **eve** trade dates the
+  later capture is at the row: 2026-06-18 cites `CME-SVC-2026-06-18` and 2026-07-02 cites
+  `CME-SVC-2026-07-02`, the 2026-01-29 window whose own first `eventDate` is that date and
+  which no earlier id covered. For the closure dates the later capture governs and the earlier
+  one corroborates, so `CME-SVC-2026-07-03` stays the id beside 2026-07-03.
 - **Christmas Eve 2026 has a third corroborating window.**
   `arc/thbp_2026-12-23_2026-12-25_20260310063244.json` (2026-03-10T06:32:44Z, sha256
   `0cc5fa9d78ba2d6d1246faab67acfc1388b52f16a7f2c32b2dddec07238e87c2`) and
@@ -748,14 +777,18 @@ and each row's `Derived from` cell records which one produced it.
 | 2027-01-01 | closed | `2027-01-01: no events published` | `CME-SVC-2026-12-31` | T2 | eventDate 2027-01-01 -> TD none printed |
 | 2027-01-18 | closed | `2027-01-17: 16:00 preopen / 2027-01-18: 19:00 open` | `CME-SVC-2027-01-17` | T2 | eventDate 2027-01-17 -> TD 2027-01-19; eventDate 2027-01-18 -> TD 2027-01-19 |
 | 2027-02-15 | closed | `2027-02-14: 16:00 preopen / 2027-02-15: 19:00 open` | `CME-SVC-2027-02-14` | T2 | eventDate 2027-02-14 -> TD 2027-02-16; eventDate 2027-02-15 -> TD 2027-02-16 |
+| 2027-03-25 | replacement blocks | `07:45 paused; 08:00 preopen; 08:30 open; 13:20 paused; 14:30 pcp; 16:00 closed` on eventDate 2027-03-25, all carrying trade date 2027-03-25 | `CME-SVC-2027-03-25` | T2 | Good Friday eve, as 2025-04-17 |
 | 2027-03-26 | closed | `2027-03-26: no events published` | `CME-SVC-2027-03-25` | T2 | eventDate 2027-03-26 -> TD none printed |
 | 2027-05-31 | closed | `2027-05-30: 16:00 preopen / 2027-05-31: 19:00 open` | `CME-SVC-2027-05-30` | T2 | eventDate 2027-05-30 -> TD 2027-06-01; eventDate 2027-05-31 -> TD 2027-06-01 |
+| 2027-06-17 | replacement blocks | `07:45 paused; 08:00 preopen; 08:30 open; 13:20 paused; 14:30 pcp; 16:00 closed` on eventDate 2027-06-17, all carrying trade date 2027-06-17 | `CME-SVC-2027-06-17` | T2 | Juneteenth eve, as 2025-04-17 |
 | 2027-06-18 | closed | `2027-06-18: no events published` | `CME-SVC-2027-06-17` | T2 | eventDate 2027-06-18 -> TD none printed |
 | 2027-07-05 | closed | `2027-07-04: no events published / 2027-07-05: no events published` | `CME-SVC-2027-07-04` | T2 | eventDate 2027-07-04 -> TD none printed; eventDate 2027-07-05 -> TD none printed |
-| 2027-07-06 | late open | `2027-07-06: 06:00 preopen; 08:30 open; 13:20 paused; 13:30 closed; 14:30 pcp; 16:00 closed; 16:45 preopen; 19:00 open` | `CME-SVC-2027-07-04` | T2 | eventDate 2027-07-06 -> TD 2027-07-06, 2027-07-07 |
+| 2027-07-06 | replacement blocks | `06:00 preopen; 08:30 open; 13:20 paused; 14:30 pcp; 16:00 closed` on eventDate 2027-07-06, all carrying trade date 2027-07-06 | `CME-SVC-2027-07-04` | T2 | no prior-evening leg (eventDate 2027-07-05 is empty), as 2025-01-02 |
 | 2027-09-06 | closed | `2027-09-05: 16:00 preopen / 2027-09-06: 19:00 open` | `CME-SVC-2027-09-05` | T2 | eventDate 2027-09-05 -> TD 2027-09-07; eventDate 2027-09-06 -> TD 2027-09-07 |
+| 2027-11-24 | replacement blocks | `07:45 paused; 08:00 preopen; 08:30 open; 13:20 paused; 14:30 pcp; 16:00 closed` on eventDate 2027-11-24, all carrying trade date 2027-11-24 | `CME-SVC-2027-11-24` | T2 | Thanksgiving eve, as 2025-04-17; the operator additionally prints a `16:45 preopen` carrying trade date 2027-11-26 on this eventDate, which this row does not state (the deviation recorded under Gaps) |
 | 2027-11-25 | closed | `2027-11-25: no events published` | `CME-SVC-2027-11-24` | T2 | eventDate 2027-11-25 -> TD none printed |
 | 2027-11-26 | late open and early close | `2027-11-26: 08:30 open; 12:05 closed` | `CME-SVC-2027-11-24` | T2 | eventDate 2027-11-26 -> TD 2027-11-26 |
+| 2027-12-23 | replacement blocks | `07:45 paused; 08:00 preopen; 08:30 open; 13:20 paused; 14:30 pcp; 16:00 closed` on eventDate 2027-12-23, all carrying trade date 2027-12-23 | `CME-SVC-2027-12-22` | T2 | Christmas Friday eve, as 2025-04-17 |
 | 2027-12-24 | closed | `2027-12-24: no events published` | `CME-SVC-2027-12-22` | T2 | eventDate 2027-12-24 -> TD none printed |
 
 **Artifacts, 2027.** Files are relative to `exchange-hours-research/holidays/raw/`, all in
@@ -774,7 +807,8 @@ and each row's `Derived from` cell records which one produced it.
   have opened trade date Monday is deleted by the Monday's own `closed` row.
 - **Christmas 2027 falls on a Saturday.** CME's holiday date is Thursday 2027-12-23, but the
   Globex closure is Friday 2027-12-24, which is where the row sits. 2027-12-23 prints the
-  whole day session and no evening leg, so it is audited normal under conversion 2 above.
+  whole day session and no evening leg, so it is the eve conversion 2 above states and ships
+  the family's full `replacement blocks` day; its `14:30 pcp` carries trade date 2027-12-23.
 - **`ZS` and `ZW` corroboration.** The `live/extra/extra_2027-*.json` files in
   `cme-2025-2027/INDEX.md` carry soybeans and wheat for all ten 2027 windows and agree with
   the `ZC` rows date for date and instant for instant.
@@ -789,35 +823,64 @@ and each row's `Derived from` cell records which one produced it.
 
 ### Gaps across the block
 
-- **Order-entry-only deviations are not representable.** The table's vocabulary is the scalar
-  vocabulary of `DayPolicy`, which has no order-entry boundary (design memo D3, §1.4). Five
-  classes of deviation in this block are therefore recorded and not modelled. None of them
-  moves an `is_open`, `session_bounds`, `trade_date` or `candle_end` answer; all of them can
-  move `is_accepting_orders` or `is_order_entry_only`.
-  1. On 2025-01-02, 2025-12-26, 2026-01-02 and 2027-07-06 CME prints a `06:00 preopen` where
-     the normal week has an `08:00 preopen`; the crate keeps the normal 08:00-08:30 CT queue.
-  2. On 2025-11-28 CME prints a `07:00 preopen`, and on 2026-11-27 and 2027-11-26 it prints
+- **The post-close queue's trade-date label is the crate's convention, not the operator's
+  printing (#152).** CME's own service prints a trade date on every `14:30 pcp` event, and on
+  an ordinary date that is the date the queue is printed on. The crate dates an order-entry
+  occurrence by the **session it feeds**, so the same queue reads with the next trade date
+  instead: `D + 1` on a Monday to Thursday and `D + 3` over a weekend. Measured through
+  `calendar_for_market_hours_key(MarketHoursKey::GlobexGrains)` over
+  2025-01-01..2027-12-31, 15:00 CT is inside the queue on **746** trade dates, and **all 746**
+  answer `session_state = OrderEntry`, `is_accepting_orders = true` and a `trade_date` other
+  than the date printed on. Two instants show it on a date no row covers: **2025-06-10** (a
+  Tuesday) answers `trade_date = 2025-06-11`, and **2025-06-13** (a Friday) answers
+  `trade_date = 2025-06-16`, where `CME-SVC-2024-12-31` prints `2025-01-02 14:30 pcp` and
+  `2026-07-02 14:30 pcp` carrying their own dates. This is the one answer in this block that a
+  correction to `trade_date` moves, and the earlier blanket claim that no order-entry deviation
+  moves one was false for it. The divergence is **deliberate**: CME's own T1 description of the
+  Post-Close — "GTC and GTD orders may be entered, modified and cancelled 1:45.30 - 4:00 p.m.
+  CT / The markets will become unavailable at 4:00 p.m. CT" — describes orders that persist
+  into the next session, which is the session the crate assigns them to. It is **not fixable by
+  any data row**: three candidate row shapes were measured and all were rejected — one leaves
+  the label unchanged, and the only shape that yields the operator's own label is `tradeable`,
+  which would assert matching in a window the operator marks `pcp` (LAW-SESSION-NOT-EXPIRY).
+  The scope therefore declares the gap (`CoverageGapReason::PostCloseQueueTradeDateLabel`,
+  whole-domain, closing condition #152 in `schedules/sourcing.rs`) and neither
+  `globex_grains` nor `globex_livestock`, which carries the same queue, claims a complete
+  calendar. The declaration withholds no answer and refuses no query: the window and both of
+  its verdicts are served. Served identity, so tracked as issue #152
+  (LAW-FOLLOW-UPS-ARE-ISSUES).
+- **Order-entry-only deviations the replacement rows do not state.** Five classes of deviation
+  in this block are recorded and not modelled as rows; all of them move `is_accepting_orders`
+  or `is_order_entry_only` alone, and none moves `is_open`, `session_bounds`, `candle_end`, or
+  — apart from the label deviation above — `trade_date`.
+  1. On 2025-11-28 CME prints a `07:00 preopen`, and on 2026-11-27 and 2027-11-26 it prints
      no pre-open at all; the crate keeps the normal 08:00-08:30 CT queue.
-  3. On the twelve Sundays before a Monday holiday CME prints a `16:00 preopen` carrying the
+  2. On the twelve Sundays before a Monday holiday CME prints a `16:00 preopen` carrying the
      *Tuesday* trade date and no `19:00 open`; the crate keeps its normal Sunday 16:00-19:00 CT
      queue.
-  4. On 2025-06-18, 2025-11-26, 2026-11-25 and 2027-11-24 CME prints a `16:45 preopen`
-     carrying the post-holiday trade date and no `19:00 open`; the crate keeps its normal
-     Monday-Thursday 16:45-19:00 CT queue.
-  5. On the eves whose `closed` row deletes the following trade date, the crate's normal
-     14:30-16:00 CT post-close queue is deleted with it, because the crate assigns that
-     occurrence to the *next* trade date while CME's service labels it with the eve's own.
-     CME does print `14:30 pcp; 16:00 closed` on those eves. This is the one deviation in
-     which the built-in row removes an order-entry window the operator publishes, so it is
-     named here rather than merely noted.
+  3. On 2025-06-18, 2025-11-26, 2026-11-25 and 2027-11-24 — four of the fourteen eves the new
+     replacement rows state — CME prints a `16:45 preopen` carrying the **post-holiday** trade
+     date on the eve's eventDate and no `19:00 open`. The row keyed to the eve's own trade date
+     cannot state it: the occurrence it names belongs to the post-holiday trade date, and
+     stating it on the eve would assign the eve's date to an event the operator dates two days
+     later. Stating it on the post-holiday date would need that date's own replacement row,
+     which is a separate arrangement. Measured through the built-in calendar, the crate answers
+     `Closed` at 16:45 and 17:30 CT on those four eves — the neighbouring `closed` row deletes
+     the queue with the trade date it feeds — so the window the operator publishes is absent
+     rather than merely mislabelled.
+  4. The `14:30 pcp` window on the four `replacement blocks` late-open dates is stated by the
+     row, but its trade-date **label** is not fixed by it: the row's blocks carry the trade
+     date, and `trade_date` at 15:00 CT still resolves through the session the queue feeds, as
+     on every other date.
 
-  Closing condition for all five: an order-entry boundary in the holiday vocabulary, which
-  design memo §7 defers to the block-row v2 the scalar table cannot express (#93). Served identity,
-  so tracked as an issue (LAW-FOLLOW-UPS-ARE-ISSUES).
+  Closing condition for the first two: an order-entry boundary the scalar vocabulary cannot
+  state, which the replacement-block rows now supply where a whole day is published. Closing
+  condition for the third and fourth: #152, as for the label deviation above.
 - **No intraday-topology gap.** All eighteen `modified` grain rows in the block triage to
-  design memo §1.6 categories 3, 4 and 5 — fourteen to "normal, the neighbouring closure
-  carries it" and four to a late open. None is a category-6 topology change, so this family
-  contributes no unrepresentable special day in this window.
+  design memo §1.6 categories 3, 4 and 5 — fourteen to conversion 2 and four to conversion 3 —
+  and each of the eighteen now ships a replacement-block row stating its complete day. None is
+  a category-6 topology change, so this family contributes no unrepresentable special day in
+  this window.
 - **No `unsourced` row.** Every trade date this table names has an operator artifact behind it
   at T2, and every other date in the coverage window is audited normal on CME's own T1 holiday
   list.

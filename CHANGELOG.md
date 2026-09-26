@@ -269,6 +269,21 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Fixed
 
+- **`globex_fx` now states CME's 2025 merged trade dates (2026-09-26 UTC).** On a
+  Monday or Thursday holiday the operator publishes no final close for that
+  holiday's own trade date: the Sunday-or-Wednesday Pre-Open and the `17:00` open
+  are printed against the **next** business day, so the whole span through the
+  following `16:00` CT close carries one trade date. The crate kept its own label
+  and answered the holiday's, so `trade_date` contradicted the operator on the
+  whole span. Six rows now state it — 2025-01-21, 2025-02-18, 2025-05-27,
+  2025-06-20, 2025-09-02 and 2025-11-28 — each as the complete trade date, with
+  the holiday's own Pre-Open read from the operator (`16:00` CT for this family,
+  not the ordinary weekday `16:45`). 2025-11-28 was previously a bare
+  `EarlyClose { 13:45 }`; it is now a replacement whose last block ends at that
+  same `13:45`. No `is_open` answer changes — the merge relabels the span, it
+  does not delete it. The 2026 and 2027 instances of the same shape are still
+  unstated and tracked as #140.
+
 - **The Saturday-session trade dates now state the Thursday-evening leg their
   Friday holiday closes (2026-09-26 UTC).** `globex_energy`,
   `globex_equity_index`, `globex_interest_rates`, `globex_fx` and

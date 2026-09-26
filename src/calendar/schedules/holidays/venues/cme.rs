@@ -564,14 +564,24 @@ pub(crate) static CME: &HolidayTable = holidays! {
         // rates early close 12:00 CT, energy 13:30 CT, grains and livestock
         // closed, no row in FX.
         (2025, 1, 20, Unsourced, T2, "CME-SVC-2025-01-19"),
+        // 2025-01-21 - T2 - CME-SVC-2025-01-19 - FX states the merged trade date
+        // this holiday rolls into; the other five families state no row, so the
+        // venue cannot support either answer.
+        (2025, 1, 21, Unsourced, T2, "CME-SVC-2025-01-19"),
         // 2025-02-17 - T2 - CME-SVC-2025-02-16 - as 2025-01-20.
         (2025, 2, 17, Unsourced, T2, "CME-SVC-2025-02-16"),
+        // 2025-02-18 - T2 - CME-SVC-2025-02-16 - as 2025-01-21.
+        (2025, 2, 18, Unsourced, T2, "CME-SVC-2025-02-16"),
         // 2025-04-18 - T2 - CME-SVC-2025-04-17 - all six families closed.
         (2025, 4, 18, Closed, T2, "CME-SVC-2025-04-17"),
         // 2025-05-26 - T2 - CME-SVC-2025-05-25 - as 2025-01-20.
         (2025, 5, 26, Unsourced, T2, "CME-SVC-2025-05-25"),
+        // 2025-05-27 - T2 - CME-SVC-2025-05-25 - as 2025-01-21.
+        (2025, 5, 27, Unsourced, T2, "CME-SVC-2025-05-25"),
         // 2025-06-19 - T2 - CME-SVC-2025-06-18 - as 2025-01-20.
         (2025, 6, 19, Unsourced, T2, "CME-SVC-2025-06-18"),
+        // 2025-06-20 - T2 - CME-SVC-2025-06-18 - as 2025-01-21.
+        (2025, 6, 20, Unsourced, T2, "CME-SVC-2025-06-18"),
         // 2025-07-03 - T2 - CME-SVC-2025-07-03 - equity index early close
         // 12:15 CT; no row in any of the other five families.
         (2025, 7, 3, Unsourced, T2, "CME-SVC-2025-07-03"),
@@ -580,6 +590,8 @@ pub(crate) static CME: &HolidayTable = holidays! {
         (2025, 7, 4, Unsourced, T2, "CME-SVC-2025-07-03"),
         // 2025-09-01 - T2 - CME-SVC-2025-08-31 - as 2025-01-20.
         (2025, 9, 1, Unsourced, T2, "CME-SVC-2025-08-31"),
+        // 2025-09-02 - T2 - CME-SVC-2025-08-31 - as 2025-01-21.
+        (2025, 9, 2, Unsourced, T2, "CME-SVC-2025-08-31"),
         // 2025-11-27 - T2 - CME-SVC-2025-11-26-SAT - as 2025-01-20.
         (2025, 11, 27, Unsourced, T2, "CME-SVC-2025-11-26-SAT"),
         // 2025-11-28 - T2 - CME-SVC-2025-11-26 - equity index, interest rates

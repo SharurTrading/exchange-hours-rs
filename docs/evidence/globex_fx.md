@@ -89,7 +89,12 @@ are in the research store's `holidays/raw/` indexes.
 | `2018-holiday-calendars.zip#2018-thanksgiving-holiday-schedule.xls @2026-08-30` | `2018-thanksgiving-holiday-schedule.xls` | <https://web.archive.org/web/20260830id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2018-thanksgiving-holiday-schedule.xls> | 2026-08-30T10:02:25Z | T1 | `31fc95f5b27f8689477b4abb557f14b2cf9ac481262926e30b78adf1455adff1` |
 | `2018-holiday-calendars.zip#2018-christmas-holiday-schedule.xls @2026-08-30` | `2018-christmas-holiday-schedule.xls` | <https://web.archive.org/web/20260830id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2018-christmas-holiday-schedule.xls> | 2026-08-30T10:02:25Z | T1 | `b97ee5f47d55c4383c7f1fa7d554eba3c7f0e8ded18343aadd06d7908d9e7a91` |
 | `CME-SVC-2024-12-31` | 2024-12-31 .. 2025-01-02 | <https://web.archive.org/web/20241220155340id_/https://www.cmegroup.com/services/trading-hours-by-product?id=316,133,425,300,58,437,22,8478,5201,10191&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2024-12-31&toEventDate=2025-01-02> | archive capture 2024-12-20T15:53:40Z | T2 | `375c70eecd19c5c6204ecb408d1b3210a9da4c9a03b85ef1c7dbbcde1397ab63` |
+| `CME-SVC-2025-01-19` | 2025-01-19 .. 2025-01-21 | <https://web.archive.org/web/20241220155340id_/https://www.cmegroup.com/services/trading-hours-by-product?id=316,133,425,300,58,437,22,8478,5201,10191&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2025-01-19&toEventDate=2025-01-21> | archive capture 2024-12-20T15:53:40Z | T2 | `4f2ab56af14e7b3a6978e7fa6db8e2cfc63a82d06428cd88844f0e5bcf534f40` |
+| `CME-SVC-2025-02-16` | 2025-02-16 .. 2025-02-18 | <https://web.archive.org/web/20241220155340id_/https://www.cmegroup.com/services/trading-hours-by-product?id=316,133,425,300,58,437,22,8478,5201,10191&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2025-02-16&toEventDate=2025-02-18> | archive capture 2024-12-20T15:53:40Z | T2 | `5bec2ca6b4999a534e4d9818035aaa18ec8626b6c912cf7e3d2c57015536f2fa` |
 | `CME-SVC-2025-04-17` | 2025-04-17 .. 2025-04-19 | <https://web.archive.org/web/20241220155340id_/https://www.cmegroup.com/services/trading-hours-by-product?id=316,133,425,300,58,437,22,8478,5201,10191&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2025-04-17&toEventDate=2025-04-19> | archive capture 2024-12-20T15:53:40Z | T2 | `865a1d4f08102e00151bd87ab2b8e8a7720e9203a17aaaba24627ade3ed26e74` |
+| `CME-SVC-2025-05-25` | 2025-05-25 .. 2025-05-27 | <https://web.archive.org/web/20241220155340id_/https://www.cmegroup.com/services/trading-hours-by-product?id=316,133,425,300,58,437,22,8478,5201,10191&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2025-05-25&toEventDate=2025-05-27> | archive capture 2024-12-20T15:53:40Z | T2 | `5f42869879c826f5949b79236aabb3d26d74e7565d92d7cc5e8784c63973210b` |
+| `CME-SVC-2025-06-18` | 2025-06-18 .. 2025-06-20 | <https://web.archive.org/web/20241220155340id_/https://www.cmegroup.com/services/trading-hours-by-product?id=316,133,425,300,58,437,22,8478,5201,10191&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2025-06-18&toEventDate=2025-06-20> | archive capture 2024-12-20T15:53:40Z | T2 | `a572706907175776255261103b393493ebdf5a8106ec5374d129145bdf89105e` |
+| `CME-SVC-2025-08-31` | 2025-08-31 .. 2025-09-02 | <https://web.archive.org/web/20241220155340id_/https://www.cmegroup.com/services/trading-hours-by-product?id=316,133,425,300,58,437,22,8478,5201,10191&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2025-08-31&toEventDate=2025-09-02> | archive capture 2024-12-20T15:53:40Z | T2 | `e075762ed34a86048d94900e10edba10d95b3d766052908ffbb5133f6b64bab0` |
 | `CME-SVC-2025-07-03` | 2025-07-03 .. 2025-07-05 | <https://web.archive.org/web/20241220155340id_/https://www.cmegroup.com/services/trading-hours-by-product?id=316,133,425,300,58,437,22,8478,5201,10191&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2025-07-03&toEventDate=2025-07-05> | archive capture 2024-12-20T15:53:40Z | T2 | `b80cd4bfed0ae72865bfacc1936e107eb8febfcc94b37fcce1d05505c659147b` |
 | `CME-SVC-2025-11-26` | 2025-11-26 .. 2025-11-28 | <https://web.archive.org/web/20260129012309id_/https://www.cmegroup.com/services/trading-hours-by-product?id=316,133,425,300,58,437,22,8478,5201,10191&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2025-11-26&toEventDate=2025-11-28> | archive capture 2026-01-29T01:23:09Z | T2 | `6c4c598791058dd9a11aff0ddb072c761a436c6d1054b891def74c6935f020f1` |
 | `CME-SVC-2025-11-26-SAT` | 2025-11-26 .. 2025-11-29 | <https://www.cmegroup.com/services/trading-hours-by-product?id=316,133,425,300,58,437,22,8478,5201,10191&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2025-11-26&toEventDate=2025-11-29> | live retrieval 2026-09-12T08:55:12Z | T2 | `2e9f34f20085de3ccbdff1dc29cb7463bcff93713ef0c550740d6f15e0635ab7` |
@@ -516,9 +521,14 @@ Sat none.
 | Trade date | Kind | Instant as printed | Document | Tier | Derived from |
 |---|---|---|---|---|---|
 | 2025-01-01 | closed | `16:00 preopen; 17:00 open` — both events carry CME trade date 2025-01-02, so no session belongs to trade date 2025-01-01 | `CME-SVC-2024-12-31` | T2 | eventDate 2024-12-31 (`16:00 closed`, CME trade date 2024-12-31, no evening re-open) and eventDate 2025-01-01, CME trade date 2025-01-02 |
+| 2025-01-21 | replacement blocks | `16:00 preopen; 17:00 open` on eventDate 2025-01-19 and on eventDate 2025-01-20, both carrying CME trade date 2025-01-21; `16:00 closed` on eventDate 2025-01-21, CME trade date 2025-01-21 | `CME-SVC-2025-01-19` | T2 | Martin Luther King Day publishes no final close for its own trade date, so the Sunday-17:00-to-Tuesday-16:00 CT span carries this trade date. Unlike the ordinary weekday, the holiday's Pre-Open is `16:00` for this family, not `16:45` |
+| 2025-02-18 | replacement blocks | `16:00 preopen; 17:00 open` on eventDate 2025-02-16 and on eventDate 2025-02-17, both carrying CME trade date 2025-02-18; `16:00 closed` on eventDate 2025-02-18, CME trade date 2025-02-18 | `CME-SVC-2025-02-16` | T2 | Presidents Day; as 2025-01-21 |
 | 2025-04-18 | closed | `no events published` | `CME-SVC-2025-04-17` | T2 | eventDate 2025-04-17 (`16:00 closed`, CME trade date 2025-04-17, no evening re-open) and eventDate 2025-04-18 |
+| 2025-05-27 | replacement blocks | `16:00 preopen; 17:00 open` on eventDate 2025-05-25 and on eventDate 2025-05-26, both carrying CME trade date 2025-05-27; `16:00 closed` on eventDate 2025-05-27, CME trade date 2025-05-27 | `CME-SVC-2025-05-25` | T2 | Memorial Day; as 2025-01-21 |
+| 2025-06-20 | replacement blocks | `16:45 preopen; 17:00 open` on eventDate 2025-06-18 and `16:00 preopen; 17:00 open` on eventDate 2025-06-19, both carrying CME trade date 2025-06-20; `16:00 closed` on eventDate 2025-06-20, CME trade date 2025-06-20 | `CME-SVC-2025-06-18` | T2 | Juneteenth falls on the Thursday, so the merged span opens Wednesday evening. Its `-2` day is therefore an ordinary weekday and the row carries the family's weekday `16:45` Pre-Open there, where the Sunday-opening merges carry `16:00` |
 | 2025-07-04 | early close | `12:00 closed` — 12:00 CT | `CME-SVC-2025-07-03` | T2 | eventDate 2025-07-04, CME trade date 2025-07-04 |
-| 2025-11-28 | early close | `07:00 preopen; 07:30 open; 13:45 closed` — 13:45 CT | `CME-SVC-2025-11-26` | T2 | eventDate 2025-11-28, CME trade date 2025-11-28 |
+| 2025-09-02 | replacement blocks | `16:00 preopen; 17:00 open` on eventDate 2025-08-31 and on eventDate 2025-09-01, both carrying CME trade date 2025-09-02; `16:00 closed` on eventDate 2025-09-02, CME trade date 2025-09-02 | `CME-SVC-2025-08-31` | T2 | Labor Day; as 2025-01-21 |
+| 2025-11-28 | replacement blocks | `16:45 preopen; 17:00 open` on eventDate 2025-11-26 and `16:00 preopen; 17:00 open` on eventDate 2025-11-27, both carrying CME trade date 2025-11-28; `13:45 closed` on eventDate 2025-11-28, CME trade date 2025-11-28 | `CME-SVC-2025-11-26` | T2 | Thanksgiving Day publishes no final close of its own, so this trade date owns the span from Wednesday evening, and its own close is the operator's `13:45` CT. The `-2` day is a Wednesday, so that queue is the weekday `16:45`; the `07:00 preopen; 07:30 open` pair the earlier reading recorded is not a second session — the leg has been continuously open since Wednesday 17:00 |
 | 2025-11-29 | closed | `no events published` | `CME-SVC-2025-11-26-SAT` | T2 | eventDate 2025-11-29 |
 | 2025-12-24 | early close | `12:45 closed` — 12:45 CT | `CME-SVC-2025-12-24` | T2 | eventDate 2025-12-24, CME trade date 2025-12-24 |
 | 2025-12-25 | closed | `16:00 preopen; 17:00 open` — both events carry CME trade date 2025-12-26 | `CME-SVC-2025-12-24` | T2 | eventDate 2025-12-25, CME trade date 2025-12-26 |
@@ -548,20 +558,20 @@ Sat none.
 **Gaps, 2025.**
 
 - **Trade-date merge — 2025-01-20, 2025-02-17, 2025-05-26, 2025-06-19,
-  2025-09-01, 2025-11-27 (no row).** On these Monday and Thursday holidays CME
-  publishes `16:00 preopen; 17:00 open` for this family instead of `16:00
-  closed; 16:45 preopen; 17:00 open`, with both events carrying the next
-  business day's trade date. Matching still stops at 16:00 CT and still resumes
-  at 17:00 CT, so **no executable phase moves and no `is_open` answer changes**;
-  what changes is that the holiday has no final close of its own and the whole
-  Sunday-evening-through-Tuesday-16:00 CT (resp.
+  2025-09-01, 2025-11-27 — now stated, no longer a gap.** On these Monday and
+  Thursday holidays CME publishes `16:00 preopen; 17:00 open` for this family
+  instead of `16:00 closed; 16:45 preopen; 17:00 open`, with both events carrying
+  the next business day's trade date. Matching still stops at 16:00 CT and still
+  resumes at 17:00 CT, so no executable phase moves and no `is_open` answer
+  changes; what changes is that the holiday has no final close of its own and the
+  whole Sunday-evening-through-Tuesday-16:00 CT (resp.
   Wednesday-evening-through-Friday-16:00 CT) span carries one trade date. The
-  scalar vocabulary cannot merge two trade dates, and a `Closed` row would
-  instead delete a full evening and day of trading CME in fact ran, so no row
-  ships and the crate keeps its normal-week trade-date assignment for the span.
-  Closing condition: a block-row vocabulary (#93) that can state a trading day's own
-  trade date (design memo §7). Served identity, so tracked as an issue
-  (LAW-FOLLOW-UPS-ARE-ISSUES).
+  block-row vocabulary of #93 states it, so the six spans now ship as
+  replacement rows keyed to the operator's trade date — 2025-01-21, 2025-02-18,
+  2025-05-27, 2025-06-20, 2025-09-02 and 2025-11-28 — and a `Closed` row is not
+  used, because it would delete a full evening and day of trading CME in fact
+  ran. The 2026 and 2027 instances of the same shape are still unstated and are
+  tracked as #140.
 - **Order-entry window — the same six dates, plus 2025-01-01 and 2025-12-25.**
   The Globex pre-open opens at 16:00 CT instead of the normal 16:45 CT. The
   table shares `DayPolicy`'s vocabulary, which has no order-entry boundary, so

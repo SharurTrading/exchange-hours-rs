@@ -388,7 +388,14 @@ This era's rows cite the ids below: CME Group's own published holiday schedules 
 - **not representable** — order-entry deviations. On 2025-01-01 and 2025-12-25 the pre-open
   starts at 16:00 CT rather than the normal 16:45 CT. The table's vocabulary is `DayPolicy`'s
   and has no order-entry boundary; the family models no order-entry phase at all, so this
-  changes nothing the crate reports.
+  changes nothing the crate reports. **That "normal 16:45 CT" is itself unmodelled, and is an
+  open question — #139.** The store's own normal-week capture for this family's product set,
+  `holidays/raw/cme-2025-2027/live/normal/normalweek_extra.json`, prints `16:45 preopen` and
+  `17:00 open` for Monday-Thursday and `16:00 preopen`/`17:00 open` on the opening Sunday, for
+  `NKD` (id 168) and `NIY` (id 167) alike. This file cited that artifact nowhere until #139,
+  which is why the module's claim that the operator publishes no normal-week onset went
+  unchallenged. #139 records both readings and the closing condition; until one is chosen, the
+  coverage row's `none in 2025+` / `complete` cells stand only for the phases the crate models.
 - **Saturday 2025-11-29 ships a row.** `CME-SVC-B-2025-11-26` publishes no events for it,
   the ten-product capture agrees, and CME's 2025 Globex table states the period as
   "27 - 29 November 2025", so it is a sourced closure. The family's grid has no

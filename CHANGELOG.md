@@ -269,6 +269,19 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Fixed
 
+- **`globex_energy` now states CME's merged trade dates, and `comex`/`nymex`
+  follow it (2026-09-26 UTC).** The last of the five Globex families to gain the
+  merged rows, on seventeen dates: 2025-01-21, 2025-02-18, 2025-05-27, 2025-06-20,
+  2025-09-02, 2025-11-28, 2026-01-20, 2026-02-17, 2026-05-26, 2026-09-08,
+  2026-11-27, 2027-01-19, 2027-02-16, 2027-06-01, 2027-07-06, 2027-09-07 and
+  2027-11-26. Every one of this family's Monday and Thursday holidays closes at
+  `13:30` CT and the day-after-Thanksgiving rows end at `13:45`, so three statics
+  serve the whole set — including 2027-07-05, which for
+  `globex_interest_rates` was the sole `13:30` exception and is simply the rule
+  here. `comex` and `nymex` route this family alone, so their tables are the
+  family's unchanged and their rows import the same statics rather than copying
+  them. **No `is_open` answer changes**; only the trade date moves.
+
 - **`globex_equity_index` now states CME's merged trade dates (2026-09-26 UTC).**
   The same family of rows as `globex_fx`, `globex_nikkei_225_dollar` and
   `globex_interest_rates`, on seventeen dates: 2025-01-21, 2025-02-18,

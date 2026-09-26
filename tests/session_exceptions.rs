@@ -2099,12 +2099,22 @@ fn a_replaced_day_restates_its_order_entry_topology() {
 /// trade date rather than composing with it.
 ///
 /// This is the precedence Stage 3's new kind has to obey, fenced here on the
-/// half of it a caller can reach: `GlobexEnergy` ships a built-in early close at
-/// 13:45 CT on 2026-11-27, and a caller's `ReplaceSessions` record for the same
-/// date must win outright. If the two composed, the replaced day's blocks would
-/// be clipped back to 13:45 and one row would have been applied twice.
+/// half of it a caller can reach: `GlobexEnergy` ships a built-in replacement for
+/// 2026-11-27 whose last block ends at 13:45 CT — the day after Thanksgiving, which
+/// that family states as a merged trade date — and a caller's `ReplaceSessions`
+/// record for the same date must win outright. If the two composed, the replaced
+/// day's blocks would be clipped back to 13:45 and one row would have been applied
+/// twice.
 static SUPPRESSES_BUILTIN_BLOCKS: [ExceptionBlock; 1] =
     [ExceptionBlock::regular(0, 9 * 3_600, 16 * 3_600)];
+
+/// The built-in row those blocks replace, with the same 13:45 CT end.
+static SUPPRESSED_BUILTIN_BLOCKS: [ExceptionBlock; 4] = [
+    ExceptionBlock::order_entry(-2, 16 * 3_600 + 45 * 60, 17 * 3_600),
+    ExceptionBlock::extended(-2, 17 * 3_600, 13 * 3_600 + 30 * 60),
+    ExceptionBlock::order_entry(-1, 13 * 3_600 + 30 * 60, 17 * 3_600),
+    ExceptionBlock::extended(-1, 17 * 3_600, 13 * 3_600 + 45 * 60),
+];
 
 #[test]
 fn a_caller_replacement_suppresses_the_built_in_row_for_that_trade_date() {
@@ -2114,10 +2124,9 @@ fn a_caller_replacement_suppresses_the_built_in_row_for_that_trade_date() {
     let bare = calendar_for_market_hours_key(MarketHoursKey::GlobexEnergy);
     assert_eq!(
         bare.holiday_on(trade_date).map(Holiday::kind),
-        Some(HolidayKind::EarlyClose {
-            close_ssm: 13 * 3_600 + 45 * 60
-        }),
-        "the fixture depends on this identity shipping an early close that day"
+        Some(HolidayKind::ReplacementBlocks(&SUPPRESSED_BUILTIN_BLOCKS)),
+        "the fixture depends on this identity shipping a built-in row that day, \
+         whose session ends at the same 13:45 the check below probes past"
     );
 
     let records = [SessionExceptionRecord::replace_sessions(

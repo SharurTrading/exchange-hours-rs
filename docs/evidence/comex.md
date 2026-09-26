@@ -545,14 +545,20 @@ through the Sunday and prints both legs.
 |---|---|---|---|---|---|
 | 2025-01-01 | closed | `no events published` | `CME-SVC-2024-12-31` | T2 | energy closed |
 | 2025-01-20 | early close | `early close 13:30 CT` | `CME-SVC-2025-01-19` | T2 | energy early close 13:30 CT |
+| 2025-01-21 | replacement blocks | `16:00 preopen; 17:00 open` on eventDate 2025-01-19; `13:30 preopen; 17:00 open` on eventDate 2025-01-20; `16:00 closed` on eventDate 2025-01-21 | `CME-SVC-2025-01-19` | T2 | this venue routes `globex_energy` alone, so its table is the family's unchanged: the holiday publishes no final close, the span from the evening before carries 2025-01-21, and it ends at the holiday's 13:30 CT close |
 | 2025-02-17 | early close | `early close 13:30 CT` | `CME-SVC-2025-02-16` | T2 | energy early close 13:30 CT |
+| 2025-02-18 | replacement blocks | `16:00 preopen; 17:00 open` on eventDate 2025-02-16; `13:30 preopen; 17:00 open` on eventDate 2025-02-17; `16:00 closed` on eventDate 2025-02-18 | `CME-SVC-2025-02-16` | T2 | this venue routes `globex_energy` alone, so its table is the family's unchanged: the holiday publishes no final close, the span from the evening before carries 2025-02-18, and it ends at the holiday's 13:30 CT close |
 | 2025-04-18 | closed | `no events published` | `CME-SVC-2025-04-17` | T2 | energy closed |
 | 2025-05-26 | early close | `early close 13:30 CT` | `CME-SVC-2025-05-25` | T2 | energy early close 13:30 CT |
+| 2025-05-27 | replacement blocks | `16:00 preopen; 17:00 open` on eventDate 2025-05-25; `13:30 preopen; 17:00 open` on eventDate 2025-05-26; `16:00 closed` on eventDate 2025-05-27 | `CME-SVC-2025-05-25` | T2 | this venue routes `globex_energy` alone, so its table is the family's unchanged: the holiday publishes no final close, the span from the evening before carries 2025-05-27, and it ends at the holiday's 13:30 CT close |
 | 2025-06-19 | early close | `early close 13:30 CT` | `CME-SVC-2025-06-18` | T2 | energy early close 13:30 CT |
+| 2025-06-20 | replacement blocks | `16:45 preopen; 17:00 open` on eventDate 2025-06-18; `13:30 preopen; 17:00 open` on eventDate 2025-06-19; `16:00 closed` on eventDate 2025-06-20 | `CME-SVC-2025-06-18` | T2 | this venue routes `globex_energy` alone, so its table is the family's unchanged: the holiday publishes no final close, the span from the evening before carries 2025-06-20, and it ends at the holiday's 13:30 CT close |
 | 2025-07-04 | early close | `early close 12:00 CT` | `CME-SVC-2025-07-03` | T2 | energy early close 12:00 CT |
 | 2025-09-01 | early close | `early close 13:30 CT` | `CME-SVC-2025-08-31` | T2 | energy early close 13:30 CT |
+| 2025-09-02 | replacement blocks | `16:00 preopen; 17:00 open` on eventDate 2025-08-31; `13:30 preopen; 17:00 open` on eventDate 2025-09-01; `16:00 closed` on eventDate 2025-09-02 | `CME-SVC-2025-08-31` | T2 | this venue routes `globex_energy` alone, so its table is the family's unchanged: the holiday publishes no final close, the span from the evening before carries 2025-09-02, and it ends at the holiday's 13:30 CT close |
 | 2025-11-27 | early close | `early close 13:30 CT` | `CME-SVC-2025-11-26` | T2 | energy early close 13:30 CT |
 | 2025-11-28 | early close | `early close 13:45 CT` | `CME-SVC-2025-11-26` | T2 | energy early close 13:45 CT |
+| 2025-11-28 | replacement blocks | `16:45 preopen; 17:00 open` on eventDate 2025-11-26; `13:30 preopen; 17:00 open` on eventDate 2025-11-27; `13:45 closed` on eventDate 2025-11-28 | `CME-SVC-2025-11-26` | T2 | as the family row: the Thursday holiday publishes no final close, so this trade date owns the span from Wednesday evening and ends at the operator's 13:45 CT close |
 | 2025-11-29 | closed | `no events published` | `CME-SVC-2025-11-26-SAT` | T2 | energy closed |
 | 2025-12-24 | early close | `early close 12:45 CT` | `CME-SVC-2025-12-24` | T2 | energy early close 12:45 CT |
 | 2025-12-25 | closed | `no events published` | `CME-SVC-2025-12-24` | T2 | energy closed |
@@ -563,16 +569,21 @@ through the Sunday and prints both legs.
 |---|---|---|---|---|---|
 | 2026-01-01 | closed | `no events published` | `CME-SVC-2025-12-31` | T2 | energy closed |
 | 2026-01-19 | early close | `early close 13:30 CT` | `CME-SVC-2026-01-18` | T2 | energy early close 13:30 CT |
+| 2026-01-20 | replacement blocks | `16:00 preopen; 17:00 open` on eventDate 2026-01-18; `13:30 preopen; 17:00 open` on eventDate 2026-01-19; `16:00 closed` on eventDate 2026-01-20 | `CME-SVC-2026-01-18` | T2 | this venue routes `globex_energy` alone, so its table is the family's unchanged: the holiday publishes no final close, the span from the evening before carries 2026-01-20, and it ends at the holiday's 13:30 CT close |
 | 2026-02-16 | early close | `early close 13:30 CT` | `CME-SVC-2026-02-15` | T2 | energy early close 13:30 CT |
+| 2026-02-17 | replacement blocks | `16:00 preopen; 17:00 open` on eventDate 2026-02-15; `13:30 preopen; 17:00 open` on eventDate 2026-02-16; `16:00 closed` on eventDate 2026-02-17 | `CME-SVC-2026-02-15` | T2 | this venue routes `globex_energy` alone, so its table is the family's unchanged: the holiday publishes no final close, the span from the evening before carries 2026-02-17, and it ends at the holiday's 13:30 CT close |
 | 2026-04-03 | closed | `no events published` | `CME-SVC-2026-04-01` | T2 | energy closed |
 | 2026-05-25 | early close | `early close 13:30 CT` | `CME-SVC-2026-05-24` | T2 | energy early close 13:30 CT |
+| 2026-05-26 | replacement blocks | `16:00 preopen; 17:00 open` on eventDate 2026-05-24; `13:30 preopen; 17:00 open` on eventDate 2026-05-25; `16:00 closed` on eventDate 2026-05-26 | `CME-SVC-2026-05-24` | T2 | this venue routes `globex_energy` alone, so its table is the family's unchanged: the holiday publishes no final close, the span from the evening before carries 2026-05-26, and it ends at the holiday's 13:30 CT close |
 | 2026-06-19 | early close | `early close 12:00 CT` | `CME-SVC-2026-06-18` | T2 | energy early close 12:00 CT |
 | 2026-06-22 | replacement blocks | `05:00 open; 17:00 closed` on eventDate 2026-06-20, all carrying trade date 2026-06-22 (`CME-SVC-2026-06-18`); `16:00 preopen; 17:00 open` on eventDate 2026-06-21 and `16:00 closed` on eventDate 2026-06-22, all carrying trade date 2026-06-22 (`CME-SVC-2026-06-21`) | `CME-SVC-2026-06-18` | T2 | the energy family's own row: the eventDate 2026-06-20 Saturday session from the first window, plus the ordinary Sunday Pre-Open and Sunday-17:00-to-Monday-16:00 session from the second, which the first does not print |
 | 2026-07-06 | replacement blocks | `05:00 open; 17:00 closed` on eventDate 2026-07-04; `16:00 preopen; 17:00 open` on eventDate 2026-07-05 | `CME-SVC-2026-07-03` | T2 | the energy family's own row, as 2026-06-22 |
 | 2026-07-03 | early close | `early close 12:00 CT` | `CME-SVC-2026-07-03` | T2 | energy early close 12:00 CT |
 | 2026-09-07 | early close | `early close 13:30 CT` | `CME-SVC-2026-09-06` | T2 | energy early close 13:30 CT |
+| 2026-09-08 | replacement blocks | `16:00 preopen; 17:00 open` on eventDate 2026-09-06; `13:30 preopen; 17:00 open` on eventDate 2026-09-07; `16:00 closed` on eventDate 2026-09-08 | `CME-SVC-2026-09-06` | T2 | this venue routes `globex_energy` alone, so its table is the family's unchanged: the holiday publishes no final close, the span from the evening before carries 2026-09-08, and it ends at the holiday's 13:30 CT close |
 | 2026-11-26 | early close | `early close 13:30 CT` | `CME-SVC-2026-11-25` | T2 | energy early close 13:30 CT |
 | 2026-11-27 | early close | `early close 13:45 CT` | `CME-SVC-2026-11-25` | T2 | energy early close 13:45 CT |
+| 2026-11-27 | replacement blocks | `16:45 preopen; 17:00 open` on eventDate 2026-11-25; `13:30 preopen; 17:00 open` on eventDate 2026-11-26; `13:45 closed` on eventDate 2026-11-27 | `CME-SVC-2026-11-25` | T2 | as the family row: the Thursday holiday publishes no final close, so this trade date owns the span from Wednesday evening and ends at the operator's 13:45 CT close |
 | 2026-12-24 | early close | `early close 12:45 CT` | `CME-SVC-2026-12-22` | T2 | energy early close 12:45 CT |
 | 2026-12-25 | closed | `no events published` | `CME-SVC-2026-12-24` | T2 | energy closed |
 
@@ -582,15 +593,21 @@ through the Sunday and prints both legs.
 |---|---|---|---|---|---|
 | 2027-01-01 | closed | `no events published` | `CME-SVC-2026-12-31` | T2 | energy closed |
 | 2027-01-18 | early close | `early close 13:30 CT` | `CME-SVC-2027-01-17` | T2 | energy early close 13:30 CT |
+| 2027-01-19 | replacement blocks | `16:00 preopen; 17:00 open` on eventDate 2027-01-17; `13:30 preopen; 17:00 open` on eventDate 2027-01-18; `16:00 closed` on eventDate 2027-01-19 | `CME-SVC-2027-01-17` | T2 | this venue routes `globex_energy` alone, so its table is the family's unchanged: the holiday publishes no final close, the span from the evening before carries 2027-01-19, and it ends at the holiday's 13:30 CT close |
 | 2027-02-15 | early close | `early close 13:30 CT` | `CME-SVC-2027-02-14` | T2 | energy early close 13:30 CT |
+| 2027-02-16 | replacement blocks | `16:00 preopen; 17:00 open` on eventDate 2027-02-14; `13:30 preopen; 17:00 open` on eventDate 2027-02-15; `16:00 closed` on eventDate 2027-02-16 | `CME-SVC-2027-02-14` | T2 | this venue routes `globex_energy` alone, so its table is the family's unchanged: the holiday publishes no final close, the span from the evening before carries 2027-02-16, and it ends at the holiday's 13:30 CT close |
 | 2027-03-26 | closed | `no events published` | `CME-SVC-2027-03-25` | T2 | energy closed |
 | 2027-05-31 | early close | `early close 13:30 CT` | `CME-SVC-2027-05-30` | T2 | energy early close 13:30 CT |
+| 2027-06-01 | replacement blocks | `16:00 preopen; 17:00 open` on eventDate 2027-05-30; `13:30 preopen; 17:00 open` on eventDate 2027-05-31; `16:00 closed` on eventDate 2027-06-01 | `CME-SVC-2027-05-30` | T2 | this venue routes `globex_energy` alone, so its table is the family's unchanged: the holiday publishes no final close, the span from the evening before carries 2027-06-01, and it ends at the holiday's 13:30 CT close |
 | 2027-06-18 | early close | `early close 12:00 CT` | `CME-SVC-2027-06-17` | T2 | energy early close 12:00 CT |
 | 2027-06-21 | replacement blocks | `05:00 open; 17:00 closed` on eventDate 2027-06-19, all carrying trade date 2027-06-21 (`CME-SVC-2027-06-17`); `16:00 preopen; 17:00 open` on eventDate 2027-06-20 and `16:00 closed` on eventDate 2027-06-21, all carrying trade date 2027-06-21 (`CME-SVC-2027-06-20`) | `CME-SVC-2027-06-17` | T2 | the energy family's own row, as 2026-06-22: the eventDate 2027-06-19 Saturday session from the first window and the Sunday legs from the second |
 | 2027-07-05 | early close | `early close 13:30 CT` | `CME-SVC-2027-07-04` | T2 | energy early close 13:30 CT |
+| 2027-07-06 | replacement blocks | `16:00 preopen; 17:00 open` on eventDate 2027-07-04; `13:30 preopen; 17:00 open` on eventDate 2027-07-05; `16:00 closed` on eventDate 2027-07-06 | `CME-SVC-2027-07-04` | T2 | this venue routes `globex_energy` alone, so its table is the family's unchanged: the holiday publishes no final close, the span from the evening before carries 2027-07-06, and it ends at the holiday's 13:30 CT close |
 | 2027-09-06 | early close | `early close 13:30 CT` | `CME-SVC-2027-09-05` | T2 | energy early close 13:30 CT |
+| 2027-09-07 | replacement blocks | `16:00 preopen; 17:00 open` on eventDate 2027-09-05; `13:30 preopen; 17:00 open` on eventDate 2027-09-06; `16:00 closed` on eventDate 2027-09-07 | `CME-SVC-2027-09-05` | T2 | this venue routes `globex_energy` alone, so its table is the family's unchanged: the holiday publishes no final close, the span from the evening before carries 2027-09-07, and it ends at the holiday's 13:30 CT close |
 | 2027-11-25 | early close | `early close 13:30 CT` | `CME-SVC-2027-11-24` | T2 | energy early close 13:30 CT |
 | 2027-11-26 | early close | `early close 13:45 CT` | `CME-SVC-2027-11-24` | T2 | energy early close 13:45 CT |
+| 2027-11-26 | replacement blocks | `16:45 preopen; 17:00 open` on eventDate 2027-11-24; `13:30 preopen; 17:00 open` on eventDate 2027-11-25; `13:45 closed` on eventDate 2027-11-26 | `CME-SVC-2027-11-24` | T2 | as the family row: the Thursday holiday publishes no final close, so this trade date owns the span from Wednesday evening and ends at the operator's 13:45 CT close |
 | 2027-12-24 | closed | `no events published` | `CME-SVC-2027-12-22` | T2 | energy closed |
 
 **Gaps, 2025-2027.**

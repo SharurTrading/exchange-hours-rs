@@ -89,6 +89,42 @@ pub(crate) static SATURDAY_SESSION_BLOCKS: [ExceptionBlock; 5] = [
     ExceptionBlock::order_entry(-1, 16 * 3_600, 17 * 3_600),
     ExceptionBlock::extended(-1, 17 * 3_600, 16 * 3_600),
 ];
+/// The complete trading day of the trade dates CME merges with the session
+/// before them, on a Monday holiday.
+///
+/// The holiday publishes no final close of its own: the queue and evening
+/// session that would carry it are printed against the next business day
+/// instead, so the whole span from Sunday evening through the following
+/// afternoon carries one trade date.
+///
+/// - offset `-2`, 16:00-17:00 CT: the Sunday Pre-Open queue.
+/// - offset `-2`, 17:00 CT to the holiday's own `12:00` CT early close: the
+///   matching session, which the holiday's T1 schedule ends there.
+/// - offset `-1`, **12:00**-17:00 CT: the holiday's own Pre-Open queue. CME
+///   publishes `12:00 preopen` for `NKD` and `NIY` on these dates, not the
+///   ordinary weekday `16:45`.
+/// - offset `-1`, 17:00 CT to trade date 16:00 CT: the matching session.
+///
+/// Evidence: `docs/evidence/globex_nikkei_225_dollar.md`.
+pub(crate) static MERGED_SESSION_BLOCKS: [ExceptionBlock; 4] = [
+    ExceptionBlock::order_entry(-2, 16 * 3_600, 17 * 3_600),
+    ExceptionBlock::extended(-2, 17 * 3_600, 12 * 3_600),
+    ExceptionBlock::order_entry(-1, 12 * 3_600, 17 * 3_600),
+    ExceptionBlock::extended(-1, 17 * 3_600, 16 * 3_600),
+];
+/// The same merged day when the trade date is the day-after-Thanksgiving
+/// Friday, whose session this family ends at `12:15` CT — not the `13:45` the
+/// CME equity and energy families use.
+///
+/// Its `-2` day is a Wednesday, so that queue is the ordinary weekday `16:45`.
+///
+/// Evidence: `docs/evidence/globex_nikkei_225_dollar.md`.
+pub(crate) static MERGED_SESSION_EARLY_CLOSE_BLOCKS: [ExceptionBlock; 4] = [
+    ExceptionBlock::order_entry(-2, 16 * 3_600 + 45 * 60, 17 * 3_600),
+    ExceptionBlock::extended(-2, 17 * 3_600, 12 * 3_600),
+    ExceptionBlock::order_entry(-1, 12 * 3_600, 17 * 3_600),
+    ExceptionBlock::extended(-1, 17 * 3_600, 12 * 3_600 + 15 * 60),
+];
 use super::{
     EvidenceTier::{T1, T2},
     HolidayKind::{Closed, ReplacementBlocks, Unsourced},
@@ -347,7 +383,15 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         // 2025-11-27 - T2 - CME-SVC-B-2025-11-26 - Thanksgiving, 12:00 CT close.
         (2025, 11, 27, early_close(12 * 3_600), T2, "CME-SVC-B-2025-11-26"),
         // 2025-11-28 - T2 - CME-SVC-B-2025-11-26 - day after Thanksgiving, 12:15 CT close.
-        (2025, 11, 28, early_close(12 * 3_600 + 15 * 60), T2, "CME-SVC-B-2025-11-26"),
+        // 2025-11-28 - T2 - CME-SVC-B-2025-11-26 - day after Thanksgiving. The Thursday holiday publishes no final close, so this trade date owns the span from Wednesday evening and ends at this family's 12:15 CT close.
+        (
+            2025,
+            11,
+            28,
+            ReplacementBlocks(&MERGED_SESSION_EARLY_CLOSE_BLOCKS),
+            T2,
+            "CME-SVC-B-2025-11-26"
+        ),
         // 2025-11-29 - T2 - CME-SVC-B-2025-11-26 - Thanksgiving Saturday; NKD and
         // NIY publish no events, and CME's 2025 Globex table states the period
         // as "27 - 29 November 2025".
@@ -360,12 +404,39 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2026, 1, 1, Closed, T2, "CME-SVC-B-2025-12-31"),
         // 2026-01-19 - T2 - CME-SVC-B-2026-01-18 - Martin Luther King Jr. Day, 12:00 CT close.
         (2026, 1, 19, early_close(12 * 3_600), T2, "CME-SVC-B-2026-01-18"),
+        // 2026-01-20 - T2 - CME-SVC-B-2026-01-18 - Martin Luther King Day; the holiday publishes no final close, so the span from Sunday evening carries this trade date.
+        (
+            2026,
+            1,
+            20,
+            ReplacementBlocks(&MERGED_SESSION_BLOCKS),
+            T2,
+            "CME-SVC-B-2026-01-18"
+        ),
         // 2026-02-16 - T2 - CME-SVC-B-2026-02-15 - Presidents' Day, 12:00 CT close.
         (2026, 2, 16, early_close(12 * 3_600), T2, "CME-SVC-B-2026-02-15"),
+        // 2026-02-17 - T2 - CME-SVC-B-2026-02-15 - Presidents Day; as 2026-01-20.
+        (
+            2026,
+            2,
+            17,
+            ReplacementBlocks(&MERGED_SESSION_BLOCKS),
+            T2,
+            "CME-SVC-B-2026-02-15"
+        ),
         // 2026-04-03 - T2 - CME-SVC-B-2026-04-01 - Good Friday, 08:15 CT close with Equity Index.
         (2026, 4, 3, early_close(8 * 3_600 + 15 * 60), T2, "CME-SVC-B-2026-04-01"),
         // 2026-05-25 - T2 - CME-SVC-B-2026-05-24 - Memorial Day, 12:00 CT close.
         (2026, 5, 25, early_close(12 * 3_600), T2, "CME-SVC-B-2026-05-24"),
+        // 2026-05-26 - T2 - CME-SVC-B-2026-05-24 - Memorial Day; as 2026-01-20.
+        (
+            2026,
+            5,
+            26,
+            ReplacementBlocks(&MERGED_SESSION_BLOCKS),
+            T2,
+            "CME-SVC-B-2026-05-24"
+        ),
         // 2026-06-19 - T2 - CME-SVC-B-2026-06-18 - Juneteenth, 12:00 CT close.
         (2026, 6, 19, early_close(12 * 3_600), T2, "CME-SVC-B-2026-06-18"),
         // the Saturday session 05:00-17:00 CT carrying this trade date.
@@ -376,10 +447,27 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2026, 7, 6, ReplacementBlocks(&SATURDAY_SESSION_BLOCKS), T2, "CME-SVC-B-2026-07-03"),
         // 2026-09-07 - T2 - CME-SVC-B-2026-09-06 - Labor Day, 12:00 CT close.
         (2026, 9, 7, early_close(12 * 3_600), T2, "CME-SVC-B-2026-09-06"),
+        // 2026-09-08 - T2 - CME-SVC-B-2026-09-06 - Labor Day; as 2026-01-20.
+        (
+            2026,
+            9,
+            8,
+            ReplacementBlocks(&MERGED_SESSION_BLOCKS),
+            T2,
+            "CME-SVC-B-2026-09-06"
+        ),
         // 2026-11-26 - T2 - CME-SVC-B-2026-11-25 - Thanksgiving, 12:00 CT close.
         (2026, 11, 26, early_close(12 * 3_600), T2, "CME-SVC-B-2026-11-25"),
         // 2026-11-27 - T2 - CME-SVC-B-2026-11-25 - day after Thanksgiving, 12:15 CT close.
-        (2026, 11, 27, early_close(12 * 3_600 + 15 * 60), T2, "CME-SVC-B-2026-11-25"),
+        // 2026-11-27 - T2 - CME-SVC-B-2026-11-25 - day after Thanksgiving; as 2025-11-28.
+        (
+            2026,
+            11,
+            27,
+            ReplacementBlocks(&MERGED_SESSION_EARLY_CLOSE_BLOCKS),
+            T2,
+            "CME-SVC-B-2026-11-25"
+        ),
         // 2026-12-24 - T2 - CME-SVC-B-2026-12-24 - Christmas Eve, 12:15 CT close.
         (2026, 12, 24, early_close(12 * 3_600 + 15 * 60), T2, "CME-SVC-B-2026-12-24"),
         // 2026-12-25 - T2 - CME-SVC-B-2026-12-24 - Christmas Day, no events published.
@@ -388,24 +476,77 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2027, 1, 1, Closed, T2, "CME-SVC-B-2026-12-31"),
         // 2027-01-18 - T2 - CME-SVC-B-2027-01-17 - Martin Luther King Jr. Day, 12:00 CT close.
         (2027, 1, 18, early_close(12 * 3_600), T2, "CME-SVC-B-2027-01-17"),
+        // 2027-01-19 - T2 - CME-SVC-B-2027-01-17 - Martin Luther King Day; as 2026-01-20.
+        (
+            2027,
+            1,
+            19,
+            ReplacementBlocks(&MERGED_SESSION_BLOCKS),
+            T2,
+            "CME-SVC-B-2027-01-17"
+        ),
         // 2027-02-15 - T2 - CME-SVC-B-2027-02-14 - Presidents' Day, 12:00 CT close.
         (2027, 2, 15, early_close(12 * 3_600), T2, "CME-SVC-B-2027-02-14"),
+        // 2027-02-16 - T2 - CME-SVC-B-2027-02-14 - Presidents Day; as 2026-01-20.
+        (
+            2027,
+            2,
+            16,
+            ReplacementBlocks(&MERGED_SESSION_BLOCKS),
+            T2,
+            "CME-SVC-B-2027-02-14"
+        ),
         // 2027-03-26 - T2 - CME-SVC-B-2027-03-25 - Good Friday, no events published.
         (2027, 3, 26, Closed, T2, "CME-SVC-B-2027-03-25"),
         // 2027-05-31 - T2 - CME-SVC-B-2027-05-30 - Memorial Day, 12:00 CT close.
         (2027, 5, 31, early_close(12 * 3_600), T2, "CME-SVC-B-2027-05-30"),
+        // 2027-06-01 - T2 - CME-SVC-B-2027-05-30 - Memorial Day; as 2026-01-20.
+        (
+            2027,
+            6,
+            1,
+            ReplacementBlocks(&MERGED_SESSION_BLOCKS),
+            T2,
+            "CME-SVC-B-2027-05-30"
+        ),
         // 2027-06-18 - T2 - CME-SVC-B-2027-06-17 - Juneteenth observed, 12:00 CT close.
         (2027, 6, 18, early_close(12 * 3_600), T2, "CME-SVC-B-2027-06-17"),
         // the Saturday session 05:00-17:00 CT carrying this trade date.
         (2027, 6, 21, ReplacementBlocks(&SATURDAY_SESSION_BLOCKS), T2, "CME-SVC-B-2027-06-17"),
         // 2027-07-05 - T2 - CME-SVC-B-2027-07-04 - Independence Day observed, 12:00 CT close.
         (2027, 7, 5, early_close(12 * 3_600), T2, "CME-SVC-B-2027-07-04"),
+        // 2027-07-06 - T2 - CME-SVC-B-2027-07-04 - Independence Day observed; as 2026-01-20.
+        (
+            2027,
+            7,
+            6,
+            ReplacementBlocks(&MERGED_SESSION_BLOCKS),
+            T2,
+            "CME-SVC-B-2027-07-04"
+        ),
         // 2027-09-06 - T2 - CME-SVC-B-2027-09-05 - Labor Day, 12:00 CT close.
         (2027, 9, 6, early_close(12 * 3_600), T2, "CME-SVC-B-2027-09-05"),
+        // 2027-09-07 - T2 - CME-SVC-B-2027-09-05 - Labor Day; as 2026-01-20.
+        (
+            2027,
+            9,
+            7,
+            ReplacementBlocks(&MERGED_SESSION_BLOCKS),
+            T2,
+            "CME-SVC-B-2027-09-05"
+        ),
         // 2027-11-25 - T2 - CME-SVC-B-2027-11-24 - Thanksgiving, 12:00 CT close.
         (2027, 11, 25, early_close(12 * 3_600), T2, "CME-SVC-B-2027-11-24"),
         // 2027-11-26 - T2 - CME-SVC-B-2027-11-24 - day after Thanksgiving, 12:15 CT close.
-        (2027, 11, 26, early_close(12 * 3_600 + 15 * 60), T2, "CME-SVC-B-2027-11-24"),
+        // 2027-11-26 - T2 - CME-SVC-B-2027-11-24 - day after Thanksgiving; as 2025-11-28.
+        (
+            2027,
+            11,
+            26,
+            ReplacementBlocks(&MERGED_SESSION_EARLY_CLOSE_BLOCKS),
+            T2,
+            "CME-SVC-B-2027-11-24"
+        ),
         // 2027-12-24 - T2 - CME-SVC-B-2027-12-22 - Christmas Friday closure, no events.
         (2027, 12, 24, Closed, T2, "CME-SVC-B-2027-12-22"),
     ],

@@ -269,6 +269,18 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Fixed
 
+- **`globex_nikkei_225_dollar` now states CME's merged trade dates (2026-09-26
+  UTC).** The same shape as `globex_fx` in the entry below, on twelve dates:
+  2025-11-28, 2026-01-20, 2026-02-17, 2026-05-26, 2026-09-08, 2026-11-27,
+  2027-01-19, 2027-02-16, 2027-06-01, 2027-07-06, 2027-09-07 and 2027-11-26. It
+  differs from `globex_fx` in one respect that matters: **this family's Monday
+  holidays carry a real early close**, so the merged span's evening leg ends at
+  `12:00` CT and the holiday queue opens there, rather than running through to
+  `16:00`. CME's own holiday schedules state that close at T1, and the crate has
+  shipped it since 2021. The day-after-Thanksgiving rows end at `12:15`, this
+  family's own close. **No `is_open` answer changes** — the previously shipped
+  holiday closes still hold at every instant, and the trade date is what moves.
+
 - **`globex_fx` now states CME's merged trade dates across the published future
   (2026-09-26 UTC).** On a
   Monday or Thursday holiday the operator publishes no final close for that

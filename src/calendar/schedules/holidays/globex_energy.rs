@@ -90,13 +90,20 @@ use super::{
 };
 use crate::calendar::exceptions::ExceptionBlock;
 
-/// The complete trading day of the 2026-06-22 and 2027-06-21 trade dates, which
-/// CME states a Saturday session on.
+/// The complete trading day of the 2026-06-22, 2026-07-06 and 2027-06-21 trade
+/// dates, which CME states a Saturday session on.
 ///
 /// CME published all three of the trading day's phases for each of these dates,
 /// so the row states the day rather than the Saturday alone. Stating only the
 /// Saturday would delete the Sunday-evening session that belongs to the same
 /// trade date, because a replacement row replaces the **complete** trade date.
+///
+/// The 2026-06-22 and 2027-06-21 trade dates read two windows, because the
+/// window that carries their Saturday stops there and prints no Sunday entry at
+/// all: `CME-SVC-2026-06-18` and `CME-SVC-2027-06-17` carry the Saturday
+/// session, and `CME-SVC-2026-06-21` and `CME-SVC-2027-06-20` carry the Sunday
+/// and Monday phases. The 2026-07-06 trade date needs one window only:
+/// `CME-SVC-2026-07-03` runs through its Sunday and prints both legs.
 ///
 /// - offset `-2`, Saturday 05:00-17:00 CT: the session itself.
 /// - offset `-1`, Sunday 16:00-17:00 CT: the ordinary Sunday Pre-Open queue,
@@ -478,13 +485,16 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2026, 5, 25, early_close(13 * 3_600 + 30 * 60), T2, "CME-SVC-2026-05-24"),
         // 2026-06-19 - T2 - CME-SVC-2026-06-18 - Juneteenth, 12:00 CT close dated to 06-22.
         (2026, 6, 19, early_close(12 * 3_600), T2, "CME-SVC-2026-06-18"),
-        // 2026-06-22 - T2 - CME-SVC-2026-06-20-SAT - Saturday session 05:00-17:00
-        // CT carrying this trade date; the complete trading day is stated.
+        // 2026-06-22 - T2 - CME-SVC-2026-06-18 - Saturday 2026-06-20 05:00-17:00 CT from that
+        // window, and the Sunday 2026-06-21 Pre-Open plus Sunday-17:00-to-Monday-16:00
+        // session from CME-SVC-2026-06-21, all carrying this trade date; the complete
+        // trading day is stated.
         (2026, 6, 22, ReplacementBlocks(&SATURDAY_SESSION_BLOCKS), T2, "CME-SVC-2026-06-18"),
         // 2026-07-03 - T2 - CME-SVC-2026-07-03 - Independence Day observed, 12:00 CT close.
         (2026, 7, 3, early_close(12 * 3_600), T2, "CME-SVC-2026-07-03"),
-        // 2026-07-06 - T2 - CME-SVC-2026-07-03-SAT - Saturday session 05:00-17:00
-        // CT carrying this trade date; the complete trading day is stated.
+        // 2026-07-06 - T2 - CME-SVC-2026-07-03 - Saturday 2026-07-04 05:00-17:00 CT and the Sunday
+        // 2026-07-05 Pre-Open plus Sunday-17:00-to-Monday-16:00 session, all
+        // carrying this trade date; the complete trading day is stated.
         (2026, 7, 6, ReplacementBlocks(&SATURDAY_SESSION_BLOCKS), T2, "CME-SVC-2026-07-03"),
         // 2026-09-07 - T2 - CME-SVC-2026-09-06 - Labor Day, 13:30 CT close.
         (2026, 9, 7, early_close(13 * 3_600 + 30 * 60), T2, "CME-SVC-2026-09-06"),
@@ -508,8 +518,10 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2027, 5, 31, early_close(13 * 3_600 + 30 * 60), T2, "CME-SVC-2027-05-30"),
         // 2027-06-18 - T2 - CME-SVC-2027-06-17 - Juneteenth observed, 12:00 CT close.
         (2027, 6, 18, early_close(12 * 3_600), T2, "CME-SVC-2027-06-17"),
-        // 2027-06-21 - T2 - CME-SVC-2027-06-19-SAT - Saturday session 05:00-17:00
-        // CT carrying this trade date; the complete trading day is stated.
+        // 2027-06-21 - T2 - CME-SVC-2027-06-17 - Saturday 2027-06-19 05:00-17:00 CT from that
+        // window, and the Sunday 2027-06-20 Pre-Open plus Sunday-17:00-to-Monday-16:00
+        // session from CME-SVC-2027-06-20, all carrying this trade date; the complete
+        // trading day is stated.
         (2027, 6, 21, ReplacementBlocks(&SATURDAY_SESSION_BLOCKS), T2, "CME-SVC-2027-06-17"),
         // 2027-07-05 - T2 - CME-SVC-2027-07-04 - Independence Day observed, 13:30 CT close.
         (2027, 7, 5, early_close(13 * 3_600 + 30 * 60), T2, "CME-SVC-2027-07-04"),

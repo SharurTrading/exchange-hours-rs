@@ -44,7 +44,7 @@ use super::super::{
 
 /// The `Exchange::Nymex` table: the NYMEX energy half of `globex_energy`.
 ///
-/// The same rows as [`COMEX`] — 206 over six audited eras, 38 from 2010-2012,
+/// The same rows as [`COMEX`] — 209 over six audited eras, 38 from 2010-2012,
 /// 33 from 2013-2015, 31 from 2016-2018, 35 from 2019-2021, 33 from 2022-2024
 /// and 39 from 2025-2027 — because the two venues route the same single family: the operator
 /// publishes the metals and energy halves as one product row on every date the

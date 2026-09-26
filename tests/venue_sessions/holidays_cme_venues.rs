@@ -430,7 +430,7 @@ fn a_closed_venue_row_is_a_unanimous_closure() {
         // `Exchange` is `#[non_exhaustive]`, so the count is keyed off the
         // routing list this module already pins rather than off the variant.
         // 2010-2012 contributes 49 (CME) or 33 (CBOT) unsourced dates,
-        // 2013-2015 another 49 or 47, 2016-2018 27 each, 2019-2021 34 each,
+        // 2013-2015 another 50 or 46, 2016-2018 27 each, 2019-2021 34 each,
         // 2022-2024 34 and 32, and 2025-2027 35 and 31 — the three CME-side
         // dates on which only the energy and equity-index families state a row
         // (the 2026-06-22, 2026-07-06 and 2027-06-21 Saturday-session trade

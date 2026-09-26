@@ -195,8 +195,10 @@ routes one family's grid, so they match it row for row and their six `Unsourced`
 Dates that change internal phase topology are not representable by the scalar vocabulary, and the
 affected scopes declare them as gaps rather than approximations. For the 2025 floor the ones that
 matter are `globex_cryptocurrency` and `globex_fx`, whose evidence files record Saturday sessions and
-merged trade dates the scalar layer cannot state. No built-in replacement-block data ships today, so
-those dates remain gaps; the dates and closing conditions stay in the owner evidence files.
+merged trade dates the scalar layer cannot state. No built-in replacement-block row covers either
+scope's dates today — `globex_energy` and `globex_equity_index` carry the three Saturday-session
+rows each, and neither is one of them — so those dates remain gaps; the dates and closing
+conditions stay in the owner evidence files.
 
 ## Artifact resolution
 

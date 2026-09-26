@@ -639,9 +639,12 @@ thirty-five dates have all six families stating a boundary that they do not agre
 **Twenty-five** have at least one family silent, and five of those are the sharpest
 case, where exactly **one** family states anything at all: 2025-01-02, 2025-12-26,
 2026-01-02 and 2027-07-06, where only `globex_grains` states a late open, and
-2025-07-03, where only `globex_equity_index` states an early close. The other
-twenty are a mixture in between. Here is what the boundary disagreements look like
-across the three shapes of holiday, which is why no single instant can stand for one.
+2025-07-03, where only `globex_equity_index` states an early close. Three more —
+2026-06-22, 2026-07-06 and 2027-06-21 — are the two-family case: `globex_energy`
+and `globex_equity_index` both state the Saturday-session block and the other four
+state nothing. The remaining seventeen are a mixture in between. Here is what the
+boundary disagreements look like across the three shapes of holiday, which is why
+no single instant can stand for one.
 
 **The Christmas Eves are the widest** (a ten-date shape): on 2026-12-24 the grain and
 livestock day sessions end at 12:05 CT, the equity-index and interest-rate families at
@@ -737,7 +740,9 @@ the product-family key: `globex_equity_index` knows what CME equity index does o
   table on `cmegroup.com/trading-hours.html` is per asset class, not per venue — or a
   `DayPolicy`-shaped boundary that can express a per-family answer inside one venue
   calendar. Neither exists today.
-- **`no row in FX` on twenty-five of the thirty-five disputed dates.** `globex_fx`
+- **`no row in FX` on twenty-five of the thirty-five disputed dates** — twenty-two
+  of the older disputed dates, plus the three 2026-2027 Saturday-session dates.
+  `globex_fx`
   carries no row on 2025-01-02, 2025-01-20, 2025-02-17, 2025-05-26, 2025-06-19,
   2025-07-03, 2025-09-01, 2025-11-27, 2025-12-26, 2026-01-02, 2026-01-19, 2026-02-16,
   2026-05-25, 2026-06-22, 2026-07-06, 2026-09-07, 2026-11-26, 2027-01-18, 2027-02-15,
@@ -785,9 +790,9 @@ the product-family key: `globex_equity_index` knows what CME equity index does o
   would change nothing at all. Cryptocurrency shares the same **nine** closures — its
   `Closed` rows cover every one of them — so it would not touch the nine stated rows.
   What it would change is the residue: it ships twenty-four rows against this list's
-  forty-one dates, because it trades 24/7 and states no closure on the other
-  seventeen, so on each of those seventeen it has **audited the date normal** while
-  another routed family states a closure or an early close. Those seventeen dates
+  forty-four dates, because it trades 24/7 and states no closure on the other
+  twenty, so on each of those twenty it has **audited the date normal** while
+  another routed family states a closure or an early close. Those twenty dates
   carry `unsourced` either way, so the venue's answers would be unchanged and only the
   evidence would record one more family as party to each disagreement. The choice is
   therefore not load-bearing for any answer in this window, which is exactly why it

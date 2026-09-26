@@ -23,7 +23,11 @@ counts are the **61** each their `Unsrc 2025+ dates` cells now read. The `iceus`
 `2025+ dates`, `Unsrc 2025+ dates`, `Missing / disputed` and `Complete?` cells moved on 2026-09-26 UTC
 when its 2025 holiday rows shipped — the last scope whose window opened after the floor — together
 with §1's heading and body, §2's withheld count, and the `iceus` endpoint row and table-shape bullet
-in [Artifact resolution](#artifact-resolution). The inspection statement above
+in [Artifact resolution](#artifact-resolution). The `iceus` `2025+ dates`, `Unsrc 2025+ dates`,
+`Missing / disputed` and `Complete?` cells moved again on 2026-09-26 UTC, from **41**/**34** to
+**42**/**35**, when the National Day of Mourning notice the identity had recorded as unread was read
+and 2025-01-09 shipped as one more `Unsourced` venue date — together with §1's and §2's `iceus`
+counts. The inspection statement above
 still describes the revision the values were first derived at; the counts, windows and horizons it
 covers are otherwise unchanged.
 
@@ -82,7 +86,7 @@ served `iceus` identity, while `FANG`, `DOLLAR_INDEX`, `SUGAR_COFFEE_COCOA`, `CO
 | `cfe` | [cfe.rs](../../src/calendar/schedules/futures/us/cfe.rs) | 2010-12-10 … 2021-12-06 (8 rows) | 2010-01-01 | 2025-01-01..2026-12-31 | 26 | — | 2027 is not published by Cboe: verified 2026-09-26 UTC, the `Hours & Holidays` page carries only a “2026 Futures Holiday Schedule” and its CSV twin lists 2026 rows only, so nothing is withheld and nothing past 2026-12-31 is claimed | complete to 2026-12-31 (2025-2026 sourced; 2027 unpublished) | #98, #116 |
 | `coinbase_derivatives` | [coinbase_derivatives.rs](../../src/calendar/schedules/futures/us/coinbase_derivatives.rs) | 2026-09-11 … 2026-09-11 (1 row) | — | 2021-06-28..2026-09-07 | 20 | — | 2026-09-08 onward (past the horizon) | complete to 2026-09-07; **horizon before inspection** | #86, #98, #116 |
 | `eurex` | [europe.rs](../../src/calendar/schedules/futures/international/europe.rs) | seasonal selector, no `revisions!` timeline | 2010-01-01 | 2025-01-01..2026-12-31 | 15 | — | the operator's `tba` German equity / equity-index scope, which withholds undated FDAX and FDXM closures across 2025 and 2026 (#157); 2027 is published twice with conflicting labels | **incomplete**: the German-scope closures are undated (#157) and 2027 is conflicted | #77, #86, #98, #116, #157 |
-| `iceus` | [ice_us.rs](../../src/calendar/schedules/futures/us/ice_us.rs) | 2017-11-07 … 2017-11-08 (2 rows) | — | 2025-01-01..2028-01-03 | 41 | 34 | 2025 answers, except the Independence Day and Christmas dates: fourteen 2025 dates are withheld (2025-01-20 … 2025-12-26) because the families disagree on them, four of them because the two 2025 holiday notices that would state the hours were not retrieved (#168); the 20 withheld 2026-2027 dates are unchanged by the 2025 material | **incomplete**: 34 `Unsourced` dates in 2025+ | #98, #116, #168 |
+| `iceus` | [ice_us.rs](../../src/calendar/schedules/futures/us/ice_us.rs) | 2017-11-07 … 2017-11-08 (2 rows) | — | 2025-01-01..2028-01-03 | 42 | 35 | 2025 answers, except the Independence Day and Christmas dates and the National Day of Mourning: fifteen 2025 dates are withheld (2025-01-09 … 2025-12-26) because the families disagree on them, four of them because the two 2025 holiday notices that would state the hours were not retrieved (#168); the 20 withheld 2026-2027 dates are unchanged by the 2025 material | **incomplete**: 35 `Unsourced` dates in 2025+ | #98, #116, #168 |
 | `globex_equity_index` | [cme_group.rs](../../src/calendar/schedules/futures/us/cme_group.rs) | 2010-11-15 … 2026-08-22 (5 rows) | 2012-05-03 | 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 54 | — | the 16:00-16:15 CT Sunday quarter-hour, withheld (#79) | **incomplete**: the Sunday 16:00-16:15 CT quarter-hour is withheld (#79) | #79, #116, #117 |
 | `globex_energy` | [energy_metals.rs](../../src/calendar/schedules/futures/us/energy_metals.rs) | 2015-09-20 … 2026-08-22 (2 rows) | 2012-05-11 | 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 53 | — | the Sunday 16:00-16:15 CT quarter-hour, withheld (#79) | **incomplete**: the Sunday 16:00-16:15 CT quarter-hour is withheld (#79) | #79, #116, #117 |
 | `globex_grains` | [grains.rs](../../src/calendar/schedules/futures/us/grains.rs) | 2010-04-19 … 2015-07-05 (6 rows) | 2010-03-15 | 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 54 | — | the post-close queue's trade-date label: the crate dates the 14:30-16:00 CT queue by the session it feeds, so all 746 covered dates that carry it answer a trade date other than the operator's own printed one (#152) | **incomplete**: the post-close queue's trade-date label differs on every one of the 746 dates that carry the queue (#152) | #116, #117, #152 |
@@ -151,12 +155,13 @@ retrieval. `comex` and `nymex` route a single family and so reproduce it row for
 2026-01-01..2028-01-03 window until its 2025 rows landed on 2026-09-26 UTC, so it answered no holiday
 question over any part of 2025. `cfe` and `eurex` shipped the same 2026-only window until their 2025
 rows landed in separate changes on the same date; all three now audit from the floor. `iceus` ships
-**41** scheduling rows: its
+**42** scheduling rows: its
 table is the D17 intersection of the seven ICE Futures U.S. families routed to the venue, so a row
 ships only where the five tables those keys select agree - the **seven** full closures in its window -
-and the other **34** dates
+and the other **35** dates
 are `Unsourced`, the shape of a date on which the softs close while the index families trade
-shortened hours. Fourteen of those dates are in 2025, so the venue now answers 2025 and answers it
+shortened hours, or on which one index family moves alone. Fifteen of those dates are in 2025, so
+the venue now answers 2025 and answers it
 incompletely rather than not at all. These are the one-operator scopes whose instruments reach the
 venue calendar
 directly through `ExchangeFallback` rather than through a family key, so the gap is on the path a
@@ -170,9 +175,10 @@ scope is the dormant CFE and Eurex keys and the six ICE Futures U.S. family file
 `cme` withholds **61** dates and `cbot` **61** across 2025-2027, covering every US market holiday the
 routed families dispute — fourteen of the additions are the 2025-2027 closure eves, on which
 `globex_grains` states a complete replacement-blocks day and the other routed families audited the
-date normal. `iceus` withholds **34**: fourteen 2025 dates, of which the two London-bank-holiday
-“Delayed Opens” dates (2025-05-05 and 2025-08-25) are ones the annual calendar does not list at all,
-and twenty 2026-2027 dates that are unchanged by the 2025 material. This is the intersection
+date normal. `iceus` withholds **35**: fifteen 2025 dates, of which the two London-bank-holiday
+“Delayed Opens” dates (2025-05-05 and 2025-08-25) and the National Day of Mourning (2025-01-09) are
+ones the annual calendar does not list at all, and twenty 2026-2027 dates that are unchanged by the
+2025 material. This is the intersection
 behaving as designed rather than a defect: the
 charter states that family disagreement is `Unsourced`, never silence, and that a broad intersection
 remains explicitly partial and cannot stand in for a complete family calendar. It does not by itself

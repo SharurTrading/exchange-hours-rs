@@ -261,10 +261,11 @@ fn withheld(calendar: ExchangeCalendar, date: NaiveDate) -> bool {
 /// does in the same file. `cme` is deliberately absent: it withholds 48 dates
 /// **and** the Sunday quarter-hour (#79), so its denial of completeness is no
 /// longer date-shaped. `iceus` is the second entry: from 2026-09-26 UTC it audits
-/// from the 2025 floor and withholds 34 dates its routed families dispute, with
-/// no phase-level gap behind the denial.
+/// from the 2025 floor and withholds 35 dates its routed families dispute — the
+/// 2025-01-09 National Day of Mourning row moved the last of them — with no
+/// phase-level gap behind the denial.
 fn date_level_incompleteness() -> &'static [(&'static str, usize)] {
-    &[("cbot", 61), ("iceus", 34)]
+    &[("cbot", 61), ("iceus", 35)]
 }
 
 /// `is_complete_on(SAMPLE)` agrees with the inventory's `Complete?` cell for all

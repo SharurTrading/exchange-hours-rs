@@ -745,6 +745,14 @@ fn cme_mlk_and_presidents_day_close_at_noon_then_reopen_at_five() {
             .pred_opt()
             .expect("holiday fixture has a predecessor");
 
+        // The daily candle ends at the **trade date's** final close, and since
+        // the crate began stating CME's merged trade dates these holidays no
+        // longer own one: the span from the previous evening belongs to the
+        // following business day. A `DayPolicy` is keyed by trade date too, so
+        // the caller's `early` above — which names the holiday — correctly clips
+        // nothing here; the holiday's own noon close is now built in.
+        let trade_date = holiday.succ_opt().expect("holiday fixture has a successor");
+
         assert_eq!(
             calendar
                 .candle_end(
@@ -760,8 +768,8 @@ fn cme_mlk_and_presidents_day_close_at_noon_then_reopen_at_five() {
                 )
                 .expect("the coverage contract must answer a covered date"),
             Some(ct(
-                (holiday.year(), holiday.month(), holiday.day()),
-                (12, 0, 0),
+                (trade_date.year(), trade_date.month(), trade_date.day()),
+                (16, 0, 0),
             ))
         );
         assert!(

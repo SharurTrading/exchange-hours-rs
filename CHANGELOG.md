@@ -303,13 +303,44 @@ corrections (a venue's hours fixed against a primary source) go under
   candidate row shapes, one leaves the label unchanged and the only one yielding
   the operator's own label would assert matching in a window the operator marks
   `pcp`. Both scopes now declare it whole-domain in `schedules/sourcing.rs`,
-  `docs/schedules/coverage-2025.md` reads both **incomplete**, and
+  `docs/schedules/coverage-2025.md` reads both **incomplete**, the `cme` and
+  `cbot` inventory rows and §2 read **61** withheld 2025+ dates each — the counts
+  the closure-eve rows above move theirs to, and the ones their `Unsrc 2025+
+  dates` cells and the inventory fence derive — and
   `globex_nikkei_225_dollar` — which has no order-entry phase at all — is the one
   scope still complete to 2027-12-31. The declaration **withholds no answer**:
   unlike the two existing phase-level reasons it does not gate the phase's own
   queries, so `is_open`, `is_accepting_orders`, `session_state`, `session_bounds`
   and every other answer stand exactly as before and only the completeness
   verdict moves.
+- **Stale counts and refuted sentences corrected against the shipped tables
+  (2026-09-26 UTC).** An independent review and a coverage audit found numbers
+  and sentences the merged-trade-date waves had outgrown; each was recomputed
+  from the tables rather than matched to its neighbours. In
+  `docs/schedules/coverage-2025.md` the `cme` and `cbot` inventory rows and §2
+  now read **48** and **47** withheld 2025+ dates — the counts their `Unsrc`
+  cells and the inventory fence already derive — and §6 names all five families
+  that carry the three Saturday-session trade dates: `globex_energy`,
+  `globex_equity_index`, `globex_fx`, `globex_interest_rates` and
+  `globex_nikkei_225_dollar`, with `comex` and `nymex` routing `globex_energy`'s
+  table whole. The venue modules' own totals move with their rows — `cme` from
+  276 rows/229 `Unsourced`/35 in 2025-2027 to **289/242/48**, and `cbot` from
+  253/206/34 to **266/219/47**. `venues/cme.rs`'s merged-trade-date comments
+  claimed only `globex_fx` states a row; `globex_equity_index`, `globex_energy`
+  and `globex_interest_rates` state one too, each with a different
+  replacement-block set, and only `globex_grains` and `globex_livestock` state
+  none — the kind stays `Unsourced` because the families disagree, which is what
+  a venue intersection withholds. `globex_fx.rs`'s 2025-2027 notes now say
+  **seventeen** merged trade dates and no longer describe those spans as
+  unstated, and the `globex_fx` entry below says what #140 still tracks rather
+  than claiming the 2026 and 2027 shapes are unstated. `globex_livestock.md`'s
+  three Post-Close gap bullets state the `trade_date` consequence they omitted,
+  with the instants that show it (`14:30:00`-`15:59:59` CT answers the following
+  trade date). `docs/evidence/globex_equity_index.md` and
+  `docs/evidence/globex_livestock.md` gain an `### Interpretive notes` section
+  defining the `N1`/`N15`/`N17` and `N1`/`N8` retrieval codes their tables cite,
+  which until now were defined only in the uncommitted research store (#142). No
+  row, instant, window or runtime answer changes.
 - **`globex_cryptocurrency` now states CME's nine merged trade dates (2026-09-26
   UTC).** On a Monday or Thursday holiday the operator publishes no final close
   for that holiday's own trade date: its `16:00` CT pre-open and `17:00` CT open
@@ -328,9 +359,10 @@ corrections (a venue's hours fixed against a primary source) go under
   07:30 open` pause the pre-holiday capture lacks, so that row carries six blocks,
   its `-1` leg ends at `07:00` CT and `07:00`-`07:30` CT is closed where the
   ordinary week matched. The `EarlyClose { 13:45 }` row it replaces ended at the
-  same `13:45`. `globex_fx`, `globex_energy`, `globex_equity_index` and
-  `globex_interest_rates` print that same pause for their own products and still
-  serve matching through it; that is **issue #156**, not part of this change.
+  same `13:45`. `globex_fx`, `globex_energy`, `globex_equity_index`,
+  `globex_interest_rates` and `globex_nikkei_225_dollar` print that same pause for
+  their own products and still serve matching through it; that is **issue #156**,
+  not part of this change.
   Every other `is_open` answer holds, because the merge relabels a span rather than
   deleting one.
   `docs/schedules/coverage-2025.md` moves this scope's `2025+ dates` cell to 32
@@ -429,7 +461,12 @@ corrections (a venue's hours fixed against a primary source) go under
   holiday's own queue is `16:00` either way. No `is_open` answer changes — the
   merge relabels a span, it does not delete one. `globex_fx` now agrees with the
   operator's printed `tradingDate` everywhere the captured windows reach; the
-  same shape in the other four families is tracked as #140.
+  same shape now ships in `globex_energy`, `globex_equity_index` and
+  `globex_interest_rates` too, and #140 is left tracking
+  `globex_nikkei_225_dollar`'s five unstated 2025 merged dates (2025-01-21,
+  2025-02-18, 2025-05-27, 2025-06-20 and 2025-09-02), the order-entry-only class
+  (2025-01-02, 2025-12-26 and 2026-01-02) and the `07:00 preopen; 07:30 open`
+  pair the 2025-11-28 rows do not split.
 
 - **The Saturday-session trade dates now state the Thursday-evening leg their
   Friday holiday closes (2026-09-26 UTC).** `globex_energy`,
@@ -808,10 +845,10 @@ corrections (a venue's hours fixed against a primary source) go under
   end stops one family early or runs another past its own close. **COMEX** and
   **NYMEX** route the one `globex_energy` key, whose metals and energy halves CME
   prints as a single product row, so their intersections drop nothing and they
-  carry that family's table whole (39 rows each in this era, no `Unsourced`).
-  CBOT ships 9 stated rows against its thirty-one `Unsourced` dates and CME 9
-  against thirty-five, each with the disagreement named per date in that venue's
-  evidence file. Over all six audited eras the four venue tables carry 276, 250, 209 and 209
+  carry that family's table whole (53 rows each in this era, no `Unsourced`).
+  CBOT ships 9 stated rows against its forty-seven `Unsourced` dates and CME 9
+  against forty-eight, each with the disagreement named per date in that venue's
+  evidence file. Over all six audited eras the four venue tables carry 289, 266, 223 and 223
   rows; the composition counts in this paragraph are the 2025-2027 era's. The family list behind each intersection is a decision recorded there,
   not something the crate can derive: the map from product families to venues
   belongs to the consumer. **This change also amends `AGENTS.md`**: the charter's

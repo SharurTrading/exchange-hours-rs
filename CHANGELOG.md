@@ -308,6 +308,23 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Fixed
 
+- **`iceus` and `ice_us` state the 2025-01-09 National Day of Mourning close (2026-09-26 UTC).** The
+  artifact issue #168 had recorded as unread — ICE Futures U.S.'s one-page Exchange Notice of
+  2024-12-30, `ICE_Futures_US_ExNot2024MomentOfSilence20241230.pdf` (Wayback capture `20250207231515`,
+  sha256 `a4dca19c06c46d62886e3379b8db8f95319e94681bd477ac43cac03ce3e002de`) — states a date the 2025
+  annual calendar does not list: trading in `Micro NYSE FANG+™ Index futures contracts (contract
+  symbol FNG)` ended at `9:30 am NY time` on Thursday, January 9, 2025, the SOFR and mortgage
+  contracts (`SR1`, `SR3`, `30C`, `30J`) at `1:15 pm NY time`, and “All other contracts will follow
+  regular trading hours and daily settlement window times.” The notice names the contract the `ice_us`
+  family is: the product page its grid is read from is titled `MICRO NYSE FANG+™ Index Futures` and
+  gives `Contract Symbol` `FNG`, and the SOFR and mortgage half of the notice's own group header is
+  not modelled by any crate identity — so the `FANG` table ships a single stated instant, an early
+  close at 09:30 NY, not an intra-family disagreement. The `iceus` **venue** table still cannot state the date: it is the
+  five-family intersection, and the softs and the dollar index keep the full session the notice itself
+  leaves regular, so it ships `Unsourced` — its thirty-fifth withheld 2025+ date and its
+  forty-second row. **No other instant moves and no withheld date is answered:** the two unretrieved
+  2025 notices and their four withheld dates stand, and only the 2025-01-09 part of #168 is resolved.
+
 - **`globex_grains` states eighteen more complete trading days (2026-09-26 UTC).**
   CME publishes a `14:30 pcp`/`16:00 closed` pair carrying the **eve's own trade
   date** on the fourteen eves whose following trade date is closed — 2025-04-17,

@@ -50,28 +50,217 @@ the date. Day and GTD (current trade date) orders are eliminated." A `closed`
 event is therefore the operator's own statement of which trade date ended, and
 `/TD <date>` is the trade date the service prints beside an event.
 
+**Family label.** The service groups products, and `Cryptocurrency (BTC)` — the
+Bitcoin future as the group's representative product — is the line this key is
+built from. No separate line for ETH, MBT or MET is published in this channel.
+
 **How an event-date record became a trade-date row.** CME keys a holiday by the
 civil day its events fall on and prints each event's own trade date. The crate
 keys by the trade date. So a record whose events all carry the *following*
 business date is evidence that the holiday has **no trade date of its own**, and
-that is a `closed` row on the holiday — not a row on the next day, and not a
-`normal` day. The retrieval's own status words map onto that as follows:
+the date is not a `normal` day. Which row states that absence depends on the era
+and on whether the preceding evening's leg ran: a `closed` row on the holiday
+itself where the operator published no session for it at all, or the following
+business day's merged `replacement blocks` row where the operator ran matching
+across it and only re-labelled the span. The table below gives each shape and the
+row it becomes. The retrieval's own status words map onto that as follows:
 
 | Retrieval status and note | Crate row |
 |---|---|
 | `closed` with `no events published` | `closed` |
 | `closed` `[N17]` — only a 16:00 CT pre-open and a 17:00 CT open, both already carrying the next business date | `closed` |
-| `modified` `[N3]` — no final close on the date and a 16:00 CT rather than 16:45 CT pre-open, the whole span rolling into the next business day | no row (trade-date merge; the printed 16:00 CT stop is the family's own normal close) |
+| `modified` `[N3]` — no final close on the date and a 16:00 CT rather than 16:45 CT pre-open, the whole span rolling into the next business day | no row on the holiday; `replacement blocks` on that next business day |
 | `modified` `[N10]` — 24/7 era, Monday or Thursday holiday: the 16:00 CT final close is omitted outright | `closed` |
 | `closed` `[N19]` — 24/7 era, Friday holiday: the 16:00 CT final close is printed but carries the following Monday's trade date | `closed` |
 | `early_close` with `close_instant` | `early close` at that instant |
 | `modified` `[N6]` — a normal final close with no evening re-open, the leg the *neighbouring* `closed` row already removes | no row |
 | `modified` `[N18]` / `normal` `[N8]` — the date settles its own trade date and only the re-open rolls | no row |
 
-**Family label.** The service groups products, and `Cryptocurrency (BTC)` — the
-Bitcoin future as the group's representative product — is the line this key is
-built from. No separate line for ETH, MBT or MET is published in this channel.
+### Interpretive notes
 
+The mapping table above annotates its retrieval shapes with the retrieval's own
+short codes — `N3`, `N6`, `N8`, `N10`, `N17`, `N18` and `N19` — and the 2025 and
+2026 sections below cite `N3`, `N6` and `N18` again in their interpretive steps.
+Those codes are defined in the research store's `raw/cme-2025-2027/INDEX.md`
+(`N1`..`N16`, `EC`), in that file's round-1 addendum (`N17`, `N18`) and in
+`raw/cme-2025-2027-repair/INDEX.md` (`N19`), none of which is committed, so a
+reader following a row to its reasoning currently reaches a dead reference. Every
+code this file's mapping table and interpretive steps print is defined here beside
+the bytes that exhibit it; `N1` is the one code the store defines that this file
+never prints, and it is left undefined at the end of this section. Artifact
+paths are relative to the research store's `holidays/` directory, and every
+quotation below is a verbatim substring of the file at the path named beside it —
+the JSON, or the reader-original `.md` where the path names one — given with the
+product id and the `eventDate` it was read from. The modelled line throughout is
+product `8478` (Bitcoin Futures; the service prints its `globex` code as `BTC`
+and its schedule `groupCode` as `BF`).
+
+| Note | In one line | Crate row |
+|---|---|---|
+| `N3` | five-day era, Monday or Thursday holiday: the normal 16:00-17:00 CT matching pause is printed as a 16:00 CT `preopen` rather than as a final close, and every event on the span carries the following business day's trade date | no row on the holiday; the merged span ships as `HolidayKind::ReplacementBlocks` on that following business day |
+| `N6` | a final close at the normal 16:00 CT but no evening re-open | no row (the missing leg belongs to the neighbouring `closed` row) |
+| `N8` | the published event list — times, types and printed trade dates — equals the family's normal grid for that weekday | no row (audited normal) |
+| `N10` | 24/7 era, Monday or Thursday holiday: the 16:00 CT final close is omitted outright | `HolidayKind::Closed` on that trade date |
+| `N17` | no day session: only a 16:00 CT pre-open and a 17:00 CT open, both already carrying the next business day's trade date | `HolidayKind::Closed` on that trade date |
+| `N18` | the published event times equal the normal grid, but the re-open carries a trade date that skips the following closed holiday | no row (the closure it rolls past carries one) |
+| `N19` | 24/7 era, Friday holiday: the 16:00 CT final close is printed but carries the following Monday's trade date | `HolidayKind::Closed` on that trade date |
+
+**`N3` — the ordinary daily 16:00-17:00 CT matching pause, no early close: the operator prints its normal 16:00 CT boundary as a `preopen` rather than as a final close, so no final close falls on the date and its trade date rolls to the next business day.**
+
+- **Evidence.** `raw/cme-2025-2027/arc/thbp_2025-01-19_2025-01-21_20241220155340.json` — document `CME-SVC-2025-01-19`, sha256 `4f2ab56af14e7b3a6978e7fa6db8e2cfc63a82d06428cd88844f0e5bcf534f40`, archive capture 2024-12-20T15:53:40Z. Product `8478`, `eventDate` `2025-01-20` (Monday, Martin Luther King Jr. Day):
+
+  ```json
+  {"groupCode":"BF","eventDate":"2025-01-20","events":[{"tradingDate":"2025-01-21","eventTime":"16:00","marketEventType":"preopen"},{"tradingDate":"2025-01-21","eventTime":"17:00","marketEventType":"open"}]}
+  ```
+
+  The Sunday this family's five-day week opens on, and the trade date every event in the response names, from the same artifact:
+
+  ```json
+  {"groupCode":"BF","eventDate":"2025-01-19","events":[{"tradingDate":"2025-01-21","eventTime":"16:00","marketEventType":"preopen"},{"tradingDate":"2025-01-21","eventTime":"17:00","marketEventType":"open"}]}
+  {"groupCode":"BF","eventDate":"2025-01-21","events":[{"tradingDate":"2025-01-21","eventTime":"16:00","marketEventType":"closed"},{"tradingDate":"2025-01-22","eventTime":"16:45","marketEventType":"preopen"},{"tradingDate":"2025-01-22","eventTime":"17:00","marketEventType":"open"}]}
+  ```
+
+  No event anywhere in that response carries trade date 2025-01-20: the request covers exactly these three `eventDate` records, and every event in them carries 2025-01-21 or 2025-01-22.
+
+- **Crate row.** No row on the holiday 2025-01-20, and the span ships as `HolidayKind::ReplacementBlocks` on the trade date the operator labels it with, 2025-01-21 — `(2025, 1, 21, ReplacementBlocks(&MERGED_SESSION_BLOCKS), T2, "CME-SVC-2025-01-19")` in `src/calendar/schedules/holidays/globex_cryptocurrency.rs`. 2025-02-18, 2025-05-27, 2025-09-02, 2026-01-20, 2026-02-17 and 2026-05-26 carry the same kind and block table; 2025-06-20 uses `MERGED_SESSION_AFTER_WEEKDAY_BLOCKS`, because its span opens on a Wednesday evening and the `-2` queue is the operator's ordinary 16:45 CT; and 2025-11-28 uses `MERGED_THANKSGIVING_FRIDAY_BLOCKS` for the `07:00-07:30` CT pause its finalised publication adds. That the holiday keys no row is the crate's interpretive step, and its point is what it does **not** do: the 16:00 CT event on 2025-01-20 is a `preopen`, an order-entry-only event by the operator's own vocabulary quoted above, and the crate does not read it as a session close (LAW-SESSION-NOT-EXPIRY). What makes the reading right is the trade dates the operator prints: matching ran from the Sunday 17:00 CT open through the holiday's own 16:00 CT pause and resumed at 17:00 CT, and the operator attached 2025-01-21 to every part of that span. A `closed` row on 2025-01-20 would delete an evening and a day the operator ran; an early close would invent a boundary no event states. What a scalar boundary cannot state — the reassignment of the span's trade date — is what the `ReplacementBlocks` row states instead, so the merge ships rather than being recorded as a gap.
+
+- **Falsified by.** A CME publication printing an early final close on `eventDate` 2025-01-20, or printing any event on it carrying trade date 2025-01-20.
+
+**`N6` — a final close at the normal 16:00 CT but no evening re-open.**
+
+- **Evidence.** `raw/cme-2025-2027/arc/thbp_2025-04-17_2025-04-19_20241220155340.json` — document `CME-SVC-2025-04-17`, sha256 `865a1d4f08102e00151bd87ab2b8e8a7720e9203a17aaaba24627ade3ed26e74`, archive capture 2024-12-20T15:53:40Z. Product `8478`, `eventDate` `2025-04-17`, whose record holds exactly one event:
+
+  ```json
+  {"groupCode":"BF","eventDate":"2025-04-17","events":[{"tradingDate":"2025-04-17","eventTime":"16:00","marketEventType":"closed"}]}
+  ```
+
+  An ordinary day of the same era prints three, as the `N3` quotation above shows: the same 16:00 CT close, then a 16:45/17:00 CT re-open carrying the next trade date. The next record in this response is the closure that missing leg would have served:
+
+  ```json
+  {"groupCode":"BF","eventDate":"2025-04-18","events":[]}
+  ```
+
+- **Crate row.** No row — this file records 2025-04-17, 2025-07-03 and 2025-12-31 as `modified` `[N6]` records that ship nothing. What makes that right: the only event the operator omitted is the evening re-open, and that leg's trade date is the *next* date — 2025-04-18 here — which the neighbouring `closed` row already removes in full, so the missing leg is not this date's to state. The 16:00 CT event is the family's ordinary final close at its ordinary instant, so there is no early close to carry either, and the next date's own row is where the closure belongs.
+
+- **Falsified by.** A later publication printing an evening re-open on `eventDate` 2025-04-17, which would make its 16:00 CT instant a pause rather than the day's end and would mean 2025-04-18 held a session that the `Closed` row deletes.
+
+**`N8` — the published event list — times, types and printed trade dates — equals the family's normal grid for that weekday, so nothing about the date changed.**
+
+- **Evidence.** `raw/cme-2025-2027-repair/live/probeA_2026-06-17_2026-06-19.md` — research id `D66`, sha256 `f9ee38678821e32e8f54f8084366024173462b108376658be423581c1ba77e09`, retrieved 2026-09-12T08:55:13Z. This is the reader-original `.md`; the `json/probeA_2026-06-17_2026-06-19.json` beside it is a derived re-serialisation, and the sha256 above hashes the `.md`, so the `.md` is what is cited and what the quotation below is a substring of. The corresponding archived capture is **superseded** for this date: `raw/cme-2025-2027/arc/thbp_2026-06-17_2026-06-19_20260129012310.json` was taken 2026-01-29, before CME moved this family to 24/7 on 2026-05-29, and prints the retired `16:45 preopen; 17:00 open` pair. Product `8478`, `eventDate` `2026-06-17` (Wednesday):
+
+  ```json
+  {"groupCode":"BF","eventDate":"2026-06-17","events":[{"tradingDate":"2026-06-17","eventTime":"16:00","marketEventType":"closed"},{"tradingDate":"2026-06-18","eventTime":"16:01","marketEventType":"preopen"},{"tradingDate":"2026-06-18","eventTime":"16:02","marketEventType":"open"}]}
+  ```
+
+  The baseline is the reference week `raw/cme-2025-2027/live/normal/normalweek_main.json` — sha256 `d3bd6e890bdc427d2ebd3ece48dedc56eb231178be82c69ab3ac427f0b09dc0a`, indexed in `raw/cme-2025-2027/INDEX.md` as "the normal-grid baseline every holiday row is measured against" — product `8478`, `eventDate` `2026-10-21`, the same weekday:
+
+  ```json
+  {"groupCode":"BF","eventDate":"2026-10-21","events":[{"tradingDate":"2026-10-21","eventTime":"16:00","marketEventType":"closed"},{"tradingDate":"2026-10-22","eventTime":"16:01","marketEventType":"preopen"},{"tradingDate":"2026-10-22","eventTime":"16:02","marketEventType":"open"}]}
+  ```
+
+  Same three times, same three types, and in both the 16:00 CT close carries the date's own trade date while the re-open carries the next calendar day's.
+
+- **Crate row.** No row — 2026-06-17 is inside the 2025-2027 window and ships nothing, which is the crate's audited-normal claim. What makes that right: every answer the crate gives for the date is the ordinary 24/7 grid the response prints, so a row could only change a correct one; the roll past 2026-06-17 is the family's ordinary roll; and the next closure, 2026-06-19, carries its own `Closed` row.
+
+- **Falsified by.** A publication whose `eventDate` 2026-06-17 events differ in time, event type or printed trade date from the same weekday's grid in the reference week.
+
+**`N10` — 24/7 era, Monday or Thursday holiday: the 16:00 CT daily final close is omitted outright, so trading is continuous across the date and its trade date rolls.**
+
+- **Evidence.** `raw/cme-2025-2027/live/thbp/thbp_2026-09-06_2026-09-08.json` — document `CME-SVC-2026-09-06`, sha256 `01fb78ffaac10eac466fed53674214222f05aed518b9d93a4b42cf8957147bca`, live retrieval 2026-09-12T04:30Z. Product `8478`, `eventDate` `2026-09-07` (Monday, Labor Day), whose record holds two events where an ordinary day holds three:
+
+  ```json
+  {"groupCode":"BF","eventDate":"2026-09-07","events":[{"tradingDate":"2026-09-08","eventTime":"16:01","marketEventType":"preopen"},{"tradingDate":"2026-09-08","eventTime":"16:02","marketEventType":"open"}]}
+  ```
+
+  The next record in the same response shows the complete grid, for contrast:
+
+  ```json
+  {"groupCode":"BF","eventDate":"2026-09-08","events":[{"tradingDate":"2026-09-08","eventTime":"16:00","marketEventType":"closed"},{"tradingDate":"2026-09-09","eventTime":"16:01","marketEventType":"preopen"},{"tradingDate":"2026-09-09","eventTime":"16:02","marketEventType":"open"}]}
+  ```
+
+  The Thursday case prints the same two-event shape, in `raw/cme-2025-2027/live/thbp/thbp_2026-11-25_2026-11-27.json` — document `CME-SVC-2026-11-25`, product `8478`, `eventDate` `2026-11-26`:
+
+  ```json
+  {"groupCode":"BF","eventDate":"2026-11-26","events":[{"tradingDate":"2026-11-27","eventTime":"16:01","marketEventType":"preopen"},{"tradingDate":"2026-11-27","eventTime":"16:02","marketEventType":"open"}]}
+  ```
+
+- **Crate row.** `HolidayKind::Closed` on trade date 2026-09-07 — `(2026, 9, 7, HolidayKind::Closed, T2, "CME-SVC-2026-09-06")`, and the same kind for 2026-11-26 and for this file's 2027 Monday and Thursday holidays. This is the crate's interpretive step, and its honest limit is recorded under the 2026 gaps above: the operator prints **no** 16:00 CT event here at all, so the crate reads an omission, not a printed close. What makes the reading right is the trade dates the operator does print: both events that bracket the missing boundary carry 2026-09-08, so the holiday has no trade date of its own to key a row to, and the neighbouring record's own 16:00 CT close carries 2026-09-08 as well. `Closed` then makes the 24/7 roll skip the date, which is what the printed trade dates already show happening. The residue is the 60-second 16:00-16:01 CT maintenance minute the crate's normal week keeps, recorded as a gap; it is not a session boundary the operator printed.
+
+- **Falsified by.** A CME publication printing the 16:00 CT final close on `eventDate` 2026-09-07, or any event on it carrying trade date 2026-09-07.
+
+**`N17` — no day session on the holiday: the operator publishes only a 16:00 CT pre-open and a 17:00 CT open, both already carrying the next business day's trade date.**
+
+- **Evidence.** `raw/cme-2025-2027/arc/thbp_2025-12-31_2026-01-02_20260619114105.json` — document `CME-SVC-2025-12-31`, sha256 `0ed61f8328eda4746265cc8e197f10cd53aec06c2b393927bab27c913993d314`, archive capture 2026-06-19T11:41:05Z. Product `8478`, `eventDate` `2026-01-01`:
+
+  ```json
+  {"groupCode":"BF","eventDate":"2026-01-01","events":[{"tradingDate":"2026-01-02","eventTime":"16:00","marketEventType":"preopen"},{"tradingDate":"2026-01-02","eventTime":"17:00","marketEventType":"open"}]}
+  ```
+
+  The evening before it, in the same response, is an `N6`-shaped record for its own trade date with no re-open:
+
+  ```json
+  {"groupCode":"BF","eventDate":"2025-12-31","events":[{"tradingDate":"2025-12-31","eventTime":"16:00","marketEventType":"closed"}]}
+  ```
+
+- **Crate row.** `HolidayKind::Closed` on trade date 2026-01-01 — `(2026, 1, 1, HolidayKind::Closed, T2, "CME-SVC-2025-12-31")`, and the same shape for 2025-01-01 and 2025-12-25. Why that is right: the family's five-day grid has one session per trade date, opening 17:00 CT the previous evening; the 2025-12-31 record shows that leg not running, and both events printed against 2026-01-01 carry 2026-01-02, so nothing is assignable to the holiday. The 17:00 CT open is the next trade date's session beginning — the shape the ordinary week already has — not a session belonging to 2026-01-01, and no expiry, settlement or order-entry cutoff is being read as a close (LAW-SESSION-NOT-EXPIRY).
+
+- **Falsified by.** An event on `eventDate` 2026-01-01 carrying trade date 2026-01-01, or an evening re-open on 2025-12-31 carrying it.
+
+**`N18` — the published event times equal the family's normal grid for that weekday, but the re-open carries a trade date that skips the following closed holiday, so the date settles its own trade date and only the re-open rolls past the closure.**
+
+- **Evidence.** Two records exhibit it. First, `raw/cme-2025-2027-repair/live/probeA_2026-07-02_2026-07-04.md` — research id `D67`, sha256 `0e8b38b67779644a22d41de94e315e599198d6c8c739ef35196163779aacfd4b`, retrieved 2026-09-12T08:55:14Z; the reader-original `.md`, cited as for `N8` above, and again the archived 2026-01-29 capture `raw/cme-2025-2027/arc/thbp_2026-07-02_2026-07-04_20260129012216.json` is superseded by it. Product `8478`, `eventDate` `2026-07-02` (Thursday, the eve of the closed Friday 2026-07-03):
+
+  ```json
+  {"groupCode":"BF","eventDate":"2026-07-02","events":[{"tradingDate":"2026-07-02","eventTime":"16:00","marketEventType":"closed"},{"tradingDate":"2026-07-06","eventTime":"16:01","marketEventType":"preopen"},{"tradingDate":"2026-07-06","eventTime":"16:02","marketEventType":"open"}]}
+  ```
+
+  Second, `raw/cme-2025-2027/live/thbp/thbp_2027-12-22_2027-12-25.json` — document `CME-SVC-2027-12-22`, sha256 `5edc4dd588a32faa74f841494c10a3df48692dca29843c3581bad3e18c30fef9`, live retrieval 2026-09-12T04:30Z; product `8478`, `eventDate` `2027-12-23` (Thursday, the eve of the closed Friday 2027-12-24):
+
+  ```json
+  {"groupCode":"BF","eventDate":"2027-12-23","events":[{"tradingDate":"2027-12-23","eventTime":"16:00","marketEventType":"closed"},{"tradingDate":"2027-12-27","eventTime":"16:01","marketEventType":"preopen"},{"tradingDate":"2027-12-27","eventTime":"16:02","marketEventType":"open"}]}
+  ```
+
+  The reference week `raw/cme-2025-2027/live/normal/normalweek_main.json` (sha256 `d3bd6e890bdc427d2ebd3ece48dedc56eb231178be82c69ab3ac427f0b09dc0a`) carries the ordinary Thursday grid whose times both records keep:
+
+  ```json
+  {"groupCode":"BF","eventDate":"2026-10-22","events":[{"tradingDate":"2026-10-22","eventTime":"16:00","marketEventType":"closed"},{"tradingDate":"2026-10-23","eventTime":"16:01","marketEventType":"preopen"},{"tradingDate":"2026-10-23","eventTime":"16:02","marketEventType":"open"}]}
+  ```
+
+- **Crate row.** No row on either `N18` date — 2026-07-02 and 2027-12-23 both ship nothing. What makes that right: each settles its own trade date at the operator's ordinary 16:00 CT close, so every answer the crate gives for it is already the ordinary week's; the closure each re-open rolls past is the **following** date and carries its own `Closed` row — `(2026, 7, 3, HolidayKind::Closed, T2, "CME-SVC-2026-07-03")` and `(2027, 12, 24, HolidayKind::Closed, T2, "CME-SVC-2027-12-22")`. The second closure is exhibited twice over in the one artifact: the 2027-12-24 record is itself the `N19` shape below, printing all three of its events against 2027-12-27 —
+
+  ```json
+  {"groupCode":"BF","eventDate":"2027-12-24","events":[{"tradingDate":"2027-12-27","eventTime":"16:00","marketEventType":"closed"},{"tradingDate":"2027-12-27","eventTime":"16:01","marketEventType":"preopen"},{"tradingDate":"2027-12-27","eventTime":"16:02","marketEventType":"open"}]}
+  ```
+
+  — so the crate reads that closure from the holiday's own bytes as well as from the eve's re-open.
+
+- **Falsified by.** The 16:00 CT close on such a date carrying the following Monday's trade date instead of its own, which is `N19` and not `N18`, or the re-open carrying the day's own trade date, which is `N8` and not `N18`.
+
+**`N19` — 24/7 era, Friday holiday: the 16:00 CT final close *is* published, but it carries the following Monday's trade date, so the holiday settles no trade date of its own and the whole day rolls into the next business date.**
+
+- **Evidence.** `raw/cme-2025-2027/live/thbp/thbp_2026-12-24_2026-12-26.json` — document `CME-SVC-2026-12-24`, sha256 `bdc1fe831adb794bcf8aeb7e99baf6af2009d1ff9969d0a48b18b2ebc2e1e829`, live retrieval 2026-09-12T04:30Z. Product `8478`, `eventDate` `2026-12-25` (Friday, Christmas Day):
+
+  ```json
+  {"groupCode":"BF","eventDate":"2026-12-25","events":[{"tradingDate":"2026-12-28","eventTime":"16:00","marketEventType":"closed"},{"tradingDate":"2026-12-28","eventTime":"16:01","marketEventType":"preopen"},{"tradingDate":"2026-12-28","eventTime":"16:02","marketEventType":"open"}]}
+  ```
+
+  The contrast is inside the same artifact, one day earlier, where the same three times are printed and the 16:00 CT close carries the date's own trade date:
+
+  ```json
+  {"groupCode":"BF","eventDate":"2026-12-24","events":[{"tradingDate":"2026-12-24","eventTime":"16:00","marketEventType":"closed"},{"tradingDate":"2026-12-28","eventTime":"16:01","marketEventType":"preopen"},{"tradingDate":"2026-12-28","eventTime":"16:02","marketEventType":"open"}]}
+  ```
+
+  The baseline is the reference week `raw/cme-2025-2027/live/normal/normalweek_main.json` (sha256 `d3bd6e890bdc427d2ebd3ece48dedc56eb231178be82c69ab3ac427f0b09dc0a`), whose ordinary Friday is what this shape is measured against:
+
+  ```json
+  {"groupCode":"BF","eventDate":"2026-10-23","events":[{"tradingDate":"2026-10-23","eventTime":"16:00","marketEventType":"closed"},{"tradingDate":"2026-10-26","eventTime":"16:01","marketEventType":"preopen"},{"tradingDate":"2026-10-26","eventTime":"16:02","marketEventType":"open"}]}
+  ```
+
+- **Crate row.** `HolidayKind::Closed` on trade date 2026-12-25 — `(2026, 12, 25, HolidayKind::Closed, T2, "CME-SVC-2026-12-24")`, and the same kind for every other 24/7-era Friday holiday this file's 2026 and 2027 tables carry. What makes the reading right: the operator's `closed` event is its own final-close statement in session language, and the trade date printed beside it is 2026-12-28 rather than the date the events fall on, while the ordinary Friday grid prints the Friday's own trade date at that same instant — so the difference is the operator's own statement that this date settles nothing. `Closed` then makes the 24/7 roll skip the date, which is what the printed 2026-12-28 on all three events already says. Unlike `N10`, nothing is missing here: the final close is printed, so no part of the ordinary grid's shape is lost, and no expiry, settlement or order-entry instant is read as a close.
+
+- **Falsified by.** The 16:00 CT close on such a Friday carrying the Friday's own trade date, which is the ordinary `N8` shape, or the operator printing no 16:00 CT event on it at all, which is the `N10` shape.
+
+**`N1` is deliberately not defined here.** This file never prints the code: the shape it names — the service publishing no events for the date — appears only as the unnumbered `closed` with `no events published` row of the mapping table above, and in the `closed` rows this file's 2019-2025 tables derive from that row, whose own text states the shape in full. Defining it would put a code in a reader's path that no row of this file cites.
 
 ### 2019
 

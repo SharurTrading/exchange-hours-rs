@@ -40,16 +40,17 @@ use super::super::{
     fences::early_close,
     globex_energy::{
         MERGED_SESSION_AFTER_WEEKDAY_BLOCKS, MERGED_SESSION_BLOCKS,
-        MERGED_SESSION_EARLY_CLOSE_BLOCKS, SATURDAY_SESSION_BLOCKS,
+        MERGED_SESSION_EARLY_CLOSE_BLOCKS, MERGED_SESSION_EARLY_CLOSE_BLOCKS_2025_11_28,
+        SATURDAY_SESSION_BLOCKS,
     },
     holidays,
 };
 
 /// The `Exchange::Nymex` table: the NYMEX energy half of `globex_energy`.
 ///
-/// The same rows as [`COMEX`] — 209 over six audited eras, 38 from 2010-2012,
+/// The same rows as [`COMEX`] — 223 over six audited eras, 38 from 2010-2012,
 /// 33 from 2013-2015, 31 from 2016-2018, 35 from 2019-2021, 33 from 2022-2024
-/// and 39 from 2025-2027 — because the two venues route the same single family: the operator
+/// and 53 from 2025-2027 — because the two venues route the same single family: the operator
 /// publishes the metals and energy halves as one product row on every date the
 /// table audits. They stay separate tables rather than one shared binding,
 /// matching the one-arm-per-identity rule the routing match states — a venue's
@@ -473,7 +474,7 @@ pub(crate) static NYMEX: &HolidayTable = holidays! {
             2025,
             11,
             28,
-            ReplacementBlocks(&MERGED_SESSION_EARLY_CLOSE_BLOCKS),
+            ReplacementBlocks(&MERGED_SESSION_EARLY_CLOSE_BLOCKS_2025_11_28),
             T2,
             "CME-SVC-2025-11-26"
         ),

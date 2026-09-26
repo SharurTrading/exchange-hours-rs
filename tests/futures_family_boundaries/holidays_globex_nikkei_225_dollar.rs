@@ -18,8 +18,9 @@
 use chrono::{DateTime, Datelike as _, Days, Duration, NaiveDate, TimeZone as _, Utc};
 use chrono_tz::US;
 use exchange_hours::{
-    CalendarQueryError, CalendarResolution, EvidenceTier, ExchangeCalendar, Holiday, HolidayKind,
-    MarketHoursKey, SUPPORT_FLOOR, SessionKind, SessionState, calendar_for_market_hours_key,
+    CalendarQueryError, CalendarResolution, EvidenceTier, ExceptionBlockKind, ExchangeCalendar,
+    Holiday, HolidayKind, MarketHoursKey, SUPPORT_FLOOR, SessionKind, SessionState,
+    calendar_for_market_hours_key,
 };
 
 /// The family calendar under test, with its built-in table attached.
@@ -1948,5 +1949,162 @@ fn a_saturday_rows_sunday_legs_are_sourced_from_a_window_that_prints_them() {
                  that prints the Sunday legs"
             );
         }
+    }
+}
+
+// ---------------------------------------------------------------------------
+// The 2025-11-28 morning Pre-Open: order entry, not trading (issue #156).
+// ---------------------------------------------------------------------------
+
+/// 2025-11-28 is the one trade date in this table where the operator publishes a
+/// second Pre-Open — `07:00 preopen; 07:30 open` — and CME's own event
+/// vocabulary defines `preopen` as *"Order Entry, modification, and cancel are
+/// allowed. **No order matching.**"*. The row therefore states `07:00-07:30` CT
+/// as an `order_entry` window and matching resumes at the `07:30` `open`.
+///
+/// This is the fence for that reading. Before the correction the whole morning
+/// was one continuous `extended` block, so `is_open` answered `true` at 07:15
+/// and `session_state` answered `OpenExtended`: the crate claimed matching in a
+/// window the operator prints as order-entry-only. The 2026 and 2027 Thanksgiving
+/// Fridays publish the close line alone, so they must NOT gain this queue — the
+/// per-row block assertions in this file's `shipped_rows` fence cover that, and
+/// the 2026-11-27 and 2027-11-26 probes below pin it behaviourally.
+#[test]
+fn the_2025_thanksgiving_friday_serves_its_0700_pre_open_as_order_entry_only() {
+    let calendar = nkd();
+    let holiday = calendar
+        .holiday_on(day(2025, 11, 28))
+        .expect("2025-11-28 ships a row");
+    let HolidayKind::ReplacementBlocks(blocks) = holiday.kind() else {
+        panic!(
+            "2025-11-28 must be a replacement row, not {:?}",
+            holiday.kind()
+        );
+    };
+
+    // The row states the queue itself: one order-entry block covering exactly
+    // 07:00-07:30 CT on the trade date. Its `open_day_offset` is 0 because the
+    // Wednesday-evening run's wrapped block opens numerically later in the day,
+    // and the table fence requires the list to be non-decreasing by opening day
+    // then open time.
+    let queues: Vec<_> = blocks
+        .iter()
+        .filter(|block| {
+            block.kind() == ExceptionBlockKind::OrderEntry
+                && block.open_day_offset() == 0
+                && block.open_ssm() == 7 * 3_600
+                && block.close_ssm() == 7 * 3_600 + 30 * 60
+        })
+        .collect();
+    assert_eq!(
+        queues.len(),
+        1,
+        "the row must state exactly one 07:00-07:30 CT order-entry window"
+    );
+
+    // Matching is off in the queue and on after its `open`.
+    assert!(
+        !calendar
+            .is_open(ct(2025, 11, 28, 7, 15, 0))
+            .expect("the coverage contract must answer a covered date"),
+        "07:15 CT is the operator's Pre-Open and must not report matching"
+    );
+    assert!(
+        calendar
+            .is_open(ct(2025, 11, 28, 7, 45, 0))
+            .expect("the coverage contract must answer a covered date"),
+        "07:45 CT is inside continuous trading and must report matching"
+    );
+    // The trade date does not move: the day still carries 2025-11-28.
+    assert_eq!(
+        calendar
+            .trade_date(ct(2025, 11, 28, 6, 0, 0))
+            .expect("the coverage contract must answer a covered date"),
+        Some(day(2025, 11, 28))
+    );
+    assert_eq!(
+        calendar
+            .trade_date(ct(2025, 11, 28, 10, 0, 0))
+            .expect("the coverage contract must answer a covered date"),
+        Some(day(2025, 11, 28))
+    );
+
+    // The 2026 and 2027 Thanksgiving Fridays publish the final close alone, so
+    // the same morning must still report matching there.
+    for (year, month, date) in [(2026, 11, 27), (2027, 11, 26)] {
+        assert!(
+            calendar
+                .is_open(ct(year, month, date, 7, 15, 0))
+                .expect("the coverage contract must answer a covered date"),
+            "{year}-{month:02}-{date:02} publishes no Pre-Open and must stay open at 07:15 CT"
+        );
+    }
+}
+
+// ---------------------------------------------------------------------------
+// The five 2025 merged trade dates this family cannot witness (issue #162).
+// ---------------------------------------------------------------------------
+
+/// `globex_nikkei_225_dollar` models seventeen merged trade dates — the
+/// day-after-holiday dates on which CME assigns the Sunday- or
+/// Wednesday-evening-through-holiday span to the *following* business day — and
+/// ships twelve. The five 2025 dates (2025-01-21, 2025-02-18, 2025-05-27,
+/// 2025-06-20, 2025-09-02) ship no row, and this fence states that as the
+/// **witness gap** it is rather than as an accident.
+///
+/// The twelve that ship each have their own `NKD`(168)/`NIY`(167) witness bytes.
+/// The five that do not have no Nikkei event anywhere in the research store:
+/// five targeted `THBP-B` captures requested exactly `id=168,167` over exactly
+/// these windows and returned an empty event list for both products
+/// (`raw/cme-2025-2027-repair/json/edgeB_2025-*.json`). Inventing the rows from
+/// the sibling families' line would be a fabricated date, so the gap is recorded
+/// in the evidence file with its closing condition and tracked as issue #162.
+///
+/// The behavioural consequence is what this fence pins: at 18:00 CT on the
+/// evening before each of the five, the four sibling families answer the
+/// *following* business day while this family still answers the holiday itself.
+#[test]
+fn the_five_unwitnessed_2025_merged_dates_answer_the_holiday_not_the_next_business_day() {
+    // (evening before, the holiday this family answers, the merged date CME assigns)
+    type Case = (i32, u32, u32, (i32, u32, u32), (i32, u32, u32));
+    let nikkei = nkd();
+    let unwitnessed: [Case; 5] = [
+        (2025, 1, 19, (2025, 1, 20), (2025, 1, 21)),
+        (2025, 2, 16, (2025, 2, 17), (2025, 2, 18)),
+        (2025, 5, 25, (2025, 5, 26), (2025, 5, 27)),
+        (2025, 6, 18, (2025, 6, 19), (2025, 6, 20)),
+        (2025, 8, 31, (2025, 9, 1), (2025, 9, 2)),
+    ];
+    for (y, m, d, holiday, merged) in unwitnessed {
+        let instant = ct(y, m, d, 18, 0, 0);
+        // The family still keys the evening leg to the holiday, because it ships
+        // no merged row for the following business day.
+        assert_eq!(
+            nikkei
+                .trade_date(instant)
+                .expect("the coverage contract must answer a covered date"),
+            Some(day(holiday.0, holiday.1, holiday.2)),
+            "{y}-{m:02}-{d:02} 18:00 CT must still carry the holiday for this family"
+        );
+        // And it ships no row at all for the merged date.
+        assert_eq!(
+            nikkei
+                .holiday_on(day(merged.0, merged.1, merged.2))
+                .map(exchange_hours::Holiday::kind),
+            None,
+            "{}-{:02}-{:02} must ship no row: the gap is a witness gap, not a modelled date",
+            merged.0,
+            merged.1,
+            merged.2
+        );
+        // A sibling family that *does* witness its merged dates answers the next
+        // business day at the same instant. `globex_fx` is that family.
+        assert_eq!(
+            exchange_hours::calendar_for_market_hours_key(MarketHoursKey::GlobexFx)
+                .trade_date(instant)
+                .expect("the coverage contract must answer a covered date"),
+            Some(day(merged.0, merged.1, merged.2)),
+            "{y}-{m:02}-{d:02} 18:00 CT must carry the merged date for globex_fx"
+        );
     }
 }

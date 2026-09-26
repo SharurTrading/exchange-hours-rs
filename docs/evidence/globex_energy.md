@@ -324,7 +324,7 @@ Every interval from 2010-01-01 is declared, so the whole span has an answer; the
 
 ### Gaps and residual risks, 2013-2015
 
-**This era brings the family to six audited windows.** The table as a whole carries 209 rows over 6 windows — 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 — and this era's share is **33 rows**: 9 stated closures and 24 early closes. Every row is at T1.
+**This era brings the family to six audited windows.** The table as a whole carries 223 rows over 6 windows — 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 — and the six eras hold 38, 33, 31, 35, 33 and 53 rows. This era's share is **33 rows**: 9 stated closures and 24 early closes. Every row is at T1.
 
 **Columbus Day 2013 and Veterans Day 2014 and 2015 carry no row.** CME's own sheets for those three dates state in session language that Globex ran a normal schedule — `Products listed on Globex are unaffected and will run on a normal schedule` for 2013-10-14 (`2013-columbus-day.pdf @2012-11-19T00:15:54Z`) and `Regular CME Globex trading hours will be in effect` for 2014-11-11 and 2015-11-11 (`2014-veterans-day-holiday-schedule.pdf @2014-11-13T19:34:50Z` and `2015-veterans-day-schedule.pdf @2015-11-22T23:09:20Z`) — so the block records each as `normal` and this table ships nothing: inside a declared window silence is the positive claim that the date was audited normal, and these dates are audited rather than skipped. The three sheets have no row of their own to cite, so they are listed in this era's `### Documents` table without being any row's document.
 
@@ -462,7 +462,7 @@ This era's rows cite the ids below — CME Group's own Globex holiday schedules,
 | `2021-holiday-calendars.zip#2021-presidents-day-holiday-schedule-compact.xls @2026-08-30T10:03:27Z` | 2019-01-01 .. 2021-12-31 | <https://web.archive.org/web/20260830100327id_/https://www.cmegroup.com/tools-information/holiday-calendar/files/2021-holiday-calendars.zip> | archive capture 2026-08-30T10:03:27Z | T1 | `7a8d5ce35c639998abf64723de2cc2d649dc015b1aa6cfc3bc326ab5cdfd0c4f` |
 | `2021-holiday-calendars.zip#2021-thanksgiving-holiday-schedule-compact.xls @2026-08-30T10:03:27Z` | 2019-01-01 .. 2021-12-31 | <https://web.archive.org/web/20260830100327id_/https://www.cmegroup.com/tools-information/holiday-calendar/files/2021-holiday-calendars.zip> | archive capture 2026-08-30T10:03:27Z | T1 | `df6cdbc4c996109fe5a5829b5e8aaf622c20c6f16f1464dcdd9d5250c4163a47` |
 ### Gaps and residual risks, 2019-2021
-**This era brought the family to five audited windows; the 2013-2015 wave has since added a sixth.** The table as a whole carries 209 rows over 6 windows — 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 — and this era's share is **35 rows**: 9 full closures, 23 early closes and 3 `Unsourced` rows. Every row is at T1. Every interval from 2010-01-01 is inside a declared window, so `holiday_coverage` answers for the whole span rather than reporting an unaudited gap.
+**This era brought the family to five audited windows; the 2013-2015 wave has since added a sixth.** The table as a whole carries 223 rows over 6 windows — 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 — and this era's share is **35 rows**: 9 full closures, 23 early closes and 3 `Unsourced` rows. Every row is at T1. Every interval from 2010-01-01 is inside a declared window, so `holiday_coverage` answers for the whole span rather than reporting an unaudited gap.
 **Juneteenth 2019, 2020 and 2021 — three `Unsourced` rows.** CME published no Juneteenth schedule in any of the three years. Each row cites that year's own consolidated bundle — `2019-holiday-calendars.zip @2021-01-26T09:48:37Z`, `2020-holiday-calendars.zip @2026-07-30T11:18:34Z` and `2021-holiday-calendars.zip @2026-08-30T10:03:27Z` — whose member lists are CME's own account of every Globex holiday schedule it published that year and which carry no Juneteenth sheet; the four archived `holiday-calendar.html` index pages name none either, and a fresh 2018-2027 prefix CDX enumeration (`raw/cme-2019-2021-fix/cdx/cdx-files-2018-2027.json`, 369 rows, 340 distinct filenames) finds no `juneteenth` filename before 2022. Inside a contiguous window silence is the positive claim that a date was audited normal, which is false for a date the operator later marks as a holiday, so all three ship `Unsourced`, which clips nothing. 2021-06-19 is a **Saturday**: no family has a trade date there and the row changes no answer, and the row is keyed to the operator's own calendar date for the holiday rather than to an observed date CME never states. Closing condition: a CME holiday schedule naming Juneteenth in one of these three years.
 **Columbus Day and Veterans Day — six dates with no row.** 2019-10-14, 2019-11-11, 2020-10-12, 2020-11-11, 2021-10-11 and 2021-11-11 lie inside this window and carry no row, so the family's ordinary week stands there. CME published settlement-time and OTC-clearing advisories for these dates — the 2019 ZIP's `settlement-notices/*-settlement-times.pdf` members and, for example, `2021-veterans-day-advisory.pdf` — but never a Globex trading schedule for them. A settlement notice is not session language (LAW-SESSION-NOT-EXPIRY), so no row is keyed to one and the block's `missing` register records the dates as gaps rather than as sourced normality. Closing condition: a CME Globex holiday schedule naming one of these dates.
 
@@ -595,9 +595,11 @@ window, and one intraday topology the scalar vocabulary cannot state:
    `12:00 preopen` row of 2025-01-20.
 4. an intraday `preopen`/`open` pair on the date ahead of an early close, on a
    trading day that already opened the previous evening — 2025-11-28 prints
-   `07:00 preopen; 07:30 open; 13:45 closed`. The row carries only the 13:45 CT
-   `EarlyClose`; the implied halt is a topology change, recorded under
-   **Gaps, 2025** below and not modelled.
+   `07:00 preopen; 07:30 open; 13:45 closed`. The operator's vocabulary defines
+   `preopen` as "Order Entry, modification, and cancel are allowed. No order
+   matching.", so `07:00-07:30` CT is a queue and `07:30` is where matching
+   resumes; the row's replacement blocks state both, and matching therefore runs
+   in two pieces. It is the only date in the window with this shape.
 
 ### 2025
 
@@ -634,19 +636,27 @@ CME's own 2025 Globex table states the Thanksgiving period as "27 - 29 November
 
 **Gaps, 2025.**
 
-- **Intraday topology, 2025-11-28** — the finalised publication prints
-  `07:00 preopen; 07:30 open` ahead of the 13:45 CT close, on a trading day
-  that opened 17:00 CT the previous evening. That implies a halt CME does not
-  print, and the scalar vocabulary of a holiday row cannot state it. Not a late
-  open: the trading day's own first open is 17:00 CT on 11-27, and clipping to
-  07:30 CT would delete fourteen hours CME publishes as open. Recorded, not
-  modelled. Closing condition: a block-row holiday kind (#93), or an operator
-  statement of the halt.
+- **The 2025-11-28 morning Pre-Open is served, and it is order entry.** The
+  finalised publication prints `07:00 preopen; 07:30 open; 13:45 closed` on
+  eventDate 2025-11-28, all three carrying CME trade date 2025-11-28. CME's own
+  event vocabulary defines `preopen` as "Order Entry, modification, and cancel
+  are allowed. No order matching." and `open` as "Start of continuous trading
+  phase. Order matching begins.", so `07:00-07:30` CT is a queue and matching
+  resumes at `07:30`. The row's `MERGED_SESSION_EARLY_CLOSE_BLOCKS_2025_11_28`
+  states exactly that: the overnight run is carried as `extended` blocks ending
+  at 07:00, the queue is an `order_entry` block, and matching resumes in an
+  `extended` block to the 13:45 close. Until this correction the whole morning
+  was one `extended` block, so `is_open` answered `true` and `session_state`
+  answered `OpenExtended` in the operator's queue — the same defect class as
+  `globex_cryptocurrency`'s Pre-Opens. It is the only date in the 2025-2027
+  window with this shape: the 2026 and 2027 Thanksgiving Fridays print the
+  close line alone and keep the four-block static.
 - **Order-entry deviations** — on the shape-3 dates the pre-open runs
   13:30-17:00 CT rather than the normal 16:45-17:00 CT, and on 2025-01-01 and
-  2025-12-25 it starts 16:00 CT rather than 16:45 CT. A holiday row has no
-  order-entry boundary, so this is not representable. It changes no `is_open`
-  answer, only `is_accepting_orders` and `is_order_entry_only`.
+  2025-12-25 it starts 16:00 CT rather than 16:45 CT. Those rows are scalar
+  holiday kinds with no block set of their own, so the boundary is not
+  representable there. It changes no `is_open` answer, only
+  `is_accepting_orders` and `is_order_entry_only`.
 - **Pre-finalisation publications** — the 2025-01-01 through 2025-09-01 rows
   rest on the single archive capture 2024-12-20T15:53:40Z, on a page that
   states "This schedule is subject to change. Trading hours are usually
@@ -717,8 +727,9 @@ deleting it (design memo D9).
   by group and matched row for row.
 - **Black Friday finalisation** — 2026-11-27 is sourced from a pre-holiday
   publication. The 2025 equivalent gained a `07:00 preopen; 07:30 open` pair
-  when CME finalised it, so this row may gain the same intraday pair. The close
-  instant was unchanged by finalisation in 2025.
+  when CME finalised it, so this row may gain the same queue. The close instant
+  was unchanged by finalisation in 2025. Closing condition: a post-holiday CME
+  publication of the 2026-11-27 window, or its 2027 sibling.
 
 ### 2027
 

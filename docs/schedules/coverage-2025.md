@@ -168,10 +168,20 @@ scope.
 covered future stops 14 days before this inspection (2026-09-21). The interval after 2026-09-07 has
 no answer, and Stage 4 item 2 refreshes it.
 
-### 4. Three scopes are complete to 2027-12-31
+### 4. Two scopes are complete to 2027-12-31
 
-`globex_grains`, `globex_livestock` and `globex_nikkei_225_dollar` reach 2027-12-31 with no
-`Unsourced` row at or after 2025-01-01. The other nine scopes that reach that date are **not**
+`globex_grains` and `globex_livestock` reach 2027-12-31 with no
+`Unsourced` row at or after 2025-01-01. `globex_nikkei_225_dollar` reaches that date with no
+`Unsourced` row either, and the coverage API therefore reports every date in the window
+complete — but it carries a **witness gap** the API has no representation for: it ships twelve of
+the seventeen merged trade dates and none of the 2025 five (2025-01-21, 2025-02-18, 2025-05-27,
+2025-06-20, 2025-09-02), because no `NKD`/`NIY` witness exists for those windows and the channel
+that would carry one returns an empty event list for them. Those five dates are not `Unsourced`
+rows — nothing the operator published withholds them — they are dates this crate has not worked
+up, so the gap is recorded in
+[`docs/evidence/globex_nikkei_225_dollar.md`](../evidence/globex_nikkei_225_dollar.md) with its
+closing condition and tracked as issue #162, and `is_complete_on` cannot yet be taught to refuse
+them. The other nine scopes that reach that date are **not**
 complete: `cbot` withholds disputed dates in §2 and `cme` those plus the Sunday 16:00-16:15 CT
 quarter-hour; `comex`, `nymex`, `globex_energy`, `globex_interest_rates` and `globex_equity_index`
 withhold that same quarter-hour in §5, and so does `globex_fx`; and

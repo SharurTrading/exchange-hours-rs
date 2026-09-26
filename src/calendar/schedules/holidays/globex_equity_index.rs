@@ -168,6 +168,60 @@ pub(crate) static MERGED_SESSION_AFTER_WEEKDAY_BLOCKS: [ExceptionBlock; 7] = [
     ExceptionBlock::extended(0, 15 * 3_600 + 15 * 60, 16 * 3_600),
 ];
 
+/// The same, for the one trade date where the operator publishes a second
+/// Pre-Open: the day-after-Thanksgiving Friday 2025-11-28.
+///
+/// The finalised publication states `07:00 preopen`, `07:30 open` and
+/// `12:15 closed` on eventDate 2025-11-28 with trade date 2025-11-28. `07:30` is
+/// earlier than the family's `08:30` regular open, so the queue is the overnight
+/// session's own `order_entry` window rather than a late open, and matching runs
+/// from 07:30 until the regular session takes over at 08:30. Carried as one
+/// continuous `extended` run the queue answered `is_open = true`, a window CME
+/// defines as "No order matching".
+///
+/// The 2026 and 2027 Thanksgiving Fridays publish the `12:15 closed` line alone
+/// and keep [`MERGED_SESSION_EARLY_CLOSE_BLOCKS`], which this row would
+/// otherwise overstate.
+///
+/// - offset `-2`, 16:45-17:00 CT: the Wednesday Pre-Open queue.
+/// - offset `-2`, 17:00 CT to offset `-1` 08:30 CT: the overnight session.
+/// - offset `-1`, 08:30-12:00 CT: the holiday's regular session.
+/// - offset `-1`, 12:00-17:00 CT: the holiday's own Pre-Open queue.
+/// - offset `-1`, 17:00 CT to the trade date's 12:15 CT close: the overnight
+///   run, split at local midnight into the two pieces below so the trade date's
+///   own 07:00 queue can be stated without overlapping it. The block list is
+///   non-decreasing by opening day then open time, which the table fence
+///   enforces at compile time.
+/// - offset `0`, 00:00-07:00 CT: the tail of that overnight run. It restates the
+///   wrapped block's own span, which is what keeps the run's envelope whole.
+/// - offset `0`, 07:00-07:30 CT: the trade date's morning Pre-Open queue.
+/// - offset `0`, 07:30-08:30 CT: matching, to the family's regular open.
+/// - offset `0`, 08:30 CT to the trade date's 12:15 CT close: the regular
+///   session that the early close cuts short.
+///
+/// Evidence: `docs/evidence/globex_equity_index.md`.
+// `0 * 3_600 + 0 * 60` is midnight, written in the table fence's own grammar
+// (`h * 3_600 + m * 60`); a bare `0` is rejected by
+// `tests/schedule_documentation/evidence_files.rs`, so the zero product is
+// deliberate and the lint is wrong here.
+#[expect(
+    clippy::erasing_op,
+    clippy::identity_op,
+    reason = "the table fence reads every block instant as `h * 3_600 + m * 60`; \
+              midnight has to be written in that grammar"
+)]
+pub(crate) static MERGED_SESSION_EARLY_CLOSE_BLOCKS_2025_11_28: [ExceptionBlock; 9] = [
+    ExceptionBlock::order_entry(-2, 16 * 3_600 + 45 * 60, 17 * 3_600),
+    ExceptionBlock::extended(-2, 17 * 3_600, 8 * 3_600 + 30 * 60),
+    ExceptionBlock::regular(-1, 8 * 3_600 + 30 * 60, 12 * 3_600),
+    ExceptionBlock::order_entry(-1, 12 * 3_600, 17 * 3_600),
+    ExceptionBlock::extended(-1, 17 * 3_600, 24 * 3_600),
+    ExceptionBlock::extended(0, 0 * 3_600 + 0 * 60, 7 * 3_600),
+    ExceptionBlock::order_entry(0, 7 * 3_600, 7 * 3_600 + 30 * 60),
+    ExceptionBlock::extended(0, 7 * 3_600 + 30 * 60, 8 * 3_600 + 30 * 60),
+    ExceptionBlock::regular(0, 8 * 3_600 + 30 * 60, 12 * 3_600 + 15 * 60),
+];
+
 /// The same, when the trade date is a day-after-Thanksgiving Friday whose
 /// regular session the `12:15` CT close cuts short. Six blocks: the trade date's
 /// own envelope ends at that close, so there is no trailing `extended` slice.
@@ -606,7 +660,7 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
             2025,
             11,
             28,
-            ReplacementBlocks(&MERGED_SESSION_EARLY_CLOSE_BLOCKS),
+            ReplacementBlocks(&MERGED_SESSION_EARLY_CLOSE_BLOCKS_2025_11_28),
             T2,
             "CME-SVC-2025-11-26"
         ),

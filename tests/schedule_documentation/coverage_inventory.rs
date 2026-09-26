@@ -258,7 +258,7 @@ fn withheld(calendar: ExchangeCalendar, date: NaiveDate) -> bool {
 /// page rather than asserted by this list. It is a fence only while the
 /// `Unsrc 2025+ dates` column it is compared against is re-derived from the
 /// shipped tables — which `inventory_windows_and_date_counts_match_the_shipped_tables`
-/// does in the same file. `cme` is deliberately absent: it withholds 35 dates
+/// does in the same file. `cme` is deliberately absent: it withholds 48 dates
 /// **and** the Sunday quarter-hour (#79), so its denial of completeness is no
 /// longer date-shaped.
 fn date_level_incompleteness() -> &'static [(&'static str, usize)] {
@@ -277,7 +277,7 @@ fn date_level_incompleteness() -> &'static [(&'static str, usize)] {
 /// `globex_interest_rates` each withheld the Sunday 16:00-16:15 CT quarter-hour
 /// their own ledger basis notes record, and this fence is what made the correction
 /// to the page and the metadata land together — but only **four** of the five had
-/// a cell reading complete: `cme`'s already denied it, for the 35 dates it
+/// a cell reading complete: `cme`'s already denied it, for the 48 dates it
 /// withholds as `Unsourced` in 2025+, so the quarter-hour corrected that scope's
 /// cause of incompleteness rather than its verdict.
 ///
@@ -360,8 +360,8 @@ fn inventory_completeness_verdicts_match_the_metadata() {
     }
     assert_eq!(
         (complete, incomplete, no_coverage),
-        (5, 9, 2),
-        "the inventory's verdict shapes: five complete, nine incomplete, two with no 2025 \
+        (5, 10, 1),
+        "the inventory's verdict shapes: five complete, ten incomplete, one with no 2025 \
          coverage"
     );
 }
@@ -385,6 +385,7 @@ fn declared_phase_gaps() -> Vec<(&'static str, Vec<(CoverageGapReason, &'static 
     let quarter_hour = (CoverageGapReason::NormalWeekPhaseWithheld, "#79");
     let special_sessions = (CoverageGapReason::SpecialSessionUnrepresentable, "#93");
     let pre_open_onset = (CoverageGapReason::NormalWeekPhaseWithheld, "#123");
+    let undated_closures = (CoverageGapReason::UnpublishedClosureDates, "#157");
     vec![
         ("cme", vec![quarter_hour]),
         ("comex", vec![quarter_hour]),
@@ -399,10 +400,15 @@ fn declared_phase_gaps() -> Vec<(&'static str, Vec<(CoverageGapReason, &'static 
             "globex_cryptocurrency",
             vec![special_sessions, pre_open_onset],
         ),
+        // `eurex` withholds no *phase*: the operator declares German
+        // equity/equity-index closures it has not dated, so the declaration is
+        // a completeness fact the date walk cannot find and the order-entry
+        // scans still answer through it.
+        ("eurex", vec![undated_closures]),
     ]
 }
 
-/// The eight scopes that declare a phase-level gap declare exactly the ones
+/// The nine scopes that declare a gap declare exactly the ones
 /// advertised, each reportable with its own reason and closing issue, and each
 /// issue is one the scope's own row names.
 ///
@@ -533,9 +539,9 @@ fn the_declared_phase_level_gaps_match_the_inventory() {
     }
     assert_eq!(
         (declaring, declarations),
-        (8, 9),
-        "eight served scopes declare a phase-level gap today, nine declarations in all: seven \
-         quarter-hour scopes, and `globex_cryptocurrency`'s two"
+        (9, 10),
+        "nine served scopes declare a gap today, ten declarations in all: seven \
+         quarter-hour scopes, `globex_cryptocurrency`'s two and `eurex`'s undated closure scope"
     );
 
     // The scopes the quarter-hour probe cleared of the disputed window declare
@@ -546,7 +552,6 @@ fn the_declared_phase_level_gaps_match_the_inventory() {
         "cbot",
         "cfe",
         "coinbase_derivatives",
-        "eurex",
         "iceus",
         "globex_grains",
         "globex_livestock",

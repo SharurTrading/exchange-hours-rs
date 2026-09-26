@@ -28,12 +28,13 @@
 //! A **date-shaped** gap is what the three facts above decide, and
 //! [`CoverageGapReason::NormalWeekCarried`], [`CoverageGapReason::NoHolidayTable`],
 //! [`CoverageGapReason::NoHolidayCoverage`], [`CoverageGapReason::WithheldDate`]
-//! and [`CoverageGapReason::NormalWeekOnly`] name its five kinds. A **phase-level**
+//! and [`CoverageGapReason::NormalWeekOnly`] name its five kinds. A **declared**
 //! gap is not date-shaped: the operator publishes the arrangement, and no shipped
 //! row states it. `schedules/sourcing.rs` declares those
 //! per identity, and this module reports them as
-//! [`CoverageGapReason::NormalWeekPhaseWithheld`] (#79) and
-//! [`CoverageGapReason::SpecialSessionUnrepresentable`] (#93).
+//! [`CoverageGapReason::NormalWeekPhaseWithheld`] (#79),
+//! [`CoverageGapReason::SpecialSessionUnrepresentable`] (#93) and
+//! [`CoverageGapReason::UnpublishedClosureDates`] (#157).
 //!
 //! A declared gap applies to the whole supported domain **unless its own
 //! declaration carries an end bound** ([`PhaseGap::until`]), because a profile can
@@ -153,13 +154,16 @@ pub enum DateCoverage {
 /// Why a span inside the supported domain is not complete.
 ///
 /// Five variants are **date-shaped**: they describe a span of venue-local dates
-/// and are derived from the identity's own timeline and holiday table. Two are
-/// **phase-level**, declared beside the identity in `schedules/sourcing.rs`
-/// (LAW-COVERAGE's required-phase and special-session gaps): they apply to the
+/// and are derived from the identity's own timeline and holiday table. Three are
+/// **declared**, beside the identity in `schedules/sourcing.rs` (LAW-COVERAGE's
+/// required-phase, special-session and holiday gaps): they apply to the
 /// dates their declaration names — the whole claimed interval when it carries no
 /// end bound — so a date walk over the tables can never find them. An identity
-/// carrying a phase-level gap is incomplete wherever that gap applies, and
-/// [`CoverageGap::closing_condition`] names what would discharge it.
+/// carrying a declared gap is incomplete wherever that gap applies, and
+/// [`CoverageGap::closing_condition`] names what would discharge it. Two of the
+/// three are phase-level, withholding a phase the crate's scalar rules do not
+/// serve; [`Self::UnpublishedClosureDates`] withholds no phase and is a
+/// completeness fact alone.
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum CoverageGapReason {
@@ -235,10 +239,49 @@ pub enum CoverageGapReason {
     /// session CME publishes for that family is stated and it declares only the
     /// `#79` quarter-hour.
     SpecialSessionUnrepresentable,
+    /// **Declared, not phase-level.** The operator declares closures inside this
+    /// identity's own product scope but has not dated them, so no date its
+    /// declaration covers is certified complete.
+    ///
+    /// The shape is an **undated closure scope**, and it differs from both
+    /// declared variants above. No phase is withheld: every phase the crate
+    /// models for an ordinary day is served, so this declaration is a
+    /// completeness fact alone and the query gate answers through it rather than
+    /// refusing an order-entry queue it does not touch. Nor is a row missing from
+    /// the vocabulary: a closure is [`HolidayKind::Closed`], which ships. What is
+    /// missing is the *date* — the operator's own calendar names a scope that
+    /// closes and prints `tba` where its dates belong — so no date-level row can
+    /// state it and no date walk over the identity's tables can find it.
+    ///
+    /// `eurex` is the shipped case. The *Eurex trading calendar 2025* prints
+    /// `Kein Handel und keine Ausübung in deutschen Aktien- und
+    /// Aktienindex-derivaten sowie in ETF- und ETC-Derivaten, die auf
+    /// Xetra@-Börsen-notierungen basieren: tba.`, and the 2026 edition carries
+    /// the same note in English and still says `to be announced`; FDAX and FDXM
+    /// are German equity-index derivatives this identity serves, so both years
+    /// could carry closures no shipped row states. The withholding is the
+    /// **operator's**, not this crate's: the Holiday regulations page never
+    /// carries the note, so it cannot be closed from that page, and
+    /// LAW-PRIMARY-SOURCES forbids closing it from a T3 restatement. The closing
+    /// condition is an Eurex announcement or Trading Calendar edition that dates
+    /// the German-scope closures.
+    ///
+    /// Because no phase is withheld, a declared span is *not* a phase gap: the
+    /// order-entry queue scans of `CalendarQueryContext::require_phase_coverage`
+    /// answer through it.
+    UnpublishedClosureDates,
 }
 
-/// A phase-level completeness gap one identity declares about itself: a known
-/// internal gap that no date walk over the identity's tables can find.
+/// A completeness gap one identity declares about itself: a known internal gap
+/// that no date walk over the identity's tables can find.
+///
+/// Two shapes are declared here. A **phase-level** gap withholds part of a
+/// phase the crate's scalar rules do not serve
+/// ([`CoverageGapReason::NormalWeekPhaseWithheld`],
+/// [`CoverageGapReason::SpecialSessionUnrepresentable`]). A **holiday-scope**
+/// gap ([`CoverageGapReason::UnpublishedClosureDates`]) withholds no phase at
+/// all: the operator's calendar names dates it closes without publishing them,
+/// so the site is incomplete while every phase still answers.
 ///
 /// Declared in `schedules/sourcing.rs` beside the identity it belongs to, never
 /// inferred from a timeline or a holiday table. LAW-COVERAGE requires complete
@@ -585,7 +628,9 @@ impl CalendarCoverage {
     /// the era in which the identity still withholds it. An empty slice is an
     /// affirmative "no such gap declared", not missing data — the declarations
     /// live in `schedules/sourcing.rs`, one arm per identity, and are never
-    /// inferred from a timeline or a holiday table.
+    /// inferred from a timeline or a holiday table. The accessor keeps the name
+    /// of the phase-level shape it was introduced for; `eurex`'s undated closure
+    /// scope is declared here too, and it withholds no phase.
     ///
     /// A scope can carry several because the shapes stack: `globex_fx`
     /// withholds the Sunday quarter-hour *and* publishes special sessions no
@@ -633,7 +678,8 @@ impl CalendarCoverage {
                 | CoverageGapReason::NoHolidayTable
                 | CoverageGapReason::NoHolidayCoverage
                 | CoverageGapReason::NormalWeekPhaseWithheld
-                | CoverageGapReason::SpecialSessionUnrepresentable,
+                | CoverageGapReason::SpecialSessionUnrepresentable
+                | CoverageGapReason::UnpublishedClosureDates,
             ) => DateCoverage::OutsideCoveredRange,
         }
     }

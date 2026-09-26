@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT-0
 
 //! Built-in holiday rows for Eurex (`eurex` venue, `eurex` and
-//! `eurex_fixed_income` keys), 2026.
+//! `eurex_fixed_income` keys), 2025 and 2026.
 //!
 //! Eurex publishes closures only — no early close and no late open — so §4.1
 //! cases 2, 3 and 4 have nothing to exercise here and the block says so rather
@@ -10,12 +10,15 @@
 //! 22:00-22:10 CET post-trading phase, whose occurrence on local date `D`
 //! belongs to trade date `D + 1`, so a closure deletes the preceding evening's
 //! leg. The two benchmark-index identities run 02:15-22:00 CET and have no such
-//! leg; that absence is fenced below rather than assumed. Coverage stops at 2026-12-31 because Eurex's 2027
+//! leg; that absence is fenced below rather than assumed. Coverage runs from the
+//! 2025-01-01 floor — the eight 2025 closures are the operator's own "all
+//! derivatives" rows, four of them trading-and-clearing and the two Christmas
+//! block ends trading-only — and stops at 2026-12-31 because Eurex's 2027
 //! calendar is published "on a preliminary and indicative basis", which
 //! LAW-NO-FABRICATED-DATES keeps out of a runtime table; the last test is the
 //! fence on that.
 
-use chrono::{DateTime, Days, NaiveDate, TimeZone as _, Utc};
+use chrono::{DateTime, Datelike as _, Days, NaiveDate, TimeZone as _, Utc};
 use chrono_tz::Europe;
 use exchange_hours::{
     CalendarQueryError, Exchange, ExchangeCalendar, Holiday, HolidayKind, MarketHoursKey,
@@ -49,8 +52,16 @@ fn day(year: i32, month: u32, date: u32) -> NaiveDate {
 }
 
 #[test]
-fn every_eurex_identity_ships_the_same_seven_closures() {
+fn every_eurex_identity_ships_the_same_fifteen_closures() {
     let closures = [
+        day(2025, 1, 1),
+        day(2025, 4, 18),
+        day(2025, 4, 21),
+        day(2025, 5, 1),
+        day(2025, 12, 24),
+        day(2025, 12, 25),
+        day(2025, 12, 26),
+        day(2025, 12, 31),
         day(2026, 1, 1),
         day(2026, 4, 3),
         day(2026, 4, 6),
@@ -66,25 +77,12 @@ fn every_eurex_identity_ships_the_same_seven_closures() {
                 Some(HolidayKind::Closed),
                 "{name} must be closed on {date}"
             );
-            if date == day(2026, 1, 1) {
-                // A trade-date query rests on the trading day that opened the
-                // previous evening, and New Year's Day's predecessor
-                // (2025-12-31) is one day below the audited 2026 window. Stage
-                // 2B refuses the query there, so the closure's trade-date
-                // consequence is no longer claimable for this row even though
-                // the row itself ships.
-                assert!(
-                    matches!(
-                        calendar.is_closed_trade_date(date, SessionKind::Both),
-                        Err(CalendarQueryError::OutsideCoveredRange {
-                            date: dependency,
-                            ..
-                        }) if dependency == day(2025, 12, 31)
-                    ),
-                    "{name} on {date}: the answer depends on the unaudited 2025-12-31"
-                );
-                continue;
-            }
+            // Every one of the fifteen answers its trade-date consequence,
+            // including both New Year's Days: 2025-01-01's own row settles the
+            // question without walking below the floor, and 2026-01-01's
+            // predecessor (2025-12-31) is inside the window now. Until the 2025
+            // rows landed that second probe refused with `OutsideCoveredRange`
+            // naming the unaudited 2025-12-31.
             assert!(
                 calendar
                     .is_closed_trade_date(date, SessionKind::Both)
@@ -141,31 +139,34 @@ fn trading_resumes_on_the_first_open_day_after_the_christmas_block() {
 #[test]
 fn new_years_day_is_closed_and_the_second_of_january_is_not() {
     for (name, calendar) in identities() {
-        // The closure row itself is unchanged, but the 2026-01-01 probe cannot
-        // be answered: resolving it reads the local date 2025-12-31, one day
-        // below the audited 2026 window, and Stage 2B refuses rather than
-        // answering from a normal week the window did not audit.
-        assert_eq!(
-            calendar.holiday_on(day(2026, 1, 1)).map(Holiday::kind),
-            Some(HolidayKind::Closed),
-            "{name}"
-        );
-        assert!(
-            matches!(
-                calendar.is_open(cet((2026, 1, 1), (12, 0, 0))),
-                Err(CalendarQueryError::OutsideCoveredRange {
-                    date,
-                    ..
-                }) if date == day(2025, 12, 31)
-            ),
-            "{name}: 2026-01-01 depends on the unaudited 2025-12-31"
-        );
-        assert!(
-            calendar
-                .is_open(cet((2026, 1, 2), (12, 0, 0)))
-                .expect("2026-01-02 and its predecessor are inside the audited window"),
-            "{name}"
-        );
+        // Both New Year's Days now answer from their own audited windows. Until
+        // the 2025 rows landed the 2026-01-01 probe refused: resolving it reads
+        // the local date 2025-12-31, which was then one day below the window the
+        // table audited. 2025-12-31 is inside the window now — and is itself a
+        // trading closure — so the probe reads the closure it names.
+        for date in [day(2025, 1, 1), day(2026, 1, 1)] {
+            assert_eq!(
+                calendar.holiday_on(date).map(Holiday::kind),
+                Some(HolidayKind::Closed),
+                "{name} on {date}"
+            );
+        }
+        for probe in [cet((2025, 1, 1), (12, 0, 0)), cet((2026, 1, 1), (12, 0, 0))] {
+            assert!(
+                !calendar
+                    .is_open(probe)
+                    .expect("New Year's Day and its predecessor are inside the audited window"),
+                "{name} at {probe}"
+            );
+        }
+        for probe in [cet((2025, 1, 2), (12, 0, 0)), cet((2026, 1, 2), (12, 0, 0))] {
+            assert!(
+                calendar
+                    .is_open(probe)
+                    .expect("2 January and its predecessor are inside the audited window"),
+                "{name} at {probe}"
+            );
+        }
     }
 }
 
@@ -175,7 +176,7 @@ fn the_indicative_2027_calendar_does_not_ship() {
         let coverage = calendar
             .holiday_coverage()
             .unwrap_or_else(|| panic!("{name} ships a built-in table"));
-        assert_eq!(coverage.first(), day(2026, 1, 1), "{name}");
+        assert_eq!(coverage.first(), day(2025, 1, 1), "{name}");
         assert_eq!(coverage.last(), day(2026, 12, 31), "{name}");
         assert_eq!(
             calendar.holiday_on(
@@ -213,7 +214,7 @@ fn the_indicative_2027_calendar_does_not_ship() {
                     ..
                 }) if date == day(2027, 1, 1)
             ),
-            "{name}: 2027-01-01 is outside the audited 2026 window"
+            "{name}: 2027-01-01 is outside the audited 2025-2026 window"
         );
         assert!(
             calendar
@@ -222,6 +223,72 @@ fn the_indicative_2027_calendar_does_not_ship() {
                 .expect("a detached snapshot claims no coverage"),
             "{name} answers the pure normal week only once the table is detached"
         );
+    }
+}
+
+/// The 2025 rows this change adds, date by date: each of the eight is closed,
+/// the ordinary week around them is untouched, and the table's window now opens
+/// at the 2025-01-01 support floor.
+#[test]
+fn the_2025_closures_and_the_ordinary_week_around_them() {
+    let closed = [
+        day(2025, 1, 1),
+        day(2025, 4, 18),
+        day(2025, 4, 21),
+        day(2025, 5, 1),
+        day(2025, 12, 24),
+        day(2025, 12, 25),
+        day(2025, 12, 26),
+        day(2025, 12, 31),
+    ];
+    // Weekdays adjacent to the closures, plus the coverage inventory's sample
+    // date. None carries a row for these three identities, so each is an
+    // audited-normal day and must still answer as an ordinary session.
+    let ordinary = [
+        day(2025, 1, 2),
+        day(2025, 4, 17),
+        day(2025, 4, 22),
+        day(2025, 5, 2),
+        day(2025, 6, 10),
+        day(2025, 12, 23),
+        day(2025, 12, 29),
+        day(2025, 12, 30),
+    ];
+    for (name, calendar) in identities() {
+        let coverage = calendar
+            .holiday_coverage()
+            .unwrap_or_else(|| panic!("{name} ships a built-in table"));
+        assert_eq!(coverage.first(), day(2025, 1, 1), "{name}");
+        assert_eq!(coverage.last(), day(2026, 12, 31), "{name}");
+        // Below the window and past it the table has no answer at all: the
+        // endpoints are bounds, not rows.
+        assert_eq!(calendar.holiday_on(day(2024, 12, 31)), None, "{name}");
+        assert_eq!(calendar.holiday_on(day(2027, 1, 1)), None, "{name}");
+
+        for date in closed {
+            assert_eq!(
+                calendar.holiday_on(date).map(Holiday::kind),
+                Some(HolidayKind::Closed),
+                "{name} on {date}"
+            );
+            let noon = cet((date.year(), date.month(), date.day()), (12, 0, 0));
+            assert!(
+                !calendar
+                    .is_open(noon)
+                    .expect("the coverage contract must answer a covered date"),
+                "{name} at {noon}"
+            );
+        }
+        for date in ordinary {
+            assert_eq!(calendar.holiday_on(date), None, "{name} on {date}");
+            let noon = cet((date.year(), date.month(), date.day()), (12, 0, 0));
+            assert!(
+                calendar
+                    .is_open(noon)
+                    .expect("the coverage contract must answer a covered date"),
+                "{name} at {noon}: an ordinary weekday with no row"
+            );
+        }
     }
 }
 

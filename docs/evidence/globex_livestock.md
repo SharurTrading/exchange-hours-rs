@@ -382,6 +382,65 @@ day, against its latest verdict `cme-2025-2027.verify.json` (round 2). The verdi
 repaired in the result; only one of them touches Livestock, and it adds the sourced Saturday 2025-11-29 closure
 recorded below. Nothing in the verdict disputes a Livestock instant or status.
 
+### Interpretive notes
+
+The mapping table above annotates its rows with the retrieval's own short
+codes — `N1` and `N8`. Those codes are defined in the research store's
+`raw/cme-2025-2027/INDEX.md`, which is not committed, so a reader following a row to its
+reasoning currently reaches a dead reference. Both codes are defined here beside the bytes
+that exhibit them. Artifact paths are relative to the research store's `holidays/`
+directory, and every quotation below is a verbatim substring of the JSON at the path named
+beside it, given with the product id and the `eventDate` it was read from.
+
+| Note | In one line | Crate row |
+|---|---|---|
+| `N1` | the service publishes no events for the date | `HolidayKind::Closed` on that trade date |
+| `N8` | the published event list — times, types and printed trade dates — equals the family's normal grid for that weekday | no row (audited normal) |
+
+**`N1` — no market events published for the date (the family does not trade).**
+
+- **Evidence.** `raw/cme-2025-2027/arc/thbp_2026-01-18_2026-01-20_20260619114105.json` — document `CME-SVC-2026-01-18`, sha256 `5e3ff08bdc7d07474b96b8dc8c18ed0d5e48d12dc4bcad81a5f68820cb2aa89e`, archive capture 2026-06-19T11:41:05Z. Product `22` (Live Cattle Futures — the group line the service prints as `LE`, and the line this key is built from), `eventDate` `2026-01-19`:
+
+  ```json
+  {"groupCode":"LE","eventDate":"2026-01-19","events":[]}
+  ```
+
+  The next record in the same response, for contrast, is the family's ordinary session printed in full:
+
+  ```json
+  {"groupCode":"LE","eventDate":"2026-01-20","events":[{"tradingDate":"2026-01-20","eventTime":"08:00","marketEventType":"preopen"},{"tradingDate":"2026-01-20","eventTime":"08:30","marketEventType":"open"},{"tradingDate":"2026-01-20","eventTime":"13:05","marketEventType":"closed"},{"tradingDate":"2026-01-20","eventTime":"14:30","marketEventType":"pcp"},{"tradingDate":"2026-01-20","eventTime":"16:00","marketEventType":"closed"}]}
+  ```
+
+  The Lean Hog line, queried in the repair round's own product set, agrees: `raw/cme-2025-2027-repair/live/probeB_2026-01-18_2026-01-20.md` — research id `D57`, sha256 `15f55c10115e7a37cf85f0583e577c2fb7421b08a545ee03f3c0261e46c5d09d`, retrieved 2026-09-12T08:54:58Z (response body extracted at `raw/cme-2025-2027-repair/json/probeB_2026-01-18_2026-01-20.json`); product `19` (Lean Hog Futures, group `HE`), `eventDate` `2026-01-19`:
+
+  ```json
+  {"groupCode":"HE","eventDate":"2026-01-19","events":[]}
+  ```
+
+- **Crate row.** `HolidayKind::Closed` on trade date 2026-01-19 — `(2026, 1, 19, Closed, T2, "CME-SVC-2026-01-18")` in `src/calendar/schedules/holidays/globex_livestock.rs`. Reading the empty list as a closure is the crate's interpretive step: the operator prints no `closed` event, so no event in session language says the market shut. What makes the step the right one is that it cannot be a leg of a neighbouring trading day: this family's grid runs one Monday-Friday session entirely inside one local day since 2016-02-29, nothing wraps a local midnight, so an `eventDate` record with an empty list is the whole of that date and not a part of another. The date is a Monday, on which the ordinary week does carry a session; the surrounding dates in the same response print their events in full; and the separately queried Lean Hog line answers the same way. The silence is therefore an answer about this date rather than a gap in the response, and the row removes the complete trade date.
+
+- **Falsified by.** A later CME publication printing any event against `eventDate` 2026-01-19 for product 22 or product 19.
+
+**`N8` — the published event list equals the family's normal grid for that weekday: same times, same event types and the same printed trade dates, so nothing about the date changed.**
+
+- **Evidence.** `raw/cme-2025-2027/live/thbp/thbp_2027-12-22_2027-12-25.json` — document `CME-SVC-2027-12-22`, sha256 `5edc4dd588a32faa74f841494c10a3df48692dca29843c3581bad3e18c30fef9`, live retrieval 2026-09-12T04:30Z. Product `22`, `eventDate` `2027-12-23` (Thursday, CME's own 2027 Christmas holiday date), whose row this file records as audited normal:
+
+  ```json
+  {"groupCode":"LE","eventDate":"2027-12-23","events":[{"tradingDate":"2027-12-23","eventTime":"08:00","marketEventType":"preopen"},{"tradingDate":"2027-12-23","eventTime":"08:30","marketEventType":"open"},{"tradingDate":"2027-12-23","eventTime":"13:05","marketEventType":"closed"},{"tradingDate":"2027-12-23","eventTime":"14:30","marketEventType":"pcp"},{"tradingDate":"2027-12-23","eventTime":"16:00","marketEventType":"closed"}]}
+  ```
+
+  The baseline is the non-holiday reference week `raw/cme-2025-2027/live/normal/normalweek_main.json` — sha256 `d3bd6e890bdc427d2ebd3ece48dedc56eb231178be82c69ab3ac427f0b09dc0a`, retrieved 2026-09-12, indexed in `raw/cme-2025-2027/INDEX.md` as "the normal-grid baseline every holiday row is measured against" — product `22`, `eventDate` `2026-10-22`, the same weekday:
+
+  ```json
+  {"groupCode":"LE","eventDate":"2026-10-22","events":[{"tradingDate":"2026-10-22","eventTime":"08:00","marketEventType":"preopen"},{"tradingDate":"2026-10-22","eventTime":"08:30","marketEventType":"open"},{"tradingDate":"2026-10-22","eventTime":"13:05","marketEventType":"closed"},{"tradingDate":"2026-10-22","eventTime":"14:30","marketEventType":"pcp"},{"tradingDate":"2026-10-22","eventTime":"16:00","marketEventType":"closed"}]}
+  ```
+
+  The two lists are equal event for event once each event's own printed trade date is carried: five events, `08:00 preopen`, `08:30 open`, `13:05 closed`, `14:30 pcp`, `16:00 closed`, every one of them against the date it falls on. The closure the operator does make is the following Friday: the same artifact's `eventDate 2027-12-24` is `{"groupCode":"LE","eventDate":"2027-12-24","events":[]}`, which is the date that ships the `Closed` row.
+
+- **Crate row.** No row — trade date 2027-12-23 is inside the 2025-2027 window and ships nothing, which is the crate's audited-normal claim. What makes that the right reading: a row exists only where an answer changes, and here the operator's own bytes are the ordinary Thursday grid event for event, with every event carrying the date's own trade date, so `holiday_on(2027-12-23)` resolving through the family's ordinary week is exactly what the response shows. The date is CME's own 2027 Christmas holiday date, so the note is the positive statement that the operator published an ordinary session on it — not an omission of evidence.
+
+- **Falsified by.** Any event on `eventDate` 2027-12-23 in a later publication whose time, event type or printed trade date differs from the same weekday's grid in the reference week.
+
 ### 2025
 
 | Trade date | Kind | Instant as printed | Document | Tier | Derived from |
@@ -402,7 +461,7 @@ recorded below. Nothing in the verdict disputes a Livestock instant or status.
 
 **Gaps, 2025.**
 
-- **order-entry, every row** — on a closed or shortened date CME publishes no `14:30 pcp` and no `16:00 closed`, but the crate's 14:30-16:00 CT Post-Close window already carries the **following** trade date, so neither a `Closed` row nor an `EarlyClose` row on the holiday can reach it. `DayPolicy`'s scalar vocabulary — the vocabulary a holiday row copies — has no order-entry boundary, so this is not representable and is recorded here rather than modelled. It changes no `is_open` answer, only `is_accepting_orders` / `is_order_entry_only` for 90 minutes. Fenced in both directions by `tests/futures_family_boundaries/holidays_globex_livestock.rs`, so the residue stays visible rather than becoming folklore. Closing condition: the design memo's §7 follow-up 8 block rows (#93), or an order-entry boundary on `DayPolicy`.
+- **order-entry, every row** — on a closed or shortened date CME publishes no `14:30 pcp` and no `16:00 closed`, but the crate's 14:30-16:00 CT Post-Close window already carries the **following** trade date, so neither a `Closed` row nor an `EarlyClose` row on the holiday can reach it. `DayPolicy`'s scalar vocabulary — the vocabulary a holiday row copies — has no order-entry boundary, so this is not representable and is recorded here rather than modelled. It changes the `trade_date` answer as well as the order-entry pair, for 90 minutes. Measured on 2025-01-02: 14:29:59 CT answers `trade_date=Ok(None)`, `is_order_entry_only=false`, `is_accepting_orders=false`; 14:30:00 CT and 15:59:59 CT answer `trade_date=Ok(Some(2025-01-03))` with both `true`; and 16:00:00 CT answers `Ok(None)` with both `false` again. Where the following trade date is closed the queue goes with it, so 2025-04-17 14:30:00 CT answers `trade_date=Ok(None)`. `is_open` is unchanged. Fenced in both directions by `tests/futures_family_boundaries/holidays_globex_livestock.rs`, so the residue stays visible rather than becoming folklore. Closing condition: the design memo's §7 follow-up 8 block rows (#93), or an order-entry boundary on `DayPolicy`.
 - **no post-finalisation statement, 2025-01-01 through 2025-09-01** — the eight rows `CME-SVC-2024-12-31` through `CME-SVC-2025-08-31` rest on a single archive capture of the service taken 2024-12-20T15:53:40Z, which is CME's published future rather than a post-holiday statement. CME prints on the same page: "This schedule is subject to change. Trading hours are usually finalized approximately two weeks prior to the holiday." The service's retention edge now falls between Labor Day 2025 and Thanksgiving 2025, so the channel itself cannot restate them: all eight windows were re-probed live on 2026-09-12 and return the products with empty schedules. Closing condition: a later archived call of `services/trading-hours-by-product` over one of those windows, or a CME notice restating the finalised Globex hours. Residual risk only — a slipped instant would be a schedule fix, not a fabricated date.
 - **no T1 rendering** — from the 2025 calendar year CME publishes no per-holiday Globex hours PDF or XLS; the holiday hours *are* the interactive table on `cmegroup.com/trading-hours.html`, which renders client-side, so the archived HTML carries no table. Every row in this section is therefore T2, the operator's own trading-hours service read as bytes and saved. The T1 page was captured once, for Thanksgiving 2026, and its printed `Livestock` row matches the service's `LE` row event for event. Closing condition: a CME notice or advisory restating these dates per asset class.
 - **no late open anywhere in 2025-2027** — CME publishes no delayed first open for this family in the window, so neither `HolidayKind::LateOpen` branch has a sourced instance here. This is an observation rather than a hole in the evidence: every published Livestock holiday is a full closure or an early final close, and the test walks the whole coverage window to assert it.
@@ -434,7 +493,7 @@ recorded below. Nothing in the verdict disputes a Livestock instant or status.
 
 **Gaps, 2026.**
 
-- **order-entry, every row** — on a closed or shortened date CME publishes no `14:30 pcp` and no `16:00 closed`, but the crate's 14:30-16:00 CT Post-Close window already carries the **following** trade date, so neither a `Closed` row nor an `EarlyClose` row on the holiday can reach it. `DayPolicy`'s scalar vocabulary — the vocabulary a holiday row copies — has no order-entry boundary, so this is not representable and is recorded here rather than modelled. It changes no `is_open` answer, only `is_accepting_orders` / `is_order_entry_only` for 90 minutes. Fenced in both directions by `tests/futures_family_boundaries/holidays_globex_livestock.rs`, so the residue stays visible rather than becoming folklore. Closing condition: the design memo's §7 follow-up 8 block rows (#93), or an order-entry boundary on `DayPolicy`.
+- **order-entry, every row** — on a closed or shortened date CME publishes no `14:30 pcp` and no `16:00 closed`, but the crate's 14:30-16:00 CT Post-Close window already carries the **following** trade date, so neither a `Closed` row nor an `EarlyClose` row on the holiday can reach it. `DayPolicy`'s scalar vocabulary — the vocabulary a holiday row copies — has no order-entry boundary, so this is not representable and is recorded here rather than modelled. It changes the `trade_date` answer as well as the order-entry pair, for 90 minutes. Measured on 2025-01-02: 14:29:59 CT answers `trade_date=Ok(None)`, `is_order_entry_only=false`, `is_accepting_orders=false`; 14:30:00 CT and 15:59:59 CT answer `trade_date=Ok(Some(2025-01-03))` with both `true`; and 16:00:00 CT answers `Ok(None)` with both `false` again. Where the following trade date is closed the queue goes with it, so 2025-04-17 14:30:00 CT answers `trade_date=Ok(None)`. `is_open` is unchanged. Fenced in both directions by `tests/futures_family_boundaries/holidays_globex_livestock.rs`, so the residue stays visible rather than becoming folklore. Closing condition: the design memo's §7 follow-up 8 block rows (#93), or an order-entry boundary on `DayPolicy`.
 - **no T1 rendering** — from the 2025 calendar year CME publishes no per-holiday Globex hours PDF or XLS; the holiday hours *are* the interactive table on `cmegroup.com/trading-hours.html`, which renders client-side, so the archived HTML carries no table. Every row in this section is therefore T2, the operator's own trading-hours service read as bytes and saved. The T1 page was captured once, for Thanksgiving 2026, and its printed `Livestock` row matches the service's `LE` row event for event. Closing condition: a CME notice or advisory restating these dates per asset class.
 - **Columbus Day and Veterans Day** — CME publishes settlement and clearing advisories for them but no Globex trading schedule. Coverage here is contiguous, so those dates carry no row and therefore read as audited normal. That is a deliberate reading of CME's silence on days the exchange is known to trade, named here rather than left implicit.
 
@@ -463,7 +522,7 @@ recorded below. Nothing in the verdict disputes a Livestock instant or status.
 
 **Gaps, 2027.**
 
-- **order-entry, every row** — on a closed or shortened date CME publishes no `14:30 pcp` and no `16:00 closed`, but the crate's 14:30-16:00 CT Post-Close window already carries the **following** trade date, so neither a `Closed` row nor an `EarlyClose` row on the holiday can reach it. `DayPolicy`'s scalar vocabulary — the vocabulary a holiday row copies — has no order-entry boundary, so this is not representable and is recorded here rather than modelled. It changes no `is_open` answer, only `is_accepting_orders` / `is_order_entry_only` for 90 minutes. Fenced in both directions by `tests/futures_family_boundaries/holidays_globex_livestock.rs`, so the residue stays visible rather than becoming folklore. Closing condition: the design memo's §7 follow-up 8 block rows (#93), or an order-entry boundary on `DayPolicy`.
+- **order-entry, every row** — on a closed or shortened date CME publishes no `14:30 pcp` and no `16:00 closed`, but the crate's 14:30-16:00 CT Post-Close window already carries the **following** trade date, so neither a `Closed` row nor an `EarlyClose` row on the holiday can reach it. `DayPolicy`'s scalar vocabulary — the vocabulary a holiday row copies — has no order-entry boundary, so this is not representable and is recorded here rather than modelled. It changes the `trade_date` answer as well as the order-entry pair, for 90 minutes. Measured on 2025-01-02: 14:29:59 CT answers `trade_date=Ok(None)`, `is_order_entry_only=false`, `is_accepting_orders=false`; 14:30:00 CT and 15:59:59 CT answer `trade_date=Ok(Some(2025-01-03))` with both `true`; and 16:00:00 CT answers `Ok(None)` with both `false` again. Where the following trade date is closed the queue goes with it, so 2025-04-17 14:30:00 CT answers `trade_date=Ok(None)`. `is_open` is unchanged. Fenced in both directions by `tests/futures_family_boundaries/holidays_globex_livestock.rs`, so the residue stays visible rather than becoming folklore. Closing condition: the design memo's §7 follow-up 8 block rows (#93), or an order-entry boundary on `DayPolicy`.
 - **no T1 rendering** — from the 2025 calendar year CME publishes no per-holiday Globex hours PDF or XLS; the holiday hours *are* the interactive table on `cmegroup.com/trading-hours.html`, which renders client-side, so the archived HTML carries no table. Every row in this section is therefore T2, the operator's own trading-hours service read as bytes and saved. The T1 page was captured once, for Thanksgiving 2026, and its printed `Livestock` row matches the service's `LE` row event for event. Closing condition: a CME notice or advisory restating these dates per asset class.
 - **Columbus Day and Veterans Day** — CME publishes settlement and clearing advisories for them but no Globex trading schedule. Coverage here is contiguous, so those dates carry no row and therefore read as audited normal. That is a deliberate reading of CME's silence on days the exchange is known to trade, named here rather than left implicit.
 

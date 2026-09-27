@@ -11,6 +11,13 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-09-27
+
+First stable release. Version 1.0 establishes the canonical string identities,
+normal-week schedule scope, date-aware calendar surface, and primary-source
+maintenance contract described in the README and schedule verification ledger.
+
+
 ### Changed
 
 - **The support floor moves back to 2010-01-01 (2026-09-27 UTC).** The
@@ -2584,12 +2591,6 @@ corrections (a venue's hours fixed against a primary source) go under
   calendar PDFs but undated. No date was inferred to fill a gap.
 - Nifty is deliberately absent. It is an NSE IFSC product now, and SGX's own
   2026 calendar and GIFT Connect product page state different T+1 start times.
-
-## [1.0.0] - 2026-08-22
-
-First stable release. Version 1.0 establishes the canonical string identities,
-normal-week schedule scope, date-aware calendar surface, and primary-source
-maintenance contract described in the README and schedule verification ledger.
 
 ### Added
 

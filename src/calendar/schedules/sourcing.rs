@@ -508,6 +508,9 @@ const fn for_market_hours_key(key: MarketHoursKey) -> DeclaredSourcing {
         MarketHoursKey::IceUsOrangeJuice => DeclaredSourcing::carried_below(horizon!(2011, 8, 1)),
         MarketHoursKey::IceUsDollarIndex => DeclaredSourcing::carried_below(horizon!(2011, 2, 7)),
         // `—`: sessionless before its grid's 2011-01-12 first sourced appearance — a recorded gap below the support floor.
+        // Its Sunday Pre-Open onset (16:15 -> 16:00 CT) is undated like #79's, but
+        // the quarter-hour is served rather than withheld; the evidence file
+        // records why and the closing condition.
         MarketHoursKey::GlobexNikkei225Dollar => DeclaredSourcing::nothing_carried(),
         MarketHoursKey::EurexFixedIncome => DeclaredSourcing::carried_below(horizon!(2018, 11, 15)),
         MarketHoursKey::SgxEquityIndexJapan => {

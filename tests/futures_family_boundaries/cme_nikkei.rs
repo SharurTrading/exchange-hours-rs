@@ -3,6 +3,7 @@
 //! CME Nikkei 225 Dollar (`NKD`): every sourced close, halt and removal revision.
 
 use super::prelude::*;
+use exchange_hours::calendar_for_market_hours_key;
 
 /// CME Nikkei 225 Dollar moved 15:15 CT -> 16:15 CT (2012), kept 16:15 CT after
 /// the halt removal (2013), then moved to 16:00 CT (2015-09-20, CME Globex
@@ -166,4 +167,95 @@ fn nkd_2015_revision_is_keyed_to_the_session_opening_day() {
         monday_session.is_open(utc(2015, 9, 21, 20, 50)),
         "the Monday session itself still trades through 15:50 CT"
     );
+}
+
+/// The normal-week Pre-Open is published and is served as `order_entry`.
+///
+/// CME's own trading-hours service prints `16:45 preopen` Monday through
+/// Thursday and `16:00 preopen` on the Sunday that opens the week, each handing
+/// over to the 17:00 CT open, and CME's own legend defines `preopen` as "Order
+/// Entry, modification, and cancel are allowed. No order matching." The module
+/// asserted the opposite until this fence existed: it read "CME publishes no
+/// normal-week pre-open or order-entry start time for NKD".
+///
+/// Both onsets are probed at the window's first and last second and one second
+/// before it, and the handover is asserted through `session_bounds`, so a queue
+/// that moved, widened, narrowed or became a session fails here. October is
+/// CDT, so every instant below is the printed CT wall clock plus five hours.
+#[test]
+fn nkd_serves_the_published_normal_week_pre_open_as_order_entry() {
+    let calendar = calendar_for_market_hours_key(MarketHoursKey::GlobexNikkei225Dollar);
+
+    // (queue open, queue close, the matching session's own final close).
+    let windows = [
+        // The Sunday that opens the week: `16:00 preopen` -> `17:00 open`.
+        (
+            utc(2026, 10, 18, 21, 0),
+            utc(2026, 10, 18, 22, 0),
+            utc(2026, 10, 19, 21, 0),
+        ),
+        // Monday through Thursday: `16:45 preopen` -> `17:00 open`.
+        (
+            utc(2026, 10, 19, 21, 45),
+            utc(2026, 10, 19, 22, 0),
+            utc(2026, 10, 20, 21, 0),
+        ),
+        (
+            utc(2026, 10, 20, 21, 45),
+            utc(2026, 10, 20, 22, 0),
+            utc(2026, 10, 21, 21, 0),
+        ),
+        (
+            utc(2026, 10, 21, 21, 45),
+            utc(2026, 10, 21, 22, 0),
+            utc(2026, 10, 22, 21, 0),
+        ),
+        (
+            utc(2026, 10, 22, 21, 45),
+            utc(2026, 10, 22, 22, 0),
+            utc(2026, 10, 23, 21, 0),
+        ),
+    ];
+
+    for (open, close, session_close) in windows {
+        for instant in [open, close - Duration::seconds(1)] {
+            assert_eq!(
+                calendar.session_state(instant),
+                Ok(SessionState::OrderEntry),
+                "{instant} is inside the published Pre-Open"
+            );
+            assert_eq!(
+                calendar.is_order_entry_only(instant),
+                Ok(true),
+                "{instant} is order-entry only"
+            );
+            assert_eq!(
+                calendar.is_accepting_orders(instant),
+                Ok(true),
+                "{instant} accepts orders"
+            );
+            assert_eq!(
+                calendar.is_open(instant),
+                Ok(false),
+                "{instant}: a pre-open matches no trade and stays out of is_open"
+            );
+        }
+        assert_ne!(
+            calendar.session_state(open - Duration::seconds(1)),
+            Ok(SessionState::OrderEntry),
+            "no queue runs before its published onset"
+        );
+        // 17:00 CT is the queue's end-exclusive close and the matching session's
+        // open: one instant, both statements.
+        assert_eq!(
+            calendar.session_state(close),
+            Ok(SessionState::OpenRegular),
+            "{close} hands the queue to the matching session"
+        );
+        assert_eq!(
+            calendar.session_bounds(close),
+            Ok(Some((close, session_close))),
+            "{close} opens the session this family models as regular"
+        );
+    }
 }

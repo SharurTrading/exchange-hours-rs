@@ -103,6 +103,7 @@ date) orders are eliminated." `/TD` below is CME's own `tradingDate` field on ea
 | `CME-SVC-B-2026-07-03` | 2026-07-03 .. 2026-07-05 | <https://www.cmegroup.com/services/trading-hours-by-product?id=168,167,320,323,19,27&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2026-07-03&toEventDate=2026-07-05> | live retrieval 2026-09-12T08:55:11Z | T2 | `dfc4aff36f0e44fb8fdb78de59d13bad90707c0d108673094ad0a012cefad898` |
 | `CME-SVC-B-2026-07-05` | 2026-07-05 .. 2026-07-07 | <https://www.cmegroup.com/services/trading-hours-by-product?id=168,167,320,323,19,27&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2026-07-05&toEventDate=2026-07-07> | live retrieval 2026-09-26T02:55:11Z via `https://r.jina.ai/` | T2 | `4998f2fbf8016ce92132df7efcb1ea98555270c28ad453262e70213d2b519a4d` |
 | `CME-SVC-B-2026-09-06` | 2026-09-06 .. 2026-09-08 | <https://www.cmegroup.com/services/trading-hours-by-product?id=168,167,320,323,19,27&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2026-09-06&toEventDate=2026-09-08> | live retrieval 2026-09-12T04:30Z | T2 | `f7cc43f8d90b571b945901f826277ca43ec21c4438c36bbb26e231c859a83923` |
+| `CME-SVC-B-2026-10-18` | 2026-10-18 .. 2026-10-24 | <https://www.cmegroup.com/services/trading-hours-by-product?id=168,167,320,323,19,27&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2026-10-18&toEventDate=2026-10-24> | live retrieval 2026-09-12; stored as `cme-2025-2027/live/normal/normalweek_extra.json` | T2 | `2084b6593c7ac7703a5a86d506c242b5d9589f1756cc0dbfddb90c7d8f5f064c` |
 | `CME-SVC-B-2026-11-25` | 2026-11-25 .. 2026-11-27 | <https://www.cmegroup.com/services/trading-hours-by-product?id=168,167,320,323,19,27&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2026-11-25&toEventDate=2026-11-27> | live retrieval 2026-09-12T04:30Z | T2 | `f6007a75d6009dada85fe6c57d660598f21ed8a8385364c454ee015565f94dd4` |
 | `CME-SVC-B-2026-12-24` | 2026-12-24 .. 2026-12-26 | <https://www.cmegroup.com/services/trading-hours-by-product?id=168,167,320,323,19,27&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2026-12-24&toEventDate=2026-12-26> | live retrieval 2026-09-12T04:30Z | T2 | `b622712c1c45c3efb90443172617636ba4c7d7dfb4c6851b70a22ee1c9fa978d` |
 | `CME-SVC-B-2026-12-31` | 2026-12-31 .. 2027-01-02 | <https://www.cmegroup.com/services/trading-hours-by-product?id=168,167,320,323,19,27&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2026-12-31&toEventDate=2027-01-02> | live retrieval 2026-09-12T04:30Z | T2 | `b21ac047d6d67cb9026940a37ad345c7b2ece40e73dbca7be69cf7171646613c` |
@@ -323,6 +324,7 @@ This era's rows cite the ids below: CME Group's own published holiday schedules 
 | Trade date | Kind | Instant as printed | Document | Tier | Derived from |
 |---|---|---|---|---|---|
 | 2025-01-01 | closed | `16:00 preopen /TD 2025-01-02; 17:00 open /TD 2025-01-02` — no close event on 2025-01-01 | `CME-SVC-2024-12-31` | T2 | eventDates 2024-12-31 and 2025-01-01; CME prints `16:00 closed /TD 2024-12-31` with no evening re-open, and assigns no trade date 2025-01-01 |
+| 2025-01-02 | replacement blocks | `16:00 preopen /TD 2025-01-02; 17:00 open /TD 2025-01-02` on eventDate 2025-01-01; `16:00 closed /TD 2025-01-02` on eventDate 2025-01-02 | `CME-SVC-2024-12-31` | T2 | the prior local day is a full closure, so this trade date's Pre-Open opens at the 17:00 CT session's own 16:00 CT boundary rather than at the weekday `16:45`. The `Ten-product capture` is the artifact that carries this instant: no `THBP-B` window covers it |
 | 2025-01-20 | early close | `12:00 preopen /TD 2025-01-21; 17:00 open /TD 2025-01-21` — 12:00 CT | `CME-SVC-2025-01-19` | T2 | eventDate 2025-01-20, CME trade date 2025-01-21; the Sunday-evening leg opened 2025-01-19 17:00 CT |
 | 2025-02-17 | early close | `12:00 preopen /TD 2025-02-18; 17:00 open /TD 2025-02-18` — 12:00 CT | `CME-SVC-2025-02-16` | T2 | eventDate 2025-02-17, CME trade date 2025-02-18 |
 | 2025-04-18 | closed | `no events published` | `CME-SVC-2025-04-17` | T2 | eventDates 2025-04-17 and 2025-04-18; CME prints `16:00 closed /TD 2025-04-17` with no evening re-open |
@@ -336,6 +338,7 @@ This era's rows cite the ids below: CME Group's own published holiday schedules 
 | 2025-11-29 | closed | `no events published` | `CME-SVC-B-2025-11-26` | T2 | eventDate 2025-11-29; `NKD` and `NIY` publish no events, and CME's 2025 Globex table states the period as "27 - 29 November 2025" |
 | 2025-12-24 | early close | `12:15 closed /TD 2025-12-24` — 12:15 CT, no evening re-open | `CME-SVC-B-2025-12-24` | T2 | eventDate 2025-12-24, CME trade date 2025-12-24 |
 | 2025-12-25 | closed | `16:00 preopen /TD 2025-12-26; 17:00 open /TD 2025-12-26` — no close event on 2025-12-25 | `CME-SVC-B-2025-12-24` | T2 | eventDates 2025-12-24 and 2025-12-25; the 2025-12-24 record's missing evening re-open is what this row removes |
+| 2025-12-26 | replacement blocks | `16:00 preopen /TD 2025-12-26; 17:00 open /TD 2025-12-26` on eventDate 2025-12-25; `16:00 closed /TD 2025-12-26` on eventDate 2025-12-26 | `CME-SVC-B-2025-12-24` | T2 | the prior local day is a full closure, so this trade date's Pre-Open opens at the 17:00 CT session's own 16:00 CT boundary rather than at the weekday `16:45` |
 
 **Interpretive steps, 2025.**
 
@@ -406,17 +409,51 @@ This era's rows cite the ids below: CME Group's own published holiday schedules 
   `preopen`-at-noon holiday. No query the crate answers is wrong; a consumer comparing the
   crate's `trade_date` against a CME settlement file will see the holiday where CME shows the
   next business day.
-- **not representable** — order-entry deviations. On 2025-01-01 and 2025-12-25 the pre-open
-  starts at 16:00 CT rather than the normal 16:45 CT. The table's vocabulary is `DayPolicy`'s
-  and has no order-entry boundary; the family models no order-entry phase at all, so this
-  changes nothing the crate reports. **That "normal 16:45 CT" is itself unmodelled, and is an
-  open question — #139.** The store's own normal-week capture for this family's product set,
-  `holidays/raw/cme-2025-2027/live/normal/normalweek_extra.json`, prints `16:45 preopen` and
-  `17:00 open` for Monday-Thursday and `16:00 preopen`/`17:00 open` on the opening Sunday, for
-  `NKD` (id 168) and `NIY` (id 167) alike. This file cited that artifact nowhere until #139,
-  which is why the module's claim that the operator publishes no normal-week onset went
-  unchallenged. #139 records both readings and the closing condition; until one is chosen, the
-  coverage row's `none in 2025+` / `complete` cells stand only for the phases the crate models.
+- **closed 2026-09-26 UTC — the normal-week Pre-Open is served.** The module stated that "CME
+  publishes no normal-week pre-open or order-entry start time for NKD"; the operator's own
+  channel says otherwise, and the phase now ships as `order_entry` (never a session, so it
+  stays out of `is_open`). This file cited the deciding artifact nowhere before #139, which is
+  why the claim went unchallenged. The artifact is the store's normal-week capture for this
+  family's own product set, `holidays/raw/cme-2025-2027/live/normal/normalweek_extra.json` —
+  the trading-hours service over the ordinary week **2026-10-18..24** for
+  `id=168,167,320,323,19,27`, retrieved **2026-09-12** (UT, `date -u`), sha256
+  `2084b6593c7ac7703a5a86d506c242b5d9589f1756cc0dbfddb90c7d8f5f064c`, recorded in
+  `cme-2025-2027/INDEX.md`. Verbatim, from `products[].id` 168 (`NKD`, group `NK`) and 167
+  (`NIY`, group `N1`), whose event lists are identical: `eventDate` 2026-10-18 prints
+  `16:00 preopen`/`17:00 open` with `tradingDate` 2026-10-19, and each of `eventDate`
+  2026-10-19, 2026-10-20, 2026-10-21 and 2026-10-22 prints `16:00 closed` for its own trade
+  date, then `16:45 preopen`/`17:00 open` for the next one. So the published onsets are
+  `16:45` CT Monday-Thursday and `16:00` CT on the Sunday that opens the week, each handing
+  over to the `17:00` CT open. Both are modelled from the 2015-09-20 revision, the grid this
+  artifact witnesses, and the phase is an `order_entry` one: the operator's own legend on the
+  page that calls the service reads `preopen` — "Order Entry, modification, and cancel are
+  allowed. No order matching." The same `16:00 preopen` is what the family's own line prints
+  on each holiday-merge Sunday this table already states from `NKD`/`NIY` bytes
+  (2026-01-18, 2026-02-15, 2026-05-24, 2026-09-06 and the 2027 windows), so the Sunday onset is
+  not read off a single later observation.
+- **residual risk — the Sunday onset's 16:15-to-16:00 CT move has no operator-stated day.**
+  CME's 2011-era trading-hours captures print a Sunday Pre-Open of `16:15` for this grid, and
+  every state the crate holds from 2012 on prints `16:00`; the crate serves `16:00` across the
+  modelled grid rather than withholding the quarter-hour. That is a deliberate difference from
+  `globex_equity_index`, `globex_energy`, `globex_fx`, `globex_interest_rates`, `cme`, `comex`
+  and `nymex`, which #79 records as serving only the `16:15-17:00` intersection. The reason is
+  the engine's grain: `CoverageGapReason::NormalWeekPhaseWithheld` refuses **every** order-entry
+  query on a date the declaration covers, not only the withheld slice, so declaring here would
+  turn the twenty-one published onsets this change serves — nine of them on dates the
+  declaration would cover — into coverage errors, which is the failure LAW-COVERAGE exists to
+  prevent. Closing condition: a CME statement dating the Sunday onset at day level, after which
+  the crate serves the sourced intersection with a bounded declaration like the seven scopes
+  above; or an engine that scopes the refusal to the withheld quarter-hour. Tracked as issue
+  #79 (LAW-FOLLOW-UPS-ARE-ISSUES).
+- **gap — the 2011/2012/2013 eras ship no order-entry phase.** CME's 2011-01-12 capture prints
+  a Sunday Pre-Open of `16:15` and a weekday Pre-Open of `16:45` for the outgoing grid, and
+  those eras' envelopes are materially different (a 15:15 or 16:30 close with a 15:15-15:30
+  halt), so the current phase is not carried into them: a later observation is not carry-back,
+  and restating this grid's onsets there would assert a derivation no artifact makes. The
+  omission is a gap rather than a wrong answer, and the phase's onset for those eras is the
+  same undated question #79 records. Closing condition: a CME statement of those eras' Pre-Open
+  onsets at day level, or a capture inside 2011-01-12..2015-09-19 that prints them against a
+  grid the crate holds.
 - **Saturday 2025-11-29 ships a row.** `CME-SVC-B-2025-11-26` publishes no events for it,
   the ten-product capture agrees, and CME's 2025 Globex table states the period as
   "27 - 29 November 2025", so it is a sourced closure. The family's grid has no
@@ -427,12 +464,24 @@ This era's rows cite the ids below: CME Group's own published holiday schedules 
   advisories but no Globex trading schedule for either, and the service returns the normal
   grid. Coverage is contiguous, so those dates read as audited normal; that is stated here
   rather than left implicit.
+- **phase query, pre-existing — every block row spells the regular envelope as `extended`.**
+  This family's whole tradeable envelope is its `regular` session, so an ordinary date answers
+  `is_open_regular = true` and `is_open_extended = false`; on each trade date whose row is a
+  block set the two flip. Measured at 10:00 CT: 2026-01-13 (ordinary) answers
+  `OpenRegular`/`regular true`/`extended false`, and 2026-01-20 (a merged MLK trade date)
+  answers `OpenExtended`/`regular false`/`extended true`; the Saturday-row trade dates
+  2026-06-22, 2026-07-06 and 2027-06-21 behave as 2026-01-20 does. `is_open` is unaffected and
+  correct throughout. The three rows this file gained on 2026-09-26 UTC state the envelope as
+  `regular`, which keeps the ordinary answer. Closing condition: one spelling for one envelope
+  across the four pre-existing sets, fenced by a phase-query test on each affected date.
+  Tracked as issue #176 (LAW-FOLLOW-UPS-ARE-ISSUES).
 
 ### 2026
 
 | Trade date | Kind | Instant as printed | Document | Tier | Derived from |
 |---|---|---|---|---|---|
-| 2026-01-01 | closed | `no events published` | `CME-SVC-B-2025-12-31` | T2 | eventDates 2025-12-31 and 2026-01-01; CME prints `16:00 closed /TD 2025-12-31` with no evening re-open |
+| 2026-01-01 | closed | `16:00 preopen /TD 2026-01-02; 17:00 open /TD 2026-01-02` — no close event on 2026-01-01 | `CME-SVC-B-2025-12-31` | T2 | eventDates 2025-12-31 and 2026-01-01; CME prints `16:00 closed /TD 2025-12-31` with no evening re-open, and assigns no trade date 2026-01-01 |
+| 2026-01-02 | replacement blocks | `16:00 preopen /TD 2026-01-02; 17:00 open /TD 2026-01-02` on eventDate 2026-01-01; `16:00 closed /TD 2026-01-02` on eventDate 2026-01-02 | `CME-SVC-B-2025-12-31` | T2 | the prior local day is a full closure, so this trade date's Pre-Open opens at the 17:00 CT session's own 16:00 CT boundary rather than at the weekday `16:45`; `NKD` and `NIY` print this line themselves |
 | 2026-01-19 | early close | `12:00 preopen /TD 2026-01-20; 17:00 open /TD 2026-01-20` — 12:00 CT | `CME-SVC-B-2026-01-18` | T2 | eventDate 2026-01-19, CME trade date 2026-01-20; the Sunday-evening leg opened 2026-01-18 17:00 CT carrying the same CME trade date |
 | 2026-01-20 | replacement blocks | `16:00 preopen /TD 2026-01-20; 17:00 open /TD 2026-01-20` on eventDate 2026-01-18; `12:00 preopen /TD 2026-01-20; 17:00 open /TD 2026-01-20` on eventDate 2026-01-19; `16:00 closed /TD 2026-01-20` on eventDate 2026-01-20 | `CME-SVC-B-2026-01-18` | T2 | the holiday publishes no final close of its own, so the span from Sunday evening through 2026-01-20 16:00 CT carries this trade date. The holiday's Pre-Open is the `12:00` CME prints for `NKD` and `NIY`, not the ordinary weekday `16:45` |
 | 2026-02-16 | early close | `12:00 preopen /TD 2026-02-17; 17:00 open /TD 2026-02-17` — 12:00 CT | `CME-SVC-B-2026-02-15` | T2 | eventDate 2026-02-16, CME trade date 2026-02-17 |
@@ -612,7 +661,7 @@ Official origin of the trading-hours captures: <http://www.cmegroup.com/trading_
 - **executable** — the 2010 grid is sourced but structurally different and its changeover day is undated, so dates before 2011-01-12 resolve to a sessionless profile rather than carrying either grid. CME's 2010-03-10 and 2010-04-07 captures read a daytime-anchored, DST-dependent grid — CDT 03:00–15:15 reopening 15:30–16:30 and 17:00–18:00, CST 02:00–15:15 with no Sunday hours — and the 2011-01-12 capture already reads the served grid, with no capture and no located CME notice in between. Serving the continuous grid across 2010 would report the contract open all night when it was closed, which an earlier revision of the module did and which is corrected. Closing condition: a CME document that dates the changeover, or a capture inside the 2010-04-07..2011-01-12 window. Served identity, so tracked as an issue (LAW-FOLLOW-UPS-ARE-ISSUES).
 - **residual risk** — encoding the 2010 grid itself would need seasonal CDT/CST rules and a boundary that is still undated, so it is left sourced-but-unmodelled.
 - **corrected at the migration** — the ledger note carried into this file ended with a sentence, written for an earlier revision of the module, saying the pre-2012 grid "is now extended to the January-2010 floor". The module does not do that and must not: `nkd_profile_at` returns `NKD_CLOSED` below 2011-01-12. That sentence was removed on 2026-09-12 and an editorial marker left in its place; the surviving correction earlier in the same note is the authoritative statement.
-- **scope** — Nikkei 225 Dollar outrights only. BTIC (`NKT`) is separately scheduled on its own CME-published hours and takes its own key if a consumer maps one; the 16:00–17:00 CT daily break is a maintenance period, not an order-entry phase.
+- **scope** — Nikkei 225 Dollar outrights only. BTIC (`NKT`) is separately scheduled on its own CME-published hours and takes its own key if a consumer maps one. The 16:00–17:00 CT daily break is a maintenance period; the Pre-Open queue the operator prints inside it is an order-entry phase and is a phase of this outright book, which is why it ships in the current profile.
 
 ## Module narrative (moved from src/calendar/schedules/futures/us/cme_nikkei.rs on 2026-09-12 UTC)
 
@@ -645,12 +694,13 @@ https://www.cmegroup.com/trading-hours.html
 
 CME publishes no normal-week pre-open or order-entry start time for NKD on the
 contract specs page, the ContractSpecs service, or the Japanese equity index
-fact card, so no extended phase is asserted. The 16:00-17:00 CT daily break is
-a maintenance/closed period, not an order-entry phase, and BTIC ("Sunday -
+fact card, so the Pre-Open is sourced from the operator's own trading-hours
+service instead — see the 2026-09-26 note under "Gaps and residual risks" above,
+which this paragraph replaced. No extended phase is asserted, and BTIC ("Sunday -
 Friday 6:00 p.m. ET - 3:30 p.m. Tokyo time ... and Monday - Friday Noon to
 5:00 p.m. ET") is separately scheduled, on its own published hours, so it is
-not a phase of this outright order book. Both are deliberately omitted rather
-than modelled as extended sessions.
+not a phase of this outright order book. BTIC is deliberately omitted rather
+than modelled as an extended session.
 
 That is a statement about scope, not about tradability: the Nikkei BTIC
 instruments are their own order book with their own CME-published hours, and

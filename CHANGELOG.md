@@ -323,6 +323,30 @@ corrections (a venue's hours fixed against a primary source) go under
   every Sunday across the boundary. Still no runtime data change: no schedule module,
   profile, timeline, holiday row, ledger row, window or count moved.
 
+### Fixed
+
+- **Six 2016-2018 CME Documents rows now name one revision each, split across
+  the eleven evidence files that carry them (2026-09-27 UTC, #188).** The rows
+  for `2017-memorial-day`, `2017-4th-of-july`, `2017-labor-day`,
+  `2018-new-years`, `2018-martin-luther-king` and `2018-presidents-day`
+  `holiday-schedule.xls` paired the later revision's document id and replay URL
+  with the earlier revision's capture time and sha256, in `cbot.md`, `cme.md`,
+  `comex.md`, `nymex.md`, `globex_equity_index.md`, `globex_energy.md`,
+  `globex_fx.md`, `globex_grains.md`, `globex_interest_rates.md`,
+  `globex_livestock.md` and `globex_nikkei_225_dollar.md`. Each single row is
+  now two: the earlier revision (`@2017-05-05`, or `@2018-01-06` for the two
+  2018 documents first captured then) keeps its capture time and digest, and
+  the later row (`@2017-10-25` / `@2018-01-06` / `@2018-05-08`) carries its
+  own capture time, Wayback timestamp and digest, recomputed from the research
+  store's `holidays/raw/cme-2016-2018/docs/` bytes. A byte-level audit of both
+  revisions of all six documents (xlrd dumps, digests verified) found every
+  shipped era-row value identical in the two editions on every date the files
+  cite, so no era row's citation moves and no shipped value, kind, instant,
+  tier or module changes; where the editions differ (the grains rows'
+  neighbouring December 31 / February 20 cells, Rough Rice, KOSPI, DME Oman
+  pre-opens, EU Wheat), the differing cells belong to dates no shipped row
+  claims. 66 Documents rows become 132 across the eleven files.
+
 ### Changed
 
 - **Development plan (2026-09-21 UTC).** Adopt a permanent 2025 history floor,

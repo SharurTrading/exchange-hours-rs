@@ -196,6 +196,7 @@ pub(crate) static MERGED_2010_2011_MONDAY_BLOCKS: [ExceptionBlock; 4] = [
     ExceptionBlock::extended(-1, 17 * 3_600 + 30 * 60, 16 * 3_600),
 ];
 
+/// The holiday-eve Pre-Open queue window is the profile's own normal-week window; the sheets state no queue for these dates.
 /// The 2010 merged trade date after Thanksgiving, still on the `17:30` CT
 /// clock: the Wednesday evening open carries the Friday trade date, the
 /// Thursday noon halt holds order entry only, the halted CBOT financial
@@ -210,6 +211,7 @@ pub(crate) static MERGED_2010_THANKSGIVING_BLOCKS: [ExceptionBlock; 4] = [
     ExceptionBlock::extended(-1, 17 * 3_600 + 30 * 60, 12 * 3_600 + 15 * 60),
 ];
 
+/// The holiday-eve Pre-Open queue window is the profile's own normal-week window; the sheets state no queue for these dates.
 /// The 2012 merged trade date after a Monday holiday, on the unified `17:00`
 /// CT clock the 2011-10-02 notice put in force: the Sunday 17:00 CT open
 /// carries the Tuesday trade date, the Monday noon halt holds order entry,
@@ -224,6 +226,7 @@ pub(crate) static MERGED_2012_MONDAY_BLOCKS: [ExceptionBlock; 4] = [
     ExceptionBlock::extended(-1, 17 * 3_600, 16 * 3_600),
 ];
 
+/// The holiday-eve Pre-Open queue window is the profile's own normal-week window; the sheets state no queue for these dates.
 /// The 2011 and 2012 merged trade date after Thanksgiving, on the unified
 /// `17:00` CT clock: the Wednesday evening open carries the Friday trade
 /// date, the Thursday noon halt holds order entry, trading resumes at the

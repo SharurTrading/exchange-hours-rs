@@ -198,6 +198,142 @@ fn fcoj_and_cotton_are_not_part_of_the_easter_monday_late_open() {
     );
 }
 
+/// The 2026 Thanksgiving notice (`IFUS-NOTICE-2026-THANKSGIVING`,
+/// September 23, 2026) states per-group instants for Thu Nov 26 and Fri Nov
+/// 27: the softs group is closed Thursday and regular Friday — so Sugar,
+/// Coffee and Cocoa gain no row — while Cotton opens late and closes early
+/// Friday, FCOJ closes early, and the index families close early at their own
+/// instants on both days. The families disagree on both dates, so the `iceus`
+/// venue withholds them as `Unsourced`.
+#[test]
+fn the_2026_thanksgiving_notice_states_each_familys_instants() {
+    // Cotton Friday: late open 08:00 NY, early close 13:30 NY.
+    let cotton = key(MarketHoursKey::IceUsCotton);
+    assert_eq!(
+        cotton.holiday_on(day(2026, 11, 27)).map(Holiday::kind),
+        Some(HolidayKind::LateOpenAndEarlyClose {
+            open_ssm: 8 * 3_600,
+            close_ssm: 13 * 3_600 + 30 * 60
+        })
+    );
+    assert!(
+        !cotton
+            .is_open(ny((2026, 11, 27), (7, 59, 59)))
+            .expect("the coverage contract must answer a covered date")
+    );
+    assert!(
+        cotton
+            .is_open(ny((2026, 11, 27), (8, 0, 0)))
+            .expect("the coverage contract must answer a covered date")
+    );
+    // The normal 14:20 close is gone: the early close ends the day.
+    assert!(
+        !cotton
+            .is_open(ny((2026, 11, 27), (14, 0, 0)))
+            .expect("the coverage contract must answer a covered date")
+    );
+
+    // FCOJ Friday: regular 08:00 open, early close 13:30 NY, end-exclusive.
+    let fcoj = key(MarketHoursKey::IceUsOrangeJuice);
+    assert_eq!(
+        fcoj.holiday_on(day(2026, 11, 27)).map(Holiday::kind),
+        Some(HolidayKind::EarlyClose {
+            close_ssm: 13 * 3_600 + 30 * 60
+        })
+    );
+    assert!(
+        fcoj.is_open(ny((2026, 11, 27), (8, 0, 0)))
+            .expect("the coverage contract must answer a covered date")
+    );
+    assert!(
+        fcoj.is_open(ny((2026, 11, 27), (13, 29, 59)))
+            .expect("the coverage contract must answer a covered date")
+    );
+    assert!(
+        !fcoj
+            .is_open(ny((2026, 11, 27), (13, 30, 0)))
+            .expect("the coverage contract must answer a covered date")
+    );
+
+    // The softs are regular on the Friday: no row, normal open.
+    for which in [
+        MarketHoursKey::IceUsSugar,
+        MarketHoursKey::IceUsCoffee,
+        MarketHoursKey::IceUsCocoa,
+    ] {
+        assert_eq!(
+            key(which).holiday_on(day(2026, 11, 27)),
+            None,
+            "{which:?}: the notice prints Regular Hours for Sugar, Coffee and Cocoa"
+        );
+    }
+    assert!(
+        key(MarketHoursKey::IceUsSugar)
+            .is_open(ny((2026, 11, 27), (3, 30, 0)))
+            .expect("the coverage contract must answer a covered date"),
+        "Sugar opens at its normal 03:30 NY on 2026-11-27"
+    );
+
+    // The index families close early on both days at their own instants.
+    let fang = key(MarketHoursKey::IceUs);
+    assert_eq!(
+        fang.holiday_on(day(2026, 11, 26)).map(Holiday::kind),
+        Some(HolidayKind::EarlyClose {
+            close_ssm: 13 * 3_600
+        })
+    );
+    assert_eq!(
+        fang.holiday_on(day(2026, 11, 27)).map(Holiday::kind),
+        Some(HolidayKind::EarlyClose {
+            close_ssm: 13 * 3_600 + 15 * 60
+        })
+    );
+    assert!(
+        fang.is_open(ny((2026, 11, 26), (12, 59, 59)))
+            .expect("the coverage contract must answer a covered date")
+    );
+    assert!(
+        !fang
+            .is_open(ny((2026, 11, 26), (13, 0, 0)))
+            .expect("the coverage contract must answer a covered date")
+    );
+    assert!(
+        fang.is_open(ny((2026, 11, 27), (13, 14, 59)))
+            .expect("the coverage contract must answer a covered date")
+    );
+    assert!(
+        !fang
+            .is_open(ny((2026, 11, 27), (13, 15, 0)))
+            .expect("the coverage contract must answer a covered date")
+    );
+
+    for date in [(2026, 11, 26), (2026, 11, 27)] {
+        let dx = key(MarketHoursKey::IceUsDollarIndex);
+        assert_eq!(
+            dx.holiday_on(day(date.0, date.1, date.2))
+                .map(Holiday::kind),
+            Some(HolidayKind::EarlyClose {
+                close_ssm: 13 * 3_600 + 15 * 60
+            }),
+            "dollar index on {date:?}"
+        );
+        assert!(
+            !dx.is_open(ny(date, (13, 15, 0)))
+                .expect("the coverage contract must answer a covered date"),
+            "dollar index end-exclusive 13:15 close on {date:?}"
+        );
+
+        // The families disagree on both dates, so the venue states no instant.
+        assert_eq!(
+            calendar_for_exchange(Exchange::Iceus)
+                .holiday_on(day(date.0, date.1, date.2))
+                .map(Holiday::kind),
+            Some(HolidayKind::Unsourced),
+            "the venue intersection on {date:?}"
+        );
+    }
+}
+
 /// The 2026 BST-end week (notice `IFUS-NOTICE-2026-DST-END`, September 25,
 /// 2026): on each of the five trade dates 2026-10-26..30 Sugar opens 04:30 NY,
 /// Coffee 05:15 and Cocoa 05:45, with closes, Pre-Open and everything else

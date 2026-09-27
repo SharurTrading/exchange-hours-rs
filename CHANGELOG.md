@@ -85,6 +85,25 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Added
 
+- **ICE Futures U.S. states the 2026 Thanksgiving instants per family
+  (2026-09-27 UTC).** Exchange Notice `ICE_Futures_US_2026_Thanksgiving_Holiday_20260923.pdf`
+  (T1, retrieved 2026-09-27 UTC) gives Thu Nov 26 and Fri Nov 27 2026 in
+  session language: the softs group closed Thursday — the calendar rows for
+  2026-11-26 stand — and "Regular Hours for Sugar, Coffee and Cocoa" on the
+  Friday; Cotton No. 2 late opens at 08:00 NY and early closes at 13:30 NY on
+  Friday; FCOJ early closes 13:30 NY; the NYSE Stock Index group (which
+  carries `ice_us`) early closes 13:00 NY Thursday and 13:15 NY Friday; the
+  U.S. Dollar Index group early closes 13:15 NY both days. All are
+  unconditional day-level instants inside the tables' claimed window, so
+  `ice_us_cotton`, `ice_us_orange_juice`, `ice_us` and `ice_us_dollar_index`
+  gain or restate their rows and the served `iceus` venue ships `Unsourced`
+  for 2026-11-27 beside the restated 2026-11-26 — the families disagree on
+  both dates. The notice's post-close-pre-open end at 15:30 NY on the Friday
+  is an order-entry instant the scalar row cannot carry; it is recorded in
+  `ice_us_cotton.md` beside the row it concerns. The notice's settlement
+  windows are calculation windows (LAW-SESSION-NOT-EXPIRY) and no row states
+  them.
+
 - **ICE Futures U.S. softs state the 2026 BST-end week (2026-09-27 UTC).**
   Exchange Notice `ICE_Futures_US_DST_End2026_20260925.pdf` (T1, retrieved
   2026-09-27 UTC) moves the opens for trade dates 2026-10-26 through

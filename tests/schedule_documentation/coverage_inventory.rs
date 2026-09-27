@@ -266,7 +266,7 @@ fn withheld(calendar: ExchangeCalendar, date: NaiveDate) -> bool {
 /// 2025-01-09 National Day of Mourning row moved the last of them — with no
 /// phase-level gap behind the denial.
 fn date_level_incompleteness() -> &'static [(&'static str, usize)] {
-    &[("cbot", 261), ("iceus", 40)]
+    &[("cbot", 261), ("iceus", 41)]
 }
 
 /// `is_complete_on(SAMPLE)` agrees with the inventory's `Complete?` cell for all

@@ -823,12 +823,18 @@ fn without_holidays_restores_the_normal_week_for_every_venue() {
 // ---------------------------------------------------------------------------
 
 /// The era's intersection is the block's own shape: the nine dates every
-/// covered family states a closure for ship `Closed`, and the other 27 ship
+/// routed family states a closure for ship `Closed`, and the other 27 ship
 /// `Unsourced`, because `globex_grains` states a row on all 36 of the block's
 /// dates while the five financial families state one on 34 and the two do not
-/// state the same row. `globex_livestock`, a routed family, has no table for
-/// 2016-2018: it **abstains**, so it neither supplies nor withholds a row and
-/// the covered families decide each date — it is not what withholds the 27.
+/// state the same row. `globex_livestock`'s 2016-2018 rows (#110) join the
+/// derivation and move nothing: the family states `Closed` on all nine, so the
+/// closures stay unanimous, and across the other 27 it early-closes at 12:15 CT
+/// on its own eight half-days (the three Thanksgiving Fridays, 2018-12-24, the
+/// two Christmas-eve Fridays and the two July-3 eves), closes outright on the
+/// eighteen Monday and Thursday holidays, and audits 2018-12-26 normal — a
+/// disagreement either way. The assertions
+/// below are unchanged from the wave that wrote them against the abstention,
+/// which is the point: encoding the family changed no venue answer.
 #[test]
 fn wave2_venue_rows_are_closed_on_the_nine_and_unsourced_on_the_rest() {
     const WAVE2_CLOSURES: [(i32, u32, u32); 9] = [

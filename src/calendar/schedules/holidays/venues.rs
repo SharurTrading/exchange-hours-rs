@@ -35,26 +35,22 @@
 //! dispute different dates, because they route different families.
 //!
 //! **CME's twenty-seven** are three shapes: eighteen dates on which the four
-//! financial families halt at 12:00 CT while `globex_grains` is shut outright;
-//! four on which `globex_grains` closes at 12:05 CT or reopens at 08:30 CT
-//! while `globex_equity_index` closes at 12:15 CT or reopens at 15:30 CT and
-//! `globex_energy` closes at 12:45 CT — the three Thanksgiving Fridays and
-//! 2018-12-24; and five on which `globex_grains` alone states a row and
-//! `globex_equity_index` states a *different* one, a 12:15 CT close on
-//! 2017-07-03 and 2018-07-03 or a 15:30 CT open on 2018-12-26, with the other
-//! four families audited normal (2016-12-23 and 2017-12-22 are grains' alone,
-//! every financial family having audited them normal).
+//! financial families halt at 12:00 CT while `globex_grains` and
+//! `globex_livestock` are shut outright; four on which grains closes at
+//! 12:05 CT, equity, FX, rates and livestock at 12:15 CT and energy at 12:45 CT
+//! — the three Thanksgiving Fridays and 2018-12-24; and five on which the
+//! stated rows disagree — a 12:15 CT close from equity and livestock on
+//! 2017-07-03 and 2018-07-03 and a 12:05 CT close from grains on 2016-12-23
+//! and 2017-12-22, dates some of the other families audited normal, and an
+//! equity 15:30 CT reopen with a grains 08:30 CT reopen on 2018-12-26, which
+//! livestock audited normal.
 //!
 //! **CBOT's twenty-seven** are the two families' own disagreements:
 //! `globex_grains` closes at 12:05 CT where `globex_interest_rates` closes at
 //! 12:15 CT — the three Thanksgiving Fridays and 2018-12-24 — and states a row
 //! on 2016-12-23, 2017-07-03, 2017-12-22, 2018-07-03 and 2018-12-26, dates the
-//! rate leg audited normal. A routed family **with no table for an era
-//! abstains** rather than disputing: `globex_livestock` covers 2010-2012 and
-//! 2025-2027 and not 2016-2018, so it neither supplies nor withholds a venue
-//! row there, and the families that do cover the era decide each date.
-//! Metals and energy are one key and CME prints them as one product row, so the
-//! `globex_energy` rows carry through untouched.
+//! rate leg audited normal. Metals and energy are one key and CME prints them
+//! as one product row, so the `globex_energy` rows carry through untouched.
 //!
 //! On the 2019-2021 era's **forty-two dates** the CME and CBOT tables state
 //! eight `Closed` rows — the same eight on both, the dates every routed family

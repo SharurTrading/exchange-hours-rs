@@ -356,7 +356,7 @@ fn each_early_close_carries_its_own_sourced_instant() {
 /// A late open is the one kind whose branch choice is data-dependent and
 /// silently 24 hours wrong if it flips, so its count is asserted rather than
 /// assumed. The walk fixes the table's shape over every audited window:
-/// 127 closures, 33 early closes, seven late opens (the four 2010-2012 ones and
+/// 154 closures, 43 early closes, seven late opens (the four 2010-2012 ones and
 /// the three 2013 year-end reopenings), one combined late-open-and-early-close
 /// row and the six `Unsourced` statements, nothing else.
 #[test]
@@ -385,8 +385,8 @@ fn the_table_ships_the_audited_kind_distribution() {
             .expect("the coverage window stays inside the representable calendar");
     }
 
-    assert_eq!(closed, 127, "closed rows over every audited window");
-    assert_eq!(early, 35, "early-close rows over every audited window");
+    assert_eq!(closed, 154, "closed rows over every audited window");
+    assert_eq!(early, 43, "early-close rows over every audited window");
     assert_eq!(
         late, 7,
         "late-open rows, the 2010-2012 four and the 2013 reopenings"
@@ -1215,12 +1215,14 @@ fn era_2022_2024_unsourced_rows_change_no_answer() {
     }
 }
 
-/// The 2022-2024 window sits fourth in the declared coverage, its edges
-/// answer, and the 2013-2015 interval below it is a window of its own since this
-/// wave shipped. (The 2019-2021 interval this test used to fence became a window
-/// of its own when that wave shipped; the section below fences it.)
+/// The 2022-2024 window sits fifth in the declared coverage, its edges
+/// answer, and the 2013-2015 and 2016-2018 intervals below it are windows of
+/// their own since those waves shipped. (The 2019-2021 interval an earlier
+/// version of this test fenced became a window of its own when that wave
+/// shipped; the section below fences it, as the 2016-2018 section fences its
+/// own era.)
 #[test]
-fn era_2022_2024_window_sits_fourth_and_the_2016_2018_interval_is_unaudited() {
+fn era_2022_2024_window_sits_fifth_and_the_lower_waves_are_declared() {
     let calendar = calendar();
     let coverage = calendar
         .holiday_coverage()
@@ -1231,6 +1233,7 @@ fn era_2022_2024_window_sits_fourth_and_the_2016_2018_interval_is_unaudited() {
         vec![
             (day((2010, 1, 1)), day((2012, 12, 31))),
             (day((2013, 1, 1)), day((2015, 12, 31))),
+            (day((2016, 1, 1)), day((2018, 12, 31))),
             (day((2019, 1, 1)), day((2021, 12, 31))),
             (day((2022, 1, 1)), day((2024, 12, 31))),
             (day((2025, 1, 1)), day((2027, 12, 31))),
@@ -1242,21 +1245,17 @@ fn era_2022_2024_window_sits_fourth_and_the_2016_2018_interval_is_unaudited() {
     assert_eq!(calendar.holiday_on(day((2022, 1, 1))), None);
     assert_eq!(calendar.holiday_on(day((2024, 12, 31))), None);
 
-    // The 2013-2015 wave shipped after this test was written, so 2013-01-01
-    // and 2015-12-25 now carry its rows; 2017-06-14 stays the unaudited probe,
-    // and 2015-12-31 is the era's 13:55 CT year-end half-day.
+    // The 2013-2015 and 2016-2018 waves shipped after this test was written,
+    // so 2013-01-01 and 2015-12-25 carry the former's rows, 2016-01-01 opens
+    // the latter's declared window, and 2017-06-14 — the probe that used to
+    // sit in the unaudited gap (#110) — is now an audited-normal date inside
+    // it: the window answers for it, and only the instant query still states
+    // the below-floor refusal. 2015-12-31 is the 2013-2015 era's 13:55 CT
+    // year-end half-day.
     assert_eq!(calendar.holiday_on(day((2017, 6, 14))), None);
-    assert!(!coverage.contains(day((2017, 6, 14))));
-    // The unaudited 2017 probe and the 2015 closure row are both static facts;
-    // every query about them is refused, because both dates precede the
-    // permanent 2025-01-01 floor. The A/B equality the test used to make is no
-    // longer observable: both calendars state the same refusal.
+    assert!(coverage.contains(day((2017, 6, 14))));
     assert_below_floor(
         calendar.is_open(ct((2017, 6, 14), (10, 0, 0))),
-        day((2017, 6, 14)),
-    );
-    assert_below_floor(
-        bare().is_open(ct((2017, 6, 14), (10, 0, 0))),
         day((2017, 6, 14)),
     );
     assert_eq!(
@@ -1502,6 +1501,7 @@ fn era_2019_2021_window_is_declared_in_order_and_bounds_every_row() {
         vec![
             (day((2010, 1, 1)), day((2012, 12, 31))),
             (day((2013, 1, 1)), day((2015, 12, 31))),
+            (day((2016, 1, 1)), day((2018, 12, 31))),
             (day((2019, 1, 1)), day((2021, 12, 31))),
             (day((2022, 1, 1)), day((2024, 12, 31))),
             (day((2025, 1, 1)), day((2027, 12, 31))),
@@ -1773,13 +1773,16 @@ fn era_2013_2015_window_edges_answer_as_the_module_declares() {
     );
     // The neighbouring dates are their own eras' business: 2012-12-31 is
     // audited normal by the wave below, and 2016-01-01 opens the 2016-2018
-    // interval this family has no window for, so the table is silent there.
+    // window the #110 wave declared, whose own New Year closure ships there.
     assert_eq!(venue.holiday_on(day((2012, 12, 31))), None);
     assert!(
-        !coverage.contains(day((2016, 1, 1))),
-        "2016-01-01 falls in this family's 2016-2018 gap (#110)"
+        coverage.contains(day((2016, 1, 1))),
+        "2016-01-01 is the 2016-2018 wave's declared first day"
     );
-    assert_eq!(venue.holiday_on(day((2016, 1, 1))), None);
+    assert_eq!(
+        venue.holiday_on(day((2016, 1, 1))).map(Holiday::kind),
+        Some(HolidayKind::Closed)
+    );
     // A date below the January-2010 floor is outside every window, so this
     // table has no answer for it at all.
     assert!(!coverage.contains(day((2009, 12, 31))));
@@ -1801,6 +1804,7 @@ fn era_2013_2015_window_is_declared_in_order_and_bounds_every_row() {
         vec![
             (day((2010, 1, 1)), day((2012, 12, 31))),
             (day((2013, 1, 1)), day((2015, 12, 31))),
+            (day((2016, 1, 1)), day((2018, 12, 31))),
             (day((2019, 1, 1)), day((2021, 12, 31))),
             (day((2022, 1, 1)), day((2024, 12, 31))),
             (day((2025, 1, 1)), day((2027, 12, 31))),
@@ -1993,4 +1997,208 @@ fn era_2013_2015_rows_are_the_audited_date_kind_and_tier_set() {
         date = date.succ_opt().expect("the era ends well before the bound");
     }
     assert_eq!(index, ERA_2013_2015_ROWS.len(), "every recorded row ships");
+}
+
+// ---------------------------------------------------------------------------
+// The 2016-2018 rows (#110).
+// ---------------------------------------------------------------------------
+
+/// The era is its own declared window, contiguous with the waves either side.
+///
+/// Every row the era ships lies inside it, its kind totals are the block's
+/// 27 closures and 8 early closes, and the one `normal` date the block
+/// records — 2018-12-26, whose sheet states the family's ordinary
+/// 08:30-13:05 CT day — ships no row and is audited normal.
+#[test]
+fn era_2016_2018_window_is_declared_in_order_and_bounds_every_row() {
+    let venue = calendar();
+    let coverage = venue
+        .holiday_coverage()
+        .expect("globex_livestock ships a table");
+
+    assert_eq!(
+        coverage.windows(),
+        vec![
+            (day((2010, 1, 1)), day((2012, 12, 31))),
+            (day((2013, 1, 1)), day((2015, 12, 31))),
+            (day((2016, 1, 1)), day((2018, 12, 31))),
+            (day((2019, 1, 1)), day((2021, 12, 31))),
+            (day((2022, 1, 1)), day((2024, 12, 31))),
+            (day((2025, 1, 1)), day((2027, 12, 31))),
+        ]
+    );
+
+    let (mut rows, mut closures, mut early) = (0_usize, 0_usize, 0_usize);
+    let mut date = day((2016, 1, 1));
+    while date <= day((2018, 12, 31)) {
+        if let Some(row) = venue.holiday_on(date) {
+            assert!(coverage.contains(date), "{date} ships outside its window");
+            match row.kind() {
+                HolidayKind::Closed => closures += 1,
+                HolidayKind::EarlyClose { .. } => early += 1,
+                other => panic!("{date}: the era ships no {other:?}"),
+            }
+            rows += 1;
+        }
+        date = date.succ_opt().expect("the era ends well before the bound");
+    }
+    assert_eq!(rows, 35, "the era's rows");
+    assert_eq!(closures, 27, "the era's closures");
+    assert_eq!(early, 8, "the era's early closes");
+    // The block's one `normal` date carries no row and is inside the window.
+    assert_eq!(venue.holiday_on(day((2018, 12, 26))), None);
+    assert!(coverage.contains(day((2018, 12, 26))));
+    // The outer neighbours are their own eras' rows.
+    for probe in [day((2015, 12, 31)), day((2019, 1, 1))] {
+        assert!(
+            venue.holiday_on(probe).is_some(),
+            "{probe} is the neighbouring era's own row"
+        );
+    }
+}
+
+/// The era's edges answer as the module declares: its first day is the shipped
+/// New Year closure, its last is an audited-normal Monday, and the block's
+/// unaudited-gap probe of the pre-#110 table, 2017-06-14, is an ordinary
+/// audited-normal mid-June Wednesday inside the window.
+#[test]
+fn era_2016_2018_window_edges_answer_as_the_module_declares() {
+    let venue = calendar();
+    let coverage = venue
+        .holiday_coverage()
+        .expect("globex_livestock ships a table");
+
+    assert!(coverage.contains(day((2016, 1, 1))));
+    assert_eq!(
+        venue.holiday_on(day((2016, 1, 1))).map(Holiday::kind),
+        Some(HolidayKind::Closed)
+    );
+    assert!(coverage.contains(day((2018, 12, 31))));
+    assert_eq!(venue.holiday_on(day((2018, 12, 31))), None);
+    assert!(
+        coverage.contains(day((2017, 6, 14))),
+        "the former #110 gap probe is inside the declared window"
+    );
+    assert_eq!(venue.holiday_on(day((2017, 6, 14))), None);
+    // A date below the January-2010 floor is outside every window, so this
+    // table has no answer for it at all.
+    assert!(!coverage.contains(day((2009, 12, 31))));
+    assert_eq!(venue.holiday_on(day((2009, 12, 31))), None);
+}
+
+/// The 2016-2018 rows as the block records them: date, kind and tier in order,
+/// handwritten here rather than read back from the module. The era-wide walk
+/// counts kinds, which a row moved to another audited date with the same kind
+/// and instant would leave unchanged; this pins the date set itself, in the
+/// order `holiday_on` must answer it. 2018-12-26 is absent because the block
+/// records it `normal`: the window declares the date and no row ships there.
+const ERA_2016_2018_ROWS: &[((i32, u32, u32), HolidayKind, EvidenceTier)] = &[
+    ((2016, 1, 1), HolidayKind::Closed, EvidenceTier::T1),
+    ((2016, 1, 18), HolidayKind::Closed, EvidenceTier::T1),
+    ((2016, 2, 15), HolidayKind::Closed, EvidenceTier::T1),
+    ((2016, 3, 25), HolidayKind::Closed, EvidenceTier::T1),
+    ((2016, 5, 30), HolidayKind::Closed, EvidenceTier::T1),
+    ((2016, 7, 4), HolidayKind::Closed, EvidenceTier::T1),
+    ((2016, 9, 5), HolidayKind::Closed, EvidenceTier::T1),
+    ((2016, 11, 24), HolidayKind::Closed, EvidenceTier::T1),
+    (
+        (2016, 11, 25),
+        HolidayKind::EarlyClose {
+            close_ssm: 12 * 3_600 + 15 * 60,
+        },
+        EvidenceTier::T1,
+    ),
+    (
+        (2016, 12, 23),
+        HolidayKind::EarlyClose {
+            close_ssm: 12 * 3_600 + 15 * 60,
+        },
+        EvidenceTier::T1,
+    ),
+    ((2016, 12, 26), HolidayKind::Closed, EvidenceTier::T1),
+    ((2017, 1, 2), HolidayKind::Closed, EvidenceTier::T1),
+    ((2017, 1, 16), HolidayKind::Closed, EvidenceTier::T1),
+    ((2017, 2, 20), HolidayKind::Closed, EvidenceTier::T1),
+    ((2017, 4, 14), HolidayKind::Closed, EvidenceTier::T1),
+    ((2017, 5, 29), HolidayKind::Closed, EvidenceTier::T1),
+    (
+        (2017, 7, 3),
+        HolidayKind::EarlyClose {
+            close_ssm: 12 * 3_600 + 15 * 60,
+        },
+        EvidenceTier::T1,
+    ),
+    ((2017, 7, 4), HolidayKind::Closed, EvidenceTier::T1),
+    ((2017, 9, 4), HolidayKind::Closed, EvidenceTier::T1),
+    ((2017, 11, 23), HolidayKind::Closed, EvidenceTier::T1),
+    (
+        (2017, 11, 24),
+        HolidayKind::EarlyClose {
+            close_ssm: 12 * 3_600 + 15 * 60,
+        },
+        EvidenceTier::T1,
+    ),
+    (
+        (2017, 12, 22),
+        HolidayKind::EarlyClose {
+            close_ssm: 12 * 3_600 + 15 * 60,
+        },
+        EvidenceTier::T1,
+    ),
+    ((2017, 12, 25), HolidayKind::Closed, EvidenceTier::T1),
+    ((2018, 1, 1), HolidayKind::Closed, EvidenceTier::T1),
+    ((2018, 1, 15), HolidayKind::Closed, EvidenceTier::T1),
+    ((2018, 2, 19), HolidayKind::Closed, EvidenceTier::T1),
+    ((2018, 3, 30), HolidayKind::Closed, EvidenceTier::T1),
+    ((2018, 5, 28), HolidayKind::Closed, EvidenceTier::T1),
+    (
+        (2018, 7, 3),
+        HolidayKind::EarlyClose {
+            close_ssm: 12 * 3_600 + 15 * 60,
+        },
+        EvidenceTier::T1,
+    ),
+    ((2018, 7, 4), HolidayKind::Closed, EvidenceTier::T1),
+    ((2018, 9, 3), HolidayKind::Closed, EvidenceTier::T1),
+    ((2018, 11, 22), HolidayKind::Closed, EvidenceTier::T1),
+    (
+        (2018, 11, 23),
+        HolidayKind::EarlyClose {
+            close_ssm: 12 * 3_600 + 15 * 60,
+        },
+        EvidenceTier::T1,
+    ),
+    (
+        (2018, 12, 24),
+        HolidayKind::EarlyClose {
+            close_ssm: 12 * 3_600 + 15 * 60,
+        },
+        EvidenceTier::T1,
+    ),
+    ((2018, 12, 25), HolidayKind::Closed, EvidenceTier::T1),
+];
+
+/// The era's audited date, kind and tier set, in order.
+#[test]
+fn era_2016_2018_rows_are_the_audited_date_kind_and_tier_set() {
+    let venue = calendar();
+    let mut index = 0_usize;
+    let mut date = day((2016, 1, 1));
+    while date <= day((2018, 12, 31)) {
+        if let Some(row) = venue.holiday_on(date) {
+            let (expected, kind, tier) = *ERA_2016_2018_ROWS.get(index).unwrap_or_else(|| {
+                panic!("{date}: a row ships in the 2016-2018 window that the block does not record")
+            });
+            assert_eq!(
+                (date.year(), date.month(), date.day()),
+                expected,
+                "the 2016-2018 rows must ship in order, with none added"
+            );
+            assert_eq!(row.kind(), kind, "{date}");
+            assert_eq!(row.tier(), tier, "{date}");
+            index += 1;
+        }
+        date = date.succ_opt().expect("the era ends well before the bound");
+    }
+    assert_eq!(index, ERA_2016_2018_ROWS.len(), "every recorded row ships");
 }

@@ -344,6 +344,22 @@ corrections (a venue's hours fixed against a primary source) go under
   recorded sha256 reproduces from the saved bundle, and each quotation is the
   edition's own `Grains and Oilseeds` cell. No row, instant, kind or tier moves.
 
+- **`globex_interest_rates` states the 2010-2012 holiday-Monday sessions CME's own
+  sheets print (2026-09-27 UTC).** Closes #101. The eighteen noon-halt dates of
+  2010-2012 — the Monday holidays, the observed July 4ths and the Thanksgiving
+  Thursdays — shipped no row because the wave read the era's flat 17:30-16:00 CT
+  grid as leaving the Monday trade date sessionless. CME's per-holiday PDFs state
+  the opposite in session language: the prior evening's open carries the *next*
+  trade date (`Sunday, Jan 17 / 1730 CT - Regular CME Globex open for CBOT
+  financial products for trade date Tuesday, Jan 19`), a `1200 CT` trading halt
+  with order entry allowed, and a resume at the family's own evening open. Each
+  date now ships an `early close 12:00 CT` row and a merged-trade-date
+  replacement row restating the whole published day, the three Thanksgiving
+  Fridays' rows become replacement rows for the same reason, and the
+  `cme`/`cbot` intersections re-derive (CME gains fourteen merged-date disputes,
+  CBOT twenty-eight rows; `comex`/`nymex` route energy alone and do not move).
+  Columbus Day and Veterans Day print no halt for this family and stay audited
+  normal.
 - **`eurex`'s gap record spans the editions that carry the note (2026-09-27 UTC).** The `#157`
   declaration was whole-domain, so the metadata reported the German-scope `tba` withholding as
   covering the whole supported domain. It is now bounded at 2027-01-01 — the first day the 2025

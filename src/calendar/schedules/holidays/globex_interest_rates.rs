@@ -47,16 +47,28 @@
 //!
 //! **2010-2012.** CME's own holiday-calendar PDFs (`2010-martin-luther-king.pdf`
 //! and its siblings) are the T1 source for the era. The grid is the era's
-//! 17:30 CT wrapped leg into a 16:00 CT close, so the rows that move an answer
-//! are the full closures (New Year's Day, Christmas Day, 2011's Good Friday and
-//! the observed days around them), the eves of a Friday holiday — 2010-01-15,
-//! 2010-02-12, 2010-05-28, 2010-07-02, 2010-09-03 and 2010-10-08 — on which CME
-//! prints `1515 CT - Early CME Globex close`, and the Good Fridays of 2010 and
-//! 2012 at 10:15 CT. On the Monday holidays of those years CME prints a `1200
-//! CT` halt and a `1700 CT` resume carrying the *next* trade date; the crate's
-//! own grid for the era carries no session for the Monday trade date at all, so
-//! the instant cannot move an answer and the dates are recorded as gaps in the
-//! evidence file (#101).
+//! 17:30 CT wrapped leg into a 16:00 CT close (17:00 CT from the 2011-10-02
+//! notice), so the scalar rows are the full closures (New Year's Day, Christmas
+//! Day, 2011's Good Friday and the observed days around them), the eves of a
+//! Friday holiday — 2010-01-15, 2010-02-12, 2010-05-28, 2010-07-02, 2010-09-03
+//! and 2010-10-08 — on which CME prints `1515 CT - Early CME Globex close`, and
+//! the Good Fridays of 2010 and 2012 at 10:15 CT.
+//!
+//! The eighteen Monday and Thursday noon halts ship as **pairs**. Each sheet
+//! states that the prior evening's open carries the *next* trade date —
+//! `Sunday, Jan 17 / 1730 CT – Regular CME Globex open for CBOT financial
+//! products for trade date Tuesday, Jan 19` — then a `1200 CT` trading halt
+//! with order entry allowed, a resume at the family's own evening open (the
+//! sheet's `1730 CT` CBOT-financial line through 2011-09-05, `1700 CT` unified
+//! from 2011-11-24), and the next trade date's ordinary close. So the holiday
+//! date itself ships an `early close 12:00 CT` row and the following trade date
+//! ships a replacement row whose blocks restate the merged day exactly as
+//! published, on the era's own instants. The Thanksgiving Fridays' rows become
+//! replacement rows for the same reason: their trade date owns the span from
+//! Wednesday evening. Columbus Day and Veterans Day sheets print no halt for
+//! this family, so those Mondays are audited normal; the one instant the sheets
+//! do not state, the holiday-Sunday/Wednesday Pre-Open queue, is the profile's
+//! own normal-week window and is disclosed in each block set's comment.
 //!
 //! Quotations, document URLs, capture timestamps, the event-date to trade-date
 //! conversion and the declared gaps live in
@@ -164,6 +176,84 @@ pub(crate) static MERGED_SESSION_EARLY_CLOSE_BLOCKS: [ExceptionBlock; 4] = [
     ExceptionBlock::order_entry(-1, 12 * 3_600, 17 * 3_600),
     ExceptionBlock::extended(-1, 17 * 3_600, 12 * 3_600 + 15 * 60),
 ];
+
+/// The 2010-2011 merged trade date after a Monday holiday, on the era's
+/// `17:30` CT CBOT-financial clock.
+///
+/// CME's sheets state the whole arrangement: the Sunday open `1730 CT` for CBOT
+/// financial products carrying the *Tuesday* trade date, the Monday `1200 CT`
+/// trading halt with order entry allowed, the `1730 CT` resume of the halted
+/// CBOT financial products, and the Tuesday `1600 CT` regular close. The one
+/// instant the sheets do not state is the Sunday evening Pre-Open queue, which
+/// is the profile's own 16:15-17:30 CT window, unchanged by an exception that
+/// never mentions it.
+///
+/// Evidence: `docs/evidence/globex_interest_rates.md`.
+pub(crate) static MERGED_2010_2011_MONDAY_BLOCKS: [ExceptionBlock; 4] = [
+    ExceptionBlock::order_entry(-2, 16 * 3_600 + 15 * 60, 17 * 3_600 + 30 * 60),
+    ExceptionBlock::extended(-2, 17 * 3_600 + 30 * 60, 12 * 3_600),
+    ExceptionBlock::order_entry(-1, 12 * 3_600, 17 * 3_600 + 30 * 60),
+    ExceptionBlock::extended(-1, 17 * 3_600 + 30 * 60, 16 * 3_600),
+];
+
+/// The holiday-eve Pre-Open queue window is the profile's own normal-week window; the sheets state no queue for these dates.
+/// The 2010 merged trade date after Thanksgiving, still on the `17:30` CT
+/// clock: the Wednesday evening open carries the Friday trade date, the
+/// Thursday noon halt holds order entry only, the halted CBOT financial
+/// products resume at the sheet's `1730 CT`, and the Friday closes at its
+/// own `12:15` CT.
+///
+/// Evidence: `docs/evidence/globex_interest_rates.md`.
+pub(crate) static MERGED_2010_THANKSGIVING_BLOCKS: [ExceptionBlock; 4] = [
+    ExceptionBlock::order_entry(-2, 16 * 3_600 + 45 * 60, 17 * 3_600 + 30 * 60),
+    ExceptionBlock::extended(-2, 17 * 3_600 + 30 * 60, 12 * 3_600),
+    ExceptionBlock::order_entry(-1, 12 * 3_600, 17 * 3_600 + 30 * 60),
+    ExceptionBlock::extended(-1, 17 * 3_600 + 30 * 60, 12 * 3_600 + 15 * 60),
+];
+
+/// The holiday-eve Pre-Open queue window is the profile's own normal-week window; the sheets state no queue for these dates.
+/// The 2012 merged trade date after a Monday holiday, on the unified `17:00`
+/// CT clock the 2011-10-02 notice put in force: the Sunday 17:00 CT open
+/// carries the Tuesday trade date, the Monday noon halt holds order entry,
+/// trading resumes at the sheet's `1700 CT`, and the Tuesday closes at its
+/// ordinary `16:00` CT.
+///
+/// Evidence: `docs/evidence/globex_interest_rates.md`.
+pub(crate) static MERGED_2012_MONDAY_BLOCKS: [ExceptionBlock; 4] = [
+    ExceptionBlock::order_entry(-2, 16 * 3_600 + 15 * 60, 17 * 3_600),
+    ExceptionBlock::extended(-2, 17 * 3_600, 12 * 3_600),
+    ExceptionBlock::order_entry(-1, 12 * 3_600, 17 * 3_600),
+    ExceptionBlock::extended(-1, 17 * 3_600, 16 * 3_600),
+];
+
+/// The holiday-eve Pre-Open queue window is the profile's own normal-week window; the sheets state no queue for these dates.
+/// The 2011 and 2012 merged trade date after Thanksgiving, on the unified
+/// `17:00` CT clock: the Wednesday evening open carries the Friday trade
+/// date, the Thursday noon halt holds order entry, trading resumes at the
+/// sheets' `1700 CT`, and the Friday closes at its own `12:15` CT.
+///
+/// Evidence: `docs/evidence/globex_interest_rates.md`.
+pub(crate) static MERGED_2011_2012_THANKSGIVING_BLOCKS: [ExceptionBlock; 4] = [
+    ExceptionBlock::order_entry(-2, 16 * 3_600 + 45 * 60, 17 * 3_600),
+    ExceptionBlock::extended(-2, 17 * 3_600, 12 * 3_600),
+    ExceptionBlock::order_entry(-1, 12 * 3_600, 17 * 3_600),
+    ExceptionBlock::extended(-1, 17 * 3_600, 12 * 3_600 + 15 * 60),
+];
+
+/// The 2012 merged trade date after the Fourth of July, whose holiday fell on
+/// the Wednesday: the Tuesday evening open carries the *Thursday* trade date,
+/// the Wednesday noon halt holds order entry, trading resumes at the sheet's
+/// `1700 CT`, and the Thursday closes at its ordinary `16:00` CT. The `-2`
+/// queue is the weekday 16:45-17:00 CT Pre-Open, whose onset the sheet's own
+/// note (`orders entered on Tuesday after 1645 CT`) confirms.
+///
+/// Evidence: `docs/evidence/globex_interest_rates.md`.
+pub(crate) static MERGED_2012_JULY4_BLOCKS: [ExceptionBlock; 4] = [
+    ExceptionBlock::order_entry(-2, 16 * 3_600 + 45 * 60, 17 * 3_600),
+    ExceptionBlock::extended(-2, 17 * 3_600, 12 * 3_600),
+    ExceptionBlock::order_entry(-1, 12 * 3_600, 17 * 3_600),
+    ExceptionBlock::extended(-1, 17 * 3_600, 16 * 3_600),
+];
 use crate::calendar::exceptions::ExceptionBlock;
 /// The complete trading day of the 2026-06-22, 2026-07-06 and 2027-06-21 trade
 /// dates, which CME states a Saturday session on.
@@ -214,25 +304,155 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         // 2010-01-01 - T1 - 2010-new-years.pdf - closed: new year's day 2010.
         (2010, 1, 1, Closed, T1, "2010-new-years.pdf @2010-02-15T05:16:52Z"),
         (2010, 1, 15, early_close(15 * 3_600 + 15 * 60), T1, "2010-martin-luther-king.pdf @2010-03-31T06:42:26Z"),
+        // 2010-01-18 - T1 - 2010-martin-luther-king.pdf @2010-03-31T06:42:26Z - the printed halt `1200 CT - CME interest rate and CBOT financial products trading halt` ends the Sunday-opened session.
+        (2010, 1, 18, early_close(12 * 3_600), T1, "2010-martin-luther-king.pdf @2010-03-31T06:42:26Z"),
+        // 2010-01-19 - T1 - 2010-martin-luther-king.pdf @2010-03-31T06:42:26Z - the merged trade date: the sheet opens Sunday 17:30 CT (CBOT financial) for trade date Tuesday, halts Monday 12:00 CT with order entry allowed, resumes 17:30 CT and closes Tuesday 16:00 CT.
+        (
+            2010,
+            1,
+            19,
+            ReplacementBlocks(&MERGED_2010_2011_MONDAY_BLOCKS),
+            T1,
+            "2010-martin-luther-king.pdf @2010-03-31T06:42:26Z"
+        ),
         (2010, 2, 12, early_close(15 * 3_600 + 15 * 60), T1, "2010-presidents-day.pdf @2010-02-15T06:46:41Z"),
+        // 2010-02-15 - T1 - 2010-presidents-day.pdf @2010-02-15T06:46:41Z - the printed halt `1200 CT - CME interest rate and CBOT financial products trading halt` ends the Sunday-opened session.
+        (2010, 2, 15, early_close(12 * 3_600), T1, "2010-presidents-day.pdf @2010-02-15T06:46:41Z"),
+        // 2010-02-16 - T1 - 2010-presidents-day.pdf @2010-02-15T06:46:41Z - the merged trade date; as 2010-01-19.
+        (
+            2010,
+            2,
+            16,
+            ReplacementBlocks(&MERGED_2010_2011_MONDAY_BLOCKS),
+            T1,
+            "2010-presidents-day.pdf @2010-02-15T06:46:41Z"
+        ),
         (2010, 4, 2, early_close(10 * 3_600 + 15 * 60), T1, "2010-good-friday.pdf @2010-06-01T11:19:16Z"),
         (2010, 5, 28, early_close(15 * 3_600 + 15 * 60), T1, "2010-memorial-day.pdf @2010-06-01T09:42:25Z"),
+        // 2010-05-31 - T1 - 2010-memorial-day.pdf @2010-06-01T09:42:25Z - the printed halt `1200 CT - CME interest rate and CBOT financial products trading halt` ends the Sunday-opened session.
+        (2010, 5, 31, early_close(12 * 3_600), T1, "2010-memorial-day.pdf @2010-06-01T09:42:25Z"),
+        // 2010-06-01 - T1 - 2010-memorial-day.pdf @2010-06-01T09:42:25Z - the merged trade date; as 2010-01-19.
+        (
+            2010,
+            6,
+            1,
+            ReplacementBlocks(&MERGED_2010_2011_MONDAY_BLOCKS),
+            T1,
+            "2010-memorial-day.pdf @2010-06-01T09:42:25Z"
+        ),
         (2010, 7, 2, early_close(15 * 3_600 + 15 * 60), T1, "2010-4th-of-july.pdf @2010-06-02T00:56:37Z"),
+        // 2010-07-05 - T1 - 2010-4th-of-july.pdf @2010-06-02T00:56:37Z - the printed halt `1200 CT - CME interest rate and CBOT financial products trading halt` ends the Sunday-opened session.
+        (2010, 7, 5, early_close(12 * 3_600), T1, "2010-4th-of-july.pdf @2010-06-02T00:56:37Z"),
+        // 2010-07-06 - T1 - 2010-4th-of-july.pdf @2010-06-02T00:56:37Z - the merged trade date; as 2010-01-19.
+        (
+            2010,
+            7,
+            6,
+            ReplacementBlocks(&MERGED_2010_2011_MONDAY_BLOCKS),
+            T1,
+            "2010-4th-of-july.pdf @2010-06-02T00:56:37Z"
+        ),
         (2010, 9, 3, early_close(15 * 3_600 + 15 * 60), T1, "2010-labor-day.pdf @2010-06-02T00:56:41Z"),
+        // 2010-09-06 - T1 - 2010-labor-day.pdf @2010-06-02T00:56:41Z - the printed halt `1200 CT - CME interest rate and CBOT financial products trading halt` ends the Sunday-opened session.
+        (2010, 9, 6, early_close(12 * 3_600), T1, "2010-labor-day.pdf @2010-06-02T00:56:41Z"),
+        // 2010-09-07 - T1 - 2010-labor-day.pdf @2010-06-02T00:56:41Z - the merged trade date; as 2010-01-19.
+        (
+            2010,
+            9,
+            7,
+            ReplacementBlocks(&MERGED_2010_2011_MONDAY_BLOCKS),
+            T1,
+            "2010-labor-day.pdf @2010-06-02T00:56:41Z"
+        ),
         (2010, 10, 8, early_close(15 * 3_600 + 15 * 60), T1, "2010-columbus-day.pdf @2010-08-21T13:31:22Z"),
-        (2010, 11, 26, early_close(12 * 3_600 + 15 * 60), T1, "2010-thanksgiving.pdf @2010-11-22T09:40:12Z"),
+        // 2010-11-25 - T1 - 2010-thanksgiving.pdf @2010-11-22T09:40:12Z - the printed halt `1200 CT - CME interest rate and CBOT financial products trading halt` ends the Wednesday-opened session; no trade date Thursday exists, the sheet opens Wednesday 17:30 CT for trade date Friday.
+        (2010, 11, 25, early_close(12 * 3_600), T1, "2010-thanksgiving.pdf @2010-11-22T09:40:12Z"),
+        // 2010-11-26 - T1 - 2010-thanksgiving.pdf @2010-11-22T09:40:12Z - the merged trade date: the sheet opens Wednesday 17:30 CT (CBOT financial) for trade date Friday, halts Thursday 12:00 CT with order entry allowed, resumes 17:30 CT and closes Friday 12:15 CT.
+        (
+            2010,
+            11,
+            26,
+            ReplacementBlocks(&MERGED_2010_THANKSGIVING_BLOCKS),
+            T1,
+            "2010-thanksgiving.pdf @2010-11-22T09:40:12Z"
+        ),
         // 2010-12-24 - T1 - 2010-christmas.pdf - closed: christmas day 2010 observed.
         (2010, 12, 24, Closed, T1, "2010-christmas.pdf @2010-12-14T06:12:38Z"),
         (2010, 12, 31, early_close(12 * 3_600 + 15 * 60), T1, "2011-new-years.pdf @2011-11-01T14:39:45Z"),
         (2011, 1, 14, early_close(15 * 3_600 + 15 * 60), T1, "2011-martin-luther-king.pdf @2011-10-28T02:34:29Z"),
+        // 2011-01-17 - T1 - 2011-martin-luther-king.pdf @2011-10-28T02:34:29Z - the printed halt `1200 CT - CME interest rate and CBOT financial products trading halt` ends the Sunday-opened session.
+        (2011, 1, 17, early_close(12 * 3_600), T1, "2011-martin-luther-king.pdf @2011-10-28T02:34:29Z"),
+        // 2011-01-18 - T1 - 2011-martin-luther-king.pdf @2011-10-28T02:34:29Z - the merged trade date: the sheet opens Sunday 17:30 CT (CBOT financial) for trade date Tuesday, halts Monday 12:00 CT with order entry allowed, resumes 17:30 CT and closes Tuesday 16:00 CT.
+        (
+            2011,
+            1,
+            18,
+            ReplacementBlocks(&MERGED_2010_2011_MONDAY_BLOCKS),
+            T1,
+            "2011-martin-luther-king.pdf @2011-10-28T02:34:29Z"
+        ),
         (2011, 2, 18, early_close(15 * 3_600 + 15 * 60), T1, "2011-presidents-day.pdf @2011-10-28T02:35:16Z"),
+        // 2011-02-21 - T1 - 2011-presidents-day.pdf @2011-10-28T02:35:16Z - the printed halt `1200 CT - CME interest rate and CBOT financial products trading halt` ends the Sunday-opened session.
+        (2011, 2, 21, early_close(12 * 3_600), T1, "2011-presidents-day.pdf @2011-10-28T02:35:16Z"),
+        // 2011-02-22 - T1 - 2011-presidents-day.pdf @2011-10-28T02:35:16Z - the merged trade date; as 2011-01-18.
+        (
+            2011,
+            2,
+            22,
+            ReplacementBlocks(&MERGED_2010_2011_MONDAY_BLOCKS),
+            T1,
+            "2011-presidents-day.pdf @2011-10-28T02:35:16Z"
+        ),
         // 2011-04-22 - T1 - 2011-good-friday.pdf - closed: good friday 2011.
         (2011, 4, 22, Closed, T1, "2011-good-friday.pdf @2011-10-28T02:37:07Z"),
         (2011, 5, 27, early_close(15 * 3_600 + 15 * 60), T1, "2011-memorial-day.pdf @2013-09-30T10:56:52Z"),
+        // 2011-05-30 - T1 - 2011-memorial-day.pdf @2013-09-30T10:56:52Z - the printed halt `1200 CT - CME interest rate and CBOT financial products trading halt` ends the Sunday-opened session.
+        (2011, 5, 30, early_close(12 * 3_600), T1, "2011-memorial-day.pdf @2013-09-30T10:56:52Z"),
+        // 2011-05-31 - T1 - 2011-memorial-day.pdf @2013-09-30T10:56:52Z - the merged trade date; as 2011-01-18.
+        (
+            2011,
+            5,
+            31,
+            ReplacementBlocks(&MERGED_2010_2011_MONDAY_BLOCKS),
+            T1,
+            "2011-memorial-day.pdf @2013-09-30T10:56:52Z"
+        ),
         (2011, 7, 1, early_close(15 * 3_600 + 15 * 60), T1, "2011-4th-of-july.pdf @2011-11-01T14:40:54Z"),
+        // 2011-07-04 - T1 - 2011-4th-of-july.pdf @2011-11-01T14:40:54Z - the printed halt `1200 CT - CME interest rate and CBOT financial products trading halt` ends the Sunday-opened session.
+        (2011, 7, 4, early_close(12 * 3_600), T1, "2011-4th-of-july.pdf @2011-11-01T14:40:54Z"),
+        // 2011-07-05 - T1 - 2011-4th-of-july.pdf @2011-11-01T14:40:54Z - the merged trade date; as 2011-01-18.
+        (
+            2011,
+            7,
+            5,
+            ReplacementBlocks(&MERGED_2010_2011_MONDAY_BLOCKS),
+            T1,
+            "2011-4th-of-july.pdf @2011-11-01T14:40:54Z"
+        ),
         (2011, 9, 2, early_close(15 * 3_600 + 15 * 60), T1, "2011-labor-day.pdf @2011-11-01T14:43:45Z"),
+        // 2011-09-05 - T1 - 2011-labor-day.pdf @2011-11-01T14:43:45Z - the printed halt `1200 CT - CME interest rate and CBOT financial products trading halt` ends the Sunday-opened session.
+        (2011, 9, 5, early_close(12 * 3_600), T1, "2011-labor-day.pdf @2011-11-01T14:43:45Z"),
+        // 2011-09-06 - T1 - 2011-labor-day.pdf @2011-11-01T14:43:45Z - the merged trade date; as 2011-01-18.
+        (
+            2011,
+            9,
+            6,
+            ReplacementBlocks(&MERGED_2010_2011_MONDAY_BLOCKS),
+            T1,
+            "2011-labor-day.pdf @2011-11-01T14:43:45Z"
+        ),
         (2011, 10, 7, early_close(15 * 3_600 + 15 * 60), T1, "2011-columbus-day.pdf @2011-11-01T14:39:16Z"),
-        (2011, 11, 25, early_close(12 * 3_600 + 15 * 60), T1, "2011-thanksgiving.pdf @2011-11-24T18:52:46Z"),
+        // 2011-11-24 - T1 - 2011-thanksgiving.pdf @2011-11-24T18:52:46Z - the printed halt `1200 CT - Trading halt` ends the Wednesday-opened session; no trade date Thursday exists, the sheet opens Wednesday 17:00 CT for trade date Friday.
+        (2011, 11, 24, early_close(12 * 3_600), T1, "2011-thanksgiving.pdf @2011-11-24T18:52:46Z"),
+        // 2011-11-25 - T1 - 2011-thanksgiving.pdf @2011-11-24T18:52:46Z - the merged trade date: the sheet opens Wednesday 17:00 CT for trade date Friday, halts Thursday 12:00 CT with order entry allowed, resumes 17:00 CT and closes Friday 12:15 CT.
+        (
+            2011,
+            11,
+            25,
+            ReplacementBlocks(&MERGED_2011_2012_THANKSGIVING_BLOCKS),
+            T1,
+            "2011-thanksgiving.pdf @2011-11-24T18:52:46Z"
+        ),
         // 2011-12-26 - T1 - 2011-christmas.pdf - closed: christmas day 2011 observed.
         (2011, 12, 26, Closed, T1, "2011-christmas.pdf @2012-01-25T02:05:48Z"),
         (2011, 12, 27, late_open(5 * 3_600), T1, "2011-christmas.pdf @2012-01-25T02:05:48Z"),
@@ -240,12 +460,77 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2012, 1, 2, Closed, T1, "2012-new-years.pdf @2012-01-25T02:54:30Z"),
         (2012, 1, 3, late_open(5 * 3_600), T1, "2012-new-years.pdf @2012-01-25T02:54:30Z"),
         (2012, 1, 13, early_close(15 * 3_600 + 15 * 60), T1, "2012-martin-luther-king.pdf @2012-05-05T16:15:26Z"),
+        // 2012-01-16 - T1 - 2012-martin-luther-king.pdf @2012-05-05T16:15:26Z - the printed halt `1200 CT - Trading halt` ends the Sunday-opened session.
+        (2012, 1, 16, early_close(12 * 3_600), T1, "2012-martin-luther-king.pdf @2012-05-05T16:15:26Z"),
+        // 2012-01-17 - T1 - 2012-martin-luther-king.pdf @2012-05-05T16:15:26Z - the merged trade date: the sheet opens Sunday 17:00 CT for trade date Tuesday, halts Monday 12:00 CT with order entry allowed, resumes 17:00 CT and closes Tuesday 16:00 CT.
+        (
+            2012,
+            1,
+            17,
+            ReplacementBlocks(&MERGED_2012_MONDAY_BLOCKS),
+            T1,
+            "2012-martin-luther-king.pdf @2012-05-05T16:15:26Z"
+        ),
         (2012, 2, 17, early_close(15 * 3_600 + 15 * 60), T1, "2012-presidents-day.pdf @2012-05-05T16:15:39Z"),
+        // 2012-02-20 - T1 - 2012-presidents-day.pdf @2012-05-05T16:15:39Z - the printed halt `1200 CT - Trading halt` ends the Sunday-opened session.
+        (2012, 2, 20, early_close(12 * 3_600), T1, "2012-presidents-day.pdf @2012-05-05T16:15:39Z"),
+        // 2012-02-21 - T1 - 2012-presidents-day.pdf @2012-05-05T16:15:39Z - the merged trade date; as 2012-01-17.
+        (
+            2012,
+            2,
+            21,
+            ReplacementBlocks(&MERGED_2012_MONDAY_BLOCKS),
+            T1,
+            "2012-presidents-day.pdf @2012-05-05T16:15:39Z"
+        ),
         (2012, 4, 6, early_close(10 * 3_600 + 15 * 60), T1, "2012-good-friday.pdf @2012-04-17T00:42:47Z"),
         (2012, 5, 25, early_close(15 * 3_600 + 15 * 60), T1, "2012-memorial-day.pdf @2012-09-15T00:37:14Z"),
+        // 2012-05-28 - T1 - 2012-memorial-day.pdf @2012-09-15T00:37:14Z - the printed halt `1200 CT - Trading halt` ends the Sunday-opened session.
+        (2012, 5, 28, early_close(12 * 3_600), T1, "2012-memorial-day.pdf @2012-09-15T00:37:14Z"),
+        // 2012-05-29 - T1 - 2012-memorial-day.pdf @2012-09-15T00:37:14Z - the merged trade date; as 2012-01-17.
+        (
+            2012,
+            5,
+            29,
+            ReplacementBlocks(&MERGED_2012_MONDAY_BLOCKS),
+            T1,
+            "2012-memorial-day.pdf @2012-09-15T00:37:14Z"
+        ),
+        // 2012-07-04 - T1 - 2012-4th-of-july.pdf @2012-09-15T00:39:23Z - the printed halt `1200 CT - Trading halt` ends the Tuesday-opened session; no trade date Wednesday exists, the sheet opens Tuesday 17:00 CT for trade date Thursday.
+        (2012, 7, 4, early_close(12 * 3_600), T1, "2012-4th-of-july.pdf @2012-09-15T00:39:23Z"),
+        // 2012-07-05 - T1 - 2012-4th-of-july.pdf @2012-09-15T00:39:23Z - the merged trade date: the sheet opens Tuesday 17:00 CT for trade date Thursday (its note dates the 16:45 CT queue), halts Wednesday 12:00 CT with order entry allowed, resumes 17:00 CT and closes Thursday 16:00 CT.
+        (
+            2012,
+            7,
+            5,
+            ReplacementBlocks(&MERGED_2012_JULY4_BLOCKS),
+            T1,
+            "2012-4th-of-july.pdf @2012-09-15T00:39:23Z"
+        ),
         (2012, 8, 31, early_close(15 * 3_600 + 15 * 60), T1, "2012-labor-day.pdf @2012-09-15T00:34:37Z"),
+        // 2012-09-03 - T1 - 2012-labor-day.pdf @2012-09-15T00:34:37Z - the printed halt `1200 CT - Trading halt` ends the Sunday-opened session.
+        (2012, 9, 3, early_close(12 * 3_600), T1, "2012-labor-day.pdf @2012-09-15T00:34:37Z"),
+        // 2012-09-04 - T1 - 2012-labor-day.pdf @2012-09-15T00:34:37Z - the merged trade date; as 2012-01-17.
+        (
+            2012,
+            9,
+            4,
+            ReplacementBlocks(&MERGED_2012_MONDAY_BLOCKS),
+            T1,
+            "2012-labor-day.pdf @2012-09-15T00:34:37Z"
+        ),
         (2012, 10, 5, early_close(15 * 3_600 + 15 * 60), T1, "2012-columbus-day.pdf @2012-09-15T00:15:14Z"),
-        (2012, 11, 23, early_close(12 * 3_600 + 15 * 60), T1, "2012-thanksgiving.pdf @2013-01-27T22:39:01Z"),
+        // 2012-11-22 - T1 - 2012-thanksgiving.pdf @2013-01-27T22:39:01Z - the printed halt `1200 CT - Trading halt` ends the Wednesday-opened session; no trade date Thursday exists, the sheet opens Wednesday 17:00 CT for trade date Friday.
+        (2012, 11, 22, early_close(12 * 3_600), T1, "2012-thanksgiving.pdf @2013-01-27T22:39:01Z"),
+        // 2012-11-23 - T1 - 2012-thanksgiving.pdf @2013-01-27T22:39:01Z - the merged trade date: the sheet opens Wednesday 17:00 CT for trade date Friday, halts Thursday 12:00 CT with order entry allowed, resumes 17:00 CT and closes Friday 12:15 CT.
+        (
+            2012,
+            11,
+            23,
+            ReplacementBlocks(&MERGED_2011_2012_THANKSGIVING_BLOCKS),
+            T1,
+            "2012-thanksgiving.pdf @2013-01-27T22:39:01Z"
+        ),
         (2012, 12, 24, early_close(12 * 3_600 + 15 * 60), T1, "2012-christmas.pdf @2013-04-14T19:40:27Z"),
         // 2012-12-25 - T1 - 2012-christmas.pdf - closed: christmas day 2012.
         (2012, 12, 25, Closed, T1, "2012-christmas.pdf @2013-04-14T19:40:27Z"),

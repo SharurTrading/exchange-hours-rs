@@ -64,6 +64,21 @@ const VENUES: [(Exchange, &[MarketHoursKey]); 4] = [
     (Exchange::Nymex, &[MarketHoursKey::GlobexEnergy]),
 ];
 
+/// The routed families Stage 5's Globex-family PR has already pruned to the
+/// single floor-onward window: the fence holds their declared windows **equal**
+/// to the venue's. `globex_grains` and `globex_livestock` keep their earlier
+/// eras until their own pruning PR and are held to containment.
+const FLOOR_WINDOW_FAMILIES: &[MarketHoursKey] = &[
+    MarketHoursKey::GlobexEquityIndex,
+    MarketHoursKey::GlobexEnergy,
+    MarketHoursKey::GlobexFx,
+    MarketHoursKey::GlobexInterestRates,
+];
+
+/// The pruned family no venue routes; it is held to the same exact window so
+/// the removal cannot hide behind the routing.
+const FLOOR_WINDOW_UNROUTED: &[MarketHoursKey] = &[MarketHoursKey::GlobexCryptocurrency];
+
 fn day(year: i32, month: u32, date: u32) -> NaiveDate {
     NaiveDate::from_ymd_opt(year, month, date).expect("fixture must be a valid date")
 }
@@ -782,13 +797,15 @@ fn without_holidays_restores_the_normal_week_for_every_venue() {
 /// The venue's window is the part of its families' shared answer that reaches
 /// the floor.
 ///
-/// Stage 5 (#117) prunes owners in separate PRs: the four venue tables dropped
-/// their pre-floor eras first, and the routed families' own tables still declare
-/// those earlier eras beside them until their own pruning PR lands. What holds
-/// already — and is asserted here — is that the venue declares exactly one
-/// floor-onward window, that it sits inside every routed family's covered
-/// dates, and that the day before the floor ships no row rather than an
-/// audited-normal one.
+/// Stage 5 (#117) prunes owners in separate PRs. The four venue tables dropped
+/// their pre-floor eras first, and this PR pruned the routed families
+/// [`FLOOR_WINDOW_FAMILIES`] to the same single floor-onward window, beside the
+/// unrouted [`FLOOR_WINDOW_UNROUTED`]. `globex_grains` and `globex_livestock`
+/// still declare their earlier eras until their own pruning PR, so the fence
+/// holds each family to the strongest claim true of it: the pruned families'
+/// windows **equal** the venue's, and the pending ones' windows **contain**
+/// it. Either way the venue never answers a date its families do not cover,
+/// and the day before the floor ships no row rather than an audited-normal one.
 #[test]
 fn the_venue_window_is_the_floor_onward_part_of_its_families_answer() {
     for (exchange, families) in VENUES {
@@ -802,8 +819,11 @@ fn the_venue_window_is_the_floor_onward_part_of_its_families_answer() {
 
         // Every routed family covers every date the venue answers, so the
         // intersection fence above never walks a date a family abstains on.
+        // A family whose own pruning PR has landed is held to the exact
+        // window; one whose eras are still shipped is held to containment.
         for key in families {
-            let family = calendar_for_market_hours_key(*key)
+            let family_calendar = calendar_for_market_hours_key(*key);
+            let family = family_calendar
                 .holiday_coverage()
                 .expect("a routed family ships a table");
             let (venue_first, venue_last) = (coverage.first(), coverage.last());
@@ -814,6 +834,13 @@ fn the_venue_window_is_the_floor_onward_part_of_its_families_answer() {
                     .any(|(first, last)| *first <= venue_first && venue_last <= *last),
                 "{exchange:?}: {key:?} covers the venue's retained window"
             );
+            if FLOOR_WINDOW_FAMILIES.contains(key) {
+                assert_eq!(
+                    family.windows(),
+                    &[(day(2025, 1, 1), day(2027, 12, 31))][..],
+                    "{exchange:?}: {key:?} is pruned to the venue's own window"
+                );
+            }
         }
 
         // The day before the floor is outside the window: no row, not silence
@@ -822,6 +849,19 @@ fn the_venue_window_is_the_floor_onward_part_of_its_families_answer() {
             venue.holiday_on(day(2024, 12, 31)),
             None,
             "{exchange:?}: 2024-12-31 is below the floor and ships no row"
+        );
+    }
+
+    // The pruned family that no venue routes still declares exactly the
+    // floor-onward window, so the removal cannot hide behind the routing.
+    for key in FLOOR_WINDOW_UNROUTED {
+        let family = calendar_for_market_hours_key(*key)
+            .holiday_coverage()
+            .expect("a family with a table ships coverage");
+        assert_eq!(
+            family.windows(),
+            &[(day(2025, 1, 1), day(2027, 12, 31))][..],
+            "{key:?}: pruned to the floor-onward window"
         );
     }
 }

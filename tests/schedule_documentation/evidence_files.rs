@@ -239,6 +239,51 @@ fn declared_evidence_files(run: &[String], module: &str) -> Vec<String> {
         .collect()
 }
 
+/// Replaces every `//` line comment outside a string literal with spaces of
+/// the same byte length, so a scanner that reads a macro body as text reads
+/// only the code (issue #174): a comment's prose — however parenthesised — can
+/// become neither a row nor a bracket nor a field, and a trailing `]` in a
+/// comment can no longer end a block early. Offsets into the result index the
+/// input identically.
+fn strip_line_comments(text: &str) -> String {
+    let mut stripped = String::with_capacity(text.len());
+    let mut characters = text.char_indices().peekable();
+    let mut in_string = false;
+    let mut escaped = false;
+    while let Some((_, character)) = characters.next() {
+        if in_string {
+            if escaped {
+                escaped = false;
+            } else if character == '\\' {
+                escaped = true;
+            } else if character == '"' {
+                in_string = false;
+            }
+            stripped.push(character);
+            continue;
+        }
+        match character {
+            '"' => {
+                in_string = true;
+                stripped.push(character);
+            }
+            '/' if characters.peek().is_some_and(|&(_, next)| next == '/') => {
+                characters.next();
+                stripped.push_str("  ");
+                for (_, commented) in characters.by_ref() {
+                    if commented == '\n' {
+                        stripped.push(commented);
+                        break;
+                    }
+                    stripped.extend(std::iter::repeat_n(' ', commented.len_utf8()));
+                }
+            }
+            _ => stripped.push(character),
+        }
+    }
+    stripped
+}
+
 /// Returns the body of the `revisions![ … ]` invocation starting at `text`.
 fn macro_body(text: &str) -> &str {
     let open = text.find('[').expect("revisions! must open its bracket");
@@ -386,15 +431,16 @@ fn revision_blocks() -> Vec<RevisionBlock> {
     let mut blocks = Vec::new();
     for path in crate_sources() {
         let text = fs::read_to_string(&path).expect("source file must be readable");
+        let scanned = strip_line_comments(&text);
         let module = relative(&path);
         let mut searched = 0_usize;
-        while let Some(offset) = text[searched..].find("revisions![") {
+        while let Some(offset) = scanned[searched..].find("revisions![") {
             let start = searched.saturating_add(offset);
             let run = comment_run(&text[..start]);
             blocks.push(RevisionBlock {
                 module: module.clone(),
                 files: declared_evidence_files(&run, &module),
-                rows: revision_rows(macro_body(&text[start..])),
+                rows: revision_rows(macro_body(&scanned[start..])),
             });
             searched = start.saturating_add("revisions![".len());
         }
@@ -415,6 +461,7 @@ struct HolidayBlock {
 }
 
 /// One `holidays!` tuple, reduced to what the evidence file has to record.
+#[derive(Debug, PartialEq, Eq)]
 struct HolidayRow {
     day: String,
     kind: String,
@@ -536,6 +583,34 @@ fn holiday_rows(body: &str, module_source: &str) -> Vec<HolidayRow> {
         .collect()
 }
 
+/// A `//` comment inside a `rows:` list changes nothing the fence reads
+/// (issue #174): a comment carrying parentheses must not become a row tuple,
+/// and one carrying a bracket must not end the list early — both silently
+/// changed what the fence verified before the scanners read comment-stripped
+/// text. The trailing `]` in the last comment is the case that used to
+/// truncate the list and drop the row after it.
+#[test]
+fn a_parenthesised_comment_parses_to_the_same_rows_as_none() {
+    let module = "const NINE_THIRTY: u32 = 9 * 3_600 + 30 * 60;\n";
+    let without = "rows: [\n\
+        \x20(2025, 1, 9, early_close(NINE_THIRTY), T2, \"DOC-1\"),\n\
+        \x20(2026, 1, 1, Closed, T2, \"DOC-2\"),\n\
+        \x20]\n";
+    let with = "rows: [ // the list (all trade dates)\n\
+        \x20// 2025-01-09 (09:30 NY)\n\
+        \x20(2025, 1, 9, early_close(NINE_THIRTY), T2, \"DOC-1\"), // (New York)\n\
+        \x20// the next row closes] the family for the day\n\
+        \x20(2026, 1, 1, Closed, T2, \"DOC-2\"),\n\
+        \x20]\n";
+    let expected = holiday_rows(without, module);
+    let commented = holiday_rows(&strip_line_comments(with), module);
+    assert_eq!(
+        commented, expected,
+        "a comment must not change the rows a fence reads"
+    );
+    assert_eq!(expected.len(), 2, "the fixture must carry both rows");
+}
+
 /// Every `holidays!` block in the crate, with its declared evidence files.
 ///
 /// Empty while no family table ships, which is what makes the two fences below
@@ -545,21 +620,22 @@ fn holiday_blocks() -> Vec<HolidayBlock> {
     let mut blocks = Vec::new();
     for path in crate_sources() {
         let text = fs::read_to_string(&path).expect("source file must be readable");
+        let scanned = strip_line_comments(&text);
         let module = relative(&path);
         let mut searched = 0_usize;
-        while let Some(offset) = text[searched..].find(MARKER) {
+        while let Some(offset) = scanned[searched..].find(MARKER) {
             let start = searched.saturating_add(offset);
             searched = start.saturating_add(MARKER.len());
             if on_comment_line(&text, start) {
                 continue;
             }
-            let body = &text[start..];
+            let body = &scanned[start..];
             blocks.push(HolidayBlock {
                 module: module.clone(),
-                source: text.clone(),
+                source: scanned.clone(),
                 files: declared_evidence_files(&comment_run(&text[..start]), &module),
                 coverage: holiday_coverage(body, &module),
-                rows: holiday_rows(body, &text),
+                rows: holiday_rows(body, &scanned),
             });
         }
     }

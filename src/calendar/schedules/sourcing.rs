@@ -277,14 +277,20 @@ const WITHHELD_QUARTER_HOUR: [PhaseGap; 1] = [withheld_sunday_quarter_hour()];
 /// German equity-index derivatives behind this identity, so 2025 and 2026 could
 /// carry closures the shipped table cannot state.
 ///
-/// **Whole-domain, and no phase.** The note is unpublished in the 2026 edition
-/// too, so no row is keyed to a day the gap stops applying
-/// (LAW-NO-FABRICATED-DATES). The gap withholds no phase — Eurex serves every
-/// phase it models on an ordinary day — so the declaration is a completeness
-/// fact rather than a reason to refuse an order-entry queue, and
+/// **Bounded by the editions that carry the note, and no phase.** The note is
+/// evidence in the 2025 and 2026 editions and in no later one — the 2027-2036
+/// material is the operator's own `preliminary and indicative` publishing, and
+/// the archive's Trading Calendar list stops at 2026 — so the gap's span ends
+/// where the last edition in hand ends: 2027-01-01 is the first day the note
+/// does not establish, not a day the operator resolved it. If a 2027 edition
+/// carries the note again, extending the bound is that edition's dated change.
+/// The gap withholds no phase — Eurex serves every phase it models on an
+/// ordinary day — so the declaration is a completeness fact rather than a reason
+/// to refuse an order-entry queue, and
 /// `CalendarQueryContext::require_phase_coverage` answers through it.
 const fn undated_german_closures() -> PhaseGap {
     PhaseGap::new(CoverageGapReason::UnpublishedClosureDates, "#157")
+        .until(effective_date(2027, 1, 1))
 }
 
 /// `eurex`'s one declaration: the operator's undated German-scope closures.

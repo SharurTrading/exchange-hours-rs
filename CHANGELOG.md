@@ -316,6 +316,16 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Fixed
 
+- **`eurex`'s gap record spans the editions that carry the note (2026-09-27 UTC).** The `#157`
+  declaration was whole-domain, so the metadata reported the German-scope `tba` withholding as
+  covering the whole supported domain. It is now bounded at 2027-01-01 — the first day the 2025
+  and 2026 editions' `to be announced` note does not establish, the archive's Trading Calendar
+  list stopping at 2026 and the 2027-2036 calendars being the operator's own `preliminary and
+  indicative` publishing. The bound moves no `is_open`, trade-date, boundary or coverage verdict:
+  2025-2026 stay withheld by the note and 2027 stays outside the audited window either way. A
+  2027 edition carrying the note again extends the bound as that edition's dated change (the
+  span-granularity half of #172).
+
 - **`globex_cryptocurrency` states its 24/7-era merged trade dates, and the `#93`
   special-session declaration is gone (2026-09-26 UTC).** CME's own trading-hours
   service prints no `16:00 closed` on the eight 24/7-era Monday and Thursday

@@ -12,10 +12,12 @@
 //! The whole block is **T1**: the `July 5, 2024 - 2025 Trading Holiday
 //! Calendar`, the `June 9, 2025 - 2026 Trading Holiday Calendar`, the `June 4,
 //! 2026 - 2027 Trading Holiday Calendar` issued as an Exchange Notice, the
-//! 2025 per-holiday Exchange Notices, the two 2025 London-bank-holiday
-//! "Delayed Opens" notices that carry dates the annual calendar does not list,
-//! and the six 2026 per-holiday Exchange Notices that give the exact late-open
-//! and early-close instants in New York time.
+//! 2025 per-holiday Exchange Notices, the 2024-12-30 National Day of Mourning
+//! notice that states 2025-01-09 without the annual calendar listing it, the
+//! two 2025 London-bank-holiday "Delayed Opens" notices that carry other dates
+//! the annual calendar does not list, and the six 2026 per-holiday Exchange
+//! Notices that give the exact late-open and early-close instants in New York
+//! time.
 //!
 //! ICE's calendars mark a date on which a product group trades non-regular
 //! hours `open1`, footnoted "Trading Hours for these contracts will be
@@ -274,15 +276,24 @@ pub(crate) static COTTON: &HolidayTable = holidays! {
 /// ICE prints FANG+ inside an `NYSE ... Index` bullet, at the same instant as
 /// NYSE Stock Index, on every notice that names it at all; the interpretive
 /// step that carries that reading to the notices which do not spell it out is
-/// recorded per year in the evidence file. Three 2025 notices name it
-/// explicitly — Juneteenth, Labor Day and the revised Thanksgiving notice — and
-/// the 2026 New Year's notice names it in the 2025-12-31 column.
+/// recorded per year in the evidence file. Four 2025 notices name it
+/// explicitly — Juneteenth, Labor Day, the revised Thanksgiving notice and the
+/// 2024-12-30 National Day of Mourning notice — and the 2026 New Year's notice
+/// names it in the 2025-12-31 column. The mourning notice is also the one that
+/// names the crate's own contract, `Micro NYSE FANG+` / `FNG`, which is why its
+/// 09:30 NY close is this family's row rather than the group header's.
 // Evidence: docs/evidence/ice_us.md
 pub(crate) static FANG: &HolidayTable = holidays! {
     coverage: [(2025, 1, 1) ..= (2028, 1, 3)],
     rows: [
         // 2025-01-01 - T1 - IFUS-CAL-2025 - New Year's Day.
         (2025, 1, 1, Closed, T1, "IFUS-CAL-2025"),
+        // 2025-01-09 - T1 - IFUS-NOTICE-2025-MOMENT-OF-SILENCE - National Day of
+        // Mourning: Micro NYSE FANG+, contract symbol FNG, ends at 09:30 NY; the
+        // notice's 13:15 NY list is SOFR and mortgage, which no crate identity
+        // models. No parentheses in these comments: the evidence fence parses
+        // every parenthesised group in this block as a holiday row.
+        (2025, 1, 9, early_close(9 * 3_600 + 30 * 60), T1, "IFUS-NOTICE-2025-MOMENT-OF-SILENCE"),
         // 2025-01-20 - T1 - IFUS-NOTICE-2025-MLK - early close 13:00 NY.
         (2025, 1, 20, early_close(13 * 3_600), T1, "IFUS-NOTICE-2025-MLK"),
         // 2025-02-17 - T1 - IFUS-NOTICE-2025-PRESIDENTS - early close 13:00 NY.
@@ -446,15 +457,20 @@ pub(crate) static DOLLAR_INDEX: &HolidayTable = holidays! {
 /// select agree. In this window that is the seven full closures — 2025-01-01,
 /// 2025-04-18, 2025-12-25, 2026-01-01, 2026-12-25, 2027-01-01 and 2027-12-24.
 /// On every other special date the families disagree — the softs close while
-/// the index families trade shortened hours — so the venue ships `Unsourced`
-/// rather than a row it cannot state or the silence that would claim the date
-/// was audited normal.
+/// the index families trade shortened hours, FANG+ closes early while every
+/// other family trades a full session, and so on — so the venue ships
+/// `Unsourced` rather than a row it cannot state or the silence that would
+/// claim the date was audited normal.
 // Evidence: docs/evidence/iceus.md
 pub(crate) static VENUE: &HolidayTable = holidays! {
     coverage: [(2025, 1, 1) ..= (2028, 1, 3)],
     rows: [
         // 2025-01-01 - T1 - IFUS-CAL-2025 - New Year's Day, every family closed.
         (2025, 1, 1, Closed, T1, "IFUS-CAL-2025"),
+        // 2025-01-09 - T1 - IFUS-NOTICE-2025-MOMENT-OF-SILENCE - FANG+ ends at
+        // 09:30 NY, the softs and the dollar index keep regular hours, so the
+        // venue states no instant.
+        (2025, 1, 9, Unsourced, T1, "IFUS-NOTICE-2025-MOMENT-OF-SILENCE"),
         // 2025-01-20 - T1 - IFUS-NOTICE-2025-MLK - softs closed, FANG+ early,
         // the dollar index regular.
         (2025, 1, 20, Unsourced, T1, "IFUS-NOTICE-2025-MLK"),

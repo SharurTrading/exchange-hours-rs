@@ -788,6 +788,104 @@ fn the_2025_index_early_closes_take_their_own_instants() {
 }
 
 #[test]
+fn the_2025_mourning_notice_closes_fang_at_0930_and_the_venue_withholds_the_date() {
+    let fang = key(MarketHoursKey::IceUs);
+    let venue = calendar_for_exchange(Exchange::Iceus);
+    let date = day(2025, 1, 9);
+    // ICE prints `9:30 am NY time`, and the module states venue-local seconds
+    // since midnight, so the row is 09:30 in `America/New_York`.
+    let cutoff = ny((2025, 1, 9), (9, 30, 0));
+
+    assert_eq!(
+        fang.holiday_on(date).map(Holiday::kind),
+        Some(HolidayKind::EarlyClose {
+            close_ssm: 9 * 3_600 + 30 * 60
+        })
+    );
+    assert_eq!(
+        fang.holiday_on(date).map(Holiday::document_id),
+        Some("IFUS-NOTICE-2025-MOMENT-OF-SILENCE")
+    );
+    // The clipping lands on the session that opened at 20:00 NY the evening
+    // before and still carries this trade date, so the evening leg is open and
+    // the close itself is end-exclusive.
+    assert_eq!(
+        fang.trade_date(ny((2025, 1, 8), (20, 0, 0)))
+            .expect("the coverage contract must answer a covered date"),
+        Some(date)
+    );
+    assert!(
+        fang.is_open(ny((2025, 1, 8), (20, 0, 0)))
+            .expect("the coverage contract must answer a covered date")
+    );
+    assert!(
+        fang.is_open(cutoff - TimeDelta::nanoseconds(1))
+            .expect("the coverage contract must answer a covered date"),
+        "09:29:59 NY is inside the shortened session"
+    );
+    assert!(
+        !fang
+            .is_open(cutoff)
+            .expect("the coverage contract must answer a covered date"),
+        "09:30:00 NY is the close, and a close is end-exclusive"
+    );
+    // The notice's second instant belongs to the SOFR and mortgage contracts,
+    // which no crate identity models: FANG+ is already shut there, so the
+    // 13:15 NY list is not this family's answer.
+    assert!(
+        !fang
+            .is_open(ny((2025, 1, 9), (13, 14, 59)))
+            .expect("the coverage contract must answer a covered date")
+    );
+    assert!(
+        !fang
+            .is_open(ny((2025, 1, 9), (13, 15, 0)))
+            .expect("the coverage contract must answer a covered date")
+    );
+
+    // The venue table is the five-family intersection, and 2025-01-09 moves
+    // exactly one family: the notice's own closing line leaves the softs and
+    // the dollar index on regular hours, so every other routed family trades a
+    // full session and the venue ships `Unsourced` rather than one family's
+    // instant or the silence that would claim the date audited normal.
+    assert_eq!(
+        venue.holiday_on(date).map(Holiday::kind),
+        Some(HolidayKind::Unsourced)
+    );
+    assert_eq!(
+        venue.holiday_on(date).map(Holiday::document_id),
+        Some("IFUS-NOTICE-2025-MOMENT-OF-SILENCE")
+    );
+    assert_declared_refusal(
+        venue.is_open(ny((2025, 1, 9), (12, 0, 0))),
+        DateCoverage::UnresolvedGap,
+        venue,
+        "the venue withholds 2025-01-09 because its families disagree",
+    );
+    for which in [
+        MarketHoursKey::IceUsSugar,
+        MarketHoursKey::IceUsCoffee,
+        MarketHoursKey::IceUsCocoa,
+        MarketHoursKey::IceUsCotton,
+        MarketHoursKey::IceUsOrangeJuice,
+        MarketHoursKey::IceUsDollarIndex,
+    ] {
+        let calendar = key(which);
+        assert_eq!(
+            calendar.holiday_on(date),
+            None,
+            "{which:?} is regular on 2025-01-09, which is what makes the venue withhold it"
+        );
+        assert!(
+            calendar
+                .is_open(ny((2025, 1, 9), (12, 0, 0)))
+                .expect("the coverage contract must answer a covered date"),
+            "{which:?} trades its ordinary session on 2025-01-09"
+        );
+    }
+}
+
+#[test]
 fn the_2025_london_bank_holidays_delay_the_three_softs_opens() {
     for date in [(2025, 5, 5), (2025, 8, 25)] {
         let open = ny(date, (7, 30, 0));

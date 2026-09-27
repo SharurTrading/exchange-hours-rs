@@ -326,7 +326,7 @@ corrections (a venue's hours fixed against a primary source) go under
 ### Fixed
 
 - **Six 2016-2018 CME Documents rows now name one revision each, split across
-  the eleven evidence files that carry them (2026-09-28 UTC, #188).** The rows
+  the eleven evidence files that carry them (2026-09-27 UTC, #188).** The rows
   for `2017-memorial-day`, `2017-4th-of-july`, `2017-labor-day`,
   `2018-new-years`, `2018-martin-luther-king` and `2018-presidents-day`
   `holiday-schedule.xls` paired the later revision's document id and replay URL

@@ -702,9 +702,12 @@ fn sundays_between(first: NaiveDate, last: NaiveDate) -> Vec<NaiveDate> {
 /// withholds the quarter-hour is closed at 16:05 CT and **accepting orders** at
 /// 16:20 CT, and exactly the served scopes that show that signature declare #79 - four dormant identities show it too and declare nothing, so the invariant is scoped to the inventory's sixteen rows —
 /// `cme`, `comex`, `nymex`, `globex_energy`, `globex_equity_index`, `globex_fx`
-/// and `globex_interest_rates`. The three that accept at 16:05 CT are genuinely
-/// fine, and the six closed at both instants have a different grid rather than a
-/// withheld quarter-hour, so neither group may carry the declaration.
+/// and `globex_interest_rates`. The four that accept at 16:05 CT are genuinely
+/// fine — the CBOT grains grid dates its own 16:00 CT Sunday onset to the
+/// 2013-04-07 notice, and `globex_nikkei_225_dollar` today carries the operator's
+/// published Sunday Pre-Open — and the five closed at both instants have a
+/// different grid rather than a withheld quarter-hour, so neither group may
+/// carry the declaration.
 ///
 /// This is the independent half of the fence the defect needed: it reads the
 /// profiles rather than the prose, so a scope silently dropped from the
@@ -786,7 +789,7 @@ fn the_sunday_quarter_hour_is_declared_exactly_where_the_profiles_withhold_it() 
     );
     assert_eq!(
         accepts_inside,
-        ["cbot", "cfe", "globex_grains"],
+        ["cbot", "cfe", "globex_grains", "globex_nikkei_225_dollar"],
         "these accept orders inside the disputed window, so no gap is declared for them"
     );
     assert_eq!(
@@ -796,8 +799,7 @@ fn the_sunday_quarter_hour_is_declared_exactly_where_the_profiles_withhold_it() 
             "eurex",
             "iceus",
             "globex_livestock",
-            "globex_cryptocurrency",
-            "globex_nikkei_225_dollar"
+            "globex_cryptocurrency"
         ],
         "these are closed at both instants: a different grid, not a withheld quarter-hour"
     );

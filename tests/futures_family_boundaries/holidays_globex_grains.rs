@@ -213,20 +213,26 @@ fn boxing_day_2025_opens_late_at_0830_central() {
     );
 }
 
-/// Case 4 again, on the row that moves both boundaries: the day after
-/// Thanksgiving 2025 is 08:30-12:05 CT and nothing else.
+/// Case 4 again, on the row that moves both boundaries and states the two
+/// Pre-Open windows the operator publishes beside them: the **finalised**
+/// 2025-11-28 publication prints `07:00 preopen`, `08:30 open` and
+/// `12:05 closed`, and the eve prints `16:45 preopen` against this trade date.
+///
+/// A scalar `late_open_and_early_close` moved the matching run correctly and
+/// stated neither queue, so the whole `16:45-19:00` eve window and the
+/// `07:00-08:30` morning window answered "not accepting orders".
 #[test]
-fn day_after_thanksgiving_2025_is_a_single_0830_to_1205_block() {
+fn day_after_thanksgiving_2025_states_both_of_its_published_queues() {
     let calendar = calendar_for_market_hours_key(ZC);
     let open = ct((2025, 11, 28), (8, 30, 0));
     let close = ct((2025, 11, 28), (12, 5, 0));
 
-    assert_eq!(
-        calendar.holiday_on(day((2025, 11, 28))).map(Holiday::kind),
-        Some(HolidayKind::LateOpenAndEarlyClose {
-            open_ssm: 8 * 3_600 + 30 * 60,
-            close_ssm: 12 * 3_600 + 5 * 60,
-        }),
+    assert!(
+        matches!(
+            calendar.holiday_on(day((2025, 11, 28))).map(Holiday::kind),
+            Some(HolidayKind::ReplacementBlocks(_)),
+        ),
+        "the row must state a complete block set, not a scalar clip"
     );
     assert!(!open_at(ct((2025, 11, 27), (19, 30, 0))));
     assert!(!open_at(open - Duration::seconds(1)));
@@ -238,6 +244,64 @@ fn day_after_thanksgiving_2025_is_a_single_0830_to_1205_block() {
             .session_bounds(open)
             .expect("the coverage contract must answer a covered date"),
         Some((open, close))
+    );
+
+    // The eve's own `16:45 preopen`, which CME dates to this trade date.
+    for (hour, minute, second) in [(16, 45, 0), (17, 0, 0), (18, 59, 59)] {
+        let instant = ct((2025, 11, 26), (hour, minute, second));
+        assert!(
+            calendar
+                .is_order_entry_only(instant)
+                .expect("the coverage contract must answer a covered date"),
+            "2025-11-26 {hour:02}:{minute:02}:{second:02} CT is inside the published eve queue"
+        );
+        assert!(
+            calendar
+                .is_accepting_orders(instant)
+                .expect("the coverage contract must answer a covered date")
+        );
+        assert_eq!(
+            calendar
+                .trade_date(instant)
+                .expect("the coverage contract must answer a covered date"),
+            Some(day((2025, 11, 28))),
+            "the eve queue carries the merged trade date"
+        );
+    }
+    assert!(
+        !calendar
+            .is_order_entry_only(ct((2025, 11, 26), (16, 44, 59)))
+            .expect("the coverage contract must answer a covered date"),
+        "no queue runs before the eve's published 16:45 CT onset"
+    );
+
+    // The trade date's own `07:00 preopen`, which the pre-holiday capture does
+    // not print.
+    for (hour, minute, second) in [(7, 0, 0), (8, 0, 0), (8, 29, 59)] {
+        let instant = ct((2025, 11, 28), (hour, minute, second));
+        assert!(
+            calendar
+                .is_order_entry_only(instant)
+                .expect("the coverage contract must answer a covered date"),
+            "2025-11-28 {hour:02}:{minute:02}:{second:02} CT is inside the published morning queue"
+        );
+        assert!(
+            calendar
+                .is_accepting_orders(instant)
+                .expect("the coverage contract must answer a covered date")
+        );
+    }
+    assert!(
+        !calendar
+            .is_order_entry_only(ct((2025, 11, 28), (6, 59, 59)))
+            .expect("the coverage contract must answer a covered date"),
+        "no queue runs before the published 07:00 CT onset"
+    );
+    assert!(
+        !calendar
+            .is_order_entry_only(open)
+            .expect("the coverage contract must answer a covered date"),
+        "08:30 CT is the open, and the queue closes end-exclusively"
     );
 }
 
@@ -486,6 +550,161 @@ fn a_closure_eve_states_the_complete_day_and_keeps_its_post_close_queue() {
             Ok(Some(day(eve))),
             "{eve:?}: the prior-evening leg carries the eve's trade date"
         );
+    }
+}
+
+/// The merged trade dates serve the Pre-Open the operator publishes on their
+/// eves, at each of the two onsets CME prints.
+///
+/// The operator dates the eve's queue with the **merged** trade date and
+/// withholds the holiday's own evening leg, so the ordinary week would feed the
+/// occurrence to the holiday the `Closed` row removes and the queue would
+/// disappear. Each merged trade date therefore carries a replacement row of its
+/// own. This fence pins the whole published window from both sides on every one
+/// of the seventeen dates the acceptance probe measured, and asserts on each
+/// that the window is order entry and never a session.
+///
+/// The seventeen are the twelve Sundays before a Monday holiday (`16:00
+/// preopen`) and the four mid-week eves whose holiday publishes no final close
+/// of its own (`16:45 preopen`), plus 2025-11-28's own `07:00 preopen`.
+/// (eve the queue is printed on, merged trade date, queue open CT).
+type MergeRow = ((i32, u32, u32), (i32, u32, u32), (u32, u32));
+
+const MERGES: [MergeRow; 16] = [
+    ((2025, 1, 19), (2025, 1, 21), (16, 0)),
+    ((2025, 2, 16), (2025, 2, 18), (16, 0)),
+    ((2025, 5, 25), (2025, 5, 27), (16, 0)),
+    ((2025, 6, 18), (2025, 6, 20), (16, 45)),
+    ((2025, 8, 31), (2025, 9, 2), (16, 0)),
+    ((2025, 11, 26), (2025, 11, 28), (16, 45)),
+    ((2026, 1, 18), (2026, 1, 20), (16, 0)),
+    ((2026, 2, 15), (2026, 2, 17), (16, 0)),
+    ((2026, 5, 24), (2026, 5, 26), (16, 0)),
+    ((2026, 9, 6), (2026, 9, 8), (16, 0)),
+    ((2026, 11, 25), (2026, 11, 27), (16, 45)),
+    ((2027, 1, 17), (2027, 1, 19), (16, 0)),
+    ((2027, 2, 14), (2027, 2, 16), (16, 0)),
+    ((2027, 5, 30), (2027, 6, 1), (16, 0)),
+    ((2027, 9, 5), (2027, 9, 7), (16, 0)),
+    ((2027, 11, 24), (2027, 11, 26), (16, 45)),
+];
+
+#[test]
+fn a_merged_trade_date_serves_the_pre_open_its_eve_publishes() {
+    let calendar = calendar_for_market_hours_key(ZC);
+
+    for (eve, trade_date, onset) in MERGES {
+        let open = ct(eve, (onset.0, onset.1, 0));
+        // The family's ordinary queue is three hours; 2025-11-26 is the one eve
+        // whose own trade date carries a `ReplacementBlocks` row and therefore
+        // closes the queue at the 19:00 CT open either way.
+        let close = ct(eve, (19, 0, 0));
+        let before = open - Duration::seconds(1);
+        assert!(
+            matches!(
+                calendar.holiday_on(day(trade_date)).map(Holiday::kind),
+                Some(HolidayKind::ReplacementBlocks(_)),
+            ),
+            "{trade_date:?} is a merged trade date and must state a block set"
+        );
+        assert!(
+            !calendar
+                .is_order_entry_only(before)
+                .expect("the coverage contract must answer a covered date"),
+            "{eve:?}: no queue runs before the published {onset:?} CT onset"
+        );
+        for instant in [open, close - Duration::seconds(1)] {
+            assert!(
+                calendar
+                    .is_order_entry_only(instant)
+                    .expect("the coverage contract must answer a covered date"),
+                "{eve:?}: the published Pre-Open is order entry only"
+            );
+            assert!(
+                calendar
+                    .is_accepting_orders(instant)
+                    .expect("the coverage contract must answer a covered date"),
+                "{eve:?}: a published Pre-Open accepts orders"
+            );
+            assert!(
+                !calendar
+                    .is_open(instant)
+                    .expect("the coverage contract must answer a covered date"),
+                "{eve:?}: no trade matches in a pre-open"
+            );
+            assert_eq!(
+                calendar
+                    .trade_date(instant)
+                    .expect("the coverage contract must answer a covered date"),
+                Some(day(trade_date)),
+                "{eve:?}: the queue carries the merged trade date the operator labels it with"
+            );
+        }
+    }
+
+    // 2025-11-28's own morning queue, which only the finalised publication
+    // prints.
+    let open = ct((2025, 11, 28), (7, 0, 0));
+    assert!(
+        !calendar
+            .is_order_entry_only(open - Duration::seconds(1))
+            .expect("the coverage contract must answer a covered date"),
+        "2025-11-28: no queue runs before the published 07:00 CT onset"
+    );
+    for instant in [
+        open,
+        ct((2025, 11, 28), (8, 0, 0)),
+        ct((2025, 11, 28), (8, 29, 59)),
+    ] {
+        assert!(
+            calendar
+                .is_order_entry_only(instant)
+                .expect("the coverage contract must answer a covered date"),
+            "2025-11-28: the published morning Pre-Open is order entry only"
+        );
+        assert!(
+            calendar
+                .is_accepting_orders(instant)
+                .expect("the coverage contract must answer a covered date"),
+            "2025-11-28: a published Pre-Open accepts orders"
+        );
+        assert!(
+            !calendar
+                .is_open(instant)
+                .expect("the coverage contract must answer a covered date"),
+            "2025-11-28: no trade matches in a pre-open"
+        );
+    }
+    assert!(
+        !calendar
+            .is_order_entry_only(ct((2025, 11, 28), (8, 30, 0)))
+            .expect("the coverage contract must answer a covered date"),
+        "2025-11-28: 08:30 CT is the open, and the queue closes end-exclusively"
+    );
+
+    // The holiday Monday itself keeps no queue: CME publishes no `14:30 pcp` and
+    // no `16:45 preopen` on it, and the merged row must not resurrect them.
+    for (holiday, first, second) in [
+        ((2025, 1, 20), (14, 30), (16, 45)),
+        ((2025, 6, 19), (14, 30), (16, 45)),
+        ((2026, 11, 26), (14, 30), (16, 45)),
+        ((2027, 11, 25), (14, 30), (16, 45)),
+    ] {
+        for time in [first, second] {
+            let instant = ct(holiday, (time.0, time.1, 0));
+            assert!(
+                !calendar
+                    .is_order_entry_only(instant)
+                    .expect("the coverage contract must answer a covered date"),
+                "{holiday:?} {time:?} CT: the holiday publishes no queue of its own"
+            );
+            assert!(
+                !calendar
+                    .is_accepting_orders(instant)
+                    .expect("the coverage contract must answer a covered date"),
+                "{holiday:?} {time:?} CT: the holiday publishes no queue of its own"
+            );
+        }
     }
 }
 

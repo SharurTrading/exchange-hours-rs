@@ -8,11 +8,20 @@
 //! noted, so Central is the zone modelled here. `US::Central` is the IANA link
 //! for `America/Chicago` and is the zone constant every other CME/CBOT module
 //! in this crate already uses.
+//!
+//! One continuous 17:00-16:00 CT envelope per trade date, and the 16:00-17:00 CT
+//! break between consecutive trade dates carries the operator's Pre-Open queue:
+//! `16:45 preopen` Monday-Thursday and a Sunday onset that moved from 16:15 to
+//! 16:00 CT without a day-level statement, both handing over to the 17:00 CT
+//! open. A queue is `order_entry`, so it accepts orders without reporting a
+//! session. The disputed Sunday quarter-hour is withheld and declared (#79), and
+//! the 2011/2012/2013 eras ship no order-entry phase; both records are in
+//! [`docs/evidence/globex_nikkei_225_dollar.md`](../../../../../docs/evidence/globex_nikkei_225_dollar.md).
 
 use chrono_tz::US;
 
 use crate::calendar::SessionRule;
-use crate::calendar::rule::{MON_FRI, SUN_PLUS_MON_THU};
+use crate::calendar::rule::{MON_FRI, MON_THU, SUN_ONLY, SUN_PLUS_MON_THU};
 use crate::calendar::schedules::StaticHoursProfile;
 use crate::calendar::schedules::timeline::{Revision, local_date, revisions, select_revision};
 
@@ -28,17 +37,43 @@ pub(crate) static NKD_REGULAR_CURRENT: &[SessionRule] = &[SessionRule {
     close_ssm: 16 * 3600,
 }];
 
-// No order-entry phase is modelled, and BTIC (`NKT`) is separately scheduled, so
-// no extended phase is asserted. Whether the operator's `16:45 preopen` Mon-Thu
-// onset is an order-entry phase is open — #139. See
-// docs/evidence/globex_nikkei_225_dollar.md.
+// No extended phase is asserted: BTIC (`NKT`) is separately scheduled on its
+// own published hours, so it is not a phase of this outright order book.
 pub(crate) static NKD_EXTENDED_CURRENT: &[SessionRule] = &[];
+
+/// The Pre-Open the operator publishes ahead of the 17:00 CT open:
+/// `16:45 preopen` Monday-Thursday and `16:00 preopen` on the Sunday that opens
+/// the week.
+///
+/// `preopen` is the operator's own event type — "Order Entry, modification, and
+/// cancel are allowed. No order matching." — so the window is an order-entry
+/// phase, never a session, and it stays out of `is_open`.
+///
+/// The phase is carried from the 2015-09-20 revision, the grid the cited
+/// normal-week capture witnesses, and not into the 2011/2012/2013 eras: a later
+/// observation is not carry-back, and those eras' captures state a different
+/// Pre-Open onset. Both records — the pre-2015 omission and the Sunday onset's
+/// undated 16:15-to-16:00 move — are in the evidence file.
+///
+/// Evidence: `docs/evidence/globex_nikkei_225_dollar.md`.
+pub(crate) static NKD_ORDER_ENTRY_CURRENT: &[SessionRule] = &[
+    SessionRule {
+        days: SUN_ONLY,
+        open_ssm: 16 * 3_600,
+        close_ssm: 17 * 3_600,
+    },
+    SessionRule {
+        days: MON_THU,
+        open_ssm: 16 * 3_600 + 45 * 60,
+        close_ssm: 17 * 3_600,
+    },
+];
 
 pub(crate) static NKD_CURRENT: StaticHoursProfile = StaticHoursProfile {
     tz: US::Central,
     regular: NKD_REGULAR_CURRENT,
     extended: NKD_EXTENDED_CURRENT,
-    order_entry: &[],
+    order_entry: NKD_ORDER_ENTRY_CURRENT,
     has_daily_close: true,
     has_weekend_close: true,
 };

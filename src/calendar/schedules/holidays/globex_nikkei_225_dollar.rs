@@ -174,6 +174,24 @@ pub(crate) static MERGED_SESSION_EARLY_CLOSE_BLOCKS: [ExceptionBlock; 4] = [
     ExceptionBlock::order_entry(-1, 12 * 3_600, 17 * 3_600),
     ExceptionBlock::extended(-1, 17 * 3_600, 12 * 3_600 + 15 * 60),
 ];
+/// The complete trading day of the two trade dates whose prior local day is a
+/// full closure, and whose Pre-Open therefore opens at the 17:00 CT session's
+/// own 16:00 CT boundary rather than at the weekday `16:45`.
+///
+/// CME prints `16:00 preopen /TD <this date>; 17:00 open /TD <this date>` on the
+/// closed day itself, so the queue belongs to this trade date rather than to the
+/// holiday, and the holiday's own `Closed` row would otherwise delete it. The
+/// 17:00-16:00 CT envelope is one `regular` block, matching `NKD_REGULAR_CURRENT`
+/// rather than the `extended` spelling the merged-date rows use, because on
+/// these two dates the normal week's own `regular` occurrence is what is being
+/// restated. The four pre-existing block sets' `extended` spelling is what
+/// flips `is_open_regular` on every date they cover; tracked as issue #176.
+///
+/// Evidence: `docs/evidence/globex_nikkei_225_dollar.md`.
+pub(crate) static NO_PRIOR_EVENING_LEG_BLOCKS: [ExceptionBlock; 2] = [
+    ExceptionBlock::order_entry(-1, 16 * 3_600, 17 * 3_600),
+    ExceptionBlock::regular(-1, 17 * 3_600, 16 * 3_600),
+];
 use super::{
     EvidenceTier::{T1, T2},
     HolidayKind::{Closed, ReplacementBlocks, Unsourced},
@@ -413,6 +431,18 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         // CME-SVC-2024-12-31, whose artifact is the 2025-01-01..2025-01-02 response.
         (2024, 12, 31, Unsourced, T2, "CME-SVC-2024-12-31..2025-01-02"),
         (2025, 1, 1, Closed, T2, "CME-SVC-2024-12-31"),
+        // 2025-01-02 - T2 - CME-SVC-2024-12-31 - the day after New Year's Day; its prior
+        // local day is a full closure, so its Pre-Open opens at 16:00 CT. The
+        // ten-product capture is the one that carries this instant for this
+        // window; no `THBP-B` capture of it exists.
+        (
+            2025,
+            1,
+            2,
+            ReplacementBlocks(&NO_PRIOR_EVENING_LEG_BLOCKS),
+            T2,
+            "CME-SVC-2024-12-31"
+        ),
         // 2025-01-20 - T2 - CME-SVC-2025-01-19 - Martin Luther King Jr. Day, 12:00 CT close.
         (2025, 1, 20, early_close(12 * 3_600), T2, "CME-SVC-2025-01-19"),
         // 2025-02-17 - T2 - CME-SVC-2025-02-16 - Presidents' Day, 12:00 CT close.
@@ -449,8 +479,27 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2025, 12, 24, early_close(12 * 3_600 + 15 * 60), T2, "CME-SVC-B-2025-12-24"),
         // 2025-12-25 - T2 - CME-SVC-B-2025-12-24 - Christmas Day, no trade date of its own.
         (2025, 12, 25, Closed, T2, "CME-SVC-B-2025-12-24"),
+        // 2025-12-26 - T2 - CME-SVC-B-2025-12-24 - the day after Christmas; its prior
+        // local day is a full closure, so its Pre-Open opens at 16:00 CT.
+        (
+            2025,
+            12,
+            26,
+            ReplacementBlocks(&NO_PRIOR_EVENING_LEG_BLOCKS),
+            T2,
+            "CME-SVC-B-2025-12-24"
+        ),
         // 2026-01-01 - T2 - CME-SVC-B-2025-12-31 - New Year's Day, no trade date of its own.
         (2026, 1, 1, Closed, T2, "CME-SVC-B-2025-12-31"),
+        // 2026-01-02 - T2 - CME-SVC-B-2025-12-31 - the day after New Year's Day; as 2025-12-26.
+        (
+            2026,
+            1,
+            2,
+            ReplacementBlocks(&NO_PRIOR_EVENING_LEG_BLOCKS),
+            T2,
+            "CME-SVC-B-2025-12-31"
+        ),
         // 2026-01-19 - T2 - CME-SVC-B-2026-01-18 - Martin Luther King Jr. Day, 12:00 CT close.
         (2026, 1, 19, early_close(12 * 3_600), T2, "CME-SVC-B-2026-01-18"),
         // 2026-01-20 - T2 - CME-SVC-B-2026-01-18 - Martin Luther King Day; the holiday publishes no final close, so the span from Sunday evening carries this trade date.

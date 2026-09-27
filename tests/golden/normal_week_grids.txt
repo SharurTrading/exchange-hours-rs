@@ -615,7 +615,8 @@ ice_us_dollar_index | order-en | MoTuWeTh------ | 19:30:00-20:00:00
 globex_nikkei_225_dollar | tz US/Central | week_open_seconds 414000
 globex_nikkei_225_dollar | regular  | MoTuWeTh----Su | 17:00:00-16:00:00 +1d
 globex_nikkei_225_dollar | extended | (none)
-globex_nikkei_225_dollar | order-en | (none)
+globex_nikkei_225_dollar | order-en | ------------Su | 16:00:00-17:00:00
+globex_nikkei_225_dollar | order-en | MoTuWeTh------ | 16:45:00-17:00:00
 eurex_fixed_income | tz Europe/Berlin | week_open_seconds 357000
 eurex_fixed_income | regular  | MoTuWeThFr---- | 02:10:00-22:00:00
 eurex_fixed_income | extended | (none)

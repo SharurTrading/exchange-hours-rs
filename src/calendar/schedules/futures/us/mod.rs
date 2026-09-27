@@ -47,7 +47,9 @@ pub(crate) use cfe::CFE_ORDER_ENTRY;
 pub(crate) use cfe::{CFE_EXTENDED, CFE_REGULAR, cfe_profile_at};
 pub(crate) use cme_group::CME_ORDER_ENTRY_CURRENT;
 pub(crate) use cme_group::{CME_EXTENDED_CURRENT, CME_REGULAR, cme_profile_at};
-pub(crate) use cme_nikkei::{NKD_EXTENDED_CURRENT, NKD_REGULAR_CURRENT, nkd_profile_at};
+pub(crate) use cme_nikkei::{
+    NKD_EXTENDED_CURRENT, NKD_ORDER_ENTRY_CURRENT, NKD_REGULAR_CURRENT, nkd_profile_at,
+};
 pub(crate) use coinbase_derivatives::profile_at as coinbase_derivatives_profile_at;
 pub(crate) use cryptocurrency::{
     CURRENT_FUTURES_PROFILE as CRYPTOCURRENCY_CURRENT, profile_at as cryptocurrency_profile_at,

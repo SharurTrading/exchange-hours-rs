@@ -774,9 +774,11 @@ fn the_published_saturday_sessions_ship_as_rows_on_the_following_monday() {
 /// session, so the row's `session_bounds` alone do not state it: this fence
 /// pins the queue's own interval from both sides through `session_state`,
 /// confirms through `is_order_entry_only` that the interval is a queue and not
-/// a session, and confirms 17:00 CT hands it to the matching session. The
-/// family's *normal* week models no order-entry phase, so those two routes
-/// answer `false` everywhere else; here they answer for the row.
+/// a session, and confirms 17:00 CT hands it to the matching session.
+///
+/// The row states this queue on a Sunday whose Monday trade date carries a
+/// published Saturday session; the family's ordinary Sunday and Monday-Thursday
+/// queues are fenced in `cme_nikkei.rs`.
 #[test]
 fn the_published_sunday_pre_open_queues_are_fenced_at_their_bounds() {
     let nkd = nkd();
@@ -854,10 +856,95 @@ fn the_published_sunday_pre_open_queues_are_fenced_at_their_bounds() {
     }
 }
 
+/// The three trade dates whose prior local day is a full closure, where the
+/// operator's Pre-Open therefore opens at the 17:00 CT session's own 16:00 CT
+/// boundary rather than at the weekday `16:45`, are served as order entry.
+///
+/// CME prints `16:00 preopen /TD <the trade date>; 17:00 open /TD <the trade
+/// date>` on the closed day itself, so the queue belongs to the following trade
+/// date and the holiday's own `Closed` row would otherwise delete it. The
+/// window is fenced from both sides, and 17:00 CT is asserted to hand it to the
+/// matching session rather than to a second queue.
+#[test]
+fn a_day_after_a_closure_serves_its_1600_pre_open() {
+    let nkd = nkd();
+
+    // (the closure the queue is printed on, the trade date it carries).
+    for (closure, trade_date) in [
+        ((2025, 1, 1), (2025, 1, 2)),
+        ((2025, 12, 25), (2025, 12, 26)),
+        ((2026, 1, 1), (2026, 1, 2)),
+    ] {
+        let (cy, cm, cd) = closure;
+        let (ty, tm, td) = trade_date;
+        assert_eq!(
+            nkd.holiday_on(day(cy, cm, cd)).map(Holiday::kind),
+            Some(HolidayKind::Closed),
+            "{cy}-{cm:02}-{cd:02} is a full closure"
+        );
+        assert!(
+            matches!(
+                nkd.holiday_on(day(ty, tm, td)).map(Holiday::kind),
+                Some(HolidayKind::ReplacementBlocks(_)),
+            ),
+            "{ty}-{tm:02}-{td:02} must state the queue's own trade date"
+        );
+
+        let open = ct(cy, cm, cd, 16, 0, 0);
+        let close = ct(cy, cm, cd, 17, 0, 0);
+        // One second before the onset is outside the queue. For 2025-01-01 that
+        // instant belongs to 2024-12-31, which precedes the support floor, so the
+        // contract's own refusal is the right answer there as well.
+        assert!(
+            !matches!(
+                nkd.is_order_entry_only(open - Duration::seconds(1)),
+                Ok(true)
+            ),
+            "{cy}-{cm:02}-{cd:02}: no queue runs before the published 16:00 CT onset"
+        );
+        for instant in [open, close - Duration::seconds(1)] {
+            assert_eq!(
+                nkd.session_state(instant),
+                Ok(SessionState::OrderEntry),
+                "{instant} is inside the published Pre-Open"
+            );
+            assert!(
+                nkd.is_order_entry_only(instant)
+                    .expect("the coverage contract must answer a covered date")
+            );
+            assert!(
+                nkd.is_accepting_orders(instant)
+                    .expect("the coverage contract must answer a covered date")
+            );
+            assert!(
+                !nkd.is_open(instant)
+                    .expect("the coverage contract must answer a covered date"),
+                "{instant}: a pre-open matches no trade"
+            );
+            assert_eq!(
+                nkd.trade_date(instant)
+                    .expect("the coverage contract must answer a covered date"),
+                Some(day(ty, tm, td)),
+                "{instant} carries the trade date CME prints on it"
+            );
+        }
+        assert_eq!(
+            nkd.session_state(close),
+            Ok(SessionState::OpenRegular),
+            "{cy}-{cm:02}-{cd:02}: 17:00 CT hands the queue to the matching session"
+        );
+        assert_eq!(
+            nkd.session_bounds(ct(cy, cm, cd, 18, 0, 0))
+                .expect("the coverage contract must answer a covered date"),
+            Some((close, ct(ty, tm, td, 16, 0, 0))),
+            "{cy}-{cm:02}-{cd:02}: the queue feeds the 17:00-16:00 CT envelope"
+        );
+    }
+}
+
 // ---------------------------------------------------------------------------
 // The 2016-2018 rows.
 // ---------------------------------------------------------------------------
-
 /// The era is governed by the Equity Index line, and its nine closures and
 /// 24 early closes land on the same trade dates as that line's.
 #[test]

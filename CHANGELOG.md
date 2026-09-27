@@ -326,6 +326,36 @@ corrections (a venue's hours fixed against a primary source) go under
   2027 edition carrying the note again extends the bound as that edition's dated change (the
   span-granularity half of #172).
 
+- **`globex_nikkei_225_dollar` and `globex_grains` serve Pre-Open queues CME
+  publishes and they did not (2026-09-26 UTC).** One class of defect across the
+  two keys, at twenty row-level onsets — sixteen `globex_grains`
+  merged-trade-date rows, the restated 2025-11-28 trade date, and three
+  `globex_nikkei_225_dollar` no-prior-evening-leg block rows — plus
+  `globex_nikkei_225_dollar`'s whole normal-week order-entry phase, at every
+  one of which `is_accepting_orders` answered `Ok(false)` for a queue the
+  operator prints.
+  `globex_nikkei_225_dollar` modelled **no** order-entry phase, on a module comment
+  claiming CME publishes no normal-week Pre-Open for `NKD`; the operator's own
+  trading-hours service prints `16:45 preopen` Monday-Thursday and `16:00 preopen`
+  on the Sunday that opens the week, ahead of the `17:00` CT open, so the phase now
+  ships as `order_entry` from the 2015-09-20 revision, with `is_open` untouched
+  (#139). Its 2025-01-02, 2025-12-26 and 2026-01-02 trade dates — whose prior local
+  day is a full closure, so their Pre-Open opens at the `17:00` CT session's own
+  `16:00` boundary rather than at the weekday `16:45` — ship as replacement-block
+  rows. `globex_grains` lost the evening Pre-Open on the twelve Sundays before a
+  Monday holiday and on the four mid-week eves whose holiday publishes no final
+  close: the operator dates those queues with the **merged** trade date, so the
+  ordinary week fed each occurrence to the holiday the `Closed` row removes and the
+  queue disappeared with it. Each merged trade date now carries a replacement-block
+  row stating the queue and its complete day — sixteen rows in all, plus the 2025-11-28
+  trade date restated — and the **finalised** 2025-11-28 publication's `07:00 preopen`,
+  which the pre-holiday capture does not print, is stated beside the eve's queue
+  (#165). Measured over the whole 2025-01-01..2027-12-31 window at five-minute
+  granularity, the change moves no `is_open`, `is_open_regular`, `is_open_extended`
+  or `session_bounds` answer on either key; it moves only `session_state`,
+  `is_order_entry_only`, `is_accepting_orders` and the order-entry windows'
+  `trade_date`. Two defects found in the same sweep are **not** fixed and are tracked
+  as #175 and #176.
 - **`globex_cryptocurrency` states its 24/7-era merged trade dates, and the `#93`
   special-session declaration is gone (2026-09-26 UTC).** CME's own trading-hours
   service prints no `16:00 closed` on the eight 24/7-era Monday and Thursday

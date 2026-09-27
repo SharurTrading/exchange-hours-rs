@@ -318,8 +318,9 @@ the product-family key: `globex_equity_index` knows what CME equity index does o
   party to each disagreement.
   Cryptocurrency shares the same **nine** closures — its `Closed` rows cover every one
   of them — so it would not touch the nine stated rows. Of the sixty-one dates the
-  venue withholds, it states nothing on thirty and replacement blocks on thirty-one,
-  and every one of those thirty-one lands on a date the venue already reports
+  venue withholds, it states nothing on thirty and a row on the other thirty-one —
+  seventeen replacement-blocks sets, three early closes and eleven closures — and
+  every one of those thirty-one lands on a date the venue already reports
   `unsourced`, so no audited-normal date could flip and the venue's answers would be
   unchanged. The choice is recorded rather than inferred: the consumer owns the map,
   and this file states what each reading costs.

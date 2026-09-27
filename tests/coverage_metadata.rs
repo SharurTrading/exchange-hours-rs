@@ -662,8 +662,9 @@ fn check_metadata(calendar: ExchangeCalendar, identity: CalendarSource) {
     // date-level runs are streamed a run at a time and never stored — so the
     // capacity is asserted against those. (The store's own doc in
     // `coverage/ranges.rs` carries the invariant; at the 2010 floor the
-    // restored windows put `cbot` at 267 total gap records, of which two are
-    // declaration records.)
+    // restored windows put `cbot` at 267 total gap records, none of them
+    // declaration records — cbot carries no phase-gap declaration, and the
+    // most any shipped identity holds is one.)
     let declaration_records = gaps.iter().filter(|gap| gap.phase_gap().is_some()).count();
     assert!(
         declaration_records <= exchange_hours::CoverageGaps::capacity(),

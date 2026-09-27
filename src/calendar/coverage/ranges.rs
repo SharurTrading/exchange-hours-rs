@@ -39,7 +39,7 @@ use chrono::NaiveDate;
 /// The walk's own edges are bounded by the identity's window and row counts, and a
 /// declaration adds two more, so this is generous headroom rather than a limit
 /// anything ships near: the most declarations any shipped identity carries is
-/// **2** (`globex_fx`), against a bound of 256, and
+/// **1** (`globex_fx`), against a bound of 256, and
 /// `tests/coverage_metadata.rs` holds every identity's declaration-record count
 /// to it. Exceeding it is unreachable with the shipped tables; were it
 /// reached, a declaration's record would be dropped while the walk still skipped

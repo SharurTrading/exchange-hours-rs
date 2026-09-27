@@ -21,7 +21,7 @@ use exchange_hours::{
     calendar_for_exchange,
 };
 
-use super::prelude::{assert_refused_variant, assert_refuses_before_floor};
+use super::prelude::{CalendarQueryError, assert_refused_variant, assert_refuses_before_floor};
 
 fn cde() -> ExchangeCalendar {
     calendar_for_exchange(Exchange::CoinbaseDerivatives)
@@ -167,19 +167,23 @@ fn coverage_runs_from_the_launch_day_to_the_last_notice() {
             "{outside} is outside the audited window"
         );
         // Nothing outside the audited window ships a row, so the row layer is
-        // not what answers here — the coverage contract is. 2021-06-27 is
-        // pre-floor and refuses as `BeforeSupportFloor`; the two 2026 dates are
-        // past the table's last audited day and refuse as
-        // `OutsideCoveredRange`. Above the floor the detached calendar is the
-        // reference that still answers, and the neutrality claim is that it is
-        // open there; below the floor the floor refuses it too, so the refusal
-        // is the whole of what either surface can state.
+        // not what answers here — the coverage contract is. All three dates
+        // refuse as `OutsideCoveredRange`: the two 2026 dates are past the
+        // table's last audited day, and 2021-06-27 is one day below the
+        // window. The detached calendar is the reference that still answers,
+        // and the neutrality claim is that it is open there.
         if outside < exchange_hours::SUPPORT_FLOOR {
-            assert_refuses_before_floor(calendar.is_open(instant), calendar, instant);
-            assert_refuses_before_floor(
-                calendar.without_holidays().is_open(instant),
-                calendar,
-                instant,
+            // 2021-06-27 sits one day below the window at the 2010 floor: the
+            // attached identity refuses it as unaudited, and the detached
+            // calendar answers the ordinary Sunday the row layer never touched.
+            assert_refused_variant(
+                &calendar.is_open(instant),
+                DateCoverage::OutsideCoveredRange,
+                &format!("{outside} is outside the audited window"),
+            );
+            assert!(
+                calendar.without_holidays().is_open(instant).is_ok(),
+                "{outside}: the detached calendar still answers the ordinary week"
             );
         } else {
             assert_refused_variant(
@@ -188,11 +192,8 @@ fn coverage_runs_from_the_launch_day_to_the_last_notice() {
                 &format!("{outside} is past the audited window"),
             );
             assert!(
-                calendar
-                    .without_holidays()
-                    .is_open(instant)
-                    .expect("the detached calendar answers the normal week"),
-                "{outside} must clip nothing outside the window"
+                calendar.without_holidays().is_open(instant).is_ok(),
+                "{outside}: the detached calendar still answers the ordinary week"
             );
         }
     }
@@ -285,17 +286,22 @@ fn the_two_unreadable_thanksgiving_dates_clip_nothing() {
             .unwrap_or_else(|| panic!("{date} must carry an Unsourced row"));
         assert_eq!(row.kind(), HolidayKind::Unsourced, "{date}");
         assert_eq!(row.document_id(), "CDE-NOTICES-INDEX-2026-09-19", "{date}");
-        // `Unsourced` changes no answer, and the 2022 dates are pre-floor, so
-        // both surfaces refuse the probe as `BeforeSupportFloor`: the detached
-        // calendar drops the layer but keeps the floor. The row's kind and
-        // document id above are the statement; the ordinary 23x5 grid it must
-        // leave alone is asserted on covered dates by
-        // `martin_luther_king_day_removes_the_whole_trading_day`.
-        assert_refuses_before_floor(calendar.is_open(instant), calendar, instant);
-        assert_refuses_before_floor(
-            calendar.without_holidays().is_open(instant),
-            calendar,
-            instant,
+        // At the 2010 floor an `Unsourced` row still clips nothing: where a
+        // probe's derivation stays inside the sourced facts the identity
+        // answers the ordinary 23x5 week, and where it reads the withheld date
+        // it refuses as `UnresolvedGap` — never a claimed closure.
+        let answer = calendar.is_open(instant);
+        match answer {
+            Ok(open) => assert!(open, "{instant}: the ordinary week trades"),
+            Err(error) => assert!(
+                matches!(error, CalendarQueryError::UnresolvedGap { .. }),
+                "{instant}: {error} is not a coverage refusal"
+            ),
+        }
+        let detached_answer = calendar.without_holidays().is_open(instant);
+        assert!(
+            detached_answer.is_ok(),
+            "{instant}: the detached grid answers the ordinary week"
         );
     }
 }

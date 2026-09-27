@@ -51,9 +51,9 @@
 //! it now, and the reason stays on the enum because it is still the vocabulary a
 //! future special-session gap would use.
 //!
-//! Only an identity whose gap survives the permanent 2025 floor is declared
+//! Only an identity whose gap survives the permanent 2010 floor is declared
 //! here, because that is the interval the completeness claim covers: a scope
-//! whose withheld phase or unstateable session lies entirely before 2025 is not
+//! whose withheld phase or unstateable session lies entirely before 2010 is not
 //! incomplete in the claimed interval and must not be declared. Twelve identities
 //! declare one gap each today — twelve declarations in all — and the fences in
 //! `tests/schedule_documentation/coverage_inventory.rs` hold them to the

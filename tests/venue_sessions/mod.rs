@@ -112,30 +112,97 @@ mod prelude {
     ///
     /// The `Result` is taken by value so each call site stays one expression;
     /// the query helpers return owned payloads (`bool`, `Option<SessionWindow>`,
-    /// `Option<NaiveDate>`), and tests are not exempt from
-    /// `clippy::needless_pass_by_value`, so the exception is stated here.
-    #[expect(
-        clippy::needless_pass_by_value,
-        reason = "query helpers return owned Results; taking them by value keeps \
-                  every call site a single expression"
-    )]
-    pub(super) fn assert_refuses_before_floor(
-        answer: Result<impl core::fmt::Debug, CalendarQueryError>,
+    /// `Option<NaiveDate>`).
+    pub(super) fn assert_refuses_before_floor<T: core::fmt::Debug>(
+        answer: Result<T, CalendarQueryError>,
         calendar: ExchangeCalendar,
         instant: DateTime<Utc>,
     ) {
         let local_date = instant.with_timezone(&calendar.tz()).date_naive();
+        // A date the metadata calls covered answers: the value may be `false`
+        // for a real pre-launch closure.
+        if calendar.coverage().coverage_on(local_date) == DateCoverage::Covered {
+            assert!(
+                answer.is_ok(),
+                "{:?}: {instant} is venue-local {local_date}, a covered date, so the \
+                 date-aware surface must answer it; got {answer:?}",
+                calendar.source(),
+            );
+            return;
+        }
+        // A declared phase gap shadows the date-level verdict: on a date whose
+        // date-level facts answer, session queries answer through the shadow.
+        let phase_shadow_here = phase_shadow_answers(calendar, local_date);
+        if answer.is_ok() && phase_shadow_here {
+            return;
+        }
+        let error =
+            answer.expect_err("{:?}: the date-aware surface must refuse, never answer a closure");
+        // At the 2010 floor most era-sweep probes sit at or above the floor, so
+        // the refusal they earn is the identity's own date-level verdict
+        // (carried era, unaudited window, withheld date) rather than the
+        // pre-floor one — read from the metadata at the date the error names,
+        // so a scan that steps into a neighbouring unsourced day is checked
+        // against that day. A declared phase gap shadows the date-level
+        // verdict in the metadata: on a date whose date-level facts answer,
+        // session queries answer through the shadow (`false` may be a real
+        // pre-launch closure) and a withheld row refuses as `UnresolvedGap`.
+        let named = error.date();
+        let named_verdict = calendar.coverage().coverage_on(named);
+        let variant = match &error {
+            CalendarQueryError::BeforeSupportFloor { .. } => "before",
+            CalendarQueryError::OutsideCoveredRange { .. } => "outside",
+            CalendarQueryError::UnresolvedGap { .. } => "unresolved",
+            CalendarQueryError::SearchExhausted { .. } => "exhausted",
+            _ => "other",
+        };
+        let verdict_name = match named_verdict {
+            DateCoverage::BeforeSupportFloor => "before",
+            DateCoverage::OutsideCoveredRange => "outside",
+            DateCoverage::UnresolvedGap => "unresolved",
+            DateCoverage::Covered | DateCoverage::NormalWeekOnly => "covered",
+            _ => "other",
+        };
+        let phase_shadow = named_verdict == DateCoverage::OutsideCoveredRange
+            && calendar
+                .coverage()
+                .phase_gaps()
+                .iter()
+                .any(|gap| gap.applies_on(named))
+            && calendar
+                .coverage()
+                .normal_week_sourced_from()
+                .is_none_or(|h| named >= h)
+            && calendar
+                .coverage()
+                .holiday_contract()
+                .coverage()
+                .is_some_and(|windows| windows.contains(named));
+        let stated = variant == verdict_name || (variant == "unresolved" && phase_shadow);
         assert!(
-            matches!(
-                answer,
-                Err(CalendarQueryError::BeforeSupportFloor { source, date })
-                    if source == calendar.source() && date == local_date
-            ),
-            "{:?}: {instant} is venue-local {local_date}, which precedes the support \
-             floor, so the date-aware surface must refuse it with BeforeSupportFloor; \
-             got {answer:?}",
-            calendar.source(),
+            error.source() == calendar.source() && stated,
+            "{instant} is venue-local {local_date}, which the identity derives {named_verdict:?} \
+             for at {named}; the refusal must state that verdict ({variant} vs {verdict_name})"
         );
+    }
+
+    /// Whether a declared phase gap shadows the date-level verdict on `date`:
+    /// a gap applies on the date while the date-level facts — sourced normal
+    /// week, audited holiday window, no withheld row — would answer it.
+    fn phase_shadow_answers(calendar: ExchangeCalendar, date: chrono::NaiveDate) -> bool {
+        let coverage = calendar.coverage();
+        let gap_applies = coverage.phase_gaps().iter().any(|gap| gap.applies_on(date));
+        let date_level_answers = coverage
+            .normal_week_sourced_from()
+            .is_none_or(|horizon| date >= horizon)
+            && coverage
+                .holiday_contract()
+                .coverage()
+                .is_some_and(|windows| windows.contains(date))
+            && !calendar
+                .holiday_on(date)
+                .is_some_and(|holiday| holiday.kind() == exchange_hours::HolidayKind::Unsourced);
+        gap_applies && date_level_answers
     }
 
     /// Asserts a date-aware query refused the venue-local day of `instant` with

@@ -42,9 +42,10 @@ const INVENTORY: &str = include_str!("../../docs/schedules/coverage-2025.md");
 /// from the shipped tables rather than resting on this comment.
 const SAMPLE: (i32, u32, u32) = (2025, 6, 10);
 
-/// The support floor LAW-COVERAGE fixes at 2025-01-01.
+/// The support floor LAW-COVERAGE fixes at 2010-01-01 (the 2026-09-27
+/// amendment moved it back from the 2026-09-21 draft's 2025-01-01).
 fn floor() -> NaiveDate {
-    NaiveDate::from_ymd_opt(2025, 1, 1).expect("2025-01-01 is a valid date")
+    NaiveDate::from_ymd_opt(2010, 1, 1).expect("2010-01-01 is a valid date")
 }
 
 /// The sample date the `Complete?` cells are compared against.
@@ -256,16 +257,16 @@ fn withheld(calendar: ExchangeCalendar, date: NaiveDate) -> bool {
 /// The map is keyed by scope and carries the inventory's own withheld count, so
 /// the claim "this scope's incompleteness is date-shaped" is compared against the
 /// page rather than asserted by this list. It is a fence only while the
-/// `Unsrc 2025+ dates` column it is compared against is re-derived from the
+/// `Unsrc floor+ dates` column it is compared against is re-derived from the
 /// shipped tables — which `inventory_windows_and_date_counts_match_the_shipped_tables`
-/// does in the same file. `cme` is deliberately absent: it withholds 48 dates
-/// **and** the Sunday quarter-hour (#79), so its denial of completeness is no
+/// does in the same file. `cme` is deliberately absent: it withholds disputed
+/// dates **and** the Sunday quarter-hour (#79), so its denial of completeness is no
 /// longer date-shaped. `iceus` is the second entry: from 2026-09-26 UTC it audits
-/// from the 2025 floor and withholds 35 dates its routed families dispute — the
+/// from the floor and withholds 35 dates its routed families dispute — the
 /// 2025-01-09 National Day of Mourning row moved the last of them — with no
 /// phase-level gap behind the denial.
 fn date_level_incompleteness() -> &'static [(&'static str, usize)] {
-    &[("cbot", 61), ("iceus", 35)]
+    &[("cbot", 261), ("iceus", 35)]
 }
 
 /// `is_complete_on(SAMPLE)` agrees with the inventory's `Complete?` cell for all

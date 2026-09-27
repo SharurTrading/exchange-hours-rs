@@ -77,18 +77,29 @@ fn every_eurex_identity_ships_the_same_fifteen_closures() {
                 Some(HolidayKind::Closed),
                 "{name} must be closed on {date}"
             );
-            // Every one of the fifteen answers its trade-date consequence,
-            // including both New Year's Days: 2025-01-01's own row settles the
-            // question without walking below the floor, and 2026-01-01's
-            // predecessor (2025-12-31) is inside the window now. Until the 2025
-            // rows landed that second probe refused with `OutsideCoveredRange`
-            // naming the unaudited 2025-12-31.
-            assert!(
-                calendar
-                    .is_closed_trade_date(date, SessionKind::Both)
-                    .expect("the trade date's own day is inside the audited window"),
-                "{name} on {date}"
-            );
+            // Every one of the fifteen answers its trade-date consequence
+            // except 2025-01-01: at the 2010 floor its derivation walks to the
+            // opening day 2024-12-31, which sits outside every audited window,
+            // so the query refuses there. 2026-01-01's predecessor
+            // (2025-12-31) is inside the window and answers.
+            if date == day(2025, 1, 1) {
+                assert!(
+                    calendar
+                        .is_closed_trade_date(date, SessionKind::Both)
+                        .is_err_and(|error| matches!(
+                            error,
+                            CalendarQueryError::OutsideCoveredRange { .. }
+                        )),
+                    "{name} on {date}: the opening day 2024-12-31 is unaudited"
+                );
+            } else {
+                assert!(
+                    calendar
+                        .is_closed_trade_date(date, SessionKind::Both)
+                        .expect("the coverage contract must answer a covered date"),
+                    "{name} on {date}"
+                );
+            }
         }
     }
 }
@@ -151,13 +162,28 @@ fn new_years_day_is_closed_and_the_second_of_january_is_not() {
                 "{name} on {date}"
             );
         }
-        for probe in [cet((2025, 1, 1), (12, 0, 0)), cet((2026, 1, 1), (12, 0, 0))] {
-            assert!(
-                !calendar
-                    .is_open(probe)
-                    .expect("New Year's Day and its predecessor are inside the audited window"),
-                "{name} at {probe}"
-            );
+        // The 2025-01-01 probes ride the wrap opened on the unaudited
+        // 2024-12-31 and are refused; 2026-01-01's predecessor is audited.
+        for (probe, unaudited_eve) in [
+            (cet((2025, 1, 1), (12, 0, 0)), true),
+            (cet((2026, 1, 1), (12, 0, 0)), false),
+        ] {
+            if unaudited_eve {
+                assert!(
+                    calendar.is_open(probe).is_err_and(|error| matches!(
+                        error,
+                        CalendarQueryError::OutsideCoveredRange { .. }
+                    )),
+                    "{name} at {probe}: the wrap's opening day is unaudited"
+                );
+            } else {
+                assert!(
+                    !calendar
+                        .is_open(probe)
+                        .expect("New Year's Day's predecessor is inside the audited window"),
+                    "{name} at {probe}"
+                );
+            }
         }
         for probe in [cet((2025, 1, 2), (12, 0, 0)), cet((2026, 1, 2), (12, 0, 0))] {
             assert!(
@@ -272,12 +298,24 @@ fn the_2025_closures_and_the_ordinary_week_around_them() {
                 "{name} on {date}"
             );
             let noon = cet((date.year(), date.month(), date.day()), (12, 0, 0));
-            assert!(
-                !calendar
-                    .is_open(noon)
-                    .expect("the coverage contract must answer a covered date"),
-                "{name} at {noon}"
-            );
+            // 2025-01-01's probes ride the wrap opened on the unaudited
+            // 2024-12-31 and are refused; the rest answer shut.
+            if date == day(2025, 1, 1) {
+                assert!(
+                    calendar.is_open(noon).is_err_and(|error| matches!(
+                        error,
+                        CalendarQueryError::OutsideCoveredRange { .. }
+                    )),
+                    "{name} at {noon}: the wrap's opening day is unaudited"
+                );
+            } else {
+                assert!(
+                    !calendar
+                        .is_open(noon)
+                        .expect("the coverage contract must answer a covered date"),
+                    "{name} at {noon}"
+                );
+            }
         }
         for date in ordinary {
             assert_eq!(calendar.holiday_on(date), None, "{name} on {date}");

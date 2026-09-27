@@ -60,10 +60,12 @@ fn globex() -> ExchangeCalendar {
 #[test]
 fn a_query_before_the_floor_refuses_the_local_date_it_needs() {
     let calendar = globex();
-    // 2024-12-31 10:00 CT is a venue-local 2024 date, so the floor refuses it
-    // even though the instant is only hours before the floor begins.
+    // 2009-12-28 10:00 CT is a venue-local 2009 date inside the sourced weekly
+    // grid, so the floor refuses it naming that day. (New Year's Eve itself
+    // holds no session in the dated profile, and the refusal the caller gets
+    // names the next session's opening day instead — a different fixture.)
     let error = calendar
-        .is_open(ct((2024, 12, 31), (10, 0)))
+        .is_open(ct((2009, 12, 28), (10, 0)))
         .expect_err("a pre-floor instant must be refused, not answered");
 
     match error {
@@ -72,7 +74,7 @@ fn a_query_before_the_floor_refuses_the_local_date_it_needs() {
             date: refused,
         } => {
             assert_eq!(source, calendar.source());
-            assert_eq!(refused, date(2024, 12, 31));
+            assert_eq!(refused, date(2009, 12, 28));
         }
         other => panic!("expected BeforeSupportFloor, got {other:?}"),
     }
@@ -80,52 +82,39 @@ fn a_query_before_the_floor_refuses_the_local_date_it_needs() {
 
 #[test]
 fn the_floor_is_a_local_date_so_two_zones_refuse_at_different_utc_instants() {
-    // The floor is a **venue-local** date, so an instant near it is a covered
-    // date for one zone and a pre-floor date for another. The first fixture
-    // ships complete coverage (the metadata fence pins its span), so the
-    // refusal below can only come from the floor.
-    let chicago = calendar_for_market_hours_key(MarketHoursKey::GlobexGrains);
+    // The floor is a **venue-local** date, so the same UTC instant near the
+    // floor is a covered date for one zone and a pre-floor date for another.
+    let tokyo_instant = jst((2010, 1, 1), (0, 30));
+    let tokyo_day = tokyo_instant.with_timezone(&Asia::Tokyo).date_naive();
+    let chicago_day = tokyo_instant.with_timezone(&US::Central).date_naive();
+    assert_eq!(tokyo_day, date(2010, 1, 1));
+    assert_eq!(chicago_day, date(2009, 12, 31));
 
-    // Singapore's 2025-01-01 00:30 is still 2024-12-31 in Chicago.
-    let singapore_early = jst((2025, 1, 1), (0, 30));
-    assert!(
-        matches!(
-            chicago.is_open(singapore_early),
-            Err(CalendarQueryError::BeforeSupportFloor { .. })
-        ),
-        "for Chicago the instant is local 2024-12-31 and must be refused"
+    // One UTC instant, two verdicts: Tokyo's 2010-01-01 is inside the supported
+    // domain while Chicago is still on 2009-12-31. A single UTC midnight for
+    // every venue would misjudge one of them.
+    assert_ne!(
+        calendar_for_exchange(Exchange::Tse)
+            .coverage()
+            .coverage_on(tokyo_day),
+        DateCoverage::BeforeSupportFloor
     );
-
-    // A Chicago-local date inside the covered window answers. Using one identity
-    // for both halves isolates the floor as the only variable: the difference is
-    // the date, not the calendar.
-    assert!(
-        chicago
-            .is_open(ct((2025, 6, 4), (10, 0)))
-            .expect("a covered Chicago date answers"),
-        "2025-06-04 10:00 CT is inside the grains session"
-    );
-
-    // The Singapore-keyed scope is the documented counter-example: it ships no
-    // holiday table and claims none, so its coverage is empty above the floor and
-    // it refuses every post-floor date rather than guessing. That is the
-    // coverage-data fact `tests/coverage_metadata.rs` records, surfacing here as
-    // an error exactly as LAW-COVERAGE requires.
-    let singapore = calendar_for_market_hours_key(MarketHoursKey::SgxEquityIndexJapan);
     assert_eq!(
-        singapore.coverage().complete_ranges().count(),
-        0,
-        "a no-table scope claims no complete range"
+        calendar_for_exchange(Exchange::Cme)
+            .coverage()
+            .coverage_on(chicago_day),
+        DateCoverage::BeforeSupportFloor
     );
-    assert!(
-        matches!(
-            singapore.is_open(jst((2025, 6, 4), (10, 0))),
-            Err(CalendarQueryError::OutsideCoveredRange { .. })
-        ),
-        "an unsourced scope refuses rather than answering"
-    );
-}
 
+    // And at query time the pre-floor Chicago-local Monday of that week is
+    // refused with the floor error naming its local day.
+    let chicago_calendar = calendar_for_market_hours_key(MarketHoursKey::GlobexEquityIndex);
+    assert!(matches!(
+        chicago_calendar.is_open(ct((2009, 12, 28), (10, 0))),
+        Err(CalendarQueryError::BeforeSupportFloor { date: named, .. })
+            if named == date(2009, 12, 28)
+    ));
+}
 #[test]
 fn the_floor_answers_from_its_own_first_local_day() {
     let calendar = globex();
@@ -179,7 +168,7 @@ fn a_returned_session_is_never_truncated_at_a_date_boundary() {
     // distinguishes what the caller addressed, not the days the answer walks.
     assert!(
         matches!(
-            calendar.session_bounds(ct((2024, 12, 31), (12, 0))),
+            calendar.session_bounds(ct((2009, 12, 31), (12, 0))),
             Err(CalendarQueryError::BeforeSupportFloor { .. })
         ),
         "a query addressed before the floor still errors"
@@ -189,8 +178,8 @@ fn a_returned_session_is_never_truncated_at_a_date_boundary() {
 #[test]
 fn every_migrated_query_refuses_the_same_pre_floor_date() {
     let calendar = globex();
-    let instant = ct((2024, 6, 3), (10, 0));
-    let day = date(2024, 6, 3);
+    let instant = ct((2009, 6, 3), (10, 0));
+    let day = date(2009, 6, 3);
     let tz = calendar.tz();
 
     // Each of these resolves a date through the identity, so each must refuse.
@@ -324,7 +313,7 @@ fn without_holidays_answers_the_normal_week_it_claims() {
     // The floor still applies: a detached calendar does not claim coverage
     // below it, so an unsourced pre-floor date is still refused.
     assert!(
-        detached.is_open(ct((2024, 12, 31), (10, 0))).is_err(),
+        detached.is_open(ct((2009, 12, 31), (10, 0))).is_err(),
         "detaching the holiday table does not license pre-floor dates"
     );
 }
@@ -336,7 +325,7 @@ fn a_caller_policy_cannot_bypass_the_identity_floor() {
     let policy = StaticDayPolicy::new(&[]).expect("an empty policy is valid");
     let overlaid = globex().with_day_policy(&policy);
     assert!(
-        overlaid.is_open(ct((2024, 12, 31), (10, 0))).is_err(),
+        overlaid.is_open(ct((2009, 12, 31), (10, 0))).is_err(),
         "no overlay may bypass the identity floor"
     );
     assert!(
@@ -440,10 +429,10 @@ fn a_caller_exception_provider_does_not_improve_the_builtin_ledger() {
     // A provider that supplies a replacement for a pre-floor date still cannot
     // make the identity answer it: caller data never improves the ledger.
     let calendar = globex();
-    let records = [SessionExceptionRecord::closed(date(2024, 6, 3))];
+    let records = [SessionExceptionRecord::closed(date(2009, 6, 3))];
     let Ok(blocks) = StaticSessionExceptions::new(
         calendar.source(),
-        date(2024, 1, 1),
+        date(2009, 1, 1),
         date(2030, 1, 1),
         &records,
     ) else {
@@ -453,14 +442,14 @@ fn a_caller_exception_provider_does_not_improve_the_builtin_ledger() {
         return;
     };
     assert!(
-        overlaid.is_open(ct((2024, 6, 3), (10, 0))).is_err(),
+        overlaid.is_open(ct((2009, 6, 3), (10, 0))).is_err(),
         "a replacement record cannot license a pre-floor query"
     );
 }
 
 #[test]
 fn the_support_floor_constant_is_the_documented_date() {
-    assert_eq!(SUPPORT_FLOOR, date(2025, 1, 1));
+    assert_eq!(SUPPORT_FLOOR, date(2010, 1, 1));
 }
 
 /// The whole-date verdict and a session query answer **different questions**,

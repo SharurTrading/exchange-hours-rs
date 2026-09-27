@@ -502,10 +502,12 @@ fn vienna_third_friday_settlement_grid_is_date_aware() {
         NaiveDate::from_ymd_opt(2026, 8, 14).expect("fixture date"),
         "the third-Friday grid in 2026",
     );
-    assert_before_floor(
+    assert_refusal(
         calendar.is_open_regular(legacy_ordinary),
-        CalendarSource::Exchange(Exchange::Vienna),
-        NaiveDate::from_ymd_opt(2010, 1, 8).expect("fixture date"),
+        CalendarQueryError::OutsideCoveredRange {
+            source: CalendarSource::Exchange(Exchange::Vienna),
+            date: NaiveDate::from_ymd_opt(2010, 1, 8).expect("fixture date"),
+        },
         "the third-Friday grid in 2010",
     );
 }
@@ -537,21 +539,6 @@ fn assert_outside_coverage<T: std::fmt::Debug>(
     assert_refusal(
         answer,
         CalendarQueryError::OutsideCoveredRange { source, date },
-        label,
-    );
-}
-
-/// Asserts a query refuses `date` because the venue-local day precedes the
-/// permanent 2025 support floor (LAW-COVERAGE).
-fn assert_before_floor<T: std::fmt::Debug>(
-    answer: Result<T, CalendarQueryError>,
-    source: CalendarSource,
-    date: NaiveDate,
-    label: &str,
-) {
-    assert_refusal(
-        answer,
-        CalendarQueryError::BeforeSupportFloor { source, date },
         label,
     );
 }

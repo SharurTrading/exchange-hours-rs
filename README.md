@@ -31,11 +31,13 @@ quirks, is handled internally.
 The internal ownership and extension model is documented in
 [ARCHITECTURE.md](ARCHITECTURE.md).
 
-**Planned coverage change (2026-09-21 UTC):** the
-[staged release plan](docs/plans/2026-09-12-path-to-release.md) adopts complete
-2025-onward calendars for served instrument scopes, including special holiday
-sessions and explicit coverage errors. This is a development target: the APIs,
-older history and coverage figures below still describe the current implementation.
+**Planned coverage change (amended 2026-09-27 UTC):** the
+[staged release plan](docs/plans/2026-09-12-path-to-release.md) targets complete
+calendars for served instrument scopes from the permanent 2010-01-01 floor (the
+2026-09-21 draft's 2025 floor was reversed), including special holiday sessions
+and explicit coverage errors, with the 2010-2024 era's known gaps closed as data
+before 1.0.0. This is a development target: the coverage figures below still
+describe the current implementation.
 
 - **95 source-backed market identities**, plus the synthetic `Exchange::Unknown`
   fallback (96 `Exchange` variants total) — covering US equities/options, US and

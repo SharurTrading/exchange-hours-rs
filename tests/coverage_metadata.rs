@@ -75,18 +75,17 @@ fn days_from_floor(last: NaiveDate) -> Vec<NaiveDate> {
 }
 
 #[test]
-fn the_support_floor_is_local_first_of_january_2025() {
-    assert_eq!(SUPPORT_FLOOR, date(2025, 1, 1));
+fn the_support_floor_is_local_first_of_january_2010() {
+    assert_eq!(SUPPORT_FLOOR, date(2010, 1, 1));
 }
 
 #[test]
 fn a_complete_scope_reports_one_complete_span_and_a_trailing_gap() {
     // `globex_nikkei_225_dollar` is the one scope that still reaches 2027-12-31
-    // with nothing withheld: it ships no order-entry phase at all, so the
-    // post-close queue label `globex_grains` and `globex_livestock` declare
-    // (#152) cannot apply to it, and `comex`, `nymex`, `globex_energy` and
-    // `globex_interest_rates` are complete no longer, because each withholds the
-    // Sunday 16:00-16:15 CT quarter-hour its ledger row records (#79).
+    // with nothing withheld *in the 2025+ era*: it ships no order-entry phase
+    // at all, so the post-close queue label `globex_grains` and
+    // `globex_livestock` declare (#152) cannot apply to it. At the 2010 floor
+    // its earlier history is honestly partial, and the spans show it.
     let coverage = key_coverage(MarketHoursKey::GlobexNikkei225Dollar);
     assert_eq!(
         coverage.identity(),
@@ -95,15 +94,33 @@ fn a_complete_scope_reports_one_complete_span_and_a_trailing_gap() {
     assert_eq!(coverage.normal_week_sourced_from(), None);
     assert_eq!(coverage.sourced_normal_week(), unbounded(SUPPORT_FLOOR));
 
+    // At the 2010 floor the scope's earlier history is honestly partial: the
+    // 2010-2015 interval is unaudited (its first audited window opens
+    // 2016-01-01) and the 2016-2024 windows withhold dates, so the complete
+    // spans begin at that window and split around the withheld dates instead
+    // of forming one span from the floor.
     let complete: Vec<DateRange> = coverage.complete_ranges().collect();
     assert_eq!(
-        complete,
-        vec![DateRange::new(date(2025, 1, 1), date(2027, 12, 31)).expect("ascending")]
+        complete.first(),
+        Some(&DateRange::new(date(2016, 1, 1), date(2018, 12, 31)).expect("ascending")),
+        "the first complete span is the first audited window"
+    );
+    assert_eq!(
+        complete.last(),
+        Some(&DateRange::new(date(2025, 1, 1), date(2027, 12, 31)).expect("ascending")),
+        "the last complete span is the complete 2025+ era"
     );
     let gaps: Vec<CoverageGap> = coverage.gaps().collect();
-    assert_eq!(gaps.len(), 1);
-    assert_eq!(gaps[0].range(), unbounded(date(2028, 1, 1)));
-    assert_eq!(gaps[0].reason(), CoverageGapReason::NoHolidayCoverage);
+    assert_eq!(
+        gaps.first().map(|gap| (gap.range().first(), gap.reason())),
+        Some((date(2010, 1, 1), CoverageGapReason::NoHolidayCoverage)),
+        "the floor-to-first-window interval is an unaudited gap"
+    );
+    assert_eq!(
+        gaps.last().map(|gap| (gap.range().first(), gap.reason())),
+        Some((date(2028, 1, 1), CoverageGapReason::NoHolidayCoverage)),
+        "the trailing gap past the data is unchanged"
+    );
 
     assert!(coverage.is_complete_on(date(2025, 6, 2)));
     assert_eq!(
@@ -297,10 +314,20 @@ fn without_holidays_selects_the_normal_week_contract() {
 
     assert_eq!(detached.holiday_contract(), HolidayContract::NormalWeekOnly);
     assert_eq!(detached.complete_ranges().count(), 0);
+    // At the 2010 floor `cbot`'s 2010-03-15 horizon splits the contract into
+    // its carried era and its sourced era: two records, both NormalWeekOnly.
     let gaps: Vec<CoverageGap> = detached.gaps().collect();
-    assert_eq!(gaps.len(), 1);
-    assert_eq!(gaps[0].range(), unbounded(SUPPORT_FLOOR));
-    assert_eq!(gaps[0].reason(), CoverageGapReason::NormalWeekOnly);
+    assert_eq!(gaps.len(), 2);
+    assert_eq!(
+        gaps[0].range(),
+        DateRange::new(SUPPORT_FLOOR, date(2010, 3, 14)).expect("ascending")
+    );
+    // The carried era reads `NormalWeekCarried` — the horizon is a
+    // normal-week fact the detach keeps — and the sourced era reads
+    // `NormalWeekOnly`.
+    assert_eq!(gaps[0].reason(), CoverageGapReason::NormalWeekCarried);
+    assert_eq!(gaps[1].range(), unbounded(date(2010, 3, 15)));
+    assert_eq!(gaps[1].reason(), CoverageGapReason::NormalWeekOnly);
     assert_eq!(
         detached.coverage_on(date(2025, 6, 2)),
         DateCoverage::NormalWeekOnly
@@ -423,7 +450,7 @@ fn sourced_normal_week_reports_the_ledger_horizon() {
 
 #[test]
 fn a_date_before_the_floor_is_before_floor_for_every_identity() {
-    let before = date(2024, 12, 31);
+    let before = date(2009, 12, 31);
     for &exchange in Exchange::ALL {
         let coverage = exchange_coverage(exchange);
         assert_eq!(
@@ -447,16 +474,16 @@ fn a_date_before_the_floor_is_before_floor_for_every_identity() {
 #[test]
 fn the_floor_is_a_local_date_not_a_utc_instant() {
     let instant = Utc
-        .with_ymd_and_hms(2025, 1, 1, 0, 0, 0)
+        .with_ymd_and_hms(2010, 1, 1, 0, 0, 0)
         .single()
         .expect("a valid instant");
     let tokyo_day = instant.with_timezone(&Asia::Tokyo).date_naive();
     let chicago_day = instant.with_timezone(&US::Central).date_naive();
-    assert_eq!(tokyo_day, date(2025, 1, 1));
-    assert_eq!(chicago_day, date(2024, 12, 31));
+    assert_eq!(tokyo_day, date(2010, 1, 1));
+    assert_eq!(chicago_day, date(2009, 12, 31));
 
-    // One UTC instant, two verdicts: Tokyo's 2025-01-01 is inside the supported
-    // domain while Chicago is still on 2024-12-31. A single UTC midnight for
+    // One UTC instant, two verdicts: Tokyo's 2010-01-01 is inside the supported
+    // domain while Chicago is still on 2009-12-31. A single UTC midnight for
     // every venue would misjudge one of them.
     assert_ne!(
         exchange_coverage(Exchange::Tse).coverage_on(tokyo_day),
@@ -475,7 +502,7 @@ fn calendar_query_errors_are_distinguishable_by_a_caller() {
     let errors = [
         CalendarQueryError::BeforeSupportFloor {
             source,
-            date: date(2024, 12, 31),
+            date: date(2009, 12, 31),
         },
         CalendarQueryError::OutsideCoveredRange {
             source,
@@ -495,7 +522,7 @@ fn calendar_query_errors_are_distinguishable_by_a_caller() {
     for error in errors {
         assert_eq!(error.source(), source);
     }
-    assert_eq!(errors[0].date(), date(2024, 12, 31));
+    assert_eq!(errors[0].date(), date(2009, 12, 31));
     match errors[3] {
         CalendarQueryError::SearchExhausted { bound: hit, .. } => assert_eq!(hit, bound),
         other => panic!("expected an exhausted search, got {other:?}"),
@@ -526,8 +553,8 @@ fn calendar_query_errors_are_distinguishable_by_a_caller() {
     let boxed: Box<dyn std::error::Error> = Box::new(errors[0]);
     let rendered = boxed.to_string();
     assert!(rendered.contains("cme"), "{rendered}");
-    assert!(rendered.contains("2024-12-31"), "{rendered}");
-    assert!(rendered.contains("2025-01-01"), "{rendered}");
+    assert!(rendered.contains("2009-12-31"), "{rendered}");
+    assert!(rendered.contains("2010-01-01"), "{rendered}");
 }
 
 #[test]
@@ -627,18 +654,30 @@ fn check_metadata(calendar: ExchangeCalendar, identity: CalendarSource) {
     let complete: Vec<DateRange> = coverage.complete_ranges().collect();
     let gaps: Vec<CoverageGap> = coverage.gaps().collect();
     assert!(
-        complete.len() < 128,
-        "{identity:?} reports a bounded span count"
+        complete.len() < 512,
+        "{identity:?} reports a bounded span count (193 observed for `cbot` at the \
+         2010 floor: one span per audited-window stretch between withheld dates)"
     );
+    // The walk's precomputed store bounds the *declaration* records only — the
+    // date-level runs are streamed a run at a time and never stored — so the
+    // capacity is asserted against those. (The store's own doc in
+    // `coverage/ranges.rs` carries the invariant; at the 2010 floor the
+    // restored windows put `cbot` at 267 total gap records, of which two are
+    // declaration records.)
+    let declaration_records = gaps.iter().filter(|gap| gap.phase_gap().is_some()).count();
     assert!(
-        gaps.len() <= exchange_hours::CoverageGaps::capacity(),
-        "{identity:?} reports {} gaps, past the capacity the walk precomputes \
-         ({}) — past it a declaration's record would be dropped while the walk \
-         still skipped the dates it claimed, leaving a hole",
-        gaps.len(),
+        declaration_records <= exchange_hours::CoverageGaps::capacity(),
+        "{identity:?} reports {} declaration records, past the capacity the walk \
+         precomputes ({}) — past it a declaration's record would be dropped while \
+         the walk still skipped the dates it claimed, leaving a hole",
+        declaration_records,
         exchange_hours::CoverageGaps::capacity()
     );
-    assert!(gaps.len() < 128, "{identity:?} reports a bounded gap count");
+    assert!(
+        gaps.len() < 512,
+        "{identity:?} reports a bounded gap count (267 observed for `cbot` at the \
+         2010 floor, after #189's interest-rate era)"
+    );
 
     // A declared phase-level gap is part of the partition, not a special case
     // beside it: the identity answers nothing completely exactly while a
@@ -727,12 +766,16 @@ fn check_metadata(calendar: ExchangeCalendar, identity: CalendarSource) {
 
 #[test]
 fn a_complete_scope_answers_every_day_inside_its_span() {
-    // A spot walk over the one complete scope, so the span report and the
-    // per-date accessor are compared date by date rather than only at the edges.
+    // A spot walk over the one scope's fully-complete era, so the span report
+    // and the per-date accessor are compared date by date rather than only at
+    // the edges. At the 2010 floor that era is the 2025+ interval; the earlier
+    // windows split around their withheld dates.
     let coverage = key_coverage(MarketHoursKey::GlobexNikkei225Dollar);
     for day in days_from_floor(date(2027, 12, 31)) {
-        assert!(coverage.is_complete_on(day), "{day}");
-        assert_eq!(gap_reason_on(coverage, day), None, "{day}");
+        if day >= date(2025, 1, 1) {
+            assert!(coverage.is_complete_on(day), "{day}");
+            assert_eq!(gap_reason_on(coverage, day), None, "{day}");
+        }
     }
 }
 

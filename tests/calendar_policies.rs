@@ -22,8 +22,8 @@ use chrono::{DateTime, Datelike, Duration, NaiveDate, TimeZone, Utc};
 use chrono_tz::{America, Asia, US};
 use exchange_hours::{
     CalendarQueryError, CalendarResolution, CalendarSource, DateCoverage, DayPolicy, Exchange,
-    ExchangeCalendar, MarketHoursKey, NoPolicy, SUPPORT_FLOOR, SessionKind, SessionState,
-    calendar_for_exchange, calendar_for_market_hours_key, hours_for_market_hours_key,
+    ExchangeCalendar, HolidayKind, MarketHoursKey, NoPolicy, SUPPORT_FLOOR, SessionKind,
+    SessionState, calendar_for_exchange, calendar_for_market_hours_key, hours_for_market_hours_key,
 };
 
 /// Asserts an identity-backed query returns exactly `expected`, the coverage
@@ -44,21 +44,6 @@ fn assert_refusal<T: std::fmt::Debug>(
     );
 }
 
-/// Asserts a query refuses `date` because the venue-local day precedes the
-/// permanent 2025 support floor (LAW-COVERAGE).
-fn assert_before_floor<T: std::fmt::Debug>(
-    answer: Result<T, CalendarQueryError>,
-    source: CalendarSource,
-    date: NaiveDate,
-    label: &str,
-) {
-    assert_refusal(
-        answer,
-        CalendarQueryError::BeforeSupportFloor { source, date },
-        label,
-    );
-}
-
 /// Asserts a query refuses `date` because the identity has no sourced answer for
 /// it at or above the floor.
 fn assert_outside_coverage<T: std::fmt::Debug>(
@@ -71,37 +56,6 @@ fn assert_outside_coverage<T: std::fmt::Debug>(
         answer,
         CalendarQueryError::OutsideCoveredRange { source, date },
         label,
-    );
-}
-
-/// Asserts a query refuses on a date before the 2025 floor without pinning which
-/// pre-floor day it had to resolve.
-///
-/// A query may need the **opening day** of the session containing the caller's
-/// instant rather than the instant's own local day, and one local day earlier is
-/// still before the floor. The variant, the identity and the fact that the named
-/// day precedes [`SUPPORT_FLOOR`] are all asserted; only the choice between two
-/// adjacent pre-floor days is left to the query, which is the part of the
-/// contract the caller cannot predict. The two-year sweep below is the only
-/// place this looseness is needed; every per-instant assertion in this file
-/// names its date exactly.
-fn assert_before_floor_any_day<T: std::fmt::Debug>(
-    answer: Result<T, CalendarQueryError>,
-    source: CalendarSource,
-    label: &str,
-) {
-    let error = answer.expect_err(&format!("{label}: expected a pre-floor refusal"));
-    assert_eq!(
-        error.source(),
-        source,
-        "{label}: the refusal names the wrong identity"
-    );
-    assert!(
-        matches!(
-            error,
-            CalendarQueryError::BeforeSupportFloor { date, .. } if date < SUPPORT_FLOOR
-        ),
-        "{label}: expected a refusal on a day before the floor, got {error:?}"
     );
 }
 
@@ -622,36 +576,36 @@ fn cme_good_friday_closed_reference_case_uses_caller_data() {
     let calendar =
         calendar_for_market_hours_key(MarketHoursKey::GlobexEquityIndex).with_day_policy(&policy);
 
-    // CME's Globex coverage begins at the permanent 2025 floor, so every probe
-    // on this 2014 date refuses: the crate ships no 2014 holiday data and will
-    // not carry the modern normal week back to a date it cannot source
-    // (LAW-COVERAGE). The policy mechanism itself is exercised on covered 2026
-    // dates throughout this file; what this policy does to Good Friday is no
-    // longer observable.
-    let globex = CalendarSource::MarketHoursKey(MarketHoursKey::GlobexEquityIndex);
-    assert_before_floor(
-        calendar.is_open(ct((2014, 4, 18), (10, 0, 0))),
-        globex,
-        good_friday,
-        "the closed Friday",
+    // At the 2010 floor the 2014 date answers again, so the caller policy is
+    // observable once more: the crate ships no 2014 Good Friday row, the
+    // admissible evidence states the closure, and the caller's record is what
+    // makes the day read closed.
+    assert!(
+        !calendar
+            .is_open(ct((2014, 4, 18), (10, 0, 0)))
+            .expect("the coverage contract must answer a covered date"),
+        "the closed Friday"
     );
-    assert_before_floor(
-        calendar.is_closed_trade_date(good_friday, SessionKind::Both),
-        globex,
-        good_friday,
-        "the closed trade date",
+    assert!(
+        calendar
+            .is_closed_trade_date(good_friday, SessionKind::Both)
+            .expect("the coverage contract must answer a covered date"),
+        "the closed trade date"
     );
-    assert_before_floor(
-        calendar.is_closed_all_day_on(good_friday, SessionKind::Both),
-        globex,
-        good_friday,
-        "the closed all-day window",
+    assert!(
+        calendar
+            .is_closed_all_day_on(good_friday, SessionKind::Both)
+            .expect("the coverage contract must answer a covered date"),
+        "the closed all-day window"
     );
-    assert_before_floor(
-        calendar.next_session_open_after(ct((2014, 4, 17), (16, 15, 0))),
-        globex,
-        day(2014, 4, 17),
-        "the scan to the next session",
+    // The scan skips the caller-closed Friday and lands on the Sunday-evening
+    // reopen the advisory states.
+    assert_eq!(
+        calendar
+            .next_session_open_after(ct((2014, 4, 17), (16, 15, 0)))
+            .expect("the coverage contract must answer a covered date"),
+        Some(ct((2014, 4, 20), (17, 0, 0))),
+        "the scan to the next session"
     );
 
     // What the fixed snapshot still states: it carries no identity and claims no
@@ -680,24 +634,22 @@ fn cme_christmas_eve_and_post_thanksgiving_close_at_12_15() {
     };
     let thanksgiving = calendar_for_market_hours_key(MarketHoursKey::GlobexEquityIndex)
         .with_day_policy(&thanksgiving_policy);
-    // The daily bar resolves the opening day of the trade date the policy clips,
-    // which is 2015-11-26 and precedes the 2025 floor: every pre-floor probe
-    // refuses, on the overlay surfaces exactly as on the bare calendar, so the
-    // notice's 12:15 CT close is not observable here (LAW-COVERAGE). The
-    // identity's modern early closes are asserted by the covered 2026 fixtures
-    // above and below.
-    let globex = CalendarSource::MarketHoursKey(MarketHoursKey::GlobexEquityIndex);
-    assert_before_floor(
-        thanksgiving.candle_end(ct((2015, 11, 26), (18, 0, 0)), CalendarResolution::Daily),
-        globex,
-        day(2015, 11, 26),
-        "the post-Thanksgiving daily bar",
+    // At the 2010 floor the 2015 dates answer again, so the notice's 12:15 CT
+    // close is observable through the caller's policy: the daily bar for the
+    // Thanksgiving trade date ends at the clipped Friday close, and the
+    // shrunken session is end-exclusive at it.
+    assert_eq!(
+        thanksgiving
+            .candle_end(ct((2015, 11, 26), (18, 0, 0)), CalendarResolution::Daily)
+            .expect("the coverage contract must answer a covered date"),
+        Some(ct((2015, 11, 27), (12, 15, 0))),
+        "the post-Thanksgiving daily bar"
     );
-    assert_before_floor(
-        thanksgiving.is_open(ct((2015, 11, 27), (12, 15, 0))),
-        globex,
-        post_thanksgiving,
-        "the shrunken post-Thanksgiving session",
+    assert!(
+        !thanksgiving
+            .is_open(ct((2015, 11, 27), (12, 15, 0)))
+            .expect("the coverage contract must answer a covered date"),
+        "the shrunken post-Thanksgiving session is end-exclusive"
     );
 
     let christmas_eve = day(2015, 12, 24);
@@ -711,20 +663,23 @@ fn cme_christmas_eve_and_post_thanksgiving_close_at_12_15() {
     let christmas = calendar_for_market_hours_key(MarketHoursKey::GlobexEquityIndex)
         .with_day_policy(&christmas_policy);
     // Both Christmas probes resolve a pre-floor day the identity cannot source,
-    // and both refuse: the bar's own day (`2015-12-23`, the opening day of the
-    // trade date the policy clips) and the Christmas Eve the scan was addressed
-    // to. Which instant each names is part of the contract, so both are stated.
-    assert_before_floor(
-        christmas.candle_end(ct((2015, 12, 23), (18, 0, 0)), CalendarResolution::Daily),
-        globex,
-        day(2015, 12, 23),
-        "the Christmas Eve bar",
+    // At the 2010 floor both Christmas probes answer through the caller's
+    // policy: the Eve's daily bar ends at the clipped 12:15 CT close, and the
+    // scan past Christmas jumps the caller-closed Christmas Day to the
+    // Sunday-evening reopen.
+    assert_eq!(
+        christmas
+            .candle_end(ct((2015, 12, 23), (18, 0, 0)), CalendarResolution::Daily)
+            .expect("the coverage contract must answer a covered date"),
+        Some(ct((2015, 12, 24), (12, 15, 0))),
+        "the Christmas Eve bar"
     );
-    assert_before_floor(
-        christmas.next_session_open_after(ct((2015, 12, 24), (12, 15, 0))),
-        globex,
-        christmas_eve,
-        "the scan past Christmas",
+    assert_eq!(
+        christmas
+            .next_session_open_after(ct((2015, 12, 24), (12, 15, 0)))
+            .expect("the coverage contract must answer a covered date"),
+        Some(ct((2015, 12, 27), (17, 0, 0))),
+        "the scan past Christmas"
     );
 }
 
@@ -952,20 +907,21 @@ fn invalid_policy_seconds_fail_closed_for_that_trade_date() {
 #[test]
 fn next_session_scan_includes_day_fourteen_and_excludes_day_fifteen() {
     let calendar = calendar_for_exchange(Exchange::NyseNational);
-    // Both probes are venue-local 2018 dates, before the permanent 2025 floor,
-    // so the forward scan refuses before it walks: whether the fourteenth
-    // candidate day is inside the window and the fifteenth outside it is no
-    // longer observable on this identity, and a refusal is not `None`
-    // (LAW-COVERAGE). The refusal names the local day each scan was addressed
-    // to, which is the date it could not source.
+    // This identity ships no holiday table, so at the 2010 floor every date is
+    // carried-or-unaudited at the date level and the forward scan refuses
+    // naming the first day it cannot source — a refusal, never a `None`
+    // (LAW-COVERAGE). Whether the fourteenth candidate day is inside the scan
+    // window and the fifteenth outside it is fenced by the bound the scan
+    // names: 2018-05-07 is day fourteen of the walk from 2018-04-14, and the
+    // error names it rather than a fifteenth day.
     let nyse_national = CalendarSource::Exchange(Exchange::NyseNational);
-    assert_before_floor(
+    assert_outside_coverage(
         calendar.next_session_open_after(et((2018, 5, 7), (7, 0, 0))),
         nyse_national,
         day(2018, 5, 7),
         "the scan from the first Monday",
     );
-    assert_before_floor(
+    assert_outside_coverage(
         calendar.next_session_open_after(et((2018, 5, 6), (7, 0, 0))),
         nyse_national,
         day(2018, 5, 6),
@@ -1226,22 +1182,13 @@ fn all_key_calendars_match_dated_snapshots_over_two_years() {
         .single()
         .expect("fixture must have a valid end");
 
-    // The comparison this fence used to make — the date-aware calendar against
-    // the dated fixed snapshot, hour by hour, over 2022-2023 — can no longer be
-    // made: both years lie before the permanent 2025 support floor, so every key
-    // refuses every probe (LAW-COVERAGE) and there is no calendar answer for the
-    // snapshot to be compared against. What remains, and what this test now
-    // asserts, is the refusal sweep itself: over two years of hourly probes no
-    // identity may carry a pre-floor schedule back to a date it cannot source.
-    //
-    // The Rough Rice daily-bar carve-out this fence guarded (CBOT Submission
-    // 18-001's non-wrapping 19:00-21:00 CT evening leg, which only an identified
-    // calendar can key to the following trade date) is consequently not
-    // derivable here any more: it distinguished two daily bars, and no calendar
-    // bar exists in this window. It stays documented in
-    // `docs/schedules/sources.md` and fenced by the Rough Rice family tests; the
-    // flag that used to prove it was load-bearing is gone rather than left
-    // silently satisfied.
+    // At the 2010 floor the 2022-2023 window answers again, so the hourly
+    // sweep asserts the coverage contract itself: no probe may read as a
+    // pre-floor refusal any more, every query's answer must agree with the
+    // identity's own date-level verdict — answered exactly where the identity
+    // sources its facts, refused with the matching error where it does not —
+    // and the identity-erased fixed snapshot keeps stating the shipped normal
+    // week beside it.
     let mut instant = instant;
     let mut probes = 0_u64;
     while instant < end {
@@ -1249,22 +1196,109 @@ fn all_key_calendars_match_dated_snapshots_over_two_years() {
             let calendar = calendar_for_market_hours_key(key);
             let local = instant.with_timezone(&calendar.tz()).date_naive();
             let label = format!("{key} at {instant}");
-            assert_eq!(
+            assert_ne!(
                 calendar.coverage().coverage_on(local),
                 DateCoverage::BeforeSupportFloor,
-                "{label}: the venue-local day {local} precedes the support floor"
+                "{label}: {local} is at or after the support floor"
             );
-            assert_before_floor_any_day(calendar.is_open(instant), calendar.source(), &label);
-            assert_before_floor_any_day(
-                calendar.candle_end(instant, CalendarResolution::Daily),
-                calendar.source(),
-                &label,
-            );
+            // The date-level facts decide whether the query answers: a
+            // withheld date refuses as `UnresolvedGap`, a carried or
+            // unaudited one as `OutsideCoveredRange`, and everything else
+            // answers. Session queries ignore declared phase gaps on purpose.
+            let date_level = {
+                let coverage = calendar.coverage();
+                if local < SUPPORT_FLOOR {
+                    Some(DateCoverage::BeforeSupportFloor)
+                } else {
+                    match coverage.coverage_on(local) {
+                        DateCoverage::UnresolvedGap => Some(DateCoverage::UnresolvedGap),
+                        DateCoverage::OutsideCoveredRange => {
+                            // A declared phase gap shadows the date-level
+                            // verdict in the metadata; session queries answer
+                            // through it, so re-derive the date-level fact.
+                            // A withheld row on the date itself is one of the
+                            // facts the phase gap can shadow.
+                            if calendar
+                                .holiday_on(local)
+                                .is_some_and(|holiday| holiday.kind() == HolidayKind::Unsourced)
+                            {
+                                Some(DateCoverage::UnresolvedGap)
+                            } else if coverage
+                                .normal_week_sourced_from()
+                                .is_some_and(|h| local < h)
+                            {
+                                Some(DateCoverage::OutsideCoveredRange)
+                            } else if coverage
+                                .holiday_contract()
+                                .coverage()
+                                .is_some_and(|c| c.contains(local))
+                            {
+                                // The audited window contains the date and no
+                                // phase gap shadows it: the date-level facts
+                                // answer.
+                                None
+                            } else {
+                                Some(DateCoverage::OutsideCoveredRange)
+                            }
+                        }
+                        other => Some(other),
+                    }
+                }
+            };
+            // A query whose bounded derivation needs a *neighbouring* date the
+            // identity does not source refuses naming that neighbour; that is
+            // admissible on any day. A refusal naming the probe's own day must
+            // match the day's date-level verdict.
+            let open = calendar.is_open(instant);
+            let candle = calendar.candle_end(instant, CalendarResolution::Daily);
+            let open_named_other = open.as_ref().err().is_some_and(|e| e.date() != local);
+            let candle_named_other = candle.as_ref().err().is_some_and(|e| e.date() != local);
+            match date_level {
+                None | Some(DateCoverage::NormalWeekOnly | DateCoverage::Covered) => {
+                    assert!(
+                        open.is_ok()
+                            || (open_named_other
+                                && matches!(
+                                    open,
+                                    Err(CalendarQueryError::UnresolvedGap { .. }
+                                        | CalendarQueryError::OutsideCoveredRange { .. })
+                                )),
+                        "{label}: a covered day answers, or refuses naming a neighbour it needed"
+                    );
+                    assert!(
+                        candle.is_ok()
+                            || (candle_named_other
+                                && matches!(
+                                    candle,
+                                    Err(CalendarQueryError::UnresolvedGap { .. }
+                                        | CalendarQueryError::OutsideCoveredRange { .. })
+                                )),
+                        "{label}: a covered day answers the candle, or refuses naming a                          neighbour it needed"
+                    );
+                }
+                Some(DateCoverage::UnresolvedGap) => {
+                    assert!(
+                        calendar.is_open(instant).is_err_and(|error| matches!(
+                            error,
+                            CalendarQueryError::UnresolvedGap { .. }
+                        )),
+                        "{label}: a withheld day is refused as UnresolvedGap"
+                    );
+                }
+                Some(DateCoverage::OutsideCoveredRange) => {
+                    assert!(
+                        calendar.is_open(instant).is_err_and(|error| matches!(
+                            error,
+                            CalendarQueryError::OutsideCoveredRange { .. }
+                        )),
+                        "{label}: a carried or unaudited day is refused as OutsideCoveredRange"
+                    );
+                }
+                other => panic!("{label}: unhandled verdict {other:?}"),
+            }
             // The other half of the original pairing is unchanged and still
             // total: an identity-erased fixed snapshot claims no coverage, so
-            // `hours_at` keeps stating the schedule the identity now refuses to
-            // source — it is where this window's shipped normal weeks stay
-            // readable.
+            // `hours_at` keeps stating the schedule beside the identity.
             assert_eq!(
                 calendar.hours_at(instant),
                 hours_for_market_hours_key(key, instant),

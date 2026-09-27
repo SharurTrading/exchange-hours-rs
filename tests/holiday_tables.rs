@@ -316,22 +316,6 @@ fn assert_published_refusal(error: CalendarQueryError, calendar: ExchangeCalenda
     }
 }
 
-/// Asserts an identity-backed query returns exactly `expected`, the coverage
-/// error the shipped data declares.
-fn assert_refusal<T: std::fmt::Debug>(
-    answer: Result<T, CalendarQueryError>,
-    expected: CalendarQueryError,
-    label: &str,
-) {
-    let error = answer.expect_err(&format!(
-        "{label}: expected the coverage refusal {expected:?}"
-    ));
-    assert_eq!(
-        error, expected,
-        "{label}: the query must state the refusal its identity declares"
-    );
-}
-
 // ---------------------------------------------------------------------------
 // What an identity's holiday layer may claim.
 // ---------------------------------------------------------------------------
@@ -1475,22 +1459,19 @@ fn an_out_of_range_boundary_is_unavailable_and_never_rolls_a_trade_date() {
             .expect("the coverage contract must answer a covered date"),
         "an unavailable trade date takes its sessions with it"
     );
-    // An invalid record must not roll a trade date. What the query reports is a
-    // refusal rather than `None`: once the invalid boundary is attached, the
-    // derivation asks about the probe's own day, and that day is one this
-    // identity declares unsourced (it is inside the withheld Sunday-quarter-hour
-    // era, #79), so the answer is the coverage error and not a fabricated trade
-    // date (LAW-COVERAGE). That it did **not** roll is still observable in the
-    // closed-record leg below, which names Monday 2026-08-24 for the same probe:
-    // the roll the invalid record must not perform is a roll this engine does
-    // perform when the record is a closure.
-    assert_refusal(
-        unavailable.trade_date(probe),
-        CalendarQueryError::OutsideCoveredRange {
-            source: CalendarSource::MarketHoursKey(MarketHoursKey::GlobexCryptocurrency),
-            date: day(2026, 8, 20),
-        },
-        "the unavailable trade date",
+    // An invalid record must not roll a trade date. The identity covers the
+    // day, and the boundary the policy states is outside `u32` seconds-in-day,
+    // so the date is **unavailable**: its sessions are removed and there is no
+    // trade date left to name. What the query must not do is name the rolled
+    // date — that is the closed-record leg below, which reports Monday
+    // 2026-08-24 for the same probe, so the roll the invalid record must not
+    // perform is one this engine does perform when the record is a closure.
+    assert_eq!(
+        unavailable
+            .trade_date(probe)
+            .expect("the coverage contract must answer a covered date"),
+        None,
+        "an unavailable trade date rolls nowhere, so it names no date",
     );
 
     let overrides = [DayOverride::closed(friday)];

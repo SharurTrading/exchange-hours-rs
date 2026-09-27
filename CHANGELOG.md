@@ -316,6 +316,15 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Fixed
 
+- **The three `globex_grains` wave-4 verbatims are re-read from the editions
+  that carry them (2026-09-27 UTC, #89).** The 2018-07-03, 2018-11-23 and
+  2018-12-24 quotations already stood rewritten to the 2018 annual-bundle
+  revisions when the wave shipped, so they no longer cite the `MGEX Apple Juice`
+  sibling CME deleted from those editions; this change records that re-read
+  beside the rows in `docs/evidence/globex_grains.md` — each cited member's
+  recorded sha256 reproduces from the saved bundle, and each quotation is the
+  edition's own `Grains and Oilseeds` cell. No row, instant, kind or tier moves.
+
 - **`eurex`'s gap record spans the editions that carry the note (2026-09-27 UTC).** The `#157`
   declaration was whole-domain, so the metadata reported the German-scope `tba` withholding as
   covering the whole supported domain. It is now bounded at 2027-01-01 — the first day the 2025

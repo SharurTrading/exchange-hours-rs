@@ -30,7 +30,7 @@
 //! the late-2026 notices that had not issued at retrieval are gaps in
 //! [`docs/evidence/iceus.md`](../../../../../docs/evidence/iceus.md).
 //!
-//! Coverage runs from the 2025 floor to 2028-01-03, the last trade date the
+//! Coverage runs from the table's own 2025-01-01 window to 2028-01-03, the last trade date the
 //! 2027 calendar names.
 //! Its last two dates are audited normal: 2027-12-31 is not on ICE's calendar,
 //! and on 2028-01-03 (New Year's Day observed) every group a crate identity

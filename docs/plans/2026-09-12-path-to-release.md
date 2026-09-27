@@ -2,6 +2,37 @@
 
 # Path to release — complete 2025-onward calendars
 
+## Amendment of 2026-09-27 (UTC) — the floor returns to 2010
+
+The maintainer reversed the 2026-09-21 floor decision on 2026-09-27 UTC:
+
+- **The support floor is 2010-01-01** (LAW-COVERAGE, as amended). The
+  pre-2025 history the crate ships is retained; Stage 5's removal programme is
+  **cancelled** (#117 closed as superseded and its removals reverted by #185).
+- **The pre-2025 gap-closure programme gates 1.0.0** alongside the standing
+  2025+ classes: the #110 livestock-era encoding gap, the #101 2010–2012
+  interest-rate holiday grid, the #112 Coinbase source defects and the #89
+  pre-2025 quotations close as data, not by deletion. Where the restored
+  2010–2024 data has no audited answer the coverage API reports the honest
+  verdict, and the #112 Coinbase rows report `UnresolvedGap`. Two of the four
+  have already closed as data on main: #187 shipped the livestock 2016-2018
+  era (35 rows) and #189 the 2010-2012 interest-rate holiday-Monday sessions
+  (66 rows), so those intervals answer and the dates outside every restored
+  window — the pre-window eras of the later-launched families — refuse with
+  `OutsideCoveredRange`; #112 and #89 remain.
+- **Stages 6–7 continue with the 2010 clamp**: consumer walks clamp to
+  listing bounds and the 2010 supported floor, and the release gate evaluates
+  every served scope from 2010 (or its later sourced launch) through its
+  publication horizon.
+
+The sections below record the 2026-09-21 plan and remain history; where they
+say the floor is permanently 2025-01-01, or direct Stage 5 to remove pre-2025
+runtime history, the amendment above supersedes them. Sections that describe
+staged mechanics, evidence discipline and the bounded-PR contract are
+unchanged in force.
+
+---
+
 Amended 2026-09-21 (UTC). This is the active staged development plan. It replaces
 remaining instructions in the September 12–19 plan; that plan and its completed
 wave records are preserved in the [historical archive](archive/2026-09-12-path-to-release-before-2025-amendment.md).

@@ -105,19 +105,50 @@ fn assert_closed(cell: (i32, u32, u32), label: &str) {
         Some(HolidayKind::Closed),
         "{label}: {cell:?} is a closure"
     );
-    assert!(
-        calendar
-            .is_closed_trade_date(date, SessionKind::Both)
-            .expect("the coverage contract must answer a covered date"),
-        "{label}: {cell:?} has no session in either phase"
-    );
-    for probe in [(2, 0, 0), (10, 0, 0), (15, 30, 0)] {
+    // New Year's Day 2025 is the window's first date, and its trade-date
+    // derivation reads the opening day 2024-12-31, which sits outside every
+    // audited window; that query is refused there rather than answered. Every
+    // later closure's opening day is audited and answers.
+    if cell == (2025, 1, 1) {
         assert!(
-            !calendar
-                .is_open(ct(cell, probe))
-                .expect("the coverage contract must answer a covered date"),
-            "{label}: {cell:?} must be shut at {probe:?}"
+            calendar
+                .is_closed_trade_date(date, SessionKind::Both)
+                .is_err_and(|error| matches!(
+                    error,
+                    CalendarQueryError::OutsideCoveredRange { .. }
+                )),
+            "{label}: the opening day 2024-12-31 is unaudited"
         );
+    } else {
+        assert!(
+            calendar
+                .is_closed_trade_date(date, SessionKind::Both)
+                .expect("the coverage contract must answer a covered date"),
+            "{label}: {cell:?} has no session in either phase"
+        );
+    }
+    // Every probe on New Year's Day 2025 rides the wrap that opened on
+    // 2024-12-31, outside the audited window, so the identity refuses it; the
+    // later closures' wraps are audited and answer shut.
+    for probe in [(2, 0, 0), (10, 0, 0), (15, 30, 0)] {
+        if cell == (2025, 1, 1) {
+            assert!(
+                calendar
+                    .is_open(ct(cell, probe))
+                    .is_err_and(|error| matches!(
+                        error,
+                        CalendarQueryError::OutsideCoveredRange { .. }
+                    )),
+                "{label}: the wrap's opening day 2024-12-31 is unaudited"
+            );
+        } else {
+            assert!(
+                !calendar
+                    .is_open(ct(cell, probe))
+                    .expect("the coverage contract must answer a covered date"),
+                "{label}: {cell:?} must be shut at {probe:?}"
+            );
+        }
     }
 }
 
@@ -574,6 +605,18 @@ fn detaching_the_table_restores_the_normal_week() {
     assert_eq!(calendar.without_holidays().holiday_coverage(), None);
 }
 
+fn refusal_shape(error: &CalendarQueryError) -> (chrono::NaiveDate, &'static str) {
+    // `CalendarQueryError` is `#[non_exhaustive]`.
+    let kind = match error {
+        CalendarQueryError::BeforeSupportFloor { .. } => "before-floor",
+        CalendarQueryError::OutsideCoveredRange { .. } => "outside",
+        CalendarQueryError::UnresolvedGap { .. } => "unresolved",
+        CalendarQueryError::SearchExhausted { .. } => "exhausted",
+        _ => "other",
+    };
+    (error.date(), kind)
+}
+
 #[test]
 fn the_venue_and_the_key_answer_from_the_same_table() {
     let venue = calendar_for_exchange(Exchange::Cfe);
@@ -605,13 +648,15 @@ fn the_venue_and_the_key_answer_from_the_same_table() {
         .holiday_coverage()
         .expect("CFE ships a built-in table")
         .last();
+    // The two identities label their refusals with their own source, so the
+    // comparison is on the refusal's date and variant, not its rendering.
     while date <= last {
         assert_eq!(
             venue
                 .is_closed_trade_date(date, SessionKind::Both)
-                .map_err(|error| format!("{error:?}")),
+                .map_err(|error| refusal_shape(&error)),
             key.is_closed_trade_date(date, SessionKind::Both)
-                .map_err(|error| format!("{error:?}")),
+                .map_err(|error| refusal_shape(&error)),
             "{date}"
         );
         date = date

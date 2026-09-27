@@ -55,25 +55,26 @@ fn accepts(key: MarketHoursKey, at: DateTime<Utc>) -> bool {
     hours_for_market_hours_key(key, at).is_accepting_orders(at)
 }
 
-/// Asserts that the identity-backed calendar refuses a pre-floor probe.
+/// Asserts that the identity-backed calendar refuses a probe in an era it does
+/// not source.
 ///
-/// Asserts a pre-floor gap **is** the kind this module names, and that the
+/// Asserts a withheld gap **is** the kind this module names, and that the
 /// identity-backed surface refuses to say so.
 ///
-/// Every date in this module precedes the permanent 2025 floor, so the
-/// date-aware calendar has no sourced answer and refuses with
-/// `BeforeSupportFloor` rather than naming a session (LAW-COVERAGE). The
-/// detached instant selector is a different matter: it carries no identity and
-/// therefore claims nothing about coverage, so it keeps the classification its
-/// own rules derive — including the `Halt`/`Maintenance` kind, which is read
-/// from a trade date. Both halves are asserted here, so the pair cannot drift:
-/// a change that makes the snapshot lose the kind, or the calendar start
-/// answering the date, fails this helper.
+/// Every date in this module sits in an SGX era whose audited window opened
+/// 2025-01-01, so at the 2010 floor the date-aware calendar has no sourced
+/// answer and refuses with `OutsideCoveredRange` rather than naming a session
+/// (LAW-COVERAGE). The detached instant selector is a different matter: it
+/// carries no identity and therefore claims nothing about coverage, so it
+/// keeps the classification its own rules derive — including the
+/// `Halt`/`Maintenance` kind, which is read from a trade date. Both halves are
+/// asserted here, so the pair cannot drift: a change that makes the snapshot
+/// lose the kind, or the calendar start answering the date, fails this helper.
 fn assert_withheld_kind(key: MarketHoursKey, at: DateTime<Utc>, kind: SessionState, label: &str) {
     let answer = calendar_for_market_hours_key(key).session_state(at);
     assert!(
-        matches!(answer, Err(CalendarQueryError::BeforeSupportFloor { .. })),
-        "{label}: a pre-floor date must be refused by the identity surface, got {answer:?}"
+        matches!(answer, Err(CalendarQueryError::OutsideCoveredRange { .. })),
+        "{label}: an unaudited-era date must be refused by the identity surface, got {answer:?}"
     );
     assert_eq!(
         hours_for_market_hours_key(key, at).session_state(at),

@@ -3,10 +3,10 @@
 //! What a calendar can answer, and the vocabulary for what it cannot
 //! (LAW-COVERAGE).
 //!
-//! The support floor is fixed at **1 January 2025 in each venue's own
+//! The support floor is fixed at **1 January 2010 in each venue's own
 //! local-date domain** ([`SUPPORT_FLOOR`]) — never a rolling window, and never a
-//! single UTC midnight, because a Tokyo session's 2025-01-01 begins while
-//! Chicago is still on 2024-12-31. At or above that floor an identity-backed
+//! single UTC midnight, because a Tokyo session's 2010-01-01 begins while
+//! Chicago is still on 2009-12-31. At or above that floor an identity-backed
 //! calendar answers a date only where three separate facts hold, and this module
 //! reports each of them rather than collapsing them into one flag:
 //!
@@ -79,15 +79,16 @@ use super::schedules::holidays::{self, HolidayCoverage, HolidayKind, HolidayTabl
 use super::schedules::sourcing;
 use super::schedules::timeline::effective_date;
 
-/// The permanent support floor, **1 January 2025 in the venue's own local-date
-/// domain** (LAW-COVERAGE).
+/// The permanent support floor, **1 January 2010 in the venue's own local-date
+/// domain** (LAW-COVERAGE; the 2026-09-27 amendment moved it back from
+/// 2025-01-01).
 ///
 /// This is a *local* date, not a UTC instant: the instant at which an identity
 /// reaches its floor depends on that identity's IANA zone, and a query's instant
 /// is judged by the venue-local date it falls on. The floor is fixed and never a
 /// rolling previous-year window. A later sourced launch stays the identity's own
 /// coverage start (`docs/schedules/coverage-2025.md`).
-pub const SUPPORT_FLOOR: NaiveDate = effective_date(2025, 1, 1);
+pub const SUPPORT_FLOOR: NaiveDate = effective_date(2010, 1, 1);
 
 /// One inclusive, ascending venue-local date span.
 ///
@@ -560,7 +561,7 @@ impl HolidayContract {
 /// Built by [`ExchangeCalendar::coverage`](crate::ExchangeCalendar::coverage);
 /// it borrows the identity's static tables, so reading it allocates nothing and
 /// the value stays `Copy + Send + Sync + 'static`. Every range it reports is
-/// clipped to [`SUPPORT_FLOOR`], the permanent 2025-01-01 local-date floor.
+/// clipped to [`SUPPORT_FLOOR`], the permanent 2010-01-01 local-date floor.
 ///
 /// [`Self::coverage_on`] is the per-date verdict, [`Self::complete_ranges`] the
 /// spans that answer completely, and [`Self::gaps`] the rest with their

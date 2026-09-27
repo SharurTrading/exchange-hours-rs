@@ -13,6 +13,23 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Changed
 
+- **The support floor moves back to 2010-01-01 (2026-09-27 UTC).** The
+  maintainer reversed the 2026-09-21 decision: `SUPPORT_FLOOR` is the
+  permanent **1 January 2010** in each venue's local-date domain, the
+  pre-2025 history the crate ships is retained rather than removed (Stage 5's
+  removal programme is cancelled; #117 closed as superseded, its removals
+  reverted by #185), and the charter's LAW-COVERAGE, LAW-HOLIDAY-SCOPE and
+  LAW-NO-FABRICATED-DATES carry the reversal. **What this means for callers:**
+  identity-backed queries now answer 2010-01-01 through 2024-12-31 from the
+  restored audited windows, so `BeforeSupportFloor` begins below 2010-01-01;
+  dates a restored window does not audit (the pre-window eras of families
+  launched later) refuse with
+  `OutsideCoveredRange`, and dates a window withholds report
+  `UnresolvedGap`. The 2010-2024 era's known gaps close as data before 1.0.0
+  instead of being deleted past: #110's livestock 2016-2018 era and #101's
+  2010-2012 interest-rate holiday Mondays already ship (via #187 and #189),
+  and #112 and #89 remain.
+
 - **Identity-backed queries return `Result` (2026-09-23 UTC) — BREAKING.** Stage 2B of
   the release plan makes every date-aware query on `ExchangeCalendar` and
   `PolicyCalendar` answer the coverage contract Stage 2A published instead of

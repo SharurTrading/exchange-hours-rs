@@ -43,15 +43,25 @@ still describes the revision the values were first derived at; the counts, windo
 covers are otherwise unchanged.
 
 One row per served instrument scope, recording what the crate actually ships against the adopted
-2025 floor. This is a **record, not a claim**: no runtime change accompanies it and it moves no
-ledger row. Every value is derived from the shipped modules, the verification ledger, the consumer's
+floor. **Amended 2026-09-27 UTC:** the maintainer moved the support floor back to **2010-01-01**
+(the 2026-09-21 draft's 2025 floor was reversed; the Stage 5 removal programme was cancelled,
+#117 reverted by #185), so the count columns below are re-derived from 2010-01-01 through each
+scope's last audited day. The restored 2010-2024 audited windows now answer, and the pre-2025
+known gaps surface as honest verdicts: dates outside every restored window — the pre-window
+eras of the later-launched families (`cfe`/`eurex` 2010-2024, Coinbase before 2021-06-28,
+`globex_cryptocurrency` before 2019, `globex_nikkei_225_dollar` 2010-2015) — refuse as
+`OutsideCoveredRange` (the #110 livestock 2016-2018 interval answered again from 2026-09-26 UTC,
+when #187 shipped its 35 rows, and #189's 66 interest-rate rows restored that family's
+2010-2012 holiday Mondays), and the #112 Coinbase unsourced rows
+report as `UnresolvedGap`. This is a **record, not a claim**: no runtime change accompanies it
+and it moves no ledger row. Every value is derived from the shipped modules, the verification ledger, the consumer's
 own routing tables and the owner evidence files. The artifacts cited in
 [Artifact resolution](#artifact-resolution) were located in the research store and their digests
 recomputed by this stage.
 
 ## What “complete” means here
 
-LAW-COVERAGE fixes the support floor at **2025-01-01**: complete coverage means no unresolved
+LAW-COVERAGE fixes the support floor at **2010-01-01** (as amended 2026-09-27): complete coverage means no unresolved
 normal-week, required-phase, holiday or special-session gap in the claimed interval. Three
 consequences drive every verdict below.
 
@@ -72,9 +82,9 @@ consequences drive every verdict below.
 | Normal week | sourced `revisions!` timeline: earliest…latest effective day and row count |
 | Horizon | ledger carried-below date; `—` when nothing is carried |
 | Holidays | this scope's shipped windows from `holiday_coverage()` |
-| `2025+ dates` | trade dates at or after 2025-01-01 that this scope answers with a holiday row; one row per date in every served table |
-| `Unsrc` 2025+ dates | trade dates at or after 2025-01-01 this scope withholds as `Unsourced`; any one fails completeness |
-| Missing / disputed | what the scope cannot answer inside 2025+, and its issue |
+| `floor+ dates` | trade dates from the 2010-01-01 floor through the scope's last audited day that this scope answers with a holiday row; one row per date in every served table |
+| `Unsrc` floor+ dates | trade dates in that same interval this scope withholds as `Unsourced`; any one fails completeness |
+| Missing / disputed | what the scope cannot answer inside the claimed interval, and its issue |
 | Complete? | verdict over the 2025-onward interval |
 | Closing issues | open issues to discharge for this scope |
 
@@ -88,24 +98,24 @@ served `iceus` identity, while `FANG`, `DOLLAR_INDEX`, `SUGAR_COFFEE_COCOA`, `CO
 
 ## Inventory
 
-| Identity | Owner | Normal week | Horizon | Holidays | 2025+ dates | `Unsrc` 2025+ dates | Missing / disputed | Complete? | Closing issues |
+| Identity | Owner | Normal week | Horizon | Holidays | `floor+ dates` | `Unsrc` floor+ dates | Missing / disputed | Complete? | Closing issues |
 |---|---|---|---|---|---|---|---|---|---|
-| `cme` | [cme_group.rs](../../src/calendar/schedules/futures/us/cme_group.rs) | 2010-11-15 … 2026-08-22 (5 rows) | 2012-05-03 | 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 70 | 61 | all of 2025-2027 on 61 disputed dates (2025-01-02 … 2027-12-23); the Sunday 16:00-16:15 CT quarter-hour, withheld (#79) | **incomplete**: 61 `Unsourced` dates in 2025+ and the Sunday 16:00-16:15 CT quarter-hour is withheld (#79) | #79, #116, #117 |
-| `cbot` | [grains.rs](../../src/calendar/schedules/futures/us/grains.rs) | 2010-04-19 … 2015-07-05 (6 rows) | 2010-03-15 | 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 70 | 61 | all of 2025-2027 on 61 disputed dates (2025-01-02 … 2027-12-23) | **incomplete**: 61 `Unsourced` dates in 2025+ | #116, #117 |
-| `comex` | [energy_metals.rs](../../src/calendar/schedules/futures/us/energy_metals.rs) | 2015-09-20 … 2026-08-22 (2 rows) | 2012-05-11 | 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 53 | — | the Sunday 16:00-16:15 CT quarter-hour, withheld (#79) | **incomplete**: the Sunday 16:00-16:15 CT quarter-hour is withheld (#79) | #79, #116, #117 |
-| `nymex` | [energy_metals.rs](../../src/calendar/schedules/futures/us/energy_metals.rs) | 2015-09-20 … 2026-08-22 (2 rows) | 2012-05-11 | 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 53 | — | the Sunday 16:00-16:15 CT quarter-hour, withheld (#79) | **incomplete**: the Sunday 16:00-16:15 CT quarter-hour is withheld (#79) | #79, #116, #117 |
-| `cfe` | [cfe.rs](../../src/calendar/schedules/futures/us/cfe.rs) | 2010-12-10 … 2021-12-06 (8 rows) | 2010-01-01 | 2025-01-01..2026-12-31 | 26 | — | 2027 is not published by Cboe: verified 2026-09-26 UTC, the `Hours & Holidays` page carries only a “2026 Futures Holiday Schedule” and its CSV twin lists 2026 rows only, so nothing is withheld and nothing past 2026-12-31 is claimed | complete to 2026-12-31 (2025-2026 sourced; 2027 unpublished) | #98, #116 |
-| `coinbase_derivatives` | [coinbase_derivatives.rs](../../src/calendar/schedules/futures/us/coinbase_derivatives.rs) | 2026-09-11 … 2026-09-11 (1 row) | — | 2021-06-28..2026-09-07 | 20 | — | 2026-09-08 onward (past the horizon) | complete to 2026-09-07; **horizon before inspection** | #86, #98, #116 |
-| `eurex` | [europe.rs](../../src/calendar/schedules/futures/international/europe.rs) | seasonal selector, no `revisions!` timeline | 2010-01-01 | 2025-01-01..2026-12-31 | 15 | — | the operator's `tba` German equity / equity-index scope, which withholds undated FDAX and FDXM closures across 2025 and 2026 (#157); 2027 is published twice with conflicting labels | **incomplete**: the German-scope closures are undated (#157) and 2027 is conflicted | #77, #86, #98, #116, #157 |
+| `cme` | [cme_group.rs](../../src/calendar/schedules/futures/us/cme_group.rs) | 2010-11-15 … 2026-08-22 (5 rows) | 2012-05-03 | 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 316 | 269 | 269 `Unsourced` dates across 2010-2027 — every US market holiday the routed families dispute, closure eves included, in the restored pre-2025 eras as well as 2025+; the Sunday 16:00-16:15 CT quarter-hour, withheld (#79) | **incomplete**: 269 `Unsourced` dates across 2010-2027 and the Sunday 16:00-16:15 CT quarter-hour is withheld (#79) | #79, #116, #117 |
+| `cbot` | [grains.rs](../../src/calendar/schedules/futures/us/grains.rs) | 2010-04-19 … 2015-07-05 (6 rows) | 2010-03-15 | 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 308 | 261 | 261 `Unsourced` dates across 2010-2027 — every US market holiday the routed families dispute, closure eves included, in the restored pre-2025 eras as well as 2025+ | **incomplete**: 261 `Unsourced` dates across 2010-2027 | #116, #117 |
+| `comex` | [energy_metals.rs](../../src/calendar/schedules/futures/us/energy_metals.rs) | 2015-09-20 … 2026-08-22 (2 rows) | 2012-05-11 | 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 223 | 6 | the Sunday 16:00-16:15 CT quarter-hour, withheld (#79) | **incomplete**: the Sunday 16:00-16:15 CT quarter-hour is withheld (#79) | #79, #116, #117 |
+| `nymex` | [energy_metals.rs](../../src/calendar/schedules/futures/us/energy_metals.rs) | 2015-09-20 … 2026-08-22 (2 rows) | 2012-05-11 | 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 223 | 6 | the Sunday 16:00-16:15 CT quarter-hour, withheld (#79) | **incomplete**: the Sunday 16:00-16:15 CT quarter-hour is withheld (#79) | #79, #116, #117 |
+| `cfe` | [cfe.rs](../../src/calendar/schedules/futures/us/cfe.rs) | 2010-12-10 … 2021-12-06 (8 rows) | 2010-01-01 | 2025-01-01..2026-12-31 | 26 | 0 | 2027 is not published by Cboe: verified 2026-09-26 UTC, the `Hours & Holidays` page carries only a “2026 Futures Holiday Schedule” and its CSV twin lists 2026 rows only, so nothing is withheld and nothing past 2026-12-31 is claimed | complete to 2026-12-31 (2025-2026 sourced; 2027 unpublished) | #98, #116 |
+| `coinbase_derivatives` | [coinbase_derivatives.rs](../../src/calendar/schedules/futures/us/coinbase_derivatives.rs) | 2026-09-11 … 2026-09-11 (1 row) | — | 2021-06-28..2026-09-07 | 58 | 2 | 2 `Unsourced` dates in the 2021-2024 era (#112) and 2026-09-08 onward (past the horizon) | complete to 2026-09-07 in 2025+; **incomplete across 2010-2027**: 2 `Unsourced` dates in 2021-2024 (#112) and the horizon before inspection | #86, #98, #116 |
+| `eurex` | [europe.rs](../../src/calendar/schedules/futures/international/europe.rs) | seasonal selector, no `revisions!` timeline | 2010-01-01 | 2025-01-01..2026-12-31 | 15 | 0 | the operator's `tba` German equity / equity-index scope, which withholds undated FDAX and FDXM closures across 2025 and 2026 (#157); 2027 is published twice with conflicting labels | **incomplete**: the German-scope closures are undated (#157) and 2027 is conflicted | #77, #86, #98, #116, #157 |
 | `iceus` | [ice_us.rs](../../src/calendar/schedules/futures/us/ice_us.rs) | 2017-11-07 … 2017-11-08 (2 rows) | — | 2025-01-01..2028-01-03 | 42 | 35 | 2025 answers, except the Independence Day and Christmas dates and the National Day of Mourning: fifteen 2025 dates are withheld (2025-01-09 … 2025-12-26) because the families disagree on them, four of them because the two 2025 holiday notices that would state the hours were not retrieved (#168); the 20 withheld 2026-2027 dates are unchanged by the 2025 material | **incomplete**: 35 `Unsourced` dates in 2025+ | #98, #116, #168 |
-| `globex_equity_index` | [cme_group.rs](../../src/calendar/schedules/futures/us/cme_group.rs) | 2010-11-15 … 2026-08-22 (5 rows) | 2012-05-03 | 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 54 | — | the 16:00-16:15 CT Sunday quarter-hour, withheld (#79) | **incomplete**: the Sunday 16:00-16:15 CT quarter-hour is withheld (#79) | #79, #116, #117 |
-| `globex_energy` | [energy_metals.rs](../../src/calendar/schedules/futures/us/energy_metals.rs) | 2015-09-20 … 2026-08-22 (2 rows) | 2012-05-11 | 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 53 | — | the Sunday 16:00-16:15 CT quarter-hour, withheld (#79) | **incomplete**: the Sunday 16:00-16:15 CT quarter-hour is withheld (#79) | #79, #116, #117 |
-| `globex_grains` | [grains.rs](../../src/calendar/schedules/futures/us/grains.rs) | 2010-04-19 … 2015-07-05 (6 rows) | 2010-03-15 | 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 67 | — | the post-close queue's trade-date label: the crate dates the 14:30-16:00 CT queue by the session it feeds, so all 746 covered dates that carry it answer a trade date other than the operator's own printed one (#152) | **incomplete**: the post-close queue's trade-date label differs on every one of the 746 dates that carry the queue (#152) | #116, #117, #152 |
-| `globex_fx` | [fx.rs](../../src/calendar/schedules/futures/us/fx.rs) | 2010-11-15 … 2026-08-22 (2 rows) | 2012-05-03 | 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 36 | — | the Sunday 16:00-16:15 CT quarter-hour, withheld (#79) | **incomplete**: the Sunday 16:00-16:15 CT quarter-hour is withheld (#79) | #79, #116, #117 |
-| `globex_interest_rates` | [interest_rates.rs](../../src/calendar/schedules/futures/us/interest_rates.rs) | 2010-11-15 … 2026-08-22 (3 rows) | 2010-01-01 | 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 53 | — | the Sunday 16:00-16:15 CT quarter-hour, withheld (#79) | **incomplete**: the Sunday 16:00-16:15 CT quarter-hour is withheld (#79) | #79, #116, #117 |
-| `globex_livestock` | [livestock.rs](../../src/calendar/schedules/futures/us/livestock.rs) | 2014-10-27 … 2020-05-31 (4 rows) | 2010-01-01 | 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 36 | — | the post-close queue's trade-date label: the crate dates the 14:30-16:00 CT queue by the session it feeds, so every covered date that carries it answers a trade date other than the operator's own printed one (#152) | **incomplete**: the post-close queue's trade-date label differs on every date that carries the queue (#152) | #116, #117, #152 |
-| `globex_cryptocurrency` | [cryptocurrency.rs](../../src/calendar/schedules/futures/us/cryptocurrency.rs) | 2017-12-17 … 2026-09-20 (9 rows) | — | 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 40 | — | the five-day era's Sunday and weekday Pre-Open onset is undated in the normal week, so the identity answers nothing before the 2026-05-29 bridge row its declaration is now bounded at (#123); its 24/7-era merged trade dates shipped as rows on 2026-09-26 UTC | **incomplete**: the five-day era's Pre-Open onset is undated, so the whole era before 2026-05-29 is withheld (#123) | #116, #117, #123 |
-| `globex_nikkei_225_dollar` | [cme_nikkei.rs](../../src/calendar/schedules/futures/us/cme_nikkei.rs) | 2011-01-12 … 2015-09-20 (4 rows) | — | 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 52 | — | none in 2025+ | complete to 2027-12-31 | #116, #117 |
+| `globex_equity_index` | [cme_group.rs](../../src/calendar/schedules/futures/us/cme_group.rs) | 2010-11-15 … 2026-08-22 (5 rows) | 2012-05-03 | 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 231 | 6 | the 16:00-16:15 CT Sunday quarter-hour, withheld (#79) | **incomplete**: the Sunday 16:00-16:15 CT quarter-hour is withheld (#79) | #79, #116, #117 |
+| `globex_energy` | [energy_metals.rs](../../src/calendar/schedules/futures/us/energy_metals.rs) | 2015-09-20 … 2026-08-22 (2 rows) | 2012-05-11 | 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 223 | 6 | the Sunday 16:00-16:15 CT quarter-hour, withheld (#79) | **incomplete**: the Sunday 16:00-16:15 CT quarter-hour is withheld (#79) | #79, #116, #117 |
+| `globex_grains` | [grains.rs](../../src/calendar/schedules/futures/us/grains.rs) | 2010-04-19 … 2015-07-05 (6 rows) | 2010-03-15 | 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 249 | 6 | the post-close queue's trade-date label: the crate dates the 14:30-16:00 CT queue by the session it feeds, so all 746 covered dates that carry it answer a trade date other than the operator's own printed one (#152) | **incomplete**: the post-close queue's trade-date label differs on every one of the 746 dates that carry the queue (#152) | #116, #117, #152 |
+| `globex_fx` | [fx.rs](../../src/calendar/schedules/futures/us/fx.rs) | 2010-11-15 … 2026-08-22 (2 rows) | 2012-05-03 | 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 214 | 6 | the Sunday 16:00-16:15 CT quarter-hour, withheld (#79) | **incomplete**: the Sunday 16:00-16:15 CT quarter-hour is withheld (#79) | #79, #116, #117 |
+| `globex_interest_rates` | [interest_rates.rs](../../src/calendar/schedules/futures/us/interest_rates.rs) | 2010-11-15 … 2026-08-22 (3 rows) | 2010-01-01 | 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 265 | 6 | the Sunday 16:00-16:15 CT quarter-hour, withheld (#79) | **incomplete**: the Sunday 16:00-16:15 CT quarter-hour is withheld (#79) | #79, #116, #117 |
+| `globex_livestock` | [livestock.rs](../../src/calendar/schedules/futures/us/livestock.rs) | 2014-10-27 … 2020-05-31 (4 rows) | 2010-01-01 | 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 211 | 6 | the post-close queue's trade-date label: the crate dates the 14:30-16:00 CT queue by the session it feeds, so every covered date that carries it answers a trade date other than the operator's own printed one (#152) | **incomplete**: the post-close queue's trade-date label differs on every date that carries the queue (#152) | #116, #117, #152 |
+| `globex_cryptocurrency` | [cryptocurrency.rs](../../src/calendar/schedules/futures/us/cryptocurrency.rs) | 2017-12-17 … 2026-09-20 (9 rows) | — | 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 90 | 6 | the five-day era's Sunday and weekday Pre-Open onset is undated in the normal week, so the identity answers nothing before the 2026-05-29 bridge row its declaration is now bounded at (#123); its 24/7-era merged trade dates shipped as rows on 2026-09-26 UTC | **incomplete**: the five-day era's Pre-Open onset is undated, so the whole era before 2026-05-29 is withheld (#123) | #116, #117, #123 |
+| `globex_nikkei_225_dollar` | [cme_nikkei.rs](../../src/calendar/schedules/futures/us/cme_nikkei.rs) | 2011-01-12 … 2015-09-20 (4 rows) | — | 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 158 | 20 | none in 2025+; the 2010-2015 interval is unaudited (#162) and 20 `Unsourced` dates across 2016-2024 | complete to 2027-12-31 in 2025+; **incomplete across 2010-2027**: 20 `Unsourced` dates across 2016-2024 and the unaudited 2010-2015 interval | #116, #117 |
 
 ## Consumer routing
 
@@ -202,7 +212,7 @@ scope.
 covered future stops 14 days before this inspection (2026-09-21). The interval after 2026-09-07 has
 no answer, and Stage 4 item 2 refreshes it.
 
-### 4. One scope reports complete to 2027-12-31, and it carries a gap the API cannot state
+### 4. One scope reports complete to 2027-12-31 in 2025+; **incomplete across 2010-2027**: 20 `Unsourced` dates across 2016-2024 and the unaudited 2010-2015 interval, and it carries a gap the API cannot state
 
 `globex_nikkei_225_dollar` is the only scope the coverage API reports complete to that date: it has
 no `Unsourced` row at or after 2025-01-01 and no declared phase-level gap. It nonetheless carries a
@@ -222,8 +232,9 @@ those plus the Sunday 16:00-16:15 CT quarter-hour; `comex`, `nymex`, `globex_ene
 `globex_interest_rates` and `globex_equity_index` withhold that same quarter-hour in §5, and so does
 `globex_fx`; and `globex_cryptocurrency` carries an undated five-day-era Pre-Open onset, which
 withholds every date before the 2026-05-29 bridge row and leaves the whole 24/7 era answered. `comex` and `nymex` are intersections too, but each routes one
-family's grid, so they match it row for row and their six `Unsourced` rows all fall in 2019-2023,
-outside the new floor.
+family's grid, so they match it row for row and their six `Unsourced` rows all fall in 2019-2023 —
+inside the claimed interval since the floor moved back to 2010, and reported as such in their
+`Unsrc` cells.
 
 ### 5. Issues checked for an effect that survives the new floor
 

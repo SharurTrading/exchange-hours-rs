@@ -7,28 +7,36 @@ ledger rows cite, and the rules any change to this repository must follow. It
 was rewritten on 2026-09-12 (UTC) after an architectural review
 (`docs/plans/2026-09-12-architectural-review.md`); law names were kept wherever
 a law's intent survived so that existing citations stay valid. The 2026-09-21
-(UTC) amendment adopts a permanent 2025 floor and complete served-scope coverage;
-its implementation is staged in
-[the release plan](docs/plans/2026-09-12-path-to-release.md).
+(UTC) amendment adopted a permanent 2025 floor and complete served-scope
+coverage, staged in
+[the release plan](docs/plans/2026-09-12-path-to-release.md). The 2026-09-27
+(UTC) amendment reverses the floor decision: the support floor returns to
+**2010-01-01**, the pre-2025 history the crate ships is retained rather than
+removed (Stage 5's removal programme is cancelled; #117 closed and reverted by
+#185), and the 2010–2024 era's known gaps (#110, #101, #112, #89) close before
+1.0.0 instead of being deleted past. The law names are unchanged.
 
-## Migration status — 2026-09-21 UTC
+## Migration status — 2026-09-27 UTC
 
-The 2025 contract below is the **adopted target**, not a claim about the current
+The 2010 contract below is the **adopted target**, not a claim about the current
 implementation. The documentation amendment changes no Rust API or runtime data.
-Earlier history still ships; identity queries still use their existing return
-shapes and fallback behavior; built-in holidays remain scalar and the crate ships
-no built-in replacement-session data. The ledger records what actually ships.
-Explicit coverage errors (#115), built-in special sessions (#93), complete served
-data (#116), and removal of obsolete history (#117) land in separate reviewed
-changes before the new release gate (#119) is satisfied. Do not implement those
-stages as incidental cleanup in a documentation change.
+The restored 2010–2024 audited windows answer again, and the pre-2025
+known gaps surface as explicit coverage verdicts rather than being removed:
+the #110 livestock-era encoding gap and the #101 2010–2012 interest-rate holiday
+grid have already closed as data on main (#187 and #189), while the #112
+Coinbase source defects and the #89 pre-2025 quotations close
+as data before 1.0.0. The ledger records what actually ships. Built-in
+special-session data (#93), complete served data (#116) and the remaining
+stages land in separate reviewed changes before the release gate (#119) is
+satisfied. Do not implement those stages as incidental cleanup in a
+documentation change.
 
 ## Purpose
 
 `exchange-hours` is the live session calendar for the instruments its consumer
 can route. Its consumer is SharurPlatform, which will support more markets over
 time. For every served instrument's exact family or documented venue scope,
-the target is complete coverage from the permanent **1 January 2025** floor
+the target is complete coverage from the permanent **1 January 2010** floor
 (or its later sourced launch) through the operator's sufficiently specified,
 unconditional publications. Each later year stays in the supported history.
 Within that coverage the crate answers five questions: is the market open now;
@@ -74,7 +82,7 @@ the cost of keeping them true.
   | Obligation | Served | Dormant |
   |---|---|---|
   | Current schedule sourced at T1 or T2 | required | required at last review |
-  | Dated history from the permanent 2025 floor | complete for each served instrument scope | labelled coverage; complete before activation |
+  | Dated history from the permanent 2010 floor | complete for each served instrument scope | labelled coverage; complete before activation |
   | All holiday and special-session data | complete, floor to sufficiently specified published future | on demand; complete before activation |
   | Review cadence (LAW-WATCH) | monthly if high-churn, 24/7 or holiday-bearing, else quarterly | on demand |
   | Follow-ups tracked as issues | required | recorded in the evidence file |
@@ -85,8 +93,9 @@ the cost of keeping them true.
   Dormant completeness does not block release. A dormant identity's runtime
   pruning still belongs to #117; its wire identity and archived evidence stay.
 
-- **LAW-COVERAGE** — the support floor is fixed at 2025-01-01, never a rolling
-  previous-year window. Complete coverage means no unresolved normal-week,
+- **LAW-COVERAGE** — the support floor is fixed at 2010-01-01 (the 2026-09-27
+  amendment moved it back from the 2026-09-21 decision's 2025-01-01), never a
+  rolling previous-year window. Complete coverage means no unresolved normal-week,
   required-phase, holiday or special-session gap in the claimed interval. An
   audited window containing `Unsourced` dates is not complete. Identity-backed
   date-aware queries return explicit coverage errors before the support floor,
@@ -148,7 +157,7 @@ the cost of keeping them true.
   revision boundary never splits a running session; a sourced change whose
   boundary falls at a stated intraday instant is an exact-instant cutover,
   never a day-level row rounded to local midnight. Amendment history is
-  maintained from **January 2025**. Earlier documents may prove the baseline
+  maintained from **January 2010**. Earlier documents may prove the baseline
   and the context needed for complete sessions crossing the support boundary;
   the boundary itself is not an exchange cutover and never earns a revision row.
 - **LAW-UTC-DATES** — every date the repository records about its own work is
@@ -191,11 +200,11 @@ the cost of keeping them true.
   through the existing `ExceptionBlock` engine (#93). Until those rows ship,
   their absence remains a gap, not a complete calendar or an approximation.
 
-  The target is the permanent 2025 floor, or the identity's later sourced
+  The target is the permanent 2010 floor, or the identity's later sourced
   launch, through what the operator has published unconditionally and with
   enough detail to state the sessions. Publication horizons are per scope;
   preliminary dates and missing hours do not certify ordinary trading. Reuse
-  captured 2025-onward evidence and retrieve missing or revised material. An
+  captured evidence and retrieve missing or revised material. An
   unavailable source is a recorded gap with a closing condition and, for a
   served scope, a blocking issue; it does not waive the completeness gate.
   Operators that observe no holidays need affirmative evidence instead of an
@@ -337,20 +346,22 @@ state actual supported ranges; an unknown date is not a market closure.
   the randomized seconds only move an adjacent phase handoff; use a
   conservative envelope when that is the profile's stated scope. Never imply
   exact ticker-level uncross timing.
-- **A support boundary never splits a session.** During #117 retain the sourced
-  baseline in force at the 2025 floor, all later changes, seasonal selectors,
-  and the context needed to return complete sessions crossing New Year. Remove
-  obsolete earlier runtime eras and their historical coverage expectations,
-  not source artifacts or Git history. Requests before the floor use the
-  explicit error contract from #115. Genuine later launch closures remain
-  known closures, distinct from unsourced dates. Generic fixed-snapshot and
-  date-arithmetic tests may still use dates before 2025.
+- **A support boundary never splits a session.** Retain the sourced baseline
+  in force at the 2010 floor, all later changes, seasonal selectors, and the
+  context needed to return complete sessions crossing New Year. Never remove
+  source artifacts or Git history; the 2026-09-27 amendment cancelled the
+  Stage 5 removal programme (#117, reverted by #185), so pre-2025 runtime eras
+  stay and their known gaps surface as explicit coverage verdicts until they
+  close as data. Requests before the floor use the explicit error contract
+  from #115. Genuine later launch closures remain known closures, distinct
+  from unsourced dates. Generic fixed-snapshot and date-arithmetic tests may
+  still use dates before 2010.
 - **Executable windows are the priority.** A gap in a phase where a trade can
   print is materially more serious than a gap in an `order_entry` window.
   Close executable-hours gaps first, and when recording a gap say which kind
   it is.
 - **A sourced baseline is not automatic carry-back.** Establish the state in
-  force at the 2025 floor from admissible evidence, including earlier documents
+  force at the 2010 floor from admissible evidence, including earlier documents
   when needed. A later observation alone does not prove the intervening period
   complete. Preserve existing carried/intersection states with their disclosed
   gaps during migration; they must not become complete merely because earlier

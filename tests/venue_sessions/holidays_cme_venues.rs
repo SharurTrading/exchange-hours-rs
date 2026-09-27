@@ -379,14 +379,18 @@ fn a_closed_venue_row_is_a_unanimous_closure() {
                     "{exchange:?}: {closure} closes the venue's trading day"
                 ),
                 Err(error) => {
+                    // 2010-01-01 is the floor itself and its opening day
+                    // (2009-12-31) lies below it, so the query can refuse as
+                    // outside the covered range too.
                     assert!(
                         matches!(
                             error,
                             CalendarQueryError::BeforeSupportFloor { .. }
                                 | CalendarQueryError::UnresolvedGap { .. }
+                                | CalendarQueryError::OutsideCoveredRange { .. }
                         ),
-                        "{exchange:?}: {closure} may refuse only as below-floor or \
-                         withheld; got {error:?}"
+                        "{exchange:?}: {closure} may refuse only as below-floor, \
+                         withheld or outside the audited windows; got {error:?}"
                     );
                 }
             }
@@ -1249,19 +1253,27 @@ fn wave3_unsourced_rows_clip_nothing() {
                 Some(HolidayKind::Unsourced),
                 "{exchange:?}: {date}"
             );
-            // Every date in this wave is pre-floor, so the venue's own queries
-            // are refused as `BeforeSupportFloor` and the row's neutrality has
-            // no observable date-aware consequence to assert: an `Unsourced`
-            // row states that the venue has no single instant for the date, and
-            // the row's own kind above is that statement. What survives is the
-            // refusal — the venue never reports the withheld evidence as a
-            // closure (LAW-COVERAGE).
-            assert_refuses_before_floor(
-                venue.is_closed_trade_date(date, SessionKind::Both),
-                venue,
-                probe,
+            // At the 2010 floor these 2022-2023 dates are inside the audited
+            // windows, so the queries are refused as `UnresolvedGap` — the
+            // venue never reports the withheld evidence as a closure
+            // (LAW-COVERAGE). The row's kind above is the neutrality itself.
+            assert!(
+                venue
+                    .is_closed_trade_date(date, SessionKind::Both)
+                    .is_err_and(|error| matches!(error, CalendarQueryError::UnresolvedGap { .. })),
+                "{venue:?}: {date} must be refused as UnresolvedGap"
             );
-            assert_refuses_before_floor(venue.is_open(probe), venue, probe);
+            // The is_open probe may name the neighbouring day its wrap
+            // derivation reads; either way the withheld evidence is never
+            // reported as a closure.
+            assert!(
+                venue.is_open(probe).is_err_and(|error| matches!(
+                    error,
+                    CalendarQueryError::UnresolvedGap { .. }
+                        | CalendarQueryError::OutsideCoveredRange { .. }
+                )),
+                "{venue:?}: {probe} must be refused, never answered as closed"
+            );
         }
     }
 }

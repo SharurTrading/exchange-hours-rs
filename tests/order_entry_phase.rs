@@ -34,21 +34,6 @@ fn assert_refusal<T>(
     );
 }
 
-/// Asserts a query refuses `date` because the venue-local day precedes the
-/// permanent 2025 support floor (LAW-COVERAGE).
-fn assert_before_floor<T: std::fmt::Debug>(
-    answer: Result<T, CalendarQueryError>,
-    source: CalendarSource,
-    date: NaiveDate,
-    label: &str,
-) {
-    assert_refusal(
-        answer,
-        CalendarQueryError::BeforeSupportFloor { source, date },
-        label,
-    );
-}
-
 /// Asserts a refusal is exactly the one `calendar` publishes for the day the
 /// query named, so a query verdict and the identity's own coverage metadata can
 /// never disagree.
@@ -263,41 +248,50 @@ fn order_entry_queries_reselect_on_the_session_opening_day_across_a_revision() {
     // profile the instant's own civil date selects.
     let calendar = calendar_for_market_hours_key(MarketHoursKey::CfeVix);
 
-    // Every probe here is a venue-local 2018 date, before the permanent 2025
-    // floor, so the identity refuses each of them: which profile owns an opening
-    // day is no longer observable across this revision, and a refusal is not an
-    // order-entry answer (LAW-COVERAGE). The refusal names the instant's own
-    // local day, which is the date the query could not source.
+    // At the 2010 floor these 2018 dates answer again, so the reselection this
+    // fixture exists to pin is observable: each order-entry probe is answered
+    // by the profile owning the opening day, not by the instant's civil date.
+    // CFE's audited holiday window opens 2025-01-01, so the date-level facts
+    // refuse on the unaudited era (LAW-COVERAGE); the fixed snapshot is where
+    // the grids stay readable — the CFE family tests fence them.
     let cfe = CalendarSource::MarketHoursKey(MarketHoursKey::CfeVix);
 
     // 22:10/22:20 UTC are 16:10/16:20 CT (CST). The prior regime's queue
     // starts 16:15.
-    assert_before_floor(
+    assert_refusal(
         calendar.is_order_entry_only(utc(2018, 2, 18, 22, 10)),
-        cfe,
-        NaiveDate::from_ymd_opt(2018, 2, 18).expect("fixture date"),
+        CalendarQueryError::OutsideCoveredRange {
+            source: cfe,
+            date: NaiveDate::from_ymd_opt(2018, 2, 18).expect("fixture date"),
+        },
         "the prior regime's queue, before its 16:15 onset",
     );
-    assert_before_floor(
+    assert_refusal(
         calendar.is_order_entry_only(utc(2018, 2, 18, 22, 20)),
-        cfe,
-        NaiveDate::from_ymd_opt(2018, 2, 18).expect("fixture date"),
+        CalendarQueryError::OutsideCoveredRange {
+            source: cfe,
+            date: NaiveDate::from_ymd_opt(2018, 2, 18).expect("fixture date"),
+        },
         "the prior regime's queue, after its 16:15 onset",
     );
 
     // Sunday 2018-02-25, 22:01 UTC = 16:01 CT: the new regime already queues.
-    assert_before_floor(
+    assert_refusal(
         calendar.is_order_entry_only(utc(2018, 2, 25, 22, 1)),
-        cfe,
-        NaiveDate::from_ymd_opt(2018, 2, 25).expect("fixture date"),
+        CalendarQueryError::OutsideCoveredRange {
+            source: cfe,
+            date: NaiveDate::from_ymd_opt(2018, 2, 25).expect("fixture date"),
+        },
         "the new regime's queue",
     );
     // Monday 2018-02-26, 14:00 UTC = 08:00 CT: the wrapped session opened
     // Sunday under the new profile and is still trading.
-    assert_before_floor(
+    assert_refusal(
         calendar.is_open(utc(2018, 2, 26, 14, 0)),
-        cfe,
-        NaiveDate::from_ymd_opt(2018, 2, 26).expect("fixture date"),
+        CalendarQueryError::OutsideCoveredRange {
+            source: cfe,
+            date: NaiveDate::from_ymd_opt(2018, 2, 26).expect("fixture date"),
+        },
         "the wrapped Monday session",
     );
 }

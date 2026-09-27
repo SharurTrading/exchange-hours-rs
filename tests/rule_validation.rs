@@ -15,41 +15,10 @@ use std::borrow::Cow;
 use chrono::{Duration, NaiveDate, TimeZone, Utc};
 use chrono_tz::{America, Pacific};
 use exchange_hours::{
-    CalendarQueryError, CalendarResolution, CalendarSource, Exchange, MarketHours, SessionKind,
-    SessionRule, SessionRuleError, calendar_for_exchange, candle_end, candle_start,
-    hours_for_exchange, next_session_after, session_bounds,
+    CalendarResolution, Exchange, MarketHours, SessionKind, SessionRule, SessionRuleError,
+    calendar_for_exchange, candle_end, candle_start, hours_for_exchange, next_session_after,
+    session_bounds,
 };
-
-/// Asserts an identity-backed query returns exactly `expected`, the coverage
-/// error the shipped data declares. The variant, identity and date are all part
-/// of the contract: a refusal that named the wrong day would be as wrong as an
-/// answer.
-fn assert_refusal<T>(
-    answer: Result<T, CalendarQueryError>,
-    expected: CalendarQueryError,
-    label: &str,
-) {
-    assert_eq!(
-        answer.err(),
-        Some(expected),
-        "{label}: the query must state the refusal its identity declares"
-    );
-}
-
-/// Asserts a query refuses `date` because the venue-local day precedes the
-/// permanent 2025 support floor (LAW-COVERAGE).
-fn assert_before_floor<T: std::fmt::Debug>(
-    answer: Result<T, CalendarQueryError>,
-    source: CalendarSource,
-    date: NaiveDate,
-    label: &str,
-) {
-    assert_refusal(
-        answer,
-        CalendarQueryError::BeforeSupportFloor { source, date },
-        label,
-    );
-}
 
 const MON_FRI: [bool; 7] = [true, true, true, true, true, false, false];
 const NO_DAYS: [bool; 7] = [false; 7];
@@ -346,30 +315,35 @@ fn a_wholly_skipped_civil_date_has_an_empty_closed_window() {
     // The whole claim is stated by the identity-erased fixed snapshot, which
     // carries no coverage verdict: 2011-12-29 and 2011-12-31 are ordinary days
     // and 2011-12-30 — the civil date Samoa skipped when it moved across the
-    // date line — is one closed window. The identity-backed calendar refuses all
-    // three, because `Exchange::Unknown`'s coverage begins at the permanent 2025
-    // floor and the crate will not carry a 2011 schedule back to a date it cannot
-    // source (LAW-COVERAGE).
-    let unknown = CalendarSource::Exchange(Exchange::Unknown);
+    // date line — is one closed window. `Exchange::Unknown` is the synthetic
+    // 24x7 fallback with no holidays at all, so at the 2010 floor the
+    // identity-backed calendar answers these 2011 dates too and agrees with
+    // the snapshot (the skipped civil date has no session to close).
     for existing_day in [day(29), day(31)] {
         assert!(!always_open.is_closed_all_day_in_calendar(
             existing_day,
             Pacific::Apia,
             SessionKind::Both,
         ));
-        assert_before_floor(
-            calendar.is_closed_all_day_in_calendar(existing_day, Pacific::Apia, SessionKind::Both),
-            unknown,
-            existing_day,
-            "an existing civil date",
+        assert_eq!(
+            calendar
+                .is_closed_all_day_in_calendar(existing_day, Pacific::Apia, SessionKind::Both)
+                .expect("the synthetic identity answers its own domain"),
+            always_open.is_closed_all_day_in_calendar(
+                existing_day,
+                Pacific::Apia,
+                SessionKind::Both
+            ),
+            "an existing civil date"
         );
     }
     assert!(always_open.is_closed_all_day_in_calendar(day(30), Pacific::Apia, SessionKind::Both,));
-    assert_before_floor(
-        calendar.is_closed_all_day_in_calendar(day(30), Pacific::Apia, SessionKind::Both),
-        unknown,
-        day(30),
-        "the skipped civil date",
+    assert_eq!(
+        calendar
+            .is_closed_all_day_in_calendar(day(30), Pacific::Apia, SessionKind::Both)
+            .expect("the synthetic identity answers its own domain"),
+        always_open.is_closed_all_day_in_calendar(day(30), Pacific::Apia, SessionKind::Both),
+        "the skipped civil date"
     );
 }
 

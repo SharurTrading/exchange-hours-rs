@@ -992,18 +992,16 @@ fn every_shipped_session_occurrence_is_dated_by_its_own_open_or_the_next_day() {
     // 987,848 occurrences.
     //
     // **What the population is now.** The fence's span is still the fixture's
-    // own 2010-2028, but an identity-backed calendar enumerates only what it
-    // sources: every cursor before the permanent 2025 floor refuses with
-    // `BeforeSupportFloor` and is stepped over, so the premise is checked
-    // against the sourced span and the counts below are the ones observed here
-    // for it — 128 of 128 identities, 32,034 occurrences, 125 identities
-    // carrying trade dates (the other three ship an always-open profile), 3,279
-    // occurrences whose trade date the identity withholds, and 115,924 refused
-    // cursors over the unsourced span. The pre-floor population this fence once
-    // enumerated (1,195,680 occurrences) is not reachable through any
-    // identity-backed query, and the counts state that rather than hiding it.
-    // The premise itself is unchanged and still asserted per occurrence: what
-    // shrank is the population it can be asserted over.
+    // own 2010-2028, and the 2026-09-27 amendment moved the support floor back
+    // to 2010-01-01, so the restored audited history enumerates again: the
+    // counts below are the ones observed at this head — 128 of 128 identities,
+    // 161,695 occurrences, 125 identities carrying trade dates (the other
+    // three ship an always-open profile), 16,184 occurrences whose trade date
+    // the identity withholds or cannot source in the carried era, and 95,704
+    // refused cursors over carried-era and unaudited spans (a refusal is
+    // stepped over, never read as a closure). The premise itself is unchanged
+    // and still asserted per occurrence: what the floor move restored is the
+    // population the premise can be asserted over.
     //
     // The population itself is pinned off the two enums, so a filter that
     // quietly starts dropping identities fails here as well as in the ledger:
@@ -1024,16 +1022,16 @@ fn every_shipped_session_occurrence_is_dated_by_its_own_open_or_the_next_day() {
         "every close-dated identity must ship a session inside the span"
     );
     assert!(
-        occurrences > 30_000,
+        occurrences > 150_000,
         "the sweep must cover every occurrence the identities source, saw {occurrences}"
     );
     assert!(
-        refused_cursors > 100_000,
-        "the sweep must step over the unsourced span rather than stopping at it, \
-         saw {refused_cursors} refused cursors"
+        refused_cursors > 90_000,
+        "the sweep must step over the carried-era and unsourced spans rather than \
+         stopping at them, saw {refused_cursors} refused cursors"
     );
     assert!(
-        unresolved > 3_000,
+        unresolved > 15_000,
         "a session whose trade date the identity withholds must be counted as a \
          refusal, never as a session without a trade date, saw {unresolved}"
     );

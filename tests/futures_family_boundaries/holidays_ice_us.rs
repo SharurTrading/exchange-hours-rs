@@ -430,8 +430,12 @@ fn the_venue_ships_only_the_dates_every_family_agrees_on() {
     // trade-date deletion answers from the date's own day, except where it
     // depends on a day the table withholds: 2025-12-25's opening day is the
     // withheld 2025-12-24.
+    // 2025-01-01's trade-date derivation reads the opening day 2024-12-31,
+    // outside every audited window, so it refuses there; the other closures'
+    // opening days are audited (2025-12-25 additionally depends on the
+    // withheld 2025-12-24).
     for (date, withheld_by) in [
-        (day(2025, 1, 1), None),
+        (day(2025, 1, 1), Some(DateCoverage::OutsideCoveredRange)),
         (day(2025, 4, 18), None),
         (day(2025, 12, 25), Some(DateCoverage::UnresolvedGap)),
         (day(2026, 1, 1), None),
@@ -459,18 +463,20 @@ fn the_venue_ships_only_the_dates_every_family_agrees_on() {
             );
         }
     }
-    // 2025-01-01 answers its own closure, but naming its trade date reads the
-    // evening of 2024-12-31, which is below the 2025 floor.
-    assert!(
-        !venue
-            .is_open(ny((2025, 1, 1), (12, 0, 0)))
-            .expect("the closure's own day is inside the audited window")
+    // Naming anything on 2025-01-01 — its trade date, even the noon probe,
+    // which rides the wrap opened that evening — reads 2024-12-31, outside
+    // every audited window, so the identity refuses it.
+    assert_declared_refusal(
+        venue.is_open(ny((2025, 1, 1), (12, 0, 0))),
+        DateCoverage::OutsideCoveredRange,
+        venue,
+        "the closure's day rides the wrap opened on the unaudited 2024-12-31",
     );
     assert_declared_refusal(
         venue.trade_date(ny((2025, 1, 1), (12, 0, 0))),
-        DateCoverage::BeforeSupportFloor,
+        DateCoverage::OutsideCoveredRange,
         venue,
-        "the trade date's opening day is below the 2025 floor",
+        "the trade date's opening day 2024-12-31 sits outside every audited window",
     );
     // A plain 2025 weekday answers: the 2025 floor is inside the window now.
     let weekday = ny((2025, 6, 11), (12, 0, 0));
@@ -596,11 +602,14 @@ fn every_ice_table_covers_the_2025_floor_through_the_2027_calendars_last_entry()
     // calendar too; the normal week is still observable on the detached
     // snapshot.
     let sugar = key(MarketHoursKey::IceUsSugar);
+    // At the 2010 floor, 2024-12-31 is no longer below the floor; it is one
+    // day below the audited window, so the verdict is the no-audited-answer
+    // one instead.
     assert_declared_refusal(
         sugar.is_open(ny((2024, 12, 31), (9, 0, 0))),
-        DateCoverage::BeforeSupportFloor,
+        DateCoverage::OutsideCoveredRange,
         sugar,
-        "2024-12-31 is below the 2025 floor",
+        "2024-12-31 is one day below the audited window",
     );
     let outside = ny((2028, 1, 18), (9, 0, 0));
     assert_eq!(sugar.holiday_on(day(2028, 1, 18)), None);
@@ -672,6 +681,30 @@ fn the_2025_softs_closures_remove_the_whole_trading_day() {
                 Some(HolidayKind::Closed),
                 "{which:?} {year}-{month:02}-{date:02}"
             );
+            // 2025-01-01's derivations read the opening day 2024-12-31,
+            // outside every audited window, so the date-aware queries refuse
+            // there; every later closure's opening day is audited.
+            if (year, month, date) == (2025, 1, 1) {
+                assert!(
+                    calendar
+                        .is_closed_trade_date(day(year, month, date), SessionKind::Both)
+                        .is_err_and(|error| matches!(
+                            error,
+                            CalendarQueryError::OutsideCoveredRange { .. }
+                        )),
+                    "{which:?}: the opening day 2024-12-31 is unaudited"
+                );
+                assert!(
+                    calendar
+                        .is_open(ny((year, month, date), (12, 0, 0)))
+                        .is_err_and(|error| matches!(
+                            error,
+                            CalendarQueryError::OutsideCoveredRange { .. }
+                        )),
+                    "{which:?}: the noon probe rides the unaudited wrap"
+                );
+                continue;
+            }
             assert!(
                 calendar
                     .is_closed_trade_date(day(year, month, date), SessionKind::Both)

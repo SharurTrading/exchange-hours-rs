@@ -126,7 +126,7 @@
 //! the authority on which identities carry one and over which window.
 //!
 //! The coverage contract sits above all of those layers. [`SUPPORT_FLOOR`] is
-//! the permanent floor, 1 January 2025 in the venue's own local-date domain;
+//! the permanent floor, 1 January 2010 in the venue's own local-date domain;
 //! [`ExchangeCalendar::coverage`] reports, for one identity, where its normal
 //! week is sourced rather than carried, what its holiday layer asserts, and
 //! which venue-local ranges it answers completely; and [`CalendarQueryError`]

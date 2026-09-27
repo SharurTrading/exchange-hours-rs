@@ -55,8 +55,9 @@
 //! `globex_equity_index`'s on twenty-three dates in the window: fifteen where
 //! both state different rows — the three Stage-4 Saturday trade dates
 //! (2026-06-22, 2026-07-06 and 2027-06-21), where Nikkei states a
-//! complete-day Saturday row, among them — five 2025 Sunday-eve merges where
-//! only equity index states, and three dates where only Nikkei states (its
+//! complete-day Saturday row, among them — four 2025 Sunday-eve merges
+//! and the 2025-06-20 Juneteenth-eve merge, where only equity index states, and
+//! three dates where only Nikkei states (its
 //! no-prior-evening-leg block rows for 2025-01-02, 2025-12-26 and
 //! 2026-01-02). On the Saturdays the venue already reports `Unsourced`, so
 //! routing Nikkei could add no stated row there; the rest of the disagreement

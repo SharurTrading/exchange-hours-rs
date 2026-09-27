@@ -307,25 +307,22 @@ the product-family key: `globex_equity_index` knows what CME equity index does o
   Eight CME families ship tables; the two left out are `globex_cryptocurrency` and
   `globex_nikkei_225_dollar`.
 - **What adding each of the two would cost is known, and they differ.** Nikkei's
-  2025-2027 table differs from `globex_equity_index`'s on exactly three dates: the
-  Saturday trade dates 2026-06-22, 2026-07-06 and 2027-06-21 that Stage 4 (#116) added
-  as complete-day replacement rows. On every other date the two both state, they state
-  the same row, so adding Nikkei would leave those dates alone; on the three Saturdays
-  it can add no shipped row either, because the families this venue routes do not all
-  state Nikkei's row there, and the intersection can only report `unsourced`.
-  Cryptocurrency shares the same **nine**
-  closures — its `Closed` rows cover every one of them — so it would not touch the nine
-  stated rows.
-  What it would change is the residue: it ships twenty-four rows against this list's
-  forty-four dates, because it trades 24/7 and states no closure on the other
-  twenty, so on each of those twenty it has **audited the date normal** while
-  another routed family states a closure or an early close. Those twenty dates
-  carry `unsourced` either way, so the venue's answers would be unchanged and only the
-  evidence would record one more family as party to each disagreement. The routing
-  decision therefore comes down to those three dates: on every other date the two
-  state, Nikkei states the row `globex_equity_index` already states, so no answer can
-  move, and on the three Saturdays the intersection ships no row either way — which is
-  exactly why the choice has to be written down rather than inferred.
+  2025-2027 answers differ from `globex_equity_index`'s on twenty-three dates in the
+  window: fifteen where both state different rows — the three Stage-4 (#116) Saturday
+  trade dates 2026-06-22, 2026-07-06 and 2027-06-21, where Nikkei states a complete-day
+  Saturday row, among them — four 2025 Sunday-eve merges and the 2025-06-20
+  Juneteenth-eve merge, where only equity index states, and three dates where only
+  Nikkei states (its no-prior-evening-leg block rows for 2025-01-02, 2025-12-26 and
+  2026-01-02). On every one of the twenty-three the venue already reports `unsourced`,
+  so routing Nikkei would move no answer; it would only record one more family as
+  party to each disagreement.
+  Cryptocurrency shares the same **nine** closures — its `Closed` rows cover every one
+  of them — so it would not touch the nine stated rows. Of the sixty-one dates the
+  venue withholds, it states nothing on thirty and replacement blocks on thirty-one,
+  and every one of those thirty-one lands on a date the venue already reports
+  `unsourced`, so no audited-normal date could flip and the venue's answers would be
+  unchanged. The choice is recorded rather than inferred: the consumer owns the map,
+  and this file states what each reading costs.
   Closing condition: the consumer's own root map, disclosed and reviewed against this
   list. The crate cannot settle it, and this file states both readings so a reviewer
   can.

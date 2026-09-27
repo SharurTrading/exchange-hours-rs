@@ -566,10 +566,28 @@ fn check_declarations(
         );
         return;
     }
+    // A bounded declaration leaves the dates past its bound to the ordinary
+    // date-level facts; those dates are complete only where audited answers
+    // exist, so the complete spans stay empty when the audited holiday windows
+    // end at or before the last bound. `eurex` is the shipped case.
+    let audited_end = coverage
+        .holiday_contract()
+        .coverage()
+        .map(exchange_hours::HolidayCoverage::last);
+    let latest_bound = coverage
+        .phase_gaps()
+        .iter()
+        .filter_map(|gap| gap.applies_until())
+        .max();
+    let audited_dates_survive_past_the_bound = match audited_end {
+        None => true,
+        Some(end) => latest_bound.is_some_and(|bound| end >= bound),
+    };
     assert_eq!(
         complete.is_empty(),
-        whole_domain,
-        "{identity:?}: no complete span exactly while a whole-domain declaration applies"
+        whole_domain || !audited_dates_survive_past_the_bound,
+        "{identity:?}: no complete span exactly while a whole-domain declaration \
+         applies or no audited date survives past the last bound"
     );
     assert!(
         gaps.iter().any(|gap| gap.phase_gap().is_some()),
@@ -913,13 +931,15 @@ fn a_declared_phase_gap_is_era_aware_and_reported_for_the_span_it_answers() {
         declared,
         vec![(CoverageGapReason::UnpublishedClosureDates, "#157")]
     );
-    assert!(
+    assert_eq!(
         eurex
             .phase_gaps()
             .iter()
-            .all(|gap| gap.applies_until().is_none()),
-        "the German-scope note is unpublished in the 2026 edition too, so the \
-         declaration carries no era bound"
+            .find_map(|gap| gap.applies_until()),
+        Some(date(2027, 1, 1)),
+        "the declaration spans the editions that carry the note and stops where they do: \
+         2027-01-01 is the first day the note does not establish, not a day the operator \
+         resolved it"
     );
     assert!(!eurex.is_complete_on(sample), "eurex on {sample}");
     assert_eq!(eurex.coverage_on(sample), DateCoverage::OutsideCoveredRange);

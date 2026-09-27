@@ -509,9 +509,8 @@ fn the_declared_phase_level_gaps_match_the_inventory() {
     let mut declaring = 0_usize;
     let mut declarations = 0_usize;
     for (name, row) in &rows {
-        let coverage = calendar_for(name)
-            .expect("the inventory names a known identity")
-            .coverage();
+        let calendar = calendar_for(name).expect("the inventory names a known identity");
+        let coverage = calendar.coverage();
         let expected = expected_table
             .iter()
             .find(|(scope, _)| scope == name)
@@ -530,17 +529,36 @@ fn the_declared_phase_level_gaps_match_the_inventory() {
 
         // The horizon the ledger declares is untouched: a phase gap is additional
         // information, not a re-dating. Whether the identity answers any date
-        // completely follows from the declarations: one that carries a
-        // whole-domain gap answers none, and one whose gaps are all bounded by an
-        // era answers from the latest bound on.
+        // completely follows from the declarations and the audited facts: one
+        // that carries a whole-domain gap answers none; one whose gaps are all
+        // bounded by an era answers from the latest bound on — unless its
+        // audited holiday windows end at or before that bound, in which case no
+        // audited date survives past it and the complete ranges stay empty.
+        // `eurex` is the shipped case: the editions carrying the `tba` note end
+        // at 2026-12-31 and its bound is the next day.
         let whole_domain = coverage
             .phase_gaps()
             .iter()
             .any(|gap| gap.applies_until().is_none());
+        let audited_end = calendar
+            .holiday_coverage()
+            .map(exchange_hours::HolidayCoverage::last);
+        let latest_bound = coverage
+            .phase_gaps()
+            .iter()
+            .filter_map(|gap| gap.applies_until())
+            .max();
+        let audited_dates_survive_past_the_bound = match audited_end {
+            // No holiday table: the date-level facts refuse nothing for want of
+            // an audited row, so the ordinary dates past the bound are complete.
+            None => true,
+            Some(end) => latest_bound.is_some_and(|bound| end >= bound),
+        };
         assert_eq!(
             coverage.complete_ranges().count() == 0,
-            whole_domain,
-            "{name}: complete_ranges() is empty exactly while a whole-domain gap applies"
+            whole_domain || !audited_dates_survive_past_the_bound,
+            "{name}: complete_ranges() is empty exactly while a whole-domain gap \
+             applies or no audited date survives past the last bound"
         );
         if whole_domain {
             assert!(

@@ -85,6 +85,23 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Added
 
+- **ICE Futures U.S. softs state the 2026 BST-end week (2026-09-27 UTC).**
+  Exchange Notice `ICE_Futures_US_DST_End2026_20260925.pdf` (T1, retrieved
+  2026-09-27 UTC) moves the opens for trade dates 2026-10-26 through
+  2026-10-30 — the week between the end of British Summer Time and the end
+  of US DST — to 04:30 NY for Sugar No. 11, 05:15 NY for Coffee "C" and
+  Coffee "C" Metric, and 05:45 NY for Cocoa, unconditional and day-level.
+  The softs had shared one holiday table because they agreed on every row;
+  this notice is the first disagreement, so `ice_us_sugar`, `ice_us_coffee`
+  and `ice_us_cocoa` now carry their own tables (the common rows unchanged)
+  plus five late-open rows each, citing the notice. Closes, Pre-Open and
+  everything else stay as printed in NY local time, and the notice's
+  temporary settlement windows and TAS ends are calculation windows and
+  trade-type lifecycle (LAW-SESSION-NOT-EXPIRY), so no row states them. The
+  other families trade regular hours that week, so the served `iceus` venue
+  ships `Unsourced` for the five dates and its withheld count moves from 35
+  to 40.
+
 - **`globex_livestock` covers 2016-2018, closing the last CME family holiday
   gap; the four venue tables move not a row (2026-09-27 UTC).** The family's
   table gains **35 rows over venue-local trade dates 2016-01-01 .. 2018-12-31**

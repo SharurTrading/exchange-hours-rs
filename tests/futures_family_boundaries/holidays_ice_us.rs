@@ -198,6 +198,128 @@ fn fcoj_and_cotton_are_not_part_of_the_easter_monday_late_open() {
     );
 }
 
+/// The 2026 BST-end week (notice `IFUS-NOTICE-2026-DST-END`, September 25,
+/// 2026): on each of the five trade dates 2026-10-26..30 Sugar opens 04:30 NY,
+/// Coffee 05:15 and Cocoa 05:45, with closes, Pre-Open and everything else
+/// unchanged as printed in NY local time. The notice's settlement-window
+/// changes are calculation windows (LAW-SESSION-NOT-EXPIRY), so no row states
+/// them and no close moves. The other families trade regular hours that week —
+/// which is why the `iceus` venue withholds all five dates as `Unsourced` —
+/// and 2026-11-02 reopens the softs at their normal instants.
+#[test]
+fn the_2026_dst_end_week_opens_the_softs_late_at_three_instants() {
+    let opens_by_key = [
+        (
+            MarketHoursKey::IceUsSugar,
+            (4u32, 30u32),
+            (3u32, 30u32),
+            13 * 3_600,
+        ),
+        (
+            MarketHoursKey::IceUsCoffee,
+            (5, 15),
+            (4, 15),
+            13 * 3_600 + 30 * 60,
+        ),
+        (
+            MarketHoursKey::IceUsCocoa,
+            (5, 45),
+            (4, 45),
+            13 * 3_600 + 30 * 60,
+        ),
+    ];
+    for date in [26, 27, 28, 29, 30] {
+        for (which, dst_open, normal_open, close_ssm) in opens_by_key {
+            let calendar = key(which);
+            assert_eq!(
+                calendar.holiday_on(day(2026, 10, date)).map(Holiday::kind),
+                Some(HolidayKind::LateOpen {
+                    open_ssm: dst_open.0 * 3_600 + dst_open.1 * 60
+                }),
+                "{which:?} on 2026-10-{date}"
+            );
+            let cutoff = ny((2026, 10, date), (dst_open.0, dst_open.1, 0));
+            assert!(
+                !calendar
+                    .is_open(ny((2026, 10, date), (normal_open.0, normal_open.1, 0)))
+                    .expect("the coverage contract must answer a covered date"),
+                "{which:?} must not open at its normal {normal_open:?} on 2026-10-{date}"
+            );
+            assert!(
+                !calendar
+                    .is_open(cutoff - TimeDelta::nanoseconds(1))
+                    .expect("the coverage contract must answer a covered date"),
+                "{which:?} stays shut the minute before its delayed open on 2026-10-{date}"
+            );
+            assert!(
+                calendar
+                    .is_open(cutoff)
+                    .expect("the coverage contract must answer a covered date"),
+                "{which:?} opens at the notice's instant on 2026-10-{date}"
+            );
+            // The close is unchanged, so the delayed session still ends at the
+            // normal instant, end-exclusive.
+            let bounds = calendar
+                .session_bounds(cutoff)
+                .expect("the coverage contract must answer a covered date")
+                .expect("the delayed session must exist");
+            assert_eq!(bounds.0, cutoff, "{which:?} on 2026-10-{date}");
+            assert_eq!(
+                bounds.1,
+                ny(
+                    (2026, 10, date),
+                    (close_ssm / 3_600, (close_ssm % 3_600) / 60, 0)
+                ),
+                "{which:?} keeps its normal close on 2026-10-{date}"
+            );
+        }
+
+        // The families the notice leaves regular carry no row for the date.
+        for which in [
+            MarketHoursKey::IceUsCotton,
+            MarketHoursKey::IceUsOrangeJuice,
+            MarketHoursKey::IceUsDollarIndex,
+        ] {
+            assert_eq!(
+                key(which).holiday_on(day(2026, 10, date)),
+                None,
+                "{which:?} on 2026-10-{date}: the notice prints regular hours for it"
+            );
+        }
+
+        // The venue's families disagree on the open instant, so the venue
+        // withholds every date of the week rather than stating one.
+        assert_eq!(
+            calendar_for_exchange(Exchange::Iceus)
+                .holiday_on(day(2026, 10, date))
+                .map(Holiday::kind),
+            Some(HolidayKind::Unsourced),
+            "the venue intersection on 2026-10-{date}"
+        );
+    }
+
+    // The window reverts: the Monday after is past the notice's last trade
+    // date, and the softs open at their normal instants again.
+    for (which, normal_open) in [
+        (MarketHoursKey::IceUsSugar, (3, 30)),
+        (MarketHoursKey::IceUsCoffee, (4, 15)),
+        (MarketHoursKey::IceUsCocoa, (4, 45)),
+    ] {
+        let calendar = key(which);
+        assert_eq!(
+            calendar.holiday_on(day(2026, 11, 2)),
+            None,
+            "{which:?} on 2026-11-02: past the notice's last trade date"
+        );
+        assert!(
+            calendar
+                .is_open(ny((2026, 11, 2), (normal_open.0, normal_open.1, 0)))
+                .expect("the coverage contract must answer a covered date"),
+            "{which:?} reopens at its normal {normal_open:?} on 2026-11-02"
+        );
+    }
+}
+
 #[test]
 fn cotton_carries_its_own_monday_late_open_row() {
     let cotton = key(MarketHoursKey::IceUsCotton);

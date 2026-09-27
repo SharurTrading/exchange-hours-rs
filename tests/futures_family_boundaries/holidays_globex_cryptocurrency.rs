@@ -1647,10 +1647,10 @@ fn era_2022_2024_window_sits_second_and_the_pre_2019_interval_is_unaudited() {
 // ---------------------------------------------------------------------------
 
 /// 12:00 CT, the Monday and Thursday holiday close this era prints.
-const ERA_MIDNIGHT: u32 = 12 * 3_600;
+const ERA_NOON: u32 = 12 * 3_600;
 /// 12:15 CT, the Independence Day eve and Christmas Eve close, and the
 /// Thanksgiving Friday close of 2019 and 2020, that this era prints.
-const ERA_QUARTER_PAST_MIDNIGHT: u32 = 12 * 3_600 + 15 * 60;
+const ERA_QUARTER_PAST_NOON: u32 = 12 * 3_600 + 15 * 60;
 /// 12:45 CT, the Thanksgiving Friday close of **2021-11-26**: the one date CME
 /// moves this family half an hour later than the rest of the complex's 12:15 CT.
 /// The wave-3 constant of the same name and value is the 2022-2024 era's own.
@@ -1683,8 +1683,8 @@ fn era_2019_2021_sweeps_every_shipped_row_kind_and_instant() {
             match row.kind() {
                 HolidayKind::EarlyClose { close_ssm } => {
                     match close_ssm {
-                        ERA_MIDNIGHT => noons += 1,
-                        ERA_QUARTER_PAST_MIDNIGHT => quarters += 1,
+                        ERA_NOON => noons += 1,
+                        ERA_QUARTER_PAST_NOON => quarters += 1,
                         ERA_EIGHT_FIFTEEN => eight_fifteens += 1,
                         ERA_TWELVE_FORTY_FIVE_2021 => twelve_forty_fives += 1,
                         other => {

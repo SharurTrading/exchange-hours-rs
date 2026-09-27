@@ -945,20 +945,25 @@ fn a_day_after_a_closure_serves_its_1600_pre_open() {
 // ---------------------------------------------------------------------------
 // The 2016-2018 rows.
 // ---------------------------------------------------------------------------
-/// The era is governed by the Equity Index line, and its nine closures and
-/// 24 early closes land on the same trade dates as that line's.
+/// The era's nine closures hold on NKD's own table after the Equity Index
+/// line's pre-floor rows left with Stage 5 (#117): the equity index no longer
+/// answers this era, so the comparison that used to fence NKD against it is
+/// gone, and the era's own closure list is the fence that remains until NKD's
+/// own pruning PR lands.
 #[test]
-fn wave2_rows_follow_the_equity_index_line() {
+fn wave2_closure_dates_hold_after_the_equity_index_line_left_the_floor() {
     let calendar = nkd();
     let equity = calendar_for_market_hours_key(MarketHoursKey::GlobexEquityIndex);
 
     let mut closures = Vec::new();
     let mut date = day(2016, 1, 1);
     while date <= day(2018, 12, 31) {
+        // The equity index abstains below the floor — no window, no answer —
+        // so its pruning cannot have moved any NKD row here.
         assert_eq!(
-            kind_on(calendar, date),
             kind_on(equity, date),
-            "{date}: NKD and the Equity Index line agree in this era"
+            None,
+            "{date}: the equity index no longer answers the pre-floor eras"
         );
         if kind_on(calendar, date) == Some(HolidayKind::Closed) {
             closures.push(date);

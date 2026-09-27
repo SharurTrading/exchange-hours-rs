@@ -68,6 +68,25 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Added
 
+- **`globex_livestock` covers 2016-2018, closing the last CME family holiday
+  gap; the four venue tables move not a row (2026-09-27 UTC).** The family's
+  table gains **35 rows over venue-local trade dates 2016-01-01 .. 2018-12-31**
+  (#110) — 27 full closures and 8 early closes at 12:15 CT, every one at
+  **T1** — read from the same 27 CME Globex holiday documents the other
+  families' era rows cite: the 2016 per-holiday PDFs inside the 2016 annual
+  bundle, the revised standalone 2016 New Year's PDF, the standalone 2017 and
+  2018 `.xls` workbooks, and the 2017 and 2018 annual bundles that carry CME's
+  final revisions. The window sits between 2013-2015 and 2019-2021, so every
+  interval from the January-2010 floor is now audited for the family.
+  2018-12-26 ships no row: the same sheet states the family's ordinary 06:00
+  pre-open, 08:30 open, 13:05 close and 14:30-16:00 PCP there, so the date is
+  audited normal inside the window. The four venue tables were re-derived by
+  the D17 intersection with the new rows in place, and no row moved: `cme` and
+  `cbot` state `Closed` on the same nine dates every routed family shuts and
+  withhold the same 27 as `Unsourced` — the family's `Closed` answers on the
+  Monday and Thursday holidays join existing disagreements rather than
+  creating agreements — and `comex`/`nymex` carry `globex_energy`'s 31 era
+  rows unchanged. Evidence: `docs/evidence/globex_livestock.md`.
 - **`iceus` ships its 2025 holiday rows, so every served scope now answers 2025 (2026-09-26 UTC).** The venue table — the intersection of the five ICE Futures U.S. family tables the routed keys select — shipped a `2026-01-01..2028-01-03` window, so all 365 dates of 2025 returned `OutsideCoveredRange` for a served market. Every ICE US table now audits from the 2025 floor, with the 2025 rows read from the `July 5, 2024` — `2025 Trading Holiday Calendar` and ICE's per-holiday notices (MLK, Presidents Day, Good Friday, Memorial Day, Juneteenth, Labor Day and the revised Thanksgiving notice), including the two London-bank-holiday “Delayed Opens” dates 2025-05-05 and 2025-08-25 that the calendar does not list. The venue gains three `Closed` rows (2025-01-01, 2025-04-18, 2025-12-25) and fourteen `Unsourced` dates, so it answers 2025 and answers it incompletely. **Two 2025 notices were not retrievable** — Independence Day and Christmas / Boxing Day — so 2025-07-03, 2025-07-04, 2025-12-24 and 2025-12-26 are withheld for the index families rather than invented, and the 20 withheld 2026-2027 dates are unchanged; tracked as #168.
 - **`cfe` and `cfe_vix` gain their 2025 holiday rows (2026-09-26 UTC).** The CFE
   table shipped a 2026-only window, so all 365 dates of 2025 returned

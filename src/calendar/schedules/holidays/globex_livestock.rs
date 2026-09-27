@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: MIT-0
 
 //! CME Live Cattle, Feeder Cattle and Lean Hog holiday rows, 2010-2012,
-//! 2013-2015, 2019-2021, 2022-2024 and 2025-2027 (LAW-HOLIDAY-SCOPE).
+//! 2013-2015, 2016-2018, 2019-2021, 2022-2024 and 2025-2027
+//! (LAW-HOLIDAY-SCOPE).
 //!
 //! Keyed by the crate's own venue-local trade date in `America/Chicago`
 //! (design memo D1). The conversion is the identity for this family and is the
@@ -21,6 +22,26 @@
 //! family closed on), **early closes** at 13:55 CT on the Good Fridays of 2011
 //! and 2012 and at 12:00/12:15 CT on the year-end half-days, and **late opens**
 //! at 09:05 CT on 2011-12-27, 2012-01-03, 2012-07-05 and 2012-12-26.
+//!
+//! **2016-2018.** CME's own published Globex holiday schedules are the T1
+//! source for this era: the per-holiday PDFs inside the 2016 annual bundle,
+//! the revised standalone 2016 New Year's PDF, per-product-group .xls
+//! workbooks for 2017 and 2018, and the 2017 and 2018 annual bundles that
+//! carry CME's final revisions. Through February 2016 the grid is still the
+//! wrapping one, so the closures remove the trade date with its prior-evening
+//! leg; from the 2016-02-29 revision (SER-7591, the revision row above) the
+//! family is the flat 08:30-13:05 CT block and every occurrence's trade date
+//! is its own civil date. Thirty-five rows:
+//! twenty-seven closures and eight early closes at 12:15 CT — the three
+//! day-after-Thanksgiving Fridays (2016-11-25, 2017-11-24, 2018-11-23), the
+//! two Christmas-eve Fridays (2016-12-23, 2017-12-22), the two July-3 eves
+//! (2017-07-03, 2018-07-03) and Christmas Eve 2018-12-24 — with no late open.
+//! 2018-12-26 carries no row: the sheet states the family's ordinary 06:00
+//! pre-open, 08:30 open, 13:05 close and 14:30-16:00 PCP, so the date is
+//! audited normal inside the window. The 09:05 CT reopen lines the two
+//! early-2016 sheets print for the day after a closure are recorded beside
+//! those rows, not as rows of their own; the question they raise is a
+//! residual note in the evidence file.
 //!
 //! **2022-2024.** This family's flat grid keeps every trade date on its own
 //! civil date, so each row below is stated on the occurrence's own date.
@@ -56,11 +77,9 @@ use super::{
 
 /// The family's built-in holiday rows and the windows they were audited over.
 ///
-///  Five audited eras: 2010-2012 at T1, 2013-2015 at T1, 2019-2021 at T1,
-/// 2022-2024 at T1/T2 and 2025-2027 at T2.
-///  The 2016-2018 interval between them is audited by no wave and lies
-/// outside every window, so `holiday_on` has no answer there rather than
-/// reporting a normal date.
+///  Six audited eras: 2010-2012 at T1, 2013-2015 at T1, 2016-2018 at T1,
+/// 2019-2021 at T1, 2022-2024 at T1/T2 and 2025-2027 at T2. They are
+/// contiguous from 2010-01-01, so no interval between them is unaudited.
 ///
 /// Coverage ends at 2027-12-31, the end of
 /// the operator's published future, and CME's 2028-01-01 record sits outside
@@ -69,7 +88,7 @@ use super::{
 /// instead.
 // Evidence: docs/evidence/globex_livestock.md
 pub(crate) static TABLE: &HolidayTable = holidays! {
-    coverage: [(2010, 1, 1) ..= (2012, 12, 31), (2013, 1, 1) ..= (2015, 12, 31), (2019, 1, 1) ..= (2021, 12, 31), (2022, 1, 1) ..= (2024, 12, 31), (2025, 1, 1) ..= (2027, 12, 31)],
+    coverage: [(2010, 1, 1) ..= (2012, 12, 31), (2013, 1, 1) ..= (2015, 12, 31), (2016, 1, 1) ..= (2018, 12, 31), (2019, 1, 1) ..= (2021, 12, 31), (2022, 1, 1) ..= (2024, 12, 31), (2025, 1, 1) ..= (2027, 12, 31)],
     rows: [
         // 2010-01-01 - T1 - 2010-new-years.pdf - closed: new year's day 2010.
         (2010, 1, 1, Closed, T1, "2010-new-years.pdf @2010-02-15T05:16:52Z"),
@@ -200,6 +219,76 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2015, 12, 25, Closed, T1, "2015-christmas-holiday-schedule.pdf @2015-11-23T06:15:20Z"),
         // 2015-12-31 - T1 - 2016-new-years-holiday-schedule.pdf @2016-01-08 - the printed final close 13:55 CT is earlier than the family's ordinary 16:00 CT.
         (2015, 12, 31, early_close(13 * 3_600 + 55 * 60), T1, "2016-new-years-holiday-schedule.pdf @2016-01-08"),
+        // 2016-01-01 - T1 - 2016-new-years-holiday-schedule.pdf @2016-01-08 - closed: `Friday, Jan 1 New Years Observed - Globex closed`.
+        (2016, 1, 1, Closed, T1, "2016-new-years-holiday-schedule.pdf @2016-01-08"),
+        // 2016-01-18 - T1 - 2016-holiday-calendars.zip#2016-martin-luther-king-holiday-schedule.pdf @2017-06-28 - closed: no Monday, Jan 18 livestock session is printed; the sheet's next livestock open is `Tuesday, Jan 19 905 CT`.
+        (2016, 1, 18, Closed, T1, "2016-holiday-calendars.zip#2016-martin-luther-king-holiday-schedule.pdf @2017-06-28"),
+        // 2016-02-15 - T1 - 2016-holiday-calendars.zip#2016-presidents-day-holiday-schedule.pdf @2017-06-28 - closed: no Monday, Feb 15 livestock session is printed; the sheet's next livestock open is `Tuesday, Feb 16 905 CT`.
+        (2016, 2, 15, Closed, T1, "2016-holiday-calendars.zip#2016-presidents-day-holiday-schedule.pdf @2017-06-28"),
+        // 2016-03-25 - T1 - 2016-holiday-calendars.zip#2016-good-friday-holiday-schedule.pdf @2017-06-28 - closed: `Friday, March 25 CME Globex is closed`.
+        (2016, 3, 25, Closed, T1, "2016-holiday-calendars.zip#2016-good-friday-holiday-schedule.pdf @2017-06-28"),
+        // 2016-05-30 - T1 - 2016-holiday-calendars.zip#2016-memorial-day-holiday-schedule.pdf @2017-06-28 - closed: no Monday, May 30 livestock session is printed; the sheet's next livestock open is `Tuesday, May 31 0830 CT`.
+        (2016, 5, 30, Closed, T1, "2016-holiday-calendars.zip#2016-memorial-day-holiday-schedule.pdf @2017-06-28"),
+        // 2016-07-04 - T1 - 2016-holiday-calendars.zip#2016-4th-of-july-holiday-schedule.pdf @2017-06-28 - closed: no Monday, July 4 livestock session is printed; the sheet's next livestock open is `Tuesday, July 5 830 CT`.
+        (2016, 7, 4, Closed, T1, "2016-holiday-calendars.zip#2016-4th-of-july-holiday-schedule.pdf @2017-06-28"),
+        // 2016-09-05 - T1 - 2016-holiday-calendars.zip#2016-labor-day-holiday-schedule.pdf @2017-06-28 - closed: no Monday, Sep 5 livestock session is printed; the sheet's next livestock open is `Tuesday, Sep 6 830 CT`.
+        (2016, 9, 5, Closed, T1, "2016-holiday-calendars.zip#2016-labor-day-holiday-schedule.pdf @2017-06-28"),
+        // 2016-11-24 - T1 - 2016-holiday-calendars.zip#2016-thanksgiving-holiday-schedule.pdf @2017-06-28 - closed: no Thursday, Nov 24 session is printed; the sheet's next livestock open is `Friday, Nov 25 830 CT`.
+        (2016, 11, 24, Closed, T1, "2016-holiday-calendars.zip#2016-thanksgiving-holiday-schedule.pdf @2017-06-28"),
+        // 2016-11-25 - T1 - 2016-holiday-calendars.zip#2016-thanksgiving-holiday-schedule.pdf @2017-06-28 - early close `1215 CT / 1315 ET / 1815 UTC - Early close for Livestock Futures & Options`.
+        (2016, 11, 25, early_close(12 * 3_600 + 15 * 60), T1, "2016-holiday-calendars.zip#2016-thanksgiving-holiday-schedule.pdf @2017-06-28"),
+        // 2016-12-23 - T1 - 2016-holiday-calendars.zip#2016-christmas-holiday-schedule.pdf @2017-06-28 - early close `1215 CT / 1315 ET / 1815 UTC - Early close for Livestock Futures & Options`.
+        (2016, 12, 23, early_close(12 * 3_600 + 15 * 60), T1, "2016-holiday-calendars.zip#2016-christmas-holiday-schedule.pdf @2017-06-28"),
+        // 2016-12-26 - T1 - 2016-holiday-calendars.zip#2016-christmas-holiday-schedule.pdf @2017-06-28 - closed: `Monday, Dec 26 Christmas Day Observed - Globex closed`.
+        (2016, 12, 26, Closed, T1, "2016-holiday-calendars.zip#2016-christmas-holiday-schedule.pdf @2017-06-28"),
+        // 2017-01-02 - T1 - 2016-holiday-calendars.zip#2017-new-years-holiday-schedule.pdf @2017-06-28 - closed: `Monday, Jan 2 New Years Observed - Globex closed`.
+        (2017, 1, 2, Closed, T1, "2016-holiday-calendars.zip#2017-new-years-holiday-schedule.pdf @2017-06-28"),
+        // 2017-01-16 - T1 - 2017-martin-luther-king-holiday-schedule.xls @2017-06-28 - closed: the Livestock row prints no Monday, January 16 entry; the trade date reopens Tuesday 08:30 CT.
+        (2017, 1, 16, Closed, T1, "2017-martin-luther-king-holiday-schedule.xls @2017-06-28"),
+        // 2017-02-20 - T1 - 2017-presidents-day-holiday-schedule.xls @2017-06-28 - closed: the Livestock row prints no Monday, February 20 entry; the trade date reopens Tuesday 08:30 CT.
+        (2017, 2, 20, Closed, T1, "2017-presidents-day-holiday-schedule.xls @2017-06-28"),
+        // 2017-04-14 - T1 - 2017-good-friday-holiday-schedule.xls @2017-05-05 - closed: the Livestock row prints `Globex Closed` for Friday, April 14.
+        (2017, 4, 14, Closed, T1, "2017-good-friday-holiday-schedule.xls @2017-05-05"),
+        // 2017-05-29 - T1 - 2017-memorial-day-holiday-schedule.xls @2017-10-25 - closed: the Livestock row prints no Monday, May 29 entry; the trade date reopens Tuesday 08:30 CT.
+        (2017, 5, 29, Closed, T1, "2017-memorial-day-holiday-schedule.xls @2017-10-25"),
+        // 2017-07-03 - T1 - 2017-4th-of-july-holiday-schedule.xls @2017-10-25 - early close: the Livestock row prints Monday, July 3 `Early Close` 12:15 with `PCP` 12:45-16:00.
+        (2017, 7, 3, early_close(12 * 3_600 + 15 * 60), T1, "2017-4th-of-july-holiday-schedule.xls @2017-10-25"),
+        // 2017-07-04 - T1 - 2017-4th-of-july-holiday-schedule.xls @2017-10-25 - closed: the Livestock row prints `Markets Closed` for Tuesday, July 4.
+        (2017, 7, 4, Closed, T1, "2017-4th-of-july-holiday-schedule.xls @2017-10-25"),
+        // 2017-09-04 - T1 - 2017-labor-day-holiday-schedule.xls @2017-10-25 - closed: the Livestock row prints no Monday, September 4 entry; the trade date reopens Tuesday 08:30 CT.
+        (2017, 9, 4, Closed, T1, "2017-labor-day-holiday-schedule.xls @2017-10-25"),
+        // 2017-11-23 - T1 - 2017-holiday-calendars.zip#2017-thanksgiving-holiday-schedule.xls @2021-01-26 - closed: the Livestock row prints no Thursday, November 23 session; the trade date reopens Friday 08:30 CT.
+        (2017, 11, 23, Closed, T1, "2017-holiday-calendars.zip#2017-thanksgiving-holiday-schedule.xls @2021-01-26"),
+        // 2017-11-24 - T1 - 2017-holiday-calendars.zip#2017-thanksgiving-holiday-schedule.xls @2021-01-26 - early close: the Livestock row prints Friday, November 24 open 08:30 and `Close` 12:15.
+        (2017, 11, 24, early_close(12 * 3_600 + 15 * 60), T1, "2017-holiday-calendars.zip#2017-thanksgiving-holiday-schedule.xls @2021-01-26"),
+        // 2017-12-22 - T1 - 2017-holiday-calendars.zip#2017-christmas-holiday-schedule.xls @2021-01-26 - early close: the Livestock row prints Friday, December 22 `Close` 12:15.
+        (2017, 12, 22, early_close(12 * 3_600 + 15 * 60), T1, "2017-holiday-calendars.zip#2017-christmas-holiday-schedule.xls @2021-01-26"),
+        // 2017-12-25 - T1 - 2017-holiday-calendars.zip#2017-christmas-holiday-schedule.xls @2021-01-26 - closed: the Livestock row prints `Globex Closed` for Monday, December 25.
+        (2017, 12, 25, Closed, T1, "2017-holiday-calendars.zip#2017-christmas-holiday-schedule.xls @2021-01-26"),
+        // 2018-01-01 - T1 - 2018-new-years-holiday-schedule.xls @2018-01-06 - closed: the Livestock row prints `Globex Closed` for Monday, January 1.
+        (2018, 1, 1, Closed, T1, "2018-new-years-holiday-schedule.xls @2018-01-06"),
+        // 2018-01-15 - T1 - 2018-martin-luther-king-holiday-schedule.xls @2018-05-08 - closed: the Livestock row prints no Monday, January 15 entry; the trade date reopens Tuesday 08:30 CT.
+        (2018, 1, 15, Closed, T1, "2018-martin-luther-king-holiday-schedule.xls @2018-05-08"),
+        // 2018-02-19 - T1 - 2018-presidents-day-holiday-schedule.xls @2018-05-08 - closed: the Livestock row prints no Monday, February 19 entry; the trade date reopens Tuesday 08:30 CT.
+        (2018, 2, 19, Closed, T1, "2018-presidents-day-holiday-schedule.xls @2018-05-08"),
+        // 2018-03-30 - T1 - 2018-holiday-calendars.zip#2018-good-friday-holiday-schedule.xls @2026-08-30 - closed: the Livestock row prints `Globex Closed` for Friday, March 30.
+        (2018, 3, 30, Closed, T1, "2018-holiday-calendars.zip#2018-good-friday-holiday-schedule.xls @2026-08-30"),
+        // 2018-05-28 - T1 - 2018-holiday-calendars.zip#2018-memorial-day-holiday-schedule.xls @2026-08-30 - closed: the Livestock row prints no Monday, May 28 entry; the trade date reopens Tuesday 08:30 CT.
+        (2018, 5, 28, Closed, T1, "2018-holiday-calendars.zip#2018-memorial-day-holiday-schedule.xls @2026-08-30"),
+        // 2018-07-03 - T1 - 2018-holiday-calendars.zip#2018-4th-of-july-holiday-schedule.xls @2026-08-30 - early close: the Livestock row prints Tuesday, July 3 `Early Close` 12:15 with `PCP` 12:45-16:00.
+        (2018, 7, 3, early_close(12 * 3_600 + 15 * 60), T1, "2018-holiday-calendars.zip#2018-4th-of-july-holiday-schedule.xls @2026-08-30"),
+        // 2018-07-04 - T1 - 2018-holiday-calendars.zip#2018-4th-of-july-holiday-schedule.xls @2026-08-30 - closed: the Livestock row prints `Markets Closed` for Wednesday, July 4.
+        (2018, 7, 4, Closed, T1, "2018-holiday-calendars.zip#2018-4th-of-july-holiday-schedule.xls @2026-08-30"),
+        // 2018-09-03 - T1 - 2018-holiday-calendars.zip#2018-labor-day-holiday-schedule.xls @2026-08-30 - closed: the Livestock row prints no Monday, September 3 entry; the trade date reopens Tuesday 08:30 CT.
+        (2018, 9, 3, Closed, T1, "2018-holiday-calendars.zip#2018-labor-day-holiday-schedule.xls @2026-08-30"),
+        // 2018-11-22 - T1 - 2018-holiday-calendars.zip#2018-thanksgiving-holiday-schedule.xls @2026-08-30 - closed: the Livestock row prints no Thursday, November 22 session; the trade date reopens Friday 08:30 CT.
+        (2018, 11, 22, Closed, T1, "2018-holiday-calendars.zip#2018-thanksgiving-holiday-schedule.xls @2026-08-30"),
+        // 2018-11-23 - T1 - 2018-holiday-calendars.zip#2018-thanksgiving-holiday-schedule.xls @2026-08-30 - early close: the Livestock row prints Friday, November 23 open 08:30 and `Close` 12:15.
+        (2018, 11, 23, early_close(12 * 3_600 + 15 * 60), T1, "2018-holiday-calendars.zip#2018-thanksgiving-holiday-schedule.xls @2026-08-30"),
+        // 2018-12-24 - T1 - 2018-holiday-calendars.zip#2018-christmas-holiday-schedule.xls @2026-08-30 - early close: the Livestock row prints Monday, December 24 `Close` 12:15.
+        (2018, 12, 24, early_close(12 * 3_600 + 15 * 60), T1, "2018-holiday-calendars.zip#2018-christmas-holiday-schedule.xls @2026-08-30"),
+        // 2018-12-25 - T1 - 2018-holiday-calendars.zip#2018-christmas-holiday-schedule.xls @2026-08-30 - closed: the Livestock row prints `Globex Closed` for Tuesday, December 25. 2018-12-26 ships no row: the same sheet states the family's ordinary 08:30 open and 13:05 close there, so the date is audited normal.
+        (2018, 12, 25, Closed, T1, "2018-holiday-calendars.zip#2018-christmas-holiday-schedule.xls @2026-08-30"),
         // 2019-01-01 - T1 - 2019-new-years-holiday-schedule-compact.xls @2018-01-07T04:13:43Z - CME prints no session running through this date.
         (2019, 1, 1, Closed, T1, "2019-new-years-holiday-schedule-compact.xls @2018-01-07T04:13:43Z"),
         // 2019-01-21 - T1 - 2019-holiday-calendars.zip#globex-trading-schedules/2019-martin-luther-king-holiday-schedule-compact.xls @2021-01-26T09:48:37Z - CME prints no session running through this date.

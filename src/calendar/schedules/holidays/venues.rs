@@ -49,15 +49,23 @@
 //! `the_energy_venues_carry_the_family_table_unchanged` holds each against the
 //! family's own answers.
 //!
-//! **What the two excluded families would cost is known.** `globex_nikkei_225_dollar`'s
-//! 2025-2027 table differs from `globex_equity_index`'s on exactly three dates:
-//! the Saturday trade dates 2026-06-22, 2026-07-06 and 2027-06-21 that Stage 4
-//! (#116) added as complete-day replacement rows. Routing it can add no shipped
-//! row on those dates: the families this venue routes do not all state Nikkei's
-//! row there, so the intersection can only report `Unsourced`.
+//! **What the two excluded families would cost is known.** The two families'
+//! 2025-2027 answers differ from the routed families' on measured dates, not
+//! on an assumption. `globex_nikkei_225_dollar`'s answers differ from
+//! `globex_equity_index`'s on twenty-three dates in the window: fifteen where
+//! both state different rows — the three Stage-4 Saturday trade dates
+//! (2026-06-22, 2026-07-06 and 2027-06-21), where Nikkei states a
+//! complete-day Saturday row, among them — five 2025 Sunday-eve merges where
+//! only equity index states, and three dates where only Nikkei states (its
+//! no-prior-evening-leg block rows for 2025-01-02, 2025-12-26 and
+//! 2026-01-02). On the Saturdays the venue already reports `Unsourced`, so
+//! routing Nikkei could add no stated row there; the rest of the disagreement
+//! is a re-routing decision's to weigh, not this module's to settle.
 //! `globex_cryptocurrency` moves no answer in the window: it shares all nine
-//! 2025-2027 closures, states nothing on twenty of the other 2025-2027 dates,
-//! and would join twenty more disagreements without moving an answer.
+//! 2025-2027 closures, states nothing on thirty of the sixty-one dates the
+//! venue withholds, and every one of its other thirty-one rows lands on a
+//! date the venue already reports `Unsourced`, so no audited-normal date
+//! could flip.
 //!
 //! # Two kinds of row
 //!

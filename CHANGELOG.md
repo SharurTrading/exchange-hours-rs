@@ -11,54 +11,6 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ## [Unreleased]
 
-### Removed
-
-- **The pre-2025 runtime holiday history of the four CME venue tables (2026-09-27
-  UTC).** Stage 5 PR A of the release plan (#117) removes every holiday row keyed
-  before the permanent 2025-01-01 support floor from `Exchange::Cme` (232 rows),
-  `Exchange::Cbot` (210), `Exchange::Comex` (170) and `Exchange::Nymex` (170), and
-  collapses each table's declared holiday coverage from six audited windows
-  (2010-2012 through 2022-2024 plus 2025-2027) to the single window
-  `2025-01-01..2027-12-31`, which opens at the support floor. Every
-  2025-01-01-or-later row is kept byte-for-byte — kind, tier and document id — so
-  no 2025+ answer moves: the four venues' `2025+ dates` and `Unsourced` counts
-  (70/61, 70/61, 53 and 53) and the trade dates their rows land on are unchanged,
-  and a date-aware query before the floor already refuses with `BeforeSupportFloor`
-  under the Stage 2B contract, so the removed rows could not shape any in-range
-  answer. No New Year boundary row was needed at the floor: the retained
-  2025-01-01 closures carry the whole trading day, including the prior-evening
-  wrap. The evidence files' removed-era year tables, era prose and holiday
-  documents left with their rows; the retained documents and their research-store
-  artifacts are untouched. The `globex_grains` and `globex_livestock` family
-  tables keep their earlier eras until their own Stage 5 pruning PRs.
-- **The pre-2025 runtime holiday history of the five Globex family tables
-  (2026-09-27 UTC).** Stage 5 PR B of the release plan (#117) removes every
-  holiday row keyed before the permanent 2025-01-01 support floor from
-  `globex_fx` (178 rows), `globex_equity_index` (177), `globex_energy` (170),
-  `globex_interest_rates` (179) and `globex_cryptocurrency` (50) — 754 rows in
-  all — and collapses each table's declared holiday coverage from its pre-floor
-  audited windows to the single window `2025-01-01..2027-12-31`, which opens at
-  the support floor. Every 2025-01-01-or-later row is kept byte-for-byte — kind,
-  tier and document id — so no 2025+ answer moves: the five families' `2025+
-  dates` and `Unsourced` counts (36, 54, 53, 53 and 40, none withheld) and the
-  trade dates their rows land on are unchanged, and a date-aware query before
-  the floor already refuses with `BeforeSupportFloor` under the Stage 2B
-  contract, so the removed rows could not shape any in-range answer. The
-  boundary was checked per module and no pre-floor row is load-bearing at or
-  after the floor: the retained `2025-01-01` closures carry the whole trading
-  day including the prior-evening wrap that opens on 2024-12-31 — which is what
-  the wrapping 17:00 CT grids of fx and the other families, and crypto's
-  five-day era, do on New Year's eve — and crypto's 24/7-era `ReplacementBlocks`
-  rows keyed to 2026-2027 merged trade dates reach back only over evenings
-  inside the retained window; its `#123` order-entry declaration, bounded at the
-  2026-05-29 bridge row, and the coverage walk's 2025-01-01..2026-05-28
-  withholding do not move. The evidence files' removed-era year sections, era
-  prose and holiday documents left with their rows; the retained documents
-  (including `CME-SVC-2024-12-31` and `CME-SVC-2025-01-19`) and their
-  research-store artifacts are untouched. `globex_grains`, `globex_livestock`
-  and `globex_nikkei_225_dollar` keep their earlier eras until their own Stage 5
-  pruning PRs.
-
 ### Changed
 
 - **Identity-backed queries return `Result` (2026-09-23 UTC) — BREAKING.** Stage 2B of

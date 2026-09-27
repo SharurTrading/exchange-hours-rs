@@ -130,8 +130,11 @@ families state rows they do not all share: the sixteen Monday and Thursday holid
 where the equity-index and interest-rate families halt at 12:00 CT, energy at 13:30
 CT, grains and livestock are closed outright and `globex_fx` states nothing because
 its halt falls at its ordinary 16:00 CT close; the thirteen `globex_fx` merged trade
-dates, where energy, equity index, FX and interest rates state one common
-replacement-blocks set and grains and livestock are silent; the four holidays —
+dates — the twelve Sunday eves and 2025-06-20 — where the four financial
+families each state their own replacement-blocks set and disagree: equity index
+seven blocks halting 12:00 CT, energy four at 13:30 CT, interest rates four at
+12:00 CT, FX four at 16:00 CT; `globex_grains` states its five-block merged-eve
+set and `globex_livestock` alone is silent; the four holidays —
 2025-07-04, 2026-06-19, 2026-07-03 and 2027-06-18 — where those same four families all
 close at 12:00 CT while grains and livestock are closed outright; the three
 Thanksgiving Fridays and two Christmas Eves, where six stated closes spread from 12:05

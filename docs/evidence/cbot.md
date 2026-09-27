@@ -124,9 +124,13 @@ The other **sixty-one** dates carry `unsourced`, in these shapes:
   prints the eve's own `14:30 pcp` carrying the eve's trade date — while
   `globex_interest_rates` audited every one of them normal. One family states the whole
   day and the other states nothing, so the venue cannot adopt the day as its own.
-- **Sixteen are rate-leg-only dates.** On the thirteen merged trade dates and the three
-  Saturday-session trade dates (2026-06-22, 2026-07-06 and 2027-06-21) the rate leg
-  states replacement blocks while `globex_grains` audited the date normal.
+- **Three are rate-leg-only dates.** On the three Saturday-session trade dates
+  (2026-06-22, 2026-07-06 and 2027-06-21) the rate leg states replacement blocks
+  while `globex_grains` audited the date normal.
+- **Thirteen are both-state dates.** On the thirteen merged trade dates the rate
+  leg states its four-block set and `globex_grains` states its five-block
+  merged-eve set — both state rows, the rows differ, and the date is disputed
+  for exactly that reason.
 
 **`unsourced` is neither silence nor a compromise.** The coverage window is
 contiguous **within each audited window**, so a date carrying no row there is the

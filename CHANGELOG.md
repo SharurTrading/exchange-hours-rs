@@ -342,6 +342,22 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Fixed
 
+- **`globex_cryptocurrency` states CME's two October Saturday maintenance
+  extensions (2026-09-27 UTC).** Globex notice 20260921 extends the Saturday
+  24/7 maintenance window to 02:00-05:00 CT on 2026-10-03 and to 02:00-15:30
+  CT on 2026-10-24 (FIA industry disaster-recovery exercise), each reverting
+  to the 02:00-04:00 CT standard. Both dates sit inside the family's claimed
+  2025-2027 window, so they ship as four one-day profile revisions in the
+  timeline's established Saturday-extension shape — keyed to each Saturday
+  and reverting the next day, with no replacement Pre-Open as the notice
+  publishes none. The 13.5-hour October 24 halt exceeds the four-hour
+  operator-designated bound the crate's maintenance policy keeps and falls
+  inside one trade date — the weekend block still carries the following
+  Monday's — so `session_state` classifies that gap `Halt`, not
+  `Maintenance`. The previously forward-dated 2026-09-19 extension is
+  recorded as confirmed effective by the operator's T2 service on 2026-09-27
+  UTC.
+
 - **Six 2016-2018 CME Documents rows now name one revision each, split across
   the eleven evidence files that carry them (2026-09-27 UTC, #188).** The rows
   for `2017-memorial-day`, `2017-4th-of-july`, `2017-labor-day`,

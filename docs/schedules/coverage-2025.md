@@ -22,8 +22,8 @@ moves the `cme`, `cbot` and `globex_grains` date columns with them — the `cme`
 counts are the **61** each their `Unsrc 2025+ dates` cells now read. A second change on the same
 date adds the twelve merged Sunday eves and the Juneteenth eve to those rows — the
 `globex_grains` `2025+ dates` cell moves from 54 to **67** — and states
-`globex_nikkei_225_dollar`'s normal-week Pre-Open, moving that scope's cell from 49 to **52**
-without adding a declaration: its Sunday onset's 16:15-to-16:00 CT move is undated like #79's,
+`globex_nikkei_225_dollar`'s normal-week Pre-Open and its three no-prior-evening-leg
+block trade dates, moving that scope's cell from 49 to **52** without adding a declaration: its Sunday onset's 16:15-to-16:00 CT move is undated like #79's,
 but the quarter-hour is served rather than withheld, and the reason is recorded in its evidence
 file. The `iceus` `Holidays`,
 `2025+ dates`, `Unsrc 2025+ dates`, `Missing / disputed` and `Complete?` cells moved on 2026-09-26 UTC
@@ -296,12 +296,12 @@ documents` section - to saved bytes, and their digests recomputed by this stage:
 | `iceus` | `IFUS-CAL-2025` | T1 | `holidays/raw/iceus-2025-2027/IFUS_Trading_Hours_Holiday_Calendar_20250523.pdf` - sha256 reproduces as `0add2b10e7d6cb2a35b727db654e4ea87ed30970ec637f53e62dd044f553d049` | `IFUS-CAL-2027` | T1 | `holidays/raw/cfe-eurex-ice-cde-smfe-2026-2027/ICE_Futures_US_Exchange_Notice-2027_Holiday_Calendar_20260604.pdf` - sha256 reproduces as `d2e39a2db2a26e0578ad0d09b36f51dfdad8502635020fe79d66303c09c1a040` |
 | `globex_equity_index` | `CME-SVC-2024-12-31` | T2 | `holidays/raw/cme-2025-2027/arc/thbp_2024-12-31_2025-01-02_20241220155340.json` - sha256 reproduces | `CME-SVC-2027-12-22` | T2 | `holidays/raw/cme-2025-2027/live/thbp/thbp_2027-12-22_2027-12-25.json` - sha256 reproduces |
 | `globex_energy` | `CME-SVC-2024-12-31` | T2 | `holidays/raw/cme-2025-2027/arc/thbp_2024-12-31_2025-01-02_20241220155340.json` - sha256 reproduces | `CME-SVC-2027-12-22` | T2 | `holidays/raw/cme-2025-2027/live/thbp/thbp_2027-12-22_2027-12-25.json` - sha256 reproduces |
-| `globex_grains` | `CME-SVC-2024-12-31` | T2 | `holidays/raw/cme-2025-2027/arc/thbp_2024-12-31_2025-01-02_20241220155340.json` - sha256 reproduces | `CME-SVC-2027-12-22` | 67 | `holidays/raw/cme-2025-2027/live/thbp/thbp_2027-12-22_2027-12-25.json` - sha256 reproduces |
+| `globex_grains` | `CME-SVC-2024-12-31` | T2 | `holidays/raw/cme-2025-2027/arc/thbp_2024-12-31_2025-01-02_20241220155340.json` - sha256 reproduces | `CME-SVC-2027-12-22` | T2 | `holidays/raw/cme-2025-2027/live/thbp/thbp_2027-12-22_2027-12-25.json` - sha256 reproduces |
 | `globex_fx` | `CME-SVC-2024-12-31` | T2 | `holidays/raw/cme-2025-2027/arc/thbp_2024-12-31_2025-01-02_20241220155340.json` - sha256 reproduces | `CME-SVC-2027-12-22` | T2 | `holidays/raw/cme-2025-2027/live/thbp/thbp_2027-12-22_2027-12-25.json` - sha256 reproduces |
 | `globex_interest_rates` | `CME-SVC-2024-12-31` | T2 | `holidays/raw/cme-2025-2027/arc/thbp_2024-12-31_2025-01-02_20241220155340.json` - sha256 reproduces | `CME-SVC-2027-12-22` | T2 | `holidays/raw/cme-2025-2027/live/thbp/thbp_2027-12-22_2027-12-25.json` - sha256 reproduces |
 | `globex_livestock` | `CME-SVC-2024-12-31` | T2 | `holidays/raw/cme-2025-2027/arc/thbp_2024-12-31_2025-01-02_20241220155340.json` - sha256 reproduces | `CME-SVC-2027-12-22` | T2 | `holidays/raw/cme-2025-2027/live/thbp/thbp_2027-12-22_2027-12-25.json` - sha256 reproduces |
 | `globex_cryptocurrency` | `CME-SVC-2024-12-31` | T2 | `holidays/raw/cme-2025-2027/arc/thbp_2024-12-31_2025-01-02_20241220155340.json` - sha256 reproduces | `CME-SVC-2027-12-22` | T2 | `holidays/raw/cme-2025-2027/live/thbp/thbp_2027-12-22_2027-12-25.json` - sha256 reproduces |
-| `globex_nikkei_225_dollar` | `CME-SVC-2024-12-31` | T2 | `holidays/raw/cme-2025-2027/arc/thbp_2024-12-31_2025-01-02_20241220155340.json` - sha256 reproduces | `CME-SVC-B-2027-12-22` | 52 | `holidays/raw/cme-2025-2027/live/extra/extra_2027-12-22_2027-12-25.json` - sha256 reproduces |
+| `globex_nikkei_225_dollar` | `CME-SVC-2024-12-31` | T2 | `holidays/raw/cme-2025-2027/arc/thbp_2024-12-31_2025-01-02_20241220155340.json` - sha256 reproduces | `CME-SVC-B-2027-12-22` | T2 | `holidays/raw/cme-2025-2027/live/extra/extra_2027-12-22_2027-12-25.json` - sha256 reproduces |
 
 All twenty-eight endpoints of the fourteen scopes that carry a `### Documents` table reproduce.
 The two that show no endpoint are a shape gap, not a missing source:

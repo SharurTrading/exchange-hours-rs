@@ -327,8 +327,13 @@ corrections (a venue's hours fixed against a primary source) go under
   span-granularity half of #172).
 
 - **`globex_nikkei_225_dollar` and `globex_grains` serve Pre-Open queues CME
-  publishes and they did not (2026-09-26 UTC).** One class of defect at
-  thirty-eight published instants where `is_accepting_orders` answered `Ok(false)`.
+  publishes and they did not (2026-09-26 UTC).** One class of defect across the
+  two keys, at twenty row-level onsets — sixteen `globex_grains`
+  merged-trade-date rows, the restated 2025-11-28 trade date, and three
+  `globex_nikkei_225_dollar` no-prior-evening-leg block rows — plus
+  `globex_nikkei_225_dollar`'s whole normal-week order-entry phase, at every
+  one of which `is_accepting_orders` answered `Ok(false)` for a queue the
+  operator prints.
   `globex_nikkei_225_dollar` modelled **no** order-entry phase, on a module comment
   claiming CME publishes no normal-week Pre-Open for `NKD`; the operator's own
   trading-hours service prints `16:45 preopen` Monday-Thursday and `16:00 preopen`

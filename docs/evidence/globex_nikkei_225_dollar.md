@@ -348,7 +348,10 @@ This era's rows cite the ids below: CME Group's own published holiday schedules 
   eight windows New Year 2025 through Labor Day 2025 (`raw/cme-2025-2027-repair/live/edgeB_*.md`,
   probed 2026-09-12). The rows for 2025-01-01, 2025-01-20, 2025-02-17, 2025-04-18,
   2025-05-26, 2025-06-19, 2025-07-03, 2025-07-04 and 2025-09-01 are therefore the `ES` line
-  of the ten-product capture, and they ship with the `THBP-A` document id. The corroboration
+  of the ten-product capture, and they ship with the `THBP-A` document id. The same line also
+  states 2025-01-02's no-prior-evening-leg block row — read from the New-Year 2025 window
+  rather than from a repair probe, and shipped as `CME-SVC-2024-12-31` — which makes ten
+  `ES`-line rows in this table. The corroboration
   is direct rather than assumed: on every one of the 36 product-dates from Thanksgiving 2025
   to 2028-01-01 where CME publishes both lines, `NKD` and `NIY` match `ES` event for event
   and trade date for trade date, including the single date on which the Equity Index line

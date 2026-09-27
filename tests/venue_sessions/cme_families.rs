@@ -642,13 +642,19 @@ fn cryptocurrency_history_covers_launch_24_7_and_temporary_maintenance() {
     assert!(restored.is_open_extended(ct((2026, 8, 8), (4, 0, 0))));
 }
 
-/// Notice 20260824 names two more one-day Saturday extensions for the same
-/// channels, each reverting to the standard window the following week.
+/// Notices 20260824 and 20260921 name four one-day Saturday extensions for the
+/// same channels, each reverting to the standard window the following week.
+/// The October 24 extension runs 02:00-15:30 CT for the FIA industry
+/// disaster-recovery exercise: a 13.5-hour operator-designated gap, past the
+/// four-hour bound the crate's maintenance policy keeps, so `session_state`
+/// must classify it `Closed` and `is_maintenance` must answer false there.
 #[test]
 fn cryptocurrency_models_the_later_saturday_extensions() {
-    for (saturday, reopen_hour, next_saturday) in [
-        ((2026, 8, 29), 6u32, (2026, 9, 5)),
-        ((2026, 9, 19), 8, (2026, 9, 26)),
+    for (saturday, (reopen_hour, reopen_minute), next_saturday) in [
+        ((2026, 8, 29), (6u32, 0u32), (2026, 9, 5)),
+        ((2026, 9, 19), (8, 0), (2026, 9, 26)),
+        ((2026, 10, 3), (5, 0), (2026, 10, 10)),
+        ((2026, 10, 24), (15, 30), (2026, 10, 31)),
     ] {
         let temporary = hours_for_market_hours_key(
             MarketHoursKey::GlobexCryptocurrency,
@@ -662,13 +668,14 @@ fn cryptocurrency_models_the_later_saturday_extensions() {
             !temporary.is_open(ct(saturday, (3, 45, 0))),
             "{saturday:?}: no Pre-Open"
         );
+        let reopen = ct(saturday, (reopen_hour, reopen_minute, 0));
         assert!(
-            !temporary.is_open(ct(saturday, (reopen_hour - 1, 59, 59))),
+            !temporary.is_open(reopen - chrono::Duration::seconds(1)),
             "{saturday:?}"
         );
         assert!(
-            temporary.is_open_extended(ct(saturday, (reopen_hour, 0, 0))),
-            "{saturday:?}: reopens at {reopen_hour}:00 CT"
+            temporary.is_open_extended(reopen),
+            "{saturday:?}: reopens at {reopen_hour}:{reopen_minute:02} CT"
         );
         let restored = hours_for_market_hours_key(
             MarketHoursKey::GlobexCryptocurrency,
@@ -690,6 +697,49 @@ fn cryptocurrency_models_the_later_saturday_extensions() {
             "{next_saturday:?}"
         );
     }
+
+    // The 13.5-hour October 24 halt is not a maintenance window: the gap
+    // exceeds the four-hour operator-designated bound the crate keeps, and it
+    // falls inside one trade date — the weekend block carries the following
+    // Monday's — so the policy classifies it Halt, a pause in a trade date's
+    // trading, and `is_maintenance` must answer false there.
+    let calendar = calendar_for_market_hours_key(MarketHoursKey::GlobexCryptocurrency);
+    for probe in [
+        ct((2026, 10, 24), (2, 0, 0)),
+        ct((2026, 10, 24), (8, 0, 0)),
+        ct((2026, 10, 24), (15, 29, 59)),
+    ] {
+        assert_eq!(
+            calendar
+                .session_state(probe)
+                .expect("the coverage contract must answer a covered date"),
+            SessionState::Halt,
+            "{probe}: the FIA drill halt is a same-trade-date halt, not maintenance"
+        );
+        assert!(
+            !calendar
+                .is_maintenance(probe)
+                .expect("the coverage contract must answer a covered date"),
+            "{probe}: `is_maintenance` must stay exactly the maintenance case"
+        );
+    }
+
+    // Each Saturday's weekend block carries the following Monday's trade
+    // date, so the October rows are keyed to the operator's own roll —
+    // matching runs on the Saturday, but the trade date it belongs to is the
+    // next open business date's.
+    assert_eq!(
+        calendar
+            .trade_date(ct((2026, 10, 3), (6, 0, 0)))
+            .expect("the coverage contract must answer a covered date"),
+        Some(zoned(US::Central, (2026, 10, 5), (0, 0, 0)).date_naive())
+    );
+    assert_eq!(
+        calendar
+            .trade_date(ct((2026, 10, 24), (16, 0, 0)))
+            .expect("the coverage contract must answer a covered date"),
+        Some(zoned(US::Central, (2026, 10, 26), (0, 0, 0)).date_naive())
+    );
 }
 
 #[test]

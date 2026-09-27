@@ -43,11 +43,12 @@ use super::{
     HolidayTable, holidays,
 };
 
-/// Sugar No. 11, Coffee "C" and Cocoa: one calendar group, one notice group,
-/// and one shared Easter Monday late open, so one table serves all three.
-// Evidence: docs/evidence/ice_us_sugar.md, docs/evidence/ice_us_coffee.md,
-// docs/evidence/ice_us_cocoa.md
-pub(crate) static SUGAR_COFFEE_COCOA: &HolidayTable = holidays! {
+/// Sugar No. 11: the softs calendar group's common rows, plus its own
+/// 2026 DST-end week — the one run of dates where Sugar, Coffee and Cocoa
+/// state different opens (04:30, 05:15 and 05:45 NY respectively), which no
+/// shared table can carry.
+// Evidence: docs/evidence/ice_us_sugar.md
+pub(crate) static SUGAR: &HolidayTable = holidays! {
     coverage: [(2025, 1, 1) ..= (2028, 1, 3)],
     rows: [
         // 2025-01-01 - T1 - IFUS-CAL-2025 - New Year's Day.
@@ -98,6 +99,212 @@ pub(crate) static SUGAR_COFFEE_COCOA: &HolidayTable = holidays! {
         (2026, 7, 3, Closed, T1, "IFUS-NOTICE-2026-INDEPENDENCE"),
         // 2026-09-07 - T1 - IFUS-NOTICE-2026-LABORDAY - Labor Day.
         (2026, 9, 7, Closed, T1, "IFUS-NOTICE-2026-LABORDAY"),
+        // 2026-10-26 - T1 - IFUS-NOTICE-2026-DST-END - BST-end week, day 1 of
+        // 5: open moves to 04:30 NY; close, Pre-Open and everything else
+        // unchanged as printed in NY local time.
+        (2026, 10, 26, late_open(4 * 3_600 + 30 * 60), T1, "IFUS-NOTICE-2026-DST-END"),
+        // 2026-10-27 - T1 - IFUS-NOTICE-2026-DST-END - BST-end week, day 2 of 5.
+        (2026, 10, 27, late_open(4 * 3_600 + 30 * 60), T1, "IFUS-NOTICE-2026-DST-END"),
+        // 2026-10-28 - T1 - IFUS-NOTICE-2026-DST-END - BST-end week, day 3 of 5.
+        (2026, 10, 28, late_open(4 * 3_600 + 30 * 60), T1, "IFUS-NOTICE-2026-DST-END"),
+        // 2026-10-29 - T1 - IFUS-NOTICE-2026-DST-END - BST-end week, day 4 of 5.
+        (2026, 10, 29, late_open(4 * 3_600 + 30 * 60), T1, "IFUS-NOTICE-2026-DST-END"),
+        // 2026-10-30 - T1 - IFUS-NOTICE-2026-DST-END - BST-end week, day 5 of
+        // 5; the window reverts to the normal times afterwards.
+        (2026, 10, 30, late_open(4 * 3_600 + 30 * 60), T1, "IFUS-NOTICE-2026-DST-END"),
+        // 2026-11-26 - T1 - IFUS-CAL-2026 - Thanksgiving Day.
+        (2026, 11, 26, Closed, T1, "IFUS-CAL-2026"),
+        // 2026-12-25 - T1 - IFUS-CAL-2026 - Christmas Day.
+        (2026, 12, 25, Closed, T1, "IFUS-CAL-2026"),
+        // 2027-01-01 - T1 - IFUS-CAL-2027 - New Year's Day.
+        (2027, 1, 1, Closed, T1, "IFUS-CAL-2027"),
+        // 2027-01-18 - T1 - IFUS-CAL-2027 - Martin Luther King Day.
+        (2027, 1, 18, Closed, T1, "IFUS-CAL-2027"),
+        // 2027-02-15 - T1 - IFUS-CAL-2027 - Presidents Day.
+        (2027, 2, 15, Closed, T1, "IFUS-CAL-2027"),
+        // 2027-03-26 - T1 - IFUS-CAL-2027 - Good Friday.
+        (2027, 3, 26, Closed, T1, "IFUS-CAL-2027"),
+        // 2027-05-31 - T1 - IFUS-CAL-2027 - Memorial Day.
+        (2027, 5, 31, Closed, T1, "IFUS-CAL-2027"),
+        // 2027-06-18 - T1 - IFUS-CAL-2027 - Juneteenth.
+        (2027, 6, 18, Closed, T1, "IFUS-CAL-2027"),
+        // 2027-07-05 - T1 - IFUS-CAL-2027 - Independence Day observed.
+        (2027, 7, 5, Closed, T1, "IFUS-CAL-2027"),
+        // 2027-09-06 - T1 - IFUS-CAL-2027 - Labor Day.
+        (2027, 9, 6, Closed, T1, "IFUS-CAL-2027"),
+        // 2027-11-25 - T1 - IFUS-CAL-2027 - Thanksgiving Day.
+        (2027, 11, 25, Closed, T1, "IFUS-CAL-2027"),
+        // 2027-12-24 - T1 - IFUS-CAL-2027 - Christmas Day observed.
+        (2027, 12, 24, Closed, T1, "IFUS-CAL-2027"),
+    ],
+};
+
+/// Coffee "C" (and Coffee "C" Metric, on the same master-table row): the
+/// softs calendar group's common rows, plus its own 2026 DST-end week at
+/// 05:15 NY.
+// Evidence: docs/evidence/ice_us_coffee.md
+pub(crate) static COFFEE: &HolidayTable = holidays! {
+    coverage: [(2025, 1, 1) ..= (2028, 1, 3)],
+    rows: [
+        // 2025-01-01 - T1 - IFUS-CAL-2025 - New Year's Day.
+        (2025, 1, 1, Closed, T1, "IFUS-CAL-2025"),
+        // 2025-01-20 - T1 - IFUS-NOTICE-2025-MLK - Martin Luther King Day.
+        (2025, 1, 20, Closed, T1, "IFUS-NOTICE-2025-MLK"),
+        // 2025-02-17 - T1 - IFUS-NOTICE-2025-PRESIDENTS - Presidents Day.
+        (2025, 2, 17, Closed, T1, "IFUS-NOTICE-2025-PRESIDENTS"),
+        // 2025-04-18 - T1 - IFUS-NOTICE-2025-GOODFRIDAY - Good Friday.
+        (2025, 4, 18, Closed, T1, "IFUS-NOTICE-2025-GOODFRIDAY"),
+        // 2025-04-21 - T1 - IFUS-NOTICE-2025-GOODFRIDAY - Easter Monday late
+        // open at 07:30 NY; regular hours for every other contract.
+        (2025, 4, 21, late_open(7 * 3_600 + 30 * 60), T1, "IFUS-NOTICE-2025-GOODFRIDAY"),
+        // 2025-05-05 - T1 - IFUS-NOTICE-2025-LBMA-MAY05 - London bank holiday:
+        // late open at 07:30 NY.
+        (2025, 5, 5, late_open(7 * 3_600 + 30 * 60), T1, "IFUS-NOTICE-2025-LBMA-MAY05"),
+        // 2025-05-26 - T1 - IFUS-NOTICE-2025-MEMORIAL - Memorial Day.
+        (2025, 5, 26, Closed, T1, "IFUS-NOTICE-2025-MEMORIAL"),
+        // 2025-06-19 - T1 - IFUS-NOTICE-2025-JUNETEENTH - Juneteenth.
+        (2025, 6, 19, Closed, T1, "IFUS-NOTICE-2025-JUNETEENTH"),
+        // 2025-07-04 - T1 - IFUS-CAL-2025 - Independence Day.
+        (2025, 7, 4, Closed, T1, "IFUS-CAL-2025"),
+        // 2025-08-25 - T1 - IFUS-NOTICE-2025-LBMA-AUG25 - London bank holiday:
+        // late open at 07:30 NY.
+        (2025, 8, 25, late_open(7 * 3_600 + 30 * 60), T1, "IFUS-NOTICE-2025-LBMA-AUG25"),
+        // 2025-09-01 - T1 - IFUS-NOTICE-2025-LABORDAY - Labor Day.
+        (2025, 9, 1, Closed, T1, "IFUS-NOTICE-2025-LABORDAY"),
+        // 2025-11-27 - T1 - IFUS-NOTICE-2025-THANKSGIVING - Thanksgiving Day.
+        (2025, 11, 27, Closed, T1, "IFUS-NOTICE-2025-THANKSGIVING"),
+        // 2025-12-25 - T1 - IFUS-CAL-2025 - Christmas Day.
+        (2025, 12, 25, Closed, T1, "IFUS-CAL-2025"),
+        // 2026-01-01 - T1 - IFUS-CAL-2026 - New Year's Day.
+        (2026, 1, 1, Closed, T1, "IFUS-CAL-2026"),
+        // 2026-01-19 - T1 - IFUS-CAL-2026 - Martin Luther King Day.
+        (2026, 1, 19, Closed, T1, "IFUS-CAL-2026"),
+        // 2026-02-16 - T1 - IFUS-CAL-2026 - Presidents Day.
+        (2026, 2, 16, Closed, T1, "IFUS-CAL-2026"),
+        // 2026-04-03 - T1 - IFUS-NOTICE-2026-GOODFRIDAY - Good Friday.
+        (2026, 4, 3, Closed, T1, "IFUS-NOTICE-2026-GOODFRIDAY"),
+        // 2026-04-06 - T1 - IFUS-NOTICE-2026-GOODFRIDAY - Easter Monday late
+        // open at 07:30 NY; regular hours for every other contract.
+        (2026, 4, 6, late_open(7 * 3_600 + 30 * 60), T1, "IFUS-NOTICE-2026-GOODFRIDAY"),
+        // 2026-05-25 - T1 - IFUS-NOTICE-2026-MEMORIAL - Memorial Day.
+        (2026, 5, 25, Closed, T1, "IFUS-NOTICE-2026-MEMORIAL"),
+        // 2026-06-19 - T1 - IFUS-NOTICE-2026-JUNETEENTH - Juneteenth.
+        (2026, 6, 19, Closed, T1, "IFUS-NOTICE-2026-JUNETEENTH"),
+        // 2026-07-03 - T1 - IFUS-NOTICE-2026-INDEPENDENCE - Independence Day observed.
+        (2026, 7, 3, Closed, T1, "IFUS-NOTICE-2026-INDEPENDENCE"),
+        // 2026-09-07 - T1 - IFUS-NOTICE-2026-LABORDAY - Labor Day.
+        (2026, 9, 7, Closed, T1, "IFUS-NOTICE-2026-LABORDAY"),
+        // 2026-10-26 - T1 - IFUS-NOTICE-2026-DST-END - BST-end week, day 1 of
+        // 5: open moves to 05:15 NY; the daily settlement window moves to
+        // 1:23-1:25 pm, which is a calculation window, not a session boundary,
+        // so no row states it; close, Pre-Open and everything else unchanged
+        // as printed in NY local time.
+        (2026, 10, 26, late_open(5 * 3_600 + 15 * 60), T1, "IFUS-NOTICE-2026-DST-END"),
+        // 2026-10-27 - T1 - IFUS-NOTICE-2026-DST-END - BST-end week, day 2 of 5.
+        (2026, 10, 27, late_open(5 * 3_600 + 15 * 60), T1, "IFUS-NOTICE-2026-DST-END"),
+        // 2026-10-28 - T1 - IFUS-NOTICE-2026-DST-END - BST-end week, day 3 of 5.
+        (2026, 10, 28, late_open(5 * 3_600 + 15 * 60), T1, "IFUS-NOTICE-2026-DST-END"),
+        // 2026-10-29 - T1 - IFUS-NOTICE-2026-DST-END - BST-end week, day 4 of 5.
+        (2026, 10, 29, late_open(5 * 3_600 + 15 * 60), T1, "IFUS-NOTICE-2026-DST-END"),
+        // 2026-10-30 - T1 - IFUS-NOTICE-2026-DST-END - BST-end week, day 5 of
+        // 5; the window reverts to the normal times afterwards.
+        (2026, 10, 30, late_open(5 * 3_600 + 15 * 60), T1, "IFUS-NOTICE-2026-DST-END"),
+        // 2026-11-26 - T1 - IFUS-CAL-2026 - Thanksgiving Day.
+        (2026, 11, 26, Closed, T1, "IFUS-CAL-2026"),
+        // 2026-12-25 - T1 - IFUS-CAL-2026 - Christmas Day.
+        (2026, 12, 25, Closed, T1, "IFUS-CAL-2026"),
+        // 2027-01-01 - T1 - IFUS-CAL-2027 - New Year's Day.
+        (2027, 1, 1, Closed, T1, "IFUS-CAL-2027"),
+        // 2027-01-18 - T1 - IFUS-CAL-2027 - Martin Luther King Day.
+        (2027, 1, 18, Closed, T1, "IFUS-CAL-2027"),
+        // 2027-02-15 - T1 - IFUS-CAL-2027 - Presidents Day.
+        (2027, 2, 15, Closed, T1, "IFUS-CAL-2027"),
+        // 2027-03-26 - T1 - IFUS-CAL-2027 - Good Friday.
+        (2027, 3, 26, Closed, T1, "IFUS-CAL-2027"),
+        // 2027-05-31 - T1 - IFUS-CAL-2027 - Memorial Day.
+        (2027, 5, 31, Closed, T1, "IFUS-CAL-2027"),
+        // 2027-06-18 - T1 - IFUS-CAL-2027 - Juneteenth.
+        (2027, 6, 18, Closed, T1, "IFUS-CAL-2027"),
+        // 2027-07-05 - T1 - IFUS-CAL-2027 - Independence Day observed.
+        (2027, 7, 5, Closed, T1, "IFUS-CAL-2027"),
+        // 2027-09-06 - T1 - IFUS-CAL-2027 - Labor Day.
+        (2027, 9, 6, Closed, T1, "IFUS-CAL-2027"),
+        // 2027-11-25 - T1 - IFUS-CAL-2027 - Thanksgiving Day.
+        (2027, 11, 25, Closed, T1, "IFUS-CAL-2027"),
+        // 2027-12-24 - T1 - IFUS-CAL-2027 - Christmas Day observed.
+        (2027, 12, 24, Closed, T1, "IFUS-CAL-2027"),
+    ],
+};
+
+/// Cocoa: the softs calendar group's common rows, plus its own 2026 DST-end
+/// week at 05:45 NY.
+// Evidence: docs/evidence/ice_us_cocoa.md
+pub(crate) static COCOA: &HolidayTable = holidays! {
+    coverage: [(2025, 1, 1) ..= (2028, 1, 3)],
+    rows: [
+        // 2025-01-01 - T1 - IFUS-CAL-2025 - New Year's Day.
+        (2025, 1, 1, Closed, T1, "IFUS-CAL-2025"),
+        // 2025-01-20 - T1 - IFUS-NOTICE-2025-MLK - Martin Luther King Day.
+        (2025, 1, 20, Closed, T1, "IFUS-NOTICE-2025-MLK"),
+        // 2025-02-17 - T1 - IFUS-NOTICE-2025-PRESIDENTS - Presidents Day.
+        (2025, 2, 17, Closed, T1, "IFUS-NOTICE-2025-PRESIDENTS"),
+        // 2025-04-18 - T1 - IFUS-NOTICE-2025-GOODFRIDAY - Good Friday.
+        (2025, 4, 18, Closed, T1, "IFUS-NOTICE-2025-GOODFRIDAY"),
+        // 2025-04-21 - T1 - IFUS-NOTICE-2025-GOODFRIDAY - Easter Monday late
+        // open at 07:30 NY; regular hours for every other contract.
+        (2025, 4, 21, late_open(7 * 3_600 + 30 * 60), T1, "IFUS-NOTICE-2025-GOODFRIDAY"),
+        // 2025-05-05 - T1 - IFUS-NOTICE-2025-LBMA-MAY05 - London bank holiday:
+        // late open at 07:30 NY.
+        (2025, 5, 5, late_open(7 * 3_600 + 30 * 60), T1, "IFUS-NOTICE-2025-LBMA-MAY05"),
+        // 2025-05-26 - T1 - IFUS-NOTICE-2025-MEMORIAL - Memorial Day.
+        (2025, 5, 26, Closed, T1, "IFUS-NOTICE-2025-MEMORIAL"),
+        // 2025-06-19 - T1 - IFUS-NOTICE-2025-JUNETEENTH - Juneteenth.
+        (2025, 6, 19, Closed, T1, "IFUS-NOTICE-2025-JUNETEENTH"),
+        // 2025-07-04 - T1 - IFUS-CAL-2025 - Independence Day.
+        (2025, 7, 4, Closed, T1, "IFUS-CAL-2025"),
+        // 2025-08-25 - T1 - IFUS-NOTICE-2025-LBMA-AUG25 - London bank holiday:
+        // late open at 07:30 NY.
+        (2025, 8, 25, late_open(7 * 3_600 + 30 * 60), T1, "IFUS-NOTICE-2025-LBMA-AUG25"),
+        // 2025-09-01 - T1 - IFUS-NOTICE-2025-LABORDAY - Labor Day.
+        (2025, 9, 1, Closed, T1, "IFUS-NOTICE-2025-LABORDAY"),
+        // 2025-11-27 - T1 - IFUS-NOTICE-2025-THANKSGIVING - Thanksgiving Day.
+        (2025, 11, 27, Closed, T1, "IFUS-NOTICE-2025-THANKSGIVING"),
+        // 2025-12-25 - T1 - IFUS-CAL-2025 - Christmas Day.
+        (2025, 12, 25, Closed, T1, "IFUS-CAL-2025"),
+        // 2026-01-01 - T1 - IFUS-CAL-2026 - New Year's Day.
+        (2026, 1, 1, Closed, T1, "IFUS-CAL-2026"),
+        // 2026-01-19 - T1 - IFUS-CAL-2026 - Martin Luther King Day.
+        (2026, 1, 19, Closed, T1, "IFUS-CAL-2026"),
+        // 2026-02-16 - T1 - IFUS-CAL-2026 - Presidents Day.
+        (2026, 2, 16, Closed, T1, "IFUS-CAL-2026"),
+        // 2026-04-03 - T1 - IFUS-NOTICE-2026-GOODFRIDAY - Good Friday.
+        (2026, 4, 3, Closed, T1, "IFUS-NOTICE-2026-GOODFRIDAY"),
+        // 2026-04-06 - T1 - IFUS-NOTICE-2026-GOODFRIDAY - Easter Monday late
+        // open at 07:30 NY; regular hours for every other contract.
+        (2026, 4, 6, late_open(7 * 3_600 + 30 * 60), T1, "IFUS-NOTICE-2026-GOODFRIDAY"),
+        // 2026-05-25 - T1 - IFUS-NOTICE-2026-MEMORIAL - Memorial Day.
+        (2026, 5, 25, Closed, T1, "IFUS-NOTICE-2026-MEMORIAL"),
+        // 2026-06-19 - T1 - IFUS-NOTICE-2026-JUNETEENTH - Juneteenth.
+        (2026, 6, 19, Closed, T1, "IFUS-NOTICE-2026-JUNETEENTH"),
+        // 2026-07-03 - T1 - IFUS-NOTICE-2026-INDEPENDENCE - Independence Day observed.
+        (2026, 7, 3, Closed, T1, "IFUS-NOTICE-2026-INDEPENDENCE"),
+        // 2026-09-07 - T1 - IFUS-NOTICE-2026-LABORDAY - Labor Day.
+        (2026, 9, 7, Closed, T1, "IFUS-NOTICE-2026-LABORDAY"),
+        // 2026-10-26 - T1 - IFUS-NOTICE-2026-DST-END - BST-end week, day 1 of
+        // 5: open moves to 05:45 NY; the daily settlement window moves to
+        // 12:48-12:50 pm, which is a calculation window, not a session
+        // boundary, so no row states it; close, Pre-Open and everything else
+        // unchanged as printed in NY local time.
+        (2026, 10, 26, late_open(5 * 3_600 + 45 * 60), T1, "IFUS-NOTICE-2026-DST-END"),
+        // 2026-10-27 - T1 - IFUS-NOTICE-2026-DST-END - BST-end week, day 2 of 5.
+        (2026, 10, 27, late_open(5 * 3_600 + 45 * 60), T1, "IFUS-NOTICE-2026-DST-END"),
+        // 2026-10-28 - T1 - IFUS-NOTICE-2026-DST-END - BST-end week, day 3 of 5.
+        (2026, 10, 28, late_open(5 * 3_600 + 45 * 60), T1, "IFUS-NOTICE-2026-DST-END"),
+        // 2026-10-29 - T1 - IFUS-NOTICE-2026-DST-END - BST-end week, day 4 of 5.
+        (2026, 10, 29, late_open(5 * 3_600 + 45 * 60), T1, "IFUS-NOTICE-2026-DST-END"),
+        // 2026-10-30 - T1 - IFUS-NOTICE-2026-DST-END - BST-end week, day 5 of
+        // 5; the window reverts to the normal times afterwards.
+        (2026, 10, 30, late_open(5 * 3_600 + 45 * 60), T1, "IFUS-NOTICE-2026-DST-END"),
         // 2026-11-26 - T1 - IFUS-CAL-2026 - Thanksgiving Day.
         (2026, 11, 26, Closed, T1, "IFUS-CAL-2026"),
         // 2026-12-25 - T1 - IFUS-CAL-2026 - Christmas Day.
@@ -172,6 +379,9 @@ pub(crate) static ORANGE_JUICE: &HolidayTable = holidays! {
         (2026, 9, 7, Closed, T1, "IFUS-NOTICE-2026-LABORDAY"),
         // 2026-11-26 - T1 - IFUS-CAL-2026 - Thanksgiving Day.
         (2026, 11, 26, Closed, T1, "IFUS-CAL-2026"),
+        // 2026-11-27 - T1 - IFUS-NOTICE-2026-THANKSGIVING - early close at
+        // 13:30 NY; regular hours otherwise.
+        (2026, 11, 27, early_close(13 * 3_600 + 30 * 60), T1, "IFUS-NOTICE-2026-THANKSGIVING"),
         // 2026-12-25 - T1 - IFUS-CAL-2026 - Christmas Day.
         (2026, 12, 25, Closed, T1, "IFUS-CAL-2026"),
         // 2027-01-01 - T1 - IFUS-CAL-2027 - New Year's Day.
@@ -246,6 +456,11 @@ pub(crate) static COTTON: &HolidayTable = holidays! {
         (2026, 9, 7, Closed, T1, "IFUS-NOTICE-2026-LABORDAY"),
         // 2026-11-26 - T1 - IFUS-CAL-2026 - Thanksgiving Day.
         (2026, 11, 26, Closed, T1, "IFUS-CAL-2026"),
+        // 2026-11-27 - T1 - IFUS-NOTICE-2026-THANKSGIVING - late open at
+        // 08:00 NY and early close at 13:30 NY; the notice also ends this
+        // Friday's post-close pre-open at 15:30 NY, an order-entry instant
+        // the evidence file records beside this row.
+        (2026, 11, 27, late_open_and_early_close(8 * 3_600, 13 * 3_600 + 30 * 60), T1, "IFUS-NOTICE-2026-THANKSGIVING"),
         // 2026-12-25 - T1 - IFUS-CAL-2026 - Christmas Day.
         (2026, 12, 25, Closed, T1, "IFUS-CAL-2026"),
         // 2027-01-01 - T1 - IFUS-CAL-2027 - New Year's Day.
@@ -341,8 +556,11 @@ pub(crate) static FANG: &HolidayTable = holidays! {
         // 2026-09-07 - T1 - IFUS-NOTICE-2026-LABORDAY - early close 13:00 NY,
         // the one 2026 notice that names `NYSE FANG+` in that bullet.
         (2026, 9, 7, early_close(13 * 3_600), T1, "IFUS-NOTICE-2026-LABORDAY"),
-        // 2026-11-26 - T1 - IFUS-CAL-2026 - Thanksgiving `open1`; notice not issued.
-        (2026, 11, 26, Unsourced, T1, "IFUS-CAL-2026"),
+        // 2026-11-26 - T1 - IFUS-NOTICE-2026-THANKSGIVING - early close 13:00
+        // NY, the `NYSE Stock Index` group's instant.
+        (2026, 11, 26, early_close(13 * 3_600), T1, "IFUS-NOTICE-2026-THANKSGIVING"),
+        // 2026-11-27 - T1 - IFUS-NOTICE-2026-THANKSGIVING - early close 13:15 NY.
+        (2026, 11, 27, early_close(13 * 3_600 + 15 * 60), T1, "IFUS-NOTICE-2026-THANKSGIVING"),
         // 2026-12-25 - T1 - IFUS-CAL-2026 - Christmas Day.
         (2026, 12, 25, Closed, T1, "IFUS-CAL-2026"),
         // 2026-12-28 - T1 - IFUS-CAL-2026 - Boxing Day `open1`; notice not issued.
@@ -419,8 +637,11 @@ pub(crate) static DOLLAR_INDEX: &HolidayTable = holidays! {
         (2026, 6, 19, early_close(14 * 3_600 + 30 * 60), T1, "IFUS-NOTICE-2026-JUNETEENTH"),
         // 2026-07-03 - T1 - IFUS-NOTICE-2026-INDEPENDENCE - early close 14:30 NY.
         (2026, 7, 3, early_close(14 * 3_600 + 30 * 60), T1, "IFUS-NOTICE-2026-INDEPENDENCE"),
-        // 2026-11-26 - T1 - IFUS-CAL-2026 - Thanksgiving `open1`; notice not issued.
-        (2026, 11, 26, Unsourced, T1, "IFUS-CAL-2026"),
+        // 2026-11-26 - T1 - IFUS-NOTICE-2026-THANKSGIVING - early close 13:15
+        // NY, TAS trading not held; the family's own group bullet.
+        (2026, 11, 26, early_close(13 * 3_600 + 15 * 60), T1, "IFUS-NOTICE-2026-THANKSGIVING"),
+        // 2026-11-27 - T1 - IFUS-NOTICE-2026-THANKSGIVING - early close 13:15 NY.
+        (2026, 11, 27, early_close(13 * 3_600 + 15 * 60), T1, "IFUS-NOTICE-2026-THANKSGIVING"),
         // 2026-12-25 - T1 - IFUS-CAL-2026 - Christmas Day.
         (2026, 12, 25, Closed, T1, "IFUS-CAL-2026"),
         // 2026-12-28 - T1 - IFUS-CAL-2026 - Boxing Day `open1`; notice not issued.
@@ -529,8 +750,24 @@ pub(crate) static VENUE: &HolidayTable = holidays! {
         // 2026-09-07 - T1 - IFUS-NOTICE-2026-LABORDAY - softs closed, FANG+ early,
         // the dollar index regular.
         (2026, 9, 7, Unsourced, T1, "IFUS-NOTICE-2026-LABORDAY"),
-        // 2026-11-26 - T1 - IFUS-CAL-2026 - softs closed, index families `open1`.
-        (2026, 11, 26, Unsourced, T1, "IFUS-CAL-2026"),
+        // 2026-10-26 - T1 - IFUS-NOTICE-2026-DST-END - the three softs open
+        // late at three different instants, the rest regular.
+        (2026, 10, 26, Unsourced, T1, "IFUS-NOTICE-2026-DST-END"),
+        // 2026-10-27 - T1 - IFUS-NOTICE-2026-DST-END - the three softs open late, the rest regular.
+        (2026, 10, 27, Unsourced, T1, "IFUS-NOTICE-2026-DST-END"),
+        // 2026-10-28 - T1 - IFUS-NOTICE-2026-DST-END - the three softs open late, the rest regular.
+        (2026, 10, 28, Unsourced, T1, "IFUS-NOTICE-2026-DST-END"),
+        // 2026-10-29 - T1 - IFUS-NOTICE-2026-DST-END - the three softs open late, the rest regular.
+        (2026, 10, 29, Unsourced, T1, "IFUS-NOTICE-2026-DST-END"),
+        // 2026-10-30 - T1 - IFUS-NOTICE-2026-DST-END - the three softs open late, the rest regular.
+        (2026, 10, 30, Unsourced, T1, "IFUS-NOTICE-2026-DST-END"),
+        // 2026-11-26 - T1 - IFUS-NOTICE-2026-THANKSGIVING - softs and Cotton and
+        // FCOJ closed, FANG+ 13:00, the dollar index 13:15.
+        (2026, 11, 26, Unsourced, T1, "IFUS-NOTICE-2026-THANKSGIVING"),
+        // 2026-11-27 - T1 - IFUS-NOTICE-2026-THANKSGIVING - Cotton late and
+        // early, FCOJ early, the softs regular, the index families early at
+        // their own instants.
+        (2026, 11, 27, Unsourced, T1, "IFUS-NOTICE-2026-THANKSGIVING"),
         // 2026-12-25 - T1 - IFUS-CAL-2026 - Christmas Day, every family closed.
         (2026, 12, 25, Closed, T1, "IFUS-CAL-2026"),
         // 2026-12-28 - T1 - IFUS-CAL-2026 - softs regular, index families `open1`.

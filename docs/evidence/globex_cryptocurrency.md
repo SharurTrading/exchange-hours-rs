@@ -9,7 +9,7 @@
 
 ## Ledger basis (moved from docs/schedules/verification.md on 2026-09-12 UTC)
 
-**Gap: order-entry** — the trading session is sourced; what is undated is a queue or post-close phase in which no trade can print. CME non-spot-quoted cryptocurrency futures. The exact current 24/7 phases, 2026-05-29 transition, multi-day bounds, weekly close, and following-open-business-day convention are retained, as are the three one-day Saturday maintenance extensions CME's Globex notices state for this family's channels 326/327 — 2026-08-01 to 09:00 CT (notice 20260727), 2026-08-29 to 06:00 and 2026-09-19 to 08:00 CT (notice 20260824, restated by 20260831) — each without a replacement Pre-Open and each reverting to the 02:00–04:00 standard window; the September row is forward-dated on the operator's statement, and the two later rows were added on 2026-09-06 (#61). The 2017–2026 matching grid is exact, but primary evidence does not date the five-day era's Sunday/weekday Pre-Open onset, so dated history omits those queues. The 2026-08-31 review confirmed this at the source: the bitcoin contract specification captured 2017-12-14 — carrying the launch statement for trade date 2017-12-18 — and the 2017-12-22 and 2018-01-04 captures publish the Globex matching grid only and state no Pre-Open. Later member-product listings remain catalog data.
+**Gap: order-entry** — the trading session is sourced; what is undated is a queue or post-close phase in which no trade can print. CME non-spot-quoted cryptocurrency futures. The exact current 24/7 phases, 2026-05-29 transition, multi-day bounds, weekly close, and following-open-business-day convention are retained, as are the five one-day Saturday maintenance extensions CME's Globex notices state for this family's channels 326/327 — 2026-08-01 to 09:00 CT (notice 20260727), 2026-08-29 to 06:00 and 2026-09-19 to 08:00 CT (notice 20260824, restated by 20260831), and 2026-10-03 to 05:00 and 2026-10-24 to 15:30 CT (notice 20260921, the latter for the FIA industry disaster-recovery exercise) — each without a replacement Pre-Open and each reverting to the 02:00–04:00 standard window; the September row was confirmed effective by the operator's T2 service on 2026-09-27 UTC, and the two October rows are forward-dated on the operator's statement. The 2017–2026 matching grid is exact, but primary evidence does not date the five-day era's Sunday/weekday Pre-Open onset, so dated history omits those queues. The 2026-08-31 review confirmed this at the source: the bitcoin contract specification captured 2017-12-14 — carrying the launch statement for trade date 2017-12-18 — and the 2017-12-22 and 2018-01-04 captures publish the Globex matching grid only and state no Pre-Open. Later member-product listings remain catalog data.
 
 ## Revision rows
 
@@ -22,6 +22,10 @@
 - 2026-08-30 — T1 — CME Globex notice 20260824 — revert to the standard window.
 - 2026-09-19 — T1 — CME Globex notice 20260824 — Saturday reopen 08:00 CT.
 - 2026-09-20 — T1 — CME Globex notice 20260824 — revert to the standard window.
+- 2026-10-03 — T1 — CME Globex notice 20260921 — Saturday maintenance window 02:00–05:00 CT; reopen 05:00 CT.
+- 2026-10-04 — T1 — CME Globex notice 20260921 — revert to the standard window.
+- 2026-10-24 — T1 — CME Globex notice 20260921 — Saturday maintenance window 02:00–15:30 CT for the FIA industry disaster-recovery exercise; reopen 15:30 CT.
+- 2026-10-25 — T1 — CME Globex notice 20260921 — revert to the standard window.
 
 ## Holidays
 
@@ -649,6 +653,7 @@ research store.
 
 | Document | Window | Replay or service URL | Capture or retrieval, UTC | Tier | sha256 |
 |---|---|---|---|---|---|
+| `CME-GLOBEX-NOTICE-20260921` | the 2026-10-03 and 2026-10-24 Saturday maintenance-window extensions | <https://www.cmegroup.com/notices/electronic-trading/2026/09/20260921.html> read through the public reader `r.jina.ai` | retrieved 2026-09-27T19:31Z | T1 | `47387659655a80d7aac49b84ba98a860a7d5ca402a9d4d85c90f2fb570e7596c` |
 | `CME-TRADING-HOURS-PAGE` | 2026 .. 2028 Holiday Notes; the Thanksgiving 2026 per-asset-class hours | <https://www.cmegroup.com/trading-hours.html> read through the public reader `r.jina.ai` | retrieved 2026-09-12 | T1 | `ac85d05d1fcf2c6fc5afaad7bef5efa7bed407d53df7bdfc9bc724ae18c3449f` |
 | `CME-SVC-2024-12-31` | 2024-12-31 .. 2025-01-02 | <https://web.archive.org/web/20241220155340id_/https://www.cmegroup.com/services/trading-hours-by-product?id=316,133,425,300,58,437,22,8478,5201,10191&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2024-12-31&toEventDate=2025-01-02> | archive capture 2024-12-20T15:53:40Z | T2 | `375c70eecd19c5c6204ecb408d1b3210a9da4c9a03b85ef1c7dbbcde1397ab63` |
 | `CME-SVC-2025-01-19` | 2025-01-19 .. 2025-01-21 | <https://web.archive.org/web/20241220155340id_/https://www.cmegroup.com/services/trading-hours-by-product?id=316,133,425,300,58,437,22,8478,5201,10191&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2025-01-19&toEventDate=2025-01-21> | archive capture 2024-12-20T15:53:40Z | T2 | `4f2ab56af14e7b3a6978e7fa6db8e2cfc63a82d06428cd88844f0e5bcf534f40` |
@@ -703,13 +708,14 @@ as each source is re-verified.
 - <https://www.cmegroup.com/notices/electronic-trading/2026/07/20260727.html> — CME Globex notice 20260727, the 2026-08-01 Saturday extension.
 - <https://www.cmegroup.com/notices/electronic-trading/2026/08/20260824.html> — CME Globex notice 20260824, the 2026-08-29 and 2026-09-19 Saturday extensions.
 - <https://www.cmegroup.com/notices/electronic-trading/2026/08/20260831.html> — CME Globex notice 20260831, restating notice 20260824.
+- <https://www.cmegroup.com/notices/electronic-trading/2026/09/20260921.html> — CME Globex notice 20260921, the 2026-10-03 and 2026-10-24 Saturday extensions (the latter for the FIA industry disaster-recovery exercise).
 
 Official origin of the specification capture: <http://www.cmegroup.com/trading/equity-index/us-index/bitcoin_contract_specifications.html>.
 
 ## Gaps and residual risks
 
 - **order-entry** — the five-day era's Sunday and weekday Pre-Open onset is undated in the normal week; the 2017-12-14, 2017-12-22 and 2018-01-04 contract-specification captures publish the matching grid only, and the 16:00 CT queues the six merged spans and 2025-11-28 publish are stated by their own `replacement blocks` rows rather than by the week. Closing condition: a CME artifact that states the Pre-Open in session language on a day-level effective date. Served identity, so tracked as issue [#123](https://github.com/SharurTrading/exchange-hours-rs/issues/123) (LAW-FOLLOW-UPS-ARE-ISSUES), which `schedules/sourcing.rs` cites as the declaration's closing condition and `docs/schedules/coverage-2025.md` names in this scope's `Closing issues` cell. The declaration is **bounded at 2026-05-29**: the gap is a property of the five-day 17:00-16:00 CT grid, and that grid's own last day is the bridge row CME filing 26-114 introduced, whose profile serves the operator's published Pre-Open for the first time. From that row's day the withheld phase is served and the identity answers again, so the declaration names the era it is about rather than the whole supported domain.
-- **forward-dated row** — the 2026-09-19 Saturday extension is encoded ahead of its effective day on CME Globex notice 20260824, restated by notice 20260831. It must be confirmed against the operator before that day (LAW-WATCH).
+- **forward-dated row** — the 2026-10-03 and 2026-10-24 Saturday extensions are encoded ahead of their effective days on CME Globex notice 20260921. Each must be confirmed against the operator before its effective day (LAW-WATCH). The 2026-09-19 extension, likewise forward-dated on notice 20260824, was **confirmed effective** on 2026-09-27 UTC by the operator's T2 service — BF printed `02:00 closed`, `07:45 preopen`, `08:00 open` with trade date 2026-09-21 (`holidays/raw/cme-globex/release-inspection-20260928/thbp_sep2026_sat.raw`, retrieval 2026-09-27 ~19:21 UTC) — and the confirm-by obligation on that row is discharged. The October 24 window is a 13.5-hour halt: it exceeds the four-hour operator-designated bound the crate's maintenance policy keeps and falls inside one trade date — the weekend block still carries the following Monday's — so `session_state` classifies the gap `Halt`, not `Maintenance`; the row is a one-day profile revision, the shape the three earlier extensions ship, and removes no trade date.
 - **holidays** — the built-in holiday table covers trade dates 2025-01-01 .. 2027-12-31 at T2. Its per-year gaps, interpretive steps and residual risks are recorded under `## Holidays`, beside the rows they are about, rather than pooled here. The load-bearing ones: the five-day era's Pre-Open onset is undated in the normal week, so every date before the 2026-05-29 bridge row is withheld (#123); the six 24/7-era Monday merged rows restate a pre-holiday Friday and Saturday no captured window covers; five scalar closure dates still carry an unstated 16:00 CT queue; eight 2025 windows rest on a pre-holiday capture; and no T1 rendering of these hours exists.
 - **scope** — ETH, MBT and MET joined this already-live family in 2021 and later member-product listings remain catalog data; their individual launch dates are not family-clock revisions.
 
@@ -745,6 +751,19 @@ without publishing a replacement Pre-Open, each followed by the standard
 Crypto Futures | 74 | 326" and "CME Crypto Options | 327", alongside the
 event-contract channels. The September row is forward-dated on the
 operator's statement.
+
+2026-09-27 UTC — notice 20260921 adds two more one-day Saturday extensions
+in the same language: "On Saturday, October 3, CME Group will temporarily
+extend the Saturday maintenance window schedule for 24/7 markets from 2:00
+a.m. – 5:00 a.m. Central Time (CT)" and "On Saturday, October 24, CME Group
+will temporarily extend the maintenance window for 24/7 markets to 2:00
+a.m. – 3:30 p.m. Central Time (CT) to support the FIA Industry Disaster
+Recovery Exercise on CME Globex", each followed by "the Saturday maintenance
+window will revert to its 2:00 a.m. – 4:00 a.m. CT standard schedule". Both
+dates are unconditional and day-level, and both fall inside the family's
+audited 2025-2027 window, so they ship in the release that claims it. The
+September 19 extension's confirm-by obligation was discharged the same day:
+the operator's T2 service printed the extension's events as run.
 
 `SessionRule` spans at most one local midnight, so the multi-day weekend
 session is stored in adjacent pieces. The key-backed calendar joins those

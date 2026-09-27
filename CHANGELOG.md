@@ -11,6 +11,13 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-09-27
+
+First stable release. Version 1.0 establishes the canonical string identities,
+normal-week schedule scope, date-aware calendar surface, and primary-source
+maintenance contract described in the README and schedule verification ledger.
+
+
 ### Changed
 
 - **The support floor moves back to 2010-01-01 (2026-09-27 UTC).** The
@@ -84,6 +91,42 @@ corrections (a venue's hours fixed against a primary source) go under
   (#77).
 
 ### Added
+
+- **ICE Futures U.S. states the 2026 Thanksgiving instants per family
+  (2026-09-27 UTC).** Exchange Notice `ICE_Futures_US_2026_Thanksgiving_Holiday_20260923.pdf`
+  (T1, retrieved 2026-09-27 UTC) gives Thu Nov 26 and Fri Nov 27 2026 in
+  session language: the softs group closed Thursday — the calendar rows for
+  2026-11-26 stand — and "Regular Hours for Sugar, Coffee and Cocoa" on the
+  Friday; Cotton No. 2 late opens at 08:00 NY and early closes at 13:30 NY on
+  Friday; FCOJ early closes 13:30 NY; the NYSE Stock Index group (which
+  carries `ice_us`) early closes 13:00 NY Thursday and 13:15 NY Friday; the
+  U.S. Dollar Index group early closes 13:15 NY both days. All are
+  unconditional day-level instants inside the tables' claimed window, so
+  `ice_us_cotton`, `ice_us_orange_juice`, `ice_us` and `ice_us_dollar_index`
+  gain or restate their rows and the served `iceus` venue ships `Unsourced`
+  for 2026-11-27 beside the restated 2026-11-26 — the families disagree on
+  both dates. The notice's post-close-pre-open end at 15:30 NY on the Friday
+  is an order-entry instant the scalar row cannot carry; it is recorded in
+  `ice_us_cotton.md` beside the row it concerns. The notice's settlement
+  windows are calculation windows (LAW-SESSION-NOT-EXPIRY) and no row states
+  them.
+
+- **ICE Futures U.S. softs state the 2026 BST-end week (2026-09-27 UTC).**
+  Exchange Notice `ICE_Futures_US_DST_End2026_20260925.pdf` (T1, retrieved
+  2026-09-27 UTC) moves the opens for trade dates 2026-10-26 through
+  2026-10-30 — the week between the end of British Summer Time and the end
+  of US DST — to 04:30 NY for Sugar No. 11, 05:15 NY for Coffee "C" and
+  Coffee "C" Metric, and 05:45 NY for Cocoa, unconditional and day-level.
+  The softs had shared one holiday table because they agreed on every row;
+  this notice is the first disagreement, so `ice_us_sugar`, `ice_us_coffee`
+  and `ice_us_cocoa` now carry their own tables (the common rows unchanged)
+  plus five late-open rows each, citing the notice. Closes, Pre-Open and
+  everything else stay as printed in NY local time, and the notice's
+  temporary settlement windows and TAS ends are calculation windows and
+  trade-type lifecycle (LAW-SESSION-NOT-EXPIRY), so no row states them. The
+  other families trade regular hours that week, so the served `iceus` venue
+  ships `Unsourced` for the five dates and its withheld count moves from 35
+  to 40.
 
 - **`globex_livestock` covers 2016-2018, closing the last CME family holiday
   gap; the four venue tables move not a row (2026-09-27 UTC).** The family's
@@ -341,6 +384,22 @@ corrections (a venue's hours fixed against a primary source) go under
   profile, timeline, holiday row, ledger row, window or count moved.
 
 ### Fixed
+
+- **`globex_cryptocurrency` states CME's two October Saturday maintenance
+  extensions (2026-09-27 UTC).** Globex notice 20260921 extends the Saturday
+  24/7 maintenance window to 02:00-05:00 CT on 2026-10-03 and to 02:00-15:30
+  CT on 2026-10-24 (FIA industry disaster-recovery exercise), each reverting
+  to the 02:00-04:00 CT standard. Both dates sit inside the family's claimed
+  2025-2027 window, so they ship as four one-day profile revisions in the
+  timeline's established Saturday-extension shape — keyed to each Saturday
+  and reverting the next day, with no replacement Pre-Open as the notice
+  publishes none. The 13.5-hour October 24 halt exceeds the four-hour
+  operator-designated bound the crate's maintenance policy keeps and falls
+  inside one trade date — the weekend block still carries the following
+  Monday's — so `session_state` classifies that gap `Halt`, not
+  `Maintenance`. The previously forward-dated 2026-09-19 extension is
+  recorded as confirmed effective by the operator's T2 service on 2026-09-27
+  UTC.
 
 - **Six 2016-2018 CME Documents rows now name one revision each, split across
   the eleven evidence files that carry them (2026-09-27 UTC, #188).** The rows
@@ -2532,12 +2591,6 @@ corrections (a venue's hours fixed against a primary source) go under
   calendar PDFs but undated. No date was inferred to fill a gap.
 - Nifty is deliberately absent. It is an NSE IFSC product now, and SGX's own
   2026 calendar and GIFT Connect product page state different T+1 start times.
-
-## [1.0.0] - 2026-08-22
-
-First stable release. Version 1.0 establishes the canonical string identities,
-normal-week schedule scope, date-aware calendar surface, and primary-source
-maintenance contract described in the README and schedule verification ledger.
 
 ### Added
 

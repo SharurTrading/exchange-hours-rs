@@ -172,12 +172,23 @@ Every interval from 2010-01-01 is declared, so the whole span has an answer; the
 |---|---|---|---|---|---|
 | 2010-01-01 | closed | `CME Globex is closed` | `2010-new-years.pdf @2010-02-15T05:16:52Z` | T1 | CME prints `Jan 1` above it as a closed day; the year comes from the document's own identity, because the annual sheets print no year |
 | 2010-01-15 | unsourced | - | `2010-martin-luther-king.pdf @2010-03-31T06:42:26Z` | T1 | the routed families disagree on this date |
+| 2010-01-18 | unsourced | - | `2010-martin-luther-king.pdf @2010-03-31T06:42:26Z` | T1 | the routed families disagree on this date |
+| 2010-01-19 | unsourced | - | `2010-martin-luther-king.pdf @2010-03-31T06:42:26Z` | T1 | the routed families disagree on this date |
 | 2010-02-12 | unsourced | - | `2010-presidents-day.pdf @2010-02-15T06:46:41Z` | T1 | the routed families disagree on this date |
+| 2010-02-15 | unsourced | - | `2010-presidents-day.pdf @2010-02-15T06:46:41Z` | T1 | the routed families disagree on this date |
+| 2010-02-16 | unsourced | - | `2010-presidents-day.pdf @2010-02-15T06:46:41Z` | T1 | the routed families disagree on this date |
 | 2010-04-02 | unsourced | - | `2010-good-friday.pdf @2010-06-01T11:19:16Z` | T1 | the routed families disagree on this date |
 | 2010-05-28 | unsourced | - | `2010-memorial-day.pdf @2010-06-01T09:42:25Z` | T1 | the routed families disagree on this date |
+| 2010-05-31 | unsourced | - | `2010-memorial-day.pdf @2010-06-01T09:42:25Z` | T1 | the routed families disagree on this date |
+| 2010-06-01 | unsourced | - | `2010-memorial-day.pdf @2010-06-01T09:42:25Z` | T1 | the routed families disagree on this date |
 | 2010-07-02 | unsourced | - | `2010-4th-of-july.pdf @2010-06-02T00:56:37Z` | T1 | the routed families disagree on this date |
+| 2010-07-05 | unsourced | - | `2010-4th-of-july.pdf @2010-06-02T00:56:37Z` | T1 | the routed families disagree on this date |
+| 2010-07-06 | unsourced | - | `2010-4th-of-july.pdf @2010-06-02T00:56:37Z` | T1 | the routed families disagree on this date |
 | 2010-09-03 | unsourced | - | `2010-labor-day.pdf @2010-06-02T00:56:41Z` | T1 | the routed families disagree on this date |
+| 2010-09-06 | unsourced | - | `2010-labor-day.pdf @2010-06-02T00:56:41Z` | T1 | the routed families disagree on this date |
+| 2010-09-07 | unsourced | - | `2010-labor-day.pdf @2010-06-02T00:56:41Z` | T1 | the routed families disagree on this date |
 | 2010-10-08 | unsourced | - | `2010-columbus-day.pdf @2010-08-21T13:31:22Z` | T1 | the routed families disagree on this date |
+| 2010-11-25 | unsourced | - | `2010-thanksgiving.pdf @2010-11-22T09:40:12Z` | T1 | the routed families disagree on this date |
 | 2010-11-26 | unsourced | - | `2010-thanksgiving.pdf @2010-11-22T09:40:12Z` | T1 | the routed families disagree on this date |
 | 2010-12-24 | closed | `CME Globex is closed` | `2010-christmas.pdf @2010-12-14T06:12:38Z` | T1 | CME prints `Dec 24` above it as a closed day; the year comes from the document's own identity, because the annual sheets print no year |
 | 2010-12-31 | unsourced | - | `2011-new-years.pdf @2011-11-01T14:39:45Z` | T1 | the routed families disagree on this date |
@@ -187,12 +198,23 @@ Every interval from 2010-01-01 is declared, so the whole span has an answer; the
 | trade date | kind | instant as printed | document | tier | derived from |
 |---|---|---|---|---|---|
 | 2011-01-14 | unsourced | - | `2011-martin-luther-king.pdf @2011-10-28T02:34:29Z` | T1 | the routed families disagree on this date |
+| 2011-01-17 | unsourced | - | `2011-martin-luther-king.pdf @2011-10-28T02:34:29Z` | T1 | the routed families disagree on this date |
+| 2011-01-18 | unsourced | - | `2011-martin-luther-king.pdf @2011-10-28T02:34:29Z` | T1 | the routed families disagree on this date |
 | 2011-02-18 | unsourced | - | `2011-presidents-day.pdf @2011-10-28T02:35:16Z` | T1 | the routed families disagree on this date |
+| 2011-02-21 | unsourced | - | `2011-presidents-day.pdf @2011-10-28T02:35:16Z` | T1 | the routed families disagree on this date |
+| 2011-02-22 | unsourced | - | `2011-presidents-day.pdf @2011-10-28T02:35:16Z` | T1 | the routed families disagree on this date |
 | 2011-04-22 | closed | `CME Globex is closed` | `2011-good-friday.pdf @2011-10-28T02:37:07Z` | T1 | CME prints `Apr 22` above it as a closed day; the year comes from the document's own identity, because the annual sheets print no year |
 | 2011-05-27 | unsourced | - | `2011-memorial-day.pdf @2013-09-30T10:56:52Z` | T1 | the routed families disagree on this date |
+| 2011-05-30 | unsourced | - | `2011-memorial-day.pdf @2013-09-30T10:56:52Z` | T1 | the routed families disagree on this date |
+| 2011-05-31 | unsourced | - | `2011-memorial-day.pdf @2013-09-30T10:56:52Z` | T1 | the routed families disagree on this date |
 | 2011-07-01 | unsourced | - | `2011-4th-of-july.pdf @2011-11-01T14:40:54Z` | T1 | the routed families disagree on this date |
+| 2011-07-04 | unsourced | - | `2011-4th-of-july.pdf @2011-11-01T14:40:54Z` | T1 | the routed families disagree on this date |
+| 2011-07-05 | unsourced | - | `2011-4th-of-july.pdf @2011-11-01T14:40:54Z` | T1 | the routed families disagree on this date |
 | 2011-09-02 | unsourced | - | `2011-labor-day.pdf @2011-11-01T14:43:45Z` | T1 | the routed families disagree on this date |
+| 2011-09-05 | unsourced | - | `2011-labor-day.pdf @2011-11-01T14:43:45Z` | T1 | the routed families disagree on this date |
+| 2011-09-06 | unsourced | - | `2011-labor-day.pdf @2011-11-01T14:43:45Z` | T1 | the routed families disagree on this date |
 | 2011-10-07 | unsourced | - | `2011-columbus-day.pdf @2011-11-01T14:39:16Z` | T1 | the routed families disagree on this date |
+| 2011-11-24 | unsourced | - | `2011-thanksgiving.pdf @2011-11-24T18:52:46Z` | T1 | the routed families disagree on this date |
 | 2011-11-25 | unsourced | - | `2011-thanksgiving.pdf @2011-11-24T18:52:46Z` | T1 | the routed families disagree on this date |
 | 2011-12-26 | closed | `CME Globex is closed` | `2011-christmas.pdf @2012-01-25T02:05:48Z` | T1 | CME prints `Dec 26` above it as a closed day; the year comes from the document's own identity, because the annual sheets print no year |
 | 2011-12-27 | unsourced | - | `2011-christmas.pdf @2012-01-25T02:05:48Z` | T1 | the routed families disagree on this date |
@@ -204,15 +226,21 @@ Every interval from 2010-01-01 is declared, so the whole span has an answer; the
 | 2012-01-02 | closed | `CME Globex is closed` | `2012-new-years.pdf @2012-01-25T02:54:30Z` | T1 | CME prints `Jan 2` above it as a closed day; the year comes from the document's own identity, because the annual sheets print no year |
 | 2012-01-03 | unsourced | - | `2012-new-years.pdf @2012-01-25T02:54:30Z` | T1 | the routed families disagree on this date |
 | 2012-01-13 | unsourced | - | `2012-martin-luther-king.pdf @2012-05-05T16:15:26Z` | T1 | the routed families disagree on this date |
+| 2012-01-16 | unsourced | - | `2012-martin-luther-king.pdf @2012-05-05T16:15:26Z` | T1 | the routed families disagree on this date |
+| 2012-01-17 | unsourced | - | `2012-martin-luther-king.pdf @2012-05-05T16:15:26Z` | T1 | the routed families disagree on this date |
 | 2012-02-17 | unsourced | - | `2012-presidents-day.pdf @2012-05-05T16:15:39Z` | T1 | the routed families disagree on this date |
+| 2012-02-20 | unsourced | - | `2012-presidents-day.pdf @2012-05-05T16:15:39Z` | T1 | the routed families disagree on this date |
+| 2012-02-21 | unsourced | - | `2012-presidents-day.pdf @2012-05-05T16:15:39Z` | T1 | the routed families disagree on this date |
 | 2012-04-06 | unsourced | - | `2012-good-friday.pdf @2012-04-17T00:42:47Z` | T1 | the routed families disagree on this date |
 | 2012-05-25 | unsourced | - | `2012-memorial-day.pdf @2012-09-15T00:37:14Z` | T1 | the routed families disagree on this date |
 | 2012-05-28 | unsourced | - | `2012-memorial-day.pdf @2012-09-15T00:37:14Z` | T1 | the routed families disagree on this date |
+| 2012-05-29 | unsourced | - | `2012-memorial-day.pdf @2012-09-15T00:37:14Z` | T1 | the routed families disagree on this date |
 | 2012-07-03 | unsourced | - | `2012-4th-of-july.pdf @2012-09-15T00:39:23Z` | T1 | the routed families disagree on this date |
 | 2012-07-04 | unsourced | - | `2012-4th-of-july.pdf @2012-09-15T00:39:23Z` | T1 | the routed families disagree on this date |
 | 2012-07-05 | unsourced | - | `2012-4th-of-july.pdf @2012-09-15T00:39:23Z` | T1 | the routed families disagree on this date |
 | 2012-08-31 | unsourced | - | `2012-labor-day.pdf @2012-09-15T00:34:37Z` | T1 | the routed families disagree on this date |
 | 2012-09-03 | unsourced | - | `2012-labor-day.pdf @2012-09-15T00:34:37Z` | T1 | the routed families disagree on this date |
+| 2012-09-04 | unsourced | - | `2012-labor-day.pdf @2012-09-15T00:34:37Z` | T1 | the routed families disagree on this date |
 | 2012-10-05 | unsourced | - | `2012-columbus-day.pdf @2012-09-15T00:15:14Z` | T1 | the routed families disagree on this date |
 | 2012-11-22 | unsourced | - | `2012-thanksgiving.pdf @2013-01-27T22:39:01Z` | T1 | the routed families disagree on this date |
 | 2012-11-23 | unsourced | - | `2012-thanksgiving.pdf @2013-01-27T22:39:01Z` | T1 | the routed families disagree on this date |

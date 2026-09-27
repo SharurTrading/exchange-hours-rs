@@ -402,9 +402,12 @@ fn no_late_open_ships_and_the_post_closure_reopen_is_the_normal_open() {
     assert_eq!(calendar.holiday_on(day(2026, 1, 2)), None);
 
     // Over every audited window, every row is a closure, an early close, a
-    // late open or an `Unsourced` statement. Three late opens come from
-    // 2010-2012 and three from 2013-2015; the counts pin the shape of all six
-    // eras, so a row on a date no test names fails here.
+    // late open, a replacement or an `Unsourced` statement. Three late opens
+    // come from 2010-2012 and three from 2013-2015; the counts pin the shape of
+    // all six eras, so a row on a date no test names fails here. The
+    // 2010-2012 wave's eighteen noon halts added eighteen early closes and
+    // turned its three Thanksgiving Fridays into replacement rows, which is
+    // the 153 -> 168 move.
     let coverage = calendar
         .holiday_coverage()
         .expect("this family ships a table");
@@ -429,7 +432,7 @@ fn no_late_open_ships_and_the_post_closure_reopen_is_the_normal_open() {
     }
     assert_eq!(
         (closed, early, late, unsourced),
-        (47, 153, 6, 6),
+        (47, 168, 6, 6),
         "closed, early-close, late-open and unsourced rows over all six windows"
     );
 }
@@ -689,13 +692,560 @@ fn without_holidays_restores_the_normal_week_answer() {
 }
 
 // ---------------------------------------------------------------------------
-// 9. The 2010-2012 rows.
+// The 2010-2012 rows.
 // ---------------------------------------------------------------------------
 
 /// 17:30 CT, the family's normal evening first open to 2012-04-30.
 const ERA_EVENING_OPEN: u32 = 17 * 3_600 + 30 * 60;
 /// 05:00 CT, the era's post-holiday first open.
 const ERA_REOPEN: u32 = 5 * 3_600;
+
+/// One expected block of a merged trade date: opening-day offset, kind, and
+/// the venue-local seconds-since-midnight bounds.
+type EraBlock = (i8, ExceptionBlockKind, u32, u32);
+
+/// The merged-day blocks of the era's `17:30` CT clock: the Sunday Pre-Open
+/// queue, the Sunday open into the Monday noon halt, the halt's order-entry
+/// window to the sheet's `1730 CT` CBOT-financial resume, and the resume into
+/// the Tuesday `16:00` CT close.
+const ERA_BLOCKS_1730_MONDAY: [EraBlock; 4] = [
+    (
+        -2,
+        ExceptionBlockKind::OrderEntry,
+        16 * 3_600 + 15 * 60,
+        17 * 3_600 + 30 * 60,
+    ),
+    (
+        -2,
+        ExceptionBlockKind::Extended,
+        17 * 3_600 + 30 * 60,
+        12 * 3_600,
+    ),
+    (
+        -1,
+        ExceptionBlockKind::OrderEntry,
+        12 * 3_600,
+        17 * 3_600 + 30 * 60,
+    ),
+    (
+        -1,
+        ExceptionBlockKind::Extended,
+        17 * 3_600 + 30 * 60,
+        16 * 3_600,
+    ),
+];
+
+/// The 2010 merged Thanksgiving Friday, still on the `17:30` CT clock and
+/// closing at the trade date's own `12:15` CT.
+const ERA_BLOCKS_1730_THANKSGIVING: [EraBlock; 4] = [
+    (
+        -2,
+        ExceptionBlockKind::OrderEntry,
+        16 * 3_600 + 45 * 60,
+        17 * 3_600 + 30 * 60,
+    ),
+    (
+        -2,
+        ExceptionBlockKind::Extended,
+        17 * 3_600 + 30 * 60,
+        12 * 3_600,
+    ),
+    (
+        -1,
+        ExceptionBlockKind::OrderEntry,
+        12 * 3_600,
+        17 * 3_600 + 30 * 60,
+    ),
+    (
+        -1,
+        ExceptionBlockKind::Extended,
+        17 * 3_600 + 30 * 60,
+        12 * 3_600 + 15 * 60,
+    ),
+];
+
+/// The merged-day blocks of the unified `17:00` CT clock, closing at the
+/// following trade date's ordinary `16:00` CT.
+const ERA_BLOCKS_1700_MONDAY: [EraBlock; 4] = [
+    (
+        -2,
+        ExceptionBlockKind::OrderEntry,
+        16 * 3_600 + 15 * 60,
+        17 * 3_600,
+    ),
+    (-2, ExceptionBlockKind::Extended, 17 * 3_600, 12 * 3_600),
+    (-1, ExceptionBlockKind::OrderEntry, 12 * 3_600, 17 * 3_600),
+    (-1, ExceptionBlockKind::Extended, 17 * 3_600, 16 * 3_600),
+];
+
+/// The 2012 Fourth-of-July merged Thursday: the `-2` day is the Tuesday, whose
+/// queue is the weekday 16:45 Pre-Open the sheet's own note dates.
+const ERA_BLOCKS_1700_JULY4: [EraBlock; 4] = [
+    (
+        -2,
+        ExceptionBlockKind::OrderEntry,
+        16 * 3_600 + 45 * 60,
+        17 * 3_600,
+    ),
+    (-2, ExceptionBlockKind::Extended, 17 * 3_600, 12 * 3_600),
+    (-1, ExceptionBlockKind::OrderEntry, 12 * 3_600, 17 * 3_600),
+    (-1, ExceptionBlockKind::Extended, 17 * 3_600, 16 * 3_600),
+];
+
+/// The 2011 and 2012 merged Thanksgiving Friday on the unified `17:00` CT
+/// clock, closing at the trade date's own `12:15` CT.
+const ERA_BLOCKS_1700_THANKSGIVING: [EraBlock; 4] = [
+    (
+        -2,
+        ExceptionBlockKind::OrderEntry,
+        16 * 3_600 + 45 * 60,
+        17 * 3_600,
+    ),
+    (-2, ExceptionBlockKind::Extended, 17 * 3_600, 12 * 3_600),
+    (-1, ExceptionBlockKind::OrderEntry, 12 * 3_600, 17 * 3_600),
+    (
+        -1,
+        ExceptionBlockKind::Extended,
+        17 * 3_600,
+        12 * 3_600 + 15 * 60,
+    ),
+];
+
+/// One expected era row: the halt row of a noon-halt pair, the merged row of
+/// a pair (with the block group it must state), or any other scalar row the
+/// window ships, carried with its kind.
+enum EraExpectedKind {
+    Halt,
+    Merged(&'static [EraBlock; 4]),
+    Other(HolidayKind),
+}
+
+/// `EarlyClose { close_ssm }`, for the table below.
+const fn ec(close_ssm: u32) -> HolidayKind {
+    HolidayKind::EarlyClose { close_ssm }
+}
+
+/// Every row the 2010-2012 window ships, in table order.
+///
+/// The eighteen holiday dates whose sheet prints the `1200 CT` trading halt
+/// and the eighteen following trade dates whose sheet opens the prior evening
+/// **for their own trade date** are the issue's subject; the rest are the
+/// wave's original rows, carried so the sweep can state "none added" over the
+/// whole window. Each entry cites the sheet both rows of a pair read from,
+/// because one document states the whole arrangement.
+///
+/// This is the era-wide instant fence the wave shipped without: the sweep
+/// below walks the whole window and compares against this list row for row,
+/// so a dropped, added or moved row fails as loudly as a wrong instant.
+/// Reading the blocks back also fences the issue's own finding — the sheets
+/// state the halt and the resume in session language, and the resume instant
+/// is the family's own evening open (`1730` CBOT-financial through 2011-09-05,
+/// `1700` unified from 2011-11-24), not the `1700` CME-products line alone.
+const ERA_2010_2012_ROWS: &[((i32, u32, u32), EraExpectedKind, &str)] = &[
+    (
+        (2010, 1, 1),
+        EraExpectedKind::Other(HolidayKind::Closed),
+        "2010-new-years.pdf @2010-02-15T05:16:52Z",
+    ),
+    (
+        (2010, 1, 15),
+        EraExpectedKind::Other(ec(15 * 3_600 + 15 * 60)),
+        "2010-martin-luther-king.pdf @2010-03-31T06:42:26Z",
+    ),
+    (
+        (2010, 1, 18),
+        EraExpectedKind::Halt,
+        "2010-martin-luther-king.pdf @2010-03-31T06:42:26Z",
+    ),
+    (
+        (2010, 1, 19),
+        EraExpectedKind::Merged(&ERA_BLOCKS_1730_MONDAY),
+        "2010-martin-luther-king.pdf @2010-03-31T06:42:26Z",
+    ),
+    (
+        (2010, 2, 12),
+        EraExpectedKind::Other(ec(15 * 3_600 + 15 * 60)),
+        "2010-presidents-day.pdf @2010-02-15T06:46:41Z",
+    ),
+    (
+        (2010, 2, 15),
+        EraExpectedKind::Halt,
+        "2010-presidents-day.pdf @2010-02-15T06:46:41Z",
+    ),
+    (
+        (2010, 2, 16),
+        EraExpectedKind::Merged(&ERA_BLOCKS_1730_MONDAY),
+        "2010-presidents-day.pdf @2010-02-15T06:46:41Z",
+    ),
+    (
+        (2010, 4, 2),
+        EraExpectedKind::Other(ec(10 * 3_600 + 15 * 60)),
+        "2010-good-friday.pdf @2010-06-01T11:19:16Z",
+    ),
+    (
+        (2010, 5, 28),
+        EraExpectedKind::Other(ec(15 * 3_600 + 15 * 60)),
+        "2010-memorial-day.pdf @2010-06-01T09:42:25Z",
+    ),
+    (
+        (2010, 5, 31),
+        EraExpectedKind::Halt,
+        "2010-memorial-day.pdf @2010-06-01T09:42:25Z",
+    ),
+    (
+        (2010, 6, 1),
+        EraExpectedKind::Merged(&ERA_BLOCKS_1730_MONDAY),
+        "2010-memorial-day.pdf @2010-06-01T09:42:25Z",
+    ),
+    (
+        (2010, 7, 2),
+        EraExpectedKind::Other(ec(15 * 3_600 + 15 * 60)),
+        "2010-4th-of-july.pdf @2010-06-02T00:56:37Z",
+    ),
+    (
+        (2010, 7, 5),
+        EraExpectedKind::Halt,
+        "2010-4th-of-july.pdf @2010-06-02T00:56:37Z",
+    ),
+    (
+        (2010, 7, 6),
+        EraExpectedKind::Merged(&ERA_BLOCKS_1730_MONDAY),
+        "2010-4th-of-july.pdf @2010-06-02T00:56:37Z",
+    ),
+    (
+        (2010, 9, 3),
+        EraExpectedKind::Other(ec(15 * 3_600 + 15 * 60)),
+        "2010-labor-day.pdf @2010-06-02T00:56:41Z",
+    ),
+    (
+        (2010, 9, 6),
+        EraExpectedKind::Halt,
+        "2010-labor-day.pdf @2010-06-02T00:56:41Z",
+    ),
+    (
+        (2010, 9, 7),
+        EraExpectedKind::Merged(&ERA_BLOCKS_1730_MONDAY),
+        "2010-labor-day.pdf @2010-06-02T00:56:41Z",
+    ),
+    (
+        (2010, 10, 8),
+        EraExpectedKind::Other(ec(15 * 3_600 + 15 * 60)),
+        "2010-columbus-day.pdf @2010-08-21T13:31:22Z",
+    ),
+    (
+        (2010, 11, 25),
+        EraExpectedKind::Halt,
+        "2010-thanksgiving.pdf @2010-11-22T09:40:12Z",
+    ),
+    (
+        (2010, 11, 26),
+        EraExpectedKind::Merged(&ERA_BLOCKS_1730_THANKSGIVING),
+        "2010-thanksgiving.pdf @2010-11-22T09:40:12Z",
+    ),
+    (
+        (2010, 12, 24),
+        EraExpectedKind::Other(HolidayKind::Closed),
+        "2010-christmas.pdf @2010-12-14T06:12:38Z",
+    ),
+    (
+        (2010, 12, 31),
+        EraExpectedKind::Other(ec(12 * 3_600 + 15 * 60)),
+        "2011-new-years.pdf @2011-11-01T14:39:45Z",
+    ),
+    (
+        (2011, 1, 14),
+        EraExpectedKind::Other(ec(15 * 3_600 + 15 * 60)),
+        "2011-martin-luther-king.pdf @2011-10-28T02:34:29Z",
+    ),
+    (
+        (2011, 1, 17),
+        EraExpectedKind::Halt,
+        "2011-martin-luther-king.pdf @2011-10-28T02:34:29Z",
+    ),
+    (
+        (2011, 1, 18),
+        EraExpectedKind::Merged(&ERA_BLOCKS_1730_MONDAY),
+        "2011-martin-luther-king.pdf @2011-10-28T02:34:29Z",
+    ),
+    (
+        (2011, 2, 18),
+        EraExpectedKind::Other(ec(15 * 3_600 + 15 * 60)),
+        "2011-presidents-day.pdf @2011-10-28T02:35:16Z",
+    ),
+    (
+        (2011, 2, 21),
+        EraExpectedKind::Halt,
+        "2011-presidents-day.pdf @2011-10-28T02:35:16Z",
+    ),
+    (
+        (2011, 2, 22),
+        EraExpectedKind::Merged(&ERA_BLOCKS_1730_MONDAY),
+        "2011-presidents-day.pdf @2011-10-28T02:35:16Z",
+    ),
+    (
+        (2011, 4, 22),
+        EraExpectedKind::Other(HolidayKind::Closed),
+        "2011-good-friday.pdf @2011-10-28T02:37:07Z",
+    ),
+    (
+        (2011, 5, 27),
+        EraExpectedKind::Other(ec(15 * 3_600 + 15 * 60)),
+        "2011-memorial-day.pdf @2013-09-30T10:56:52Z",
+    ),
+    (
+        (2011, 5, 30),
+        EraExpectedKind::Halt,
+        "2011-memorial-day.pdf @2013-09-30T10:56:52Z",
+    ),
+    (
+        (2011, 5, 31),
+        EraExpectedKind::Merged(&ERA_BLOCKS_1730_MONDAY),
+        "2011-memorial-day.pdf @2013-09-30T10:56:52Z",
+    ),
+    (
+        (2011, 7, 1),
+        EraExpectedKind::Other(ec(15 * 3_600 + 15 * 60)),
+        "2011-4th-of-july.pdf @2011-11-01T14:40:54Z",
+    ),
+    (
+        (2011, 7, 4),
+        EraExpectedKind::Halt,
+        "2011-4th-of-july.pdf @2011-11-01T14:40:54Z",
+    ),
+    (
+        (2011, 7, 5),
+        EraExpectedKind::Merged(&ERA_BLOCKS_1730_MONDAY),
+        "2011-4th-of-july.pdf @2011-11-01T14:40:54Z",
+    ),
+    (
+        (2011, 9, 2),
+        EraExpectedKind::Other(ec(15 * 3_600 + 15 * 60)),
+        "2011-labor-day.pdf @2011-11-01T14:43:45Z",
+    ),
+    (
+        (2011, 9, 5),
+        EraExpectedKind::Halt,
+        "2011-labor-day.pdf @2011-11-01T14:43:45Z",
+    ),
+    (
+        (2011, 9, 6),
+        EraExpectedKind::Merged(&ERA_BLOCKS_1730_MONDAY),
+        "2011-labor-day.pdf @2011-11-01T14:43:45Z",
+    ),
+    (
+        (2011, 10, 7),
+        EraExpectedKind::Other(ec(15 * 3_600 + 15 * 60)),
+        "2011-columbus-day.pdf @2011-11-01T14:39:16Z",
+    ),
+    (
+        (2011, 11, 24),
+        EraExpectedKind::Halt,
+        "2011-thanksgiving.pdf @2011-11-24T18:52:46Z",
+    ),
+    (
+        (2011, 11, 25),
+        EraExpectedKind::Merged(&ERA_BLOCKS_1700_THANKSGIVING),
+        "2011-thanksgiving.pdf @2011-11-24T18:52:46Z",
+    ),
+    (
+        (2011, 12, 26),
+        EraExpectedKind::Other(HolidayKind::Closed),
+        "2011-christmas.pdf @2012-01-25T02:05:48Z",
+    ),
+    (
+        (2011, 12, 27),
+        EraExpectedKind::Other(HolidayKind::LateOpen {
+            open_ssm: 5 * 3_600,
+        }),
+        "2011-christmas.pdf @2012-01-25T02:05:48Z",
+    ),
+    (
+        (2012, 1, 2),
+        EraExpectedKind::Other(HolidayKind::Closed),
+        "2012-new-years.pdf @2012-01-25T02:54:30Z",
+    ),
+    (
+        (2012, 1, 3),
+        EraExpectedKind::Other(HolidayKind::LateOpen {
+            open_ssm: 5 * 3_600,
+        }),
+        "2012-new-years.pdf @2012-01-25T02:54:30Z",
+    ),
+    (
+        (2012, 1, 13),
+        EraExpectedKind::Other(ec(15 * 3_600 + 15 * 60)),
+        "2012-martin-luther-king.pdf @2012-05-05T16:15:26Z",
+    ),
+    (
+        (2012, 1, 16),
+        EraExpectedKind::Halt,
+        "2012-martin-luther-king.pdf @2012-05-05T16:15:26Z",
+    ),
+    (
+        (2012, 1, 17),
+        EraExpectedKind::Merged(&ERA_BLOCKS_1700_MONDAY),
+        "2012-martin-luther-king.pdf @2012-05-05T16:15:26Z",
+    ),
+    (
+        (2012, 2, 17),
+        EraExpectedKind::Other(ec(15 * 3_600 + 15 * 60)),
+        "2012-presidents-day.pdf @2012-05-05T16:15:39Z",
+    ),
+    (
+        (2012, 2, 20),
+        EraExpectedKind::Halt,
+        "2012-presidents-day.pdf @2012-05-05T16:15:39Z",
+    ),
+    (
+        (2012, 2, 21),
+        EraExpectedKind::Merged(&ERA_BLOCKS_1700_MONDAY),
+        "2012-presidents-day.pdf @2012-05-05T16:15:39Z",
+    ),
+    (
+        (2012, 4, 6),
+        EraExpectedKind::Other(ec(10 * 3_600 + 15 * 60)),
+        "2012-good-friday.pdf @2012-04-17T00:42:47Z",
+    ),
+    (
+        (2012, 5, 25),
+        EraExpectedKind::Other(ec(15 * 3_600 + 15 * 60)),
+        "2012-memorial-day.pdf @2012-09-15T00:37:14Z",
+    ),
+    (
+        (2012, 5, 28),
+        EraExpectedKind::Halt,
+        "2012-memorial-day.pdf @2012-09-15T00:37:14Z",
+    ),
+    (
+        (2012, 5, 29),
+        EraExpectedKind::Merged(&ERA_BLOCKS_1700_MONDAY),
+        "2012-memorial-day.pdf @2012-09-15T00:37:14Z",
+    ),
+    (
+        (2012, 7, 4),
+        EraExpectedKind::Halt,
+        "2012-4th-of-july.pdf @2012-09-15T00:39:23Z",
+    ),
+    (
+        (2012, 7, 5),
+        EraExpectedKind::Merged(&ERA_BLOCKS_1700_JULY4),
+        "2012-4th-of-july.pdf @2012-09-15T00:39:23Z",
+    ),
+    (
+        (2012, 8, 31),
+        EraExpectedKind::Other(ec(15 * 3_600 + 15 * 60)),
+        "2012-labor-day.pdf @2012-09-15T00:34:37Z",
+    ),
+    (
+        (2012, 9, 3),
+        EraExpectedKind::Halt,
+        "2012-labor-day.pdf @2012-09-15T00:34:37Z",
+    ),
+    (
+        (2012, 9, 4),
+        EraExpectedKind::Merged(&ERA_BLOCKS_1700_MONDAY),
+        "2012-labor-day.pdf @2012-09-15T00:34:37Z",
+    ),
+    (
+        (2012, 10, 5),
+        EraExpectedKind::Other(ec(15 * 3_600 + 15 * 60)),
+        "2012-columbus-day.pdf @2012-09-15T00:15:14Z",
+    ),
+    (
+        (2012, 11, 22),
+        EraExpectedKind::Halt,
+        "2012-thanksgiving.pdf @2013-01-27T22:39:01Z",
+    ),
+    (
+        (2012, 11, 23),
+        EraExpectedKind::Merged(&ERA_BLOCKS_1700_THANKSGIVING),
+        "2012-thanksgiving.pdf @2013-01-27T22:39:01Z",
+    ),
+    (
+        (2012, 12, 24),
+        EraExpectedKind::Other(ec(12 * 3_600 + 15 * 60)),
+        "2012-christmas.pdf @2013-04-14T19:40:27Z",
+    ),
+    (
+        (2012, 12, 25),
+        EraExpectedKind::Other(HolidayKind::Closed),
+        "2012-christmas.pdf @2013-04-14T19:40:27Z",
+    ),
+    (
+        (2012, 12, 26),
+        EraExpectedKind::Other(HolidayKind::LateOpen {
+            open_ssm: 5 * 3_600,
+        }),
+        "2012-christmas.pdf @2013-04-14T19:40:27Z",
+    ),
+];
+
+/// The era-wide sweep of everything the 2010-2012 window ships — the wave's
+/// original rows plus the eighteen noon halts and their eighteen merged trade
+/// dates: every row's date, kind, instant, tier and citation, in table order.
+///
+/// The halt rows carry the scalar `12:00` CT close; the merged rows carry the
+/// complete replacement day, whose blocks are compared block for block. Every
+/// query about the era's answers is refused — the whole 2010-2012 window
+/// precedes the permanent 2025-01-01 floor — so the rows' own facts are what
+/// this fence states, and they are read from the static table the way a
+/// caller without a date-aware query would read them.
+#[test]
+fn era_2010_2012_noon_halts_and_merged_trade_dates_are_the_audited_set() {
+    let calendar = rates();
+    let mut index = 0_usize;
+    let mut date = day(2010, 1, 1);
+    while date <= day(2012, 12, 31) {
+        if let Some(row) = calendar.holiday_on(date) {
+            let (expected, kind, document) = ERA_2010_2012_ROWS.get(index).unwrap_or_else(|| {
+                panic!("{date}: a row ships in the 2010-2012 window that the audited set does not record")
+            });
+            assert_eq!(
+                (date.year(), date.month(), date.day()),
+                *expected,
+                "the 2010-2012 rows must ship in order, with none added"
+            );
+            assert_eq!(row.tier(), EvidenceTier::T1, "{date}");
+            assert_eq!(row.document_id(), *document, "{date}");
+            match kind {
+                EraExpectedKind::Halt => {
+                    assert_eq!(
+                        row.kind(),
+                        HolidayKind::EarlyClose {
+                            close_ssm: 12 * 3_600
+                        },
+                        "{date} must carry the sheet's 12:00 CT halt"
+                    );
+                }
+                EraExpectedKind::Merged(group) => {
+                    let HolidayKind::ReplacementBlocks(blocks) = row.kind() else {
+                        panic!("{date} must carry a replacement row, not {:?}", row.kind());
+                    };
+                    assert_eq!(
+                        blocks.len(),
+                        group.len(),
+                        "{date}: the merged day states {} blocks",
+                        group.len()
+                    );
+                    for (block, (day_offset, block_kind, open_ssm, close_ssm)) in
+                        blocks.iter().zip(group.iter())
+                    {
+                        assert_eq!(block.open_day_offset(), *day_offset, "{date}");
+                        assert_eq!(block.kind(), *block_kind, "{date}");
+                        assert_eq!(block.open_ssm(), *open_ssm, "{date}");
+                        assert_eq!(block.close_ssm(), *close_ssm, "{date}");
+                    }
+                }
+                EraExpectedKind::Other(expected_kind) => {
+                    assert_eq!(row.kind(), *expected_kind, "{date}");
+                }
+            }
+            index += 1;
+        }
+        date = date.succ_opt().expect("the era ends well before the bound");
+    }
+    assert_eq!(index, ERA_2010_2012_ROWS.len(), "every recorded row ships");
+}
 
 /// The era's early closes clip a trading day that opened 17:30 CT the previous
 /// evening, so each cutoff has to land on its own trade date and delete the

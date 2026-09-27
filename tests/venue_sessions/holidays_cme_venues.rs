@@ -430,7 +430,7 @@ fn a_closed_venue_row_is_a_unanimous_closure() {
         // `Exchange` is `#[non_exhaustive]`, so the count is keyed off the
         // routing list this module already pins rather than off the variant.
         // Parsed from the shipped tables window by window, 2010-2012
-        // contributes 49 (CME) or 33 (CBOT) unsourced dates, 2013-2015 another
+        // contributes 63 (CME) or 61 (CBOT) unsourced dates, 2013-2015 another
         // 50 or 46, 2016-2018 27 each, 2019-2021 34 each, 2022-2024 34 and 32,
         // and 2025-2027 53 and 48 — the closure-eve replacement rows
         // `globex_grains` states on fourteen dates move both venues by those
@@ -449,12 +449,21 @@ fn a_closed_venue_row_is_a_unanimous_closure() {
         // 2026-2027 eight are the same shape at 2026-01-20, 2026-02-17,
         // 2026-05-26, 2026-09-08, 2027-01-19, 2027-02-16, 2027-06-01 and
         // 2027-09-07. 2026-11-27 and 2027-11-26 already carried venue rows.
+        // CME's 2010-2012 fourteen and CBOT's twenty-eight are the #101 wave:
+        // the eighteen noon halts put `globex_interest_rates` in disagreement
+        // with grains on fourteen dates CBOT had no row for (four already
+        // disagreed), and its fourteen merged trade dates — 2010-01-19,
+        // 2010-02-16, 2010-06-01, 2010-07-06, 2010-09-07, 2011-01-18,
+        // 2011-02-22, 2011-05-31, 2011-07-05, 2011-09-06, 2012-01-17,
+        // 2012-02-21, 2012-05-29, 2012-09-04 — state a row no other family
+        // states, which both venues must withhold; the eighteen CME halt dates
+        // and 2012-07-05 already carried their disputes.
         let expected = if single_family {
             6
         } else if families.len() == 6 {
-            255
+            269
         } else {
-            233
+            261
         };
         assert_eq!(unsigned, expected, "{exchange:?}: unsourced row count");
     }

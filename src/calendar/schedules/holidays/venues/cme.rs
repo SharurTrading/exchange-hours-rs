@@ -83,9 +83,12 @@ use super::super::{
 
 /// The `Exchange::Cme` table: the intersection of the six CME families.
 ///
-/// Two hundred and eighty-nine rows over six audited eras. Forty-seven state a
-/// status — the Globex full closures — and 242 are `Unsourced`: 49 in 2010-2012,
-/// where the families disagree in kind rather than by minutes, 50 in 2013-2015,
+/// Three hundred and three rows over six audited eras. Forty-seven state a
+/// status — the Globex full closures — and 256 are `Unsourced`: 63 in 2010-2012,
+/// where the families disagree in kind rather than by minutes — fourteen more
+/// now that `globex_interest_rates` states its noon halts and the merged trade
+/// dates fourteen of them carry, the fourteen merged dates the other five
+/// families audit normal — 50 in 2013-2015,
 /// 27 in 2016-2018, 34 in 2019-2021, 34 in 2022-2024, and 48 in 2025-2027. The
 /// six eras are declared as six coverage windows, and outside them the table
 /// reports no answer rather than a normal one.
@@ -97,31 +100,41 @@ pub(crate) static CME: &HolidayTable = holidays! {
         (2010, 1, 1, Closed, T1, "2010-new-years.pdf @2010-02-15T05:16:52Z"),
         // 2010-01-15 - T1 - 2010-martin-luther-king.pdf - disagreement: equity index no row; interest rates early close 15:15 CT; FX early close 15:15 CT; energy and metals early close 15:15 CT; grains no row; livestock no row.
         (2010, 1, 15, Unsourced, T1, "2010-martin-luther-king.pdf @2010-03-31T06:42:26Z"),
-        // 2010-01-18 - T1 - 2010-martin-luther-king.pdf - disagreement: equity index early close 10:30 CT; interest rates no row; FX early close 12:00 CT; energy and metals early close 12:15 CT; grains no row; livestock no row.
+        // 2010-01-18 - T1 - 2010-martin-luther-king.pdf - disagreement: equity index early close 10:30 CT; interest rates early close 12:00 CT; FX early close 12:00 CT; energy and metals early close 12:15 CT; grains no row; livestock no row.
         (2010, 1, 18, Unsourced, T1, "2010-martin-luther-king.pdf @2010-03-31T06:42:26Z"),
+        // 2010-01-19 - T1 - 2010-martin-luther-king.pdf @2010-03-31T06:42:26Z - the merged trade date: interest rates states a replacement-block set for it; no row in equity index, FX, energy and metals, grains or livestock.
+        (2010, 1, 19, Unsourced, T1, "2010-martin-luther-king.pdf @2010-03-31T06:42:26Z"),
         // 2010-02-12 - T1 - 2010-presidents-day.pdf - disagreement: equity index no row; interest rates early close 15:15 CT; FX early close 15:15 CT; energy and metals early close 15:15 CT; grains no row; livestock no row.
         (2010, 2, 12, Unsourced, T1, "2010-presidents-day.pdf @2010-02-15T06:46:41Z"),
-        // 2010-02-15 - T1 - 2010-presidents-day.pdf - disagreement: equity index early close 10:30 CT; interest rates no row; FX early close 12:00 CT; energy and metals early close 12:15 CT; grains no row; livestock no row.
+        // 2010-02-15 - T1 - 2010-presidents-day.pdf - disagreement: equity index early close 10:30 CT; interest rates early close 12:00 CT; FX early close 12:00 CT; energy and metals early close 12:15 CT; grains no row; livestock no row.
         (2010, 2, 15, Unsourced, T1, "2010-presidents-day.pdf @2010-02-15T06:46:41Z"),
+        // 2010-02-16 - T1 - 2010-presidents-day.pdf @2010-02-15T06:46:41Z - the merged trade date: interest rates states a replacement-block set for it; no row in equity index, FX, energy and metals, grains or livestock.
+        (2010, 2, 16, Unsourced, T1, "2010-presidents-day.pdf @2010-02-15T06:46:41Z"),
         // 2010-04-02 - T1 - 2010-good-friday.pdf - disagreement: equity index early close 08:15 CT; interest rates early close 10:15 CT; FX early close 10:15 CT; energy and metals closed; grains closed; livestock closed.
         (2010, 4, 2, Unsourced, T1, "2010-good-friday.pdf @2010-06-01T11:19:16Z"),
         // 2010-05-28 - T1 - 2010-memorial-day.pdf - disagreement: equity index no row; interest rates early close 15:15 CT; FX early close 15:15 CT; energy and metals early close 15:15 CT; grains no row; livestock no row.
         (2010, 5, 28, Unsourced, T1, "2010-memorial-day.pdf @2010-06-01T09:42:25Z"),
-        // 2010-05-31 - T1 - 2010-memorial-day.pdf - disagreement: equity index early close 10:30 CT; interest rates no row; FX early close 12:00 CT; energy and metals early close 12:15 CT; grains no row; livestock no row.
+        // 2010-05-31 - T1 - 2010-memorial-day.pdf - disagreement: equity index early close 10:30 CT; interest rates early close 12:00 CT; FX early close 12:00 CT; energy and metals early close 12:15 CT; grains no row; livestock no row.
         (2010, 5, 31, Unsourced, T1, "2010-memorial-day.pdf @2010-06-01T09:42:25Z"),
+        // 2010-06-01 - T1 - 2010-memorial-day.pdf @2010-06-01T09:42:25Z - the merged trade date: interest rates states a replacement-block set for it; no row in equity index, FX, energy and metals, grains or livestock.
+        (2010, 6, 1, Unsourced, T1, "2010-memorial-day.pdf @2010-06-01T09:42:25Z"),
         // 2010-07-02 - T1 - 2010-4th-of-july.pdf - disagreement: equity index no row; interest rates early close 15:15 CT; FX early close 15:15 CT; energy and metals early close 15:15 CT; grains no row; livestock no row.
         (2010, 7, 2, Unsourced, T1, "2010-4th-of-july.pdf @2010-06-02T00:56:37Z"),
-        // 2010-07-05 - T1 - 2010-4th-of-july.pdf - disagreement: equity index early close 10:30 CT; interest rates no row; FX early close 12:00 CT; energy and metals early close 12:15 CT; grains no row; livestock no row.
+        // 2010-07-05 - T1 - 2010-4th-of-july.pdf - disagreement: equity index early close 10:30 CT; interest rates early close 12:00 CT; FX early close 12:00 CT; energy and metals early close 12:15 CT; grains no row; livestock no row.
         (2010, 7, 5, Unsourced, T1, "2010-4th-of-july.pdf @2010-06-02T00:56:37Z"),
+        // 2010-07-06 - T1 - 2010-4th-of-july.pdf @2010-06-02T00:56:37Z - the merged trade date: interest rates states a replacement-block set for it; no row in equity index, FX, energy and metals, grains or livestock.
+        (2010, 7, 6, Unsourced, T1, "2010-4th-of-july.pdf @2010-06-02T00:56:37Z"),
         // 2010-09-03 - T1 - 2010-labor-day.pdf - disagreement: equity index no row; interest rates early close 15:15 CT; FX early close 15:15 CT; energy and metals early close 15:15 CT; grains no row; livestock no row.
         (2010, 9, 3, Unsourced, T1, "2010-labor-day.pdf @2010-06-02T00:56:41Z"),
-        // 2010-09-06 - T1 - 2010-labor-day.pdf - disagreement: equity index early close 10:30 CT; interest rates no row; FX early close 12:00 CT; energy and metals early close 12:15 CT; grains no row; livestock no row.
+        // 2010-09-06 - T1 - 2010-labor-day.pdf - disagreement: equity index early close 10:30 CT; interest rates early close 12:00 CT; FX early close 12:00 CT; energy and metals early close 12:15 CT; grains no row; livestock no row.
         (2010, 9, 6, Unsourced, T1, "2010-labor-day.pdf @2010-06-02T00:56:41Z"),
+        // 2010-09-07 - T1 - 2010-labor-day.pdf @2010-06-02T00:56:41Z - the merged trade date: interest rates states a replacement-block set for it; no row in equity index, FX, energy and metals, grains or livestock.
+        (2010, 9, 7, Unsourced, T1, "2010-labor-day.pdf @2010-06-02T00:56:41Z"),
         // 2010-10-08 - T1 - 2010-columbus-day.pdf - disagreement: equity index no row; interest rates early close 15:15 CT; FX early close 15:15 CT; energy and metals early close 15:15 CT; grains no row; livestock no row.
         (2010, 10, 8, Unsourced, T1, "2010-columbus-day.pdf @2010-08-21T13:31:22Z"),
-        // 2010-11-25 - T1 - 2010-thanksgiving.pdf - disagreement: equity index early close 10:30 CT; interest rates no row; FX early close 12:00 CT; energy and metals early close 12:15 CT; grains no row; livestock no row.
+        // 2010-11-25 - T1 - 2010-thanksgiving.pdf - disagreement: equity index early close 10:30 CT; interest rates early close 12:00 CT; FX early close 12:00 CT; energy and metals early close 12:15 CT; grains no row; livestock no row.
         (2010, 11, 25, Unsourced, T1, "2010-thanksgiving.pdf @2010-11-22T09:40:12Z"),
-        // 2010-11-26 - T1 - 2010-thanksgiving.pdf - disagreement: equity index early close 12:15 CT; interest rates early close 12:15 CT; FX early close 12:15 CT; energy and metals early close 12:45 CT; grains early close 12:00 CT; livestock early close 12:00 CT.
+        // 2010-11-26 - T1 - 2010-thanksgiving.pdf - disagreement: equity index early close 12:15 CT; interest rates states the merged trade date; FX early close 12:15 CT; energy and metals early close 12:45 CT; grains early close 12:00 CT; livestock early close 12:00 CT.
         (2010, 11, 26, Unsourced, T1, "2010-thanksgiving.pdf @2010-11-22T09:40:12Z"),
         // 2010-12-24 - T1 - 2010-christmas.pdf - closed.
         (2010, 12, 24, Closed, T1, "2010-christmas.pdf @2010-12-14T06:12:38Z"),
@@ -129,33 +142,43 @@ pub(crate) static CME: &HolidayTable = holidays! {
         (2010, 12, 31, Unsourced, T1, "2011-new-years.pdf @2011-11-01T14:39:45Z"),
         // 2011-01-14 - T1 - 2011-martin-luther-king.pdf - disagreement: equity index no row; interest rates early close 15:15 CT; FX early close 15:15 CT; energy and metals early close 15:15 CT; grains no row; livestock no row.
         (2011, 1, 14, Unsourced, T1, "2011-martin-luther-king.pdf @2011-10-28T02:34:29Z"),
-        // 2011-01-17 - T1 - 2011-martin-luther-king.pdf - disagreement: equity index early close 10:30 CT; interest rates no row; FX early close 12:00 CT; energy and metals early close 12:15 CT; grains no row; livestock no row.
+        // 2011-01-17 - T1 - 2011-martin-luther-king.pdf - disagreement: equity index early close 10:30 CT; interest rates early close 12:00 CT; FX early close 12:00 CT; energy and metals early close 12:15 CT; grains no row; livestock no row.
         (2011, 1, 17, Unsourced, T1, "2011-martin-luther-king.pdf @2011-10-28T02:34:29Z"),
+        // 2011-01-18 - T1 - 2011-martin-luther-king.pdf @2011-10-28T02:34:29Z - the merged trade date: interest rates states a replacement-block set for it; no row in equity index, FX, energy and metals, grains or livestock.
+        (2011, 1, 18, Unsourced, T1, "2011-martin-luther-king.pdf @2011-10-28T02:34:29Z"),
         // 2011-02-18 - T1 - 2011-presidents-day.pdf - disagreement: equity index no row; interest rates early close 15:15 CT; FX early close 15:15 CT; energy and metals no row; grains no row; livestock no row.
         (2011, 2, 18, Unsourced, T1, "2011-presidents-day.pdf @2011-10-28T02:35:16Z"),
-        // 2011-02-21 - T1 - 2011-presidents-day.pdf - disagreement: equity index early close 10:30 CT; interest rates no row; FX early close 12:00 CT; energy and metals early close 12:15 CT; grains no row; livestock no row.
+        // 2011-02-21 - T1 - 2011-presidents-day.pdf - disagreement: equity index early close 10:30 CT; interest rates early close 12:00 CT; FX early close 12:00 CT; energy and metals early close 12:15 CT; grains no row; livestock no row.
         (2011, 2, 21, Unsourced, T1, "2011-presidents-day.pdf @2011-10-28T02:35:16Z"),
+        // 2011-02-22 - T1 - 2011-presidents-day.pdf @2011-10-28T02:35:16Z - the merged trade date: interest rates states a replacement-block set for it; no row in equity index, FX, energy and metals, grains or livestock.
+        (2011, 2, 22, Unsourced, T1, "2011-presidents-day.pdf @2011-10-28T02:35:16Z"),
         // 2011-04-21 - T1 - 2011-good-friday.pdf - disagreement: equity index no row; interest rates no row; FX no row; energy and metals no row; grains no row; livestock early close 13:55 CT.
         (2011, 4, 21, Unsourced, T1, "2011-good-friday.pdf @2011-10-28T02:37:07Z"),
         // 2011-04-22 - T1 - 2011-good-friday.pdf - closed.
         (2011, 4, 22, Closed, T1, "2011-good-friday.pdf @2011-10-28T02:37:07Z"),
         // 2011-05-27 - T1 - 2011-memorial-day.pdf - disagreement: equity index no row; interest rates early close 15:15 CT; FX early close 15:15 CT; energy and metals no row; grains no row; livestock no row.
         (2011, 5, 27, Unsourced, T1, "2011-memorial-day.pdf @2013-09-30T10:56:52Z"),
-        // 2011-05-30 - T1 - 2011-memorial-day.pdf - disagreement: equity index early close 10:30 CT; interest rates no row; FX early close 12:00 CT; energy and metals early close 12:15 CT; grains no row; livestock closed.
+        // 2011-05-30 - T1 - 2011-memorial-day.pdf - disagreement: equity index early close 10:30 CT; interest rates early close 12:00 CT; FX early close 12:00 CT; energy and metals early close 12:15 CT; grains no row; livestock closed.
         (2011, 5, 30, Unsourced, T1, "2011-memorial-day.pdf @2013-09-30T10:56:52Z"),
+        // 2011-05-31 - T1 - 2011-memorial-day.pdf @2013-09-30T10:56:52Z - the merged trade date: interest rates states a replacement-block set for it; no row in equity index, FX, energy and metals, grains or livestock.
+        (2011, 5, 31, Unsourced, T1, "2011-memorial-day.pdf @2013-09-30T10:56:52Z"),
         // 2011-07-01 - T1 - 2011-4th-of-july.pdf - disagreement: equity index no row; interest rates early close 15:15 CT; FX early close 15:15 CT; energy and metals no row; grains no row; livestock no row.
         (2011, 7, 1, Unsourced, T1, "2011-4th-of-july.pdf @2011-11-01T14:40:54Z"),
-        // 2011-07-04 - T1 - 2011-4th-of-july.pdf - disagreement: equity index early close 10:30 CT; interest rates no row; FX early close 12:00 CT; energy and metals early close 12:15 CT; grains no row; livestock closed.
+        // 2011-07-04 - T1 - 2011-4th-of-july.pdf - disagreement: equity index early close 10:30 CT; interest rates early close 12:00 CT; FX early close 12:00 CT; energy and metals early close 12:15 CT; grains no row; livestock closed.
         (2011, 7, 4, Unsourced, T1, "2011-4th-of-july.pdf @2011-11-01T14:40:54Z"),
+        // 2011-07-05 - T1 - 2011-4th-of-july.pdf @2011-11-01T14:40:54Z - the merged trade date: interest rates states a replacement-block set for it; no row in equity index, FX, energy and metals, grains or livestock.
+        (2011, 7, 5, Unsourced, T1, "2011-4th-of-july.pdf @2011-11-01T14:40:54Z"),
         // 2011-09-02 - T1 - 2011-labor-day.pdf - disagreement: equity index no row; interest rates early close 15:15 CT; FX early close 15:15 CT; energy and metals no row; grains no row; livestock no row.
         (2011, 9, 2, Unsourced, T1, "2011-labor-day.pdf @2011-11-01T14:43:45Z"),
-        // 2011-09-05 - T1 - 2011-labor-day.pdf - disagreement: equity index early close 10:30 CT; interest rates no row; FX early close 12:00 CT; energy and metals early close 12:15 CT; grains no row; livestock closed.
+        // 2011-09-05 - T1 - 2011-labor-day.pdf - disagreement: equity index early close 10:30 CT; interest rates early close 12:00 CT; FX early close 12:00 CT; energy and metals early close 12:15 CT; grains no row; livestock closed.
         (2011, 9, 5, Unsourced, T1, "2011-labor-day.pdf @2011-11-01T14:43:45Z"),
+        // 2011-09-06 - T1 - 2011-labor-day.pdf @2011-11-01T14:43:45Z - the merged trade date: interest rates states a replacement-block set for it; no row in equity index, FX, energy and metals, grains or livestock.
+        (2011, 9, 6, Unsourced, T1, "2011-labor-day.pdf @2011-11-01T14:43:45Z"),
         // 2011-10-07 - T1 - 2011-columbus-day.pdf - disagreement: equity index no row; interest rates early close 15:15 CT; FX early close 15:15 CT; energy and metals no row; grains no row; livestock no row.
         (2011, 10, 7, Unsourced, T1, "2011-columbus-day.pdf @2011-11-01T14:39:16Z"),
-        // 2011-11-24 - T1 - 2011-thanksgiving.pdf - disagreement: equity index early close 10:30 CT; interest rates no row; FX early close 12:00 CT; energy and metals early close 12:15 CT; grains no row; livestock no row.
+        // 2011-11-24 - T1 - 2011-thanksgiving.pdf - disagreement: equity index early close 10:30 CT; interest rates early close 12:00 CT; FX early close 12:00 CT; energy and metals early close 12:15 CT; grains no row; livestock no row.
         (2011, 11, 24, Unsourced, T1, "2011-thanksgiving.pdf @2011-11-24T18:52:46Z"),
-        // 2011-11-25 - T1 - 2011-thanksgiving.pdf - disagreement: equity index early close 12:15 CT; interest rates early close 12:15 CT; FX early close 12:15 CT; energy and metals early close 12:45 CT; grains early close 12:00 CT; livestock early close 12:15 CT.
+        // 2011-11-25 - T1 - 2011-thanksgiving.pdf - disagreement: equity index early close 12:15 CT; interest rates states the merged trade date; FX early close 12:15 CT; energy and metals early close 12:45 CT; grains early close 12:00 CT; livestock early close 12:15 CT.
         (2011, 11, 25, Unsourced, T1, "2011-thanksgiving.pdf @2011-11-24T18:52:46Z"),
         // 2011-12-26 - T1 - 2011-christmas.pdf - closed.
         (2011, 12, 26, Closed, T1, "2011-christmas.pdf @2012-01-25T02:05:48Z"),
@@ -167,37 +190,45 @@ pub(crate) static CME: &HolidayTable = holidays! {
         (2012, 1, 3, Unsourced, T1, "2012-new-years.pdf @2012-01-25T02:54:30Z"),
         // 2012-01-13 - T1 - 2012-martin-luther-king.pdf - disagreement: equity index no row; interest rates early close 15:15 CT; FX early close 15:15 CT; energy and metals no row; grains no row; livestock no row.
         (2012, 1, 13, Unsourced, T1, "2012-martin-luther-king.pdf @2012-05-05T16:15:26Z"),
-        // 2012-01-16 - T1 - 2012-martin-luther-king.pdf - disagreement: equity index early close 10:30 CT; interest rates no row; FX early close 12:00 CT; energy and metals early close 12:15 CT; grains no row; livestock closed.
+        // 2012-01-16 - T1 - 2012-martin-luther-king.pdf - disagreement: equity index early close 10:30 CT; interest rates early close 12:00 CT; FX early close 12:00 CT; energy and metals early close 12:15 CT; grains no row; livestock closed.
         (2012, 1, 16, Unsourced, T1, "2012-martin-luther-king.pdf @2012-05-05T16:15:26Z"),
+        // 2012-01-17 - T1 - 2012-martin-luther-king.pdf @2012-05-05T16:15:26Z - the merged trade date: interest rates states a replacement-block set for it; no row in equity index, FX, energy and metals, grains or livestock.
+        (2012, 1, 17, Unsourced, T1, "2012-martin-luther-king.pdf @2012-05-05T16:15:26Z"),
         // 2012-02-17 - T1 - 2012-presidents-day.pdf - disagreement: equity index no row; interest rates early close 15:15 CT; FX early close 15:15 CT; energy and metals no row; grains no row; livestock no row.
         (2012, 2, 17, Unsourced, T1, "2012-presidents-day.pdf @2012-05-05T16:15:39Z"),
-        // 2012-02-20 - T1 - 2012-presidents-day.pdf - disagreement: equity index early close 10:30 CT; interest rates no row; FX early close 12:00 CT; energy and metals early close 12:15 CT; grains no row; livestock closed.
+        // 2012-02-20 - T1 - 2012-presidents-day.pdf - disagreement: equity index early close 10:30 CT; interest rates early close 12:00 CT; FX early close 12:00 CT; energy and metals early close 12:15 CT; grains no row; livestock closed.
         (2012, 2, 20, Unsourced, T1, "2012-presidents-day.pdf @2012-05-05T16:15:39Z"),
+        // 2012-02-21 - T1 - 2012-presidents-day.pdf @2012-05-05T16:15:39Z - the merged trade date: interest rates states a replacement-block set for it; no row in equity index, FX, energy and metals, grains or livestock.
+        (2012, 2, 21, Unsourced, T1, "2012-presidents-day.pdf @2012-05-05T16:15:39Z"),
         // 2012-04-05 - T1 - 2012-good-friday.pdf - disagreement: equity index no row; interest rates no row; FX no row; energy and metals no row; grains no row; livestock early close 13:55 CT.
         (2012, 4, 5, Unsourced, T1, "2012-good-friday.pdf @2012-04-17T00:42:47Z"),
         // 2012-04-06 - T1 - 2012-good-friday.pdf - disagreement: equity index early close 08:15 CT; interest rates early close 10:15 CT; FX early close 10:15 CT; energy and metals closed; grains closed; livestock closed.
         (2012, 4, 6, Unsourced, T1, "2012-good-friday.pdf @2012-04-17T00:42:47Z"),
         // 2012-05-25 - T1 - 2012-memorial-day.pdf - disagreement: equity index no row; interest rates early close 15:15 CT; FX early close 15:15 CT; energy and metals no row; grains no row; livestock no row.
         (2012, 5, 25, Unsourced, T1, "2012-memorial-day.pdf @2012-09-15T00:37:14Z"),
-        // 2012-05-28 - T1 - 2012-memorial-day.pdf - disagreement: equity index early close 10:30 CT; interest rates no row; FX early close 12:00 CT; energy and metals early close 12:15 CT; grains late open 19:00 CT; livestock closed.
+        // 2012-05-28 - T1 - 2012-memorial-day.pdf - disagreement: equity index early close 10:30 CT; interest rates early close 12:00 CT; FX early close 12:00 CT; energy and metals early close 12:15 CT; grains late open 19:00 CT; livestock closed.
         (2012, 5, 28, Unsourced, T1, "2012-memorial-day.pdf @2012-09-15T00:37:14Z"),
+        // 2012-05-29 - T1 - 2012-memorial-day.pdf @2012-09-15T00:37:14Z - the merged trade date: interest rates states a replacement-block set for it; no row in equity index, FX, energy and metals, grains or livestock.
+        (2012, 5, 29, Unsourced, T1, "2012-memorial-day.pdf @2012-09-15T00:37:14Z"),
         // 2012-07-03 - T1 - 2012-4th-of-july.pdf - disagreement: equity index early close 12:15 CT; interest rates no row; FX no row; energy and metals no row; grains early close 12:00 CT; livestock no row.
         (2012, 7, 3, Unsourced, T1, "2012-4th-of-july.pdf @2012-09-15T00:39:23Z"),
-        // 2012-07-04 - T1 - 2012-4th-of-july.pdf - disagreement: equity index early close 10:30 CT; interest rates no row; FX early close 12:00 CT; energy and metals early close 12:15 CT; grains closed; livestock closed.
+        // 2012-07-04 - T1 - 2012-4th-of-july.pdf - disagreement: equity index early close 10:30 CT; interest rates early close 12:00 CT; FX early close 12:00 CT; energy and metals early close 12:15 CT; grains closed; livestock closed.
         (2012, 7, 4, Unsourced, T1, "2012-4th-of-july.pdf @2012-09-15T00:39:23Z"),
-        // 2012-07-05 - T1 - 2012-4th-of-july.pdf - disagreement: equity index no row; interest rates no row; FX no row; energy and metals no row; grains late open 09:30 CT; livestock late open 09:05 CT.
+        // 2012-07-05 - T1 - 2012-4th-of-july.pdf - disagreement: equity index no row; interest rates states the merged trade date; FX no row; energy and metals no row; grains late open 09:30 CT; livestock late open 09:05 CT.
         (2012, 7, 5, Unsourced, T1, "2012-4th-of-july.pdf @2012-09-15T00:39:23Z"),
         // 2012-08-31 - T1 - 2012-labor-day.pdf - disagreement: equity index no row; interest rates early close 15:15 CT; FX early close 15:15 CT; energy and metals no row; grains no row; livestock no row.
         (2012, 8, 31, Unsourced, T1, "2012-labor-day.pdf @2012-09-15T00:34:37Z"),
-        // 2012-09-03 - T1 - 2012-labor-day.pdf - disagreement: equity index early close 10:30 CT; interest rates no row; FX early close 12:00 CT; energy and metals early close 12:15 CT; grains late open 19:00 CT; livestock closed.
+        // 2012-09-03 - T1 - 2012-labor-day.pdf - disagreement: equity index early close 10:30 CT; interest rates early close 12:00 CT; FX early close 12:00 CT; energy and metals early close 12:15 CT; grains late open 19:00 CT; livestock closed.
         (2012, 9, 3, Unsourced, T1, "2012-labor-day.pdf @2012-09-15T00:34:37Z"),
+        // 2012-09-04 - T1 - 2012-labor-day.pdf @2012-09-15T00:34:37Z - the merged trade date: interest rates states a replacement-block set for it; no row in equity index, FX, energy and metals, grains or livestock.
+        (2012, 9, 4, Unsourced, T1, "2012-labor-day.pdf @2012-09-15T00:34:37Z"),
         // 2012-10-05 - T1 - 2012-columbus-day.pdf - disagreement: equity index no row; interest rates early close 15:15 CT; FX early close 15:15 CT; energy and metals no row; grains no row; livestock no row.
         (2012, 10, 5, Unsourced, T1, "2012-columbus-day.pdf @2012-09-15T00:15:14Z"),
-        // 2012-11-22 - T1 - 2012-thanksgiving.pdf - disagreement: equity index early close 10:30 CT; interest rates no row; FX early close 12:00 CT; energy and metals early close 12:15 CT; grains closed; livestock no row.
+        // 2012-11-22 - T1 - 2012-thanksgiving.pdf - disagreement: equity index early close 10:30 CT; interest rates early close 12:00 CT; FX early close 12:00 CT; energy and metals early close 12:15 CT; grains closed; livestock no row.
         (2012, 11, 22, Unsourced, T1, "2012-thanksgiving.pdf @2013-01-27T22:39:01Z"),
-        // 2012-11-23 - T1 - 2012-thanksgiving.pdf - disagreement: equity index early close 12:15 CT; interest rates early close 12:15 CT; FX early close 12:15 CT; energy and metals early close 12:45 CT; grains late open 09:30 CT and early close 12:00 CT; livestock early close 12:15 CT.
+        // 2012-11-23 - T1 - 2012-thanksgiving.pdf - disagreement: equity index early close 12:15 CT; interest rates states the merged trade date; FX early close 12:15 CT; energy and metals early close 12:45 CT; grains late open 09:30 CT and early close 12:00 CT; livestock early close 12:15 CT.
         (2012, 11, 23, Unsourced, T1, "2012-thanksgiving.pdf @2013-01-27T22:39:01Z"),
-        // 2012-12-24 - T1 - 2012-christmas.pdf - disagreement: equity index early close 12:15 CT; interest rates early close 12:15 CT; FX early close 12:15 CT; energy and metals early close 12:45 CT; grains early close 12:00 CT; livestock early close 12:15 CT.
+        // 2012-12-24 - T1 - 2012-christmas.pdf - disagreement: equity index early close 12:15 CT; interest rates states the merged trade date; FX early close 12:15 CT; energy and metals early close 12:45 CT; grains early close 12:00 CT; livestock early close 12:15 CT.
         (2012, 12, 24, Unsourced, T1, "2012-christmas.pdf @2013-04-14T19:40:27Z"),
         // 2012-12-25 - T1 - 2012-christmas.pdf - closed.
         (2012, 12, 25, Closed, T1, "2012-christmas.pdf @2013-04-14T19:40:27Z"),

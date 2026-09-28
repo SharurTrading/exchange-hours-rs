@@ -272,7 +272,7 @@ fn date_level_incompleteness() -> &'static [(&'static str, usize)] {
 }
 
 /// `is_complete_on(SAMPLE)` agrees with the inventory's `Complete?` cell for all
-/// twenty-four served scopes.
+/// twenty-seven served scopes.
 ///
 /// The page and the API are one record, and this is the test that stops them
 /// disagreeing. The defect it was added for is why it is not a loop over the cell
@@ -366,10 +366,12 @@ fn inventory_completeness_verdicts_match_the_metadata() {
     }
     assert_eq!(
         (complete, incomplete, no_coverage),
-        (9, 15, 0),
-        "the inventory's verdict shapes: nine complete, fifteen incomplete, none with no 2025 \
-         coverage (xetra's unpublished 2027 schedule keeps it incomplete; #197's b3/tadawul are complete; \
-         nyse is complete to 2027 and nasdaq is incomplete — four Unsourced dates across 2010-2026)"
+        (11, 16, 0),
+        "the inventory's verdict shapes: eleven complete, sixteen incomplete, none with no 2025 \
+         coverage (xetra's unpublished 2027 schedule keeps it incomplete; #197's b3/tadawul are \
+         complete; nyse is complete to 2027 and nasdaq is incomplete — four Unsourced dates across \
+         2010-2026; the 2026-09-28 UTC APAC activation makes nzx and sgx_securities complete to \
+         their operators' horizons and asx incomplete below its 2025-06-23 SR15 horizon)"
     );
 }
 
@@ -704,7 +706,7 @@ fn sundays_between(first: NaiveDate, last: NaiveDate) -> Vec<NaiveDate> {
 /// tell a scope that withholds a required phase from one whose grid simply has no
 /// session at 16:05 CT. This fence observes the profiles instead: a scope that
 /// withholds the quarter-hour is closed at 16:05 CT and **accepting orders** at
-/// 16:20 CT, and exactly the served scopes that show that signature declare #79 - four dormant identities show it too and declare nothing, so the invariant is scoped to the inventory's nineteen rows —
+/// 16:20 CT, and exactly the served scopes that show that signature declare #79 - four dormant identities show it too and declare nothing, so the invariant is scoped to the inventory's served rows —
 /// `cme`, `comex`, `nymex`, `globex_energy`, `globex_equity_index`, `globex_fx`
 /// and `globex_interest_rates`. The four that accept at 16:05 CT are genuinely
 /// fine — the CBOT grains grid dates its own 16:00 CT Sunday onset to the
@@ -793,7 +795,14 @@ fn the_sunday_quarter_hour_is_declared_exactly_where_the_profiles_withhold_it() 
     );
     assert_eq!(
         accepts_inside,
-        ["cbot", "cfe", "globex_grains", "globex_nikkei_225_dollar"],
+        [
+            "cbot",
+            "cfe",
+            "asx",
+            "nzx",
+            "globex_grains",
+            "globex_nikkei_225_dollar"
+        ],
         "these accept orders inside the disputed window, so no gap is declared for them"
     );
     assert_eq!(
@@ -805,6 +814,7 @@ fn the_sunday_quarter_hour_is_declared_exactly_where_the_profiles_withhold_it() 
             "eurex",
             "iceus",
             "hkex",
+            "sgx_securities",
             "xetra",
             "six",
             "borsa_istanbul",
@@ -824,7 +834,7 @@ fn the_sunday_quarter_hour_is_declared_exactly_where_the_profiles_withhold_it() 
 /// would make a scope read incomplete for a reason that has nothing to do with
 /// its `Complete?` cell. Both claims are re-derived here from the shipped
 /// tables — the holiday row (if any) and the audited windows — for all
-/// twenty-four scopes, and the scope count is asserted so a scope cannot drop out.
+/// twenty-seven scopes, and the scope count is asserted so a scope cannot drop out.
 #[test]
 fn inventory_sample_date_is_inside_every_scopes_audit() {
     let day = sample();
@@ -854,8 +864,8 @@ fn inventory_sample_date_is_inside_every_scopes_audit() {
         checked += 1;
     }
     assert_eq!(
-        checked, 24,
-        "the inventory carries one row per served scope, and all twenty-four are checked"
+        checked, 27,
+        "the inventory carries one row per served scope, and all twenty-seven are checked"
     );
 }
 

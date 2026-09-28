@@ -37,6 +37,7 @@
 //! trading day shorter; a caller can never widen the crate's answer with a
 //! `DayPolicy`.
 
+mod asx;
 mod b3;
 mod borsa_istanbul;
 mod cfe;
@@ -55,7 +56,9 @@ mod hkex;
 mod ice_us;
 mod nasdaq;
 mod nyse;
+mod nzx;
 mod routing;
+mod sgx_securities;
 mod six;
 mod tadawul;
 mod venues;

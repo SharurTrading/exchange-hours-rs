@@ -33,6 +33,95 @@ as each source is re-verified.
   cannot be re-opened from a link here; re-verification goes through the
   `APAC-ASX` operating-rules entry point in
   [sources.md](../schedules/sources.md#apac-asx).
+- <https://www.asx.com.au/markets/market-resources/trading-hours-calendar/cash-market-trading-hours/trading-calendar> — the operator's own annual trading calendar (this page's own holiday sheets), retrieved 2026-09-28 (UTC) as `holidays/raw/equities/asx/2025-2027/live_asx_cash_market_trading_calendar.html` (research store), sha256 `adb2344c…`; the live page renders the 2026 and 2027 sheets.
+
+## Holidays
+
+**Coverage:** 2025-01-01..2027-12-31 (inclusive trade dates). Tier: T1 throughout.
+
+ASX server-renders one sheet per year on its own `Trading calendar` page under
+cash-market trading hours (columns `Public holiday`, `Dates for <year>`,
+`Trading day`, settlement activity, `Business day`). The live page retrieved
+2026-09-28 (UTC) renders the **2026** and **2027** sheets; the **2025** sheet
+comes from the page's own 2025-04-16 wayback replay (`id_` original bytes),
+which renders `2025 Trading calendar` alone. All three years ASX publishes are
+therefore audited and the window reaches 2027-12-31; there is no forward gap
+to record inside the operator's publication horizon.
+
+The sheet states each closure in its own `CLOSED` cell and each half day as
+`CLOSE EARLY` with numbered footnotes that state the instant themselves:
+`Normal trading ceases at 14:10 (Sydney time)`. The row therefore clips the
+envelope at 14:10 — the Pre-CSPA, CSPA and Post Close blocks start after that
+instant and are gone with it — and nothing about the reading is inferred: the
+footnote is the sheet's own words. ANZAC Day 2027 is the one entry the module
+deliberately does not row: the 2027 sheet prints `OPEN` against Monday
+26 April with the footnote `Substitute for Sunday 25 April`, so that Monday is
+an audited-normal trading day.
+
+### 2025
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2025-01-01 | closed | `New Year's Day` — `Wednesday 1 January` — `CLOSED` | `ASX-CAL-2025` | T1 | ASX event date printed verbatim; `A Trading Day means ASX Trade is open for trading`, and no session belongs to the date |
+| 2025-01-27 | closed | `Australia Day` — `Monday 27 January` — `CLOSED` | `ASX-CAL-2025` | T1 | ASX event date printed verbatim (the sheet's own observed date for Sunday 26 January) |
+| 2025-04-18 | closed | `Good Friday` — `Friday 18 April` — `CLOSED` | `ASX-CAL-2025` | T1 | ASX event date printed verbatim |
+| 2025-04-21 | closed | `Easter Monday` — `Monday 21 April` — `CLOSED` | `ASX-CAL-2025` | T1 | ASX event date printed verbatim |
+| 2025-04-25 | closed | `ANZAC Day` — `Friday 25 April` — `CLOSED` | `ASX-CAL-2025` | T1 | ASX event date printed verbatim |
+| 2025-06-09 | closed | `King's Birthday` — `Monday 9 June` — `CLOSED` | `ASX-CAL-2025` | T1 | ASX event date printed verbatim |
+| 2025-12-24 | early close | `Last Business day before Christmas Day` — `Wednesday 24 December` — `CLOSE EARLY` `[3]` — footnote: `Normal trading ceases at 14:10 (Sydney time)` | `ASX-CAL-2025` | T1 | ASX trade date named verbatim; the row clips the envelope at the sheet's own 14:10 |
+| 2025-12-25 | closed | `Christmas Day` — `Thursday 25 December` — `CLOSED` | `ASX-CAL-2025` | T1 | ASX event date printed verbatim |
+| 2025-12-26 | closed | `Boxing Day` — `Friday 26 December` — `CLOSED` | `ASX-CAL-2025` | T1 | ASX event date printed verbatim |
+| 2025-12-31 | early close | `Last Business day of the Year` — `Wednesday 31 December` — `CLOSE EARLY` `[4]` — 14:10 (Sydney time) | `ASX-CAL-2025` | T1 | same reading as 2025-12-24 |
+
+### 2026
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2026-01-01 | closed | `New Year's Day` — `Thursday 1 January` — `CLOSED` | `ASX-CAL-LIVE` | T1 | ASX event date printed verbatim |
+| 2026-01-26 | closed | `Australia Day` — `Monday 26 January` — `CLOSED` | `ASX-CAL-LIVE` | T1 | ASX event date printed verbatim |
+| 2026-04-03 | closed | `Good Friday` — `Friday 3 April` — `CLOSED` | `ASX-CAL-LIVE` | T1 | ASX event date printed verbatim |
+| 2026-04-06 | closed | `Easter Monday` — `Monday 6 April` — `CLOSED` | `ASX-CAL-LIVE` | T1 | ASX event date printed verbatim |
+| 2026-04-25 | closed | `ANZAC Day` — `Saturday 25 April` — `CLOSED`, no substitute footnote | `ASX-CAL-LIVE` | T1 | the sheet prints the Saturday closure and states no substitution; the row restates a closure the Mon-Fri normal week already makes, so it changes no answer — recorded so the transcription matches the sheet line for line |
+| 2026-06-08 | closed | `King's Birthday` — `Monday 8 June` — `CLOSED` | `ASX-CAL-LIVE` | T1 | ASX event date printed verbatim |
+| 2026-12-24 | early close | `Last Business day before Christmas Day` — `Thursday 24 December` — `CLOSE EARLY` `[3]` — 14:10 (Sydney time) | `ASX-CAL-LIVE` | T1 | ASX trade date named verbatim |
+| 2026-12-25 | closed | `Christmas Day` — `Friday 25 December` — `CLOSED` | `ASX-CAL-LIVE` | T1 | ASX event date printed verbatim |
+| 2026-12-28 | closed | `Boxing Day` — `Monday 28 December` — `CLOSED` | `ASX-CAL-LIVE` | T1 | the sheet's own date for the Saturday 26 December holiday |
+| 2026-12-31 | early close | `Last Business day of the Year` — `Thursday 31 December` — `CLOSE EARLY` `[4]` — 14:10 (Sydney time) | `ASX-CAL-LIVE` | T1 | same reading as 2026-12-24 |
+
+### 2027
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2027-01-01 | closed | `New Year's Day` — `Friday 1 January` — `CLOSED` | `ASX-CAL-LIVE` | T1 | ASX event date printed verbatim |
+| 2027-01-26 | closed | `Australia Day` — `Tuesday 26 January` — `CLOSED` | `ASX-CAL-LIVE` | T1 | ASX event date printed verbatim |
+| 2027-03-26 | closed | `Good Friday` — `Friday 26 March` — `CLOSED` | `ASX-CAL-LIVE` | T1 | ASX event date printed verbatim |
+| 2027-03-29 | closed | `Easter Monday` — `Monday 29 March` — `CLOSED` | `ASX-CAL-LIVE` | T1 | ASX event date printed verbatim |
+| 2027-06-14 | closed | `King's Birthday` — `Monday 14 June` — `CLOSED` | `ASX-CAL-LIVE` | T1 | ASX event date printed verbatim |
+| 2027-12-24 | early close | `Last Business day before Christmas Day` — `Friday 24 December` — `CLOSE EARLY` `[4]` — 14:10 (Sydney time) | `ASX-CAL-LIVE` | T1 | ASX trade date named verbatim |
+| 2027-12-27 | closed | `Christmas Day` — `Monday 27 December` — `CLOSED` `[5]` — `Substitute for Saturday 25 December` | `ASX-CAL-LIVE` | T1 | the sheet's own substitute date, printed in the event row |
+| 2027-12-28 | closed | `Boxing Day` — `Tuesday 28 December` — `CLOSED` `[6]` — `Substitute for Sunday 26 December` | `ASX-CAL-LIVE` | T1 | the sheet's own substitute date |
+| 2027-12-31 | early close | `Last Business day of the Year` — `Friday 31 December` — `CLOSE EARLY` `[7]` — 14:10 (Sydney time) | `ASX-CAL-LIVE` | T1 | same reading as 2027-12-24 |
+
+**ANZAC Day 2027 ships no row.** The 2027 sheet prints `ANZAC Day` /
+`Monday 26 April` / `OPEN` `[3]` / Settlement / Settlement / `YES`, with the
+footnote `Substitute for Sunday 25 April`. The sheet states a trading day, so
+the Monday is audited normal: recording it as a row would claim a closure the
+operator's own bytes deny. No other sheet entry is without a row; ASX's
+standing note (`ASX Limited reserves the right to declare additional
+Non-Business Days … without notice`) is the operator's own alteration clause
+and is covered by the monthly watch.
+
+### Documents
+
+| Document | Window | Replay or service URL | Capture or retrieval, UTC | Tier | sha256 |
+|---|---|---|---|---|---|
+| `ASX-CAL-2025` | 2025-01-01 .. 2027-12-31 | <https://web.archive.org/web/20250416082951id_/https://www.asx.com.au/markets/market-resources/trading-hours-calendar/cash-market-trading-hours/trading-calendar> | retrieved 2026-09-28 01:51 UTC | T1 | `d24de6d6f6ec1864480de6f2f75cf4a3650b30f6eda8daa354fd1bfa1302d66d` |
+| `ASX-CAL-LIVE` | 2025-01-01 .. 2027-12-31 | <https://www.asx.com.au/markets/market-resources/trading-hours-calendar/cash-market-trading-hours/trading-calendar> | retrieved 2026-09-28 01:00 UTC | T1 | `adb2344ca5e13dcbfb8de9b0cf40334c992f4ffb660026b22bca7d21d964cd19` |
+
+`ASX-CAL-2025`'s replayed page renders only the 2025 sheet; its window cell
+names the table window it keys rows inside, not the years it prints. The
+store's `holidays/raw/equities/asx/2025-2027/` also holds the calendar hub
+page (`7ea4e039…`) through which the trading-calendar URL was located.
 
 ## Gaps and residual risks
 

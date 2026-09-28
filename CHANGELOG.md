@@ -13,6 +13,41 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Added
 
+- **`nzx`, `asx` and `sgx_securities` activate: built-in holiday tables for
+  the three APAC cash-equity venues the consumer routes (2026-09-28 UTC).**
+  All three identities flip dormant→**served** (LAW-SERVICE-TIERS admission by
+  consumer reach), the `for_exchange` arms answer `Some`, and the review
+  cadence becomes monthly (LAW-WATCH, holiday-bearing).
+  - `nzx` — **28 rows over 2025-01-01..2027-01-04** (24 closures, 4
+    abbreviated days): the operator's own `Market Holidays & Trading Hours`
+    table, read from successive captures of the one rolling page (NZX prints
+    no consolidated year sheets), with the live page retrieved 2026-09-28 as
+    the horizon evidence. The four abbreviated days ship as replacement block
+    sets restating the operator's own abbreviated grid — the tradeable
+    closing-uncross envelope survives — and the 2026 ANZAC and Boxing Day
+    mondayisations key to the operator's printed Mondays.
+  - `asx` — **29 rows over 2025-01-01..2027-12-31** (23 closures, six 14:10
+    early closes): the operator's cash-market trading-calendar sheets 2025-2027.
+    ANZAC Day 2026 rows as the sheet's `CLOSED` against the Saturday, ANZAC
+    Day 2027 prints `OPEN` and ships no row, and the 2027 Christmas substitute
+    Monday is the sheet's own date. Date-aware answers begin at the
+    2025-06-23 SR15 horizon; the Australia Day 2025 row sits inside the
+    carried region below it and the coverage contract refuses that date.
+  - `sgx_securities` — **25 rows over 2025-01-01..2026-12-31** (19 closures,
+    six half days): the operator's securities trading page read as bytes from
+    SGX's own content API (T2), which designates the MOM gazetted calendar
+    and prints the six half days; each half day ships as a replacement block
+    set to the printed 12:16 close, and the three 2026 Sunday substitutions
+    key to the operator's printed Mondays. SGX has printed 2025 & 2026 only
+    and states no 2027 half-day treatment, so the window ends at 2026-12-31
+    with the closing condition recorded in the evidence file and the ledger
+    rather than an invented row.
+  Every row cites a saved operator artifact (research store
+  `holidays/raw/equities/<venue>/2025-2027/`, sha256 per artifact); the
+  evidence files carry the per-row derivation, the interpretive steps behind
+  the replacement-block days, and the monitoring entries in
+  `docs/schedules/sources.md`.
+
 - **`nyse` and `nasdaq` activate: built-in holiday tables for the two US
   cash-equity venues the consumer routes (2026-09-28 UTC).** Both identities
   flip dormant→**served** (LAW-SERVICE-TIERS admission by consumer reach),

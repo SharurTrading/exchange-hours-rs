@@ -1,24 +1,38 @@
 // SPDX-License-Identifier: MIT-0
 
-//! Built-in holiday rows for the three served cash-equity venues whose tables
-//! shipped with the 2025-2027 wave: `b3`, `tadawul` and `borsa_istanbul`.
+//! Built-in holiday rows for the served cash-equity venues whose tables
+//! shipped with the 2025-2027 wave: `b3`, `tadawul` and `borsa_istanbul`
+//! (2025-2026), and the APAC venues `nzx` (2025 through the operator's
+//! 2027-01-04 horizon), `asx` (2025-2027) and `sgx_securities` (2025-2026).
 //!
-//! Every case below goes through the public identity-backed calendar, and each
-//! venue's section fences its own kinds: closures per year, the half-day and
-//! late-open instants at second granularity so a row that moves fails, an
-//! ordinary weekday inside the window, the end-exclusive close, the coverage
-//! endpoints, the pre-floor refusal, and a per-kind census so a row cannot
-//! change kind silently.
+//! Every case below goes through the public identity-backed calendar, the
+//! same surface the consumer routes through. Each venue's section fences its
+//! own kinds: closures per year, the half-day and late-open instants at
+//! second granularity so a row that moves fails, an ordinary weekday inside
+//! the window, the end-exclusive close, the coverage endpoints, the pre-floor
+//! refusal, and a per-kind census so a row cannot change kind silently.
 //!
 //! The Islamic-calendar rows (Tadawul) and the Carnival rows (B3) are fenced
 //! against the dates the operators printed, not against a computed calendar:
 //! each entry names its own printed day, so a row keyed to a computed rather
 //! than printed date fails here.
+//!
+//! The APAC modules below walk every shipped row of their windows and tally
+//! the kinds per year against the operators' sheets — which is the mutation
+//! fence: flipping any one shipped row (its date, its kind or its instant)
+//! fails that walk.
+
+#![expect(
+    clippy::panic,
+    reason = "the shared walk helpers below are plain functions rather than #[test] \
+              functions, so the test switches in clippy.toml do not reach them; a \
+              kind an operator does not print must fail the walk loudly"
+)]
 
 use super::prelude::*;
 
-use chrono::TimeZone as _;
-use chrono_tz::{America, Asia, Europe};
+use chrono::{Datelike as _, TimeDelta, TimeZone as _, Utc};
+use chrono_tz::{America, Asia, Australia, Europe, Pacific};
 use exchange_hours::{
     CalendarQueryError, CalendarResolution, Exchange, ExchangeCalendar, Holiday, HolidayKind,
     SessionKind, calendar_for_exchange,
@@ -132,6 +146,98 @@ fn assert_ordinary_weekday(
         !calendar.is_open(close_at).expect("a covered date answers"),
         "{date:?} closes are end-exclusive"
     );
+}
+
+/// One nanosecond before a venue-local wall-clock instant, for end-exclusive
+/// bounds.
+fn before(
+    tz: chrono_tz::Tz,
+    date: (i32, u32, u32),
+    time: (u32, u32, u32),
+) -> chrono::DateTime<Utc> {
+    tz.with_ymd_and_hms(date.0, date.1, date.2, time.0, time.1, time.2)
+        .single()
+        .expect("fixture must be an unambiguous local instant")
+        .with_timezone(&Utc)
+        - TimeDelta::nanoseconds(1)
+}
+
+/// One walked row: its venue-local date as a triple, its kind label, and the
+/// scalar instant the kind states when it states one.
+type WalkedRow = ((i32, u32, u32), String, Option<u32>);
+
+/// Asserts `date` is a printed closure: the row kind, no session in either
+/// phase, and a shut envelope at intraday probes.
+fn assert_closure(calendar: ExchangeCalendar, date: (i32, u32, u32), label: &str) {
+    let d = day(date.0, date.1, date.2);
+    assert_eq!(
+        calendar.holiday_on(d).map(Holiday::kind),
+        Some(HolidayKind::Closed),
+        "{label}: {date:?} carries a printed closure"
+    );
+    assert!(
+        calendar
+            .is_closed_trade_date(d, SessionKind::Both)
+            .expect("the coverage contract must answer a covered date"),
+        "{label}: {date:?} has no session in either phase"
+    );
+}
+
+/// Counts every row in the table's window by kind, per year, and returns the
+/// per-year tallies so each venue's walk can compare them against the sheets.
+fn rows_per_year(calendar: ExchangeCalendar) -> Vec<WalkedRow> {
+    let coverage = calendar
+        .holiday_coverage()
+        .expect("these venues ship built-in tables");
+    let mut rows = Vec::new();
+    let mut date = coverage.first();
+    while date <= coverage.last() {
+        if let Some(holiday) = calendar.holiday_on(date) {
+            // `HolidayKind` is `#[non_exhaustive]`: a kind these operators do
+            // not print fails the walk loudly instead of tallying silently.
+            let instant = match holiday.kind() {
+                HolidayKind::Closed
+                | HolidayKind::Unsourced
+                | HolidayKind::ReplacementBlocks(_) => None,
+                HolidayKind::EarlyClose { close_ssm } => Some(close_ssm),
+                other @ (HolidayKind::LateOpen { .. }
+                | HolidayKind::LateOpenAndEarlyClose { .. }) => {
+                    panic!("{date} ships a kind these operators do not print: {other:?}")
+                }
+                other => panic!("{date} ships an unknown kind: {other:?}"),
+            };
+            let kind = match holiday.kind() {
+                HolidayKind::Closed => "closed".to_owned(),
+                HolidayKind::ReplacementBlocks(_) => "replacement".to_owned(),
+                HolidayKind::EarlyClose { .. } => "early close".to_owned(),
+                HolidayKind::Unsourced => "unsourced".to_owned(),
+                other => panic!("{date} ships an unknown kind: {other:?}"),
+            };
+            rows.push(((date.year(), date.month(), date.day()), kind, instant));
+        }
+        date = date
+            .succ_opt()
+            .expect("the windows stay inside the representable calendar");
+    }
+    rows
+}
+
+fn tally(rows: &[WalkedRow], year: i32) -> (usize, usize, usize) {
+    let mut closed = 0;
+    let mut early = 0;
+    let mut replacement = 0;
+    for (date, kind, _) in rows {
+        if date.0 != year {
+            continue;
+        }
+        match kind.as_str() {
+            "closed" => closed += 1,
+            "early close" => early += 1,
+            "replacement" => replacement += 1,
+            other => panic!("{year} ships an unexpected kind: {other}"),
+        }
+    }
+    (closed, early, replacement)
 }
 
 // ---------------------------------------------------------------------------
@@ -688,5 +794,690 @@ fn every_table_detaches_to_the_normal_week() {
             None,
             "{exchange:?}: the detached snapshot carries no row"
         );
+    }
+}
+mod nzx {
+    use super::*;
+
+    fn nzx() -> ExchangeCalendar {
+        calendar_for_exchange(Exchange::Nzx)
+    }
+
+    fn akl(date: (i32, u32, u32), time: (u32, u32, u32)) -> chrono::DateTime<Utc> {
+        Pacific::Auckland
+            .with_ymd_and_hms(date.0, date.1, date.2, time.0, time.1, time.2)
+            .single()
+            .expect("fixture must be an unambiguous Auckland instant")
+            .with_timezone(&Utc)
+    }
+
+    #[test]
+    fn a_representative_closure_answers_in_each_published_year() {
+        let calendar = nzx();
+        for date in [(2025, 2, 6), (2026, 4, 27), (2027, 1, 4)] {
+            assert_closure(calendar, date, "nzx");
+        }
+        // ANZAC Day 2026: the sheet mondayises the Saturday to its own printed
+        // Monday. The Saturday itself is closed by the normal week and ships
+        // no row.
+        assert_eq!(
+            calendar.holiday_on(day(2026, 4, 25)).map(Holiday::kind),
+            None
+        );
+        assert!(
+            calendar
+                .is_closed_trade_date(day(2026, 4, 25), SessionKind::Both)
+                .expect("the coverage contract must answer a covered date")
+        );
+        assert!(
+            !calendar
+                .is_open(akl((2026, 4, 27), (11, 0, 0)))
+                .expect("covered")
+        );
+    }
+
+    #[test]
+    fn an_abbreviated_day_restates_the_operators_own_grid() {
+        let calendar = nzx();
+        let d = day(2025, 12, 24);
+        let Some(HolidayKind::ReplacementBlocks(blocks)) =
+            calendar.holiday_on(d).map(Holiday::kind)
+        else {
+            panic!("2025-12-24 must ship a replacement block set");
+        };
+        assert_eq!(
+            blocks
+                .iter()
+                .map(|block| (
+                    block.kind(),
+                    block.open_day_offset(),
+                    block.open_ssm(),
+                    block.close_ssm()
+                ))
+                .collect::<Vec<_>>(),
+            vec![
+                (
+                    exchange_hours::ExceptionBlockKind::Extended,
+                    0,
+                    30_600,
+                    36_000
+                ),
+                (
+                    exchange_hours::ExceptionBlockKind::Regular,
+                    0,
+                    36_000,
+                    45_900
+                ),
+                (
+                    exchange_hours::ExceptionBlockKind::OrderEntry,
+                    0,
+                    45_900,
+                    46_770
+                ),
+                (
+                    exchange_hours::ExceptionBlockKind::Extended,
+                    0,
+                    46_770,
+                    46_830
+                ),
+            ],
+            "the blocks are the operator's abbreviated column, phase for phase"
+        );
+        // Pre-open prints (reported off-market trades) and the shortened
+        // regular session answer open ...
+        assert!(
+            calendar
+                .is_open(akl((2025, 12, 24), (9, 0, 0)))
+                .expect("covered")
+        );
+        assert!(
+            calendar
+                .is_open(akl((2025, 12, 24), (11, 0, 0)))
+                .expect("covered")
+        );
+        // ... the Pre-Close queue stays out of `is_open` ...
+        assert!(
+            !calendar
+                .is_open(akl((2025, 12, 24), (12, 50, 0)))
+                .expect("covered")
+        );
+        // ... the closing-uncross envelope is tradeable to its 13:00:30 end,
+        // end-exclusive ...
+        assert!(
+            calendar
+                .is_open(akl((2025, 12, 24), (12, 59, 45)))
+                .expect("covered")
+        );
+        assert!(
+            !calendar
+                .is_open(akl((2025, 12, 24), (13, 0, 30)))
+                .expect("covered")
+        );
+        // ... and nothing answers after the day's own close, not even the
+        // ordinary 17:00 envelope.
+        assert!(
+            !calendar
+                .is_open(akl((2025, 12, 24), (16, 0, 0)))
+                .expect("covered")
+        );
+        assert!(
+            !calendar
+                .is_open(akl((2025, 12, 24), (17, 0, 0)))
+                .expect("covered")
+        );
+        // The trade date still resolves to the abbreviated day itself.
+        assert_eq!(
+            calendar
+                .trade_date(akl((2025, 12, 24), (11, 0, 0)))
+                .expect("covered"),
+            Some(d)
+        );
+    }
+
+    #[test]
+    fn an_ordinary_weekday_answers_and_closes_end_exclusively() {
+        let calendar = nzx();
+        // Tuesday 2025-07-15: inside the window, no row, normal envelope.
+        assert_eq!(calendar.holiday_on(day(2025, 7, 15)), None);
+        assert!(
+            calendar
+                .is_open(akl((2025, 7, 15), (11, 0, 0)))
+                .expect("covered")
+        );
+        assert_eq!(
+            calendar
+                .session_bounds(akl((2025, 7, 15), (11, 0, 0)))
+                .expect("covered"),
+            Some((
+                akl((2025, 7, 15), (10, 0, 0)),
+                akl((2025, 7, 15), (16, 45, 0))
+            ))
+        );
+        // The closing-uncross envelope runs to 17:00:30, end-exclusive.
+        assert!(
+            calendar
+                .is_open(akl((2025, 7, 15), (17, 0, 0)))
+                .expect("covered")
+        );
+        assert!(
+            calendar
+                .is_open(before(Pacific::Auckland, (2025, 7, 15), (17, 0, 30)))
+                .expect("covered")
+        );
+        assert!(
+            !calendar
+                .is_open(akl((2025, 7, 15), (17, 0, 30)))
+                .expect("covered")
+        );
+    }
+
+    #[test]
+    fn the_window_refuses_on_both_sides_of_the_operators_horizon() {
+        let calendar = nzx();
+        let coverage = calendar.holiday_coverage().expect("nzx ships a table");
+        assert_eq!(coverage.first(), day(2025, 1, 1));
+        assert_eq!(coverage.last(), day(2027, 1, 4));
+        // Before the support floor.
+        assert!(matches!(
+            calendar.is_open(akl((2009, 12, 31), (11, 0, 0))),
+            Err(CalendarQueryError::BeforeSupportFloor { .. })
+        ));
+        // Past the operator's horizon: 2027-01-05 is a Tuesday NZX has not
+        // published, so the identity refuses rather than claiming normal.
+        assert!(matches!(
+            calendar.is_open(akl((2027, 1, 5), (11, 0, 0))),
+            Err(CalendarQueryError::OutsideCoveredRange { .. })
+        ));
+        // 2027-01-04 itself is the horizon day and is a printed closure.
+        assert!(
+            !calendar
+                .is_open(akl((2027, 1, 4), (11, 0, 0)))
+                .expect("covered")
+        );
+        // Detaching the table restores the pure normal week everywhere.
+        assert_eq!(calendar.without_holidays().holiday_coverage(), None);
+        assert!(
+            calendar
+                .without_holidays()
+                .is_open(akl((2027, 1, 5), (11, 0, 0)))
+                .expect("a detached snapshot claims no coverage")
+        );
+    }
+
+    #[test]
+    fn every_shipped_row_matches_the_sheets_per_year() {
+        let rows = rows_per_year(nzx());
+        assert_eq!(rows.len(), 28, "24 closures and 4 abbreviated days");
+        assert_eq!(
+            tally(&rows, 2025),
+            (11, 0, 2),
+            "2025: eleven closures, two abbreviated days"
+        );
+        assert_eq!(
+            tally(&rows, 2026),
+            (11, 0, 2),
+            "2026: eleven closures, two abbreviated days"
+        );
+        assert_eq!(
+            tally(&rows, 2027),
+            (2, 0, 0),
+            "2027: the two New Year closures only"
+        );
+        // The four abbreviated days carry no scalar instant: flipping one to
+        // an early close, or moving a closure to a neighbour date, breaks the
+        // tallies above or the shape here.
+        for (date, kind, instant) in &rows {
+            if kind == "replacement" {
+                assert!(
+                    matches!(date, (2025 | 2026, 12, 24 | 31)),
+                    "the abbreviated days are exactly the sheet's four: {date:?}"
+                );
+            }
+            assert_eq!(
+                *instant, None,
+                "no nzx row states a scalar instant: {date:?}"
+            );
+        }
+    }
+}
+
+mod asx {
+    use super::*;
+
+    fn asx() -> ExchangeCalendar {
+        calendar_for_exchange(Exchange::Asx)
+    }
+
+    fn syd(date: (i32, u32, u32), time: (u32, u32, u32)) -> chrono::DateTime<Utc> {
+        Australia::Sydney
+            .with_ymd_and_hms(date.0, date.1, date.2, time.0, time.1, time.2)
+            .single()
+            .expect("fixture must be an unambiguous Sydney instant")
+            .with_timezone(&Utc)
+    }
+
+    #[test]
+    fn a_representative_closure_answers_in_each_published_year() {
+        let calendar = asx();
+        for date in [(2025, 12, 25), (2026, 4, 6), (2027, 12, 27)] {
+            assert_closure(calendar, date, "asx");
+        }
+        // Australia Day 2025 sits below the ledger horizon: the SR15-era
+        // normal week is sourced only from 2025-06-23, so LAW-COVERAGE has
+        // the identity refuse the date even though the holiday row ships.
+        // `holiday_on` still reports the printed row.
+        assert_eq!(
+            calendar.holiday_on(day(2025, 1, 27)).map(Holiday::kind),
+            Some(HolidayKind::Closed)
+        );
+        assert!(matches!(
+            calendar.is_closed_trade_date(day(2025, 1, 27), SessionKind::Both),
+            Err(CalendarQueryError::OutsideCoveredRange { .. })
+        ));
+        // The 2027 Christmas row is the sheet's own substitute date.
+        assert!(
+            !calendar
+                .is_open(syd((2027, 12, 27), (11, 0, 0)))
+                .expect("covered"),
+            "the substitute Monday is closed"
+        );
+        // ANZAC Day 2027 prints `OPEN` on the sheet: audited normal, no row.
+        assert_eq!(
+            calendar.holiday_on(day(2027, 4, 26)).map(Holiday::kind),
+            None
+        );
+        assert!(
+            calendar
+                .is_open(syd((2027, 4, 26), (11, 0, 0)))
+                .expect("covered")
+        );
+        // ANZAC Day 2026 prints `CLOSED` against the Saturday; the row
+        // restates it and the answer matches the normal week.
+        assert_eq!(
+            calendar.holiday_on(day(2026, 4, 25)).map(Holiday::kind),
+            Some(HolidayKind::Closed)
+        );
+    }
+
+    #[test]
+    fn the_close_early_days_clip_at_the_sheets_own_1410() {
+        let calendar = asx();
+        let cutoff = syd((2025, 12, 24), (14, 10, 0));
+        assert_eq!(
+            calendar.holiday_on(day(2025, 12, 24)).map(Holiday::kind),
+            Some(HolidayKind::EarlyClose {
+                close_ssm: 14 * 3_600 + 10 * 60
+            })
+        );
+        // Open to the last instant before the printed cessation ...
+        assert!(
+            calendar
+                .is_open(before(Australia::Sydney, (2025, 12, 24), (14, 10, 0)))
+                .expect("covered")
+        );
+        // ... and closed at it: closes are end-exclusive.
+        assert!(!calendar.is_open(cutoff).expect("covered"));
+        assert_eq!(
+            calendar
+                .session_bounds(syd((2025, 12, 24), (13, 0, 0)))
+                .expect("covered"),
+            Some((syd((2025, 12, 24), (10, 0, 0)), cutoff))
+        );
+        assert_eq!(
+            calendar
+                .candle_end(
+                    syd((2025, 12, 24), (13, 0, 0)),
+                    exchange_hours::CalendarResolution::Daily
+                )
+                .expect("covered"),
+            Some(cutoff)
+        );
+        // The afternoon blocks start after the clip and are gone with it.
+        assert!(
+            !calendar
+                .is_open(syd((2025, 12, 24), (16, 15, 0)))
+                .expect("covered")
+        );
+        assert_eq!(
+            calendar
+                .trade_date(syd((2025, 12, 24), (13, 0, 0)))
+                .expect("covered"),
+            Some(day(2025, 12, 24)),
+            "the shortened day keeps its trade date"
+        );
+    }
+
+    #[test]
+    fn an_ordinary_weekday_answers_and_closes_end_exclusively() {
+        let calendar = asx();
+        assert_eq!(calendar.holiday_on(day(2025, 7, 15)), None);
+        assert!(
+            calendar
+                .is_open(syd((2025, 7, 15), (11, 0, 0)))
+                .expect("covered")
+        );
+        assert!(
+            calendar
+                .is_open(syd((2025, 7, 15), (12, 30, 0)))
+                .expect("covered")
+        );
+        // The envelope's last tradeable instant is the 16:21:30 Post Close
+        // end; closes are end-exclusive.
+        assert!(
+            calendar
+                .is_open(syd((2025, 7, 15), (16, 15, 0)))
+                .expect("covered")
+        );
+        assert!(
+            calendar
+                .is_open(before(Australia::Sydney, (2025, 7, 15), (16, 21, 30)))
+                .expect("covered")
+        );
+        assert!(
+            !calendar
+                .is_open(syd((2025, 7, 15), (16, 21, 30)))
+                .expect("covered")
+        );
+    }
+
+    #[test]
+    fn the_window_refuses_before_the_floor_and_the_sheet_has_no_forward_gap() {
+        let calendar = asx();
+        let coverage = calendar.holiday_coverage().expect("asx ships a table");
+        assert_eq!(coverage.first(), day(2025, 1, 1));
+        assert_eq!(coverage.last(), day(2027, 12, 31));
+        assert!(matches!(
+            calendar.is_open(syd((2009, 12, 31), (11, 0, 0))),
+            Err(CalendarQueryError::BeforeSupportFloor { .. })
+        ));
+        // ASX publishes the full 2027 sheet, so the last trading day of the
+        // window — a half day, `CLOSE EARLY` — answers rather than refuses.
+        assert!(
+            calendar
+                .is_open(syd((2027, 12, 31), (11, 0, 0)))
+                .expect("the operator publishes 2027")
+        );
+        assert!(
+            !calendar
+                .is_open(syd((2027, 12, 31), (14, 10, 0)))
+                .expect("covered")
+        );
+        assert_eq!(calendar.without_holidays().holiday_coverage(), None);
+    }
+
+    #[test]
+    fn every_shipped_row_matches_the_sheets_per_year() {
+        let rows = rows_per_year(asx());
+        assert_eq!(rows.len(), 29, "23 closures and six 14:10 early closes");
+        assert_eq!(
+            tally(&rows, 2025),
+            (8, 2, 0),
+            "2025: eight closures, two half days"
+        );
+        assert_eq!(
+            tally(&rows, 2026),
+            (8, 2, 0),
+            "2026: eight closures (the Saturday ANZAC included), two half days"
+        );
+        assert_eq!(
+            tally(&rows, 2027),
+            (7, 2, 0),
+            "2027: seven closures (ANZAC prints OPEN), two half days"
+        );
+        for (date, _, instant) in &rows {
+            if instant.is_some() {
+                assert_eq!(*instant, Some(14 * 3_600 + 10 * 60), "{date:?}");
+            }
+        }
+    }
+}
+
+mod sgx_securities {
+    use super::*;
+
+    fn sgx() -> ExchangeCalendar {
+        calendar_for_exchange(Exchange::SgxSecurities)
+    }
+
+    fn sgt(date: (i32, u32, u32), time: (u32, u32, u32)) -> chrono::DateTime<Utc> {
+        Asia::Singapore
+            .with_ymd_and_hms(date.0, date.1, date.2, time.0, time.1, time.2)
+            .single()
+            .expect("fixture must be an unambiguous Singapore instant")
+            .with_timezone(&Utc)
+    }
+
+    #[test]
+    fn a_representative_closure_answers_in_each_published_year() {
+        let calendar = sgx();
+        for date in [(2025, 1, 29), (2026, 6, 1)] {
+            assert_closure(calendar, date, "sgx_securities");
+        }
+        // The 2026 Vesak closure is MOM's own Sunday substitution moved to
+        // its Monday; the Sunday itself is closed by the normal week and
+        // ships no row.
+        assert_eq!(
+            calendar.holiday_on(day(2026, 5, 31)).map(Holiday::kind),
+            None
+        );
+        assert!(
+            !calendar
+                .is_open(sgt((2026, 6, 1), (10, 0, 0)))
+                .expect("covered")
+        );
+        // Hari Raya Puasa 2026 falls on a Saturday: MOM prints no
+        // substitution, so no row and no weekday answer changes.
+        assert_eq!(
+            calendar.holiday_on(day(2026, 3, 21)).map(Holiday::kind),
+            None
+        );
+    }
+
+    #[test]
+    fn the_half_days_restate_the_operators_printed_grid() {
+        let calendar = sgx();
+        let d = day(2026, 2, 16);
+        let Some(HolidayKind::ReplacementBlocks(blocks)) =
+            calendar.holiday_on(d).map(Holiday::kind)
+        else {
+            panic!("2026-02-16 must ship a replacement block set");
+        };
+        assert_eq!(
+            blocks
+                .iter()
+                .map(|block| (
+                    block.kind(),
+                    block.open_day_offset(),
+                    block.open_ssm(),
+                    block.close_ssm()
+                ))
+                .collect::<Vec<_>>(),
+            vec![
+                (
+                    exchange_hours::ExceptionBlockKind::OrderEntry,
+                    0,
+                    30_600,
+                    32_280
+                ),
+                (
+                    exchange_hours::ExceptionBlockKind::Extended,
+                    0,
+                    32_280,
+                    32_400
+                ),
+                (
+                    exchange_hours::ExceptionBlockKind::Regular,
+                    0,
+                    32_400,
+                    43_200
+                ),
+                (
+                    exchange_hours::ExceptionBlockKind::OrderEntry,
+                    0,
+                    43_200,
+                    43_440
+                ),
+                (
+                    exchange_hours::ExceptionBlockKind::Extended,
+                    0,
+                    43_440,
+                    44_160
+                ),
+            ],
+            "the blocks are the operator's half-day column, phase for phase"
+        );
+        // The morning trades ...
+        assert!(
+            calendar
+                .is_open(sgt((2026, 2, 16), (9, 30, 0)))
+                .expect("covered")
+        );
+        assert!(
+            calendar
+                .is_open(sgt((2026, 2, 16), (11, 0, 0)))
+                .expect("covered")
+        );
+        // ... the Pre-Close queue stays out of `is_open` ...
+        assert!(
+            !calendar
+                .is_open(sgt((2026, 2, 16), (12, 2, 0)))
+                .expect("covered")
+        );
+        // ... the closing Non-Cancel and Trade at Close print to the printed
+        // 12:16 close, end-exclusive ...
+        assert!(
+            calendar
+                .is_open(sgt((2026, 2, 16), (12, 5, 0)))
+                .expect("covered")
+        );
+        assert!(
+            calendar
+                .is_open(sgt((2026, 2, 16), (12, 10, 0)))
+                .expect("covered")
+        );
+        assert!(
+            calendar
+                .is_open(before(Asia::Singapore, (2026, 2, 16), (12, 16, 0)))
+                .expect("covered")
+        );
+        assert!(
+            !calendar
+                .is_open(sgt((2026, 2, 16), (12, 16, 0)))
+                .expect("covered")
+        );
+        // ... the trade date still resolves to the half day itself ...
+        assert_eq!(
+            calendar
+                .trade_date(sgt((2026, 2, 16), (11, 0, 0)))
+                .expect("covered"),
+            Some(d)
+        );
+        // ... and the afternoon is gone.
+        assert!(
+            !calendar
+                .is_open(sgt((2026, 2, 16), (14, 0, 0)))
+                .expect("covered")
+        );
+        assert!(
+            !calendar
+                .is_open(sgt((2026, 2, 16), (17, 10, 0)))
+                .expect("covered")
+        );
+    }
+
+    #[test]
+    fn an_ordinary_weekday_answers_with_its_lunch_gap_and_end_exclusive_close() {
+        let calendar = sgx();
+        assert_eq!(calendar.holiday_on(day(2025, 7, 15)), None);
+        assert!(
+            calendar
+                .is_open(sgt((2025, 7, 15), (10, 0, 0)))
+                .expect("covered")
+        );
+        assert!(
+            !calendar
+                .is_open(sgt((2025, 7, 15), (12, 30, 0)))
+                .expect("covered")
+        );
+        assert!(
+            calendar
+                .is_open(sgt((2025, 7, 15), (14, 0, 0)))
+                .expect("covered")
+        );
+        // The envelope's last tradeable instant is the 17:16 Trade-at-Close
+        // end; closes are end-exclusive.
+        assert!(
+            calendar
+                .is_open(sgt((2025, 7, 15), (17, 10, 0)))
+                .expect("covered")
+        );
+        assert!(
+            calendar
+                .is_open(before(Asia::Singapore, (2025, 7, 15), (17, 16, 0)))
+                .expect("covered")
+        );
+        assert!(
+            !calendar
+                .is_open(sgt((2025, 7, 15), (17, 16, 0)))
+                .expect("covered")
+        );
+    }
+
+    #[test]
+    fn the_window_refuses_past_the_operators_published_horizon() {
+        let calendar = sgx();
+        let coverage = calendar.holiday_coverage().expect("sgx ships a table");
+        assert_eq!(coverage.first(), day(2025, 1, 1));
+        assert_eq!(coverage.last(), day(2026, 12, 31));
+        assert!(matches!(
+            calendar.is_open(sgt((2009, 12, 31), (10, 0, 0))),
+            Err(CalendarQueryError::BeforeSupportFloor { .. })
+        ));
+        // 2027-01-01 is an SGX holiday in fact, but the operator has
+        // published no 2027 half-day schedule, so the identity must refuse
+        // the date outright rather than answer from a normal week it has not
+        // audited. The detached snapshot still answers the pure normal week.
+        let outside = sgt((2027, 1, 4), (10, 0, 0));
+        assert!(matches!(
+            calendar.is_open(outside),
+            Err(CalendarQueryError::OutsideCoveredRange { .. })
+        ));
+        assert!(
+            calendar
+                .without_holidays()
+                .is_open(outside)
+                .expect("a detached snapshot claims no coverage")
+        );
+        assert_eq!(calendar.without_holidays().holiday_coverage(), None);
+    }
+
+    #[test]
+    fn every_shipped_row_matches_the_sheets_per_year() {
+        let rows = rows_per_year(sgx());
+        assert_eq!(rows.len(), 25, "19 closures and six printed half-day grids");
+        assert_eq!(
+            tally(&rows, 2025),
+            (9, 0, 3),
+            "2025: nine closures, three half days"
+        );
+        assert_eq!(
+            tally(&rows, 2026),
+            (10, 0, 3),
+            "2026: ten closures (three Sunday substitutions), three half days"
+        );
+        // The half days are exactly the operator's six printed dates, and no
+        // row anywhere in the window states a scalar instant.
+        for (date, kind, instant) in &rows {
+            assert_eq!(*instant, None, "{date:?}");
+            if kind == "replacement" {
+                assert!(
+                    matches!(
+                        date,
+                        (2025, 1, 28) | (2025 | 2026, 12, 24 | 31) | (2026, 2, 16)
+                    ),
+                    "the half days are exactly the sheet's six: {date:?}"
+                );
+            }
+        }
     }
 }

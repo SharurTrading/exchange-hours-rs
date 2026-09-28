@@ -272,6 +272,7 @@ per-record review before any exception can drive runtime.
 ### `APAC-ASX`
 
 - **Official current/rulebook:** [ASX cash-market hours](https://www.asx.com.au/markets/market-resources/trading-hours-calendar/cash-market-trading-hours) and ASX Operating Rules Procedures Appendix 4013.
+- **Holiday calendar (watch list entry, added 2026-09-28 UTC):** the operator's [cash-market trading calendar](https://www.asx.com.au/markets/market-resources/trading-hours-calendar/cash-market-trading-hours/trading-calendar) page, whose per-year sheets govern the built-in rows for each year; re-checked monthly per LAW-WATCH.
 - **Notices/evidence:** [Service Release 15 notice](https://www.asxonline.com/public/notices/2025/may/0473.25.05.html) and its [marked procedure amendments](https://www.asxonline.com/content/dam/asxonline/public/notices/2025/april/asx-sr15asx-operating-rule-procedure-amendments.pdf).
 
 <a id="apac-tmx-australia"></a>
@@ -286,6 +287,7 @@ per-record review before any exception can drive runtime.
 ### `APAC-NZX`
 
 - **Official current/rulebook:** [NZX trading hours](https://www.nzx.com/learning/help-reference/trading-hours) and [anatomy of a trading day](https://www.nzx.com/learning/issuer-participant-resources/nzx-trading/anatomy-of-a-trading-day).
+- **Holiday calendar (watch list entry, added 2026-09-28 UTC):** the operator's [trading hours](https://www.nzx.com/learning/help-reference/trading-hours) page, whose rolling `Market Holidays & Trading Hours` table of roughly the next thirteen months governs the built-in rows; re-checked monthly per LAW-WATCH — NZX prints no consolidated year sheets, so each table refresh extends the window.
 - **Notices/evidence:** [announcement 350919](https://www.nzx.com/announcements/350919) and [announcement 353837](https://www.nzx.com/announcements/353837).
 
 <a id="apac-jpx"></a>
@@ -318,6 +320,7 @@ per-record review before any exception can drive runtime.
 ### `APAC-SGX-SECURITIES`
 
 - **Official current/rulebook:** [SGX-ST Regulatory Notice 8.2.1](https://rulebook.sgx.com/rulebook/regulatory-notice-821-trading-hours-market-phases-application-market-phases-and-principles).
+- **Holiday calendar (watch list entry, added 2026-09-28 UTC):** the operator's [securities trading](https://www.sgx.com/stock-exchange/trading) page — read as bytes from SGX's own content API, the feed the page renders — whose closure designation and half-day statements govern the built-in rows, with the [MOM public-holidays calendar](https://www.mom.gov.sg/employment-practices/public-holidays) the page itself names; re-checked monthly per LAW-WATCH.
 - **Notices/evidence:** no consolidated schedule-only feed is indexed here; reopen [Regulatory Notice 8.2.1](https://rulebook.sgx.com/rulebook/regulatory-notice-821-trading-hours-market-phases-application-market-phases-and-principles) and the exact 2011 rule and 2017/2019 operator announcements beside the owner timeline.
 
 <a id="apac-bursa"></a>

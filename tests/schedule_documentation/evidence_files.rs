@@ -1340,8 +1340,11 @@ fn declaring_text(name: &str, module: &str, text: &str, depth: u32) -> Option<St
               module and must fail loudly rather than mis-read one"
 )]
 fn stated_instants(kind: &str, module: &str, module_text: &str) -> Vec<String> {
-    /// Reads one `h * 3_600 + m * 60` expression as minutes since midnight.
-    fn minutes(expression: &str) -> u32 {
+    /// Reads one `h * 3_600 + m * 60` (or `h * 3_600 + m * 60 + s`)
+    /// expression as seconds since midnight. Some operators print half-day
+    /// closes and auction-envelope slices at second granularity (NZX's
+    /// 12:59:30 pre-close slice), so the parser must read the seconds term.
+    fn seconds_since_midnight(expression: &str) -> u32 {
         expression
             .split('+')
             .map(|term| {
@@ -1358,9 +1361,13 @@ fn stated_instants(kind: &str, module: &str, module_text: &str) -> Vec<String> {
                     })
                     .collect::<Vec<_>>();
                 match factors.as_slice() {
-                    [hours, 3_600] => hours * 60,
-                    [count, 60] => *count,
-                    _ => panic!("a holiday instant reads `h * 3_600 + m * 60`: {expression}"),
+                    [hours, 3_600] => hours * 3_600,
+                    [count, 60] => count * 60,
+                    [seconds] => *seconds,
+                    _ => panic!(
+                        "a holiday instant reads `h * 3_600 + m * 60` or \
+                         `h * 3_600 + m * 60 + s`: {expression}"
+                    ),
                 }
             })
             .fold(0_u32, u32::saturating_add)
@@ -1376,8 +1383,17 @@ fn stated_instants(kind: &str, module: &str, module_text: &str) -> Vec<String> {
     }
 
     let stamp = |expression: &str| {
-        let total = minutes(expression);
-        format!("{:02}:{:02}", total / 60, total % 60)
+        let total = seconds_since_midnight(expression);
+        if total.is_multiple_of(60) {
+            format!("{:02}:{:02}", total / 3_600, (total % 3_600) / 60)
+        } else {
+            format!(
+                "{:02}:{:02}:{:02}",
+                total / 3_600,
+                (total % 3_600) / 60,
+                total % 60
+            )
+        }
     };
     match kind {
         // Both spellings occur in the crate: a module that imports the variant

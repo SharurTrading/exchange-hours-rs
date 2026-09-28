@@ -297,6 +297,7 @@ per-record review before any exception can drive runtime.
 - **Official current/rulebook:** [TSE domestic trading hours](https://www.jpx.co.jp/english/equities/trading/domestic/01.html), the [equities trading system](https://www.jpx.co.jp/english/systems/equities-trading/), and [ToSTNeT hours](https://www.jpx.co.jp/english/equities/trading/tostnet/02.html).
 - **Notices/evidence:** JPX's [official trading-hours transition table](https://www.jpx.co.jp/english/equities/trading/domestic/tvdivq0000006blj-att/tradinghours_eg.pdf), [2010 shareholder report](https://www.jpx.co.jp/english/corporate/investor-relations/shareholders/meeting/tvdivq000000958w-att/tse04.pdf), [Working Paper No.3](https://www.jpx.co.jp/corporate/research-study/working-paper/tvdivq0000008q5y-att/JPX_working_paper_No.3.pdf), [2024 extension appendix](https://www.jpx.co.jp/english/corporate/news/news-releases/1030/uorii50000002f2a-att/pressrelease_extension_of_trading_hours_en.pdf), and [final system-change release](https://www.jpx.co.jp/english/corporate/news/news-releases/1030/20241103-01.html).
 - **Status:** Primary. The current TSE venue union is 08:00–18:00 across arrowhead and ToSTNeT. JPX's own January-2010 FLEX order-book analysis directly records accepted orders from 08:00 at the audit floor, the shareholder report establishes the 17:30 ToSTNeT tail before that floor, and the exact 2024-11-05 extension to 18:00 is date-aware.
+- **Holidays:** the [JPX trading calendar](https://www.jpx.co.jp/english/corporate/about-jpx/calendar/) (current + next year; the rolling page is the watch entry point).
 
 <a id="apac-india-cash"></a>
 
@@ -305,6 +306,7 @@ per-record review before any exception can drive runtime.
 - **Official current/rulebook:** [NSE closing-auction session](https://www.nseindia.com/static/products-services/closing-auction-session), the [SEBI CAS circular](https://www.sebi.gov.in/legal/circulars/jan-2026/introduction-of-closing-auction-session-cas-in-the-equity-cash-segment-and-certain-modifications-in-the-pre-open-auction-session_99122.html), and BSE's [notices and circulars portal](https://www.bseindia.com/markets/MarketInfo/NoticesCirculars.aspx).
 - **Notices/evidence:** search the official [NSE exchange circulars](https://www.nseindia.com/resources/exchange-communication-circulars?PageSpeed=noscript) and [BSE notices and circulars](https://www.bseindia.com/markets/MarketInfo/NoticesCirculars.aspx); retain each exact annual report, release, and day-level notice beside `nse.rs` or `bse.rs`.
 - **Status:** keep NSE and BSE historical evidence distinct even where the current CAS envelope is coordinated.
+- **Holidays:** the NSE [trading holiday calendar](https://www.nseindia.com/resources/trading-holiday-calendar) and its annual `nsearchives.nseindia.com` holiday-list banners (the live site refuses plain clients; Wayback `id_` replays of the banners are the working channel); the Muhurat Trading circular when published closes the instants gap.
 
 <a id="apac-hkex"></a>
 
@@ -369,6 +371,7 @@ per-record review before any exception can drive runtime.
 - **Official current/rulebook:** the current [SSE trading rule](https://www.sse.com.cn/lawandrules/sselawsrules2025/stocks/exchange/c/c_20260424_10816482.shtml) and [SZSE trading rule](https://www.szse.cn/lawrules/rule/trade/current/t20260424_620190.html).
 - **Notices/evidence:** monitor the current [SSE rule](https://www.sse.com.cn/lawandrules/sselawsrules2025/stocks/exchange/c/c_20260424_10816482.shtml) and [SZSE rule](https://www.szse.cn/lawrules/rule/trade/current/t20260424_620190.html); exact dated releases remain beside their separate owner timelines.
 - **Status:** monitor both exchanges independently even when a national rule change is coordinated. Their January-2010-on venue unions include the 15:00–15:30 block-trading phase; later STAR/ChiNext changes do not create a new outer-envelope cutover.
+- **Holidays:** the SSE annual holiday notices (上证公告 numbering, e.g. 〔2024〕38号 and 〔2025〕45号, published each December for the next year) at [sse.com.cn](https://www.sse.com.cn/) — the current horizon's watch entry point.
 
 <a id="apac-krx"></a>
 

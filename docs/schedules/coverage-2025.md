@@ -52,8 +52,7 @@ APAC cash-equity venues turned **served** and their holiday tables shipped — 2
 2027 arrangements are unpublished) — together with the No-holiday statement's scope count, §4's
 complete-to-2027-12-31 note, the three endpoint rows and their scope count in
 [Artifact resolution](#artifact-resolution), and the consumer-routing note for the three venues'
-market-clock reachability.
-2026-11-26 one. Three dormant equities venues became served on 2026-09-28 UTC when their
+market-clock reachability. Three dormant equities venues became served on 2026-09-28 UTC when their
 2025-2027 holiday windows shipped — `borsa_istanbul` (2025-2026; 2027 unpublished),
 `tadawul` (2025-2027 complete) and `b3` (2025-2026; 2027 unpublished) — moving §1's heading and
 body no further, adding the three inventory rows below with the counts their tables derive, and

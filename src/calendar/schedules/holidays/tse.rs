@@ -10,7 +10,7 @@
 //! `jpx.co.jp`, which prints the current and next year. The 2025 table came
 //! from the page's Wayback `id_` replay (the live page rotates each January),
 //! and the 2026 and 2027 tables from the live page retrieved 2026-09-28; the
-//! 2026 table is identical in both. JPX states the scope in one sentence:
+//! 2026 table is identical in both except the live page's one extra weekend-printed row (Jan. 3 (Sat.) Market Holiday), which keys no row. JPX states the scope in one sentence:
 //! "JPX markets are closed on Saturdays, Sundays, national holidays, and on
 //! the dates indicated below", so the rows below are exactly the printed dates
 //! that fall on a weekday — a printed holiday that lands on a Saturday or

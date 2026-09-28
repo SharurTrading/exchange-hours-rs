@@ -272,11 +272,17 @@ fn withheld(calendar: ExchangeCalendar, date: NaiveDate) -> bool {
 /// instants the operator has not published, with no phase-level gap behind the
 /// denial either.
 fn date_level_incompleteness() -> &'static [(&'static str, usize)] {
-    &[("cbot", 261), ("iceus", 41), ("nasdaq", 4), ("nse_india", 2), ("xetra", 0)]
+    &[
+        ("cbot", 261),
+        ("iceus", 41),
+        ("nasdaq", 4),
+        ("nse_india", 2),
+        ("xetra", 0),
+    ]
 }
 
 /// `is_complete_on(SAMPLE)` agrees with the inventory's `Complete?` cell for all
-/// twenty-seven served scopes.
+/// thirty served scopes.
 ///
 /// The page and the API are one record, and this is the test that stops them
 /// disagreeing. The defect it was added for is why it is not a loop over the cell

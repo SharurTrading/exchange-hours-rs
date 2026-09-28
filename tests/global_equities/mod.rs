@@ -5,6 +5,7 @@
 mod bulk;
 mod current;
 mod history;
+mod holidays;
 
 mod prelude {
     pub(super) use chrono::{Duration, NaiveDate};

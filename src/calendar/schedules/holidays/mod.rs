@@ -36,6 +36,8 @@
 //! trading day shorter; a caller can never widen the crate's answer with a
 //! `DayPolicy`.
 
+mod b3;
+mod borsa_istanbul;
 mod cfe;
 mod coinbase_derivatives;
 mod eurex;
@@ -50,6 +52,7 @@ mod globex_livestock;
 mod globex_nikkei_225_dollar;
 mod ice_us;
 mod routing;
+mod tadawul;
 mod venues;
 
 pub(crate) use routing::table_for;

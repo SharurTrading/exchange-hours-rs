@@ -43,7 +43,11 @@ era and withholding 2025-01-01..2026-05-28. The `iceus` `floor+ dates`, `Unsrc f
 **47**/**40**, when the release incorporated the operator's September 2026 notices: the softs'
 BST-end week rows (2026-10-26..30, five per family) and the 2026 Thanksgiving instants, whose
 family disagreements ship as one more `Unsourced` venue date (2026-11-27) beside the restated
-2026-11-26 one.
+2026-11-26 one. Three dormant equities venues became served on 2026-09-28 UTC when their
+2025-2027 holiday windows shipped — `borsa_istanbul` (2025-2026; 2027 unpublished),
+`tadawul` (2025-2027 complete) and `b3` (2025-2026; 2027 unpublished) — moving §1's heading and
+body no further, adding the three inventory rows below with the counts their tables derive, and
+moving the no-holiday scope count from sixteen to nineteen.
 The inspection statement above
 still describes the revision the values were first derived at; the counts, windows and horizons it
 covers are otherwise unchanged.
@@ -114,6 +118,9 @@ served `iceus` identity, while `FANG`, `DOLLAR_INDEX`, `SUGAR_COFFEE_COCOA`, `CO
 | `coinbase_derivatives` | [coinbase_derivatives.rs](../../src/calendar/schedules/futures/us/coinbase_derivatives.rs) | 2026-09-11 … 2026-09-11 (1 row) | — | 2021-06-28..2026-09-07 | 58 | 2 | 2 `Unsourced` dates in the 2021-2024 era (#112) and 2026-09-08 onward (past the horizon) | complete to 2026-09-07 in 2025+; **incomplete across 2010-2027**: 2 `Unsourced` dates in 2021-2024 (#112) and the horizon before inspection | #86, #98, #116 |
 | `eurex` | [europe.rs](../../src/calendar/schedules/futures/international/europe.rs) | seasonal selector, no `revisions!` timeline | 2010-01-01 | 2025-01-01..2026-12-31 | 15 | 0 | the operator's `tba` German equity / equity-index scope, which withholds undated FDAX and FDXM closures across 2025 and 2026 (#157); 2027 is published twice with conflicting labels | **incomplete**: the German-scope closures are undated (#157) and 2027 is conflicted | #77, #86, #98, #116, #157 |
 | `iceus` | [ice_us.rs](../../src/calendar/schedules/futures/us/ice_us.rs) | 2017-11-07 … 2017-11-08 (2 rows) | — | 2025-01-01..2028-01-03 | 48 | 41 | 2025 answers, except the Independence Day and Christmas dates and the National Day of Mourning: fifteen 2025 dates are withheld (2025-01-09 … 2025-12-26) because the families disagree on them, four of them because the two 2025 holiday notices that would state the hours were not retrieved (#168); the 26 withheld 2026-2027 dates include the five 2026-10-26..30 BST-end dates the softs' DST-end notice opened at three instants and Thanksgiving 2026-11-27, whose instants the operator's notice states per family | **incomplete**: 41 `Unsourced` dates in 2025+ | #98, #116, #168 |
+| `borsa_istanbul` | [bist.rs](../../src/calendar/schedules/equities/europe/bist.rs) | 2012-03-02 … 2019-10-04 (8 rows) | 2012-03-02 | 2025-01-01..2026-12-31 | 25 | 0 | 2027 is not published by Borsa İstanbul: verified 2026-09-28 UTC, the `Resmi Tatil Günleri` page's year list runs 2012-2026 and no 2027 equity-market table is linked from it, so nothing past 2026-12-31 is claimed | complete to 2026-12-31 (2025-2026 sourced; 2027 unpublished) | #116 |
+| `tadawul` | [tadawul.rs](../../src/calendar/schedules/equities/africa_middle_east/tadawul.rs) | 2013-06-29 … 2020-05-31 (6 rows) | 2013-06-29 | 2025-01-01..2027-12-31 | 34 | 0 | none in 2025+; the pre-2013 grid below the horizon is carried, not sourced, and the 2013-06-29 and 2016-04-03 normal-week rows rest on state news-agency releases, a tier disclosure the evidence file carries | complete to 2027-12-31 in 2025+ | #116 |
+| `b3` | [b3.rs](../../src/calendar/schedules/equities/americas/b3.rs) | 2010-03-15 … 2013-07-08 (7 rows) + recurring New-York-offset selector | 2010-01-01 | 2025-01-01..2026-12-31 | 27 | 0 | 2027 is not published by B3: verified 2026-09-28 UTC, the operator released the 2026 calendar on 2026-01-09 and no 2027 calendar existed at retrieval, so nothing past 2026-12-31 is claimed | complete to 2026-12-31 (2025-2026 sourced; 2027 unpublished) | #116 |
 | `globex_equity_index` | [cme_group.rs](../../src/calendar/schedules/futures/us/cme_group.rs) | 2010-11-15 … 2026-08-22 (5 rows) | 2012-05-03 | 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 231 | 6 | the 16:00-16:15 CT Sunday quarter-hour, withheld (#79) | **incomplete**: the Sunday 16:00-16:15 CT quarter-hour is withheld (#79) | #79, #116, #117 |
 | `globex_energy` | [energy_metals.rs](../../src/calendar/schedules/futures/us/energy_metals.rs) | 2015-09-20 … 2026-08-22 (2 rows) | 2012-05-11 | 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 223 | 6 | the Sunday 16:00-16:15 CT quarter-hour, withheld (#79) | **incomplete**: the Sunday 16:00-16:15 CT quarter-hour is withheld (#79) | #79, #116, #117 |
 | `globex_grains` | [grains.rs](../../src/calendar/schedules/futures/us/grains.rs) | 2010-04-19 … 2015-07-05 (6 rows) | 2010-03-15 | 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 249 | 6 | the post-close queue's trade-date label: the crate dates the 14:30-16:00 CT queue by the session it feeds, so all 746 covered dates that carry it answer a trade date other than the operator's own printed one (#152) | **incomplete**: the post-close queue's trade-date label differs on every one of the 746 dates that carry the queue (#152) | #116, #117, #152 |
@@ -160,7 +167,7 @@ recorded rather than resolved in this stage.
 ### No-holiday and synthetic scopes
 
 Stated explicitly, as the stage requires. **No served scope is synthetic and no served scope is a
-no-holiday scope**: all sixteen ship a holiday table, and the row above for each names its windows.
+no-holiday scope**: all nineteen ship a holiday table, and the row above for each names its windows.
 The crate's two synthetic identities are `Exchange::Unknown`, the UTC 24x7 fallback, and
 `AlwaysOpen`; both are **dormant**, both answer `None` in `holidays/routing.rs`, and neither is a
 venue fact. They therefore contribute no inventory row, and no consumer instrument in the maps

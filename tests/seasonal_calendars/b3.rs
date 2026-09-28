@@ -17,92 +17,122 @@ fn b3_selects_current_short_and_northern_winter_long_grids() {
         calendar.hours_at(local(tz, short_day, (12, 0, 0)))
     );
 
+    // B3 is now a served identity whose built-in holiday table audits
+    // 2025-01-01..2026-12-31, so probes inside that window answer through the
+    // date-aware surface instead of refusing. 2026-08-19 is an ordinary
+    // Wednesday on the short grid.
     assert!(
-        calendar.is_open(local(tz, short_day, (9, 44, 59))).is_err(),
-        "a dormant identity refuses the closed probe"
+        !calendar
+            .is_open(local(tz, short_day, (9, 44, 59)))
+            .expect("an audited date answers"),
+        "the short day is closed before its pre-abertura"
     );
     // B3 pre-abertura: order entry ahead of the opening call.
     assert!(
         calendar
             .is_order_entry_only(local(tz, short_day, (9, 45, 0)))
-            .is_err(),
-        "a dormant identity refuses this probe"
+            .expect("an audited date answers"),
+        "the short day accepts pre-abertura orders from 09:45"
     );
     assert!(
         calendar
             .is_open_regular(local(tz, short_day, (10, 0, 0)))
-            .is_err(),
-        "a dormant identity refuses this probe"
+            .expect("an audited date answers"),
+        "the short day opens its regular session at 10:00"
     );
     assert!(
-        calendar
+        !calendar
             .is_open_regular(local(tz, short_day, (16, 55, 0)))
-            .is_err(),
-        "a dormant identity refuses the closed probe"
+            .expect("an audited date answers"),
+        "the regular session ends at 16:55"
     );
     assert!(
         calendar
             .is_open_extended(local(tz, short_day, (16, 55, 0)))
-            .is_err(),
-        "a dormant identity refuses this probe"
+            .expect("an audited date answers"),
+        "the closing call at 16:55 is extended"
     );
     assert!(
-        calendar.is_open(local(tz, short_day, (17, 0, 0))).is_err(),
-        "a dormant identity refuses the closed probe"
+        !calendar
+            .is_open(local(tz, short_day, (17, 0, 0)))
+            .expect("an audited date answers"),
+        "the short day is closed between the closing call and the after-market"
     );
     assert!(
         calendar
             .is_open_extended(local(tz, short_day, (17, 30, 0)))
-            .is_err(),
-        "a dormant identity refuses this probe"
+            .expect("an audited date answers"),
+        "the after-market envelope opens at 17:30"
     );
     assert!(
-        calendar.is_open(local(tz, short_day, (18, 0, 0))).is_err(),
-        "a dormant identity refuses the closed probe"
+        !calendar
+            .is_open(local(tz, short_day, (18, 0, 0)))
+            .expect("an audited date answers"),
+        "the after-market envelope ends at 18:00"
     );
     assert_eq!(
         regular_window(&calendar.hours_at(local(tz, short_day, (12, 0, 0)))),
         (10 * 3600, 16 * 3600 + 55 * 60)
     );
-    assert!(
+    // Five ordinary short-grid days: regular 10:00-16:55, closing call to
+    // 17:00, after-market 17:30-18:00.
+    assert_eq!(
         calendar
             .normal_week_open_seconds_containing(local(tz, short_day, (12, 0, 0)))
-            .is_err(),
-        "a dormant identity refuses this probe"
+            .expect("an audited week answers"),
+        5 * (24_900 + 300 + 1_800)
     );
 
     let long_day = (2026, 1, 14);
     assert!(
         calendar
             .is_open_regular(local(tz, long_day, (17, 30, 0)))
-            .is_err(),
-        "a dormant identity refuses this probe"
+            .expect("an audited date answers"),
+        "the long day still trades its regular session at 17:30"
     );
     assert!(
-        calendar
+        !calendar
             .is_open_regular(local(tz, long_day, (17, 55, 0)))
-            .is_err(),
-        "a dormant identity refuses the closed probe"
+            .expect("an audited date answers"),
+        "the long day's regular session ends at 17:55"
     );
     assert!(
         calendar
             .is_open_extended(local(tz, long_day, (17, 55, 0)))
-            .is_err(),
-        "a dormant identity refuses this probe"
+            .expect("an audited date answers"),
+        "the long day's closing call is extended"
     );
     assert!(
-        calendar.is_open(local(tz, long_day, (18, 0, 0))).is_err(),
-        "a dormant identity refuses the closed probe"
+        !calendar
+            .is_open(local(tz, long_day, (18, 0, 0)))
+            .expect("an audited date answers"),
+        "the long day closes at 18:00"
     );
     assert_eq!(
         regular_window(&calendar.hours_at(local(tz, long_day, (12, 0, 0)))),
         (10 * 3600, 17 * 3600 + 55 * 60)
     );
-    assert!(
+    // Five ordinary long-grid days: regular 10:00-17:55 and closing call to
+    // 18:00.
+    assert_eq!(
         calendar
             .normal_week_open_seconds_containing(local(tz, long_day, (12, 0, 0)))
-            .is_err(),
-        "a dormant identity refuses this probe"
+            .expect("an audited week answers"),
+        5 * (28_500 + 300)
+    );
+
+    // Outside the audited window the identity still refuses rather than
+    // answering: 2027 has no audited B3 holiday coverage yet.
+    let unaudited = local(tz, (2027, 8, 18), (12, 0, 0));
+    assert!(
+        calendar
+            .normal_week_open_seconds_containing(unaudited)
+            .is_err_and(|error| matches!(error, CalendarQueryError::OutsideCoveredRange { .. })),
+        "2027 is outside the audited window"
+    );
+    assert!(
+        calendar.is_open(unaudited).is_err(),
+        "a date past the audited window refuses"
     );
 }
 

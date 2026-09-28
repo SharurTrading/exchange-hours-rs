@@ -30,6 +30,33 @@ corrections (a venue's hours fixed against a primary source) go under
   evidence files and the ledger rather than an invented row. Artifacts and
   digests are in the research store under `holidays/raw/equities/`.
 
+- **Built-in holiday tables for `hkex`, `xetra` and `six`, 2025-2027
+  (2026-09-28 UTC).** The three cash-equity venues the consumer serves live now
+  ship their holiday and special-session rows and are **served** in the
+  verification ledger, reviewed monthly per LAW-WATCH.
+  - `hkex` — 51 rows (18 in 2025, 17 in 2026, 16 in 2027): the operator's own
+    `Trading Calendar and Holiday Schedule` page names every closure and every
+    shortened eve; the eves of Lunar New Year, Christmas and New Year are
+    early closes at the operator's printed half-day Closing Auction edge,
+    12:10 HKT.
+  - `xetra` — 23 rows (8 closures in 2025, 7 closures and 3 early closes in
+    2026, 5 closures in 2027): the FWB non-trading-days tables and per-year
+    calendar PDFs name the closures, and Christmas Eve and New Year's Eve are
+    full closures ("No trading but settlement is open"); the 20:00 CET shares
+    close ships only where the operator names the day and the instant
+    (Ascension, Whit Monday and Corpus Christi 2026).
+  - `six` — 29 rows (12 in 2025, 10 in 2026, 7 in 2027): the operator's
+    per-year `Trading Calendar` PDFs print closures only; weekend-falling
+    holidays are weekend shading and key no weekday row.
+
+  Evidence: `docs/evidence/hkex.md`, `docs/evidence/xetra.md`,
+  `docs/evidence/six.md` (research store:
+  `holidays/raw/equities/<venue>/2025-2027/`). Residual gaps recorded with
+  their closing conditions: Xetra's unpublished 2027 trading-holiday close
+  schedule (the 2025 20:00-close note names Börse Frankfurt only) — #200.
+  Recorded, not a gap: HKEX's 2026-12-28 check (verified: no conflict — the
+  general-holiday list names Saturday 2026-12-26; no closing condition).
+
 ## [1.0.0] - 2026-09-27
 
 First stable release. Version 1.0 establishes the canonical string identities,

@@ -13,6 +13,8 @@ mod commodities;
 mod equity_corrections;
 mod eurex_ice;
 mod finra_trfs;
+mod holidays_nasdaq;
+mod holidays_nyse;
 mod international_products;
 mod intraday_and_monthly_candles;
 mod kind_aware_candles;

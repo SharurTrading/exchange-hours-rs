@@ -264,13 +264,15 @@ fn withheld(calendar: ExchangeCalendar, date: NaiveDate) -> bool {
 /// longer date-shaped. `iceus` is the second entry: from 2026-09-26 UTC it audits
 /// from the floor and withholds 35 dates its routed families dispute — the
 /// 2025-01-09 National Day of Mourning row moved the last of them — with no
-/// phase-level gap behind the denial.
+/// phase-level gap behind the denial. `nasdaq` is the next entry (2026-09-28
+/// UTC): its four withheld dates are the two TBA early closes, the unrecovered
+/// Sandy confirmation and the mourning day, all date-shaped with no phase gap.
 fn date_level_incompleteness() -> &'static [(&'static str, usize)] {
-    &[("cbot", 261), ("iceus", 41), ("xetra", 0)]
+    &[("cbot", 261), ("iceus", 41), ("nasdaq", 4), ("xetra", 0)]
 }
 
 /// `is_complete_on(SAMPLE)` agrees with the inventory's `Complete?` cell for all
-/// nineteen served scopes.
+/// twenty-four served scopes.
 ///
 /// The page and the API are one record, and this is the test that stops them
 /// disagreeing. The defect it was added for is why it is not a loop over the cell
@@ -364,9 +366,10 @@ fn inventory_completeness_verdicts_match_the_metadata() {
     }
     assert_eq!(
         (complete, incomplete, no_coverage),
-        (8, 14, 0),
-        "the inventory's verdict shapes: eight complete, fourteen incomplete, none with no 2025 \
-         coverage (xetra's unpublished 2027 schedule keeps it incomplete; #197's b3/tadawul are complete)"
+        (9, 15, 0),
+        "the inventory's verdict shapes: nine complete, fifteen incomplete, none with no 2025 \
+         coverage (xetra's unpublished 2027 schedule keeps it incomplete; #197's b3/tadawul are complete; \
+         nyse is complete to 2027 and nasdaq is incomplete — four Unsourced dates across 2010-2026)"
     );
 }
 
@@ -796,6 +799,8 @@ fn the_sunday_quarter_hour_is_declared_exactly_where_the_profiles_withhold_it() 
     assert_eq!(
         closed_at_both,
         [
+            "nasdaq",
+            "nyse",
             "coinbase_derivatives",
             "eurex",
             "iceus",
@@ -818,8 +823,8 @@ fn the_sunday_quarter_hour_is_declared_exactly_where_the_profiles_withhold_it() 
 /// withheld `Unsourced` date and falls inside a window the scope audited: either
 /// would make a scope read incomplete for a reason that has nothing to do with
 /// its `Complete?` cell. Both claims are re-derived here from the shipped
-/// tables — the holiday row (if any) and the audited windows — for all nineteen
-/// scopes, and the scope count is asserted so a scope cannot drop out.
+/// tables — the holiday row (if any) and the audited windows — for all
+/// twenty-four scopes, and the scope count is asserted so a scope cannot drop out.
 #[test]
 fn inventory_sample_date_is_inside_every_scopes_audit() {
     let day = sample();
@@ -849,8 +854,8 @@ fn inventory_sample_date_is_inside_every_scopes_audit() {
         checked += 1;
     }
     assert_eq!(
-        checked, 22,
-        "the inventory carries one row per served scope, and all twenty-two are checked"
+        checked, 24,
+        "the inventory carries one row per served scope, and all twenty-four are checked"
     );
 }
 

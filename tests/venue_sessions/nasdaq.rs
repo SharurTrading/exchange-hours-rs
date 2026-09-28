@@ -142,18 +142,19 @@ fn nasdaq_unconfirmed_night_session_is_not_encoded() {
         assert!(!hours.is_open(et((2026, 12, 7), (20, 0, 0))));
         assert!(!hours.is_open(et((2026, 12, 7), (21, 0, 0))));
     }
-    // `Nasdaq` ships no holiday table and claims none, so it has no complete
-    // range at all above the floor: every post-floor date is
-    // `OutsideCoveredRange`. The date-aware calendar therefore refuses this
-    // probe rather than answering it, and the "no night session is encoded"
-    // claim is stated by the fixed snapshot in the loop above — the same fact
-    // the calendar's `hours_at` still reports.
+    // The 2026-09-27 holiday activation gave `Nasdaq` a complete audited
+    // window, so the date-aware calendar now answers the probe instead of
+    // refusing it — and the answer is "closed": Sunday 2026-12-06 21:00 ET
+    // carries no session, which is the date-aware form of the "no Night
+    // Session is encoded" claim. The fixed snapshot in the loop above states
+    // the same fact for the static profile, and the calendar's `hours_at`
+    // still reports it.
     let calendar = calendar_for_exchange(Exchange::Nasdaq);
-    assert_refused(
-        calendar.is_open(et((2026, 12, 6), (21, 0, 0))),
-        DateCoverage::OutsideCoveredRange,
-        calendar,
-        et((2026, 12, 6), (21, 0, 0)),
+    assert!(
+        !calendar
+            .is_open(et((2026, 12, 6), (21, 0, 0)))
+            .expect("2026-12-06 is inside the audited window"),
+        "the Night Session is not encoded: Sunday evening answers closed"
     );
     assert!(
         !calendar

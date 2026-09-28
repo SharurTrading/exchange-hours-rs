@@ -2,8 +2,11 @@
 
 //! Built-in holiday rows for the served cash-equity venues whose tables
 //! shipped with the 2025-2027 wave: `b3`, `tadawul` and `borsa_istanbul`
-//! (2025-2026), and the APAC venues `nzx` (2025 through the operator's
-//! 2027-01-04 horizon), `asx` (2025-2027) and `sgx_securities` (2025-2026).
+//! (2025-2026), the APAC venues `nzx` (2025 through the operator's
+//! 2027-01-04 horizon), `asx` (2025-2027) and `sgx_securities` (2025-2026),
+//! and the European/American venues `lse` (2025-2027, with five rolling-table
+//! dates withheld), `euronext_paris` (2025-2026; the 2026 half-day hours are
+//! announced but unstated) and `tsx` (2025-2026).
 //!
 //! Every case below goes through the public identity-backed calendar, the
 //! same surface the consumer routes through. Each venue's section fences its
@@ -238,6 +241,30 @@ fn tally(rows: &[WalkedRow], year: i32) -> (usize, usize, usize) {
         }
     }
     (closed, early, replacement)
+}
+
+/// The four-way tally for venues whose sheets also carry dates the crate
+/// withholds: an operator era can leave a date inside its window printed by
+/// nothing (`Unsourced`), and a walk that panicked on that kind could not
+/// fence a table that ships it.
+fn census(rows: &[WalkedRow], year: i32) -> (usize, usize, usize, usize) {
+    let mut closed = 0;
+    let mut early = 0;
+    let mut replacement = 0;
+    let mut unsourced = 0;
+    for (date, kind, _) in rows {
+        if date.0 != year {
+            continue;
+        }
+        match kind.as_str() {
+            "closed" => closed += 1,
+            "early close" => early += 1,
+            "replacement" => replacement += 1,
+            "unsourced" => unsourced += 1,
+            other => panic!("{year} ships an unexpected kind: {other}"),
+        }
+    }
+    (closed, early, replacement, unsourced)
 }
 
 // ---------------------------------------------------------------------------
@@ -1477,6 +1504,681 @@ mod sgx_securities {
                     ),
                     "the half days are exactly the sheet's six: {date:?}"
                 );
+            }
+        }
+    }
+}
+
+mod lse {
+    use super::*;
+
+    fn lse() -> ExchangeCalendar {
+        calendar_for_exchange(Exchange::Lse)
+    }
+
+    fn london(date: (i32, u32, u32), time: (u32, u32, u32)) -> chrono::DateTime<Utc> {
+        Europe::London
+            .with_ymd_and_hms(date.0, date.1, date.2, time.0, time.1, time.2)
+            .single()
+            .expect("fixture must be an unambiguous London instant")
+            .with_timezone(&Utc)
+    }
+
+    #[test]
+    fn closures_per_year_match_the_operators_printed_table() {
+        let calendar = lse();
+        // Every `NON-trading day.` row of the operator's business-days table,
+        // per year: 2025's New Year closure is printed by the 2024-02-07
+        // capture; 2025-12-25/26 and the whole 2026 and 2027 sets are printed
+        // by the 2025-12-18 capture.
+        let closed = [
+            (2025, 1, 1),
+            (2025, 12, 25),
+            (2025, 12, 26),
+            (2026, 1, 1),
+            (2026, 4, 3),
+            (2026, 4, 6),
+            (2026, 5, 4),
+            (2026, 5, 25),
+            (2026, 8, 31),
+            (2026, 12, 25),
+            (2026, 12, 28),
+            (2027, 1, 1),
+            (2027, 3, 26),
+            (2027, 3, 29),
+            (2027, 5, 3),
+            (2027, 5, 31),
+            (2027, 8, 30),
+            (2027, 12, 27),
+            (2027, 12, 28),
+        ];
+        for date in closed {
+            assert_closed(calendar, date, "lse", &london);
+        }
+    }
+
+    #[test]
+    fn the_half_days_close_at_the_printed_1230_london_time() {
+        let calendar = lse();
+        // The sheet states `Markets closing process commences from 12:30
+        // London time.` for every Christmas Eve and New Year's Eve in the
+        // window; closes are end-exclusive.
+        for date in [
+            (2025, 12, 24),
+            (2025, 12, 31),
+            (2026, 12, 24),
+            (2026, 12, 31),
+            (2027, 12, 24),
+            (2027, 12, 31),
+        ] {
+            assert_eq!(
+                calendar
+                    .holiday_on(day(date.0, date.1, date.2))
+                    .map(Holiday::kind),
+                Some(HolidayKind::EarlyClose { close_ssm: 45_000 }),
+                "lse {date:?} carries the printed 12:30 half-day close"
+            );
+            assert!(
+                calendar
+                    .is_open(london(date, (12, 29, 59)))
+                    .expect("covered"),
+                "lse {date:?} still trades at 12:29:59"
+            );
+            assert!(
+                !calendar
+                    .is_open(london(date, (12, 30, 0)))
+                    .expect("covered"),
+                "lse {date:?} is closed at the 12:30 close (end-exclusive)"
+            );
+            // No afternoon session survives the half-day close, and the
+            // morning runs normally.
+            assert!(
+                !calendar.is_open(london(date, (14, 0, 0))).expect("covered"),
+                "lse {date:?} has no afternoon session"
+            );
+            assert!(
+                calendar.is_open(london(date, (9, 0, 0))).expect("covered"),
+                "lse {date:?} trades the morning"
+            );
+        }
+    }
+
+    #[test]
+    fn the_rolling_table_gap_dates_claim_nothing() {
+        let calendar = lse();
+        // The operator's table is rolling and the Wayback index holds no
+        // capture of the 2025-01-02..2025-12-17 gap, so these five dates ship
+        // `Unsourced` and every derivation that reads them refuses rather
+        // than claims.
+        for date in [
+            (2025, 4, 18),
+            (2025, 4, 21),
+            (2025, 5, 5),
+            (2025, 5, 26),
+            (2025, 8, 25),
+        ] {
+            assert_eq!(
+                calendar
+                    .holiday_on(day(date.0, date.1, date.2))
+                    .map(Holiday::kind),
+                Some(HolidayKind::Unsourced),
+                "lse {date:?} must ship an Unsourced row, not a claimed closure"
+            );
+            assert!(
+                calendar
+                    .is_open(london(date, (12, 0, 0)))
+                    .is_err_and(|error| matches!(error, CalendarQueryError::UnresolvedGap { .. })),
+                "lse {date:?}: is_open must refuse rather than claim"
+            );
+            assert!(
+                calendar
+                    .is_closed_trade_date(day(date.0, date.1, date.2), SessionKind::Both)
+                    .is_err_and(|error| matches!(error, CalendarQueryError::UnresolvedGap { .. })),
+                "lse {date:?}: the trade-date closure question must refuse"
+            );
+        }
+    }
+
+    #[test]
+    fn an_ordinary_weekday_answers_with_the_end_exclusive_close() {
+        let calendar = lse();
+        // Wednesday 2026-06-10: inside the window, no row, the normal SETS
+        // envelope.
+        assert_eq!(calendar.holiday_on(day(2026, 6, 10)), None);
+        assert!(
+            calendar
+                .is_open(london((2026, 6, 10), (12, 0, 0)))
+                .expect("covered")
+        );
+        // The closing-uncross envelope runs to the 16:40 CPX end, end-exclusive.
+        assert!(
+            calendar
+                .is_open(before(Europe::London, (2026, 6, 10), (16, 40, 0)))
+                .expect("covered")
+        );
+        assert!(
+            !calendar
+                .is_open(london((2026, 6, 10), (16, 40, 0)))
+                .expect("covered")
+        );
+    }
+
+    #[test]
+    fn the_window_bounds_and_the_pre_floor_refusal() {
+        let calendar = lse();
+        let coverage = calendar.holiday_coverage().expect("lse ships a table");
+        assert_eq!(coverage.first(), day(2025, 1, 1));
+        assert_eq!(coverage.last(), day(2027, 12, 31));
+        // Outside the audited window the table has no answer at all.
+        assert_eq!(calendar.holiday_on(day(2024, 12, 31)), None);
+        assert_eq!(calendar.holiday_on(day(2028, 1, 3)), None);
+        // Before the support floor.
+        assert!(matches!(
+            calendar.is_open(london((2009, 12, 31), (12, 0, 0))),
+            Err(CalendarQueryError::BeforeSupportFloor { .. })
+        ));
+        // Past the audited window: 2028-01-03 is inside the live table's own
+        // print but outside this table's audited window, so the identity
+        // refuses rather than answering from an unaudited normal week. The
+        // detached snapshot still answers the pure normal week.
+        let outside = london((2028, 1, 4), (12, 0, 0));
+        assert!(matches!(
+            calendar.is_open(outside),
+            Err(CalendarQueryError::OutsideCoveredRange { .. })
+        ));
+        assert!(
+            calendar
+                .without_holidays()
+                .is_open(outside)
+                .expect("a detached snapshot claims no coverage")
+        );
+        assert_eq!(calendar.without_holidays().holiday_coverage(), None);
+    }
+
+    #[test]
+    fn every_shipped_row_matches_the_sheet_per_year() {
+        let rows = rows_per_year(lse());
+        assert_eq!(rows.len(), 30, "19 closures, six half days, five gaps");
+        assert_eq!(
+            census(&rows, 2025),
+            (3, 2, 0, 5),
+            "2025: three closures, two half days, five rolling-table gaps"
+        );
+        assert_eq!(
+            census(&rows, 2026),
+            (8, 2, 0, 0),
+            "2026: eight closures and two half days, no gaps"
+        );
+        assert_eq!(
+            census(&rows, 2027),
+            (8, 2, 0, 0),
+            "2027: eight closures and two half days, no gaps"
+        );
+        // The half days are exactly the sheet's six 24/31 December dates, each
+        // stating the printed 12:30 instant; flipping a row's date, kind or
+        // instant breaks the walk.
+        for (date, kind, instant) in &rows {
+            if kind == "early close" {
+                assert!(
+                    matches!(date, (2025..=2027, 12, 24 | 31)),
+                    "the half days are exactly the sheet's six: {date:?}"
+                );
+                assert_eq!(*instant, Some(45_000), "{date:?} prints 12:30");
+            } else {
+                assert_eq!(*instant, None, "{date:?} states no scalar instant");
+            }
+        }
+    }
+}
+
+mod euronext_paris {
+    use super::*;
+
+    fn paris() -> ExchangeCalendar {
+        calendar_for_exchange(Exchange::EuronextParis)
+    }
+
+    fn paris_time(date: (i32, u32, u32), time: (u32, u32, u32)) -> chrono::DateTime<Utc> {
+        Europe::Paris
+            .with_ymd_and_hms(date.0, date.1, date.2, time.0, time.1, time.2)
+            .single()
+            .expect("fixture must be an unambiguous Paris instant")
+            .with_timezone(&Utc)
+    }
+
+    #[test]
+    fn closures_per_year_match_the_operators_printed_columns() {
+        let calendar = paris();
+        // Every Paris `Closed` cell: the 2025 column of the 2025-12-06 page
+        // capture and the 2026 column of the live page and its INFO-FLASH.
+        // 2026-12-25 is fenced separately: its derivation reads 2026-12-24,
+        // the announced-but-unstated eve, so the closure question refuses.
+        let closed = [
+            (2025, 1, 1),
+            (2025, 4, 18),
+            (2025, 4, 21),
+            (2025, 5, 1),
+            (2025, 12, 25),
+            (2025, 12, 26),
+            (2026, 1, 1),
+            (2026, 4, 3),
+            (2026, 4, 6),
+            (2026, 5, 1),
+        ];
+        for date in closed {
+            assert_closed(calendar, date, "euronext_paris", &paris_time);
+        }
+    }
+
+    #[test]
+    fn the_unresolved_eve_shadows_the_following_christmas_derivation() {
+        let calendar = paris();
+        // The row for 2026-12-25 itself still answers Closed.
+        assert_eq!(
+            calendar.holiday_on(day(2026, 12, 25)).map(Holiday::kind),
+            Some(HolidayKind::Closed),
+            "2026-12-25 carries the printed closure row"
+        );
+        // But the trade-date and intraday questions read behind the query's
+        // bounds — 2026-12-24, whose half-day hours are announced and
+        // unstated — so both refuse as an unresolved gap rather than claim.
+        assert!(
+            calendar
+                .is_closed_trade_date(day(2026, 12, 25), SessionKind::Both)
+                .is_err_and(|error| matches!(error, CalendarQueryError::UnresolvedGap { .. })),
+            "the 2026-12-25 closure question must refuse on the unresolved eve"
+        );
+        assert!(
+            calendar
+                .is_open(paris_time((2026, 12, 25), (12, 0, 0)))
+                .is_err_and(|error| matches!(error, CalendarQueryError::UnresolvedGap { .. })),
+            "the 2026-12-25 intraday question must refuse on the unresolved eve"
+        );
+    }
+
+    #[test]
+    fn the_2025_half_days_close_at_the_appendix_printed_1405_cet() {
+        let calendar = paris();
+        // The 2025 end-of-year appendix prints the Paris equity segments'
+        // closing auction at 14:00 and TAL to 14:05 on 24 and 31 December, so
+        // the envelope close is 14:05 CET, end-exclusive.
+        for date in [(2025, 12, 24), (2025, 12, 31)] {
+            assert_eq!(
+                calendar
+                    .holiday_on(day(date.0, date.1, date.2))
+                    .map(Holiday::kind),
+                Some(HolidayKind::EarlyClose { close_ssm: 50_700 }),
+                "paris {date:?} carries the appendix's 14:05 close"
+            );
+            assert!(
+                calendar
+                    .is_open(paris_time(date, (14, 4, 59)))
+                    .expect("covered"),
+                "paris {date:?} still trades at 14:04:59"
+            );
+            assert!(
+                !calendar
+                    .is_open(paris_time(date, (14, 5, 0)))
+                    .expect("covered"),
+                "paris {date:?} is closed at the 14:05 close (end-exclusive)"
+            );
+            assert!(
+                calendar
+                    .is_open(paris_time(date, (9, 30, 0)))
+                    .expect("covered"),
+                "paris {date:?} trades the morning"
+            );
+        }
+    }
+
+    #[test]
+    fn the_2026_half_days_are_announced_but_unstated() {
+        let calendar = paris();
+        // The 2026 table prints `**Half Trading Day` for both December eves,
+        // but the hours live in the end-of-year appendix, which is announced
+        // and unpublished — so the rows claim nothing.
+        for date in [(2026, 12, 24), (2026, 12, 31)] {
+            assert_eq!(
+                calendar
+                    .holiday_on(day(date.0, date.1, date.2))
+                    .map(Holiday::kind),
+                Some(HolidayKind::Unsourced),
+                "paris {date:?}: the half day is announced, its hours are not"
+            );
+            assert!(
+                calendar
+                    .is_open(paris_time(date, (12, 0, 0)))
+                    .is_err_and(|error| matches!(error, CalendarQueryError::UnresolvedGap { .. })),
+                "paris {date:?}: is_open must refuse rather than claim"
+            );
+            assert!(
+                calendar
+                    .is_closed_trade_date(day(date.0, date.1, date.2), SessionKind::Both)
+                    .is_err_and(|error| matches!(error, CalendarQueryError::UnresolvedGap { .. })),
+                "paris {date:?}: the trade-date closure question must refuse"
+            );
+        }
+    }
+
+    #[test]
+    fn other_markets_rows_never_clip_paris() {
+        let calendar = paris();
+        // The "Wednesday before Easter" half day is Oslo-only, the Irish May
+        // Bank Holiday is Dublin-only, and Ascension, Whit Monday, Ferragosto
+        // and the substitutes print `Full Trading Day` for Paris: no row and
+        // no clipped answer.
+        for date in [
+            (2025, 4, 16),
+            (2025, 5, 5),
+            (2025, 5, 29),
+            (2025, 6, 9),
+            (2025, 8, 15),
+            (2026, 4, 1),
+            (2026, 1, 2),
+            (2026, 5, 4),
+            (2026, 12, 28),
+        ] {
+            assert_eq!(
+                calendar.holiday_on(day(date.0, date.1, date.2)),
+                None,
+                "{date:?} is not a Paris row"
+            );
+            assert!(
+                calendar
+                    .is_open(paris_time(date, (14, 0, 0)))
+                    .expect("covered"),
+                "{date:?}: Paris trades through another market's arrangement"
+            );
+        }
+    }
+
+    #[test]
+    fn an_ordinary_weekday_answers_with_the_end_exclusive_close() {
+        let calendar = paris();
+        assert_eq!(calendar.holiday_on(day(2026, 6, 10)), None);
+        assert!(
+            calendar
+                .is_open(paris_time((2026, 6, 10), (12, 0, 0)))
+                .expect("covered")
+        );
+        // The envelope's last tradeable instant is the 17:40 Trading-at-Last
+        // end; closes are end-exclusive.
+        assert!(
+            calendar
+                .is_open(before(Europe::Paris, (2026, 6, 10), (17, 40, 0)))
+                .expect("covered")
+        );
+        assert!(
+            !calendar
+                .is_open(paris_time((2026, 6, 10), (17, 40, 0)))
+                .expect("covered")
+        );
+    }
+
+    #[test]
+    fn the_window_bounds_and_the_pre_floor_refusal() {
+        let calendar = paris();
+        let coverage = calendar.holiday_coverage().expect("paris ships a table");
+        assert_eq!(coverage.first(), day(2025, 1, 1));
+        assert_eq!(coverage.last(), day(2026, 12, 31));
+        assert_eq!(calendar.holiday_on(day(2024, 12, 31)), None);
+        assert_eq!(calendar.holiday_on(day(2027, 1, 1)), None);
+        assert!(matches!(
+            calendar.is_open(paris_time((2009, 12, 31), (12, 0, 0))),
+            Err(CalendarQueryError::BeforeSupportFloor { .. })
+        ));
+        // 2027 is not published anywhere on the operator's site, so the year
+        // the wave scopes is deliberately absent and queries past 2026-12-31
+        // refuse. The detached snapshot still answers the pure normal week.
+        let outside = paris_time((2027, 1, 4), (12, 0, 0));
+        assert!(matches!(
+            calendar.is_open(outside),
+            Err(CalendarQueryError::OutsideCoveredRange { .. })
+        ));
+        assert!(
+            calendar
+                .without_holidays()
+                .is_open(outside)
+                .expect("a detached snapshot claims no coverage")
+        );
+        assert_eq!(calendar.without_holidays().holiday_coverage(), None);
+    }
+
+    #[test]
+    fn every_shipped_row_matches_the_sheets_per_year() {
+        let rows = rows_per_year(paris());
+        assert_eq!(rows.len(), 15, "eleven closures, two half days, two gaps");
+        assert_eq!(
+            census(&rows, 2025),
+            (6, 2, 0, 0),
+            "2025: six closures and two appendix-dated half days"
+        );
+        assert_eq!(
+            census(&rows, 2026),
+            (5, 0, 0, 2),
+            "2026: five closures; the two half days are announced but unstated"
+        );
+        // The half days are exactly the sheet's four December eves, and only
+        // 2025's state their appendix instant; the 2026 pair ship Unsourced.
+        for (date, kind, instant) in &rows {
+            if kind == "early close" {
+                assert!(
+                    matches!(date, (2025, 12, 24 | 31)),
+                    "2025's half days are exactly the appendix's two: {date:?}"
+                );
+                assert_eq!(*instant, Some(50_700), "{date:?} prints 14:05");
+            } else if kind == "unsourced" {
+                assert!(
+                    matches!(date, (2026, 12, 24 | 31)),
+                    "the gaps are exactly the announced 2026 eves: {date:?}"
+                );
+            } else {
+                assert_eq!(*instant, None, "{date:?} states no scalar instant");
+            }
+        }
+    }
+}
+
+mod tsx {
+    use super::*;
+
+    fn tsx() -> ExchangeCalendar {
+        calendar_for_exchange(Exchange::Tsx)
+    }
+
+    fn toronto(date: (i32, u32, u32), time: (u32, u32, u32)) -> chrono::DateTime<Utc> {
+        America::Toronto
+            .with_ymd_and_hms(date.0, date.1, date.2, time.0, time.1, time.2)
+            .single()
+            .expect("fixture must be an unambiguous Toronto instant")
+            .with_timezone(&Utc)
+    }
+
+    #[test]
+    fn closures_per_year_match_the_operators_printed_lists() {
+        let calendar = tsx();
+        // Every entry of the operator's "Canadian Holidays" lists: the 2025
+        // and 2026 "Stock Markets Closed" sections of the live page.
+        let closed = [
+            (2025, 1, 1),
+            (2025, 2, 17),
+            (2025, 4, 18),
+            (2025, 5, 19),
+            (2025, 7, 1),
+            (2025, 8, 4),
+            (2025, 9, 1),
+            (2025, 10, 13),
+            (2025, 12, 25),
+            (2025, 12, 26),
+            (2026, 1, 1),
+            (2026, 2, 16),
+            (2026, 4, 3),
+            (2026, 5, 18),
+            (2026, 7, 1),
+            (2026, 8, 3),
+            (2026, 9, 7),
+            (2026, 10, 12),
+            (2026, 12, 25),
+            (2026, 12, 28),
+        ];
+        for date in closed {
+            assert_closed(calendar, date, "tsx", &toronto);
+        }
+    }
+
+    #[test]
+    fn christmas_eve_closes_at_the_printed_1300_toronto_time() {
+        let calendar = tsx();
+        // The calendar's footnote: `* Closing at 1:00 PM (TSX/TSXV) and 1:30
+        // (ALPHA/ALPHA X/DRK)`. This identity's scope is the TSX/TSXV close;
+        // the 1:30 book-system half is outside it.
+        for date in [(2025, 12, 24), (2026, 12, 24)] {
+            assert_eq!(
+                calendar
+                    .holiday_on(day(date.0, date.1, date.2))
+                    .map(Holiday::kind),
+                Some(HolidayKind::EarlyClose { close_ssm: 46_800 }),
+                "tsx {date:?} carries the printed 1:00 PM close"
+            );
+            assert!(
+                calendar
+                    .is_open(toronto(date, (12, 59, 59)))
+                    .expect("covered"),
+                "tsx {date:?} still trades at 12:59:59"
+            );
+            assert!(
+                !calendar
+                    .is_open(toronto(date, (13, 0, 0)))
+                    .expect("covered"),
+                "tsx {date:?} is closed at the 1:00 PM close (end-exclusive)"
+            );
+            // The 16:15 extended-trading session the normal week carries does
+            // not survive a 13:00 close.
+            assert!(
+                !calendar
+                    .is_open(toronto(date, (16, 20, 0)))
+                    .expect("covered"),
+                "tsx {date:?} has no extended session after the early close"
+            );
+            assert!(
+                calendar
+                    .is_open(toronto(date, (10, 0, 0)))
+                    .expect("covered"),
+                "tsx {date:?} trades the morning"
+            );
+        }
+    }
+
+    #[test]
+    fn the_us_holiday_list_is_settlement_only_and_never_clips() {
+        let calendar = tsx();
+        // The same page lists U.S. holidays under a separate heading footnoted
+        // `** U.S. Holidays with Special Settlement for Issues trading in USD`
+        // — a settlement arrangement, not a trading closure
+        // (LAW-SESSION-NOT-EXPIRY).
+        for date in [
+            (2025, 1, 20),
+            (2025, 5, 26),
+            (2025, 6, 19),
+            (2025, 7, 4),
+            (2025, 11, 27),
+            (2026, 1, 19),
+            (2026, 5, 25),
+            (2026, 6, 19),
+            (2026, 7, 3),
+            (2026, 11, 26),
+        ] {
+            assert_eq!(
+                calendar.holiday_on(day(date.0, date.1, date.2)),
+                None,
+                "tsx {date:?} is an ordinary trading day, not a settlement-only listing"
+            );
+            assert!(
+                calendar
+                    .is_open(toronto(date, (12, 0, 0)))
+                    .expect("covered"),
+                "tsx {date:?} trades through the U.S. holiday"
+            );
+        }
+    }
+
+    #[test]
+    fn an_ordinary_weekday_answers_with_the_end_exclusive_close() {
+        let calendar = tsx();
+        assert_eq!(calendar.holiday_on(day(2026, 6, 10)), None);
+        assert!(
+            calendar
+                .is_open(toronto((2026, 6, 10), (12, 0, 0)))
+                .expect("covered")
+        );
+        // The envelope's last tradeable instant is the 17:00 extended-trading
+        // end; closes are end-exclusive.
+        assert!(
+            calendar
+                .is_open(before(America::Toronto, (2026, 6, 10), (17, 0, 0)))
+                .expect("covered")
+        );
+        assert!(
+            !calendar
+                .is_open(toronto((2026, 6, 10), (17, 0, 0)))
+                .expect("covered")
+        );
+    }
+
+    #[test]
+    fn the_window_bounds_and_the_pre_floor_refusal() {
+        let calendar = tsx();
+        let coverage = calendar.holiday_coverage().expect("tsx ships a table");
+        assert_eq!(coverage.first(), day(2025, 1, 1));
+        assert_eq!(coverage.last(), day(2026, 12, 31));
+        assert_eq!(calendar.holiday_on(day(2024, 12, 31)), None);
+        assert_eq!(calendar.holiday_on(day(2027, 1, 1)), None);
+        assert!(matches!(
+            calendar.is_open(toronto((2009, 12, 31), (12, 0, 0))),
+            Err(CalendarQueryError::BeforeSupportFloor { .. })
+        ));
+        // 2027 is not published: TMX adds the next year in Q4, so queries past
+        // 2026-12-31 refuse rather than answer from an unaudited normal week.
+        let outside = toronto((2027, 1, 4), (12, 0, 0));
+        assert!(matches!(
+            calendar.is_open(outside),
+            Err(CalendarQueryError::OutsideCoveredRange { .. })
+        ));
+        assert!(
+            calendar
+                .without_holidays()
+                .is_open(outside)
+                .expect("a detached snapshot claims no coverage")
+        );
+        assert_eq!(calendar.without_holidays().holiday_coverage(), None);
+    }
+
+    #[test]
+    fn every_shipped_row_matches_the_sheet_per_year() {
+        let rows = rows_per_year(tsx());
+        assert_eq!(rows.len(), 22, "twenty closures and two Christmas Eves");
+        assert_eq!(
+            census(&rows, 2025),
+            (10, 1, 0, 0),
+            "2025: ten closures and the printed Christmas Eve close"
+        );
+        assert_eq!(
+            census(&rows, 2026),
+            (10, 1, 0, 0),
+            "2026: ten closures (the Boxing Day substitute included) and the \
+             printed Christmas Eve close"
+        );
+        // The early closes are exactly the two printed Christmas Eves, each
+        // stating the 1:00 PM instant.
+        for (date, kind, instant) in &rows {
+            if kind == "early close" {
+                assert!(
+                    matches!(date, (2025 | 2026, 12, 24)),
+                    "the early closes are exactly the sheet's two: {date:?}"
+                );
+                assert_eq!(*instant, Some(46_800), "{date:?} prints 1:00 PM");
+            } else {
+                assert_eq!(*instant, None, "{date:?} states no scalar instant");
             }
         }
     }

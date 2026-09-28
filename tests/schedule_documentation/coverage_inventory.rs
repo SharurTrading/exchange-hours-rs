@@ -274,7 +274,9 @@ fn withheld(calendar: ExchangeCalendar, date: NaiveDate) -> bool {
 fn date_level_incompleteness() -> &'static [(&'static str, usize)] {
     &[
         ("cbot", 261),
+        ("euronext_paris", 2),
         ("iceus", 41),
+        ("lse", 5),
         ("nasdaq", 4),
         ("nse_india", 2),
         ("xetra", 0),
@@ -282,7 +284,7 @@ fn date_level_incompleteness() -> &'static [(&'static str, usize)] {
 }
 
 /// `is_complete_on(SAMPLE)` agrees with the inventory's `Complete?` cell for all
-/// thirty served scopes.
+/// thirty-three served scopes.
 ///
 /// The page and the API are one record, and this is the test that stops them
 /// disagreeing. The defect it was added for is why it is not a loop over the cell
@@ -376,13 +378,16 @@ fn inventory_completeness_verdicts_match_the_metadata() {
     }
     assert_eq!(
         (complete, incomplete, no_coverage),
-        (13, 17, 0),
-        "the inventory's verdict shapes: thirteen complete, seventeen incomplete, none with no 2025 \
+        (14, 19, 0),
+        "the inventory's verdict shapes: fourteen complete, nineteen incomplete, none with no 2025 \
          coverage (xetra's unpublished 2027 schedule keeps it incomplete; #197's b3/tadawul are \
          complete; nyse is complete to 2027 and nasdaq is incomplete — four Unsourced dates across \
          2010-2026; the 2026-09-28 UTC APAC activation makes nzx and sgx_securities complete to \
          their operators' horizons and asx incomplete below its 2025-06-23 SR15 horizon; tse and \
-         sse windows end at the operators' horizons, and nse_india's Muhurat dates are Unsourced)"
+         sse windows end at the operators' horizons, and nse_india's Muhurat dates are Unsourced; \
+         the same date's European/Canadian activation makes tsx complete to its operator's horizon \
+         while lse carries five Unsourced 2025 dates and euronext_paris two announced-but-unstated \
+         2026 eves)"
     );
 }
 
@@ -829,9 +834,12 @@ fn the_sunday_quarter_hour_is_declared_exactly_where_the_profiles_withhold_it() 
             "hkex",
             "sgx_securities",
             "sse",
+            "lse",
             "xetra",
             "six",
+            "euronext_paris",
             "borsa_istanbul",
+            "tsx",
             "tadawul",
             "b3",
             "globex_livestock",
@@ -848,7 +856,7 @@ fn the_sunday_quarter_hour_is_declared_exactly_where_the_profiles_withhold_it() 
 /// would make a scope read incomplete for a reason that has nothing to do with
 /// its `Complete?` cell. Both claims are re-derived here from the shipped
 /// tables — the holiday row (if any) and the audited windows — for all
-/// thirty scopes, and the scope count is asserted so a scope cannot drop out.
+/// thirty-three scopes, and the scope count is asserted so a scope cannot drop out.
 #[test]
 fn inventory_sample_date_is_inside_every_scopes_audit() {
     let day = sample();
@@ -878,8 +886,8 @@ fn inventory_sample_date_is_inside_every_scopes_audit() {
         checked += 1;
     }
     assert_eq!(
-        checked, 30,
-        "the inventory carries one row per served scope, and all thirty are checked"
+        checked, 33,
+        "the inventory carries one row per served scope, and all thirty-three are checked"
     );
 }
 

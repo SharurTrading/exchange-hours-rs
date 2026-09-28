@@ -264,9 +264,11 @@ fn withheld(calendar: ExchangeCalendar, date: NaiveDate) -> bool {
 /// longer date-shaped. `iceus` is the second entry: from 2026-09-26 UTC it audits
 /// from the floor and withholds 35 dates its routed families dispute — the
 /// 2025-01-09 National Day of Mourning row moved the last of them — with no
-/// phase-level gap behind the denial.
+/// phase-level gap behind the denial. `nasdaq` is the third entry (2026-09-27
+/// UTC): its four withheld dates are the two TBA early closes, the unrecovered
+/// Sandy confirmation and the mourning day, all date-shaped with no phase gap.
 fn date_level_incompleteness() -> &'static [(&'static str, usize)] {
-    &[("cbot", 261), ("iceus", 41)]
+    &[("cbot", 261), ("iceus", 41), ("nasdaq", 4)]
 }
 
 /// `is_complete_on(SAMPLE)` agrees with the inventory's `Complete?` cell for all
@@ -364,8 +366,8 @@ fn inventory_completeness_verdicts_match_the_metadata() {
     }
     assert_eq!(
         (complete, incomplete, no_coverage),
-        (3, 13, 0),
-        "the inventory's verdict shapes: three complete, thirteen incomplete, none with no 2025 \
+        (4, 14, 0),
+        "the inventory's verdict shapes: four complete, fourteen incomplete, none with no 2025 \
          coverage"
     );
 }
@@ -796,6 +798,8 @@ fn the_sunday_quarter_hour_is_declared_exactly_where_the_profiles_withhold_it() 
     assert_eq!(
         closed_at_both,
         [
+            "nasdaq",
+            "nyse",
             "coinbase_derivatives",
             "eurex",
             "iceus",
@@ -843,8 +847,8 @@ fn inventory_sample_date_is_inside_every_scopes_audit() {
         checked += 1;
     }
     assert_eq!(
-        checked, 16,
-        "the inventory carries one row per served scope, and all sixteen are checked"
+        checked, 18,
+        "the inventory carries one row per served scope, and all eighteen are checked"
     );
 }
 

@@ -1570,6 +1570,11 @@ fn a_replacement_block_that_opens_in_a_dst_gap_moves_to_the_first_real_instant()
 fn an_all_closed_window_terminates_every_forward_scan() {
     // Longer than any of the engine's forward horizons, so a scan that failed
     // to terminate would hang instead of answering.
+    //
+    // `Exchange::NasdaqBx` stands in here since 2026-09-27 UTC, when the
+    // `nasdaq` venue shipped its own holiday table: the fence needs an
+    // identity with no built-in table, whose coverage is empty at and above
+    // the floor.
     let first = day(2026, 6, 1);
     let last = day(2026, 7, 15);
     let mut records = Vec::new();
@@ -1579,25 +1584,25 @@ fn an_all_closed_window_terminates_every_forward_scan() {
         date = date.succ_opt().expect("in-range fixture date");
     }
     let table = StaticSessionExceptions::new(
-        CalendarSource::Exchange(Exchange::Nasdaq),
+        CalendarSource::Exchange(Exchange::NasdaqBx),
         first,
         last,
         &records,
     )
     .expect("valid records");
-    let calendar = calendar_for_exchange(Exchange::Nasdaq)
+    let calendar = calendar_for_exchange(Exchange::NasdaqBx)
         .with_session_exceptions(&table)
         .expect("the fixture is scoped to this calendar");
 
     let instant = utc((2026, 6, 22), (14, 30, 0));
-    // `Exchange::Nasdaq` ships no holiday table, so its coverage is empty at and
+    // `Exchange::NasdaqBx` ships no holiday table, so its coverage is empty at and
     // above the floor: it refuses every date in this window rather than guessing
     // a holiday layer it does not have (LAW-COVERAGE). The scans below terminate
     // by returning that refusal — which is what the original fence about
     // termination now asserts, and the strongest statement the identity supports,
     // because "every date in this window is closed" is exactly the claim the
     // crate must *not* make without a sourced table.
-    let nasdaq = calendar_for_exchange(Exchange::Nasdaq);
+    let nasdaq = calendar_for_exchange(Exchange::NasdaqBx);
     assert_declared_refusal(
         calendar.is_open(instant),
         nasdaq,

@@ -11,6 +11,33 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ## [Unreleased]
 
+### Added
+
+- **`nyse` and `nasdaq` activate: built-in holiday tables for the two US
+  cash-equity venues the consumer routes (2026-09-27 UTC).** Both identities
+  flip dormant→**served** (LAW-SERVICE-TIERS admission by consumer reach),
+  the `for_exchange` arms answer `Some`, and the review cadence becomes
+  monthly (LAW-WATCH, holiday-bearing). `nyse` ships **206 rows over
+  2010-01-01..2027-12-31** (169 closures, 37 early closes at the printed
+  1:00 p.m., zero withheld dates): the operator's holiday pages
+  2010-2027 — live for 2026-2027, Wayback replays of the operator's own
+  pages for 2010-2025 — plus the operator's press releases for Hurricane
+  Sandy (2012-10-29/30) and the ICE release for the 2025-01-09 National Day
+  of Mourning. `nasdaq` ships **194 rows over 2010-01-01..2026-12-31** (the
+  operator publishes no 2027 schedule): the operator's "U.S. Equity and
+  Options Markets Holiday Schedule" pages 2010-2025 and the live 2026 pages,
+  with **four dates withheld as `Unsourced`** (the `TBA` early closes of
+  2010-11-26 and 2011-11-25, the unrecovered 2012-10-30 Sandy confirmation,
+  and the mourning day 2025-01-09 the operator's own sheet omits), so the
+  scope ships labelled incomplete rather than complete-by-omission. Every row
+  cites a saved operator artifact at T1 (research store
+  `holidays/raw/nyse-nasdaq/`, sha256 per artifact); the evidence files set
+  the equities early-close convention — the sheet's own wording decides,
+  and where it prints a 1:00 p.m. close and nothing after, the whole envelope
+  clips. Date-aware answers begin at each identity's normal-week horizon
+  (NYSE 2018-04-09, Nasdaq 2013-03-18); below it the holiday rows fence the
+  data and the coverage contract refuses.
+
 ## [1.0.0] - 2026-09-27
 
 First stable release. Version 1.0 establishes the canonical string identities,
@@ -91,6 +118,7 @@ maintenance contract described in the README and schedule verification ledger.
   (#77).
 
 ### Added
+
 
 - **ICE Futures U.S. states the 2026 Thanksgiving instants per family
   (2026-09-27 UTC).** Exchange Notice `ICE_Futures_US_2026_Thanksgiving_Holiday_20260923.pdf`

@@ -262,3 +262,4 @@ mod prelude {
 
 mod holidays_cme_venues;
 mod holidays_coinbase_derivatives;
+mod holidays_tse_sse_nse;

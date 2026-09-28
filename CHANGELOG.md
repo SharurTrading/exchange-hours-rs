@@ -52,9 +52,10 @@ corrections (a venue's hours fixed against a primary source) go under
   Evidence: `docs/evidence/hkex.md`, `docs/evidence/xetra.md`,
   `docs/evidence/six.md` (research store:
   `holidays/raw/equities/<venue>/2025-2027/`). Residual gaps recorded with
-  their closing conditions: HKEX's 2026-12-28 conflict with the Hong Kong
-  general-holiday gazette, and Xetra's unpublished 2027 trading-holiday close
-  schedule (the 2025 20:00-close note names Börse Frankfurt only).
+  their closing conditions: Xetra's unpublished 2027 trading-holiday close
+  schedule (the 2025 20:00-close note names Börse Frankfurt only) — #200.
+  Recorded, not a gap: HKEX's 2026-12-28 check (verified: no conflict — the
+  general-holiday list names Saturday 2026-12-26; no closing condition).
 
 ## [1.0.0] - 2026-09-27
 

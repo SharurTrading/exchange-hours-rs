@@ -266,7 +266,7 @@ fn withheld(calendar: ExchangeCalendar, date: NaiveDate) -> bool {
 /// 2025-01-09 National Day of Mourning row moved the last of them — with no
 /// phase-level gap behind the denial.
 fn date_level_incompleteness() -> &'static [(&'static str, usize)] {
-    &[("cbot", 261), ("iceus", 41)]
+    &[("cbot", 261), ("iceus", 41), ("xetra", 0)]
 }
 
 /// `is_complete_on(SAMPLE)` agrees with the inventory's `Complete?` cell for all
@@ -364,9 +364,9 @@ fn inventory_completeness_verdicts_match_the_metadata() {
     }
     assert_eq!(
         (complete, incomplete, no_coverage),
-        (6, 13, 0),
-        "the inventory's verdict shapes: six complete, thirteen incomplete, none with no 2025 \
-         coverage"
+        (8, 14, 0),
+        "the inventory's verdict shapes: eight complete, fourteen incomplete, none with no 2025 \
+         coverage (xetra's unpublished 2027 schedule keeps it incomplete; #197's b3/tadawul are complete)"
     );
 }
 
@@ -849,8 +849,8 @@ fn inventory_sample_date_is_inside_every_scopes_audit() {
         checked += 1;
     }
     assert_eq!(
-        checked, 19,
-        "the inventory carries one row per served scope, and all nineteen are checked"
+        checked, 22,
+        "the inventory carries one row per served scope, and all twenty-two are checked"
     );
 }
 

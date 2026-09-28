@@ -105,8 +105,8 @@ fn every_printed_2026_row_ships() {
         );
     }
     // The operator's three editions print no 2026-12-28 holiday, so the day
-    // answers as an ordinary Monday: the recorded gazette conflict is prose,
-    // never a row.
+    // answers as an ordinary Monday: verified against the general-holiday
+    // list (no conflict — it names Saturday 2026-12-26); prose, never a row.
     assert_eq!(calendar.holiday_on(day(2026, 12, 28)), None);
     assert!(
         calendar

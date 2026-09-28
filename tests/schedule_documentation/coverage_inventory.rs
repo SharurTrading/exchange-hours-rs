@@ -270,7 +270,7 @@ fn date_level_incompleteness() -> &'static [(&'static str, usize)] {
 }
 
 /// `is_complete_on(SAMPLE)` agrees with the inventory's `Complete?` cell for all
-/// sixteen served scopes.
+/// nineteen served scopes.
 ///
 /// The page and the API are one record, and this is the test that stops them
 /// disagreeing. The defect it was added for is why it is not a loop over the cell
@@ -364,8 +364,8 @@ fn inventory_completeness_verdicts_match_the_metadata() {
     }
     assert_eq!(
         (complete, incomplete, no_coverage),
-        (3, 13, 0),
-        "the inventory's verdict shapes: three complete, thirteen incomplete, none with no 2025 \
+        (6, 13, 0),
+        "the inventory's verdict shapes: six complete, thirteen incomplete, none with no 2025 \
          coverage"
     );
 }
@@ -701,7 +701,7 @@ fn sundays_between(first: NaiveDate, last: NaiveDate) -> Vec<NaiveDate> {
 /// tell a scope that withholds a required phase from one whose grid simply has no
 /// session at 16:05 CT. This fence observes the profiles instead: a scope that
 /// withholds the quarter-hour is closed at 16:05 CT and **accepting orders** at
-/// 16:20 CT, and exactly the served scopes that show that signature declare #79 - four dormant identities show it too and declare nothing, so the invariant is scoped to the inventory's sixteen rows —
+/// 16:20 CT, and exactly the served scopes that show that signature declare #79 - four dormant identities show it too and declare nothing, so the invariant is scoped to the inventory's nineteen rows —
 /// `cme`, `comex`, `nymex`, `globex_energy`, `globex_equity_index`, `globex_fx`
 /// and `globex_interest_rates`. The four that accept at 16:05 CT are genuinely
 /// fine — the CBOT grains grid dates its own 16:00 CT Sunday onset to the
@@ -799,6 +799,9 @@ fn the_sunday_quarter_hour_is_declared_exactly_where_the_profiles_withhold_it() 
             "coinbase_derivatives",
             "eurex",
             "iceus",
+            "borsa_istanbul",
+            "tadawul",
+            "b3",
             "globex_livestock",
             "globex_cryptocurrency"
         ],
@@ -843,8 +846,8 @@ fn inventory_sample_date_is_inside_every_scopes_audit() {
         checked += 1;
     }
     assert_eq!(
-        checked, 16,
-        "the inventory carries one row per served scope, and all sixteen are checked"
+        checked, 19,
+        "the inventory carries one row per served scope, and all nineteen are checked"
     );
 }
 

@@ -11,6 +11,25 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ## [Unreleased]
 
+### Added
+
+- **Built-in holiday tables for three served cash-equity venues (2026-09-28
+  UTC).** `b3`, `tadawul` and `borsa_istanbul` ship built-in holiday rows and
+  move from dormant to served in the verification ledger, each reviewed monthly
+  (LAW-WATCH). `tadawul` covers 2025-01-01..2027-12-31 from the operator's own
+  holiday calendar page (34 closure rows; the printed trading-discontinue and
+  trading-resume days key the Eid rows, and Founding Day 2025 keys to the
+  operator's printed Sunday 23 February). `b3` covers
+  2025-01-01..2026-12-31 from the operator's calendar articles and
+  Ofício Circular 149/2024-PRE (27 rows; each Ash Wednesday is a 13:00 late
+  open, and 24/31 December are stated closures). `borsa_istanbul` covers
+  2025-01-01..2026-12-31 from the `Resmi Tatil Günleri` page and the
+  `Pay Piyasası Tatil Tablosu` annexes (25 rows; five half days close at the
+  printed 13:00). B3 and Borsa İstanbul have published no 2027 calendars, so
+  both windows end at 2026-12-31 with the closing condition recorded in the
+  evidence files and the ledger rather than an invented row. Artifacts and
+  digests are in the research store under `holidays/raw/equities/`.
+
 ## [1.0.0] - 2026-09-27
 
 First stable release. Version 1.0 establishes the canonical string identities,

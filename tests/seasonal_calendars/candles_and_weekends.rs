@@ -11,23 +11,32 @@ fn seasonal_daily_candles_use_the_profile_for_each_trading_day() {
     let b3_short = local(sao_paulo, (2026, 8, 19), (10, 30, 0));
     let b3_long = local(sao_paulo, (2026, 1, 14), (10, 30, 0));
 
-    assert!(
+    // B3 is served and both probe days sit inside its audited window, so the
+    // date-aware candles answer: the short day's regular session ends 16:55,
+    // the long day's at 17:55, and the final daily close is the venue's own.
+    assert_eq!(
         b3.candle_end_with(b3_short, CalendarResolution::Daily, SessionKind::Regular)
-            .is_err(),
-        "a dormant identity refuses this probe"
+            .expect("an audited date answers"),
+        Some(local(sao_paulo, (2026, 8, 19), (16, 55, 0))),
+        "the short day's regular candle ends at 16:55"
     );
-    assert!(
+    assert_eq!(
         b3.candle_end_with(b3_long, CalendarResolution::Daily, SessionKind::Regular)
-            .is_err(),
-        "a dormant identity refuses this probe"
+            .expect("an audited date answers"),
+        Some(local(sao_paulo, (2026, 1, 14), (17, 55, 0))),
+        "the long day's regular candle ends at 17:55"
     );
-    assert!(
-        b3.time_end_of_day(b3_short).is_err(),
-        "a dormant identity refuses this probe"
+    assert_eq!(
+        b3.time_end_of_day(b3_short)
+            .expect("an audited date answers"),
+        Some(local(sao_paulo, (2026, 8, 19), (18, 0, 0))),
+        "the short day's final close is the after-market envelope end"
     );
-    assert!(
-        b3.time_end_of_day(b3_long).is_err(),
-        "a dormant identity refuses this probe"
+    assert_eq!(
+        b3.time_end_of_day(b3_long)
+            .expect("an audited date answers"),
+        Some(local(sao_paulo, (2026, 1, 14), (18, 0, 0))),
+        "the long day's final close is the closing-call end"
     );
 
     let bmv = calendar_for_exchange(Exchange::Bmv);
@@ -68,20 +77,23 @@ fn seasonal_daily_candles_use_the_profile_for_each_trading_day() {
 fn seasonal_calendars_keep_weekends_and_closes_end_exclusive() {
     let b3 = calendar_for_exchange(Exchange::B3);
     let sao_paulo = America::Sao_Paulo;
+    // B3 is served and 2026-08-21/22 sit inside its audited window, so the
+    // weekend boundary answers: shut at the Friday after-market close, shut
+    // all Saturday, and end-exclusive at the close.
     assert!(
-        b3.is_open(local(sao_paulo, (2026, 8, 21), (18, 0, 0)))
-            .is_err(),
-        "a dormant identity refuses this probe"
+        !b3.is_open(local(sao_paulo, (2026, 8, 21), (18, 0, 0)))
+            .expect("an audited date answers"),
+        "the Friday after-market close is end-exclusive"
     );
     assert!(
-        b3.is_open(local(sao_paulo, (2026, 8, 22), (12, 0, 0)))
-            .is_err(),
-        "a dormant identity refuses this probe"
+        !b3.is_open(local(sao_paulo, (2026, 8, 22), (12, 0, 0)))
+            .expect("an audited date answers"),
+        "the Saturday is closed"
     );
     assert!(
         b3.is_closed_all_day_on(day((2026, 8, 22)), SessionKind::Both)
-            .is_err(),
-        "a dormant identity refuses this probe"
+            .expect("an audited date answers"),
+        "the Saturday has no session"
     );
 
     let bmv = calendar_for_exchange(Exchange::Bmv);

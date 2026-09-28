@@ -451,7 +451,8 @@ per-record review before any exception can drive runtime.
 ### `EU-BIST`
 
 - **Official current/rulebook:** [Borsa İstanbul Equity Market procedure](https://www.borsaistanbul.com/files/equity-market-procedure.pdf).
-- **Notices/evidence:** no stable consolidated announcements-feed URL is indexed here; reopen the [Equity Market procedure](https://www.borsaistanbul.com/files/equity-market-procedure.pdf) and every exact 2012–2019 circular or announcement beside `bist.rs`.
+- **Holidays:** the corporate [`Resmi Tatil Günleri`](https://www.borsaistanbul.com/resmi-tatil-gunleri) page (year tables 2012-2026, half-day instants) and the per-market [`Pay Piyasası Tatil Tablosu`](https://www.borsaistanbul.com/files/pay-piyasasi-2026-yili-tatil-tablosu.pdf) annexes.
+- **Notices/evidence:** no stable consolidated announcements-feed URL is indexed here; reopen the [Equity Market procedure](https://www.borsaistanbul.com/files/equity-market-procedure.pdf), the [official holiday page](https://www.borsaistanbul.com/resmi-tatil-gunleri) and every exact 2012–2019 circular or announcement beside `bist.rs`.
 
 <a id="amer-tsx"></a>
 
@@ -472,13 +473,15 @@ per-record review before any exception can drive runtime.
 ### `MIDEAST-TADAWUL`
 
 - **Official current/rulebook:** [Saudi Exchange trading cycle and times](https://www.saudiexchange.sa/wps/portal/saudiexchange/rules-guidance/capital-market-overview/trading-cycle-and-times?locale=en).
-- **Notices/evidence:** no consolidated schedule-notice feed is indexed here; reopen the official [trading cycle and times](https://www.saudiexchange.sa/wps/portal/saudiexchange/rules-guidance/capital-market-overview/trading-cycle-and-times?locale=en) and every report, press-agency release, and pandemic notice beside `tadawul.rs`.
+- **Holidays:** the [Saudi Exchange Holiday Calendar](https://www.saudiexchange.sa/wps/portal/saudiexchange/about-saudi-exchange/exchange-media-centre/saudi-exchange-holiday-calendar?locale=en) (Exchange Media Centre); the site refuses plain HTTP clients (403) and answers a complete browser-grade header set.
+- **Notices/evidence:** no consolidated schedule-notice feed is indexed here; reopen the official [trading cycle and times](https://www.saudiexchange.sa/wps/portal/saudiexchange/rules-guidance/capital-market-overview/trading-cycle-and-times?locale=en), the [holiday calendar](https://www.saudiexchange.sa/wps/portal/saudiexchange/about-saudi-exchange/exchange-media-centre/saudi-exchange-holiday-calendar?locale=en) and every report, press-agency release, and pandemic notice beside `tadawul.rs`.
 
 <a id="amer-b3"></a>
 
 ### `AMER-B3`
 
 - **Official current/rulebook:** [B3 trading-hours notices](https://www.b3.com.br/pt_br/noticias/horarios-de-negociacao.htm) and the current operator circulars linked beside the profiles.
+- **Holidays:** the yearly calendar articles ([2025](https://www.b3.com.br/pt_br/noticias/calendario-de-feriados-2025.htm) and [2026](https://www.b3.com.br/pt_br/noticias/calendario-de-negociacao-da-b3-confira-o-funcionamento-da-bolsa-em-2026.htm) with their detailing Ofícios Circulares) plus the [PUMA trading-calendar Feriados page](https://www.b3.com.br/pt_br/solucoes/plataformas/puma-trading-system/para-participantes-e-traders/calendario-de-negociacao/feriados/) as the watch entry point.
 - **Notices/evidence:** monitor B3's [trading-hours notices](https://www.b3.com.br/pt_br/noticias/horarios-de-negociacao.htm); the January-2010 baseline, every old-grid switch, and recurring New York-reference rule remain beside `b3.rs`.
 
 <a id="amer-bmv"></a>

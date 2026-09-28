@@ -287,7 +287,7 @@ Nasdaq Stock Market normal week; date-aware lookups retain the sourced 2013 07:0
 | 2025-04-18 | closed | `Closed` | `NQ-HOL-2025` | T1 | event date 2025-04-18; the sheet prints no session for it |
 | 2025-05-26 | closed | `Closed` | `NQ-HOL-2025` | T1 | event date 2025-05-26; the sheet prints no session for it |
 | 2025-06-19 | closed | `Closed` | `NQ-HOL-2025` | T1 | event date 2025-06-19; the sheet prints no session for it |
-| 2025-07-03 | early close | `1:00 p.m. ET` | `NQ-HOL-2025` | T1 | the sheet's own footnote: "Each market will close early at 1:00 p.m. (1:15 p.m. for eligible options) on Thursday, July 3, 2025" — the day before Independence Day, per the July 3 pattern the same footnote family uses across the years |
+| 2025-07-03 | early close | `1:00 p.m. ET` | `NQ-HOL-2025` | T1 | the sheet's own table row: `July 3, 2025` / `Early Close* - U.S.` / `1:00 p.m.`; the `*` defers to the alert footnote ("Nasdaq will continue to send alerts…"), which states no time of its own |
 | 2025-07-04 | closed | `Closed` | `NQ-HOL-2025` | T1 | event date 2025-07-04; the sheet prints no session for it |
 | 2025-09-01 | closed | `Closed` | `NQ-HOL-2025` | T1 | event date 2025-09-01; the sheet prints no session for it |
 | 2025-11-27 | closed | `Closed` | `NQ-HOL-2025` | T1 | event date 2025-11-27; the sheet prints no session for it |

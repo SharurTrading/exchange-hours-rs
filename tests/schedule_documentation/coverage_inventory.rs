@@ -799,6 +799,9 @@ fn the_sunday_quarter_hour_is_declared_exactly_where_the_profiles_withhold_it() 
             "coinbase_derivatives",
             "eurex",
             "iceus",
+            "hkex",
+            "xetra",
+            "six",
             "borsa_istanbul",
             "tadawul",
             "b3",
@@ -815,7 +818,7 @@ fn the_sunday_quarter_hour_is_declared_exactly_where_the_profiles_withhold_it() 
 /// withheld `Unsourced` date and falls inside a window the scope audited: either
 /// would make a scope read incomplete for a reason that has nothing to do with
 /// its `Complete?` cell. Both claims are re-derived here from the shipped
-/// tables — the holiday row (if any) and the audited windows — for all sixteen
+/// tables — the holiday row (if any) and the audited windows — for all nineteen
 /// scopes, and the scope count is asserted so a scope cannot drop out.
 #[test]
 fn inventory_sample_date_is_inside_every_scopes_audit() {

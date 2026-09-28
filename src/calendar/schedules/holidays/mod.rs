@@ -50,10 +50,13 @@ mod globex_grains;
 mod globex_interest_rates;
 mod globex_livestock;
 mod globex_nikkei_225_dollar;
+mod hkex;
 mod ice_us;
 mod routing;
+mod six;
 mod tadawul;
 mod venues;
+mod xetra;
 
 pub(crate) use routing::table_for;
 

@@ -9,7 +9,7 @@
 //! the operator's `NZX Market Holidays & Trading Hours` page carries a rolling
 //! table of roughly the next thirteen months, so the rows are read from the
 //! page's own captures: the 2025 block and the first two 2026 dates from the
-//! December 2025 / January 2025 replays, and Waitangi Day 2026 onward from the
+//! December 2024 replay, and Waitangi Day 2026 onward from the
 //! February 2026 replay, which the live page (retrieved 2026-09-28) still
 //! prints row for row. NZX has published nothing past 2027-01-04, so coverage
 //! stops there and the operator's next table refresh extends it; the per-row

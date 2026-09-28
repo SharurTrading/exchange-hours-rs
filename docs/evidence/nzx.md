@@ -129,7 +129,7 @@ later 2027 date are outside the operator's published table, so the window
 ends at 2027-01-04 and the inventory records the forward gap. Dates inside
 the window with no row are audited normal: the operator's page names every
 holiday it observes, and 2026's table (Waitangi 2026 through the horizon)
-names thirteen — the twelve shipped plus none withheld.
+names thirteen — all thirteen shipped, none withheld.
 
 ### Documents
 

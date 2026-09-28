@@ -77,7 +77,7 @@ list; no member firm, vendor or press restatement touches any row.
 | Trade date | Kind | Instant as printed | Document | Tier | Derived from |
 |---|---|---|---|---|---|
 | 2025-01-01 | closed | MOM: `1 January 2025 Wednesday New Year's Day`; SGX designates the MOM calendar | `SGX-ST-SCHED` | T2 | the operator's designation resolved against MOM's printed gazetted date |
-| 2025-01-28 | early close | SGX: `28 Jan 2025 Tuesday Eve of Chinese New Year`; half-day `Close: 12:16pm` | `SGX-ST-SCHED` | T2 | SGX trade date named verbatim; the row clips the envelope at the operator's printed half-day close |
+| 2025-01-28 | replacement blocks | SGX: `28 Jan 2025 Tuesday Eve of Chinese New Year`; half-day `Close: 12:16pm` | `SGX-ST-SCHED` | T2 | SGX trade date named verbatim; the row restates the day's complete session structure as a replacement-block set keyed to the operator's printed half-day close |
 | 2025-01-29 | closed | MOM: `29 January 2025 Wednesday Chinese New Year` | `SGX-ST-SCHED` | T2 | designation + MOM print |
 | 2025-01-30 | closed | MOM: `30 January 2025 Thursday Chinese New Year` | `SGX-ST-SCHED` | T2 | designation + MOM print |
 | 2025-03-31 | closed | MOM: `31 March 2025 Monday Hari Raya Puasa` | `SGX-ST-SCHED` | T2 | designation + MOM print |
@@ -85,9 +85,9 @@ list; no member firm, vendor or press restatement touches any row.
 | 2025-05-01 | closed | MOM: `1 May 2025 Thursday Labour Day` | `SGX-ST-SCHED` | T2 | designation + MOM print |
 | 2025-05-12 | closed | MOM: `12 May 2025 Monday Vesak Day` | `SGX-ST-SCHED` | T2 | designation + MOM print |
 | 2025-10-20 | closed | MOM: `20 October 2025 Monday Deepavali` | `SGX-ST-SCHED` | T2 | designation + MOM print |
-| 2025-12-24 | early close | SGX: `24 Dec 2025 Wednesday Eve of Christmas`; half-day `Close: 12:16pm` | `SGX-ST-SCHED` | T2 | SGX trade date named verbatim |
+| 2025-12-24 | replacement blocks | SGX: `24 Dec 2025 Wednesday Eve of Christmas`; half-day `Close: 12:16pm` | `SGX-ST-SCHED` | T2 | SGX trade date named verbatim |
 | 2025-12-25 | closed | MOM: `25 December 2025 Thursday Christmas Day` | `SGX-ST-SCHED` | T2 | designation + MOM print |
-| 2025-12-31 | early close | SGX: `31 Dec 2025 Wednesday Eve of New Year`; half-day `Close: 12:16pm` | `SGX-ST-SCHED` | T2 | SGX trade date named verbatim |
+| 2025-12-31 | replacement blocks | SGX: `31 Dec 2025 Wednesday Eve of New Year`; half-day `Close: 12:16pm` | `SGX-ST-SCHED` | T2 | SGX trade date named verbatim |
 
 The 2025 gazetted holidays that fall on a Saturday — Polling Day 3 May, Hari
 Raya Haji 7 June, National Day 9 August — print no row: they are outside the
@@ -99,7 +99,7 @@ them. MOM's own Sunday-substitution sentences never arise in 2025.
 | Trade date | Kind | Instant as printed | Document | Tier | Derived from |
 |---|---|---|---|---|---|
 | 2026-01-01 | closed | MOM: `1 January 2026 Thursday New Year's Day` | `SGX-ST-SCHED` | T2 | designation + MOM print |
-| 2026-02-16 | early close | SGX: `16 Feb 2026 Monday Eve of Chinese New Year`; half-day `Close: 12:16pm` | `SGX-ST-SCHED` | T2 | SGX trade date named verbatim |
+| 2026-02-16 | replacement blocks | SGX: `16 Feb 2026 Monday Eve of Chinese New Year`; half-day `Close: 12:16pm` | `SGX-ST-SCHED` | T2 | SGX trade date named verbatim |
 | 2026-02-17 | closed | MOM: `17 February 2026 Tuesday Chinese New Year` | `SGX-ST-SCHED` | T2 | designation + MOM print |
 | 2026-02-18 | closed | MOM: `18 February 2026 Wednesday Chinese New Year` | `SGX-ST-SCHED` | T2 | designation + MOM print |
 | 2026-04-03 | closed | MOM: `3 April 2026 Friday Good Friday` | `SGX-ST-SCHED` | T2 | designation + MOM print |
@@ -108,9 +108,9 @@ them. MOM's own Sunday-substitution sentences never arise in 2025.
 | 2026-06-01 | closed | MOM: `31 May 2026 Sunday Vesak Day` — `Monday, 1 June 2026, will be a public holiday if your rest day falls on 31 May 2026.` | `SGX-ST-SCHED` | T2 | MOM's own Sunday-substitution sentence moves the holiday to the Monday the exchange does not trade |
 | 2026-08-10 | closed | MOM: `9 August 2026 Sunday National Day` — `Monday, 10 August 2026, will be a public holiday …` | `SGX-ST-SCHED` | T2 | MOM's Sunday-substitution sentence |
 | 2026-11-09 | closed | MOM: `8 November 2026 Sunday Deepavali` — `Monday, 9 November 2026, will be a public holiday …` | `SGX-ST-SCHED` | T2 | MOM's Sunday-substitution sentence |
-| 2026-12-24 | early close | SGX: `24 Dec 2026 Thursday Eve of Christmas`; half-day `Close: 12:16pm` | `SGX-ST-SCHED` | T2 | SGX trade date named verbatim |
+| 2026-12-24 | replacement blocks | SGX: `24 Dec 2026 Thursday Eve of Christmas`; half-day `Close: 12:16pm` | `SGX-ST-SCHED` | T2 | SGX trade date named verbatim |
 | 2026-12-25 | closed | MOM: `25 December 2026 Friday Christmas Day` | `SGX-ST-SCHED` | T2 | designation + MOM print |
-| 2026-12-31 | early close | SGX: `31 Dec 2026 Thursday Eve of New Year`; half-day `Close: 12:16pm` | `SGX-ST-SCHED` | T2 | SGX trade date named verbatim |
+| 2026-12-31 | replacement blocks | SGX: `31 Dec 2026 Thursday Eve of New Year`; half-day `Close: 12:16pm` | `SGX-ST-SCHED` | T2 | SGX trade date named verbatim |
 
 `Hari Raya Puasa 2026` falls on Saturday 21 March (MOM prints it with no
 substitution sentence), so it closes no weekday and ships no row.
@@ -126,10 +126,12 @@ the derivation from the saved bytes.
 **The half-day rows state the sheet exactly.** Every matching phase the
 operator prints on a half day — the morning session to 12:00, the closing
 Non-Cancel to 12:06 and Trade at Close to 12:16 — ends at or before the
-printed `Close: 12:16pm`, so the scalar clip deletes nothing executable. The
-midday order-entry slice the normal week carries (12:00-12:58) clips to
-12:00-12:16, which only ever marks order acceptance where the sheet prints
-Pre-Close order entry and the closing routine.
+printed `Close: 12:16pm`. The rows ship as `ReplacementBlocks` restating the
+complete half-day structure rather than a scalar early close, because a
+scalar clip on the envelope's final close would drag the order-entry-only
+Pre-Close into `is_open`: the restated midday order-entry slice
+(12:00-12:04) only ever marks order acceptance where the sheet prints
+Pre-Close order entry, and the closing routine runs to the printed 12:16.
 
 ### Documents
 

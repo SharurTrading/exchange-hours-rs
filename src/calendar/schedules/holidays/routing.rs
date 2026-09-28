@@ -44,14 +44,14 @@ pub(crate) const fn table_for(source: CalendarSource) -> Option<&'static Holiday
 const fn for_exchange(exchange: Exchange) -> Option<&'static HolidayTable> {
     match exchange {
         Exchange::Unknown => None,
-        Exchange::Nasdaq => None,
+        Exchange::Nasdaq => Some(super::nasdaq::TABLE),
         Exchange::NasdaqBx => None,
         Exchange::NasdaqPsx => None,
         Exchange::CboeBzx => None,
         Exchange::CboeByx => None,
         Exchange::CboeEdga => None,
         Exchange::CboeEdgx => None,
-        Exchange::Nyse => None,
+        Exchange::Nyse => Some(super::nyse::TABLE),
         Exchange::NyseArca => None,
         Exchange::NyseAmerican => None,
         Exchange::NyseNational => None,

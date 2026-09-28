@@ -994,14 +994,18 @@ fn every_shipped_session_occurrence_is_dated_by_its_own_open_or_the_next_day() {
     // **What the population is now.** The fence's span is still the fixture's
     // own 2010-2028, and the 2026-09-27 amendment moved the support floor back
     // to 2010-01-01, so the restored audited history enumerates again: the
-    // counts below are the ones observed at this head — 128 of 128 identities,
-    // 161,695 occurrences, 125 identities carrying trade dates (the other
-    // three ship an always-open profile), 16,184 occurrences whose trade date
-    // the identity withholds or cannot source in the carried era, and 95,704
-    // refused cursors over carried-era and unaudited spans (a refusal is
-    // stepped over, never read as a closure). The premise itself is unchanged
-    // and still asserted per occurrence: what the floor move restored is the
-    // population the premise can be asserted over.
+    // counts below are the ones observed at this head (2026-09-28 UTC) — 128
+    // of 128 identities, 268,168 occurrences, 125 identities carrying trade
+    // dates (the other three ship an always-open profile), 16,191 occurrences
+    // whose trade date the identity withholds or cannot source in the carried
+    // era, and 89,142 refused cursors over carried-era and unaudited spans (a
+    // refusal is stepped over, never read as a closure). The 2026-09-28
+    // activation of `nyse` and `nasdaq` moved the last two numbers honestly:
+    // their below-horizon cursor refusals became enumerated, dated sessions
+    // (+16,642 occurrences, +2 date-carrying identities, -1,280 refused
+    // cursors). The premise itself is unchanged and still asserted per
+    // occurrence: what the floor move restored is the population the premise
+    // can be asserted over.
     //
     // The population itself is pinned off the two enums, so a filter that
     // quietly starts dropping identities fails here as well as in the ledger:
@@ -1022,11 +1026,11 @@ fn every_shipped_session_occurrence_is_dated_by_its_own_open_or_the_next_day() {
         "every close-dated identity must ship a session inside the span"
     );
     assert!(
-        occurrences > 150_000,
+        occurrences > 250_000,
         "the sweep must cover every occurrence the identities source, saw {occurrences}"
     );
     assert!(
-        refused_cursors > 90_000,
+        refused_cursors > 82_000,
         "the sweep must step over the carried-era and unsourced spans rather than \
          stopping at them, saw {refused_cursors} refused cursors"
     );

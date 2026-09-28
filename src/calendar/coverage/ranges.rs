@@ -11,45 +11,56 @@
 //! accessor beside it.
 //!
 //! A declared phase-level gap is part of the same partition rather than a special
-//! case beside it. Both a declaration's own edges — its `PhaseGap::until` day and
-//! the day before it — are run boundaries, so every run lies wholly inside the
-//! declaration's era or wholly outside it, and one precedence
+//! case beside it. Where every declaration an identity carries is whole-domain or
+//! era-bounded, the declaration is itself static across its era: every run lies
+//! wholly inside the declaration's era or wholly outside it, and one precedence
 //! ([`CalendarCoverage::phase_gap_on`], the first declaration applying to a date)
-//! settles each run exactly as the per-date accessor settles its dates. A run a
-//! declaration answers for is reported by [`CoverageGaps`] with that declaration
-//! and is **not** yielded by [`CompleteRanges`]; a run no declaration answers for is
-//! decided by the ordinary date-level facts.
+//! settles each run exactly as the per-date accessor settles its dates.
 //!
-//! The two iterators are a partition of the supported domain, and a declaration's
-//! record spans its whole era however many static edges fall inside it: the era
-//! before its bound, the whole domain when it carries none and no bounded
-//! declaration precedes it, or what a bounded predecessor left when one does —
-//! `globex_fx` is the shipped case, whose special-session gap applies everywhere
-//! but reports from the quarter-hour gap's bound on. A declaration an earlier one
-//! already answers for on every date has no record, because no date has it as its
-//! answer.
+//! A **date-scoped** declaration — one carrying an
+//! [`PhaseGapShape::OrderEntryWindow`] shape — can flip the verdict from date to
+//! date, because the served occurrence it is keyed to resolves on a bracket-era
+//! Sunday and not on the Tuesday beside it. Inside such a declaration's span the
+//! walk therefore merges verdicts **day by day**, which keeps every reported run
+//! faithful to [`CalendarCoverage::coverage_on`] one date at a time: #79's
+//! quarter-hour comes back as the bracket-era Sundays, one record each, with the
+//! Tuesdays between them answered. The day-merged region is bounded by the
+//! declaration's own era and the identity's audited windows — outside both, the
+//! ordinary facts refuse every date uniformly and the static-edge walk resumes —
+//! so the walk's cost stays bounded by the identity's own tables.
+//!
+//! The two iterators are a partition of the supported domain: the runs are
+//! disjoint, ascending, and together they tile `[SUPPORT_FLOOR, NaiveDate::MAX]`,
+//! and each run's verdict is exactly what the per-date accessor answers on every
+//! date inside it.
 
 use super::{CalendarCoverage, CoverageGap, CoverageGapReason, DateRange, SUPPORT_FLOOR};
 use chrono::NaiveDate;
 
-/// The most declaration records the walk's store holds. The date-level runs are
-/// always reported a run at a time and are not stored, so this bounds
-/// declarations only.
+/// The most declarations one identity may carry.
 ///
-/// The walk's own edges are bounded by the identity's window and row counts, and a
-/// declaration adds two more, so this is generous headroom rather than a limit
-/// anything ships near: the most declarations any shipped identity carries is
-/// **1** (`globex_fx`), against a bound of 256, and
-/// `tests/coverage_metadata.rs` holds every identity's declaration-record count
-/// to it. Exceeding it is unreachable with the shipped tables; were it
-/// reached, a declaration's record would be dropped while the walk still skipped
-/// the dates it claimed, leaving a hole in both iterators — so the bound is
-/// headroom that a fence guards, not a correctness guarantee.
+/// A declaration is a `PhaseGap` on the identity's `phase_gaps` list, and this
+/// bounds the list — not the records the walk reports, which a date-scoped
+/// declaration expands to one per maximal run (hundreds for the bracket-era
+/// Sundays) and which are streamed a run at a time and never stored. The bound
+/// is generous headroom rather than a limit anything ships near: the most
+/// declarations any shipped identity carries is **2** (`globex_grains`), against
+/// a bound of 256, and `tests/coverage_metadata.rs` holds every identity to it.
 pub(super) const GAP_RECORD_CAPACITY: usize = 256;
+
+/// One walked run: a maximal span of one verdict, with the declaration the
+/// verdict's gap carries when a declaration is the answer for the run.
+pub(super) type Run = (
+    DateRange,
+    Option<CoverageGapReason>,
+    Option<super::PhaseGap>,
+);
+
 /// Walks the supported domain once in maximal runs of one verdict.
 ///
-/// Every run boundary is a static table edge, so the walk is bounded by the
-/// identity's window and row counts and allocates nothing.
+/// Run boundaries are static table edges everywhere except inside the span of a
+/// date-scoped declaration, where the run is merged from per-date verdicts; both
+/// regimes are bounded by the identity's own tables and allocate nothing.
 #[derive(Debug, Clone, Copy)]
 pub(super) struct Runs {
     coverage: CalendarCoverage,
@@ -67,53 +78,69 @@ impl Runs {
         }
     }
 
-    /// Starts a walk at `cursor`, restoring a walk another value parked.
-    ///
-    /// The walk carries no state beyond its cursor — every run is derived from the
-    /// identity's static edges — so a scope may run several walks over the same
-    /// domain without them disagreeing, which is what lets each declaration be
-    /// walked on its own.
-    const fn resume(coverage: CalendarCoverage, cursor: NaiveDate) -> Self {
-        Self {
-            coverage,
-            cursor,
-            done: false,
-        }
-    }
-
-    /// Returns the next run, with the reason that applies inside it, or `None`
-    /// once the domain is walked.
-    fn next_run(&mut self) -> Option<(DateRange, Option<CoverageGapReason>)> {
+    /// Returns the next run, with the reason that applies inside it and the
+    /// declaration that reason carries, or `None` once the domain is walked.
+    fn next_run(&mut self) -> Option<Run> {
         if self.done {
             return None;
         }
         let first = self.cursor;
-        let reason = self.coverage.gap_reason_on(first);
-        let last = self.coverage.run_end(first);
+        let verdict = self.verdict_at(first);
+        let segment_last = self.coverage.run_end(first);
+        // Outside a date-scoped declaration's reach the verdict is constant
+        // across the whole static segment. Inside it the verdict can flip from
+        // date to date, so the run is merged from per-date verdicts; the region
+        // ends at the segment's own static edge at the latest.
+        let last = if self
+            .coverage
+            .has_date_scoped_shapes_between(first, segment_last)
+        {
+            let mut day = first;
+            while let Some(next) = day.succ_opt() {
+                if next > segment_last || self.verdict_at(next) != verdict {
+                    break;
+                }
+                day = next;
+            }
+            day
+        } else {
+            segment_last
+        };
         match last.succ_opt() {
             Some(next) => self.cursor = next,
             None => self.done = true,
         }
-        Some((DateRange { first, last }, reason))
+        Some((DateRange { first, last }, verdict.0, verdict.1))
+    }
+
+    /// The verdict one date walks to: the reason the date refuses with, and the
+    /// declaration that reason belongs to when a declaration supplies it.
+    fn verdict_at(&self, date: NaiveDate) -> (Option<CoverageGapReason>, Option<super::PhaseGap>) {
+        match self.coverage.phase_gap_on(date) {
+            Some(declaration) => (Some(declaration.reason()), Some(declaration)),
+            None => (self.coverage.gap_reason_on(date), None),
+        }
     }
 }
 
 /// Ascending iterator over the spans an identity answers completely.
 ///
 /// Produced by [`CalendarCoverage::complete_ranges`]. An identity with any
-/// unbounded declaration reports no span at all, however many it bounds; one
-/// whose declarations are all bounded reports the spans from the last bound on.
+/// unbounded whole-domain declaration reports no span at all; one whose
+/// declarations are bounded or date-scoped reports the spans its ordinary facts
+/// answer between them.
 #[derive(Debug)]
 pub struct CompleteRanges {
     runs: Runs,
 }
 
 impl CompleteRanges {
-    /// Returns the walk's declaration-record bound.
+    /// Returns the walk's declaration bound.
     ///
     /// This iterator reports complete spans, never declaration records, and holds
-    /// no precomputed store; the constant bounds its sibling's store. Exposed so a
-    /// caller can size a buffer against the same number the fence uses. `tests/coverage_metadata.rs` holds every identity to
+    /// no precomputed store; the constant bounds how many declarations one
+    /// identity may carry. Exposed so a caller can size against the same number
+    /// the fence uses, and `tests/coverage_metadata.rs` holds every identity to
     /// it.
     #[must_use]
     pub const fn capacity() -> usize {
@@ -133,14 +160,12 @@ impl Iterator for CompleteRanges {
 
     fn next(&mut self) -> Option<DateRange> {
         loop {
-            let (range, reason) = self.runs.next_run()?;
-            // A declared gap can cover a run the date level would have called
-            // ordinary — the bounded era is the shipped case — and that run is
-            // reported by `gaps` with its closing condition. Yielding it here too
-            // would report one date as both complete and incomplete, so the two
-            // iterators never overlap.
-            let declared = self.runs.coverage.phase_gap_on(range.first()).is_some();
-            if reason.is_none() && !declared {
+            let (range, reason, _declaration) = self.runs.next_run()?;
+            // A run a declaration answers for is reported by `gaps` with its
+            // closing condition. Yielding it here too would report one date as
+            // both complete and incomplete, so the two iterators never overlap —
+            // a declaration always refuses, so its runs carry a reason.
+            if reason.is_none() {
                 return Some(range);
             }
         }
@@ -150,36 +175,25 @@ impl Iterator for CompleteRanges {
 /// Ascending iterator over the spans an identity cannot answer completely, each
 /// with its reason.
 ///
-/// Produced by [`CalendarCoverage::gaps`]. The records are computed by one walk
-/// when the iterator is first asked, then handed out: a **declared phase-level
-/// gap** first, one record per declaration that answers for any date, then the
-/// date-level runs in ascending order with the reason the walk derived. The runs a
-/// declaration answers for are not repeated among the date-level ones, so every
-/// record spans dates no other record claims — the declaration records themselves
-/// are ascending, the date-level ones follow them, and each record reports exactly
-/// one declaration ([`CoverageGap::phase_gap`]) whose own bound is on
-/// [`CalendarCoverage::phase_gaps`].
+/// Produced by [`CalendarCoverage::gaps`]. The records are **streamed in
+/// ascending date order** by one walk over the supported domain: a record whose
+/// reason is a declared phase-level gap carries that declaration
+/// ([`CoverageGap::phase_gap`]) over one maximal span the declaration answers
+/// for, and every other record is a date-level run with the reason the walk
+/// derived. No span is reported twice and none is withheld, so the records and
+/// [`CompleteRanges`] tile the supported domain.
 #[derive(Debug)]
 pub struct CoverageGaps {
-    coverage: CalendarCoverage,
-    records: [Option<CoverageGap>; GAP_RECORD_CAPACITY],
-    /// How many records the walk produced, saturating at the capacity.
-    len: usize,
-    /// How many records have been handed out.
-    next: usize,
-    /// The date-level walk, used once the precomputed records are exhausted.
     runs: Runs,
-    /// Whether the precomputed records have been built.
-    built: bool,
 }
 
 impl CoverageGaps {
-    /// Returns the walk's declaration-record bound.
+    /// Returns the walk's declaration bound.
     ///
-    /// It bounds the declaration records the walk stores, not the records
-    /// [`CalendarCoverage::gaps`] reports: the date-level runs are walked a run at
-    /// a time and are not stored. Exceeding it drops declaration records, so the
-    /// fence holds the shipped tables under it.
+    /// It bounds the **declarations** one identity may carry, not the records
+    /// this iterator reports: a date-scoped declaration reports one record per
+    /// maximal run its shape resolves, and the records are streamed a run at a
+    /// time and never stored, so no record count can overflow anything.
     #[must_use]
     pub const fn capacity() -> usize {
         GAP_RECORD_CAPACITY
@@ -188,68 +202,7 @@ impl CoverageGaps {
     /// Starts the walk this iterator reports.
     pub(super) const fn new(coverage: CalendarCoverage) -> Self {
         Self {
-            coverage,
-            records: [None; GAP_RECORD_CAPACITY],
-            len: 0,
-            next: 0,
             runs: Runs::new(coverage),
-            built: false,
-        }
-    }
-
-    /// Records one phase-level gap per declaration that no earlier one shadows,
-    /// over the whole span that declaration answers for.
-    ///
-    /// The span is the union of the runs the declaration answers for, which is
-    /// contiguous because its own bound is a run edge: the era before it for the
-    /// seven scopes withholding the Sunday quarter-hour, the whole supported domain
-    /// for a declaration that carries no bound and has none before it, and what a
-    /// bounded predecessor left for one that follows it — `globex_fx`'s shape, whose
-    /// special-session gap applies everywhere and reports from the quarter-hour
-    /// gap's bound on so the two records stay disjoint.
-    ///
-    /// A declaration answers for a run when it applies and no earlier declaration
-    /// does; that is exactly the set the per-date accessor names it on, so each
-    /// record's span is the span its own declaration is the answer for. The
-    /// date-level half of the iterator resumes past those runs, so no span is
-    /// reported twice.
-    fn build(&mut self) {
-        let mut claimed = 0_usize;
-        for declaration in self.coverage.phase_gaps() {
-            let mut first = None;
-            let mut last = None;
-            let mut walk = Runs::new(self.coverage);
-            while let Some((range, _)) = walk.next_run() {
-                let answers = self.coverage.phase_gap_on(range.first()) == Some(*declaration);
-                if !answers {
-                    continue;
-                }
-                claimed += 1;
-                first.get_or_insert(range.first());
-                last = Some(range.last());
-            }
-            if let (Some(first), Some(last)) = (first, last) {
-                self.push(CoverageGap {
-                    range: DateRange { first, last },
-                    reason: declaration.reason(),
-                    phase_gap: Some(*declaration),
-                });
-            }
-        }
-        self.runs = Runs::resume(self.coverage, SUPPORT_FLOOR);
-        for _ in 0..claimed {
-            if self.runs.next_run().is_none() {
-                break;
-            }
-        }
-        self.built = true;
-    }
-
-    /// Records one gap, saturating at the capacity.
-    fn push(&mut self, gap: CoverageGap) {
-        if let Some(slot) = self.records.get_mut(self.len) {
-            *slot = Some(gap);
-            self.len += 1;
         }
     }
 }
@@ -258,21 +211,17 @@ impl Iterator for CoverageGaps {
     type Item = CoverageGap;
 
     fn next(&mut self) -> Option<CoverageGap> {
-        if !self.built {
-            self.build();
-        }
-        if let Some(gap) = self.records.get(self.next).copied().flatten() {
-            self.next += 1;
-            return Some(gap);
-        }
-        // Past the capacity a declaration record is dropped, and its dates are
-        // still skipped as claimed, so `GAP_RECORD_CAPACITY` is a fence-guarded
-        // headroom rather than a guarantee. Date-level runs are never stored, so
-        // they are unaffected.
         loop {
-            let (range, reason) = self.runs.next_run()?;
+            let (range, reason, declaration) = self.runs.next_run()?;
             if let Some(reason) = reason {
-                return Some(super::gap_of(range, reason));
+                return Some(match declaration {
+                    Some(declaration) => CoverageGap {
+                        range,
+                        reason,
+                        phase_gap: Some(declaration),
+                    },
+                    None => super::gap_of(range, reason),
+                });
             }
         }
     }

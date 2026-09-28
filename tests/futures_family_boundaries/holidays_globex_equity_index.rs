@@ -514,9 +514,22 @@ fn holiday_rows_move_the_trade_date_only_where_the_operator_does() {
         Some(day(2025, 12, 26))
     );
     // Nothing is assigned to the closed trade date itself, and the evening
-    // before that closure has no session at all to assign: both are refused.
-    assert_declared_refusal(calendar.trade_date(ct((2025, 12, 25), (10, 0, 0))));
-    assert_declared_refusal(calendar.trade_date(ct((2025, 12, 24), (18, 0, 0))));
+    // before that closure has no session at all to assign: both answer
+    // absence. A sourced closure is not a coverage refusal — the closure and
+    // its deleted eve are facts of the shipped rows, and the walk that finds
+    // neither a session nor a queue on them answers `None` (#172).
+    assert_eq!(
+        calendar
+            .trade_date(ct((2025, 12, 25), (10, 0, 0)))
+            .expect("the coverage contract must answer a covered date"),
+        None
+    );
+    assert_eq!(
+        calendar
+            .trade_date(ct((2025, 12, 24), (18, 0, 0)))
+            .expect("the coverage contract must answer a covered date"),
+        None
+    );
 }
 
 // ---------------------------------------------------------------------------
@@ -1587,10 +1600,16 @@ fn era_2022_2024_closures_remove_the_trading_day_and_the_prior_evening_wrap() {
                 .expect("the coverage contract must answer a covered date"),
             "{date}"
         );
-        // No session holds this instant — the closure deleted the trade date —
-        // so the walk falls through to the order-entry scan, which the Sunday
-        // quarter-hour declaration withholds in this era (#79).
-        assert_declared_refusal(calendar.trade_date(ct_on(date, (10, 0, 0))));
+        // No session holds this instant and the closure deleted the trade date, so
+        // the trade-date walk finds neither a session nor a queue: the answer is
+        // absence (`None`), a sourced closure, never a refusal.
+        assert_eq!(
+            calendar
+                .trade_date(ct_on(date, (10, 0, 0)))
+                .expect("the coverage contract must answer a covered date"),
+            None,
+            "{date}"
+        );
 
         let reopen = era_reopen_after_closure(date);
         assert_eq!(
@@ -1973,11 +1992,16 @@ fn era_2019_2021_sweeps_every_shipped_row_kind_and_instant() {
                             .expect("the coverage contract must answer a covered date"),
                         "{date}"
                     );
-                    // No session holds this instant — the closure deleted the
-                    // trade date — so the walk falls through to the order-entry
-                    // scan, which the Sunday quarter-hour declaration withholds
-                    // in this era (#79): the refusal is the phase gap's.
-                    assert_declared_refusal(calendar.trade_date(ct_on(date, (10, 0, 0))));
+                    // No session holds this instant and the closure deleted the trade date, so
+                    // the trade-date walk finds neither a session nor a queue: the answer is
+                    // absence (`None`), a sourced closure, never a refusal.
+                    assert_eq!(
+                        calendar
+                            .trade_date(ct_on(date, (10, 0, 0)))
+                            .expect("the coverage contract must answer a covered date"),
+                        None,
+                        "{date}"
+                    );
                 }
                 HolidayKind::Unsourced => unsourced += 1,
                 other => panic!("{date}: this era ships no {other:?}"),

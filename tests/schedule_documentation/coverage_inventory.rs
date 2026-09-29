@@ -267,12 +267,22 @@ fn withheld(calendar: ExchangeCalendar, date: NaiveDate) -> bool {
 /// phase-level gap behind the denial. `nasdaq` is the next entry (2026-09-28
 /// UTC): its four withheld dates are the two TBA early closes, the unrecovered
 /// Sandy confirmation and the mourning day, all date-shaped with no phase gap.
+/// `nse_india` is the next: from 2026-09-28 UTC it audits 2025-2026 and withholds
+/// the two Muhurat Trading dates (2025-10-21 and 2026-11-08), whose special-session
+/// instants the operator has not published, with no phase-level gap behind the
+/// denial either.
 fn date_level_incompleteness() -> &'static [(&'static str, usize)] {
-    &[("cbot", 261), ("iceus", 41), ("nasdaq", 4), ("xetra", 0)]
+    &[
+        ("cbot", 261),
+        ("iceus", 41),
+        ("nasdaq", 4),
+        ("nse_india", 2),
+        ("xetra", 0),
+    ]
 }
 
 /// `is_complete_on(SAMPLE)` agrees with the inventory's `Complete?` cell for all
-/// twenty-seven served scopes.
+/// thirty served scopes.
 ///
 /// The page and the API are one record, and this is the test that stops them
 /// disagreeing. The defect it was added for is why it is not a loop over the cell
@@ -366,12 +376,13 @@ fn inventory_completeness_verdicts_match_the_metadata() {
     }
     assert_eq!(
         (complete, incomplete, no_coverage),
-        (11, 16, 0),
-        "the inventory's verdict shapes: eleven complete, sixteen incomplete, none with no 2025 \
+        (13, 17, 0),
+        "the inventory's verdict shapes: thirteen complete, seventeen incomplete, none with no 2025 \
          coverage (xetra's unpublished 2027 schedule keeps it incomplete; #197's b3/tadawul are \
          complete; nyse is complete to 2027 and nasdaq is incomplete — four Unsourced dates across \
          2010-2026; the 2026-09-28 UTC APAC activation makes nzx and sgx_securities complete to \
-         their operators' horizons and asx incomplete below its 2025-06-23 SR15 horizon)"
+         their operators' horizons and asx incomplete below its 2025-06-23 SR15 horizon; tse and \
+         sse windows end at the operators' horizons, and nse_india's Muhurat dates are Unsourced)"
     );
 }
 
@@ -813,8 +824,11 @@ fn the_sunday_quarter_hour_is_declared_exactly_where_the_profiles_withhold_it() 
             "coinbase_derivatives",
             "eurex",
             "iceus",
+            "tse",
+            "nse_india",
             "hkex",
             "sgx_securities",
+            "sse",
             "xetra",
             "six",
             "borsa_istanbul",
@@ -834,7 +848,7 @@ fn the_sunday_quarter_hour_is_declared_exactly_where_the_profiles_withhold_it() 
 /// would make a scope read incomplete for a reason that has nothing to do with
 /// its `Complete?` cell. Both claims are re-derived here from the shipped
 /// tables — the holiday row (if any) and the audited windows — for all
-/// twenty-seven scopes, and the scope count is asserted so a scope cannot drop out.
+/// thirty scopes, and the scope count is asserted so a scope cannot drop out.
 #[test]
 fn inventory_sample_date_is_inside_every_scopes_audit() {
     let day = sample();
@@ -864,8 +878,8 @@ fn inventory_sample_date_is_inside_every_scopes_audit() {
         checked += 1;
     }
     assert_eq!(
-        checked, 27,
-        "the inventory carries one row per served scope, and all twenty-seven are checked"
+        checked, 30,
+        "the inventory carries one row per served scope, and all thirty are checked"
     );
 }
 

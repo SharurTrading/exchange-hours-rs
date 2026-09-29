@@ -73,6 +73,17 @@ corrections (a venue's hours fixed against a primary source) go under
   (NYSE 2018-04-09, Nasdaq 2013-03-18); below it the holiday rows fence the
   data and the coverage contract refuses.
 
+- **Built-in holiday tables for the three APAC cash-equity venues (2026-09-28
+  UTC).** `tse` ships 2025-2027 (54 closure rows, keyed to the operator's
+  `Market Holidays` page, which prints the current and next year), `sse` ships
+  2025-2026 (37 closure rows from the annual closure-arrangement notices; the
+  2027 notice is unpublished) and `nse_india` ships 2025-2026 (30 rows, two of
+  them `Unsourced` Muhurat-Trading dates whose special-session instants the
+  operator has not published, so the dates refuse rather than answer). The
+  three identities turn **served** in the verification ledger at a monthly
+  review cadence, and the coverage inventory, README counts and evidence files
+  move with them.
+
 - **Built-in holiday tables for three served cash-equity venues (2026-09-28
   UTC).** `b3`, `tadawul` and `borsa_istanbul` ship built-in holiday rows and
   move from dormant to served in the verification ledger, each reviewed monthly

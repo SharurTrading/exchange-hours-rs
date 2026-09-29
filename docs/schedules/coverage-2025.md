@@ -46,7 +46,13 @@ era and withholding 2025-01-01..2026-05-28. The `iceus` `floor+ dates`, `Unsrc f
 **47**/**40**, when the release incorporated the operator's September 2026 notices: the softs'
 BST-end week rows (2026-10-26..30, five per family) and the 2026 Thanksgiving instants, whose
 family disagreements ship as one more `Unsourced` venue date (2026-11-27) beside the restated
-2026-11-26 one. Three dormant equities venues became served on 2026-09-28 UTC when their
+2026-11-26 one. The `tse`, `nse_india` and `sse` rows were added on 2026-09-28 UTC, when the three
+APAC cash-equity venues turned **served** and their holiday tables shipped — 2025-2027 for `tse`
+(the operator's page prints the current and next year), 2025-2026 for `sse` and `nse_india` (the
+2027 arrangements are unpublished) — together with the No-holiday statement's scope count, §4's
+complete-to-2027-12-31 note, the three endpoint rows and their scope count in
+[Artifact resolution](#artifact-resolution), and the consumer-routing note for the three venues'
+market-clock reachability. Three dormant equities venues became served on 2026-09-28 UTC when their
 2025-2027 holiday windows shipped — `borsa_istanbul` (2025-2026; 2027 unpublished),
 `tadawul` (2025-2027 complete) and `b3` (2025-2026; 2027 unpublished) — moving §1's heading and
 body no further, adding the three inventory rows below with the counts their tables derive, and
@@ -132,8 +138,11 @@ served `iceus` identity, while `FANG`, `DOLLAR_INDEX`, `SUGAR_COFFEE_COCOA`, `CO
 | `iceus` | [ice_us.rs](../../src/calendar/schedules/futures/us/ice_us.rs) | 2017-11-07 … 2017-11-08 (2 rows) | — | 2025-01-01..2028-01-03 | 48 | 41 | 2025 answers, except the Independence Day and Christmas dates and the National Day of Mourning: fifteen 2025 dates are withheld (2025-01-09 … 2025-12-26) because the families disagree on them, four of them because the two 2025 holiday notices that would state the hours were not retrieved (#168); the 26 withheld 2026-2027 dates include the five 2026-10-26..30 BST-end dates the softs' DST-end notice opened at three instants and Thanksgiving 2026-11-27, whose instants the operator's notice states per family | **incomplete**: 41 `Unsourced` dates in 2025+ | #98, #116, #168 |
 | `asx` | [asx.rs](../../src/calendar/schedules/equities/apac/asx.rs) | 2025-06-23 … 2025-06-23 (1 row) | 2025-06-23 | 2025-01-01..2027-12-31 | 29 | 0 | the normal week is sourced only from the 2025-06-23 SR15 knowledge bound, so every 2025-01-01..2025-06-22 trade date refuses as carried rather than answering — the below-bound grid is carried, not sourced — and the operator's 2025-01-27 Australia Day row sits inside that carried region | **incomplete**: the below-horizon 2025 dates answer nothing (carried normal week) | — |
 | `nzx` | [nzx.rs](../../src/calendar/schedules/equities/apac/nzx.rs) | 2020-04-06 … 2020-04-06 (1 row) | 2020-04-06 | 2025-01-01..2027-01-04 | 28 | 0 | NZX prints no consolidated year sheets: the operator's own rolling table of roughly the next thirteen months reaches only the Day after New Year's Day, 2027-01-04 — verified 2026-09-28 UTC against the live page — so nothing past that day is claimed and nothing is withheld inside it | complete to 2027-01-04 (2025-2027 sourced; the operator's rolling table stops there) | — |
+| `tse` | [tse.rs](../../src/calendar/schedules/equities/apac/tse.rs) | 2011-11-21 … 2024-11-05 (2 rows) | 2010-01-01 | 2025-01-01..2027-12-31 | 54 | 0 | none in 2025+; the 2010-2024 holiday era sits outside the audited window, and the 2028 table is not published yet — JPX prints the current and next year only | complete to 2027-12-31 (2025-2027 sourced; 2028 unpublished) | #116 |
+| `nse_india` | [nse.rs](../../src/calendar/schedules/equities/apac/nse.rs) | 2010-01-04 … 2026-08-03 (4 rows) | 2010-01-01 | 2025-01-01..2026-12-31 | 30 | 2 | the two Muhurat Trading dates (2025-10-21 and 2026-11-08) are withheld `Unsourced`: the operator announces the special sessions but had published no instants when the banners were captured; the 2027 list is not published yet | **incomplete**: 2 `Unsourced` dates in 2025+ | #116 |
 | `hkex` | [hkex.rs](../../src/calendar/schedules/equities/apac/hkex.rs) | 2011-03-07 … 2016-07-25 (2 rows) | 2011-03-03 | 2025-01-01..2027-12-31 | 51 | 0 | the operator's 2026 holiday table ends at Christmas Day in all three editions retrieved and 2026-12-28 answers as an ordinary trading day — verified against the general-holiday list, which puts "the first weekday after Christmas Day" on Saturday 2026-12-26 (no conflict); the verification record with its method stands in the evidence file | complete to 2027-12-31 (2025-2027 sourced; the 2026-12-28 check is recorded, no conflict) | — |
 | `sgx_securities` | [sgx.rs](../../src/calendar/schedules/equities/apac/sgx.rs) | 2011-08-01 … 2019-06-03 (3 rows) | 2011-08-01 | 2025-01-01..2026-12-31 | 25 | 0 | the operator's own sheet is printed for 2025 & 2026 only: MOM has gazetted 2027 but the operator has stated no 2027 half-day treatment, so a 2027 date without a row could not be audited normal — verified 2026-09-28 UTC; the closing condition is SGX's next annual securities schedule | complete to 2026-12-31 (2025-2026 sourced; 2027 unpublished) | — |
+| `sse` | [sse.rs](../../src/calendar/schedules/equities/apac/sse.rs) | 2018-08-20 … 2018-08-20 (1 row) | 2010-01-01 | 2025-01-01..2026-12-31 | 37 | 0 | none in 2025+; the 2010-2024 holiday era sits outside the audited window, and 2027 is not published by SSE: the annual closure notice appears each December and none exists as of the 2026-09-28 retrieval | complete to 2026-12-31 (2025-2026 sourced; 2027 unpublished) | #116 |
 | `xetra` | [xetra.rs](../../src/calendar/schedules/equities/europe/xetra.rs) | 2020-11-24 … 2025-12-01 (2 rows) | 2010-01-01 | 2025-01-01..2027-12-31 | 23 | 0 | the 2027 trading-holiday close schedule is not yet published — the operator's named 20:00-close list is scoped to 2026 — and the 2025 page edition words the 20:00 note over Börse Frankfurt only, so no 2025 Xetra early close is sourced; both closing conditions are recorded in the evidence file (#200) | **incomplete**: the 2027 trading-holiday close schedule is unpublished and the 2025 page edition words the 20:00 note over Börse Frankfurt only, so no 2025 Xetra early close is sourced (#200); 2026 is complete | #200 |
 | `six` | [six.rs](../../src/calendar/schedules/equities/europe/six.rs) | 2020-06-22 … 2020-06-22 (1 row) | 2010-01-01 | 2025-01-01..2027-12-31 | 29 | 0 | none in 2025-2027: the operator's three per-year Trading Calendar PDFs print complete closure sets and no intraday arrangement | complete to 2027-12-31 (2025-2027 sourced) | — |
 | `borsa_istanbul` | [bist.rs](../../src/calendar/schedules/equities/europe/bist.rs) | 2012-03-02 … 2019-10-04 (8 rows) | 2012-03-02 | 2025-01-01..2026-12-31 | 25 | 0 | 2027 is not published by Borsa İstanbul: verified 2026-09-28 UTC, the `Resmi Tatil Günleri` page's year list runs 2012-2026 and no 2027 equity-market table is linked from it, so nothing past 2026-12-31 is claimed | complete to 2026-12-31 (2025-2026 sourced; 2027 unpublished) | #116 |
@@ -158,7 +167,11 @@ to a site in SharurPlatform. The consumer owns both maps; this crate maps no sym
 `translate::exchange_for_rithmic_code`, and all eight are reached there. The four CME-group
 venues also hold many authored roots in `static PRODUCTS`, so their mapped instruments resolve as
 `SessionHoursBasis::ProductFamily`; only `cfe`, `eurex`, `iceus` and `coinbase_derivatives` have no
-authored root and so reach the venue calendar through `ExchangeFallback`.
+authored root and so reach the venue calendar through `ExchangeFallback`. The three APAC
+cash-equity venues turned served on 2026-09-28 UTC — `tse`, `nse_india` and `sse` — are reached
+outside `NAMESPACES`: the consumer's market-clock sets in `crates/ui/src/market_clock/sets.rs`
+name each `Exchange` directly (`OVERVIEW_MARKETS` and `EQUITY_MARKETS`, and `FOREX_MARKETS` for
+`tse`).
 
 | Identity | Namespace | Authored root rows | Other consumer sites |
 |---|---|---|---|
@@ -170,7 +183,10 @@ authored root and so reach the venue calendar through `ExchangeFallback`.
 | `eurex` | "EUREX" | none | market clock uses the `Eurex` family instead |
 | `iceus` | "NYBOT" | none | market clock uses the `IceUs` family instead |
 | `coinbase_derivatives` | "CDE" | none | - |
+| `tse` | none | none | market-clock overview, equity and forex-centre sets |
+| `nse_india` | none | none | market-clock overview and equity sets |
 | `hkex` | - | none | market-clock `HKEX` set (`MARKETS`, `HKEX_CENTRE`, `GATEWAYS` in `crates/ui/src/market_clock/sets.rs`) |
+| `sse` | none | none | market-clock overview and equity sets |
 | `xetra` | - | none | market-clock `XETRA` and `XETRA_CENTRE` sets (same file) |
 | `six` | - | none | market-clock `SIX` and `SIX_CENTRE` sets (same file) |
 
@@ -188,7 +204,7 @@ recorded rather than resolved in this stage.
 ### No-holiday and synthetic scopes
 
 Stated explicitly, as the stage requires. **No served scope is synthetic and no served scope is a
-no-holiday scope**: all twenty-two ship a holiday table, and the row above for each names its windows.
+no-holiday scope**: all thirty ship a holiday table, and the row above for each names its windows.
 The crate's two synthetic identities are `Exchange::Unknown`, the UTC 24x7 fallback, and
 `AlwaysOpen`; both are **dormant**, both answer `None` in `holidays/routing.rs`, and neither is a
 venue fact. They therefore contribute no inventory row, and no consumer instrument in the maps
@@ -249,7 +265,10 @@ no answer, and Stage 4 item 2 refreshes it.
 ### 4. One scope reports complete to 2027-12-31 in 2025+; **incomplete across 2010-2027**: 20 `Unsourced` dates across 2016-2024 and the unaudited 2010-2015 interval, and it carries a gap the API cannot state
 
 `globex_nikkei_225_dollar` is the only scope the coverage API reports complete to that date: it has
-no `Unsourced` row at or after 2025-01-01 and no declared phase-level gap. It nonetheless carries a
+no `Unsourced` row at or after 2025-01-01 and no declared phase-level gap. (From 2026-09-28 UTC
+`tse` reports complete to the same date in 2025+ as well — its window is 2025-01-01..2027-12-31
+with nothing withheld and no declared gap — so `globex_nikkei_225_dollar` remains the only such
+scope that is **incomplete across 2010-2027**.) It nonetheless carries a
 **witness gap** the API has no representation for: it ships twelve of the seventeen merged trade
 dates and none of the 2025 five (2025-01-21, 2025-02-18, 2025-05-27, 2025-06-20, 2025-09-02),
 because no `NKD`/`NIY` witness exists for those windows and the channel that would carry one returns
@@ -322,7 +341,10 @@ one era directory, so a digest resolves to bytes that more than one location car
 including loose copies of members of the store's 14 zip bundles. Every quoted digest was
 recomputed from the bytes: **1,941 of 1,941 reproduce, with 0 mismatches, 0 unlocatable artifacts
 and 0 unparseable rows.** A second independent pass re-hashed every distinct artifact from raw
-bytes, re-extracting the zip members, and reproduced every one.
+bytes, re-extracting the zip members, and reproduced every one. The three APAC equity evidence
+files added on 2026-09-28 UTC carry three further `### Documents` tables of nine rows — nine
+distinct document ids — whose digests were recomputed from the store bytes when the rows shipped
+and all reproduce.
 
 **Load-bearing endpoints.** For each scope, the artifact establishing the state in force at the 2025
 floor (**baseline**) and the one establishing its **horizon** were resolved through the owner
@@ -339,6 +361,9 @@ documents` section - to saved bytes, and their digests recomputed by this stage:
 | `coinbase_derivatives` | `CDE-MN-24-25` | T1 | `holidays/raw/cde-2021-2025/pdf/24-25.pdf` - sha256 reproduces | `CDE-MN-26-36` | T1 | `holidays/raw/cde-2021-2025/pdf/26-36.pdf` - sha256 reproduces |
 | `eurex` | `EUREX-HOLREG-2025` | T1 | `holidays/raw/eurex-2025-2027/eurex_holiday_regulations_2025.wayback-20250913041407.html` - sha256 reproduces | `EUREX-HOLREG-2026` | T1 | `holidays/raw/cfe-eurex-ice-cde-smfe-2026-2027/eurex_holiday_regulations.html` - sha256 reproduces |
 | `iceus` | `IFUS-CAL-2025` | T1 | `holidays/raw/iceus-2025-2027/IFUS_Trading_Hours_Holiday_Calendar_20250523.pdf` - sha256 reproduces as `0add2b10e7d6cb2a35b727db654e4ea87ed30970ec637f53e62dd044f553d049` | `IFUS-CAL-2027` | T1 | `holidays/raw/cfe-eurex-ice-cde-smfe-2026-2027/ICE_Futures_US_Exchange_Notice-2027_Holiday_Calendar_20260604.pdf` - sha256 reproduces as `d2e39a2db2a26e0578ad0d09b36f51dfdad8502635020fe79d66303c09c1a040` |
+| `tse` | `JPX-HOL-2025` | T1 | `holidays/raw/equities/tse/2025-2027/wayback_20250923_jpx_holiday_calendar.html` - sha256 reproduces as `b301e55c0d5e091602cabcb242dc28de76943e04db22115e4270b8a53de37877` | `JPX-HOL-2026-2027` | T1 | `holidays/raw/equities/tse/2025-2027/live_jpx_holiday_calendar_hub.html` - sha256 reproduces as `32c6d13a925aff109c135947f2e809b5b9de1ae3d4dfb77b876f4a05d809090a` |
+| `nse_india` | `NSE-HOL-2025` | T1 | `holidays/raw/equities/nse_india/2025-2027/wayback_20241223_nse_holiday_banner.jpg` - sha256 reproduces as `22e29e5a236591c9dd64e9bf1788703da77d9d4934dbbc617668618668e3a115` | `NSE-HOL-2026` | T1 | `holidays/raw/equities/nse_india/2025-2027/wayback_20260108_nse_trading_holiday_list_banner.jpg` - sha256 reproduces as `4920fdb026e210d0badc135577871cd6383559fe82d93d164c830b9ffd04a89e` |
+| `sse` | `SSE-NOTICE-2024-38` | T1 | `holidays/raw/equities/sse/2025-2027/live_sse_notice_20241223_2025_holidays.html` - sha256 reproduces as `b88e5777d868192c156b85f7514fafcba8638a8bcec0cd80190b2e67769f5fff` | `SSE-NOTICE-2025-45` | T1 | `holidays/raw/equities/sse/2025-2027/live_sse_notice_20251222_2026_holidays.html` - sha256 reproduces as `4e260b815ce1309175ed994e6490a4ccd51b998a5f92bcdc41cec00fc6823dc7` |
 | `globex_equity_index` | `CME-SVC-2024-12-31` | T2 | `holidays/raw/cme-2025-2027/arc/thbp_2024-12-31_2025-01-02_20241220155340.json` - sha256 reproduces | `CME-SVC-2027-12-22` | T2 | `holidays/raw/cme-2025-2027/live/thbp/thbp_2027-12-22_2027-12-25.json` - sha256 reproduces |
 | `globex_energy` | `CME-SVC-2024-12-31` | T2 | `holidays/raw/cme-2025-2027/arc/thbp_2024-12-31_2025-01-02_20241220155340.json` - sha256 reproduces | `CME-SVC-2027-12-22` | T2 | `holidays/raw/cme-2025-2027/live/thbp/thbp_2027-12-22_2027-12-25.json` - sha256 reproduces |
 | `globex_grains` | `CME-SVC-2024-12-31` | T2 | `holidays/raw/cme-2025-2027/arc/thbp_2024-12-31_2025-01-02_20241220155340.json` - sha256 reproduces | `CME-SVC-2027-12-22` | T2 | `holidays/raw/cme-2025-2027/live/thbp/thbp_2027-12-22_2027-12-25.json` - sha256 reproduces |
@@ -348,7 +373,8 @@ documents` section - to saved bytes, and their digests recomputed by this stage:
 | `globex_cryptocurrency` | `CME-SVC-2024-12-31` | T2 | `holidays/raw/cme-2025-2027/arc/thbp_2024-12-31_2025-01-02_20241220155340.json` - sha256 reproduces | `CME-SVC-2027-12-22` | T2 | `holidays/raw/cme-2025-2027/live/thbp/thbp_2027-12-22_2027-12-25.json` - sha256 reproduces |
 | `globex_nikkei_225_dollar` | `CME-SVC-2024-12-31` | T2 | `holidays/raw/cme-2025-2027/arc/thbp_2024-12-31_2025-01-02_20241220155340.json` - sha256 reproduces | `CME-SVC-B-2027-12-22` | T2 | `holidays/raw/cme-2025-2027/live/extra/extra_2027-12-22_2027-12-25.json` - sha256 reproduces |
 
-All twenty-eight endpoints of the fourteen scopes that carry a `### Documents` table reproduce.
+All thirty-four endpoints of the seventeen scopes that carry a `### Documents` table reproduce —
+the three APAC equity scopes' six were verified when their rows shipped on 2026-09-28 UTC.
 The two that show no endpoint are a shape gap, not a missing source:
 
 - `cfe` and `iceus` carry **no Markdown table with a `sha256` header at all**; their

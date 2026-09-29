@@ -55,12 +55,15 @@ mod globex_nikkei_225_dollar;
 mod hkex;
 mod ice_us;
 mod nasdaq;
+mod nse_india;
 mod nyse;
 mod nzx;
 mod routing;
 mod sgx_securities;
 mod six;
+mod sse;
 mod tadawul;
+mod tse;
 mod venues;
 mod xetra;
 

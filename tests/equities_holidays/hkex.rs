@@ -331,6 +331,56 @@ fn the_2012_2015_half_day_eves_ship_unsourced() {
 }
 
 #[test]
+fn every_printed_2012_row_ships_including_labour_day() {
+    let calendar = calendar();
+    // The 2012 calendar's holiday list prints fourteen weekday closures, from
+    // `2/1` through `26/12`: Labour Day (`1/5`) among them.
+    assert_closed(
+        "hkex",
+        calendar,
+        Asia::Hong_Kong,
+        &[
+            day(2012, 1, 2),
+            day(2012, 1, 23),
+            day(2012, 1, 24),
+            day(2012, 1, 25),
+            day(2012, 4, 4),
+            day(2012, 4, 6),
+            day(2012, 4, 9),
+            day(2012, 5, 1),
+            day(2012, 7, 2),
+            day(2012, 10, 1),
+            day(2012, 10, 2),
+            day(2012, 10, 23),
+            day(2012, 12, 25),
+            day(2012, 12, 26),
+        ],
+    );
+    // The year's two eves are the shared 2012-2015 `Unsourced` shape; they are
+    // enumerated here too so the year's full row set is fenced in one place.
+    for (month, day_of_month) in [(12, 24), (12, 31)] {
+        let date = day(2012, month, day_of_month);
+        let holiday = calendar
+            .holiday_on(date)
+            .unwrap_or_else(|| panic!("{date} ships a row"));
+        assert_eq!(
+            holiday.kind(),
+            HolidayKind::Unsourced,
+            "{date} must ship Unsourced"
+        );
+        assert_eq!(holiday.tier(), EvidenceTier::T1, "{date}");
+        assert_eq!(holiday.document_id(), "HKEX-TC-2012", "{date}");
+    }
+    // The calendar's list also prints three holidays that fell on a Saturday —
+    // the day following Good Friday (7 April), the Buddha's Birthday
+    // (28 April) and Tuen Ng Festival (23 June) — and the calendar's own
+    // Saturday closure subsumes them: no weekday row ships.
+    for (month, day_of_month) in [(4, 7), (4, 28), (6, 23)] {
+        assert_eq!(calendar.holiday_on(day(2012, month, day_of_month)), None);
+    }
+}
+
+#[test]
 fn every_printed_2016_closure_ships_and_2016_names_no_half_day() {
     let calendar = calendar();
     assert_closed(

@@ -276,7 +276,7 @@ corrections (a venue's hours fixed against a primary source) go under
   general-holiday list names Saturday 2026-12-26; no closing condition).
 
 - **`hkex` holiday history backfilled to the 2010 floor, 2010-2024
-  (2026-09-29 UTC).** 237 rows join the table (207 closures, 20 early closes,
+  (2026-09-29 UTC).** 238 rows join the table (208 closures, 20 early closes,
   10 `Unsourced`), audited 2010-01-01..2024-12-31 beside the existing
   2025-2027 window: 2010-2017 rows key on the operator's own per-year
   `Trading Calendar` PDFs and 2018-2024 rows on the page editions that print

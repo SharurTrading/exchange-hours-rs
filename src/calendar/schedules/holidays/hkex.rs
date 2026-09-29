@@ -140,6 +140,8 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2012, 4, 6, Closed, T1, "HKEX-TC-2012"),
         // 2012-04-09 - T1 - HKEX-TC-2012 - Easter Monday.
         (2012, 4, 9, Closed, T1, "HKEX-TC-2012"),
+        // 2012-05-01 - T1 - HKEX-TC-2012 - Labour Day.
+        (2012, 5, 1, Closed, T1, "HKEX-TC-2012"),
         // 2012-07-02 - T1 - HKEX-TC-2012 - The day following Hong Kong Special Administrative Region Establishment Day.
         (2012, 7, 2, Closed, T1, "HKEX-TC-2012"),
         // 2012-10-01 - T1 - HKEX-TC-2012 - The day following Chinese Mid-Autumn Festival.

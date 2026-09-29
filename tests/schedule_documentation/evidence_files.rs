@@ -19,6 +19,7 @@
 use super::{EVIDENCE_DIR, evidence_target, exchange_rows, market_hours_key_rows, wire_name};
 use chrono::NaiveDate;
 use exchange_hours::Exchange;
+use sha2::{Digest, Sha256};
 use std::collections::{BTreeMap, BTreeSet};
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -707,14 +708,225 @@ struct DocumentRow {
     id: String,
     window: String,
     sha: String,
+    /// The id's `@label` timestamp without the `@`: `YYYY-MM-DD`, or the full
+    /// capture instant `YYYY-MM-DDTHH:MM:SSZ` where a row states one.
+    label: Option<String>,
+    /// The Wayback timestamp in the replay URL's `/web/<digits>…` prefix, at
+    /// day (`YYYYMMDD`) or instant (`YYYYMMDDHHMMSS`) precision; `None` for a
+    /// live operator URL.
+    wayback: Option<String>,
+    /// The day of the first timestamp the capture-or-retrieval cell states —
+    /// the archive capture for a replay, the retrieval for a live fetch.
+    capture_day: String,
+    /// That timestamp's instant, normalized to `YYYY-MM-DDTHH:MM:SSZ`, when
+    /// the cell states seconds.
+    capture_instant: Option<String>,
+}
+
+/// The first timestamp a capture-or-retrieval cell states.
+///
+/// A cell may state two timestamps — an archive capture plus the later
+/// retrieval that saved the bytes (`archive capture … (retrieved …)`) — and
+/// only the first is the capture stamp a row's label and replay URL must
+/// agree with, so the scanner takes the earliest match. The shipped grammars
+/// are enumerated in `the_documents_stamp_parsers_read_every_shipped_grammar`;
+/// a cell matching none of them fails the parse in `document_rows`.
+struct CaptureStamp {
+    day: String,
+    instant: Option<String>,
+}
+
+impl CaptureStamp {
+    fn new(day: String, instant: Option<String>) -> CaptureStamp {
+        CaptureStamp { day, instant }
+    }
+
+    /// Reads a 14-digit Wayback stamp, `YYYYMMDDHHMMSS`.
+    fn from_wayback(digits: &str) -> CaptureStamp {
+        let day = format!("{}-{}-{}", &digits[..4], &digits[4..6], &digits[6..8]);
+        CaptureStamp {
+            instant: (digits.len() == 14).then(|| {
+                format!(
+                    "{day}T{}:{}:{}Z",
+                    &digits[8..10],
+                    &digits[10..12],
+                    &digits[12..14]
+                )
+            }),
+            day,
+        }
+    }
+}
+
+/// True when `count` ASCII digits sit at `at`.
+fn digits_at(text: &str, at: usize, count: usize) -> bool {
+    text.as_bytes()
+        .get(at..at + count)
+        .is_some_and(|bytes| bytes.iter().all(u8::is_ascii_digit))
+}
+
+/// True when the bytes of `pattern` sit at `at`.
+fn literal_at(text: &str, at: usize, pattern: &str) -> bool {
+    text.as_bytes().get(at..at + pattern.len()) == Some(pattern.as_bytes())
+}
+
+/// True when a `YYYY-MM-DD` calendar day sits at `at`.
+fn calendar_day_at(text: &str, at: usize) -> bool {
+    digits_at(text, at, 4)
+        && literal_at(text, at + 4, "-")
+        && digits_at(text, at + 5, 2)
+        && literal_at(text, at + 7, "-")
+        && digits_at(text, at + 8, 2)
+}
+
+/// True when an ISO instant, `YYYY-MM-DDTHH:MM[:SS]Z`, sits at `at`.
+fn iso_instant_at(text: &str, at: usize, seconds: bool) -> bool {
+    calendar_day_at(text, at)
+        && literal_at(text, at + 10, "T")
+        && digits_at(text, at + 11, 2)
+        && literal_at(text, at + 13, ":")
+        && digits_at(text, at + 14, 2)
+        && (if seconds {
+            literal_at(text, at + 16, ":")
+                && digits_at(text, at + 17, 2)
+                && literal_at(text, at + 19, "Z")
+        } else {
+            literal_at(text, at + 16, "Z")
+        })
+}
+
+/// True when a prose instant, `YYYY-MM-DD HH:MM[:SS] UTC`, sits at `at`.
+fn space_instant_at(text: &str, at: usize, seconds: bool) -> bool {
+    calendar_day_at(text, at)
+        && literal_at(text, at + 10, " ")
+        && digits_at(text, at + 11, 2)
+        && literal_at(text, at + 13, ":")
+        && digits_at(text, at + 14, 2)
+        && (if seconds {
+            literal_at(text, at + 16, ":")
+                && digits_at(text, at + 17, 2)
+                && literal_at(text, at + 19, " UTC")
+        } else {
+            literal_at(text, at + 16, " UTC")
+        })
+}
+
+/// Scans a capture-or-retrieval cell for its first timestamp.
+///
+/// At each position the specific shapes are tried before the bare day, so an
+/// instant cell yields its instant and only a day-level cell yields `None`.
+/// A minute-precision instant (`live retrieval …T04:30Z`, `… 04:20 UTC`)
+/// states no seconds, and every instant-level comparison needs them, so it is
+/// reduced to its day.
+fn first_capture_stamp(cell: &str) -> Option<CaptureStamp> {
+    let bytes = cell.as_bytes();
+    for at in 0..bytes.len() {
+        // The replay grammar states its capture as the raw 14-digit archive
+        // stamp in backticks; the 64-hex digests a cell may also carry are
+        // longer than fourteen digits, so the closing backtick distinguishes
+        // a stamp from them.
+        if bytes[at] == b'`' && digits_at(cell, at + 1, 14) && bytes.get(at + 15) == Some(&b'`') {
+            return Some(CaptureStamp::from_wayback(&cell[at + 1..at + 15]));
+        }
+        if iso_instant_at(cell, at, true) {
+            return Some(CaptureStamp::new(
+                cell[at..at + 10].to_owned(),
+                Some(cell[at..at + 20].to_owned()),
+            ));
+        }
+        if iso_instant_at(cell, at, false) || space_instant_at(cell, at, false) {
+            return Some(CaptureStamp::new(cell[at..at + 10].to_owned(), None));
+        }
+        if space_instant_at(cell, at, true) {
+            return Some(CaptureStamp::new(
+                cell[at..at + 10].to_owned(),
+                Some(format!(
+                    "{}T{}Z",
+                    &cell[at..at + 10],
+                    &cell[at + 11..at + 19]
+                )),
+            ));
+        }
+        if calendar_day_at(cell, at)
+            && bytes
+                .get(at + 10)
+                .is_none_or(|byte| !byte.is_ascii_alphanumeric())
+        {
+            return Some(CaptureStamp::new(cell[at..at + 10].to_owned(), None));
+        }
+    }
+    None
+}
+
+/// Reads a Documents id's `@label` timestamp, without the `@`.
+///
+/// The label is the id's final space-separated token: the capture day, or the
+/// full capture instant where the row states one. An id with no `@` token
+/// (`CME-SVC-2026-06-18`) carries no label; a token that opens with `@` and is
+/// not one of the two shapes is a defect in the row.
+fn document_label(id: &str, line: &str) -> Option<String> {
+    let label = id.rsplit_once(' ')?.1.strip_prefix('@')?;
+    assert!(
+        calendar_day_at(label, 0) && label.len() >= 10,
+        "a documents id's @label must open with its capture day: {line}"
+    );
+    if label.len() == 10 {
+        return Some(label.to_owned());
+    }
+    assert!(
+        label.len() == 20 && iso_instant_at(label, 0, true),
+        "a documents id's @label is the capture day or the full instant, not \
+         {label:?}: {line}"
+    );
+    Some(label.to_owned())
+}
+
+/// Reads a replay URL's Wayback timestamp, or `None` for a live operator URL.
+///
+/// The stamp is the digits of the `/web/<digits>…` prefix: eight for a
+/// day-level replay, fourteen for an instant-level one. Wayback itself also
+/// resolves shorter prefixes, but a row that states less than the day its
+/// capture happened is exactly what the pairing fence must not accept
+/// silently, so anything else fails the parse.
+fn wayback_stamp(url: &str, line: &str) -> Option<String> {
+    let rest = url.strip_prefix("https://web.archive.org/web/")?;
+    let digits = rest
+        .chars()
+        .take_while(char::is_ascii_digit)
+        .collect::<String>();
+    assert!(
+        digits.len() == 8 || digits.len() == 14,
+        "a documents row's replay URL must state its capture at day or instant \
+         precision: {line}"
+    );
+    Some(digits)
+}
+
+/// The `YYYY-MM-DD` day of a Wayback timestamp, `YYYYMMDD` or `YYYYMMDDHHMMSS`.
+fn wayback_day(stamp: &str) -> String {
+    format!("{}-{}-{}", &stamp[..4], &stamp[4..6], &stamp[6..8])
+}
+
+/// The full instant of a 14-digit Wayback timestamp, as `YYYY-MM-DDTHH:MM:SSZ`.
+fn wayback_instant(stamp: &str) -> String {
+    format!(
+        "{}T{}:{}:{}Z",
+        wayback_day(stamp),
+        &stamp[8..10],
+        &stamp[10..12],
+        &stamp[12..14]
+    )
 }
 
 /// The `### Documents` table of one evidence file, one entry per resolved id.
 ///
-/// The table's shape is fixed — `| Document | Window | Capture or retrieval,
-/// UTC | Tier | sha256 |` — so a resolution is machine-readable and the three
-/// fences below can be written at all. A left cell may name several ids
-/// separated by `, ` when one artifact carries more than one.
+/// The table's shape is fixed — `| Document | Window | Replay or service URL |
+/// Capture or retrieval, UTC | Tier | sha256 |` — so a resolution is
+/// machine-readable and the fences below can be written at all. A left cell
+/// may name several ids separated by `, ` when one artifact carries more than
+/// one. Parsing also asserts each row's capture grammar: the `@label` shape,
+/// the Wayback stamp's precision, and a capture-or-retrieval cell that states
+/// a timestamp.
 fn document_rows(text: &str) -> Vec<DocumentRow> {
     // An owner may carry more than one documents table — the CME families keep a
     // 2010-2012 table and a 2016-2018 one — so every table is read, in file
@@ -750,11 +962,31 @@ fn document_rows(text: &str) -> Vec<DocumentRow> {
                 "a documents row resolves its id to an https URL, not {url:?}: {line}"
             );
             let sha = cells[5].trim_matches('`').to_owned();
+            let capture = first_capture_stamp(cells[3]).unwrap_or_else(|| {
+                panic!("a documents row's capture-or-retrieval cell must state a timestamp: {line}")
+            });
+            assert!(
+                NaiveDate::parse_from_str(&capture.day, "%Y-%m-%d").is_ok(),
+                "a documents row's capture stamp must be a real calendar day: {line}"
+            );
+            let wayback = wayback_stamp(url, line);
+            if let Some(stamp) = &wayback {
+                let day = format!("{}-{}-{}", &stamp[..4], &stamp[4..6], &stamp[6..8]);
+                assert!(
+                    NaiveDate::parse_from_str(&day, "%Y-%m-%d").is_ok(),
+                    "a documents row's Wayback stamp must be a real calendar day: {line}"
+                );
+            }
             for id in cells[0].split(", ") {
+                let id = id.trim().trim_matches('`');
                 rows.push(DocumentRow {
-                    id: id.trim().trim_matches('`').to_owned(),
+                    id: id.to_owned(),
                     window: window.clone(),
                     sha: sha.clone(),
+                    label: document_label(id, line),
+                    wayback: wayback.clone(),
+                    capture_day: capture.day.clone(),
+                    capture_instant: capture.instant.clone(),
                 });
             }
         }
@@ -828,6 +1060,367 @@ fn every_artifact_carries_one_document_id() {
             }
         }
     }
+}
+
+/// One Documents row tells one capture story, in three places.
+///
+/// Issue #191: the id fences above read ids, windows and digests, and none of
+/// them read a row's capture-instant cell or checked that a row's Wayback URL
+/// stamp matches its `@label` — the exact defect class #188 was, where a
+/// revision's id was paired with another revision's capture and the whole
+/// suite stayed green. This fence reads all three places a row states its
+/// capture — the id's `@label`, the replay URL's Wayback stamp, and the
+/// capture-or-retrieval cell — and requires every pair that is present to
+/// agree: at day granularity always, and at full-instant granularity wherever
+/// both sides state seconds. A row without a Wayback URL is a live retrieval,
+/// exempt from the URL comparison but still dated by its cell; a few CFE rows
+/// record only the UTC day of their fetch, which the fence accepts rather
+/// than invent instants the research store does not hold
+/// (LAW-NO-FABRICATED-DATES).
+///
+/// The fence is structural and consistency-only: it proves the row agrees
+/// with itself. That the capture the row names is the capture the store holds
+/// is the digest fence below, which recomputes each artifact's sha256 from the
+/// research store's bytes.
+#[test]
+fn every_documents_row_pairs_one_label_url_and_capture() {
+    let mut rows = 0_usize;
+    let mut replays = 0_usize;
+    let mut live = 0_usize;
+    let mut labeled = 0_usize;
+    let mut instant_pairs = 0_usize;
+    for (name, text) in evidence_files() {
+        for row in document_rows(&text) {
+            rows = rows.saturating_add(1);
+            if let Some(label) = &row.label {
+                labeled = labeled.saturating_add(1);
+                let day = &label[..10];
+                if let Some(stamp) = &row.wayback {
+                    assert_eq!(
+                        wayback_day(stamp),
+                        day,
+                        "{name}: `{}` pairs @label {label} with the Wayback capture {}",
+                        row.id,
+                        wayback_day(stamp)
+                    );
+                }
+                assert_eq!(
+                    row.capture_day, day,
+                    "{name}: `{}` pairs @label {label} with the capture cell's {}",
+                    row.id, row.capture_day
+                );
+                if label.len() == 20 {
+                    instant_pairs = instant_pairs.saturating_add(1);
+                    if let Some(instant) = &row.capture_instant {
+                        assert_eq!(
+                            instant, label,
+                            "{name}: `{}` pairs @label {label} with capture instant {instant}",
+                            row.id
+                        );
+                    }
+                    if let Some(stamp) = row.wayback.as_deref().filter(|stamp| stamp.len() == 14) {
+                        assert_eq!(
+                            wayback_instant(stamp),
+                            *label,
+                            "{name}: `{}` pairs @label {label} with Wayback instant {}",
+                            row.id,
+                            wayback_instant(stamp)
+                        );
+                    }
+                }
+            }
+            match &row.wayback {
+                Some(stamp) => {
+                    replays = replays.saturating_add(1);
+                    assert_eq!(
+                        wayback_day(stamp),
+                        row.capture_day,
+                        "{name}: `{}` pairs the Wayback capture {} with the capture cell's {}",
+                        row.id,
+                        wayback_day(stamp),
+                        row.capture_day
+                    );
+                    if stamp.len() == 14
+                        && let Some(instant) = &row.capture_instant
+                    {
+                        instant_pairs = instant_pairs.saturating_add(1);
+                        assert_eq!(
+                            wayback_instant(stamp),
+                            *instant,
+                            "{name}: `{}` pairs Wayback instant {} with capture instant \
+                             {instant}",
+                            row.id,
+                            wayback_instant(stamp)
+                        );
+                    }
+                }
+                None => live = live.saturating_add(1),
+            }
+        }
+    }
+    // The fence is only as good as the corpus it read: a parser that silently
+    // stopped matching rows would pass vacuously, so the counts are pinned to
+    // what the crate ships today.
+    assert!(
+        rows > 2_000,
+        "the pairing fence read only {rows} documents rows; the shipped corpus is 2_307"
+    );
+    assert!(
+        replays > 1_500,
+        "the pairing fence read only {replays} Wayback replays; the shipped corpus is 1_900"
+    );
+    assert!(
+        live > 300,
+        "the pairing fence read only {live} live retrievals; the shipped corpus is 407"
+    );
+    assert!(
+        labeled > 1_000,
+        "the pairing fence read only {labeled} @labelled ids; the shipped corpus is 1_482"
+    );
+    assert!(
+        instant_pairs > 2_000,
+        "the pairing fence compared only {instant_pairs} instant pairs; the shipped corpus \
+         compares 2_664"
+    );
+}
+
+/// Every Documents row's digest cell is a sha256 hex string.
+///
+/// The hermetic half of the digest fences: without the research store (CI),
+/// this still proves the cell is a well-formed lowercase digest. That the
+/// digest is real bytes is the store fence below, which runs wherever the
+/// store sits beside the checkout.
+#[test]
+fn every_documents_row_digest_is_a_sha256_digest() {
+    let mut checked = 0_usize;
+    for (name, text) in evidence_files() {
+        for row in document_rows(&text) {
+            checked = checked.saturating_add(1);
+            assert!(
+                row.sha.len() == 64
+                    && row
+                        .sha
+                        .bytes()
+                        .all(|byte| matches!(byte, b'0'..=b'9' | b'a'..=b'f')),
+                "{name}: `{}`'s digest cell must be 64 lowercase hex digits, not {:?}",
+                row.id,
+                row.sha
+            );
+        }
+    }
+    assert!(
+        checked > 2_000,
+        "the digest fence read only {checked} documents rows; the shipped corpus is 2_307"
+    );
+}
+
+/// The research store's root: `$EXCHANGE_HOURS_RESEARCH` where the checkout
+/// sits elsewhere, else the sibling directory the plans name
+/// (`../exchange-hours-research`, the convention of
+/// `docs/plans/2026-09-12-cme-trade-type-keys.md`).
+fn research_store_root() -> PathBuf {
+    std::env::var_os("EXCHANGE_HOURS_RESEARCH").map_or_else(
+        || PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../exchange-hours-research"),
+        PathBuf::from,
+    )
+}
+
+/// Hashes every file under the research store, keyed by sha256.
+///
+/// The store's directory layout is per retrieval task and not uniform —
+/// `INDEX.md` tables, `live_index.json`, bare saves — so the resolution a
+/// review does by hand (find the artifact, recompute its sha256) is done here
+/// by hashing everything once. A digest's entry holds every path whose bytes
+/// produce it, because one artifact is often mirrored across task directories.
+fn store_digest_map(root: &Path) -> BTreeMap<String, Vec<String>> {
+    fn walk(root: &Path, dir: &Path, map: &mut BTreeMap<String, Vec<String>>) {
+        for entry in fs::read_dir(dir).unwrap_or_else(|error| {
+            panic!(
+                "the research store must be readable at {}: {error}",
+                dir.display()
+            )
+        }) {
+            let path = entry
+                .expect("a research store entry must be readable")
+                .path();
+            if path.is_dir() {
+                walk(root, &path, map);
+            } else {
+                let bytes = fs::read(&path)
+                    .unwrap_or_else(|error| panic!("{} must be readable: {error}", path.display()));
+                let digest = format!("{:x}", Sha256::digest(&bytes));
+                let shown = path
+                    .strip_prefix(root)
+                    .unwrap_or(&path)
+                    .display()
+                    .to_string();
+                map.entry(digest).or_default().push(shown);
+            }
+        }
+    }
+    let mut map = BTreeMap::new();
+    walk(root, root, &mut map);
+    map
+}
+
+/// Every Documents row's digest is the sha256 of bytes the research store
+/// holds.
+///
+/// Issue #191 (b), made uniform: the id fences key artifacts by digest, and
+/// until now a transplanted or corrupted digest cell failed only when the same
+/// id or artifact appeared twice — a digest altered everywhere it appeared
+/// passed the whole suite. This fence hashes every file under the research
+/// store and requires each row's digest to be one of them; a digest that
+/// resolves is by construction the bytes at the paths the failure message
+/// prints, and a digest no store file produces is a defect in the row.
+///
+/// The store lives beside the repository (`research_store_root` above).
+/// GitHub-hosted CI checks out only this repository, so there the fence
+/// returns after finding the store absent — the one documented environment
+/// exception, never a row-level one: wherever the store is present, every
+/// Documents row in every evidence file is checked, and the pins below keep
+/// the check from passing vacuously over a truncated or misplaced store.
+#[test]
+fn every_documents_digest_is_the_research_store_bytes() {
+    let root = research_store_root();
+    if !root.is_dir() {
+        // CI holds no store; the digest-shape fence above still ran.
+        return;
+    }
+    let store = store_digest_map(&root);
+    assert!(
+        store.len() > 4_000,
+        "the research store at {} hashed to only {} distinct digests; the shipped store \
+         hashes 4_985 files into 4_146",
+        root.display(),
+        store.len()
+    );
+    let mut rows = 0_usize;
+    let mut resolved = BTreeSet::new();
+    for (name, text) in evidence_files() {
+        for row in document_rows(&text) {
+            rows = rows.saturating_add(1);
+            assert!(
+                store.contains_key(&row.sha),
+                "{name}: `{}`'s digest `{}` is no file in the research store at {}",
+                row.id,
+                row.sha,
+                root.display()
+            );
+            resolved.insert(row.sha);
+        }
+    }
+    assert!(
+        rows > 2_000,
+        "the store fence read only {rows} documents rows; the shipped corpus is 2_307"
+    );
+    assert!(
+        resolved.len() > 300,
+        "the store fence resolved only {} distinct digests; the shipped corpus resolves 380",
+        resolved.len()
+    );
+}
+
+/// The Documents stamp parsers read every capture grammar shipped rows use.
+///
+/// The pairing fence above is only as strong as these scanners: a grammar the
+/// cell writers take up that the scanners stop matching would fail every parse
+/// loudly (good), but a grammar the scanners silently misread — taking the
+/// retrieval stamp for the capture stamp, say — would fence nothing. Each
+/// shipped shape is pinned here with the stamp it must yield, first stamp
+/// first for the cells that state two timestamps.
+#[test]
+fn the_documents_stamp_parsers_read_every_shipped_grammar() {
+    // (capture-or-retrieval cell, first stamp's day, that stamp's instant)
+    const GRAMMARS: [(&str, &str, Option<&str>); 10] = [
+        (
+            "2010-02-15T05:16:52Z",
+            "2010-02-15",
+            Some("2010-02-15T05:16:52Z"),
+        ),
+        (
+            "archive capture 2016-01-08T20:30:07Z",
+            "2016-01-08",
+            Some("2016-01-08T20:30:07Z"),
+        ),
+        (
+            "archive capture 2025-09-13T04:14:07Z (retrieved 2026-09-26T07:15:50Z)",
+            "2025-09-13",
+            Some("2025-09-13T04:14:07Z"),
+        ),
+        ("live retrieval 2026-09-12T04:30Z", "2026-09-12", None),
+        (
+            "Wayback `id_` replay of capture `20250523135551`, 2026-09-26 07:16:50 UTC",
+            "2025-05-23",
+            Some("2025-05-23T13:55:51Z"),
+        ),
+        ("retrieved 2026-09-21 UTC", "2026-09-21", None),
+        ("retrieved 2026-09-12 04:20 UTC", "2026-09-12", None),
+        (
+            "retrieved live from the operator, 2026-09-26 07:21:21 UTC",
+            "2026-09-26",
+            Some("2026-09-26T07:21:21Z"),
+        ),
+        (
+            "retrieved 2026-09-19 02:02-02:45 UTC (live)",
+            "2026-09-19",
+            None,
+        ),
+        ("retrieved 2026-09-12", "2026-09-12", None),
+    ];
+    for (cell, day, instant) in GRAMMARS {
+        let stamp = first_capture_stamp(cell)
+            .unwrap_or_else(|| panic!("the stamp scanner must read the shipped grammar {cell:?}"));
+        assert_eq!(
+            stamp.day, day,
+            "the stamp scanner read the wrong day out of {cell:?}"
+        );
+        assert_eq!(
+            stamp.instant.as_deref(),
+            instant,
+            "the stamp scanner read the wrong instant out of {cell:?}"
+        );
+    }
+
+    // The label parser: the two shapes, and an id without a label.
+    assert_eq!(
+        document_label(
+            "2017-memorial-day-holiday-schedule.xls @2017-05-05",
+            "fixture",
+        )
+        .as_deref(),
+        Some("2017-05-05")
+    );
+    assert_eq!(
+        document_label("2010-new-years.pdf @2010-02-15T05:16:52Z", "fixture",).as_deref(),
+        Some("2010-02-15T05:16:52Z")
+    );
+    assert_eq!(document_label("CME-SVC-2026-06-18", "fixture"), None);
+
+    // The Wayback parser: day- and instant-level replays, and a live URL.
+    assert_eq!(
+        wayback_stamp(
+            "https://web.archive.org/web/20170628id_/http://www.cmegroup.com/files/x.xls",
+            "fixture",
+        )
+        .as_deref(),
+        Some("20170628")
+    );
+    assert_eq!(
+        wayback_stamp(
+            "https://web.archive.org/web/20100215051652id_/http://www.cmegroup.com/files/x.pdf",
+            "fixture",
+        )
+        .as_deref(),
+        Some("20100215051652")
+    );
+    assert_eq!(
+        wayback_stamp(
+            "https://www.cmegroup.com/services/trading-hours-by-product?id=316",
+            "fixture",
+        ),
+        None
+    );
 }
 
 /// Every id a module cites is resolved exactly once in its evidence file's

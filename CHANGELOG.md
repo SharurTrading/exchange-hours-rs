@@ -128,6 +128,50 @@ corrections (a venue's hours fixed against a primary source) go under
   Recorded, not a gap: HKEX's 2026-12-28 check (verified: no conflict — the
   general-holiday list names Saturday 2026-12-26; no closing condition).
 
+### Fixed
+
+- **Documents rows fence their capture pairing and their digests against the
+  research store's bytes, and twenty-two shipped rows are corrected (issue
+  #191).** No shipped test read a `### Documents` row's capture-instant cell
+  or checked that a row's Wayback URL stamp matches its `@label` — the defect
+  class #188 was, where a revision's id was paired with another revision's
+  capture and the whole evidence suite stayed green; and a digest cell altered
+  in every file that carries it failed nothing. `document_rows` now parses
+  every column (the `@label`, the replay URL's Wayback stamp, the
+  capture-or-retrieval cell), the pairing fence asserts, per row across all 38
+  evidence files carrying Documents tables, that every stated
+  pair agrees — at day granularity always, at full-instant granularity
+  wherever both sides state seconds — and the digest fences assert the cell is
+  64 lowercase hex digits and that the digest resolves to real bytes under the
+  research store (`$EXCHANGE_HOURS_RESEARCH`, default
+  `../exchange-hours-research`; where the store is absent, as on GitHub-hosted
+  CI, that one fence returns and the shape fence still runs). Two defects
+  the fences exposed are corrected:
+  - Nine rows that mixed two revisions (2026-09-28 UTC): the id
+    `2016-holiday-calendars.zip#2016-presidents-day-holiday-schedule.pdf
+    @2017-06-28` was paired, in nine evidence files (`cme.md`, `comex.md`,
+    `globex_energy.md`, `globex_equity_index.md`, `globex_fx.md`,
+    `globex_grains.md`, `globex_interest_rates.md`,
+    `globex_nikkei_225_dollar.md`, `nymex.md`), with the standalone PDF's
+    2015-12-03 Wayback capture instead of the bundle capture its label names —
+    the research store's `cme-2016-2018` index records
+    `2016-holiday-calendars.zip` captured at 2017-06-28T11:58:19Z and the
+    member's sha256 under `docs/zip2016/`, and `globex_livestock.md` already
+    resolved the same id to that capture. All nine rows now resolve the id to
+    `web/20170628id_` and `2017-06-28T11:58:19Z`; the sha256 is unchanged.
+  - Thirteen rows whose capture cell left the replay's archive capture
+    unstated (2026-09-29 UTC): `ASX-CAL-2025`, `HKEX-TC-2025`, `HKEX-TC-2026`,
+    `NZX-TH-2024-12-16`, `NZX-TH-2025-01-23`, `NZX-TH-2026-02-03`,
+    `SIX-TC-2025`, `DB-TC-PAGE-2025`, `NSE-HOL-2025`, `NSE-HOL-2026`,
+    `NSE-TIMINGS-2025`, `NSE-TIMINGS-2026` and `JPX-HOL-2025` named only the
+    later retrieval of their Wayback replay (or, for the last five, stated the
+    capture day only after it), so no fence could pair the three places a row
+    states its capture. Each cell now leads with the capture stamp its replay
+    URL carries (`Wayback \`id_\` replay of capture \`…\`, retrieved
+    …`) — a stamp the store's own indexes and artifact names already record
+    for the equities rows and the archive's own URL stamp for the rest; the
+    retrieval stamps and page-state notes are unchanged.
+
 ## [1.0.0] - 2026-09-27
 
 First stable release. Version 1.0 establishes the canonical string identities,

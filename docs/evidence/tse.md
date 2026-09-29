@@ -97,7 +97,7 @@ The rows are exactly the printed dates that fall on a weekday. A printed holiday
 
 | Document | Window | Replay or service URL | Capture or retrieval, UTC | Tier | sha256 |
 |---|---|---|---|---|---|
-| `JPX-HOL-2025` | 2025-01-01..2027-12-31 | <https://web.archive.org/web/20250923014239id_/https://www.jpx.co.jp/english/corporate/about-jpx/calendar/index.html> | retrieved 2026-09-28 UTC (Wayback capture 2025-09-23, page state "Update : Mar. 07, 2025") | T1 | `b301e55c0d5e091602cabcb242dc28de76943e04db22115e4270b8a53de37877` |
+| `JPX-HOL-2025` | 2025-01-01..2027-12-31 | <https://web.archive.org/web/20250923014239id_/https://www.jpx.co.jp/english/corporate/about-jpx/calendar/index.html> | Wayback `id_` replay of capture `20250923014239`, retrieved 2026-09-28 UTC (page state "Update : Mar. 07, 2025") | T1 | `b301e55c0d5e091602cabcb242dc28de76943e04db22115e4270b8a53de37877` |
 | `JPX-HOL-2026-2027` | 2025-01-01..2027-12-31 | <https://www.jpx.co.jp/english/corporate/about-jpx/calendar/> | retrieved 2026-09-28 UTC (page state "Update : Feb. 06, 2026") | T1 | `32c6d13a925aff109c135947f2e809b5b9de1ae3d4dfb77b876f4a05d809090a` |
 
 Both artifacts are saved in the research store under `holidays/raw/equities/tse/2025-2027/` with an `INDEX.md` carrying the same digests. The replayed capture is stored gzip-compressed exactly as served.

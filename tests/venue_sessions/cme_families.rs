@@ -21,18 +21,28 @@ fn interest_rates_current_profile_is_the_extended_17_to_16_grid() {
     assert!(profile.is_open(ct((2026, 4, 20), (17, 0, 0))));
     assert!(!profile.is_open(ct((2026, 4, 25), (12, 0, 0))));
     // `globex_interest_rates` declares the `#79` phase-level gap for the Sunday
-    // 16:00-16:15 CT quarter-hour, so it has no complete range before the
-    // 2026-08-22 knowledge-bound row (LAW-COVERAGE). The queue scan therefore
-    // refuses the whole day rather than reporting the 16:30 CT maintenance gap
-    // as a closure — what is no longer claimable through the calendar is a
-    // `SessionState` there. The grid itself, including that 16:00→16:45 CT
-    // maintenance gap, stays asserted above through `session_profile`, and the
-    // two queries that do not read the withheld phase still answer below.
-    assert_refused(
+    // 16:00-16:15 CT quarter-hour, shaped to the bracket-era Sundays whose
+    // served Pre-Open resolves (#172): the identity-backed queue scan refuses
+    // exactly that Sunday instant — never a closed grid — while the Monday
+    // beside it answers from the sourced weekday grid, so the 16:00→16:45 CT
+    // maintenance gap reports as `Maintenance` rather than as a refusal or a
+    // closure. The grid itself, including that gap, stays asserted above
+    // through `session_profile`, and the queries that do not read the withheld
+    // phase answer below.
+    assert_eq!(
         calendar.session_state(ct((2026, 4, 20), (16, 30, 0))),
-        DateCoverage::OutsideCoveredRange,
-        calendar,
-        ct((2026, 4, 20), (16, 30, 0)),
+        Ok(SessionState::Maintenance),
+        "the Monday 16:00-16:45 CT maintenance gap is sourced: a weekday of the \
+         bracket era answers, and only the bracket-era Sundays refuse"
+    );
+    assert_eq!(
+        calendar.session_state(ct((2026, 4, 19), (16, 5, 0))),
+        Err(CalendarQueryError::OutsideCoveredRange {
+            source: calendar.source(),
+            date: chrono::NaiveDate::from_ymd_opt(2026, 4, 19).expect("valid fixture date"),
+        }),
+        "the withheld quarter-hour refuses the bracket-era Sunday instant it \
+         withholds, and never reads as a closed grid"
     );
     assert_eq!(
         calendar

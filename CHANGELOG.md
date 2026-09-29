@@ -225,6 +225,43 @@ maintenance contract described in the README and schedule verification ledger.
 
 ### Changed
 
+- **Declared coverage gaps become date-scoped and phase-shaped (2026-09-28 UTC) —
+  #172.** `PhaseGap` carries a start bound ([`PhaseGap::since`]) and an
+  applicability shape ([`PhaseGapShape`]) beside its end bound, so a declaration
+  withholds exactly the dates its evidence withholds and an identity's
+  `coverage_on`, `complete_ranges` and `gaps` answer everything beside them. The
+  seven CME scopes that withhold the Sunday 16:00-16:15 CT quarter-hour (#79)
+  now refuse only the bracket-era Sundays (2012-05-28..2026-08-21) whose served
+  Pre-Open resolves — their Tuesdays, pre-bracket Sundays and
+  holiday-removed Sundays answer from the tables, and their order-entry
+  queries answer on every date the shape does not resolve. `globex_grains` and
+  `globex_livestock` refuse only the dates that carry the post-close queue
+  whose trade-date label diverges (#152; 720 of the 1,095 days of
+  2025-01-01..2027-12-31 for `globex_grains` and 754 for `globex_livestock`,
+  counts the walk fence in `tests/coverage_metadata.rs` pins);
+  `globex_cryptocurrency`'s undated
+  Pre-Open declaration (#123) is bounded to the five-day era on both sides
+  (2017-12-17..2026-05-29); and `globex_grains` declares the omitted
+  2012-05-20..2013-04-06 regime's queues (`NormalWeekPhaseWithheld`, #116),
+  which the whole-domain #152 refusal had masked. `eurex`'s `UnpublishedClosureDates`
+  record (#157) now streams exactly the 2025 and 2026 editions that carry the
+  `tba` note instead of shadowing the whole floor, so the dates before 2025
+  read `NoHolidayCoverage` rather than carrying a declaration the note does not
+  reach. **What this means for
+  callers:** dates that read `Covered` today refused before; a queue scan on a
+  bracket-era Sunday still refuses with `OutsideCoveredRange` (never reading as
+  a closed grid), a queue scan whose opening day could not consult the
+  withheld arrangement now answers, and a queue scan inside `globex_grains`'s
+  omitted 2012-05-20..2013-04-06 regime refuses with it too — the omitted
+  queues leave no occurrence to answer from, so an absence would read as a
+  sourced negative. `CoverageGaps` streams its records in date
+  order — a date-scoped declaration reports one record per maximal run its
+  shape resolves — and `CoverageGaps::capacity` now bounds the declarations an
+  identity may carry, not stored records. The order-entry scan gate fires only
+  where the scan would consult the withheld arrangement: an unscoped refusing
+  declaration, a matching order-entry rule on the opening day, or a built-in
+  block row on it.
+
 - **The support floor moves back to 2010-01-01 (2026-09-27 UTC).** The
   maintainer reversed the 2026-09-21 decision: `SUPPORT_FLOOR` is the
   permanent **1 January 2010** in each venue's local-date domain, the

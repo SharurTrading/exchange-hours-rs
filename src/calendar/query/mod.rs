@@ -6,7 +6,7 @@ pub(in crate::calendar) mod candles;
 mod identity;
 pub(in crate::calendar) mod periods;
 mod replacement;
-mod schedule;
+pub(in crate::calendar) mod schedule;
 pub(in crate::calendar) mod sessions;
 pub(in crate::calendar) mod status;
 pub(in crate::calendar) mod week;

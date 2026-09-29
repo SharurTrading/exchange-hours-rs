@@ -397,18 +397,31 @@ impl<'a> QueryContext<'a> {
     /// This is the strict sibling of [`Self::require_coverage`], for the entry
     /// points whose answer *is* the arrangement a declared phase gap withholds:
     /// the order-entry queue scans. An identity that declares no phase gap is
-    /// unaffected, so this costs one slice check on that path.
+    /// unaffected, so this costs one span check on that path.
     ///
-    /// Only a declaration that **withholds a phase** refuses here. A declared
-    /// gap withholds a queue exactly when its reason names one:
-    /// [`CoverageGapReason::NormalWeekPhaseWithheld`] and
+    /// The declaration the metadata applies decides —
+    /// [`CalendarCoverage::phase_gap_on`], the first declaration in order whose
+    /// span contains the date *and* whose shape resolves against the built-in
+    /// layers, which is the same shadowing rule `coverage_on` and
+    /// [`CalendarCoverage::gaps`] report by. Deciding from the span alone would
+    /// let an earlier pass-through declaration whose queue is absent on the
+    /// date — the #152 shape resolves to no occurrence inside `globex_grains`'s
+    /// omitted 2012-05-20..2013-04-06 regime — shadow the refusing declaration
+    /// behind it, and a queue scan would answer absence where `coverage_on`
+    /// refuses. A declared gap withholds a queue exactly when its reason names
+    /// one: [`CoverageGapReason::NormalWeekPhaseWithheld`] and
     /// [`CoverageGapReason::SpecialSessionUnrepresentable`] do, and
-    /// [`CoverageGapReason::UnpublishedClosureDates`] — `eurex`'s undated
-    /// German-scope closures — does not, because every phase the crate models
-    /// for that identity is served and that gap is a completeness fact alone
-    /// (LAW-COVERAGE: a coverage error is never reported where the crate has an
-    /// answer). An unrecognized reason refuses, which is the conservative
-    /// direction: a new declaration shape answers no queue until it says so.
+    /// [`CoverageGapReason::PostCloseQueueTradeDateLabel`] and
+    /// [`CoverageGapReason::UnpublishedClosureDates`] do not, because their
+    /// phases are served — the post-close queue's window and both of its
+    /// verdicts are sourced, and an ordinary day's queues answer through Eurex's
+    /// undated closures. A pass-through reason refuses nothing. A refusing
+    /// reason refuses the scan: the #79 quarter-hour refuses the bracket-era
+    /// Sundays whose Pre-Open resolves, and answers the Tuesday beside one —
+    /// refusing a Tuesday for a Sunday queue is precisely the
+    /// coverage-error-read-as-closure failure LAW-COVERAGE exists to prevent.
+    /// An unrecognized reason refuses, which is the conservative direction: a
+    /// new declaration shape answers no queue until it says so.
     pub(super) fn require_phase_coverage(self, date: NaiveDate) -> Result<(), CalendarQueryError> {
         let Some(coverage) = self.coverage else {
             return Ok(());
@@ -428,16 +441,11 @@ impl<'a> QueryContext<'a> {
         // answer at all is refused for its own reason, not the phase's.
         self.require_answerable(date)?;
         match coverage.phase_gap_on(date) {
+            // No declaration applies to the date: the phase answers from the
+            // sourced tables.
             None => Ok(()),
-            // A declaration that withholds no phase refuses nothing. The
-            // post-close queue's window and both of its verdicts are served, and
-            // only the trade date it is reported under is the crate's own
-            // convention rather than the operator's printed label; the undated
-            // German closures name no phase either, so an ordinary day's queues
-            // answer through them. Refusing here would turn a completeness fact
-            // into a coverage error read as a closure on every covered date —
-            // the failure LAW-COVERAGE exists to prevent. The two reasons above
-            // name phases the crate does not carry at all.
+            // A pass-through reason's phase is served — only its label is the
+            // crate's convention — so the scan answers from the sourced tables.
             Some(gap)
                 if matches!(
                     gap.reason(),
@@ -447,7 +455,9 @@ impl<'a> QueryContext<'a> {
             {
                 Ok(())
             }
-            Some(_gap) => Err(CalendarQueryError::OutsideCoveredRange {
+            // A refusing declaration applies: the phase the scan consults is
+            // the one the identity withholds on this date.
+            Some(_) => Err(CalendarQueryError::OutsideCoveredRange {
                 source: coverage.identity(),
                 date,
             }),
@@ -533,6 +543,25 @@ impl<'a> QueryContext<'a> {
                 late_open_ssm,
             }
         })
+    }
+
+    /// Returns whether the built-in table may hold a replacement block row on
+    /// `day`.
+    ///
+    /// This is the built-in half of [`Self::any_layer_may_affect`] alone, and
+    /// it is what the order-entry scan gate consults: a caller's [`DayPolicy`]
+    /// only clips scalar boundaries and a caller's exception provider can only
+    /// remove an occurrence or supply its own blocks — caller data, never the
+    /// identity's withheld arrangement — so neither can turn a queue probe
+    /// into a consultation of the withheld phase. Counting them here would
+    /// flip an answerable wrapped-queue probe into a coverage error whenever
+    /// any layer is attached, which is exactly the overlay-neutrality the
+    /// overlay contracts promise not to break.
+    fn builtin_block_may_exist_on(self, day: NaiveDate) -> bool {
+        self.builtin_blocks
+            && self
+                .holidays
+                .is_some_and(|table| table.may_affect(day, day))
     }
 
     /// Returns whether any attached layer can hold a record in `first..=last`.
@@ -810,20 +839,38 @@ pub(super) fn find_occurrence<T>(
     wrapped_only: bool,
     mut probe: impl FnMut(DateTime<Utc>, DateTime<Utc>) -> Option<T>,
 ) -> Result<Option<T>, CalendarQueryError> {
-    // The gate sits ahead of the profile selection, not inside it: resolving a
-    // profile reads the identity's zone through a post-floor epoch snapshot,
-    // and the plan requires that resolution never be reached on a date this
-    // identity cannot answer (LAW-COVERAGE).
+    // The date-level gate sits ahead of the profile selection, not inside it:
+    // resolving a profile reads the identity's zone through a post-floor epoch
+    // snapshot, and the plan requires that resolution never be reached on a date
+    // this identity cannot answer (LAW-COVERAGE).
     context.require_answerable(open_day)?;
+    let weekday = open_day.weekday().num_days_from_monday() as usize;
+    let selected = context.profile_for_open_day(open_day);
     // Only the order-entry scans read the phase a declared phase-level gap
     // withholds: a tradeable-session scan is answered by the sourced normal
     // week, so refusing it for a queue it never consults would report a
-    // coverage error where the crate has a real answer.
-    if matches!(set, RuleSet::OrderEntry) {
+    // coverage error where the crate has a real answer. And even a queue scan
+    // is gated only where its own day could consult the withheld arrangement:
+    // an `EveryDay` declaration whose reason refuses fires on every scan of
+    // its era, because an omitted phase leaves no rule for the scan to match
+    // and the question is live whether or not one does; a date-scoped
+    // declaration fires only where its own day could yield an occurrence of
+    // the set — a normal rule of the set matching the day, or a replacement
+    // layer that may hold a record on it. A wrapped-Sunday probe against a
+    // grid whose Sunday queue never wraps, or any day whose grid carries no
+    // matching rule and no nearby block row, answers `None` from the sourced
+    // tables without consulting the withheld phase, and a coverage error
+    // there would refuse an answer the identity has.
+    if matches!(set, RuleSet::OrderEntry) && {
+        context
+            .coverage
+            .is_some_and(|coverage| coverage.has_unscoped_refusing_phase_gap_on(open_day))
+            || rules(selected.as_ref(), set)
+                .any(|rule| rule.days[weekday] && (!wrapped_only || rule.wraps_to_next_day()))
+            || context.builtin_block_may_exist_on(open_day)
+    } {
         context.require_phase_coverage(open_day)?;
     }
-    let weekday = open_day.weekday().num_days_from_monday() as usize;
-    let selected = context.profile_for_open_day(open_day);
     for rule in rules(selected.as_ref(), set)
         .filter(|rule| rule.days[weekday] && (!wrapped_only || rule.wraps_to_next_day()))
     {
@@ -849,6 +896,54 @@ pub(super) fn find_occurrence<T>(
         wrapped_only,
         probe,
     ))
+}
+
+/// Returns whether the identity's **built-in** calendar resolves an
+/// order-entry occurrence of `open_ssm..close_ssm` opening on `date`.
+///
+/// This is the shape check behind
+/// [`CalendarCoverage::phase_gap_on`](crate::CalendarCoverage::phase_gap_on):
+/// a declared gap whose shape names an order-entry window applies exactly to
+/// the dates this answers `true` for. The walk is the identity's own — its
+/// profile timeline for the opening day, its built-in holiday table, and the
+/// same occurrence resolution every queue scan runs — never a caller's
+/// overlay, because the declaration is a fact about the identity and the same
+/// value must be reported by every view of it. The window pre-filter runs
+/// before any resolution, so a date whose weekday or grid carries no matching
+/// rule costs one profile selection and a rule scan; a failure to resolve
+/// withholds, which is the conservative direction.
+pub(in crate::calendar) fn builtin_resolves_order_entry(
+    source: CalendarSource,
+    date: NaiveDate,
+    open_ssm: Option<u32>,
+    close_ssm: u32,
+) -> bool {
+    let calendar = match source {
+        CalendarSource::Exchange(exchange) => {
+            crate::calendar::exchange_calendar::calendar_for_exchange(exchange)
+        }
+        CalendarSource::MarketHoursKey(key) => {
+            crate::calendar::exchange_calendar::calendar_for_market_hours_key(key)
+        }
+    };
+    let context = QueryContext::date_aware(calendar);
+    let weekday = date.weekday().num_days_from_monday() as usize;
+    let selected = context.profile_for_open_day(date);
+    let mut unresolved = false;
+    for rule in rules(selected.as_ref(), RuleSet::OrderEntry) {
+        if !rule.days[weekday] || rule.close_ssm != close_ssm {
+            continue;
+        }
+        if open_ssm.is_some_and(|open| rule.open_ssm != open) {
+            continue;
+        }
+        match resolve_rule_bounds(&context, date, RuleSet::OrderEntry, rule) {
+            Ok(Some(_bounds)) => return true,
+            Ok(None) => {}
+            Err(_) => unresolved = true,
+        }
+    }
+    unresolved
 }
 
 /// Resolves one scheduled occurrence and rejects civil-time collapses.

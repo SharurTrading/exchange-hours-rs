@@ -18,14 +18,24 @@
 //! count taken over the whole file reports those dormant rows under the served
 //! identity. Going through the identity's own calendar is what keeps the two
 //! apart, and it is why this fence queries rather than reading module text.
+//!
+//! The `Normal week` column is the one exception: no query surface reports a
+//! timeline (an identity answers *through* it at a caller's instant, and a
+//! revision whose grid restores a prior state is behaviourally invisible), so
+//! `inventory_revisions_cells_match_the_shipped_tables` derives that cell from
+//! the owner module's source text instead — the same bytes the compiler ships —
+//! choosing the identity's own block by static binding where a module carries
+//! several.
 
 use super::VERIFICATION;
+use super::evidence_files::revision_blocks;
 use chrono::{Datelike as _, NaiveDate, TimeZone as _, Utc, Weekday};
 use chrono_tz::US::Central;
 use exchange_hours::{
     CalendarQueryError, CoverageGap, CoverageGapReason, DateCoverage, Exchange, ExchangeCalendar,
     Holiday, HolidayKind, MarketHoursKey, calendar_for_exchange, calendar_for_market_hours_key,
 };
+use std::path::Path;
 
 const INVENTORY: &str = include_str!("../../docs/schedules/coverage-2025.md");
 
@@ -188,6 +198,132 @@ fn inventory_windows_and_date_counts_match_the_shipped_tables() {
     }
 }
 
+/// The served identities whose owner module carries more than one
+/// `revisions!` block, each with the static its routing arm dispatches
+/// through (`hours_for_exchange` in `src/calendar/presets/historical.rs`).
+///
+/// A module that grows a second block fails the fence until its identity is
+/// named here deliberately, and a listed static that stops existing fails the
+/// lookup below — the mapping can go stale only loudly.
+fn multi_block_bindings() -> &'static [(&'static str, &'static str)] {
+    &[
+        ("nasdaq", "NASDAQ_REVISIONS"),
+        ("nyse", "NYSE_REVISIONS"),
+        ("euronext_paris", "PARIS_REVISIONS"),
+    ]
+}
+
+/// The owner modules one Owner cell links, as repository-relative paths
+/// (`../../src/…` read from `docs/schedules/`).
+fn owner_modules(cell: &str) -> Vec<String> {
+    let mut modules = Vec::new();
+    let mut searched = 0_usize;
+    while let Some(offset) = cell[searched..].find("](../../") {
+        let start = searched + offset + "](../../".len();
+        let close = cell[start..]
+            .find(')')
+            .unwrap_or_else(|| panic!("an Owner link closes its parenthesis: {cell}"));
+        let target = &cell[start..start + close];
+        assert!(
+            target.starts_with("src/"),
+            "an Owner link names a repository path under src/: {target}"
+        );
+        modules.push(target.to_owned());
+        searched = start + close;
+    }
+    modules
+}
+
+/// The `Normal week` cell is the owner module's shipped `revisions!` timeline,
+/// so it is re-derived here from the module source text and compared cell by
+/// cell.
+///
+/// A stale cell — the `globex_cryptocurrency` row this fence was added for
+/// still read a pre-rebase copy nine rows ending 2026-09-20 where its module
+/// ships thirteen ending 2026-10-25 — fails here until it states what ships.
+/// The derived shape is `first … last (N rows)`, singular `row` for one, and a
+/// module with no `revisions!` block states that in its cell (the em dash, or
+/// the seasonal-selector wording that names the macro); a disclosed-suffix
+/// cell such as `b3`'s passes only with the derived timeline as its prefix.
+#[test]
+fn inventory_revisions_cells_match_the_shipped_tables() {
+    let blocks = revision_blocks();
+    for (name, row) in inventory_rows() {
+        let modules = owner_modules(&row[1]);
+        assert!(!modules.is_empty(), "{name}'s Owner cell links no module");
+        for module in &modules {
+            assert!(
+                Path::new(env!("CARGO_MANIFEST_DIR")).join(module).is_file(),
+                "{name}'s Owner links {module}, which is not a file in this crate"
+            );
+        }
+        let owned: Vec<&super::evidence_files::RevisionBlock> = blocks
+            .iter()
+            .filter(|block| modules.iter().any(|module| module == &block.module))
+            .collect();
+        if owned.is_empty() {
+            assert!(
+                row[2] == "\u{2014}" || row[2].contains("no `revisions!` timeline"),
+                "{name}'s owner modules carry no `revisions!` block, but its Normal week cell \
+                 reads {:?}",
+                row[2]
+            );
+            continue;
+        }
+        let chosen = if owned.len() == 1 {
+            owned[0]
+        } else {
+            let binding = multi_block_bindings()
+                .iter()
+                .find(|(scope, _)| *scope == name)
+                .map_or_else(
+                    || {
+                        panic!(
+                            "{name}'s owner modules carry {} `revisions!` blocks; name the static \
+                             its routing arm dispatches through in multi_block_bindings",
+                            owned.len()
+                        )
+                    },
+                    |(_, binding)| *binding,
+                );
+            let matches: Vec<&super::evidence_files::RevisionBlock> = owned
+                .iter()
+                .copied()
+                .filter(|b| b.binding == binding)
+                .collect();
+            assert_eq!(
+                matches.len(),
+                1,
+                "{name} names {binding} in multi_block_bindings, but its owner modules carry \
+                 {} blocks bound to it",
+                matches.len()
+            );
+            matches[0]
+        };
+        let rows = &chosen.rows;
+        assert!(
+            !rows.is_empty(),
+            "{name}'s {:?} block carries no rows",
+            chosen.binding
+        );
+        let count = rows.len();
+        let derived = format!(
+            "{} \u{2026} {} ({} {})",
+            rows[0].day,
+            rows[count - 1].day,
+            count,
+            if count == 1 { "row" } else { "rows" }
+        );
+        assert!(
+            row[2] == derived || row[2].starts_with(&format!("{derived} + ")),
+            "{name}'s Normal week cell reads {:?}; its owner module's {:?} block derives \
+             {derived:?}",
+            row[2],
+            chosen.binding
+        );
+    }
+}
+
 /// A row that names a tracked issue in its `Missing / disputed` cell has an
 /// unresolved gap, and LAW-COVERAGE does not let that row read as complete.
 ///
@@ -283,6 +419,31 @@ fn date_level_incompleteness() -> &'static [(&'static str, usize)] {
     ]
 }
 
+/// The scopes whose `**incomplete**` verdict is a **date-scoped** phase gap
+/// (#172): the withheld arrangement is live only on the dates its shape
+/// resolves, and the sample date — a Tuesday no served table withholds — is
+/// answered beside them.
+///
+/// Since #172 the seven quarter-hour scopes withhold the Sunday 16:00-16:15 CT
+/// quarter-hour on the bracket-era Sundays whose served Pre-Open resolves and
+/// answer every other date from the tables, so their interval verdict stays
+/// `**incomplete**` while `is_complete_on` on the sample reads `true`. The
+/// direction rule below re-derives that escape non-circularly: the sample is
+/// asserted to be a weekday, and the scope's declarations are asserted to be
+/// date-scoped, so a declaration that ever became `EveryDay` again — or a sample
+/// that ever became a Sunday — fails here rather than passing by construction.
+fn scoped_incompleteness() -> &'static [&'static str] {
+    &[
+        "cme",
+        "comex",
+        "nymex",
+        "globex_energy",
+        "globex_equity_index",
+        "globex_fx",
+        "globex_interest_rates",
+    ]
+}
+
 /// `is_complete_on(SAMPLE)` agrees with the inventory's `Complete?` cell for all
 /// thirty-three served scopes.
 ///
@@ -330,6 +491,7 @@ fn inventory_completeness_verdicts_match_the_metadata() {
             .iter()
             .find(|(scope, _)| *scope == name)
             .copied();
+        let scoped = scoped_incompleteness().contains(&name.as_str());
 
         let expected = match verdict_of(&name, cell) {
             Verdict::Complete => {
@@ -351,6 +513,22 @@ fn inventory_completeness_verdicts_match_the_metadata() {
                         "{name} is listed as date-level incomplete with {claimed} withheld dates"
                     );
                     !withheld(calendar, day)
+                } else if scoped {
+                    // A date-scoped denial names the dates its shape resolves.
+                    // The scopes in this group all withhold the Sunday-keyed
+                    // quarter-hour — fenced behaviourally by the two
+                    // `the_sunday_quarter_hour` fences below — so the sample
+                    // escapes exactly while it is not a Sunday; a sample that
+                    // ever became a Sunday fails here rather than passing by
+                    // construction.
+                    assert!(
+                        coverage.phase_gaps().iter().any(|gap| !matches!(
+                            gap.shape(),
+                            exchange_hours::PhaseGapShape::EveryDay
+                        )),
+                        "{name} is listed as scoped-incomplete but declares no date-scoped gap"
+                    );
+                    day.weekday() != Weekday::Sun
                 } else {
                     false
                 }
@@ -409,10 +587,18 @@ fn inventory_completeness_verdicts_match_the_metadata() {
 /// `SpecialSessionUnrepresentable` shape #93 named has no entry at all since
 /// 2026-09-26 UTC: `globex_cryptocurrency`'s eight 24/7-era merged trade dates
 /// shipped as `replacement blocks` rows, so no served scope declares it.
+///
+/// Since #172 every declaration also carries the dates it applies to, and
+/// `globex_grains` carries **two**: the #152 label gap, shaped to the dates that
+/// carry the post-close queue, and the 2012-05-20..2013-04-06 regime whose queue
+/// states are omitted outright — without the second, those dates would read
+/// `Covered` while their queue rows are missing, and the evidence file records
+/// them as a gap with a closing condition.
 fn declared_phase_gaps() -> Vec<(&'static str, Vec<(CoverageGapReason, &'static str)>)> {
     let quarter_hour = (CoverageGapReason::NormalWeekPhaseWithheld, "#79");
     let pre_open_onset = (CoverageGapReason::NormalWeekPhaseWithheld, "#123");
     let post_close_label = (CoverageGapReason::PostCloseQueueTradeDateLabel, "#152");
+    let omitted_regime = (CoverageGapReason::NormalWeekPhaseWithheld, "#116");
     let undated_closures = (CoverageGapReason::UnpublishedClosureDates, "#157");
     vec![
         ("cme", vec![quarter_hour]),
@@ -427,13 +613,14 @@ fn declared_phase_gaps() -> Vec<(&'static str, Vec<(CoverageGapReason, &'static 
         // `globex_cryptocurrency` carried the #93 special-session declaration
         // until its 24/7-era merged trade dates landed on 2026-09-26 UTC;
         // every session CME publishes for it now ships as a row, and the
-        // declared Pre-Open onset is bounded at the 2026-05-29 bridge row.
+        // declared Pre-Open onset is bounded to the five-day era itself.
         ("globex_cryptocurrency", vec![pre_open_onset]),
-        // The two scopes whose declaration serves its phase: the post-close
-        // queue is answered on every covered date, and only the trade date it
-        // reads under is the crate's convention rather than the operator's
-        // printing (#152).
-        ("globex_grains", vec![post_close_label]),
+        // The two scopes whose #152 declaration serves its phase: the post-close
+        // queue is answered on every date that carries it, and only the trade
+        // date it reads under is the crate's convention rather than the
+        // operator's printing. `globex_grains` adds the omitted-queue regime,
+        // which withholds a phase and is bounded by the dated rows on both sides.
+        ("globex_grains", vec![post_close_label, omitted_regime]),
         ("globex_livestock", vec![post_close_label]),
         // `eurex` withholds no *phase*: the operator declares German
         // equity/equity-index closures it has not dated, so the declaration is
@@ -453,13 +640,14 @@ fn declared_phase_gaps() -> Vec<(&'static str, Vec<(CoverageGapReason, &'static 
 /// move silently.
 /// Asserts one scope's declaration records match what it declares.
 ///
-/// A declaration the per-date accessor names on some date has a record, carrying
-/// its own reason and closing condition over the span it is the answer for: the
-/// era before its bound for a bounded declaration, the whole domain for one that
-/// carries no bound. Every served scope declares one gap today, so the records
-/// and the declarations correspond one to one; the helper still reads the
-/// `phase_gaps` stack rather than assuming that, because a scope that stacks two
-/// would report only the first through `gaps`.
+/// Since #172 a date-scoped declaration reports **one record per maximal run**
+/// its shape resolves — the bracket-era Sundays come back one record each — so
+/// this checks every record that carries a declaration against the declaration
+/// it carries, and requires each expected declaration to have at least one
+/// record where the identity answers. A declaration the per-date accessor names
+/// on some date has a record, carrying its own reason and closing condition;
+/// every record's span starts at or after the floor and inside its
+/// declaration's own dates.
 fn check_declaration_records(
     name: &str,
     coverage: exchange_hours::CalendarCoverage,
@@ -472,44 +660,39 @@ fn check_declaration_records(
         .filter(|gap| gap.phase_gap().is_some())
         .copied()
         .collect();
-    assert!(
-        declared.len() <= expected.len(),
-        "{name} reports no more declaration records than it declares"
-    );
     for (reason, closing) in expected {
-        let Some(gap) = declared
+        let records: Vec<CoverageGap> = declared
             .iter()
-            .find(|gap| gap.closing_condition() == Some(*closing))
-        else {
-            let shadowed = coverage.phase_gaps().iter().any(|candidate| {
-                candidate.closing_condition() == *closing && candidate.applies_until().is_none()
-            }) && coverage.phase_gaps()[0].closing_condition() != *closing;
-            assert!(
-                shadowed,
-                "{name} must report a record for {closing} unless an earlier declaration \
-                 applies to every date it does"
+            .filter(|gap| gap.closing_condition() == Some(*closing))
+            .copied()
+            .collect();
+        assert!(
+            !records.is_empty(),
+            "{name} must report at least one record for {closing} inside the dates \
+             its identity answers"
+        );
+        for gap in &records {
+            assert_eq!(gap.reason(), *reason, "{name}'s {closing} record");
+            let declaration = coverage
+                .phase_gaps()
+                .iter()
+                .find(|candidate| candidate.closing_condition() == *closing)
+                .expect("the fixture names a declared gap");
+            assert_eq!(
+                gap.phase_gap(),
+                Some(declaration).copied(),
+                "{name}'s {closing} record"
             );
-            continue;
-        };
-        assert_eq!(gap.reason(), *reason, "{name}'s {closing} record");
-        let declaration = coverage
-            .phase_gaps()
-            .iter()
-            .find(|candidate| candidate.closing_condition() == *closing)
-            .expect("the fixture names a declared gap");
-        assert!(
-            gap.range().first() >= floor(),
-            "{name}'s {closing} record starts at or after the floor"
-        );
-        assert_eq!(
-            gap.range().is_open_ended(),
-            declaration.applies_until().is_none(),
-            "{name}'s {closing} record must be open-ended exactly while its declaration is"
-        );
-        assert!(
-            declaration.applies_on(gap.range().first()),
-            "{name}'s {closing} record must start where its declaration applies"
-        );
+            assert!(
+                gap.range().first() >= floor(),
+                "{name}'s {closing} record starts at or after the floor"
+            );
+            assert!(
+                declaration.applies_on(gap.range().first())
+                    && declaration.applies_on(gap.range().last()),
+                "{name}'s {closing} record must sit inside its own declaration's dates"
+            );
+        }
         assert!(
             row[7].contains(closing) || row[9].contains(closing),
             "{name}'s Missing / disputed and Closing issues cells must name {closing}: {:?} / {:?}",
@@ -552,16 +735,21 @@ fn the_declared_phase_level_gaps_match_the_inventory() {
         // The horizon the ledger declares is untouched: a phase gap is additional
         // information, not a re-dating. Whether the identity answers any date
         // completely follows from the declarations and the audited facts: one
-        // that carries a whole-domain gap answers none; one whose gaps are all
-        // bounded by an era answers from the latest bound on — unless its
-        // audited holiday windows end at or before that bound, in which case no
-        // audited date survives past it and the complete ranges stay empty.
-        // `eurex` is the shipped case: the editions carrying the `tba` note end
-        // at 2026-12-31 and its bound is the next day.
-        let whole_domain = coverage
+        // that carries a whole-domain `EveryDay` gap answers none; one whose
+        // declarations are all `EveryDay`, bounded, and outlived by the audited
+        // windows answers none either — `eurex` is the shipped case, whose
+        // editions end 2026-12-31 and whose bound is the day after. A date-scoped
+        // declaration answers the dates its shape does not resolve, so a shaped
+        // scope reports complete spans beside its gap records.
+        let whole_domain = coverage.phase_gaps().iter().any(|gap| {
+            gap.applies_since().is_none()
+                && gap.applies_until().is_none()
+                && gap.shape() == exchange_hours::PhaseGapShape::EveryDay
+        });
+        let all_every_day = coverage
             .phase_gaps()
             .iter()
-            .any(|gap| gap.applies_until().is_none());
+            .all(|gap| gap.shape() == exchange_hours::PhaseGapShape::EveryDay);
         let audited_end = calendar
             .holiday_coverage()
             .map(exchange_hours::HolidayCoverage::last);
@@ -570,17 +758,12 @@ fn the_declared_phase_level_gaps_match_the_inventory() {
             .iter()
             .filter_map(|gap| gap.applies_until())
             .max();
-        let audited_dates_survive_past_the_bound = match audited_end {
-            // No holiday table: the date-level facts refuse nothing for want of
-            // an audited row, so the ordinary dates past the bound are complete.
-            None => true,
-            Some(end) => latest_bound.is_some_and(|bound| end >= bound),
-        };
+        let nothing_survives = all_every_day
+            && matches!((audited_end, latest_bound), (Some(end), Some(bound)) if end < bound);
         assert_eq!(
             coverage.complete_ranges().count() == 0,
-            whole_domain || !audited_dates_survive_past_the_bound,
-            "{name}: complete_ranges() is empty exactly while a whole-domain gap \
-             applies or no audited date survives past the last bound"
+            whole_domain || nothing_survives,
+            "{name}: complete_ranges() is empty exactly while nothing survives the declarations"
         );
         if whole_domain {
             assert!(
@@ -593,11 +776,11 @@ fn the_declared_phase_level_gaps_match_the_inventory() {
     }
     assert_eq!(
         (declaring, declarations),
-        (11, 11),
-        "eleven served scopes declare a gap today, one declaration each: seven \
+        (11, 12),
+        "eleven served scopes declare today, twelve declarations in all: seven \
          quarter-hour scopes, `globex_cryptocurrency`'s undated five-day-era Pre-Open \
-         onset, `eurex`'s undated closure scope, and the post-close queue label \
-         `globex_grains` and `globex_livestock` declare"
+         onset, `eurex`'s undated closure scope, and the two `globex_grains` carries — \
+         the post-close queue label and the omitted 2012-05-20..2013-04-06 regime"
     );
 
     // The scopes the quarter-hour probe cleared of the disputed window declare

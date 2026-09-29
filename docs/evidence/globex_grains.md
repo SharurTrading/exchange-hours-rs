@@ -49,7 +49,7 @@ Official origin of the trading-hours captures: <http://www.cmegroup.com/trading_
 
 ## Gaps and residual risks
 
-- **order-entry** — the queue and PCP states of the 21-hour 2012-05-20..2013-04-06 regime have no operator-stated onset day. The 2026-08-31 review sourced the states themselves from CME's own trading-hours captures of 2012-05-28 and 2012-06-07 against the pre-expansion 2012-05-11 capture, which brackets the switch to 2012-05-11..2012-05-28; CME market-data advisory 20120518 states only the new matching hours and never the queue times, so no queue revision is keyed to 2012-05-20. Closing condition: a CME document that states those queue times in session language on a day-level effective date. Served identity, so tracked as an issue (LAW-FOLLOW-UPS-ARE-ISSUES).
+- **order-entry** — the queue and PCP states of the 21-hour 2012-05-20..2013-04-06 regime have no operator-stated onset day. The 2026-08-31 review sourced the states themselves from CME's own trading-hours captures of 2012-05-28 and 2012-06-07 against the pre-expansion 2012-05-11 capture, which brackets the switch to 2012-05-11..2012-05-28; CME market-data advisory 20120518 states only the new matching hours and never the queue times, so no queue revision is keyed to 2012-05-20. The regime's own dates refuse through the declaration #172 ships for it (`NormalWeekPhaseWithheld`, bounded by the dated 2012-05-20 and 2013-04-07 rows beside it, closing condition #116 — this scope's Stage 4 completeness issue). Closing condition: a CME document that states those queue times in session language on a day-level effective date. Served identity, so tracked as an issue (LAW-FOLLOW-UPS-ARE-ISSUES).
 - **residual risk** — the baseline queue and PCP phases rest on the operator's March-2010 market-state table, which states them as then-live rather than dating them, so they are carried back from 2010-03-15 to the January-2010 floor.
 - **residual risk** — a later generic CME Globex notice broadly names CBOT in an afternoon queue change but does not enumerate this family and conflicts with the complete family-specific state table, so no separate evening queue is inferred from it.
 - **scope** — standard-size CBOT grain and oilseed futures only; mini grains are excluded.
@@ -850,9 +850,16 @@ and each row's `Derived from` cell records which one produced it.
   occurrence by the **session it feeds**, so the same queue reads with the next trade date
   instead: `D + 1` on a Monday to Thursday and `D + 3` over a weekend. Measured through
   `calendar_for_market_hours_key(MarketHoursKey::GlobexGrains)` over
-  2025-01-01..2027-12-31, 15:00 CT is inside the queue on **746** trade dates, and **all 746**
+  2025-01-01..2027-12-31, the shaped #152 declaration refuses **720** days (re-measured
+  2026-09-29 UTC against the current tables; the original 2026-09-26 measurement read
+  **746** queue dates before the closure-eve replacement blocks landed) — every refusing
+  day is one whose calendar serves the 14:30-16:00 CT queue, and **all 720**
   answer `session_state = OrderEntry`, `is_accepting_orders = true` and a `trade_date` other
-  than the date printed on. Two instants show it on a date no row covers: **2025-06-10** (a
+  than the date printed on. Fourteen further days accept orders at 15:00 CT on the
+  adjusted queue their own replacement block states and answer completely; the walk fence
+  in `tests/coverage_metadata.rs`
+  (`a_date_scoped_declaration_zeroes_no_identity_over_2025_2027`) pins the 720 refusals,
+  the 14 block-eve days and livestock's 754. Two instants show it on a date no row covers: **2025-06-10** (a
   Tuesday) answers `trade_date = 2025-06-11`, and **2025-06-13** (a Friday) answers
   `trade_date = 2025-06-16`, where `CME-SVC-2024-12-31` prints `2025-01-02 14:30 pcp` and
   `2026-07-02 14:30 pcp` carrying their own dates. This is the one answer in this block that a
@@ -865,9 +872,9 @@ and each row's `Derived from` cell records which one produced it.
   the label unchanged, and the only shape that yields the operator's own label is `tradeable`,
   which would assert matching in a window the operator marks `pcp` (LAW-SESSION-NOT-EXPIRY).
   The scope therefore declares the gap (`CoverageGapReason::PostCloseQueueTradeDateLabel`,
-  whole-domain, closing condition #152 in `schedules/sourcing.rs`) and neither
-  `globex_grains` nor `globex_livestock`, which carries the same queue, claims a complete
-  calendar. The declaration withholds no answer and refuses no query: the window and both of
+  closing condition #152 in `schedules/sourcing.rs`), shaped — since #172 — to the dates whose own
+  calendar serves the order-entry window closing at 16:00 CT, and neither `globex_grains` nor
+  `globex_livestock`, which carries the same queue, claims a complete calendar on its queue dates. The declaration withholds no answer and refuses no query: the window and both of
   its verdicts are served. Served identity, so tracked as issue #152
   (LAW-FOLLOW-UPS-ARE-ISSUES).
 - **closed 2026-09-26 UTC — the merged eves' Pre-Open is served.** Three of the four classes

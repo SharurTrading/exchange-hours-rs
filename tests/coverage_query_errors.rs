@@ -456,15 +456,18 @@ fn the_support_floor_constant_is_the_documented_date() {
 /// and both are right.
 ///
 /// `calendar.coverage().coverage_on(day)` answers "is this date completely
-/// covered?", so it is `OutsideCoveredRange` wherever a declared phase-level gap
-/// applies — for the CME-family scopes that is every venue-local date before the
-/// #79 bound (2026-08-22), because the Sunday 16:00-16:15 CT queue is withheld
-/// across that span and the date therefore has no complete answer.
+/// covered?", so it is `OutsideCoveredRange` where the declared phase-level gap
+/// applies — for the CME-family scopes that is a bracket-era **Sunday** whose
+/// served Pre-Open resolves, because the Sunday 16:00-16:15 CT queue is
+/// withheld there and the date therefore has no complete answer. A weekday of
+/// the same era answers: the declaration's shape (#172) keys the withholding to
+/// the dates its evidence cannot state, so the sourced weekday grid is
+/// complete.
 ///
 /// A *session* query asks something narrower: what does the sourced normal week
-/// and holiday layer say about the tradeable day? That answer does not depend on
-/// the withheld queue at all, so it is given rather than refused — refusing a
-/// Tuesday for a Sunday queue is precisely the coverage-error-read-as-closure
+/// and holiday layer say about the tradeable day? That answer does not depend
+/// on the withheld queue at all, so it is given rather than refused — refusing
+/// a Tuesday for a Sunday queue is precisely the coverage-error-read-as-closure
 /// failure LAW-COVERAGE exists to prevent (see `QueryContext::require_answerable`
 /// and the order-entry-only `require_phase_coverage` beside it).
 ///
@@ -475,32 +478,59 @@ fn the_support_floor_constant_is_the_documented_date() {
 #[test]
 fn a_withheld_phase_refuses_the_order_entry_query_but_not_the_session_query() {
     let cal = calendar_for_exchange(Exchange::Cme);
-    let day = date(2026, 4, 20);
-    let instant = ct((2026, 4, 20), (10, 0));
-    assert_eq!(instant.with_timezone(&cal.tz()).date_naive(), day);
+    let day = date(2026, 4, 19);
+    let queue_instant = ct((2026, 4, 19), (16, 5));
+    let session_instant = ct((2026, 4, 19), (18, 0));
+    assert_eq!(queue_instant.with_timezone(&cal.tz()).date_naive(), day);
 
-    // The date is not *completely* covered: a phase-level gap applies to it.
+    // The date is not *completely* covered: the phase-level gap applies to it —
+    // the served Sunday Pre-Open resolves, so the withheld quarter-hour is live.
     assert_eq!(
         cal.coverage().coverage_on(day),
         DateCoverage::OutsideCoveredRange,
-        "a declared phase gap makes the whole date incomplete"
+        "the bracket-era Sunday's withheld quarter-hour makes the date incomplete"
     );
     assert!(!cal.coverage().is_complete_on(day));
+    let declaration = cal
+        .coverage()
+        .phase_gap_on(day)
+        .expect("the #79 declaration applies on its bracket-era Sunday");
+    assert_eq!(declaration.closing_condition(), "#79");
+
+    // ...yet the session query answers on the same date, because it never reads
+    // that phase: the 17:00 CT Sunday open is sourced.
     assert!(
-        cal.coverage()
-            .phase_gaps()
-            .iter()
-            .any(|gap| gap.applies_on(day)),
-        "the incompleteness must come from a declared phase gap, not a date-level one"
+        cal.is_open(session_instant)
+            .expect("a sourced session answers"),
+        "the Sunday evening session on that date is sourced"
+    );
+    // And the order-entry query at the withheld instant states the date's
+    // verdict instead of reading as a closed grid.
+    assert_eq!(
+        cal.is_accepting_orders(queue_instant),
+        Err(CalendarQueryError::OutsideCoveredRange {
+            source: cal.source(),
+            date: day,
+        }),
+        "the withheld quarter-hour refuses, never reads as closed"
     );
 
-    // ...yet the session query answers, because it never reads that phase.
+    // The Tuesday beside it answers outright: the shape keys the withholding to
+    // the served Sunday queue, so the weekday grid is complete.
+    let tuesday = date(2026, 4, 21);
+    assert_eq!(cal.coverage().coverage_on(tuesday), DateCoverage::Covered);
     assert!(
-        cal.is_open(instant).expect("a sourced session answers"),
+        cal.coverage().phase_gap_on(tuesday).is_none(),
+        "no declaration applies on a Tuesday of the same era"
+    );
+    assert!(
+        cal.is_open(ct((2026, 4, 21), (10, 0)))
+            .expect("a sourced session answers"),
         "the regular session on that date is sourced"
     );
     assert!(
-        cal.normal_week_open_seconds_containing(instant).is_ok(),
+        cal.normal_week_open_seconds_containing(ct((2026, 4, 21), (10, 0)))
+            .is_ok(),
         "and so is the normal week around it"
     );
 }

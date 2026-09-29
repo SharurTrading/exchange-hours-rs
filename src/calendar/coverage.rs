@@ -46,20 +46,28 @@
 //! closures it has not dated — so both are completeness facts alone and the
 //! phase's own queries answer through them.
 //!
-//! A declared gap applies to the whole supported domain **unless its own
-//! declaration carries an end bound** ([`PhaseGap::until`]), because a profile can
-//! start serving the withheld phase in a later era: the seven scopes withholding
-//! CME's Sunday 16:00-16:15 CT quarter-hour each begin a knowledge-bound era on
-//! 2026-08-22 that widens the queue to 16:00-17:00 CT, so the quarter-hour is
-//! served from that day and the gap is bounded to the dated era before it. Where a
-//! declaration is bounded, every verdict here follows the era: the dates inside
-//! the bound keep the phase-level reason, and dates at or after it fall through
-//! to the ordinary date-level facts — so [`CalendarCoverage::coverage_on`],
+//! A declared gap applies to the dates its own declaration names, not to the
+//! whole supported domain. Three bounds narrow it: a **start bound**
+//! ([`PhaseGap::since`], the first venue-local date the withholding is live —
+//! the era the gap is a property of, never an inferred cutover), an **end
+//! bound** ([`PhaseGap::until`], the first date the profile serves the withheld
+//! arrangement — for the seven scopes withholding CME's Sunday 16:00-16:15 CT
+//! quarter-hour, the 2026-08-22 knowledge-bound row that widens the queue to
+//! 16:00-17:00 CT), and a **shape** ([`PhaseGapShape`]) — `EveryDay`, or an
+//! order-entry window whose occurrence on the identity's own calendar decides
+//! the individual dates. The #79 quarter-hour withholds one phase on one
+//! weekday, so its declaration names the served Sunday Pre-Open window: the gap
+//! applies exactly where that occurrence resolves, and a Tuesday or a
+//! holiday-removed Sunday in the same era answers from the tables. Where a
+//! declaration is bounded or shaped, every verdict here follows it: the dates
+//! it names keep the phase-level reason, and all others fall through to the
+//! ordinary date-level facts — so [`CalendarCoverage::coverage_on`],
 //! [`CalendarCoverage::is_complete_on`], [`CalendarCoverage::complete_ranges`]
-//! and [`CalendarCoverage::gaps`] agree on where the gap stops. A whole-domain
-//! declaration (no bound) leaves an identity incomplete everywhere, as does
-//! shipping no holiday table at all — most identities do, though the three whose
-//! own definition observes no holidays are complete without one.
+//! and [`CalendarCoverage::gaps`] agree date by date. A whole-domain
+//! declaration (no bounds, `EveryDay`) leaves an identity incomplete wherever
+//! its ordinary facts would otherwise answer, as does shipping no holiday table
+//! at all — most identities do, though the three whose own definition observes
+//! no holidays are complete without one.
 //!
 //! Nothing here changes an existing query's signature. Inspectable metadata is
 //! not permission to return a fabricated schedule: a date this module reports as
@@ -213,10 +221,17 @@ pub enum CoverageGapReason {
     /// 2026-08-22 — so the shared bound below is not theirs to reuse. Each
     /// declaration is **bounded to the dated era before each module's own
     /// knowledge-bound 2026-08-22 row**, which widens the queue to 16:00-17:00 CT
-    /// and therefore serves the quarter-hour from that day on.
+    /// and therefore serves the quarter-hour from that day on, and **shaped to
+    /// the served Sunday Pre-Open** — the 16:15-17:00 CT window the dated eras
+    /// carry — because the withholding is live only on the Sundays whose queue
+    /// resolves: a Tuesday in the same era, and a Sunday whose evening leg a
+    /// holiday removes, answer from the tables. Before the 2012-05-28 capture the
+    /// sourced state still printed 16:15 CT, so the span starts there and no
+    /// earlier Sunday refuses.
     /// `globex_cryptocurrency` carries a second instance of the shape, its
-    /// five-day era's undated Pre-Open onset, which is bounded to no era: its
-    /// evidence records no day the gap stops applying.
+    /// five-day era's undated Pre-Open onset, bounded to that era
+    /// (2017-12-17..2026-05-28) with no shape: the era's queue rows are omitted
+    /// outright, so every date of the era refuses.
     ///
     /// Because the withheld slice lies inside a phase on a recurring grid rather
     /// than on one trade date, this is not [`Self::WithheldDate`]: it is not a
@@ -318,6 +333,49 @@ pub enum CoverageGapReason {
     UnpublishedClosureDates,
 }
 
+/// The dates one declared gap applies to, within its own span.
+///
+/// A declaration's span ([`PhaseGap::since`] through [`PhaseGap::until`]) states
+/// the era the gap is a property of; the shape states **which dates inside that
+/// era** the withholding is live on. The default is every date of the span. An
+/// order-entry window narrows it to the dates whose own calendar resolves an
+/// order-entry occurrence of exactly that window — the truthful granularity for
+/// a gap that withholds one phase on one weekday (#79's Sunday Pre-Open
+/// quarter-hour) or on the dates that carry one queue (#152's post-close
+/// trade-date label), where the rest of the span's dates are fully answered by
+/// the tables.
+///
+/// A shape is evaluated against the identity's own built-in layers only — its
+/// profile timeline, its holiday table, never a caller's overlay — because the
+/// declaration is a fact about the identity, and the same value must be
+/// reported by every view of it, detached calendars included.
+#[non_exhaustive]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum PhaseGapShape {
+    /// Every date of the declaration's span. The shape for a gap whose
+    /// withholding is not keyed to a served occurrence: an era whose queue rows
+    /// are omitted outright (`globex_grains`' 2012-05-20..2013-04-06 regime) or
+    /// a scope whose closure dates the operator has not published (`eurex`).
+    EveryDay,
+    /// The dates on which the identity's own calendar resolves an
+    /// **order-entry** occurrence opening on the date, of a rule whose
+    /// venue-local window matches exactly: `close_ssm` always, and `open_ssm`
+    /// when it is `Some`. `None` matches any opening — the post-close queue's
+    /// opening moved across eras while its 16:00 CT close did not (#152).
+    ///
+    /// The occurrence must survive the built-in layers — a trade date the
+    /// table closes or replaces removes the occurrence, and the date then
+    /// answers completely. Resolution is the same walk the order-entry queries
+    /// run, so a shape can never apply where the crate itself serves nothing.
+    OrderEntryWindow {
+        /// The rule's venue-local opening, in seconds since local midnight, or
+        /// `None` to match any opening with the named close.
+        open_ssm: Option<u32>,
+        /// The rule's venue-local close, in seconds since local midnight.
+        close_ssm: u32,
+    },
+}
+
 /// A completeness gap one identity declares about itself: a known internal gap
 /// that no date walk over the identity's tables can find.
 ///
@@ -339,11 +397,18 @@ pub enum CoverageGapReason {
 /// `schedules/` cannot express today, so they are stated affirmatively, exactly
 /// as `observes_no_holidays` states the absence of holiday closures.
 ///
-/// A declaration is bounded when the profile serves the withheld arrangement from
-/// a later era on: [`Self::until`] is then the first date the gap no longer
-/// applies, and it is the same day the identity's own timeline begins the profile
-/// that serves it. The bound is never invented — it restates a knowledge-bound
-/// revision row the module already ships (LAW-NO-FABRICATED-DATES).
+/// A declaration is **bounded** when the era it is about is dated on either
+/// side: [`Self::since`] is the first date the withholding is live (the
+/// five-day era's own first day, for `globex_cryptocurrency`'s undated
+/// Pre-Open), and [`Self::until`] the first date the profile serves the
+/// withheld arrangement — the day a knowledge-bound revision row the module
+/// already ships begins (LAW-NO-FABRICATED-DATES: the bound restates a row,
+/// never an inference). A declaration is **shaped** when the withholding is
+/// live only on the dates a served occurrence decides ([`PhaseGapShape`]):
+/// #79's quarter-hour on the Sundays whose Pre-Open resolves, #152's label on
+/// the dates that carry the post-close queue. Span and shape compose, so a
+/// declaration names exactly the dates its evidence cannot answer and the
+/// identity's metadata answers every other date beside it.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct PhaseGap {
     /// Which phase-level gap the identity carries.
@@ -352,22 +417,50 @@ pub struct PhaseGap {
     /// `schedules/sourcing.rs` and the coverage inventory write it (`#79`,
     /// `#93`, `#123`).
     closing_condition: &'static str,
+    /// The first venue-local date on which the gap applies, or `None` when it
+    /// applies from the support floor.
+    since: Option<NaiveDate>,
     /// The first venue-local date from which the gap no longer applies, or
-    /// `None` when it applies to the whole supported domain.
+    /// `None` when no era that serves the arrangement is known.
     until: Option<NaiveDate>,
+    /// Which dates inside the span the withholding is live on.
+    shape: PhaseGapShape,
 }
 
 impl PhaseGap {
     /// Declares a phase-level gap and the issue that closes it.
     ///
-    /// The declaration covers the whole supported domain; [`Self::until`] narrows
-    /// it to the era in which the identity still withholds the arrangement.
+    /// The declaration covers every date of the supported domain its evidence
+    /// withholds — every date, until [`Self::since`], [`Self::until`] or a
+    /// [`PhaseGapShape`] narrows it.
     #[must_use]
     pub const fn new(reason: CoverageGapReason, closing_condition: &'static str) -> Self {
         Self {
             reason,
             closing_condition,
+            since: None,
             until: None,
+            shape: PhaseGapShape::EveryDay,
+        }
+    }
+
+    /// Bounds the gap to the era **at and after** `since`.
+    ///
+    /// `since` is the first venue-local date on which the withholding is live —
+    /// the first day of the era the gap is a property of, dated by a row the
+    /// module already ships (`globex_cryptocurrency`'s five-day grid launches
+    /// 2017-12-17 at T1, so its Pre-Open gap applies from that day and not to
+    /// the sourced launch closures before it). A date before the bound is
+    /// judged by the ordinary date-level facts.
+    ///
+    /// Public so a caller can compose a declaration of its own over
+    /// [`Self::new`]'s whole-domain default; the crate's own declarations live
+    /// in `schedules/sourcing.rs`.
+    #[must_use]
+    pub const fn since(self, since: NaiveDate) -> Self {
+        Self {
+            since: Some(since),
+            ..self
         }
     }
 
@@ -380,14 +473,24 @@ impl PhaseGap {
     /// is judged by the ordinary date-level facts instead.
     ///
     /// Public so a caller can compose a declaration of its own over
-    /// [`Self::new`]'s whole-domain default; the crate's own declarations live in
-    /// `schedules/sourcing.rs`.
+    /// [`Self::new`]'s whole-domain default; the crate's own declarations live
+    /// in `schedules/sourcing.rs`.
     #[must_use]
     pub const fn until(self, until: NaiveDate) -> Self {
         Self {
             until: Some(until),
             ..self
         }
+    }
+
+    /// Narrows the gap to the dates a served occurrence decides
+    /// ([`PhaseGapShape::OrderEntryWindow`]).
+    ///
+    /// Public so a caller can compose a declaration of its own; the crate's own
+    /// declarations live in `schedules/sourcing.rs`.
+    #[must_use]
+    pub const fn with_shape(self, shape: PhaseGapShape) -> Self {
+        Self { shape, ..self }
     }
 
     /// Returns which phase-level gap the identity carries.
@@ -407,9 +510,20 @@ impl PhaseGap {
         self.closing_condition
     }
 
+    /// Returns the first venue-local date on which the gap applies, or `None`
+    /// when it applies from the support floor.
+    ///
+    /// `None` is not missing data: it states that no dated era bounds the
+    /// withholding from below, which is the truth for a gap whose phase the
+    /// operator has published since before the floor. A `Some` bound is a day a
+    /// sourced row already carries (LAW-NO-FABRICATED-DATES).
+    #[must_use]
+    pub const fn applies_since(self) -> Option<NaiveDate> {
+        self.since
+    }
+
     /// Returns the first venue-local date from which the gap no longer applies,
-    /// or `None` when the identity withholds the arrangement for the whole
-    /// supported domain.
+    /// or `None` when no era that serves the arrangement is known.
     ///
     /// `None` is not missing data: it is the affirmative "this profile never
     /// serves the arrangement", which is what the inventory's `Missing /
@@ -420,10 +534,21 @@ impl PhaseGap {
         self.until
     }
 
-    /// Returns whether this declaration applies to venue-local `date`.
+    /// Returns which dates inside the span the withholding is live on.
+    #[must_use]
+    pub const fn shape(self) -> PhaseGapShape {
+        self.shape
+    }
+
+    /// Returns whether this declaration's **span** contains venue-local `date`.
+    ///
+    /// This is the span check alone. The full "does the gap apply here" test
+    /// also consults the shape and the identity's own tables, and it lives on
+    /// [`CalendarCoverage::phase_gap_on`], which is the only reader that has
+    /// them.
     #[must_use]
     pub fn applies_on(self, date: NaiveDate) -> bool {
-        self.until.is_none_or(|until| date < until)
+        self.since.is_none_or(|since| date >= since) && self.until.is_none_or(|until| date < until)
     }
 }
 
@@ -431,13 +556,11 @@ impl PhaseGap {
 ///
 /// A **date-shaped** record comes from the walk over the identity's timeline and
 /// holiday windows and carries no declaration. A **phase-level** record reports
-/// one of the identity's declared gaps over the span that declaration is the
-/// answer for: the whole supported domain for a declaration with no bound, the era
-/// before its [`PhaseGap::until`] day for a bounded one, and what a bounded
-/// declaration left for a whole-domain one that follows it. Because the shapes
-/// stack, a declaration that no earlier one shadows reports its own record; a
-/// shadowed one has none, so `globex_cryptocurrency`'s `#93` precedes its `#123`
-/// and only `#93` reaches [`CalendarCoverage::gaps`].
+/// one of the identity's declared gaps over one maximal span the declaration
+/// answers for: a bounded `EveryDay` declaration reports its era as one span, a
+/// date-scoped declaration reports one span per run its shape resolves — #79's
+/// quarter-hour comes back as the bracket-era Sundays, one record each — and a
+/// whole-domain declaration spans everything no earlier declaration took.
 /// [`CalendarCoverage::phase_gaps`] is the declaration list itself.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct CoverageGap {
@@ -450,11 +573,11 @@ impl CoverageGap {
     /// Returns the venue-local span the gap covers.
     ///
     /// A **date-shaped** gap spans the dates its reason applies to. A
-    /// **phase-level** gap declared per identity spans the dates its own
-    /// declaration is the answer for: the whole supported domain when the
-    /// declaration carries no bound and none precedes it, the era before its
-    /// [`PhaseGap::until`] day when it does, or the dates a bounded predecessor
-    /// left when a whole-domain declaration follows one.
+    /// **phase-level** gap declared per identity spans one maximal run its own
+    /// declaration is the answer for — the whole supported domain when the
+    /// declaration is whole-domain and unshadowed, the era between its bounds
+    /// when it is bounded, or the single dates its shape resolves, which is why
+    /// a date-scoped declaration's records arrive one per run.
     #[must_use]
     pub const fn range(self) -> DateRange {
         self.range
@@ -470,13 +593,12 @@ impl CoverageGap {
     /// the span is date-shaped.
     ///
     /// This is where a caller finds the **closing condition** LAW-COVERAGE
-    /// requires a gap to carry: the issue whose closure would discharge it, as the
-    /// declaration in `schedules/sourcing.rs` and
+    /// requires a gap to carry: the issue whose closure would discharge it, as
+    /// the declaration in `schedules/sourcing.rs` and
     /// `docs/schedules/coverage-2025.md` write it. A record reports one
-    /// declaration, and only the first one applying to a date reaches
-    /// [`CalendarCoverage::gaps`] — a declaration an earlier one shadows has no
-    /// record there, so read [`CalendarCoverage::phase_gaps`] for the whole list
-    /// at once.
+    /// declaration; only the first declaration applying to a date reaches
+    /// [`CalendarCoverage::gaps`] — a shadowed one has no record there, so read
+    /// [`CalendarCoverage::phase_gaps`] for the whole list at once.
     #[must_use]
     pub const fn phase_gap(self) -> Option<PhaseGap> {
         self.phase_gap
@@ -565,30 +687,42 @@ impl HolidayContract {
 ///
 /// [`Self::coverage_on`] is the per-date verdict, [`Self::complete_ranges`] the
 /// spans that answer completely, and [`Self::gaps`] the rest with their
-/// reasons. An identity that declares a **whole-domain phase-level** gap in
-/// `schedules/sourcing.rs` reports no complete range at all. Its `#79`-style
-/// declarations are reported from [`Self::gaps`] only where they are the answer;
-/// from the day such a declaration stops applying the date-level walk supplies
-/// the records instead, so `cme` reports both its declaration's span and its own
-/// withheld dates. Where several declarations overlap, the one that answers first
-/// takes the span and a shadowed one has no record of its own — which is
-/// `globex_cryptocurrency`'s shape, whose `#93` precedes its `#123`. Bounding one
-/// declaration does not make the identity complete: one that also carries an
-/// unbounded declaration is still outside covered range after the bound, which is
-/// `globex_fx`'s shape.
+/// reasons. An identity that declares a **whole-domain** gap in
+/// `schedules/sourcing.rs` reports no complete range at all. The bounded and
+/// shaped declarations answer only the dates they name — the era before a
+/// `PhaseGap::until` bound, the Sundays an order-entry shape resolves — and
+/// every other date is decided by the ordinary date-level facts, so `cme`
+/// reports its bracket-era Sundays and answers its Tuesdays beside them. Where
+/// several declarations overlap, the first that applies takes the span and a
+/// shadowed one has no record of its own. Bounding one declaration does not
+/// make the identity complete: one that also carries an unbounded declaration
+/// is still outside covered range wherever that declaration applies.
 ///
 /// The spans are **derived, not duplicated**: the iterators walk the identity's
 /// static timeline horizon and holiday-window edges in ascending order and stop
 /// at the next edge, so reading the metadata allocates nothing and never sorts.
-/// Deriving them per call is also what lets a detached calendar report the
-/// normal-week contract from the very same value.
+/// Inside the span of a date-scoped declaration the walk merges verdicts day by
+/// day, because the shape can flip them mid-week; the region is bounded by the
+/// declaration's own era. Deriving everything per call is also what lets a
+/// detached calendar report the normal-week contract from the very same value.
 #[derive(Clone, Copy)]
 pub struct CalendarCoverage {
     source: CalendarSource,
     carried_below: Option<NaiveDate>,
     phase_gaps: &'static [PhaseGap],
     holidays: HolidayContract,
+    /// The table this **view** consults: the identity's shipped table, or
+    /// `None` once the calendar detached it.
     table: Option<&'static HolidayTable>,
+    /// The table the identity **ships**, detached or not.
+    ///
+    /// A declared gap is a fact about the identity, so its shape must resolve
+    /// the same way on every view of it: the shape asks whether the identity's
+    /// own calendar resolves a served occurrence, which is a question about the
+    /// shipped tables even when this view answers only the normal-week
+    /// contract. The attached walk never reads past [`Self::table`]; this field
+    /// is the shape machinery's alone.
+    shipped: Option<&'static HolidayTable>,
 }
 
 impl CalendarCoverage {
@@ -618,6 +752,7 @@ impl CalendarCoverage {
             phase_gaps: declared.phase_gaps,
             holidays,
             table: if holidays_attached { shipped } else { None },
+            shipped,
         }
     }
 
@@ -672,9 +807,9 @@ impl CalendarCoverage {
     ///
     /// This is the completeness fact no date walk can derive: the identity's
     /// normal week or calendar carries an arrangement no shipped row states, so
-    /// it is incomplete on every date the declaration covers —
-    /// the whole claimed interval unless [`PhaseGap::applies_until`] bounds it to
-    /// the era in which the identity still withholds it. An empty slice is an
+    /// it is incomplete on every date the declaration covers — the dates its
+    /// bounds and shape name, not the whole claimed interval. An empty slice is
+    /// an
     /// affirmative "no such gap declared", not missing data — the declarations
     /// live in `schedules/sourcing.rs`, one arm per identity, and are never
     /// inferred from a timeline or a holiday table. The accessor keeps the name
@@ -684,35 +819,161 @@ impl CalendarCoverage {
     /// A scope can carry several because the shapes stack: `globex_fx`
     /// withholds the Sunday quarter-hour *and* publishes special sessions no
     /// shipped row states. Each of these carries its own reason and
-    /// closing condition. [`Self::gaps`] reports a declaration over the span it
-    /// answers for, and only where no earlier declaration shadows it.
+    /// closing condition. [`Self::gaps`] reports a declaration over each maximal
+    /// span it answers for, and only where no earlier declaration shadows it.
     #[must_use]
     pub const fn phase_gaps(self) -> &'static [PhaseGap] {
         self.phase_gaps
     }
 
-    /// Returns the first declaration that applies to venue-local `date`, or
+    /// Returns the first declaration that **applies** to venue-local `date`, or
     /// `None` when none does.
-    pub(in crate::calendar) fn phase_gap_on(self, date: NaiveDate) -> Option<PhaseGap> {
+    ///
+    /// A declaration applies when three tests hold, in cost order: its span
+    /// contains the date ([`PhaseGap::applies_on`]), the identity's own facts
+    /// would otherwise answer the date — where they already refuse it, that
+    /// refusal is the operative reason and the declaration adds nothing — and
+    /// its shape resolves against the identity's built-in layers. The first
+    /// declaration passing all three is the answer for the date, in declaration
+    /// order. The "own facts" test is the `identity_answers` logic below, so a
+    /// detached view reports the same declarations the attached one does.
+    #[must_use]
+    pub fn phase_gap_on(self, date: NaiveDate) -> Option<PhaseGap> {
+        if !self.identity_answers(date) {
+            return None;
+        }
         self.phase_gaps
             .iter()
             .copied()
-            .find(|gap| gap.applies_on(date))
+            .find(|gap| gap.applies_on(date) && self.shape_resolves(*gap, date))
+    }
+
+    /// Returns whether the **identity** — this view's calendar, whatever layers
+    /// it detached — would answer `date` from its ordinary date-level facts.
+    ///
+    /// An attached view answers exactly when [`Self::date_level_gap_on`] finds
+    /// no refusal. A detached view claims no complete calendar
+    /// ([`HolidayContract::NormalWeekOnly`]) for every date, which is the view's
+    /// contract and not the identity's fact, so the question is re-asked against
+    /// the table the identity ships: the same carried-below horizon, withheld
+    /// dates and audited windows the attached view reads. This is what keeps a
+    /// declared gap's shape reporting the same records on every view of the
+    /// identity.
+    fn identity_answers(self, date: NaiveDate) -> bool {
+        if self.holidays != HolidayContract::NormalWeekOnly {
+            return self.date_level_gap_on(date).is_none();
+        }
+        if date < SUPPORT_FLOOR {
+            return true;
+        }
+        if self.carried_below.is_some_and(|carried| date < carried) {
+            return false;
+        }
+        match self.shipped {
+            None => false,
+            Some(table) => !Self::withholds_shipped(table, date) && table.coverage().contains(date),
+        }
+    }
+
+    /// Returns whether the shipped table withholds `date` as `Unsourced`.
+    fn withholds_shipped(table: &'static HolidayTable, date: NaiveDate) -> bool {
+        table
+            .holiday_on(date)
+            .is_some_and(|holiday| holiday.kind() == HolidayKind::Unsourced)
+    }
+
+    /// Returns whether any declaration whose span contains `date` withholds a
+    /// phase **without** keying the withholding to a served occurrence — an
+    /// `EveryDay` declaration whose reason refuses. An omitted-queue era
+    /// (#123's five-day grid) leaves no rule for a scan to match, so every
+    /// order-entry query inside it consults the question the crate cannot
+    /// answer and the scan gate has to fire whether or not a rule exists.
+    pub(in crate::calendar) fn has_unscoped_refusing_phase_gap_on(self, date: NaiveDate) -> bool {
+        self.phase_gaps.iter().copied().any(|gap| {
+            gap.applies_on(date)
+                && gap.shape() == PhaseGapShape::EveryDay
+                && !matches!(
+                    gap.reason(),
+                    CoverageGapReason::PostCloseQueueTradeDateLabel
+                        | CoverageGapReason::UnpublishedClosureDates
+                )
+        })
+    }
+
+    /// Returns whether `gap`'s shape resolves on `date`, against the built-in
+    /// layers only.
+    ///
+    /// The declaration is a fact about the identity, so a caller's overlay is
+    /// deliberately out of the question: the same value must be reported by the
+    /// attached calendar, a detached one, and the metadata iterators. A
+    /// resolution error withholds — a shape that cannot prove the date answers
+    /// keeps the gap applied, which is the conservative direction.
+    fn shape_resolves(self, gap: PhaseGap, date: NaiveDate) -> bool {
+        match gap.shape() {
+            PhaseGapShape::EveryDay => true,
+            PhaseGapShape::OrderEntryWindow {
+                open_ssm,
+                close_ssm,
+            } => crate::calendar::query::schedule::builtin_resolves_order_entry(
+                self.source,
+                date,
+                open_ssm,
+                close_ssm,
+            ),
+        }
+    }
+
+    /// Returns whether any declaration carries an
+    /// [`PhaseGapShape::OrderEntryWindow`] shape whose span reaches this
+    /// segment — the walk's signal that verdicts inside the segment can change
+    /// from date to date and must be merged by day rather than taken whole.
+    ///
+    /// The reach test is the declaration's span, and the segment must be a
+    /// **finite, answered** one: past the last audited window the ordinary facts
+    /// refuse every date uniformly, so no shape can flip anything and the
+    /// static-edge walk resumes. Every shipped shaped declaration sits inside an
+    /// audited window; a shaped declaration on a table-less identity would have
+    /// no such bound and is not expressible here.
+    pub(super) fn has_date_scoped_shapes_between(self, first: NaiveDate, last: NaiveDate) -> bool {
+        let Some(table) = self.shipped else {
+            return false;
+        };
+        if last == NaiveDate::MAX {
+            return false;
+        }
+        let answered_through = table
+            .windows
+            .iter()
+            .filter_map(|&(.., last_year, last_month, last_day)| {
+                NaiveDate::from_ymd_opt(last_year, last_month, last_day)
+            })
+            .max();
+        let Some(answered_through) = answered_through else {
+            return false;
+        };
+        last <= answered_through
+            && self.phase_gaps.iter().any(|gap| {
+                matches!(gap.shape, PhaseGapShape::OrderEntryWindow { .. })
+                    && gap.applies_on(first)
+                    && gap.applies_on(last)
+            })
     }
 
     /// Returns the coverage verdict for venue-local `date`.
     ///
-    /// A date inside a declared **phase-level** gap reports
+    /// A date a declared **phase-level** gap applies to reports
     /// [`DateCoverage::OutsideCoveredRange`], not a new verdict: LAW-COVERAGE
     /// makes an unresolved normal-week or special-session gap the same
     /// "no sourced answer" case as a carried horizon, and Stage 2B maps it to
-    /// the same [`CalendarQueryError::OutsideCoveredRange`]. A declaration its
-    /// identity has bounded with [`PhaseGap::until`] applies only before that day,
-    /// so a date at or after the bound is judged by the ordinary date-level facts
-    /// — the day the profile began serving the withheld phase. The distinction
-    /// between the two lives in [`Self::gaps`], which carries the closing
-    /// condition a caller needs in order to tell "not worked up yet" from
-    /// "answered, and the answer is ordinary".
+    /// the same [`CalendarQueryError::OutsideCoveredRange`]. A declaration
+    /// applies only where its own bounds and shape name the date
+    /// ([`Self::phase_gap_on`]), so a Tuesday in the bracket era answers from
+    /// the tables while the bracket-era Sunday beside it refuses, and a date at
+    /// or after a `PhaseGap::until` bound is judged by the ordinary date-level
+    /// facts — the day the profile began serving the withheld phase. The
+    /// distinction between the two lives in [`Self::gaps`], which carries the
+    /// closing condition a caller needs in order to tell "not worked up yet"
+    /// from "answered, and the answer is ordinary".
     #[must_use]
     pub fn coverage_on(self, date: NaiveDate) -> DateCoverage {
         if date < SUPPORT_FLOOR {
@@ -755,16 +1016,16 @@ impl CalendarCoverage {
     /// identity cannot answer completely, in ascending order, each with the
     /// reason that applies inside it.
     ///
-    /// The spans are disjoint and separated by [`Self::complete_ranges`]. Each
-    /// declared **phase-level** gap that some date has as its answer is reported
-    /// once, over the span it is the answer for — the era before its [`PhaseGap::until`] day
-    /// for a bounded declaration, the whole supported domain for one that carries
-    /// no bound and has none before it, or what a bounded predecessor left for a
-    /// whole-domain declaration that follows one. A whole-domain declaration an
-    /// earlier one already answers for on every date has no record here, because
-    /// no date has it as its answer; read [`Self::phase_gaps`] for the whole
-    /// declaration list. The record's reason and closing condition are the
-    /// declaration's own.
+    /// The spans are disjoint and separated by [`Self::complete_ranges`]; the
+    /// last one may be open-ended. Every span whose reason is a declared
+    /// **phase-level** gap carries that declaration
+    /// ([`CoverageGap::phase_gap`]), and a shaped declaration reports one span
+    /// per maximal run its shape resolves — #79's quarter-hour is reported as
+    /// the bracket-era Sundays one day at a time, because the dates between them
+    /// answer. A whole-domain declaration that another declaration shadows on
+    /// every date has no record, because no date has it as its answer; read
+    /// [`Self::phase_gaps`] for the whole declaration list. The record's reason
+    /// and closing condition are the declaration's own.
     #[must_use]
     pub fn gaps(self) -> CoverageGaps {
         CoverageGaps::new(self)
@@ -774,13 +1035,14 @@ impl CalendarCoverage {
     ///
     /// Below the floor nothing is a gap: the supported domain starts there. A
     /// declared phase-level gap is checked **first**, because it states a fact the
-    /// timeline and holiday walk cannot carry: where one applies, an identity has
-    /// no covered date whatever its tables say. A declaration an era bound has
-    /// retired ([`PhaseGap::until`]) is not consulted for a later date at all, so
-    /// the date is decided by the ordinary facts. The first declaration applying
-    /// to the date supplies the reason; every declaration is listed by
-    /// [`Self::phase_gaps`], and by [`Self::gaps`] where no earlier one shadows
-    /// it.
+    /// timeline and holiday walk cannot carry: where one applies, the date is
+    /// incomplete whatever its tables say. "Applies" is
+    /// [`Self::phase_gap_on`]'s full test — the span, the ordinary facts, and
+    /// the shape — so a declaration a bound has retired, or whose served
+    /// occurrence the date does not carry, is not consulted for that date at
+    /// all. The first declaration applying to the date supplies the reason;
+    /// every declaration is listed by [`Self::phase_gaps`], and by [`Self::gaps`]
+    /// where no earlier one shadows it.
     pub(super) fn gap_reason_on(self, date: NaiveDate) -> Option<CoverageGapReason> {
         if date < SUPPORT_FLOOR {
             return None;
@@ -842,17 +1104,21 @@ impl CalendarCoverage {
     /// verdict can change, or `None` when no later boundary exists.
     ///
     /// The candidates are the support floor, the carried-below horizon, both
-    /// edges of every audited window, every withheld date and the day after it, and
-    /// **both edges of every declaration that carries a bound** — all static and
-    /// bounded, so the walk allocates nothing.
+    /// edges of every declaration that carries a bound, both edges of every
+    /// audited window, and every withheld date and the day after it — all
+    /// static and bounded, so the walk allocates nothing. An ordinary holiday
+    /// row needs no edge of its own: inside a date-scoped declaration's reach
+    /// the walk judges each date on its own tables, and outside that reach no
+    /// shape can flip a verdict.
     ///
-    /// A declaration bounded with [`PhaseGap::until`] contributes both of its
-    /// edges, not just the bound: a run walk that stopped only at the bound could
-    /// straddle the two eras, because the run that *starts* on the last date before
-    /// the bound ends there as well. A whole-domain declaration contributes no edge
-    /// — it applies to every date, so its own run can end only where another
-    /// static edge does, and a scope declaring both shapes (`globex_fx`) still
-    /// walks its bounded declaration's era correctly.
+    /// A declaration bounded with [`PhaseGap::since`] or [`PhaseGap::until`]
+    /// contributes both of its edges, not just the bound: a run walk that
+    /// stopped only at the bound could straddle the two eras, because the run
+    /// that *starts* on the last date before the bound ends there as well. A
+    /// whole-domain declaration contributes no edge — it applies to every date,
+    /// so its own run can end only where another static edge does, and a scope
+    /// declaring both shapes (`globex_fx`) still walks its bounded declaration's
+    /// era correctly.
     fn next_boundary_after(self, date: NaiveDate) -> Option<NaiveDate> {
         let mut best: Option<NaiveDate> = None;
         let mut consider = |candidate: Option<NaiveDate>| {
@@ -860,13 +1126,22 @@ impl CalendarCoverage {
         };
         consider((SUPPORT_FLOOR > date).then_some(SUPPORT_FLOOR));
         consider(self.carried_below.filter(|boundary| *boundary > date));
+        // A date-scoped declaration can flip a verdict from date to date, so an
+        // identity carrying one segments on the windows its **shipped** table
+        // audits — a detached view included, because the declaration is a fact
+        // about the identity and its day-merged reach is bounded by those
+        // windows. The windows bound every identity's walk regardless: a
+        // NoHolidayCoverage-to-Covered flip at a window's first day is exactly
+        // the kind of verdict change only a window edge can end a run on.
         for gap in self.phase_gaps {
-            consider(gap.applies_until().filter(|bound| *bound > date));
-            consider(
-                gap.applies_until()
-                    .and_then(|bound| bound.pred_opt())
-                    .filter(|last| *last > date),
-            );
+            for bound in [gap.applies_since(), gap.applies_until()] {
+                consider(bound.filter(|bound| *bound > date));
+                consider(
+                    bound
+                        .and_then(|bound| bound.pred_opt())
+                        .filter(|last| *last > date),
+                );
+            }
         }
         for &(first_year, first_month, first_day, last_year, last_month, last_day) in self.windows()
         {
@@ -880,6 +1155,8 @@ impl CalendarCoverage {
                     .filter(|after| *after > date),
             );
         }
+        // A withheld date flips this view's verdict only where the view
+        // consults the table at all.
         if let Some(table) = self.table {
             for row in table.rows {
                 if row.kind == HolidayKind::Unsourced && row.trade_date >= SUPPORT_FLOOR {
@@ -891,10 +1168,13 @@ impl CalendarCoverage {
         best
     }
 
-    /// Returns the audited holiday windows, or an empty slice when no built-in
-    /// table applies to this calendar.
+    /// Returns the audited holiday windows the identity **ships**, or an empty
+    /// slice when it ships no table — a view that detached its table still
+    /// segments on the shipped windows where a date-scoped declaration needs
+    /// the bounds. Splitting a uniform run at one of them is harmless; walking
+    /// past an edge that could have ended a day-merged run is not.
     fn windows(self) -> &'static [(i32, u32, u32, i32, u32, u32)] {
-        self.table.map_or(&[], |table| table.windows)
+        self.shipped.map_or(&[], |table| table.windows)
     }
 
     /// Returns the last date of the run starting at `first`, or
@@ -933,12 +1213,14 @@ impl PartialEq for CalendarCoverage {
 
 impl Eq for CalendarCoverage {}
 
-/// Returns the gap one maximal run of `reason` reports.
+/// Returns the gap one maximal run of `reason` reports when no declaration is
+/// the answer for it.
 ///
-/// Declarations are reported from [`CoverageGaps`](super::CoverageGaps) before
-/// the walk, and the walk still runs for the days no declaration answers, so a
-/// walk record never carries a declaration and a declaring identity reports
-/// both — `cme` yields its declaration's span and its own withheld dates.
+/// The walk reports a declaration on the runs
+/// [`CalendarCoverage::phase_gap_on`] names it on; a run no declaration answers
+/// is decided by the ordinary date-level facts and carries none — `cme` yields
+/// its bracket-era Sundays with the declaration and its own withheld dates
+/// without one, in one ascending walk.
 const fn gap_of(range: DateRange, reason: CoverageGapReason) -> CoverageGap {
     CoverageGap {
         range,

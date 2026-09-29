@@ -865,8 +865,12 @@ fn the_post_close_queue_carries_the_trade_date_of_the_session_it_feeds() {
         );
     }
 
-    // The declaration is whole-domain and withholds nothing: the queue's own
-    // window is answered on every covered date rather than refused.
+    // The #152 declaration withholds nothing: the queue's own window is
+    // answered on every date that carries it rather than refused. Beside it the
+    // scope declares the 2012-05-20..2013-04-06 regime whose queue states are
+    // omitted outright — a phase gap the whole-domain #152 refusal used to
+    // mask, and which must refuse those dates now that the label gap is shaped
+    // to the dates that carry a queue.
     let declared: Vec<_> = calendar
         .coverage()
         .phase_gaps()
@@ -875,8 +879,11 @@ fn the_post_close_queue_carries_the_trade_date_of_the_session_it_feeds() {
         .collect();
     assert_eq!(
         declared,
-        vec![(CoverageGapReason::PostCloseQueueTradeDateLabel, "#152")],
-        "globex_grains declares exactly the post-close label divergence"
+        vec![
+            (CoverageGapReason::PostCloseQueueTradeDateLabel, "#152"),
+            (CoverageGapReason::NormalWeekPhaseWithheld, "#116"),
+        ],
+        "globex_grains declares the post-close label divergence and the omitted regime"
     );
 }
 

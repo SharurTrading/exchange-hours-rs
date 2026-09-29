@@ -73,18 +73,6 @@ fn assert_below_floor<T>(result: Result<T, CalendarQueryError>, date: NaiveDate)
 /// `OutsideCoveredRange` for that date either way. A pre-floor date never
 /// reaches here: the floor governs the phase check first, so those probes state
 /// [`assert_below_floor`]'s error instead.
-#[track_caller]
-fn assert_out_of_range<T>(result: Result<T, CalendarQueryError>, date: NaiveDate) {
-    let refused = result.err();
-    assert!(
-        matches!(
-            refused,
-            Some(CalendarQueryError::OutsideCoveredRange { date: named, .. }) if named == date
-        ),
-        "{date} is outside this identity's covered ranges and its refusal must name it, got {refused:?}",
-    );
-}
-
 /// 12:00 CT, the noon halt CME prints on the Monday and Thursday holidays.
 const NOON: u32 = 12 * 3_600;
 
@@ -485,14 +473,15 @@ fn trade_dates_follow_the_shortened_and_the_deleted_days() {
             .expect("the coverage contract must answer a covered date"),
         Some(day(2025, 11, 28))
     );
-    // 2025-12-24's deleted evening leg can no longer be read as "no trade
-    // date": the instant is in no session, so the trade-date walk has to
-    // consult the order-entry queue, and the identity's `#79` declaration
-    // withholds that phase through 2026-08-21. The refusal is what this probe
-    // states now; the deleted leg itself remains a fact of the shipped row.
-    assert_out_of_range(
-        calendar.trade_date(ct((2025, 12, 24), (17, 30, 0))),
-        day(2025, 12, 24),
+    // 2025-12-24's evening leg is deleted by the closure row, so the instant
+    // is in no session; the walk that finds neither a session nor a queue
+    // answers absence, which is the sourced closure's own answer and never a
+    // refusal (#172). The deleted leg itself remains a fact of the shipped row.
+    assert_eq!(
+        calendar
+            .trade_date(ct((2025, 12, 24), (17, 30, 0)))
+            .expect("the coverage contract must answer a covered date"),
+        None
     );
     assert_eq!(
         calendar
@@ -2039,7 +2028,16 @@ fn era_2022_2024_closures_remove_the_trading_day_and_the_prior_evening_wrap() {
                 .expect("the coverage contract must answer a covered date"),
             "{date}"
         );
-        assert_out_of_range(calendar.trade_date(ct_on(date, (10, 0, 0))), date);
+        // No session holds this instant and the closure deleted the trade date,
+        // so the walk finds neither a session nor a queue: absence, never a
+        // refusal.
+        assert_eq!(
+            calendar
+                .trade_date(ct_on(date, (10, 0, 0)))
+                .expect("the coverage contract must answer a covered date"),
+            None,
+            "{date}"
+        );
 
         let reopen = era_reopen_after_closure(date);
         assert_eq!(
@@ -2483,7 +2481,15 @@ fn era_2019_2021_sweeps_every_shipped_row_kind_and_instant() {
                             .expect("the coverage contract must answer a covered date"),
                         "{date}"
                     );
-                    assert_out_of_range(calendar.trade_date(ct_on(date, (10, 0, 0))), date);
+                    // Absence, not a refusal: the closure deleted the trade
+                    // date and no session or queue holds the instant.
+                    assert_eq!(
+                        calendar
+                            .trade_date(ct_on(date, (10, 0, 0)))
+                            .expect("the coverage contract must answer a covered date"),
+                        None,
+                        "{date}"
+                    );
                 }
                 HolidayKind::Unsourced => unsourced += 1,
                 other => panic!("{date}: this era ships no {other:?}"),

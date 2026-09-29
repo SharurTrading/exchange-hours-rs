@@ -234,25 +234,20 @@ fn no_policy_preserves_the_complete_calendar_surface() {
         );
     }
 
-    // Which of those comparisons are comparisons of refusals, stated rather
-    // than left implicit: at 2026-04-20 16:30 CT the state and the trade date
-    // resolve the next session through the Sunday queue that
-    // `GlobexEquityIndex` withholds (#79), so the coverage error is the only
-    // legal answer there. The open and bounds queries resolve no withheld phase
-    // at that instant and still answer.
+    // 2026-04-20 16:30 CT is the daily halt: the state is the sourced
+    // 16:00-16:45 CT maintenance gap, and the trade date is absent, with or
+    // without the layer — a weekday of the bracket era answers from the tables
+    // (#172), and the layer changed no answer above.
     let after_the_close = ct((2026, 4, 20), (16, 30, 0));
-    let globex = CalendarSource::MarketHoursKey(MarketHoursKey::GlobexEquityIndex);
-    assert_outside_coverage(
+    assert_eq!(
         policy.session_state(after_the_close),
-        globex,
-        day(2026, 4, 20),
-        "the state after the close",
+        base.session_state(after_the_close),
+        "the state after the close: the layer changed nothing"
     );
-    assert_outside_coverage(
+    assert_eq!(
         policy.trade_date(after_the_close),
-        globex,
-        day(2026, 4, 20),
-        "the trade date after the close",
+        base.trade_date(after_the_close),
+        "the trade date after the close: the layer changed nothing"
     );
 }
 
@@ -520,16 +515,15 @@ fn early_close_clamps_sessions_candles_and_state() {
             .expect("the covered five-minute bar still answers"),
         Some(ct((2026, 4, 20), (12, 15, 0)))
     );
-    // The state at 13:00 CT — after the policy's 12:15 close — needs the next
-    // session, which opens through the Sunday-evening queue that
-    // `GlobexEquityIndex` withholds (#79). That phase is refused rather than
-    // reported as `Closed` (LAW-COVERAGE); the clamp itself is asserted above by
-    // the regular-session and bar probes, which resolve no withheld phase.
-    assert_outside_coverage(
+    // The state at 13:00 CT — after the policy's 12:15 close — is the sourced
+    // gap between the clipped close and the 17:00 CT evening open: longer than
+    // the four-hour maintenance bound and crossing into the next trade date,
+    // so it classifies as `Closed`. The clamp itself is asserted above by the
+    // regular-session and bar probes.
+    assert_eq!(
         calendar.session_state(ct((2026, 4, 20), (13, 0, 0))),
-        CalendarSource::MarketHoursKey(MarketHoursKey::GlobexEquityIndex),
-        day(2026, 4, 20),
-        "the state after the policy's early close",
+        Ok(SessionState::Closed),
+        "the state after the policy's early close is the sourced gap, not a refusal"
     );
 }
 
@@ -952,17 +946,15 @@ fn trade_dates_and_states_cover_the_globex_day() {
             .expect("the coverage contract must answer a covered date"),
         Some(monday)
     );
-    // 16:30 CT is the daily halt, and naming the state or the trade date there
-    // resolves the next session through the Sunday-evening queue that
-    // `GlobexEquityIndex` withholds (#79), so both queries refuse that date
-    // (LAW-COVERAGE). The halt's own shape is stated where it resolves no
-    // withheld phase — the extended state at 15:20 above and the daily bounds.
-    let globex = CalendarSource::MarketHoursKey(MarketHoursKey::GlobexEquityIndex);
-    assert_outside_coverage(
+    // 16:30 CT is the daily halt: no session and no queue holds the instant,
+    // so the trade date is absent and the state is the sourced 16:00-16:45 CT
+    // maintenance gap — a weekday of the bracket era answers from the tables
+    // (#172). The halt's own shape is stated beside it — the extended state at
+    // 15:20 above and the daily bounds.
+    assert_eq!(
         calendar.trade_date(ct((2026, 4, 20), (16, 30, 0))),
-        globex,
-        monday,
-        "the trade date at the daily halt",
+        Ok(None),
+        "the trade date at the daily halt is absent, not refused"
     );
     assert_eq!(
         calendar
@@ -982,20 +974,29 @@ fn trade_dates_and_states_cover_the_globex_day() {
             .expect("the covered extended session still answers"),
         SessionState::OpenExtended
     );
-    assert_outside_coverage(
+    assert_eq!(
         calendar.session_state(ct((2026, 4, 20), (16, 30, 0))),
-        globex,
-        monday,
-        "the state at the daily halt",
+        Ok(SessionState::Maintenance),
+        "the state at the daily halt is the sourced 16:00-16:45 CT gap"
     );
-    // The Saturday probe is a `Closed` the identity will not state either: the
-    // weekend state is derived from the next session, which is the withheld
-    // Sunday queue.
-    assert_outside_coverage(
+    // The Saturday state is derived from the surrounding sessions, which the
+    // sourced grid answers: the weekend closes and the Sunday queue opens it
+    // again, so the state answers `Closed` rather than refusing (#172 — the
+    // withheld quarter-hour is the Sunday 16:00-16:15 slice alone).
+    assert_eq!(
         calendar.session_state(ct((2026, 4, 25), (12, 0, 0))),
+        Ok(SessionState::Closed),
+        "the weekend state answers from the sourced grid"
+    );
+    // The bracket-era Sunday's own quarter-hour is the one instant class the
+    // identity refuses: the state there states the coverage verdict rather
+    // than reading as a closed grid.
+    let globex = CalendarSource::MarketHoursKey(MarketHoursKey::GlobexEquityIndex);
+    assert_outside_coverage(
+        calendar.session_state(ct((2026, 4, 19), (16, 5, 0))),
         globex,
-        day(2026, 4, 25),
-        "the weekend state",
+        day(2026, 4, 19),
+        "the withheld quarter-hour on its bracket-era Sunday",
     );
 
     let livestock = calendar_for_market_hours_key(MarketHoursKey::GlobexLivestock);

@@ -67,6 +67,18 @@ corrections (a venue's hours fixed against a primary source) go under
   states a holiday-time early close, so the venue still ships closures only.
   The audited window is now 2010-01-01..2027-12-31 and the identity is complete
   to 2027-12-31 across it.
+- **`eurex`, `eurex` key and `eurex_fixed_income` holiday history extended to
+  the support floor (2026-09-29 UTC).** The shared Eurex holiday table grows
+  from 15 rows over 2025-01-01..2026-12-31 to **108 rows over
+  2010-01-01..2026-12-31** (93 added, every one a whole-day closure stated for
+  "all derivatives"): the operator's own annual **Trading Calendar** editions
+  2012-2024, retrieved live from the operator's Trading Calendar archive, and
+  the 2010 and 2011 editions read as Wayback `id_` replays of their
+  era-original `eurexchange.com` captures, so the window reaches the
+  2010-01-01 floor with no unaudited span. 2015 is the one edition that also
+  closes Whit Monday (25 May) for trading, and ships so; the German-scope
+  `tba` withholding (#157) is untouched and still keys no row. The #157
+  declaration, the 2027 conflict and the operators' horizon are unchanged.
 - **`cfe` and `cfe_vix` holiday history extended below the 2025 window to the
   earliest surviving operator artifact (2026-09-29 UTC).** The routed CFE
   holiday table grows from 26 rows over 2025-01-01..2026-12-31 to **113 rows

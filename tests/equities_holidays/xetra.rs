@@ -18,15 +18,186 @@ fn calendar() -> ExchangeCalendar {
 }
 
 #[test]
-fn coverage_opens_at_the_2025_floor_and_stops_at_the_2027_schedule() {
+fn coverage_opens_at_the_2010_floor_and_stops_at_the_2027_schedule() {
     let calendar = calendar();
     let coverage = calendar
         .holiday_coverage()
         .expect("xetra ships a built-in table");
-    assert_eq!(coverage.first(), day(2025, 1, 1));
+    assert_eq!(coverage.first(), day(2010, 1, 1));
     assert_eq!(coverage.last(), day(2027, 12, 31));
-    assert_eq!(calendar.holiday_on(day(2024, 12, 31)), None);
+    let windows = coverage.windows();
+    assert_eq!(
+        windows,
+        vec![
+            (day(2010, 1, 1), day(2024, 12, 31)),
+            (day(2025, 1, 1), day(2027, 12, 31)),
+        ],
+        "two audited windows, one per document wave"
+    );
+    // Outside the windows the table has no answer at all.
+    assert_eq!(calendar.holiday_on(day(2009, 12, 31)), None);
     assert_eq!(calendar.holiday_on(day(2028, 1, 1)), None);
+}
+
+#[test]
+fn every_printed_2010_closure_ships_as_a_settlement_day_closure() {
+    let calendar = calendar();
+    assert_closed(
+        "xetra",
+        calendar,
+        Europe::Berlin,
+        &[
+            day(2010, 1, 1),
+            day(2010, 4, 2),
+            day(2010, 4, 5),
+            day(2010, 12, 24),
+            day(2010, 12, 31),
+        ],
+    );
+    // 24 and 31 December are the sentence's settlement days: no trading, so
+    // the noon probe inside `assert_closed` must answer closed, not open.
+    assert!(
+        !calendar
+            .is_open(de((2010, 12, 24), (12, 0, 0)))
+            .expect("the coverage contract must answer a covered date"),
+        "a settlement day is a closure, not a trading day"
+    );
+    // 1 May 2010 fell on a Saturday: the sentence's Mondays-to-Fridays premise
+    // deletes it and no weekday row ships.
+    assert_eq!(calendar.holiday_on(day(2010, 5, 1)), None);
+}
+
+#[test]
+fn the_2011_sentence_names_three_closures_and_no_unity_day() {
+    let calendar = calendar();
+    assert_closed(
+        "xetra",
+        calendar,
+        Europe::Berlin,
+        &[day(2011, 4, 22), day(2011, 4, 25), day(2011, 12, 26)],
+    );
+    // New Year 2011 (Saturday), Labour Day (Sunday) and the Christmas/New Year
+    // eves (Saturdays) are weekend deletions; no rows and no weekday answer.
+    assert_eq!(calendar.holiday_on(day(2011, 1, 1)), None);
+    assert_eq!(calendar.holiday_on(day(2011, 12, 24)), None);
+    // The sentence names no 3 October — a Monday in 2011 — so the exchange
+    // traded that German Unity Day as an ordinary day.
+    assert_eq!(calendar.holiday_on(day(2011, 10, 3)), None);
+    assert!(
+        calendar
+            .is_open(de((2011, 10, 3), (12, 0, 0)))
+            .expect("the coverage contract must answer a covered date"),
+        "the 2011 sentence omits 3 October, so the Monday traded"
+    );
+}
+
+#[test]
+fn the_2014_german_edition_closes_unity_day_and_the_settlement_eves() {
+    let calendar = calendar();
+    assert_closed(
+        "xetra",
+        calendar,
+        Europe::Berlin,
+        &[
+            day(2014, 1, 1),
+            day(2014, 4, 18),
+            day(2014, 4, 21),
+            day(2014, 5, 1),
+            day(2014, 10, 3),
+            day(2014, 12, 24),
+            day(2014, 12, 25),
+            day(2014, 12, 26),
+            day(2014, 12, 31),
+        ],
+    );
+    let unity = calendar
+        .holiday_on(day(2014, 10, 3))
+        .expect("2014-10-03 ships a row");
+    assert_eq!(unity.document_id(), "DB-TC-PDF-2014");
+}
+
+#[test]
+fn the_2016_closures_ship_and_the_weekend_eves_key_no_row() {
+    let calendar = calendar();
+    assert_closed(
+        "xetra",
+        calendar,
+        Europe::Berlin,
+        &[
+            day(2016, 1, 1),
+            day(2016, 3, 25),
+            day(2016, 3, 28),
+            day(2016, 5, 16),
+            day(2016, 10, 3),
+            day(2016, 12, 26),
+        ],
+    );
+    // 24, 25 and 31 December 2016 fell on weekends: the sentence's exception
+    // dates delete themselves and key no weekday row.
+    assert_eq!(calendar.holiday_on(day(2016, 12, 24)), None);
+    assert_eq!(calendar.holiday_on(day(2016, 12, 25)), None);
+    assert_eq!(calendar.holiday_on(day(2016, 12, 31)), None);
+}
+
+#[test]
+fn from_2022_whit_monday_and_unity_day_trade_as_ordinary_days() {
+    let calendar = calendar();
+    // The 2022 sentence names only Good Friday, Easter Monday and Boxing Day.
+    assert_closed(
+        "xetra",
+        calendar,
+        Europe::Berlin,
+        &[day(2022, 4, 15), day(2022, 4, 18), day(2022, 12, 26)],
+    );
+    // Whit Monday 2022-06-06 and German Unity Day 2022-10-03 are named by no
+    // closure sentence from 2022 on: ordinary trading days.
+    for traded in [(2022, 6, 6), (2022, 10, 3)] {
+        assert_eq!(
+            calendar.holiday_on(day(traded.0, traded.1, traded.2)),
+            None,
+            "{traded:?} ships no row"
+        );
+        assert!(
+            calendar
+                .is_open(de(traded, (12, 0, 0)))
+                .expect("the coverage contract must answer a covered date"),
+            "{traded:?} trades as an ordinary day from 2022 on"
+        );
+    }
+    // 2013 names no 3 October either (a Thursday that year).
+    assert_eq!(calendar.holiday_on(day(2013, 10, 3)), None);
+    assert!(
+        calendar
+            .is_open(de((2013, 10, 3), (12, 0, 0)))
+            .expect("the coverage contract must answer a covered date"),
+        "the 2013 sentence omits 3 October, so the Thursday traded"
+    );
+}
+
+#[test]
+fn a_pre_2025_ordinary_weekday_trades_to_the_end_exclusive_auction_edge() {
+    let calendar = calendar();
+    // Wednesday 2015-07-08: inside the window, no row.
+    assert_eq!(calendar.holiday_on(day(2015, 7, 8)), None);
+    assert!(
+        calendar
+            .is_open(de((2015, 7, 8), (12, 0, 0)))
+            .expect("the coverage contract must answer a covered date"),
+        "an ordinary midday is open"
+    );
+    // The era's closing auction ends 17:35:30; end-exclusive on both sides.
+    assert!(
+        calendar
+            .is_open(de((2015, 7, 8), (17, 35, 29)))
+            .expect("the coverage contract must answer a covered date"),
+        "17:35:29 is inside the closing auction"
+    );
+    assert!(
+        !calendar
+            .is_open(de((2015, 7, 8), (17, 35, 30)))
+            .expect("the coverage contract must answer a covered date"),
+        "17:35:30 is the end-exclusive auction close"
+    );
 }
 
 #[test]
@@ -205,4 +376,10 @@ fn mutating_a_shipped_row_fails_a_test() {
         .holiday_on(day(2027, 3, 26))
         .expect("2027-03-26 ships a row");
     assert_eq!(closure_2027.document_id(), "DB-TC-PAGE");
+    // A historical closure cites the per-year calendar that prints its year.
+    let closure_2019 = calendar
+        .holiday_on(day(2019, 6, 10))
+        .expect("2019-06-10 ships a row");
+    assert_eq!(closure_2019.kind(), HolidayKind::Closed);
+    assert_eq!(closure_2019.document_id(), "DB-TC-PDF-2019");
 }

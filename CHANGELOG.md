@@ -287,6 +287,19 @@ corrections (a venue's hours fixed against a primary source) go under
   the window is expressly incomplete over them (#208). Weekend-falling
   holidays key no weekday row and the typhoon/black-rain halts remain halts,
   not closures.
+- **`xetra` holiday history backfilled to the 2010 floor, 2010-2024
+  (2026-09-29 UTC).** 104 closure rows join the table, audited
+  2010-01-01..2024-12-31 beside the existing 2025-2027 window: every row is
+  one exception date of the operator's per-year calendar sentence ("there
+  will be trading Mondays to Fridays in \<year\>, with the exception of
+  ..."), keyed on the `Trading Calendar <year>` grid editions of 2010-2014
+  and the `xetra-trading-calendar-<year>` PDFs of 2015-2024. A "settlement
+  day" ships `Closed` — the sentence deletes the day and notes settlement
+  runs — the same reading as the modern `** No trading but settlement is
+  open` footnote. The sentences name no 3 October in 2011 and 2013 and name
+  no Whit Monday or German Unity Day from 2022 on, so those days trade as
+  ordinary days; weekend-falling exception dates key no weekday row and no
+  2010-2024 date is unresolved.
 
 ### Fixed
 

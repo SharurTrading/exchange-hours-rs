@@ -818,11 +818,15 @@ fn withheld(calendar: ExchangeCalendar, date: NaiveDate) -> bool {
 /// denial either. `hkex` is the next: from 2026-09-29 UTC it audits 2010-2024 and
 /// 2025-2027, and the ten 2012-2015 half-day eves ship `Unsourced` because no era
 /// artifact states that half-day close (#208), with no phase-level gap behind the
-/// denial either.
+/// denial either. `euronext_paris` drops from four to two on 2026-09-29 UTC:
+/// the 2010-2013 gap closed from the operator's own per-year press releases,
+/// notice and Info-Flash, and the 2024 eves' instants were recovered from the
+/// operator's 2024 end-of-year appendix, leaving only the two announced-but-
+/// unstated 2026 eves.
 fn date_level_incompleteness() -> &'static [(&'static str, usize)] {
     &[
         ("cbot", 261),
-        ("euronext_paris", 4),
+        ("euronext_paris", 2),
         ("hkex", 10),
         ("iceus", 41),
         ("lse", 5),

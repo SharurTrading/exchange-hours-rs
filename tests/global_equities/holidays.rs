@@ -10,10 +10,12 @@
 //! beside 2025-2026, the 2010-2013 and 2020-2024 capture gaps refusing), and
 //! the European/American venues `lse` (2010-2015 and 2020-2027, the
 //! rolling table's archived states, with five 2025 dates withheld and the two
-//! capture gaps refusing), `euronext_paris` (2014-2026 across the operator's
-//! three calendar generations; the 2024 and 2026 half-day eves are announced
-//! but their appendix instants are unarchived) and `tsx` (2017-2026 across
-//! the calendar page's archived states, with 2010-2016 refusing).
+//! capture gaps refusing), `euronext_paris` (2010-2026 across the operator's
+//! four calendar generations — the per-year press releases and notices, the
+//! 2014-2015 cash-markets pages, the per-year page and the per-market table;
+//! only the 2026 half-day eves are announced and unstated) and `tsx`
+//! (2017-2026 across the calendar page's archived states, with 2010-2016
+//! refusing).
 //!
 //! Every case below goes through the public identity-backed calendar, the
 //! same surface the consumer routes through. Each venue's section fences its
@@ -3218,11 +3220,26 @@ mod euronext_paris {
     #[test]
     fn closures_per_year_match_the_operators_printed_columns() {
         let calendar = paris();
-        // Every Paris `Closed` cell: the 2025 column of the 2025-12-06 page
-        // capture and the 2026 column of the live page and its INFO-FLASH.
-        // 2026-12-25 is fenced separately: its derivation reads 2026-12-24,
-        // the announced-but-unstated eve, so the closure question refuses.
+        // Every Paris `Closed` cell: the operator's own per-year press
+        // releases and notice for 2010-2012, the 2012 Info-Flash for 2013,
+        // the cash-markets calendars of 2014-2021, the 2025 column of the
+        // 2025-12-06 page capture and the 2026 column of the live page and
+        // its INFO-FLASH. 2026-12-25 is fenced separately: its derivation
+        // reads 2026-12-24, the announced-but-unstated eve, so the closure
+        // question refuses.
         let closed = [
+            (2011, 4, 22),
+            (2011, 4, 25),
+            (2011, 12, 26),
+            (2012, 4, 6),
+            (2012, 4, 9),
+            (2012, 5, 1),
+            (2012, 12, 25),
+            (2012, 12, 26),
+            (2013, 1, 1),
+            (2013, 3, 29),
+            (2013, 4, 1),
+            (2013, 5, 1),
             (2015, 4, 3),
             (2016, 3, 25),
             (2017, 5, 1),
@@ -3246,31 +3263,66 @@ mod euronext_paris {
         for date in closed {
             assert_closed(calendar, date, "euronext_paris", &paris_time);
         }
-        // 2025-01-01: its behind-derivation reads 2024-12-31, the unresolved
-        // eve, so the session questions refuse as an unresolved gap rather
-        // than answer; the holiday row itself answers.
+        // The 2010 rows sit below the 2010-12-24 ledger horizon, so the
+        // holiday rows answer while the session queries refuse as carried
+        // (the nzx shape).
+        for date in [(2010, 1, 1), (2010, 4, 2), (2010, 4, 5)] {
+            assert_eq!(
+                calendar
+                    .holiday_on(day(date.0, date.1, date.2))
+                    .map(Holiday::kind),
+                Some(HolidayKind::Closed),
+                "paris {date:?} carries the printed closure row"
+            );
+            assert!(
+                calendar
+                    .is_closed_trade_date(day(date.0, date.1, date.2), SessionKind::Both)
+                    .is_err_and(|error| matches!(
+                        error,
+                        CalendarQueryError::OutsideCoveredRange { .. }
+                    )),
+                "the {date:?} session question must refuse below the horizon"
+            );
+            assert!(
+                calendar
+                    .is_open(paris_time(date, (12, 0, 0)))
+                    .is_err_and(|error| matches!(
+                        error,
+                        CalendarQueryError::OutsideCoveredRange { .. }
+                    )),
+                "the {date:?} intraday question must refuse below the horizon"
+            );
+        }
+        // 2025-01-01: its behind-derivation reads 2024-12-31, the appendix-
+        // dated eve — a sourced early close since the 2024 end-of-year
+        // appendix was recovered — so the session questions answer: the day
+        // is shut all the way through.
         assert_eq!(
             calendar.holiday_on(day(2025, 1, 1)).map(Holiday::kind),
             Some(HolidayKind::Closed)
         );
-        assert!(matches!(
-            calendar.is_open(paris_time((2025, 1, 1), (12, 0, 0))),
-            Err(CalendarQueryError::UnresolvedGap { .. })
-        ));
-        // 2014-01-01, the window's first row: the behind-derivation reads
-        // 2013-12-31, outside every audited window, so the holiday row
-        // answers but the session probes refuse.
+        assert!(
+            !calendar
+                .is_open(paris_time((2025, 1, 1), (12, 0, 0)))
+                .expect("the eve's instant is sourced"),
+            "2025-01-01 is shut midday like its sourced eve"
+        );
+        // 2014-01-01: the behind-derivation reads 2013-12-31, inside the
+        // recovered 2013 window (a sourced 14:00 half day), so the session
+        // probes answer rather than refuse.
         assert_eq!(
             calendar.holiday_on(day(2014, 1, 1)).map(Holiday::kind),
             Some(HolidayKind::Closed)
         );
-        assert!(matches!(
-            calendar.is_open(paris_time((2014, 1, 1), (12, 0, 0))),
-            Err(CalendarQueryError::OutsideCoveredRange { .. })
-        ));
-        // 2024-12-25 and 2024-12-26: the rows answer, but their derivation
-        // reads 2024-12-24 (the unresolved eve), so the session questions
-        // refuse as an unresolved gap.
+        assert!(
+            !calendar
+                .is_open(paris_time((2014, 1, 1), (12, 0, 0)))
+                .expect("covered"),
+            "2014-01-01 is shut midday"
+        );
+        // 2024-12-25 and 2024-12-26: the rows answer and their derivation
+        // reads 2024-12-24, whose half-day instant the recovered appendix
+        // states, so the session questions answer too.
         for date in [(2024, 12, 25), (2024, 12, 26)] {
             assert_eq!(
                 calendar
@@ -3279,6 +3331,12 @@ mod euronext_paris {
                 Some(HolidayKind::Closed),
                 "paris {date:?} carries the printed closure row"
             );
+            assert!(
+                !calendar
+                    .is_open(paris_time(date, (12, 0, 0)))
+                    .expect("covered"),
+                "paris {date:?} is shut midday"
+            );
         }
     }
 
@@ -3286,8 +3344,13 @@ mod euronext_paris {
     fn the_pre_2025_eras_answer_through_the_identity_backed_surface() {
         let calendar = paris();
         // One printed closure per pre-2025 generation, every one the
-        // operator's own calendar line or Paris cell.
+        // operator's own calendar line or Paris cell, plus the recovered
+        // 2011-2013 press releases, notice and Info-Flash (2010's rows sit
+        // below the ledger horizon and are fenced in the closures test).
         for date in [
+            (2011, 4, 22),
+            (2012, 4, 9),
+            (2013, 3, 29),
             (2014, 4, 18),
             (2015, 4, 3),
             (2016, 3, 25),
@@ -3399,6 +3462,98 @@ mod euronext_paris {
     }
 
     #[test]
+    fn the_recovered_decade_eves_close_at_their_printed_instants() {
+        let calendar = paris();
+        // The 2010 appendix's Paris grid prints Trading to 13:55, a 14:00
+        // closing uncross and TAL 14:00-14:05, so the envelope close is
+        // 14:05 — the same shape the 2025 appendix prints. The 24th sits one
+        // carried day behind the 2010-12-24 horizon, so its session probes
+        // refuse; the 31st's behind-derivation reads 2010-12-30, above the
+        // horizon, so its probes answer the 14:05 end-exclusive close.
+        for date in [(2010, 12, 24), (2010, 12, 31)] {
+            assert_eq!(
+                calendar
+                    .holiday_on(day(date.0, date.1, date.2))
+                    .map(Holiday::kind),
+                Some(HolidayKind::EarlyClose { close_ssm: 50_700 }),
+                "paris {date:?} carries the 2010 appendix's 14:05 close"
+            );
+        }
+        assert!(
+            calendar
+                .is_open(paris_time((2010, 12, 24), (14, 4, 59)))
+                .is_err_and(|error| matches!(
+                    error,
+                    CalendarQueryError::OutsideCoveredRange { .. }
+                )),
+            "the 2010-12-24 intraday question must refuse behind the horizon"
+        );
+        assert!(
+            calendar
+                .is_open(paris_time((2010, 12, 31), (14, 4, 59)))
+                .expect("covered"),
+            "paris still trades at 14:04:59 on the sourced eve"
+        );
+        assert!(
+            !calendar
+                .is_open(paris_time((2010, 12, 31), (14, 5, 0)))
+                .expect("covered"),
+            "paris is closed at the 14:05 close (end-exclusive)"
+        );
+        // The 2011 press release states `close at 5.35 pm CET` — the
+        // closing-auction end, five minutes ahead of the 17:40 envelope end.
+        for date in [(2011, 12, 23), (2011, 12, 30)] {
+            assert_eq!(
+                calendar
+                    .holiday_on(day(date.0, date.1, date.2))
+                    .map(Holiday::kind),
+                Some(HolidayKind::EarlyClose { close_ssm: 63_300 }),
+                "paris {date:?} carries the printed 17:35 close"
+            );
+            assert!(
+                calendar
+                    .is_open(paris_time(date, (17, 34, 59)))
+                    .expect("covered"),
+                "paris {date:?} still trades at 17:34:59"
+            );
+            assert!(
+                !calendar
+                    .is_open(paris_time(date, (17, 35, 0)))
+                    .expect("covered"),
+                "paris {date:?} is closed at the 17:35 close (end-exclusive)"
+            );
+        }
+        // The 2012 notice and the 2013 Info-Flash state 14:00 (2013's page
+        // restatement of 14:05 is held at the narrowest sourced value).
+        for date in [
+            (2012, 12, 24),
+            (2012, 12, 31),
+            (2013, 12, 24),
+            (2013, 12, 31),
+        ] {
+            assert_eq!(
+                calendar
+                    .holiday_on(day(date.0, date.1, date.2))
+                    .map(Holiday::kind),
+                Some(HolidayKind::EarlyClose { close_ssm: 50_400 }),
+                "paris {date:?} carries the stated 14:00 close"
+            );
+            assert!(
+                calendar
+                    .is_open(paris_time(date, (13, 59, 59)))
+                    .expect("covered"),
+                "paris {date:?} still trades at 13:59:59"
+            );
+            assert!(
+                !calendar
+                    .is_open(paris_time(date, (14, 0, 0)))
+                    .expect("covered"),
+                "paris {date:?} is closed at the 14:00 close (end-exclusive)"
+            );
+        }
+    }
+
+    #[test]
     fn the_unresolved_eve_shadows_the_following_christmas_derivation() {
         let calendar = paris();
         // The row for 2026-12-25 itself still answers Closed.
@@ -3410,26 +3565,24 @@ mod euronext_paris {
         // But the trade-date and intraday questions read behind the query's
         // bounds — 2026-12-24, whose half-day hours are announced and
         // unstated — so both refuse as an unresolved gap rather than claim.
-        // 2024-12-25 is the same shape one appendix earlier.
-        for date in [(2026, 12, 25), (2024, 12, 25)] {
-            assert!(
-                calendar
-                    .is_closed_trade_date(day(date.0, date.1, date.2), SessionKind::Both)
-                    .is_err_and(|error| matches!(error, CalendarQueryError::UnresolvedGap { .. })),
-                "the {date:?} closure question must refuse on the unresolved eve"
-            );
-            assert!(
-                calendar
-                    .is_open(paris_time(date, (12, 0, 0)))
-                    .is_err_and(|error| matches!(error, CalendarQueryError::UnresolvedGap { .. })),
-                "the {date:?} intraday question must refuse on the unresolved eve"
-            );
-        }
-        // 2024-12-31 itself ships Unsourced: the arrangement is printed, the
-        // appendix instant is not archived.
+        // 2024-12-25 no longer does: its eve's instant has been recovered
+        // from the 2024 end-of-year appendix.
+        assert!(
+            calendar
+                .is_closed_trade_date(day(2026, 12, 25), SessionKind::Both)
+                .is_err_and(|error| matches!(error, CalendarQueryError::UnresolvedGap { .. })),
+            "the 2026-12-25 closure question must refuse on the unresolved eve"
+        );
+        assert!(
+            calendar
+                .is_open(paris_time((2026, 12, 25), (12, 0, 0)))
+                .is_err_and(|error| matches!(error, CalendarQueryError::UnresolvedGap { .. })),
+            "the 2026-12-25 intraday question must refuse on the unresolved eve"
+        );
+        // 2024-12-31 now ships the appendix's printed 14:05 close.
         assert_eq!(
             calendar.holiday_on(day(2024, 12, 31)).map(Holiday::kind),
-            Some(HolidayKind::Unsourced)
+            Some(HolidayKind::EarlyClose { close_ssm: 50_700 })
         );
     }
 
@@ -3556,15 +3709,27 @@ mod euronext_paris {
     fn the_window_bounds_and_the_pre_floor_refusal() {
         let calendar = paris();
         let coverage = calendar.holiday_coverage().expect("paris ships a table");
-        assert_eq!(coverage.first(), day(2014, 1, 1));
+        assert_eq!(coverage.first(), day(2010, 1, 1));
         assert_eq!(coverage.last(), day(2026, 12, 31));
-        // 2010-2013 survives in no operator capture: no row, and the session
-        // queries refuse rather than answer an unaudited year.
-        assert_eq!(calendar.holiday_on(day(2012, 7, 2)), None);
+        // 2010-01-01 is the window's first row and sits below the
+        // 2010-12-24 ledger horizon: the holiday row answers while the
+        // session probes refuse as carried (the nzx shape).
+        assert_eq!(
+            calendar.holiday_on(day(2010, 1, 1)).map(Holiday::kind),
+            Some(HolidayKind::Closed)
+        );
         assert!(matches!(
-            calendar.is_open(paris_time((2012, 7, 2), (12, 0, 0))),
+            calendar.is_open(paris_time((2010, 1, 1), (12, 0, 0))),
             Err(CalendarQueryError::OutsideCoveredRange { .. })
         ));
+        // An ordinary day of the recovered 2012 window answers as audited
+        // normal.
+        assert_eq!(calendar.holiday_on(day(2012, 7, 2)), None);
+        assert!(
+            calendar
+                .is_open(paris_time((2012, 7, 2), (12, 0, 0)))
+                .expect("covered")
+        );
         assert_eq!(calendar.holiday_on(day(2027, 1, 1)), None);
         assert!(matches!(
             calendar.is_open(paris_time((2009, 12, 31), (12, 0, 0))),
@@ -3590,8 +3755,12 @@ mod euronext_paris {
     #[test]
     fn every_shipped_row_matches_the_sheets_per_year() {
         let rows = rows_per_year(paris());
-        assert_eq!(rows.len(), 83, "66 closures, 13 half days, four gaps");
-        let expected: [(i32, (usize, usize, usize, usize)); 13] = [
+        assert_eq!(rows.len(), 108, "83 closures, 23 half days, two gaps");
+        let expected: [(i32, (usize, usize, usize, usize)); 17] = [
+            (2010, (3, 2, 0, 0)),
+            (2011, (3, 2, 0, 0)),
+            (2012, (5, 2, 0, 0)),
+            (2013, (6, 2, 0, 0)),
             (2014, (6, 2, 0, 0)),
             (2015, (6, 1, 0, 0)),
             (2016, (4, 0, 0, 0)),
@@ -3602,37 +3771,32 @@ mod euronext_paris {
             (2021, (3, 2, 0, 0)),
             (2022, (3, 0, 0, 0)),
             (2023, (5, 0, 0, 0)),
-            (2024, (6, 0, 0, 2)),
+            (2024, (6, 2, 0, 0)),
             (2025, (6, 2, 0, 0)),
             (2026, (5, 0, 0, 2)),
         ];
         for (year, tally) in expected {
             assert_eq!(census(&rows, year), tally, "{year} census");
         }
-        for year in [2010, 2011, 2012, 2013] {
-            assert_eq!(
-                census(&rows, year),
-                (0, 0, 0, 0),
-                "{year} is before the audited window and ships no row"
-            );
-        }
         // The half days are exactly the eves the operator's own words give an
-        // instant — the page-stated 14:05 eves of 2014-2021 and 2025's
-        // appendix-dated pair — and the gaps are the 2024 and 2026 eves whose
-        // appendix instants are unarchived.
+        // instant — the appendix-grid 14:05 eves of 2010 and 2024-2025, the
+        // page-stated 14:05 eves of 2014-2021, the printed 17:35 eves of
+        // 2011 and the 14:00 eves of 2012-2013 — and the gaps are the 2026
+        // eves whose appendix instants are announced and unstated.
         for (date, kind, instant) in &rows {
             if kind == "early close" {
-                assert!(
-                    matches!(
-                        date,
-                        (2014 | 2015 | 2018 | 2019 | 2020 | 2021 | 2025, 12, 24 | 31)
-                    ),
-                    "the half days are exactly the stated eves: {date:?}"
-                );
-                assert_eq!(*instant, Some(50_700), "{date:?} prints 14:05");
+                let expected_instant = match *date {
+                    (2010 | 2014 | 2015 | 2018 | 2019 | 2020 | 2021 | 2024 | 2025, 12, 24 | 31) => {
+                        50_700
+                    }
+                    (2011, 12, 23 | 30) => 63_300,
+                    (2012 | 2013, 12, 24 | 31) => 50_400,
+                    other => panic!("unexpected early-close row {other:?}"),
+                };
+                assert_eq!(*instant, Some(expected_instant), "{date:?} prints its instant");
             } else if kind == "unsourced" {
                 assert!(
-                    matches!(date, (2024 | 2026, 12, 24 | 31)),
+                    matches!(date, (2026, 12, 24 | 31)),
                     "the gaps are exactly the announced-but-unstated eves: {date:?}"
                 );
             } else {

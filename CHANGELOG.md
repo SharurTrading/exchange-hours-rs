@@ -482,6 +482,27 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Fixed
 
+- **`euronext_paris` 2010-2013 holiday history recovered and the 2024 eves'
+  instants sourced (2026-09-29 UTC, closes [#219]).** A domain-wide Wayback
+  CDX sweep of `euronext.com` 2009-2015 (79 364 collapsed url keys) surfaced
+  the `trading/nyse-euronext-trading-calendar` page and the operator's own
+  `Trading Calendar Archives` index, which lists every year's holiday document
+  with its file URL; the archived 2010 press release, 2011 press release, 2012
+  Paris notice and 2012 Info-Flash (T1, bulk crawl 2018-11-11) plus the
+  2014-01-12 Trading Calendar page capture key 25 further rows — 17 `Closed`
+  and 8 early closes — extending the audited window from 2014-01-01 back to
+  the 2010-01-01 floor. The half-day eves print the operator's own instants:
+  2010 ends at 14:05 CET (the December appendix's TAL end, the same grid the
+  2025 appendix prints), 2011 at the printed `5.35 pm CET` (17:35), 2012 and
+  2013 at the stated 14:00 CET (2013 held at the narrowest of two operator
+  statements — the operator's own page restates 14:05). The 2024-12-24 and
+  2024-12-31 rows move from `Unsourced` to the 2024 end-of-year appendix's
+  printed 14:05 CET (recovered live from the operator's own channel, identity
+  witnessed by the 2025-01-02 page capture that links it by name), leaving
+  only the 2026 eves `Unsourced` (their appendix is announced and
+  unpublished). Artifacts are sha-pinned in the research store's
+  `holidays/raw/equities/euronext_paris/2010-2024/` and `cdx-retry-2026-09-29/`
+  directories.
 - **The gate-walk documentation findings fixed (2026-09-29 UTC).** The 1.0.0
   gate walk surfaced three documentation defects, all corrected from the
   shipped tables. `docs/evidence/cme.md`'s aggregate prose stated 276/289 rows

@@ -198,6 +198,177 @@ fn inventory_windows_and_date_counts_match_the_shipped_tables() {
     }
 }
 
+/// The findings sections' text, whitespace-normalized and lowercased, so a
+/// reflowed paragraph or a sentence-initial capital still matches the fragments
+/// the fence compares.
+///
+/// The section runs from its `### {number}.` heading to the next `### ` heading;
+/// a missing heading fails here rather than comparing against an empty string.
+fn findings_section(number: u32) -> String {
+    let heading = format!("### {number}. ");
+    let mut lines = INVENTORY
+        .lines()
+        .skip_while(|line| !line.starts_with(&heading));
+    assert!(
+        lines.next().is_some(),
+        "coverage-2025.md carries a `### {number}.` findings section"
+    );
+    lines
+        .take_while(|line| !line.starts_with("### "))
+        .collect::<Vec<_>>()
+        .join("\n")
+        .split_whitespace()
+        .collect::<Vec<_>>()
+        .join(" ")
+        .to_lowercase()
+}
+
+/// Spells a count the way the findings prose states one, for the derived numbers
+/// the paragraphs carry as words. Two digits cover every count the `iceus`
+/// intersection has produced; a larger count fails here and asks for the table
+/// to be extended rather than shipping a wrong word.
+fn spelled(count: usize) -> String {
+    const UNITS: [&str; 9] = [
+        "one", "two", "three", "four", "five", "six", "seven", "eight", "nine",
+    ];
+    const TEENS: [&str; 10] = [
+        "ten",
+        "eleven",
+        "twelve",
+        "thirteen",
+        "fourteen",
+        "fifteen",
+        "sixteen",
+        "seventeen",
+        "eighteen",
+        "nineteen",
+    ];
+    const TENS: [&str; 8] = [
+        "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety",
+    ];
+    assert!(
+        (1..100).contains(&count),
+        "the findings fence spells one through ninety-nine; {count} needs the table extended"
+    );
+    if count < 10 {
+        UNITS[count - 1].to_owned()
+    } else if count < 20 {
+        TEENS[count - 10].to_owned()
+    } else {
+        let mut word = TENS[count / 10 - 2].to_owned();
+        if !count.is_multiple_of(10) {
+            word.push('-');
+            word.push_str(UNITS[count % 10 - 1]);
+        }
+        word
+    }
+}
+
+/// The findings paragraphs state the `iceus` intersection's date counts in
+/// prose, and prose is data (review step 5): this fence derives the counts from
+/// the same public walk that derives the inventory row's cells and formats the
+/// sentence fragments from the derivation, so a row that lands or a kind that
+/// changes fails the paragraphs until they are restated. The defect it was added
+/// for is issue #204: §1 and §2 kept stating a 35-date intersection the row had
+/// outgrown at 41, because the inventory fences read only the table rows.
+///
+/// The derivation walks every trade date from the floor through the table's last
+/// audited day and classifies each row, so §1's scheduling-row, full-closure and
+/// withheld counts, and the 2025 share both paragraphs name, are all derived;
+/// the 2026-2027 remainder is the withheld count minus its 2025 share. The dates
+/// §2 names are asserted to be `Unsourced` rows of the shipped calendar, so the
+/// examples cannot rot beside the counts. The sentence shapes are pinned by the
+/// fragments themselves: a reworded paragraph fails its `contains` with the
+/// derived number in the message, which is the fence telling the editor exactly
+/// what the tables derive.
+#[test]
+fn the_iceus_findings_paragraphs_derive_their_counts_from_the_shipped_tables() {
+    let calendar = calendar_for("iceus").expect("the inventory names a known identity");
+    let coverage = calendar
+        .holiday_coverage()
+        .expect("a served identity ships a holiday table");
+    let (dated, unsourced) = count_from_floor(calendar, coverage.last());
+    let (mut closed, mut unsourced_2025) = (0_usize, 0_usize);
+    let mut date = floor();
+    while date <= coverage.last() {
+        if let Some(holiday) = calendar.holiday_on(date) {
+            if holiday.kind() == HolidayKind::Closed {
+                closed += 1;
+            }
+            if holiday.kind() == HolidayKind::Unsourced && date.year() == 2025 {
+                unsourced_2025 += 1;
+            }
+        }
+        match date.succ_opt() {
+            Some(next) => date = next,
+            None => break,
+        }
+    }
+    let unsourced_from_2026 = unsourced - unsourced_2025;
+    let one = findings_section(1);
+    assert!(
+        one.contains(&format!("`iceus` ships **{dated}** scheduling rows")),
+        "\u{a7}1's scheduling-row count must restate the shipped table's derivation ({dated})"
+    );
+    assert!(
+        one.contains(&format!(
+            "the **{}** full closures in its window",
+            spelled(closed)
+        )),
+        "\u{a7}1's full-closure count must restate the shipped table's derivation ({closed})"
+    );
+    assert!(
+        one.contains(&format!(
+            "and the other **{unsourced}** dates are `unsourced`"
+        )),
+        "\u{a7}1's withheld count must restate the shipped table's derivation ({unsourced})"
+    );
+    assert!(
+        one.contains(&format!(
+            "{} of those dates are in 2025",
+            spelled(unsourced_2025)
+        )),
+        "\u{a7}1's 2025 share must restate the shipped table's derivation ({unsourced_2025})"
+    );
+    let two = findings_section(2);
+    assert!(
+        two.contains(&format!(
+            "`iceus` withholds **{unsourced}**: {} 2025 dates",
+            spelled(unsourced_2025)
+        )),
+        "\u{a7}2's withheld count and 2025 share must restate the shipped table's derivation \
+         ({unsourced} withheld, {unsourced_2025} of them in 2025)"
+    );
+    assert!(
+        two.contains(&format!(
+            "and {} 2026-2027 dates",
+            spelled(unsourced_from_2026)
+        )),
+        "\u{a7}2's 2026-2027 remainder must restate the shipped table's derivation \
+         ({unsourced_from_2026})"
+    );
+
+    // The dates §2 names are examples of the withheld set: each must still be a
+    // row the shipped calendar withholds as `Unsourced`.
+    for (year, month, day) in [
+        (2025, 1, 9),
+        (2025, 5, 5),
+        (2025, 8, 25),
+        (2026, 10, 26),
+        (2026, 10, 27),
+        (2026, 10, 28),
+        (2026, 10, 29),
+        (2026, 10, 30),
+        (2026, 11, 27),
+    ] {
+        let named = NaiveDate::from_ymd_opt(year, month, day).expect("a valid section-2 date");
+        assert!(
+            withheld(calendar, named),
+            "the findings name {named}, which the shipped table must withhold as Unsourced"
+        );
+    }
+}
+
 /// The served identities whose owner module carries more than one
 /// `revisions!` block, each with the static its routing arm dispatches
 /// through (`hours_for_exchange` in `src/calendar/presets/historical.rs`).
@@ -398,9 +569,11 @@ fn withheld(calendar: ExchangeCalendar, date: NaiveDate) -> bool {
 /// does in the same file. `cme` is deliberately absent: it withholds disputed
 /// dates **and** the Sunday quarter-hour (#79), so its denial of completeness is no
 /// longer date-shaped. `iceus` is the second entry: from 2026-09-26 UTC it audits
-/// from the floor and withholds 35 dates its routed families dispute — the
-/// 2025-01-09 National Day of Mourning row moved the last of them — with no
-/// phase-level gap behind the denial. `nasdaq` is the next entry (2026-09-28
+/// from the floor with no phase-level gap behind its denial — the 2025-01-09
+/// National Day of Mourning row completed the date-level set, which stood at 35
+/// withheld dates when this entry was added and has grown as the September 2026
+/// notices landed; the value the map carries is compared against the derived
+/// cell, so it moves with the tables. `nasdaq` is the next entry (2026-09-28
 /// UTC): its four withheld dates are the two TBA early closes, the unrecovered
 /// Sandy confirmation and the mourning day, all date-shaped with no phase gap.
 /// `nse_india` is the next: from 2026-09-28 UTC it audits 2025-2026 and withholds

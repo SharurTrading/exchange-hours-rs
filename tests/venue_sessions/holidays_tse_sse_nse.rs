@@ -600,11 +600,310 @@ fn tse_printed_closures_ship_a_row_per_year() {
     }
 }
 
-/// Asserts every SSE closure row, per year, against the operator's printed
-/// notices. The date list is spelled here independently of the module: a row
-/// that moves, loses its clip or changes its citation fails here.
+/// Asserts the 2011-2014 SSE closure rows, per year, against the operator's own
+/// annual closure-arrangement notices (the 2011-2013 notices live from the operator's media-center reprints, the 2014 notice from its Wayback replay). The date list is spelled here
+/// independently of the module: a row that moves, loses its clip or changes
+/// its citation fails here.
 #[test]
-fn sse_printed_closures_ship_a_row_per_year() {
+fn sse_printed_closures_2011_2014_ship_a_row_per_year() {
+    let sse = calendar_for_exchange(Exchange::Sse);
+    for (date, document, label) in [
+        // 2011, from the operator's 2011 arrangement notice.
+        ((2011, 1, 3), "SSE-NOTICE-2011", "元旦"),
+        ((2011, 2, 2), "SSE-NOTICE-2011", "春节"),
+        ((2011, 2, 3), "SSE-NOTICE-2011", "春节"),
+        ((2011, 2, 4), "SSE-NOTICE-2011", "春节"),
+        ((2011, 2, 7), "SSE-NOTICE-2011", "春节"),
+        ((2011, 2, 8), "SSE-NOTICE-2011", "春节"),
+        ((2011, 4, 4), "SSE-NOTICE-2011", "清明节"),
+        ((2011, 4, 5), "SSE-NOTICE-2011", "清明节"),
+        ((2011, 5, 2), "SSE-NOTICE-2011", "劳动节"),
+        ((2011, 6, 6), "SSE-NOTICE-2011", "端午节"),
+        ((2011, 9, 12), "SSE-NOTICE-2011", "中秋节"),
+        ((2011, 10, 3), "SSE-NOTICE-2011", "国庆节"),
+        ((2011, 10, 4), "SSE-NOTICE-2011", "国庆节"),
+        ((2011, 10, 5), "SSE-NOTICE-2011", "国庆节"),
+        ((2011, 10, 6), "SSE-NOTICE-2011", "国庆节"),
+        ((2011, 10, 7), "SSE-NOTICE-2011", "国庆节"),
+        // 2012, from the operator's 2012 arrangement notice.
+        ((2012, 1, 2), "SSE-NOTICE-2012", "元旦"),
+        ((2012, 1, 3), "SSE-NOTICE-2012", "元旦"),
+        ((2012, 1, 23), "SSE-NOTICE-2012", "春节"),
+        ((2012, 1, 24), "SSE-NOTICE-2012", "春节"),
+        ((2012, 1, 25), "SSE-NOTICE-2012", "春节"),
+        ((2012, 1, 26), "SSE-NOTICE-2012", "春节"),
+        ((2012, 1, 27), "SSE-NOTICE-2012", "春节"),
+        ((2012, 4, 2), "SSE-NOTICE-2012", "清明节"),
+        ((2012, 4, 3), "SSE-NOTICE-2012", "清明节"),
+        ((2012, 4, 4), "SSE-NOTICE-2012", "清明节"),
+        ((2012, 4, 30), "SSE-NOTICE-2012", "劳动节"),
+        ((2012, 5, 1), "SSE-NOTICE-2012", "劳动节"),
+        ((2012, 6, 22), "SSE-NOTICE-2012", "端午节"),
+        ((2012, 10, 1), "SSE-NOTICE-2012", "中秋节、国庆节"),
+        ((2012, 10, 2), "SSE-NOTICE-2012", "中秋节、国庆节"),
+        ((2012, 10, 3), "SSE-NOTICE-2012", "中秋节、国庆节"),
+        ((2012, 10, 4), "SSE-NOTICE-2012", "中秋节、国庆节"),
+        ((2012, 10, 5), "SSE-NOTICE-2012", "中秋节、国庆节"),
+        // 2013, from the operator's 2013 arrangement notice.
+        ((2013, 1, 1), "SSE-NOTICE-2013", "元旦"),
+        ((2013, 1, 2), "SSE-NOTICE-2013", "元旦"),
+        ((2013, 1, 3), "SSE-NOTICE-2013", "元旦"),
+        ((2013, 2, 11), "SSE-NOTICE-2013", "春节"),
+        ((2013, 2, 12), "SSE-NOTICE-2013", "春节"),
+        ((2013, 2, 13), "SSE-NOTICE-2013", "春节"),
+        ((2013, 2, 14), "SSE-NOTICE-2013", "春节"),
+        ((2013, 2, 15), "SSE-NOTICE-2013", "春节"),
+        ((2013, 4, 4), "SSE-NOTICE-2013", "清明节"),
+        ((2013, 4, 5), "SSE-NOTICE-2013", "清明节"),
+        ((2013, 4, 29), "SSE-NOTICE-2013", "劳动节"),
+        ((2013, 4, 30), "SSE-NOTICE-2013", "劳动节"),
+        ((2013, 5, 1), "SSE-NOTICE-2013", "劳动节"),
+        ((2013, 6, 10), "SSE-NOTICE-2013", "端午节"),
+        ((2013, 6, 11), "SSE-NOTICE-2013", "端午节"),
+        ((2013, 6, 12), "SSE-NOTICE-2013", "端午节"),
+        ((2013, 9, 19), "SSE-NOTICE-2013", "中秋节"),
+        ((2013, 9, 20), "SSE-NOTICE-2013", "中秋节"),
+        ((2013, 10, 1), "SSE-NOTICE-2013", "国庆节"),
+        ((2013, 10, 2), "SSE-NOTICE-2013", "国庆节"),
+        ((2013, 10, 3), "SSE-NOTICE-2013", "国庆节"),
+        ((2013, 10, 4), "SSE-NOTICE-2013", "国庆节"),
+        ((2013, 10, 7), "SSE-NOTICE-2013", "国庆节"),
+        // 2014, from the operator's 2014 arrangement notice.
+        ((2014, 1, 1), "SSE-NOTICE-2014", "元旦"),
+        ((2014, 1, 31), "SSE-NOTICE-2014", "春节"),
+        ((2014, 2, 3), "SSE-NOTICE-2014", "春节"),
+        ((2014, 2, 4), "SSE-NOTICE-2014", "春节"),
+        ((2014, 2, 5), "SSE-NOTICE-2014", "春节"),
+        ((2014, 2, 6), "SSE-NOTICE-2014", "春节"),
+        ((2014, 4, 7), "SSE-NOTICE-2014", "清明节"),
+        ((2014, 5, 1), "SSE-NOTICE-2014", "劳动节"),
+        ((2014, 5, 2), "SSE-NOTICE-2014", "劳动节"),
+        ((2014, 6, 2), "SSE-NOTICE-2014", "端午节"),
+        ((2014, 9, 8), "SSE-NOTICE-2014", "中秋节"),
+        ((2014, 10, 1), "SSE-NOTICE-2014", "国庆节"),
+        ((2014, 10, 2), "SSE-NOTICE-2014", "国庆节"),
+        ((2014, 10, 3), "SSE-NOTICE-2014", "国庆节"),
+        ((2014, 10, 6), "SSE-NOTICE-2014", "国庆节"),
+        ((2014, 10, 7), "SSE-NOTICE-2014", "国庆节"),
+    ] {
+        assert_closure(sse, date, document, &format!("SSE {label}"));
+    }
+}
+
+/// Asserts the 2015-2019 SSE closure rows, per year, against the operator's own
+/// annual closure-arrangement notices (the 上证公告-numbered notices, one per December, from Wayback replays). The date list is spelled here
+/// independently of the module: a row that moves, loses its clip or changes
+/// its citation fails here.
+#[test]
+fn sse_printed_closures_2015_2019_ship_a_row_per_year() {
+    let sse = calendar_for_exchange(Exchange::Sse);
+    for (date, document, label) in [
+        // 2015, from the operator's 2015 arrangement notice.
+        ((2015, 1, 1), "SSE-NOTICE-2014-15", "元旦"),
+        ((2015, 1, 2), "SSE-NOTICE-2014-15", "元旦"),
+        ((2015, 2, 18), "SSE-NOTICE-2014-15", "春节"),
+        ((2015, 2, 19), "SSE-NOTICE-2014-15", "春节"),
+        ((2015, 2, 20), "SSE-NOTICE-2014-15", "春节"),
+        ((2015, 2, 23), "SSE-NOTICE-2014-15", "春节"),
+        ((2015, 2, 24), "SSE-NOTICE-2014-15", "春节"),
+        ((2015, 4, 6), "SSE-NOTICE-2014-15", "清明节"),
+        ((2015, 5, 1), "SSE-NOTICE-2014-15", "劳动节"),
+        ((2015, 6, 22), "SSE-NOTICE-2014-15", "端午节"),
+        ((2015, 10, 1), "SSE-NOTICE-2014-15", "国庆节"),
+        ((2015, 10, 2), "SSE-NOTICE-2014-15", "国庆节"),
+        ((2015, 10, 5), "SSE-NOTICE-2014-15", "国庆节"),
+        ((2015, 10, 6), "SSE-NOTICE-2014-15", "国庆节"),
+        ((2015, 10, 7), "SSE-NOTICE-2014-15", "国庆节"),
+        // 2016, from the operator's 2016 arrangement notice.
+        ((2016, 1, 1), "SSE-NOTICE-2015-36", "元旦"),
+        ((2016, 2, 8), "SSE-NOTICE-2015-36", "春节"),
+        ((2016, 2, 9), "SSE-NOTICE-2015-36", "春节"),
+        ((2016, 2, 10), "SSE-NOTICE-2015-36", "春节"),
+        ((2016, 2, 11), "SSE-NOTICE-2015-36", "春节"),
+        ((2016, 2, 12), "SSE-NOTICE-2015-36", "春节"),
+        ((2016, 4, 4), "SSE-NOTICE-2015-36", "清明节"),
+        ((2016, 5, 2), "SSE-NOTICE-2015-36", "劳动节"),
+        ((2016, 6, 9), "SSE-NOTICE-2015-36", "端午节"),
+        ((2016, 6, 10), "SSE-NOTICE-2015-36", "端午节"),
+        ((2016, 9, 15), "SSE-NOTICE-2015-36", "中秋节"),
+        ((2016, 9, 16), "SSE-NOTICE-2015-36", "中秋节"),
+        ((2016, 10, 3), "SSE-NOTICE-2015-36", "国庆节"),
+        ((2016, 10, 4), "SSE-NOTICE-2015-36", "国庆节"),
+        ((2016, 10, 5), "SSE-NOTICE-2015-36", "国庆节"),
+        ((2016, 10, 6), "SSE-NOTICE-2015-36", "国庆节"),
+        ((2016, 10, 7), "SSE-NOTICE-2015-36", "国庆节"),
+        // 2017, from the operator's 2017 arrangement notice.
+        ((2017, 1, 2), "SSE-NOTICE-2016-25", "元旦"),
+        ((2017, 1, 27), "SSE-NOTICE-2016-25", "春节"),
+        ((2017, 1, 30), "SSE-NOTICE-2016-25", "春节"),
+        ((2017, 1, 31), "SSE-NOTICE-2016-25", "春节"),
+        ((2017, 2, 1), "SSE-NOTICE-2016-25", "春节"),
+        ((2017, 2, 2), "SSE-NOTICE-2016-25", "春节"),
+        ((2017, 4, 3), "SSE-NOTICE-2016-25", "清明节"),
+        ((2017, 4, 4), "SSE-NOTICE-2016-25", "清明节"),
+        ((2017, 5, 1), "SSE-NOTICE-2016-25", "劳动节"),
+        ((2017, 5, 29), "SSE-NOTICE-2016-25", "端午节"),
+        ((2017, 5, 30), "SSE-NOTICE-2016-25", "端午节"),
+        ((2017, 10, 2), "SSE-NOTICE-2016-25", "中秋节、国庆节"),
+        ((2017, 10, 3), "SSE-NOTICE-2016-25", "中秋节、国庆节"),
+        ((2017, 10, 4), "SSE-NOTICE-2016-25", "中秋节、国庆节"),
+        ((2017, 10, 5), "SSE-NOTICE-2016-25", "中秋节、国庆节"),
+        ((2017, 10, 6), "SSE-NOTICE-2016-25", "中秋节、国庆节"),
+        // 2018, from the operator's 2018 arrangement notice.
+        ((2018, 1, 1), "SSE-NOTICE-2017-26", "元旦"),
+        ((2018, 2, 15), "SSE-NOTICE-2017-26", "春节"),
+        ((2018, 2, 16), "SSE-NOTICE-2017-26", "春节"),
+        ((2018, 2, 19), "SSE-NOTICE-2017-26", "春节"),
+        ((2018, 2, 20), "SSE-NOTICE-2017-26", "春节"),
+        ((2018, 2, 21), "SSE-NOTICE-2017-26", "春节"),
+        ((2018, 4, 5), "SSE-NOTICE-2017-26", "清明节"),
+        ((2018, 4, 6), "SSE-NOTICE-2017-26", "清明节"),
+        ((2018, 4, 30), "SSE-NOTICE-2017-26", "劳动节"),
+        ((2018, 5, 1), "SSE-NOTICE-2017-26", "劳动节"),
+        ((2018, 6, 18), "SSE-NOTICE-2017-26", "端午节"),
+        ((2018, 9, 24), "SSE-NOTICE-2017-26", "中秋节"),
+        ((2018, 10, 1), "SSE-NOTICE-2017-26", "国庆节"),
+        ((2018, 10, 2), "SSE-NOTICE-2017-26", "国庆节"),
+        ((2018, 10, 3), "SSE-NOTICE-2017-26", "国庆节"),
+        ((2018, 10, 4), "SSE-NOTICE-2017-26", "国庆节"),
+        ((2018, 10, 5), "SSE-NOTICE-2017-26", "国庆节"),
+        ((2018, 12, 31), "SSE-NOTICE-2018-39", "元旦"),
+        // 2019, from the operator's 2019 arrangement notice.
+        ((2019, 1, 1), "SSE-NOTICE-2018-39", "元旦"),
+        ((2019, 2, 4), "SSE-NOTICE-2018-39", "春节"),
+        ((2019, 2, 5), "SSE-NOTICE-2018-39", "春节"),
+        ((2019, 2, 6), "SSE-NOTICE-2018-39", "春节"),
+        ((2019, 2, 7), "SSE-NOTICE-2018-39", "春节"),
+        ((2019, 2, 8), "SSE-NOTICE-2018-39", "春节"),
+        ((2019, 4, 5), "SSE-NOTICE-2018-39", "清明节"),
+        ((2019, 5, 1), "SSE-NOTICE-2018-39", "劳动节"),
+        ((2019, 6, 7), "SSE-NOTICE-2018-39", "端午节"),
+        ((2019, 9, 13), "SSE-NOTICE-2018-39", "中秋节"),
+        ((2019, 10, 1), "SSE-NOTICE-2018-39", "国庆节"),
+        ((2019, 10, 2), "SSE-NOTICE-2018-39", "国庆节"),
+        ((2019, 10, 3), "SSE-NOTICE-2018-39", "国庆节"),
+        ((2019, 10, 4), "SSE-NOTICE-2018-39", "国庆节"),
+        ((2019, 10, 7), "SSE-NOTICE-2018-39", "国庆节"),
+    ] {
+        assert_closure(sse, date, document, &format!("SSE {label}"));
+    }
+}
+
+/// Asserts the 2020-2024 SSE closure rows, per year, against the operator's own
+/// annual closure-arrangement notices (the 2020-2024 notices, one per December). The date list is spelled here
+/// independently of the module: a row that moves, loses its clip or changes
+/// its citation fails here.
+#[test]
+fn sse_printed_closures_2020_2024_ship_a_row_per_year() {
+    let sse = calendar_for_exchange(Exchange::Sse);
+    for (date, document, label) in [
+        // 2020, from the operator's 2020 arrangement notice.
+        ((2020, 1, 1), "SSE-NOTICE-2019-65", "元旦"),
+        ((2020, 1, 24), "SSE-NOTICE-2019-65", "春节"),
+        ((2020, 1, 27), "SSE-NOTICE-2019-65", "春节"),
+        ((2020, 1, 28), "SSE-NOTICE-2019-65", "春节"),
+        ((2020, 1, 29), "SSE-NOTICE-2019-65", "春节"),
+        ((2020, 1, 30), "SSE-NOTICE-2019-65", "春节"),
+        ((2020, 4, 6), "SSE-NOTICE-2019-65", "清明节"),
+        ((2020, 5, 1), "SSE-NOTICE-2019-65", "劳动节"),
+        ((2020, 5, 4), "SSE-NOTICE-2019-65", "劳动节"),
+        ((2020, 5, 5), "SSE-NOTICE-2019-65", "劳动节"),
+        ((2020, 6, 25), "SSE-NOTICE-2019-65", "端午节"),
+        ((2020, 6, 26), "SSE-NOTICE-2019-65", "端午节"),
+        ((2020, 10, 1), "SSE-NOTICE-2019-65", "国庆节、中秋节"),
+        ((2020, 10, 2), "SSE-NOTICE-2019-65", "国庆节、中秋节"),
+        ((2020, 10, 5), "SSE-NOTICE-2019-65", "国庆节、中秋节"),
+        ((2020, 10, 6), "SSE-NOTICE-2019-65", "国庆节、中秋节"),
+        ((2020, 10, 7), "SSE-NOTICE-2019-65", "国庆节、中秋节"),
+        ((2020, 10, 8), "SSE-NOTICE-2019-65", "国庆节、中秋节"),
+        // 2021, from the operator's 2021 arrangement notice.
+        ((2021, 1, 1), "SSE-NOTICE-2020-48", "元旦"),
+        ((2021, 2, 11), "SSE-NOTICE-2020-48", "春节"),
+        ((2021, 2, 12), "SSE-NOTICE-2020-48", "春节"),
+        ((2021, 2, 15), "SSE-NOTICE-2020-48", "春节"),
+        ((2021, 2, 16), "SSE-NOTICE-2020-48", "春节"),
+        ((2021, 2, 17), "SSE-NOTICE-2020-48", "春节"),
+        ((2021, 4, 5), "SSE-NOTICE-2020-48", "清明节"),
+        ((2021, 5, 3), "SSE-NOTICE-2020-48", "劳动节"),
+        ((2021, 5, 4), "SSE-NOTICE-2020-48", "劳动节"),
+        ((2021, 5, 5), "SSE-NOTICE-2020-48", "劳动节"),
+        ((2021, 6, 14), "SSE-NOTICE-2020-48", "端午节"),
+        ((2021, 9, 20), "SSE-NOTICE-2020-48", "中秋节"),
+        ((2021, 9, 21), "SSE-NOTICE-2020-48", "中秋节"),
+        ((2021, 10, 1), "SSE-NOTICE-2020-48", "国庆节"),
+        ((2021, 10, 4), "SSE-NOTICE-2020-48", "国庆节"),
+        ((2021, 10, 5), "SSE-NOTICE-2020-48", "国庆节"),
+        ((2021, 10, 6), "SSE-NOTICE-2020-48", "国庆节"),
+        ((2021, 10, 7), "SSE-NOTICE-2020-48", "国庆节"),
+        // 2022, from the operator's 2022 arrangement notice.
+        ((2022, 1, 3), "SSE-NOTICE-2021-37", "元旦"),
+        ((2022, 1, 31), "SSE-NOTICE-2021-37", "春节"),
+        ((2022, 2, 1), "SSE-NOTICE-2021-37", "春节"),
+        ((2022, 2, 2), "SSE-NOTICE-2021-37", "春节"),
+        ((2022, 2, 3), "SSE-NOTICE-2021-37", "春节"),
+        ((2022, 2, 4), "SSE-NOTICE-2021-37", "春节"),
+        ((2022, 4, 4), "SSE-NOTICE-2021-37", "清明节"),
+        ((2022, 4, 5), "SSE-NOTICE-2021-37", "清明节"),
+        ((2022, 5, 2), "SSE-NOTICE-2021-37", "劳动节"),
+        ((2022, 5, 3), "SSE-NOTICE-2021-37", "劳动节"),
+        ((2022, 5, 4), "SSE-NOTICE-2021-37", "劳动节"),
+        ((2022, 6, 3), "SSE-NOTICE-2021-37", "端午节"),
+        ((2022, 9, 12), "SSE-NOTICE-2021-37", "中秋节"),
+        ((2022, 10, 3), "SSE-NOTICE-2021-37", "国庆节"),
+        ((2022, 10, 4), "SSE-NOTICE-2021-37", "国庆节"),
+        ((2022, 10, 5), "SSE-NOTICE-2021-37", "国庆节"),
+        ((2022, 10, 6), "SSE-NOTICE-2021-37", "国庆节"),
+        ((2022, 10, 7), "SSE-NOTICE-2021-37", "国庆节"),
+        // 2023, from the operator's 2023 arrangement notice.
+        ((2023, 1, 2), "SSE-NOTICE-2022-51", "元旦"),
+        ((2023, 1, 23), "SSE-NOTICE-2022-51", "春节"),
+        ((2023, 1, 24), "SSE-NOTICE-2022-51", "春节"),
+        ((2023, 1, 25), "SSE-NOTICE-2022-51", "春节"),
+        ((2023, 1, 26), "SSE-NOTICE-2022-51", "春节"),
+        ((2023, 1, 27), "SSE-NOTICE-2022-51", "春节"),
+        ((2023, 4, 5), "SSE-NOTICE-2022-51", "清明节"),
+        ((2023, 5, 1), "SSE-NOTICE-2022-51", "劳动节"),
+        ((2023, 5, 2), "SSE-NOTICE-2022-51", "劳动节"),
+        ((2023, 5, 3), "SSE-NOTICE-2022-51", "劳动节"),
+        ((2023, 6, 22), "SSE-NOTICE-2022-51", "端午节"),
+        ((2023, 6, 23), "SSE-NOTICE-2022-51", "端午节"),
+        ((2023, 9, 29), "SSE-NOTICE-2022-51", "中秋节、国庆节"),
+        ((2023, 10, 2), "SSE-NOTICE-2022-51", "中秋节、国庆节"),
+        ((2023, 10, 3), "SSE-NOTICE-2022-51", "中秋节、国庆节"),
+        ((2023, 10, 4), "SSE-NOTICE-2022-51", "中秋节、国庆节"),
+        ((2023, 10, 5), "SSE-NOTICE-2022-51", "中秋节、国庆节"),
+        ((2023, 10, 6), "SSE-NOTICE-2022-51", "中秋节、国庆节"),
+        // 2024, from the operator's 2024 arrangement notice.
+        ((2024, 1, 1), "SSE-NOTICE-2023-47", "元旦"),
+        ((2024, 2, 9), "SSE-NOTICE-2023-47", "春节"),
+        ((2024, 2, 12), "SSE-NOTICE-2023-47", "春节"),
+        ((2024, 2, 13), "SSE-NOTICE-2023-47", "春节"),
+        ((2024, 2, 14), "SSE-NOTICE-2023-47", "春节"),
+        ((2024, 2, 15), "SSE-NOTICE-2023-47", "春节"),
+        ((2024, 2, 16), "SSE-NOTICE-2023-47", "春节"),
+        ((2024, 4, 4), "SSE-NOTICE-2023-47", "清明节"),
+        ((2024, 4, 5), "SSE-NOTICE-2023-47", "清明节"),
+        ((2024, 5, 1), "SSE-NOTICE-2023-47", "劳动节"),
+        ((2024, 5, 2), "SSE-NOTICE-2023-47", "劳动节"),
+        ((2024, 5, 3), "SSE-NOTICE-2023-47", "劳动节"),
+        ((2024, 6, 10), "SSE-NOTICE-2023-47", "端午节"),
+        ((2024, 9, 16), "SSE-NOTICE-2023-47", "中秋节"),
+        ((2024, 9, 17), "SSE-NOTICE-2023-47", "中秋节"),
+        ((2024, 10, 1), "SSE-NOTICE-2023-47", "国庆节"),
+        ((2024, 10, 2), "SSE-NOTICE-2023-47", "国庆节"),
+        ((2024, 10, 3), "SSE-NOTICE-2023-47", "国庆节"),
+        ((2024, 10, 4), "SSE-NOTICE-2023-47", "国庆节"),
+        ((2024, 10, 7), "SSE-NOTICE-2023-47", "国庆节"),
+    ] {
+        assert_closure(sse, date, document, &format!("SSE {label}"));
+    }
+}
+
+/// Asserts the 2025-2026 SSE closure rows against 上证公告〔2024〕38号 and
+/// 上证公告〔2025〕45号. The date list is spelled here independently of the
+/// module: a row that moves, loses its clip or changes its citation fails here.
+#[test]
+fn sse_printed_closures_2025_2026_ship_a_row_per_year() {
     let sse = calendar_for_exchange(Exchange::Sse);
     for (date, document, label) in [
         // 2025, from 上证公告〔2024〕38号.
@@ -771,7 +1070,8 @@ fn the_muhurat_dates_are_unsourced_neither_closed_nor_normal() {
 
 /// The counts per year, read back from the shipped tables by walking them:
 /// 16+15+13+16+17+17+16+13+16+20+19+16+16+14+17 TSE closures across 2010-2024
-/// plus 18 + 19 + 17 over 2025-2027, 18 + 19 SSE closures, and 13 + 1 plus
+/// plus 18 + 19 + 17 over 2025-2027, 16+18+23+16+15+17+16+17+16+18+18+18+18+20
+/// SSE closures across 2011-2024 plus 18 + 19 over 2025-2026, and 13 + 1 plus
 /// 15 + 1 NSE rows (the one per year being the withheld Muhurat date). A row
 /// added, moved across a year or dropped breaks the count; the per-row fence
 /// above pins where.
@@ -835,7 +1135,24 @@ fn the_window_counts_are_the_printed_lists_counts() {
     );
     assert_eq!(
         count_by_year(calendar_for_exchange(Exchange::Sse)),
-        [(2025, 18, 0), (2026, 19, 0)],
+        [
+            (2011, 16, 0),
+            (2012, 18, 0),
+            (2013, 23, 0),
+            (2014, 16, 0),
+            (2015, 15, 0),
+            (2016, 17, 0),
+            (2017, 16, 0),
+            (2018, 17, 0),
+            (2019, 16, 0),
+            (2020, 18, 0),
+            (2021, 18, 0),
+            (2022, 18, 0),
+            (2023, 18, 0),
+            (2024, 20, 0),
+            (2025, 18, 0),
+            (2026, 19, 0),
+        ],
         "SSE closures per year, from the operator's notices"
     );
     assert_eq!(
@@ -916,10 +1233,11 @@ fn coverage_runs_exactly_over_each_operators_published_window() {
         "a 2028 weekday is past the published schedule and must be refused"
     );
 
-    // SSE: 2025-01-01 .. 2026-12-31; the 2027 notice is not published.
+    // SSE: 2011-01-01 .. 2026-12-31; 2010 is the unrecovered-notice gap and
+    // the 2027 notice is not published.
     let sse = calendar_for_exchange(Exchange::Sse);
     let sse_coverage = sse.holiday_coverage().expect("SSE ships a table");
-    assert_eq!(sse_coverage.first(), day(2025, 1, 1));
+    assert_eq!(sse_coverage.first(), day(2011, 1, 1));
     assert_eq!(sse_coverage.last(), day(2026, 12, 31));
     assert!(
         matches!(
@@ -927,6 +1245,13 @@ fn coverage_runs_exactly_over_each_operators_published_window() {
             Err(CalendarQueryError::OutsideCoveredRange { .. })
         ),
         "2027 is unpublished by SSE and the identity must refuse it outright"
+    );
+    assert!(
+        matches!(
+            sse.is_open(zoned(Asia::Shanghai, (2010, 12, 31), (10, 0, 0))),
+            Err(CalendarQueryError::OutsideCoveredRange { .. })
+        ),
+        "the unrecovered 2010 arrangement sits outside every audited window and must refuse"
     );
 
     // NSE: 2025-01-01 .. 2026-12-31; the 2027 list is not published.

@@ -13,6 +13,21 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Added
 
+- **`sse` 2011-2024 holiday history backfilled (2026-09-29 UTC).** The
+  venue's built-in holiday table extends from the 2025-2026 audited window
+  back to 2011-01-01: 246 further `Closed` rows (16/18/23/16 for 2011-2014,
+  15/17/16/17/16 for 2015-2019, 18/18/18/18/20 for 2020-2024), every one a
+  weekday inside an event-date range of the operator's own annual
+  closure-arrangement notices — 关于2011年全年休市安排的通知 through 上证公告
+  〔2023〕47号. The 2011-2013 notices came live from SSE's media-center
+  reprints of its pre-2015 notices; the 2014-2024 notices from the
+  announcement channel's Wayback `id_` replays; each printed date's weekday
+  name was checked against the civil calendar while deriving. The 2019
+  notice's 元旦 range reaches back to 2018-12-31, which keys from 上证公告
+  〔2018〕39号. The 2010 annual notice (上证交字〔2009〕42号) is unrecovered and
+  2010-01-01..2010-12-31 stays outside every audited window as a recorded gap
+  with its closing condition. The audited window is now
+  2011-01-01..2026-12-31.
 - **`tse` 2010-2024 holiday history backfilled (2026-09-29 UTC).** The venue's
   built-in holiday table extends from the 2025-2027 audited window back to the
   2010-01-01 support floor: 241 further `Closed` rows, 16/15/13/16/17 for

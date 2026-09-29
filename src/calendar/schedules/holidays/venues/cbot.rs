@@ -76,12 +76,14 @@ use super::super::{
 /// below keeps both closed, while a holiday early close moves the two by a
 /// different amount — the grain day session ends at 12:05 CT or 12:00 CT while
 /// the rate leg halts at 15:15, 12:00, 10:15 or 13:30 CT by date — so those
-/// dates ship `Unsourced`. 292 rows over six audited eras: forty-seven
-/// stated and 245 `Unsourced` (61 in 2010-2012 — fourteen more noon-halt
+/// dates ship `Unsourced`. 308 rows over six audited eras: forty-seven
+/// stated and 261 `Unsourced` (61 in 2010-2012 — fourteen more noon-halt
 /// disagreements, the fourteen merged trade dates `globex_interest_rates`
 /// alone states, and the interest-rates half of the three Thanksgiving
 /// Friday comments updated — 46 in 2013-2015,
-/// 27 in 2016-2018, 34 in 2019-2021, 32 in 2022-2024 and 47 in 2025-2027).
+/// 27 in 2016-2018, 34 in 2019-2021, 32 in 2022-2024 and 61 in 2025-2027;
+/// counts re-derived on 2026-09-29, four of the 261 being the two families'
+/// own not-worked-up markers rather than disputes).
 // Evidence: docs/evidence/cbot.md
 pub(crate) static CBOT: &HolidayTable = holidays! {
     coverage: [(2010, 1, 1) ..= (2012, 12, 31), (2013, 1, 1) ..= (2015, 12, 31), (2016, 1, 1) ..= (2018, 12, 31), (2019, 1, 1) ..= (2021, 12, 31), (2022, 1, 1) ..= (2024, 12, 31), (2025, 1, 1) ..= (2027, 12, 31)],
@@ -510,10 +512,10 @@ pub(crate) static CBOT: &HolidayTable = holidays! {
         (2023, 1, 2, Closed, T1, "2023-new-years-holiday-schedule.xls @2022-07-04T06:55:01Z"),
         // 2023-01-16 - T2 - CME-SVC-2023-01-15 - unsourced: the routed families state the date is not worked up.
         (2023, 1, 16, Unsourced, T2, "CME-SVC-2023-01-15"),
-        // 2023-02-20 - T2 - CME-SVC-2023-02-19 - unsourced: the routed families state the date is not worked up.
-        (2023, 2, 20, Unsourced, T2, "CME-SVC-2023-02-19"),
-        // 2023-04-07 - T2 - CME-SVC-2023-04-06 - unsourced: the routed families state the date is not worked up.
-        (2023, 4, 7, Unsourced, T2, "CME-SVC-2023-04-06"),
+        // 2023-02-20 - T1 - files/presidents-day.pdf @2023-03-29T11:57:47Z - disagreement: grains closed; interest rates early close 12:00 CT.
+        (2023, 2, 20, Unsourced, T1, "files/presidents-day.pdf @2023-03-29T11:57:47Z"),
+        // 2023-04-07 - T1 - files/good-friday.pdf @2024-07-08T16:00:09Z - disagreement: grains closed; interest rates early close 10:15 CT.
+        (2023, 4, 7, Unsourced, T1, "files/good-friday.pdf @2024-07-08T16:00:09Z"),
         // 2023-05-29 - T1 - memorial-day-2023.pdf @2023-04-20T22:40:18Z - disagreement: grains closed; interest rates early close 12:00 CT.
         (2023, 5, 29, Unsourced, T1, "memorial-day-2023.pdf @2023-04-20T22:40:18Z"),
         // 2023-06-19 - T1 - juneteenth-2023.pdf @2023-06-13T18:59:49Z - disagreement: grains closed; interest rates early close 12:00 CT.

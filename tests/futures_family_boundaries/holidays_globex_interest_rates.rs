@@ -403,7 +403,7 @@ fn no_late_open_ships_and_the_post_closure_reopen_is_the_normal_open() {
     }
     assert_eq!(
         (closed, early, late, unsourced),
-        (47, 168, 6, 6),
+        (47, 170, 6, 4),
         "closed, early-close, late-open and unsourced rows over all six windows"
     );
 }
@@ -1725,8 +1725,20 @@ const ERA_ROWS: &[((i32, u32, u32), HolidayKind, EvidenceTier)] = &[
     ((2022, 12, 26), HolidayKind::Closed, EvidenceTier::T1),
     ((2023, 1, 2), HolidayKind::Closed, EvidenceTier::T1),
     ((2023, 1, 16), HolidayKind::Unsourced, EvidenceTier::T2),
-    ((2023, 2, 20), HolidayKind::Unsourced, EvidenceTier::T2),
-    ((2023, 4, 7), HolidayKind::Unsourced, EvidenceTier::T2),
+    (
+        (2023, 2, 20),
+        HolidayKind::EarlyClose {
+            close_ssm: ERA_NOON,
+        },
+        EvidenceTier::T1,
+    ),
+    (
+        (2023, 4, 7),
+        HolidayKind::EarlyClose {
+            close_ssm: 10 * 3_600 + 15 * 60,
+        },
+        EvidenceTier::T1,
+    ),
     (
         (2023, 5, 29),
         HolidayKind::EarlyClose {
@@ -1880,7 +1892,7 @@ fn era_reopen_after_closure(date: NaiveDate) -> DateTime<Utc> {
 fn era_2022_2024_sweeps_every_row_kind_tier_and_instant() {
     let calendar = rates();
     let mut index = 0_usize;
-    let (mut noons, mut quarter_past_noon) = (0_usize, 0);
+    let (mut noons, mut quarter_past_noon, mut ten_fifteens) = (0_usize, 0, 0);
     let (mut closures, mut unsourced) = (0_usize, 0);
     let mut date = day(2022, 1, 1);
     while date <= day(2024, 12, 31) {
@@ -1898,6 +1910,7 @@ fn era_2022_2024_sweeps_every_row_kind_tier_and_instant() {
                     match close_ssm {
                         ERA_NOON => noons += 1,
                         ERA_QUARTER_PAST_NOON => quarter_past_noon += 1,
+                        ERA_TEN_FIFTEEN => ten_fifteens += 1,
                         other => panic!("{date}: the era ships no {other} CT close"),
                     }
                     let cutoff = ct_on(
@@ -1972,8 +1985,8 @@ fn era_2022_2024_sweeps_every_row_kind_tier_and_instant() {
     }
     assert_eq!(index, ERA_ROWS.len(), "every planned row ships");
     assert_eq!(
-        (noons, quarter_past_noon, closures, unsourced),
-        (19, 4, 7, 3),
+        (noons, quarter_past_noon, ten_fifteens, closures, unsourced),
+        (20, 4, 1, 7, 1),
         "the era's shape"
     );
 }
@@ -2203,12 +2216,39 @@ fn assert_unsourced_changes_nothing(date: NaiveDate, row: Holiday, tier: Evidenc
 #[test]
 fn era_2022_2024_unsourced_rows_change_no_answer() {
     let calendar = rates();
-    for date in [(2023, 1, 16), (2023, 2, 20), (2023, 4, 7)] {
+    let date = day(2023, 1, 16);
+    let row = calendar
+        .holiday_on(date)
+        .unwrap_or_else(|| panic!("{date} ships a row"));
+    assert_unsourced_changes_nothing(date, row, EvidenceTier::T2);
+}
+
+/// The two 2023 holidays the unsuffixed operator summary sheets settled are
+/// sourced early closes at the sheet's own instants — 12:00 CT on Presidents
+/// Day and 10:15 CT on Good Friday — cited to the sheet the family's own
+/// evidence table resolves, at T1, the analogue of 2022-02-21 and 2021-04-02.
+#[test]
+fn era_2022_2023_sheet_sourced_early_closes() {
+    let calendar = rates();
+    for (date, close_ssm, document) in [
+        (
+            (2023, 2, 20),
+            12 * 3_600,
+            "files/presidents-day.pdf @2023-03-29T11:57:47Z",
+        ),
+        (
+            (2023, 4, 7),
+            10 * 3_600 + 15 * 60,
+            "files/good-friday.pdf @2024-07-08T16:00:09Z",
+        ),
+    ] {
         let date = day(date.0, date.1, date.2);
         let row = calendar
             .holiday_on(date)
             .unwrap_or_else(|| panic!("{date} ships a row"));
-        assert_unsourced_changes_nothing(date, row, EvidenceTier::T2);
+        assert_eq!(row.kind(), HolidayKind::EarlyClose { close_ssm }, "{date}");
+        assert_eq!(row.tier(), EvidenceTier::T1, "{date}");
+        assert_eq!(row.document_id(), document, "{date}");
     }
 }
 

@@ -11,8 +11,10 @@
 //! and 2022-2024, whose rows are
 //! the D17 intersection of the routed families' T1 rows from CME's own
 //! published Globex holiday schedules — all of 2019-2021 at T1, and 2022-2024
-//! except for the three 2023 markers and the 2024 dates the trading-hours
-//! service answers; and 2025-2027, whose rows are T2 (that service).
+//! except for the agreed 2023-01-16 marker, the two 2023 dates the
+//! unsuffixed holiday sheets state as disputes, and the 2024 dates the
+//! trading-hours service answers; and 2025-2027, whose rows are T2 (that
+//! service).
 //!
 //! On the 2016-2018 era's thirty-six dates this table states nine `Closed`
 //! rows — the dates every routed family shut, `globex_livestock` included —
@@ -63,9 +65,11 @@
 //! row the others audited normal — the `globex_grains` late opens of 2022-07-05,
 //! 2023-07-05, 2023-12-26, 2024-01-02, 2024-07-05 and 2024-12-26, and
 //! `globex_equity_index`'s 12:15 CT closes of 2023-07-03 and 2024-07-03; and
-//! three are 2023-01-16, 2023-02-20 and 2023-04-07, where every routed family
-//! states `Unsourced` — the wave did not work those dates up — so the venue
-//! ships the families' own marker rather than a dispute.
+//! one is 2023-01-16, where every routed family states `Unsourced` — the wave
+//! did not work that date up — so the venue ships the families' own marker rather
+//! than a dispute; the last two, 2023-02-20 and 2023-04-07, were that shape until
+//! the #224 census worked `globex_grains` and `globex_interest_rates` up from the
+//! operator's unsuffixed sheets, and are disputes now.
 //!
 //! The derivation, the instant disagreements and every dropped date are in the
 //! venue's own evidence file, and the per-family rows are in the family files.
@@ -83,13 +87,13 @@ use super::super::{
 
 /// The `Exchange::Cme` table: the intersection of the six CME families.
 ///
-/// Three hundred and three rows over six audited eras. Forty-seven state a
-/// status — the Globex full closures — and 256 are `Unsourced`: 63 in 2010-2012,
+/// Three hundred and sixteen rows over six audited eras. Forty-seven state a
+/// status — the Globex full closures — and 269 are `Unsourced`: 63 in 2010-2012,
 /// where the families disagree in kind rather than by minutes — fourteen more
 /// now that `globex_interest_rates` states its noon halts and the merged trade
 /// dates fourteen of them carry, the fourteen merged dates the other five
 /// families audit normal — 50 in 2013-2015,
-/// 27 in 2016-2018, 34 in 2019-2021, 34 in 2022-2024, and 48 in 2025-2027. The
+/// 27 in 2016-2018, 34 in 2019-2021, 34 in 2022-2024, and 61 in 2025-2027. The
 /// six eras are declared as six coverage windows, and outside them the table
 /// reports no answer rather than a normal one.
 // Evidence: docs/evidence/cme.md

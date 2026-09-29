@@ -461,6 +461,23 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Fixed
 
+- **The gate-walk documentation findings fixed (2026-09-29 UTC).** The 1.0.0
+  gate walk surfaced three documentation defects, all corrected from the
+  shipped tables. `docs/evidence/cme.md`'s aggregate prose stated 276/289 rows
+  and 229 withheld where the file's own per-date tables, the shipped venue
+  table, the inventory fence and the inventory cell derive **316 rows with 269
+  `Unsourced`** (per era 69/58/36/42/41/70 — 6/8/9/8/7/9 stated closures — the
+  2010-2012 and 2025-2027 eras gained rows in later waves without the
+  aggregates being re-derived); the same re-derivation moves the shipped
+  table's own doc comment from 303 rows / 256 `Unsourced` / 48 in 2025-2027 to
+  316 / 269 / 61, and restates the 2022-2024 marker prose the #224 census
+  superseded — 2023-02-20 and 2023-04-07 are disputes now, leaving four agreed
+  markers. The cme-family inventory rows cited #117, closed with the cancelled
+  Stage 5 removal programme, where the live coverage obligation is #116. And
+  the `asx` and `nasdaq` carried-horizon refusals — each scope's largest
+  class, below the 2025-06-23 SR15 bound and the 2013-03-18 alert day
+  respectively — name their new tracked closing condition #231 in the
+  inventory and both evidence files.
 - **The `ice_us` module-shape prose re-derived from the shipped tables
   (2026-09-29 UTC).** Four sentences still described
   `src/calendar/schedules/holidays/ice_us.rs` as it was before the shared softs

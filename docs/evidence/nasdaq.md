@@ -358,7 +358,8 @@ as each source is re-verified.
   publication date is not recorded here, so the horizon is keyed to the
   effective day it states, 2013-03-18. Closing condition: a Nasdaq rulebook
   edition or trader alert that states the 07:00 System Hours open on a
-  floor-era day.
+  floor-era day. Tracked as #231, the carried-horizon tracker this scope shares
+  with `asx` (LAW-FOLLOW-UPS-ARE-ISSUES).
 - **Watch item, not a gap.** The announced Night Session is monitored and
   unencoded. Nasdaq Equity Trader Alert 2026-46 announces **2026-12-06** as the
   date, but Nasdaq Equity 1 conditions commencement on Equity Data Plan

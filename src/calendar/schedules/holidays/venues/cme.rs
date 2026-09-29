@@ -532,9 +532,9 @@ pub(crate) static CME: &HolidayTable = holidays! {
         (2023, 1, 2, Closed, T1, "2023-new-years-holiday-schedule.xls @2022-07-04T06:55:01Z"),
         // 2023-01-16 - T2 - CME-SVC-2023-01-15 - unsourced: the routed families state the date is not worked up.
         (2023, 1, 16, Unsourced, T2, "CME-SVC-2023-01-15"),
-        // 2023-02-20 - T2 - CME-SVC-2023-02-19 - unsourced: the routed families state the date is not worked up.
+        // 2023-02-20 - T2 - CME-SVC-2023-02-19 - disagreement: equity index unsourced; energy and metals unsourced; FX unsourced; grains closed; interest rates early close 12:00 CT; livestock unsourced.
         (2023, 2, 20, Unsourced, T2, "CME-SVC-2023-02-19"),
-        // 2023-04-07 - T2 - CME-SVC-2023-04-06 - unsourced: the routed families state the date is not worked up.
+        // 2023-04-07 - T2 - CME-SVC-2023-04-06 - disagreement: equity index unsourced; energy and metals unsourced; FX unsourced; grains closed; interest rates early close 10:15 CT; livestock unsourced.
         (2023, 4, 7, Unsourced, T2, "CME-SVC-2023-04-06"),
         // 2023-05-29 - T1 - memorial-day-2023.pdf @2023-04-20T22:40:18Z - disagreement: equity index early close 12:00 CT; energy and metals early close 13:30 CT; FX no row; grains closed; interest rates early close 12:00 CT; livestock closed.
         (2023, 5, 29, Unsourced, T1, "memorial-day-2023.pdf @2023-04-20T22:40:18Z"),

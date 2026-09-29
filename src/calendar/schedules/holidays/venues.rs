@@ -92,17 +92,20 @@
 //! thirty-four as [`HolidayKind::Unsourced`]; `comex` and `nymex` carry
 //! `globex_energy`'s thirty-three rows unchanged, three of which are that
 //! family's own `Unsourced` markers. A withheld date is not automatically a
-//! dispute: on three of them — 2023-01-16, 2023-02-20 and 2023-04-07 — every
-//! routed family states the same `Unsourced` marker, so the venue repeats their
-//! agreement. That leaves **CME thirty-one disputes**: nineteen Monday and
-//! Thursday holidays, four half-days (2022-11-25, 2023-11-24, 2024-11-29 and
-//! 2024-12-24), and eight dates on which one family states a row the others
-//! audited normal. **CBOT's twenty-nine** are the same nineteen Monday and
-//! Thursday holidays, the same four half-days, and the same six
-//! `globex_grains` half-days the rate leg audited normal; it does not see the
-//! two equity-only dates, because it routes `globex_interest_rates` rather than
+//! dispute: on one of them — 2023-01-16 — every routed family states the same
+//! `Unsourced` marker, so the venue repeats their agreement. On 2023-02-20 and
+//! 2023-04-07 the operator's own unsuffixed holiday sheets state the two
+//! families different session shapes, so the venue withholds the
+//! disagreement. That leaves **CME thirty-three disputes**: nineteen Monday
+//! and Thursday holidays, four half-days (2022-11-25, 2023-11-24, 2024-11-29
+//! and 2024-12-24), eight dates on which one family states a row the others
+//! audited normal, and the two 2023 sheet-stated dates. **CBOT's thirty-one**
+//! are the same nineteen Monday and Thursday holidays, the same four
+//! half-days, the same six `globex_grains` half-days the rate leg audited
+//! normal, and the same two 2023 dates; it does not see the two equity-only
+//! dates, because it routes `globex_interest_rates` rather than
 //! `globex_equity_index`. Each table withholds its own dispute count plus the
-//! same three agreed markers.
+//! one agreed marker.
 //!
 //! # The routing
 //!

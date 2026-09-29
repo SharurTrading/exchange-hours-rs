@@ -1438,8 +1438,8 @@ const ERA_ROWS: &[((i32, u32, u32), HolidayKind, EvidenceTier)] = &[
     ((2022, 12, 26), HolidayKind::Closed, EvidenceTier::T1),
     ((2023, 1, 2), HolidayKind::Closed, EvidenceTier::T1),
     ((2023, 1, 16), HolidayKind::Unsourced, EvidenceTier::T2),
-    ((2023, 2, 20), HolidayKind::Unsourced, EvidenceTier::T2),
-    ((2023, 4, 7), HolidayKind::Unsourced, EvidenceTier::T2),
+    ((2023, 2, 20), HolidayKind::Closed, EvidenceTier::T1),
+    ((2023, 4, 7), HolidayKind::Closed, EvidenceTier::T1),
     ((2023, 5, 29), HolidayKind::Closed, EvidenceTier::T1),
     ((2023, 6, 19), HolidayKind::Closed, EvidenceTier::T1),
     ((2023, 7, 4), HolidayKind::Closed, EvidenceTier::T1),
@@ -1697,7 +1697,7 @@ fn era_2022_2024_sweeps_every_row_kind_tier_and_instant() {
     assert_eq!(index, ERA_ROWS.len(), "every planned row ships");
     assert_eq!(
         (late_opens, combined, early_closes, closures, unsourced),
-        (6, 3, 1, 26, 3),
+        (6, 3, 1, 28, 1),
         "the era's shape"
     );
 }
@@ -1906,7 +1906,7 @@ fn era_2022_2024_closures_remove_the_trading_day_and_the_prior_evening_wrap() {
             );
         }
     }
-    assert_eq!(closures, 26, "the era's closures");
+    assert_eq!(closures, 28, "the era's closures");
 }
 
 /// Every query about an `Unsourced` date is refused, and refused identically by
@@ -1974,12 +1974,34 @@ fn assert_unsourced_changes_nothing(date: NaiveDate, row: Holiday, tier: Evidenc
 #[test]
 fn era_2022_2024_unsourced_rows_change_no_answer() {
     let calendar = calendar_for_market_hours_key(ZC);
-    for date in [(2023, 1, 16), (2023, 2, 20), (2023, 4, 7)] {
+    let date = day((2023, 1, 16));
+    let row = calendar
+        .holiday_on(date)
+        .unwrap_or_else(|| panic!("{date} ships a row"));
+    assert_unsourced_changes_nothing(date, row, EvidenceTier::T2);
+}
+
+/// The two 2023 holidays the unsuffixed operator summary sheets settled are
+/// sourced closures: the trade date is removed outright, cited to the sheet
+/// the family's own evidence table resolves, at T1 — the analogue of every
+/// other closure the era ships.
+#[test]
+fn era_2022_2023_sheet_sourced_closures() {
+    let calendar = calendar_for_market_hours_key(ZC);
+    for (date, document) in [
+        (
+            (2023, 2, 20),
+            "files/presidents-day.pdf @2023-03-29T11:57:47Z",
+        ),
+        ((2023, 4, 7), "files/good-friday.pdf @2024-07-08T16:00:09Z"),
+    ] {
         let date = day(date);
         let row = calendar
             .holiday_on(date)
             .unwrap_or_else(|| panic!("{date} ships a row"));
-        assert_unsourced_changes_nothing(date, row, EvidenceTier::T2);
+        assert_eq!(row.kind(), HolidayKind::Closed, "{date}");
+        assert_eq!(row.tier(), EvidenceTier::T1, "{date}");
+        assert_eq!(row.document_id(), document, "{date}");
     }
 }
 

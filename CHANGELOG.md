@@ -461,6 +461,32 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Fixed
 
+- **The `cbot` withheld-date census corrected and two 2023 holidays worked up
+  (2026-09-29 UTC).** The venue's 261 withheld `Unsourced` dates are now stated
+  exactly: 257 are disputes the routed families' own sourced answers produce
+  and 4 are the two families' not-worked-up markers (2019/2020/2021-06-19 and
+  2023-01-16), a split the new
+  `the_cbot_withheld_dates_are_four_markers_plus_only_disputes` fence pins
+  together with the per-era counts (61/46/27/34/32/61 withheld, 6/8/9/8/7/9
+  closures over 308 rows) and the `UnresolvedGap` refusals the four markers
+  earn beside covered edges. The module doc's and the evidence file's stale
+  prose counts (292 rows / 245 withheld; the 250/203 audit figures; the
+  per-window breakdowns) were re-derived from the shipped tables. The first
+  census pass had left 2023-02-20 and 2023-04-07 as markers behind a
+  closed-negative search claim; the operator's own unsuffixed summary sheets —
+  `cmegroup.com/files/presidents-day.pdf` (capture 20230329115747) and
+  `cmegroup.com/files/good-friday.pdf` (capture 20240708160009), linked from
+  the 2023 trading-hours page — now source `globex_interest_rates` early
+  closes of 12:00 CT and 10:15 CT and `globex_grains` closures on those two
+  dates, the same dispute shapes as the sourced 2022-02-21, 2024-02-19,
+  2025-02-17 and 2021-04-02. The bounded re-search that keeps the four markers
+  withheld — the operator's 2023 clearing advisories state no session hours,
+  the 2023 calendar pages moved the hours into the trading-hours service, and
+  no captured service window reaches them — is recorded beside the rows'
+  owners in the two family evidence files with the artifacts in
+  `holidays/raw/cbot-2023-advisories/` and
+  `holidays/raw/review-224-closure-negatives/`. The venue's honest 261 stands;
+  the four markers are tracked as #223.
 - **The five `lse` and `euronext_paris` Documents capture cells state their
   Wayback capture in the pairing fence's format** (`Wayback id_ replay of
   capture <stamp>`, retrieval preserved): #203's evidence files predate

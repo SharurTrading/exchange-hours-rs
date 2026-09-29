@@ -111,6 +111,9 @@ are in the research store's `holidays/raw/` indexes.
 | `labor-day-2023.pdf @2023-08-02T19:24:46Z` | 2022-01-01 .. 2024-12-31 | <https://web.archive.org/web/20230802192446id_/https://www.cmegroup.com/trading-hours/files/labor-day-2023.pdf> | archive capture 2023-08-02T19:24:46Z | T1 | `39a4c075437fdc7134166328eca730e3cabf3bea00ab369466dff63c99f8e948` |
 | `memorial-day-2023.pdf @2023-04-20T22:40:18Z` | 2022-01-01 .. 2024-12-31 | <https://web.archive.org/web/20230420224018id_/https://www.cmegroup.com/trading-hours/files/memorial-day-2023.pdf> | archive capture 2023-04-20T22:40:18Z | T1 | `7657bc8089ca669cfd244c2e3e697b47a7e650f5d957efe5b32da001622acb35` |
 | `thanksgiving-day-2023.pdf @2023-12-03T20:59:29Z` | 2022-01-01 .. 2024-12-31 | <https://web.archive.org/web/20231203205929id_/https://www.cmegroup.com/trading-hours/files/thanksgiving-day-2023.pdf> | archive capture 2023-12-03T20:59:29Z | T1 | `99e187b3f3899e1062d662e148d5978e0cd075b961e6fc79550d4393812307e8` |
+| `files/presidents-day.pdf @2023-03-29T11:57:47Z` | 2022-01-01 .. 2024-12-31 | <https://web.archive.org/web/20230329115747id_/https://www.cmegroup.com/files/presidents-day.pdf> | Wayback `id_` replay of capture `20230329115747`, retrieved 2026-09-29 UTC | T1 | `63c9f17b5dd285a522cccb6d75ac014f299d6a25defab6fd182e6ec7300d4a80` |
+| `files/good-friday.pdf @2024-07-08T16:00:09Z` | 2022-01-01 .. 2024-12-31 | <https://web.archive.org/web/20240708160009id_/https://www.cmegroup.com/files/good-friday.pdf> | Wayback `id_` replay of capture `20240708160009`, retrieved 2026-09-29 UTC | T1 | `7c598e4e4853335eec65283677349985aaac9fff8d95cb248510bc6fac981189` |
+| `trading-hours.html @2023-04-07T03:15:32Z` | 2022-01-01 .. 2024-12-31 | <https://web.archive.org/web/20230407031532id_/https://www.cmegroup.com/trading-hours.html> | Wayback `id_` replay of capture `20230407031532`, retrieved 2026-09-29 UTC | T1 | `2d314e400c8995e9159fbffe8457fc5931bc2625ff88bac8169eff28e868a90e` |
 | `CME-SVC-2023-01-15` | 2022-01-01 .. 2024-12-31 | <https://web.archive.org/web/20240708161438id_/https://www.cmegroup.com/services/trading-hours-by-product?id=316,133,425,300,58,437,22,8478,5201,10191&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2023-01-15&toEventDate=2023-01-17&isProtected&_t=1720455278636> | archive capture 2024-07-08T16:14:38Z | T2 | `507fd196a7654ddd916218b2aa24a146eeaca4e1f7cb7daded4e7a9c689cda82` |
 | `CME-SVC-2023-02-19` | 2022-01-01 .. 2024-12-31 | <https://web.archive.org/web/20240708161438id_/https://www.cmegroup.com/services/trading-hours-by-product?id=316,133,425,300,58,437,22,8478,5201,10191&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2023-02-19&toEventDate=2023-02-21&isProtected&_t=1720455278640> | archive capture 2024-07-08T16:14:38Z | T2 | `d063238a83e8cb84d4484a86b26cb1d976f1ccfdb91972eecc08dcc0cec49412` |
 | `CME-SVC-2023-04-06` | 2022-01-01 .. 2024-12-31 | <https://web.archive.org/web/20240708161438id_/https://www.cmegroup.com/services/trading-hours-by-product?id=316,133,425,300,58,437,22,8478,5201,10191&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=2023-04-06&toEventDate=2023-04-08&isProtected&_t=1720455278642> | archive capture 2024-07-08T16:14:38Z | T2 | `0543d5f6d2efd4aa6f4132ce9f5425b9ba9f64de08eccd677b78d6b43c6e9d4f` |
@@ -307,7 +310,7 @@ Every interval from 2010-01-01 is declared, so the whole span has an answer; the
 
 
 ### 2013-2015 (T1)
-**This era brings the venue to six audited windows.** The table as a whole carries 250 rows over 6 windows — 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 — and this era's share is **54 rows**: 8 stated rows and 46 `Unsourced` rows. Every row is the intersection of the families routed here — `globex_grains`, `globex_interest_rates` — by the D17 rule `venues.rs` states: a row ships only where every routed family states the same one, and a date on which they differ, or on which one states a row while another has audited the date normal, ships `Unsourced`; the three year tables below carry every date's row, its instant as printed and the id it is derived from.
+**This era brings the venue to six audited windows.** The table as a whole carries 308 rows over 6 windows — 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 — and this era's share is **54 rows**: 8 stated rows and 46 `Unsourced` rows. Every row is the intersection of the families routed here — `globex_grains`, `globex_interest_rates` — by the D17 rule `venues.rs` states: a row ships only where every routed family states the same one, and a date on which they differ, or on which one states a row while another has audited the date normal, ships `Unsourced`; the three year tables below carry every date's row, its instant as printed and the id it is derived from.
 
 **Columbus Day 2013 and Veterans Day 2014 and 2015 carry no row.** CME's own sheets for those three dates state in session language that Globex ran a normal schedule — `Products listed on Globex are unaffected and will run on a normal schedule` for 2013-10-14 (`2013-columbus-day.pdf @2012-11-19T00:15:54Z`) and `Regular CME Globex trading hours will be in effect` for 2014-11-11 and 2015-11-11 (`2014-veterans-day-holiday-schedule.pdf @2014-11-13T19:34:50Z` and `2015-veterans-day-schedule.pdf @2015-11-22T23:09:20Z`) — so the block records each as `normal` and this table ships nothing: inside a declared window silence is the positive claim that the date was audited normal, and these dates are audited rather than skipped. The three sheets have no row of their own to cite, so they are listed in this era's `### Documents` table without being any row's document.
 
@@ -416,7 +419,7 @@ Every interval from 2010-01-01 is declared, so the whole span has an answer; the
 | 2015-12-25 | closed | `every routed family states a closure` | `2015-christmas-holiday-schedule.pdf @2015-11-23T06:15:20Z` | T1 | the intersection of the families routed to this venue |
 
 ### 2019-2021 (T1)
-**This era brought the venue to five audited windows; the 2013-2015 wave has since added a sixth.** The table as a whole carries 250 rows over 6 windows — 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 — and this era's share is **42 rows**: 8 stated closures and 34 `Unsourced` rows. Every row is the intersection of the families routed here — `globex_grains` and `globex_interest_rates` — by the D17 rule `venues.rs` states: a closure ships only where every routed family states the same one, and a date on which they differ, or on which one states a row while another has audited the date normal, ships `Unsourced`, with the disagreement named per date below. `comex` and `nymex` route `globex_energy` alone, so their rows are that family's own, unchanged. The three Juneteenth dates ship `Unsourced` because every routed family states the crate's not-worked-up marker there.
+**This era brought the venue to five audited windows; the 2013-2015 wave has since added a sixth.** The table as a whole carries 308 rows over 6 windows — 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 — and this era's share is **42 rows**: 8 stated closures and 34 `Unsourced` rows. Every row is the intersection of the families routed here — `globex_grains` and `globex_interest_rates` — by the D17 rule `venues.rs` states: a closure ships only where every routed family states the same one, and a date on which they differ, or on which one states a row while another has audited the date normal, ships `Unsourced`, with the disagreement named per date below. `comex` and `nymex` route `globex_energy` alone, so their rows are that family's own, unchanged. The three Juneteenth dates ship `Unsourced` because every routed family states the crate's not-worked-up marker there; the 2026-09-29 bounded re-search that keeps them there is recorded in the two family evidence files and tracked as #223.
 
 ### Documents
 | Document | Window | Replay or service URL | Capture or retrieval, UTC | Tier | sha256 |
@@ -505,12 +508,14 @@ Every interval from 2010-01-01 is declared, so the whole span has an answer; the
 | 2021-12-24 | closed | `every routed family states a closure` | `2021-holiday-calendars.zip#2021-christmas-holiday-schedule-compact.xls @2026-08-30T10:03:27Z` | T1 | the intersection of the families routed to this venue |
 ### 2022-2024 (T1/T2)
 
-**Counts in this subsection are the 2022-2024 era's.** The table as a whole carries 250 rows over
-its six audited windows: 39 in 2010-2012 (6 stated closures and 33 `Unsourced`), 54 in 2013-2015
+**Counts in this subsection are the 2022-2024 era's.** The table as a whole carries 308 rows over
+its six audited windows: 67 in 2010-2012 (6 stated closures and 61 `Unsourced`), 54 in 2013-2015
 (8 stated closures and 46 `Unsourced`), 36 in 2016-2018 (9 stated closures and 27 `Unsourced`), 42
 in 2019-2021 (8 stated closures and 34 `Unsourced`), 39 in this era (7 stated closures and 32
-`Unsourced`) and 40 in 2025-2027 (9 stated closures and 31 `Unsourced`). The derivation rule is the
-same in all six; only the documents differ.
+`Unsourced`) and 70 in 2025-2027 (9 stated closures and 61 `Unsourced`). The derivation rule is the
+same in all six; only the documents differ. Counts re-derived on 2026-09-29 (UTC); four of the 261
+withheld dates are the two routed families' own not-worked-up markers, the other 257 are disputes
+the families' own sourced answers produce.
 
 **This era's rows are derived, not retrieved.** They are the **intersection** of
 the two families that route to `Exchange::Cbot`, and every id they cite is one of
@@ -520,23 +525,29 @@ event-date-to-trade-date conversions, are in those two files.
 **Seven closures, thirty-two withheld dates.** Seven dates are shut in both routed
 families and ship `closed`: 2022-04-15 and 2022-12-26, 2023-01-02 and 2023-12-25,
 and 2024-01-01, 2024-03-29 and 2024-12-25. The other thirty-two carry
-`unsourced`, in four shapes:
+`unsourced`, in five shapes:
 
-- **Nineteen Monday and Thursday holidays**: 2022-01-17, 2022-02-21, 2022-05-30,
-  2022-06-20, 2022-07-04, 2022-09-05, 2022-11-24; 2023-05-29, 2023-06-19,
-  2023-07-04, 2023-09-04, 2023-11-23; and 2024-01-15, 2024-02-19, 2024-05-27,
-  2024-06-19, 2024-07-04, 2024-09-02, 2024-11-28. `globex_grains` is closed
-  outright while the rate leg halts at 12:00 CT.
+- **Twenty Monday and Thursday holidays**: 2022-01-17, 2022-02-21, 2022-05-30,
+  2022-06-20, 2022-07-04, 2022-09-05, 2022-11-24; 2023-02-20, 2023-05-29,
+  2023-06-19, 2023-07-04, 2023-09-04, 2023-11-23; and 2024-01-15, 2024-02-19,
+  2024-05-27, 2024-06-19, 2024-07-04, 2024-09-02, 2024-11-28. `globex_grains` is
+  closed outright while the rate leg halts at 12:00 CT — on 2023-02-20 from the
+  operator's own summary sheet (`files/presidents-day.pdf @2023-03-29T11:57:47Z`),
+  which the 2026-09-29 fix worked up from the trading-hours page's own link.
+- **One Good Friday**: 2023-04-07. The grain complex is closed outright while the
+  rate leg closes at 10:15 CT, from the operator's own summary sheet
+  (`files/good-friday.pdf @2024-07-08T16:00:09Z`) — the same sourced disagreement
+  as 2021-04-02.
 - **Four half-days**: 2022-11-25, 2023-11-24, 2024-11-29 and 2024-12-24. The grain
   day session ends at 12:05 CT (after an 08:30 CT late open on the three Fridays)
   where the rate leg halts at 12:15 CT.
 - **Six grain half-days**: 2022-07-05, 2023-07-05, 2023-12-26, 2024-01-02,
   2024-07-05 and 2024-12-26, on which `globex_grains` states a late open at
   08:30 CT and the rate leg audited the date normal.
-- **Three dates both families mark `Unsourced`**: 2023-01-16, 2023-02-20 and
-  2023-04-07. The wave retrieved no document for those three 2023 sheets, so both
-  families state the crate's not-worked-up marker and the venue repeats the answer
-  they agree on. It is neither a dispute nor silence.
+- **One date both families mark `Unsourced`**: 2023-01-16. The wave retrieved no
+  document for that 2023 sheet, so both families state the crate's not-worked-up
+  marker and the venue repeats the answer they agree on. It is neither a dispute
+  nor silence.
 
 ### 2022
 | trade date | kind | instant as printed | document | tier | derived from |
@@ -558,8 +569,8 @@ and 2024-01-01, 2024-03-29 and 2024-12-25. The other thirty-two carry
 |---|---|---|---|---|---|
 | 2023-01-02 | closed | `every routed family states a closure` | `2023-new-years-holiday-schedule.xls @2022-07-04T06:55:01Z` | T1 | the intersection of the families routed to this venue |
 | 2023-01-16 | unsourced | `—` | `CME-SVC-2023-01-15` | T2 | grains states `Unsourced`: the wave retrieved no document for this date |
-| 2023-02-20 | unsourced | `—` | `CME-SVC-2023-02-19` | T2 | grains states `Unsourced`: the wave retrieved no document for this date |
-| 2023-04-07 | unsourced | `—` | `CME-SVC-2023-04-06` | T2 | grains states `Unsourced`: the wave retrieved no document for this date |
+| 2023-02-20 | unsourced | `—` | `files/presidents-day.pdf @2023-03-29T11:57:47Z` | T1 | grains closed; interest rates early close 12:00 CT |
+| 2023-04-07 | unsourced | `—` | `files/good-friday.pdf @2024-07-08T16:00:09Z` | T1 | grains closed; interest rates early close 10:15 CT |
 | 2023-05-29 | unsourced | `—` | `memorial-day-2023.pdf @2023-04-20T22:40:18Z` | T1 | grains closed; interest rates early close 12:00 CT |
 | 2023-06-19 | unsourced | `—` | `juneteenth-2023.pdf @2023-06-13T18:59:49Z` | T1 | grains closed; interest rates early close 12:00 CT |
 | 2023-07-04 | unsourced | `—` | `4th-of-july-2023.pdf @2023-06-27T12:50:57Z` | T1 | grains closed; interest rates early close 12:00 CT |
@@ -591,12 +602,14 @@ and 2024-01-01, 2024-03-29 and 2024-12-25. The other thirty-two carry
 
 ### 2025-2027 (T2)
 
-**Counts in this subsection are the 2025-2027 era's.** The table as a whole carries 264 rows over
-its six audited windows: 39 in 2010-2012 (6 stated closures and 33 `Unsourced`), 54 in 2013-2015
+**Counts in this subsection are the 2025-2027 era's.** The table as a whole carries 308 rows over
+its six audited windows: 67 in 2010-2012 (6 stated closures and 61 `Unsourced`), 54 in 2013-2015
 (8 stated closures and 46 `Unsourced`), 36 in 2016-2018 (9 stated closures and 27 `Unsourced`), 42
 in 2019-2021 (8 stated closures and 34 `Unsourced`), 39 in 2022-2024 (7 stated closures and 32
-`Unsourced`) and 54 in this era (9 stated closures and 45 `Unsourced`). The derivation rule is the
-same in all six; only the documents differ.
+`Unsourced`) and 70 in this era (9 stated closures and 61 `Unsourced`). The derivation rule is the
+same in all six; only the documents differ. Counts re-derived on 2026-09-29 (UTC); four of the 261
+withheld dates are the two routed families' own not-worked-up markers, the other 257 are disputes
+the families' own sourced answers produce.
 
 **This table is derived, not retrieved.** It is the **intersection** of the two
 families that route to `Exchange::Cbot` — `globex_grains` and
@@ -733,10 +746,10 @@ on.
 
 **Gaps, 2025-2027.**
 
-- **The thirty-one `unsourced` dates are the intersection's residue, not a research
+- **The sixty-one `unsourced` dates are the intersection's residue, not a research
   gap.** Each is a date on which the two families disagree — by stating different
-  rows, or by one of them stating a row while the other states none, which is the
-  `late open` shape of 2025-01-02, 2025-12-26, 2026-01-02 and 2027-07-06. A family
+  rows, or by one of them stating a replacement-blocks day while the other states
+  none, which is the shape of 2025-01-02, 2025-12-26, 2026-01-02 and 2027-07-06. A family
   with no row has **audited the date normal**, which is a different answer rather
   than a missing one. The disagreement is printed per date in the `Derived from`
   column above. Every
@@ -745,10 +758,11 @@ on.
   operator statement of CBOT-wide holiday hours — CME's holiday-hours table on
   `cmegroup.com/trading-hours.html` is per asset class — or a `DayPolicy`-shaped
   boundary that can express a per-family answer inside one venue calendar.
-- **The four single-family `late open` dates.** 2025-01-02, 2025-12-26, 2026-01-02 and
-  2027-07-06 carry a `globex_grains` late open at 08:30 CT and nothing on the rates
+- **The four single-family replacement-blocks dates.** 2025-01-02, 2025-12-26, 2026-01-02 and
+  2027-07-06 carry a `globex_grains` replacement-blocks day whose matching opens at
+  08:30 CT and nothing on the rates
   side. The interest-rate family runs a continuous overnight leg through those dates,
-  so for it no boundary moves. The venue therefore cannot state the grain late open as
+  so for it no boundary moves. The venue therefore cannot state the grain day as
   its own. It is also inert for the `cbot` venue calendar, whose grains-backed profile
   already opens its day session at 08:30 CT; it is recorded because a venue row must be
   true of every routed family.
@@ -781,9 +795,9 @@ on.
 
 ### The cross-wave D17 audit (#95)
 
-**The intersection is re-derived over every audited era, not only this wave's.** `tools/check_wave5.py` recomputes the D17 rule over 2010-01-01..2027-12-31 — every date on which at least one routed family declares a window — and compares the result with the tables above date by date: **250 rows over the six windows**, 47 the two routed families state `Closed` and 203 withheld as `Unsourced`. This is the agreement audit memo §7 follow-up 10 asks for (#95).
+**The intersection is re-derived over every audited era, not only this wave's.** `tools/check_wave5.py` recomputes the D17 rule over 2010-01-01..2027-12-31 — every date on which at least one routed family declares a window — and compares the result with the tables above date by date: **308 rows over the six windows**, 47 the two routed families state `Closed` and 261 withheld as `Unsourced`. This is the agreement audit memo §7 follow-up 10 asks for (#95).
 
-**Audited-normal silence is a state the audit reads.** Both routed families cover all six windows, so nothing abstains here; inside a window a family that states no row has audited the date normal, and a date one family states while the other audited normal is a disagreement and ships `Unsourced`. Of the 203 rows withheld, **197 are disagreements of that kind and 6 are dates both families themselves mark not worked up** (the three Juneteenth dates and the three 2023 dates), which are the families' own marker rather than a dispute. The grain day session ends at 12:05 CT or 12:00 CT on a holiday and the rate leg at 12:00 CT (93 dates), 12:15 CT (29), 15:15 CT (28), 10:15 CT (5) or 13:30 CT (1) — the counts taken over the withheld dates — so on a shortened day the two never state the same instant: over 2010-2027 there is no date on which both families state the same shortened-day row, and every date they do agree on is a full closure (`Closed`).
+**Audited-normal silence is a state the audit reads.** Both routed families cover all six windows, so nothing abstains here; inside a window a family that states no row has audited the date normal, and a date one family states while the other audited normal is a disagreement and ships `Unsourced`. Of the 261 rows withheld, **257 are disagreements of that kind and 4 are dates both families themselves mark not worked up** (the three Juneteenth dates and 2023-01-16), which are the families' own marker rather than a dispute; the 2026-09-29 bounded re-search that keeps those four withheld is recorded beside their rows in the two family evidence files and tracked as #223. The rate leg states an early close at 12:00 CT on 112 of the withheld dates, 12:15 CT on 23, 15:15 CT on 28, 10:15 CT on 6 and 13:30 CT on 1; on 38 it states a replacement-blocks day, on 6 a 05:00 CT late open, on 4 the not-worked-up marker, and on the other 43 it audited the date normal while `globex_grains` states a row — the counts taken over the 261 withheld dates — so on a shortened day the two never state the same instant: over 2010-2027 there is no date on which both families state the same shortened-day row, and every date they do agree on is a full closure (`Closed`).
 
 ## Sources
 

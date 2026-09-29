@@ -1159,11 +1159,11 @@ fn wave3_unsourced_shapes_are_the_families_own_answers() {
         "the venue cites the family row behind the date"
     );
 
-    // Shape three: the three 2023 dates this wave did not work up. Every
-    // covering family states `Unsourced`, so the venue ships the marker the
-    // families agree on — and the single-family energy venues carry it too,
+    // Shape three: 2023-01-16, the one 2023 date this wave did not work up.
+    // Every covering family states `Unsourced`, so the venue ships the marker
+    // the families agree on — and the single-family energy venues carry it too,
     // because their one family states it, not because anyone disputes it.
-    for date in [day(2023, 1, 16), day(2023, 2, 20), day(2023, 4, 7)] {
+    for date in [day(2023, 1, 16)] {
         for key in [
             MarketHoursKey::GlobexEquityIndex,
             MarketHoursKey::GlobexEnergy,
@@ -1190,16 +1190,90 @@ fn wave3_unsourced_shapes_are_the_families_own_answers() {
                 .unwrap_or_else(|missing| panic!("{missing} (holiday_on date lookup)"));
         }
     }
+
+    // Shape four: 2023-02-20 and 2023-04-07, worked up from the operator's own
+    // unsuffixed summary sheets. The two families the CBOT venue routes state
+    // their own sourced rows there — grains closed, rates an early close —
+    // while the four families this wave never worked up still state the
+    // marker, so the six-family intersection disputes and the two-family one
+    // does too; both venues cite a routed family's id, and the single-family
+    // energy venues carry the marker their one family states.
+    for (date, rates_close_ssm, sheet) in [
+        (
+            day(2023, 2, 20),
+            12 * 3_600,
+            "files/presidents-day.pdf @2023-03-29T11:57:47Z",
+        ),
+        (
+            day(2023, 4, 7),
+            10 * 3_600 + 15 * 60,
+            "files/good-friday.pdf @2024-07-08T16:00:09Z",
+        ),
+    ] {
+        assert_eq!(
+            grains.holiday_on(date).map(Holiday::kind),
+            Some(HolidayKind::Closed),
+            "grains is closed on {date}"
+        );
+        assert_eq!(
+            calendar_for_market_hours_key(MarketHoursKey::GlobexInterestRates)
+                .holiday_on(date)
+                .map(Holiday::kind),
+            Some(HolidayKind::EarlyClose {
+                close_ssm: rates_close_ssm
+            }),
+            "the rate leg halts on {date}"
+        );
+        for key in [
+            MarketHoursKey::GlobexEquityIndex,
+            MarketHoursKey::GlobexEnergy,
+            MarketHoursKey::GlobexFx,
+            MarketHoursKey::GlobexLivestock,
+        ] {
+            assert_eq!(
+                calendar_for_market_hours_key(key)
+                    .holiday_on(date)
+                    .map(Holiday::kind),
+                Some(HolidayKind::Unsourced),
+                "{key:?} still states `Unsourced` on {date}"
+            );
+        }
+        // The CBOT intersection routes grains first, so it cites the sheet;
+        // the six-family CME intersection routes equity index first, which
+        // still states the marker, so it cites the service capture. Both are
+        // disputes either way.
+        {
+            let venue = calendar_for_exchange(Exchange::Cbot);
+            let row = venue
+                .holiday_on(date)
+                .unwrap_or_else(|| panic!("Cbot: {date} ships a row"));
+            assert_eq!(
+                row.kind(),
+                HolidayKind::Unsourced,
+                "Cbot: the routed families' disagreement withholds {date}"
+            );
+            assert_eq!(row.document_id(), sheet, "Cbot: {date} cites the sheet");
+            assert_eq!(row.tier(), EvidenceTier::T1, "Cbot: {date}");
+        }
+        agreed_marker_cites_a_routed_family(Exchange::Cme, date)
+            .unwrap_or_else(|missing| panic!("{missing} (holiday_on date lookup)"));
+        for exchange in [Exchange::Comex, Exchange::Nymex] {
+            agreed_marker_cites_a_routed_family(exchange, date)
+                .unwrap_or_else(|missing| panic!("{missing} (holiday_on date lookup)"));
+        }
+    }
 }
 
-/// A venue row shipping the families' agreed `Unsourced` marker must cite an
-/// artifact one of **its own** routed families states for that date.
+/// A venue row shipping an `Unsourced` kind — the families' agreed marker or a
+/// multi-family dispute — must cite an artifact one of **its own** routed
+/// families states for that date.
 ///
 /// Equity index specifically is not the bar: CBOT routes grains and interest
 /// rates, COMEX and NYMEX route energy alone, and a venue row citing any routed
-/// family is as well grounded as one citing equity index. The routed families'
-/// ids agree on these three markers today, which this also pins — if they ever
-/// stop agreeing, the row must follow a routed family and the assertion says so.
+/// family is as well grounded as one citing equity index. On the agreed
+/// markers the routed families' ids all agree, which this also pins — if they
+/// ever stop agreeing, the row must follow a routed family and the assertion
+/// says so.
 ///
 /// The missing row is returned rather than panicked on, so the caller — a test
 /// body — owns the failure message this repository's lint configuration expects
@@ -1917,6 +1991,138 @@ fn wave4_unsourced_shapes_are_the_families_own_answers() {
         ] {
             agreed_marker_cites_a_routed_family(exchange, date)
                 .unwrap_or_else(|missing| panic!("{missing} (holiday_on date lookup)"));
+        }
+    }
+}
+
+/// The `cbot` withheld-date census: 261 `Unsourced` rows that are exactly four
+/// not-worked-up markers plus 257 genuine disputes, and the refusals the
+/// markers earn at the identity surface.
+///
+/// This is the fence behind the inventory's `date_level_incompleteness` entry
+/// and the evidence file's cross-wave audit counts (re-derived on 2026-09-29
+/// UTC; tracked as #223 for the four markers). It pins four facts a row flip, a
+/// re-derivation or a new wave would move:
+///
+/// 1. **the totals** — 308 rows over the six audited windows, 47 `Closed` and
+///    261 `Unsourced`, with the per-era withheld series 61 / 46 / 27 / 34 / 32
+///    / 61 and the closures 6 / 8 / 9 / 8 / 7 / 9;
+/// 2. **the split** — exactly the four marker dates (the three Juneteenth dates
+///    and 2023-01-16) are dates both routed families state `Unsourced` on;
+///    every other withheld date is a dispute the two families' own answers
+///    produce, and on no withheld date do the two state the same row (the
+///    audit's "no date on which both families state the same shortened-day
+///    row"). The 2026-09-29 fix worked 2023-02-20 and 2023-04-07 up from the
+///    operator's own unsuffixed summary sheets, so the two date the families'
+///    own sourced answers and are disputes, not markers;
+/// 3. **the markers refuse** — each of the four dates answers
+///    `UnresolvedGap` through the identity's coverage metadata, the #115
+///    contract for a withheld date inside an audited window;
+/// 4. **the edges answer** — the trade days either side of each marker are
+///    audited normal and `Covered`, so the refusal is exactly the marker's span
+///    and never a window hole.
+#[test]
+fn the_cbot_withheld_dates_are_four_markers_plus_only_disputes() {
+    let venue = calendar_for_exchange(Exchange::Cbot);
+    let grains = calendar_for_market_hours_key(MarketHoursKey::GlobexGrains);
+    let rates = calendar_for_market_hours_key(MarketHoursKey::GlobexInterestRates);
+    let markers = [
+        day(2019, 6, 19),
+        day(2020, 6, 19),
+        day(2021, 6, 19),
+        day(2023, 1, 16),
+    ];
+    let era_of = |date: NaiveDate| match date.year() {
+        2010..=2012 => 0,
+        2013..=2015 => 1,
+        2016..=2018 => 2,
+        2019..=2021 => 3,
+        2022..=2024 => 4,
+        _ => 5,
+    };
+    let mut withheld_per_era = [0_usize; 6];
+    let mut closed_per_era = [0_usize; 6];
+    let mut rows = 0_usize;
+    let mut withheld = 0_usize;
+    let mut marker_dates = Vec::new();
+    let mut date = day(2010, 1, 1);
+    let last = venue.holiday_coverage().expect("cbot ships a table").last();
+    while date <= last {
+        if let Some(holiday) = venue.holiday_on(date) {
+            rows += 1;
+            let era = era_of(date);
+            match holiday.kind() {
+                HolidayKind::Closed => closed_per_era[era] += 1,
+                HolidayKind::Unsourced => {
+                    withheld_per_era[era] += 1;
+                    withheld += 1;
+                    let grains_kind = grains.holiday_on(date).map(Holiday::kind);
+                    let rates_kind = rates.holiday_on(date).map(Holiday::kind);
+                    if grains_kind == Some(HolidayKind::Unsourced)
+                        && rates_kind == Some(HolidayKind::Unsourced)
+                    {
+                        marker_dates.push(date);
+                    } else {
+                        // A dispute: the two routed families' answers differ,
+                        // so no single venue row exists. Neither family
+                        // abstains — both windows cover every era — and on no
+                        // withheld date do they state the same row.
+                        assert_ne!(
+                            grains_kind, rates_kind,
+                            "the routed families state the same row on withheld {date}"
+                        );
+                    }
+                }
+                other => panic!("cbot ships no {other:?} rows, but {date} carries one"),
+            }
+        }
+        date = date.succ_opt().expect("the census stays representable");
+    }
+    assert_eq!(
+        (rows, closed_per_era.iter().sum::<usize>(), withheld),
+        (308, 47, 261),
+        "the cbot table's whole-table census"
+    );
+    assert_eq!(
+        withheld_per_era,
+        [61, 46, 27, 34, 32, 61],
+        "withheld dates per audited era"
+    );
+    assert_eq!(
+        closed_per_era,
+        [6, 8, 9, 8, 7, 9],
+        "closures per audited era"
+    );
+    assert_eq!(
+        marker_dates, markers,
+        "the four dates both routed families mark not worked up"
+    );
+
+    // The markers refuse through the coverage contract, and the trade days
+    // either side of each are audited normal and covered. 2021-06-19 is a
+    // Saturday, so its neighbours are the Friday and the Monday.
+    for (marker, edges) in markers.iter().zip([
+        [(2019, 6, 18), (2019, 6, 20)],
+        [(2020, 6, 18), (2020, 6, 20)],
+        [(2021, 6, 18), (2021, 6, 21)],
+        [(2023, 1, 15), (2023, 1, 17)],
+    ]) {
+        assert_eq!(
+            venue.coverage().coverage_on(*marker),
+            DateCoverage::UnresolvedGap,
+            "the withheld marker {marker} must refuse through the coverage metadata"
+        );
+        for (year, month, day_number) in edges {
+            let edge = day(year, month, day_number);
+            assert_eq!(
+                venue.coverage().coverage_on(edge),
+                DateCoverage::Covered,
+                "the trade day {edge} beside the marker {marker} is audited normal"
+            );
+            assert!(
+                venue.holiday_on(edge).is_none(),
+                "the trade day {edge} beside the marker {marker} ships no row"
+            );
         }
     }
 }

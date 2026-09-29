@@ -98,16 +98,31 @@ const REQUIRED_SECTIONS: [&str; 4] = [
 ];
 
 /// One `revisions!` block, with the evidence files its module declares for it.
-struct RevisionBlock {
-    module: String,
-    files: Vec<String>,
-    rows: Vec<RevisionRow>,
+///
+/// Shared with the coverage-inventory fence, which locates a served row's
+/// normal-week timeline by module and static binding; the fields are test-side
+/// helpers, not a production surface (TEST-LAYOUT).
+pub(super) struct RevisionBlock {
+    /// The module's repository-relative path, as the inventory's Owner links
+    /// name it.
+    pub(super) module: String,
+    /// The static identifier the block is bound to (`static REVISIONS:
+    /// &[Revision] = revisions![`), empty when the block is not a static
+    /// binding.
+    pub(super) binding: String,
+    /// The evidence files the block's comment run declares.
+    pub(super) files: Vec<String>,
+    /// The block's rows, in source order — the `revisions!` macro compiles an
+    /// ascending-order assertion in, so source order is effective-day order.
+    pub(super) rows: Vec<RevisionRow>,
 }
 
 /// One `revisions!` tuple: its effective day and its citation literal.
-struct RevisionRow {
-    day: String,
-    citation: String,
+pub(super) struct RevisionRow {
+    /// The effective day, `YYYY-MM-DD`.
+    pub(super) day: String,
+    /// The citation literal the row carries.
+    pub(super) citation: String,
 }
 
 /// Whether a file name is a Markdown file.
@@ -428,7 +443,9 @@ fn parse_revision_tuple(tuple: &str) -> RevisionRow {
     }
 }
 
-fn revision_blocks() -> Vec<RevisionBlock> {
+/// Every `revisions!` block in the crate, in file order, with the static each
+/// is bound to.
+pub(super) fn revision_blocks() -> Vec<RevisionBlock> {
     let mut blocks = Vec::new();
     for path in crate_sources() {
         let text = fs::read_to_string(&path).expect("source file must be readable");
@@ -439,6 +456,7 @@ fn revision_blocks() -> Vec<RevisionBlock> {
             let start = searched.saturating_add(offset);
             let run = comment_run(&text[..start]);
             blocks.push(RevisionBlock {
+                binding: static_binding(&scanned[..start]),
                 module: module.clone(),
                 files: declared_evidence_files(&run, &module),
                 rows: revision_rows(macro_body(&scanned[start..])),
@@ -447,6 +465,20 @@ fn revision_blocks() -> Vec<RevisionBlock> {
         }
     }
     blocks
+}
+
+/// The static identifier a `revisions!` block is bound to, read backwards from
+/// the macro token: `static NAME: &[Revision] = revisions![` (the binding may
+/// carry `pub(crate)`). Empty when the prefix does not name a static, which no
+/// shipped block does; the inventory fence asserts the bindings it needs.
+fn static_binding(prefix: &str) -> String {
+    let Some(static_at) = prefix.rfind("static ") else {
+        return String::new();
+    };
+    prefix[static_at + "static ".len()..]
+        .chars()
+        .take_while(|character| character.is_ascii_alphanumeric() || *character == '_')
+        .collect()
 }
 
 /// One `holidays!` block, with the evidence files its module declares for it.

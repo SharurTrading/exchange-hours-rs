@@ -18,14 +18,24 @@
 //! count taken over the whole file reports those dormant rows under the served
 //! identity. Going through the identity's own calendar is what keeps the two
 //! apart, and it is why this fence queries rather than reading module text.
+//!
+//! The `Normal week` column is the one exception: no query surface reports a
+//! timeline (an identity answers *through* it at a caller's instant, and a
+//! revision whose grid restores a prior state is behaviourally invisible), so
+//! `inventory_revisions_cells_match_the_shipped_tables` derives that cell from
+//! the owner module's source text instead — the same bytes the compiler ships —
+//! choosing the identity's own block by static binding where a module carries
+//! several.
 
 use super::VERIFICATION;
+use super::evidence_files::revision_blocks;
 use chrono::{Datelike as _, NaiveDate, TimeZone as _, Utc, Weekday};
 use chrono_tz::US::Central;
 use exchange_hours::{
     CalendarQueryError, CoverageGap, CoverageGapReason, DateCoverage, Exchange, ExchangeCalendar,
     Holiday, HolidayKind, MarketHoursKey, calendar_for_exchange, calendar_for_market_hours_key,
 };
+use std::path::Path;
 
 const INVENTORY: &str = include_str!("../../docs/schedules/coverage-2025.md");
 
@@ -184,6 +194,132 @@ fn inventory_windows_and_date_counts_match_the_shipped_tables() {
             leading(&row[6]).expect("an Unsourced cell"),
             unsourced,
             "2025+ trade dates withheld as Unsourced, for {name}"
+        );
+    }
+}
+
+/// The served identities whose owner module carries more than one
+/// `revisions!` block, each with the static its routing arm dispatches
+/// through (`hours_for_exchange` in `src/calendar/presets/historical.rs`).
+///
+/// A module that grows a second block fails the fence until its identity is
+/// named here deliberately, and a listed static that stops existing fails the
+/// lookup below — the mapping can go stale only loudly.
+fn multi_block_bindings() -> &'static [(&'static str, &'static str)] {
+    &[
+        ("nasdaq", "NASDAQ_REVISIONS"),
+        ("nyse", "NYSE_REVISIONS"),
+        ("euronext_paris", "PARIS_REVISIONS"),
+    ]
+}
+
+/// The owner modules one Owner cell links, as repository-relative paths
+/// (`../../src/…` read from `docs/schedules/`).
+fn owner_modules(cell: &str) -> Vec<String> {
+    let mut modules = Vec::new();
+    let mut searched = 0_usize;
+    while let Some(offset) = cell[searched..].find("](../../") {
+        let start = searched + offset + "](../../".len();
+        let close = cell[start..]
+            .find(')')
+            .unwrap_or_else(|| panic!("an Owner link closes its parenthesis: {cell}"));
+        let target = &cell[start..start + close];
+        assert!(
+            target.starts_with("src/"),
+            "an Owner link names a repository path under src/: {target}"
+        );
+        modules.push(target.to_owned());
+        searched = start + close;
+    }
+    modules
+}
+
+/// The `Normal week` cell is the owner module's shipped `revisions!` timeline,
+/// so it is re-derived here from the module source text and compared cell by
+/// cell.
+///
+/// A stale cell — the `globex_cryptocurrency` row this fence was added for
+/// still read a pre-rebase copy nine rows ending 2026-09-20 where its module
+/// ships thirteen ending 2026-10-25 — fails here until it states what ships.
+/// The derived shape is `first … last (N rows)`, singular `row` for one, and a
+/// module with no `revisions!` block states that in its cell (the em dash, or
+/// the seasonal-selector wording that names the macro); a disclosed-suffix
+/// cell such as `b3`'s passes only with the derived timeline as its prefix.
+#[test]
+fn inventory_revisions_cells_match_the_shipped_tables() {
+    let blocks = revision_blocks();
+    for (name, row) in inventory_rows() {
+        let modules = owner_modules(&row[1]);
+        assert!(!modules.is_empty(), "{name}'s Owner cell links no module");
+        for module in &modules {
+            assert!(
+                Path::new(env!("CARGO_MANIFEST_DIR")).join(module).is_file(),
+                "{name}'s Owner links {module}, which is not a file in this crate"
+            );
+        }
+        let owned: Vec<&super::evidence_files::RevisionBlock> = blocks
+            .iter()
+            .filter(|block| modules.iter().any(|module| module == &block.module))
+            .collect();
+        if owned.is_empty() {
+            assert!(
+                row[2] == "\u{2014}" || row[2].contains("no `revisions!` timeline"),
+                "{name}'s owner modules carry no `revisions!` block, but its Normal week cell \
+                 reads {:?}",
+                row[2]
+            );
+            continue;
+        }
+        let chosen = if owned.len() == 1 {
+            owned[0]
+        } else {
+            let binding = multi_block_bindings()
+                .iter()
+                .find(|(scope, _)| *scope == name)
+                .map_or_else(
+                    || {
+                        panic!(
+                            "{name}'s owner modules carry {} `revisions!` blocks; name the static \
+                             its routing arm dispatches through in multi_block_bindings",
+                            owned.len()
+                        )
+                    },
+                    |(_, binding)| *binding,
+                );
+            let matches: Vec<&super::evidence_files::RevisionBlock> = owned
+                .iter()
+                .copied()
+                .filter(|b| b.binding == binding)
+                .collect();
+            assert_eq!(
+                matches.len(),
+                1,
+                "{name} names {binding} in multi_block_bindings, but its owner modules carry \
+                 {} blocks bound to it",
+                matches.len()
+            );
+            matches[0]
+        };
+        let rows = &chosen.rows;
+        assert!(
+            !rows.is_empty(),
+            "{name}'s {:?} block carries no rows",
+            chosen.binding
+        );
+        let count = rows.len();
+        let derived = format!(
+            "{} \u{2026} {} ({} {})",
+            rows[0].day,
+            rows[count - 1].day,
+            count,
+            if count == 1 { "row" } else { "rows" }
+        );
+        assert!(
+            row[2] == derived || row[2].starts_with(&format!("{derived} + ")),
+            "{name}'s Normal week cell reads {:?}; its owner module's {:?} block derives \
+             {derived:?}",
+            row[2],
+            chosen.binding
         );
     }
 }

@@ -399,25 +399,29 @@ impl<'a> QueryContext<'a> {
     /// the order-entry queue scans. An identity that declares no phase gap is
     /// unaffected, so this costs one span check on that path.
     ///
-    /// Only a declaration that **withholds a phase** refuses here, and only on
-    /// the dates its declaration names. The first declaration whose *span*
-    /// contains the date decides, in declaration order — the same shadowing rule
-    /// the metadata reports by. A declared gap withholds a queue exactly when
-    /// its reason names one:
-    /// [`CoverageGapReason::NormalWeekPhaseWithheld`] and
+    /// The declaration the metadata applies decides —
+    /// [`CalendarCoverage::phase_gap_on`], the first declaration in order whose
+    /// span contains the date *and* whose shape resolves against the built-in
+    /// layers, which is the same shadowing rule `coverage_on` and
+    /// [`CalendarCoverage::gaps`] report by. Deciding from the span alone would
+    /// let an earlier pass-through declaration whose queue is absent on the
+    /// date — the #152 shape resolves to no occurrence inside `globex_grains`'s
+    /// omitted 2012-05-20..2013-04-06 regime — shadow the refusing declaration
+    /// behind it, and a queue scan would answer absence where `coverage_on`
+    /// refuses. A declared gap withholds a queue exactly when its reason names
+    /// one: [`CoverageGapReason::NormalWeekPhaseWithheld`] and
     /// [`CoverageGapReason::SpecialSessionUnrepresentable`] do, and
     /// [`CoverageGapReason::PostCloseQueueTradeDateLabel`] and
     /// [`CoverageGapReason::UnpublishedClosureDates`] do not, because their
     /// phases are served — the post-close queue's window and both of its
     /// verdicts are sourced, and an ordinary day's queues answer through Eurex's
-    /// undated closures. A pass-through reason refuses nothing and pays no shape
-    /// resolution. A refusing reason then consults the declaration's full
-    /// applicability ([`CalendarCoverage::phase_gap_on`]): the #79 quarter-hour
-    /// refuses the bracket-era Sundays whose Pre-Open resolves, and answers the
-    /// Tuesday beside one — refusing a Tuesday for a Sunday queue is precisely
-    /// the coverage-error-read-as-closure failure LAW-COVERAGE exists to
-    /// prevent. An unrecognized reason refuses, which is the conservative
-    /// direction: a new declaration shape answers no queue until it says so.
+    /// undated closures. A pass-through reason refuses nothing. A refusing
+    /// reason refuses the scan: the #79 quarter-hour refuses the bracket-era
+    /// Sundays whose Pre-Open resolves, and answers the Tuesday beside one —
+    /// refusing a Tuesday for a Sunday queue is precisely the
+    /// coverage-error-read-as-closure failure LAW-COVERAGE exists to prevent.
+    /// An unrecognized reason refuses, which is the conservative direction: a
+    /// new declaration shape answers no queue until it says so.
     pub(super) fn require_phase_coverage(self, date: NaiveDate) -> Result<(), CalendarQueryError> {
         let Some(coverage) = self.coverage else {
             return Ok(());
@@ -436,24 +440,24 @@ impl<'a> QueryContext<'a> {
         // Otherwise the date-level verdict governs: a date the identity cannot
         // answer at all is refused for its own reason, not the phase's.
         self.require_answerable(date)?;
-        let Some(first) = coverage
-            .phase_gaps()
-            .iter()
-            .copied()
-            .find(|gap| gap.applies_on(date))
-        else {
-            return Ok(());
-        };
-        if matches!(
-            first.reason(),
-            CoverageGapReason::PostCloseQueueTradeDateLabel
-                | CoverageGapReason::UnpublishedClosureDates
-        ) {
-            return Ok(());
-        }
         match coverage.phase_gap_on(date) {
+            // No declaration applies to the date: the phase answers from the
+            // sourced tables.
             None => Ok(()),
-            Some(_gap) => Err(CalendarQueryError::OutsideCoveredRange {
+            // A pass-through reason's phase is served — only its label is the
+            // crate's convention — so the scan answers from the sourced tables.
+            Some(gap)
+                if matches!(
+                    gap.reason(),
+                    CoverageGapReason::PostCloseQueueTradeDateLabel
+                        | CoverageGapReason::UnpublishedClosureDates
+                ) =>
+            {
+                Ok(())
+            }
+            // A refusing declaration applies: the phase the scan consults is
+            // the one the identity withholds on this date.
+            Some(_) => Err(CalendarQueryError::OutsideCoveredRange {
                 source: coverage.identity(),
                 date,
             }),

@@ -225,7 +225,7 @@ maintenance contract described in the README and schedule verification ledger.
 
 ### Changed
 
-- **Declared coverage gaps become date-scoped and phase-shaped (2026-09-27 UTC) —
+- **Declared coverage gaps become date-scoped and phase-shaped (2026-09-28 UTC) —
   #172.** `PhaseGap` carries a start bound ([`PhaseGap::since`]) and an
   applicability shape ([`PhaseGapShape`]) beside its end bound, so a declaration
   withholds exactly the dates its evidence withholds and an identity's
@@ -250,8 +250,11 @@ maintenance contract described in the README and schedule verification ledger.
   reach. **What this means for
   callers:** dates that read `Covered` today refused before; a queue scan on a
   bracket-era Sunday still refuses with `OutsideCoveredRange` (never reading as
-  a closed grid), and a queue scan whose opening day could not consult the
-  withheld arrangement now answers. `CoverageGaps` streams its records in date
+  a closed grid), a queue scan whose opening day could not consult the
+  withheld arrangement now answers, and a queue scan inside `globex_grains`'s
+  omitted 2012-05-20..2013-04-06 regime refuses with it too — the omitted
+  queues leave no occurrence to answer from, so an absence would read as a
+  sourced negative. `CoverageGaps` streams its records in date
   order — a date-scoped declaration reports one record per maximal run its
   shape resolves — and `CoverageGaps::capacity` now bounds the declarations an
   identity may carry, not stored records. The order-entry scan gate fires only

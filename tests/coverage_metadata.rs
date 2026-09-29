@@ -1096,6 +1096,27 @@ fn the_post_close_label_gap_applies_only_to_the_dates_that_carry_the_queue() {
         Ok(true),
         "the post-close queue answers: it is served, and its declaration withholds no phase"
     );
+
+    // Inside the omitted regime the queue question refuses instead: the #152
+    // shape resolves to no occurrence there, so the metadata's shadowing rule
+    // leaves #116 operative, and the order-entry probe — the query whose answer
+    // *is* the omitted arrangement — states that rather than reading as a
+    // sourced absence (2012-06-01 14:30-15:30 CT is closed and order-entryless
+    // in the regime grid, so the probe reaches the phase gate).
+    let regime_instant = US::Central
+        .with_ymd_and_hms(2012, 6, 1, 15, 0, 0)
+        .single()
+        .expect("a single 15:00 CT instant")
+        .with_timezone(&Utc);
+    assert_eq!(
+        grains_cal.is_accepting_orders(regime_instant),
+        Err(CalendarQueryError::OutsideCoveredRange {
+            source: CalendarSource::MarketHoursKey(MarketHoursKey::GlobexGrains),
+            date: date(2012, 6, 1),
+        }),
+        "an order-entry probe inside the omitted regime refuses: the queue question is live \
+         and unsourced there"
+    );
 }
 
 #[test]

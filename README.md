@@ -341,7 +341,7 @@ dated, and Direct Edge's own FIX and API specifications supply the earlier
 in late 2010 and early 2011 during which the specifications move acceptance
 from 07:00 to 06:00 with no source naming the day. Closing all 28 is the current
 priority, alongside the per-family holiday and early-close tables the crate now
-carries: 40 of the 132 ledger rows ship one, each over its own audited
+carries: 43 of the 132 ledger rows ship one, each over its own audited
 trade-date window, and the rest still reach holidays only through the caller's
 `DayPolicy`.
 
@@ -356,9 +356,9 @@ primary evidence cannot date. The basis vocabulary is closed at four values —
 defect to fix, not a weaker label to wear. `Exchange::Unknown` is synthetic and
 is not one of the 95 source-backed identities.
 
-Every row also states its **service tier** (LAW-SERVICE-TIERS): 30 of the 132
+Every row also states its **service tier** (LAW-SERVICE-TIERS): 33 of the 132
 rows are `served` — a consumer instrument can reach them, so they owe dated
-history to the January-2010 floor and a monthly or quarterly review — and 102
+history to the January-2010 floor and a monthly or quarterly review — and 99
 are `dormant`, kept correct as of their last review and re-reviewed on demand.
 Each row carries its evidence tier, the horizon below which its grid is carried
 rather than sourced, its review cadence, and a link to the evidence file holding
@@ -384,7 +384,7 @@ will remain unchanged after the review date. They cover recurring weekday
 phases, time zones, lunch and maintenance gaps, and weekend boundaries. They
 exclude holidays, half-days, one-off closures or halts, severe-weather
 exceptions, and product-specific variations outside a row's stated scope:
-per-family holiday and early-close tables ship for 40 of the 132 ledger rows,
+per-family holiday and early-close tables ship for 43 of the 132 ledger rows,
 each over the trade-date window its Holidays cell names, and none of that data
 is included in the counts above, which are about normal weeks. A change confined to a
 single trade date — an early final close, a late first open, or a full

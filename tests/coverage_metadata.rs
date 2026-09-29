@@ -355,9 +355,10 @@ fn without_holidays_selects_the_normal_week_contract() {
 #[test]
 fn an_identity_with_no_holiday_table_reports_no_table() {
     // `nasdaq_bx` stands in here since 2026-09-28 UTC: the `nasdaq` venue
-    // shipped its own holiday table and left the no-table set.
+    // shipped its own holiday table and left the no-table set. `bmv` took
+    // `tsx`'s place the same day for the same reason.
 
-    for exchange in [Exchange::NasdaqBx, Exchange::MemxEq, Exchange::Tsx] {
+    for exchange in [Exchange::NasdaqBx, Exchange::MemxEq, Exchange::Bmv] {
         let coverage = exchange_coverage(exchange);
         assert_eq!(coverage.holiday_contract(), HolidayContract::NoTable);
         assert_eq!(coverage.complete_ranges().count(), 0);

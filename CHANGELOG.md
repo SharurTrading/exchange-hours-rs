@@ -13,6 +13,44 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Added
 
+- **`lse`, `euronext_paris` and `tsx` activate: built-in holiday tables for
+  the European and Canadian cash-equity venues (2026-09-28 UTC).** All three
+  identities flip dormant→**served** (LAW-SERVICE-TIERS admission by consumer
+  reach), the `for_exchange` arms answer `Some`, and the review cadence
+  becomes monthly (LAW-WATCH, holiday-bearing).
+  - `lse` — **30 rows over 2025-01-01..2027-12-31** (19 closures, six 12:30
+    early closes, five withheld dates): the operator's own "Bank holidays and
+    their impact on our trading services" table, read from three states of the
+    one rolling business-days API (the 2024-02-07 and 2025-12-18 captures and
+    the live retrieval of 2026-09-28, corroborated by a fourth capture). The
+    half days ride the sheet's own printed instant — "Markets closing process
+    commences from 12:30 London time." — and the five 2025 dates no surviving
+    artifact states (2025-04-18, 2025-04-21, 2025-05-05, 2025-05-26,
+    2025-08-25) ship as `Unsourced`, a labelled gap rather than a claimed
+    closure.
+  - `euronext_paris` — **15 rows over 2025-01-01..2026-12-31** (11 closures,
+    two 14:05 early closes, two withheld dates): the operator's per-market
+    holiday columns (the 2025 table at its 2025-12-06 capture, the 2026 table
+    live and in the INFO-FLASH PDF), with the 2025 December eves keyed to the
+    end-of-year appendix's printed Paris schedule (closing uncross 14:00
+    Random, TAL to 14:05 CET) and the two 2026 eves `Unsourced` because the
+    2026 end-of-year hours are announced and unpublished. 2027 is not
+    published anywhere on the operator's site, so nothing past 2026-12-31 is
+    claimed.
+  - `tsx` — **22 rows over 2025-01-01..2026-12-31** (20 closures, two 1:00 PM
+    early closes): TMX's own calendar page, whose 2025 and 2026 "Stock Market
+    Holidays - Stock Markets Closed" lists were live at retrieval. The printed
+    Christmas Eve footnote — "Closing at 1:00 PM (TSX/TSXV)" — is the single
+    early close, and the page's U.S.-holiday block ships no rows: it is
+    special-settlement data for USD issues, not a trading closure
+    (LAW-SESSION-NOT-EXPIRY). TMX has published no 2027 calendar, so the
+    window ends at 2026-12-31 with the closing condition recorded.
+  Every row cites a saved operator artifact (research store
+  `holidays/raw/equities/<venue>/2025-2027/`, sha256 per artifact and per
+  INDEX.md); the evidence files carry the per-row derivation, the rolling-table
+  and end-of-year-appendix gaps with their closing conditions, and the
+  monitoring entries in `docs/schedules/sources.md`.
+
 - **`nzx`, `asx` and `sgx_securities` activate: built-in holiday tables for
   the three APAC cash-equity venues the consumer routes (2026-09-28 UTC).**
   All three identities flip dormant→**served** (LAW-SERVICE-TIERS admission by

@@ -395,14 +395,16 @@ fn maximum_hour_resolution_clamps_without_losing_a_bar() {
 
     assert_eq!(candle_start(&fixed, instant, resolution), Some(instant));
     assert_eq!(candle_end(&fixed, instant, resolution), Some(close));
-    assert!(
-        calendar.candle_start(instant, resolution).is_err(),
-        "a chrono-bound candle start refuses rather than answering"
+    // The identity-backed calendar clamps exactly as the fixed snapshot does:
+    // the bar bounds resolve from the self-dated session the instant lands in
+    // (a session opening on its own day is dated by that day), so no date
+    // outside the audited window is needed and the chrono-bound clamp answers
+    // the same bar the fixed snapshot states.
+    assert_eq!(
+        calendar.candle_start(instant, resolution),
+        Ok(Some(instant))
     );
-    assert!(
-        calendar.candle_end(instant, resolution).is_err(),
-        "a chrono-bound candle end refuses rather than answering"
-    );
+    assert_eq!(calendar.candle_end(instant, resolution), Ok(Some(close)));
 }
 
 #[test]

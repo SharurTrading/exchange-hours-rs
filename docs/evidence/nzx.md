@@ -60,7 +60,7 @@ and resume at 2017-10-23, and queries inside the gap refuse rather than
 answer. **Closing condition:** a surviving operator artifact printing the
 2016-2017 closures (an annual sheet, a participant circular, or a late-2016 or
 mid-2017 page capture) keys the span and re-joins the windows. Tracked as
-[#211](https://github.com/SharurTrading/exchange-hours-rs/issues/211).
+[#209](https://github.com/SharurTrading/exchange-hours-rs/issues/209).
 
 **Abbreviated trading days are replacement days, not scalar early closes.**
 The operator's own abbreviated column keeps a tradeable closing auction after
@@ -85,7 +85,9 @@ era's own page:
 - **2013-2020** (`ERA_2013_ABBREVIATED_DAY_BLOCKS`): Pre-open 9:00am-10:00am,
   Normal Trading 10:00am-12:45pm, Pre-Close 12:45pm-1:00pm, Adjust
   1:00pm-1:30pm — read from the 2013-01-16 page onward. The Pre-Close slice
-  stops at 12:59:30 and the uncross envelope runs 12:59:30-1:00:30.
+  stops at 12:59:30 and the uncross envelope runs 12:59:30-1:00:30. The
+  2013-05-16 capture's own grid still shows the older 15:45 column; see the
+  conflict note below.
 - **2021 onward** (`ABBREVIATED_DAY_BLOCKS`): the same 12:45pm grid with the
   8:30am Pre-open, read from the 2021-01-12 page and the current table.
 
@@ -95,6 +97,20 @@ the normal-week profile, and on the pre-2020 dates the profile itself is
 carried, so the envelope rests on that carried convention rather than a 2010
 operator statement — disclosed here because it is the one instant the era's
 sheets do not print.
+
+**The 2013 abbreviated-grid conflict, held at the narrowest bound.** The
+operator's 2013-01-16 page prints the 12:45 abbreviated grid (Normal Trading
+to 12:45pm) while its 2013-05-16 page — the capture whose holiday table keys
+the 2013-12-24 and 2013-12-31 abbreviated days — still shows the older 15:45
+column in its trading-hours grid, and every later capture (2014-01-27 onward)
+prints 12:45 again. No operator statement dates the changeover between the
+two grids, so the two 2013 abbreviated days hold the close at its narrowest
+sourced value across the undated span, 12:45pm, and restate the 12:45 grid
+the 2013-01-16 page prints (AGENTS.md, *Prefer the sourced intersection to
+omission*). The 12:45pm-4:30pm span the two grids dispute ships as no session
+rather than guessed at, so if the older grid actually governed those days the
+answer understates the open window; the narrowest-bound rule prefers that
+error to inventing the changeover day.
 
 **The 2020 Pre-open conflict, held at the narrowest bound.** The operator's
 2020-06-08 page still prints the 9:00am Pre-open (both columns) while its
@@ -171,7 +187,7 @@ Pre-open at 9:00am — the narrowest sourced value across the undated span
 | 2013-04-25 | closed | `25 Apr 2013 Anzac Day` — `Closed` | `NZX-SX-2013-01-16` | T1 | NZX event date printed verbatim |
 | 2013-06-03 | closed | `3 Jun 2013 Queen's Birthday` — `Closed` | `NZX-SX-2013-01-16` | T1 | NZX event date printed verbatim (the 2013-05-16 replay prints the same row) |
 | 2013-10-28 | closed | `28 Oct 2013 Labour Day` — `Closed` | `NZX-SX-2013-01-16` | T1 | NZX event date printed verbatim (the 2013-05-16 replay prints the same row) |
-| 2013-12-24 | replacement blocks | `24 Dec 2013` — `Abbreviated`; the 12:45 abbreviated grid | `NZX-SX-2013-05-16` | T1 | the 2013 grid: Normal Trading `10:00am - 12:45pm`, Pre-close `12:45pm - 1:00pm`, Adjust `1:00pm - 1:30pm` |
+| 2013-12-24 | replacement blocks | `24 Dec 2013` — `Abbreviated` | `NZX-SX-2013-05-16` | T1 | the date is the sheet's own; the block instants read from the 2013-01-16 page's 12:45 abbreviated grid — Normal Trading `10:00am - 12:45pm`, Pre-close `12:45pm - 1:00pm`, Adjust `1:00pm - 1:30pm` — held at the narrowest bound across the 2013-05-16 capture's 15:45 column (see the conflict note) |
 | 2013-12-25 | closed | `25 Dec 2013 Christmas Day` — `Closed` | `NZX-SX-2013-05-16` | T1 | NZX event date printed verbatim |
 | 2013-12-26 | closed | `26 Dec 2013 Boxing Day` — `Closed` | `NZX-SX-2013-05-16` | T1 | NZX event date printed verbatim |
 | 2013-12-31 | replacement blocks | `31 Dec 2013` — `Abbreviated` | `NZX-SX-2013-05-16` | T1 | same reading as 2013-12-24 |
@@ -472,7 +488,15 @@ any row).
   claims nothing there; queries inside the gap refuse. **Closing condition:** a
   surviving operator artifact printing the span (an annual sheet, a participant
   circular, or a late-2016 or mid-2017 page capture). Tracked as
-  [#211](https://github.com/SharurTrading/exchange-hours-rs/issues/211).
+  [#209](https://github.com/SharurTrading/exchange-hours-rs/issues/209).
+- **the 2013 abbreviated-grid conflict** — the 2013-05-16 capture's trading-hours
+  grid still shows the older 15:45 abbreviated column while the 2013-01-16 page
+  before it and every capture from 2014-01-27 after it print 12:45; the two 2013
+  abbreviated days hold the 12:45 close (the narrowest sourced value) and the
+  disputed 12:45pm-4:30pm remainder ships as no session. **Closing condition:** a
+  dated operator statement for the 15:45-to-12:45 grid changeover, or a capture
+  whose grid and holiday table agree on the December 2013 days, keys the span's
+  true grid.
 - **horizon carried below the first dated row** — the pre-2020 baseline rests
   only on NZX announcement 350919, whose publication day is not recorded in the
   repository (an NZX announcement number is not a date). The ledger horizon is

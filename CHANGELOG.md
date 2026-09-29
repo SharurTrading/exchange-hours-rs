@@ -86,6 +86,27 @@ corrections (a venue's hours fixed against a primary source) go under
   the replacement-block days, and the monitoring entries in
   `docs/schedules/sources.md`.
 
+- **`nzx` holiday history backfilled to the 2010 floor (2026-09-29 UTC).**
+  The `nzx` table grows from 28 rows over 2025-01-01..2027-01-04 to **203
+  rows over 2010-01-01..2016-04-25 and 2017-10-23..2027-01-04** (144
+  closures and 31 abbreviated trading days added): the operator's own
+  trading-hours statements, read from 19 Wayback `id_` replays of the
+  operator's own pages per era (the key-dates sheets 2010-2011, the NZSX
+  Main Board rolling table 2011-2017, the investing page 2018-2019 and the
+  hours-boards page 2020-2024), with every artifact saved and sha256'd in
+  the research store. Abbreviated days ship as replacement block sets
+  restating each era's own printed grid — the 2010-2012 15:45 grid, the
+  2013-2020 12:45 grid, the 2021-onward 8:30 grid — so the tradeable
+  closing-uncross envelope survives; the two 2020 abbreviated days hold the
+  9:00 Pre-open at its narrowest sourced value across the undated
+  2020-2021 span, and the two 2013 days hold the 12:45 close against the
+  2013-05-16 capture's older 15:45 column (both conflicts disclosed in the
+  evidence file). The 2016-04-26..2017-10-22 span survives in no operator
+  capture (Wayback CDX sweep checked 2026-09-29 UTC), so the audited
+  windows stop either side of it and queries inside the gap refuse rather
+  than answer; the gap and its closing condition are tracked as
+  [#209](https://github.com/SharurTrading/exchange-hours-rs/issues/209).
+
 - **`nyse` and `nasdaq` activate: built-in holiday tables for the two US
   cash-equity venues the consumer routes (2026-09-28 UTC).** Both identities
   flip dormant→**served** (LAW-SERVICE-TIERS admission by consumer reach),

@@ -25,7 +25,7 @@
 //! page survives in the Wayback index for those eighteen months, so no
 //! operator artifact prints those dates and the table claims nothing there.
 //! Queries inside the gap refuse rather than answer; the gap and its closing
-//! condition are recorded in the evidence file.
+//! condition are recorded in the evidence file, tracked as issue #209.
 //!
 //! The abbreviated-trading days ship as replacement block sets restating the
 //! operator's own abbreviated grid for their era, **not** scalar early closes,
@@ -41,7 +41,10 @@
 //!   The 2020 abbreviated days (24 and 31 December) hold the 9:00 Pre-open at
 //!   its narrowest sourced value: the operator's 2020-06-08 page still printed
 //!   the 9:00 Pre-open while the 2021-01-12 page printed 8:30, and no capture
-//!   survives between them, so the disputed hour stays out.
+//!   survives between them, so the disputed hour stays out. The same rule
+//!   governs the 2013 December days against the 2013-05-16 capture's older
+//!   15:45 grid column: the 12:45 close the 2013-01-16 page prints is the
+//!   narrowest sourced value across that undated span.
 //! - **2021 onward** (`ABBREVIATED_DAY_BLOCKS`): Pre-open 8:30-10:00 (the
 //!   sourced 2020-04-06 pre-open move), Normal Trading 10:00-12:45, Pre-Close
 //!   12:45-13:00, Adjust 13:00-13:30.

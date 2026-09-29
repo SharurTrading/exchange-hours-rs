@@ -987,7 +987,10 @@ mod nzx {
     #[test]
     fn the_pre_2025_abbreviated_days_restate_their_era_grid() {
         let calendar = nzx();
-        let blocks_of = |date| match calendar.holiday_on(day(date.0, date.1, date.2)).map(Holiday::kind) {
+        let blocks_of = |date: (i32, u32, u32)| match calendar
+            .holiday_on(day(date.0, date.1, date.2))
+            .map(Holiday::kind)
+        {
             Some(HolidayKind::ReplacementBlocks(blocks)) => blocks
                 .iter()
                 .map(|block| (block.kind(), block.open_ssm(), block.close_ssm()))
@@ -996,8 +999,16 @@ mod nzx {
         };
         let grid = |pre_open: u32, regular_end: u32| {
             vec![
-                (exchange_hours::ExceptionBlockKind::Extended, pre_open, 36_000),
-                (exchange_hours::ExceptionBlockKind::Regular, 36_000, regular_end),
+                (
+                    exchange_hours::ExceptionBlockKind::Extended,
+                    pre_open,
+                    36_000,
+                ),
+                (
+                    exchange_hours::ExceptionBlockKind::Regular,
+                    36_000,
+                    regular_end,
+                ),
                 (
                     exchange_hours::ExceptionBlockKind::OrderEntry,
                     regular_end,
@@ -1216,12 +1227,16 @@ mod nzx {
                 assert!(
                     matches!(
                         date,
-                        (2010 | 2011 | 2012, 12, 23 | 24 | 30 | 31)
-                            | (2013 | 2014 | 2015 | 2018 | 2019 | 2020 | 2021 | 2024, 12, 24 | 31)
-                            | (2010 | 2011 | 2012, 4, 1 | 5 | 21)
-                            | (2017, 12, 22 | 29)
-                            | (2022, 12, 23 | 30)
-                            | (2023, 12, 22 | 29)
+                        (2010, 4, 1)
+                            | (2011, 4, 21)
+                            | (2012, 4, 5)
+                            // December abbreviated days, the sheets' own
+                            // dates: 24|31 December except where the sheets
+                            // printed 22/23/29/30.
+                            | (2010 | 2012 | 2013 | 2014 | 2015 | 2018 | 2019
+                                | 2020 | 2021 | 2024 | 2025 | 2026, 12, 24 | 31)
+                            | (2011 | 2022, 12, 23 | 30)
+                            | (2017 | 2023, 12, 22 | 29)
                     ),
                     "the abbreviated days are exactly the sheets' own: {date:?}"
                 );

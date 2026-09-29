@@ -1105,10 +1105,11 @@ impl CalendarCoverage {
     ///
     /// The candidates are the support floor, the carried-below horizon, both
     /// edges of every declaration that carries a bound, both edges of every
-    /// audited window, every withheld date and the day after it, and every
-    /// ordinary holiday row date when an order-entry-shaped declaration could
-    /// turn on a row's removal — all static and bounded, so the walk allocates
-    /// nothing.
+    /// audited window, and every withheld date and the day after it — all
+    /// static and bounded, so the walk allocates nothing. An ordinary holiday
+    /// row needs no edge of its own: inside a date-scoped declaration's reach
+    /// the walk judges each date on its own tables, and outside that reach no
+    /// shape can flip a verdict.
     ///
     /// A declaration bounded with [`PhaseGap::since`] or [`PhaseGap::until`]
     /// contributes both of its edges, not just the bound: a run walk that

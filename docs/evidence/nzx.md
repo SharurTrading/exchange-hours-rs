@@ -23,44 +23,357 @@ migration; where a later targeted review, capture or document date is recorded
 beside a source below, that date governs for that source, and dates are added
 as each source is re-verified.
 
-- <https://www.nzx.com/learning/help-reference/trading-hours> — NZX trading hours.
+- <https://www.nzx.com/learning/help-reference/trading-hours> — NZX trading hours (live home of the holiday table since 2025; earlier homes and their captures are listed in the `### Documents` tables).
 - <https://www.nzx.com/learning/issuer-participant-resources/nzx-trading/anatomy-of-a-trading-day> — NZX Anatomy of a Trading Day. Of Pre-Open it says: "Orders can be placed, amended, and deleted. No trades execute until the opening auction. Off-market trades may be reported." Off-market reports print, so Pre-Open is tradeable `extended`, not order-entry-only.
 - <https://www.nzx.com/announcements/350919> — NZX announcement 350919, the 2020-04-06 pre-open move.
 - <https://www.nzx.com/announcements/353837> — NZX announcement 353837, making the initially temporary change indefinite.
-- <https://www.nzx.com/learning/help-reference/trading-hours> (this page's own holiday table) — retrieved 2026-09-28 (UTC) as `holidays/raw/equities/nzx/2025-2027/live_nzx_trading_hours_and_holidays.html` (research store), sha256 `92071cd2…`; it is the horizon evidence: its rolling table prints Waitangi Day 2026-02-06 through the Day after New Year's Day 2027-01-04 and nothing past that.
+- The operator's pre-2025 trading-hours pages and their Wayback `id_` replays — `nzx.com/markets/key-dates/trading-hours` (2010-2011), `nzx.com/markets/NZSX/trading_hours` (2011-2017), `nzx.com/investing/nzx-trading-hours` (2018-2019), `nzx.com/services/nzx-trading/hours-boards` (2020-2024) — retrieved 2026-09-29 (UTC) as `holidays/raw/equities/nzx/2010-2024/` (research store), digests in the `### Documents` table below. Each page prints the operator's own `Market Closed or Abbreviated Trading` / `NZX Market Holidays` table and the era's normal and abbreviated phase grids.
 
 ## Holidays
 
-**Coverage:** 2025-01-01..2027-01-04 (inclusive trade dates, the operator's published rolling horizon). Tier: T1 throughout.
+**Coverage:** 2010-01-01..2016-04-25, 2017-10-23..2027-01-04 (inclusive trade dates, the spans the operator's own pages print; the span between them is the capture gap recorded below). Tier: T1 throughout.
 
-NZX prints no consolidated year sheets. The operator's own `NZX Market
-Holidays & Trading Hours` page carries one rolling table of roughly the next
-thirteen months (columns `Event`, `Date`, `Market Status`), so the rows below
-are read from successive captures of that one page: the **2024-12-16** replay
-prints Business Day Prior to Christmas Day 2024 through the Day after New
-Year's Day 2026 and is the only artifact that prints the 2025-01-01 and
-2025-01-02 rows; the **2025-01-23** replay prints Waitangi Day 2025 through
-the Day after New Year's Day 2026 and keys the rest of 2025 plus the first two
-2026 dates; the **2026-02-03** replay prints Waitangi Day 2026 through the Day
-after New Year's Day 2027 and keys 2026 from Waitangi onward. The live page
-(retrieved 2026-09-28) prints the identical 2026-02-06..2027-01-04 rows and is
-the horizon evidence. The 2025 rows the 2025-01-23 replay and the 2024-12-16
-replay print in common are identical cell for cell, so the boundary between
-the two documents is corroborated on both sides. The wayback replays are
-verbatim captures of the operator's own page (`id_` original bytes).
+NZX prints no consolidated year sheets for most of the window. The operator's
+own `Market Holidays & Trading Hours` statements are keyed to the page that
+carried them at the time: the `nzx.com/markets/key-dates/trading-hours` page
+(2010-2011) prints one "Market holidays & abbreviated trading days for <year>"
+sheet per year; the `nzx.com/markets/NZSX/trading_hours` Main Board page
+(2011-2017) prints a rolling "Market Closed or Abbreviated Trading" table of
+upcoming closures, roughly twelve months deep; the
+`nzx.com/investing/nzx-trading-hours` page (2018-2019) prints the current
+year's full table; and the `nzx.com/services/nzx-trading/hours-boards` page
+(2020-2024) prints the current year's full `NZX Market Holidays` table. Each
+page also prints the era's own normal and abbreviated phase grids, from which
+the replacement-block days below are restated. Every pre-2025 artifact is a
+Wayback `id_` replay of the operator's own page — verbatim bytes of an
+operator statement, so T1 (LAW-PUBLIC-SOURCES).
 
-NZX has published nothing past 2027-01-04: verified 2026-09-28 (UTC), the
-live table's last row is the Day after New Year's Day, Monday 4 January 2027.
-Nothing is withheld by this crate — there is no later NZX schedule yet.
-**Closing condition:** NZX's next table refresh, at which point the window
-extends. Re-checked monthly per LAW-WATCH.
+**The 2016-2017 capture gap.** The NZSX page's surviving replays run
+2015-04-27 (printing upcoming closures through ANZAC Day, 2016-04-25) and then
+2017-06-23 (printing upcoming closures from Labour Day, 2017-10-23). No
+capture of any NZX trading-hours page — key-dates, NZSX, NZAX, NZDX, NZZX,
+investing or hours-boards, nor any operator PDF — survives in the Wayback
+index for 2016-04-26..2017-10-22 (checked 2026-09-29, CDX sweeps over the
+whole domain in that era). No operator statement prints those dates, so the
+table claims nothing for the span: the coverage windows stop at 2016-04-25
+and resume at 2017-10-23, and queries inside the gap refuse rather than
+answer. **Closing condition:** a surviving operator artifact printing the
+2016-2017 closures (an annual sheet, a participant circular, or a late-2016 or
+mid-2017 page capture) keys the span and re-joins the windows. Tracked as
+[#209](https://github.com/SharurTrading/exchange-hours-rs/issues/209).
 
-The `Market Status` column states `Closed` for a full closure and
-`Abbreviated Trading*` for the two pre-holiday business days each year (the
-footnote: `*Note not applicable to SGX-NZX Dairy Derivatives market` — the
-abbreviated grid applies to the NZX Main Board this crate serves). Where
-applicable, public holidays will be "mondayised" (the page's own preamble),
-which is why ANZAC Day 2026 and Boxing Day 2026 print on Mondays.
+**Abbreviated trading days are replacement days, not scalar early closes.**
+The operator's own abbreviated column keeps a tradeable closing auction after
+the shortened Normal Trading window: Pre-Close runs to the abbreviated close
+and the closing uncross randomises within 30 seconds either side of it, exactly
+as it does around 5:00pm on a full day (the same anatomy-of-a-trading-day
+statement the normal-week profile cites for the ±30 second envelope). A scalar
+`EarlyClose` clip cannot state that day: clipped at the Normal-Trading end it
+deletes the auction prints (an executable window the operator keeps open), and
+clipped at the uncross envelope's end it drags the order-entry-only Pre-Close
+queue inside `is_open`, which the charter's order-entry rule forbids. Each
+abbreviated day therefore ships as a replacement block set restating the
+operator's grid block for block, with Enquiry and Adjust excluded exactly as
+on a full day. Three grids are in force across the window, each printed by the
+era's own page:
+
+- **2010-2012** (`ERA_2010_ABBREVIATED_DAY_BLOCKS`): Pre-open 9:00am-10:00am
+  (tradeable: off-market reports print), Normal Trading 10:00am-3:45pm,
+  Pre-Close 3:45pm-4:00pm, Adjust 4:00pm-4:30pm — read from the 2010-01-05 and
+  2011-12-19 pages' abbreviated columns. The Pre-Close slice stops at 3:59:30
+  and the uncross envelope runs 3:59:30-4:00:30.
+- **2013-2020** (`ERA_2013_ABBREVIATED_DAY_BLOCKS`): Pre-open 9:00am-10:00am,
+  Normal Trading 10:00am-12:45pm, Pre-Close 12:45pm-1:00pm, Adjust
+  1:00pm-1:30pm — read from the 2013-01-16 page onward. The Pre-Close slice
+  stops at 12:59:30 and the uncross envelope runs 12:59:30-1:00:30. The
+  2013-05-16 capture's own grid still shows the older 15:45 column; see the
+  conflict note below.
+- **2021 onward** (`ABBREVIATED_DAY_BLOCKS`): the same 12:45pm grid with the
+  8:30am Pre-open, read from the 2021-01-12 page and the current table.
+
+The block instants are the sheets' own phase boundaries; only the ±30 second
+uncross envelopes are the operator's randomisation statement already carried by
+the normal-week profile, and on the pre-2020 dates the profile itself is
+carried, so the envelope rests on that carried convention rather than a 2010
+operator statement — disclosed here because it is the one instant the era's
+sheets do not print.
+
+**The 2013 abbreviated-grid conflict, held at the narrowest bound.** The
+operator's 2013-01-16 page prints the 12:45 abbreviated grid (Normal Trading
+to 12:45pm) while its 2013-05-16 page — the capture whose holiday table keys
+the 2013-12-24 and 2013-12-31 abbreviated days — still shows the older 15:45
+column in its trading-hours grid, and every later capture (2014-01-27 onward)
+prints 12:45 again. No operator statement dates the changeover between the
+two grids, so the two 2013 abbreviated days hold the close at its narrowest
+sourced value across the undated span, 12:45pm, and restate the 12:45 grid
+the 2013-01-16 page prints (AGENTS.md, *Prefer the sourced intersection to
+omission*). The 12:45pm-4:30pm span the two grids dispute ships as no session
+rather than guessed at, so if the older grid actually governed those days the
+answer understates the open window; the narrowest-bound rule prefers that
+error to inventing the changeover day.
+
+**The 2020 Pre-open conflict, held at the narrowest bound.** The operator's
+2020-06-08 page still prints the 9:00am Pre-open (both columns) while its
+2021-01-12 page prints 8:30am, and no capture survives between them; the
+2020-04-06 announcement (350919) keyed the move and announcement 353837 made
+it indefinite, but the interim state across December 2020 is not printed by
+any surviving artifact. The two 2020 abbreviated days therefore hold the
+Pre-open at 9:00am — the narrowest sourced value across the undated span
+(AGENTS.md, *Prefer the sourced intersection to omission*) — and the disputed
+8:30-9:00 hour stays out of the replacement blocks.
+
+### 2010
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2010-01-01 | closed | `New Year's Day` — `Friday, 1 Jan` — `Closed` | `NZX-KD-2010-01-05` | T1 | NZX event date printed verbatim; no Main Board session belongs to the date |
+| 2010-01-04 | closed | `New Year's Day Holiday` — `Mon, 4 Jan` — `Closed` | `NZX-KD-2010-01-05` | T1 | the sheet's own observed date for the Saturday 2 January holiday |
+| 2010-02-06 | closed | `Waitangi Day Sat, 06 Feb` — `Closed` | `NZX-KD-2010-01-05` | T1 | NZX event date printed verbatim (a Saturday the sheet prints; it restates the normal week's closure) |
+| 2010-04-01 | replacement blocks | `Thursday, 1 Apr` — `Abbreviated Trading`; abbreviated grid: Normal Trading `10.00am - 3.45pm`, Pre-close `3.45pm - 4.00pm`, Adjust `4.00pm - 4.30pm` | `NZX-KD-2010-01-05` | T1 | see the interpretive step — the row restates the operator's own abbreviated grid as one replacement day |
+| 2010-04-02 | closed | `Good Friday: Fri, 02 Apr` — `Closed` | `NZX-KD-2010-01-05` | T1 | NZX event date printed verbatim |
+| 2010-04-05 | closed | `Easter Monday: Mon, 05 Apr` — `Closed` | `NZX-KD-2010-01-05` | T1 | NZX event date printed verbatim |
+| 2010-04-25 | closed | `ANZAC Day: Sun, 25 Apr` — `Closed` | `NZX-KD-2010-01-05` | T1 | NZX event date printed verbatim (a Sunday the sheet prints; it restates the normal week's closure) |
+| 2010-06-07 | closed | `Queens Birthday: Mon, 7 Jun` — `Closed` | `NZX-KD-2010-01-05` | T1 | NZX event date printed verbatim |
+| 2010-10-25 | closed | `Labour Day: Mon, 25 Oct` — `Closed` | `NZX-KD-2010-01-05` | T1 | NZX event date printed verbatim |
+| 2010-12-24 | replacement blocks | `Friday, 24 Dec` — `Abbreviated Trading`; same abbreviated grid | `NZX-KD-2010-01-05` | T1 | same reading as 2010-04-01 |
+| 2010-12-27 | closed | `Christmas Day: Mon, 27 Dec` — `Closed` | `NZX-KD-2010-01-05` | T1 | the sheet's own observed date for the Saturday 25 December holiday |
+| 2010-12-28 | closed | `Boxing Day: Tue, 28 Dec` — `Closed` | `NZX-KD-2010-01-05` | T1 | the sheet's own observed date for the Sunday 26 December holiday |
+| 2010-12-31 | replacement blocks | `Friday, 31 Dec` — `Abbreviated Trading` | `NZX-KD-2010-01-05` | T1 | same reading as 2010-04-01 |
+
+### 2011
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2011-01-03 | closed | `New Year's Day: Monday, 03 Jan` — `Closed` | `NZX-KD-2010-12-29` | T1 | the sheet's own observed date for the Saturday 1 January holiday |
+| 2011-01-04 | closed | `New Year's Day Holiday: Tuesday, 04 Jan` — `Closed` | `NZX-KD-2010-12-29` | T1 | the sheet's own observed date for the Sunday 2 January holiday |
+| 2011-02-06 | closed | `Waitangi Day: Sunday, 06 Feb` — `Closed` | `NZX-KD-2010-12-29` | T1 | NZX event date printed verbatim (a Sunday the sheet prints; it restates the normal week's closure) |
+| 2011-04-21 | replacement blocks | `Thursday, 21 Apr` — `Abbreviated Trading` | `NZX-KD-2010-12-29` | T1 | same reading as 2010-04-01 |
+| 2011-04-22 | closed | `Good Friday: Friday, 22 Apr` — `Closed` | `NZX-KD-2010-12-29` | T1 | NZX event date printed verbatim |
+| 2011-04-25 | closed | `Easter Monday: Monday, 25 Apr` and `ANZAC Day: Monday, 25 Apr` — `Closed` | `NZX-KD-2010-12-29` | T1 | NZX prints both events on one date; one row, the date printed verbatim |
+| 2011-06-06 | closed | `Queens Birthday: Monday, 6 Jun` — `Closed` | `NZX-KD-2010-12-29` | T1 | NZX event date printed verbatim |
+| 2011-10-24 | closed | `Labour Day: Monday, 24 Oct` — `Closed` | `NZX-KD-2010-12-29` | T1 | NZX event date printed verbatim |
+| 2011-12-23 | replacement blocks | `Christmas Eve: Friday, 23 Dec` — `Abbreviated Trading` | `NZX-KD-2010-12-29` | T1 | same reading as 2010-04-01 |
+| 2011-12-26 | closed | `Boxing Day: Monday, 26 Dec` — `Closed` | `NZX-KD-2010-12-29` | T1 | the sheet's own observed date for the Sunday 26 December holiday |
+| 2011-12-27 | closed | `Christmas Day: Tuesday, 27 Dec` — `Closed` | `NZX-KD-2010-12-29` | T1 | the sheet's own observed date for the Saturday 25 December holiday |
+| 2011-12-30 | replacement blocks | `Friday, 30 Dec` — `Abbreviated Trading` | `NZX-KD-2010-12-29` | T1 | same reading as 2010-04-01 |
+
+### 2012
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2012-01-02 | closed | `2 Jan 2012 New Year` — `Closed` | `NZX-SX-2011-12-19` | T1 | the sheet's own observed date for the Sunday 1 January holiday |
+| 2012-01-03 | closed | `3 Jan 2012 New Year` — `Closed` | `NZX-SX-2011-12-19` | T1 | the sheet's own observed date for the Monday 2 January holiday |
+| 2012-02-06 | closed | `6 Feb 2012 Waitangi Day` — `Closed` | `NZX-SX-2011-12-19` | T1 | NZX event date printed verbatim |
+| 2012-04-05 | replacement blocks | `5 Apr 2012` — `Abbreviated`; abbreviated grid: Normal Trading `10:00am - 3:45pm`, Pre-close `3:45pm - 4:00pm`, Adjust `4:00pm - 4:30pm` | `NZX-SX-2011-12-19` | T1 | same reading as 2010-04-01 |
+| 2012-04-06 | closed | `6 Apr 2012 Good Friday` — `Closed` | `NZX-SX-2011-12-19` | T1 | NZX event date printed verbatim |
+| 2012-04-09 | closed | `9 Apr 2012 Easter Monday` — `Closed` | `NZX-SX-2011-12-19` | T1 | NZX event date printed verbatim |
+| 2012-04-25 | closed | `25 Apr 2012 Anzac Day` — `Closed` | `NZX-SX-2011-12-19` | T1 | NZX event date printed verbatim |
+| 2012-06-04 | closed | `4 Jun 2012 Queen's Birthday` — `Closed` | `NZX-SX-2012-05-04` | T1 | NZX event date printed verbatim (the 2011-12-19 replay prints the same row) |
+| 2012-10-22 | closed | `22 Oct 2012 Labour Day` — `Closed` | `NZX-SX-2012-05-04` | T1 | NZX event date printed verbatim (the 2011-12-19 replay prints the same row) |
+| 2012-12-24 | replacement blocks | `24 Dec 2012` — `Abbreviated` | `NZX-SX-2012-05-04` | T1 | same reading as 2010-04-01 |
+| 2012-12-25 | closed | `25 Dec 2012 Christmas Day` — `Closed` | `NZX-SX-2012-05-04` | T1 | NZX event date printed verbatim |
+| 2012-12-26 | closed | `26 Dec 2012 Boxing Day` — `Closed` | `NZX-SX-2012-05-04` | T1 | NZX event date printed verbatim |
+| 2012-12-31 | replacement blocks | `31 Dec 2012` — `Abbreviated` | `NZX-SX-2012-05-04` | T1 | same reading as 2010-04-01 |
+
+### 2013
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2013-01-01 | closed | `1 Jan 2013 New Year` — `Closed` | `NZX-SX-2012-05-04` | T1 | NZX event date printed verbatim |
+| 2013-01-02 | closed | `2 Jan 2013 New Year` — `Closed` | `NZX-SX-2012-05-04` | T1 | NZX event date printed verbatim |
+| 2013-02-06 | closed | `6 Feb 2013 Waitangi Day` — `Closed` | `NZX-SX-2013-01-16` | T1 | NZX event date printed verbatim |
+| 2013-03-29 | closed | `29 Mar 2013 Good Friday` — `Closed` | `NZX-SX-2013-01-16` | T1 | NZX event date printed verbatim |
+| 2013-04-01 | closed | `1 Apr 2013 Easter Monday` — `Closed` | `NZX-SX-2013-01-16` | T1 | NZX event date printed verbatim |
+| 2013-04-25 | closed | `25 Apr 2013 Anzac Day` — `Closed` | `NZX-SX-2013-01-16` | T1 | NZX event date printed verbatim |
+| 2013-06-03 | closed | `3 Jun 2013 Queen's Birthday` — `Closed` | `NZX-SX-2013-01-16` | T1 | NZX event date printed verbatim (the 2013-05-16 replay prints the same row) |
+| 2013-10-28 | closed | `28 Oct 2013 Labour Day` — `Closed` | `NZX-SX-2013-01-16` | T1 | NZX event date printed verbatim (the 2013-05-16 replay prints the same row) |
+| 2013-12-24 | replacement blocks | `24 Dec 2013` — `Abbreviated` | `NZX-SX-2013-05-16` | T1 | the date is the sheet's own; the block instants read from the 2013-01-16 page's 12:45 abbreviated grid — Normal Trading `10:00am - 12:45pm`, Pre-close `12:45pm - 1:00pm`, Adjust `1:00pm - 1:30pm` — held at the narrowest bound across the 2013-05-16 capture's 15:45 column (see the conflict note) |
+| 2013-12-25 | closed | `25 Dec 2013 Christmas Day` — `Closed` | `NZX-SX-2013-05-16` | T1 | NZX event date printed verbatim |
+| 2013-12-26 | closed | `26 Dec 2013 Boxing Day` — `Closed` | `NZX-SX-2013-05-16` | T1 | NZX event date printed verbatim |
+| 2013-12-31 | replacement blocks | `31 Dec 2013` — `Abbreviated` | `NZX-SX-2013-05-16` | T1 | same reading as 2013-12-24 |
+
+### 2014
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2014-01-01 | closed | `1 Jan 2014 New Year` — `Closed` | `NZX-SX-2013-05-16` | T1 | NZX event date printed verbatim (the 2014-01-27 replay prints the same row) |
+| 2014-01-02 | closed | `2 Jan 2014 New Year` — `Closed` | `NZX-SX-2013-05-16` | T1 | NZX event date printed verbatim (the 2014-01-27 replay prints the same row) |
+| 2014-02-06 | closed | `6 Feb 2014 Waitangi Day` — `Closed` | `NZX-SX-2014-01-27` | T1 | NZX event date printed verbatim |
+| 2014-04-18 | closed | `18 Apr 2014 Good Friday` — `Closed` | `NZX-SX-2014-01-27` | T1 | NZX event date printed verbatim |
+| 2014-04-21 | closed | `21 Apr 2014 Easter Monday` — `Closed` | `NZX-SX-2014-01-27` | T1 | NZX event date printed verbatim |
+| 2014-04-25 | closed | `25 Apr 2014 Anzac Day` — `Closed` | `NZX-SX-2014-01-27` | T1 | NZX event date printed verbatim |
+| 2014-06-02 | closed | `2 Jun 2014 Queen's Birthday` — `Closed` | `NZX-SX-2014-01-27` | T1 | NZX event date printed verbatim |
+| 2014-10-27 | closed | `27/10/2014 Labour Day` — `Closed` | `NZX-SX-2014-01-27` | T1 | NZX event date printed verbatim (the 2014-10-20 replay prints the same row) |
+| 2014-12-24 | replacement blocks | `24/12/2014 Christmas Eve` — `Abbreviated` | `NZX-SX-2014-10-20` | T1 | the 12:45 abbreviated grid, same reading as 2013-12-24 |
+| 2014-12-25 | closed | `25/12/2014 Christmas Day` — `Closed` | `NZX-SX-2014-10-20` | T1 | NZX event date printed verbatim |
+| 2014-12-26 | closed | `26/12/2014 Boxing Day` — `Closed` | `NZX-SX-2014-10-20` | T1 | NZX event date printed verbatim |
+| 2014-12-31 | replacement blocks | `31/12/2014 New Years Eve` — `Abbreviated` | `NZX-SX-2014-10-20` | T1 | same reading as 2013-12-24 |
+
+### 2015
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2015-01-01 | closed | `01/01/2015 New Year` — `Closed` | `NZX-SX-2014-10-20` | T1 | NZX event date printed verbatim |
+| 2015-01-02 | closed | `02/01/2015 New Year` — `Closed` | `NZX-SX-2014-10-20` | T1 | NZX event date printed verbatim |
+| 2015-02-06 | closed | `06/02/2015 Waitangi Day` — `Closed` | `NZX-SX-2015-01-13` | T1 | NZX event date printed verbatim |
+| 2015-04-03 | closed | `03/04/2015 Good Friday` — `Closed` | `NZX-SX-2015-01-13` | T1 | NZX event date printed verbatim |
+| 2015-04-06 | closed | `06/04/2015 Easter Monday` — `Closed` | `NZX-SX-2015-01-13` | T1 | NZX event date printed verbatim |
+| 2015-04-25 | closed | `25/04/2015 Anzac Day` — `Closed` | `NZX-SX-2015-01-13` | T1 | NZX event date printed verbatim (a Saturday the sheet prints) |
+| 2015-04-27 | closed | `27/04/2015 Anzac Observance` — `Closed` | `NZX-SX-2015-01-13` | T1 | the sheet's own mondayised date |
+| 2015-06-01 | closed | `01/06/2015 Queen's Birthday` — `Closed` | `NZX-SX-2015-01-13` | T1 | NZX event date printed verbatim (the 2015-04-27 replay prints the same row) |
+| 2015-10-26 | closed | `26/10/2015 Labour Day` — `Closed` | `NZX-SX-2015-01-13` | T1 | NZX event date printed verbatim (the 2015-04-27 replay prints the same row) |
+| 2015-12-24 | replacement blocks | `24/12/2015 Christmas Eve` — `Abbreviated` | `NZX-SX-2015-01-13` | T1 | the 12:45 abbreviated grid, same reading as 2013-12-24 |
+| 2015-12-25 | closed | `25/12/2015 Christmas Day` — `Closed` | `NZX-SX-2015-01-13` | T1 | NZX event date printed verbatim |
+| 2015-12-28 | closed | `28/12/2015 Boxing Day` — `Closed` | `NZX-SX-2015-01-13` | T1 | the sheet's own observed date for the Saturday 26 December holiday |
+| 2015-12-31 | replacement blocks | `31/12/2015 New Years Eve` — `Abbreviated` | `NZX-SX-2015-01-13` | T1 | same reading as 2013-12-24 |
+
+### 2016
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2016-01-01 | closed | `01/01/2016 New Year` — `Closed` | `NZX-SX-2015-04-27` | T1 | NZX event date printed verbatim |
+| 2016-01-04 | closed | `04/01/2016 New Year` — `Closed` | `NZX-SX-2015-04-27` | T1 | the sheet's own observed date for the Saturday 2 January holiday |
+| 2016-02-06 | closed | `06/02/2016 Waitangi Day` — `Closed` | `NZX-SX-2015-04-27` | T1 | NZX event date printed verbatim (a Saturday the sheet prints) |
+| 2016-02-08 | closed | `08/02/2016 Waitangi Observance` — `Closed` | `NZX-SX-2015-04-27` | T1 | the sheet's own mondayised date |
+| 2016-03-25 | closed | `25/03/2016 Good Friday` — `Closed` | `NZX-SX-2015-04-27` | T1 | NZX event date printed verbatim |
+| 2016-03-28 | closed | `28/03/2016 Easter Monday` — `Closed` | `NZX-SX-2015-04-27` | T1 | NZX event date printed verbatim |
+| 2016-04-25 | closed | `25/04/2016 Anzac Day` — `Closed` | `NZX-SX-2015-04-27` | T1 | NZX event date printed verbatim; the last date any surviving operator artifact prints before the 2016-2017 capture gap |
+
+**2016-04-26..2017-10-22: the capture gap.** No operator artifact prints these
+dates (see the coverage paragraph); they carry no rows and no answer.
+
+### 2017
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2017-10-23 | closed | `23/10/2017 Labour Day` — `Closed` | `NZX-SX-2017-06-23` | T1 | NZX event date printed verbatim; the first date the next surviving operator artifact prints after the capture gap |
+| 2017-12-22 | replacement blocks | `22/12/2017 Christmas Eve` — `Abbreviated` | `NZX-SX-2017-06-23` | T1 | the 12:45 abbreviated grid, same reading as 2013-12-24 |
+| 2017-12-25 | closed | `25/12/2017 Christmas Day` — `Closed` | `NZX-SX-2017-06-23` | T1 | NZX event date printed verbatim |
+| 2017-12-26 | closed | `26/12/2017 Boxing Day` — `Closed` | `NZX-SX-2017-06-23` | T1 | NZX event date printed verbatim |
+| 2017-12-29 | replacement blocks | `29/12/2017 New Years Eve` — `Abbreviated` | `NZX-SX-2017-06-23` | T1 | same reading as 2013-12-24 |
+
+### 2018
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2018-01-01 | closed | `01/01/2018 New Years Day` — `Closed` | `NZX-TH-2018-08-24` | T1 | NZX event date printed verbatim |
+| 2018-01-02 | closed | `02/01/2018 Day after New Year's Day` — `Closed` | `NZX-TH-2018-08-24` | T1 | NZX event date printed verbatim |
+| 2018-02-06 | closed | `06/02/2018 Waitangi Day` — `Closed` | `NZX-TH-2018-08-24` | T1 | NZX event date printed verbatim |
+| 2018-03-30 | closed | `30/03/2018 Good Friday` — `Closed` | `NZX-TH-2018-08-24` | T1 | NZX event date printed verbatim |
+| 2018-04-02 | closed | `02/04/2018 Easter Monday` — `Closed` | `NZX-TH-2018-08-24` | T1 | NZX event date printed verbatim |
+| 2018-04-25 | closed | `25/04/2018 Anzac Day` — `Closed` | `NZX-TH-2018-08-24` | T1 | NZX event date printed verbatim |
+| 2018-06-04 | closed | `04/06/2018 Queen's Birthday` — `Closed` | `NZX-TH-2018-08-24` | T1 | NZX event date printed verbatim (the 2017-06-23 replay prints the same row) |
+| 2018-10-22 | closed | `22/10/2018 Labour Day` — `Closed` | `NZX-TH-2018-08-24` | T1 | NZX event date printed verbatim |
+| 2018-12-24 | replacement blocks | `24/12/2018 Business Day prior to Christmas Day` — `Abbreviated` | `NZX-TH-2018-08-24` | T1 | the 12:45 abbreviated grid, same reading as 2013-12-24 |
+| 2018-12-25 | closed | `25/12/2018 Christmas Day` — `Closed` | `NZX-TH-2018-08-24` | T1 | NZX event date printed verbatim |
+| 2018-12-26 | closed | `26/12/2018 Boxing Day` — `Closed` | `NZX-TH-2018-08-24` | T1 | NZX event date printed verbatim |
+| 2018-12-31 | replacement blocks | `31/12/2018 Business Day prior to New Year's Day` — `Abbreviated` | `NZX-TH-2018-08-24` | T1 | same reading as 2013-12-24 |
+
+### 2019
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2019-01-01 | closed | `01/01/2019 New Years Day` — `Closed` | `NZX-TH-2019-03-25` | T1 | NZX event date printed verbatim |
+| 2019-01-02 | closed | `02/01/2019 Day after New Year's Day` — `Closed` | `NZX-TH-2019-03-25` | T1 | NZX event date printed verbatim |
+| 2019-02-06 | closed | `06/02/2019 Waitangi Day` — `Closed` | `NZX-TH-2019-03-25` | T1 | NZX event date printed verbatim |
+| 2019-04-19 | closed | `19/04/2019 Good Friday` — `Closed` | `NZX-TH-2019-03-25` | T1 | NZX event date printed verbatim |
+| 2019-04-22 | closed | `22/04/2019 Easter Monday` — `Closed` | `NZX-TH-2019-03-25` | T1 | NZX event date printed verbatim |
+| 2019-04-25 | closed | `25/04/2019 ANZAC Day` — `Closed` | `NZX-TH-2019-03-25` | T1 | NZX event date printed verbatim |
+| 2019-06-03 | closed | `03/06/2019 Queen's Birthday` — `Closed` | `NZX-TH-2019-03-25` | T1 | NZX event date printed verbatim |
+| 2019-10-28 | closed | `28/10/2019 Labour Day` — `Closed` | `NZX-TH-2019-03-25` | T1 | NZX event date printed verbatim |
+| 2019-12-24 | replacement blocks | `24/12/2019 Business Day prior to Christmas Day` — `Abbreviated` | `NZX-TH-2019-03-25` | T1 | the 12:45 abbreviated grid, same reading as 2013-12-24 |
+| 2019-12-25 | closed | `25/12/2019 Christmas Day` — `Closed` | `NZX-TH-2019-03-25` | T1 | NZX event date printed verbatim |
+| 2019-12-26 | closed | `26/12/2019 Boxing Day` — `Closed` | `NZX-TH-2019-03-25` | T1 | NZX event date printed verbatim |
+| 2019-12-31 | replacement blocks | `31/12/2019 Business Day prior to New Year's Day` — `Abbreviated` | `NZX-TH-2019-03-25` | T1 | same reading as 2013-12-24 |
+
+### 2020
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2020-01-01 | closed | `01/01/2020 New Years Day` — `Closed` | `NZX-HB-2020-06-08` | T1 | NZX event date printed verbatim |
+| 2020-01-02 | closed | `02/01/2020 Day after New Year's Day` — `Closed` | `NZX-HB-2020-06-08` | T1 | NZX event date printed verbatim |
+| 2020-02-06 | closed | `06/02/2020 Waitangi Day` — `Closed` | `NZX-HB-2020-06-08` | T1 | NZX event date printed verbatim |
+| 2020-04-10 | closed | `10/04/2020 Good Friday` — `Closed` | `NZX-HB-2020-06-08` | T1 | NZX event date printed verbatim |
+| 2020-04-13 | closed | `13/04/2020 Easter Monday` — `Closed` | `NZX-HB-2020-06-08` | T1 | NZX event date printed verbatim |
+| 2020-04-27 | closed | `27/04/2020 ANZAC Day observed` — `Closed` | `NZX-HB-2020-06-08` | T1 | the sheet's own observed date for the Saturday 25 April holiday; the sheet prints no Saturday row |
+| 2020-06-01 | closed | `01/06/2020 Queen's Birthday` — `Closed` | `NZX-HB-2020-06-08` | T1 | NZX event date printed verbatim |
+| 2020-10-26 | closed | `26/10/2020 Labour Day` — `Closed` | `NZX-HB-2020-06-08` | T1 | NZX event date printed verbatim |
+| 2020-12-24 | replacement blocks | `24/12/2020 Business Day prior to Christmas Day` — `Abbreviated`; the 12:45 grid with the 9:00am Pre-open | `NZX-HB-2020-06-08` | T1 | the 2013-2020 grid; the Pre-open is the narrowest sourced value across the 2020-06-08 and 2021-01-12 replays (see the conflict note) |
+| 2020-12-25 | closed | `25/12/2020 Christmas Day` — `Closed` | `NZX-HB-2020-06-08` | T1 | NZX event date printed verbatim |
+| 2020-12-28 | closed | `28/12/2020 Boxing Day` — `Closed` | `NZX-HB-2020-06-08` | T1 | the sheet's own observed date for the Saturday 26 December holiday |
+| 2020-12-31 | replacement blocks | `31/12/2020 Business Day Prior to New Year's Day` — `Abbreviated` | `NZX-HB-2021-01-12` | T1 | same reading as 2020-12-24 |
+
+### 2021
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2021-01-01 | closed | `01/01/2021 New Years Day` — `Closed` | `NZX-HB-2021-01-12` | T1 | NZX event date printed verbatim |
+| 2021-01-04 | closed | `04/01/2021 Day after New Year's Day` — `Closed` | `NZX-HB-2021-01-12` | T1 | the sheet's own observed date for the Saturday 2 January holiday |
+| 2021-02-08 | closed | `08/02/2021 Waitangi Day` — `Closed` | `NZX-HB-2021-01-12` | T1 | the sheet's own observed date for the Saturday 6 February holiday; the sheet prints no Saturday row |
+| 2021-04-02 | closed | `02/04/2021 Good Friday` — `Closed` | `NZX-HB-2021-01-12` | T1 | NZX event date printed verbatim |
+| 2021-04-05 | closed | `05/04/2021 Easter Monday` — `Closed` | `NZX-HB-2021-01-12` | T1 | NZX event date printed verbatim |
+| 2021-04-26 | closed | `26/04/2021 ANZAC Day observed` — `Closed` | `NZX-HB-2021-01-12` | T1 | the sheet's own observed date for the Sunday 25 April holiday |
+| 2021-06-07 | closed | `07/06/2021 Queen's Birthday` — `Closed` | `NZX-HB-2021-01-12` | T1 | NZX event date printed verbatim |
+| 2021-10-25 | closed | `25/10/2021 Labour Day` — `Closed` | `NZX-HB-2021-01-12` | T1 | NZX event date printed verbatim |
+| 2021-12-24 | replacement blocks | `24/12/2021 Business Day prior to Christmas Day` — `Abbreviated`; the 8:30am grid | `NZX-HB-2021-01-12` | T1 | the 2021 grid: Pre-open `8:30am - 10:00am`, Normal Trading `10:00am - 12:45pm`, Pre-close `12:45pm - 1:00pm`, Adjust `1:00pm - 1:30pm` |
+| 2021-12-27 | closed | `27/12/2021 Christmas Day` — `Closed` | `NZX-HB-2021-01-12` | T1 | the sheet's own observed date for the Saturday 25 December holiday |
+| 2021-12-28 | closed | `28/12/2021 Boxing Day` — `Closed` | `NZX-HB-2021-01-12` | T1 | the sheet's own observed date for the Sunday 26 December holiday |
+| 2021-12-31 | replacement blocks | `31/12/2021 Business Day Prior to New Year's Day` — `Abbreviated` | `NZX-HB-2021-01-12` | T1 | same reading as 2021-12-24 |
+
+### 2022
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2022-01-03 | closed | `New Year's Day — Monday, 3 January 2022` — `Closed` | `NZX-HB-2022-02-01` | T1 | the sheet's own observed date for the Saturday 1 January holiday |
+| 2022-01-04 | closed | `Day after New Year's Day — Tuesday, 4 January 2022` — `Closed` | `NZX-HB-2022-02-01` | T1 | the sheet's own observed date for the Sunday 2 January holiday |
+| 2022-02-07 | closed | `Waitangi Day — Monday, 7 February 2022` — `Closed` | `NZX-HB-2022-02-01` | T1 | the sheet's own observed date for the Sunday 6 February holiday |
+| 2022-04-15 | closed | `Good Friday — Friday, 15 April 2022` — `Closed` | `NZX-HB-2022-02-01` | T1 | NZX event date printed verbatim |
+| 2022-04-18 | closed | `Easter Monday — Monday, 18 April 2022` — `Closed` | `NZX-HB-2022-02-01` | T1 | NZX event date printed verbatim |
+| 2022-04-25 | closed | `ANZAC Day — Monday, 25 April 2022` — `Closed` | `NZX-HB-2022-02-01` | T1 | NZX event date printed verbatim |
+| 2022-06-06 | closed | `Queen's Birthday — Monday, 6 June 2022` — `Closed` | `NZX-HB-2022-02-01` | T1 | NZX event date printed verbatim |
+| 2022-06-24 | closed | `Matariki — Friday, 24 June 2022` — `Closed` | `NZX-HB-2022-02-01` | T1 | NZX event date printed verbatim; the holiday's first observance |
+| 2022-09-26 | closed | `Queen Elizabeth II Memorial Day — Monday, 26 September` — `Closed`; footnote: `New Zealand's stock exchange (NZX) will be closed on 26 September, a national public holiday to honour the passing of Queen Elizabeth II. All NZX operations will resume on 27 September.` | `NZX-HB-2022-11-15` | T1 | the sheet's own unscheduled closure in session language |
+| 2022-10-24 | closed | `Labour Day — Monday, 24 October 2022` — `Closed` | `NZX-HB-2022-11-15` | T1 | NZX event date printed verbatim |
+| 2022-12-23 | replacement blocks | `Business Day Prior to Christmas Day — Friday, 23 December 2022` — `Abbreviated Trading*` | `NZX-HB-2022-11-15` | T1 | the 8:30am grid, same reading as 2021-12-24 |
+| 2022-12-26 | closed | `Boxing Day — Monday, 26 December 2022` — `Closed` | `NZX-HB-2022-11-15` | T1 | the sheet's own observed date for the Monday 26 December holiday |
+| 2022-12-27 | closed | `Christmas Day — Tuesday, 27 December 2022` — `Closed` | `NZX-HB-2022-11-15` | T1 | the sheet's own observed date for the Sunday 25 December holiday |
+| 2022-12-30 | replacement blocks | `Business Day Prior to New Year's Day — Friday, 30 December 2022` — `Abbreviated Trading*` | `NZX-HB-2022-11-15` | T1 | same reading as 2021-12-24 |
+
+### 2023
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2023-01-02 | closed | `New Year's Day — Monday, 2 January 2023` — `Closed` | `NZX-HB-2023-11-06` | T1 | the sheet's own observed date for the Sunday 1 January holiday |
+| 2023-01-03 | closed | `Day after New Year's Day — Tuesday, 3 January 2023` — `Closed` | `NZX-HB-2023-11-06` | T1 | the sheet's own observed date for the Monday 2 January holiday |
+| 2023-02-06 | closed | `Waitangi Day — Monday, 6 February 2023` — `Closed` | `NZX-HB-2023-11-06` | T1 | NZX event date printed verbatim |
+| 2023-04-07 | closed | `Good Friday — Friday, 7 April 2023` — `Closed` | `NZX-HB-2023-11-06` | T1 | NZX event date printed verbatim |
+| 2023-04-10 | closed | `Easter Monday — Monday, 10 April 2023` — `Closed` | `NZX-HB-2023-11-06` | T1 | NZX event date printed verbatim |
+| 2023-04-25 | closed | `ANZAC Day — Tuesday, 25 April 2023` — `Closed` | `NZX-HB-2023-11-06` | T1 | NZX event date printed verbatim |
+| 2023-06-05 | closed | `King's Birthday — Monday, 5 June 2023` — `Closed` | `NZX-HB-2023-11-06` | T1 | NZX event date printed verbatim |
+| 2023-07-14 | closed | `Matariki — Friday, 14 July 2023` — `Closed` | `NZX-HB-2023-11-06` | T1 | NZX event date printed verbatim |
+| 2023-10-23 | closed | `Labour Day — Monday, 23 October 2023` — `Closed` | `NZX-HB-2023-11-06` | T1 | NZX event date printed verbatim |
+| 2023-12-22 | replacement blocks | `Business Day Prior to Christmas Day — Friday, 22 December 2023` — `Abbreviated Trading*` | `NZX-HB-2023-11-06` | T1 | the 8:30am grid, same reading as 2021-12-24 |
+| 2023-12-25 | closed | `Christmas Day — Monday, 25 December 2023` — `Closed` | `NZX-HB-2023-11-06` | T1 | NZX event date printed verbatim |
+| 2023-12-26 | closed | `Boxing Day — Tuesday, 26 December 2023` — `Closed` | `NZX-HB-2023-11-06` | T1 | NZX event date printed verbatim |
+| 2023-12-29 | replacement blocks | `Business Day Prior to New Year's Day — Friday, 29 December 2023` — `Abbreviated Trading*` | `NZX-HB-2023-11-06` | T1 | same reading as 2021-12-24 |
+
+### 2024
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2024-01-01 | closed | `New Year's Day — Monday, 1 January 2024` — `Closed` | `NZX-HB-2024-02-19` | T1 | NZX event date printed verbatim |
+| 2024-01-02 | closed | `Day after New Year's Day — Tuesday, 2 January 2024` — `Closed` | `NZX-HB-2024-02-19` | T1 | NZX event date printed verbatim |
+| 2024-02-06 | closed | `Waitangi Day — Tuesday, 6 February 2024` — `Closed` | `NZX-HB-2024-02-19` | T1 | NZX event date printed verbatim |
+| 2024-03-29 | closed | `Good Friday — Friday, 29 March 2024` — `Closed` | `NZX-HB-2024-02-19` | T1 | NZX event date printed verbatim |
+| 2024-04-01 | closed | `Easter Monday — Monday, 1 April 2024` — `Closed` | `NZX-HB-2024-02-19` | T1 | NZX event date printed verbatim |
+| 2024-04-25 | closed | `ANZAC Day — Thursday, 25 April 2024` — `Closed` | `NZX-HB-2024-02-19` | T1 | NZX event date printed verbatim |
+| 2024-06-03 | closed | `King's Birthday — Monday, 3 June 2024` — `Closed` | `NZX-HB-2024-02-19` | T1 | NZX event date printed verbatim |
+| 2024-06-28 | closed | `Matariki — Friday, 28 June 2024` — `Closed` | `NZX-HB-2024-02-19` | T1 | NZX event date printed verbatim |
+| 2024-10-28 | closed | `Labour Day — Monday, 28 October 2024` — `Closed` | `NZX-HB-2024-02-19` | T1 | NZX event date printed verbatim |
+| 2024-12-24 | replacement blocks | `Business Day Prior to Christmas Day — Tuesday, 24 December 2024` — `Abbreviated Trading*` | `NZX-HB-2024-02-19` | T1 | the 8:30am grid, same reading as 2021-12-24 |
+| 2024-12-25 | closed | `Christmas Day — Wednesday, 25 December 2024` — `Closed` | `NZX-HB-2024-02-19` | T1 | NZX event date printed verbatim |
+| 2024-12-26 | closed | `Boxing Day — Thursday, 26 December 2024` — `Closed` | `NZX-HB-2024-02-19` | T1 | NZX event date printed verbatim |
+| 2024-12-31 | replacement blocks | `Business Day Prior to New Year's Day — Tuesday, 31 December 2024` — `Abbreviated Trading*` | `NZX-HB-2024-02-19` | T1 | same reading as 2021-12-24 |
 
 ### 2025
 
@@ -75,7 +388,7 @@ which is why ANZAC Day 2026 and Boxing Day 2026 print on Mondays.
 | 2025-06-02 | closed | `King's Birthday` — `Monday, 2 June 2025` — `Closed` | `NZX-TH-2025-01-23` | T1 | NZX event date printed verbatim |
 | 2025-06-20 | closed | `Matariki` — `Friday, 20 June 2025` — `Closed` | `NZX-TH-2025-01-23` | T1 | NZX event date printed verbatim |
 | 2025-10-27 | closed | `Labour Day` — `Monday, 27 October 2025` — `Closed` | `NZX-TH-2025-01-23` | T1 | NZX event date printed verbatim |
-| 2025-12-24 | replacement blocks | `Business Day Prior to Christmas Day` — `Wednesday, 24 December 2025` — `Abbreviated Trading*`; abbreviated grid: Normal Trading `10:00am - 12:45pm`, Pre-Close `12:45pm - 1:00pm`, Adjust `1:00pm - 1:30pm` | `NZX-TH-2025-01-23` | T1 | see the interpretive step below — the row restates the operator's own abbreviated grid as one replacement day |
+| 2025-12-24 | replacement blocks | `Business Day Prior to Christmas Day` — `Wednesday, 24 December 2025` — `Abbreviated Trading*`; abbreviated grid: Normal Trading `10:00am - 12:45pm`, Pre-Close `12:45pm - 1:00pm`, Adjust `1:00pm - 1:30pm` | `NZX-TH-2025-01-23` | T1 | see the interpretive step — the row restates the operator's own abbreviated grid as one replacement day |
 | 2025-12-25 | closed | `Christmas Day` — `Thursday, 25 December 2025` — `Closed` | `NZX-TH-2025-01-23` | T1 | NZX event date printed verbatim |
 | 2025-12-26 | closed | `Boxing Day` — `Friday, 26 December 2025` — `Closed` | `NZX-TH-2025-01-23` | T1 | NZX event date printed verbatim |
 | 2025-12-31 | replacement blocks | `Business Day Prior to New Year's Day` — `Wednesday, 31 December 2025` — `Abbreviated Trading*`; same abbreviated grid | `NZX-TH-2025-01-23` | T1 | same reading as 2025-12-24 |
@@ -107,34 +420,52 @@ which is why ANZAC Day 2026 and Boxing Day 2026 print on Mondays.
 
 **Interpretive step — the abbreviated-trading days are replacement days, not
 scalar early closes.** The operator's own abbreviated column keeps a tradeable
-closing auction after the shortened Normal Trading window: Pre-Close runs
-12:45pm-1:00pm and the closing uncross randomises within 30 seconds either
-side of 1:00pm, exactly as it does around 5:00pm on a full day (the same
-anatomy-of-a-trading-day statement the normal-week profile cites for the
-±30 second envelope). An `EarlyClose` clip cannot state that day: clipped at
-12:45 it deletes the auction prints (an executable window the operator
-keeps open), and clipped at 13:00:30 it drags the order-entry-only Pre-Close
-queue inside `is_open`, which the charter's order-entry rule forbids. Each
-abbreviated day therefore ships as a replacement block set restating the
-operator's grid block for block — `extended` 08:30-10:00 (Pre-open, tradeable:
-off-market reports print), `regular` 10:00-12:45 (Normal Trading),
-`order_entry` 12:45-12:59:30 (Pre-Close, sliced at the earliest uncross edge),
-`extended` 12:59:30-13:00:30 (the closing uncross envelope) — with Enquiry and
-Adjust excluded exactly as on a full day. The block instants are the sheet's
-own phase boundaries; only the ±30 second uncross envelope is the operator's
+closing auction after the shortened Normal Trading window: Pre-Close runs to
+the abbreviated close and the closing uncross randomises within 30 seconds
+either side of it, exactly as it does around 5:00pm on a full day (the same
+anatomy-of-a-trading-day statement the normal-week profile cites for the ±30
+second envelope). An `EarlyClose` clip cannot state that day: clipped at the
+Normal-Trading end it deletes the auction prints (an executable window the
+operator keeps open), and clipped at the uncross envelope's end it drags the
+order-entry-only Pre-Close queue inside `is_open`, which the charter's
+order-entry rule forbids. Each abbreviated day therefore ships as a
+replacement block set restating the operator's grid block for block — the
+`extended` Pre-open (tradeable: off-market reports print), the `regular`
+Normal Trading, the `order_entry` Pre-Close sliced at the earliest uncross
+edge, and the `extended` closing uncross envelope — with Enquiry and Adjust
+excluded exactly as on a full day. The block instants are the sheets' own
+phase boundaries; only the ±30 second uncross envelope is the operator's
 randomisation statement already carried by the normal-week profile.
 
 **No 2027 rows past the horizon.** Waitangi Day 2027 (6 February) and every
 later 2027 date are outside the operator's published table, so the window
 ends at 2027-01-04 and the inventory records the forward gap. Dates inside
-the window with no row are audited normal: the operator's page names every
-holiday it observes, and 2026's table (Waitangi 2026 through the horizon)
-names thirteen — all thirteen shipped, none withheld.
+the windows with no row are audited normal: each operator page names every
+holiday it observes in its span, and every printed date ships.
 
 ### Documents
 
 | Document | Window | Replay or service URL | Capture or retrieval, UTC | Tier | sha256 |
 |---|---|---|---|---|---|
+| `NZX-KD-2010-01-05` | 2010-01-01 .. 2010-12-31 | <https://web.archive.org/web/20100105003154id_/https://www.nzx.com/markets/key-dates/trading-hours> | Wayback `id_` replay of capture `20100105003154`, retrieved 2026-09-29 03:18:58 UTC | T1 | `c01569901faa64d89de1ecb5e4f1ab319d3ad7ee13735389989e8813e5da0294` |
+| `NZX-KD-2010-12-29` | 2011-01-01 .. 2011-12-30 | <https://web.archive.org/web/20101229214809id_/https://www.nzx.com/markets/key-dates/trading-hours> | Wayback `id_` replay of capture `20101229214809`, retrieved 2026-09-29 03:18:59 UTC | T1 | `14aa8ba0dbc6d6b044181964302a7c54fb9457da8822766a98c8b190c3c58a23` |
+| `NZX-SX-2011-12-19` | 2011-12-23 .. 2012-10-22 | <https://web.archive.org/web/20111219140445id_/https://www.nzx.com/markets/NZSX/trading_hours> | Wayback `id_` replay of capture `20111219140445`, retrieved 2026-09-29 03:28:46 UTC | T1 | `7085a9a8c7a0addae300a56e6c6b21b6c57731505c1d4052b6132a0819108872` |
+| `NZX-SX-2012-05-04` | 2012-06-04 .. 2013-04-25 | <https://web.archive.org/web/20120504064253id_/https://www.nzx.com/markets/NZSX/trading_hours> | Wayback `id_` replay of capture `20120504064253`, retrieved 2026-09-29 03:27:01 UTC | T1 | `464bee01a8f7b760e5292cfaa3d4efbd17018d3c2ec96eb0e0142b706612d2ce` |
+| `NZX-SX-2013-01-16` | 2013-02-06 .. 2014-01-02 | <https://web.archive.org/web/20130116204734id_/https://www.nzx.com/markets/NZSX/trading_hours> | Wayback `id_` replay of capture `20130116204734`, retrieved 2026-09-29 03:27:03 UTC | T1 | `092c07789047507b8c9147feb60d04b5c33b3f87ca9be5b4e841104be4808948` |
+| `NZX-SX-2013-05-16` | 2013-06-03 .. 2014-04-25 | <https://web.archive.org/web/20130516103440id_/https://www.nzx.com/markets/NZSX/trading_hours> | Wayback `id_` replay of capture `20130516103440`, retrieved 2026-09-29 03:28:48 UTC | T1 | `d16c9e2e6fc34df8b3a54b7a3587f5b535c14a2b47aa6843dc3796857bfb4241` |
+| `NZX-SX-2014-01-27` | 2014-02-06 .. 2015-01-02 | <https://web.archive.org/web/20140127101752id_/https://www.nzx.com/markets/NZSX/trading_hours> | Wayback `id_` replay of capture `20140127101752`, retrieved 2026-09-29 03:27:06 UTC | T1 | `88dc01a700388b64149a68274542e82f9af308c55047b6c6cd7ea26b339743aa` |
+| `NZX-SX-2014-10-20` | 2014-10-27 .. 2015-06-01 | <https://web.archive.org/web/20141020180412id_/https://www.nzx.com/markets/NZSX/trading_hours> | Wayback `id_` replay of capture `20141020180412`, retrieved 2026-09-29 03:28:50 UTC | T1 | `e8d409f45da2a2d48c640547ea3249dc73ef43d8b27a20b609793f56087c52d5` |
+| `NZX-SX-2015-01-13` | 2015-02-06 .. 2016-01-04 | <https://web.archive.org/web/20150113212520id_/https://www.nzx.com/markets/NZSX/trading_hours> | Wayback `id_` replay of capture `20150113212520`, retrieved 2026-09-29 03:27:08 UTC | T1 | `8ea588ca618faad2f742ad771bd2a0428469568b537bf26fbe67c04cf0dd1bc6` |
+| `NZX-SX-2015-04-27` | 2015-06-01 .. 2016-04-25 | <https://web.archive.org/web/20150427144953id_/https://www.nzx.com/markets/NZSX/trading_hours> | Wayback `id_` replay of capture `20150427144953`, retrieved 2026-09-29 03:28:52 UTC | T1 | `293803e0f1a918423c4bad2d8cfbb3d4b8858d0d32d42c6701814168292c4411` |
+| `NZX-SX-2017-06-23` | 2017-10-23 .. 2018-06-04 | <https://web.archive.org/web/20170623165321id_/https://www.nzx.com/markets/NZSX/trading_hours> | Wayback `id_` replay of capture `20170623165321`, retrieved 2026-09-29 03:27:10 UTC | T1 | `aff08bd12590dea5f6035b51625dd1c3a3792dc7ae5359cdc1acd9835bb05fa1` |
+| `NZX-TH-2018-08-24` | 2018-01-01 .. 2019-01-02 | <https://web.archive.org/web/20180824125304id_/https://www.nzx.com/investing/nzx-trading-hours> | Wayback `id_` replay of capture `20180824125304`, retrieved 2026-09-29 03:22:36 UTC | T1 | `45a19b7159f1d07a831d740d0f95da0bf84e19bb200b5585537e2c3822b90e94` |
+| `NZX-TH-2019-03-25` | 2019-01-01 .. 2019-12-31 | <https://web.archive.org/web/20190325182628id_/https://www.nzx.com/investing/nzx-trading-hours> | Wayback `id_` replay of capture `20190325182628`, retrieved 2026-09-29 03:22:37 UTC | T1 | `c697dea53d89bfbd3be04aef9faf9366ed66720aada58a6eea05dec9ceb48634` |
+| `NZX-HB-2020-06-08` | 2020-01-01 .. 2020-12-28 | <https://web.archive.org/web/20200608000152id_/https://www.nzx.com/services/nzx-trading/hours-boards> | Wayback `id_` replay of capture `20200608000152`, retrieved 2026-09-29 03:31:50 UTC | T1 | `d09833adaaa0241f13afb27cd9708324cc06701992f311e911f8e7f07f34c5f7` |
+| `NZX-HB-2021-01-12` | 2020-12-24 .. 2022-01-04 | <https://web.archive.org/web/20210112222610id_/https://www.nzx.com/services/nzx-trading/hours-boards> | Wayback `id_` replay of capture `20210112222610`, retrieved 2026-09-29 03:33:35 UTC | T1 | `6feeadc3d903d2dc3968fb1ac6e3f7cac4c2d9fa435ff6fc312b32bd53e95706` |
+| `NZX-HB-2022-02-01` | 2021-12-24 .. 2023-01-02 | <https://web.archive.org/web/20220201081954id_/https://www.nzx.com/services/nzx-trading/hours-boards> | Wayback `id_` replay of capture `20220201081954`, retrieved 2026-09-29 03:34:49 UTC | T1 | `cff34ef58e690fb695ce480429e39bf28145fbe7a8eca2dda46b948c40e3801c` |
+| `NZX-HB-2022-11-15` | 2021-12-24 .. 2023-01-02 | <https://web.archive.org/web/20221115164810id_/https://www.nzx.com/services/nzx-trading/hours-boards> | Wayback `id_` replay of capture `20221115164810`, retrieved 2026-09-29 03:36:07 UTC | T1 | `02c27775b753fa68c3158e263df93af0ac86fbc50e071735f89ab7a18c297247` |
+| `NZX-HB-2023-11-06` | 2022-12-23 .. 2024-01-02 | <https://web.archive.org/web/20231106024609id_/https://www.nzx.com/services/nzx-trading/hours-boards> | Wayback `id_` replay of capture `20231106024609`, retrieved 2026-09-29 03:35:41 UTC | T1 | `84e0a2b0cb78823a85ee0c520bc8b59cf3d75930df48ca491fd6401566641cb3` |
+| `NZX-HB-2024-02-19` | 2024-01-01 .. 2025-01-02 | <https://web.archive.org/web/20240219104141id_/https://www.nzx.com/services/nzx-trading/hours-boards> | Wayback `id_` replay of capture `20240219104141`, retrieved 2026-09-29 03:36:09 UTC | T1 | `bc4ad05484098ec1a589e4a129681e46c7e75b572115edd0c49ae10a3d9c1608` |
 | `NZX-TH-2024-12-16` | 2025-01-01 .. 2026-01-02 | <https://web.archive.org/web/20241216221746id_/https://www.nzx.com/investing/nzx-trading-hours> | Wayback `id_` replay of capture `20241216221746`, retrieved 2026-09-28 01:20 UTC | T1 | `27ead98734cede1f2b0e21d3132b20b5a4b6ea5ebd218b4fb4d17fe9394aa675` |
 | `NZX-TH-2025-01-23` | 2025-01-01 .. 2026-01-02 | <https://web.archive.org/web/20250123031559id_/https://www.nzx.com/investing/nzx-trading-hours> | Wayback `id_` replay of capture `20250123031559`, retrieved 2026-09-28 01:19 UTC | T1 | `982f231b435dddba2473692163a2bcb60f47f89c1005a41d1745eb520c6e715a` |
 | `NZX-TH-2026-02-03` | 2025-01-01 .. 2027-01-04 | <https://web.archive.org/web/20260203200136id_/https://new.nzx.com/investing/nzx-trading-hours> | Wayback `id_` replay of capture `20260203200136`, retrieved 2026-09-28 01:19 UTC | T1 | `0aa0508dadd8c30aeb914bd09f6e7db96afe84533a18350e4145f7b5b8dd6215` |
@@ -142,13 +473,49 @@ names thirteen — all thirteen shipped, none withheld.
 
 `NZX-TH-LIVE-2026-09-28` is no row's document: it is the horizon evidence, and
 its table is cell-for-cell identical to `NZX-TH-2026-02-03`'s over the rows
-they share. The store's `holidays/raw/equities/nzx/2025-2027/` also holds the
-2025-11-16 replay (`59c3798c…`), which still prints the 2025 table and
-corroborates the 2025/2026 boundary documents without keying any row.
+they share. The store's `holidays/raw/equities/nzx/2010-2024/` holds the
+pre-2025 replays; `holidays/raw/equities/nzx/2025-2027/` holds the 2025-2027
+replays (including the 2025-11-16 replay, `59c3798c…`, which still prints the
+2025 table and corroborates the 2025/2026 boundary documents without keying
+any row).
 
 ## Gaps and residual risks
 
-- **horizon carried below the first dated row** — the pre-2020 baseline rests only on NZX announcement 350919, whose publication day is not recorded in the repository (an NZX announcement number is not a date). The ledger horizon is therefore 2020-04-06, the first day at which this row's state is sourced, with everything below it carried. Closing condition: read the announcement's own publication date, or find a dated pre-2020 NZX trading-hours page; either would move the horizon earlier.
-- The closing uncross is randomised within 30 seconds either side of 17:00, so the tradeable window runs to 17:00:30; stopping at 17:00 would drop the half of the randomisation in which the official closing print most often occurs.
-- The only order-entry-only phase is Pre-Close 16:45–16:59:30, which neither matches nor accepts reports. The slice stops 30 seconds short of the nominal 17:00 boundary so the randomized uncross stays inside the tradeable window.
-- Enquiry and Adjust do not accept automatically matched orders and are excluded from the envelope (AGENTS.md, *Cash-equity venue envelope*).
+- **the 2016-2017 capture gap** — 2016-04-26..2017-10-22 is inside no audited
+  window: no capture of any NZX trading-hours page or operator PDF survives in
+  the Wayback index for that span (checked 2026-09-29, UTC, CDX sweeps over the
+  whole domain), so no operator statement prints those closures and the table
+  claims nothing there; queries inside the gap refuse. **Closing condition:** a
+  surviving operator artifact printing the span (an annual sheet, a participant
+  circular, or a late-2016 or mid-2017 page capture). Tracked as
+  [#209](https://github.com/SharurTrading/exchange-hours-rs/issues/209).
+- **the 2013 abbreviated-grid conflict** — the 2013-05-16 capture's trading-hours
+  grid still shows the older 15:45 abbreviated column while the 2013-01-16 page
+  before it and every capture from 2014-01-27 after it print 12:45; the two 2013
+  abbreviated days hold the 12:45 close (the narrowest sourced value) and the
+  disputed 12:45pm-4:30pm remainder ships as no session. **Closing condition:** a
+  dated operator statement for the 15:45-to-12:45 grid changeover, or a capture
+  whose grid and holiday table agree on the December 2013 days, keys the span's
+  true grid.
+- **horizon carried below the first dated row** — the pre-2020 baseline rests
+  only on NZX announcement 350919, whose publication day is not recorded in the
+  repository (an NZX announcement number is not a date). The ledger horizon is
+  therefore 2020-04-06, the first day at which this row's state is sourced,
+  with everything below it carried. Closing condition: read the announcement's
+  own publication date, or find a dated pre-2020 NZX trading-hours page; either
+  would move the horizon earlier. The 2020-06-08 capture still printing the
+  9:00am Pre-open beside the announcement's 8:30am move is the same era's
+  open question; the holiday table holds the 9:00am Pre-open on the two 2020
+  abbreviated days (the narrowest sourced value) and the conflict is recorded
+  in the coverage section.
+- The closing uncross is randomised within 30 seconds either side of 17:00, so
+  the tradeable window runs to 17:00:30; stopping at 17:00 would drop the half
+  of the randomisation in which the official closing print most often occurs.
+  On the pre-2025 abbreviated days the envelopes rest on the crate's carried
+  ±30-second convention, not on a statement the era's sheets print (disclosed
+  in the coverage section).
+- The only order-entry-only phase is Pre-Close 16:45–16:59:30, which neither
+  matches nor accepts reports. The slice stops 30 seconds short of the nominal
+  17:00 boundary so the randomized uncross stays inside the tradeable window.
+- Enquiry and Adjust do not accept automatically matched orders and are
+  excluded from the envelope (AGENTS.md, *Cash-equity venue envelope*).

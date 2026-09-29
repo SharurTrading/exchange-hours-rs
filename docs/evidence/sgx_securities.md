@@ -34,7 +34,192 @@ as each source is re-verified.
 
 ## Holidays
 
-**Coverage:** 2025-01-01..2026-12-31 (inclusive trade dates, the operator's published horizon). Tier: T2 throughout.
+**Coverage:** 2014-01-01..2019-12-31, 2020-01-01..2020-01-01, 2025-01-01..2026-12-31 (inclusive trade dates; the spans between the windows are the capture gaps recorded below). Tiers: T1 for the 2014 to 2020 rows, T2 for the 2025 and 2026 rows.
+
+**The 2014-2020 rows come from the operator's own securities
+`Trading Hours & Calendar` page** (`sgx.com/wps/portal/sgxweb/home/trading/
+securities/trading_hours_calendar`), whose Wayback `id_` replays — verbatim
+bytes of an operator statement, so T1 (LAW-PUBLIC-SOURCES) — were retrieved
+2026-09-29 (UTC) as `holidays/raw/equities/sgx_securities/2010-2024/`
+(research store), digests in the `### Documents` table below. The page
+prints one `Public Holidays <year>` table per year with the operator's own
+markers: `*` — `The following Monday will be a public holiday` — keys the
+Sunday substitutions, and `#` — `The preceding day is a half-day trading
+day` — keys the half days. Weekend holidays the sheet marks with neither
+marker close no weekday and ship no row.
+
+**The 2016-2017 half-day grid, and what is held where.** The page's
+`Half Day Trading` column prints the half-day routine in force:
+`Pre-Open 0830 0858 – 59*`, `Non-Cancel 0858 – 59* 0900`, `Trading Open
+0900 1230`, `Pre-Close 1230 1234-35*`, `Non-Cancel 1234-35* 1236`,
+`Close 1236` — identical in both surviving replays (2017-09-27 and
+2018-12-23). The seven pre-2025 half days ship as replacement block sets
+restating that printed grid, not scalar early closes, for the same reason
+the 2025-2026 rows do: the closing Non-Cancel match is tradeable after the
+trading close.
+
+**Two disclosures the printed record forces.**
+
+- **The 2019 Trade-at-Close question.** The operator's own 2019-05-14
+  announcement launched Trade at Close on 2019-06-03 and moved the full-day
+  close to 17:16; the current page's half-day grid carries the 12:06-12:16
+  Trade-at-Close tail. But no surviving artifact prints the half-day grid
+  as it stood after 2019-06-03 — the last printed pre-2025 grid is the
+  2018-12-23 replay's 12:36-close grid — so whether the 2019-12-24 and
+  2019-12-31 half days closed at 12:36 (the printed grid) or gained a
+  Trade-at-Close tail (as the full day did) is unstated. The rows hold the
+  printed grid, the only sourced shape, and the disputed remainder ships as
+  no session rather than guessed.
+- **The 2014-2016 half days are unstated.** The 2014, 2015 and 2016 sheets
+  print no `#` markers, no half-day legend and no half-day grid, so no
+  half-day row ships for those years. The dates without rows inside the
+  2014-2016 windows are audited normal **for closures**; that the eves'
+  treatment is unstated is a recorded gap below.
+
+**The capture gaps.** No capture of any SGX securities trading-hours page —
+the `wps/portal/sgxweb` securities page, its `marketplace`-portal
+predecessor, the `www2`-era pages, or the current content-API page —
+survives in the Wayback index for 2010-01-01..2013-12-31 or for
+2020-01-02..2024-12-31 (checked 2026-09-29, UTC, CDX sweeps over the whole
+sgx.com domain in both eras; the 2020-2024 captures of the wps path are
+SPA shells whose bytes carry no holiday content). No operator statement
+prints those closures, so the table claims nothing for the spans: the
+coverage windows stop at 2019-12-31, hold only 2020-01-01 (the one 2020
+date the 2019 sheet prints), and resume at 2025-01-01, and queries inside
+the gaps refuse rather than answer. **Closing condition:** a surviving
+operator artifact printing the spans' closures (a 2010-2013 or 2020-2024
+capture or export of the operator's own calendar page, or an annual
+securities trading-schedule notice). Tracked as
+[#213](https://github.com/SharurTrading/exchange-hours-rs/issues/213).
+
+**Tier.** The 2025-2026 rows key at T2 because the artifact behind them is
+the operator's own machine channel read as bytes (LAW-PRIMARY-SOURCES),
+which carries both the designation sentence and the half-day schedule; the
+closure *dates* are printed on the designated MOM page, the government's own
+gazetted list; no member firm, vendor or press restatement touches any row.
+The 2014-2020 rows key at T1: their artifact is the operator's own page as
+verbatim `id_` replays.
+
+### 2014
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2014-01-01 | closed | `1 Jan 2014 Wednesday New Year's Day` | `SGX-CAL-2014` | T1 | the operator's own table, date printed verbatim |
+| 2014-01-31 | closed | `31 Jan 2014 Friday Chinese New Year` | `SGX-CAL-2014` | T1 | the operator's own table; the Saturday 1 February holiday closes no weekday and ships no row |
+| 2014-04-18 | closed | `18 Apr 2014 Friday Good Friday` | `SGX-CAL-2014` | T1 | the operator's own table |
+| 2014-05-01 | closed | `1 May 2014 Thursday Labour Day` | `SGX-CAL-2014` | T1 | the operator's own table |
+| 2014-05-13 | closed | `13 May 2014 Tuesday Vesak Day` | `SGX-CAL-2014` | T1 | the operator's own table |
+| 2014-07-28 | closed | `28 Jul 2014 Monday Hari Raya Puasa` | `SGX-CAL-2014` | T1 | the operator's own table |
+| 2014-10-06 | closed | `5 Oct 2014* Sunday Hari Raya Haji`; footnote: `As Hari Raya Haji falls on Sunday 5 October 2014, the next day, Monday 6 October 2014, will be a public holiday.` | `SGX-CAL-2014` | T1 | the operator's own substitution sentence keys the Monday |
+| 2014-10-22 | closed | `22 Oct 2014** Wednesday Deepavali`; footnote: `The Hindu Advisory Board (HAB) has confirmed that Deepavali will fall on 22 October 2014 (Wednesday) instead of 23 October 2014 (Thursday).` | `SGX-CAL-2014` | T1 | the operator's own confirmed-date footnote |
+| 2014-12-25 | closed | `25 Dec 2014 Thursday Christmas Day` | `SGX-CAL-2014` | T1 | the operator's own table |
+
+The 2014 sheet prints no half-day markers or half-day grid; the eves'
+treatment is the recorded gap below. The Saturday 9 August National Day
+closes no weekday and ships no row.
+
+### 2015
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2015-01-01 | closed | `1-Jan-15 Thursday New Year's Day` | `SGX-CAL-2015` | T1 | the operator's own table |
+| 2015-02-19 | closed | `19-Feb-15 Thursday Chinese New Year` | `SGX-CAL-2015` | T1 | the operator's own table |
+| 2015-02-20 | closed | `20-Feb-15 Friday Chinese New Year` | `SGX-CAL-2015` | T1 | the operator's own table |
+| 2015-04-03 | closed | `3-Apr-15 Friday Good Friday` | `SGX-CAL-2015` | T1 | the operator's own table |
+| 2015-05-01 | closed | `1-May-15 Friday Labour Day` | `SGX-CAL-2015` | T1 | the operator's own table |
+| 2015-06-01 | closed | `1-Jun-15 Monday Vesak Day` | `SGX-CAL-2015` | T1 | the operator's own table |
+| 2015-07-17 | closed | `17-Jul-15 Friday Hari Raya Puasa` | `SGX-CAL-2015` | T1 | the operator's own table |
+| 2015-08-07 | closed | `7-Aug-15 Friday SG50 Public Holiday` | `SGX-CAL-2015` | T1 | the operator's own one-off SG50 holiday |
+| 2015-08-10 | closed | `9 Aug 2015 * Sunday National Day`; legend: `The following Monday will be a public holiday` | `SGX-CAL-2015` | T1 | the operator's own substitution marker keys the Monday |
+| 2015-09-11 | closed | `11-Sep-15 Friday Polling Day` | `SGX-CAL-2015` | T1 | the operator's own table |
+| 2015-09-24 | closed | `24-Sep-15 Thursday Hari Raya Haji` | `SGX-CAL-2015` | T1 | the operator's own table |
+| 2015-11-10 | closed | `10 Nov 2015 ** Tuesday Deepavali`; footnote records the date as subject to the Hindu Almanac's reconfirmation | `SGX-CAL-2015` | T1 | the operator's own printed date |
+| 2015-12-25 | closed | `25-Dec-15 Friday Christmas Day` | `SGX-CAL-2015` | T1 | the operator's own table |
+
+The 2015-09-24 replay and the 2016-01-08 replay print the identical 2015
+table; the former is the keying document, the latter corroborates it. The
+2015 sheet prints no half-day markers or grid (the recorded gap below).
+
+### 2016
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2016-01-01 | closed | `1-Jan-16 Friday New Year's Day` | `SGX-CAL-2016` | T1 | the operator's own table |
+| 2016-02-08 | closed | `8-Feb-16 Monday Chinese New Year` | `SGX-CAL-2016` | T1 | the operator's own table |
+| 2016-02-09 | closed | `9-Feb-16 Tuesday Chinese New Year` | `SGX-CAL-2016` | T1 | the operator's own table |
+| 2016-03-25 | closed | `25-Mar-16 Friday Good Friday` | `SGX-CAL-2016` | T1 | the operator's own table |
+| 2016-05-02 | closed | `1 May 2016* Sunday Labour Day`; legend: `The following Monday will be a public holiday` | `SGX-CAL-2016` | T1 | the operator's own substitution marker keys the Monday |
+| 2016-07-06 | closed | `6-Jul-16 Wednesday Hari Raya Puasa` | `SGX-CAL-2016` | T1 | the operator's own table |
+| 2016-08-09 | closed | `9-Aug-16 Tuesday National Day` | `SGX-CAL-2016` | T1 | the operator's own table |
+| 2016-09-12 | closed | `12-Sep-16 Monday Hari Raya Haji` | `SGX-CAL-2016` | T1 | the operator's own table |
+| 2016-12-26 | closed | `25 Dec 2016* Sunday Christmas Day`; legend: `The following Monday will be a public holiday` | `SGX-CAL-2016` | T1 | the operator's own substitution marker keys the Monday |
+
+The Saturday 21 May Vesak Day and Saturday 29 October Deepavali close no
+weekday and ship no row. The 2016 sheet prints no half-day markers or grid
+(the recorded gap below).
+
+### 2017
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2017-01-02 | closed | `1-Jan-17* Sunday New Year's Day`; legend: `The following Monday will be a public holiday` | `SGX-CAL-2017` | T1 | the operator's own substitution marker keys the Monday |
+| 2017-01-27 | replacement blocks | `28-Jan-17# Saturday Chinese New Year`; footnote: `The preceding Friday, 27-Jan-17, is a half-day trading day`; the page's `Half Day Trading` grid: Pre-Open `0830 0858 – 59*`, Non-Cancel `0858 – 59* 0900`, `Trading Open 0900 1230`, Pre-Close `1230 1234-35*`, Non-Cancel `1234-35* 1236`, `Close 1236` | `SGX-CAL-2017` | T1 | the operator's own half-day marker and printed grid; the row restates the grid as one replacement day |
+| 2017-01-30 | closed | `29-Jan-17* Sunday Chinese New Year`; legend: `The following Monday will be a public holiday` | `SGX-CAL-2017` | T1 | the operator's own substitution marker keys the Monday |
+| 2017-04-14 | closed | `14-Apr-17 Friday Good Friday` | `SGX-CAL-2017` | T1 | the operator's own table |
+| 2017-05-01 | closed | `1-May-17 Monday Labour Day` | `SGX-CAL-2017` | T1 | the operator's own table |
+| 2017-05-10 | closed | `10-May-17 Wednesday Vesak Day` | `SGX-CAL-2017` | T1 | the operator's own table |
+| 2017-06-26 | closed | `25-Jun-17* Sunday Hari Raya Puasa`; legend: `The following Monday will be a public holiday` | `SGX-CAL-2017` | T1 | the operator's own substitution marker keys the Monday |
+| 2017-08-09 | closed | `9-Aug-17 Wednesday National Day` | `SGX-CAL-2017` | T1 | the operator's own table |
+| 2017-09-01 | closed | `1-Sep-17 Friday Hari Raya Haji` | `SGX-CAL-2017` | T1 | the operator's own table |
+| 2017-10-18 | closed | `18-Oct-17 Wednesday Deepavali` | `SGX-CAL-2017` | T1 | the operator's own table |
+| 2017-12-25 | closed | `25-Dec-17 Monday Christmas Day` | `SGX-CAL-2017` | T1 | the operator's own table; no `#` marker, the eve being a Sunday |
+
+The 2017 sheet was captured 2017-09-27, when the restored midday-break
+structure (effective 2017-11-13) was already the page's printed full-day
+grid, and its `Half Day Trading` column prints the 12:30/12:36 grid.
+
+### 2018
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2018-01-01 | closed | `1-Jan-18 Monday New Year's Day` | `SGX-CAL-2018-2019` | T1 | the operator's own table |
+| 2018-02-15 | replacement blocks | `16-Feb-18 # Friday Chinese New Year`; footnote: `The preceding day is a half-day trading day`; the page's `Half Day Trading` grid, `Trading Open 0900 1230` … `Close 1236` | `SGX-CAL-2018-2019` | T1 | the operator's own half-day marker and printed grid |
+| 2018-02-16 | closed | `16-Feb-18 Friday Chinese New Year` | `SGX-CAL-2018-2019` | T1 | the operator's own table; the Saturday 17 February holiday closes no weekday |
+| 2018-03-30 | closed | `30-Mar-18 Friday Good Friday` | `SGX-CAL-2018-2019` | T1 | the operator's own table |
+| 2018-05-01 | closed | `1-May-18 Tuesday Labour Day` | `SGX-CAL-2018-2019` | T1 | the operator's own table |
+| 2018-05-29 | closed | `29-May-18 Tuesday Vesak Day` | `SGX-CAL-2018-2019` | T1 | the operator's own table |
+| 2018-06-15 | closed | `15-Jun-18 Friday Hari Raya Puasa` | `SGX-CAL-2018-2019` | T1 | the operator's own table |
+| 2018-08-09 | closed | `9-Aug-18 Thursday National Day` | `SGX-CAL-2018-2019` | T1 | the operator's own table |
+| 2018-08-22 | closed | `22-Aug-18 Wednesday Hari Raya Haji` | `SGX-CAL-2018-2019` | T1 | the operator's own table |
+| 2018-11-06 | closed | `6-Nov-18 Tuesday Deepavali` | `SGX-CAL-2018-2019` | T1 | the operator's own table |
+| 2018-12-24 | replacement blocks | `25-Dec-18 # Tuesday Christmas Day`; footnote: `The preceding day is a half-day trading day` | `SGX-CAL-2018-2019` | T1 | the operator's own half-day marker and printed grid |
+| 2018-12-25 | closed | `25-Dec-18 Tuesday Christmas Day` | `SGX-CAL-2018-2019` | T1 | the operator's own table |
+| 2018-12-31 | replacement blocks | `1-Jan-19 # Tuesday New Year's Day`; `# The preceding day is a half-day trading day` | `SGX-CAL-2018-2019` | T1 | the 2019 table's own half-day marker keys the preceding Monday |
+
+### 2019
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2019-01-01 | closed | `1-Jan-19 Tuesday New Year's Day` | `SGX-CAL-2018-2019` | T1 | the operator's own table |
+| 2019-02-04 | replacement blocks | `5-Feb-19 # Tuesday Chinese New Year`; `6-Feb-19 Wednesday`; footnote: `The preceding day is a half-day trading day` | `SGX-CAL-2018-2019` | T1 | the operator's own half-day marker and printed grid |
+| 2019-02-05 | closed | `5-Feb-19 Tuesday Chinese New Year` | `SGX-CAL-2018-2019` | T1 | the operator's own table |
+| 2019-02-06 | closed | `6-Feb-19 Wednesday Chinese New Year` | `SGX-CAL-2018-2019` | T1 | the operator's own table |
+| 2019-04-19 | closed | `19-Apr-19 Friday Good Friday` | `SGX-CAL-2018-2019` | T1 | the operator's own table |
+| 2019-05-01 | closed | `1-May-19 Wednesday Labour Day` | `SGX-CAL-2018-2019` | T1 | the operator's own table |
+| 2019-05-20 | closed | `19-May-19* Sunday Vesak Day`; legend: `The following Monday will be a public holiday` | `SGX-CAL-2018-2019` | T1 | the operator's own substitution marker keys the Monday |
+| 2019-06-05 | closed | `5-Jun-19 Wednesday Hari Raya Puasa` | `SGX-CAL-2018-2019` | T1 | the operator's own table |
+| 2019-08-09 | closed | `9-Aug-19 Friday National Day` | `SGX-CAL-2018-2019` | T1 | the operator's own table |
+| 2019-08-12 | closed | `11-Aug-19* Sunday Hari Raya Haji`; legend: `The following Monday will be a public holiday` | `SGX-CAL-2018-2019` | T1 | the operator's own substitution marker keys the Monday |
+| 2019-10-28 | closed | `27-Oct-19* Sunday Deepavali`; legend: `The following Monday will be a public holiday` | `SGX-CAL-2018-2019` | T1 | the operator's own substitution marker keys the Monday |
+| 2019-12-24 | replacement blocks | `25-Dec-19 # Wednesday Christmas Day`; footnote: `The preceding day is a half-day trading day`; the printed half-day grid held (see the Trade-at-Close disclosure) | `SGX-CAL-2018-2019` | T1 | the operator's own half-day marker and printed grid |
+| 2019-12-25 | closed | `25-Dec-19 Wednesday Christmas Day` | `SGX-CAL-2018-2019` | T1 | the operator's own table |
+| 2019-12-31 | replacement blocks | `1-Jan-20 # Wednesday New Year's Day`; `# The preceding day is a half-day trading day`; the printed half-day grid held (see the Trade-at-Close disclosure) | `SGX-CAL-2018-2019` | T1 | the 2020 table's own half-day marker keys the preceding Tuesday |
+
+### 2020
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2020-01-01 | closed | `1-Jan-20 Wednesday New Year's Day` | `SGX-CAL-2018-2019` | T1 | the one 2020 date the sheet's 2020 table prints; no later 2020 table survives |
 
 The live `www.sgx.com` holiday pages render no server-side content, so the
 operator's statements were read as bytes from SGX's own content API
@@ -137,19 +322,54 @@ Pre-Close order entry, and the closing routine runs to the printed 12:16.
 
 | Document | Window | Replay or service URL | Capture or retrieval, UTC | Tier | sha256 |
 |---|---|---|---|---|---|
+| `SGX-CAL-2014` | 2014-01-01 .. 2014-12-25 | <https://web.archive.org/web/20140821082648id_/http://www.sgx.com/wps/portal/sgxweb/home/trading/securities/trading_hours_calendar> | Wayback `id_` replay of capture `20140821082648`, retrieved 2026-09-29 05:09:17 UTC | T1 | `1025d2182f31d1d73a058a59ef757b82530ddecfd8df17da6b3c53ebb18b3e33` |
+| `SGX-CAL-2015` | 2015-01-01 .. 2015-12-25 | <https://web.archive.org/web/20150924101024id_/http://www.sgx.com/wps/portal/sgxweb/home/trading/securities/trading_hours_calendar> | Wayback `id_` replay of capture `20150924101024`, retrieved 2026-09-29 05:09:19 UTC | T1 | `21c74bf1c2261e6118b8b6b822ed92651aaeffd04cd52ab746e99d06ef2b23de` |
+| `SGX-CAL-2016` | 2016-01-01 .. 2016-12-26 | <https://web.archive.org/web/20160108072436id_/http://www.sgx.com/wps/portal/sgxweb/home/trading/securities/trading_hours_calendar> | Wayback `id_` replay of capture `20160108072436`, retrieved 2026-09-29 05:09:22 UTC | T1 | `e51c3933d83c95acd3bfe5a0c16ca55df28aea4484fe8e88349884b0b8783309` |
+| `SGX-CAL-2017` | 2017-01-02 .. 2017-12-25 | <https://web.archive.org/web/20170927130119id_/http://www.sgx.com/wps/portal/sgxweb/home/trading/securities/trading_hours_calendar> | Wayback `id_` replay of capture `20170927130119`, retrieved 2026-09-29 05:09:24 UTC | T1 | `3256466c4917117ac0cd318f0dd55d7e4513c5d3b967b77d59c48079ce2baaa9` |
+| `SGX-CAL-2018-2019` | 2018-01-01 .. 2020-01-01 | <https://web.archive.org/web/20181223141708id_/http://www.sgx.com/wps/portal/sgxweb/home/trading/securities/trading_hours_calendar> | Wayback `id_` replay of capture `20181223141708`, retrieved 2026-09-29 05:09:54 UTC | T1 | `818e043305ce491a2279d98d4279a26eed2b6d6aae61df9afca7ec3bdbf516ba` |
 | `SGX-ST-SCHED` | 2025-01-01 .. 2026-12-31 | <https://api2.sgx.com/content-api?queryId=dd24dd8e5b3ef52e535a662e01b58d76471f335e%3Apage&variables=%7B%22path%22%3A%22%2Fstock-exchange%2Ftrading%22%2C%22lang%22%3A%22EN%22%7D> | retrieved 2026-09-28 01:59 UTC | T2 | `45dbdc61d808b4f72bb8bbddb198107f08759a20b85b288271d6d5a0326facd7` |
 | `SGX-MOM-CAL-2025-2026` | 2025-01-01 .. 2026-12-31 | <https://www.mom.gov.sg/employment-practices/public-holidays> | retrieved 2026-09-28 01:48 UTC | T1 | `a4f175a7d33222b91f1c8c2f84e6d1e75f0c0b15e265addb478b73e3e65dcf3d` |
 
-`SGX-ST-SCHED` is the document id every row cites. `SGX-MOM-CAL-2025-2026` is
-the designated calendar the closure dates are read from; it is the
-government's own gazetted list, recorded here so each closure date's bytes
-resolve, and no row keys on it alone. The store's
+`SGX-ST-SCHED` is the document id the 2025-2026 rows cite; `SGX-MOM-CAL-
+2025-2026` is the designated calendar those closure dates are read from,
+recorded so each closure date's bytes resolve, and no row keys on it alone.
+The 2014-2020 rows cite the five pre-2025 replays above, each a capture of
+the operator's own securities `Trading Hours & Calendar` page printing that
+year's (or years') `Public Holidays` table, the operator's `*`/`#` legend
+and, from 2017, the `Half Day Trading` grid. The store's
 `holidays/raw/equities/sgx_securities/2025-2027/` also holds the live SPA
 shell and the SGX Group desk calendar PDF (derivatives day notes; context
-only) — neither keys a row.
+only) — neither keys a row. The 2020-2024 captures of the wps path are SPA
+shells and key nothing.
 
 ## Gaps and residual risks
 
+- **the 2010-2013 capture gap** — no capture of any SGX securities
+  trading-hours page survives in the Wayback index for 2010-01-01..2013-12-31
+  (checked 2026-09-29, UTC, CDX sweeps over the whole sgx.com domain), so no
+  operator statement prints those closures and the table claims nothing
+  there; queries inside the gap refuse. **Closing condition:** a surviving
+  operator artifact printing the span (a capture or export of the operator's
+  own calendar page, or an annual securities trading-schedule notice).
+  Tracked as [#213](https://github.com/SharurTrading/exchange-hours-rs/issues/213).
+- **the 2020-2024 capture gap** — the same for 2020-01-02..2024-12-31: the
+  wps path's 2020-2024 captures are SPA shells whose bytes carry no holiday
+  content, the `stock-exchange/trading` page's own captures begin in 2025,
+  and no other operator calendar page was captured in the era. Only
+  2020-01-01 (keyed by the 2019 sheet's 2020 table) answers. **Closing
+  condition:** a surviving operator artifact printing the span's closures.
+  Tracked as [#213](https://github.com/SharurTrading/exchange-hours-rs/issues/213).
+- **the 2014-2016 half-day treatment is unstated** — the 2014, 2015 and
+  2016 sheets print no `#` markers, half-day legend or half-day grid, so no
+  half-day rows ship for those years and the within-window no-row claim is
+  scoped to closures. **Closing condition:** a 2014-2016 artifact printing
+  the operator's half-day treatment (a sheet edition with the legend, or a
+  participant notice).
+- **the 2019 Trade-at-Close half-day question** — no surviving artifact
+  prints the half-day grid as it stood after the 2019-06-03 Trade-at-Close
+  launch, so the 2019-12-24 and 2019-12-31 rows hold the last printed grid
+  (close 12:36) and the disputed tail ships as no session. **Closing
+  condition:** a post-June-2019 artifact printing the half-day grid.
 - **horizon carried below the first dated row** — the pre-2011-08-01 session bounds (09:00–12:30 and 14:00–17:00) are not attested by any artifact named in the repository; the 2011-08-01 rulebook supplies only the routine phase boundaries carried by the two oldest profiles. The ledger horizon is therefore 2011-08-01, the first day at which this row's state is sourced, with everything below it carried. Closing condition: a dated pre-2011 SGX-ST rulebook or practice-note edition stating the lunch-break session bounds, which would move the horizon earlier.
 - Current routine ends are randomized: Pre-Open ends 08:58–08:59 and 12:58–12:59, Pre-Close ends 17:04–17:05. Each order-entry slice stops at the earliest possible end so no matching time is claimed as order entry.
 - Trade at Close matches at the Equilibrium Price and is therefore tradeable throughout its window.

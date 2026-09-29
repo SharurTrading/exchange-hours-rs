@@ -86,6 +86,61 @@ corrections (a venue's hours fixed against a primary source) go under
   the replacement-block days, and the monitoring entries in
   `docs/schedules/sources.md`.
 
+- **`nzx` holiday history backfilled to the 2010 floor (2026-09-29 UTC).**
+  The `nzx` table grows from 28 rows over 2025-01-01..2027-01-04 to **203
+  rows over 2010-01-01..2016-04-25 and 2017-10-23..2027-01-04** (144
+  closures and 31 abbreviated trading days added): the operator's own
+  trading-hours statements, read from 19 Wayback `id_` replays of the
+  operator's own pages per era (the key-dates sheets 2010-2011, the NZSX
+  Main Board rolling table 2011-2017, the investing page 2018-2019 and the
+  hours-boards page 2020-2024), with every artifact saved and sha256'd in
+  the research store. Abbreviated days ship as replacement block sets
+  restating each era's own printed grid — the 2010-2012 15:45 grid, the
+  2013-2020 12:45 grid, the 2021-onward 8:30 grid — so the tradeable
+  closing-uncross envelope survives; the two 2020 abbreviated days hold the
+  9:00 Pre-open at its narrowest sourced value across the undated
+  2020-2021 span, and the two 2013 days hold the 12:45 close against the
+  2013-05-16 capture's older 15:45 column (both conflicts disclosed in the
+  evidence file). The 2016-04-26..2017-10-22 span survives in no operator
+  capture (Wayback CDX sweep checked 2026-09-29 UTC), so the audited
+  windows stop either side of it and queries inside the gap refuse rather
+  than answer; the gap and its closing condition are tracked as
+  [#209](https://github.com/SharurTrading/exchange-hours-rs/issues/209).
+
+- **`asx` holiday history backfilled to the 2010 floor (2026-09-29 UTC).**
+  The `asx` table grows from 29 rows over 2025-01-01..2027-12-31 to **174
+  rows over 2010-01-01..2027-12-31** (121 closures and 24 early closes
+  added): each year's own operator trading-calendar sheet, read from 15
+  Wayback `id_` replays of the operator's pages per era (the
+  `trading_calendar/asx/<year>` pages 2010-2011, the
+  `trading_services`/`about/asx-trading-calendar-<year>` pages 2012-2019,
+  the `www2.asx.com.au` cash-market trading-calendar page 2020-2022 and the
+  `www.asx.com.au` page 2023-2024), with every artifact saved and sha256'd
+  in the research store. Only a sheet's own `CLOSED` and `CLOSE EARLY` rows
+  ship — the state rows that print `OPEN` are settlement facts, not market
+  closures — so 2017, 2022 and 2023 ship no early close (their sheets print
+  none), the 2011-04-26 Easter Tuesday congruence one-off and the 2022-09-22
+  National Day of Mourning ship from the operator's own sheets, and the
+  scalar early closes all clip at the sheets' own printed 14:10.
+
+- **`sgx_securities` holiday history backfilled as far as the archive
+  allows (2026-09-29 UTC).** The `sgx_securities` table grows from 25 rows
+  over 2025-01-01..2026-12-31 to **95 rows over 2014-01-01..2019-12-31,
+  2020-01-01, and 2025-01-01..2026-12-31** (63 closures and 7 half-day
+  grids added): the operator's own securities `Trading Hours & Calendar`
+  page, read from five Wayback `id_` replays (2014, 2015, 2016, 2017,
+  2018-12-23) whose `Public Holidays <year>` tables carry the operator's
+  own `*` substitution and `#` half-day markers, so the Sunday
+  substitutions (e.g. Vesak 2019 to Monday 20 May) key from the operator's
+  own bytes at T1, and the seven pre-2025 half days restate the page's
+  printed 09:00-12:30 / 12:36 grid as replacement block sets. The
+  2010-2013 and 2020-2024 eras survive in no operator capture — the page's
+  own 2020-2024 captures are SPA shells — so the audited windows stop
+  either side of them and queries inside refuse; the gaps, the unstated
+  2014-2016 half-day treatment and the post-2019 Trade-at-Close half-day
+  question are recorded with closing conditions and tracked as
+  [#213](https://github.com/SharurTrading/exchange-hours-rs/issues/213).
+
 - **`nyse` and `nasdaq` activate: built-in holiday tables for the two US
   cash-equity venues the consumer routes (2026-09-28 UTC).** Both identities
   flip dormant→**served** (LAW-SERVICE-TIERS admission by consumer reach),

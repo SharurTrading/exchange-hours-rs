@@ -13,6 +13,26 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Added
 
+- **`nse_india` 2010-2024 holiday history backfilled (2026-09-29 UTC).** The
+  venue's built-in holiday table extends from the 2025-2026 audited window
+  back over three audited windows — 2010-2011, 2013-2017 and 2019-2024 —
+  186 further rows (174 `Closed` plus 12 withheld `Unsourced` Muhurat dates:
+  11/14/14/17/15/16/13/17/13/14/13/16/14 rows for 2010, 2011, 2013, 2014,
+  2015, 2016, 2017, 2019, 2020, 2021, 2022, 2023 and 2024), every one a
+  printed weekday date of the operator's own holiday material: the annual
+  circulars (`NSE-CIRC-2010-61` from the operator's press `HOLIDAYS.zip`,
+  `NSE-CIRC-2012-79` dated 2012-12-17), the annual trading-holiday pages
+  (`NSE-HOL-PAGE-2011`, `NSE-HOL-PAGE-2014`..`NSE-HOL-PAGE-2017`,
+  `NSE-HOL-PAGE-2019`..`NSE-HOL-PAGE-2022`), and the operator's own
+  `holiday-master` machine channel for 2023-2024 (T2, the block's only T2
+  rows), all Wayback `id_` replays. A date a source footnotes with a Muhurat
+  Trading session whose instants it does not state ships `Unsourced`, never a
+  bare closure; 2021's list names no Muhurat date, so nothing is withheld
+  there. **2012 and 2018 are unrecovered** — no operator artifact stating
+  either year's capital-market holiday list survives in the archive — so they
+  sit inside no audited window and the identity refuses those dates rather
+  than claiming an answer. The audited windows are now 2010-2011, 2013-2017
+  and 2019-2026.
 - **`sse` 2011-2024 holiday history backfilled (2026-09-29 UTC).** The
   venue's built-in holiday table extends from the 2025-2026 audited window
   back to 2011-01-01: 247 further `Closed` rows (16/18/23/16 for 2011-2014,

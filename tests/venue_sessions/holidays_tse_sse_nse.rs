@@ -38,13 +38,24 @@ fn day(year: i32, month: u32, date: u32) -> chrono::NaiveDate {
 /// it, which sits outside the audited window (or below the 2010 support
 /// floor), so the query refuses there — the same shape the CFE fence
 /// documents for its New Year row.
+fn assert_closure(calendar: ExchangeCalendar, date: (i32, u32, u32), document: &str, label: &str) {
+    assert_closure_at(calendar, date, document, EvidenceTier::T1, label);
+}
+
+/// The same fence at an explicit tier (the NSE 2023-2024 rows are T2).
 #[expect(
     clippy::panic,
     reason = "a shared test helper is not itself a #[test], so the \
               allow-panic-in-tests switch does not see it; aborting on a \
               broken fixture is the test's job"
 )]
-fn assert_closure(calendar: ExchangeCalendar, date: (i32, u32, u32), document: &str, label: &str) {
+fn assert_closure_at(
+    calendar: ExchangeCalendar,
+    date: (i32, u32, u32),
+    document: &str,
+    tier: EvidenceTier,
+    label: &str,
+) {
     let (year, month, day_of_month) = date;
     let trade_date = day(year, month, day_of_month);
     let row = calendar
@@ -55,7 +66,7 @@ fn assert_closure(calendar: ExchangeCalendar, date: (i32, u32, u32), document: &
         HolidayKind::Closed,
         "{label}: {trade_date} kind"
     );
-    assert_eq!(row.tier(), EvidenceTier::T1, "{label}: {trade_date} tier");
+    assert_eq!(row.tier(), tier, "{label}: {trade_date} tier");
     assert_eq!(
         row.document_id(),
         document,
@@ -115,16 +126,27 @@ fn assert_closure(calendar: ExchangeCalendar, date: (i32, u32, u32), document: &
 /// Asserts the date refuses as an `Unsourced` gap: the row exists, the metadata
 /// names the date unresolved, and the date-aware queries refuse rather than
 /// answer from the normal week.
+fn assert_unsourced(
+    calendar: ExchangeCalendar,
+    date: (i32, u32, u32),
+    document: &str,
+    label: &str,
+) {
+    assert_unsourced_at(calendar, date, document, EvidenceTier::T1, label);
+}
+
+/// The same withholding fence at an explicit tier (the NSE 2023-2024 rows are T2).
 #[expect(
     clippy::panic,
     reason = "a shared test helper is not itself a #[test], so the \
               allow-panic-in-tests switch does not see it; aborting on a \
               broken fixture is the test's job"
 )]
-fn assert_unsourced(
+fn assert_unsourced_at(
     calendar: ExchangeCalendar,
     date: (i32, u32, u32),
     document: &str,
+    tier: EvidenceTier,
     label: &str,
 ) {
     let (year, month, day_of_month) = date;
@@ -137,7 +159,7 @@ fn assert_unsourced(
         HolidayKind::Unsourced,
         "{label}: {trade_date} kind"
     );
-    assert_eq!(row.tier(), EvidenceTier::T1, "{label}: {trade_date} tier");
+    assert_eq!(row.tier(), tier, "{label}: {trade_date} tier");
     assert_eq!(
         row.document_id(),
         document,
@@ -976,6 +998,355 @@ fn sse_printed_closures_2025_2026_ship_a_row_per_year() {
     }
 }
 
+/// Asserts the 2010-2017 NSE closure rows, per year, against the operator's
+/// own annual circulars and holiday pages. The date list is spelled here
+/// independently of the module: a row that moves, loses its clip or changes
+/// its citation fails here. 2012 is unrecovered and ships no rows (see the
+/// refusal fence below).
+/// Asserts the 2010-2017 NSE closure rows, per year, against the operator's
+/// own annual holiday material. The date list is spelled here independently of
+/// the module: a row that moves, loses its clip or changes its citation fails
+/// here.
+/// 2012 is unrecovered and ships no rows (see the refusal fence below).
+#[test]
+fn nse_printed_closures_2010_2017_ship_a_row_per_year() {
+    let nse = calendar_for_exchange(Exchange::NseIndia);
+    for (date, document, label) in [
+        // 2010, from NSE-CIRC-2010-61.
+        ((2010, 1, 1), "NSE-CIRC-2010-61", "NSE New Year"),
+        ((2010, 1, 26), "NSE-CIRC-2010-61", "NSE Republic Day"),
+        ((2010, 2, 12), "NSE-CIRC-2010-61", "NSE Mahashivratri"),
+        ((2010, 3, 1), "NSE-CIRC-2010-61", "NSE Holi"),
+        ((2010, 3, 24), "NSE-CIRC-2010-61", "NSE Ram Navmi"),
+        ((2010, 4, 2), "NSE-CIRC-2010-61", "NSE Good Friday"),
+        ((2010, 4, 14), "NSE-CIRC-2010-61", "NSE Ambedkar Jayanti"),
+        ((2010, 9, 10), "NSE-CIRC-2010-61", "NSE Ramzan ID"),
+        ((2010, 11, 17), "NSE-CIRC-2010-61", "NSE Bakri Id"),
+        ((2010, 12, 17), "NSE-CIRC-2010-61", "NSE Moharum"),
+        // 2011, from NSE-HOL-PAGE-2011.
+        ((2011, 1, 26), "NSE-HOL-PAGE-2011", "NSE Republic Day"),
+        ((2011, 3, 2), "NSE-HOL-PAGE-2011", "NSE Mahashivratri"),
+        ((2011, 4, 12), "NSE-HOL-PAGE-2011", "NSE Ram Navmi"),
+        ((2011, 4, 14), "NSE-HOL-PAGE-2011", "NSE Ambedkar Jayanti"),
+        ((2011, 4, 22), "NSE-HOL-PAGE-2011", "NSE Good Friday"),
+        ((2011, 8, 15), "NSE-HOL-PAGE-2011", "NSE Independence Day"),
+        ((2011, 8, 31), "NSE-HOL-PAGE-2011", "NSE Ramzan ID"),
+        ((2011, 9, 1), "NSE-HOL-PAGE-2011", "NSE Ganesh Chaturthi"),
+        ((2011, 10, 6), "NSE-HOL-PAGE-2011", "NSE Dasara"),
+        (
+            (2011, 10, 27),
+            "NSE-HOL-PAGE-2011",
+            "NSE Diwali-Balipratipada",
+        ),
+        ((2011, 11, 7), "NSE-HOL-PAGE-2011", "NSE Bakri Id"),
+        ((2011, 11, 10), "NSE-HOL-PAGE-2011", "NSE Gurunanak Jayanti"),
+        ((2011, 12, 6), "NSE-HOL-PAGE-2011", "NSE Moharum"),
+        // 2013, from NSE-CIRC-2012-79.
+        ((2013, 3, 27), "NSE-CIRC-2012-79", "NSE Holi"),
+        ((2013, 3, 29), "NSE-CIRC-2012-79", "NSE Good Friday"),
+        ((2013, 4, 19), "NSE-CIRC-2012-79", "NSE Ram Navmi"),
+        ((2013, 4, 24), "NSE-CIRC-2012-79", "NSE Mahavir Jayanti"),
+        ((2013, 5, 1), "NSE-CIRC-2012-79", "NSE May Day"),
+        ((2013, 8, 9), "NSE-CIRC-2012-79", "NSE Ramzan ID"),
+        ((2013, 8, 15), "NSE-CIRC-2012-79", "NSE Independence Day"),
+        ((2013, 9, 9), "NSE-CIRC-2012-79", "NSE Ganesh Chaturthi"),
+        ((2013, 10, 2), "NSE-CIRC-2012-79", "NSE Gandhi Jayanti"),
+        ((2013, 10, 16), "NSE-CIRC-2012-79", "NSE Bakri ID"),
+        (
+            (2013, 11, 4),
+            "NSE-CIRC-2012-79",
+            "NSE Diwali-Balipratipada",
+        ),
+        ((2013, 11, 14), "NSE-CIRC-2012-79", "NSE Moharram"),
+        ((2013, 12, 25), "NSE-CIRC-2012-79", "NSE Christmas"),
+        // 2014, from NSE-HOL-PAGE-2014.
+        ((2014, 2, 27), "NSE-HOL-PAGE-2014", "NSE Mahashivratri"),
+        ((2014, 3, 17), "NSE-HOL-PAGE-2014", "NSE Holi"),
+        ((2014, 4, 8), "NSE-HOL-PAGE-2014", "NSE Ram Navmi"),
+        ((2014, 4, 14), "NSE-HOL-PAGE-2014", "NSE Ambedkar Jayanti"),
+        ((2014, 4, 18), "NSE-HOL-PAGE-2014", "NSE Good Friday"),
+        ((2014, 5, 1), "NSE-HOL-PAGE-2014", "NSE May Day"),
+        ((2014, 7, 29), "NSE-HOL-PAGE-2014", "NSE Ramzan ID"),
+        ((2014, 8, 15), "NSE-HOL-PAGE-2014", "NSE Independence Day"),
+        ((2014, 8, 29), "NSE-HOL-PAGE-2014", "NSE Ganesh Chaturthi"),
+        ((2014, 10, 2), "NSE-HOL-PAGE-2014", "NSE Gandhi Jayanti"),
+        ((2014, 10, 3), "NSE-HOL-PAGE-2014", "NSE Dasera"),
+        ((2014, 10, 6), "NSE-HOL-PAGE-2014", "NSE Bakri ID"),
+        (
+            (2014, 10, 24),
+            "NSE-HOL-PAGE-2014",
+            "NSE Diwali-Balipratipada",
+        ),
+        ((2014, 11, 4), "NSE-HOL-PAGE-2014", "NSE Moharram"),
+        ((2014, 11, 6), "NSE-HOL-PAGE-2014", "NSE Gurunank Jayanti"),
+        ((2014, 12, 25), "NSE-HOL-PAGE-2014", "NSE Christmas"),
+        // 2015, from NSE-HOL-PAGE-2015.
+        ((2015, 1, 26), "NSE-HOL-PAGE-2015", "NSE Republic Day"),
+        ((2015, 2, 17), "NSE-HOL-PAGE-2015", "NSE Mahashivratri"),
+        ((2015, 3, 6), "NSE-HOL-PAGE-2015", "NSE Holi"),
+        ((2015, 4, 2), "NSE-HOL-PAGE-2015", "NSE Mahavir Jayanti"),
+        ((2015, 4, 3), "NSE-HOL-PAGE-2015", "NSE Good Friday"),
+        ((2015, 4, 14), "NSE-HOL-PAGE-2015", "NSE Ambedkar Jayanti"),
+        ((2015, 5, 1), "NSE-HOL-PAGE-2015", "NSE Maharashtra Day"),
+        ((2015, 9, 17), "NSE-HOL-PAGE-2015", "NSE Ganesh Chaturthi"),
+        ((2015, 9, 25), "NSE-HOL-PAGE-2015", "NSE Bakri ID"),
+        ((2015, 10, 2), "NSE-HOL-PAGE-2015", "NSE Gandhi Jayanti"),
+        ((2015, 10, 22), "NSE-HOL-PAGE-2015", "NSE Dussehra"),
+        (
+            (2015, 11, 12),
+            "NSE-HOL-PAGE-2015",
+            "NSE Diwali-Balipratipada",
+        ),
+        ((2015, 11, 25), "NSE-HOL-PAGE-2015", "NSE Gurunanak Jayanti"),
+        ((2015, 12, 25), "NSE-HOL-PAGE-2015", "NSE Christmas"),
+        // 2016, from NSE-HOL-PAGE-2016.
+        ((2016, 1, 26), "NSE-HOL-PAGE-2016", "NSE Republic Day"),
+        ((2016, 3, 7), "NSE-HOL-PAGE-2016", "NSE Mahashivratri"),
+        ((2016, 3, 24), "NSE-HOL-PAGE-2016", "NSE Holi"),
+        ((2016, 3, 25), "NSE-HOL-PAGE-2016", "NSE Good Friday"),
+        ((2016, 4, 14), "NSE-HOL-PAGE-2016", "NSE Ambedkar Jayanti"),
+        ((2016, 4, 15), "NSE-HOL-PAGE-2016", "NSE Ram Navami"),
+        ((2016, 4, 19), "NSE-HOL-PAGE-2016", "NSE Mahavir Jayanti"),
+        ((2016, 7, 6), "NSE-HOL-PAGE-2016", "NSE Ramzan ID"),
+        ((2016, 8, 15), "NSE-HOL-PAGE-2016", "NSE Independence Day"),
+        ((2016, 9, 5), "NSE-HOL-PAGE-2016", "NSE Ganesh Chaturthi"),
+        ((2016, 9, 13), "NSE-HOL-PAGE-2016", "NSE Bakri ID"),
+        ((2016, 10, 11), "NSE-HOL-PAGE-2016", "NSE Dasera"),
+        ((2016, 10, 12), "NSE-HOL-PAGE-2016", "NSE Moharram"),
+        (
+            (2016, 10, 31),
+            "NSE-HOL-PAGE-2016",
+            "NSE Diwali-Balipratipada",
+        ),
+        ((2016, 11, 14), "NSE-HOL-PAGE-2016", "NSE Gurunanak Jayanti"),
+        // 2017, from NSE-HOL-PAGE-2017.
+        ((2017, 1, 26), "NSE-HOL-PAGE-2017", "NSE Republic Day"),
+        ((2017, 2, 24), "NSE-HOL-PAGE-2017", "NSE Mahashivratri"),
+        ((2017, 3, 13), "NSE-HOL-PAGE-2017", "NSE Holi"),
+        ((2017, 4, 4), "NSE-HOL-PAGE-2017", "NSE Ram Navami"),
+        (
+            (2017, 4, 14),
+            "NSE-HOL-PAGE-2017",
+            "NSE Ambedkar Jayanti / Good Friday",
+        ),
+        ((2017, 5, 1), "NSE-HOL-PAGE-2017", "NSE Maharashtra Day"),
+        ((2017, 6, 26), "NSE-HOL-PAGE-2017", "NSE Ramzan ID"),
+        ((2017, 8, 15), "NSE-HOL-PAGE-2017", "NSE Independence Day"),
+        ((2017, 8, 25), "NSE-HOL-PAGE-2017", "NSE Ganesh Chaturthi"),
+        ((2017, 10, 2), "NSE-HOL-PAGE-2017", "NSE Gandhi Jayanti"),
+        (
+            (2017, 10, 20),
+            "NSE-HOL-PAGE-2017",
+            "NSE Diwali-Balipratipada",
+        ),
+        ((2017, 12, 25), "NSE-HOL-PAGE-2017", "NSE Christmas"),
+    ] {
+        assert_closure_at(
+            nse,
+            date,
+            document,
+            EvidenceTier::T1,
+            &format!("NSE {label}"),
+        );
+    }
+}
+
+/// Asserts the 2019-2022 NSE closure rows, per year, against the operator's
+/// own holiday pages. The date list is spelled here independently of the
+/// module: a row that moves, loses its clip or changes its citation fails
+/// here. 2018 is unrecovered and ships no rows (see the refusal fence below).
+/// Asserts the 2019-2022 NSE closure rows, per year, against the operator's
+/// own annual holiday material. The date list is spelled here independently of
+/// the module: a row that moves, loses its clip or changes its citation fails
+/// here.
+/// 2018 is unrecovered and ships no rows (see the refusal fence below).
+#[test]
+fn nse_printed_closures_2019_2022_ship_a_row_per_year() {
+    let nse = calendar_for_exchange(Exchange::NseIndia);
+    for (date, document, label) in [
+        // 2019, from NSE-HOL-PAGE-2019.
+        ((2019, 3, 4), "NSE-HOL-PAGE-2019", "NSE Mahashivratri"),
+        ((2019, 3, 21), "NSE-HOL-PAGE-2019", "NSE Holi"),
+        ((2019, 4, 17), "NSE-HOL-PAGE-2019", "NSE Mahavir Jayanti"),
+        ((2019, 4, 19), "NSE-HOL-PAGE-2019", "NSE Good Friday"),
+        (
+            (2019, 4, 29),
+            "NSE-HOL-PAGE-2019",
+            "NSE Parliamentary Elections",
+        ),
+        ((2019, 5, 1), "NSE-HOL-PAGE-2019", "NSE Maharashtra Day"),
+        ((2019, 6, 5), "NSE-HOL-PAGE-2019", "NSE Ramzan ID"),
+        ((2019, 8, 12), "NSE-HOL-PAGE-2019", "NSE Bakri Id"),
+        ((2019, 8, 15), "NSE-HOL-PAGE-2019", "NSE Independence Day"),
+        ((2019, 9, 2), "NSE-HOL-PAGE-2019", "NSE Ganesh Chaturthi"),
+        ((2019, 9, 10), "NSE-HOL-PAGE-2019", "NSE Moharram"),
+        ((2019, 10, 2), "NSE-HOL-PAGE-2019", "NSE Gandhi Jayanti"),
+        ((2019, 10, 8), "NSE-HOL-PAGE-2019", "NSE Dasera"),
+        (
+            (2019, 10, 28),
+            "NSE-HOL-PAGE-2019",
+            "NSE Diwali-Balipratipada",
+        ),
+        ((2019, 11, 12), "NSE-HOL-PAGE-2019", "NSE Gurunanak Jayanti"),
+        ((2019, 12, 25), "NSE-HOL-PAGE-2019", "NSE Christmas"),
+        // 2020, from NSE-HOL-PAGE-2020.
+        ((2020, 2, 21), "NSE-HOL-PAGE-2020", "NSE Mahashivratri"),
+        ((2020, 3, 10), "NSE-HOL-PAGE-2020", "NSE Holi"),
+        ((2020, 4, 2), "NSE-HOL-PAGE-2020", "NSE Ram Navami"),
+        ((2020, 4, 6), "NSE-HOL-PAGE-2020", "NSE Mahavir Jayanti"),
+        ((2020, 4, 10), "NSE-HOL-PAGE-2020", "NSE Good Friday"),
+        ((2020, 4, 14), "NSE-HOL-PAGE-2020", "NSE Ambedkar Jayanti"),
+        ((2020, 5, 1), "NSE-HOL-PAGE-2020", "NSE Maharashtra Day"),
+        ((2020, 5, 25), "NSE-HOL-PAGE-2020", "NSE Ramzan ID"),
+        ((2020, 10, 2), "NSE-HOL-PAGE-2020", "NSE Gandhi Jayanti"),
+        (
+            (2020, 11, 16),
+            "NSE-HOL-PAGE-2020",
+            "NSE Diwali-Balipratipada",
+        ),
+        ((2020, 11, 30), "NSE-HOL-PAGE-2020", "NSE Gurunanak Jayanti"),
+        ((2020, 12, 25), "NSE-HOL-PAGE-2020", "NSE Christmas"),
+        // 2021, from NSE-HOL-PAGE-2021.
+        ((2021, 1, 26), "NSE-HOL-PAGE-2021", "NSE Republic Day"),
+        ((2021, 3, 11), "NSE-HOL-PAGE-2021", "NSE Mahashivratri"),
+        ((2021, 3, 29), "NSE-HOL-PAGE-2021", "NSE Holi"),
+        ((2021, 4, 2), "NSE-HOL-PAGE-2021", "NSE Good Friday"),
+        ((2021, 4, 14), "NSE-HOL-PAGE-2021", "NSE Ambedkar Jayanti"),
+        ((2021, 4, 21), "NSE-HOL-PAGE-2021", "NSE Ram Navami"),
+        ((2021, 5, 13), "NSE-HOL-PAGE-2021", "NSE Ramzan ID"),
+        ((2021, 7, 21), "NSE-HOL-PAGE-2021", "NSE Bakri Id"),
+        ((2021, 8, 19), "NSE-HOL-PAGE-2021", "NSE Moharram"),
+        ((2021, 9, 10), "NSE-HOL-PAGE-2021", "NSE Ganesh Chaturthi"),
+        ((2021, 10, 15), "NSE-HOL-PAGE-2021", "NSE Dussehra"),
+        (
+            (2021, 11, 5),
+            "NSE-HOL-PAGE-2021",
+            "NSE Diwali-Balipratipada",
+        ),
+        ((2021, 11, 19), "NSE-HOL-PAGE-2021", "NSE Gurunanak Jayanti"),
+        // 2022, from NSE-HOL-PAGE-2022.
+        ((2022, 1, 26), "NSE-HOL-PAGE-2022", "NSE Republic Day"),
+        ((2022, 3, 1), "NSE-HOL-PAGE-2022", "NSE Mahashivratri"),
+        ((2022, 3, 18), "NSE-HOL-PAGE-2022", "NSE Holi"),
+        (
+            (2022, 4, 14),
+            "NSE-HOL-PAGE-2022",
+            "NSE Ambedkar Jayanti / Mahavir Jayanti",
+        ),
+        ((2022, 4, 15), "NSE-HOL-PAGE-2022", "NSE Good Friday"),
+        ((2022, 5, 3), "NSE-HOL-PAGE-2022", "NSE Ramzan ID"),
+        ((2022, 8, 9), "NSE-HOL-PAGE-2022", "NSE Moharram"),
+        ((2022, 8, 15), "NSE-HOL-PAGE-2022", "NSE Independence Day"),
+        ((2022, 8, 31), "NSE-HOL-PAGE-2022", "NSE Ganesh Chaturthi"),
+        ((2022, 10, 5), "NSE-HOL-PAGE-2022", "NSE Dussehra"),
+        (
+            (2022, 10, 26),
+            "NSE-HOL-PAGE-2022",
+            "NSE Diwali-Balipratipada",
+        ),
+        ((2022, 11, 8), "NSE-HOL-PAGE-2022", "NSE Gurunanak Jayanti"),
+    ] {
+        assert_closure_at(
+            nse,
+            date,
+            document,
+            EvidenceTier::T1,
+            &format!("NSE {label}"),
+        );
+    }
+}
+
+/// Asserts the 2023-2024 NSE closure rows, per year, against the operator's
+/// own holiday-master machine channel (T2 — the only T2 rows in the block).
+/// Asserts the 2023-2024 NSE closure rows, per year, against the operator's
+/// own annual holiday material. The date list is spelled here independently of
+/// the module: a row that moves, loses its clip or changes its citation fails
+/// here.
+#[test]
+fn nse_printed_closures_2023_2024_ship_a_row_per_year() {
+    let nse = calendar_for_exchange(Exchange::NseIndia);
+    for (date, document, label) in [
+        // 2023, from NSE-HOLMASTER-2023.
+        ((2023, 1, 26), "NSE-HOLMASTER-2023", "NSE Republic Day"),
+        ((2023, 3, 7), "NSE-HOLMASTER-2023", "NSE Holi"),
+        ((2023, 3, 30), "NSE-HOLMASTER-2023", "NSE Ram Navami"),
+        ((2023, 4, 4), "NSE-HOLMASTER-2023", "NSE Mahavir Jayanti"),
+        ((2023, 4, 7), "NSE-HOLMASTER-2023", "NSE Good Friday"),
+        ((2023, 4, 14), "NSE-HOLMASTER-2023", "NSE Ambedkar Jayanti"),
+        ((2023, 5, 1), "NSE-HOLMASTER-2023", "NSE Maharashtra Day"),
+        ((2023, 6, 28), "NSE-HOLMASTER-2023", "NSE Bakri Id"),
+        ((2023, 8, 15), "NSE-HOLMASTER-2023", "NSE Independence Day"),
+        ((2023, 9, 19), "NSE-HOLMASTER-2023", "NSE Ganesh Chaturthi"),
+        ((2023, 10, 2), "NSE-HOLMASTER-2023", "NSE Gandhi Jayanti"),
+        ((2023, 10, 24), "NSE-HOLMASTER-2023", "NSE Dussehra"),
+        (
+            (2023, 11, 14),
+            "NSE-HOLMASTER-2023",
+            "NSE Diwali-Balipratipada",
+        ),
+        (
+            (2023, 11, 27),
+            "NSE-HOLMASTER-2023",
+            "NSE Gurunanak Jayanti",
+        ),
+        ((2023, 12, 25), "NSE-HOLMASTER-2023", "NSE Christmas"),
+        // 2024, from NSE-HOLMASTER-2024.
+        ((2024, 1, 26), "NSE-HOLMASTER-2024", "NSE Republic Day"),
+        ((2024, 3, 8), "NSE-HOLMASTER-2024", "NSE Mahashivratri"),
+        ((2024, 3, 25), "NSE-HOLMASTER-2024", "NSE Holi"),
+        ((2024, 3, 29), "NSE-HOLMASTER-2024", "NSE Good Friday"),
+        ((2024, 4, 11), "NSE-HOLMASTER-2024", "NSE Ramadan Eid"),
+        ((2024, 4, 17), "NSE-HOLMASTER-2024", "NSE Ram Navmi"),
+        ((2024, 5, 1), "NSE-HOLMASTER-2024", "NSE Maharashtra Day"),
+        ((2024, 6, 17), "NSE-HOLMASTER-2024", "NSE Bakri Id"),
+        ((2024, 7, 17), "NSE-HOLMASTER-2024", "NSE Moharram"),
+        ((2024, 8, 15), "NSE-HOLMASTER-2024", "NSE Independence Day"),
+        ((2024, 10, 2), "NSE-HOLMASTER-2024", "NSE Gandhi Jayanti"),
+        (
+            (2024, 11, 15),
+            "NSE-HOLMASTER-2024",
+            "NSE Gurunanak Jayanti",
+        ),
+        ((2024, 12, 25), "NSE-HOLMASTER-2024", "NSE Christmas"),
+    ] {
+        assert_closure_at(
+            nse,
+            date,
+            document,
+            EvidenceTier::T2,
+            &format!("NSE {label}"),
+        );
+    }
+}
+
+/// The unrecovered 2012 and 2018 years refuse outright: no row, no audited
+/// normal, an explicit outside-covered-range verdict and refusing date-aware
+/// queries, never a silent answer from the normal week.
+#[test]
+fn the_unrecovered_2012_and_2018_years_refuse() {
+    let nse = calendar_for_exchange(Exchange::NseIndia);
+    for date in [(2012, 6, 15), (2012, 12, 24), (2018, 3, 12), (2018, 11, 20)] {
+        let trade_date = day(date.0, date.1, date.2);
+        assert_eq!(
+            nse.holiday_on(trade_date),
+            None,
+            "{trade_date} is inside no audited window"
+        );
+        assert_eq!(
+            nse.coverage().coverage_on(trade_date),
+            DateCoverage::OutsideCoveredRange,
+            "{trade_date} metadata verdict"
+        );
+        assert!(
+            matches!(
+                nse.is_closed_trade_date(trade_date, SessionKind::Both),
+                Err(CalendarQueryError::OutsideCoveredRange { .. })
+            ),
+            "{trade_date} must refuse, never answer from the carried week"
+        );
+    }
+}
+
 /// Asserts every NSE closure row, per year, against the operator's printed
 /// lists. The date list is spelled here independently of the module: a row
 /// that moves, loses its clip or changes its citation fails here.
@@ -1030,6 +1401,18 @@ fn the_muhurat_dates_are_unsourced_neither_closed_nor_normal() {
         "Diwali Laxmi Pujan + Muhurat",
     );
     assert_unsourced(nse, (2026, 11, 8), "NSE-HOL-2026", "Sunday Muhurat");
+    // The same withholding across the backfilled years: an asterisked holiday
+    // the operator footnotes a Muhurat session onto (T1 pages and circulars,
+    // T2 feeds per the 2023-2024 tier).
+    assert_unsourced(nse, (2010, 11, 5), "NSE-CIRC-2010-61", "2010 Muhurat");
+    assert_unsourced(nse, (2014, 10, 23), "NSE-HOL-PAGE-2014", "2014 Muhurat");
+    assert_unsourced_at(
+        nse,
+        (2024, 11, 1),
+        "NSE-HOLMASTER-2024",
+        EvidenceTier::T2,
+        "2024 Muhurat",
+    );
 
     // A probe inside the Sunday Muhurat day refuses too, rather than reading
     // the normal weekend. The withholding shadows its own Monday as well: a
@@ -1072,11 +1455,13 @@ fn the_muhurat_dates_are_unsourced_neither_closed_nor_normal() {
 
 /// The counts per year, read back from the shipped tables by walking them:
 /// 16+15+13+16+17+17+16+13+16+20+19+16+16+14+17 TSE closures across 2010-2024
-/// plus 18 + 19 + 17 over 2025-2027, 16+18+23+16+15+17+16+17+16+18+18+18+18+20
-/// SSE closures across 2011-2024 plus 18 + 19 over 2025-2026, and 13 + 1 plus
-/// 15 + 1 NSE rows (the one per year being the withheld Muhurat date). A row
-/// added, moved across a year or dropped breaks the count; the per-row fence
-/// above pins where.
+/// plus 18 + 19 + 17 over 2025-2027, 16+18+23+16+15+17+16+18+15+19+18+18+18+20
+/// SSE closures across 2011-2024 plus 18 + 19 over 2025-2026, and the NSE rows
+/// of 10+13+13+16+14+15+12+16+12+13+12+15+13 closures across 2010-2024 (2012
+/// and 2018 unrecovered, shipping none) plus 13 + 1 and 15 + 1 over 2025-2026
+/// (the one per year being the withheld Muhurat date). A row added, moved
+/// across a year or dropped breaks the count; the per-row fence above pins
+/// where.
 #[test]
 fn the_window_counts_are_the_printed_lists_counts() {
     fn count_by_year(calendar: ExchangeCalendar) -> Vec<(i32, usize, usize)> {
@@ -1163,7 +1548,30 @@ fn the_window_counts_are_the_printed_lists_counts() {
     );
     assert_eq!(
         count_by_year(calendar_for_exchange(Exchange::NseIndia)),
-        [(2025, 13, 1), (2026, 15, 1)],
+        [
+            // 2012 and 2018 are unrecovered (no operator artifact in the
+            // archive), so they ship no rows and sit inside no window; every
+            // other year carries its list's weekday legs, the one per year
+            // with an asterisked Muhurat date withheld (2021's list names no
+            // Muhurat date, so nothing is withheld there).
+            (2010, 10, 1),
+            (2011, 13, 1),
+            (2012, 0, 0),
+            (2013, 13, 1),
+            (2014, 16, 1),
+            (2015, 14, 1),
+            (2016, 15, 1),
+            (2017, 12, 1),
+            (2018, 0, 0),
+            (2019, 16, 1),
+            (2020, 12, 1),
+            (2021, 13, 0),
+            (2022, 12, 1),
+            (2023, 15, 1),
+            (2024, 13, 1),
+            (2025, 13, 1),
+            (2026, 15, 1),
+        ],
         "NSE closures and withheld Muhurat dates per year, from the operator's lists"
     );
 }
@@ -1260,11 +1668,22 @@ fn coverage_runs_exactly_over_each_operators_published_window() {
         "the unrecovered 2010 arrangement sits outside every audited window and must refuse"
     );
 
-    // NSE: 2025-01-01 .. 2026-12-31; the 2027 list is not published.
+    // NSE: 2010-01-01 .. 2026-12-31 over three audited windows; 2012 and
+    // 2018 are unrecovered (no operator artifact in the archive) and the 2027
+    // list is not published.
     let nse = calendar_for_exchange(Exchange::NseIndia);
     let nse_coverage = nse.holiday_coverage().expect("NSE ships a table");
-    assert_eq!(nse_coverage.first(), day(2025, 1, 1));
+    assert_eq!(nse_coverage.first(), day(2010, 1, 1));
     assert_eq!(nse_coverage.last(), day(2026, 12, 31));
+    assert_eq!(
+        nse_coverage.windows(),
+        vec![
+            (day(2010, 1, 1), day(2011, 12, 31)),
+            (day(2013, 1, 1), day(2017, 12, 31)),
+            (day(2019, 1, 1), day(2026, 12, 31)),
+        ],
+        "the three audited windows stop at each unrecovered year's edge"
+    );
     assert!(
         matches!(
             nse.is_open(zoned(Asia::Kolkata, (2027, 1, 4), (10, 0, 0))),
@@ -1272,6 +1691,16 @@ fn coverage_runs_exactly_over_each_operators_published_window() {
         ),
         "2027 is unpublished by NSE and the identity must refuse it outright"
     );
+    for gap_year in [(2012, 6, 15), (2018, 6, 15)] {
+        assert!(
+            matches!(
+                nse.is_open(zoned(Asia::Kolkata, gap_year, (10, 0, 0))),
+                Err(CalendarQueryError::OutsideCoveredRange { .. })
+            ),
+            "{} is unrecovered and the identity must refuse it outright",
+            day(gap_year.0, gap_year.1, gap_year.2)
+        );
+    }
 
     // Pre-floor instants refuse naming their venue-local pre-2010 day, on all
     // three, whatever the window does.
@@ -1349,7 +1778,25 @@ fn detaching_the_table_restores_the_normal_week() {
 /// `Unsourced` (or back) keeps the totals and must fail here. Walk the tables
 /// and assert the exact dates that carry the withheld kind.
 #[test]
-fn the_only_unsourced_rows_are_the_two_muhurat_dates() {
+fn the_only_unsourced_rows_are_the_muhurat_dates() {
+    use chrono::Datelike as _;
+
+    const MUHURAT: [(i32, u32, u32); 14] = [
+        (2010, 11, 5),
+        (2011, 10, 26),
+        (2013, 11, 3),
+        (2014, 10, 23),
+        (2015, 11, 11),
+        (2016, 10, 30),
+        (2017, 10, 19),
+        (2019, 10, 27),
+        (2020, 11, 14),
+        (2022, 10, 24),
+        (2023, 11, 12),
+        (2024, 11, 1),
+        (2025, 10, 21),
+        (2026, 11, 8),
+    ];
     for exchange in [Exchange::Tse, Exchange::Sse, Exchange::NseIndia] {
         let calendar = calendar_for_exchange(exchange);
         let coverage = calendar.holiday_coverage().expect("each ships a table");
@@ -1364,8 +1811,8 @@ fn the_only_unsourced_rows_are_the_two_muhurat_dates() {
                     "{date}: only NSE ships withheld rows"
                 );
                 assert!(
-                    date == day(2025, 10, 21) || date == day(2026, 11, 8),
-                    "{date}: the only withheld dates are the two Muhurat dates"
+                    MUHURAT.contains(&(date.year(), date.month(), date.day())),
+                    "{date}: the only withheld dates are the Muhurat dates"
                 );
             }
             date = date

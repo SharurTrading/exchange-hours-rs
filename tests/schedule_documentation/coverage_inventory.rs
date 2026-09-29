@@ -414,7 +414,7 @@ fn date_level_incompleteness() -> &'static [(&'static str, usize)] {
         ("iceus", 41),
         ("lse", 5),
         ("nasdaq", 4),
-        ("nse_india", 2),
+        ("nse_india", 14),
         ("xetra", 0),
     ]
 }

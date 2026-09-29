@@ -54,7 +54,8 @@ On 2020-01-27 the operator's 上证公告〔2020〕6号 (关于调整2020年春�
 公告) states `延长2020年春节休市至2月2日（星期日），2月3日（星期一）正常开市` — an
 unconditional, day-level adjustment of the earlier notice under `根据《国务院
 办公厅关于延长2020年春节假期的通知》，经中国证监会批准`. The lineage is the
-operator's own: the extension names the notice it adjusts, so the extension
+operator's own: the extension names 上证公告〔2020〕3号 (《关于2020年春节休市安排的公告》)
+as the notice it adjusts, so the extension
 governs the overlap and the annual notice's 1月31日 reopening clause is
 superseded. Against the adjusted closure (1月24日 through 2月2日), the only
 weekday the extension adds over the annual notice is 2020-01-31 — 2月1日 and

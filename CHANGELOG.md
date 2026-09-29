@@ -17,7 +17,7 @@ corrections (a venue's hours fixed against a primary source) go under
   venue's built-in holiday table extends from the 2025-2026 audited window
   back over three audited windows — 2010-2011, 2013-2017 and 2019-2024 —
   186 further rows (174 `Closed` plus 12 withheld `Unsourced` Muhurat dates:
-  11/14/14/17/15/16/13/17/13/14/13/16/14 rows for 2010, 2011, 2013, 2014,
+  11/14/14/17/15/16/13/17/13/13/13/16/14 rows for 2010, 2011, 2013, 2014,
   2015, 2016, 2017, 2019, 2020, 2021, 2022, 2023 and 2024), every one a
   printed weekday date of the operator's own holiday material: the annual
   circulars (`NSE-CIRC-2010-61` from the operator's press `HOLIDAYS.zip`,

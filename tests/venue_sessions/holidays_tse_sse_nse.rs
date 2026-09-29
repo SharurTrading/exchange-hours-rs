@@ -1155,11 +1155,6 @@ fn nse_printed_closures_2010_2017_ship_a_row_per_year() {
 /// own holiday pages. The date list is spelled here independently of the
 /// module: a row that moves, loses its clip or changes its citation fails
 /// here. 2018 is unrecovered and ships no rows (see the refusal fence below).
-/// Asserts the 2019-2022 NSE closure rows, per year, against the operator's
-/// own annual holiday material. The date list is spelled here independently of
-/// the module: a row that moves, loses its clip or changes its citation fails
-/// here.
-/// 2018 is unrecovered and ships no rows (see the refusal fence below).
 #[test]
 fn nse_printed_closures_2019_2022_ship_a_row_per_year() {
     let nse = calendar_for_exchange(Exchange::NseIndia);
@@ -1258,10 +1253,8 @@ fn nse_printed_closures_2019_2022_ship_a_row_per_year() {
 
 /// Asserts the 2023-2024 NSE closure rows, per year, against the operator's
 /// own holiday-master machine channel (T2 — the only T2 rows in the block).
-/// Asserts the 2023-2024 NSE closure rows, per year, against the operator's
-/// own annual holiday material. The date list is spelled here independently of
-/// the module: a row that moves, loses its clip or changes its citation fails
-/// here.
+/// The date list is spelled here independently of the module: a row that
+/// moves, loses its clip or changes its citation fails here.
 #[test]
 fn nse_printed_closures_2023_2024_ship_a_row_per_year() {
     let nse = calendar_for_exchange(Exchange::NseIndia);

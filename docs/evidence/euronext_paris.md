@@ -103,7 +103,7 @@ ships a Paris row.
 
 | Document | Window | Replay or service URL | Capture or retrieval, UTC | Tier | sha256 |
 |---|---|---|---|---|---|
-| `EURONEXT-HH-2025-12-06` | 2025-01-01 .. 2025-12-31 (the page's 2025 table) | <https://web.archive.org/web/20251206154319id_/https://live.euronext.com/en/resources/trading-hours-holidays> | retrieved 2026-09-28 01:50 (capture 2025-12-06T15:43:19Z) | T1 | `dc96c4f7f1e6a51cd2e6743385faa5cbc4156623ec45499c89e2ec3871398a18` |
+| `EURONEXT-HH-2025-12-06` | 2025-01-01 .. 2025-12-31 (the page's 2025 table) | <https://web.archive.org/web/20251206154319id_/https://live.euronext.com/en/resources/trading-hours-holidays> | Wayback `id_` replay of capture `20251206154319`, retrieved 2026-09-28 01:50 UTC | T1 | `dc96c4f7f1e6a51cd2e6743385faa5cbc4156623ec45499c89e2ec3871398a18` |
 | `EURONEXT-EOY-2025` | 2025-12-24 and 2025-12-31 | <https://www.euronext.com/media/14656/download> | retrieved 2026-09-28 01:50 | T1 | `5850b4b4f5a031e637a0c44a0c7c1388ddc638c652133e66636c674af19bb6b9` |
 | `EURONEXT-IF-2026` | 2026-01-01 .. 2026-12-31 | <https://connect2.euronext.com/sites/default/files/2025-11/IF251107CADE%202026%20Holiday%20Calendar%20for%20Euronexts%20Cash%20and%20Derivatives%20markets_1.pdf?VersionId=3ehe2.c9cMxv1K36.i6o4tz.5CAJmuw2> | retrieved 2026-09-28 01:09 | T1 | `617bc559510ef3a3d86d4a8b804422d0ba4c4dae43782a0a728d57a23fc4b1c5` |
 | `EURONEXT-HH-LIVE-2026-09-28` | 2025-01-01 .. 2026-12-31 (the page's 2026 table; the 2025 table corroborated) | <https://live.euronext.com/en/resources/trading-hours-holidays> | retrieved 2026-09-28 01:07 | T1 | `5a1165a52361a81350fa69401910c76f046f28e16f757dadb6d33d68ccb6e5e3` |

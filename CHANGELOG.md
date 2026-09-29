@@ -168,6 +168,12 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Fixed
 
+- **The five `lse` and `euronext_paris` Documents capture cells state their
+  Wayback capture in the pairing fence's format** (`Wayback id_ replay of
+  capture <stamp>`, retrieval preserved): #203's evidence files predate
+  #205's uniform capture-pairing fence, and the fence — which passes on every
+  other shipped file — flagged the five rows whose capture cell led with the
+  retrieval stamp.
 - **Documents rows fence their capture pairing and their digests against the
   research store's bytes, and twenty-two shipped rows are corrected (issue
   #191).** No shipped test read a `### Documents` row's capture-instant cell

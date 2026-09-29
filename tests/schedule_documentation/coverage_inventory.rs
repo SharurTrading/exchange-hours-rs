@@ -14,7 +14,7 @@
 //! assume that, it counts whatever the surface returns.
 //!
 //! Only a **routed** table is counted. A module may hold several — `ice_us.rs`
-//! carries the served venue table beside five dormant family tables — and a
+//! carries the served venue table beside seven dormant family tables — and a
 //! count taken over the whole file reports those dormant rows under the served
 //! identity. Going through the identity's own calendar is what keeps the two
 //! apart, and it is why this fence queries rather than reading module text.
@@ -35,6 +35,7 @@ use exchange_hours::{
     CalendarQueryError, CoverageGap, CoverageGapReason, DateCoverage, Exchange, ExchangeCalendar,
     Holiday, HolidayKind, MarketHoursKey, calendar_for_exchange, calendar_for_market_hours_key,
 };
+use std::fs;
 use std::path::Path;
 
 const INVENTORY: &str = include_str!("../../docs/schedules/coverage-2025.md");
@@ -367,6 +368,241 @@ fn the_iceus_findings_paragraphs_derive_their_counts_from_the_shipped_tables() {
             "the findings name {named}, which the shipped table must withhold as Unsourced"
         );
     }
+}
+
+/// Reads a repository file, relative to the crate root, as the compiler ships it.
+fn repo_file(path: &str) -> String {
+    let text = fs::read_to_string(Path::new(env!("CARGO_MANIFEST_DIR")).join(path))
+        .unwrap_or_else(|error| panic!("{path} must be readable: {error}"));
+    assert!(!text.is_empty(), "{path} must not be empty");
+    text
+}
+
+/// Whitespace-normalizes hard-wrapped prose so a claim can straddle line breaks.
+fn flowed(text: &str) -> String {
+    text.split_whitespace().collect::<Vec<_>>().join(" ")
+}
+
+/// One `HolidayTable` static in a holiday module: its name and row-tuple count.
+struct TableCensus {
+    /// The static's identifier.
+    name: String,
+    /// The number of `(YYYY, M, D, …)` row lines the static carries.
+    rows: usize,
+}
+
+/// Counts the `HolidayTable` statics in a holiday module's source text and the
+/// row tuples each carries.
+///
+/// A static opens with `pub(crate) static NAME: &HolidayTable`, and each of its
+/// row lines opens with `(YYYY,` at statement indentation; the `coverage:` range
+/// line and the `// date - tier - document` comment lines never do, so the count
+/// is the row count.
+fn census_holiday_tables(module: &str, module_path: &str) -> Vec<TableCensus> {
+    let mut census: Vec<TableCensus> = Vec::new();
+    for line in module.lines() {
+        if let Some(rest) = line.strip_prefix("pub(crate) static ") {
+            assert!(
+                line.contains("&HolidayTable"),
+                "{module_path}: the census counts only `HolidayTable` statics: {line}"
+            );
+            let name = rest
+                .split(':')
+                .next()
+                .unwrap_or_else(|| panic!("{module_path}: a static line must name its static"))
+                .trim()
+                .to_owned();
+            census.push(TableCensus { name, rows: 0 });
+            continue;
+        }
+        let trimmed = line.trim_start();
+        let is_row = trimmed.starts_with('(')
+            && trimmed[1..]
+                .split(',')
+                .next()
+                .is_some_and(|year| year.trim().parse::<i32>().is_ok());
+        if is_row && let Some(table) = census.last_mut() {
+            table.rows += 1;
+        }
+    }
+    assert!(
+        !census.is_empty(),
+        "{module_path} must declare at least one holiday-table static"
+    );
+    census
+}
+
+/// The `ice_us` statics `holidays/routing.rs` maps the `MarketHoursKey::IceUs*`
+/// arms to, in arm order.
+///
+/// Only the key arms count: the venue arm routes `Exchange::Iceus` to `VENUE`,
+/// which is the served table the keys' tables are the dormant complement of.
+fn ice_us_key_routing_targets(routing: &str) -> Vec<String> {
+    routing
+        .lines()
+        .filter(|line| line.contains("MarketHoursKey::IceUs") && line.contains("super::ice_us::"))
+        .map(|line| {
+            line.split("super::ice_us::")
+                .nth(1)
+                .expect("every routed ice_us arm names its static")
+                .split(')')
+                .next()
+                .expect("every routed ice_us arm closes its `Some(..)`")
+                .trim()
+                .to_owned()
+        })
+        .collect()
+}
+
+/// The doc comment above a static, whitespace-normalized, `///` markers stripped.
+///
+/// A plain `// Evidence:` line sits between the doc block and the declaration,
+/// so the walk skips non-doc lines before it takes the contiguous `///` block.
+fn static_doc_comment(module: &str, static_name: &str) -> String {
+    let marker = format!("pub(crate) static {static_name}: &HolidayTable");
+    let position = module
+        .find(&marker)
+        .unwrap_or_else(|| panic!("{static_name} must be declared in its module"));
+    let mut doc: Vec<String> = module[..position]
+        .lines()
+        .rev()
+        .skip_while(|line| !line.starts_with("///"))
+        .take_while(|line| line.starts_with("///"))
+        .map(|line| line.trim_start_matches('/').trim().to_owned())
+        .collect();
+    doc.reverse();
+    flowed(&doc.join(" "))
+}
+
+/// The module-shape sentences are prose is data (review step 5): the routed-table
+/// note under `How to read a row`, §1's "tables those keys select" clause, the
+/// `VENUE` docstring in `holidays/ice_us.rs`, and this fence's own module doc all
+/// state how many tables the `ice_us` holiday module holds, which statics the
+/// `ice_us*` keys route to, and how many rows each side carries. All four rotted
+/// when the shared softs table split into `SUGAR`, `COFFEE` and `COCOA` (issue
+/// #228) because nothing derived them. This fence parses the shipped module and
+/// `holidays/routing.rs` — the same bytes the compiler ships, exactly as
+/// `inventory_revisions_cells_match_the_shipped_tables` reads `revisions!`
+/// blocks — derives the shape, cross-checks the venue count against the public
+/// surface, and pins every sentence with its derived number, so the next split
+/// fails here with the correction in the message.
+#[test]
+fn the_ice_us_module_shape_prose_derives_from_the_shipped_tables() {
+    let module = repo_file("src/calendar/schedules/holidays/ice_us.rs");
+    let census = census_holiday_tables(&module, "holidays/ice_us.rs");
+    let routed =
+        ice_us_key_routing_targets(&repo_file("src/calendar/schedules/holidays/routing.rs"));
+
+    let venue_rows = census
+        .iter()
+        .find(|table| table.name == "VENUE")
+        .expect("holidays/ice_us.rs must declare VENUE")
+        .rows;
+    let dormant: Vec<&TableCensus> = census
+        .iter()
+        .filter(|table| table.name != "VENUE")
+        .collect();
+    let dormant_rows: usize = dormant.iter().map(|table| table.rows).sum();
+    let module_rows: usize = census.iter().map(|table| table.rows).sum();
+
+    // The routing arms and the module's dormant statics must name the same
+    // tables. An arm that names a missing static cannot compile, but a dormant
+    // static no arm selects — or a key left on another table's rows — can, and
+    // that is exactly the drift the prose cannot survive.
+    let mut routed_sorted = routed.clone();
+    routed_sorted.sort();
+    let mut dormant_sorted: Vec<String> = dormant.iter().map(|table| table.name.clone()).collect();
+    dormant_sorted.sort();
+    assert_eq!(
+        routed_sorted, dormant_sorted,
+        "the ice_us keys' routing arms and the module's dormant statics must name the same tables"
+    );
+
+    // The count the module ships is the count the public surface answers, so
+    // the census and the identity-backed walk cannot disagree silently.
+    let calendar = calendar_for("iceus").expect("the inventory names a known identity");
+    let coverage = calendar
+        .holiday_coverage()
+        .expect("a served identity ships a holiday table");
+    let (dated, _) = count_from_floor(calendar, coverage.last());
+    assert_eq!(
+        dated, venue_rows,
+        "the identity-backed walk and VENUE's own row count must agree"
+    );
+
+    // "individually smaller than `VENUE`" is a derived invariant, not a given:
+    // a dormant table that grows past the venue intersection fails here until
+    // the note is restated.
+    let largest_dormant = dormant
+        .iter()
+        .map(|table| table.rows)
+        .max()
+        .expect("the module carries at least one dormant table");
+    assert!(
+        largest_dormant < venue_rows,
+        "the routed-table note calls the dormant tables individually smaller than `VENUE`, but \
+         one holds {largest_dormant} rows against VENUE's {venue_rows}"
+    );
+
+    let keys_word = spelled(routed.len());
+    let note = flowed(INVENTORY);
+    assert!(
+        note.contains(&format!("holds {} tables", spelled(census.len()))),
+        "the routed-table note must state the module's table count ({})",
+        census.len()
+    );
+    for table in &dormant_sorted {
+        assert!(
+            note.contains(&format!("`{table}`")),
+            "the routed-table note must name the dormant static `{table}`"
+        );
+    }
+    assert!(
+        note.contains(&format!("hold {dormant_rows} further rows")),
+        "the routed-table note must state the dormant tables' row total ({dormant_rows})"
+    );
+    assert!(
+        note.contains(&format!(
+            "{module_rows} rows where the served identity answers for {venue_rows} dates"
+        )),
+        "the routed-table note must state the module total ({module_rows}) and the served \
+         identity's own count ({venue_rows})"
+    );
+
+    let one = findings_section(1);
+    assert!(
+        one.contains(&format!(
+            "the {keys_word} ice futures u.s. families routed to the venue"
+        )),
+        "\u{a7}1's family count must restate the routing arms ({})",
+        routed.len()
+    );
+    assert!(
+        one.contains(&format!("the {keys_word} tables those keys select")),
+        "\u{a7}1's table count must restate the routing arms ({})",
+        routed.len()
+    );
+
+    let venue_doc = static_doc_comment(&module, "VENUE");
+    assert!(
+        venue_doc.contains(&format!(
+            "only where all {keys_word} tables those {keys_word} keys select agree"
+        )),
+        "VENUE's docstring must restate the routing arms ({})",
+        routed.len()
+    );
+
+    let own_doc = flowed(&repo_file(
+        "tests/schedule_documentation/coverage_inventory.rs",
+    ));
+    assert!(
+        own_doc.contains(&format!(
+            "beside {} dormant family tables",
+            spelled(dormant.len())
+        )),
+        "this fence's own module doc must state the dormant table count ({})",
+        dormant.len()
+    );
 }
 
 /// The served identities whose owner module carries more than one

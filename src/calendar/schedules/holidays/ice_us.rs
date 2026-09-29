@@ -674,7 +674,7 @@ pub(crate) static DOLLAR_INDEX: &HolidayTable = holidays! {
 /// The `iceus` venue table: the intersection of the seven ICE Futures U.S.
 /// families the crate routes to the venue (design memo D17).
 ///
-/// A date ships a scheduling row only where all five tables those seven keys
+/// A date ships a scheduling row only where all seven tables those seven keys
 /// select agree. In this window that is the seven full closures — 2025-01-01,
 /// 2025-04-18, 2025-12-25, 2026-01-01, 2026-12-25, 2027-01-01 and 2027-12-24.
 /// On every other special date the families disagree — the softs close while

@@ -461,6 +461,20 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Fixed
 
+- **The `ice_us` module-shape prose re-derived from the shipped tables
+  (2026-09-29 UTC).** Four sentences still described
+  `src/calendar/schedules/holidays/ice_us.rs` as it was before the shared softs
+  table split into `SUGAR`, `COFFEE` and `COCOA`: the coverage inventory's
+  routed-table note (six tables, a defunct `SUGAR_COFFEE_COCOA` static, and
+  105/129/24 where the module ships eight tables — the served `VENUE` table at
+  48 rows beside seven dormant family tables totalling 251 rows, 299 in all),
+  §1's and the `VENUE` docstring's "five tables those keys select" (the seven
+  `ice_us*` keys route to seven distinct statics), and this inventory fence's
+  own module doc. The new
+  `the_ice_us_module_shape_prose_derives_from_the_shipped_tables` fence parses
+  the module's statics and `holidays/routing.rs`'s arms, cross-checks the venue
+  count against the public surface, and pins every restated sentence with its
+  derived number.
 - **The `cbot` withheld-date census corrected and two 2023 holidays worked up
   (2026-09-29 UTC).** The venue's 261 withheld `Unsourced` dates are now stated
   exactly: 257 are disputes the routed families' own sourced answers produce

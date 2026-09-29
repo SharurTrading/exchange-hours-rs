@@ -15,7 +15,7 @@
     reason = "fixture constructors assert their own literals; a bad literal must fail the test"
 )]
 
-use chrono::{NaiveDate, TimeZone as _, Utc};
+use chrono::{DateTime, Datelike as _, NaiveDate, TimeZone as _, Utc};
 use chrono_tz::{Asia, US};
 use exchange_hours::{
     CalendarCoverage, CalendarQueryError, CalendarSource, CoverageGap, CoverageGapReason,
@@ -1270,5 +1270,135 @@ fn detaching_the_holiday_table_neither_hides_nor_manufactures_a_phase_gap() {
             .filter(|gap| gap.phase_gap().is_some())
             .count(),
         "the detached view reports the same declaration records"
+    );
+}
+
+/// The inspection interval the #172 regression probe walks: the 1,095 days
+/// 2025-01-01..2027-12-31 over which the whole-domain declarations once
+/// answered zero complete days for three served identities.
+const REGRESSION_FIRST: NaiveDate = match NaiveDate::from_ymd_opt(2025, 1, 1) {
+    Some(date) => date,
+    None => NaiveDate::MAX,
+};
+const REGRESSION_LAST: NaiveDate = match NaiveDate::from_ymd_opt(2027, 12, 31) {
+    Some(date) => date,
+    None => NaiveDate::MAX,
+};
+
+/// The 15:00 CT instant of `day`, the middle of the post-close queue window
+/// the #152 label gap is about.
+fn post_close_instant(day: NaiveDate) -> DateTime<Utc> {
+    use chrono_tz::US;
+    US::Central
+        .with_ymd_and_hms(day.year(), day.month(), day.day(), 15, 0, 0)
+        .single()
+        .expect("15:00 CT is never ambiguous")
+        .with_timezone(&Utc)
+}
+
+/// Walks the interval and returns the number of `Covered` days.
+fn complete_days(coverage: CalendarCoverage) -> usize {
+    let mut days = 0;
+    let mut day = REGRESSION_FIRST;
+    while day <= REGRESSION_LAST {
+        days += usize::from(coverage.coverage_on(day) == DateCoverage::Covered);
+        day = day
+            .succ_opt()
+            .expect("the walk stays inside the year range");
+    }
+    days
+}
+
+#[test]
+fn a_date_scoped_declaration_zeroes_no_identity_over_2025_2027() {
+    // The #172 regression: `PostCloseQueueTradeDateLabel` declared whole-domain
+    // refused every date of 2025-01-01..2027-12-31 for both queue families, and
+    // `UnpublishedClosureDates` did the same for eurex before #180 bounded it.
+    // The date-scoped engine answers the dates the evidence does not withhold,
+    // so the walk counts here are nonzero and every refused date is one whose
+    // own calendar carries the disputed arrangement.
+    let grains = key_coverage(MarketHoursKey::GlobexGrains);
+    let livestock = key_coverage(MarketHoursKey::GlobexLivestock);
+    assert_eq!(
+        complete_days(grains),
+        375,
+        "globex_grains answers 375 of the 1,095 days; the refused rest carry the post-close queue"
+    );
+    assert_eq!(
+        complete_days(livestock),
+        341,
+        "globex_livestock answers 341 of the 1,095 days; the refused rest carry the post-close queue"
+    );
+
+    // Livestock's queue day is exactly a refused day: the 15:00 CT instant
+    // accepts orders iff the profile serves the 14:30-16:00 CT post-close
+    // queue the label gap withholds, and on every other day the date answers
+    // completely.
+    let livestock_cal = calendar_for_market_hours_key(MarketHoursKey::GlobexLivestock);
+    let mut day = REGRESSION_FIRST;
+    while day <= REGRESSION_LAST {
+        let refused = livestock.coverage_on(day) == DateCoverage::OutsideCoveredRange;
+        let accepts = livestock_cal.is_accepting_orders(post_close_instant(day)) == Ok(true);
+        assert_eq!(refused, accepts, "globex_livestock on {day}");
+        day = day
+            .succ_opt()
+            .expect("the walk stays inside the year range");
+    }
+
+    // Grains refuses on the same condition, but fourteen dates answer
+    // completely while a queue accepts orders at 15:00 CT: the closure eves
+    // whose complete replacement blocks state the adjusted day outright
+    // (coverage-2025 §2), so the 16:00-ending occurrence the shape resolves is
+    // absent and the label gap cannot apply.
+    let grains_cal = calendar_for_market_hours_key(MarketHoursKey::GlobexGrains);
+    let mut block_eves = 0;
+    day = REGRESSION_FIRST;
+    while day <= REGRESSION_LAST {
+        let refused = grains.coverage_on(day) == DateCoverage::OutsideCoveredRange;
+        let accepts = grains_cal.is_accepting_orders(post_close_instant(day)) == Ok(true);
+        if refused {
+            assert!(
+                accepts,
+                "a refused date must be one the post-close queue runs on: {day}"
+            );
+        } else if accepts {
+            block_eves += 1;
+        }
+        day = day
+            .succ_opt()
+            .expect("the walk stays inside the year range");
+    }
+    assert_eq!(
+        block_eves, 14,
+        "the complete replacement-blocks closure eves are the only covered dates that \
+         accept orders at 15:00 CT"
+    );
+
+    // Eurex stays at zero complete days — the operator's `tba` note is
+    // evidence in the 2025 and 2026 editions and in no later one, so every
+    // audited date is withheld and 2027 lies outside the audited windows — but
+    // the record it streams spans exactly those editions, not the whole floor
+    // the whole-domain rendering used to shadow (2010-01-01..2026-12-31).
+    let eurex = exchange_coverage(Exchange::Eurex);
+    assert_eq!(complete_days(eurex), 0);
+    let unpublished: Vec<(DateRange, Option<&str>)> = eurex
+        .gaps()
+        .filter(|gap| gap.reason() == CoverageGapReason::UnpublishedClosureDates)
+        .map(|gap| (gap.range(), gap.closing_condition()))
+        .collect();
+    assert_eq!(
+        unpublished,
+        vec![
+            (
+                DateRange::new(date(2025, 1, 1), date(2026, 12, 30)).expect("ascending"),
+                Some("#157")
+            ),
+            (
+                DateRange::new(date(2026, 12, 31), date(2026, 12, 31)).expect("ascending"),
+                Some("#157")
+            ),
+        ],
+        "the #157 record covers exactly the editions that carry the note, each with its \
+         closing condition"
     );
 }

@@ -561,8 +561,8 @@ fn inventory_completeness_verdicts_match_the_metadata() {
     }
     assert_eq!(
         (complete, incomplete, no_coverage),
-        (13, 20, 0),
-        "the inventory's verdict shapes: thirteen complete, twenty incomplete, none with no 2025 \
+        (12, 21, 0),
+        "the inventory's verdict shapes: twelve complete, twenty-one incomplete, none with no 2025 \
          coverage (xetra's unpublished 2027 schedule keeps it incomplete and hkex's ten Unsourced \
          2012-2015 half-day eves moved it there on 2026-09-29 UTC; #197's b3/tadawul are \
          complete; nyse is complete to 2027 and nasdaq is incomplete — four Unsourced dates across \

@@ -67,6 +67,23 @@ corrections (a venue's hours fixed against a primary source) go under
   states a holiday-time early close, so the venue still ships closures only.
   The audited window is now 2010-01-01..2027-12-31 and the identity is complete
   to 2027-12-31 across it.
+- **`cfe` and `cfe_vix` holiday history extended below the 2025 window to the
+  earliest surviving operator artifact (2026-09-29 UTC).** The routed CFE
+  holiday table grows from 26 rows over 2025-01-01..2026-12-31 to **113 rows
+  over 2017-04-10..2026-12-31** (87 added: 20 closures, 66 early closes at
+  the printed instants, one withheld date),
+  audited from the operator's own documents at T1: the CFE Holiday Schedule
+  rules page read through five Wayback `id_` captures (2017-04-10 through
+  2019-12-15) for 2017 and 2018-01-01, and the per-holiday CFE notices under
+  the operator's CDN for every 2018-2024 holiday. **2017-07-03 ships
+  `Unsourced`**: the rules page states the July 3 eve close only as a default
+  ("typically"), and no controlling circular survives — a labelled gap with a
+  closing condition, not a claimed normal day. 2010-01-01..2017-04-09 is an
+  explicit unaudited span (no artifact survives that keys an earlier
+  holiday's session), recorded with its closing condition in the evidence
+  files; outside the window the table has no answer. Every row cites a saved
+  operator artifact (research store `holidays/raw/cfe-2010-2025/live/` and
+  `holidays/raw/cfe-2010-2024/rulespage/`, sha256 per artifact).
 - **`lse`, `euronext_paris` and `tsx` activate: built-in holiday tables for
   the European and Canadian cash-equity venues (2026-09-28 UTC).** All three
   identities flip dormant→**served** (LAW-SERVICE-TIERS admission by consumer

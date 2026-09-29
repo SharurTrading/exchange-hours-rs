@@ -308,8 +308,9 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2024, 1, 15, early_close(10 * 3_600 + 30 * 60), T1, "CBOE-SU-2024-MLK"),
         // 2024-02-19 - T1 - CBOE-SU-2024-PRESIDENTS - Presidents' Day, 10:30 CT.
         (2024, 2, 19, early_close(10 * 3_600 + 30 * 60), T1, "CBOE-SU-2024-PRESIDENTS"),
-        // 2024-03-29 - T1 - CBOE-SU-2024-GOOD-FRIDAY - Good Friday: the notice
-        // states trading will be closed for all CFE products.
+        // 2024-03-29 - T1 - CBOE-SU-2024-GOOD-FRIDAY - Good Friday: the
+        // notice's table prints no Friday session and its Trade Date row skips
+        // the day, so no session belongs to it.
         (2024, 3, 29, Closed, T1, "CBOE-SU-2024-GOOD-FRIDAY"),
         // 2024-05-27 - T1 - CBOE-SU-2024-MEMORIAL - Memorial Day, 10:30 CT.
         (2024, 5, 27, early_close(10 * 3_600 + 30 * 60), T1, "CBOE-SU-2024-MEMORIAL"),

@@ -251,17 +251,31 @@ fn cfe_2025_holiday_rows_report_covered() {
         assert!(coverage.is_complete_on(day));
         assert_eq!(
             coverage.complete_ranges().next().map(DateRange::first),
-            Some(date(2025, 1, 1))
+            Some(date(2017, 4, 10))
         );
         assert!(
             coverage
                 .holiday_contract()
                 .coverage()
-                .is_some_and(|windows| windows.first() == date(2025, 1, 1)
+                .is_some_and(|windows| windows.first() == date(2017, 4, 10)
                     && windows.last() == date(2026, 12, 31)),
-            "cfe must audit the 2025 floor through the published 2026 schedule"
+            "cfe must audit from the earliest surviving operator artifact through the \
+             published 2026 schedule"
         );
     }
+    // The one date the venue withholds inside that window: 2017-07-03 is
+    // `Unsourced` because the rules page states the eve close only as a
+    // default and no controlling circular survives, and it is the reason the
+    // first complete range breaks where it does.
+    let coverage = exchange_coverage(Exchange::Cfe);
+    assert_eq!(
+        coverage.coverage_on(date(2017, 7, 3)),
+        DateCoverage::UnresolvedGap
+    );
+    assert_eq!(
+        gap_reason_on(coverage, date(2017, 7, 3)),
+        Some(CoverageGapReason::WithheldDate)
+    );
 }
 
 #[test]

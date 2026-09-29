@@ -2951,7 +2951,7 @@ mod lse {
             calendar.holiday_on(day(2020, 8, 31)).map(Holiday::kind),
             Some(HolidayKind::Closed)
         );
-        // ... whose session probes read 2020-08-28, inside the gap, so they
+        // ... whose session probes read 2020-08-30, inside the gap, so they
         // refuse; the first fully answering date is the next trading day.
         assert!(matches!(
             calendar.is_open(london((2020, 8, 31), (12, 0, 0))),
@@ -3922,7 +3922,7 @@ mod tsx {
         assert_eq!(
             rows.len(),
             107,
-            "97 closures and ten Christmas Eve closes — 2010-2016 ships no rows"
+            "100 closures and seven Christmas Eve closes — 2010-2016 ships no rows"
         );
         let expected: [(i32, (usize, usize, usize, usize)); 10] = [
             (2017, (10, 0, 0, 0)),

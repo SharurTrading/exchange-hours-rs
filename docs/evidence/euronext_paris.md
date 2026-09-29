@@ -54,9 +54,10 @@ Euronext Paris runs no overnight session, so an event date and its trade date ar
 day and the conversion is the identity.
 
 **The December half days take three shapes across the generations.** The 2014-2021 calendar
-pages state the instant themselves — `all instruments closing by 14:05 CET` for the
-Amsterdam, Brussels, Lisbon and Paris cash markets (the whole cash-market scope before the
-per-market tables; Paris named in every sentence from 2019 on) — so those eves are
+pages state the instant themselves — `all instruments closing by 14:05 CET` for the whole
+cash-market scope (the sentences name no market through 2018, say `the Cash Markets,
+including Euronext Dublin` in the two 2019 pre-December states, and enumerate Amsterdam,
+Brussels, Lisbon and Paris from the 2019-12-10 state on) — so those eves are
 `EarlyClose` at 50 700 seconds on the page's own words. 2016 and 2017 print `close at the
 usual times` for their substitute December Fridays, so no half day exists in either year.
 From the 2022 per-market tables the statement splits per market: the 23/30 December 2022 and
@@ -153,7 +154,7 @@ ships a Paris row.
 | 2019-04-19 | closed | `Friday 19 April 2019 (Good Friday)` | ``EURONEXT-HH-2019-03-25`` | T1 | the operator's own printed date |
 | 2019-04-22 | closed | `Monday 22 April 2019 (Easter Monday)` | ``EURONEXT-HH-2019-03-25`` | T1 | the operator's own printed date |
 | 2019-05-01 | closed | `Wednesday 1 May 2019 (Labour Day)` | ``EURONEXT-HH-2019-03-25`` | T1 | the operator's own printed date |
-| 2019-12-24 | early close | `Tuesday 24 December 2019 (Christmas Eve)` — the Amsterdam, Brussels, Lisbon and Paris cash markets' instruments `closing by 14:05 CET` | ``EURONEXT-HH-2019-03-25`` | T1 | the printed event date; the Paris half of the sentence is the envelope close |
+| 2019-12-24 | early close | `Tuesday 24 December 2019 (Christmas Eve)` — trading on `the Cash Markets, including Euronext Dublin`, all instruments `closing by 14:05 CET` | ``EURONEXT-HH-2019-03-25`` | T1 | the printed event date; Paris is inside the sentence's cash-market scope and the 14:05 CET close is the envelope close |
 | 2019-12-25 | closed | `Wednesday 25 December 2019 (Christmas Day)` | ``EURONEXT-HH-2019-03-25`` | T1 | the operator's own printed date |
 | 2019-12-26 | closed | `Thursday 26 December 2019 (Boxing Day)` | ``EURONEXT-HH-2019-03-25`` | T1 | the operator's own printed date |
 | 2019-12-31 | early close | `Tuesday 31 December 2019 (New Year's Eve)` — the same 14:05 CET sentence | ``EURONEXT-HH-2019-03-25`` | T1 | the printed event date |
@@ -206,10 +207,10 @@ ships a Paris row.
 | 2024-03-29 | closed | `Friday 29 March 2024 (Good Friday)` — Paris `Closed` | ``EURONEXT-HH-2023-11-27`` | T1 | the operator's own Paris cell; the 27/28 March half days are Oslo's and print `Full Day Trading` for Paris |
 | 2024-04-01 | closed | `Monday 1 April 2024 (Easter Monday)` — Paris `Closed` | ``EURONEXT-HH-2023-11-27`` | T1 | the operator's own Paris cell |
 | 2024-05-01 | closed | `Wednesday 1 May 2024 (Labour Day)` — Paris `Closed` | ``EURONEXT-HH-2023-11-27`` | T1 | the operator's own Paris cell |
-| 2024-12-24 | unsourced | `Tuesday 24 December 2024` — Paris `**Half Trading Day`; the instant lives in the end-of-year appendix, which no surviving capture holds | ``EURONEXT-HH-2023-11-27`` | T1 | the arrangement is announced by the operator but its Paris instants are unpublished in every archived state; no status claimed for the hours |
+| 2024-12-24 | unsourced | `Tuesday 24 December 2024` — Paris `Half Day Trading**`; the instant lives in the end-of-year appendix, which no surviving capture holds | ``EURONEXT-HH-2023-11-27`` | T1 | the arrangement is announced by the operator but its Paris instants are unpublished in every archived state; no status claimed for the hours |
 | 2024-12-25 | closed | `Wednesday 25 December 2024 (Christmas)` — Paris `Closed` | ``EURONEXT-HH-2023-11-27`` | T1 | the operator's own Paris cell |
 | 2024-12-26 | closed | `Thursday 26 December 2024 (St Stephens Day / Boxing Day)` — Paris `Closed` | ``EURONEXT-HH-2023-11-27`` | T1 | the operator's own Paris cell |
-| 2024-12-31 | unsourced | `Tuesday 31 December 2024` — Paris `**Half Trading Day`; the appendix is not archived | ``EURONEXT-HH-2023-11-27`` | T1 | same shape as 2026-12-24; no status claimed for the hours |
+| 2024-12-31 | unsourced | `Tuesday 31 December 2024` — Paris `Half Day Trading**`; the appendix is not archived | ``EURONEXT-HH-2023-11-27`` | T1 | same shape as 2026-12-24; no status claimed for the hours |
 ### 2025
 
 | Trade date | Kind | Instant as printed | Document | Tier | Derived from |
@@ -277,7 +278,7 @@ script shell in the current index and keys no row.
 - **Follow-up, the other Euronext cash markets (dormant identities).** `euronext_amsterdam`, `euronext_brussels`, `euronext_lisbon` and `euronext_milan` route no consumer instrument and ship no holiday tables; the same retrieved calendars carry their columns. Per LAW-FOLLOW-UPS-ARE-ISSUES for dormant identities this is recorded here with its closing condition: each dormant identity's table can be keyed from the already-retrieved artifacts (and per-market end-of-year appendix sheets) when a consumer reaches it or the maintainer names the market.
 - **Horizon carried below the first dated artifact.** The earliest artifact cited for the legacy grid is the operator's special-day appendix for 24 and 31 December 2010, so the ledger horizon is 2010-12-24, its own first attested day, and the January-2010 to December-2010 interval is carried rather than sourced. The source set's "January-2010-or-launch" status is not an artifact dated inside that interval and does not source it. Closing condition: a Euronext trading appendix or notice dated in or before January 2010 that prints the legacy 07:15/09:00/17:30/17:40 grid would move the horizon down to the January-2010 floor.
 - **Holiday coverage gap, 2010-01-01..2013-12-31 (tracked as [#219](https://github.com/SharurTrading/exchange-hours-rs/issues/219)).** No capture of any operator holiday page or calendar survives for those years: the Wayback index's first capture of the `trading-hours-and-holidays` page is 2014-01-12, and CDX sweeps of the plausible predecessor URLs (`trader/trading-calendar`, `services/trading-hours`, `trading-hours-holidays`, `resources/trading-calendar`) return nothing (checked 2026-09-29 UTC). Queries before 2014-01-01 refuse rather than answer. Closing condition: a capture of the operator's holiday calendar dated 2010-2013, or the operator's re-publication of a historical calendar.
-- **Unsourced half-day instants, 2024-12-24 and 2024-12-31 (tracked as [#219](https://github.com/SharurTrading/exchange-hours-rs/issues/219)).** The per-market tables print `**Half Trading Day` for Paris on both dates, but the instants live in the operator's end-of-year appendix to the Euronext Instructions 4-01/4-03, and no capture of the 2024 appendix survives (the 2025 appendix is held and keys the 2025 eves; the same shape leaves the 2026 eves `Unsourced`). Closing condition: a capture of the 2024 end-of-year appendix (a `euronext.com/media/<id>/download` XLSX).
+- **Unsourced half-day instants, 2024-12-24 and 2024-12-31 (tracked as [#219](https://github.com/SharurTrading/exchange-hours-rs/issues/219)).** The per-market tables print `Half Day Trading**` for Paris on both dates, but the instants live in the operator's end-of-year appendix to the Euronext Instructions 4-01/4-03, and no capture of the 2024 appendix survives (the 2025 appendix is held and keys the 2025 eves; the same shape leaves the 2026 eves `Unsourced`). Closing condition: a capture of the 2024 end-of-year appendix (a `euronext.com/media/<id>/download` XLSX).
 - **Holiday horizon.** The audited holiday window stops at 2026-12-31 because the operator has published nothing for 2027 (verified 2026-09-28). Closing condition: Euronext's 2027 holiday calendar; the row is re-checked monthly per LAW-WATCH.
 
 > Shared module. [`euronext.rs`](../../src/calendar/schedules/equities/europe/euronext.rs) also carries

@@ -25,7 +25,7 @@
 //! 2023 move to the per-market table, where the 23/30 December 2022 and
 //! 22/29 December 2023 half days are **Dublin's** substitutes and the Paris
 //! column prints `Full Day Trading`; Paris ships no row for them. For 2024
-//! the Paris column prints `**Half Trading Day` on 24 and 31 December but the
+//! the Paris column prints `Half Day Trading**` on 24 and 31 December but the
 //! instant lives in the operator's end-of-year appendix to the Euronext
 //! Instructions 4-01/4-03, which no surviving capture holds, so those two
 //! rows ship as `Unsourced` (the same shape as the 2026 eves below). The 2025
@@ -221,7 +221,7 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         // 2024-05-01 - T1 - EURONEXT-HH-2023-11-27 - Labour Day.
         (2024, 5, 1, Closed, T1, "EURONEXT-HH-2023-11-27"),
         // 2024-12-24 - T1 - EURONEXT-HH-2023-11-27 - Christmas Eve: Paris
-        // prints `**Half Trading Day` but the instant lives in the operator's
+        // prints `Half Day Trading**` but the instant lives in the operator's
         // end-of-year appendix, which no surviving capture holds; no instant
         // is claimed.
         (2024, 12, 24, Unsourced, T1, "EURONEXT-HH-2023-11-27"),
@@ -231,7 +231,7 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         // Day.
         (2024, 12, 26, Closed, T1, "EURONEXT-HH-2023-11-27"),
         // 2024-12-31 - T1 - EURONEXT-HH-2023-11-27 - New Year's Eve: Paris
-        // prints `**Half Trading Day` but the end-of-year appendix is not
+        // prints `Half Day Trading**` but the end-of-year appendix is not
         // archived; no instant is claimed.
         (2024, 12, 31, Unsourced, T1, "EURONEXT-HH-2023-11-27"),
         // 2025-01-01 - T1 - EURONEXT-HH-2025-12-06 - New Year's Day: Paris

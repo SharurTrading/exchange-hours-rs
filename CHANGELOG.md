@@ -138,7 +138,7 @@ corrections (a venue's hours fixed against a primary source) go under
   2010 dates refuse with the closing condition recorded in the evidence file.
 - **`tsx` holiday history backfilled to 2017 (2026-09-29 UTC).** The `tsx`
   table grows from 22 rows over 2025-01-01..2026-12-31 to **107 rows over
-  2017-01-01..2026-12-31** (97 closures and ten Christmas Eve 1:00 PM early
+  2017-01-01..2026-12-31** (100 closures and seven Christmas Eve 1:00 PM early
   closes): TMX's own "Stock Markets Closed" lists, read from ten Wayback
   `id_` replays of the calendar page across its two paths — the 2018
   relaunch path `tsx.com/trading/calendars-and-trading-hours/calendar`

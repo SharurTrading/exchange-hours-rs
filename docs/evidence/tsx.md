@@ -38,7 +38,7 @@ date and its trade date are one civil day and the conversion is the identity. Th
 2026 lists are read from the live retrieval of 2026-09-28; every earlier year is pinned by
 Wayback `id_` captures of the same page across its two paths — the 2018 relaunch path
 `tsx.com/trading/calendars-and-trading-hours/calendar` (named by the archived sitemap.xml of
-2022-06-26; ten captures 2018-09-11..2023-12-15 pin 2017 through 2023, the 2018-09-11
+2022-06-26; seven captures 2018-09-11..2023-12-15 pin 2017 through 2023, the 2018-09-11
 capture's archive section restating the complete 2017 list) and the `/en/` path for 2024-2025
 (the 2024-12-17 capture carries the complete 2024 list; the July 2024 states printed the list
 without its Christmas Eve row, so that row keys to the December state — a knowledge boundary
@@ -182,7 +182,7 @@ arrangement for USD issues, not a TSX trading closure, so none of those dates is
 
 | Trade date | Kind | Instant as printed | Document | Tier | Derived from |
 |---|---|---|---|---|---|
-| 2024-01-01 | closed | `In Lieu of New Year's Day - Monday, January 1, 2024` | `TSX-CAL-2024-12-17` | T1 | the operator's own in-lieu print; the July 2024 states print the same ten closures |
+| 2024-01-01 | closed | `New Year's Day - Monday, January 1, 2024` | `TSX-CAL-2024-12-17` | T1 | the operator's own printed date; the July 2024 state prints the same closure under the label `In Lieu of New Year's Day` |
 | 2024-02-19 | closed | `Family Day - Monday, February 19, 2024` | `TSX-CAL-2024-12-17` | T1 | the operator's own printed date; corroborated by the 2025-01-24 capture |
 | 2024-03-29 | closed | `Good Friday - Friday, March 29, 2024` | `TSX-CAL-2024-12-17` | T1 | the operator's own printed date |
 | 2024-05-20 | closed | `Victoria Day - Monday, May 20, 2024` | `TSX-CAL-2024-12-17` | T1 | the operator's own printed date |

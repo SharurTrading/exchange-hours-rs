@@ -226,7 +226,9 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2023, 12, 25, Closed, T1, "TSX-CAL-2023-01-16"),
         // 2023-12-26 - T1 - TSX-CAL-2023-01-16 - Boxing Day.
         (2023, 12, 26, Closed, T1, "TSX-CAL-2023-01-16"),
-        // 2024-01-01 - T1 - TSX-CAL-2024-12-17 - In Lieu of New Year's Day.
+        // 2024-01-01 - T1 - TSX-CAL-2024-12-17 - New Year's Day; the July 2024
+        // state prints the same closure under the label "In Lieu of New Year's
+        // Day".
         (2024, 1, 1, Closed, T1, "TSX-CAL-2024-12-17"),
         // 2024-02-19 - T1 - TSX-CAL-2024-12-17 - Family Day.
         (2024, 2, 19, Closed, T1, "TSX-CAL-2024-12-17"),

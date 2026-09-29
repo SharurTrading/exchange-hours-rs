@@ -13,26 +13,10 @@
 
 use chrono::{DateTime, NaiveDate, TimeZone as _, Utc};
 use exchange_hours::{
-    CalendarQueryError, CalendarResolution, CalendarSource, DateCoverage, DayOverride, Exchange,
-    ExchangeCalendar, MarketHoursKey, SessionState, StaticDayPolicy, calendar_for_exchange,
+    CalendarQueryError, CalendarResolution, DateCoverage, DayOverride, Exchange, ExchangeCalendar,
+    MarketHoursKey, SessionState, StaticDayPolicy, calendar_for_exchange,
     calendar_for_market_hours_key, hours_for_exchange, hours_for_market_hours_key,
 };
-
-/// Asserts an identity-backed query returns exactly `expected`, the coverage
-/// error the shipped data declares. The variant, identity and date are all part
-/// of the contract: a refusal that named the wrong day would be as wrong as an
-/// answer.
-fn assert_refusal<T>(
-    answer: Result<T, CalendarQueryError>,
-    expected: CalendarQueryError,
-    label: &str,
-) {
-    assert_eq!(
-        answer.err(),
-        Some(expected),
-        "{label}: the query must state the refusal its identity declares"
-    );
-}
 
 /// Asserts a refusal is exactly the one `calendar` publishes for the day the
 /// query named, so a query verdict and the identity's own coverage metadata can
@@ -248,51 +232,36 @@ fn order_entry_queries_reselect_on_the_session_opening_day_across_a_revision() {
     // profile the instant's own civil date selects.
     let calendar = calendar_for_market_hours_key(MarketHoursKey::CfeVix);
 
-    // At the 2010 floor these 2018 dates answer again, so the reselection this
-    // fixture exists to pin is observable: each order-entry probe is answered
-    // by the profile owning the opening day, not by the instant's civil date.
-    // CFE's audited holiday window opens 2025-01-01, so the date-level facts
-    // refuse on the unaudited era (LAW-COVERAGE); the fixed snapshot is where
-    // the grids stay readable — the CFE family tests fence them.
-    let cfe = CalendarSource::MarketHoursKey(MarketHoursKey::CfeVix);
-
+    // The audited holiday window reached 2017-04-10 on 2026-09-29 (UTC), so
+    // these 2018 instants answer through the identity itself: each order-entry
+    // probe is answered by the profile owning the opening day, not by the
+    // instant's civil date, which is the reselection this fixture pins.
+    //
     // 22:10/22:20 UTC are 16:10/16:20 CT (CST). The prior regime's queue
     // starts 16:15.
-    assert_refusal(
+    assert_eq!(
         calendar.is_order_entry_only(utc(2018, 2, 18, 22, 10)),
-        CalendarQueryError::OutsideCoveredRange {
-            source: cfe,
-            date: NaiveDate::from_ymd_opt(2018, 2, 18).expect("fixture date"),
-        },
-        "the prior regime's queue, before its 16:15 onset",
+        Ok(false),
+        "the prior regime's queue, before its 16:15 onset"
     );
-    assert_refusal(
+    assert_eq!(
         calendar.is_order_entry_only(utc(2018, 2, 18, 22, 20)),
-        CalendarQueryError::OutsideCoveredRange {
-            source: cfe,
-            date: NaiveDate::from_ymd_opt(2018, 2, 18).expect("fixture date"),
-        },
-        "the prior regime's queue, after its 16:15 onset",
+        Ok(true),
+        "the prior regime's queue, after its 16:15 onset"
     );
 
     // Sunday 2018-02-25, 22:01 UTC = 16:01 CT: the new regime already queues.
-    assert_refusal(
+    assert_eq!(
         calendar.is_order_entry_only(utc(2018, 2, 25, 22, 1)),
-        CalendarQueryError::OutsideCoveredRange {
-            source: cfe,
-            date: NaiveDate::from_ymd_opt(2018, 2, 25).expect("fixture date"),
-        },
-        "the new regime's queue",
+        Ok(true),
+        "the new regime's queue"
     );
     // Monday 2018-02-26, 14:00 UTC = 08:00 CT: the wrapped session opened
     // Sunday under the new profile and is still trading.
-    assert_refusal(
+    assert_eq!(
         calendar.is_open(utc(2018, 2, 26, 14, 0)),
-        CalendarQueryError::OutsideCoveredRange {
-            source: cfe,
-            date: NaiveDate::from_ymd_opt(2018, 2, 26).expect("fixture date"),
-        },
-        "the wrapped Monday session",
+        Ok(true),
+        "the wrapped Monday session"
     );
 }
 

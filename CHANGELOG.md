@@ -67,6 +67,35 @@ corrections (a venue's hours fixed against a primary source) go under
   states a holiday-time early close, so the venue still ships closures only.
   The audited window is now 2010-01-01..2027-12-31 and the identity is complete
   to 2027-12-31 across it.
+- **`eurex`, `eurex` key and `eurex_fixed_income` holiday history extended to
+  the support floor (2026-09-29 UTC).** The shared Eurex holiday table grows
+  from 15 rows over 2025-01-01..2026-12-31 to **108 rows over
+  2010-01-01..2026-12-31** (93 added, every one a whole-day closure stated for
+  "all derivatives"): the operator's own annual **Trading Calendar** editions
+  2012-2024, retrieved live from the operator's Trading Calendar archive, and
+  the 2010 and 2011 editions read as Wayback `id_` replays of their
+  era-original `eurexchange.com` captures, so the window reaches the
+  2010-01-01 floor with no unaudited span. 2015 is the one edition that also
+  closes Whit Monday (25 May) for trading, and ships so; the German-scope
+  `tba` withholding (#157) is untouched and still keys no row. The #157
+  declaration, the 2027 conflict and the operators' horizon are unchanged.
+- **`cfe` and `cfe_vix` holiday history extended below the 2025 window to the
+  earliest surviving operator artifact (2026-09-29 UTC).** The routed CFE
+  holiday table grows from 26 rows over 2025-01-01..2026-12-31 to **113 rows
+  over 2017-04-10..2026-12-31** (87 added: 20 closures, 66 early closes at
+  the printed instants, one withheld date),
+  audited from the operator's own documents at T1: the CFE Holiday Schedule
+  rules page read through five Wayback `id_` captures (2017-04-10 through
+  2019-12-15) for 2017 and 2018-01-01, and the per-holiday CFE notices under
+  the operator's CDN for every 2018-2024 holiday. **2017-07-03 ships
+  `Unsourced`**: the rules page states the July 3 eve close only as a default
+  ("typically"), and no controlling circular survives — a labelled gap with a
+  closing condition, not a claimed normal day. 2010-01-01..2017-04-09 is an
+  explicit unaudited span (no artifact survives that keys an earlier
+  holiday's session), recorded with its closing condition in the evidence
+  files; outside the window the table has no answer. Every row cites a saved
+  operator artifact (research store `holidays/raw/cfe-2010-2025/live/` and
+  `holidays/raw/cfe-2010-2024/rulespage/`, sha256 per artifact).
 - **`lse`, `euronext_paris` and `tsx` activate: built-in holiday tables for
   the European and Canadian cash-equity venues (2026-09-28 UTC).** All three
   identities flip dormant→**served** (LAW-SERVICE-TIERS admission by consumer

@@ -66,10 +66,10 @@ session it publishes, so the `#93` declaration is gone, and the five-day era's P
 (#123) is bounded at the 2026-05-29 bridge row, which leaves the identity answering the whole 24/7
 era and withholding 2025-01-01..2026-05-28. The `iceus` `floor+ dates`, `Unsrc floor+ dates`,
 `Missing / disputed` and `Complete?` cells moved again on 2026-09-27 UTC, from **42**/**35** to
-**47**/**40**, when the release incorporated the operator's September 2026 notices: the softs'
-BST-end week rows (2026-10-26..30, five per family) and the 2026 Thanksgiving instants, whose
-family disagreements ship as one more `Unsourced` venue date (2026-11-27) beside the restated
-2026-11-26 one. On 2026-09-29 UTC the `tse` 2010-2024 and `sse` 2011-2024 holiday eras were backfilled from the operators' own notices and pages (one Wayback capture per year, TSE's page through 2014 and JPX's from 2015), so the `tse` row's `Holidays` cell moved to 2010-01-01..2027-12-31, its `floor+ dates` count to 295, and its verdict to complete to 2027-12-31 across the whole span; the `sse` rows moved the same way from the annual closure notices (2011-2024, retrieved live from the operator's media-center reprints for 2011-2013 and as Wayback replays for 2014-2024) plus the operator's 2020 COVID extension notice, its `Holidays` cell moving to 2011-01-01..2026-12-31, its count to 284, and 2010 recorded as an unrecovered-notice gap. On 2026-09-29 UTC the `nse_india` 2010-2024 holiday era was backfilled the same way (the operator's annual circulars, holiday pages and `holiday-master` feed from the archive; 2012 and 2018 unrecovered and left outside every window), so the `nse_india` row's `Holidays` cell moved to the three audited windows above, its count to 216, and fourteen Muhurat dates across the sourced years now ship as explicit `Unsourced` verdicts. The `tse`, `nse_india` and `sse` rows were added on 2026-09-28 UTC, when the three
+**47**/**40**, when the softs' BST-end week rows landed (2026-10-26..30, five per family), and to
+**48**/**41** later the same UTC day, when the 1.0.0 release incorporated the 2026 Thanksgiving
+instants, whose family disagreements ship as one more `Unsourced` venue date (2026-11-27) beside
+the restated 2026-11-26 one. On 2026-09-29 UTC the `tse` 2010-2024 and `sse` 2011-2024 holiday eras were backfilled from the operators' own notices and pages (one Wayback capture per year, TSE's page through 2014 and JPX's from 2015), so the `tse` row's `Holidays` cell moved to 2010-01-01..2027-12-31, its `floor+ dates` count to 295, and its verdict to complete to 2027-12-31 across the whole span; the `sse` rows moved the same way from the annual closure notices (2011-2024, retrieved live from the operator's media-center reprints for 2011-2013 and as Wayback replays for 2014-2024) plus the operator's 2020 COVID extension notice, its `Holidays` cell moving to 2011-01-01..2026-12-31, its count to 284, and 2010 recorded as an unrecovered-notice gap. On 2026-09-29 UTC the `nse_india` 2010-2024 holiday era was backfilled the same way (the operator's annual circulars, holiday pages and `holiday-master` feed from the archive; 2012 and 2018 unrecovered and left outside every window), so the `nse_india` row's `Holidays` cell moved to the three audited windows above, its count to 216, and fourteen Muhurat dates across the sourced years now ship as explicit `Unsourced` verdicts. The `tse`, `nse_india` and `sse` rows were added on 2026-09-28 UTC, when the three
 APAC cash-equity venues turned **served** and their holiday tables shipped — 2025-2027 for `tse`
 (the operator's page prints the current and next year), 2025-2026 for `sse` and `nse_india` (the
 2027 arrangements are unpublished) — together with the No-holiday statement's scope count, §4's
@@ -277,10 +277,10 @@ retrieval. `comex` and `nymex` route a single family and so reproduce it row for
 2026-01-01..2028-01-03 window until its 2025 rows landed on 2026-09-26 UTC, so it answered no holiday
 question over any part of 2025. `cfe` and `eurex` shipped the same 2026-only window until their 2025
 rows landed in separate changes on the same date; all three now audit from the floor. `iceus` ships
-**42** scheduling rows: its
+**48** scheduling rows: its
 table is the D17 intersection of the seven ICE Futures U.S. families routed to the venue, so a row
 ships only where the five tables those keys select agree - the **seven** full closures in its window -
-and the other **35** dates
+and the other **41** dates
 are `Unsourced`, the shape of a date on which the softs close while the index families trade
 shortened hours, or on which one index family moves alone. Fifteen of those dates are in 2025, so
 the venue now answers 2025 and answers it
@@ -297,10 +297,11 @@ scope is the dormant CFE and Eurex keys and the six ICE Futures U.S. family file
 `cme` withholds **61** dates and `cbot` **61** across 2025-2027, covering every US market holiday the
 routed families dispute — fourteen of the additions are the 2025-2027 closure eves, on which
 `globex_grains` states a complete replacement-blocks day and the other routed families audited the
-date normal. `iceus` withholds **35**: fifteen 2025 dates, of which the two London-bank-holiday
+date normal. `iceus` withholds **41**: fifteen 2025 dates, of which the two London-bank-holiday
 “Delayed Opens” dates (2025-05-05 and 2025-08-25) and the National Day of Mourning (2025-01-09) are
-ones the annual calendar does not list at all, and twenty 2026-2027 dates that are unchanged by the
-2025 material. This is the intersection
+ones the annual calendar does not list at all, and twenty-six 2026-2027 dates, among them the five
+2026-10-26..30 BST-end dates the softs' DST-end notice opened at three instants and Thanksgiving
+2026-11-27, whose instants the operator's notice states per family. This is the intersection
 behaving as designed rather than a defect: the
 charter states that family disagreement is `Unsourced`, never silence, and that a broad intersection
 remains explicitly partial and cannot stand in for a complete family calendar. It does not by itself

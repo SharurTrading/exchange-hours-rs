@@ -96,6 +96,17 @@ corrections (a venue's hours fixed against a primary source) go under
   files; outside the window the table has no answer. Every row cites a saved
   operator artifact (research store `holidays/raw/cfe-2010-2025/live/` and
   `holidays/raw/cfe-2010-2024/rulespage/`, sha256 per artifact).
+- **`borsa_istanbul` pre-2025 holiday history: 2012-2024 backfilled from the
+  operator's own page (2026-09-29 UTC).** The built-in borsa_istanbul holiday
+  table extends from the 2025-2026 window back to **2012-03-02**, the
+  operator's own first sourced normal-week day — 177 rows over
+  2012-03-02..2026-12-31 (145 closures and thirty-two 13:00 half days). The
+  152 new rows key to the same `Resmi Tatil Günleri` page the half-day rows
+  already used at T1: its server-rendered year tabs print every year 2012-2026
+  in one artifact, so no new retrieval was needed. Weekend-dated legs
+  (`Kapalı` on a Saturday or Sunday) change no Monday-Friday trade date and
+  ship no row.
+
 - **`tadawul` pre-2025 holiday history: 2021-2024 added from the operator's
   own calendar (2026-09-29 UTC).** The built-in tadawul holiday table extends
   from the 2025-2027 window back to **2021-01-01** — 78 rows over

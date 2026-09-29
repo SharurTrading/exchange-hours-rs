@@ -24,11 +24,231 @@ Equity Market; all modeled post-2010 changes have dated official evidence.
 
 ## Holidays
 
-**Coverage:** 2025-01-01..2026-12-31 (inclusive trade dates). Tier: T1 throughout.
+**Coverage:** 2012-03-02..2026-12-31 (inclusive trade dates; the window opens at the operator's own first sourced normal-week day). Tier: T1 throughout.
 
 One table serves the `borsa_istanbul` venue: Borsa İstanbul publishes one holiday arrangement per market, and the Equity Market's own `Tatil Tablosu` annex states it. Two artifacts key each year: the corporate `Resmi Tatil Günleri` page, which prints the year's holidays with the half-days marked `Yarım Gün Tatil / Saat 13:00'e kadar` (half-day holiday until 13:00), and the per-market annex `EK-3 — Borsa İstanbul A.Ş. Pay Piyasası <year> Yılı Tatil Tablosu`, which states per holiday whether a session takes place (`seans yapılmayacaktır`) or a half-day session is held (`yarım gün seans yapılacaktır`). The annex keys the closure rows; the corporate page keys the early-close rows, because the 13:00 instant those rows state is printed only there. The document ids record which: `BIST-PP-TATIL-<year>` for the annex, `BIST-RESMI-TATIL-GUNLERI` for the page.
 
-Every listed holiday that falls on a Saturday or Sunday — Zafer Bayramı 2025-08-30 and 2026-08-30, Ramazan Bayramı Arefesi 2025-03-29 — changes no Monday-Friday trade date and ships no row; the annex prints those legs as `seans yapılmayacaktır` beside the holiday that does remove a trade date.
+The 2012-2024 rows were backfilled on 2026-09-29 (UTC) from the same corporate page the early-close rows already keyed: its server-rendered year tabs print every year 2012-2026 in one artifact, so no new retrieval was needed. In the backfilled years the corporate page alone states the arrangement — `Kapalı` for a closure, `Yarım Gün Tatil / Saat 13:00'e kadar` for a half day — so every 2012-2024 row keys to `BIST-RESMI-TATIL-GUNLERI`; the 2025-2026 closure rows keep their annex citations.
+
+Every listed holiday that falls on a Saturday or Sunday — Zafer Bayramı 2025-08-30 and 2026-08-30, Ramazan Bayramı Arefesi 2025-03-29, and the weekend legs of the backfilled years (for example 1 Ocak 2016, 23 Nisan 2016, 1 Mayıs 2016 and 2017's 1 Ocak, 23 Nisan, 15 Temmuz, 28 Ekim and 29 Ekim) — changes no Monday-Friday trade date and ships no row; the page prints those legs as `Kapalı` beside the holiday that does remove a trade date, and the annex prints them as `seans yapılmayacaktır`.
+
+
+### 2012
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2012-04-23 | closed | `23 Nisan 2012, Pazartesi` — Ulusal Egemenlik ve Çocuk Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2012-04-23, a Monday |
+| 2012-05-01 | closed | `1 Mayıs 2012, Salı` — Emek ve Dayanışma Günü — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2012-05-01, a Tuesday |
+| 2012-08-20 | closed | `20 Ağustos 2012, Pazartesi` — Ramazan Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2012-08-20, a Monday |
+| 2012-08-21 | closed | `21 Ağustos 2012, Salı` — Ramazan Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2012-08-21, a Tuesday |
+| 2012-08-30 | closed | `30 Ağustos 2012, Perşembe` — Zafer Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2012-08-30, a Thursday |
+| 2012-10-24 | early close | `24 Ekim 2012, Çarşamba` — Kurban Bayramı Arefesi (Yarım Gün Tatil) — `Yarım Gün Tatil / Saat 13:00'e kadar` — 13:00 | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2012-10-24, a Wednesday |
+| 2012-10-25 | closed | `25 Ekim 2012, Perşembe` — Kurban Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2012-10-25, a Thursday |
+| 2012-10-26 | closed | `26 Ekim 2012, Cuma` — Kurban Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2012-10-26, a Friday |
+| 2012-10-29 | closed | `29 Ekim 2012, Pazartesi` — Cumhuriyet Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2012-10-29, a Monday |
+
+### 2013
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2013-01-01 | closed | `1 Ocak 2013, Salı` — Yeni Yıl Tatili — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2013-01-01, a Tuesday |
+| 2013-04-23 | closed | `23 Nisan 2013, Salı` — Ulusal Egemenlik ve Çocuk Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2013-04-23, a Tuesday |
+| 2013-05-01 | closed | `1 Mayıs 2013, Çarşamba` — Emek ve Dayanışma Günü — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2013-05-01, a Wednesday |
+| 2013-08-07 | early close | `7 Ağustos 2013, Çarşamba` — Ramazan Bayramı Arefesi (Yarım Gün Tatil) — `Yarım Gün Tatil / Saat 13:00'e kadar` — 13:00 | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2013-08-07, a Wednesday |
+| 2013-08-08 | closed | `8 Ağustos 2013, Perşembe` — Ramazan Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2013-08-08, a Thursday |
+| 2013-08-09 | closed | `9 Ağustos 2013, Cuma` — Ramazan Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2013-08-09, a Friday |
+| 2013-08-30 | closed | `30 Ağustos 2013, Cuma` — Zafer Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2013-08-30, a Friday |
+| 2013-10-14 | early close | `14 Ekim 2013, Pazartesi` — Kurban Bayramı Arefesi (Yarım Gün Tatil) — `Yarım Gün Tatil / Saat 13:00'e kadar` — 13:00 | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2013-10-14, a Monday |
+| 2013-10-15 | closed | `15 Ekim 2013, Salı` — Kurban Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2013-10-15, a Tuesday |
+| 2013-10-16 | closed | `16 Ekim 2013, Çarşamba` — Kurban Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2013-10-16, a Wednesday |
+| 2013-10-17 | closed | `17 Ekim 2013, Perşembe` — Kurban Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2013-10-17, a Thursday |
+| 2013-10-18 | closed | `18 Ekim 2013, Cuma` — Kurban Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2013-10-18, a Friday |
+| 2013-10-28 | early close | `28 Ekim 2013, Pazartesi` — Cumhuriyet Bayramı Arefesi (Yarım Gün Tatil) — `Yarım Gün Tatil / Saat 13:00'e kadar` — 13:00 | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2013-10-28, a Monday |
+| 2013-10-29 | closed | `29 Ekim 2013, Salı` — Cumhuriyet Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2013-10-29, a Tuesday |
+
+### 2014
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2014-01-01 | closed | `1 Ocak 2014, Çarşamba` — Yeni Yıl Tatili — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2014-01-01, a Wednesday |
+| 2014-04-23 | closed | `23 Nisan 2014, Çarşamba` — Ulusal Egemenlik ve Çocuk Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2014-04-23, a Wednesday |
+| 2014-05-01 | closed | `1 Mayıs 2014, Perşembe` — Emek ve Dayanışma Günü — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2014-05-01, a Thursday |
+| 2014-05-19 | closed | `19 Mayıs 2014, Pazartesi` — Atatürk'ü Anma, Gençlik ve Spor Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2014-05-19, a Monday |
+| 2014-07-28 | closed | `28 Temmuz 2014, Pazartesi` — Ramazan Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2014-07-28, a Monday |
+| 2014-07-29 | closed | `29 Temmuz 2014, Salı` — Ramazan Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2014-07-29, a Tuesday |
+| 2014-07-30 | closed | `30 Temmuz 2014, Çarşamba` — Ramazan Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2014-07-30, a Wednesday |
+| 2014-10-03 | early close | `3 Ekim 2014, Cuma` — Kurban Bayramı Arifesi (Yarım Gün Tatil) — `Yarım Gün Tatil / Saat 13:00'e kadar` — 13:00 | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2014-10-03, a Friday |
+| 2014-10-06 | closed | `6 Ekim 2014, Pazartesi` — Kurban Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2014-10-06, a Monday |
+| 2014-10-07 | closed | `7 Ekim 2014, Salı` — Kurban Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2014-10-07, a Tuesday |
+| 2014-10-28 | early close | `28 Ekim 2014, Salı` — Cumhuriyet Bayramı Arefesi (Yarım Gün Tatil) — `Yarım Gün Tatil / Saat 13:00'e kadar` — 13:00 | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2014-10-28, a Tuesday |
+| 2014-10-29 | closed | `29 Ekim 2014, Çarşamba` — Cumhuriyet Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2014-10-29, a Wednesday |
+
+### 2015
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2015-01-01 | closed | `1 Ocak 2015, Perşembe` — Yeni Yıl Tatili — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2015-01-01, a Thursday |
+| 2015-04-23 | closed | `23 Nisan 2015, Perşembe` — Ulusal Egemenlik ve Çocuk Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2015-04-23, a Thursday |
+| 2015-05-01 | closed | `1 Mayıs 2015, Cuma` — Emek ve Dayanışma Günü — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2015-05-01, a Friday |
+| 2015-05-19 | closed | `19 Mayıs 2015, Salı` — Atatürk'ü Anma, Gençlik ve Spor Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2015-05-19, a Tuesday |
+| 2015-07-16 | early close | `16 Temmuz 2015, Perşembe` — Ramazan Bayramı Arefesi (Yarım Gün Tatil) — `Yarım Gün Tatil / Saat 13:00'e kadar` — 13:00 | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2015-07-16, a Thursday |
+| 2015-07-17 | closed | `17 Temmuz 2015, Cuma` — Ramazan Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2015-07-17, a Friday |
+| 2015-09-23 | early close | `23 Eylül 2015, Çarşamba` — Kurban Bayramı Arefesi (Yarım Gün Tatil) — `Yarım Gün Tatil / Saat 13:00'e kadar` — 13:00 | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2015-09-23, a Wednesday |
+| 2015-09-24 | closed | `24 Eylül 2015, Perşembe` — Kurban Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2015-09-24, a Thursday |
+| 2015-09-25 | closed | `25 Eylül 2015, Cuma` — Kurban Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2015-09-25, a Friday |
+| 2015-10-28 | early close | `28 Ekim 2015, Çarşamba` — Cumhuriyet Bayramı Arefesi (Yarım Gün Tatil) — `Yarım Gün Tatil / Saat 13:00'e kadar` — 13:00 | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2015-10-28, a Wednesday |
+| 2015-10-29 | closed | `29 Ekim 2015, Perşembe` — Cumhuriyet Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2015-10-29, a Thursday |
+
+### 2016
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2016-01-01 | closed | `1 Ocak 2016, Cuma` — Yeni Yıl Tatili — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2016-01-01, a Friday |
+| 2016-05-19 | closed | `19 Mayıs 2016, Perşembe` — Atatürk'ü Anma, Gençlik ve Spor Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2016-05-19, a Thursday |
+| 2016-07-04 | early close | `4 Temmuz 2016, Pazartesi` — Ramazan Bayramı Arefesi (Yarım Gün Tatil) — `Yarım Gün Tatil / Saat 13:00'e kadar` — 13:00 | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2016-07-04, a Monday |
+| 2016-07-05 | closed | `5 Temmuz 2016, Salı` — Ramazan Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2016-07-05, a Tuesday |
+| 2016-07-06 | closed | `6 Temmuz 2016, Çarşamba` — Ramazan Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2016-07-06, a Wednesday |
+| 2016-07-07 | closed | `7 Temmuz 2016, Perşembe` — Ramazan Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2016-07-07, a Thursday |
+| 2016-08-30 | closed | `30 Ağustos 2016, Salı` — Zafer Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2016-08-30, a Tuesday |
+| 2016-09-12 | closed | `12 Eylül 2016, Pazartesi` — Kurban Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2016-09-12, a Monday |
+| 2016-09-13 | closed | `13 Eylül 2016, Salı` — Kurban Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2016-09-13, a Tuesday |
+| 2016-09-14 | closed | `14 Eylül 2016, Çarşamba` — Kurban Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2016-09-14, a Wednesday |
+| 2016-09-15 | closed | `15 Eylül 2016, Perşembe` — Kurban Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2016-09-15, a Thursday |
+| 2016-10-28 | early close | `28 Ekim 2016, Cuma` — Cumhuriyet Bayramı Arefesi (Yarım Gün Tatil) — `Yarım Gün Tatil / Saat 13:00'e kadar` — 13:00 | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2016-10-28, a Friday |
+
+### 2017
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2017-05-01 | closed | `1 Mayıs 2017, Pazartesi` — Emek ve Dayanışma Günü — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2017-05-01, a Monday |
+| 2017-05-19 | closed | `19 Mayıs 2017, Cuma` — Atatürk'ü Anma, Gençlik ve Spor Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2017-05-19, a Friday |
+| 2017-06-26 | closed | `26 Haziran 2017, Pazartesi` — Ramazan Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2017-06-26, a Monday |
+| 2017-06-27 | closed | `27 Haziran 2017, Salı` — Ramazan Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2017-06-27, a Tuesday |
+| 2017-08-30 | closed | `30 Ağustos 2017, Çarşamba` — Zafer Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2017-08-30, a Wednesday |
+| 2017-08-31 | early close | `31 Ağustos 2017, Perşembe` — Kurban Bayramı Arefesi (Yarım Gün Tatil) — `Yarım Gün Tatil / Saat 13:00'e kadar` — 13:00 | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2017-08-31, a Thursday |
+| 2017-09-01 | closed | `1 Eylül 2017, Cuma` — Kurban Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2017-09-01, a Friday |
+| 2017-09-04 | closed | `4 Eylül 2017, Pazartesi` — Kurban Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2017-09-04, a Monday |
+
+### 2018
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2018-01-01 | closed | `1 Ocak 2018, Pazartesi` — Yeni Yıl Tatili — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2018-01-01, a Monday |
+| 2018-04-23 | closed | `23 Nisan 2018, Pazartesi` — Ulusal Egemenlik ve Çocuk Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2018-04-23, a Monday |
+| 2018-05-01 | closed | `1 Mayıs 2018, Salı` — Emek ve Dayanışma Günü — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2018-05-01, a Tuesday |
+| 2018-06-14 | early close | `14 Haziran 2018, Perşembe` — Ramazan Bayramı Arefesi (Yarım Gün Tatil) — `Yarım Gün Tatil / Saat 13:00'e kadar` — 13:00 | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2018-06-14, a Thursday |
+| 2018-06-15 | closed | `15 Haziran 2018, Cuma` — Ramazan Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2018-06-15, a Friday |
+| 2018-08-20 | early close | `20 Ağustos 2018, Pazartesi` — Kurban Bayramı Arefesi (Yarım Gün Tatil) — `Yarım Gün Tatil / Saat 13:00'e kadar` — 13:00 | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2018-08-20, a Monday |
+| 2018-08-21 | closed | `21 Ağustos 2018, Salı` — Kurban Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2018-08-21, a Tuesday |
+| 2018-08-22 | closed | `22 Ağustos 2018, Çarşamba` — Kurban Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2018-08-22, a Wednesday |
+| 2018-08-23 | closed | `23 Ağustos 2018, Perşembe` — Kurban Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2018-08-23, a Thursday |
+| 2018-08-24 | closed | `24 Ağustos 2018, Cuma` — Kurban Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2018-08-24, a Friday |
+| 2018-08-30 | closed | `30 Ağustos 2018, Perşembe` — Zafer Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2018-08-30, a Thursday |
+| 2018-10-29 | closed | `29 Ekim 2018, Pazartesi` — Cumhuriyet Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2018-10-29, a Monday |
+
+### 2019
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2019-01-01 | closed | `1 Ocak 2019, Salı` — Yeni Yıl Tatili — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2019-01-01, a Tuesday |
+| 2019-04-23 | closed | `23 Nisan 2019, Salı` — Ulusal Egemenlik ve Çocuk Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2019-04-23, a Tuesday |
+| 2019-05-01 | closed | `1 Mayıs 2019, Çarşamba` — Emek ve Dayanışma Günü — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2019-05-01, a Wednesday |
+| 2019-06-03 | early close | `3 Haziran 2019, Pazartesi` — Ramazan Bayramı Arefesi (Yarım Gün Tatil) — `Yarım Gün Tatil / Saat 13:00'e kadar` — 13:00 | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2019-06-03, a Monday |
+| 2019-06-04 | closed | `4 Haziran 2019, Salı` — Ramazan Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2019-06-04, a Tuesday |
+| 2019-06-05 | closed | `5 Haziran 2019, Çarşamba` — Ramazan Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2019-06-05, a Wednesday |
+| 2019-06-06 | closed | `6 Haziran 2019, Perşembe` — Ramazan Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2019-06-06, a Thursday |
+| 2019-07-15 | closed | `15 Temmuz 2019, Pazartesi` — Demokrasi ve Milli Birlik Günü — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2019-07-15, a Monday |
+| 2019-08-12 | closed | `12 Ağustos 2019, Pazartesi` — Kurban Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2019-08-12, a Monday |
+| 2019-08-13 | closed | `13 Ağustos 2019, Salı` — Kurban Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2019-08-13, a Tuesday |
+| 2019-08-14 | closed | `14 Ağustos 2019, Çarşamba` — Kurban Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2019-08-14, a Wednesday |
+| 2019-08-30 | closed | `30 Ağustos 2019, Cuma` — Zafer Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2019-08-30, a Friday |
+| 2019-10-28 | early close | `28 Ekim 2019, Pazartesi` — Cumhuriyet Bayramı Arefesi (Yarım Gün Tatil) — `Yarım Gün Tatil / Saat 13:00'e kadar` — 13:00 | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2019-10-28, a Monday |
+| 2019-10-29 | closed | `29 Ekim 2019, Salı` — Cumhuriyet Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2019-10-29, a Tuesday |
+
+### 2020
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2020-01-01 | closed | `1 Ocak 2020, Çarşamba` — Yeni Yıl Tatili — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2020-01-01, a Wednesday |
+| 2020-04-23 | closed | `23 Nisan 2020, Perşembe` — Ulusal Egemenlik ve Çocuk Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2020-04-23, a Thursday |
+| 2020-05-01 | closed | `1 Mayıs 2020, Cuma` — Emek ve Dayanışma Günü — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2020-05-01, a Friday |
+| 2020-05-19 | closed | `19 Mayıs 2020, Salı` — Atatürk'ü Anma, Gençlik ve Spor Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2020-05-19, a Tuesday |
+| 2020-05-25 | closed | `25 Mayıs 2020, Pazartesi` — Ramazan Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2020-05-25, a Monday |
+| 2020-05-26 | closed | `26 Mayıs 2020, Salı` — Ramazan Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2020-05-26, a Tuesday |
+| 2020-07-15 | closed | `15 Temmuz 2020, Çarşamba` — Demokrasi ve Milli Birlik Günü — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2020-07-15, a Wednesday |
+| 2020-07-30 | early close | `30 Temmuz 2020, Perşembe` — Kurban Bayramı Arefesi (Yarım Gün Tatil) — `Yarım Gün Tatil / Saat 13:00'e kadar` — 13:00 | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2020-07-30, a Thursday |
+| 2020-07-31 | closed | `31 Temmuz 2020, Cuma` — Kurban Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2020-07-31, a Friday |
+| 2020-08-03 | closed | `3 Ağustos 2020, Pazartesi` — Kurban Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2020-08-03, a Monday |
+| 2020-10-28 | early close | `28 Ekim 2020, Çarşamba` — Cumhuriyet Bayramı Arefesi (Yarım Gün Tatil) — `Yarım Gün Tatil / Saat 13:00'e kadar` — 13:00 | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2020-10-28, a Wednesday |
+| 2020-10-29 | closed | `29 Ekim 2020, Perşembe` — Cumhuriyet Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2020-10-29, a Thursday |
+
+### 2021
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2021-01-01 | closed | `1 Ocak 2021, Cuma` — Yeni Yıl Tatili — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2021-01-01, a Friday |
+| 2021-04-23 | closed | `23 Nisan 2021, Cuma` — Ulusal Egemenlik ve Çocuk Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2021-04-23, a Friday |
+| 2021-05-12 | early close | `12 Mayıs 2021, Çarşamba` — Ramazan Bayramı Arefesi (Yarım Gün Tatil) — `Yarım Gün Tatil / Saat 13:00'e kadar` — 13:00 | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2021-05-12, a Wednesday |
+| 2021-05-13 | closed | `13 Mayıs 2021, Perşembe` — Ramazan Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2021-05-13, a Thursday |
+| 2021-05-14 | closed | `14 Mayıs 2021, Cuma` — Ramazan Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2021-05-14, a Friday |
+| 2021-05-19 | closed | `19 Mayıs 2021, Çarşamba` — Atatürk'ü Anma, Gençlik ve Spor Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2021-05-19, a Wednesday |
+| 2021-07-15 | closed | `15 Temmuz 2021, Perşembe` — Demokrasi ve Milli Birlik Günü — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2021-07-15, a Thursday |
+| 2021-07-19 | early close | `19 Temmuz 2021, Pazartesi` — Kurban Bayramı Arefesi (Yarım Gün Tatil) — `Yarım Gün Tatil / Saat 13:00'e kadar` — 13:00 | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2021-07-19, a Monday |
+| 2021-07-20 | closed | `20 Temmuz 2021, Salı` — Kurban Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2021-07-20, a Tuesday |
+| 2021-07-21 | closed | `21 Temmuz 2021, Çarşamba` — Kurban Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2021-07-21, a Wednesday |
+| 2021-07-22 | closed | `22 Temmuz 2021, Perşembe` — Kurban Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2021-07-22, a Thursday |
+| 2021-07-23 | closed | `23 Temmuz 2021, Cuma` — Kurban Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2021-07-23, a Friday |
+| 2021-08-30 | closed | `30 Ağustos 2021, Pazartesi` — Zafer Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2021-08-30, a Monday |
+| 2021-10-28 | early close | `28 Ekim 2021, Perşembe` — Cumhuriyet Bayramı Arefesi (Yarım Gün Tatil) — `Yarım Gün Tatil / Saat 13:00'e kadar` — 13:00 | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2021-10-28, a Thursday |
+| 2021-10-29 | closed | `29 Ekim 2021, Cuma` — Cumhuriyet Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2021-10-29, a Friday |
+
+### 2022
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2022-05-02 | closed | `2 Mayıs 2022, Pazartesi` — Ramazan Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2022-05-02, a Monday |
+| 2022-05-03 | closed | `3 Mayıs 2022, Salı` — Ramazan Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2022-05-03, a Tuesday |
+| 2022-05-04 | closed | `4 Mayıs 2022, Çarşamba` — Ramazan Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2022-05-04, a Wednesday |
+| 2022-05-19 | closed | `19 Mayıs 2022, Perşembe` — Atatürk'ü Anma, Gençlik ve Spor Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2022-05-19, a Thursday |
+| 2022-07-08 | early close | `8 Temmuz 2022, Cuma` — Kurban Bayramı Arefesi (Yarım Gün Tatil) — `Yarım Gün Tatil / Saat 13:00'e kadar` — 13:00 | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2022-07-08, a Friday |
+| 2022-07-11 | closed | `11 Temmuz 2022, Pazartesi` — Kurban Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2022-07-11, a Monday |
+| 2022-07-12 | closed | `12 Temmuz 2022, Salı` — Kurban Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2022-07-12, a Tuesday |
+| 2022-07-15 | closed | `15 Temmuz 2022, Cuma` — Demokrasi ve Milli Birlik Günü — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2022-07-15, a Friday |
+| 2022-08-30 | closed | `30 Ağustos 2022, Salı` — Zafer Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2022-08-30, a Tuesday |
+| 2022-10-28 | early close | `28 Ekim 2022, Cuma` — Cumhuriyet Bayramı Arefesi (Yarım Gün Tatil) — `Yarım Gün Tatil / Saat 13:00'e kadar` — 13:00 | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2022-10-28, a Friday |
+
+### 2023
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2023-04-20 | early close | `20 Nisan 2023, Perşembe` — Ramazan Bayramı Arefesi (Yarım Gün Tatil) — `Yarım Gün Tatil / Saat 13:00'e kadar` — 13:00 | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2023-04-20, a Thursday |
+| 2023-04-21 | closed | `21 Nisan 2023, Cuma` — Ramazan Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2023-04-21, a Friday |
+| 2023-05-01 | closed | `1 Mayıs 2023, Pazartesi` — Emek ve Dayanışma Günü — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2023-05-01, a Monday |
+| 2023-05-19 | closed | `19 Mayıs 2023, Cuma` — Atatürk'ü Anma, Gençlik ve Spor Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2023-05-19, a Friday |
+| 2023-06-27 | early close | `27 Haziran 2023, Salı` — Kurban Bayramı Arefesi (Yarım Gün Tatil) — `Yarım Gün Tatil / Saat 13:00'e kadar` — 13:00 | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2023-06-27, a Tuesday |
+| 2023-06-28 | closed | `28 Haziran 2023, Çarşamba` — Kurban Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2023-06-28, a Wednesday |
+| 2023-06-29 | closed | `29 Haziran 2023, Perşembe` — Kurban Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2023-06-29, a Thursday |
+| 2023-06-30 | closed | `30 Haziran 2023, Cuma` — Kurban Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2023-06-30, a Friday |
+| 2023-08-30 | closed | `30 Ağustos 2023, Çarşamba` — Zafer Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2023-08-30, a Wednesday |
+
+### 2024
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2024-01-01 | closed | `1 Ocak 2024, Pazartesi` — Yeni Yıl Tatili — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2024-01-01, a Monday |
+| 2024-04-09 | early close | `9 Nisan 2024, Salı` — Ramazan Bayramı Arefesi (Yarım Gün Tatil) — `Yarım Gün Tatil / Saat 13:00'e kadar` — 13:00 | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2024-04-09, a Tuesday |
+| 2024-04-10 | closed | `10 Nisan 2024, Çarşamba` — Ramazan Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2024-04-10, a Wednesday |
+| 2024-04-11 | closed | `11 Nisan 2024, Perşembe` — Ramazan Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2024-04-11, a Thursday |
+| 2024-04-12 | closed | `12 Nisan 2024, Cuma` — Ramazan Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2024-04-12, a Friday |
+| 2024-04-23 | closed | `23 Nisan 2024, Salı` — Ulusal Egemenlik ve Çocuk Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2024-04-23, a Tuesday |
+| 2024-05-01 | closed | `1 Mayıs 2024, Çarşamba` — Emek ve Dayanışma Günü — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2024-05-01, a Wednesday |
+| 2024-06-17 | closed | `17 Haziran 2024, Pazartesi` — Kurban Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2024-06-17, a Monday |
+| 2024-06-18 | closed | `18 Haziran 2024, Salı` — Kurban Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2024-06-18, a Tuesday |
+| 2024-06-19 | closed | `19 Haziran 2024, Çarşamba` — Kurban Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2024-06-19, a Wednesday |
+| 2024-07-15 | closed | `15 Temmuz 2024, Pazartesi` — Demokrasi ve Milli Birlik Günü — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2024-07-15, a Monday |
+| 2024-08-30 | closed | `30 Ağustos 2024, Cuma` — Zafer Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2024-08-30, a Friday |
+| 2024-10-28 | early close | `28 Ekim 2024, Pazartesi` — Cumhuriyet Bayramı Arefesi (Yarım Gün Tatil) — `Yarım Gün Tatil / Saat 13:00'e kadar` — 13:00 | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2024-10-28, a Monday |
+| 2024-10-29 | closed | `29 Ekim 2024, Salı` — Cumhuriyet Bayramı — `Kapalı` | `BIST-RESMI-TATIL-GUNLERI` | T1 | Borsa İstanbul event date 2024-10-29, a Tuesday |
 
 ### 2025
 
@@ -67,9 +287,11 @@ Every listed holiday that falls on a Saturday or Sunday — Zafer Bayramı 2025-
 
 **Gaps, 2025-2026:** none inside the window. Every Equity Market trade date the operator's two 2025-2026 artifacts modify ships a row, and every other date inside the window is audited normal.
 
+**Gaps, 2012-2024:** none inside the window. The corporate page's year tabs print each year's complete table, every Monday-Friday date its rows modify ships a row, and every other date inside the window is audited normal.
+
 **Gaps, 2027:** the operator has published no 2027 arrangement. Verified 2026-09-28 UTC: the `Resmi Tatil Günleri` page's year list runs 2012-2026 and names no 2027 table, and no 2027 `Pay Piyasası Tatil Tablosu` annex is linked from it. Nothing is being withheld by this crate — there is no 2027 table yet. **Closing condition:** the corporate 2027 holiday page or the 2027 equity-market annex, at which point the window extends to 2027-12-31. Re-checked monthly per LAW-WATCH: the identity is holiday-bearing, so its cadence is monthly.
 
-**Interpretive steps.** On the five half-day dates the corporate page prints the holiday as `Yarım Gün Tatil / Saat 13:00'e kadar` — a half-day holiday *until 13:00* — and the market annex states for the same day that a half-day session takes place (`yarım gün seans yapılacaktır`). The crate reads the pair as one statement: the trade date keeps its session with the final close moved to the printed 13:00, which is what `EarlyClose { 13:00 }` states. The half days' own settlement column (`takas yapılmayacaktır`) is settlement data, not a session boundary (LAW-SESSION-NOT-EXPIRY), and nothing is modelled for it. This reading is fenced per date in `tests/global_equities/holidays.rs`.
+**Interpretive steps.** On the half-day dates the corporate page prints the holiday as `Yarım Gün Tatil / Saat 13:00'e kadar` — a half-day holiday *until 13:00* — and the 2025-2026 market annex states for the same day that a half-day session takes place (`yarım gün seans yapılacaktır`). The crate reads the pair as one statement: the trade date keeps its session with the final close moved to the printed 13:00, which is what `EarlyClose { 13:00 }` states. Two eras sit under that scalar. From the 2015-11-30 midday call onward the 13:00 bound falls inside a live session, so the day trades to one second before 13:00. On the 2012-2015 half days the 13:00 bound sits inside the era's lunch gap: the executable morning ends at its own 12:30 and the clip deletes the 14:00 afternoon, so the day's last trade is 12:29:59.999... and the candle ends at 12:30. The half days' own settlement column (`takas yapılmayacaktır`) is settlement data, not a session boundary (LAW-SESSION-NOT-EXPIRY), and nothing is modelled for it. This reading is fenced per date in `tests/global_equities/holidays.rs`.
 
 ### Documents
 
@@ -77,7 +299,7 @@ Every listed holiday that falls on a Saturday or Sunday — Zafer Bayramı 2025-
 |---|---|---|---|---|---|
 | `BIST-PP-TATIL-2025` | 2025-01-01 .. 2026-12-31 | <https://www.borsaistanbul.com/files/pay-piyasasi-2025-yili-tatil-tablosu.pdf> | retrieved 2026-09-28 01:02 UTC | T1 | `55d639083395fb1374718582d5cf439a70855ad49fe321379b2c53991eeaf182` |
 | `BIST-PP-TATIL-2026` | 2025-01-01 .. 2026-12-31 | <https://www.borsaistanbul.com/files/pay-piyasasi-2026-yili-tatil-tablosu.pdf> | retrieved 2026-09-28 01:02 UTC | T1 | `e45fa97e2f67d85b3571ce9e6c4758292a57379c2216fc88183f32504584e680` |
-| `BIST-RESMI-TATIL-GUNLERI` | 2025-01-01 .. 2026-12-31 | <https://www.borsaistanbul.com/resmi-tatil-gunleri> | retrieved 2026-09-28 01:02 UTC | T1 | `a598c8021f1bfa4887612816a9845232eac5f8afdcbce8be278f359edd885ed2` |
+| `BIST-RESMI-TATIL-GUNLERI` | 2012-03-02 .. 2026-12-31 | <https://www.borsaistanbul.com/resmi-tatil-gunleri> | retrieved 2026-09-28 01:02 UTC | T1 | `a598c8021f1bfa4887612816a9845232eac5f8afdcbce8be278f359edd885ed2` |
 
 All three artifacts were saved under `holidays/raw/equities/borsa_istanbul/2025-2027/` in the research store, whose `INDEX.md` repeats the URLs and digests.
 

@@ -13,6 +13,60 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Added
 
+- **`nse_india` 2010-2024 holiday history backfilled (2026-09-29 UTC).** The
+  venue's built-in holiday table extends from the 2025-2026 audited window
+  back over three audited windows — 2010-2011, 2013-2017 and 2019-2024 —
+  186 further rows (174 `Closed` plus 12 withheld `Unsourced` Muhurat dates:
+  11/14/14/17/15/16/13/17/13/13/13/16/14 rows for 2010, 2011, 2013, 2014,
+  2015, 2016, 2017, 2019, 2020, 2021, 2022, 2023 and 2024), every one a
+  printed weekday date of the operator's own holiday material: the annual
+  circulars (`NSE-CIRC-2010-61` from the operator's press `HOLIDAYS.zip`,
+  `NSE-CIRC-2012-79` dated 2012-12-17), the annual trading-holiday pages
+  (`NSE-HOL-PAGE-2011`, `NSE-HOL-PAGE-2014`..`NSE-HOL-PAGE-2017`,
+  `NSE-HOL-PAGE-2019`..`NSE-HOL-PAGE-2022`), and the operator's own
+  `holiday-master` machine channel for 2023-2024 (T2, the block's only T2
+  rows), all Wayback `id_` replays. A date a source footnotes with a Muhurat
+  Trading session whose instants it does not state ships `Unsourced`, never a
+  bare closure; 2021's list names no Muhurat date, so nothing is withheld
+  there. **2012 and 2018 are unrecovered** — no operator artifact stating
+  either year's capital-market holiday list survives in the archive — so they
+  sit inside no audited window and the identity refuses those dates rather
+  than claiming an answer. The audited windows are now 2010-2011, 2013-2017
+  and 2019-2026.
+- **`sse` 2011-2024 holiday history backfilled (2026-09-29 UTC).** The
+  venue's built-in holiday table extends from the 2025-2026 audited window
+  back to 2011-01-01: 247 further `Closed` rows (16/18/23/16 for 2011-2014,
+  15/17/16/18/15 for 2015-2019, 19/18/18/18/20 for 2020-2024), every one a
+  weekday inside an event-date range of the operator's own annual
+  closure-arrangement notices — 关于2011年全年休市安排的通知 through 上证公告
+  〔2023〕47号 — or, for 2020-01-31, of 上证公告〔2020〕6号, the operator's
+  COVID-era notice extending the 2020 Spring Festival closure past the annual
+  notice's 1月31日 reopening clause. The 2011-2013 notices came live from
+  SSE's media-center reprints of its pre-2015 notices; the 2014-2024 notices
+  and the 2020 extension from the announcement channel's Wayback `id_`
+  replays; each printed date's weekday name was checked against the civil
+  calendar while deriving. The 2019 notice's 元旦 range reaches back to
+  2018-12-31, which keys from 上证公告〔2018〕39号. The 2010 annual notice
+  (上证交字〔2009〕42号) is unrecovered and 2010-01-01..2010-12-31 stays outside
+  every audited window as a recorded gap with its closing condition. The
+  audited window is now 2011-01-01..2026-12-31.
+- **`tse` 2010-2024 holiday history backfilled (2026-09-29 UTC).** The venue's
+  built-in holiday table extends from the 2025-2027 audited window back to the
+  2010-01-01 support floor: 241 further `Closed` rows, 16/15/13/16/17 for
+  2010-2014, 17/16/13/16 for 2015-2018, 20/19/16/16 for 2019-2022 and 14/17 for
+  2023-2024, every one a printed weekday date of the operator's own holiday
+  page read from fifteen Wayback captures (TSE's
+  `tse.or.jp/english/about/calendar.html` through 2014, JPX's
+  `english/corporate/calendar/` for 2015-2017 and today's
+  `english/corporate/about-jpx/calendar/` from 2018). The two weekday dates the
+  TSE-era pages state in prose (`the market holidays of Jan. 2, 3, and Dec.
+  31`) but whose tables omit — 2010-12-31 and 2011-01-03 — ship from that
+  sentence; the operator's edition lineages (the imperial-transition holidays
+  of 2019, the Tokyo-Olympics shift of 2021) are recorded in the evidence file
+  with the later edition keying each corrected year. No edition in the window
+  states a holiday-time early close, so the venue still ships closures only.
+  The audited window is now 2010-01-01..2027-12-31 and the identity is complete
+  to 2027-12-31 across it.
 - **`lse`, `euronext_paris` and `tsx` activate: built-in holiday tables for
   the European and Canadian cash-equity venues (2026-09-28 UTC).** All three
   identities flip dormant→**served** (LAW-SERVICE-TIERS admission by consumer

@@ -13,6 +13,23 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Added
 
+- **`tse` 2010-2024 holiday history backfilled (2026-09-29 UTC).** The venue's
+  built-in holiday table extends from the 2025-2027 audited window back to the
+  2010-01-01 support floor: 241 further `Closed` rows, 16/15/13/16/17 for
+  2010-2014, 17/16/13/16 for 2015-2018, 20/19/16/16 for 2019-2022 and 14/17 for
+  2023-2024, every one a printed weekday date of the operator's own holiday
+  page read from fifteen Wayback captures (TSE's
+  `tse.or.jp/english/about/calendar.html` through 2014, JPX's
+  `english/corporate/calendar/` for 2015-2017 and today's
+  `english/corporate/about-jpx/calendar/` from 2018). The two weekday dates the
+  TSE-era pages state in prose (`the market holidays of Jan. 2, 3, and Dec.
+  31`) but whose tables omit — 2010-12-31 and 2011-01-03 — ship from that
+  sentence; the operator's edition lineages (the imperial-transition holidays
+  of 2019, the Tokyo-Olympics shift of 2021) are recorded in the evidence file
+  with the later edition keying each corrected year. No edition in the window
+  states a holiday-time early close, so the venue still ships closures only.
+  The audited window is now 2010-01-01..2027-12-31 and the identity is complete
+  to 2027-12-31 across it.
 - **`lse`, `euronext_paris` and `tsx` activate: built-in holiday tables for
   the European and Canadian cash-equity venues (2026-09-28 UTC).** All three
   identities flip dormant→**served** (LAW-SERVICE-TIERS admission by consumer

@@ -33,10 +33,11 @@ fn day(year: i32, month: u32, date: u32) -> chrono::NaiveDate {
 }
 
 /// Asserts the row `date` ships is a `Closed` row citing `document` at T1,
-/// and that the whole trade date answers shut. The one exception is the
-/// window's own first date: settling that trade date reads the day before it,
-/// which sits outside every audited window, so the query refuses there — the
-/// same shape the CFE fence documents for its New Year row.
+/// and that the whole trade date answers shut. The exceptions are the
+/// window's own first dates: settling that trade date reads the day before
+/// it, which sits outside the audited window (or below the 2010 support
+/// floor), so the query refuses there — the same shape the CFE fence
+/// documents for its New Year row.
 #[expect(
     clippy::panic,
     reason = "a shared test helper is not itself a #[test], so the \
@@ -62,11 +63,12 @@ fn assert_closure(calendar: ExchangeCalendar, date: (i32, u32, u32), document: &
     );
     // Settling a trade-date question scans backward to the previous session;
     // around New Year that scan walks off the window's first day (2025-01-01,
-    // 01-02 and 01-03 are all rows and the prior session sits in 2024), and
-    // beside a withheld Muhurat date it walks onto that withheld day. The
+    // 01-02 and 01-03 are all rows and the prior session sits in 2024, while
+    // the new window start 2010-01-01..01-03 scans to pre-floor 2009-12-31),
+    // and beside a withheld Muhurat date it walks onto that withheld day. The
     // contract is to refuse naming the day the scan needed: accepted only when
-    // the error names a day before the window or a day the table withholds.
-    // Everywhere else the date must answer shut.
+    // the error names a day before the window or the floor, or a day the table
+    // withholds. Everywhere else the date must answer shut.
     match calendar.is_closed_trade_date(trade_date, SessionKind::Both) {
         Ok(closed) => assert!(
             closed,
@@ -91,6 +93,16 @@ fn assert_closure(calendar: ExchangeCalendar, date: (i32, u32, u32), document: &
             assert!(
                 withheld,
                 "{label}: {trade_date} refused naming {date}, which the table does not withhold"
+            );
+        }
+        Err(CalendarQueryError::BeforeSupportFloor { date, .. }) => {
+            let first = calendar
+                .holiday_coverage()
+                .map(exchange_hours::HolidayCoverage::first)
+                .expect("each of these venues ships a table");
+            assert!(
+                date < first,
+                "{label}: {trade_date} refused naming in-window {date}; only a scan that                  exits the window start may refuse"
             );
         }
         Err(other) => panic!(
@@ -183,9 +195,305 @@ fn assert_ordinary_weekday(
     );
 }
 
-/// Asserts every TSE closure row, per year, against the operator's printed
-/// tables. The date list is spelled here independently of the module: a row
-/// that moves, loses its clip or changes its citation fails here.
+/// Asserts the 2010-2014 TSE closure rows against the operator's own archived
+/// holiday pages, one edition per calendar year (the TSE-era page `tse.or.jp/english/about/calendar.html`). The window-start rows scan back
+/// below the 2010 floor and may refuse naming that day, which the helper accepts.
+/// The date list is spelled here independently of the module: a row that
+/// moves, loses its clip or changes its citation fails here.
+#[test]
+fn tse_printed_closures_2010_2014_ship_a_row_per_year() {
+    let tse = calendar_for_exchange(Exchange::Tse);
+    for (date, document, label) in [
+        // 2010, from the operator's TSE-CAL-2010 edition.
+        ((2010, 1, 1), "TSE-CAL-2010", "New Year's Day"),
+        ((2010, 1, 11), "TSE-CAL-2010", "Coming of Age Day"),
+        ((2010, 2, 11), "TSE-CAL-2010", "National Foundation Day"),
+        ((2010, 3, 22), "TSE-CAL-2010", "Holiday"),
+        ((2010, 4, 29), "TSE-CAL-2010", "Showa Day"),
+        ((2010, 5, 3), "TSE-CAL-2010", "Constitution Memorial Day"),
+        ((2010, 5, 4), "TSE-CAL-2010", "Greenery Day"),
+        ((2010, 5, 5), "TSE-CAL-2010", "Children's Day"),
+        ((2010, 7, 19), "TSE-CAL-2010", "Marine Day"),
+        ((2010, 9, 20), "TSE-CAL-2010", "Respect for the Aged Day"),
+        ((2010, 9, 23), "TSE-CAL-2010", "Autumnal equinox"),
+        ((2010, 10, 11), "TSE-CAL-2010", "Health and Sports Day"),
+        ((2010, 11, 3), "TSE-CAL-2010", "Culture Day"),
+        ((2010, 11, 23), "TSE-CAL-2010", "Labor Thanksgiving Day"),
+        ((2010, 12, 23), "TSE-CAL-2010", "Emperor's Birthday"),
+        ((2010, 12, 31), "TSE-CAL-2010", "Market Holiday"),
+        // 2011, from the operator's TSE-CAL-2011 edition.
+        ((2011, 1, 3), "TSE-CAL-2011", "Market Holiday"),
+        ((2011, 1, 10), "TSE-CAL-2011", "Coming of Age Day"),
+        ((2011, 2, 11), "TSE-CAL-2011", "National Foundation Day"),
+        ((2011, 3, 21), "TSE-CAL-2011", "Vernal Equinox"),
+        ((2011, 4, 29), "TSE-CAL-2011", "Showa Day"),
+        ((2011, 5, 3), "TSE-CAL-2011", "Constitution Memorial Day"),
+        ((2011, 5, 4), "TSE-CAL-2011", "Greenery Day"),
+        ((2011, 5, 5), "TSE-CAL-2011", "Children's Day"),
+        ((2011, 7, 18), "TSE-CAL-2011", "Marine Day"),
+        ((2011, 9, 19), "TSE-CAL-2011", "Respect for the Aged Day"),
+        ((2011, 9, 23), "TSE-CAL-2011", "Autumnal equinox"),
+        ((2011, 10, 10), "TSE-CAL-2011", "Health and Sports Day"),
+        ((2011, 11, 3), "TSE-CAL-2011", "Culture Day"),
+        ((2011, 11, 23), "TSE-CAL-2011", "Labor Thanksgiving Day"),
+        ((2011, 12, 23), "TSE-CAL-2011", "Emperor's Birthday"),
+        // 2012, from the operator's TSE-CAL-2012 edition.
+        ((2012, 1, 2), "TSE-CAL-2012", "Holiday"),
+        ((2012, 1, 3), "TSE-CAL-2012", "Exchange Holiday"),
+        ((2012, 1, 9), "TSE-CAL-2012", "Coming of Age Day"),
+        ((2012, 3, 20), "TSE-CAL-2012", "Vernal Equinox"),
+        ((2012, 4, 30), "TSE-CAL-2012", "Holiday"),
+        ((2012, 5, 3), "TSE-CAL-2012", "Constitution Memorial Day"),
+        ((2012, 5, 4), "TSE-CAL-2012", "Greenery Day"),
+        ((2012, 7, 16), "TSE-CAL-2012", "Marine Day"),
+        ((2012, 9, 17), "TSE-CAL-2012", "Respect for the Aged Day"),
+        ((2012, 10, 8), "TSE-CAL-2012", "Health and Sports Day"),
+        ((2012, 11, 23), "TSE-CAL-2012", "Labor Thanksgiving Day"),
+        ((2012, 12, 24), "TSE-CAL-2012", "Holiday"),
+        ((2012, 12, 31), "TSE-CAL-2012", "Exchange Holiday"),
+        // 2013, from the operator's TSE-CAL-2013 edition.
+        ((2013, 1, 1), "TSE-CAL-2013", "New Year's Day"),
+        ((2013, 1, 2), "TSE-CAL-2013", "Exchange Holiday"),
+        ((2013, 1, 3), "TSE-CAL-2013", "Exchange Holiday"),
+        ((2013, 1, 14), "TSE-CAL-2013", "Coming of Age Day"),
+        ((2013, 2, 11), "TSE-CAL-2013", "National Foundation Day"),
+        ((2013, 3, 20), "TSE-CAL-2013", "Vernal Equinox"),
+        ((2013, 4, 29), "TSE-CAL-2013", "Showa Day"),
+        ((2013, 5, 3), "TSE-CAL-2013", "Constitution Memorial Day"),
+        ((2013, 5, 6), "TSE-CAL-2013", "Holiday"),
+        ((2013, 7, 15), "TSE-CAL-2013", "Marine Day"),
+        ((2013, 9, 16), "TSE-CAL-2013", "Respect for the Aged Day"),
+        ((2013, 9, 23), "TSE-CAL-2013", "Autumnal equinox"),
+        ((2013, 10, 14), "TSE-CAL-2013", "Health and Sports Day"),
+        ((2013, 11, 4), "TSE-CAL-2013", "Holiday"),
+        ((2013, 12, 23), "TSE-CAL-2013", "Emperor's Birthday"),
+        ((2013, 12, 31), "TSE-CAL-2013", "Exchange Holiday"),
+        // 2014, from the operator's TSE-CAL-2014 edition.
+        ((2014, 1, 1), "TSE-CAL-2014", "New Year's Day"),
+        ((2014, 1, 2), "TSE-CAL-2014", "Exchange Holiday"),
+        ((2014, 1, 3), "TSE-CAL-2014", "Exchange Holiday"),
+        ((2014, 1, 13), "TSE-CAL-2014", "Coming of Age Day"),
+        ((2014, 2, 11), "TSE-CAL-2014", "National Foundation Day"),
+        ((2014, 3, 21), "TSE-CAL-2014", "Vernal Equinox"),
+        ((2014, 4, 29), "TSE-CAL-2014", "Showa Day"),
+        ((2014, 5, 5), "TSE-CAL-2014", "Children's Day"),
+        ((2014, 5, 6), "TSE-CAL-2014", "Holiday"),
+        ((2014, 7, 21), "TSE-CAL-2014", "Marine Day"),
+        ((2014, 9, 15), "TSE-CAL-2014", "Respect for the Aged Day"),
+        ((2014, 9, 23), "TSE-CAL-2014", "Autumnal equinox"),
+        ((2014, 10, 13), "TSE-CAL-2014", "Health and Sports Day"),
+        ((2014, 11, 3), "TSE-CAL-2014", "Culture Day"),
+        ((2014, 11, 24), "TSE-CAL-2014", "Holiday"),
+        ((2014, 12, 23), "TSE-CAL-2014", "Emperor's Birthday"),
+        ((2014, 12, 31), "TSE-CAL-2014", "Exchange Holiday"),
+    ] {
+        assert_closure(tse, date, document, &format!("TSE {label}"));
+    }
+}
+
+/// Asserts the 2015-2019 TSE closure rows against the operator's own archived
+/// holiday pages, one edition per calendar year (JPX's `english/corporate/calendar/` for 2015-2017 and today's `about-jpx/calendar/` page from 2018).
+/// The date list is spelled here independently of the module: a row that
+/// moves, loses its clip or changes its citation fails here.
+#[test]
+fn tse_printed_closures_2015_2019_ship_a_row_per_year() {
+    let tse = calendar_for_exchange(Exchange::Tse);
+    for (date, document, label) in [
+        // 2015, from the operator's JPX-HOL-2015 edition.
+        ((2015, 1, 1), "JPX-HOL-2015", "New Year's Day"),
+        ((2015, 1, 2), "JPX-HOL-2015", "Exchange Holiday"),
+        ((2015, 1, 12), "JPX-HOL-2015", "Coming of Age Day"),
+        ((2015, 2, 11), "JPX-HOL-2015", "National Foundation Day"),
+        ((2015, 4, 29), "JPX-HOL-2015", "Showa Day"),
+        ((2015, 5, 4), "JPX-HOL-2015", "Greenery Day"),
+        ((2015, 5, 5), "JPX-HOL-2015", "Children's Day"),
+        ((2015, 5, 6), "JPX-HOL-2015", "Holiday"),
+        ((2015, 7, 20), "JPX-HOL-2015", "Marine Day"),
+        ((2015, 9, 21), "JPX-HOL-2015", "Respect for the Aged Day"),
+        ((2015, 9, 22), "JPX-HOL-2015", "Holiday"),
+        ((2015, 9, 23), "JPX-HOL-2015", "Autumnal equinox"),
+        ((2015, 10, 12), "JPX-HOL-2015", "Health and Sports Day"),
+        ((2015, 11, 3), "JPX-HOL-2015", "Culture Day"),
+        ((2015, 11, 23), "JPX-HOL-2015", "Labor Thanksgiving Day"),
+        ((2015, 12, 23), "JPX-HOL-2015", "Emperor's Birthday"),
+        ((2015, 12, 31), "JPX-HOL-2015", "Exchange Holiday"),
+        // 2016, from the operator's JPX-HOL-2016 edition.
+        ((2016, 1, 1), "JPX-HOL-2016", "New Year's Day"),
+        ((2016, 1, 11), "JPX-HOL-2016", "Coming of Age Day"),
+        ((2016, 2, 11), "JPX-HOL-2016", "National Foundation Day"),
+        ((2016, 3, 21), "JPX-HOL-2016", "Holiday"),
+        ((2016, 4, 29), "JPX-HOL-2016", "Showa Day"),
+        ((2016, 5, 3), "JPX-HOL-2016", "Constitution Memorial Day"),
+        ((2016, 5, 4), "JPX-HOL-2016", "Greenery Day"),
+        ((2016, 5, 5), "JPX-HOL-2016", "Children's Day"),
+        ((2016, 7, 18), "JPX-HOL-2016", "Marine Day"),
+        ((2016, 8, 11), "JPX-HOL-2016", "Mountain Day"),
+        ((2016, 9, 19), "JPX-HOL-2016", "Respect for the Aged Day"),
+        ((2016, 9, 22), "JPX-HOL-2016", "Autumnal equinox"),
+        ((2016, 10, 10), "JPX-HOL-2016", "Health and Sports Day"),
+        ((2016, 11, 3), "JPX-HOL-2016", "Culture Day"),
+        ((2016, 11, 23), "JPX-HOL-2016", "Labor Thanksgiving Day"),
+        ((2016, 12, 23), "JPX-HOL-2016", "Emperor's Birthday"),
+        // 2017, from the operator's JPX-HOL-2017 edition.
+        ((2017, 1, 2), "JPX-HOL-2017", "Holiday"),
+        ((2017, 1, 3), "JPX-HOL-2017", "Exchange Holiday"),
+        ((2017, 1, 9), "JPX-HOL-2017", "Coming of Age Day"),
+        ((2017, 3, 20), "JPX-HOL-2017", "Vernal Equinox"),
+        ((2017, 5, 3), "JPX-HOL-2017", "Constitution Memorial Day"),
+        ((2017, 5, 4), "JPX-HOL-2017", "Greenery Day"),
+        ((2017, 5, 5), "JPX-HOL-2017", "Children's Day"),
+        ((2017, 7, 17), "JPX-HOL-2017", "Marine Day"),
+        ((2017, 8, 11), "JPX-HOL-2017", "Mountain Day"),
+        ((2017, 9, 18), "JPX-HOL-2017", "Respect for the Aged Day"),
+        ((2017, 10, 9), "JPX-HOL-2017", "Health and Sports Day"),
+        ((2017, 11, 3), "JPX-HOL-2017", "Culture Day"),
+        ((2017, 11, 23), "JPX-HOL-2017", "Labor Thanksgiving Day"),
+        // 2018, from the operator's JPX-HOL-2018 edition.
+        ((2018, 1, 1), "JPX-HOL-2018", "New Year's Day"),
+        ((2018, 1, 2), "JPX-HOL-2018", "Market Holiday"),
+        ((2018, 1, 3), "JPX-HOL-2018", "Market Holiday"),
+        ((2018, 1, 8), "JPX-HOL-2018", "Coming of Age Day"),
+        ((2018, 2, 12), "JPX-HOL-2018", "National Foundation Day"),
+        ((2018, 3, 21), "JPX-HOL-2018", "Vernal Equinox"),
+        ((2018, 4, 30), "JPX-HOL-2018", "Showa Day"),
+        ((2018, 5, 3), "JPX-HOL-2018", "Constitution Memorial Day"),
+        ((2018, 5, 4), "JPX-HOL-2018", "Greenery Day"),
+        ((2018, 7, 16), "JPX-HOL-2018", "Marine Day"),
+        ((2018, 9, 17), "JPX-HOL-2018", "Respect for the Aged Day"),
+        ((2018, 9, 24), "JPX-HOL-2018", "Autumnal Equinox"),
+        ((2018, 10, 8), "JPX-HOL-2018", "Health and Sports Day"),
+        ((2018, 11, 23), "JPX-HOL-2018", "Labor Thanksgiving Day"),
+        ((2018, 12, 24), "JPX-HOL-2018", "Emperor's Birthday"),
+        ((2018, 12, 31), "JPX-HOL-2018", "Market Holiday"),
+        // 2019, from the operator's JPX-HOL-2019 edition.
+        ((2019, 1, 1), "JPX-HOL-2019", "New Year's Day"),
+        ((2019, 1, 2), "JPX-HOL-2019", "Market Holiday"),
+        ((2019, 1, 3), "JPX-HOL-2019", "Market Holiday"),
+        ((2019, 1, 14), "JPX-HOL-2019", "Coming of Age Day"),
+        ((2019, 2, 11), "JPX-HOL-2019", "National Foundation Day"),
+        ((2019, 3, 21), "JPX-HOL-2019", "Vernal Equinox"),
+        ((2019, 4, 29), "JPX-HOL-2019", "Showa Day"),
+        ((2019, 4, 30), "JPX-HOL-2019", "Abdication Day"),
+        ((2019, 5, 1), "JPX-HOL-2019", "Accession Day"),
+        ((2019, 5, 2), "JPX-HOL-2019", "National Holiday"),
+        ((2019, 5, 3), "JPX-HOL-2019", "Constitution Memorial Day"),
+        ((2019, 5, 6), "JPX-HOL-2019", "Children's Day"),
+        ((2019, 7, 15), "JPX-HOL-2019", "Marine Day"),
+        ((2019, 8, 12), "JPX-HOL-2019", "Mountain Day"),
+        ((2019, 9, 16), "JPX-HOL-2019", "Respect for the Aged Day"),
+        ((2019, 9, 23), "JPX-HOL-2019", "Autumnal Equinox"),
+        ((2019, 10, 14), "JPX-HOL-2019", "Health and Sports Day"),
+        ((2019, 10, 22), "JPX-HOL-2019", "Enthronement Ceremony Day"),
+        ((2019, 11, 4), "JPX-HOL-2019", "Culture Day"),
+        ((2019, 12, 31), "JPX-HOL-2019", "Market Holiday"),
+    ] {
+        assert_closure(tse, date, document, &format!("TSE {label}"));
+    }
+}
+
+/// Asserts the 2020-2024 TSE closure rows against the operator's own archived
+/// holiday pages, one edition per calendar year (JPX's `about-jpx/calendar/` page, the Tokyo-Olympics year included).
+/// The date list is spelled here independently of the module: a row that
+/// moves, loses its clip or changes its citation fails here.
+#[test]
+fn tse_printed_closures_2020_2024_ship_a_row_per_year() {
+    let tse = calendar_for_exchange(Exchange::Tse);
+    for (date, document, label) in [
+        // 2020, from the operator's JPX-HOL-2020 edition.
+        ((2020, 1, 1), "JPX-HOL-2020", "New Year's Day"),
+        ((2020, 1, 2), "JPX-HOL-2020", "Market Holiday"),
+        ((2020, 1, 3), "JPX-HOL-2020", "Market Holiday"),
+        ((2020, 1, 13), "JPX-HOL-2020", "Coming of Age Day"),
+        ((2020, 2, 11), "JPX-HOL-2020", "National Foundation Day"),
+        ((2020, 2, 24), "JPX-HOL-2020", "Emperor's Birthday"),
+        ((2020, 3, 20), "JPX-HOL-2020", "Vernal Equinox"),
+        ((2020, 4, 29), "JPX-HOL-2020", "Showa Day"),
+        ((2020, 5, 4), "JPX-HOL-2020", "Greenery Day"),
+        ((2020, 5, 5), "JPX-HOL-2020", "Children's Day"),
+        ((2020, 5, 6), "JPX-HOL-2020", "Constitution Memorial Day"),
+        ((2020, 7, 23), "JPX-HOL-2020", "Marine Day"),
+        ((2020, 7, 24), "JPX-HOL-2020", "Sports Day"),
+        ((2020, 8, 10), "JPX-HOL-2020", "Mountain Day"),
+        ((2020, 9, 21), "JPX-HOL-2020", "Respect for the Aged Day"),
+        ((2020, 9, 22), "JPX-HOL-2020", "Autumnal Equinox"),
+        ((2020, 11, 3), "JPX-HOL-2020", "Culture Day"),
+        ((2020, 11, 23), "JPX-HOL-2020", "Labor Thanksgiving Day"),
+        ((2020, 12, 31), "JPX-HOL-2020", "Market Holiday"),
+        // 2021, from the operator's JPX-HOL-2021 edition.
+        ((2021, 1, 1), "JPX-HOL-2021", "New Year's Day"),
+        ((2021, 1, 11), "JPX-HOL-2021", "Coming of Age Day"),
+        ((2021, 2, 11), "JPX-HOL-2021", "National Foundation Day"),
+        ((2021, 2, 23), "JPX-HOL-2021", "Emperor's Birthday"),
+        ((2021, 4, 29), "JPX-HOL-2021", "Showa Day"),
+        ((2021, 5, 3), "JPX-HOL-2021", "Constitution Memorial Day"),
+        ((2021, 5, 4), "JPX-HOL-2021", "Greenery Day"),
+        ((2021, 5, 5), "JPX-HOL-2021", "Children's Day"),
+        ((2021, 7, 22), "JPX-HOL-2021", "Marine Day"),
+        ((2021, 7, 23), "JPX-HOL-2021", "Sports Day"),
+        ((2021, 8, 9), "JPX-HOL-2021", "Mountain Day"),
+        ((2021, 9, 20), "JPX-HOL-2021", "Respect for the Aged Day"),
+        ((2021, 9, 23), "JPX-HOL-2021", "Autumnal Equinox"),
+        ((2021, 11, 3), "JPX-HOL-2021", "Culture Day"),
+        ((2021, 11, 23), "JPX-HOL-2021", "Labor Thanksgiving Day"),
+        ((2021, 12, 31), "JPX-HOL-2021", "Market Holiday"),
+        // 2022, from the operator's JPX-HOL-2022 edition.
+        ((2022, 1, 3), "JPX-HOL-2022", "Market Holiday"),
+        ((2022, 1, 10), "JPX-HOL-2022", "Coming of Age Day"),
+        ((2022, 2, 11), "JPX-HOL-2022", "National Foundation Day"),
+        ((2022, 2, 23), "JPX-HOL-2022", "Emperor's Birthday"),
+        ((2022, 3, 21), "JPX-HOL-2022", "Vernal Equinox"),
+        ((2022, 4, 29), "JPX-HOL-2022", "Showa Day"),
+        ((2022, 5, 3), "JPX-HOL-2022", "Constitution Memorial Day"),
+        ((2022, 5, 4), "JPX-HOL-2022", "Greenery Day"),
+        ((2022, 5, 5), "JPX-HOL-2022", "Children's Day"),
+        ((2022, 7, 18), "JPX-HOL-2022", "Marine Day"),
+        ((2022, 8, 11), "JPX-HOL-2022", "Mountain Day"),
+        ((2022, 9, 19), "JPX-HOL-2022", "Respect for the Aged Day"),
+        ((2022, 9, 23), "JPX-HOL-2022", "Autumnal Equinox"),
+        ((2022, 10, 10), "JPX-HOL-2022", "Sports Day"),
+        ((2022, 11, 3), "JPX-HOL-2022", "Culture Day"),
+        ((2022, 11, 23), "JPX-HOL-2022", "Labor Thanksgiving Day"),
+        // 2023, from the operator's JPX-HOL-2023 edition.
+        ((2023, 5, 3), "JPX-HOL-2023", "Constitution Memorial Day"),
+        ((2023, 5, 4), "JPX-HOL-2023", "Greenery Day"),
+        ((2023, 1, 2), "JPX-HOL-2023", "New Year's Day"),
+        ((2023, 1, 3), "JPX-HOL-2023", "Market Holiday"),
+        ((2023, 1, 9), "JPX-HOL-2023", "Coming of Age Day"),
+        ((2023, 2, 23), "JPX-HOL-2023", "Emperor's Birthday"),
+        ((2023, 3, 21), "JPX-HOL-2023", "Vernal Equinox"),
+        ((2023, 5, 5), "JPX-HOL-2023", "Children's Day"),
+        ((2023, 7, 17), "JPX-HOL-2023", "Marine Day"),
+        ((2023, 8, 11), "JPX-HOL-2023", "Mountain Day"),
+        ((2023, 9, 18), "JPX-HOL-2023", "Respect for the Aged Day"),
+        ((2023, 10, 9), "JPX-HOL-2023", "Sports Day"),
+        ((2023, 11, 3), "JPX-HOL-2023", "Culture Day"),
+        ((2023, 11, 23), "JPX-HOL-2023", "Labor Thanksgiving Day"),
+        // 2024, from the operator's JPX-HOL-2024 edition.
+        ((2024, 1, 1), "JPX-HOL-2024", "New Year's Day"),
+        ((2024, 1, 2), "JPX-HOL-2024", "Market Holiday"),
+        ((2024, 1, 3), "JPX-HOL-2024", "Market Holiday"),
+        ((2024, 1, 8), "JPX-HOL-2024", "Coming of Age Day"),
+        ((2024, 2, 12), "JPX-HOL-2024", "National Foundation Day"),
+        ((2024, 2, 23), "JPX-HOL-2024", "Emperor's Birthday"),
+        ((2024, 3, 20), "JPX-HOL-2024", "Vernal Equinox"),
+        ((2024, 4, 29), "JPX-HOL-2024", "Showa Day"),
+        ((2024, 5, 3), "JPX-HOL-2024", "Constitution Memorial Day"),
+        ((2024, 5, 6), "JPX-HOL-2024", "Children's Day"),
+        ((2024, 7, 15), "JPX-HOL-2024", "Marine Day"),
+        ((2024, 8, 12), "JPX-HOL-2024", "Mountain Day"),
+        ((2024, 9, 16), "JPX-HOL-2024", "Respect for the Aged Day"),
+        ((2024, 9, 23), "JPX-HOL-2024", "Autumnal Equinox"),
+        ((2024, 10, 14), "JPX-HOL-2024", "Sports Day"),
+        ((2024, 11, 4), "JPX-HOL-2024", "Culture Day"),
+        ((2024, 12, 31), "JPX-HOL-2024", "Market Holiday"),
+    ] {
+        assert_closure(tse, date, document, &format!("TSE {label}"));
+    }
+}
+
+/// Asserts every 2025-2027 TSE closure row, per year, against the operator's
+/// printed tables. The date list is spelled here independently of the module:
+/// a row that moves, loses its clip or changes its citation fails here.
 #[test]
 fn tse_printed_closures_ship_a_row_per_year() {
     let tse = calendar_for_exchange(Exchange::Tse);
@@ -462,10 +770,11 @@ fn the_muhurat_dates_are_unsourced_neither_closed_nor_normal() {
 }
 
 /// The counts per year, read back from the shipped tables by walking them:
-/// 18 + 19 + 17 TSE closures, 18 + 19 SSE closures, and 13 + 1 plus 15 + 1
-/// NSE rows (the one per year being the withheld Muhurat date). A row added,
-/// moved across a year or dropped breaks the count; the per-row fence above
-/// pins where.
+/// 16+15+13+16+17+17+16+13+16+20+19+16+16+14+17 TSE closures across 2010-2024
+/// plus 18 + 19 + 17 over 2025-2027, 18 + 19 SSE closures, and 13 + 1 plus
+/// 15 + 1 NSE rows (the one per year being the withheld Muhurat date). A row
+/// added, moved across a year or dropped breaks the count; the per-row fence
+/// above pins where.
 #[test]
 fn the_window_counts_are_the_printed_lists_counts() {
     fn count_by_year(calendar: ExchangeCalendar) -> Vec<(i32, usize, usize)> {
@@ -502,7 +811,26 @@ fn the_window_counts_are_the_printed_lists_counts() {
 
     assert_eq!(
         count_by_year(calendar_for_exchange(Exchange::Tse)),
-        [(2025, 18, 0), (2026, 19, 0), (2027, 17, 0)],
+        [
+            (2010, 16, 0),
+            (2011, 15, 0),
+            (2012, 13, 0),
+            (2013, 16, 0),
+            (2014, 17, 0),
+            (2015, 17, 0),
+            (2016, 16, 0),
+            (2017, 13, 0),
+            (2018, 16, 0),
+            (2019, 20, 0),
+            (2020, 19, 0),
+            (2021, 16, 0),
+            (2022, 16, 0),
+            (2023, 14, 0),
+            (2024, 17, 0),
+            (2025, 18, 0),
+            (2026, 19, 0),
+            (2027, 17, 0),
+        ],
         "TSE closures per year, from the operator's tables"
     );
     assert_eq!(
@@ -550,13 +878,14 @@ fn ordinary_weekdays_inside_the_window_trade_end_exclusively() {
 /// week. Pre-floor instants refuse as before the floor.
 #[test]
 fn coverage_runs_exactly_over_each_operators_published_window() {
-    // TSE: 2025-01-01 .. 2027-12-31.
+    // TSE: 2010-01-01 .. 2027-12-31 — the operator's own pages state the
+    // current and next year from 2010 on, so the window reaches the floor.
     let tse = calendar_for_exchange(Exchange::Tse);
     let tse_coverage = tse.holiday_coverage().expect("TSE ships a table");
-    assert_eq!(tse_coverage.first(), day(2025, 1, 1));
+    assert_eq!(tse_coverage.first(), day(2010, 1, 1));
     assert_eq!(tse_coverage.last(), day(2027, 12, 31));
     assert_eq!(
-        tse.holiday_on(day(2024, 12, 31)),
+        tse.holiday_on(day(2009, 12, 31)),
         None,
         "the day before the window carries no row"
     );
@@ -565,12 +894,19 @@ fn coverage_runs_exactly_over_each_operators_published_window() {
         None,
         "the day after the window carries no row"
     );
+    // 2024-12-31 is now inside the window and is one of the page's own rows.
+    let year_end = tse
+        .holiday_on(day(2024, 12, 31))
+        .expect("2024-12-31 is inside the audited window");
+    assert_eq!(
+        year_end.kind(),
+        HolidayKind::Closed,
+        "2024-12-31 is the printed Dec. 31 Market Holiday of the 2024 page"
+    );
     assert!(
-        matches!(
-            tse.is_open(zoned(Asia::Tokyo, (2024, 12, 31), (10, 0, 0))),
-            Err(CalendarQueryError::OutsideCoveredRange { .. })
-        ),
-        "a 2024 weekday is inside no audited window and must be refused"
+        !tse.is_open(zoned(Asia::Tokyo, (2024, 12, 31), (10, 0, 0)))
+            .expect("2024-12-31 is inside the audited window and must answer"),
+        "the printed year-end holiday answers shut"
     );
     assert!(
         matches!(

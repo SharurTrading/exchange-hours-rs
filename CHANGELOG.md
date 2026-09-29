@@ -304,6 +304,44 @@ corrections (a venue's hours fixed against a primary source) go under
   Recorded, not a gap: HKEX's 2026-12-28 check (verified: no conflict — the
   general-holiday list names Saturday 2026-12-26; no closing condition).
 
+- **`hkex` holiday history backfilled to the 2010 floor, 2010-2024
+  (2026-09-29 UTC).** 238 rows join the table (208 closures, 20 early closes,
+  10 `Unsourced`), audited 2010-01-01..2024-12-31 beside the existing
+  2025-2027 window: 2010-2017 rows key on the operator's own per-year
+  `Trading Calendar` PDFs and 2018-2024 rows on the page editions that print
+  each year. The 2010-2011 eves close at the era's printed half-day edge 12:30
+  (`HKEX-TN-2010`); the CAS-era eves close at 12:10; the ten 2012-2015 eves —
+  named half-day trading days by the calendars but stated at no instant by any
+  retrieved era artifact — ship `Unsourced` rather than an invented close, so
+  the window is expressly incomplete over them (#208). Weekend-falling
+  holidays key no weekday row and the typhoon/black-rain halts remain halts,
+  not closures.
+- **`xetra` holiday history backfilled to the 2010 floor, 2010-2024
+  (2026-09-29 UTC).** 104 closure rows join the table, audited
+  2010-01-01..2024-12-31 beside the existing 2025-2027 window: every row is
+  one exception date of the operator's per-year calendar sentence ("there
+  will be trading Mondays to Fridays in \<year\>, with the exception of
+  ..."), keyed on the `Trading Calendar <year>` grid editions of 2010-2014
+  and the `xetra-trading-calendar-<year>` PDFs of 2015-2024. A "settlement
+  day" ships `Closed` — the sentence deletes the day and notes settlement
+  runs — the same reading as the modern `** No trading but settlement is
+  open` footnote. The sentences name no 3 October in 2011 and 2013 and name
+  no Whit Monday or German Unity Day from 2022 on, so those days trade as
+  ordinary days; weekend-falling exception dates key no weekday row and no
+  2010-2024 date is unresolved.
+- **`six` holiday history backfilled to 2012-2017 and 2020-2024
+  (2026-09-29 UTC).** 105 closure rows join the table, every row one dark
+  `Market Holiday — Market Closed` cell of the operator's own per-year
+  `Trading Calendar` PDF (Wayback replays of the six-swiss-exchange.com
+  editions of 2012-2017 and the six-group.com editions of 2020-2024; the
+  2012-2016 editions print the cells red, 2017 on dark blue). The coverage
+  windows leave 2010-2011 and 2018-2019 as unaudited spans: the operator's
+  trading calendars for those years are archived on no operator channel (the
+  archived grids of those eras are settlement or currency calendars, a
+  different arrangement) and a date-aware query inside them refuses with the
+  coverage contract rather than answering from silence (#212). Weekend-falling
+  holidays key no weekday row.
+
 ### Fixed
 
 - **The five `lse` and `euronext_paris` Documents capture cells state their

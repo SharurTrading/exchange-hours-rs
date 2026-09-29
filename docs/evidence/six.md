@@ -17,11 +17,163 @@ SIX shares January-2010 phases, including the two-minute randomized opening and 
 
 ## Holidays
 
-**Coverage:** 2025-01-01..2027-12-31 (inclusive venue-local trade dates in `Europe/Zurich`; tier T1 throughout).
+**Coverage:** 2012-01-01..2017-12-31, 2020-01-01..2024-12-31, 2025-01-01..2027-12-31 (inclusive venue-local trade dates in `Europe/Zurich`; tier T1 throughout).
 
-The rows key on SIX's own `Trading Calendar` PDFs, one per year, each a Trading Guide page whose twelve month grids mark every non-trading day and whose legend reads: light shade `Saturday — Market Closed`, lighter shade `Sunday — Market Closed`, dark cell `Market Holiday — Market Closed`. Each year's rows cite that year's PDF: `SIX-TC-2025` (2025-05-05 capture of the `trading-guides-upcoming` edition), `SIX-TC-2026` and `SIX-TC-2027` (live download-centre editions; the 2027 file is marked `valid as of 1 July 2026`).
+The spans between the windows — 2010-2011 and 2018-2019 — are unaudited and refused, not silent; see Gaps below.
 
-The dark cells were resolved from the PDFs' vector fills — the holiday fill is rgb ≈ (0.0, 0.17, 0.37), read cell by cell with the day number found inside the same cell rectangle — and every resolved date was cross-checked against its weekday column in the grid (for example 2026-05-14 lands on the Thursday column of the May block). Holidays that fall on a weekend are not dark-marked — the Saturday/Sunday shading already deletes them — and key no weekday row: the Swiss National Day 2026-08-01 and St. Stephen's Day 2026-12-26 (both Saturdays), and St. Berchtold Day 2027-01-02, Labour Day 2027-05-01, Swiss National Day 2027-08-01, Christmas Day 2027-12-25 and St. Stephen's Day 2027-12-26 (all weekend) are those cases. The calendars print closures only — no half day, no late open and no intraday instant anywhere in the three years — so `Closed` is the only kind the operator's own statement supports.
+The rows key on SIX's own `Trading Calendar` PDFs, one per year, each a Trading Guide page whose twelve month grids mark every non-trading day and whose legend reads: light shade `Saturday — Market Closed`, lighter shade `Sunday — Market Closed`, dark cell `Market Holiday — Market Closed`. Each year's rows cite that year's PDF: `SIX-TC-2012`..`SIX-TC-2017` (Wayback `id_` replays of the six-swiss-exchange.com `download/participants/regulation/trading_guides/trading_calendar_<year>.pdf` editions) and `SIX-TC-2020`..`SIX-TC-2024` (Wayback replays of the six-group.com `dam/.../trading-guides/trading-calendar-<year>.pdf` editions) for the backfilled years, and `SIX-TC-2025` (2025-05-05 capture of the `trading-guides-upcoming` edition), `SIX-TC-2026` and `SIX-TC-2027` (live download-centre editions; the 2027 file is marked `valid as of 1 July 2026`) for the activation window.
+
+The dark cells were resolved from the PDFs' vector fills — the holiday fill is rgb ≈ (0.0, 0.17, 0.37) in the 2017-2027 editions and rgb ≈ (0.84, 0.17, 0.12) red in the 2012-2016 editions — read cell by cell with the day number found inside the same cell rectangle (adjacent holidays print as one merged rectangle and resolve to each covered day) — and every resolved date was cross-checked against its weekday column in the grid (for example 2026-05-14 lands on the Thursday column of the May block), then re-read cell by cell from page renderings. Holidays that fall on a weekend are not dark-marked — the Saturday/Sunday shading already deletes them — and key no weekday row: the Swiss National Day 2026-08-01 and St. Stephen's Day 2026-12-26 (both Saturdays), and St. Berchtold Day 2027-01-02, Labour Day 2027-05-01, Swiss National Day 2027-08-01, Christmas Day 2027-12-25 and St. Stephen's Day 2027-12-26 (all weekend) are those cases. The calendars print closures only — no half day, no late open and no intraday instant anywhere in the three years — so `Closed` is the only kind the operator's own statement supports.
+
+### 2012
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2012-01-02 | closed | dark cell on 2 January (Monday column) — St. Berchtold Day | `SIX-TC-2012` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2012-04-06 | closed | dark cell on 6 April (Friday column) — Good Friday | `SIX-TC-2012` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2012-04-09 | closed | dark cell on 9 April (Monday column) — Easter Monday | `SIX-TC-2012` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2012-05-01 | closed | dark cell on 1 May (Tuesday column) — Labour Day | `SIX-TC-2012` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2012-05-17 | closed | dark cell on 17 May (Thursday column) — Ascension Day | `SIX-TC-2012` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2012-05-28 | closed | dark cell on 28 May (Monday column) — Whit Monday | `SIX-TC-2012` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2012-08-01 | closed | dark cell on 1 August (Wednesday column) — Swiss National Day | `SIX-TC-2012` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2012-12-24 | closed | dark cell on 24 December (Monday column) — Christmas Eve | `SIX-TC-2012` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2012-12-25 | closed | dark cell on 25 December (Tuesday column) — Christmas Day | `SIX-TC-2012` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2012-12-26 | closed | dark cell on 26 December (Wednesday column) — St. Stephen's Day | `SIX-TC-2012` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2012-12-31 | closed | dark cell on 31 December (Monday column) — New Year's Eve | `SIX-TC-2012` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+### 2013
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2013-01-01 | closed | dark cell on 1 January (Tuesday column) — New Year's Day | `SIX-TC-2013` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2013-01-02 | closed | dark cell on 2 January (Wednesday column) — St. Berchtold Day | `SIX-TC-2013` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2013-03-29 | closed | dark cell on 29 March (Friday column) — Good Friday | `SIX-TC-2013` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2013-04-01 | closed | dark cell on 1 April (Monday column) — Easter Monday | `SIX-TC-2013` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2013-05-01 | closed | dark cell on 1 May (Wednesday column) — Labour Day | `SIX-TC-2013` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2013-05-09 | closed | dark cell on 9 May (Thursday column) — Ascension Day | `SIX-TC-2013` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2013-05-20 | closed | dark cell on 20 May (Monday column) — Whit Monday | `SIX-TC-2013` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2013-08-01 | closed | dark cell on 1 August (Thursday column) — Swiss National Day | `SIX-TC-2013` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2013-12-24 | closed | dark cell on 24 December (Tuesday column) — Christmas Eve | `SIX-TC-2013` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2013-12-25 | closed | dark cell on 25 December (Wednesday column) — Christmas Day | `SIX-TC-2013` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2013-12-26 | closed | dark cell on 26 December (Thursday column) — St. Stephen's Day | `SIX-TC-2013` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2013-12-31 | closed | dark cell on 31 December (Tuesday column) — New Year's Eve | `SIX-TC-2013` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+### 2014
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2014-01-01 | closed | dark cell on 1 January (Wednesday column) — New Year's Day | `SIX-TC-2014` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2014-01-02 | closed | dark cell on 2 January (Thursday column) — St. Berchtold Day | `SIX-TC-2014` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2014-04-18 | closed | dark cell on 18 April (Friday column) — Good Friday | `SIX-TC-2014` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2014-04-21 | closed | dark cell on 21 April (Monday column) — Easter Monday | `SIX-TC-2014` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2014-05-01 | closed | dark cell on 1 May (Thursday column) — Labour Day | `SIX-TC-2014` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2014-05-29 | closed | dark cell on 29 May (Thursday column) — Ascension Day | `SIX-TC-2014` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2014-06-09 | closed | dark cell on 9 June (Monday column) — Whit Monday | `SIX-TC-2014` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2014-08-01 | closed | dark cell on 1 August (Friday column) — Swiss National Day | `SIX-TC-2014` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2014-12-24 | closed | dark cell on 24 December (Wednesday column) — Christmas Eve | `SIX-TC-2014` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2014-12-25 | closed | dark cell on 25 December (Thursday column) — Christmas Day | `SIX-TC-2014` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2014-12-26 | closed | dark cell on 26 December (Friday column) — St. Stephen's Day | `SIX-TC-2014` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2014-12-31 | closed | dark cell on 31 December (Wednesday column) — New Year's Eve | `SIX-TC-2014` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+### 2015
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2015-01-01 | closed | dark cell on 1 January (Thursday column) — New Year's Day | `SIX-TC-2015` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2015-01-02 | closed | dark cell on 2 January (Friday column) — St. Berchtold Day | `SIX-TC-2015` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2015-04-03 | closed | dark cell on 3 April (Friday column) — Good Friday | `SIX-TC-2015` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2015-04-06 | closed | dark cell on 6 April (Monday column) — Easter Monday | `SIX-TC-2015` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2015-05-01 | closed | dark cell on 1 May (Friday column) — Labour Day | `SIX-TC-2015` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2015-05-14 | closed | dark cell on 14 May (Thursday column) — Ascension Day | `SIX-TC-2015` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2015-05-25 | closed | dark cell on 25 May (Monday column) — Whit Monday | `SIX-TC-2015` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2015-12-24 | closed | dark cell on 24 December (Thursday column) — Christmas Eve | `SIX-TC-2015` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2015-12-25 | closed | dark cell on 25 December (Friday column) — Christmas Day | `SIX-TC-2015` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2015-12-31 | closed | dark cell on 31 December (Thursday column) — New Year's Eve | `SIX-TC-2015` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+### 2016
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2016-01-01 | closed | dark cell on 1 January (Friday column) — New Year's Day | `SIX-TC-2016` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2016-03-25 | closed | dark cell on 25 March (Friday column) — Good Friday | `SIX-TC-2016` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2016-03-28 | closed | dark cell on 28 March (Monday column) — Easter Monday | `SIX-TC-2016` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2016-05-05 | closed | dark cell on 5 May (Thursday column) — Ascension Day | `SIX-TC-2016` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2016-05-16 | closed | dark cell on 16 May (Monday column) — Whit Monday | `SIX-TC-2016` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2016-08-01 | closed | dark cell on 1 August (Monday column) — Swiss National Day | `SIX-TC-2016` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2016-12-26 | closed | dark cell on 26 December (Monday column) — St. Stephen's Day | `SIX-TC-2016` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+### 2017
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2017-01-02 | closed | dark cell on 2 January (Monday column) — St. Berchtold Day | `SIX-TC-2017` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2017-04-14 | closed | dark cell on 14 April (Friday column) — Good Friday | `SIX-TC-2017` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2017-04-17 | closed | dark cell on 17 April (Monday column) — Easter Monday | `SIX-TC-2017` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2017-05-01 | closed | dark cell on 1 May (Monday column) — Labour Day | `SIX-TC-2017` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2017-05-25 | closed | dark cell on 25 May (Thursday column) — Ascension Day | `SIX-TC-2017` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2017-06-05 | closed | dark cell on 5 June (Monday column) — Whit Monday | `SIX-TC-2017` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2017-08-01 | closed | dark cell on 1 August (Tuesday column) — Swiss National Day | `SIX-TC-2017` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2017-12-25 | closed | dark cell on 25 December (Monday column) — Christmas Day | `SIX-TC-2017` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2017-12-26 | closed | dark cell on 26 December (Tuesday column) — St. Stephen's Day | `SIX-TC-2017` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+### 2020
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2020-01-01 | closed | dark cell on 1 January (Wednesday column) — New Year's Day | `SIX-TC-2020` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2020-01-02 | closed | dark cell on 2 January (Thursday column) — St. Berchtold Day | `SIX-TC-2020` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2020-04-10 | closed | dark cell on 10 April (Friday column) — Good Friday | `SIX-TC-2020` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2020-04-13 | closed | dark cell on 13 April (Monday column) — Easter Monday | `SIX-TC-2020` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2020-05-01 | closed | dark cell on 1 May (Friday column) — Labour Day | `SIX-TC-2020` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2020-05-21 | closed | dark cell on 21 May (Thursday column) — Ascension Day | `SIX-TC-2020` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2020-06-01 | closed | dark cell on 1 June (Monday column) — Whit Monday | `SIX-TC-2020` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2020-12-24 | closed | dark cell on 24 December (Thursday column) — Christmas Eve | `SIX-TC-2020` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2020-12-25 | closed | dark cell on 25 December (Friday column) — Christmas Day | `SIX-TC-2020` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2020-12-31 | closed | dark cell on 31 December (Thursday column) — New Year's Eve | `SIX-TC-2020` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+### 2021
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2021-01-01 | closed | dark cell on 1 January (Friday column) — New Year's Day | `SIX-TC-2021` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2021-04-02 | closed | dark cell on 2 April (Friday column) — Good Friday | `SIX-TC-2021` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2021-04-05 | closed | dark cell on 5 April (Monday column) — Easter Monday | `SIX-TC-2021` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2021-05-13 | closed | dark cell on 13 May (Thursday column) — Ascension Day | `SIX-TC-2021` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2021-05-24 | closed | dark cell on 24 May (Monday column) — Whit Monday | `SIX-TC-2021` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2021-12-24 | closed | dark cell on 24 December (Friday column) — Christmas Eve | `SIX-TC-2021` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2021-12-31 | closed | dark cell on 31 December (Friday column) — New Year's Eve | `SIX-TC-2021` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+### 2022
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2022-04-15 | closed | dark cell on 15 April (Friday column) — Good Friday | `SIX-TC-2022` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2022-04-18 | closed | dark cell on 18 April (Monday column) — Easter Monday | `SIX-TC-2022` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2022-05-26 | closed | dark cell on 26 May (Thursday column) — Ascension Day | `SIX-TC-2022` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2022-06-06 | closed | dark cell on 6 June (Monday column) — Whit Monday | `SIX-TC-2022` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2022-08-01 | closed | dark cell on 1 August (Monday column) — Swiss National Day | `SIX-TC-2022` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2022-12-26 | closed | dark cell on 26 December (Monday column) — St. Stephen's Day | `SIX-TC-2022` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+### 2023
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2023-01-02 | closed | dark cell on 2 January (Monday column) — St. Berchtold Day | `SIX-TC-2023` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2023-04-07 | closed | dark cell on 7 April (Friday column) — Good Friday | `SIX-TC-2023` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2023-04-10 | closed | dark cell on 10 April (Monday column) — Easter Monday | `SIX-TC-2023` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2023-05-01 | closed | dark cell on 1 May (Monday column) — Labour Day | `SIX-TC-2023` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2023-05-18 | closed | dark cell on 18 May (Thursday column) — Ascension Day | `SIX-TC-2023` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2023-05-29 | closed | dark cell on 29 May (Monday column) — Whit Monday | `SIX-TC-2023` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2023-08-01 | closed | dark cell on 1 August (Tuesday column) — Swiss National Day | `SIX-TC-2023` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2023-12-25 | closed | dark cell on 25 December (Monday column) — Christmas Day | `SIX-TC-2023` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2023-12-26 | closed | dark cell on 26 December (Tuesday column) — St. Stephen's Day | `SIX-TC-2023` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+### 2024
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2024-01-01 | closed | dark cell on 1 January (Monday column) — New Year's Day | `SIX-TC-2024` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2024-01-02 | closed | dark cell on 2 January (Tuesday column) — St. Berchtold Day | `SIX-TC-2024` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2024-03-29 | closed | dark cell on 29 March (Friday column) — Good Friday | `SIX-TC-2024` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2024-04-01 | closed | dark cell on 1 April (Monday column) — Easter Monday | `SIX-TC-2024` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2024-05-01 | closed | dark cell on 1 May (Wednesday column) — Labour Day | `SIX-TC-2024` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2024-05-09 | closed | dark cell on 9 May (Thursday column) — Ascension Day | `SIX-TC-2024` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2024-05-20 | closed | dark cell on 20 May (Monday column) — Whit Monday | `SIX-TC-2024` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2024-08-01 | closed | dark cell on 1 August (Thursday column) — Swiss National Day | `SIX-TC-2024` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2024-12-24 | closed | dark cell on 24 December (Tuesday column) — Christmas Eve | `SIX-TC-2024` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2024-12-25 | closed | dark cell on 25 December (Wednesday column) — Christmas Day | `SIX-TC-2024` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2024-12-26 | closed | dark cell on 26 December (Thursday column) — St. Stephen's Day | `SIX-TC-2024` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
+| 2024-12-31 | closed | dark cell on 31 December (Tuesday column) — New Year's Eve | `SIX-TC-2024` | T1 | the calendar's own legend: `Market Holiday — Market Closed` |
 
 ### 2025
 
@@ -67,14 +219,25 @@ The dark cells were resolved from the PDFs' vector fills — the holiday fill is
 | 2027-12-24 | closed | dark cell on 24 December (Friday column) — Christmas Eve | `SIX-TC-2027` | T1 | same legend; Christmas Day (Saturday), St. Stephen's Day (Sunday) and Swiss National Day 2027 (Sunday) are marked as a weekend |
 | 2027-12-31 | closed | dark cell on 31 December (Friday column) — New Year's Eve | `SIX-TC-2027` | T1 | same legend |
 
-**Gaps: none inside the window.** The three PDFs print complete closure sets for their years — every weekday the operator marks ships a row, and every other trade date in 2025-2027 is audited normal. No 2028 material is claimed.
+**Gaps.** The four years **2010-2011 and 2018-2019 are unaudited spans**: the operator's own Trading Calendar for them is archived on no retrievable operator channel, so the coverage windows leave them out entirely and a date-aware query inside them refuses with the coverage contract rather than answering from silence. What was searched, per LAW-BOUNDED-WORK: the six-swiss-exchange.com crawls of the per-year `trading_calendar_<year>.pdf` series (2012 is the earliest capture, 2011-12-10; the domain's PDF crawls end 2017-11); the era's stable URL `download/participants/regulation/trading_guides/trading_calendar_en.pdf` (captures only from 2022, redirects); the archived `trading_calendar/calendar/<year>/grid_*.pdf` and `participants/.../calendar/<year>/grid_*.pdf` files of 2010-2011, which are the operator's **settlement** calendars — their own prose reads "The SIX Swiss Exchange settlement calendar shows the days on which national banks are closed" and points to the trading calendar as a different document — so they key nothing (a settlement holiday is not a trading day); and the six-group.com side, where the `exchanges/*/trading_calendar/calendar/2019/grid_en.pdf` captures are the **Currency Holiday Calendar 2019** and the `dam/.../trading-guides/` series begins at the 2020 calendar. The settlement and currency artifacts are kept in the research store as `extra_*` files with their digests. **Closing condition:** a captured copy of the operator's Trading Calendar for 2010, 2011, 2018 or 2019 — the per-year PDF or a Trading Guide edition reprinting the year's grids — from SIX's own channels or a later Wayback capture; tracked as #212. Inside the audited windows nothing is unresolved: every weekday the operator marks ships a row, weekend-falling holidays key no row, and every other trade date is audited normal. No 2028 material is claimed.
 
 ### Documents
 
-Every artifact was retrieved on 2026-09-28 UTC and saved under `holidays/raw/equities/six/2025-2027/` in the research store, whose `INDEX.md` carries the same digests.
+The 2012-2024 artifacts were retrieved on 2026-09-29 UTC and saved under `holidays/raw/equities/six/2010-2024/` in the research store; the 2025-2027 artifacts below them were retrieved on 2026-09-28 UTC and saved under `holidays/raw/equities/six/2025-2027/`. The store's `INDEX.md` carries the same digests. The 2012-2016 editions print the holiday cells in red and the 2017-2027 editions in the dark blue the legend shows; the derivation reads each edition's own holiday fill.
 
 | Document | Window | Replay or service URL | Capture or retrieval, UTC | Tier | sha256 |
 |---|---|---|---|---|---|
+| `SIX-TC-2012` | 2012-01-01 .. 2012-12-31 | <https://web.archive.org/web/20111210134722id_/http://www.six-swiss-exchange.com/download/participants/regulation/trading_guides/trading_calendar_2012.pdf> (capture `20111210134722`, "valid as 1st February 2011") | Wayback `id_` replay of capture `20111210134722`, retrieved 2026-09-29 UTC | T1 | `ade86266f26231fe8b4516e22e57383c85dbee4627ac39dd05f25005d011c55c` |
+| `SIX-TC-2013` | 2013-01-01 .. 2013-12-31 | <https://web.archive.org/web/20130512203837id_/http://www.six-swiss-exchange.com/download/participants/regulation/trading_guides/trading_calendar_2013.pdf> (capture `20130512203837`) | Wayback `id_` replay of capture `20130512203837`, retrieved 2026-09-29 UTC | T1 | `5c92de028b17ec4f5e1dca7c8de1b89545baebaa43cb8ba6cf14f10f493e4d1d` |
+| `SIX-TC-2014` | 2014-01-01 .. 2014-12-31 | <https://web.archive.org/web/20150501074534id_/http://www.six-swiss-exchange.com/download/participants/regulation/trading_guides/trading_calendar_2014.pdf> (capture `20150501074534`) | Wayback `id_` replay of capture `20150501074534`, retrieved 2026-09-29 UTC | T1 | `289a37b97f79b1087522c4a8fcbf5074cd77e9ca1fd0994872eeed01d839173b` |
+| `SIX-TC-2015` | 2015-01-01 .. 2015-12-31 | <https://web.archive.org/web/20150501134212id_/http://www.six-swiss-exchange.com/download/participants/regulation/trading_guides/trading_calendar_2015.pdf> (capture `20150501134212`) | Wayback `id_` replay of capture `20150501134212`, retrieved 2026-09-29 UTC | T1 | `2959a3ad929de0d29f35b4dd1c33589a893179144489ddcfad3ec047f4149d12` |
+| `SIX-TC-2016` | 2016-01-01 .. 2016-12-31 | <https://web.archive.org/web/20151123020429id_/http://www.six-swiss-exchange.com/download/participants/regulation/trading_guides/trading_calendar_2016.pdf> (capture `20151123020429`) | Wayback `id_` replay of capture `20151123020429`, retrieved 2026-09-29 UTC | T1 | `aa48b5680e39bab2e56da6b774f60ecd72363e6e5d0fe1192a1bdd22de20f115` |
+| `SIX-TC-2017` | 2017-01-01 .. 2017-12-31 | <https://web.archive.org/web/20160905165931id_/http://www.six-swiss-exchange.com/download/participants/regulation/trading_guides/trading_calendar_2017.pdf> (capture `20160905165931`) | Wayback `id_` replay of capture `20160905165931`, retrieved 2026-09-29 UTC | T1 | `ecc5835379b7b6b4679699c313a36377c4470e75e2f2038af14733ea9c33ac4b` |
+| `SIX-TC-2020` | 2020-01-01 .. 2020-12-31 | <https://web.archive.org/web/20201128083137id_/https://www.six-group.com/dam/download/the-swiss-stock-exchange/trading/trading-provisions/regulation/trading-guides/trading-calendar-2020.pdf> (capture `20201128083137`, Trading Guide page 25) | Wayback `id_` replay of capture `20201128083137`, retrieved 2026-09-29 UTC | T1 | `32e3208bedaefee731785ea7bec7b68fa67d638c1830df1cf969eec2e42405f6` |
+| `SIX-TC-2021` | 2021-01-01 .. 2021-12-31 | <https://web.archive.org/web/20201128070709id_/https://www.six-group.com/dam/download/the-swiss-stock-exchange/trading/trading-provisions/regulation/trading-guides/trading-calendar-2021.pdf> (capture `20201128070709`) | Wayback `id_` replay of capture `20201128070709`, retrieved 2026-09-29 UTC | T1 | `3a2a357028a3f5b2e0c71629d57dc48d06a261219885733c6cdf12c53d9d8315` |
+| `SIX-TC-2022` | 2022-01-01 .. 2022-12-31 | <https://web.archive.org/web/20210512075300id_/https://www.six-group.com/dam/download/the-swiss-stock-exchange/trading/trading-provisions/regulation/trading-guides/trading-calendar-2022.pdf> (capture `20210512075300`, Trading Guide page 32) | Wayback `id_` replay of capture `20210512075300`, retrieved 2026-09-29 UTC | T1 | `0f9ea4971affece53f0aa677511e2243f5a7c7342f4be448ce3ff717881b1ff7` |
+| `SIX-TC-2023` | 2023-01-01 .. 2023-12-31 | <https://web.archive.org/web/20220120192614id_/https://www.six-group.com/dam/download/the-swiss-stock-exchange/trading/trading-provisions/regulation/trading-guides/trading-calendar-2023.pdf> (capture `20220120192614`) | Wayback `id_` replay of capture `20220120192614`, retrieved 2026-09-29 UTC | T1 | `3cf8ec89525e5a009837ba2d0b5daba506a8a3ce3ed92d8d084e20df1dc10fba` |
+| `SIX-TC-2024` | 2024-01-01 .. 2024-12-31 | <https://web.archive.org/web/20230923182818id_/https://www.six-group.com/dam/download/the-swiss-stock-exchange/trading/trading-provisions/regulation/trading-guides/trading-calendar-2024.pdf> (capture `20230923182818`, Trading Guide page 38) | Wayback `id_` replay of capture `20230923182818`, retrieved 2026-09-29 UTC | T1 | `77d8781dc074fbe4ffc9e6e238054e6b1c0f09c99749227ed2011a259a567b37` |
 | `SIX-TC-2025` | 2025-01-01 .. 2025-12-31 | <https://web.archive.org/web/20250505133302id_/https://www.six-group.com/dam/download/the-swiss-stock-exchange/trading/trading-provisions/regulation/trading-guides-upcoming/trading-calendar-2025.pdf> (capture `20250505133302`) | Wayback `id_` replay of capture `20250505133302`, retrieved 2026-09-28 UTC | T1 | `0729de0a843ee2e22d50271d2bbc6fef8b031a133d392cd700f7db38878b1ed2` |
 | `SIX-TC-2026` | 2026-01-01 .. 2026-12-31 | <https://www.six-group.com/dam/download/the-swiss-stock-exchange/trading/trading-provisions/regulation/trading-guides/trading-calendar-2026.pdf> | retrieved 2026-09-28 01:28 UTC | T1 | `70d1b87db3e65d487159f660e9daec2fc68c6cb53385483c0af7bf99591c9390` |
 | `SIX-TC-2027` | 2027-01-01 .. 2027-12-31 | <https://www.six-group.com/dam/download/the-swiss-stock-exchange/trading/trading-provisions/regulation/trading-guides/trading-calendar-2027.pdf> ("valid as of 1 July 2026") | retrieved 2026-09-28 01:28 UTC | T1 | `cd2fdca6f0083709bd9100d30b10415b2f0fce0b0b74b54b7e73f901fb318037` |
@@ -102,4 +265,4 @@ as each source is re-verified.
 - **Interpretive step, randomized opening.** The Trading Guide's 09:00 opening is randomized over two minutes. The deterministic profile keeps the auction/pre-opening classification through 09:01:59 and starts regular trading at the latest possible edge, 09:02. Within that stretch the guide's own phase boundary applies: 06:00 until 09:00 is Pre-Opening (`order_entry`), 09:00–09:02 is the Opening auction (`extended`, because its uncross prints).
 - **Interpretive step, order-entry classification.** Pre-Opening and Post Trading are `order_entry`: an At-the-Opening order entered during Pre-Opening only executes in the Opening Auction that follows, and Directive 1 separates both phases from the trading phases of the exchange day.
 - **Time zone.** SIX labels its times "CET" year-round; they are local Zurich wall-clock, so `Europe::Zurich` (CET/CEST) is the correct zone, not a fixed offset.
-- **Served identity, 2026-09-28 UTC.** The consumer's market clock routes its `SIX` and `SIX_CENTRE` sets to this venue, so the row is **served** and reviewed monthly per LAW-WATCH; the holiday window records **no gaps** — every closure the operator prints ships and no residual is withheld (LAW-SERVICE-TIERS, LAW-FOLLOW-UPS-ARE-ISSUES: nothing to track).
+- **Served identity, 2026-09-28 UTC.** The consumer's market clock routes its `SIX` and `SIX_CENTRE` sets to this venue, so the row is **served** and reviewed monthly per LAW-WATCH; the holiday windows are complete for 2012-2017 and 2020-2027, the 2010-2011 and 2018-2019 spans are the recorded gap with its closing condition (#212) (LAW-SERVICE-TIERS, LAW-FOLLOW-UPS-ARE-ISSUES).

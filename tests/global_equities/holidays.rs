@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: MIT-0
 
 //! Built-in holiday rows for the served cash-equity venues whose tables
-//! shipped with the 2025-2027 wave: `b3`, `tadawul` and `borsa_istanbul`
-//! (2025-2026), the APAC venues `nzx` (2010-2024 backfilled beside the
+//! shipped with the 2025-2027 wave: `b3` (2025-2026 extended back to 2011,
+//! the 2010 span unaudited), `tadawul` (2021-2027, the earlier span
+//! unaudited) and `borsa_istanbul` (2012-03-02..2026-12-31), the APAC venues `nzx` (2010-2024 backfilled beside the
 //! operator's 2025-2027-01-04 rolling horizon, with the 2016-2017 capture gap
 //! refusing), `asx` (2010-2024 backfilled from each year's own operator
 //! sheet, beside 2025-2027) and `sgx_securities` (2014-2020-01-01 backfilled
@@ -87,15 +88,23 @@ fn assert_closed(calendar: ExchangeCalendar, date: (i32, u32, u32), label: &str,
         Some(HolidayKind::Closed),
         "{label}: {date:?} carries a closure row"
     );
-    if date == (2025, 1, 1) {
+    let covered = day(date.0, date.1, date.2);
+    let coverage = calendar
+        .holiday_coverage()
+        .expect("these venues ship built-in tables");
+    if coverage.first() == covered {
+        // The window's first closure is special exactly as the CFE suite
+        // states it: the derivation reads behind the query's bounds — the day
+        // before the window, outside every audited window — so the
+        // identity-backed probes on the day refuse rather than answer.
         assert!(
             calendar
-                .is_closed_trade_date(day(date.0, date.1, date.2), SessionKind::Both)
+                .is_closed_trade_date(covered, SessionKind::Both)
                 .is_err_and(|error| matches!(
                     error,
                     CalendarQueryError::OutsideCoveredRange { .. }
                 )),
-            "{label}: the derivation behind {date:?} reads unaudited 2024-12-31"
+            "{label}: the derivation behind {date:?} reads outside the audited windows"
         );
         assert!(
             calendar
@@ -109,7 +118,7 @@ fn assert_closed(calendar: ExchangeCalendar, date: (i32, u32, u32), label: &str,
     } else {
         assert!(
             calendar
-                .is_closed_trade_date(day(date.0, date.1, date.2), SessionKind::Both)
+                .is_closed_trade_date(covered, SessionKind::Both)
                 .expect("the coverage contract must answer a covered date"),
             "{label}: {date:?} has no session in either phase"
         );
@@ -271,53 +280,321 @@ fn census(rows: &[WalkedRow], year: i32) -> (usize, usize, usize, usize) {
 }
 
 // ---------------------------------------------------------------------------
-// b3 — B3 (Brasil, Bolsa, Balcão), 2025-2026, America/Sao_Paulo.
+// b3 — B3 (Brasil, Bolsa, Balcão), 2011-2024 backfill plus 2025-2026,
+// America/Sao_Paulo.
 // ---------------------------------------------------------------------------
+
+/// One operator year's weekday closure list and the label its probes carry.
+type B3YearClosures<'a> = (&'a [(i32, u32, u32)], &'a str);
+
+/// The weekday closure rows per calendar year, exactly as the operator's own
+/// artifacts print them: the yearly announcements (2011, 2012, 2015), the
+/// `Calendário do Mercado` pages (2013, 2014), the PUMA `Feriados` captures
+/// (2016-2024) and the 2025 circular and 2026 article. A date that changes or
+/// disappears breaks the per-year walk.
+const B3_CLOSURES_PER_YEAR: &[B3YearClosures<'_>] = &[
+    (
+        &[
+            (2011, 1, 25),
+            (2011, 3, 7),
+            (2011, 3, 8),
+            (2011, 4, 21),
+            (2011, 4, 22),
+            (2011, 6, 23),
+            (2011, 9, 7),
+            (2011, 10, 12),
+            (2011, 11, 2),
+            (2011, 11, 15),
+            (2011, 12, 30),
+        ],
+        "B3 2011",
+    ),
+    (
+        &[
+            (2012, 1, 25),
+            (2012, 2, 20),
+            (2012, 2, 21),
+            (2012, 4, 6),
+            (2012, 5, 1),
+            (2012, 6, 7),
+            (2012, 7, 9),
+            (2012, 9, 7),
+            (2012, 10, 12),
+            (2012, 11, 2),
+            (2012, 11, 15),
+            (2012, 11, 20),
+            (2012, 12, 24),
+            (2012, 12, 25),
+            (2012, 12, 31),
+        ],
+        "B3 2012",
+    ),
+    (
+        &[
+            (2013, 1, 1),
+            (2013, 1, 25),
+            (2013, 2, 11),
+            (2013, 2, 12),
+            (2013, 3, 29),
+            (2013, 5, 1),
+            (2013, 5, 30),
+            (2013, 7, 9),
+            (2013, 11, 15),
+            (2013, 11, 20),
+            (2013, 12, 24),
+            (2013, 12, 25),
+            (2013, 12, 31),
+        ],
+        "B3 2013",
+    ),
+    (
+        &[
+            (2014, 1, 1),
+            (2014, 3, 3),
+            (2014, 3, 4),
+            (2014, 4, 18),
+            (2014, 4, 21),
+            (2014, 5, 1),
+            (2014, 6, 19),
+            (2014, 7, 9),
+            (2014, 11, 20),
+            (2014, 12, 24),
+            (2014, 12, 25),
+            (2014, 12, 31),
+        ],
+        "B3 2014",
+    ),
+    (
+        &[
+            (2015, 1, 1),
+            (2015, 2, 16),
+            (2015, 2, 17),
+            (2015, 4, 3),
+            (2015, 4, 21),
+            (2015, 5, 1),
+            (2015, 6, 4),
+            (2015, 7, 9),
+            (2015, 9, 7),
+            (2015, 10, 12),
+            (2015, 11, 2),
+            (2015, 11, 20),
+            (2015, 12, 24),
+            (2015, 12, 25),
+            (2015, 12, 31),
+        ],
+        "B3 2015",
+    ),
+    (
+        &[
+            (2016, 1, 1),
+            (2016, 1, 25),
+            (2016, 2, 8),
+            (2016, 2, 9),
+            (2016, 3, 25),
+            (2016, 4, 21),
+            (2016, 5, 26),
+            (2016, 9, 7),
+            (2016, 10, 12),
+            (2016, 11, 2),
+            (2016, 11, 15),
+            (2016, 12, 30),
+        ],
+        "B3 2016",
+    ),
+    (
+        &[
+            (2017, 1, 25),
+            (2017, 2, 27),
+            (2017, 2, 28),
+            (2017, 4, 14),
+            (2017, 4, 21),
+            (2017, 5, 1),
+            (2017, 6, 15),
+            (2017, 9, 7),
+            (2017, 10, 12),
+            (2017, 11, 2),
+            (2017, 11, 15),
+            (2017, 11, 20),
+            (2017, 12, 25),
+            (2017, 12, 29),
+        ],
+        "B3 2017",
+    ),
+    (
+        &[
+            (2018, 1, 1),
+            (2018, 1, 25),
+            (2018, 2, 12),
+            (2018, 2, 13),
+            (2018, 3, 30),
+            (2018, 5, 1),
+            (2018, 5, 31),
+            (2018, 7, 9),
+            (2018, 9, 7),
+            (2018, 10, 12),
+            (2018, 11, 2),
+            (2018, 11, 15),
+            (2018, 11, 20),
+            (2018, 12, 24),
+            (2018, 12, 25),
+            (2018, 12, 31),
+        ],
+        "B3 2018",
+    ),
+    (
+        &[
+            (2019, 1, 1),
+            (2019, 1, 25),
+            (2019, 3, 4),
+            (2019, 3, 5),
+            (2019, 4, 19),
+            (2019, 5, 1),
+            (2019, 6, 20),
+            (2019, 7, 9),
+            (2019, 11, 15),
+            (2019, 11, 20),
+            (2019, 12, 24),
+            (2019, 12, 25),
+            (2019, 12, 31),
+        ],
+        "B3 2019",
+    ),
+    (
+        &[
+            (2020, 1, 1),
+            (2020, 2, 24),
+            (2020, 2, 25),
+            (2020, 4, 10),
+            (2020, 4, 21),
+            (2020, 5, 1),
+            (2020, 6, 11),
+            (2020, 7, 9),
+            (2020, 9, 7),
+            (2020, 10, 12),
+            (2020, 11, 2),
+            (2020, 11, 20),
+            (2020, 12, 24),
+            (2020, 12, 25),
+            (2020, 12, 31),
+        ],
+        "B3 2020",
+    ),
+    (
+        &[
+            (2021, 1, 1),
+            (2021, 1, 25),
+            (2021, 2, 15),
+            (2021, 2, 16),
+            (2021, 4, 2),
+            (2021, 4, 21),
+            (2021, 6, 3),
+            (2021, 7, 9),
+            (2021, 9, 7),
+            (2021, 10, 12),
+            (2021, 11, 2),
+            (2021, 11, 15),
+            (2021, 12, 24),
+            (2021, 12, 31),
+        ],
+        "B3 2021",
+    ),
+    (
+        &[
+            (2022, 2, 28),
+            (2022, 3, 1),
+            (2022, 4, 15),
+            (2022, 4, 21),
+            (2022, 6, 16),
+            (2022, 9, 7),
+            (2022, 10, 12),
+            (2022, 11, 2),
+            (2022, 11, 15),
+            (2022, 12, 30),
+        ],
+        "B3 2022",
+    ),
+    (
+        &[
+            (2023, 2, 20),
+            (2023, 2, 21),
+            (2023, 4, 7),
+            (2023, 4, 21),
+            (2023, 5, 1),
+            (2023, 6, 8),
+            (2023, 9, 7),
+            (2023, 10, 12),
+            (2023, 11, 2),
+            (2023, 11, 15),
+            (2023, 12, 25),
+            (2023, 12, 29),
+        ],
+        "B3 2023",
+    ),
+    (
+        &[
+            (2024, 1, 1),
+            (2024, 2, 12),
+            (2024, 2, 13),
+            (2024, 3, 29),
+            (2024, 5, 1),
+            (2024, 5, 30),
+            (2024, 11, 15),
+            (2024, 11, 20),
+            (2024, 12, 24),
+            (2024, 12, 25),
+            (2024, 12, 31),
+        ],
+        "B3 2024",
+    ),
+    (
+        &[
+            (2025, 1, 1),
+            (2025, 3, 3),
+            (2025, 3, 4),
+            (2025, 4, 18),
+            (2025, 4, 21),
+            (2025, 5, 1),
+            (2025, 6, 19),
+            (2025, 11, 20),
+            (2025, 12, 24),
+            (2025, 12, 25),
+            (2025, 12, 31),
+        ],
+        "B3 2025",
+    ),
+    (
+        &[
+            (2026, 1, 1),
+            (2026, 2, 16),
+            (2026, 2, 17),
+            (2026, 4, 3),
+            (2026, 4, 21),
+            (2026, 5, 1),
+            (2026, 6, 4),
+            (2026, 9, 7),
+            (2026, 10, 12),
+            (2026, 11, 2),
+            (2026, 11, 20),
+            (2026, 12, 24),
+            (2026, 12, 25),
+            (2026, 12, 31),
+        ],
+        "B3 2026",
+    ),
+];
 
 #[test]
 fn b3_closures_per_year_match_the_operators_printed_calendars() {
     let calendar = calendar_for(Exchange::B3);
-    // 2025: the circular's Quadro A, equities leg. The weekend holidays
-    // (07 September, 12 October, 02 November, 15 November) print no session
-    // change and ship no row.
-    for date in [
-        (2025, 1, 1),
-        (2025, 3, 3),
-        (2025, 3, 4),
-        (2025, 4, 18),
-        (2025, 4, 21),
-        (2025, 5, 1),
-        (2025, 6, 19),
-        (2025, 11, 20),
-        (2025, 12, 24),
-        (2025, 12, 25),
-        (2025, 12, 31),
-    ] {
-        assert_closed(calendar, date, "B3 2025 closure", &|d, time| {
-            sao_paulo(d, time)
-        });
-    }
-    // 2026: the operator's 2026 article, including the two year-end days it
-    // states separately have no trading session.
-    for date in [
-        (2026, 1, 1),
-        (2026, 2, 16),
-        (2026, 2, 17),
-        (2026, 4, 3),
-        (2026, 4, 21),
-        (2026, 5, 1),
-        (2026, 6, 4),
-        (2026, 9, 7),
-        (2026, 10, 12),
-        (2026, 11, 2),
-        (2026, 11, 20),
-        (2026, 12, 24),
-        (2026, 12, 25),
-        (2026, 12, 31),
-    ] {
-        assert_closed(calendar, date, "B3 2026 closure", &|d, time| {
-            sao_paulo(d, time)
-        });
+    // Every weekday closure of the operator's yearly lists, per year: the
+    // announcement articles (2011, 2012, 2015), the `Calendário do Mercado`
+    // pages (2013, 2014) and the PUMA `Feriados` captures (2016-2024), then
+    // the 2025 circular and the 2026 article. Weekend legs are fenced
+    // separately below.
+    for (dates, label) in B3_CLOSURES_PER_YEAR {
+        for date in *dates {
+            assert_closed(calendar, *date, label, &|d, time| sao_paulo(d, time));
+        }
     }
     // The Christmas Eve closure deletes the day itself; the 2025-12-24 row is
     // what removes trading, and Christmas Day stays shut beside it.
@@ -329,15 +606,88 @@ fn b3_closures_per_year_match_the_operators_printed_calendars() {
     );
 }
 
+/// Weekend legs and the operator's own "trades anyway" dates print no session
+/// change and ship no row: a weekend leg changes no Monday-Friday trade date,
+/// and the 2022-2024 São Paulo-holiday rows state `Haverá negociação nos
+/// mercados de renda variável`.
+#[test]
+fn b3_weekend_legs_and_sao_paulo_holidays_are_audited_normal() {
+    let calendar = calendar_for(Exchange::B3);
+    // Weekend legs: some printed by the operator (2019-04-21, 2019-09-07,
+    // 2022-01-01), some unprinted; all carry no row either way.
+    for date in [
+        (2011, 1, 1),
+        (2014, 1, 25),
+        (2019, 4, 21),
+        (2019, 9, 7),
+        (2019, 11, 2),
+        (2020, 1, 25),
+        (2021, 11, 20),
+        (2022, 1, 1),
+        (2022, 11, 20),
+        (2023, 12, 24),
+        (2024, 4, 21),
+    ] {
+        assert_eq!(
+            calendar.holiday_on(day(date.0, date.1, date.2)),
+            None,
+            "{date:?} is a weekend leg and carries no row"
+        );
+        assert!(
+            calendar
+                .is_closed_trade_date(day(date.0, date.1, date.2), SessionKind::Both)
+                .expect("the coverage contract must answer a covered date"),
+            "{date:?} is shut by the normal week"
+        );
+    }
+    // The São Paulo holidays the operator's own calendars state trade: no
+    // row, and an ordinary midday open (both grids open at 10:00).
+    for date in [
+        (2022, 1, 25),
+        (2023, 1, 25),
+        (2023, 11, 20),
+        (2024, 1, 25),
+        (2024, 7, 9),
+    ] {
+        assert_eq!(
+            calendar.holiday_on(day(date.0, date.1, date.2)),
+            None,
+            "{date:?} prints `Haverá negociação nos mercados de renda variável`"
+        );
+        assert!(
+            calendar
+                .is_open(sao_paulo(date, (11, 0, 0)))
+                .expect("a covered date answers"),
+            "{date:?} trades on the operator's own statement"
+        );
+    }
+}
+
 /// Ash Wednesday is a **late open**: the operator states special hours with
-/// equities trading beginning at 13:00 on the long grid, whose 17:55 close is
-/// unchanged. The probes are at second granularity so a row that takes any
-/// other instant fails.
+/// equities trading beginning at 13:00 and no changed close. The probes are
+/// at second granularity so a row that takes any other instant fails.
 #[test]
 fn b3_ash_wednesday_opens_late_at_1300_sao_paulo() {
     let calendar = calendar_for(Exchange::B3);
 
-    for date in [(2025, 3, 5), (2026, 2, 18)] {
+    for date in [
+        (2011, 3, 9),
+        (2012, 2, 22),
+        (2013, 2, 13),
+        (2014, 3, 5),
+        (2015, 2, 18),
+        (2016, 2, 10),
+        (2017, 3, 1),
+        (2018, 2, 14),
+        (2019, 3, 6),
+        (2020, 2, 26),
+        (2021, 2, 17),
+        (2022, 3, 2),
+        (2023, 2, 22),
+        (2024, 2, 14),
+        (2025, 3, 5),
+        (2026, 2, 18),
+    ] {
         assert_eq!(
             calendar
                 .holiday_on(day(date.0, date.1, date.2))
@@ -347,8 +697,8 @@ fn b3_ash_wednesday_opens_late_at_1300_sao_paulo() {
             }),
             "{date:?} carries the printed late open"
         );
-        // The printed 12:45-13:00 pre-opening accepts no orders that match, and
-        // continuous trading begins exactly at 13:00.
+        // The printed 12:45-13:00 pre-opening accepts no orders that match,
+        // and continuous trading begins exactly at 13:00.
         assert!(
             !calendar
                 .is_open(sao_paulo(date, (12, 59, 59)))
@@ -361,15 +711,17 @@ fn b3_ash_wednesday_opens_late_at_1300_sao_paulo() {
                 .expect("a covered date answers"),
             "{date:?} opens at 13:00"
         );
-        // The long grid's close is unchanged and stays end-exclusive.
+    }
+
+    // On the 2025-2026 long-grid days the close is the unchanged 17:55 with
+    // the closing call to 18:00, end-exclusive.
+    for date in [(2025, 3, 5), (2026, 2, 18)] {
         assert!(
             calendar
                 .is_open(sao_paulo(date, (17, 54, 59)))
                 .expect("a covered date answers"),
             "{date:?} still trades through the long-grid afternoon"
         );
-        // The regular session hands into the unchanged 17:55-18:00 closing
-        // call; the final close stays end-exclusive at 18:00.
         assert!(
             calendar
                 .is_open(sao_paulo(date, (17, 55, 0)))
@@ -431,22 +783,32 @@ fn b3_window_ordinary_weekdays_and_coverage_endpoints() {
             .expect("a covered date answers"),
         "the closing call after the regular close is extended"
     );
+    // An ordinary weekday inside the backfilled era: 2016 sits on the fixed
+    // short grid, and its 16:55 regular close hands into the extended call.
+    assert_ordinary_weekday(calendar, (2016, 6, 15), (10, 0), (17, 0), &sao_paulo);
     let coverage = calendar
         .holiday_coverage()
         .expect("B3 ships a built-in table");
-    assert_eq!(coverage.first(), day(2025, 1, 1));
+    assert_eq!(coverage.first(), day(2011, 1, 1));
     assert_eq!(coverage.last(), day(2026, 12, 31));
     assert_eq!(
         calendar.holiday_on(coverage.first().pred_opt().expect("representable")),
         None,
-        "no answer below the window"
+        "no answer below the window: 2010 is the unaudited span"
     );
-    // 2027-01-04 is inside 2027 but outside the audited window: the identity
+    // 2010 sits between the support floor and the audited window: the
+    // identity refuses the date rather than claiming a normal day.
+    let unaudited = sao_paulo((2010, 6, 2), (11, 0, 0));
+    assert!(matches!(
+        calendar.is_open(unaudited),
+        Err(CalendarQueryError::OutsideCoveredRange { date, .. }) if date == day(2010, 6, 2)
+    ));
+    // 2027-01-05 is inside 2027 but outside the audited window: the identity
     // refuses the date rather than claiming a normal Monday.
-    let outside = sao_paulo((2027, 1, 4), (11, 0, 0));
+    let outside = sao_paulo((2027, 1, 5), (11, 0, 0));
     assert!(matches!(
         calendar.is_open(outside),
-        Err(CalendarQueryError::OutsideCoveredRange { date, .. }) if date == day(2027, 1, 4)
+        Err(CalendarQueryError::OutsideCoveredRange { date, .. }) if date == day(2027, 1, 5)
     ));
     // Pre-floor refusal.
     let ancient = sao_paulo((2009, 12, 31), (11, 0, 0));
@@ -471,25 +833,137 @@ fn b3_window_ships_only_closures_and_one_late_open_shape() {
             Some(HolidayKind::Closed) => closed += 1,
             Some(HolidayKind::LateOpen { open_ssm }) if open_ssm == 13 * 3_600 => late_opens += 1,
             Some(other) => {
-                panic!("{date} ships a kind B3's 2025-2026 calendars do not state: {other:?}")
+                panic!("{date} ships a kind B3's calendars do not state: {other:?}")
             }
         }
         date = date.succ_opt().expect("the window stays representable");
     }
     assert_eq!(
         (closed, late_opens),
-        (25, 2),
-        "closures and late opens, B3 2025-2026"
+        (208, 16),
+        "closures and late opens, B3 2011-2026"
+    );
+    // Every late open is the year's Ash Wednesday: one per calendar year of
+    // the audited windows, so a duplicated or shifted row breaks this.
+    let mut late_dates = Vec::new();
+    let mut date = coverage.first();
+    while date <= coverage.last() {
+        if matches!(
+            calendar.holiday_on(date).map(Holiday::kind),
+            Some(HolidayKind::LateOpen { .. })
+        ) {
+            late_dates.push((date.year(), date.month(), date.day()));
+        }
+        date = date.succ_opt().expect("the window stays representable");
+    }
+    assert_eq!(
+        late_dates,
+        vec![
+            (2011, 3, 9),
+            (2012, 2, 22),
+            (2013, 2, 13),
+            (2014, 3, 5),
+            (2015, 2, 18),
+            (2016, 2, 10),
+            (2017, 3, 1),
+            (2018, 2, 14),
+            (2019, 3, 6),
+            (2020, 2, 26),
+            (2021, 2, 17),
+            (2022, 3, 2),
+            (2023, 2, 22),
+            (2024, 2, 14),
+            (2025, 3, 5),
+            (2026, 2, 18),
+        ],
+        "the late opens are exactly each year's printed Ash Wednesday"
     );
 }
 
 // ---------------------------------------------------------------------------
-// tadawul — Saudi Exchange Main Market, 2025-2027, Asia/Riyadh (Sun-Thu).
+// tadawul — Saudi Exchange Main Market, 2021-2027, Asia/Riyadh (Sun-Thu).
 // ---------------------------------------------------------------------------
 
 #[test]
 fn tadawul_closures_per_year_match_the_operators_printed_entries() {
     let calendar = calendar_for(Exchange::Tadawul);
+    // 2021: the Eid Al Fiter first/last-day entry (13 and 16 May), the Eid Al
+    // Adha legs between the printed 15/07 discontinue and 25/07 resume, and
+    // National Day.
+    for date in [
+        (2021, 5, 13),
+        (2021, 5, 16),
+        (2021, 7, 18),
+        (2021, 7, 19),
+        (2021, 7, 20),
+        (2021, 7, 21),
+        (2021, 7, 22),
+        (2021, 9, 23),
+    ] {
+        assert_closed(calendar, date, "Tadawul 2021 closure", &|d, time| {
+            riyadh(d, time)
+        });
+    }
+    // 2022: Founding Day, the Eid Al Fiter first/last-day entry's weekday
+    // range, Eid Al Adha between 06/07 and 13/07, National Day.
+    for date in [
+        (2022, 2, 22),
+        (2022, 4, 28),
+        (2022, 5, 1),
+        (2022, 5, 2),
+        (2022, 5, 3),
+        (2022, 5, 4),
+        (2022, 5, 5),
+        (2022, 7, 7),
+        (2022, 7, 10),
+        (2022, 7, 11),
+        (2022, 7, 12),
+        (2022, 9, 22),
+    ] {
+        assert_closed(calendar, date, "Tadawul 2022 closure", &|d, time| {
+            riyadh(d, time)
+        });
+    }
+    // 2023: Founding Day, Eid ranges, and the Sunday the National Day
+    // arrangement removes between the printed 21/09 discontinue and 25/09
+    // resume.
+    for date in [
+        (2023, 2, 22),
+        (2023, 4, 18),
+        (2023, 4, 19),
+        (2023, 4, 20),
+        (2023, 4, 23),
+        (2023, 4, 24),
+        (2023, 6, 25),
+        (2023, 6, 26),
+        (2023, 6, 27),
+        (2023, 6, 28),
+        (2023, 6, 29),
+        (2023, 9, 24),
+    ] {
+        assert_closed(calendar, date, "Tadawul 2023 closure", &|d, time| {
+            riyadh(d, time)
+        });
+    }
+    // 2024: Founding Day, Eid ranges, National Day.
+    for date in [
+        (2024, 2, 22),
+        (2024, 4, 7),
+        (2024, 4, 8),
+        (2024, 4, 9),
+        (2024, 4, 10),
+        (2024, 4, 11),
+        (2024, 6, 16),
+        (2024, 6, 17),
+        (2024, 6, 18),
+        (2024, 6, 19),
+        (2024, 6, 20),
+        (2024, 9, 23),
+    ] {
+        assert_closed(calendar, date, "Tadawul 2024 closure", &|d, time| {
+            riyadh(d, time)
+        });
+    }
     // 2025: Founding Day observed Sunday 23 February (the operator's printed
     // day, not the civil 22nd), both Eid ranges' Sunday-Thursday legs, and
     // National Day.
@@ -549,26 +1023,40 @@ fn tadawul_closures_per_year_match_the_operators_printed_entries() {
     }
     // The printed weekend legs — Friday 2025-03-28 and Saturday 2025-03-29 —
     // change no trade date and carry no row; the normal week already closes
-    // them.
-    assert_eq!(
-        calendar.holiday_on(day(2025, 3, 28)),
-        None,
-        "a Friday leg needs no row in a Sun-Thu week"
-    );
-    assert_eq!(
-        calendar.holiday_on(day(2025, 3, 29)),
-        None,
-        "a Saturday leg needs no row in a Sun-Thu week"
-    );
+    // them. The same reading holds in the backfilled years: the 2023 Eid Al
+    // Adha range prints 23-24 June and the 2024 Eid Al Adha range prints
+    // 21-22 June, both weekends.
+    for date in [
+        (2023, 6, 23),
+        (2023, 6, 24),
+        (2024, 6, 21),
+        (2024, 6, 22),
+        (2025, 3, 28),
+        (2025, 3, 29),
+    ] {
+        assert_eq!(
+            calendar.holiday_on(day(date.0, date.1, date.2)),
+            None,
+            "a Friday or Saturday leg needs no row in a Sun-Thu week: {date:?}"
+        );
+    }
 }
 
 #[test]
 fn tadawul_trading_resumes_on_the_printed_days() {
     let calendar = calendar_for(Exchange::Tadawul);
-    // The entries state resume days: 03/04/2025, 11/06/2025, 24/03/2026,
-    // 31/05/2026, 14/03/2027, 23/05/2027 — each open with the ordinary
-    // 09:30 order entry and 10:00 regular open.
+    // The entries state resume days: 25/07/2021, 13/07/2022, 25/04/2023,
+    // 02/07/2023, 25/09/2023, 14/04/2024, 23/06/2024, 03/04/2025, 11/06/2025,
+    // 24/03/2026, 31/05/2026, 14/03/2027, 23/05/2027 — each open with the
+    // ordinary 10:00 regular open.
     for date in [
+        (2021, 7, 25),
+        (2022, 7, 13),
+        (2023, 4, 25),
+        (2023, 7, 2),
+        (2023, 9, 25),
+        (2024, 4, 14),
+        (2024, 6, 23),
         (2025, 4, 3),
         (2025, 6, 11),
         (2026, 3, 24),
@@ -606,16 +1094,24 @@ fn tadawul_window_ordinary_weekday_and_coverage_endpoints() {
     let coverage = calendar
         .holiday_coverage()
         .expect("Tadawul ships a built-in table");
-    assert_eq!(coverage.first(), day(2025, 1, 1));
+    assert_eq!(coverage.first(), day(2021, 1, 1));
     assert_eq!(coverage.last(), day(2027, 12, 31));
     assert_eq!(
         calendar.holiday_on(coverage.first().pred_opt().expect("representable")),
-        None
+        None,
+        "no answer below the window: 2013-2020 is the unaudited span"
     );
     assert_eq!(
         calendar.holiday_on(coverage.last().succ_opt().expect("representable")),
         None
     );
+    // A 2020 probe sits in the unaudited span: the identity refuses rather
+    // than answering.
+    let unaudited = riyadh((2020, 12, 15), (11, 0, 0));
+    assert!(matches!(
+        calendar.is_open(unaudited),
+        Err(CalendarQueryError::OutsideCoveredRange { date, .. }) if date == day(2020, 12, 15)
+    ));
     // Pre-floor refusal.
     let ancient = riyadh((2009, 12, 31), (11, 0, 0));
     assert!(matches!(
@@ -640,66 +1136,370 @@ fn tadawul_window_ships_only_closures() {
         }
         date = date.succ_opt().expect("the window stays representable");
     }
-    assert_eq!(closed, 34, "closures, Tadawul 2025-2027");
+    assert_eq!(closed, 78, "closures, Tadawul 2021-2027");
 }
 
 // ---------------------------------------------------------------------------
-// borsa_istanbul — Borsa İstanbul Equity Market, 2025-2026, Europe/Istanbul.
+// borsa_istanbul — Borsa İstanbul Equity Market, 2012-2026, Europe/Istanbul.
 // ---------------------------------------------------------------------------
+
+/// One operator year's weekday closure list and the label its probes carry.
+type BistYearClosures<'a> = (&'a [(i32, u32, u32)], &'a str);
+
+/// The weekday closure rows per calendar year, exactly as the operator's
+/// `Resmi Tatil Günleri` page (2025-2026: with the annex) prints them. A date
+/// that changes or disappears breaks the per-year walk.
+const BIST_CLOSURES_PER_YEAR: &[BistYearClosures<'_>] = &[
+    (
+        &[
+            (2012, 4, 23),
+            (2012, 5, 1),
+            (2012, 8, 20),
+            (2012, 8, 21),
+            (2012, 8, 30),
+            (2012, 10, 25),
+            (2012, 10, 26),
+            (2012, 10, 29),
+        ],
+        "BIST 2012",
+    ),
+    (
+        &[
+            (2013, 1, 1),
+            (2013, 4, 23),
+            (2013, 5, 1),
+            (2013, 8, 8),
+            (2013, 8, 9),
+            (2013, 8, 30),
+            (2013, 10, 15),
+            (2013, 10, 16),
+            (2013, 10, 17),
+            (2013, 10, 18),
+            (2013, 10, 29),
+        ],
+        "BIST 2013",
+    ),
+    (
+        &[
+            (2014, 1, 1),
+            (2014, 4, 23),
+            (2014, 5, 1),
+            (2014, 5, 19),
+            (2014, 7, 28),
+            (2014, 7, 29),
+            (2014, 7, 30),
+            (2014, 10, 6),
+            (2014, 10, 7),
+            (2014, 10, 29),
+        ],
+        "BIST 2014",
+    ),
+    (
+        &[
+            (2015, 1, 1),
+            (2015, 4, 23),
+            (2015, 5, 1),
+            (2015, 5, 19),
+            (2015, 7, 17),
+            (2015, 9, 24),
+            (2015, 9, 25),
+            (2015, 10, 29),
+        ],
+        "BIST 2015",
+    ),
+    (
+        &[
+            (2016, 1, 1),
+            (2016, 5, 19),
+            (2016, 7, 5),
+            (2016, 7, 6),
+            (2016, 7, 7),
+            (2016, 8, 30),
+            (2016, 9, 12),
+            (2016, 9, 13),
+            (2016, 9, 14),
+            (2016, 9, 15),
+        ],
+        "BIST 2016",
+    ),
+    (
+        &[
+            (2017, 5, 1),
+            (2017, 5, 19),
+            (2017, 6, 26),
+            (2017, 6, 27),
+            (2017, 8, 30),
+            (2017, 9, 1),
+            (2017, 9, 4),
+        ],
+        "BIST 2017",
+    ),
+    (
+        &[
+            (2018, 1, 1),
+            (2018, 4, 23),
+            (2018, 5, 1),
+            (2018, 6, 15),
+            (2018, 8, 21),
+            (2018, 8, 22),
+            (2018, 8, 23),
+            (2018, 8, 24),
+            (2018, 8, 30),
+            (2018, 10, 29),
+        ],
+        "BIST 2018",
+    ),
+    (
+        &[
+            (2019, 1, 1),
+            (2019, 4, 23),
+            (2019, 5, 1),
+            (2019, 6, 4),
+            (2019, 6, 5),
+            (2019, 6, 6),
+            (2019, 7, 15),
+            (2019, 8, 12),
+            (2019, 8, 13),
+            (2019, 8, 14),
+            (2019, 8, 30),
+            (2019, 10, 29),
+        ],
+        "BIST 2019",
+    ),
+    (
+        &[
+            (2020, 1, 1),
+            (2020, 4, 23),
+            (2020, 5, 1),
+            (2020, 5, 19),
+            (2020, 5, 25),
+            (2020, 5, 26),
+            (2020, 7, 15),
+            (2020, 7, 31),
+            (2020, 8, 3),
+            (2020, 10, 29),
+        ],
+        "BIST 2020",
+    ),
+    (
+        &[
+            (2021, 1, 1),
+            (2021, 4, 23),
+            (2021, 5, 13),
+            (2021, 5, 14),
+            (2021, 5, 19),
+            (2021, 7, 15),
+            (2021, 7, 20),
+            (2021, 7, 21),
+            (2021, 7, 22),
+            (2021, 7, 23),
+            (2021, 8, 30),
+            (2021, 10, 29),
+        ],
+        "BIST 2021",
+    ),
+    (
+        &[
+            (2022, 5, 2),
+            (2022, 5, 3),
+            (2022, 5, 4),
+            (2022, 5, 19),
+            (2022, 7, 11),
+            (2022, 7, 12),
+            (2022, 7, 15),
+            (2022, 8, 30),
+        ],
+        "BIST 2022",
+    ),
+    (
+        &[
+            (2023, 4, 21),
+            (2023, 5, 1),
+            (2023, 5, 19),
+            (2023, 6, 28),
+            (2023, 6, 29),
+            (2023, 6, 30),
+            (2023, 8, 30),
+        ],
+        "BIST 2023",
+    ),
+    (
+        &[
+            (2024, 1, 1),
+            (2024, 4, 10),
+            (2024, 4, 11),
+            (2024, 4, 12),
+            (2024, 4, 23),
+            (2024, 5, 1),
+            (2024, 6, 17),
+            (2024, 6, 18),
+            (2024, 6, 19),
+            (2024, 7, 15),
+            (2024, 8, 30),
+            (2024, 10, 29),
+        ],
+        "BIST 2024",
+    ),
+    (
+        &[
+            (2025, 1, 1),
+            (2025, 3, 31),
+            (2025, 4, 1),
+            (2025, 4, 23),
+            (2025, 5, 1),
+            (2025, 5, 19),
+            (2025, 6, 6),
+            (2025, 6, 9),
+            (2025, 7, 15),
+            (2025, 10, 29),
+        ],
+        "BIST 2025",
+    ),
+    (
+        &[
+            (2026, 1, 1),
+            (2026, 3, 20),
+            (2026, 4, 23),
+            (2026, 5, 1),
+            (2026, 5, 19),
+            (2026, 5, 27),
+            (2026, 5, 28),
+            (2026, 5, 29),
+            (2026, 7, 15),
+            (2026, 10, 29),
+        ],
+        "BIST 2026",
+    ),
+];
 
 #[test]
 fn borsa_istanbul_closures_per_year_match_the_operators_printed_tables() {
     let calendar = calendar_for(Exchange::BorsaIstanbul);
-    // 2025: the EK-3 annex's no-session dates that land on a weekday.
-    for date in [
-        (2025, 1, 1),
-        (2025, 3, 31),
-        (2025, 4, 1),
-        (2025, 4, 23),
-        (2025, 5, 1),
-        (2025, 5, 19),
-        (2025, 6, 6),
-        (2025, 6, 9),
-        (2025, 7, 15),
-        (2025, 10, 29),
-    ] {
-        assert_closed(calendar, date, "BIST 2025 closure", &|d, time| {
-            istanbul(d, time)
-        });
-    }
-    // 2026.
-    for date in [
-        (2026, 1, 1),
-        (2026, 3, 20),
-        (2026, 4, 23),
-        (2026, 5, 1),
-        (2026, 5, 19),
-        (2026, 5, 27),
-        (2026, 5, 28),
-        (2026, 5, 29),
-        (2026, 7, 15),
-        (2026, 10, 29),
-    ] {
-        assert_closed(calendar, date, "BIST 2026 closure", &|d, time| {
-            istanbul(d, time)
-        });
+    // Every weekday closure of the operator's yearly tables, per year: the
+    // `Resmi Tatil Günleri` page's year tabs (2012-2024) and the annex's
+    // no-session dates (2025-2026). Weekend legs are fenced below.
+    for (dates, label) in BIST_CLOSURES_PER_YEAR {
+        for date in *dates {
+            assert_closed(calendar, *date, label, &|d, time| istanbul(d, time));
+        }
     }
     // Weekend legs (Zafer Bayramı 2025-08-30 and 2026-08-30, Ramazan Arefesi
-    // 2025-03-29) change no trade date and ship no row.
-    assert_eq!(
-        calendar.holiday_on(day(2025, 8, 30)),
-        None,
-        "a Saturday holiday needs no row in a Mon-Fri week"
-    );
+    // 2025-03-29, and the backfilled years' weekend `Kapalı` legs) change no
+    // trade date and ship no row.
+    for date in [
+        (2012, 1, 1),
+        (2016, 4, 23),
+        (2016, 10, 29),
+        (2017, 1, 1),
+        (2017, 4, 23),
+        (2017, 10, 28),
+        (2020, 5, 23),
+        (2022, 1, 1),
+        (2023, 4, 23),
+        (2025, 3, 29),
+        (2025, 8, 30),
+        (2026, 8, 30),
+    ] {
+        assert_eq!(
+            calendar.holiday_on(day(date.0, date.1, date.2)),
+            None,
+            "a Saturday or Sunday holiday needs no row in a Mon-Fri week: {date:?}"
+        );
+        assert!(
+            calendar
+                .is_closed_trade_date(day(date.0, date.1, date.2), SessionKind::Both)
+                .expect("the coverage contract must answer a covered date"),
+            "{date:?} is shut by the normal week"
+        );
+    }
 }
 
-/// The four half days keep their session and end at the printed 13:00. The
-/// probes sit at second granularity, so a row that takes any other instant —
-/// or copies a neighbouring holiday's — fails.
+/// The half days keep their session and end at the printed 13:00. The probes
+/// sit at second granularity, so a row that takes any other instant — or
+/// copies a neighbouring holiday's — fails.
 #[test]
 fn each_half_day_closes_at_the_printed_1300_istanbul() {
     let calendar = calendar_for(Exchange::BorsaIstanbul);
+    // Half days before the 2015-11-30 midday-call change: the normal day's
+    // morning session runs to 12:30 and the afternoon started at 14:00, so the
+    // half day is the morning plus the 12:30-13:00 tail and the 13:00 clip
+    // deletes the afternoon entirely.
     for date in [
+        (2012, 10, 24),
+        (2013, 8, 7),
+        (2013, 10, 14),
+        (2013, 10, 28),
+        (2014, 10, 3),
+        (2014, 10, 28),
+        (2015, 7, 16),
+        (2015, 9, 23),
+        (2015, 10, 28),
+    ] {
+        assert_eq!(
+            calendar
+                .holiday_on(day(date.0, date.1, date.2))
+                .map(Holiday::kind),
+            Some(HolidayKind::EarlyClose {
+                close_ssm: 13 * 3_600
+            }),
+            "{date:?} carries the printed half-day close"
+        );
+        assert!(
+            calendar
+                .is_open(istanbul(date, (12, 29, 59)))
+                .expect("a covered date answers"),
+            "{date:?} trades to the end of the morning session"
+        );
+        assert!(
+            !calendar
+                .is_open(istanbul(date, (12, 45, 0)))
+                .expect("a covered date answers"),
+            "{date:?} has no lunch-hour session"
+        );
+        assert!(
+            !calendar
+                .is_open(istanbul(date, (13, 0, 0)))
+                .expect("a covered date answers"),
+            "{date:?} closes at 13:00, end-exclusive"
+        );
+        assert!(
+            !calendar
+                .is_open(istanbul(date, (14, 0, 0)))
+                .expect("a covered date answers"),
+            "{date:?} afternoon is gone"
+        );
+        // The candle ends at the morning session's own 12:30 end: the printed
+        // 13:00 is the day's formal close bound, and the executable morning
+        // ends half an hour before it.
+        assert_eq!(
+            calendar
+                .candle_end(istanbul(date, (11, 0, 0)), CalendarResolution::Daily)
+                .expect("a covered date answers"),
+            Some(istanbul(date, (12, 30, 0))),
+            "{date:?} candle edge is the morning session's end"
+        );
+    }
+    // Half days from 2016 on: the midday call session spans 13:00, so the day
+    // trades to one second before the printed close.
+    for date in [
+        (2016, 7, 4),
+        (2016, 10, 28),
+        (2017, 8, 31),
+        (2018, 6, 14),
+        (2018, 8, 20),
+        (2019, 6, 3),
+        (2019, 10, 28),
+        (2020, 7, 30),
+        (2020, 10, 28),
+        (2021, 5, 12),
+        (2021, 7, 19),
+        (2021, 10, 28),
+        (2022, 7, 8),
+        (2022, 10, 28),
+        (2023, 4, 20),
+        (2023, 6, 27),
+        (2024, 4, 9),
+        (2024, 10, 28),
         (2025, 6, 5),
         (2025, 10, 28),
         (2026, 3, 19),
@@ -745,16 +1545,29 @@ fn borsa_istanbul_window_ordinary_weekday_and_coverage_endpoints() {
     assert_ordinary_weekday(calendar, (2025, 6, 17), (10, 0), (18, 10), &|date, time| {
         istanbul(date, time)
     });
+    // An ordinary weekday inside the backfilled era: after the 2016-11-14
+    // extended day the continuous sessions run 10:00-13:00 and 14:00-18:00 and
+    // the closing envelope ends at 18:10.
+    assert_ordinary_weekday(calendar, (2017, 3, 16), (11, 0), (18, 10), &|date, time| {
+        istanbul(date, time)
+    });
     let coverage = calendar
         .holiday_coverage()
         .expect("Borsa Istanbul ships a built-in table");
-    assert_eq!(coverage.first(), day(2025, 1, 1));
+    assert_eq!(coverage.first(), day(2012, 3, 2));
     assert_eq!(coverage.last(), day(2026, 12, 31));
     assert_eq!(
         calendar.holiday_on(coverage.last().succ_opt().expect("representable")),
         None,
         "no answer past the window: 2027 is unpublished"
     );
+    // A 2012 probe below the window start (the floor and 2012-03-01 sit in
+    // the carried pre-baseline era) refuses.
+    let unaudited = istanbul((2012, 2, 20), (11, 0, 0));
+    assert!(matches!(
+        calendar.is_open(unaudited),
+        Err(CalendarQueryError::OutsideCoveredRange { date, .. }) if date == day(2012, 2, 20)
+    ));
     // 2027-01-02 is inside 2027 and outside the audited window.
     let outside = istanbul((2027, 1, 4), (11, 0, 0));
     assert!(matches!(
@@ -785,16 +1598,16 @@ fn borsa_istanbul_window_ships_only_closures_and_half_days() {
             Some(HolidayKind::EarlyClose { close_ssm }) if close_ssm == 13 * 3_600 => {
                 half_days += 1;
             }
-            Some(other) => panic!(
-                "{date} ships a kind Borsa Istanbul's 2025-2026 tables do not state: {other:?}"
-            ),
+            Some(other) => {
+                panic!("{date} ships a kind Borsa Istanbul's tables do not state: {other:?}")
+            }
         }
         date = date.succ_opt().expect("the window stays representable");
     }
     assert_eq!(
         (closed, half_days),
-        (20, 5),
-        "closures and 13:00 half days, Borsa Istanbul 2025-2026"
+        (145, 32),
+        "closures and 13:00 half days, Borsa Istanbul 2012-2026"
     );
 }
 

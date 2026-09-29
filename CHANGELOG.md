@@ -96,6 +96,47 @@ corrections (a venue's hours fixed against a primary source) go under
   files; outside the window the table has no answer. Every row cites a saved
   operator artifact (research store `holidays/raw/cfe-2010-2025/live/` and
   `holidays/raw/cfe-2010-2024/rulespage/`, sha256 per artifact).
+- **`borsa_istanbul` pre-2025 holiday history: 2012-2024 backfilled from the
+  operator's own page (2026-09-29 UTC).** The built-in borsa_istanbul holiday
+  table extends from the 2025-2026 window back to **2012-03-02**, the
+  operator's own first sourced normal-week day — 177 rows over
+  2012-03-02..2026-12-31 (145 closures and thirty-two 13:00 half days). The
+  152 new rows key to the same `Resmi Tatil Günleri` page the half-day rows
+  already used at T1: its server-rendered year tabs print every year 2012-2026
+  in one artifact, so no new retrieval was needed. Weekend-dated legs
+  (`Kapalı` on a Saturday or Sunday) change no Monday-Friday trade date and
+  ship no row.
+
+- **`tadawul` pre-2025 holiday history: 2021-2024 added from the operator's
+  own calendar (2026-09-29 UTC).** The built-in tadawul holiday table extends
+  from the 2025-2027 window back to **2021-01-01** — 78 rows over
+  2021-01-01..2027-12-31. The forty-four new rows key to the same operator
+  artifact the 2025-2027 rows already used — the Saudi Exchange Holiday
+  Calendar page at T1 — whose server-rendered entries print the
+  trading-discontinue and trading-resume days (2021-2022 Eid Al Fiter entries
+  print the holiday's first and last day), so no new retrieval was needed.
+  Each Eid row keys to the printed range's Sunday-Thursday dates; Friday and
+  Saturday legs change no trade date and ship no row. 2013-06-29..2020-12-31
+  is an unaudited span: the page's oldest complete entry is the 2020 Eid Al
+  Fiter and it states no Eid Al Adha 2020, while the Internet Archive holds no
+  pre-2023 capture of the page and the pre-2023 portal exposes no named
+  holiday page — closing condition recorded in the evidence file.
+
+- **`b3` pre-2025 holiday history: 2011-2024 backfilled from the operator's
+  own calendars (2026-09-29 UTC).** The built-in `b3` holiday table extends
+  from the 2025-2026 window back to **2011-01-01** — 224 rows over
+  2011-01-01..2024-12-31, 2025-01-01..2026-12-31 (208 closures and sixteen
+  13:00 Ash Wednesday late opens). Every backfilled row keys to the operator's
+  own yearly calendar announcement, `Calendário do Mercado` page or PUMA
+  `Feriados` page at T1, read as Internet Archive `id_` replays (eighteen
+  saved artifacts, sha256 per artifact). Weekend-dated legs of the operator's
+  lists (the printed 2019-04-21, 2019-09-07, 2019-10-12, 2019-11-02 and
+  2022-01-01 included) ship no row because they change no Monday-Friday trade
+  date, and the 2022-2024 São Paulo holidays the operator's own calendars
+  state trade ship no row either. 2010 remains an unaudited span: no operator
+  artifact stating the 2010 holiday arrangement was found at retrieval, so
+  2010 dates refuse with the closing condition recorded in the evidence file.
+
 - **`lse`, `euronext_paris` and `tsx` activate: built-in holiday tables for
   the European and Canadian cash-equity venues (2026-09-28 UTC).** All three
   identities flip dormant→**served** (LAW-SERVICE-TIERS admission by consumer

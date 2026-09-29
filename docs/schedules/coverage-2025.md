@@ -164,11 +164,11 @@ consequences drive every verdict below.
 
 Every count is taken over the identity's **own routed table** - the one `holidays/routing.rs`
 selects for it - and not over the module that table lives in. The distinction is load-bearing:
-`src/calendar/schedules/holidays/ice_us.rs` holds six tables, of which only `VENUE` backs the
-served `iceus` identity, while `FANG`, `DOLLAR_INDEX`, `SUGAR_COFFEE_COCOA`, `COTTON` and
-`ORANGE_JUICE` back dormant `MarketHoursKey`s. Those five tables are individually smaller than
-`VENUE`, but together they hold 105 further rows, and a count over the module would have reported
-129 rows where the served identity answers for 24 dates.
+`src/calendar/schedules/holidays/ice_us.rs` holds eight tables, of which only `VENUE` backs the
+served `iceus` identity, while `FANG`, `SUGAR`, `COFFEE`, `COCOA`, `ORANGE_JUICE`, `COTTON` and
+`DOLLAR_INDEX` back dormant `MarketHoursKey`s. Those seven tables are individually smaller than
+`VENUE`, but together they hold 251 further rows, and a count over the module would have reported
+299 rows where the served identity answers for 48 dates.
 
 ## Inventory
 
@@ -279,7 +279,7 @@ question over any part of 2025. `cfe` and `eurex` shipped the same 2026-only win
 rows landed in separate changes on the same date; all three now audit from the floor. `iceus` ships
 **48** scheduling rows: its
 table is the D17 intersection of the seven ICE Futures U.S. families routed to the venue, so a row
-ships only where the five tables those keys select agree - the **seven** full closures in its window -
+ships only where the seven tables those keys select agree - the **seven** full closures in its window -
 and the other **41** dates
 are `Unsourced`, the shape of a date on which the softs close while the index families trade
 shortened hours, or on which one index family moves alone. Fifteen of those dates are in 2025, so

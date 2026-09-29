@@ -13,6 +13,26 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Added
 
+- **`globex_nikkei_225_dollar` 2011-2015 holiday history backfilled
+  (2026-09-29 UTC).** The family's built-in holiday table extends from the
+  2016-2027 audited windows back over two further audited windows —
+  2011-01-12..2012-12-31 and 2013-01-01..2015-12-31 — 62 further rows (12
+  `Closed`, 44 early closes at 10:30/12:00/12:15/08:15 CT and 6 late opens at
+  05:00 CT), every one read from CME's own per-holiday Globex schedule PDFs
+  (T1, Internet Archive `id_` replays already in the research store from the
+  `globex_equity_index` audit and re-verified against the store's bytes for
+  this wave). No sheet in either era prints a Nikkei line, so the sheets'
+  `Equity Products` line governs every row — the same interpretive step the
+  2016-2018 rows carry, resting for this era on the sourced grid identity
+  between NKD and the equity-index family from the 2011-01-12 capture through
+  SER-6465, SER-6554R and CME Globex Notice #20150817. **2010-01-01..2011-01-11
+  stays unaudited and refuses**: the 2010 sheets survive complete and are
+  read, but they carve the Nikkei out of the equity class line where it
+  differed (the President's Day sheet's own `Exception: USD & JY denominated
+  Nikkei ...` lines) and govern the sourced-but-unmodelled 2010 grid whose
+  changeover day is undated, so no audited-normal claim is available there;
+  the bounded search, the quoted exceptions and the closing conditions are
+  recorded in the evidence file and tracked as an issue.
 - **`nse_india` 2010-2024 holiday history backfilled (2026-09-29 UTC).** The
   venue's built-in holiday table extends from the 2025-2026 audited window
   back over three audited windows — 2010-2011, 2013-2017 and 2019-2024 —

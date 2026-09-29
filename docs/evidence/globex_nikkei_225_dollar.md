@@ -20,18 +20,22 @@
 
 ## Holidays
 
-**Coverage:** 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 (inclusive venue-local trade dates).
+**Coverage:** 2011-01-12..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 (inclusive venue-local trade dates).
 
-**Four audited eras, with the unworked years between them.** The table declares 4 coverage
-windows: `2016-01-01..2018-12-31`, from the operators' own published holiday schedules at **T1**;
+**Six audited eras.** The table declares 6 coverage
+windows: `2011-01-12..2012-12-31` and `2013-01-01..2015-12-31`, from the
+operator's own published holiday schedules at **T1** — the 2026-09-29 wave that
+closed the 2011-2015 span of what the inventory had recorded as the unaudited
+2010-2015 interval; `2016-01-01..2018-12-31`, from the operators' own published holiday schedules at **T1**;
 `2019-01-01..2021-12-31`, from CME's own published Globex holiday schedules at **T1**;
 `2022-01-01..2024-12-31`, from the 2022 workbooks and 2023 one-pagers at T1 and CME's service
 responses at **T2**; and `2025-01-01..2027-12-31`, from the trading-hours service at T2. The
-2022-2024 and 2025-2027 windows are adjacent; what lies outside every declared window is 2010-2015
-— this family did not declare the 2010-2012 era at all — so `holiday_on` has **no answer** there
-rather than reporting an unaudited date as normal. 2013-2015 is the one remaining stage-2.2 wave,
-and the eras before 2010 are out of scope below the crate's January-2010 floor.
-`HolidayCoverage::windows()` lists the 4, and `contains` answers per date.
+2022-2024 and 2025-2027 windows are adjacent; what lies outside every declared window is
+2010-01-01..2011-01-11 — the 2010 sheets name the Nikkei where it differs and
+govern the sourced-but-unmodelled 2010 grid, so that interval stays unaudited
+rather than reporting an unaudited date as normal (the era's gap block below
+records the bounded search and its closing conditions).
+`HolidayCoverage::windows()` lists the 6, and `contains` answers per date.
 **Channel.** Every row below comes from
 `https://www.cmegroup.com/services/trading-hours-by-product?id=<set>&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=<from>&toEventDate=<to>`
 — the endpoint `cmegroup.com/trading-hours.html` itself calls to render its per-asset-class
@@ -51,6 +55,266 @@ channel, so no ET value is asserted here and none is bracketed in.
 and cancel are allowed. No order matching."; `open` — "Start of continuous trading phase.
 Order matching begins."; `closed` — "Final Close of the date. Day and GTD (current trade
 date) orders are eliminated." `/TD` below is CME's own `tradingDate` field on each event.
+
+**The 2011-2015 eras (T1), shipped 2026-09-29 UTC.** Every row in the five year
+tables below comes from CME's own published Globex holiday schedules — the
+per-holiday one-pager PDFs under
+`cmegroup.com/tools-information/holiday-calendar/files/`, the same channel and
+document lineage the 2016-2018 era cites, each read as bytes from an Internet
+Archive `id_` raw replay. The corpus was retrieved and reconciled on
+2026-09-12 UTC by the tasks that audited `globex_equity_index` (its research
+store directories `holidays/raw/cme-2010-2012/`, `holidays/raw/cme-2013-2015/`,
+`-fix`, `-repair-r2` and `-verify*` carry the bytes, the CDX enumerations
+`cdx_holiday_calendar_2009_2014.json` and `cdx_holiday_calendar.json`, and the
+per-file `INDEX.md` rows with byte counts); this wave re-verified the sha256 of
+all 48 artifacts it cites against the store's bytes on 2026-09-29 UTC and
+re-read each sheet's `Equity Products` line from the store's `pdftotext`
+extracts. No new retrieval was needed: the archive already held every sheet
+both eras cite, each the latest HTTP-200 capture of its URL.
+
+**Interpretive step: no sheet in either era prints a Nikkei line; the
+`Equity Products` line governs.** A text search across every extracted sheet of
+both eras — and across all 45 reconciled `.xls` workbooks of the 2013-2015
+`-fix` round — returns no `Nikkei` line at all, and no row above cites one. The
+line that governs is the class line: `CME Group Equity Products` in 2011-2012,
+`CME & CBOT Equity Products` in 2013 and `Equity Products` in 2014-2015. That
+step is the same one the 2016-2018 rows carry, and from 2011-01-12 it rests on
+sourced grid identity rather than on silence: the 2011-01-12 trading-hours
+capture reads NKD's session boundaries byte-identical to the E-mini S&P 500 row
+on the same page, and CME SER-6465 (2012-11-18), SER-6554R (2013-03-03) and
+Globex Notice #20150817 (2015-09-20) each put NKD and the equity-index family
+through the same revision on the same day — so the equity class line's holiday
+boundaries are this contract's own for the whole of both windows. The two
+sheets' Monday-holiday halts end the wrapped leg: `1030 CT – Trading halt`
+(order entry allowed) with `1700 CT – Halted products resume trading` deletes
+the trade date's post-halt segment, and the 12:00 CT halts from 2014-05 do the
+same on the extended grid.
+
+**Row shapes and counts.** 62 rows over the two windows: 12 closures —
+`CME Globex is closed` or `Christmas Day Observed – Globex closed` (the
+`New Years Observed` twin on the observed New Year Mondays), each removing the
+trade date with its prior-evening leg; 44 early closes — 10:30 CT on the twenty
+2011-2013 and January-February 2014 Monday and Thursday holidays, 12:00 CT on
+the ten from 2014-05 on, 12:15 CT on the twelve eve, Thanksgiving-Friday and
+year-end half-days, and 08:15 CT on the two Good Fridays the sheets state it
+for; and 6 late opens at `0500 CT` — the trade date after Christmas 2011 and
+2012 and after New Year's Day 2012, 2013, 2013 Christmas and 2014, where the
+sheet prints `0500 CT – CME Globex open for trade date <date>` (the 2013 and
+2014 New Year twins print `0500 CT – Modified open`), so the trade date's first
+open is 05:00 CT on the date itself and the evening leg that would have opened
+earlier did not run. 2015-01-02 ships no late open: its sheet prints the
+holiday Thursday reopening at the ordinary 17:00 CT for Friday's trade date and
+no reopening line for the Friday, so the ordinary grid stands. Every row above
+is at T1.
+
+**2010 — the one interval that stays unaudited.** The 2010 sheets survive complete
+(CDX enumeration `cdx_holiday_calendar_2009_2014.json`, 2009-2014, zero rows
+for the `trading-hours` path; one PDF per holiday, all retrieved and in the
+store) and they do not leave the Nikkei to the class line. The President's Day
+sheet prints, verbatim, twice: `Exception: USD & JY denominated Nikkei will
+open at their regularly scheduled times of 02:00 & 05:00 Monday morning.` and
+`... Tuesday morning.` — the operator carving the contract out of the equity
+line's Sunday-open/halt/resume pattern and onto its own daytime-anchored 2010
+grid (02:00/05:00 CT opens; the consolidation PDF carries the same exceptions).
+That affirmative exception defeats the silence-means-governed reading the
+2011-2015 rows rest on, for 2010 only: where the operator wanted NKD excepted
+from the class line that year, it said so, so the sheets that name no exception
+cannot be read as governing NKD either. The instants those exceptions name
+belong to the 2010 grid this crate deliberately does not model — its changeover
+day to the served grid is undated (bracketed only by the 2010-04-07 and
+2011-01-12 captures), `nkd_profile_at` resolves every 2010 date to the
+sessionless profile, and no NKD session is served there to carry a holiday row.
+A 2010 window would therefore claim audited normality on dates whose governing
+arrangement cannot be stated, which LAW-HOLIDAY-SCOPE forbids, so the table
+declares no 2010 window and `holiday_on` has no answer below 2011-01-12. The
+two whole-platform statements the 2010 sheets do make — `CME Globex is closed`
+on 2010-01-01 (`2010-new-years.pdf @2010-02-15T05:16:52Z`) and on observed
+Christmas 2010-12-24 (`2010-christmas.pdf @2010-12-14T06:12:38Z`) — are quoted
+here as evidence for the refusal, not encoded as rows, because coverage that
+answers only closures while the sessions themselves are unserved would read as
+more complete than it is. Closing conditions: (1) the 2010 grid work — a CME
+document that dates the 2010-to-2011 changeover, or a capture inside the
+2010-04-07..2011-01-12 window (the profile gap's own condition, recorded in
+`## Gaps and residual risks` below); (2) a per-sheet reading of the 2010
+sheets' Nikkei statements once that grid is modelled. Both are tracked for this
+served identity as #225 (LAW-FOLLOW-UPS-ARE-ISSUES).
+
+### 2011
+
+| trade date | kind | instant as printed | document | tier | derived from |
+|---|---|---|---|---|---|
+| 2011-01-17 | early close | `1030 CT` | `2011-martin-luther-king.pdf @2011-10-28T02:34:29Z` | T1 | the Equity Products line prints `1030 CT – Trading halt` above `Monday, Jan 17`, and `1700 CT – Halted products resume trading` with it, so the wrapped leg that opened Sunday 17:00 CT ends here; 10:30 CT is earlier than the family's ordinary 15:15 CT close |
+| 2011-02-21 | early close | `1030 CT` | `2011-presidents-day.pdf @2011-10-28T02:35:16Z` | T1 | the Equity Products line prints `1030 CT – Trading halt` above `Monday, Feb 21`, and `1700 CT – Halted products resume trading` with it, so the wrapped leg that opened Sunday 17:00 CT ends here; 10:30 CT is earlier than the family's ordinary 15:15 CT close |
+| 2011-04-22 | closed | `CME Globex is closed` | `2011-good-friday.pdf @2011-10-28T02:37:07Z` | T1 | the Equity Products line prints `Friday, Apr 22` above `CME Globex is closed`, so the trade date and its prior-evening leg are removed |
+| 2011-05-30 | early close | `1030 CT` | `2011-memorial-day.pdf @2013-09-30T10:56:52Z` | T1 | the Equity Products line prints `1030 CT – Trading halt` above `Monday, May 30`, and `1700 CT – Halted products resume trading` with it, so the wrapped leg that opened Sunday 17:00 CT ends here; 10:30 CT is earlier than the family's ordinary 15:15 CT close |
+| 2011-07-04 | early close | `1030 CT` | `2011-4th-of-july.pdf @2011-11-01T14:40:54Z` | T1 | the Equity Products line prints `1030 CT – Trading halt` above `Monday, July 4`, and `1700 CT – Halted products resume trading` with it, so the wrapped leg that opened Sunday 17:00 CT ends here; 10:30 CT is earlier than the family's ordinary 15:15 CT close |
+| 2011-09-05 | early close | `1030 CT` | `2011-labor-day.pdf @2011-11-01T14:43:45Z` | T1 | the Equity Products line prints `1030 CT – Trading halt` above `Monday, Sep 5`, and `1700 CT – Halted products resume trading` with it, so the wrapped leg that opened Sunday 17:00 CT ends here; 10:30 CT is earlier than the family's ordinary 15:15 CT close |
+| 2011-11-24 | early close | `1030 CT` | `2011-thanksgiving.pdf @2011-11-24T18:52:46Z` | T1 | the Equity Products line prints `1030 CT – Trading halt` above `Thursday, Nov 24`, and `1700 CT – Halted products resume trading` with it, so the wrapped leg that opened Wednesday 15:30 CT ends here; 10:30 CT is earlier than the family's ordinary 15:15 CT close |
+| 2011-11-25 | early close | `1215 CT` | `2011-thanksgiving.pdf @2011-11-24T18:52:46Z` | T1 | the Equity Products line prints `1215 CT – Early CME Globex close for trade date Friday, Nov 25`; 12:15 CT is earlier than the family's ordinary 15:15 CT close |
+| 2011-12-26 | closed | `Christmas Day Observed – Globex closed` | `2011-christmas.pdf @2012-01-25T02:05:48Z` | T1 | the Equity Products line prints `Monday, Dec 26` above the closure, so the trade date and its prior-evening leg are removed |
+| 2011-12-27 | late open | `0500 CT` | `2011-christmas.pdf @2012-01-25T02:05:48Z` | T1 | the Equity Products line prints `0500 CT – CME Globex open for trade date Tuesday, Dec 27`, so the trade date's first open is 05:00 CT on the date itself; the evening leg that would have opened earlier did not run |
+
+### 2012
+
+| trade date | kind | instant as printed | document | tier | derived from |
+|---|---|---|---|---|---|
+| 2012-01-02 | closed | `New Years Observed – Globex closed` | `2012-new-years.pdf @2012-01-25T02:54:30Z` | T1 | the Equity Products line prints `Monday, Jan 2` above the closure, so the trade date and its prior-evening leg are removed |
+| 2012-01-03 | late open | `0500 CT` | `2012-new-years.pdf @2012-01-25T02:54:30Z` | T1 | the Equity Products line prints `0500 CT – CME Globex open for trade date Tuesday, Jan 3`, so the trade date's first open is 05:00 CT on the date itself; the evening leg that would have opened earlier did not run |
+| 2012-01-16 | early close | `1030 CT` | `2012-martin-luther-king.pdf @2012-05-05T16:15:26Z` | T1 | the Equity Products line prints `1030 CT – Trading halt` above `Monday, Jan 16`, and `1700 CT – Halted products resume trading` with it, so the wrapped leg that opened Sunday 17:00 CT ends here; 10:30 CT is earlier than the family's ordinary 15:15 CT close |
+| 2012-02-20 | early close | `1030 CT` | `2012-presidents-day.pdf @2012-05-05T16:15:39Z` | T1 | the Equity Products line prints `1030 CT – Trading halt` above `Monday, Feb 20`, and `1700 CT – Halted products resume trading` with it, so the wrapped leg that opened Sunday 17:00 CT ends here; 10:30 CT is earlier than the family's ordinary 15:15 CT close |
+| 2012-04-06 | early close | `0815 CT` | `2012-good-friday.pdf @2012-04-17T00:42:47Z` | T1 | the Equity Products line prints `0815 CT - Early CME Globex close for trade date Friday Apr 6`; 08:15 CT is earlier than the family's ordinary 15:15 CT close |
+| 2012-05-28 | early close | `1030 CT` | `2012-memorial-day.pdf @2012-09-15T00:37:14Z` | T1 | the Equity Products line prints `1030 CT – Trading halt` above `Monday, May 28`, and `1700 CT – Halted products resume trading` with it, so the wrapped leg that opened Sunday 17:00 CT ends here; 10:30 CT is earlier than the family's ordinary 15:15 CT close |
+| 2012-07-03 | early close | `1215 CT` | `2012-4th-of-july.pdf @2012-09-15T00:39:23Z` | T1 | the Equity Products line prints `1215 CT – Early CME Globex close for trade date Tuesday, July 3` above `Tuesday, July 3`; 12:15 CT is earlier than the family's ordinary 15:15 CT close |
+| 2012-07-04 | early close | `1030 CT` | `2012-4th-of-july.pdf @2012-09-15T00:39:23Z` | T1 | the Equity Products line prints `1030 CT – Trading halt` above `Wednesday, July 4`, and `1700 CT – Halted products resume trading` with it, so the wrapped leg that opened Tuesday 15:30 CT ends here; 10:30 CT is earlier than the family's ordinary 15:15 CT close |
+| 2012-09-03 | early close | `1030 CT` | `2012-labor-day.pdf @2012-09-15T00:34:37Z` | T1 | the Equity Products line prints `1030 CT – Trading halt` above `Monday, Sep 3`, and `1700 CT – Halted products resume trading` with it, so the wrapped leg that opened Sunday 17:00 CT ends here; 10:30 CT is earlier than the family's ordinary 15:15 CT close |
+| 2012-11-22 | early close | `1030 CT` | `2012-thanksgiving.pdf @2013-01-27T22:39:01Z` | T1 | the Equity Products line prints `1030 CT - Trading halt` above `Thursday, Nov 22`, and `1700 CT – Equity products resume trading` with it, so the wrapped leg that opened Wednesday 17:00 CT ends here; 10:30 CT is earlier than the family's ordinary 16:15 CT close (the SER-6465 grid) |
+| 2012-11-23 | early close | `1215 CT` | `2012-thanksgiving.pdf @2013-01-27T22:39:01Z` | T1 | the Equity Products line prints `1215 CT – Early CME Globex close for trade date Friday, Nov 23`; 12:15 CT is earlier than the family's ordinary 16:15 CT close (the SER-6465 grid) |
+| 2012-12-24 | early close | `1215 CT` | `2012-christmas.pdf @2013-04-14T19:40:27Z` | T1 | the Equity Products line prints `1215 CT – Early CME Globex close for trade date Monday, Dec 24`; 12:15 CT is earlier than the family's ordinary 16:15 CT close (the SER-6465 grid) |
+| 2012-12-25 | closed | `Christmas Day Observed – Globex closed` | `2012-christmas.pdf @2013-04-14T19:40:27Z` | T1 | the Equity Products line prints `Tuesday, Dec 25` above the closure, so the trade date and its prior-evening leg are removed |
+| 2012-12-26 | late open | `0500 CT` | `2012-christmas.pdf @2013-04-14T19:40:27Z` | T1 | the Equity Products line prints `0500 CT – CME Globex open for trade date Wednesday, Dec 26`, so the trade date's first open is 05:00 CT on the date itself; the evening leg that would have opened earlier did not run |
+
+### 2013
+
+| trade date | kind | instant as printed | document | tier | derived from |
+|---|---|---|---|---|---|
+| 2013-01-01 | closed | `New Years Observed – Globex closed` | `2013-new-years.pdf @2013-04-14T19:41:46Z` | T1 | the Equity Products line prints `Tuesday, Jan 1` above the closure, so the trade date and its prior-evening leg are removed |
+| 2013-01-02 | late open | `0500 CT` | `2013-new-years.pdf @2013-04-14T19:41:46Z` | T1 | the Equity Products line prints `0500 CT – CME Globex open for trade date Wednesday, Jan 2`, so the trade date's first open is 05:00 CT on the date itself; the evening leg that would have opened earlier did not run |
+| 2013-01-21 | early close | `1030 CT` | `2013-martin-luther-king.pdf @2012-11-19T00:16:09Z` | T1 | the Equity Products line prints `1030 CT – Trading halt` above `Monday, Jan 21`, and `1700 CT – Halted products resume trading` with it, so the wrapped leg that opened Sunday 17:00 CT ends here; 10:30 CT is earlier than the family's ordinary 16:15 CT close |
+| 2013-02-18 | early close | `1030 CT` | `2013-presidents-day.pdf @2013-03-09T11:53:37Z` | T1 | the Equity Products line prints `1030 CT – Trading halt` above `Monday, Feb 18`, and `1700 CT – Halted products resume trading` with it, so the wrapped leg that opened Sunday 17:00 CT ends here; 10:30 CT is earlier than the family's ordinary 16:15 CT close |
+| 2013-03-29 | closed | `CME Globex is closed` | `2013-good-friday.pdf @2013-06-23T19:59:25Z` | T1 | the Equity Products line prints `Friday, March 29` above `CME Globex is closed`, so the trade date and its prior-evening leg are removed |
+| 2013-05-27 | early close | `1030 CT` | `2013-memorial-day.pdf @2013-06-23T20:36:04Z` | T1 | the Equity Products line prints `1030 CT – Trading halt` above `Monday, May 27`, and `1700 CT – Halted products resume trading` with it, so the wrapped leg that opened Sunday 17:00 CT ends here; 10:30 CT is earlier than the family's ordinary 16:15 CT close |
+| 2013-07-03 | early close | `1215 CT` | `2013-4th-of-july.pdf @2013-06-23T20:58:25Z` | T1 | the Equity Products line prints `1215 CT – Early close` above `Wednesday, July 3`; 12:15 CT is earlier than the family's ordinary 16:15 CT close |
+| 2013-07-04 | early close | `1030 CT` | `2013-4th-of-july.pdf @2013-06-23T20:58:25Z` | T1 | the Equity Products line prints `1030 CT – Trading halt` above `Thursday, July 4`, and `1700 CT – Halted products resume trading` with it, so the wrapped leg that opened Wednesday 17:00 CT ends here; 10:30 CT is earlier than the family's ordinary 16:15 CT close |
+| 2013-09-02 | early close | `1030 CT` | `2013-labor-day.pdf @2013-09-02T17:08:41Z` | T1 | the Equity Products line prints `1030 CT – Trading halt` above `Monday, Sep 2`, and `1700 CT – Halted products resume trading` with it, so the wrapped leg that opened Sunday 17:00 CT ends here; 10:30 CT is earlier than the family's ordinary 16:15 CT close |
+| 2013-11-28 | early close | `1030 CT` | `2013-thanksgiving.pdf @2014-02-14T06:28:36Z` | T1 | the Equity Products line prints `1030 CT – Trading halt` above `Thursday, Nov 28`, and `1700 CT – Halted products resume trading` with it, so the wrapped leg that opened Wednesday 17:00 CT ends here; 10:30 CT is earlier than the family's ordinary 16:15 CT close |
+| 2013-11-29 | early close | `1215 CT` (the sheet also prints `0815 CT – Regular close – Big Equities (SP, MD, ND, SMP, ZD)`, a line NKD is not named on) | `2013-thanksgiving.pdf @2014-02-14T06:28:36Z` | T1 | the Equity Products line prints `1215 CT – Early close` above `Friday, Nov 29`; 12:15 CT is earlier than the family's ordinary 16:15 CT close |
+| 2013-12-24 | early close | `1215 CT` | `2013-christmas.pdf @2014-04-12T06:24:28Z` | T1 | the Equity Products line prints `1215 CT – Early close` above `Tuesday, Dec 24`; 12:15 CT is earlier than the family's ordinary 16:15 CT close |
+| 2013-12-25 | closed | `Christmas Day Observed – Globex closed` | `2013-christmas.pdf @2014-04-12T06:24:28Z` | T1 | the Equity Products line prints `Wednesday, Dec 25` above the closure, so the trade date and its prior-evening leg are removed |
+| 2013-12-26 | late open | `0500 CT` | `2013-christmas.pdf @2014-04-12T06:24:28Z` | T1 | the Equity Products line prints `0500 CT – Modified open` above `Thursday, Dec 26`, so the trade date's first open is 05:00 CT on the date itself; the evening leg that would have opened earlier did not run |
+
+### 2014
+
+| trade date | kind | instant as printed | document | tier | derived from |
+|---|---|---|---|---|---|
+| 2014-01-01 | closed | `New Years Observed – Globex closed` | `2014-new-years.pdf @2013-10-07T20:58:00Z` | T1 | the Equity Products line prints `Wednesday, Jan 1` above the closure, so the trade date and its prior-evening leg are removed |
+| 2014-01-02 | late open | `0500 CT` | `2014-new-years.pdf @2013-10-07T20:58:00Z` | T1 | the Equity Products line prints `0500 CT – Modified open` above `Thursday, Jan 2`, so the trade date's first open is 05:00 CT on the date itself; the evening leg that would have opened earlier did not run |
+| 2014-01-20 | early close | `1030 CT / 1130 ET / 1630 UTC` | `2014-martin-luther-king-holiday-schedule.pdf @2014-03-26T16:02:15Z` | T1 | the Equity Products line prints `1030 CT / 1130 ET / 1630 UTC – Trading halt (pre-open)` above `Monday, Jan 20`, and `1700 CT / 1800 ET / 2300 UTC – Products resume trading` with it, so the wrapped leg that opened Sunday 17:00 CT ends here; 10:30 CT is earlier than the family's ordinary 16:15 CT close |
+| 2014-02-17 | early close | `1030 CT / 1130 ET / 1630 UTC` | `2014-presidents-day-holiday-schedule.pdf @2014-02-14T19:23:32Z` | T1 | the Equity Products line prints `1030 CT / 1130 ET / 1630 UTC – Trading halt (pre-open)` above `Monday, Feb 17`, and `1700 CT / 1800 ET / 2300 UTC – Products resume trading` with it, so the wrapped leg that opened Sunday 17:00 CT ends here; 10:30 CT is earlier than the family's ordinary 16:15 CT close |
+| 2014-04-18 | closed | `CME Globex is closed` | `2014-good-friday-holiday-schedule.pdf @2014-03-26T15:27:35Z` | T1 | the Equity Products line prints `Friday, April 18` above `CME Globex is closed`, so the trade date and its prior-evening leg are removed |
+| 2014-05-26 | early close | `1200 CT / 1300 ET / 1700 UTC` | `2014-memorial-day-holiday-schedule.pdf @2014-07-08T02:01:55Z` | T1 | the Equity Products line prints `1200 CT / 1300 ET / 1700 UTC – Trading halt (pre-open)` above `Monday, May 26`, and `1700 CT / 1800 ET / 2200 UTC – Products resume trading` with it, so the wrapped leg that opened Sunday 17:00 CT ends here; 12:00 CT is earlier than the family's ordinary 16:15 CT close |
+| 2014-07-03 | early close | `1215 CT / 1315 ET / 1715 UTC` | `2014-4th-of-july-holiday-schedule.pdf @2014-07-08T01:57:36Z` | T1 | the Equity Products line prints `1215 CT / 1315 ET / 1715 UTC – Early close` above `Thursday, July 3`; 12:15 CT is earlier than the family's ordinary 16:15 CT close |
+| 2014-07-04 | early close | `1200 CT / 1300 ET / 1700 UTC` | `2014-4th-of-july-holiday-schedule.pdf @2014-07-08T01:57:36Z` | T1 | the Equity Products line prints `1200 CT / 1300 ET / 1700 UTC – Early close (Day & GTD order elimination)` above `Friday, July 4`; 12:00 CT is earlier than the family's ordinary 16:15 CT close |
+| 2014-09-01 | early close | `1200 CT / 1300 ET / 1700 UTC` | `2014-labor-day-holiday-schedule.pdf @2014-09-12T07:16:08Z` | T1 | the Equity Products line prints `1200 CT / 1300 ET / 1700 UTC – Trading halt (pre-open)` above `Monday, Sep 1`, and `1700 CT / 1800 ET / 2200 UTC – Products resume trading` with it, so the wrapped leg that opened Sunday 17:00 CT ends here; 12:00 CT is earlier than the family's ordinary 16:15 CT close |
+| 2014-11-27 | early close | `1200 CT / 1300 ET / 1800 UTC` | `2014-thanksgiving-holiday-schedule.pdf @2015-01-21T14:54:56Z` | T1 | the Equity Products line prints `1200 CT / 1300 ET / 1800 UTC – Trading halt (pre-open)` above `Thursday, Nov 27`, and `1700 CT / 1800 ET / 2300 UTC – Products resume trading` with it, so the wrapped leg that opened Wednesday 17:00 CT ends here; 12:00 CT is earlier than the family's ordinary 16:15 CT close |
+| 2014-11-28 | early close | `1215 CT / 1315 ET / 1815 UTC` | `2014-thanksgiving-holiday-schedule.pdf @2015-01-21T14:54:56Z` | T1 | the Equity Products line prints `1215 CT / 1315 ET / 1815 UTC – Early close` above `Friday, Nov 28`; 12:15 CT is earlier than the family's ordinary 16:15 CT close |
+| 2014-12-24 | early close | `1215 CT / 1315 ET / 1815 UTC` | `2014-christmas-holiday-schedule.pdf @2015-01-21T14:10:00Z` | T1 | the Equity Products line prints `1215 CT / 1315 ET / 1815 UTC – Early close` above `Wednesday, Dec 24`; 12:15 CT is earlier than the family's ordinary 16:15 CT close |
+| 2014-12-25 | closed | `Christmas Day Observed – Globex close` (the sheet's own wording, followed by its `1700 CT / 1800 ET / 2300 UTC – Regular open for trade date Friday, Dec 26`) | `2014-christmas-holiday-schedule.pdf @2015-01-21T14:10:00Z` | T1 | the Equity Products line prints `Thursday, Dec 25` above the closure, so the trade date and its prior-evening leg are removed |
+
+### 2015
+
+| trade date | kind | instant as printed | document | tier | derived from |
+|---|---|---|---|---|---|
+| 2015-01-01 | closed | `New Years Observed – Globex closed` | `2015-new-years-holiday-schedule.pdf @2015-01-21T14:10:43Z` | T1 | the Equity Products line prints `Thursday, Jan 1` above the closure, so the trade date and its prior-evening leg are removed |
+| 2015-01-19 | early close | `1200 CT / 1300 ET / 1800 UTC` | `2015-martin-luther-king-holiday-schedule.pdf @2015-01-21T14:10:12Z` | T1 | the Equity Products line prints `1200 CT / 1300 ET / 1800 UTC – Trading halt (pre-open)` above `Monday, Jan 19`, and `1700 CT / 1800 ET / 2300 UTC – Products resume trading` with it, so the wrapped leg that opened Sunday 17:00 CT ends here; 12:00 CT is earlier than the family's ordinary 16:15 CT close |
+| 2015-02-16 | early close | `1200 CT / 1300 ET / 1800 UTC` | `2015-presidents-day-holiday-schedule.pdf @2015-01-21T19:24:01Z` | T1 | the Equity Products line prints `1200 CT / 1300 ET / 1800 UTC – Trading halt (pre-open)` above `Monday, Feb 16`, and `1700 CT / 1800 ET / 2300 UTC – Products resume trading` with it, so the wrapped leg that opened Sunday 17:00 CT ends here; 12:00 CT is earlier than the family's ordinary 16:15 CT close |
+| 2015-04-03 | early close | `0815 CT / 0915 ET / 1315 UTC` | `2015-good-friday-holiday-schedule.pdf @2015-09-05T22:32:30Z` | T1 | the Equity Products line prints `0815 CT / 0915 ET / 1315 UTC - Early CME Globex close for trade date Friday April 3`; 08:15 CT is earlier than the family's ordinary 16:15 CT close |
+| 2015-05-25 | early close | `1200 CT / 1300 ET / 1700 UTC` | `2015-memorial-day-holiday-schedule.pdf @2015-03-26T11:39:38Z` | T1 | the Equity Products line prints `1200 CT / 1300 ET / 1700 UTC – Trading halt (pre-open)` above `Monday, May 25`, and `1700 CT / 1800 ET / 2200 UTC – Products resume trading` with it, so the wrapped leg that opened Sunday 17:00 CT ends here; 12:00 CT is earlier than the family's ordinary 16:15 CT close |
+| 2015-07-03 | early close | `1200 CT / 1300 ET / 1700 UTC` | `2015-4th-of-july-holiday-schedule.pdf @2015-09-05T22:27:33Z` | T1 | the Equity Products line prints `1200 CT / 1300 ET / 1700 UTC – Early close (Day & GTD order elimination)` above `Friday, July 3`; 12:00 CT is earlier than the family's ordinary 16:15 CT close |
+| 2015-09-07 | early close | `1200 CT / 1300 ET / 1700 UTC` | `2015-labor-day-holiday-schedule.pdf @2015-08-24T02:30:39Z` | T1 | the Equity Products line prints `1200 CT / 1300 ET / 1700 UTC – Trading halt (pre-open)` above `Monday, Sep 7`, and `1700 CT / 1800 ET / 2200 UTC – Products resume trading` with it, so the wrapped leg that opened Sunday 17:00 CT ends here; 12:00 CT is earlier than the family's ordinary 16:15 CT close |
+| 2015-11-26 | early close | `1200 CT / 1300 ET / 1800 UTC` | `2015-thanksgiving-holiday-schedule.pdf @2016-02-05T16:25:19Z` | T1 | the Equity Products line prints `1200 CT / 1300 ET / 1800 UTC – Trading halt (pre-open)` above `Thursday, Nov 26`, and `1700 CT / 1800 ET / 2300 UTC – Products resume trading` with it, so the wrapped leg that opened Wednesday 17:00 CT ends here; 12:00 CT is earlier than the family's ordinary 16:00 CT close (the notice-20150817 grid) |
+| 2015-11-27 | early close | `1215 CT / 1315 ET / 1815 UTC` | `2015-thanksgiving-holiday-schedule.pdf @2016-02-05T16:25:19Z` | T1 | the Equity Products line prints `1215 CT / 1315 ET / 1815 UTC – Early close` above `Friday, Nov 27`; 12:15 CT is earlier than the family's ordinary 16:00 CT close (the notice-20150817 grid) |
+| 2015-12-24 | early close | `1215 CT / 1315 ET / 1815 UTC` | `2015-christmas-holiday-schedule.pdf @2015-11-23T06:15:20Z` | T1 | the Equity Products line prints `1215 CT / 1315 ET / 1815 UTC – Early close` above `Thursday, Dec 24`; 12:15 CT is earlier than the family's ordinary 16:00 CT close (the notice-20150817 grid) |
+| 2015-12-25 | closed | `Christmas Day Observed – Globex closed` | `2015-christmas-holiday-schedule.pdf @2015-11-23T06:15:20Z` | T1 | the Equity Products line prints `Friday, Dec 25` above the closure, so the trade date and its prior-evening leg are removed |
+
+### Documents (2011-2015)
+
+This era's rows cite the ids below — CME Group's own published holiday
+schedules, all at **T1**. Every id is shared with
+[`globex_equity_index`](globex_equity_index.md), whose auditors retrieved the
+bytes on 2026-09-12 UTC into `holidays/raw/cme-2010-2012/` and
+`holidays/raw/cme-2013-2015/` (with the `-fix` and `-repair-r2` rounds); this
+wave re-verified every digest against the store's bytes and re-read every
+cited line from the store's extracts on 2026-09-29 UTC. The three 2010 ids and
+`2011-new-years.pdf` are cited by the era's prose above — the 2010 sheets for
+the refusal that keeps the interval unaudited, the 2011 New Year's sheet for
+the audited-normal 2011-01-03 — and are not any row's document.
+
+| Document | Window | Replay or service URL | Capture or retrieval, UTC | Tier | sha256 |
+|---|---|---|---|---|---|
+| `2011-new-years.pdf @2011-11-01T14:39:45Z` | `2011-new-years.pdf` | <https://web.archive.org/web/20111101143945id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2011-new-years.pdf> | archive capture 2011-11-01T14:39:45Z | T1 | `42c289804cd3fa0830556ecb7fcc31493c452ba9e7325ebe7d7ce29613e41476` |
+| `2010-new-years.pdf @2010-02-15T05:16:52Z` | `2010-new-years.pdf` | <https://web.archive.org/web/20100215051652id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2010-new-years.pdf> | archive capture 2010-02-15T05:16:52Z | T1 | `c30a6cef73fca23c54b25907f307ad52a2922d1e4b76c0a12de126dc6fc31a6d` |
+| `2010-presidents-day.pdf @2010-02-15T06:46:41Z` | `2010-presidents-day.pdf` | <https://web.archive.org/web/20100215064641id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2010-presidents-day.pdf> | archive capture 2010-02-15T06:46:41Z | T1 | `ba379a7fa57efef43820583ada0002ea6cd8ccf0caf1b650d1cb6e8561f84253` |
+| `2010-christmas.pdf @2010-12-14T06:12:38Z` | `2010-christmas.pdf` | <https://web.archive.org/web/20101214061238id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2010-christmas.pdf> | archive capture 2010-12-14T06:12:38Z | T1 | `d4adb060f6eb592fb24e3a272db57b3d8c9d69f3f370682ecd8d57e4169c37be` |
+| `2011-martin-luther-king.pdf @2011-10-28T02:34:29Z` | `2011-martin-luther-king.pdf` | <https://web.archive.org/web/20111028023429id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2011-martin-luther-king.pdf> | archive capture 2011-10-28T02:34:29Z | T1 | `2e389e2688d6760705220a11657329e76a9eb3a88d78664b4775eb7481be7b17` |
+| `2011-presidents-day.pdf @2011-10-28T02:35:16Z` | `2011-presidents-day.pdf` | <https://web.archive.org/web/20111028023516id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2011-presidents-day.pdf> | archive capture 2011-10-28T02:35:16Z | T1 | `0342359e135acada5cfaa1b74f806477f759924a0b40625e035242c7e81321d4` |
+| `2011-good-friday.pdf @2011-10-28T02:37:07Z` | `2011-good-friday.pdf` | <https://web.archive.org/web/20111028023707id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2011-good-friday.pdf> | archive capture 2011-10-28T02:37:07Z | T1 | `6cf10359bb438eb49287dcef7c1e75a484df4d6e3b538fa9ee59dc3832210bda` |
+| `2011-memorial-day.pdf @2013-09-30T10:56:52Z` | `2011-memorial-day.pdf` | <https://web.archive.org/web/20130930105652id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2011-memorial-day.pdf> | archive capture 2013-09-30T10:56:52Z | T1 | `5482f7bf47e0ee61448cf5f60fd4a5373cc39cb0e46220150c1f6a2ab2d6caec` |
+| `2011-4th-of-july.pdf @2011-11-01T14:40:54Z` | `2011-4th-of-july.pdf` | <https://web.archive.org/web/20111101144054id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2011-4th-of-july.pdf> | archive capture 2011-11-01T14:40:54Z | T1 | `4c3bfbbe927ed799006edce76b5f263b6299bab29be7ff1eb06326e184a9b443` |
+| `2011-labor-day.pdf @2011-11-01T14:43:45Z` | `2011-labor-day.pdf` | <https://web.archive.org/web/20111101144345id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2011-labor-day.pdf> | archive capture 2011-11-01T14:43:45Z | T1 | `03f38fea761a6da7633c3e636a40de61431c866a87f2229f270685bf9bb4470b` |
+| `2011-thanksgiving.pdf @2011-11-24T18:52:46Z` | `2011-thanksgiving.pdf` | <https://web.archive.org/web/20111124185246id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2011-thanksgiving.pdf> | archive capture 2011-11-24T18:52:46Z | T1 | `bf75c3e0d3e18cbb8599458574bc7232513b737a664582454a7b34ca2b6caeb5` |
+| `2011-christmas.pdf @2012-01-25T02:05:48Z` | `2011-christmas.pdf` | <https://web.archive.org/web/20120125020548id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2011-christmas.pdf> | archive capture 2012-01-25T02:05:48Z | T1 | `a0d34878fd70534afb2e0a2585a04ce1efc8c4aa0451575266cfb5f9dcf08029` |
+| `2012-new-years.pdf @2012-01-25T02:54:30Z` | `2012-new-years.pdf` | <https://web.archive.org/web/20120125025430id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2012-new-years.pdf> | archive capture 2012-01-25T02:54:30Z | T1 | `aa8593edfde40a70ce2ab4818cd8984082eaeaa4a4893e2a8f3e3dc9ef4b1347` |
+| `2012-martin-luther-king.pdf @2012-05-05T16:15:26Z` | `2012-martin-luther-king.pdf` | <https://web.archive.org/web/20120505161526id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2012-martin-luther-king.pdf> | archive capture 2012-05-05T16:15:26Z | T1 | `458c94af0fd7b7d8445c229de6bbe05648ea588c2fea88180eefe46486e4d265` |
+| `2012-presidents-day.pdf @2012-05-05T16:15:39Z` | `2012-presidents-day.pdf` | <https://web.archive.org/web/20120505161539id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2012-presidents-day.pdf> | archive capture 2012-05-05T16:15:39Z | T1 | `4b5daad7813d41cdd9a104cca3a656bf303672f03c6c51ff5a13771d840ef131` |
+| `2012-good-friday.pdf @2012-04-17T00:42:47Z` | `2012-good-friday.pdf` | <https://web.archive.org/web/20120417004247id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2012-good-friday.pdf> | archive capture 2012-04-17T00:42:47Z | T1 | `81440c44afb97ea4b3a44b86aa4cf21e2e4cb7ba5839fabd95b29d0c928b2ea8` |
+| `2012-memorial-day.pdf @2012-09-15T00:37:14Z` | `2012-memorial-day.pdf` | <https://web.archive.org/web/20120915003714id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2012-memorial-day.pdf> | archive capture 2012-09-15T00:37:14Z | T1 | `5dc5cf9883232978ec1e80bd5bd50a2043535e93d7e52acddf4fd7e68938e848` |
+| `2012-4th-of-july.pdf @2012-09-15T00:39:23Z` | `2012-4th-of-july.pdf` | <https://web.archive.org/web/20120915003923id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2012-4th-of-july.pdf> | archive capture 2012-09-15T00:39:23Z | T1 | `9b35b802ff0e399226ac0811761fc7e03487d8dec401c19a7e383750cbca5faf` |
+| `2012-labor-day.pdf @2012-09-15T00:34:37Z` | `2012-labor-day.pdf` | <https://web.archive.org/web/20120915003437id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2012-labor-day.pdf> | archive capture 2012-09-15T00:34:37Z | T1 | `2f951bede1d6084977c8bed2f1cc4c993ebedd904aa0d56027668d2cb808ee39` |
+| `2012-thanksgiving.pdf @2013-01-27T22:39:01Z` | `2012-thanksgiving.pdf` | <https://web.archive.org/web/20130127223901id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2012-thanksgiving.pdf> | archive capture 2013-01-27T22:39:01Z | T1 | `052e381bbd4eb0790c6d38e3866874738d6da081da62643e525c25674b2608e1` |
+| `2012-christmas.pdf @2013-04-14T19:40:27Z` | `2012-christmas.pdf` | <https://web.archive.org/web/20130414194027id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2012-christmas.pdf> | archive capture 2013-04-14T19:40:27Z | T1 | `de3b16aaae2ef887e46c965f902d8d0e43afa6e18dc1f721baaa40ea6b18b5e9` |
+| `2013-new-years.pdf @2013-04-14T19:41:46Z` | 2013-01-01 .. 2015-12-31 | <https://web.archive.org/web/20130414194146id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2013-new-years.pdf> | archive capture 2013-04-14T19:41:46Z | T1 | `e29c2c968cdf20883d55acd13bab50e9df02c547826bca9d2867f5bf9b2df3f7` |
+| `2013-martin-luther-king.pdf @2012-11-19T00:16:09Z` | 2013-01-01 .. 2015-12-31 | <https://web.archive.org/web/20121119001609id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2013-martin-luther-king.pdf> | archive capture 2012-11-19T00:16:09Z | T1 | `43a646480cc7ffca137890901c0fc716ed04403e0dabc1ef07749d2b21b70c4c` |
+| `2013-presidents-day.pdf @2013-03-09T11:53:37Z` | 2013-01-01 .. 2015-12-31 | <https://web.archive.org/web/20130309115337id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2013-presidents-day.pdf> | archive capture 2013-03-09T11:53:37Z | T1 | `e1242116eec5b7f3c5748e61adbf5bf7a809f48739ad456391f1d8b4bafceff6` |
+| `2013-good-friday.pdf @2013-06-23T19:59:25Z` | 2013-01-01 .. 2015-12-31 | <https://web.archive.org/web/20130623195925id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2013-good-friday.pdf> | archive capture 2013-06-23T19:59:25Z | T1 | `c05e590c950581e19ac2e8ee5327ebcfb4fc111b231b506abefae44534ee9b68` |
+| `2013-memorial-day.pdf @2013-06-23T20:36:04Z` | 2013-01-01 .. 2015-12-31 | <https://web.archive.org/web/20130623203604id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2013-memorial-day.pdf> | archive capture 2013-06-23T20:36:04Z | T1 | `7cc47e352ff4874614fdb583cecd41b3ac3fcf95be6199ea5d489b8b34d2afe7` |
+| `2013-4th-of-july.pdf @2013-06-23T20:58:25Z` | 2013-01-01 .. 2015-12-31 | <https://web.archive.org/web/20130623205825id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2013-4th-of-july.pdf> | archive capture 2013-06-23T20:58:25Z | T1 | `52c62e72329866f12726363d762335c8dadfdd3407c3643f38d7ed74608e8eb7` |
+| `2013-labor-day.pdf @2013-09-02T17:08:41Z` | 2013-01-01 .. 2015-12-31 | <https://web.archive.org/web/20130902170841id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2013-labor-day.pdf> | archive capture 2013-09-02T17:08:41Z | T1 | `8f22671fa723d33fe36d58bb29e80ebd15370d3bf9000a9b45d56a0cab0608ef` |
+| `2013-thanksgiving.pdf @2014-02-14T06:28:36Z` | 2013-01-01 .. 2015-12-31 | <https://web.archive.org/web/20140214062836id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2013-thanksgiving.pdf> | archive capture 2014-02-14T06:28:36Z | T1 | `1f7f6428990a5bd01065f31c4388bf5aeeb12d9219e5af6d16b1cec86bbc158b` |
+| `2013-christmas.pdf @2014-04-12T06:24:28Z` | 2013-01-01 .. 2015-12-31 | <https://web.archive.org/web/20140412062428id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2013-christmas.pdf> | archive capture 2014-04-12T06:24:28Z | T1 | `1389ade6b120383d05e8d6e8ed9c38f1e2394dd250c86b19606548618285e848` |
+| `2014-new-years.pdf @2013-10-07T20:58:00Z` | 2013-01-01 .. 2015-12-31 | <https://web.archive.org/web/20131007205800id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2014-new-years.pdf> | archive capture 2013-10-07T20:58:00Z | T1 | `ca6da5edc26537d341b5148781c43c8ef00e33e832c8e602b97c57d6508b8f28` |
+| `2014-martin-luther-king-holiday-schedule.pdf @2014-03-26T16:02:15Z` | 2013-01-01 .. 2015-12-31 | <https://web.archive.org/web/20140326160215id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2014-martin-luther-king-holiday-schedule.pdf> | archive capture 2014-03-26T16:02:15Z | T1 | `5069a46a6acfb69bf05261abc23097fd675d159cf55e45361fb7e1e41dc0dcd4` |
+| `2014-presidents-day-holiday-schedule.pdf @2014-02-14T19:23:32Z` | 2013-01-01 .. 2015-12-31 | <https://web.archive.org/web/20140214192332id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2014-presidents-day-holiday-schedule.pdf> | archive capture 2014-02-14T19:23:32Z | T1 | `b689b4f8e9f62ba6f8c32bba46d35923a4017d1edbc83cc9ffcc2a85baded4fb` |
+| `2014-good-friday-holiday-schedule.pdf @2014-03-26T15:27:35Z` | 2013-01-01 .. 2015-12-31 | <https://web.archive.org/web/20140326152735id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2014-good-friday-holiday-schedule.pdf> | archive capture 2014-03-26T15:27:35Z | T1 | `4e8593e96eb42af2cde99f6ed906d4fe4a2ea8f976fc9f8d8f561f3049cc7f0e` |
+| `2014-memorial-day-holiday-schedule.pdf @2014-07-08T02:01:55Z` | 2013-01-01 .. 2015-12-31 | <https://web.archive.org/web/20140708020155id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2014-memorial-day-holiday-schedule.pdf> | archive capture 2014-07-08T02:01:55Z | T1 | `a8e020149657b4e4730c2a357015d096a9fd47e2054ca59a85d6e6548ccb6023` |
+| `2014-4th-of-july-holiday-schedule.pdf @2014-07-08T01:57:36Z` | 2013-01-01 .. 2015-12-31 | <https://web.archive.org/web/20140708015736id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2014-4th-of-july-holiday-schedule.pdf> | archive capture 2014-07-08T01:57:36Z | T1 | `34faa82435c6d8bb1088593c8945b6a5faaaa67b36c6a6422a24e4a25572ba77` |
+| `2014-labor-day-holiday-schedule.pdf @2014-09-12T07:16:08Z` | 2013-01-01 .. 2015-12-31 | <https://web.archive.org/web/20140912071608id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2014-labor-day-holiday-schedule.pdf> | archive capture 2014-09-12T07:16:08Z | T1 | `dfd92a530d114a1f1c68dd52be4315fd307d8f8cfb344d71de78334b9c73e4d6` |
+| `2014-thanksgiving-holiday-schedule.pdf @2015-01-21T14:54:56Z` | 2013-01-01 .. 2015-12-31 | <https://web.archive.org/web/20150121145456id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2014-thanksgiving-holiday-schedule.pdf> | archive capture 2015-01-21T14:54:56Z | T1 | `a90ae1f39414337f1a8600f55bf3a0a587214d987074885a47cfea307bc8054a` |
+| `2014-christmas-holiday-schedule.pdf @2015-01-21T14:10:00Z` | 2013-01-01 .. 2015-12-31 | <https://web.archive.org/web/20150121141000id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2014-christmas-holiday-schedule.pdf> | archive capture 2015-01-21T14:10:00Z | T1 | `8125a18c9cad9b770be39b89c3193ee419240d409e39aa510d6eb3e8eba94e25` |
+| `2015-new-years-holiday-schedule.pdf @2015-01-21T14:10:43Z` | 2013-01-01 .. 2015-12-31 | <https://web.archive.org/web/20150121141043id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2015-new-years-holiday-schedule.pdf> | archive capture 2015-01-21T14:10:43Z | T1 | `196b4ec04bcfce2cfd9783262023afe9da73bcdef1b983c8c4b464b2e115bb8a` |
+| `2015-martin-luther-king-holiday-schedule.pdf @2015-01-21T14:10:12Z` | 2013-01-01 .. 2015-12-31 | <https://web.archive.org/web/20150121141012id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2015-martin-luther-king-holiday-schedule.pdf> | archive capture 2015-01-21T14:10:12Z | T1 | `67395dcb63d86b6e1f573a5aa37269a685dfe1b17d23edd7d95449899bce090a` |
+| `2015-presidents-day-holiday-schedule.pdf @2015-01-21T19:24:01Z` | 2013-01-01 .. 2015-12-31 | <https://web.archive.org/web/20150121192401id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2015-presidents-day-holiday-schedule.pdf> | archive capture 2015-01-21T19:24:01Z | T1 | `c81b04bcf43dbfd2b7c2f7aba559992cde8bb8eee59e7b310b643b636d290b94` |
+| `2015-good-friday-holiday-schedule.pdf @2015-09-05T22:32:30Z` | 2013-01-01 .. 2015-12-31 | <https://web.archive.org/web/20150905223230id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2015-good-friday-holiday-schedule.pdf> | archive capture 2015-09-05T22:32:30Z | T1 | `67873caa987c9eee8de38d02a5c18d8f7d46fd82a486bab34821f6e6f6363e0b` |
+| `2015-memorial-day-holiday-schedule.pdf @2015-03-26T11:39:38Z` | 2013-01-01 .. 2015-12-31 | <https://web.archive.org/web/20150326113938id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2015-memorial-day-holiday-schedule.pdf> | archive capture 2015-03-26T11:39:38Z | T1 | `4ad4398fa092393fa77cd8ed9c58ecc0f1669a41fd38a9b4cab5b05790d2dfec` |
+| `2015-4th-of-july-holiday-schedule.pdf @2015-09-05T22:27:33Z` | 2013-01-01 .. 2015-12-31 | <https://web.archive.org/web/20150905222733id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2015-4th-of-july-holiday-schedule.pdf> | archive capture 2015-09-05T22:27:33Z | T1 | `1013e6ebea1829591946c9aa513ec6e3f99c64d99be14814610e601bb5dcc0fb` |
+| `2015-labor-day-holiday-schedule.pdf @2015-08-24T02:30:39Z` | 2013-01-01 .. 2015-12-31 | <https://web.archive.org/web/20150824023039id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2015-labor-day-holiday-schedule.pdf> | archive capture 2015-08-24T02:30:39Z | T1 | `4aab7fdb5e57420a243bbc26be6ecfa00a6317937afe3b772dfcdd8db1dd50fd` |
+| `2015-thanksgiving-holiday-schedule.pdf @2016-02-05T16:25:19Z` | 2013-01-01 .. 2015-12-31 | <https://web.archive.org/web/20160205162519id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2015-thanksgiving-holiday-schedule.pdf> | archive capture 2016-02-05T16:25:19Z | T1 | `ef96d05289667c635f435884a0a2407bcbec63149ff96e802b719100c85c887f` |
+| `2015-christmas-holiday-schedule.pdf @2015-11-23T06:15:20Z` | 2013-01-01 .. 2015-12-31 | <https://web.archive.org/web/20151123061520id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2015-christmas-holiday-schedule.pdf> | archive capture 2015-11-23T06:15:20Z | T1 | `7fde46210798f2cb4299903400b41ef6e2cb9aa287f8d3d360ba59d835b482ec` |
+
+### Gaps and residual risks, 2011-2015 and 2010
+
+**This era closes the 2011-2015 span and narrows the family's unaudited
+interval to 2010-01-01..2011-01-11.** The table as a whole carries 220 rows
+over 6 windows — 2011-01-12..2012-12-31, 2013-01-01..2015-12-31,
+2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31,
+2025-01-01..2027-12-31 — and this wave's share is **62 rows**: 12 closures,
+44 early closes and 6 late opens, every one at T1, none `Unsourced`. The 2011
+window opens 2011-01-12, not 2011-01-01: the profile's first sourced day is
+2011-01-12 (the knowledge boundary above), and the 2011 New Year's sheet — the
+only operator document covering 2011-01-01..2011-01-03 — states the equity
+class line for dates whose NKD handling that year followed the unmodelled 2010
+grid, so the four sessions it describes are not this family's to claim. The
+2010 refusal, its bounded-search record and its closing conditions are in the
+era block above, and the follow-up is tracked as #225
+(LAW-FOLLOW-UPS-ARE-ISSUES).
+
+**No `Unsourced` row and no unrepresentable instant ships in either window.**
+The two 2010-era vocabulary limits the equity family recorded — a same-day
+re-open after a close, and the 15:30 CT re-open printed for the day after a
+half-day — do not arise here: every re-open this family's sheets print in
+2011-2015 is the ordinary 17:00 CT evening open or a stated late open, both of
+which the crate represents. The `USD - Ibovespa Futures` opens and exceptions
+the 2013 sheets print beside the equity lines are another contract's sessions,
+not this family's (LAW-SESSION-NOT-EXPIRY), and no row above keys to one.
 
 ### Documents
 
@@ -220,7 +484,7 @@ This era's rows cite the ids below — CME Group's own Globex holiday schedules,
 | `2021-holiday-calendars.zip#2021-presidents-day-holiday-schedule-compact.xls @2026-08-30T10:03:27Z` | 2019-01-01 .. 2021-12-31 | <https://web.archive.org/web/20260830100327id_/https://www.cmegroup.com/tools-information/holiday-calendar/files/2021-holiday-calendars.zip> | archive capture 2026-08-30T10:03:27Z | T1 | `7a8d5ce35c639998abf64723de2cc2d649dc015b1aa6cfc3bc326ab5cdfd0c4f` |
 | `2021-holiday-calendars.zip#2021-thanksgiving-holiday-schedule-compact.xls @2026-08-30T10:03:27Z` | 2019-01-01 .. 2021-12-31 | <https://web.archive.org/web/20260830100327id_/https://www.cmegroup.com/tools-information/holiday-calendar/files/2021-holiday-calendars.zip> | archive capture 2026-08-30T10:03:27Z | T1 | `df6cdbc4c996109fe5a5829b5e8aaf622c20c6f16f1464dcdd9d5250c4163a47` |
 ### Gaps and residual risks, 2019-2021
-**This era declares the family's fourth audited window.** The table as a whole carries 143 rows over 4 windows — 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 — and this era's share is **36 rows**: 8 full closures, 25 early closes and 3 `Unsourced` rows. Every row is at T1. Every date before the first window lies outside it, so `holiday_coverage` reports it as unaudited rather than as audited normal.
+**This era declared the family's fourth audited window when it shipped; the 2026-09-29 wave added the two before it.** The table as a whole carries 220 rows over 6 windows — 2011-01-12..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 — and this era's share is **36 rows**: 8 full closures, 25 early closes and 3 `Unsourced` rows. Every row is at T1. Every date before the 2011-01-12 window lies outside it, so `holiday_coverage` reports that interval as unaudited rather than as audited normal.
 **Juneteenth 2019, 2020 and 2021 — three `Unsourced` rows.** CME published no Juneteenth schedule in any of the three years. Each row cites that year's own consolidated bundle — `2019-holiday-calendars.zip @2021-01-26T09:48:37Z`, `2020-holiday-calendars.zip @2026-07-30T11:18:34Z` and `2021-holiday-calendars.zip @2026-08-30T10:03:27Z` — whose member lists are CME's own account of every Globex holiday schedule it published that year and which carry no Juneteenth sheet; the four archived `holiday-calendar.html` index pages name none either, and a fresh 2018-2027 prefix CDX enumeration (`raw/cme-2019-2021-fix/cdx/cdx-files-2018-2027.json`, 369 rows, 340 distinct filenames) finds no `juneteenth` filename before 2022. Inside a contiguous window silence is the positive claim that a date was audited normal, which is false for a date the operator later marks as a holiday, so all three ship `Unsourced`, which clips nothing. 2021-06-19 is a **Saturday**: no family has a trade date there and the row changes no answer, and the row is keyed to the operator's own calendar date for the holiday rather than to an observed date CME never states. Closing condition: a CME holiday schedule naming Juneteenth in one of these three years.
 **Columbus Day and Veterans Day — six dates with no row.** 2019-10-14, 2019-11-11, 2020-10-12, 2020-11-11, 2021-10-11 and 2021-11-11 lie inside this window and carry no row, so the family's ordinary week stands there. CME published settlement-time and OTC-clearing advisories for these dates — the 2019 ZIP's `settlement-notices/*-settlement-times.pdf` members and, for example, `2021-veterans-day-advisory.pdf` — but never a Globex trading schedule for them. A settlement notice is not session language (LAW-SESSION-NOT-EXPIRY), so no row is keyed to one and the block's `missing` register records the dates as gaps rather than as sourced normality. Closing condition: a CME Globex holiday schedule naming one of these dates.
 **Interpretive step: this family is keyed to the `Equity` / `Equity Products` line.** No CME sheet in this era prints an outright Nikkei row. The Nikkei 225 futures trade under the compact sheets' `Equity` line and the full sheets' `Equity Products` line, and that is the line every row above records; the block's `globex_nikkei_225_dollar` rows say so on each of the 44 dates. Five dates carry `modified` status because CME's own Nikkei-labelled BTIC row diverges from that line: 2020-12-31 and 2021-12-31, where the row prints `Globex Closed` and `Closed` in a column where `Equity Products` closes at 16:00; 2021-04-02, where the sheet splits `Nikkei BTIC` from `TOPIX BTIC`; and 2021-11-25 and 2021-11-26, where it prints `Nikkei & BTIC` with its own 10:30 pre-open, 11:00 open, 16:00 halt and 00:00 close. A BTIC row is a trade-type variant, not the outright future — the consumer marks that flag itself — so the `Equity` line governs every row above. The two year-end divergences move no boundary the crate holds, because the `Equity Products` 16:00 close is that grid's ordinary close on both dates and both ship no row; the two Thanksgiving 2021 divergences are recorded beside the rows they touch, which carry the `Equity` line's 12:00 CT and 12:15 CT closes. Closing condition for a row of this family's own: a CME document that breaks out the outright Nikkei 225 future's session on a holiday date.
@@ -667,6 +931,15 @@ Official origin of the trading-hours captures: <http://www.cmegroup.com/trading_
 
 ## Gaps and residual risks
 
+- **holiday, 2010 only** — the 2010-01-01..2011-01-11 interval stays outside
+  every declared holiday window, so `holiday_on` refuses it. The 2010 sheets
+  survive complete and are read (the era block under `## Holidays` records the
+  bounded search), but they govern the 2010 grid this crate does not model and
+  they carve the Nikkei out of the equity class line where it differed, so no
+  audited-normal claim is available there either. Closing conditions: the 2010
+  grid's own condition below, then a per-sheet reading of the 2010 sheets'
+  Nikkei statements. Served identity, so tracked as an issue
+  (LAW-FOLLOW-UPS-ARE-ISSUES).
 - **executable** — the 2010 grid is sourced but structurally different and its changeover day is undated, so dates before 2011-01-12 resolve to a sessionless profile rather than carrying either grid. CME's 2010-03-10 and 2010-04-07 captures read a daytime-anchored, DST-dependent grid — CDT 03:00–15:15 reopening 15:30–16:30 and 17:00–18:00, CST 02:00–15:15 with no Sunday hours — and the 2011-01-12 capture already reads the served grid, with no capture and no located CME notice in between. Serving the continuous grid across 2010 would report the contract open all night when it was closed, which an earlier revision of the module did and which is corrected. Closing condition: a CME document that dates the changeover, or a capture inside the 2010-04-07..2011-01-12 window. Served identity, so tracked as an issue (LAW-FOLLOW-UPS-ARE-ISSUES).
 - **residual risk** — encoding the 2010 grid itself would need seasonal CDT/CST rules and a boundary that is still undated, so it is left sourced-but-unmodelled.
 - **corrected at the migration** — the ledger note carried into this file ended with a sentence, written for an earlier revision of the module, saying the pre-2012 grid "is now extended to the January-2010 floor". The module does not do that and must not: `nkd_profile_at` returns `NKD_CLOSED` below 2011-01-12. That sentence was removed on 2026-09-12 and an editorial marker left in its place; the surviving correction earlier in the same note is the authoritative statement.

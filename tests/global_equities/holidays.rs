@@ -8,9 +8,10 @@
 //! refusing), `asx` (2010-2024 backfilled from each year's own operator
 //! sheet, beside 2025-2027) and `sgx_securities` (2014-2020-01-01 backfilled
 //! beside 2025-2026, the 2010-2013 and 2020-2024 capture gaps refusing), and
-//! the European/American venues `lse` (2025-2027, with five rolling-table
-//! dates withheld), `euronext_paris` (2025-2026; the 2026 half-day hours are
-//! announced but unstated) and `tsx` (2025-2026).
+//! the European/American venues `lse` (2010-2015 and 2020-2027, the
+//! rolling table's archived states, with five 2025 dates withheld and the two
+//! capture gaps refusing), `euronext_paris` (2025-2026; the 2026 half-day
+//! hours are announced but unstated) and `tsx` (2025-2026).
 //!
 //! Every case below goes through the public identity-backed calendar, the
 //! same surface the consumer routes through. Each venue's section fences its
@@ -2776,11 +2777,9 @@ mod lse {
     fn closures_per_year_match_the_operators_printed_table() {
         let calendar = lse();
         // Every `NON-trading day.` row of the operator's business-days table,
-        // per year: 2025's New Year closure is printed by the 2024-02-07
-        // capture; 2025-12-25/26 and the whole 2026 and 2027 sets are printed
+        // per year: 2025-12-25/26 and the whole 2026 and 2027 sets are printed
         // by the 2025-12-18 capture.
         let closed = [
-            (2025, 1, 1),
             (2025, 12, 25),
             (2025, 12, 26),
             (2026, 1, 1),
@@ -2803,6 +2802,160 @@ mod lse {
         for date in closed {
             assert_closed(calendar, date, "lse", &london);
         }
+        // 2025-01-01, printed by the 2024-02-07 capture: with the second
+        // audited window reaching back over 2024, its derivation reads the
+        // covered 2024-12-31 and answers end to end (the special behind-window
+        // refusal the single-window tables show no longer applies).
+        assert_eq!(
+            calendar.holiday_on(day(2025, 1, 1)).map(Holiday::kind),
+            Some(HolidayKind::Closed)
+        );
+        assert!(
+            calendar
+                .is_closed_trade_date(day(2025, 1, 1), SessionKind::Both)
+                .expect("the derivation reads covered 2024-12-31"),
+            "lse 2025-01-01 has no session in either phase"
+        );
+        assert!(!calendar.is_open(london((2025, 1, 1), (11, 0, 0))).expect("covered"));
+    }
+
+    #[test]
+    fn the_pre_2025_eras_answer_through_the_identity_backed_surface() {
+        let calendar = lse();
+        // One representative closure per pre-2025 audited year, each the
+        // operator's own printed row: the 2010 substitute Christmas pair, the
+        // 2011 Royal Wedding, the 2012 Diamond Jubilee, the 2013-2014 spring
+        // bank holidays, 2020's substitute Boxing Day, the 2021 Christmas
+        // substitute, 2022's Platinum Jubilee, 2023's Coronation and 2024's
+        // Good Friday.
+        let closed = [
+            (2010, 12, 28),
+            (2011, 4, 29),
+            (2012, 6, 5),
+            (2013, 5, 27),
+            (2014, 8, 25),
+            (2020, 12, 28),
+            (2021, 12, 27),
+            (2022, 6, 3),
+            (2023, 5, 8),
+            (2024, 3, 29),
+        ];
+        for date in closed {
+            assert_closure(calendar, date, "lse");
+            assert!(
+                !calendar.is_open(london(date, (12, 0, 0))).expect("covered"),
+                "lse {date:?} is shut midday"
+            );
+        }
+        // The first row of the first window answers end to end: the engine's
+        // behind-derivation reads 2009-12-31 and the support floor carries the
+        // baseline, so the closure resolves through the full surface.
+        assert_eq!(
+            calendar.holiday_on(day(2010, 1, 1)).map(Holiday::kind),
+            Some(HolidayKind::Closed)
+        );
+        assert!(
+            calendar
+                .is_closed_trade_date(day(2010, 1, 1), SessionKind::Both)
+                .expect("the floor carries the baseline behind the first row"),
+            "lse 2010-01-01 has no session in either phase"
+        );
+        assert!(!calendar.is_open(london((2010, 1, 1), (12, 0, 0))).expect("covered"));
+        // The last row of the first window answers end to end: its derivation
+        // reads 2014-12-31, inside the window.
+        assert_closure(calendar, (2015, 1, 1), "lse");
+        assert!(
+            !calendar
+                .is_open(london((2015, 1, 1), (12, 0, 0)))
+                .expect("covered")
+        );
+    }
+
+    #[test]
+    fn the_pre_2025_half_days_close_at_the_printed_1230_london_time() {
+        let calendar = lse();
+        // 2012's Christmas Eve (page-level sentence), 2011's printed Friday
+        // 23 December and 2022's printed Friday 30 December: every pre-2025
+        // half-day shape, each closing at the operator's 12:30 instant,
+        // end-exclusive.
+        for date in [(2011, 12, 23), (2012, 12, 24), (2022, 12, 30), (2024, 12, 24)] {
+            assert_eq!(
+                calendar
+                    .holiday_on(day(date.0, date.1, date.2))
+                    .map(Holiday::kind),
+                Some(HolidayKind::EarlyClose { close_ssm: 45_000 }),
+                "lse {date:?} carries the printed 12:30 half-day close"
+            );
+            assert!(
+                calendar
+                    .is_open(london(date, (12, 29, 59)))
+                    .expect("covered"),
+                "lse {date:?} still trades at 12:29:59"
+            );
+            assert!(
+                !calendar
+                    .is_open(london(date, (12, 30, 0)))
+                    .expect("covered"),
+                "lse {date:?} is closed at the 12:30 close (end-exclusive)"
+            );
+            assert!(
+                !calendar.is_open(london(date, (14, 0, 0))).expect("covered"),
+                "lse {date:?} has no afternoon session"
+            );
+            assert!(
+                calendar.is_open(london(date, (9, 0, 0))).expect("covered"),
+                "lse {date:?} trades the morning"
+            );
+        }
+    }
+
+    #[test]
+    fn the_two_coverage_gaps_refuse_rather_than_answer() {
+        let calendar = lse();
+        // 2015-01-02..2019-12-31 and 2020-01-01..2020-08-30 survive in no
+        // operator capture, so they sit outside every window: the holiday
+        // layer has no answer and the session queries refuse.
+        for date in [(2016, 6, 13), (2018, 12, 24), (2020, 3, 30), (2020, 8, 28)] {
+            assert_eq!(
+                calendar.holiday_on(day(date.0, date.1, date.2)),
+                None,
+                "lse {date:?} is inside a coverage gap and carries no row"
+            );
+            assert!(
+                calendar
+                    .is_open(london(date, (12, 0, 0)))
+                    .is_err_and(|error| matches!(
+                        error,
+                        CalendarQueryError::OutsideCoveredRange { .. }
+                    )),
+                "lse {date:?}: the query must refuse inside the gap"
+            );
+        }
+        // The second window opens on its own first row.
+        assert_eq!(
+            calendar.holiday_on(day(2020, 8, 31)).map(Holiday::kind),
+            Some(HolidayKind::Closed)
+        );
+        // ... whose session probes read 2020-08-28, inside the gap, so they
+        // refuse; the first fully answering date is the next trading day.
+        assert!(matches!(
+            calendar.is_open(london((2020, 8, 31), (12, 0, 0))),
+            Err(CalendarQueryError::OutsideCoveredRange { .. })
+        ));
+        assert!(
+            calendar
+                .is_closed_trade_date(day(2020, 8, 31), SessionKind::Both)
+                .is_err_and(|error| matches!(
+                    error,
+                    CalendarQueryError::OutsideCoveredRange { .. }
+                ))
+        );
+        assert!(
+            calendar
+                .is_open(london((2020, 9, 1), (12, 0, 0)))
+                .expect("covered"),
+            "lse 2020-09-01 answers as the window's first fully derived date"
+        );
     }
 
     #[test]
@@ -2915,10 +3068,11 @@ mod lse {
     fn the_window_bounds_and_the_pre_floor_refusal() {
         let calendar = lse();
         let coverage = calendar.holiday_coverage().expect("lse ships a table");
-        assert_eq!(coverage.first(), day(2025, 1, 1));
+        assert_eq!(coverage.first(), day(2010, 1, 1));
         assert_eq!(coverage.last(), day(2027, 12, 31));
-        // Outside the audited window the table has no answer at all.
-        assert_eq!(calendar.holiday_on(day(2024, 12, 31)), None);
+        // Outside the audited windows the table has no answer at all: a gap
+        // year and a date past the live table's print.
+        assert_eq!(calendar.holiday_on(day(2017, 6, 13)), None);
         assert_eq!(calendar.holiday_on(day(2028, 1, 3)), None);
         // Before the support floor.
         assert!(matches!(
@@ -2946,36 +3100,88 @@ mod lse {
     #[test]
     fn every_shipped_row_matches_the_sheet_per_year() {
         let rows = rows_per_year(lse());
-        assert_eq!(rows.len(), 30, "19 closures, six half days, five gaps");
         assert_eq!(
-            census(&rows, 2025),
-            (3, 2, 0, 5),
-            "2025: three closures, two half days, five rolling-table gaps"
+            rows.len(),
+            130,
+            "99 closures, 26 half days, five rolling-table gaps — the gap years carry no rows"
         );
-        assert_eq!(
-            census(&rows, 2026),
-            (8, 2, 0, 0),
-            "2026: eight closures and two half days, no gaps"
-        );
-        assert_eq!(
-            census(&rows, 2027),
-            (8, 2, 0, 0),
-            "2027: eight closures and two half days, no gaps"
-        );
-        // The half days are exactly the sheet's six 24/31 December dates, each
-        // stating the printed 12:30 instant; flipping a row's date, kind or
-        // instant breaks the walk.
+        let expected: [(i32, (usize, usize, usize, usize)); 13] = [
+            (2010, (8, 2, 0, 0)),
+            (2011, (9, 2, 0, 0)),
+            (2012, (9, 2, 0, 0)),
+            (2013, (8, 2, 0, 0)),
+            (2014, (8, 2, 0, 0)),
+            (2015, (1, 0, 0, 0)),
+            (2020, (3, 2, 0, 0)),
+            (2021, (8, 2, 0, 0)),
+            (2022, (9, 2, 0, 0)),
+            (2023, (9, 2, 0, 0)),
+            (2024, (8, 2, 0, 0)),
+            (2025, (3, 2, 0, 5)),
+            (2027, (8, 2, 0, 0)),
+        ];
+        for (year, tally) in expected {
+            assert_eq!(census(&rows, year), tally, "{year} census");
+        }
+        for year in [2016, 2017, 2018, 2019] {
+            assert_eq!(
+                census(&rows, year),
+                (0, 0, 0, 0),
+                "{year} is a gap year and ships no row"
+            );
+        }
+        // The half days are exactly the sheet's printed 12:30 dates — 24/31
+        // December every year except 2011 and 2022 (Friday 23/30), 2023
+        // (22/29), and none in the gap years — each stating the printed
+        // instant; flipping a row's date, kind or instant breaks the walk.
         for (date, kind, instant) in &rows {
             if kind == "early close" {
-                assert!(
-                    matches!(date, (2025..=2027, 12, 24 | 31)),
-                    "the half days are exactly the sheet's six: {date:?}"
-                );
                 assert_eq!(*instant, Some(45_000), "{date:?} prints 12:30");
+                assert!(
+                    matches!(date.1, 12) && matches!(date.2, 22 | 23 | 24 | 29 | 30 | 31),
+                    "the half days are the sheet's December dates: {date:?}"
+                );
             } else {
                 assert_eq!(*instant, None, "{date:?} states no scalar instant");
             }
         }
+        let half_days: Vec<(i32, u32, u32)> = rows
+            .iter()
+            .filter(|(_, kind, _)| kind == "early close")
+            .map(|(date, _, _)| *date)
+            .collect();
+        assert_eq!(
+            half_days,
+            vec![
+                (2010, 12, 24),
+                (2010, 12, 31),
+                (2011, 12, 23),
+                (2011, 12, 30),
+                (2012, 12, 24),
+                (2012, 12, 31),
+                (2013, 12, 24),
+                (2013, 12, 31),
+                (2014, 12, 24),
+                (2014, 12, 31),
+                (2020, 12, 24),
+                (2020, 12, 31),
+                (2021, 12, 24),
+                (2021, 12, 31),
+                (2022, 12, 23),
+                (2022, 12, 30),
+                (2023, 12, 22),
+                (2023, 12, 29),
+                (2024, 12, 24),
+                (2024, 12, 31),
+                (2025, 12, 24),
+                (2025, 12, 31),
+                (2026, 12, 24),
+                (2026, 12, 31),
+                (2027, 12, 24),
+                (2027, 12, 31),
+            ],
+            "the sheet's half days, year by year"
+        );
     }
 }
 

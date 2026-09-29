@@ -136,6 +136,23 @@ corrections (a venue's hours fixed against a primary source) go under
   state trade ship no row either. 2010 remains an unaudited span: no operator
   artifact stating the 2010 holiday arrangement was found at retrieval, so
   2010 dates refuse with the closing condition recorded in the evidence file.
+- **`lse` holiday history backfilled to the 2010 floor (2026-09-29 UTC).**
+  The `lse` table grows from 30 rows over 2025-01-01..2027-12-31 to **130 rows
+  over 2010-01-01..2015-01-01 and 2020-08-31..2027-12-31** (99 closures and 26
+  12:30 early closes across the two windows, five 2025 dates still withheld):
+  the operator's own holiday table, read from fourteen Wayback `id_` replays
+  of its three site generations — the `.htm` Business days page (2010-2014,
+  where 2011's Royal Wedding and 2012's Diamond Jubilee carry their own
+  printed rows and the December half days are page-level sentences naming
+  23/30 December 2011 as well as the 24/31 pairs), the 2020 SPA page
+  (2020-2022, adding the Platinum Jubilee), and the content API under its 2023
+  path form (2023-2024, adding the Coronation) — with every artifact saved,
+  sha256'd and re-verified in the research store. Two spans survive in no
+  operator capture (CDX sweep checked 2026-09-29 UTC): 2015-01-02..2019-12-31
+  (the `.htm` page serves 404 from April 2014 and the `/trade/` page's first
+  capture is 2020-07-31) and 2020-01-01..2020-08-30 (rolled off before the
+  first 2020 capture); queries inside them refuse rather than answer, and the
+  gap and its closing conditions are recorded in the evidence file.
 
 - **`lse`, `euronext_paris` and `tsx` activate: built-in holiday tables for
   the European and Canadian cash-equity venues (2026-09-28 UTC).** All three

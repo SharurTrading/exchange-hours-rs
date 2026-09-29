@@ -96,6 +96,21 @@ corrections (a venue's hours fixed against a primary source) go under
   files; outside the window the table has no answer. Every row cites a saved
   operator artifact (research store `holidays/raw/cfe-2010-2025/live/` and
   `holidays/raw/cfe-2010-2024/rulespage/`, sha256 per artifact).
+- **`tadawul` pre-2025 holiday history: 2021-2024 added from the operator's
+  own calendar (2026-09-29 UTC).** The built-in tadawul holiday table extends
+  from the 2025-2027 window back to **2021-01-01** — 78 rows over
+  2021-01-01..2027-12-31. The forty-four new rows key to the same operator
+  artifact the 2025-2027 rows already used — the Saudi Exchange Holiday
+  Calendar page at T1 — whose server-rendered entries print the
+  trading-discontinue and trading-resume days (2021-2022 Eid Al Fiter entries
+  print the holiday's first and last day), so no new retrieval was needed.
+  Each Eid row keys to the printed range's Sunday-Thursday dates; Friday and
+  Saturday legs change no trade date and ship no row. 2013-06-29..2020-12-31
+  is an unaudited span: the page's oldest complete entry is the 2020 Eid Al
+  Fiter and it states no Eid Al Adha 2020, while the Internet Archive holds no
+  pre-2023 capture of the page and the pre-2023 portal exposes no named
+  holiday page — closing condition recorded in the evidence file.
+
 - **`b3` pre-2025 holiday history: 2011-2024 backfilled from the operator's
   own calendars (2026-09-29 UTC).** The built-in `b3` holiday table extends
   from the 2025-2026 window back to **2011-01-01** — 224 rows over

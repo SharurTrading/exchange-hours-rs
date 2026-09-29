@@ -39,11 +39,75 @@ as each source is re-verified.
 
 ## Holidays
 
-**Coverage:** 2025-01-01..2027-12-31 (inclusive trade dates). Tier: T1 throughout.
+**Coverage:** 2021-01-01..2027-12-31 (inclusive trade dates). Tier: T1 throughout.
 
-One table serves the `tadawul` venue: the operator publishes one holiday arrangement per year and the crate routes the Main Market venue to it. Every row keys to the single artifact `TADAWUL-HOLCAL-2026-09-28` — the operator's `Saudi Exchange Holiday Calendar` page as retrieved on 2026-09-28, whose entries 2020-2029 are server-rendered in one table. Each Eid entry states the arrangement in session language: `Trading will discontinue at the end of trading day <date>. Trading will resume after the holiday on <date>`, several annotated `* According to the UMM AL-QURA calendar`. Each Founding Day and National Day entry states the single day observed. The dates — Carnival-equivalent Islamic dates included — are read from the operator's printed calendar, never computed.
+One table serves the `tadawul` venue: the operator publishes one holiday arrangement per year and the crate routes the Main Market venue to it. Every row keys to the single artifact `TADAWUL-HOLCAL-2026-09-28` — the operator's `Saudi Exchange Holiday Calendar` page as retrieved on 2026-09-28, whose entries 2020-2029 are server-rendered in one table. Most Eid entries state the arrangement in session language: `Trading will discontinue at the end of trading day <date>. Trading will resume after the holiday on <date>`, several annotated `* According to the UMM AL-QURA calendar`; the 2021 and 2022 Eid Al Fiter entries instead print the holiday's own bounds — `First day of Eid Al Fiter is <date>. Last day of Eid Al Fiter is <date>.` — and each Founding Day and National Day entry states the single day observed (2023's National Day entry carries the discontinue/resume statement). The dates — Carnival-equivalent Islamic dates included — are read from the operator's printed calendar, never computed. The 2021-2024 rows were added on 2026-09-29 (UTC) from the same artifact the 2025-2027 rows already keyed: the page is the operator's own statement of its own past arrangements, so no new retrieval was needed.
 
 The Main Market trades Sunday-Thursday, so every row below is a Sunday-Thursday trade date the operator's entry removes: an Eid's printed legs that fall on Friday-Saturday change no trade date and ship no row.
+
+### 2021
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2021-05-13 | closed | `First day of Eid Al Fiter is 13/5/2021. Last day of Eid Al Fiter is 16/5/2021.` | `TADAWUL-HOLCAL-2026-09-28` | T1 | Operator event date 2021-05-13, a Thursday |
+| 2021-05-16 | closed | same Eid Al Fiter entry | `TADAWUL-HOLCAL-2026-09-28` | T1 | Operator event date 2021-05-16, a Sunday; the 14th-15th are the weekend |
+| 2021-07-18 | closed | Eid Al Adha: `Trading will discontinue at the end of trading day 15/7/2021. Trading will resume after the holiday on 25/7/2021.` (the entry prints its range as `22/07/2021 - 15/07/2021`) | `TADAWUL-HOLCAL-2026-09-28` | T1 | First removed Sunday-Thursday trade date after the printed Thursday 15/07 discontinue; the 16th-17th are the weekend |
+| 2021-07-19 | closed | same Eid Al Adha entry | `TADAWUL-HOLCAL-2026-09-28` | T1 | Operator event date 2021-07-19, a Monday |
+| 2021-07-20 | closed | same Eid Al Adha entry | `TADAWUL-HOLCAL-2026-09-28` | T1 | Operator event date 2021-07-20, a Tuesday |
+| 2021-07-21 | closed | same Eid Al Adha entry | `TADAWUL-HOLCAL-2026-09-28` | T1 | Operator event date 2021-07-21, a Wednesday |
+| 2021-07-22 | closed | same Eid Al Adha entry | `TADAWUL-HOLCAL-2026-09-28` | T1 | Operator event date 2021-07-22, a Thursday |
+| 2021-09-23 | closed | `National Day of Saudi Arabia is on 23/9/2021.` | `TADAWUL-HOLCAL-2026-09-28` | T1 | Operator event date 2021-09-23, a Thursday |
+
+### 2022
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2022-02-22 | closed | `Founding Day of Saudi Arabia is on 22/02/2022.` | `TADAWUL-HOLCAL-2026-09-28` | T1 | Operator event date 2022-02-22, a Tuesday |
+| 2022-04-28 | closed | `First day of Eid Al Fiter is 28/4/2022. Last day of Eid Al Fiter is 8/5/2022.` | `TADAWUL-HOLCAL-2026-09-28` | T1 | Operator event date 2022-04-28, a Thursday, the range's first leg |
+| 2022-05-01 | closed | same Eid Al Fiter entry | `TADAWUL-HOLCAL-2026-09-28` | T1 | Operator event date 2022-05-01, a Sunday; the 29th-30th April are the weekend |
+| 2022-05-02 | closed | same Eid Al Fiter entry | `TADAWUL-HOLCAL-2026-09-28` | T1 | Operator event date 2022-05-02, a Monday |
+| 2022-05-03 | closed | same Eid Al Fiter entry | `TADAWUL-HOLCAL-2026-09-28` | T1 | Operator event date 2022-05-03, a Tuesday |
+| 2022-05-04 | closed | same Eid Al Fiter entry | `TADAWUL-HOLCAL-2026-09-28` | T1 | Operator event date 2022-05-04, a Wednesday |
+| 2022-05-05 | closed | same Eid Al Fiter entry | `TADAWUL-HOLCAL-2026-09-28` | T1 | Operator event date 2022-05-05, a Thursday; the 6th-7th May are the weekend |
+| 2022-07-07 | closed | Eid Al Adha, range `06/07/2022 - 13/07/2022`: `Trading will discontinue at the end of trading day 6/7/2022. Trading will resume after the holiday on 13/7/2022.` | `TADAWUL-HOLCAL-2026-09-28` | T1 | First removed Sunday-Thursday trade date after the printed Wednesday 06/07 discontinue |
+| 2022-07-10 | closed | same Eid Al Adha entry | `TADAWUL-HOLCAL-2026-09-28` | T1 | Operator event date 2022-07-10, a Sunday; the 8th-9th July are the weekend |
+| 2022-07-11 | closed | same Eid Al Adha entry | `TADAWUL-HOLCAL-2026-09-28` | T1 | Operator event date 2022-07-11, a Monday |
+| 2022-07-12 | closed | same Eid Al Adha entry | `TADAWUL-HOLCAL-2026-09-28` | T1 | Operator event date 2022-07-12, a Tuesday; trading resumes Wednesday 13/07 |
+| 2022-09-22 | closed | `National Day of Saudi Arabia is on 22/9/2022.` | `TADAWUL-HOLCAL-2026-09-28` | T1 | Operator event date 2022-09-22, a Thursday |
+
+### 2023
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2023-02-22 | closed | `Founding Day of Saudi Arabia is on 22/02/2023.` | `TADAWUL-HOLCAL-2026-09-28` | T1 | Operator event date 2023-02-22, a Wednesday |
+| 2023-04-18 | closed | Eid Al Fiter, range `17/04/2023 - 25/04/2023`: `Trading will discontinue at the end of trading day 17-04-2023. Trading will resume after the holiday on 25-04-2023.` | `TADAWUL-HOLCAL-2026-09-28` | T1 | First removed Sunday-Thursday trade date after the printed Monday 17/04 discontinue; the 21st-22nd April are the weekend |
+| 2023-04-19 | closed | same Eid Al Fiter entry | `TADAWUL-HOLCAL-2026-09-28` | T1 | Operator event date 2023-04-19, a Wednesday |
+| 2023-04-20 | closed | same Eid Al Fiter entry | `TADAWUL-HOLCAL-2026-09-28` | T1 | Operator event date 2023-04-20, a Thursday |
+| 2023-04-23 | closed | same Eid Al Fiter entry | `TADAWUL-HOLCAL-2026-09-28` | T1 | Operator event date 2023-04-23, a Sunday |
+| 2023-04-24 | closed | same Eid Al Fiter entry | `TADAWUL-HOLCAL-2026-09-28` | T1 | Operator event date 2023-04-24, a Monday; trading resumes Tuesday 25/04 |
+| 2023-06-25 | closed | Eid Al Adha, range `22/06/2023 - 02/07/2023`: `Trading will discontinue at the end of trading day Thursday 22-06-2023. Trading will resume after the holiday on Sunday 02-07-2023. ** According to the UMM AL-QURA calendar` | `TADAWUL-HOLCAL-2026-09-28` | T1 | First removed Sunday-Thursday trade date after the printed Thursday 22/06 discontinue; the 23rd-24th June are the weekend |
+| 2023-06-26 | closed | same Eid Al Adha entry | `TADAWUL-HOLCAL-2026-09-28` | T1 | Operator event date 2023-06-26, a Monday |
+| 2023-06-27 | closed | same Eid Al Adha entry | `TADAWUL-HOLCAL-2026-09-28` | T1 | Operator event date 2023-06-27, a Tuesday |
+| 2023-06-28 | closed | same Eid Al Adha entry | `TADAWUL-HOLCAL-2026-09-28` | T1 | Operator event date 2023-06-28, a Wednesday |
+| 2023-06-29 | closed | same Eid Al Adha entry | `TADAWUL-HOLCAL-2026-09-28` | T1 | Operator event date 2023-06-29, a Thursday; trading resumes Sunday 02/07 |
+| 2023-09-24 | closed | National Day: `Trading will discontinue at the end of trading day 21-09-2023. Trading will resume after the holiday on 25-09-2023.` | `TADAWUL-HOLCAL-2026-09-28` | T1 | The removed Sunday 24/09 between the printed Thursday 21/09 discontinue and the Monday 25/09 resume; the 22nd-23rd September are the weekend |
+
+### 2024
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2024-02-22 | closed | `Founding Day of Saudi Arabia is on 22/02/2024.` | `TADAWUL-HOLCAL-2026-09-28` | T1 | Operator event date 2024-02-22, a Thursday |
+| 2024-04-07 | closed | Eid Al Fiter, range `04/04/2024 - 14/04/2024`: `Trading will discontinue at the end of trading day 04/04/2024. Trading will resume after the holiday on 14/04/2024.` | `TADAWUL-HOLCAL-2026-09-28` | T1 | First removed Sunday-Thursday trade date after the printed Thursday 04/04 discontinue; the 12th-13th April are the weekend |
+| 2024-04-08 | closed | same Eid Al Fiter entry | `TADAWUL-HOLCAL-2026-09-28` | T1 | Operator event date 2024-04-08, a Monday |
+| 2024-04-09 | closed | same Eid Al Fiter entry | `TADAWUL-HOLCAL-2026-09-28` | T1 | Operator event date 2024-04-09, a Tuesday |
+| 2024-04-10 | closed | same Eid Al Fiter entry | `TADAWUL-HOLCAL-2026-09-28` | T1 | Operator event date 2024-04-10, a Wednesday |
+| 2024-04-11 | closed | same Eid Al Fiter entry | `TADAWUL-HOLCAL-2026-09-28` | T1 | Operator event date 2024-04-11, a Thursday; trading resumes Sunday 14/04 |
+| 2024-06-16 | closed | Eid Al Adha, range `13/06/2024 - 23/06/2024`: `Trading will discontinue at the end of trading day 13/06/2024. Trading will resume after the holiday on 23/06/2024.` | `TADAWUL-HOLCAL-2026-09-28` | T1 | First removed Sunday-Thursday trade date after the printed Thursday 13/06 discontinue; the 14th-15th June are the weekend |
+| 2024-06-17 | closed | same Eid Al Adha entry | `TADAWUL-HOLCAL-2026-09-28` | T1 | Operator event date 2024-06-17, a Monday |
+| 2024-06-18 | closed | same Eid Al Adha entry | `TADAWUL-HOLCAL-2026-09-28` | T1 | Operator event date 2024-06-18, a Tuesday |
+| 2024-06-19 | closed | same Eid Al Adha entry | `TADAWUL-HOLCAL-2026-09-28` | T1 | Operator event date 2024-06-19, a Wednesday |
+| 2024-06-20 | closed | same Eid Al Adha entry | `TADAWUL-HOLCAL-2026-09-28` | T1 | Operator event date 2024-06-20, a Thursday; the 21st-22nd June are the weekend and trading resumes Sunday 23/06 |
+| 2024-09-23 | closed | `National Day of Saudi Arabia is on 23/09/2024.` | `TADAWUL-HOLCAL-2026-09-28` | T1 | Operator event date 2024-09-23, a Monday |
 
 ### 2025
 
@@ -94,20 +158,23 @@ The Main Market trades Sunday-Thursday, so every row below is a Sunday-Thursday 
 | 2027-05-20 | closed | same Eid Al Adha entry | `TADAWUL-HOLCAL-2026-09-28` | T1 | Operator event date 2027-05-20, a Thursday; trading resumes Sunday 23/05 |
 | 2027-09-23 | closed | `National Day of Saudi Arabia is on 23/09/2027.` | `TADAWUL-HOLCAL-2026-09-28` | T1 | Operator event date 2027-09-23, a Thursday |
 
-**Gaps:** none inside the window. The operator's page published 2025, 2026 and 2027 at the 2026-09-28 retrieval, every Sunday-Thursday trade date its entries remove ships a row, and every other date inside the window is audited normal. The 2028-2029 entries the page also prints (Eid ranges only, whose legs the crate has not worked up) lie outside the window and claim nothing.
+**Gaps, inside the window:** none. The operator's page published 2021 through 2027 at the 2026-09-28 retrieval, every Sunday-Thursday trade date its entries remove ships a row, and every other date inside the window is audited normal. The 2028-2029 entries the page also prints (Eid ranges only, whose legs the crate has not worked up) lie outside the window and claim nothing.
 
-**Interpretive steps.** Each Eid row is keyed to the printed range's Sunday-Thursday dates, bounded by the entry's own trading-discontinue and trading-resume days: a printed leg on a Friday or Saturday (e.g. 28-29 March 2025, 20-21 March 2026, 5-7 June 2025, 13-14 and 21-22 May 2027) is not a Main Market trade date and ships no row. The UMM AL-QURA annotation is the operator's own caveat on its printed dates; the crate records the printed day and does not compute the Islamic calendar. The 2025 Founding Day row keys to Sunday 23 February because that is the day the operator's entry prints, not the anniversary's civil 22 February. This reading is fenced per date in `tests/global_equities/holidays.rs`.
+**2013-06-29..2020-12-31 is an unaudited span.** The page's oldest complete entry is the 2020 Eid Al Fiter (`Trading will discontinue at the end of trading day 21/5/2020. Trading will resume after the holiday on 31/5/2020.`), but the same page states no Eid Al Adha 2020 or anything earlier — its entry list truncates there — so a 2020 window would claim Eid Al Adha dates it cannot audit. Bounded search 2026-09-29 (UTC): the Internet Archive's CDX over `saudiexchange.sa` holds no capture of the holiday-calendar page before 2023-01-29, and the pre-2023 operator portal (`tadawul.com.sa`) exposes only opaque IBM-portal URLs with no surviving named holiday page. **Closing condition:** an operator artifact (or a Wayback capture of one) printing the 2014-2020 holiday arrangements — e.g. a contemporaneous `Market Holidays` page capture or a yearly circular — at which point the window extends back toward the 2013-06-29 normal-week horizon.
+
+**Interpretive steps.** Each Eid row is keyed to the printed range's Sunday-Thursday dates, bounded by the entry's own trading-discontinue and trading-resume days: a printed leg on a Friday or Saturday (e.g. 28-29 March 2025, 20-21 March 2026, 5-7 June 2025, 13-14 and 21-22 May 2027) is not a Main Market trade date and ships no row. The 2021 and 2022 Eid Al Fiter entries state no discontinue or resume day — they print the holiday's first and last day — so their rows key to the Sunday-Thursday dates inside those printed bounds and the days outside them stand or fall with the normal week. The UMM AL-QURA annotation is the operator's own caveat on its printed dates; the crate records the printed day and does not compute the Islamic calendar. The 2025 Founding Day row keys to Sunday 23 February because that is the day the operator's entry prints, not the anniversary's civil 22 February. This reading is fenced per date in `tests/global_equities/holidays.rs`.
 
 ### Documents
 
 | Document | Window | Replay or service URL | Capture or retrieval, UTC | Tier | sha256 |
 |---|---|---|---|---|---|
-| `TADAWUL-HOLCAL-2026-09-28` | 2025-01-01 .. 2027-12-31 | <https://www.saudiexchange.sa/wps/portal/saudiexchange/about-saudi-exchange/exchange-media-centre/saudi-exchange-holiday-calendar?locale=en> | retrieved 2026-09-28 01:20 UTC | T1 | `6980261a27759b1fd80b79281d1f08aa30d19aa0e1b08d721020910c268343ff` |
+| `TADAWUL-HOLCAL-2026-09-28` | 2021-01-01 .. 2027-12-31 | <https://www.saudiexchange.sa/wps/portal/saudiexchange/about-saudi-exchange/exchange-media-centre/saudi-exchange-holiday-calendar?locale=en> | retrieved 2026-09-28 01:20 UTC | T1 | `6980261a27759b1fd80b79281d1f08aa30d19aa0e1b08d721020910c268343ff` |
 
 The artifact was saved under `holidays/raw/equities/tadawul/2025-2027/` in the research store, whose `INDEX.md` repeats the URL and digest.
 
 ## Gaps and residual risks
 
+- **2013-06-29..2020-12-31 holiday span.** Recorded in the Holidays section above: the operator's own page states only the 2020 Eid Al Fiter for that era, no contemporaneous holiday page survives in the Internet Archive, and the dates refuse. Closing condition: an operator artifact printing the 2014-2020 holiday arrangements.
 - **Raised in review of the ledger-reshape PR (#87), 2026-09-12 — the 2013-06-29 and 2016-04-03 rows are dated by T3 artifacts.** Both revision rows carry `T3` on their own lines and rest on Saudi Press Agency releases (SPA news 7e453de27d and SPA news 1484000). Under LAW-PRIMARY-SOURCES a dated change needs an unconditional day stated by the operator, and T3 may date a change **only** when it mirrors an operator document verbatim; nothing in the record shows either release reproduces a Saudi Exchange or CMA document verbatim, so as recorded these two rows are not admissible and the bullet above understates that as a tier note rather than a defect. The reshape PR moved this text out of the owner module and changed no schedule rule, revision row, profile or routing; both rows are served exactly as before. Closing condition: retrieve the underlying Tadawul or CMA announcement behind each date, or establish that the SPA text is a verbatim reprint of it — either promotes both rows to T1. If neither holds, the rows must be withdrawn and the two grids served as an undated intersection instead. Served since this activation (monthly LAW-WATCH cadence); tracked under #116.
 - **executable, pre-2016 opening-auction window.** The pre-2016 grids carry no pre-opening phase. Today's trading-cycle table documents the 09:30–10:00 opening auction, but no dated primary source states the opening-auction order window for the 11:00-open eras; a 10:00–11:00 window would be an inference from the later auction's shape, so under LAW-PRIMARY-SOURCES it is omitted and reads closed. The 2016–2018 era likewise carries no order-entry schedule: the 09:30 queue is evidenced only by the current trading-cycle page, which states nothing about that era. Closing condition: a dated Saudi Exchange or CMA artifact stating the queue for its era. Neither old grid had any close-side phase, so their extended slices are empty too.
 - **Tier of the 2013 and 2016 rows.** Both rest on Saudi Press Agency releases. SPA is the Kingdom's state news agency and carries official announcements, but nothing in the record establishes that either release reproduces an exchange or CMA document verbatim, so they are recorded here at T3 rather than T1. Under LAW-PRIMARY-SOURCES a dated change needs an unconditional day stated by the operator, and T3 may date a change only when it mirrors an operator document verbatim. Closing condition: retrieve the underlying Tadawul or CMA announcement for each date, or confirm that the SPA text is a verbatim reprint of it. If neither holds, both rows are T4-keyed and must be rebuilt or withdrawn.

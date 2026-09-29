@@ -881,12 +881,89 @@ fn b3_window_ships_only_closures_and_one_late_open_shape() {
 }
 
 // ---------------------------------------------------------------------------
-// tadawul — Saudi Exchange Main Market, 2025-2027, Asia/Riyadh (Sun-Thu).
+// tadawul — Saudi Exchange Main Market, 2021-2027, Asia/Riyadh (Sun-Thu).
 // ---------------------------------------------------------------------------
 
 #[test]
 fn tadawul_closures_per_year_match_the_operators_printed_entries() {
     let calendar = calendar_for(Exchange::Tadawul);
+    // 2021: the Eid Al Fiter first/last-day entry (13 and 16 May), the Eid Al
+    // Adha legs between the printed 15/07 discontinue and 25/07 resume, and
+    // National Day.
+    for date in [
+        (2021, 5, 13),
+        (2021, 5, 16),
+        (2021, 7, 18),
+        (2021, 7, 19),
+        (2021, 7, 20),
+        (2021, 7, 21),
+        (2021, 7, 22),
+        (2021, 9, 23),
+    ] {
+        assert_closed(calendar, date, "Tadawul 2021 closure", &|d, time| {
+            riyadh(d, time)
+        });
+    }
+    // 2022: Founding Day, the Eid Al Fiter first/last-day entry's weekday
+    // range, Eid Al Adha between 06/07 and 13/07, National Day.
+    for date in [
+        (2022, 2, 22),
+        (2022, 4, 28),
+        (2022, 5, 1),
+        (2022, 5, 2),
+        (2022, 5, 3),
+        (2022, 5, 4),
+        (2022, 5, 5),
+        (2022, 7, 7),
+        (2022, 7, 10),
+        (2022, 7, 11),
+        (2022, 7, 12),
+        (2022, 9, 22),
+    ] {
+        assert_closed(calendar, date, "Tadawul 2022 closure", &|d, time| {
+            riyadh(d, time)
+        });
+    }
+    // 2023: Founding Day, Eid ranges, and the Sunday the National Day
+    // arrangement removes between the printed 21/09 discontinue and 25/09
+    // resume.
+    for date in [
+        (2023, 2, 22),
+        (2023, 4, 18),
+        (2023, 4, 19),
+        (2023, 4, 20),
+        (2023, 4, 23),
+        (2023, 4, 24),
+        (2023, 6, 25),
+        (2023, 6, 26),
+        (2023, 6, 27),
+        (2023, 6, 28),
+        (2023, 6, 29),
+        (2023, 9, 24),
+    ] {
+        assert_closed(calendar, date, "Tadawul 2023 closure", &|d, time| {
+            riyadh(d, time)
+        });
+    }
+    // 2024: Founding Day, Eid ranges, National Day.
+    for date in [
+        (2024, 2, 22),
+        (2024, 4, 7),
+        (2024, 4, 8),
+        (2024, 4, 9),
+        (2024, 4, 10),
+        (2024, 4, 11),
+        (2024, 6, 16),
+        (2024, 6, 17),
+        (2024, 6, 18),
+        (2024, 6, 19),
+        (2024, 6, 20),
+        (2024, 9, 23),
+    ] {
+        assert_closed(calendar, date, "Tadawul 2024 closure", &|d, time| {
+            riyadh(d, time)
+        });
+    }
     // 2025: Founding Day observed Sunday 23 February (the operator's printed
     // day, not the civil 22nd), both Eid ranges' Sunday-Thursday legs, and
     // National Day.
@@ -946,26 +1023,40 @@ fn tadawul_closures_per_year_match_the_operators_printed_entries() {
     }
     // The printed weekend legs — Friday 2025-03-28 and Saturday 2025-03-29 —
     // change no trade date and carry no row; the normal week already closes
-    // them.
-    assert_eq!(
-        calendar.holiday_on(day(2025, 3, 28)),
-        None,
-        "a Friday leg needs no row in a Sun-Thu week"
-    );
-    assert_eq!(
-        calendar.holiday_on(day(2025, 3, 29)),
-        None,
-        "a Saturday leg needs no row in a Sun-Thu week"
-    );
+    // them. The same reading holds in the backfilled years: the 2023 Eid Al
+    // Adha range prints 23-24 June and the 2024 Eid Al Adha range prints
+    // 21-22 June, both weekends.
+    for date in [
+        (2023, 6, 23),
+        (2023, 6, 24),
+        (2024, 6, 21),
+        (2024, 6, 22),
+        (2025, 3, 28),
+        (2025, 3, 29),
+    ] {
+        assert_eq!(
+            calendar.holiday_on(day(date.0, date.1, date.2)),
+            None,
+            "a Friday or Saturday leg needs no row in a Sun-Thu week: {date:?}"
+        );
+    }
 }
 
 #[test]
 fn tadawul_trading_resumes_on_the_printed_days() {
     let calendar = calendar_for(Exchange::Tadawul);
-    // The entries state resume days: 03/04/2025, 11/06/2025, 24/03/2026,
-    // 31/05/2026, 14/03/2027, 23/05/2027 — each open with the ordinary
-    // 09:30 order entry and 10:00 regular open.
+    // The entries state resume days: 25/07/2021, 13/07/2022, 25/04/2023,
+    // 02/07/2023, 25/09/2023, 14/04/2024, 23/06/2024, 03/04/2025, 11/06/2025,
+    // 24/03/2026, 31/05/2026, 14/03/2027, 23/05/2027 — each open with the
+    // ordinary 10:00 regular open.
     for date in [
+        (2021, 7, 25),
+        (2022, 7, 13),
+        (2023, 4, 25),
+        (2023, 7, 2),
+        (2023, 9, 25),
+        (2024, 4, 14),
+        (2024, 6, 23),
         (2025, 4, 3),
         (2025, 6, 11),
         (2026, 3, 24),
@@ -1003,16 +1094,24 @@ fn tadawul_window_ordinary_weekday_and_coverage_endpoints() {
     let coverage = calendar
         .holiday_coverage()
         .expect("Tadawul ships a built-in table");
-    assert_eq!(coverage.first(), day(2025, 1, 1));
+    assert_eq!(coverage.first(), day(2021, 1, 1));
     assert_eq!(coverage.last(), day(2027, 12, 31));
     assert_eq!(
         calendar.holiday_on(coverage.first().pred_opt().expect("representable")),
-        None
+        None,
+        "no answer below the window: 2013-2020 is the unaudited span"
     );
     assert_eq!(
         calendar.holiday_on(coverage.last().succ_opt().expect("representable")),
         None
     );
+    // A 2020 probe sits in the unaudited span: the identity refuses rather
+    // than answering.
+    let unaudited = riyadh((2020, 12, 15), (11, 0, 0));
+    assert!(matches!(
+        calendar.is_open(unaudited),
+        Err(CalendarQueryError::OutsideCoveredRange { date, .. }) if date == day(2020, 12, 15)
+    ));
     // Pre-floor refusal.
     let ancient = riyadh((2009, 12, 31), (11, 0, 0));
     assert!(matches!(
@@ -1037,7 +1136,7 @@ fn tadawul_window_ships_only_closures() {
         }
         date = date.succ_opt().expect("the window stays representable");
     }
-    assert_eq!(closed, 34, "closures, Tadawul 2025-2027");
+    assert_eq!(closed, 78, "closures, Tadawul 2021-2027");
 }
 
 // ---------------------------------------------------------------------------

@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT-0
 
 //! Built-in holiday rows for the served cash-equity venues whose tables
-<<<<<<< HEAD
 //! shipped with the 2025-2027 wave: `b3` (2025-2026 extended back to 2011,
 //! the 2010 span unaudited), `tadawul` (2021-2027, the earlier span
 //! unaudited) and `borsa_istanbul` (2012-03-02..2026-12-31), the APAC venues `nzx` (2010-2024 backfilled beside the
@@ -12,15 +11,6 @@
 //! the European/American venues `lse` (2025-2027, with five rolling-table
 //! dates withheld), `euronext_paris` (2025-2026; the 2026 half-day hours are
 //! announced but unstated) and `tsx` (2025-2026).
-=======
-//! shipped with the 2025-2027 wave: `tadawul` (2021-2027) and `borsa_istanbul`
-//! (2012-2026), `b3` (2025-2026 extended back to 2011), the APAC venues `nzx`
-//! (2025 through the operator's 2027-01-04 horizon), `asx` (2025-2027) and
-//! `sgx_securities` (2025-2026), and the European/American venues `lse`
-//! (2025-2027, with five rolling-table dates withheld), `euronext_paris`
-//! (2025-2026; the 2026 half-day hours are announced but unstated) and `tsx`
-//! (2025-2026).
->>>>>>> edbfd5f (zai-api/GLM-5.3-Flash (ZCode): borsa_istanbul backfill — 2012-2024 holiday history from the operator's own page)
 //!
 //! Every case below goes through the public identity-backed calendar, the
 //! same surface the consumer routes through. Each venue's section fences its

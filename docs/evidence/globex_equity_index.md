@@ -225,14 +225,14 @@ Every interval from 2010-01-01 is declared, so the whole span has an answer; the
 | 2011-11-24 | early close | `10:30 CT` | `2011-thanksgiving.pdf @2011-11-24T18:52:46Z` | T1 | `10:30 CT` is the date's own final close; CME prints `Nov 24` above it, and the year comes from the document's own identity |
 | 2011-11-25 | early close | `12:15 CT` | `2011-thanksgiving.pdf @2011-11-24T18:52:46Z` | T1 | `12:15 CT` is the date's own final close; CME prints `Nov 25` above it, and the year comes from the document's own identity |
 | 2011-12-26 | closed | `CME Globex is closed` | `2011-christmas.pdf @2012-01-25T02:05:48Z` | T1 | CME prints `Dec 26` above it as a closed day; the year comes from the document's own identity, because the annual sheets print no year |
-| 2011-12-27 | late open | `15:15 CT` | `2011-christmas.pdf @2012-01-25T02:05:48Z` | T1 | `15:15 CT` is the trade date's own first open; the evening leg that would have opened earlier did not run |
+| 2011-12-27 | late open | `0500 CT` | `2011-christmas.pdf @2012-01-25T02:05:48Z` | T1 | `0500 CT – CME Globex open for trade date Tuesday, Dec 27` is the trade date's own first open; the evening leg that would have opened earlier did not run |
 
 ### 2012
 
 | trade date | kind | instant as printed | document | tier | derived from |
 |---|---|---|---|---|---|
 | 2012-01-02 | closed | `CME Globex is closed` | `2012-new-years.pdf @2012-01-25T02:54:30Z` | T1 | CME prints `Jan 2` above it as a closed day; the year comes from the document's own identity, because the annual sheets print no year |
-| 2012-01-03 | late open | `15:15 CT` | `2012-new-years.pdf @2012-01-25T02:54:30Z` | T1 | `15:15 CT` is the trade date's own first open; the evening leg that would have opened earlier did not run |
+| 2012-01-03 | late open | `0500 CT` | `2012-new-years.pdf @2012-01-25T02:54:30Z` | T1 | `0500 CT – CME Globex open for trade date Tuesday, Jan 3` is the trade date's own first open; the evening leg that would have opened earlier did not run |
 | 2012-01-16 | early close | `10:30 CT` | `2012-martin-luther-king.pdf @2012-05-05T16:15:26Z` | T1 | `10:30 CT` is the date's own final close; CME prints `Jan 16` above it, and the year comes from the document's own identity |
 | 2012-02-20 | early close | `10:30 CT` | `2012-presidents-day.pdf @2012-05-05T16:15:39Z` | T1 | `10:30 CT` is the date's own final close; CME prints `Feb 20` above it, and the year comes from the document's own identity |
 | 2012-04-06 | early close | `08:15 CT` | `2012-good-friday.pdf @2012-04-17T00:42:47Z` | T1 | `08:15 CT` is the date's own final close; CME prints `Apr 6` above it, and the year comes from the document's own identity |
@@ -244,7 +244,18 @@ Every interval from 2010-01-01 is declared, so the whole span has an answer; the
 | 2012-11-23 | early close | `12:15 CT` | `2012-thanksgiving.pdf @2013-01-27T22:39:01Z` | T1 | `12:15 CT` is the date's own final close; CME prints `Nov 23` above it, and the year comes from the document's own identity |
 | 2012-12-24 | early close | `12:15 CT` | `2012-christmas.pdf @2013-04-14T19:40:27Z` | T1 | `12:15 CT` is the date's own final close; CME prints `Dec 24` above it, and the year comes from the document's own identity |
 | 2012-12-25 | closed | `CME Globex is closed` | `2012-christmas.pdf @2013-04-14T19:40:27Z` | T1 | CME prints `Dec 25` above it as a closed day; the year comes from the document's own identity, because the annual sheets print no year |
-| 2012-12-26 | late open | `16:15 CT` | `2012-christmas.pdf @2013-04-14T19:40:27Z` | T1 | `16:15 CT` is the trade date's own first open; the evening leg that would have opened earlier did not run |
+| 2012-12-26 | late open | `0500 CT` | `2012-christmas.pdf @2013-04-14T19:40:27Z` | T1 | `0500 CT – CME Globex open for trade date Wednesday, Dec 26` is the trade date's own first open; the evening leg that would have opened earlier did not run |
+
+**Correction, 2026-09-29 (UTC):** the three late-open rows above previously transcribed their
+"instant as printed" as `15:15 CT` (2011-12-27, 2012-01-03) and `16:15 CT` (2012-12-26); those
+are the sheets' own day-session close lines — `1515 CT – Regular CME Globex close for trade
+date ...` on the 2011 Christmas and 2012 New Year sheets, `1615 CT – Regular CME Globex close
+for trade date Wednesday, Dec 26` on the 2012 Christmas sheet — not the reopenings. The
+Equity section of each sheet prints the reopening as `0500 CT – CME Globex open for trade
+date ...` on the trade date itself, which the rows now quote verbatim and which is the
+instant the module has encoded all along (`late_open(5 * 3_600)`); no runtime row changes.
+The 2012 Christmas sheet's `0515 CT – USD Ibovespa futures open for trade date Wednesday,
+Dec 26` is the Ibovespa contract's own open and not this family's (LAW-SESSION-NOT-EXPIRY).
 
 #### Gaps, 2010-2012
 

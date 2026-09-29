@@ -1838,16 +1838,19 @@ mod sgx_securities {
         for (date, kind, instant) in &rows {
             assert_eq!(*instant, None, "{date:?}");
             if kind == "replacement" {
+                // The 24|31 December arms mix the two eras (2018 and 2019 are
+                // the operator's pre-2025 `#` markers; 2025 and 2026 the
+                // current sheet's printed dates); 2018-02-15, 2019-02-04,
+                // 2017-01-27, 2025-01-28 and 2026-02-16 are the remaining
+                // Chinese New Year eves.
                 assert!(
                     matches!(
                         date,
                         (2017, 1, 27)
                             | (2018, 2, 15)
-                            | (2018, 12, 24 | 31)
+                            | (2018 | 2019 | 2025 | 2026, 12, 24 | 31)
                             | (2019, 2, 4)
-                            | (2019, 12, 24 | 31)
                             | (2025, 1, 28)
-                            | (2025 | 2026, 12, 24 | 31)
                             | (2026, 2, 16)
                     ),
                     "the half days are exactly the sheets' own: {date:?}"

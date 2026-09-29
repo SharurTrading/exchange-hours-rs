@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT-0
 
-//! Built-in holiday rows for the `nyse` venue, 2010-2027.
+//! Built-in holiday rows for the `nyse` venue, 2010-2028.
 //!
 //! Every case runs through `calendar_for_exchange`, the surface a consumer
 //! reaches. The table ships only `Closed` and `EarlyClose` scalars — the
@@ -294,7 +294,7 @@ fn the_2025_2026_2027_rows() {
 
 #[test]
 fn every_early_close_in_the_table_is_the_printed_one_oclock() {
-    // The sheet prints 1:00 p.m. for every early close 2010-2027; walk the
+    // The sheet prints 1:00 p.m. for every early close 2010-2028; walk the
     // rows through the public accessor and confirm no other instant ships.
     let calendar = nyse();
     let coverage = calendar.holiday_coverage().expect("nyse ships a table");
@@ -316,31 +316,70 @@ fn every_early_close_in_the_table_is_the_printed_one_oclock() {
             .checked_add_days(Days::new(1))
             .expect("the walk stays representable");
     }
-    assert_eq!(closed + early, 206, "the table ships 206 rows");
-    assert_eq!(early, 37, "37 printed early closes, 2010-2027");
+    assert_eq!(closed + early, 217, "the table ships 217 rows");
+    assert_eq!(early, 39, "39 printed early closes, 2010-2028");
 }
 
 #[test]
-fn the_window_covers_to_2027_12_31_and_refuses_after_it() {
+fn the_window_covers_to_2028_12_31_and_refuses_after_it() {
     let calendar = nyse();
     let coverage = calendar.holiday_coverage().expect("nyse ships a table");
-    let last = day((2027, 12, 24));
+    let last = day((2028, 12, 25));
     assert!(coverage.contains(last));
-    assert_eq!(row_of((2027, 12, 24)), Some(HolidayKind::Closed));
+    assert_eq!(row_of((2028, 12, 25)), Some(HolidayKind::Closed));
     assert!(
-        coverage.contains(day((2027, 12, 31))),
-        "the window ends 2027-12-31"
+        coverage.contains(day((2028, 12, 31))),
+        "the window ends 2028-12-31"
     );
-    let after = day((2028, 1, 3));
+    let after = day((2029, 1, 3));
     assert!(
         !coverage.contains(after),
-        "2028-01-03 is outside the audited window"
+        "2029-01-03 is outside the audited window"
     );
     let error = calendar
-        .is_open(et((2028, 1, 3), (10, 0, 0)))
+        .is_open(et((2029, 1, 3), (10, 0, 0)))
         .expect_err("the day after the window is refused");
     assert!(
         matches!(error, CalendarQueryError::OutsideCoveredRange { .. }),
         "the window-end refusal is OutsideCoveredRange, got {error:?}"
+    );
+}
+
+#[test]
+fn the_2028_rows() {
+    // The 2028 column moved into the audited window on 2026-09-29 UTC, read
+    // from the same live page the 2026-2027 columns key. The nine closures
+    // and the two 1:00 p.m. eves, plus the three no-row shapes the sheet's
+    // own footnotes state: New Year's Day 2028 (a Saturday, unobserved), the
+    // Friday before it (2027-12-31, audited normal), and Christmas Eve 2028
+    // (a Sunday; the **** footnote names only 2026-12-24).
+    assert_closed((2028, 1, 17), "2028 Martin Luther King Jr. Day");
+    assert_closed((2028, 2, 21), "2028 Washington's Birthday");
+    assert_closed((2028, 4, 14), "2028 Good Friday");
+    assert_closed((2028, 5, 29), "2028 Memorial Day");
+    assert_closed((2028, 6, 19), "2028 Juneteenth National Independence Day");
+    assert_closed((2028, 7, 4), "2028 Independence Day");
+    assert_closed((2028, 9, 4), "2028 Labor Day");
+    assert_closed((2028, 11, 23), "2028 Thanksgiving Day");
+    assert_closed((2028, 12, 25), "2028 Christmas Day");
+    assert_early_close(
+        (2028, 7, 3),
+        "2028 July 3 early close before the Tuesday holiday",
+    );
+    assert_early_close((2028, 11, 24), "2028 day after Thanksgiving");
+    assert_eq!(
+        row_of((2028, 1, 1)),
+        None,
+        "New Year's Day 2028 is a Saturday and the sheet observes no holiday"
+    );
+    assert_eq!(
+        row_of((2027, 12, 31)),
+        None,
+        "Friday 2027-12-31 is audited normal: the sheet states no observed holiday"
+    );
+    assert_eq!(
+        row_of((2028, 12, 24)),
+        None,
+        "Christmas Eve 2028 (a Sunday) carries no footnote and no row"
     );
 }

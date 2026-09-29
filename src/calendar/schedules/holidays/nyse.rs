@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT-0
 
-//! New York Stock Exchange holiday rows, 2010-2027.
+//! New York Stock Exchange holiday rows, 2010-2028.
 //!
 //! Keyed by the venue-local trade date in `America/New_York`; every session
 //! the exchange publishes inside one civil day, so an event date is its own
@@ -25,9 +25,10 @@
 //! nowhere, so it errs toward closed), and the other venues are separate
 //! identities — so neither clause moves a row.
 //!
-//! Coverage is 2010-01-01..2027-12-31 with no `Unsourced` dates: each year's
+//! Coverage is 2010-01-01..2028-12-31 with no `Unsourced` dates: each year's
 //! holidays and early closes are printed in full by at least one operator
-//! artifact, and 2028 (printed on the live page) stays outside the window.
+//! artifact, and the live page's 2028 column ships from the same artifact as
+//! the 2026-2027 columns.
 
 use super::EvidenceTier::T1;
 use super::fences::early_close;
@@ -41,7 +42,7 @@ use super::{HolidayKind::Closed, HolidayTable, holidays};
 /// `### Documents` table.
 // Evidence: docs/evidence/nyse.md
 pub(crate) static TABLE: &HolidayTable = holidays! {
-    coverage: [(2010, 1, 1) ..= (2027, 12, 31)],
+    coverage: [(2010, 1, 1) ..= (2028, 12, 31)],
     rows: [
         // 2010 - NYSE-HOL-2010 / NYSE-HOL-2010LATE - operator holiday pages.
         (2010, 1, 1, Closed, T1, "NYSE-HOL-2010"),
@@ -272,5 +273,24 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2027, 11, 25, Closed, T1, "NYSE-HOL-2026"),
         (2027, 11, 26, early_close(13 * 3_600), T1, "NYSE-HOL-2026"),
         (2027, 12, 24, Closed, T1, "NYSE-HOL-2026"),
+        // 2028 - NYSE-HOL-2026 (live operator page, 2028 column). New
+        // Year's Day falls on Saturday, January 1, 2028, and the sheet's
+        // footnote states no New Year's Day holiday is observed, so Friday
+        // 2027-12-31 carries no row and is audited normal.
+        (2028, 1, 17, Closed, T1, "NYSE-HOL-2026"),
+        (2028, 2, 21, Closed, T1, "NYSE-HOL-2026"),
+        (2028, 4, 14, Closed, T1, "NYSE-HOL-2026"),
+        (2028, 5, 29, Closed, T1, "NYSE-HOL-2026"),
+        (2028, 6, 19, Closed, T1, "NYSE-HOL-2026"),
+        // Early close as printed: "close early at 1:00 p.m. ... on Monday,
+        // July 3, 2028".
+        (2028, 7, 3, early_close(13 * 3_600), T1, "NYSE-HOL-2026"),
+        (2028, 7, 4, Closed, T1, "NYSE-HOL-2026"),
+        (2028, 9, 4, Closed, T1, "NYSE-HOL-2026"),
+        (2028, 11, 23, Closed, T1, "NYSE-HOL-2026"),
+        // Early close as printed: "close early at 1:00 p.m. ... on ...
+        // Friday, November 24, 2028 (the day after Thanksgiving)".
+        (2028, 11, 24, early_close(13 * 3_600), T1, "NYSE-HOL-2026"),
+        (2028, 12, 25, Closed, T1, "NYSE-HOL-2026"),
     ],
 };

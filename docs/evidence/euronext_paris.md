@@ -76,11 +76,20 @@ seconds. For 2026 the appendix is announced but unpublished — the live page st
 of year Trading hours: To be announced" — so 2026-12-24 and 2026-12-31 ship as `Unsourced`
 with the closing condition "the 2026 end-of-year appendix to the Euronext Instructions
 4-01/4-03". Nothing is inferred from the 2025 appendix; the operator's own precedent is not
-evidence of 2026.
+evidence of 2026. Re-checked 2026-09-29 UTC: the live page's 2026 calendar rows still print
+`**Half Trading Day` for both December eves, the "will be announced in an end of year
+appendix" sentence stands, and the only appendix the page links is the 2025 edition
+(`/media/14656/download`, "2025 end of year - appendix to Euronext Instructions 4-01 4-03
+Trading Manuals"); the earlier "2026 end of year Trading hours: To be announced" phrasing no
+longer appears on the page, which announces the same withholding in different words. Fresh
+read saved under `holidays/raw/equities/euronext_paris/forward-2027/`.
 
 **2027 is not published.** The live page's newest calendar is the 2026 one and no 2027 edition
 exists on live.euronext.com (sitemap grep over `holiday|calendar|trading-hours`, queried
-2026-09-28T01:03Z). Nothing past 2026-12-31 is claimed. **Closing condition:** the operator's
+2026-09-28T01:03Z). Re-checked 2026-09-29 UTC: the fresh live read names 2027 only inside the
+operator's `Innovate for Growth 2027` strategy material — no 2027 calendar rows, no
+"Calendar 2027" heading, and no half-day or closure cell for any 2027 date. Nothing past
+2026-12-31 is claimed. **Closing condition:** the operator's
 2027 calendar.
 
 **Rows of other markets never touch Paris.** The "Half trading day, Wednesday before Easter"

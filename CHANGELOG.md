@@ -13,6 +13,27 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Added
 
+- **`nyse` holiday window extended to 2028-12-31 (2026-09-29 UTC).** The
+  live operator page has printed a 2028 column since the 2026-09-27
+  retrieval; the forward wave worked it up as eleven rows — nine `Closed`
+  (Martin Luther King Jr. Day 2028-01-17, Washington's Birthday 2028-02-21,
+  Good Friday 2028-04-14, Memorial Day 2028-05-29, Juneteenth 2028-06-19,
+  Independence Day 2028-07-04, Labor Day 2028-09-04, Thanksgiving
+  2028-11-23, Christmas Day 2028-12-25) and two 1:00 p.m. early closes
+  (2028-07-03 before the Tuesday Independence Day, 2028-11-24 the day after
+  Thanksgiving) — all keyed to the same `NYSE-HOL-2026` artifact the
+  2026-2027 columns cite, re-read byte-identically on 2026-09-29 UTC. New
+  Year's Day 2028 falls on a Saturday and the sheet's footnote states no
+  holiday is observed, so Friday 2027-12-31 ships no row and is audited
+  normal, and Christmas Eve 2028 carries no footnote and no early close.
+  The same wave re-read every other served scope whose window stops before
+  end-2027 — `sse`, `nse_india`, `sgx_securities`, `nzx`, `tadawul`, `hkex`
+  (2028 cadence), `euronext_paris` (2026 eves' appendix still unpublished),
+  `tsx`, `borsa_istanbul`, `b3`, `cfe`/`cfe_vix`, `eurex`/`eurex_fixed_income`
+  (2027 conflict unchanged), `xetra` (#200), `six` (2028 not published) and
+  `nasdaq` — and no operator had published 2027 or 2028 material, so each
+  evidence file records the fresh check date and the horizons stand.
+
 - **`globex_nikkei_225_dollar` 2011-2015 holiday history backfilled
   (2026-09-29 UTC).** The family's built-in holiday table extends from the
   2016-2027 audited windows back over two further audited windows —

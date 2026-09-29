@@ -136,6 +136,26 @@ corrections (a venue's hours fixed against a primary source) go under
   state trade ship no row either. 2010 remains an unaudited span: no operator
   artifact stating the 2010 holiday arrangement was found at retrieval, so
   2010 dates refuse with the closing condition recorded in the evidence file.
+- **`tsx` holiday history backfilled to 2017 (2026-09-29 UTC).** The `tsx`
+  table grows from 22 rows over 2025-01-01..2026-12-31 to **107 rows over
+  2017-01-01..2026-12-31** (97 closures and ten Christmas Eve 1:00 PM early
+  closes): TMX's own "Stock Markets Closed" lists, read from ten Wayback
+  `id_` replays of the calendar page across its two paths — the 2018
+  relaunch path `tsx.com/trading/calendars-and-trading-hours/calendar`
+  (2018-2023, named by the archived sitemap.xml; its 2018-09-11 capture's
+  archive section restates the complete 2017 list) and the `/en/` path
+  (2024-2025). The Christmas Eve half days ride the operator's own printed
+  instant: the 2018-2020 page sentence `Markets will close at 1:00 PM ...`,
+  the 2021 row whose January `subject to Board Approval` condition is
+  witnessed discharged by the 2022 state of the page, and 2024's row, which
+  the operator added to the list between its July and December states. 2022
+  and 2023 print no Christmas Eve line (24 December fell on a weekend) and
+  ship none. 2010-2016 predates every reachable capture (the Wayback CDX
+  service was down for most of 2026-09-29 UTC), so queries before
+  2017-01-01 refuse; the span and its closing conditions are recorded in
+  the evidence file and tracked as
+  [#221](https://github.com/SharurTrading/exchange-hours-rs/issues/221).
+
 - **`euronext_paris` holiday history backfilled to 2014 (2026-09-29 UTC).**
   The `euronext_paris` table grows from 15 rows over 2025-01-01..2026-12-31
   to **83 rows over 2014-01-01..2026-12-31** (66 closures, thirteen 14:05

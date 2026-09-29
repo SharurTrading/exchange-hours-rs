@@ -419,6 +419,7 @@ fn date_level_incompleteness() -> &'static [(&'static str, usize)] {
         ("lse", 5),
         ("nasdaq", 4),
         ("nse_india", 14),
+        ("tsx", 0),
         ("xetra", 0),
     ]
 }
@@ -568,9 +569,9 @@ fn inventory_completeness_verdicts_match_the_metadata() {
          2010-2026; the 2026-09-28 UTC APAC activation makes nzx and sgx_securities complete to \
          their operators' horizons and asx incomplete below its 2025-06-23 SR15 horizon; tse and \
          sse windows end at the operators' horizons, and nse_india's Muhurat dates are Unsourced; \
-         the same date's European/Canadian activation makes tsx complete to its operator's horizon \
-         while lse carries five Unsourced 2025 dates and euronext_paris two announced-but-unstated \
-         2026 eves)"
+         the same date's European/Canadian activation makes lse carry five Unsourced 2025 dates, \
+         euronext_paris two announced-but-unstated 2026 eves, and the 2026-09-29 UTC backfills \
+         leave tsx incomplete across the 2010-2016 span no capture reaches (#221))"
     );
 }
 

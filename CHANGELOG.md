@@ -300,6 +300,18 @@ corrections (a venue's hours fixed against a primary source) go under
   no Whit Monday or German Unity Day from 2022 on, so those days trade as
   ordinary days; weekend-falling exception dates key no weekday row and no
   2010-2024 date is unresolved.
+- **`six` holiday history backfilled to 2012-2017 and 2020-2024
+  (2026-09-29 UTC).** 105 closure rows join the table, every row one dark
+  `Market Holiday — Market Closed` cell of the operator's own per-year
+  `Trading Calendar` PDF (Wayback replays of the six-swiss-exchange.com
+  editions of 2012-2017 and the six-group.com editions of 2020-2024; the
+  2012-2016 editions print the cells red, 2017 on dark blue). The coverage
+  windows leave 2010-2011 and 2018-2019 as unaudited spans: the operator's
+  trading calendars for those years are archived on no operator channel (the
+  archived grids of those eras are settlement or currency calendars, a
+  different arrangement) and a date-aware query inside them refuses with the
+  coverage contract rather than answering from silence (#212). Weekend-falling
+  holidays key no weekday row.
 
 ### Fixed
 

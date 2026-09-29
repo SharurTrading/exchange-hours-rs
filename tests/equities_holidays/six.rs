@@ -18,15 +18,178 @@ fn calendar() -> ExchangeCalendar {
 }
 
 #[test]
-fn coverage_opens_at_the_2025_floor_and_stops_at_the_2027_schedule() {
+fn coverage_opens_at_the_2012_backfill_and_stops_at_the_2027_schedule() {
     let calendar = calendar();
     let coverage = calendar
         .holiday_coverage()
         .expect("six ships a built-in table");
-    assert_eq!(coverage.first(), day(2025, 1, 1));
+    assert_eq!(coverage.first(), day(2012, 1, 1));
     assert_eq!(coverage.last(), day(2027, 12, 31));
-    assert_eq!(calendar.holiday_on(day(2024, 12, 31)), None);
+    let windows = coverage.windows();
+    assert_eq!(
+        windows,
+        vec![
+            (day(2012, 1, 1), day(2017, 12, 31)),
+            (day(2020, 1, 1), day(2024, 12, 31)),
+            (day(2025, 1, 1), day(2027, 12, 31)),
+        ],
+        "three audited windows; 2010-2011 and 2018-2019 are the unaudited spans (#212)"
+    );
+    // Inside the unaudited spans the table has no answer at all.
+    assert_eq!(calendar.holiday_on(day(2011, 1, 2)), None);
+    assert_eq!(calendar.holiday_on(day(2018, 8, 1)), None);
+    assert_eq!(calendar.holiday_on(day(2019, 12, 25)), None);
+    // Outside the audited history entirely: the same.
+    assert_eq!(calendar.holiday_on(day(2009, 12, 31)), None);
     assert_eq!(calendar.holiday_on(day(2028, 1, 1)), None);
+}
+
+#[test]
+fn every_printed_2012_cell_ships() {
+    let calendar = calendar();
+    assert_closed(
+        "six",
+        calendar,
+        Europe::Zurich,
+        &[
+            day(2012, 1, 2),
+            day(2012, 4, 6),
+            day(2012, 4, 9),
+            day(2012, 5, 1),
+            day(2012, 5, 17),
+            day(2012, 5, 28),
+            day(2012, 8, 1),
+            day(2012, 12, 24),
+            day(2012, 12, 25),
+            day(2012, 12, 26),
+            day(2012, 12, 31),
+        ],
+    );
+    // New Year 2012 fell on a Sunday: the grid marks no cell and no row ships.
+    assert_eq!(calendar.holiday_on(day(2012, 1, 1)), None);
+    // The red cells cite the year's own PDF.
+    assert_eq!(
+        calendar
+            .holiday_on(day(2012, 5, 17))
+            .expect("2012-05-17 ships a row")
+            .document_id(),
+        "SIX-TC-2012"
+    );
+}
+
+#[test]
+fn the_2016_grid_marks_seven_weekday_holidays_and_no_weekend_fall() {
+    let calendar = calendar();
+    assert_closed(
+        "six",
+        calendar,
+        Europe::Zurich,
+        &[
+            day(2016, 1, 1),
+            day(2016, 3, 25),
+            day(2016, 3, 28),
+            day(2016, 5, 5),
+            day(2016, 5, 16),
+            day(2016, 8, 1),
+            day(2016, 12, 26),
+        ],
+    );
+    // Christmas Day 2016 fell on a Sunday: the Sunday shading deletes it and
+    // no weekday row ships.
+    assert_eq!(calendar.holiday_on(day(2016, 12, 25)), None);
+}
+
+#[test]
+fn the_2022_grid_marks_six_weekday_holidays() {
+    let calendar = calendar();
+    assert_closed(
+        "six",
+        calendar,
+        Europe::Zurich,
+        &[
+            day(2022, 4, 15),
+            day(2022, 4, 18),
+            day(2022, 5, 26),
+            day(2022, 6, 6),
+            day(2022, 8, 1),
+            day(2022, 12, 26),
+        ],
+    );
+    // New Year 2022 (Saturday), Christmas Eve (Saturday), Christmas Day
+    // (Sunday) and New Year's Eve (Saturday) shade away.
+    for weekend_fall in [(2022, 1, 1), (2022, 12, 24), (2022, 12, 25), (2022, 12, 31)] {
+        assert_eq!(
+            calendar.holiday_on(day(weekend_fall.0, weekend_fall.1, weekend_fall.2)),
+            None,
+            "{weekend_fall:?} keys no weekday row"
+        );
+    }
+    assert_eq!(
+        calendar
+            .holiday_on(day(2022, 8, 1))
+            .expect("2022-08-01 ships a row")
+            .document_id(),
+        "SIX-TC-2022"
+    );
+}
+
+#[test]
+fn every_printed_2024_cell_ships() {
+    let calendar = calendar();
+    assert_closed(
+        "six",
+        calendar,
+        Europe::Zurich,
+        &[
+            day(2024, 1, 1),
+            day(2024, 1, 2),
+            day(2024, 3, 29),
+            day(2024, 4, 1),
+            day(2024, 5, 1),
+            day(2024, 5, 9),
+            day(2024, 5, 20),
+            day(2024, 8, 1),
+            day(2024, 12, 24),
+            day(2024, 12, 25),
+            day(2024, 12, 26),
+            day(2024, 12, 31),
+        ],
+    );
+}
+
+#[test]
+fn a_pre_2025_ordinary_weekday_trades_and_the_unaudited_spans_refuse() {
+    let calendar = calendar();
+    // Wednesday 2015-07-08: inside the 2012-2017 window, no row, and the
+    // session layer answers the ordinary day end-exclusively.
+    assert_eq!(calendar.holiday_on(day(2015, 7, 8)), None);
+    assert!(
+        calendar
+            .is_open(ch((2015, 7, 8), (12, 0, 0)))
+            .expect("the coverage contract must answer a covered date"),
+        "an ordinary pre-2025 midday is open"
+    );
+    assert!(
+        !calendar
+            .is_open(ch((2015, 7, 8), (17, 40, 0)))
+            .expect("the coverage contract must answer a covered date"),
+        "17:40 is the end-exclusive Trading-At-Last close"
+    );
+    // The unaudited spans refuse with the coverage contract: the operator's
+    // trading calendar for them is archived on no channel (#212).
+    for (label, instant) in [
+        ("2011-05-12", ch((2011, 5, 12), (12, 0, 0))),
+        ("2018-06-06", ch((2018, 6, 6), (12, 0, 0))),
+        ("2019-10-03", ch((2019, 10, 3), (12, 0, 0))),
+    ] {
+        let error = calendar
+            .is_open(instant)
+            .expect_err("an unaudited-span query must refuse");
+        assert!(
+            matches!(error, CalendarQueryError::OutsideCoveredRange { .. }),
+            "{label} must refuse with OutsideCoveredRange, got {error:?}"
+        );
+    }
 }
 
 #[test]

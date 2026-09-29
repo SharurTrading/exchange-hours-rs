@@ -4,7 +4,7 @@
 //!
 //! Keyed by the crate's own venue-local trade date in `Europe/Berlin`. The
 //! operator states each year's closure set in one sentence — "there will be
-//! trading Mondays to Fridays in <year>, with the exception of ..." — printed
+//! trading Mondays to Fridays in \<year\>, with the exception of ..." — printed
 //! on the `Trading calendar` PDFs: the `Trading Calendar <year>` grids of
 //! 2010-2014 (the `DB_HK_<year>` documents of the xetra.com and
 //! deutsche-boerse.com archive) and the `xetra-trading-calendar-<year>` PDFs of
@@ -52,7 +52,7 @@ const HOLIDAY_CLOSE_SSM: u32 = 20 * 3_600;
 /// Xetra's built-in holiday rows and the windows they were audited over.
 ///
 /// Every closure row is one line of the operator's per-year calendar sentence
-/// ("there will be trading Mondays to Fridays in <year>, with the exception
+/// ("there will be trading Mondays to Fridays in \<year\>, with the exception
 /// of ...") or the equivalent cell of the page's non-trading-days table; the
 /// three 2026 early closes are the page's own named 2026 trading holidays
 /// under its 20:00 close rule. A date inside a window with no row is audited

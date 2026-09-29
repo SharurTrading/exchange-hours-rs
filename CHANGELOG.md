@@ -136,6 +136,62 @@ corrections (a venue's hours fixed against a primary source) go under
   state trade ship no row either. 2010 remains an unaudited span: no operator
   artifact stating the 2010 holiday arrangement was found at retrieval, so
   2010 dates refuse with the closing condition recorded in the evidence file.
+- **`tsx` holiday history backfilled to 2017 (2026-09-29 UTC).** The `tsx`
+  table grows from 22 rows over 2025-01-01..2026-12-31 to **107 rows over
+  2017-01-01..2026-12-31** (100 closures and seven Christmas Eve 1:00 PM early
+  closes): TMX's own "Stock Markets Closed" lists, read from ten Wayback
+  `id_` replays of the calendar page across its two paths — the 2018
+  relaunch path `tsx.com/trading/calendars-and-trading-hours/calendar`
+  (2018-2023, named by the archived sitemap.xml; its 2018-09-11 capture's
+  archive section restates the complete 2017 list) and the `/en/` path
+  (2024-2025). The Christmas Eve half days ride the operator's own printed
+  instant: the 2018-2020 page sentence `Markets will close at 1:00 PM ...`,
+  the 2021 row whose January `subject to Board Approval` condition is
+  witnessed discharged by the 2022 state of the page, and 2024's row, which
+  the operator added to the list between its July and December states. 2022
+  and 2023 print no Christmas Eve line (24 December fell on a weekend) and
+  ship none. 2010-2016 predates every reachable capture (the Wayback CDX
+  service was down for most of 2026-09-29 UTC), so queries before
+  2017-01-01 refuse; the span and its closing conditions are recorded in
+  the evidence file and tracked as
+  [#221](https://github.com/SharurTrading/exchange-hours-rs/issues/221).
+
+- **`euronext_paris` holiday history backfilled to 2014 (2026-09-29 UTC).**
+  The `euronext_paris` table grows from 15 rows over 2025-01-01..2026-12-31
+  to **83 rows over 2014-01-01..2026-12-31** (66 closures, thirteen 14:05
+  early closes, four withheld dates): the operator's own holiday calendars,
+  read from ten Wayback `id_` replays across its three site generations —
+  the NYSE Euronext cash-markets calendar (2014-2015, including 2015's one
+  full New Year's Eve closure), the per-year `trading-calendars-hours` page
+  (2016-2019, whose 2016 and 2017 substitute December Fridays state `close
+  at the usual times`, so no half day exists those years) and the per-market
+  `trading-hours-holidays` tables whose Paris column this identity reads
+  (2019-2025, where the 2022 and 2023 December substitutes are Dublin's and
+  Paris prints `Full Day Trading`). The 2024 December eves join the 2026
+  pair as `Unsourced`: the tables print `Half Day Trading**` (2024) and
+  `**Half Trading Day` (2026) but their instants live in end-of-year
+  appendices no surviving capture holds. No
+  operator holiday page survives for 2010-2013 (CDX sweep checked
+  2026-09-29 UTC), so queries before 2014-01-01 refuse; the gap and its
+  closing conditions are recorded in the evidence file.
+
+- **`lse` holiday history backfilled to the 2010 floor (2026-09-29 UTC).**
+  The `lse` table grows from 30 rows over 2025-01-01..2027-12-31 to **130 rows
+  over 2010-01-01..2015-01-01 and 2020-08-31..2027-12-31** (99 closures and 26
+  12:30 early closes across the two windows, five 2025 dates still withheld):
+  the operator's own holiday table, read from fourteen Wayback `id_` replays
+  of its three site generations — the `.htm` Business days page (2010-2014,
+  where 2011's Royal Wedding and 2012's Diamond Jubilee carry their own
+  printed rows and the December half days are page-level sentences naming
+  23/30 December 2011 as well as the 24/31 pairs), the 2020 SPA page
+  (2020-2022, adding the Platinum Jubilee), and the content API under its 2023
+  path form (2023-2024, adding the Coronation) — with every artifact saved,
+  sha256'd and re-verified in the research store. Two spans survive in no
+  operator capture (CDX sweep checked 2026-09-29 UTC): 2015-01-02..2019-12-31
+  (the `.htm` page serves 404 from April 2014 and the `/trade/` page's first
+  capture is 2020-07-31) and 2020-01-01..2020-08-30 (rolled off before the
+  first 2020 capture); queries inside them refuse rather than answer, and the
+  gap and its closing conditions are recorded in the evidence file.
 
 - **`lse`, `euronext_paris` and `tsx` activate: built-in holiday tables for
   the European and Canadian cash-equity venues (2026-09-28 UTC).** All three

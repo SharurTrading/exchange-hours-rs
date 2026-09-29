@@ -413,12 +413,13 @@ fn withheld(calendar: ExchangeCalendar, date: NaiveDate) -> bool {
 fn date_level_incompleteness() -> &'static [(&'static str, usize)] {
     &[
         ("cbot", 261),
-        ("euronext_paris", 2),
+        ("euronext_paris", 4),
         ("hkex", 10),
         ("iceus", 41),
         ("lse", 5),
         ("nasdaq", 4),
         ("nse_india", 14),
+        ("tsx", 0),
         ("xetra", 0),
     ]
 }
@@ -560,17 +561,17 @@ fn inventory_completeness_verdicts_match_the_metadata() {
     }
     assert_eq!(
         (complete, incomplete, no_coverage),
-        (13, 20, 0),
-        "the inventory's verdict shapes: thirteen complete, twenty incomplete, none with no 2025 \
+        (12, 21, 0),
+        "the inventory's verdict shapes: twelve complete, twenty-one incomplete, none with no 2025 \
          coverage (xetra's unpublished 2027 schedule keeps it incomplete and hkex's ten Unsourced \
          2012-2015 half-day eves moved it there on 2026-09-29 UTC; #197's b3/tadawul are \
          complete; nyse is complete to 2027 and nasdaq is incomplete — four Unsourced dates across \
          2010-2026; the 2026-09-28 UTC APAC activation makes nzx and sgx_securities complete to \
          their operators' horizons and asx incomplete below its 2025-06-23 SR15 horizon; tse and \
          sse windows end at the operators' horizons, and nse_india's Muhurat dates are Unsourced; \
-         the same date's European/Canadian activation makes tsx complete to its operator's horizon \
-         while lse carries five Unsourced 2025 dates and euronext_paris two announced-but-unstated \
-         2026 eves)"
+         the same date's European/Canadian activation makes lse carry five Unsourced 2025 dates, \
+         euronext_paris two announced-but-unstated 2026 eves, and the 2026-09-29 UTC backfills \
+         leave tsx incomplete across the 2010-2016 span no capture reaches (#221))"
     );
 }
 

@@ -2818,7 +2818,11 @@ mod lse {
                 .expect("the derivation reads covered 2024-12-31"),
             "lse 2025-01-01 has no session in either phase"
         );
-        assert!(!calendar.is_open(london((2025, 1, 1), (11, 0, 0))).expect("covered"));
+        assert!(
+            !calendar
+                .is_open(london((2025, 1, 1), (11, 0, 0)))
+                .expect("covered")
+        );
     }
 
     #[test]
@@ -2862,7 +2866,11 @@ mod lse {
                 .expect("the floor carries the baseline behind the first row"),
             "lse 2010-01-01 has no session in either phase"
         );
-        assert!(!calendar.is_open(london((2010, 1, 1), (12, 0, 0))).expect("covered"));
+        assert!(
+            !calendar
+                .is_open(london((2010, 1, 1), (12, 0, 0)))
+                .expect("covered")
+        );
         // The last row of the first window answers end to end: its derivation
         // reads 2014-12-31, inside the window.
         assert_closure(calendar, (2015, 1, 1), "lse");
@@ -2880,7 +2888,12 @@ mod lse {
         // 23 December and 2022's printed Friday 30 December: every pre-2025
         // half-day shape, each closing at the operator's 12:30 instant,
         // end-exclusive.
-        for date in [(2011, 12, 23), (2012, 12, 24), (2022, 12, 30), (2024, 12, 24)] {
+        for date in [
+            (2011, 12, 23),
+            (2012, 12, 24),
+            (2022, 12, 30),
+            (2024, 12, 24),
+        ] {
             assert_eq!(
                 calendar
                     .holiday_on(day(date.0, date.1, date.2))
@@ -3260,7 +3273,9 @@ mod euronext_paris {
         // refuse as an unresolved gap.
         for date in [(2024, 12, 25), (2024, 12, 26)] {
             assert_eq!(
-                calendar.holiday_on(day(date.0, date.1, date.2)).map(Holiday::kind),
+                calendar
+                    .holiday_on(day(date.0, date.1, date.2))
+                    .map(Holiday::kind),
                 Some(HolidayKind::Closed),
                 "paris {date:?} carries the printed closure row"
             );
@@ -3316,7 +3331,12 @@ mod euronext_paris {
         }
         // The 2022 and 2023 December substitutes are Dublin's: their Paris
         // cells read `Full Day Trading`, so Paris trades through them.
-        for date in [(2022, 12, 23), (2022, 12, 30), (2023, 12, 22), (2023, 12, 29)] {
+        for date in [
+            (2022, 12, 23),
+            (2022, 12, 30),
+            (2023, 12, 22),
+            (2023, 12, 29),
+        ] {
             assert_eq!(
                 calendar.holiday_on(day(date.0, date.1, date.2)),
                 None,
@@ -3669,8 +3689,14 @@ mod tsx {
         // 2022 and 2023 print no Christmas Eve line (24 December fell on a
         // weekend): the Tuesdays/Wednesdays after answer as ordinary trading
         // days.
-        assert_eq!(calendar.holiday_on(day(2022, 12, 27)).map(Holiday::kind), Some(HolidayKind::Closed));
-        assert_eq!(calendar.holiday_on(day(2023, 12, 25)).map(Holiday::kind), Some(HolidayKind::Closed));
+        assert_eq!(
+            calendar.holiday_on(day(2022, 12, 27)).map(Holiday::kind),
+            Some(HolidayKind::Closed)
+        );
+        assert_eq!(
+            calendar.holiday_on(day(2023, 12, 25)).map(Holiday::kind),
+            Some(HolidayKind::Closed)
+        );
     }
 
     #[test]
@@ -3750,7 +3776,11 @@ mod tsx {
                 .expect("the derivation reads a covered 2024-12-24"),
             "tsx 2025-01-01 has no session in either phase"
         );
-        assert!(!calendar.is_open(toronto((2025, 1, 1), (11, 0, 0))).expect("covered"));
+        assert!(
+            !calendar
+                .is_open(toronto((2025, 1, 1), (11, 0, 0)))
+                .expect("covered")
+        );
     }
 
     #[test]

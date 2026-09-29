@@ -850,9 +850,16 @@ and each row's `Derived from` cell records which one produced it.
   occurrence by the **session it feeds**, so the same queue reads with the next trade date
   instead: `D + 1` on a Monday to Thursday and `D + 3` over a weekend. Measured through
   `calendar_for_market_hours_key(MarketHoursKey::GlobexGrains)` over
-  2025-01-01..2027-12-31, 15:00 CT is inside the queue on **746** trade dates, and **all 746**
+  2025-01-01..2027-12-31, the shaped #152 declaration refuses **720** days (re-measured
+  2026-09-29 UTC against the current tables; the original 2026-09-26 measurement read
+  **746** queue dates before the closure-eve replacement blocks landed) — every refusing
+  day is one whose calendar serves the 14:30-16:00 CT queue, and **all 720**
   answer `session_state = OrderEntry`, `is_accepting_orders = true` and a `trade_date` other
-  than the date printed on. Two instants show it on a date no row covers: **2025-06-10** (a
+  than the date printed on. Fourteen further days accept orders at 15:00 CT on the
+  adjusted queue their own replacement block states and answer completely; the walk fence
+  in `tests/coverage_metadata.rs`
+  (`a_date_scoped_declaration_zeroes_no_identity_over_2025_2027`) pins the 720 refusals,
+  the 14 block-eve days and livestock's 754. Two instants show it on a date no row covers: **2025-06-10** (a
   Tuesday) answers `trade_date = 2025-06-11`, and **2025-06-13** (a Friday) answers
   `trade_date = 2025-06-16`, where `CME-SVC-2024-12-31` prints `2025-01-02 14:30 pcp` and
   `2026-07-02 14:30 pcp` carrying their own dates. This is the one answer in this block that a

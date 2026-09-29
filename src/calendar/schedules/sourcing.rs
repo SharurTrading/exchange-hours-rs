@@ -234,10 +234,13 @@ const fn withheld_sunday_quarter_hour() -> PhaseGap {
 /// on. The crate dates an order-entry occurrence by the session it feeds, so
 /// the same queue reads with the **next** trade date instead — `D + 1` on a
 /// Monday to Thursday, `D + 3` over a weekend. Measured over
-/// 2025-01-01..2027-12-31, `globex_grains` serves the queue on **746** trade
-/// dates and answers all 746 with a trade date other than the operator's
-/// label; `globex_livestock` serves the same queue on its own 08:30-13:05 CT
-/// grid.
+/// 2025-01-01..2027-12-31 (re-measured 2026-09-29 UTC after the closure-eve
+/// replacement blocks landed), the shape refuses **720** of the 1,095 days for
+/// `globex_grains` — every day whose calendar serves the 14:30-16:00 CT queue —
+/// and **754** for `globex_livestock`, each answering a trade date other than
+/// the operator's label; the closure-eve days whose complete replacement blocks
+/// state the adjusted day answer completely, and the walk fence in
+/// `tests/coverage_metadata.rs` pins the counts.
 ///
 /// **Shaped to the dates that carry the queue.** The shape names any
 /// order-entry window closing at 16:00 CT on a weekday — the PCP's own close,

@@ -236,11 +236,18 @@ maintenance contract described in the README and schedule verification ledger.
   holiday-removed Sundays answer from the tables, and their order-entry
   queries answer on every date the shape does not resolve. `globex_grains` and
   `globex_livestock` refuse only the dates that carry the post-close queue
-  whose trade-date label diverges (#152); `globex_cryptocurrency`'s undated
+  whose trade-date label diverges (#152; 720 of the 1,095 days of
+  2025-01-01..2027-12-31 for `globex_grains` and 754 for `globex_livestock`,
+  counts the walk fence in `tests/coverage_metadata.rs` pins);
+  `globex_cryptocurrency`'s undated
   Pre-Open declaration (#123) is bounded to the five-day era on both sides
   (2017-12-17..2026-05-29); and `globex_grains` declares the omitted
   2012-05-20..2013-04-06 regime's queues (`NormalWeekPhaseWithheld`, #116),
-  which the whole-domain #152 refusal had masked. **What this means for
+  which the whole-domain #152 refusal had masked. `eurex`'s `UnpublishedClosureDates`
+  record (#157) now streams exactly the 2025 and 2026 editions that carry the
+  `tba` note instead of shadowing the whole floor, so the dates before 2025
+  read `NoHolidayCoverage` rather than carrying a declaration the note does not
+  reach. **What this means for
   callers:** dates that read `Covered` today refused before; a queue scan on a
   bracket-era Sunday still refuses with `OutsideCoveredRange` (never reading as
   a closed grid), and a queue scan whose opening day could not consult the

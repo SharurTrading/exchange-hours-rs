@@ -56,7 +56,10 @@ market-clock reachability. Three dormant equities venues became served on 2026-0
 2025-2027 holiday windows shipped — `borsa_istanbul` (2025-2026; 2027 unpublished),
 `tadawul` (2025-2027 complete) and `b3` (2025-2026; 2027 unpublished) — moving §1's heading and
 body no further, adding the three inventory rows below with the counts their tables derive, and
-moving the no-holiday scope count from sixteen to nineteen.
+moving the no-holiday scope count from sixteen to nineteen. On 2026-09-29 UTC those three
+windows were backfilled from the operators' own artifacts — `borsa_istanbul` to 2012-03-02,
+`tadawul` to 2021-01-01 (2013-06-29..2020-12-31 an unaudited span) and `b3` to 2011-01-01
+(2010 an unaudited span) — and the three inventory rows moved with them.
 Three more dormant APAC equities venues became served on the same date, 2026-09-28 UTC, when their
 operators' own holiday windows shipped — `asx` (2025-2027, with the normal week below the
 2025-06-23 SR15 knowledge bound still carried), `nzx` (2025 through the operator's 2027-01-04

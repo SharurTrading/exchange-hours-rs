@@ -136,6 +136,25 @@ corrections (a venue's hours fixed against a primary source) go under
   state trade ship no row either. 2010 remains an unaudited span: no operator
   artifact stating the 2010 holiday arrangement was found at retrieval, so
   2010 dates refuse with the closing condition recorded in the evidence file.
+- **`euronext_paris` holiday history backfilled to 2014 (2026-09-29 UTC).**
+  The `euronext_paris` table grows from 15 rows over 2025-01-01..2026-12-31
+  to **83 rows over 2014-01-01..2026-12-31** (66 closures, thirteen 14:05
+  early closes, four withheld dates): the operator's own holiday calendars,
+  read from ten Wayback `id_` replays across its three site generations —
+  the NYSE Euronext cash-markets calendar (2014-2015, including 2015's one
+  full New Year's Eve closure), the per-year `trading-calendars-hours` page
+  (2016-2019, whose 2016 and 2017 substitute December Fridays state `close
+  at the usual times`, so no half day exists those years) and the per-market
+  `trading-hours-holidays` tables whose Paris column this identity reads
+  (2019-2025, where the 2022 and 2023 December substitutes are Dublin's and
+  Paris prints `Full Day Trading`). The 2024 December eves join the 2026
+  pair as `Unsourced`: the tables print `Half Day Trading**` (2024) and
+  `**Half Trading Day` (2026) but their instants live in end-of-year
+  appendices no surviving capture holds. No
+  operator holiday page survives for 2010-2013 (CDX sweep checked
+  2026-09-29 UTC), so queries before 2014-01-01 refuse; the gap and its
+  closing conditions are recorded in the evidence file.
+
 - **`lse` holiday history backfilled to the 2010 floor (2026-09-29 UTC).**
   The `lse` table grows from 30 rows over 2025-01-01..2027-12-31 to **130 rows
   over 2010-01-01..2015-01-01 and 2020-08-31..2027-12-31** (99 closures and 26

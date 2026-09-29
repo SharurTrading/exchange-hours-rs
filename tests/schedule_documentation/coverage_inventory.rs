@@ -413,7 +413,7 @@ fn withheld(calendar: ExchangeCalendar, date: NaiveDate) -> bool {
 fn date_level_incompleteness() -> &'static [(&'static str, usize)] {
     &[
         ("cbot", 261),
-        ("euronext_paris", 2),
+        ("euronext_paris", 4),
         ("hkex", 10),
         ("iceus", 41),
         ("lse", 5),

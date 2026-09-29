@@ -4,7 +4,8 @@
 //! shipped with the 2025-2027 wave: `b3`, `tadawul` and `borsa_istanbul`
 //! (2025-2026), the APAC venues `nzx` (2010-2024 backfilled beside the
 //! operator's 2025-2027-01-04 rolling horizon, with the 2016-2017 capture gap
-//! refusing), `asx` (2025-2027) and `sgx_securities` (2025-2026), and the
+//! refusing), `asx` (2010-2024 backfilled from each year's own operator
+//! sheet, beside 2025-2027) and `sgx_securities` (2025-2026), and the
 //! European/American venues `lse` (2025-2027, with five rolling-table
 //! dates withheld), `euronext_paris` (2025-2026; the 2026 half-day hours are
 //! announced but unstated) and `tsx` (2025-2026).
@@ -1289,6 +1290,18 @@ mod asx {
                 .expect("covered"),
             "the substitute Monday is closed"
         );
+        // Pre-2025 closure rows answer through `holiday_on` even below the
+        // carried horizon: 2010-04-26 is the sheet's own observed ANZAC
+        // Monday and 2013-01-28 its observed Australia Day.
+        for date in [(2010, 4, 26), (2013, 1, 28)] {
+            assert_eq!(
+                calendar
+                    .holiday_on(day(date.0, date.1, date.2))
+                    .map(Holiday::kind),
+                Some(HolidayKind::Closed),
+                "{date:?}"
+            );
+        }
         // ANZAC Day 2027 prints `OPEN` on the sheet: audited normal, no row.
         assert_eq!(
             calendar.holiday_on(day(2027, 4, 26)).map(Holiday::kind),
@@ -1392,7 +1405,7 @@ mod asx {
     fn the_window_refuses_before_the_floor_and_the_sheet_has_no_forward_gap() {
         let calendar = asx();
         let coverage = calendar.holiday_coverage().expect("asx ships a table");
-        assert_eq!(coverage.first(), day(2025, 1, 1));
+        assert_eq!(coverage.first(), day(2010, 1, 1));
         assert_eq!(coverage.last(), day(2027, 12, 31));
         assert!(matches!(
             calendar.is_open(syd((2009, 12, 31), (11, 0, 0))),
@@ -1416,7 +1429,56 @@ mod asx {
     #[test]
     fn every_shipped_row_matches_the_sheets_per_year() {
         let rows = rows_per_year(asx());
-        assert_eq!(rows.len(), 29, "23 closures and six 14:10 early closes");
+        assert_eq!(
+            rows.len(),
+            174,
+            "121 pre-2025 closures + 24 pre-2025 14:10 early closes, 23 closures \
+             and six 14:10 early closes across 2025-2027"
+        );
+        // 2010-2024, read off each year's own operator sheet.
+        assert_eq!(tally(&rows, 2010), (8, 2, 0), "2010");
+        assert_eq!(
+            tally(&rows, 2011),
+            (8, 2, 0),
+            "2011: the Easter Tuesday one-off included"
+        );
+        assert_eq!(tally(&rows, 2012), (8, 2, 0), "2012");
+        assert_eq!(tally(&rows, 2013), (8, 2, 0), "2013");
+        assert_eq!(tally(&rows, 2014), (8, 2, 0), "2014");
+        assert_eq!(
+            tally(&rows, 2015),
+            (8, 2, 0),
+            "2015: the Saturday ANZAC included"
+        );
+        assert_eq!(tally(&rows, 2016), (8, 2, 0), "2016");
+        assert_eq!(
+            tally(&rows, 2017),
+            (8, 0, 0),
+            "2017: the sheet prints no Last Business Day rows, so no early close"
+        );
+        assert_eq!(tally(&rows, 2018), (8, 2, 0), "2018");
+        assert_eq!(tally(&rows, 2019), (8, 2, 0), "2019");
+        assert_eq!(
+            tally(&rows, 2020),
+            (8, 2, 0),
+            "2020: the Saturday ANZAC (no substitute) included"
+        );
+        assert_eq!(
+            tally(&rows, 2021),
+            (8, 2, 0),
+            "2021: the Sunday ANZAC included"
+        );
+        assert_eq!(
+            tally(&rows, 2022),
+            (9, 0, 0),
+            "2022: the National Day of Mourning included; both year-end rows print OPEN"
+        );
+        assert_eq!(
+            tally(&rows, 2023),
+            (8, 0, 0),
+            "2023: both year-end rows print OPEN, so no early close"
+        );
+        assert_eq!(tally(&rows, 2024), (8, 2, 0), "2024");
         assert_eq!(
             tally(&rows, 2025),
             (8, 2, 0),
@@ -1436,6 +1498,54 @@ mod asx {
             if instant.is_some() {
                 assert_eq!(*instant, Some(14 * 3_600 + 10 * 60), "{date:?}");
             }
+        }
+        // The scalar early closes sit only on the sheets' own dates: adding
+        // one to 2017/2022/2023 (whose sheets print none) or moving a closure
+        // breaks the tallies above.
+        for (date, _, instant) in &rows {
+            if instant.is_some() {
+                assert!(
+                    matches!(
+                        date,
+                        (
+                            2010 | 2012
+                                | 2013
+                                | 2014
+                                | 2015
+                                | 2018
+                                | 2019
+                                | 2020
+                                | 2021
+                                | 2024
+                                | 2025
+                                | 2026
+                                | 2027,
+                            12,
+                            24 | 31
+                        ) | (2011 | 2016, 12, 23 | 30)
+                    ),
+                    "the early closes are exactly the sheets' own: {date:?}"
+                );
+            }
+        }
+    }
+
+    /// Below the 2025-06-23 SR15 horizon the session queries refuse as
+    /// carried, but the holiday rows answer: 2011-04-26 is the sheet's own
+    /// one-off Easter Tuesday congruence holiday, and 2022-09-22 is the
+    /// National Day of Mourning the sheet gained between replays.
+    #[test]
+    fn the_pre_2025_rows_answer_while_carried_dates_refuse() {
+        let calendar = asx();
+        for date in [(2011, 4, 26), (2022, 9, 22), (2010, 12, 24), (2023, 12, 25)] {
+            assert!(
+                calendar.holiday_on(day(date.0, date.1, date.2)).is_some(),
+                "{date:?} ships a row"
+            );
+            assert!(matches!(
+                calendar.is_open(syd(date, (11, 0, 0))),
+                Err(CalendarQueryError::OutsideCoveredRange { .. })
+            ));
         }
     }
 }

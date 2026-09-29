@@ -107,6 +107,22 @@ corrections (a venue's hours fixed against a primary source) go under
   than answer; the gap and its closing condition are tracked as
   [#209](https://github.com/SharurTrading/exchange-hours-rs/issues/209).
 
+- **`asx` holiday history backfilled to the 2010 floor (2026-09-29 UTC).**
+  The `asx` table grows from 29 rows over 2025-01-01..2027-12-31 to **174
+  rows over 2010-01-01..2027-12-31** (121 closures and 24 early closes
+  added): each year's own operator trading-calendar sheet, read from 15
+  Wayback `id_` replays of the operator's pages per era (the
+  `trading_calendar/asx/<year>` pages 2010-2011, the
+  `trading_services`/`about/asx-trading-calendar-<year>` pages 2012-2019,
+  the `www2.asx.com.au` cash-market trading-calendar page 2020-2022 and the
+  `www.asx.com.au` page 2023-2024), with every artifact saved and sha256'd
+  in the research store. Only a sheet's own `CLOSED` and `CLOSE EARLY` rows
+  ship — the state rows that print `OPEN` are settlement facts, not market
+  closures — so 2017, 2022 and 2023 ship no early close (their sheets print
+  none), the 2011-04-26 Easter Tuesday congruence one-off and the 2022-09-22
+  National Day of Mourning ship from the operator's own sheets, and the
+  scalar early closes all clip at the sheets' own printed 14:10.
+
 - **`nyse` and `nasdaq` activate: built-in holiday tables for the two US
   cash-equity venues the consumer routes (2026-09-28 UTC).** Both identities
   flip dormant→**served** (LAW-SERVICE-TIERS admission by consumer reach),

@@ -96,6 +96,21 @@ corrections (a venue's hours fixed against a primary source) go under
   files; outside the window the table has no answer. Every row cites a saved
   operator artifact (research store `holidays/raw/cfe-2010-2025/live/` and
   `holidays/raw/cfe-2010-2024/rulespage/`, sha256 per artifact).
+- **`b3` pre-2025 holiday history: 2011-2024 backfilled from the operator's
+  own calendars (2026-09-29 UTC).** The built-in `b3` holiday table extends
+  from the 2025-2026 window back to **2011-01-01** — 224 rows over
+  2011-01-01..2024-12-31, 2025-01-01..2026-12-31 (208 closures and sixteen
+  13:00 Ash Wednesday late opens). Every backfilled row keys to the operator's
+  own yearly calendar announcement, `Calendário do Mercado` page or PUMA
+  `Feriados` page at T1, read as Internet Archive `id_` replays (eighteen
+  saved artifacts, sha256 per artifact). Weekend-dated legs of the operator's
+  lists (the printed 2019-04-21, 2019-09-07, 2019-10-12, 2019-11-02 and
+  2022-01-01 included) ship no row because they change no Monday-Friday trade
+  date, and the 2022-2024 São Paulo holidays the operator's own calendars
+  state trade ship no row either. 2010 remains an unaudited span: no operator
+  artifact stating the 2010 holiday arrangement was found at retrieval, so
+  2010 dates refuse with the closing condition recorded in the evidence file.
+
 - **`lse`, `euronext_paris` and `tsx` activate: built-in holiday tables for
   the European and Canadian cash-equity venues (2026-09-28 UTC).** All three
   identities flip dormant→**served** (LAW-SERVICE-TIERS admission by consumer

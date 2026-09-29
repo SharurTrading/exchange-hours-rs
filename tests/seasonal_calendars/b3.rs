@@ -258,23 +258,27 @@ fn b3_explicit_2010_to_2012_grids_and_cutovers_are_preserved() {
         "a dormant identity refuses the closed probe"
     );
 
+    // The interim-grid day now sits inside the audited holiday window
+    // (2011-01-01..2024-12-31), so its probes answer through the date-aware
+    // surface instead of refusing: the closing call ends at 17:30, the
+    // after-market envelope runs 18:00-19:30.
     let interim_day = (2013, 1, 9);
     assert!(
-        calendar
+        !calendar
             .is_open(local(tz, interim_day, (17, 30, 0)))
-            .is_err(),
-        "a dormant identity refuses the closed probe"
+            .expect("an audited date answers"),
+        "the interim day is closed between the closing call and the after-market"
     );
     assert!(
         calendar
             .is_open_extended(local(tz, interim_day, (18, 0, 0)))
-            .is_err(),
-        "a dormant identity refuses this probe"
+            .expect("an audited date answers"),
+        "the interim day's after-market envelope opens at 18:00"
     );
     assert!(
-        calendar
+        !calendar
             .is_open(local(tz, interim_day, (19, 30, 0)))
-            .is_err(),
-        "a dormant identity refuses the closed probe"
+            .expect("an audited date answers"),
+        "the interim day's after-market envelope ends at 19:30"
     );
 }

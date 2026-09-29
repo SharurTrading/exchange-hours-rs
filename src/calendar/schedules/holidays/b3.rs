@@ -5,10 +5,11 @@
 //! Keyed by the venue-local trade date in `America/Sao_Paulo`. B3 cash
 //! equities trade Monday-Friday, so every listed holiday lands on its own
 //! trade date; holidays that fell on weekends print no session change and
-//! ship no row (07 September, 12 October, 02 November and 15 November in the
-//! years they fell on a Saturday or Sunday, and 2022-2024 Aniversário de São
-//! Paulo after the operator's own calendars stopped closing the market on São
-//! Paulo holidays).
+//! ship no row — 01 January, 21 April, 07 September, 12 October, 02 November,
+//! 15 November, 20 November and the year-end days, in the years they fell on
+//! a Saturday or Sunday — and 2022-2024 Aniversário de São Paulo and
+//! 2024-07-09 after the operator's own calendars stopped closing the market
+//! on São Paulo holidays.
 //!
 //! The whole block is **T1**: the operator's own yearly calendar articles,
 //! market-calendar pages and hours notices, read from the Internet Archive's
@@ -360,8 +361,9 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2019, 3, 6, late_open(13 * 3_600), T1, "B3-PUMA-FER-2019"),
         // 2019-04-19 - T1 - B3-PUMA-FER-2019 - Paixão de Cristo.
         (2019, 4, 19, Closed, T1, "B3-PUMA-FER-2019"),
-        // 2019-04-21 - T1 - B3-PUMA-FER-2019 - Tiradentes.
-        (2019, 4, 21, Closed, T1, "B3-PUMA-FER-2019"),
+        // 2019-04-21, 2019-09-07, 2019-10-12 and 2019-11-02 are printed
+        // weekend legs (Sunday and Saturdays): they change no Monday-Friday
+        // trade date and ship no row.
         // 2019-05-01 - T1 - B3-PUMA-FER-2019 - Dia do Trabalho.
         (2019, 5, 1, Closed, T1, "B3-PUMA-FER-2019"),
         // 2019-06-20 - T1 - B3-PUMA-FER-2019 - Corpus Christi.
@@ -369,12 +371,6 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         // 2019-07-09 - T1 - B3-PUMA-FER-2019 - Revolução Constitucionalista
         // (feriado municipal), same equities statement.
         (2019, 7, 9, Closed, T1, "B3-PUMA-FER-2019"),
-        // 2019-09-07 - T1 - B3-PUMA-FER-2019 - Independência do Brasil.
-        (2019, 9, 7, Closed, T1, "B3-PUMA-FER-2019"),
-        // 2019-10-12 - T1 - B3-PUMA-FER-2019 - Nossa Senhora Aparecida.
-        (2019, 10, 12, Closed, T1, "B3-PUMA-FER-2019"),
-        // 2019-11-02 - T1 - B3-PUMA-FER-2019 - Finados.
-        (2019, 11, 2, Closed, T1, "B3-PUMA-FER-2019"),
         // 2019-11-15 - T1 - B3-PUMA-FER-2019 - Proclamação da República.
         (2019, 11, 15, Closed, T1, "B3-PUMA-FER-2019"),
         // 2019-11-20 - T1 - B3-PUMA-FER-2019 - Consciência Negra (feriado
@@ -472,9 +468,9 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         // instituições bancárias (sem sessão de negociação na B3): `Não
         // haverá negociação nos mercados de renda variável …`.
         (2021, 12, 31, Closed, T1, "B3-PUMA-FER-2021-2024"),
-        // 2022-01-01 - T1 - B3-PUMA-FER-2021-2024 - Confraternização
-        // Universal / New Year's Day, same equities statement.
-        (2022, 1, 1, Closed, T1, "B3-PUMA-FER-2021-2024"),
+        // 2022-01-01 Confraternização Universal prints no row: the Saturday
+        // leg changes no Monday-Friday trade date, exactly like the
+        // unprinted 2011, 2012, 2017 and 2023 New Year weekends.
         // 2022-02-28 - T1 - B3-PUMA-FER-2021-2024 - Carnaval (Monday).
         (2022, 2, 28, Closed, T1, "B3-PUMA-FER-2021-2024"),
         // 2022-03-01 - T1 - B3-PUMA-FER-2021-2024 - Carnaval (Tuesday).

@@ -75,7 +75,7 @@ Every artifact was retrieved on 2026-09-28 UTC and saved under `holidays/raw/equ
 
 | Document | Window | Replay or service URL | Capture or retrieval, UTC | Tier | sha256 |
 |---|---|---|---|---|---|
-| `SIX-TC-2025` | 2025-01-01 .. 2025-12-31 | <https://web.archive.org/web/20250505133302id_/https://www.six-group.com/dam/download/the-swiss-stock-exchange/trading/trading-provisions/regulation/trading-guides-upcoming/trading-calendar-2025.pdf> (capture `20250505133302`) | retrieved 2026-09-28 UTC | T1 | `0729de0a843ee2e22d50271d2bbc6fef8b031a133d392cd700f7db38878b1ed2` |
+| `SIX-TC-2025` | 2025-01-01 .. 2025-12-31 | <https://web.archive.org/web/20250505133302id_/https://www.six-group.com/dam/download/the-swiss-stock-exchange/trading/trading-provisions/regulation/trading-guides-upcoming/trading-calendar-2025.pdf> (capture `20250505133302`) | Wayback `id_` replay of capture `20250505133302`, retrieved 2026-09-28 UTC | T1 | `0729de0a843ee2e22d50271d2bbc6fef8b031a133d392cd700f7db38878b1ed2` |
 | `SIX-TC-2026` | 2026-01-01 .. 2026-12-31 | <https://www.six-group.com/dam/download/the-swiss-stock-exchange/trading/trading-provisions/regulation/trading-guides/trading-calendar-2026.pdf> | retrieved 2026-09-28 01:28 UTC | T1 | `70d1b87db3e65d487159f660e9daec2fc68c6cb53385483c0af7bf99591c9390` |
 | `SIX-TC-2027` | 2027-01-01 .. 2027-12-31 | <https://www.six-group.com/dam/download/the-swiss-stock-exchange/trading/trading-provisions/regulation/trading-guides/trading-calendar-2027.pdf> ("valid as of 1 July 2026") | retrieved 2026-09-28 01:28 UTC | T1 | `cd2fdca6f0083709bd9100d30b10415b2f0fce0b0b74b54b7e73f901fb318037` |
 

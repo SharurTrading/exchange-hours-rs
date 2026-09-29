@@ -115,7 +115,7 @@ and is covered by the monthly watch.
 
 | Document | Window | Replay or service URL | Capture or retrieval, UTC | Tier | sha256 |
 |---|---|---|---|---|---|
-| `ASX-CAL-2025` | 2025-01-01 .. 2027-12-31 | <https://web.archive.org/web/20250416082951id_/https://www.asx.com.au/markets/market-resources/trading-hours-calendar/cash-market-trading-hours/trading-calendar> | retrieved 2026-09-28 01:51 UTC | T1 | `d24de6d6f6ec1864480de6f2f75cf4a3650b30f6eda8daa354fd1bfa1302d66d` |
+| `ASX-CAL-2025` | 2025-01-01 .. 2027-12-31 | <https://web.archive.org/web/20250416082951id_/https://www.asx.com.au/markets/market-resources/trading-hours-calendar/cash-market-trading-hours/trading-calendar> | Wayback `id_` replay of capture `20250416082951`, retrieved 2026-09-28 01:51 UTC | T1 | `d24de6d6f6ec1864480de6f2f75cf4a3650b30f6eda8daa354fd1bfa1302d66d` |
 | `ASX-CAL-LIVE` | 2025-01-01 .. 2027-12-31 | <https://www.asx.com.au/markets/market-resources/trading-hours-calendar/cash-market-trading-hours/trading-calendar> | retrieved 2026-09-28 01:00 UTC | T1 | `adb2344ca5e13dcbfb8de9b0cf40334c992f4ffb660026b22bca7d21d964cd19` |
 
 `ASX-CAL-2025`'s replayed page renders only the 2025 sheet; its window cell

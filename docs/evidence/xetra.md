@@ -70,7 +70,7 @@ Every artifact was retrieved on 2026-09-28 UTC and saved under `holidays/raw/equ
 
 | Document | Window | Replay or service URL | Capture or retrieval, UTC | Tier | sha256 |
 |---|---|---|---|---|---|
-| `DB-TC-PAGE-2025` | 2025-01-01 .. 2027-12-31 | <https://web.archive.org/web/20250422181518id_/https://www.xetra.com/xetra-en/trading/trading-calendar-and-trading-hours> (capture `20250422181518`) | retrieved 2026-09-28 UTC | T1 | `44b6b2783375a17ac736ebc1c0247e0bae011f1a64c9ae125c602fea9ab41918` |
+| `DB-TC-PAGE-2025` | 2025-01-01 .. 2027-12-31 | <https://web.archive.org/web/20250422181518id_/https://www.xetra.com/xetra-en/trading/trading-calendar-and-trading-hours> (capture `20250422181518`) | Wayback `id_` replay of capture `20250422181518`, retrieved 2026-09-28 UTC | T1 | `44b6b2783375a17ac736ebc1c0247e0bae011f1a64c9ae125c602fea9ab41918` |
 | `DB-TC-PDF-2025` | 2025-01-01 .. 2025-12-31 | <https://www.xetra.com/resource/blob/4064968/4079a2d5a9fec324905942b807b398ed/data/xetra-trading-calendar-2025.pdf> (2025 archive replay of the PDF linked from `DB-TC-PAGE-2025`) | retrieved 2026-09-28 UTC | T1 | `84c71bed702dd753f4272939f9c65d87ebd9afdfc89ff7917d545b66c3f8a8e5` |
 | `DB-TC-PDF-2026` | 2026-01-01 .. 2026-12-31 | <https://www.cashmarket.deutsche-boerse.com/resource/blob/4481276/1b643791fcb4d60bdd7f25efad3f4626/data/deutsche-boerse-trading-calendar-2026.pdf> ("Trading calendar 2026") | retrieved 2026-09-28 01:28 UTC | T1 | `1edfc7b737ae1f5fe93179bfa9af59223b3c9d11cc8deddd127b386fb87e44b6` |
 | `DB-TC-PAGE` | 2025-01-01 .. 2027-12-31 | <https://www.cashmarket.deutsche-boerse.com/cash-en/trading/trading-calendar-and-trading-hours> | retrieved 2026-09-28 01:28 UTC | T1 | `d70a8f5d54cb529103bf674ea8382702a3510800dac8b48965a43aa08ae4bca4` |

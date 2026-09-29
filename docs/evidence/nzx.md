@@ -135,9 +135,9 @@ names thirteen — all thirteen shipped, none withheld.
 
 | Document | Window | Replay or service URL | Capture or retrieval, UTC | Tier | sha256 |
 |---|---|---|---|---|---|
-| `NZX-TH-2024-12-16` | 2025-01-01 .. 2026-01-02 | <https://web.archive.org/web/20241216221746id_/https://www.nzx.com/investing/nzx-trading-hours> | retrieved 2026-09-28 01:20 UTC | T1 | `27ead98734cede1f2b0e21d3132b20b5a4b6ea5ebd218b4fb4d17fe9394aa675` |
-| `NZX-TH-2025-01-23` | 2025-01-01 .. 2026-01-02 | <https://web.archive.org/web/20250123031559id_/https://www.nzx.com/investing/nzx-trading-hours> | retrieved 2026-09-28 01:19 UTC | T1 | `982f231b435dddba2473692163a2bcb60f47f89c1005a41d1745eb520c6e715a` |
-| `NZX-TH-2026-02-03` | 2025-01-01 .. 2027-01-04 | <https://web.archive.org/web/20260203200136id_/https://new.nzx.com/investing/nzx-trading-hours> | retrieved 2026-09-28 01:19 UTC | T1 | `0aa0508dadd8c30aeb914bd09f6e7db96afe84533a18350e4145f7b5b8dd6215` |
+| `NZX-TH-2024-12-16` | 2025-01-01 .. 2026-01-02 | <https://web.archive.org/web/20241216221746id_/https://www.nzx.com/investing/nzx-trading-hours> | Wayback `id_` replay of capture `20241216221746`, retrieved 2026-09-28 01:20 UTC | T1 | `27ead98734cede1f2b0e21d3132b20b5a4b6ea5ebd218b4fb4d17fe9394aa675` |
+| `NZX-TH-2025-01-23` | 2025-01-01 .. 2026-01-02 | <https://web.archive.org/web/20250123031559id_/https://www.nzx.com/investing/nzx-trading-hours> | Wayback `id_` replay of capture `20250123031559`, retrieved 2026-09-28 01:19 UTC | T1 | `982f231b435dddba2473692163a2bcb60f47f89c1005a41d1745eb520c6e715a` |
+| `NZX-TH-2026-02-03` | 2025-01-01 .. 2027-01-04 | <https://web.archive.org/web/20260203200136id_/https://new.nzx.com/investing/nzx-trading-hours> | Wayback `id_` replay of capture `20260203200136`, retrieved 2026-09-28 01:19 UTC | T1 | `0aa0508dadd8c30aeb914bd09f6e7db96afe84533a18350e4145f7b5b8dd6215` |
 | `NZX-TH-LIVE-2026-09-28` | 2025-01-01 .. 2027-01-04 | <https://www.nzx.com/learning/help-reference/trading-hours> | retrieved 2026-09-28 01:10 UTC | T1 | `92071cd2c1186012fe977fc59af5f4b27de50a435a11b3298a078aa715391146` |
 
 `NZX-TH-LIVE-2026-09-28` is no row's document: it is the horizon evidence, and

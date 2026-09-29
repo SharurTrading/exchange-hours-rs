@@ -21,7 +21,7 @@
 //!   the row is an early close at 10:30 CT; Good Friday 2010 and 2012 close
 //!   their day sessions at 08:15 CT, and the Friday-holiday eves at 12:15 CT;
 //! * a **late open** on the trade date after a closure — 2011-12-27, 2012-01-03
-//!   and 2012-12-26 print `0500 CT - CME Globex open for trade date ...`, so
+//!   and 2012-12-26 print `0500 CT – CME Globex open for trade date ...`, so
 //!   the trade date's first open is 05:00 CT on the trade date itself rather
 //!   than the ordinary 17:00 CT on the eve, twelve hours later.
 //!

@@ -123,6 +123,24 @@ corrections (a venue's hours fixed against a primary source) go under
   National Day of Mourning ship from the operator's own sheets, and the
   scalar early closes all clip at the sheets' own printed 14:10.
 
+- **`sgx_securities` holiday history backfilled as far as the archive
+  allows (2026-09-29 UTC).** The `sgx_securities` table grows from 25 rows
+  over 2025-01-01..2026-12-31 to **95 rows over 2014-01-01..2019-12-31,
+  2020-01-01, and 2025-01-01..2026-12-31** (63 closures and 7 half-day
+  grids added): the operator's own securities `Trading Hours & Calendar`
+  page, read from five Wayback `id_` replays (2014, 2015, 2016, 2017,
+  2018-12-23) whose `Public Holidays <year>` tables carry the operator's
+  own `*` substitution and `#` half-day markers, so the Sunday
+  substitutions (e.g. Vesak 2019 to Monday 20 May) key from the operator's
+  own bytes at T1, and the seven pre-2025 half days restate the page's
+  printed 09:00-12:30 / 12:36 grid as replacement block sets. The
+  2010-2013 and 2020-2024 eras survive in no operator capture — the page's
+  own 2020-2024 captures are SPA shells — so the audited windows stop
+  either side of them and queries inside refuse; the gaps, the unstated
+  2014-2016 half-day treatment and the post-2019 Trade-at-Close half-day
+  question are recorded with closing conditions and tracked as
+  [#213](https://github.com/SharurTrading/exchange-hours-rs/issues/213).
+
 - **`nyse` and `nasdaq` activate: built-in holiday tables for the two US
   cash-equity venues the consumer routes (2026-09-28 UTC).** Both identities
   flip dormant→**served** (LAW-SERVICE-TIERS admission by consumer reach),

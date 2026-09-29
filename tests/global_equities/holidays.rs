@@ -5,8 +5,9 @@
 //! (2025-2026), the APAC venues `nzx` (2010-2024 backfilled beside the
 //! operator's 2025-2027-01-04 rolling horizon, with the 2016-2017 capture gap
 //! refusing), `asx` (2010-2024 backfilled from each year's own operator
-//! sheet, beside 2025-2027) and `sgx_securities` (2025-2026), and the
-//! European/American venues `lse` (2025-2027, with five rolling-table
+//! sheet, beside 2025-2027) and `sgx_securities` (2014-2020-01-01 backfilled
+//! beside 2025-2026, the 2010-2013 and 2020-2024 capture gaps refusing), and
+//! the European/American venues `lse` (2025-2027, with five rolling-table
 //! dates withheld), `euronext_paris` (2025-2026; the 2026 half-day hours are
 //! announced but unstated) and `tsx` (2025-2026).
 //!
@@ -1745,12 +1746,31 @@ mod sgx_securities {
     fn the_window_refuses_past_the_operators_published_horizon() {
         let calendar = sgx();
         let coverage = calendar.holiday_coverage().expect("sgx ships a table");
-        assert_eq!(coverage.first(), day(2025, 1, 1));
+        assert_eq!(coverage.first(), day(2014, 1, 1));
         assert_eq!(coverage.last(), day(2026, 12, 31));
         assert!(matches!(
             calendar.is_open(sgt((2009, 12, 31), (10, 0, 0))),
             Err(CalendarQueryError::BeforeSupportFloor { .. })
         ));
+        // The 2020-2024 capture gap sits between two audited windows and the
+        // identity refuses it: no operator artifact prints those closures.
+        let gap = sgt((2022, 6, 8), (10, 0, 0));
+        assert!(matches!(
+            calendar.is_open(gap),
+            Err(CalendarQueryError::OutsideCoveredRange { .. })
+        ));
+        assert_eq!(calendar.holiday_on(day(2022, 6, 8)), None);
+        // The one 2020 date the 2019 sheet prints answers as a row, and the
+        // session queries answer with it: the market is closed all day.
+        assert_eq!(
+            calendar.holiday_on(day(2020, 1, 1)).map(Holiday::kind),
+            Some(HolidayKind::Closed)
+        );
+        assert!(
+            !calendar
+                .is_open(sgt((2020, 1, 1), (10, 0, 0)))
+                .expect("the date is inside an audited window")
+        );
         // 2027-01-01 is an SGX holiday in fact, but the operator has
         // published no 2027 half-day schedule, so the identity must refuse
         // the date outright rather than answer from a normal week it has not
@@ -1772,7 +1792,36 @@ mod sgx_securities {
     #[test]
     fn every_shipped_row_matches_the_sheets_per_year() {
         let rows = rows_per_year(sgx());
-        assert_eq!(rows.len(), 25, "19 closures and six printed half-day grids");
+        assert_eq!(
+            rows.len(),
+            95,
+            "63 pre-2025 closures + 7 pre-2025 half-day grids + 19 closures and \
+             six printed half-day grids across 2025-2026"
+        );
+        // 2014-2020, read off the operator's own sheets per year.
+        assert_eq!(tally(&rows, 2014), (9, 0, 0), "2014");
+        assert_eq!(
+            tally(&rows, 2015),
+            (13, 0, 0),
+            "2015: SG50 and Polling Day included"
+        );
+        assert_eq!(
+            tally(&rows, 2016),
+            (9, 0, 0),
+            "2016: three Sunday substitutions keyed by the operator's own *"
+        );
+        assert_eq!(
+            tally(&rows, 2017),
+            (10, 0, 1),
+            "2017: the CNY-eve half day the sheet's # names"
+        );
+        assert_eq!(tally(&rows, 2018), (10, 0, 3), "2018");
+        assert_eq!(tally(&rows, 2019), (11, 0, 3), "2019");
+        assert_eq!(
+            tally(&rows, 2020),
+            (1, 0, 0),
+            "2020: only the one date the 2019 sheet's 2020 table prints"
+        );
         assert_eq!(
             tally(&rows, 2025),
             (9, 0, 3),
@@ -1783,20 +1832,112 @@ mod sgx_securities {
             (10, 0, 3),
             "2026: ten closures (three Sunday substitutions), three half days"
         );
-        // The half days are exactly the operator's six printed dates, and no
-        // row anywhere in the window states a scalar instant.
+        // The half days are exactly the operator's printed dates: the seven
+        // pre-2025 `#` markers and the six 2025-2026 sheet dates, and no row
+        // anywhere in the window states a scalar instant.
         for (date, kind, instant) in &rows {
             assert_eq!(*instant, None, "{date:?}");
             if kind == "replacement" {
                 assert!(
                     matches!(
                         date,
-                        (2025, 1, 28) | (2025 | 2026, 12, 24 | 31) | (2026, 2, 16)
+                        (2017, 1, 27)
+                            | (2018, 2, 15)
+                            | (2018, 12, 24 | 31)
+                            | (2019, 2, 4)
+                            | (2019, 12, 24 | 31)
+                            | (2025, 1, 28)
+                            | (2025 | 2026, 12, 24 | 31)
+                            | (2026, 2, 16)
                     ),
-                    "the half days are exactly the sheet's six: {date:?}"
+                    "the half days are exactly the sheets' own: {date:?}"
                 );
             }
         }
+    }
+
+    /// The 2017-2019 half days restate the grid the operator's own page
+    /// prints — Trading 09:00-12:30, Pre-Close 12:30-12:34, Non-Cancel to
+    /// the printed 12:36 close — not the current 12:00/12:16 grid.
+    #[test]
+    fn the_pre_2025_half_days_restate_the_printed_1236_grid() {
+        let calendar = sgx();
+        for date in [(2017, 1, 27), (2018, 12, 24), (2019, 12, 31)] {
+            let kind = calendar
+                .holiday_on(day(date.0, date.1, date.2))
+                .map(Holiday::kind);
+            let Some(HolidayKind::ReplacementBlocks(blocks)) = kind else {
+                panic!("{date:?} must ship a replacement block set, got {kind:?}");
+            };
+            let shapes = blocks
+                .iter()
+                .map(|block| (block.kind(), block.open_ssm(), block.close_ssm()))
+                .collect::<Vec<_>>();
+            assert_eq!(
+                shapes,
+                vec![
+                    (
+                        exchange_hours::ExceptionBlockKind::OrderEntry,
+                        30_600,
+                        32_280
+                    ),
+                    (exchange_hours::ExceptionBlockKind::Extended, 32_280, 32_400),
+                    (exchange_hours::ExceptionBlockKind::Regular, 32_400, 45_000),
+                    (
+                        exchange_hours::ExceptionBlockKind::OrderEntry,
+                        45_000,
+                        45_240
+                    ),
+                    (exchange_hours::ExceptionBlockKind::Extended, 45_240, 45_360),
+                ],
+                "{date:?} must restate the printed 09:00-12:30 / 12:36 grid"
+            );
+        }
+    }
+
+    /// The pre-2025 rows answer through the identity-backed surface: the
+    /// normal week is sourced from 2011-08-01, so 2014-2019 dates are above
+    /// the horizon and the holiday rows close them outright. 2015-08-07 is
+    /// the operator's own SG50 one-off, 2019-10-28 its own Deepavali
+    /// substitution Monday and 2017-01-27 its printed half day.
+    #[test]
+    fn the_pre_2025_rows_answer_the_session_queries() {
+        let calendar = sgx();
+        for date in [(2015, 8, 7), (2019, 10, 28), (2014, 10, 6)] {
+            assert_eq!(
+                calendar
+                    .holiday_on(day(date.0, date.1, date.2))
+                    .map(Holiday::kind),
+                Some(HolidayKind::Closed),
+                "{date:?}"
+            );
+            assert!(
+                !calendar
+                    .is_open(sgt(date, (10, 0, 0)))
+                    .expect("the date is inside an audited window"),
+                "{date:?} is a sourced closure"
+            );
+        }
+        // The half day trades its printed grid: open at 09:30, order-entry
+        // only in the 12:30 Pre-Close, tradeable through the 12:35:45
+        // Non-Cancel, closed at the end-exclusive 12:36.
+        let half = (2017, 1, 27);
+        assert!(
+            calendar.is_open(sgt(half, (9, 30, 0))).expect("covered"),
+            "the half day's trading session is open"
+        );
+        assert!(
+            !calendar.is_open(sgt(half, (12, 32, 0))).expect("covered"),
+            "the Pre-Close queue stays out of is_open"
+        );
+        assert!(
+            calendar.is_open(sgt(half, (12, 35, 45))).expect("covered"),
+            "the closing Non-Cancel prints"
+        );
+        assert!(
+            !calendar.is_open(sgt(half, (12, 36, 0))).expect("covered"),
+            "the printed 12:36 close is end-exclusive"
+        );
     }
 }
 

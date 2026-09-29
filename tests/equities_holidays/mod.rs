@@ -22,7 +22,9 @@ mod prelude {
     /// refuses instead of answering (the shape the Eurex suite fences for
     /// 2025-01-01); the walk's reach differs per identity, so both verdicts —
     /// a closed answer and the window-boundary refusal naming the
-    /// predecessor — are accepted, and anything else fails.
+    /// predecessor — are accepted, and anything else fails. A walk that reads
+    /// a `Unsourced` row the table ships refuses the same way
+    /// (`UnresolvedGap`), so that verdict is accepted beside the refusal.
     pub(super) fn assert_closed(
         label: &str,
         calendar: ExchangeCalendar,
@@ -47,9 +49,13 @@ mod prelude {
                         "{label} at {noon} must be closed: the row deletes the day"
                     );
                 }
-                Err(CalendarQueryError::OutsideCoveredRange { .. }) => {
-                    // The session walk read the unaudited predecessor; the
-                    // row itself is still fenced by `holiday_on` above.
+                Err(
+                    CalendarQueryError::OutsideCoveredRange { .. }
+                    | CalendarQueryError::UnresolvedGap { .. },
+                ) => {
+                    // The session walk read the unaudited predecessor or a
+                    // `Unsourced` row the table ships; the row itself is
+                    // still fenced by `holiday_on` above.
                 }
                 Err(error) => {
                     panic!("{label} at {noon}: unexpected query error {error:?}");
@@ -59,7 +65,10 @@ mod prelude {
                 Ok(closed) => {
                     assert!(closed, "{label}: {date} must answer as a closed trade date");
                 }
-                Err(CalendarQueryError::OutsideCoveredRange { .. }) => {}
+                Err(
+                    CalendarQueryError::OutsideCoveredRange { .. }
+                    | CalendarQueryError::UnresolvedGap { .. },
+                ) => {}
                 Err(error) => {
                     panic!("{label} on {date}: unexpected trade-date error {error:?}");
                 }
@@ -69,6 +78,10 @@ mod prelude {
 
     /// An early close's exact instant, fenced from both directions: the row
     /// carries the printed second and the envelope shuts there end-exclusive.
+    ///
+    /// The behavioural probes run only where the identity's coverage answers;
+    /// a walk that reads a carried-era date or a `Unsourced` row refuses, and
+    /// the refusal is accepted exactly as `assert_closed` accepts it.
     pub(super) fn assert_early_close(
         label: &str,
         calendar: ExchangeCalendar,
@@ -88,18 +101,40 @@ mod prelude {
         assert_eq!(holiday.document_id(), document, "{label} on {date:?}");
         let before = ssm_instant(tz, date, close_ssm - 1);
         let at = ssm_instant(tz, date, close_ssm);
-        assert!(
-            calendar
-                .is_open(before)
-                .expect("the coverage contract must answer a covered date"),
-            "{label}: one second before the early close at {before} must be open"
+        for (instant, expect_open) in [(before, true), (at, false)] {
+            match calendar.is_open(instant) {
+                Ok(open) => assert_eq!(
+                    open, expect_open,
+                    "{label} at {instant}: end-exclusive early close"
+                ),
+                Err(
+                    CalendarQueryError::OutsideCoveredRange { .. }
+                    | CalendarQueryError::UnresolvedGap { .. },
+                ) => {}
+                Err(error) => panic!("{label} at {instant}: unexpected query error {error:?}"),
+            }
+        }
+    }
+
+    /// An early close row asserted at row level only: the identity-backed
+    /// session layer refuses dates inside its carried era, so a pre-horizon
+    /// eve's instant is fenced through the row itself.
+    pub(super) fn assert_early_close_row(
+        label: &str,
+        calendar: ExchangeCalendar,
+        date: (i32, u32, u32),
+        close_ssm: u32,
+        document: &str,
+    ) {
+        let holiday = calendar
+            .holiday_on(NaiveDate::from_ymd_opt(date.0, date.1, date.2).expect("valid date"))
+            .unwrap_or_else(|| panic!("{label}: {date:?} ships an early-close row"));
+        assert_eq!(
+            holiday.kind(),
+            HolidayKind::EarlyClose { close_ssm },
+            "{label} on {date:?}"
         );
-        assert!(
-            !calendar
-                .is_open(at)
-                .expect("the coverage contract must answer a covered date"),
-            "{label}: the early close at {at} is end-exclusive, so it must be closed"
-        );
+        assert_eq!(holiday.document_id(), document, "{label} on {date:?}");
     }
 
     /// A venue-local instant from seconds since midnight.

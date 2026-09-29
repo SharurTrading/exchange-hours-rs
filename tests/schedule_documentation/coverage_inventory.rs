@@ -406,11 +406,15 @@ fn withheld(calendar: ExchangeCalendar, date: NaiveDate) -> bool {
 /// `nse_india` is the next: from 2026-09-28 UTC it audits 2025-2026 and withholds
 /// the two Muhurat Trading dates (2025-10-21 and 2026-11-08), whose special-session
 /// instants the operator has not published, with no phase-level gap behind the
+/// denial either. `hkex` is the next: from 2026-09-29 UTC it audits 2010-2024 and
+/// 2025-2027, and the ten 2012-2015 half-day eves ship `Unsourced` because no era
+/// artifact states that half-day close (#208), with no phase-level gap behind the
 /// denial either.
 fn date_level_incompleteness() -> &'static [(&'static str, usize)] {
     &[
         ("cbot", 261),
         ("euronext_paris", 2),
+        ("hkex", 10),
         ("iceus", 41),
         ("lse", 5),
         ("nasdaq", 4),
@@ -556,9 +560,10 @@ fn inventory_completeness_verdicts_match_the_metadata() {
     }
     assert_eq!(
         (complete, incomplete, no_coverage),
-        (14, 19, 0),
-        "the inventory's verdict shapes: fourteen complete, nineteen incomplete, none with no 2025 \
-         coverage (xetra's unpublished 2027 schedule keeps it incomplete; #197's b3/tadawul are \
+        (13, 20, 0),
+        "the inventory's verdict shapes: thirteen complete, twenty incomplete, none with no 2025 \
+         coverage (xetra's unpublished 2027 schedule keeps it incomplete and hkex's ten Unsourced \
+         2012-2015 half-day eves moved it there on 2026-09-29 UTC; #197's b3/tadawul are \
          complete; nyse is complete to 2027 and nasdaq is incomplete — four Unsourced dates across \
          2010-2026; the 2026-09-28 UTC APAC activation makes nzx and sgx_securities complete to \
          their operators' horizons and asx incomplete below its 2025-06-23 SR15 horizon; tse and \

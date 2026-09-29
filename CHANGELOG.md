@@ -275,6 +275,19 @@ corrections (a venue's hours fixed against a primary source) go under
   Recorded, not a gap: HKEX's 2026-12-28 check (verified: no conflict — the
   general-holiday list names Saturday 2026-12-26; no closing condition).
 
+- **`hkex` holiday history backfilled to the 2010 floor, 2010-2024
+  (2026-09-29 UTC).** 237 rows join the table (207 closures, 20 early closes,
+  10 `Unsourced`), audited 2010-01-01..2024-12-31 beside the existing
+  2025-2027 window: 2010-2017 rows key on the operator's own per-year
+  `Trading Calendar` PDFs and 2018-2024 rows on the page editions that print
+  each year. The 2010-2011 eves close at the era's printed half-day edge 12:30
+  (`HKEX-TN-2010`); the CAS-era eves close at 12:10; the ten 2012-2015 eves —
+  named half-day trading days by the calendars but stated at no instant by any
+  retrieved era artifact — ship `Unsourced` rather than an invented close, so
+  the window is expressly incomplete over them (#208). Weekend-falling
+  holidays key no weekday row and the typhoon/black-rain halts remain halts,
+  not closures.
+
 ### Fixed
 
 - **The five `lse` and `euronext_paris` Documents capture cells state their

@@ -23,7 +23,11 @@
 //! ordinary weekend closures and no session exists to encode, so none is
 //! invented. A range may reach back into the prior December (the 2019, 2023
 //! and 2024 notices' 元旦 legs): its weekday legs ship with the notice that
-//! states them, so 2018-12-31 keys from 上证公告〔2018〕39号. The derivation and
+//! states them, so 2018-12-31 keys from 上证公告〔2018〕39号. One later
+//! operator adjustment is encoded: 上证公告〔2020〕6号 (关于调整2020年春节休市
+//! 相关安排的公告) extends the 2020 Spring Festival closure past the annual
+//! notice's "1月31日（星期五）起照常开市" clause, so 2020-01-31 keys from the
+//! extension. The derivation and
 //! per-row quotations are recorded in
 //! [`docs/evidence/sse.md`](../../../../../docs/evidence/sse.md).
 //!
@@ -43,9 +47,10 @@ use super::{HolidayTable, holidays};
 /// Every row is one weekday inside an event-date range the operator's own
 /// notice prints as a closure: `SSE-NOTICE-2011`..`SSE-NOTICE-2014` (the
 /// unnumbered annual notices), `SSE-NOTICE-2014-15` .. `SSE-NOTICE-2023-47`
-/// (the 上证公告-numbered notices), then `SSE-NOTICE-2024-38` for 2025 and
-/// `SSE-NOTICE-2025-45` for 2026. A date inside the window with no row is
-/// audited normal.
+/// (the 上证公告-numbered annual notices, plus the `SSE-NOTICE-2020-6`
+/// extension that adjusted the 2020 annual notice), then
+/// `SSE-NOTICE-2024-38` for 2025 and `SSE-NOTICE-2025-45` for 2026. A date
+/// inside the window with no row is audited normal.
 // Evidence: docs/evidence/sse.md
 pub(crate) static TABLE: &HolidayTable = holidays! {
     coverage: [(2011, 1, 1) ..= (2026, 12, 31)],
@@ -370,6 +375,9 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2020, 1, 29, Closed, T1, "SSE-NOTICE-2019-65"),
         // 2020-01-30 - T1 - SSE-NOTICE-2019-65 - 春节: the range's own last day.
         (2020, 1, 30, Closed, T1, "SSE-NOTICE-2019-65"),
+        // 2020-01-31 - T1 - SSE-NOTICE-2020-6 - 春节延长: "延长2020年春节休市至2月2日（星期日），2月3日（星期一）正常开市"; supersedes
+        // the annual notice's "1月31日（星期五）起照常开市" clause; the extension's only closed weekday.
+        (2020, 1, 31, Closed, T1, "SSE-NOTICE-2020-6"),
         // 2020-04-06 - T1 - SSE-NOTICE-2019-65 - 清明节: "清明节：4月4日（星期六）至4月6日（星期一）休市"; the range's only weekday.
         (2020, 4, 6, Closed, T1, "SSE-NOTICE-2019-65"),
         // 2020-05-01 - T1 - SSE-NOTICE-2019-65 - 劳动节: "劳动节：5月1日（星期五）至5月5日（星期二）休市"; weekday legs.

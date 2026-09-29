@@ -804,6 +804,8 @@ fn sse_printed_closures_2020_2024_ship_a_row_per_year() {
         ((2020, 1, 28), "SSE-NOTICE-2019-65", "春节"),
         ((2020, 1, 29), "SSE-NOTICE-2019-65", "春节"),
         ((2020, 1, 30), "SSE-NOTICE-2019-65", "春节"),
+        // 2020-01-31 closes by the COVID extension, not the annual notice.
+        ((2020, 1, 31), "SSE-NOTICE-2020-6", "春节延长"),
         ((2020, 4, 6), "SSE-NOTICE-2019-65", "清明节"),
         ((2020, 5, 1), "SSE-NOTICE-2019-65", "劳动节"),
         ((2020, 5, 4), "SSE-NOTICE-2019-65", "劳动节"),
@@ -1136,6 +1138,10 @@ fn the_window_counts_are_the_printed_lists_counts() {
     assert_eq!(
         count_by_year(calendar_for_exchange(Exchange::Sse)),
         [
+            // 2018 carries 17 weekday legs of the 2018 notice plus the
+            // 2019 notice's 12-31 元旦 leg; 2019 carries the 2019 notice's
+            // 15 weekday legs (its own 元旦 leg is 2019-01-01); 2020 carries
+            // the annual notice's 18 plus the COVID extension's 01-31.
             (2011, 16, 0),
             (2012, 18, 0),
             (2013, 23, 0),
@@ -1143,9 +1149,9 @@ fn the_window_counts_are_the_printed_lists_counts() {
             (2015, 15, 0),
             (2016, 17, 0),
             (2017, 16, 0),
-            (2018, 17, 0),
-            (2019, 16, 0),
-            (2020, 18, 0),
+            (2018, 18, 0),
+            (2019, 15, 0),
+            (2020, 19, 0),
             (2021, 18, 0),
             (2022, 18, 0),
             (2023, 18, 0),

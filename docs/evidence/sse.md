@@ -24,12 +24,15 @@ closure-arrangement notices: 关于2011年全年休市安排的通知 (dated 201
 onward, one per arrangement year through 关于上海证券交易所2024年部分节假日休市
 安排的通知 (上证公告〔2023〕47号, dated 2023-12-26), then 上证公告〔2024〕38号 for
 2025 and 上证公告〔2025〕45号 for 2026, with 上证公告〔2025〕36号 restating the 2025
-October block verbatim. The 2025-2026 rows were keyed when the venue turned
+October block verbatim — plus one dated operator adjustment, 上证公告〔2020〕6号
+(关于调整2020年春节休市相关安排的公告, dated 2020-01-27), which extends the 2020
+Spring Festival closure. The 2025-2026 rows were keyed when the venue turned
 served (2026-09-28 UTC); the 2011-2024 rows were keyed on 2026-09-29 UTC. The
 2011, 2012 and 2013 notices were retrieved live from the operator's own
 media-center reprints (`aboutus/mediacenter/hotandd/`), where SSE republishes
 its pre-2015 notices verbatim; the 2014-2024 notices are the announcement
-channel's Wayback `id_` replays. Each notice prints its closures as event-date
+channel's Wayback `id_` replays, and the 2020 extension is the same channel's
+Wayback `id_` replay. Each notice prints its closures as event-date
 ranges in session language — `休市` ("market closed") — for example 上证公告
 〔2018〕39号's `（一）元旦：2018年12月30日（星期日）至2019年1月1日（星期二）休市，1月2日
 （星期三）起照常开市`.
@@ -43,7 +46,21 @@ date's own weekday name was checked against the civil calendar while deriving.
 A range may reach back into the prior December (the 2019, 2023 and 2024
 notices' 元旦 legs): its weekday legs ship with the notice that states them, so
 2018-12-31 keys from 上证公告〔2018〕39号, published 2018-12-20, twelve days before
-the trade date. The exchange prints no early close, late open or weekend
+the trade date.
+
+**The 2020 Spring Festival extension.** The annual notice 上证公告〔2019〕65号
+states `春节：1月24日（星期五）至1月30日（星期四）休市，1月31日（星期五）起照常开市`.
+On 2020-01-27 the operator's 上证公告〔2020〕6号 (关于调整2020年春节休市相关安排的
+公告) states `延长2020年春节休市至2月2日（星期日），2月3日（星期一）正常开市` — an
+unconditional, day-level adjustment of the earlier notice under `根据《国务院
+办公厅关于延长2020年春节假期的通知》，经中国证监会批准`. The lineage is the
+operator's own: the extension names the notice it adjusts, so the extension
+governs the overlap and the annual notice's 1月31日 reopening clause is
+superseded. Against the adjusted closure (1月24日 through 2月2日), the only
+weekday the extension adds over the annual notice is 2020-01-31 — 2月1日 and
+2月2日 fall on the weekend — and that row keys from `SSE-NOTICE-2020-6`.
+
+The exchange prints no early close, late open or weekend
 session for the cash market in any year of the window, and every row below is
 a full closure.
 
@@ -256,6 +273,7 @@ a full closure.
 | 2020-01-28 | closed | `春节：1月24日（星期五）至1月30日（星期四）休市` | `SSE-NOTICE-2019-65` | T1 | Range 1月24日（星期五）至1月30日（星期四）; weekday leg; 2020-01-25, 2020-01-26 are the weekend inside the range |
 | 2020-01-29 | closed | `春节：1月24日（星期五）至1月30日（星期四）休市` | `SSE-NOTICE-2019-65` | T1 | Range 1月24日（星期五）至1月30日（星期四）; weekday leg; 2020-01-25, 2020-01-26 are the weekend inside the range |
 | 2020-01-30 | closed | `春节：1月24日（星期五）至1月30日（星期四）休市` | `SSE-NOTICE-2019-65` | T1 | Range 1月24日（星期五）至1月30日（星期四）; the range's own last day is a Thursday |
+| 2020-01-31 | closed | `延长2020年春节休市至2月2日（星期日），2月3日（星期一）正常开市` | `SSE-NOTICE-2020-6` | T1 | The extension notice lengthens the Spring Festival closure past 2月2日; against the annual notice's superseded `1月31日（星期五）起照常开市` clause the extension's only newly closed weekday is 2020-01-31 (2月1日、2月2日 fall on the weekend) |
 | 2020-04-06 | closed | `清明节：4月4日（星期六）至4月6日（星期一）休市` | `SSE-NOTICE-2019-65` | T1 | Range 4月4日（星期六）至4月6日（星期一）; the range's own last day is a Monday |
 | 2020-05-01 | closed | `劳动节：5月1日（星期五）至5月5日（星期二）休市` | `SSE-NOTICE-2019-65` | T1 | Range 5月1日（星期五）至5月5日（星期二）; weekday leg; 2020-05-02, 2020-05-03 are the weekend inside the range |
 | 2020-05-04 | closed | `劳动节：5月1日（星期五）至5月5日（星期二）休市` | `SSE-NOTICE-2019-65` | T1 | Range 5月1日（星期五）至5月5日（星期二）; weekday leg; 2020-05-02, 2020-05-03 are the weekend inside the range |
@@ -423,6 +441,7 @@ a full closure.
 | `SSE-NOTICE-2017-26` | 2011-01-01..2026-12-31 | <https://web.archive.org/web/20180101000930id_/http://www.sse.com.cn/disclosure/announcement/general/c/c_20171222_4438363.shtml> | Wayback `id_` replay of capture `20180101000930`, retrieved 2026-09-29 UTC | T1 | `ea360857f3dfc47d2f4003bca996e768aa3cbc813bc4750ecddc0c3ff17d900f` |
 | `SSE-NOTICE-2018-39` | 2011-01-01..2026-12-31 | <https://web.archive.org/web/20190102063036id_/http://www.sse.com.cn/disclosure/announcement/general/c/c_20181220_4696473.shtml> | Wayback `id_` replay of capture `20190102063036`, retrieved 2026-09-29 UTC | T1 | `2873948d9003000d2cde91b926559dffb70721cca9220e23988fa80856ab584d` |
 | `SSE-NOTICE-2019-65` | 2011-01-01..2026-12-31 | <https://web.archive.org/web/20191224162145id_/http://www.sse.com.cn/disclosure/announcement/general/c/c_20191220_4969627.shtml> | Wayback `id_` replay of capture `20191224162145`, retrieved 2026-09-29 UTC | T1 | `8c1f7e47852db24a1e9f63c9dcd46f4cf2d3fc96bec4ef45b3579ffc02fa8329` |
+| `SSE-NOTICE-2020-6` | 2011-01-01..2026-12-31 | <https://web.archive.org/web/20200211105610id_/http://www.sse.com.cn/disclosure/announcement/general/c/c_20200127_4991582.shtml> | Wayback `id_` replay of capture `20200211105610`, retrieved 2026-09-29 UTC | T1 | `8695945221e5bd11bb25fd90273a909aad5a1e56aa8207584be1ec137fb4d92c` |
 | `SSE-NOTICE-2020-48` | 2011-01-01..2026-12-31 | <https://web.archive.org/web/20210418025946id_/http://www.sse.com.cn/disclosure/announcement/general/c/c_20201224_5286949.shtml> | Wayback `id_` replay of capture `20210418025946`, retrieved 2026-09-29 UTC | T1 | `813744c6a57289996cca6260a19f8026fade6d066d809b68d7a899afec1270aa` |
 | `SSE-NOTICE-2021-37` | 2011-01-01..2026-12-31 | <https://web.archive.org/web/20220518224459id_/http://www.sse.com.cn/disclosure/announcement/general/c/c_20211220_5662606.shtml> | Wayback `id_` replay of capture `20220518224459`, retrieved 2026-09-29 UTC | T1 | `494784607a6df3b052cfe3e78737285c06b6cf7019e5a2c56599173f3d60cff5` |
 | `SSE-NOTICE-2022-51` | 2011-01-01..2026-12-31 | <https://web.archive.org/web/20230521054030id_/http://www.sse.com.cn/disclosure/announcement/general/c/c_20221227_5714458.shtml> | Wayback `id_` replay of capture `20230521054030`, retrieved 2026-09-29 UTC | T1 | `e40fc641b82ba8c10df25006c8e0ce8a2022ff399963fbe03297d5679b7c95f6` |
@@ -432,7 +451,7 @@ a full closure.
 | `SSE-NOTICE-2025-36` | 2025-01-01..2026-12-31 | <https://www.sse.com.cn/disclosure/announcement/general/c/c_20250925_10792976.shtml> | retrieved 2026-09-28 UTC | T1 | `b587eadba8fc24d097028039278b5fa7a1fccb1ab6ed69ce619c8fb5d686ce54` |
 | `SSE-NOTICE-2025-45` | 2025-01-01..2026-12-31 | <https://www.sse.com.cn/disclosure/announcement/general/c/c_20251222_10802507.shtml> | retrieved 2026-09-28 UTC | T1 | `4e260b815ce1309175ed994e6490a4ccd51b998a5f92bcdc41cec00fc6823dc7` |
 
-All eighteen artifacts are saved in the research store — the 2025-2027 notices under `holidays/raw/equities/sse/2025-2027/` and the fifteen 2011-2024 notices (plus the English 2013 schedule page that corroborates `SSE-NOTICE-2013`) under `holidays/raw/equities/sse/2010-2024/`, each directory with an `INDEX.md` carrying the same digests.
+All nineteen artifacts are saved in the research store — the 2025-2027 notices under `holidays/raw/equities/sse/2025-2027/` and the fifteen 2011-2024 notices (plus the English 2013 schedule page that corroborates `SSE-NOTICE-2013` and the 2020 extension notice `SSE-NOTICE-2020-6`) under `holidays/raw/equities/sse/2010-2024/`, each directory with an `INDEX.md` carrying the same digests.
 
 **Why the window runs 2011-01-01..2026-12-31.** The 2011 start is the earliest arrangement the operator's own channel still serves: SSE's media-center reprints begin with the 2011 notice, and the 2010 annual notice (上证交字〔2009〕42号, published 2009-12-23) is neither live on sse.com.cn nor captured in the Internet Archive, so 2010 sits outside every audited window and refuses rather than answers (see Gaps). Every notice from 2011 on states its year complete. **The forward end at 2026-12-31 is the operator's horizon, not a withholding.** SSE publishes the next year's arrangement each December; the 2026 notice was published 2025-12-22, and no `关于2027年部分节假日休市安排的通知` exists as of the 2026-09-28 retrieval (web search found none; the SSE announcement search and English calendar channels refused that day, see Gaps). **Closing condition:** publication of 上交所's 2027 notice, which extends the window to 2027-12-31. Re-checked monthly per LAW-WATCH.
 

@@ -24,11 +24,146 @@ VIX futures normal-week history is complete from January 2010. Old-system pre-op
 
 ## Holidays
 
-**Coverage:** 2025-01-01..2026-12-31 (inclusive trade dates). Tier: T1 throughout.
+**Coverage:** 2017-04-10..2026-12-31 (inclusive trade dates). Tier: T1 throughout.
 
 One table serves the `cfe` venue and the `cfe_vix` key: Cboe publishes one holiday schedule for all CFE futures, and VIX futures are the only family the crate routes to the venue, so the venue intersection is that one family's own table.
 
-Two artifacts key 2025 and one keys 2026, so the 2025 rows rest on per-holiday Cboe notices and the 2026 rows on Cboe's consolidated `Hours & Holidays` page and CSV. The document ids record which: `CBOE-SU-<holiday year>-<HOLIDAY>` for a per-holiday `schedule_update` notice published ahead of that holiday year, and `CBOE-HOURS-USFUT-2026` for the page. The year in the id is the **holiday year the notice governs**, not the year of the directory it is served from: Cboe files each New Year's and MLK notice under the *previous* year, so the notices governing 2025-01-01 and 2025-01-20 are served from `schedule_update/2024/` and the ones governing 2026-01-01 and 2026-01-19 from `schedule_update/2025/`.
+Two document families key the window. The **rules page** — the operator's own `CFE Holiday Schedule` page on `cfe.cboe.com/about-cfe/holiday-calendar`, read through Wayback `id_` captures — prints the complete holiday calendar for the years it shows (2017, then 2018 and 2019, then 2019 and 2020) and the per-holiday-type hours tables in session language; it keys the 2017 rows and the 2018 New Year's Day row, because no CFE notice for those dates survives. The **per-holiday notices** under `cdn.cboe.com/resources/schedule_update/<publication year>/` state each 2018-2026 holiday's session instants and the observed-day arrangements, and key every other row. The document ids record which: `CBOE-SU-<holiday year>-<HOLIDAY>` for a per-holiday notice, `cfe-holiday-calendar @<capture instant>` for a rules-page capture, and `CBOE-HOURS-USFUT-2026` for the 2026 page. A notice's id year is the **holiday year the notice governs**, not the year of the directory it is served from: Cboe files each New Year's and MLK notice under the *previous* year, so the notices governing 2025-01-01 and 2025-01-20 are served from `schedule_update/2024/` and the ones governing 2026-01-01 and 2026-01-19 from `schedule_update/2025/`.
+
+**Shapes that repeat across the whole window.** The Monday/Thursday and mid-week floating holidays keep the overnight leg running to 10:30 CT with no regular session (`early close 10:30`), 2017 through 2026 alike — the rules page's Monday-holiday chart and each year's notice agree. Good Friday alternates between a full closure (2017, 2018, 2019, 2020, 2022, 2024, 2025 — each stated outright by its own document) and an early close at the regular open (2021, 2023, 2026 — the overnight leg stops at 8:30 a.m., Regular `None`). New Year's Day and Christmas falling Monday-Thursday print no holiday-day session at all and reopen at 17:00 CT on the holiday, so the trade date is `Closed` and the prior-evening leg is deleted with it. The Independence Day and Christmas eves close at 12:15 CT where the year's notice says so (2019-07-03, 2023-07-03, 2024-07-03, and the December eves of 2018, 2019, 2020 and 2024) and trade normally where it does not (2018-07-03, whose notice's holiday leg opens 5:00 p.m. Tuesday, and 2022-12-23, whose notice prints the normal 3:00/4:00 PM closes). Juneteenth enters the observed set in 2022; the operator's own notice states CFE traded unadjusted hours in 2021.
+
+### 2017
+
+The 2017 rows are read from the operator's own `CFE Holiday Schedule` page, whose captures print the complete **2017 CFE Holiday Calendar** — `New Year's Day – Monday, January 2 (observed)` through `Christmas Day – Monday, December 25`, nine dates — and the per-holiday-type hours tables. Each row below cites the latest capture that precedes its holiday; all five captures used here (2017-04-10, 2017-06-26, 2017-11-13, 2017-12-29 and, as corroboration, 2019-12-15) print the same 2017 calendar and the same hours tables, so the bracketing captures witness the rules' continuity across the year.
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2017-04-14 | closed | `If the holiday is on a Friday: New Year's Day, Good Friday, Independence Day and Christmas — Extended None / Regular None` | `cfe-holiday-calendar @2017-04-10T21:04:29Z` | T1 | The 2017 calendar names `Good Friday – Friday, April 14`; the Friday chart prints no session at all for the day, so the Thursday-evening leg is deleted with it |
+| 2017-05-29 | early close | `Domestic Holidays Always Observed on Mondays … Extended 5:00 p.m. (Sunday) to 10:30 a.m. / Regular None` | `cfe-holiday-calendar @2017-04-10T21:04:29Z` | T1 | The 2017 calendar names `Memorial Day – Monday, May 29`; 10:30 CT |
+| 2017-07-03 | unsourced | `The Exchange will typically close at 12:15 p.m. on July 3 (the day before Independence Day) and December 24 (Christmas Eve). Holiday closures and shortened holiday trading hours will be announced by circular.` | `cfe-holiday-calendar @2017-06-26T00:36:49Z` | T1 | The page states the eve close only as a default ("typically") and defers the year's answer to a circular; no 2017 CFE circular or notice survives (see the gap note below), while 2018 is witnessed as a normal-trading July 3 by its notice's leg structure and 2019, 2023 and 2024 as 12:15 years by their notices — so the day is withheld rather than guessed |
+| 2017-07-04 | early close | `If Independence Day is on a Monday - Thursday: Extended 5:00 p.m. (July 3) to 10:30 a.m. / Regular None` | `cfe-holiday-calendar @2017-06-26T00:36:49Z` | T1 | The 2017 calendar names `Independence Day – Tuesday, July 4`; the July 3 evening leg is trade date 2017-07-04's own and stops at 10:30, and no July 3 row is shipped because the chart prints none for it |
+| 2017-09-04 | early close | `Domestic Holidays Always Observed on Mondays … Regular None, extended to 10:30 a.m.` | `cfe-holiday-calendar @2017-06-26T00:36:49Z` | T1 | The 2017 calendar names `Labor Day – Monday, September 4`; 10:30 CT |
+| 2017-11-23 | early close | `Thanksgiving … Extended 3:30 p.m. (Wednesday) to 10:30 a.m. / Regular None` | `cfe-holiday-calendar @2017-11-13T01:40:35Z` | T1 | The 2017 calendar names `Thanksgiving Day – Thursday, November 23`; the holiday trade date's own leg stops at 10:30 CT. The chart's `3:30 p.m. (Wednesday)` start lumps the pre-migration Wednesday tail session (15:30-16:15 CT) into one cell with the evening leg; under the crate's trade-date key that tail session closes 16:15 Wednesday and belongs to Wednesday's own trade date, so the cell and the 2018 notices' `5:00 p.m. (Wednesday)` wording state the same trade-date boundary |
+| 2017-11-24 | early close | `Thanksgiving … Friday: Regular 8:30 a.m. to 12:15 p.m.` | `cfe-holiday-calendar @2017-11-13T01:40:35Z` | T1 | The chart prints the Friday regular session 8:30-12:15, so only the close moves; 12:15 CT |
+| 2017-12-25 | closed | `If New Years Day or Christmas is on a Monday - Thursday: Extended 5:00 p.m. (on holiday) to 8:30 a.m. (day after holiday) / Regular 8:30 a.m. to 3:15 p.m. (day after holiday)` | `cfe-holiday-calendar @2017-11-13T01:40:35Z` | T1 | The 2017 calendar names `Christmas Day – Monday, December 25`; the chart prints no holiday-day session and the first block opens 17:00 CT on the holiday itself, so the trade date is deleted and the Sunday-evening leg with it. December 24 2017 was a Sunday, so the `typically 12:15` Christmas-Eve default has no session to shorten |
+
+**The 2017-07-03 withholding.** The rules page is the only surviving operator document that touches the day, and it states a default, not the year's arrangement: `typically close at 12:15 p.m. on July 3`. The same page defers `shortened holiday trading hours` to circulars, and no 2017 CFE circular or notice survives — the `schedule_update/2017` directory holds only options-exchange `Cboe-Holiday-Reminder` PDFs, the archived CFE circular series (`cfe.cboe.com/publish/CFEinfocirc*`) carries no 2017 holiday content, and the live general-circular index begins at `CFE-IC-2017-001`. The neighbouring years prove the default is year-dependent, not a rule: 2018-07-03 traded normally (the 2018 notice's holiday leg opens `5:00 p.m. (Tuesday)`, which a 12:15 close would have deleted) while 2019-07-03, 2023-07-03 and 2024-07-03 closed at 12:15 by their notices' own statements. So 2017-07-03 ships `Unsourced`: the operator published nothing this crate could read, not proof of a normal day. Closing condition: a 2017 CFE holiday circular or notice, or a rules-page capture that states the day's arrangement unconditionally.
+
+### 2018
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2018-01-01 | closed | `If New Years Day or Christmas is on a Monday - Thursday: Extended 5:00 p.m. (on holiday) to 8:30 a.m. (day after holiday)` | `cfe-holiday-calendar @2017-12-29T07:06:24Z` | T1 | The page's `2018 Exchange Holiday Calendar` names `New Year's Day – Monday, January 1`; the Monday-Thursday chart prints no holiday-day session, so the trade date is deleted and the Sunday-evening leg with it |
+| 2018-01-15 | early close | `Monday, January 15, 2018: Extended 5:00 p.m. (Sunday) to 10:30 a.m. / Regular None` | `CBOE-SU-2018-MLK` | T1 | Cboe event date 2018-01-15; the Sunday-evening leg is trade date 2018-01-15's own and stops at 10:30, and the Monday-evening leg is trade date 2018-01-16's |
+| 2018-02-19 | early close | `Monday, February 19, 2018: Extended 5:00 p.m. (Sunday) to 10:30 a.m. / Regular None` | `CBOE-SU-2018-PRESIDENTS` | T1 | Cboe event date 2018-02-19; same two-leg shape as MLK Day |
+| 2018-03-30 | closed | `Trading will be closed for all CFE products on Friday, March 30, 2018.` | `CBOE-SU-2018-GOOD-FRIDAY` | T1 | Cboe event date 2018-03-30; the notice states the closure outright and the reopen `at 5:00 p.m. on April 1, 2018 with the regularly scheduled start of extended trading hours` |
+| 2018-05-28 | early close | `Monday, May 28, 2018: Extended 5:00 p.m. (Sunday) to 10:30 a.m. / Regular None` | `CBOE-SU-2018-MEMORIAL` | T1 | Cboe event date 2018-05-28 |
+| 2018-07-04 | early close | `Wednesday, July 4, 2018: Extended 5:00 p.m. (Tuesday) to 10:30 a.m. / Regular None` | `CBOE-SU-2018-INDEPENDENCE` | T1 | Cboe event date 2018-07-04; the Tuesday-evening leg is trade date 2018-07-04's own and stops at 10:30. The same leg proves 2018-07-03 traded normally — a 12:15 Tuesday close would have deleted it |
+| 2018-09-03 | early close | `Monday, September 3, 2018: Extended 5:00 p.m. (Sunday) to 10:30 a.m. / Regular None` | `CBOE-SU-2018-LABOR` | T1 | Cboe event date 2018-09-03 |
+| 2018-11-22 | early close | `Thursday, November 22, 2018: Extended 5:00 p.m. (Wednesday) to 10:30 a.m. / Regular None` | `CBOE-SU-2018-THANKSGIVING` | T1 | Cboe event date 2018-11-22; the notice also states `CFE will have normal trading hours … on Wednesday, November 21, 2018` |
+| 2018-11-23 | early close | `Friday, November 23, 2018: Regular 8:30 a.m. to 12:15 p.m.` | `CBOE-SU-2018-THANKSGIVING` | T1 | Cboe prints the Friday regular session 8:30-12:15, so only the close moves |
+| 2018-12-24 | early close | `Trading in all CFE products will close at 12:15 p.m. on Monday, December 24, 2018.` | `CBOE-SU-2018-CHRISTMAS` | T1 | Cboe trade date named verbatim; the first open is the normal Sunday 17:00 CT, so only the close moves |
+| 2018-12-25 | closed | `CFE will reopen following the Christmas holiday at 5:00 p.m. on Tuesday, December 25, 2018 with the start of extended trading hours` | `CBOE-SU-2018-CHRISTMAS` | T1 | Cboe event date 2018-12-25; the reopen on the holiday itself means no session belongs to the trade date |
+
+### 2019
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2019-01-01 | closed | `CFE will reopen following the New Year's Day holiday at 5:00 p.m. on Tuesday, January 1, 2019` and `CFE will have normal trading hours for all products on Monday, December 31, 2018.` | `CBOE-SU-2019-NEW-YEAR` | T1 | Cboe event date 2019-01-01; the reopen on the holiday itself means no session belongs to the trade date, and the notice states the prior Monday's normal hours |
+| 2019-01-21 | early close | `Monday, January 21, 2019: Extended 5:00 p.m. (Sunday) to 10:30 a.m. / Regular None` | `CBOE-SU-2019-MLK` | T1 | Cboe event date 2019-01-21 |
+| 2019-02-18 | early close | `Monday, February 18, 2019: Extended 5:00 p.m. (Sunday) to 10:30 a.m. / Regular None` | `CBOE-SU-2019-PRESIDENTS` | T1 | Cboe event date 2019-02-18 |
+| 2019-04-19 | closed | `Trading will be closed for all CFE products on Friday, April 19, 2019.` | `CBOE-SU-2019-GOOD-FRIDAY` | T1 | Cboe event date 2019-04-19; the notice states the closure and the Sunday 2019-04-21 reopen |
+| 2019-05-27 | early close | `Monday, May 27, 2019: Extended 5:00 p.m. (Sunday) to 10:30 a.m. / Regular None` | `CBOE-SU-2019-MEMORIAL` | T1 | Cboe event date 2019-05-27 |
+| 2019-07-03 | early close | `Trading in all CFE products will close at 12:15 p.m. on Wednesday, July 3, 2019.` | `CBOE-SU-2019-INDEPENDENCE` | T1 | Cboe trade date named verbatim; the 12:15 eve before the Thursday holiday |
+| 2019-07-04 | early close | `Thursday, July 4, 2019: Extended 5:00 p.m. (Wednesday) to 10:30 a.m. / Regular None` | `CBOE-SU-2019-INDEPENDENCE` | T1 | Cboe event date 2019-07-04 |
+| 2019-09-02 | early close | `Monday, September 2, 2019: Extended 5:00 p.m. (Sunday) to 10:30 a.m. / Regular None` | `CBOE-SU-2019-LABOR` | T1 | Cboe event date 2019-09-02 |
+| 2019-11-28 | early close | `Thursday, November 28, 2019: Extended 5:00 p.m. (Wednesday) to 10:30 a.m. / Regular None` | `CBOE-SU-2019-THANKSGIVING` | T1 | Cboe event date 2019-11-28; the notice also states normal hours Wednesday 2019-11-27 |
+| 2019-11-29 | early close | `Friday, November 29, 2019: Regular 8:30 a.m. to 12:15 p.m.` | `CBOE-SU-2019-THANKSGIVING` | T1 | Cboe prints the Friday regular session 8:30-12:15, so only the close moves |
+| 2019-12-24 | early close | `Tuesday, December 24, 2019 … VX, AMW, AMB, VA, and VXTY futures 12:15 p.m.` | `CBOE-SU-2019-CHRISTMAS` | T1 | Cboe event date 2019-12-24; the notice's per-product closing table names 12:15 for the VX row, so only the close moves |
+| 2019-12-25 | closed | `CFE will reopen following the Christmas holiday at 5:00 p.m. on Wednesday, December 25, 2019` | `CBOE-SU-2019-CHRISTMAS` | T1 | Cboe event date 2019-12-25; the reopen on the holiday itself means no session belongs to the trade date |
+
+### 2020
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2020-01-01 | closed | `CFE will reopen following the New Year's Day holiday at 5:00 p.m. on Wednesday, January 1, 2020` and `CFE will have normal trading hours for all products on Tuesday, December 31, 2019.` | `CBOE-SU-2020-NEW-YEAR` | T1 | Cboe event date 2020-01-01; the reopen on the holiday itself means no session belongs to the trade date |
+| 2020-01-20 | early close | `Monday, January 20, 2020: Extended 5:00 p.m. (Sunday) to 10:30 a.m. / Regular None` | `CBOE-SU-2020-MLK` | T1 | Cboe event date 2020-01-20 |
+| 2020-02-17 | early close | `Monday, February 17, 2020: Extended 5:00 p.m. (Sunday) to 10:30 a.m. / Regular None` | `CBOE-SU-2020-PRESIDENTS` | T1 | Cboe event date 2020-02-17 |
+| 2020-04-10 | closed | `Trading will be closed for all CFE products on Friday, April 10, 2020.` | `CBOE-SU-2020-GOOD-FRIDAY` | T1 | Cboe event date 2020-04-10; the notice states the closure and the Sunday 2020-04-12 reopen |
+| 2020-05-25 | early close | `Monday, May 25, 2020: Extended 5:00 p.m. (Sunday) to 10:30 a.m. CT / Regular None` | `CBOE-SU-2020-MEMORIAL` | T1 | Cboe event date 2020-05-25 |
+| 2020-07-03 | early close | `Friday, July 3, 2020: Extended 5:00 p.m. (Thursday) to 10:30 a.m. CT / Regular None` — `the Independence Day holiday is being observed on July 3, 2020` | `CBOE-SU-2020-INDEPENDENCE` | T1 | Cboe event date observed Friday 2020-07-03; the notice also states normal hours Thursday 2020-07-02, so the Thursday-evening leg is the observed day's own and stops at 10:30 |
+| 2020-09-07 | early close | `Monday, September 7, 2020: Extended 5:00 p.m. (Sunday) to 10:30 a.m. CT / Regular None` | `CBOE-SU-2020-LABOR` | T1 | Cboe event date 2020-09-07 |
+| 2020-11-26 | early close | `Thursday, November 26, 2020: Extended 5:00 p.m. (Wednesday) to 10:30 a.m. / Regular None` | `CBOE-SU-2020-THANKSGIVING` | T1 | Cboe event date 2020-11-26; the notice also states normal hours Wednesday 2020-11-25 |
+| 2020-11-27 | early close | `Friday, November 27, 2020: Regular 8:30 a.m. to 12:15 p.m.` | `CBOE-SU-2020-THANKSGIVING` | T1 | Cboe prints the Friday regular session 8:30-12:15, so only the close moves |
+| 2020-12-24 | early close | `Thursday, December 24, 2020 … VX, VXM, AMERIBOR (AMW, AMB1, AMB3), and VA/VAO futures 12:15 p.m.` | `CBOE-SU-2020-CHRISTMAS` | T1 | Cboe event date 2020-12-24; the notice's per-product closing table names 12:15 for the VX row |
+| 2020-12-25 | closed | `Trading will be closed for all CFE products on Friday, December 25, 2020. There will be no extended trading hours on the evening of Thursday, December 24, 2020.` | `CBOE-SU-2020-CHRISTMAS` | T1 | Cboe event date 2020-12-25; the closure deletes the Thursday-evening leg |
+
+### 2021
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2021-01-01 | closed | `Trading will be closed for all CFE products on Friday, January 1, 2021. There will be no extended trading hours on the evening of Thursday, December 31, 2020.` | `CBOE-SU-2021-NEW-YEAR` | T1 | Cboe event date 2021-01-01; the closure deletes the Thursday-evening leg |
+| 2021-01-18 | early close | `Monday, January 18, 2021: Extended 5:00 p.m. (Sunday) to 10:30 a.m. / Regular None` | `CBOE-SU-2021-MLK` | T1 | Cboe event date 2021-01-18 |
+| 2021-02-15 | early close | `Monday, February 15, 2021: Extended 5:00 p.m. (Sunday) to 10:30 a.m. / Regular None` | `CBOE-SU-2021-PRESIDENTS` | T1 | Cboe event date 2021-02-15 |
+| 2021-04-02 | early close | `Friday, April 2, 2021: Extended 5:00 p.m. (Thursday) to 8:30 a.m. / Regular None` | `CBOE-SU-2021-GOOD-FRIDAY` | T1 | Cboe event date 2021-04-02; the overnight leg ends at the regular open and no regular session runs — the 2026 shape, not the closure shape |
+| 2021-05-31 | early close | `Monday, May 31, 2021: Extended 5:00 p.m. (Sunday) to 10:30 a.m. CT / Regular None` | `CBOE-SU-2021-MEMORIAL` | T1 | Cboe event date 2021-05-31 |
+| 2021-07-05 | early close | `Monday, July 5, 2021: Extended 5:00 p.m. (Sunday) to 10:30 a.m. CT / Regular None` | `CBOE-SU-2021-INDEPENDENCE` | T1 | Cboe event date observed Monday 2021-07-05; the Sunday-evening leg is the observed day's own and stops at 10:30 (July 4 was a Sunday, so no eve session exists to shorten) |
+| 2021-09-06 | early close | `Monday, September 6, 2021: Extended 5:00 p.m. (Sunday) to 10:30 a.m. CT / Regular None` | `CBOE-SU-2021-LABOR` | T1 | Cboe event date 2021-09-06 |
+| 2021-11-25 | early close | `Thursday, November 25, 2021: Extended 5:00 p.m. (Wednesday) to 10:30 a.m. / Regular None` | `CBOE-SU-2021-THANKSGIVING` | T1 | Cboe event date 2021-11-25 |
+| 2021-11-26 | early close | `Friday, November 26, 2021: Regular 8:30 a.m. to 12:15 p.m.` | `CBOE-SU-2021-THANKSGIVING` | T1 | Cboe prints the Friday regular session 8:30-12:15, so only the close moves |
+| 2021-12-24 | closed | `Trading will be closed for all CFE products on Friday, December 24, 2021. There will be no extended trading hours on the evening of Thursday, December 23, 2021.` | `CBOE-SU-2021-CHRISTMAS` | T1 | Cboe event date observed Friday 2021-12-24 (Christmas fell on a Saturday); the notice states the closure of the observed day itself and the deletion of the Thursday-evening leg, and normal hours Monday 2021-12-27 from the Sunday 17:00 reopen |
+
+**2021 witnesses with no row.** Two Cboe-wide notices state CFE days this table ships no row for, and both are listed in `### Documents` below as their witnesses: `C2021061701` states that `Cboe will not be adjusting trading hours for … CFE for Friday, June 18, 2021 or Monday, June 21, 2021` (Juneteenth's first year — the observed set gained it only in 2022), and `C2021121601` states that CFE `will follow normal trading hours` on Friday, December 31, 2021 (New Year's Eve before the Saturday holiday). Inside the window these dates are audited normal by those notices rather than by silence.
+
+### 2022
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2022-01-17 | early close | `Monday, January 17, 2022: Extended 5:00 p.m. (Sunday) to 10:30 a.m. / Regular None` | `CBOE-SU-2022-MLK` | T1 | Cboe event date 2022-01-17 |
+| 2022-02-21 | early close | `Monday, February 21, 2022: Extended 5:00 p.m. (Sunday) to 10:30 a.m. / Regular None` | `CBOE-SU-2022-PRESIDENTS` | T1 | Cboe event date 2022-02-21 |
+| 2022-04-15 | closed | `Trading will be closed for all CFE products on Friday, April 15th, 2022.` | `CBOE-SU-2022-GOOD-FRIDAY` | T1 | Cboe event date 2022-04-15; the notice states the closure and the Sunday 2022-04-17 reopen |
+| 2022-05-30 | early close | `Monday, May 30, 2022: Extended 5:00 p.m. (Sunday) to 10:30 a.m. / Regular None` | `CBOE-SU-2022-MEMORIAL` | T1 | Cboe event date 2022-05-30 |
+| 2022-06-20 | early close | `Monday, June 20, 2022: Extended 5:00 p.m. (Sunday) to 10:30 a.m. / Regular None` | `CBOE-SU-2022-JUNETEENTH` | T1 | Cboe event date observed Monday 2022-06-20 (Juneteenth fell on a Sunday); the Sunday-evening leg is the observed day's own and stops at 10:30 |
+| 2022-07-04 | early close | `SUNDAY JULY 3, 2022 ETH Start 5:00 PM … MONDAY JULY 4, 2022 ETH Close 10:30 AM; MONDAY … RTH` — the VX row reads `5:00 PM / 10:30 AM` | `CBOE-SU-2022-INDEPENDENCE` | T1 | Cboe event date 2022-07-04; the notice's table states `observed on Monday, July 4, 2022`, the Sunday-evening leg is the holiday's own and stops at 10:30, and the Trade Date row names Tuesday, July 5, 2022 for the next group |
+| 2022-09-05 | early close | `Monday, September 5, 2022: Extended 5:00 p.m. (Sunday) to 10:30 a.m. / Regular None` | `CBOE-SU-2022-LABOR` | T1 | Cboe event date 2022-09-05; the notice states `observed on Monday, September 5, 2022` |
+| 2022-11-24 | early close | `WEDNESDAY NOVEMBER 23, 2022 ETH Start 5:00 PM, ETH Close 10:30 AM` | `CBOE-SU-2022-THANKSGIVING` | T1 | Cboe event date 2022-11-24; the Wednesday-evening leg is trade date 2022-11-24's own and stops at 10:30 |
+| 2022-11-25 | early close | `THURSDAY NOVEMBER 24, 2022 … RTH Start 8:30 AM, RTH Close 12:15 PM` — `Trade Date Friday, November 25, 2022` | `CBOE-SU-2022-THANKSGIVING` | T1 | Cboe trade date named verbatim; the first open is the normal Thursday 17:00 CT, so only the close moves |
+| 2022-12-26 | closed | `FRIDAY DECEMBER 23, 2022 RTH Close 3:00 PM, ETH Close 4:00 PM; SUNDAY DECEMBER 25, 2022 … MONDAY DECEMBER 26, 2022 … all empty` | `CBOE-SU-2022-CHRISTMAS` | T1 | Cboe event date observed Monday 2022-12-26 (Christmas fell on a Sunday); the notice's table prints the normal Friday 12-23 closes beside it (so 2022-12-23 is audited normal by its own notice) and no Sunday-evening or Monday session |
+
+### 2023
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2023-01-02 | closed | `FRIDAY DECEMBER 30, 2022 RTH Close 3:00 PM, ETH Close 4:00 PM; MONDAY JANUARY 2, 2023 … all empty` | `CBOE-SU-2023-NEW-YEAR` | T1 | Cboe event date observed Monday 2023-01-02 (New Year's Day fell on a Sunday); the notice's table prints the normal Friday 12-30 closes beside it (so 2022-12-30 is audited normal by its own notice) and no Sunday-evening or Monday session |
+| 2023-01-16 | early close | `MONDAY JANUARY 16, 2023 … ETH Close 10:30 AM` — `Trade Date Tuesday, January 17, 2023` | `CBOE-SU-2023-MLK` | T1 | Cboe event date 2023-01-16; the Sunday-evening leg is the holiday's own and stops at 10:30 |
+| 2023-02-20 | early close | `Monday, February 20, 2023 … 10:30 AM` | `CBOE-SU-2023-PRESIDENTS` | T1 | Cboe event date 2023-02-20 |
+| 2023-04-07 | early close | `Thursday, April 6, 2023: ETH Close 8:30 AM` | `CBOE-SU-2023-GOOD-FRIDAY` | T1 | Cboe event date 2023-04-07; the overnight leg ends at the regular open and no regular session runs |
+| 2023-05-29 | early close | `Monday, May 29, 2023 … 10:30 AM` | `CBOE-SU-2023-MEMORIAL` | T1 | Cboe event date 2023-05-29 |
+| 2023-06-19 | early close | `Monday, June 19, 2023 … 10:30 AM` | `CBOE-SU-2023-JUNETEENTH` | T1 | Cboe event date 2023-06-19 |
+| 2023-07-03 | early close | `TUESDAY JULY 2 … MONDAY JULY 3, 2023 … RTH Close 12:15 PM` — `Trade Date Monday, July 3, 2023` | `CBOE-SU-2023-INDEPENDENCE` | T1 | Cboe trade date named verbatim; the notice's table closes the Monday RTH at 12:15, the `typically 12:15` July 3 eve before the Tuesday holiday |
+| 2023-07-04 | early close | `MONDAY JULY 3, 2023 ETH Start 5:00 PM, ETH Close 10:30 AM` | `CBOE-SU-2023-INDEPENDENCE` | T1 | Cboe event date 2023-07-04; the Monday-evening leg is the holiday's own and stops at 10:30 |
+| 2023-09-04 | early close | `Monday, September 4, 2023 … 10:30 AM` | `CBOE-SU-2023-LABOR` | T1 | Cboe event date 2023-09-04 |
+| 2023-11-23 | early close | `WEDNESDAY NOVEMBER 22, 2023 ETH Start 5:00 PM, ETH Close 10:30 AM` | `CBOE-SU-2023-THANKSGIVING` | T1 | Cboe event date 2023-11-23; the Wednesday-evening leg is the holiday's own |
+| 2023-11-24 | early close | `THURSDAY NOVEMBER 23, 2023 … RTH Close 12:15 PM` — `Trade Date Friday, November 24, 2023` | `CBOE-SU-2023-THANKSGIVING` | T1 | Cboe trade date named verbatim; the first open is the normal Thursday 17:00 CT |
+| 2023-12-25 | closed | `SUNDAY DECEMBER 24, 2023 … MONDAY DECEMBER 25, 2023 … all empty` — `Trade Date Tuesday, December 26, 2023` | `CBOE-SU-2023-CHRISTMAS` | T1 | Cboe event date 2023-12-25; the notice's table prints no Sunday-evening or Monday session, so the trade date is deleted with the Sunday-evening leg (December 24 was a Sunday, so the `typically 12:15` Christmas-Eve default has no session to shorten) |
+
+### 2024
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2024-01-01 | closed | `SUNDAY DECEMBER 31, 2023 … MONDAY JANUARY 1, 2024 … all empty` | `CBOE-SU-2024-NEW-YEAR` | T1 | Cboe event date 2024-01-01; the notice's table prints no Sunday-evening or Monday session, so the trade date is deleted with the Sunday-evening leg |
+| 2024-01-15 | early close | `MONDAY JANUARY 15, 2024 … ETH Close 10:30 AM` | `CBOE-SU-2024-MLK` | T1 | Cboe event date 2024-01-15 |
+| 2024-02-19 | early close | `Monday, February 19, 2024 … 10:30 AM` | `CBOE-SU-2024-PRESIDENTS` | T1 | Cboe event date 2024-02-19 |
+| 2024-03-29 | closed | `Trading will be closed for all CFE products on Friday, March 29, 2024.` | `CBOE-SU-2024-GOOD-FRIDAY` | T1 | Cboe event date 2024-03-29; the notice states the closure outright |
+| 2024-05-27 | early close | `Monday, May 27, 2024 … 10:30 AM` | `CBOE-SU-2024-MEMORIAL` | T1 | Cboe event date 2024-05-27 |
+| 2024-06-19 | early close | `Wednesday, June 19, 2024 … 10:30 AM` | `CBOE-SU-2024-JUNETEENTH` | T1 | Cboe event date 2024-06-19 |
+| 2024-07-03 | early close | `TUESDAY JULY 2, 2024 ETH Start 5:00 PM, RTH Start 8:30 AM, RTH Close 12:15 PM` — `Trade Date Wednesday, July 3, 2024` | `CBOE-SU-2024-INDEPENDENCE` | T1 | Cboe trade date named verbatim; the notice's table closes the Wednesday RTH at 12:15, the July 3 eve before the Thursday holiday |
+| 2024-07-04 | early close | `WEDNESDAY JULY 3, 2024 ETH Start 5:00 PM, ETH Close 10:30 AM` | `CBOE-SU-2024-INDEPENDENCE` | T1 | Cboe event date 2024-07-04; the Wednesday-evening leg is the holiday's own and stops at 10:30 |
+| 2024-09-02 | early close | `Monday, September 2, 2024 … 10:30 AM` | `CBOE-SU-2024-LABOR` | T1 | Cboe event date 2024-09-02 |
+| 2024-11-28 | early close | `WEDNESDAY NOVEMBER 27, 2024 ETH Start 5:00 PM, ETH Close 10:30 AM` | `CBOE-SU-2024-THANKSGIVING` | T1 | Cboe event date 2024-11-28; the Wednesday-evening leg is the holiday's own |
+| 2024-11-29 | early close | `THURSDAY NOVEMBER 28, 2024 … RTH Close 12:15 PM` — `Trade Date Friday, November 29, 2024` | `CBOE-SU-2024-THANKSGIVING` | T1 | Cboe trade date named verbatim; the first open is the normal Thursday 17:00 CT |
+| 2024-12-24 | early close | `MONDAY DECEMBER 23, 2024 ETH Start 5:00 PM, RTH Start 8:30 AM, RTH Close 12:15 PM` — `Trade Date Tuesday, December 24, 2024` | `CBOE-SU-2024-CHRISTMAS` | T1 | Cboe trade date named verbatim; the notice's table closes the Tuesday RTH at 12:15, the Christmas Eve half day, and prints no Tuesday-evening leg because trade date 2024-12-25 is closed |
+| 2024-12-25 | closed | `TUESDAY DECEMBER 24, 2024 ETH Start, ETH Close empty; WEDNESDAY DECEMBER 25, 2024 … empty` — `Trade Date Thursday, December 26, 2024` | `CBOE-SU-2024-CHRISTMAS` | T1 | Cboe event date 2024-12-25; the notice's table prints no Tuesday-evening or Wednesday session |
 
 ### 2025
 

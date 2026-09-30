@@ -584,7 +584,9 @@ const fn for_market_hours_key(key: MarketHoursKey) -> DeclaredSourcing {
         MarketHoursKey::GlobexMiniGrains => DeclaredSourcing::carried_below(horizon!(2010, 4, 5)),
         // Only the Sunday 16:00-16:15 CT quarter-hour is withheld (#79): every
         // special session CME publishes for this family now ships as a row, so
-        // the #93 declaration it used to carry is gone.
+        // the #93 declaration it used to carry is gone. The floor-era matching
+        // grid is sourced (FX-hours page, capture 2009-05-02), but the Sunday
+        // Pre-Open has no pre-2012 statement of its own.
         MarketHoursKey::GlobexFx => {
             DeclaredSourcing::carried_below_with_quarter_hour(horizon!(2012, 5, 3))
         }
@@ -617,7 +619,10 @@ const fn for_market_hours_key(key: MarketHoursKey) -> DeclaredSourcing {
         // the quarter-hour is served rather than withheld; the evidence file
         // records why and the closing condition.
         MarketHoursKey::GlobexNikkei225Dollar => DeclaredSourcing::nothing_carried(),
-        MarketHoursKey::EurexFixedIncome => DeclaredSourcing::carried_below(horizon!(2018, 11, 15)),
+        // The pre-2018-12-10 baseline is sourced through the floor: the
+        // operator's archived Contract Specifications amendments of
+        // 2009-09-14 .. 2017-08-28 each print the FGBL/FGBM/FGBS/FGBX row.
+        MarketHoursKey::EurexFixedIncome => DeclaredSourcing::carried_below(horizon!(2010, 1, 1)),
         MarketHoursKey::SgxEquityIndexJapan => {
             DeclaredSourcing::carried_below(horizon!(2010, 1, 1))
         }

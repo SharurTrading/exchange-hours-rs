@@ -138,10 +138,10 @@ static EUREX_FIXED_INCOME_2018_WINTER: StaticHoursProfile = StaticHoursProfile {
     has_weekend_close: true,
 };
 
-// Baseline before 2018-12-10: Pre-Trading 07:30-08:00 CET with continuous
-// trading 08:00-22:00, one same-day grid with no seasonal split. Circular
-// 088/18 states the phase it replaced; the 22:30 post-trading end is carried
-// back rather than dated.
+// Baseline before 2018-12-10: Pre-Trading 07:30-08:00 CET, continuous
+// trading 08:00-22:00, one same-day grid. The operator's archived Contract
+// Specifications amendments of 2009-09-14 .. 2017-08-28 print this grid, so
+// it is sourced from before the January-2010 floor, not carried.
 // Narrative: docs/evidence/eurex_fixed_income.md
 static EUREX_FIXED_INCOME_REGULAR_BASELINE: &[SessionRule] = &[SessionRule {
     days: MON_FRI,
@@ -150,7 +150,10 @@ static EUREX_FIXED_INCOME_REGULAR_BASELINE: &[SessionRule] = &[SessionRule {
 }];
 
 // Pre-Trading 07:30-08:00 CET and Post-Trading 22:00-22:30: order entry only,
-// same phase machine as the current grid.
+// same phase machine as the current grid. The 22:30 post-trading end is the
+// value the 2019-02-25 amendment records the change away from, and the same
+// value the 2009-09-14 amendment already prints, so it is sourced across the
+// whole baseline era.
 static EUREX_FIXED_INCOME_ORDER_ENTRY_BASELINE: &[SessionRule] = &[
     SessionRule {
         days: MON_FRI,

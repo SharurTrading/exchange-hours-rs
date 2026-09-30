@@ -154,12 +154,12 @@ use crate::calendar::exceptions::ExceptionBlock;
 )]
 pub(crate) static MERGED_SESSION_EARLY_CLOSE_BLOCKS_2025_11_28: [ExceptionBlock; 7] = [
     ExceptionBlock::order_entry(-2, 16 * 3_600 + 45 * 60, 17 * 3_600),
-    ExceptionBlock::extended(-2, 17 * 3_600, 12 * 3_600),
+    ExceptionBlock::regular(-2, 17 * 3_600, 12 * 3_600),
     ExceptionBlock::order_entry(-1, 12 * 3_600, 17 * 3_600),
-    ExceptionBlock::extended(-1, 17 * 3_600, 24 * 3_600),
-    ExceptionBlock::extended(0, 0 * 3_600 + 0 * 60, 7 * 3_600),
+    ExceptionBlock::regular(-1, 17 * 3_600, 24 * 3_600),
+    ExceptionBlock::regular(0, 0 * 3_600 + 0 * 60, 7 * 3_600),
     ExceptionBlock::order_entry(0, 7 * 3_600, 7 * 3_600 + 30 * 60),
-    ExceptionBlock::extended(0, 7 * 3_600 + 30 * 60, 12 * 3_600 + 15 * 60),
+    ExceptionBlock::regular(0, 7 * 3_600 + 30 * 60, 12 * 3_600 + 15 * 60),
 ];
 
 /// The complete trading day of the 2026-06-22, 2026-07-06 and 2027-06-21 trade
@@ -185,10 +185,10 @@ pub(crate) static MERGED_SESSION_EARLY_CLOSE_BLOCKS_2025_11_28: [ExceptionBlock;
 /// `docs/evidence/globex_nikkei_225_dollar.md`.
 pub(crate) static SATURDAY_SESSION_BLOCKS: [ExceptionBlock; 5] = [
     ExceptionBlock::order_entry(-4, 16 * 3_600 + 45 * 60, 17 * 3_600),
-    ExceptionBlock::extended(-4, 17 * 3_600, 12 * 3_600),
-    ExceptionBlock::extended(-2, 5 * 3_600, 17 * 3_600),
+    ExceptionBlock::regular(-4, 17 * 3_600, 12 * 3_600),
+    ExceptionBlock::regular(-2, 5 * 3_600, 17 * 3_600),
     ExceptionBlock::order_entry(-1, 16 * 3_600, 17 * 3_600),
-    ExceptionBlock::extended(-1, 17 * 3_600, 16 * 3_600),
+    ExceptionBlock::regular(-1, 17 * 3_600, 16 * 3_600),
 ];
 /// The complete trading day of the trade dates CME merges with the session
 /// before them, on a Monday holiday.
@@ -209,9 +209,9 @@ pub(crate) static SATURDAY_SESSION_BLOCKS: [ExceptionBlock; 5] = [
 /// Evidence: `docs/evidence/globex_nikkei_225_dollar.md`.
 pub(crate) static MERGED_SESSION_BLOCKS: [ExceptionBlock; 4] = [
     ExceptionBlock::order_entry(-2, 16 * 3_600, 17 * 3_600),
-    ExceptionBlock::extended(-2, 17 * 3_600, 12 * 3_600),
+    ExceptionBlock::regular(-2, 17 * 3_600, 12 * 3_600),
     ExceptionBlock::order_entry(-1, 12 * 3_600, 17 * 3_600),
-    ExceptionBlock::extended(-1, 17 * 3_600, 16 * 3_600),
+    ExceptionBlock::regular(-1, 17 * 3_600, 16 * 3_600),
 ];
 /// The same merged day when the trade date is the day-after-Thanksgiving
 /// Friday, whose session this family ends at `12:15` CT — not the `13:45` the
@@ -222,9 +222,9 @@ pub(crate) static MERGED_SESSION_BLOCKS: [ExceptionBlock; 4] = [
 /// Evidence: `docs/evidence/globex_nikkei_225_dollar.md`.
 pub(crate) static MERGED_SESSION_EARLY_CLOSE_BLOCKS: [ExceptionBlock; 4] = [
     ExceptionBlock::order_entry(-2, 16 * 3_600 + 45 * 60, 17 * 3_600),
-    ExceptionBlock::extended(-2, 17 * 3_600, 12 * 3_600),
+    ExceptionBlock::regular(-2, 17 * 3_600, 12 * 3_600),
     ExceptionBlock::order_entry(-1, 12 * 3_600, 17 * 3_600),
-    ExceptionBlock::extended(-1, 17 * 3_600, 12 * 3_600 + 15 * 60),
+    ExceptionBlock::regular(-1, 17 * 3_600, 12 * 3_600 + 15 * 60),
 ];
 /// The complete trading day of the two trade dates whose prior local day is a
 /// full closure, and whose Pre-Open therefore opens at the 17:00 CT session's
@@ -233,11 +233,12 @@ pub(crate) static MERGED_SESSION_EARLY_CLOSE_BLOCKS: [ExceptionBlock; 4] = [
 /// CME prints `16:00 preopen /TD <this date>; 17:00 open /TD <this date>` on the
 /// closed day itself, so the queue belongs to this trade date rather than to the
 /// holiday, and the holiday's own `Closed` row would otherwise delete it. The
-/// 17:00-16:00 CT envelope is one `regular` block, matching `NKD_REGULAR_CURRENT`
-/// rather than the `extended` spelling the merged-date rows use, because on
-/// these two dates the normal week's own `regular` occurrence is what is being
-/// restated. The four pre-existing block sets' `extended` spelling is what
-/// flips `is_open_regular` on every date they cover; tracked as issue #176.
+/// 17:00-16:00 CT envelope is one `regular` block, matching `NKD_REGULAR_CURRENT`,
+/// because on these two dates the normal week's own `regular` occurrence is
+/// what is being restated. Every block set in this table spells the envelope
+/// `regular` since #176 — this family's whole tradeable envelope is its
+/// `regular` session, so a block row must not flip `is_open_regular` on the
+/// dates it covers.
 ///
 /// Evidence: `docs/evidence/globex_nikkei_225_dollar.md`.
 pub(crate) static NO_PRIOR_EVENING_LEG_BLOCKS: [ExceptionBlock; 2] = [

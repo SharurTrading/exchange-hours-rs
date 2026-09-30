@@ -767,6 +767,30 @@ Sat none.
   late-open disambiguation are therefore untested *by this family's rows*; they
   are exercised by the engine's own suite.
 
+## The January-2010 floor era (2026-09-30 targeted review)
+
+The floor-era **matching grid** is stated by the operator's own FX trading-hours
+page before the floor: the capture of 2009-05-02 (`fx-20090502.html` in the
+research store's `normal-weeks/wave-c1/`) prints `17:00-16:00 next day` for
+every standard FX future in all three classes the page splits (G10, Emerging
+Market, E-micros), and the 2011-09-18 capture (`fx-20110918.html`) repeats it
+inside the floor era. That is the grid this family models, so the executable
+session is sourced through the floor.
+
+The **Sunday Pre-Open queue** is not: the 2009, 2010-era and 2011-09-18 page
+captures carry no Pre-Open rows at all (the page grew them by the 2012-05-03
+capture, which prints Sunday 16:15), and the bounded search for a pre-2012
+statement — every archived weekly Globex notice of 2008-2011 text-scanned, the
+record in the research store's `normal-weeks/wave-c1/INDEX.md` — found the
+floor-era Sunday-queue value stated only for the equity complex (notices
+20090831/0907/0914, "the pre-open, 4:15 to 5:00 p.m. CT, Sunday"), for the
+excluded TAS products ("their normal time, 16:15 CT", notices 20101025 through
+20110117), and for Random Length Lumber (dated 2010-06-21). None names the FX
+complex. The horizon therefore stays at the 2012-05-03 capture, below which the
+Sunday queue is carried at its sourced intersection, and the closing condition
+stays: an operator statement of the FX complex's Sunday Pre-Open in session
+language dated before 2012.
+
 ## Sources
 
 Row review: 2026-08-29 (UTC) is the date the ledger row was last reviewed as a
@@ -783,6 +807,8 @@ as each source is re-verified.
 - <https://www.cmegroup.com/notices/ser/2022/02/SER-8921.pdf> — CME SER-8921, current-grid corroboration.
 - <https://www.cmegroup.com/articles/faqs/frequently-asked-questions-cme-fx-futures-calendar-spreads.html> — CME FX calendar-spread FAQ.
 - <https://web.archive.org/web/20120503103452/http://www.cmegroup.com/trading_hours/fx-hours.html> — CME FX trading-hours page — capture 2012-05-03, Sunday Pre-Open still 16:15. **Read at the 2026-08-31 targeted Sunday-queue review**, which is later than this row's review date and governs for this source.
+- <https://web.archive.org/web/20090502194222id_/http://www.cmegroup.com/trading_hours/fx-hours.html> — CME FX trading-hours page — capture 2009-05-02, the pre-floor `17:00-16:00 next day` grid with no Pre-Open rows — read at the 2026-09-30 (UTC) floor-era review.
+- <https://web.archive.org/web/20110918055701id_/http://www.cmegroup.com/trading_hours/fx-hours.html> — CME FX trading-hours page — capture 2011-09-18, the same grid, still no Pre-Open rows — read at the 2026-09-30 (UTC) floor-era review.
 - <https://web.archive.org/web/20120616190153/http://www.cmegroup.com/trading_hours/fx-hours.html> — CME FX trading-hours page — capture 2012-06-16, Sunday Pre-Open already 16:00. **Read at the 2026-08-31 targeted Sunday-queue review**, which is later than this row's review date and governs for this source.
 - <https://web.archive.org/web/20120511163357id_/http://www.cmegroup.com/trading_hours/index.html?show=Commodities> — CME trading-hours index — capture 2012-05-11. **Read at the 2026-08-31 targeted Sunday-queue review**, which is later than this row's review date and governs for this source.
 - <https://web.archive.org/web/20120528102754id_/http://www.cmegroup.com/trading_hours/index.html> — CME trading-hours index — capture 2012-05-28, Sunday Pre-Open 16:15 platform-wide. **Read at the 2026-08-31 targeted Sunday-queue review**, which is later than this row's review date and governs for this source.

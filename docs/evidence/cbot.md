@@ -801,6 +801,39 @@ on.
 
 ## Sources
 
+## The January-2010 floor era (2026-09-30 targeted review)
+
+The floor-era **matching grid** is stated by the operator's own Globex notice
+of June 8, 2009 (repeated in the June 15 and June 22 notices), which dates it
+unconditionally before the support floor: "Commodity Trading Hours Extended —
+Effective Wednesday, July 1, the electronic trading hours (ETH) for CBOT
+grains, oilseeds and ethanol contracts, as well as the Minneapolis Grain
+Exchange (MGEX) and Kansas City Board of Trade (KCBT) commodity products listed
+on CME Globex, will be expanded from 6 a.m. Central time to 7:15 a.m. CT. With
+this change, these futures, options and spreads will be available for
+electronic trading on CME Globex from 6 p.m. to 7:15 a.m. Sunday through
+Friday. There is no change to the regular trading hours (RTH), 9:30 a.m. to
+1:15 p.m. weekdays." That is exactly the 18:00–07:15 CT electronic session
+around the 09:30–13:15 CT RTH the floor profile serves, so the executable
+session is sourced from 2009-07-01 through the floor and the grid below
+2010-03-15 stops being carried.
+
+The floor-era **queue phases** (Sunday 16:15–18:00, weekday morning
+07:15–09:30, PCP 14:30–16:00) are not stated before the March-2010 market-state
+table (notice 20100315, published 2010-03-15, whose "Current Pre-Open for CBOT,
+KCBT and MGEX Grain Futures" prints all three), so they stay carried from
+2010-03-15 to the floor and the horizon stands. The bounded search: every
+archived weekly Globex notice of 2008–2011 text-scanned (record in the research
+store's `normal-weeks/wave-c1/INDEX.md`); the June-2009 expansion notices
+themselves state no queue times; the only earlier grain-queue statement in the
+archive is the January-2008 CBOT-migration notice (20080109: pre-open 4:50
+p.m., open 6:00 p.m., 6:00 a.m. halt, 2:30–4:30 p.m. afternoon pre-open), whose
+values describe the pre-expansion 18:00–06:00 era and were superseded by the
+dated 2009-07-01 expansion. Closing condition: a CME statement of the grain
+futures' pre-open sessions in session language dated between 2009-07-01 and
+the floor.
+
+
 Row review: 2026-08-29 (UTC) is the date the ledger row was last reviewed as a
 whole. Per-source retrieval dates were not recorded before the 2026-09-12
 migration; where a later targeted review, capture or document date is recorded
@@ -808,6 +841,7 @@ beside a source below, that date governs for that source, and dates are added
 as each source is re-verified.
 
 - <https://www.cmegroup.com/media-room/press-releases/2009/6/05/cme_group_announcesadditionalagricultureethanolelectronictrading.html> — CME press release of 2009-06-05, the pre-floor grain electronic-hours expansion.
+- <https://www.cmegroup.com/tools-information/lookups/advisories/electronic-trading/20090608.html> — CME Globex notice 20090608 (repeated 20090615 and 20090622), the dated 2009-07-01 grain ETH expansion that sources the floor-era matching grid — read 2026-09-30 (UTC).
 - <https://www.cmegroup.com/tools-information/lookups/advisories/electronic-trading/20100315.html> — CME Globex notice 20100315, the March-2010 market-state table that supplies the then-live audit-floor queue and PCP phases.
 - <https://www.cmegroup.com/tools-information/lookups/advisories/market-data/Q2010-62.html> — CME market-data advisory Q2010-62.
 - <https://www.cmegroup.com/tools-information/lookups/advisories/electronic-trading/20100405.html> — CME Globex notice 20100405, the 2010-04-19 revision's source.

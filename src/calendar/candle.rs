@@ -22,6 +22,7 @@
 
 use chrono::{DateTime, Utc};
 
+use super::query::schedule::FixedSnapshotAnswer;
 use super::query::{QueryContext, candles};
 use super::{CalendarResolution, MarketHours, SessionKind};
 
@@ -48,9 +49,10 @@ pub fn candle_end_with(
     kind: SessionKind,
 ) -> Option<DateTime<Utc>> {
     // A detached snapshot carries no identity, so no day can be refused and the
-    // error arm is unreachable by construction (LAW-COVERAGE governs
-    // identity-backed queries; a fixed snapshot is exactly its supplied rules).
-    candles::candle_end_with(&QueryContext::fixed(hours), instant, resolution, kind).unwrap_or(None)
+    // error arm cannot fire; `fixed_answer` documents the mechanism rather than
+    // asserting it here (LAW-COVERAGE governs identity-backed queries; a fixed
+    // snapshot is exactly its supplied rules).
+    candles::candle_end_with(&QueryContext::fixed(hours), instant, resolution, kind).fixed_answer()
 }
 
 /// Returns [`candle_end_with`] over regular and extended sessions.
@@ -76,9 +78,10 @@ pub fn candle_start_with(
     resolution: CalendarResolution,
     kind: SessionKind,
 ) -> Option<DateTime<Utc>> {
-    // See `candle_end_with`: a fixed snapshot has no coverage verdict to fail.
+    // See `candle_end_with` and `fixed_answer`: a fixed snapshot has no
+    // coverage verdict to fail.
     candles::candle_start_with(&QueryContext::fixed(hours), instant, resolution, kind)
-        .unwrap_or(None)
+        .fixed_answer()
 }
 
 /// Returns [`candle_start_with`] over regular and extended sessions.

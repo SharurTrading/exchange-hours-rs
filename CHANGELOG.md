@@ -193,6 +193,25 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Added
 
+- **The LAW-INVARIANT audit's fence for the fixed-snapshot query collapse
+  (2026-10-01 UTC; #210).** The audit swept every production module for
+  fabricated fallback values and silently swallowed invariant failures and
+  found no violation: the date-aware surface reports every coverage failure
+  through `CalendarQueryError`, and absence, declared defaults and the
+  documented totality fallbacks express their contracts. One under-established
+  shape remains: the nine fixed-snapshot adapters collapse the shared engine's
+  `Result<Option<T>, CalendarQueryError>` into `Option`/`bool`/`SessionState`
+  on the invariant that a detached snapshot can raise no coverage error —
+  true because every error site is gated on the identity's coverage metadata,
+  which `QueryContext::fixed` never carries, but previously asserted by a
+  separate comment at each site. The nine collapses now run through one named
+  seam (`query::schedule::FixedSnapshotAnswer`) that documents the mechanism,
+  and the new `fixed_snapshot_collapse_fence` test pins the observable
+  consequence on every shipped identity: the date-aware calendar refuses each
+  pre-floor sample with `BeforeSupportFloor` while the same snapshot's fixed
+  answers match their post-floor twins exactly. The compile-time split that
+  would make the collapse unrepresentable is tracked as #245.
+
 - **The `cme` and `globex_equity_index` normal weeks source back to the
   2010-01-01 floor (2026-09-30 UTC).** The carried horizons below which
   those weekday profiles were served from a carried grid are gone: both

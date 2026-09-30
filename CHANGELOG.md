@@ -60,6 +60,16 @@ corrections (a venue's hours fixed against a primary source) go under
   gate-soundness fence's forcing reference becomes a provider that keeps the
   trait's default answer, so it still exercises the derivation everywhere.
 
+- **The dairy and lumber fold disclosures extend to the 2025-2027 captures
+  (2026-09-30 UTC; #105).** The evidence files already recorded the fold for
+  2019-2024: CME's grouped `Dairy` and `Lumber` lines have no crate key, fold
+  into `globex_grains` and `globex_livestock` for reporting only, and never
+  key a row. The 2025-2027 service captures carry the same grouped lines, and
+  both files now record their era's differing instants beside the crate rows —
+  dairy's 13:55/12:00 CT closure-eve closes and its ordinary 16:00 CT close
+  against `globex_grains`' replacement days, and lumber's 12:05 CT close
+  against `globex_livestock`'s 12:15 CT close on 2025-12-24 — with the
+  closing condition unchanged: a consumer that maps the two groups.
 - **The charter's migration status states the enforced coverage contract
   (2026-09-30 UTC; closes #154).** The "adopted target, not a claim about the
   current implementation" framing predated #115's landing and read as though

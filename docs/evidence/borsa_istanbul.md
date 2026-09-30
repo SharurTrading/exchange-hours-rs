@@ -22,6 +22,34 @@ Equity Market; all modeled post-2010 changes have dated official evidence.
 - 2016-11-14 — T1 — Borsa Istanbul announcement 13376 — extended day: order collection 09:40–09:55, opening print to 10:00, continuous 10:00–13:00 and 14:00–18:00, closing envelope 18:00–18:10.
 - 2019-10-04 — T1 — Borsa Istanbul duyuru 2019/56 — the midday single-price section is removed, leaving one continuous 10:00–18:00 session.
 
+## Normal week
+
+**The pre-2012 grid is the operator's own İşlem Saatleri page.** IMKB's
+`Markets/StockMarket/TransactionHours.aspx` page as served 2010-03-25
+(`IMKB-TH-2010-03-25`) prints, for Hisse Senetleri Piyasası (Ulusal Pazar,
+Kurumsal Ürünler Pazarı, İkinci Ulusal Pazar, Yeni Ekonomi Pazarı ve Fon
+Pazarı): 1. Seans 09:30-12:30 — Açılış Seansı 09:30-09:50, (i) Emir Toplama
+09:30-09:45, (ii) Açılış Fiyatının Belirlenmesi ve Açılış İşlemleri 09:45-09:50,
+Sürekli Müzayede Seansı 09:50-12:30 — and 2. Seans 14:00-17:30 — Açılış Seansı
+14:00-14:20, (i) Emir Toplama, (ii) Açılış Fiyatının Belirlenmesi ve Açılış
+İşlemleri, Sürekli Müzayede Seansı 14:20-17:30. That is exactly the baseline
+profile the module encodes: opening calls 09:30-09:50 and 14:00-14:20,
+continuous 09:50-12:30 and 14:20-17:30. The 2011-07-27 capture
+(`IMKB-TH-2011-07-27`) prints the same session bounds with the auction methods
+spelled out (Piyasa Yapıcılı SM, Tek Fiyat Yöntemi), so the grid is attested at
+both ends of the carried era, and the 2012-03-02 revision row keys the era's
+one dated change (the closing auction). The ledger horizon is 2010-03-25, the
+first capture day; below it, 2010-01-01..2010-03-24 is carried.
+
+**What the page states and what the module leaves whole.** The page's own
+sub-phases split each call: Emir Toplama (order collection) then Açılış
+Fiyatının Belirlenmesi ve Açılış İşlemleri (price determination and opening
+trades), so the call prints its auction at its end. The baseline profile keeps
+each whole call 09:30-09:50 / 14:00-14:20 in `extended` — the pre-existing
+classification that carries no order-entry window for the eras whose sources do
+not separate the collection leg (the interpretive step below) — and the
+sourcing move changes the grid's attestation, not its phase split.
+
 ## Holidays
 
 **Coverage:** 2012-03-02..2026-12-31 (inclusive trade dates; the window opens at the operator's own first sourced normal-week day). Tier: T1 throughout.
@@ -300,6 +328,8 @@ Every listed holiday that falls on a Saturday or Sunday — Zafer Bayramı 2025-
 | `BIST-PP-TATIL-2025` | 2025-01-01 .. 2026-12-31 | <https://www.borsaistanbul.com/files/pay-piyasasi-2025-yili-tatil-tablosu.pdf> | retrieved 2026-09-28 01:02 UTC | T1 | `55d639083395fb1374718582d5cf439a70855ad49fe321379b2c53991eeaf182` |
 | `BIST-PP-TATIL-2026` | 2025-01-01 .. 2026-12-31 | <https://www.borsaistanbul.com/files/pay-piyasasi-2026-yili-tatil-tablosu.pdf> | retrieved 2026-09-28 01:02 UTC | T1 | `e45fa97e2f67d85b3571ce9e6c4758292a57379c2216fc88183f32504584e680` |
 | `BIST-RESMI-TATIL-GUNLERI` | 2012-03-02 .. 2026-12-31 | <https://www.borsaistanbul.com/resmi-tatil-gunleri> | retrieved 2026-09-28 01:02 UTC | T1 | `a598c8021f1bfa4887612816a9845232eac5f8afdcbce8be278f359edd885ed2` |
+| `IMKB-TH-2010-03-25` | 2010-03-25 .. 2012-03-01 (the pre-2012 İşlem Saatleri page; Normal-week rows) | <https://web.archive.org/web/20100325232952id_/http://www.imkb.gov.tr/Markets/StockMarket/TransactionHours.aspx> | Wayback `id_` replay of capture `20100325232952`, retrieved 2026-09-30 04:30 UTC | T1 | `f09a1962671b53fde20f02edb86bee6de72d22f98ca719c94bb02d05a33277a2` |
+| `IMKB-TH-2011-07-27` | 2010-03-25 .. 2012-03-01 (the same page with auction methods detailed; Normal-week corroboration) | <https://web.archive.org/web/20110727072510id_/http://www.imkb.gov.tr/Markets/StockMarket/TransactionHours.aspx> | Wayback `id_` replay of capture `20110727072510`, retrieved 2026-09-30 04:32 UTC | T1 | `c0815e3e31fecbb9bbf6b4c88514e7b6de82688dd7e2a03fd9b3af26bbbb0e23` |
 
 All three artifacts were saved under `holidays/raw/equities/borsa_istanbul/2025-2027/` in the research store, whose `INDEX.md` repeats the URLs and digests.
 
@@ -326,7 +356,7 @@ as each source is re-verified.
 
 ## Gaps and residual risks
 
-- **Horizon carried below the first dated row.** The baseline profile below 2012-03-02 — morning opening call 09:30–09:50 and continuous 09:50–12:30, afternoon call 14:00–14:20 and continuous 14:20–17:30 — cites no artifact of its own. Every source indexed here states a change and its replacement table; none is identified as the document that attests the pre-2012 grid, and no retrieval date is recorded for the closing-session document, so its own publication day cannot be read off the citation. The ledger horizon is therefore 2012-03-02, the first day at which this row's state is sourced, with everything below it carried. Closing condition: retrieve a Borsa İstanbul circular, procedure edition or announcement dated at or before the January-2010 floor that prints the pre-2012 grid, or record the closing-session document's publication date so the baseline can be carried from it; either would move the horizon earlier.
+- **Horizon sourced from 2010-03-25.** The baseline profile below 2012-03-02 — morning opening call 09:30–09:50 and continuous 09:50–12:30, afternoon call 14:00–14:20 and continuous 14:20–17:30 — is the operator's own İşlem Saatleri page print of 2010-03-25, corroborated by the 2011-07-27 capture and ended by the operator's dated 2012-03-02 closing-auction change (see the Normal week section). The carried region below it runs 2010-01-01..2010-03-24.
 - **Interpretive step, order-entry classification.** From 2016-11-14 only the 09:40–09:55 Order Collection Process is `order_entry`; 09:55–10:00 carries the opening print and stays `extended`. The midday single-price call and the 18:00–18:10 closing envelope each bundle collection with a price-determination leg that prints, so both stay `extended` whole. Earlier eras carry no `order_entry` window because no source separates their collection legs.
 - **Source set has no monitoring feed.** `EU-BIST` records that no stable consolidated announcements-feed URL is indexed; review means reopening the Equity Market Procedure, the individual circulars listed above, and the `Resmi Tatil Günleri` holiday page.
 - **Service tier.** The consumer serves this venue live (it is one of the market-clock overview's venues), so the identity is **served** and the holiday-bearing calendar is reviewed monthly per LAW-WATCH; the 2027 closing condition above is the one tracked gap.

@@ -5,6 +5,27 @@
 use super::prelude::*;
 
 #[test]
+fn hkex_pre_2011_grid_is_the_hours_page_print() {
+    // The operator's Trading Hours page (footer-updated 2009-03-23, captured
+    // 2010-05-24) prints Pre-opening 9:30-10:00 against Morning 10:00-12:30,
+    // Extended Morning 12:30-2:30 and Afternoon 2:30-4:00 — one continuous
+    // 10:00-16:00 envelope with the whole POS tradeable extended, and the same
+    // grid stands on the last pre-change day (docs/evidence/hkex.md, Normal
+    // week).
+    for probe in [(2010, 5, 25), (2011, 3, 4)] {
+        let h = hours_for_exchange(Exchange::Hkex, local(Asia::Hong_Kong, probe, (12, 0, 0)));
+        assert!(!h.is_open(local(Asia::Hong_Kong, probe, (9, 15, 0))));
+        assert!(h.is_open_extended(local(Asia::Hong_Kong, probe, (9, 35, 0))));
+        assert!(!h.is_open_regular(local(Asia::Hong_Kong, probe, (9, 35, 0))));
+        assert!(h.is_open_regular(local(Asia::Hong_Kong, probe, (10, 0, 0))));
+        assert!(h.is_open_regular(local(Asia::Hong_Kong, probe, (13, 30, 0))));
+        assert!(h.is_open_regular(local(Asia::Hong_Kong, probe, (15, 59, 0))));
+        assert!(!h.is_open(local(Asia::Hong_Kong, probe, (16, 0, 0))));
+        assert!(!h.is_open(local(Asia::Hong_Kong, probe, (16, 5, 0))));
+    }
+}
+
+#[test]
 fn hong_kong_cutovers() {
     let tz = Asia::Hong_Kong;
     let probe = (2026, 8, 19);

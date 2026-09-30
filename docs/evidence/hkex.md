@@ -16,6 +16,39 @@ Securities venue union: the executable Extended Morning Session is Regular under
 - 2011-03-07 — T1 — HKEX news release 110303news — Phase One: morning session 09:30–12:00, Extended Morning Session 12:00–13:30, afternoon session 13:30–16:00, with the Pre-opening Session moved to 09:00–09:30.
 - 2016-07-25 — T1 — HKEX market communication 160725news — the Closing Auction Session adds the 16:00–16:10 tail for its first eligible securities.
 
+## Normal week
+
+**The pre-2011 grid is the operator's own Trading Hours page, and the page's
+own lifetime spans the whole carried region.** The old site's
+`eng/market/sec_tradinfo/tradcal/tradcal_1.htm` page — footer
+`Updated: 23/03/2009` — states: "Trading is conducted on Monday to Friday
+(excluding public holidays) at the following times: Auction Session
+Pre-opening Session 9:30 a.m. to 10:00 a.m.; Continuous Trading Session Morning
+Session 10:00 a.m. to 12:30 p.m.; Extended Morning Session 12:30 p.m. to 2:30
+p.m.; Afternoon Session 2:30 p.m. to 4:00 p.m." That is exactly the baseline
+profile the module encodes: `regular` 10:00-16:00 (the three back-to-back
+sessions are one continuous envelope — the Extended Morning Session bridges the
+former lunch), and the whole 09:30-10:00 Pre-opening Session in `extended`, with
+no order-entry split because the page names no period boundaries inside it. The
+grid is attested at capture `20100524085427` and unchanged at
+`20101219233021` (the last pre-change observation; the page's other pre-change
+captures, `20100628233229`, `20100818073934` and `20110119131654`, carry the
+same session-table text), and the first post-change capture (`20110309232522`)
+prints the Phase One grid — the page updated at the operator's own dated
+changeover, which the 2011-03-07 revision row already keys. The ledger horizon
+is therefore the January-2010 floor: the carried region is empty.
+
+**Residual.** The 2010-01-01..2010-05-23 span rests on the page's own footer
+date (the operator's statement that this content was last updated 2009-03-23)
+plus the byte-identity of every observed capture through 2011-01-19, not on a
+capture inside that span; the Wayback holds none. A capture of the page dated
+inside January-May 2010 would tighten the record without moving the horizon.
+
+**What the page does not state.** The pre-2011 POS's internal period boundaries
+(order input vs matching) are stated by no operator text of that era, so the
+whole 09:30-10:00 window stays `extended` — the module's existing disclosure,
+unchanged by the sourcing move.
+
 ## Holidays
 
 **Coverage:** 2010-01-01..2024-12-31, 2025-01-01..2027-12-31 (inclusive venue-local trade dates in `Asia/Hong_Kong`; tier T1 throughout).
@@ -437,6 +470,9 @@ The 2025-2027 artifacts were retrieved on 2026-09-28 UTC and saved under `holida
 | `HKEX-TC-PAGE-2023` | 2023-01-01 .. 2024-12-31 | <https://web.archive.org/web/20230921225643id_/https://www.hkex.com.hk/Services/Trading/Derivatives/Overview/Trading-Calendar-and-Holiday-Schedule?sc_lang=en> (capture `20230921225643`, page footer "Updated 27 Jun 2023") | Wayback `id_` replay of capture `20230921225643`, retrieved 2026-09-29 UTC | T1 | `386445a8a2f2dd6ab24d863bfa82ca83762cc2978fc714ba2bac8d8acfb95ccd` |
 | `HKEX-TC-PAGE-2024` | 2024-01-01 .. 2025-12-31 | <https://web.archive.org/web/20240615174828id_/https://www.hkex.com.hk/Services/Trading/Derivatives/Overview/Trading-Calendar-and-Holiday-Schedule?sc_lang=en> (capture `20240615174828`, page footer "Updated 24 May 2024") | Wayback `id_` replay of capture `20240615174828`, retrieved 2026-09-29 UTC | T1 | `02a21b406ffad3c77fa4485392417acca030f49d941561fdd5bb9ec847092169` |
 | `HKEX-TN-2010` | 2010-01-01 .. 2011-03-04 | <https://web.archive.org/web/20101226014449id_/http://www.hkex.com.hk/eng/market/sec_tradinfo/tradnews/prvtrad_day/ehalf1.htm> (capture `20101226014449`, page updated 24/12/2010) | Wayback `id_` replay of capture `20101226014449`, retrieved 2026-09-29 03:02 UTC | T1 | `a6eb8d9e0f59b4088d68d267708ee1fb8c469b02feba2e596c1a45f066b5b500` |
+| `HKEX-TH-2010-05-24` | 2010-01-01 .. 2011-03-06 (the pre-change Trading Hours page; Normal-week rows) | <https://web.archive.org/web/20100524085427id_/http://www.hkex.com.hk/eng/market/sec_tradinfo/tradcal/tradcal_1.htm> | Wayback `id_` replay of capture `20100524085427`, retrieved 2026-09-30 04:12 UTC | T1 | `5b5c556465d3c9b8db07a074709db03964a0190478fbc5c5b544a82ff153edf5` |
+| `HKEX-TH-2010-12-19` | 2010-01-01 .. 2011-03-06 (the last pre-change page state; Normal-week corroboration) | <https://web.archive.org/web/20101219233021id_/http://www.hkex.com.hk/eng/market/sec_tradinfo/tradcal/tradcal_1.htm> | Wayback `id_` replay of capture `20101219233021`, retrieved 2026-09-30 04:12 UTC | T1 | `14772b65160765b7aaaceaf0fd006daacf205de3090446a3f06f3d5cbf3f6239` |
+| `HKEX-TH-2011-03-09` | no rows keyed (the first post-Phase-One page state; Normal-week bracket) | <https://web.archive.org/web/20110309232522id_/http://www.hkex.com.hk/eng/market/sec_tradinfo/tradcal/tradcal_1.htm> | Wayback `id_` replay of capture `20110309232522`, retrieved 2026-09-30 04:14 UTC | T1 | `a281b6810551fdaf5000a53e562a2d69fc0ec636997e7c9e434cfbe48e3cdd4e` |
 | `HKEX-NEWS-PHASE1` | 2010-01-01 .. 2012-03-04 | <https://www.hkex.com.hk/News/News-Release/2011/110303news?sc_lang=en> (HKEX news release of 2011-03-03, with the session table for the pre-change, Phase 1 and Phase 2 grids) | retrieved 2026-09-29 03:02:28 UTC | T1 | `7544ebf7c125f82c4e714f1d94a0c408991615214037ce622ea7a1f325dc5141` |
 
 ## Sources
@@ -456,7 +492,7 @@ as each source is re-verified.
 
 ## Gaps and residual risks
 
-- **horizon 2011-03-03** — the pre-2011 profile (10:00 open, POS 09:30–10:00) is attested only by the 2011-03-03 news release and the SEHK rule update that accompanied Phase One, so below 2011-03-03 the grid is carried back to the January-2010 floor rather than independently sourced (AGENTS.md, *Carry the earliest sourced state back to the floor*). Closing condition: a dated pre-2011 SEHK rulebook edition or trading-hours page.
+- **horizon sourced from the floor** — the pre-2011 profile (10:00 open, POS 09:30–10:00) is the operator's own Trading Hours page (`eng/market/sec_tradinfo/tradcal/tradcal_1.htm`, footer `Updated: 23/03/2009`), attested at captures 2010-05-24 through 2011-01-19 and superseded at the dated 2011-03-07 change (see the Normal week section); the carried region below the floor is empty. The residual — no capture inside 2010-01-01..2010-05-23 — is recorded there.
 - No primary SEHK text for the pre-2011-03-07 POS period boundaries was located, so the whole 09:30–10:00 window is left `extended` rather than guessing where its matching period began.
 - The 2012-03-05 Phase Two is deliberately not a revision row: it rearranged internal phases without changing the venue-level open or close (LAW-HOLIDAY-SCOPE's companion rule on topology, and the ledger's own statement that it is not an observable envelope cutover).
 - Later CAS eligibility expansions do not create new exchange-level open/close cutovers; the static profile uses the maximum scheduled CAS edge and not every security is eligible for every phase.

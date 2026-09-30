@@ -157,12 +157,13 @@ fn a_pre_floor_date_is_refused_not_claimed_normal() {
 }
 
 #[test]
-fn pre_horizon_holiday_rows_fence_data_but_date_aware_queries_refuse() {
-    // The 2010-2017 rows are fenced against the operator artifacts, but the
-    // identity's normal-week timeline is only sourced from its 2018-04-09
-    // Pillar revision: below that horizon the date-aware contract refuses
-    // (OutsideCoveredRange) even on a date the holiday table answers for.
-    // `holiday_on` and `holiday_coverage` remain the data fences.
+fn pre_horizon_holiday_rows_fence_data_and_the_sourced_grid_answers() {
+    // The 2010-2017 rows are fenced against the operator artifacts. Since
+    // 2026-09-30 UTC the normal week itself is sourced below 2018-04-09 —
+    // the operator's own historical timeline and Rule 51 filings (see
+    // docs/evidence/nyse.md, Normal week) — so a date-aware query on the
+    // 2012 early-close day answers from the sourced grid instead of refusing:
+    // the row clips the session at the printed 1:00 p.m. close.
     let calendar = nyse();
     let date = day((2012, 7, 3));
     assert_eq!(
@@ -179,12 +180,17 @@ fn pre_horizon_holiday_rows_fence_data_but_date_aware_queries_refuse() {
             .contains(date),
         "2012-07-03 is inside the audited holiday window"
     );
-    let error = calendar
-        .is_open(et((2012, 7, 3), (10, 0, 0)))
-        .expect_err("below the normal-week horizon the query refuses");
     assert!(
-        matches!(error, CalendarQueryError::OutsideCoveredRange { .. }),
-        "the horizon refusal is OutsideCoveredRange, got {error:?}"
+        calendar
+            .is_open(et((2012, 7, 3), (10, 0, 0)))
+            .expect("a sourced-era date answers"),
+        "10:00 is inside the core session on the early-close day"
+    );
+    assert!(
+        !calendar
+            .is_open(et((2012, 7, 3), (13, 0, 0)))
+            .expect("a sourced-era date answers"),
+        "the 1:00 p.m. early close is end-exclusive"
     );
 }
 

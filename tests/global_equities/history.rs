@@ -371,6 +371,57 @@ fn tadawul_cutovers() {
 }
 
 #[test]
+fn borsa_istanbul_pre_2012_grid_is_the_imkb_page_print() {
+    // IMKB's İşlem Saatleri page as served 2010-03-25 prints 1. Seans
+    // 09:30-12:30 (Açılış 09:30-09:50, Sürekli Müzayede 09:50-12:30) and
+    // 2. Seans 14:00-17:30 (Açılış 14:00-14:20, Sürekli Müzayede 14:20-17:30),
+    // and the same bounds stand on the revision eve
+    // (docs/evidence/borsa_istanbul.md, Normal week).
+    for probe in [(2010, 3, 26), (2012, 3, 1)] {
+        let h = hours_for_exchange(
+            Exchange::BorsaIstanbul,
+            local(Europe::Istanbul, probe, (12, 0, 0)),
+        );
+        assert!(h.is_open_extended(local(Europe::Istanbul, probe, (9, 35, 0))));
+        assert!(!h.is_open_regular(local(Europe::Istanbul, probe, (9, 35, 0))));
+        assert!(h.is_open_regular(local(Europe::Istanbul, probe, (9, 50, 0))));
+        assert!(h.is_open_regular(local(Europe::Istanbul, probe, (12, 29, 0))));
+        assert!(!h.is_open(local(Europe::Istanbul, probe, (12, 45, 0))));
+        assert!(h.is_open_extended(local(Europe::Istanbul, probe, (14, 5, 0))));
+        assert!(h.is_open_regular(local(Europe::Istanbul, probe, (14, 20, 0))));
+        assert!(h.is_open_regular(local(Europe::Istanbul, probe, (17, 29, 0))));
+        assert!(!h.is_open(local(Europe::Istanbul, probe, (17, 30, 0))));
+    }
+}
+
+#[test]
+fn tadawul_pre_2013_grid_is_the_trading_times_print() {
+    // The operator's Trading Times page (Arabic capture 2010-01-12, English
+    // capture 2011-04-29) states one Saturday-to-Wednesday session,
+    // 11:00 a.m. to 3:30 p.m., and the same grid stands on the last Sat-Wed
+    // trade date before the operator's dated 2013-06-29 week change
+    // (docs/evidence/tadawul.md, Normal week).
+    for probe in [(2010, 1, 13), (2013, 6, 26)] {
+        let h = hours_for_exchange(Exchange::Tadawul, local(Asia::Riyadh, probe, (12, 0, 0)));
+        assert!(!h.is_open(local(Asia::Riyadh, probe, (10, 59, 0))));
+        assert!(h.is_open_regular(local(Asia::Riyadh, probe, (11, 0, 0))));
+        assert!(h.is_open_regular(local(Asia::Riyadh, probe, (15, 29, 0))));
+        assert!(!h.is_open(local(Asia::Riyadh, probe, (15, 30, 0))));
+    }
+    // Thursday sits outside the Saturday-Wednesday week; Saturday trades.
+    let thursday = hours_for_exchange(
+        Exchange::Tadawul,
+        local(Asia::Riyadh, (2010, 1, 14), (12, 0, 0)),
+    );
+    assert!(!thursday.is_open(local(Asia::Riyadh, (2010, 1, 14), (11, 0, 0))));
+    let saturday = hours_for_exchange(
+        Exchange::Tadawul,
+        local(Asia::Riyadh, (2010, 1, 16), (12, 0, 0)),
+    );
+    assert!(saturday.is_open_regular(local(Asia::Riyadh, (2010, 1, 16), (11, 30, 0))));
+}
+
+#[test]
 fn six_trading_at_last_cutover() {
     let tz = Europe::Zurich;
     let probe = local(tz, (2026, 8, 19), (17, 35, 0));

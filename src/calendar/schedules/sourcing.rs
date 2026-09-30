@@ -414,7 +414,10 @@ const fn for_exchange(exchange: Exchange) -> DeclaredSourcing {
         Exchange::CboeEdga => DeclaredSourcing::nothing_carried(),
         // `—`: closed before the sourced 2010-07-02 launch.
         Exchange::CboeEdgx => DeclaredSourcing::nothing_carried(),
-        Exchange::Nyse => DeclaredSourcing::carried_below(horizon!(2018, 4, 9)),
+        // Sourced from the floor: NYSE's own historical note (regular trading
+        // 9:30-16:00 since 1985-09-30, "As of January 26, 2005") and its Rule 51
+        // statements in the 2014-2017 SEC filings — see docs/evidence/nyse.md.
+        Exchange::Nyse => DeclaredSourcing::carried_below(horizon!(2010, 1, 1)),
         Exchange::NyseArca => DeclaredSourcing::carried_below(horizon!(2010, 1, 1)),
         Exchange::NyseAmerican => DeclaredSourcing::carried_below(horizon!(2017, 7, 24)),
         Exchange::NyseNational => DeclaredSourcing::carried_below(horizon!(2010, 8, 2)),
@@ -496,15 +499,28 @@ const fn for_exchange(exchange: Exchange) -> DeclaredSourcing {
         Exchange::IceCanada => DeclaredSourcing::carried_below(horizon!(2010, 1, 1)),
         // `—`: closed before the sourced 2024-07-29 launch.
         Exchange::Sgx => DeclaredSourcing::nothing_carried(),
-        Exchange::Asx => DeclaredSourcing::carried_below(horizon!(2025, 6, 23)),
+        // The pre-SR15 staggered-open timetable is the operator's own page
+        // print from 2013-09-16 through 2020-10-22 and the SR15 amendments'
+        // struck-through old text — see docs/evidence/asx.md.
+        Exchange::Asx => DeclaredSourcing::carried_below(horizon!(2013, 9, 16)),
         // `—`: closed before the 2011-10-31 Chi-X Australia launch.
         Exchange::TmxAustralia => DeclaredSourcing::nothing_carried(),
-        Exchange::Nzx => DeclaredSourcing::carried_below(horizon!(2020, 4, 6)),
+        // Sourced from 2010-01-05: the operator's own key-dates trading-hours
+        // page prints the pre-2020 grid, and every later capture corroborates it
+        // to the dated 2020-04-06 revision — see docs/evidence/nzx.md.
+        Exchange::Nzx => DeclaredSourcing::carried_below(horizon!(2010, 1, 5)),
         Exchange::Tse => DeclaredSourcing::carried_below(horizon!(2010, 1, 1)),
         Exchange::NseIndia => DeclaredSourcing::carried_below(horizon!(2010, 1, 1)),
         Exchange::BseIndia => DeclaredSourcing::carried_below(horizon!(2010, 1, 1)),
-        Exchange::Hkex => DeclaredSourcing::carried_below(horizon!(2011, 3, 3)),
+        // Sourced from the floor: the operator's own Trading Hours page (footer
+        // "Updated: 23/03/2009"), captured 2010-05-24..2011-01-19 with the same
+        // grid and superseded at the dated 2011-03-07 change — see
+        // docs/evidence/hkex.md.
+        Exchange::Hkex => DeclaredSourcing::carried_below(horizon!(2010, 1, 1)),
         Exchange::SgxSecurities => DeclaredSourcing::carried_below(horizon!(2011, 8, 1)),
+        // sgx_securities horizon unchanged: the 2009-05-14 Trading Hours page
+        // capture is pre-floor and dates no day inside the claimed interval
+        // (docs/evidence/sgx_securities.md).
         Exchange::BursaMalaysia => DeclaredSourcing::carried_below(horizon!(2010, 1, 1)),
         Exchange::SetThailand => DeclaredSourcing::carried_below(horizon!(2024, 3, 25)),
         Exchange::Idx => DeclaredSourcing::carried_below(horizon!(2010, 8, 31)),
@@ -528,10 +544,16 @@ const fn for_exchange(exchange: Exchange) -> DeclaredSourcing {
         Exchange::NasdaqHelsinki => DeclaredSourcing::carried_below(horizon!(2010, 1, 1)),
         Exchange::NasdaqCopenhagen => DeclaredSourcing::carried_below(horizon!(2010, 1, 1)),
         Exchange::Vienna => DeclaredSourcing::carried_below(horizon!(2010, 1, 1)),
-        Exchange::BorsaIstanbul => DeclaredSourcing::carried_below(horizon!(2012, 3, 2)),
+        // Sourced from 2010-03-25: the operator's own İşlem Saatleri page prints
+        // the pre-2012 grid, and the 2011-07-27 capture corroborates it — see
+        // docs/evidence/borsa_istanbul.md.
+        Exchange::BorsaIstanbul => DeclaredSourcing::carried_below(horizon!(2010, 3, 25)),
         Exchange::Tsx => DeclaredSourcing::carried_below(horizon!(2010, 1, 1)),
         Exchange::Jse => DeclaredSourcing::carried_below(horizon!(2012, 5, 25)),
-        Exchange::Tadawul => DeclaredSourcing::carried_below(horizon!(2013, 6, 29)),
+        // Sourced from 2010-01-12: the operator's own Trading Times page
+        // (Arabic) states the Saturday-Wednesday 11:00-15:30 session, and the
+        // 2011-04-29 English page restates it — see docs/evidence/tadawul.md.
+        Exchange::Tadawul => DeclaredSourcing::carried_below(horizon!(2010, 1, 12)),
         Exchange::B3 => DeclaredSourcing::carried_below(horizon!(2010, 1, 1)),
         Exchange::Bmv => DeclaredSourcing::carried_below(horizon!(2010, 2, 18)),
         // `—`: closed before the archived 2019-09-13 04:00 UTC launch, then continuously open; the operator publishes 24/7 trading and no holiday closures.

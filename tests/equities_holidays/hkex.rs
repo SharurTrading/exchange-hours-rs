@@ -512,19 +512,20 @@ fn a_pre_2025_ordinary_weekday_trades_to_the_end_exclusive_close() {
             .expect("the coverage contract must answer a covered date"),
         "16:10:00 is the end-exclusive close"
     );
-    // The 2010-12-24 half day sits below the carried horizon: the
-    // identity-backed session layer refuses rather than answers, which is the
-    // LAW-COVERAGE contract for the carried era.
-    let error = calendar
+    // The 2010-12-24 half day used to sit below the carried horizon; since
+    // 2026-09-30 UTC the operator's own Trading Hours page sources the grid to
+    // the floor (docs/evidence/hkex.md), so the day answers: the sheet's
+    // 9:30am-12:30pm half day is open at noon and closed from the end-exclusive
+    // 12:30 close.
+    let calendar_open = calendar
         .is_open(hk((2010, 12, 24), (12, 0, 0)))
-        .expect_err("a carried-era query must refuse");
+        .expect("a sourced-era query must answer");
+    assert!(calendar_open, "noon is inside the half day");
     assert!(
-        matches!(
-            error,
-            CalendarQueryError::OutsideCoveredRange { .. }
-                | CalendarQueryError::UnresolvedGap { .. }
-        ),
-        "2010-12-24 must refuse with the coverage contract, got {error:?}"
+        !calendar
+            .is_open(hk((2010, 12, 24), (12, 30, 0)))
+            .expect("a sourced-era query must answer"),
+        "12:30 is the end-exclusive half-day close"
     );
 }
 

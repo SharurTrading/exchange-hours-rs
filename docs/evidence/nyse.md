@@ -15,6 +15,41 @@
 
 - 2018-04-09 — T1 — SEC 34-83230 (NYSE UTP Pillar production) — UTP securities begin trading on Pillar, adding the 06:30–07:00 acceptance queue and the 07:00–09:30 Early Trading Session to the venue envelope.
 
+## Normal week
+
+**The core session is the operator's own published history, at the floor.**
+NYSE's own "NYSE ARCHIVES — HISTORICAL NOTE" trading-hours timeline
+(`NYSE-ARCH-NOTE`, served from `nyse.com/pdfs/` and captured 2012-08-12; header
+"As of January 26, 2005") states the timeline the floor-era grid rests on:
+"Sept. 30, 1985 — 9:30 a.m. – 4 p.m."; "June 13, 1991 — … Regular trading,
+9:30 a.m. – 4 p.m."; "June 15, 2004 — … Regular trading remained unchanged,
+9:30 a.m. – 4 p.m." The operator's Rule 51 statements in its own SEC filings
+carry the same grid inside the claimed interval: "The regular trade hours on the
+Exchange are defined in Rule 51 and is generally the time between 9:30 a.m. to
+4:00 p.m. E.T." (82 FR page set of 2014-05-06, `FR-2014-10288`); a Day Order
+"expires at the end of the 9:30 a.m. to 4:00 p.m. trading session"
+(`FR-2014-16191`, 2014-07-11); "the Exchange trading session (currently 9:30
+a.m. to 4:00 p.m.)" (`FR-2015-22603`, 2015-09-09); "consistent with the
+Exchange's current hours, described in Rule 51, that the Exchange is not open
+for business after 4:00 p.m. Eastern Time" (`FR-2017-16742`, 2017-08-09 — the
+UTP Pillar filing this row's own revision cites). The 2018-04-09 Pillar row keys
+the era's one dated envelope change and leaves the core session itself
+unchanged across it. The ledger horizon is therefore the January-2010 floor:
+nothing is carried.
+
+**Residual.** Between the historical note's as-of date (2005-01-26; the URL's
+own capture chain runs 2004-12-09 through 2007-03-16, and the 2012-08-12 capture
+witnesses it still served) and the first in-interval Rule 51 statement
+(2014-05-06) no dated operator artifact restating the core session was found;
+the note's "remained unchanged" language, its continued service into 2012, and
+the operator's unchanged Rule 51 text across the 2014-2017 filings carry the
+claim, and this record states exactly that rather than a capture per year.
+
+**The "generally" qualifier is holiday scope.** The filings' "generally" and
+Rule 51's own early-close mechanism are date-exception material the holiday
+table already carries; they qualify nothing in the normal-week grid
+(LAW-HOLIDAY-SCOPE).
+
 ## Sources
 
 Row review: 2026-08-22 (UTC) is the date the ledger row was last reviewed as a
@@ -398,6 +433,11 @@ The 2028 rows were read from the same live page as the 2026-2027 columns (`NYSE-
 | `NYSE-SANDY-2012A` | 2012-10-29 | <https://www.nyse.com/press/1351243418010.html> | captured 2012-11-01, retrieved 2026-09-27 | T1 | `01e6ac79aaa6feaf26273ff2e5b31826b01907243de18aed4d4f6cc67d215751` |
 | `NYSE-SANDY-2012B` | 2012-10-30 | <https://www.nyse.com/press/1351243421978.html> | captured 2012-11-02, retrieved 2026-09-27 | T1 | `33e019250494c1935c0ac9a0f900fdadd6c09c7f76d7f55163c763e1205073f4` |
 | `NYSE-CARTER-2025` | 2025-01-09 | <https://ir.theice.com/press/news-details/2024/The-New-York-Stock-Exchange-Will-Close-Markets-on-January-9-to-Honor-the-Passing-of-Former-President-Jimmy-Carter-on-National-Day-of-Mourning/default.aspx> | captured 2024-12-30, retrieved 2026-09-27 | T1 | `ea4d74e47babed59481977b0ff5950a189015a099901702cadd72582d667501e` |
+| `NYSE-ARCH-NOTE` | 2010-01-01 .. 2018-04-08 (the trading-hours timeline; Normal-week rows) | <https://web.archive.org/web/20120812235441id_/http://www.nyse.com/pdfs/historical_trading_hours.pdf> | Wayback `id_` replay of capture `20120812235441`, retrieved 2026-09-30 04:41 UTC | T1 | `a6a2c630a28f57b89bb3063d85ac82108fe8c2c92c906bd1c2cae31e339ff4e5` |
+| `FR-2014-10288` | 2014-05-06 .. 2018-04-08 (Rule 51 statement; Normal-week rows) | <https://www.federalregister.gov/documents/full_text/text/2014/05/06/2014-10288.txt> | retrieved 2026-09-30 04:41 UTC | T1 | `e13f9c062ebdbdc3450df45c166f839ca44a3b06e7c5ded1ffaf501f7d4841fd` |
+| `FR-2014-16191` | 2014-07-11 .. 2018-04-08 (Day Order expiry at the session end; Normal-week corroboration) | <https://www.federalregister.gov/documents/full_text/text/2014/07/11/2014-16191.txt> | retrieved 2026-09-30 04:41 UTC | T1 | `09c7d00d6058c76921e73b0e98141f46135fb00994ad29af86f93dfd49a4c561` |
+| `FR-2015-22603` | 2015-09-09 .. 2018-04-08 (the current-session statement; Normal-week corroboration) | <https://www.federalregister.gov/documents/full_text/text/2015/09/09/2015-22603.txt> | retrieved 2026-09-30 04:41 UTC | T1 | `ae8a260edadc86e89c08ced442805fbd290ca945d29a1d2b62d2dcaec8088364` |
+| `FR-2017-16742` | 2017-08-09 .. 2018-04-08 (Rule 51 hours beside the Pillar proposal; Normal-week corroboration) | <https://www.federalregister.gov/documents/full_text/text/2017/08/09/2017-16742.txt> | retrieved 2026-09-30 04:41 UTC | T1 | `2ccdeebb3325915685473a09eaac321cdb141537fecddd599a0b0c0c4672e21f` |
 
 ## Gaps and residual risks
 
@@ -416,13 +456,10 @@ The 2028 rows were read from the same live page as the 2026-2027 columns (`NYSE-
 - **order-entry** — the pre-2018 Tape A order-acceptance edge is unmodelled. The
   post-2018 edge is closed: Rule 7.34(a)(1) is rulebook text and the production
   day is stated unconditionally by NYSE's own filings.
-- **Horizon carried below the first dated row.** The baseline below 2018-04-09 is the 09:30–16:00
-  core session, carried rather than sourced at a named day: no reviewed artifact
-  in this row's material states the core session's hours on a floor-era date, so
-  the ledger horizon is 2018-04-09, the first day at which this row's state is
-  sourced, and everything below it is carried. Closing condition: a floor-era
-  NYSE rulebook edition or hours publication that states the core session, which
-  would move the horizon down to the January-2010 floor.
+- **Horizon sourced from the floor.** The baseline below 2018-04-09 is the 09:30–16:00
+  core session, stated by the operator's own historical-note timeline (1985-09-30:
+  9:30 a.m. – 4 p.m., unchanged) and by its Rule 51 statements in the 2014-2017
+  SEC filings (see the Normal week section); the carried region is empty.
 - **System coverage (2026-09-02), discrepancy #1.** NYSE Bonds (Early
   04:00–08:00, Core 08:00–17:00, Late 17:00–20:00 ET, with an Opening Bond
   Auction at 04:00 and a Core Bond Auction at 08:00) is a facility of New York

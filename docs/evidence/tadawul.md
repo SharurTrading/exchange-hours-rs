@@ -20,6 +20,31 @@ Main Market including sourced temporary 2020 regime. The pre-2016 opening-auctio
 - 2020-03-26 — T1 — Saudi Exchange issuer news 6262 — temporary shortened hours: continuous 10:00–13:00 with the close-side envelope to 13:20.
 - 2020-05-31 — T1 — Saudi Exchange resumption notice — normal trading hours resume.
 
+## Normal week
+
+**The pre-2013 grid is the operator's own Trading Times page, attested from
+2010-01-12.** Tadawul's `static/pages/ar/TradingTimes/tradingtimes.html` page as
+served 2010-01-12 (`TADAWUL-TT-2010-01-12`) states: the Saudi Stock Market
+(Tadawul) trades "من السبت إلى الأربعاء فترة واحدة فقط من الساعة 11:00 صباحاً
+إلى الساعة 03:30 عصراً" — Saturday to Wednesday, one session, 11:00 a.m. to
+3:30 p.m. The English page as served 2011-04-29 (`TADAWUL-TT-2011-04-29`)
+restates it: "Trading Days: One session, Saturday through Wednesday except
+official holidays. Trading in Equities and ETFs: 11:00 am - 03:30 pm. Trading in
+Sukuk & Bonds: 11:30 am - 03:30 pm." That is exactly the pre-2013 baseline the
+module encodes — Saturday-Wednesday, 11:00-15:30 continuous — and the English
+page's capture chain (`20110429234359`, `20110703101441`, `20110903170945`, then
+the next surviving capture `20140603012846` after the operator's own dated
+2013-06-29 change) brackets the era at both ends. The ledger horizon is
+therefore 2010-01-12, the earliest capture day; the carried region below it runs
+2010-01-01..2010-01-11.
+
+**What the page settles.** The page is the operator's own standing statement of
+the session grid (T1 through the Wayback verbatim mirror), and it also states
+the single-session shape (فترة واحدة فقط — no lunch gap) and the Sukuk & Bonds
+11:30 open, a segment outside this identity's equity envelope. It states no
+pre-opening queue, consistent with the executable-gap note below: the omission
+of the pre-2016 opening-auction window stands.
+
 ## Sources
 
 Row review: 2026-08-24 (UTC) is the date the ledger row was last reviewed as a
@@ -170,6 +195,8 @@ The Main Market trades Sunday-Thursday, so every row below is a Sunday-Thursday 
 |---|---|---|---|---|---|
 | `TADAWUL-HOLCAL-2026-09-28` | 2021-01-01 .. 2027-12-31 | <https://www.saudiexchange.sa/wps/portal/saudiexchange/about-saudi-exchange/exchange-media-centre/saudi-exchange-holiday-calendar?locale=en> | retrieved 2026-09-28 01:20 UTC | T1 | `6980261a27759b1fd80b79281d1f08aa30d19aa0e1b08d721020910c268343ff` |
 | `TADAWUL-HOLCAL-2026-09-29` | 2021-01-01 .. 2027-12-31 | <https://www.saudiexchange.sa/wps/portal/saudiexchange/about-saudi-exchange/exchange-media-centre/saudi-exchange-holiday-calendar?locale=en> | retrieved 2026-09-29 22:22 UTC | T1 | `74fecb031d7503a51a4c81197d61928c753a2ed6afe4039d9f63e4297d73cad7` |
+| `TADAWUL-TT-2010-01-12` | 2010-01-12 .. 2013-06-28 (the Arabic Trading Times page; Normal-week rows) | <https://web.archive.org/web/20100112091155id_/http://www.tadawul.com.sa/static/pages/ar/TradingTimes/tradingtimes.html> | Wayback `id_` replay of capture `20100112091155`, retrieved 2026-09-30 04:35 UTC | T1 | `8d5a8681b99bad99873fec880bb97e4d70528d6c1bb9b7d756d638fcf4b44262` |
+| `TADAWUL-TT-2011-04-29` | 2010-01-12 .. 2013-06-28 (the English Trading Times page; Normal-week corroboration) | <https://web.archive.org/web/20110429234359id_/http://www.tadawul.com.sa/static/pages/en/TradingTimes/tradingtimes.html> | Wayback `id_` replay of capture `20110429234359`, retrieved 2026-09-30 04:35 UTC | T1 | `d4bf474d42d80e8b2de33be783e834f9357cef7550162bdabcb9fb2ba0c578de` |
 
 The artifact was saved under `holidays/raw/equities/tadawul/2025-2027/` in the research store, whose `INDEX.md` repeats the URL and digest; the 2026-09-29 re-check artifact lives under `holidays/raw/equities/tadawul/forward-2027/` with its own `INDEX.md`.
 
@@ -179,7 +206,7 @@ The artifact was saved under `holidays/raw/equities/tadawul/2025-2027/` in the r
 - **Raised in review of the ledger-reshape PR (#87), 2026-09-12 — the 2013-06-29 and 2016-04-03 rows are dated by T3 artifacts.** Both revision rows carry `T3` on their own lines and rest on Saudi Press Agency releases (SPA news 7e453de27d and SPA news 1484000). Under LAW-PRIMARY-SOURCES a dated change needs an unconditional day stated by the operator, and T3 may date a change **only** when it mirrors an operator document verbatim; nothing in the record shows either release reproduces a Saudi Exchange or CMA document verbatim, so as recorded these two rows are not admissible and the bullet above understates that as a tier note rather than a defect. The reshape PR moved this text out of the owner module and changed no schedule rule, revision row, profile or routing; both rows are served exactly as before. Closing condition: retrieve the underlying Tadawul or CMA announcement behind each date, or establish that the SPA text is a verbatim reprint of it — either promotes both rows to T1. If neither holds, the rows must be withdrawn and the two grids served as an undated intersection instead. Served since this activation (monthly LAW-WATCH cadence); tracked under #116.
 - **executable, pre-2016 opening-auction window.** The pre-2016 grids carry no pre-opening phase. Today's trading-cycle table documents the 09:30–10:00 opening auction, but no dated primary source states the opening-auction order window for the 11:00-open eras; a 10:00–11:00 window would be an inference from the later auction's shape, so under LAW-PRIMARY-SOURCES it is omitted and reads closed. The 2016–2018 era likewise carries no order-entry schedule: the 09:30 queue is evidenced only by the current trading-cycle page, which states nothing about that era. Closing condition: a dated Saudi Exchange or CMA artifact stating the queue for its era. Neither old grid had any close-side phase, so their extended slices are empty too.
 - **Tier of the 2013 and 2016 rows.** Both rest on Saudi Press Agency releases. SPA is the Kingdom's state news agency and carries official announcements, but nothing in the record establishes that either release reproduces an exchange or CMA document verbatim, so they are recorded here at T3 rather than T1. Under LAW-PRIMARY-SOURCES a dated change needs an unconditional day stated by the operator, and T3 may date a change only when it mirrors an operator document verbatim. Closing condition: retrieve the underlying Tadawul or CMA announcement for each date, or confirm that the SPA text is a verbatim reprint of it. If neither holds, both rows are T4-keyed and must be rebuilt or withdrawn.
-- **Horizon carried below the first dated row.** The pre-2013 baseline — Saturday–Wednesday, 11:00–15:30 — cites no artifact of its own, and neither SPA citation carries a readable publication date, so no day can be read off the record from which the baseline is carried. The ledger horizon is therefore 2013-06-29, the first day at which this row's state is sourced, with everything below it carried. Closing condition: a dated Tadawul or CMA artifact printing the Saturday–Wednesday 11:00–15:30 grid, or a recorded retrieval and publication date for SPA release 7e453de27d; either would move the horizon earlier.
+- **Horizon sourced from 2010-01-12.** The pre-2013 baseline — Saturday–Wednesday, 11:00–15:30 — is the operator's own Trading Times page (Arabic, capture 2010-01-12; English restatement, capture 2011-04-29), bracketed at the far end by the operator's own 2013-06-29 week change (see the Normal week section). The carried region below the earliest capture runs 2010-01-01..2010-01-11. The SPA publications-date closing condition is discharged for the baseline: the grid itself no longer rests on the SPA citation, though the 2013-06-29 and 2016-04-03 revision rows keep the T3 disclosure recorded above.
 - **Interpretive step, order-entry classification.** The current 09:30–10:00 window is `order_entry`: it collects, amends and cancels opening-auction orders without any of them matching, and the first print is the 10:00 uncross. The closing auction and the trade-at-last tail both print — trade at last executes at the closing auction price — so both stay `extended`.
 - **Source set has no monitoring feed.** `MIDEAST-TADAWUL` records that no consolidated schedule-notice feed is indexed; review means reopening the trading cycle and times page, the `Saudi Exchange Holiday Calendar` page, and the individual reports and notices above.
 - **Service tier.** The consumer serves this venue live (it is one of the market-clock overview's venues), so the identity is **served** and the holiday-bearing calendar is reviewed monthly per LAW-WATCH. The holiday rows above are T1 throughout; the 2013-06-29 and 2016-04-03 normal-week rows below the current grid keep the T3 disclosure recorded above.

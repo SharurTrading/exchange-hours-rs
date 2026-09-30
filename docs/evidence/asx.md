@@ -15,6 +15,38 @@ Cash-market envelope; the pre-2025 staggered opening preserves both the earliest
 
 - 2025-06-23 — T1 — ASX SR15 notice 0473.25.05 — Service Release 15: a single Opening Single Price Auction, which ASX's timetable prints at 09:59:00–09:59:45 with Normal Trading nominally from 09:59:45, replaces the five staggered symbol-group opens, and Post Close 16:11:00–16:21:30 is added. `ASX_PROFILE_CURRENT` encodes the resulting opening minute as one `extended` rule 09:59:00–10:00:00 and starts `regular` at 10:00:00; see the opening-edge note under Gaps.
 
+## Normal week
+
+**The pre-SR15 staggered grid is the operator's own phase-timetable page, from
+2013-09-16.** ASX's `about/trading-hours.htm` page as served 2013-09-16
+(`ASX-TH-2013-09-16`) prints the cash-market phase table: Pre-opening 7:00 am to
+10:00 am ("Overnight and overseas trades may be reported until 9:45 am, Sydney
+time"), an Opening Phase of five symbol groups — Group 1 10:00:00 am +/- 15
+secs (A-B), Group 2 10:02:15 am +/- 15 secs (C-F), Group 3 10:04:30 am +/- 15
+secs (G-M), Group 4 10:06:45 am +/- 15 secs (N-R), Group 5 10:09:00 am +/- 15
+secs (S-Z), with the operator's own gloss "group 1 may open at any time between
+9:59:45 am and 10:00:15 am" — Normal Trading 10:00 am to 4:00 pm, Pre-CSPA 4:00
+to 4:10 pm, a Closing Single Price Auction printed as 4:10-4:12 pm (*Random +
+60 secs), and Adjust from 4:12 pm. The same page's last capture (`ASX-TH-2016-01-20`,
+40 captures 2013-09-16..2016-01-20) prints the identical table with Group 1's
+letter range widened to "0-9 and A-B", and the successor page's earliest capture
+(`ASX-TH-2020-10-22`, `www2.asx.com.au/.../cash-market-trading-hours`) prints
+the same grid with the CSPA rendered as 4:10-4:11 pm (*Random + 60 secs) — one
+envelope ending 16:12 in both renderings. That is exactly the pre-SR15 profile
+the module encodes: `regular` 10:00-16:00, the opening envelope
+09:59:45-10:09:15 in `extended` beside the tradeable Pre-open 07:00-09:59:45,
+Pre-CSPA 16:00-16:10 `order_entry`, and the CSPA-to-16:12 tail `extended`. The
+SR15 marked amendments (already cited for the 2025-06-23 revision row) show
+that same staggered text struck through effective 2025-06-23, so the operator's
+own artifacts bracket the era at both ends and the ledger horizon is 2013-09-16,
+the first capture day; the carried region below it runs 2010-01-01..2013-09-15.
+
+**What the page settles and what it leaves.** The nominal boundaries are the
+page's own print; the ±15-second group randomisation and the CSPA's "+60 secs"
+are stated by the same artifact and are exactly the envelopes the profile's
+`extended` rules span. The per-security uncross second stays out of scope per
+the opening-edge note below, which the sourcing move does not change.
+
 ## Sources
 
 Row review: 2026-08-22 (UTC) is the date the ledger row was last reviewed as a
@@ -408,6 +440,9 @@ and is covered by the monthly watch.
 | `ASX-CAL-2024` | 2024-01-01 .. 2024-12-31 | <https://web.archive.org/web/20240824000246id_/https://www.asx.com.au/markets/market-resources/trading-hours-calendar/cash-market-trading-hours/trading-calendar> | Wayback `id_` replay of capture `20240824000246`, retrieved 2026-09-29 04:49:09 UTC (stored after decoding the replay's gzip content-encoding; the digest is of the stored decoded bytes) | T1 | `e4959274c9a937e157e5f5d2300a5d88d75f4c69404654b703ccbae4a9b3295c` |
 | `ASX-CAL-2025` | 2025-01-01 .. 2027-12-31 | <https://web.archive.org/web/20250416082951id_/https://www.asx.com.au/markets/market-resources/trading-hours-calendar/cash-market-trading-hours/trading-calendar> | Wayback `id_` replay of capture `20250416082951`, retrieved 2026-09-28 01:51 UTC | T1 | `d24de6d6f6ec1864480de6f2f75cf4a3650b30f6eda8daa354fd1bfa1302d66d` |
 | `ASX-CAL-LIVE` | 2025-01-01 .. 2027-12-31 | <https://www.asx.com.au/markets/market-resources/trading-hours-calendar/cash-market-trading-hours/trading-calendar> | retrieved 2026-09-28 01:00 UTC | T1 | `adb2344ca5e13dcbfb8de9b0cf40334c992f4ffb660026b22bca7d21d964cd19` |
+| `ASX-TH-2013-09-16` | 2013-09-16 .. 2025-06-22 (the pre-SR15 phase timetable; Normal-week rows) | <https://web.archive.org/web/20130916140725id_/http://www.asx.com.au/about/trading-hours.htm> | Wayback `id_` replay of capture `20130916140725`, retrieved 2026-09-30 04:44 UTC | T1 | `a02cbf558a9519dd467afabc94189362a71404c55442421ba76231498354ca34` |
+| `ASX-TH-2016-01-20` | 2013-09-16 .. 2025-06-22 (the same page, last capture; Normal-week corroboration) | <https://web.archive.org/web/20160120000651id_/http://www.asx.com.au/about/trading-hours.htm> | Wayback `id_` replay of capture `20160120000651`, retrieved 2026-09-30 04:44 UTC | T1 | `6e260285e884be0068d85e8db60d3d3a19358fe3efbf19f1ba172263a500c4d6` |
+| `ASX-TH-2020-10-22` | 2013-09-16 .. 2025-06-22 (the successor page's earliest capture; Normal-week corroboration) | <https://web.archive.org/web/20201022120436id_/https://www2.asx.com.au/markets/market-resources/trading-hours-calendar/cash-market-trading-hours> | Wayback `id_` replay of capture `20201022120436`, retrieved 2026-09-30 04:44 UTC | T1 | `c12675d67c4615b7565b94566c31227e59ab55289137ea0971dfc063f73631e8` |
 
 `ASX-CAL-2025`'s replayed page renders only the 2025 sheet; its window cell
 names the table window it keys rows inside, not the years it prints.
@@ -422,7 +457,7 @@ footnote text and corroborates it likewise. The store's
 
 ## Gaps and residual risks
 
-- **horizon carried below the first dated row** — the pre-SR15 baseline rests only on the SR15 marked procedure amendments, whose publication day is not recorded in the repository (the notice index places it in April 2025). The ledger horizon is therefore 2025-06-23, the first day at which this row's state is sourced, with everything below it carried. Closing condition: read the marked amendments' own publication date, or find an earlier dated ASX procedure edition stating the staggered-open table; either would move the horizon earlier. Tracked as #231, the carried-horizon tracker this scope shares with `nasdaq` (LAW-FOLLOW-UPS-ARE-ISSUES).
+- **horizon sourced from 2013-09-16** — the pre-SR15 baseline is the operator's own phase-timetable page (2013-09-16, restated through 2016-01-20 and 2020-10-22) and the SR15 marked amendments carry the same grid to its dated 2025-06-23 removal (see the Normal week section). The carried region below the earliest capture runs 2010-01-01..2013-09-15. The #231 horizon tracking for this scope is discharged; `nasdaq`'s stands there.
 - **The opening edge, stated against what the module encodes.** ASX's cash-market timetable prints *nominal* boundaries: Opening Single Price Auction 09:59:00–09:59:45, then Open (Normal Trading) 09:59:45–16:00:00. `asx.rs` does not encode 09:59:45 as the start of `regular`. `ASX_EXTENDED_CURRENT` carries one rule over the whole opening minute, 09:59:00–10:00:00, and `ASX_REGULAR` runs 10:00:00–16:00:00, so the crate reports the market open from 09:59:00 — the auction matches, so a price can print there — and defers *continuous* trading to 10:00:00, the latest instant at which it can have begun. That is the conservative envelope AGENTS.md's *Exchange-level boundaries, not per-security auction outcomes* calls for: the uncross is randomised per security around the nominal 09:59:45 handoff, so naming any second inside 09:59:45–10:00:00 as the continuous-trading start would imply ticker-level uncross timing the exchange does not publish. Nothing is under-reported as closed by this choice; only the `regular`/`extended` split inside that minute is conservative.
 - Both single-price auctions match, and in Post Close "ASX matches orders at the CSPA price", so the opening auction, the CSPA and Post Close are all tradeable `extended`: 09:59:00–10:00:00 on the open side and 16:10:00–16:21:30 on the close side, the latter merging CSPA 16:10–16:11 with Post Close 16:11–16:21:30 into one rule.
 - Pre-open is `extended`, not `order_entry`: ASX Trade does not match in it, but overnight and overseas trades report until 09:45 and other allowable trades may be reported under the Operating Rules, so a price can print.

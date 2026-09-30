@@ -1011,7 +1011,13 @@ fn every_shipped_session_occurrence_is_dated_by_its_own_open_or_the_next_day() {
     // identities, and the refused-cursors bound follows the refusals those
     // moves removed. The same wave's CME side (`cme`, `globex_equity_index`,
     // `eurex_fixed_income`) then sourced its floors back to 2010-01-01 the
-    // same way, enumerating the carried-era cursors above their old horizons.
+    // same way, enumerating the carried-era cursors above their old horizons:
+    // at this head the sweep observes 432,660 enumerated occurrences, 79,533
+    // refused cursors, 16,188 unresolved trade dates and 42 date-carrying
+    // identities. The CME move removes exactly the 705 weekly cursor refusals
+    // its three horizons turned into enumerated sessions — the same -705 the
+    // wave measured at its pre-rebase base, where 82,161 fell to 81,456 — and
+    // the refused-cursors bound follows this observed value.
     // The premise itself is unchanged and still asserted per occurrence:
     // what the floor move restored is the population the premise can be
     // asserted over.

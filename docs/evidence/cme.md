@@ -54,7 +54,10 @@ cannot state the queue before 2012; the notices above are the floor-era queue
 evidence, and the bounded search behind them is recorded in the research
 store's `normal-weeks/wave-c1/INDEX.md` (every archived weekly Globex notice of
 2008–2011 text-scanned; the only floor-era Sunday-queue statements name the
-equity complex, the excluded TAS products, or Random Length Lumber).
+equity complex, the CME/CBOT interest-rate products (notices 20090326/20090330
+print the schedule table effective Sunday, April 5, 2009 — Sundays Pre-Open
+16:15, Monday-Friday 16:50), the excluded TAS products, or Random Length
+Lumber).
 
 Residual scope note: the three notices name "the CME Equity futures markets".
 The CBOT-listed YM/MYM line inside this family has no pre-floor statement of

@@ -186,14 +186,22 @@ fn the_floor_week_answers_from_the_sourced_grid() {
         "the floor-era Sunday 17:00 CT open matches"
     );
 
-    // Eurex fixed income on the sourced 2009-09-14 baseline: Pre-Trading
-    // 07:30-08:00 CET queues, Continuous Trading 08:00-22:00 CET matches,
-    // Post-Trading until 22:30 CET queues, then the overnight close.
+    // Eurex fixed income on the sourced 2009-09-14 baseline, sampled on both
+    // sides of every phase boundary: 07:30 CET queues (Pre-Trading
+    // 07:30-08:00), 09:00 and 13:00 CET trade (Continuous 08:00-22:00),
+    // 21:59 CET still trades and 22:00 CET queues (the continuous close is
+    // end-exclusive and Post-Trading 22:00-22:30 begins), 22:15 and 22:29 CET
+    // queue, and 22:30 CET is closed (the Post-Trading end is end-exclusive),
+    // as is 23:00 CET.
     let baseline = [
         (utc(2010, 1, 4, 6, 30), SessionState::OrderEntry),
         (utc(2010, 1, 4, 8, 0), SessionState::OpenRegular),
         (utc(2010, 1, 4, 12, 0), SessionState::OpenRegular),
+        (utc(2010, 1, 4, 20, 59), SessionState::OpenRegular),
+        (utc(2010, 1, 4, 21, 0), SessionState::OrderEntry),
         (utc(2010, 1, 4, 21, 15), SessionState::OrderEntry),
+        (utc(2010, 1, 4, 21, 29), SessionState::OrderEntry),
+        (utc(2010, 1, 4, 21, 30), SessionState::Closed),
         (utc(2010, 1, 4, 22, 0), SessionState::Closed),
     ];
     for (instant, state) in baseline {

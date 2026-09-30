@@ -799,8 +799,6 @@ on.
 
 **Audited-normal silence is a state the audit reads.** Both routed families cover all six windows, so nothing abstains here; inside a window a family that states no row has audited the date normal, and a date one family states while the other audited normal is a disagreement and ships `Unsourced`. Of the 261 rows withheld, **257 are disagreements of that kind and 4 are dates both families themselves mark not worked up** (the three Juneteenth dates and 2023-01-16), which are the families' own marker rather than a dispute; the 2026-09-29 bounded re-search that keeps those four withheld is recorded beside their rows in the two family evidence files and tracked as #223. The rate leg states an early close at 12:00 CT on 112 of the withheld dates, 12:15 CT on 23, 15:15 CT on 28, 10:15 CT on 6 and 13:30 CT on 1; on 38 it states a replacement-blocks day, on 6 a 05:00 CT late open, on 4 the not-worked-up marker, and on the other 43 it audited the date normal while `globex_grains` states a row — the counts taken over the 261 withheld dates — so on a shortened day the two never state the same instant: over 2010-2027 there is no date on which both families state the same shortened-day row, and every date they do agree on is a full closure (`Closed`).
 
-## Sources
-
 ## The January-2010 floor era (2026-09-30 targeted review)
 
 The floor-era **matching grid** is stated by the operator's own Globex notice
@@ -833,6 +831,7 @@ dated 2009-07-01 expansion. Closing condition: a CME statement of the grain
 futures' pre-open sessions in session language dated between 2009-07-01 and
 the floor.
 
+## Sources
 
 Row review: 2026-08-29 (UTC) is the date the ledger row was last reviewed as a
 whole. Per-source retrieval dates were not recorded before the 2026-09-12

@@ -16,8 +16,6 @@
 - 2015-09-20 — T1 — CME Globex notice 20150907 — every COMEX and NYMEX close moves to 16:00 CT for trade date Monday 2015-09-21.
 - 2026-08-22 — T1 — 2026-08-22 review: verified current, onset undated — knowledge-bound row widening the Sunday queue to the sourced current 16:00–17:00 CT Pre-Open.
 
-## Sources
-
 ## The January-2010 floor era (2026-09-30 targeted review)
 
 The floor-era **matching grid** was already sourced (Globex notice 20090130's
@@ -41,12 +39,17 @@ corroborating statements and bounded the Sunday-queue search:
   none), the 2010-05-02 energy-hours capture likewise has none, and every
   archived weekly Globex notice of 2008-2011 text-scanned (record in the
   research store's `normal-weeks/wave-c1/INDEX.md`) names a floor-era Sunday
-  Pre-Open value only for the equity complex, the TAS products, or Random
-  Length Lumber. The horizon therefore stays at the 2012-05-11 index capture,
-  below which the Sunday queue is carried at its sourced intersection, and the
-  closing condition stays: an operator statement of the energy or metals
-  complex's Sunday Pre-Open in session language dated before 2012.
+  Pre-Open value only for the equity complex, the CME/CBOT interest-rate
+  products (notices 20090326/20090330 print the schedule table effective
+  Sunday, April 5, 2009 — Sundays Pre-Open 16:15, Monday-Friday 16:50 —
+  corroboration beside the already-sourced `globex_interest_rates` floor
+  grid), the TAS products, or Random Length Lumber. The horizon therefore
+  stays at the 2012-05-11 index capture, below which the Sunday queue is
+  carried at its sourced intersection, and the closing condition stays: an
+  operator statement of the energy or metals complex's Sunday Pre-Open in
+  session language dated before 2012.
 
+## Sources
 
 Row review: 2026-08-29 (UTC) is the date the ledger row was last reviewed as a
 whole. Per-source retrieval dates were not recorded before the 2026-09-12

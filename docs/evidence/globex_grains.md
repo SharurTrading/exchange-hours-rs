@@ -20,8 +20,6 @@
 - 2013-08-18 — T1 — CME market-data advisory 20130812 — the morning Pre-Open widens from 08:15 to 08:00 CT.
 - 2015-07-05 — T1 — CME SER-7395R — the day-session close moves to 13:20 CT.
 
-## Sources
-
 ## The January-2010 floor era (2026-09-30 targeted review)
 
 The floor-era **matching grid** is stated by the operator's own Globex notice
@@ -54,6 +52,7 @@ dated 2009-07-01 expansion. Closing condition: a CME statement of the grain
 futures' pre-open sessions in session language dated between 2009-07-01 and
 the floor.
 
+## Sources
 
 Row review: 2026-08-29 (UTC) is the date the ledger row was last reviewed as a
 whole. Per-source retrieval dates were not recorded before the 2026-09-12
@@ -62,8 +61,8 @@ beside a source below, that date governs for that source, and dates are added
 as each source is re-verified.
 
 - <https://www.cmegroup.com/media-room/press-releases/2009/6/05/cme_group_announcesadditionalagricultureethanolelectronictrading.html> — CME press release of 2009-06-05, the pre-floor grain electronic-hours expansion.
-- <https://www.cmegroup.com/tools-information/lookups/advisories/electronic-trading/20100315.html>- <https://www.cmegroup.com/tools-information/lookups/advisories/electronic-trading/20090608.html> — CME Globex notice 20090608 (repeated 20090615 and 20090622), the dated 2009-07-01 grain ETH expansion that sources the floor-era matching grid — read 2026-09-30 (UTC).
- — CME Globex notice 20100315, the March-2010 market-state table that supplies the then-live audit-floor queue and PCP phases.
+- <https://www.cmegroup.com/tools-information/lookups/advisories/electronic-trading/20090608.html> — CME Globex notice 20090608 (repeated 20090615 and 20090622), the dated 2009-07-01 grain ETH expansion that sources the floor-era matching grid — read 2026-09-30 (UTC).
+- <https://www.cmegroup.com/tools-information/lookups/advisories/electronic-trading/20100315.html> — CME Globex notice 20100315, the March-2010 market-state table that supplies the then-live audit-floor queue and PCP phases.
 - <https://www.cmegroup.com/tools-information/lookups/advisories/market-data/Q2010-62.html> — CME market-data advisory Q2010-62.
 - <https://www.cmegroup.com/tools-information/lookups/advisories/electronic-trading/20100405.html> — CME Globex notice 20100405, the 2010-04-19 revision's source.
 - <https://www.cmegroup.com/tools-information/lookups/advisories/electronic-trading/20101025.html> — CME Globex notice 20101025, the generic afternoon-queue notice that does not enumerate this family.

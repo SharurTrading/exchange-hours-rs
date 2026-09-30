@@ -784,12 +784,14 @@ statement — every archived weekly Globex notice of 2008-2011 text-scanned, the
 record in the research store's `normal-weeks/wave-c1/INDEX.md` — found the
 floor-era Sunday-queue value stated only for the equity complex (notices
 20090831/0907/0914, "the pre-open, 4:15 to 5:00 p.m. CT, Sunday"), for the
-excluded TAS products ("their normal time, 16:15 CT", notices 20101025 through
-20110117), and for Random Length Lumber (dated 2010-06-21). None names the FX
-complex. The horizon therefore stays at the 2012-05-03 capture, below which the
-Sunday queue is carried at its sourced intersection, and the closing condition
-stays: an operator statement of the FX complex's Sunday Pre-Open in session
-language dated before 2012.
+CME/CBOT interest-rate products (notices 20090326/20090330 print the schedule
+table effective Sunday, April 5, 2009 — Sundays Pre-Open 16:15, Monday-Friday
+16:50), for the excluded TAS products ("their normal time, 16:15 CT", notices
+20101025 through 20110117), and for Random Length Lumber (dated 2010-06-21).
+None names the FX complex. The horizon therefore stays at the 2012-05-03
+capture, below which the Sunday queue is carried at its sourced intersection,
+and the closing condition stays: an operator statement of the FX complex's
+Sunday Pre-Open in session language dated before 2012.
 
 ## Sources
 

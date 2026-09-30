@@ -117,10 +117,10 @@ fn a_complete_scope_reports_one_complete_span_and_a_trailing_gap() {
     assert_eq!(
         complete.first(),
         Some(&DateRange::new(date(2010, 1, 4), date(2012, 12, 28)).expect("ascending")),
-        "the first complete span opens at the floor era's first session day: the \
-         sourced old grid (2010-01-01..2010-04-10, #225/#243) and the new grid \
-         (2010-04-11, the 20100405 notice) leave no resolution edge inside the \
-         first audited window (#151)"
+        "the first complete span opens at the floor era's first session day \
+         (2010-01-04, the sourced CST grid's first Monday): January 1-3's \
+         resolution reach crosses the pre-floor edge into 2009-12-31, where the \
+         crate models nothing (#151)"
     );
     assert_eq!(
         complete.last(),
@@ -130,8 +130,15 @@ fn a_complete_scope_reports_one_complete_span_and_a_trailing_gap() {
     let gaps: Vec<CoverageGap> = coverage.gaps().collect();
     assert_eq!(
         gaps.first().map(|gap| (gap.range().first(), gap.reason())),
-        Some((date(2019, 6, 19), CoverageGapReason::WithheldDate)),
-        "the first gap is the era's own first Unsourced date"
+        Some((date(2010, 1, 1), CoverageGapReason::ResolutionEdge)),
+        "the first gap is the pre-floor resolution edge the floor era's January \
+         1-3 dates reach across (#151); the sourced old grid answers from January 4"
+    );
+    assert!(
+        gaps.iter()
+            .any(|gap| gap.range().contains(date(2019, 6, 19))
+                && gap.reason() == CoverageGapReason::WithheldDate),
+        "the Juneteenth marker's WithheldDate gap survives between the sourced eras"
     );
     assert_eq!(
         gaps.last().map(|gap| (gap.range().first(), gap.reason())),

@@ -34,6 +34,15 @@ use crate::calendar::exchange_calendar::CalendarSource;
 /// venue-local date and, for an exhausted search, the bound it hit. It is
 /// `Copy + Send + Sync + 'static` so a caller can log or return it without
 /// ceremony.
+///
+/// **The mapping from [`DateCoverage`](super::DateCoverage) to these variants
+/// is exact in one direction only.** A date the metadata calls
+/// [`DateCoverage::Covered`](super::DateCoverage::Covered) promises that every
+/// query addressed to an instant of it answers, or refuses naming a date the
+/// metadata itself does not call covered (#151) — a wrapped session can open on
+/// the previous civil day, and the next session's trade date can lie beyond the
+/// day, so the refusal a caller sees on a covered date names the *neighbour*
+/// the answer depends on, never a market state for the covered date itself.
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum CalendarQueryError {

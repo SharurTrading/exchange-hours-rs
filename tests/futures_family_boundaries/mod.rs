@@ -55,3 +55,4 @@ mod holidays_globex_interest_rates;
 mod holidays_globex_livestock;
 mod holidays_globex_nikkei_225_dollar;
 mod holidays_ice_us;
+mod preopen_no_movement;

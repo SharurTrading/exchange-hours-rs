@@ -17,7 +17,13 @@
 //!    the identity's built-in table covers, or an affirmative no-holiday
 //!    assertion ([`CalendarCoverage::holiday_contract`]); and
 //! 3. **the identity does not withhold the date** as
-//!    [`HolidayKind::Unsourced`](crate::HolidayKind::Unsourced).
+//!    [`HolidayKind::Unsourced`](crate::HolidayKind::Unsourced);
+//! 4. **answering the date completely stays inside the dates the identity
+//!    answers**: a session can open on the previous civil day, and the next
+//!    session's trade date can lie beyond it, so a date whose resolution
+//!    reach crosses an unanswerable neighbour is reported as
+//!    [`CoverageGapReason::ResolutionEdge`] rather than called complete
+//!    (#151).
 //!
 //! [`CalendarCoverage::coverage_on`] reports the verdict for one venue-local
 //! date; [`CalendarCoverage::complete_ranges`] and [`CalendarCoverage::gaps`]
@@ -98,6 +104,33 @@ use super::schedules::timeline::effective_date;
 /// coverage start (`docs/schedules/coverage-2025.md`).
 pub const SUPPORT_FLOOR: NaiveDate = effective_date(2010, 1, 1);
 
+/// The most days one resolution-reach walk may visit before it gives up and
+/// withholds the `Covered` claim ([`CalendarCoverage::
+/// resolution_reach_answerable`]).
+///
+/// The walk crosses only session-day-free, answered dates — weekends and
+/// audited closures. The longest such run any shipped table states is a
+/// week-long new-year or lunar-new-year closure; the bound is an order of
+/// magnitude above it, and exceeding it means the identity's tables state a
+/// closure run this crate never audited, so the conservative verdict (not
+/// completely answerable) invents nothing.
+const RESOLUTION_WALK_BOUND: u32 = 400;
+
+/// The distance beyond which a date is fast-pathed to "answerable reach" in
+/// [`CalendarCoverage::resolution_reach_answerable`].
+///
+/// The reach walk only runs long through **session-day-free, answered** dates —
+/// weekends and audited closures — and it stops at the first session day. The
+/// longest session-day-free chain any shipped table states is a week-long
+/// new-year or lunar-new-year closure, so a date more than a few weeks from
+/// every unanswerable day cannot flip, and the shortcut answers it with three
+/// binary searches instead of a profile selection per probed day. The full walk
+/// still runs inside the radius, so the shortcut can only ever move a verdict
+/// for an identity whose grid carries no session day for sixty-three straight
+/// answered dates — no shipped profile does, and the metadata/query agreement
+/// fence in `tests/coverage_metadata.rs` would catch one that starts to.
+const RESOLUTION_FAST_RADIUS: u32 = 64;
+
 /// One inclusive, ascending venue-local date span.
 ///
 /// A span whose [`Self::last`] is [`NaiveDate::MAX`] has no known end: the
@@ -152,14 +185,22 @@ impl DateRange {
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum DateCoverage {
-    /// The date is inside this identity's complete covered calendar.
+    /// The date is inside this identity's complete covered calendar: every
+    /// question about every instant of it answers, and any refusal a query
+    /// there can still raise names a **neighbouring** date this vocabulary
+    /// itself does not call covered (the resolution-edge promise, #151).
     Covered,
     /// The date precedes the venue-local [`SUPPORT_FLOOR`].
     BeforeSupportFloor,
     /// The date is at or after the floor but outside the ranges this identity
     /// has a sourced answer for: its weekday profile is carried backwards
-    /// there, its holiday layer has no answer, or a declared phase-level gap
-    /// applies on the date.
+    /// there, its holiday layer has no answer, a declared phase-level gap
+    /// applies on the date, or answering it completely would consult a
+    /// neighbouring date the identity does not answer
+    /// ([`CoverageGapReason::ResolutionEdge`], #151). A date refused for the
+    /// last reason may still answer the questions that need only its own
+    /// facts; what the metadata withholds is the claim that *every* query on
+    /// it answers.
     OutsideCoveredRange,
     /// The date is inside an audited window on a date the identity explicitly
     /// withholds as [`HolidayKind::Unsourced`](crate::HolidayKind::Unsourced).
@@ -331,6 +372,31 @@ pub enum CoverageGapReason {
     /// order-entry queue scans of `CalendarQueryContext::require_phase_coverage`
     /// answer through it.
     UnpublishedClosureDates,
+    /// **Date-shaped, not declared.** Answering this date completely needs a
+    /// **neighbouring date the identity does not answer**: a session can open on
+    /// the previous civil day (the wrapped evening leg), the next session's
+    /// trade date can lie beyond it, and the gap classification between
+    /// sessions reads the trade dates on both sides — so a date whose own
+    /// facts are sourced is still not fully answerable when the reach of its
+    /// queries crosses the edge of an audited window or a withheld date
+    /// (#151).
+    ///
+    /// The shape is the **resolution reach**: the dates
+    /// [`DateCoverage`]'s five questions consult for any instant of the date —
+    /// from the last session day before it (whose wrapped leg an instant at
+    /// local midnight lands in) through the first session day at or after it
+    /// and that session's trade date. Where every date in that reach answers
+    /// at the date level, the date is [`DateCoverage::Covered`]; where one
+    /// does not — an audited window starts or ends inside the reach, or a
+    /// withheld date sits inside it — the date is
+    /// [`DateCoverage::OutsideCoveredRange`] and this is the recorded reason.
+    /// A query addressed to such a date may still answer (the questions that
+    /// need only the date's own facts do); what the metadata refuses is the
+    /// claim that *every* query on the date answers, so a consumer walking a
+    /// range never walks into a surprise refusal. Every refusal a query on a
+    /// `Covered` date can still raise names a date this vocabulary already
+    /// flags, which is the agreement `tests/coverage_metadata.rs` fences.
+    ResolutionEdge,
 }
 
 /// The dates one declared gap applies to, within its own span.
@@ -990,7 +1056,8 @@ impl CalendarCoverage {
                 | CoverageGapReason::NormalWeekPhaseWithheld
                 | CoverageGapReason::SpecialSessionUnrepresentable
                 | CoverageGapReason::PostCloseQueueTradeDateLabel
-                | CoverageGapReason::UnpublishedClosureDates,
+                | CoverageGapReason::UnpublishedClosureDates
+                | CoverageGapReason::ResolutionEdge,
             ) => DateCoverage::OutsideCoveredRange,
         }
     }
@@ -1043,6 +1110,12 @@ impl CalendarCoverage {
     /// all. The first declaration applying to the date supplies the reason;
     /// every declaration is listed by [`Self::phase_gaps`], and by [`Self::gaps`]
     /// where no earlier one shadows it.
+    ///
+    /// A date whose own facts answer is then judged by its **resolution reach**
+    /// ([`Self::resolution_reach_answerable`]): answering every question about
+    /// every instant of the date consults neighbouring dates, and a date whose
+    /// reach crosses an unanswerable one is reported as
+    /// [`CoverageGapReason::ResolutionEdge`] rather than called complete (#151).
     pub(super) fn gap_reason_on(self, date: NaiveDate) -> Option<CoverageGapReason> {
         if date < SUPPORT_FLOOR {
             return None;
@@ -1050,7 +1123,175 @@ impl CalendarCoverage {
         if let Some(phase_gap) = self.phase_gap_on(date) {
             return Some(phase_gap.reason());
         }
-        self.date_level_gap_on(date)
+        if let Some(reason) = self.date_level_gap_on(date) {
+            return Some(reason);
+        }
+        if !self.resolution_reach_answerable(date) {
+            return Some(CoverageGapReason::ResolutionEdge);
+        }
+        None
+    }
+
+    /// Returns whether the identity's built-in calendar resolves a surviving
+    /// tradeable occurrence opening on `day` — the reach walk's "session day".
+    ///
+    /// A session day is a day whose profile grid carries a tradeable rule for
+    /// its weekday and whose holiday layer does not remove that day's complete
+    /// grid (a `Closed` row removes every occurrence belonging to the day, and a
+    /// replacement row replaces it with blocks this conservative test cannot
+    /// prove resolve). Early closes and late opens survive, so they keep the day
+    /// a session day. The test reads the identity's shipped table, never a
+    /// caller's overlay, because the reach is a fact about the identity.
+    fn surviving_session_day(self, day: NaiveDate) -> bool {
+        if !crate::calendar::query::schedule::builtin_has_tradeable_rule(self.source, day) {
+            return false;
+        }
+        match self.shipped.and_then(|table| table.holiday_on(day)) {
+            Some(holiday) => !matches!(
+                holiday.kind(),
+                HolidayKind::Closed | HolidayKind::ReplacementBlocks(_)
+            ),
+            None => true,
+        }
+    }
+
+    /// Returns whether answering **every** question about every instant of
+    /// `date` stays inside dates the identity answers at the date level (#151).
+    ///
+    /// The reach is what the query surface actually consults. Backward: the
+    /// previous-session walk processes `date` and every older day down to the
+    /// last session day whose occurrence it reports, plus that day's own
+    /// predecessor (a wrapped opening), and its trade-date probes read one day
+    /// before that. Forward: the next-session walk processes every day from
+    /// `date` to the first session day with a surviving occurrence, and the
+    /// found session's trade date can be that day's successor. The walk stops
+    /// at the first unanswerable day — a refusal there is exactly what the
+    /// query surface raises — and treats a walk past its bound as unanswerable,
+    /// the conservative direction: no shipped table chains that many
+    /// session-day-free dates, and withholding the `Covered` claim invents
+    /// nothing.
+    ///
+    /// A date further than the walk's own bound from every unanswerable day
+    /// cannot flip, and answers so without any walk: the shortcut asks the same
+    /// question the walk would, one binary search per static source, and no
+    /// shipped profile leaves a session-day-free chain long enough to disagree
+    /// with it.
+    fn resolution_reach_answerable(self, date: NaiveDate) -> bool {
+        if !self.unanswerable_within(date, Some(RESOLUTION_FAST_RADIUS)) {
+            return true;
+        }
+        // Backward reach: `date` itself is answerable (the caller checked), so
+        // walk to the last session day at or before it and require its own
+        // predecessor.
+        let mut day = date;
+        let mut steps: u32 = 0;
+        loop {
+            if self.surviving_session_day(day) {
+                match day.pred_opt() {
+                    Some(prev) if self.identity_answers(prev) => break,
+                    Some(_) => return false,
+                    None => break,
+                }
+            }
+            match day.pred_opt() {
+                Some(prev) if self.identity_answers(prev) => day = prev,
+                Some(_) => return false,
+                None => break,
+            }
+            steps += 1;
+            if steps > RESOLUTION_WALK_BOUND {
+                return false;
+            }
+        }
+        // Forward reach: walk to the first session day at or after `date` and
+        // require its successor (the found session's trade date).
+        let mut day = date;
+        let mut steps: u32 = 0;
+        loop {
+            if self.surviving_session_day(day) {
+                match day.succ_opt() {
+                    Some(next) if self.identity_answers(next) => break,
+                    Some(_) => return false,
+                    None => break,
+                }
+            }
+            match day.succ_opt() {
+                Some(next) if self.identity_answers(next) => day = next,
+                Some(_) => return false,
+                None => break,
+            }
+            steps += 1;
+            if steps > RESOLUTION_WALK_BOUND {
+                return false;
+            }
+        }
+        true
+    }
+
+    /// Returns whether an unanswerable day sits within `bound` days of `date`
+    /// in either direction.
+    ///
+    /// The unanswerable days are the dates below the carried-below horizon, the
+    /// dates outside every audited window, and the withheld rows. All three
+    /// sources are sorted static tables, so this is three binary searches and
+    /// no walk — the fast path behind
+    /// [`Self::resolution_reach_answerable`].
+    fn unanswerable_within(self, date: NaiveDate, bound: Option<u32>) -> bool {
+        let within = |candidate: Option<NaiveDate>| {
+            candidate.is_some_and(|candidate| {
+                bound.is_none_or(|bound| {
+                    candidate.signed_duration_since(date).num_days().abs() <= i64::from(bound)
+                })
+            })
+        };
+        if within(self.carried_below) {
+            return true;
+        }
+        // Outside-window land begins the day before the first window's first
+        // date and the day after each window's last.
+        for &(first_year, first_month, first_day, last_year, last_month, last_day) in self.windows()
+        {
+            if let Some(first) = NaiveDate::from_ymd_opt(first_year, first_month, first_day)
+                && within(first.pred_opt())
+            {
+                return true;
+            }
+            if let Some(last) = NaiveDate::from_ymd_opt(last_year, last_month, last_day)
+                && within(last.succ_opt())
+            {
+                return true;
+            }
+        }
+        if let Some(table) = self.table {
+            let index = table.rows.partition_point(|row| row.trade_date < date);
+            // Walk the rows on both sides of `date` out to the radius: rows are
+            // sorted, so each direction stops at the first row past it. (A
+            // single row on the near side of the partition is not enough — a
+            // closed day can sit between the date and the withheld row beside
+            // it.)
+            let mut back = index;
+            while back > 0 {
+                let row = &table.rows[back - 1];
+                let days = date.signed_duration_since(row.trade_date).num_days();
+                if days > i64::from(RESOLUTION_FAST_RADIUS) {
+                    break;
+                }
+                if row.kind == HolidayKind::Unsourced {
+                    return true;
+                }
+                back -= 1;
+            }
+            for row in &table.rows[index..] {
+                let days = row.trade_date.signed_duration_since(date).num_days();
+                if days > i64::from(RESOLUTION_FAST_RADIUS) {
+                    break;
+                }
+                if row.kind == HolidayKind::Unsourced {
+                    return true;
+                }
+            }
+        }
+        false
     }
 
     /// Returns the **date-level** reason `date` is not complete, ignoring any
@@ -1105,11 +1346,12 @@ impl CalendarCoverage {
     ///
     /// The candidates are the support floor, the carried-below horizon, both
     /// edges of every declaration that carries a bound, both edges of every
-    /// audited window, and every withheld date and the day after it — all
-    /// static and bounded, so the walk allocates nothing. An ordinary holiday
-    /// row needs no edge of its own: inside a date-scoped declaration's reach
-    /// the walk judges each date on its own tables, and outside that reach no
-    /// shape can flip a verdict.
+    /// audited window, every withheld date and the day after it, and the two
+    /// edges of every **resolution-reach zone** around a finite unanswerable
+    /// day (below) — all static and bounded, so the walk allocates nothing. An
+    /// ordinary holiday row needs no edge of its own: inside a date-scoped
+    /// declaration's reach the walk judges each date on its own tables, and
+    /// outside that reach no shape can flip a verdict.
     ///
     /// A declaration bounded with [`PhaseGap::since`] or [`PhaseGap::until`]
     /// contributes both of its edges, not just the bound: a run walk that
@@ -1165,7 +1407,130 @@ impl CalendarCoverage {
                 }
             }
         }
+        // The resolution-reach zones (#151): around every finite unanswerable
+        // day, the verdict of the answered days whose queries consult it flips
+        // to `ResolutionEdge`. The zone's edges are derived from the same
+        // session-day walk the reach test runs, so a run claimed between two
+        // reported edges carries one verdict across its whole span; the
+        // per-date verification in `tests/coverage_metadata.rs` holds every
+        // reported span to `coverage_on` date by date and would catch a missed
+        // edge. A detached view's verdict never flips — `NormalWeekOnly`
+        // covers every date uniformly and its gate never reaches the reach
+        // test — so its zones would only split runs for nothing.
+        if self.holidays == HolidayContract::NormalWeekOnly {
+            return best;
+        }
+        if let Some(carried_below) = self.carried_below
+            && let Some(before) = carried_below.pred_opt()
+        {
+            for edge in self.resolution_zone_edges(before) {
+                consider(edge.filter(|edge| *edge > date));
+            }
+        }
+        for &(first_year, first_month, first_day, last_year, last_month, last_day) in self.windows()
+        {
+            if let Some(first) = NaiveDate::from_ymd_opt(first_year, first_month, first_day)
+                && let Some(before) = first.pred_opt()
+            {
+                for edge in self.resolution_zone_edges(before) {
+                    consider(edge.filter(|edge| *edge > date));
+                }
+            }
+            if let Some(last) = NaiveDate::from_ymd_opt(last_year, last_month, last_day)
+                && let Some(after) = last.succ_opt()
+            {
+                for edge in self.resolution_zone_edges(after) {
+                    consider(edge.filter(|edge| *edge > date));
+                }
+            }
+        }
+        if let Some(table) = self.table {
+            // Only withheld rows near the frontier can contribute a boundary
+            // past `date`: a zone's edges sit at most the walk bound plus two
+            // days from its own unanswerable day, so earlier rows' zones end
+            // before `date`. The rows are sorted, so the frontier is one
+            // binary search.
+            let first_relevant = table.rows.partition_point(|row| {
+                row.trade_date
+                    .checked_add_signed(chrono::Duration::days(
+                        i64::from(RESOLUTION_WALK_BOUND) + 2,
+                    ))
+                    .is_some_and(|limit| limit <= date)
+            });
+            for row in &table.rows[first_relevant..] {
+                if row.kind == HolidayKind::Unsourced {
+                    for edge in self.resolution_zone_edges(row.trade_date) {
+                        consider(edge.filter(|edge| *edge > date));
+                    }
+                }
+            }
+        }
         best
+    }
+
+    /// Returns the verdict-flip edges of the resolution zone around one finite
+    /// unanswerable day `x` (#151).
+    ///
+    /// A day `d` below `x` flips when its forward session-day walk stops on a
+    /// session day whose successor is `x`, or walks onto `x` itself: that is
+    /// every day after the last session-or-unanswerable day at or before
+    /// `x - 2`, so the zone's first day is the boundary candidate. A day `d`
+    /// above `x` flips when its backward walk stops on a session day whose
+    /// predecessor is `x`, or walks onto `x` itself: that is every day from
+    /// `x + 1` up to the day before the first session-or-unanswerable day at
+    /// or after `x + 2` — the non-session days between the two session days
+    /// stop on the nearer one, whose predecessor is `x` — so that first day at
+    /// or after `x + 2` is the other candidate. Candidates that name no
+    /// answered day are dropped, and a candidate is only a *possible* edge: a
+    /// run walk that reports it and finds one verdict across the span is still
+    /// exact, and the per-date verification in `tests/coverage_metadata.rs`
+    /// holds every reported span to `coverage_on` date by date.
+    fn resolution_zone_edges(self, x: NaiveDate) -> [Option<NaiveDate>; 2] {
+        // Below: walk back from two days before `x` to the last session day or
+        // unanswerable day; the flip zone starts the day after it.
+        let mut below = x.pred_opt().and_then(|first| first.pred_opt());
+        if let Some(start) = below {
+            let mut day = start;
+            let mut steps = 0;
+            loop {
+                if !self.identity_answers(day) || self.surviving_session_day(day) {
+                    break;
+                }
+                match day.pred_opt() {
+                    Some(prev) => day = prev,
+                    None => break,
+                }
+                steps += 1;
+                if steps > RESOLUTION_WALK_BOUND {
+                    break;
+                }
+            }
+            below = day.succ_opt();
+        }
+        let below = below.filter(|edge| self.identity_answers(*edge));
+        // Above: walk forward from two days after `x` to the first session day
+        // or unanswerable day; the flip zone ends the day before it.
+        let mut above = None;
+        if let Some(start) = x.succ_opt().and_then(|first| first.succ_opt()) {
+            let mut day = start;
+            let mut steps = 0;
+            loop {
+                if !self.identity_answers(day) || self.surviving_session_day(day) {
+                    break;
+                }
+                match day.succ_opt() {
+                    Some(next) => day = next,
+                    None => return [below, None],
+                }
+                steps += 1;
+                if steps > RESOLUTION_WALK_BOUND {
+                    return [below, None];
+                }
+            }
+            above = Some(day);
+        }
+        let above = above.filter(|edge| self.identity_answers(*edge));
+        [below, above]
     }
 
     /// Returns the audited holiday windows the identity **ships**, or an empty

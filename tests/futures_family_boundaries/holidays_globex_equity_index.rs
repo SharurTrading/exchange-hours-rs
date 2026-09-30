@@ -122,12 +122,18 @@ fn assert_declared_refusal<T: std::fmt::Debug>(result: Result<T, CalendarQueryEr
             CalendarQueryError::OutsideCoveredRange { .. }
         )
     ) && !coverage.phase_gaps().is_empty();
-    let withheld_row = matches!(error, CalendarQueryError::UnresolvedGap { .. })
-        && calendar_of(error.source())
-            .holiday_on(day)
-            .is_some_and(|holiday| holiday.kind() == HolidayKind::Unsourced);
+    // The variant the query raises must state the verdict the metadata
+    // publishes for the day: the doubly-gapped-date divergence issue #128
+    // recorded — where a withheld date inside a declared era read
+    // `OutsideCoveredRange` from `coverage_on` but refused `UnresolvedGap`
+    // from the query — was removed when the declarations became date-scoped
+    // (#172), so the withheld-row fallback the assertion used to carry beside
+    // the verdict is gone. The declared-phase-gap clause stays because a
+    // bracket-era Sunday's query refuses through the phase declaration while
+    // its pre-floor neighbours state the floor, and the phase verdict is what
+    // `coverage_on` reports there too.
     assert!(
-        states_verdict || declared_phase_gap || withheld_row,
+        states_verdict || declared_phase_gap,
         "{day} carries the verdict {verdict:?}: {error:?} does not state it"
     );
 }

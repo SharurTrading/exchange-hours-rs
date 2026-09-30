@@ -28,9 +28,9 @@
 use chrono::{DateTime, Datelike as _, Days, Duration, NaiveDate, TimeZone as _, Utc};
 use chrono_tz::US;
 use exchange_hours::{
-    CalendarQueryError, CalendarSource, DateCoverage, EvidenceTier, Exchange, ExchangeCalendar,
-    Holiday, HolidayKind, MarketHoursKey, SessionKind, calendar_for_exchange,
-    calendar_for_market_hours_key,
+    CalendarQueryError, CalendarSource, CoverageGap, CoverageGapReason, DateCoverage, EvidenceTier,
+    Exchange, ExchangeCalendar, Holiday, HolidayKind, MarketHoursKey, SessionKind,
+    calendar_for_exchange, calendar_for_market_hours_key,
 };
 
 use super::prelude::{assert_refused_variant, assert_refuses_before_floor};
@@ -2098,15 +2098,30 @@ fn the_cbot_withheld_dates_are_four_markers_plus_only_disputes() {
         "the four dates both routed families mark not worked up"
     );
 
-    // The markers refuse through the coverage contract, and the trade days
-    // either side of each are audited normal and covered. 2021-06-19 is a
-    // Saturday, so its neighbours are the Friday and the Monday.
-    for (marker, edges) in markers.iter().zip([
-        [(2019, 6, 18), (2019, 6, 20)],
-        [(2020, 6, 18), (2020, 6, 20)],
-        [(2021, 6, 18), (2021, 6, 21)],
-        [(2023, 1, 15), (2023, 1, 17)],
-    ]) {
+    // The markers refuse through the coverage contract. The trade days either
+    // side of each ship no row and answer at the date level, but they are not
+    // *complete* under the resolution-edge rule (#151): every query on them
+    // reaches the withheld marker beside them, so their verdict is
+    // `OutsideCoveredRange` with the `ResolutionEdge` reason, and the first
+    // complete day past the zone is the marker's second trade day past it
+    // (2021-06-19 is a Saturday, so its Friday flips and the zone past it ends
+    // on the Sunday; its Monday answers completely).
+    let complete_again = [
+        day(2019, 6, 21),
+        day(2020, 6, 22),
+        day(2021, 6, 21),
+        day(2023, 1, 18),
+    ];
+    for ((marker, edges), complete_again) in markers
+        .iter()
+        .zip([
+            [(2019, 6, 18), (2019, 6, 20)],
+            [(2020, 6, 18), (2020, 6, 20)],
+            [(2021, 6, 18), (2021, 6, 20)],
+            [(2023, 1, 15), (2023, 1, 17)],
+        ])
+        .zip(complete_again.iter())
+    {
         assert_eq!(
             venue.coverage().coverage_on(*marker),
             DateCoverage::UnresolvedGap,
@@ -2116,13 +2131,28 @@ fn the_cbot_withheld_dates_are_four_markers_plus_only_disputes() {
             let edge = day(year, month, day_number);
             assert_eq!(
                 venue.coverage().coverage_on(edge),
-                DateCoverage::Covered,
-                "the trade day {edge} beside the marker {marker} is audited normal"
+                DateCoverage::OutsideCoveredRange,
+                "the trade day {edge} beside the marker {marker} reaches the \
+                 withheld day and is not called complete"
+            );
+            assert_eq!(
+                venue
+                    .coverage()
+                    .gaps()
+                    .find(|gap| gap.range().contains(edge))
+                    .map(CoverageGap::reason),
+                Some(CoverageGapReason::ResolutionEdge),
+                "the trade day {edge} beside the marker {marker} refuses through \
+                 the resolution edge"
             );
             assert!(
                 venue.holiday_on(edge).is_none(),
                 "the trade day {edge} beside the marker {marker} ships no row"
             );
         }
+        assert!(
+            venue.coverage().is_complete_on(*complete_again),
+            "the day past the zone {complete_again} answers completely again"
+        );
     }
 }

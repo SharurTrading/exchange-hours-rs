@@ -856,17 +856,19 @@ This era's rows cite the ids below: CME Group's own published holiday schedules 
   advisories but no Globex trading schedule for either, and the service returns the normal
   grid. Coverage is contiguous, so those dates read as audited normal; that is stated here
   rather than left implicit.
-- **phase query, pre-existing — every block row spells the regular envelope as `extended`.**
-  This family's whole tradeable envelope is its `regular` session, so an ordinary date answers
-  `is_open_regular = true` and `is_open_extended = false`; on each trade date whose row is a
-  block set the two flip. Measured at 10:00 CT: 2026-01-13 (ordinary) answers
-  `OpenRegular`/`regular true`/`extended false`, and 2026-01-20 (a merged MLK trade date)
-  answers `OpenExtended`/`regular false`/`extended true`; the Saturday-row trade dates
-  2026-06-22, 2026-07-06 and 2027-06-21 behave as 2026-01-20 does. `is_open` is unaffected and
-  correct throughout. The three rows this file gained on 2026-09-26 UTC state the envelope as
-  `regular`, which keeps the ordinary answer. Closing condition: one spelling for one envelope
-  across the four pre-existing sets, fenced by a phase-query test on each affected date.
-  Tracked as issue #176 (LAW-FOLLOW-UPS-ARE-ISSUES).
+- **phase query, fixed 2026-09-30 (UTC) — every block row now spells the regular envelope
+  `regular`.** This family's whole tradeable envelope is its `regular` session, so an
+  ordinary date answers `is_open_regular = true` and `is_open_extended = false`; on each
+  trade date whose row is a block set the two used to flip, because the four pre-existing
+  sets spelled their matching runs `extended`. Measured at 10:00 CT before the fix:
+  2026-01-20 (a merged MLK trade date) answered `OpenExtended`/`regular false`/
+  `extended true`, as did the Saturday-row trade dates 2026-06-22, 2026-07-06 and
+  2027-06-21. The four sets restate their 17:00-16:00 CT matching runs `regular` since this
+  change — one spelling for one envelope — and every affected trade date answers the
+  ordinary `OpenRegular`/`regular true`/`extended false` beside 2026-01-13's ordinary
+  answer, fenced per set. `is_open`, the trade dates and the session bounds are unaffected:
+  the change is confined to the two phase queries. Tracked as issue #176; closed by this
+  change.
 
 ### 2026
 

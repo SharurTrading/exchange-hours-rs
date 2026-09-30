@@ -134,8 +134,16 @@ mod prelude {
         }
         // A declared phase gap shadows the date-level verdict: on a date whose
         // date-level facts answer, session queries answer through the shadow.
+        // So does the resolution edge (#151): a date incomplete only because
+        // answering it completely would consult a neighbour keeps its own
+        // facts sourced, and the queries that need only them answer — which is
+        // why the fixture asserts which queries answer rather than that every
+        // query refuses.
         let phase_shadow_here = phase_shadow_answers(calendar, local_date);
-        if answer.is_ok() && phase_shadow_here {
+        let resolution_edge_here = calendar.coverage().gaps().any(|gap| {
+            gap.reason() == CoverageGapReason::ResolutionEdge && gap.range().contains(local_date)
+        });
+        if answer.is_ok() && (phase_shadow_here || resolution_edge_here) {
             return;
         }
         let error =

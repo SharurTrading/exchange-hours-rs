@@ -118,19 +118,28 @@ const HALF_DAY_CLOSE: u32 = 12 * 3_600 + 5 * 60;
 /// `14:30 pcp` carrying the **eve's** trade date. The crate dates an
 /// order-entry occurrence by the session it feeds, so the ordinary week puts
 /// that queue on the holiday and the neighbouring `Closed` row deletes it. A
-/// row keyed to the eve states the day whole: the ordinary prior-evening queue
-/// and leg, the morning queue, the day session, and the post-close queue CME
-/// publishes.
+/// row keyed to the eve states the day whole: the day before the eve's own
+/// post-close queue, the ordinary prior-evening queue and leg, the morning
+/// queue, the day session, and the post-close queue CME publishes.
 ///
 /// The ordinary phases are the family's own normal-week values, quoted here
 /// because a replacement states the complete day, and both queues are order
 /// entry: no trade matches in them, and none is claimed. Because a replacement
 /// carries its own trade-date assignment, the eve's queue reads with the eve's
-/// trade date — the operator's own label. On every other date the ordinary
-/// assignment stands and the queue still reads with the trade date it feeds;
-/// that divergence is recorded in
+/// trade date — the operator's own label — and the `-1` block restates the
+/// pre-eve queue the ordinary week would have deleted (#175); the label that
+/// assignment gives it is the crate's convention, which is the #152 declared
+/// gap's statement. On every other date the ordinary assignment stands and the
+/// queue still reads with the trade date it feeds; that divergence is recorded
+/// in
 /// [`docs/evidence/globex_grains.md`](../../../../../docs/evidence/globex_grains.md).
-pub(crate) static CLOSURE_EVE_BLOCKS: [ExceptionBlock; 5] = [
+pub(crate) static CLOSURE_EVE_BLOCKS: [ExceptionBlock; 6] = [
+    // The day before the eve prints its ordinary `14:30 pcp; 16:00 closed`
+    // pair — the operator's own service prints it on the pre-eve dates, e.g.
+    // 2026-04-01 in `probeB_2026-04-01_2026-04-03.json` — and without this
+    // block the row would delete the occurrence the ordinary week dates to the
+    // eve's trade date (#175).
+    ExceptionBlock::order_entry(-1, 14 * 3_600 + 30 * 60, 16 * 3_600),
     ExceptionBlock::order_entry(-1, 16 * 3_600 + 45 * 60, 19 * 3_600),
     ExceptionBlock::extended(-1, 19 * 3_600, 7 * 3_600 + 45 * 60),
     ExceptionBlock::order_entry(0, 8 * 3_600, 8 * 3_600 + 30 * 60),

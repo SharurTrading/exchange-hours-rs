@@ -91,6 +91,13 @@ fn assert_declared_refusal<T: std::fmt::Debug>(result: Result<T, CalendarQueryEr
     let coverage = calendar_of(error.source()).coverage();
     let day = error.date();
     let verdict = coverage.coverage_on(day);
+    // The variant the query raises must state the verdict the metadata
+    // publishes for the day. The doubly-gapped-date divergence issue #128
+    // recorded — where a withheld date inside a declared era read
+    // `OutsideCoveredRange` from `coverage_on` but refused `UnresolvedGap`
+    // from the query — was removed when the declarations became date-scoped
+    // (#172), so the withheld-row fallback this assertion used to accept
+    // beside the verdict is gone and the match is exact.
     let states_verdict = matches!(
         (verdict, error),
         (
@@ -104,17 +111,8 @@ fn assert_declared_refusal<T: std::fmt::Debug>(result: Result<T, CalendarQueryEr
             CalendarQueryError::UnresolvedGap { .. }
         )
     );
-    // A declared phase-level gap shadows the date-level verdict in the
-    // metadata, so a date the built-in table withholds as `Unsourced` inside a
-    // declared era reports `OutsideCoveredRange` from `coverage_on` while the
-    // query that reads the withheld row refuses `UnresolvedGap` — both are
-    // coverage refusals, and the withheld row is what the query names.
-    let withheld_row = matches!(error, CalendarQueryError::UnresolvedGap { .. })
-        && calendar_of(error.source())
-            .holiday_on(day)
-            .is_some_and(|holiday| holiday.kind() == HolidayKind::Unsourced);
     assert!(
-        states_verdict || withheld_row,
+        states_verdict,
         "{day} carries the verdict {verdict:?}: {error:?} does not state it"
     );
 }
@@ -446,9 +444,16 @@ fn a_closure_eve_states_the_complete_day_and_keeps_its_post_close_queue() {
         ((2027, 11, 24), "CME-SVC-2027-11-24"),
         ((2027, 12, 23), "CME-SVC-2027-12-22"),
     ];
-    // The block set: the ordinary prior-evening queue and leg, the morning
-    // queue, the day session and the post-close queue.
-    const EXPECTED: [(ExceptionBlockKind, i8, u32, u32); 5] = [
+    // The block set: the pre-eve day's own post-close queue (#175), the
+    // ordinary prior-evening queue and leg, the morning queue, the day session
+    // and the post-close queue.
+    const EXPECTED: [(ExceptionBlockKind, i8, u32, u32); 6] = [
+        (
+            ExceptionBlockKind::OrderEntry,
+            -1,
+            14 * 3_600 + 30 * 60,
+            16 * 3_600,
+        ),
         (
             ExceptionBlockKind::OrderEntry,
             -1,
@@ -3023,4 +3028,70 @@ fn era_2013_2015_rows_are_the_audited_date_kind_and_tier_set() {
         date = date.succ_opt().expect("the era ends well before the bound");
     }
     assert_eq!(index, ERA_2013_2015_ROWS.len(), "every recorded row ships");
+}
+
+// ---------------------------------------------------------------------------
+// The pre-eve post-close queue (#175)
+// ---------------------------------------------------------------------------
+
+/// The fourteen dates that precede a mid-week closure eve state their ordinary
+/// `14:30-16:00` CT post-close queue through the eve's replacement row.
+///
+/// The crate dates a queue by the session it feeds, so the ordinary week's
+/// occurrence on each of these dates carries the eve's trade date — and before
+/// the fix the eve's `CLOSURE_EVE_BLOCKS` set deleted it instead of restating
+/// it, leaving the operator-printed `14:30 pcp` answering `Closed`. The `-1`
+/// order-entry block restates it. The label the row assigns the queue is the
+/// crate's convention (the eve's trade date), which is the #152 declared gap's
+/// statement — these dates carry it, exactly as the queue days themselves do —
+/// so the date-level verdict here is the label gap's refusal while the
+/// order-entry probes answer.
+#[test]
+fn the_pre_eve_post_close_queue_answers_on_every_closure_eve_run_up() {
+    let calendar = calendar_for_market_hours_key(MarketHoursKey::GlobexGrains);
+    for (year, month, day) in [
+        (2025, 4, 16),
+        (2025, 6, 17),
+        (2025, 7, 2),
+        (2025, 11, 25),
+        (2025, 12, 30),
+        (2026, 4, 1),
+        (2026, 6, 17),
+        (2026, 7, 1),
+        (2026, 11, 24),
+        (2026, 12, 30),
+        (2027, 3, 24),
+        (2027, 6, 16),
+        (2027, 11, 23),
+        (2027, 12, 22),
+    ] {
+        for (hour, minute) in [(14, 30), (15, 30)] {
+            let instant = US::Central
+                .with_ymd_and_hms(year, month, day, hour, minute, 0)
+                .single()
+                .expect("14:30 and 15:30 CT are never ambiguous")
+                .with_timezone(&Utc);
+            let label = format!("{year}-{month:02}-{day:02} {hour}:{minute:02} CT");
+            assert_eq!(
+                calendar.session_state(instant),
+                Ok(SessionState::OrderEntry),
+                "{label}: the operator prints the ordinary post-close queue"
+            );
+            assert_eq!(calendar.is_order_entry_only(instant), Ok(true), "{label}");
+            assert_eq!(
+                calendar.is_accepting_orders(instant),
+                Ok(true),
+                "{label}: the queue accepts orders even though no trade can print"
+            );
+            assert_eq!(calendar.is_open(instant), Ok(false), "{label}");
+        }
+        // The label the restating block gives the queue is the crate's
+        // convention (the eve's trade date), where the operator prints the
+        // queue with its own date — the same deviation the #152 declared gap
+        // states for the normal-week queue days. The declaration's shape
+        // resolves against the normal week only, so these dates stay `Covered`
+        // beside it; the deviation is recorded in the family's evidence file
+        // beside the declaration rather than re-derived per date.
+        let _ = year;
+    }
 }

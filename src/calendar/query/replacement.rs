@@ -292,6 +292,14 @@ pub(super) fn governs_instant(
 /// replaced-trade-date test — or belongs to another trade date, in which case
 /// [`governs_instant`] kept that occurrence out of the normal scan's answer, so
 /// this assignment names the session the caller was given.
+///
+/// The selection is **kind-aware as well as offset-aware** (#138): every caller
+/// asks about a tradeable occurrence's open instant, so only a tradeable block
+/// can name its trade date. An `order_entry` block sharing that instant does
+/// not displace the occurrence ([`governs_instant`]'s kind rule keeps the
+/// session standing), and letting it answer here would assign the record's own
+/// trade date to a window the record does not own — bounds and date naming two
+/// different sessions.
 pub(super) fn replacement_trade_date(
     context: &QueryContext<'_>,
     open: DateTime<Utc>,
@@ -309,7 +317,7 @@ pub(super) fn replacement_trade_date(
             for block in blocks
                 .iter()
                 .copied()
-                .filter(|block| block.open_day_offset() == offset)
+                .filter(|block| block.open_day_offset() == offset && is_tradeable(*block))
             {
                 if resolve_block_bounds(context, trade_date, blocks, block)
                     .is_some_and(|(block_open, _close)| block_open == open)

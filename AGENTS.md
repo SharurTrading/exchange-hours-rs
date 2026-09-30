@@ -241,6 +241,23 @@ the cost of keeping them true.
   silence. Such broad intersections remain labelled partial and cannot stand
   in for a served instrument's complete family/scope calendar.
 
+  **The venue speaks for its profile clock (2026-09-30 decision, issue
+  #153).** Each venue `Exchange` serves one session clock — `cbot`'s is the
+  grain grid, `cme`'s the equity-index grid, `comex`'s and `nymex`'s the
+  energy grid — and the intersection rule exists so the venue never states a
+  holiday instant two routed operators print differently. A family whose clock
+  the venue does **not** serve stating the only row on a date, while the
+  venue's own clock family audits the date normal, is not that case: the
+  venue's clock is boundary-normal in the operator's own bytes, the dissenting
+  arrangement lives in its own family table where the consumer's exact-family
+  routing (#118) reads it, and the venue answers the date from its clock
+  instead of withholding it. Genuine disagreement — two routed families
+  printing different instants, or a clock-family holiday against another
+  family's normal — stays `Unsourced`. The re-derivation this decision needs
+  is data work tracked on its own issue; until it lands, the shipped venue
+  tables keep the withheld rows the earlier rule produced, and they remain
+  labelled partial either way.
+
   An explicit caller `Closed` or `ReplaceSessions` record takes precedence over
   the built-in date arrangement; the caller's `DayPolicy` then clips the result.
   Caller data does not improve the built-in ledger's completeness claim.

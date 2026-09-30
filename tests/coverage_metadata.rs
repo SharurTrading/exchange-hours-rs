@@ -99,29 +99,46 @@ fn a_complete_scope_reports_one_complete_span_and_a_trailing_gap() {
     );
     assert_eq!(coverage.sourced_normal_week(), unbounded(SUPPORT_FLOOR));
 
-    // The 2010-01-01..2010-04-10 interval joined the first audited window on
-    // 2026-09-30 UTC, when the old grid shipped from the operator's own
-    // equities-hours captures and the New Year closure keyed the window to the
-    // floor; the 2019-2024 windows still withhold dates, so the complete spans
-    // begin at the floor and split around the withheld dates. Each complete
-    // range is one audited window (the walk's static segment edge), so the
-    // first is the floor-to-2012 window that now opens at the support floor.
+    // At the 2010 floor the scope's earlier history is honestly partial: the
+    // 2010-01-01..2010-04-10 interval is unaudited (the 2011-2024 windows
+    // opened with the 2026-09-29 wave; on 2026-09-30 UTC the first window
+    // moved back to the dated 2010-04-11 grid start, and the 2010 rows
+    // entered with it), and the 2016-2024 windows withhold dates, so the
+    // complete spans begin inside that window and split around the
+    // withheld dates instead of forming one span from the floor.
     let complete: Vec<DateRange> = coverage.complete_ranges().collect();
+    // The first audited window's own first day is not complete under the
+    // resolution-edge rule (#151): answering 2010-04-11 completely consults
+    // 2010-04-10, the unmodelled edge outside the window, so the first
+    // complete span begins one day inside it. The same rule ends each span
+    // at the last date whose forward reach stays inside the window:
+    // 2012-12-28's Saturday-to-Monday tail reaches 2013-01-01, outside the
+    // window, and flips.
     assert_eq!(
         complete.first(),
-        Some(&DateRange::new(date(2010, 1, 1), date(2012, 12, 31)).expect("ascending")),
-        "the first complete span is the first audited window, opened at the floor"
+        Some(&DateRange::new(date(2010, 1, 4), date(2012, 12, 28)).expect("ascending")),
+        "the first complete span opens at the floor era's first session day \
+         (2010-01-04, the sourced CST grid's first Monday): January 1-3's \
+         resolution reach crosses the pre-floor edge into 2009-12-31, where the \
+         crate models nothing (#151)"
     );
     assert_eq!(
         complete.last(),
-        Some(&DateRange::new(date(2025, 1, 1), date(2027, 12, 31)).expect("ascending")),
-        "the last complete span is the complete 2025+ era"
+        Some(&DateRange::new(date(2025, 1, 5), date(2027, 12, 30)).expect("ascending")),
+        "the last complete span is the complete 2025+ era inside its edges"
     );
     let gaps: Vec<CoverageGap> = coverage.gaps().collect();
     assert_eq!(
         gaps.first().map(|gap| (gap.range().first(), gap.reason())),
-        Some((date(2019, 6, 19), CoverageGapReason::WithheldDate)),
-        "the first gap is the era's own first Unsourced date"
+        Some((date(2010, 1, 1), CoverageGapReason::ResolutionEdge)),
+        "the first gap is the pre-floor resolution edge the floor era's January \
+         1-3 dates reach across (#151); the sourced old grid answers from January 4"
+    );
+    assert!(
+        gaps.iter()
+            .any(|gap| gap.range().contains(date(2019, 6, 19))
+                && gap.reason() == CoverageGapReason::WithheldDate),
+        "the Juneteenth marker's WithheldDate gap survives between the sourced eras"
     );
     assert_eq!(
         gaps.last().map(|gap| (gap.range().first(), gap.reason())),
@@ -130,9 +147,16 @@ fn a_complete_scope_reports_one_complete_span_and_a_trailing_gap() {
     );
 
     assert!(coverage.is_complete_on(date(2025, 6, 2)));
+    // The window's own edges are not complete: 2025-01-01 reaches back to
+    // 2024-12-31 and 2027-12-31 reaches forward to 2028-01-01, both outside
+    // the audited window (#151).
     assert_eq!(
         coverage.coverage_on(date(2027, 12, 31)),
-        DateCoverage::Covered
+        DateCoverage::OutsideCoveredRange
+    );
+    assert_eq!(
+        gaps.last().map(|gap| gap.range().first()),
+        Some(date(2028, 1, 1))
     );
     assert_eq!(
         coverage.coverage_on(date(2028, 1, 1)),
@@ -211,10 +235,13 @@ fn iceus_2025_holiday_rows_report_covered() {
         assert_eq!(coverage.coverage_on(day), DateCoverage::Covered);
         assert_eq!(gap_reason_on(coverage, day), None);
         assert!(coverage.is_complete_on(day));
+        // The window's own first day is not complete (#151): answering
+        // 2025-01-01 consults 2024-12-31, outside the window. The first
+        // complete span begins the day after it.
         assert_eq!(
             coverage.complete_ranges().next().map(DateRange::first),
-            Some(date(2025, 1, 1)),
-            "the audited window now opens at the 2025 floor"
+            Some(date(2025, 1, 2)),
+            "the audited window opens at the 2025 floor, and the first complete              date is the window's second day"
         );
         assert!(
             coverage
@@ -256,9 +283,12 @@ fn cfe_2025_holiday_rows_report_covered() {
         assert_eq!(coverage.coverage_on(day), DateCoverage::Covered);
         assert_eq!(gap_reason_on(coverage, day), None);
         assert!(coverage.is_complete_on(day));
+        // 2017-04-10, the window's own first day, reaches back to 2017-04-09
+        // for its wrapped Sunday-evening leg and so is not complete (#151);
+        // the first complete span begins the day after it.
         assert_eq!(
             coverage.complete_ranges().next().map(DateRange::first),
-            Some(date(2017, 4, 10))
+            Some(date(2017, 4, 11))
         );
         assert!(
             coverage
@@ -293,11 +323,29 @@ fn withheld_dates_are_unresolved_gaps_inside_an_audited_window() {
     // `OutsideCoveredRange` rather than `UnresolvedGap`. From 2026-08-22 the
     // declaration is retired and 13 of its 32 withheld dates again answer
     // `UnresolvedGap`; neither is the plain shape these two intersections show.
+    // The `neighbour` is the first answered day after the withheld date, and
+    // the resolution-edge rule (#151) means it is not complete either: every
+    // query on it reaches the withheld day, so its verdict is
+    // `OutsideCoveredRange` with the `ResolutionEdge` reason, and the first
+    // complete date after the withheld one is the day past the zone. Cbot's
+    // Saturday sits between the two and its Sunday session survives, so its
+    // zone ends on the Saturday; iceus trades the whole span and its zone ends
+    // two days out.
     let fixtures = [
-        (Exchange::Cbot, date(2025, 1, 2), date(2025, 1, 3)),
-        (Exchange::Iceus, date(2026, 1, 19), date(2026, 1, 20)),
+        (
+            Exchange::Cbot,
+            date(2025, 1, 2),
+            date(2025, 1, 3),
+            date(2025, 1, 5),
+        ),
+        (
+            Exchange::Iceus,
+            date(2026, 1, 19),
+            date(2026, 1, 20),
+            date(2026, 1, 21),
+        ),
     ];
-    for (exchange, withheld, neighbour) in fixtures {
+    for (exchange, withheld, neighbour, complete_again) in fixtures {
         let coverage = exchange_coverage(exchange);
         assert_eq!(
             coverage.coverage_on(withheld),
@@ -309,9 +357,19 @@ fn withheld_dates_are_unresolved_gaps_inside_an_audited_window() {
             Some(CoverageGapReason::WithheldDate),
             "{exchange:?}"
         );
+        assert_eq!(
+            coverage.coverage_on(neighbour),
+            DateCoverage::OutsideCoveredRange,
+            "{exchange:?}: answering {neighbour} completely would consult the              withheld {withheld}"
+        );
+        assert_eq!(
+            gap_reason_on(coverage, neighbour),
+            Some(CoverageGapReason::ResolutionEdge),
+            "{exchange:?}"
+        );
         assert!(
-            coverage.is_complete_on(neighbour),
-            "{exchange:?} answers {neighbour} completely"
+            coverage.is_complete_on(complete_again),
+            "{exchange:?} answers {complete_again} completely"
         );
         assert!(
             coverage
@@ -685,16 +743,27 @@ fn check_declarations(
         gaps.iter().any(|gap| gap.phase_gap().is_some()),
         "{identity:?} reports its declarations among its records"
     );
+    // The declaration records the walk reports are collected in one ascending
+    // pass — a fresh `gaps()` walk per record would make this check quadratic
+    // in the record count, which the date-scoped declarations drive into the
+    // hundreds per identity. The identity of a record is its range paired with
+    // its declaration, so a second pass over the collected records is the same
+    // assertion the per-record `find` made.
+    let walked_records: Vec<(DateRange, exchange_hours::PhaseGap)> = coverage
+        .gaps()
+        .filter_map(|gap| {
+            gap.phase_gap()
+                .map(|declaration| (gap.range(), declaration))
+        })
+        .collect();
     for gap in gaps {
         let Some(declaration) = gap.phase_gap() else {
             continue;
         };
-        assert_eq!(
-            coverage
-                .gaps()
-                .find(|candidate| candidate.range() == gap.range()
-                    && candidate.phase_gap() == Some(declaration)),
-            Some(*gap),
+        assert!(
+            walked_records
+                .iter()
+                .any(|(range, walked)| *range == gap.range() && *walked == declaration),
             "{identity:?}: the declaration's record is what the walk reports there"
         );
         assert!(declaration.applies_on(gap.range().first()), "{identity:?}");
@@ -838,11 +907,21 @@ fn a_complete_scope_answers_every_day_inside_its_span() {
     // the edges. At the 2010 floor that era is the 2025+ interval; the earlier
     // windows split around their withheld dates.
     let coverage = key_coverage(MarketHoursKey::GlobexNikkei225Dollar);
-    for day in days_from_floor(date(2027, 12, 31)) {
-        if day >= date(2025, 1, 1) {
+    // Inside the audited windows the scope answers day by day, except at the
+    // resolution edges (#151): the window's own first and last dates reach
+    // outside it and are reported incomplete by the same accessor.
+    for day in days_from_floor(date(2027, 12, 30)) {
+        if day >= date(2025, 1, 5) {
             assert!(coverage.is_complete_on(day), "{day}");
             assert_eq!(gap_reason_on(coverage, day), None, "{day}");
         }
+    }
+    for day in [date(2025, 1, 1), date(2025, 1, 3), date(2027, 12, 31)] {
+        assert_eq!(
+            coverage.coverage_on(day),
+            DateCoverage::OutsideCoveredRange,
+            "{day}: a date whose resolution reach leaves the audited window is              not called complete"
+        );
     }
 }
 
@@ -1410,11 +1489,13 @@ fn a_date_scoped_declaration_zeroes_no_identity_over_2025_2027() {
             .expect("the walk stays inside the year range");
     }
 
-    // Grains refuses on the same condition, but fourteen dates answer
-    // completely while a queue accepts orders at 15:00 CT: the closure eves
-    // whose complete replacement blocks state the adjusted day outright
-    // (coverage-2025 §2), so the 16:00-ending occurrence the shape resolves is
-    // absent and the label gap cannot apply.
+    // Grains refuses on the same condition, but twenty-eight dates answer
+    // completely while a queue accepts orders at 15:00 CT: the fourteen
+    // closure eves whose complete replacement blocks state the adjusted day
+    // outright (coverage-2025 §2), plus — since #175 — the fourteen pre-eve
+    // dates whose queue the eves' rows restate through their `-1` block, so
+    // the 16:00-ending occurrence the shape resolves is absent on both runs
+    // and the label gap cannot apply.
     let grains_cal = calendar_for_market_hours_key(MarketHoursKey::GlobexGrains);
     let mut block_eves = 0;
     day = REGRESSION_FIRST;
@@ -1434,8 +1515,8 @@ fn a_date_scoped_declaration_zeroes_no_identity_over_2025_2027() {
             .expect("the walk stays inside the year range");
     }
     assert_eq!(
-        block_eves, 14,
-        "the complete replacement-blocks closure eves are the only covered dates that \
+        block_eves, 28,
+        "the closure eves and their pre-eve run-ups are the only covered dates that \
          accept orders at 15:00 CT"
     );
 
@@ -1454,11 +1535,19 @@ fn a_date_scoped_declaration_zeroes_no_identity_over_2025_2027() {
         .filter(|gap| gap.reason() == CoverageGapReason::UnpublishedClosureDates)
         .map(|gap| (gap.range(), gap.closing_condition()))
         .collect();
+    // The resolution-edge rule (#151) splits the run at the window edges:
+    // 2010-01-01..03 answer incompletely because their sessions reach back to
+    // 2009-12-31, and 2026-12-31 because its next session reaches 2027-01-01.
+    // The phase gap is checked first, so those dates keep the #157 reason.
     assert_eq!(
         unpublished,
         vec![
             (
-                DateRange::new(date(2010, 1, 1), date(2026, 12, 30)).expect("ascending"),
+                DateRange::new(date(2010, 1, 1), date(2010, 1, 3)).expect("ascending"),
+                Some("#157")
+            ),
+            (
+                DateRange::new(date(2010, 1, 4), date(2026, 12, 30)).expect("ascending"),
                 Some("#157")
             ),
             (
@@ -1469,4 +1558,131 @@ fn a_date_scoped_declaration_zeroes_no_identity_over_2025_2027() {
         "the #157 record spans the audited window the German scope stands unencoded \
          across, ending where the editions in hand end"
     );
+}
+
+/// The metadata/query agreement the coverage contract promises (#151).
+///
+/// `DateCoverage::Covered` promises that every question about every instant of
+/// the date answers, or refuses naming a date the metadata itself does not call
+/// covered. This walks identities' covered dates — one instant per day, the
+/// five question families plus both order-entry probes — and asserts the
+/// promise: a date-level coverage error raised on a `Covered` date must name a
+/// date whose own verdict is not `Covered` (a withheld neighbour, a declared
+/// phase-gap day, a date outside the audited windows), never a date the caller
+/// would have trusted. `SearchExhausted` is not a date-level error and is
+/// accepted; a query that answers is accepted outright.
+///
+/// Every identity is walked across the recent five years, which contains every
+/// audited window end and every withheld date the 2025+ tables ship; the six
+/// identities whose withheld dates carried #151's original disagreement are
+/// walked from the 2010 floor, where their dense markers live.
+#[test]
+fn a_covered_date_is_never_refused_by_a_query_naming_another_covered_date() {
+    fn assert_agreement(calendar: ExchangeCalendar, first: NaiveDate, last: NaiveDate) {
+        let coverage = calendar.coverage();
+        let label = format!("{:?}", calendar.source());
+        let mut day = first;
+        while day <= last {
+            if coverage.coverage_on(day) == DateCoverage::Covered {
+                let instant = Utc
+                    .with_ymd_and_hms(day.year(), day.month(), day.day(), 14, 7, 0)
+                    .single()
+                    .expect("14:07Z falls once on every date");
+                for (family, error) in [
+                    ("is_open", calendar.is_open(instant).err()),
+                    ("session_state", calendar.session_state(instant).err()),
+                    ("trade_date", calendar.trade_date(instant).err()),
+                    ("session_bounds", calendar.session_bounds(instant).err()),
+                    (
+                        "next_session_after",
+                        calendar.next_session_after(instant).err(),
+                    ),
+                    (
+                        "is_accepting_orders",
+                        calendar.is_accepting_orders(instant).err(),
+                    ),
+                    (
+                        "is_order_entry_only",
+                        calendar.is_order_entry_only(instant).err(),
+                    ),
+                ] {
+                    // `SearchExhausted` is the bounded search's own refusal, not
+                    // a date-level verdict, so only the three date-shaped
+                    // errors promise anything about the named date.
+                    let Some(error) = error else { continue };
+                    if matches!(error, CalendarQueryError::SearchExhausted { .. }) {
+                        continue;
+                    }
+                    let named = error.date();
+                    assert_ne!(
+                        coverage.coverage_on(named),
+                        DateCoverage::Covered,
+                        "{label}: {family} at 14:07Z on {day} refuses naming {named}, \
+                         which the metadata itself calls covered"
+                    );
+                    // The variant the query raises must be the one the
+                    // metadata publishes for the day it names — the mapping
+                    // `CalendarQueryError` documents, with the doubly-gapped
+                    // -date divergence issue #128 recorded now removed.
+                    let published = match coverage.coverage_on(named) {
+                        DateCoverage::OutsideCoveredRange => {
+                            Some(CalendarQueryError::OutsideCoveredRange {
+                                source: calendar.source(),
+                                date: named,
+                            })
+                        }
+                        DateCoverage::UnresolvedGap => Some(CalendarQueryError::UnresolvedGap {
+                            source: calendar.source(),
+                            date: named,
+                        }),
+                        DateCoverage::BeforeSupportFloor => {
+                            Some(CalendarQueryError::BeforeSupportFloor {
+                                source: calendar.source(),
+                                date: named,
+                            })
+                        }
+                        _ => None,
+                    };
+                    if let Some(expected) = published {
+                        assert_eq!(
+                            error, expected,
+                            "{label}: {family} at 14:07Z on {day} refuses {named} \
+                             with a variant the metadata does not publish for it"
+                        );
+                    }
+                }
+            }
+            day = day.succ_opt().unwrap_or(last);
+            if day > last {
+                break;
+            }
+        }
+    }
+
+    let recent = (date(2024, 1, 1), date(2028, 12, 31));
+    let floor = (SUPPORT_FLOOR, date(2028, 12, 31));
+    for &exchange in Exchange::ALL {
+        let calendar = calendar_for_exchange(exchange);
+        let (first, last) = if matches!(
+            exchange,
+            Exchange::Cbot | Exchange::Cme | Exchange::Iceus | Exchange::Comex
+        ) {
+            floor
+        } else {
+            recent
+        };
+        assert_agreement(calendar, first, last);
+    }
+    for &key in MarketHoursKey::ALL {
+        let calendar = calendar_for_market_hours_key(key);
+        let (first, last) = if matches!(
+            key,
+            MarketHoursKey::GlobexNikkei225Dollar | MarketHoursKey::IceUsSugar
+        ) {
+            floor
+        } else {
+            recent
+        };
+        assert_agreement(calendar, first, last);
+    }
 }

@@ -946,6 +946,33 @@ pub(in crate::calendar) fn builtin_resolves_order_entry(
     unresolved
 }
 
+/// Returns whether the identity's built-in timeline gives `day`'s weekday any
+/// **tradeable** rule (regular or extended).
+///
+/// This is the coverage walk's "session day" test: a date whose profile grid
+/// carries a tradeable rule is a day a session scan can find an occurrence on,
+/// whatever the holiday layer later does to that occurrence. It is the same
+/// profile selection every query runs
+/// ([`Self::profile_for_open_day`]), so the metadata and the query surface
+/// cannot disagree about which days carry rules.
+pub(in crate::calendar) fn builtin_has_tradeable_rule(
+    source: CalendarSource,
+    day: NaiveDate,
+) -> bool {
+    let calendar = match source {
+        CalendarSource::Exchange(exchange) => {
+            crate::calendar::exchange_calendar::calendar_for_exchange(exchange)
+        }
+        CalendarSource::MarketHoursKey(key) => {
+            crate::calendar::exchange_calendar::calendar_for_market_hours_key(key)
+        }
+    };
+    let context = QueryContext::date_aware(calendar);
+    let weekday = day.weekday().num_days_from_monday() as usize;
+    let selected = context.profile_for_open_day(day);
+    rules(selected.as_ref(), RuleSet::Sessions(SessionKind::Both)).any(|rule| rule.days[weekday])
+}
+
 /// Resolves one scheduled occurrence and rejects civil-time collapses.
 pub(super) fn resolve_rule_bounds(
     context: &QueryContext<'_>,

@@ -873,10 +873,12 @@ fn the_published_sunday_pre_open_queues_are_fenced_at_their_bounds() {
             );
         }
         // 17:00 CT is the queue's end-exclusive close and the matching
-        // session's open: one instant, both statements.
+        // session's open: one instant, both statements. The matching session
+        // is this family's `regular` one — the whole tradeable envelope is
+        // its regular session, so the row states it `regular` since #176.
         assert_eq!(
             state(17, 0, 0),
-            SessionState::OpenExtended,
+            SessionState::OpenRegular,
             "{year}-{month:02}-{date:02}: 17:00 CT hands the queue to the matching session"
         );
         assert!(
@@ -3456,4 +3458,55 @@ fn era_new_year_2015_ships_no_late_open_and_reopens_at_1700() {
             .expect("the coverage contract must answer a covered date"),
         Some(day(2015, 1, 2))
     );
+}
+
+// ---------------------------------------------------------------------------
+// The block rows' envelope is the family's regular session (#176)
+// ---------------------------------------------------------------------------
+
+/// Every trade date a block row covers answers `is_open_regular` inside its
+/// session, exactly as an ordinary date does.
+///
+/// This family's whole tradeable envelope is its `regular` session
+/// (`NKD_REGULAR_CURRENT`; `NKD_EXTENDED_CURRENT` is empty), so a block row
+/// spelling the matching runs `extended` flipped `is_open_regular` and
+/// `is_open_extended` on every date it covered while `is_open` stayed right.
+/// The four pre-existing sets restate their 17:00-16:00 CT runs `regular`
+/// since #176, and the fence walks one trade date per set — a merged Monday,
+/// a published Saturday, the 2025-11-28 two-piece day and a day-after-
+/// Thanksgiving Friday — asserting the ordinary answer at an instant inside
+/// each session.
+#[test]
+fn every_block_row_spells_the_envelope_the_regular_session_it_is() {
+    let nkd = nkd();
+    for (year, month, date) in [
+        (2026, 1, 20),  // MERGED_SESSION_BLOCKS (merged MLK Tuesday)
+        (2026, 6, 22),  // SATURDAY_SESSION_BLOCKS (published Saturday session)
+        (2025, 11, 28), // MERGED_SESSION_EARLY_CLOSE_BLOCKS_2025_11_28
+        (2026, 11, 27), // MERGED_SESSION_EARLY_CLOSE_BLOCKS
+    ] {
+        let instant = ct(year, month, date, 9, 0, 0);
+        assert_eq!(
+            nkd.session_state(instant),
+            Ok(SessionState::OpenRegular),
+            "{year}-{month:02}-{date:02}: the matching session is the regular one"
+        );
+        assert_eq!(
+            nkd.is_open_regular(instant),
+            Ok(true),
+            "{year}-{month:02}-{date:02}"
+        );
+        assert_eq!(
+            nkd.is_open_extended(instant),
+            Ok(false),
+            "{year}-{month:02}-{date:02}: the family carries no extended session"
+        );
+        // The tradeable envelope itself does not move: the same instant stays
+        // open and the bounds stay the ordinary wrapped run.
+        assert_eq!(
+            nkd.is_open(instant),
+            Ok(true),
+            "{year}-{month:02}-{date:02}: is_open is unaffected by the spelling"
+        );
+    }
 }

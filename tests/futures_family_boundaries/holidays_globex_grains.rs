@@ -91,6 +91,13 @@ fn assert_declared_refusal<T: std::fmt::Debug>(result: Result<T, CalendarQueryEr
     let coverage = calendar_of(error.source()).coverage();
     let day = error.date();
     let verdict = coverage.coverage_on(day);
+    // The variant the query raises must state the verdict the metadata
+    // publishes for the day. The doubly-gapped-date divergence issue #128
+    // recorded — where a withheld date inside a declared era read
+    // `OutsideCoveredRange` from `coverage_on` but refused `UnresolvedGap`
+    // from the query — was removed when the declarations became date-scoped
+    // (#172), so the withheld-row fallback this assertion used to accept
+    // beside the verdict is gone and the match is exact.
     let states_verdict = matches!(
         (verdict, error),
         (
@@ -104,13 +111,10 @@ fn assert_declared_refusal<T: std::fmt::Debug>(result: Result<T, CalendarQueryEr
             CalendarQueryError::UnresolvedGap { .. }
         )
     );
-    // The variant the query raises must state the verdict the metadata
-    // publishes for the day: the doubly-gapped-date divergence issue #128
-    // recorded — where a withheld date inside a declared era read
-    // `OutsideCoveredRange` from `coverage_on` but refused `UnresolvedGap`
-    // from the query — was removed when the declarations became date-scoped
-    // (#172), which is why this assertion is exact instead of accepting the
-    // withheld-row shape beside the verdict.
+    assert!(
+        states_verdict,
+        "{day} carries the verdict {verdict:?}: {error:?} does not state it"
+    );
 }
 
 /// Case 1 — a closed trade date removes its whole trading day, including the
@@ -3073,11 +3077,7 @@ fn the_pre_eve_post_close_queue_answers_on_every_closure_eve_run_up() {
                 Ok(SessionState::OrderEntry),
                 "{label}: the operator prints the ordinary post-close queue"
             );
-            assert_eq!(
-                calendar.is_order_entry_only(instant),
-                Ok(true),
-                "{label}"
-            );
+            assert_eq!(calendar.is_order_entry_only(instant), Ok(true), "{label}");
             assert_eq!(
                 calendar.is_accepting_orders(instant),
                 Ok(true),

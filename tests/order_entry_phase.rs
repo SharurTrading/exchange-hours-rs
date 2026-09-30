@@ -343,7 +343,10 @@ fn the_sunday_evening_queue_answers_through_every_entry_point_it_describes() {
     // The families without a Sunday queue answer too — refusal-free, which is
     // the regression the issue records: grains and livestock answered before,
     // but only because their scans happened to find a weekday occurrence.
-    for key in [MarketHoursKey::GlobexGrains, MarketHoursKey::GlobexLivestock] {
+    for key in [
+        MarketHoursKey::GlobexGrains,
+        MarketHoursKey::GlobexLivestock,
+    ] {
         let calendar = calendar_for_market_hours_key(key);
         let instant = utc(2026, 6, 21, 21, 30);
         assert!(

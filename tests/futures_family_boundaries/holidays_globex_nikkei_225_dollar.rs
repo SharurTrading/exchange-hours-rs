@@ -3460,7 +3460,6 @@ fn era_new_year_2015_ships_no_late_open_and_reopens_at_1700() {
     );
 }
 
-
 // ---------------------------------------------------------------------------
 // The block rows' envelope is the family's regular session (#176)
 // ---------------------------------------------------------------------------
@@ -3481,8 +3480,8 @@ fn era_new_year_2015_ships_no_late_open_and_reopens_at_1700() {
 fn every_block_row_spells_the_envelope_the_regular_session_it_is() {
     let nkd = nkd();
     for (year, month, date) in [
-        (2026, 1, 20), // MERGED_SESSION_BLOCKS (merged MLK Tuesday)
-        (2026, 6, 22), // SATURDAY_SESSION_BLOCKS (published Saturday session)
+        (2026, 1, 20),  // MERGED_SESSION_BLOCKS (merged MLK Tuesday)
+        (2026, 6, 22),  // SATURDAY_SESSION_BLOCKS (published Saturday session)
         (2025, 11, 28), // MERGED_SESSION_EARLY_CLOSE_BLOCKS_2025_11_28
         (2026, 11, 27), // MERGED_SESSION_EARLY_CLOSE_BLOCKS
     ] {

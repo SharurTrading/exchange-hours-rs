@@ -34,7 +34,10 @@
 //! `tests/order_entry_phase.rs` fence — so a future row or phase change on
 //! any identity cannot silently widen the two answers.
 
-#![expect(clippy::expect_used, reason = "fixture literals must fail the test if malformed")]
+#![expect(
+    clippy::expect_used,
+    reason = "fixture literals must fail the test if malformed"
+)]
 
 use chrono::{DateTime, Datelike as _, TimeZone as _, Utc};
 use exchange_hours::{
@@ -55,7 +58,7 @@ fn utc(year: i32, month: u32, day: u32, hour: u32, minute: u32) -> DateTime<Utc>
 /// one entry point may reach further than another. A refusal naming a
 /// covered date is the disagreement the fence exists to catch.
 fn assert_queue_never_widens(
-    calendar: &exchange_hours::ExchangeCalendar,
+    calendar: exchange_hours::ExchangeCalendar,
     instant: DateTime<Utc>,
     label: &str,
 ) {
@@ -63,8 +66,12 @@ fn assert_queue_never_widens(
         let named = error.date();
         calendar.coverage().coverage_on(named) != exchange_hours::DateCoverage::Covered
     };
-    let Ok(state) = calendar.session_state(instant) else { return };
-    let Ok(is_open) = calendar.is_open(instant) else { return };
+    let Ok(state) = calendar.session_state(instant) else {
+        return;
+    };
+    let Ok(is_open) = calendar.is_open(instant) else {
+        return;
+    };
     if state == SessionState::OrderEntry {
         assert!(
             !is_open,
@@ -72,9 +79,10 @@ fn assert_queue_never_widens(
         );
         match calendar.session_bounds(instant) {
             Err(error) if accepted(&error) => {}
-            Err(error) => {
-                panic!("{label}: session_bounds refuses naming a covered date: {error:?}")
-            }
+            Err(error) => assert!(
+                accepted(&error),
+                "{label}: session_bounds refuses naming a covered date: {error:?}"
+            ),
             Ok(Some((open, _close))) => assert!(
                 open > instant,
                 "{label}: session_bounds returns a window opening at or before the \\
@@ -101,7 +109,10 @@ fn assert_queue_never_widens(
 
 #[test]
 fn a_queue_never_widens_is_open_or_session_bounds_on_the_preopen_keys_windows() {
-    for key in [MarketHoursKey::GlobexGrains, MarketHoursKey::GlobexNikkei225Dollar] {
+    for key in [
+        MarketHoursKey::GlobexGrains,
+        MarketHoursKey::GlobexNikkei225Dollar,
+    ] {
         let calendar = calendar_for_market_hours_key(key);
         let mut day = utc(2025, 1, 1, 0, 0).date_naive();
         let last = utc(2028, 1, 1, 0, 0).date_naive();
@@ -115,15 +126,17 @@ fn a_queue_never_widens_is_open_or_session_bounds_on_the_preopen_keys_windows() 
                         day.year(),
                         day.month(),
                         day.day(),
-                        (slot / 12) as u32,
+                        slot / 12,
                         (slot % 12) * 5,
                         0,
                     )
                     .single();
                 let Some(instant) = instant else { continue };
-                assert_queue_never_widens(&calendar, instant, &format!("{key:?} {instant}"));
+                assert_queue_never_widens(calendar, instant, &format!("{key:?} {instant}"));
             }
-            day = day.succ_opt().expect("the walk stays inside the year range");
+            day = day
+                .succ_opt()
+                .expect("the walk stays inside the year range");
         }
     }
 }
@@ -137,7 +150,7 @@ fn a_queue_never_widens_is_open_or_session_bounds_on_every_identity_for_a_sample
                 for minute in (0..60u32).step_by(15) {
                     let instant = utc(2026, 8, day, hour, minute);
                     assert_queue_never_widens(
-                        &calendar,
+                        calendar,
                         instant,
                         &format!("{exchange:?} {instant}"),
                     );
@@ -151,7 +164,7 @@ fn a_queue_never_widens_is_open_or_session_bounds_on_every_identity_for_a_sample
             for hour in 0..24u32 {
                 for minute in (0..60u32).step_by(15) {
                     let instant = utc(2026, 8, day, hour, minute);
-                    assert_queue_never_widens(&calendar, instant, &format!("{key:?} {instant}"));
+                    assert_queue_never_widens(calendar, instant, &format!("{key:?} {instant}"));
                 }
             }
         }

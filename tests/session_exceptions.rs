@@ -2696,8 +2696,7 @@ fn a_block_meeting_the_next_trade_dates_open_replaces_it() {
 /// displace.
 #[test]
 fn an_order_entry_record_does_not_name_the_trade_date_of_the_session_it_does_not_displace() {
-    static BLOCKS: [ExceptionBlock; 1] =
-        [ExceptionBlock::order_entry(0, 19 * 3_600, 20 * 3_600)];
+    static BLOCKS: [ExceptionBlock; 1] = [ExceptionBlock::order_entry(0, 19 * 3_600, 20 * 3_600)];
     let replaced = day(2026, 6, 11);
     let records = [SessionExceptionRecord::replace_sessions(replaced, &BLOCKS)];
     let table = StaticSessionExceptions::new(
@@ -2721,10 +2720,7 @@ fn an_order_entry_record_does_not_name_the_trade_date_of_the_session_it_does_not
         .expect("the coverage contract must answer a covered date");
     assert_eq!(
         expected_bounds,
-        Some((
-            ct((2026, 6, 11), (19, 0, 0)),
-            ct((2026, 6, 12), (7, 45, 0))
-        )),
+        Some((ct((2026, 6, 11), (19, 0, 0)), ct((2026, 6, 12), (7, 45, 0)))),
         "the fixture states the shape only when the normal session stands"
     );
     assert_eq!(
@@ -2736,9 +2732,10 @@ fn an_order_entry_record_does_not_name_the_trade_date_of_the_session_it_does_not
     // surviving occurrence is Friday's session, so its trade date is Friday's.
     assert_eq!(
         calendar.trade_date(instant).expect("covered"),
-        expected_bounds.map(|(open, _)| plain.trade_date(open).expect("covered").expect(
-            "the plain calendar dates the session the bounds came from"
-        )),
+        expected_bounds.map(|(open, _)| plain
+            .trade_date(open)
+            .expect("covered")
+            .expect("the plain calendar dates the session the bounds came from")),
         "trade_date and session_bounds must describe one session, not the \
          record's own date"
     );

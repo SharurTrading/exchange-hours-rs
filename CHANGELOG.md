@@ -38,6 +38,21 @@ corrections (a venue's hours fixed against a primary source) go under
   PAR_20091015_05039_EUR dated 2009-10-15, now in hand, prints closures only)
   Evidence files gain the era blocks and Documents rows; the ledger, coverage
   inventory and `sourcing.rs` move together.
+- **Four carried horizons stand with tightened bounded-search records
+  (2026-09-30 UTC).** `nasdaq`: the operator's 2010 systems-hours PDFs print
+  Support Hours 07:00-20:00 — the help desk, not a session — and the
+  TradingHours page and ETA2013-21 have no 2010-2013 captures, so the
+  2013-03-18 horizon stands (#231). `sgx_securities`: the 2009-05-14 Trading
+  Hours page capture corroborates the carried 09:00-12:30/14:00-17:00 grid
+  verbatim but is pre-floor, so it sources no claimed-interval day and the
+  2011-08-01 horizon stands with the closing condition named to the page
+  family. `euronext_paris`: the operator's Calendar of Cash Business Days 2010
+  (notice PAR_20091015_05039_EUR, dated 2009-10-15, previously believed
+  uncaptured) prints closures and the December eves' close but no weekday
+  timetable, so the 2010-12-24 horizon stands with the closing condition
+  tightened to the trading-manual appendix. The ICE Futures U.S. softs and
+  USDX: a theice.com domain sweep (2009-2012) holds no product page before the
+  August 2011 master table, and the terminal-answer conclusion stands.
 
 ### Added
 

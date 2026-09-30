@@ -17,6 +17,30 @@ SGX-ST normal week; sourced 2011/2017/2019 phases.
 - 2017-11-13 — T1 — SGX announcement 2017-07-18 — the midday break returns: regular 09:00–12:00 and 13:00–17:00 with a 12:00–13:00 routine.
 - 2019-06-03 — T1 — SGX announcement 2019-05-14 — Trade at Close extends the closing tail to 17:16.
 
+## Normal week
+
+**The carried baseline's instants are the operator's own print.** The
+`wps/wcm/connect` securities Trading Hours page as served 2009-05-14
+(`SGX-TH-2009-05-14`) — the only surviving capture of any pre-2011 securities
+hours page — states: "Trading sessions are held daily from Mondays to Fridays
+between 9.00am – 12.30pm and 2.00pm - 5.00pm. In addition, there is an Pre-Open
+Routine (8.30am – 9.00am) and Pre-Close Routine (5.00pm – 5.06pm)." That is
+exactly the pre-2011-08-01 baseline the module encodes: `regular`
+09:00-12:30/14:00-17:00, the morning Pre-Open 08:30-09:00, and the 17:00-17:06
+Pre-Close/Non-Close tail.
+
+**Why the horizon stays at 2011-08-01.** The capture is pre-floor: it dates an
+observation on 2009-05-14 and no capture of any securities trading-hours page
+survives for 2010-01-01..2011-07-31 (the domain-wide CDX sweeps recorded above
+were re-checked 2026-09-30 UTC against the `wps/wcm/connect` path family; the
+Trading Hours page's own capture list holds exactly one row, this one). An
+observation before the support floor does not source a day inside the claimed
+interval, so the era's dates stay carried even though its grid is no longer
+unattested. Closing condition, unchanged in substance and now named to the
+page family: a capture of the securities Trading Hours page (or a dated SGX-ST
+rulebook or practice-note edition) dated inside 2010-01-01..2011-07-31 would
+move the horizon to its day.
+
 ## Sources
 
 Row review: 2026-08-22 (UTC) is the date the ledger row was last reviewed as a
@@ -332,6 +356,7 @@ Pre-Close order entry, and the closing routine runs to the printed 12:16.
 | `SGX-CAL-2018-2019` | 2018-01-01 .. 2020-01-01 | <https://web.archive.org/web/20181223141708id_/http://www.sgx.com/wps/portal/sgxweb/home/trading/securities/trading_hours_calendar> | Wayback `id_` replay of capture `20181223141708`, retrieved 2026-09-29 05:09:54 UTC | T1 | `818e043305ce491a2279d98d4279a26eed2b6d6aae61df9afca7ec3bdbf516ba` |
 | `SGX-ST-SCHED` | 2025-01-01 .. 2026-12-31 | <https://api2.sgx.com/content-api?queryId=dd24dd8e5b3ef52e535a662e01b58d76471f335e%3Apage&variables=%7B%22path%22%3A%22%2Fstock-exchange%2Ftrading%22%2C%22lang%22%3A%22EN%22%7D> | retrieved 2026-09-28 01:59 UTC | T2 | `45dbdc61d808b4f72bb8bbddb198107f08759a20b85b288271d6d5a0326facd7` |
 | `SGX-MOM-CAL-2025-2026` | 2025-01-01 .. 2026-12-31 | <https://www.mom.gov.sg/employment-practices/public-holidays> | retrieved 2026-09-28 01:48 UTC | T1 | `a4f175a7d33222b91f1c8c2f84e6d1e75f0c0b15e265addb478b73e3e65dcf3d` |
+| `SGX-TH-2009-05-14` | no rows keyed (the pre-floor securities Trading Hours page; Normal-week corroboration) | <https://web.archive.org/web/20090514003555id_/http://www.sgx.com:80/wps/wcm/connect/mp_en/site/trading_on_sgx/securities_market/securities_trading_and_settlement/Trading+Hours?> | Wayback `id_` replay of capture `20090514003555`, retrieved 2026-09-30 04:47 UTC | T1 | `0dd72053814bf349b1177d300027cd4bfae160cc4fd75c22afa824d5f7099bf1` |
 
 `SGX-ST-SCHED` is the document id the 2025-2026 rows cite; `SGX-MOM-CAL-
 2025-2026` is the designated calendar those closure dates are read from,
@@ -373,6 +398,6 @@ shells and key nothing.
   launch, so the 2019-12-24 and 2019-12-31 rows hold the last printed grid
   (close 12:36) and the disputed tail ships as no session. **Closing
   condition:** a post-June-2019 artifact printing the half-day grid.
-- **horizon carried below the first dated row** — the pre-2011-08-01 session bounds (09:00–12:30 and 14:00–17:00) are not attested by any artifact named in the repository; the 2011-08-01 rulebook supplies only the routine phase boundaries carried by the two oldest profiles. The ledger horizon is therefore 2011-08-01, the first day at which this row's state is sourced, with everything below it carried. Closing condition: a dated pre-2011 SGX-ST rulebook or practice-note edition stating the lunch-break session bounds, which would move the horizon earlier.
+- **horizon carried below the first dated row** — the pre-2011-08-01 session bounds (09:00–12:30 and 14:00–17:00) are attested by the operator's own Trading Hours page only at a pre-floor capture (2009-05-14, see the Normal week section): the grid is no longer unattested, but no artifact dated inside 2010-01-01..2011-07-31 prints it, so the era's dates stay carried. The ledger horizon remains 2011-08-01, the first day at which this row's state is sourced, with everything below it carried. Closing condition: a capture of the securities Trading Hours page (or a dated pre-2011 SGX-ST rulebook or practice-note edition) dated inside 2010-01-01..2011-07-31, which would move the horizon to its day.
 - Current routine ends are randomized: Pre-Open ends 08:58–08:59 and 12:58–12:59, Pre-Close ends 17:04–17:05. Each order-entry slice stops at the earliest possible end so no matching time is claimed as order entry.
 - Trade at Close matches at the Equilibrium Price and is therefore tradeable throughout its window.

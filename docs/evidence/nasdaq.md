@@ -332,6 +332,8 @@ Nasdaq Stock Market normal week; date-aware lookups retain the sourced 2013 07:0
 | `NQ-HOL-2025` | 2024-12-29 .. 2025-12-31 | <https://web.archive.org/web/20241229150248id_/https://www.nasdaqtrader.com/Trader.aspx?id=Calendar> | captured 2024-12-29, retrieved 2026-09-27 | T1 | `8b57f45eb7cc7e6aa373591d48be9b2e77ff3319500c107a0caebff9d2f32db9` |
 | `NQ-HOL-2026` | 2026-01-01 .. 2026-12-31 | <https://www.nasdaqtrader.com/trader.aspx?id=calendar> | retrieved 2026-09-27 | T1 | `47db9c37c67e3bd095a5e596b02bf61b3ca3d49de48f45a9d4c7e3de5745270a` |
 | `NQ-SANDY-2012` | 2012-10-29 | <https://www.nasdaqtrader.com/TraderNews.aspx?id=ETA2012-44> | captured 2012-10-29, retrieved 2026-09-27 | T1 | `04ff48074681a33f0a14e59411c75ffd34604b806955bdcaa60bad4f0f2a33cc` |
+| `NASDAQ-SYS-2010-A` | no rows keyed (the 2010 systems-hours inventory; Normal-week bounded-search record) | <https://web.archive.org/web/20100101193510id_/http://nasdaqtrader.com/content/TechnicalSupport/nasdaq_sys_hours.pdf> | Wayback `id_` replay of capture `20100101193510`, retrieved 2026-09-30 04:52 UTC | T1 | `57a5d35d99f03690814c2c74157fc5a2b2417b964e03cd3a1adae2803f4d8c81` |
+| `NASDAQ-SYS-2010-B` | no rows keyed (the December 2010 edition, doc code Q10-0079; Normal-week bounded-search record) | <https://web.archive.org/web/20101230180554id_/http://ftp.nasdaqtrader.com/content/TechnicalSupport/nasdaq_sys_hours.pdf> | Wayback `id_` replay of capture `20101230180554`, retrieved 2026-09-30 04:52 UTC | T1 | `062e5fda19370bdf65abc22f2de32147df8b68566c4888355fcfa10cd5d80799` |
 
 ## Sources
 
@@ -348,6 +350,7 @@ as each source is re-verified.
 - <https://www.nasdaqtrader.com/TraderNews.aspx?id=ETA2013-21> — Nasdaq Equity Trader Alert 2013-21, the 04:00 pre-market open effective Monday 2013-03-18.
 - <https://www.nasdaqtrader.com/TraderNews.aspx?id=ETA2026-46> — Nasdaq Equity Trader Alert 2026-46, the announced Night Session.
 - <https://listingcenter.nasdaq.com/assets/rulebook/nasdaq/filings/SR-NASDAQ-2025-109_Approval.pdf> — the SEC approval order for the Night Session rule.
+- The operator's `nasdaq_sys_hours.pdf` floor-era captures, 2010-01-01 and 2010-12-30 (Wayback replays, digests in the `### Documents` table) — the operator's systems-hours inventory of that era, whose Stock Market row prints Support Hours 07:00-20:00 and Market Hours 09:30-16:00; support hours are not a trading session (LAW-SESSION-NOT-EXPIRY), so they carry the record's negative rather than a row.
 
 ## Gaps and residual risks
 
@@ -358,8 +361,21 @@ as each source is re-verified.
   publication date is not recorded here, so the horizon is keyed to the
   effective day it states, 2013-03-18. Closing condition: a Nasdaq rulebook
   edition or trader alert that states the 07:00 System Hours open on a
-  floor-era day. Tracked as #231, the carried-horizon tracker this scope shares
-  with `asx` (LAW-FOLLOW-UPS-ARE-ISSUES).
+  floor-era day. Tracked as #231, the carried-horizon tracker (the `asx` half
+  was discharged 2026-09-30 — see that file).
+- **Bounded search, 2026-09-30 UTC.** The floor-era channels that could state
+  the 07:00 open were checked and close without an admissible artifact:
+  nasdaqtrader's own `nasdaq_sys_hours.pdf` survives at captures
+  `20100101193510` and `20101230180554` (`NASDAQ-SYS-2010-A`,
+  `NASDAQ-SYS-2010-B`), but its Stock Market row reads "Support Hours: 7:00
+  a.m. – 8:00 p.m.; Market Hours: 9:30 a.m. – 4:00 p.m." — the help desk's
+  staffing window, not a trading session, so it states neither the pre-market
+  open nor the post-market close in session language; the nasdaqtrader
+  `TradingHours` page has no 2010-2013 capture; `TraderNews.aspx?id=ETA2013-21`
+  has no capture at all, so the alert's publication day stays unrecorded; and
+  the Federal Register and EDGAR full-text channels return no Nasdaq-authored
+  statement of the pre-2013 System Hours at an exact-phrase match. The two PDF
+  captures are held in the store and cited below so the negative is checkable.
 - **Watch item, not a gap.** The announced Night Session is monitored and
   unencoded. Nasdaq Equity Trader Alert 2026-46 announces **2026-12-06** as the
   date, but Nasdaq Equity 1 conditions commencement on Equity Data Plan

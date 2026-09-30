@@ -187,6 +187,14 @@ close_ssm` encodes exactly one complete local-day span, so Sunday 18:00 runs
 continuously to Monday 18:00, which is what the pre-2011 grid described.
 
 
+2026-09-30: the theice.com product-page channel was swept for pre-August-2011
+editions (domain-wide CDX 2009-2012, 12 503 collapsed url keys; recorded in the
+research store's `holidays/raw/equities/NORMAL-WEEK-RETRIEVALS-2026-09-30.md`).
+The USDX product pages first appear in the archive after the earliest master
+table edition, and no 2009-2011 archived ICE page or FAQ edition printing a DX
+grid beyond the April 2011 FAQ already held survives. The terminal-answer
+conclusion stands.
+
 2026-09-01: WHY THE 2010-2011 INTERVAL CANNOT BE SOURCED. ICE Futures U.S.
 sets these hours administratively, not by rule. Its product rulebook chapters
 - Sugar No. 11, Cotton No. 2, Coffee, Cocoa, FCOJ and USDX, all captured

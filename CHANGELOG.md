@@ -56,17 +56,21 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Added
 
-- **The `eurex_fixed_income` normal week sources back to the 2010-01-01
-  floor (2026-09-30 UTC).** The carried horizon below which the key's
-  pre-2018 weekday profile was served from a carried grid is gone:
-  `eurex_fixed_income` moves from 2018-11-15, so dates between the old
-  horizon and the floor now answer instead of refusing as carried. The
-  operator's archived Contract Specifications amendments of 2009-09-14,
-  2011-09-19, 2013-03-11 and 2017-08-28 each print the same
-  FGBL/FGBM/FGBS/FGBX row (Pre-Trading 07:30-08:00 CET, Continuous Trading
-  08:00-22:00, Post-Trading Period Until 22:30), which also sources the
-  22:30 post-trading value the evidence previously carried, so both of the
-  row's recorded residual gaps discharge.
+- **The `cme` and `globex_equity_index` normal weeks source back to the
+  2010-01-01 floor (2026-09-30 UTC).** The carried horizons below which
+  those weekday profiles were served from a carried grid are gone: both
+  move from 2012-05-03, so dates between the old horizon and the floor now
+  answer instead of refusing as carried. The floor-era Sunday queue is
+  stated by CME's own Globex notices 20090831, 20090907 and 20090914
+  ("Customers may re-enter GTC and GTD orders during the pre-open, 4:15 to
+  5:00 p.m. CT, Sunday, October 4", the Equity Futures Enhancements launch
+  effective 2009-10-04), the floor-era grid by the archived equities
+  trading-hours page of 2009-04-06 beside the already-cited October-2009
+  product guide, and the floor-era weekday queue by the outgoing value the
+  dated 2010-11-15 change states; the CBOT YM line's own Sunday queue time
+  is first printed per product on the 2012-05-03 capture and is recorded as
+  a residual scope note. The two #79 Sunday quarter-hour declarations are
+  unchanged.
 
 - **`nzx` 2016-2017 capture gap narrowed (2026-09-30 UTC).** The 2026-09-30
   re-sweep with the Wayback CDX service working surfaced the operator's own

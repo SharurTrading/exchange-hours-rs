@@ -469,8 +469,9 @@ const fn for_exchange(exchange: Exchange) -> DeclaredSourcing {
         Exchange::BoxOptions => DeclaredSourcing::carried_below(horizon!(2010, 1, 1)),
         // `—`: closed before the operator-dated 2023-09-27 launch.
         Exchange::MemxOptions => DeclaredSourcing::nothing_carried(),
-        // The Sunday 16:00-16:15 CT quarter-hour is withheld (#79).
-        Exchange::Cme => DeclaredSourcing::carried_below_with_quarter_hour(horizon!(2012, 5, 3)),
+        // The Sunday 16:00-16:15 CT quarter-hour is withheld (#79). The
+        // floor-era grid and both queues are sourced (notices 20090831/0907/0914).
+        Exchange::Cme => DeclaredSourcing::carried_below_with_quarter_hour(horizon!(2010, 1, 1)),
         Exchange::Cbot => DeclaredSourcing::carried_below(horizon!(2010, 3, 15)),
         // The Sunday 16:00-16:15 CT quarter-hour is withheld (#79).
         Exchange::Comex => DeclaredSourcing::carried_below_with_quarter_hour(horizon!(2012, 5, 11)),
@@ -570,10 +571,11 @@ const fn for_exchange(exchange: Exchange) -> DeclaredSourcing {
 )]
 const fn for_market_hours_key(key: MarketHoursKey) -> DeclaredSourcing {
     match key {
-        // The Sunday 16:00-16:15 CT quarter-hour is withheld, so no date in the
-        // 2025-onward claim is answered from a complete normal week (#79).
+        // The floor-era grid and both queues are sourced like the venue's own
+        // (notices 20090831/0907/0914); the Sunday quarter-hour is still
+        // withheld (#79).
         MarketHoursKey::GlobexEquityIndex => {
-            DeclaredSourcing::carried_below_with_quarter_hour(horizon!(2012, 5, 3))
+            DeclaredSourcing::carried_below_with_quarter_hour(horizon!(2010, 1, 1))
         }
         MarketHoursKey::GlobexEnergy => {
             DeclaredSourcing::carried_below_with_quarter_hour(horizon!(2012, 5, 11))

@@ -93,6 +93,64 @@ corrections (a venue's hours fixed against a primary source) go under
   closes there. The evidence file's Documents table gains the capture series;
   the ledger row and coverage inventory move with the rows and the scope reads
   complete to 2027-12-31.
+
+- **Coverage metadata no longer calls dates covered that the query surface
+  refuses for another date's sake (2026-09-30 UTC).** A date whose own facts
+  answer could still be called `Covered` while its queries refused — a session
+  opens on the previous civil day, and the next session's trade date lies
+  beyond it — so a consumer reading `coverage_on` to walk a range walked into
+  refusals the metadata never named (#151). `coverage_on` now accounts for the
+  resolution reach: a date whose reach crosses a date the identity does not
+  answer (an audited window's edge, a withheld date) reports
+  `OutsideCoveredRange` with the new `CoverageGapReason::ResolutionEdge`, and
+  `Covered` promises that every query on the date answers or refuses naming a
+  date the metadata itself flags. The agreement is fenced by a sweep over every
+  identity's covered dates; window-edge dates (for example `iceus` 2025-01-01
+  and `cfe` 2017-04-10) move from `Covered` to the new reason, and the dates
+  beside a withheld marker move with them.
+
+- **The order-entry gate judges a Sunday queue by its trade date, and an
+  order-entry record no longer lends its date to a session it does not own
+  (2026-09-30 UTC).** Two engine corrections. The Sunday-evening order-entry
+  queue of every CME family now answers `is_order_entry_only` and
+  `is_accepting_orders` instead of refusing as outside the covered ranges
+  (#132; the date-scoped declarations of #172 already carried the fix, and the
+  fence the issue asked for now pins it). And `replacement_trade_date` selects
+  candidate blocks by kind as well as offset, so an `order_entry` record can no
+  longer assign its own trade date to the tradeable occurrence it does not
+  displace (#138): the bounds and the date a caller pairs always describe one
+  session.
+
+- **Gate and metadata agree on a doubly-gapped date, and the fixtures that
+  accepted either refusal are narrowed (2026-09-30 UTC).** #128's divergence —
+  `coverage_on` reading a declared phase gap first while the query gate read
+  the withheld date — was removed by #172's date-scoped declarations; the
+  variant the query raises on a doubly-gapped date is now the one the metadata
+  publishes, the agreement fence asserts it for every identity, and the
+  `globex_grains` and `globex_equity_index` fixtures state the verdict exactly
+  instead of accepting a withheld-row fallback beside it.
+
+- **The nikkei block rows spell the regular envelope `regular`, so
+  `is_open_regular` no longer flips on the dates they cover (2026-09-30
+  UTC).** `globex_nikkei_225_dollar`'s whole tradeable envelope is its
+  `regular` session, but the four pre-existing block sets spelled their
+  matching runs `extended`, so 2026-01-20, 2026-06-22, 2026-07-06, 2027-06-21
+  and every other block-row trade date answered `is_open_regular = false` /
+  `is_open_extended = true` inside a session the ordinary week calls regular
+  (#176). The sets restate their 17:00-16:00 CT runs `regular`; `is_open`,
+  trade dates and session bounds are unchanged.
+
+- **The grains pre-eve post-close queue answers again on the fourteen dates
+  before a mid-week closure eve (2026-09-30 UTC).** The ordinary
+  `14:30-16:00` CT post-close queue on 2025-04-16, 2025-06-17, 2025-07-02,
+  2025-11-25, 2025-12-30, 2026-04-01, 2026-06-17, 2026-07-01, 2026-11-24,
+  2026-12-30, 2027-03-24, 2027-06-16, 2027-11-23 and 2027-12-22 answered
+  `Closed` because the eve's replacement row deleted the occurrence the
+  ordinary week dates to the eve's trade date (#175). `CLOSURE_EVE_BLOCKS` now
+  opens with a `-1` `14:30-16:00` order-entry block restating it, so the
+  fourteen instants answer `OrderEntry` and accept orders at 14:30 and 15:30 CT
+  while no trade prints in the queue. Holiday-table row dates are unchanged.
+
 - **Six equities carried horizons source back toward the 2010 floor
   (2026-09-30 UTC).** The Wave C2 retrieval found each scope's carried normal
   week in the operators' own artifacts, and six horizons move with no runtime

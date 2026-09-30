@@ -2678,6 +2678,72 @@ fn a_block_meeting_the_next_trade_dates_open_replaces_it() {
     );
 }
 
+/// An `order_entry` record whose block shares its opening instant with a
+/// surviving **tradeable** occurrence: issue #138's shape, stated as the same
+/// invariant the collision fixture above states for the date filter.
+///
+/// The record below replaces Thursday's trade date with a single order-entry
+/// block opening Thursday 19:00 CT — which is also the normal-week electronic
+/// open on this grid. The kind-aware displacement rule (#131) leaves the
+/// tradeable occurrence alone (the block is not of its kind and displaces
+/// nothing), so `session_bounds` answers the normal Thursday 19:00 -> Friday
+/// 07:45 session. Before the fix, `replacement_trade_date` filtered candidate
+/// blocks by **offset only**, so the `order_entry` block still assigned its own
+/// trade date (Thursday) to that window, and a caller pairing the two answers
+/// received a window and a date naming two different sessions. The fix is the
+/// kind filter: an `order_entry` block answers only for the order-entry scan
+/// and cannot name the trade date of a tradeable occurrence it does not
+/// displace.
+#[test]
+fn an_order_entry_record_does_not_name_the_trade_date_of_the_session_it_does_not_displace() {
+    static BLOCKS: [ExceptionBlock; 1] =
+        [ExceptionBlock::order_entry(0, 19 * 3_600, 20 * 3_600)];
+    let replaced = day(2026, 6, 11);
+    let records = [SessionExceptionRecord::replace_sessions(replaced, &BLOCKS)];
+    let table = StaticSessionExceptions::new(
+        CalendarSource::MarketHoursKey(MarketHoursKey::GlobexGrains),
+        day(2026, 6, 1),
+        day(2026, 6, 30),
+        &records,
+    )
+    .expect("valid records");
+    let calendar = calendar_for_market_hours_key(MarketHoursKey::GlobexGrains)
+        .with_session_exceptions(&table)
+        .expect("the fixture is scoped to this calendar");
+    let plain = calendar_for_market_hours_key(MarketHoursKey::GlobexGrains);
+
+    // The window the identity serves at the shared open instant is the
+    // normal extended session opening Thursday 19:00 CT (00:00Z Friday), and
+    // it is unchanged: the order-entry block displaces nothing.
+    let instant = ct((2026, 6, 11), (19, 30, 0));
+    let expected_bounds = plain
+        .session_bounds(instant)
+        .expect("the coverage contract must answer a covered date");
+    assert_eq!(
+        expected_bounds,
+        Some((
+            ct((2026, 6, 11), (19, 0, 0)),
+            ct((2026, 6, 12), (7, 45, 0))
+        )),
+        "the fixture states the shape only when the normal session stands"
+    );
+    assert_eq!(
+        calendar.session_bounds(instant).expect("covered"),
+        expected_bounds,
+        "the order-entry record must not displace the tradeable occurrence"
+    );
+    // The trade date reported must be the date of the window reported: the
+    // surviving occurrence is Friday's session, so its trade date is Friday's.
+    assert_eq!(
+        calendar.trade_date(instant).expect("covered"),
+        expected_bounds.map(|(open, _)| plain.trade_date(open).expect("covered").expect(
+            "the plain calendar dates the session the bounds came from"
+        )),
+        "trade_date and session_bounds must describe one session, not the \
+         record's own date"
+    );
+}
+
 /// The reach of the invariant, swept over every served identity.
 ///
 /// A window `session_bounds` reports as containing the query is a session the

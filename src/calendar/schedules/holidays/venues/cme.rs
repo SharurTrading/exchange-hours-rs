@@ -604,8 +604,8 @@ pub(crate) static CME: &HolidayTable = holidays! {
         // 2025-01-21 - T2 - CME-SVC-2025-01-19 - the merged trade date: equity
         // index, energy, interest rates and FX each state a replacement-block
         // set for it and the four sets differ; the holiday halts at 12:00,
-        // 13:30, 12:00 and 16:00 CT respectively, while grains and livestock
-        // state no row.
+        // 13:30, 12:00 and 16:00 CT respectively, while grains states its five-block
+        // merged-eve set and livestock states no row.
         (2025, 1, 21, Unsourced, T2, "CME-SVC-2025-01-19"),
         // 2025-02-17 - T2 - CME-SVC-2025-02-16 - as 2025-01-20.
         (2025, 2, 17, Unsourced, T2, "CME-SVC-2025-02-16"),
@@ -665,7 +665,8 @@ pub(crate) static CME: &HolidayTable = holidays! {
         (2026, 1, 19, Unsourced, T2, "CME-SVC-2026-01-18"),
         // 2026-01-20 - T2 - CME-SVC-2026-01-18 - the merged trade date; as
         // 2025-01-21: equity index, energy, interest rates and FX state four
-        // different replacement-block sets, and grains and livestock state none.
+        // different replacement-block sets, grains states its five-block
+        // merged-eve set, and livestock states none.
         (2026, 1, 20, Unsourced, T2, "CME-SVC-2026-01-18"),
         // 2026-02-16 - T2 - CME-SVC-2026-02-15 - as 2025-01-20.
         (2026, 2, 16, Unsourced, T2, "CME-SVC-2026-02-15"),

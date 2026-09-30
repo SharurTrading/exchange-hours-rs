@@ -20,12 +20,22 @@
 //! [`docs/evidence/nzx.md`](../../../../../docs/evidence/nzx.md).
 //!
 //! The audited windows are `2010-01-01..2016-04-25` and
-//! `2017-10-23..2027-01-04`. The span between them — 2016-04-26 through
-//! 2017-10-22 — is a recorded gap: no capture of any operator trading-hours
-//! page survives in the Wayback index for those eighteen months, so no
-//! operator artifact prints those dates and the table claims nothing there.
-//! Queries inside the gap refuse rather than answer; the gap and its closing
-//! condition are recorded in the evidence file, tracked as issue #209.
+//! `2017-04-14..2027-01-04`. The span between them — 2016-04-26 through
+//! 2017-04-13 — is a recorded gap: no capture of any operator trading-hours
+//! page survives in the Wayback index for those months, so no operator
+//! artifact prints those dates and the table claims nothing there. The
+//! 2026-09-30 UTC re-sweep with the CDX service working found the operator's
+//! Derivatives trading-hours page of 2017-07-18 (`nzx.com/Derivatives/
+//! trading_hours`, capture `20170718122509`), whose own `Market Closed or
+//! Abbreviated Trading` table prints the exchange closures retrospectively
+//! from Good Friday 2017-04-14 — the same table the Main Board page carries,
+//! agreeing with the 2017-06-23 Main Board capture on every shared date — so
+//! the four 2017 dates it adds key to it (`NZX-DX-2017-07-18`) and the
+//! window they open runs unbroken into the 2017-10-23 rows. The table's
+//! first row is 2017-04-14, so the roll reaches no further back and the gap
+//! keeps 2016-04-26..2017-04-13. Queries inside the gap refuse rather than
+//! answer; the gap and its closing condition are recorded in the evidence
+//! file, tracked as issue #209.
 //!
 //! The abbreviated-trading days ship as replacement block sets restating the
 //! operator's own abbreviated grid for their era, **not** scalar early closes,
@@ -137,7 +147,7 @@ static ABBREVIATED_DAY_BLOCKS: [ExceptionBlock; 4] = [
 /// 2026-02-03 replay.
 // Evidence: docs/evidence/nzx.md
 pub(crate) static TABLE: &HolidayTable = holidays! {
-    coverage: [(2010, 1, 1) ..= (2016, 4, 25), (2017, 10, 23) ..= (2027, 1, 4)],
+    coverage: [(2010, 1, 1) ..= (2016, 4, 25), (2017, 4, 14) ..= (2027, 1, 4)],
     rows: [
         // 2010-01-01 - T1 - NZX-KD-2010-01-05 - New Year's Day, `Closed`.
         (2010, 1, 1, Closed, T1, "NZX-KD-2010-01-05"),
@@ -343,9 +353,21 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         // last date any surviving operator artifact prints before the
         // 2016-2017 capture gap.
         (2016, 4, 25, Closed, T1, "NZX-SX-2015-04-27"),
+        // 2017-04-14 - T1 - NZX-DX-2017-07-18 - Good Friday, `Closed`, the
+        // Derivatives trading-hours page's own first table row — the furthest
+        // back the operator's surviving artifacts reach after the capture
+        // gap.
+        (2017, 4, 14, Closed, T1, "NZX-DX-2017-07-18"),
+        // 2017-04-17 - T1 - NZX-DX-2017-07-18 - Easter Monday, `Closed`.
+        (2017, 4, 17, Closed, T1, "NZX-DX-2017-07-18"),
+        // 2017-04-25 - T1 - NZX-DX-2017-07-18 - Anzac Day, `Closed`.
+        (2017, 4, 25, Closed, T1, "NZX-DX-2017-07-18"),
+        // 2017-06-05 - T1 - NZX-DX-2017-07-18 - Queen's Birthday (`Queens
+        // Birthday` as printed), `Closed`.
+        (2017, 6, 5, Closed, T1, "NZX-DX-2017-07-18"),
         // 2017-10-23 - T1 - NZX-SX-2017-06-23 - Labour Day, `Closed`, the
-        // first date the next surviving operator artifact prints after the
-        // capture gap.
+        // first date the Main Board artifact after the capture gap prints;
+        // the Derivatives page prints the same date.
         (2017, 10, 23, Closed, T1, "NZX-SX-2017-06-23"),
         // 2017-12-22 - T1 - NZX-SX-2017-06-23 - Christmas Eve, Abbreviated
         // Trading (the 12:45 abbreviated grid).

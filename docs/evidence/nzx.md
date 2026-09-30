@@ -27,11 +27,11 @@ as each source is re-verified.
 - <https://www.nzx.com/learning/issuer-participant-resources/nzx-trading/anatomy-of-a-trading-day> — NZX Anatomy of a Trading Day. Of Pre-Open it says: "Orders can be placed, amended, and deleted. No trades execute until the opening auction. Off-market trades may be reported." Off-market reports print, so Pre-Open is tradeable `extended`, not order-entry-only.
 - <https://www.nzx.com/announcements/350919> — NZX announcement 350919, the 2020-04-06 pre-open move.
 - <https://www.nzx.com/announcements/353837> — NZX announcement 353837, making the initially temporary change indefinite.
-- The operator's pre-2025 trading-hours pages and their Wayback `id_` replays — `nzx.com/markets/key-dates/trading-hours` (2010-2011), `nzx.com/markets/NZSX/trading_hours` (2011-2017), `nzx.com/investing/nzx-trading-hours` (2018-2019), `nzx.com/services/nzx-trading/hours-boards` (2020-2024) — retrieved 2026-09-29 (UTC) as `holidays/raw/equities/nzx/2010-2024/` (research store), digests in the `### Documents` table below. Each page prints the operator's own `Market Closed or Abbreviated Trading` / `NZX Market Holidays` table and the era's normal and abbreviated phase grids.
+- The operator's pre-2025 trading-hours pages and their Wayback `id_` replays — `nzx.com/markets/key-dates/trading-hours` (2010-2011), `nzx.com/markets/NZSX/trading_hours` (2011-2017), `nzx.com/Derivatives/trading_hours` (2017; found by the 2026-09-30 UTC re-sweep, artifact in the store's `cdx-retry-2026-09-30/`), `nzx.com/investing/nzx-trading-hours` (2018-2019), `nzx.com/services/nzx-trading/hours-boards` (2020-2024) — retrieved 2026-09-29 (UTC) as `holidays/raw/equities/nzx/2010-2024/` (research store), digests in the `### Documents` table below. Each page prints the operator's own `Market Closed or Abbreviated Trading` / `NZX Market Holidays` table and the era's normal and abbreviated phase grids.
 
 ## Holidays
 
-**Coverage:** 2010-01-01..2016-04-25, 2017-10-23..2027-01-04 (inclusive trade dates, the spans the operator's own pages print; the span between them is the capture gap recorded below). Tier: T1 throughout.
+**Coverage:** 2010-01-01..2016-04-25, 2017-04-14..2027-01-04 (inclusive trade dates, the spans the operator's own pages print; the span between them is the capture gap recorded below). Tier: T1 throughout.
 
 NZX prints no consolidated year sheets for most of the window. The operator's
 own `Market Holidays & Trading Hours` statements are keyed to the page that
@@ -48,18 +48,29 @@ the replacement-block days below are restated. Every pre-2025 artifact is a
 Wayback `id_` replay of the operator's own page — verbatim bytes of an
 operator statement, so T1 (LAW-PUBLIC-SOURCES).
 
-**The 2016-2017 capture gap.** The NZSX page's surviving replays run
-2015-04-27 (printing upcoming closures through ANZAC Day, 2016-04-25) and then
-2017-06-23 (printing upcoming closures from Labour Day, 2017-10-23). No
-capture of any NZX trading-hours page — key-dates, NZSX, NZAX, NZDX, NZZX,
-investing or hours-boards, nor any operator PDF — survives in the Wayback
-index for 2016-04-26..2017-10-22 (checked 2026-09-29, CDX sweeps over the
-whole domain in that era). No operator statement prints those dates, so the
+**The 2016-2017 capture gap, narrowed 2026-09-30.** The NZSX page's surviving
+replays run 2015-04-27 (printing upcoming closures through ANZAC Day,
+2016-04-25) and then 2017-06-23 (printing upcoming closures from Labour Day,
+2017-10-23). The 2026-09-30 UTC re-sweep with the CDX service working (the
+2026-09-29 sweeps ran while the service was failing; outputs in the store's
+`holidays/raw/equities/nzx/cdx-retry-2026-09-30/`) surfaced one more in-span
+operator page: the Derivatives trading-hours page of 2017-07-18
+(`nzx.com/Derivatives/trading_hours`, `NZX-DX-2017-07-18`), whose own
+`Market Closed or Abbreviated Trading` table — the same table the Main Board
+page carries — prints the closures retrospectively from Good Friday 2017-04-14
+through the 2018 arrangement, agreeing with the 2017-06-23 Main Board capture
+on every shared date, so the 2017-04-14..2017-10-22 span keys to it and the
+audited window runs unbroken from 2017-04-14. The table's first row is
+2017-04-14 — the roll reaches no further back — and the re-sweep found no
+other in-span operator page (no key-dates, NZAX, NZDX-path, investing or
+hours-boards capture, no holiday-named PDF, no data endpoint among the 1 256
+url keys of the span). The remaining span **2016-04-26..2017-04-13** ships no
+rows, and no operator statement prints those dates, so the
 table claims nothing for the span: the coverage windows stop at 2016-04-25
-and resume at 2017-10-23, and queries inside the gap refuse rather than
+and resume at 2017-04-14, and queries inside the gap refuse rather than
 answer. **Closing condition:** a surviving operator artifact printing the
-2016-2017 closures (an annual sheet, a participant circular, or a late-2016 or
-mid-2017 page capture) keys the span and re-joins the windows. Tracked as
+2016-04-26..2017-04-13 closures (an annual sheet, a participant circular, or a
+2016 or early-2017 page capture). Tracked as
 [#209](https://github.com/SharurTrading/exchange-hours-rs/issues/209).
 
 **Abbreviated trading days are replacement days, not scalar early closes.**
@@ -239,14 +250,18 @@ Pre-open at 9:00am — the narrowest sourced value across the undated span
 | 2016-03-28 | closed | `28/03/2016 Easter Monday` — `Closed` | `NZX-SX-2015-04-27` | T1 | NZX event date printed verbatim |
 | 2016-04-25 | closed | `25/04/2016 Anzac Day` — `Closed` | `NZX-SX-2015-04-27` | T1 | NZX event date printed verbatim; the last date any surviving operator artifact prints before the 2016-2017 capture gap |
 
-**2016-04-26..2017-10-22: the capture gap.** No operator artifact prints these
+**2016-04-26..2017-04-13: the capture gap.** No operator artifact prints these
 dates (see the coverage paragraph); they carry no rows and no answer.
 
 ### 2017
 
 | Trade date | Kind | Instant as printed | Document | Tier | Derived from |
 |---|---|---|---|---|---|
-| 2017-10-23 | closed | `23/10/2017 Labour Day` — `Closed` | `NZX-SX-2017-06-23` | T1 | NZX event date printed verbatim; the first date the next surviving operator artifact prints after the capture gap |
+| 2017-04-14 | closed | `14/04/2017 Good Friday` — `Closed` | `NZX-DX-2017-07-18` | T1 | NZX event date printed verbatim; the Derivatives page table's own first row, the furthest back any surviving operator artifact reaches after the capture gap |
+| 2017-04-17 | closed | `17/04/2017 Easter Monday` — `Closed` | `NZX-DX-2017-07-18` | T1 | NZX event date printed verbatim |
+| 2017-04-25 | closed | `25/04/2017 Anzac Day` — `Closed` | `NZX-DX-2017-07-18` | T1 | NZX event date printed verbatim |
+| 2017-06-05 | closed | `05/06/2017 Queens Birthday` — `Closed` | `NZX-DX-2017-07-18` | T1 | NZX event date printed verbatim (the operator's own unapostrophised print) |
+| 2017-10-23 | closed | `23/10/2017 Labour Day` — `Closed` | `NZX-SX-2017-06-23` | T1 | NZX event date printed verbatim; the first date the next surviving Main Board artifact prints after the capture gap — the Derivatives artifact prints the same date |
 | 2017-12-22 | replacement blocks | `22/12/2017 Christmas Eve` — `Abbreviated` | `NZX-SX-2017-06-23` | T1 | the 12:45 abbreviated grid, same reading as 2013-12-24 |
 | 2017-12-25 | closed | `25/12/2017 Christmas Day` — `Closed` | `NZX-SX-2017-06-23` | T1 | NZX event date printed verbatim |
 | 2017-12-26 | closed | `26/12/2017 Boxing Day` — `Closed` | `NZX-SX-2017-06-23` | T1 | NZX event date printed verbatim |
@@ -465,6 +480,7 @@ LAW-WATCH.
 | `NZX-SX-2015-01-13` | 2015-02-06 .. 2016-01-04 | <https://web.archive.org/web/20150113212520id_/https://www.nzx.com/markets/NZSX/trading_hours> | Wayback `id_` replay of capture `20150113212520`, retrieved 2026-09-29 03:27:08 UTC | T1 | `8ea588ca618faad2f742ad771bd2a0428469568b537bf26fbe67c04cf0dd1bc6` |
 | `NZX-SX-2015-04-27` | 2015-06-01 .. 2016-04-25 | <https://web.archive.org/web/20150427144953id_/https://www.nzx.com/markets/NZSX/trading_hours> | Wayback `id_` replay of capture `20150427144953`, retrieved 2026-09-29 03:28:52 UTC | T1 | `293803e0f1a918423c4bad2d8cfbb3d4b8858d0d32d42c6701814168292c4411` |
 | `NZX-SX-2017-06-23` | 2017-10-23 .. 2018-06-04 | <https://web.archive.org/web/20170623165321id_/https://www.nzx.com/markets/NZSX/trading_hours> | Wayback `id_` replay of capture `20170623165321`, retrieved 2026-09-29 03:27:10 UTC | T1 | `aff08bd12590dea5f6035b51625dd1c3a3792dc7ae5359cdc1acd9835bb05fa1` |
+| `NZX-DX-2017-07-18` | 2017-04-14 .. 2018-04-02 | <https://web.archive.org/web/20170718122509id_/https://nzx.com/Derivatives/trading_hours> | Wayback `id_` replay of capture `20170718122509`, retrieved 2026-09-30 02:25:08 UTC | T1 | `03f91bbe1706d7b2a3f050a134725891027f48a34ccdd64f239ada7ebb54580c` |
 | `NZX-TH-2018-08-24` | 2018-01-01 .. 2019-01-02 | <https://web.archive.org/web/20180824125304id_/https://www.nzx.com/investing/nzx-trading-hours> | Wayback `id_` replay of capture `20180824125304`, retrieved 2026-09-29 03:22:36 UTC | T1 | `45a19b7159f1d07a831d740d0f95da0bf84e19bb200b5585537e2c3822b90e94` |
 | `NZX-TH-2019-03-25` | 2019-01-01 .. 2019-12-31 | <https://web.archive.org/web/20190325182628id_/https://www.nzx.com/investing/nzx-trading-hours> | Wayback `id_` replay of capture `20190325182628`, retrieved 2026-09-29 03:22:37 UTC | T1 | `c697dea53d89bfbd3be04aef9faf9366ed66720aada58a6eea05dec9ceb48634` |
 | `NZX-HB-2020-06-08` | 2020-01-01 .. 2020-12-28 | <https://web.archive.org/web/20200608000152id_/https://www.nzx.com/services/nzx-trading/hours-boards> | Wayback `id_` replay of capture `20200608000152`, retrieved 2026-09-29 03:31:50 UTC | T1 | `d09833adaaa0241f13afb27cd9708324cc06701992f311e911f8e7f07f34c5f7` |
@@ -488,14 +504,15 @@ any row).
 
 ## Gaps and residual risks
 
-- **the 2016-2017 capture gap** — 2016-04-26..2017-10-22 is inside no audited
-  window: no capture of any NZX trading-hours page or operator PDF survives in
-  the Wayback index for that span (checked 2026-09-29, UTC, CDX sweeps over the
-  whole domain), so no operator statement prints those closures and the table
-  claims nothing there; queries inside the gap refuse. **Closing condition:** a
-  surviving operator artifact printing the span (an annual sheet, a participant
-  circular, or a late-2016 or mid-2017 page capture). Tracked as
-  [#209](https://github.com/SharurTrading/exchange-hours-rs/issues/209).
+- **the 2016-2017 capture gap** — 2016-04-26..2017-04-13 is inside no audited
+  window: after the 2026-09-30 UTC re-sweep (the 2026-09-29 sweeps ran while
+  the CDX service was failing) the only in-span operator artifact is the
+  Derivatives trading-hours page of 2017-07-18, whose table reaches back only
+  to Good Friday 2017-04-14, so no operator statement prints the earlier dates
+  and the table claims nothing there; queries inside the gap refuse.
+  **Closing condition:** a surviving operator artifact printing the span (an
+  annual sheet, a participant circular, or a 2016 or early-2017 page capture).
+  Tracked as [#209](https://github.com/SharurTrading/exchange-hours-rs/issues/209).
 - **the 2013 abbreviated-grid conflict** — the 2013-05-16 capture's trading-hours
   grid still shows the older 15:45 abbreviated column while the 2013-01-16 page
   before it and every capture from 2014-01-27 after it print 12:45; the two 2013

@@ -13,14 +13,13 @@
 //!
 //! An eve row is an **early close**, not a closure. The instant is era-bound:
 //! 2010-2011 half days ran `9:30am to 12:30pm` with `no afternoon trading
-//! session` (`HKEX-TN-2010`), so their close is 12:30; the 2017-2024 eves
-//! delete the afternoon and close at the half-day CAS edge 12:10
+//! session` (`HKEX-TN-2010`), so their close is 12:30; the 2012-2015 eves
+//! delete the Extended Morning and Afternoon Sessions and close at the end of
+//! the Morning Session, 12:00 noon (`HKEX-TH-PHASE2`, the operator's own
+//! Trading Hours page, byte-identical at captures 2012-12-13 through
+//! 2016-01-20); the 2017-2024 eves close at the half-day CAS edge 12:10
 //! (`HKEX-HOURS-SEC`, the arrangement in force since the 2016-07-25 CAS
-//! launch). The 2012-2015 calendars likewise name their eves half-day trading
-//! days, but no retrieved artifact states that era's half-day close, so those
-//! ten dates ship [`HolidayKind::Unsourced`] rather than an invented instant;
-//! the gap and its closing condition are recorded in
-//! [`docs/evidence/hkex.md`](../../../../../docs/evidence/hkex.md).
+//! launch).
 //!
 //! Severe-weather arrangements (typhoon signals) are conditional and key no
 //! row (LAW-NO-FABRICATED-DATES); the many typhoon and black-rain halts of
@@ -32,7 +31,6 @@
 
 use super::EvidenceTier::T1;
 use super::HolidayKind::Closed;
-use super::HolidayKind::Unsourced;
 use super::fences::early_close;
 use super::{HolidayTable, holidays};
 
@@ -53,6 +51,18 @@ const HALF_DAY_CLOSE_SSM: u32 = 12 * 3_600 + 10 * 60;
 /// in force through 4 March 2011 (`HKEX-NEWS-PHASE1`'s `Current` column:
 /// Morning Session 10:00-12:30).
 const ERA_HALF_DAY_CLOSE_SSM: u32 = 12 * 3_600 + 30 * 60;
+
+/// The 2012-2015-era half-day final close, `12:00` venue-local, in seconds
+/// since midnight.
+///
+/// The operator's own Trading Hours page states, in session language, that
+/// `There is no Extended Morning Session and Afternoon Session on the eves of
+/// Christmas, New Year and Lunar New Year`, and the same page prints the
+/// Phase-Two grid whose Morning Session ends at `12:00 noon` (`HKEX-TH-PHASE2`:
+/// captures 2012-12-13 through 2016-01-20 byte-identical; the page's Phase-1
+/// edition of 2011-07-21 already carries the same eve sentence). The era runs
+/// from the 2012-03-05 Phase Two to the 2016-07-25 CAS launch.
+const PHASE2_HALF_DAY_CLOSE_SSM: u32 = 12 * 3_600;
 
 /// HKEX's built-in holiday rows and the windows they were audited over.
 ///
@@ -150,14 +160,14 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2012, 10, 2, Closed, T1, "HKEX-TC-2012"),
         // 2012-10-23 - T1 - HKEX-TC-2012 - Chung Yeung Festival.
         (2012, 10, 23, Closed, T1, "HKEX-TC-2012"),
-        // 2012-12-24 - T1 - HKEX-TC-2012 - Christmas Eve: named a half-day trading day; the pre-CAS half-day close instant is unsourced, so the date ships Unsourced.
-        (2012, 12, 24, Unsourced, T1, "HKEX-TC-2012"),
+        // 2012-12-24 - T1 - HKEX-TC-2012 - Christmas Eve; no Extended Morning or Afternoon Session; the close is the Morning Session edge 12:00 (HKEX-TH-PHASE2).
+        (2012, 12, 24, early_close(PHASE2_HALF_DAY_CLOSE_SSM), T1, "HKEX-TC-2012"),
         // 2012-12-25 - T1 - HKEX-TC-2012 - Christmas Day.
         (2012, 12, 25, Closed, T1, "HKEX-TC-2012"),
         // 2012-12-26 - T1 - HKEX-TC-2012 - The first weekday after Christmas Day.
         (2012, 12, 26, Closed, T1, "HKEX-TC-2012"),
-        // 2012-12-31 - T1 - HKEX-TC-2012 - New Year's Eve: named a half-day trading day; the pre-CAS half-day close instant is unsourced, so the date ships Unsourced.
-        (2012, 12, 31, Unsourced, T1, "HKEX-TC-2012"),
+        // 2012-12-31 - T1 - HKEX-TC-2012 - New Year's Eve; no Extended Morning or Afternoon Session; the close is the Morning Session edge 12:00 (HKEX-TH-PHASE2).
+        (2012, 12, 31, early_close(PHASE2_HALF_DAY_CLOSE_SSM), T1, "HKEX-TC-2012"),
         // HKEX-TC-2013: the operator's own holiday schedule
         // 2013-01-01 - T1 - HKEX-TC-2013 - The first day of January.
         (2013, 1, 1, Closed, T1, "HKEX-TC-2013"),
@@ -187,19 +197,19 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2013, 10, 1, Closed, T1, "HKEX-TC-2013"),
         // 2013-10-14 - T1 - HKEX-TC-2013 - The day following Chung Yeung Festival.
         (2013, 10, 14, Closed, T1, "HKEX-TC-2013"),
-        // 2013-12-24 - T1 - HKEX-TC-2013 - Christmas Eve: named a half-day trading day; the pre-CAS half-day close instant is unsourced, so the date ships Unsourced.
-        (2013, 12, 24, Unsourced, T1, "HKEX-TC-2013"),
+        // 2013-12-24 - T1 - HKEX-TC-2013 - Christmas Eve; no Extended Morning or Afternoon Session; the close is the Morning Session edge 12:00 (HKEX-TH-PHASE2).
+        (2013, 12, 24, early_close(PHASE2_HALF_DAY_CLOSE_SSM), T1, "HKEX-TC-2013"),
         // 2013-12-25 - T1 - HKEX-TC-2013 - Christmas Day.
         (2013, 12, 25, Closed, T1, "HKEX-TC-2013"),
         // 2013-12-26 - T1 - HKEX-TC-2013 - The first weekday after Christmas Day.
         (2013, 12, 26, Closed, T1, "HKEX-TC-2013"),
-        // 2013-12-31 - T1 - HKEX-TC-2013 - New Year's Eve: named a half-day trading day; the pre-CAS half-day close instant is unsourced, so the date ships Unsourced.
-        (2013, 12, 31, Unsourced, T1, "HKEX-TC-2013"),
+        // 2013-12-31 - T1 - HKEX-TC-2013 - New Year's Eve; no Extended Morning or Afternoon Session; the close is the Morning Session edge 12:00 (HKEX-TH-PHASE2).
+        (2013, 12, 31, early_close(PHASE2_HALF_DAY_CLOSE_SSM), T1, "HKEX-TC-2013"),
         // HKEX-TC-2014: the operator's own holiday schedule
         // 2014-01-01 - T1 - HKEX-TC-2014 - The first day of January.
         (2014, 1, 1, Closed, T1, "HKEX-TC-2014"),
-        // 2014-01-30 - T1 - HKEX-TC-2014 - Eve of Lunar New Year: named a half-day trading day; the pre-CAS half-day close instant is unsourced, so the date ships Unsourced.
-        (2014, 1, 30, Unsourced, T1, "HKEX-TC-2014"),
+        // 2014-01-30 - T1 - HKEX-TC-2014 - Eve of Lunar New Year; no Extended Morning or Afternoon Session; the close is the Morning Session edge 12:00 (HKEX-TH-PHASE2).
+        (2014, 1, 30, early_close(PHASE2_HALF_DAY_CLOSE_SSM), T1, "HKEX-TC-2014"),
         // 2014-01-31 - T1 - HKEX-TC-2014 - Lunar New Year's Day.
         (2014, 1, 31, Closed, T1, "HKEX-TC-2014"),
         // 2014-02-03 - T1 - HKEX-TC-2014 - The fourth day of Lunar New Year.
@@ -222,19 +232,19 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2014, 10, 1, Closed, T1, "HKEX-TC-2014"),
         // 2014-10-02 - T1 - HKEX-TC-2014 - Chung Yeung Festival.
         (2014, 10, 2, Closed, T1, "HKEX-TC-2014"),
-        // 2014-12-24 - T1 - HKEX-TC-2014 - Christmas Eve: named a half-day trading day; the pre-CAS half-day close instant is unsourced, so the date ships Unsourced.
-        (2014, 12, 24, Unsourced, T1, "HKEX-TC-2014"),
+        // 2014-12-24 - T1 - HKEX-TC-2014 - Christmas Eve; no Extended Morning or Afternoon Session; the close is the Morning Session edge 12:00 (HKEX-TH-PHASE2).
+        (2014, 12, 24, early_close(PHASE2_HALF_DAY_CLOSE_SSM), T1, "HKEX-TC-2014"),
         // 2014-12-25 - T1 - HKEX-TC-2014 - Christmas Day.
         (2014, 12, 25, Closed, T1, "HKEX-TC-2014"),
         // 2014-12-26 - T1 - HKEX-TC-2014 - The first weekday after Christmas Day.
         (2014, 12, 26, Closed, T1, "HKEX-TC-2014"),
-        // 2014-12-31 - T1 - HKEX-TC-2014 - New Year's Eve: named a half-day trading day; the pre-CAS half-day close instant is unsourced, so the date ships Unsourced.
-        (2014, 12, 31, Unsourced, T1, "HKEX-TC-2014"),
+        // 2014-12-31 - T1 - HKEX-TC-2014 - New Year's Eve; no Extended Morning or Afternoon Session; the close is the Morning Session edge 12:00 (HKEX-TH-PHASE2).
+        (2014, 12, 31, early_close(PHASE2_HALF_DAY_CLOSE_SSM), T1, "HKEX-TC-2014"),
         // HKEX-TC-2015: the operator's own holiday schedule
         // 2015-01-01 - T1 - HKEX-TC-2015 - The first day of January.
         (2015, 1, 1, Closed, T1, "HKEX-TC-2015"),
-        // 2015-02-18 - T1 - HKEX-TC-2015 - Eve of Lunar New Year: named a half-day trading day; the pre-CAS half-day close instant is unsourced, so the date ships Unsourced.
-        (2015, 2, 18, Unsourced, T1, "HKEX-TC-2015"),
+        // 2015-02-18 - T1 - HKEX-TC-2015 - Eve of Lunar New Year; no Extended Morning or Afternoon Session; the close is the Morning Session edge 12:00 (HKEX-TH-PHASE2).
+        (2015, 2, 18, early_close(PHASE2_HALF_DAY_CLOSE_SSM), T1, "HKEX-TC-2015"),
         // 2015-02-19 - T1 - HKEX-TC-2015 - Lunar New Year's Day.
         (2015, 2, 19, Closed, T1, "HKEX-TC-2015"),
         // 2015-02-20 - T1 - HKEX-TC-2015 - The second day of Lunar New Year.
@@ -257,12 +267,12 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2015, 10, 1, Closed, T1, "HKEX-TC-2015"),
         // 2015-10-21 - T1 - HKEX-TC-2015 - Chung Yeung Festival.
         (2015, 10, 21, Closed, T1, "HKEX-TC-2015"),
-        // 2015-12-24 - T1 - HKEX-TC-2015 - Christmas Eve: named a half-day trading day; the pre-CAS half-day close instant is unsourced, so the date ships Unsourced.
-        (2015, 12, 24, Unsourced, T1, "HKEX-TC-2015"),
+        // 2015-12-24 - T1 - HKEX-TC-2015 - Christmas Eve; no Extended Morning or Afternoon Session; the close is the Morning Session edge 12:00 (HKEX-TH-PHASE2).
+        (2015, 12, 24, early_close(PHASE2_HALF_DAY_CLOSE_SSM), T1, "HKEX-TC-2015"),
         // 2015-12-25 - T1 - HKEX-TC-2015 - Christmas Day.
         (2015, 12, 25, Closed, T1, "HKEX-TC-2015"),
-        // 2015-12-31 - T1 - HKEX-TC-2015 - New Year's Eve: named a half-day trading day; the pre-CAS half-day close instant is unsourced, so the date ships Unsourced.
-        (2015, 12, 31, Unsourced, T1, "HKEX-TC-2015"),
+        // 2015-12-31 - T1 - HKEX-TC-2015 - New Year's Eve; no Extended Morning or Afternoon Session; the close is the Morning Session edge 12:00 (HKEX-TH-PHASE2).
+        (2015, 12, 31, early_close(PHASE2_HALF_DAY_CLOSE_SSM), T1, "HKEX-TC-2015"),
         // HKEX-TC-2016: the operator's own holiday schedule
         // 2016-01-01 - T1 - HKEX-TC-2016 - The first day of January.
         (2016, 1, 1, Closed, T1, "HKEX-TC-2016"),

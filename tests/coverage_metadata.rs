@@ -95,15 +95,16 @@ fn a_complete_scope_reports_one_complete_span_and_a_trailing_gap() {
     assert_eq!(coverage.sourced_normal_week(), unbounded(SUPPORT_FLOOR));
 
     // At the 2010 floor the scope's earlier history is honestly partial: the
-    // 2010-01-01..2011-01-11 interval is unaudited (the 2011-2024 windows
-    // opened with the 2026-09-29 wave, and its first window opens
-    // 2011-01-12), and the 2016-2024 windows withhold dates, so the complete
-    // spans begin at that window's first day and split around the withheld
-    // dates instead of forming one span from the floor.
+    // 2010-01-01..2010-04-10 interval is unaudited (the 2011-2024 windows
+    // opened with the 2026-09-29 wave; on 2026-09-30 UTC the first window
+    // moved back to the dated 2010-04-11 grid start, and the 2010 rows
+    // entered with it), and the 2016-2024 windows withhold dates, so the
+    // complete spans begin at that window's first day and split around the
+    // withheld dates instead of forming one span from the floor.
     let complete: Vec<DateRange> = coverage.complete_ranges().collect();
     assert_eq!(
         complete.first(),
-        Some(&DateRange::new(date(2011, 1, 12), date(2012, 12, 31)).expect("ascending")),
+        Some(&DateRange::new(date(2010, 4, 11), date(2012, 12, 31)).expect("ascending")),
         "the first complete span is the first audited window"
     );
     assert_eq!(
@@ -137,7 +138,7 @@ fn a_complete_scope_reports_one_complete_span_and_a_trailing_gap() {
     assert!(matches!(contract, HolidayContract::Audited { .. }));
     assert!(contract.rows().is_some_and(|rows| rows > 0));
     assert!(contract.coverage().is_some_and(|windows| {
-        windows.first() == date(2011, 1, 12) && windows.last() == date(2027, 12, 31)
+        windows.first() == date(2010, 4, 11) && windows.last() == date(2027, 12, 31)
     }));
 }
 

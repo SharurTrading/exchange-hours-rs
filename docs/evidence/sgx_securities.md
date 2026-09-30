@@ -104,17 +104,43 @@ trading close.
 the `wps/portal/sgxweb` securities page, its `marketplace`-portal
 predecessor, the `www2`-era pages, or the current content-API page —
 survives in the Wayback index for 2010-01-01..2013-12-31 or for
-2020-01-02..2024-12-31 (checked 2026-09-29, UTC, CDX sweeps over the whole
-sgx.com domain in both eras; the 2020-2024 captures of the wps path are
-SPA shells whose bytes carry no holiday content). No operator statement
-prints those closures, so the table claims nothing for the spans: the
-coverage windows stop at 2019-12-31, hold only 2020-01-01 (the one 2020
-date the 2019 sheet prints), and resume at 2025-01-01, and queries inside
-the gaps refuse rather than answer. **Closing condition:** a surviving
-operator artifact printing the spans' closures (a 2010-2013 or 2020-2024
-capture or export of the operator's own calendar page, or an annual
-securities trading-schedule notice). Tracked as
+2020-01-02..2024-12-31. No operator statement prints those closures, so the
+table claims nothing for the spans: the coverage windows stop at 2019-12-31,
+hold only 2020-01-01 (the one 2020 date the 2019 sheet prints), and resume at
+2025-01-01, and queries inside the gaps refuse rather than answer.
+**Closing condition:** a surviving operator artifact printing the spans'
+closures (a 2010-2013 or 2020-2024 capture or export of the operator's own
+calendar page, or an annual securities trading-schedule notice). Tracked as
 [#213](https://github.com/SharurTrading/exchange-hours-rs/issues/213).
+
+**The bounded searches, recorded.** Checked 2026-09-29 UTC by domain-wide
+CDX sweeps over sgx.com in both eras, and re-run with fresh eyes on
+2026-09-30 UTC (artifacts under `holidays/raw/equities/sgx_securities/
+2010-2013-retry/` and `.../2020-2024-retry/` in the research store):
+
+- **2010-2013.** The earlier record said the marketplace-portal predecessor
+  page was never captured; that was too strong. The
+  `wps/wcm/connect/mp_en/site/trading_on_sgx/securities_market/` family was
+  captured — in May 2009 only: the `Securities Trading Calendar` page
+  (capture 20090522132802), the `2009 public holidays` sheet (20090514003600)
+  and the `2008 publicholidays` sheet (20090523091800), each retrieved and
+  digested in the store. They print only the 2008 and 2009 holiday tables and
+  the pre-2011 sessions grid; no capture of the family exists after May 2009,
+  the `wps/portal/sgxweb` securities page's first capture is 2014-08-21
+  (its own capture list, re-enumerated 2026-09-30 UTC), a 3 000-urlkey
+  domain-wide sweep of sgx.com 2010-2013 holds no securities trading-schedule
+  page or annual circular, and `marketplace.sgx.com` has zero captures.
+- **2020-2024.** The wps page's own captures remain React SPA shells
+  (re-verified on the 2021-12-24, 2022-05-25 and 2024-03-02 replays). The
+  shell's own data channel is the operator's content API, and the archive
+  answers for it too: the content-api page query for the wps
+  `trading_hours_calendar` path was captured exactly once (2022-09-13
+  17:17:07 UTC) and its complete body is `{"data":{"route":null}}` — the
+  retired path served no content; the current site's
+  `/stock-exchange/trading` content-api query first appears at capture
+  2026-07-25; and a domain-wide enumeration of `api2.sgx.com` (1 499
+  urlkeys) holds no other calendar or holiday query shape. The JSON channel
+  is a negative on the same terms as the page shells.
 
 **Tier.** The 2025-2026 rows key at T2 because the artifact behind them is
 the operator's own machine channel read as bytes (LAW-PRIMARY-SOURCES),

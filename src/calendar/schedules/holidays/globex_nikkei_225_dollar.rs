@@ -29,29 +29,46 @@
 //! Globex holiday schedules — the same per-holiday one-pager PDFs the 2016-2018
 //! era's predecessor publications use — and no sheet in either era prints any
 //! Nikkei line at all, so the `Equity Products` line governs every row, the
-//! same interpretive step the 2016-2018 rows carry. From 2011-01-12 that line
-//! governs by grid identity: the 2011-01-12 trading-hours capture reads NKD's
-//! boundaries byte-identical to the equity-index row on the same page, and
-//! SER-6465, SER-6554R and CME Globex Notice #20150817 each put NKD and the
-//! equity index family through the same revision on the same day. The 62 rows
-//! carry the same shape and instants as `globex_equity_index`'s own 2011-2015
-//! windows: twelve closures, forty-four early closes — 10:30 CT on the 2011
-//! through 2014-02 Monday and Thursday holidays, 12:00 CT from 2014-05 on, and
-//! 12:15 CT on the eve, Thanksgiving-Friday and year-end half-days — and six
-//! late opens at 05:00 CT on the trade date after New Year's, Christmas 2011
-//! and Christmas 2012.
+//! same interpretive step the 2016-2018 rows carry. From 2010-04-11 that line
+//! governs by dated grid identity: CME's own Globex notice of 2010-04-05
+//! expanded the Nikkei 225 (Dollar) futures' electronic hours effective
+//! Sunday, April 11, 2010 to exactly the served grid — `trading on CME Globex
+//! will begin Sundays at 17:00 through 15:15 CT the following day, with
+//! trading Monday–Friday from 15:30 through 15:15 the next day (closing at
+//! 15:15 Friday, with a daily maintenance shutdown between 16:30-17:00)` —
+//! the 2011-01-12 trading-hours capture reads NKD's boundaries byte-identical
+//! to the equity-index row on the same page, and SER-6465, SER-6554R and CME
+//! Globex Notice #20150817 each put NKD and the equity index family through
+//! the same revision on the same day. The 62 rows of 2011-2015 carry the same
+//! shape and instants as `globex_equity_index`'s own 2011-2015 windows:
+//! twelve closures, forty-four early closes — 10:30 CT on the 2011 through
+//! 2014-02 Monday and Thursday holidays, 12:00 CT from 2014-05 on, and 12:15
+//! CT on the eve, Thanksgiving-Friday and year-end half-days — and six late
+//! opens at 05:00 CT on the trade date after New Year's, Christmas 2011 and
+//! Christmas 2012.
 //!
-//! **2010 ships no row and no window.** The 2010 sheets are in the research
-//! store and name the Nikkei where it differs: the President's Day sheet prints
-//! `Exception: USD & JY denominated Nikkei will open at their regularly
-//! scheduled times of 02:00 & 05:00 Monday morning` — the operator carving the
-//! contract out of the equity class line and onto the daytime-anchored 2010
-//! grid. That affirmative exception defeats the silence-means-governed reading
-//! the 2011-2015 sheets rest on, the grid those exception instants belong to is
-//! the sourced-but-unmodelled 2010 grid whose changeover day is undated, and no
-//! NKD session is served there. Dates before 2011-01-12 therefore sit outside
-//! every declared window and refuse, and the interval's closing conditions are
-//! recorded in the evidence file and tracked as an issue.
+//! **2010-04-11..2010-12-31, added 2026-09-30 UTC (#225).** The six 2010 rows
+//! are **T1** from the same per-holiday sheets, read per sheet: the Memorial
+//! Day, Fourth of July and Labor Day sheets print the Monday-holiday line the
+//! 2011 sheets print (`1030 CT – Trading halt` with `1700 CT – Halted
+//! products resume trading`), the Thanksgiving sheet prints the Thursday halt
+//! and the Friday `1215 CT – Early CME Globex close`, and the Christmas sheet
+//! prints `Friday, Dec 24: CME Globex is closed` identically in both of its
+//! revisions. Columbus Day and Veterans Day print the ordinary flow for the
+//! equity class and ship no row, and the 2011 New Year sheet prints a regular
+//! 15:15 close for Friday 2010-12-31, so no year-end row ships either.
+//!
+//! **2010-01-01..2010-04-10 ships no row and no window.** Those dates sit on
+//! the old daytime-anchored grid the 2010-04-02 capture states (CDT
+//! 03:00-15:15 reopening 15:30-16:30 and 17:00-18:00; CST 02:00-15:15, no
+//! Sunday hours), whose end the 2010-04-05 notice dates, but whose own era the
+//! crate does not model: the President's Day sheet carves the Nikkei out of
+//! the equity class line with `Exception: USD & JY denominated Nikkei will
+//! open at their regularly scheduled times of 02:00 & 05:00 Monday morning`,
+//! so the class-line reading is defeated there and the exception instants
+//! belong to the unmodelled grid. Those dates sit outside every declared
+//! window and refuse; the interval's closing conditions are recorded in the
+//! evidence file and tracked as an issue.
 //!
 //! **2016-2018.** The era's rows are **T1**, CME's own published Globex holiday
 //! schedules, and the grid is the wrapped `17:00 CT -> 16:00 CT` leg: an early
@@ -228,9 +245,10 @@ use super::{
 
 /// The family's built-in holiday rows and the windows they were audited over.
 ///
-/// Six audited eras: 2011-01-12..2012 at T1, 2013-2015 at T1, 2016-2018 at T1,
+/// Six audited eras: 2010-04-11..2012 at T1 (the dated 2010-04-05 notice
+/// starts the first window), 2013-2015 at T1, 2016-2018 at T1,
 /// 2019-2021 at T1, 2022-2024 at T1/T2 and 2025-2027 at T2.
-/// Nothing before 2011-01-12 has a table at all: that interval lies
+/// Nothing before 2010-04-11 has a table at all: that interval lies
 /// outside every window, so `holiday_on` has no answer there rather than
 /// reporting a normal date.
 ///
@@ -241,8 +259,20 @@ use super::{
 /// instead.
 // Evidence: docs/evidence/globex_nikkei_225_dollar.md
 pub(crate) static TABLE: &HolidayTable = holidays! {
-    coverage: [(2011, 1, 12) ..= (2012, 12, 31), (2013, 1, 1) ..= (2015, 12, 31), (2016, 1, 1) ..= (2018, 12, 31), (2019, 1, 1) ..= (2021, 12, 31), (2022, 1, 1) ..= (2024, 12, 31), (2025, 1, 1) ..= (2027, 12, 31)],
+    coverage: [(2010, 4, 11) ..= (2012, 12, 31), (2013, 1, 1) ..= (2015, 12, 31), (2016, 1, 1) ..= (2018, 12, 31), (2019, 1, 1) ..= (2021, 12, 31), (2022, 1, 1) ..= (2024, 12, 31), (2025, 1, 1) ..= (2027, 12, 31)],
     rows: [
+        // 2010-05-31 - T1 - 2010-memorial-day.pdf @2010-06-01T09:42:25Z - the printed Monday line is the 10:30 CT halt, earlier than the ordinary 15:15 CT close.
+        (2010, 5, 31, early_close(10 * 3_600 + 30 * 60), T1, "2010-memorial-day.pdf @2010-06-01T09:42:25Z"),
+        // 2010-07-05 - T1 - 2010-4th-of-july.pdf @2010-06-02T00:56:37Z - the printed Monday line is the 10:30 CT halt, earlier than the ordinary 15:15 CT close.
+        (2010, 7, 5, early_close(10 * 3_600 + 30 * 60), T1, "2010-4th-of-july.pdf @2010-06-02T00:56:37Z"),
+        // 2010-09-06 - T1 - 2010-labor-day.pdf @2010-06-02T00:56:41Z - the printed Monday line is the 10:30 CT halt, earlier than the ordinary 15:15 CT close.
+        (2010, 9, 6, early_close(10 * 3_600 + 30 * 60), T1, "2010-labor-day.pdf @2010-06-02T00:56:41Z"),
+        // 2010-11-25 - T1 - 2010-thanksgiving.pdf @2010-11-22T09:40:12Z - the printed Thursday line is the 10:30 CT halt, earlier than the ordinary 15:15 CT close.
+        (2010, 11, 25, early_close(10 * 3_600 + 30 * 60), T1, "2010-thanksgiving.pdf @2010-11-22T09:40:12Z"),
+        // 2010-11-26 - T1 - 2010-thanksgiving.pdf @2010-11-22T09:40:12Z - the printed final close 12:15 CT is earlier than the ordinary 15:15 CT close.
+        (2010, 11, 26, early_close(12 * 3_600 + 15 * 60), T1, "2010-thanksgiving.pdf @2010-11-22T09:40:12Z"),
+        // 2010-12-24 - T1 - 2010-christmas.pdf @2010-12-14T06:12:38Z - CME prints no session running through this date (`CME Globex is closed`; identical in the sheet's 12/23/2010 revision).
+        (2010, 12, 24, Closed, T1, "2010-christmas.pdf @2010-12-14T06:12:38Z"),
         // 2011-01-17 - T1 - 2011-martin-luther-king.pdf @2011-10-28T02:34:29Z - the printed final close 10:30 CT is earlier than the ordinary 15:15 CT close.
         (2011, 1, 17, early_close(10 * 3_600 + 30 * 60), T1, "2011-martin-luther-king.pdf @2011-10-28T02:34:29Z"),
         // 2011-02-21 - T1 - 2011-presidents-day.pdf @2011-10-28T02:35:16Z - the printed final close 10:30 CT is earlier than the ordinary 15:15 CT close.

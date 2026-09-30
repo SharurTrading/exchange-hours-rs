@@ -307,10 +307,10 @@ reports a market as tradeable. A gap in an order-entry window only changes
 whether orders could be *queued* ahead of an open that is itself modelled
 correctly; no trade can print in one of those windows on any venue in this crate.
 Every `Partial` row states which kind it is in its Basis cell, and the split is
-**35 order-entry to 22 executable** across the 57 rows in the ledger. The order-entry majority is
+**35 order-entry to 21 executable** across the 56 rows in the ledger. The order-entry majority is
 the exact *day* an older queue or post-close phase started, with the trading
-session itself sourced. The executable twenty-two — the ICE Futures U.S. keys, CME
-Nikkei 225 Dollar, the SGX equity-index keys, `nyse` and `nyse_american`,
+session itself sourced. The executable twenty-one — the ICE Futures U.S. keys,
+the SGX equity-index keys, `nyse` and `nyse_american`,
 whose January-2010 off-hours crossing phase was reclassified from order-entry on
 2026-09-02, `globex_event_contracts`, whose daily close is carried back to its
 2022 launch, `globex_event_contracts_btc`, whose 24/7 weekday close is the
@@ -367,8 +367,8 @@ the quotations and URLs behind it.
 The key surface was audited separately:
 **Hours verified at the review date for each product family:** `35 of 35` operator-derived
 `MarketHoursKey` values. The key API provides fixed-current snapshots, an
-`as_of` selector, and a date-aware calendar for sourced histories. Six key
-rows are **Primary** and twenty-nine are **Partial**, because a named historical
+`as_of` selector, and a date-aware calendar for sourced histories. Seven key
+rows are **Primary** and twenty-eight are **Partial**, because a named historical
 queue, PCP amendment day, or undated venue transition cannot be dated from a
 primary source.
 

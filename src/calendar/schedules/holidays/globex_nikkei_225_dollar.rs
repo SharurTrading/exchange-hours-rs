@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT-0
 
-//! CME Nikkei 225 Dollar (`NKD`) holiday and early-close rows, 2011-2012,
+//! CME Nikkei 225 Dollar (`NKD`) holiday and early-close rows, 2010-2012,
 //! 2013-2015, 2016-2018, 2019-2021, 2022-2024 and 2025-2027.
 //!
 //! Keyed by the crate's own venue-local trade date in `America/Chicago`
@@ -58,17 +58,24 @@
 //! equity class and ship no row, and the 2011 New Year sheet prints a regular
 //! 15:15 close for Friday 2010-12-31, so no year-end row ships either.
 //!
-//! **2010-01-01..2010-04-10 ships no row and no window.** Those dates sit on
-//! the old daytime-anchored grid the 2010-04-02 capture states (CDT
-//! 03:00-15:15 reopening 15:30-16:30 and 17:00-18:00; CST 02:00-15:15, no
-//! Sunday hours), whose end the 2010-04-05 notice dates, but whose own era the
-//! crate does not model: the President's Day sheet carves the Nikkei out of
-//! the equity class line with `Exception: USD & JY denominated Nikkei will
-//! open at their regularly scheduled times of 02:00 & 05:00 Monday morning`,
-//! so the class-line reading is defeated there and the exception instants
-//! belong to the unmodelled grid. Those dates sit outside every declared
-//! window and refuse; the interval's closing conditions are recorded in the
-//! evidence file and tracked as an issue.
+//! **2010-01-01..2010-04-10, added 2026-09-30 UTC (#225's remainder).** Those
+//! dates sit on the old daytime-anchored grid the operator's own equities-hours
+//! page states (CDT 03:00-15:15 reopening 15:30-16:30 and 17:00-18:00, Sunday
+//! `Opens 17:00-18:00`; CST 02:00-15:15 reopening 15:30-16:30 closing 16:30,
+//! no Sunday hours), which the crate now models from the 2010-04-02 capture
+//! with the two profiles the page's DST spellings name. The only closure any
+//! 2010 sheet states inside the span is the New Year one: `CME Globex is
+//! closed` on Friday 2010-01-01 under every product class, so the old grid's
+//! Friday sessions do not run and one `Closed` row keys it. The era's other
+//! three sheets name no Nikkei line at all except the President's Day sheet,
+//! which carves the contract out of the equity pattern twice — `Exception: USD
+//! & JY denominated Nikkei will open at their regularly scheduled times of
+//! 02:00 & 05:00 Monday morning.` and the `Tuesday morning` twin — so on that
+//! Monday holiday the contract traded its own regular CST grid (the 02:00
+//! instant is its own; 05:00 is the yen contract's) and ships no row, and the
+//! Martin Luther King and Good Friday sheets' equity lines govern nothing here
+//! because no NKD statement includes it and its own page states the regular
+//! grid (the residual risk is recorded in the evidence file).
 //!
 //! **2016-2018.** The era's rows are **T1**, CME's own published Globex holiday
 //! schedules, and the grid is the wrapped `17:00 CT -> 16:00 CT` leg: an early
@@ -259,8 +266,10 @@ use super::{
 /// instead.
 // Evidence: docs/evidence/globex_nikkei_225_dollar.md
 pub(crate) static TABLE: &HolidayTable = holidays! {
-    coverage: [(2010, 4, 11) ..= (2012, 12, 31), (2013, 1, 1) ..= (2015, 12, 31), (2016, 1, 1) ..= (2018, 12, 31), (2019, 1, 1) ..= (2021, 12, 31), (2022, 1, 1) ..= (2024, 12, 31), (2025, 1, 1) ..= (2027, 12, 31)],
+    coverage: [(2010, 1, 1) ..= (2012, 12, 31), (2013, 1, 1) ..= (2015, 12, 31), (2016, 1, 1) ..= (2018, 12, 31), (2019, 1, 1) ..= (2021, 12, 31), (2022, 1, 1) ..= (2024, 12, 31), (2025, 1, 1) ..= (2027, 12, 31)],
     rows: [
+        // 2010-01-01 - T1 - 2010-new-years.pdf @2010-02-15T05:16:52Z - CME prints no session running through this date (`CME Globex is closed` under every product class; a venue-wide closure, so the old grid's Friday sessions do not run).
+        (2010, 1, 1, Closed, T1, "2010-new-years.pdf @2010-02-15T05:16:52Z"),
         // 2010-05-31 - T1 - 2010-memorial-day.pdf @2010-06-01T09:42:25Z - the printed Monday line is the 10:30 CT halt, earlier than the ordinary 15:15 CT close.
         (2010, 5, 31, early_close(10 * 3_600 + 30 * 60), T1, "2010-memorial-day.pdf @2010-06-01T09:42:25Z"),
         // 2010-07-05 - T1 - 2010-4th-of-july.pdf @2010-06-02T00:56:37Z - the printed Monday line is the 10:30 CT halt, earlier than the ordinary 15:15 CT close.

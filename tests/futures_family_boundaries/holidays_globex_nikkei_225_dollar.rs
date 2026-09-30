@@ -445,10 +445,9 @@ fn the_2025_rows_inferred_from_the_equity_index_line_clip_the_same_way() {
 ///
 /// Inside the window a date with no row is audited normal; outside it the
 /// table has no holiday answer. Christmas 2015 is the 2013-2015 window's own
-/// closure since the 2026-09-29 wave backfilled 2011-2015, and 2010-04-10 —
-/// the day before the first window opens — refuses with the rest of the
-/// unaudited 2010-01-01..2010-04-10 interval (the 2026-09-30 wave extended
-/// the first window to the dated 2010-04-11 grid start).
+/// closure since the 2026-09-29 wave backfilled 2011-2015, and 2010-01-01 —
+/// the first window's opening day since the #225 remainder moved its start to
+/// the floor on 2026-09-30 UTC — is the old-grid era's own closure.
 #[test]
 fn holiday_coverage_bounds_what_the_table_answers_for() {
     let nkd = nkd();
@@ -456,7 +455,7 @@ fn holiday_coverage_bounds_what_the_table_answers_for() {
         .holiday_coverage()
         .expect("the family ships a built-in table");
 
-    assert_eq!(coverage.first(), day(2010, 4, 11));
+    assert_eq!(coverage.first(), day(2010, 1, 1));
     assert_eq!(coverage.last(), day(2027, 12, 31));
     assert!(coverage.contains(day(2026, 4, 3)));
     assert!(coverage.contains(day(2016, 1, 1)));
@@ -483,12 +482,27 @@ fn holiday_coverage_bounds_what_the_table_answers_for() {
     assert!(nkd.holiday_on(day(2028, 1, 1)).is_none());
     assert!(
         nkd.holiday_on(day(2010, 4, 11)).is_none(),
-        "the first audited date is inside the window and audited normal"
+        "the notice-dated grid start is inside the window and audited normal"
     );
     assert_eq!(
         kind_on(nkd, day(2010, 12, 24)),
         Some(HolidayKind::Closed),
         "the 2010 rows entered with the 2026-09-30 wave"
+    );
+    // The #225 remainder joined the window on 2026-09-30 UTC: 2010-01-01 is
+    // the old-grid era's one closure and the rest of Q1 2010 is audited normal
+    // on the modelled old grid.
+    assert!(coverage.contains(day(2010, 1, 1)));
+    assert!(coverage.contains(day(2010, 2, 15)));
+    assert_eq!(
+        kind_on(nkd, day(2010, 1, 1)),
+        Some(HolidayKind::Closed),
+        "the New Year sheet's venue-wide closure is the era's only row"
+    );
+    assert_eq!(
+        kind_on(nkd, day(2010, 2, 15)),
+        None,
+        "the President's Day sheet excepts NKD onto its regular grid, so no row ships"
     );
 
     // Christmas 2015 is a shipped `Closed` row since the 2011-2015 wave: the
@@ -507,28 +521,21 @@ fn holiday_coverage_bounds_what_the_table_answers_for() {
             .expect("the coverage contract must answer a covered date")
     );
 
-    // The day before the first window opens sits outside every audited window:
-    // the identity refuses, while the detached calendar answers from the
-    // sessionless pre-2010-04-11 profile, which is closed at every instant
-    // (LAW-COVERAGE's refusal is about the holiday evidence, and the profile's
-    // own gap is a separate, recorded one). The 2010 dates after 2010-04-10
-    // entered the window with the 2026-09-30 wave, so only pre-window dates
-    // remain here.
-    for probe in [ct(2010, 4, 10, 10, 0, 0), ct(2010, 2, 16, 10, 0, 0)] {
-        assert!(
-            nkd.is_open(probe).is_err_and(|error| matches!(
-                error,
-                CalendarQueryError::OutsideCoveredRange { .. }
-            )),
-            "{probe} is outside every audited window"
-        );
-        assert!(
-            !nkd.without_holidays()
-                .is_open(probe)
-                .expect("the detached calendar answers above the 2010 floor from the profile"),
-            "{probe}: the pre-2011 profile is sessionless, so the detached answer is closed"
-        );
-    }
+    // The day before the window opens is below the support floor, so both the
+    // attached identity and the detached snapshot refuse the date as pre-floor
+    // rather than answering it.
+    let probe = ct(2009, 12, 31, 10, 0, 0);
+    assert!(
+        nkd.is_open(probe)
+            .is_err_and(|error| matches!(error, CalendarQueryError::BeforeSupportFloor { .. })),
+        "{probe} is below the 2010 floor"
+    );
+    assert!(
+        nkd.without_holidays()
+            .is_open(probe)
+            .is_err_and(|error| matches!(error, CalendarQueryError::BeforeSupportFloor { .. })),
+        "{probe}: the detached snapshot is identity-backed and refuses the floor too"
+    );
 }
 
 /// `without_holidays()` restores exactly the pre-table answer.
@@ -1090,12 +1097,12 @@ fn wave2_early_close_and_late_open_bounds_are_end_and_start_exclusive() {
     );
 }
 
-/// The era's own window edges, and the interval below it.
+/// The era's own window edges, and the interval below the first window.
 ///
 /// The table claims — which dates the window contains and which ship no row —
-/// are unchanged; the interval below the first window is now
-/// 2010-01-01..2010-04-10, which the 2026-09-30 wave left unaudited after
-/// moving the first window's start to the dated 2010-04-11 grid start.
+/// are unchanged; the first window has opened at the 2010-01-01 floor since
+/// the #225 remainder modelled the old grid (2026-09-30 UTC), so the only
+/// interval below the windows is pre-floor and refuses as such.
 #[test]
 fn wave2_window_edges_answer_as_declared() {
     let calendar = nkd();
@@ -1110,26 +1117,163 @@ fn wave2_window_edges_answer_as_declared() {
     // 2011-2015 wave shipped.
     assert!(coverage.contains(day(2015, 12, 31)));
     // 2019-01-01 became the first date of a window of its own when the
-    // 2019-2021 wave shipped: the only interval no wave audits is
-    // 2010-01-01..2010-04-10 (the first window moved back to the dated
-    // 2010-04-11 grid start on 2026-09-30 UTC).
+    // 2019-2021 wave shipped, and the first window has opened at the floor
+    // since the #225 remainder shipped.
     assert!(coverage.contains(day(2019, 1, 1)));
+    assert!(coverage.contains(day(2010, 4, 10)));
     assert_eq!(calendar.holiday_on(day(2013, 6, 14)), None);
     assert_eq!(
         kind_on(calendar, day(2015, 12, 25)),
         Some(HolidayKind::Closed)
     );
     assert!(
-        calendar
+        !calendar
             .is_open(ct(2010, 4, 10, 10, 0, 0))
-            .is_err_and(|error| matches!(error, CalendarQueryError::OutsideCoveredRange { .. })),
-        "2010-04-10 is outside every audited window"
+            .expect("the coverage contract must answer a covered date"),
+        "2010-04-10 is a covered Saturday: neither old-grid spelling has a session"
     );
     assert!(
         !bare
             .is_open(ct(2010, 4, 10, 10, 0, 0))
-            .expect("the detached calendar answers above the 2010 floor"),
-        "the pre-2010-04-11 profile is sessionless"
+            .expect("the detached calendar answers above the 2010 floor from the old grid"),
+        "neither old-grid spelling has a Saturday session"
+    );
+    // The last old-grid weekday and the Monday after the changeover: the
+    // detached Friday answers from the CDT old grid through its 17:00-18:00 CT
+    // tail, and the detached Monday already answers from the notice's grid —
+    // its Sunday-opened wrap runs straight through 02:30 CT, where the old
+    // grid's Monday was still closed.
+    assert!(
+        bare.is_open(ct(2010, 4, 9, 17, 30, 0))
+            .expect("the detached calendar answers above the 2010 floor from the old grid"),
+        "2010-04-09 17:30 CT is inside the old grid's Friday tail"
+    );
+    assert!(
+        !bare
+            .is_open(ct(2010, 4, 9, 18, 0, 0))
+            .expect("the detached calendar answers above the 2010 floor from the old grid"),
+        "the old grid's Friday tail closes end-exclusively at 18:00 CT"
+    );
+    assert!(
+        bare.is_open(ct(2010, 4, 12, 2, 30, 0))
+            .expect("the detached calendar answers above the 2010 floor from the served grid"),
+        "2010-04-12 02:30 CT is inside the served grid's Sunday-opened wrap"
+    );
+}
+
+// ---------------------------------------------------------------------------
+// The old-grid era, 2010-01-01..2010-04-10 (#225's remainder).
+// ---------------------------------------------------------------------------
+
+/// The old-grid era answers from the modelled grid and ships exactly one row.
+///
+/// The New Year closure is the era's only sheet-stated closure for NKD (`CME
+/// Globex is closed` under every product class of the 2010 New Year sheet).
+/// The President's Day sheet excepts the contract onto its regular CST open,
+/// and the Martin Luther King and Good Friday sheets name no Nikkei line at
+/// all, so those days are audited normal on the modelled grid — fenced here on
+/// both sides of every distinct instant the two spellings state.
+#[test]
+fn the_old_grid_era_answers_from_the_modelled_grid_with_one_row() {
+    let calendar = nkd();
+
+    let mut rows: Vec<(NaiveDate, HolidayKind, EvidenceTier)> = Vec::new();
+    let mut date = day(2010, 1, 1);
+    while date <= day(2010, 4, 10) {
+        if let Some(holiday) = calendar.holiday_on(date) {
+            rows.push((date, holiday.kind(), holiday.tier()));
+        }
+        date = date.succ_opt().expect("the era is bounded");
+    }
+    assert_eq!(rows.len(), 1, "the era ships exactly one row: {rows:?}");
+    assert_eq!(rows[0].0, day(2010, 1, 1));
+    assert_eq!(
+        rows[0].1,
+        HolidayKind::Closed,
+        "the New Year sheet's venue-wide closure is the era's only row"
+    );
+    assert_eq!(rows[0].2, EvidenceTier::T1);
+
+    // The closure: the CST grid's Friday sessions do not run, and the next
+    // open is the following Monday's regular 02:00 CT.
+    for (hour, minute) in [(2, 0), (9, 30), (16, 29)] {
+        assert!(
+            !calendar
+                .is_open(ct(2010, 1, 1, hour, minute, 0))
+                .expect("the coverage contract must answer a covered date"),
+            "2010-01-01 {hour:02}:{minute:02} CT is inside the venue-wide closure"
+        );
+    }
+    assert_eq!(
+        calendar
+            .next_session_open_after(ct(2010, 1, 1, 10, 0, 0))
+            .expect("the coverage contract must answer a covered date"),
+        Some(ct(2010, 1, 4, 2, 0, 0)),
+        "the next session is Monday 2010-01-04's regular 02:00 CT open"
+    );
+
+    // Martin Luther King 2010-01-18, audited normal: the regular CST grid,
+    // whose 02:00 CT open and 16:30 CT close run straight through the holiday.
+    assert!(
+        calendar
+            .is_open(ct(2010, 1, 18, 2, 0, 0))
+            .expect("the coverage contract must answer a covered date"),
+        "02:00 CT opens the holiday Monday on the regular grid"
+    );
+    assert!(
+        calendar
+            .is_open(ct(2010, 1, 18, 10, 30, 0))
+            .expect("the coverage contract must answer a covered date"),
+        "10:30 CT trades: the equity sheet's halt is not this family's arrangement"
+    );
+    assert!(
+        !calendar
+            .is_open(ct(2010, 1, 18, 16, 30, 0))
+            .expect("the coverage contract must answer a covered date"),
+        "16:30 CT closes the holiday Monday exactly as it closes an ordinary day"
+    );
+
+    // President's Day 2010-02-15, the NKD instants the sheet names: the
+    // regularly scheduled 02:00 CT open (05:00 is the yen contract's), fenced
+    // at the second.
+    assert!(
+        !calendar
+            .is_open(ct(2010, 2, 15, 1, 59, 59))
+            .expect("the coverage contract must answer a covered date")
+    );
+    assert!(
+        calendar
+            .is_open(ct(2010, 2, 15, 2, 0, 0))
+            .expect("the coverage contract must answer a covered date"),
+        "02:00 CT is the excepted NKD open"
+    );
+
+    // Good Friday 2010-04-02, audited normal on the CDT grid: the equity
+    // line's 08:15 CT early close is not this family's arrangement, and the
+    // 17:00-18:00 CT tail still runs.
+    assert!(
+        calendar
+            .is_open(ct(2010, 4, 2, 8, 15, 0))
+            .expect("the coverage contract must answer a covered date"),
+        "08:15 CT is the equity family's early close, not NKD's: the regular session trades through it"
+    );
+    assert!(
+        !calendar
+            .is_open(ct(2010, 4, 2, 15, 20, 0))
+            .expect("the coverage contract must answer a covered date"),
+        "the CDT grid's own 15:15-15:30 CT break still holds"
+    );
+    assert!(
+        calendar
+            .is_open(ct(2010, 4, 2, 17, 30, 0))
+            .expect("the coverage contract must answer a covered date"),
+        "17:30 CT is inside the CDT grid's evening tail"
+    );
+    assert!(
+        !calendar
+            .is_open(ct(2010, 4, 2, 18, 0, 0))
+            .expect("the coverage contract must answer a covered date"),
+        "18:00 CT is the tail's end-exclusive close"
     );
 }
 
@@ -1656,13 +1800,13 @@ fn era_2022_2024_unsourced_rows_cite_the_document_that_withheld_the_instant() {
 }
 
 /// The 2022-2024 window sits third from the end of the declared coverage, its
-/// edges answer, and the interval below the first window —
-/// 2010-01-01..2010-04-10 since the 2026-09-30 wave moved the first window to
-/// the dated 2010-04-11 grid start — stays unaudited.
+/// edges answer, and the floor era below the changeover answers since the
+/// #225 remainder modelled the old grid and moved the first window to the
+/// 2010-01-01 floor (2026-09-30 UTC) — only a pre-floor date refuses.
 /// (The 2013-2015 and 2011-01-12..2011-01-16 intervals earlier tests fenced
 /// became audited as later waves shipped; the 2011-2015 section fences those.)
 #[test]
-fn era_2022_2024_window_sits_third_and_the_pre_2011_interval_is_unaudited() {
+fn era_2022_2024_window_sits_third_and_the_floor_era_answers() {
     let calendar = nkd();
     let bare = calendar.without_holidays();
     let coverage = calendar
@@ -1672,7 +1816,7 @@ fn era_2022_2024_window_sits_third_and_the_pre_2011_interval_is_unaudited() {
     assert_eq!(
         coverage.windows(),
         vec![
-            (day(2010, 4, 11), day(2012, 12, 31)),
+            (day(2010, 1, 1), day(2012, 12, 31)),
             (day(2013, 1, 1), day(2015, 12, 31)),
             (day(2016, 1, 1), day(2018, 12, 31)),
             (day(2019, 1, 1), day(2021, 12, 31)),
@@ -1697,24 +1841,40 @@ fn era_2022_2024_window_sits_third_and_the_pre_2011_interval_is_unaudited() {
         kind_on(calendar, day(2015, 12, 25)),
         Some(HolidayKind::Closed)
     );
-    // The unaudited interval below the first window: the attached identity
-    // refuses both probes, and the detached calendar answers from the
-    // sessionless pre-2010-04-11 profile.
-    for probe in [ct(2010, 4, 10, 10, 0, 0), ct(2010, 1, 5, 18, 0, 0)] {
-        assert!(
-            calendar.is_open(probe).is_err_and(|error| matches!(
-                error,
-                CalendarQueryError::OutsideCoveredRange { .. }
-            )),
-            "{probe} is outside every audited window"
-        );
-        assert!(
-            !bare
-                .is_open(probe)
-                .expect("the detached calendar answers above the 2010 floor"),
-            "{probe}: the pre-2011 profile is sessionless"
-        );
-    }
+    // The floor era answers since the #225 remainder shipped: the two probes
+    // the earlier fence read as refusals are covered dates the modelled old
+    // grid answers, and only a pre-floor date refuses — on the identity and on
+    // the detached snapshot alike.
+    assert!(
+        !calendar
+            .is_open(ct(2010, 4, 10, 10, 0, 0))
+            .expect("the coverage contract must answer a covered date"),
+        "2010-04-10 is a Saturday: neither old-grid spelling has a session"
+    );
+    assert!(
+        !calendar
+            .is_open(ct(2010, 1, 5, 18, 0, 0))
+            .expect("the coverage contract must answer a covered date"),
+        "2010-01-05 18:00 CT is past the CST grid's 16:30 CT close"
+    );
+    assert!(
+        calendar
+            .is_open(ct(2010, 1, 5, 14, 0, 0))
+            .expect("the coverage contract must answer a covered date"),
+        "2010-01-05 14:00 CT is inside the CST grid's afternoon run"
+    );
+    let probe = ct(2009, 12, 31, 18, 0, 0);
+    assert!(
+        calendar
+            .is_open(probe)
+            .is_err_and(|error| matches!(error, CalendarQueryError::BeforeSupportFloor { .. })),
+        "{probe} is below the 2010 floor"
+    );
+    assert!(
+        bare.is_open(probe)
+            .is_err_and(|error| matches!(error, CalendarQueryError::BeforeSupportFloor { .. })),
+        "{probe}: the detached snapshot refuses the floor too"
+    );
 }
 
 // ---------------------------------------------------------------------------
@@ -1962,7 +2122,7 @@ fn era_2019_2021_window_is_declared_in_order_and_bounds_every_row() {
     assert_eq!(
         coverage.windows(),
         vec![
-            (day(2010, 4, 11), day(2012, 12, 31)),
+            (day(2010, 1, 1), day(2012, 12, 31)),
             (day(2013, 1, 1), day(2015, 12, 31)),
             (day(2016, 1, 1), day(2018, 12, 31)),
             (day(2019, 1, 1), day(2021, 12, 31)),

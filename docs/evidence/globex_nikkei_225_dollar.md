@@ -9,33 +9,36 @@
 
 ## Ledger basis (moved from docs/schedules/verification.md on 2026-09-12 UTC)
 
-**Gap: executable** — the uncertainty touches a window where trades print, so this row's history is served conservatively and the basis below says how. Nikkei 225 Dollar (`NKD`) only. Current 17:00→16:00 CT grid sourced from the contract specification, with a dated timeline from 2012-11-18: SER-6465 (session-opening day 2012-11-18) extended the close to 16:15 CT with a 15:15–15:30 CT halt, SER-6554R (2013-03-03) removed that halt for International Equity Index futures naming NKD explicitly, and CME Globex Notice #20150817 (2015-09-20, trade date 2015-09-21) moved the CME Equity close to 16:00 CT. Partial because the pre-2011 interval is omitted rather than modelled. The 2026-09-01 review found why it must be: CME's own trading-hours pages captured 2010-03-10 and 2010-04-07 show a **materially different** NKD grid — CDT 03:00–15:15 reopening 15:30–16:30 and 17:00–18:00, CST 02:00–15:15 with **no Sunday hours** — so the 17:00–15:15 continuous grid cannot be carried across 2010 without reporting the contract open all night when it was closed. An earlier revision of this branch did exactly that; it is corrected. The changeover is undated (2010-04-07 still shows the old grid, 2011-01-12 already shows the new one, with no capture or located notice between), so dates before the first sourced appearance of the served grid are sessionless and the 2010 grid is left sourced-but-unmodelled — encoding it would need seasonal CDT/CST rules and a boundary that is still undated. CME's trading-hours pages captured 2011-01-12 onward state the served grid — Sunday Pre-Open 16:15, ETH (Sunday) 17:00-15:15, weekday Pre-Open "15:25, 16:45", ETH (Weekday) "15:30-16:30, 17:00-15:15", byte-identical to the E-mini S&P 500 row on the same page — so the pre-2012 evening open is 17:00 CT and is primary-sourced. What stayed undated at that review was when that grid began; keying a revision to a capture date would fabricate a cutover. [Sentence removed at the 2026-09-12 migration: it claimed the pre-2012 grid was carried to the January-2010 floor, which contradicts `nkd_profile_at` (NKD_CLOSED before 2011-01-12).] **Update, 2026-09-30 UTC: the start is dated.** CME's own weekly Globex notice of 2010-04-05 (research store `normal-weeks/wave-c1/cme-notices/20100405.html`, the `id_` replay of capture `20190718173802`, sha256 `749d708a…`, retrieved 2026-09-30 UTC by the wave-C1 corpus and cross-read for this family today) announces, under Product Changes: `Expanded Trading Hours for Nikkei 225 (Dollar) Futures … Effective this Sunday, April 11, 2010 … trading on CME Globex will begin Sundays at 17:00 through 15:15 CT the following day, with trading Monday–Friday from 15:30 through 15:15 the next day (closing at 15:15 Friday, with a daily maintenance shutdown between 16:30-17:00) … Open outcry trading hours, as well as trading hours for dollar-denominated Nikkei 225 options on futures and yen-denominated futures, will remain unchanged.` That is this grid, in session language, at an unconditional day level, at T1 — so the profile's first revision moves from the 2011-01-12 capture to the notice's session-opening Sunday 2010-04-11 (the capture corroborates). The bracketing captures now sit exactly either side of the dated change: 2010-04-07 still shows the old grid (four days before it), 2011-01-12 the served one. The same week's notice series dates the yen contract's twin change (notice 20100816 and repeats: `Effective Sunday, September 12, 2010`), which the family records but does not serve. The pre-2010-04-11 era stays sessionless: the old grid is stated (the 2010-04-02 equities-hours page) and bounded, but remains unmodelled — tracked as #225.
+**Gap: executable** — the uncertainty touches a window where trades print, so this row's history is served conservatively and the basis below says how. Nikkei 225 Dollar (`NKD`) only. Current 17:00→16:00 CT grid sourced from the contract specification, with a dated timeline from 2012-11-18: SER-6465 (session-opening day 2012-11-18) extended the close to 16:15 CT with a 15:15–15:30 CT halt, SER-6554R (2013-03-03) removed that halt for International Equity Index futures naming NKD explicitly, and CME Globex Notice #20150817 (2015-09-20, trade date 2015-09-21) moved the CME Equity close to 16:00 CT. Partial because the pre-2011 interval is omitted rather than modelled. The 2026-09-01 review found why it must be: CME's own trading-hours pages captured 2010-03-10 and 2010-04-07 show a **materially different** NKD grid — CDT 03:00–15:15 reopening 15:30–16:30 and 17:00–18:00, CST 02:00–15:15 with **no Sunday hours** — so the 17:00–15:15 continuous grid cannot be carried across 2010 without reporting the contract open all night when it was closed. An earlier revision of this branch did exactly that; it is corrected. The changeover is undated (2010-04-07 still shows the old grid, 2011-01-12 already shows the new one, with no capture or located notice between), so dates before the first sourced appearance of the served grid are sessionless and the 2010 grid is left sourced-but-unmodelled — encoding it would need seasonal CDT/CST rules and a boundary that is still undated. CME's trading-hours pages captured 2011-01-12 onward state the served grid — Sunday Pre-Open 16:15, ETH (Sunday) 17:00-15:15, weekday Pre-Open "15:25, 16:45", ETH (Weekday) "15:30-16:30, 17:00-15:15", byte-identical to the E-mini S&P 500 row on the same page — so the pre-2012 evening open is 17:00 CT and is primary-sourced. What stayed undated at that review was when that grid began; keying a revision to a capture date would fabricate a cutover. [Sentence removed at the 2026-09-12 migration: it claimed the pre-2012 grid was carried to the January-2010 floor, which contradicts `nkd_profile_at` (NKD_CLOSED before 2011-01-12).] **Update, 2026-09-30 UTC: the start is dated.** CME's own weekly Globex notice of 2010-04-05 (research store `normal-weeks/wave-c1/cme-notices/20100405.html`, the `id_` replay of capture `20190718173802`, sha256 `749d708a…`, retrieved 2026-09-30 UTC by the wave-C1 corpus and cross-read for this family today) announces, under Product Changes: `Expanded Trading Hours for Nikkei 225 (Dollar) Futures … Effective this Sunday, April 11, 2010 … trading on CME Globex will begin Sundays at 17:00 through 15:15 CT the following day, with trading Monday–Friday from 15:30 through 15:15 the next day (closing at 15:15 Friday, with a daily maintenance shutdown between 16:30-17:00) … Open outcry trading hours, as well as trading hours for dollar-denominated Nikkei 225 options on futures and yen-denominated futures, will remain unchanged.` That is this grid, in session language, at an unconditional day level, at T1 — so the profile's first revision moves from the 2011-01-12 capture to the notice's session-opening Sunday 2010-04-11 (the capture corroborates). The bracketing captures now sit exactly either side of the dated change: 2010-04-07 still shows the old grid (four days before it), 2011-01-12 the served one. The same week's notice series dates the yen contract's twin change (notice 20100816 and repeats: `Effective Sunday, September 12, 2010`), which the family records but does not serve. The pre-2010-04-11 era stayed sessionless at that wave: the old grid was stated and bounded but unmodelled — the remainder tracked as #225. **Update, 2026-09-30 UTC (the #225 remainder): the old grid is modelled.** The operator's own equities-hours page states it twice, byte-identically, either side of the floor era — research store `normal-weeks/wave-c1/cme-hours-pages/equities-20100402.html` (capture 2010-04-02T12:24:30Z, sha256 `6991513178bb5446323041d57de4177cb3921f3f9f165738ee68953e2701a06d`, re-verified against the store's bytes today) and `equities-20090406.html` (capture 2009-04-06T22:34:56Z, sha256 `1b5a9fb31a6b1207cc915041f42d22e3b9c1eabf100d18ef7ab0597b652014fc`) — in one `Equity Indexes` table whose columns are `Product Name | Open Outcry | Electronic Trading (Weekday) | Electronic Trading (Sunday) | CME ClearPort`. The `Nikkei 225 (Dollar) Futures` row reads, verbatim with the page's own line breaks shown as `|`: Open Outcry `08:00-15:15`; Electronic Trading (Weekday) `CDT: 03:00-15:15 | reopens 15:30-16:30; | closes 16:30-17:00; | reopens 17:00-18:00 | CST: 02:00-15:15; | reopens 15:30-16:30; | closes 16:30`; Electronic Trading (Sunday) `CDT: Opens 17:00-18:00 | CST: No Sunday Hours`; the page's own zone note reads `Trading hours are in U.S. Central Time, the time in Chicago, where CME Group is headquartered`. The page prints **both** DST spellings on every capture — 2009-04-06 and 2010-04-02 sit on the same side of no transition and each carries the pair, so the conditional reading (the CDT spelling governs Chicago-daylight dates, the CST spelling Chicago-standard dates) is the only one that keeps the page true on its own capture days — and which spelling governs a date is the Chicago DST calendar's, a calendar fact, not an operator cutover. The column grammar itself settles that `Opens 17:00-18:00` is a trading span, because the weekday column's `reopens 15:30-16:30` uses the same span idiom for the leg it then closes with `closes 16:30-17:00`. The old-grid rows therefore key at 2010-01-01 (the support floor, the era's first local opening day, the CST spelling) and at 2010-03-14 (the Sunday DST began, the CDT regime's first local opening day, whose evening carries the grid's first `17:00-18:00` Sunday leg), and the notice's row ends the era at 2010-04-11; the old grid's last session opened Friday 2010-04-09 and Saturday 2010-04-10 carries no session on either grid. The #225 remainder closes: the floor-era span is modelled, sourced at T1, and audited (the Holidays section below re-reads the era's sheets per sheet).
 
 ## Revision rows
 
-- 2010-04-11 — T1 — CME Globex notice 20100405 (Nikkei 225 Dollar expanded hours) — the notice expands the hours `Effective this Sunday, April 11, 2010`: Sundays 17:00 through 15:15 CT, Monday-Friday 15:30 through 15:15 the next day with a 16:30-17:00 CT maintenance shutdown; the 2011-01-12 trading-hours capture corroborates the same grid. The pre-2010-04-11 era sits on the old daytime-anchored grid (stated by the 2010-04-02 equities-hours capture) and is sessionless here.
+- 2010-01-01 — T1 — CME equities-hours page (capture 2010-04-02), CST spelling — the old grid's standard-time weekdays, verbatim `CST: 02:00-15:15; reopens 15:30-16:30; closes 16:30`, with the Sunday column's `CST: No Sunday Hours`; keyed at the support floor, the era's first local opening day. The 2009-04-06 capture of the same page prints the row byte-identically, so the floor state is this grid and nothing is carried.
+- 2010-03-14 — T1 — CME equities-hours page (capture 2010-04-02), CDT spelling — the same page's daylight-time spelling, verbatim `CDT: 03:00-15:15 | reopens 15:30-16:30; closes 16:30-17:00; reopens 17:00-18:00`, with the Sunday column's `CDT: Opens 17:00-18:00`; the operator prints both spellings side by side on every capture and the Chicago DST calendar decides which governs a date, so the row keys the regime's first local opening day, the Sunday DST began.
+- 2010-04-11 — T1 — CME Globex notice 20100405 (Nikkei 225 Dollar expanded hours) — the notice expands the hours `Effective this Sunday, April 11, 2010`: Sundays 17:00 through 15:15 CT, Monday-Friday 15:30 through 15:15 the next day with a 16:30-17:00 CT maintenance shutdown; the 2011-01-12 trading-hours capture corroborates the same grid. The old grid's last session opened Friday 2010-04-09.
 - 2012-11-18 — T1 — CME SER-6465 — the close is extended to 16:15 CT with a 15:15–15:30 CT electronic halt.
 - 2013-03-03 — T1 — CME SER-6554R — the 15:15–15:30 CT halt is removed for International Equity Index futures, naming NKD explicitly.
 - 2015-09-20 — T1 — CME Globex notice 20150817 — the CME Equity close moves to 16:00 CT for trade date Monday 2015-09-21.
 
 ## Holidays
 
-**Coverage:** 2010-04-11..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 (inclusive venue-local trade dates; the first window opens at the notice-dated grid start, see the ledger basis for the dated change).
+**Coverage:** 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 (inclusive venue-local trade dates; the first window opens at the support floor, where the modelled old grid begins, and the ledger basis records both of the dated changes that shaped it).
 
 **Six audited eras.** The table declares 6 coverage
-windows: `2010-04-11..2012-12-31` and `2013-01-01..2015-12-31`, from the
+windows: `2010-01-01..2012-12-31` and `2013-01-01..2015-12-31`, from the
 operator's own published holiday schedules at **T1** — the 2026-09-29 wave that
 closed the 2011-2015 span of what the inventory had recorded as the unaudited
-2010-2015 interval; `2016-01-01..2018-12-31`, from the operators' own published holiday schedules at **T1**;
+2010-2015 interval, with the 2026-09-30 waves adding the six post-changeover
+2010 rows and then the old-grid era's own closure at the floor; `2016-01-01..2018-12-31`, from the operators' own published holiday schedules at **T1**;
 `2019-01-01..2021-12-31`, from CME's own published Globex holiday schedules at **T1**;
 `2022-01-01..2024-12-31`, from the 2022 workbooks and 2023 one-pagers at T1 and CME's service
 responses at **T2**; and `2025-01-01..2027-12-31`, from the trading-hours service at T2. The
-2022-2024 and 2025-2027 windows are adjacent; what lies outside every declared window is
-2010-01-01..2010-04-10 — the old-grid era, which the 2010-04-05 notice ends and
-this crate does not model (the sheets from 2010-04-11 onward re-joined the table
-on 2026-09-30 UTC), so that interval stays unaudited
-rather than reporting an unaudited date as normal (the era's gap block below
-records the bounded search and its closing conditions).
+2022-2024 and 2025-2027 windows are adjacent; nothing between the support floor
+and the table's last audited day lies outside every declared window any longer —
+the 2010-01-01..2010-04-10 old-grid interval joined the first window on
+2026-09-30 UTC, once its grid was modelled from the operator's own page (the
+era block below records the derivation and the per-sheet readings), and dates
+before the floor refuse as pre-floor rather than as unaudited.
 `HolidayCoverage::windows()` lists the 6, and `contains` answers per date.
 **Channel.** Every row below comes from
 `https://www.cmegroup.com/services/trading-hours-by-product?id=<set>&pageNumber=1&pageSize=999&sortAsc=true&fromEventDate=<from>&toEventDate=<to>`
@@ -111,7 +114,7 @@ is at T1.
 **2010 from 2010-04-11: six rows, added 2026-09-30 UTC (#225's first closing
 condition met).** CME's own Globex notice of 2010-04-05 dates the served grid's
 first session at Sunday 2010-04-11 (see the ledger-basis update above), so the
-first window opens there and the 2010 sheets from that day govern NKD exactly as
+2010 sheets from that day govern NKD exactly as
 the 2011 sheets do. Each is read per sheet: the Memorial Day, Fourth of July
 and Labor Day sheets print for `CME Group Equity Products` the same
 Monday-holiday line the 2011 sheets print — Friday `1515 CT – Regular CME
@@ -133,49 +136,81 @@ each is audited normal inside the window. The six rows match
 `globex_equity_index`'s own 2010 rows row for row, kind for kind, instant for
 instant, and document for document.
 
-**2010-01-01..2010-04-10 — the one interval that stays unaudited.** Those dates
-sit on the old daytime-anchored grid, which the operator's 2010-04-02
-equities-hours page states (NKD: CDT 03:00–15:15 reopening 15:30–16:30 and
-17:00–18:00; CST 02:00–15:15 reopening 15:30–16:30 closing 16:30; no Sunday
-hours in CST) and which the 2010-04-05 notice ends at the dated Sunday. The
-crate does not model that grid, and the era's sheets do not leave the Nikkei to
-the class line: the President's Day sheet prints, verbatim, twice:
-`Exception: USD & JY denominated Nikkei will open at their regularly scheduled
-times of 02:00 & 05:00 Monday morning.` and `... Tuesday morning.` — the
-operator carving the contract out of the equity line's pattern and onto its own
-grid (the consolidation PDF carries the same exceptions). That affirmative
-exception defeats the silence-means-governed reading for the old-grid era:
-where the operator wanted NKD excepted, it said so, and the instants the
-exceptions name belong to the unmodelled grid, so `nkd_profile_at` resolves
-every date below 2010-04-11 to the sessionless profile and no NKD session is
-served there to carry a holiday row. A window over the interval would claim
-audited normality on dates whose governing arrangement cannot be stated, which
-LAW-HOLIDAY-SCOPE forbids, so the table declares no window there and
-`holiday_on` has no answer below 2010-04-11. The era's sheets do print
-equity-class arrangements — `CME Globex is closed` on 2010-01-01
-(`2010-new-years.pdf @2010-02-15T05:16:52Z`), the MLK and Presidents Day
-10:30-halt lines, and Good Friday's `0815 CT - Early CME Globex close for trade
-date Friday Apr 2` (`2010-good-friday.pdf @2010-06-01T11:19:16Z`) — and they
-are quoted here as evidence for the refusal, not encoded as rows, because
-coverage that answers only closures while the sessions themselves are unserved
-would read as more complete than it is.
-**Closing condition** (the profile gap's own condition): model the old grid
-from the 2010-04-02 page's printed CDT/CST rules with DST-seasonal selectors,
-then re-read the era's three sheets (New Year's, MLK, Good Friday — the
-President's Day exceptions included) per sheet. Tracked for this served
-identity as #225 (LAW-FOLLOW-UPS-ARE-ISSUES).
+**The old-grid era 2010-01-01..2010-04-10, covered from 2026-09-30 UTC
+(#225's remainder).** Those dates sit on the old daytime-anchored grid, whose
+derivation is in the ledger-basis update above: the operator's own
+equities-hours page states the weekday sessions per DST regime (CST
+`02:00-15:15; reopens 15:30-16:30; closes 16:30`; CDT `03:00-15:15; reopens
+15:30-16:30; closes 16:30-17:00; reopens 17:00-18:00`) and the Sunday column
+(`CDT: Opens 17:00-18:00`; `CST: No Sunday Hours`), so the crate serves two
+old-grid profiles keyed at 2010-01-01 and 2010-03-14, and the 2010-04-05
+notice ends the era at 2010-04-11. With the grid modelled, the window covers
+the era and the era's four sheets are read per sheet:
+
+- **New Year's (`2010-new-years.pdf @2010-02-15T05:16:52Z`, T1, sha256
+  `c30a6cef…`):** the sheet prints `Friday, Jan 1` above `CME Globex is closed`
+  under every product class it carries — Equity, Interest Rate, FX,
+  NYMEX/COMEX, Other and even KOSPI — so the closure is venue-wide and the old
+  grid's Friday sessions do not run. The CST grid has no prior-evening leg
+  (its weekday column ends at the 16:30 close), so one `Closed` row keyed to
+  2010-01-01 states the whole day. The sheet's other equity lines — the
+  Thursday regular close and the Sunday regular open — are the equity grid's
+  own: the Thursday line's date (2009-12-31) sits below the floor and refuses
+  as pre-floor, and Sunday 2010-01-03 has no NKD session at all (the CST grid
+  has no Sunday hours), so neither ships a row.
+- **Martin Luther King (`2010-martin-luther-king.pdf @2010-03-31T06:42:26Z`,
+  T1, sha256 `11af9642…`):** the Equity Products line prints the
+  Sunday-open/10:30-halt/17:00-resume
+  pattern and the sheet names no Nikkei line at all. The operator's only
+  NKD-specific holiday statement of this era — the President's Day exceptions,
+  quoted below — is the identical pattern with the contract explicitly carved
+  out onto its regular grid, and the contract's own page states `CST: No
+  Sunday Hours`, so the class line's Sunday open is not NKD's arrangement and
+  its Monday halt halts nothing NKD runs. 2010-01-18 ships no row and is
+  audited normal on the modelled regular grid.
+- **President's Day (`2010-presidents-day.pdf @2010-02-15T06:46:41Z`, T1,
+  sha256 `ba379a7f…`; the consolidation PDF carries the same exceptions):** the
+  sheet prints, verbatim, twice: `Exception: USD & JY denominated Nikkei will
+  open at their regularly scheduled times of 02:00 & 05:00 Monday morning.`
+  (under `Sunday, Feb 14`) and `... 02:00 & 05:00 Tuesday morning.` (under
+  `Monday, Feb 15`). The operator carves the contract out of the equity
+  pattern and re-anchors it to its own regular opens: 02:00 is the dollar
+  contract's regular CST open (the yen contract's is 05:00), so on Monday
+  2010-02-15 NKD traded its regular weekday grid — 02:00-15:15, reopens
+  15:30-16:30, closes 16:30 — and the equity line's 10:30 halt is not its
+  arrangement. The exceptions name opens only; the close instants are the
+  modelled grid's own (issue #225's second closing condition, discharged). No
+  row ships for 2010-02-15; it is audited normal with the exception as the
+  affirmative evidence.
+- **Good Friday (`2010-good-friday.pdf @2010-06-01T11:19:16Z`, T1):** the
+  Equity Products line prints the Thursday `1530 CT – Regular CME Globex Open
+  for trade Date Friday, Apr 2` and the Friday `0815 CT - Early CME Globex
+  close for trade date Friday Apr 2`, and the sheet names no Nikkei line. The
+  same reading as Martin Luther King's applies: no NKD statement includes the
+  contract in the equity arrangement, its own page states the regular grid,
+  and the era's one NKD-specific holiday statement carves it out of exactly
+  this kind of class line. 2010-04-02 ships no row and is audited normal on
+  the modelled CDT grid (03:00-15:15, 15:30-16:30, 17:00-18:00); the residual
+  risk below records what would settle the two silent sheets differently.
 
 ### 2010
 
-Added 2026-09-30 UTC: the first window opens at the notice-dated 2010-04-11
-grid start, and these six rows are that year's sheets' own readings. Columbus
-Day (Monday 2010-10-11), Veterans Day (Thursday 2010-11-11), Friday
-2010-12-31 (the 2011 New Year sheet prints the regular 15:15 close) and
-Monday 2011-01-03 (the ordinary Sunday evening open) ship no row and are
-audited normal.
+Added 2026-09-30 UTC, in two waves: the first window opened at the notice-dated
+2010-04-11 grid start with the six post-changeover rows, and the #225 remainder
+wave then moved the window's start to the floor, where the modelled old grid
+begins, and added the New Year closure. The post-changeover audited-normal
+dates: Columbus Day (Monday 2010-10-11), Veterans Day (Thursday 2010-11-11),
+Friday 2010-12-31 (the 2011 New Year sheet prints the regular 15:15 close) and
+Monday 2011-01-03 (the ordinary Sunday evening open) ship no row. The
+old-grid-era audited-normal dates: Monday 2010-01-18, Monday 2010-02-15 and
+Friday 2010-04-02 ship no row — each is read per sheet in the old-grid era
+block above, the President's Day sheet excepting NKD from the equity pattern
+onto its regular 02:00 CST open and the other two sheets naming no Nikkei line
+at all.
 
 | trade date | kind | instant as printed | document | tier | derived from |
 |---|---|---|---|---|---|
+| 2010-01-01 | closed | `CME Globex is closed` | `2010-new-years.pdf @2010-02-15T05:16:52Z` | T1 | the sheet prints `Friday, Jan 1` above `CME Globex is closed` under every product class (a venue-wide closure), so the old grid's Friday sessions — the CST grid's 02:00-15:15 and 15:30-16:30 — do not run; the CST grid has no prior-evening leg to remove |
 | 2010-05-31 | early close | `1030 CT` | `2010-memorial-day.pdf @2010-06-01T09:42:25Z` | T1 | the Equity Products line prints `1030 CT – Trading halt` above `Monday, May 31`, and `1700 CT – Halted products resume trading` with it, so the wrapped leg that opened Sunday 17:00 CT ends here; 10:30 CT is earlier than the family's ordinary 15:15 CT close |
 | 2010-07-05 | early close | `1030 CT` | `2010-4th-of-july.pdf @2010-06-02T00:56:37Z` | T1 | the Equity Products line prints `1030 CT – Trading halt` above `Monday, July 5`, and `1700 CT – Halted products resume trading` with it, so the wrapped leg that opened Sunday 17:00 CT ends here; 10:30 CT is earlier than the family's ordinary 15:15 CT close |
 | 2010-09-06 | early close | `1030 CT` | `2010-labor-day.pdf @2010-06-02T00:56:41Z` | T1 | the Equity Products line prints `1030 CT – Trading halt` above `Monday, Sep 6`, and `1700 CT – Halted products resume trading` with it, so the wrapped leg that opened Sunday 17:00 CT ends here; 10:30 CT is earlier than the family's ordinary 15:15 CT close |
@@ -279,18 +314,24 @@ bytes on 2026-09-12 UTC into `holidays/raw/cme-2010-2012/` and
 `holidays/raw/cme-2013-2015/` (with the `-fix` and `-repair-r2` rounds); this
 wave re-verified every digest against the store's bytes and re-read every
 cited line from the store's extracts on 2026-09-29 UTC; the 2026-09-30 UTC
-wave re-read the 2010 sheets it cites the same way and added their ids below.
+wave re-read the 2010 sheets it cites the same way and added their ids below;
+the #225-remainder wave the same day added the New Year closure row and the
+old-grid-era prose readings, re-verified the four 2010 Q1 digests against the
+store's bytes, and added the Martin Luther King id below.
 `2011-new-years.pdf` is cited by the era's prose above, for the audited-normal
-2010-12-31 and 2011-01-03; the 2010 New Year's, Presidents Day and Good Friday
-ids are cited by the prose for the old-grid era's refusal — those three are
-not any row's document (the other four 2010 ids below are, since the
-2026-09-30 wave).
+2010-12-31 and 2011-01-03; the 2010 Presidents Day and Good Friday ids are
+cited by the prose for the old-grid era's audited-normal readings, and the
+Martin Luther King id for its own — those three are
+not any row's document (the other 2010 ids below are, since the
+2026-09-30 waves).
 
 | Document | Window | Replay or service URL | Capture or retrieval, UTC | Tier | sha256 |
 |---|---|---|---|---|---|
 | `2011-new-years.pdf @2011-11-01T14:39:45Z` | `2011-new-years.pdf` | <https://web.archive.org/web/20111101143945id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2011-new-years.pdf> | archive capture 2011-11-01T14:39:45Z | T1 | `42c289804cd3fa0830556ecb7fcc31493c452ba9e7325ebe7d7ce29613e41476` |
+| `2010-martin-luther-king.pdf @2010-03-31T06:42:26Z` | `2010-martin-luther-king.pdf` | <https://web.archive.org/web/20100331064226id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2010-martin-luther-king.pdf> | archive capture 2010-03-31T06:42:26Z | T1 | `11af96423f788565a434209ebb94a82f69dd2c129621927cd898c2ff6c0978d3` |
 | `2010-new-years.pdf @2010-02-15T05:16:52Z` | `2010-new-years.pdf` | <https://web.archive.org/web/20100215051652id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2010-new-years.pdf> | archive capture 2010-02-15T05:16:52Z | T1 | `c30a6cef73fca23c54b25907f307ad52a2922d1e4b76c0a12de126dc6fc31a6d` |
 | `2010-presidents-day.pdf @2010-02-15T06:46:41Z` | `2010-presidents-day.pdf` | <https://web.archive.org/web/20100215064641id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2010-presidents-day.pdf> | archive capture 2010-02-15T06:46:41Z | T1 | `ba379a7fa57efef43820583ada0002ea6cd8ccf0caf1b650d1cb6e8561f84253` |
+| `2010-good-friday.pdf @2010-06-01T11:19:16Z` | `2010-good-friday.pdf` | <https://web.archive.org/web/20100601111916id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2010-good-friday.pdf> | archive capture 2010-06-01T11:19:16Z | T1 | `d196ca746c20ecd416d38f8f95020e2e7d6cb7fa9ead089e0d58c88bed0ab1f5` |
 | `2010-christmas.pdf @2010-12-14T06:12:38Z` | `2010-christmas.pdf` | <https://web.archive.org/web/20101214061238id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2010-christmas.pdf> | archive capture 2010-12-14T06:12:38Z | T1 | `d4adb060f6eb592fb24e3a272db57b3d8c9d69f3f370682ecd8d57e4169c37be` |
 | `2010-memorial-day.pdf @2010-06-01T09:42:25Z` | `2010-memorial-day.pdf` | <https://web.archive.org/web/20100601094225id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2010-memorial-day.pdf> | archive capture 2010-06-01T09:42:25Z | T1 | `46a2f00f0f23c82189d86953092ee1171e0ec1c460891bda3ef0578518d12859` |
 | `2010-4th-of-july.pdf @2010-06-02T00:56:37Z` | `2010-4th-of-july.pdf` | <https://web.archive.org/web/20100602005637id_/http://www.cmegroup.com/tools-information/holiday-calendar/files/2010-4th-of-july.pdf> | archive capture 2010-06-02T00:56:37Z | T1 | `c6a0f8c0b079b85e4500d30d942247bc9aa14d6c70fe3ed73d6d77b21b65ee2c` |
@@ -343,25 +384,39 @@ not any row's document (the other four 2010 ids below are, since the
 
 ### Gaps and residual risks, 2011-2015 and 2010
 
-**The 2011-2015 wave closed the 2011-2015 span; the 2026-09-30 UTC wave moved
-the window start to the dated 2010-04-11 grid start and added the six 2010
-rows, narrowing the family's unaudited interval to 2010-01-01..2010-04-10.**
-The table as a whole carries 226 rows
-over 6 windows — 2010-04-11..2012-12-31, 2013-01-01..2015-12-31,
+**The 2011-2015 wave closed the 2011-2015 span; the 2026-09-30 UTC waves moved
+the window start — first to the dated 2010-04-11 grid start with the six 2010
+rows, then, with the old grid modelled from the operator's own page, to the
+2010-01-01 floor, where the remaining #225 interval closed as audited data.**
+The table as a whole carries 227 rows
+over 6 windows — 2010-01-01..2012-12-31, 2013-01-01..2015-12-31,
 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31,
 2025-01-01..2027-12-31 — of which the 2011-2015 share is **62 rows**: 12 closures,
-44 early closes and 6 late opens, every one at T1, none `Unsourced`, and the
-2010 share is the six rows of the era block above. The 2011 window opened
-2011-01-12, not 2011-01-01, because the profile's first sourced day was then
-the 2011-01-12 capture and the 2011 New Year's sheet — the only operator
-document covering 2011-01-01..2011-01-03 — stated the equity class line for
-dates whose NKD handling that year followed the then-unmodelled 2010 grid; the
-2010-04-05 notice has since dated that grid's end at 2010-04-11, so the window
-opens there and the New Year's sheet's own sessions (a regular 15:15 close for
-2010-12-31, the ordinary Sunday open for 2011-01-03) are audited normal inside
-it. The old-grid era's refusal, its bounded-search record and its closing
-condition are in the era block above, and the follow-up is tracked as #225
-(LAW-FOLLOW-UPS-ARE-ISSUES).
+44 early closes and 6 late opens, every one at T1, none `Unsourced`; the
+2010 share is the seven rows of the era blocks above (the 2010-01-01 venue-wide
+closure on the modelled old grid, plus the six post-changeover rows). The 2011
+window opened 2011-01-12, not 2011-01-01, because the profile's first sourced
+day was then the 2011-01-12 capture and the 2011 New Year's sheet — the only
+operator document covering 2011-01-01..2011-01-03 — stated the equity class
+line for dates whose NKD handling that year followed the then-unmodelled 2010
+grid; the 2010-04-05 notice has since dated that grid's end at 2010-04-11 and
+the grid itself is modelled from the operator's own page, so the window now
+opens at the floor and the New Year's sheet's own sessions (a regular 15:15
+close for 2010-12-31, the ordinary Sunday open for 2011-01-03) are audited
+normal inside it. **No unaudited interval remains inside the claimed scope**:
+from the floor to the table's last audited day every date is inside a window,
+so #225 closes with this change (LAW-FOLLOW-UPS-ARE-ISSUES).
+
+**Residual risk, the two silent Q1 sheets.** The Martin Luther King and Good
+Friday readings rest on a three-way argument — the class line is not NKD's by
+silence (the operator demonstrably excepted NKD where it meant to, on the
+structurally identical President's Day pattern), the contract's own page states
+the regular grid, and the era's only NKD-specific holiday statement re-anchors
+the contract to that grid. An operator artifact naming NKD on 2010-01-18 or
+2010-04-02 with different instants would move those two dates to rows; nothing
+in hand does, and the bounded-search record is unchanged — the era's sheets
+survive complete and are read (research store `holidays/raw/cme-2010-2012/`,
+retrieved 2026-09-12 UTC; the four Q1 digests re-verified 2026-09-30 UTC).
 
 **No `Unsourced` row and no unrepresentable instant ships in either window.**
 The two 2010-era vocabulary limits the equity family recorded — a same-day
@@ -998,22 +1053,46 @@ Official origin of the trading-hours captures: <http://www.cmegroup.com/trading_
 
 ## Gaps and residual risks
 
-- **holiday, 2010-01-01..2010-04-10 only** (narrowed 2026-09-30 UTC) — the
-  old-grid era stays outside every declared holiday window, so `holiday_on`
-  refuses it. The era's sheets survive complete and are read (the era block
-  under `## Holidays` records the bounded search), but they govern the old grid
-  this crate does not model, and the President's Day sheet carves the Nikkei
-  out of the equity class line where it differed, so no audited-normal claim is
-  available there either. Every date from 2010-04-11 — the day the operator's
-  own Globex notice 20100405 dates the served grid's first session to — is
-  inside the first window, and the six 2010 rows of the era block ship from
-  that day's sheets. Closing condition: model the old grid from the 2010-04-02
-  page's printed CDT/CST rules with DST-seasonal selectors, then re-read the
-  era's sheets (New Year's, MLK, Presidents Day, Good Friday) per sheet.
-  Served identity, so tracked as an issue (LAW-FOLLOW-UPS-ARE-ISSUES).
-- **executable** — the old grid is sourced and bounded but unmodelled, so dates before 2010-04-11 resolve to a sessionless profile rather than carrying either grid. CME's 2010-03-10, 2010-04-02 and 2010-04-07 captures read a daytime-anchored, DST-dependent grid — CDT 03:00–15:15 reopening 15:30–16:30 and 17:00–18:00, CST 02:00–15:15 with no Sunday hours. The changeover was located on 2026-09-30 UTC: CME's own Globex notice 20100405 expands the Nikkei 225 (Dollar) hours `Effective this Sunday, April 11, 2010`, stating the served grid in session language, so the revision is keyed to that Sunday and serving the continuous grid from there serves only what the operator states. Serving it across the old-grid era would still report the contract open all night when it was closed, which an earlier revision of the module did and which is corrected. Closing condition: model the old grid (see the holiday gap above). Served identity, so tracked as an issue (LAW-FOLLOW-UPS-ARE-ISSUES).
-- **residual risk** — encoding the old grid itself would need seasonal CDT/CST rules keyed at the DST transitions; it is left sourced-and-bounded but unmodelled, its end dated by the notice.
-- **corrected at the migration** — the ledger note carried into this file ended with a sentence, written for an earlier revision of the module, saying the pre-2012 grid "is now extended to the January-2010 floor". The module does not do that and must not: `nkd_profile_at` returns `NKD_CLOSED` below 2011-01-12. That sentence was removed on 2026-09-12 and an editorial marker left in its place; the surviving correction earlier in the same note is the authoritative statement.
+- **closed: holiday, 2010-01-01..2010-04-10 (narrowed 2026-09-30 UTC, closed the same day).**
+  The old-grid era sat outside every declared holiday window while its grid was
+  unmodelled; the #225 remainder modelled it from the operator's own
+  equities-hours page, the first window moved to the floor, and the era's one
+  sheet-stated closure (the New Year `CME Globex is closed`) shipped as its
+  row. The original record: the era's sheets survive complete and are read (the
+  era block under `## Holidays` records the bounded search), but they governed
+  the old grid the crate did not model, and the President's Day sheet carves
+  the Nikkei out of the equity class line where it differed, so no
+  audited-normal claim was available there either. The closing condition this
+  bullet carried — model the old grid from the page's printed CDT/CST rules
+  with DST-seasonal selectors, then re-read the era's sheets (New Year's, MLK,
+  Presidents Day, Good Friday) per sheet — is discharged by this change.
+- **closed: executable (the same day).** The old grid was sourced and bounded
+  but unmodelled, so dates before 2010-04-11 resolved to a sessionless profile
+  rather than carrying either grid. CME's 2010-03-10, 2010-04-02 and
+  2010-04-07 captures read a daytime-anchored, DST-dependent grid — CDT
+  03:00–15:15 reopening 15:30–16:30 and 17:00–18:00, CST 02:00–15:15 with no
+  Sunday hours. The changeover was located on 2026-09-30 UTC: CME's own Globex
+  notice 20100405 expands the Nikkei 225 (Dollar) hours `Effective this
+  Sunday, April 11, 2010`, stating the served grid in session language, so the
+  revision is keyed to that Sunday and serving the continuous grid from there
+  serves only what the operator states. Serving it across the old-grid era
+  would still have reported the contract open all night when it was closed,
+  which an earlier revision of the module did and which is corrected. The
+  closing condition — model the old grid — is discharged.
+- **residual risk, the two silent Q1 sheets** — the Martin Luther King and
+  Good Friday audited-normal readings rest on the absence of any NKD statement
+  in those two sheets beside the operator's affirmative President's Day
+  exception and the contract's own page grid; an operator artifact naming NKD
+  on 2010-01-18 or 2010-04-02 with different instants would move those two
+  dates to rows. The seasonal-CDT/CST encoding the earlier risk bullet asked
+  for is what shipped, keyed at the DST transitions the page's own dual
+  spellings name.
+- **witness gap (recorded 2026-09-26 UTC, tracked as #162)** — the family
+  ships twelve of the seventeen merged trade dates and none of the 2025 five,
+  because no `NKD`/`NIY` witness exists for those windows and the channel that
+  would carry one returns an empty event list; the gap is recorded in the
+  Holidays section with its closing condition.
+- **corrected at the migration** — the ledger note carried into this file ended with a sentence, written for an earlier revision of the module, saying the pre-2012 grid "is now extended to the January-2010 floor". The module does not do that and must not: `nkd_profile_at` returns `NKD_CLOSED` below the timeline's first row. That sentence was removed on 2026-09-12 and an editorial marker left in its place; the surviving correction earlier in the same note is the authoritative statement.
 - **scope** — Nikkei 225 Dollar outrights only. BTIC (`NKT`) is separately scheduled on its own CME-published hours and takes its own key if a consumer maps one. The 16:00–17:00 CT daily break is a maintenance period; the Pre-Open queue the operator prints inside it is an order-entry phase and is a phase of this outright book, which is why it ships in the current profile.
 
 ## Module narrative (moved from src/calendar/schedules/futures/us/cme_nikkei.rs on 2026-09-12 UTC)
@@ -1117,6 +1196,13 @@ therefore modelled sessionless, the same knowledge boundary a launch day
 provides. Encoding the 2010 grid itself would need seasonal CDT/CST rules and
 a boundary that is still undated, so it is left as sourced-but-unmodelled and
 recorded here.
+
+(Updated 2026-09-30 UTC: the paragraph above records the state as this
+narrative was moved. The transition is dated since — CME's own Globex notice
+20100405 states it `Effective this Sunday, April 11, 2010` — and the 2010 grid
+itself is modelled, keyed at the floor and at the DST entry from the page's own
+dual spellings; see the ledger basis and the Holidays section's old-grid era
+block for the current record.)
 Official origin http://www.cmegroup.com/trading_hours/ delivered via:
 https://web.archive.org/web/20100310022002id_/http://www.cmegroup.com/trading_hours/
 https://web.archive.org/web/20100407094843id_/http://www.cmegroup.com/trading_hours/

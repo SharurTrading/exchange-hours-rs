@@ -60,6 +60,21 @@ corrections (a venue's hours fixed against a primary source) go under
   gate-soundness fence's forcing reference becomes a provider that keeps the
   trait's default answer, so it still exercises the derivation everywhere.
 
+- **The charter's migration status states the enforced coverage contract
+  (2026-09-30 UTC; closes #154).** The "adopted target, not a claim about the
+  current implementation" framing predated #115's landing and read as though
+  the coverage errors did not exist. The migration status now records what
+  ships — the identity-backed date-aware queries return
+  `Result<_, CalendarQueryError>` with `BeforeSupportFloor`,
+  `OutsideCoveredRange`, `UnresolvedGap` and `SearchExhausted` all reachable,
+  the 2010-01-01 floor and the restored 2010-2024 audited windows answer, the
+  pre-2025 known gaps surface as explicit verdicts — and what does not:
+  `hours_at`, `hours_for_*` and `session_profile` check normal-week coverage
+  only and detached `MarketHours` snapshots keep their no-holiday contract.
+  LAW-COVERAGE's "existing APIs do not yet enforce it" sentence and
+  LAW-HOLIDAY-SCOPE's "until those rows ship" sentence are corrected the same
+  way (replacement-block rows ship in eight family tables). Documentation
+  only; no Rust API or runtime data moves.
 - **The CME venue tables re-derive under the profile-clock decision
   (2026-09-30 UTC; closes #242).** The 2026-09-30 charter decision (#153)
   holds that a venue `Exchange` speaks for its profile clock — `cme`'s the

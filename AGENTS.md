@@ -254,9 +254,9 @@ the cost of keeping them true.
   instead of withholding it. Genuine disagreement — two routed families
   printing different instants, or a clock-family holiday against another
   family's normal — stays `Unsourced`. The re-derivation this decision needs
-  is data work tracked on its own issue; until it lands, the shipped venue
-  tables keep the withheld rows the earlier rule produced, and they remain
-  labelled partial either way.
+  landed as data on 2026-09-30 UTC (#242): the venue tables retire the rows
+  the earlier rule produced and answer those dates from their clocks, and the
+  venue identities remain labelled partial either way.
 
   An explicit caller `Closed` or `ReplaceSessions` record takes precedence over
   the built-in date arrangement; the caller's `DayPolicy` then clips the result.

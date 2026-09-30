@@ -59,6 +59,20 @@ ALL_FAMILIES = [
     "globex_nikkei_225_dollar",
 ]
 
+#: The profile clock each venue serves (the 2026-09-30 #153 decision,
+#: recorded in AGENTS.md's LAW-HOLIDAY-SCOPE): the family whose grid the
+#: venue's own schedule is built from. The venue answers every date its clock
+#: answers, so a dissent from any other routed family against a clock-family
+#: audited normal is retired rather than withheld, and a clock-family row that
+#: another routed family does not match stays a dispute.
+CLOCK: dict[str, str] = {
+    "cme": "globex_equity_index",
+    "cbot": "globex_grains",
+    "comex": "globex_energy",
+    "nymex": "globex_energy",
+}
+
+
 # The venue module each emitted table belongs to.
 VENUE_FILE = {
     "cme": "cme.rs",
@@ -188,6 +202,11 @@ def normalize_kind(kind: str, constants: dict[str, str]) -> str:
         return "Closed"
     if kind in ("Unsourced", "HolidayKind::Unsourced"):
         return "Unsourced"
+    # A complete-replacement row is comparable as written: two families agree
+    # only when they name the same block slice, so the slice expression itself
+    # is the token the intersection compares.
+    if kind.startswith("ReplacementBlocks(") and kind.endswith(")"):
+        return kind
     for name, arity in (
         ("early_close", 1),
         ("late_open", 1),
@@ -205,6 +224,9 @@ def normalize_kind(kind: str, constants: dict[str, str]) -> str:
 
 def parse_table_text(text: str) -> Table:
     """Parses any module's `holidays!` block, given its source text."""
+    # Row comments are prose and may contain parentheses, so they are dropped
+    # before the constants and the tuple scan rather than parsed as one.
+    text = re.sub(r"(?m)^\s*//.*$", "", text)
     constants = {
         match.group(1): match.group(2)
         for match in (CONST_RE.match(line) for line in text.splitlines())
@@ -256,7 +278,10 @@ class Joint:
         self.abstained = abstained  # [family]
 
 
-def intersect(tables: dict[str, Table], families: list[str], date: dt.date) -> Joint:
+def intersect(
+    tables: dict[str, Table], families: list[str], clock: str, date: dt.date
+) -> Joint:
+    """The venue's answer for one trade date, under the profile-clock rule."""
     abstained = [family for family in families if not tables[family].covers(date)]
     stated = []
     for family in families:
@@ -271,8 +296,21 @@ def intersect(tables: dict[str, Table], families: list[str], date: dt.date) -> J
                 None if row is None else row.tier,
             )
         )
+    if clock not in abstained:
+        clock_kind = next(
+            (kind for family, kind, _, _ in stated if family == clock), None
+        )
+        if clock_kind is None:
+            # The profile-clock decision (AGENTS.md, LAW-HOLIDAY-SCOPE,
+            # 2026-09-30): the venue answers the date from its clock, so a
+            # family whose clock the venue does not serve cannot withhold a
+            # date the clock audits normal. Any dissent — one family's lone
+            # row or several families' differing ones — is retired here.
+            return Joint("normal", None, None, None, stated, abstained)
     values = {kind for _, kind, _, _ in stated}
     if not stated or values == {None}:
+        # The clock itself has no answer (it abstains with the rest): the
+        # venue has none either.
         return Joint("normal", None, None, None, stated, abstained)
     if len(values) == 1:
         kind = next(iter(values))
@@ -287,8 +325,6 @@ def intersect(tables: dict[str, Table], families: list[str], date: dt.date) -> J
         (None, None),
     )
     return Joint("disputed", None, document, tier, stated, abstained)
-
-
 def describe(joint: Joint) -> str:
     """The per-family summary of one disputed date, in routing order."""
     parts = [f"{display(family)} {human_kind(kind)}" for family, kind, _, _ in joint.stated]
@@ -377,7 +413,7 @@ def venue_rows(tables: dict[str, Table], venue: str, era: tuple[dt.date, dt.date
     """Every joint answer in the era, in ascending trade-date order."""
     date = era[0]
     while date <= era[1]:
-        yield date, intersect(tables, ROUTING[venue], date)
+        yield date, intersect(tables, ROUTING[venue], CLOCK[venue], date)
         date += dt.timedelta(days=1)
 
 

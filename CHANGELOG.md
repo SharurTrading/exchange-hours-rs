@@ -60,6 +60,21 @@ corrections (a venue's hours fixed against a primary source) go under
   gate-soundness fence's forcing reference becomes a provider that keeps the
   trait's default answer, so it still exercises the derivation everywhere.
 
+- **The CME venue tables re-derive under the profile-clock decision
+  (2026-09-30 UTC; closes #242).** The 2026-09-30 charter decision (#153)
+  holds that a venue `Exchange` speaks for its profile clock — `cme`'s the
+  equity-index grid, `cbot`'s the grain grid, `comex`'s and `nymex`'s the
+  energy grid — so a family whose clock the venue does not serve cannot
+  withhold a date the clock family audits normal. Applying it retired **85**
+  of `cme`'s and **59** of `cbot`'s `Unsourced` rows across every audited era
+  (316→**231** and 308→**249** rows; withheld 269→**184** and 261→**202**);
+  the retired dates now audit normal for the venue and keep their sourced
+  rows in the family tables, and every genuine dispute — a clock-family row
+  another routed family does not match, or the four not-worked-up markers —
+  stays withheld. `tools/venue_intersection*.py` carry the amended rule, the
+  venue evidence files and `venues.rs` re-derive their per-era counts and
+  shapes from it, and the intersection, census and inventory fences move with
+  the data. No family table, document id or tier moves.
 - **The family evidence files' aggregate prose re-derives from the per-date
   tables (2026-09-30 UTC; #232).** The four Globex family files each stated a
   whole-table total their later waves outran — `globex_equity_index` 217,

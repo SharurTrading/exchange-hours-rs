@@ -9,7 +9,7 @@
 
 ## Ledger basis (moved from docs/schedules/verification.md on 2026-09-12 UTC)
 
-**Gap: order-entry** — the trading session is sourced; what is undated is a queue or post-close phase in which no trade can print. Compatibility default for the scoped CME/CBOT equity-index family. Current RTH/ETH and Pre-Open queues are primary-supported; matching and the exact 2010, 2012, 2015, and 2021 revisions are dated, but the Sunday queue's move from 16:15 to 16:00 lacks a source-stated day: the 2026-08-31 review narrowed it to 2012-05-28..2012-06-07 and found no operator notice in either CME channel across that window. Dated profiles now serve the sourced intersection — Sunday 16:15–17:00, carried from the January-2010 floor because the queue only ever widened — so only the disputed 16:00–16:15 quarter-hour waits on the undated move. Full-size `SP`, NKD, BTIC, and TACO products are excluded.
+**Gap: order-entry** — the trading session is sourced; what is undated is a queue or post-close phase in which no trade can print. Compatibility default for the scoped CME/CBOT equity-index family. Current RTH/ETH and Pre-Open queues are primary-supported; matching and the exact 2010, 2012, 2015, and 2021 revisions are dated, but the Sunday queue's move from 16:15 to 16:00 lacks a source-stated day: the 2026-08-31 review narrowed it to 2012-05-28..2012-06-07 and found no operator notice in either CME channel across that window. Dated profiles serve the sourced intersection — Sunday 16:15–17:00, sourced back to the January-2010 floor (the floor-era Sunday queue is stated by Globex notices 20090831/20090907/20090914, recorded in *The January-2010 floor era* below) — so only the disputed 16:00–16:15 quarter-hour waits on the undated move. Full-size `SP`, NKD, BTIC, and TACO products are excluded.
 
 ## Revision rows
 
@@ -18,6 +18,53 @@
 - 2015-09-20 — T1 — CME Globex notice 20150817 — CME Equity and CBOT Equity closes move 15 minutes earlier to 16:00 CT.
 - 2021-06-27 — T1 — CME Globex notice 20210621 — the 15:15–15:30 CT halt is removed, producing the continuous 17:00–16:00 CT ETH envelope.
 - 2026-08-22 — T1 — 2026-08-22 review: verified current, onset undated — knowledge-bound row widening the Sunday queue to the sourced current 16:00–17:00 CT Pre-Open.
+
+## The January-2010 floor era
+
+The whole floor-era weekday grid is stated by the operator's own artifacts, so
+the horizon is the floor and nothing below the first dated revision row is
+carried:
+
+- **Matching grid** — the archived equities trading-hours page, capture
+  2009-04-06 (`equities-20090406.html` in the research store), prints for every
+  E-mini equity-index future the weekday cell `15:30-16:30 and 17:00-15:15` and
+  the Sunday cell `17:00-15:15`, while the excluded full-size `S&P 500 Futures`
+  row reads `15:30-16:30 and 17:00-8:15` — the family scope the module models.
+  The capture at 2010-04-02 (`equities-20100402.html`) repeats the same cells
+  inside the floor era. CME's October-2009 product guide (already cited below)
+  supplies the same grid.
+- **Sunday Pre-Open queue (16:15–17:00 CT)** — CME Globex notices 20090831,
+  20090907 and 20090914 (the Equity Futures Enhancements launch, effective
+  Sunday, October 4, 2009) each print: "Customers may re-enter GTC and GTD
+  orders during the pre-open, 4:15 to 5:00 p.m. CT, Sunday, October 4." The
+  window is the operator's own name for the normal Sunday Pre-Open — the
+  platform's one-off extensions are always qualified as such (the DME
+  migration's "extended pre-open starting at 3:15 p.m.", and this very launch's
+  "special extended pre-open, 3:00 to 5:00 p.m." wording in notice 20090921) —
+  and these three notices carry no such qualifier. The notices predate the
+  support floor, so the floor-era Sunday queue is sourced.
+- **Weekday Pre-Open queue (16:50–17:00 CT)** — the dated 2010-11-15 change
+  (Globex notice 20101025, the first revision row above) states the outgoing
+  value in its own change statement, so 16:50–17:00 holds from the floor to
+  2010-11-14 by that notice.
+
+The 2009, 2010 and 2011 captures of the equities-hours page carry no Pre-Open
+rows at all (the page grew them by the 2012-05-03 capture), so the page channel
+cannot state the queue before 2012; the notices above are the floor-era queue
+evidence, and the bounded search behind them is recorded in the research
+store's `normal-weeks/wave-c1/INDEX.md` (every archived weekly Globex notice of
+2008–2011 text-scanned; the only floor-era Sunday-queue statements name the
+equity complex, the CME/CBOT interest-rate products (notices 20090326/20090330
+print the schedule table effective Sunday, April 5, 2009 — Sundays Pre-Open
+16:15, Monday-Friday 16:50), the excluded TAS products, or Random Length
+Lumber).
+
+Residual scope note: the three notices name "the CME Equity futures markets".
+The CBOT-listed YM/MYM line inside this family has no pre-floor statement of
+its own Sunday queue time; its queue is carried from the sourced intersection
+(the value holds under every sourced state, and the 2012-05-03 page capture
+first prints it per product), which is order-entry-only and unverifiable in
+either direction below the notices.
 
 ## Evidence documents
 
@@ -898,6 +945,9 @@ as each source is re-verified.
 - <https://www.cmegroup.com/tools-information/lookups/advisories/market-data/20121015.html> — CME market-data advisory 20121015, corroborating the 2012 change.
 - <https://www.cmegroup.com/notices/clearing/2019/06/Chadv19-182.pdf> — CME clearing advisory Chadv19-182.
 - <https://www.cmegroup.com/tools-information/lookups/advisories/electronic-trading/20101025.html> — CME Globex notice 20101025, the 2010-11-15 weekday Pre-Open move.
+- <https://www.cmegroup.com/tools-information/lookups/advisories/electronic-trading/20090831.html> — CME Globex notice 20090831 (repeated 20090907 and 20090914), the pre-floor Sunday Pre-Open statement "the pre-open, 4:15 to 5:00 p.m. CT, Sunday" — read 2026-09-30 (UTC).
+- <https://web.archive.org/web/20090406223456id_/http://www.cmegroup.com/trading_hours/equities-hours.html> — CME equities trading-hours page — capture 2009-04-06, the pre-floor grid (`15:30-16:30 and 17:00-15:15` weekday, `17:00-15:15` Sunday for every E-mini row) — read 2026-09-30 (UTC).
+- <https://web.archive.org/web/20100402122430id_/http://www.cmegroup.com/trading_hours/equities-hours.html> — CME equities trading-hours page — capture 2010-04-02, the same grid inside the floor era — read 2026-09-30 (UTC).
 - <https://www.cmegroup.com/tools-information/lookups/advisories/electronic-trading/20150817.html> — CME Globex Notice #20150817 of 17 August 2015, the 2015-09-20 revision's source.
 - <https://www.cmegroup.com/tools-information/lookups/advisories/electronic-trading/20150914.html> — CME Globex Notice #20150914, the "Effective this Monday" repeat of the same article.
 - <https://www.cmegroup.com/notices/electronic-trading/2021/06/20210621.html> — CME Globex notice 20210621, the 2021-06-27 halt removal.
@@ -917,7 +967,7 @@ Official origin of the four trading-hours captures: <http://www.cmegroup.com/tra
 
 ## Gaps and residual risks
 
-- **order-entry** — **the crate holds no admissible artifact whose own scope covers an ordinary week inside the claimed interval**, so the 16:00–16:15 CT quarter-hour is withheld. The 2012 changeover day is also unstated — the bracket is 2012-05-28..2012-06-07 — but that is **not** the operative reason: no sourced state has printed 16:15 since 2012-05-28, because Globex notice 20120402 dates the old value (2012-04-15, in the venue's own market-state language) and notice 20121112 prints the new one, and the charter says in terms that "a later observation alone does not prove the intervening period complete". The 2026-08-31 review narrowed the bracket to 2012-05-28..2012-06-07 from CME's own trading-hours captures and read both CME dated notice channels in full across that window without finding an announcement, so the dated profiles serve the sourced 16:15–17:00 CT intersection and withhold only the 16:00–16:15 CT quarter-hour. **Search record**, so the next attempt does not repeat it: 41 of the 42 Globex notice date-filenames for 2012 were retrieved and text-scanned, together with all 187 real CME 2012 CFTC rule filings, the market-data notice channel (zero occurrences of "pre-open" or "16:15" in it) and the three in-bracket Federal Register notices — no effective day in any of them; CME's own Globex Initiative Calendar for June 2012, the month of the change, carries no pre-open or trading-hours entry at all; the Wayback archive holds 703 captures of the operator's trading-hours service covering 29 distinct Sundays, **every one a holiday eve**, so it can never carry a normal-week capture; and Save Page Now on the 2025-01-05..07 window returned `"hasEvents": false`, which is the channel's retention limit rather than the operator's word. **Closing conditions**, best first: (a) a written reply from CME's own desk giving the Sunday Pre-Open time in force for the week of 2025-01-05, or the effective date of the 2012 change — T1 in session language, and it closes this under either reading; (b) a T1 or T2 artifact covering an ordinary week at or near the 2025 floor, from a channel that still retains it and checked for `hasEvents: true`; (c) a May/June 2012 Global Command Center one-pager of the class the 2013 grain notice proves exists. Do not key 2012-06-03: the only Sunday inside the bracket is an inference from the bracket, not an operator statement. The declaration applies to the bracket-era Sundays 2012-05-28..2026-08-21 whose served Sunday Pre-Open resolves — shaped, since #172, to the served 16:15-17:00 CT window — so the Tuesdays, the pre-bracket Sundays (whose sourced state still printed 16:15) and the holiday-removed Sundays beside them answer from the tables. Tracked as #79. Served identity, so tracked as an issue (LAW-FOLLOW-UPS-ARE-ISSUES). Horizon 2012-05-03: below that capture the Sunday 16:15–17:00 CT queue is carried, not sourced.
+- **order-entry** — **the crate holds no admissible artifact whose own scope covers an ordinary week inside the claimed interval**, so the 16:00–16:15 CT quarter-hour is withheld. The 2012 changeover day is also unstated — the bracket is 2012-05-28..2012-06-07 — but that is **not** the operative reason: no sourced state has printed 16:15 since 2012-05-28, because Globex notice 20120402 dates the old value (2012-04-15, in the venue's own market-state language) and notice 20121112 prints the new one, and the charter says in terms that "a later observation alone does not prove the intervening period complete". The 2026-08-31 review narrowed the bracket to 2012-05-28..2012-06-07 from CME's own trading-hours captures and read both CME dated notice channels in full across that window without finding an announcement, so the dated profiles serve the sourced 16:15–17:00 CT intersection and withhold only the 16:00–16:15 CT quarter-hour. **Search record**, so the next attempt does not repeat it: 41 of the 42 Globex notice date-filenames for 2012 were retrieved and text-scanned, together with all 187 real CME 2012 CFTC rule filings, the market-data notice channel (zero occurrences of "pre-open" or "16:15" in it) and the three in-bracket Federal Register notices — no effective day in any of them; CME's own Globex Initiative Calendar for June 2012, the month of the change, carries no pre-open or trading-hours entry at all; the Wayback archive holds 703 captures of the operator's trading-hours service covering 29 distinct Sundays, **every one a holiday eve**, so it can never carry a normal-week capture; and Save Page Now on the 2025-01-05..07 window returned `"hasEvents": false`, which is the channel's retention limit rather than the operator's word. **Closing conditions**, best first: (a) a written reply from CME's own desk giving the Sunday Pre-Open time in force for the week of 2025-01-05, or the effective date of the 2012 change — T1 in session language, and it closes this under either reading; (b) a T1 or T2 artifact covering an ordinary week at or near the 2025 floor, from a channel that still retains it and checked for `hasEvents: true`; (c) a May/June 2012 Global Command Center one-pager of the class the 2013 grain notice proves exists. Do not key 2012-06-03: the only Sunday inside the bracket is an inference from the bracket, not an operator statement. The declaration applies to the bracket-era Sundays 2012-05-28..2026-08-21 whose served Sunday Pre-Open resolves — shaped, since #172, to the served 16:15-17:00 CT window — so the Tuesdays, the pre-bracket Sundays (whose sourced state still printed 16:15) and the holiday-removed Sundays beside them answer from the tables. Tracked as #79. Served identity, so tracked as an issue (LAW-FOLLOW-UPS-ARE-ISSUES). Horizon 2010-01-01 (moved from the 2012-05-03 capture on 2026-09-30 UTC): the floor-era Sunday queue is stated by Globex notices 20090831/20090907/20090914 and the floor-era grid by the archived equities-hours page of 2009-04-06 — see *The January-2010 floor era* above.
 - **residual risk** — the only Sunday inside the narrowed bracket is 2012-06-03; that is an observation about the bracket, not a source-stated effective day, so LAW-NO-FABRICATED-DATES keeps it out of the tables.
 - **scope** — full-size `SP`, NKD, BTIC and TACO products are excluded from this compatibility default; NKD has its own key and module.
 - **holidays** — this venue ships the intersection of the six CME families'

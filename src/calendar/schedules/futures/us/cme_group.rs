@@ -89,11 +89,12 @@ static CME_EXT_DATED_CURRENT: &[SessionRule] = &[
     },
 ];
 
-// Pre-Open queues; no trade can match in any of them. The Sunday queue is the
-// sourced 16:15-17:00 intersection: CME's queue only widened inside the
-// modelled window, so carrying it from the January-2010 floor asserts no
-// cutover, and the knowledge-bound row below adds the disputed 16:00-16:15
-// quarter-hour. See docs/evidence/cme.md.
+// Pre-Open queues; no trade can match in any of them. Globex notices
+// 20090831/0907/0914 state the floor-era Sunday queue and the dated
+// 2010-11-15 change states the weekday one, so serving the 16:15-17:00
+// intersection from the January-2010 floor asserts no cutover; the
+// knowledge-bound row below adds the disputed quarter-hour.
+// See docs/evidence/cme.md.
 static CME_ORDER_ENTRY_1650: &[SessionRule] = &[
     SessionRule {
         days: SUN_ONLY,

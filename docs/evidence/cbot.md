@@ -799,6 +799,38 @@ on.
 
 **Audited-normal silence is a state the audit reads.** Both routed families cover all six windows, so nothing abstains here; inside a window a family that states no row has audited the date normal, and a date one family states while the other audited normal is a disagreement and ships `Unsourced`. Of the 261 rows withheld, **257 are disagreements of that kind and 4 are dates both families themselves mark not worked up** (the three Juneteenth dates and 2023-01-16), which are the families' own marker rather than a dispute; the 2026-09-29 bounded re-search that keeps those four withheld is recorded beside their rows in the two family evidence files and tracked as #223. The rate leg states an early close at 12:00 CT on 112 of the withheld dates, 12:15 CT on 23, 15:15 CT on 28, 10:15 CT on 6 and 13:30 CT on 1; on 38 it states a replacement-blocks day, on 6 a 05:00 CT late open, on 4 the not-worked-up marker, and on the other 43 it audited the date normal while `globex_grains` states a row — the counts taken over the 261 withheld dates — so on a shortened day the two never state the same instant: over 2010-2027 there is no date on which both families state the same shortened-day row, and every date they do agree on is a full closure (`Closed`).
 
+## The January-2010 floor era (2026-09-30 targeted review)
+
+The floor-era **matching grid** is stated by the operator's own Globex notice
+of June 8, 2009 (repeated in the June 15 and June 22 notices), which dates it
+unconditionally before the support floor: "Commodity Trading Hours Extended —
+Effective Wednesday, July 1, the electronic trading hours (ETH) for CBOT
+grains, oilseeds and ethanol contracts, as well as the Minneapolis Grain
+Exchange (MGEX) and Kansas City Board of Trade (KCBT) commodity products listed
+on CME Globex, will be expanded from 6 a.m. Central time to 7:15 a.m. CT. With
+this change, these futures, options and spreads will be available for
+electronic trading on CME Globex from 6 p.m. to 7:15 a.m. Sunday through
+Friday. There is no change to the regular trading hours (RTH), 9:30 a.m. to
+1:15 p.m. weekdays." That is exactly the 18:00–07:15 CT electronic session
+around the 09:30–13:15 CT RTH the floor profile serves, so the executable
+session is sourced from 2009-07-01 through the floor and the grid below
+2010-03-15 stops being carried.
+
+The floor-era **queue phases** (Sunday 16:15–18:00, weekday morning
+07:15–09:30, PCP 14:30–16:00) are not stated before the March-2010 market-state
+table (notice 20100315, published 2010-03-15, whose "Current Pre-Open for CBOT,
+KCBT and MGEX Grain Futures" prints all three), so they stay carried from
+2010-03-15 to the floor and the horizon stands. The bounded search: every
+archived weekly Globex notice of 2008–2011 text-scanned (record in the research
+store's `normal-weeks/wave-c1/INDEX.md`); the June-2009 expansion notices
+themselves state no queue times; the only earlier grain-queue statement in the
+archive is the January-2008 CBOT-migration notice (20080109: pre-open 4:50
+p.m., open 6:00 p.m., 6:00 a.m. halt, 2:30–4:30 p.m. afternoon pre-open), whose
+values describe the pre-expansion 18:00–06:00 era and were superseded by the
+dated 2009-07-01 expansion. Closing condition: a CME statement of the grain
+futures' pre-open sessions in session language dated between 2009-07-01 and
+the floor.
+
 ## Sources
 
 Row review: 2026-08-29 (UTC) is the date the ledger row was last reviewed as a
@@ -808,6 +840,7 @@ beside a source below, that date governs for that source, and dates are added
 as each source is re-verified.
 
 - <https://www.cmegroup.com/media-room/press-releases/2009/6/05/cme_group_announcesadditionalagricultureethanolelectronictrading.html> — CME press release of 2009-06-05, the pre-floor grain electronic-hours expansion.
+- <https://www.cmegroup.com/tools-information/lookups/advisories/electronic-trading/20090608.html> — CME Globex notice 20090608 (repeated 20090615 and 20090622), the dated 2009-07-01 grain ETH expansion that sources the floor-era matching grid — read 2026-09-30 (UTC).
 - <https://www.cmegroup.com/tools-information/lookups/advisories/electronic-trading/20100315.html> — CME Globex notice 20100315, the March-2010 market-state table that supplies the then-live audit-floor queue and PCP phases.
 - <https://www.cmegroup.com/tools-information/lookups/advisories/market-data/Q2010-62.html> — CME market-data advisory Q2010-62.
 - <https://www.cmegroup.com/tools-information/lookups/advisories/electronic-trading/20100405.html> — CME Globex notice 20100405, the 2010-04-19 revision's source.

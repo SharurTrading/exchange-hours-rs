@@ -138,6 +138,103 @@ fn sunday_pre_open_carries_back_at_its_narrowest_sourced_edge() {
     }
 }
 
+/// The 2026-09-30 wave sourced the equity families' floor-era grid and
+/// queues (Globex notices 20090831/0907/0914 for the Sunday queue, the
+/// archived equities-hours page of 2009-04-06 for the grid) and the fixed
+/// income key's baseline (the operator's archived Contract Specifications
+/// amendments of 2009-09-14 .. 2017-08-28), so the horizons moved to the
+/// 2010-01-01 floor: the first floor week answers instead of refusing.
+///
+/// January probes sit in CST (UTC-6) and CET (UTC+1).
+#[test]
+fn the_floor_week_answers_from_the_sourced_grid() {
+    use exchange_hours::{
+        DateCoverage, Exchange, calendar_for_exchange, calendar_for_market_hours_key,
+    };
+
+    // Monday 2010-01-04, the floor week's first trading day, on the era
+    // equity grid: the 17:00->08:30 overnight leg closes at 08:30, the
+    // 08:30-15:15 day session trades, the 15:30-16:30 post-halt slice trades,
+    // and 17:00 reopens the next leg.
+    let monday = [
+        (utc(2010, 1, 4, 14, 29), SessionState::OpenExtended),
+        (utc(2010, 1, 4, 14, 30), SessionState::OpenRegular),
+        (utc(2010, 1, 4, 20, 0), SessionState::OpenRegular),
+        (utc(2010, 1, 4, 21, 35), SessionState::OpenExtended),
+        (utc(2010, 1, 4, 22, 0), SessionState::OpenExtended),
+        (utc(2010, 1, 4, 23, 0), SessionState::OpenExtended),
+    ];
+    for (instant, state) in monday {
+        assert_eq!(
+            hours_for_market_hours_key(MarketHoursKey::GlobexEquityIndex, instant)
+                .session_state(instant),
+            state,
+            "globex_equity_index at {instant} on the sourced floor-era grid"
+        );
+    }
+    // Sunday 2010-01-10: the sourced 16:15 CT queue, then the 17:00 CT open.
+    assert_eq!(
+        hours_for_market_hours_key(MarketHoursKey::GlobexEquityIndex, utc(2010, 1, 10, 22, 30))
+            .session_state(utc(2010, 1, 10, 22, 30)),
+        SessionState::OrderEntry,
+        "the floor-era Sunday 16:15-17:00 CT Pre-Open queues orders"
+    );
+    assert_eq!(
+        hours_for_market_hours_key(MarketHoursKey::GlobexEquityIndex, utc(2010, 1, 10, 23, 0))
+            .session_state(utc(2010, 1, 10, 23, 0)),
+        SessionState::OpenExtended,
+        "the floor-era Sunday 17:00 CT open matches"
+    );
+
+    // Eurex fixed income on the sourced 2009-09-14 baseline, sampled on both
+    // sides of every phase boundary: 07:30 CET queues (Pre-Trading
+    // 07:30-08:00), 09:00 and 13:00 CET trade (Continuous 08:00-22:00),
+    // 21:59 CET still trades and 22:00 CET queues (the continuous close is
+    // end-exclusive and Post-Trading 22:00-22:30 begins), 22:15 and 22:29 CET
+    // queue, and 22:30 CET is closed (the Post-Trading end is end-exclusive),
+    // as is 23:00 CET.
+    let baseline = [
+        (utc(2010, 1, 4, 6, 30), SessionState::OrderEntry),
+        (utc(2010, 1, 4, 8, 0), SessionState::OpenRegular),
+        (utc(2010, 1, 4, 12, 0), SessionState::OpenRegular),
+        (utc(2010, 1, 4, 20, 59), SessionState::OpenRegular),
+        (utc(2010, 1, 4, 21, 0), SessionState::OrderEntry),
+        (utc(2010, 1, 4, 21, 15), SessionState::OrderEntry),
+        (utc(2010, 1, 4, 21, 29), SessionState::OrderEntry),
+        (utc(2010, 1, 4, 21, 30), SessionState::Closed),
+        (utc(2010, 1, 4, 22, 0), SessionState::Closed),
+    ];
+    for (instant, state) in baseline {
+        assert_eq!(
+            hours_for_market_hours_key(MarketHoursKey::EurexFixedIncome, instant)
+                .session_state(instant),
+            state,
+            "eurex_fixed_income at {instant} on the sourced 2009 baseline"
+        );
+    }
+
+    // The metadata agrees: the floor day is inside the sourced normal week
+    // for all three identities, not a carried refusal.
+    let floor_day = chrono::NaiveDate::from_ymd_opt(2010, 1, 4).expect("a valid floor-week day");
+    for (name, coverage) in [
+        ("cme", calendar_for_exchange(Exchange::Cme).coverage()),
+        (
+            "globex_equity_index",
+            calendar_for_market_hours_key(MarketHoursKey::GlobexEquityIndex).coverage(),
+        ),
+        (
+            "eurex_fixed_income",
+            calendar_for_market_hours_key(MarketHoursKey::EurexFixedIncome).coverage(),
+        ),
+    ] {
+        assert_eq!(
+            coverage.coverage_on(floor_day),
+            DateCoverage::Covered,
+            "{name} must answer the floor week from its sourced grid"
+        );
+    }
+}
+
 /// CME dated the livestock morning Pre-Open moving "from 06:00 to 08:00" on
 /// 2020-05-31, which states the outgoing 06:00 value. No source names a cutover
 /// between SER-7591's 2016-02-29 grid — the 08:30 open this queue runs into —

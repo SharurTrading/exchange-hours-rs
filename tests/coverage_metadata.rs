@@ -440,7 +440,7 @@ fn a_no_holiday_assertion_is_distinct_from_a_missing_table() {
 fn sourced_normal_week_reports_the_ledger_horizon() {
     assert_eq!(
         exchange_coverage(Exchange::Cme).normal_week_sourced_from(),
-        Some(date(2012, 5, 3))
+        Some(date(2010, 1, 1))
     );
     // The 2018-04-09 Pillar row no longer bounds a carried interval: the
     // operator's own historical timeline and Rule 51 filings source the core

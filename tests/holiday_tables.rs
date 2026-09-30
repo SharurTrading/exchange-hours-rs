@@ -998,7 +998,7 @@ fn every_shipped_session_occurrence_is_dated_by_its_own_open_or_the_next_day() {
     // of 128 identities, 268,168 occurrences, 125 identities carrying trade
     // dates (the other three ship an always-open profile), 16,191 occurrences
     // whose trade date the identity withholds or cannot source in the carried
-    // era, and 89,142 refused cursors over carried-era and unaudited spans (a
+    // era, and 81,456 refused cursors over carried-era and unaudited spans (a
     // refusal is stepped over, never read as a closure). The 2026-09-28
     // activation of `nyse` and `nasdaq` moved the last two numbers honestly:
     // their below-horizon cursor refusals became enumerated, dated sessions
@@ -1009,9 +1009,18 @@ fn every_shipped_session_occurrence_is_dated_by_its_own_open_or_the_next_day() {
     // that head the sweep observes 426,957 enumerated occurrences, 80,238
     // refused cursors, 16,191 unresolved trade dates and 42 date-carrying
     // identities, and the refused-cursors bound follows the refusals those
-    // moves removed. The premise itself is unchanged and still asserted per
-    // occurrence: what the floor move restored is the population the premise
-    // can be asserted over.
+    // moves removed. The same wave's CME side (`cme`, `globex_equity_index`,
+    // `eurex_fixed_income`) then sourced its floors back to 2010-01-01 the
+    // same way, enumerating the carried-era cursors above their old horizons:
+    // at this head the sweep observes 432,660 enumerated occurrences, 79,533
+    // refused cursors, 16,188 unresolved trade dates and 42 date-carrying
+    // identities. The CME move removes exactly the 705 weekly cursor refusals
+    // its three horizons turned into enumerated sessions — the same -705 the
+    // wave measured at its pre-rebase base, where 82,161 fell to 81,456 — and
+    // the refused-cursors bound follows this observed value.
+    // The premise itself is unchanged and still asserted per occurrence:
+    // what the floor move restored is the population the premise can be
+    // asserted over.
     //
     // The population itself is pinned off the two enums, so a filter that
     // quietly starts dropping identities fails here as well as in the ledger:

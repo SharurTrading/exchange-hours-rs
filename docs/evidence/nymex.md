@@ -658,6 +658,39 @@ through the Sunday and prints both legs.
 
 **The venue routes one family, so the intersection is that family's table.** Energy and metals are one key and CME prints them as one product row on every date the table audits, so nothing abstains and nothing is withheld for a disagreement; the audit's job here is to confirm the venue ships `globex_energy`'s rows unchanged, which it does, date by date, over all 223.
 
+## The January-2010 floor era (2026-09-30 targeted review)
+
+The floor-era **matching grid** was already sourced (Globex notice 20090130's
+17:00–16:15 CT energy and metals grid). The 2026-09-30 wave added two
+corroborating statements and bounded the Sunday-queue search:
+
+- The DME-migration notices of late January 2009 (Globex notices 20090126,
+  20090127 and 20090130) print "Trading hours for DME products on CME Globex
+  will match the NYMEX Crude Oil products: Sunday - Friday, 5:00 p.m. - 4:15
+  p.m. CT" — the pre-floor NYMEX energy grid this family models, from before
+  the support floor.
+- The COMEX/NYMEX/DME futures-enhancement notices of October 2010 through
+  January 2011 (20101025, 20101227, 20110110, 20110117) state "TAS products
+  will pre-open at their normal time, 16:15 CT" beside their launch weekends'
+  extended 15:00 CT pre-open — floor-era corroboration of the 16:15 Sunday
+  value for the complex. The statement names the TAS products, which this
+  family's scope excludes, so it corroborates rather than keys the row.
+- The bounded search for a pre-2012 statement of the complex's own normal
+  Sunday Pre-Open closed negative: the metals trading-hours page carries no
+  Pre-Open rows before the 2012-05-01 capture (the 2011-09-02 capture has
+  none), the 2010-05-02 energy-hours capture likewise has none, and every
+  archived weekly Globex notice of 2008-2011 text-scanned (record in the
+  research store's `normal-weeks/wave-c1/INDEX.md`) names a floor-era Sunday
+  Pre-Open value only for the equity complex, the CME/CBOT interest-rate
+  products (notices 20090326/20090330 print the schedule table effective
+  Sunday, April 5, 2009 — Sundays Pre-Open 16:15, Monday-Friday 16:50 —
+  corroboration beside the already-sourced `globex_interest_rates` floor
+  grid), the TAS products, or Random Length Lumber. The horizon therefore
+  stays at the 2012-05-11 index capture, below which the Sunday queue is
+  carried at its sourced intersection, and the closing condition stays: an
+  operator statement of the energy or metals complex's Sunday Pre-Open in
+  session language dated before 2012.
+
 ## Sources
 
 Row review: 2026-08-29 (UTC) is the date the ledger row was last reviewed as a
@@ -670,6 +703,8 @@ as each source is re-verified.
 - <https://www.cmegroup.com/trading/metals/files/MT-027_GoldFuturesVsETFCheatSheet_r3.pdf> — CME `MT-027` gold futures cheat sheet.
 - <https://www.cmegroup.com/tools-information/lookups/advisories/market-regulation/SER-5391.html> — CME SER-5391.
 - <https://www.cmegroup.com/tools-information/lookups/advisories/electronic-trading/20101025.html> — CME Globex notice 20101025, which observes the weekday 16:45 queue already in effect without dating its onset.
+- <https://www.cmegroup.com/tools-information/lookups/advisories/electronic-trading/20090126.html> — CME Globex notice 20090126 (repeated 20090127), whose DME line states the pre-floor NYMEX Crude grid "Sunday - Friday, 5:00 p.m. - 4:15 p.m. CT" — read 2026-09-30 (UTC).
+- <https://www.cmegroup.com/tools-information/lookups/advisories/electronic-trading/20101227.html> — CME Globex notice 20101227 (with 20101025 and 20110110), the COMEX/NYMEX launch notices whose "TAS products will pre-open at their normal time, 16:15 CT" corroborates the floor-era Sunday value for the complex — read 2026-09-30 (UTC).
 - <https://www.cmegroup.com/tools-information/lookups/advisories/electronic-trading/20150907.html> — CME Globex notice 20150907, the 2015-09-20 revision's source.
 - <https://www.cmegroup.com/markets/metals/precious/gold.contractSpecs.html> — CME gold futures contract specification, current grid.
 - <https://www.cmegroup.com/markets/energy/crude-oil/light-sweet-crude.contractSpecs.html> — CME light sweet crude contract specification, current grid.

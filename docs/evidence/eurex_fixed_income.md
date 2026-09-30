@@ -9,12 +9,63 @@
 
 ## Ledger basis (moved from docs/schedules/verification.md on 2026-09-12 UTC)
 
-FGBL/FGBM/FGBS/FGBX fixed-income futures. Current continuous-trading and pre/post-trading phases sourced, with dated 2018-12-10 and 2019-02-25 revisions; the revision list was independently verified complete for 2010-01 through 2026-08.
+FGBL/FGBM/FGBS/FGBX fixed-income futures. Current continuous-trading and pre/post-trading phases sourced, with dated 2018-12-10 and 2019-02-25 revisions; the revision list was independently verified complete for 2010-01 through 2026-08. On 2026-09-30 UTC the baseline became sourced through the January-2010 floor: Eurex's own archived Contract Specifications amendments print the same FGBL/FGBM/FGBS/FGBX trading-hours row from 2009-09-14 through 2017-08-28, so the horizon moved from the 2018-11-15 circular date to the floor and the pre-floor carry notes below were discharged.
 
 ## Revision rows
 
 - 2018-12-10 — T1 — Eurex Circular 088/18 — Pre-Trading moves from 07:30-08:00 CET to 01:00-01:10 CET / 02:00-02:10 CEST and continuous trading becomes 01:10-22:00 CET / 02:10-22:00 CEST (both seasonal timelines carry this day).
 - 2019-02-25 — T1 — Eurex CS amendment 2019-02-25 — Post-Trading Period Until shortened from 22:30 to 22:10 for FGBL, FGBM, FGBS and FGBX; continuous trading untouched (both seasonal timelines carry this day).
+
+## The baseline era, 2010-01-01 .. 2018-12-09
+
+The baseline grid (Pre-Trading 07:30-08:00 CET, Continuous Trading 08:00-22:00,
+Post-Trading until 22:30) is stated by the operator's own Contract Specifications
+amendments, each printing the `Annex C — Trading Hours Futures Contracts — Fixed
+Income Futures Contracts` table row by row:
+
+- **2009-09-14** — "Euro-BTP Futures: Introduction of Futures Contracts on
+  long-term Italian Government Bonds" (`As of September 14, 2009`), page 3:
+  `Euro-Schatz Futures FGBS 07:30-08:00 | 08:00-22:00 | 22:00-22:30*`,
+  `Euro-Bobl Futures FGBM 07:30-08:00 | 08:00-22:00 | 22:00-22:30`,
+  `Euro-Bund Futures FGBL 07:30-08:00 | 08:00-22:00 | 22:00-22:30`,
+  `Euro-Buxl® Futures FGBX 07:30-08:00 | 08:00-22:00 | 22:00-22:30` (the asterisk
+  marks the last-trading-day footnote; `All times in CET`). The amendment
+  predates the January-2010 floor, so the grid is sourced through the floor
+  rather than carried back to it — the same doctrine the sibling `eurex` row
+  records for its 2009 index-futures edition.
+- **2011-09-19** — "Mid-Term Euro-BTP Futures: Introduction" (`As of 19.09.2011`),
+  Annex C: FGBL/FGBM/FGBS/FGBX rows unchanged.
+- **2013-03-11** — "Mid-Term Euro-OAT-Futures: Introduction" (`As of 11.03.2013`),
+  Annex C: FGBL/FGBM/FGBS/FGBX rows unchanged.
+- **2017-08-28** — "Fixed Income Futures: Harmonisation of Post-Trading period on
+  regular trading days" (`As of 28.08.2017`), Annex C: FGBL/FGBM/FGBX
+  `07:30-08:00 | 08:00-22:00 | 22:30*` and FGBS `07:30-08:00 | 08:00-22:00 |
+  22:30*` — the same exchange phases under the amendment's new column layout;
+  the harmonisation redrew the off-book (TES) columns, not the Pre-Trading,
+  Continuous Trading or Post-Trading Period Until values this family models.
+  The two 2018-12-10 cutover rows follow.
+
+No amendment between 2009-09-14 and the 2018-12-10 circular touches the four
+products' exchange trading hours: the contract-specification index's amendment
+archive lists, for subpart 1.2 (fixed-income futures) plus Annex C in that
+window, only the product-introduction amendments quoted above and the 2017-08-28
+harmonisation; the other fixed-income entries amend options (subpart 2.3) or
+delivery baskets (Annex A). The `Extension of trading time` amendment of
+2010-07-05 (`cs_history_05072010`) carries index-futures rows only (MSCI Russia,
+OMXH25, SLI, SMI) and no fixed-income table.
+
+**Documents.**
+
+| Document | Window | URL | Capture or retrieval, UTC | Tier | sha256 |
+|---|---|---|---|---|---|
+| `EUREX-CS-2009-09-14` | baseline era | <https://www.eurex.com/resource/blob/328400/e12f28dfcc8ba1f7b94ea4da40b69c41/data/cs_history_14092009_en.pdf.pdf> | retrieved 2026-09-30T04:35Z | T1 | `c94ac7911b1e2b2835833f0c04d0989cdcd5e1a20f8f4cf9890d2b60c0a19f96` |
+| `EUREX-CS-2011-09-19` | baseline era | <https://www.eurex.com/resource/blob/326452/9aa55ddb4fd3b0fb7fb15567a734ab5d/data/cs_history_19092011_en.pdf.pdf> | retrieved 2026-09-30T04:45Z | T1 | `eb52f6af0ccfbf36b145601d90d28e9c5d92b1ffdcf4d19e8fd3cdccd1b33162` |
+| `EUREX-CS-2013-03-11` | baseline era | <https://www.eurex.com/resource/blob/334064/488cfe99b1526c777b789ade2950e4e5/data/2013_03_11_cs_history_1_en.pdf.pdf> | retrieved 2026-09-30T05:00Z | T1 | `f927a78d8cc975ebe0207b32e64a7762bb53fd0c5c9fd9c37fe7b3b3e0a1560c` |
+| `EUREX-CS-2017-08-28` | baseline era | <https://www.eurex.com/resource/blob/295608/36bcde7eecdd7167995bf1143432e5c9/data/2017_08_28_cs_2_history_en.pdf> | retrieved 2026-09-30T04:40Z | T1 | `a7a42a3936b182476cfbe4d0218ef518826171044236089bf34baef3a6b5cbac` |
+
+All bytes are in the research store under
+`normal-weeks/wave-c1/eurex/` with this page as their index
+(`normal-weeks/wave-c1/INDEX.md`).
 
 ## Holidays
 
@@ -239,12 +290,28 @@ as each source is re-verified.
 - <https://www.eurex.com/ex-en/trade/trading-hours/trading-phases> — Eurex trading-phases page — defines Pre-Trading and Post-Trading as non-executable order-entry phases.
 - <https://www.eurex.com/resource/blob/1412768/e61a2c41d65ad165af7909002223b943/data/er18088e.pdf> — Eurex Circular 088/18, 15 November 2018, "Extension of trading hours for selected benchmark futures and MSCI futures" — states the phase it replaced.
 - <https://www.eurex.com/resource/blob/1493194/bee8965900f0124d7ff7c7993d5f969b/data/2019_02_25_cs_4_history.pdf> — Eurex Contract Specifications amendment of 2019-02-25, "Shortening of post-trading phase for products traded until 22:00 CET".
+- <https://www.eurex.com/resource/blob/328400/e12f28dfcc8ba1f7b94ea4da40b69c41/data/cs_history_14092009_en.pdf.pdf> — Eurex CS amendment of 2009-09-14 (Euro-BTP introduction), whose Annex C prints the FGBL/FGBM/FGBS/FGBX baseline grid — read 2026-09-30 (UTC).
+- <https://www.eurex.com/resource/blob/326452/9aa55ddb4fd3b0fb7fb15567a734ab5d/data/cs_history_19092011_en.pdf.pdf> — Eurex CS amendment of 2011-09-19 (Mid-Term Euro-BTP introduction), same rows — read 2026-09-30 (UTC).
+- <https://www.eurex.com/resource/blob/334064/488cfe99b1526c777b789ade2950e4e5/data/2013_03_11_cs_history_1_en.pdf.pdf> — Eurex CS amendment of 2013-03-11 (Mid-Term Euro-OAT introduction), same rows — read 2026-09-30 (UTC).
+- <https://www.eurex.com/resource/blob/295608/36bcde7eecdd7167995bf1143432e5c9/data/2017_08_28_cs_2_history_en.pdf> — Eurex CS amendment of 2017-08-28 (Post-Trading harmonisation), FGBL/FGBM/FGBS/FGBX exchange phases unchanged — read 2026-09-30 (UTC).
 - <https://www.eurex.com/ex-en/rules-regs/eurex-rules-regulations/03.-Contract-Specifications-4347288> — Eurex Contract Specifications index.
 
 ## Gaps and residual risks
 
-- **horizon** — the pre-2018-12-10 baseline (Pre-Trading 07:30-08:00 CET, continuous trading 08:00-22:00) is known from Circular 088/18's own statement of the phase it replaced, so it is sourced from the circular's date, 2018-11-15, and carried below that to the January-2010 floor. No Eurex document dates an earlier change inside the modelled window.
-- **order-entry** — the 22:30 post-trading end is carried back into the baseline rather than dated: the earliest primary statement of that value inside the modelled window is the February 2019 amendment recording the change away from it, and no Eurex document dates an earlier change to it.
+- **horizon** — discharged on 2026-09-30 UTC. The pre-2018-12-10 baseline was
+  previously known only from Circular 088/18's own statement of the phase it
+  replaced, sourcing it from the circular's date, 2018-11-15, and carrying it
+  below that to the floor. Eurex's own archived Contract Specifications
+  amendments (2009-09-14, 2011-09-19, 2013-03-11, 2017-08-28 — see *The
+  baseline era* above) now print the same grid from before the January-2010
+  floor, so the horizon is the floor and nothing below the 2018-12-10 cutover
+  is carried.
+- **order-entry** — discharged on 2026-09-30 UTC. The 22:30 post-trading end
+  was previously carried back into the baseline from the February 2019
+  amendment that records the change away from it; the 2009-09-14 amendment
+  already prints `Post-Trading Full-Period 22:00-22:30` for FGBL, FGBM, FGBS
+  and FGBX, so the value is sourced across the whole baseline era and the
+  2019-02-25 amendment dates its one change.
 - **excluded by design** — the Eurex T7 Entry Service (off-book TES, 01:15-22:00 CET / 02:15-22:00 CEST) is bilateral block, EFP and vola business rather than the central order book; clearing hours are not a trading phase; and per-contract last-trading-day hours (continuous trading ending 12:30) are an exceptional-day matter outside this normal-week model.
 
 ## Module narrative (moved from src/calendar/schedules/futures/international/eurex_fixed_income.rs on 2026-09-12 UTC)
@@ -301,14 +368,16 @@ Pre-Trading ran 07:30-08:00 CET, so continuous trading began at 08:00 and ran
 to the unchanged 22:00 close - one same-day grid with no seasonal split,
 because nothing in it was anchored to an Asian clock.
 
-The 22:30 post-trading end is carried back into this baseline rather than
-dated: the earliest primary statement of that value inside the modelled
-window is the February 2019 amendment recording the change away from it, and
-no Eurex document dates an earlier change to it. Carrying the value back is
-preferred here over inventing a cutover.
+The same grid is stated directly by the operator's archived Contract
+Specifications amendments from 2009-09-14 onward (see *The baseline era*
+above), including the 22:30 post-trading end the February 2019 amendment later
+shortened. The baseline is therefore sourced across the whole era from the
+January-2010 floor, and the 22:30 value is a sourced state rather than a
+carry.
 
 https://www.eurex.com/resource/blob/1412768/e61a2c41d65ad165af7909002223b943/data/er18088e.pdf
 https://www.eurex.com/ex-en/rules-regs/eurex-rules-regulations/03.-Contract-Specifications-4347288
+https://www.eurex.com/resource/blob/328400/e12f28dfcc8ba1f7b94ea4da40b69c41/data/cs_history_14092009_en.pdf.pdf
 
 ---
 

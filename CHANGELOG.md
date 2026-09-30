@@ -56,6 +56,37 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Added
 
+- **The `cme` and `globex_equity_index` normal weeks source back to the
+  2010-01-01 floor (2026-09-30 UTC).** The carried horizons below which
+  those weekday profiles were served from a carried grid are gone: both
+  move from 2012-05-03, so dates between the old horizon and the floor now
+  answer instead of refusing as carried. The floor-era Sunday queue is
+  stated by CME's own Globex notices 20090831, 20090907 and 20090914
+  ("Customers may re-enter GTC and GTD orders during the pre-open, 4:15 to
+  5:00 p.m. CT, Sunday, October 4", the Equity Futures Enhancements launch
+  effective 2009-10-04), the floor-era grid by the archived equities
+  trading-hours page of 2009-04-06 beside the already-cited October-2009
+  product guide, and the floor-era weekday queue by the outgoing value the
+  dated 2010-11-15 change states; the CBOT YM line's own Sunday queue time
+  is first printed per product on the 2012-05-03 capture and is recorded as
+  a residual scope note. The two #79 Sunday quarter-hour declarations are
+  unchanged.
+- **Era provenance for the regions that stay carried (2026-09-30 UTC).** The
+  same retrieval wave upgraded the recorded provenance of the carried
+  regions whose horizons stand: `globex_fx`'s floor-era matching grid is
+  recorded from the operator's FX-hours page capture of 2009-05-02, the
+  energy/metals families' from the DME/NYMEX Globex notices of 2009-01
+  beside the COMEX/NYMEX launch notices of 2010-10..2011-01 ("TAS products
+  will pre-open at their normal time, 16:15 CT", corroboration only — TAS
+  is outside the served scopes), and `cbot`'s and `globex_grains`' floor-era
+  matching grid from Globex notice 20090608's unconditional grain expansion
+  "Effective Wednesday, July 1" 2009, so the executable session below the
+  2010-03-15 queue horizon is itself sourced. The bounded pre-2012 searches
+  for the FX, energy/metals and grain Sunday/morning queues are recorded in
+  each evidence file with their closing conditions; the horizons of
+  `globex_fx` (2012-05-03), `comex`/`nymex`/`globex_energy` (2012-05-11)
+  and `cbot`/`globex_grains` (2010-03-15) stand.
+
 - **`nyse` holiday window extended to 2028-12-31 (2026-09-29 UTC).** The
   live operator page has printed a 2028 column since the 2026-09-27
   retrieval; the forward wave worked it up as eleven rows — nine `Closed`
@@ -76,6 +107,7 @@ corrections (a venue's hours fixed against a primary source) go under
   (2027 conflict unchanged), `xetra` (#200), `six` (2028 not published) and
   `nasdaq` — and no operator had published 2027 or 2028 material, so each
   evidence file records the fresh check date and the horizons stand.
+
 - **`nzx` 2016-2017 capture gap narrowed (2026-09-30 UTC).** The 2026-09-30
   re-sweep with the Wayback CDX service working surfaced the operator's own
   Derivatives trading-hours page of 2017-07-18 (`nzx.com/Derivatives/

@@ -42,10 +42,9 @@ fn identities() -> [(&'static str, ExchangeCalendar); 3] {
 
 /// The two benchmark-index identities, whose normal-week history is sourced
 /// from the 2010-01-01 floor. `eurex_fixed_income` shares the holiday table
-/// but its own grid is carried below its 2018-11-15 horizon, so its
-/// session-level queries refuse below that day while its row-level answers
-/// reach the floor; tests that probe sessions below 2018-11-15 iterate this
-/// list and fence the fixed-income refusal beside it.
+/// and, since the 2026-09-30 wave, sources its pre-2018 baseline grid from
+/// the operator's archived Contract Specifications amendments back to the
+/// floor, so all three Eurex identities answer sessions from 2010-01-01.
 fn benchmark_identities() -> [(&'static str, ExchangeCalendar); 2] {
     [
         ("Exchange::Eurex", calendar_for_exchange(Exchange::Eurex)),
@@ -202,11 +201,10 @@ fn every_eurex_identity_ships_the_same_hundred_and_eight_closures() {
     }
     // The window opens at the 2010 floor and Eurex wraps no session across
     // midnight, so every closure's trade-date consequence is answerable from
-    // the floor on — for the benchmark identities, whose grid is sourced to
-    // the floor. `eurex_fixed_income`'s own grid is carried below its
-    // 2018-11-15 horizon, so its session queries refuse there while its row
-    // layer answers above; both behaviours are fenced.
-    for (name, calendar) in benchmark_identities() {
+    // the floor on: the benchmark identities' grid and, since the 2026-09-30
+    // wave, `eurex_fixed_income`'s own baseline are sourced to the floor, so
+    // all three answer every closure date in the window.
+    for (name, calendar) in identities() {
         for date in &closures {
             assert!(
                 calendar
@@ -215,19 +213,6 @@ fn every_eurex_identity_ships_the_same_hundred_and_eight_closures() {
                 "{name} on {date}"
             );
         }
-    }
-    let fixed_income = calendar_for_market_hours_key(MarketHoursKey::EurexFixedIncome);
-    for date in closures.iter().filter(|date| **date < day(2018, 11, 15)) {
-        assert!(
-            fixed_income
-                .is_closed_trade_date(*date, SessionKind::Both)
-                .is_err_and(|error| matches!(
-                    error,
-                    CalendarQueryError::OutsideCoveredRange { .. }
-                )),
-            "eurex_fixed_income on {date}: below its carried horizon the session query \
-             refuses"
-        );
     }
 }
 
@@ -689,31 +674,29 @@ fn the_window_reaches_the_floor_and_refuses_below_it() {
             "{name}: 2009-12-31 is below the support floor and must be refused as such"
         );
     }
-    // `eurex_fixed_income` shares the rows but its grid is carried below its
-    // 2018-11-15 horizon: session queries refuse on the dates below it and
-    // answer from it on.
+    // `eurex_fixed_income` shares the rows and, since the 2026-09-30 wave,
+    // sources its pre-2018 baseline from the operator's archived Contract
+    // Specifications amendments, so its horizon is the floor too: mid-window
+    // dates answer from the sourced baseline (2015-05-25 was the one Whit
+    // Monday closure, so noon is closed rather than a refusal), and the
+    // 2018-11-15 horizon-era probes answer from the dated grid.
     let fixed_income = calendar_for_market_hours_key(MarketHoursKey::EurexFixedIncome);
     assert!(
-        fixed_income
+        !fixed_income
             .is_open(cet((2015, 5, 25), (12, 0, 0)))
-            .is_err_and(|error| matches!(error, CalendarQueryError::OutsideCoveredRange { .. })),
-        "eurex_fixed_income refuses below its carried horizon"
+            .expect("the floor-era baseline answers a covered date"),
+        "2015-05-25 is the sourced Whit Monday closure: closed at noon, not refused"
     );
-    // The horizon day itself still refuses: the fixed-income family carries a
-    // 22:00-22:10 CET post-close leg whose occurrence on 2018-11-14 belongs to
-    // trade date 2018-11-15, so the horizon day's complete session set starts
-    // one day below the horizon and a support boundary never splits a session.
-    // The first fully answerable day is 2018-11-16.
     assert!(
         fixed_income
-            .is_open(cet((2018, 11, 15), (12, 0, 0)))
-            .is_err_and(|error| matches!(error, CalendarQueryError::OutsideCoveredRange { .. })),
-        "eurex_fixed_income refuses its horizon day, whose opening leg sits below it"
+            .is_open(cet((2015, 5, 26), (12, 0, 0)))
+            .expect("the floor-era baseline answers a covered date"),
+        "the day after the closure trades on the sourced 08:00-22:00 baseline"
     );
     assert!(
         fixed_income
             .is_open(cet((2018, 11, 16), (12, 0, 0)))
-            .expect("2018-11-16 is the first fully answerable fixed-income day"),
-        "the first answerable day is a trading Friday"
+            .expect("2018-11-16 is a fully answerable fixed-income day"),
+        "the first post-circular day is a trading Friday"
     );
 }

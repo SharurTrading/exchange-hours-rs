@@ -44,15 +44,18 @@ fn assert_closed(cell: (i32, u32, u32), label: &str) {
         Some(HolidayKind::Closed),
         "{label}: {cell:?} carries the closure row"
     );
-    // Date-aware answers exist only from the identity's normal-week horizon
-    // (the sourced 2013-03-18 pre-market revision).
-    if cell.0 >= 2013 {
-        assert!(
-            !calendar
-                .is_open(et(cell, (10, 0, 0)))
-                .expect("a covered closure date answers"),
-            "{label}: {cell:?} is closed mid-morning"
-        );
+    // The normal week sources to the 2010-01-01 floor, so every closure date
+    // inside the audited window answers through the date-aware surface.
+    assert!(
+        !calendar
+            .is_open(et(cell, (10, 0, 0)))
+            .expect("a covered closure date answers"),
+        "{label}: {cell:?} is closed mid-morning"
+    );
+    // The trade-date walk may reach across an adjacent `Unsourced` date (the
+    // Sandy Monday's walk reaches the withheld Tuesday), so only a closure
+    // whose walk stays inside sourced data asserts the closed trade date.
+    if cell != (2012, 10, 29) {
         assert!(
             calendar
                 .is_closed_trade_date(date, SessionKind::Both)
@@ -65,9 +68,6 @@ fn assert_closed(cell: (i32, u32, u32), label: &str) {
 fn assert_early_close(cell: (i32, u32, u32), label: &str) {
     let calendar = nasdaq();
     let cutoff = et(cell, (13, 0, 0));
-    // The row always answers; the date-aware half gates on the 2013-03-18
-    // normal-week horizon.
-    let date_aware = cell.0 >= 2013;
     assert_eq!(
         row_of(cell),
         Some(HolidayKind::EarlyClose {
@@ -75,33 +75,32 @@ fn assert_early_close(cell: (i32, u32, u32), label: &str) {
         }),
         "{label}: {cell:?} carries the printed 1:00 p.m. close"
     );
-    if date_aware {
-        assert!(
-            calendar
-                .is_open(cutoff - chrono::TimeDelta::nanoseconds(1))
-                .expect("a covered early-close date answers"),
-            "{label}: open one nanosecond before the close"
-        );
-        assert!(
-            !calendar
-                .is_open(cutoff)
-                .expect("a covered early-close date answers"),
-            "{label}: closed at the close (end-exclusive)"
-        );
-        assert!(
-            !calendar
-                .is_open(et(cell, (13, 30, 0)))
-                .expect("a covered early-close date answers"),
-            "{label}: the sheet states no post-close session, and none answers"
-        );
-        // The 04:00 pre-market open is untouched by a final-close clip.
-        assert!(
-            calendar
-                .is_open(et(cell, (9, 0, 0)))
-                .expect("a covered early-close date answers"),
-            "{label}: the pre-market session runs to 09:30 as on any day"
-        );
-    }
+    assert!(
+        calendar
+            .is_open(cutoff - chrono::TimeDelta::nanoseconds(1))
+            .expect("a covered early-close date answers"),
+        "{label}: open one nanosecond before the close"
+    );
+    assert!(
+        !calendar
+            .is_open(cutoff)
+            .expect("a covered early-close date answers"),
+        "{label}: closed at the close (end-exclusive)"
+    );
+    assert!(
+        !calendar
+            .is_open(et(cell, (13, 30, 0)))
+            .expect("a covered early-close date answers"),
+        "{label}: the sheet states no post-close session, and none answers"
+    );
+    // The pre-market open (07:00 below 2013-03-18, 04:00 from it) is untouched
+    // by a final-close clip.
+    assert!(
+        calendar
+            .is_open(et(cell, (9, 0, 0)))
+            .expect("a covered early-close date answers"),
+        "{label}: the pre-market session runs to 09:30 as on any day"
+    );
 }
 
 fn assert_unsourced(cell: (i32, u32, u32), label: &str) {
@@ -119,13 +118,11 @@ fn assert_unsourced(cell: (i32, u32, u32), label: &str) {
             .contains(date),
         "{label}: the withheld date stays inside the audited window"
     );
-    if cell.0 < 2013 {
-        // Below the normal-week horizon the coverage refusal precedes the
-        // holiday resolution; the fence here is the row plus the window.
-        return;
-    }
     // The coverage contract refuses the date instead of claiming it normal or
-    // closed: an unsourced arrangement is not an answer.
+    // closed: an unsourced arrangement is not an answer. Below the old
+    // 2013-03-18 horizon the horizon refusal used to precede this; since the
+    // 2026-09-30 floor sourcing the holiday layer's own withholding is what
+    // refuses.
     let error = calendar
         .is_open(et(cell, (10, 0, 0)))
         .expect_err("an Unsourced date must not answer as open or closed");
@@ -165,23 +162,46 @@ fn the_sandy_monday_is_sourced_and_the_tuesday_is_withheld() {
         (2012, 10, 30),
         "2012 Sandy Tuesday (confirmation unrecovered)",
     );
-    // The markets reopened Wednesday; the row fence answers even though the
-    // 2012 date-aware queries refuse below the normal-week horizon.
+    // The markets reopened Wednesday; the row fence answers and, since the
+    // 2026-09-30 floor sourcing, so do the 2012 date-aware queries. The
+    // Monday's closed-trade-date settlement still refuses: it walks across
+    // the withheld Tuesday (UnresolvedGap), the holiday layer's own refusal,
+    // and the instant itself sits in no session, so the trade date is None.
     assert_eq!(row_of((2012, 10, 31)), None, "2012-10-31 is audited normal");
+    assert!(
+        nasdaq()
+            .trade_date(et((2012, 10, 29), (10, 0, 0)))
+            .expect("the instant is inside the audited window")
+            .is_none(),
+        "a fully closed day places no trade date"
+    );
+    let closed = nasdaq()
+        .is_closed_trade_date(day((2012, 10, 29)), SessionKind::Both)
+        .expect_err("the settlement walk reaches the withheld Tuesday");
+    assert!(
+        matches!(closed, CalendarQueryError::UnresolvedGap { .. }),
+        "the Sandy Monday's trade-date settlement refuses with UnresolvedGap, got {closed:?}"
+    );
 }
 
 #[test]
-fn pre_horizon_rows_fence_data_but_date_aware_queries_refuse() {
-    // Below the sourced 2013-03-18 revision the date-aware contract refuses
-    // even on a date the holiday table answers for; `holiday_on` and
-    // `holiday_coverage` remain the data fences.
+fn pre_horizon_rows_fence_data_and_date_aware_queries_answer() {
+    // The normal week sources to the 2010-01-01 floor (the operator's own SEC
+    // filings and archived Trading Hours page), so a 2012 early-close date the
+    // holiday table answers now answers through the date-aware contract too:
+    // open mid-morning, closed at the printed 1:00 p.m. edge.
     let calendar = nasdaq();
-    let error = calendar
-        .is_open(et((2012, 11, 23), (10, 0, 0)))
-        .expect_err("below the normal-week horizon the query refuses");
     assert!(
-        matches!(error, CalendarQueryError::OutsideCoveredRange { .. }),
-        "the horizon refusal is OutsideCoveredRange, got {error:?}"
+        calendar
+            .is_open(et((2012, 11, 23), (10, 0, 0)))
+            .expect("2012-11-23 is inside the sourced span"),
+        "the 2012 early close is open mid-morning"
+    );
+    assert!(
+        !calendar
+            .is_open(et((2012, 11, 23), (13, 0, 0)))
+            .expect("2012-11-23 is inside the sourced span"),
+        "the printed 1:00 p.m. close is end-exclusive"
     );
 }
 

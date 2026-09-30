@@ -987,7 +987,10 @@ fn inventory_completeness_verdicts_match_the_metadata() {
          complete; nyse is complete to 2027 and nasdaq is incomplete — four Unsourced dates across \
          2010-2026; the 2026-09-28 UTC APAC activation makes nzx and sgx_securities complete to \
          their operators' horizons, and the 2026-09-30 UTC normal-week sourcing moved asx's horizon
-         to 2013-09-16 so its carried region answers and it reads complete; tse and \
+         to 2013-09-16 so its carried region answers and it reads complete, and nasdaq's horizon \
+         to the 2010-01-01 floor the same day (the operator's own SEC filings and archived Trading \
+         Hours page — #231's last half discharged, the four Unsourced dates still withholding the \
+         verdict); tse and \
          sse windows end at the operators' horizons, and nse_india's Muhurat dates are Unsourced; \
          the same date's European/Canadian activation makes lse carry five Unsourced 2025 dates, \
          euronext_paris two announced-but-unstated 2026 eves, and the 2026-09-29/30 UTC backfills \

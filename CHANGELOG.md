@@ -28,6 +28,23 @@ corrections (a venue's hours fixed against a primary source) go under
   and the venue withholds **26** 2026-2027 `Unsourced` dates, not twenty.
   `cme.md`'s "this era's 50 withheld rows" now names its era: the 2013-2015
   tables, where 58 rows less the 8 stated closures still leaves 50 withheld.
+- **The `nasdaq` normal week sources back to the 2010-01-01 floor (2026-09-30
+  UTC; closes #231).** The carried 07:00–20:00 grid below the keyed 2013-03-18
+  cutover is the operator's own published history: SR-NASDAQ-2010-008 (75 FR
+  8156) quotes the in-force rulebook text "Nasdaq market hours (7 a.m. to 8
+  p.m. ET)" at the floor; four 2012–2013 filings print the operator's own
+  Rule 4120(b)(4) footnote describing the three sessions (Pre-Market 7:00–9:30
+  a.m., Regular 9:30 a.m.–4 p.m., Post-Market to 8 p.m.); the operator's
+  pre-2013 `nasdaqomx.com` Trading Hours page states the same grid in session
+  language at all five surviving captures (2012-03-25 through 2012-10-05); and
+  SR-NASDAQ-2013-033's own filing PDF marks Rule 4120(b)(4)(B)'s "[7:00] 4:00
+  a.m." rule text and states "NASDAQ will implement this proposal on March 18,
+  2013". The Federal Register sweep 2010-2013 holds no other session-hour
+  change, so no new revision row ships and the runtime grid is unchanged; the
+  horizon moves to the floor, the 1,172 carried dates answer through the
+  date-aware calendar, and the ledger, coverage inventory and `sourcing.rs`
+  move together. The "or 4:15 p.m." alternative is per-series ETP designation
+  (`as specified by Nasdaq`), recorded beside the rows, never the venue grid.
 - **The `globex_nikkei_225_dollar` served grid is dated to 2010-04-11 and the
   2010 holiday rows ship (2026-09-30 UTC; the first #225 closing condition).**
   CME's own weekly Globex notice of 2010-04-05 announces `Expanded Trading
@@ -74,20 +91,16 @@ corrections (a venue's hours fixed against a primary source) go under
   `tadawul` to 2010-01-12 (the Trading Times page stating the Saturday-Wednesday
   11:00-15:30 session; English restatement 2011-04-29) and `nzx` to 2010-01-05
   (the key-dates trading-hours page print of the pre-2020 grid, corroborated at
-  every later capture to the dated 2020-04-06 revision). Four scopes' horizons
-  stand with tightened bounded-search records: `nasdaq` (its 2010 systems-hours
-  PDFs print Support Hours 07:00-20:00 — the help desk, not a session),
+  every later capture to the dated 2020-04-06 revision). Three scopes' horizons
+  stand with tightened bounded-search records:
   `sgx_securities` (the 2009-05-14 Trading Hours page capture corroborates the
   carried 09:00-12:30/14:00-17:00 grid but is pre-floor),
   `euronext_paris` (the 2010 Calendar of Cash Business Days, notice
   PAR_20091015_05039_EUR dated 2009-10-15, now in hand, prints closures only)
   Evidence files gain the era blocks and Documents rows; the ledger, coverage
   inventory and `sourcing.rs` move together.
-- **Four carried horizons stand with tightened bounded-search records
-  (2026-09-30 UTC).** `nasdaq`: the operator's 2010 systems-hours PDFs print
-  Support Hours 07:00-20:00 — the help desk, not a session — and the
-  TradingHours page and ETA2013-21 have no 2010-2013 captures, so the
-  2013-03-18 horizon stands (#231). `sgx_securities`: the 2009-05-14 Trading
+- **Three carried horizons stand with tightened bounded-search records
+  (2026-09-30 UTC).** `sgx_securities`: the 2009-05-14 Trading
   Hours page capture corroborates the carried 09:00-12:30/14:00-17:00 grid
   verbatim but is pre-floor, so it sources no claimed-interval day and the
   2011-08-01 horizon stands with the closing condition named to the page
@@ -97,7 +110,10 @@ corrections (a venue's hours fixed against a primary source) go under
   timetable, so the 2010-12-24 horizon stands with the closing condition
   tightened to the trading-manual appendix. The ICE Futures U.S. softs and
   USDX: a theice.com domain sweep (2009-2012) holds no product page before the
-  August 2011 master table, and the terminal-answer conclusion stands.
+  August 2011 master table, and the terminal-answer conclusion stands. The
+  fourth member of that sweep, `nasdaq`, closed the same day when the SEC and
+  archived-page channels produced its floor record (the first Fixed entry
+  above); its bounded-search record for the trader-site PAGE channel stands.
 
 ### Added
 

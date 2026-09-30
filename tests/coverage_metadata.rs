@@ -450,6 +450,18 @@ fn sourced_normal_week_reports_the_ledger_horizon() {
     let nyse = exchange_coverage(Exchange::Nyse);
     assert_eq!(nyse.normal_week_sourced_from(), Some(date(2010, 1, 1)));
     assert_eq!(nyse.sourced_normal_week().first(), date(2010, 1, 1));
+    // The same floor move for `nasdaq` (2026-09-30 UTC): the operator's own
+    // SEC filings and archived Trading Hours page source the 07:00-20:00 grid
+    // below the 2013-03-18 cutover, so the horizon reads 2010-01-01 and the
+    // 1,172 dates that used to refuse answer.
+    let nasdaq = exchange_coverage(Exchange::Nasdaq);
+    assert_eq!(nasdaq.normal_week_sourced_from(), Some(date(2010, 1, 1)));
+    assert_eq!(nasdaq.sourced_normal_week().first(), date(2010, 1, 1));
+    assert_eq!(
+        nasdaq.coverage_on(date(2012, 6, 5)),
+        DateCoverage::Covered,
+        "a mid-era Tuesday below the old horizon is a covered date now"
+    );
     // The ledger's em dash: nothing is carried below the identity's own first
     // row, so there is no date below which its rows are carried.
     assert_eq!(

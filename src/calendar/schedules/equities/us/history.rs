@@ -14,8 +14,10 @@ use super::equities::{
 use crate::calendar::schedules::CLOSED_NEW_YORK;
 use crate::calendar::schedules::timeline::{Revision, local_date, revisions, select_revision};
 
-// 2013-03-18 — T1 — Nasdaq Equity Trader Alert 2013-21 — the pre-market open
-//   moves from 07:00 to 04:00 ET.
+// 2013-03-18 — T1 — Nasdaq Equity Trader Alert 2013-21 and SEC SR-NASDAQ-2013-033
+//   (34-69151) — the pre-market open moves from 07:00 to 04:00 ET; the filing
+//   marks Rule 4120(b)(4)(B)'s in-force "[7:00] 4:00 a.m." text and states
+//   "NASDAQ will implement this proposal on March 18, 2013".
 // Evidence: docs/evidence/nasdaq.md
 static NASDAQ_REVISIONS: &[Revision] = revisions![(
     2013,

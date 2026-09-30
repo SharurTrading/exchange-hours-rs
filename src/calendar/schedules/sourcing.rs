@@ -403,7 +403,13 @@ const fn for_exchange(exchange: Exchange) -> DeclaredSourcing {
     match exchange {
         // `—`: synthetic 24×7 fallback: library policy, not a venue, and no holiday closures.
         Exchange::Unknown => DeclaredSourcing::no_holidays(),
-        Exchange::Nasdaq => DeclaredSourcing::carried_below(horizon!(2013, 3, 18)),
+        // Sourced from the floor: the operator's own quoted in-force rulebook
+        // text (SR-NASDAQ-2010-008, "Nasdaq market hours (7 a.m. to 8 p.m.
+        // ET)"), its Rule 4120(b)(4) statements in the 2012-2013 filings, its
+        // archived pre-2013 Trading Hours page, and SR-NASDAQ-2013-033's
+        // marked "[7:00]" rule text and named implementation day — see
+        // docs/evidence/nasdaq.md.
+        Exchange::Nasdaq => DeclaredSourcing::carried_below(horizon!(2010, 1, 1)),
         Exchange::NasdaqBx => DeclaredSourcing::carried_below(horizon!(2010, 1, 1)),
         // `—`: closed before the operator-dated 2010-10-08 launch.
         Exchange::NasdaqPsx => DeclaredSourcing::nothing_carried(),

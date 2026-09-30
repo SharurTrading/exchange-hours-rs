@@ -54,8 +54,11 @@ fn nasdaq_psx_current_snapshot_uses_0800_to_1700_hours() {
 #[test]
 fn nasdaq_0400_premarket_started_on_2013_03_18() {
     // Nasdaq Equity Trader Alert 2013-21 explicitly moved the pre-market open
-    // from 07:00 to 04:00 ET on Monday 2013-03-18.
+    // from 07:00 to 04:00 ET on Monday 2013-03-18; the operator's own
+    // SR-NASDAQ-2013-033 filing marks Rule 4120(b)(4)(B)'s in-force "[7:00]"
+    // text and states the same implementation day.
     // https://www.nasdaqtrader.com/TraderNews.aspx?id=ETA2013-21
+    // https://listingcenter.nasdaq.com/assets/rulebook/nasdaq/filings/SR-NASDAQ-2013-033.pdf
     let cutover = et((2013, 3, 18), (0, 0, 0));
     let before = hours_for_exchange(Exchange::Nasdaq, cutover - chrono::Duration::seconds(1));
     let after = hours_for_exchange(Exchange::Nasdaq, cutover);
@@ -65,17 +68,103 @@ fn nasdaq_0400_premarket_started_on_2013_03_18() {
     assert!(!after.is_open(et((2013, 3, 18), (3, 59, 59))));
     assert!(after.is_open_extended(et((2013, 3, 18), (4, 0, 0))));
 
-    // The cutover era is entirely pre-floor, so the date-aware calendar cannot
-    // confirm the fixed snapshot: `2013-03-18` is a venue-local date before the
-    // 2025-01-01 floor and the calendar refuses it as `BeforeSupportFloor`
-    // rather than reporting the refusal as a closure. What is no longer
-    // claimable through the calendar is a `bool`; the 04:00 ET extended open
-    // itself stays asserted above through `hours_for_exchange`.
+    // Both sides of the cutover now answer through the date-aware calendar:
+    // the normal week sources to the 2010-01-01 floor (the operator's own SEC
+    // filings and archived Trading Hours page — see docs/evidence/nasdaq.md),
+    // so 2013-03-15 and 2013-03-18 are covered dates, not refusals.
     let calendar = calendar_for_exchange(Exchange::Nasdaq);
-    assert_refuses_before_floor(
-        calendar.is_open_extended(et((2013, 3, 18), (4, 0, 0))),
-        calendar,
-        et((2013, 3, 18), (4, 0, 0)),
+    assert!(
+        !calendar
+            .is_open_extended(et((2013, 3, 15), (6, 59, 59)))
+            .expect("2013-03-15 is inside the sourced span"),
+        "the Friday before the cutover keeps the 07:00 pre-market closed at 06:59:59"
+    );
+    assert!(
+        calendar
+            .is_open_extended(et((2013, 3, 15), (7, 0, 0)))
+            .expect("2013-03-15 is inside the sourced span"),
+        "the Friday before the cutover still opens its pre-market at 07:00"
+    );
+    assert!(
+        !calendar
+            .is_open_extended(et((2013, 3, 18), (3, 59, 59)))
+            .expect("2013-03-18 is inside the sourced span"),
+        "the cutover day is closed at 03:59:59"
+    );
+    assert!(
+        calendar
+            .is_open_extended(et((2013, 3, 18), (4, 0, 0)))
+            .expect("2013-03-18 is inside the sourced span"),
+        "the cutover day opens its pre-market at 04:00"
+    );
+}
+
+#[test]
+fn nasdaq_below_bound_dates_answer_from_the_sourced_floor() {
+    // The 07:00–20:00 grid below 2013-03-18 sources to the 2010-01-01 floor
+    // from the operator's own statements: SR-NASDAQ-2010-008's quoted in-force
+    // rulebook text ("Nasdaq market hours (7 a.m. to 8 p.m. ET)"), the Rule
+    // 4120(b)(4) three-session footnotes in the 2012-2013 filings, the
+    // operator's archived pre-2013 Trading Hours page, and SR-NASDAQ-2013-033's
+    // marked "[7:00]" rule text. The dates the horizon used to leave carried
+    // therefore answer through the date-aware calendar instead of refusing.
+    // https://www.federalregister.gov/documents/full_text/text/2010/02/23/2010-3394.txt
+    // https://www.federalregister.gov/documents/full_text/text/2013/03/21/2013-06479.txt
+    let calendar = calendar_for_exchange(Exchange::Nasdaq);
+
+    // The first floor-era weekday and a mid-era Tuesday state the same grid:
+    // extended 07:00–09:30 and 16:00–20:00 around the 09:30–16:00 core, with
+    // the end-exclusive close.
+    for day in [(2010, 1, 4), (2012, 6, 5)] {
+        let (y, m, d) = day;
+        let open = calendar
+            .is_open(et(day, (9, 30, 0)))
+            .unwrap_or_else(|error| {
+                panic!("{y}-{m:02}-{d:02} is inside the sourced span, not {error:?}")
+            });
+        assert!(open, "{y}-{m:02}-{d:02} core session is open at 09:30");
+    }
+    assert!(
+        !calendar
+            .is_open(et((2012, 6, 5), (6, 59, 59)))
+            .expect("2012-06-05 is inside the sourced span"),
+        "the carried grid opens nothing before 07:00"
+    );
+    assert!(
+        calendar
+            .is_open_extended(et((2012, 6, 5), (7, 0, 0)))
+            .expect("2012-06-05 is inside the sourced span"),
+        "the carried grid opens its pre-market at 07:00"
+    );
+    assert!(
+        calendar
+            .is_open_regular(et((2012, 6, 5), (9, 30, 0)))
+            .expect("2012-06-05 is inside the sourced span"),
+        "the carried grid's core session starts at 09:30"
+    );
+    assert!(
+        calendar
+            .is_open_extended(et((2012, 6, 5), (16, 0, 0)))
+            .expect("2012-06-05 is inside the sourced span"),
+        "the carried grid opens its post-market at 16:00"
+    );
+    assert!(
+        calendar
+            .is_open_extended(et((2012, 6, 5), (19, 59, 59)))
+            .expect("2012-06-05 is inside the sourced span"),
+        "the carried grid's post-market runs to its 20:00 close"
+    );
+    assert!(
+        !calendar
+            .is_open(et((2012, 6, 5), (20, 0, 0)))
+            .expect("2012-06-05 is inside the sourced span"),
+        "the carried grid's 20:00 close is end-exclusive"
+    );
+    assert!(
+        !calendar
+            .is_open(et((2012, 6, 9), (12, 0, 0)))
+            .expect("2012-06-09 is inside the sourced span"),
+        "the Saturday inside the sourced week is closed"
     );
 }
 

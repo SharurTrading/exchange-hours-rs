@@ -38,7 +38,8 @@ pub(crate) static NASDAQ_PROFILE: StaticHoursProfile = equity_profile(US_EQUITY_
 pub(crate) static MEMX_EQ_PROFILE: StaticHoursProfile = equity_profile(US_EQUITY_EXTENDED);
 pub(crate) static MIAX_PEARL_EQ_PROFILE: StaticHoursProfile = equity_profile(US_EQUITY_EXTENDED);
 
-// Nasdaq's pre-2013-03-18 grid: 07:00–20:00 ET.
+// Nasdaq's pre-2013-03-18 grid: 07:00–20:00 ET, sourced to the floor by the
+// operator's own SEC filings and archived Trading Hours page.
 // See docs/evidence/nasdaq.md.
 pub(super) static NASDAQ_PROFILE_PRE_2013_03_18: StaticHoursProfile =
     equity_profile(EXTENDED_0700_2000);

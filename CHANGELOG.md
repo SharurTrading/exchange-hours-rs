@@ -13,6 +13,21 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Fixed
 
+- **The family evidence files' aggregate prose re-derives from the per-date
+  tables (2026-09-30 UTC; #232).** The four Globex family files each stated a
+  whole-table total their later waves outran — `globex_equity_index` 217,
+  `globex_fx` 197, `globex_grains` 222 and `globex_interest_rates` 215 rows
+  where the shipped tables derive **231, 214, 249 and 265**. The same
+  re-derivation moves `globex_grains`'s 2025-2027 block total from 54 to **67**
+  (the three Thanksgiving-Friday late-open-and-early-close rows are replacement
+  blocks now, and the block carries 34), restates the `globex_grains` and
+  `globex_interest_rates` 2022-2024 wave tier splits the #224 census
+  superseded (**25 T1 / 14 T2** and **21 T1 / 12 T2**, one `unsourced` date
+  each), and corrects `iceus.md`'s routed-table counts — the seven `ice_us*`
+  keys have selected seven tables since the `SUGAR`/`COFFEE`/`COCOA` split,
+  and the venue withholds **26** 2026-2027 `Unsourced` dates, not twenty.
+  `cme.md`'s "this era's 50 withheld rows" now names its era: the 2013-2015
+  tables, where 58 rows less the 8 stated closures still leaves 50 withheld.
 - **The `globex_nikkei_225_dollar` served grid is dated to 2010-04-11 and the
   2010 holiday rows ship (2026-09-30 UTC; the first #225 closing condition).**
   CME's own weekly Globex notice of 2010-04-05 announces `Expanded Trading

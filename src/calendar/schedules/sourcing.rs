@@ -616,10 +616,11 @@ const fn for_market_hours_key(key: MarketHoursKey) -> DeclaredSourcing {
         MarketHoursKey::IceUsCotton => DeclaredSourcing::carried_below(horizon!(2011, 8, 1)),
         MarketHoursKey::IceUsOrangeJuice => DeclaredSourcing::carried_below(horizon!(2011, 8, 1)),
         MarketHoursKey::IceUsDollarIndex => DeclaredSourcing::carried_below(horizon!(2011, 2, 7)),
-        // `—`: sessionless before its grid's 2011-01-12 first sourced appearance — a recorded gap below the support floor.
-        // Its Sunday Pre-Open onset (16:15 -> 16:00 CT) is undated like #79's, but
-        // the quarter-hour is served rather than withheld; the evidence file
-        // records why and the closing condition.
+        // `—`: sessionless before 2010-04-11, the Sunday session-opening day
+        // Globex notice 20100405 dates the served grid from; the old grid is
+        // stated (2010-04-02 capture) but unmodelled, a gap tracked as #225.
+        // The Sunday Pre-Open onset (16:15 -> 16:00 CT) is undated like #79's,
+        // but the quarter-hour is served, not withheld (evidence file).
         MarketHoursKey::GlobexNikkei225Dollar => DeclaredSourcing::nothing_carried(),
         // The pre-2018-12-10 baseline is sourced through the floor: the
         // operator's archived Contract Specifications amendments of

@@ -39,25 +39,32 @@ fn nkd_close_tracks_its_three_sourced_revisions() {
         !open_at(key, utc(2013, 6, 19, 21, 20)),
         "SER-6465 pulled the close to 16:15 CT, so 16:20 CT must be closed after it"
     );
-    // The 2011 grid is NOT carried to the audit floor. CME's 2010-03-10 and
-    // 2010-04-07 captures show a materially different, DST-dependent grid whose
-    // evening segment ran only 17:00-18:00 CT, so serving the 17:00-15:15
-    // continuous grid there would report the contract open all night when it was
-    // closed. The changeover day is undated, so 2010 is sessionless.
-    for probe in [
-        utc(2010, 1, 6, 23, 30),
-        utc(2010, 6, 16, 23, 30),
-        utc(2010, 12, 15, 23, 30),
-    ] {
+    // The served grid is NOT carried to the audit floor. The 2010-01-01..
+    // 2010-04-10 era sits on the old grid — materially different,
+    // DST-dependent, with no Sunday session at all in CST (CME's 2010-03-10,
+    // 2010-04-02 and 2010-04-07 captures state it) — so serving the
+    // 17:00-15:15 continuous grid there would report the contract open all
+    // night when it was closed. That era is sessionless; the served grid's own
+    // start is dated by CME's Globex notice of 2010-04-05 (expanded Nikkei 225
+    // (Dollar) hours effective Sunday, April 11, 2010).
+    for probe in [utc(2010, 1, 6, 23, 30), utc(2010, 4, 9, 23, 30)] {
         assert!(
             !open_at(key, probe),
-            "2010 predates the first sourced appearance of this grid and must be sessionless"
+            "2010 before 2010-04-11 sits on the unmodelled old grid and must be sessionless"
         );
     }
-    // ...and the grid is served from its first sourced capture onward.
+    // ...and the grid is served from the notice's dated Sunday onward.
     assert!(
-        open_at(key, utc(2011, 1, 13, 23, 30)),
-        "the 2011 grid applies from its first sourced capture (2011-01-12)"
+        open_at(key, utc(2010, 4, 12, 23, 30)),
+        "the served grid applies from the notice's effective Sunday 2010-04-11"
+    );
+    assert!(
+        open_at(key, utc(2010, 6, 16, 23, 30)),
+        "between 2010-04-11 and 2012-11-17 the close is 15:15 CT, so 18:30 CT is inside the wrapped evening leg"
+    );
+    assert!(
+        open_at(key, utc(2010, 12, 15, 23, 30)),
+        "the same 2010 grid answers in December 2010"
     );
     assert!(
         open_at(key, utc(2014, 6, 18, 21, 10)),

@@ -126,11 +126,12 @@ static NKD_2012: StaticHoursProfile = StaticHoursProfile {
     has_weekend_close: true,
 };
 
-// THE 2011 GRID, AND WHY IT IS NOT CARRIED TO THE FLOOR. The 2010 grid was
-// materially different — daytime-anchored, DST-dependent, with no Sunday
-// session at all in CST — and its changeover day is undated, so neither grid may
-// be carried across it and dates below 2011-01-12 are modelled sessionless. See
-// docs/evidence/globex_nikkei_225_dollar.md.
+// THE SERVED GRID'S START IS DATED by the operator's own Globex notice of
+// 2010-04-05, which expands the Nikkei 225 (Dollar) hours effective Sunday,
+// April 11, 2010 to exactly this grid, so the revision is keyed to that
+// Sunday session-opening day. The old grid those dates sit on (stated by the
+// 2010-04-02 capture) is not modelled: below 2010-04-11 is sessionless.
+// Evidence: docs/evidence/globex_nikkei_225_dollar.md.
 static NKD_REGULAR_2011: &[SessionRule] = &[
     SessionRule {
         days: SUN_PLUS_MON_THU,
@@ -167,15 +168,17 @@ static NKD_CLOSED: StaticHoursProfile = StaticHoursProfile {
 
 // Evidence: docs/evidence/globex_nikkei_225_dollar.md
 pub(crate) static NKD_REVISIONS: &[Revision] = revisions![
-    // 2011-01-12 — T1 — first sourced CME trading-hours capture of this grid —
-    // knowledge boundary: 17:00-15:15 CT with the 15:30-16:30 CT post-halt
-    // segment. Dates below this row resolve to the sessionless profile.
+    // 2010-04-11 — T1 — CME Globex notice 20100405 — the Nikkei 225 (Dollar)
+    // expanded hours take effect this Sunday: 17:00 CT Sunday open to 15:15 CT,
+    // Monday-Friday 15:30 CT to 15:15 CT the next day with a 16:30-17:00 CT
+    // maintenance shutdown. The 2011-01-12 trading-hours capture corroborates
+    // the same grid. Dates below this row resolve to the sessionless profile.
     (
-        2011,
-        1,
-        12,
+        2010,
+        4,
+        11,
         &NKD_2011,
-        "first sourced CME trading-hours capture of this grid"
+        "CME Globex notice 20100405 (Nikkei 225 Dollar expanded hours)"
     ),
     // 2012-11-18 — T1 — CME SER-6465 — the close is extended to 16:15 CT with a
     // 15:15-15:30 CT electronic halt.
@@ -190,9 +193,10 @@ pub(crate) static NKD_REVISIONS: &[Revision] = revisions![
 
 /// Selects the CME Nikkei 225 Dollar profile in force on `as_of`'s Chicago day.
 ///
-/// Dates before 2011-01-12 — the first sourced appearance of the 2011 grid —
-/// resolve to a sessionless profile. The 2010 grid was materially different and
-/// its changeover day is undated, so neither grid may be carried across it.
+/// Dates before 2010-04-11 — the day the operator's own Globex notice of
+/// 2010-04-05 dates the served grid's first Sunday session — resolve to a
+/// sessionless profile. The old 2010 grid was materially different and is not
+/// modelled.
 pub(crate) fn nkd_profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {
     select_revision(local_date(as_of, US::Central), &NKD_CLOSED, NKD_REVISIONS)
 }

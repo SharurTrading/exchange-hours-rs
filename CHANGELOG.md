@@ -33,7 +33,20 @@ corrections (a venue's hours fixed against a primary source) go under
   (2027 conflict unchanged), `xetra` (#200), `six` (2028 not published) and
   `nasdaq` — and no operator had published 2027 or 2028 material, so each
   evidence file records the fresh check date and the horizons stand.
-
+- **`tsx` 2010-2014 holiday history backfilled (2026-09-30 UTC).** The
+  venue's built-in holiday table extends from the 2017-2026 audited window
+  back over four audited windows — 2010-01-01..2011-10-10,
+  2012-01-03..2012-12-31, 2013-01-01..2013-08-18 and 2014-01-02..2014-07-01 —
+  38 further rows (36 `Closed` plus the 2010 and 2012 Christmas Eve early
+  closes at the releases' printed 1:00 p.m. EST), every one read from the
+  operator's own per-holiday closure news releases and December Holiday
+  (Operating) Schedule releases on `tmx.com` (T1, thirty-two Wayback `id_`
+  replays found 2026-09-30 by domain-wide CDX sweeps of `tsx.com` and
+  `tmx.com` after the archive service returned; #221's service caveat is
+  closed by the completed search). The release practice stops in the archive
+  after the 2014-06-23 Canada Day notice, so three spans refuse —
+  2011-10-11..2012-01-02, 2013-08-19..2014-01-01 and 2014-07-02..2016-12-31 —
+  and #221 stays open narrowed to them.
 - **`globex_nikkei_225_dollar` 2011-2015 holiday history backfilled
   (2026-09-29 UTC).** The family's built-in holiday table extends from the
   2016-2027 audited windows back over two further audited windows —

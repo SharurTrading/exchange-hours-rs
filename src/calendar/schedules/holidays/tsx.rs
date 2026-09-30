@@ -1,42 +1,42 @@
 // SPDX-License-Identifier: MIT-0
 
-//! Toronto Stock Exchange (TSX) holiday rows, 2024-2026.
+//! Toronto Stock Exchange (TSX) holiday rows, 2010-2026 across five audited
+//! windows.
 //!
 //! Keyed by the crate's own venue-local trade date in `America/Toronto`. TSX
 //! runs no overnight session, so an event date and its trade date are one
 //! civil day and the conversion is the identity.
 //!
-//! The whole block is **T1**: TMX Group's own "Stock Market Holidays - Stock
-//! Markets Closed" calendar at
-//! `tsx.com/en/trading/calendars-and-trading-hours/calendar`, one server-
-//! rendered page carrying the current year's list in full and the next
-//! year's from Q4. The 2025 and 2026 rows are read from the live page
-//! (retrieved 2026-09-28); the 2024 rows are read from the archived
-//! 2024-12-17 state, which carries the complete 2024 list including its
-//! Christmas Eve line — the July 2024 states printed the list without that
-//! row, so the Christmas Eve row keys to the December capture (a knowledge
-//! boundary may only widen). The 2017-2023 rows are read from ten archived
-//! states of the same page across its two paths: the `/trading/` relaunch
-//! path (2018-2023, its first capture 2018-09-11, whose archive section also
-//! restates the complete 2017 list) and the `/en/` path (2024). The
-//! Christmas Eve half days of 2018-2021 ride the page's own sentence
-//! `Markets will close at 1:00 PM ...`; the 2021 sentence was printed
-//! `subject to Board Approval` in January 2021 and the 2022-01-28 capture's
-//! archive section witnesses the discharged state, so that row keys to the
-//! later artifact. **2010-2016** ships no rows: the Wayback index holds no
-//! capture of any TSX holiday page for those years that this session could
-//! retrieve (CDX was down for most of 2026-09-29; every reachable capture
-//! set starts at 2018-09-11), so queries before 2017-01-01 refuse and the
-//! span is tracked as an issue. TSX has published no 2027 calendar yet, so
-//! coverage stops at 2026-12-31; all of this is recorded in
+//! The whole block is **T1**: the operator's own statements. 2017-2026 is read
+//! from TMX Group's "Stock Market Holidays - Stock Markets Closed" calendar at
+//! `tsx.com/en/trading/calendars-and-trading-hours/calendar` — one server-
+//! rendered page carrying the current year's list in full and the next year's
+//! from Q4, pinned by Wayback `id_` captures of its two paths (the 2018
+//! relaunch path's first capture 2018-09-11 restates the complete 2017 list
+//! in its archive section; the `/en/` path carries 2024-2025) plus the live
+//! retrieval of 2026-09-28. **2010-2014** is read from the operator's own
+//! per-holiday closure news releases and Holiday (Operating) Schedule
+//! releases on `tmx.com` (found 2026-09-30 UTC by domain-wide CDX sweeps of
+//! `tsx.com` and `tmx.com`; the all-time release sweep enumerated every
+//! holiday release the archive holds): each release states Toronto Stock
+//! Exchange closed, or open until 1:00 p.m. EST on a Christmas Eve, for an
+//! unconditional named date. The release practice stops in the archive after
+//! June 2014, and no `tsx.com`-era page survives for 2015-2016, so three
+//! intra-year spans ship no data — 2011-10-11..2012-01-02,
+//! 2013-08-19..2014-01-01 and 2014-07-02..2016-12-31 refuse —
+//! and queries there error rather than answer. All of this is recorded in
 //! [`docs/evidence/tsx.md`](../../../../../docs/evidence/tsx.md).
 //!
-//! The one early close is the operator's own footnote: Christmas Eve closes at
-//! `1:00 PM (TSX/TSXV)` — the 1:30 PM half of that footnote applies to the
-//! ALPHA/ALPHA X/DRK book systems and is outside this venue's scope. The U.S.
-//! holidays the same page lists under a separate heading are footnoted as
-//! **special-settlement** days for USD issues, not trading closures, so none
-//! of them is encoded (LAW-SESSION-NOT-EXPIRY).
+//! The Christmas Eve early closes are the operator's own sentences: the
+//! 2018-2021 and 2024-2026 rows ride the calendar page's `1:00 PM (TSX/TSXV)`
+//! footnote and sentence (the 1:30 PM half applies to the ALPHA/ALPHA X/DRK
+//! book systems and is outside this venue's scope; the 2021 sentence was
+//! printed `subject to Board Approval` in January 2021 and the 2022-01-28
+//! capture witnesses the discharged state), and the 2010 and 2012 rows ride
+//! the news releases' `Open until 1:00 p.m. (EST)` — the same 13:00 Toronto
+//! instant. The U.S. holidays the calendar page lists under a separate
+//! heading are footnoted as **special-settlement** days for USD issues, not
+//! trading closures, so none of them is encoded (LAW-SESSION-NOT-EXPIRY).
 
 use super::EvidenceTier::T1;
 use super::HolidayKind::Closed;
@@ -52,16 +52,127 @@ const HALF_DAY_13_00: u32 = 13 * 3_600;
 
 /// TSX's built-in holiday rows and the window they were audited over.
 ///
-/// Every row is one line of the operator's "Stock Markets Closed" list at
-/// the earliest archived state that prints it — the live retrieval of
-/// 2026-09-28 (2025 and 2026), the archived 2024-12-17 state (2024), or the
-/// 2018-2023 captures of the `/trading/` path, whose 2018-09-11 archive
-/// section restates 2017. A date inside the window with no row is audited
-/// normal.
+/// Every row is one line of the operator's statement at the document its id
+/// names — a per-holiday news release or Holiday (Operating) Schedule
+/// release on `tmx.com` for 2010-2014, or one archived/live state of the
+/// "Stock Markets Closed" calendar page for 2017-2026. A date inside a window
+/// with no row is audited normal: the release practice printed one notice per
+/// market closure and the all-time archive sweep enumerated every one, and
+/// for the page years the page's list is the complete year. The three spans
+/// between the windows sit outside every window, so queries there refuse.
 // Evidence: docs/evidence/tsx.md
 pub(crate) static TABLE: &HolidayTable = holidays! {
-    coverage: [(2017, 1, 1) ..= (2026, 12, 31)],
+    coverage: [
+        (2010, 1, 1) ..= (2011, 10, 10),
+        (2012, 1, 3) ..= (2012, 12, 31),
+        (2013, 1, 1) ..= (2013, 8, 18),
+        (2014, 1, 2) ..= (2014, 7, 1),
+        (2017, 1, 1) ..= (2026, 12, 31),
+    ],
     rows: [
+        // 2010-01-01 - T1 - TSX-REL-2009-12-02 - New Year's Day: the Holiday
+        // Market Operating Schedule's TSX/TSXV table prints `Friday, January
+        // 1, 2010 Closed`.
+        (2010, 1, 1, Closed, T1, "TSX-REL-2009-12-02"),
+        // 2010-02-15 - T1 - TSX-REL-2010-02-08 - Family Day: `Toronto Stock
+        // Exchange and TSX Venture Exchange will be closed for Family Day on
+        // Monday February 15, 2010`.
+        (2010, 2, 15, Closed, T1, "TSX-REL-2010-02-08"),
+        // 2010-04-02 - T1 - TSX-REL-2010-03-26 - Good Friday.
+        (2010, 4, 2, Closed, T1, "TSX-REL-2010-03-26"),
+        // 2010-05-24 - T1 - TSX-REL-2010-05-17 - Victoria Day.
+        (2010, 5, 24, Closed, T1, "TSX-REL-2010-05-17"),
+        // 2010-08-02 - T1 - TSX-REL-2010-07-27 - Civic Holiday.
+        (2010, 8, 2, Closed, T1, "TSX-REL-2010-07-27"),
+        // 2010-09-06 - T1 - TSX-REL-2010-09-01 - Labour Day.
+        (2010, 9, 6, Closed, T1, "TSX-REL-2010-09-01"),
+        // 2010-10-11 - T1 - TSX-REL-2010-10-01 - Thanksgiving.
+        (2010, 10, 11, Closed, T1, "TSX-REL-2010-10-01"),
+        // 2010-12-24 - T1 - TSX-REL-2010-11-08 - the Holiday Operating
+        // Schedule prints TSX/TSXV `Open until 1:00 p.m. (EST)`.
+        (2010, 12, 24, early_close(HALF_DAY_13_00), T1, "TSX-REL-2010-11-08"),
+        // 2010-12-27 - T1 - TSX-REL-2010-11-08 - `(In lieu of Christmas Day)
+        // Closed`.
+        (2010, 12, 27, Closed, T1, "TSX-REL-2010-11-08"),
+        // 2010-12-28 - T1 - TSX-REL-2010-11-08 - `(In lieu of Boxing Day)
+        // Closed`.
+        (2010, 12, 28, Closed, T1, "TSX-REL-2010-11-08"),
+        // 2011-01-03 - T1 - TSX-REL-2010-11-08 - `(In lieu of New Year's Day)
+        // Closed`.
+        (2011, 1, 3, Closed, T1, "TSX-REL-2010-11-08"),
+        // 2011-02-21 - T1 - TMX-REL-2011-02-16 - Family Day: `Toronto Stock
+        // Exchange, TSX Venture Exchange and Montreal Exchange will be closed
+        // for the Family Day holiday on Monday, February 21`.
+        (2011, 2, 21, Closed, T1, "TMX-REL-2011-02-16"),
+        // 2011-04-22 - T1 - TMX-REL-2011-04-14 - Good Friday.
+        (2011, 4, 22, Closed, T1, "TMX-REL-2011-04-14"),
+        // 2011-05-23 - T1 - TMX-REL-2011-05-18 - Victoria Day.
+        (2011, 5, 23, Closed, T1, "TMX-REL-2011-05-18"),
+        // 2011-07-01 - T1 - TMX-REL-2011-06-22 - Canada Day.
+        (2011, 7, 1, Closed, T1, "TMX-REL-2011-06-22"),
+        // 2011-08-01 - T1 - TMX-REL-2011-07-25 - Civic Holiday.
+        (2011, 8, 1, Closed, T1, "TMX-REL-2011-07-25"),
+        // 2011-09-05 - T1 - TMX-REL-2011-08-30 - Labour Day.
+        (2011, 9, 5, Closed, T1, "TMX-REL-2011-08-30"),
+        // 2011-10-10 - T1 - TMX-REL-2011-09-30 - Thanksgiving.
+        (2011, 10, 10, Closed, T1, "TMX-REL-2011-09-30"),
+        // 2012-02-20 - T1 - TMX-REL-2012-02-13 - Family Day. The 2012 New
+        // Year in-lieu (2012-01-02) survives in no release, so the window
+        // opens the day after it.
+        (2012, 2, 20, Closed, T1, "TMX-REL-2012-02-13"),
+        // 2012-04-06 - T1 - TMX-REL-2012-03-30 - Good Friday.
+        (2012, 4, 6, Closed, T1, "TMX-REL-2012-03-30"),
+        // 2012-05-21 - T1 - TMX-REL-2012-05-14 - Victoria Day.
+        (2012, 5, 21, Closed, T1, "TMX-REL-2012-05-14"),
+        // 2012-07-02 - T1 - TMX-REL-2012-06-22 - Canada Day: the release
+        // states `closed on Monday, July 2, 2012, for the Canada Day holiday`
+        // (1 July fell on a Sunday).
+        (2012, 7, 2, Closed, T1, "TMX-REL-2012-06-22"),
+        // 2012-08-06 - T1 - TMX-REL-2012-07-31 - Civic Holiday.
+        (2012, 8, 6, Closed, T1, "TMX-REL-2012-07-31"),
+        // 2012-09-03 - T1 - TMX-REL-2012-08-24 - Labour Day.
+        (2012, 9, 3, Closed, T1, "TMX-REL-2012-08-24"),
+        // 2012-10-08 - T1 - TMX-REL-2012-09-28 - Thanksgiving.
+        (2012, 10, 8, Closed, T1, "TMX-REL-2012-09-28"),
+        // 2012-12-24 - T1 - TMX-REL-2012-11-28 - the Holiday Operating
+        // Schedule prints TSX/TSXV `Open until 1:00 p.m. (EST)`.
+        (2012, 12, 24, early_close(HALF_DAY_13_00), T1, "TMX-REL-2012-11-28"),
+        // 2012-12-25 - T1 - TMX-REL-2012-11-28 - Christmas Day.
+        (2012, 12, 25, Closed, T1, "TMX-REL-2012-11-28"),
+        // 2012-12-26 - T1 - TMX-REL-2012-11-28 - Boxing Day; the schedule's
+        // TSX row also prints `Monday, December 31, 2012 Open`, so the window
+        // runs to the year's end.
+        (2012, 12, 26, Closed, T1, "TMX-REL-2012-11-28"),
+        // 2013-01-01 - T1 - TMX-REL-2012-11-28 - New Year's Day.
+        (2013, 1, 1, Closed, T1, "TMX-REL-2012-11-28"),
+        // 2013-02-18 - T1 - TMX-REL-2013-01-30 - Family Day.
+        (2013, 2, 18, Closed, T1, "TMX-REL-2013-01-30"),
+        // 2013-03-29 - T1 - TMX-REL-2013-03-20 - Good Friday.
+        (2013, 3, 29, Closed, T1, "TMX-REL-2013-03-20"),
+        // 2013-05-20 - T1 - TMX-REL-2013-05-13 - Victoria Day.
+        (2013, 5, 20, Closed, T1, "TMX-REL-2013-05-13"),
+        // 2013-07-01 - T1 - TMX-REL-2013-06-24 - Canada Day.
+        (2013, 7, 1, Closed, T1, "TMX-REL-2013-06-24"),
+        // 2013-08-05 - T1 - TMX-REL-2013-07-26 - Civic Holiday. The archive's
+        // last bulk sweep of the 2013 release tree is 2013-08-18 (it caught
+        // every release through the Civic notice), so the window ends there
+        // and the 2013 Labour Day, Thanksgiving and Christmas arrangements
+        // after it refuse.
+        (2013, 8, 5, Closed, T1, "TMX-REL-2013-07-26"),
+        // 2014-02-17 - T1 - TMX-REL-2014-02-07 - Family Day. The 2014 New
+        // Year's Day rode a release the archive never captured (it would be a
+        // 2013-published release outside the 2014 tree sweep), so the window
+        // opens 2014-01-02.
+        (2014, 2, 17, Closed, T1, "TMX-REL-2014-02-07"),
+        // 2014-04-18 - T1 - TMX-REL-2014-04-09 - Good Friday: `will be closed
+        // on Friday, April 18 for Good Friday`.
+        (2014, 4, 18, Closed, T1, "TMX-REL-2014-04-09"),
+        // 2014-05-19 - T1 - TMX-REL-2014-05-13 - Victoria Day.
+        (2014, 5, 19, Closed, T1, "TMX-REL-2014-05-13"),
+        // 2014-07-01 - T1 - TMX-REL-2014-06-23 - Canada Day: the 2014-07-14
+        // bulk sweep is the last capture of the release tree, so the window
+        // ends here.
+        (2014, 7, 1, Closed, T1, "TMX-REL-2014-06-23"),
         // 2017-01-02 - T1 - TSX-CAL-2018-09-11 - New Year's Day (in lieu):
         // `Monday, January 2, 2017 * in lieu of New Years Day, Sunday January 1`.
         (2017, 1, 2, Closed, T1, "TSX-CAL-2018-09-11"),

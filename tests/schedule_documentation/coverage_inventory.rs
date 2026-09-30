@@ -822,7 +822,11 @@ fn withheld(calendar: ExchangeCalendar, date: NaiveDate) -> bool {
 /// the 2010-2013 gap closed from the operator's own per-year press releases,
 /// notice and Info-Flash, and the 2024 eves' instants were recovered from the
 /// operator's 2024 end-of-year appendix, leaving only the two announced-but-
-/// unstated 2026 eves.
+/// unstated 2026 eves. `tsx` joins on 2026-09-30 UTC at zero: the 2010-2014
+/// recovery keys on the operator's own per-holiday news releases, all sourced
+/// `Closed`/early-close rows with no `Unsourced` date anywhere, so its
+/// incompleteness is the four refusing release-era spans and 2015-2016, not a
+/// withheld date.
 fn date_level_incompleteness() -> &'static [(&'static str, usize)] {
     &[
         ("cbot", 261),
@@ -983,8 +987,9 @@ fn inventory_completeness_verdicts_match_the_metadata() {
          their operators' horizons and asx incomplete below its 2025-06-23 SR15 horizon; tse and \
          sse windows end at the operators' horizons, and nse_india's Muhurat dates are Unsourced; \
          the same date's European/Canadian activation makes lse carry five Unsourced 2025 dates, \
-         euronext_paris two announced-but-unstated 2026 eves, and the 2026-09-29 UTC backfills \
-         leave tsx incomplete across the 2010-2016 span no capture reaches (#221))"
+         euronext_paris two announced-but-unstated 2026 eves, and the 2026-09-29/30 UTC backfills \
+         leave tsx incomplete across the three release-era gaps its 2010-2014 news releases do not \
+         reach and the 2015-2016 span no capture states (#221))"
     );
 }
 

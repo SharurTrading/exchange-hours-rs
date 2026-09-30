@@ -27,6 +27,17 @@
 //! report `true` inside a queue, and a widened `session_bounds` would return
 //! a window containing it.
 //!
+//! The fence also pins the **classification** those conditions rest on
+//! (#244 review, A2): a blunt widening of the shared `is_open_with` primitive
+//! across *every* session kind would reclassify each queue as `OpenRegular`,
+//! so no `state == OrderEntry` branch above would ever fire and this sweep
+//! would pass vacuously. The walks therefore count their `OrderEntry`
+//! observations and require the keys and identities that ship order-entry
+//! phases to have observed some — a widening that reclassifies every queue
+//! into an open session drives the count to zero and fails here, and inside
+//! a still-classified queue the split phase queries must answer false
+//! (property 3's queue half).
+//!
 //! The walk covers the two keys the preopen PRs changed at five-minute
 //! granularity across 2025-01-01..2028-01-01 (~630k instants, the resolution
 //! and span PR #179 measured), and every identity over one sampled week at
@@ -57,25 +68,44 @@ fn utc(year: i32, month: u32, day: u32, hour: u32, minute: u32) -> DateTime<Utc>
 /// covered date can depend on a neighbouring date the identity withholds, and
 /// one entry point may reach further than another. A refusal naming a
 /// covered date is the disagreement the fence exists to catch.
+///
+/// Returns whether the instant was classified as a queue, so the walks can
+/// pin that classification itself: a sweep that never observes `OrderEntry`
+/// has stopped fencing the invariant and started passing vacuously.
 fn assert_queue_never_widens(
     calendar: exchange_hours::ExchangeCalendar,
     instant: DateTime<Utc>,
     label: &str,
-) {
+) -> bool {
     let accepted = |error: &exchange_hours::CalendarQueryError| {
         let named = error.date();
         calendar.coverage().coverage_on(named) != exchange_hours::DateCoverage::Covered
     };
     let Ok(state) = calendar.session_state(instant) else {
-        return;
+        return false;
     };
     let Ok(is_open) = calendar.is_open(instant) else {
-        return;
+        return false;
     };
     if state == SessionState::OrderEntry {
         assert!(
             !is_open,
             "{label}: a queue reports is_open true — an order-entry phase widened it"
+        );
+        // Property 3's queue half: the split phase queries stay false inside a
+        // queue. `session_state` reached this branch only because both split
+        // probes answered `Ok(false)` on their own path, so both answers here
+        // are total; asserting them pins the classification against a
+        // widening that would leave the state label while opening a kind.
+        assert_eq!(
+            calendar.is_open_regular(instant),
+            Ok(false),
+            "{label}: a queue reports is_open_regular true"
+        );
+        assert_eq!(
+            calendar.is_open_extended(instant),
+            Ok(false),
+            "{label}: a queue reports is_open_extended true"
         );
         match calendar.session_bounds(instant) {
             Err(error) if accepted(&error) => {}
@@ -90,6 +120,7 @@ fn assert_queue_never_widens(
             ),
             Ok(None) => {}
         }
+        true
     } else if state == SessionState::OpenRegular || state == SessionState::OpenExtended {
         assert!(is_open, "{label}: an open session reports is_open false");
         let regular = calendar.is_open_regular(instant);
@@ -104,6 +135,9 @@ fn assert_queue_never_widens(
             assert_eq!(extended, Ok(true), "{label}");
         }
         let _ = (regular, extended);
+        false
+    } else {
+        false
     }
 }
 
@@ -114,6 +148,7 @@ fn a_queue_never_widens_is_open_or_session_bounds_on_the_preopen_keys_windows() 
         MarketHoursKey::GlobexNikkei225Dollar,
     ] {
         let calendar = calendar_for_market_hours_key(key);
+        let mut queues_observed = 0usize;
         let mut day = utc(2025, 1, 1, 0, 0).date_naive();
         let last = utc(2028, 1, 1, 0, 0).date_naive();
         while day < last {
@@ -132,28 +167,44 @@ fn a_queue_never_widens_is_open_or_session_bounds_on_the_preopen_keys_windows() 
                     )
                     .single();
                 let Some(instant) = instant else { continue };
-                assert_queue_never_widens(calendar, instant, &format!("{key:?} {instant}"));
+                queues_observed += usize::from(assert_queue_never_widens(
+                    calendar,
+                    instant,
+                    &format!("{key:?} {instant}"),
+                ));
             }
             day = day
                 .succ_opt()
                 .expect("the walk stays inside the year range");
         }
+        // The classification pin (#244 review, A2): this key ships order-entry
+        // phases the preopen PRs added, so the walk must have observed the
+        // state itself. A widening of `is_open_with` across every kind
+        // reclassifies each queue as an open session, empties this count and
+        // fails here instead of leaving the sweep above vacuous.
+        assert!(
+            queues_observed > 0,
+            "{key:?}: the walk never observed an OrderEntry state — the queues it \
+             ships were reclassified or dropped, so the no-widening invariant \
+             above fenced nothing"
+        );
     }
 }
 
 #[test]
 fn a_queue_never_widens_is_open_or_session_bounds_on_every_identity_for_a_sampled_week() {
+    let mut queues_observed = 0usize;
     for &exchange in Exchange::ALL {
         let calendar = calendar_for_exchange(exchange);
         for day in 17..=23u32 {
             for hour in 0..24u32 {
                 for minute in (0..60u32).step_by(15) {
                     let instant = utc(2026, 8, day, hour, minute);
-                    assert_queue_never_widens(
+                    queues_observed += usize::from(assert_queue_never_widens(
                         calendar,
                         instant,
                         &format!("{exchange:?} {instant}"),
-                    );
+                    ));
                 }
             }
         }
@@ -164,9 +215,23 @@ fn a_queue_never_widens_is_open_or_session_bounds_on_every_identity_for_a_sample
             for hour in 0..24u32 {
                 for minute in (0..60u32).step_by(15) {
                     let instant = utc(2026, 8, day, hour, minute);
-                    assert_queue_never_widens(calendar, instant, &format!("{key:?} {instant}"));
+                    let observed =
+                        assert_queue_never_widens(calendar, instant, &format!("{key:?} {instant}"));
+                    queues_observed += usize::from(observed);
                 }
             }
         }
     }
+    // The classification pin (#244 review, A2), identity-wide: the sampled
+    // week covers identities that ship order-entry phases (`cfe_vix`'s Sunday
+    // pre-open among them, fenced by instant in `tests/order_entry_phase.rs`),
+    // so the sweep must have observed queues as queues. An all-kinds widening
+    // of `is_open_with` reclassifies every one of them `OpenRegular` and
+    // zeroes this count.
+    assert!(
+        queues_observed > 0,
+        "the sampled week never observed an OrderEntry state on any identity — \
+         the queues were reclassified or dropped, so the no-widening invariant \
+         above fenced nothing"
+    );
 }

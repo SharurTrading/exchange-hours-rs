@@ -1417,9 +1417,6 @@ impl CalendarCoverage {
         // edge. A detached view's verdict never flips — `NormalWeekOnly`
         // covers every date uniformly and its gate never reaches the reach
         // test — so its zones would only split runs for nothing.
-        // A detached view's verdict never flips — `NormalWeekOnly` covers
-        // every date uniformly and its gate never reaches the reach test — so
-        // its zones would only split runs for nothing.
         if self.holidays == HolidayContract::NormalWeekOnly {
             return best;
         }

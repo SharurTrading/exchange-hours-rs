@@ -2,7 +2,7 @@
 
 //! HKEX holiday rows, 2010-2027: the operator's own holiday schedule, with the
 //! Lunar New Year, Christmas and New Year eves as early closes (12:30 in the
-//! 2010-2011 era, 12:10 in the CAS era) and the 2012-2015 eves `Unsourced`.
+//! 2010-2011 era, 12:00 in the 2012-2015 Phase-Two era, 12:10 in the CAS era).
 
 use super::prelude::*;
 
@@ -299,11 +299,13 @@ fn every_printed_2011_row_ships_and_the_lunar_eve_is_the_era_half_day() {
 }
 
 #[test]
-fn the_2012_2015_half_day_eves_ship_unsourced() {
+fn the_2012_2015_half_day_eves_close_at_the_phase_two_morning_edge() {
     let calendar = calendar();
-    // Each year's calendar names these eves half-day trading days, but no era
-    // artifact states the 2012-2015 half-day close, so the rows withhold
-    // (#208) instead of inventing an instant.
+    // Each year's calendar names these eves half-day trading days, and the
+    // operator's own Trading Hours page states the eve shape in session
+    // language: no Extended Morning Session and no Afternoon Session, so the
+    // close is the Phase-Two Morning Session edge, 12:00 noon
+    // (HKEX-TH-PHASE2, byte-identical at captures 2012-12-13..2016-01-20).
     for (year, month, day_of_month, document) in [
         (2012, 12, 24, "HKEX-TC-2012"),
         (2012, 12, 31, "HKEX-TC-2012"),
@@ -316,18 +318,36 @@ fn the_2012_2015_half_day_eves_ship_unsourced() {
         (2015, 12, 24, "HKEX-TC-2015"),
         (2015, 12, 31, "HKEX-TC-2015"),
     ] {
-        let date = day(year, month, day_of_month);
-        let holiday = calendar
-            .holiday_on(date)
-            .unwrap_or_else(|| panic!("{date} ships a row"));
-        assert_eq!(
-            holiday.kind(),
-            HolidayKind::Unsourced,
-            "{date} must ship Unsourced"
+        assert_early_close(
+            "hkex",
+            calendar,
+            Asia::Hong_Kong,
+            (year, month, day_of_month),
+            12 * 3_600,
+            document,
         );
-        assert_eq!(holiday.tier(), EvidenceTier::T1, "{date}");
-        assert_eq!(holiday.document_id(), document, "{date}");
     }
+    // The Phase-Two half day runs the morning only: 11:59:59 is inside the
+    // Morning Session, the noon edge is the end-exclusive close, and the
+    // deleted afternoon is gone. 2012-12-24 was a Monday.
+    assert!(
+        calendar
+            .is_open(hk((2012, 12, 24), (11, 59, 59)))
+            .expect("a sourced-era query must answer"),
+        "the 2012 Christmas Eve morning session trades"
+    );
+    assert!(
+        !calendar
+            .is_open(hk((2012, 12, 24), (12, 0, 0)))
+            .expect("a sourced-era query must answer"),
+        "12:00 noon is the end-exclusive Phase-Two half-day close"
+    );
+    assert!(
+        !calendar
+            .is_open(hk((2012, 12, 24), (14, 0, 0)))
+            .expect("a sourced-era query must answer"),
+        "the deleted afternoon session is closed"
+    );
 }
 
 #[test]
@@ -356,21 +376,9 @@ fn every_printed_2012_row_ships_including_labour_day() {
             day(2012, 12, 26),
         ],
     );
-    // The year's two eves are the shared 2012-2015 `Unsourced` shape; they are
-    // enumerated here too so the year's full row set is fenced in one place.
-    for (month, day_of_month) in [(12, 24), (12, 31)] {
-        let date = day(2012, month, day_of_month);
-        let holiday = calendar
-            .holiday_on(date)
-            .unwrap_or_else(|| panic!("{date} ships a row"));
-        assert_eq!(
-            holiday.kind(),
-            HolidayKind::Unsourced,
-            "{date} must ship Unsourced"
-        );
-        assert_eq!(holiday.tier(), EvidenceTier::T1, "{date}");
-        assert_eq!(holiday.document_id(), "HKEX-TC-2012", "{date}");
-    }
+    // The year's two eves are the Phase-Two 12:00 half days; they are
+    // enumerated in `the_2012_2015_half_day_eves_close_at_the_phase_two_morning_edge`
+    // alongside their siblings, so this test fences only the closures.
     // The calendar's list also prints three holidays that fell on a Saturday —
     // the day following Good Friday (7 April), the Buddha's Birthday
     // (28 April) and Tuen Ng Festival (23 June) — and the calendar's own

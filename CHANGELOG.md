@@ -13,6 +13,19 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Fixed
 
+- **The `hkex` 2012-2015 half-day eves close at the sourced Phase-Two noon edge
+  (2026-09-30 UTC, closes #208).** The ten pre-2025 eves that shipped
+  `Unsourced` (2012-12-24, 2012-12-31, 2013-12-24, 2013-12-31, 2014-01-30,
+  2014-12-24, 2014-12-31, 2015-02-18, 2015-12-24, 2015-12-31) now ship
+  `early_close(12:00)` rows: the operator's own Trading Hours page
+  (`tradcal_1.htm`, archived at eight byte-identical Wayback captures,
+  2012-12-13 through 2016-01-20) states in session language that there is no
+  Extended Morning Session and no Afternoon Session on the eves of Christmas,
+  New Year and Lunar New Year, and the same page prints the Phase-Two grid
+  whose Morning Session ends at 12:00 noon, so each calendar-named half day
+  closes there. The evidence file's Documents table gains the capture series;
+  the ledger row and coverage inventory move with the rows and the scope reads
+  complete to 2027-12-31.
 - **Six equities carried horizons source back toward the 2010 floor
   (2026-09-30 UTC).** The Wave C2 retrieval found each scope's carried normal
   week in the operators' own artifacts, and six horizons move with no runtime

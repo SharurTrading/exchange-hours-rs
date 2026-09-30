@@ -1666,29 +1666,18 @@ mod nzx {
         for date in [(2025, 2, 6), (2026, 4, 27), (2027, 1, 4)] {
             assert_closure(calendar, date, "nzx");
         }
-        // 2020-04-27 sits above the 2020-04-06 ledger horizon, so the closure
-        // answers through the identity-backed surface.
+        // The ledger horizon is 2010-01-05 — the operator's own trading-hours
+        // page print (docs/evidence/nzx.md, Normal week) — so closures above it
+        // answer through the identity-backed surface, 2020-04-27 included.
         assert_closure(calendar, (2020, 4, 27), "nzx");
-        // Below the horizon the holiday rows answer while the session queries
-        // refuse as carried: 2011-04-25 is the sheet's own Easter Monday and
-        // ANZAC Day on one date, and 2017-04-14 is the Derivatives page's own
-        // Good Friday row that re-joins the 2016-2017 capture gap's far side.
-        assert_eq!(
-            calendar.holiday_on(day(2011, 4, 25)).map(Holiday::kind),
-            Some(HolidayKind::Closed)
-        );
+        assert_closure(calendar, (2011, 4, 25), "nzx");
+        // The one exception is the 2016-04-26..2017-04-13 capture gap's far
+        // side: 2017-04-14 is the Derivatives page's own Good Friday row that
+        // re-joins the audited windows, and it answers like every sourced date.
         assert_eq!(
             calendar.holiday_on(day(2017, 4, 14)).map(Holiday::kind),
             Some(HolidayKind::Closed)
         );
-        assert!(matches!(
-            calendar.is_closed_trade_date(day(2011, 4, 25), SessionKind::Both),
-            Err(CalendarQueryError::OutsideCoveredRange { .. })
-        ));
-        assert!(matches!(
-            calendar.is_open(akl((2011, 4, 25), (11, 0, 0))),
-            Err(CalendarQueryError::OutsideCoveredRange { .. })
-        ));
         // ANZAC Day 2026: the sheet mondayises the Saturday to its own printed
         // Monday. The Saturday itself is closed by the normal week and ships
         // no row.
@@ -2112,18 +2101,20 @@ mod asx {
         for date in [(2025, 12, 25), (2026, 4, 6), (2027, 12, 27)] {
             assert_closure(calendar, date, "asx");
         }
-        // Australia Day 2025 sits below the ledger horizon: the SR15-era
-        // normal week is sourced only from 2025-06-23, so LAW-COVERAGE has
-        // the identity refuse the date even though the holiday row ships.
-        // `holiday_on` still reports the printed row.
+        // Australia Day 2025 sits above the 2013-09-16 horizon: the pre-SR15
+        // grid is the operator's own phase-timetable page sourced back to that
+        // capture (docs/evidence/asx.md), so the identity answers the date and
+        // the row and the session agree that it is closed.
         assert_eq!(
             calendar.holiday_on(day(2025, 1, 27)).map(Holiday::kind),
             Some(HolidayKind::Closed)
         );
-        assert!(matches!(
-            calendar.is_closed_trade_date(day(2025, 1, 27), SessionKind::Both),
-            Err(CalendarQueryError::OutsideCoveredRange { .. })
-        ));
+        assert!(
+            calendar
+                .is_closed_trade_date(day(2025, 1, 27), SessionKind::Both)
+                .expect("a sourced-era date answers"),
+            "Australia Day 2025 is a closed trade date"
+        );
         // The 2027 Christmas row is the sheet's own substitute date.
         assert!(
             !calendar
@@ -2371,14 +2362,28 @@ mod asx {
         }
     }
 
-    /// Below the 2025-06-23 SR15 horizon the session queries refuse as
-    /// carried, but the holiday rows answer: 2011-04-26 is the sheet's own
-    /// one-off Easter Tuesday congruence holiday, and 2022-09-22 is the
-    /// National Day of Mourning the sheet gained between replays.
+    /// Dates from 2013-09-16 (the earliest phase-timetable capture,
+    /// docs/evidence/asx.md) answer from the sourced grid: 2022-09-22 is the
+    /// National Day of Mourning the sheet gained between replays and
+    /// 2023-12-25 a Christmas Monday, so the 11:00 probe answers closed. The
+    /// dates still below the horizon — 2010-12-24 and the sheet's own one-off
+    /// Easter Tuesday 2011-04-26 — keep the carried-era refusal; their rows
+    /// still ship through `holiday_on`.
     #[test]
-    fn the_pre_2025_rows_answer_while_carried_dates_refuse() {
+    fn sourced_dates_answer_while_the_carried_region_still_refuses() {
         let calendar = asx();
-        for date in [(2011, 4, 26), (2022, 9, 22), (2010, 12, 24), (2023, 12, 25)] {
+        for date in [(2022, 9, 22), (2023, 12, 25)] {
+            assert!(
+                calendar.holiday_on(day(date.0, date.1, date.2)).is_some(),
+                "{date:?} ships a row"
+            );
+            let verdict = calendar.is_open(syd(date, (11, 0, 0)));
+            assert!(
+                matches!(&verdict, Ok(open) if !*open),
+                "{date:?} is a closure, so the 11:00 probe answers closed, got {verdict:?}"
+            );
+        }
+        for date in [(2010, 12, 24), (2011, 4, 26)] {
             assert!(
                 calendar.holiday_on(day(date.0, date.1, date.2)).is_some(),
                 "{date:?} ships a row"

@@ -1003,7 +1003,13 @@ fn every_shipped_session_occurrence_is_dated_by_its_own_open_or_the_next_day() {
     // activation of `nyse` and `nasdaq` moved the last two numbers honestly:
     // their below-horizon cursor refusals became enumerated, dated sessions
     // (+16,642 occurrences, +2 date-carrying identities, -1,280 refused
-    // cursors). The premise itself is unchanged and still asserted per
+    // cursors). The 2026-09-30 UTC normal-week sourcing did the same for the
+    // carried eras of `hkex`, `nzx`, `asx` and `nyse` (their horizons moved to
+    // sourced days — each scope's evidence file carries the era blocks): at
+    // that head the sweep observes 426,957 enumerated occurrences, 80,238
+    // refused cursors, 16,191 unresolved trade dates and 42 date-carrying
+    // identities, and the refused-cursors bound follows the refusals those
+    // moves removed. The premise itself is unchanged and still asserted per
     // occurrence: what the floor move restored is the population the premise
     // can be asserted over.
     //
@@ -1030,7 +1036,7 @@ fn every_shipped_session_occurrence_is_dated_by_its_own_open_or_the_next_day() {
         "the sweep must cover every occurrence the identities source, saw {occurrences}"
     );
     assert!(
-        refused_cursors > 82_000,
+        refused_cursors > 78_000,
         "the sweep must step over the carried-era and unsourced spans rather than \
          stopping at them, saw {refused_cursors} refused cursors"
     );

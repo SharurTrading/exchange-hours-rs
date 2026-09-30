@@ -442,10 +442,13 @@ fn sourced_normal_week_reports_the_ledger_horizon() {
         exchange_coverage(Exchange::Cme).normal_week_sourced_from(),
         Some(date(2012, 5, 3))
     );
-    assert_eq!(
-        exchange_coverage(Exchange::Nyse).normal_week_sourced_from(),
-        Some(date(2018, 4, 9))
-    );
+    // The 2018-04-09 Pillar row no longer bounds a carried interval: the
+    // operator's own historical timeline and Rule 51 filings source the core
+    // session to the floor, so the horizon reads 2010-01-01 and the clipped
+    // sourced span opens there.
+    let nyse = exchange_coverage(Exchange::Nyse);
+    assert_eq!(nyse.normal_week_sourced_from(), Some(date(2010, 1, 1)));
+    assert_eq!(nyse.sourced_normal_week().first(), date(2010, 1, 1));
     // The ledger's em dash: nothing is carried below the identity's own first
     // row, so there is no date below which its rows are carried.
     assert_eq!(
@@ -469,15 +472,23 @@ fn sourced_normal_week_reports_the_ledger_horizon() {
         Some(CoverageGapReason::NormalWeekCarried)
     );
 
+    // The SR15 row remains the dated revision; the horizon is the earliest
+    // capture of the pre-SR15 phase timetable (2013-09-16), so 2025 dates are
+    // all sourced and 2013-09-15 is the last carried day.
     let asx = exchange_coverage(Exchange::Asx);
-    assert_eq!(asx.normal_week_sourced_from(), Some(date(2025, 6, 23)));
+    assert_eq!(asx.normal_week_sourced_from(), Some(date(2013, 9, 16)));
     assert_eq!(
-        gap_reason_on(asx, date(2025, 6, 22)),
+        gap_reason_on(asx, date(2013, 9, 15)),
         Some(CoverageGapReason::NormalWeekCarried)
     );
     assert_ne!(
-        gap_reason_on(asx, date(2025, 6, 23)),
+        gap_reason_on(asx, date(2013, 9, 16)),
         Some(CoverageGapReason::NormalWeekCarried)
+    );
+    assert_eq!(
+        gap_reason_on(asx, date(2025, 6, 22)),
+        None,
+        "the below-SR15 grid is sourced now, so no 2025 date is carried"
     );
 }
 

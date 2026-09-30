@@ -15,6 +15,41 @@ Main Board; deterministic edges for randomized auctions.
 
 - 2020-04-06 — T1 — NZX announcement 350919 — pre-open start moves 09:00 → 08:30.
 
+## Normal week
+
+**The pre-2020 grid is the operator's own print of 2010-01-05, and every later
+page state corroborates it to the dated revision.** The operator's
+`nzx.com/markets/key-dates/trading-hours` page as served 2010-01-05
+(`NZX-KD-2010-01-05`) prints, for the NZSX & NZAX markets: Enquiry
+8.00am-9.00am, Pre-open 9.00am-10.00am, Normal Trading 10.00am-4.45pm,
+Pre-close 4.45pm-5.00pm, Adjust 5.00pm-5.30pm, closing Enquiry 5.30pm. That is
+exactly the pre-2020 profile the module encodes: `regular` 10:00-16:45, the
+tradeable Pre-open 09:00-09:59:30 in `extended`, and the order-entry Pre-close
+16:45-16:59:30 with the ±30-second closing-uncross envelope to 17:00:30. The
+same grid appears in the operator's 2010-12-29, 2011-12-19, 2012-05-04,
+2013-01-16, 2013-05-16, 2014-01-27, 2014-10-20, 2015-01-13, 2015-04-27,
+2017-06-23, 2018-08-24, 2019-03-25 and 2020-06-08 page states (all held in the
+store, each cited in the holiday `### Documents` table), and the 2020-04-06
+revision row keys the one change the era ends with. The ledger horizon is
+therefore 2010-01-05, the capture day: below it the carried region contains no
+trade date (2010-01-01 and 2010-01-04 are the sheet's own New Year closures and
+2010-01-02/03 fall at the weekend).
+
+**Corroboration across the floor.** The same page as served 2009-12-04
+(`NZX-KD-2009-12-04`) prints the identical grid, so the state attested on
+2010-01-05 did not begin there; the capture dates no 2010 day, so the horizon
+stays at the capture rather than the floor. A 2009-era capture attests the
+state on its own day only.
+
+**What the era's sheets do not print.** The ±30-second uncross envelope (the
+09:59:30-10:00:00 and 16:59:30-17:00:30 `extended` slices) rests on the
+operator's Anatomy-of-a-Trading-Day randomisation statement already carried by
+the normal-week profile; the 2010-2020 page states print the phase grid, not
+the randomisation. That is the same disclosure the holiday section records for
+the pre-2025 abbreviated days, and the envelope is the one instant family the
+era's sheets do not state.
+
+
 ## Sources
 
 Row review: 2026-08-22 (UTC) is the date the ledger row was last reviewed as a
@@ -470,6 +505,7 @@ LAW-WATCH.
 | Document | Window | Replay or service URL | Capture or retrieval, UTC | Tier | sha256 |
 |---|---|---|---|---|---|
 | `NZX-KD-2010-01-05` | 2010-01-01 .. 2010-12-31 | <https://web.archive.org/web/20100105003154id_/https://www.nzx.com/markets/key-dates/trading-hours> | Wayback `id_` replay of capture `20100105003154`, retrieved 2026-09-29 03:18:58 UTC | T1 | `c01569901faa64d89de1ecb5e4f1ab319d3ad7ee13735389989e8813e5da0294` |
+| `NZX-KD-2009-12-04` | no rows keyed (the same page's pre-floor state; Normal-week corroboration) | <https://web.archive.org/web/20091204184203id_/http://www.nzx.com/markets/key-dates/trading-hours> | Wayback `id_` replay of capture `20091204184203`, retrieved 2026-09-30 04:20 UTC | T1 | `f5a8c3f622dbcf6adf8c48f688988e8392ef0542d8a56ac54e29d63f5b033b54` |
 | `NZX-KD-2010-12-29` | 2011-01-01 .. 2011-12-30 | <https://web.archive.org/web/20101229214809id_/https://www.nzx.com/markets/key-dates/trading-hours> | Wayback `id_` replay of capture `20101229214809`, retrieved 2026-09-29 03:18:59 UTC | T1 | `14aa8ba0dbc6d6b044181964302a7c54fb9457da8822766a98c8b190c3c58a23` |
 | `NZX-SX-2011-12-19` | 2011-12-23 .. 2012-10-22 | <https://web.archive.org/web/20111219140445id_/https://www.nzx.com/markets/NZSX/trading_hours> | Wayback `id_` replay of capture `20111219140445`, retrieved 2026-09-29 03:28:46 UTC | T1 | `7085a9a8c7a0addae300a56e6c6b21b6c57731505c1d4052b6132a0819108872` |
 | `NZX-SX-2012-05-04` | 2012-06-04 .. 2013-04-25 | <https://web.archive.org/web/20120504064253id_/https://www.nzx.com/markets/NZSX/trading_hours> | Wayback `id_` replay of capture `20120504064253`, retrieved 2026-09-29 03:27:01 UTC | T1 | `464bee01a8f7b760e5292cfaa3d4efbd17018d3c2ec96eb0e0142b706612d2ce` |
@@ -521,14 +557,12 @@ any row).
   dated operator statement for the 15:45-to-12:45 grid changeover, or a capture
   whose grid and holiday table agree on the December 2013 days, keys the span's
   true grid.
-- **horizon carried below the first dated row** — the pre-2020 baseline rests
-  only on NZX announcement 350919, whose publication day is not recorded in the
-  repository (an NZX announcement number is not a date). The ledger horizon is
-  therefore 2020-04-06, the first day at which this row's state is sourced,
-  with everything below it carried. Closing condition: read the announcement's
-  own publication date, or find a dated pre-2020 NZX trading-hours page; either
-  would move the horizon earlier. The 2020-06-08 capture still printing the
-  9:00am Pre-open beside the announcement's 8:30am move is the same era's
+- **horizon sourced from 2010-01-05** — the pre-2020 baseline is the operator's
+  own key-dates trading-hours page print of 2010-01-05, corroborated at every
+  later capture and ended by the dated 2020-04-06 revision (see the Normal week
+  section). The carried region below it — 2010-01-01..2010-01-04 — contains no
+  trade date. The 2020-06-08 capture still printing the
+  9:00am Pre-open beside the announcement's 8:30am move remains the era's
   open question; the holiday table holds the 9:00am Pre-open on the two 2020
   abbreviated days (the narrowest sourced value) and the conflict is recorded
   in the coverage section.

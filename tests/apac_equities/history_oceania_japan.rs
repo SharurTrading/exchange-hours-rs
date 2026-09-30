@@ -40,6 +40,47 @@ fn oceania_and_japan_cutovers() {
 }
 
 #[test]
+fn nzx_pre_2020_grid_is_the_2010_page_print() {
+    // The operator's key-dates trading-hours page as served 2010-01-05 prints
+    // Pre-open 9:00-10:00 (tradeable: off-market reports print), Normal
+    // Trading 10:00-4:45pm, Pre-close 4:45-5:00, and the same grid stands on
+    // the revision eve. The ±30-second uncross envelopes are the carried
+    // randomisation statement (docs/evidence/nzx.md, Normal week).
+    for probe in [(2010, 1, 7), (2019, 12, 31)] {
+        let h = hours_for_exchange(Exchange::Nzx, local(Pacific::Auckland, probe, (12, 0, 0)));
+        assert!(!h.is_open(local(Pacific::Auckland, probe, (8, 59, 0))));
+        assert!(h.is_open_extended(local(Pacific::Auckland, probe, (9, 45, 0))));
+        assert!(!h.is_open_regular(local(Pacific::Auckland, probe, (9, 45, 0))));
+        assert!(h.is_open_extended(local(Pacific::Auckland, probe, (9, 59, 40))));
+        assert!(h.is_open_regular(local(Pacific::Auckland, probe, (10, 0, 0))));
+        assert!(h.is_open_regular(local(Pacific::Auckland, probe, (16, 44, 0))));
+        assert!(h.is_order_entry_only(local(Pacific::Auckland, probe, (16, 50, 0))));
+        assert!(!h.is_open_extended(local(Pacific::Auckland, probe, (16, 50, 0))));
+        assert!(h.is_open_extended(local(Pacific::Auckland, probe, (17, 0, 15))));
+        assert!(!h.is_open(local(Pacific::Auckland, probe, (17, 1, 0))));
+    }
+}
+
+#[test]
+fn asx_pre_sr15_grid_is_the_phase_page_print() {
+    // The operator's cash-market phase table (2013-09-16, restated 2020-10-22)
+    // prints Pre-opening from 7:00 am, the five staggered group opens inside
+    // 9:59:45-10:09:15, Normal Trading 10:00-4:00, Pre-CSPA 4:00-4:10 and the
+    // CSPA envelope to 4:12 (docs/evidence/asx.md, Normal week).
+    for probe in [(2013, 9, 17), (2020, 10, 23), (2025, 6, 20)] {
+        let h = hours_for_exchange(Exchange::Asx, local(Australia::Sydney, probe, (12, 0, 0)));
+        assert!(h.is_open_extended(local(Australia::Sydney, probe, (7, 0, 0))));
+        assert!(h.is_open_extended(local(Australia::Sydney, probe, (9, 59, 30))));
+        assert!(h.is_open_regular(local(Australia::Sydney, probe, (10, 0, 0))));
+        assert!(h.is_open_extended(local(Australia::Sydney, probe, (10, 5, 0))));
+        assert!(h.is_order_entry_only(local(Australia::Sydney, probe, (16, 5, 0))));
+        assert!(!h.is_open_extended(local(Australia::Sydney, probe, (16, 5, 0))));
+        assert!(h.is_open_extended(local(Australia::Sydney, probe, (16, 11, 0))));
+        assert!(!h.is_open(local(Australia::Sydney, probe, (16, 13, 0))));
+    }
+}
+
+#[test]
 fn tmx_australia_cutovers() {
     let tz = Australia::Sydney;
     let probe = (2026, 8, 19);

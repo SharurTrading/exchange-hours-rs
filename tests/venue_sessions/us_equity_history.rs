@@ -144,6 +144,25 @@ fn edga_and_edgx_0600_queue_starts_on_the_2014_rule_approval_days() {
 }
 
 #[test]
+fn nyse_core_session_is_the_floor_era_statement() {
+    // The pre-2018 grid is one 09:30-16:00 core session with no other phase:
+    // NYSE's own trading-hours timeline states regular trading at those hours
+    // since 1985-09-30 ("As of January 26, 2005"), and its Rule 51 statements
+    // in the 2014-2017 SEC filings restate it inside the interval
+    // (docs/evidence/nyse.md, Normal week). The 06:30/07:00 early phases begin
+    // only with the sourced 2018-04-09 Pillar row.
+    for probe in [(2010, 1, 4), (2014, 5, 7), (2017, 8, 10)] {
+        let h = hours_for_exchange(Exchange::Nyse, et(probe, (12, 0, 0)));
+        assert!(!h.is_open(et(probe, (7, 30, 0))));
+        assert!(!h.is_open(et(probe, (9, 29, 0))));
+        assert!(h.is_open_regular(et(probe, (9, 30, 0))));
+        assert!(h.is_open_regular(et(probe, (15, 59, 0))));
+        assert!(!h.is_open(et(probe, (16, 0, 0))));
+        assert!(!h.is_open(et(probe, (16, 30, 0))));
+    }
+}
+
+#[test]
 fn nyse_early_session_and_queue_begin_with_the_2018_utp_pillar_launch() {
     // NYSE Rule 7.34(a)(1) sets the Early Trading Session at 07:00 and order
     // acceptance 30 minutes earlier; NYSE's own filings date the production

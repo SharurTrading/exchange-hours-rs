@@ -11,6 +11,34 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ## [Unreleased]
 
+### Fixed
+
+- **Six equities carried horizons source back toward the 2010 floor
+  (2026-09-30 UTC).** The Wave C2 retrieval found each scope's carried normal
+  week in the operators' own artifacts, and six horizons move with no runtime
+  row changing: `nyse` to the floor (the operator's own historical trading-hours
+  timeline — regular trading 9:30 a.m.–4 p.m. since 1985-09-30, "As of January
+  26, 2005" — plus its Rule 51 statements in the 2014-2017 SEC filings),
+  `hkex` to the floor (the securities Trading Hours page, footer-updated
+  2009-03-23, attested at Wayback captures 2010-05-24 through 2011-01-19 and
+  superseded at the dated 2011-03-07 change), `asx` to 2013-09-16 (the
+  cash-market phase-timetable page with the staggered five-group opening table,
+  restated 2016-01-20 and 2020-10-22 and carried to the SR15 removal by the
+  marked amendments), `borsa_istanbul` to 2010-03-25 (IMKB's İşlem Saatleri
+  page printing the pre-2012 two-session grid, corroborated 2011-07-27),
+  `tadawul` to 2010-01-12 (the Trading Times page stating the Saturday-Wednesday
+  11:00-15:30 session; English restatement 2011-04-29) and `nzx` to 2010-01-05
+  (the key-dates trading-hours page print of the pre-2020 grid, corroborated at
+  every later capture to the dated 2020-04-06 revision). Four scopes' horizons
+  stand with tightened bounded-search records: `nasdaq` (its 2010 systems-hours
+  PDFs print Support Hours 07:00-20:00 — the help desk, not a session),
+  `sgx_securities` (the 2009-05-14 Trading Hours page capture corroborates the
+  carried 09:00-12:30/14:00-17:00 grid but is pre-floor),
+  `euronext_paris` (the 2010 Calendar of Cash Business Days, notice
+  PAR_20091015_05039_EUR dated 2009-10-15, now in hand, prints closures only)
+  Evidence files gain the era blocks and Documents rows; the ledger, coverage
+  inventory and `sourcing.rs` move together.
+
 ### Added
 
 - **`nyse` holiday window extended to 2028-12-31 (2026-09-29 UTC).** The

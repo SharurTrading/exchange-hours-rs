@@ -952,24 +952,33 @@ and each row's `Derived from` cell records which one produced it.
      not fixed by it: the row's blocks carry the trade date, and `trade_date` at 15:00 CT still
      resolves through the session the queue feeds, as on every other date. Closing condition:
      #152, as for the label deviation above.
-  5. **Still open, and not fixed here.** On each of the fourteen dates that precede a mid-week
-     closure eve, the `14:30-16:00` CT post-close queue disappears: the occurrence the ordinary
-     week dates to the next trade date is deleted by that date's replacement row — or, before a
-     Monday holiday, by the holiday's own `Closed` row — and no block restates it on the earlier
-     day. Measured through the built-in calendar at both 14:30 and 15:30 CT, every one of
-     **2025-04-16, 2025-06-17, 2025-07-02, 2025-11-25, 2025-12-30, 2026-04-01, 2026-06-17,
-     2026-07-01, 2026-11-24, 2026-12-30, 2027-03-24, 2027-06-16, 2027-11-23 and 2027-12-22**
-     answers `session_state = Closed` where CME prints an ordinary `14:30 pcp`. Four of those
-     dates carry their own capture bytes — `probeB_2026-04-01_2026-04-03.json`,
-     `probeB_2026-06-17_2026-06-19.json` and `probeB_2026-06-18_2026-06-20.json` under
-     `raw/cme-2025-2027-repair/json/`, and `thbp_2026-12-29_2026-12-31.json` under
-     `raw/cme-2025-2027/live/thbp/` — each printing `14:30 pcp` for the date it covers with that
-     date's own `tradingDate`. This is **pre-existing**: the same instants answer `Closed` on
-     `main` at `ef6ffba`, and this change moves no instant on any of the fourteen. It is not
-     fixed here because the repair is a decision about how a replacement row composes with the
-     preceding day's queue rather than about the eves' Pre-Open. Closing condition: a stated
-     rule for the pre-eve queue, or a row shape that restates it. Tracked as issue #175
-     (LAW-FOLLOW-UPS-ARE-ISSUES).
+  5. **Fixed 2026-09-30 (UTC): the pre-eve queue is restated by the eve's row.** On each of
+   the fourteen dates that precede a mid-week closure eve, the `14:30-16:00` CT post-close
+   queue used to disappear: the occurrence the ordinary week dates to the next trade date was
+   deleted by that date's replacement row, and no block restated it on the earlier day — every
+   one of **2025-04-16, 2025-06-17, 2025-07-02, 2025-11-25, 2025-12-30, 2026-04-01,
+   2026-06-17, 2026-07-01, 2026-11-24, 2026-12-30, 2027-03-24, 2027-06-16, 2027-11-23 and
+   2027-12-22** answered `session_state = Closed` where CME prints an ordinary `14:30 pcp`.
+   The repair is the `-1` `14:30-16:00` order-entry block `CLOSURE_EVE_BLOCKS` now opens
+   with: the row keyed to the eve restates the queue the ordinary week dates to the eve's
+   trade date, and the fourteen instants answer `OrderEntry` / accepting orders at both 14:30
+   and 15:30 CT. The rule the repair states is the issue's first option: a queue the ordinary
+   week dates to a replaced trade date is restated by that trade date's row, not left to
+   vanish with it. Four pre-eve dates carry their own capture bytes, read from the operator's
+   service: `probeB_2026-04-01_2026-04-03.json` (sha256
+   `cc4ed1150520c5f071ae0e5bcd2259449bef68a4d6048a2b08524b70e8490e11`) and
+   `probeB_2026-06-17_2026-06-19.json` (sha256
+   `d05c0d4ade30b6de6149251ec541f294335de533a4e95ad0b74bac2caa05fdba`) under
+   `raw/cme-2025-2027-repair/json/`, `probeB_2026-06-18_2026-06-20.json` (sha256
+   `b54f1f9c0672ce59413be4d9283bbc5f96bc2c84b4113c25de3cb6ade285ad7d`) beside them, and
+   `raw/cme-2025-2027/live/thbp/thbp_2026-12-29_2026-12-31.json` (sha256
+   `691de39fb25a0be94598e50ac48933f119fbd0cd04fae9c36f7df8494ffcedaa`) — each printing
+   `14:30 pcp` for the date it covers with that date's own `tradingDate`, which is the label
+   deviation the #152 declared gap states. The declaration's shape resolves against the
+   normal week only, so the fourteen dates stay `Covered` beside it; the label the restating
+   block gives their queue is the crate's convention (the eve's trade date), recorded here
+   beside the declaration rather than re-derived per date. The other ten dates' queue is the
+   ordinary PCP the normal week sources. Tracked as issue #175; closed by this change.
 - **No intraday-topology gap.** All eighteen `modified` grain rows in the block triage to
   design memo §1.6 categories 3, 4 and 5 — fourteen to conversion 2 and four to conversion 3 —
   and each of the eighteen now ships a replacement-block row stating its complete day. None is

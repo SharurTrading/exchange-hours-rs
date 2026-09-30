@@ -298,6 +298,66 @@ fn a_closed_trade_date_removes_the_queue_that_feeds_it() {
 }
 
 #[test]
+fn the_sunday_evening_queue_answers_through_every_entry_point_it_describes() {
+    // Issue #132: the order-entry gate used to judge a Sunday-evening queue by
+    // its **opening day** — a Sunday, outside every trade-date-keyed coverage
+    // range — and refuse `is_order_entry_only` and `is_accepting_orders` for
+    // exactly the families whose normal week carries a Sunday queue, while
+    // `is_open` answered the same instant from the tradeable scan. The
+    // date-scoped phase declarations (#172) key the withholding to the dates
+    // whose queue resolves, so the Sunday queue of a covered trade date
+    // answers through the identity like any other sourced phase.
+    //
+    // The fence is the issue's own: the four families whose normal week
+    // carries a Sunday order-entry rule must answer inside the queue, and the
+    // two answers must agree with `is_open` at the same instant.
+    // 2026-06-21 is a Sunday; 21:30Z is 16:30 CT, inside every CME Sunday
+    // Pre-Open (16:00-17:00 CT); 21:50Z is a second sample past its midpoint.
+    for key in [
+        MarketHoursKey::GlobexEnergy,
+        MarketHoursKey::GlobexEquityIndex,
+        MarketHoursKey::GlobexInterestRates,
+        MarketHoursKey::GlobexFx,
+    ] {
+        let calendar = calendar_for_market_hours_key(key);
+        for (hour, minute) in [(21, 30), (21, 50)] {
+            let instant = utc(2026, 6, 21, hour, minute);
+            let label = format!("{key:?} {instant}");
+            assert_eq!(
+                calendar.is_order_entry_only(instant),
+                Ok(true),
+                "{label}: the Sunday queue is order-entry only"
+            );
+            assert_eq!(
+                calendar.is_accepting_orders(instant),
+                Ok(true),
+                "{label}: the Sunday queue accepts orders"
+            );
+            assert_eq!(
+                calendar.is_open(instant),
+                Ok(false),
+                "{label}: no trade can print in the queue"
+            );
+        }
+    }
+    // The families without a Sunday queue answer too — refusal-free, which is
+    // the regression the issue records: grains and livestock answered before,
+    // but only because their scans happened to find a weekday occurrence.
+    for key in [MarketHoursKey::GlobexGrains, MarketHoursKey::GlobexLivestock] {
+        let calendar = calendar_for_market_hours_key(key);
+        let instant = utc(2026, 6, 21, 21, 30);
+        assert!(
+            calendar.is_order_entry_only(instant).is_ok(),
+            "{key:?}: a Sunday instant outside the queue answers, it does not refuse"
+        );
+        assert!(
+            calendar.is_accepting_orders(instant).is_ok(),
+            "{key:?}: a Sunday instant outside the queue answers, it does not refuse"
+        );
+    }
+}
+
+#[test]
 fn the_calendar_never_accepts_orders_the_fixed_profile_rejects() {
     // Equality does NOT hold here and must not be asserted: 24 of 96 exchanges
     // legitimately diverge, because a dated timeline omits phases whose onset

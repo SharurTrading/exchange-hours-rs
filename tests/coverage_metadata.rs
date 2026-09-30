@@ -84,28 +84,33 @@ fn a_complete_scope_reports_one_complete_span_and_a_trailing_gap() {
     // `globex_nikkei_225_dollar` is the one scope that still reaches 2027-12-31
     // with nothing withheld *in the 2025+ era*: it ships no order-entry phase
     // at all, so the post-close queue label `globex_grains` and
-    // `globex_livestock` declare (#152) cannot apply to it. At the 2010 floor
-    // its earlier history is honestly partial, and the spans show it.
+    // `globex_livestock` declare (#152) cannot apply to it. Since the #225
+    // remainder modelled the old grid (2026-09-30 UTC), the normal week is
+    // sourced from the floor itself and the first audited window opens there.
     let coverage = key_coverage(MarketHoursKey::GlobexNikkei225Dollar);
     assert_eq!(
         coverage.identity(),
         CalendarSource::MarketHoursKey(MarketHoursKey::GlobexNikkei225Dollar)
     );
-    assert_eq!(coverage.normal_week_sourced_from(), None);
+    assert_eq!(
+        coverage.normal_week_sourced_from(),
+        Some(date(2010, 1, 1)),
+        "the old grid's own row keys at the support floor"
+    );
     assert_eq!(coverage.sourced_normal_week(), unbounded(SUPPORT_FLOOR));
 
-    // At the 2010 floor the scope's earlier history is honestly partial: the
-    // 2010-01-01..2010-04-10 interval is unaudited (the 2011-2024 windows
-    // opened with the 2026-09-29 wave; on 2026-09-30 UTC the first window
-    // moved back to the dated 2010-04-11 grid start, and the 2010 rows
-    // entered with it), and the 2016-2024 windows withhold dates, so the
-    // complete spans begin at that window's first day and split around the
-    // withheld dates instead of forming one span from the floor.
+    // The 2010-01-01..2010-04-10 interval joined the first audited window on
+    // 2026-09-30 UTC, when the old grid shipped from the operator's own
+    // equities-hours captures and the New Year closure keyed the window to the
+    // floor; the 2019-2024 windows still withhold dates, so the complete spans
+    // begin at the floor and split around the withheld dates. Each complete
+    // range is one audited window (the walk's static segment edge), so the
+    // first is the floor-to-2012 window that now opens at the support floor.
     let complete: Vec<DateRange> = coverage.complete_ranges().collect();
     assert_eq!(
         complete.first(),
-        Some(&DateRange::new(date(2010, 4, 11), date(2012, 12, 31)).expect("ascending")),
-        "the first complete span is the first audited window"
+        Some(&DateRange::new(date(2010, 1, 1), date(2012, 12, 31)).expect("ascending")),
+        "the first complete span is the first audited window, opened at the floor"
     );
     assert_eq!(
         complete.last(),
@@ -115,8 +120,8 @@ fn a_complete_scope_reports_one_complete_span_and_a_trailing_gap() {
     let gaps: Vec<CoverageGap> = coverage.gaps().collect();
     assert_eq!(
         gaps.first().map(|gap| (gap.range().first(), gap.reason())),
-        Some((date(2010, 1, 1), CoverageGapReason::NoHolidayCoverage)),
-        "the floor-to-first-window interval is an unaudited gap"
+        Some((date(2019, 6, 19), CoverageGapReason::WithheldDate)),
+        "the first gap is the era's own first Unsourced date"
     );
     assert_eq!(
         gaps.last().map(|gap| (gap.range().first(), gap.reason())),
@@ -138,7 +143,7 @@ fn a_complete_scope_reports_one_complete_span_and_a_trailing_gap() {
     assert!(matches!(contract, HolidayContract::Audited { .. }));
     assert!(contract.rows().is_some_and(|rows| rows > 0));
     assert!(contract.coverage().is_some_and(|windows| {
-        windows.first() == date(2010, 4, 11) && windows.last() == date(2027, 12, 31)
+        windows.first() == date(2010, 1, 1) && windows.last() == date(2027, 12, 31)
     }));
 }
 

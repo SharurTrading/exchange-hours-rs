@@ -3,18 +3,20 @@
 //! CME Nikkei 225 Dollar (`NKD`): every sourced close, halt and removal revision.
 
 use super::prelude::*;
+use chrono::NaiveDate;
 use exchange_hours::calendar_for_market_hours_key;
 
 /// CME Nikkei 225 Dollar moved 15:15 CT -> 16:15 CT (2012), kept 16:15 CT after
 /// the halt removal (2013), then moved to 16:00 CT (2015-09-20, CME Globex
 /// Notice #20150817). 21:10Z is 16:10 CT on a US summer date, so it is inside
-/// the session only while the close is 16:15 CT. Before 2012-11-18 the dated
-/// route serves the sourced pre-2012 grid — CME's own trading-hours pages give
-/// Electronic Trading (Sunday) "17:00-15:15" and (Weekday) "15:30-16:30,
-/// 17:00-15:15" — carried back to the January-2010 floor because no primary
-/// source names a cutover inside that interval.
+/// the session only while the close is 16:15 CT. Before 2010-04-11 the dated
+/// route serves the old daytime-anchored grid the operator's own equities-hours
+/// page prints — CST 02:00-15:15 and 15:30-16:30 (no Sunday hours) from the
+/// floor, CDT 03:00-15:15, 15:30-16:30 and the 17:00-18:00 tail (Sunday
+/// included) from the 2010-03-14 DST entry — and CME's Globex notice of
+/// 2010-04-05 dates the served continuous grid from that Sunday.
 #[test]
-fn nkd_close_tracks_its_three_sourced_revisions() {
+fn nkd_close_tracks_its_sourced_revisions() {
     let key = MarketHoursKey::GlobexNikkei225Dollar;
 
     // 18:30 CT on a Wednesday evening is inside the pre-2012 evening session,
@@ -39,21 +41,75 @@ fn nkd_close_tracks_its_three_sourced_revisions() {
         !open_at(key, utc(2013, 6, 19, 21, 20)),
         "SER-6465 pulled the close to 16:15 CT, so 16:20 CT must be closed after it"
     );
-    // The served grid is NOT carried to the audit floor. The 2010-01-01..
-    // 2010-04-10 era sits on the old grid — materially different,
-    // DST-dependent, with no Sunday session at all in CST (CME's 2010-03-10,
-    // 2010-04-02 and 2010-04-07 captures state it) — so serving the
-    // 17:00-15:15 continuous grid there would report the contract open all
-    // night when it was closed. That era is sessionless; the served grid's own
-    // start is dated by CME's Globex notice of 2010-04-05 (expanded Nikkei 225
-    // (Dollar) hours effective Sunday, April 11, 2010).
-    for probe in [utc(2010, 1, 6, 23, 30), utc(2010, 4, 9, 23, 30)] {
-        assert!(
-            !open_at(key, probe),
-            "2010 before 2010-04-11 sits on the unmodelled old grid and must be sessionless"
-        );
-    }
-    // ...and the grid is served from the notice's dated Sunday onward.
+    // The old grid's standard-time weekdays run 02:00-15:15 CT and 15:30-16:30
+    // CT, each on its own local day: CME's equities-hours page prints `CST:
+    // 02:00-15:15; reopens 15:30-16:30; closes 16:30` with `CST: No Sunday
+    // Hours`, so the 2010 winter mornings open at 02:00 CT and the day is over
+    // at 16:30 CT — nothing like the served grid's 17:00 CT evening open.
+    assert!(
+        open_at(key, utc(2010, 1, 6, 8, 0)),
+        "02:00 CT is the old grid's CST open (2010-01-06, a Wednesday)"
+    );
+    assert!(
+        !open_at(key, utc(2010, 1, 6, 7, 59)),
+        "one second before the 02:00 CT CST open is closed"
+    );
+    assert!(
+        open_at(key, utc(2010, 1, 6, 21, 14)),
+        "15:14 CT still trades ahead of the CST grid's 15:15 CT break"
+    );
+    assert!(
+        !open_at(key, utc(2010, 1, 6, 21, 20)),
+        "the 15:15-15:30 CT break matches nothing on the CST grid"
+    );
+    assert!(
+        open_at(key, utc(2010, 1, 6, 22, 29)),
+        "the CST grid's reopen runs to its 16:30 CT close"
+    );
+    assert!(
+        !open_at(key, utc(2010, 1, 6, 22, 30)),
+        "16:30 CT is the CST grid's final close, end-exclusive"
+    );
+    assert!(
+        !open_at(key, utc(2010, 1, 10, 16, 0)),
+        "the CST grid has no Sunday hours at all (2010-01-10, a Sunday)"
+    );
+    // From the 2010-03-14 DST entry the page's CDT spelling governs: three
+    // weekday runs (03:00-15:15, 15:30-16:30, and the 17:00-18:00 tail behind
+    // the 16:30-17:00 CT maintenance halt) plus the Sunday evening leg, which
+    // prints as the Sunday column's own `CDT: Opens 17:00-18:00`.
+    assert!(
+        !open_at(key, utc(2010, 3, 16, 7, 30)),
+        "02:30 CT is closed on the CDT grid, whose open moved to 03:00 CT"
+    );
+    assert!(
+        open_at(key, utc(2010, 3, 16, 8, 0)),
+        "03:00 CT is the CDT grid's open (2010-03-16, a Tuesday)"
+    );
+    assert!(
+        !open_at(key, utc(2010, 3, 16, 21, 35)),
+        "16:35 CT sits inside the CDT grid's 16:30-17:00 CT maintenance halt"
+    );
+    assert!(
+        open_at(key, utc(2010, 3, 16, 22, 30)),
+        "17:30 CT is inside the CDT grid's 17:00-18:00 CT tail"
+    );
+    assert!(
+        !open_at(key, utc(2010, 3, 16, 23, 0)),
+        "18:00 CT is the tail's end-exclusive close"
+    );
+    assert!(
+        open_at(key, utc(2010, 3, 14, 22, 30)),
+        "the DST regime's first Sunday leg runs 17:00-18:00 CT on 2010-03-14"
+    );
+    // ...and the served grid is NOT carried back over the old-grid era: its
+    // 17:00 CT Sunday open wraps into a 15:15 CT Monday close only from the
+    // notice's dated Sunday 2010-04-11. The old grid's last session opened
+    // Friday 2010-04-09 (its 17:00-18:00 CT tail); Saturday carries nothing.
+    assert!(
+        open_at(key, utc(2010, 4, 9, 22, 30)),
+        "the old grid's last session trades its Friday 17:00-18:00 CT tail"
+    );
     assert!(
         open_at(key, utc(2010, 4, 12, 23, 30)),
         "the served grid applies from the notice's effective Sunday 2010-04-11"
@@ -73,6 +129,116 @@ fn nkd_close_tracks_its_three_sourced_revisions() {
     assert!(
         !open_at(key, utc(2026, 6, 17, 21, 10)),
         "from 2015-09-20 the close is 16:00 CT, so 16:10 CT must be closed"
+    );
+}
+
+/// The old-grid era is keyed at venue-local midnights: the support floor
+/// (2010-01-01, the CST spelling), the 2010-03-14 DST entry (the CDT regime's
+/// first local opening day) and the notice-dated 2010-04-11 changeover. A
+/// snapshot selected one second either side of each midnight carries a
+/// different profile, fenced on an instant the two profiles disagree about.
+#[test]
+fn the_old_grid_and_changeover_are_keyed_at_venue_local_midnights() {
+    let key = MarketHoursKey::GlobexNikkei225Dollar;
+
+    // Floor: 2009-12-31 23:59 CT has no shipped row (below the timeline's
+    // first), 2010-01-01 00:00 CT carries the CST old grid. The disagreement
+    // instant is Tuesday 2010-01-05 02:30 CT: open on the CST grid, closed on
+    // anything the served grid would state.
+    let floor_day = hours_for_market_hours_key(key, utc(2010, 1, 1, 6, 0));
+    assert!(
+        floor_day.is_open(utc(2010, 1, 5, 8, 30)),
+        "the floor-day snapshot serves the CST old grid: 02:30 CT is inside 02:00-15:15"
+    );
+
+    // DST entry: 2010-03-13 23:59 CT selects the CST grid, 2010-03-14 00:00 CT
+    // selects the CDT grid. 02:30 local on Tuesday 2010-03-16 distinguishes
+    // them — open on the CST grid, closed on the CDT one.
+    let cst = hours_for_market_hours_key(key, utc(2010, 3, 14, 5, 59));
+    assert!(
+        cst.is_open(utc(2010, 3, 16, 7, 30)),
+        "the 2010-03-13 snapshot serves the CST grid: 02:30 CT is open"
+    );
+    let cdt = hours_for_market_hours_key(key, utc(2010, 3, 14, 6, 0));
+    assert!(
+        !cdt.is_open(utc(2010, 3, 16, 7, 30)),
+        "the 2010-03-14 snapshot serves the CDT grid: 02:30 CT is closed, the open is 03:00 CT"
+    );
+
+    // Changeover: 2010-04-10 23:59 CT (the old grid's last civil day, a
+    // Saturday) selects the CDT old grid; 2010-04-11 00:00 CT (the notice's
+    // Sunday) selects the served grid. Two instants distinguish them: Monday
+    // 02:30 CT is closed on the old grid (it opens 03:00 CT) and inside the
+    // served grid's Sunday-opened wrap; Sunday 18:30 CT is past the old grid's
+    // one-hour Sunday leg and inside the served grid's wrap.
+    let old = hours_for_market_hours_key(key, utc(2010, 4, 11, 4, 59));
+    assert!(
+        !old.is_open(utc(2010, 4, 12, 7, 30)),
+        "the 2010-04-10 snapshot serves the old grid: Monday 02:30 CT is closed"
+    );
+    assert!(
+        !old.is_open(utc(2010, 4, 11, 23, 30)),
+        "the 2010-04-10 snapshot serves the old grid: Sunday 18:30 CT is past its one-hour leg"
+    );
+    let served = hours_for_market_hours_key(key, utc(2010, 4, 11, 5, 0));
+    assert!(
+        served.is_open(utc(2010, 4, 12, 7, 30)),
+        "the 2010-04-11 snapshot serves the notice's grid: Monday 02:30 CT is inside the wrap"
+    );
+    assert!(
+        served.is_open(utc(2010, 4, 11, 23, 30)),
+        "the 2010-04-11 snapshot serves the notice's grid: Sunday 17:00 CT wraps into Monday"
+    );
+}
+
+/// President's Day 2010-02-15: the operator's own sheet carves the Nikkei out
+/// of the equity holiday pattern — `Exception: USD & JY denominated Nikkei
+/// will open at their regularly scheduled times of 02:00 & 05:00 Monday
+/// morning.` — so NKD trades its regular CST grid while the equity family
+/// halts at 10:30 CT, and the table ships no row for the day.
+#[test]
+fn presidents_day_2010_trades_the_nkd_instants_not_the_equity_pattern() {
+    let key = MarketHoursKey::GlobexNikkei225Dollar;
+    let nkd = calendar_for_market_hours_key(key);
+    let equity = calendar_for_market_hours_key(MarketHoursKey::GlobexEquityIndex);
+
+    // The 02:00 CT open is the NKD-specific instant the exception names (05:00
+    // is the yen contract's), and the day runs to the regular 16:30 CT close.
+    assert!(
+        nkd.is_open(utc(2010, 2, 15, 8, 0))
+            .expect("the coverage contract must answer a covered date"),
+        "02:00 CT is the excepted NKD open on 2010-02-15"
+    );
+    assert!(
+        !nkd.is_open(utc(2010, 2, 15, 7, 59))
+            .expect("the coverage contract must answer a covered date"),
+        "one second before the excepted open is closed"
+    );
+    assert!(
+        nkd.is_open(utc(2010, 2, 15, 16, 30))
+            .expect("the coverage contract must answer a covered date"),
+        "10:30 CT is an ordinary NKD trading minute: the equity halt is not its arrangement"
+    );
+    assert!(
+        !equity
+            .is_open(utc(2010, 2, 15, 16, 30))
+            .expect("the coverage contract must answer a covered date"),
+        "the equity family halts at 10:30 CT on the same day — the pattern NKD is excepted from"
+    );
+    assert!(
+        nkd.is_open(utc(2010, 2, 15, 22, 29))
+            .expect("the coverage contract must answer a covered date"),
+        "the regular 15:30-16:30 CT reopen still runs"
+    );
+    assert!(
+        !nkd.is_open(utc(2010, 2, 15, 22, 30))
+            .expect("the coverage contract must answer a covered date"),
+        "16:30 CT closes the holiday Monday exactly as it closes an ordinary day"
+    );
+    assert_eq!(
+        nkd.holiday_on(NaiveDate::from_ymd_opt(2010, 2, 15).expect("valid date")),
+        None,
+        "the table ships no row for 2010-02-15: the contract traded its regular grid"
     );
 }
 

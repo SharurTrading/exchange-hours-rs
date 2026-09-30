@@ -45,6 +45,24 @@ corrections (a venue's hours fixed against a primary source) go under
   date-aware calendar, and the ledger, coverage inventory and `sourcing.rs`
   move together. The "or 4:15 p.m." alternative is per-series ETP designation
   (`as specified by Nasdaq`), recorded beside the rows, never the venue grid.
+- **The `globex_nikkei_225_dollar` 2010 old grid models, the narrowed span
+  answers, and #225 closes (2026-09-30 UTC).** The old daytime-anchored grid
+  that governed 2010-01-01 through 2010-04-10 is modelled from the operator's
+  own equities-hours page — archived captures 2009-04-06 and 2010-04-02 print
+  the same `Nikkei 225 (Dollar) Futures` row in both DST spellings, `CST:
+  02:00-15:15; reopens 15:30-16:30; closes 16:30` with `No Sunday Hours`, and
+  `CDT: 03:00-15:15 | reopens 15:30-16:30; closes 16:30-17:00; reopens
+  17:00-18:00` with the Sunday `Opens 17:00-18:00` leg — as two profiles keyed
+  at the support floor and at the 2010-03-14 DST entry, with CME's own Globex
+  notice 20100405 ending the era at the session-opening Sunday 2010-04-11.
+  Both old-grid rows are T1. The first holiday window moves to the 2010-01-01
+  floor with the era's one closure — the New Year sheet's venue-wide `CME
+  Globex is closed` on 2010-01-01 — and the era's sheets are re-read per sheet:
+  the President's Day sheet excepts NKD onto its regular 02:00 CST open, the
+  Martin Luther King and Good Friday sheets name no Nikkei line, so those dates
+  are audited normal on the modelled grid. No unaudited interval remains inside
+  the claimed scope, the row's basis verdict moves to Primary, and issue #225
+  closes.
 - **The `globex_nikkei_225_dollar` served grid is dated to 2010-04-11 and the
   2010 holiday rows ship (2026-09-30 UTC; the first #225 closing condition).**
   CME's own weekly Globex notice of 2010-04-05 announces `Expanded Trading

@@ -23,10 +23,9 @@ const GOLDEN_GRIDS: &str = include_str!("../golden_grids.rs");
 /// `every_executable_gap_row_is_named_in_the_prose` also fails if a prefix
 /// stops matching any executable row, or if a written-out count beside a
 /// phrase disagrees with the ledger.
-const EXECUTABLE_COLLECTIVE_NAMES: [(&str, &str); 3] = [
+const EXECUTABLE_COLLECTIVE_NAMES: [(&str, &str); 2] = [
     ("ice_us_", "ICE Futures U.S. keys"),
     ("sgx_equity_index_", "SGX equity-index keys"),
-    ("globex_nikkei_225_dollar", "CME Nikkei 225 Dollar"),
 ];
 
 /// Flows hard-wrapped prose onto one line so a claim can straddle line breaks.

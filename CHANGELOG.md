@@ -33,6 +33,17 @@ corrections (a venue's hours fixed against a primary source) go under
   (2027 conflict unchanged), `xetra` (#200), `six` (2028 not published) and
   `nasdaq` — and no operator had published 2027 or 2028 material, so each
   evidence file records the fresh check date and the horizons stand.
+- **`nzx` 2016-2017 capture gap narrowed (2026-09-30 UTC).** The 2026-09-30
+  re-sweep with the Wayback CDX service working surfaced the operator's own
+  Derivatives trading-hours page of 2017-07-18 (`nzx.com/Derivatives/
+  trading_hours`), whose `Market Closed or Abbreviated Trading` table prints
+  the exchange closures retrospectively from Good Friday 2017-04-14 — the
+  same table the Main Board page carries, agreeing with the 2017-06-23 Main
+  Board capture on every shared date. Four `Closed` rows key to it
+  (`NZX-DX-2017-07-18`: 2017-04-14, 2017-04-17, 2017-04-25, 2017-06-05) and
+  the audited window resumes at 2017-04-14, re-joining the windows; #209's
+  gap shrinks to 2016-04-26..2017-04-13, whose closing condition sharpens to
+  a 2016 or early-2017 artifact.
 - **`tsx` 2010-2014 holiday history backfilled (2026-09-30 UTC).** The
   venue's built-in holiday table extends from the 2017-2026 audited window
   back over four audited windows — 2010-01-01..2011-10-10,

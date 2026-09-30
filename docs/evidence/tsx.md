@@ -46,7 +46,10 @@ may only widen).
 
 **2027 is not published.** The page's newest section is 2026; TMX historically adds the next
 year's calendar in Q4. Verified 2026-09-28: no 2027 list exists on the page or behind its
-"Settlement Schedule" links. Nothing past 2026-12-31 is claimed; **closing condition:** the
+"Settlement Schedule" links. Re-checked 2026-09-29 UTC: the fresh live read of the calendar
+page carries the 2026 list inline (its dates are in the page's own bytes) and zero `2027`
+mentions anywhere in those bytes (artifact under `holidays/raw/equities/tsx/forward-2027/`),
+so nothing past 2026-12-31 is claimed; **closing condition:** the
 operator's 2027 calendar section.
 
 **The Christmas Eve half days are the operator's own sentences.** From 2024 on each Christmas
@@ -255,4 +258,4 @@ own index, and `holidays/raw/equities/tsx/2010-2024/` holds the ten 2017-2025 ca
 - **Interpretive step, the Christmas Eve half.** The footnote states two closes — `1:00 PM (TSX/TSXV) and 1:30 (ALPHA/ALPHA X/DRK)`. The row encodes the TSX/TSXV 13:00 close because this identity is the Toronto Stock Exchange cash-equity venue; the ALPHA/ALPHA X/DRK book systems are separate order books, not part of this row's scope, and no TSX-listed session is clipped by their later close.
 - **No dated revision.** The reviewed grid holds for the whole audit window, so every instant resolves to the one profile. A sourced revision later replaces this with a real timeline row and needs no routing change. Closing condition for a future change: a TMX notice stating an unconditional day-level effective date.
 - **Holiday coverage gap, 2010-01-01..2016-12-31 (tracked as [#221](https://github.com/SharurTrading/exchange-hours-rs/issues/221)).** No capture of any TSX holiday page reaches those years: the 2018 relaunch path's first capture is 2018-09-11 and its archive section restates only 2017, and the CDX sweeps of the candidate pre-relaunch URLs returned nothing recoverable — with the caveat that the Wayback CDX service was down for most of 2026-09-29 UTC, so the domain-wide `holiday`/`calendar` filters could not complete. Queries before 2017-01-01 refuse rather than answer. Closing condition: a capture of any pre-relaunch TSX/TMX holiday page dated 2010-2016, the domain-wide CDX filters re-run when the archive service is stable, or the operator's re-publication of a historical calendar.
-- **Holiday horizon.** The audited holiday window stops at 2026-12-31 because the operator has published nothing past it (verified 2026-09-28). Closing condition: TMX's 2027 calendar section; the row is re-checked monthly per LAW-WATCH.
+- **Holiday horizon.** The audited holiday window stops at 2026-12-31 because the operator has published nothing past it (verified 2026-09-28; re-checked 2026-09-29 UTC with a fresh live read, zero 2027 mentions in the page's bytes). Closing condition: TMX's 2027 calendar section; the row is re-checked monthly per LAW-WATCH.

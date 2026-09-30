@@ -247,9 +247,12 @@ three load-bearing statements in the operator's own words:
 2027 treatment of the Chinese New Year, Christmas and New Year eves — whether
 any of them is a half day is exactly the fact statement 3 exists to make — so
 a 2027 date without a row could not be audited normal and the window cannot
-honestly extend. **Closing condition:** SGX's next annual securities schedule
-naming the 2027 half days, at which point the window extends. Re-checked
-monthly per LAW-WATCH.
+honestly extend. Re-checked 2026-09-29 UTC: the `SGX-ST-SCHED` content-api
+endpoint was read again and answered byte-identical bytes (same sha256
+`45dbdc61…`), so the sheet still scopes itself to 2025 & 2026 and the
+2027-01-01..2027-12-31 arrangement remains unpublished. **Closing condition:**
+SGX's next annual securities schedule naming the 2027 half days, at which
+point the window extends. Re-checked monthly per LAW-WATCH.
 
 **Tier.** The rows key at T2 because the artifact behind every row is the
 operator's own machine channel read as bytes (LAW-PRIMARY-SOURCES), which

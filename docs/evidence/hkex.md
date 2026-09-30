@@ -409,9 +409,11 @@ Severe-weather arrangements (typhoon signals, black-rain warnings) are condition
 
 **Recorded check, 2026-12-28.** The operator's 2026 table ends at `25/12/2026 (Friday) Christmas Day` in all three editions retrieved (2025-10-07, 2026-02-13 and live 2026-07-31), so no row ships for Monday 2026-12-28 and the crate answers it as an ordinary trading day. The operator's printing holds: Hong Kong's general holidays for 2026 name "the first weekday after Christmas Day" as **Saturday 26 December** (2026-12-28 is not a general holiday), so no conflict exists — the exchange schedule and the general-holiday list agree. A check against gov.hk's 2026 list was performed at review (2026-09-28 UTC); its bytes are the public gov.hk page. **Closing condition:** none — this is a verification record, not a gap; an HKEX table edition that adds a 2026-12-28 row becomes a schedule fix. Re-checked monthly per LAW-WATCH.
 
+**Forward horizon.** The window ends at 2027-12-31 because that is the operator's own publication horizon: the live edition (`HKEX-TC-2026-2027`, footer "Updated 31 Jul 2026") prints 2026 and 2027 complete and names nothing later. Re-checked 2026-09-29 UTC with a fresh live read (saved under `holidays/raw/equities/hkex/forward-2027/` in the research store, sha256 `5a04e139…`): the footer still reads "Updated 31 Jul 2026", the page's 2027 rows are unchanged, and the page names 2028 zero times, so no 2028 edition exists yet and nothing past 2027-12-31 is claimed. **Closing condition:** the operator's 2028 trading-calendar edition, at which point the window extends. Re-checked monthly per LAW-WATCH.
+
 ### Documents
 
-The 2025-2027 artifacts were retrieved on 2026-09-28 UTC and saved under `holidays/raw/equities/hkex/2025-2027/` in the research store; the 2010-2024 artifacts below were retrieved on 2026-09-29 UTC and saved under `holidays/raw/equities/hkex/2010-2024/`. The store's `INDEX.md` carries the same digests.
+The 2025-2027 artifacts were retrieved on 2026-09-28 UTC and saved under `holidays/raw/equities/hkex/2025-2027/` in the research store; the 2010-2024 artifacts below were retrieved on 2026-09-29 UTC and saved under `holidays/raw/equities/hkex/2010-2024/`; the 2026-09-29 forward-horizon re-check artifact lives under `holidays/raw/equities/hkex/forward-2027/`. Each directory's `INDEX.md` carries the same digests.
 
 | Document | Window | Replay or service URL | Capture or retrieval, UTC | Tier | sha256 |
 |---|---|---|---|---|---|

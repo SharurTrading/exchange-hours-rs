@@ -441,7 +441,14 @@ randomisation statement already carried by the normal-week profile.
 later 2027 date are outside the operator's published table, so the window
 ends at 2027-01-04 and the inventory records the forward gap. Dates inside
 the windows with no row are audited normal: each operator page names every
-holiday it observes in its span, and every printed date ships.
+holiday it observes in its span, and every printed date ships. Re-checked
+2026-09-29 UTC: the live trading-hours page was read again and answered
+byte-identical bytes (same sha256 `92071cd2…` as `NZX-TH-LIVE-2026-09-28`),
+so the operator's table still ends at 2027-01-04, and web search finds no 2027
+holiday-arrangement notice on the operator's channels. **Closing condition:**
+the operator republishing its trading-hours table with later dates, at which
+point the window extends to the table's own end. Re-checked monthly per
+LAW-WATCH.
 
 ### Documents
 

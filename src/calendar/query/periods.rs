@@ -38,6 +38,11 @@ fn latest_close_for_trade_date(
     kind: SessionKind,
     ceiling: Option<DateTime<Utc>>,
 ) -> Result<Option<DateTime<Utc>>, CalendarQueryError> {
+    // This scan describes `day` from the identity's own tables, so a date
+    // those tables withhold refuses instead of being described (LAW-COVERAGE;
+    // see `daily_close_for_trade_date` for why the gate sits below the
+    // caller-record path).
+    context.require_answerable(day)?;
     let weekday = day.weekday().num_days_from_monday() as usize;
     let today = context.profile_for_open_day(day);
     let mut latest = None;
@@ -86,6 +91,21 @@ fn latest_close_for_trade_date(
 /// blocks rather than from the normal-week neighbour scan below, whose
 /// one-day-either-side window cannot reach a block that opens several local
 /// days before its trade date.
+///
+/// The day is gated at [`latest_close_for_trade_date`], the normal-week
+/// derivation, not here: a caller record for a withheld date states the day
+/// itself, and the overlay contracts keep that observable — the composed
+/// daily bar over a replaced `Unsourced` date answers from the record
+/// (`a_day_policy_clips_a_replaced_trading_day`). The derivation, by
+/// contrast, describes the date from the identity's own tables, so a date
+/// those tables withhold must refuse rather than let the neighbour scan
+/// describe its normal week (LAW-COVERAGE). That refusal used to be an
+/// accident of the derivation's containment probes reaching the day; the
+/// per-occurrence gate window (issue #107) legitimately stopped most
+/// resolves from consulting it, which would have let `is_closed_trade_date`
+/// answer a withheld Muhurat Sunday from its normal week — an unsourced gap
+/// reported as a plain closure is precisely the failure LAW-COVERAGE exists
+/// to prevent.
 pub(in crate::calendar) fn daily_close_for_trade_date(
     context: &QueryContext<'_>,
     day: NaiveDate,

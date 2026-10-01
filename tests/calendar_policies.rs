@@ -471,10 +471,15 @@ fn closed_set_trade_date_removes_its_day_and_after_midnight_tail() {
         day(2025, 5, 8),
         "the following day's session",
     );
+    // The refusal names the queried day itself: the daily-close derivation
+    // answers a question *about* that day, so the day is gated at the entry
+    // (issue #107's per-occurrence window removed the accidental path that
+    // first touched the day the walk backed into). The identity's metadata
+    // declares no answer for 2025-05-07 either way.
     assert_outside_coverage(
         calendar.is_closed_trade_date(wednesday, SessionKind::Both),
         thailand,
-        day(2025, 5, 6),
+        day(2025, 5, 7),
         "the closed trade date's own close",
     );
 }

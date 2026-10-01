@@ -1271,13 +1271,23 @@ fn assert_unsourced_changes_nothing(date: NaiveDate, row: Holiday, tier: Evidenc
     // 2021-06-19 is a Saturday: the grid has no session on whether or not a
     // row exists, so the date-keyed query answers without reading the row.
     if matches!(date.weekday(), Weekday::Sat | Weekday::Sun) {
-        assert_eq!(
+        // A withheld weekend is still withheld (issue #107's explicit day
+        // gate): the closure question is asked *about* the date, so the
+        // attached identity refuses it rather than letting the normal week
+        // describe a day its row withholds — an unknown date is never a
+        // market closure. The detached grid keeps its NormalWeekOnly
+        // relaxation and answers from the sourced week, whose weekends
+        // carry no session for this family.
+        assert!(
             calendar
                 .is_closed_trade_date(date, SessionKind::Both)
-                .expect("the coverage contract must answer a covered date"),
+                .is_err_and(|error| matches!(error, CalendarQueryError::UnresolvedGap { .. })),
+            "{date}: a withheld date is refused, never reported closed"
+        );
+        assert!(
             detached
                 .is_closed_trade_date(date, SessionKind::Both)
-                .expect("the coverage contract must answer a covered date"),
+                .expect("the detached grid keeps its normal-week relaxation"),
             "{date}"
         );
     } else {

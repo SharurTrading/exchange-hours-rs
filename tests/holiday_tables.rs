@@ -852,18 +852,24 @@ fn the_gate_window_reaches_the_neighbouring_trade_dates() {
 // ---------------------------------------------------------------------------
 
 /// The narrowed window's premise: every session occurrence the crate ships is
-/// dated by its own opening local day or the next one.
+/// dated by its own opening local day or the next one — and one that closes on
+/// its own local day is dated by that day.
 ///
-/// `identity::trade_date_window` answers `[D, D + 1]` for an occurrence that a
-/// session opening on its own local day still closes after (issue #97), and
-/// that is only sound while this holds. Such an occurrence lies inside — or
-/// before the end of — a tradeable block that opened on its own local day, so
-/// the close walk stops at that block's own final close and the trade date it
-/// returns is that close's local date. The block opened no earlier than the
-/// session occurrence probed here, so a trade date more than one local day past
-/// the occurrence's own open is exactly the case the gate would miss: a layer
-/// record outside the window could still have moved it. A block longer than a
-/// local day fails here first.
+/// `identity::trade_date_window` answers `[D, D + 1]` for a wrapped occurrence
+/// that a session opening on its own local day still closes after, and `[D, D]`
+/// for one whose rule closes on its own local day (issue #107's per-occurrence
+/// window). Both are only sound while this holds. Such an occurrence lies
+/// inside — or before the end of — a tradeable block that opened on its own
+/// local day, so the close walk stops at that block's own final close and the
+/// trade date it returns is that close's local date. The block opened no earlier
+/// than the session occurrence probed here, so a trade date more than one local
+/// day past the occurrence's own open is exactly the case the gate would miss: a
+/// layer record outside the window could still have moved it. The `[D, D]`
+/// narrowing adds the block's own close bound: an occurrence whose resolved
+/// session closes on its open day cannot be dated by any later day, because the
+/// close-date default reads the walk's stop — which that close bounds. A block
+/// longer than a local day, or a convention that re-dates a non-wrapped leg,
+/// fails here first.
 ///
 /// The probe is the whole population of occurrence openings, not a sample:
 /// `next_session_open_after` enumerates every `Regular` and `Extended` rule
@@ -957,6 +963,32 @@ fn every_shipped_session_occurrence_is_dated_by_its_own_open_or_the_next_day() {
                         trade_date == opened || trade_date == next,
                         "{label}: the session opening {open} on {opened} carries {trade_date}"
                     );
+                    // The per-occurrence half (issue #107): an occurrence whose
+                    // resolved session closes on its own local day is dated by
+                    // that day. The gate answers `[D, D]` for it, so a
+                    // convention that re-dates a non-wrapped leg — or a block
+                    // chaining past its own close's local day — must fail here
+                    // before a record outside the window is silently lost.
+                    match calendar.session_bounds(open) {
+                        Ok(Some((session_open, session_close)))
+                            if session_open == open =>
+                        {
+                            let closes_on =
+                                session_close.with_timezone(&tz).date_naive();
+                            if closes_on == opened {
+                                assert!(
+                                    trade_date == opened,
+                                    "{label}: the session opening {open} closes on \
+                                     {opened} but carries {trade_date}"
+                                );
+                            }
+                        }
+                        // The bounds themselves are unanswerable or merged
+                        // behind a coalescing identity this fence excludes; the
+                        // wrap classification is then unavailable and the
+                        // two-day assertion above still stands.
+                        _ => {}
+                    }
                     dated += 1;
                 }
                 Ok(None) => undated += 1,

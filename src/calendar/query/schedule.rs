@@ -1050,7 +1050,8 @@ pub(super) fn resolve_rule_bounds(
     // This sits above the daily-close guard because all three of these branches
     // return the same unmodified bounds, and the guard resolves a profile to
     // answer.
-    if let Some((first, last)) = identity::trade_date_window(context, open_day, set, raw_open)
+    if let Some((first, last)) =
+        identity::trade_date_window(context, open_day, set, rule.wraps_to_next_day(), raw_open)
         && !context.any_layer_may_affect(first, last)
     {
         return Ok(Some((raw_open, raw_close)));

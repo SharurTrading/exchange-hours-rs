@@ -57,16 +57,22 @@ const DERIVED_AFTER: i64 = 19;
 /// question is therefore which trade dates this occurrence can carry, and there
 /// are two answers.
 ///
-/// **A self-dated occurrence takes `[D, D + 1]`.** When a `Regular` or
-/// `Extended` rule that is active on `open_day` still closes after `raw_open`,
-/// the occurrence lies inside — or before the end of — a tradeable block that
-/// opened on its own local day. The close walk then stops at that block's own
-/// final close, whose local date is the trade date, and no shipped session
-/// occurrence is dated more than one local day past its own open
+/// **A self-dated occurrence takes its own block end's date, and one further
+/// day only when its rule wraps.** When a `Regular` or `Extended` rule that is
+/// active on `open_day` still closes after `raw_open`, the occurrence lies
+/// inside — or before the end of — a tradeable block that opened on its own
+/// local day. The close walk then stops at that block's own final close, whose
+/// local date is the trade date, and no shipped session occurrence is dated
+/// more than one local day past its own open
 /// (`every_shipped_session_occurrence_is_dated_by_its_own_open_or_the_next_day`
-/// fences that), so the trade date is `D` or `D + 1`. The layers cannot move
-/// it: the walk runs over [`QueryContext::baseline`], which holds no layer at
-/// all, and the close-date default reads nothing but that walk.
+/// fences that). A rule that closes on its own local day cannot leave it: the
+/// block it belongs to ends on `open_day`, the trading day's final close is on
+/// `open_day`, and the close-date default answers `open_day` — so the window is
+/// `[D, D]` and a probe in that occurrence pays the derivation only when a row
+/// sits on its own date (issue #107). The one-day reach is kept exactly for the
+/// wrapped evening leg, whose close legitimately lands on `D + 1`. The layers
+/// cannot move it: the walk runs over [`QueryContext::baseline`], which holds
+/// no layer at all, and the close-date default reads nothing but that walk.
 ///
 /// A tradeable rule answers that question with its own close, so the test costs
 /// nothing on the session path; an order-entry rule is not a session and the
@@ -91,12 +97,23 @@ pub(super) fn trade_date_window(
     context: &QueryContext<'_>,
     open_day: NaiveDate,
     set: RuleSet,
+    wraps: bool,
     raw_open: DateTime<Utc>,
 ) -> Option<(NaiveDate, NaiveDate)> {
     if assigns_by_close_date(context) && is_self_dated(context, open_day, set, raw_open) {
+        // A non-wrapped tradeable occurrence is dated by its own open day; the
+        // extra day exists only for the rule whose close lands on the following
+        // local date. An order-entry occurrence reached by *another* day's
+        // session keeps the full `[D, D + 1]`: that session may be the wrapped
+        // evening leg.
+        let after = if !wraps && matches!(set, RuleSet::Sessions(_)) {
+            0
+        } else {
+            SELF_DATED_AFTER
+        };
         return Some((
             open_day,
-            open_day.checked_add_signed(Duration::days(SELF_DATED_AFTER))?,
+            open_day.checked_add_signed(Duration::days(after))?,
         ));
     }
     let (before, after) = match context.identity() {

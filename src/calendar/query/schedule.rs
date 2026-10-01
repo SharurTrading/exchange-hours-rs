@@ -566,6 +566,37 @@ impl<'a> QueryContext<'a> {
                 .is_some_and(|table| table.may_affect(day, day))
     }
 
+    /// Returns whether any layer's replacement blocks can reach the inclusive
+    /// local-day span `first..=last` — meaning a record keyed so that one of
+    /// its blocks can open on a day inside it.
+    ///
+    /// This is the cheap pre-filter in front of the two block walks
+    /// ([`replacement::governs_instant`](super::replacement::governs_instant)
+    /// and [`replacement::find_occurrence`](super::replacement::find_occurrence)),
+    /// which otherwise probe record tables once per candidate trade date on
+    /// every resolved occurrence. It answers **false only when no block can
+    /// exist**: a `false` here always means the walks would find nothing, so
+    /// skipping them cannot move an answer (LAW-INVARIANT). A caller's
+    /// exception provider answers from its own
+    /// [`may_affect`](crate::SessionExceptionSource::may_affect) (issue #127),
+    /// so an audited-normal provider no longer keeps the full walk alive; an
+    /// implementation that does not track its records defaults to `true` and
+    /// keeps today's walk. The built-in table, whose rows the crate ships and
+    /// fences, is asked over its block rows alone.
+    pub(super) fn replacement_blocks_may_reach(self, first: NaiveDate, last: NaiveDate) -> bool {
+        if !self.replacement_layer {
+            return false;
+        }
+        if let Some(provider) = self.exceptions
+            && provider.may_affect(first, last)
+        {
+            return true;
+        }
+        self.builtin_blocks
+            && self
+                .holidays
+                .is_some_and(|table| table.blocks_may_affect(first, last))
+    }
     /// Returns whether any attached layer can hold a record in `first..=last`.
     ///
     /// This is the coverage gate. It runs before any trading-day derivation, so
@@ -573,22 +604,34 @@ impl<'a> QueryContext<'a> {
     /// table and nothing else — which is what lets a built-in table sit on the
     /// consumer's hot path (LAW-HOLIDAY-SCOPE).
     ///
-    /// A caller's [`DayPolicy`] is opaque, so it always answers `true`; giving
-    /// the trait a coverage question of its own is a named follow-up, not a
-    /// wave-0 API addition. A caller's exception provider publishes a coverage
-    /// window and is gated on it, except that a provider claiming **no**
-    /// coverage is treated as possibly relevant rather than trusted to return
-    /// nothing: the trait documents that contract but cannot enforce it, and a
-    /// missed exception is worse than a missed optimisation.
+    /// A caller's [`DayPolicy`] answers from its own
+    /// [`may_affect`](crate::DayPolicy::may_affect), which defaults to `true`
+    /// for an implementation that does not track its span and is one binary
+    /// search for [`StaticDayPolicy`](crate::StaticDayPolicy) (issue #94). A
+    /// caller's exception provider is gated on its coverage window **and** on
+    /// its own [`may_affect`](crate::SessionExceptionSource::may_affect)
+    /// (issue #127): a window only states where records may lie, so a
+    /// provider whose records sit elsewhere — or that audited a window and
+    /// found nothing — must no more force the derivation than an unattached
+    /// layer. A provider claiming **no** coverage is still treated as
+    /// possibly relevant rather than trusted to return nothing: the trait
+    /// documents that contract but cannot enforce it, and a missed exception
+    /// is worse than a missed optimisation.
     fn any_layer_may_affect(self, first: NaiveDate, last: NaiveDate) -> bool {
-        if self.policy.is_some() {
+        if self
+            .policy
+            .is_some_and(|policy| policy.may_affect(first, last))
+        {
             return true;
         }
         if let Some(provider) = self.exceptions {
             match provider.coverage() {
                 None => return true,
                 Some(coverage) => {
-                    if coverage.first() <= last && first <= coverage.last() {
+                    if coverage.first() <= last
+                        && first <= coverage.last()
+                        && provider.may_affect(first, last)
+                    {
                         return true;
                     }
                 }
@@ -949,8 +992,17 @@ pub(super) fn find_occurrence<T>(
             // neighbouring trade date's occurrence too, so the normal scan
             // yields to the replacement scan below instead of answering with a
             // session `trade_date_for_bounds` does not assign to that block
-            // (#130).
-            if replacement::governs_instant(context, bounds, set) {
+            // (#130). The occurrence's own opening day and wrap bound the
+            // local days its window can touch — a clip only ever shortens it —
+            // so the reach test needs no fresh resolution of the bounds, and a
+            // day no block is keyed near skips the walk entirely (issue #125).
+            if replacement::governs_instant(
+                context,
+                bounds,
+                set,
+                open_day,
+                rule.wraps_to_next_day(),
+            ) {
                 continue;
             }
             if let Some(found) = probe(bounds.0, bounds.1) {
@@ -1071,14 +1123,16 @@ pub(super) fn resolve_rule_bounds(
     // dates this occurrence can be assigned to is bounded by the identity's own
     // conventions, so ask every layer whether it holds a record in that window
     // before paying for any of it. When a session opening on this day still
-    // reaches `raw_open` the occurrence is dated by its own trading day and the
-    // window is `[D, D + 1]`; otherwise it is the close walk's own reach,
-    // `[D - 1, D + 19]` — see
+    // reaches `raw_open` the occurrence is dated by its own trading day: a
+    // rule closing on its own local day is dated by that day alone, `[D, D]`,
+    // and a wrapping one by `[D, D + 1]`; otherwise the window is the close
+    // walk's own reach, `[D - 1, D + 19]` — see
     // [`identity::trade_date_window`](super::identity::trade_date_window).
     // This sits above the daily-close guard because all three of these branches
     // return the same unmodified bounds, and the guard resolves a profile to
     // answer.
-    if let Some((first, last)) = identity::trade_date_window(context, open_day, set, raw_open)
+    if let Some((first, last)) =
+        identity::trade_date_window(context, open_day, set, rule.wraps_to_next_day(), raw_open)
         && !context.any_layer_may_affect(first, last)
     {
         return Ok(Some((raw_open, raw_close)));

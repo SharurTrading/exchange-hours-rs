@@ -40,10 +40,11 @@
 use chrono::{DateTime, Days, NaiveDate, TimeDelta, TimeZone, Utc};
 use chrono_tz::US;
 use exchange_hours::{
-    CalendarQueryError, CalendarResolution, CalendarSource, DateCoverage, DayOverride, DayPolicy,
-    Exchange, ExchangeCalendar, Holiday, HolidayKind, MarketHoursKey, PolicyCalendar,
-    SUPPORT_FLOOR, SessionExceptionRecord, SessionKind, StaticDayPolicy, StaticSessionExceptions,
-    calendar_for_exchange, calendar_for_market_hours_key,
+    CalendarQueryError, CalendarResolution, CalendarSource, DateCoverage, DateException,
+    DayOverride, DayPolicy, ExceptionCoverage, Exchange, ExchangeCalendar, Holiday, HolidayKind,
+    MarketHoursKey, PolicyCalendar, SUPPORT_FLOOR, SessionExceptionRecord, SessionExceptionSource,
+    SessionKind, StaticDayPolicy, StaticSessionExceptions, calendar_for_exchange,
+    calendar_for_market_hours_key,
 };
 
 fn day(year: i32, month: u32, date: u32) -> NaiveDate {
@@ -170,17 +171,17 @@ fn agree<T: PartialEq + std::fmt::Debug>(
     }
 }
 
-/// Asserts that an overlay-carrying calendar stands in that relation to the bare
-/// one over a dense instant grid.
+/// Asserts the relation the coverage contract permits between an overlay and
+/// the bare calendar over a dense instant grid.
 ///
-/// The comparison is over the `Result`s rather than over unwrapped answers. Two
-/// premises of the original fence no longer hold and are stated here rather than
-/// left implicit: an identity-backed query refuses the dates it cannot source,
-/// and on a date one of them withholds — CME's `Unsourced` dates, for instance —
-/// the overlaid path can need that day while the bare path does not, so an
-/// *empty* provider can change a refusal without changing a schedule. The strict
-/// claim that survives is that no answer may differ and no overlay may answer
-/// where the bare calendar refuses; see [`agree`].
+/// The comparison is over the `Result`s rather than over unwrapped answers.
+/// An identity-backed query refuses the dates it cannot source, and the
+/// *forced* reference below — the provider the gate cannot see through —
+/// makes the overlaid derivation ask about more of the trade date's span
+/// than the bare path does, so on a date one of them withholds the overlaid
+/// path can refuse where the bare calendar answers. The strict claims that
+/// survive are that no answer may differ and no overlay may answer where the
+/// bare calendar refuses; see [`agree`].
 fn assert_agrees(
     label: &str,
     overlaid: PolicyCalendar<'_>,
@@ -520,8 +521,13 @@ fn policy_calendar_mirrors_the_builtin_accessors() {
 ///
 /// A provider whose window is remote must be gated out, and a provider whose
 /// window covers the grid must not be — and both must answer exactly as the
-/// bare calendar, because neither holds a record. Divergence in the first case
-/// is an unsound gate; divergence in the second is an unsound overlay path.
+/// bare calendar, because neither holds a record. Since issue #127 the gate
+/// also asks the provider's own `may_affect`, so an audited-normal provider is
+/// a no-op even when its window covers the queried date: the derivation is
+/// skipped and the answer is the bare calendar's by construction, which is
+/// what makes the second half of this fence an exact-agreement case rather
+/// than a forced-derivation comparison. Divergence in the first case is an
+/// unsound gate; divergence in the second is an unsound overlay path.
 ///
 /// This is the weaker half of the pair. It probes one fortnight on which none
 /// of these identities carries a row, so it cannot detect an unsound gate
@@ -561,33 +567,71 @@ fn attaching_an_irrelevant_exception_provider_changes_no_answer() {
 /// in the relation [`agree`] states: **no answer may differ**, and the overlay
 /// may never answer where the bare calendar refuses.
 ///
-/// The reference is an empty `StaticSessionExceptions` whose coverage spans the
-/// sweep: it holds no record, so it can change no answer of its own, but it
-/// makes `any_layer_may_affect` true for every candidate day, so the full
-/// trading-day derivation — and with it the built-in clip — runs at every
-/// instant. A gate window narrower than what the derivation can actually derive
-/// therefore shows up here as a divergence, which is what makes the §2.3 window
-/// claim true rather than hoped.
+/// The reference is a provider whose coverage spans the sweep and whose
+/// records are empty, but that keeps the trait's **default** `may_affect` —
+/// the *possibly* answer. It holds no record, so it can change no answer of
+/// its own, and the gate it cannot see through makes the full trading-day
+/// derivation — and with it the built-in clip — run at every instant. The
+/// comparison therefore validates the fact every gate window rests on: a
+/// derivation over days no record touches is answer-neutral. A window is
+/// then sound exactly while its span covers the trade dates that derivation
+/// can reach, which the population walk
+/// `every_shipped_session_occurrence_is_dated_by_its_own_open_or_the_next_day`
+/// fences occurrence by occurrence, and
+/// `the_gate_window_reaches_the_neighbouring_trade_dates` fences at the
+/// edges.
 ///
-/// **What Stage 2B changed here, stated plainly.** Two premises of the original
-/// fence no longer hold. First, the pre-floor half of every window is a refusal
-/// on both sides (LAW-COVERAGE), so it is probed once per local day — the floor
-/// is a date gate — and the intraday grid runs where the gate derives an answer.
-/// Second, and more seriously, the strict claim that an *empty* provider changes
-/// no answer is false on a date the identity withholds: the overlaid derivation
-/// asks whether a layer could have moved the day the containing session opened
-/// on, and when that day is `Unsourced` the overlay refuses where the bare
-/// calendar answers (observed on `Exchange::Cme` at 2025-01-03T06:12Z, refusing
-/// `UnresolvedGap` on 2025-01-02). That divergence is recorded here, not hidden:
-/// [`agree`] accepts it in the one direction it occurs, and the bare path — which
-/// answers a question that may depend on a withheld day without checking it — is
-/// the side under suspicion. The intraday step is four hours rather than the
-/// original 43 minutes so the sweep stays affordable; every phase of every day
-/// is still sampled, and the phase boundaries themselves are fenced by the
-/// per-family row tests.
+/// **Why the reference is not `StaticSessionExceptions` any more.** Until the
+/// record-level gate shipped, an empty static table opened the gate for its
+/// window, so it served as the forcing reference. Issue #127 made an empty
+/// provider a true no-op — its own `may_affect` answers `false` for every
+/// window, so a coverage window alone can no longer force the derivation and
+/// flip an answer on a date the identity withholds (the `Exchange::Cme`
+/// divergence this fence used to accept in one direction is gone; see
+/// `tests/session_exceptions.rs::an_empty_provider_changes_no_answer_on_a_withheld_date`).
+/// The forcing reference therefore models the caller the gate genuinely cannot
+/// see through, and the empty static provider joins the *weaker* fence above as
+/// an exact-agreement case.
+///
+/// **What Stage 2B changed here, stated plainly.** The pre-floor half of every
+/// window is a refusal on both sides (LAW-COVERAGE), so it is probed once per
+/// local day — the floor is a date gate — and the intraday grid runs where the
+/// gate derives an answer. The overlaid derivation asks about more of the
+/// trade date's span than the bare one, so on a date the identity withholds
+/// the overlaid path can still refuse where the bare calendar answers; that
+/// refusal is accepted only in the one direction and only when it names a day
+/// the identity does not declare complete.
 #[test]
 fn the_coverage_gate_is_sound_for_every_shipped_row() {
-    static NO_RECORDS: [SessionExceptionRecord<'static>; 0] = [];
+    /// A provider the gate cannot see through: the trait's default
+    /// `may_affect` answers *possibly* for every window, so the full
+    /// derivation runs everywhere. Its answers are exactly an empty
+    /// audited-normal table's.
+    struct OpaqueProvider {
+        source: CalendarSource,
+        coverage: ExceptionCoverage,
+    }
+
+    impl SessionExceptionSource for OpaqueProvider {
+        fn source(&self) -> CalendarSource {
+            self.source
+        }
+
+        fn coverage(&self) -> Option<ExceptionCoverage> {
+            Some(self.coverage)
+        }
+
+        fn exception_on(&self, trade_date: NaiveDate) -> DateException<'_> {
+            if self.coverage.contains(trade_date) {
+                DateException::KnownNormal
+            } else {
+                DateException::OutOfCoverage
+            }
+        }
+
+        // `may_affect` is deliberately left at the trait default: `true` for
+        // every window is the whole point of this reference.
+    }
 
     let mut tabled = 0_usize;
     for (label, calendar) in every_calendar() {
@@ -595,21 +639,22 @@ fn the_coverage_gate_is_sound_for_every_shipped_row() {
             continue;
         };
         tabled += 1;
-        let reference_window = StaticSessionExceptions::new(
-            calendar.source(),
-            coverage
-                .first()
-                .checked_sub_days(Days::new(30))
-                .expect("the reference window stays representable"),
-            coverage
-                .last()
-                .checked_add_days(Days::new(30))
-                .expect("the reference window stays representable"),
-            &NO_RECORDS,
-        )
-        .expect("an empty record slice is valid");
+        let reference = OpaqueProvider {
+            source: calendar.source(),
+            coverage: ExceptionCoverage::new(
+                coverage
+                    .first()
+                    .checked_sub_days(Days::new(30))
+                    .expect("the reference window stays representable"),
+                coverage
+                    .last()
+                    .checked_add_days(Days::new(30))
+                    .expect("the reference window stays representable"),
+            )
+            .expect("the reference window is ordered"),
+        };
         let ungated = calendar
-            .with_session_exceptions(&reference_window)
+            .with_session_exceptions(&reference)
             .expect("the reference is scoped to this calendar");
 
         // Adjacent rows — Thanksgiving Thursday through Saturday, Christmas Eve
@@ -852,18 +897,24 @@ fn the_gate_window_reaches_the_neighbouring_trade_dates() {
 // ---------------------------------------------------------------------------
 
 /// The narrowed window's premise: every session occurrence the crate ships is
-/// dated by its own opening local day or the next one.
+/// dated by its own opening local day or the next one — and one that closes on
+/// its own local day is dated by that day.
 ///
-/// `identity::trade_date_window` answers `[D, D + 1]` for an occurrence that a
-/// session opening on its own local day still closes after (issue #97), and
-/// that is only sound while this holds. Such an occurrence lies inside — or
-/// before the end of — a tradeable block that opened on its own local day, so
-/// the close walk stops at that block's own final close and the trade date it
-/// returns is that close's local date. The block opened no earlier than the
-/// session occurrence probed here, so a trade date more than one local day past
-/// the occurrence's own open is exactly the case the gate would miss: a layer
-/// record outside the window could still have moved it. A block longer than a
-/// local day fails here first.
+/// `identity::trade_date_window` answers `[D, D + 1]` for a wrapped occurrence
+/// that a session opening on its own local day still closes after, and `[D, D]`
+/// for one whose rule closes on its own local day (issue #107's per-occurrence
+/// window). Both are only sound while this holds. Such an occurrence lies
+/// inside — or before the end of — a tradeable block that opened on its own
+/// local day, so the close walk stops at that block's own final close and the
+/// trade date it returns is that close's local date. The block opened no earlier
+/// than the session occurrence probed here, so a trade date more than one local
+/// day past the occurrence's own open is exactly the case the gate would miss: a
+/// layer record outside the window could still have moved it. The `[D, D]`
+/// narrowing adds the block's own close bound: an occurrence whose resolved
+/// session closes on its open day cannot be dated by any later day, because the
+/// close-date default reads the walk's stop — which that close bounds. A block
+/// longer than a local day, or a convention that re-dates a non-wrapped leg,
+/// fails here first.
 ///
 /// The probe is the whole population of occurrence openings, not a sample:
 /// `next_session_open_after` enumerates every `Regular` and `Extended` rule
@@ -957,6 +1008,29 @@ fn every_shipped_session_occurrence_is_dated_by_its_own_open_or_the_next_day() {
                         trade_date == opened || trade_date == next,
                         "{label}: the session opening {open} on {opened} carries {trade_date}"
                     );
+                    // The per-occurrence half (issue #107): an occurrence whose
+                    // resolved session closes on its own local day is dated by
+                    // that day. The gate answers `[D, D]` for it, so a
+                    // convention that re-dates a non-wrapped leg — or a block
+                    // chaining past its own close's local day — must fail here
+                    // before a record outside the window is silently lost.
+                    match calendar.session_bounds(open) {
+                        Ok(Some((session_open, session_close))) if session_open == open => {
+                            let closes_on = session_close.with_timezone(&tz).date_naive();
+                            if closes_on == opened {
+                                assert!(
+                                    trade_date == opened,
+                                    "{label}: the session opening {open} closes on \
+                                     {opened} but carries {trade_date}"
+                                );
+                            }
+                        }
+                        // The bounds themselves are unanswerable or merged
+                        // behind a coalescing identity this fence excludes; the
+                        // wrap classification is then unavailable and the
+                        // two-day assertion above still stands.
+                        _ => {}
+                    }
                     dated += 1;
                 }
                 Ok(None) => undated += 1,

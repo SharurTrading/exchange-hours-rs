@@ -29,9 +29,9 @@
 //! `overlay_layers` is the matrix that decides whether a built-in table can sit
 //! on the consumer's hot path. It measures the bare calendar, the
 //! `without_holidays` control, and a caller's two layers in the two states that
-//! matter — a coverage window the queried date falls outside, which the gate
-//! answers with one binary search, and a window it falls inside, which pays for
-//! the full trading-day derivation.
+//! matter — a coverage window (or record span) the queried date falls outside,
+//! which the gate answers with one binary search, and records the queried date
+//! falls beside, which pay for the full trading-day derivation.
 //!
 //! `cold_axis` reproduces the consumer's cold chart frame: 4,999 `is_open`
 //! probes plus one daily close over a 5,000-point window. That is the figure
@@ -198,8 +198,10 @@ fn overlay_layers(criterion: &mut Criterion) {
     let Ok(on_date_policy) = StaticDayPolicy::new(&on_date) else {
         return;
     };
-    // A caller record far from the queried date. The policy trait publishes no
-    // coverage window, so this is the state the gate cannot yet help with.
+    // A caller record far from the queried date. The policy's own
+    // `may_affect` (issue #94) lets the gate exit here, so this is the row the
+    // ≤ 2x target names: the overlay must cost the bare calendar's gate plus
+    // one binary search, not the trading-day derivation.
     let elsewhere = [DayOverride::early_close(remote_first, 12 * 3_600)];
     let Ok(elsewhere_policy) = StaticDayPolicy::new(&elsewhere) else {
         return;
@@ -210,7 +212,10 @@ fn overlay_layers(criterion: &mut Criterion) {
     else {
         return;
     };
-    // ... and one whose window it falls inside, with no record in it.
+    // ... and one whose window it falls inside, with no record in it: the
+    // provider's own `may_affect` (issue #127) lets the gate exit here too,
+    // so this pair shows an audited-normal provider is a no-op on the hot
+    // path rather than a forced derivation.
     let Ok(covering_table) = StaticSessionExceptions::new(source, remote_first, covered, &[])
     else {
         return;

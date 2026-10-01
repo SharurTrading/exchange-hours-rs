@@ -8,7 +8,7 @@ use chrono_tz::Tz;
 use super::periods::{daily_close_for_trade_date, next_daily_close_after_with};
 use super::schedule::QueryContext;
 use super::sessions::{
-    containing_session_with, contains_in_session_with, next_session_after_with,
+    containing_session_with, contains_in_session_on, next_session_after_with,
     previous_session_before_with,
 };
 use crate::calendar::CalendarQueryError;
@@ -23,14 +23,21 @@ pub(in crate::calendar) fn is_open_with(
     instant: DateTime<Utc>,
     kind: SessionKind,
 ) -> Result<bool, CalendarQueryError> {
+    // The venue-local day is resolved once and shared: the containment probe
+    // and the floor check below are both facts about this one day, and
+    // resolving it twice put a second timezone walk on the crate's hottest
+    // query (issue #125).
+    let day = bounded_utc(instant, context.tz())
+        .with_timezone(&context.tz())
+        .date_naive();
     // An in-range instant whose session opened before the floor is still
     // answered whole (the plan permits retaining earlier context), so the
     // containment probe runs first. A **negative** answer then has to pass the
     // floor: it may be negative only because the floor withheld the day that
     // would have said otherwise, and LAW-COVERAGE forbids reporting that as a
     // closure.
-    let open = contains_in_session_with(context, instant, kind)?;
-    context.require_floor_at(instant)?;
+    let open = contains_in_session_on(context, instant, day, kind)?;
+    context.require_floor(Some(day))?;
     Ok(open)
 }
 

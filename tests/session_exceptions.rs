@@ -2933,3 +2933,106 @@ fn a_block_opening_two_days_early_still_governs_its_own_instant() {
         "and carry its own trade date"
     );
 }
+
+/// The coverage question the engine's gate asks
+/// (`SessionExceptionSource::may_affect`, issue #127): `true` exactly when a
+/// record is keyed inside the inclusive window, one binary search wide.
+#[test]
+fn may_affect_answers_whether_a_record_is_keyed_inside_the_window() {
+    static NO_RECORDS: [SessionExceptionRecord<'static>; 0] = [];
+    let records = [
+        SessionExceptionRecord::closed(day(2026, 6, 16)),
+        SessionExceptionRecord::known_normal(day(2026, 6, 20)),
+    ];
+    let table = StaticSessionExceptions::new(
+        CalendarSource::MarketHoursKey(MarketHoursKey::GlobexGrains),
+        day(2026, 6, 1),
+        day(2026, 6, 30),
+        &records,
+    )
+    .expect("valid records");
+
+    // Windows that hold no record, on both sides of the span.
+    assert!(!table.may_affect(day(2026, 6, 1), day(2026, 6, 15)));
+    assert!(!table.may_affect(day(2026, 6, 17), day(2026, 6, 19)));
+    assert!(!table.may_affect(day(2026, 6, 21), day(2026, 6, 30)));
+    // Single-day windows on each record, and windows that touch their edges.
+    assert!(table.may_affect(day(2026, 6, 16), day(2026, 6, 16)));
+    assert!(table.may_affect(day(2026, 6, 20), day(2026, 6, 20)));
+    assert!(table.may_affect(day(2026, 6, 1), day(2026, 6, 16)));
+    assert!(table.may_affect(day(2026, 6, 20), day(2026, 6, 30)));
+    assert!(table.may_affect(day(2026, 6, 1), day(2026, 6, 30)));
+    // An audited-normal table holds nothing anywhere.
+    let empty = StaticSessionExceptions::new(
+        CalendarSource::MarketHoursKey(MarketHoursKey::GlobexGrains),
+        day(2026, 6, 1),
+        day(2026, 6, 30),
+        &NO_RECORDS,
+    )
+    .expect("an empty record slice is valid");
+    assert!(!empty.may_affect(day(2026, 6, 1), day(2026, 6, 30)));
+}
+
+/// An empty provider is a no-op — on a date the identity withholds too
+/// (issue #127).
+///
+/// `Exchange::Cme` withholds Thursday 2025-01-02 as `Unsourced`. Friday
+/// 2025-01-03 00:12 CT sits in the overnight gap, and the bare calendar
+/// answers `next_session_after` for it from Friday's own rules. Attaching a
+/// provider whose coverage window spans the date used to force the full
+/// trading-day derivation, whose close walk stepped back over the withheld
+/// Thursday and refused `UnresolvedGap` for it — a provider with no record
+/// for any date changed an answer purely by naming a wider window. The gate
+/// now asks the provider's own `may_affect`, and an audited-normal provider
+/// answers `false` for every window: a window states where records may lie,
+/// and a window alone can never move an answer.
+#[test]
+fn an_empty_provider_changes_no_answer_on_a_withheld_date() {
+    static NO_RECORDS: [SessionExceptionRecord<'static>; 0] = [];
+
+    let calendar = calendar_for_exchange(Exchange::Cme);
+    let instant = utc((2025, 1, 3), (6, 12, 0));
+    let bare = calendar
+        .next_session_after(instant)
+        .expect("the coverage contract must answer a covered date");
+    assert_eq!(
+        bare,
+        Some((
+            utc((2025, 1, 3), (14, 30, 0)),
+            utc((2025, 1, 3), (21, 15, 0))
+        )),
+        "the repro needs the bare calendar answering from Friday's own rules"
+    );
+
+    let provider = StaticSessionExceptions::new(
+        CalendarSource::Exchange(Exchange::Cme),
+        day(2009, 12, 2),
+        day(2028, 1, 30),
+        &NO_RECORDS,
+    )
+    .expect("an empty record slice is valid");
+    let overlaid = calendar
+        .with_session_exceptions(&provider)
+        .expect("the fixture is scoped to this calendar");
+
+    assert_eq!(
+        overlaid.next_session_after(instant).ok().flatten(),
+        bare,
+        "an empty provider changed next_session_after on a withheld date"
+    );
+    assert_eq!(
+        overlaid.is_open(instant).ok(),
+        calendar.is_open(instant).ok(),
+        "an empty provider changed is_open on a withheld date"
+    );
+    assert_eq!(
+        overlaid.session_bounds(instant).ok().flatten(),
+        calendar.session_bounds(instant).ok().flatten(),
+        "an empty provider changed session_bounds on a withheld date"
+    );
+    assert_eq!(
+        overlaid.trade_date(instant).ok().flatten(),
+        calendar.trade_date(instant).ok().flatten(),
+        "an empty provider changed trade_date on a withheld date"
+    );
+}

@@ -47,8 +47,8 @@ use super::prelude::*;
 use chrono::{Datelike as _, TimeDelta, TimeZone as _, Utc};
 use chrono_tz::{America, Asia, Australia, Europe, Pacific};
 use exchange_hours::{
-    CalendarQueryError, CalendarResolution, Exchange, ExchangeCalendar, Holiday, HolidayKind,
-    SessionKind, calendar_for_exchange,
+    CalendarQueryError, CalendarResolution, DateCoverage, Exchange, ExchangeCalendar, Holiday,
+    HolidayKind, SessionKind, calendar_for_exchange,
 };
 
 fn day(year: i32, month: u32, date: u32) -> NaiveDate {
@@ -1406,17 +1406,34 @@ fn borsa_istanbul_closures_per_year_match_the_operators_printed_tables() {
         (2025, 8, 30),
         (2026, 8, 30),
     ] {
+        let date = day(date.0, date.1, date.2);
         assert_eq!(
-            calendar.holiday_on(day(date.0, date.1, date.2)),
+            calendar.holiday_on(date),
             None,
             "a Saturday or Sunday holiday needs no row in a Mon-Fri week: {date:?}"
         );
-        assert!(
-            calendar
-                .is_closed_trade_date(day(date.0, date.1, date.2), SessionKind::Both)
-                .expect("the coverage contract must answer a covered date"),
-            "{date:?} is shut by the normal week"
-        );
+        // The closure question is asked *about* the date, so where the
+        // identity's own metadata declares the date complete the answer is
+        // the normal week's shutdown, and where it does not the query
+        // refuses naming that date (issue #107's explicit day gate — the
+        // same verdict `is_open` on the date already stated).
+        if calendar.coverage().coverage_on(date) == DateCoverage::Covered {
+            assert!(
+                calendar
+                    .is_closed_trade_date(date, SessionKind::Both)
+                    .expect("the coverage contract must answer a covered date"),
+                "{date:?} is shut by the normal week"
+            );
+        } else {
+            let error = calendar
+                .is_closed_trade_date(date, SessionKind::Both)
+                .expect_err("an incomplete date refuses its closure question");
+            assert_eq!(
+                error.date(),
+                date,
+                "{date:?}: the refusal must name the queried date"
+            );
+        }
     }
 }
 

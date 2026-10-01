@@ -311,9 +311,10 @@ pub(crate) struct HolidayTable {
     /// Whether any row carries a replacement block set.
     ///
     /// Decided during constant evaluation rather than by walking the rows per
-    /// query: the replacement scan is gated on this, so a table shipping no
-    /// block row must not pay for that scan, and one that ships a row must not
-    /// pay a table walk to discover it.
+    /// query: the replacement scan and the per-occurrence block gate read this
+    /// bit first, so a table shipping no block row must not pay for either,
+    /// and one that ships a row pays a bounded search over the rows of the
+    /// asked-for window alone.
     pub(crate) has_blocks: bool,
 }
 
@@ -325,6 +326,28 @@ impl HolidayTable {
     /// kind off the hot path until Stage 4 ships a row that uses it.
     pub(crate) const fn carries_replacement_blocks(&self) -> bool {
         self.has_blocks
+    }
+
+    /// Returns whether any replacement block row is keyed inside the inclusive
+    /// window `first..=last`.
+    ///
+    /// This is the block-row sibling of [`Self::may_affect`]: one partition
+    /// point over the sorted rows plus a scan of the window's own rows,
+    /// allocation-free and with no trading-day derivation behind it. A table
+    /// with no block row answers `false` from the constant-evaluated bit
+    /// without touching the rows; a table with rows pays a binary search and
+    /// then only the handful of rows the window itself holds, so a date
+    /// nowhere near a merged or Saturday arrangement costs no more than a
+    /// scalar-row lookup.
+    pub(crate) fn blocks_may_affect(&self, first: NaiveDate, last: NaiveDate) -> bool {
+        if !self.has_blocks {
+            return false;
+        }
+        let start = self.rows.partition_point(|row| row.trade_date < first);
+        self.rows[start..]
+            .iter()
+            .take_while(|row| row.trade_date <= last)
+            .any(|row| matches!(row.kind, HolidayKind::ReplacementBlocks(_)))
     }
 
     /// Returns the audited trade-date windows.

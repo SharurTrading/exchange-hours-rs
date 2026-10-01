@@ -1248,18 +1248,30 @@ fn assert_unsourced_changes_nothing(date: NaiveDate, row: Holiday, tier: Evidenc
     assert_eq!(row.kind(), HolidayKind::Unsourced, "{date}");
     assert_eq!(row.tier(), tier, "{date}");
     // An `Unsourced` row closes nothing: the withheld row contributes no clip,
-    // so the trade-date query reads the ordinary week and the detached grid
-    // agrees row for row. 2021-06-19 is a Saturday, which the grid has no
-    // session on whether or not a row exists, so the strict claim is made
-    // where the family could trade and the equality claim where it could not.
+    // so the detached grid reads the ordinary week. The attached identity
+    // refuses the date and every derivation that reads it as `UnresolvedGap` —
+    // never as a claimed closure — and the date-keyed closure question is
+    // asked *about* the date, so the strict claim holds on a withheld weekend
+    // too (issue #107's explicit day gate); the detached grid keeps its
+    // NormalWeekOnly relaxation and answers from the sourced week.
     if matches!(date.weekday(), Weekday::Sat | Weekday::Sun) {
-        assert_eq!(
+        // A withheld weekend is still withheld (issue #107's explicit day
+        // gate): the closure question is asked *about* the date, so the
+        // attached identity refuses it rather than letting the normal week
+        // describe a day its row withholds — an unknown date is never a
+        // market closure. The detached grid keeps its NormalWeekOnly
+        // relaxation and answers from the sourced week, whose weekends
+        // carry no session for this family.
+        assert!(
             calendar
                 .is_closed_trade_date(date, SessionKind::Both)
-                .expect("the coverage contract must answer a covered date"),
+                .is_err_and(|error| matches!(error, CalendarQueryError::UnresolvedGap { .. })),
+            "{date}: a withheld date is refused, never reported closed"
+        );
+        assert!(
             detached
                 .is_closed_trade_date(date, SessionKind::Both)
-                .expect("the coverage contract must answer a covered date"),
+                .expect("the detached grid keeps its normal-week relaxation"),
             "{date}"
         );
     } else {

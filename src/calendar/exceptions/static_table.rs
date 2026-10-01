@@ -305,6 +305,21 @@ impl SessionExceptionSource for StaticSessionExceptions<'_> {
     fn exception_on(&self, trade_date: NaiveDate) -> DateException<'_> {
         StaticSessionExceptions::exception_on(*self, trade_date)
     }
+
+    /// One partition point over the validated, sorted records — the same shape
+    /// the built-in table's gate answers from. A provider that audited a
+    /// window and recorded nothing (an empty slice) answers `false` for every
+    /// window, which is what makes it a true no-op on the engine's hot path
+    /// (issue #127): the engine must not derive a trading day — and refuse on
+    /// a day that derivation reaches — for a provider that can move nothing.
+    fn may_affect(&self, first: NaiveDate, last: NaiveDate) -> bool {
+        let start = self
+            .records
+            .partition_point(|record| record.trade_date < first);
+        self.records
+            .get(start)
+            .is_some_and(|record| record.trade_date <= last)
+    }
 }
 
 /// A [`StaticSessionExceptions`] record-set invariant violation.

@@ -72,7 +72,7 @@ criterion = { version = "0.8.2", default-features = false, features = ["cargo_be
 # Test-only: the Documents digest fence recomputes each artifact's sha256 from
 # the research store's bytes. Never linked into the library, so
 # LAW-DETERMINISM is untouched.
-sha2 = "0.10.9"
+sha2 = "0.11.0"
 serde_json = "1.0.151"
 serde_test = "1.0.177"
 

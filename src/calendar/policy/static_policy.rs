@@ -244,6 +244,21 @@ impl DayPolicy for StaticDayPolicy<'_> {
         self.override_on(trade_date)
             .and_then(DayOverride::late_open_ssm)
     }
+
+    /// One partition point over the validated, sorted records — the same shape
+    /// the built-in table's gate answers from (issue #94). A queried trading
+    /// day nowhere near a record therefore costs the engine's gate one binary
+    /// search instead of the full trading-day derivation, which is what kept a
+    /// far-from-the-date [`StaticDayPolicy`] at ~15x the bare calendar's
+    /// `is_open` cost.
+    fn may_affect(&self, first: NaiveDate, last: NaiveDate) -> bool {
+        let start = self
+            .overrides
+            .partition_point(|record| record.trade_date < first);
+        self.overrides
+            .get(start)
+            .is_some_and(|record| record.trade_date <= last)
+    }
 }
 
 /// A [`StaticDayPolicy`] record-set invariant violation.

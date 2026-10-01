@@ -60,6 +60,29 @@ pub trait DayPolicy: Send + Sync {
     fn late_open_ssm(&self, _trade_date: NaiveDate) -> Option<u32> {
         None
     }
+
+    /// Returns whether this policy holds any record that can land on a trade
+    /// date in the inclusive window `first..=last`.
+    ///
+    /// This is the coverage question the query engine's gate asks before it
+    /// derives a trading day: the overlay can only change an occurrence's
+    /// answer by holding a record for a trade date that occurrence could be
+    /// assigned to, so a policy answering `false` for the whole window lets
+    /// the query finish at the bare calendar's cost. The default answer is
+    /// `true` — *possibly*, which keeps the derivation — so an implementation
+    /// that does not track its own span behaves exactly as it did before this
+    /// method existed, and every existing implementation stays
+    /// source-compatible.
+    ///
+    /// Returning `false` for a window that in fact holds a record is a
+    /// soundness bug in the implementation, not a tunable: the engine will
+    /// skip the derivation and serve the unmodified normal week for an
+    /// occurrence the record should have moved. [`StaticDayPolicy`] answers
+    /// from one binary search over its validated, sorted records.
+    fn may_affect(&self, first: NaiveDate, last: NaiveDate) -> bool {
+        let _ = (first, last);
+        true
+    }
 }
 
 /// A policy that leaves every normal-week session unchanged.
@@ -73,6 +96,12 @@ impl DayPolicy for NoPolicy {
 
     fn early_close_ssm(&self, _trade_date: NaiveDate) -> Option<u32> {
         None
+    }
+
+    /// No record anywhere: the policy can never affect an answer, so the
+    /// engine's gate may always skip its derivation.
+    fn may_affect(&self, _first: NaiveDate, _last: NaiveDate) -> bool {
+        false
     }
 }
 

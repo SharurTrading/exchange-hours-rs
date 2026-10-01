@@ -600,15 +600,17 @@ impl<'a> QueryContext<'a> {
     /// table and nothing else — which is what lets a built-in table sit on the
     /// consumer's hot path (LAW-HOLIDAY-SCOPE).
     ///
-    /// A caller's [`DayPolicy`] is opaque, so it always answers `true`; giving
-    /// the trait a coverage question of its own is a named follow-up, not a
-    /// wave-0 API addition. A caller's exception provider publishes a coverage
-    /// window and is gated on it, except that a provider claiming **no**
-    /// coverage is treated as possibly relevant rather than trusted to return
-    /// nothing: the trait documents that contract but cannot enforce it, and a
-    /// missed exception is worse than a missed optimisation.
+    /// A caller's [`DayPolicy`] answers from its own
+    /// [`may_affect`](crate::DayPolicy::may_affect), which defaults to `true`
+    /// for an implementation that does not track its span and is one binary
+    /// search for [`StaticDayPolicy`](crate::StaticDayPolicy) (issue #94). A
+    /// caller's exception provider publishes a coverage window and is gated on
+    /// it, except that a provider claiming **no** coverage is treated as
+    /// possibly relevant rather than trusted to return nothing: the trait
+    /// documents that contract but cannot enforce it, and a missed exception
+    /// is worse than a missed optimisation.
     fn any_layer_may_affect(self, first: NaiveDate, last: NaiveDate) -> bool {
-        if self.policy.is_some() {
+        if self.policy.is_some_and(|policy| policy.may_affect(first, last)) {
             return true;
         }
         if let Some(provider) = self.exceptions {

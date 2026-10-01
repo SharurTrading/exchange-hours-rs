@@ -13,7 +13,9 @@ use crate::calendar::local_time::{bounded_utc, mk_local_close, mk_local_open};
 use crate::calendar::policy::DayPolicy;
 use crate::calendar::rule::{SessionKind, SessionRule};
 use crate::calendar::schedules::holidays::{Holiday, HolidayKind, HolidayTable};
-use crate::calendar::{CalendarQueryError, CalendarResolution, CalendarSource, SUPPORT_FLOOR};
+use crate::calendar::{
+    CalendarQueryError, CalendarResolution, CalendarSource, SUPPORT_FLOOR, SessionState,
+};
 
 use super::{candles, identity, replacement};
 
@@ -816,6 +818,73 @@ impl<'a> QueryContext<'a> {
     }
 }
 
+/// Collapses the shared engine's `Result` for a **detached fixed snapshot**.
+///
+/// The fixed-snapshot adapters (`MarketHours`' own predicates and the free
+/// `session_bounds` / `candle_end` family) answer `Option`/`bool`/`SessionState`
+/// with no error channel, while the engine they run returns a
+/// `Result` carrying [`CalendarQueryError`]. This trait is the one place the
+/// two meet, and it is sound because of how [`QueryContext`] is built, not
+/// because the branch looks impossible:
+///
+/// - every `CalendarQueryError` the engine produces is made in one of
+///   [`QueryContext::require_answerable`], [`QueryContext::require_floor`],
+///   [`QueryContext::require_floor_at`] or
+///   [`QueryContext::require_phase_coverage`], each of which returns `Ok` when
+///   the context carries no coverage metadata; or in the period walk's
+///   `SearchExhausted` site, which returns `Ok(None)` when the context has no
+///   identity to attribute the exhaustion to;
+/// - [`QueryContext::fixed`] sets `coverage: None`, and `coverage` is `None`
+///   exactly when the source is [`ProfileSource::Fixed`], so a fixed context
+///   can reach neither gate; and
+/// - the field is private and the three constructors in this module are the
+///   only ways to build a context.
+///
+/// A future error variant produced outside those gates would silently report a
+/// coverage failure as market absence here. That is the invariant's known
+/// maintenance cost, recorded as
+/// [#245](https://github.com/SharurTrading/exchange-hours-rs/issues/245) (from
+/// the LAW-INVARIANT audit, #210): the required outcome is a compile-time
+/// split that makes the collapse unrepresentable. The
+/// `fixed_snapshot_collapse_fence` test pins the observable consequence on
+/// every shipped identity meanwhile.
+///
+/// The collapse itself is the adapters' documented contract, not a swallowed
+/// failure: a detached snapshot carries no identity, claims no coverage
+/// (LAW-COVERAGE), and its `None`/`false` answers mean "the supplied rules say
+/// so" — bounded-search absence and unresolved rules included (LAW-PANIC).
+pub(in crate::calendar) trait FixedSnapshotAnswer {
+    /// The adapter-surface answer the engine result collapses to.
+    type Answer;
+
+    /// Collapses the engine result; see the trait's own documentation.
+    fn fixed_answer(self) -> Self::Answer;
+}
+
+impl<T> FixedSnapshotAnswer for Result<Option<T>, CalendarQueryError> {
+    type Answer = Option<T>;
+
+    fn fixed_answer(self) -> Self::Answer {
+        self.unwrap_or(None)
+    }
+}
+
+impl FixedSnapshotAnswer for Result<bool, CalendarQueryError> {
+    type Answer = bool;
+
+    fn fixed_answer(self) -> Self::Answer {
+        self.unwrap_or(false)
+    }
+}
+
+impl FixedSnapshotAnswer for Result<SessionState, CalendarQueryError> {
+    type Answer = SessionState;
+
+    fn fixed_answer(self) -> Self::Answer {
+        self.unwrap_or(SessionState::Closed)
+    }
+}
+
 /// Visits every effective occurrence opening on `open_day`, newest layer last.
 ///
 /// `probe` receives resolved `(open, close)` bounds and returns `Some` to stop
@@ -1090,7 +1159,12 @@ fn clamp_to_clip(
         // The trading day's own first open decides which local date a late-open
         // wall clock belongs to, and it is needed only on this branch — late
         // opens are rare, so it is derived here rather than beside the final
-        // close above.
+        // close above. The walk runs on `baseline()`, which carries no layer
+        // and holds the rule this occurrence resolves from, so `None` would
+        // mean the first open cannot be derived at the representable calendar's
+        // edge; anchoring at this occurrence's own resolved open then keeps the
+        // cutoff on the opening day it was derived from. It is a real value in
+        // the same derivation, never an invented one.
         let first_open = candles::candle_start_with(
             &context.baseline(),
             raw_open,

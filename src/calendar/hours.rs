@@ -22,6 +22,7 @@ use chrono::{DateTime, NaiveDate, Utc};
 use chrono_tz::Tz;
 
 use super::exchange_calendar::CalendarSource;
+use super::query::schedule::FixedSnapshotAnswer;
 use super::query::{QueryContext, status, week};
 use super::{Exchange, SessionKind, SessionRule, SessionState};
 
@@ -201,10 +202,12 @@ impl MarketHours {
     /// [`DayPolicy`](super::DayPolicy) when day-level overrides are required.
     #[must_use]
     pub fn is_open_with(&self, t: DateTime<Utc>, kind: SessionKind) -> bool {
-        // A detached fixed snapshot carries no identity, so no day can be refused:
-        // the error arm is unreachable by construction (LAW-COVERAGE governs
-        // identity-backed queries; this profile is exactly its supplied rules).
-        status::is_open_with(&QueryContext::fixed(self), t, kind).unwrap_or(false)
+        // A detached fixed snapshot carries no identity, so no day can be
+        // refused: the error arm cannot fire, and `fixed_answer` documents the
+        // mechanism that makes that true rather than asserting it here
+        // (LAW-COVERAGE governs identity-backed queries; this profile is
+        // exactly its supplied rules).
+        status::is_open_with(&QueryContext::fixed(self), t, kind).fixed_answer()
     }
 
     /// True if a **regular** (primary/RTH) session is open at `t`.
@@ -240,8 +243,9 @@ impl MarketHours {
     /// rather than inserting synthetic maintenance rules.
     #[must_use]
     pub fn is_maintenance(&self, t: DateTime<Utc>) -> bool {
-        // See `is_open_with`: a fixed snapshot has no coverage verdict to fail.
-        status::is_maintenance(&QueryContext::fixed(self), t).unwrap_or(false)
+        // See `is_open_with` and `fixed_answer`: a fixed snapshot has no
+        // coverage verdict to fail.
+        status::is_maintenance(&QueryContext::fixed(self), t).fixed_answer()
     }
 
     /// Returns one mutually exclusive open, halt, maintenance, or closed state.
@@ -252,8 +256,9 @@ impl MarketHours {
     /// longer closures are [`SessionState::Closed`].
     #[must_use]
     pub fn session_state(&self, t: DateTime<Utc>) -> SessionState {
-        // See `is_open_with`: a fixed snapshot has no coverage verdict to fail.
-        status::session_state(&QueryContext::fixed(self), t).unwrap_or(SessionState::Closed)
+        // See `is_open_with` and `fixed_answer`: a fixed snapshot has no
+        // coverage verdict to fail.
+        status::session_state(&QueryContext::fixed(self), t).fixed_answer()
     }
 
     /// Return true iff the market is closed for the entire **calendar day** `day`
@@ -276,9 +281,10 @@ impl MarketHours {
         calendar_tz: Tz,
         kind: SessionKind,
     ) -> bool {
-        // See `is_open_with`: a fixed snapshot has no coverage verdict to fail.
+        // See `is_open_with` and `fixed_answer`: a fixed snapshot has no
+        // coverage verdict to fail.
         status::is_closed_all_day_in_calendar(&QueryContext::fixed(self), day, calendar_tz, kind)
-            .unwrap_or(false)
+            .fixed_answer()
     }
 
     /// Convenience: interpret the date in the **exchange TZ** (what your old
@@ -298,8 +304,9 @@ impl MarketHours {
         calendar_tz: Tz,
         kind: SessionKind,
     ) -> bool {
-        // See `is_open_with`: a fixed snapshot has no coverage verdict to fail.
+        // See `is_open_with` and `fixed_answer`: a fixed snapshot has no
+        // coverage verdict to fail.
         status::is_closed_all_day_at(&QueryContext::fixed(self), ts_utc, calendar_tz, kind)
-            .unwrap_or(false)
+            .fixed_answer()
     }
 }

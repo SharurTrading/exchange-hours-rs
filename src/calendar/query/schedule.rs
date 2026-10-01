@@ -585,7 +585,9 @@ impl<'a> QueryContext<'a> {
         if !self.replacement_layer {
             return false;
         }
-        if self.exceptions.is_some() {
+        if let Some(provider) = self.exceptions
+            && provider.may_affect(first, last)
+        {
             return true;
         }
         self.builtin_blocks
@@ -604,20 +606,30 @@ impl<'a> QueryContext<'a> {
     /// [`may_affect`](crate::DayPolicy::may_affect), which defaults to `true`
     /// for an implementation that does not track its span and is one binary
     /// search for [`StaticDayPolicy`](crate::StaticDayPolicy) (issue #94). A
-    /// caller's exception provider publishes a coverage window and is gated on
-    /// it, except that a provider claiming **no** coverage is treated as
+    /// caller's exception provider is gated on its coverage window **and** on
+    /// its own [`may_affect`](crate::SessionExceptionSource::may_affect)
+    /// (issue #127): a window only states where records may lie, so a
+    /// provider whose records sit elsewhere — or that audited a window and
+    /// found nothing — must no more force the derivation than an unattached
+    /// layer. A provider claiming **no** coverage is still treated as
     /// possibly relevant rather than trusted to return nothing: the trait
     /// documents that contract but cannot enforce it, and a missed exception
     /// is worse than a missed optimisation.
     fn any_layer_may_affect(self, first: NaiveDate, last: NaiveDate) -> bool {
-        if self.policy.is_some_and(|policy| policy.may_affect(first, last)) {
+        if self
+            .policy
+            .is_some_and(|policy| policy.may_affect(first, last))
+        {
             return true;
         }
         if let Some(provider) = self.exceptions {
             match provider.coverage() {
                 None => return true,
                 Some(coverage) => {
-                    if coverage.first() <= last && first <= coverage.last() {
+                    if coverage.first() <= last
+                        && first <= coverage.last()
+                        && provider.may_affect(first, last)
+                    {
                         return true;
                     }
                 }

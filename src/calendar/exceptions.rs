@@ -264,6 +264,34 @@ pub trait SessionExceptionSource: Send + Sync {
     /// Dates inside [`Self::coverage`] with no recorded exception return
     /// [`DateException::KnownNormal`].
     fn exception_on(&self, trade_date: NaiveDate) -> DateException<'_>;
+
+    /// Returns whether this provider holds any record keyed inside the
+    /// inclusive window `first..=last`.
+    ///
+    /// This is the coverage question the query engine's gate asks before it
+    /// derives a trading day: the provider can only change an occurrence's
+    /// answer by holding a record for a trade date that occurrence could be
+    /// assigned to, so a provider answering `false` for the whole window lets
+    /// the query finish at the bare calendar's cost — exactly as if no
+    /// provider were attached. The default answer is `true` — *possibly*,
+    /// which keeps the derivation — so an implementation that does not track
+    /// its own records behaves exactly as it did before this method existed,
+    /// and every existing implementation stays source-compatible.
+    ///
+    /// Returning `false` for a window that in fact holds a record is a
+    /// soundness bug in the implementation, not a tunable: the engine will
+    /// skip the derivation and serve the unmodified normal week for an
+    /// occurrence the record should have moved. [`StaticSessionExceptions`]
+    /// answers from one binary search over its validated, sorted records, so
+    /// an empty record set — a provider that audited a window and found it
+    /// normal — answers `false` for every window. That is what makes an
+    /// audited-normal provider a true no-op (issue #127): a coverage window
+    /// states where records may lie, and a window alone can never change an
+    /// answer.
+    fn may_affect(&self, first: NaiveDate, last: NaiveDate) -> bool {
+        let _ = (first, last);
+        true
+    }
 }
 
 /// A [`SessionExceptionSource`] attached to a calendar with another identity.

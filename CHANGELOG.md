@@ -13,6 +13,21 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Fixed
 
+- **An empty `SessionExceptions` provider changes no answer — on a date the
+  identity withholds too (2026-10-01 UTC; closes #127).** Attaching a
+  provider whose coverage window spanned a withheld date used to force the
+  full trading-day derivation, whose walk could step over a day the identity
+  withholds and refuse `UnresolvedGap` where the bare calendar answered
+  (`Exchange::Cme`, Friday 2025-01-03 00:12 CT, the derivation naming the
+  withheld Thursday 2025-01-02). A provider with no record says nothing about
+  any date, and a window only states where records may lie, so the coverage
+  gate now asks the provider's own `SessionExceptionSource::may_affect`
+  (defaulting to `true` for implementations that do not track their records):
+  an audited-normal `StaticSessionExceptions` answers `false` for every
+  window and is a true no-op, answer for answer and refusal for refusal. The
+  gate-soundness fence's forcing reference becomes a provider that keeps the
+  trait's default answer, so it still exercises the derivation everywhere.
+
 - **The family evidence files' aggregate prose re-derives from the per-date
   tables (2026-09-30 UTC; #232).** The four Globex family files each stated a
   whole-table total their later waves outran — `globex_equity_index` 217,
@@ -853,6 +868,36 @@ maintenance contract described in the README and schedule verification ledger.
 
 ### Changed
 
+- **The query engine's hot path recovers the block-row tax, the coverage gate
+  consults caller records instead of windows, and the per-occurrence window
+  narrows to the occurrence's own close (2026-10-01 UTC; fixes #125, closes
+  #94, closes #107).** `is_open`'s regular minute had regressed to 1.76 µs on
+  the reference machine — 7.0x the 250 ns measured at the self-dated-narrowing
+  head — from two compounding causes, and both are fixed without moving a
+  single answer. The replacement-block machinery
+  (`governs_instant`'s per-occurrence walk and the replacement scan) now
+  answers from a bounded, allocation-free pre-filter — a partition point over
+  block rows for the built-in table, the provider's own record question for
+  callers — instead of probing every candidate trade date per rule occurrence,
+  and `is_open` resolves its venue-local day once instead of twice; together
+  those recover the containment path to 895 ns (1.97x). The coverage gate
+  asks each attached layer — `DayPolicy::may_affect` and
+  `SessionExceptionSource::may_affect`, both provided methods defaulting to
+  `true`, overridden by `StaticDayPolicy`, `StaticSessionExceptions` and
+  `NoPolicy` — whether it holds any record keyed inside the occurrence's
+  trade-date window,
+  so a caller layer whose records sit elsewhere — or an audited-normal
+  provider whose window merely spans the date — costs one binary search
+  instead of the full trading-day derivation. And a session rule that closes
+  on its own local day is dated by that day, so its gate window is `[D, D]`
+  rather than `[D, D + 1]` (`every_shipped_session_occurrence_is_dated_by_its_own_open_or_the_next_day`
+  now fences the per-occurrence premise over the whole 2010-2028 sweep); the
+  daily-close derivation gates the day it answers for explicitly, which turns
+  the old accidental refusals on withheld dates into the uniform contract the
+  charter states — a question about a date the identity withholds refuses
+  (`is_closed_trade_date` on a withheld weekend now refuses instead of
+  reporting the normal week's closure; the era fences' weekend arms move to
+  the refusal they should always have stated).
 - **Declared coverage gaps become date-scoped and phase-shaped (2026-09-28 UTC) —
   #172.** `PhaseGap` carries a start bound ([`PhaseGap::since`]) and an
   applicability shape ([`PhaseGapShape`]) beside its end bound, so a declaration

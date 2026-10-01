@@ -157,6 +157,18 @@ pub(super) fn find_occurrence<T>(
     if !context.has_replacement_layer() {
         return None;
     }
+    // Every block this scan could find is keyed to a trade date in
+    // `[open_day, open_day + 7]`: a block's offset places its opening day at
+    // `key + offset` with `offset` in `[-7, 0]`, so a block opening on
+    // `open_day` carries a key of `open_day - offset`. A date no record is
+    // keyed near skips the offset loop entirely. The pre-filter is exact in
+    // its `false` direction: no block can exist, so answering `None` here is
+    // the scan's own answer (issue #125).
+    let reach_last =
+        open_day.checked_add_signed(Duration::days(i64::from(-ExceptionBlock::MIN_DAY_OFFSET)))?;
+    if !context.replacement_blocks_may_reach(open_day, reach_last) {
+        return None;
+    }
     let mut offset = ExceptionBlock::MIN_DAY_OFFSET;
     while offset <= ExceptionBlock::MAX_DAY_OFFSET {
         if let Some(trade_date) = open_day.checked_sub_signed(Duration::days(i64::from(offset)))
@@ -210,12 +222,43 @@ pub(super) fn find_occurrence<T>(
 /// Resolution decides containment rather than a raw wall-clock comparison, so
 /// the test inherits the block's own wrap, DST bias and `DayPolicy` clip: a
 /// block the policy removed governs nothing.
+///
+/// `open_day` and `wraps` are the occurrence's own opening local day and
+/// whether its rule closes on the following one. A clip only ever shortens an
+/// occurrence, so those two facts bound the local days `window` can touch, and
+/// the per-day record pre-filter
+/// ([`QueryContext::replacement_blocks_may_reach`]) runs on them before either
+/// timezone resolution below. A day no block is keyed near — every day of every
+/// table that ships no reachable block row — answers `false` without the walk
+/// that a shipped merged-trade-date arrangement otherwise re-derives per rule
+/// occurrence (issue #125); a `false` from the pre-filter is therefore exact,
+/// not an estimate.
 pub(super) fn governs_instant(
     context: &QueryContext<'_>,
     window: (DateTime<Utc>, DateTime<Utc>),
     set: RuleSet,
+    open_day: chrono::NaiveDate,
+    wraps: bool,
 ) -> bool {
     if !context.has_replacement_layer() {
+        return false;
+    }
+    // A block meeting this occurrence is keyed to a trade date in
+    // `[first_day + MIN, last_day - MIN]` = `[first_day - 7, last_day + 7]`
+    // (see the exact walk below). The occurrence's own opening day bounds both
+    // window days — a clip only ever shortens it, so `first_day >= open_day`
+    // and `last_day <= close_day = open_day + (wraps ? 1 : 0)` — which makes
+    // `[open_day - 7, open_day + 7 (+ 1)]` a superset of that key span, and
+    // the pre-filter below sees every key date the exact walk could ask for.
+    let Some(reach_first) =
+        open_day.checked_sub_signed(Duration::days(i64::from(-ExceptionBlock::MIN_DAY_OFFSET)))
+    else {
+        return false;
+    };
+    let Some(reach_last) = open_day.checked_add_signed(Duration::days(7 + i64::from(wraps))) else {
+        return false;
+    };
+    if !context.replacement_blocks_may_reach(reach_first, reach_last) {
         return false;
     }
     let (window_open, window_close) = window;

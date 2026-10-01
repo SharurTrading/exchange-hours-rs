@@ -76,10 +76,9 @@ fn coalesce_same_kind(
 fn containing_occurrence_of_kind(
     context: &QueryContext<'_>,
     instant: DateTime<Utc>,
+    day: chrono::NaiveDate,
     kind: SessionKind,
 ) -> Result<Option<SessionBounds>, CalendarQueryError> {
-    let tz = context.tz();
-    let day = bounded_utc(instant, tz).with_timezone(&tz).date_naive();
     let hit = |open: DateTime<Utc>, close: DateTime<Utc>| {
         (open <= instant && instant < close).then_some((open, close))
     };
@@ -106,26 +105,37 @@ fn containing_concrete_kind(
     instant: DateTime<Utc>,
     kind: SessionKind,
 ) -> Result<Option<SessionBounds>, CalendarQueryError> {
-    containing_occurrence_of_kind(context, instant, kind)?
+    let day = bounded_utc(instant, context.tz())
+        .with_timezone(&context.tz())
+        .date_naive();
+    containing_occurrence_of_kind(context, instant, day, kind)?
         .map(|candidate| coalesce_same_kind(context, candidate, kind))
         .transpose()
 }
 
-pub(super) fn contains_in_session_with(
+/// [`is_open`'s](crate::ExchangeCalendar::is_open) containment probe over a
+/// caller-resolved venue-local day.
+///
+/// `is_open` resolves the day once for both the containment probe and its own
+/// floor check, so the crate's hottest query performs one timezone walk where
+/// two used to run (issue #125). The answers are identical: the day is a pure
+/// function of the instant and the context's zone.
+pub(super) fn contains_in_session_on(
     context: &QueryContext<'_>,
     instant: DateTime<Utc>,
+    day: chrono::NaiveDate,
     kind: SessionKind,
 ) -> Result<bool, CalendarQueryError> {
     let found = match kind {
         SessionKind::Regular => {
-            containing_occurrence_of_kind(context, instant, SessionKind::Regular)?
+            containing_occurrence_of_kind(context, instant, day, SessionKind::Regular)?
         }
         SessionKind::Extended => {
-            containing_occurrence_of_kind(context, instant, SessionKind::Extended)?
+            containing_occurrence_of_kind(context, instant, day, SessionKind::Extended)?
         }
         SessionKind::Both => {
-            containing_occurrence_of_kind(context, instant, SessionKind::Regular)?.or(
-                containing_occurrence_of_kind(context, instant, SessionKind::Extended)?,
+            containing_occurrence_of_kind(context, instant, day, SessionKind::Regular)?.or(
+                containing_occurrence_of_kind(context, instant, day, SessionKind::Extended)?,
             )
         }
     };

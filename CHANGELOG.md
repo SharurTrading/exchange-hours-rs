@@ -66,6 +66,20 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Fixed
 
+- **The `lse` holiday table closes its two capture gaps — 2015-01-02..2019-12-31
+  and 2020-01-01..2020-08-30 — with the operator group's own Business days page
+  (2026-10-02 UTC; closes #218).** The operator's own December 2015 service
+  announcement points at `www.lseg.com/businessdays` for "Full details of London
+  Stock Exchange trading and EUI settlement days"; that URL redirects to the
+  same rolling holiday table on the operator group's own site, captured
+  continuously 2013-10..2020-07 (155 Wayback captures). Seventeen `id_` replays
+  tile both former refusal spans: 54 new rows (44 closures and ten printed
+  12:30 half days across 2015-2020, including 2020's moved Friday 8 May VE-Day
+  bank holiday) key from the earliest capture that prints each row, the coverage
+  windows merge into one 2010-01-01..2027-12-31 window, and queries in the
+  former gaps now answer as printed instead of refusing. The five 2025
+  rolling-table dates remain `Unsourced` (#116 scope).
+
 - **The globex family files' aggregate prose is fenced, and the two
   Documents intros that never derived state their tables' counts
   (2026-10-02 UTC; the `schedule_documentation` fence extension issue #232's

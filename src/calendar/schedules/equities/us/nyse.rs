@@ -204,17 +204,15 @@ pub(crate) static NYSE_NATIONAL_PROFILE: StaticHoursProfile =
 // text (NSX Rule 11.1) and no NSX order-acceptance phase is modelled.
 // See docs/evidence/nyse_national.md.
 
-// 2010-08-02 — T1 — SEC 34-62643 — the post-RTH close extends to 20:00 ET.
-// 2014-05-16 — T1 — SEC 34-72215 — the post-RTH close shortens to 17:00 ET.
-// 2014-05-31 — T1 — SEC 34-72107 — trading ceases after the 2014-05-30 close.
-// 2015-12-22 — T1 — NSX SEC Form 1 relaunch filing — the phased relaunch.
-// 2017-02-01 — T1 — SEC 34-80018 — trading ceases again before the open.
-// 2018-05-21 — T1 — SR-NYSENat-2020-05 — the NYSE National Pillar launch.
 // Evidence: docs/evidence/nyse_national.md
 static NATIONAL_REVISIONS: &[Revision] = revisions![
+    // 2010-08-02 — T1 — SEC 34-62643 — the post-RTH close extends to 20:00 ET.
     (2010, 8, 2, &NATIONAL_2010_08_02, "SEC 34-62643"),
+    // 2014-05-16 — T1 — SEC 34-72215 — the post-RTH close shortens to 17:00 ET.
     (2014, 5, 16, &NATIONAL_2015_12_22, "SEC 34-72215"),
+    // 2014-05-31 — T1 — SEC 34-72107 — trading ceases after the 2014-05-30 close.
     (2014, 5, 31, &CLOSED_NEW_YORK, "SEC 34-72107"),
+    // 2015-12-22 — T1 — NSX SEC Form 1 relaunch filing — the phased relaunch.
     (
         2015,
         12,
@@ -222,7 +220,9 @@ static NATIONAL_REVISIONS: &[Revision] = revisions![
         &NATIONAL_2015_12_22,
         "NSX SEC Form 1 relaunch filing"
     ),
+    // 2017-02-01 — T1 — SEC 34-80018 — trading ceases again before the open.
     (2017, 2, 1, &CLOSED_NEW_YORK, "SEC 34-80018"),
+    // 2018-05-21 — T1 — SR-NYSENat-2020-05 — the NYSE National Pillar launch.
     (2018, 5, 21, &NYSE_NATIONAL_PROFILE, "SR-NYSENat-2020-05"),
 ];
 

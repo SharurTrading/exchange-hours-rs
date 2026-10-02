@@ -47,7 +47,7 @@ const MAX_COMMENT_RUN: usize = 6;
 /// `modules_carry_no_narrative`, an unlisted one is asserted, and the list only
 /// ever shrinks — that is what makes "a new module never carries one" a fence
 /// rather than a hope. Tracked as issue #85.
-const NARRATIVE_DEBT: [&str; 40] = [
+const NARRATIVE_DEBT: [&str; 35] = [
     "src/calendar/schedules/equities/africa_middle_east/jse.rs",
     "src/calendar/schedules/equities/africa_middle_east/tadawul.rs",
     "src/calendar/schedules/equities/americas/b3.rs",
@@ -72,9 +72,7 @@ const NARRATIVE_DEBT: [&str; 40] = [
     "src/calendar/schedules/equities/europe/bist.rs",
     "src/calendar/schedules/equities/europe/bme.rs",
     "src/calendar/schedules/equities/europe/euronext.rs",
-    "src/calendar/schedules/equities/europe/euronext/dublin.rs",
     "src/calendar/schedules/equities/europe/lse.rs",
-    "src/calendar/schedules/equities/europe/six.rs",
     "src/calendar/schedules/equities/europe/vienna.rs",
     "src/calendar/schedules/equities/europe/xetra.rs",
     "src/calendar/schedules/equities/us/cboe.rs",
@@ -82,11 +80,8 @@ const NARRATIVE_DEBT: [&str; 40] = [
     "src/calendar/schedules/futures/international/binance.rs",
     "src/calendar/schedules/futures/international/ice_abu_dhabi.rs",
     "src/calendar/schedules/futures/international/ice_canada.rs",
-    "src/calendar/schedules/futures/international/ice_endex.rs",
     "src/calendar/schedules/futures/international/ice_europe.rs",
     "src/calendar/schedules/futures/international/sgx.rs",
-    "src/calendar/schedules/futures/international/sgx_equity_index/eras.rs",
-    "src/calendar/schedules/futures/international/sgx_equity_index/history.rs",
     "src/calendar/schedules/futures/us/small_exchange.rs",
 ];
 

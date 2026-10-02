@@ -60,13 +60,8 @@ pub(crate) static KRX_PROFILE_CURRENT: StaticHoursProfile = StaticHoursProfile {
     has_weekend_close: true,
 };
 
-// The regular close extended by 30 minutes on 2016-08-01. On 2019-04-29,
-// pre-market block/basket trading moved 07:30 -> 08:00, prior-close trading
-// moved 07:30–08:30 -> 08:30–08:40, and opening-call order reception moved
-// 08:00 -> 08:30. The profile uses the earliest executable/accepted edge.
-// https://global.krx.co.kr/contents/GLB/01/0107/0107010000/20170630_eng_brochure.pdf
-// https://www.fsc.go.kr/po010106/73613
-// https://law.krx.co.kr/las/LawBon.jsp?lawid=000111
+// The regular close extended by 30 minutes on 2016-08-01. Narrative:
+// docs/evidence/krx.md.
 pub(crate) static KRX_PROFILE_POST_2016_08_01: StaticHoursProfile = StaticHoursProfile {
     tz: Asia::Seoul,
     regular: KRX_REGULAR_CURRENT,

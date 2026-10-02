@@ -37,29 +37,15 @@ static CHINA_EXTENDED_CORE: &[SessionRule] = &[
         close_ssm: 15 * 3600 + 30 * 60,
     },
 ];
-// The pre-2016 SZSE Trading Rules (2013 revision) set the opening call auction
-// at 09:15–09:25 and continuous auction from 09:30 (Art. 2.4.2), and Art. 3.3.1
-// adds that "每个交易日 9:25 至 9:30，交易主机只接受申报，但不对买卖申报或撤销
-// 申报作处理" — from 09:25 to 09:30 the trading host only accepts declarations
-// and processes neither orders nor cancellations. The opening uncrossing has
-// already printed at 09:25 and continuous matching does not start until 09:30,
-// so this window is order entry, not tradeable time. SZSE stopped accepting
-// orders in it on 2016-05-09, which is why it exists only in this era.
-// https://docs.static.szse.cn/www/disclosure/notice/W020180328432928783546.pdf
+// The pre-2016 SZSE Trading Rules (2013 revision) set the opening call auction at 09:15–09:25 and continuous auction from 09:30 (Art. 2.4.2). Narrative:
+// docs/evidence/szse.md.
 static SZSE_ORDER_ENTRY_PRE_2016: &[SessionRule] = &[SessionRule {
     days: MON_FRI,
     open_ssm: 9 * 3600 + 25 * 60,
     close_ssm: 9 * 3600 + 30 * 60,
 }];
-// SZSE has accepted block-trading declarations through 15:30 since before the
-// January-2010 audit floor. The generic fixed-price expansion is undated here —
-// no reviewed artifact states its effective day — and in any case changed
-// eligibility inside that existing venue envelope, not the
-// exchange-level close. Block and fixed-price phases are extended by
-// convention; not every security is eligible for them.
-// https://www.szse.cn/lawrules/rule/trade/current/t20260424_620190.html
-// Block-trading rule effective 2006-07-01:
-// https://www.szse.cn/disclosure/notice/general/t20060515_499577.html
+// SZSE has accepted block-trading declarations through 15:30 since before the January-2010 audit floor. Narrative:
+// docs/evidence/szse.md.
 pub(crate) static SZSE_PROFILE_CURRENT: StaticHoursProfile = StaticHoursProfile {
     tz: Asia::Shanghai,
     regular: CHINA_REGULAR_WITH_CLOSE_CALL,

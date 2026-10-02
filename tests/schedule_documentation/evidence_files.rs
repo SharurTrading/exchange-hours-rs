@@ -47,14 +47,7 @@ const MAX_COMMENT_RUN: usize = 6;
 /// `modules_carry_no_narrative`, an unlisted one is asserted, and the list only
 /// ever shrinks — that is what makes "a new module never carries one" a fence
 /// rather than a hope. Tracked as issue #85.
-const NARRATIVE_DEBT: [&str; 24] = [
-    "src/calendar/schedules/equities/apac/krx.rs",
-    "src/calendar/schedules/equities/apac/nse.rs",
-    "src/calendar/schedules/equities/apac/nzx.rs",
-    "src/calendar/schedules/equities/apac/set.rs",
-    "src/calendar/schedules/equities/apac/sgx.rs",
-    "src/calendar/schedules/equities/apac/sse.rs",
-    "src/calendar/schedules/equities/apac/szse.rs",
+const NARRATIVE_DEBT: [&str; 17] = [
     "src/calendar/schedules/equities/apac/tmx_australia.rs",
     "src/calendar/schedules/equities/apac/tse.rs",
     "src/calendar/schedules/equities/apac/twse.rs",

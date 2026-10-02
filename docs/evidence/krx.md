@@ -38,3 +38,13 @@ as each source is re-verified.
 - **defect — the 2016-08-01 row's day is unsourced in this repository.** With FSC notice 73613 reassigned to 2019, nothing in the `APAC-KRX` source set dates the 14:50 → 15:20 regular-close extension: the KRX trading-hours page and the 2017-06-30 brochure both describe the post-2016 state without dating the change, and KRX rulebook law 000111 is cited for the 2019 row. Under LAW-PRIMARY-SOURCES a dated change needs an unconditional day at T1 or T2, so the row as it stands is a defect rather than a label, and the revision bullet carries `T4` to say so. The ledger row's `Evidence tier` cell stays `T1`, which is correct: that cell records the tier behind the row's *current* schedule, which rests on the KRX cash-equity trading-hours page. Closing condition, and it needs its own PR because it may change the schedule: recover the FSC resolution or the KRX business-regulation amendment that dates the extension — which would restore the row at T1 — or, failing that, withdraw the dated row and serve the pre- and post-2016 grids as a sourced intersection. The ledger's `Primary` Basis for this row should be re-examined in that PR.
 - **the 2019-04-29 row is unaffected and is now doubly sourced.** Its citation literal stays `"KRX rulebook law 000111"`, and FSC notice 73613 corroborates the same day and both moves from the regulator's side.
 - KRX profiles carry no `order_entry` window: the pre-market block/basket window is executable, so the earliest edge used is 08:00 rather than the 08:30 opening-call order reception.
+
+## Module narrative (moved from src/calendar/schedules/equities/apac/krx.rs on 2026-10-02 UTC)
+
+On 2019-04-29,
+pre-market block/basket trading moved 07:30 -> 08:00, prior-close trading
+moved 07:30–08:30 -> 08:30–08:40, and opening-call order reception moved
+08:00 -> 08:30. The profile uses the earliest executable/accepted edge.
+https://global.krx.co.kr/contents/GLB/01/0107/0107010000/20170630_eng_brochure.pdf
+https://www.fsc.go.kr/po010106/73613
+https://law.krx.co.kr/las/LawBon.jsp?lawid=000111

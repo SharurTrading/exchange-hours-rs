@@ -631,3 +631,21 @@ any row).
   17:00 boundary so the randomized uncross stays inside the tradeable window.
 - Enquiry and Adjust do not accept automatically matched orders and are
   excluded from the envelope (AGENTS.md, *Cash-equity venue envelope*).
+
+## Module narrative (moved from src/calendar/schedules/equities/apac/nzx.rs on 2026-10-02 UTC)
+
+Both auction
+uncrosses are randomized ±30 seconds around the nominal boundary; this
+deterministic venue profile uses 10:00 and 17:00. Enquiry and Adjust do not
+accept automatically matched orders and are excluded.
+Sources:
+https://www.nzx.com/learning/help-reference/trading-hours
+https://www.nzx.com/learning/issuer-participant-resources/nzx-trading/anatomy-of-a-trading-day
+
+---
+
+These windows are shared by both revisions — only the pre-open
+start moved in 2020, and that start now sits in the order-entry slice.
+The closing uncross is randomised within 30 seconds EITHER SIDE of 17:00, so
+the tradeable window runs to 17:00:30; stopping at 17:00 dropped the half of
+the randomisation in which the official closing print most often occurs.

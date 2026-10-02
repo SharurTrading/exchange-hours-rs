@@ -37,14 +37,8 @@ static SGX_REGULAR_PRE_2011: &[SessionRule] = &[
         close_ssm: 17 * 3600,
     },
 ];
-// Regulatory Notice 8.2.1 splits every routine into two documented phases: a
-// Pre-Open/Pre-Close Phase that "allows order entry, order modification and
-// withdrawal of orders but no matching of orders", and a Non-Cancel Phase in
-// which "all existing orders that can be matched are matched at a single price".
-// Only the Non-Cancel Phase can print, so each routine is split at the earliest
-// possible Non-Cancel start. Trade at Close matches at the Equilibrium Price and
-// is tradeable throughout.
-// https://rulebook.sgx.com/rulebook/regulatory-notice-821-trading-hours-market-phases-application-market-phases-and-principles
+// Regulatory Notice 8.2.1 splits every routine into two documented phases: a Pre-Open/Pre-Close Phase that "allows order entry, order modification and withdrawal of orders but no matching of orders", and a Non-Cancel Phase in which "all existing orders that can be matched are matched at a single price". Narrative:
+// docs/evidence/sgx_securities.md.
 
 // Order-entry-only Pre-Open/Pre-Close phases (current randomized boundaries:
 // Pre-Open ends 08:58–08:59 and 12:58–12:59, Pre-Close ends 17:04–17:05; the
@@ -165,15 +159,8 @@ pub(crate) static SGX_SEC_PROFILE_CURRENT: StaticHoursProfile = StaticHoursProfi
     has_weekend_close: true,
 };
 
-// Continuous all-day trading began 2011-08-01; the lunch break returned
-// 2017-11-13; TAC began 2019-06-03.
-// https://rulebook.sgx.com/sites/default/files/net_file_store/SGX_ST_Rules_August_1_2011.pdf
-// https://links.sgx.com/1.0.0/corporate-announcements/AYXNAX3DG8RCFZT7/20170718_SGX_to_adjust_equities_market_structure_after_supportive_feedback.pdf
-// https://links.sgx.com/1.0.0/corporate-announcements/46OQY4VBYIHO4ARN/20190514_SGX_to_launch_securities_market_trade_at_close_session_on_3_June.pdf
-// The 2011-08-01 practice note carries the pre-2017 routine boundaries used by
-// the two oldest profiles: Pre-Open 08:30–08:59 / Non-Cancel 08:59–09:00,
-// lunch-break Adjust 12:30–13:59 with no matching and its 13:59–14:00 match,
-// and Pre-Close 17:00–17:05 / Non-Cancel 17:05–17:06.
+// Continuous all-day trading began 2011-08-01; the lunch break returned 2017-11-13; TAC began 2019-06-03. Narrative:
+// docs/evidence/sgx_securities.md.
 pub(crate) static SGX_SEC_PROFILE_POST_2017_11_13: StaticHoursProfile = StaticHoursProfile {
     tz: Asia::Singapore,
     regular: SGX_REGULAR_CURRENT,

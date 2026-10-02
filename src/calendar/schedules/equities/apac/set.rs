@@ -42,14 +42,8 @@ static SET_REGULAR_PRE_2024: &[SessionRule] = &[
         close_ssm: 16 * 3600 + 30 * 60,
     },
 ];
-// SET's published trading procedure gives each pre-open phase a randomized end
-// T: Pre-open I runs 09:30–T1 (T1 random 09:55–10:00), Pre-open II 13:30–T2 (T2
-// random 13:55–14:00) and the night Pre-open 18:45–T4 (T4 random 18:55–19:00).
-// Each is listed as order entry only — an auction order-collection phase with no
-// matching and no trade reports — so the head of each window is order entry and
-// only the five-minute randomization tail, where the uncross can print, stays
-// extended.
-// https://www.set.or.th/en/market/information/trading-procedure/trading-hours
+// SET's published trading procedure gives each pre-open phase a randomized end T: Pre-open I runs 09:30–T1 (T1 random 09:55–10:00), Pre-open II 13:30–T2 (T2 random 13:55–14:00) and the night Pre-open 18:45–T4 (T4 random 18:55–19:00). Narrative:
+// docs/evidence/set_thailand.md.
 
 // Randomized uncross windows: a trade can print anywhere inside these.
 const SET_OPEN_1_RANDOM: SessionRule = SessionRule {
@@ -141,14 +135,8 @@ static SET_EXTENDED_PRE_2024: &[SessionRule] = &[
 ];
 static SET_ORDER_ENTRY_PRE_2024: &[SessionRule] = &[SET_PRE_OPEN_1, SET_PRE_OPEN_2_PRE_2024];
 
-// SET's venue-availability envelope includes eligible Europe/Americas DRs.
-// From 2025-05-06 those DRs trade continuously through the ordinary-share
-// lunch and in a 19:00–03:00 night session. The night pre-open begins 18:45,
-// continuous trading ends 02:45, and the randomized closing auction ends no
-// later than 03:00. The next-local-day tail belongs to the prior opening day's
-// trade date. Not every listed security is eligible for every phase.
-// https://www.set.or.th/en/market/information/trading-procedure/trading-hours
-// https://www.set.or.th/en/market/news-and-alert/newsdetails?id=95921400&symbol=SET
+// SET's venue-availability envelope includes eligible Europe/Americas DRs. Narrative:
+// docs/evidence/set_thailand.md.
 pub(crate) static SET_PROFILE_CURRENT: StaticHoursProfile = StaticHoursProfile {
     tz: Asia::Bangkok,
     regular: SET_REGULAR_CURRENT,

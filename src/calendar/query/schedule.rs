@@ -2,10 +2,10 @@
 
 //! The two concrete profile sources consumed by the query engine.
 
-use chrono::{DateTime, Datelike, NaiveDate, Timelike, Utc};
+use chrono::{DateTime, Datelike, Duration, NaiveDate, Timelike, Utc};
 use chrono_tz::Tz;
 
-use crate::calendar::exceptions::{DateException, SessionExceptionSource};
+use crate::calendar::exceptions::{DateException, ExceptionBlock, SessionExceptionSource};
 use crate::calendar::exchange_calendar::ExchangeCalendar;
 use crate::calendar::hours::MarketHours;
 use crate::calendar::local_time::{bounded_utc, mk_local_close, mk_local_open};
@@ -686,11 +686,45 @@ impl<'a, G: SourceGate> QueryContext<'a, G> {
         // A queue that opened yesterday can still be running, and the day it
         // opened on is the day this answer depends on — so the probe is gated
         // by the same rule as the one above rather than being read as a bare
-        // civil-date fact.
+        // civil-date fact. But a yesterday that cannot host a queue still
+        // running — no wrapping rule of the set on its weekday, and no
+        // replacement layer that could supply one — yields `None` whatever
+        // its holiday layer held, so the answer does not read that day and it
+        // need not answer (#257).
         let Some(yesterday) = day.pred_opt() else {
             return Ok(false);
         };
+        if !self.wrapped_occurrence_possible(yesterday, RuleSet::OrderEntry) {
+            return Ok(false);
+        }
         Ok(find_occurrence(&self, yesterday, RuleSet::OrderEntry, true, hit)?.is_some())
+    }
+
+    /// Returns whether `day`'s grid — or a replacement layer standing in for
+    /// it — could yield an occurrence of `set` that **closes on the following
+    /// local day**.
+    ///
+    /// This is the host test behind the engine's wrapped lookbacks (#257): a
+    /// probe into `day - 1` for an occurrence still running into `day` filters
+    /// to rules whose window wraps, so a day whose grid carries no wrapping
+    /// rule of the set can never produce one, whatever its holiday layer
+    /// held — the probe would scan to `None` on that day's own tables, and
+    /// the answer does not depend on `day` at all. The replacement half is
+    /// exactly the pre-filter [`replacement::find_occurrence`] itself runs
+    /// for the same scan, so a `false` there means that leg would find
+    /// nothing either and skipping the probe cannot move an answer
+    /// (LAW-INVARIANT). The profile selection reads the same static timeline
+    /// every query and every coverage walk reads.
+    pub(super) fn wrapped_occurrence_possible(self, day: NaiveDate, set: RuleSet) -> bool {
+        let block_reach_last = day
+            .checked_add_signed(Duration::days(i64::from(-ExceptionBlock::MIN_DAY_OFFSET)))
+            .is_none_or(|last| self.replacement_blocks_may_reach(day, last));
+        if block_reach_last {
+            return true;
+        }
+        let weekday = day.weekday().num_days_from_monday() as usize;
+        let selected = self.profile_for_open_day(day);
+        rules(selected.as_ref(), set).any(|rule| rule.days[weekday] && rule.wraps_to_next_day())
     }
 
     /// Returns whether this source exposes a real weekly candle boundary.

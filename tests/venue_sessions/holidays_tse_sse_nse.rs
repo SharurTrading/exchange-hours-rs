@@ -1408,19 +1408,20 @@ fn the_muhurat_dates_are_unsourced_neither_closed_nor_normal() {
     );
 
     // A probe inside the Sunday Muhurat day refuses too, rather than reading
-    // the normal weekend. The withholding shadows its own Monday as well: a
-    // query on 2026-11-09 scans the day before it, touches the withheld
-    // 2026-11-08 row, and refuses naming that day — the crate's honest
-    // failure mode for a scan that reaches an unresolved date. The Saturday
-    // before is untouched by the scan and answers as an ordinary weekend.
+    // the normal weekend. The Monday after does not: the Monday session opens
+    // 09:15 IST on the sourced 2026-11-09, and no NSE session wraps, so
+    // nothing from the withheld Sunday can reach it and noon answers inside
+    // its own regular session. The Saturday before is likewise untouched and
+    // answers as an ordinary weekend.
     assert!(matches!(
         nse.is_open(zoned(Asia::Kolkata, (2026, 11, 8), (18, 0, 0))),
         Err(CalendarQueryError::UnresolvedGap { .. })
     ));
-    assert!(matches!(
-        nse.is_open(zoned(Asia::Kolkata, (2026, 11, 9), (10, 0, 0))),
-        Err(CalendarQueryError::UnresolvedGap { date, .. }) if date == day(2026, 11, 8)
-    ));
+    assert!(
+        nse.is_open(zoned(Asia::Kolkata, (2026, 11, 9), (10, 0, 0)))
+            .expect("the Monday session opens on the sourced day"),
+        "the Monday after the Muhurat Sunday answers inside its own session"
+    );
     assert!(
         !nse.is_open(zoned(Asia::Kolkata, (2026, 11, 7), (10, 0, 0)))
             .expect("2026-11-07 is an audited weekend and must answer"),

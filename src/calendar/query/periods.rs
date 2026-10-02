@@ -5,6 +5,7 @@
 use chrono::{DateTime, Datelike, Duration, NaiveDate, Utc};
 
 use super::gate::SourceGate;
+use super::identity;
 use super::replacement::{self, ExceptionDailyClose};
 use super::schedule::{QueryContext, RuleSet, resolve_rule_bounds, rules};
 use super::sessions::containing_session_with;
@@ -146,6 +147,25 @@ fn next_daily_close_and_trade_date_after_with<G: SourceGate>(
     let tz = context.tz();
     let local_day = bounded_utc(instant, tz).with_timezone(&tz).date_naive();
     let mut day = local_day.pred_opt().unwrap_or(local_day);
+    // The walk starts one local day back because a close can still be assigned
+    // to the day before the instant's own: SET Thailand's convention dates an
+    // after-midnight night phase to its prior local opening date
+    // (`back_dates_trade_dates`), and a replacement record keyed to the start
+    // day can own blocks whose windows reach past it. Under the close-date
+    // default every occurrence assigned to the start day closes within it —
+    // strictly before the instant's local day begins — and a wrapping rule
+    // opening there is dated by its own close's day, which the walk reaches
+    // through the next trade date's neighbour scan without reading the start
+    // day at all. Visiting a start day that cannot contribute demands an
+    // answer for the neighbour itself, and a refused window-edge neighbour
+    // would then refuse a walk whose answer lies entirely on the queried day
+    // and after it (#257).
+    if day < local_day
+        && !identity::back_dates_trade_dates(context)
+        && !context.replacement_blocks_may_reach(day, day)
+    {
+        day = local_day;
+    }
     for _ in 0..CLOSE_LOOKAHEAD_DAYS {
         if let Some(close) = daily_close_for_trade_date(context, day, kind)?
             && close > instant

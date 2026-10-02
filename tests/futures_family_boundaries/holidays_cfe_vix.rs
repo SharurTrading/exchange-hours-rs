@@ -713,13 +713,21 @@ fn the_withheld_2017_july_3_date_is_unsourced_not_normal() {
             "2017-07-04 at {probe:?} must refuse on the withheld opening day"
         );
     }
-    // The reach is exactly two days: 2017-07-05's complete session chain still
-    // walks through the leg that opened on the withheld day, so it refuses
-    // naming 2017-07-03 as well, and 2017-07-06 — whose chain stops on sourced
-    // days — answers again. The row layer answers throughout.
+    // The reach is exactly two days: 2017-07-05's trading day still includes
+    // the overnight leg that opened on the withheld 2017-07-03, so its trade
+    // date refuses naming the withheld day — while noon itself sits inside the
+    // Wednesday regular session, which opens on the sourced 2017-07-05 and
+    // answers, and 2017-07-06 — whose chain stops on sourced days — answers
+    // again. The row layer answers throughout.
     assert_eq!(calendar.holiday_on(day(2017, 7, 5)), None);
+    assert!(
+        calendar
+            .is_open(ct((2017, 7, 5), (12, 0, 0)))
+            .expect("the Wednesday regular session opens on the sourced day"),
+        "noon on 2017-07-05 answers inside its own regular session"
+    );
     assert!(matches!(
-        calendar.is_open(ct((2017, 7, 5), (12, 0, 0))),
+        calendar.trade_date(ct((2017, 7, 5), (12, 0, 0))),
         Err(CalendarQueryError::UnresolvedGap { date, .. }) if date == day(2017, 7, 3)
     ));
     assert!(
@@ -948,16 +956,30 @@ fn coverage_runs_from_the_earliest_surviving_artifact_to_the_published_horizon()
     // 2017-04-10 is the window's own first day — the capture instant that can
     // speak for 2017 — and the day before it is outside the audited window:
     // the identity refuses it rather than answering the normal week.
-    // The window's first trade date is inside the audited window and its row
-    // layer answers for it, but no instant query on it can: a support boundary
-    // never splits a session, and every one of 2017-04-10's sessions opened on
-    // Sunday 2017-04-09, one day before the window. The identity refuses those
-    // instants naming the wrap's opening day rather than serving a day split
-    // at its own start, and the first fully answerable day is 2017-04-11,
-    // whose wrap opened on the sourced 2017-04-10.
+    // A support boundary never splits a session: the 2017 grid's Sunday-evening
+    // wrap opens 17:00 CT on 2017-04-09, so the wrap's own instants on 04-10
+    // refuse naming the wrap's opening day. The day's regular session opens
+    // 08:30 CT on the window's own first day, so noon answers through
+    // `is_open` — while the trade date still refuses naming 2017-04-09,
+    // because the trading day's complete session chain includes that wrap and
+    // the day's final-close derivation reads it. The first fully answerable
+    // day is 2017-04-11, whose wrap opened on the sourced 2017-04-10.
     assert_eq!(calendar.holiday_on(day(2017, 4, 10)), None);
     assert!(matches!(
-        calendar.is_open(ct((2017, 4, 10), (12, 0, 0))),
+        calendar.is_open(ct((2017, 4, 10), (7, 0, 0))),
+        Err(CalendarQueryError::OutsideCoveredRange {
+            date,
+            ..
+        }) if date == day(2017, 4, 9)
+    ));
+    assert!(
+        calendar
+            .is_open(ct((2017, 4, 10), (12, 0, 0)))
+            .expect("the regular session opens on the window's own first day"),
+        "the window's first day answers inside its own regular session"
+    );
+    assert!(matches!(
+        calendar.trade_date(ct((2017, 4, 10), (12, 0, 0))),
         Err(CalendarQueryError::OutsideCoveredRange {
             date,
             ..

@@ -61,7 +61,7 @@ static ENERGY_METALS_ORDER_ENTRY_DATED: &[SessionRule] = &[
     },
 ];
 
-static ENERGY_METALS_AT_2010_FLOOR: StaticHoursProfile = StaticHoursProfile {
+pub(crate) static ENERGY_METALS_AT_2010_FLOOR: StaticHoursProfile = StaticHoursProfile {
     tz: US::Central,
     regular: &[],
     extended: ENERGY_METALS_EXTENDED_AT_2010_FLOOR,
@@ -77,7 +77,7 @@ pub(crate) static ENERGY_METALS_CURRENT: StaticHoursProfile = StaticHoursProfile
     has_daily_close: true,
     has_weekend_close: true,
 };
-static ENERGY_METALS_DATED_CURRENT: StaticHoursProfile = StaticHoursProfile {
+pub(crate) static ENERGY_METALS_DATED_CURRENT: StaticHoursProfile = StaticHoursProfile {
     tz: US::Central,
     regular: &[],
     extended: ENERGY_METALS_EXTENDED_CURRENT,

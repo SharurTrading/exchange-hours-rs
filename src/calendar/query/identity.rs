@@ -86,7 +86,8 @@ const DERIVED_AFTER: i64 = 19;
 /// day back and walks `CLOSE_LOOKAHEAD_DAYS` forward, so it is `[D - 1, D +
 /// 19]`, widened by each identity convention's own documented offset — SET
 /// Thailand's night phase can step one further back, and the business-date roll
-/// of CME cryptocurrency and `ECBTC` can step [`ROLLING_WINDOW_DAYS`] further
+/// of CME cryptocurrency, `ECBTC` and COMEX 100-oz silver can step
+/// [`ROLLING_WINDOW_DAYS`] further
 /// forward *and* is itself layer-sensitive, because it skips the dates the
 /// caller's layers close.
 ///
@@ -121,7 +122,9 @@ pub(super) fn trade_date_window(
             (DERIVED_BEFORE + 1, DERIVED_AFTER)
         }
         Some(CalendarSource::MarketHoursKey(
-            MarketHoursKey::GlobexCryptocurrency | MarketHoursKey::GlobexEventContractsBtc,
+            MarketHoursKey::GlobexCryptocurrency
+                | MarketHoursKey::GlobexEventContractsBtc
+                | MarketHoursKey::GlobexSilver100Oz,
         )) => (DERIVED_BEFORE, DERIVED_AFTER + ROLLING_WINDOW_DAYS),
         _ => (DERIVED_BEFORE, DERIVED_AFTER),
     };
@@ -148,6 +151,7 @@ fn assigns_by_close_date(context: &QueryContext<'_>) -> bool {
                     MarketHoursKey::GlobexRoughRice
                         | MarketHoursKey::GlobexCryptocurrency
                         | MarketHoursKey::GlobexEventContractsBtc
+                        | MarketHoursKey::GlobexSilver100Oz,
                 )
         )
     )
@@ -221,7 +225,9 @@ pub(super) fn joins_adjacent_same_kind(context: &QueryContext<'_>) -> bool {
     matches!(
         context.identity(),
         Some(CalendarSource::MarketHoursKey(
-            MarketHoursKey::GlobexCryptocurrency | MarketHoursKey::GlobexEventContractsBtc
+            MarketHoursKey::GlobexCryptocurrency
+                | MarketHoursKey::GlobexEventContractsBtc
+                | MarketHoursKey::GlobexSilver100Oz
         ))
     )
 }
@@ -231,7 +237,8 @@ pub(super) fn joins_adjacent_same_kind(context: &QueryContext<'_>) -> bool {
 /// Most profiles use the local date of the final close. Three sourced
 /// exceptions survive: SET's after-midnight DR night phase belongs to its prior
 /// local opening date, CBOT Rough Rice's evening leg belongs to the following
-/// local date, and the weekend blocks of CME cryptocurrency and of `ECBTC` —
+/// local date, and the weekend blocks of CME cryptocurrency, of `ECBTC` and of
+/// COMEX 100-oz silver —
 /// whose documents both say the daily window rolls the trade date — carry the
 /// following open business date.
 pub(super) fn assign_normal(
@@ -273,7 +280,9 @@ pub(super) fn assign_normal(
     if !matches!(
         source,
         CalendarSource::MarketHoursKey(
-            MarketHoursKey::GlobexCryptocurrency | MarketHoursKey::GlobexEventContractsBtc
+            MarketHoursKey::GlobexCryptocurrency
+                | MarketHoursKey::GlobexEventContractsBtc
+                | MarketHoursKey::GlobexSilver100Oz
         )
     ) {
         return default;

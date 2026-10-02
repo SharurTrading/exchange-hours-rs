@@ -586,6 +586,12 @@ const fn for_market_hours_key(key: MarketHoursKey) -> DeclaredSourcing {
         MarketHoursKey::GlobexEnergy => {
             DeclaredSourcing::carried_below_with_quarter_hour(horizon!(2012, 5, 11))
         }
+        // The 100-oz silver family shares the energy/metals tables by
+        // reference, so it carries the family's own horizon; like Rough Rice,
+        // a key referencing another family's rows declares no phase gaps of
+        // its own — the family's bracketed Sunday quarter-hour (#79) is the
+        // family's, recorded beside its rows and in this key's evidence file.
+        MarketHoursKey::GlobexSilver100Oz => DeclaredSourcing::carried_below(horizon!(2012, 5, 11)),
         MarketHoursKey::GlobexGrains => {
             DeclaredSourcing::carried_below_with(horizon!(2010, 3, 15), &GRAINS_GAPS)
         }

@@ -9,6 +9,7 @@ mod cme_metals_tas;
 mod cme_mini_grains;
 mod cme_nikkei;
 mod cme_rough_rice;
+mod cme_silver_100oz;
 mod cme_spot_quoted;
 mod cme_weather;
 mod holidays_globex_energy;

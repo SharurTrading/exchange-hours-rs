@@ -527,6 +527,11 @@ globex_energy | regular  | (none)
 globex_energy | extended | MoTuWeTh----Su | 17:00:00-16:00:00 +1d
 globex_energy | order-en | ------------Su | 16:00:00-17:00:00
 globex_energy | order-en | MoTuWeTh------ | 16:45:00-17:00:00
+globex_silver_100oz | tz US/Central | week_open_seconds 414000
+globex_silver_100oz | regular  | (none)
+globex_silver_100oz | extended | MoTuWeTh----Su | 17:00:00-16:00:00 +1d
+globex_silver_100oz | order-en | ------------Su | 16:00:00-17:00:00
+globex_silver_100oz | order-en | MoTuWeTh------ | 16:45:00-17:00:00
 globex_grains | tz US/Central | week_open_seconds 316500
 globex_grains | regular  | MoTuWeThFr---- | 08:30:00-13:20:00
 globex_grains | extended | MoTuWeTh----Su | 19:00:00-07:45:00 +1d

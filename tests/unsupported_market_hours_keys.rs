@@ -11,6 +11,7 @@ use exchange_hours::MarketHoursKey;
 
 /// Names that must resolve, because their profiles are now sourced.
 const SUPPORTED_FAMILY_NAMES: &[&str] = &[
+    "globex_silver_100oz",
     "globex_nikkei_225_dollar",
     "ice_us_dollar_index",
     "ice_us_sugar",

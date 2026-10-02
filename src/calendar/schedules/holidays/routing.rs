@@ -181,6 +181,11 @@ const fn for_market_hours_key(key: MarketHoursKey) -> Option<&'static HolidayTab
         MarketHoursKey::GlobexSpotQuoted => None,
         MarketHoursKey::GlobexEventContracts => None,
         MarketHoursKey::GlobexEventContractsBtc => None,
+        // No built-in holiday table: the 24/7 era's holiday arrangement for
+        // COMEX 100-oz silver is not yet sourced, and the pre-cutover era's
+        // energy/metals rows would misstate the era that follows it. The
+        // evidence file records the activation condition.
+        MarketHoursKey::GlobexSilver100Oz => None,
         MarketHoursKey::GlobexGoldTas => None,
         MarketHoursKey::GlobexSilverTas => None,
         MarketHoursKey::GlobexCopperTas => None,

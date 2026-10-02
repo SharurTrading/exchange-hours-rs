@@ -97,6 +97,15 @@ fn containing_occurrence_of_kind<G: SourceGate>(
     let Some(yesterday) = day.pred_opt() else {
         return Ok(None);
     };
+    // The probe filters to occurrences that close on the following local day, so
+    // a yesterday that cannot host one — no wrapping rule of this set on its
+    // weekday, and no replacement layer that could supply it — yields `None`
+    // whatever its holiday layer held, and the answer does not read that day at
+    // all. Skipping the probe keeps a refused window-edge neighbour from
+    // refusing an instant whose own day resolves (#257).
+    if !context.wrapped_occurrence_possible(yesterday, RuleSet::Sessions(kind)) {
+        return Ok(None);
+    }
     find_occurrence(context, yesterday, RuleSet::Sessions(kind), true, hit)
 }
 
@@ -134,9 +143,17 @@ pub(super) fn contains_in_session_on<G: SourceGate>(
             containing_occurrence_of_kind(context, instant, day, SessionKind::Extended)?
         }
         SessionKind::Both => {
-            containing_occurrence_of_kind(context, instant, day, SessionKind::Regular)?.or(
-                containing_occurrence_of_kind(context, instant, day, SessionKind::Extended)?,
-            )
+            // Lazy, like `containing_session_with`'s `Both` arm: a Regular hit
+            // settles the question, so the Extended probe — whose own wrapped
+            // lookback can refuse where the Regular answer already resolved —
+            // runs only when it is the query's answer (#257).
+            let regular =
+                containing_occurrence_of_kind(context, instant, day, SessionKind::Regular)?;
+            if regular.is_some() {
+                regular
+            } else {
+                containing_occurrence_of_kind(context, instant, day, SessionKind::Extended)?
+            }
         }
     };
     Ok(found.is_some())

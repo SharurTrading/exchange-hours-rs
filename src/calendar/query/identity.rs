@@ -221,6 +221,21 @@ fn a_session_reaches<G: SourceGate>(
     false
 }
 
+/// Returns whether this identity's trade-date convention can date an
+/// occurrence to the local day **before** its own close's date.
+///
+/// SET Thailand's after-midnight DR night phase belongs to its prior local
+/// opening date ([`assign_normal`]), so a close after an instant on `D` can
+/// carry trade date `D - 1` with no rule wrapping past local midnight — which
+/// is why the daily-close walk's start-day skip (#257) keeps that visit alive
+/// for this identity alone.
+pub(super) fn back_dates_trade_dates<G: SourceGate>(context: &QueryContext<'_, G>) -> bool {
+    matches!(
+        context.identity(),
+        Some(CalendarSource::Exchange(Exchange::SetThailand))
+    )
+}
+
 /// Returns whether this identified calendar joins storage-only rule pieces.
 pub(super) fn joins_adjacent_same_kind<G: SourceGate>(context: &QueryContext<'_, G>) -> bool {
     matches!(

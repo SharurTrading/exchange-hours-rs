@@ -3590,10 +3590,11 @@ mod euronext_paris {
         let calendar = paris();
         // The 2010 appendix's Paris grid prints Trading to 13:55, a 14:00
         // closing uncross and TAL 14:00-14:05, so the envelope close is
-        // 14:05 — the same shape the 2025 appendix prints. The 24th sits one
-        // carried day behind the 2010-12-24 horizon, so its session probes
-        // refuse; the 31st's behind-derivation reads 2010-12-30, above the
-        // horizon, so its probes answer the 14:05 end-exclusive close.
+        // 14:05 — the same shape the 2025 appendix prints. The horizon starts
+        // on the 24th itself, so its row answers the eve's own instants; the
+        // carried 23rd refuses when addressed to itself; the 31st's
+        // behind-derivation reads 2010-12-30, above the horizon, so its
+        // probes answer the 14:05 end-exclusive close.
         for date in [(2010, 12, 24), (2010, 12, 31)] {
             assert_eq!(
                 calendar
@@ -3603,14 +3604,25 @@ mod euronext_paris {
                 "paris {date:?} carries the 2010 appendix's 14:05 close"
             );
         }
+        // The eve's own instants answer from its sourced row: the 14:05 close
+        // is stated on 2010-12-24 itself, and no Paris session wraps, so
+        // nothing from the carried 2010-12-23 can reach the eve — the one day
+        // the horizon still carries refuses only when addressed to itself.
+        assert!(matches!(
+            calendar.is_open(paris_time((2010, 12, 23), (12, 0, 0))),
+            Err(CalendarQueryError::OutsideCoveredRange { .. })
+        ));
         assert!(
             calendar
                 .is_open(paris_time((2010, 12, 24), (14, 4, 59)))
-                .is_err_and(|error| matches!(
-                    error,
-                    CalendarQueryError::OutsideCoveredRange { .. }
-                )),
-            "the 2010-12-24 intraday question must refuse behind the horizon"
+                .expect("the eve's own sourced close answers"),
+            "paris still trades at 14:04:59 on the sourced eve"
+        );
+        assert!(
+            !calendar
+                .is_open(paris_time((2010, 12, 24), (14, 5, 0)))
+                .expect("the eve's own sourced close answers"),
+            "paris is closed at the 14:05 close (end-exclusive)"
         );
         assert!(
             calendar
@@ -3686,11 +3698,13 @@ mod euronext_paris {
             Some(HolidayKind::Closed),
             "2026-12-25 carries the printed closure row"
         );
-        // But the trade-date and intraday questions read behind the query's
-        // bounds — 2026-12-24, whose half-day hours are announced and
-        // unstated — so both refuse as an unresolved gap rather than claim.
-        // 2024-12-25 no longer does: its eve's instant has been recovered
-        // from the 2024 end-of-year appendix.
+        // But the trade-date question reads behind the query's bounds —
+        // 2026-12-24, whose half-day hours are announced and unstated — so it
+        // refuses as an unresolved gap. The intraday question does not: the
+        // Closed row removes 12-25's own sessions, and no Paris session
+        // wraps, so nothing from the withheld eve can reach the closed day
+        // and noon answers shut. 2024-12-25 no longer refuses either: its
+        // eve's instant has been recovered from the 2024 end-of-year appendix.
         assert!(
             calendar
                 .is_closed_trade_date(day(2026, 12, 25), SessionKind::Both)
@@ -3698,10 +3712,10 @@ mod euronext_paris {
             "the 2026-12-25 closure question must refuse on the unresolved eve"
         );
         assert!(
-            calendar
+            !calendar
                 .is_open(paris_time((2026, 12, 25), (12, 0, 0)))
-                .is_err_and(|error| matches!(error, CalendarQueryError::UnresolvedGap { .. })),
-            "the 2026-12-25 intraday question must refuse on the unresolved eve"
+                .expect("the closed day answers from its own row"),
+            "the withheld eve cannot reach the closed day, so noon answers shut"
         );
         // 2024-12-31 now ships the appendix's printed 14:05 close.
         assert_eq!(
@@ -4250,6 +4264,94 @@ mod tsx {
             !calendar
                 .is_open(toronto((2026, 6, 10), (17, 0, 0)))
                 .expect("covered")
+        );
+    }
+
+    /// The merged window's first day answers through every entry point whose
+    /// answer needs only its own facts (issue #257).
+    ///
+    /// 2012-01-03 is the first day of the `(2012, 1, 3) ..=` window; the day
+    /// before it is the refused span's last day. No tsx rule wraps, so no
+    /// session from the refused neighbour can reach the window's first day:
+    /// the wrapped lookbacks that used to demand the neighbour's answer probe
+    /// nothing, and the queries they carried refuse no more. The session
+    /// metadata keeps its resolution-edge verdict — the previous-session and
+    /// closed-instant scans walk onto the refused neighbour regardless — and
+    /// the fence pins that verdict too, so neither direction can drift.
+    #[test]
+    fn the_merged_windows_first_day_answers_through_its_own_facts() {
+        let calendar = tsx();
+        let first_day = day(2012, 1, 3);
+        assert_eq!(calendar.holiday_on(first_day), None);
+        // `is_open` matches the Regular answer at every probed instant,
+        // including the midnight, pre-open and post-close instants whose
+        // containing probes used to reach the refused 2012-01-02.
+        for time in [
+            (0, 0, 0),
+            (7, 0, 0),
+            (9, 30, 0),
+            (12, 0, 0),
+            (15, 59, 0),
+            (16, 0, 0),
+            (16, 20, 0),
+            (17, 0, 0),
+            (23, 59, 0),
+        ] {
+            let instant = toronto((2012, 1, 3), time);
+            let open_regular = calendar
+                .is_open_regular(instant)
+                .expect("the window's first day answers the Regular probe");
+            let open_extended = calendar
+                .is_open_extended(instant)
+                .expect("the window's first day answers the Extended probe");
+            assert_eq!(
+                calendar.is_open(instant).expect("covered"),
+                open_regular || open_extended,
+                "tsx 2012-01-03 {time:?}: `is_open` must match the phase answers"
+            );
+        }
+        // The trade date answers on the day's own instants: the session's
+        // trade date inside the regular session, `None` at the closed ones.
+        assert_eq!(
+            calendar
+                .trade_date(toronto((2012, 1, 3), (12, 0, 0)))
+                .expect("covered"),
+            Some(first_day),
+            "tsx 2012-01-03 noon belongs to its own trade date"
+        );
+        assert_eq!(
+            calendar
+                .trade_date(toronto((2012, 1, 3), (0, 0, 0)))
+                .expect("the closed midnight answers"),
+            None,
+            "the closed midnight states no trade date"
+        );
+        // The closed-day questions answer: the day trades, so it is closed in
+        // neither sense.
+        assert!(
+            !calendar
+                .is_closed_trade_date(first_day, SessionKind::Both)
+                .expect("covered"),
+            "tsx 2012-01-03 carries its own regular session"
+        );
+        assert!(
+            !calendar
+                .is_closed_all_day_at(
+                    toronto((2012, 1, 3), (12, 0, 0)),
+                    America::Toronto,
+                    SessionKind::Both
+                )
+                .expect("covered"),
+            "tsx 2012-01-03 trades during the day"
+        );
+        // The window's first day keeps the resolution-edge verdict: the
+        // previous-session and closed-instant scans genuinely walk onto the
+        // refused 2012-01-02, so the metadata withholds the claim that every
+        // query on the day answers while the day's own facts answer.
+        assert_eq!(
+            calendar.coverage().coverage_on(first_day),
+            DateCoverage::OutsideCoveredRange,
+            "2012-01-03 keeps its resolution-edge verdict"
         );
     }
 

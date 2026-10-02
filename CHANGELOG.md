@@ -66,6 +66,30 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Fixed
 
+- **The merged tsx window's first day answers through the entry points that
+  need only its own facts (2026-10-02 UTC; fixes #257).** Every instant of
+  2012-01-03 — the first day of tsx's second audited window `(2012, 1, 3) ..=`
+  — refused through `is_open`, `trade_date` and the closed-day queries with
+  `OutsideCoveredRange { date: 2012-01-02 }`, the refused span's last day,
+  even though 2012-01-03's own facts answered and no tsx rule wraps: the
+  engine's wrapped lookbacks gated on the neighbouring day unconditionally,
+  so the eager `SessionKind::Both` arm's Extended probe, the containing
+  probes' wrapped-yesterday legs, the order-entry queue's wrapped-yesterday
+  leg and the daily-close walk's one-day-back start all demanded an answer
+  from a day their probes could never read. The lookbacks now ask the host
+  test first: a wrapped probe runs only where the neighbour's grid carries a
+  wrapping rule of the scanned set or a replacement record could supply one
+  (`wrapped_occurrence_possible`, whose replacement half is the exact
+  pre-filter the replacement scan itself runs), and the daily-close walk
+  skips its start day where no convention or replacement record can assign
+  that day a close after the instant (SET Thailand's back-dating convention
+  keeps the visit). The `Both` arm is lazy like its session-bounds sibling.
+  Refusals whose answer genuinely reads the refused day stand — a wrapped
+  session's own instants, the previous-session scan, a window's trade-date
+  derivation — and the tsx suite pins the window's first day answering
+  through `is_open`, `trade_date` and both closed-day queries beside the
+  refused span that keeps refusing.
+
 - **The `lse` holiday table closes its two capture gaps — 2015-01-02..2019-12-31
   and 2020-01-01..2020-08-30 — with the operator group's own Business days page
   (2026-10-02 UTC; closes #218).** The operator's own December 2015 service

@@ -656,12 +656,14 @@ fn a_closure_on_a_non_session_day_changes_nothing() {
         Some(HolidayKind::Closed),
     );
 
-    // The neutrality claim is now a claim about the **detached** calendar, the
-    // only surface that answers here: every instant of this Saturday belongs to
-    // the trade date that opened Friday 2025-11-28, which the venue's own table
-    // withholds, so `venue` refuses the whole day with `UnresolvedGap`. The
-    // detached calendar carries no holiday layer to withhold anything and still
-    // states the ordinary normal-week answers the row must not move.
+    // The neutrality claim is a claim about the **answers**, attached and
+    // detached alike: the attached calendar answers the whole Saturday `false`
+    // from its own row and the shipped grid's shape — the Closed row removes
+    // the Saturday's trading day, and no CME family grid wraps a Friday
+    // session, so nothing from the withheld 2025-11-28 can cover a Saturday
+    // instant and the answer cannot depend on it. The detached calendar
+    // carries no holiday layer at all and still states the ordinary
+    // normal-week answers the row must not move.
     let detached = venue.without_holidays();
     let start = US::Central
         .with_ymd_and_hms(2025, 11, 29, 0, 0, 0)
@@ -683,10 +685,11 @@ fn a_closure_on_a_non_session_day_changes_nothing() {
     );
     for step in 0..48 {
         let probe = start + chrono::TimeDelta::minutes(30 * step);
-        assert_refused_variant(
-            &venue.is_open(probe),
-            DateCoverage::UnresolvedGap,
-            &format!("the 2025-11-29 closure must not be reported as a closure at {probe}"),
+        assert!(
+            !venue
+                .is_open(probe)
+                .expect("the closed Saturday answers from its own row"),
+            "{probe}: the 2025-11-29 closure must not be reported as open"
         );
         assert!(
             !detached

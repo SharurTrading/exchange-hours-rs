@@ -939,28 +939,55 @@ fn the_2025_softs_closures_remove_the_whole_trading_day() {
                 Some(HolidayKind::Closed),
                 "{which:?} {year}-{month:02}-{date:02}"
             );
-            // 2025-01-01's derivations read the opening day 2024-12-31,
-            // outside every audited window, so the date-aware queries refuse
-            // there; every later closure's opening day is audited.
+            // 2025-01-01 splits by family. Sugar, Coffee, Cocoa and FCOJ run
+            // one same-day executable session — no wrapping session rule — so
+            // no session from the unaudited 2024-12-31 can reach the holiday,
+            // and the closed day answers from its own row; the trade date
+            // still refuses naming 2024-12-31, because the Tuesday-evening
+            // pre-open queue that feeds the next morning opens on the
+            // unaudited day. Cotton No. 2 is the wrapping contract: its
+            // session for trade date 2025-01-01 opened 21:00 CT on the
+            // unaudited 2024-12-31, so its noon sits inside a session the
+            // identity cannot resolve and every query refuses naming that
+            // day. Every later closure's opening day is audited.
             if (year, month, date) == (2025, 1, 1) {
                 assert!(
-                    calendar
-                        .is_closed_trade_date(day(year, month, date), SessionKind::Both)
-                        .is_err_and(|error| matches!(
-                            error,
-                            CalendarQueryError::OutsideCoveredRange { .. }
-                        )),
-                    "{which:?}: the opening day 2024-12-31 is unaudited"
+                    matches!(
+                        calendar.trade_date(ny((year, month, date), (12, 0, 0))),
+                        Err(CalendarQueryError::OutsideCoveredRange { .. })
+                    ),
+                    "{which:?}: the trade date reads the leg that opened on the unaudited 2024-12-31"
                 );
-                assert!(
-                    calendar
-                        .is_open(ny((year, month, date), (12, 0, 0)))
-                        .is_err_and(|error| matches!(
-                            error,
-                            CalendarQueryError::OutsideCoveredRange { .. }
-                        )),
-                    "{which:?}: the noon probe rides the unaudited wrap"
-                );
+                if which == MarketHoursKey::IceUsCotton {
+                    assert!(
+                        matches!(
+                            calendar
+                                .is_closed_trade_date(day(year, month, date), SessionKind::Both),
+                            Err(CalendarQueryError::OutsideCoveredRange { .. })
+                        ),
+                        "{which:?}: the wrapping session opened on the unaudited 2024-12-31"
+                    );
+                    assert!(
+                        matches!(
+                            calendar.is_open(ny((year, month, date), (12, 0, 0))),
+                            Err(CalendarQueryError::OutsideCoveredRange { .. })
+                        ),
+                        "{which:?}: noon sits inside the session that opened on the unaudited 2024-12-31"
+                    );
+                } else {
+                    assert!(
+                        calendar
+                            .is_closed_trade_date(day(year, month, date), SessionKind::Both)
+                            .expect("the closed day answers from its own row"),
+                        "{which:?}: 2025-01-01 has no session in either phase"
+                    );
+                    assert!(
+                        !calendar
+                            .is_open(ny((year, month, date), (12, 0, 0)))
+                            .expect("the closed day answers from its own row"),
+                        "{which:?} must be shut at noon on 2025-01-01"
+                    );
+                }
                 continue;
             }
             assert!(

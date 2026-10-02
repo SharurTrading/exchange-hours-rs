@@ -1,17 +1,19 @@
 // SPDX-License-Identifier: MIT-0
 
-//! Fence for the fixed-snapshot `Result` -> `Option` collapse (LAW-INVARIANT
-//! audit #210; the structural follow-up is #245).
+//! Fence for the fixed-snapshot `Result` -> answer collapse (LAW-INVARIANT
+//! audit #210; the type-level fix is #245).
 //!
 //! The fixed-snapshot adapters (`MarketHours`' own predicates and the free
 //! `session_bounds` / `candle_end` family) collapse the shared engine's
 //! `Result<Option<T>, CalendarQueryError>` into an answer with no error
-//! channel, on the invariant that a detached snapshot can raise no coverage
-//! error: every `CalendarQueryError` the engine produces is gated on the
-//! identity's coverage metadata, which `QueryContext::fixed` never carries.
-//! The invariant and its mechanism live in one place,
-//! `query::schedule::fixed_answer`; this suite pins the observable consequence
-//! over **every shipped identity**:
+//! channel. Since #245 the collapse is a compile-time property, not a review
+//! obligation: the engine is parameterised over the `SourceGate` coverage gate
+//! (`query::gate`), a `FixedSnapshot` context carries no coverage at all and
+//! has `Infallible` as its error type, and the single collapse,
+//! `query::gate::answered`, unwraps a `Result<T, Infallible>` with a match
+//! that has no error arm to write — an identity-backed context's
+//! `CalendarQueryError` does not unify with it. This suite keeps pinning the
+//! observable consequence over **every shipped identity**:
 //!
 //! 1. at an instant below the support floor the date-aware calendar refuses
 //!    with [`CalendarQueryError::BeforeSupportFloor`] — that gate is exactly

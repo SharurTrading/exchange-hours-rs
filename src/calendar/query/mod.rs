@@ -3,6 +3,7 @@
 //! Shared query engine for fixed and date-aware schedules.
 
 pub(in crate::calendar) mod candles;
+pub(in crate::calendar) mod gate;
 mod identity;
 pub(in crate::calendar) mod periods;
 mod replacement;

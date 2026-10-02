@@ -9,6 +9,7 @@
 
 use chrono::{DateTime, Datelike, Duration, NaiveDate, Timelike, Utc, Weekday};
 
+use super::gate::SourceGate;
 use super::schedule::{QueryContext, RuleSet, rules};
 use crate::calendar::local_time::mk_local_close;
 use crate::calendar::rule::SessionKind;
@@ -94,8 +95,8 @@ const DERIVED_AFTER: i64 = 19;
 /// `None` means the window could not be formed at the extremes of the
 /// representable calendar, which sends the caller down the ungated path — the
 /// answer is the same either way, only the cost differs.
-pub(super) fn trade_date_window(
-    context: &QueryContext<'_>,
+pub(super) fn trade_date_window<G: SourceGate>(
+    context: &QueryContext<'_, G>,
     open_day: NaiveDate,
     set: RuleSet,
     wraps: bool,
@@ -142,7 +143,7 @@ pub(super) fn trade_date_window(
 /// cryptocurrency and `ECBTC` roll to the following open business date — so
 /// those identities keep the walk's full window. The self-dated narrowing is a
 /// statement about the close-date default only.
-fn assigns_by_close_date(context: &QueryContext<'_>) -> bool {
+fn assigns_by_close_date<G: SourceGate>(context: &QueryContext<'_, G>) -> bool {
     !matches!(
         context.identity(),
         Some(
@@ -169,8 +170,8 @@ fn assigns_by_close_date(context: &QueryContext<'_>) -> bool {
 /// An order-entry rule is not a session: it never joins the union the close
 /// walk reads, so its occurrence is dated by the trading day its own day's
 /// sessions belong to, and those have to be asked directly.
-fn is_self_dated(
-    context: &QueryContext<'_>,
+fn is_self_dated<G: SourceGate>(
+    context: &QueryContext<'_, G>,
     open_day: NaiveDate,
     set: RuleSet,
     raw_open: DateTime<Utc>,
@@ -193,8 +194,8 @@ fn is_self_dated(
 /// percent, because every session occurrence resolves through the same
 /// function. `benches/calendar_queries.rs` measures both.
 #[inline(never)]
-fn a_session_reaches(
-    context: &QueryContext<'_>,
+fn a_session_reaches<G: SourceGate>(
+    context: &QueryContext<'_, G>,
     open_day: NaiveDate,
     raw_open: DateTime<Utc>,
 ) -> bool {
@@ -221,7 +222,7 @@ fn a_session_reaches(
 }
 
 /// Returns whether this identified calendar joins storage-only rule pieces.
-pub(super) fn joins_adjacent_same_kind(context: &QueryContext<'_>) -> bool {
+pub(super) fn joins_adjacent_same_kind<G: SourceGate>(context: &QueryContext<'_, G>) -> bool {
     matches!(
         context.identity(),
         Some(CalendarSource::MarketHoursKey(
@@ -241,8 +242,8 @@ pub(super) fn joins_adjacent_same_kind(context: &QueryContext<'_>) -> bool {
 /// COMEX 100-oz silver —
 /// whose documents both say the daily window rolls the trade date — carry the
 /// following open business date.
-pub(super) fn assign_normal(
-    context: &QueryContext<'_>,
+pub(super) fn assign_normal<G: SourceGate>(
+    context: &QueryContext<'_, G>,
     open: DateTime<Utc>,
     close: DateTime<Utc>,
 ) -> NaiveDate {

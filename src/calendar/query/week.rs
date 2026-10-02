@@ -4,8 +4,8 @@
 
 use chrono::{DateTime, Datelike, Duration, Timelike, Utc};
 
+use super::gate::SourceGate;
 use super::schedule::{QueryContext, RuleSet, find_occurrence, rules};
-use crate::calendar::CalendarQueryError;
 use crate::calendar::hours::MarketHours;
 use crate::calendar::local_time::bounded_utc;
 use crate::calendar::rule::{SECONDS_PER_NORMAL_WEEK, SessionKind, normal_week_rule_intervals};
@@ -42,10 +42,10 @@ pub(in crate::calendar) fn fixed_normal_week_open_seconds(hours: &MarketHours) -
     union_seconds(intervals)
 }
 
-pub(in crate::calendar) fn normal_week_open_seconds_containing(
-    context: &QueryContext<'_>,
+pub(in crate::calendar) fn normal_week_open_seconds_containing<G: SourceGate>(
+    context: &QueryContext<'_, G>,
     instant: DateTime<Utc>,
-) -> Result<u64, CalendarQueryError> {
+) -> Result<u64, G::Error> {
     let tz = context.tz();
     let local_day = bounded_utc(instant, tz).with_timezone(&tz).date_naive();
     let weekday = i64::from(local_day.weekday().num_days_from_monday());

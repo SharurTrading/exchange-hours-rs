@@ -5,24 +5,24 @@
 use chrono::{DateTime, Datelike, Duration, NaiveDate, Utc};
 use chrono_tz::Tz;
 
+use super::gate::SourceGate;
 use super::periods::{daily_close_for_trade_date, next_daily_close_after_with};
 use super::schedule::QueryContext;
 use super::sessions::{
     containing_session_with, contains_in_session_on, next_session_after_with,
     previous_session_before_with,
 };
-use crate::calendar::CalendarQueryError;
 use crate::calendar::SessionState;
 use crate::calendar::local_time::{bounded_utc, mk_local_open};
 use crate::calendar::rule::SessionKind;
 
 const MAX_MAINTENANCE_GAP: Duration = Duration::hours(4);
 
-pub(in crate::calendar) fn is_open_with(
-    context: &QueryContext<'_>,
+pub(in crate::calendar) fn is_open_with<G: SourceGate>(
+    context: &QueryContext<'_, G>,
     instant: DateTime<Utc>,
     kind: SessionKind,
-) -> Result<bool, CalendarQueryError> {
+) -> Result<bool, G::Error> {
     // The venue-local day is resolved once and shared: the containment probe
     // and the floor check below are both facts about this one day, and
     // resolving it twice put a second timezone walk on the crate's hottest
@@ -37,37 +37,37 @@ pub(in crate::calendar) fn is_open_with(
     // would have said otherwise, and LAW-COVERAGE forbids reporting that as a
     // closure.
     let open = contains_in_session_on(context, instant, day, kind)?;
-    context.require_floor(Some(day))?;
+    context.require_floor(day)?;
     Ok(open)
 }
 
-pub(in crate::calendar) fn is_order_entry_only(
-    context: &QueryContext<'_>,
+pub(in crate::calendar) fn is_order_entry_only<G: SourceGate>(
+    context: &QueryContext<'_, G>,
     instant: DateTime<Utc>,
-) -> Result<bool, CalendarQueryError> {
+) -> Result<bool, G::Error> {
     Ok(!is_open_with(context, instant, SessionKind::Both)?
         && context.contains_order_entry(instant)?)
 }
 
-pub(in crate::calendar) fn is_accepting_orders(
-    context: &QueryContext<'_>,
+pub(in crate::calendar) fn is_accepting_orders<G: SourceGate>(
+    context: &QueryContext<'_, G>,
     instant: DateTime<Utc>,
-) -> Result<bool, CalendarQueryError> {
+) -> Result<bool, G::Error> {
     Ok(is_open_with(context, instant, SessionKind::Both)?
         || context.contains_order_entry(instant)?)
 }
 
-pub(in crate::calendar) fn is_maintenance(
-    context: &QueryContext<'_>,
+pub(in crate::calendar) fn is_maintenance<G: SourceGate>(
+    context: &QueryContext<'_, G>,
     instant: DateTime<Utc>,
-) -> Result<bool, CalendarQueryError> {
+) -> Result<bool, G::Error> {
     Ok(session_state(context, instant)? == SessionState::Maintenance)
 }
 
-pub(in crate::calendar) fn trade_date(
-    context: &QueryContext<'_>,
+pub(in crate::calendar) fn trade_date<G: SourceGate>(
+    context: &QueryContext<'_, G>,
     instant: DateTime<Utc>,
-) -> Result<Option<NaiveDate>, CalendarQueryError> {
+) -> Result<Option<NaiveDate>, G::Error> {
     // Resolve first, then judge -- and judge on **every** exit, including the
     // early one. A containing session answers the instant, but its trade date is
     // still a date an identity must have a sourced answer for: reporting
@@ -94,7 +94,7 @@ pub(in crate::calendar) fn trade_date(
         context.require_floor_at(instant)?;
         return Ok(None);
     };
-    context.require_floor(Some(day))?;
+    context.require_floor(day)?;
     Ok(Some(day))
 }
 
@@ -104,10 +104,10 @@ pub(in crate::calendar) fn trade_date(
 /// it exists to feed the session that follows it, and an order queued in a
 /// Sunday pre-open belongs to Monday's trade date. That case resolves through
 /// the next session rather than reporting absence.
-fn resolve_trade_date(
-    context: &QueryContext<'_>,
+fn resolve_trade_date<G: SourceGate>(
+    context: &QueryContext<'_, G>,
     instant: DateTime<Utc>,
-) -> Result<Option<NaiveDate>, CalendarQueryError> {
+) -> Result<Option<NaiveDate>, G::Error> {
     if let Some((open, _session_close)) =
         containing_session_with(context, instant, SessionKind::Both)?
     {
@@ -130,10 +130,10 @@ fn resolve_trade_date(
     Ok(None)
 }
 
-pub(in crate::calendar) fn session_state(
-    context: &QueryContext<'_>,
+pub(in crate::calendar) fn session_state<G: SourceGate>(
+    context: &QueryContext<'_, G>,
     instant: DateTime<Utc>,
-) -> Result<SessionState, CalendarQueryError> {
+) -> Result<SessionState, G::Error> {
     context.require_floor_at(instant)?;
     if is_open_with(context, instant, SessionKind::Regular)? {
         return Ok(SessionState::OpenRegular);
@@ -185,22 +185,22 @@ pub(in crate::calendar) fn session_state(
     }
 }
 
-pub(in crate::calendar) fn is_closed_trade_date(
-    context: &QueryContext<'_>,
+pub(in crate::calendar) fn is_closed_trade_date<G: SourceGate>(
+    context: &QueryContext<'_, G>,
     day: NaiveDate,
     kind: SessionKind,
-) -> Result<bool, CalendarQueryError> {
-    context.require_floor(Some(day))?;
+) -> Result<bool, G::Error> {
+    context.require_floor(day)?;
     Ok(daily_close_for_trade_date(context, day, kind)?.is_none())
 }
 
-pub(in crate::calendar) fn is_closed_all_day_in_calendar(
-    context: &QueryContext<'_>,
+pub(in crate::calendar) fn is_closed_all_day_in_calendar<G: SourceGate>(
+    context: &QueryContext<'_, G>,
     day: NaiveDate,
     calendar_tz: Tz,
     kind: SessionKind,
-) -> Result<bool, CalendarQueryError> {
-    context.require_floor(Some(day))?;
+) -> Result<bool, G::Error> {
+    context.require_floor(day)?;
     let start = mk_local_open(calendar_tz, day, 0).with_timezone(&Utc);
     let end = day.succ_opt().map_or(DateTime::<Utc>::MAX_UTC, |next| {
         mk_local_open(calendar_tz, next, 0).with_timezone(&Utc)
@@ -215,12 +215,12 @@ pub(in crate::calendar) fn is_closed_all_day_in_calendar(
         .is_none_or(|(next_open, _close)| next_open >= end))
 }
 
-pub(in crate::calendar) fn is_closed_all_day_at(
-    context: &QueryContext<'_>,
+pub(in crate::calendar) fn is_closed_all_day_at<G: SourceGate>(
+    context: &QueryContext<'_, G>,
     instant: DateTime<Utc>,
     calendar_tz: Tz,
     kind: SessionKind,
-) -> Result<bool, CalendarQueryError> {
+) -> Result<bool, G::Error> {
     let day = bounded_utc(instant, calendar_tz)
         .with_timezone(&calendar_tz)
         .date_naive();

@@ -4,20 +4,20 @@
 
 use chrono::{DateTime, Duration, Utc};
 
+use super::gate::SourceGate;
 use super::schedule::{QueryContext, RuleSet, find_occurrence};
-use crate::calendar::CalendarQueryError;
 use crate::calendar::local_time::bounded_utc;
 use crate::calendar::rule::SessionKind;
 
 const SESSION_LOOKAHEAD_DAYS: i64 = 14;
 type SessionBounds = (DateTime<Utc>, DateTime<Utc>);
 
-fn merge_occurrences_on_day(
-    context: &QueryContext<'_>,
+fn merge_occurrences_on_day<G: SourceGate>(
+    context: &QueryContext<'_, G>,
     day: chrono::NaiveDate,
     kind: SessionKind,
     bounds: &mut SessionBounds,
-) -> Result<(), CalendarQueryError> {
+) -> Result<(), G::Error> {
     // The probe never stops the scan: it folds every occurrence into `bounds`.
     let _: Option<()> = find_occurrence(
         context,
@@ -39,11 +39,11 @@ fn merge_occurrences_on_day(
 ///
 /// `Both` is deliberately never passed here: a regular/extended handoff is a
 /// public phase boundary even when the market remains open at the same instant.
-fn coalesce_same_kind(
-    context: &QueryContext<'_>,
+fn coalesce_same_kind<G: SourceGate>(
+    context: &QueryContext<'_, G>,
     seed: SessionBounds,
     kind: SessionKind,
-) -> Result<SessionBounds, CalendarQueryError> {
+) -> Result<SessionBounds, G::Error> {
     if !context.joins_adjacent_same_kind() {
         return Ok(seed);
     }
@@ -73,12 +73,12 @@ fn coalesce_same_kind(
     Ok(bounds)
 }
 
-fn containing_occurrence_of_kind(
-    context: &QueryContext<'_>,
+fn containing_occurrence_of_kind<G: SourceGate>(
+    context: &QueryContext<'_, G>,
     instant: DateTime<Utc>,
     day: chrono::NaiveDate,
     kind: SessionKind,
-) -> Result<Option<SessionBounds>, CalendarQueryError> {
+) -> Result<Option<SessionBounds>, G::Error> {
     let hit = |open: DateTime<Utc>, close: DateTime<Utc>| {
         (open <= instant && instant < close).then_some((open, close))
     };
@@ -100,11 +100,11 @@ fn containing_occurrence_of_kind(
     find_occurrence(context, yesterday, RuleSet::Sessions(kind), true, hit)
 }
 
-fn containing_concrete_kind(
-    context: &QueryContext<'_>,
+fn containing_concrete_kind<G: SourceGate>(
+    context: &QueryContext<'_, G>,
     instant: DateTime<Utc>,
     kind: SessionKind,
-) -> Result<Option<SessionBounds>, CalendarQueryError> {
+) -> Result<Option<SessionBounds>, G::Error> {
     let day = bounded_utc(instant, context.tz())
         .with_timezone(&context.tz())
         .date_naive();
@@ -120,12 +120,12 @@ fn containing_concrete_kind(
 /// floor check, so the crate's hottest query performs one timezone walk where
 /// two used to run (issue #125). The answers are identical: the day is a pure
 /// function of the instant and the context's zone.
-pub(super) fn contains_in_session_on(
-    context: &QueryContext<'_>,
+pub(super) fn contains_in_session_on<G: SourceGate>(
+    context: &QueryContext<'_, G>,
     instant: DateTime<Utc>,
     day: chrono::NaiveDate,
     kind: SessionKind,
-) -> Result<bool, CalendarQueryError> {
+) -> Result<bool, G::Error> {
     let found = match kind {
         SessionKind::Regular => {
             containing_occurrence_of_kind(context, instant, day, SessionKind::Regular)?
@@ -142,11 +142,11 @@ pub(super) fn contains_in_session_on(
     Ok(found.is_some())
 }
 
-pub(in crate::calendar) fn session_bounds_with(
-    context: &QueryContext<'_>,
+pub(in crate::calendar) fn session_bounds_with<G: SourceGate>(
+    context: &QueryContext<'_, G>,
     instant: DateTime<Utc>,
     kind: SessionKind,
-) -> Result<Option<SessionBounds>, CalendarQueryError> {
+) -> Result<Option<SessionBounds>, G::Error> {
     context.require_floor_at(instant)?;
     match containing_session_with(context, instant, kind)? {
         Some(bounds) => Ok(Some(bounds)),
@@ -154,11 +154,11 @@ pub(in crate::calendar) fn session_bounds_with(
     }
 }
 
-pub(in crate::calendar) fn containing_session_with(
-    context: &QueryContext<'_>,
+pub(in crate::calendar) fn containing_session_with<G: SourceGate>(
+    context: &QueryContext<'_, G>,
     instant: DateTime<Utc>,
     kind: SessionKind,
-) -> Result<Option<SessionBounds>, CalendarQueryError> {
+) -> Result<Option<SessionBounds>, G::Error> {
     match kind {
         SessionKind::Regular => containing_concrete_kind(context, instant, SessionKind::Regular),
         SessionKind::Extended => containing_concrete_kind(context, instant, SessionKind::Extended),
@@ -177,12 +177,12 @@ pub(in crate::calendar) fn containing_session_with(
 /// `Option`-valued, so a coverage error raised while coalescing could only be
 /// swallowed there, and plan section 6 forbids exactly that. Returning the raw
 /// bounds and coalescing here keeps `?` available.
-fn next_occurrence_after_on_day(
-    context: &QueryContext<'_>,
+fn next_occurrence_after_on_day<G: SourceGate>(
+    context: &QueryContext<'_, G>,
     day: chrono::NaiveDate,
     instant: DateTime<Utc>,
     kind: SessionKind,
-) -> Result<Option<SessionBounds>, CalendarQueryError> {
+) -> Result<Option<SessionBounds>, G::Error> {
     let raw = find_occurrence(
         context,
         day,
@@ -197,13 +197,13 @@ fn next_occurrence_after_on_day(
     Ok((merged.0 > instant).then_some(merged))
 }
 
-fn consider_next_on_day(
-    context: &QueryContext<'_>,
+fn consider_next_on_day<G: SourceGate>(
+    context: &QueryContext<'_, G>,
     day: chrono::NaiveDate,
     instant: DateTime<Utc>,
     kind: SessionKind,
     best: &mut Option<SessionBounds>,
-) -> Result<(), CalendarQueryError> {
+) -> Result<(), G::Error> {
     if let Some(merged) = next_occurrence_after_on_day(context, day, instant, kind)?
         && best.is_none_or(|current| merged.0 < current.0)
     {
@@ -212,11 +212,11 @@ fn consider_next_on_day(
     Ok(())
 }
 
-pub(in crate::calendar) fn next_session_after_with(
-    context: &QueryContext<'_>,
+pub(in crate::calendar) fn next_session_after_with<G: SourceGate>(
+    context: &QueryContext<'_, G>,
     instant: DateTime<Utc>,
     kind: SessionKind,
-) -> Result<Option<SessionBounds>, CalendarQueryError> {
+) -> Result<Option<SessionBounds>, G::Error> {
     context.require_floor_at(instant)?;
     let tz = context.tz();
     let base_day = bounded_utc(instant, tz).with_timezone(&tz).date_naive();
@@ -249,12 +249,12 @@ pub(in crate::calendar) fn next_session_after_with(
 ///
 /// Coalescing runs outside the probe for the same reason as
 /// [`next_occurrence_after_on_day`].
-fn previous_occurrence_before_on_day(
-    context: &QueryContext<'_>,
+fn previous_occurrence_before_on_day<G: SourceGate>(
+    context: &QueryContext<'_, G>,
     day: chrono::NaiveDate,
     instant: DateTime<Utc>,
     kind: SessionKind,
-) -> Result<Option<SessionBounds>, CalendarQueryError> {
+) -> Result<Option<SessionBounds>, G::Error> {
     let raw = find_occurrence(
         context,
         day,
@@ -269,13 +269,13 @@ fn previous_occurrence_before_on_day(
     Ok((merged.1 <= instant).then_some(merged))
 }
 
-fn consider_previous_on_day(
-    context: &QueryContext<'_>,
+fn consider_previous_on_day<G: SourceGate>(
+    context: &QueryContext<'_, G>,
     day: chrono::NaiveDate,
     instant: DateTime<Utc>,
     kind: SessionKind,
     best: &mut Option<SessionBounds>,
-) -> Result<(), CalendarQueryError> {
+) -> Result<(), G::Error> {
     if let Some(merged) = previous_occurrence_before_on_day(context, day, instant, kind)?
         && best.is_none_or(|current| merged.1 > current.1)
     {
@@ -284,11 +284,11 @@ fn consider_previous_on_day(
     Ok(())
 }
 
-pub(super) fn previous_session_before_with(
-    context: &QueryContext<'_>,
+pub(super) fn previous_session_before_with<G: SourceGate>(
+    context: &QueryContext<'_, G>,
     instant: DateTime<Utc>,
     kind: SessionKind,
-) -> Result<Option<SessionBounds>, CalendarQueryError> {
+) -> Result<Option<SessionBounds>, G::Error> {
     let tz = context.tz();
     let base_day = bounded_utc(instant, tz).with_timezone(&tz).date_naive();
     let mut best = None;

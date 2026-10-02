@@ -14,7 +14,7 @@
 
 use chrono::{DateTime, Utc};
 
-use super::query::schedule::FixedSnapshotAnswer;
+use super::query::gate::answered;
 use super::query::{QueryContext, sessions};
 use super::{MarketHours, SessionKind};
 /// Returns the `[open, close)` UTC bounds of the session of `kind` containing
@@ -30,10 +30,14 @@ pub fn session_bounds_with(
     kind: SessionKind,
 ) -> Option<(DateTime<Utc>, DateTime<Utc>)> {
     // A detached fixed snapshot carries no identity, so no day can be refused:
-    // the error arm cannot fire, and `fixed_answer` documents the mechanism
-    // that makes that true rather than asserting it here (LAW-COVERAGE governs
+    // `answered` consumes the engine's `Result<_, Infallible>`, whose error
+    // side is not representable on this path (issue #245; LAW-COVERAGE governs
     // identity-backed queries; this profile is exactly its supplied rules).
-    sessions::session_bounds_with(&QueryContext::fixed(hours), instant, kind).fixed_answer()
+    answered(sessions::session_bounds_with(
+        &QueryContext::fixed(hours),
+        instant,
+        kind,
+    ))
 }
 
 /// Returns [`session_bounds_with`] over regular and extended sessions.
@@ -57,9 +61,13 @@ pub fn next_session_after_with(
     instant: DateTime<Utc>,
     kind: SessionKind,
 ) -> Option<(DateTime<Utc>, DateTime<Utc>)> {
-    // See `session_bounds_with` and `fixed_answer`: a fixed snapshot has no
+    // See `session_bounds_with` and `answered`: a fixed snapshot has no
     // coverage verdict to fail.
-    sessions::next_session_after_with(&QueryContext::fixed(hours), instant, kind).fixed_answer()
+    answered(sessions::next_session_after_with(
+        &QueryContext::fixed(hours),
+        instant,
+        kind,
+    ))
 }
 
 /// Returns [`next_session_after_with`] over regular and extended sessions.

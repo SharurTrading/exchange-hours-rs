@@ -4,13 +4,13 @@
 
 use chrono::{DateTime, Datelike, Duration, Utc};
 
+use super::gate::SourceGate;
 use super::periods::{
     daily_close_for_trade_date, next_daily_close_after_with, next_monthly_close_after_with,
     next_weekly_close_after_with, trade_date_for_daily_close,
 };
 use super::schedule::QueryContext;
 use super::sessions::{next_session_after_with, session_bounds_with};
-use crate::calendar::CalendarQueryError;
 use crate::calendar::resolution::CalendarResolution;
 use crate::calendar::rule::SessionKind;
 
@@ -18,12 +18,12 @@ const PERIOD_LOOKBACK_DAYS: i64 = 31;
 const PREVIOUS_CLOSE_LOOKBACK_DAYS: i64 = 21;
 const FIRST_OPEN_LOOKBACK_DAYS: i64 = 13;
 
-pub(in crate::calendar) fn candle_end_with(
-    context: &QueryContext<'_>,
+pub(in crate::calendar) fn candle_end_with<G: SourceGate>(
+    context: &QueryContext<'_, G>,
     instant: DateTime<Utc>,
     resolution: CalendarResolution,
     kind: SessionKind,
-) -> Result<Option<DateTime<Utc>>, CalendarQueryError> {
+) -> Result<Option<DateTime<Utc>>, G::Error> {
     if is_zero_interval(resolution) {
         return Ok(None);
     }
@@ -56,12 +56,12 @@ pub(in crate::calendar) fn candle_end_with(
     }
 }
 
-pub(in crate::calendar) fn candle_start_with(
-    context: &QueryContext<'_>,
+pub(in crate::calendar) fn candle_start_with<G: SourceGate>(
+    context: &QueryContext<'_, G>,
     instant: DateTime<Utc>,
     resolution: CalendarResolution,
     kind: SessionKind,
-) -> Result<Option<DateTime<Utc>>, CalendarQueryError> {
+) -> Result<Option<DateTime<Utc>>, G::Error> {
     if is_zero_interval(resolution) {
         return Ok(None);
     }
@@ -88,12 +88,12 @@ fn is_zero_interval(resolution: CalendarResolution) -> bool {
     )
 }
 
-fn fixed_grid_end(
-    context: &QueryContext<'_>,
+fn fixed_grid_end<G: SourceGate>(
+    context: &QueryContext<'_, G>,
     instant: DateTime<Utc>,
     step: Duration,
     kind: SessionKind,
-) -> Result<Option<DateTime<Utc>>, CalendarQueryError> {
+) -> Result<Option<DateTime<Utc>>, G::Error> {
     let Some((open, close)) = session_bounds_with(context, instant, kind)? else {
         return Ok(None);
     };
@@ -105,12 +105,12 @@ fn fixed_grid_end(
     ))
 }
 
-fn period_start(
-    context: &QueryContext<'_>,
+fn period_start<G: SourceGate>(
+    context: &QueryContext<'_, G>,
     instant: DateTime<Utc>,
     resolution: CalendarResolution,
     kind: SessionKind,
-) -> Result<Option<DateTime<Utc>>, CalendarQueryError> {
+) -> Result<Option<DateTime<Utc>>, G::Error> {
     let Some(end) = candle_end_with(context, instant, resolution, kind)? else {
         return Ok(None);
     };
@@ -176,11 +176,11 @@ fn period_start(
     Ok((open < first_close).then_some(open))
 }
 
-fn first_open_without_previous_close(
-    context: &QueryContext<'_>,
+fn first_open_without_previous_close<G: SourceGate>(
+    context: &QueryContext<'_, G>,
     first_close: DateTime<Utc>,
     kind: SessionKind,
-) -> Result<Option<DateTime<Utc>>, CalendarQueryError> {
+) -> Result<Option<DateTime<Utc>>, G::Error> {
     let Some(probe) = first_close.checked_sub_signed(Duration::days(FIRST_OPEN_LOOKBACK_DAYS))
     else {
         return first_representable_period_open(context, first_close, kind);
@@ -191,11 +191,11 @@ fn first_open_without_previous_close(
     Ok((open < first_close).then_some(open))
 }
 
-fn first_representable_period_open(
-    context: &QueryContext<'_>,
+fn first_representable_period_open<G: SourceGate>(
+    context: &QueryContext<'_, G>,
     first_close: DateTime<Utc>,
     kind: SessionKind,
-) -> Result<Option<DateTime<Utc>>, CalendarQueryError> {
+) -> Result<Option<DateTime<Utc>>, G::Error> {
     let Some((open, _close)) = session_bounds_with(context, DateTime::<Utc>::MIN_UTC, kind)? else {
         return Ok(None);
     };

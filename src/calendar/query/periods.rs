@@ -4,24 +4,24 @@
 
 use chrono::{DateTime, Datelike, Duration, NaiveDate, Utc};
 
+use super::gate::SourceGate;
 use super::replacement::{self, ExceptionDailyClose};
 use super::schedule::{QueryContext, RuleSet, resolve_rule_bounds, rules};
 use super::sessions::containing_session_with;
-use crate::calendar::CalendarQueryError;
 use crate::calendar::local_time::bounded_utc;
 use crate::calendar::rule::SessionKind;
 
 const CLOSE_LOOKAHEAD_DAYS: i64 = 21;
 
-fn update_latest(
-    context: &QueryContext<'_>,
+fn update_latest<G: SourceGate>(
+    context: &QueryContext<'_, G>,
     day: NaiveDate,
     kind: SessionKind,
     latest: &mut Option<DateTime<Utc>>,
     candidate_open: DateTime<Utc>,
     candidate: DateTime<Utc>,
     ceiling: Option<DateTime<Utc>>,
-) -> Result<(), CalendarQueryError> {
+) -> Result<(), G::Error> {
     if context.trade_date_for_bounds(candidate_open, candidate) == day
         && containing_session_with(context, candidate, kind)?.is_none()
         && ceiling.is_none_or(|limit| candidate <= limit)
@@ -32,12 +32,12 @@ fn update_latest(
     Ok(())
 }
 
-fn latest_close_for_trade_date(
-    context: &QueryContext<'_>,
+fn latest_close_for_trade_date<G: SourceGate>(
+    context: &QueryContext<'_, G>,
     day: NaiveDate,
     kind: SessionKind,
     ceiling: Option<DateTime<Utc>>,
-) -> Result<Option<DateTime<Utc>>, CalendarQueryError> {
+) -> Result<Option<DateTime<Utc>>, G::Error> {
     // This scan describes `day` from the identity's own tables, so a date
     // those tables withhold refuses instead of being described (LAW-COVERAGE;
     // see `daily_close_for_trade_date` for why the gate sits below the
@@ -106,11 +106,11 @@ fn latest_close_for_trade_date(
 /// answer a withheld Muhurat Sunday from its normal week — an unsourced gap
 /// reported as a plain closure is precisely the failure LAW-COVERAGE exists
 /// to prevent.
-pub(in crate::calendar) fn daily_close_for_trade_date(
-    context: &QueryContext<'_>,
+pub(in crate::calendar) fn daily_close_for_trade_date<G: SourceGate>(
+    context: &QueryContext<'_, G>,
     day: NaiveDate,
     kind: SessionKind,
-) -> Result<Option<DateTime<Utc>>, CalendarQueryError> {
+) -> Result<Option<DateTime<Utc>>, G::Error> {
     match replacement::daily_close(context, day, kind) {
         ExceptionDailyClose::NoSession => Ok(None),
         ExceptionDailyClose::Close(close) => Ok(Some(close)),
@@ -118,11 +118,11 @@ pub(in crate::calendar) fn daily_close_for_trade_date(
     }
 }
 
-pub(in crate::calendar) fn next_daily_close_after_with(
-    context: &QueryContext<'_>,
+pub(in crate::calendar) fn next_daily_close_after_with<G: SourceGate>(
+    context: &QueryContext<'_, G>,
     instant: DateTime<Utc>,
     kind: SessionKind,
-) -> Result<Option<DateTime<Utc>>, CalendarQueryError> {
+) -> Result<Option<DateTime<Utc>>, G::Error> {
     Ok(
         next_daily_close_and_trade_date_after_with(context, instant, kind)?
             .map(|(_day, close)| close),
@@ -132,17 +132,17 @@ pub(in crate::calendar) fn next_daily_close_after_with(
 /// Walks forward from `instant` for the next daily close, at most
 /// `CLOSE_LOOKAHEAD_DAYS` days.
 ///
-/// Running out of window is [`CalendarQueryError::SearchExhausted`], reported
-/// against the day the walk stopped on: it is a different answer from a day the
-/// identity refuses, which the per-day gate below raises instead (LAW-COVERAGE).
-/// A **detached fixed snapshot** has no identity to attribute that error to, so
-/// it keeps its previous exhaustive `None` rather than naming a source it does
-/// not have.
-fn next_daily_close_and_trade_date_after_with(
-    context: &QueryContext<'_>,
+/// Running out of window is [`CalendarQueryError::SearchExhausted`] for an
+/// identity-backed source, reported against the day the walk stopped on: it is
+/// a different answer from a day the identity refuses, which the per-day gate
+/// below raises instead (LAW-COVERAGE). A **detached fixed snapshot** has no
+/// coverage to attribute an error to — its gate is infallible — so it keeps
+/// its exhaustive `None` absence.
+fn next_daily_close_and_trade_date_after_with<G: SourceGate>(
+    context: &QueryContext<'_, G>,
     instant: DateTime<Utc>,
     kind: SessionKind,
-) -> Result<Option<(NaiveDate, DateTime<Utc>)>, CalendarQueryError> {
+) -> Result<Option<(NaiveDate, DateTime<Utc>)>, G::Error> {
     let tz = context.tz();
     let local_day = bounded_utc(instant, tz).with_timezone(&tz).date_naive();
     let mut day = local_day.pred_opt().unwrap_or(local_day);
@@ -157,21 +157,18 @@ fn next_daily_close_and_trade_date_after_with(
         };
         day = next;
     }
-    match context.identity() {
-        Some(source) => Err(CalendarQueryError::SearchExhausted {
-            source,
-            date: day,
-            bound: day,
-        }),
-        None => Ok(None),
-    }
+    // The bounded horizon ran out. The gate attributes the exhaustion for an
+    // identity-backed source and is infallible for a detached snapshot, whose
+    // bounded `None` is then the walk's own answer.
+    context.search_exhausted(day)?;
+    Ok(None)
 }
 
-pub(in crate::calendar) fn trade_date_for_daily_close(
-    context: &QueryContext<'_>,
+pub(in crate::calendar) fn trade_date_for_daily_close<G: SourceGate>(
+    context: &QueryContext<'_, G>,
     close: DateTime<Utc>,
     kind: SessionKind,
-) -> Result<Option<NaiveDate>, CalendarQueryError> {
+) -> Result<Option<NaiveDate>, G::Error> {
     let Some(probe) = close.checked_sub_signed(Duration::nanoseconds(1)) else {
         return Ok(None);
     };
@@ -181,11 +178,11 @@ pub(in crate::calendar) fn trade_date_for_daily_close(
     Ok((resolved_close == close).then(|| context.trade_date_for_bounds(open, close)))
 }
 
-pub(in crate::calendar) fn next_weekly_close_after_with(
-    context: &QueryContext<'_>,
+pub(in crate::calendar) fn next_weekly_close_after_with<G: SourceGate>(
+    context: &QueryContext<'_, G>,
     instant: DateTime<Utc>,
     kind: SessionKind,
-) -> Result<Option<DateTime<Utc>>, CalendarQueryError> {
+) -> Result<Option<DateTime<Utc>>, G::Error> {
     let Some((mut trade_date, mut close)) =
         next_daily_close_and_trade_date_after_with(context, instant, kind)?
     else {
@@ -209,11 +206,11 @@ pub(in crate::calendar) fn next_weekly_close_after_with(
     }
 }
 
-pub(in crate::calendar) fn next_monthly_close_after_with(
-    context: &QueryContext<'_>,
+pub(in crate::calendar) fn next_monthly_close_after_with<G: SourceGate>(
+    context: &QueryContext<'_, G>,
     instant: DateTime<Utc>,
     kind: SessionKind,
-) -> Result<Option<DateTime<Utc>>, CalendarQueryError> {
+) -> Result<Option<DateTime<Utc>>, G::Error> {
     let Some((mut trade_date, mut close)) =
         next_daily_close_and_trade_date_after_with(context, instant, kind)?
     else {

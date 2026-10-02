@@ -17,6 +17,7 @@
 
 use chrono::{DateTime, Duration, NaiveDate, Utc};
 
+use super::gate::SourceGate;
 use super::schedule::{QueryContext, RuleSet};
 use crate::calendar::exceptions::{DateException, ExceptionBlock, ExceptionBlockKind};
 use crate::calendar::local_time::{bounded_utc, mk_local_close, mk_local_open};
@@ -84,8 +85,8 @@ fn late_open_day(trade_date: NaiveDate, blocks: &[ExceptionBlock], ssm: u32) -> 
 /// the trading day is, and the policy then clips it exactly as it clips a
 /// normal week. `blocks` is the record's complete ordered set, needed only to
 /// anchor a late-open override to the replaced day's own first open.
-pub(super) fn resolve_block_bounds(
-    context: &QueryContext<'_>,
+pub(super) fn resolve_block_bounds<G: SourceGate>(
+    context: &QueryContext<'_, G>,
     trade_date: NaiveDate,
     blocks: &[ExceptionBlock],
     block: ExceptionBlock,
@@ -147,8 +148,8 @@ pub(super) fn resolve_block_bounds(
 /// This layer answers from records only, so it can never refuse a date: it
 /// returns `Option` rather than the `Result` its caller uses, and the caller
 /// applies its own coverage verdict to the day before asking.
-pub(super) fn find_occurrence<T>(
-    context: &QueryContext<'_>,
+pub(super) fn find_occurrence<G: SourceGate, T>(
+    context: &QueryContext<'_, G>,
     open_day: NaiveDate,
     set: RuleSet,
     wrapped_only: bool,
@@ -233,8 +234,8 @@ pub(super) fn find_occurrence<T>(
 /// that a shipped merged-trade-date arrangement otherwise re-derives per rule
 /// occurrence (issue #125); a `false` from the pre-filter is therefore exact,
 /// not an estimate.
-pub(super) fn governs_instant(
-    context: &QueryContext<'_>,
+pub(super) fn governs_instant<G: SourceGate>(
+    context: &QueryContext<'_, G>,
     window: (DateTime<Utc>, DateTime<Utc>),
     set: RuleSet,
     open_day: chrono::NaiveDate,
@@ -343,8 +344,8 @@ pub(super) fn governs_instant(
 /// session standing), and letting it answer here would assign the record's own
 /// trade date to a window the record does not own — bounds and date naming two
 /// different sessions.
-pub(super) fn replacement_trade_date(
-    context: &QueryContext<'_>,
+pub(super) fn replacement_trade_date<G: SourceGate>(
+    context: &QueryContext<'_, G>,
     open: DateTime<Utc>,
 ) -> Option<NaiveDate> {
     if !context.has_replacement_layer() {
@@ -379,8 +380,8 @@ pub(super) fn replacement_trade_date(
 /// A replaced trade date answers directly from its own blocks rather than
 /// through the normal-week neighbour scan, because its blocks may open several
 /// local days earlier than that scan reaches.
-pub(super) fn daily_close(
-    context: &QueryContext<'_>,
+pub(super) fn daily_close<G: SourceGate>(
+    context: &QueryContext<'_, G>,
     trade_date: NaiveDate,
     kind: SessionKind,
 ) -> ExceptionDailyClose {

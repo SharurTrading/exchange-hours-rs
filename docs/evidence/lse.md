@@ -38,19 +38,24 @@ as each source is re-verified.
 
 ## Holidays
 
-**Coverage:** 2010-01-01..2015-01-01, 2020-08-31..2027-12-31 (inclusive trade dates in
-`Europe/London`; tier T1 throughout).
+**Coverage:** 2010-01-01..2027-12-31 (inclusive trade dates in `Europe/London`; tier T1
+throughout).
 
-LSE's holiday statement is the operator's own holiday table, which has shipped under three
+LSE's holiday statement is the operator's own holiday table, which has shipped under four
 site generations: "The Public and Bank Holidays in England & Wales" on the `.htm` Business
 days page (`about-the-exchange/company-overview/business-days/business-days.htm`, 2010-2014),
-the server-rendered "Bank holidays and their impact on our trading services" table of the 2020
-SPA page (`trade/trading-access/business-days`, 2020-2022), and the same table delivered by the
-content API behind `londonstockexchange.com`
+the same page on the operator group's own site
+(`lseg.com/areas-expertise/our-markets/london-stock-exchange/equities-markets/trading-services/business-days`,
+captured continuously 2013-10..2020-07 — `lseg.com/businessdays` 301s there, and the
+operator's own December 2015 service announcement `live001-03122015` cites
+`www.lseg.com/businessdays` as where "Full details of London Stock Exchange trading and EUI
+settlement days can be found"), the server-rendered "Bank holidays and their impact on our
+trading services" table of the 2020 SPA page (`trade/trading-access/business-days`,
+2020-2022), and the same table delivered by the content API behind `londonstockexchange.com`
 (`api.londonstockexchange.com/api/v1/pages?path=equities-trading/business-days`, 2023-2026).
 The table is **rolling** at every generation — it lists business days from the present forward
 to the next New Year — so each audited year is pinned by captures taken inside it or just
-before it; the fourteen archived states 2010-2024 are the first rows of the `### Documents`
+before it; the archived states 2010-2026 are the rows of the `### Documents`
 table, and each year section below names its capture and its corroboration. The 2010-2012
 generation states the December half days in page-level words — `all Exchange markets will
 close from 12:30 London time onwards` — naming the dates in the sentence; the 2013 onward
@@ -149,23 +154,97 @@ here can support. **Closing condition:** a capture of the business-days API date
 
 | Trade date | Kind | Instant as printed | Document | Tier | Derived from |
 |---|---|---|---|---|---|
-| 2015-01-01 | closed | `New Year's Day` — `NON-trading day & NON-settlement day in EUI` | ``LSE-BUSDAYS-2014-01-15`` | T1 | the operator's own printed date; the last row any 2010-2014-era capture reaches — the audited window ends here |
+| 2015-01-01 | closed | `New Year's Day` — `NON-trading day & NON-settlement day in EUI` | ``LSE-BUSDAYS-2014-01-15`` | T1 | the operator's own printed date; corroborated by the 2015-01-03 capture of the lseg.com channel |
+| 2015-04-03 | closed | `Good Friday` — `NON-trading day & NON-settlement day in EUI` | ``LSE-LSEGBUSDAYS-2015-01-03`` | T1 | the operator's own printed date; corroborated by the 2015-04-05 capture |
+| 2015-04-06 | closed | `Easter Monday` — `NON-trading day & NON-settlement day in EUI` | ``LSE-LSEGBUSDAYS-2015-01-03`` | T1 | the operator's own printed date; corroborated by the 2015-04-05 capture |
+| 2015-05-04 | closed | `Early May Bank Holiday` — `NON-trading day & NON-settlement day in EUI` | ``LSE-LSEGBUSDAYS-2015-01-03`` | T1 | the operator's own printed date; corroborated by the 2015-04-05 capture |
+| 2015-05-25 | closed | `Spring Bank Holiday` — `NON-trading day & NON-settlement day in EUI` | ``LSE-LSEGBUSDAYS-2015-01-03`` | T1 | the operator's own printed date; corroborated by the 2015-04-05 capture |
+| 2015-08-31 | closed | `Summer Bank holiday` — `NON-trading day & NON-settlement day in EUI` | ``LSE-LSEGBUSDAYS-2015-01-03`` | T1 | the operator's own printed date; corroborated by the 2015-04-05 capture |
+| 2015-12-24 | early close | `Christmas Eve` — `Markets closing process commences from 12:30 London time. Standard settlement day` | ``LSE-LSEGBUSDAYS-2015-01-03`` | T1 | the printed event date; corroborated by the 2015-04-05 and 2015-12-21 captures and by the operator's own 2015-12-03 announcement (`live001-03122015`: half trading day on 24 and 31 December 2015) |
+| 2015-12-25 | closed | `Christmas Day` — `NON-trading day & NON-settlement day in EUI` | ``LSE-LSEGBUSDAYS-2015-01-03`` | T1 | the operator's own printed date; corroborated by the 2015-04-05 and 2015-12-21 captures |
+| 2015-12-28 | closed | `Boxing Day (holiday)` — `NON-trading day & NON-settlement day in EUI` | ``LSE-LSEGBUSDAYS-2015-01-03`` | T1 | the operator's own substitute-day print (25 December fell on Friday); corroborated by the 2015-04-05 and 2015-12-21 captures |
+| 2015-12-31 | early close | `New Year's Eve` — `Markets closing process commences from 12:30 London time. Standard settlement day` | ``LSE-LSEGBUSDAYS-2015-01-03`` | T1 | the printed event date; corroborated by the 2015-04-05 and 2015-12-21 captures and by the operator's own 2015-12-03 announcement |
+
+### 2016
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2016-01-01 | closed | `New Year's Day` — `NON-trading day & NON-settlement day in EUI` | ``LSE-LSEGBUSDAYS-2015-12-21`` | T1 | the operator's own printed date; corroborated by the 2015-01-03 capture |
+| 2016-03-25 | closed | `Good Friday` — `NON-trading day & NON-settlement day in EUI` | ``LSE-LSEGBUSDAYS-2015-12-21`` | T1 | the operator's own printed date; corroborated by the 2016-01-18 and 2016-04-17 captures |
+| 2016-03-28 | closed | `Easter Monday` — `NON-trading day & NON-settlement day in EUI` | ``LSE-LSEGBUSDAYS-2015-12-21`` | T1 | the operator's own printed date; corroborated by the 2016-01-18 and 2016-04-17 captures |
+| 2016-05-02 | closed | `Early May Bank Holiday` — `NON-trading day & NON-settlement day in EUI` | ``LSE-LSEGBUSDAYS-2015-12-21`` | T1 | the operator's own printed date; corroborated by the 2016-01-18 and 2016-04-17 captures |
+| 2016-05-30 | closed | `Spring Bank Holiday` — `NON-trading day & NON-settlement day in EUI` | ``LSE-LSEGBUSDAYS-2015-12-21`` | T1 | the operator's own printed date; corroborated by the 2016-01-18 and 2016-04-17 captures |
+| 2016-08-29 | closed | `Summer Bank Holiday` — `NON-trading day & NON-settlement day in EUI` | ``LSE-LSEGBUSDAYS-2015-12-21`` | T1 | the operator's own printed date; corroborated by the 2016-01-18 and 2016-04-17 captures |
+| 2016-12-23 | early close | `Christmas` — `Markets closing process commences from 12:30 London time. Standard settlement day` | ``LSE-LSEGBUSDAYS-2015-12-21`` | T1 | the printed event date (24/25 December fell at the weekend so the half day is the printed Friday); corroborated by the 2016-01-18, 2016-04-17 and 2016-11-22 captures |
+| 2016-12-26 | closed | `Boxing Day` — `NON-trading day & NON-settlement day in EUI` | ``LSE-LSEGBUSDAYS-2015-12-21`` | T1 | the operator's own printed date; corroborated by the 2016-01-18, 2016-04-17 and 2016-11-22 captures |
+| 2016-12-27 | closed | `Christmas Holiday` — `NON-trading day & NON-settlement day in EUI` | ``LSE-LSEGBUSDAYS-2015-12-21`` | T1 | the operator's own substitute-day print; corroborated by the 2016-01-18, 2016-04-17 and 2016-11-22 captures |
+| 2016-12-30 | early close | `New Year` — `Markets closing process commences from 12:30 London time. Standard settlement day` | ``LSE-LSEGBUSDAYS-2015-12-21`` | T1 | the printed event date; corroborated by the 2016-01-18, 2016-04-17 and 2016-11-22 captures |
+
+### 2017
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2017-01-02 | closed | `New Year Holiday` — `NON-trading day & NON-settlement day in EUI` | ``LSE-LSEGBUSDAYS-2016-11-22`` | T1 | the operator's own substitute-day print; corroborated by the 2017-02-04 and 2017-05-05 captures |
+| 2017-04-14 | closed | `Good Friday` — `NON-trading day & NON-settlement day in EUI` | ``LSE-LSEGBUSDAYS-2016-11-22`` | T1 | the operator's own printed date; corroborated by the 2017-02-04 and 2017-05-05 captures |
+| 2017-04-17 | closed | `Easter Monday` — `NON-trading day & NON-settlement day in EUI` | ``LSE-LSEGBUSDAYS-2016-11-22`` | T1 | the operator's own printed date; corroborated by the 2017-02-04 and 2017-05-05 captures |
+| 2017-05-01 | closed | `Early May Bank Holiday` — `NON-trading day & NON-settlement day in EUI` | ``LSE-LSEGBUSDAYS-2016-11-22`` | T1 | the operator's own printed date; corroborated by the 2017-02-04 and 2017-05-05 captures |
+| 2017-05-29 | closed | `Spring Bank Holiday` — `NON-trading day & NON-settlement day in EUI` | ``LSE-LSEGBUSDAYS-2016-11-22`` | T1 | the operator's own printed date; corroborated by the 2017-02-04 and 2017-05-05 captures |
+| 2017-08-28 | closed | `Summer Bank Holiday` — `NON-trading day & NON-settlement day in EUI` | ``LSE-LSEGBUSDAYS-2016-11-22`` | T1 | the operator's own printed date; corroborated by the 2017-02-04 and 2017-05-05 captures |
+| 2017-12-22 | early close | `Christmas` — `Markets closing process commences from 12:30 London time. Standard settlement day` | ``LSE-LSEGBUSDAYS-2016-11-22`` | T1 | the printed event date; corroborated by the 2017-02-04, 2017-05-05 and 2017-12-02 captures |
+| 2017-12-25 | closed | `Christmas Day` — `NON-trading day & NON-settlement day in EUI` | ``LSE-LSEGBUSDAYS-2016-11-22`` | T1 | the operator's own printed date; corroborated by the 2017-02-04, 2017-05-05 and 2017-12-02 captures |
+| 2017-12-26 | closed | `Boxing Day` — `NON-trading day & NON-settlement day in EUI` | ``LSE-LSEGBUSDAYS-2016-11-22`` | T1 | the operator's own printed date; corroborated by the 2017-02-04, 2017-05-05 and 2017-12-02 captures |
+| 2017-12-29 | early close | `New Year` — `Markets closing process commences from 12:30 London time. Standard settlement day` | ``LSE-LSEGBUSDAYS-2016-11-22`` | T1 | the printed event date; corroborated by the 2017-02-04, 2017-05-05 and 2017-12-02 captures |
+
+### 2018
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2018-01-01 | closed | `New Year's Day` — `NON-trading day. Also NON-settlement day in EUI` | ``LSE-LSEGBUSDAYS-2017-12-02`` | T1 | the operator's own printed date; corroborated by the 2017-02-04 and 2018-02-03 captures |
+| 2018-03-30 | closed | `Good Friday` — `NON-trading day. Also NON-settlement day in EUI` | ``LSE-LSEGBUSDAYS-2017-12-02`` | T1 | the operator's own printed date; corroborated by the 2018-02-03 and 2018-05-03 captures |
+| 2018-04-02 | closed | `Easter Monday` — `NON-trading day. Also NON-settlement day in EUI` | ``LSE-LSEGBUSDAYS-2017-12-02`` | T1 | the operator's own printed date; corroborated by the 2018-02-03 and 2018-05-03 captures |
+| 2018-05-07 | closed | `Early May Bank Holiday` — `NON-trading day. Also NON-settlement day in EUI` | ``LSE-LSEGBUSDAYS-2017-12-02`` | T1 | the operator's own printed date; corroborated by the 2018-02-03 and 2018-05-03 captures |
+| 2018-05-28 | closed | `Spring Bank Holiday` — `NON-trading day. Also NON-settlement day in EUI` | ``LSE-LSEGBUSDAYS-2017-12-02`` | T1 | the operator's own printed date; corroborated by the 2018-02-03 and 2018-05-03 captures |
+| 2018-08-27 | closed | `Summer bank Holiday` — `NON-trading day. Also NON-settlement day in EUI` | ``LSE-LSEGBUSDAYS-2017-12-02`` | T1 | the operator's own printed date; corroborated by the 2018-02-03, 2018-05-03 and 2018-10-01 captures |
+| 2018-12-24 | early close | `Christmas Eve` — `Markets closing process commences from 12:30 London time. Standard settlement day` | ``LSE-LSEGBUSDAYS-2017-12-02`` | T1 | the printed event date; corroborated by the 2018-02-03, 2018-05-03 and 2018-10-01 captures |
+| 2018-12-25 | closed | `Christmas Day` — `NON-trading day. Also NON-settlement day in EUI` | ``LSE-LSEGBUSDAYS-2017-12-02`` | T1 | the operator's own printed date; corroborated by the 2018-02-03, 2018-05-03 and 2018-10-01 captures |
+| 2018-12-26 | closed | `Boxing Day` — `NON-trading day. Also NON-settlement day in EUI` | ``LSE-LSEGBUSDAYS-2017-12-02`` | T1 | the operator's own printed date; corroborated by the 2018-02-03, 2018-05-03 and 2018-10-01 captures |
+| 2018-12-31 | early close | `New Year's Eve` — `Markets closing process commences from 12:30 London time. Standard settlement day` | ``LSE-LSEGBUSDAYS-2017-12-02`` | T1 | the printed event date; corroborated by the 2018-02-03, 2018-05-03 and 2018-10-01 captures |
+
+### 2019
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2019-01-01 | closed | `New Year's Day` — `NON-trading day. Also NON-settlement day in EUI` | ``LSE-LSEGBUSDAYS-2017-12-02`` | T1 | the operator's own printed date; corroborated by the 2018-02-03, 2018-05-03 and 2018-10-01 captures |
+| 2019-04-19 | closed | `Good Friday` — `NON-trading day. Also NON-settlement day in EUI` | ``LSE-LSEGBUSDAYS-2018-10-01`` | T1 | the operator's own printed date; corroborated by the 2019-03-26 capture |
+| 2019-04-22 | closed | `Easter Monday` — `NON-trading day. Also NON-settlement day in EUI` | ``LSE-LSEGBUSDAYS-2018-10-01`` | T1 | the operator's own printed date; corroborated by the 2019-03-26 capture |
+| 2019-05-06 | closed | `Early May Bank Holiday` — `NON-trading day. Also NON-settlement day in EUI` | ``LSE-LSEGBUSDAYS-2018-10-01`` | T1 | the operator's own printed date; corroborated by the 2019-03-26 capture |
+| 2019-05-27 | closed | `Spring Bank Holiday` — `NON-trading day. Also NON-settlement day in EUI` | ``LSE-LSEGBUSDAYS-2018-10-01`` | T1 | the operator's own printed date; corroborated by the 2019-03-26 and 2019-06-14 captures |
+| 2019-08-26 | closed | `Summer Bank Holiday` — `NON-trading day. Also GBX/ GBP NON-settlement day in EUI` | ``LSE-LSEGBUSDAYS-2019-03-26`` | T1 | the operator's own printed date; corroborated by the 2019-06-14 capture |
+| 2019-12-24 | early close | `Christmas Eve` — `Markets closing process commences from 12:30 London time. Standard settlement day` | ``LSE-LSEGBUSDAYS-2019-03-26`` | T1 | the printed event date; corroborated by the 2019-06-14, 2019-12-19 and 2020-03-17 captures |
+| 2019-12-25 | closed | `Christmas Day` — `NON-trading day. Also GBX/ GBP NON-settlement day in EUI` | ``LSE-LSEGBUSDAYS-2019-03-26`` | T1 | the operator's own printed date; corroborated by the 2019-06-14, 2019-12-19 and 2020-03-17 captures |
+| 2019-12-26 | closed | `Boxing Day` — `NON-trading day, Also GBX/ GBP NON-settlement day in EUI` | ``LSE-LSEGBUSDAYS-2019-03-26`` | T1 | the operator's own printed date; corroborated by the 2019-06-14, 2019-12-19 and 2020-03-17 captures |
+| 2019-12-31 | early close | `New Year's Eve` — `Markets closing process commences from 12:30 London time. Standard settlement day` | ``LSE-LSEGBUSDAYS-2019-03-26`` | T1 | the printed event date; corroborated by the 2019-06-14, 2019-12-19 and 2020-03-17 captures |
 
 ### 2020
 
 | Trade date | Kind | Instant as printed | Document | Tier | Derived from |
 |---|---|---|---|---|---|
-| 2020-08-31 | closed | `Summer Bank Holiday` — `NON-trading day.` | ``LSE-BUSDAYS-2020-07-31`` | T1 | the operator's own printed date; the first row the first 2020-era capture lists |
-| 2020-12-24 | early close | `Christmas Eve` — `Markets closing process commences from 12:30 London time. Standard settlement day.` | ``LSE-BUSDAYS-2020-07-31`` | T1 | the printed event date; corroborated by the 2020-12-21 capture |
-| 2020-12-25 | closed | `Christmas Day` — `NON-trading day.` | ``LSE-BUSDAYS-2020-07-31`` | T1 | the operator's own printed date; corroborated by the 2020-12-21 capture |
-| 2020-12-28 | closed | `Boxing Day (substitute)` — `NON-trading day.` | ``LSE-BUSDAYS-2020-07-31`` | T1 | the operator's own substitute-day print; corroborated by the 2020-12-21 capture |
-| 2020-12-31 | early close | `New Year's Eve` — `Markets closing process commences from 12:30 London time. Standard settlement day.` | ``LSE-BUSDAYS-2020-07-31`` | T1 | the printed event date; corroborated by the 2020-12-21 capture |
+| 2020-01-01 | closed | `New Year's Day` — `NON-trading day. Also GBX / GBP NON-settlement day in EUI` | ``LSE-LSEGBUSDAYS-2019-03-26`` | T1 | the operator's own printed date; corroborated by the 2019-06-14, 2019-12-19 and 2020-03-17 captures |
+| 2020-04-10 | closed | `Good Friday` — `NON-trading day. Also GBX/ GBP NON-settlement day in EUI` | ``LSE-LSEGBUSDAYS-2019-06-14`` | T1 | the operator's own printed date; corroborated by the 2019-12-19 and 2020-03-17 captures |
+| 2020-04-13 | closed | `Easter Monday` — `NON-trading day. Also GBX/ GBP NON-settlement day in EUI` | ``LSE-LSEGBUSDAYS-2019-06-14`` | T1 | the operator's own printed date; corroborated by the 2019-12-19 and 2020-03-17 captures |
+| 2020-05-08 | closed | `Early May Bank Holiday (VE Day)` — `NON-trading day. Also GBX/ GBP NON-settlement day in EUI` | ``LSE-LSEGBUSDAYS-2019-06-14`` | T1 | the operator's own printed date — the Early May holiday moved from Monday 4 May for the 75th anniversary; corroborated by the 2019-12-19 and 2020-03-17 captures |
+| 2020-05-25 | closed | `Spring Bank Holiday` — `NON-trading day. Also GBX/ GBP NON-settlement day in EUI` | ``LSE-LSEGBUSDAYS-2019-06-14`` | T1 | the operator's own printed date; corroborated by the 2019-12-19, 2020-03-17 and 2020-05-11 captures |
+| 2020-08-31 | closed | `Summer Bank Holiday` — `NON-trading day.` | ``LSE-LSEGBUSDAYS-2019-12-19`` | T1 | the operator's own printed date; corroborated by the 2020-03-17, 2020-05-11 and 2020-07-31 captures |
+| 2020-12-24 | early close | `Christmas Eve` — `Markets closing process commences from 12:30 London time. Standard settlement day.` | ``LSE-LSEGBUSDAYS-2019-12-19`` | T1 | the printed event date; corroborated by the 2020-03-17, 2020-05-11, 2020-07-31 and 2020-12-21 captures |
+| 2020-12-25 | closed | `Christmas Day` — `NON-trading day.` | ``LSE-LSEGBUSDAYS-2019-12-19`` | T1 | the operator's own printed date; corroborated by the 2020-03-17, 2020-05-11, 2020-07-31 and 2020-12-21 captures |
+| 2020-12-28 | closed | `Boxing Day (substitute)` — `NON-trading day.` | ``LSE-LSEGBUSDAYS-2019-12-19`` | T1 | the operator's own substitute-day print; corroborated by the 2020-03-17, 2020-05-11, 2020-07-31 and 2020-12-21 captures |
+| 2020-12-31 | early close | `New Year's Eve` — `Markets closing process commences from 12:30 London time. Standard settlement day.` | ``LSE-LSEGBUSDAYS-2019-12-19`` | T1 | the printed event date; corroborated by the 2020-03-17, 2020-05-11, 2020-07-31 and 2020-12-21 captures |
 
 ### 2021
 
 | Trade date | Kind | Instant as printed | Document | Tier | Derived from |
 |---|---|---|---|---|---|
-| 2021-01-01 | closed | `New Year's Day` — `NON-trading day.` | ``LSE-BUSDAYS-2020-12-21`` | T1 | the operator's own printed date; corroborated by the 2021-01-21 capture |
+| 2021-01-01 | closed | `New Year's Day` — `NON-trading day.` | ``LSE-LSEGBUSDAYS-2019-12-19`` | T1 | the operator's own printed date; corroborated by the 2020-07-31, 2020-12-21 and 2021-01-21 captures |
 | 2021-04-02 | closed | `Good Friday` — `NON-trading day.` | ``LSE-BUSDAYS-2020-12-21`` | T1 | the operator's own printed date; corroborated by the 2021-01-21 capture |
 | 2021-04-05 | closed | `Easter Monday` — `NON-trading day.` | ``LSE-BUSDAYS-2020-12-21`` | T1 | the operator's own printed date; corroborated by the 2021-01-21 capture |
 | 2021-05-03 | closed | `Early May Bank Holiday` — `NON-trading day.` | ``LSE-BUSDAYS-2020-12-21`` | T1 | the operator's own printed date; corroborated by the 2021-01-21 capture |
@@ -286,6 +365,24 @@ no other half days are printed in any audited year.
 | `LSE-BUSDAYS-2012-01-17` | 2012-01-02 .. 2012-12-31 | <https://web.archive.org/web/20120117133012id_/http://www.londonstockexchange.com/about-the-exchange/company-overview/business-days/business-days.htm> | Wayback `id_` replay of capture `20120117133012`, retrieved 2026-09-29 05:30 UTC | T1 | `9884a611e2743bc80ac54f98cf893647740613dda6b040118a921b6c741233b7` |
 | `LSE-BUSDAYS-2013-01-01` | 2012-12-24 .. 2013-12-31 | <https://web.archive.org/web/20130101122127id_/http://www.londonstockexchange.com/about-the-exchange/company-overview/business-days/business-days.htm> | Wayback `id_` replay of capture `20130101122127`, retrieved 2026-09-29 05:30 UTC | T1 | `9defbe1e5f0ac1a1e4d4c2aa36b1c24bfdbde0da21e75be6afbba6da505eb5ba` |
 | `LSE-BUSDAYS-2014-01-15` | 2013-12-24 .. 2015-01-01 | <https://web.archive.org/web/20140115110512id_/http://www.londonstockexchange.com/about-the-exchange/company-overview/business-days/business-days.htm> | Wayback `id_` replay of capture `20140115110512`, retrieved 2026-09-29 05:30 UTC | T1 | `14cfffbe01cc2d618aa9c0df5b04dd8f0b9e4ac781944e3b3389bf443ec50931` |
+| `LSE-LSEGBUSDAYS-2015-01-03` | 2014-12-24 .. 2016-01-01 | <https://web.archive.org/web/20150103045430id_/http://www.lseg.com/areas-expertise/our-markets/london-stock-exchange/equities-markets/trading-services/business-days> | Wayback `id_` replay of capture `20150103045430`, retrieved 2026-10-02 UTC | T1 | `ce4ae71a9f28650fd18be394c52a8aa8d79b052038aadeebf82c94a9cc42ec6d` |
+| `LSE-LSEGBUSDAYS-2015-04-05` | 2014-12-24 .. 2016-01-01 | <https://web.archive.org/web/20150405132414id_/http://www.lseg.com/areas-expertise/our-markets/london-stock-exchange/equities-markets/trading-services/business-days> | Wayback `id_` replay of capture `20150405132414`, retrieved 2026-10-02 UTC | T1 | `f176db644e228dc3abda9b35ffffd9e0f2af3c9c74a6c9a8010ef80d7769f4ea` |
+| `LSE-LSEGBUSDAYS-2015-12-21` | 2015-12-24 .. 2017-01-02 | <https://web.archive.org/web/20151221080205id_/http://www.lseg.com/areas-expertise/our-markets/london-stock-exchange/equities-markets/trading-services/business-days> | Wayback `id_` replay of capture `20151221080205`, retrieved 2026-10-02 UTC | T1 | `b9a2f41338f4218302c8eed80d830ab9b78ff3eb296bc088bdf7a40a4688cb68` |
+| `LSE-LSEGBUSDAYS-2016-01-18` | 2016-03-25 .. 2017-01-02 | <https://web.archive.org/web/20160118223452id_/http://www.lseg.com/areas-expertise/our-markets/london-stock-exchange/equities-markets/trading-services/business-days> | Wayback `id_` replay of capture `20160118223452`, retrieved 2026-10-02 UTC | T1 | `cd6a561ecaaba90eeb6ed4d72037fa74cc9aa258ff5320aa138b56bf3f9495db` |
+| `LSE-LSEGBUSDAYS-2016-04-17` | 2016-03-25 .. 2017-01-02 | <https://web.archive.org/web/20160417162806id_/http://www.lseg.com/areas-expertise/our-markets/london-stock-exchange/equities-markets/trading-services/business-days> | Wayback `id_` replay of capture `20160417162806`, retrieved 2026-10-02 UTC | T1 | `12742854a82949f8fc1d20828676fc4dbbd27bf1cf8d60da9ba31a8549039566` |
+| `LSE-LSEGBUSDAYS-2016-11-22` | 2016-12-23 .. 2018-01-01 | <https://web.archive.org/web/20161122160354id_/http://www.lseg.com/areas-expertise/our-markets/london-stock-exchange/equities-markets/trading-services/business-days> | Wayback `id_` replay of capture `20161122160354`, retrieved 2026-10-02 UTC | T1 | `28d39168f2563b922e08b814ae3d22a7e999cdc29eba01278059561395c8ffff` |
+| `LSE-LSEGBUSDAYS-2017-02-04` | 2016-12-23 .. 2018-01-01 | <https://web.archive.org/web/20170204222808id_/http://www.lseg.com/areas-expertise/our-markets/london-stock-exchange/equities-markets/trading-services/business-days> | Wayback `id_` replay of capture `20170204222808`, retrieved 2026-10-02 UTC | T1 | `0ddf56559725a9e92bd9dad1a7f226b76fa52c867af536ba045a099e83328560` |
+| `LSE-LSEGBUSDAYS-2017-05-05` | 2016-12-23 .. 2018-01-01 | <https://web.archive.org/web/20170505203121id_/http://www.lseg.com/areas-expertise/our-markets/london-stock-exchange/equities-markets/trading-services/business-days> | Wayback `id_` replay of capture `20170505203121`, retrieved 2026-10-02 UTC | T1 | `aa2945fcc327ad31ab3fc4e498a11d485bb4fbaab0dd334b27f9d14e7fb3dd5a` |
+| `LSE-LSEGBUSDAYS-2017-12-02` | 2017-12-22 .. 2019-01-01 | <https://web.archive.org/web/20171202110229id_/http://www.lseg.com/areas-expertise/our-markets/london-stock-exchange/equities-markets/trading-services/business-days> | Wayback `id_` replay of capture `20171202110229`, retrieved 2026-10-02 UTC | T1 | `bf71ef582ca25a3f8ff0e2930d863d5acb67317762795b707372bceb07c0cb0c` |
+| `LSE-LSEGBUSDAYS-2018-02-03` | 2017-12-22 .. 2019-01-01 | <https://web.archive.org/web/20180203095647id_/http://www.lseg.com/areas-expertise/our-markets/london-stock-exchange/equities-markets/trading-services/business-days> | Wayback `id_` replay of capture `20180203095647`, retrieved 2026-10-02 UTC | T1 | `16413c9465bf8d3bd909b8b67c1b7b87cfdfa8ee5ed560e5145098bd6c077a35` |
+| `LSE-LSEGBUSDAYS-2018-05-03` | 2018-03-30 .. 2019-01-01 | <https://web.archive.org/web/20180503121105id_/http://www.lseg.com/areas-expertise/our-markets/london-stock-exchange/equities-markets/trading-services/business-days> | Wayback `id_` replay of capture `20180503121105`, retrieved 2026-10-02 UTC | T1 | `12a39452aef92b53044e4bdce9fe186cbfdd23839137944ce91194abd87b1bdd` |
+| `LSE-LSEGBUSDAYS-2018-10-01` | 2018-08-27 .. 2019-05-27 | <https://web.archive.org/web/20181001173859id_/http://www.lseg.com/areas-expertise/our-markets/london-stock-exchange/equities-markets/trading-services/business-days> | Wayback `id_` replay of capture `20181001173859`, retrieved 2026-10-02 UTC | T1 | `ec2fd1ace6e7747a965c74c7fe23b3b9f872303c51bec85cc04b63b586b20c08` |
+| `LSE-LSEGBUSDAYS-2019-03-26` | 2019-04-19 .. 2020-01-01 | <https://web.archive.org/web/20190326054958id_/http://www.lseg.com/areas-expertise/our-markets/london-stock-exchange/equities-markets/trading-services/business-days> | Wayback `id_` replay of capture `20190326054958`, retrieved 2026-10-02 UTC | T1 | `e8ef57a5bee4b009da09ea3772e6b49be73198b52b9fdad4f263a0af5e8f8632` |
+| `LSE-LSEGBUSDAYS-2019-06-14` | 2019-08-26 .. 2020-05-25 | <https://web.archive.org/web/20190614074153id_/http://www.lseg.com/areas-expertise/our-markets/london-stock-exchange/equities-markets/trading-services/business-days> | Wayback `id_` replay of capture `20190614074153`, retrieved 2026-10-02 UTC | T1 | `a7745f884c79ab3683a219645f306950a782fb07d8f26e4fe9bb102eb6d99a09` |
+| `LSE-LSEGBUSDAYS-2019-12-19` | 2019-12-24 .. 2021-01-01 | <https://web.archive.org/web/20191219013737id_/http://www.lseg.com/areas-expertise/our-markets/london-stock-exchange/equities-markets/trading-services/business-days> | Wayback `id_` replay of capture `20191219013737`, retrieved 2026-10-02 UTC | T1 | `d86ab5d9ce39a8d552e9f2a7a70d93c159ebc8fd4871729294b0e5135bd9a0d4` |
+| `LSE-LSEGBUSDAYS-2020-03-17` | 2020-04-10 .. 2020-12-31 | <https://web.archive.org/web/20200317072237id_/http://www.lseg.com/areas-expertise/our-markets/london-stock-exchange/equities-markets/trading-services/business-days> | Wayback `id_` replay of capture `20200317072237` (gzip response decoded), retrieved 2026-10-02 UTC | T1 | `5e8911451971b371d7d70dc556ca8887feba8dd8c15c5eb101b6ea2dde314ed1` |
+| `LSE-LSEGBUSDAYS-2020-05-11` | 2020-04-10 .. 2020-12-31 | <https://web.archive.org/web/20200511062750id_/http://www.lseg.com/areas-expertise/our-markets/london-stock-exchange/equities-markets/trading-services/business-days> | Wayback `id_` replay of capture `20200511062750` (gzip response decoded), retrieved 2026-10-02 UTC | T1 | `2bab0d7d84bed7347e17bbd3e880045f09877f0a00c1f2a8f9127ab818307310` |
+| `LSE-NOTICE-2015-12-03` | 2015-12-24 .. 2015-12-31 | <https://web.archive.org/web/20170916002832id_/http://www.londonstockexchange.com/products-and-services/technical-library/service-announcements/2015/live-001-03122015.doc> | Wayback `id_` replay of capture `20170916002832`, retrieved 2026-10-02 UTC | T1 | `52044cc2fac37dbc3de24dac2c1a863a59cd09df4dd9b37f1b4b99ca594323a8` |
 | `LSE-BUSDAYS-2020-07-31` | 2020-08-31 .. 2021-05-31 | <https://web.archive.org/web/20200731082235id_/https://www.londonstockexchange.com/trade/trading-access/business-days> | Wayback `id_` replay of capture `20200731082235`, retrieved 2026-09-29 05:31 UTC | T1 | `005b59af3fc83bcbfac0d96bb1cefaf9036134feeaf5fa0c58201a17841f240e` |
 | `LSE-BUSDAYS-2020-12-21` | 2020-12-24 .. 2022-01-03 | <https://web.archive.org/web/20201221145636id_/https://www.londonstockexchange.com/trade/trading-access/business-days> | Wayback `id_` replay of capture `20201221145636`, retrieved 2026-09-29 05:31 UTC | T1 | `d1bf0e7da56dbd525afa6d28f2ec2306e2864902aaa26bd820cf4b727a14ba19` |
 | `LSE-BUSDAYS-2021-01-21` | 2021-04-02 .. 2022-01-03 | <https://web.archive.org/web/20210121011235id_/https://www.londonstockexchange.com/trade/trading-access/business-days> | Wayback `id_` replay of capture `20210121011235`, retrieved 2026-09-29 05:31 UTC | T1 | `1ea15180a8868d07efe5a4b9a44e69429dbd5d1031cd6cccafffd118fc3fc962` |
@@ -301,20 +398,28 @@ no other half days are printed in any audited year.
 `LSE-BUSDAYS-2010-12-03` and `LSE-BUSDAYS-2011-02-01` corroborate the 2010-10-07 capture on
 every row they share and add the one row it lacks (the Royal Wedding). `LSE-BUSDAYS-2010-01-30`,
 `LSE-BUSDAYS-2012-01-17` and `LSE-BUSDAYS-2013-01-01` are likewise full-state corroborations
-beside the earliest artifact that prints each of their years. `LSE-BUSDAYS-2021-01-21` and
-`LSE-BUSDAYS-2022-07-07` corroborate the December captures before them. `LSE-BUSDAYS-2024-03-08`
+beside the earliest artifact that prints each of their years. In the lseg.com generation the
+2015-04-05, 2015-12-21, 2016-04-17, 2017-05-05, 2018-05-03 and 2020-05-11 captures
+corroborate the December captures that first print each year, and the 2020-03-17 capture is
+dated inside the former 2020-01-01..2020-05-25 window (it prints 2020-04-10..2020-12-31).
+`LSE-NOTICE-2015-12-03` keys no row: it is the operator's own service announcement restating
+the 2015 half days and pointing at `www.lseg.com/businessdays`, the pointer that led to the
+lseg.com channel. `LSE-BUSDAYS-2021-01-21` and `LSE-BUSDAYS-2022-07-07` corroborate the
+December captures before them. `LSE-BUSDAYS-2024-03-08`
 keys no row: it confirms the February capture's 2025-01-01 endpoint and that no further 2025
 rows were listed at that date. `LSE-BUSDAYS-2026-06-17` and `LSE-BUSDAYS-LIVE-2026-09-28` key
 no row either: they corroborate the 2025-12-18 capture's rows on every date they share, which
 is what lets one document id carry 2026 and 2027. The store's `holidays/raw/equities/lse/
-2025-2027/` holds the 2025-2027 artifacts with its own index, and
-`holidays/raw/equities/lse/2010-2024/` holds the fourteen 2010-2024 artifacts above (their
-sha256s in `SHA256SUMS.txt`, their retrieval stamps in that directory's `INDEX.md`).
+2025-2027/` holds the 2025-2027 artifacts with its own index,
+`holidays/raw/equities/lse/2010-2024/` holds the fourteen 2010-2024 `.htm`/SPA/API artifacts
+above, and `holidays/raw/equities/lse/evidence-thread/` holds the lseg.com captures and the
+2015 announcement (sha256s in `SHA256SUMS-lseg-2026-10-02.txt`, the hunt record in that
+directory's `INDEX.md`).
 
 ## Gaps and residual risks
 
 - **Interpretive step, order-entry classification.** Pre-trading 07:00–07:50 is modelled `order_entry` on MIT201 section 4.4, which lists it as a scheduled trading session distinct from the executable phases of the order-book day. No on-book execution can occur before the opening auction uncrosses. Closing condition: none needed; a later MIT201 edition that reclassifies the phase would move it.
 - **Interpretive step, randomized uncrosses.** The opening uncross, the intraday auction uncross and the closing uncross are each randomized. The deterministic profile holds the auction classification through the latest possible edge (08:00:30, 12:02:30, 16:35:30), so the calendar never reports continuous trading while an auction can still run. This is the crate's conservative-envelope convention, not an operator statement about any individual security.
 - **Holiday coverage, five 2025 dates.** 2025-04-18, 2025-04-21, 2025-05-05, 2025-05-26 and 2025-08-25 are inside the audited window with `Unsourced` rows: the operator's rolling business-days table had moved past them before any surviving capture, and no archived or live artifact states them (checked 2026-09-28). The dates are Good Friday, Easter Monday and the three bank-holiday Mondays, so the crate claims nothing about them rather than an unaudited closure. Closing condition: a capture of the business-days API dated inside the 2025-01-02..2025-12-17 gap.
-- **Holiday coverage gap, 2015-01-02..2019-12-31 (tracked as [#218](https://github.com/SharurTrading/exchange-hours-rs/issues/218)).** The `.htm` Business days page died in February 2014 (its URL serves 404 from the first April 2014 capture on) and the 2020 SPA page's first Wayback capture is 2020-07-31, so no operator artifact states any 2015-2019 holiday. The CDX sweep covered both `.htm` URL forms (`about-the-exchange/...` and `products-and-services/trading-services/...`), the `/trade/` prefix, the `docs.londonstockexchange.com` document store and the API URL (checked 2026-09-29 UTC); the dead `.htm` URLs have only 404 captures after 2014-02-09. **Retried 2026-09-29 UTC with the CDX service back up.** The `products-and-services/trading-services/business-days` subtree's full capture list (78 entries) shows its last 200 at 2014-02-09, then 404s from 2015-07-08 through 2017 and 301s from 2018-07-07 through 2020-06-09 — no 2015-2019 state. A domain-wide sweep of `lseg.com` 2014-2021 (5 000 collapsed url keys) holds no business-days or holiday page of the exchange (only Academy course calendars and analytics beacons); `docs.londonstockexchange.com` 2014-2020 holds no holiday document; the business-days API still has exactly its four known captures (2024-02-07, 2024-03-08, 2025-12-18, 2026-06-17). The regex-filtered domain-wide sweep of `londonstockexchange.com` itself (`urlkey:.*holiday.*`, 2015-2020) was attempted three times and the CDX service returned 504 on each — the per-directory prefix sweeps above (about-the-exchange, products-and-services, traders-and-brokers, trade, news) are the completed substitute and the residual risk. Queries inside the span refuse rather than answer. Closing condition: a capture of any operator Business days state dated inside 2015-01-02..2019-12-31.
+- **Holiday coverage gap 2015-01-02..2019-12-31 and 2020-01-01..2020-05-25 — CLOSED as data (2026-10-02 UTC; [#218](https://github.com/SharurTrading/exchange-hours-rs/issues/218)).** The gap existed because the `.htm` Business days page died in February 2014 and the 2020 SPA page's first Wayback capture is 2020-07-31. The 2026-09-29 search covered both `.htm` URL forms, the `/trade/` prefix, `docs.londonstockexchange.com`, the business-days API URL and a domain-wide `lseg.com` sweep (5 000 collapsed url keys — a CDX truncation, as it turned out: the sweep's cap hid the exchange's own page on the group site). The close came through the operator's own pointer: the December 2015 service announcement `live001-03122015` (capture `20170916002832` — a class the earlier holiday/business-day URL-name greps could not see) cites `www.lseg.com/businessdays` for "Full details of London Stock Exchange trading and EUI settlement days"; that URL 301s (capture `20160423171007`) to `lseg.com/areas-expertise/our-markets/london-stock-exchange/equities-markets/trading-services/business-days`, whose 155 Wayback captures run 200-continuously from 2013-10-04 to 2020-07-23. Seventeen `id_` replays (sha256s in the store's `evidence-thread/SHA256SUMS-lseg-2026-10-02.txt`) tile both former gaps: the 2015-01-03 capture prints all 2015 rows, the 2015-12-21 capture all 2016 rows, the 2016-11-22 capture all 2017 rows, the 2017-12-02 capture all 2018 rows and 2019-01-01, the 2018-10-01 and 2019-03-26 captures the rest of 2019, the 2019-06-14 capture the moved 2020-05-08 VE Day holiday, and the 2019-12-19 capture the whole 2020 year — while the 2020-03-17 capture is dated inside 2020-01-01..2020-05-25 and prints 2020-04-10..2020-12-31, meeting the issue's second closing condition by the letter. The rows and their citations are above; the coverage verdict over 2015-2020 is now audited normal/closed exactly as printed. The five 2025 rolling-table dates below remain the only unaudited dates in the window.
 - **Holiday coverage gap, 2020-01-01..2020-08-30 (tracked as [#218](https://github.com/SharurTrading/exchange-hours-rs/issues/218)).** The first capture of the `/trade/trading-access/business-days` page is 2020-07-31 and its table starts at 2020-08-31, so New Year 2020, the Easter dates, the VE-Day-moved Early May holiday and Spring 2020 are stated by no surviving artifact (CDX checked 2026-09-29 UTC, including `?lang=` and `?mod=` variants). **Retried 2026-09-29 UTC with the CDX service back up:** the URL's full capture list (26 entries, 2020-07-31 through 2026-03-15) still opens at 2020-07-31, the `?lang=en` and `?mod=article_inline` variants are captured only from 2020-09-19 and 2020-12-21, and a Memento TimeTravel timemap query over both Business-days URLs returned no additional archive. Queries inside the span refuse. Closing condition: a capture dated 2020-01-01..2020-05-25.

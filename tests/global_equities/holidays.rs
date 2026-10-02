@@ -9,9 +9,10 @@
 //! from each year's own operator
 //! sheet, beside 2025-2027) and `sgx_securities` (2014-2020-01-01 backfilled
 //! beside 2025-2026, the 2010-2013 and 2020-2024 capture gaps refusing), and
-//! the European/American venues `lse` (2010-2015 and 2020-2027, the
-//! rolling table's archived states, with five 2025 dates withheld and the two
-//! capture gaps refusing), `euronext_paris` (2010-2026 across the operator's
+//! the European/American venues `lse` (2010-2027, the rolling table's
+//! archived states across the operator's four site generations — the `.htm`
+//! page, the operator group's `lseg.com` page, the 2020 SPA page and the
+//! content API — with five 2025 dates withheld), `euronext_paris` (2010-2026 across the operator's
 //! four calendar generations — the per-year press releases and notices, the
 //! 2014-2015 cash-markets pages, the per-year page and the per-market table;
 //! only the 2026 half-day eves are announced and unstated) and `tsx`
@@ -2918,15 +2919,23 @@ mod lse {
         // One representative closure per pre-2025 audited year, each the
         // operator's own printed row: the 2010 substitute Christmas pair, the
         // 2011 Royal Wedding, the 2012 Diamond Jubilee, the 2013-2014 spring
-        // bank holidays, 2020's substitute Boxing Day, the 2021 Christmas
-        // substitute, 2022's Platinum Jubilee, 2023's Coronation and 2024's
-        // Good Friday.
+        // bank holidays, the 2015-2019 lseg.com generations (the 2015
+        // substitute Boxing Day, 2016's Summer, 2017's Spring, 2018's Spring,
+        // 2019's Spring), 2020's moved VE-Day May holiday and substitute
+        // Boxing Day, the 2021 Christmas substitute, 2022's Platinum Jubilee,
+        // 2023's Coronation and 2024's Good Friday.
         let closed = [
             (2010, 12, 28),
             (2011, 4, 29),
             (2012, 6, 5),
             (2013, 5, 27),
             (2014, 8, 25),
+            (2015, 12, 28),
+            (2016, 8, 29),
+            (2017, 5, 29),
+            (2018, 5, 28),
+            (2019, 5, 27),
+            (2020, 5, 8),
             (2020, 12, 28),
             (2021, 12, 27),
             (2022, 6, 3),
@@ -2972,12 +2981,14 @@ mod lse {
     fn the_pre_2025_half_days_close_at_the_printed_1230_london_time() {
         let calendar = lse();
         // 2012's Christmas Eve (page-level sentence), 2011's printed Friday
-        // 23 December and 2022's printed Friday 30 December: every pre-2025
+        // 23 December, 2017's printed Friday 22 December (the lseg.com
+        // generation) and 2022's printed Friday 30 December: every pre-2025
         // half-day shape, each closing at the operator's 12:30 instant,
         // end-exclusive.
         for date in [
             (2011, 12, 23),
             (2012, 12, 24),
+            (2017, 12, 22),
             (2022, 12, 30),
             (2024, 12, 24),
         ] {
@@ -3012,51 +3023,71 @@ mod lse {
     }
 
     #[test]
-    fn the_two_coverage_gaps_refuse_rather_than_answer() {
+    fn the_former_capture_gaps_answer_from_the_lseg_channel() {
         let calendar = lse();
-        // 2015-01-02..2019-12-31 and 2020-01-01..2020-08-30 survive in no
-        // operator capture, so they sit outside every window: the holiday
-        // layer has no answer and the session queries refuse.
-        for date in [(2016, 6, 13), (2018, 12, 24), (2020, 3, 30), (2020, 8, 28)] {
+        // 2015-01-02..2019-12-31 and 2020-01-01..2020-08-30 once survived in
+        // no operator capture (#218) and the queries refused; the operator
+        // group's own Business days page on lseg.com — reached through the
+        // operator's own 2015 announcement pointer — is captured continuously
+        // through both spans, so they now answer exactly as printed. A
+        // former-gap weekday with no row is audited normal, the former-gap
+        // half day carries its printed instant, and the moved 2020 VE-Day May
+        // holiday closes.
+        for date in [(2016, 6, 13), (2020, 3, 30), (2020, 8, 28)] {
             assert_eq!(
                 calendar.holiday_on(day(date.0, date.1, date.2)),
                 None,
-                "lse {date:?} is inside a coverage gap and carries no row"
+                "lse {date:?} is inside the former gap, carries no row and is audited normal"
             );
             assert!(
-                calendar
-                    .is_open(london(date, (12, 0, 0)))
-                    .is_err_and(|error| matches!(
-                        error,
-                        CalendarQueryError::OutsideCoveredRange { .. }
-                    )),
-                "lse {date:?}: the query must refuse inside the gap"
+                calendar.is_open(london(date, (12, 0, 0))).expect("covered"),
+                "lse {date:?}: the former gap answers, it does not refuse"
             );
         }
-        // The second window opens on its own first row.
+        // 2018-12-24 sat in the refused span and now carries the printed half
+        // day: open at noon, shut from the 12:30 close (end-exclusive).
+        assert_eq!(
+            calendar.holiday_on(day(2018, 12, 24)).map(Holiday::kind),
+            Some(HolidayKind::EarlyClose { close_ssm: 45_000 })
+        );
+        assert!(
+            calendar
+                .is_open(london((2018, 12, 24), (12, 0, 0)))
+                .expect("covered")
+        );
+        assert!(
+            !calendar
+                .is_open(london((2018, 12, 24), (12, 30, 0)))
+                .expect("covered")
+        );
+        // The 2020 Early May holiday moved to Friday 8 May for the VE Day
+        // anniversary, printed as such by the 2019-06-14 capture, and Monday
+        // 2020-05-04 is audited normal.
+        assert_closure(calendar, (2020, 5, 8), "lse");
+        assert_eq!(calendar.holiday_on(day(2020, 5, 4)), None);
+        // The second window no longer opens on its own first row: 2020-08-31
+        // sits inside one continuous window and its session probes derive
+        // end to end.
         assert_eq!(
             calendar.holiday_on(day(2020, 8, 31)).map(Holiday::kind),
             Some(HolidayKind::Closed)
         );
-        // ... whose session probes read 2020-08-30, inside the gap, so they
-        // refuse; the first fully answering date is the next trading day.
-        assert!(matches!(
-            calendar.is_open(london((2020, 8, 31), (12, 0, 0))),
-            Err(CalendarQueryError::OutsideCoveredRange { .. })
-        ));
+        assert!(
+            !calendar
+                .is_open(london((2020, 8, 31), (12, 0, 0)))
+                .expect("the former gap is covered"),
+            "lse 2020-08-31 is the Summer Bank Holiday and derives through the covered 2020-08-28"
+        );
         assert!(
             calendar
                 .is_closed_trade_date(day(2020, 8, 31), SessionKind::Both)
-                .is_err_and(|error| matches!(
-                    error,
-                    CalendarQueryError::OutsideCoveredRange { .. }
-                ))
+                .expect("the former gap is covered")
         );
         assert!(
             calendar
                 .is_open(london((2020, 9, 1), (12, 0, 0)))
                 .expect("covered"),
-            "lse 2020-09-01 answers as the window's first fully derived date"
+            "lse 2020-09-01 answers"
         );
     }
 
@@ -3172,8 +3203,8 @@ mod lse {
         let coverage = calendar.holiday_coverage().expect("lse ships a table");
         assert_eq!(coverage.first(), day(2010, 1, 1));
         assert_eq!(coverage.last(), day(2027, 12, 31));
-        // Outside the audited windows the table has no answer at all: a gap
-        // year and a date past the live table's print.
+        // A covered date with no row answers None (audited normal) and a date
+        // past the live table's print has no answer at all.
         assert_eq!(calendar.holiday_on(day(2017, 6, 13)), None);
         assert_eq!(calendar.holiday_on(day(2028, 1, 3)), None);
         // Before the support floor.
@@ -3204,37 +3235,35 @@ mod lse {
         let rows = rows_per_year(lse());
         assert_eq!(
             rows.len(),
-            130,
-            "99 closures, 26 half days, five rolling-table gaps — the gap years carry no rows"
+            184,
+            "143 closures, 36 half days, five rolling-table gaps — one audited window, 2010-2027"
         );
-        let expected: [(i32, (usize, usize, usize, usize)); 13] = [
+        let expected: [(i32, (usize, usize, usize, usize)); 18] = [
             (2010, (8, 2, 0, 0)),
             (2011, (9, 2, 0, 0)),
             (2012, (9, 2, 0, 0)),
             (2013, (8, 2, 0, 0)),
             (2014, (8, 2, 0, 0)),
-            (2015, (1, 0, 0, 0)),
-            (2020, (3, 2, 0, 0)),
+            (2015, (8, 2, 0, 0)),
+            (2016, (8, 2, 0, 0)),
+            (2017, (8, 2, 0, 0)),
+            (2018, (8, 2, 0, 0)),
+            (2019, (8, 2, 0, 0)),
+            (2020, (8, 2, 0, 0)),
             (2021, (8, 2, 0, 0)),
             (2022, (9, 2, 0, 0)),
             (2023, (9, 2, 0, 0)),
             (2024, (8, 2, 0, 0)),
             (2025, (3, 2, 0, 5)),
+            (2026, (8, 2, 0, 0)),
             (2027, (8, 2, 0, 0)),
         ];
         for (year, tally) in expected {
             assert_eq!(census(&rows, year), tally, "{year} census");
         }
-        for year in [2016, 2017, 2018, 2019] {
-            assert_eq!(
-                census(&rows, year),
-                (0, 0, 0, 0),
-                "{year} is a gap year and ships no row"
-            );
-        }
         // The half days are exactly the sheet's printed 12:30 dates — 24/31
-        // December every year except 2011 and 2022 (Friday 23/30), 2023
-        // (22/29), and none in the gap years — each stating the printed
+        // December every year except 2011 (23/30), 2016 (23/30), 2017 (22/29)
+        // and 2022 (23/30), 2023 (22/29) — each stating the printed
         // instant; flipping a row's date, kind or instant breaks the walk.
         for (date, kind, instant) in &rows {
             if kind == "early close" {
@@ -3265,6 +3294,16 @@ mod lse {
                 (2013, 12, 31),
                 (2014, 12, 24),
                 (2014, 12, 31),
+                (2015, 12, 24),
+                (2015, 12, 31),
+                (2016, 12, 23),
+                (2016, 12, 30),
+                (2017, 12, 22),
+                (2017, 12, 29),
+                (2018, 12, 24),
+                (2018, 12, 31),
+                (2019, 12, 24),
+                (2019, 12, 31),
                 (2020, 12, 24),
                 (2020, 12, 31),
                 (2021, 12, 24),

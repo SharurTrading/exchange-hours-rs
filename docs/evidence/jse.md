@@ -48,3 +48,25 @@ as each source is re-verified.
 - **Interpretive step, empty order-entry slice.** No ZA01 phase is order-entry-only. The opening and closing auction call sessions each uncross into a printed auction trade, and the Closing Price Cross and EOD tails are crossing sessions that print at the closing price, so `order_entry` stays empty on every profile.
 - **Source access.** The JSE technical library and notice archive are served from `clientportal.jse.co.za`. Where a document is reachable only behind the portal's authentication it is admissible at T2 as the operator's own channel, and the retrieved artifact must be saved in the research store with its retrieval date (LAW-PUBLIC-SOURCES). The direct document URLs above resolved without authentication at the last review.
 - **Dormant identity.** Reviewed on demand; gaps are recorded here rather than as issues.
+
+## Module narrative (moved from src/calendar/schedules/equities/africa_middle_east/jse.rs on 2026-10-02 UTC)
+
+The EOD/GDX auction remains disabled; ZA03's midday auction is product-specific.
+Volume 00E v4.09 and the May 2026 session workbook were published with
+Release 7.8 on 2026-08-17; the release changed no ZA01 session boundary.
+https://clientportal.jse.co.za/technical-library/trading-and-market-data-documentation
+https://clientportal.jse.co.za/Content/JSE%20Contract%20Specification%20Items/Volume%2000E%20-%20Trading%20and%20Information%20Overview%20for%20Equity%20Market%20v4.09.pdf
+https://clientportal.jse.co.za/Content/JSE%20Contract%20Specification%20Items/JSE%20Trading%20Session%20Times%20May%202026.xls
+
+---
+
+The following primary notices date every modeled change: opening auction
+08:30 from 2012-07-02; CPX from 2013-11-11; EOD auction from 2016-09-26;
+EOD disabled 2020-08-24; CPX start 17:01 from 2021-02-01 and 17:02 from
+2021-02-15.
+https://clientportal.jse.co.za/Content/JSENoticesandCircularsItems/20120525-049C.pdf
+https://clientportal.jse.co.za/Content/JSENoticesandCircularsItems/2013_158B.pdf
+https://clientportal.jse.co.za/Content/JSENoticesandCircularsItems/461A.pdf
+https://clientportal.jse.co.za/Content/JSEHotlinesItems/JSE%20Service%20Hotline%2018520%20EDM%2C%20EQM%20and%20FXM%20-%20JSE%20Trading%20and%20Information%20System%20Upgrade%20-%20Final%20Go%20Live%20Cutover.pdf
+https://clientportal.jse.co.za/Content/JSEHotlinesItems/JSE%20Service%20Hotline%2028220%20EQM%20-%20JSE%20Closing%20Price%20Cross%20%28CPX%29%20Session%20Extension.pdf
+https://clientportal.jse.co.za/Content/JSEHotlinesItems/JSE%20Service%20Hotline%2003721%20EQM%20-%20JSE%20Closing%20Price%20Cross%20%28CPX%29%20Session%20Extension.pdf

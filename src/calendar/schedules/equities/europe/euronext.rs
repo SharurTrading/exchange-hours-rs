@@ -19,32 +19,15 @@ use crate::calendar::schedules::timeline::{Revision, local_date, revisions, sele
 pub(crate) use dublin::profile_at as dublin_profile_at;
 pub(crate) use milan::profile_at as milan_profile_at;
 
-// The operator's 2010 special-day appendix and 2014 normal-hours appendix show
-// the legacy 07:15 CET pre-opening and the principal-share opening at 09:00.
-// Euronext notice PAR_20150924_07448_EUR documents zero-to-30-second randomized
-// uncrosses for Belgian, Dutch, French, and Portuguese trading groups. Those
-// instrument-level micro-events do not define one exchange-wide transition instant,
-// so this exchange-level profile retains the published nominal boundaries:
-// continuous trading starts at 09:00, the closing auction ends at 17:35, and
-// Trading-at-Last then runs to 17:40.
-// https://www.euronext.com/sites/default/files/european_cash_markets_trading_hours_for_24th_and_31st_december_2010.pdf
-// https://connect.euronext.com/nl/listview/notice-download?attachmentId=201416&id=581906&type=PDF
-// https://live.euronext.com/en/listview/notice-download?id=598779&type=PDF&attachmentId=218289
-// https://live.euronext.com/en/listview/notice-download?id=598933&type=PDF&attachmentId=218443
+// The operator's 2010 special-day appendix and 2014 normal-hours appendix show the legacy 07:15 CET pre-opening and the principal-share opening at 09:00. Narrative:
+// docs/evidence/euronext_paris.md.
 static CENTRAL_REGULAR: &[SessionRule] = &[SessionRule {
     days: MON_FRI,
     open_ssm: 9 * 3600,
     close_ssm: 17 * 3600 + 30 * 60,
 }];
-// Order-entry classification. The operator's trading appendix describes the
-// pre-opening as a Call phase - the French and Dutch columns render it
-// "phase d'accumulation" / "accumulatiefase" - and its liquidity-provider
-// clause speaks of "the order-accumulation periods preceding pre-scheduled or
-// other Uncrossings during a Trading Day". The first uncrossing of the day is
-// the 09:00 opening uncrossing, so no central-order-book trade can match
-// before continuous trading starts. The pre-opening windows below are
-// therefore order entry only; the closing uncrossing and Trading-at-Last both
-// print and stay in `extended`.
+// Order-entry classification. Narrative:
+// docs/evidence/euronext_paris.md.
 static CENTRAL_LEGACY_ORDER_ENTRY: &[SessionRule] = &[SessionRule {
     days: MON_FRI,
     open_ssm: 7 * 3600 + 15 * 60,

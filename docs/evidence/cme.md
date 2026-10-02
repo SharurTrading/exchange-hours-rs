@@ -215,7 +215,7 @@ for 2025-2027. Inside a window a date with no row is audited normal; outside eve
 window this table has no answer at all.
 
 **Six audited eras, with no gap between them.** The table declares 6 coverage windows: `2010-01-01..2012-12-31`, `2013-01-01..2015-12-31`, `2016-01-01..2018-12-31`, `2019-01-01..2021-12-31`, `2022-01-01..2024-12-31`, `2025-01-01..2027-12-31`.
-The rows of every era are the D17 intersection of the families routed here: an era's rows are the family tables' own where a venue routes one family, and the joint statement where it routes several.
+The rows of every era are the D17 intersection of the families routed here, read through the venue's profile clock (AGENTS.md, LAW-HOLIDAY-SCOPE, the 2026-09-30 decision on #153, applied by #242): an era's rows are the family tables' own where a venue routes one family, and the joint statement where it routes several.
 Every interval from 2010-01-01 is declared, so the whole span has an answer; the eras before 2010 are out of scope below the crate's January-2010 floor.
 
 ### 2010
@@ -223,50 +223,26 @@ Every interval from 2010-01-01 is declared, so the whole span has an answer; the
 | trade date | kind | instant as printed | document | tier | derived from |
 |---|---|---|---|---|---|
 | 2010-01-01 | closed | `CME Globex is closed` | `2010-new-years.pdf @2010-02-15T05:16:52Z` | T1 | CME prints `Jan 1` above it as a closed day; the year comes from the document's own identity, because the annual sheets print no year |
-| 2010-01-15 | unsourced | - | `2010-martin-luther-king.pdf @2010-03-31T06:42:26Z` | T1 | the routed families disagree on this date |
 | 2010-01-18 | unsourced | - | `2010-martin-luther-king.pdf @2010-03-31T06:42:26Z` | T1 | the routed families disagree on this date |
-| 2010-01-19 | unsourced | - | `2010-martin-luther-king.pdf @2010-03-31T06:42:26Z` | T1 | the routed families disagree on this date |
-| 2010-02-12 | unsourced | - | `2010-presidents-day.pdf @2010-02-15T06:46:41Z` | T1 | the routed families disagree on this date |
 | 2010-02-15 | unsourced | - | `2010-presidents-day.pdf @2010-02-15T06:46:41Z` | T1 | the routed families disagree on this date |
-| 2010-02-16 | unsourced | - | `2010-presidents-day.pdf @2010-02-15T06:46:41Z` | T1 | the routed families disagree on this date |
 | 2010-04-02 | unsourced | - | `2010-good-friday.pdf @2010-06-01T11:19:16Z` | T1 | the routed families disagree on this date |
-| 2010-05-28 | unsourced | - | `2010-memorial-day.pdf @2010-06-01T09:42:25Z` | T1 | the routed families disagree on this date |
 | 2010-05-31 | unsourced | - | `2010-memorial-day.pdf @2010-06-01T09:42:25Z` | T1 | the routed families disagree on this date |
-| 2010-06-01 | unsourced | - | `2010-memorial-day.pdf @2010-06-01T09:42:25Z` | T1 | the routed families disagree on this date |
-| 2010-07-02 | unsourced | - | `2010-4th-of-july.pdf @2010-06-02T00:56:37Z` | T1 | the routed families disagree on this date |
 | 2010-07-05 | unsourced | - | `2010-4th-of-july.pdf @2010-06-02T00:56:37Z` | T1 | the routed families disagree on this date |
-| 2010-07-06 | unsourced | - | `2010-4th-of-july.pdf @2010-06-02T00:56:37Z` | T1 | the routed families disagree on this date |
-| 2010-09-03 | unsourced | - | `2010-labor-day.pdf @2010-06-02T00:56:41Z` | T1 | the routed families disagree on this date |
 | 2010-09-06 | unsourced | - | `2010-labor-day.pdf @2010-06-02T00:56:41Z` | T1 | the routed families disagree on this date |
-| 2010-09-07 | unsourced | - | `2010-labor-day.pdf @2010-06-02T00:56:41Z` | T1 | the routed families disagree on this date |
-| 2010-10-08 | unsourced | - | `2010-columbus-day.pdf @2010-08-21T13:31:22Z` | T1 | the routed families disagree on this date |
 | 2010-11-25 | unsourced | - | `2010-thanksgiving.pdf @2010-11-22T09:40:12Z` | T1 | the routed families disagree on this date |
 | 2010-11-26 | unsourced | - | `2010-thanksgiving.pdf @2010-11-22T09:40:12Z` | T1 | the routed families disagree on this date |
 | 2010-12-24 | closed | `CME Globex is closed` | `2010-christmas.pdf @2010-12-14T06:12:38Z` | T1 | CME prints `Dec 24` above it as a closed day; the year comes from the document's own identity, because the annual sheets print no year |
-| 2010-12-31 | unsourced | - | `2011-new-years.pdf @2011-11-01T14:39:45Z` | T1 | the routed families disagree on this date |
 
 ### 2011
 
 | trade date | kind | instant as printed | document | tier | derived from |
 |---|---|---|---|---|---|
-| 2011-01-14 | unsourced | - | `2011-martin-luther-king.pdf @2011-10-28T02:34:29Z` | T1 | the routed families disagree on this date |
 | 2011-01-17 | unsourced | - | `2011-martin-luther-king.pdf @2011-10-28T02:34:29Z` | T1 | the routed families disagree on this date |
-| 2011-01-18 | unsourced | - | `2011-martin-luther-king.pdf @2011-10-28T02:34:29Z` | T1 | the routed families disagree on this date |
-| 2011-02-18 | unsourced | - | `2011-presidents-day.pdf @2011-10-28T02:35:16Z` | T1 | the routed families disagree on this date |
 | 2011-02-21 | unsourced | - | `2011-presidents-day.pdf @2011-10-28T02:35:16Z` | T1 | the routed families disagree on this date |
-| 2011-02-22 | unsourced | - | `2011-presidents-day.pdf @2011-10-28T02:35:16Z` | T1 | the routed families disagree on this date |
-| 2011-04-21 | unsourced | - | `2011-good-friday.pdf @2011-10-28T02:37:07Z` | T1 | the routed families disagree on this date |
 | 2011-04-22 | closed | `CME Globex is closed` | `2011-good-friday.pdf @2011-10-28T02:37:07Z` | T1 | CME prints `Apr 22` above it as a closed day; the year comes from the document's own identity, because the annual sheets print no year |
-| 2011-05-27 | unsourced | - | `2011-memorial-day.pdf @2013-09-30T10:56:52Z` | T1 | the routed families disagree on this date |
 | 2011-05-30 | unsourced | - | `2011-memorial-day.pdf @2013-09-30T10:56:52Z` | T1 | the routed families disagree on this date |
-| 2011-05-31 | unsourced | - | `2011-memorial-day.pdf @2013-09-30T10:56:52Z` | T1 | the routed families disagree on this date |
-| 2011-07-01 | unsourced | - | `2011-4th-of-july.pdf @2011-11-01T14:40:54Z` | T1 | the routed families disagree on this date |
 | 2011-07-04 | unsourced | - | `2011-4th-of-july.pdf @2011-11-01T14:40:54Z` | T1 | the routed families disagree on this date |
-| 2011-07-05 | unsourced | - | `2011-4th-of-july.pdf @2011-11-01T14:40:54Z` | T1 | the routed families disagree on this date |
-| 2011-09-02 | unsourced | - | `2011-labor-day.pdf @2011-11-01T14:43:45Z` | T1 | the routed families disagree on this date |
 | 2011-09-05 | unsourced | - | `2011-labor-day.pdf @2011-11-01T14:43:45Z` | T1 | the routed families disagree on this date |
-| 2011-09-06 | unsourced | - | `2011-labor-day.pdf @2011-11-01T14:43:45Z` | T1 | the routed families disagree on this date |
-| 2011-10-07 | unsourced | - | `2011-columbus-day.pdf @2011-11-01T14:39:16Z` | T1 | the routed families disagree on this date |
 | 2011-11-24 | unsourced | - | `2011-thanksgiving.pdf @2011-11-24T18:52:46Z` | T1 | the routed families disagree on this date |
 | 2011-11-25 | unsourced | - | `2011-thanksgiving.pdf @2011-11-24T18:52:46Z` | T1 | the routed families disagree on this date |
 | 2011-12-26 | closed | `CME Globex is closed` | `2011-christmas.pdf @2012-01-25T02:05:48Z` | T1 | CME prints `Dec 26` above it as a closed day; the year comes from the document's own identity, because the annual sheets print no year |
@@ -278,24 +254,13 @@ Every interval from 2010-01-01 is declared, so the whole span has an answer; the
 |---|---|---|---|---|---|
 | 2012-01-02 | closed | `CME Globex is closed` | `2012-new-years.pdf @2012-01-25T02:54:30Z` | T1 | CME prints `Jan 2` above it as a closed day; the year comes from the document's own identity, because the annual sheets print no year |
 | 2012-01-03 | unsourced | - | `2012-new-years.pdf @2012-01-25T02:54:30Z` | T1 | the routed families disagree on this date |
-| 2012-01-13 | unsourced | - | `2012-martin-luther-king.pdf @2012-05-05T16:15:26Z` | T1 | the routed families disagree on this date |
 | 2012-01-16 | unsourced | - | `2012-martin-luther-king.pdf @2012-05-05T16:15:26Z` | T1 | the routed families disagree on this date |
-| 2012-01-17 | unsourced | - | `2012-martin-luther-king.pdf @2012-05-05T16:15:26Z` | T1 | the routed families disagree on this date |
-| 2012-02-17 | unsourced | - | `2012-presidents-day.pdf @2012-05-05T16:15:39Z` | T1 | the routed families disagree on this date |
 | 2012-02-20 | unsourced | - | `2012-presidents-day.pdf @2012-05-05T16:15:39Z` | T1 | the routed families disagree on this date |
-| 2012-02-21 | unsourced | - | `2012-presidents-day.pdf @2012-05-05T16:15:39Z` | T1 | the routed families disagree on this date |
-| 2012-04-05 | unsourced | - | `2012-good-friday.pdf @2012-04-17T00:42:47Z` | T1 | the routed families disagree on this date |
 | 2012-04-06 | unsourced | - | `2012-good-friday.pdf @2012-04-17T00:42:47Z` | T1 | the routed families disagree on this date |
-| 2012-05-25 | unsourced | - | `2012-memorial-day.pdf @2012-09-15T00:37:14Z` | T1 | the routed families disagree on this date |
 | 2012-05-28 | unsourced | - | `2012-memorial-day.pdf @2012-09-15T00:37:14Z` | T1 | the routed families disagree on this date |
-| 2012-05-29 | unsourced | - | `2012-memorial-day.pdf @2012-09-15T00:37:14Z` | T1 | the routed families disagree on this date |
 | 2012-07-03 | unsourced | - | `2012-4th-of-july.pdf @2012-09-15T00:39:23Z` | T1 | the routed families disagree on this date |
 | 2012-07-04 | unsourced | - | `2012-4th-of-july.pdf @2012-09-15T00:39:23Z` | T1 | the routed families disagree on this date |
-| 2012-07-05 | unsourced | - | `2012-4th-of-july.pdf @2012-09-15T00:39:23Z` | T1 | the routed families disagree on this date |
-| 2012-08-31 | unsourced | - | `2012-labor-day.pdf @2012-09-15T00:34:37Z` | T1 | the routed families disagree on this date |
 | 2012-09-03 | unsourced | - | `2012-labor-day.pdf @2012-09-15T00:34:37Z` | T1 | the routed families disagree on this date |
-| 2012-09-04 | unsourced | - | `2012-labor-day.pdf @2012-09-15T00:34:37Z` | T1 | the routed families disagree on this date |
-| 2012-10-05 | unsourced | - | `2012-columbus-day.pdf @2012-09-15T00:15:14Z` | T1 | the routed families disagree on this date |
 | 2012-11-22 | unsourced | - | `2012-thanksgiving.pdf @2013-01-27T22:39:01Z` | T1 | the routed families disagree on this date |
 | 2012-11-23 | unsourced | - | `2012-thanksgiving.pdf @2013-01-27T22:39:01Z` | T1 | the routed families disagree on this date |
 | 2012-12-24 | unsourced | - | `2012-christmas.pdf @2013-04-14T19:40:27Z` | T1 | the routed families disagree on this date |
@@ -315,7 +280,6 @@ Every interval from 2010-01-01 is declared, so the whole span has an answer; the
 | 2016-09-05 | unsourced | `—` | `2016-holiday-calendars.zip#2016-labor-day-holiday-schedule.pdf @2017-06-28` | T1 | the intersection of the families routed to this venue |
 | 2016-11-24 | unsourced | `—` | `2016-holiday-calendars.zip#2016-thanksgiving-holiday-schedule.pdf @2017-06-28` | T1 | the intersection of the families routed to this venue |
 | 2016-11-25 | unsourced | `—` | `2016-holiday-calendars.zip#2016-thanksgiving-holiday-schedule.pdf @2017-06-28` | T1 | the intersection of the families routed to this venue |
-| 2016-12-23 | unsourced | `—` | `2016-holiday-calendars.zip#2016-christmas-holiday-schedule.pdf @2017-06-28` | T1 | the intersection of the families routed to this venue |
 | 2016-12-26 | closed | `every routed family states a closure` | `2016-holiday-calendars.zip#2016-christmas-holiday-schedule.pdf @2017-06-28` | T1 | the intersection of the families routed to this venue |
 
 ### 2017
@@ -332,7 +296,6 @@ Every interval from 2010-01-01 is declared, so the whole span has an answer; the
 | 2017-09-04 | unsourced | `—` | `2017-labor-day-holiday-schedule.xls @2017-10-25` | T1 | the intersection of the families routed to this venue |
 | 2017-11-23 | unsourced | `—` | `2017-holiday-calendars.zip#2017-thanksgiving-holiday-schedule.xls @2021-01-26` | T1 | the intersection of the families routed to this venue |
 | 2017-11-24 | unsourced | `—` | `2017-holiday-calendars.zip#2017-thanksgiving-holiday-schedule.xls @2021-01-26` | T1 | the intersection of the families routed to this venue |
-| 2017-12-22 | unsourced | `—` | `2017-holiday-calendars.zip#2017-christmas-holiday-schedule.xls @2021-01-26` | T1 | the intersection of the families routed to this venue |
 | 2017-12-25 | closed | `every routed family states a closure` | `2017-holiday-calendars.zip#2017-christmas-holiday-schedule.xls @2021-01-26` | T1 | the intersection of the families routed to this venue |
 
 ### 2018
@@ -355,7 +318,7 @@ Every interval from 2010-01-01 is declared, so the whole span has an answer; the
 
 
 ### 2013-2015 (T1)
-**This era brings the venue to six audited windows.** The table as a whole carries 316 rows over 6 windows — 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 — and this era's share is **58 rows**: 8 stated rows and 50 `Unsourced` rows. Every row is the intersection of the families routed here — `globex_equity_index`, `globex_energy`, `globex_fx`, `globex_grains`, `globex_interest_rates`, `globex_livestock` — by the D17 rule `venues.rs` states: a row ships only where every routed family states the same one, and a date on which they differ, or on which one states a row while another has audited the date normal, ships `Unsourced`; the three year tables below carry every date's row, its instant as printed and the id it is derived from.
+**This era brings the venue to six audited windows.** The table as a whole carries 231 rows over 6 windows — 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 — and this era's share is **38 rows**: 8 stated rows and 30 `Unsourced` rows. Every row is the intersection of the families routed here — `globex_equity_index`, `globex_energy`, `globex_fx`, `globex_grains`, `globex_interest_rates`, `globex_livestock` — by the profile-clock rule `venues.rs` states (AGENTS.md, LAW-HOLIDAY-SCOPE, the 2026-09-30 decision on #153): the venue answers from its clock, the equity-index grid, so a row ships where the clock states one and every other non-abstaining routed family states the same, a date the clock audits normal ships no row whatever the other families state, and a clock-family row another family does not match ships `Unsourced`; the three year tables below carry every date's row, its instant as printed and the id it is derived from.
 
 **Columbus Day 2013 and Veterans Day 2014 and 2015 carry no row.** CME's own sheets for those three dates state in session language that Globex ran a normal schedule — `Products listed on Globex are unaffected and will run on a normal schedule` for 2013-10-14 (`2013-columbus-day.pdf @2012-11-19T00:15:54Z`) and `Regular CME Globex trading hours will be in effect` for 2014-11-11 and 2015-11-11 (`2014-veterans-day-holiday-schedule.pdf @2014-11-13T19:34:50Z` and `2015-veterans-day-schedule.pdf @2015-11-22T23:09:20Z`) — so the block records each as `normal` and this table ships nothing: inside a declared window silence is the positive claim that the date was audited normal, and these dates are audited rather than skipped. The three sheets have no row of their own to cite, so they are listed in this era's `### Documents` table without being any row's document.
 
@@ -400,18 +363,12 @@ Every interval from 2010-01-01 is declared, so the whole span has an answer; the
 |---|---|---|---|---|---|
 | 2013-01-01 | closed | `every routed family states a closure` | `2013-new-years.pdf @2013-04-14T19:41:46Z` | T1 | the intersection of the families routed to this venue |
 | 2013-01-02 | unsourced | `—` | `2013-new-years.pdf @2013-04-14T19:41:46Z` | T1 | the intersection of the families routed to this venue |
-| 2013-01-18 | unsourced | `—` | `2013-martin-luther-king.pdf @2012-11-19T00:16:09Z` | T1 | the intersection of the families routed to this venue |
 | 2013-01-21 | unsourced | `—` | `2013-martin-luther-king.pdf @2012-11-19T00:16:09Z` | T1 | the intersection of the families routed to this venue |
-| 2013-02-15 | unsourced | `—` | `2013-presidents-day.pdf @2013-03-09T11:53:37Z` | T1 | the intersection of the families routed to this venue |
 | 2013-02-18 | unsourced | `—` | `2013-presidents-day.pdf @2013-03-09T11:53:37Z` | T1 | the intersection of the families routed to this venue |
-| 2013-03-28 | unsourced | `—` | `2013-good-friday.pdf @2013-06-23T19:59:25Z` | T1 | the intersection of the families routed to this venue |
 | 2013-03-29 | closed | `every routed family states a closure` | `2013-good-friday.pdf @2013-06-23T19:59:25Z` | T1 | the intersection of the families routed to this venue |
-| 2013-05-24 | unsourced | `—` | `2013-memorial-day.pdf @2013-06-23T20:36:04Z` | T1 | the intersection of the families routed to this venue |
 | 2013-05-27 | unsourced | `—` | `2013-memorial-day.pdf @2013-06-23T20:36:04Z` | T1 | the intersection of the families routed to this venue |
 | 2013-07-03 | unsourced | `—` | `2013-4th-of-july.pdf @2013-06-23T20:58:25Z` | T1 | the intersection of the families routed to this venue |
 | 2013-07-04 | unsourced | `—` | `2013-4th-of-july.pdf @2013-06-23T20:58:25Z` | T1 | the intersection of the families routed to this venue |
-| 2013-07-05 | unsourced | `—` | `2013-4th-of-july.pdf @2013-06-23T20:58:25Z` | T1 | the intersection of the families routed to this venue |
-| 2013-08-30 | unsourced | `—` | `2013-labor-day.pdf @2013-09-02T17:08:41Z` | T1 | the intersection of the families routed to this venue |
 | 2013-09-02 | unsourced | `—` | `2013-labor-day.pdf @2013-09-02T17:08:41Z` | T1 | the intersection of the families routed to this venue |
 | 2013-11-28 | unsourced | `—` | `2013-thanksgiving.pdf @2014-02-14T06:28:36Z` | T1 | the intersection of the families routed to this venue |
 | 2013-11-29 | unsourced | `—` | `2013-thanksgiving.pdf @2014-02-14T06:28:36Z` | T1 | the intersection of the families routed to this venue |
@@ -425,50 +382,36 @@ Every interval from 2010-01-01 is declared, so the whole span has an answer; the
 |---|---|---|---|---|---|
 | 2014-01-01 | closed | `every routed family states a closure` | `2014-new-years.pdf @2013-10-07T20:58:00Z` | T1 | the intersection of the families routed to this venue |
 | 2014-01-02 | unsourced | `—` | `2014-new-years.pdf @2013-10-07T20:58:00Z` | T1 | the intersection of the families routed to this venue |
-| 2014-01-17 | unsourced | `—` | `2014-martin-luther-king-holiday-schedule.pdf @2014-03-26T16:02:15Z` | T1 | the intersection of the families routed to this venue |
 | 2014-01-20 | unsourced | `—` | `2014-martin-luther-king-holiday-schedule.pdf @2014-03-26T16:02:15Z` | T1 | the intersection of the families routed to this venue |
-| 2014-02-14 | unsourced | `—` | `2014-presidents-day-holiday-schedule.pdf @2014-02-14T19:23:32Z` | T1 | the intersection of the families routed to this venue |
 | 2014-02-17 | unsourced | `—` | `2014-presidents-day-holiday-schedule.pdf @2014-02-14T19:23:32Z` | T1 | the intersection of the families routed to this venue |
-| 2014-04-17 | unsourced | `—` | `2014-good-friday-holiday-schedule.pdf @2014-03-26T15:27:35Z` | T1 | the intersection of the families routed to this venue |
 | 2014-04-18 | closed | `every routed family states a closure` | `2014-good-friday-holiday-schedule.pdf @2014-03-26T15:27:35Z` | T1 | the intersection of the families routed to this venue |
-| 2014-05-23 | unsourced | `—` | `2014-memorial-day-holiday-schedule.pdf @2014-07-08T02:01:55Z` | T1 | the intersection of the families routed to this venue |
 | 2014-05-26 | unsourced | `—` | `2014-memorial-day-holiday-schedule.pdf @2014-07-08T02:01:55Z` | T1 | the intersection of the families routed to this venue |
 | 2014-07-03 | unsourced | `—` | `2014-4th-of-july-holiday-schedule.pdf @2014-07-08T01:57:36Z` | T1 | the intersection of the families routed to this venue |
 | 2014-07-04 | unsourced | `—` | `2014-4th-of-july-holiday-schedule.pdf @2014-07-08T01:57:36Z` | T1 | the intersection of the families routed to this venue |
-| 2014-07-07 | unsourced | `—` | `2014-4th-of-july-holiday-schedule.pdf @2014-07-08T01:57:36Z` | T1 | the intersection of the families routed to this venue |
-| 2014-08-29 | unsourced | `—` | `2014-labor-day-holiday-schedule.pdf @2014-09-12T07:16:08Z` | T1 | the intersection of the families routed to this venue |
 | 2014-09-01 | unsourced | `—` | `2014-labor-day-holiday-schedule.pdf @2014-09-12T07:16:08Z` | T1 | the intersection of the families routed to this venue |
 | 2014-11-27 | unsourced | `—` | `2014-thanksgiving-holiday-schedule.pdf @2015-01-21T14:54:56Z` | T1 | the intersection of the families routed to this venue |
 | 2014-11-28 | unsourced | `—` | `2014-thanksgiving-holiday-schedule.pdf @2015-01-21T14:54:56Z` | T1 | the intersection of the families routed to this venue |
 | 2014-12-24 | unsourced | `—` | `2014-christmas-holiday-schedule.pdf @2015-01-21T14:10:00Z` | T1 | the intersection of the families routed to this venue |
 | 2014-12-25 | closed | `every routed family states a closure` | `2014-christmas-holiday-schedule.pdf @2015-01-21T14:10:00Z` | T1 | the intersection of the families routed to this venue |
-| 2014-12-26 | unsourced | `—` | `2014-christmas-holiday-schedule.pdf @2015-01-21T14:10:00Z` | T1 | the intersection of the families routed to this venue |
 
 ### 2015
 
 | trade date | kind | instant as printed | document | tier | derived from |
 |---|---|---|---|---|---|
 | 2015-01-01 | closed | `every routed family states a closure` | `2015-new-years-holiday-schedule.pdf @2015-01-21T14:10:43Z` | T1 | the intersection of the families routed to this venue |
-| 2015-01-02 | unsourced | `—` | `2015-new-years-holiday-schedule.pdf @2015-01-21T14:10:43Z` | T1 | the intersection of the families routed to this venue |
-| 2015-01-16 | unsourced | `—` | `2015-martin-luther-king-holiday-schedule.pdf @2015-01-21T14:10:12Z` | T1 | the intersection of the families routed to this venue |
 | 2015-01-19 | unsourced | `—` | `2015-martin-luther-king-holiday-schedule.pdf @2015-01-21T14:10:12Z` | T1 | the intersection of the families routed to this venue |
-| 2015-02-13 | unsourced | `—` | `2015-presidents-day-holiday-schedule.pdf @2015-01-21T19:24:01Z` | T1 | the intersection of the families routed to this venue |
 | 2015-02-16 | unsourced | `—` | `2015-presidents-day-holiday-schedule.pdf @2015-01-21T19:24:01Z` | T1 | the intersection of the families routed to this venue |
-| 2015-04-02 | unsourced | `—` | `2015-good-friday-holiday-schedule.pdf @2015-09-05T22:32:30Z` | T1 | the intersection of the families routed to this venue |
 | 2015-04-03 | unsourced | `—` | `2015-good-friday-holiday-schedule.pdf @2015-09-05T22:32:30Z` | T1 | the intersection of the families routed to this venue |
-| 2015-05-22 | unsourced | `—` | `2015-memorial-day-holiday-schedule.pdf @2015-03-26T11:39:38Z` | T1 | the intersection of the families routed to this venue |
 | 2015-05-25 | unsourced | `—` | `2015-memorial-day-holiday-schedule.pdf @2015-03-26T11:39:38Z` | T1 | the intersection of the families routed to this venue |
-| 2015-07-02 | unsourced | `—` | `2015-4th-of-july-holiday-schedule.pdf @2015-09-05T22:27:33Z` | T1 | the intersection of the families routed to this venue |
 | 2015-07-03 | unsourced | `—` | `2015-4th-of-july-holiday-schedule.pdf @2015-09-05T22:27:33Z` | T1 | the intersection of the families routed to this venue |
 | 2015-09-07 | unsourced | `—` | `2015-labor-day-holiday-schedule.pdf @2015-08-24T02:30:39Z` | T1 | the intersection of the families routed to this venue |
 | 2015-11-26 | unsourced | `—` | `2015-thanksgiving-holiday-schedule.pdf @2016-02-05T16:25:19Z` | T1 | the intersection of the families routed to this venue |
 | 2015-11-27 | unsourced | `—` | `2015-thanksgiving-holiday-schedule.pdf @2016-02-05T16:25:19Z` | T1 | the intersection of the families routed to this venue |
 | 2015-12-24 | unsourced | `—` | `2015-christmas-holiday-schedule.pdf @2015-11-23T06:15:20Z` | T1 | the intersection of the families routed to this venue |
 | 2015-12-25 | closed | `every routed family states a closure` | `2015-christmas-holiday-schedule.pdf @2015-11-23T06:15:20Z` | T1 | the intersection of the families routed to this venue |
-| 2015-12-31 | unsourced | `—` | `2016-new-years-holiday-schedule.pdf @2016-01-08` | T1 | the intersection of the families routed to this venue |
 
 ### 2019-2021 (T1)
-**This era brought the venue to five audited windows; the 2013-2015 wave has since added a sixth.** The table as a whole carries 316 rows over 6 windows — 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 — and this era's share is **42 rows**: 8 stated closures and 34 `Unsourced` rows. Every row is the intersection of the families routed here — `globex_equity_index`, `globex_energy`, `globex_fx`, `globex_grains`, `globex_interest_rates` and `globex_livestock` — by the D17 rule `venues.rs` states: a closure ships only where every routed family states the same one, and a date on which they differ, or on which one states a row while another has audited the date normal, ships `Unsourced`, with the disagreement named per date below. `comex` and `nymex` route `globex_energy` alone, so their rows are that family's own, unchanged. The three Juneteenth dates ship `Unsourced` because every routed family states the crate's not-worked-up marker there.
+**This era brought the venue to five audited windows; the 2013-2015 wave has since added a sixth.** The table as a whole carries 231 rows over 6 windows — 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 — and this era's share is **36 rows**: 8 stated closures and 28 `Unsourced` rows. Every row is the intersection of the families routed here — `globex_equity_index`, `globex_energy`, `globex_fx`, `globex_grains`, `globex_interest_rates` and `globex_livestock` — by the profile-clock rule `venues.rs` states (AGENTS.md, LAW-HOLIDAY-SCOPE, the 2026-09-30 decision on #153): a closure ships only where the equity-index clock and every other non-abstaining routed family state the same one, a date the clock audits normal ships no row whatever the other families state, and a clock-family row another family does not match ships `Unsourced`, with the disagreement named per date below. `comex` and `nymex` route `globex_energy` alone, so their rows are that family's own, unchanged. The three Juneteenth dates ship `Unsourced` because every routed family states the crate's not-worked-up marker there.
 
 ### Documents
 | Document | Window | Replay or service URL | Capture or retrieval, UTC | Tier | sha256 |
@@ -508,7 +451,6 @@ Every interval from 2010-01-01 is declared, so the whole span has an answer; the
 | trade date | kind | instant as printed | document | tier | derived from |
 |---|---|---|---|---|---|
 | 2019-01-01 | closed | `every routed family states a closure` | `2019-new-years-holiday-schedule-compact.xls @2018-01-07T04:13:43Z` | T1 | the intersection of the families routed to this venue |
-| 2019-01-02 | unsourced | `—` | `2019-new-years-holiday-schedule-compact.xls @2018-01-07T04:13:43Z` | T1 | equity index no row; energy and metals no row; FX no row; grains late open 08:30 CT; interest rates no row; livestock no row |
 | 2019-01-21 | unsourced | `—` | `2019-holiday-calendars.zip#globex-trading-schedules/2019-martin-luther-king-holiday-schedule-compact.xls @2021-01-26T09:48:37Z` | T1 | equity index early close 12:00 CT; energy and metals early close 12:00 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed |
 | 2019-02-18 | unsourced | `—` | `2019-holiday-calendars.zip#globex-trading-schedules/2019-presidents-day-holiday-schedule-compact.xls @2021-01-26T09:48:37Z` | T1 | equity index early close 12:00 CT; energy and metals early close 12:00 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed |
 | 2019-04-19 | closed | `every routed family states a closure` | `2019-holiday-calendars.zip#globex-trading-schedules/2019-good-friday-holiday-compact.xls @2021-01-26T09:48:37Z` | T1 | the intersection of the families routed to this venue |
@@ -516,24 +458,20 @@ Every interval from 2010-01-01 is declared, so the whole span has an answer; the
 | 2019-06-19 | unsourced | `—` | `2019-holiday-calendars.zip @2021-01-26T09:48:37Z` | T1 | equity index states `Unsourced` |
 | 2019-07-03 | unsourced | `—` | `2019-holiday-calendars.zip#globex-trading-schedules/2019-4th-of-july-holiday-schedule-compact.xls @2021-01-26T09:48:37Z` | T1 | equity index early close 12:15 CT; energy and metals no row; FX no row; grains early close 12:05 CT; interest rates no row; livestock early close 12:15 CT |
 | 2019-07-04 | unsourced | `—` | `2019-holiday-calendars.zip#globex-trading-schedules/2019-4th-of-july-holiday-schedule-compact.xls @2021-01-26T09:48:37Z` | T1 | equity index early close 12:00 CT; energy and metals early close 12:00 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed |
-| 2019-07-05 | unsourced | `—` | `2019-holiday-calendars.zip#globex-trading-schedules/2019-4th-of-july-holiday-schedule-compact.xls @2021-01-26T09:48:37Z` | T1 | equity index no row; energy and metals no row; FX no row; grains late open 08:30 CT; interest rates no row; livestock no row |
 | 2019-09-02 | unsourced | `—` | `2019-holiday-calendars.zip#globex-trading-schedules/2019-labor-day-holiday-schedule-compact.xls @2021-01-26T09:48:37Z` | T1 | equity index early close 12:00 CT; energy and metals early close 12:00 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed |
 | 2019-11-28 | unsourced | `—` | `2019-holiday-calendars.zip#globex-trading-schedules/2019-thanksgiving-holiday-schedule-compact.xls @2021-01-26T09:48:37Z` | T1 | equity index early close 12:00 CT; energy and metals early close 12:00 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed |
 | 2019-11-29 | unsourced | `—` | `2019-holiday-calendars.zip#globex-trading-schedules/2019-thanksgiving-holiday-schedule-compact.xls @2021-01-26T09:48:37Z` | T1 | equity index early close 12:15 CT; energy and metals early close 12:45 CT; FX early close 12:15 CT; grains late open 08:30 CT and early close 12:05 CT; interest rates early close 12:15 CT; livestock early close 12:15 CT |
 | 2019-12-24 | unsourced | `—` | `2019-holiday-calendars.zip#globex-trading-schedules/2019-christmas-holiday-schedule-compact.xls @2021-01-26T09:48:37Z` | T1 | equity index early close 12:15 CT; energy and metals early close 12:45 CT; FX early close 12:15 CT; grains early close 12:05 CT; interest rates early close 12:15 CT; livestock early close 12:15 CT |
 | 2019-12-25 | closed | `every routed family states a closure` | `2019-holiday-calendars.zip#globex-trading-schedules/2019-christmas-holiday-schedule-compact.xls @2021-01-26T09:48:37Z` | T1 | the intersection of the families routed to this venue |
-| 2019-12-26 | unsourced | `—` | `2019-holiday-calendars.zip#globex-trading-schedules/2019-christmas-holiday-schedule-compact.xls @2021-01-26T09:48:37Z` | T1 | equity index no row; energy and metals no row; FX no row; grains late open 08:30 CT; interest rates no row; livestock no row |
 ### 2020
 | trade date | kind | instant as printed | document | tier | derived from |
 |---|---|---|---|---|---|
 | 2020-01-01 | closed | `every routed family states a closure` | `2019-holiday-calendars.zip#globex-trading-schedules/2019-new-years-holiday-schedule-compact.xls @2021-01-26T09:48:37Z` | T1 | the intersection of the families routed to this venue |
-| 2020-01-02 | unsourced | `—` | `2019-holiday-calendars.zip#globex-trading-schedules/2019-new-years-holiday-schedule-compact.xls @2021-01-26T09:48:37Z` | T1 | equity index no row; energy and metals no row; FX no row; grains late open 08:30 CT; interest rates no row; livestock no row |
 | 2020-01-20 | unsourced | `—` | `2020-holiday-calendars.zip#2020-martin-luther-king-holiday-schedule-compact.xls @2026-07-30T11:18:34Z` | T1 | equity index early close 12:00 CT; energy and metals early close 12:00 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed |
 | 2020-02-17 | unsourced | `—` | `2020-holiday-calendars.zip#2020-presidents-day-holiday-schedule-compact.xls @2026-07-30T11:18:34Z` | T1 | equity index early close 12:00 CT; energy and metals early close 12:00 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed |
 | 2020-04-10 | closed | `every routed family states a closure` | `2020-holiday-calendars.zip#2020-good-friday-holiday-compact.xls @2026-07-30T11:18:34Z` | T1 | the intersection of the families routed to this venue |
 | 2020-05-25 | unsourced | `—` | `2020-holiday-calendars.zip#2020-memorial-day-holiday-schedule-compact.xls @2026-07-30T11:18:34Z` | T1 | equity index early close 12:00 CT; energy and metals early close 12:00 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed |
 | 2020-06-19 | unsourced | `—` | `2020-holiday-calendars.zip @2026-07-30T11:18:34Z` | T1 | equity index states `Unsourced` |
-| 2020-07-02 | unsourced | `—` | `2020-holiday-calendars.zip#2020-4th-of-july-holiday-schedule-compact.xls @2026-07-30T11:18:34Z` | T1 | equity index no row; energy and metals no row; FX no row; grains early close 12:05 CT; interest rates no row; livestock early close 12:15 CT |
 | 2020-07-03 | unsourced | `—` | `2020-holiday-calendars.zip#2020-4th-of-july-holiday-schedule-compact.xls @2026-07-30T11:18:34Z` | T1 | equity index early close 12:00 CT; energy and metals early close 12:00 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed |
 | 2020-09-07 | unsourced | `—` | `2020-holiday-calendars.zip#2020-labor-day-holiday-schedule-compact.xls @2026-07-30T11:18:34Z` | T1 | equity index early close 12:00 CT; energy and metals early close 12:00 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed |
 | 2020-11-26 | unsourced | `—` | `2020-holiday-calendars.zip#2020-thanksgiving-holiday-schedule-compact.xls @2026-07-30T11:18:34Z` | T1 | equity index early close 12:00 CT; energy and metals early close 12:00 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed |
@@ -550,19 +488,20 @@ Every interval from 2010-01-01 is declared, so the whole span has an answer; the
 | 2021-05-31 | unsourced | `—` | `2021-holiday-calendars.zip#2021-memorial-day-holiday-schedule-compact.xls @2026-08-30T10:03:27Z` | T1 | equity index early close 12:00 CT; energy and metals early close 12:00 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed |
 | 2021-06-19 | unsourced | `—` | `2021-holiday-calendars.zip @2026-08-30T10:03:27Z` | T1 | equity index states `Unsourced` |
 | 2021-07-05 | unsourced | `—` | `2021-holiday-calendars.zip#2021-independence-day-holiday-schedule-compact.xls @2026-08-30T10:03:27Z` | T1 | equity index early close 12:00 CT; energy and metals early close 12:00 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed |
-| 2021-07-06 | unsourced | `—` | `2021-holiday-calendars.zip#2021-independence-day-holiday-schedule-compact.xls @2026-08-30T10:03:27Z` | T1 | equity index no row; energy and metals no row; FX no row; grains late open 08:30 CT; interest rates no row; livestock no row |
 | 2021-09-06 | unsourced | `—` | `2021-holiday-calendars.zip#2021-labor-day-holiday-schedule-compact.xls @2026-08-30T10:03:27Z` | T1 | equity index early close 12:00 CT; energy and metals early close 12:00 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed |
 | 2021-11-25 | unsourced | `—` | `2021-holiday-calendars.zip#2021-thanksgiving-holiday-schedule-compact.xls @2026-08-30T10:03:27Z` | T1 | equity index early close 12:00 CT; energy and metals early close 12:00 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed |
 | 2021-11-26 | unsourced | `—` | `2021-holiday-calendars.zip#2021-thanksgiving-holiday-schedule-compact.xls @2026-08-30T10:03:27Z` | T1 | equity index early close 12:15 CT; energy and metals early close 12:45 CT; FX early close 12:15 CT; grains late open 08:30 CT and early close 12:05 CT; interest rates early close 12:15 CT; livestock early close 12:05 CT |
 | 2021-12-24 | closed | `every routed family states a closure` | `2021-holiday-calendars.zip#2021-christmas-holiday-schedule-compact.xls @2026-08-30T10:03:27Z` | T1 | the intersection of the families routed to this venue |
 ### 2022-2024 (T1/T2)
 
-**Counts in this subsection are the 2022-2024 era's.** The table as a whole carries 316 rows over
-its six audited windows: 69 in 2010-2012 (6 stated closures and 63 `Unsourced`), 58 in 2013-2015
-(8 stated closures and 50 `Unsourced`), 36 in 2016-2018 (9 stated closures and 27 `Unsourced`), 42
-in 2019-2021 (8 stated closures and 34 `Unsourced`), 41 in this era (7 stated closures and 34
-`Unsourced`) and 70 in 2025-2027 (9 stated closures and 61 `Unsourced`). The derivation rule is the
-same in all six; only the documents differ.
+**Counts in this subsection are the 2022-2024 era's.** The table as a whole carries 231 rows over
+its six audited windows: 34 in 2010-2012 (6 stated closures and 28 `Unsourced`), 38 in 2013-2015
+(8 stated closures and 30 `Unsourced`), 34 in 2016-2018 (9 stated closures and 25 `Unsourced`), 36
+in 2019-2021 (8 stated closures and 28 `Unsourced`), 35 in this era (7 stated closures and 28
+`Unsourced`) and 54 in 2025-2027 (9 stated closures and 45 `Unsourced`). The derivation rule is the
+same in all six; only the documents differ. Counts re-derived on 2026-09-30 (UTC) under the
+profile-clock rule (#153, #242), which retired the eighty-five earlier rows on which only families
+other than the clock stated anything.
 
 **This era's rows are derived, not retrieved.** They are the **intersection** of
 the same six CME product families, and every id they cite is one a routed family's
@@ -570,11 +509,12 @@ own row on that date cites. The per-family rows, with their
 event-date-to-trade-date conversions, are in the six key evidence files; this
 section records the derivation, every date the intersection drops, and why.
 
-**Seven closures, thirty-four withheld dates.** Seven dates are shut in every
+**Seven closures, twenty-eight withheld dates.** Seven dates are shut in every
 routed family and ship `closed`: 2022-04-15 and 2022-12-26, 2023-01-02 and
-2023-12-25, and 2024-01-01, 2024-03-29 and 2024-12-25. The other thirty-four
+2023-12-25, and 2024-01-01, 2024-03-29 and 2024-12-25. The other twenty-eight
 dates carry `unsourced`, and the `Derived from` column above prints each routed
-family's own answer on each of them. They fall into four shapes:
+family's own answer on each of them. They fall into four shapes (counts
+re-derived 2026-09-30 UTC under the profile-clock rule, #153 and #242):
 
 - **Nineteen Monday and Thursday holidays**: 2022-01-17, 2022-02-21, 2022-05-30,
   2022-06-20, 2022-07-04, 2022-09-05, 2022-11-24; 2023-05-29, 2023-06-19,
@@ -590,11 +530,13 @@ family's own answer on each of them. They fall into four shapes:
   12:15 CT; energy and metals close at 12:45 CT, and at 13:45 CT on 2024-11-29. FX
   closes at 12:15 CT on the three Fridays and at 12:45 CT on 2024-12-24, when
   livestock ends at 12:15 CT rather than at 12:05 CT.
-- **Eight one-family dates**: `globex_grains` states a late open at 08:30 CT on
-  2022-07-05, 2023-07-05, 2023-12-26, 2024-01-02, 2024-07-05 and 2024-12-26, and
-  `globex_equity_index` an early close at 12:15 CT on 2023-07-03 and 2024-07-03.
-  Every other routed family audited those dates normal, which is an answer and
-  disputes the row.
+- **Two one-family dates**: `globex_equity_index` states an early close at 12:15 CT
+  on 2023-07-03 and 2024-07-03, and every other routed family audited those dates
+  normal, which is an answer and disputes the clock's row. (The six dates on which
+  `globex_grains` alone stated a late open at 08:30 CT — 2022-07-05, 2023-07-05,
+  2023-12-26, 2024-01-02, 2024-07-05 and 2024-12-26 — were withheld under the earlier
+  rule and are retired now: the venue's clock audited each of them normal, and a
+  family whose clock the venue does not serve cannot withhold it.)
 - **Three dates the families mark**: 2023-01-16, 2023-02-20 and 2023-04-07. On the
   first, every routed family states the crate's not-worked-up marker — the wave
   retrieved no document for that 2023 sheet — and the venue repeats the answer they
@@ -620,7 +562,6 @@ did. A caller with a product routes the question through the family key.
 | 2022-05-30 | unsourced | `—` | `2022-memorial-day-holiday-schedule.xls @2022-07-04T06:54:38Z` | T1 | equity index early close 12:00 CT; energy and metals early close 13:30 CT; FX no row; grains closed; interest rates early close 12:00 CT; livestock closed |
 | 2022-06-20 | unsourced | `—` | `2022-juneteenth-holiday-schedule.xls @2022-06-20T20:02:10Z` | T1 | equity index early close 12:00 CT; energy and metals early close 13:30 CT; FX no row; grains closed; interest rates early close 12:00 CT; livestock closed |
 | 2022-07-04 | unsourced | `—` | `2022-independence-day-holiday-schedule.xls @2022-07-04T06:54:50Z` | T1 | equity index early close 12:00 CT; energy and metals early close 13:30 CT; FX no row; grains closed; interest rates early close 12:00 CT; livestock closed |
-| 2022-07-05 | unsourced | `—` | `2022-independence-day-holiday-schedule.xls @2022-07-04T06:54:50Z` | T1 | equity index no row; energy and metals no row; FX no row; grains late open 08:30 CT; interest rates no row; livestock no row |
 | 2022-09-05 | unsourced | `—` | `2022-labor-day-holiday-schedule.xls @2022-07-04T06:54:41Z` | T1 | equity index early close 12:00 CT; energy and metals early close 13:30 CT; FX no row; grains closed; interest rates early close 12:00 CT; livestock closed |
 | 2022-11-24 | unsourced | `—` | `2022-thanksgiving-holiday-schedule.FINAL-20221122.xls @2022-11-22T06:08:01Z` | T1 | equity index early close 12:00 CT; energy and metals early close 13:30 CT; FX no row; grains closed; interest rates early close 12:00 CT; livestock closed |
 | 2022-11-25 | unsourced | `—` | `2022-thanksgiving-holiday-schedule.FINAL-20221122.xls @2022-11-22T06:08:01Z` | T1 | equity index early close 12:15 CT; energy and metals early close 12:45 CT; FX early close 12:15 CT; grains late open 08:30 CT and early close 12:05 CT; interest rates early close 12:15 CT; livestock early close 12:05 CT |
@@ -637,18 +578,15 @@ did. A caller with a product routes the question through the family key.
 | 2023-06-19 | unsourced | `—` | `juneteenth-2023.pdf @2023-06-13T18:59:49Z` | T1 | equity index early close 12:00 CT; energy and metals early close 13:30 CT; FX no row; grains closed; interest rates early close 12:00 CT; livestock closed |
 | 2023-07-03 | unsourced | `—` | `4th-of-july-2023.pdf @2023-06-27T12:50:57Z` | T1 | equity index early close 12:15 CT; energy and metals no row; FX no row; grains no row; interest rates no row; livestock no row |
 | 2023-07-04 | unsourced | `—` | `4th-of-july-2023.pdf @2023-06-27T12:50:57Z` | T1 | equity index early close 12:00 CT; energy and metals early close 13:30 CT; FX no row; grains closed; interest rates early close 12:00 CT; livestock closed |
-| 2023-07-05 | unsourced | `—` | `4th-of-july-2023.pdf @2023-06-27T12:50:57Z` | T1 | equity index no row; energy and metals no row; FX no row; grains late open 08:30 CT; interest rates no row; livestock no row |
 | 2023-09-04 | unsourced | `—` | `labor-day-2023.pdf @2023-08-02T19:24:46Z` | T1 | equity index early close 12:00 CT; energy and metals early close 13:30 CT; FX no row; grains closed; interest rates early close 12:00 CT; livestock closed |
 | 2023-11-23 | unsourced | `—` | `thanksgiving-day-2023.pdf @2023-12-03T20:59:29Z` | T1 | equity index early close 12:00 CT; energy and metals early close 13:30 CT; FX no row; grains closed; interest rates early close 12:00 CT; livestock closed |
 | 2023-11-24 | unsourced | `—` | `thanksgiving-day-2023.pdf @2023-12-03T20:59:29Z` | T1 | equity index early close 12:15 CT; energy and metals early close 12:45 CT; FX early close 12:15 CT; grains late open 08:30 CT and early close 12:05 CT; interest rates early close 12:15 CT; livestock early close 12:05 CT |
 | 2023-12-25 | closed | `every routed family states a closure` | `christmas-day-2023.pdf @2026-07-19T09:52:48Z` | T1 | the intersection of the families routed to this venue |
-| 2023-12-26 | unsourced | `—` | `christmas-day-2023.pdf @2026-07-19T09:52:48Z` | T1 | equity index no row; energy and metals no row; FX no row; grains late open 08:30 CT; interest rates no row; livestock no row |
 
 ### 2024
 | trade date | kind | instant as printed | document | tier | derived from |
 |---|---|---|---|---|---|
 | 2024-01-01 | closed | `every routed family states a closure` | `new-years-day-2024.pdf @2026-08-11T16:57:16Z` | T1 | the intersection of the families routed to this venue |
-| 2024-01-02 | unsourced | `—` | `new-years-day-2024.pdf @2026-08-11T16:57:16Z` | T1 | equity index no row; energy and metals no row; FX no row; grains late open 08:30 CT; interest rates no row; livestock no row |
 | 2024-01-15 | unsourced | `—` | `CME-SVC-2024-01-14` | T2 | equity index early close 12:00 CT; energy and metals early close 13:30 CT; FX no row; grains closed; interest rates early close 12:00 CT; livestock closed |
 | 2024-02-19 | unsourced | `—` | `CME-SVC-2024-02-18` | T2 | equity index early close 12:00 CT; energy and metals early close 13:30 CT; FX no row; grains closed; interest rates early close 12:00 CT; livestock closed |
 | 2024-03-29 | closed | `every routed family states a closure` | `CME-SVC-2024-03-28` | T2 | the intersection of the families routed to this venue |
@@ -656,22 +594,22 @@ did. A caller with a product routes the question through the family key.
 | 2024-06-19 | unsourced | `—` | `CME-SVC-2024-06-18` | T2 | equity index early close 12:00 CT; energy and metals early close 13:30 CT; FX no row; grains closed; interest rates early close 12:00 CT; livestock closed |
 | 2024-07-03 | unsourced | `—` | `CME-SVC-2024-07-03` | T2 | equity index early close 12:15 CT; energy and metals no row; FX no row; grains no row; interest rates no row; livestock no row |
 | 2024-07-04 | unsourced | `—` | `CME-SVC-2024-07-03` | T2 | equity index early close 12:00 CT; energy and metals early close 13:30 CT; FX no row; grains closed; interest rates early close 12:00 CT; livestock closed |
-| 2024-07-05 | unsourced | `—` | `CME-SVC-2024-07-03` | T2 | equity index no row; energy and metals no row; FX no row; grains late open 08:30 CT; interest rates no row; livestock no row |
 | 2024-09-02 | unsourced | `—` | `CME-SVC-2024-09-01` | T2 | equity index early close 12:00 CT; energy and metals early close 13:30 CT; FX no row; grains closed; interest rates early close 12:00 CT; livestock closed |
 | 2024-11-28 | unsourced | `—` | `CME-SVC-2024-11-27` | T2 | equity index early close 12:00 CT; energy and metals early close 13:30 CT; FX no row; grains closed; interest rates early close 12:00 CT; livestock closed |
 | 2024-11-29 | unsourced | `—` | `CME-SVC-2024-11-27` | T2 | equity index early close 12:15 CT; energy and metals early close 13:45 CT; FX early close 12:15 CT; grains late open 08:30 CT and early close 12:05 CT; interest rates early close 12:15 CT; livestock early close 12:05 CT |
 | 2024-12-24 | unsourced | `—` | `CME-SVC-2024-12-24` | T2 | equity index early close 12:15 CT; energy and metals early close 12:45 CT; FX early close 12:45 CT; grains early close 12:05 CT; interest rates early close 12:15 CT; livestock early close 12:15 CT |
 | 2024-12-25 | closed | `every routed family states a closure` | `CME-SVC-2024-12-24` | T2 | the intersection of the families routed to this venue |
-| 2024-12-26 | unsourced | `—` | `CME-SVC-2024-12-24` | T2 | equity index no row; energy and metals no row; FX no row; grains late open 08:30 CT; interest rates no row; livestock no row |
 
 ### 2025-2027 (T2)
 
-**Counts in this subsection are the 2025-2027 era's.** The table as a whole carries 316 rows over
-its six audited windows: 69 in 2010-2012 (6 stated closures and 63 `Unsourced`), 58 in 2013-2015
-(8 stated closures and 50 `Unsourced`), 36 in 2016-2018 (9 stated closures and 27 `Unsourced`), 42
-in 2019-2021 (8 stated closures and 34 `Unsourced`), 41 in 2022-2024 (7 stated closures and 34
-`Unsourced`) and 70 in this era (9 stated closures and 61 `Unsourced`). The derivation rule is the
-same in all six; only the documents differ.
+**Counts in this subsection are the 2025-2027 era's.** The table as a whole carries 231 rows over
+its six audited windows: 34 in 2010-2012 (6 stated closures and 28 `Unsourced`), 38 in 2013-2015
+(8 stated closures and 30 `Unsourced`), 34 in 2016-2018 (9 stated closures and 25 `Unsourced`), 36
+in 2019-2021 (8 stated closures and 28 `Unsourced`), 35 in 2022-2024 (7 stated closures and 28
+`Unsourced`) and 54 in this era (9 stated closures and 45 `Unsourced`). The derivation rule is the
+same in all six; only the documents differ. Counts re-derived on 2026-09-30 (UTC) under the
+profile-clock rule (#153, #242), which retired the eighty-five earlier rows on which only families
+other than the clock stated anything.
 
 **This table is derived, not retrieved.** It is the **intersection** of the holiday
 tables the crate ships for the six CME product families that route to `Exchange::Cme`
@@ -702,41 +640,46 @@ positive claim that it was audited normal, which is false on every one of these
 dates. Nor can the venue state an
 instant. A venue row would have to pick one, and on these dates there is no single
 one to pick, in either of two shapes: two families state **different boundaries**, or
-one family states a boundary while another has **audited the date normal** — and the
-second shape blocks a venue row just as firmly, because an audited normal is a
-different answer rather than a missing one.
+the **clock family itself** states a boundary while another has **audited the date
+normal** — and the second shape blocks a venue row just as firmly, because an audited
+normal is a different answer rather than a missing one. A row stated only by a family
+whose clock this venue does not serve, against a date the clock audits normal,
+withholds nothing since the 2026-09-30 decision: the #242 re-derivation retired those
+rows, among them this era's grains-only late opens and closure eves.
 
-The shapes are counted from the six tables rather than assumed. **Ten** of the
-forty-eight dates have all six families stating a boundary that they do not agree on.
-**Thirty-eight** have at least one family silent, and nineteen of those are the
-sharpest case, where exactly **one** family states anything at all: 2025-01-02,
-2025-12-26, 2026-01-02 and 2027-07-06, where only `globex_grains` states a whole-day
-replacement-blocks row, the fourteen closure eves on which it is the only family with
-a row, and 2025-07-03, where only `globex_equity_index` states an early close. Three
-more — 2026-06-22, 2026-07-06 and 2027-06-21 — are the two-family case:
-`globex_energy` and `globex_equity_index` both state the Saturday-session block and
-the other four state nothing. The remaining sixteen are a mixture in between. Here is what the
+The shapes are counted from the six tables rather than assumed (2026-09-30 UTC).
+**Ten** of the forty-five dates have all six families stating a boundary that they do
+not agree on. **Thirty-five** have at least one family silent, in three sub-shapes:
+thirty-one have exactly one family silent — seventeen are the Monday holidays where
+`globex_fx` alone states nothing (its halt falls at its ordinary 16:00 CT close) and
+fourteen are the merged trade dates where `globex_livestock` alone states nothing
+(including 2027-07-06, where the grain grid states a late-open replacement day); three
+are the Saturday trade dates 2026-06-22, 2026-07-06 and 2027-06-21, where
+`globex_grains` and `globex_livestock` state nothing while the other four each state
+the Saturday-session block; and one is 2025-07-03, where the clock states an early
+close at 12:15 CT and `globex_grains` a closure-eve replacement day while the other
+four state nothing. Here is what the
 boundary disagreements look like across the three shapes of holiday, which is why
 no single instant can stand for one.
 
-**The Christmas Eves are the widest** (a ten-date shape): on 2026-12-24 the grain and
-livestock day sessions end at 12:05 CT, the equity-index and interest-rate families at
-12:15 CT, and energy and FX at 12:45 CT — a forty-minute spread. **The Friday holidays
-are nearly as wide** (again all six, except that grains and livestock carry a late
-open as well): on the three days after Thanksgiving the grain and livestock sessions
-end at 12:05 CT, the equity-index and interest-rate families at 12:15 CT, and energy
-and FX at 13:45 CT. **The Monday holidays disagree in kind rather than by minutes**
-(these are the five-silent shape — `globex_fx` states nothing): the equity-index and
-interest-rate families halt at 12:00 CT, energy at 13:30 CT, and grains and livestock
-are closed outright. A venue row at the shallowest close would stop trading the
-families that run later; one at the deepest would run the families that stop earlier
-past their own sourced close.
+**The Christmas Eves are the widest**: on 2026-12-24 (2025-12-24 is the same shape)
+the grain and livestock day sessions end at 12:05 CT, the equity-index and
+interest-rate families at 12:15 CT, and energy and FX at 12:45 CT — a forty-minute
+spread. **The Friday holidays are nearly as wide** (again all six, except that grains
+and livestock carry a late open as well): on the three days after Thanksgiving the
+grain and livestock sessions end at 12:05 CT, the equity-index and interest-rate
+families at 12:15 CT, and energy and FX at 13:45 CT. **The Monday holidays disagree in
+kind rather than by minutes** (the one-silent shape — `globex_fx` states nothing): the
+equity-index and interest-rate families halt at 12:00 CT, energy at 13:30 CT, and
+grains and livestock are closed outright. A venue row at the shallowest close would
+stop trading the families that run later; one at the deepest would run the families
+that stop earlier past their own sourced close.
 
 `unsourced` clips nothing, changes no answer, and tells
 a caller what the crate knows: the date is special and the venue has no single answer
 for it. `iceus`, whose venue table shipped first, is the precedent.
 
-**Cite the family, not the venue, for holiday behaviour.** These forty-eight rows are
+**Cite the family, not the venue, for holiday behaviour.** These forty-five rows are
 the reason the consumer contract tells a caller to route holiday questions through
 the product-family key: `globex_equity_index` knows what CME equity index does on
 2026-12-24 and this venue deliberately does not claim to.
@@ -746,59 +689,47 @@ the product-family key: `globex_equity_index` knows what CME equity index does o
 | Trade date | Kind | Instant as printed | Document | Tier | Derived from |
 |---|---|---|---|---|---|
 | 2025-01-01 | closed | `no events published` | `CME-SVC-2024-12-31` | T2 | equity index closed; energy closed; FX closed; grains closed; interest rates closed; livestock closed |
-| 2025-01-02 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2024-12-31` | T2 | grains replacement blocks: the whole day from CME's 06:00 pre-open; no row in equity index, energy, FX, interest rates, livestock |
 | 2025-01-20 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2025-01-19` | T2 | equity index early close 12:00 CT; energy early close 13:30 CT; grains closed; interest rates early close 12:00 CT; livestock closed; no row in FX |
 | 2025-01-21 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2025-01-19` | T2 | equity index, energy, FX, grains and interest rates each state their own replacement-block set for the date the 2025-01-20 holiday rolls into; no row in livestock |
 | 2025-02-17 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2025-02-16` | T2 | equity index early close 12:00 CT; energy early close 13:30 CT; grains closed; interest rates early close 12:00 CT; livestock closed; no row in FX |
 | 2025-02-18 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2025-02-16` | T2 | equity index, energy, FX, grains and interest rates each state their own replacement-block set for the date the holiday rolls into; no row in livestock |
-| 2025-04-17 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2025-04-17` | T2 | grains states the eve's complete replacement-blocks day, whose post-close queue carries this trade date; no row in the other five families |
 | 2025-04-18 | closed | `no events published` | `CME-SVC-2025-04-17` | T2 | equity index closed; energy closed; FX closed; grains closed; interest rates closed; livestock closed |
 | 2025-05-26 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2025-05-25` | T2 | equity index early close 12:00 CT; energy early close 13:30 CT; grains closed; interest rates early close 12:00 CT; livestock closed; no row in FX |
 | 2025-05-27 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2025-05-25` | T2 | equity index, energy, FX, grains and interest rates each state their own replacement-block set for the date the holiday rolls into; no row in livestock |
-| 2025-06-18 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2025-06-18` | T2 | grains states the eve's complete replacement-blocks day, whose post-close queue carries this trade date; no row in the other five families |
 | 2025-06-19 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2025-06-18` | T2 | equity index early close 12:00 CT; energy early close 13:30 CT; grains closed; interest rates early close 12:00 CT; livestock closed; no row in FX |
 | 2025-06-20 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2025-06-18` | T2 | equity index, energy, FX, grains and interest rates each state their own replacement-block set for the date the holiday rolls into; no row in livestock |
 | 2025-07-03 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2025-07-03` | T2 | equity index early close 12:15 CT; no row in energy, FX, grains, interest rates, livestock |
 | 2025-07-04 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2025-07-03` | T2 | equity index early close 12:00 CT; energy early close 12:00 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed |
 | 2025-09-01 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2025-08-31` | T2 | equity index early close 12:00 CT; energy early close 13:30 CT; grains closed; interest rates early close 12:00 CT; livestock closed; no row in FX |
 | 2025-09-02 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2025-08-31` | T2 | equity index, energy, FX, grains and interest rates each state their own replacement-block set for the date the holiday rolls into; no row in livestock |
-| 2025-11-26 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2025-11-26-SAT` | T2 | grains states the eve's complete replacement-blocks day, whose post-close queue carries this trade date; no row in the other five families |
 | 2025-11-27 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2025-11-26-SAT` | T2 | equity index early close 12:00 CT; energy early close 13:30 CT; grains closed; interest rates early close 12:00 CT; livestock closed; no row in FX |
 | 2025-11-28 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2025-11-26` | T2 | equity index early close 12:15 CT; energy early close 13:45 CT; FX early close 13:45 CT; grains late open 08:30 CT and early close 12:05 CT; interest rates early close 12:15 CT; livestock early close 12:05 CT |
 | 2025-11-29 | closed | `no events published` | `CME-SVC-2025-11-26-SAT` | T2 | equity index closed; energy closed; FX closed; grains closed; interest rates closed; livestock closed |
 | 2025-12-24 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2025-12-24` | T2 | equity index early close 12:15 CT; energy early close 12:45 CT; FX early close 12:45 CT; grains early close 12:05 CT; interest rates early close 12:15 CT; livestock early close 12:15 CT |
 | 2025-12-25 | closed | `no events published` | `CME-SVC-2025-12-24` | T2 | equity index closed; energy closed; FX closed; grains closed; interest rates closed; livestock closed |
-| 2025-12-26 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2025-12-24` | T2 | grains replacement blocks: the whole day from CME's 06:00 pre-open; no row in equity index, energy, FX, interest rates, livestock |
-| 2025-12-31 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2025-12-31` | T2 | grains states the eve's complete replacement-blocks day, whose post-close queue carries this trade date; no row in the other five families |
 
 ### 2026
 
 | Trade date | Kind | Instant as printed | Document | Tier | Derived from |
 |---|---|---|---|---|---|
 | 2026-01-01 | closed | `no events published` | `CME-SVC-2025-12-31` | T2 | equity index closed; energy closed; FX closed; grains closed; interest rates closed; livestock closed |
-| 2026-01-02 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2025-12-31` | T2 | grains replacement blocks: the whole day from CME's 06:00 pre-open; no row in equity index, energy, FX, interest rates, livestock |
 | 2026-01-19 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2026-01-18` | T2 | equity index early close 12:00 CT; energy early close 13:30 CT; grains closed; interest rates early close 12:00 CT; livestock closed; no row in FX |
 | 2026-01-20 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2026-01-18` | T2 | equity index, energy, FX, grains and interest rates each state their own replacement-block set for the date the holiday rolls into; no row in livestock |
 | 2026-02-16 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2026-02-15` | T2 | equity index early close 12:00 CT; energy early close 13:30 CT; grains closed; interest rates early close 12:00 CT; livestock closed; no row in FX |
 | 2026-02-17 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2026-02-15` | T2 | equity index, energy, FX, grains and interest rates each state their own replacement-block set for the date the holiday rolls into; no row in livestock |
-| 2026-04-02 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2026-04-01` | T2 | grains states the eve's complete replacement-blocks day, whose post-close queue carries this trade date; no row in the other five families |
 | 2026-04-03 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2026-04-01` | T2 | equity index early close 08:15 CT; energy closed; FX early close 10:15 CT; grains closed; interest rates early close 10:15 CT; livestock closed |
 | 2026-05-25 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2026-05-24` | T2 | equity index early close 12:00 CT; energy early close 13:30 CT; grains closed; interest rates early close 12:00 CT; livestock closed; no row in FX |
 | 2026-05-26 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2026-05-24` | T2 | equity index, energy, FX, grains and interest rates each state their own replacement-block set for the date the holiday rolls into; no row in livestock |
-| 2026-06-18 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2026-06-18` | T2 | grains states the eve's complete replacement-blocks day, whose post-close queue carries this trade date; no row in the other five families |
 | 2026-06-19 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2026-06-18` | T2 | equity index early close 12:00 CT; energy early close 12:00 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed |
 | 2026-06-22 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2026-06-18` | T2 | energy, equity index, interest rates and FX replacement blocks: Saturday 05:00-17:00 CT, the Sunday Pre-Open 16:00-17:00 CT and the Sunday-17:00-to-Monday-16:00 session; no row in grains or livestock |
-| 2026-07-02 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2026-07-02` | T2 | grains states the eve's complete replacement-blocks day, whose post-close queue carries this trade date; no row in the other five families |
 | 2026-07-06 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2026-07-03` | T2 | as 2026-06-22 |
 | 2026-07-03 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2026-07-03` | T2 | equity index early close 12:00 CT; energy early close 12:00 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed |
 | 2026-09-07 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2026-09-06` | T2 | equity index early close 12:00 CT; energy early close 13:30 CT; grains closed; interest rates early close 12:00 CT; livestock closed; no row in FX |
 | 2026-09-08 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2026-09-06` | T2 | equity index, energy, FX, grains and interest rates each state their own replacement-block set for the date the holiday rolls into; no row in livestock |
-| 2026-11-25 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2026-11-25` | T2 | grains states the eve's complete replacement-blocks day, whose post-close queue carries this trade date; no row in the other five families |
 | 2026-11-26 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2026-11-25` | T2 | equity index early close 12:00 CT; energy early close 13:30 CT; grains closed; interest rates early close 12:00 CT; livestock closed; no row in FX |
 | 2026-11-27 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2026-11-25` | T2 | equity index early close 12:15 CT; energy early close 13:45 CT; FX early close 13:45 CT; grains late open 08:30 CT and early close 12:05 CT; interest rates early close 12:15 CT; livestock early close 12:05 CT |
 | 2026-12-24 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2026-12-22` | T2 | equity index early close 12:15 CT; energy early close 12:45 CT; FX early close 12:45 CT; grains early close 12:05 CT; interest rates early close 12:15 CT; livestock early close 12:05 CT |
 | 2026-12-25 | closed | `no events published` | `CME-SVC-2026-12-24` | T2 | equity index closed; energy closed; FX closed; grains closed; interest rates closed; livestock closed |
-| 2026-12-31 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2026-12-31` | T2 | grains states the eve's complete replacement-blocks day, whose post-close queue carries this trade date; no row in the other five families |
 
 ### 2027
 
@@ -809,21 +740,17 @@ the product-family key: `globex_equity_index` knows what CME equity index does o
 | 2027-01-19 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2027-01-17` | T2 | equity index, energy, FX, grains and interest rates each state their own replacement-block set for the date the holiday rolls into; no row in livestock |
 | 2027-02-15 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2027-02-14` | T2 | equity index early close 12:00 CT; energy early close 13:30 CT; grains closed; interest rates early close 12:00 CT; livestock closed; no row in FX |
 | 2027-02-16 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2027-02-14` | T2 | equity index, energy, FX, grains and interest rates each state their own replacement-block set for the date the holiday rolls into; no row in livestock |
-| 2027-03-25 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2027-03-25` | T2 | grains states the eve's complete replacement-blocks day, whose post-close queue carries this trade date; no row in the other five families |
 | 2027-03-26 | closed | `no events published` | `CME-SVC-2027-03-25` | T2 | equity index closed; energy closed; FX closed; grains closed; interest rates closed; livestock closed |
 | 2027-05-31 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2027-05-30` | T2 | equity index early close 12:00 CT; energy early close 13:30 CT; grains closed; interest rates early close 12:00 CT; livestock closed; no row in FX |
 | 2027-06-01 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2027-05-30` | T2 | equity index, energy, FX, grains and interest rates each state their own replacement-block set for the date the holiday rolls into; no row in livestock |
-| 2027-06-17 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2027-06-17` | T2 | grains states the eve's complete replacement-blocks day, whose post-close queue carries this trade date; no row in the other five families |
 | 2027-06-18 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2027-06-17` | T2 | equity index early close 12:00 CT; energy early close 12:00 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed |
 | 2027-06-21 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2027-06-17` | T2 | as 2026-06-22 |
 | 2027-07-05 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2027-07-04` | T2 | equity index early close 12:00 CT; energy early close 13:30 CT; grains closed; interest rates early close 13:30 CT; livestock closed; no row in FX |
 | 2027-07-06 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2027-07-04` | T2 | grains replacement blocks: the whole day from CME's 06:00 pre-open; no row in equity index, energy, FX, interest rates, livestock |
 | 2027-09-06 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2027-09-05` | T2 | equity index early close 12:00 CT; energy early close 13:30 CT; grains closed; interest rates early close 12:00 CT; livestock closed; no row in FX |
 | 2027-09-07 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2027-09-05` | T2 | equity index, energy, FX, grains and interest rates each state their own replacement-block set for the date the holiday rolls into; no row in livestock |
-| 2027-11-24 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2027-11-24` | T2 | grains states the eve's complete replacement-blocks day, whose post-close queue carries this trade date; no row in the other five families |
 | 2027-11-25 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2027-11-24` | T2 | equity index early close 12:00 CT; energy early close 13:30 CT; grains closed; interest rates early close 12:00 CT; livestock closed; no row in FX |
 | 2027-11-26 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2027-11-24` | T2 | equity index early close 12:15 CT; energy early close 13:45 CT; FX early close 13:45 CT; grains late open 08:30 CT and early close 12:05 CT; interest rates early close 12:15 CT; livestock early close 12:05 CT |
-| 2027-12-23 | unsourced | no single cell — the routed families disagree, so the venue states no instant | `CME-SVC-2027-12-22` | T2 | grains states the eve's complete replacement-blocks day, whose post-close queue carries this trade date; no row in the other five families |
 | 2027-12-24 | closed | `no events published` | `CME-SVC-2027-12-22` | T2 | equity index closed; energy closed; FX closed; grains closed; interest rates closed; livestock closed |
 
 **Gaps, 2025-2027.**
@@ -924,11 +851,13 @@ the product-family key: `globex_equity_index` knows what CME equity index does o
 
 ### The cross-wave D17 audit (#95)
 
-**The intersection is re-derived over every audited era, not only this wave's.** `tools/check_wave5.py` recomputes the D17 rule over 2010-01-01..2027-12-31 — every date on which at least one routed family declares a window — and compares the result with the tables above date by date: **316 rows over the six windows**, 47 the routed families state `Closed` and 269 withheld as `Unsourced`. This is the agreement audit memo §7 follow-up 10 asks for (#95).
+**The intersection is re-derived over every audited era, not only this wave's.** `tools/venue_intersection*.py` recompute the profile-clock rule (2026-09-30, #153; amended and applied by #242) over 2010-01-01..2027-12-31 — every date on which at least one routed family declares a window — and compare the result with the tables above date by date: **231 rows over the six windows**, 47 the routed families state `Closed` and 184 withheld as `Unsourced`. This is the agreement audit memo §7 follow-up 10 asks for (#95).
 
-**Abstention and audited-normal silence are both states the audit reads.** A family with no window on a date abstains and the families that cover it decide: until the #110 wave encoded `globex_livestock`'s 2016-2018 rows, the other five decided that era's 36 dates — 9 closures and 27 withheld — and the encoded rows agree with every one of those decisions, `Closed` on the nine and a joining row or audited normal on each of the 27, so no venue row moved. Inside a window a family that states no row has audited the date normal, which is not the same state as silence: a date one family states and another audited normal is a disagreement and ships `Unsourced`. Of the 269 rows withheld, **263 are disagreements of that kind and 6 carry a routed family's marker**: on four — 2019-06-19, 2020-06-19, 2021-06-19 and 2023-01-16 — every routed family itself marks the date not worked up, the families' own marker rather than a dispute; on the other two — 2023-02-20 and 2023-04-07 — four families still mark while `globex_grains` states a closure and `globex_interest_rates` an early close, the rows the #224 census worked up from the operator's unsuffixed sheets, so those two are disputes now. **The reading this audit uses for an `Unsourced` family never decides a row.** A routed family's `Unsourced` marker appears where every routed family states one — the four agreed markers above — so the venue ships `Unsourced` under either reading, and since that census it also appears on 2023-02-20 and 2023-04-07, which makes those two the only dates in the four venue tables on which a routed family marks a date while another routed family states a row (recomputed: 2); as a stated row against the marks they ship `Unsourced` under either reading too. The shapes that look like counterexamples are not: 2024-03-29 and 2024-12-25 have all six routed families stating `Closed` (the `Unsourced` marker printed beside them belongs to `globex_nikkei_225_dollar`, which `venues.rs` excludes from this venue's routing), 2025-01-02 is the ordinary disagreement — `globex_grains` states a late open and the other five are silent — and on 2024-12-31 all six are silent, so the table ships nothing. `Exchange::Cme` applies one reading, not two.
+**The profile clock decides the artefact rows.** The venue answers from its clock, the equity-index grid, so a date the equity table audits normal ships no row even where other routed families state rows: that rule retired **eighty-five** rows the earlier D17 rule had withheld across every era. They are the interest-rate and FX families' 15:15 CT pre-holiday Friday closes on twenty-eight dates (energy and metals joining on the seven 2010-2011 dates where the metals half shared the 15:15 CT halt), the interest-rate leg's merged-Monday replacement sets alone on fourteen dates, the livestock-only 13:55 CT Good-Friday-eve closes on six (2011-04-21, 2012-04-05, 2013-03-28, 2014-04-17, 2015-04-02 and 2015-12-31), the grains-only 08:30 CT day-after-closure late opens on eighteen (2013-07-05, 2014-07-07, 2014-12-26, 2015-01-02, the five 2019-2021 dates, the six 2022-2024 dates and 2025-01-02, 2025-12-26, 2026-01-02), the grains-only closure-eve replacement days on thirteen (2025-04-17, 2025-06-18, 2025-11-26, 2025-12-31, 2026-04-02, 2026-06-18, 2026-07-02, 2026-11-25, 2026-12-31, 2027-03-25, 2027-06-17, 2027-11-24 and 2027-12-23), and six dates on which two or more non-clock families disagreed with each other while the clock audited normal (2010-12-31, 2012-07-05, 2015-07-02, 2016-12-23, 2017-12-22 and 2020-07-02). Every one of those dates still carries the dissenting family's own sourced row in its family table, where the consumer's exact-family routing (#118) reads it. What remains withheld is what the clock itself answers and another routed family disputes.
 
-The 2013-2015 era's 50 withheld rows — its 58 rows less the 8 the routed families state `Closed` — carry only the intersection cell in that era's year tables above; the per-date disagreements are named in `venues/cme.rs`'s row comments and in the 2019-2021 and 2022-2024 tables.
+**Abstention and audited-normal silence are both states the audit reads.** A family with no window on a date abstains and the families that cover it decide: until the #110 wave encoded `globex_livestock`'s 2016-2018 rows, the other five decided that era's 36 dates — 9 closures and 27 withheld under the then-current rule — and the encoded rows agree with every one of those decisions, `Closed` on the nine and a joining row or audited normal on each of the 27, so no venue row moved. Inside a window the clock's own silence is the venue's answer; a clock-family row another routed family does not match is a disagreement and ships `Unsourced`. Of the 184 rows withheld, **180 are disputes of that kind and 4 are dates every routed family itself marks not worked up** (2019-06-19, 2020-06-19, 2021-06-19 and 2023-01-16), which are the families' own marker rather than a dispute. Two of the disputes — 2023-02-20 and 2023-04-07 — carry four families' markers beside the clock's own, while `globex_grains` states a closure and `globex_interest_rates` an early close, the rows the #224 census worked up from the operator's unsuffixed sheets: those two are the only dates in the four venue tables on which a routed family marks a date while the clock states the marker too (recomputed: 2). The shapes that look like counterexamples are not: 2024-03-29 and 2024-12-25 have all six routed families stating `Closed` (the `Unsourced` marker printed beside them belongs to `globex_nikkei_225_dollar`, which `venues.rs` excludes from this venue's routing), 2025-01-02 was the ordinary grains-only disagreement until the profile-clock rule retired it, and on 2024-12-31 all six are silent, so the table ships nothing. `Exchange::Cme` applies one rule, not two.
+
+The 2013-2015 era's 30 withheld rows — its 38 rows less the 8 the routed families state `Closed` — carry only the intersection cell in that era's year tables above; the per-date disagreements are named in `venues/cme.rs`'s row comments and in the 2019-2021 and 2022-2024 tables.
 
 ## Sources
 

@@ -14,22 +14,37 @@ coverage, staged in
 **2010-01-01**, the pre-2025 history the crate ships is retained rather than
 removed (Stage 5's removal programme is cancelled; #117 closed and reverted by
 #185), and the 2010–2024 era's known gaps (#110, #101, #112, #89) close before
-1.0.0 instead of being deleted past. The law names are unchanged.
+1.0.0 instead of being deleted past. The 2026-09-30 (UTC) refresh records that
+the coverage contract is enforced, not pending: the migration status and
+LAW-COVERAGE now describe what ships (closes #154). The law names are
+unchanged.
 
-## Migration status — 2026-09-27 UTC
+## Migration status — 2026-09-30 UTC
 
-The 2010 contract below is the **adopted target**, not a claim about the current
-implementation. The documentation amendment changes no Rust API or runtime data.
-The restored 2010–2024 audited windows answer again, and the pre-2025
-known gaps surface as explicit coverage verdicts rather than being removed:
-the #110 livestock-era encoding gap and the #101 2010–2012 interest-rate holiday
-grid have already closed as data on main (#187 and #189), while the #112
-Coinbase source defects and the #89 pre-2025 quotations close
-as data before 1.0.0. The ledger records what actually ships. Built-in
-special-session data (#93), complete served data (#116) and the remaining
-stages land in separate reviewed changes before the release gate (#119) is
-satisfied. Do not implement those stages as incidental cleanup in a
-documentation change.
+The 2010 contract below **ships**. Identity-backed date-aware queries enforce
+LAW-COVERAGE (#115): `ExchangeCalendar::trade_date`, `session_bounds`,
+`is_accepting_orders`, `is_order_entry_only`, `session_state`,
+`is_maintenance`, `is_closed_trade_date`, the `candle_*` adapters and
+`next_session_*` all return `Result<_, CalendarQueryError>`, with
+`BeforeSupportFloor`, `OutsideCoveredRange`, `UnresolvedGap` and
+`SearchExhausted` all reachable — an unknown date is never reported as a
+market closure or an ordinary one. The support floor is 2010-01-01, the
+restored 2010–2024 audited windows answer again, and the pre-2025 known gaps
+surface as explicit coverage verdicts rather than being removed: the #110
+livestock-era encoding gap and the #101 2010–2012 interest-rate holiday grid
+closed as data on main (#187 and #189), and the #112 Coinbase source defects
+and the #89 pre-2025 quotations close as data before 1.0.0. The ledger
+records what actually ships.
+
+What still does not enforce the contract: `hours_at`, `hours_for_*` and
+`session_profile` are static-table accessors that check normal-week coverage
+only, and detached caller-supplied `MarketHours` snapshots keep their
+no-holiday contract — the caller's `DayPolicy` overlay is the only layer
+there. Built-in replacement-session data ships as `HolidayKind::ReplacementBlocks`
+rows in eight family tables through the `ExceptionBlock` engine (#93).
+Complete served data (#116) and the remaining stages land in separate reviewed
+changes before the release gate (#119) is satisfied; do not implement those
+stages as incidental cleanup in a documentation change.
 
 ## Purpose
 
@@ -123,8 +138,10 @@ the cost of keeping them true.
   unknown date during a bounded search. A known closure, absent session and
   search exhaustion remain distinct from missing evidence. Normal-week
   snapshots retain their no-holiday contract, and detached caller-supplied
-  `MarketHours` snapshots remain exactly their supplied rules. Stage 2 (#115)
-  implements this contract; existing APIs do not yet enforce it.
+  `MarketHours` snapshots remain exactly their supplied rules. The
+  identity-backed date-aware surface enforces this contract (#115); the
+  static-table accessors (`hours_at`, `hours_for_*`, `session_profile`) and
+  detached snapshots do not, as the migration status records.
 - **LAW-PRIMARY-SOURCES** — every session time, every dated change and every
   holiday in this crate is backed by evidence at a recorded **tier**:
   - **T1**, the operator's own statement — rulebook, notice, circular,
@@ -217,8 +234,9 @@ the cost of keeping them true.
   in per-family static tables under `schedules/`, sourced at T1 or T2 with its
   tier and document id in each row. Scalar boundaries represent only what they
   can state exactly; complete replacement blocks represent other arrangements
-  through the existing `ExceptionBlock` engine (#93). Until those rows ship,
-  their absence remains a gap, not a complete calendar or an approximation.
+  through the existing `ExceptionBlock` engine (#93), and such rows ship in
+  eight family tables. Where an arrangement is still unmodelled, its absence
+  remains a gap, not a complete calendar or an approximation.
 
   The target is the permanent 2010 floor, or the identity's later sourced
   launch, through what the operator has published unconditionally and with
@@ -254,9 +272,9 @@ the cost of keeping them true.
   instead of withholding it. Genuine disagreement — two routed families
   printing different instants, or a clock-family holiday against another
   family's normal — stays `Unsourced`. The re-derivation this decision needs
-  is data work tracked on its own issue; until it lands, the shipped venue
-  tables keep the withheld rows the earlier rule produced, and they remain
-  labelled partial either way.
+  landed as data on 2026-09-30 UTC (#242): the venue tables retire the rows
+  the earlier rule produced and answer those dates from their clocks, and the
+  venue identities remain labelled partial either way.
 
   An explicit caller `Closed` or `ReplaceSessions` record takes precedence over
   the built-in date arrangement; the caller's `DayPolicy` then clips the result.

@@ -40,7 +40,8 @@ use super::schedules::futures::us::{
     fcoj_profile_at, fx_profile_at, gold_tas_profile_at, ice_us_fang_profile_at,
     ice_usdx_profile_at, interest_rates_profile_at, livestock_profile_at, mini_grains_profile_at,
     nkd_profile_at, palladium_tas_profile_at, platinum_tas_profile_at, rough_rice_profile_at,
-    silver_tas_profile_at, spot_quoted_profile_at, sugar_profile_at, weather_profile_at,
+    silver_100oz_profile_at, silver_tas_profile_at, spot_quoted_profile_at, sugar_profile_at,
+    weather_profile_at,
 };
 use super::{Exchange, MarketHours, SessionRule};
 
@@ -150,6 +151,20 @@ market_hours_keys! {
         /// energy/metals history. Excludes TAS/TAM/BTIC, options, and products
         /// whose own specification publishes a different grid.
         GlobexEnergy => "globex_energy",
+        /// COMEX 100-Ounce Silver futures (`SIL`, Globex security group 4S) —
+        /// the one energy/metals root CME moved to 24/7 trading, effective
+        /// Friday 2026-09-11 with the first weekend leg opening 16:30 CT. It
+        /// rode the [`GlobexEnergy`](Self::GlobexEnergy) grid from the
+        /// January-2010 floor and that key's scope excludes products whose own
+        /// specification publishes a different grid, so this key carries the
+        /// product's whole life: the shared energy/metals grid by reference to
+        /// every dated revision through 2026-09-10, the bridge day, and the
+        /// 24/7 grid from 2026-09-12. Excludes miNY Silver and every TAS,
+        /// options and spread product on the metal. The weekend block carries
+        /// the following open business date, as the operator's notice states;
+        /// no built-in holiday table routes here, because the 24/7 era's
+        /// holiday arrangement is not yet sourced (see the evidence file).
+        GlobexSilver100Oz => "globex_silver_100oz",
         /// Standard-size CBOT grain/oilseed Globex hours; excludes the
         /// mini-sized grain futures, which have their own
         /// [`GlobexMiniGrains`](Self::GlobexMiniGrains) key, and Rough Rice,
@@ -463,6 +478,7 @@ pub fn hours_for_market_hours_key(key: MarketHoursKey, as_of: DateTime<Utc>) -> 
     let profile = match key {
         MarketHoursKey::GlobexEquityIndex => cme_profile_at(as_of),
         MarketHoursKey::GlobexEnergy => energy_metals_profile_at(as_of),
+        MarketHoursKey::GlobexSilver100Oz => silver_100oz_profile_at(as_of),
         MarketHoursKey::GlobexGrains => cbot_profile_at(as_of),
         MarketHoursKey::GlobexMiniGrains => mini_grains_profile_at(as_of),
         MarketHoursKey::GlobexFx => fx_profile_at(as_of),

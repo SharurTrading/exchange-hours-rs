@@ -830,7 +830,9 @@ fn withheld(calendar: ExchangeCalendar, date: NaiveDate) -> bool {
 /// withheld date.
 fn date_level_incompleteness() -> &'static [(&'static str, usize)] {
     &[
-        ("cbot", 261),
+        // 202 after the #242 profile-clock re-derivation (2026-09-30): the 59
+        // rows the rate leg's lone dissent had withheld are retired.
+        ("cbot", 202),
         ("euronext_paris", 2),
         ("iceus", 41),
         ("lse", 5),

@@ -1102,12 +1102,12 @@ fn every_shipped_session_occurrence_is_dated_by_its_own_open_or_the_next_day() {
     // `ALL_EXCHANGES` / `EXCHANGE_VARIANT_COUNT`
     // (`tests/contract/session_invariants/identity_expectations.rs`), every
     // `MarketHoursKey` the ledger names must resolve, and the verification
-    // ledger states one row per identity. This count is that ledger's 132 rows
-    // less the four sourced trade-date conventions the sweep excludes.
+    // ledger states one row per identity. This count is that ledger's 133 rows
+    // less the five sourced trade-date conventions the sweep excludes.
     assert_eq!(
         close_dated_calendars().len(),
         128,
-        "132 ledger identities less this fence's four excluded conventions"
+        "133 ledger identities less this fence's five excluded conventions"
     );
     assert_eq!(
         swept_identities,
@@ -1145,10 +1145,10 @@ fn every_shipped_session_occurrence_is_dated_by_its_own_open_or_the_next_day() {
 /// The identities whose trade date is the close-date default — every identity
 /// the self-dated narrowing applies to.
 ///
-/// The three sourced conventions — SET Thailand's prior opening date, CBOT
-/// Rough Rice's following local date, and the cryptocurrency and `ECBTC`
-/// business-date roll — keep the close walk's full window, so they are the
-/// calendars this fence does not speak for.
+/// The sourced trade-date conventions — SET Thailand's prior opening date,
+/// CBOT Rough Rice's following local date, and the cryptocurrency, `ECBTC`
+/// and COMEX 100-oz silver business-date roll — keep the close walk's full
+/// window, so they are the calendars this fence does not speak for.
 fn close_dated_calendars() -> Vec<(String, ExchangeCalendar)> {
     every_calendar()
         .into_iter()
@@ -1160,6 +1160,7 @@ fn close_dated_calendars() -> Vec<(String, ExchangeCalendar)> {
                         MarketHoursKey::GlobexRoughRice
                             | MarketHoursKey::GlobexCryptocurrency
                             | MarketHoursKey::GlobexEventContractsBtc
+                            | MarketHoursKey::GlobexSilver100Oz
                     )
             )
         })

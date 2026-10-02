@@ -36,9 +36,10 @@ use crate::calendar::schedules::futures::us::{
     MINI_ORDER_ENTRY_CURRENT, MINI_REGULAR_CURRENT, NKD_EXTENDED_CURRENT, NKD_ORDER_ENTRY_CURRENT,
     NKD_REGULAR_CURRENT, PALLADIUM_TAS_EXTENDED_CURRENT, PGM_TAS_ORDER_ENTRY_CURRENT,
     PLATINUM_TAS_EXTENDED_CURRENT, ROUGH_RICE_EXTENDED_CURRENT, ROUGH_RICE_ORDER_ENTRY_CURRENT,
-    ROUGH_RICE_REGULAR_CURRENT, SILVER_TAS_EXTENDED_CURRENT, SPOT_QUOTED_EXTENDED_CURRENT,
-    SPOT_QUOTED_ORDER_ENTRY_CURRENT, SUGAR_EXTENDED_CURRENT, SUGAR_ORDER_ENTRY_CURRENT,
-    SUGAR_REGULAR_CURRENT, WEATHER_EXTENDED_CURRENT, WEATHER_ORDER_ENTRY_CURRENT,
+    ROUGH_RICE_REGULAR_CURRENT, SILVER_100OZ_EXTENDED_CURRENT, SILVER_TAS_EXTENDED_CURRENT,
+    SPOT_QUOTED_EXTENDED_CURRENT, SPOT_QUOTED_ORDER_ENTRY_CURRENT, SUGAR_EXTENDED_CURRENT,
+    SUGAR_ORDER_ENTRY_CURRENT, SUGAR_REGULAR_CURRENT, WEATHER_EXTENDED_CURRENT,
+    WEATHER_ORDER_ENTRY_CURRENT,
 };
 
 static FUTURES_GLOBEX_EQUITY_INDEX: FuturesSessionProfile = FuturesSessionProfile {
@@ -57,6 +58,17 @@ static FUTURES_GLOBEX_ENERGY: FuturesSessionProfile = FuturesSessionProfile {
     order_entry: ENERGY_METALS_ORDER_ENTRY_CURRENT,
     has_daily_close: true,
     has_weekend_close: true,
+};
+
+// The 100-oz silver family's verified-current 24/7 grid (from 2026-09-12). No
+// source states a Pre-Open queue for the 24/7 era, so `order_entry` is empty.
+static FUTURES_GLOBEX_SILVER_100OZ: FuturesSessionProfile = FuturesSessionProfile {
+    tz: US::Central,
+    regular: &[],
+    extended: SILVER_100OZ_EXTENDED_CURRENT,
+    order_entry: &[],
+    has_daily_close: true,
+    has_weekend_close: false,
 };
 
 static FUTURES_GLOBEX_GRAINS: FuturesSessionProfile = FuturesSessionProfile {
@@ -385,6 +397,7 @@ pub fn session_profile(key: MarketHoursKey) -> &'static FuturesSessionProfile {
     match key {
         MarketHoursKey::GlobexEquityIndex => &FUTURES_GLOBEX_EQUITY_INDEX,
         MarketHoursKey::GlobexEnergy => &FUTURES_GLOBEX_ENERGY,
+        MarketHoursKey::GlobexSilver100Oz => &FUTURES_GLOBEX_SILVER_100OZ,
         MarketHoursKey::GlobexGrains => &FUTURES_GLOBEX_GRAINS,
         MarketHoursKey::GlobexMiniGrains => &FUTURES_GLOBEX_MINI_GRAINS,
         MarketHoursKey::GlobexFx => &FX_CURRENT,

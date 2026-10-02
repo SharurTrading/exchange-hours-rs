@@ -53,3 +53,42 @@ as each source is re-verified.
 - The module encodes three day-level cutovers as named constants (`TRANSFER` 2013-10-07, `EXTENSION_OPENING_DAY` 2026-04-12, `EXTENSION` 2026-04-13) plus a daylight-time reference selector rather than as `revisions!` tuples, so this file records no revision-row bullets even though the identity has dated cutovers.
 - The original predecessor-venue onset of the 07:45 pre-market is outside this identity's modelled interval; the transfer selector does not claim that the phase began in 2013.
 - The 2026-04-12 eve profile exists so the extension's Sunday leg does not appear before its first opening day; it is a one-day bridge, not a separate era.
+
+## Module narrative (moved from src/calendar/schedules/futures/international/ice_endex.rs on 2026-10-01 UTC)
+
+PHASE CLASSIFICATION. Every non-executable window below is the pre-open /
+pre-market phase that precedes the day's open: the WebICE hours table and the
+archived Endex product page publish it as "pre-open" ahead of the 08:00 open,
+and the Endex Rules' Operating Time Schedule keeps it a separate Pre-Opening
+phase from Trading. Orders may be entered, amended and cancelled there and
+nothing matches until the open, so these windows are order_entry. Dutch TTF
+has no tradeable phase outside its executable session, so extended is empty
+in every era.
+
+---
+
+ICE Endex is scoped to the post-combination Dutch TTF Natural Gas Futures
+contract. ICE's 2013-08-31 WebICE hours table shows the transferred contract's
+07:45 pre-open / 08:00-18:00 CET grid immediately before the handoff. Circular
+13/107 moves the equivalent contract to ICE Endex on 2013-10-07 and explicitly
+keeps it on the same ICE platform; the completion release confirms combined
+WebICE trading from that date. The first archived Endex product page and March
+2014 schedule retain the 08:00 open, 18:00 close, and pre-market phase. The
+original predecessor-venue onset of 07:45 is outside this identity's modeled
+interval; the transfer selector does not claim that the phase began in 2013.
+E26/004 proves the immediately preceding grid and changes it on 2026-04-13 to
+a 21-hour day, including the exact one-hour-earlier profile used while US and
+Central-European daylight time differ.
+https://web.archive.org/web/20130831104114id_/https://www.theice.com/productguide/Search.shtml?tradingHours=
+https://www.ice.com/publicdocs/circulars/10010%20attach%201%20-%20TTF%20Nat%20Gas%20Contract%20Spec.pdf
+https://www.ice.com/publicdocs/circulars/13107.pdf
+https://www.ice.com/publicdocs/circulars/13134.pdf
+https://ir.theice.com/press/news-details/2013/IntercontinentalExchange-Completes-Trading-and-Clearing-Transition-for-ICE-Endex-Futures-Markets/default.aspx
+https://web.archive.org/web/20140215045503id_/https://www.theice.com/productguide/ProductSpec.shtml?specId=27996665
+https://www.ice.com/publicdocs/endex/circulars/ICE-Endex-Derivatives-Rules-V21-2-201403-Appendix-B-1-Operating-Time-Schedule.pdf
+https://www.ice.com/publicdocs/endex/ICE_Endex_Rules.pdf
+https://www.ice.com/publicdocs/endex/circulars/E19003_attach_2.pdf
+https://www.ice.com/publicdocs/endex/circulars/E21013_attach_2.pdf
+https://www.ice.com/publicdocs/endex/circulars/E26004.pdf
+https://www.ice.com/products/27996665/Dutch-TTF-Gas-Futures
+Evidence: docs/evidence/ice_endex.md

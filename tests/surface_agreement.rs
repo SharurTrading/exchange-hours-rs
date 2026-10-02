@@ -43,6 +43,13 @@ const DOCUMENTED_DIVERGENCE: &[(MarketHoursKey, &str)] = &[
         "Sunday queue narrowed to 16:15-17:00 CT; the 16:00-16:15 slice waits on \
          the undated 2012 cutover",
     ),
+    (
+        MarketHoursKey::GlobexSilver100Oz,
+        "the fixed snapshot resolves on the 2026-08-22 knowledge-bound day, so \
+         its pre-cutover grid carries the family's widened Sunday queue; the \
+         sampled week rides the family's dated 16:15-17:00 intersection, the \
+         same narrowing the energy/metals family documents",
+    ),
 ];
 
 /// A Monday-to-Sunday week in June 2026, sampled every five minutes.

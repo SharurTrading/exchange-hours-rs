@@ -45,7 +45,7 @@ describe the current implementation.
   markets, and always-open crypto, with independently fenced point-in-time
   revisions wherever primary evidence states an unconditional day-level boundary.
 - **Session queries** — open/closed by regular/extended/both, session bounds, next open, gaps.
-- **Product-family calendars** — all 35 operator-derived `MarketHoursKey`
+- **Product-family calendars** — all 36 operator-derived `MarketHoursKey`
   values have fixed, point-in-time, and date-aware query surfaces.
 - **Caller-supplied day policy** — whole trade-date closures, early final
   closes, and late first opens can be overlaid on any built-in profile, for the
@@ -183,7 +183,7 @@ non-`Unknown` identities. See the checked
 labels, stable enum variants, canonical wire names, and each ledger basis.
 
 Futures hours track the *product family*, not merely the listing venue.
-`MarketHoursKey` has 36 variants—35 operator-derived product-family keys plus
+`MarketHoursKey` has 37 variants—36 operator-derived product-family keys plus
 the synthetic `AlwaysOpen` key. They reuse profiles and are not additional
 venues. `session_profile` exposes each family's fixed-current static table;
 `hours_for_market_hours_key` selects the sourced snapshot at the caller's
@@ -307,7 +307,7 @@ reports a market as tradeable. A gap in an order-entry window only changes
 whether orders could be *queued* ahead of an open that is itself modelled
 correctly; no trade can print in one of those windows on any venue in this crate.
 Every `Partial` row states which kind it is in its Basis cell, and the split is
-**35 order-entry to 21 executable** across the 56 rows in the ledger. The order-entry majority is
+**36 order-entry to 21 executable** across the 57 rows in the ledger. The order-entry majority is
 the exact *day* an older queue or post-close phase started, with the trading
 session itself sourced. The executable twenty-one — the ICE Futures U.S. keys,
 the SGX equity-index keys, `nyse` and `nyse_american`,
@@ -341,7 +341,7 @@ dated, and Direct Edge's own FIX and API specifications supply the earlier
 in late 2010 and early 2011 during which the specifications move acceptance
 from 07:00 to 06:00 with no source naming the day. Closing all 28 is the current
 priority, alongside the per-family holiday and early-close tables the crate now
-carries: 43 of the 132 ledger rows ship one, each over its own audited
+carries: 43 of the 133 ledger rows ship one, each over its own audited
 trade-date window, and the rest still reach holidays only through the caller's
 `DayPolicy`.
 
@@ -356,19 +356,19 @@ primary evidence cannot date. The basis vocabulary is closed at four values —
 defect to fix, not a weaker label to wear. `Exchange::Unknown` is synthetic and
 is not one of the 95 source-backed identities.
 
-Every row also states its **service tier** (LAW-SERVICE-TIERS): 33 of the 132
+Every row also states its **service tier** (LAW-SERVICE-TIERS): 33 of the 133
 rows are `served` — a consumer instrument can reach them, so they owe dated
-history to the January-2010 floor and a monthly or quarterly review — and 99
+history to the January-2010 floor and a monthly or quarterly review — and 100
 are `dormant`, kept correct as of their last review and re-reviewed on demand.
 Each row carries its evidence tier, the horizon below which its grid is carried
 rather than sourced, its review cadence, and a link to the evidence file holding
 the quotations and URLs behind it.
 
 The key surface was audited separately:
-**Hours verified at the review date for each product family:** `35 of 35` operator-derived
+**Hours verified at the review date for each product family:** `36 of 36` operator-derived
 `MarketHoursKey` values. The key API provides fixed-current snapshots, an
 `as_of` selector, and a date-aware calendar for sourced histories. Seven key
-rows are **Primary** and twenty-eight are **Partial**, because a named historical
+rows are **Primary** and twenty-nine are **Partial**, because a named historical
 queue, PCP amendment day, or undated venue transition cannot be dated from a
 primary source.
 
@@ -384,7 +384,7 @@ will remain unchanged after the review date. They cover recurring weekday
 phases, time zones, lunch and maintenance gaps, and weekend boundaries. They
 exclude holidays, half-days, one-off closures or halts, severe-weather
 exceptions, and product-specific variations outside a row's stated scope:
-per-family holiday and early-close tables ship for 43 of the 132 ledger rows,
+per-family holiday and early-close tables ship for 43 of the 133 ledger rows,
 each over the trade-date window its Holidays cell names, and none of that data
 is included in the counts above, which are about normal weeks. A change confined to a
 single trade date — an early final close, a late first open, or a full
@@ -733,7 +733,7 @@ that callers do not also get (see [Architecture: Tests](ARCHITECTURE.md#tests)).
   JSE, Tadawul, B3, and BMV.
 - `tests/schedule_documentation.rs` and `tests/schedule_documentation/` — a
   thin harness over contracts that keep all 96 `Exchange` rows (95
-  non-synthetic plus `Unknown`) and 36 `MarketHoursKey` rows (35
+  non-synthetic plus `Unknown`) and 37 `MarketHoursKey` rows (36
   operator-derived plus `AlwaysOpen`) in canonical order; validates their
   review metadata and owner/source links; requires both current and
   notice/evidence channels for every source set; rejects orphaned source sets;

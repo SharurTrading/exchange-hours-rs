@@ -51,3 +51,63 @@ as each source is re-verified.
 - **Interpretive step, randomized uncrosses.** Opening and closing uncrossings are randomized over 30 seconds; the profile uses the documented conservative latest edge (08:00:30 and 16:30:30).
 - **Time zone.** Dublin retains its own IANA zone, `Europe::Dublin`, while Euronext's Central-European clock is translated one civil hour earlier locally.
 - **Dormant identity.** Reviewed on demand; gaps are recorded here rather than as issues.
+
+## Module narrative (moved from src/calendar/schedules/equities/europe/euronext/dublin.rs on 2026-10-01 UTC)
+
+Euronext's phase-one timetable shifted legacy-market pre-opening effective
+2023-03-20 from 07:15 to 07:30 CET, or 06:15 to 06:30 Dublin local time. The
+operator document separately gives 2023-03-27 for the Italian migration.
+The current trading appendix confirms the resulting principal-share grid.
+https://connect.euronext.com/sites/default/files/it-documentation/Go-Live%20Weekend%20Guidelines%20-%20Borsa%20Italiana%20Optiq%20Migration.pdf
+https://www.euronext.com/sites/default/files/2026-07/appendix%20to%20Euronext%20Instructions%204-01%204-03%20Trading%20Manuals_0.xlsx
+Order-entry classification: same Call/uncrossing split as the 2019 grid, with
+the pre-opening start shifted to 06:30 Dublin local time.
+
+---
+
+Euronext migrated Dublin equities to Optiq on 2019-02-04. Euronext notices
+establish the post-migration 06:15 pre-opening; principal shares open after
+the latest 08:00:30 uncross, close continuous trading at 16:28, and retain a
+closing-auction/Trading-at-Last envelope through 16:40.
+https://www.euronext.com/sites/default/files/190204optiq_migration_dublin_press_release.pdf
+https://www.eurex.com/ex-en/find/circulars/Discontinuation-of-clearing-services-for-Irish-Stock-Exchange-Amendments-to-the-Clearing-Conditions-and-to-the-Price-List-of-Eurex-Clearing-AG-1391874
+https://live.euronext.com/sites/default/files/2021-07/Market%20Notice%20-%20Datalex%20Plc%20-%20Admission.pdf
+https://web.archive.org/web/20191018025213id_/https://www.euronext.com/sites/default/files/2019-09/52118_Euronext-FAQ-2019_v07_0.pdf
+
+---
+
+Tradeability classification. The market model states that "the order book
+is only open for trading during auctions and continuous trading in the main
+trading phase", so neither pre-trading nor post-trading matches an
+order-book trade. Both legs still print, so both stay in `extended`: the
+same sourced record shows off-book reports were accepted in each phase, and
+prints occur wherever off-book reports are accepted. Demoting either leg to
+order-entry on this record would claim a window that can print cannot.
+
+---
+
+ISE's own archived trading-hours page establishes the complete legacy grid
+before the January-2010 audit floor: pre-trading 06:30-07:50, opening auction
+to 08:00, continuous trading to 16:28, closing auction to 16:30, and
+post-trading through 17:15. Post-trading accepted new orders and off-book
+reports, so it is `extended` under the crate's order-entry-only convention.
+Successive archived order-book models through T7 Release 6 retain this exact
+grid, and the official 2018 trading calendar repeats it through the last full
+pre-Optiq year.
+https://web.archive.org/web/20090930042026id_/http://www.ise.ie/index.asp?locID=311&docID=-1
+https://web.archive.org/web/20121004024422id_/http://www.ise.ie/Membership-and-Trading/Market-Infrastructure/Trading/ISE-Xetra%C2%AE/Release-11-1/ISE_Xetra_Rel_11_1_Market_Model_090511.pdf
+https://web.archive.org/web/20120907001910id_/http://www.ise.ie/Membership-and-Trading/Market-Infrastructure/Trading/ISE-Xetra%C2%AE/Release-12/ISE_Xetra_Rel_12_Market_Model.pdf
+https://web.archive.org/web/20130517042005id_/http://ise.ie/Membership-and-Trading/Market-Infrastructure/Trading/ISE-Xetra%C2%AE/Release_13/ISE_Xetra_Market_Model_-_Release_13_0.pdf
+https://web.archive.org/web/20140718094950id_/http://ise.ie/Membership-and-Trading/Market-Infrastructure/Trading/ISE-Xetra%C2%AE/Release_14/ISE_Xetra_Rel_14_0_Market_Model.pdf
+https://web.archive.org/web/20150315070155id_/http://ise.ie/Products-Services/Trading-Members/Equity-Trading-Membership/ISE-Xetra-Release-15-Market-Model.pdf
+https://web.archive.org/web/20170301204221id_/http://www.ise.ie/Products-Services/Trading-Members/Equity-Trading-Membership/ISE%20Xetra%20Release%2016%20Market%20Model.pdf
+https://web.archive.org/web/20171029062447id_/http://www.ise.ie/Products-Services/Trading-Members/Equity-Trading-Membership/ISE-T7-Market-Model-Rel-5-0.pdf
+https://web.archive.org/web/20171108073227id_/http://www.ise.ie/Products-Services/Trading-Members/Equity-Trading-Membership/T7%20Rel%206%20Market%20Model.pdf
+https://web.archive.org/web/20181215004420id_/http://www.ise.ie/Products-Services/Trading-Members/Equity-Trading-Calendar-2018.pdf
+The archived December-2018 operator page identifies Release 7.0 as current,
+links its market model, and states that ISE T7 would remain live through
+2019-02-01 before the sourced Optiq migration on 2019-02-04.
+https://web.archive.org/web/20181215004420id_/http://www.ise.ie/Products-Services/Trading-Members/Equity-Trading-Membership/
+The Central Bank's official assessment independently records the same
+07:50-16:30 order-book envelope.
+https://www.centralbank.ie/docs/default-source/tns/about---tns/peer-reviews-and-reports/tns-1-11-imf-report-on-observance-of-standards-and-codes-on-securities-regulation.pdf?sfvrsn=2

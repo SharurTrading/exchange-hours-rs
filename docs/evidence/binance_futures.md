@@ -18,12 +18,16 @@ None. binance.rs encodes its dated cutovers as constants rather than revisions! 
 ## Dated selectors
 
 Day-level boundaries this identity's `profile_at` selects on directly, outside
-any `revisions!` block. They are invisible to the module-declaration fences, so
-they are recorded here in revision-row grammar and checked against
-`HISTORICAL_CUTOVERS` / `HISTORICAL_INSTANT_CUTOVERS` in
-`tests/contract/session_invariants/historical_expectations.rs`.
+any `revisions!` block. The module declares each one beside its constant with a
+`// Dated boundary` line, and
+`every_declared_dated_boundary_day_appears_in_its_evidence_file`
+(`tests/schedule_documentation/evidence_files.rs`) checks the day against this
+section; `HISTORICAL_CUTOVERS` / `HISTORICAL_INSTANT_CUTOVERS` in
+`tests/contract/session_invariants/historical_expectations.rs` pin the
+behaviour.
 
-- 2019-09-13 — T1 — Binance launch article, archived 2020-06-08 (`LAUNCH_UNIX_SECONDS`) — an exact-instant boundary at 2019-09-13 04:00:00 UTC, with a one-day launch profile to `LAUNCH_DAY_END_UNIX_SECONDS`; `HISTORICAL_INSTANT_CUTOVERS` records the same instant.
+- 2019-09-13 — T1 — Binance launch article, archived 2020-06-08 (`LAUNCH_UNIX_SECONDS`) — an exact-instant boundary at 2019-09-13 04:00:00 UTC, with a one-day launch profile; `HISTORICAL_INSTANT_CUTOVERS` records the same instant.
+- 2019-09-14 — T1 — the same launch article (`LAUNCH_DAY_END_UNIX_SECONDS`) — the launch day ends at 2019-09-14 00:00:00 UTC and the recurring 24x7 grid begins; the launch-day profile covers only Friday 2019-09-13, so the handover at the day's end splits no running session.
 
 ## Sources
 

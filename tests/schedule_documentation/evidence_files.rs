@@ -47,7 +47,7 @@ const MAX_COMMENT_RUN: usize = 6;
 /// `modules_carry_no_narrative`, an unlisted one is asserted, and the list only
 /// ever shrinks — that is what makes "a new module never carries one" a fence
 /// rather than a hope. Tracked as issue #85.
-const NARRATIVE_DEBT: [&str; 40] = [
+const NARRATIVE_DEBT: [&str; 35] = [
     "src/calendar/schedules/equities/africa_middle_east/jse.rs",
     "src/calendar/schedules/equities/africa_middle_east/tadawul.rs",
     "src/calendar/schedules/equities/americas/b3.rs",
@@ -72,9 +72,7 @@ const NARRATIVE_DEBT: [&str; 40] = [
     "src/calendar/schedules/equities/europe/bist.rs",
     "src/calendar/schedules/equities/europe/bme.rs",
     "src/calendar/schedules/equities/europe/euronext.rs",
-    "src/calendar/schedules/equities/europe/euronext/dublin.rs",
     "src/calendar/schedules/equities/europe/lse.rs",
-    "src/calendar/schedules/equities/europe/six.rs",
     "src/calendar/schedules/equities/europe/vienna.rs",
     "src/calendar/schedules/equities/europe/xetra.rs",
     "src/calendar/schedules/equities/us/cboe.rs",
@@ -82,11 +80,8 @@ const NARRATIVE_DEBT: [&str; 40] = [
     "src/calendar/schedules/futures/international/binance.rs",
     "src/calendar/schedules/futures/international/ice_abu_dhabi.rs",
     "src/calendar/schedules/futures/international/ice_canada.rs",
-    "src/calendar/schedules/futures/international/ice_endex.rs",
     "src/calendar/schedules/futures/international/ice_europe.rs",
     "src/calendar/schedules/futures/international/sgx.rs",
-    "src/calendar/schedules/futures/international/sgx_equity_index/eras.rs",
-    "src/calendar/schedules/futures/international/sgx_equity_index/history.rs",
     "src/calendar/schedules/futures/us/small_exchange.rs",
 ];
 
@@ -2993,10 +2988,14 @@ struct DatedConstant {
 /// its day and nothing proves the source and the evidence agree. This is the
 /// second source of dated boundaries that fence needs (issue #86).
 ///
-/// Only the `effective_date(y, m, d)` form is collected. A cutover written as a
-/// date comparison against a literal inside a selector, or as a `NaiveDate`
-/// built another way, is **not** covered here; those remain open on #86 and the
-/// fence deliberately does not pretend otherwise.
+/// Only the `effective_date(y, m, d)` form is collected here. The cutover
+/// instants encoded as raw `i64` Unix-second constants state no day literal to
+/// read, so they are attributed the other way: each carries a
+/// `// Dated boundary <day>: docs/evidence/<file>.md` declaration beside the
+/// constant, which [`declared_dated_boundaries`] collects and
+/// [`every_declared_dated_boundary_day_appears_in_its_evidence_file`] checks.
+/// Together the two fences attribute every dated boundary in the crate
+/// (issue #86).
 fn dated_constants() -> Vec<DatedConstant> {
     let mut found = Vec::new();
     for path in crate_sources() {
@@ -3176,5 +3175,133 @@ fn the_dated_constant_fence_reads_every_shipped_constant() {
         "the fence collects every dated constant the crate ships; found {} in {modules:?}. \
          A drop means the matcher stopped seeing a spelling, not that a constant was removed",
         constants.len()
+    );
+}
+
+/// One dated boundary declared beside an instant constant, in the shape the
+/// `// Evidence:` line established (issue #86).
+struct DatedBoundary {
+    /// Repository-relative source file that declares it.
+    module: String,
+    /// The boundary day the evidence records, as `YYYY-MM-DD`.
+    day: String,
+    /// The evidence file the declaration names.
+    file: String,
+}
+
+/// Returns every `// Dated boundary <day>: docs/evidence/<file>.md` line in
+/// `src/`.
+///
+/// A cutover encoded as a raw `i64` Unix-instant constant states an exact
+/// instant whose day is a derivation, not a literal, so the scanner cannot
+/// derive the day the evidence records — a venue-civil day and the instant's
+/// own UTC day can disagree, and ICE Canada's 2011 boundary is the shipped
+/// case (18:30 CT on the 2011-02-28 civil day is 2011-03-01 in UTC). The
+/// declaration states the day beside the constant instead, in the same shape
+/// as the `// Evidence:` line, and this scanner collects it. The effective
+///-date constants the [`dated_constants`] matcher reads need no declaration;
+/// the two fences together attribute every dated boundary in the crate.
+fn declared_dated_boundaries() -> Vec<DatedBoundary> {
+    const MARKER: &str = "// Dated boundary ";
+    let mut found = Vec::new();
+    for path in crate_sources() {
+        let text = fs::read_to_string(&path).expect("source file must be readable");
+        let module = relative(&path);
+        for line in text.lines() {
+            let trimmed = line.trim();
+            let Some(rest) = trimmed.strip_prefix(MARKER) else {
+                continue;
+            };
+            let (day, file) = rest.split_once(": ").unwrap_or_else(|| {
+                panic!(
+                    "{module}: a `// Dated boundary` line reads \
+                     `// Dated boundary YYYY-MM-DD: docs/evidence/<file>.md`: {trimmed}"
+                )
+            });
+            assert!(
+                NaiveDate::parse_from_str(day, "%Y-%m-%d").is_ok(),
+                "{module}: a dated-boundary day must be an ISO calendar day: {trimmed}"
+            );
+            let file = file.strip_prefix("docs/evidence/").unwrap_or_else(|| {
+                panic!("{module}: a dated boundary names its evidence file under docs/evidence/: {trimmed}")
+            });
+            assert!(
+                is_markdown(file) && !file.contains('/'),
+                "{module}: a dated boundary names one Markdown evidence file: {trimmed}"
+            );
+            found.push(DatedBoundary {
+                module: module.clone(),
+                day: day.to_owned(),
+                file: file.to_owned(),
+            });
+        }
+    }
+    found
+}
+
+#[test]
+fn every_declared_dated_boundary_day_appears_in_its_evidence_file() {
+    let files = evidence_files();
+    let boundaries = declared_dated_boundaries();
+
+    // Collect every violation before failing, so one run lists the whole set.
+    let mut unfenced = Vec::new();
+    for boundary in &boundaries {
+        let Some(text) = files.get(&boundary.file) else {
+            unfenced.push(format!(
+                "{}: boundary {} names a missing evidence file {}",
+                boundary.module, boundary.day, boundary.file
+            ));
+            continue;
+        };
+        // The day sits in whichever section the owning file records selectors
+        // in, exactly as [`every_dated_constant_day_appears_in_its_evidence_file`]
+        // reads the date constants.
+        let recorded = ["## Dated selectors", "## Revision rows"]
+            .iter()
+            .any(|heading| {
+                section(text, heading)
+                    .is_some_and(|rows| rows.contains(&format!("- {} \u{2014}", boundary.day)))
+            });
+        if !recorded {
+            unfenced.push(format!(
+                "{}: boundary {} is not recorded in {}",
+                boundary.module, boundary.day, boundary.file
+            ));
+        }
+    }
+    assert!(
+        unfenced.is_empty(),
+        "{} declared dated boundary(ies) carry no `- <day> \u{2014}` line in their \
+         evidence file's `## Dated selectors` or `## Revision rows` section:\n  {}",
+        unfenced.len(),
+        unfenced.join("\n  ")
+    );
+}
+
+#[test]
+fn the_dated_boundary_fence_reads_every_shipped_instant_constant() {
+    // The guard on the declaration fence, matching the dated-constant fence's
+    // own: every module that encodes a cutover as a Unix-instant constant
+    // contributes at least one declaration, and the total is pinned to the
+    // number the crate ships today, so a deleted declaration fails here
+    // instead of silently unattributing a boundary.
+    let boundaries = declared_dated_boundaries();
+    let days = boundaries
+        .iter()
+        .map(|b| b.day.as_str())
+        .collect::<Vec<_>>();
+    for day in ["2021-06-28", "2011-02-28", "2019-09-13", "2019-09-14"] {
+        assert!(
+            days.contains(&day),
+            "the instant-constant boundary {day} must be declared beside its constant"
+        );
+    }
+    assert_eq!(
+        boundaries.len(),
+        4,
+        "the fence reads every declared dated boundary the crate ships; found {}. \
+         A drop means a declaration was removed, not that a boundary was",
+        boundaries.len()
     );
 }

@@ -35,15 +35,19 @@ use exchange_hours::{
 
 use super::prelude::{assert_refused_variant, assert_refuses_before_floor};
 
-/// The four venues this change gives a table, with the families each routes.
+/// The four venues this change gives a table, each with its **profile clock**
+/// and the families it routes.
 ///
 /// This is a **handwritten** copy of the routing `holidays/venues.rs` declares,
 /// not a derivation from it: the point is to compare the module's data against
 /// the crate's own schedules, and a list generated from the module would agree
-/// with it by construction.
-const VENUES: [(Exchange, &[MarketHoursKey]); 4] = [
+/// with it by construction. The clock is the family whose grid the venue's own
+/// schedule is built from (AGENTS.md, LAW-HOLIDAY-SCOPE, the 2026-09-30
+/// decision on #153): the venue answers every date its clock answers.
+const VENUES: [(Exchange, MarketHoursKey, &[MarketHoursKey]); 4] = [
     (
         Exchange::Cme,
+        MarketHoursKey::GlobexEquityIndex,
         &[
             MarketHoursKey::GlobexEquityIndex,
             MarketHoursKey::GlobexEnergy,
@@ -55,13 +59,22 @@ const VENUES: [(Exchange, &[MarketHoursKey]); 4] = [
     ),
     (
         Exchange::Cbot,
+        MarketHoursKey::GlobexGrains,
         &[
             MarketHoursKey::GlobexGrains,
             MarketHoursKey::GlobexInterestRates,
         ],
     ),
-    (Exchange::Comex, &[MarketHoursKey::GlobexEnergy]),
-    (Exchange::Nymex, &[MarketHoursKey::GlobexEnergy]),
+    (
+        Exchange::Comex,
+        MarketHoursKey::GlobexEnergy,
+        &[MarketHoursKey::GlobexEnergy],
+    ),
+    (
+        Exchange::Nymex,
+        MarketHoursKey::GlobexEnergy,
+        &[MarketHoursKey::GlobexEnergy],
+    ),
 ];
 
 fn day(year: i32, month: u32, date: u32) -> NaiveDate {
@@ -134,11 +147,18 @@ fn abstains(calendar: ExchangeCalendar, date: NaiveDate) -> bool {
     }
 }
 
-fn family_intersection(families: &[MarketHoursKey]) -> Vec<(NaiveDate, Joint)> {
+fn family_intersection(
+    clock: MarketHoursKey,
+    families: &[MarketHoursKey],
+) -> Vec<(NaiveDate, Joint)> {
     let calendars = families
         .iter()
         .map(|key| calendar_for_market_hours_key(*key))
         .collect::<Vec<_>>();
+    let clock_index = families
+        .iter()
+        .position(|key| *key == clock)
+        .expect("the profile clock is one of the routed families");
     let coverage = calendars
         .first()
         .and_then(|calendar| calendar.holiday_coverage())
@@ -149,32 +169,56 @@ fn family_intersection(families: &[MarketHoursKey]) -> Vec<(NaiveDate, Joint)> {
         // A routed family whose table does not cover this date **abstains**:
         // it states nothing, so it cannot dispute what the others state. A
         // family whose table does cover the date and holds no row has audited
-        // it normal, which is an answer, and it does dispute a row.
+        // it normal, which is an answer.
         let stated = calendars
             .iter()
             .filter(|calendar| !abstains(**calendar, date))
             .map(|calendar| joint_kind(calendar.holiday_on(date).map(Holiday::kind)))
             .collect::<Vec<_>>();
-        // The joint answer is read off the families that answered. A family
-        // that **states nothing** has audited the date normal, which is an
-        // answer, and it disputes a row another family states on that date —
-        // that is what makes a holiday morning on which only some families
-        // halt an `Unsourced` date rather than a venue row. Only a date on
-        // which no family that answers states a row is audited normal, and a
-        // date in a gap between two eras, which no family covers, is the same
-        // "no answer" as before.
-        let joint = match stated.first().copied() {
+        // The joint answer is read off the **profile clock** first (the
+        // 2026-09-30 decision on #153, applied by #242): the venue answers the
+        // date from its own clock, so when the clock audits the date normal
+        // the venue ships no row whatever a family whose clock the venue does
+        // not serve states, and when the clock states a row the pre-existing
+        // intersection rule decides — agreement ships it, anything else is a
+        // dispute. A date in a gap between two eras, which no family covers,
+        // is the same "no answer" as before.
+        let clock_abstains = abstains(calendars[clock_index], date);
+        let clock_kind = if clock_abstains {
+            None
+        } else {
+            joint_kind(calendars[clock_index].holiday_on(date).map(Holiday::kind))
+        };
+        let joint = if clock_abstains && stated.is_empty() {
             // No family answers for this date at all: it falls in a gap
             // between two eras, and the venue has no answer either.
-            None => Joint::AuditedNormal,
-            // Every family that answers audited the date normal.
-            Some(None) if stated.iter().all(Option::is_none) => Joint::AuditedNormal,
-            Some(Some(kind)) if stated.iter().all(|other| *other == Some(kind)) => {
-                Joint::Agreed(kind)
+            Joint::AuditedNormal
+        } else if clock_abstains && stated.iter().all(Option::is_none) {
+            // The clock abstains and every answering family audited the date
+            // normal: the venue has no row to ship.
+            Joint::AuditedNormal
+        } else if clock_abstains {
+            // The clock has no window here but other families state a row:
+            // the pre-clock rule lets the covering families decide.
+            if stated.iter().all(Option::is_none) {
+                Joint::AuditedNormal
+            } else if stated
+                .iter()
+                .all(|other| *other == stated.first().copied().flatten())
+            {
+                Joint::Agreed(stated.first().copied().flatten().expect("a row is stated"))
+            } else {
+                Joint::Disputed
             }
-            // A family that states nothing has audited the date normal, which
-            // is an answer: a date only some families halt on is disputed.
-            Some(_) => Joint::Disputed,
+        } else if clock_kind.is_none() {
+            // The clock audited the date normal: the venue answers from its
+            // clock and the non-clock rows cannot withhold the date.
+            Joint::AuditedNormal
+        } else if stated.iter().all(|other| *other == clock_kind) {
+            Joint::Agreed(clock_kind.expect("the clock states a row"))
+        } else {
+            // The clock states a row another family does not match.
+            Joint::Disputed
         };
         rows.push((date, joint));
         date = date
@@ -193,9 +237,9 @@ fn family_intersection(families: &[MarketHoursKey]) -> Vec<(NaiveDate, Joint)> {
 /// close onto a date the others dispute.
 #[test]
 fn the_venue_table_is_the_intersection_of_its_families() {
-    for (exchange, families) in VENUES {
+    for (exchange, clock, families) in VENUES {
         let venue = venue_layer(calendar_for_exchange(exchange));
-        let intersection = family_intersection(families);
+        let intersection = family_intersection(clock, families);
         assert_eq!(
             venue.len(),
             intersection.len(),
@@ -339,7 +383,7 @@ fn assert_closed_row_is_unanimous(
 /// family closed, and nothing outside these sets may make it.
 #[test]
 fn a_closed_venue_row_is_a_unanimous_closure() {
-    for (exchange, families) in VENUES {
+    for (exchange, _clock, families) in VENUES {
         let single_family = matches!(exchange, Exchange::Comex | Exchange::Nymex);
         let venue = calendar_for_exchange(exchange);
         let coverage = venue.holiday_coverage().expect("the venue ships a table");
@@ -433,41 +477,23 @@ fn a_closed_venue_row_is_a_unanimous_closure() {
         }
         // `Exchange` is `#[non_exhaustive]`, so the count is keyed off the
         // routing list this module already pins rather than off the variant.
-        // Parsed from the shipped tables window by window, 2010-2012
-        // contributes 63 (CME) or 61 (CBOT) unsourced dates, 2013-2015 another
-        // 50 or 46, 2016-2018 27 each, 2019-2021 34 each, 2022-2024 34 and 32,
-        // and 2025-2027 53 and 48 — the closure-eve replacement rows
-        // `globex_grains` states on fourteen dates move both venues by those
-        // fourteen (CME's 2025-07-03 was already `Unsourced`), and the rest of
-        // the era's growth is the three Saturday-session trade dates
-        // (2026-06-22, 2026-07-06 and 2027-06-21) carry a row in `globex_energy`,
-        // `globex_equity_index`, `globex_interest_rates` and `globex_fx`, so
-        // they are disputes on the six-family venue, which gains nothing here — its
-        // three dates were already `Unsourced` — while the two-family venue gains them; and
-        // because interest rates states one where grains states none they are
-        // disputes on the two-family CBOT intersection too, which also gains
-        // three; the single-family venues have six, the three 2019-2021
-        // Juneteenth markers and the three 2023 dates. The 2025 five is
-        // `globex_fx`'s merged trade dates (2025-01-21, 2025-02-18, 2025-05-27,
-        // 2025-06-20 and 2025-09-02), which that family alone states, and the
-        // 2026-2027 eight are the same shape at 2026-01-20, 2026-02-17,
-        // 2026-05-26, 2026-09-08, 2027-01-19, 2027-02-16, 2027-06-01 and
-        // 2027-09-07. 2026-11-27 and 2027-11-26 already carried venue rows.
-        // CME's 2010-2012 fourteen and CBOT's twenty-eight are the #101 wave:
-        // the eighteen noon halts put `globex_interest_rates` in disagreement
-        // with grains on fourteen dates CBOT had no row for (four already
-        // disagreed), and its fourteen merged trade dates — 2010-01-19,
-        // 2010-02-16, 2010-06-01, 2010-07-06, 2010-09-07, 2011-01-18,
-        // 2011-02-22, 2011-05-31, 2011-07-05, 2011-09-06, 2012-01-17,
-        // 2012-02-21, 2012-05-29, 2012-09-04 — state a row no other family
-        // states, which both venues must withhold; the eighteen CME halt dates
-        // and 2012-07-05 already carried their disputes.
+        // Re-derived on 2026-09-30 under the profile-clock rule (#153, #242),
+        // which retired every row whose only dissents came from families other
+        // than the venue's clock: CME had withheld 269 rows and now withholds
+        // 184 (28 / 30 / 25 / 28 / 28 / 45 per era), CBOT 261 and now 202
+        // (16 / 35 / 27 / 34 / 32 / 58). The retired rows are the rate leg's
+        // pre-holiday closes and replacement sets against grain tables audited
+        // normal (59 of CBOT's), and for CME the rate-and-FX 15:15 closes, the
+        // merged-Monday sets, the livestock-only Good-Friday eves, the
+        // grains-only late opens and closure eves, and the six multi-dissenter
+        // dates — 85 in all. The single-family venues are their own clocks, so
+        // their six markers do not move.
         let expected = if single_family {
             6
         } else if families.len() == 6 {
-            269
+            184
         } else {
-            261
+            202
         };
         assert_eq!(unsigned, expected, "{exchange:?}: unsourced row count");
     }
@@ -761,7 +787,7 @@ fn an_unsourced_venue_row_is_reported_and_clips_nothing() {
 /// the boundary is asserted here as well as crate-wide.
 #[test]
 fn every_venue_answers_only_inside_its_own_window() {
-    for (exchange, _) in VENUES {
+    for (exchange, _, _) in VENUES {
         let venue = calendar_for_exchange(exchange);
         let coverage = venue.holiday_coverage().expect("the venue ships a table");
         assert_eq!(coverage.first(), day(2010, 1, 1), "{exchange:?}");
@@ -791,7 +817,7 @@ fn every_venue_answers_only_inside_its_own_window() {
 /// changes nothing further.
 #[test]
 fn without_holidays_restores_the_normal_week_for_every_venue() {
-    for (exchange, _) in VENUES {
+    for (exchange, _, _) in VENUES {
         let venue = calendar_for_exchange(exchange);
         assert_eq!(
             venue.source(),
@@ -868,7 +894,7 @@ fn wave2_venue_rows_are_closed_on_the_nine_and_unsourced_on_the_rest() {
         let closed = WAVE2_CLOSURES
             .iter()
             .any(|(y, m, d)| day(*y, *m, *d) == date);
-        for (exchange, families) in VENUES {
+        for (exchange, _clock, families) in VENUES {
             let venue = calendar_for_exchange(exchange);
             let kind = venue.holiday_on(date).map(Holiday::kind);
             if families.len() == 1 {
@@ -911,7 +937,12 @@ fn wave2_venue_rows_are_closed_on_the_nine_and_unsourced_on_the_rest() {
 #[test]
 fn wave2_venue_era_counts_match_the_families_they_route() {
     for (exchange, expected) in [
-        (Exchange::Cme, 36_usize),
+        // CME's 2016-2018 share dropped from 36 to 34 on 2026-09-30: the
+        // profile-clock rule (#153, #242) retired the two dates on which
+        // grains' 12:05 CT and livestock's 12:15 CT closes were the only rows
+        // stated (2016-12-23 and 2017-12-22), the equity clock auditing both
+        // normal.
+        (Exchange::Cme, 34_usize),
         (Exchange::Cbot, 36),
         (Exchange::Comex, 31),
         (Exchange::Nymex, 31),
@@ -964,7 +995,11 @@ fn wave3_venue_era_counts_match_the_families_they_route() {
         (
             Exchange::Cme,
             [2_usize, 2, 3],
-            [9_usize, 12, 13],
+            // Re-derived 2026-09-30: the profile-clock rule (#153, #242)
+            // retired the six grains-only late opens (2022-07-05, 2023-07-05,
+            // 2023-12-26, 2024-01-02, 2024-07-05 and 2024-12-26); the two
+            // equity 12:15 CT closes stay, being the clock's own rows.
+            [8_usize, 10, 10],
             [0_usize, 0, 0],
         ),
         (Exchange::Cbot, [2, 2, 3], [9, 11, 12], [0, 0, 0]),
@@ -1012,7 +1047,7 @@ fn wave3_venue_era_counts_match_the_families_they_route() {
 /// nor re-tier one it read.
 #[test]
 fn wave3_venue_rows_cite_a_family_row_on_the_same_date() {
-    for (exchange, families) in VENUES {
+    for (exchange, _clock, families) in VENUES {
         let venue = calendar_for_exchange(exchange);
         let mut date = day(2022, 1, 1);
         while date <= day(2024, 12, 31) {
@@ -1060,7 +1095,7 @@ fn wave3_venue_rows_cite_a_family_row_on_the_same_date() {
 /// module by construction and fence nothing.
 #[test]
 fn wave3_closures_are_the_dates_every_family_states_closed() {
-    for (exchange, families) in VENUES {
+    for (exchange, _clock, families) in VENUES {
         let venue = calendar_for_exchange(exchange);
         let mut date = day(2022, 1, 1);
         while date <= day(2024, 12, 31) {
@@ -1132,7 +1167,12 @@ fn wave3_unsourced_shapes_are_the_families_own_answers() {
     }
 
     // Shape two: 2022-07-05, where only grains states a row — a late open at
-    // 08:30 CT — and every financial family audited the date normal.
+    // 08:30 CT — and every financial family audited the date normal. The two
+    // venues now answer differently: CBOT's profile clock **is** grains, so
+    // its clock states a row the rate leg disputes and the date stays
+    // withheld; CME's clock is the equity-index grid, which audited the date
+    // normal, so the profile-clock rule (#153, #242) answers the date from
+    // the clock and the grains-only row no longer withholds it.
     let grains_only = day(2022, 7, 5);
     assert_eq!(
         grains.holiday_on(grains_only).map(Holiday::kind),
@@ -1144,15 +1184,18 @@ fn wave3_unsourced_shapes_are_the_families_own_answers() {
     assert_eq!(
         equity.holiday_on(grains_only),
         None,
-        "equity index audited 2022-07-05 normal, which disputes grains' row"
+        "equity index audited 2022-07-05 normal, which is the venue's own answer"
     );
-    for venue in [cme, cbot] {
-        assert_eq!(
-            venue.holiday_on(grains_only).map(Holiday::kind),
-            Some(HolidayKind::Unsourced),
-            "one family's row against another's audited normal is a dispute"
-        );
-    }
+    assert_eq!(
+        cbot.holiday_on(grains_only).map(Holiday::kind),
+        Some(HolidayKind::Unsourced),
+        "a clock-family row against another family's audited normal is a dispute"
+    );
+    assert_eq!(
+        cme.holiday_on(grains_only),
+        None,
+        "a non-clock row cannot withhold a date the clock audited normal"
+    );
     assert_eq!(
         cbot.holiday_on(grains_only).map(Holiday::document_id),
         grains.holiday_on(grains_only).map(Holiday::document_id),
@@ -1287,7 +1330,7 @@ fn agreed_marker_cites_a_routed_family(exchange: Exchange, date: NaiveDate) -> R
 
     let keys = VENUES
         .iter()
-        .find_map(|(venue, keys)| (*venue == exchange).then_some(*keys))
+        .find_map(|(venue, _, keys)| (*venue == exchange).then_some(*keys))
         .unwrap_or(&[]);
     let matches = keys
         .iter()
@@ -1315,12 +1358,28 @@ fn agreed_marker_cites_a_routed_family(exchange: Exchange, date: NaiveDate) -> R
 /// fences, on the dates this wave added.
 #[test]
 fn wave3_unsourced_rows_clip_nothing() {
-    for (date, probe) in [
-        (day(2022, 11, 25), ct((2022, 11, 25), (12, 30, 0))),
-        (day(2022, 7, 5), ct((2022, 7, 5), (9, 0, 0))),
-        (day(2023, 1, 16), ct((2023, 1, 16), (10, 0, 0))),
-    ] {
-        for exchange in [Exchange::Cme, Exchange::Cbot] {
+    // 2022-07-05 is CBOT-only now: its clock states the row, so the date
+    // stays withheld; CME's clock audited the date normal, so the #242 rule
+    // answers it and ships no row.
+    let cases: [(NaiveDate, DateTime<Utc>, &[Exchange]); 3] = [
+        (
+            day(2022, 11, 25),
+            ct((2022, 11, 25), (12, 30, 0)),
+            &[Exchange::Cme, Exchange::Cbot],
+        ),
+        (
+            day(2022, 7, 5),
+            ct((2022, 7, 5), (9, 0, 0)),
+            &[Exchange::Cbot],
+        ),
+        (
+            day(2023, 1, 16),
+            ct((2023, 1, 16), (10, 0, 0)),
+            &[Exchange::Cme, Exchange::Cbot],
+        ),
+    ];
+    for (date, probe, exchanges) in cases {
+        for &exchange in exchanges {
             let venue = calendar_for_exchange(exchange);
             assert_eq!(
                 venue.holiday_on(date).map(Holiday::kind),
@@ -1448,7 +1507,7 @@ fn every_venue_window_is_the_union_of_its_families_windows() {
         merged
     }
 
-    for (exchange, families) in VENUES {
+    for (exchange, _clock, families) in VENUES {
         let venue = calendar_for_exchange(exchange);
         let coverage = venue.holiday_coverage().expect("the venue ships a table");
         let mut windows = Vec::new();
@@ -1500,13 +1559,20 @@ fn wave5_venue_era_counts_match_the_families_they_route() {
         (
             Exchange::Cme,
             [3_usize, 3, 2],
-            [17_usize, 17, 16],
+            // Re-derived 2026-09-30: the profile-clock rule (#153, #242)
+            // retired the rate-and-FX 15:15 CT closes, the livestock-only
+            // 13:55 CT eves, the grains-only late opens and 2015-07-02, where
+            // grains' and livestock's closes were the only rows stated.
+            [11_usize, 10, 9],
             [0_usize, 0, 0],
         ),
         (
             Exchange::Cbot,
             [3_usize, 3, 2],
-            [16_usize, 16, 14],
+            // Re-derived 2026-09-30: the profile-clock rule (#153, #242)
+            // retired the rate leg's 15:15 CT pre-holiday closes, which were
+            // the only rows stated on twelve of this era's dates.
+            [12_usize, 12, 11],
             [0_usize, 0, 0],
         ),
         (
@@ -1611,7 +1677,7 @@ fn wave5_venue_era_early_closes_are_end_exclusive() {
 #[test]
 fn wave5_venue_era_unsourced_rows_are_disagreements_not_closures() {
     let mut probes = 0_usize;
-    for (exchange, keys) in VENUES {
+    for (exchange, _, keys) in VENUES {
         let venue = calendar_for_exchange(exchange);
         let mut date = day(2013, 1, 1);
         while date <= day(2015, 12, 31) {
@@ -1654,7 +1720,9 @@ fn wave5_venue_era_unsourced_rows_are_disagreements_not_closures() {
             date = date.succ_opt().expect("the era ends well before the bound");
         }
     }
-    assert_eq!(probes, 96, "the era's `Unsourced` rows were swept");
+    // CME's 30 and CBOT's 35 withheld rows after the #242 re-derivation
+    // retired the profile-clock artefacts (50 + 46 under the earlier rule).
+    assert_eq!(probes, 65, "the era's `Unsourced` rows were swept");
 }
 
 // ---------------------------------------------------------------------------
@@ -1675,7 +1743,11 @@ fn wave4_venue_era_counts_match_the_families_they_route() {
         (
             Exchange::Cme,
             [3_usize, 3, 2],
-            [13_usize, 11, 10],
+            // Re-derived 2026-09-30: the profile-clock rule (#153, #242)
+            // retired the five grains-only late opens (2019-01-02, 2019-07-05,
+            // 2019-12-26, 2020-01-02 and 2021-07-06) and 2020-07-02, where
+            // grains' and livestock's closes were the only rows stated.
+            [10_usize, 9, 9],
             [0_usize, 0, 0],
         ),
         (Exchange::Cbot, [3, 3, 2], [13, 11, 10], [0, 0, 0]),
@@ -1718,7 +1790,7 @@ fn wave4_venue_era_counts_match_the_families_they_route() {
     // closures and 34 `Unsourced` — and the energy family's own 35 for the
     // single-family ones, 9 of them closures.
     for (exchange, total, closures) in [
-        (Exchange::Cme, 42_usize, 8_usize),
+        (Exchange::Cme, 36_usize, 8_usize),
         (Exchange::Cbot, 42, 8),
         (Exchange::Comex, 35, 9),
         (Exchange::Nymex, 35, 9),
@@ -1750,9 +1822,9 @@ fn wave4_venue_era_counts_match_the_families_they_route() {
 /// so a venue row that drifted there cannot hide behind a passing global walk.
 #[test]
 fn wave4_venue_table_is_the_families_intersection_over_the_new_era() {
-    for (exchange, families) in VENUES {
+    for (exchange, clock, families) in VENUES {
         let venue = calendar_for_exchange(exchange);
-        let intersection = family_intersection(families);
+        let intersection = family_intersection(clock, families);
         let mut date = day(2019, 1, 1);
         while date <= day(2021, 12, 31) {
             let joint = intersection
@@ -1792,7 +1864,7 @@ fn wave4_venue_table_is_the_families_intersection_over_the_new_era() {
 /// proof that the two single-family venues are not the six-family ones.
 #[test]
 fn wave4_closures_are_the_dates_every_family_states_closed() {
-    for (exchange, families) in VENUES {
+    for (exchange, _clock, families) in VENUES {
         let venue = calendar_for_exchange(exchange);
         let mut date = day(2019, 1, 1);
         while date <= day(2021, 12, 31) {
@@ -1843,7 +1915,7 @@ fn wave4_closures_are_the_dates_every_family_states_closed() {
 /// neither invent an artifact nor re-tier one it read.
 #[test]
 fn wave4_venue_rows_cite_a_family_row_on_the_same_date() {
-    for (exchange, families) in VENUES {
+    for (exchange, _clock, families) in VENUES {
         let venue = calendar_for_exchange(exchange);
         let mut date = day(2019, 1, 1);
         while date <= day(2021, 12, 31) {
@@ -1934,7 +2006,11 @@ fn wave4_unsourced_shapes_are_the_families_own_answers() {
     }
 
     // Shape two: 2019-07-05, where only grains states a row — a late open at
-    // 08:30 CT — and every financial family audited the date normal.
+    // 08:30 CT — and every financial family audited the date normal. The
+    // profile-clock rule splits the venues: CBOT's clock states the row and
+    // the rate leg disputes it, so the date stays withheld; CME's clock
+    // audited the date normal, so the venue answers normal and the
+    // grains-only row retires (#153, #242).
     let grains_only = day(2019, 7, 5);
     assert_eq!(
         grains.holiday_on(grains_only).map(Holiday::kind),
@@ -1946,15 +2022,18 @@ fn wave4_unsourced_shapes_are_the_families_own_answers() {
     assert_eq!(
         equity.holiday_on(grains_only),
         None,
-        "equity index audited 2019-07-05 normal, which disputes grains' row"
+        "equity index audited 2019-07-05 normal, which is the venue's own answer"
     );
-    for venue in [cme, cbot] {
-        assert_eq!(
-            venue.holiday_on(grains_only).map(Holiday::kind),
-            Some(HolidayKind::Unsourced),
-            "one family's row against another's audited normal is a dispute"
-        );
-    }
+    assert_eq!(
+        cbot.holiday_on(grains_only).map(Holiday::kind),
+        Some(HolidayKind::Unsourced),
+        "a clock-family row against another family's audited normal is a dispute"
+    );
+    assert_eq!(
+        cme.holiday_on(grains_only),
+        None,
+        "a non-clock row cannot withhold a date the clock audited normal"
+    );
     assert_eq!(
         cbot.holiday_on(grains_only).map(Holiday::document_id),
         grains.holiday_on(grains_only).map(Holiday::document_id),
@@ -1995,18 +2074,21 @@ fn wave4_unsourced_shapes_are_the_families_own_answers() {
     }
 }
 
-/// The `cbot` withheld-date census: 261 `Unsourced` rows that are exactly four
-/// not-worked-up markers plus 257 genuine disputes, and the refusals the
+/// The `cbot` withheld-date census: 202 `Unsourced` rows that are exactly four
+/// not-worked-up markers plus 198 genuine disputes, and the refusals the
 /// markers earn at the identity surface.
 ///
 /// This is the fence behind the inventory's `date_level_incompleteness` entry
-/// and the evidence file's cross-wave audit counts (re-derived on 2026-09-29
-/// UTC; tracked as #223 for the four markers). It pins four facts a row flip, a
-/// re-derivation or a new wave would move:
+/// and the evidence file's cross-wave audit counts (re-derived on 2026-09-30
+/// UTC under the profile-clock rule, #153 and #242; tracked as #223 for the
+/// four markers). It pins four facts a row flip, a re-derivation or a new wave
+/// would move:
 ///
-/// 1. **the totals** — 308 rows over the six audited windows, 47 `Closed` and
-///    261 `Unsourced`, with the per-era withheld series 61 / 46 / 27 / 34 / 32
-///    / 61 and the closures 6 / 8 / 9 / 8 / 7 / 9;
+/// 1. **the totals** — 249 rows over the six audited windows, 47 `Closed` and
+///    202 `Unsourced`, with the per-era withheld series 16 / 35 / 27 / 34 / 32
+///    / 58 and the closures 6 / 8 / 9 / 8 / 7 / 9. The #242 re-derivation
+///    retired the fifty-nine rows the rate leg's lone dissent had withheld
+///    against a grain table auditing the date normal;
 /// 2. **the split** — exactly the four marker dates (the three Juneteenth dates
 ///    and 2023-01-16) are dates both routed families state `Unsourced` on;
 ///    every other withheld date is a dispute the two families' own answers
@@ -2080,12 +2162,12 @@ fn the_cbot_withheld_dates_are_four_markers_plus_only_disputes() {
     }
     assert_eq!(
         (rows, closed_per_era.iter().sum::<usize>(), withheld),
-        (308, 47, 261),
+        (249, 47, 202),
         "the cbot table's whole-table census"
     );
     assert_eq!(
         withheld_per_era,
-        [61, 46, 27, 34, 32, 61],
+        [16, 35, 27, 34, 32, 58],
         "withheld dates per audited era"
     );
     assert_eq!(

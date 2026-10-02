@@ -21,6 +21,7 @@ use chrono::NaiveDate;
 use exchange_hours::Exchange;
 use sha2::{Digest, Sha256};
 use std::collections::{BTreeMap, BTreeSet};
+use std::fmt::Write as _;
 use std::fs;
 use std::path::{Path, PathBuf};
 
@@ -1280,7 +1281,13 @@ fn store_digest_map(root: &Path) -> BTreeMap<String, Vec<String>> {
             } else {
                 let bytes = fs::read(&path)
                     .unwrap_or_else(|error| panic!("{} must be readable: {error}", path.display()));
-                let digest = format!("{:x}", Sha256::digest(&bytes));
+                // sha2 0.11's `Digest::digest` returns a `hybrid_array::Array`,
+                // which no longer implements `LowerHex`; encode the same
+                // lowercase hex the digest is, byte for byte.
+                let mut digest = String::with_capacity(64);
+                for &byte in &Sha256::digest(&bytes) {
+                    write!(digest, "{byte:02x}").expect("a String's write cannot fail");
+                }
                 let shown = path
                     .strip_prefix(root)
                     .unwrap_or(&path)

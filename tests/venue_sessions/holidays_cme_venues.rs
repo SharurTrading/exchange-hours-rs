@@ -383,7 +383,7 @@ fn assert_closed_row_is_unanimous(
 /// family closed, and nothing outside these sets may make it.
 #[test]
 fn a_closed_venue_row_is_a_unanimous_closure() {
-    for (exchange, clock, families) in VENUES {
+    for (exchange, _clock, families) in VENUES {
         let single_family = matches!(exchange, Exchange::Comex | Exchange::Nymex);
         let venue = calendar_for_exchange(exchange);
         let coverage = venue.holiday_coverage().expect("the venue ships a table");
@@ -894,7 +894,7 @@ fn wave2_venue_rows_are_closed_on_the_nine_and_unsourced_on_the_rest() {
         let closed = WAVE2_CLOSURES
             .iter()
             .any(|(y, m, d)| day(*y, *m, *d) == date);
-        for (exchange, clock, families) in VENUES {
+        for (exchange, _clock, families) in VENUES {
             let venue = calendar_for_exchange(exchange);
             let kind = venue.holiday_on(date).map(Holiday::kind);
             if families.len() == 1 {
@@ -1047,7 +1047,7 @@ fn wave3_venue_era_counts_match_the_families_they_route() {
 /// nor re-tier one it read.
 #[test]
 fn wave3_venue_rows_cite_a_family_row_on_the_same_date() {
-    for (exchange, clock, families) in VENUES {
+    for (exchange, _clock, families) in VENUES {
         let venue = calendar_for_exchange(exchange);
         let mut date = day(2022, 1, 1);
         while date <= day(2024, 12, 31) {
@@ -1095,7 +1095,7 @@ fn wave3_venue_rows_cite_a_family_row_on_the_same_date() {
 /// module by construction and fence nothing.
 #[test]
 fn wave3_closures_are_the_dates_every_family_states_closed() {
-    for (exchange, clock, families) in VENUES {
+    for (exchange, _clock, families) in VENUES {
         let venue = calendar_for_exchange(exchange);
         let mut date = day(2022, 1, 1);
         while date <= day(2024, 12, 31) {
@@ -1507,7 +1507,7 @@ fn every_venue_window_is_the_union_of_its_families_windows() {
         merged
     }
 
-    for (exchange, clock, families) in VENUES {
+    for (exchange, _clock, families) in VENUES {
         let venue = calendar_for_exchange(exchange);
         let coverage = venue.holiday_coverage().expect("the venue ships a table");
         let mut windows = Vec::new();
@@ -1864,7 +1864,7 @@ fn wave4_venue_table_is_the_families_intersection_over_the_new_era() {
 /// proof that the two single-family venues are not the six-family ones.
 #[test]
 fn wave4_closures_are_the_dates_every_family_states_closed() {
-    for (exchange, clock, families) in VENUES {
+    for (exchange, _clock, families) in VENUES {
         let venue = calendar_for_exchange(exchange);
         let mut date = day(2019, 1, 1);
         while date <= day(2021, 12, 31) {
@@ -1915,7 +1915,7 @@ fn wave4_closures_are_the_dates_every_family_states_closed() {
 /// neither invent an artifact nor re-tier one it read.
 #[test]
 fn wave4_venue_rows_cite_a_family_row_on_the_same_date() {
-    for (exchange, clock, families) in VENUES {
+    for (exchange, _clock, families) in VENUES {
         let venue = calendar_for_exchange(exchange);
         let mut date = day(2019, 1, 1);
         while date <= day(2021, 12, 31) {

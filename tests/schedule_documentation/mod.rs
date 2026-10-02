@@ -5,6 +5,7 @@
 mod coverage_inventory;
 mod databento;
 mod evidence_files;
+mod family_aggregates;
 mod horizons;
 mod source_registry;
 mod trade_type_keys;

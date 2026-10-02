@@ -45,6 +45,28 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Fixed
 
+- **The globex family files' aggregate prose is fenced, and the two
+  Documents intros that never derived state their tables' counts
+  (2026-10-02 UTC; the `schedule_documentation` fence extension issue #232's
+  closing condition named).** The four CME family evidence files carry
+  whole-table and per-era aggregates in running prose — the twice-stated
+  "The table as a whole carries N rows over M windows" sentence with its era
+  kind share, the 2022-2024 wave paragraph's row/T1/T2/`Unsourced` split,
+  `globex_grains`'s 2025-2027 `**Rows:**` block, and the `### Documents`
+  intro's artifact count — and no `schedule_documentation` fence spanned
+  them, which is how four files carried a stale whole-table total until
+  #240. A new `family_aggregates` fence re-derives every one of those
+  numbers through the public identity-backed walk the coverage-inventory
+  fence uses and pins each sentence with its derived fragment: a row that
+  lands, a kind that changes, or a Documents row that moves fails the
+  sentence until it is restated. The same review re-derived the Documents
+  intros and found the equity and fx ones unfixable against their own
+  tables — 29 and 13 rows under a "thirty" — so they now read "All
+  twenty-nine artifacts" and "All thirteen artifacts" respectively;
+  grains/rates' "forty-one" already matched its 41-row tables and is
+  unchanged. Docs and fences only: no schedule data, no runtime row and no
+  coverage answer moves.
+
 - **An empty `SessionExceptions` provider changes no answer — on a date the
   identity withholds too (2026-10-01 UTC; closes #127).** Attaching a
   provider whose coverage window spanned a withheld date used to force the

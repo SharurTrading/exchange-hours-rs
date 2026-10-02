@@ -8,15 +8,8 @@ use super::super::StaticHoursProfile;
 use crate::calendar::SessionRule;
 use crate::calendar::rule::MON_FRI;
 
-// TSX accepts orders from 07:00, trades continuously 09:30–16:00, can run a
-// conditional MOC Price Movement Extension through 16:10, and trades at last
-// sale 16:15–17:00. The PME rule is the venue's maximum envelope: on ordinary
-// days/symbols that interval is cancel-only. Regulator records show both PME
-// and the last-sale session existed before the January-2010 history floor; the
-// exchange archive contains no later boundary change.
-// Sources:
-// https://www.tsx.com/en/trading/calendars-and-trading-hours/trading-hours
-// https://www.osc.ca/sites/default/files/pdfs/bulletins/oscb_20050114_2802.pdf
+// TSX accepts orders from 07:00, trades continuously 09:30–16:00, can run a conditional MOC Price Movement Extension through 16:10, and trades at last sale 16:15–17:00. Narrative:
+// docs/evidence/tsx.md.
 static TSX_REGULAR: &[SessionRule] = &[SessionRule {
     days: MON_FRI,
     open_ssm: 9 * 3600 + 30 * 60,

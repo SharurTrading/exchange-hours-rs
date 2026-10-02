@@ -29,20 +29,8 @@ static IDX_REGULAR_CURRENT: &[SessionRule] = &[
         close_ssm: 15 * 3600 + 50 * 60,
     },
 ];
-// The 08:45–09:00 pre-opening is an input phase followed by a matching phase,
-// and JATS only allocates transactions in the tail. IDX's trading-hours table
-// under Board decree II-A Kep-00196/BEI/12-2024 prints "Pre opening (Input)
-// 08.45.00 – 08.57.59" and "Pre opening (Matching) 08.58.00 – 08.59.59"; the
-// earlier rulebook (Kep-00061/BEI/07-2021) prints "pukul 08.45.00 sampai dengan
-// 08.55.00 digunakan oleh Anggota Bursa Efek untuk memasukkan penawaran jual
-// dan/atau permintaan beli" followed by matching from 08.55.01. Nothing else on
-// the venue is open: the Cash and Negotiated Markets both start at 09.00.00.
-//
-// The boundary is pinned at 08:55, the earliest matching start IDX has ever
-// documented, so no second in which a trade could print is marked order entry
-// under any regime this profile family spans.
-// https://www.idx.id/en/products-services/trading-hours-and-mechanism/
-// https://web.archive.org/web/20221220175625/https://www.idx.co.id/media/10022/peraturan_ii_a_perdagangan_efek_bersifat_ekuitas.pdf
+// The 08:45–09:00 pre-opening is an input phase followed by a matching phase, and JATS only allocates transactions in the tail. Narrative:
+// docs/evidence/idx.md.
 static IDX_ORDER_ENTRY_PREOPEN: &[SessionRule] = &[SessionRule {
     days: MON_FRI,
     open_ssm: 8 * 3600 + 45 * 60,
@@ -96,13 +84,8 @@ static IDX_PROFILE_PRE_PANDEMIC: StaticHoursProfile = StaticHoursProfile {
     has_weekend_close: true,
 };
 
-// IDX before 2013: the official annual report dates the 2013 extension and
-// prints the prior continuous sessions. An archived copy of IDX's own 2010
-// trading-hours page prints 09:10–09:25 order input followed by price forming
-// and allocation through 09:29:59; the static profile uses their contiguous
-// nominal 09:10–09:30 envelope.
-// https://www.idx.co.id/Media/1208/2013.pdf
-// https://web.archive.org/web/20100831234522id_/http://www.idx.co.id/MainMenu/Trading/JamPerdagangan/tabid/214/lang/en-US/language/en-US/Default.aspx
+// IDX before 2013: the official annual report dates the 2013 extension and prints the prior continuous sessions. Narrative:
+// docs/evidence/idx.md.
 static IDX_REGULAR_PRE_2013: &[SessionRule] = &[
     SessionRule {
         days: MON_THU,

@@ -37,3 +37,20 @@ as each source is re-verified.
 - **Interpretive step, empty order-entry slice.** Every non-regular phase modelled here is tradeable, so `order_entry` stays empty: the opening and closing windows are the SIBE auctions themselves, each ending in an allocation that prints trades at the auction price, and Trading-at-Last executes at the closing price. The operator publishes no separate pre-open or post-close order-entry phase for the general trading segment.
 - **Interpretive step, randomized auction edge.** The deterministic profile uses the latest possible opening edge, 09:00:30, so it never reports continuous trading while the opening auction can still run; the closing auction likewise runs through 17:35:30.
 - **Dormant identity.** Reviewed on demand; gaps are recorded here rather than as issues.
+
+## Module narrative (moved from src/calendar/schedules/equities/europe/bme.rs on 2026-10-02 UTC)
+
+https://www.bolsasymercados.es/en/bme-exchange/trading-hours.html
+Sociedad de Bolsas Circular 1/2001 establishes the same opening, continuous,
+and closing-auction grid before the Jan-2010 history floor.
+https://www.bolsasymercados.es/dam/descargas/regulacion/renta-variable/sociedad-de-bolsas/circular/2001/c20011uk.pdf
+BME also states that SIBE auctions end in a random period of at most 30
+seconds. The deterministic profile uses the latest possible opening edge so
+it never reports continuous trading while the opening auction can still run.
+https://www.bolsasymercados.es/es/sala-de-comunicacion/noticias/2023/las-subastas-en-la-bolsa-parte-2.html
+
+Every non-regular phase modeled here is tradeable, so `order_entry` stays
+empty. The opening and closing windows are the SIBE auctions themselves:
+each ends in an allocation that prints trades at the auction price, and the
+operator publishes no separate pre-open or post-close order-entry phase for
+the general trading segment. Trading-at-Last executes at the closing price.

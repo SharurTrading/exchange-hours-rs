@@ -360,3 +360,33 @@ as each source is re-verified.
 - **Interpretive step, order-entry classification.** From 2016-11-14 only the 09:40–09:55 Order Collection Process is `order_entry`; 09:55–10:00 carries the opening print and stays `extended`. The midday single-price call and the 18:00–18:10 closing envelope each bundle collection with a price-determination leg that prints, so both stay `extended` whole. Earlier eras carry no `order_entry` window because no source separates their collection legs.
 - **Source set has no monitoring feed.** `EU-BIST` records that no stable consolidated announcements-feed URL is indexed; review means reopening the Equity Market Procedure, the individual circulars listed above, and the `Resmi Tatil Günleri` holiday page.
 - **Service tier.** The consumer serves this venue live (it is one of the market-clock overview's venues), so the identity is **served** and the holiday-bearing calendar is reviewed monthly per LAW-WATCH; the 2027 closing condition above is the one tracked gap.
+
+## Module narrative (moved from src/calendar/schedules/equities/europe/bist.rs on 2026-10-02 UTC)
+
+The 2016-11-14 announcement cited below states
+that "the trading session shall start at 09:40 with order collection" and
+that "[f]ollowing the end of the order collection phase at 09:55, continuous
+auction shall start at 10:00". The Equity Market Procedure's call-auction
+rules add that "[n]o transactions are executed during the order collection
+period", and its session table splits the 09:40-10:00 opening auction into an
+Order Collection Process (09:40-09:55) and Determination of Opening Price
+(09:55 onward). Only the collection leg moves; 09:55-10:00 carries the
+opening print and stays in `extended`. The midday single-price call and the
+18:00-18:10 closing/single-price envelope each bundle collection with a
+price-determination leg that prints, so both stay in `extended` whole.
+
+---
+
+2012-03-02 closing auction:
+https://www.borsaistanbul.com/datum/closing_session.pdf
+2012-07-16 afternoon extension:
+https://www.borsaistanbul.com/data/Genelge/gn2012394.pdf
+2013-04-05 and 2013-06-10 opening changes:
+https://www.borsaistanbul.com/data/Genelge/gn2013421.pdf
+https://www.borsaistanbul.com/data/Genelge/gn2013430.pdf
+2015-11-30 and 2016-03-28 midday calls:
+https://www.borsaistanbul.com/en/announcement/13472/single-session-era-borsa-istanbul
+https://www.borsaistanbul.com/en/announcement/13446/new-arrangement-borsa-istanbul-equity-market-midday-session
+2016-11-14 extended day and 2019-10-04 midday-call removal:
+https://www.borsaistanbul.com/en/announcement/13376/borsa-istanbul-trading-session-hours-change
+https://www.borsaistanbul.com/duyuru/11640/pay-piyasasi-seansinda-gun-ortasi-tek-fiyat-bolumu-hk-201956-sayili-duyuru

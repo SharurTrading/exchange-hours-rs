@@ -46,3 +46,13 @@ as each source is re-verified.
 - The module encodes the launch as the constants `LAUNCH_UNIX_SECONDS` (2019-09-13 04:00:00 UTC) and `LAUNCH_DAY_END_UNIX_SECONDS` rather than as `revisions!` tuples, so this file records no revision-row bullets even though the identity has a dated launch. An exact instant is required here: the launch is not a venue-local-midnight revision (LAW-NO-FABRICATED-DATES).
 - This is a normal-availability profile. Ad-hoc maintenance windows, per-contract listing and delisting windows, and operational incidents are excluded and are not modelled anywhere in the crate.
 - The profile has no daily close and no weekend close, so date-aware `trade_date` is always `None` for it.
+
+## Module narrative (moved from src/calendar/schedules/futures/international/binance.rs on 2026-10-02 UTC)
+
+The operator's current USDⓈ-M perpetual launch
+specifications publish 24/7 trading. This normal-availability profile
+excludes contract-specific launch/delist windows, ad-hoc maintenance, and
+operational incidents.
+https://arquivo.pt/noFrame/replay/20200608065459id_/https://www.binance.com/en/support/articles/360033314152
+https://t.me/binance_announcements/799
+https://www.binance.com/en-TR/support/announcement/detail/2bfb6f8dccf447ada57165b7e6a4cf1b

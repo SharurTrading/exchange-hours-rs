@@ -210,3 +210,13 @@ The artifact was saved under `holidays/raw/equities/tadawul/2025-2027/` in the r
 - **Interpretive step, order-entry classification.** The current 09:30–10:00 window is `order_entry`: it collects, amends and cancels opening-auction orders without any of them matching, and the first print is the 10:00 uncross. The closing auction and the trade-at-last tail both print — trade at last executes at the closing auction price — so both stay `extended`.
 - **Source set has no monitoring feed.** `MIDEAST-TADAWUL` records that no consolidated schedule-notice feed is indexed; review means reopening the trading cycle and times page, the `Saudi Exchange Holiday Calendar` page, and the individual reports and notices above.
 - **Service tier.** The consumer serves this venue live (it is one of the market-clock overview's venues), so the identity is **served** and the holiday-bearing calendar is reviewed monthly per LAW-WATCH. The holiday rows above are T1 throughout; the 2013-06-29 and 2016-04-03 normal-week rows below the current grid keep the T3 disclosure recorded above.
+
+## Module narrative (moved from src/calendar/schedules/equities/africa_middle_east/tadawul.rs on 2026-10-02 UTC)
+
+Session changes since 2010: the workweek changed effective 2013-06-29;
+hours moved to 10:00–15:00 effective 2016-04-03; closing auction arrived
+2018-05-27; and trade at last arrived 2019-05-12.
+https://www.spa.gov.sa/7e453de27d
+https://www.spa.gov.sa/1484000?lang=en&newsid=1484000
+https://www.saudiexchange.sa/wps/wcm/connect/24ca438e-86a0-47d0-b8f4-65b4cbfebcdd/Saudi%2BStock%2BExchange%2B-Tadawul-%2CStatistical%2BReport%2B%E2%80%93%2BFirst%2BHalf%2B2018%2B-%2BUpdated.pdf
+https://www.saudiexchange.sa/wps/wcm/connect/4657c15f-ef37-45c8-8423-09e2a5055ab7/Saudi%2BStock%2BExchange%2B%28Tadawul%29%2CStatistical%2BReport%2B%E2%80%93%2B%2B2019-%2BEn.pdf

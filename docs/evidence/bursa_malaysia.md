@@ -34,3 +34,27 @@ as each source is re-verified.
 - **order-entry classification withheld** — each of the three non-continuous windows (08:30–09:00, 14:00–14:30 and 16:45–17:00) is a combined order-entry/call phase whose call leg matches and prints. The crate has no reachable primary source for the sub-phase boundary at which the call begins, so splitting would be a guess and the whole window stays tradeable `extended`. Closing condition: a Bursa document stating the call-phase start inside each window. Dormant identity, so the gap is recorded here rather than opened as an issue.
 - The true lunch closure is 12:30–14:00 and is modelled as a gap, not a rule (AGENTS.md, *Lunch breaks are gaps, not rules*).
 - The intervening amendment register between the dated manuals contains no in-scope clock change; the module records no dated revision row for that reason, and a sourced revision later replaces the static profile with a real timeline row without any routing change.
+
+## Module narrative (moved from src/calendar/schedules/equities/apac/bursa.rs on 2026-10-02 UTC)
+
+The true lunch closure is
+12:30–14:00. Trading Manual v2.0, dated 2009-10-26 and therefore already in
+force at the January-2010 audit floor, removed the v1.0 morning pre-close and
+prints continuous trading through 12:30. Dated v3.0 (2011), v5.0 (2012),
+v29.0 (2021), and current v36.0 manuals retain the same modeled grid; the
+intervening amendment register contains no in-scope clock change.
+https://www.bursamalaysia.com/sites/5bb54be15f36ca0af339077a/assets/5bb55ac75f36ca0c3028d8e7/Amended_Participating_Organisations__Trading_Manual.pdf
+https://www.bursamalaysia.com/sites/5bb54be15f36ca0af339077a/assets/5cda944139fba22dab508ab1/rules_bms_cir_rr2_110411.pdf
+https://www.bursamalaysia.com/sites/5bb54be15f36ca0af339077a/assets/5bb55ab65f36ca0c3028d8c2/1._Amendments_to_the_Rules_of_Bursa_Malaysia_Securities_Berhad_in_relation_to_Market_Making_and_Margin_Financing.pdf
+https://www.bursamalaysia.com/sites/5d809dcf39fba22790cad230/assets/60b1b8e85b711a63ee7f1395/POs_Trading_Manual_v28n_29.pdf
+https://www.bursamalaysia.com/sites/5d809dcf39fba22790cad230/assets/65ead6cbe6414a1e16de8b8e/POs_Trading_Manual_v36_4_March_2024.pdf
+
+---
+
+Each of these three windows is a
+combined order-entry/call phase whose call leg matches and prints: the
+morning and afternoon pre-open windows end in the Theoretical Opening Price
+match, and the 16:45–17:00 window carries the closing call plus trade-at-last.
+The trading manuals cited above give the window bounds but the crate has no
+reachable primary source for the sub-phase boundary at which the call begins,
+so splitting would be a guess and the whole window stays tradeable.

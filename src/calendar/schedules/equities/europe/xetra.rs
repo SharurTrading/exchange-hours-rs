@@ -9,14 +9,8 @@ use crate::calendar::SessionRule;
 use crate::calendar::rule::MON_FRI;
 use crate::calendar::schedules::timeline::{Revision, local_date, revisions, select_revision};
 
-// Deutsche Börse circulars 207/08 and 091/18 bracket the Jan-2010 baseline and
-// confirm that the DAX grid remained: pre-trading from 07:30, opening auction
-// 08:50-09:00, intraday auction 13:00-13:02, continuous trading to 17:30, and
-// closing auction to 17:35, followed by order-entry-only post-trading through
-// 20:30. Each auction can end in a 30-second random period, so regular trading
-// begins only at the latest possible edge.
-// https://cashmarket.deutsche-boerse.com/resource/blob/197910/0890768f3f753299e4c268b80fe7944d/data/207_08e.pdf
-// https://www.cashmarket.deutsche-boerse.com/resource/blob/1431340/a23cc3ff15d46a3b649bd23f1618b928/data/091_18e.pdf
+// Deutsche Börse circulars 207/08 and 091/18 bracket the Jan-2010 baseline and confirm that the DAX grid remained: pre-trading from 07:30, opening auction 08:50-09:00, intraday auction 13:00-13:02, continuous trading to 17:30, and closing auction to 17:35, followed by order-entry-only post-trading through 20:30. Narrative:
+// docs/evidence/xetra.md.
 static REGULAR: &[SessionRule] = &[
     SessionRule {
         days: MON_FRI,
@@ -50,16 +44,8 @@ static BASE_EXTENDED: &[SessionRule] = &[
         close_ssm: 17 * 3600 + 35 * 60 + 30,
     },
 ];
-// The pre-trading and post-trading periods are order-entry-only: FWB Exchange
-// Rules § 67 makes them Trading Periods distinct from the trading periods in
-// which prices are determined, and § 67(2) states that "[d]uring the
-// pre-trading period, the order book shall remain closed" (the Specialist
-// carve-out applies to the Continuous Auction, not to Xetra's order book).
-// § 123 confines trading to 08:30-17:30 plus the closing auction and the
-// Trade-at-Close period, so nothing can match before or after those phases.
-// The operator's trading-parameter sheet likewise marks both phases "(Book)",
-// i.e. order-book maintenance only, and quotes no price for them.
-// https://www.cashmarket.deutsche-boerse.com/resource/blob/31802/6ab37d564c2934a20766824e4284d608/data/2026_07_07_fwb_boersenordnung_en.pdf
+// The pre-trading and post-trading periods are order-entry-only: FWB Exchange Rules § 67 makes them Trading Periods distinct from the trading periods in which prices are determined. Narrative:
+// docs/evidence/xetra.md.
 static BASE_ORDER_ENTRY: &[SessionRule] = &[
     // Pre-trading.
     SessionRule {
@@ -120,14 +106,8 @@ static TAC_PROFILE: StaticHoursProfile = StaticHoursProfile {
     has_weekend_close: true,
 };
 
-// Extended Xetra Retail became effective on 2025-12-01. The DAX envelope now
-// begins at 07:00, Trade-at-Close ends at 17:40, participant-restricted late
-// retail trading continues through 22:00, and post-trading ends at 22:05. The
-// non-continuous and participant-restricted retail phases are `extended`, the
-// order-entry-only pre- and post-trading phases are `order_entry`, and only the
-// unrestricted continuous phases stay `regular`.
-// https://www.cashmarket.deutsche-boerse.com/cash-en/Stay-Informed/circulars-newsletters/deutsche-boerse-circulars/Introduction-of-the-Extended-Xetra-Retail-Service-early-and-late-trading-Planned-changes-to-the-trading-process-valid-from-1-December-2025-4793480
-// https://www.cashmarket.deutsche-boerse.com/resource/blob/250890/24d50260d22cd63e0f600ae2543ca529/data/trading-parameters-xetra.pdf
+// Extended Xetra Retail became effective on 2025-12-01. Narrative:
+// docs/evidence/xetra.md.
 static CURRENT_EXTENDED: &[SessionRule] = &[
     // Retail early trading: Exchange Rules § 123(2b) permits Extended Xetra
     // Retail Service trading from 08:00 to 09:00, and the parameter sheet runs

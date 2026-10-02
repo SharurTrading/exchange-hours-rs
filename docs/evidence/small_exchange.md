@@ -41,3 +41,32 @@ as each source is re-verified.
 - Expiration-day 15:00 closes are date exceptions, not schedule rows (LAW-HOLIDAY-SCOPE, LAW-SESSION-NOT-EXPIRY).
 - A relisting would need its own dated source before the closed state is lifted.
 - **No holiday table, and that is a service-tier fact rather than a gap (LAW-SERVICE-TIERS, LAW-HOLIDAY-SCOPE).** The Wave 8 venue retrieval (2026-09-12 UTC) established that Small Exchange publishes no 2026 or 2027 holiday calendar because the DCM is dormant. The venue, renamed Kraken Derivatives Exchange Inc., has listed nothing since SMFE 2025-001 delisted every contract at the 2025-03-21 close, so the crate's profile is `CLOSED` from 2025-03-24 and a holiday row could only shorten a day that already has no session. `smallexchange.com` still serves a home page (last published 2025-11-15, contact `dcm@kraken.com`) but every subpage tried — `/reference/info-hub`, `/documents`, `/reference/regulation`, `/futures-markets`, `/regulation-page` — returns 403 AccessDenied, and nothing on the site links a trading-hours or holiday page. The basis for the dormancy itself is **T3**, the regulator rather than the operator: CFTC press release 9272-26 of 2026-07-24 records that the Division of Market Oversight “issued a no-action letter to Kraken Derivatives Exchange Inc., formerly Small Exchange Inc., a designated contract market, which addresses certain procedures related to dormancy”, extending CFTC Letter No. 25-46 (<https://www.cftc.gov/PressRoom/PressReleases/9272-26>, retrieved 2026-09-12 04:53 UTC, sha256 `9706e3b2e457047956c2a7b74eba979400cb7803ccfb83fa78ac41a98909c028`). A T3 source never keys a row and none is keyed here: `table_for` answers `None` for `Exchange::Smfe`. Closing condition: an operator statement from Kraken Derivatives Exchange when it relists products, at which point the identity needs a normal-week review before a holiday table.
+
+## Module narrative (moved from src/calendar/schedules/futures/us/small_exchange.rs on 2026-10-02 UTC)
+
+the public opening
+on 2020-06-01 came after. Its first grid was 07:00-16:00 CT Monday-Friday
+with Pre-Open quoting from 06:30: the operator's own instrument file for
+that trade date states it in its TRADING_HOURS field
+(`td=12345;...;0=p06300659n06590700r07001600`), and every surviving
+statement of the venue's hours repeats it through the info hub's 2024-11-03
+capture.
+https://www.cftc.gov/filings/ptc/ptc051120smfedcm006.pdf
+https://public.data.smallexchange.com/ipf/20200518/products-2020-05-18.csv
+https://smallexchange-com.cdn.prismic.io/smallexchange-com/ebb1c3a8-4072-4f4e-88d5-122554f04687_MN-2020-106+Trade+Cancellation.pdf
+https://web.archive.org/web/20200612014112/https://smallexchange.com/page-data/market-info-page/page-data.json
+https://web.archive.org/web/20241103095322/https://smallexchange.com/reference/info-hub/
+
+---
+
+the
+info hub from 2025 adds Pre-Open quoting from 08:00. No source dates the move
+off the old grid inside 2024-11-04..2024-11-21. The new grid lies inside the
+old one - its session within the old session, its Pre-Open within old
+trading hours, where orders were accepted either way - so it is the sourced
+intersection. As with the SGX equity-index rows, the undated move is
+approached from the conservative side: the narrower grid is keyed to the
+Monday after the old grid's last capture, 2024-11-04, and only 07:00-08:30
+and 15:00-16:00 are withheld in the undated window.
+https://www.cftc.gov/filings/ptc/ptc1121249243.pdf
+https://web.archive.org/web/20250119163716/https://smallexchange.com/reference/info-hub/

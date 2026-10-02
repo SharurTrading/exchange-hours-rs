@@ -42,48 +42,12 @@ const MAX_COMMENT_RUN: usize = 6;
 
 /// Schedule modules whose narrative has not moved yet.
 ///
-/// The reshape drained the served families and most of the dormant ones; these
-/// modules still carry prose. A listed module is skipped by
-/// `modules_carry_no_narrative`, an unlisted one is asserted, and the list only
-/// ever shrinks — that is what makes "a new module never carries one" a fence
-/// rather than a hope. Tracked as issue #85.
-const NARRATIVE_DEBT: [&str; 35] = [
-    "src/calendar/schedules/equities/africa_middle_east/jse.rs",
-    "src/calendar/schedules/equities/africa_middle_east/tadawul.rs",
-    "src/calendar/schedules/equities/americas/b3.rs",
-    "src/calendar/schedules/equities/americas/bmv.rs",
-    "src/calendar/schedules/equities/americas/tsx.rs",
-    "src/calendar/schedules/equities/apac/asx.rs",
-    "src/calendar/schedules/equities/apac/bse.rs",
-    "src/calendar/schedules/equities/apac/bursa.rs",
-    "src/calendar/schedules/equities/apac/hkex.rs",
-    "src/calendar/schedules/equities/apac/hose.rs",
-    "src/calendar/schedules/equities/apac/idx.rs",
-    "src/calendar/schedules/equities/apac/krx.rs",
-    "src/calendar/schedules/equities/apac/nse.rs",
-    "src/calendar/schedules/equities/apac/nzx.rs",
-    "src/calendar/schedules/equities/apac/set.rs",
-    "src/calendar/schedules/equities/apac/sgx.rs",
-    "src/calendar/schedules/equities/apac/sse.rs",
-    "src/calendar/schedules/equities/apac/szse.rs",
-    "src/calendar/schedules/equities/apac/tmx_australia.rs",
-    "src/calendar/schedules/equities/apac/tse.rs",
-    "src/calendar/schedules/equities/apac/twse.rs",
-    "src/calendar/schedules/equities/europe/bist.rs",
-    "src/calendar/schedules/equities/europe/bme.rs",
-    "src/calendar/schedules/equities/europe/euronext.rs",
-    "src/calendar/schedules/equities/europe/lse.rs",
-    "src/calendar/schedules/equities/europe/vienna.rs",
-    "src/calendar/schedules/equities/europe/xetra.rs",
-    "src/calendar/schedules/equities/us/cboe.rs",
-    "src/calendar/schedules/equities/us/nyse.rs",
-    "src/calendar/schedules/futures/international/binance.rs",
-    "src/calendar/schedules/futures/international/ice_abu_dhabi.rs",
-    "src/calendar/schedules/futures/international/ice_canada.rs",
-    "src/calendar/schedules/futures/international/ice_europe.rs",
-    "src/calendar/schedules/futures/international/sgx.rs",
-    "src/calendar/schedules/futures/us/small_exchange.rs",
-];
+/// The list drained to empty on 2026-10-02 UTC — every schedule module's
+/// narrative now lives in its evidence file. It stays as the fence: a listed
+/// module is skipped by `modules_carry_no_narrative`, an unlisted one is
+/// asserted, and the list only ever shrinks — that is what makes "a new module
+/// never carries one" a fence rather than a hope. Tracked as issue #85.
+const NARRATIVE_DEBT: [&str; 0] = [];
 
 /// Sections every evidence file carries, in order.
 const REQUIRED_SECTIONS: [&str; 4] = [

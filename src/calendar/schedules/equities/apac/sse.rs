@@ -57,16 +57,8 @@ static SSE_EXTENDED_PRE_2018: &[SessionRule] = &[
     },
     CHINA_EXTENDED_CORE[2],
 ];
-// SSE has accepted and confirmed block-trading declarations through 15:30
-// since before the January-2010 audit floor. The generic fixed-price expansion
-// is undated here — no reviewed artifact states its effective day — and in any
-// case changed eligibility inside that existing venue envelope, not the
-// exchange-level close. Block and fixed-price phases are extended by
-// convention; not every security is eligible for them.
-// SSE rule and notice:
-// https://www.sse.com.cn/lawandrules/sselawsrules2025/stocks/exchange/c/c_20260424_10816482.shtml
-// Historical block-trading rule:
-// https://www.sse.com.cn/lawandrules/sselawsrules2025/repeal/rules/c/c_20120918_10785158.shtml
+// SSE has accepted and confirmed block-trading declarations through 15:30 since before the January-2010 audit floor. Narrative:
+// docs/evidence/sse.md.
 pub(crate) static SSE_PROFILE_CURRENT: StaticHoursProfile = StaticHoursProfile {
     tz: Asia::Shanghai,
     regular: CHINA_REGULAR_WITH_CLOSE_CALL,

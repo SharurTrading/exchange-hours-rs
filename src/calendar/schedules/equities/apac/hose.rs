@@ -8,14 +8,8 @@ use super::super::StaticHoursProfile;
 use crate::calendar::SessionRule;
 use crate::calendar::rule::MON_FRI;
 
-// HOSE venue envelope: opening call 09:00–09:15, continuous
-// 09:15–11:30/13:00–14:30, closing call 14:30–14:45, then negotiated
-// put-through trading through 15:00. Put-through is extended by convention;
-// not every security is eligible for every phase. The current table explicitly
-// prints the 13:00–15:00 put-through window; HOSE's 2013 annual report dates
-// the 45-minute extension to 2013-07-22.
-// https://staticfile.hsx.vn/Uploads/UploadDocuments/2372209/2.Trading%20hours.pdf
-// https://web.archive.org/web/20140501225025id_/http://www.hsx.vn:80/hsx_en/Modules/annual/annual_files/BCTN-ANNUAL%20REPORT%202013.pdf
+// HOSE venue envelope: opening call 09:00–09:15, continuous 09:15–11:30/13:00–14:30, closing call 14:30–14:45, then negotiated put-through trading through 15:00. Narrative:
+// docs/evidence/hose.md.
 static HOSE_REGULAR_CURRENT: &[SessionRule] = &[
     SessionRule {
         days: MON_FRI,
@@ -171,14 +165,10 @@ use crate::calendar::schedules::timeline::{Revision, local_date, revisions, sele
 
 pub(crate) const CURRENT: &StaticHoursProfile = &HOSE_PROFILE_CURRENT;
 
-// Revision evidence — each row's day-level effective date and the primary
-// source that states it (full quotations sit in the blocks above):
-//   2010-09-13 "HOSE news notice 48784"
-//     https://web.archive.org/web/20100830155813id_/http://www.hsx.vn/hsx/Modules/News/NewsDetail.aspx?id=48784
-//   2012-03-05 "HOSE 2012 annual report"
-//     https://staticfile.hsx.vn/Uploads/Annual/6dfe6cf6-93b2-4871-966f-2bb9bb92c110/10dd075f-c751-46d2-b598-022850e517f6
-//   2013-07-22 "HOSE 2013 annual report"
-//     https://web.archive.org/web/20140501225025id_/http://www.hsx.vn:80/hsx_en/Modules/annual/annual_files/BCTN-ANNUAL%20REPORT%202013.pdf
+// Revision evidence — each row's day-level effective date and the primary source that states it (full quotations sit in the evidence file):
+//   2010-09-13 "HOSE news notice 48784" https://web.archive.org/web/20100830155813id_/http://www.hsx.vn/hsx/Modules/News/NewsDetail.aspx?id=48784
+//   2012-03-05 "HOSE 2012 annual report" https://staticfile.hsx.vn/Uploads/Annual/6dfe6cf6-93b2-4871-966f-2bb9bb92c110/10dd075f-c751-46d2-b598-022850e517f6
+//   2013-07-22 "HOSE 2013 annual report" https://web.archive.org/web/20140501225025id_/http://www.hsx.vn:80/hsx_en/Modules/annual/annual_files/BCTN-ANNUAL%20REPORT%202013.pdf
 // Evidence: docs/evidence/hose.md
 static REVISIONS: &[Revision] = revisions![
     (

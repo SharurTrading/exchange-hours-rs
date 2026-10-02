@@ -427,3 +427,20 @@ shells and key nothing.
 - **horizon carried below the first dated row** — the pre-2011-08-01 session bounds (09:00–12:30 and 14:00–17:00) are attested by the operator's own Trading Hours page only at a pre-floor capture (2009-05-14, see the Normal week section): the grid is no longer unattested, but no artifact dated inside 2010-01-01..2011-07-31 prints it, so the era's dates stay carried. The ledger horizon remains 2011-08-01, the first day at which this row's state is sourced, with everything below it carried. Closing condition: a capture of the securities Trading Hours page (or a dated pre-2011 SGX-ST rulebook or practice-note edition) dated inside 2010-01-01..2011-07-31, which would move the horizon to its day.
 - Current routine ends are randomized: Pre-Open ends 08:58–08:59 and 12:58–12:59, Pre-Close ends 17:04–17:05. Each order-entry slice stops at the earliest possible end so no matching time is claimed as order entry.
 - Trade at Close matches at the Equilibrium Price and is therefore tradeable throughout its window.
+
+## Module narrative (moved from src/calendar/schedules/equities/apac/sgx.rs on 2026-10-02 UTC)
+
+Only the Non-Cancel Phase can print, so each routine is split at the earliest
+possible Non-Cancel start. Trade at Close matches at the Equilibrium Price and
+is tradeable throughout.
+https://rulebook.sgx.com/rulebook/regulatory-notice-821-trading-hours-market-phases-application-market-phases-and-principles
+
+---
+
+The 2011-08-01 practice note carries the pre-2017 routine boundaries used by
+the two oldest profiles: Pre-Open 08:30–08:59 / Non-Cancel 08:59–09:00,
+lunch-break Adjust 12:30–13:59 with no matching and its 13:59–14:00 match,
+and Pre-Close 17:00–17:05 / Non-Cancel 17:05–17:06.
+https://rulebook.sgx.com/sites/default/files/net_file_store/SGX_ST_Rules_August_1_2011.pdf
+https://links.sgx.com/1.0.0/corporate-announcements/AYXNAX3DG8RCFZT7/20170718_SGX_to_adjust_equities_market_structure_after_supportive_feedback.pdf
+https://links.sgx.com/1.0.0/corporate-announcements/46OQY4VBYIHO4ARN/20190514_SGX_to_launch_securities_market_trade_at_close_session_on_3_June.pdf

@@ -8,22 +8,8 @@ use super::super::StaticHoursProfile;
 use crate::calendar::SessionRule;
 use crate::calendar::rule::MON_FRI;
 
-// BME cash equities: opening auction 08:30-09:00, continuous trading
-// 09:00-17:30, closing auction 17:30-17:35, and Trading-at-Last to 17:45.
-// https://www.bolsasymercados.es/en/bme-exchange/trading-hours.html
-// Sociedad de Bolsas Circular 1/2001 establishes the same opening, continuous,
-// and closing-auction grid before the Jan-2010 history floor.
-// https://www.bolsasymercados.es/dam/descargas/regulacion/renta-variable/sociedad-de-bolsas/circular/2001/c20011uk.pdf
-// BME also states that SIBE auctions end in a random period of at most 30
-// seconds. The deterministic profile uses the latest possible opening edge so
-// it never reports continuous trading while the opening auction can still run.
-// https://www.bolsasymercados.es/es/sala-de-comunicacion/noticias/2023/las-subastas-en-la-bolsa-parte-2.html
-//
-// Every non-regular phase modeled here is tradeable, so `order_entry` stays
-// empty. The opening and closing windows are the SIBE auctions themselves:
-// each ends in an allocation that prints trades at the auction price, and the
-// operator publishes no separate pre-open or post-close order-entry phase for
-// the general trading segment. Trading-at-Last executes at the closing price.
+// BME cash equities: opening auction 08:30-09:00, continuous trading 09:00-17:30, closing auction 17:30-17:35, and Trading-at-Last to 17:45. Narrative:
+// docs/evidence/bme.md.
 static BME_REGULAR: &[SessionRule] = &[SessionRule {
     days: MON_FRI,
     open_ssm: 9 * 3600 + 30,

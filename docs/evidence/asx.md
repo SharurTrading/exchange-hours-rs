@@ -463,3 +463,40 @@ footnote text and corroborates it likewise. The store's
 - Pre-open is `extended`, not `order_entry`: ASX Trade does not match in it, but overnight and overseas trades report until 09:45 and other allowable trades may be reported under the Operating Rules, so a price can print.
 - The only order-entry-only window is Pre-CSPA 16:00–16:10, in which continuous matching ceases and only entry and amendment are accepted.
 - **Pre-SR15 era, same convention.** `ASX_EXTENDED_PRE_2025_06_23` spans 09:59:45–10:09:15 — Group 1's nominal 10:00 open less its ±15-second randomization, through Group 5's nominal 10:09 plus the same — while `ASX_REGULAR` is shared with the current era and still starts at 10:00:00. The envelope therefore covers every group's possible open and the `regular` edge names Group 1's nominal transition, not any group's realised one.
+
+## Module narrative (moved from src/calendar/schedules/equities/apac/asx.rs on 2026-10-02 UTC)
+
+Service Release 15 replaced the symbol-group
+staggered opens with one Opening Single Price Auction and added Post Close
+on 2025-06-23. ASX prints the auction at 09:59:00-09:59:45 and Normal
+Trading from 09:59:45, both nominal; the uncross is randomised per security,
+so `regular` starts at 10:00, the latest instant continuous trading can have
+begun, and the whole opening minute is extended.
+Sources:
+https://www.asx.com.au/markets/market-resources/trading-hours-calendar/cash-market-trading-hours
+https://www.asxonline.com/public/notices/2025/may/0473.25.05.html
+
+---
+
+The ASX phase timetable prints
+Pre-open 07:00:00–09:59:00, Opening Single Price Auction 09:59:00–09:59:45,
+Open (Normal Trading) 09:59:45–16:00:00, Pre-CSPA 16:00:00–16:10:00, Closing
+Single Price Auction 16:10:00–16:11:00 and Post Close 16:11:00–16:21:30. Both
+single-price auctions match, and in Post Close "ASX matches orders at the CSPA
+price", so the auction and Post Close windows are tradeable. The rule below
+therefore spans the whole opening minute 09:59:00-10:00:00 rather than
+stopping at the nominal 09:59:45 Normal Trading start, and `regular` begins
+at 10:00:00: an exchange-level envelope that never implies a per-security
+uncross second.
+
+---
+
+Regular starts at the venue's earliest continuous-trading edge;
+the overlapping extended rule preserves the opening-auction envelope through
+the latest possible Group 5 transition at 10:09:15.
+Source: ASX SR15 marked operating-rule procedure amendments:
+https://www.asxonline.com/content/dam/asxonline/public/notices/2025/april/asx-sr15asx-operating-rule-procedure-amendments.pdf
+The earliest possible print of the old staggered open is the Group 1
+transition at 10:00 less its 15-second randomization, i.e. 09:59:45; the
+latest is the Group 5 transition at 10:09:15. That envelope and the 16:10
+CSPA through its old 16:12 end are tradeable.

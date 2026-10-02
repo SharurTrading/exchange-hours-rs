@@ -146,12 +146,9 @@ pub(crate) static CBOE_EDGX_PROFILE: StaticHoursProfile =
     equity_profile_with_entry(US_EQUITY_EXTENDED, ENTRY_0230_0400);
 
 // 2014-12-02 — T1 — SEC 34-73745 — the 06:00 order-acceptance queue opens.
-// 2016-05-25 — T1 — Bats release note 2016 7am matching — matching and routing
-//   start at 07:00, so the queue narrows to 06:00–07:00.
-// 2018-07-30 — T1 — Bats release note 2018 8pm post-market — the post-market
-//   close extends to 20:00.
-// 2025-05-01 — T1 — Cboe insights May 2025 — the queue moves to 02:30 and the
-//   active session to 04:00.
+// 2016-05-25 — T1 — Bats release note 2016 7am matching — matching and routing start at 07:00, so the queue narrows to 06:00–07:00.
+// 2018-07-30 — T1 — Bats release note 2018 8pm post-market — the post-market close extends to 20:00.
+// 2025-05-01 — T1 — Cboe insights May 2025 — the queue moves to 02:30 and the active session to 04:00.
 // Evidence: docs/evidence/cboe_bzx.md
 static BZX_REVISIONS: &[Revision] = revisions![
     (2014, 12, 2, &BZX_QUEUE_2014, "SEC 34-73745"),
@@ -182,10 +179,8 @@ pub(crate) fn bzx_profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static S
 
 // 2010-10-15 — T1 — SEC 34-63097 — BYX launches on 08:00–17:00 ET.
 // 2014-12-01 — T1 — SEC 34-73744 — the 06:00 order-acceptance queue opens.
-// 2016-05-23 — T1 — Bats release note 2016 7am matching — matching and routing
-//   start at 07:00, so the queue narrows to 06:00–07:00.
-// 2018-08-27 — T1 — Bats release note 2018 8pm post-market — the post-market
-//   close extends to 20:00.
+// 2016-05-23 — T1 — Bats release note 2016 7am matching — matching and routing start at 07:00, so the queue narrows to 06:00–07:00.
+// 2018-08-27 — T1 — Bats release note 2018 8pm post-market — the post-market close extends to 20:00.
 // Evidence: docs/evidence/cboe_byx.md
 static BYX_REVISIONS: &[Revision] = revisions![
     (2010, 10, 15, &BYX_0800_1700, "SEC 34-63097"),
@@ -214,12 +209,9 @@ pub(crate) fn byx_profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static S
     )
 }
 
-// 2010-07-02 — T1 — SEC 34-62431 — first-symbol production launch with the
-//   07:00–08:00 acceptance queue.
-// 2014-11-13 — T1 — SEC 34-73592 — the 06:00 entry start enters Rule
-//   11.1(a)(1).
-// 2016-05-24 — T1 — Bats release note 2016 7am matching — matching and routing
-//   start at 07:00, so the queue narrows to 06:00–07:00.
+// 2010-07-02 — T1 — SEC 34-62431 — first-symbol production launch with the 07:00–08:00 acceptance queue.
+// 2014-11-13 — T1 — SEC 34-73592 — the 06:00 entry start enters Rule 11.1(a)(1).
+// 2016-05-24 — T1 — Bats release note 2016 7am matching — matching and routing start at 07:00, so the queue narrows to 06:00–07:00.
 // Evidence: docs/evidence/cboe_edga.md
 static EDGA_REVISIONS: &[Revision] = revisions![
     (2010, 7, 2, &EDGA_LAUNCH_2010, "SEC 34-62431"),
@@ -241,14 +233,10 @@ pub(crate) fn edga_profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static 
     )
 }
 
-// 2010-07-02 — T1 — SEC 34-62431 — first-symbol production launch with the
-//   07:00–08:00 acceptance queue.
-// 2014-10-29 — T1 — SEC 34-73468 — the 06:00 entry start enters Rule
-//   11.1(a)(1).
-// 2016-05-26 — T1 — Bats release note 2016 7am matching — matching and routing
-//   start at 07:00, so the queue narrows to 06:00–07:00.
-// 2021-03-08 — T1 — Cboe press release 2021-02-08 — the 03:30 queue and 04:00
-//   active session begin.
+// 2010-07-02 — T1 — SEC 34-62431 — first-symbol production launch with the 07:00–08:00 acceptance queue.
+// 2014-10-29 — T1 — SEC 34-73468 — the 06:00 entry start enters Rule 11.1(a)(1).
+// 2016-05-26 — T1 — Bats release note 2016 7am matching — matching and routing start at 07:00, so the queue narrows to 06:00–07:00.
+// 2021-03-08 — T1 — Cboe press release 2021-02-08 — the 03:30 queue and 04:00 active session begin.
 // 2021-09-07 — T1 — SEC 34-92914 — the queue moves to 02:30.
 // Evidence: docs/evidence/cboe_edgx.md
 static EDGX_REVISIONS: &[Revision] = revisions![

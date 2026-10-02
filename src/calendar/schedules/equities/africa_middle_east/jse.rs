@@ -74,14 +74,8 @@ static JSE_EXTENDED_CPX_EOD: &[SessionRule] = &[
     },
 ];
 
-// Current ZA01: opening auction 08:30–09:00, continuous 09:00–16:50,
-// closing auction 16:50–17:00, publication gap, then CPX 17:02–17:10. The
-// EOD/GDX auction remains disabled; ZA03's midday auction is product-specific.
-// Volume 00E v4.09 and the May 2026 session workbook were published with
-// Release 7.8 on 2026-08-17; the release changed no ZA01 session boundary.
-// https://clientportal.jse.co.za/technical-library/trading-and-market-data-documentation
-// https://clientportal.jse.co.za/Content/JSE%20Contract%20Specification%20Items/Volume%2000E%20-%20Trading%20and%20Information%20Overview%20for%20Equity%20Market%20v4.09.pdf
-// https://clientportal.jse.co.za/Content/JSE%20Contract%20Specification%20Items/JSE%20Trading%20Session%20Times%20May%202026.xls
+// Current ZA01: opening auction 08:30–09:00, continuous 09:00–16:50, closing auction 16:50–17:00, publication gap, then CPX 17:02–17:10. Narrative:
+// docs/evidence/jse.md.
 pub(crate) static JSE_PROFILE_CURRENT: StaticHoursProfile = StaticHoursProfile {
     tz: Africa::Johannesburg,
     regular: JSE_REGULAR,
@@ -91,16 +85,8 @@ pub(crate) static JSE_PROFILE_CURRENT: StaticHoursProfile = StaticHoursProfile {
     has_weekend_close: true,
 };
 
-// The following primary notices date every modeled change: opening auction
-// 08:30 from 2012-07-02; CPX from 2013-11-11; EOD auction from 2016-09-26;
-// EOD disabled 2020-08-24; CPX start 17:01 from 2021-02-01 and 17:02 from
-// 2021-02-15.
-// https://clientportal.jse.co.za/Content/JSENoticesandCircularsItems/20120525-049C.pdf
-// https://clientportal.jse.co.za/Content/JSENoticesandCircularsItems/2013_158B.pdf
-// https://clientportal.jse.co.za/Content/JSENoticesandCircularsItems/461A.pdf
-// https://clientportal.jse.co.za/Content/JSEHotlinesItems/JSE%20Service%20Hotline%2018520%20EDM%2C%20EQM%20and%20FXM%20-%20JSE%20Trading%20and%20Information%20System%20Upgrade%20-%20Final%20Go%20Live%20Cutover.pdf
-// https://clientportal.jse.co.za/Content/JSEHotlinesItems/JSE%20Service%20Hotline%2028220%20EQM%20-%20JSE%20Closing%20Price%20Cross%20%28CPX%29%20Session%20Extension.pdf
-// https://clientportal.jse.co.za/Content/JSEHotlinesItems/JSE%20Service%20Hotline%2003721%20EQM%20-%20JSE%20Closing%20Price%20Cross%20%28CPX%29%20Session%20Extension.pdf
+// The following primary notices date every modeled change: opening auction 08:30 from 2012-07-02; CPX from 2013-11-11; EOD auction from 2016-09-26; EOD disabled 2020-08-24; CPX start 17:01 from 2021-02-01 and 17:02 from 2021-02-15. Narrative:
+// docs/evidence/jse.md.
 pub(crate) static JSE_PROFILE_POST_2021_02_01: StaticHoursProfile = StaticHoursProfile {
     tz: Africa::Johannesburg,
     regular: JSE_REGULAR,

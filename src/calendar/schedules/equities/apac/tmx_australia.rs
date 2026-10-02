@@ -70,14 +70,8 @@ pub(crate) static TMX_AU_PROFILE_CURRENT: StaticHoursProfile = StaticHoursProfil
     has_weekend_close: true,
 };
 
-// ASIC dates Chi-X Australia's launch to 2011-10-31. MOC actually launched
-// 2013-12-09 after the 2013-11-25 release was rolled back; @Last moved the
-// close-side open to 16:12 on 2015-08-31; auctions launched 2025-03-17.
-// https://www.asic.gov.au/about-asic/news-centre/find-a-media-release/2012-releases/12-295mr-asic-releases-first-chi-x-assessment-report/
-// https://cdn.cboe.com/resources/compliance_notice/Compliance-Notice-0008-13.pdf
-// https://cdn.cboe.com/resources/compliance_notice/Compliance-Notice-0009-13.pdf
-// https://cdn.cboe.com/resources/compliance_notice/Compliance-Notice-0006-15.pdf
-// https://cdn.cboe.com/resources/technical_notice/Technical-Notice-0003-25.pdf
+// ASIC dates Chi-X Australia's launch to 2011-10-31. Narrative:
+// docs/evidence/tmx_australia.md.
 pub(crate) static TMX_AU_PROFILE_POST_2015_08_31: StaticHoursProfile = StaticHoursProfile {
     tz: Australia::Sydney,
     regular: TMX_AU_REGULAR,

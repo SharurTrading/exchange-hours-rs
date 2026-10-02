@@ -8,14 +8,8 @@ use super::super::StaticHoursProfile;
 use crate::calendar::SessionRule;
 use crate::calendar::rule::ALL_DAYS;
 
-// Binance's archived official launch article states that Binance Futures went
-// live at 2019-09-13 04:00 UTC. The operator's current USDⓈ-M perpetual launch
-// specifications publish 24/7 trading. This normal-availability profile
-// excludes contract-specific launch/delist windows, ad-hoc maintenance, and
-// operational incidents.
-// https://arquivo.pt/noFrame/replay/20200608065459id_/https://www.binance.com/en/support/articles/360033314152
-// https://t.me/binance_announcements/799
-// https://www.binance.com/en-TR/support/announcement/detail/2bfb6f8dccf447ada57165b7e6a4cf1b
+// Binance's archived official launch article states that Binance Futures went live at 2019-09-13 04:00 UTC. Narrative:
+// docs/evidence/binance_futures.md.
 // Evidence: docs/evidence/binance_futures.md
 static ALWAYS_OPEN: &[SessionRule] = &[SessionRule {
     days: ALL_DAYS,

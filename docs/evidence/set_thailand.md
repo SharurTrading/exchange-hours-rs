@@ -35,3 +35,21 @@ as each source is re-verified.
 - The night Pre-close 02:45–T5 (T5 random 02:55–03:00) is left tradeable: the closing uncross falls inside it and the crate has no primary source ruling out trade reports in the night pre-close.
 - Not every listed security is eligible for every phase; the row is a venue-availability envelope, and the consumer's map decides which products may use it.
 - The next-local-day tail belongs to the prior opening day's trade date, which is a deliberate family convention rather than a generic rule.
+
+## Module narrative (moved from src/calendar/schedules/equities/apac/set.rs on 2026-10-02 UTC)
+
+Each is listed as order entry only — an auction order-collection phase with no
+matching and no trade reports — so the head of each window is order entry and
+only the five-minute randomization tail, where the uncross can print, stays
+extended.
+https://www.set.or.th/en/market/information/trading-procedure/trading-hours
+
+---
+
+From 2025-05-06 those DRs trade continuously through the ordinary-share
+lunch and in a 19:00–03:00 night session. The night pre-open begins 18:45,
+continuous trading ends 02:45, and the randomized closing auction ends no
+later than 03:00. The next-local-day tail belongs to the prior opening day's
+trade date. Not every listed security is eligible for every phase.
+https://www.set.or.th/en/market/information/trading-procedure/trading-hours
+https://www.set.or.th/en/market/news-and-alert/newsdetails?id=95921400&symbol=SET

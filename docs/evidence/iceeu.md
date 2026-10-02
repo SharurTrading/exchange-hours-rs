@@ -32,3 +32,16 @@ as each source is re-verified.
 - ICE Futures Europe has no venue-wide schedule; this row is Brent Crude Futures only. Any other ICE Europe contract family requires a separately sourced profile before it can use this clock.
 - The New York reference zone is used deliberately so annual UK/US daylight-time mismatch is expressed by the rule rather than by exception rows; a UK-zone restatement would need its own source.
 - Brent publishes no tradeable phase outside its near-24-hour session, so `extended` is empty by design and needs no further proof.
+
+## Module narrative (moved from src/calendar/schedules/futures/international/ice_europe.rs on 2026-10-02 UTC)
+
+`iceeu` and the commodities
+row are scoped to Brent Crude Futures (B). The live product specification
+publishes the governing 20:00-18:00 New York session and 19:45 pre-open,
+plus the special Sunday 17:00 pre-open / 18:00 open. ICE's platform
+maintenance is locked to US Eastern time; using that published reference
+zone expresses the rule directly instead of encoding annual UK/US DST
+mismatch exceptions. The official 2010 circular confirms the same ET grid.
+https://www.ice.com/products/219/Brent-Crude-Futures
+https://www.ice.com/publicdocs/futures/Trading_Schedule_Temporary_Trading_Hours_for_DST.pdf
+https://www.ice.com/publicdocs/circulars/10070.pdf

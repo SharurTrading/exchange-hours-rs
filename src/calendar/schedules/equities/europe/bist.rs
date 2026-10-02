@@ -79,17 +79,8 @@ static EXT_2016_MARCH: &[SessionRule] =
     &[EXT_2013_JUNE[0], rule!(13 * 3600, 14 * 3600), EXT_2015[2]];
 static REG_2016_NOVEMBER: &[SessionRule] =
     &[rule!(10 * 3600, 13 * 3600), rule!(14 * 3600, 18 * 3600)];
-// Order-entry classification. The 2016-11-14 announcement cited below states
-// that "the trading session shall start at 09:40 with order collection" and
-// that "[f]ollowing the end of the order collection phase at 09:55, continuous
-// auction shall start at 10:00". The Equity Market Procedure's call-auction
-// rules add that "[n]o transactions are executed during the order collection
-// period", and its session table splits the 09:40-10:00 opening auction into an
-// Order Collection Process (09:40-09:55) and Determination of Opening Price
-// (09:55 onward). Only the collection leg moves; 09:55-10:00 carries the
-// opening print and stays in `extended`. The midday single-price call and the
-// 18:00-18:10 closing/single-price envelope each bundle collection with a
-// price-determination leg that prints, so both stay in `extended` whole.
+// Order-entry classification. Narrative:
+// docs/evidence/borsa_istanbul.md.
 static ORDER_ENTRY_2016_NOVEMBER: &[SessionRule] = &[rule!(9 * 3600 + 40 * 60, 9 * 3600 + 55 * 60)];
 static EXT_2016_NOVEMBER: &[SessionRule] = &[
     // Determination of the opening price.
@@ -127,20 +118,8 @@ profile!(
     ORDER_ENTRY_CURRENT
 );
 
-// Each source below states the exact effective date and replacement table.
-// 2012-03-02 closing auction:
-// https://www.borsaistanbul.com/datum/closing_session.pdf
-// 2012-07-16 afternoon extension:
-// https://www.borsaistanbul.com/data/Genelge/gn2012394.pdf
-// 2013-04-05 and 2013-06-10 opening changes:
-// https://www.borsaistanbul.com/data/Genelge/gn2013421.pdf
-// https://www.borsaistanbul.com/data/Genelge/gn2013430.pdf
-// 2015-11-30 and 2016-03-28 midday calls:
-// https://www.borsaistanbul.com/en/announcement/13472/single-session-era-borsa-istanbul
-// https://www.borsaistanbul.com/en/announcement/13446/new-arrangement-borsa-istanbul-equity-market-midday-session
-// 2016-11-14 extended day and 2019-10-04 midday-call removal:
-// https://www.borsaistanbul.com/en/announcement/13376/borsa-istanbul-trading-session-hours-change
-// https://www.borsaistanbul.com/duyuru/11640/pay-piyasasi-seansinda-gun-ortasi-tek-fiyat-bolumu-hk-201956-sayili-duyuru
+// Each source below states the exact effective date and replacement table. Narrative:
+// docs/evidence/borsa_istanbul.md.
 profile!(BIST_PROFILE_PRE_2012_03_02, REG_PRE_2012, EXT_PRE_2012);
 profile!(BIST_PROFILE_POST_2012_03_02, REG_2012_MARCH, EXT_2012_MARCH);
 profile!(BIST_PROFILE_POST_2012_07_16, REG_2012_JULY, EXT_2012_JULY);

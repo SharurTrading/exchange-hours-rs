@@ -9,19 +9,8 @@ use crate::calendar::rule::MON_FRI;
 use crate::calendar::schedules::StaticHoursProfile;
 use crate::calendar::schedules::timeline::{Revision, local_date, revisions, select_revision};
 
-// Small Exchange listed its first contracts (SM75, SPRE and SFX) for trade
-// date Monday 2020-05-18, and trades executed that morning; the public opening
-// on 2020-06-01 came after. Its first grid was 07:00-16:00 CT Monday-Friday
-// with Pre-Open quoting from 06:30: the operator's own instrument file for
-// that trade date states it in its TRADING_HOURS field
-// (`td=12345;...;0=p06300659n06590700r07001600`), and every surviving
-// statement of the venue's hours repeats it through the info hub's 2024-11-03
-// capture.
-// https://www.cftc.gov/filings/ptc/ptc051120smfedcm006.pdf
-// https://public.data.smallexchange.com/ipf/20200518/products-2020-05-18.csv
-// https://smallexchange-com.cdn.prismic.io/smallexchange-com/ebb1c3a8-4072-4f4e-88d5-122554f04687_MN-2020-106+Trade+Cancellation.pdf
-// https://web.archive.org/web/20200612014112/https://smallexchange.com/page-data/market-info-page/page-data.json
-// https://web.archive.org/web/20241103095322/https://smallexchange.com/reference/info-hub/
+// Small Exchange listed its first contracts (SM75, SPRE and SFX) for trade date Monday 2020-05-18, and trades executed that morning. Narrative:
+// docs/evidence/small_exchange.md.
 static LAUNCH_REGULAR: &[SessionRule] = &[SessionRule {
     days: MON_FRI,
     open_ssm: 7 * 3600,
@@ -43,18 +32,8 @@ static LAUNCH: StaticHoursProfile = StaticHoursProfile {
     has_weekend_close: true,
 };
 
-// The S5C certification, dated 2024-11-21 and listing S5C for trade date
-// 2024-11-25, states the Exchange's hours as 08:30-15:00 CT Monday-Friday; the
-// info hub from 2025 adds Pre-Open quoting from 08:00. No source dates the move
-// off the old grid inside 2024-11-04..2024-11-21. The new grid lies inside the
-// old one - its session within the old session, its Pre-Open within old
-// trading hours, where orders were accepted either way - so it is the sourced
-// intersection. As with the SGX equity-index rows, the undated move is
-// approached from the conservative side: the narrower grid is keyed to the
-// Monday after the old grid's last capture, 2024-11-04, and only 07:00-08:30
-// and 15:00-16:00 are withheld in the undated window.
-// https://www.cftc.gov/filings/ptc/ptc1121249243.pdf
-// https://web.archive.org/web/20250119163716/https://smallexchange.com/reference/info-hub/
+// The S5C certification, dated 2024-11-21 and listing S5C for trade date 2024-11-25, states the Exchange's hours as 08:30-15:00 CT Monday-Friday. Narrative:
+// docs/evidence/small_exchange.md.
 static S5C_REGULAR: &[SessionRule] = &[SessionRule {
     days: MON_FRI,
     open_ssm: 8 * 3600 + 30 * 60,

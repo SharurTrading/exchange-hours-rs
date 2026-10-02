@@ -478,3 +478,15 @@ as each source is re-verified.
 - Block and fixed-price phases are `extended` by convention; not every security is eligible for them.
 - The generic fixed-price expansion is deliberately not a revision row: it changed eligibility inside the existing venue envelope, not the exchange-level close. Its effective day is **undated here**. A `2026-07-06` date stood in this file, in `sse.rs` and in the ledger row before the 2026-09-12 reshape; no artifact in this repository, in the owner module's pre-move comment, or in the research store cites it, so under LAW-NO-FABRICATED-DATES it is removed rather than kept unsourced. Closing condition: an SSE notice or rule stating the expansion's effective day; the expansion changes no exchange-level boundary, so nothing in the profile depends on it.
 - The pre-2018 profile's 15:00–15:30 block window is carried from the historical block-trading rule; the ledger records the venue union as January-2010-on for that reason.
+
+## Module narrative (moved from src/calendar/schedules/equities/apac/sse.rs on 2026-10-02 UTC)
+
+The generic fixed-price expansion
+is undated here — no reviewed artifact states its effective day — and in any
+case changed eligibility inside that existing venue envelope, not the
+exchange-level close. Block and fixed-price phases are extended by
+convention; not every security is eligible for them.
+SSE rule and notice:
+https://www.sse.com.cn/lawandrules/sselawsrules2025/stocks/exchange/c/c_20260424_10816482.shtml
+Historical block-trading rule:
+https://www.sse.com.cn/lawandrules/sselawsrules2025/repeal/rules/c/c_20120918_10785158.shtml

@@ -8,26 +8,15 @@ use super::super::StaticHoursProfile;
 use crate::calendar::SessionRule;
 use crate::calendar::rule::MON_FRI;
 
-// NZX Main Board: pre-open/order entry 08:30–10:00, continuous
-// 10:00–16:45, and pre-close/closing-auction orders 16:45–17:00. Both auction
-// uncrosses are randomized ±30 seconds around the nominal boundary; this
-// deterministic venue profile uses 10:00 and 17:00. Enquiry and Adjust do not
-// accept automatically matched orders and are excluded.
-// Sources:
-// https://www.nzx.com/learning/help-reference/trading-hours
-// https://www.nzx.com/learning/issuer-participant-resources/nzx-trading/anatomy-of-a-trading-day
+// NZX Main Board: pre-open/order entry 08:30–10:00, continuous 10:00–16:45, and pre-close/closing-auction orders 16:45–17:00. Narrative:
+// docs/evidence/nzx.md.
 static NZX_REGULAR: &[SessionRule] = &[SessionRule {
     days: MON_FRI,
     open_ssm: 10 * 3600,
     close_ssm: 16 * 3600 + 45 * 60,
 }];
-// Tradeable: the opening and closing uncrosses are randomized +/- 30 seconds
-// around 10:00 and 17:00, so a print is possible from 09:59:30 and from
-// 16:59:30. These windows are shared by both revisions — only the pre-open
-// start moved in 2020, and that start now sits in the order-entry slice.
-// The closing uncross is randomised within 30 seconds EITHER SIDE of 17:00, so
-// the tradeable window runs to 17:00:30; stopping at 17:00 dropped the half of
-// the randomisation in which the official closing print most often occurs.
+// Tradeable: the opening and closing uncrosses are randomized +/- 30 seconds around 10:00 and 17:00, so a print is possible from 09:59:30 and from 16:59:30. Narrative:
+// docs/evidence/nzx.md.
 static NZX_SHARED_EXTENDED: [SessionRule; 2] = [
     SessionRule {
         days: MON_FRI,

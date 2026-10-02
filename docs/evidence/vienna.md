@@ -48,3 +48,47 @@ as each source is re-verified.
 - **Interpretive step, order-entry classification.** Pre-trading and post-trading are `order_entry` on the detailed specification's own "no matching occurs in this phase" language, with instruments in the closed instrument state Book. Auction windows cover a call phase and its price determination, which prints, so they stay `extended`.
 - **Interpretive step, randomized uncrosses.** Auctions include their full maximum 30-second random period, so continuous trading begins at the latest sourced edge in each era.
 - **Dormant identity.** Reviewed on demand; gaps are recorded here rather than as issues.
+
+## Module narrative (moved from src/calendar/schedules/equities/europe/vienna.rs on 2026-10-02 UTC)
+
+On ordinary days its auction
+market-balancing phases delayed continuous trading until 09:01 and 12:04;
+the closing auction ended at 17:34. On derivatives-settlement days the
+corresponding latest boundaries were 09:02:30, 12:07:30, and 17:35:30.
+The same tables remain in the archived 2012, 2014, and 2015 specifications.
+https://web.archive.org/web/20090219151827id_/http://en.wienerborse.at/static/cms/sites/wbag/media/en/pdf/marketplace_products/feinspez_xetra_marktmodell.pdf
+https://web.archive.org/web/20150529063952id_/http://en.wienerborse.at/static/cms/sites/wbag/media/en/pdf/marketplace_products/feinspez_xetra_marktmodell.pdf
+
+---
+
+The pre-trading and post-trading
+windows are order-entry-only: the operator's detailed specification says of
+the product state Pre-Trading that it "is typically a time where traders may
+maintain their orders prior to the start of trading. No matching occurs in
+this phase", and of Post-Trading that traders "can maintain their orders in
+preparation of the next trading day. No matching occurs in this phase". In
+both states instruments sit in the closed instrument state Book. The same
+phase model, and the same 08:00-08:55 pre-trading slot, run through every
+era modeled here; the operator's hours page carries the current boundaries.
+https://www.wienerborse.at/uploads/u/cms/files/trading/xetra-t7-detailed-specifications-market-models.pdf
+https://www.wienerborse.at/en/trading/trading-information/trading-hours/
+
+---
+
+T7 removed the
+legacy market-balancing phases: ordinary-day continuous trading starts at
+the latest random edges 09:00:30 and 12:03:30. Settlement days retain a
+five-minute midday call and therefore resume at 12:05:30. The archived 2018
+hours page records the pre-extension three-minute closing call; its maximum
+30-second random period makes 17:33:30 the deterministic boundary.
+https://www.wienerborse.at/uploads/u/cms/files/trading/xetra-detailed-specifications-market-models.pdf
+https://web.archive.org/web/20180214144727id_/https://www.wienerborse.at/en/trading/trading-information/trading-hours/
+
+---
+
+Current
+detailed specifications preserve these phases and the recurring settlement
+grid. Auctions include their full maximum 30-second random period.
+https://www.wienerborse.at/en/news/vienna-stock-exchange-news/vienna-stock-exchange-extends-trading-hours/
+https://web.archive.org/web/20210127203612id_/https://www.wienerborse.at/en/trading/trading-information/trading-hours/
+https://www.wienerborse.at/uploads/u/cms/files/trading/xetra-t7-detailed-specifications-market-models.pdf

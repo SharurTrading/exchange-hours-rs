@@ -333,3 +333,32 @@ as each source is re-verified.
 - **Interpretive step, order-entry classification.** Pre-trading and post-trading are `order_entry` on § 67/§ 123 and on the parameter sheet's "(Book)" marking. Every auction call is `extended` whole because its price determination prints at the auction price.
 - **Interpretive step, retail phases.** The 08:00–08:55 early retail and 17:40–22:00 late retail windows are participant-restricted, so they are `extended` rather than `regular`; only the unrestricted continuous phases stay `regular`. Each auction is modelled through its 30-second random end, so regular trading begins at the latest possible edge.
 - **Served identity, 2026-09-28 UTC.** The consumer's market clock routes its `XETRA` and `XETRA_CENTRE` sets to this venue, so the row is **served** and reviewed monthly per LAW-WATCH; follow-ups are tracked as issues (#200) (LAW-SERVICE-TIERS, LAW-FOLLOW-UPS-ARE-ISSUES).
+
+## Module narrative (moved from src/calendar/schedules/equities/europe/xetra.rs on 2026-10-02 UTC)
+
+Each auction can end in a 30-second random period, so regular trading
+begins only at the latest possible edge.
+https://cashmarket.deutsche-boerse.com/resource/blob/197910/0890768f3f753299e4c268b80fe7944d/data/207_08e.pdf
+https://www.cashmarket.deutsche-boerse.com/resource/blob/1431340/a23cc3ff15d46a3b649bd23f1618b928/data/091_18e.pdf
+
+---
+
+and § 67(2) states that "[d]uring the
+pre-trading period, the order book shall remain closed" (the Specialist
+carve-out applies to the Continuous Auction, not to Xetra's order book).
+§ 123 confines trading to 08:30-17:30 plus the closing auction and the
+Trade-at-Close period, so nothing can match before or after those phases.
+The operator's trading-parameter sheet likewise marks both phases "(Book)",
+i.e. order-book maintenance only, and quotes no price for them.
+https://www.cashmarket.deutsche-boerse.com/resource/blob/31802/6ab37d564c2934a20766824e4284d608/data/2026_07_07_fwb_boersenordnung_en.pdf
+
+---
+
+The DAX envelope now
+begins at 07:00, Trade-at-Close ends at 17:40, participant-restricted late
+retail trading continues through 22:00, and post-trading ends at 22:05. The
+non-continuous and participant-restricted retail phases are `extended`, the
+order-entry-only pre- and post-trading phases are `order_entry`, and only the
+unrestricted continuous phases stay `regular`.
+https://www.cashmarket.deutsche-boerse.com/cash-en/Stay-Informed/circulars-newsletters/deutsche-boerse-circulars/Introduction-of-the-Extended-Xetra-Retail-Service-early-and-late-trading-Planned-changes-to-the-trading-process-valid-from-1-December-2025-4793480
+https://www.cashmarket.deutsche-boerse.com/resource/blob/250890/24d50260d22cd63e0f600ae2543ca529/data/trading-parameters-xetra.pdf

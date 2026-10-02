@@ -55,16 +55,8 @@ static BASE_PROFILE: StaticHoursProfile = StaticHoursProfile {
     has_weekend_close: true,
 };
 
-// Notice N15/12's official attachment states that the closing-auction uncross
-// starts at 16:35 and that CPX is the up-to-five-minute executable session
-// immediately following it. MIT501 confirms that CPX was introduced in April
-// 2012 with a default five-minute duration; the operator's service description
-// gives its scheduled 16:35:01-16:40:00 grid. MIT201's operator-maintained
-// document history records the production functional release on 2012-04-30.
-// https://docs.londonstockexchange.com/sites/default/files/documents/n1512_attach1.pdf
-// https://docs.londonstockexchange.com/sites/default/files/documents/mit501.pdf
-// https://docs.londonstockexchange.com/sites/default/files/documents/servicetechnicaldescriptionintroductionofnewtradingcurrencies.pdf
-// https://docs.londonstockexchange.com/sites/default/files/documents/mit201-guide-to-the-trading-system-15-6-20240429.pdf
+// Notice N15/12's official attachment states that the closing-auction uncross starts at 16:35 and that CPX is the up-to-five-minute executable session immediately following it. Narrative:
+// docs/evidence/lse.md.
 static CPX_EXTENDED: &[SessionRule] = &[
     BASE_EXTENDED[0],
     // Closing auction.

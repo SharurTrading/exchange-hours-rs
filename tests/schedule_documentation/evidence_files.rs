@@ -47,8 +47,7 @@ const MAX_COMMENT_RUN: usize = 6;
 /// module is skipped by `modules_carry_no_narrative`, an unlisted one is
 /// asserted, and the list only ever shrinks — that is what makes "a new module
 /// never carries one" a fence rather than a hope. Tracked as issue #85.
-const NARRATIVE_DEBT: [&str; 0] = [
-];
+const NARRATIVE_DEBT: [&str; 0] = [];
 
 /// Sections every evidence file carries, in order.
 const REQUIRED_SECTIONS: [&str; 4] = [

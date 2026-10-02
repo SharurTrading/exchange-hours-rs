@@ -995,9 +995,11 @@ fn inventory_completeness_verdicts_match_the_metadata() {
          verdict); tse and \
          sse windows end at the operators' horizons, and nse_india's Muhurat dates are Unsourced; \
          the same date's European/Canadian activation makes lse carry five Unsourced 2025 dates, \
-         euronext_paris two announced-but-unstated 2026 eves, and the 2026-09-29/30 UTC backfills \
-         leave tsx incomplete across the three release-era gaps its 2010-2014 news releases do not \
-         reach and the 2015-2016 span no capture states (#221))"
+         euronext_paris two announced-but-unstated 2026 eves, the 2026-09-29/30 UTC backfills \
+         recovered tsx's 2010-2014 releases, and the 2026-10-02 UTC wire-mirror and page \
+         recoveries closed tsx's 2013-08-19..2014-01-01 and 2014-07-02..2016-12-31 spans, \
+         leaving tsx incomplete across the one release-era gap — 2011-10-11..2012-01-02, the \
+         2011-12-12 year-end release no archive captured — its sources do not reach (#221))"
     );
 }
 

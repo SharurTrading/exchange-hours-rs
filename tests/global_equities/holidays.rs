@@ -3914,9 +3914,11 @@ mod tsx {
     fn the_pre_2025_lists_answer_through_the_identity_backed_surface() {
         let calendar = tsx();
         // One printed entry per pre-2025 statement, each the operator's own
-        // sentence: 2010-2014's per-holiday news releases and schedule tables,
-        // 2017's two in-lieu days, 2018-2020's mid-year print, 2021's double
-        // in-lieu December, and 2022-2023's lists.
+        // sentence: 2010-2013's per-holiday news releases and schedule tables,
+        // 2013-2016's year-end schedules on the wires plus TMX Money's
+        // complete-2014 page and the Calendar & Events page's 2015-2016
+        // lists, 2017's two in-lieu days, 2018-2020's mid-year print, 2021's
+        // double in-lieu December, and 2022-2023's lists.
         let closed = [
             (2010, 1, 1),
             (2010, 2, 15),
@@ -3950,10 +3952,40 @@ mod tsx {
             (2013, 5, 20),
             (2013, 7, 1),
             (2013, 8, 5),
+            (2013, 9, 2),
+            (2013, 10, 14),
+            (2013, 12, 25),
+            (2013, 12, 26),
+            (2014, 1, 1),
             (2014, 2, 17),
             (2014, 4, 18),
             (2014, 5, 19),
             (2014, 7, 1),
+            (2014, 8, 4),
+            (2014, 9, 1),
+            (2014, 10, 13),
+            (2014, 12, 25),
+            (2014, 12, 26),
+            (2015, 1, 1),
+            (2015, 2, 16),
+            (2015, 4, 3),
+            (2015, 5, 18),
+            (2015, 7, 1),
+            (2015, 8, 3),
+            (2015, 9, 7),
+            (2015, 10, 12),
+            (2015, 12, 25),
+            (2015, 12, 28),
+            (2016, 1, 1),
+            (2016, 2, 15),
+            (2016, 3, 25),
+            (2016, 5, 23),
+            (2016, 7, 1),
+            (2016, 8, 1),
+            (2016, 9, 5),
+            (2016, 10, 10),
+            (2016, 12, 26),
+            (2016, 12, 27),
             (2017, 1, 2),
             (2017, 7, 3),
             (2018, 3, 30),
@@ -3993,14 +4025,20 @@ mod tsx {
     fn the_page_stated_pre_2025_eves_close_at_1300_toronto_time() {
         let calendar = tsx();
         // 2010 and 2012 print `Open until 1:00 p.m. (EST)` in the Holiday
-        // (Operating) Schedule releases' TSX/TSXV tables; 2018-2020 print
-        // `Markets will close at 1:00 PM on December 24th, <year>.`; 2021's
-        // January capture printed the same half day `subject to Board
-        // Approval` and the 2022 state witnesses it discharged; 2024's row
-        // was added to the list between the July and December states.
+        // (Operating) Schedule releases' TSX/TSXV tables; 2013, 2014 and
+        // 2015 print the same row in the year-end schedules' wire mirrors
+        // (2013 corroborated by the operator's trading notice 2013-037);
+        // 2018-2020 print `Markets will close at 1:00 PM on December 24th,
+        // <year>.`; 2021's January capture printed the same half day
+        // `subject to Board Approval` and the 2022 state witnesses it
+        // discharged; 2024's row was added to the list between the July and
+        // December states.
         for date in [
             (2010, 12, 24),
             (2012, 12, 24),
+            (2013, 12, 24),
+            (2014, 12, 24),
+            (2015, 12, 24),
             (2018, 12, 24),
             (2019, 12, 24),
             (2020, 12, 24),
@@ -4182,12 +4220,11 @@ mod tsx {
         let coverage = calendar.holiday_coverage().expect("tsx ships a table");
         assert_eq!(coverage.first(), day(2010, 1, 1));
         assert_eq!(coverage.last(), day(2026, 12, 31));
-        // The four release-era capture gaps and the 2015-2016 span ship no
-        // data: no row, and the session queries refuse rather than answer an
-        // unaudited span. 2014-07-02 is the day after the last sourced 2014
-        // release; 2011-12-23 rides the never-captured 2011 year-end release;
-        // 2015-07-01 is inside the release practice's archival silence.
-        for (year, month, date) in [(2011, 12, 23), (2014, 7, 2), (2015, 7, 1)] {
+        // The 2011 release-era capture gap ships no data: no row, and the
+        // session queries refuse rather than answer an unaudited span.
+        // 2011-12-23 rides the never-captured 2011 year-end release, and
+        // 2012-01-02 the New Year in-lieu the same release would have named.
+        for (year, month, date) in [(2011, 12, 23), (2012, 1, 2)] {
             assert_eq!(calendar.holiday_on(day(year, month, date)), None);
             assert!(
                 matches!(
@@ -4195,6 +4232,19 @@ mod tsx {
                     Err(CalendarQueryError::OutsideCoveredRange { .. })
                 ),
                 "tsx {year}-{month:02}-{date:02} sits in a refusing span"
+            );
+        }
+        // The formerly refusing spans answer end to end: 2014-07-02 is the
+        // day after the last sourced 2014 release (the year-end schedule's
+        // own `December 31 Open` runs the window past it), and 2015-07-02 is
+        // an ordinary weekday inside the Calendar & Events page's audited
+        // 2015 list.
+        for (year, month, date) in [(2014, 7, 2), (2015, 7, 2)] {
+            assert!(
+                calendar
+                    .is_open(toronto((year, month, date), (12, 0, 0)))
+                    .expect("the 2013-2016 recovery covers the span"),
+                "tsx {year}-{month:02}-{date:02} answers as an ordinary trading day"
             );
         }
         assert_eq!(calendar.holiday_on(day(2027, 1, 1)), None);
@@ -4223,16 +4273,18 @@ mod tsx {
         let rows = rows_per_year(tsx());
         assert_eq!(
             rows.len(),
-            145,
-            "136 closures and nine Christmas Eve closes — the four release-era gaps and \
-             2015-2016 ship no rows"
+            178,
+            "165 closures and thirteen Christmas Eve closes — the 2011-2012 \
+             release-era gap is the only span that ships no rows"
         );
-        let expected: [(i32, (usize, usize, usize, usize)); 15] = [
+        let expected: [(i32, (usize, usize, usize, usize)); 17] = [
             (2010, (9, 1, 0, 0)),
             (2011, (8, 0, 0, 0)),
             (2012, (9, 1, 0, 0)),
-            (2013, (6, 0, 0, 0)),
-            (2014, (4, 0, 0, 0)),
+            (2013, (10, 1, 0, 0)),
+            (2014, (10, 1, 0, 0)),
+            (2015, (10, 1, 0, 0)),
+            (2016, (10, 0, 0, 0)),
             (2017, (10, 0, 0, 0)),
             (2018, (10, 1, 0, 0)),
             (2019, (10, 1, 0, 0)),
@@ -4247,23 +4299,26 @@ mod tsx {
         for (year, tally) in expected {
             assert_eq!(census(&rows, year), tally, "{year} census");
         }
-        for year in [2015, 2016] {
-            assert_eq!(
-                census(&rows, year),
-                (0, 0, 0, 0),
-                "{year} is inside no audited window and ships no row"
-            );
-        }
         // The early closes are exactly the printed Christmas Eve half days of
-        // 2010, 2012, 2018-2021, 2024, 2025 and 2026 — no other kind states an
-        // instant.
+        // 2010, 2012, 2013, 2014, 2015, 2018-2021, 2024, 2025 and 2026 — no
+        // other kind states an instant.
         for (date, kind, instant) in &rows {
             if kind == "early close" {
                 assert!(
                     matches!(
                         date,
                         (
-                            2010 | 2012 | 2018 | 2019 | 2020 | 2021 | 2024 | 2025 | 2026,
+                            2010 | 2012
+                                | 2013
+                                | 2014
+                                | 2015
+                                | 2018
+                                | 2019
+                                | 2020
+                                | 2021
+                                | 2024
+                                | 2025
+                                | 2026,
                             12,
                             24
                         )

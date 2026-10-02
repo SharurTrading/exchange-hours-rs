@@ -104,12 +104,12 @@ pub(crate) use pgm_tas::{
     palladium_profile_at as palladium_tas_profile_at,
     platinum_profile_at as platinum_tas_profile_at,
 };
-pub(crate) use silver_100oz::{
-    SILVER_100OZ_EXTENDED_CURRENT, profile_at as silver_100oz_profile_at,
-};
 pub(crate) use rough_rice::{
     ROUGH_RICE_EXTENDED_CURRENT, ROUGH_RICE_ORDER_ENTRY_CURRENT, ROUGH_RICE_REGULAR_CURRENT,
     profile_at as rough_rice_profile_at,
+};
+pub(crate) use silver_100oz::{
+    SILVER_100OZ_EXTENDED_CURRENT, profile_at as silver_100oz_profile_at,
 };
 pub(crate) use small_exchange::profile_at as small_exchange_profile_at;
 pub(crate) use spot_quoted::{

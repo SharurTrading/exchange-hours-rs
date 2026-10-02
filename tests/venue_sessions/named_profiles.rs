@@ -8,10 +8,7 @@ use serde_test::{Configure, Token, assert_de_tokens_error, assert_tokens};
 const EXPECTED_MARKET_HOURS_KEYS: &[(MarketHoursKey, &str)] = &[
     (MarketHoursKey::GlobexEquityIndex, "globex_equity_index"),
     (MarketHoursKey::GlobexEnergy, "globex_energy"),
-    (
-        MarketHoursKey::GlobexSilver100Oz,
-        "globex_silver_100oz",
-    ),
+    (MarketHoursKey::GlobexSilver100Oz, "globex_silver_100oz"),
     (MarketHoursKey::GlobexGrains, "globex_grains"),
     (MarketHoursKey::GlobexMiniGrains, "globex_mini_grains"),
     (MarketHoursKey::GlobexFx, "globex_fx"),

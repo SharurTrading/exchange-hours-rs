@@ -125,7 +125,10 @@ fn the_bridge_day_closes_under_the_old_grid_and_reopens_at_1630() {
         "the Saturday 02:00-04:00 window is the weekly maintenance"
     );
     assert!(open_at(SILVER, ct((2026, 9, 12), (4, 0, 0))));
-    assert!(open_at(SILVER, ct((2026, 9, 13), (12, 0, 0))), "Sunday trades");
+    assert!(
+        open_at(SILVER, ct((2026, 9, 13), (12, 0, 0))),
+        "Sunday trades"
+    );
 }
 
 /// The 24/7 week: the two-minute daily maintenance, no weekly close, and the
@@ -133,12 +136,18 @@ fn the_bridge_day_closes_under_the_old_grid_and_reopens_at_1630() {
 #[test]
 fn the_247_week_matches_the_class_template() {
     for monday in [(2026, 9, 14), (2027, 1, 11)] {
-        assert!(open_at(SILVER, ct(monday, (0, 0, 0))), "{monday:?}: midnight");
+        assert!(
+            open_at(SILVER, ct(monday, (0, 0, 0))),
+            "{monday:?}: midnight"
+        );
         assert!(
             open_at(SILVER, ct(monday, (15, 59, 59))),
             "{monday:?}: 15:59:59"
         );
-        assert!(!open_at(SILVER, ct(monday, (16, 0, 0))), "{monday:?}: 16:00");
+        assert!(
+            !open_at(SILVER, ct(monday, (16, 0, 0))),
+            "{monday:?}: 16:00"
+        );
         assert!(!open_at(SILVER, ct(monday, (16, 1, 59))));
         assert!(open_at(SILVER, ct(monday, (16, 2, 0))), "{monday:?}: 16:02");
     }
@@ -148,7 +157,10 @@ fn the_247_week_matches_the_class_template() {
     assert!(open_at(SILVER, ct((2026, 9, 19), (1, 59, 59))));
 
     let profile = session_profile(SILVER);
-    assert!(profile.regular.is_empty(), "no regular session is published");
+    assert!(
+        profile.regular.is_empty(),
+        "no regular session is published"
+    );
     assert!(!profile.has_weekend_close);
     assert!(profile.order_entry.is_empty());
     assert!(profile.is_open(ct((2026, 9, 14), (10, 0, 0))));
@@ -182,7 +194,10 @@ fn the_weekend_block_is_joined_and_carries_mondays_trade_date() {
             calendar.trade_date(instant),
             &format!("{instant} trade date"),
         );
-        assert!(snapshot.is_open(instant), "{instant}: inside the weekend block");
+        assert!(
+            snapshot.is_open(instant),
+            "{instant}: inside the weekend block"
+        );
     }
     assert_refused(
         calendar.trade_date(ct((2026, 9, 12), (3, 0, 0))),
@@ -236,7 +251,10 @@ fn the_joined_weekend_block_survives_both_dst_transitions() {
             close_trade_date(&snapshot, close - chrono::Duration::seconds(1)),
             day(monday)
         );
-        assert!(!snapshot.is_open(close), "{monday:?}: 16:00 closes end-exclusive");
+        assert!(
+            !snapshot.is_open(close),
+            "{monday:?}: 16:00 closes end-exclusive"
+        );
         assert_eq!(
             snapshot.session_state(ct(monday, (16, 1, 0))),
             SessionState::Maintenance,
@@ -267,7 +285,10 @@ fn the_notice_dated_saturday_extensions_move_only_that_saturdays_reopen() {
             reopen.0,
             reopen.1
         );
-        assert!(open_at(SILVER, ct(saturday, (1, 59, 59))), "{saturday:?}: before 02:00");
+        assert!(
+            open_at(SILVER, ct(saturday, (1, 59, 59))),
+            "{saturday:?}: before 02:00"
+        );
     }
     // The Saturdays either side keep the standard 04:00 reopen, including the
     // first weekend after the go-live and the bridge weekend itself.
@@ -289,7 +310,10 @@ fn the_notice_dated_saturday_extensions_move_only_that_saturdays_reopen() {
 #[test]
 fn neither_the_energy_nor_the_cryptocurrency_key_can_stand_in() {
     let saturday = ct((2026, 9, 19), (12, 0, 0));
-    assert!(open_at(SILVER, saturday), "the 24/7 product trades the Saturday");
+    assert!(
+        open_at(SILVER, saturday),
+        "the 24/7 product trades the Saturday"
+    );
     assert!(
         !open_at(ENERGY, saturday),
         "the family it rode did not migrate"
@@ -320,10 +344,7 @@ fn neither_the_energy_nor_the_cryptocurrency_key_can_stand_in() {
 #[test]
 fn silver_100oz_key_round_trips_through_its_canonical_name() {
     assert_eq!(SILVER.as_str(), "globex_silver_100oz");
-    assert_eq!(
-        "globex_silver_100oz".parse::<MarketHoursKey>(),
-        Ok(SILVER)
-    );
+    assert_eq!("globex_silver_100oz".parse::<MarketHoursKey>(), Ok(SILVER));
     let json = serde_json::to_string(&SILVER).expect("serializes");
     assert_eq!(json, "\"globex_silver_100oz\"");
     assert_eq!(

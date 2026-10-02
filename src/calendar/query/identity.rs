@@ -123,8 +123,8 @@ pub(super) fn trade_date_window(
         }
         Some(CalendarSource::MarketHoursKey(
             MarketHoursKey::GlobexCryptocurrency
-                | MarketHoursKey::GlobexEventContractsBtc
-                | MarketHoursKey::GlobexSilver100Oz,
+            | MarketHoursKey::GlobexEventContractsBtc
+            | MarketHoursKey::GlobexSilver100Oz,
         )) => (DERIVED_BEFORE, DERIVED_AFTER + ROLLING_WINDOW_DAYS),
         _ => (DERIVED_BEFORE, DERIVED_AFTER),
     };

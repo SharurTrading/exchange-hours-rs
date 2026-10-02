@@ -3257,11 +3257,12 @@ fn every_declared_dated_boundary_day_appears_in_its_evidence_file() {
         // The day sits in whichever section the owning file records selectors
         // in, exactly as [`every_dated_constant_day_appears_in_its_evidence_file`]
         // reads the date constants.
-        let recorded = ["## Dated selectors", "## Revision rows"].iter().any(|heading| {
-            section(text, heading).is_some_and(|rows| {
-                rows.contains(&format!("- {} \u{2014}", boundary.day))
-            })
-        });
+        let recorded = ["## Dated selectors", "## Revision rows"]
+            .iter()
+            .any(|heading| {
+                section(text, heading)
+                    .is_some_and(|rows| rows.contains(&format!("- {} \u{2014}", boundary.day)))
+            });
         if !recorded {
             unfenced.push(format!(
                 "{}: boundary {} is not recorded in {}",
@@ -3286,7 +3287,10 @@ fn the_dated_boundary_fence_reads_every_shipped_instant_constant() {
     // number the crate ships today, so a deleted declaration fails here
     // instead of silently unattributing a boundary.
     let boundaries = declared_dated_boundaries();
-    let days = boundaries.iter().map(|b| b.day.as_str()).collect::<Vec<_>>();
+    let days = boundaries
+        .iter()
+        .map(|b| b.day.as_str())
+        .collect::<Vec<_>>();
     for day in ["2021-06-28", "2011-02-28", "2019-09-13", "2019-09-14"] {
         assert!(
             days.contains(&day),

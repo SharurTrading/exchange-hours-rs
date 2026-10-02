@@ -175,13 +175,7 @@ static REVISIONS: &[Revision] = revisions![
         &TRANSITION_2026_09_11,
         "CME Globex notice 20260907"
     ),
-    (
-        2026,
-        9,
-        12,
-        &SILVER_24_7,
-        "CME Globex notice 20260907"
-    ),
+    (2026, 9, 12, &SILVER_24_7, "CME Globex notice 20260907"),
     (
         2026,
         9,
@@ -189,13 +183,7 @@ static REVISIONS: &[Revision] = revisions![
         &TEMPORARY_2026_09_19,
         "CME Globex notice 20260824"
     ),
-    (
-        2026,
-        9,
-        20,
-        &SILVER_24_7,
-        "CME Globex notice 20260824"
-    ),
+    (2026, 9, 20, &SILVER_24_7, "CME Globex notice 20260824"),
     (
         2026,
         10,
@@ -203,13 +191,7 @@ static REVISIONS: &[Revision] = revisions![
         &TEMPORARY_2026_10_03,
         "CME Globex notice 20260921"
     ),
-    (
-        2026,
-        10,
-        4,
-        &SILVER_24_7,
-        "CME Globex notice 20260921"
-    ),
+    (2026, 10, 4, &SILVER_24_7, "CME Globex notice 20260921"),
     (
         2026,
         10,
@@ -217,13 +199,7 @@ static REVISIONS: &[Revision] = revisions![
         &TEMPORARY_2026_10_24,
         "CME Globex notice 20260921"
     ),
-    (
-        2026,
-        10,
-        25,
-        &SILVER_24_7,
-        "CME Globex notice 20260921"
-    ),
+    (2026, 10, 25, &SILVER_24_7, "CME Globex notice 20260921"),
 ];
 
 pub(crate) fn profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {

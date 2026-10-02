@@ -147,7 +147,10 @@ fn abstains(calendar: ExchangeCalendar, date: NaiveDate) -> bool {
     }
 }
 
-fn family_intersection(clock: MarketHoursKey, families: &[MarketHoursKey]) -> Vec<(NaiveDate, Joint)> {
+fn family_intersection(
+    clock: MarketHoursKey,
+    families: &[MarketHoursKey],
+) -> Vec<(NaiveDate, Joint)> {
     let calendars = families
         .iter()
         .map(|key| calendar_for_market_hours_key(*key))
@@ -199,7 +202,10 @@ fn family_intersection(clock: MarketHoursKey, families: &[MarketHoursKey]) -> Ve
             // the pre-clock rule lets the covering families decide.
             if stated.iter().all(Option::is_none) {
                 Joint::AuditedNormal
-            } else if stated.iter().all(|other| *other == stated.first().copied().flatten()) {
+            } else if stated
+                .iter()
+                .all(|other| *other == stated.first().copied().flatten())
+            {
                 Joint::Agreed(stated.first().copied().flatten().expect("a row is stated"))
             } else {
                 Joint::Disputed
@@ -208,10 +214,7 @@ fn family_intersection(clock: MarketHoursKey, families: &[MarketHoursKey]) -> Ve
             // The clock audited the date normal: the venue answers from its
             // clock and the non-clock rows cannot withhold the date.
             Joint::AuditedNormal
-        } else if stated
-            .iter()
-            .all(|other| *other == clock_kind)
-        {
+        } else if stated.iter().all(|other| *other == clock_kind) {
             Joint::Agreed(clock_kind.expect("the clock states a row"))
         } else {
             // The clock states a row another family does not match.
@@ -1364,7 +1367,11 @@ fn wave3_unsourced_rows_clip_nothing() {
             ct((2022, 11, 25), (12, 30, 0)),
             &[Exchange::Cme, Exchange::Cbot],
         ),
-        (day(2022, 7, 5), ct((2022, 7, 5), (9, 0, 0)), &[Exchange::Cbot]),
+        (
+            day(2022, 7, 5),
+            ct((2022, 7, 5), (9, 0, 0)),
+            &[Exchange::Cbot],
+        ),
         (
             day(2023, 1, 16),
             ct((2023, 1, 16), (10, 0, 0)),

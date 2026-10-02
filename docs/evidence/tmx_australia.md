@@ -39,3 +39,14 @@ as each source is re-verified.
 - The 2011-10-31 launch day rests on an ASIC assessment report, a regulator restating the venue's launch rather than a venue document, so that revision row is recorded at T3. The current schedule is T1 from the venue's own hours page and Operating Rules, which is what the ledger's Evidence tier records (LAW-PRIMARY-SOURCES). Closing condition: a dated Chi-X Australia notice stating the first trading day.
 - Pre-auction eras carry no order-entry-only window: the only non-regular phases are @Last and MOC, both of which execute at the closing price.
 - The close-side 16:00–16:20 window stays tradeable throughout, because non-auction-eligible products keep trading continuously to 16:13, MOC matches at the ASX closing auction price around 16:10, and the Closing Auction uncrosses 16:12:45–16:13.
+
+## Module narrative (moved from src/calendar/schedules/equities/apac/tmx_australia.rs on 2026-10-02 UTC)
+
+MOC actually launched
+2013-12-09 after the 2013-11-25 release was rolled back; @Last moved the
+close-side open to 16:12 on 2015-08-31; auctions launched 2025-03-17.
+https://www.asic.gov.au/about-asic/news-centre/find-a-media-release/2012-releases/12-295mr-asic-releases-first-chi-x-assessment-report/
+https://cdn.cboe.com/resources/compliance_notice/Compliance-Notice-0008-13.pdf
+https://cdn.cboe.com/resources/compliance_notice/Compliance-Notice-0009-13.pdf
+https://cdn.cboe.com/resources/compliance_notice/Compliance-Notice-0006-15.pdf
+https://cdn.cboe.com/resources/technical_notice/Technical-Notice-0003-25.pdf

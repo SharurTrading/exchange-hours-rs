@@ -33,3 +33,22 @@ as each source is re-verified.
 - The 08:30–09:00 window is `order_entry`: it is the regular session's order-placing window, no block-trading window is open in it, and the first match is the 09:00 opening call.
 - Before 2020-03-23 the central book's intraday matches were call auctions every five seconds, so that primary session is `extended` rather than mislabelled `regular`; the outer envelope is unchanged.
 - Specialized block, odd-lot, auction and after-hours methods are classified `extended`; not every security is eligible for every phase.
+
+## Module narrative (moved from src/calendar/schedules/equities/apac/twse.rs on 2026-10-02 UTC)
+
+Its paired block window begins at 08:00 and block
+trading continues through 17:00, so the exchange-level availability
+envelope spans 08:00–17:00, broken only by the 08:30–09:00 order-collection
+window that now sits in order_entry. Specialized block, odd-lot, auction, and
+after-hours methods are classified extended; not every security is eligible
+for every phase.
+https://www.twse.com.tw/en/products/system/trading.html
+
+---
+
+TWSE's own investor guide states that it had
+already expanded block trading to the present 08:00/17:00 envelope at the
+beginning of 2009, before the January-2010 audit floor. No unsourced
+pre-floor effective day is encoded.
+https://www.twse.com.tw/en/about/company/history.html
+https://www.twse.com.tw/en/about/company/guide.html

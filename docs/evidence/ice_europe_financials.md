@@ -39,3 +39,25 @@ as each source is re-verified.
 ## Shared module
 
 > Shared module. [`ice_europe.rs`](../../src/calendar/schedules/futures/international/ice_europe.rs) also carries [`iceeu`](iceeu.md) and [`ice_europe_commodities`](ice_europe_commodities.md). The single copy of this module's narrative belongs in [`iceeu`](iceeu.md); the module still holds that narrative in source, and it moves in the migration that empties the fence's narrative-debt list.
+
+## Module narrative (moved from src/calendar/schedules/futures/international/ice_europe.rs on 2026-10-02 UTC)
+
+The live ICE
+specification publishes 00:45 pre-open, 01:00-21:00 trading. Circulars
+14/146, 15/016, and 15/169 give the day-level migration and subsequent
+changes. The named ICE Futures Europe product is closed before its
+2014-11-17 first trade date, yielding a complete January-2010-on timeline.
+https://www.ice.com/products/38716764/FTSE-100-INDEX-
+https://www.ice.com/publicdocs/circulars/14146.pdf
+https://www.ice.com/publicdocs/circulars/15016.pdf
+https://www.ice.com/publicdocs/circulars/15169.pdf
+
+---
+
+its two FTSE tables read "Pre-open 06:03 | Open 08:00 |
+Close 21:00" before 16 February 2015 and "Pre-open 06:03 | Open 07:00 | Close
+21:00" after it, so the 06:03 window is order entry ahead of the open rather
+than a session in which anything prints. The live specification's 00:45
+pre-open is the same phase on the current 01:00 open. All three therefore sit
+in order_entry; FTSE publishes no tradeable phase outside its executable
+session, so extended stays empty.

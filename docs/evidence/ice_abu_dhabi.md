@@ -42,3 +42,14 @@ as each source is re-verified.
 - The module encodes the launch as the named constant `IFAD_LAUNCH` (2021-03-29) plus a daylight-time reference selector rather than as a `revisions!` tuple, so this file records no revision-row bullets even though the identity has a dated launch.
 - The row is scoped to Murban Crude Oil Futures (ADM) only; other IFAD contracts require their own profile.
 - Murban publishes no tradeable phase outside its near-24-hour session, so `extended` is empty by design.
+
+## Module narrative (moved from src/calendar/schedules/futures/international/ice_abu_dhabi.rs on 2026-10-02 UTC)
+
+Circular 21/003 launched it on 2021-03-29 and publishes the normal
+Monday-Friday grid plus the two-hour-earlier Monday trading-day open. The
+live contract page gives the same 20:00-18:00 New York schedule and 19:45
+pre-open. IFAD's annual DST circulars confirm that the grid follows US
+Eastern time when London and New York clocks are temporarily misaligned.
+https://www.ice.com/publicdocs/abu_dhabi/circulars/IFAD%20Circular%20-%2021003%20-%20Trading%20information%20publication.pdf
+https://www.ice.com/products/75443578/Murban-Crude-Oil-Futures/
+https://www.ice.com/publicdocs/abu_dhabi/circulars/2026.03_-_IFAD_Trading_Hours_Change_Final.pdf

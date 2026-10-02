@@ -33,3 +33,23 @@ as each source is re-verified.
 - The row is scoped to Three-Month SORA Futures only. Other SGX derivatives remain contract-specific and must not borrow this clock; the consumer's family map decides (AGENTS.md, *Product-neutral family selection*).
 - The two opening routines are Pre-Opening/Non-Cancel windows under SGX Rule 4.1.5: they collect orders and compute an indicative opening price without matching, so they are `order_entry`. The opening match itself falls on the session-open instant that already begins the `regular` window, so nothing tradeable is lost.
 - The closing routine that follows the T session ends in a match at a single closing price, so it is `extended` rather than `order_entry`.
+
+## Module narrative (moved from src/calendar/schedules/futures/international/sgx.rs on 2026-10-02 UTC)
+
+SGX's launch announcement gives the day-level 2024-07-29
+launch. The live product specification publishes the complete T and T+1
+opening, non-cancel, continuous, pre-close, and overnight routine. SGX's
+2025 and 2026 derivatives calendars independently retain the same continuous
+windows.
+https://links.sgx.com/1.0.0/corporate-announcements/LG3YO2RZCGZ92J0B/359e83de092b9d70d54305133c92a82e16f676fc43ef4aa06a6976d8bc771fdf
+https://www.sgx.com/derivatives/products/stir-products?cc=SORA
+https://api2.sgx.com/sites/default/files/2026-01/SGX%20Calendar%202026_2.pdf
+https://rulebook.sgx.com/rulebook/415-trading-hours-opening-and-closing-routines-and-closing-range
+
+---
+
+Both are Pre-Opening/Non-Cancel routines under SGX Rule 4.1.5: they collect
+orders and compute an indicative opening price without matching. The opening
+match itself falls on the session-open instant that already begins the
+`regular` window, so nothing tradeable is lost by classifying these two
+windows as `order_entry`.

@@ -9,16 +9,8 @@ use crate::calendar::SessionRule;
 use crate::calendar::rule::MON_FRI;
 use crate::calendar::schedules::timeline::{Revision, local_date, revisions, select_revision};
 
-// The SGX derivatives default is Three-Month SORA Futures, not a venue-wide
-// derivatives clock. SGX's launch announcement gives the day-level 2024-07-29
-// launch. The live product specification publishes the complete T and T+1
-// opening, non-cancel, continuous, pre-close, and overnight routine. SGX's
-// 2025 and 2026 derivatives calendars independently retain the same continuous
-// windows.
-// https://links.sgx.com/1.0.0/corporate-announcements/LG3YO2RZCGZ92J0B/359e83de092b9d70d54305133c92a82e16f676fc43ef4aa06a6976d8bc771fdf
-// https://www.sgx.com/derivatives/products/stir-products?cc=SORA
-// https://api2.sgx.com/sites/default/files/2026-01/SGX%20Calendar%202026_2.pdf
-// https://rulebook.sgx.com/rulebook/415-trading-hours-opening-and-closing-routines-and-closing-range
+// The SGX derivatives default is Three-Month SORA Futures, not a venue-wide derivatives clock. Narrative:
+// docs/evidence/sgx.md.
 pub(crate) static SGX_CURRENT_REGULAR: &[SessionRule] = &[
     SessionRule {
         days: MON_FRI,
@@ -39,13 +31,8 @@ pub(crate) static SGX_CURRENT_EXTENDED: &[SessionRule] = &[SessionRule {
     close_ssm: 18 * 3600,
 }];
 
-// The two opening routines: the T Pre-Opening/Non-Cancel window that precedes
-// the 07:25 open, and the shorter T+1 routine that precedes the 18:15 reopen.
-// Both are Pre-Opening/Non-Cancel routines under SGX Rule 4.1.5: they collect
-// orders and compute an indicative opening price without matching. The opening
-// match itself falls on the session-open instant that already begins the
-// `regular` window, so nothing tradeable is lost by classifying these two
-// windows as `order_entry`.
+// The two opening routines: the T Pre-Opening/Non-Cancel window that precedes the 07:25 open, and the shorter T+1 routine that precedes the 18:15 reopen. Narrative:
+// docs/evidence/sgx.md.
 pub(crate) static SGX_CURRENT_ORDER_ENTRY: &[SessionRule] = &[
     SessionRule {
         days: MON_FRI,

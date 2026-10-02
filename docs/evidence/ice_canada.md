@@ -49,3 +49,35 @@ as each source is re-verified.
 
 - The 2011 change is deliberately absent from the day-level timeline. Local midnight of 2011-02-28 falls inside the still-running Sunday session (20:00 CT open, 13:15 CT next-day close), so a day-level row would split a running session (LAW-NO-FABRICATED-DATES). It is encoded as the exact UTC instant of the first new-schedule phase — the 18:30 CT pre-open, 2011-03-01 00:30:00 UTC — as the constant `REVISED_HOURS_2011_UNIX_SECONDS`.
 - Contract specifications were otherwise unchanged across the transfer; the closed state after 2018-07-29 asserts only that this venue identity stopped trading it.
+
+## Module narrative (moved from src/calendar/schedules/futures/international/ice_canada.rs on 2026-10-02 UTC)
+
+The official 2009 calendar pins the January-2010 baseline: pre-open 19:00,
+continuous trading 20:00-13:15 CT. The 2011 notice explicitly moves the
+pre-open/open to 18:30/19:00 on Monday 2011-02-28 for trade date 2011-03-01.
+https://www.ice.com/publicdocs/futures_canada/member_notices/Trading_Calendar_2009.pdf
+https://www.ice.com/publicdocs/futures_canada/member_notices/Feb1_2011_revised_trading_hours.pdf
+
+The 2011 boundary is intraday, not midnight: local midnight of 2011-02-28
+falls inside the still-running Sunday session (20:00 CT open, 13:15 CT
+next-day close), so a day-level row would split that running session. The
+change is therefore encoded at the exact UTC instant of the first
+new-schedule phase — the 18:30 CT pre-open, 2011-03-01 00:30:00 UTC — and
+the day-level timeline below begins with the 2012 revision.
+
+---
+
+A 2013 reminder restores it to 13:15 for
+trade date 2013-04-08, whose session opened Sunday 2013-04-07. The 2016
+notice then pins the final legacy close extension from 13:15 to 13:20
+beginning trade date 2016-01-25.
+https://www.ice.com/publicdocs/futures_canada/member_notices/June_13_2012_ICE_Futures_Canada_notice-Trading_Hours_and_Settlement_Time_Change.pdf
+https://www.ice.com/publicdocs/futures_canada/member_notices/April_8_2013_Reminder_Closing_time_and_Settlement_time_changes_today.pdf
+https://www.ice.com/publicdocs/futures_canada/member_notices/2016_01_18_Reminder_Canola_Trade_At_Settlement.pdf
+
+The 2017 holiday notice corroborates the final 19:00-13:20 CT grid. The
+2018 transfer notice removes the product from IFCA at the start of trading
+for trade date 2018-07-30, i.e. the Sunday 2018-07-29 opening. Contract
+specifications were otherwise unchanged.
+https://www.ice.com/publicdocs/futures_canada/member_notices/2017_11_27_Christmas_2017_and_New_Years_2018_Schedules.pdf
+https://www.ice.com/publicdocs/futures_us/exchange_notices/ICE_Futures_US-Notice-Canola-20180501.pdf

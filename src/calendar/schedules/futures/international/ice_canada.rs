@@ -9,38 +9,12 @@ use crate::calendar::SessionRule;
 use crate::calendar::rule::SUN_PLUS_MON_THU;
 use crate::calendar::schedules::timeline::{Revision, local_date, revisions, select_revision};
 
-// ICE Futures Canada's Winnipeg Canola profile has a fully sourced baseline
-// and four observable revisions before the venue identity closes.
-// The official 2009 calendar pins the January-2010 baseline: pre-open 19:00,
-// continuous trading 20:00-13:15 CT. The 2011 notice explicitly moves the
-// pre-open/open to 18:30/19:00 on Monday 2011-02-28 for trade date 2011-03-01.
-// https://www.ice.com/publicdocs/futures_canada/member_notices/Trading_Calendar_2009.pdf
-// https://www.ice.com/publicdocs/futures_canada/member_notices/Feb1_2011_revised_trading_hours.pdf
-//
-// The 2011 boundary is intraday, not midnight: local midnight of 2011-02-28
-// falls inside the still-running Sunday session (20:00 CT open, 13:15 CT
-// next-day close), so a day-level row would split that running session. The
-// change is therefore encoded at the exact UTC instant of the first
-// new-schedule phase — the 18:30 CT pre-open, 2011-03-01 00:30:00 UTC — and
-// the day-level timeline below begins with the 2012 revision.
+// ICE Futures Canada's Winnipeg Canola profile has a fully sourced baseline and four observable revisions before the venue identity closes. Narrative:
+// docs/evidence/ice_canada.md.
 // Dated boundary 2011-02-28: docs/evidence/ice_canada.md
 const REVISED_HOURS_2011_UNIX_SECONDS: i64 = 1_298_939_400;
-//
-// The 2012 notice moves the close to 14:00 for trade date 2012-06-25, whose
-// session opened Sunday 2012-06-24. A 2013 reminder restores it to 13:15 for
-// trade date 2013-04-08, whose session opened Sunday 2013-04-07. The 2016
-// notice then pins the final legacy close extension from 13:15 to 13:20
-// beginning trade date 2016-01-25.
-// https://www.ice.com/publicdocs/futures_canada/member_notices/June_13_2012_ICE_Futures_Canada_notice-Trading_Hours_and_Settlement_Time_Change.pdf
-// https://www.ice.com/publicdocs/futures_canada/member_notices/April_8_2013_Reminder_Closing_time_and_Settlement_time_changes_today.pdf
-// https://www.ice.com/publicdocs/futures_canada/member_notices/2016_01_18_Reminder_Canola_Trade_At_Settlement.pdf
-//
-// The 2017 holiday notice corroborates the final 19:00-13:20 CT grid. The
-// 2018 transfer notice removes the product from IFCA at the start of trading
-// for trade date 2018-07-30, i.e. the Sunday 2018-07-29 opening. Contract
-// specifications were otherwise unchanged.
-// https://www.ice.com/publicdocs/futures_canada/member_notices/2017_11_27_Christmas_2017_and_New_Years_2018_Schedules.pdf
-// https://www.ice.com/publicdocs/futures_us/exchange_notices/ICE_Futures_US-Notice-Canola-20180501.pdf
+// The 2012 notice moves the close to 14:00 for trade date 2012-06-25, whose session opened Sunday 2012-06-24. Narrative:
+// docs/evidence/ice_canada.md.
 static ICE_CANADA_2010_REGULAR: &[SessionRule] = &[SessionRule {
     days: SUN_PLUS_MON_THU,
     open_ssm: 20 * 3600,
@@ -125,20 +99,12 @@ pub(crate) static ICE_CANADA_PROFILE: StaticHoursProfile = StaticHoursProfile {
     has_weekend_close: true,
 };
 
-// Revision evidence — each row's day-level effective date and the primary
-// source that states it (full quotations sit in the blocks above). The 2011
+// Revision evidence — each row's day-level effective date and the primary source that states it (full quotations sit in the evidence file). The 2011
 // change is not in this timeline: its sourced boundary is the intraday
 // instant encoded above.
-//   2012-06-24 "ICE Canada June 13 2012 trading hours change"
-//     https://www.ice.com/publicdocs/futures_canada/member_notices/June_13_2012_ICE_Futures_Canada_notice-Trading_Hours_and_Settlement_Time_Change.pdf
-//   2013-04-07 "ICE Canada April 8 2013 reminder"
-//     https://www.ice.com/publicdocs/futures_canada/member_notices/April_8_2013_Reminder_Closing_time_and_Settlement_time_changes_today.pdf
-//   2016-01-24 "ICE Canada Jan 18 2016 reminder"
-//     https://www.ice.com/publicdocs/futures_canada/member_notices/2016_01_18_Reminder_Canola_Trade_At_Settlement.pdf
-//   2018-07-29 "ICE Futures US notice Canola 20180501"
-//     https://www.ice.com/publicdocs/futures_us/exchange_notices/ICE_Futures_US-Notice-Canola-20180501.pdf
 // Evidence: docs/evidence/ice_canada.md
 static ICE_CANADA_REVISIONS: &[Revision] = revisions![
+    // 2012-06-24 "ICE Canada June 13 2012 trading hours change" https://www.ice.com/publicdocs/futures_canada/member_notices/June_13_2012_ICE_Futures_Canada_notice-Trading_Hours_and_Settlement_Time_Change.pdf
     (
         2012,
         6,
@@ -146,6 +112,7 @@ static ICE_CANADA_REVISIONS: &[Revision] = revisions![
         &ICE_CANADA_2012,
         "ICE Canada June 13 2012 trading hours change"
     ),
+    // 2013-04-07 "ICE Canada April 8 2013 reminder" https://www.ice.com/publicdocs/futures_canada/member_notices/April_8_2013_Reminder_Closing_time_and_Settlement_time_changes_today.pdf
     (
         2013,
         4,
@@ -153,6 +120,7 @@ static ICE_CANADA_REVISIONS: &[Revision] = revisions![
         &ICE_CANADA_2011,
         "ICE Canada April 8 2013 reminder"
     ),
+    // 2016-01-24 "ICE Canada Jan 18 2016 reminder" https://www.ice.com/publicdocs/futures_canada/member_notices/2016_01_18_Reminder_Canola_Trade_At_Settlement.pdf
     (
         2016,
         1,
@@ -160,6 +128,7 @@ static ICE_CANADA_REVISIONS: &[Revision] = revisions![
         &ICE_CANADA_2016,
         "ICE Canada Jan 18 2016 reminder"
     ),
+    // 2018-07-29 "ICE Futures US notice Canola 20180501" https://www.ice.com/publicdocs/futures_us/exchange_notices/ICE_Futures_US-Notice-Canola-20180501.pdf
     (
         2018,
         7,

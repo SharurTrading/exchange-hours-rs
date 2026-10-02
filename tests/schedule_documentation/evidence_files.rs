@@ -42,18 +42,12 @@ const MAX_COMMENT_RUN: usize = 6;
 
 /// Schedule modules whose narrative has not moved yet.
 ///
-/// The reshape drained the served families and most of the dormant ones; these
-/// modules still carry prose. A listed module is skipped by
-/// `modules_carry_no_narrative`, an unlisted one is asserted, and the list only
-/// ever shrinks — that is what makes "a new module never carries one" a fence
-/// rather than a hope. Tracked as issue #85.
-const NARRATIVE_DEBT: [&str; 6] = [
-    "src/calendar/schedules/futures/international/binance.rs",
-    "src/calendar/schedules/futures/international/ice_abu_dhabi.rs",
-    "src/calendar/schedules/futures/international/ice_canada.rs",
-    "src/calendar/schedules/futures/international/ice_europe.rs",
-    "src/calendar/schedules/futures/international/sgx.rs",
-    "src/calendar/schedules/futures/us/small_exchange.rs",
+/// The list drained to empty on 2026-10-02 UTC — every schedule module's
+/// narrative now lives in its evidence file. It stays as the fence: a listed
+/// module is skipped by `modules_carry_no_narrative`, an unlisted one is
+/// asserted, and the list only ever shrinks — that is what makes "a new module
+/// never carries one" a fence rather than a hope. Tracked as issue #85.
+const NARRATIVE_DEBT: [&str; 0] = [
 ];
 
 /// Sections every evidence file carries, in order.

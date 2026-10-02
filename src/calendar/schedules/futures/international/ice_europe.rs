@@ -9,16 +9,8 @@ use crate::calendar::SessionRule;
 use crate::calendar::rule::{MON_FRI, MON_THU, SUN_ONLY};
 use crate::calendar::schedules::timeline::{Revision, local_date, revisions, select_revision};
 
-// ICE Europe does not have a venue-wide schedule. `iceeu` and the commodities
-// row are scoped to Brent Crude Futures (B). The live product specification
-// publishes the governing 20:00-18:00 New York session and 19:45 pre-open,
-// plus the special Sunday 17:00 pre-open / 18:00 open. ICE's platform
-// maintenance is locked to US Eastern time; using that published reference
-// zone expresses the rule directly instead of encoding annual UK/US DST
-// mismatch exceptions. The official 2010 circular confirms the same ET grid.
-// https://www.ice.com/products/219/Brent-Crude-Futures
-// https://www.ice.com/publicdocs/futures/Trading_Schedule_Temporary_Trading_Hours_for_DST.pdf
-// https://www.ice.com/publicdocs/circulars/10070.pdf
+// ICE Europe does not have a venue-wide schedule. Narrative:
+// docs/evidence/iceeu.md.
 static BRENT_REGULAR: &[SessionRule] = &[
     SessionRule {
         days: SUN_ONLY,
@@ -81,15 +73,8 @@ pub(crate) fn ice_europe_commodities_profile_at(
     &ICE_EUROPE_COMMODITIES_CURRENT
 }
 
-// The financials row is scoped to FTSE 100 Index Futures (Z). The live ICE
-// specification publishes 00:45 pre-open, 01:00-21:00 trading. Circulars
-// 14/146, 15/016, and 15/169 give the day-level migration and subsequent
-// changes. The named ICE Futures Europe product is closed before its
-// 2014-11-17 first trade date, yielding a complete January-2010-on timeline.
-// https://www.ice.com/products/38716764/FTSE-100-INDEX-
-// https://www.ice.com/publicdocs/circulars/14146.pdf
-// https://www.ice.com/publicdocs/circulars/15016.pdf
-// https://www.ice.com/publicdocs/circulars/15169.pdf
+// The financials row is scoped to FTSE 100 Index Futures (Z). Narrative:
+// docs/evidence/ice_europe_financials.md.
 static FTSE_0800_REGULAR: &[SessionRule] = &[SessionRule {
     days: MON_FRI,
     open_ssm: 8 * 3600,
@@ -105,14 +90,8 @@ static FTSE_CURRENT_REGULAR: &[SessionRule] = &[SessionRule {
     open_ssm: 3600,
     close_ssm: 21 * 3600,
 }];
-// The non-executable phases are pre-opens, and Circular 15/016 says so in its
-// own column heading: its two FTSE tables read "Pre-open 06:03 | Open 08:00 |
-// Close 21:00" before 16 February 2015 and "Pre-open 06:03 | Open 07:00 | Close
-// 21:00" after it, so the 06:03 window is order entry ahead of the open rather
-// than a session in which anything prints. The live specification's 00:45
-// pre-open is the same phase on the current 01:00 open. All three therefore sit
-// in order_entry; FTSE publishes no tradeable phase outside its executable
-// session, so extended stays empty.
+// The non-executable phases are pre-opens, and Circular 15/016 says so in its own column heading. Narrative:
+// docs/evidence/ice_europe_financials.md.
 static FTSE_0603_ORDER_ENTRY: &[SessionRule] = &[SessionRule {
     days: MON_FRI,
     open_ssm: 6 * 3600 + 3 * 60,

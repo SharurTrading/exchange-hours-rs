@@ -87,6 +87,24 @@ corrections (a venue's hours fixed against a primary source) go under
   grains/rates' "forty-one" already matched its 41-row tables and is
   unchanged. Docs and fences only: no schedule data, no runtime row and no
   coverage answer moves.
+- **`tsx`'s 2013-2016 holiday spans close from the release series' verbatim
+  wire mirrors and two recovered operator pages (2026-10-02 UTC; #221
+  narrowed).** The refused spans 2013-08-19..2014-01-01 and
+  2014-07-02..2016-12-31 key on the operator's own per-holiday and year-end
+  Holiday Operating Schedule releases mirrored verbatim on CNW/PR Newswire
+  and retrieved live (the 2013 Labour Day, Thanksgiving and year-end
+  schedules, the 2014 Civic/Labour/Thanksgiving releases and the 2014-12-02,
+  2015-12-01 and 2016-11-30 year-end schedules), TMX Money's own complete-2014
+  market-hours page (as served 2014-01-09) and the tsx.com "Calendar & Events"
+  page (as served 2015-03-15) printing the complete 2015 and 2016 lists; the
+  operator's trading-notice archive corroborates the Christmas Eve halves
+  (notice 2013-037; the 2011-2016 archives state operating-schedule changes
+  for the 2012 and 2013 eves only). Thirty-three rows are added (Labour Day
+  and Thanksgiving 2013, the 2013/2014/2015 Christmas Eve 13:00 closes, the
+  2013-2016 Christmas/Boxing arrangements, and the complete 2014-2016
+  mid-year lists), the audited windows merge to 2012-01-03..2016-12-31, and
+  the 2011-10-11..2012-01-02 span — the 2011-12-12 year-end release no
+  archive captured — is the only refusal left.
 
 - **An empty `SessionExceptions` provider changes no answer — on a date the
   identity withholds too (2026-10-01 UTC; closes #127).** Attaching a

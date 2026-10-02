@@ -28,7 +28,7 @@ as each source is re-verified.
 
 ## Holidays
 
-**Coverage:** 2010-01-01..2011-10-10, 2012-01-03..2012-12-31, 2013-01-01..2013-08-18, 2014-01-02..2014-07-01, 2017-01-01..2026-12-31
+**Coverage:** 2010-01-01..2011-10-10, 2012-01-03..2016-12-31, 2017-01-01..2026-12-31
 (inclusive trade dates in `America/Toronto`; tier T1 throughout).
 
 The operator's holiday statement for 2017-2026 is TMX Group's own "Calendar"
@@ -103,6 +103,38 @@ the same instant the calendar page's later footnote prints. The 2012-07-12 "stam
 was checked and is a market-close ceremony, not a closure; the U.S.-style closures the
 releases name for NGX or MX do not touch these rows' TSX scope.
 
+**The 2013-2016 continuation was recovered 2026-10-02 UTC from the release series' verbatim
+public wire mirrors and two further operator pages.** The per-holiday release practice did
+not stop in 2014 — the releases kept running over CNW/PR Newswire, and the wires still serve
+them live. Retrieved 2026-10-02 (UTC) and sha-pinned below: the 2013 Labour Day release
+(`TMX-REL-2013-08-23`), the 2013 Thanksgiving release (`TMX-REL-2013-10-07`), the 2013-12-03
+year-end Holiday Operating Schedule (`TMX-REL-2013-12-03`), the 2014 Civic, Labour and
+Thanksgiving releases (`TMX-REL-2014-07-28`, `TMX-REL-2014-08-25`, `TMX-REL-2014-09-23`),
+and the 2014-12-02, 2015-12-01 and 2016-11-30 year-end schedules (`TMX-REL-2014-12-02`,
+`TMX-REL-2015-12-01`, `TMX-REL-2016-11-30`) — each a verbatim public mirror of the
+operator's own document naming Toronto Stock Exchange with an unconditional date. Two
+operator pages carry the complete mid-year lists: **TMX Money's own** "Stock Market Hours &
+Holiday" page (`tmxmoney.com/en/market_activity/market_hours.html` as served 2014-01-09,
+`TSX-MH-2014-01-09`) prints the complete 2014 list under the sentence *Toronto Stock
+Exchange and TSX Venture Exchange have trading hours of 9:30 a.m. to 4:00 p.m. ET, Monday to
+Friday, with the exception of the stock market holidays listed below*; and the `tsx.com`
+"Calendar & Events" page (`tsx.com/trading/calendars-and-trading-hours/calendar-and-events`
+as served 2015-03-15, `TSX-CAL-2015-03-15`) prints the complete 2015 and 2016 lists under
+the same "Stock Market Holidays - Stock Markets Closed" heading the calendar page still
+uses. The operator's own TSX **trading notices** corroborate the eve halves: notice
+2013-037 ("Changes in operating schedule for Tuesday, December 24th, 2013", live at
+`tsx.com/resource/en/1001/2013-037-en.pdf`, `TSX-NOTICE-2013-037`) prints the 13:00:00
+continuous-trading end, and the operators' notice archives for 2011-2016 (fetched live
+2026-10-02, each running January through late December) contain operating-schedule change
+notices for the 2012 and 2013 Christmas Eves only — affirmative operator evidence that no
+other schedule change was noticed in 2014-2016. The audited-normal claims inside the merged
+2012-01-03..2016-12-31 window rest on exactly this: one wire mirror per closure recovered,
+the complete year lists for 2014-2016, and the year-end schedules' own `Open` prints for
+2013-12-31, 2014-12-31, 2015-12-31 and the 2016 TSX table's omission of December 23 and 30.
+A knowledge boundary may only widen — the January-2014 and March-2015 page states print no
+Christmas Eve line, and the later year-end releases supply those rows (the 2024 page's own
+July-to-December precedent).
+
 ### 2010
 
 | Trade date | Kind | Instant as printed | Document | Tier | Derived from |
@@ -156,15 +188,58 @@ releases name for NGX or MX do not touch these rows' TSX scope.
 | 2013-05-20 | closed | `will be closed on Monday, May 20, 2013 for the Victoria Day holiday` | `TMX-REL-2013-05-13` | T1 | the operator's own printed date |
 | 2013-07-01 | closed | `will be closed on Monday, July 1, 2013, for the Canada Day holiday` | `TMX-REL-2013-06-24` | T1 | the operator's own printed date |
 | 2013-08-05 | closed | `will be closed on Monday, August 5 2013 for the Civic Holiday` | `TMX-REL-2013-07-26` | T1 | the operator's own printed date |
+| 2013-09-02 | closed | `will be closed on Monday, September 2, 2013 for the Labour Day holiday` | `TMX-REL-2013-08-23` | T1 | the operator's own printed date (verbatim CNW/PRN mirror of the release) |
+| 2013-10-14 | closed | `will be closed on Monday, October 14, 2013 for the Thanksgiving holiday` | `TMX-REL-2013-10-07` | T1 | the operator's own printed date (verbatim CNW mirror) |
+| 2013-12-24 | early close | `Open until 1:00 p.m. (EST)` (TSX row of the year-end schedule); notice 2013-037 prints the 13:00:00 continuous-trading end | `TMX-REL-2013-12-03` | T1 | the schedule row is the day's final close, 13:00 Toronto time; corroborated by `TSX-NOTICE-2013-037` |
+| 2013-12-25 | closed | `will be closed on Wednesday, December 25, 2013 for Christmas Day` | `TMX-REL-2013-12-03` | T1 | the operator's own printed date |
+| 2013-12-26 | closed | `Thursday, December 26, 2013 Closed` | `TMX-REL-2013-12-03` | T1 | the operator's own printed date; the schedule also prints `Tuesday, December 31, 2013 Open`, so the window runs on |
 
 ### 2014
 
 | Trade date | Kind | Instant as printed | Document | Tier | Derived from |
 |---|---|---|---|---|---|
+| 2014-01-01 | closed | `Wednesday, January 1, 2014 Closed` (the 2013 year-end schedule's New Year row) | `TMX-REL-2013-12-03` | T1 | the operator's own printed date |
 | 2014-02-17 | closed | `will be closed on Monday, February 17, 2014 for Family Day` | `TMX-REL-2014-02-07` | T1 | the operator's own printed date; the release names Toronto Stock Exchange |
 | 2014-04-18 | closed | `will be closed on Friday, April 18 for Good Friday` | `TMX-REL-2014-04-09` | T1 | the operator's own printed date; 18 April 2014 is the Friday |
 | 2014-05-19 | closed | `will be closed on Monday, May 19, 2014 for the Victoria Day holiday` | `TMX-REL-2014-05-13` | T1 | the operator's own printed date |
 | 2014-07-01 | closed | `will be closed on Tuesday, July 1, 2014, for the Canada Day holiday` | `TMX-REL-2014-06-23` | T1 | the operator's own printed date |
+| 2014-08-04 | closed | `Civic Holiday - August 4, 2014` (the page's complete 2014 list) | `TSX-MH-2014-01-09` | T1 | the operator's TMX Money page prints the full-year list; the 2014-07-28 release (CNW mirror) prints the same closure |
+| 2014-09-01 | closed | `Labour Day - September 1, 2014` (the page's complete 2014 list) | `TSX-MH-2014-01-09` | T1 | the operator's TMX Money page prints the full-year list; the 2014-08-25 release (PRN mirror) prints the same closure |
+| 2014-10-13 | closed | `Thanksgiving Day - October 13, 2014` (the page's complete 2014 list) | `TSX-MH-2014-01-09` | T1 | the operator's TMX Money page prints the full-year list; the 2014-09-23 release (CNW mirror) prints the same closure |
+| 2014-12-24 | early close | `Open until 1:00 p.m. (EST)` (TSX row of the year-end schedule) | `TMX-REL-2014-12-02` | T1 | the schedule row is the day's final close, 13:00 Toronto time — the eve line the January page state predates |
+| 2014-12-25 | closed | `Thursday, December 25, 2014 Closed` (Christmas Day) | `TMX-REL-2014-12-02` | T1 | the operator's own printed date |
+| 2014-12-26 | closed | `Friday, December 26, 2014 Closed` (Boxing Day) | `TMX-REL-2014-12-02` | T1 | the operator's own printed date; the schedule also prints `Wednesday, December 31, 2014 Open`, so the window runs on |
+
+### 2015
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2015-01-01 | closed | `New Year's Day - Thursday, January 1, 2015` (the page's complete 2015 list) | `TSX-CAL-2015-03-15` | T1 | the operator's own printed date; the 2014 year-end schedule keys the same date |
+| 2015-02-16 | closed | `Family Day - Monday, February 16, 2015` | `TSX-CAL-2015-03-15` | T1 | the operator's own printed date |
+| 2015-04-03 | closed | `Good Friday - Friday, April 3, 2015` | `TSX-CAL-2015-03-15` | T1 | the operator's own printed date |
+| 2015-05-18 | closed | `Victoria Day - Monday, May 18, 2015` | `TSX-CAL-2015-03-15` | T1 | the operator's own printed date |
+| 2015-07-01 | closed | `Canada Day - Wednesday, July 1, 2015` | `TSX-CAL-2015-03-15` | T1 | the operator's own printed date |
+| 2015-08-03 | closed | `Civic Holiday - Monday, August 3, 2015` | `TSX-CAL-2015-03-15` | T1 | the operator's own printed date |
+| 2015-09-07 | closed | `Labour Day - Monday, September 7, 2015` | `TSX-CAL-2015-03-15` | T1 | the operator's own printed date |
+| 2015-10-12 | closed | `Thanksgiving Day - Monday, October 12, 2015` | `TSX-CAL-2015-03-15` | T1 | the operator's own printed date |
+| 2015-12-24 | early close | `Open until 1:00 p.m. (EST)` (TSX row of the year-end schedule) | `TMX-REL-2015-12-01` | T1 | the schedule row is the day's final close, 13:00 Toronto time — the eve line the March page state predates |
+| 2015-12-25 | closed | `Friday, December 25, 2015 Closed` (Christmas Day) | `TMX-REL-2015-12-01` | T1 | the operator's own printed date; the March page prints the same closure |
+| 2015-12-28 | closed | `Monday, December 28, 2015 Closed` (in lieu of Boxing Day on the Saturday) | `TMX-REL-2015-12-01` | T1 | the operator's own in-lieu print; the schedule also prints `Thursday, December 31, 2015 Open`, so the window runs on |
+
+### 2016
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2016-01-01 | closed | `New Year's Day - Friday, January 1, 2016` (the page's complete 2016 list) | `TSX-CAL-2015-03-15` | T1 | the operator's own printed date |
+| 2016-02-15 | closed | `Family Day - Monday, February 15, 2016` | `TSX-CAL-2015-03-15` | T1 | the operator's own printed date |
+| 2016-03-25 | closed | `Good Friday - Friday, March 25, 2016` | `TSX-CAL-2015-03-15` | T1 | the operator's own printed date |
+| 2016-05-23 | closed | `Victoria Day - Monday, May 23, 2016` | `TSX-CAL-2015-03-15` | T1 | the operator's own printed date |
+| 2016-07-01 | closed | `Canada Day - Friday, July 1, 2016` | `TSX-CAL-2015-03-15` | T1 | the operator's own printed date |
+| 2016-08-01 | closed | `Civic Holiday - Monday, August 1, 2016` | `TSX-CAL-2015-03-15` | T1 | the operator's own printed date |
+| 2016-09-05 | closed | `Labour Day - Monday, September 5, 2016` | `TSX-CAL-2015-03-15` | T1 | the operator's own printed date |
+| 2016-10-10 | closed | `Thanksgiving Day - Monday, October 10, 2016` | `TSX-CAL-2015-03-15` | T1 | the operator's own printed date |
+| 2016-12-26 | closed | `will be closed on Monday, December 26, 2016 in lieu of Christmas Day on Sunday, December 25, 2016` | `TMX-REL-2016-11-30` | T1 | the operator's own in-lieu print; the page's 2016 list prints the same closure |
+| 2016-12-27 | closed | `Tuesday, December 27, 2016 in lieu of Boxing Day on Monday, December 26, 2016` | `TMX-REL-2016-11-30` | T1 | the operator's own in-lieu print; the year-end schedule's TSX table prints no other December date, so December 23 and 30 answer as ordinary trading days |
 
 ### 2017
 
@@ -358,6 +433,19 @@ releases name for NGX or MX do not touch these rows' TSX scope.
 | `TMX-REL-2014-04-09` | 2014-04-18 | <https://web.archive.org/web/20140714210509id_/http://tmx.com/en/news_events/news/news_releases/2014/04-09-2014_TMXGroup-GoodFriday.html> | Wayback `id_` replay of capture `20140714210509`, retrieved 2026-09-30T01:17:05Z | T1 | `5088e2cd4742fa79a404d8a4180c6a50e508cfa714a31de672b89354c847963d` |
 | `TMX-REL-2014-05-13` | 2014-05-19 | <https://web.archive.org/web/20140714225156id_/http://tmx.com/en/news_events/news/news_releases/2014/05-13-2014_TMXGroup-VictoriaDay.html> | Wayback `id_` replay of capture `20140714225156`, retrieved 2026-09-30T01:17:08Z | T1 | `2cb61d1d1ef0159d5a8ed0d39af5809c92b66fda945a0fc451019924a1913d99` |
 | `TMX-REL-2014-06-23` | 2014-07-01 | <https://web.archive.org/web/20140629102827id_/http://tmx.com/en/news_events/news/news_releases/2014/06-23-2014_TMXGroup-CanadaDayClosing.html> | Wayback `id_` replay of capture `20140629102827`, retrieved 2026-09-30T01:17:09Z | T1 | `737155026e5e036501b83723503d91378a8fc3afe36c0c7b74fa150c59c37cf1` |
+| `TMX-REL-2013-08-23` | 2013-09-02 | <https://www.prnewswire.com/news-releases/toronto-stock-exchange-tsx-venture-exchange-tmx-select-alpha-and-montreal-exchange-closed-for-labour-day-512833881.html> | live retrieval 2026-10-02 UTC (PR Newswire's verbatim mirror of the operator's CNW release of 2013-08-23) | T1 | `27e6959daf5f2456c75ec1b84da55e1599efc218792a3d8cd0879fe220ddb537` |
+| `TMX-REL-2013-10-07` | 2013-10-14 | <https://www.newswire.ca/news-releases/tmx-group-thanksgiving-holiday-closures-513069561.html> | live retrieval 2026-10-02 UTC (CNW's verbatim mirror of the operator's release of 2013-10-07) | T1 | `1cb457477903db550b58b277913b0555f99427062f1b7223cdf07016822d7ae5` |
+| `TMX-REL-2013-12-03` | 2013-12-24 .. 2014-01-01 (the 2013 year-end schedule and the 2014 New Year row) | <https://www.newswire.ca/news-releases/tmx-group-holiday-operating-schedule-513358771.html> | live retrieval 2026-10-02 UTC (CNW's verbatim mirror of the operator's release of 2013-12-03) | T1 | `68b1a6786dd23690a9c2f71517ad246b24b0dd0fea3236949ef12af26f6f1f3a` |
+| `TSX-NOTICE-2013-037` | 2013-12-24 (corroboration; no row keys to it) | <https://www.tsx.com/resource/en/1001/2013-037-en.pdf> | retrieved live 2026-10-02 UTC | T1 | `0265750c9dc51c8c967365e4a8090642d56b8baef2b52664dd5e40017d6c3dad` |
+| `TMX-REL-2014-07-28` | 2014-08-04 (corroboration; no row keys to it) | <https://www.newswire.ca/news-releases/tmx-group-civic-holiday-market-closures-515176451.html> | live retrieval 2026-10-02 UTC (CNW's verbatim mirror of the operator's release of 2014-07-28) | T1 | `4e38446265b076bb02666a90f3798e849e16d7c82154073378e75d3c5b05d31e` |
+| `TMX-REL-2014-08-25` | 2014-09-01 (corroboration; no row keys to it) | <https://www.prnewswire.com/news-releases/toronto-stock-exchange-tsx-venture-exchange-montreal-exchange-tmx-select-and-alpha-closed-for-labour-day-515357461.html> | live retrieval 2026-10-02 UTC (PR Newswire's verbatim mirror of the operator's release of 2014-08-25) | T1 | `58a2ab437aa013e5b448e9e8053f56b3c61855c3662974243264197588e6c12d` |
+| `TMX-REL-2014-09-23` | 2014-10-13 (corroboration; no row keys to it) | <https://www.newswire.ca/news-releases/tmx-group-thanksgiving-holiday-market-closures-515686301.html> | live retrieval 2026-10-02 UTC (CNW's verbatim mirror of the operator's release of 2014-09-23) | T1 | `6277dadcb0e270d542380578096e0f573350f7fd0eda41255311a30cb9ae393e` |
+| `TSX-MH-2014-01-09` | 2014-08-04 .. 2014-10-13 (the complete 2014 list) | <https://web.archive.org/web/20140109054747id_/http://www.tmxmoney.com/en/market_activity/market_hours.html> | Wayback `id_` replay of capture `20140109054747`, retrieved 2026-10-02 UTC | T1 | `500fbfe4d6b12f2c509715f836ee1537f4b9ae1ba6f9ee3bd1e5a87d5911c634` |
+| `TMX-REL-2014-12-02` | 2014-12-24 .. 2015-01-01 (the 2014 year-end schedule and the 2015 New Year row) | <https://www.newswire.ca/news-releases/tmx-group-holiday-operating-schedule-516597231.html> | live retrieval 2026-10-02 UTC (CNW's verbatim mirror of the operator's release of 2014-12-02) | T1 | `b8798808a78fd1a901ea152fc7b1dc0c63cac12c84c55e313e36d0d269a1e9df` |
+| `TSX-CAL-2015-03-15` | 2015-01-01 .. 2016-10-10 (the complete 2015 and 2016 lists) | <https://web.archive.org/web/20150315063450id_/http://tsx.com/trading/calendars-and-trading-hours/calendar-and-events> | Wayback `id_` replay of capture `20150315063450`, retrieved 2026-10-02 UTC | T1 | `ae0ae8428f1ec1c28ebb9516c50a0bd6669cf2e89f57c81c56a13d268542aeac` |
+| `TSX-CAL-2015-03-21` | corroboration of `TSX-CAL-2015-03-15` on every shared row (the `?lang=en` state) | <https://web.archive.org/web/20150321161818id_/http://tsx.com/trading/calendars-and-trading-hours/calendar-and-events?lang=en> | Wayback `id_` replay of capture `20150321161818`, retrieved 2026-10-02 UTC | T1 | `3ae157f9839ad927c1e3734c815d2f87c2808666e948905bf9ba89b92d4a1bc9` |
+| `TMX-REL-2015-12-01` | 2015-12-24 .. 2016-01-01 (the 2015 year-end schedule and the 2016 New Year row) | <https://www.newswire.ca/news-releases/tmx-group-holiday-operating-schedule-559634691.html> | live retrieval 2026-10-02 UTC (CNW's verbatim mirror of the operator's release of 2015-12-01) | T1 | `7e66f251e78c127957c830354d3d6e3742bd1ab4811e96edc7987ef7a10acbef` |
+| `TMX-REL-2016-11-30` | 2016-12-26 .. 2017-01-02 (the 2016 year-end schedule and the 2017 New Year in-lieu) | <https://www.newswire.ca/news-releases/tmx-group-holiday-operating-schedule-603757686.html> | live retrieval 2026-10-02 UTC (CNW's verbatim mirror of the operator's release of 2016-11-30) | T1 | `c12142bd16fddfd405f663382c83f62aabcb9ff1f85a57b910c518904aa75015` |
 | `TSX-CAL-2018-09-11` | 2017-01-02 .. 2018-12-26 (the 2018 list and the 2017 archive restatement) | <https://web.archive.org/web/20180911094940id_/https://www.tsx.com/trading/calendars-and-trading-hours/calendar> | Wayback `id_` replay of capture `20180911094940`, retrieved 2026-09-29T07:15:33Z | T1 | `37d3840568474ae4cb6087fbdec04f8b51efadb4c31e852bdebda82da722ac64` |
 | `TSX-CAL-2019-08-20` | 2019-01-01 .. 2019-12-26 (the 2019 list; the 2018 list corroborated) | <https://web.archive.org/web/20190820094447id_/https://www.tsx.com/trading/calendars-and-trading-hours/calendar> | Wayback `id_` replay of capture `20190820094447`, retrieved 2026-09-29T07:15:34Z | T1 | `ad37450736210f7a61146262080d049edcc03c45126c039a21aeefee0930b455` |
 | `TSX-CAL-2020-03-29` | 2019-01-01 .. 2020-12-28 (the 2019 list corroborated; the 2020 list) | <https://web.archive.org/web/20200329124856id_/https://www.tsx.com/trading/calendars-and-trading-hours/calendar> | Wayback `id_` replay of capture `20200329124856`, retrieved 2026-09-29T07:15:35Z | T1 | `5bf587ca7151937f62038caf52393b596b79becc7b219e0b8312ee77a93281bc` |
@@ -385,7 +473,7 @@ the thirty-two release replays above with the same sha and index discipline.
 - **Interpretive step, conditional extension.** The Price Movement Extension rule is modelled as the venue's maximum envelope. On ordinary days and symbols the 16:00–16:10 interval is cancel-only, but when the extension fires it is the delayed Market-on-Close cross for that symbol and it prints, so the window is not order-entry-only. The separate 16:10–16:15 Post Market Cancel Session is not modelled at all.
 - **Interpretive step, the Christmas Eve half.** The footnote states two closes — `1:00 PM (TSX/TSXV) and 1:30 (ALPHA/ALPHA X/DRK)`. The row encodes the TSX/TSXV 13:00 close because this identity is the Toronto Stock Exchange cash-equity venue; the ALPHA/ALPHA X/DRK book systems are separate order books, not part of this row's scope, and no TSX-listed session is clipped by their later close.
 - **No dated revision.** The reviewed grid holds for the whole audit window, so every instant resolves to the one profile. A sourced revision later replaces this with a real timeline row and needs no routing change. Closing condition for a future change: a TMX notice stating an unconditional day-level effective date.
-- **Holiday coverage gaps inside 2011-2016 (tracked as [#221](https://github.com/SharurTrading/exchange-hours-rs/issues/221)).** The 2026-09-30 UTC sweeps (CDX service working; outputs in the store's `cdx-retry-2026-09-30/` directory) recovered 2010-2014 as far as the operator's own per-holiday news releases reach, but three spans survive in no operator artifact: **2011-10-11..2012-01-02** — the 2011 year-end arrangement and the 2012 New Year in-lieu rode releases the archive never captured (the all-time `news_releases` sweep of `tmx.com` holds no November-December 2011 or January 2012 holiday release; the 2011 news tree's last witnessed state is the 2011-10-10 bulk catch) — then **2013-08-19..2014-01-01** (no 2013 Labour Day, Thanksgiving or Christmas release and no 2014 New Year's Day release survives; the 2013 tree's last witnessed state is the 2013-08-18 bulk catch, and the 2014 New Year announcement would have been a 2013-published release outside the 2014 tree sweep) and **2014-07-02..2016-12-31** — the release practice stops in the archive after the 2014-06-23 Canada Day notice, and the `tsx.com`-era site of 2015-2016 carries no holiday page capture at all (the domain-wide `holiday` filter of `tsx.com` 2010-2016 returns zero url keys). Queries inside those spans refuse rather than answer. Residual risk: a release could have been published and never captured — the audited-normal claims inside the windows reach exactly as far as the witnessed bulk sweeps named above. Closing conditions: a capture of any of the missing releases or of any 2015-2016 TSX/TMX holiday page, or the operator's re-publication of a historical calendar.
+- **Holiday coverage gap inside 2011-2012 (tracked as [#221](https://github.com/SharurTrading/exchange-hours-rs/issues/221), narrowed 2026-10-02 UTC).** The 2026-09-30 UTC sweeps recovered 2010-2014 as far as the operator's own per-holiday news releases reach, and the 2026-10-02 UTC pass (this file's wire-mirror and page recoveries above) closed the 2013-08-19..2014-01-01 and 2014-07-02..2016-12-31 spans. One span survives in no operator artifact: **2011-10-11..2012-01-02** — the 2011 year-end arrangement and the 2012 New Year in-lieu rode the release of 2011-12-12 (*TMX Group Holiday Operating Schedule*, witnessed only by a Mondo Visione news-listing index entry dated 12/12/2011), which no archive captured: Wayback's 2011 release tree is enumerated file-by-file to its last capture (the 2026-10-02 month-prefix sweeps in the store's `tsx/evidence-thread/`, `cdx-tmx-2011tree-all.txt`, `cdx-month-2011-11.txt`, `cdx-month-2011-12.txt` — November and December 2011 hold only Maple-related and Datalinx releases), CC-MAIN-2012 answers zero captures of the 2011 tree (the prior pass's settled result; the collection list holds no other 2011-era crawl), CNW's live archive holds the migrated release under an unguessable id (the 2009 edition's id is not chronological with the 2013+ ones), and PR Newswire's company listing paginates server-side only back to 2013. Mondo Visione serves the article only to a JS-rendered shell, archive.today holds no snapshot of it, and its RSS capture window skips the release week. Queries inside the span refuse rather than answer. Residual risk: a release could have been published and never captured — the audited-normal claims inside the 2012-01-03..2016-12-31 window reach exactly as far as the recovered mirrors, complete year lists and notice archives named above. Closing conditions: a capture of the 2011-12-12 release (any wire mirror, the Mondo Visione article, or CC's 2012 crawl), or the operator's re-publication of a historical calendar.
 - **Holiday horizon.** The audited holiday window stops at 2026-12-31 because the operator has published nothing past it (verified 2026-09-28). Closing condition: TMX's 2027 calendar section; the row is re-checked monthly per LAW-WATCH.
 
 ## Module narrative (moved from src/calendar/schedules/equities/americas/tsx.rs on 2026-10-02 UTC)

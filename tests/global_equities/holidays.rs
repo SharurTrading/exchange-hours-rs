@@ -17,7 +17,7 @@
 //! only the 2026 half-day eves are announced and unstated) and `tsx`
 //! (2010-2014 from the operator's own per-holiday news releases beside
 //! 2017-2026 across the calendar page's archived states, with the four
-//! release-era capture gaps and 2015-2016 refusing).
+//! release-era capture gaps and the 2011-2012 gap refusing).
 //!
 //! Every case below goes through the public identity-backed calendar, the
 //! same surface the consumer routes through. Each venue's section fences its
@@ -4274,7 +4274,7 @@ mod tsx {
         assert_eq!(
             rows.len(),
             178,
-            "165 closures and thirteen Christmas Eve closes — the 2011-2012 \
+            "166 closures and twelve Christmas Eve closes — the 2011-2012 \
              release-era gap is the only span that ships no rows"
         );
         let expected: [(i32, (usize, usize, usize, usize)); 17] = [

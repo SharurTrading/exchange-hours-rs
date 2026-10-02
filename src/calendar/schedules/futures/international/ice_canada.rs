@@ -23,6 +23,7 @@ use crate::calendar::schedules::timeline::{Revision, local_date, revisions, sele
 // change is therefore encoded at the exact UTC instant of the first
 // new-schedule phase — the 18:30 CT pre-open, 2011-03-01 00:30:00 UTC — and
 // the day-level timeline below begins with the 2012 revision.
+// Dated boundary 2011-02-28: docs/evidence/ice_canada.md
 const REVISED_HOURS_2011_UNIX_SECONDS: i64 = 1_298_939_400;
 //
 // The 2012 notice moves the close to 14:00 for trade date 2012-06-25, whose

@@ -88,6 +88,7 @@ static CLOSED: StaticHoursProfile = StaticHoursProfile {
 
 // 2021-06-28 13:00:00 UTC, 08:00 CDT. An exact instant is required; this
 // launch is not a venue-local-midnight revision.
+// Dated boundary 2021-06-28: docs/evidence/coinbase_derivatives.md
 const LAUNCH_UNIX_SECONDS: i64 = 1_624_885_200;
 const FIRST_FULL_DAY: chrono::NaiveDate = effective_date(2021, 6, 29);
 

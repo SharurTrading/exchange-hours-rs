@@ -55,7 +55,9 @@ static LAUNCH_DAY: StaticHoursProfile = StaticHoursProfile {
 
 // 2019-09-13 04:00:00 UTC. An exact instant is required; this launch is not a
 // venue-local-midnight revision.
+// Dated boundary 2019-09-13: docs/evidence/binance_futures.md
 const LAUNCH_UNIX_SECONDS: i64 = 1_568_347_200;
+// Dated boundary 2019-09-14: docs/evidence/binance_futures.md
 const LAUNCH_DAY_END_UNIX_SECONDS: i64 = 1_568_419_200;
 
 pub(crate) fn profile_at(as_of: chrono::DateTime<chrono::Utc>) -> &'static StaticHoursProfile {

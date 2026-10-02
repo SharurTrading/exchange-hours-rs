@@ -8,32 +8,16 @@ use super::super::StaticHoursProfile;
 use crate::calendar::SessionRule;
 use crate::calendar::rule::MON_FRI;
 
-// ASX cash market, from ASX Operating Rules Procedures Appendix 4013 and the
-// cash-market hours page. Service Release 15 replaced the symbol-group
-// staggered opens with one Opening Single Price Auction and added Post Close
-// on 2025-06-23. ASX prints the auction at 09:59:00-09:59:45 and Normal
-// Trading from 09:59:45, both nominal; the uncross is randomised per security,
-// so `regular` starts at 10:00, the latest instant continuous trading can have
-// begun, and the whole opening minute is extended. See docs/evidence/asx.md.
-// Sources:
-// https://www.asx.com.au/markets/market-resources/trading-hours-calendar/cash-market-trading-hours
-// https://www.asxonline.com/public/notices/2025/may/0473.25.05.html
+// ASX cash market, from ASX Operating Rules Procedures Appendix 4013 and the cash-market hours page. Narrative:
+// docs/evidence/asx.md.
 static ASX_REGULAR: &[SessionRule] = &[SessionRule {
     days: MON_FRI,
     open_ssm: 10 * 3600,
     close_ssm: 16 * 3600,
 }];
 
-// Tradeable close-side and open-side windows. The ASX phase timetable prints
-// Pre-open 07:00:00–09:59:00, Opening Single Price Auction 09:59:00–09:59:45,
-// Open (Normal Trading) 09:59:45–16:00:00, Pre-CSPA 16:00:00–16:10:00, Closing
-// Single Price Auction 16:10:00–16:11:00 and Post Close 16:11:00–16:21:30. Both
-// single-price auctions match, and in Post Close "ASX matches orders at the CSPA
-// price", so the auction and Post Close windows are tradeable. The rule below
-// therefore spans the whole opening minute 09:59:00-10:00:00 rather than
-// stopping at the nominal 09:59:45 Normal Trading start, and `regular` begins
-// at 10:00:00: an exchange-level envelope that never implies a per-security
-// uncross second.
+// Tradeable close-side and open-side windows. Narrative:
+// docs/evidence/asx.md.
 static ASX_EXTENDED_CURRENT: &[SessionRule] = &[
     // Pre-open: ASX Trade does not match here, but overnight and overseas
     // trades report until 09:45 and other allowable trades may be reported
@@ -67,17 +51,8 @@ static ASX_ORDER_ENTRY_CURRENT: &[SessionRule] = &[SessionRule {
     close_ssm: 16 * 3600 + 10 * 60,
 }];
 
-// Before Service Release 15, five symbol groups opened at nominal times from
-// 10:00 through 10:09, each randomized by +/- 15 seconds, and the CSPA ended
-// at 16:12. Regular starts at the venue's earliest continuous-trading edge;
-// the overlapping extended rule preserves the opening-auction envelope through
-// the latest possible Group 5 transition at 10:09:15.
-// Source: ASX SR15 marked operating-rule procedure amendments:
-// https://www.asxonline.com/content/dam/asxonline/public/notices/2025/april/asx-sr15asx-operating-rule-procedure-amendments.pdf
-// The earliest possible print of the old staggered open is the Group 1
-// transition at 10:00 less its 15-second randomization, i.e. 09:59:45; the
-// latest is the Group 5 transition at 10:09:15. That envelope and the 16:10
-// CSPA through its old 16:12 end are tradeable.
+// Before Service Release 15, five symbol groups opened at nominal times from 10:00 through 10:09, each randomized by +/- 15 seconds, and the CSPA ended at 16:12. Narrative:
+// docs/evidence/asx.md.
 static ASX_EXTENDED_PRE_2025_06_23: &[SessionRule] = &[
     // Pre-open: trade reporting printed here in this era too. SR15 changed the
     // staggered open and added Post Close; it did not change reporting rules.

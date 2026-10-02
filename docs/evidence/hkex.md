@@ -499,3 +499,35 @@ as each source is re-verified.
 - The 2012-03-05 Phase Two is deliberately not a revision row: it rearranged internal phases without changing the venue-level open or close (LAW-HOLIDAY-SCOPE's companion rule on topology, and the ledger's own statement that it is not an observable envelope cutover).
 - Later CAS eligibility expansions do not create new exchange-level open/close cutovers; the static profile uses the maximum scheduled CAS edge and not every security is eligible for every phase.
 - The CAS 16:00–16:10 window ends in a randomised uncrossing that prints the closing trades, so the whole auction stays `extended`.
+
+## Module narrative (moved from src/calendar/schedules/equities/apac/hkex.rs on 2026-10-02 UTC)
+
+SEHK Rule 501G divides the 09:00–09:30 POS into
+four named periods: order input 09:00–09:15, pre-order matching (renamed
+no-cancellation in 2020) 09:15–09:20, order matching from 09:20, then a
+blocking period to 09:30. HKEX states that orders "will be accumulated and
+updated but no matching will occur" during the first two periods, so
+09:00–09:20 is order entry. Matching begins at 09:20 and prints the opening
+trades at the final IEP, so 09:20–09:30 stays extended (the blocking tail is
+kept with the match because the 2020 enhancement randomised the match end).
+https://www.hkex.com.hk/Global/Exchange/FAQ/Securities-Market/Trading/Pre_opening-Session?sc_lang=en
+https://www.hkex.com.hk/-/media/HKEX-Market/Services/Rules-and-Forms-and-Fees/Rules/SEHK/Securities/Rule-Update_Rules-of-the-Exchange/05-11-SEHK-StampDuty-TradingHour_e.pdf
+
+---
+
+The Extended Morning Session keeps eligible securities continuously tradable
+through the ordinary-board lunch, so the venue-level regular envelope has no
+midday gap. The static profile uses the maximum scheduled CAS edge; not
+every security is eligible for every phase.
+https://www.hkex.com.hk/Services/Trading-hours-and-Severe-Weather-Arrangements/Trading-Hours/Securities-Market?sc_lang=en
+
+---
+
+Phase Two moved the internal Extended
+Morning/afternoon handoff to 13:00 on 2012-03-05 without changing that
+envelope. CAS first changed the venue envelope for a subset of securities on
+2016-07-25; later eligibility expansions do not create new exchange-level
+open/close cutovers.
+https://www.hkex.com.hk/News/News-Release/2011/110303news?sc_lang=en
+https://www.hkex.com.hk/News/Regulatory-Announcements/2012/120301news?sc_lang=en
+https://www.hkex.com.hk/News/Market-Communications/2016/160725news?sc_lang=en

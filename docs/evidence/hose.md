@@ -37,3 +37,12 @@ as each source is re-verified.
 - Put-through (negotiated) trading is classified `extended` by convention; not every security is eligible for every phase.
 - HOSE profiles carry no `order_entry` window: the opening and closing calls print, and the put-through tail is tradeable, so nothing is order-entry-only in any era.
 - The 2010-02-15 capture is the January-2010 evidence. Nothing dates a change inside January or February 2010, so the grid is sourced through the floor rather than carried.
+
+## Module narrative (moved from src/calendar/schedules/equities/apac/hose.rs on 2026-10-02 UTC)
+
+Put-through is extended by convention;
+not every security is eligible for every phase. The current table explicitly
+prints the 13:00–15:00 put-through window; HOSE's 2013 annual report dates
+the 45-minute extension to 2013-07-22.
+https://staticfile.hsx.vn/Uploads/UploadDocuments/2372209/2.Trading%20hours.pdf
+https://web.archive.org/web/20140501225025id_/http://www.hsx.vn:80/hsx_en/Modules/annual/annual_files/BCTN-ANNUAL%20REPORT%202013.pdf

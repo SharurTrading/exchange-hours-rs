@@ -13,6 +13,7 @@ use chrono_tz::Tz;
 
 use super::exceptions::{DateException, ExceptionScopeError, SessionExceptionSource};
 use super::exchange_calendar::SessionWindow;
+use super::query::gate::Identified;
 use super::query::{QueryContext, sessions, status};
 use super::schedules::holidays::{Holiday, HolidayCoverage};
 use super::{
@@ -153,7 +154,7 @@ impl<'a> PolicyCalendar<'a> {
         }
     }
 
-    fn context(self) -> QueryContext<'a> {
+    fn context(self) -> QueryContext<'a, Identified> {
         QueryContext::overlay(self.calendar, self.policy, self.exceptions)
     }
 

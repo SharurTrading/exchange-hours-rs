@@ -5,7 +5,6 @@
 use chrono::{DateTime, Datelike, NaiveDate, Timelike, Utc};
 use chrono_tz::Tz;
 
-use crate::calendar::coverage::{CalendarCoverage, CoverageGapReason, DateCoverage};
 use crate::calendar::exceptions::{DateException, SessionExceptionSource};
 use crate::calendar::exchange_calendar::ExchangeCalendar;
 use crate::calendar::hours::MarketHours;
@@ -13,10 +12,9 @@ use crate::calendar::local_time::{bounded_utc, mk_local_close, mk_local_open};
 use crate::calendar::policy::DayPolicy;
 use crate::calendar::rule::{SessionKind, SessionRule};
 use crate::calendar::schedules::holidays::{Holiday, HolidayKind, HolidayTable};
-use crate::calendar::{
-    CalendarQueryError, CalendarResolution, CalendarSource, SUPPORT_FLOOR, SessionState,
-};
+use crate::calendar::{CalendarResolution, CalendarSource};
 
+use super::gate::{FixedSnapshot, Identified, SourceGate};
 use super::{candles, identity, replacement};
 
 // Sessions opening on a civil day are governed by the profile in force at the
@@ -27,14 +25,7 @@ use super::{candles, identity, replacement};
 // second of the local day exists in every zone — DST transitions never
 // collapse or duplicate 23:59:59 — and `mk_local_open` resolves earliest on
 // ambiguity regardless.
-const OPEN_DAY_ANCHOR_SSM: u32 = 86_399;
 const SECONDS_PER_DAY: u32 = 86_400;
-
-#[derive(Clone, Copy)]
-enum ProfileSource<'a> {
-    Fixed(&'a MarketHours),
-    DateAware(ExchangeCalendar),
-}
 
 /// Which of a profile's rule sets a scan consults.
 ///
@@ -55,30 +46,43 @@ pub(super) enum RuleSet {
 /// The built-in holiday table is resolved once here, not per rule and not per
 /// candidate day: an identity's table is a `&'static` borrow, so carrying it is
 /// one pointer and resolving it is one match over the identity.
+///
+/// The context is parameterised over [`SourceGate`], the compile-time split of
+/// issue #245: a [`FixedSnapshot`] context carries no coverage at all and
+/// cannot raise an error, while an [`Identified`] context always carries its
+/// coverage metadata and reports every refusal through
+/// [`CalendarQueryError`](crate::CalendarQueryError). The constructors below
+/// are the only ways to build one, so the pairing of a source with the
+/// coverage it claims is a property of the types, not of review.
 #[derive(Clone, Copy)]
-pub(in crate::calendar) struct QueryContext<'a> {
-    source: ProfileSource<'a>,
+pub(in crate::calendar) struct QueryContext<'a, G: SourceGate> {
+    source: G::Source<'a>,
     tz: Tz,
     holidays: Option<&'static HolidayTable>,
     policy: Option<&'a dyn DayPolicy>,
     exceptions: Option<&'a dyn SessionExceptionSource>,
-    /// The identity's coverage metadata, or `None` for a detached snapshot.
+    /// The coverage metadata this source state carries — the [`Identified`]
+    /// state's [`CalendarCoverage`](crate::CalendarCoverage), or nothing at all
+    /// for a [`FixedSnapshot`].
+    ///
+    /// There is no `None` state to reach: the gate types make "a context that
+    /// can carry coverage but does not" unrepresentable, which is the
+    /// invariant the former `Option<CalendarCoverage>` field could only
+    /// document. See [`SourceGate`] for the full mechanism.
     ///
     /// This is deliberately a field of its own rather than something derived
     /// from [`Self::holidays`]: [`Self::baseline`] drops the day-level layers
     /// to resolve the sourced normal week without re-entering them, and the
-    /// coverage verdict is a fact about the whole identity that must survive
-    /// that narrowing unchanged. Deriving it from the dropped table would make
-    /// every overlay identity look table-less inside its own baseline walks.
-    coverage: Option<CalendarCoverage>,
+    /// coverage verdict is a fact about the whole source state that must
+    /// survive that narrowing unchanged.
+    coverage: G::Coverage,
     /// Whether some attached layer can supply a replacement trading day.
     ///
     /// Resolved once here rather than asked per scan. The caller's provider is
     /// cheap to test, but a built-in table's answer lives behind its pointer, so
     /// asking per occurrence would make the replacement gate dereference a
     /// static table on the normal-week hot path — for a bit that cannot change
-    /// while the context lives. This is the shape [`Self::coverage`] already
-    /// has, and for the same reason.
+    /// while the context lives.
     replacement_layer: bool,
     /// Whether the identity's own table carries a replacement block row.
     ///
@@ -169,7 +173,7 @@ const fn table_can_replace(holidays: Option<&HolidayTable>) -> bool {
     }
 }
 
-pub(super) enum ResolvedHours<'a> {
+pub(in crate::calendar) enum ResolvedHours<'a> {
     Borrowed(&'a MarketHours),
     Selected(MarketHours),
 }
@@ -183,34 +187,38 @@ impl AsRef<MarketHours> for ResolvedHours<'_> {
     }
 }
 
-impl<'a> QueryContext<'a> {
+impl<'a> QueryContext<'a, FixedSnapshot> {
     /// Builds a context over a detached fixed snapshot.
     ///
     /// A snapshot carries no identity — the crate never guesses a family from
-    /// coincident rules — so no built-in holiday table attaches to it.
+    /// coincident rules — so no built-in holiday table attaches to it and no
+    /// coverage exists to claim: the context cannot raise an error
+    /// ([`FixedSnapshot`], issue #245).
     pub(in crate::calendar) fn fixed(hours: &'a MarketHours) -> Self {
         Self {
-            source: ProfileSource::Fixed(hours),
+            source: hours,
             tz: hours.tz,
             holidays: None,
             policy: None,
             exceptions: None,
-            coverage: None,
+            coverage: (),
             replacement_layer: false,
             builtin_blocks: false,
         }
     }
+}
 
+impl<'a> QueryContext<'a, Identified> {
     pub(in crate::calendar) fn date_aware(calendar: ExchangeCalendar) -> Self {
         let holidays = calendar.holiday_table();
         let builtin_blocks = table_can_replace(holidays);
         Self {
-            source: ProfileSource::DateAware(calendar),
+            source: calendar,
             tz: calendar.tz(),
             holidays,
             policy: None,
             exceptions: None,
-            coverage: Some(calendar.coverage()),
+            coverage: calendar.coverage(),
             replacement_layer: builtin_blocks,
             builtin_blocks,
         }
@@ -224,17 +232,19 @@ impl<'a> QueryContext<'a> {
         let holidays = calendar.holiday_table();
         let builtin_blocks = table_can_replace(holidays);
         Self {
-            source: ProfileSource::DateAware(calendar),
+            source: calendar,
             tz: calendar.tz(),
             holidays,
             policy,
             exceptions,
-            coverage: Some(calendar.coverage()),
+            coverage: calendar.coverage(),
             replacement_layer: exceptions.is_some() || builtin_blocks,
             builtin_blocks,
         }
     }
+}
 
+impl<'a, G: SourceGate> QueryContext<'a, G> {
     /// Drops every day-level layer, leaving the sourced normal week.
     ///
     /// The overlay paths resolve a normal trading day first and then modify it,
@@ -243,7 +253,7 @@ impl<'a> QueryContext<'a> {
     /// two layers: it is a day-level modification of that normal week, and a
     /// baseline that kept it would recurse.
     ///
-    /// The coverage metadata is **not** dropped: it describes the identity
+    /// The coverage metadata is **not** dropped: it describes the source state
     /// rather than a day-level layer, and the days a baseline walk touches are
     /// the same days the enclosing query already had to answer for.
     pub(super) const fn baseline(self) -> Self {
@@ -282,188 +292,48 @@ impl<'a> QueryContext<'a> {
         self.holidays.is_some() || self.policy.is_some() || self.exceptions.is_some()
     }
 
-    /// Fails unless this identity answers `date` completely (LAW-COVERAGE).
-    ///
-    /// This is Stage 2B's single coverage seam: every identity-backed query
-    /// resolves the venue-local days it depends on through this method, so the
-    /// floor, an unsourced span and a withheld date are refused in one place
-    /// instead of at each of the eighteen public entry points. A detached
-    /// fixed snapshot answers `Ok(())` for every date, because it carries no
-    /// identity and therefore claims nothing about coverage.
-    ///
-    /// The check is taken on the **dates the query needs**, never on the
-    /// supplied instant alone: a caller asking what happens at 2025-01-01
-    /// 00:30 local depends on the trading day that opened the previous
-    /// evening, and a search that walks forward depends on every day it walks
-    /// over (plan section 6).
-    ///
-    /// A declared **phase-level** gap does not refuse the date: it withholds a
-    /// phase, not a day, so the day's normal week and holiday layer are still
-    /// sourced and a query that never reads that phase has a real answer.
-    /// Consulting the phase gap here would refuse a Tuesday afternoon for a
-    /// Sunday queue — precisely the coverage-error-read-as-closure failure
-    /// LAW-COVERAGE exists to prevent. The entry points that *do* probe the
-    /// phase ask [`Self::require_phase_coverage`] instead.
-    ///
-    /// Cost stays on the built-in hot path's budget: one comparison against a
-    /// floor constant, then the same bounded static-table walk the holiday
-    /// layer already performs, and no allocation.
-    pub(super) fn require_answerable(self, date: NaiveDate) -> Result<(), CalendarQueryError> {
-        let Some(coverage) = self.coverage else {
-            return Ok(());
-        };
-        if date < SUPPORT_FLOOR {
-            return Ok(());
-        }
-        let verdict = match coverage.date_level_gap_on(date) {
-            None => DateCoverage::Covered,
-            Some(CoverageGapReason::WithheldDate) => DateCoverage::UnresolvedGap,
-            Some(CoverageGapReason::NormalWeekOnly) => DateCoverage::NormalWeekOnly,
-            Some(_) => DateCoverage::OutsideCoveredRange,
-        };
-        match verdict {
-            DateCoverage::Covered => Ok(()),
-            // A normal-week-only calendar still has a sourced-normal-week start
-            // below which its weekday profile is carried rather than sourced,
-            // so the one relaxation reaches exactly as far as that start and no
-            // further. Reported rather than hidden: refusing here would let a
-            // caller read a coverage error as a market closure.
-            DateCoverage::NormalWeekOnly => {
-                let sourced = coverage.sourced_normal_week();
-                if date >= sourced.first() {
-                    Ok(())
-                } else {
-                    Err(CalendarQueryError::OutsideCoveredRange {
-                        source: coverage.identity(),
-                        date,
-                    })
-                }
-            }
-            DateCoverage::BeforeSupportFloor => Err(CalendarQueryError::BeforeSupportFloor {
-                source: coverage.identity(),
-                date,
-            }),
-            DateCoverage::UnresolvedGap => Err(CalendarQueryError::UnresolvedGap {
-                source: coverage.identity(),
-                date,
-            }),
-            DateCoverage::OutsideCoveredRange => Err(CalendarQueryError::OutsideCoveredRange {
-                source: coverage.identity(),
-                date,
-            }),
-        }
+    /// The date-level coverage gate ([`SourceGate::require_answerable`],
+    /// LAW-COVERAGE): every identity-backed query resolves the venue-local
+    /// days it depends on through it, while a [`FixedSnapshot`] context's
+    /// gate is total and cannot refuse.
+    pub(super) fn require_answerable(self, date: NaiveDate) -> Result<(), G::Error> {
+        G::require_answerable(self.coverage, date)
     }
 
-    /// Fails when the venue-local day containing `instant` precedes the floor.
-    ///
-    /// Every instant-addressed query starts here, so the floor is decided from
-    /// the caller's own instant rather than from each day a scan later walks over
-    /// (see [`Self::require_floor`]).
+    /// The instant floor gate ([`SourceGate::require_floor_at`]): the floor is
+    /// decided from the caller's own instant's venue-local day.
     pub(in crate::calendar) fn require_floor_at(
         self,
         instant: DateTime<Utc>,
-    ) -> Result<(), CalendarQueryError> {
-        let local_day = bounded_utc(instant, self.tz)
-            .with_timezone(&self.tz)
-            .date_naive();
-        self.require_floor(Some(local_day))
+    ) -> Result<(), G::Error> {
+        G::require_floor_at(self.coverage, self.tz, instant)
     }
 
-    /// Fails when the caller's own instant or date precedes the support floor.
-    ///
-    /// The floor is a fact about the **queried** day, never about every day a
-    /// scan walks over: the plan requires that a session opening before the
-    /// floor is still returned whole to an in-range query, while a query
-    /// addressed to an earlier instant errors (LAW-COVERAGE, plan section 6).
-    /// `date` is the venue-local day the caller's instant belongs to, and
-    /// `None` marks a detached snapshot, which carries no identity and claims
-    /// no coverage.
-    pub(super) fn require_floor(self, date: Option<NaiveDate>) -> Result<(), CalendarQueryError> {
-        let Some(coverage) = self.coverage else {
-            return Ok(());
-        };
-        let Some(date) = date else {
-            return Ok(());
-        };
-        if date < SUPPORT_FLOOR {
-            return Err(CalendarQueryError::BeforeSupportFloor {
-                source: coverage.identity(),
-                date,
-            });
-        }
-        Ok(())
+    /// The day floor gate ([`SourceGate::require_floor`]): a fact about the
+    /// **queried** day, never about every day a scan walks over.
+    pub(super) fn require_floor(self, date: NaiveDate) -> Result<(), G::Error> {
+        G::require_floor(self.coverage, date)
     }
 
-    /// Fails unless this identity answers the **withheld phase** on `date`.
-    ///
-    /// This is the strict sibling of [`Self::require_coverage`], for the entry
-    /// points whose answer *is* the arrangement a declared phase gap withholds:
-    /// the order-entry queue scans. An identity that declares no phase gap is
-    /// unaffected, so this costs one span check on that path.
-    ///
-    /// The declaration the metadata applies decides —
-    /// [`CalendarCoverage::phase_gap_on`], the first declaration in order whose
-    /// span contains the date *and* whose shape resolves against the built-in
-    /// layers, which is the same shadowing rule `coverage_on` and
-    /// [`CalendarCoverage::gaps`] report by. Deciding from the span alone would
-    /// let an earlier pass-through declaration whose queue is absent on the
-    /// date — the #152 shape resolves to no occurrence inside `globex_grains`'s
-    /// omitted 2012-05-20..2013-04-06 regime — shadow the refusing declaration
-    /// behind it, and a queue scan would answer absence where `coverage_on`
-    /// refuses. A declared gap withholds a queue exactly when its reason names
-    /// one: [`CoverageGapReason::NormalWeekPhaseWithheld`] and
-    /// [`CoverageGapReason::SpecialSessionUnrepresentable`] do, and
-    /// [`CoverageGapReason::PostCloseQueueTradeDateLabel`] and
-    /// [`CoverageGapReason::UnpublishedClosureDates`] do not, because their
-    /// phases are served — the post-close queue's window and both of its
-    /// verdicts are sourced, and an ordinary day's queues answer through Eurex's
-    /// undated closures. A pass-through reason refuses nothing. A refusing
-    /// reason refuses the scan: the #79 quarter-hour refuses the bracket-era
-    /// Sundays whose Pre-Open resolves, and answers the Tuesday beside one —
-    /// refusing a Tuesday for a Sunday queue is precisely the
-    /// coverage-error-read-as-closure failure LAW-COVERAGE exists to prevent.
-    /// An unrecognized reason refuses, which is the conservative direction: a
-    /// new declaration shape answers no queue until it says so.
-    pub(super) fn require_phase_coverage(self, date: NaiveDate) -> Result<(), CalendarQueryError> {
-        let Some(coverage) = self.coverage else {
-            return Ok(());
-        };
-        // The floor governs first. Below it the date is not "outside a covered
-        // range" — no range has been claimed there at all — and reporting the
-        // phase's verdict would both mask the floor and move the answer the day
-        // #117 lands. `require_answerable` deliberately passes below the floor,
-        // so the check has to be made here.
-        if date < SUPPORT_FLOOR {
-            return Err(CalendarQueryError::BeforeSupportFloor {
-                source: coverage.identity(),
-                date,
-            });
-        }
-        // Otherwise the date-level verdict governs: a date the identity cannot
-        // answer at all is refused for its own reason, not the phase's.
-        self.require_answerable(date)?;
-        match coverage.phase_gap_on(date) {
-            // No declaration applies to the date: the phase answers from the
-            // sourced tables.
-            None => Ok(()),
-            // A pass-through reason's phase is served — only its label is the
-            // crate's convention — so the scan answers from the sourced tables.
-            Some(gap)
-                if matches!(
-                    gap.reason(),
-                    CoverageGapReason::PostCloseQueueTradeDateLabel
-                        | CoverageGapReason::UnpublishedClosureDates
-                ) =>
-            {
-                Ok(())
-            }
-            // A refusing declaration applies: the phase the scan consults is
-            // the one the identity withholds on this date.
-            Some(_) => Err(CalendarQueryError::OutsideCoveredRange {
-                source: coverage.identity(),
-                date,
-            }),
-        }
+    /// The withheld-phase gate ([`SourceGate::require_phase_coverage`]) for
+    /// the entry points whose answer *is* the arrangement a declared phase
+    /// gap withholds: the order-entry queue scans.
+    pub(super) fn require_phase_coverage(self, date: NaiveDate) -> Result<(), G::Error> {
+        G::require_phase_coverage(self.coverage, date)
+    }
+
+    /// Whether the coverage metadata declares an unscoped refusing phase gap
+    /// on `day` — the cheap half of the order-entry scan's gate.
+    pub(super) fn has_unscoped_refusing_phase_gap_on(self, day: NaiveDate) -> bool {
+        G::has_unscoped_refusing_phase_gap_on(self.coverage, day)
+    }
+
+    /// The bounded-search-exhaustion verdict
+    /// ([`SourceGate::search_exhausted`]): an identity-backed source
+    /// attributes the exhaustion to itself, a detached snapshot keeps its
+    /// exhaustive `None` absence.
+    pub(super) fn search_exhausted(self, day: NaiveDate) -> Result<(), G::Error> {
+        G::search_exhausted(self.coverage, day)
     }
 
     /// Returns the built-in row for `trade_date`, if the identity has a table.
@@ -642,11 +512,8 @@ impl<'a> QueryContext<'a> {
     }
 
     /// Returns the schedule identity, or `None` for a detached fixed snapshot.
-    pub(super) const fn identity(self) -> Option<CalendarSource> {
-        match self.source {
-            ProfileSource::Fixed(_) => None,
-            ProfileSource::DateAware(calendar) => Some(calendar.source()),
-        }
+    pub(super) fn identity(self) -> Option<CalendarSource> {
+        G::identity(self.source)
     }
 
     /// Returns what the caller's own exception provider knows about `trade_date`.
@@ -789,17 +656,11 @@ impl<'a> QueryContext<'a> {
     }
 
     pub(super) fn has_daily_close_at(self, instant: DateTime<Utc>) -> bool {
-        match self.source {
-            ProfileSource::Fixed(hours) => hours.has_daily_close,
-            ProfileSource::DateAware(calendar) => calendar.hours_at(instant).has_daily_close,
-        }
+        G::has_daily_close_at(self.source, instant)
     }
 
     pub(super) fn has_weekend_close_at(self, instant: DateTime<Utc>) -> bool {
-        match self.source {
-            ProfileSource::Fixed(hours) => hours.has_weekend_close,
-            ProfileSource::DateAware(calendar) => calendar.hours_at(instant).has_weekend_close,
-        }
+        G::has_weekend_close_at(self.source, instant)
     }
 
     /// True when `instant` falls in an order-entry-only phase occurrence.
@@ -812,10 +673,7 @@ impl<'a> QueryContext<'a> {
     /// sessions: a closed trade date removes the complete trading day including
     /// the queue that feeds it, and a replaced trade date serves only the
     /// order-entry blocks the caller supplied for it.
-    pub(super) fn contains_order_entry(
-        self,
-        instant: DateTime<Utc>,
-    ) -> Result<bool, CalendarQueryError> {
+    pub(super) fn contains_order_entry(self, instant: DateTime<Utc>) -> Result<bool, G::Error> {
         let day = bounded_utc(instant, self.tz)
             .with_timezone(&self.tz)
             .date_naive();
@@ -851,80 +709,7 @@ impl<'a> QueryContext<'a> {
 
     /// Selects a profile by the venue-local day on which a session opens.
     pub(super) fn profile_for_open_day(self, day: NaiveDate) -> ResolvedHours<'a> {
-        match self.source {
-            ProfileSource::Fixed(hours) => ResolvedHours::Borrowed(hours),
-            ProfileSource::DateAware(calendar) => {
-                let anchor = mk_local_open(self.tz, day, OPEN_DAY_ANCHOR_SSM).with_timezone(&Utc);
-                ResolvedHours::Selected(calendar.hours_at(anchor))
-            }
-        }
-    }
-}
-
-/// Collapses the shared engine's `Result` for a **detached fixed snapshot**.
-///
-/// The fixed-snapshot adapters (`MarketHours`' own predicates and the free
-/// `session_bounds` / `candle_end` family) answer `Option`/`bool`/`SessionState`
-/// with no error channel, while the engine they run returns a
-/// `Result` carrying [`CalendarQueryError`]. This trait is the one place the
-/// two meet, and it is sound because of how [`QueryContext`] is built, not
-/// because the branch looks impossible:
-///
-/// - every `CalendarQueryError` the engine produces is made in one of
-///   [`QueryContext::require_answerable`], [`QueryContext::require_floor`],
-///   [`QueryContext::require_floor_at`] or
-///   [`QueryContext::require_phase_coverage`], each of which returns `Ok` when
-///   the context carries no coverage metadata; or in the period walk's
-///   `SearchExhausted` site, which returns `Ok(None)` when the context has no
-///   identity to attribute the exhaustion to;
-/// - [`QueryContext::fixed`] sets `coverage: None`, and `coverage` is `None`
-///   exactly when the source is [`ProfileSource::Fixed`], so a fixed context
-///   can reach neither gate; and
-/// - the field is private and the three constructors in this module are the
-///   only ways to build a context.
-///
-/// A future error variant produced outside those gates would silently report a
-/// coverage failure as market absence here. That is the invariant's known
-/// maintenance cost, recorded as
-/// [#245](https://github.com/SharurTrading/exchange-hours-rs/issues/245) (from
-/// the LAW-INVARIANT audit, #210): the required outcome is a compile-time
-/// split that makes the collapse unrepresentable. The
-/// `fixed_snapshot_collapse_fence` test pins the observable consequence on
-/// every shipped identity meanwhile.
-///
-/// The collapse itself is the adapters' documented contract, not a swallowed
-/// failure: a detached snapshot carries no identity, claims no coverage
-/// (LAW-COVERAGE), and its `None`/`false` answers mean "the supplied rules say
-/// so" — bounded-search absence and unresolved rules included (LAW-PANIC).
-pub(in crate::calendar) trait FixedSnapshotAnswer {
-    /// The adapter-surface answer the engine result collapses to.
-    type Answer;
-
-    /// Collapses the engine result; see the trait's own documentation.
-    fn fixed_answer(self) -> Self::Answer;
-}
-
-impl<T> FixedSnapshotAnswer for Result<Option<T>, CalendarQueryError> {
-    type Answer = Option<T>;
-
-    fn fixed_answer(self) -> Self::Answer {
-        self.unwrap_or(None)
-    }
-}
-
-impl FixedSnapshotAnswer for Result<bool, CalendarQueryError> {
-    type Answer = bool;
-
-    fn fixed_answer(self) -> Self::Answer {
-        self.unwrap_or(false)
-    }
-}
-
-impl FixedSnapshotAnswer for Result<SessionState, CalendarQueryError> {
-    type Answer = SessionState;
-
-    fn fixed_answer(self) -> Self::Answer {
-        self.unwrap_or(SessionState::Closed)
+        G::profile_for_open_day(self.source, self.tz, day)
     }
 }
 
@@ -944,13 +729,13 @@ impl FixedSnapshotAnswer for Result<SessionState, CalendarQueryError> {
 /// rule set overlaps — otherwise the normal scan would answer first with a
 /// session that [`QueryContext::trade_date_for_bounds`] does not assign to that
 /// block's trade date, which is issue #130.
-pub(super) fn find_occurrence<T>(
-    context: &QueryContext<'_>,
+pub(super) fn find_occurrence<G: SourceGate, T>(
+    context: &QueryContext<'_, G>,
     open_day: NaiveDate,
     set: RuleSet,
     wrapped_only: bool,
     mut probe: impl FnMut(DateTime<Utc>, DateTime<Utc>) -> Option<T>,
-) -> Result<Option<T>, CalendarQueryError> {
+) -> Result<Option<T>, G::Error> {
     // The date-level gate sits ahead of the profile selection, not inside it:
     // resolving a profile reads the identity's zone through a post-floor epoch
     // snapshot, and the plan requires that resolution never be reached on a date
@@ -974,9 +759,7 @@ pub(super) fn find_occurrence<T>(
     // tables without consulting the withheld phase, and a coverage error
     // there would refuse an answer the identity has.
     if matches!(set, RuleSet::OrderEntry) && {
-        context
-            .coverage
-            .is_some_and(|coverage| coverage.has_unscoped_refusing_phase_gap_on(open_day))
+        context.has_unscoped_refusing_phase_gap_on(open_day)
             || rules(selected.as_ref(), set)
                 .any(|rule| rule.days[weekday] && (!wrapped_only || rule.wraps_to_next_day()))
             || context.builtin_block_may_exist_on(open_day)
@@ -1095,12 +878,12 @@ pub(in crate::calendar) fn builtin_has_tradeable_rule(
 }
 
 /// Resolves one scheduled occurrence and rejects civil-time collapses.
-pub(super) fn resolve_rule_bounds(
-    context: &QueryContext<'_>,
+pub(super) fn resolve_rule_bounds<G: SourceGate>(
+    context: &QueryContext<'_, G>,
     open_day: NaiveDate,
     set: RuleSet,
     rule: &SessionRule,
-) -> Result<Option<crate::calendar::exchange_calendar::SessionWindow>, CalendarQueryError> {
+) -> Result<Option<crate::calendar::exchange_calendar::SessionWindow>, G::Error> {
     let close_day = if rule.wraps_to_next_day() {
         open_day.succ_opt()
     } else {
@@ -1192,13 +975,13 @@ pub(super) fn resolve_rule_bounds(
 /// correct civil day for a session that opened the previous evening, and an
 /// occurrence that would begin after the cutoff disappears rather than
 /// inverting.
-fn clamp_to_clip(
-    context: &QueryContext<'_>,
+fn clamp_to_clip<G: SourceGate>(
+    context: &QueryContext<'_, G>,
     clip: DayClip,
     trade_date: NaiveDate,
     raw_open: DateTime<Utc>,
     raw_close: DateTime<Utc>,
-) -> Result<Option<crate::calendar::exchange_calendar::SessionWindow>, CalendarQueryError> {
+) -> Result<Option<crate::calendar::exchange_calendar::SessionWindow>, G::Error> {
     if clip.unavailable {
         return Ok(None);
     }

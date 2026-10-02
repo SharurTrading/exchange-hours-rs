@@ -12,6 +12,27 @@ corrections (a venue's hours fixed against a primary source) go under
 ## [Unreleased]
 ### Changed
 
+- **The fixed-snapshot no-error invariant is a type-level property (2026-10-01
+  UTC; fixes #245).** The nine fixed-snapshot adapters (`MarketHours`'
+  predicates and the free `session_bounds` / `candle_end` family) collapsed
+  the shared engine's `Result<Option<T>, CalendarQueryError>` through
+  `unwrap_or` in a `FixedSnapshotAnswer` trait whose soundness the #246 audit
+  had documented but not eliminated: the invariant held only because three
+  private constructors kept `coverage: None` paired with a fixed source, and
+  the collapse itself was reachable from a context that could carry coverage.
+  The query engine is now parameterised over a `SourceGate` coverage gate with
+  exactly two states: `FixedSnapshot` — a detached caller-supplied snapshot,
+  carrying no coverage at all and unable to raise an error (`Error` is
+  `Infallible`) — and `Identified`, which always carries its
+  `CalendarCoverage` and reports every refusal through `CalendarQueryError`
+  (LAW-COVERAGE). The collapse is one function, `query::gate::answered`,
+  unwrapping `Result<T, Infallible>` with a match that has no error arm to
+  write, and it does not accept a coverage-carrying context's result at
+  compile time. No shipped answer moves: the engine is one generic code path
+  monomorphised over the two states, the hot path stays allocation-free (the
+  fixed path's floor gate is now a total `Ok`), and the parity fence
+  (`fixed_snapshot_collapse_fence`) pins every shipped identity unchanged.
+
 - **The query engine's hot path recovers the block-row tax, the coverage gate
   consults caller records instead of windows, and the per-occurrence window
   narrows to the occurrence's own close (2026-10-01 UTC; fixes #125, closes

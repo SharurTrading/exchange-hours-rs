@@ -1128,7 +1128,7 @@ fn the_post_close_label_gap_applies_only_to_the_dates_that_carry_the_queue() {
             ),
             (
                 CoverageGapReason::NormalWeekPhaseWithheld,
-                "#116",
+                "#259",
                 Some(date(2012, 5, 20)),
                 Some(date(2013, 4, 7)),
                 exchange_hours::PhaseGapShape::EveryDay,

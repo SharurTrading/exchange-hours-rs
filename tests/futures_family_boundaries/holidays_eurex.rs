@@ -52,10 +52,13 @@ fn identities() -> [(&'static str, ExchangeCalendar); 3] {
 }
 
 /// The two benchmark-index identities, whose normal-week history is sourced
-/// from the 2010-01-01 floor. `eurex_fixed_income` shares the holiday table
-/// and, since the 2026-09-30 wave, sources its pre-2018 baseline grid from
-/// the operator's archived Contract Specifications amendments back to the
-/// floor, so all three Eurex identities answer sessions from 2010-01-01.
+/// from the 2010-01-01 floor. Since the German-scope split, `eurex` carries
+/// the 108 all-derivatives rows plus the eight dated German-scope rows and
+/// `eurex_fixed_income` carries the 108 all-derivatives rows alone — the
+/// German lines never name fixed income — and, since the 2026-09-30 wave,
+/// sources its pre-2018 baseline grid from the operator's archived Contract
+/// Specifications amendments back to the floor, so all three Eurex
+/// identities answer sessions from 2010-01-01.
 fn benchmark_identities() -> [(&'static str, ExchangeCalendar); 2] {
     [
         ("Exchange::Eurex", calendar_for_exchange(Exchange::Eurex)),

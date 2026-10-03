@@ -316,32 +316,51 @@ const WITHHELD_QUARTER_HOUR: [PhaseGap; 1] = [withheld_sunday_quarter_hour()];
 /// trade-date convention retired that (#152; see the note above).
 const GRAINS_GAPS: [PhaseGap; 1] = [grains_omitted_regime_queues()];
 
-/// The undated closure scope `eurex` declares: Eurex's own trading calendars say
-/// the German equity and equity-index scope closes on dates it has not published
-/// (#157).
+/// The undated closure scope `eurex` declares: the `tba` era of Eurex's German
+/// equity and equity-index closures, 2025-01-01 through the last edition in
+/// hand (#157).
 ///
+/// The pre-2025 editions **date** that scope, and its rows ship in the
+/// `holidays/eurex.rs` `TABLE`: the 2014, 2016,
+/// 2017 and 2018 editions print `Eurex is closed for trading and exercise in
+/// German equity and equity index derivatives as well as ETF and ETC
+/// derivatives, which are based on Xetra® listings:` with day-level dates
+/// (eight `Closed` rows, 2014-10-03 through 2018-10-03), the 2019-2021
+/// editions print the same scope with the operator's own parenthetical
+/// `(trading in German equity index futures takes place!)` — so nothing closes
+/// in the benchmark-index-futures scope those years — and the 2010-2013, 2015
+/// and 2022-2024 editions print no German-scope line at all in a panel that
+/// enumerates every other country's closures. None of those years withholds
+/// anything any more.
+///
+/// What the operator still withholds is the note's return in the 2025 and 2026
+/// editions as `tba` / `to be announced`, with no futures carve-out.
 /// `docs/schedules/coverage-2025.md` records the scope's verdict as incomplete
 /// for it and `docs/evidence/eurex.md` quotes both editions: the *Eurex trading
-/// calendar 2025* prints `Kein Handel und keine Ausübung in deutschen Aktien- und
-/// Aktienindex-derivaten sowie in ETF- und ETC-Derivaten, die auf
+/// calendar 2025* prints `Kein Handel und keine Ausübung in deutschen Aktien-
+/// und Aktienindex-derivaten sowie in ETF- und ETC-Derivaten, die auf
 /// Xetra@-Börsen-notierungen basieren: tba.`, and the 2026 edition carries the
 /// same note in English and still says `to be announced`. FDAX and FDXM are
-/// German equity-index derivatives behind this identity, so 2025 and 2026 could
-/// carry closures the shipped table cannot state.
+/// German equity-index derivatives behind this identity, so 2025 and 2026
+/// could carry closures the shipped table cannot state.
 ///
-/// **Bounded by the editions that carry the note, and no phase.** The note is
-/// evidence in the 2025 and 2026 editions and in no later one — the 2027-2036
-/// material is the operator's own `preliminary and indicative` publishing, and
-/// the archive's Trading Calendar list stops at 2026 — so the gap's span ends
-/// where the last edition in hand ends: 2027-01-01 is the first day the note
-/// does not establish, not a day the operator resolved it. If a 2027 edition
-/// carries the note again, extending the bound is that edition's dated change.
-/// The gap withholds no phase — Eurex serves every phase it models on an
-/// ordinary day — so the declaration is a completeness fact rather than a reason
-/// to refuse an order-entry queue, and
+/// **Bounded by the editions that carry the note, and no phase.** The `since`
+/// bound is 2025-01-01: the 2024 edition is the last one without the note, so
+/// every date before it answers from the dated rows or from the operator's own
+/// no-line editions, and the declaration withholds nothing the evidence gives.
+/// The note is evidence in the 2025 and 2026 editions and in no later one —
+/// the 2027-2036 material is the operator's own `preliminary and indicative`
+/// publishing, and the archive's Trading Calendar list stops at 2026 — so the
+/// gap's span ends where the last edition in hand ends: 2027-01-01 is the
+/// first day the note does not establish, not a day the operator resolved it.
+/// If a 2027 edition carries the note again, extending the bound is that
+/// edition's dated change. The gap withholds no phase — Eurex serves every
+/// phase it models on an ordinary day — so the declaration is a completeness
+/// fact rather than a reason to refuse an order-entry queue, and
 /// `CalendarQueryContext::require_phase_coverage` answers through it.
 const fn undated_german_closures() -> PhaseGap {
     PhaseGap::new(CoverageGapReason::UnpublishedClosureDates, "#157")
+        .since(effective_date(2025, 1, 1))
         .until(effective_date(2027, 1, 1))
 }
 

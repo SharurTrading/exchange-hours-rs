@@ -1184,11 +1184,16 @@ fn the_declared_phase_level_gaps_match_the_inventory() {
         // information, not a re-dating. Whether the identity answers any date
         // completely follows from the declarations and the audited facts: one
         // that carries a whole-domain `EveryDay` gap answers none; one whose
-        // declarations are all `EveryDay`, bounded, and outlived by the audited
-        // windows answers none either — `eurex` is the shipped case, whose
-        // editions end 2026-12-31 and whose bound is the day after. A date-scoped
-        // declaration answers the dates its shape does not resolve, so a shaped
-        // scope reports complete spans beside its gap records.
+        // declarations are all `EveryDay` and whose spans blanket every audited
+        // window answers none either — `eurex` before its dated German-scope
+        // rows shipped was that case, whose editions ended 2026-12-31 with the
+        // bound the day after. A bounded span that starts inside a window
+        // leaves the dates below it answering (`globex_grains`' bracketed
+        // regime, `eurex` since its 2025-01-01 `tba` bound), so the derivation
+        // walks the spans across each window rather than comparing endpoints.
+        // A date-scoped declaration answers the dates its shape does not
+        // resolve, so a shaped scope reports complete spans beside its gap
+        // records.
         let whole_domain = coverage.phase_gaps().iter().any(|gap| {
             gap.applies_since().is_none()
                 && gap.applies_until().is_none()
@@ -1198,16 +1203,39 @@ fn the_declared_phase_level_gaps_match_the_inventory() {
             .phase_gaps()
             .iter()
             .all(|gap| gap.shape() == exchange_hours::PhaseGapShape::EveryDay);
-        let audited_end = calendar
-            .holiday_coverage()
-            .map(exchange_hours::HolidayCoverage::last);
-        let latest_bound = coverage
-            .phase_gaps()
-            .iter()
-            .filter_map(|gap| gap.applies_until())
-            .max();
+        // Whether the EveryDay declarations blanket the audited windows: every
+        // audited date lies inside some declaration's span, so no date
+        // survives to answer. Derived by walking the spans over each window.
         let nothing_survives = all_every_day
-            && matches!((audited_end, latest_bound), (Some(end), Some(bound)) if end < bound);
+            && calendar.holiday_coverage().is_some_and(|audited| {
+                audited.windows().iter().all(|(first, last)| {
+                    let mut spans: Vec<(NaiveDate, NaiveDate)> = coverage
+                        .phase_gaps()
+                        .iter()
+                        .map(|gap| {
+                            (
+                                gap.applies_since().unwrap_or(*first),
+                                gap.applies_until()
+                                    .and_then(|until| until.pred_opt())
+                                    .unwrap_or(*last),
+                            )
+                        })
+                        .collect();
+                    spans.sort();
+                    let mut cursor = *first;
+                    for (start, end) in spans {
+                        if start > cursor {
+                            return false;
+                        }
+                        if end >= cursor
+                            && let Some(next) = end.succ_opt()
+                        {
+                            cursor = next;
+                        }
+                    }
+                    cursor > *last
+                })
+            });
         assert_eq!(
             coverage.complete_ranges().count() == 0,
             whole_domain || nothing_survives,

@@ -717,24 +717,49 @@ fn check_declarations(
     }
     // Complete spans are empty exactly while nothing survives the declarations:
     // a whole-domain `EveryDay` declaration claims every answered date, or every
-    // declaration is `EveryDay`, bounded, and outlives the audited windows —
-    // `eurex` is the shipped case, whose editions end 2026-12-31 and whose bound
-    // is the day after.
+    // declaration is `EveryDay` and its spans blanket every audited window —
+    // `eurex` before its dated German-scope rows shipped was that case, whose
+    // editions ended 2026-12-31 with the bound the day after. A bounded span
+    // that starts inside a window leaves the dates below it answering
+    // (`globex_grains`' bracketed regime, `eurex` since its 2025-01-01 `tba`
+    // bound), so the derivation walks the spans over each window.
     let all_every_day = coverage
         .phase_gaps()
         .iter()
         .all(|gap| gap.shape() == exchange_hours::PhaseGapShape::EveryDay);
-    let audited_end = coverage
-        .holiday_contract()
-        .coverage()
-        .map(exchange_hours::HolidayCoverage::last);
-    let latest_bound = coverage
-        .phase_gaps()
-        .iter()
-        .filter_map(|gap| gap.applies_until())
-        .max();
     let nothing_survives = all_every_day
-        && matches!((audited_end, latest_bound), (Some(end), Some(bound)) if end < bound);
+        && coverage
+            .holiday_contract()
+            .coverage()
+            .is_some_and(|audited| {
+                audited.windows().iter().all(|(first, last)| {
+                    let mut spans: Vec<(NaiveDate, NaiveDate)> = coverage
+                        .phase_gaps()
+                        .iter()
+                        .map(|gap| {
+                            (
+                                gap.applies_since().unwrap_or(*first),
+                                gap.applies_until()
+                                    .and_then(|until| until.pred_opt())
+                                    .unwrap_or(*last),
+                            )
+                        })
+                        .collect();
+                    spans.sort();
+                    let mut cursor = *first;
+                    for (start, end) in spans {
+                        if start > cursor {
+                            return false;
+                        }
+                        if end >= cursor
+                            && let Some(next) = end.succ_opt()
+                        {
+                            cursor = next;
+                        }
+                    }
+                    cursor > *last
+                })
+            });
     assert_eq!(
         complete.is_empty(),
         whole_domain || nothing_survives,
@@ -1324,10 +1349,13 @@ fn a_declared_phase_gap_is_era_aware_and_reported_for_the_span_it_answers() {
 
     // `eurex` is the one *venue* that declares a gap, and it is the one shape
     // that withholds no phase: the operator's German equity/equity-index
-    // closures are undated, so the site is incomplete on every date the
-    // declaration covers while its ordinary week and order-entry queues are
-    // still served. The reason travels with the declaration, because the query
-    // gate answers through this reason and refuses through the other two.
+    // closures are undated in the 2025 and 2026 editions (`tba` / `to be
+    // announced`), so the site is incomplete on every date the declaration
+    // covers while its ordinary week and order-entry queues are still served.
+    // The dated German-scope rows of the 2014-2018 editions ship, so the
+    // declaration starts where the `tba` note does. The reason travels with
+    // the declaration, because the query gate answers through this reason and
+    // refuses through the other two.
     let eurex = exchange_coverage(Exchange::Eurex);
     let declared: Vec<(CoverageGapReason, &str)> = eurex
         .phase_gaps()
@@ -1337,6 +1365,15 @@ fn a_declared_phase_gap_is_era_aware_and_reported_for_the_span_it_answers() {
     assert_eq!(
         declared,
         vec![(CoverageGapReason::UnpublishedClosureDates, "#157")]
+    );
+    assert_eq!(
+        eurex
+            .phase_gaps()
+            .iter()
+            .find_map(|gap| gap.applies_since()),
+        Some(date(2025, 1, 1)),
+        "the declaration starts at the tba era: the 2024 edition is the last one \
+         without the German-scope note, and the dated rows before it ship"
     );
     assert_eq!(
         eurex
@@ -1355,6 +1392,11 @@ fn a_declared_phase_gap_is_era_aware_and_reported_for_the_span_it_answers() {
     assert_eq!(
         eurex.coverage_on(date(2025, 6, 10)),
         DateCoverage::OutsideCoveredRange
+    );
+    assert!(
+        eurex.is_complete_on(date(2016, 10, 3)),
+        "eurex answers the dated 2016 German Unity Day from the shipped row, so the date \
+         is complete"
     );
     assert!(
         !key_coverage(MarketHoursKey::GlobexCryptocurrency)
@@ -1553,14 +1595,12 @@ fn a_date_scoped_declaration_zeroes_no_identity_over_2025_2027() {
          are the queue days there are"
     );
 
-    // Eurex stays at zero complete days. The German equity/equity-index scope
-    // behind #157 stands unencoded across the whole audited window: the
-    // 2010-2024 Trading Calendar editions date that scope (Unity Day and the
-    // Xetra-listing closures) and the crate leaves those dates unencoded
-    // beside its all-derivatives rows, while the 2025 and 2026 editions
-    // withhold it outright as `tba` — and 2027 lies outside the audited
-    // windows. The record therefore spans the audited window the holiday
-    // table audits, ending where the editions in hand end.
+    // Eurex stays at zero complete days over 2025-2027, and for a narrowed
+    // reason: the 2014-2018 editions date the German equity/equity-index
+    // scope and those rows ship (2010-01-01..2024-12-31 answers Covered
+    // whole), so what refuses inside the regression interval is the `tba`
+    // note the 2025 and 2026 editions print for that scope (#157) — and 2027
+    // lies outside the audited windows as before.
     let eurex = exchange_coverage(Exchange::Eurex);
     assert_eq!(complete_days(eurex), 0);
     let unpublished: Vec<(DateRange, Option<&str>)> = eurex
@@ -1568,19 +1608,15 @@ fn a_date_scoped_declaration_zeroes_no_identity_over_2025_2027() {
         .filter(|gap| gap.reason() == CoverageGapReason::UnpublishedClosureDates)
         .map(|gap| (gap.range(), gap.closing_condition()))
         .collect();
-    // The resolution-edge rule (#151) splits the run at the window edges:
-    // 2010-01-01..03 answer incompletely because their sessions reach back to
-    // 2009-12-31, and 2026-12-31 because its next session reaches 2027-01-01.
-    // The phase gap is checked first, so those dates keep the #157 reason.
+    // The resolution-edge rule (#151) splits the run at the tba era's end:
+    // 2026-12-31 answers incompletely because its next session reaches
+    // 2027-01-01, outside every window, while 2025-01-01..2026-12-30 refuse
+    // on the declared gap alone.
     assert_eq!(
         unpublished,
         vec![
             (
-                DateRange::new(date(2010, 1, 1), date(2010, 1, 3)).expect("ascending"),
-                Some("#157")
-            ),
-            (
-                DateRange::new(date(2010, 1, 4), date(2026, 12, 30)).expect("ascending"),
+                DateRange::new(date(2025, 1, 1), date(2026, 12, 30)).expect("ascending"),
                 Some("#157")
             ),
             (
@@ -1588,8 +1624,8 @@ fn a_date_scoped_declaration_zeroes_no_identity_over_2025_2027() {
                 Some("#157")
             ),
         ],
-        "the #157 record spans the audited window the German scope stands unencoded \
-         across, ending where the editions in hand end"
+        "the #157 record spans the tba era the German scope stands unencoded across, \
+         ending where the editions in hand end"
     );
 }
 

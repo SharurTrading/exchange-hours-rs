@@ -247,10 +247,13 @@ time and sha256 per artifact in its `INDEX.md`; the operator statements behind e
   A 2026-10-03 attempt through channels the earlier waves had not tried strengthens the negative
   structurally. The operator's live listing, captured byte-exact through the reader's HTML mode
   (`holidays/raw/cde/recheck-2026-10-03/`), embeds the notice table as the operator's own
-  Contentful rich text (its `FairX Market Notices Page (PROD)` document): every notice row's
-  title cell there is a hyperlink node carrying an `assets.ctfassets.net` PDF address — 22-11's,
-  22-09's, every sibling's — while **22-10's title cell is a plain text node carrying no address
-  at all**; the operator's current CMS holds no 22-10 asset to link. Two fresh CDX shapes over
+  Contentful rich text (its `FairX Market Notices Page (PROD)` document): many notice rows'
+  title cells there are hyperlink nodes carrying `assets.ctfassets.net` PDF addresses — 22-11's,
+  whose PDF the retrieval saved from the operator's CDN, among them — while **22-10's title
+  cell is a plain text node carrying no address at all**; the operator's current CMS holds no
+  22-10 asset to link. (Plain-text title cells are common across the table — twenty rows carry
+  no title link — so the narrow fact is 22-10's own: no asset, and no restatement anywhere
+  else.) Two fresh CDX shapes over
   the whole asset space return no 2022-Thanksgiving artifact under any filename: `.*22-10.*`
   matches only the unrelated regulatory `2022-10E-LMX-Crypto-LMM-Program` document and
   `.*[Tt]hanksgiving.*` matches only 21-06 and 24-21 (artifacts `cdx_ctfassets_*.txt` under
@@ -258,7 +261,7 @@ time and sha256 per artifact in its `INDEX.md`; the operator statements behind e
   holds seven captures across 2022-2023, all 301 redirects or API endpoints and no announcement
   page (`cdx_trade_ledgerx_*.txt` in the same directory). Two further web searches — the sibling
   notices' distinctive `Hours of Operation` layout strings, and a transparency/annual-report
-  shape — surface no copy. Notice 22-11's own PDF, now retrieved from the operator's CDN
+  shape — surface no copy (ad-hoc queries, not archived). Notice 22-11's own PDF, now retrieved from the operator's CDN
   (`pdf/Market_Notice__22-11.pdf` in the recheck directory), restates only the Christmas 2022
   schedule, so the restatement route is closed as well as the archive route. Closing condition
   unchanged.

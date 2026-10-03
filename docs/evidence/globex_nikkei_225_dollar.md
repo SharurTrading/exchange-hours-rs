@@ -799,7 +799,9 @@ This era's rows cite the ids below: CME Group's own published holiday schedules 
   (USD) Futures` and enumerates every event date with `"events":[]`, so it is not a
   product-resolution failure; and wider `THBP-B` windows running from the Friday (or the
   Wednesday, for Juneteenth) before each holiday through the day after the merged date answer
-  all six products with zero events for all five dates. A positive control over
+  all six products with zero events for the four dates this round covered directly — the MLK
+  window's six-product zero was already on file from the earlier targeted round's `edgeB`
+  capture. A positive control over
   2025-11-26..29 answers `hasEvents:true` with full `NKD`/`NIY` schedules, byte-identical to
   the store's `D54` capture except the order of the `products` array, so the channel and the
   service are healthy and the empties are the retention edge, not an outage; the direct channel

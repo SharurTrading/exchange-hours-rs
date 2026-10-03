@@ -708,11 +708,11 @@ fn cryptocurrency_models_the_later_saturday_extensions() {
         );
     }
 
-    // The 13.5-hour October 24 halt is not a maintenance window: the gap
+    // The 13.5-hour October 24 closure is not a maintenance window: the gap
     // exceeds the four-hour operator-designated bound the crate keeps, and it
     // falls inside one trade date — the weekend block carries the following
-    // Monday's — so the policy classifies it Halt, a pause in a trade date's
-    // trading, and `is_maintenance` must answer false there.
+    // Monday's — so the policy classifies it Closed, and `is_maintenance`
+    // must answer false there.
     let calendar = calendar_for_market_hours_key(MarketHoursKey::GlobexCryptocurrency);
     for probe in [
         ct((2026, 10, 24), (2, 0, 0)),
@@ -723,8 +723,8 @@ fn cryptocurrency_models_the_later_saturday_extensions() {
             calendar
                 .session_state(probe)
                 .expect("the coverage contract must answer a covered date"),
-            SessionState::Halt,
-            "{probe}: the FIA drill halt is a same-trade-date halt, not maintenance"
+            SessionState::Closed,
+            "{probe}: the FIA drill closure is same-trade-date closed, not maintenance"
         );
         assert!(
             !calendar

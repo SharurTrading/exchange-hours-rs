@@ -2064,8 +2064,9 @@ fn a_trade_date_may_span_three_opening_days_with_pauses_between_them() {
         );
     }
 
-    // The gaps are inside one trade date, so they are pauses rather than the
-    // closure that separates trade dates.
+    // The gaps are inside one trade date, so they are not the maintenance
+    // bound's inter-trade-date case and not open either: the crate has no
+    // halt concept (#264), so a scheduled same-trade-date gap reads closed.
     for instant in [
         ct((2026, 8, 28), (21, 0, 0)),
         ct((2026, 8, 29), (18, 0, 0)),
@@ -2081,8 +2082,8 @@ fn a_trade_date_may_span_three_opening_days_with_pauses_between_them() {
             calendar
                 .session_state(instant)
                 .expect("the coverage contract must answer a covered date"),
-            SessionState::Halt,
-            "a same-trade-date gap must read as a pause at {instant}"
+            SessionState::Closed,
+            "a same-trade-date gap must read closed at {instant}"
         );
     }
 }

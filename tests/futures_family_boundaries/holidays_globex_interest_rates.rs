@@ -788,11 +788,12 @@ const ERA_BLOCKS_1700_THANKSGIVING: [EraBlock; 4] = [
     ),
 ];
 
-/// One expected era row: the halt row of a noon-halt pair, the merged row of
-/// a pair (with the block group it must state), or any other scalar row the
-/// window ships, carried with its kind.
+/// One expected era row: the noon row the operator's sheet words as a halt
+/// (the crate ships it as an `EarlyClose`), the merged row of a pair (with
+/// the block group it must state), or any other scalar row the window
+/// ships, carried with its kind.
 enum EraExpectedKind {
-    Halt,
+    NoonEarlyClose,
     Merged(&'static [EraBlock; 4]),
     Other(HolidayKind),
 }
@@ -831,7 +832,7 @@ const ERA_2010_2012_ROWS: &[((i32, u32, u32), EraExpectedKind, &str)] = &[
     ),
     (
         (2010, 1, 18),
-        EraExpectedKind::Halt,
+        EraExpectedKind::NoonEarlyClose,
         "2010-martin-luther-king.pdf @2010-03-31T06:42:26Z",
     ),
     (
@@ -846,7 +847,7 @@ const ERA_2010_2012_ROWS: &[((i32, u32, u32), EraExpectedKind, &str)] = &[
     ),
     (
         (2010, 2, 15),
-        EraExpectedKind::Halt,
+        EraExpectedKind::NoonEarlyClose,
         "2010-presidents-day.pdf @2010-02-15T06:46:41Z",
     ),
     (
@@ -866,7 +867,7 @@ const ERA_2010_2012_ROWS: &[((i32, u32, u32), EraExpectedKind, &str)] = &[
     ),
     (
         (2010, 5, 31),
-        EraExpectedKind::Halt,
+        EraExpectedKind::NoonEarlyClose,
         "2010-memorial-day.pdf @2010-06-01T09:42:25Z",
     ),
     (
@@ -881,7 +882,7 @@ const ERA_2010_2012_ROWS: &[((i32, u32, u32), EraExpectedKind, &str)] = &[
     ),
     (
         (2010, 7, 5),
-        EraExpectedKind::Halt,
+        EraExpectedKind::NoonEarlyClose,
         "2010-4th-of-july.pdf @2010-06-02T00:56:37Z",
     ),
     (
@@ -896,7 +897,7 @@ const ERA_2010_2012_ROWS: &[((i32, u32, u32), EraExpectedKind, &str)] = &[
     ),
     (
         (2010, 9, 6),
-        EraExpectedKind::Halt,
+        EraExpectedKind::NoonEarlyClose,
         "2010-labor-day.pdf @2010-06-02T00:56:41Z",
     ),
     (
@@ -911,7 +912,7 @@ const ERA_2010_2012_ROWS: &[((i32, u32, u32), EraExpectedKind, &str)] = &[
     ),
     (
         (2010, 11, 25),
-        EraExpectedKind::Halt,
+        EraExpectedKind::NoonEarlyClose,
         "2010-thanksgiving.pdf @2010-11-22T09:40:12Z",
     ),
     (
@@ -936,7 +937,7 @@ const ERA_2010_2012_ROWS: &[((i32, u32, u32), EraExpectedKind, &str)] = &[
     ),
     (
         (2011, 1, 17),
-        EraExpectedKind::Halt,
+        EraExpectedKind::NoonEarlyClose,
         "2011-martin-luther-king.pdf @2011-10-28T02:34:29Z",
     ),
     (
@@ -951,7 +952,7 @@ const ERA_2010_2012_ROWS: &[((i32, u32, u32), EraExpectedKind, &str)] = &[
     ),
     (
         (2011, 2, 21),
-        EraExpectedKind::Halt,
+        EraExpectedKind::NoonEarlyClose,
         "2011-presidents-day.pdf @2011-10-28T02:35:16Z",
     ),
     (
@@ -971,7 +972,7 @@ const ERA_2010_2012_ROWS: &[((i32, u32, u32), EraExpectedKind, &str)] = &[
     ),
     (
         (2011, 5, 30),
-        EraExpectedKind::Halt,
+        EraExpectedKind::NoonEarlyClose,
         "2011-memorial-day.pdf @2013-09-30T10:56:52Z",
     ),
     (
@@ -986,7 +987,7 @@ const ERA_2010_2012_ROWS: &[((i32, u32, u32), EraExpectedKind, &str)] = &[
     ),
     (
         (2011, 7, 4),
-        EraExpectedKind::Halt,
+        EraExpectedKind::NoonEarlyClose,
         "2011-4th-of-july.pdf @2011-11-01T14:40:54Z",
     ),
     (
@@ -1001,7 +1002,7 @@ const ERA_2010_2012_ROWS: &[((i32, u32, u32), EraExpectedKind, &str)] = &[
     ),
     (
         (2011, 9, 5),
-        EraExpectedKind::Halt,
+        EraExpectedKind::NoonEarlyClose,
         "2011-labor-day.pdf @2011-11-01T14:43:45Z",
     ),
     (
@@ -1016,7 +1017,7 @@ const ERA_2010_2012_ROWS: &[((i32, u32, u32), EraExpectedKind, &str)] = &[
     ),
     (
         (2011, 11, 24),
-        EraExpectedKind::Halt,
+        EraExpectedKind::NoonEarlyClose,
         "2011-thanksgiving.pdf @2011-11-24T18:52:46Z",
     ),
     (
@@ -1055,7 +1056,7 @@ const ERA_2010_2012_ROWS: &[((i32, u32, u32), EraExpectedKind, &str)] = &[
     ),
     (
         (2012, 1, 16),
-        EraExpectedKind::Halt,
+        EraExpectedKind::NoonEarlyClose,
         "2012-martin-luther-king.pdf @2012-05-05T16:15:26Z",
     ),
     (
@@ -1070,7 +1071,7 @@ const ERA_2010_2012_ROWS: &[((i32, u32, u32), EraExpectedKind, &str)] = &[
     ),
     (
         (2012, 2, 20),
-        EraExpectedKind::Halt,
+        EraExpectedKind::NoonEarlyClose,
         "2012-presidents-day.pdf @2012-05-05T16:15:39Z",
     ),
     (
@@ -1090,7 +1091,7 @@ const ERA_2010_2012_ROWS: &[((i32, u32, u32), EraExpectedKind, &str)] = &[
     ),
     (
         (2012, 5, 28),
-        EraExpectedKind::Halt,
+        EraExpectedKind::NoonEarlyClose,
         "2012-memorial-day.pdf @2012-09-15T00:37:14Z",
     ),
     (
@@ -1100,7 +1101,7 @@ const ERA_2010_2012_ROWS: &[((i32, u32, u32), EraExpectedKind, &str)] = &[
     ),
     (
         (2012, 7, 4),
-        EraExpectedKind::Halt,
+        EraExpectedKind::NoonEarlyClose,
         "2012-4th-of-july.pdf @2012-09-15T00:39:23Z",
     ),
     (
@@ -1115,7 +1116,7 @@ const ERA_2010_2012_ROWS: &[((i32, u32, u32), EraExpectedKind, &str)] = &[
     ),
     (
         (2012, 9, 3),
-        EraExpectedKind::Halt,
+        EraExpectedKind::NoonEarlyClose,
         "2012-labor-day.pdf @2012-09-15T00:34:37Z",
     ),
     (
@@ -1130,7 +1131,7 @@ const ERA_2010_2012_ROWS: &[((i32, u32, u32), EraExpectedKind, &str)] = &[
     ),
     (
         (2012, 11, 22),
-        EraExpectedKind::Halt,
+        EraExpectedKind::NoonEarlyClose,
         "2012-thanksgiving.pdf @2013-01-27T22:39:01Z",
     ),
     (
@@ -1185,7 +1186,7 @@ fn era_2010_2012_noon_halts_and_merged_trade_dates_are_the_audited_set() {
             assert_eq!(row.tier(), EvidenceTier::T1, "{date}");
             assert_eq!(row.document_id(), *document, "{date}");
             match kind {
-                EraExpectedKind::Halt => {
+                EraExpectedKind::NoonEarlyClose => {
                     assert_eq!(
                         row.kind(),
                         HolidayKind::EarlyClose {

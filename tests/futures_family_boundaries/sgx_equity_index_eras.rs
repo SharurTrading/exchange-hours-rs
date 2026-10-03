@@ -14,10 +14,10 @@
 //! That selector still states every open, close and order-entry window below,
 //! so the boundary fences keep their force; what it cannot state below the
 //! floor is the **kind** of a gap, because the crate derives that from a trade
-//! date and withholds trade dates below the floor. Each former `Halt` or
-//! `Maintenance` probe therefore asserts the refusal beside the executable
-//! fact that survives — nothing in the gap trades or queues — and names what
-//! is no longer claimable.
+//! date and withholds trade dates below the floor. Each former
+//! `Maintenance`-kind probe therefore asserts the refusal beside the
+//! executable fact that survives — nothing in the gap trades or queues — and
+//! names what is no longer claimable.
 
 use chrono::{DateTime, TimeZone as _, Utc};
 use chrono_tz::Asia;
@@ -67,9 +67,10 @@ fn accepts(key: MarketHoursKey, at: DateTime<Utc>) -> bool {
 /// (LAW-COVERAGE). The detached instant selector is a different matter: it
 /// carries no identity and therefore claims nothing about coverage, so it
 /// keeps the classification its own rules derive — including the
-/// `Halt`/`Maintenance` kind, which is read from a trade date. Both halves are
-/// asserted here, so the pair cannot drift: a change that makes the snapshot
-/// lose the kind, or the calendar start answering the date, fails this helper.
+/// `Maintenance`/`Closed` kind, which is read from a trade date. Both halves
+/// are asserted here, so the pair cannot drift: a change that makes the
+/// snapshot lose the kind, or the calendar start answering the date, fails
+/// this helper.
 fn assert_withheld_kind(key: MarketHoursKey, at: DateTime<Utc>, kind: SessionState, label: &str) {
     let answer = calendar_for_market_hours_key(key).session_state(at);
     assert!(
@@ -225,7 +226,7 @@ fn the_floor_edges_are_exact_on_the_japan_key() {
     assert_withheld_kind(
         JAPAN,
         sgt(date, (14, 30)),
-        SessionState::Halt,
+        SessionState::Closed,
         "the 14:25-15:15 routine",
     );
     assert!(
@@ -235,7 +236,7 @@ fn the_floor_edges_are_exact_on_the_japan_key() {
     assert_withheld_kind(
         JAPAN,
         sgt(date, (15, 14)),
-        SessionState::Halt,
+        SessionState::Closed,
         "the minute before T+1",
     );
     assert!(
@@ -277,7 +278,7 @@ fn the_floor_edges_are_exact_on_the_china_key() {
     assert_withheld_kind(
         CHINA,
         sgt(date, (11, 35)),
-        SessionState::Halt,
+        SessionState::Closed,
         "the 2009 lunch break",
     );
     assert!(
@@ -287,7 +288,7 @@ fn the_floor_edges_are_exact_on_the_china_key() {
     assert_withheld_kind(
         CHINA,
         sgt(date, (12, 59)),
-        SessionState::Halt,
+        SessionState::Closed,
         "the lunch break",
     );
     assert!(!accepts(CHINA, sgt(date, (12, 59))));
@@ -300,7 +301,7 @@ fn the_floor_edges_are_exact_on_the_china_key() {
     assert_withheld_kind(
         CHINA,
         sgt(date, (15, 5)),
-        SessionState::Halt,
+        SessionState::Closed,
         "the end-exclusive T close",
     );
     assert!(
@@ -310,7 +311,7 @@ fn the_floor_edges_are_exact_on_the_china_key() {
     assert_withheld_kind(
         CHINA,
         sgt(date, (16, 59)),
-        SessionState::Halt,
+        SessionState::Closed,
         "the T+1 hold",
     );
     assert!(!accepts(CHINA, sgt(date, (16, 59))), "T+1 held at 17:00");
@@ -349,14 +350,14 @@ fn the_floor_edges_are_exact_on_the_singapore_key() {
     assert_withheld_kind(
         SINGAPORE,
         sgt(date, (17, 15)),
-        SessionState::Halt,
+        SessionState::Closed,
         "the 17:10-18:00 routine",
     );
     assert!(!accepts(SINGAPORE, sgt(date, (17, 15))));
     assert_withheld_kind(
         SINGAPORE,
         sgt(date, (17, 59)),
-        SessionState::Halt,
+        SessionState::Closed,
         "the minute before T+1",
     );
     assert!(

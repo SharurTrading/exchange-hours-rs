@@ -134,9 +134,12 @@ fn the_evening_leg_and_the_next_regular_session_are_one_halted_trade_date() {
         );
     }
 
-    // The afternoon break crosses a trade date and is longer than four hours,
-    // which the fixed snapshot classifies as a halt inside the trade date.
-    assert_eq!(state_at(ct((2026, 6, 15), (14, 0, 0))), SessionState::Halt);
+    // The afternoon break is longer than four hours inside its trade date,
+    // so the fixed snapshot classifies it closed, not maintenance (#264).
+    assert_eq!(
+        state_at(ct((2026, 6, 15), (14, 0, 0))),
+        SessionState::Closed
+    );
     assert_eq!(
         state_at(ct((2026, 6, 15), (16, 45, 0))),
         SessionState::OrderEntry,

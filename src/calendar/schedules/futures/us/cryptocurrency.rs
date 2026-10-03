@@ -267,9 +267,9 @@ static REVISIONS: &[Revision] = revisions![
     (2026, 10, 4, &CURRENT, "CME Globex notice 20260921"),
     // 2026-10-24 — T1 — CME Globex notice 20260921 — Saturday maintenance
     // window 02:00-15:30 CT for the FIA disaster-recovery exercise; reopen
-    // 15:30 CT. The 13.5-hour halt exceeds the four-hour maintenance bound
+    // 15:30 CT. The 13.5-hour closure exceeds the four-hour maintenance bound
     // and falls inside one trade date — the weekend block carries the
-    // following Monday's — so `session_state` classifies it `Halt`, not
+    // following Monday's — so `session_state` classifies it `Closed`, not
     // `Maintenance`. Forward-dated; confirm before the day.
     (
         2026,

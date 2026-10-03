@@ -235,9 +235,9 @@ impl MarketHours {
     /// it lies between different trade dates in the same ISO week and the
     /// complete close-to-reopen span is at most four elapsed hours. A profile
     /// that explicitly has no weekend close also retains operator-designated
-    /// breaks of that length inside one trade date. Other same-trade-date gaps
-    /// are [`SessionState::Halt`]; longer afternoon, overnight, and weekend
-    /// closures are [`SessionState::Closed`].
+    /// breaks of that length inside one trade date. Other same-trade-date
+    /// gaps, and longer afternoon, overnight, and weekend closures, are
+    /// [`SessionState::Closed`].
     ///
     /// This crate deliberately derives breaks from adjacent sourced sessions
     /// rather than inserting synthetic maintenance rules.
@@ -248,12 +248,12 @@ impl MarketHours {
         answered(status::is_maintenance(&QueryContext::fixed(self), t))
     }
 
-    /// Returns one mutually exclusive open, halt, maintenance, or closed state.
+    /// Returns one mutually exclusive open, maintenance, or closed state.
     ///
     /// Maintenance is normally a complete inter-trade-date gap of at most four
     /// elapsed hours within one ISO week. A profile with no weekend close also
     /// retains operator-designated short maintenance inside one trade date;
-    /// longer closures are [`SessionState::Closed`].
+    /// same-trade-date gaps and longer closures are [`SessionState::Closed`].
     #[must_use]
     pub fn session_state(&self, t: DateTime<Utc>) -> SessionState {
         // See `is_open_with` and `answered`: a fixed snapshot has no

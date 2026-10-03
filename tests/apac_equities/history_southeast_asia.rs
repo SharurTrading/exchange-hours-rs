@@ -97,14 +97,14 @@ fn thailand_dr_night_launch_and_trade_date() {
         "a detached snapshot classifies the 2.5-hour gap by the four-hour policy"
     );
     // The final close by the same rule: the detached snapshot reports the
-    // post-close gap through the crate's policy (`Halt`, because the next
-    // session at 09:55 belongs to the snapshot's own trade-date default), while
-    // the identity's `Closed` is not observable. The phase assertion above shows
+    // post-close gap through the crate's policy (`Closed`, because the next
+    // session at 09:55 shares the snapshot's own trade-date default and the
+    // crate has no halt state, #264). The phase assertion above shows
     // the close itself; the state that follows it is stated as this surface
     // computes it.
     assert_eq!(
         hours(final_close).session_state(final_close),
-        SessionState::Halt
+        SessionState::Closed
     );
 
     // The trade-date consequences need the identity: which trade date a wrapped

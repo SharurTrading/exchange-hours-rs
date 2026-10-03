@@ -300,7 +300,15 @@ a 2027 date without a row could not be audited normal and the window cannot
 honestly extend. Re-checked 2026-09-29 UTC: the `SGX-ST-SCHED` content-api
 endpoint was read again and answered byte-identical bytes (same sha256
 `45dbdc61…`), so the sheet still scopes itself to 2025 & 2026 and the
-2027-01-01..2027-12-31 arrangement remains unpublished. **Closing condition:**
+2027-01-01..2027-12-31 arrangement remains unpublished. Re-checked again
+2026-10-02 UTC (artifact
+`api2_content-api_stock-exchange_trading.live-20261002T235448Z.json` and
+`INDEX-recheck-2026-10-02.md` under `holidays/raw/equities/sgx_securities/2025-2027/`):
+the endpoint answered changed bytes — editorial deltas elsewhere on the page
+(market-maker programme wording and a board-lot FAQ that mentions a February
+2027 implementation) — and the holiday sheet is content-identical: the
+half-day statement still scopes itself to `2025 & 2026` and names no 2027
+dates. **Closing condition:**
 SGX's next annual securities schedule naming the 2027 half days, at which
 point the window extends. Re-checked monthly per LAW-WATCH.
 

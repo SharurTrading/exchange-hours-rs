@@ -997,17 +997,11 @@ fn inventory_completeness_verdicts_match_the_metadata() {
          euronext_paris two announced-but-unstated 2026 eves, the 2026-09-29/30 UTC backfills \
          recovered tsx's 2010-2014 releases, and the 2026-10-02 UTC wire-mirror and page \
          recoveries closed tsx's 2013-08-19..2014-01-01 and 2014-07-02..2016-12-31 spans, \
-<<<<<<< HEAD
          and the 2026-10-03 UTC recovery of the 2011-12-12 year-end schedule — the release \
          series' Mondo Visione verbatim mirror, served live — closed tsx's last span \
          2011-10-11..2012-01-02, making tsx complete to 2026-12-31 (#221); the same day's \
          recovery of the series' 2015/2016 edition on the operator's derivatives site \
          closed nzx's 2016-04-26..2016-12-22 span, so nzx reads complete across 2010-2027)"
-=======
-         and the 2026-10-03 UTC recovery of the 2011-12-12 year-end schedule — the release \
-         series' Mondo Visione verbatim mirror, served live — closed the last span \
-         2011-10-11..2012-01-02, making tsx complete to 2026-12-31 (#221))"
->>>>>>> 7cda1d5 (zai-api/GLM-5.3-Flash (ZCode): the tsx 2011 Christmas span closes from Mondo Visione)
     );
 }
 

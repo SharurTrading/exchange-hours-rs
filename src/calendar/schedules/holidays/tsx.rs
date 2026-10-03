@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT-0
 
-//! Toronto Stock Exchange (TSX) holiday rows, 2010-2026 across five audited
+//! Toronto Stock Exchange (TSX) holiday rows, 2010-2026 across two audited
 //! windows.
 //!
 //! Keyed by the crate's own venue-local trade date in `America/Toronto`. TSX

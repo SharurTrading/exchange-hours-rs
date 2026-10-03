@@ -25,6 +25,16 @@ corrections (a venue's hours fixed against a primary source) go under
   all-derivatives-only table (the German lines never name fixed income; its
   108 rows are unchanged) rather than fabricate closures the bytes
   contradict.
+- **six: the 2018-2019 trading-calendar span closes from the operator's own
+  education guide (2026-10-03 UTC; narrows #212 to 2010-2011).** The live
+  education-path `trading-guide.pdf` ("Trading Guide of 28 May 2018") — the
+  parts compilation the normal-week record already cited — prints
+  `Trading Calendar 2018` and `Trading Calendar 2019` grids whose 24 dark
+  `Market Holiday — Market Closed` cells key 24 `Closed` rows under the
+  guide's own document id (`SIX-TG-2018`); the holiday tables grow from 134
+  rows over four windows to **158 rows**, the 2018-01-01..2019-12-31 span
+  answers, and the remaining 2010-2011 span keeps its refusal with the
+  closing condition restated to those years.
 - **nzx: the 2016-04-26..2016-12-22 capture gap closes from the operator's
   own derivatives-site holiday memorandum (2026-10-03 UTC; fixes #209).** The
   series' 2015/2016 edition — *"NZX Dairy Derivatives Market Holidays –

@@ -789,7 +789,21 @@ This era's rows cite the ids below: CME Group's own published holiday schedules 
   session), and a domain-wide CDX filter over
   `cmegroup.com/services/trading-hours-by-product*` for the Nikkei id set finds no
   archived capture anywhere, for any window. The Nikkei Inc. calendar is T3 and keys no
-  row (LAW-PRIMARY-SOURCES). Closing condition: a
+  row (LAW-PRIMARY-SOURCES). **Re-checked again 2026-10-03 UTC with the query shapes the
+  targeted round had not tried** (artifacts under `raw/cme-nikkei-witness-recheck-2026-10/`,
+  `INDEX.md` beside them): the unfiltered query (no `id` parameter) is rejected by the
+  service itself — HTTP 500, `Error Query data from product slate. Check your parameters are
+  correct.` — so no all-products query shape exists; the ten-product `THBP-A` set answers the
+  2025-01-17..22 window with `hasEvents:false` and zero events for every product, so the
+  retention edge is not id-set-dependent; a single-product query (`id=168`) resolves `Nikkei
+  (USD) Futures` and enumerates every event date with `"events":[]`, so it is not a
+  product-resolution failure; and wider `THBP-B` windows running from the Friday (or the
+  Wednesday, for Juneteenth) before each holiday through the day after the merged date answer
+  all six products with zero events for all five dates. A positive control over
+  2025-11-26..29 answers `hasEvents:true` with full `NKD`/`NIY` schedules, byte-identical to
+  the store's `D54` capture except the order of the `products` array, so the channel and the
+  service are healthy and the empties are the retention edge, not an outage; the direct channel
+  refused again (HTTP 403, one attempt, not retried). Closing condition: a
   `THBP-B` response (`id=168,167,320,323,19,27`) that carries an `NKD` or `NIY` event on any
   of these five trade dates. Tracked as issue #162 (LAW-FOLLOW-UPS-ARE-ISSUES).
 - **residual risk** — the nine 2025 rows through Labor Day 2025 rest on the Equity Index

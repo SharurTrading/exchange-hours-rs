@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT-0
 
-//! SIX Swiss Exchange holiday rows, 2012-2017, 2020-2024 and 2025-2027.
+//! SIX Swiss Exchange holiday rows, 2012-2019, 2020-2024 and 2025-2027.
 //!
 //! Keyed by the crate's own venue-local trade date in `Europe/Zurich`. SIX
 //! publishes one `Trading Calendar` PDF per year — an operator document in the
@@ -8,22 +8,27 @@
 //! shades for Saturday and Sunday and a dark cell for `Market Holiday —
 //! Market Closed`. The whole block is **T1**; each year's rows cite that
 //! year's PDF (`SIX-TC-<year>`, retrieved through Wayback `id_` replays for
-//! 2012-2017 and 2020-2024).
+//! 2012-2017 and 2020-2024), except 2018-2019: their grids ride in the
+//! operator's own Trading Guide of 28 May 2018, whose "Trading Calendar 2018"
+//! and "Trading Calendar 2019" sections print both years' twelve-month grids
+//! under one cover (`SIX-TG-2018`, the live education-path compilation).
 //!
-//! **2010-2011 and 2018-2019 are unaudited spans, not silences.** The
-//! operator's Trading Calendar for those four years is archived on no
-//! retrievable operator channel: the six-swiss-exchange.com crawls end
-//! November 2017 before the per-year series begins and the era's stable
-//! `trading_calendar_en.pdf` URL has captures only from 2022, while the
-//! six-group.com `trading-guides/` series begins at the 2020 calendar and the
-//! 2019 `exchanges`-path grids are the *Currency* Holiday Calendar. The
-//! calendar documents of those years that ARE archived are settlement or
-//! currency calendars — bank-holiday closures, a different arrangement from
-//! the trading day — and key nothing. The coverage windows therefore leave
-//! those spans out entirely and a date-aware query inside them refuses with
-//! the coverage contract; the gap and its closing condition are recorded in
+//! **2010-2011 is an unaudited span, not a silence.** The operator's Trading
+//! Calendar for those two years is archived on no retrievable operator
+//! channel: the six-swiss-exchange.com crawls end November 2017 before the
+//! per-year series begins and the era's stable `trading_calendar_en.pdf` URL
+//! has captures only from 2022, while the six-group.com `trading-guides/`
+//! series begins at the 2020 calendar and the 2019 `exchanges`-path grids are
+//! the *Currency* Holiday Calendar. The calendar documents of those years
+//! that ARE archived are settlement or currency calendars — bank-holiday
+//! closures, a different arrangement from the trading day — and key nothing.
+//! The coverage window therefore leaves that span out entirely and a
+//! date-aware query inside it refuses with the coverage contract; the gap and
+//! its closing condition are recorded in
 //! [`docs/evidence/six.md`](../../../../../docs/evidence/six.md) and tracked
-//! as #212.
+//! as #212. (The 2018-2019 half closed as data on 2026-10-03 UTC, when the
+//! 28 May 2018 guide edition's own year grids were found live on the
+//! education path and their dark cells keyed the rows below.)
 //!
 //! The calendars print closures only: no half day, no late open and no
 //! intraday instant anywhere in the audited years, so `Closed` is the only
@@ -31,7 +36,9 @@
 //! Holidays that fall on a weekend are not marked (the Saturday/Sunday shading
 //! already deletes them) and key no weekday row: 2015-08-01, 2016-12-25,
 //! 2021-01-02, 2021-08-01, 2022-01-01 and 2022-12-24/25/31, 2023-12-24/31 and
-//! the 2012-2017 weekend falls are those cases. The per-cell derivation is
+//! the 2012-2017 weekend falls are those cases, while no holiday of 2018 or
+//! 2019 falls on a weekend, so those two grids arise no such case. The
+//! per-cell derivation is
 //! recorded in [`docs/evidence/six.md`](../../../../../docs/evidence/six.md).
 
 use super::EvidenceTier::T1;
@@ -46,7 +53,7 @@ use super::{HolidayTable, holidays};
 /// queries refuse it.
 // Evidence: docs/evidence/six.md
 pub(crate) static TABLE: &HolidayTable = holidays! {
-    coverage: [(2012, 1, 1) ..= (2017, 12, 31), (2020, 1, 1) ..= (2024, 12, 31), (2025, 1, 1) ..= (2027, 12, 31)],
+    coverage: [(2012, 1, 1) ..= (2017, 12, 31), (2018, 1, 1) ..= (2019, 12, 31), (2020, 1, 1) ..= (2024, 12, 31), (2025, 1, 1) ..= (2027, 12, 31)],
     rows: [
         // SIX-TC-2012: the year's own Trading Calendar PDF, dark `Market Holiday —
         // Market Closed` cells
@@ -182,6 +189,64 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2017, 12, 25, Closed, T1, "SIX-TC-2017"),
         // 2017-12-26 - T1 - SIX-TC-2017 - St. Stephen's Day.
         (2017, 12, 26, Closed, T1, "SIX-TC-2017"),
+        // SIX-TG-2018: the operator's Trading Guide of 28 May 2018 (the live
+        // education-path compilation), whose "Trading Calendar 2018" section
+        // prints the year's twelve month grids with the legend `Saturday —
+        // Market Closed / Sunday — Market Closed / Market Holiday — Market
+        // Closed`
+        // 2018-01-01 - T1 - SIX-TG-2018 - New Year's Day.
+        (2018, 1, 1, Closed, T1, "SIX-TG-2018"),
+        // 2018-01-02 - T1 - SIX-TG-2018 - St. Berchtold Day.
+        (2018, 1, 2, Closed, T1, "SIX-TG-2018"),
+        // 2018-03-30 - T1 - SIX-TG-2018 - Good Friday.
+        (2018, 3, 30, Closed, T1, "SIX-TG-2018"),
+        // 2018-04-02 - T1 - SIX-TG-2018 - Easter Monday.
+        (2018, 4, 2, Closed, T1, "SIX-TG-2018"),
+        // 2018-05-01 - T1 - SIX-TG-2018 - Labour Day.
+        (2018, 5, 1, Closed, T1, "SIX-TG-2018"),
+        // 2018-05-10 - T1 - SIX-TG-2018 - Ascension Day.
+        (2018, 5, 10, Closed, T1, "SIX-TG-2018"),
+        // 2018-05-21 - T1 - SIX-TG-2018 - Whit Monday.
+        (2018, 5, 21, Closed, T1, "SIX-TG-2018"),
+        // 2018-08-01 - T1 - SIX-TG-2018 - Swiss National Day.
+        (2018, 8, 1, Closed, T1, "SIX-TG-2018"),
+        // 2018-12-24 - T1 - SIX-TG-2018 - Christmas Eve.
+        (2018, 12, 24, Closed, T1, "SIX-TG-2018"),
+        // 2018-12-25 - T1 - SIX-TG-2018 - Christmas Day.
+        (2018, 12, 25, Closed, T1, "SIX-TG-2018"),
+        // 2018-12-26 - T1 - SIX-TG-2018 - St. Stephen's Day.
+        (2018, 12, 26, Closed, T1, "SIX-TG-2018"),
+        // 2018-12-31 - T1 - SIX-TG-2018 - New Year's Eve.
+        (2018, 12, 31, Closed, T1, "SIX-TG-2018"),
+        // SIX-TG-2018: the same guide's "Trading Calendar 2019" section, same
+        // legend
+        // 2019-01-01 - T1 - SIX-TG-2018 - New Year's Day.
+        (2019, 1, 1, Closed, T1, "SIX-TG-2018"),
+        // 2019-01-02 - T1 - SIX-TG-2018 - St. Berchtold Day.
+        (2019, 1, 2, Closed, T1, "SIX-TG-2018"),
+        // 2019-04-19 - T1 - SIX-TG-2018 - Good Friday.
+        (2019, 4, 19, Closed, T1, "SIX-TG-2018"),
+        // 2019-04-22 - T1 - SIX-TG-2018 - Easter Monday.
+        (2019, 4, 22, Closed, T1, "SIX-TG-2018"),
+        // 2019-05-01 - T1 - SIX-TG-2018 - Labour Day.
+        (2019, 5, 1, Closed, T1, "SIX-TG-2018"),
+        // 2019-05-30 - T1 - SIX-TG-2018 - Ascension Day.
+        (2019, 5, 30, Closed, T1, "SIX-TG-2018"),
+        // 2019-06-10 - T1 - SIX-TG-2018 - Whit Monday.
+        (2019, 6, 10, Closed, T1, "SIX-TG-2018"),
+        // 2019-08-01 - T1 - SIX-TG-2018 - Swiss National Day.
+        (2019, 8, 1, Closed, T1, "SIX-TG-2018"),
+        // 2019-12-24 - T1 - SIX-TG-2018 - Christmas Eve.
+        (2019, 12, 24, Closed, T1, "SIX-TG-2018"),
+        // 2019-12-25 - T1 - SIX-TG-2018 - Christmas Day.
+        (2019, 12, 25, Closed, T1, "SIX-TG-2018"),
+        // 2019-12-26 - T1 - SIX-TG-2018 - St. Stephen's Day.
+        (2019, 12, 26, Closed, T1, "SIX-TG-2018"),
+        // 2019-12-31 - T1 - SIX-TG-2018 - New Year's Eve. Every one of the
+        // guide's 24 dark cells across 2018-2019 falls on a weekday and no
+        // SIX holiday of those two years falls on a weekend, so no weekend
+        // rule arises in these two grids.
+        (2019, 12, 31, Closed, T1, "SIX-TG-2018"),
         // SIX-TC-2020: the year's own Trading Calendar PDF, dark `Market Holiday —
         // Market Closed` cells
         // 2020-01-01 - T1 - SIX-TC-2020 - New Year's Day.

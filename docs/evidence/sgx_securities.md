@@ -159,17 +159,32 @@ CDX sweeps over sgx.com in both eras, and re-run with fresh eyes on
   annual-report channel cannot key either span however many editions are
   archived. (c) The sgxweb-era WCM content tree
   (`wps/wcm/connect/sgx_en/home/trading/securities/…`) holds exactly four
-  captures, all 2022 SPA shells of the 2011-08-01 all-day-trading news item;
-  a domain-wide `wcm/connect` holiday/public filter surfaces only the known
-  May-2009 sheets. (d) The wps SPA's own JavaScript bundle (capture
+  captures of the 2011-08-01 all-day-trading news item — two 2022 SPA shells
+  (captures `20220203161334`, `20220203161324`, both 200-status) and two
+  301 redirects (captures `20220203161215` on 2022 and `20241213221530` on
+  2024-12-13) — none with holiday content; a domain-wide `wcm/connect`
+  holiday/public filter (`cdx_sgx_wcm_holiday_public_all.txt`) surfaces 35
+  status-coded rows (a 36th is truncated mid-URL by the crawler's save):
+  the three known May-2009 sheets, `2008+publicholidays`,
+  `2009+public+holidays` and `World+Holidays`, a 2017 REIT-index
+  `Holiday Schedule` PDF
+  (an `SGX APAC ex Japan Dividend Leaders REIT Index` index publication, not
+  a securities trading-schedule page, and 2017 lies inside the audited
+  2014-2019 window in any case), and public-consultation, regulation and
+  news rows matching the filter's `public` half — nothing that keys either
+  gap span. (d) The wps SPA's own JavaScript bundle (capture
   2021-12-24) names `api2.sgx.com` as its only data host — the enumerated
   host. (e) The Common Crawl record is complete: CC-MAIN-2022-05's
   previously degraded exact-page query now answers "No Captures", and the
   CC-MAIN-2021-43, 2023-50 and 2024-30 domain filters hold zero captures.
-  (f) `sgx.com.sg` (804 legacy urlkeys, never swept before) holds no
-  trading-hours page. The 2010-2013 span's one remaining lead is unchanged:
-  the 2012-09-10 archive.today snapshot, which only a human browser can
-  read.
+  (f) `sgx.com.sg` (never swept before) holds no trading-hours or holiday
+  page — the `holiday|calendar` filtered query is empty and saved
+  (`cdx_sgxcomsg_holidaycal.txt`, 0 bytes); the pass's urlkey enumeration of
+  the legacy domain (804 keys, 2000-2006 era plus redirect shells) was a
+  session observation that is not archived as a dump, so the empty filtered
+  query is the saved record. The 2010-2013 span's one remaining lead is
+  unchanged: the 2012-09-10 archive.today snapshot, which only a human
+  browser can read.
 
 **Tier.** The 2025-2026 rows key at T2 because the artifact behind them is
 the operator's own machine channel read as bytes (LAW-PRIMARY-SOURCES),

@@ -244,6 +244,24 @@ time and sha256 per artifact in its `INDEX.md`; the operator statements behind e
   unchanged; the crate simply declines to certify the date. Closing condition: any surviving copy
   of notice 22-10, or a later notice that restates the outgoing 2022 schedule. Tracked as issue
   #112.
+  A 2026-10-03 attempt through channels the earlier waves had not tried strengthens the negative
+  structurally. The operator's live listing, captured byte-exact through the reader's HTML mode
+  (`holidays/raw/cde/recheck-2026-10-03/`), embeds the notice table as the operator's own
+  Contentful rich text (its `FairX Market Notices Page (PROD)` document): every notice row's
+  title cell there is a hyperlink node carrying an `assets.ctfassets.net` PDF address — 22-11's,
+  22-09's, every sibling's — while **22-10's title cell is a plain text node carrying no address
+  at all**; the operator's current CMS holds no 22-10 asset to link. Two fresh CDX shapes over
+  the whole asset space return no 2022-Thanksgiving artifact under any filename: `.*22-10.*`
+  matches only the unrelated regulatory `2022-10E-LMX-Crypto-LMM-Program` document and
+  `.*[Tt]hanksgiving.*` matches only 21-06 and 24-21 (artifacts `cdx_ctfassets_*.txt` under
+  `holidays/raw/coinbase-derivatives-2022-2024/`). The predecessor channel `trade.ledgerx.com`
+  holds seven captures across 2022-2023, all 301 redirects or API endpoints and no announcement
+  page (`cdx_trade_ledgerx_*.txt` in the same directory). Two further web searches — the sibling
+  notices' distinctive `Hours of Operation` layout strings, and a transparency/annual-report
+  shape — surface no copy. Notice 22-11's own PDF, now retrieved from the operator's CDN
+  (`pdf/Market_Notice__22-11.pdf` in the recheck directory), restates only the Christmas 2022
+  schedule, so the restatement route is closed as well as the archive route. Closing condition
+  unchanged.
 - **Trade date 2021-12-31 is carried as audited normal and ships no row.** The operator published
   no notice for it: the 2021 listing runs 21-01 to 21-07 with no gaps, and 21-07 (issued
   2021-12-21, the last 2021 notice) covers Christmas only. New Year's Day 2022 fell on a Saturday
@@ -275,7 +293,23 @@ time and sha256 per artifact in its `INDEX.md`; the operator statements behind e
   posted 09/24/2026) and R2026-62..R2026-64 (09/16-21/2026), all Maintenance/Regulatory, and the
   newest Holiday-category notice remains 26-36 (`2026 Labor Day`, posted 08/25/2026, effective
   09/07/2026), so no holiday arrangement on or after 2026-09-08 has been published and the
-  window's end is still the operator's horizon.
+  window's end is still the operator's horizon. Re-checked again 2026-10-03 UTC (artifacts and
+  `INDEX.md` under `holidays/raw/cde/recheck-2026-10-03/`): the listing answers unchanged — the
+  newest notices are still 26-33.3 and 26-37 and the newest Holiday-category notice is still
+  26-36 — and the same round **retrieved the two notices every earlier wave had to leave
+  listed-only**: the listing read in HTML mode through the public reader (the channel that
+  returned Cloudflare 403 on 2026-09-26 answered 200 on 2026-10-03) preserves the notice table's
+  `href`s, and the two PDFs it addresses were fetched and saved with their digests. Notice 26-33.3
+  keeps the weekly 1-hour Friday maintenance window `(16:00 to 17:00 CT) remains in effect` and
+  defers the 24x7 transition without a date (`...will not change to TRUE_24X7 until the
+  transition is rescheduled`), so that transition's closing condition becomes the operator's
+  rescheduling notice. Notice 26-37 publishes an unconditional arrangement for the 24x7 tier
+  only: Saturday 2026-10-24, `24x7 Products Transition to CLOSE` 5:00 AM CT through
+  `Transition to OPEN / End of Maintenance` 2:00 PM CT (nine hours, aligned with the FIA DR
+  test). The 24x7 tier claims no key and adds no row here, so neither notice changes this table
+  and the holiday horizon stays 2026-09-07; per the 2025 pattern (the Thanksgiving notice posted
+  10/30, the Christmas notice 11/25) the next expected holiday publication is late October, and
+  the listing is re-checked monthly per LAW-WATCH.
 
 ## Sources
 

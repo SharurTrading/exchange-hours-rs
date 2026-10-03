@@ -170,7 +170,12 @@ const fn for_market_hours_key(key: MarketHoursKey) -> Option<&'static HolidayTab
         MarketHoursKey::IceUsOrangeJuice => Some(super::ice_us::ORANGE_JUICE),
         MarketHoursKey::IceUsDollarIndex => Some(super::ice_us::DOLLAR_INDEX),
         MarketHoursKey::GlobexNikkei225Dollar => Some(super::globex_nikkei_225_dollar::TABLE),
-        MarketHoursKey::EurexFixedIncome => Some(super::eurex::TABLE),
+        // The fixed-income family owns the all-derivatives rows alone: the
+        // operator's German-scope closure notes name German equity and
+        // equity-index derivatives and the Xetra-based ETF/ETC derivatives and
+        // never fixed income, so the German-scope rows `Exchange::Eurex` and
+        // the `eurex` key carry do not reach this family.
+        MarketHoursKey::EurexFixedIncome => Some(super::eurex::FIXED_INCOME),
         MarketHoursKey::SgxEquityIndexJapan => None,
         MarketHoursKey::SgxEquityIndexChina => None,
         MarketHoursKey::SgxEquityIndexSingapore => None,

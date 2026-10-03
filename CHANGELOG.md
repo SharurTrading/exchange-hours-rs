@@ -12,6 +12,19 @@ corrections (a venue's hours fixed against a primary source) go under
 ## [Unreleased]
 ### Fixed
 
+- **eurex: the dated German-scope closures of 2014-2018 encode, and #157
+  narrows to the tba era (2026-10-03 UTC; narrows #157).** The operator's own
+  Trading Calendar editions, re-read from the saved bytes, divide four ways:
+  2014, 2016, 2017 and 2018 date the German equity / equity-index-scope
+  closures (eight rows — Unity Days and the one-off 2017 Reformation Day),
+  2019-2021 carry the operator's own carve-out ("trading in German equity
+  index futures takes place!"), 2010-2013/2015/2022-2024 print no German line
+  at all, and only 2025-2026 withhold as `tba` — so the `UnpublishedClosureDates`
+  declaration re-scopes from the whole supported domain to 2025-01-01 onward
+  and `eurex` answers 5,479 more days. `eurex_fixed_income` moves to its own
+  all-derivatives-only table (the German lines never name fixed income; its
+  108 rows are unchanged) rather than fabricate closures the bytes
+  contradict.
 - **nzx: the 2016-04-26..2016-12-22 capture gap closes from the operator's
   own derivatives-site holiday memorandum (2026-10-03 UTC; fixes #209).** The
   series' 2015/2016 edition — *"NZX Dairy Derivatives Market Holidays –
@@ -591,9 +604,11 @@ corrections (a venue's hours fixed against a primary source) go under
   the 2010 and 2011 editions read as Wayback `id_` replays of their
   era-original `eurexchange.com` captures, so the window reaches the
   2010-01-01 floor with no unaudited span. 2015 is the one edition that also
-  closes Whit Monday (25 May) for trading, and ships so; the German-scope
-  `tba` withholding (#157) is untouched and still keys no row. The #157
-  declaration, the 2027 conflict and the operators' horizon are unchanged.
+  closes Whit Monday (25 May) for trading, and ships so; at this entry's
+  date the German-scope `tba` withholding (#157) still keyed no row and the
+  #157 declaration, the 2027 conflict and the operators' horizon were
+  unchanged. (The German-scope closures of 2014-2018 and the fixed-income
+  table split landed later, on 2026-10-03 — see below.)
 - **`cfe` and `cfe_vix` holiday history extended below the 2025 window to the
   earliest surviving operator artifact (2026-09-29 UTC).** The routed CFE
   holiday table grows from 26 rows over 2025-01-01..2026-12-31 to **113 rows

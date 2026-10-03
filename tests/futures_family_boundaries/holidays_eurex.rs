@@ -7,9 +7,9 @@
 //! cases 2, 3 and 4 have nothing to exercise here and the block says so rather
 //! than inventing a row. Case 5's wrap removal and case 6's trade-date
 //! consequence are **not** vacuous: `eurex_fixed_income` carries Eurex's
-//! 22:00-22:10 CET post-trading phase, whose occurrence on local date `D`
-//! belongs to trade date `D + 1`, so a closure deletes the preceding evening's
-//! leg. The two benchmark-index identities run 02:15-22:00 CET and have no such
+//! post-trading order-entry phase, whose occurrence on local date `D` belongs
+//! to trade date `D + 1`, so a closure deletes the preceding evening's leg.
+//! The two benchmark-index identities run 02:15-22:00 CET and have no such
 //! leg; that absence is fenced below rather than assumed. Coverage runs from
 //! the 2010-01-01 support floor — the operator's own "all derivatives" rows,
 //! keyed to its annual Trading Calendar editions 2010-2024 and to the Holiday
@@ -18,6 +18,17 @@
 //! 2026-12-31 because Eurex's 2027 calendar is published "on a preliminary and
 //! indicative basis", which LAW-NO-FABRICATED-DATES keeps out of a runtime
 //! table; the last test is the fence on that.
+//!
+//! The benchmark-index identities alone carry the editions' **dated
+//! German-scope closures** (2014, 2016, 2017 and 2018: Unity Day, Whit Monday
+//! and the one-off 2017 Reformation Day): the operator's note closes German
+//! equity and equity-index derivatives and the Xetra-based ETF/ETC
+//! derivatives, which is FDAX and FDXM. The fixed-income family the note never
+//! names ships the all-derivatives rows alone and answers those dates open,
+//! and the 2019-2021 editions' own parenthetical — trading in German equity
+//! index futures takes place — keeps every later German holiday in the
+//! benchmark scope open too, so the `tba` note of 2025-2026 (#157) is the only
+//! span the German scope still withholds.
 
 use chrono::{DateTime, Datelike as _, Days, NaiveDate, TimeZone as _, Utc};
 use chrono_tz::Europe;
@@ -41,10 +52,13 @@ fn identities() -> [(&'static str, ExchangeCalendar); 3] {
 }
 
 /// The two benchmark-index identities, whose normal-week history is sourced
-/// from the 2010-01-01 floor. `eurex_fixed_income` shares the holiday table
-/// and, since the 2026-09-30 wave, sources its pre-2018 baseline grid from
-/// the operator's archived Contract Specifications amendments back to the
-/// floor, so all three Eurex identities answer sessions from 2010-01-01.
+/// from the 2010-01-01 floor. Since the German-scope split, `eurex` carries
+/// the 108 all-derivatives rows plus the eight dated German-scope rows and
+/// `eurex_fixed_income` carries the 108 all-derivatives rows alone — the
+/// German lines never name fixed income — and, since the 2026-09-30 wave,
+/// sources its pre-2018 baseline grid from the operator's archived Contract
+/// Specifications amendments back to the floor, so all three Eurex
+/// identities answer sessions from 2010-01-01.
 fn benchmark_identities() -> [(&'static str, ExchangeCalendar); 2] {
     [
         ("Exchange::Eurex", calendar_for_exchange(Exchange::Eurex)),
@@ -165,6 +179,74 @@ const CALENDAR_EDITION_CLOSURES: [(i32, u32, u32); 93] = [
     (2024, 12, 25),
     (2024, 12, 26),
     (2024, 12, 31),
+];
+
+/// One dated German-scope closure and the dates both sides of it need for the
+/// probes.
+struct GermanClosure {
+    /// The closure day the edition states.
+    closure: (i32, u32, u32),
+    /// The last session day before it, whose fixed-income evening leg carries
+    /// the closure's trade date.
+    eve: (i32, u32, u32),
+    /// An ordinary control whose own evening leg survives.
+    control: (i32, u32, u32),
+    /// The first session day after the closure.
+    successor: (i32, u32, u32),
+}
+
+/// The eight dated German-scope closures the 2014, 2016, 2017 and 2018
+/// editions state. Every date here is stated by the edition's German-scope
+/// note and keys the benchmark `TABLE` alone.
+const GERMAN_SCOPE_CLOSURES: [GermanClosure; 8] = [
+    GermanClosure {
+        closure: (2014, 10, 3),
+        eve: (2014, 10, 2),
+        control: (2014, 10, 1),
+        successor: (2014, 10, 6),
+    },
+    GermanClosure {
+        closure: (2016, 5, 16),
+        eve: (2016, 5, 13),
+        control: (2016, 5, 12),
+        successor: (2016, 5, 17),
+    },
+    GermanClosure {
+        closure: (2016, 10, 3),
+        eve: (2016, 9, 30),
+        control: (2016, 9, 29),
+        successor: (2016, 10, 4),
+    },
+    GermanClosure {
+        closure: (2017, 6, 5),
+        eve: (2017, 6, 2),
+        control: (2017, 6, 1),
+        successor: (2017, 6, 6),
+    },
+    GermanClosure {
+        closure: (2017, 10, 3),
+        eve: (2017, 10, 2),
+        control: (2017, 9, 29),
+        successor: (2017, 10, 4),
+    },
+    GermanClosure {
+        closure: (2017, 10, 31),
+        eve: (2017, 10, 30),
+        control: (2017, 10, 27),
+        successor: (2017, 11, 1),
+    },
+    GermanClosure {
+        closure: (2018, 5, 21),
+        eve: (2018, 5, 18),
+        control: (2018, 5, 17),
+        successor: (2018, 5, 22),
+    },
+    GermanClosure {
+        closure: (2018, 10, 3),
+        eve: (2018, 10, 2),
+        control: (2018, 10, 1),
+        successor: (2018, 10, 4),
+    },
 ];
 
 #[test]
@@ -597,7 +679,10 @@ fn each_trading_calendar_edition_keys_its_own_year() {
 
 /// Whit Monday 2015 is the one extra trading-only closure the editions state,
 /// and it ships for 2015 alone: a date-bounded arrangement is date-exception
-/// data, never a recurring rule (LAW-HOLIDAY-SCOPE).
+/// data, never a recurring rule (LAW-HOLIDAY-SCOPE). The 2016 Whit Monday is
+/// the German-scope row the 2016 edition adds — a benchmark-index closure the
+/// fixed-income family keeps trading through — so the no-row fence moves to
+/// the years the editions state no closure for.
 #[test]
 fn the_2015_whit_monday_is_the_one_extra_trading_only_closure() {
     for (name, calendar) in identities() {
@@ -606,8 +691,10 @@ fn the_2015_whit_monday_is_the_one_extra_trading_only_closure() {
             Some(HolidayKind::Closed),
             "{name}: the 2015 edition closes Whit Monday for trading"
         );
-        // The Whit Mondays either side carry no row.
-        for whit_monday in [day(2014, 6, 9), day(2016, 5, 16), day(2019, 6, 10)] {
+        // The Whit Mondays the editions close for no Eurex identity carry no
+        // row: 2014's edition states no Whit Monday at all, and 2019's states
+        // it for the German scope with the futures carve-out.
+        for whit_monday in [day(2014, 6, 9), day(2019, 6, 10)] {
             assert_eq!(
                 calendar.holiday_on(whit_monday),
                 None,
@@ -615,14 +702,28 @@ fn the_2015_whit_monday_is_the_one_extra_trading_only_closure() {
             );
         }
     }
+    // The benchmark identities close 2016-05-16 on the 2016 edition's
+    // German-scope line; the fixed-income family, which that line never
+    // names, does not.
     for (name, calendar) in benchmark_identities() {
+        assert_eq!(
+            calendar.holiday_on(day(2016, 5, 16)).map(Holiday::kind),
+            Some(HolidayKind::Closed),
+            "{name}: the 2016 edition closes Whit Monday in the German scope"
+        );
         assert!(
             !calendar
                 .is_open(cet((2015, 5, 25), (12, 0, 0)))
                 .expect("the coverage contract must answer a covered date"),
             "{name}: 25 May 2015 is a full trading closure"
         );
-        for whit_monday in [day(2014, 6, 9), day(2016, 5, 16), day(2019, 6, 10)] {
+        assert!(
+            !calendar
+                .is_open(cet((2016, 5, 16), (12, 0, 0)))
+                .expect("the coverage contract must answer a covered date"),
+            "{name}: 16 May 2016 is the German-scope Whit Monday closure"
+        );
+        for whit_monday in [day(2014, 6, 9), day(2019, 6, 10)] {
             assert!(
                 calendar
                     .is_open(cet(
@@ -631,6 +732,170 @@ fn the_2015_whit_monday_is_the_one_extra_trading_only_closure() {
                     ))
                     .expect("the coverage contract must answer a covered date"),
                 "{name}: {whit_monday} trades"
+            );
+        }
+    }
+    let fixed_income = calendar_for_market_hours_key(MarketHoursKey::EurexFixedIncome);
+    assert_eq!(
+        fixed_income.holiday_on(day(2016, 5, 16)),
+        None,
+        "the fixed-income family carries no German-scope row"
+    );
+    assert!(
+        fixed_income
+            .is_open(cet((2016, 5, 16), (12, 0, 0)))
+            .expect("the coverage contract must answer a covered date"),
+        "fixed income trades through the German-scope Whit Monday"
+    );
+}
+
+/// The dated German-scope closures the 2014, 2016, 2017 and 2018 editions
+/// state close the benchmark-index identities and only them, on both sides of
+/// every encoded date: the closure day answers shut at Berlin noon, its
+/// neighbouring session days answer open, and the fixed-income family answers
+/// open through every one of them — its evening leg on the eve of each closure
+/// still feeds this family's own session on the closure date, which is the
+/// fence that the German rows never reached the fixed-income table.
+#[test]
+fn the_dated_german_scope_closures_close_the_benchmark_identities_alone() {
+    for (record, (name, calendar)) in GERMAN_SCOPE_CLOSURES
+        .iter()
+        .flat_map(|record| benchmark_identities().map(move |identity| (record, identity)))
+    {
+        let closure_day = day(record.closure.0, record.closure.1, record.closure.2);
+        assert_eq!(
+            calendar.holiday_on(closure_day).map(Holiday::kind),
+            Some(HolidayKind::Closed),
+            "{name} on {closure_day}"
+        );
+        let noon = cet(record.closure, (12, 0, 0));
+        assert!(
+            !calendar
+                .is_open(noon)
+                .expect("the coverage contract must answer a covered date"),
+            "{name} at {noon}"
+        );
+        // Both sides: the last session day before the closure and the first
+        // one after it are ordinary days that trade.
+        for side in [record.eve, record.successor] {
+            let side_noon = cet(side, (12, 0, 0));
+            assert_eq!(
+                calendar.holiday_on(day(side.0, side.1, side.2)),
+                None,
+                "{name}: the day beside {closure_day} is audited normal"
+            );
+            assert!(
+                calendar
+                    .is_open(side_noon)
+                    .expect("the coverage contract must answer a covered date"),
+                "{name} at {side_noon}"
+            );
+        }
+    }
+    // The fixed-income family trades through every German-scope closure and
+    // carries no row for any of them.
+    let fixed_income = calendar_for_market_hours_key(MarketHoursKey::EurexFixedIncome);
+    for record in GERMAN_SCOPE_CLOSURES {
+        let closure_day = day(record.closure.0, record.closure.1, record.closure.2);
+        assert_eq!(
+            fixed_income.holiday_on(closure_day),
+            None,
+            "fixed income on {closure_day}"
+        );
+        assert!(
+            fixed_income
+                .is_open(cet(record.closure, (12, 0, 0)))
+                .expect("the coverage contract must answer a covered date"),
+            "fixed income trades through {closure_day}"
+        );
+        for side in [record.eve, record.control, record.successor] {
+            let side_day = day(side.0, side.1, side.2);
+            assert!(
+                fixed_income
+                    .is_open(cet(side, (12, 0, 0)))
+                    .expect("the coverage contract must answer a covered date"),
+                "fixed income trades {side_day}"
+            );
+        }
+    }
+    // And the fixed-income evening leg on the last session day before each
+    // closure **keeps** carrying the German-scope date as its trade date,
+    // because that date is an ordinary fixed-income session: the leg feeds
+    // this family's own session there. The Christmas closures delete the same
+    // leg — the test above fences that — because 24 December closes every
+    // family; the German-scope closures close none of this family's days, and
+    // this is the fence that the split is real rather than a routing slip.
+    // The control leg the day earlier carries the session day it feeds.
+    for record in GERMAN_SCOPE_CLOSURES {
+        let closure_day = day(record.closure.0, record.closure.1, record.closure.2);
+        let leg_day = day(record.eve.0, record.eve.1, record.eve.2);
+        let control_day = day(record.control.0, record.control.1, record.control.2);
+        assert_eq!(
+            fixed_income
+                .trade_date(cet(record.eve, (22, 5, 0)))
+                .expect("the coverage contract must answer a covered date"),
+            Some(closure_day),
+            "the {leg_day} evening leg feeds the fixed-income session on {closure_day}, \
+             which this family keeps trading"
+        );
+        assert_eq!(
+            fixed_income
+                .trade_date(cet(record.control, (22, 5, 0)))
+                .expect("the coverage contract must answer a covered date"),
+            Some(leg_day),
+            "the {control_day} evening leg carries trade date {leg_day} and survives"
+        );
+    }
+}
+
+/// The German-scope dates the operator's own bytes leave open: the 2019, 2020
+/// and 2021 editions date the scope but print `(trading in German equity index
+/// futures takes place!)`, and the 2010-2013, 2015 and 2022-2024 editions
+/// print no German-scope line at all. Every Unity Day and Whit Monday outside
+/// 2014-2018 is therefore an ordinary day for all three identities — and 2025
+/// and 2026 refuse through the `tba` declaration (#157) rather than answering.
+#[test]
+fn the_german_holidays_outside_the_dated_editions_answer_open() {
+    let open_days = [
+        day(2011, 10, 3), // Unity Day, Monday: the 2011 edition states no German line
+        day(2012, 10, 3), // Unity Day, Wednesday: no German line
+        day(2013, 10, 3), // Unity Day, Thursday: no German line
+        day(2019, 6, 10), // Whit Monday: the 2019 edition's futures carve-out
+        day(2019, 10, 3), // Unity Day: the same carve-out
+        day(2020, 6, 1),  // Whit Monday: the 2020 edition's carve-out
+        day(2021, 5, 24), // Whit Monday: the 2021 edition's carve-out
+        day(2022, 10, 3), // Unity Day, Monday: the 2022 edition states no German line
+        day(2023, 10, 3), // Unity Day, Tuesday: no German line
+        day(2024, 10, 3), // Unity Day, Thursday: no German line
+    ];
+    for (name, calendar) in identities() {
+        for date in open_days {
+            assert_eq!(
+                calendar.holiday_on(date),
+                None,
+                "{name}: {date} is audited normal"
+            );
+        }
+    }
+    for (name, calendar) in benchmark_identities() {
+        for date in open_days {
+            assert!(
+                calendar
+                    .is_open(cet((date.year(), date.month(), date.day()), (12, 0, 0)))
+                    .expect("the coverage contract must answer a covered date"),
+                "{name}: {date} trades"
+            );
+        }
+    }
+    // The Unity Days the editions print no German line for and that fall on a
+    // Saturday (2015-10-03, 2020-10-03) carry no row either: the absence of
+    // the line is the operator's own enumeration, not silence to infer from.
+    for (name, calendar) in identities() {
+        for saturday in [day(2015, 10, 3), day(2020, 10, 3)] {
+            assert_eq!(
+                calendar.holiday_on(saturday),
+                None,
+                "{name}: {saturday} is audited normal"
             );
         }
     }

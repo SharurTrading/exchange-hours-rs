@@ -71,7 +71,7 @@ All bytes are in the research store under
 
 **Coverage:** 2010-01-01..2026-12-31 (inclusive trade dates). Tier: T1 throughout.
 
-One table serves `Exchange::Eurex`, the `eurex` key and the `eurex_fixed_income` key. The operator states the closure for “all derivatives”, which covers FESX, FDAX and FDXM behind the index rows and FGBL, FGBM, FGBS and FGBX behind the fixed-income rows alike, so the venue intersection is the same table.
+The fixed-income key ships its own table (`FIXED_INCOME` in the `eurex` holiday module): the all-derivatives closures alone. The operator's German-scope closure notes — the lines that close German equity and equity-index derivatives and the Xetra-based ETF/ETC derivatives, dated in the 2014, 2016, 2017 and 2018 editions and `tba` since 2025 — never name fixed income: the panel's grammar prints fixed income explicitly when a closure reaches it, as the recurring Swiss line (`Eurex is closed for trading and clearing (exercise and settlement) in Swiss fixed income as well as equity and equity index derivatives`) does. So FGBL, FGBM, FGBS and FGBX keep trading on every German-scope date — 2014-10-03, 2016-05-16, 2016-10-03, 2017-06-05, 2017-10-03, 2017-10-31, 2018-05-21, 2018-10-03 answer as ordinary fixed-income sessions, and each eve's 22:00-22:30 CET post-trading leg still carries the following German-scope date as its trade date — and the `tba` era withholds nothing from this family. The benchmark identities' German-scope rows live in the sibling table (`TABLE`) that serves `Exchange::Eurex` and the `eurex` key; see [eurex](eurex.md).
 
 **Documents.**
 

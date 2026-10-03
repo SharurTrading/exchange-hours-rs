@@ -827,18 +827,24 @@ fn the_day_after_a_closure_states_the_operators_pre_open() {
 /// The post-close queue's trade date is the session it feeds, not the date the
 /// queue is printed on.
 ///
-/// This is the deliberate divergence `globex_grains` declares under #152: CME's
-/// service labels the `14:30 pcp` with the date it is printed on, and the crate
-/// answers the next trade date because that is the session the queued orders
-/// feed. The fence states both instants the evidence file quotes, so the
-/// divergence cannot change silently — and it asserts the declaration that makes
-/// the scope incomplete, so the inventory's `Complete?` cell cannot drift back.
+/// This is the charter's Post-Close trade-date convention (AGENTS.md, "Trade
+/// dates and state", 2026-10-03 decision, #152), which retired the divergence
+/// declaration this family used to carry: CME's service labels the `14:30 pcp`
+/// with the date it is printed on, and the operator's own T1 Post-Close notice
+/// (Globex notice 20160530) describes the queue as order entry "for the next
+/// trade date" that "should not be considered an extension of the current day
+/// trading session" — so the crate answers the next trade date, the session the
+/// queued orders feed. The fence states a mid-week day (next calendar day), a
+/// Friday (the following Monday) and a pre-holiday run-up (the closure eve's
+/// own shortened session), so the convention cannot change silently in either
+/// direction.
 #[test]
 fn the_post_close_queue_carries_the_trade_date_of_the_session_it_feeds() {
     let calendar = calendar_for_market_hours_key(ZC);
     for (date, next) in [
         ((2025, 6, 10), (2025, 6, 11)),
         ((2025, 6, 13), (2025, 6, 16)),
+        ((2025, 11, 25), (2025, 11, 26)),
     ] {
         for time in [(15, 0, 0), (15, 59, 59)] {
             let instant = ct(date, time);
@@ -853,6 +859,11 @@ fn the_post_close_queue_carries_the_trade_date_of_the_session_it_feeds() {
                 "{date:?} at {time:?}"
             );
             assert_eq!(
+                calendar.is_open(instant),
+                Ok(false),
+                "{date:?} at {time:?}: the queue is order entry, never matching"
+            );
+            assert_eq!(
                 calendar.trade_date(instant),
                 Ok(Some(day(next))),
                 "{date:?} at {time:?}: CME prints the queue's own date, the crate answers the \
@@ -860,22 +871,19 @@ fn the_post_close_queue_carries_the_trade_date_of_the_session_it_feeds() {
             );
         }
         assert!(
-            !calendar.coverage().is_complete_on(day(date)),
-            "{date:?}: the declared label divergence makes every covered date incomplete"
+            calendar.coverage().is_complete_on(day(date)),
+            "{date:?}: the retired label declaration leaves every queue date complete"
         );
         assert_eq!(
             calendar.coverage().coverage_on(day(date)),
-            DateCoverage::OutsideCoveredRange,
+            DateCoverage::Covered,
             "{date:?}"
         );
     }
 
-    // The #152 declaration withholds nothing: the queue's own window is
-    // answered on every date that carries it rather than refused. Beside it the
-    // scope declares the 2012-05-20..2013-04-06 regime whose queue states are
-    // omitted outright — a phase gap the whole-domain #152 refusal used to
-    // mask, and which must refuse those dates now that the label gap is shaped
-    // to the dates that carry a queue.
+    // What is left after the retirement is exactly the omitted
+    // 2012-05-20..2013-04-06 regime — the label declaration is gone, and with
+    // it the last incompleteness this family declared.
     let declared: Vec<_> = calendar
         .coverage()
         .phase_gaps()
@@ -884,11 +892,9 @@ fn the_post_close_queue_carries_the_trade_date_of_the_session_it_feeds() {
         .collect();
     assert_eq!(
         declared,
-        vec![
-            (CoverageGapReason::PostCloseQueueTradeDateLabel, "#152"),
-            (CoverageGapReason::NormalWeekPhaseWithheld, "#259"),
-        ],
-        "globex_grains declares the post-close label divergence and the omitted regime"
+        vec![(CoverageGapReason::NormalWeekPhaseWithheld, "#259")],
+        "globex_grains declares only the omitted regime; the post-close label is the charter's \
+         convention, pinned by this fence"
     );
 }
 

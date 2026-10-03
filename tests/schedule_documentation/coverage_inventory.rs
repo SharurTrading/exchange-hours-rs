@@ -979,8 +979,8 @@ fn inventory_completeness_verdicts_match_the_metadata() {
     }
     assert_eq!(
         (complete, incomplete, no_coverage),
-        (15, 18, 0),
-        "the inventory's verdict shapes: fifteen complete, eighteen incomplete, none with no 2025 \
+        (17, 16, 0),
+        "the inventory's verdict shapes: seventeen complete, sixteen incomplete, none with no 2025 \
          coverage (hkex's ten Unsourced 2012-2015 half-day eves moved it to incomplete on \
          2026-09-29 UTC and its 2026-09-30 UTC closure — the operator's own Phase-Two-era Trading \
          Hours page states the eve session deletions — moved it back to complete; xetra's \
@@ -1001,7 +1001,12 @@ fn inventory_completeness_verdicts_match_the_metadata() {
          series' Mondo Visione verbatim mirror, served live — closed tsx's last span \
          2011-10-11..2012-01-02, making tsx complete to 2026-12-31 (#221); the same day's \
          recovery of the series' 2015/2016 edition on the operator's derivatives site \
-         closed nzx's 2016-04-26..2016-12-22 span, so nzx reads complete across 2010-2027)"
+         closed nzx's 2016-04-26..2016-12-22 span, so nzx reads complete across 2010-2027; \
+         the same date's charter Post-Close trade-date decision (#152) retired the label \
+         declaration the two queue scopes carried, so globex_grains and globex_livestock read \
+         complete in 2025+ under the convention their family fences pin, each incomplete across \
+         2010-2027 on its pre-2025 residue — globex_grains's omitted 2012-05-20..2013-04-06 \
+         regime and the tables' Unsourced dates)"
     );
 }
 
@@ -1025,15 +1030,18 @@ fn inventory_completeness_verdicts_match_the_metadata() {
 /// shipped as `replacement blocks` rows, so no served scope declares it.
 ///
 /// Since #172 every declaration also carries the dates it applies to, and
-/// `globex_grains` carries **two**: the #152 label gap, shaped to the dates that
-/// carry the post-close queue, and the 2012-05-20..2013-04-06 regime whose queue
-/// states are omitted outright — without the second, those dates would read
-/// `Covered` while their queue rows are missing, and the evidence file records
-/// them as a gap with a closing condition.
+/// `globex_grains` carries the 2012-05-20..2013-04-06 regime whose queue
+/// states are omitted outright — without the declaration, those dates would
+/// read `Covered` while their queue rows are missing, and the evidence file
+/// records them as a gap with a closing condition. `globex_livestock` used to
+/// carry the #152 post-close label gap beside it, until the charter's
+/// Post-Close trade-date convention (AGENTS.md, "Trade dates and state",
+/// 2026-10-03 decision, #152) resolved the divergence it recorded and the
+/// declaration was retired with the fence that pins the convention living in
+/// `tests/futures_family_boundaries/holidays_globex_livestock.rs`.
 fn declared_phase_gaps() -> Vec<(&'static str, Vec<(CoverageGapReason, &'static str)>)> {
     let quarter_hour = (CoverageGapReason::NormalWeekPhaseWithheld, "#79");
     let pre_open_onset = (CoverageGapReason::NormalWeekPhaseWithheld, "#123");
-    let post_close_label = (CoverageGapReason::PostCloseQueueTradeDateLabel, "#152");
     let omitted_regime = (CoverageGapReason::NormalWeekPhaseWithheld, "#259");
     let undated_closures = (CoverageGapReason::UnpublishedClosureDates, "#157");
     vec![
@@ -1051,13 +1059,17 @@ fn declared_phase_gaps() -> Vec<(&'static str, Vec<(CoverageGapReason, &'static 
         // every session CME publishes for it now ships as a row, and the
         // declared Pre-Open onset is bounded to the five-day era itself.
         ("globex_cryptocurrency", vec![pre_open_onset]),
-        // The two scopes whose #152 declaration serves its phase: the post-close
-        // queue is answered on every date that carries it, and only the trade
-        // date it reads under is the crate's convention rather than the
-        // operator's printing. `globex_grains` adds the omitted-queue regime,
-        // which withholds a phase and is bounded by the dated rows on both sides.
-        ("globex_grains", vec![post_close_label, omitted_regime]),
-        ("globex_livestock", vec![post_close_label]),
+        // `globex_grains` carried the #152 post-close label declaration beside
+        // the regime until the charter's Post-Close trade-date convention
+        // retired it (2026-10-03): the queue dates answer, and the convention
+        // is pinned by fence in
+        // `tests/futures_family_boundaries/holidays_globex_grains.rs`.
+        ("globex_grains", vec![omitted_regime]),
+        // `globex_livestock` carried the #152 post-close label declaration
+        // until the same charter decision retired it (2026-10-03); the queue
+        // dates answer and the convention is pinned by fence in
+        // `tests/futures_family_boundaries/holidays_globex_livestock.rs`.
+        ("globex_livestock", vec![]),
         // `eurex` withholds no *phase*: the operator declares German
         // equity/equity-index closures it has not dated, so the declaration is
         // a completeness fact the date walk cannot find and the order-entry
@@ -1066,7 +1078,7 @@ fn declared_phase_gaps() -> Vec<(&'static str, Vec<(CoverageGapReason, &'static 
     ]
 }
 
-/// The twelve scopes that declare a gap declare exactly the ones
+/// The ten scopes that declare a gap declare exactly the ones
 /// advertised, each reportable with its own reason and closing issue, and each
 /// issue is one the scope's own row names.
 ///
@@ -1212,11 +1224,12 @@ fn the_declared_phase_level_gaps_match_the_inventory() {
     }
     assert_eq!(
         (declaring, declarations),
-        (11, 12),
-        "eleven served scopes declare today, twelve declarations in all: seven \
+        (10, 10),
+        "ten served scopes declare today, ten declarations in all: seven \
          quarter-hour scopes, `globex_cryptocurrency`'s undated five-day-era Pre-Open \
-         onset, `eurex`'s undated closure scope, and the two `globex_grains` carries — \
-         the post-close queue label and the omitted 2012-05-20..2013-04-06 regime"
+         onset, `eurex`'s undated closure scope, and the omitted 2012-05-20..2013-04-06 \
+         regime `globex_grains` carries — the #152 post-close label declaration the two \
+         queue scopes carried retired with the charter's 2026-10-03 trade-date convention"
     );
 
     // The scopes the quarter-hour probe cleared of the disputed window declare

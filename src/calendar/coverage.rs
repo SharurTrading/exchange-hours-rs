@@ -43,14 +43,20 @@
 //! [`CoverageGapReason::PostCloseQueueTradeDateLabel`] (#152) and
 //! [`CoverageGapReason::UnpublishedClosureDates`] (#157).
 //!
-//! Three of the four withhold something; the fourth does not. A **phase-level**
-//! declaration withholds a phase's own answer, and a query whose answer is that
-//! phase is refused. [`CoverageGapReason::PostCloseQueueTradeDateLabel`] and
-//! [`CoverageGapReason::UnpublishedClosureDates`] withhold no phase — the first
-//! states that one served answer, the trade date, is the crate's convention
-//! rather than the operator's printing, and the second that the operator names
-//! closures it has not dated — so both are completeness facts alone and the
-//! phase's own queries answer through them.
+//! Of the reasons a shipped scope still declares, one withholds something and
+//! one does not. A **phase-level** declaration withholds a phase's own answer,
+//! and a query whose answer is that phase is refused.
+//! [`CoverageGapReason::NormalWeekPhaseWithheld`] is that shape (#79, #123).
+//! [`CoverageGapReason::UnpublishedClosureDates`]
+//! withholds no phase — it states that the operator names closures it has not
+//! dated — so it is a completeness fact alone and the phase's own queries answer
+//! through it. [`CoverageGapReason::PostCloseQueueTradeDateLabel`] and
+//! [`CoverageGapReason::SpecialSessionUnrepresentable`] are the two shapes the
+//! shipped scopes have retired — the first when the charter's Post-Close
+//! trade-date convention resolved the label divergence (2026-10-03, #152), the
+//! second when every scope's merged trade dates shipped as rows — and both stay
+//! on the enum as the vocabulary a future gap of the same shape would declare,
+//! which is also why the pass-through gate arms below remain.
 //!
 //! A declared gap applies to the dates its own declaration names, not to the
 //! whole supported domain. Three bounds narrow it: a **start bound**
@@ -306,40 +312,39 @@ pub enum CoverageGapReason {
     /// session CME publishes for that family is stated and it declares only the
     /// `#79` quarter-hour.
     SpecialSessionUnrepresentable,
-    /// **Declared phase-level.** The operator prints a trade date on its
-    /// post-close order-entry queue that the crate does not, so one answer a
-    /// caller reads from a covered date — the trade date — is the crate's own
-    /// convention rather than the operator's label.
+    /// **Declared phase-level — retired as a declaration, kept as vocabulary.**
+    /// The operator prints a trade date on its post-close order-entry queue
+    /// that the crate does not, so one answer a caller reads from a covered
+    /// date — the trade date — would be the crate's own convention rather than
+    /// the operator's label, and a scope carrying the reason could not claim a
+    /// complete calendar.
     ///
     /// An order-entry occurrence is dated by the session it feeds
     /// (`next_session_after_with`), so a date's `14:30-16:00` CT Post-Close
     /// queue reads with the **next** trade date while CME's own service prints
-    /// it carrying the date the queue is printed on. The two answers are
-    /// deliberate and differ only in the label: CME's T1 description of the
-    /// Post-Close ("GTC and GTD orders may be entered, modified and cancelled
-    /// 1:45.30 - 4:00 p.m. CT / The markets will become unavailable at 4:00
-    /// p.m. CT") describes orders that persist into the next session, which is
-    /// what the crate's assignment states.
+    /// it carrying the date the queue is printed on. The charter resolved that
+    /// divergence on 2026-10-03 (AGENTS.md, "Trade dates and state", closing
+    /// #152): the operator's own T1 Post-Close notice (Globex notice 20160530)
+    /// describes the queue as order entry "for the next trade date" that
+    /// "should not be considered an extension of the current day trading
+    /// session", so the session-fed dating is the operator's own prose, and the
+    /// T2 service's per-event labels are the divergent printing the convention
+    /// resolves. No scope declares this reason any more — the declarations
+    /// `globex_grains` and `globex_livestock` carried are retired — but the
+    /// variant stays: it is the vocabulary a future labelling divergence would
+    /// declare, and the pass-through arms in this module and in
+    /// `query::gate` keep treating it as a reason whose phase is served.
     ///
-    /// **This reason withholds no answer, so it refuses no query.** The window,
-    /// its `is_open` verdict and its `is_accepting_orders` verdict are all
-    /// sourced and served; only the label differs, and a caller that needs the
-    /// operator's own label can read the queue's date and not the session's. The
-    /// gate in `query::schedule::require_phase_coverage` therefore passes this
-    /// reason through, unlike the two reasons above, whose phases the crate does
-    /// not carry at all. What the reason states is the completeness fact: a scope
-    /// that carries it is not claiming a calendar from which every answer matches
-    /// the operator's printings.
-    ///
-    /// A replacement-block row cannot close it. Three candidate row shapes were
-    /// measured and all were rejected: one leaves the label unchanged, and the
-    /// only shape that yields the operator's own label is `tradeable`, which
-    /// would assert matching in a window the operator marks `pcp`
-    /// (LAW-SESSION-NOT-EXPIRY).
-    ///
-    /// `globex_grains` and `globex_livestock` are the shipped scopes: both
-    /// publish a `14:30-16:00` CT post-close queue, and CME prints it with the
-    /// day's own trade date. Tracked as #152, which the declaration cites.
+    /// **A declaration under this reason withholds no answer, so it refuses no
+    /// query.** The window, its `is_open` verdict and its `is_accepting_orders`
+    /// verdict are all sourced and served; only the label differs. The gate in
+    /// `query::schedule::require_phase_coverage` therefore passes this reason
+    /// through, unlike the two reasons above, whose phases the crate does not
+    /// carry at all. A replacement-block row cannot supply the operator's label
+    /// either: the only row shape that yields it is `tradeable`, which would
+    /// assert matching in a window the operator marks `pcp`
+    /// (LAW-SESSION-NOT-EXPIRY) — the measurement that settled the retired
+    /// declaration's shape.
     PostCloseQueueTradeDateLabel,
     /// **Declared, not phase-level.** The operator declares closures inside this
     /// identity's own product scope but has not dated them, so no date its
@@ -407,9 +412,9 @@ pub enum CoverageGapReason {
 /// order-entry window narrows it to the dates whose own calendar resolves an
 /// order-entry occurrence of exactly that window — the truthful granularity for
 /// a gap that withholds one phase on one weekday (#79's Sunday Pre-Open
-/// quarter-hour) or on the dates that carry one queue (#152's post-close
-/// trade-date label), where the rest of the span's dates are fully answered by
-/// the tables.
+/// quarter-hour) or, while it stood, on the dates that carried one queue (#152's
+/// post-close trade-date label, retired 2026-10-03), where the rest of the
+/// span's dates are fully answered by the tables.
 ///
 /// A shape is evaluated against the identity's own built-in layers only — its
 /// profile timeline, its holiday table, never a caller's overlay — because the
@@ -426,8 +431,9 @@ pub enum PhaseGapShape {
     /// The dates on which the identity's own calendar resolves an
     /// **order-entry** occurrence opening on the date, of a rule whose
     /// venue-local window matches exactly: `close_ssm` always, and `open_ssm`
-    /// when it is `Some`. `None` matches any opening — the post-close queue's
-    /// opening moved across eras while its 16:00 CT close did not (#152).
+    /// when it is `Some`. `None` matches any opening — the retired #152
+    /// declaration used it because the post-close queue's opening moved across
+    /// eras while its 16:00 CT close did not.
     ///
     /// The occurrence must survive the built-in layers — a trade date the
     /// table closes or replaces removes the occurrence, and the date then
@@ -451,7 +457,9 @@ pub enum PhaseGapShape {
 /// [`CoverageGapReason::SpecialSessionUnrepresentable`]). A **labelling** gap
 /// ([`CoverageGapReason::PostCloseQueueTradeDateLabel`]) serves every phase and
 /// states that one answer read from them, the trade date, is the crate's
-/// convention rather than the operator's printing. A **holiday-scope** gap
+/// convention rather than the operator's printing — the shape the charter's
+/// 2026-10-03 Post-Close decision retired, kept for a future divergence of the
+/// same kind. A **holiday-scope** gap
 /// ([`CoverageGapReason::UnpublishedClosureDates`]) withholds no phase at all:
 /// the operator's calendar names dates it closes without publishing them, so the
 /// site is incomplete while every phase still answers.
@@ -471,8 +479,9 @@ pub enum PhaseGapShape {
 /// already ships begins (LAW-NO-FABRICATED-DATES: the bound restates a row,
 /// never an inference). A declaration is **shaped** when the withholding is
 /// live only on the dates a served occurrence decides ([`PhaseGapShape`]):
-/// #79's quarter-hour on the Sundays whose Pre-Open resolves, #152's label on
-/// the dates that carry the post-close queue. Span and shape compose, so a
+/// #79's quarter-hour on the Sundays whose Pre-Open resolves — as was #152's
+/// label, before the charter retired it, on the dates that carried the
+/// post-close queue. Span and shape compose, so a
 /// declaration names exactly the dates its evidence cannot answer and the
 /// identity's metadata answers every other date beside it.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]

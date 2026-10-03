@@ -26,7 +26,7 @@ use chrono::{DateTime, Datelike as _, Days, Duration, NaiveDate, TimeZone as _, 
 use chrono_tz::US;
 use exchange_hours::{
     CalendarQueryError, CalendarResolution, EvidenceTier, ExchangeCalendar, Holiday, HolidayKind,
-    MarketHoursKey, SessionKind, calendar_for_market_hours_key,
+    MarketHoursKey, SessionKind, SessionState, calendar_for_market_hours_key,
 };
 
 const LE: MarketHoursKey = MarketHoursKey::GlobexLivestock;
@@ -510,6 +510,80 @@ fn the_rows_reach_the_trade_date() {
             .trade_date(ct((2025, 12, 24), (15, 0, 0)))
             .expect("the coverage contract must answer a covered date"),
         Some(day((2025, 12, 25)))
+    );
+}
+
+/// The Post-Close queue accepts orders, matches nothing, and its trade date is
+/// the session it feeds.
+///
+/// The charter's Post-Close trade-date convention (AGENTS.md, "Trade dates and
+/// state", 2026-10-03 decision, #152) dates an order-entry-only queue that
+/// persists past the close by the session it feeds. This family's sourced
+/// 2016-06-06 PCP onset is the very notice that prose comes from — CME Globex
+/// notice 20160530 describes the queue as order entry "for the next trade
+/// date" that "should not be considered an extension of the current day
+/// trading session" — while the operator's T2 trading-hours service prints
+/// each `14:30 pcp` event with the closed day's own trade date; the
+/// convention resolves that conflict, and the divergence declaration
+/// `globex_livestock` used to carry (`CoverageGapReason::PostCloseQueueTradeDateLabel`,
+/// #152) is retired. The fence pins a mid-week day (next calendar day), a
+/// Friday (the following Monday) and the pre-holiday run-up (the closure
+/// eve's shortened session), all inside the 14:30-16:00 CT window, so the
+/// convention cannot change silently in either direction.
+#[test]
+fn the_post_close_queue_accepts_orders_and_feeds_the_next_trade_date() {
+    let calendar = calendar();
+    for (date, next) in [
+        ((2025, 6, 10), (2025, 6, 11)),
+        ((2025, 6, 13), (2025, 6, 16)),
+        ((2025, 12, 23), (2025, 12, 24)),
+    ] {
+        for time in [(14, 30, 0), (15, 0, 0), (15, 59, 59)] {
+            let instant = ct(date, time);
+            assert_eq!(
+                calendar.session_state(instant),
+                Ok(SessionState::OrderEntry),
+                "{date:?} at {time:?}: the operator marks the window `pcp`"
+            );
+            assert_eq!(
+                calendar.is_accepting_orders(instant),
+                Ok(true),
+                "{date:?} at {time:?}: the queue accepts order entry"
+            );
+            assert_eq!(
+                calendar.is_open(instant),
+                Ok(false),
+                "{date:?} at {time:?}: no trade matches in the Post-Close"
+            );
+            assert_eq!(
+                calendar.is_order_entry_only(instant),
+                Ok(true),
+                "{date:?} at {time:?}"
+            );
+            assert_eq!(
+                calendar.trade_date(instant),
+                Ok(Some(day(next))),
+                "{date:?} at {time:?}: CME prints the queue's own date, the crate answers the \
+                 session it feeds"
+            );
+        }
+        assert!(
+            calendar.coverage().is_complete_on(day(date)),
+            "{date:?}: the retired label declaration leaves every queue date complete"
+        );
+    }
+
+    // The queue's close is end-exclusive, and an instant at it is assigned to
+    // no trade date (the evidence file's own 16:00:00 CT measurement).
+    assert_eq!(
+        calendar.is_accepting_orders(ct((2025, 6, 10), (16, 0, 0))),
+        Ok(false),
+        "16:00 CT is the queue's end-exclusive close"
+    );
+    assert_eq!(
+        calendar.trade_date(ct((2025, 6, 10), (16, 0, 0))),
+        Ok(None),
+        "nothing is assigned to an instant at the close itself"
     );
 }
 

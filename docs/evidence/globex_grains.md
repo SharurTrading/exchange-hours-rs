@@ -892,39 +892,52 @@ and each row's `Derived from` cell records which one produced it.
 
 ### Gaps across the block
 
-- **The post-close queue's trade-date label is the crate's convention, not the operator's
-  printing (#152).** CME's own service prints a trade date on every `14:30 pcp` event, and on
-  an ordinary date that is the date the queue is printed on. The crate dates an order-entry
-  occurrence by the **session it feeds**, so the same queue reads with the next trade date
-  instead: `D + 1` on a Monday to Thursday and `D + 3` over a weekend. Measured through
-  `calendar_for_market_hours_key(MarketHoursKey::GlobexGrains)` over
-  2025-01-01..2027-12-31, the shaped #152 declaration refuses **720** days (re-measured
+- **closed 2026-10-03 UTC — the post-close queue's trade-date label is the charter's
+  convention ("the post-close queue's trade-date label is the crate's convention, not the
+  operator's printing", #152).** CME's own service prints a trade date on every `14:30 pcp`
+  event, and on an ordinary date that is the date the queue is printed on. The crate dates an
+  order-entry occurrence by the **session it feeds**, so the same queue reads with the next
+  trade date instead: `D + 1` on a Monday to Thursday and `D + 3` over a weekend. Measured
+  through `calendar_for_market_hours_key(MarketHoursKey::GlobexGrains)` over
+  2025-01-01..2027-12-31, the shaped #152 declaration had refused **720** days (re-measured
   2026-09-29 UTC against the current tables; the original 2026-09-26 measurement read
   **746** queue dates before the closure-eve replacement blocks landed) — every refusing
-  day is one whose calendar serves the 14:30-16:00 CT queue, and **all 720**
-  answer `session_state = OrderEntry`, `is_accepting_orders = true` and a `trade_date` other
-  than the date printed on. Fourteen further days accept orders at 15:00 CT on the
-  adjusted queue their own replacement block states and answer completely; the walk fence
+  day was one whose calendar serves the 14:30-16:00 CT queue, and **all 720** answered
+  `session_state = OrderEntry`, `is_accepting_orders = true` and a `trade_date` other
+  than the date printed on. Fourteen further days accepted orders at 15:00 CT on the
+  adjusted queue their own replacement block states and answered completely; the walk fence
   in `tests/coverage_metadata.rs`
-  (`a_date_scoped_declaration_zeroes_no_identity_over_2025_2027`) pins the 720 refusals,
-  the 14 block-eve days and livestock's 754. Two instants show it on a date no row covers: **2025-06-10** (a
+  (`a_date_scoped_declaration_zeroes_no_identity_over_2025_2027`) pinned the 720 refusals,
+  the 14 block-eve days and livestock's 754. Two instants showed it on a date no row covers: **2025-06-10** (a
   Tuesday) answers `trade_date = 2025-06-11`, and **2025-06-13** (a Friday) answers
   `trade_date = 2025-06-16`, where `CME-SVC-2024-12-31` prints `2025-01-02 14:30 pcp` and
-  `2026-07-02 14:30 pcp` carrying their own dates. This is the one answer in this block that a
-  correction to `trade_date` moves, and the earlier blanket claim that no order-entry deviation
-  moves one was false for it. The divergence is **deliberate**: CME's own T1 description of the
-  Post-Close — "GTC and GTD orders may be entered, modified and cancelled 1:45.30 - 4:00 p.m.
-  CT / The markets will become unavailable at 4:00 p.m. CT" — describes orders that persist
-  into the next session, which is the session the crate assigns them to. It is **not fixable by
-  any data row**: three candidate row shapes were measured and all were rejected — one leaves
-  the label unchanged, and the only shape that yields the operator's own label is `tradeable`,
-  which would assert matching in a window the operator marks `pcp` (LAW-SESSION-NOT-EXPIRY).
-  The scope therefore declares the gap (`CoverageGapReason::PostCloseQueueTradeDateLabel`,
-  closing condition #152 in `schedules/sourcing.rs`), shaped — since #172 — to the dates whose own
-  calendar serves the order-entry window closing at 16:00 CT, and neither `globex_grains` nor
-  `globex_livestock`, which carries the same queue, claims a complete calendar on its queue dates. The declaration withholds no answer and refuses no query: the window and both of
-  its verdicts are served. Served identity, so tracked as issue #152
-  (LAW-FOLLOW-UPS-ARE-ISSUES).
+  `2026-07-02 14:30 pcp` carrying their own dates. **The divergence is resolved by the
+  charter's decision of 2026-10-03 (AGENTS.md, "Trade dates and state", closing #152), not
+  by data** — no data row can state it: three candidate row shapes were measured and all
+  were rejected — one leaves the label unchanged, and the only shape that yields the
+  operator's own label is `tradeable`, which would assert matching in a window the operator
+  marks `pcp` (LAW-SESSION-NOT-EXPIRY). The decision records that an order-entry-only queue
+  persisting past the session's close is dated by the session it feeds, on the operator's
+  own T1 prose: CME's Globex notice of 30 May 2016 — the notice that introduces the
+  Post-Close state, `CME Globex notice 20160530` — allows "GTC and GTD order entry,
+  modification and cancellations **for the next trade date**" and states "No matching takes
+  place during the Post-Close and it **should not be considered an extension of the current
+  day trading session**" (artifact `cme-globex/trade-types/raw/ag-crypto-tas-history/gn-20160530.html`
+  in the research store, sha256 `8dfece15efec248bea6c1772c2c25d4825182689ce612840496eb320f15f9270`,
+  both phrases verbatim; URLs in `docs/evidence/globex_livestock.md`, whose family the same
+  notice keys). The T2 feed's divergent event labels are disclosed here and fenced in
+  `tests/futures_family_boundaries/holidays_globex_grains.rs`
+  (`the_post_close_queue_carries_the_trade_date_of_the_session_it_feeds` pins 15:00 and
+  15:59:59 CT answering `OrderEntry`, accepting orders, not open, and the feeding session's
+  trade date — 2025-06-10 → 2025-06-11 mid-week, 2025-06-13 → 2025-06-16 over a weekend,
+  2025-11-25 → 2025-11-26 into the closure eve). The `CoverageGapReason::PostCloseQueueTradeDateLabel`
+  declaration the scope carried is retired, the fence that pins the convention replaces it,
+  and the queue dates answer completely: the walk fence now pins 1,094 of the 1,095 days
+  complete (the trailing window edge refuses 2027-12-31, whose reach crosses into 2028, as
+  for every scope) and 748 queue days — the 720 former refusals plus the 28 block days.
+  Livestock, which carries the same queue from its own 2016-06-06 onset, retired the same
+  declaration by the same decision; its record is in
+  [`docs/evidence/globex_livestock.md`](globex_livestock.md).
 - **closed 2026-09-26 UTC — the merged eves' Pre-Open is served.** Three of the four classes
   this note used to record are now rows; what remains is one deviation and one open defect.
   1. **Served.** On 2025-11-28 CME's **finalised** publication prints `07:00 preopen` before
@@ -947,11 +960,13 @@ and each row's `Derived from` cell records which one produced it.
      "separate arrangement" this note used to say would be needed. Measured through the built-in
      calendar, all seventeen published eves' windows now answer `session_state = OrderEntry`,
      `is_order_entry_only = true` and `is_accepting_orders = true` with `is_open = false`.
-  4. **Still open, and stated here rather than modelled.** The `14:30 pcp` window on the four
-     `replacement blocks` late-open dates is stated by the row, but its trade-date **label** is
-     not fixed by it: the row's blocks carry the trade date, and `trade_date` at 15:00 CT still
-     resolves through the session the queue feeds, as on every other date. Closing condition:
-     #152, as for the label deviation above.
+  4. **closed 2026-10-03 UTC, by the charter's Post-Close trade-date decision.** The
+     `14:30 pcp` window on the four `replacement blocks` late-open dates is stated by the row,
+     but its trade-date **label** is not fixed by it: the row's blocks carry the trade date,
+     and `trade_date` at 15:00 CT still resolves through the session the queue feeds, as on
+     every other date. That label is the charter's convention now (AGENTS.md, "Trade dates
+     and state", 2026-10-03, #152 — closed by this change), recorded in the decision entry
+     above; no closing condition remains open.
   5. **Fixed 2026-09-30 (UTC): the pre-eve queue is restated by the eve's row.** On each of
    the fourteen dates that precede a mid-week closure eve, the `14:30-16:00` CT post-close
    queue used to disappear: the occurrence the ordinary week dates to the next trade date was
@@ -973,11 +988,11 @@ and each row's `Derived from` cell records which one produced it.
    `b54f1f9c0672ce59413be4d9283bbc5f96bc2c84b4113c25de3cb6ade285ad7d`) beside them, and
    `raw/cme-2025-2027/live/thbp/thbp_2026-12-29_2026-12-31.json` (sha256
    `691de39fb25a0be94598e50ac48933f119fbd0cd04fae9c36f7df8494ffcedaa`) — each printing
-   `14:30 pcp` for the date it covers with that date's own `tradingDate`, which is the label
-   deviation the #152 declared gap states. The declaration's shape resolves against the
-   normal week only, so the fourteen dates stay `Covered` beside it; the label the restating
+   `14:30 pcp` for the date it covers with that date's own `tradingDate`, which is the
+   divergent printing the charter's Post-Close trade-date convention resolves (see the
+   decision entry above). The fourteen dates read `Covered`; the label the restating
    block gives their queue is the crate's convention (the eve's trade date), recorded here
-   beside the declaration rather than re-derived per date. The other ten dates' queue is the
+   beside the charter decision rather than re-derived per date. The other ten dates' queue is the
    ordinary PCP the normal week sources. Tracked as issue #175; closed by this change.
 - **No intraday-topology gap.** All eighteen `modified` grain rows in the block triage to
   design memo §1.6 categories 3, 4 and 5 — fourteen to conversion 2 and four to conversion 3 —

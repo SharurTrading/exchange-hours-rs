@@ -886,7 +886,7 @@ fn the_post_close_queue_carries_the_trade_date_of_the_session_it_feeds() {
         declared,
         vec![
             (CoverageGapReason::PostCloseQueueTradeDateLabel, "#152"),
-            (CoverageGapReason::NormalWeekPhaseWithheld, "#116"),
+            (CoverageGapReason::NormalWeekPhaseWithheld, "#259"),
         ],
         "globex_grains declares the post-close label divergence and the omitted regime"
     );

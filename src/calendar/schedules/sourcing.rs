@@ -288,10 +288,11 @@ const fn post_close_queue_trade_date_label() -> PhaseGap {
 /// sourced and answered; `docs/evidence/globex_grains.md` records the states,
 /// the bracket and the closing condition — a CME document that states those
 /// queue times in session language on a day-level effective date — and the
-/// scope's inventory row names #116, the Stage 4 completeness issue whose data
-/// closes it, alongside #117.
+/// scope's inventory row names #259, the live issue that carries the gap as
+/// its closing condition (its former citation #116 closed without this
+/// data), alongside #117.
 const fn grains_omitted_regime_queues() -> PhaseGap {
-    PhaseGap::new(CoverageGapReason::NormalWeekPhaseWithheld, "#116")
+    PhaseGap::new(CoverageGapReason::NormalWeekPhaseWithheld, "#259")
         .since(effective_date(2012, 5, 20))
         .until(effective_date(2013, 4, 7))
 }

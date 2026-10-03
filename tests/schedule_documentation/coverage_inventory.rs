@@ -1032,7 +1032,7 @@ fn declared_phase_gaps() -> Vec<(&'static str, Vec<(CoverageGapReason, &'static 
     let quarter_hour = (CoverageGapReason::NormalWeekPhaseWithheld, "#79");
     let pre_open_onset = (CoverageGapReason::NormalWeekPhaseWithheld, "#123");
     let post_close_label = (CoverageGapReason::PostCloseQueueTradeDateLabel, "#152");
-    let omitted_regime = (CoverageGapReason::NormalWeekPhaseWithheld, "#116");
+    let omitted_regime = (CoverageGapReason::NormalWeekPhaseWithheld, "#259");
     let undated_closures = (CoverageGapReason::UnpublishedClosureDates, "#157");
     vec![
         ("cme", vec![quarter_hour]),

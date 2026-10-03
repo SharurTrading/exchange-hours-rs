@@ -268,7 +268,14 @@ time and sha256 per artifact in its `INDEX.md`; the operator statements behind e
   Friday, July 2nd") all place the closure on the Monday. The operator's date is a typo; the
   affected trade date is 2021-09-06, which ships `closed`.
 - **The 2026-09-08 onward notices are not retrieved here.** They belong to the published-future
-  refresh, not to this window; the last row this table ships is 2026-09-07.
+  refresh, not to this window; the last row this table ships is 2026-09-07. Re-checked 2026-10-02
+  UTC through the exchange's notices listing, rendered through the public reader because the
+  direct channel answers HTTP 403 (artifacts and `INDEX-recheck-2026-10-02.md` under
+  `holidays/raw/cde/` in the research store): the newest notices are 26-33.3 and 26-37 (both
+  posted 09/24/2026) and R2026-62..R2026-64 (09/16-21/2026), all Maintenance/Regulatory, and the
+  newest Holiday-category notice remains 26-36 (`2026 Labor Day`, posted 08/25/2026, effective
+  09/07/2026), so no holiday arrangement on or after 2026-09-08 has been published and the
+  window's end is still the operator's horizon.
 
 ## Sources
 

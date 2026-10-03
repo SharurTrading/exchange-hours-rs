@@ -1160,7 +1160,7 @@ fn session_state_and_trade_date_are_consistent_for_every_key() {
                         "{label}: OrderEntry state must accept orders"
                     );
                 }
-                SessionState::Halt | SessionState::Maintenance | SessionState::Closed => {
+                SessionState::Maintenance | SessionState::Closed => {
                     assert!(
                         !calendar
                             .is_open(instant)

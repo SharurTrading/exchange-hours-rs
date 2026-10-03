@@ -163,8 +163,7 @@ fn iceus_daily_break() {
 #[test]
 fn maintenance_covers_the_whole_break_not_just_its_tail() {
     // Maintenance is classified by the full close-to-reopen span, so the
-    // front of a qualifying break counts too. CBOT's current 13:20-14:30 gap
-    // stays within one trade date before PCP and is therefore a Halt.
+    // front of a qualifying break counts too.
     let ice = hours_for_exchange(
         Exchange::Iceus,
         chrono::DateTime::<chrono::Utc>::UNIX_EPOCH + chrono::Duration::seconds(1_787_400_000),
@@ -203,7 +202,7 @@ fn maintenance_covers_the_whole_break_not_just_its_tail() {
     assert!(!cbot.is_maintenance(t));
     // 14:00 CT sits between the 13:20 grain close and the 14:30 PCP order-entry
     // window. With the queues out of `extended`, the surrounding sessions belong
-    // to different trade dates, so this reads Closed rather than an intraday Halt.
+    // to different trade dates, so this reads Closed rather than maintenance.
     assert_eq!(cbot.session_state(t), SessionState::Closed);
 }
 

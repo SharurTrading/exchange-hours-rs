@@ -533,11 +533,12 @@ impl ExchangeCalendar {
 
     /// Returns the effective state at `instant`.
     ///
-    /// `Halt` separates phases assigned to one trade date. `Maintenance` is
-    /// normally a complete inter-trade-date gap of at most four elapsed hours
-    /// within one ISO week. A continuously traded-week profile also retains an
-    /// operator-designated gap of that length inside one trade date. Longer
-    /// gaps and weekends are `Closed`.
+    /// `Maintenance` is normally a complete inter-trade-date gap of at most
+    /// four elapsed hours within one ISO week. A continuously traded-week
+    /// profile also retains an operator-designated gap of that length inside
+    /// one trade date. Same-trade-date gaps — a scheduled lunch break, for
+    /// example — and longer gaps and weekends are `Closed`: the crate models
+    /// scheduled hours only and has no halt concept.
     ///
     /// # Errors
     ///

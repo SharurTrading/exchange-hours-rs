@@ -381,13 +381,15 @@ state actual supported ranges; an unknown date is not a market closure.
   schedule family. A venue-keyed default is not permission to use that clock
   for every product listed there; the consumer's map decides.
 - **Trade dates and state.** A containing session's trade date is normally the
-  venue-local date of its final close. Same-trade-date gaps are `Halt`, except
-  that a sourced continuously traded-week profile can retain an
+  venue-local date of its final close. Same-trade-date gaps are `Closed` —
+  the crate has no halt concept, because an event-driven halt is not
+  scheduled hours or a holiday (2026-10-03 amendment, #264) — except that a
+  sourced continuously traded-week profile can retain an
   operator-designated gap of no more than four hours as `Maintenance`.
   Inter-trade-date gaps no longer than four elapsed hours within one ISO week
   are also `Maintenance`; longer gaps are `Closed`. The four-hour bound and
   the ISO-week test are **crate policy**, chosen so a consumer can compress
-  maintenance out of a chart and never a halt; they are tested as policy, not
+  maintenance out of a chart; they are tested as policy, not
   sourced per identity. `is_maintenance` must remain exactly the maintenance
   case of `session_state`.
 - **Family holiday exceptions.** A closed date normally removes its complete

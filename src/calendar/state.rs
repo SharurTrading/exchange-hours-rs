@@ -17,8 +17,6 @@ pub enum SessionState {
     /// which trades genuinely print. A consumer building bars must not emit one
     /// for this state: there is no price.
     OrderEntry,
-    /// Trading is paused between two phases of the same trade date.
-    Halt,
     /// The schedule is in a short operational maintenance break.
     ///
     /// This normally separates trade dates. A continuously traded-week

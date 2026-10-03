@@ -487,13 +487,14 @@ final close, so its trade date is always `None`; consequently
 one. Use `is_closed_all_day_on` or `is_closed_all_day_in_calendar` for
 civil-day availability.
 `session_state(instant)` returns exactly one of `OpenRegular`, `OpenExtended`,
-`Halt`, `Maintenance`, or `Closed`. A halt separates phases of the same trade
-date. Maintenance is normally an inter-trade-date gap no longer than four
-elapsed hours within one ISO week. A profile explicitly marked as having no
-weekend close also retains an operator-designated short maintenance gap inside
-one trade date; this covers CME cryptocurrency's Saturday 02:00–03:45 CT
-closed interval before its 03:45–04:00 Pre-Open. Longer afternoon gaps, closed
-days, and weekends are closed.
+`Maintenance`, or `Closed`. Maintenance is normally an inter-trade-date gap no
+longer than four elapsed hours within one ISO week. A profile explicitly marked
+as having no weekend close also retains an operator-designated short maintenance
+gap inside one trade date; this covers CME cryptocurrency's Saturday 02:00–03:45
+CT closed interval before its 03:45–04:00 Pre-Open. Same-trade-date gaps (a
+scheduled lunch break, for example), longer afternoon gaps, closed days, and
+weekends are closed — the crate models scheduled hours only and has no halt
+concept.
 `is_maintenance` is exactly the maintenance-state predicate.
 
 The built-in profiles are normal-week schedules. Per-family holiday and
@@ -641,10 +642,12 @@ caller's `DayPolicy` is outside that guarantee. The Criterion
   handle `Some(exchange)`; family calendars return `None`. Use `source()` when
   both identity kinds are valid, or `market_hours_key()` for the family case.
 - `SessionState` now uses trade-date-aware gap classification with a four-hour
-  maintenance ceiling. Same-trade-date gaps are normally `Halt`; a sourced gap
-  inside a continuously traded week can remain `Maintenance` within that bound.
-  Longer inter-trade-date and policy-created gaps are `Closed`. Recheck callers
-  that persisted or matched the former state labels.
+  maintenance ceiling, and the former `Halt` state is gone: the crate models
+  scheduled hours only, so same-trade-date gaps (a scheduled lunch break, for
+  example) are `Closed`; a sourced gap inside a continuously traded week can
+  remain `Maintenance` within that bound. Longer inter-trade-date and
+  policy-created gaps are also `Closed`. Recheck callers that persisted or
+  matched the former state labels.
 - The raw `US_EQUITY_REGULAR`, `US_EQUITY_EXTENDED`,
   `NYSE_TEXAS_EXTENDED`, and `BLUE_OCEAN_EXTENDED` slices are no longer public.
   Use `hours_for_exchange` or `calendar_for_exchange` so venue and historical

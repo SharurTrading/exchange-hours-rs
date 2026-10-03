@@ -110,9 +110,13 @@ fn mini_grains_serves_the_published_grid_with_end_exclusive_closes() {
     assert!(hours.is_open(ct((2026, 6, 15), (7, 44, 59))));
     assert!(!hours.is_open(ct((2026, 6, 15), (7, 45, 0))));
 
-    // The 07:45-08:00 break sits inside the same trade date, then the morning
+    // The 07:45-08:00 break sits inside the same trade date — a scheduled
+    // same-trade-date gap reads closed, not a halt (#264) — then the morning
     // Pre-Open runs 08:00-08:30 and the regular session opens 08:30.
-    assert_eq!(state_at(ct((2026, 6, 15), (7, 50, 0))), SessionState::Halt);
+    assert_eq!(
+        state_at(ct((2026, 6, 15), (7, 50, 0))),
+        SessionState::Closed
+    );
     assert!(!hours.is_accepting_orders(ct((2026, 6, 15), (7, 59, 59))));
     assert!(hours.is_order_entry_only(ct((2026, 6, 15), (8, 0, 0))));
     assert!(hours.is_order_entry_only(ct((2026, 6, 15), (8, 29, 59))));

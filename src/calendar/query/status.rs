@@ -175,7 +175,13 @@ pub(in crate::calendar) fn session_state<G: SourceGate>(
         return Ok(SessionState::Closed);
     };
     if previous_trade_date == next_trade_date {
-        return Ok(SessionState::Halt);
+        // A same-trade-date gap is a scheduled pause in the day's own hours
+        // (a lunch break, an operator-designated intraday window). The crate
+        // has no halt concept — an event-driven halt is not scheduled hours
+        // or a holiday — so the state is simply closed, and this branch stays
+        // ahead of the ISO-week maintenance check so the gap never reads as
+        // maintenance (#264).
+        return Ok(SessionState::Closed);
     }
     let same_week = previous_trade_date.iso_week() == next_trade_date.iso_week();
     if same_week && gap <= MAX_MAINTENANCE_GAP {

@@ -147,17 +147,22 @@ pub(in crate::calendar) trait SourceGate: Copy {
     /// layers, which is the same shadowing rule `coverage_on` and
     /// [`CalendarCoverage::gaps`] report by. Deciding from the span alone would
     /// let an earlier pass-through declaration whose queue is absent on the
-    /// date — the #152 shape resolves to no occurrence inside `globex_grains`'s
-    /// omitted 2012-05-20..2013-04-06 regime — shadow the refusing declaration
+    /// date — the retired #152 shape resolved to no occurrence inside
+    /// `globex_grains`'s omitted 2012-05-20..2013-04-06 regime, whose refusing
+    /// declaration sits behind it — shadow the refusing declaration
     /// behind it, and a queue scan would answer absence where `coverage_on`
     /// refuses. A declared gap withholds a queue exactly when its reason names
     /// one: [`CoverageGapReason::NormalWeekPhaseWithheld`] and
     /// [`CoverageGapReason::SpecialSessionUnrepresentable`] do, and
     /// [`CoverageGapReason::PostCloseQueueTradeDateLabel`] and
     /// [`CoverageGapReason::UnpublishedClosureDates`] do not, because their
-    /// phases are served — the post-close queue's window and both of its
-    /// verdicts are sourced, and an ordinary day's queues answer through Eurex's
-    /// undated closures. A pass-through reason refuses nothing. A refusing
+    /// phases are served — a labelling gap withholds a label, not a window, and
+    /// an ordinary day's queues answer through Eurex's undated closures. (No
+    /// shipped scope declares the labelling reason any more — the charter's
+    /// 2026-10-03 Post-Close trade-date convention retired it (#152) — and the
+    /// arm stays because the reason remains the vocabulary a future labelling
+    /// divergence would declare.) A pass-through reason refuses nothing. A
+    /// refusing
     /// reason refuses the scan: the #79 quarter-hour refuses the bracket-era
     /// Sundays whose Pre-Open resolves, and answers the Tuesday beside one —
     /// refusing a Tuesday for a Sunday queue is precisely the

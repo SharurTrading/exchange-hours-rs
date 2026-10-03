@@ -128,10 +128,11 @@ const HALF_DAY_CLOSE: u32 = 12 * 3_600 + 5 * 60;
 /// carries its own trade-date assignment, the eve's queue reads with the eve's
 /// trade date — the operator's own label — and the `-1` block restates the
 /// pre-eve queue the ordinary week would have deleted (#175); the label that
-/// assignment gives it is the crate's convention, which is the #152 declared
-/// gap's statement. On every other date the ordinary assignment stands and the
-/// queue still reads with the trade date it feeds; that divergence is recorded
-/// in
+/// assignment gives it is the crate's convention, which the charter's
+/// Post-Close trade-date decision states (AGENTS.md, "Trade dates and state",
+/// 2026-10-03, #152). On every other date the ordinary assignment stands and
+/// the queue still reads with the trade date it feeds; that convention is
+/// recorded in
 /// [`docs/evidence/globex_grains.md`](../../../../../docs/evidence/globex_grains.md).
 pub(crate) static CLOSURE_EVE_BLOCKS: [ExceptionBlock; 6] = [
     // The day before the eve prints its ordinary `14:30 pcp; 16:00 closed`

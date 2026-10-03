@@ -391,7 +391,16 @@ state actual supported ranges; an unknown date is not a market closure.
   the ISO-week test are **crate policy**, chosen so a consumer can compress
   maintenance out of a chart; they are tested as policy, not
   sourced per identity. `is_maintenance` must remain exactly the maintenance
-  case of `session_state`.
+  case of `session_state`. An order-entry-only queue persisting past the
+  session's close — CME's Post-Close period is the worked example — is dated
+  by the session it feeds: the next session's trade date, never the civil day
+  the operator prints the queue on. The operator's own T1 Post-Close notice
+  (CME Globex notice 20160530) describes it as order entry "for the next trade
+  date" that "should not be considered an extension of the current day trading
+  session", while the operator's T2 trading-hours service prints those queue
+  events carrying the closed day's trade date; this convention resolves that
+  conflict in favour of the session the queued orders feed (2026-10-03
+  decision, issue #152).
 - **Family holiday exceptions.** A closed date normally removes its complete
   trading day, including the prior-evening wrap. Preserve a sourced family
   exception when the operator assigns continuous weekend trading to the

@@ -568,7 +568,41 @@ beside it, given with the product id and the `eventDate` it was read from.
 
 **Gaps, 2025.**
 
-- **order-entry, every row** — on a closed or shortened date CME publishes no `14:30 pcp` and no `16:00 closed`, but the crate's 14:30-16:00 CT Post-Close window already carries the **following** trade date, so neither a `Closed` row nor an `EarlyClose` row on the holiday can reach it. `DayPolicy`'s scalar vocabulary — the vocabulary a holiday row copies — has no order-entry boundary, so this is not representable and is recorded here rather than modelled. It changes the `trade_date` answer as well as the order-entry pair, for 90 minutes. Measured on 2025-01-02: 14:29:59 CT answers `trade_date=Ok(None)`, `is_order_entry_only=false`, `is_accepting_orders=false`; 14:30:00 CT and 15:59:59 CT answer `trade_date=Ok(Some(2025-01-03))` with both `true`; and 16:00:00 CT answers `Ok(None)` with both `false` again. Where the following trade date is closed the queue goes with it, so 2025-04-17 14:30:00 CT answers `trade_date=Ok(None)`. `is_open` is unchanged. Fenced in both directions by `tests/futures_family_boundaries/holidays_globex_livestock.rs`, so the residue stays visible rather than becoming folklore. The divergence is deliberate — CME's T1 description of the Post-Close describes orders that persist into the next session — and it is **not** a data-row gap: `globex_livestock` declares it in `schedules/sourcing.rs` (`CoverageGapReason::PostCloseQueueTradeDateLabel`, closing condition #152), shaped — since #172 — to the dates whose own calendar serves the 16:00-CT-closing Post-Close window, so this scope no longer claims a complete calendar on those dates and `docs/schedules/coverage-2025.md` reads it incomplete. The window and both of its verdicts stay served: the declaration withholds no answer and refuses no query.
+- **closed 2026-10-03 UTC — the Post-Close queue's trade-date label is the charter's
+  convention ("order-entry, every row", #152).** The residue this note recorded: on a closed
+  or shortened date CME publishes no `14:30 pcp` and no `16:00 closed`, but the crate's
+  14:30-16:00 CT Post-Close window carries the **following** trade date, so neither a
+  `Closed` row nor an `EarlyClose` row on the holiday can reach it, and the operator's own
+  T2 service prints every `14:30 pcp` event with the closed day's own `tradingDate` while
+  the crate answers the session the queue feeds. Measured on 2025-01-02: 14:29:59 CT
+  answers `trade_date=Ok(None)`, `is_order_entry_only=false`, `is_accepting_orders=false`;
+  14:30:00 CT and 15:59:59 CT answer `trade_date=Ok(Some(2025-01-03))` with both `true`;
+  and 16:00:00 CT answers `Ok(None)` with both `false` again. Where the following trade
+  date is closed the queue goes with it, so 2025-04-17 14:30:00 CT answers
+  `trade_date=Ok(None)`. `is_open` is unchanged. **The divergence is resolved by the
+  charter's decision of 2026-10-03 (AGENTS.md, "Trade dates and state", closing #152), not
+  by data** — `DayPolicy`'s scalar vocabulary has no order-entry boundary, and the only
+  row shape that yields the operator's label is `tradeable`, which would assert matching in
+  a window the operator marks `pcp` (LAW-SESSION-NOT-EXPIRY). The decision records that an
+  order-entry-only queue persisting past the session's close is dated by the session it
+  feeds, on the operator's own T1 prose: CME Globex notice 20160530 — the very notice this
+  family's 2016-06-06 PCP onset keys to — allows "GTC and GTD order entry, modification and
+  cancellations **for the next trade date**" and states "No matching takes place during the
+  Post-Close and it **should not be considered an extension of the current day trading
+  session**" (artifact `cme-globex/trade-types/raw/ag-crypto-tas-history/gn-20160530.html`
+  in the research store, sha256 `8dfece15efec248bea6c1772c2c25d4825182689ce612840496eb320f15f9270`,
+  both phrases verbatim; the notice's URLs are in the Sources list above). The T2 feed's
+  divergent event labels are disclosed here and fenced in
+  `tests/futures_family_boundaries/holidays_globex_livestock.rs`
+  (`the_post_close_queue_accepts_orders_and_feeds_the_next_trade_date` pins 14:30, 15:00
+  and 15:59:59 CT answering `OrderEntry`, accepting orders, not open, order-entry-only and
+  the feeding session's trade date — 2025-06-10 → 2025-06-11 mid-week, 2025-06-13 →
+  2025-06-16 over a weekend, 2025-12-23 → 2025-12-24 into the closure eve — with the
+  16:00 CT close end-exclusive). The `CoverageGapReason::PostCloseQueueTradeDateLabel`
+  declaration the scope carried is retired; the queue dates answer completely and
+  `docs/schedules/coverage-2025.md` reads the scope complete in 2025+. Grains, which
+  carries the same queue, retired the same declaration by the same decision; its record is
+  in [`docs/evidence/globex_grains.md`](globex_grains.md).
 - **no post-finalisation statement, 2025-01-01 through 2025-09-01** — the eight rows `CME-SVC-2024-12-31` through `CME-SVC-2025-08-31` rest on a single archive capture of the service taken 2024-12-20T15:53:40Z, which is CME's published future rather than a post-holiday statement. CME prints on the same page: "This schedule is subject to change. Trading hours are usually finalized approximately two weeks prior to the holiday." The service's retention edge now falls between Labor Day 2025 and Thanksgiving 2025, so the channel itself cannot restate them: all eight windows were re-probed live on 2026-09-12 and return the products with empty schedules. Closing condition: a later archived call of `services/trading-hours-by-product` over one of those windows, or a CME notice restating the finalised Globex hours. Residual risk only — a slipped instant would be a schedule fix, not a fabricated date.
 - **no T1 rendering** — from the 2025 calendar year CME publishes no per-holiday Globex hours PDF or XLS; the holiday hours *are* the interactive table on `cmegroup.com/trading-hours.html`, which renders client-side, so the archived HTML carries no table. Every row in this section is therefore T2, the operator's own trading-hours service read as bytes and saved. The T1 page was captured once, for Thanksgiving 2026, and its printed `Livestock` row matches the service's `LE` row event for event. Closing condition: a CME notice or advisory restating these dates per asset class.
 - **no late open anywhere in 2025-2027** — CME publishes no delayed first open for this family in the window, so neither `HolidayKind::LateOpen` branch has a sourced instance here. This is an observation rather than a hole in the evidence: every published Livestock holiday is a full closure or an early final close, and the test walks the whole coverage window to assert it.
@@ -600,7 +634,14 @@ beside it, given with the product id and the `eventDate` it was read from.
 
 **Gaps, 2026.**
 
-- **order-entry, every row** — on a closed or shortened date CME publishes no `14:30 pcp` and no `16:00 closed`, but the crate's 14:30-16:00 CT Post-Close window already carries the **following** trade date, so neither a `Closed` row nor an `EarlyClose` row on the holiday can reach it. `DayPolicy`'s scalar vocabulary — the vocabulary a holiday row copies — has no order-entry boundary, so this is not representable and is recorded here rather than modelled. It changes the `trade_date` answer as well as the order-entry pair, for 90 minutes. Measured on 2025-01-02: 14:29:59 CT answers `trade_date=Ok(None)`, `is_order_entry_only=false`, `is_accepting_orders=false`; 14:30:00 CT and 15:59:59 CT answer `trade_date=Ok(Some(2025-01-03))` with both `true`; and 16:00:00 CT answers `Ok(None)` with both `false` again. Where the following trade date is closed the queue goes with it, so 2025-04-17 14:30:00 CT answers `trade_date=Ok(None)`. `is_open` is unchanged. Fenced in both directions by `tests/futures_family_boundaries/holidays_globex_livestock.rs`, so the residue stays visible rather than becoming folklore. The divergence is deliberate — CME's T1 description of the Post-Close describes orders that persist into the next session — and it is **not** a data-row gap: `globex_livestock` declares it in `schedules/sourcing.rs` (`CoverageGapReason::PostCloseQueueTradeDateLabel`, closing condition #152), shaped — since #172 — to the dates whose own calendar serves the 16:00-CT-closing Post-Close window, so this scope no longer claims a complete calendar on those dates and `docs/schedules/coverage-2025.md` reads it incomplete. The window and both of its verdicts stay served: the declaration withholds no answer and refuses no query.
+- **closed 2026-10-03 UTC — the Post-Close queue's trade-date label ("order-entry, every
+  row", #152).** The same decision as the 2025 section records above: the charter's
+  Post-Close trade-date convention (AGENTS.md, "Trade dates and state", 2026-10-03, on CME
+  Globex notice 20160530's own "for the next trade date" prose) dates the queue by the
+  session it feeds, the T2 feed's per-event labels are the disclosed divergent printing,
+  and the declaration the scope carried is retired. The queue dates answer completely; the
+  fence is `the_post_close_queue_accepts_orders_and_feeds_the_next_trade_date` in
+  `tests/futures_family_boundaries/holidays_globex_livestock.rs`.
 - **no T1 rendering** — from the 2025 calendar year CME publishes no per-holiday Globex hours PDF or XLS; the holiday hours *are* the interactive table on `cmegroup.com/trading-hours.html`, which renders client-side, so the archived HTML carries no table. Every row in this section is therefore T2, the operator's own trading-hours service read as bytes and saved. The T1 page was captured once, for Thanksgiving 2026, and its printed `Livestock` row matches the service's `LE` row event for event. Closing condition: a CME notice or advisory restating these dates per asset class.
 - **Columbus Day and Veterans Day** — CME publishes settlement and clearing advisories for them but no Globex trading schedule. Coverage here is contiguous, so those dates carry no row and therefore read as audited normal. That is a deliberate reading of CME's silence on days the exchange is known to trade, named here rather than left implicit.
 
@@ -629,7 +670,18 @@ beside it, given with the product id and the `eventDate` it was read from.
 
 **Gaps, 2027.**
 
-- **order-entry, every row** — on a closed or shortened date CME publishes no `14:30 pcp` and no `16:00 closed`, but the crate's 14:30-16:00 CT Post-Close window already carries the **following** trade date, so neither a `Closed` row nor an `EarlyClose` row on the holiday can reach it. `DayPolicy`'s scalar vocabulary — the vocabulary a holiday row copies — has no order-entry boundary, so this is not representable and is recorded here rather than modelled. It changes the `trade_date` answer as well as the order-entry pair, for 90 minutes. Measured on 2025-01-02: 14:29:59 CT answers `trade_date=Ok(None)`, `is_order_entry_only=false`, `is_accepting_orders=false`; 14:30:00 CT and 15:59:59 CT answer `trade_date=Ok(Some(2025-01-03))` with both `true`; and 16:00:00 CT answers `Ok(None)` with both `false` again. Where the following trade date is closed the queue goes with it, so 2025-04-17 14:30:00 CT answers `trade_date=Ok(None)`. `is_open` is unchanged. Fenced in both directions by `tests/futures_family_boundaries/holidays_globex_livestock.rs`, so the residue stays visible rather than becoming folklore. The divergence is deliberate — CME's T1 description of the Post-Close describes orders that persist into the next session — and it is **not** a data-row gap: `globex_livestock` declares it in `schedules/sourcing.rs` (`CoverageGapReason::PostCloseQueueTradeDateLabel`, closing condition #152), shaped — since #172 — to the dates whose own calendar serves the 16:00-CT-closing Post-Close window, so this scope no longer claims a complete calendar on those dates and `docs/schedules/coverage-2025.md` reads it incomplete. The window and both of its verdicts stay served: the declaration withholds no answer and refuses no query.
+- **closed 2026-10-03 UTC — the Post-Close queue's trade-date label ("order-entry, every
+  row", #152).** The same decision as the 2025 section records above: the charter's
+  Post-Close trade-date convention (AGENTS.md, "Trade dates and state", 2026-10-03, on CME
+  Globex notice 20160530's own "for the next trade date" prose) dates the queue by the
+  session it feeds, the T2 feed's per-event labels are the disclosed divergent printing,
+  and the declaration the scope carried is retired. The queue dates answer completely; the
+  fence is `the_post_close_queue_accepts_orders_and_feeds_the_next_trade_date` in
+  `tests/futures_family_boundaries/holidays_globex_livestock.rs`. On this year's own rows:
+  the operator prints `14:30 pcp` on 2027-12-23 carrying that day's own `tradingDate`, but
+  the queue's feeding trade date is the closed 2027-12-24, so the crate removes the queue
+  with it — the closure-removes-the-queue case
+  `a_closure_removes_the_previous_days_post_close_queue` pins.
 - **no T1 rendering** — from the 2025 calendar year CME publishes no per-holiday Globex hours PDF or XLS; the holiday hours *are* the interactive table on `cmegroup.com/trading-hours.html`, which renders client-side, so the archived HTML carries no table. Every row in this section is therefore T2, the operator's own trading-hours service read as bytes and saved. The T1 page was captured once, for Thanksgiving 2026, and its printed `Livestock` row matches the service's `LE` row event for event. Closing condition: a CME notice or advisory restating these dates per asset class.
 - **Columbus Day and Veterans Day** — CME publishes settlement and clearing advisories for them but no Globex trading schedule. Coverage here is contiguous, so those dates carry no row and therefore read as audited normal. That is a deliberate reading of CME's silence on days the exchange is known to trade, named here rather than left implicit.
 

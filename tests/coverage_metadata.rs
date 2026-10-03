@@ -83,8 +83,9 @@ fn the_support_floor_is_local_first_of_january_2010() {
 fn a_complete_scope_reports_one_complete_span_and_a_trailing_gap() {
     // `globex_nikkei_225_dollar` is the one scope that still reaches 2027-12-31
     // with nothing withheld *in the 2025+ era*: it ships no order-entry phase
-    // at all, so the post-close queue label `globex_grains` and
-    // `globex_livestock` declare (#152) cannot apply to it. Since the #225
+    // at all, so the post-close queue convention the charter records for
+    // `globex_grains` and `globex_livestock` (#152, retired as a declaration
+    // 2026-10-03) cannot apply to it. Since the #225
     // remainder modelled the old grid (2026-09-30 UTC), the normal week is
     // sourced from the floor itself and the first audited window opens there.
     let coverage = key_coverage(MarketHoursKey::GlobexNikkei225Dollar);
@@ -1104,92 +1105,79 @@ fn a_declared_phase_gap_applies_only_to_the_dates_its_shape_resolves() {
 }
 
 #[test]
-fn the_post_close_label_gap_applies_only_to_the_dates_that_carry_the_queue() {
-    // #152 withholds the trade-date label on exactly the dates whose profile
-    // serves the post-close queue. Weekends, closed dates and the eras before
-    // each family's sourced queue onset answer completely; the queue days
-    // refuse, because their trade date is the crate's convention rather than
-    // the operator's printing.
+fn the_queue_dates_answer_and_only_the_omitted_regime_refuses() {
+    // The #152 label gap is retired (2026-10-03): the charter's Post-Close
+    // trade-date convention dates an order-entry queue by the session it
+    // feeds, so a queue date's `trade_date` is a convention the operator's own
+    // T1 prose states and no longer a divergence to declare. What is left is
+    // exactly the omitted 2012-05-20..2013-04-06 regime for `globex_grains`,
+    // and nothing at all for `globex_livestock`; every date that carries the
+    // queue answers, on both scopes and in every queue era.
     let grains = key_coverage(MarketHoursKey::GlobexGrains);
     let livestock = key_coverage(MarketHoursKey::GlobexLivestock);
-    let any_close = exchange_hours::PhaseGapShape::OrderEntryWindow {
-        open_ssm: None,
-        close_ssm: 16 * 3600,
-    };
-    check_declared_gaps(
-        MarketHoursKey::GlobexGrains,
-        &[
-            (
-                CoverageGapReason::PostCloseQueueTradeDateLabel,
-                "#152",
-                None,
-                None,
-                any_close,
-            ),
-            (
-                CoverageGapReason::NormalWeekPhaseWithheld,
-                "#259",
-                Some(date(2012, 5, 20)),
-                Some(date(2013, 4, 7)),
-                exchange_hours::PhaseGapShape::EveryDay,
-            ),
-        ],
-    );
-    check_declared_gaps(
-        MarketHoursKey::GlobexLivestock,
-        &[(
-            CoverageGapReason::PostCloseQueueTradeDateLabel,
-            "#152",
-            None,
-            None,
-            any_close,
-        )],
-    );
+    let regime_only = [(
+        CoverageGapReason::NormalWeekPhaseWithheld,
+        "#259",
+        Some(date(2012, 5, 20)),
+        Some(date(2013, 4, 7)),
+        exchange_hours::PhaseGapShape::EveryDay,
+    )];
+    check_declared_gaps(MarketHoursKey::GlobexGrains, &regime_only);
+    check_declared_gaps(MarketHoursKey::GlobexLivestock, &[]);
+    assert!(livestock.phase_gaps().is_empty());
 
-    // The task's own truth table: a Sunday answers, a queue day refuses.
-    assert_eq!(
-        grains.coverage_on(date(2021, 3, 14)),
-        DateCoverage::Covered,
-        "a Sunday carries no post-close queue, so its answers are complete"
-    );
-    assert_eq!(
-        grains.coverage_on(date(2021, 3, 16)),
-        DateCoverage::OutsideCoveredRange,
-        "a Tuesday in a queue era carries the 14:30-16:00 CT PCP the label gap is about"
-    );
-    assert_eq!(
-        livestock.coverage_on(date(2021, 3, 14)),
-        DateCoverage::Covered,
-        "{livestock:?}: the same for livestock's grid"
-    );
-    assert_eq!(
-        livestock.coverage_on(date(2021, 3, 16)),
-        DateCoverage::OutsideCoveredRange
-    );
-    // Livestock's Post-Close begins on the sourced 2016-06-06 notice, so the
-    // years before it answer completely — the whole-domain declaration the #172
-    // issue replaced used to refuse them too.
-    assert_eq!(
-        livestock.coverage_on(date(2015, 6, 10)),
-        DateCoverage::Covered,
-        "livestock serves no post-close queue before its 2016-06-06 onset"
-    );
-    assert_eq!(
-        livestock.coverage_on(date(2016, 6, 8)),
-        DateCoverage::OutsideCoveredRange,
-        "the first week of the sourced Post-Close era carries the queue"
-    );
-    // Grains' PCP closes at 16:00 CT in every era that serves one, so the
-    // 2010-2012 PCP era (13:15:30-16:00 then) is a queue era too.
-    assert_eq!(
-        grains.coverage_on(date(2011, 6, 14)),
-        DateCoverage::OutsideCoveredRange,
-        "the 2010-2012 PCP era is a queue era: the label gap applies there as well"
-    );
+    // The queue days read complete: a Sunday, a mid-week queue day, the first
+    // week of livestock's sourced 2016-06-06 Post-Close onset, grains' whole
+    // 2010-2012 PCP era (13:15:30-16:00 then) and the era after the omitted
+    // regime — all answer.
+    for (coverage, day, why) in [
+        (
+            &grains,
+            date(2021, 3, 14),
+            "a Sunday carries no post-close queue",
+        ),
+        (
+            &grains,
+            date(2021, 3, 16),
+            "a Tuesday in a queue era carries the 14:30-16:00 CT PCP, dated by the session it feeds",
+        ),
+        (
+            &grains,
+            date(2011, 6, 14),
+            "the 2010-2012 PCP era is a queue era: the convention dates it like any other",
+        ),
+        (
+            &grains,
+            date(2013, 6, 10),
+            "the 2013-04-07 notice's queue era carries the PCP again",
+        ),
+        (
+            &livestock,
+            date(2021, 3, 16),
+            "livestock's Post-Close queue answers the same convention",
+        ),
+        (
+            &livestock,
+            date(2015, 6, 10),
+            "livestock serves no post-close queue before its 2016-06-06 onset",
+        ),
+        (
+            &livestock,
+            date(2016, 6, 8),
+            "the first week of the sourced Post-Close era answers under the convention",
+        ),
+    ] {
+        assert_eq!(
+            coverage.coverage_on(day),
+            DateCoverage::Covered,
+            "{day}: {why}"
+        );
+    }
+
     // The omitted 2012-05-20..2013-04-06 regime refuses as the phase-level gap
-    // its own declaration states — the #152 shape serves no queue there, so the
-    // label gap cannot apply, and without the second declaration these dates
-    // would read Covered while their queue rows are omitted.
+    // its own declaration states — the only declaration `globex_grains` has
+    // left. Without it these dates would read Covered while their queue rows
+    // are omitted; its dated neighbours answer.
     assert_eq!(
         grains.coverage_on(date(2012, 6, 1)),
         DateCoverage::OutsideCoveredRange,
@@ -1200,14 +1188,11 @@ fn the_post_close_label_gap_applies_only_to_the_dates_that_carry_the_queue() {
         DateCoverage::Covered,
         "the regime's dated neighbours answer: 2012-05-13 is before it and served"
     );
-    assert_eq!(
-        grains.coverage_on(date(2013, 6, 10)),
-        DateCoverage::OutsideCoveredRange,
-        "the 2013-04-07 notice's queue era carries the PCP again"
-    );
 
-    // The #152 reason refuses no query: the queue and both of its verdicts are
-    // served; only the label is the crate's convention.
+    // The retired label gap's service tier stands: the queue and both of its
+    // verdicts are answered on every date that carries it, under the charter
+    // convention the fence in `tests/futures_family_boundaries/` pins instant
+    // by instant.
     let grains_cal = calendar_for_market_hours_key(MarketHoursKey::GlobexGrains);
     let queue_instant = US::Central
         .with_ymd_and_hms(2021, 3, 16, 15, 0, 0)
@@ -1217,15 +1202,15 @@ fn the_post_close_label_gap_applies_only_to_the_dates_that_carry_the_queue() {
     assert_eq!(
         grains_cal.is_accepting_orders(queue_instant),
         Ok(true),
-        "the post-close queue answers: it is served, and its declaration withholds no phase"
+        "the post-close queue answers: it is served, and its trade date is the session it feeds"
     );
 
-    // Inside the omitted regime the queue question refuses instead: the #152
-    // shape resolves to no occurrence there, so the metadata's shadowing rule
-    // leaves #116 operative, and the order-entry probe — the query whose answer
-    // *is* the omitted arrangement — states that rather than reading as a
-    // sourced absence (2012-06-01 14:30-15:30 CT is closed and order-entryless
-    // in the regime grid, so the probe reaches the phase gate).
+    // Inside the omitted regime the queue question refuses instead: the
+    // regime's declaration is operative there, and the order-entry probe — the
+    // query whose answer *is* the omitted arrangement — states that rather
+    // than reading as a sourced absence (2012-06-01 14:30-15:30 CT is closed
+    // and order-entryless in the regime grid, so the probe reaches the phase
+    // gate).
     let regime_instant = US::Central
         .with_ymd_and_hms(2012, 6, 1, 15, 0, 0)
         .single()
@@ -1455,69 +1440,117 @@ fn complete_days(coverage: CalendarCoverage) -> usize {
 
 #[test]
 fn a_date_scoped_declaration_zeroes_no_identity_over_2025_2027() {
-    // The #172 regression: `PostCloseQueueTradeDateLabel` declared whole-domain
-    // refused every date of 2025-01-01..2027-12-31 for both queue families, and
+    // The #172 regression: a whole-domain declaration once refused every date
+    // of 2025-01-01..2027-12-31 for the queue families, and
     // `UnpublishedClosureDates` did the same for eurex before #180 bounded it.
-    // The date-scoped engine answers the dates the evidence does not withhold,
-    // so the walk counts here are nonzero and every refused date is one whose
-    // own calendar carries the disputed arrangement.
+    // The date-scoped engine answers the dates the evidence does not withhold.
+    // The #152 label declaration — the last whole-interval refusal these two
+    // scopes carried — is retired (2026-10-03, the charter's Post-Close
+    // trade-date convention), so both scopes now answer the whole interval
+    // except the trailing resolution edge (#151): the last audited day's reach
+    // crosses into 2028, outside every window, exactly as
+    // `globex_nikkei_225_dollar`'s complete span ends 2027-12-30. Derivation:
+    // the previous walk pinned `globex_grains` at 375 covered days and
+    // `globex_livestock` at 341, with every refusal a 15:00-CT queue day (720
+    // and 754 of them, recorded beside the retired declaration and in the two
+    // evidence files) and no other refusal anywhere in the interval — so the
+    // retirement lifts 720 + 754 refusals and leaves 1,095 − 1 = 1,094.
     let grains = key_coverage(MarketHoursKey::GlobexGrains);
     let livestock = key_coverage(MarketHoursKey::GlobexLivestock);
     assert_eq!(
         complete_days(grains),
-        375,
-        "globex_grains answers 375 of the 1,095 days; the refused rest carry the post-close queue"
+        1094,
+        "globex_grains answers 1,094 of the 1,095 days: the retired label gap's 720 refusals \
+         lift, and only the trailing window edge (#151) refuses"
     );
     assert_eq!(
         complete_days(livestock),
-        341,
-        "globex_livestock answers 341 of the 1,095 days; the refused rest carry the post-close queue"
+        1094,
+        "globex_livestock answers 1,094 of the 1,095 days: the retired label gap's 754 refusals \
+         lift, and only the trailing window edge (#151) refuses"
     );
 
-    // Livestock's queue day is exactly a refused day: the 15:00 CT instant
-    // accepts orders iff the profile serves the 14:30-16:00 CT post-close
-    // queue the label gap withholds, and on every other day the date answers
-    // completely.
+    // The queue day is still exactly a day that accepts orders at 15:00 CT;
+    // after the retirement it is a **covered** day — the charter convention
+    // dates its trade date by the session it feeds — with the one exception
+    // the audited window's own trailing edge makes (#151): 2027-12-31 accepts
+    // orders and still refuses, because its reach crosses into 2028, exactly
+    // as `globex_nikkei_225_dollar`'s complete span ends 2027-12-30.
+    // Livestock carried 754 such days — the count its retired declaration
+    // refused — and grains 748: the 720 the retired declaration refused plus
+    // the 28 block days whose restated or adjusted queue accepts beside a
+    // complete day.
     let livestock_cal = calendar_for_market_hours_key(MarketHoursKey::GlobexLivestock);
     let mut day = REGRESSION_FIRST;
+    let mut livestock_queue_days = 0_usize;
+    let mut livestock_refused: Vec<NaiveDate> = Vec::new();
     while day <= REGRESSION_LAST {
-        let refused = livestock.coverage_on(day) == DateCoverage::OutsideCoveredRange;
+        let verdict = livestock.coverage_on(day);
         let accepts = livestock_cal.is_accepting_orders(post_close_instant(day)) == Ok(true);
-        assert_eq!(refused, accepts, "globex_livestock on {day}");
-        day = day
-            .succ_opt()
-            .expect("the walk stays inside the year range");
-    }
-
-    // Grains refuses on the same condition, but twenty-eight dates answer
-    // completely while a queue accepts orders at 15:00 CT: the fourteen
-    // closure eves whose complete replacement blocks state the adjusted day
-    // outright (coverage-2025 §2), plus — since #175 — the fourteen pre-eve
-    // dates whose queue the eves' rows restate through their `-1` block, so
-    // the 16:00-ending occurrence the shape resolves is absent on both runs
-    // and the label gap cannot apply.
-    let grains_cal = calendar_for_market_hours_key(MarketHoursKey::GlobexGrains);
-    let mut block_eves = 0;
-    day = REGRESSION_FIRST;
-    while day <= REGRESSION_LAST {
-        let refused = grains.coverage_on(day) == DateCoverage::OutsideCoveredRange;
-        let accepts = grains_cal.is_accepting_orders(post_close_instant(day)) == Ok(true);
-        if refused {
-            assert!(
-                accepts,
-                "a refused date must be one the post-close queue runs on: {day}"
-            );
-        } else if accepts {
-            block_eves += 1;
+        if accepts {
+            if day != REGRESSION_LAST {
+                assert_eq!(
+                    verdict,
+                    DateCoverage::Covered,
+                    "globex_livestock {day}: a queue day answers under the charter convention"
+                );
+            }
+            livestock_queue_days += 1;
+        }
+        if verdict != DateCoverage::Covered {
+            livestock_refused.push(day);
         }
         day = day
             .succ_opt()
             .expect("the walk stays inside the year range");
     }
     assert_eq!(
-        block_eves, 28,
-        "the closure eves and their pre-eve run-ups are the only covered dates that \
-         accept orders at 15:00 CT"
+        livestock_queue_days, 754,
+        "the queue days the retired #152 declaration refused are the queue days there are"
+    );
+    assert_eq!(
+        livestock_refused,
+        vec![REGRESSION_LAST],
+        "only the audited window's trailing edge refuses livestock now (#151)"
+    );
+
+    // Grains refuses on nothing but that same trailing edge, and its queue
+    // days all answer: 748 accept orders at 15:00 CT — the 720 the retired
+    // declaration refused plus the 28 days whose own replacement blocks state
+    // the adjusted day outright or restate the pre-eve queue (#175), the
+    // fourteen closure eves and the fourteen run-ups that the family file
+    // fences by name.
+    let grains_cal = calendar_for_market_hours_key(MarketHoursKey::GlobexGrains);
+    let mut grains_queue_days = 0_usize;
+    let mut grains_refused: Vec<NaiveDate> = Vec::new();
+    day = REGRESSION_FIRST;
+    while day <= REGRESSION_LAST {
+        let verdict = grains.coverage_on(day);
+        let accepts = grains_cal.is_accepting_orders(post_close_instant(day)) == Ok(true);
+        if verdict != DateCoverage::Covered {
+            grains_refused.push(day);
+            assert!(
+                !accepts || day == REGRESSION_LAST,
+                "a refused date must be the trailing edge or a quiet day, not a queue day \
+                 answered incomplete: {day}"
+            );
+        }
+        if accepts {
+            grains_queue_days += 1;
+        }
+        day = day
+            .succ_opt()
+            .expect("the walk stays inside the year range");
+    }
+    assert_eq!(
+        grains_refused,
+        vec![REGRESSION_LAST],
+        "only the audited window's trailing edge refuses grains now (#151)"
+    );
+    assert_eq!(
+        grains_queue_days, 748,
+        "the 720 queue days the retired #152 declaration refused plus the 28 block days \
+         are the queue days there are"
     );
 
     // Eurex stays at zero complete days. The German equity/equity-index scope

@@ -136,6 +136,17 @@ material, so those rows stand unchanged with the re-checks recorded in their evi
 The inspection statement above
 still describes the revision the values were first derived at; the counts, windows and horizons it
 covers are otherwise unchanged.
+On 2026-10-03 UTC the `globex_grains` and `globex_livestock` verdicts moved again, to
+**complete** in 2025+: the charter's Post-Close trade-date convention (AGENTS.md, "Trade
+dates and state", closing #152) records that an order-entry-only queue persisting past the
+session's close is dated by the session it feeds — the operator's own T1 Post-Close notice
+(CME Globex notice 20160530) calls the queue order entry "for the next trade date" that is
+not "an extension of the current day trading session" — so the #152 label declaration both
+scopes carried is retired, the divergent per-event labels the operator's T2 service prints
+are disclosed in the two evidence files and pinned by fence, and what remains incomplete
+across 2010-2027 is `globex_grains`'s omitted 2012-05-20..2013-04-06 regime (#259) and the
+two scopes' pre-2025 `Unsourced` dates. The verdict tally moved to seventeen complete and
+sixteen incomplete.
 
 **Amended 2026-09-28 UTC.** The declared gaps became **date-scoped**
 (#172): `PhaseGap` carries a start bound and a shape beside its end bound, so a declaration
@@ -236,10 +247,10 @@ served `iceus` identity, while `FANG`, `SUGAR`, `COFFEE`, `COCOA`, `ORANGE_JUICE
 | `b3` | [b3.rs](../../src/calendar/schedules/equities/americas/b3.rs) | 2010-03-15 … 2013-07-08 (7 rows) + recurring New-York-offset selector | 2010-01-01 | 2011-01-01..2024-12-31, 2025-01-01..2026-12-31 | 224 | 0 | 2010 is an unaudited span (no operator artifact found at the 2026-09-29 retrieval; the closing condition is recorded in the evidence file) and 2027 is not published by B3: verified 2026-09-28 UTC, the operator released the 2026 calendar on 2026-01-09 and no 2027 calendar existed at retrieval, so nothing past 2026-12-31 is claimed | complete to 2026-12-31 (2011-2024 backfilled 2026-09-29; 2027 unpublished) | #116 |
 | `globex_equity_index` | [cme_group.rs](../../src/calendar/schedules/futures/us/cme_group.rs) | 2010-11-15 … 2026-08-22 (5 rows) | 2010-01-01 | 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 231 | 6 | the 16:00-16:15 CT Sunday quarter-hour, withheld on the bracket-era Sundays 2012-05-28..2026-08-21 whose served Pre-Open resolves (#79) | **incomplete**: the quarter-hour is withheld on those bracket-era Sundays (#79); every other date answers | #79, #116 |
 | `globex_energy` | [energy_metals.rs](../../src/calendar/schedules/futures/us/energy_metals.rs) | 2015-09-20 … 2026-08-22 (2 rows) | 2012-05-11 | 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 223 | 6 | the Sunday 16:00-16:15 CT quarter-hour, withheld on the bracket-era Sundays 2012-05-28..2026-08-21 whose served Pre-Open resolves (#79) | **incomplete**: the quarter-hour is withheld on those bracket-era Sundays (#79); every other date answers | #79, #116 |
-| `globex_grains` | [grains.rs](../../src/calendar/schedules/futures/us/grains.rs) | 2010-04-19 … 2015-07-05 (6 rows) | 2010-03-15 | 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 249 | 4 | the post-close queue's trade-date label: the crate dates the 14:30-16:00 CT queue by the session it feeds, so 720 of the 1,095 days of 2025-2027 — the dates that carry the queue — answer a trade date other than the operator's own printed one (#152), and the closure-eve days the shipped replacement blocks state answer completely; the 2012-05-20..2013-04-06 regime's queue states are omitted outright (#259) | **incomplete**: the queue-date label differs on every date that carries the queue (#152), and the omitted regime's dates refuse as the phase gap its own declaration states (#259); every other date answers | #259, #152 |
+| `globex_grains` | [grains.rs](../../src/calendar/schedules/futures/us/grains.rs) | 2010-04-19 … 2015-07-05 (6 rows) | 2010-03-15 | 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 249 | 4 | the 2012-05-20..2013-04-06 regime's queue states are omitted outright (#259); the post-close queue's 14:30-16:00 CT instants are dated by the session they feed per the charter convention (AGENTS.md, "Trade dates and state", 2026-10-03, closing #152) — the operator's T2 service prints those instants carrying the closed day's trade date, a divergence the evidence file discloses and the fence pins — so every date of 2025-2027 answers, the closure-eve days the shipped replacement blocks state included | complete to 2027-12-31 in 2025+, with Post-Close queue instants dated by the session they feed per the charter convention, pinned by fence; **incomplete across 2010-2027**: the omitted regime's dates refuse as the phase gap its own declaration states (#259), and 4 `Unsourced` dates across 2019-2023 | #259 |
 | `globex_fx` | [fx.rs](../../src/calendar/schedules/futures/us/fx.rs) | 2010-11-15 … 2026-08-22 (2 rows) | 2012-05-03 | 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 214 | 6 | the Sunday 16:00-16:15 CT quarter-hour, withheld on the bracket-era Sundays 2012-05-28..2026-08-21 whose served Pre-Open resolves (#79) | **incomplete**: the quarter-hour is withheld on those bracket-era Sundays (#79); every other date answers | #79, #116 |
 | `globex_interest_rates` | [interest_rates.rs](../../src/calendar/schedules/futures/us/interest_rates.rs) | 2010-11-15 … 2026-08-22 (3 rows) | 2010-01-01 | 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 265 | 4 | the Sunday 16:00-16:15 CT quarter-hour, withheld on the bracket-era Sundays 2012-05-28..2026-08-21 whose served Pre-Open resolves (#79) | **incomplete**: the quarter-hour is withheld on those bracket-era Sundays (#79); every other date answers | #79, #116 |
-| `globex_livestock` | [livestock.rs](../../src/calendar/schedules/futures/us/livestock.rs) | 2014-10-27 … 2020-05-31 (4 rows) | 2010-01-01 | 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 211 | 6 | the post-close queue's trade-date label: the crate dates the 14:30-16:00 CT queue by the session it feeds, so every date that carries the queue — sourced from the 2016-06-06 Post-Close onset — answers a trade date other than the operator's own printed one (#152) | **incomplete**: the queue-date label differs on every date that carries the queue (#152); every other date answers | #116, #152 |
+| `globex_livestock` | [livestock.rs](../../src/calendar/schedules/futures/us/livestock.rs) | 2014-10-27 … 2020-05-31 (4 rows) | 2010-01-01 | 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 211 | 6 | none in 2025+; six `Unsourced` dates across 2019-2023 — the three Juneteenths (2019, 2020 and 2021) CME published no schedule for and the three 2023 dates the operator published nothing for — with closing conditions in the evidence file; the post-close queue's 14:30-16:00 CT instants are dated by the session they feed per the charter convention (AGENTS.md, "Trade dates and state", 2026-10-03, closing #152), with the T2 feed's per-event labels disclosed in the evidence file and pinned by fence | complete to 2027-12-31 in 2025+, with Post-Close queue instants dated by the session they feed per the charter convention, pinned by fence; **incomplete across 2010-2027**: 6 `Unsourced` dates across 2019-2023 | #116 |
 | `globex_cryptocurrency` | [cryptocurrency.rs](../../src/calendar/schedules/futures/us/cryptocurrency.rs) | 2017-12-17 … 2026-10-25 (13 rows) | — | 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 90 | 6 | the five-day era's Sunday and weekday Pre-Open onset is undated in the normal week, so the declaration withholds the era between its dated first day (2017-12-17, SER-8051R's launch row) and its dated last (the 2026-05-29 bridge row, CME filing 26-114) (#123); its 24/7-era merged trade dates shipped as rows on 2026-09-26 UTC | **incomplete**: the five-day era's Pre-Open onset is undated, so the era between those two sourced days is withheld (#123); the 24/7 era answers | #116, #123 |
 | `globex_nikkei_225_dollar` | [cme_nikkei.rs](../../src/calendar/schedules/futures/us/cme_nikkei.rs) | 2010-01-01 … 2015-09-20 (6 rows) | 2010-01-01 | 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 227 | 20 | none in 2025+; the 2011-2015 span was backfilled 2026-09-29 UTC from the operator's own per-holiday sheets (62 T1 rows), the post-changeover 2010 rows keyed to the notice-dated 2010-04-11 grid start, and the #225 remainder closed 2026-09-30 UTC: the old daytime-anchored grid is modelled from the operator's own equities-hours page (captures 2009-04-06 and 2010-04-02, byte-identical, both DST spellings) with rows at the floor and at the 2010-03-14 DST entry, and the 2010-01-01 venue-wide New Year closure keyed the first window to the floor, so no unaudited interval remains and 20 `Unsourced` dates remain across 2019-2024 | complete to 2027-12-31 in 2025+ and from the 2010-01-01 floor through 2018-12-31; **incomplete across 2019-2027**: 20 `Unsourced` dates across 2019-2024 | #116 |
 
@@ -351,11 +362,15 @@ no answer, and Stage 4 item 2 refreshes it.
 
 ### 4. One scope reports complete to 2027-12-31 in 2025+; **incomplete across 2019-2027**: 20 `Unsourced` dates across 2019-2024, and it carries a gap the API cannot state
 
-`globex_nikkei_225_dollar` is the only scope the coverage API reports complete to that date: it has
+`globex_nikkei_225_dollar` is the only scope the coverage API reported complete to that date when
+this section was written: it has
 no `Unsourced` row at or after 2025-01-01 and no declared phase-level gap. (From 2026-09-28 UTC
 `tse` reports complete to the same date in 2025+ as well — its window is 2025-01-01..2027-12-31
-with nothing withheld and no declared gap — so `globex_nikkei_225_dollar` remains the only such
-scope that is **incomplete across 2019-2027**; its own 2010-2018 span answered completely from
+with nothing withheld and no declared gap — and from 2026-10-03 UTC `globex_grains` and
+`globex_livestock` joined that group, each complete in 2025+ under the charter convention and
+**incomplete across 2010-2027** on its pre-2025 residue, so `globex_nikkei_225_dollar` remains
+the only scope whose earlier-era incompleteness runs through 2019-2027; its own 2010-2018 span
+answered completely from
 2026-09-30 UTC, when the #225 remainder modelled the old grid from the operator's own
 equities-hours page and keyed the first holiday window to the floor.) It nonetheless carries a
 **witness gap** the API has no representation for: it ships twelve of the seventeen merged trade
@@ -365,10 +380,18 @@ an empty event list for them. Those five dates are not `Unsourced` rows — noth
 published withholds them — they are dates this crate has not worked up, so the gap is recorded in
 [`docs/evidence/globex_nikkei_225_dollar.md`](../evidence/globex_nikkei_225_dollar.md) with its
 closing condition and tracked as issue #162, and `is_complete_on` cannot yet be taught to refuse
-them. `globex_grains` and `globex_livestock` are the two the API does **not** report complete: they reach
-that date with no withheld date either, but both answer the post-close queue's trade date with the crate's own
-convention rather than the operator's printed label on every covered date that carries the queue —
-720 of the 1,095 days of 2025-2027 for `globex_grains` and 754 for `globex_livestock` — so both now read **incomplete** under #152. The other nine scopes
+them. `globex_grains` and `globex_livestock` read **complete** in 2025+ since 2026-10-03 UTC:
+the charter's Post-Close trade-date convention (AGENTS.md, "Trade dates and state", closing
+#152) dates an order-entry-only queue persisting past the close by the session it feeds — the
+operator's own T1 notice (CME Globex notice 20160530) calls the queue order entry "for the next
+trade date" that is not "an extension of the current day trading session" — so the #152 label
+declaration both scopes carried is retired, the divergent per-event labels the operator's T2
+service prints are disclosed in the two evidence files and pinned by fence, and every date of
+2025-2027 answers (the walk fence pins 1,094 of the 1,095 days on each scope, the trailing
+window edge refusing 2027-12-31). Both stay **incomplete across 2010-2027**: the omitted
+2012-05-20..2013-04-06 regime refuses `globex_grains`'s dates as the phase gap its own
+declaration states (#259), and six distinct `Unsourced` dates across 2019-2023 stand in the
+two tables — four rows in `globex_grains`, six in `globex_livestock`. The other nine scopes
 that reach that date are **not** complete either: `cbot` withholds disputed dates in §2 and `cme`
 those plus the Sunday 16:00-16:15 CT quarter-hour; `comex`, `nymex`, `globex_energy`,
 `globex_interest_rates` and `globex_equity_index` withhold that same quarter-hour in §5, and so does

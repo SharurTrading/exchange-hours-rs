@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT-0
 
-//! SIX holiday rows, 2025-2027: the operator's per-year Trading Calendar PDFs,
-//! closures only.
+//! SIX holiday rows, 2018-2027: the operator's per-year Trading Calendar PDFs
+//! (and the 28 May 2018 guide edition's own 2018-2019 grids), closures only.
 
 use super::prelude::*;
 
@@ -30,15 +30,15 @@ fn coverage_opens_at_the_2012_backfill_and_stops_at_the_2027_schedule() {
         windows,
         vec![
             (day(2012, 1, 1), day(2017, 12, 31)),
+            (day(2018, 1, 1), day(2019, 12, 31)),
             (day(2020, 1, 1), day(2024, 12, 31)),
             (day(2025, 1, 1), day(2027, 12, 31)),
         ],
-        "three audited windows; 2010-2011 and 2018-2019 are the unaudited spans (#212)"
+        "four audited windows; 2010-2011 is the unaudited span (#212)"
     );
-    // Inside the unaudited spans the table has no answer at all.
+    // Inside the unaudited span the table has no answer at all.
     assert_eq!(calendar.holiday_on(day(2011, 1, 2)), None);
-    assert_eq!(calendar.holiday_on(day(2018, 8, 1)), None);
-    assert_eq!(calendar.holiday_on(day(2019, 12, 25)), None);
+    assert_eq!(calendar.holiday_on(day(2010, 8, 1)), None);
     // Outside the audited history entirely: the same.
     assert_eq!(calendar.holiday_on(day(2009, 12, 31)), None);
     assert_eq!(calendar.holiday_on(day(2028, 1, 1)), None);
@@ -134,6 +134,105 @@ fn the_2022_grid_marks_six_weekday_holidays() {
 }
 
 #[test]
+fn every_printed_2018_and_2019_cell_of_the_may_2018_guide_ships() {
+    let calendar = calendar();
+    // The "Trading Calendar 2018" section of the Trading Guide of 28 May
+    // 2018: twelve dark `Market Holiday — Market Closed` cells.
+    assert_closed(
+        "six",
+        calendar,
+        Europe::Zurich,
+        &[
+            day(2018, 1, 1),
+            day(2018, 1, 2),
+            day(2018, 3, 30),
+            day(2018, 4, 2),
+            day(2018, 5, 1),
+            day(2018, 5, 10),
+            day(2018, 5, 21),
+            day(2018, 8, 1),
+            day(2018, 12, 24),
+            day(2018, 12, 25),
+            day(2018, 12, 26),
+            day(2018, 12, 31),
+        ],
+    );
+    // The same guide's "Trading Calendar 2019" section: twelve more.
+    assert_closed(
+        "six",
+        calendar,
+        Europe::Zurich,
+        &[
+            day(2019, 1, 1),
+            day(2019, 1, 2),
+            day(2019, 4, 19),
+            day(2019, 4, 22),
+            day(2019, 5, 1),
+            day(2019, 5, 30),
+            day(2019, 6, 10),
+            day(2019, 8, 1),
+            day(2019, 12, 24),
+            day(2019, 12, 25),
+            day(2019, 12, 26),
+            day(2019, 12, 31),
+        ],
+    );
+    // All 24 dark cells of these two grids fall on weekdays and no SIX
+    // holiday of 2018-2019 falls on a weekend, so the grids arise no
+    // weekend-fall exclusion; the weekend shading itself still keys no row.
+    for weekend in [
+        day(2018, 3, 31),
+        day(2018, 4, 1), // Easter Sunday 2018, shaded as a weekend day
+        day(2019, 6, 15),
+        day(2019, 12, 28),
+    ] {
+        assert_eq!(
+            calendar.holiday_on(weekend),
+            None,
+            "{weekend} is the calendar's own weekend shape, not a holiday row"
+        );
+    }
+    // Both years' closures cite the guide edition that prints their grids.
+    for probed in [day(2018, 5, 10), day(2019, 4, 19)] {
+        let holiday = calendar
+            .holiday_on(probed)
+            .unwrap_or_else(|| panic!("{probed} ships a row"));
+        assert_eq!(holiday.kind(), HolidayKind::Closed, "{probed}");
+        assert_eq!(holiday.tier(), EvidenceTier::T1, "{probed}");
+        assert_eq!(holiday.document_id(), "SIX-TG-2018", "{probed}");
+    }
+    // The 2018-2019 rows changed the refusal: an ordinary weekday inside the
+    // formerly unaudited span answers, and the holiday closes it.
+    assert!(
+        calendar
+            .is_open(ch((2018, 6, 6), (12, 0, 0)))
+            .expect("the coverage contract must answer a covered date")
+    );
+    assert!(
+        !calendar
+            .is_open(ch((2019, 4, 19), (12, 0, 0)))
+            .expect("the coverage contract must answer a covered date"),
+        "Good Friday 2019 is a `Closed` row, not an ordinary day"
+    );
+    // The window edge on the remaining-gap side still refuses correctly:
+    // 2011-12-30 (Friday) is inside the unaudited 2010-2011 span, while
+    // 2012-01-02, the first covered trade date, answers through its row.
+    let error = calendar
+        .is_open(ch((2011, 12, 30), (12, 0, 0)))
+        .expect_err("an unaudited-span query must refuse");
+    assert!(
+        matches!(error, CalendarQueryError::OutsideCoveredRange { .. }),
+        "2011-12-30 must refuse with OutsideCoveredRange, got {error:?}"
+    );
+    assert!(
+        !calendar
+            .is_open(ch((2012, 1, 2), (12, 0, 0)))
+            .expect("the coverage contract must answer a covered date"),
+        "the first covered trade date closes through its St. Berchtold row"
+    );
+}
+
+#[test]
 fn every_printed_2024_cell_ships() {
     let calendar = calendar();
     assert_closed(
@@ -158,7 +257,7 @@ fn every_printed_2024_cell_ships() {
 }
 
 #[test]
-fn a_pre_2025_ordinary_weekday_trades_and_the_unaudited_spans_refuse() {
+fn a_pre_2025_ordinary_weekday_trades_and_the_unaudited_span_refuses() {
     let calendar = calendar();
     // Wednesday 2015-07-08: inside the 2012-2017 window, no row, and the
     // session layer answers the ordinary day end-exclusively.
@@ -175,12 +274,14 @@ fn a_pre_2025_ordinary_weekday_trades_and_the_unaudited_spans_refuse() {
             .expect("the coverage contract must answer a covered date"),
         "17:40 is the end-exclusive Trading-At-Last close"
     );
-    // The unaudited spans refuse with the coverage contract: the operator's
-    // trading calendar for them is archived on no channel (#212).
+    // The unaudited span refuses with the coverage contract: the operator's
+    // trading calendar for 2010-2011 is archived on no channel (#212). The
+    // 2018-2019 half closed as data on 2026-10-03 UTC (the 28 May 2018
+    // guide's own year grids) and answers again.
     for (label, instant) in [
+        ("2010-06-06", ch((2010, 6, 6), (12, 0, 0))),
         ("2011-05-12", ch((2011, 5, 12), (12, 0, 0))),
-        ("2018-06-06", ch((2018, 6, 6), (12, 0, 0))),
-        ("2019-10-03", ch((2019, 10, 3), (12, 0, 0))),
+        ("2011-12-30", ch((2011, 12, 30), (12, 0, 0))),
     ] {
         let error = calendar
             .is_open(instant)
@@ -361,6 +462,8 @@ fn mutating_a_shipped_row_fails_a_test() {
     // behavioural one. This test adds the per-year document split: a row that
     // stops citing its own year's PDF fails.
     for (date, document) in [
+        (day(2018, 5, 10), "SIX-TG-2018"),
+        (day(2019, 12, 31), "SIX-TG-2018"),
         (day(2025, 4, 18), "SIX-TC-2025"),
         (day(2026, 5, 14), "SIX-TC-2026"),
         (day(2027, 5, 6), "SIX-TC-2027"),

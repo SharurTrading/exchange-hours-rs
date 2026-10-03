@@ -823,11 +823,11 @@ fn withheld(calendar: ExchangeCalendar, date: NaiveDate) -> bool {
 /// the 2010-2013 gap closed from the operator's own per-year press releases,
 /// notice and Info-Flash, and the 2024 eves' instants were recovered from the
 /// operator's 2024 end-of-year appendix, leaving only the two announced-but-
-/// unstated 2026 eves. `tsx` joins on 2026-09-30 UTC at zero: the 2010-2014
-/// recovery keys on the operator's own per-holiday news releases, all sourced
-/// `Closed`/early-close rows with no `Unsourced` date anywhere, so its
-/// incompleteness is the four refusing release-era spans and 2015-2016, not a
-/// withheld date.
+/// unstated 2026 eves. `tsx` joined on 2026-09-30 UTC at zero — its
+/// incompleteness was the release-era refusing spans, not a withheld date —
+/// and left the group on 2026-10-03 UTC, when the 2011-12-12 year-end
+/// schedule recovered from the release series' Mondo Visione verbatim mirror
+/// closed the last span 2011-10-11..2012-01-02, making the scope complete.
 fn date_level_incompleteness() -> &'static [(&'static str, usize)] {
     &[
         // 202 after the #242 profile-clock re-derivation (2026-09-30): the 59
@@ -838,7 +838,6 @@ fn date_level_incompleteness() -> &'static [(&'static str, usize)] {
         ("lse", 5),
         ("nasdaq", 4),
         ("nse_india", 14),
-        ("tsx", 0),
         ("xetra", 0),
     ]
 }
@@ -980,8 +979,8 @@ fn inventory_completeness_verdicts_match_the_metadata() {
     }
     assert_eq!(
         (complete, incomplete, no_coverage),
-        (14, 19, 0),
-        "the inventory's verdict shapes: fourteen complete, nineteen incomplete, none with no 2025 \
+        (15, 18, 0),
+        "the inventory's verdict shapes: fifteen complete, eighteen incomplete, none with no 2025 \
          coverage (hkex's ten Unsourced 2012-2015 half-day eves moved it to incomplete on \
          2026-09-29 UTC and its 2026-09-30 UTC closure — the operator's own Phase-Two-era Trading \
          Hours page states the eve session deletions — moved it back to complete; xetra's \
@@ -998,10 +997,11 @@ fn inventory_completeness_verdicts_match_the_metadata() {
          euronext_paris two announced-but-unstated 2026 eves, the 2026-09-29/30 UTC backfills \
          recovered tsx's 2010-2014 releases, and the 2026-10-02 UTC wire-mirror and page \
          recoveries closed tsx's 2013-08-19..2014-01-01 and 2014-07-02..2016-12-31 spans, \
-         leaving tsx incomplete across the one release-era gap — 2011-10-11..2012-01-02, the \
-         2011-12-12 year-end release no archive captured — its sources do not reach (#221); the \
-         2026-10-03 UTC recovery of the series' 2015/2016 edition on the operator's derivatives \
-         site closed nzx's 2016-04-26..2016-12-22 span, so nzx reads complete across 2010-2027)"
+         and the 2026-10-03 UTC recovery of the 2011-12-12 year-end schedule — the release \
+         series' Mondo Visione verbatim mirror, served live — closed tsx's last span \
+         2011-10-11..2012-01-02, making tsx complete to 2026-12-31 (#221); the same day's \
+         recovery of the series' 2015/2016 edition on the operator's derivatives site \
+         closed nzx's 2016-04-26..2016-12-22 span, so nzx reads complete across 2010-2027)"
     );
 }
 

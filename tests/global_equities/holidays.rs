@@ -18,8 +18,9 @@
 //! 2014-2015 cash-markets pages, the per-year page and the per-market table;
 //! only the 2026 half-day eves are announced and unstated) and `tsx`
 //! (2010-2014 from the operator's own per-holiday news releases beside
-//! 2017-2026 across the calendar page's archived states, with the four
-//! release-era capture gaps and the 2011-2012 gap refusing).
+//! 2017-2026 across the calendar page's archived states, with the three
+//! release-era capture gaps closed as data and the 2011-2012 gap closed
+//! 2026-10-03 UTC by the 2011-12-12 year-end schedule's own mirror).
 //!
 //! Every case below goes through the public identity-backed calendar, the
 //! same surface the consumer routes through. Each venue's section fences its
@@ -3987,6 +3988,7 @@ mod tsx {
         let calendar = tsx();
         // One printed entry per pre-2025 statement, each the operator's own
         // sentence: 2010-2013's per-holiday news releases and schedule tables,
+        // 2011's year-end schedule on its Mondo Visione verbatim mirror,
         // 2013-2016's year-end schedules on the wires plus TMX Money's
         // complete-2014 page and the Calendar & Events page's 2015-2016
         // lists, 2017's two in-lieu days, 2018-2020's mid-year print, 2021's
@@ -4009,6 +4011,9 @@ mod tsx {
             (2011, 8, 1),
             (2011, 9, 5),
             (2011, 10, 10),
+            (2011, 12, 26),
+            (2011, 12, 27),
+            (2012, 1, 2),
             (2012, 2, 20),
             (2012, 4, 6),
             (2012, 5, 21),
@@ -4286,25 +4291,26 @@ mod tsx {
         );
     }
 
-    /// The merged window's first day answers through every entry point whose
-    /// answer needs only its own facts (issue #257).
+    /// The formerly refused 2012-01-02 answers end to end (issue #257's
+    /// window edge dissolved by #221's recovery).
     ///
-    /// 2012-01-03 is the first day of the `(2012, 1, 3) ..=` window; the day
-    /// before it is the refused span's last day. No tsx rule wraps, so no
-    /// session from the refused neighbour can reach the window's first day:
-    /// the wrapped lookbacks that used to demand the neighbour's answer probe
-    /// nothing, and the queries they carried refuse no more. The session
-    /// metadata keeps its resolution-edge verdict — the previous-session and
-    /// closed-instant scans walk onto the refused neighbour regardless — and
-    /// the fence pins that verdict too, so neither direction can drift.
+    /// 2012-01-02 is the day whose missing row used to split the windows: the
+    /// 2011-12-12 year-end schedule — recovered 2026-10-03 UTC from the
+    /// release series' Mondo Visione verbatim mirror — keys it as the New
+    /// Year in-lieu, so the day now answers every entry point and the
+    /// resolution-edge verdict the #257 fence pinned is gone.
     #[test]
-    fn the_merged_windows_first_day_answers_through_its_own_facts() {
+    fn the_formerly_refused_new_year_in_lieu_answers_through_every_entry_point() {
         let calendar = tsx();
-        let first_day = day(2012, 1, 3);
-        assert_eq!(calendar.holiday_on(first_day), None);
-        // `is_open` matches the Regular answer at every probed instant,
-        // including the midnight, pre-open and post-close instants whose
-        // containing probes used to reach the refused 2012-01-02.
+        let in_lieu = day(2012, 1, 2);
+        assert_eq!(
+            calendar.holiday_on(in_lieu).map(Holiday::kind),
+            Some(HolidayKind::Closed),
+            "2012-01-02 keys as the printed New Year in-lieu"
+        );
+        // `is_open` is shut at every probed instant, including the midnight,
+        // pre-open and post-close instants whose containing probes used to
+        // reach the refused 2012-01-02 from the covered side.
         for time in [
             (0, 0, 0),
             (7, 0, 0),
@@ -4316,62 +4322,58 @@ mod tsx {
             (17, 0, 0),
             (23, 59, 0),
         ] {
-            let instant = toronto((2012, 1, 3), time);
-            let open_regular = calendar
-                .is_open_regular(instant)
-                .expect("the window's first day answers the Regular probe");
-            let open_extended = calendar
-                .is_open_extended(instant)
-                .expect("the window's first day answers the Extended probe");
-            assert_eq!(
-                calendar.is_open(instant).expect("covered"),
-                open_regular || open_extended,
-                "tsx 2012-01-03 {time:?}: `is_open` must match the phase answers"
+            let instant = toronto((2012, 1, 2), time);
+            assert!(
+                !calendar.is_open(instant).expect("covered"),
+                "tsx 2012-01-02 {time:?}: the in-lieu closure is shut"
+            );
+            assert!(
+                !calendar.is_open_regular(instant).expect("covered"),
+                "tsx 2012-01-02 {time:?}: no regular session"
             );
         }
-        // The trade date answers on the day's own instants: the session's
-        // trade date inside the regular session, `None` at the closed ones.
-        assert_eq!(
-            calendar
-                .trade_date(toronto((2012, 1, 3), (12, 0, 0)))
-                .expect("covered"),
-            Some(first_day),
-            "tsx 2012-01-03 noon belongs to its own trade date"
-        );
-        assert_eq!(
-            calendar
-                .trade_date(toronto((2012, 1, 3), (0, 0, 0)))
-                .expect("the closed midnight answers"),
-            None,
-            "the closed midnight states no trade date"
-        );
-        // The closed-day questions answer: the day trades, so it is closed in
-        // neither sense.
+        // The closed-day questions answer on the day's own facts.
         assert!(
-            !calendar
-                .is_closed_trade_date(first_day, SessionKind::Both)
+            calendar
+                .is_closed_trade_date(in_lieu, SessionKind::Both)
                 .expect("covered"),
-            "tsx 2012-01-03 carries its own regular session"
+            "tsx 2012-01-02 carries no session in either phase"
         );
         assert!(
-            !calendar
+            calendar
                 .is_closed_all_day_at(
-                    toronto((2012, 1, 3), (12, 0, 0)),
+                    toronto((2012, 1, 2), (12, 0, 0)),
                     America::Toronto,
                     SessionKind::Both
                 )
                 .expect("covered"),
-            "tsx 2012-01-03 trades during the day"
+            "tsx 2012-01-02 is closed all day"
         );
-        // The window's first day keeps the resolution-edge verdict: the
-        // previous-session and closed-instant scans genuinely walk onto the
-        // refused 2012-01-02, so the metadata withholds the claim that every
-        // query on the day answers while the day's own facts answer.
+        // The resolution-edge verdict is gone: the day reads covered, as does
+        // the first day after it (2012-01-03, whose #257 fence pinned the
+        // edge that no longer exists).
         assert_eq!(
-            calendar.coverage().coverage_on(first_day),
-            DateCoverage::OutsideCoveredRange,
-            "2012-01-03 keeps its resolution-edge verdict"
+            calendar.coverage().coverage_on(in_lieu),
+            DateCoverage::Covered,
+            "2012-01-02 sits inside the merged window"
         );
+        assert_eq!(
+            calendar.coverage().coverage_on(day(2012, 1, 3)),
+            DateCoverage::Covered,
+            "2012-01-03 lost its resolution-edge verdict"
+        );
+        // The 2011 side answers too: the schedule's own timetable closes
+        // Friday, December 23, 2011 at the regular 4:00 p.m., so the span
+        // between the Thanksgiving release and the in-lieu rows reads as
+        // ordinary trading days.
+        for date in [(2011, 10, 11), (2011, 11, 11), (2011, 12, 23)] {
+            assert!(
+                calendar
+                    .is_open(toronto(date, (12, 0, 0)))
+                    .expect("covered"),
+                "tsx {date:?} answers as an ordinary trading day"
+            );
+        }
     }
 
     #[test]
@@ -4380,18 +4382,25 @@ mod tsx {
         let coverage = calendar.holiday_coverage().expect("tsx ships a table");
         assert_eq!(coverage.first(), day(2010, 1, 1));
         assert_eq!(coverage.last(), day(2026, 12, 31));
-        // The 2011 release-era capture gap ships no data: no row, and the
-        // session queries refuse rather than answer an unaudited span.
-        // 2011-12-23 rides the never-captured 2011 year-end release, and
-        // 2012-01-02 the New Year in-lieu the same release would have named.
-        for (year, month, date) in [(2011, 12, 23), (2012, 1, 2)] {
-            assert_eq!(calendar.holiday_on(day(year, month, date)), None);
+        // The 2011-2012 release-era capture gap closed 2026-10-03 UTC: the
+        // 2011-12-12 year-end schedule keys the in-lieu rows, 2011-12-23
+        // trades to its regular 4:00 p.m. close per the same timetable, and
+        // 2012-01-02 is the New Year in-lieu the release names.
+        for (year, month, date) in [(2011, 12, 26), (2011, 12, 27), (2012, 1, 2)] {
+            assert_eq!(
+                calendar
+                    .holiday_on(day(year, month, date))
+                    .map(Holiday::kind),
+                Some(HolidayKind::Closed),
+                "tsx {year}-{month:02}-{date:02} keys the printed in-lieu row"
+            );
+        }
+        for (year, month, date) in [(2011, 10, 11), (2011, 12, 23), (2012, 1, 3)] {
             assert!(
-                matches!(
-                    calendar.is_open(toronto((year, month, date), (12, 0, 0))),
-                    Err(CalendarQueryError::OutsideCoveredRange { .. })
-                ),
-                "tsx {year}-{month:02}-{date:02} sits in a refusing span"
+                calendar
+                    .is_open(toronto((year, month, date), (12, 0, 0)))
+                    .expect("the merged window covers the span"),
+                "tsx {year}-{month:02}-{date:02} answers as an ordinary trading day"
             );
         }
         // The formerly refusing spans answer end to end: 2014-07-02 is the
@@ -4433,14 +4442,14 @@ mod tsx {
         let rows = rows_per_year(tsx());
         assert_eq!(
             rows.len(),
-            178,
-            "166 closures and twelve Christmas Eve closes — the 2011-2012 \
-             release-era gap is the only span that ships no rows"
+            181,
+            "169 closures and twelve Christmas Eve closes — the 2011 in-lieu \
+             rows and 2012 New Year in-lieu key the 2011-12-12 schedule"
         );
         let expected: [(i32, (usize, usize, usize, usize)); 17] = [
             (2010, (9, 1, 0, 0)),
-            (2011, (8, 0, 0, 0)),
-            (2012, (9, 1, 0, 0)),
+            (2011, (10, 0, 0, 0)),
+            (2012, (10, 1, 0, 0)),
             (2013, (10, 1, 0, 0)),
             (2014, (10, 1, 0, 0)),
             (2015, (10, 1, 0, 0)),

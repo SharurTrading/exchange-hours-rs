@@ -85,6 +85,20 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Fixed
 
+- **`tsx`'s last release-era span closes from the 2011-12-12 year-end
+  schedule's own mirror (2026-10-03 UTC; closes #221).** The refused span
+  2011-10-11..2012-01-02 keys on the operator's own *TMX Group Holiday
+  Operating Schedule* release of 2011-12-12, recovered from the release
+  series' Mondo Visione verbatim public mirror served live (the mirror's
+  verbatim-ness pinned word-for-word against the operator's own CNW mirror of
+  the 2016 edition): the schedule's TSX/TSXV/TMX Select table prints
+  `(In lieu of Christmas Day) Closed` on 2011-12-26, `(In lieu of Boxing Day)
+  Closed` on 2011-12-27 and `(In lieu of New Year's Day) Closed` on 2012-01-02,
+  and its timetable closes Friday, December 23, 2011 at the regular 4:00 p.m.
+  EST, so that week needs no early-close row. Three `Closed` rows are added at
+  T1, the 2010-2016 audited windows merge to one continuous span
+  2010-01-01..2016-12-31, and tsx answers end to end from the 2010 floor to
+  the 2026-12-31 horizon.
 - **The merged tsx window's first day answers through the entry points that
   need only its own facts (2026-10-02 UTC; fixes #257).** Every instant of
   2012-01-03 — the first day of tsx's second audited window `(2012, 1, 3) ..=`

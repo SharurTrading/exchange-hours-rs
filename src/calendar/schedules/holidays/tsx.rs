@@ -20,15 +20,16 @@
 //! `tsx.com` and `tmx.com`; the all-time release sweep enumerated every
 //! holiday release the archive holds): each release states Toronto Stock
 //! Exchange closed, or open until 1:00 p.m. EST on a Christmas Eve, for an
-//! unconditional named date. **2013-09-02..2016-12-31** keys on the same
+//! unconditional named date. **2011-12-23..2012-01-02** keys on the 2011-12-12
+//! *TMX Group Holiday Operating Schedule* release itself, recovered
+//! 2026-10-03 UTC from the release series' own Mondo Visione verbatim public
+//! mirror (the same series whose 2016 edition reads word-for-word against the
+//! operator's CNW wire mirror). **2013-09-02..2016-12-31** keys on the same
 //! release series' verbatim public wire mirrors (CNW/PR Newswire, retrieved
 //! live 2026-10-02 UTC) and on two further operator pages: TMX Money's own
 //! "Market Hours & Holiday" page as served 2014-01-09 printing the complete
 //! 2014 list, and the `tsx.com` "Calendar & Events" page as served 2015-03-15
-//! printing the complete 2015 and 2016 lists. The 2011 year-end arrangement
-//! and the 2012 New Year in-lieu rode the release of 2011-12-12, which no
-//! archive captured, so 2011-10-11..2012-01-02 still ships no data and
-//! queries there error rather than answer. All of this is recorded in
+//! printing the complete 2015 and 2016 lists. All of this is recorded in
 //! [`docs/evidence/tsx.md`](../../../../../docs/evidence/tsx.md).
 //!
 //! The Christmas Eve early closes are the operator's own sentences: the
@@ -60,22 +61,23 @@ const HALF_DAY_13_00: u32 = 13 * 3_600;
 ///
 /// Every row is one line of the operator's statement at the document its id
 /// names — a per-holiday news release or Holiday (Operating) Schedule
-/// release on `tmx.com` for 2010-2013, their verbatim CNW/PR Newswire wire
-/// mirrors for 2013-2016's year-end and single-holiday releases, TMX Money's
-/// own market-hours page for the 2014 list, an archived `tsx.com`
-/// "Calendar & Events" state for the 2015-2016 lists, or one archived/live
-/// state of the "Stock Markets Closed" calendar page for 2017-2026. A date
-/// inside a window with no row is audited normal: the release practice
-/// printed one notice per market closure and the archive sweep enumerated
-/// every one, the 2014 and 2015-2016 pages print the complete year's list,
-/// and the year-end schedules print `Open` on December 31. The 2011 span
-/// between the first two windows sits outside every window, so queries there
-/// refuse.
+/// release on `tmx.com` for 2010-2013 (the 2011 year-end edition recovered
+/// from the series' Mondo Visione verbatim mirror), their verbatim CNW/PR
+/// Newswire wire mirrors for 2013-2016's year-end and single-holiday
+/// releases, TMX Money's own market-hours page for the 2014 list, an archived
+/// `tsx.com` "Calendar & Events" state for the 2015-2016 lists, or one
+/// archived/live state of the "Stock Markets Closed" calendar page for
+/// 2017-2026. A date inside a window with no row is audited normal: the
+/// release practice printed one notice per market closure and the archive
+/// sweep enumerated every one, the year-end schedules print the year-end
+/// arrangement in full (the 2011 edition's timetable closes Friday,
+/// December 23, 2011 at the regular 4:00 p.m. EST, so no earlier row exists
+/// that week), the 2014 and 2015-2016 pages print the complete year's list,
+/// and the year-end schedules print `Open` on December 31.
 // Evidence: docs/evidence/tsx.md
 pub(crate) static TABLE: &HolidayTable = holidays! {
     coverage: [
-        (2010, 1, 1) ..= (2011, 10, 10),
-        (2012, 1, 3) ..= (2016, 12, 31),
+        (2010, 1, 1) ..= (2016, 12, 31),
         (2017, 1, 1) ..= (2026, 12, 31),
     ],
     rows: [
@@ -125,9 +127,19 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2011, 9, 5, Closed, T1, "TMX-REL-2011-08-30"),
         // 2011-10-10 - T1 - TMX-REL-2011-09-30 - Thanksgiving.
         (2011, 10, 10, Closed, T1, "TMX-REL-2011-09-30"),
-        // 2012-02-20 - T1 - TMX-REL-2012-02-13 - Family Day. The 2012 New
-        // Year in-lieu (2012-01-02) survives in no release, so the window
-        // opens the day after it.
+        // 2011-12-26 - T1 - TMX-REL-2011-12-12 - the year-end Holiday
+        // Operating Schedule (recovered 2026-10-03 UTC from the series'
+        // Mondo Visione verbatim mirror): the TSX/TSXV/TMX Select table
+        // prints `(In lieu of Christmas Day) Closed`.
+        (2011, 12, 26, Closed, T1, "TMX-REL-2011-12-12"),
+        // 2011-12-27 - T1 - TMX-REL-2011-12-12 - `(In lieu of Boxing Day)
+        // Closed`.
+        (2011, 12, 27, Closed, T1, "TMX-REL-2011-12-12"),
+        // 2012-01-02 - T1 - TMX-REL-2011-12-12 - `(In lieu of New Year's
+        // Day) Closed`; the timetable lists no other date, so the window
+        // runs on into the 2012 releases.
+        (2012, 1, 2, Closed, T1, "TMX-REL-2011-12-12"),
+        // 2012-02-20 - T1 - TMX-REL-2012-02-13 - Family Day.
         (2012, 2, 20, Closed, T1, "TMX-REL-2012-02-13"),
         // 2012-04-06 - T1 - TMX-REL-2012-03-30 - Good Friday.
         (2012, 4, 6, Closed, T1, "TMX-REL-2012-03-30"),

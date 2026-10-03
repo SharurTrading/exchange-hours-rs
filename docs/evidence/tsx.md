@@ -74,6 +74,11 @@ ship no data and refuse.
 adds the next year's calendar in Q4. Verified 2026-09-28: no 2027 list exists
 on the page or behind its "Settlement Schedule" links. Nothing past 2026-12-31
 is claimed; **closing condition:** the operator's 2027 calendar section.
+Re-checked 2026-10-02 UTC with a fresh live read of the page (artifact
+`tsx_calendar_page.live-20261002T235528Z.html` and `INDEX-recheck-2026-10-02.md`
+under `holidays/raw/equities/tsx/forward-2027/` in the research store): the
+page's bytes still carry `2027` zero times and its newest sections are still
+the 2026 and 2025 lists.
 
 **The Christmas Eve half days are the operator's own sentences.** From 2024 on each Christmas
 Eve entry carries `*`, footnoted `* Closing at 1:00 PM (TSX/TSXV) and 1:30 (ALPHA/ALPHA

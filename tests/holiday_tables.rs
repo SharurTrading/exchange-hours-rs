@@ -1091,7 +1091,16 @@ fn every_shipped_session_occurrence_is_dated_by_its_own_open_or_the_next_day() {
     // identities. The CME move removes exactly the 705 weekly cursor refusals
     // its three horizons turned into enumerated sessions — the same -705 the
     // wave measured at its pre-rebase base, where 82,161 fell to 81,456 — and
-    // the refused-cursors bound follows this observed value.
+    // the refused-cursors bound follows this observed value. The `nzx` window
+    // re-join of 2026-10-03 UTC (the dairy-derivatives memorandum of 20
+    // November 2015 closing the 2016-04-26..2016-12-22 gap) leaves this sweep
+    // untouched: the sweep detaches holiday tables, so no cursor was ever
+    // gated on that gap. The totals at this head are 435,558 enumerated
+    // occurrences, 79,366 refused cursors, 16,181 unresolved trade dates and
+    // the same 42 date-carrying identities — bit-identical on both sides of
+    // the re-join, with the drift from the CME-move head's observation above
+    // belonging to the changes merged in between — and every bound above
+    // still follows.
     // The premise itself is unchanged and still asserted per occurrence:
     // what the floor move restored is the population the premise can be
     // asserted over.

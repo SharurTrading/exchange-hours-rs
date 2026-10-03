@@ -4,8 +4,9 @@
 //! shipped with the 2025-2027 wave: `b3` (2025-2026 extended back to 2011,
 //! the 2010 span unaudited), `tadawul` (2021-2027, the earlier span
 //! unaudited) and `borsa_istanbul` (2012-03-02..2026-12-31), the APAC venues `nzx` (2010-2024 backfilled beside the
-//! operator's 2025-2027-01-04 rolling horizon, with the residual
-//! 2016-04-26..2016-12-22 capture gap refusing), `asx` (2010-2024 backfilled
+//! operator's 2025-2027-01-04 rolling horizon; the 2016 mid-year span closed
+//! on 2026-10-03 UTC by the operator's own dairy-derivatives holiday
+//! memorandum of 20 November 2015), `asx` (2010-2024 backfilled
 //! from each year's own operator
 //! sheet, beside 2025-2027) and `sgx_securities` (2014-2020-01-01 backfilled
 //! beside 2025-2026, the 2010-2013 and 2020-2024 capture gaps refusing), and
@@ -1696,6 +1697,13 @@ mod nzx {
         // inside the former capture gap.
         assert_closure(calendar, (2016, 12, 27), "nzx");
         assert_closure(calendar, (2017, 2, 6), "nzx");
+        // The former gap's own two closures — Queen's Birthday 2016-06-06 and
+        // Labour Day 2016-10-24 — key to the operator's dairy-derivatives
+        // memorandum of 20 November 2015, the 2015/2016 edition of the
+        // holiday-memo series recovered from the operator's derivatives site
+        // on 2026-10-03 UTC.
+        assert_closure(calendar, (2016, 6, 6), "nzx");
+        assert_closure(calendar, (2016, 10, 24), "nzx");
         // 2017-04-14 is the Derivatives page's own Good Friday row on the
         // former gap's far side; with the memorandum covering the span before
         // it, the day's own behind-derivation reads the audited span and the
@@ -1978,35 +1986,46 @@ mod nzx {
         let coverage = calendar.holiday_coverage().expect("nzx ships a table");
         assert_eq!(coverage.first(), day(2010, 1, 1));
         assert_eq!(coverage.last(), day(2027, 1, 4));
-        // The residual 2016 capture gap (2016-04-26..2016-12-22): no operator
-        // artifact prints the span, so it sits between two audited windows and
-        // the identity refuses it. The 2016/2017 memorandum re-joins the
-        // windows from its own first abbreviated day 2016-12-23, so
-        // Boxing Day 2016 answers, Waitangi Day 2017-02-06 — inside the former
-        // gap — answers, and 2017-04-14 stays inside the joined window.
-        assert!(matches!(
-            calendar.is_open(akl((2016, 6, 8), (11, 0, 0))),
-            Err(CalendarQueryError::OutsideCoveredRange { .. })
-        ));
-        assert_eq!(calendar.holiday_on(day(2016, 6, 8)), None);
+        // The one audited window runs unbroken from the floor to the
+        // operator's 2027-01-04 horizon: the former 2016-04-26..2016-12-22
+        // capture gap closed on 2026-10-03 UTC when the series' 2015/2016
+        // edition surfaced on the operator's derivatives site, so the span's
+        // two closures answer and the ordinary days between them answer as
+        // audited normal.
+        assert_eq!(
+            coverage.windows(),
+            vec![(day(2010, 1, 1), day(2027, 1, 4))],
+            "the one audited window runs unbroken from the floor to the horizon"
+        );
+        assert_eq!(
+            calendar.holiday_on(day(2016, 6, 8)),
+            None,
+            "2016-06-08 is the former gap's ordinary day and ships no row"
+        );
+        assert!(
+            calendar
+                .is_open(akl((2016, 6, 8), (11, 0, 0)))
+                .expect("the dairy memorandum's complete season list audits the day normal")
+        );
         assert_eq!(
             calendar.holiday_on(day(2016, 12, 22)),
             None,
-            "2016-12-22 is the gap's last day and ships no row"
+            "2016-12-22 is the Main Board memorandum's eve and ships no row"
         );
-        assert!(matches!(
-            calendar.is_open(akl((2016, 12, 22), (11, 0, 0))),
-            Err(CalendarQueryError::OutsideCoveredRange { .. })
-        ));
+        assert!(
+            calendar
+                .is_open(akl((2016, 12, 22), (11, 0, 0)))
+                .expect("covered")
+        );
         assert_eq!(
             calendar.holiday_on(day(2016, 12, 26)).map(Holiday::kind),
             Some(HolidayKind::Closed),
-            "the memorandum's Boxing Day row opens the re-joined window"
+            "the memorandum's Boxing Day row is still its own"
         );
         assert_eq!(
             calendar.holiday_on(day(2017, 2, 6)).map(Holiday::kind),
             Some(HolidayKind::Closed),
-            "Waitangi Day 2017 is the memorandum's own row now"
+            "Waitangi Day 2017 is the memorandum's own row"
         );
         assert!(
             !calendar
@@ -2058,8 +2077,8 @@ mod nzx {
         let rows = rows_per_year(nzx());
         assert_eq!(
             rows.len(),
-            214,
-            "153 pre-2025 closures + 33 pre-2025 abbreviated days + 24 closures \
+            216,
+            "155 pre-2025 closures + 33 pre-2025 abbreviated days + 24 closures \
              and 4 abbreviated days across 2025-2027"
         );
         // 2010-2024, read off the operator's own pages per year.
@@ -2071,9 +2090,9 @@ mod nzx {
         assert_eq!(tally(&rows, 2015), (11, 0, 2), "2015");
         assert_eq!(
             tally(&rows, 2016),
-            (9, 0, 2),
-            "2016: the January-April sheet dates the capture gap leaves plus \
-             the 2016/2017 memorandum's December rows"
+            (11, 0, 2),
+            "2016: the January-April sheet dates, the dairy memorandum's June \
+             and October closures, plus the 2016/2017 memorandum's December rows"
         );
         assert_eq!(
             tally(&rows, 2017),

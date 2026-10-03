@@ -999,7 +999,9 @@ fn inventory_completeness_verdicts_match_the_metadata() {
          recovered tsx's 2010-2014 releases, and the 2026-10-02 UTC wire-mirror and page \
          recoveries closed tsx's 2013-08-19..2014-01-01 and 2014-07-02..2016-12-31 spans, \
          leaving tsx incomplete across the one release-era gap — 2011-10-11..2012-01-02, the \
-         2011-12-12 year-end release no archive captured — its sources do not reach (#221))"
+         2011-12-12 year-end release no archive captured — its sources do not reach (#221); the \
+         2026-10-03 UTC recovery of the series' 2015/2016 edition on the operator's derivatives \
+         site closed nzx's 2016-04-26..2016-12-22 span, so nzx reads complete across 2010-2027)"
     );
 }
 

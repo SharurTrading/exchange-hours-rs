@@ -10,6 +10,25 @@ corrections (a venue's hours fixed against a primary source) go under
 **Fixed**; new venues and new API surface under **Unreleased**/**Added**.
 
 ## [Unreleased]
+### Fixed
+
+- **nzx: the 2016-04-26..2016-12-22 capture gap closes from the operator's
+  own derivatives-site holiday memorandum (2026-10-03 UTC; fixes #209).** The
+  series' 2015/2016 edition — *"NZX Dairy Derivatives Market Holidays –
+  2015/2016"*, NZX Client and Market Services, 20 November 2015 — surfaced as
+  `Market_Holidays_Memo.pdf` in the download system of the operator's own
+  derivatives site `nzxfutures.com`, which no earlier pass had swept, and
+  Wayback capture `20170520051811` replays it verbatim. Its season table
+  prints `6 June 2016 Queen's Birthday Closed` and
+  `24 October 2016 Labour Day Closed` — the two rows the span needed — and
+  its complete list audits the days between them, so the two audited windows
+  re-join into one `2010-01-01..2027-01-04` span (216 rows) and queries
+  inside the former gap answer instead of refusing. The rows rest on the
+  market-scope step the evidence file records: every date the series' three
+  surviving editions share with a Main Board artifact agrees with it, and the
+  one known cross-market divergence (the December abbreviated days) sits
+  outside the span.
+
 ### Changed
 
 - **The fixed-snapshot no-error invariant is a type-level property (2026-10-01

@@ -132,13 +132,21 @@ fn equity_pause_was_removed_on_the_sourced_2021_opening_day() {
 
 #[test]
 fn grains_keep_exact_sourced_order_phase_revisions() {
+    // #283 (2026-10-04 convention): notice 20100405 dated a 13:15:30 PCP start
+    // from 2010-04-19, but the operator's 2012-05-11 trading-hours capture
+    // prints the PCP back at 14:30-16:00 and no dated artifact states the
+    // changeover, so the whole pre-regime span serves the sourced intersection:
+    // the PCP keeps the floor's 14:30 start on both sides of 2010-04-19, and
+    // the disputed 13:15:30-14:30 hour is the evidence file's residual.
     let before_pcp =
         hours_for_market_hours_key(MarketHoursKey::GlobexGrains, ct((2010, 4, 18), (12, 0, 0)));
-    let expanded_pcp =
+    let intersection_pcp =
         hours_for_market_hours_key(MarketHoursKey::GlobexGrains, ct((2010, 4, 19), (0, 0, 0)));
-    let early_pcp = ct((2010, 4, 19), (13, 15, 30));
-    assert!(!before_pcp.is_open(early_pcp));
-    assert!(expanded_pcp.is_order_entry_only(early_pcp));
+    let disputed_pcp = ct((2010, 4, 19), (13, 15, 30));
+    assert!(!before_pcp.is_order_entry_only(disputed_pcp));
+    assert!(!intersection_pcp.is_order_entry_only(disputed_pcp));
+    assert!(before_pcp.is_order_entry_only(ct((2010, 4, 19), (14, 30, 0))));
+    assert!(intersection_pcp.is_order_entry_only(ct((2010, 4, 19), (14, 30, 0))));
 
     let before_morning_change =
         hours_for_market_hours_key(MarketHoursKey::GlobexGrains, ct((2011, 12, 26), (12, 0, 0)));

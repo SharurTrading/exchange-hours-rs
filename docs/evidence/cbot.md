@@ -9,12 +9,13 @@
 
 ## Ledger basis (moved from docs/schedules/verification.md on 2026-09-12 UTC)
 
-**Gap: order-entry** — the trading session is sourced; what is undated is a queue or post-close phase in which no trade can print. Compatibility default for standard-size CBOT grain/oilseed futures. Current matching, morning Pre-Open, and PCP envelopes are primary-supported, and every exact matching/RTH revision is dated. The 2013-03-22 operator notice dates the Sunday 16:00-19:00 and Monday-Thursday 16:45-19:00 queues and the 14:30-16:00 PCP to 2013-04-07, and the 21-hour 2012-05-20..2013-04-06 regime's queues are served from the regime's own dated start under the 2026-10-04 convention (see globex_grains.md for the residual). Mini grains are excluded.
+**Gap: order-entry** — the trading session is sourced; what is undated is a queue or post-close phase in which no trade can print. Compatibility default for standard-size CBOT grain/oilseed futures. Current matching, morning Pre-Open, and PCP envelopes are primary-supported, and every exact matching/RTH revision is dated. The 2013-03-22 operator notice dates the Sunday 16:00-19:00 and Monday-Thursday 16:45-19:00 queues and the 14:30-16:00 PCP to 2013-04-07, and the 21-hour 2012-05-20..2013-04-06 regime's queues are served from the regime's own dated start under the 2026-10-04 convention (see globex_grains.md for the residual). The pre-regime queue set serves the sourced intersection the same convention defines, with its disputed remainders disclosed as the residual in globex_grains.md (#283, resolved 2026-10-04). Mini grains are excluded.
 
 ## Revision rows
 
-- 2010-04-19 — T1 — CME Globex notice 20100405 — the afternoon PCP expands to 13:15:30–16:00 CT.
-- 2011-12-27 — T1 — CFTC filing rul120711cbot001 — the weekday morning queue moves to 08:00 CT.
+The 2010-04-19 PCP expansion carries no row: its changeover back is undated, so the pre-regime span serves the sourced intersection and nothing observable changes on that day — the notice and the residual live in `globex_grains.md` (#283).
+
+- 2011-12-27 — T1 — CFTC filing rul120711cbot001 — the weekday morning queue moves to 08:00 CT (the era's PCP start stays at the served 14:30-16:00 sourced intersection; see globex_grains.md for the residual).
 - 2012-05-20 — T1 — CME market-data advisory 20120518; trading-hours captures 20120528/20120607 — matching expands to 17:00–14:00 CT, and the regime's queues are served from this dated start: Sunday Pre-Open 16:00-17:00, weekday PCP 14:30-16:00 and Monday-Thursday evening Pre-Open 16:45-17:00 CT (the advisory is T1 for the matching hours, the captures T2 for the queue states; the 2026-10-04 convention keys them here, and the onset bracket is the residual in globex_grains.md).
 - 2013-04-07 — T1 — CME SER-6617 and GCC notice 2013-03-22 — 19:00–07:45 CT electronic session around an 08:30–13:15 CT day session, with the full queue set.
 - 2013-08-18 — T1 — CME market-data advisory 20130812 — the morning Pre-Open widens from 08:15 to 08:00 CT.
@@ -795,8 +796,8 @@ as each source is re-verified.
 - <https://www.cmegroup.com/tools-information/lookups/advisories/electronic-trading/20090608.html> — CME Globex notice 20090608 (repeated 20090615 and 20090622), the dated 2009-07-01 grain ETH expansion that sources the floor-era matching grid — read 2026-09-30 (UTC).
 - <https://www.cmegroup.com/tools-information/lookups/advisories/electronic-trading/20100315.html> — CME Globex notice 20100315, the March-2010 market-state table that supplies the then-live audit-floor queue and PCP phases.
 - <https://www.cmegroup.com/tools-information/lookups/advisories/market-data/Q2010-62.html> — CME market-data advisory Q2010-62.
-- <https://www.cmegroup.com/tools-information/lookups/advisories/electronic-trading/20100405.html> — CME Globex notice 20100405, the 2010-04-19 revision's source.
-- <https://www.cmegroup.com/tools-information/lookups/advisories/electronic-trading/20101025.html> — CME Globex notice 20101025, the generic afternoon-queue notice that does not enumerate this family.
+- <https://www.cmegroup.com/tools-information/lookups/advisories/electronic-trading/20100405.html> — CME Globex notice 20100405, the dated 2010-04-19 PCP expansion to 13:15:30–16:00 CT whose undated changeover back is the pre-regime residual's bracket start — re-read for #283 on 2026-10-04 (UTC).
+- <https://www.cmegroup.com/tools-information/lookups/advisories/electronic-trading/20101025.html> — CME Globex notice 20101025 (the 2010-10-18 article's repeat), the generic Monday-Thursday afternoon pre-open move to 16:45 CT effective 2010-11-15 that does not enumerate this family — read again for #283 on 2026-10-04 (UTC); see `globex_grains.md` for why it keys no grain row.
 - <https://www.cftc.gov/stellent/groups/public/%40rulesandproducts/documents/ifdocs/rul120711cbot001.pdf> — CBOT rule filing `rul120711cbot001` as published by the CFTC, the 2011-12-27 revision's source.
 - <https://www.cmegroup.com/tools-information/lookups/advisories/market-data/20120518.html> — CME market-data advisory 20120518, the 2012-05-20 matching expansion.
 - <https://www.cmegroup.com/tools-information/lookups/advisories/market-data/20120904.html> — CME market-data advisory 20120904, the mini-grain divergence.
@@ -813,7 +814,7 @@ Official origin of the trading-hours captures: <http://www.cmegroup.com/trading_
 
 ## Gaps and residual risks
 
-- **order-entry** — the queue and PCP states of the 21-hour 2012-05-20..2013-04-06 regime have no operator-stated onset day. The 2026-08-31 review sourced the states themselves from CME's own trading-hours captures of 2012-05-28 and 2012-06-07 against the pre-expansion 2012-05-11 capture, which brackets the switch to 2012-05-11..2012-05-28; CME market-data advisory 20120518 states only the new matching hours and never the queue times, so no queue revision is keyed to 2012-05-20. Closing condition: a CME document that states those queue times in session language on a day-level effective date. Served identity, so tracked as an issue (LAW-FOLLOW-UPS-ARE-ISSUES).
+- **order-entry** — the queue and PCP states of the 21-hour 2012-05-20..2013-04-06 regime have no operator-stated onset day: the 2026-10-04 convention serves them from the regime's own dated start and the eight-day onset bracket is the disclosed residual, recorded with the full search record in `globex_grains.md` (#259, closed as a served intersection). The pre-regime queue set — the PCP start and the weekday evening Pre-Open, bracketed 2010-04-19..2012-05-11 by the operator's own trading-hours capture — is resolved the same way: the span serves the sourced intersection (PCP 14:30-16:00 CT, no weekday evening Pre-Open) and the disputed remainders are the residual `globex_grains.md` records, with the CME desk ask as the named closer (#283, closed as a served intersection 2026-10-04). The pre-regime residual's brackets tighten to 2010-04-19..2011-09-27 (evening Pre-Open) and 2010-04-19..2012-05-05 (the PCP hour) under the further commodities-hours captures of those dates, without dating either changeover.
 - **residual risk** — the baseline queue and PCP phases rest on the operator's March-2010 market-state table, which states them as then-live rather than dating them, so they are carried back from 2010-03-15 to the January-2010 floor.
 - **scope** — mini-sized Corn, Soybean, Wheat and KC HRW Wheat diverged on 2012-09-16 and are owned by `mini_grains.rs`; Rough Rice borrows the pre-2018 eras but owns its own timeline in `rough_rice.rs`.
 - **holidays** — this venue ships the intersection of the families that route to
@@ -836,11 +837,19 @@ here. Nothing in this file may be changed on Rough Rice evidence.
 At the January-2010 audit floor, matching ran 18:00-07:15 around the
 09:30-13:15 RTH. The operator's March-2010 market-state table supplies the
 then-live 16:15-18:00 Sunday, 07:15-09:30 weekday, and 14:30-16:00 PCP
-phases. On 2010-04-19 PCP expanded to 13:15:30-16:00. The CFTC filing makes
-the weekday morning queue's move to 08:00 effective Tuesday 2011-12-27.
-A later generic Globex notice broadly names CBOT in an afternoon queue
-change, but it does not enumerate this family and conflicts with the complete
-family-specific state table. No separate evening queue is inferred from it.
+phases. On 2010-04-19 PCP expanded to 13:15:30-16:00 (Globex notice 20100405);
+the operator's 2012-05-11 trading-hours capture prints the PCP back at
+14:30-16:00 with a 16:45 weekday evening Pre-Open, and no dated artifact
+states the changeover, so the pre-regime span serves the sourced intersection
+— PCP 14:30-16:00, no weekday evening queue — and the disputed remainders are
+the residual `globex_grains.md` records (#283, 2026-10-04 convention). The
+CFTC filing makes the weekday morning queue's move to 08:00 effective Tuesday
+2011-12-27. The one dated statement touching a Monday-Thursday evening
+pre-open in the span — the generic notice of 2010-10-18/2010-10-25, moving it
+to 16:45 CT from 2010-11-15 for "CME, CBOT, KCBT and MGEX products" — names
+no family and presupposes a 16:50 pre-open the March-2010 grain enumeration
+does not print, so it keys no grain row; the full search record is in
+`globex_grains.md`.
 https://www.cmegroup.com/media-room/press-releases/2009/6/05/cme_group_announcesadditionalagricultureethanolelectronictrading.html
 https://www.cmegroup.com/tools-information/lookups/advisories/electronic-trading/20100315.html
 https://www.cmegroup.com/tools-information/lookups/advisories/market-data/Q2010-62.html
@@ -893,9 +902,9 @@ the afternoon PCP are `order_entry`; the electronic session and the
 post-2012 afternoon matching slice stay `extended`.
 
 Revision evidence — each row's day-level effective date and the primary
-source that states it (full quotations sit in the blocks above):
-  2010-04-19 "CME Globex notice 20100405"
-    https://www.cmegroup.com/tools-information/lookups/advisories/electronic-trading/20100405.html
+source that states it (full quotations sit in the blocks above). The
+2010-04-19 PCP expansion carries no row: the pre-regime span serves the
+sourced intersection and nothing observable changes that day (#283).
   2011-12-27 "CFTC filing rul120711cbot001"
     https://www.cftc.gov/stellent/groups/public/%40rulesandproducts/documents/ifdocs/rul120711cbot001.pdf
   2012-05-20 "CME market-data advisory 20120518"

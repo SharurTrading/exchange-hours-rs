@@ -15,6 +15,16 @@
 //! `schedule_documentation` fence spanned the sentences, so the drift class
 //! was catchable only by hand.
 //!
+//! The other globex family whose file states these aggregates,
+//! `globex_nikkei_225_dollar`, writes them in sentence shapes of its own
+//! (issue #279): the whole-table sentence appears once, in the 2011-2015
+//! section the 2010 floor-era share rides, with its tier and `Unsourced`
+//! claims inline, the 2019-2021 share keeps the four families' shape, and the
+//! 2022-2024 section states its share as a spelled `Unsourced` count broken
+//! down by year.
+//! `the_nikkei_aggregate_sentences_derive_from_the_shipped_tables` below
+//! derives and pins them the same way.
+//!
 //! This is the #227/#230 pattern applied to the family files: the shipped
 //! tables are re-derived through the **public** identity-backed surface — the
 //! same walk `coverage_inventory.rs` derives its cells from — and the prose is
@@ -34,8 +44,10 @@ use super::number_words;
 
 /// The four CME families whose evidence files state whole-table aggregates.
 ///
-/// A fifth globex family whose file grows the same sentences fails the fences
-/// below until it is named here deliberately.
+/// `globex_nikkei_225_dollar` states the same kind of aggregates in its own
+/// sentence shapes and is fenced by the nikkei test below; a further globex
+/// family whose file grows either shape fails whichever fence it outgrows
+/// until it is named deliberately.
 const FAMILIES: [&str; 4] = [
     "globex_equity_index",
     "globex_fx",
@@ -49,6 +61,9 @@ fn evidence_file(family: &str) -> &'static str {
         "globex_equity_index" => include_str!("../../docs/evidence/globex_equity_index.md"),
         "globex_fx" => include_str!("../../docs/evidence/globex_fx.md"),
         "globex_grains" => include_str!("../../docs/evidence/globex_grains.md"),
+        "globex_nikkei_225_dollar" => {
+            include_str!("../../docs/evidence/globex_nikkei_225_dollar.md")
+        }
         _ => include_str!("../../docs/evidence/globex_interest_rates.md"),
     }
 }
@@ -359,6 +374,200 @@ fn the_whole_table_sentences_derive_from_the_shipped_tables() {
                      windows derive"
                 );
             }
+        }
+    }
+}
+
+/// Capitalizes a spelled count the way a paragraph's opening bold states it.
+fn capitalized(word: &str) -> String {
+    let mut chars = word.chars();
+    match chars.next() {
+        Some(first) => first.to_uppercase().collect::<String>() + chars.as_str(),
+        None => String::new(),
+    }
+}
+
+/// The `Unsourced` trade dates one calendar year ships, walked from the
+/// shipped table.
+fn unsourced_dates(calendar: ExchangeCalendar, year: i32) -> Vec<NaiveDate> {
+    let mut dates = Vec::new();
+    let mut date = NaiveDate::from_ymd_opt(year, 1, 1).expect("January 1st is a valid date");
+    let last = NaiveDate::from_ymd_opt(year, 12, 31).expect("December 31st is a valid date");
+    while date <= last {
+        if calendar
+            .holiday_on(date)
+            .is_some_and(|holiday| holiday.kind() == HolidayKind::Unsourced)
+        {
+            dates.push(date);
+        }
+        date = date.succ_opt().expect("the year walk stays bounded");
+    }
+    dates
+}
+
+/// The `globex_nikkei_225_dollar` aggregates are prose is data too (issue
+/// #279): the file restates the shipped table's whole row total, window count
+/// and list, and per-era kind shares, in sentence shapes of its own. The
+/// whole-table sentence appears once, in the 2011-2015 section the 2010
+/// floor-era share rides, and continues `of which the 2011-2015 share is`
+/// with its tier and `Unsourced` claims inline where the four families write
+/// `and this era's share is` and `Every row is at T1`; the 2019-2021 section's
+/// share uses that four-family shape; the 2022-2024 section states its share
+/// as a spelled `Unsourced` count broken down by year. Each sentence is pinned
+/// by a fragment built from the derivation, so a row that lands anywhere in
+/// the table fails the sentences it aggregates until they are restated, and a
+/// new era section fails the panic below until its shape is named here. The
+/// 2025-2027 era states no whole-table aggregate today; a section that grows
+/// one fails the same way.
+#[test]
+fn the_nikkei_aggregate_sentences_derive_from_the_shipped_tables() {
+    let family = "globex_nikkei_225_dollar";
+    let calendar = calendar_for(family);
+    let coverage = calendar
+        .holiday_coverage()
+        .expect("a served family ships a holiday table");
+    let window_list = coverage
+        .windows()
+        .iter()
+        .map(|(first, last)| format!("{first}..{last}"))
+        .collect::<Vec<_>>()
+        .join(", ");
+    let total: usize = coverage
+        .windows()
+        .iter()
+        .map(|(start, end)| window_counts(calendar, *start, *end).rows)
+        .sum();
+
+    // The 2011-2015 share spans the first two windows, so it is walked over
+    // its years rather than looked up as one declared window; the 2010
+    // floor-era share rides the same section, and the sentence decomposes it
+    // into the 2010-01-01 venue-wide closure plus the post-changeover rows.
+    let share_2011_2015 = window_counts(
+        calendar,
+        NaiveDate::from_ymd_opt(2011, 1, 1).expect("January 1st is a valid date"),
+        NaiveDate::from_ymd_opt(2015, 12, 31).expect("December 31st is a valid date"),
+    );
+    assert_eq!(
+        share_2011_2015.unsourced, 0,
+        "{family}: the 2011-2015 sentence claims none `Unsourced`"
+    );
+    assert_eq!(
+        share_2011_2015.t1, share_2011_2015.rows,
+        "{family}: the 2011-2015 sentence claims every one at T1"
+    );
+    let floor_day = NaiveDate::from_ymd_opt(2010, 1, 1).expect("the floor is a valid date");
+    let era_2010 = window_counts(
+        calendar,
+        floor_day,
+        NaiveDate::from_ymd_opt(2010, 12, 31).expect("December 31st is a valid date"),
+    );
+    assert!(
+        calendar
+            .holiday_on(floor_day)
+            .is_some_and(|holiday| holiday.kind() == HolidayKind::Closed),
+        "{family}: the 2010 share's parenthetical names the 2010-01-01 venue-wide closure"
+    );
+    let post_changeover = era_2010.rows - 1;
+    let whole_table_sentence = format!(
+        "The table as a whole carries {total} rows over {} windows \u{2014} {window_list} \
+         \u{2014} of which the 2011-2015 share is **{} rows**: {} closures, {} early closes \
+         and {} late opens, every one at T1, none `Unsourced`; the 2010 share is the {} rows \
+         of the era blocks above (the 2010-01-01 venue-wide closure on the modelled old \
+         grid, plus the {} post-changeover rows).",
+        coverage.windows().len(),
+        share_2011_2015.rows,
+        share_2011_2015.closed,
+        share_2011_2015.early,
+        share_2011_2015.late,
+        number_words(era_2010.rows),
+        number_words(post_changeover),
+    );
+    let file = flowed(evidence_file(family));
+    assert_eq!(
+        file.matches(&whole_table_sentence).count(),
+        1,
+        "{family}: the whole-table sentence must state the shipped table's derivation \
+         exactly once: {whole_table_sentence:?}"
+    );
+
+    let file_sections = sections(evidence_file(family));
+    let gap_sections: Vec<&Section> = file_sections
+        .iter()
+        .filter(|section| section.heading.starts_with("Gaps and residual risks"))
+        .collect();
+    assert_eq!(
+        gap_sections.len(),
+        3,
+        "{family}: three era sections carry the aggregate sentence shapes"
+    );
+    for section in &gap_sections {
+        let years = era_years(&section.heading)
+            .unwrap_or_else(|| panic!("{family}: the gap section heading names no era"));
+        let flowed_body = flowed(&section.body);
+        match years {
+            // The floor-era special: the 2010 share rides this section, whose
+            // whole-table sentence the derivation above pins.
+            (2011, 2015) => assert!(
+                flowed_body.contains(&whole_table_sentence),
+                "{family}: the 2011-2015 section must carry the whole-table sentence the \
+                 shipped tables derive: {whole_table_sentence:?}"
+            ),
+            (2019, 2021) => {
+                let (first, last) = era_window(family, &coverage, years);
+                let counts = window_counts(calendar, first, last);
+                assert_eq!(
+                    counts.t1, counts.rows,
+                    "{family}: the 2019-2021 sentence claims every row is at T1"
+                );
+                let expected = format!(
+                    "and this era's share is **{} rows**: {} full closures, {} early closes \
+                     and {} `Unsourced` rows. Every row is at T1.",
+                    counts.rows, counts.closed, counts.early, counts.unsourced
+                );
+                assert!(
+                    flowed_body.contains(&expected),
+                    "{family}: the 2019-2021 share must restate the shipped table's \
+                     derivation ({first}..{last}): {expected:?}"
+                );
+            }
+            (2022, 2024) => {
+                let (first, last) = era_window(family, &coverage, years);
+                let counts = window_counts(calendar, first, last);
+                let dates_2022 = unsourced_dates(calendar, 2022);
+                let unsourced_2022 = match dates_2022.as_slice() {
+                    [only] => only.to_string(),
+                    _ => panic!(
+                        "{family}: the 2022-2024 paragraph names one 2022 date and the \
+                         shipped table ships {}",
+                        dates_2022.len()
+                    ),
+                };
+                let unsourced_2023 = unsourced_dates(calendar, 2023).len();
+                let unsourced_2024 = unsourced_dates(calendar, 2024).len();
+                assert_eq!(
+                    counts.unsourced,
+                    dates_2022.len() + unsourced_2023 + unsourced_2024,
+                    "{family}: the 2022-2024 paragraph's year split must cover the window's \
+                     `Unsourced` rows"
+                );
+                let expected = format!(
+                    "**{} `Unsourced` rows: {unsourced_2022}, the {} 2023 dates and {} 2024 \
+                     dates.**",
+                    capitalized(&number_words(counts.unsourced)),
+                    number_words(unsourced_2023),
+                    number_words(unsourced_2024),
+                );
+                assert!(
+                    flowed_body.contains(&expected),
+                    "{family}: the 2022-2024 `Unsourced` share must restate the shipped \
+                     table's derivation ({first}..{last}): {expected:?}"
+                );
+            }
+            _ => panic!(
+                "{family}: the {}-{} era section carries no derived share shape; name it in \
+                 the_nikkei_aggregate_sentences_derive_from_the_shipped_tables deliberately",
+                years.0, years.1
+            ),
         }
     }
 }

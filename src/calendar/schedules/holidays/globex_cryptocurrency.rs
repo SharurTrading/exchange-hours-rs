@@ -52,9 +52,10 @@
 //! the operator's trading-hours page calls to render its per-asset-class holiday
 //! table, read as bytes and saved. It states seventeen merged trade dates as
 //! `ReplacementBlocks` rows — the nine five-day-era dates and the eight 24/7-era
-//! ones — and one six-block day-after-Thanksgiving row. What stays open is the
-//! five-day era's undated Pre-Open onset (#123). The quotations, capture times,
-//! the event-date-to-trade-date conversion and that gap are in
+//! ones — and one six-block day-after-Thanksgiving row. The five-day era's
+//! undated Pre-Open onset is a disclosed residual (#123, retired 2026-10-04),
+//! not a declaration. The quotations, capture times,
+//! the event-date-to-trade-date conversion and that residual are in
 //! `docs/evidence/globex_cryptocurrency.md`.
 
 use super::fences::early_close;

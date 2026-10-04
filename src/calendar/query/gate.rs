@@ -163,8 +163,9 @@ pub(in crate::calendar) trait SourceGate: Copy {
     /// arm stays because the reason remains the vocabulary a future labelling
     /// divergence would declare.) A pass-through reason refuses nothing. A
     /// refusing
-    /// reason refuses the scan: the #79 quarter-hour refuses the bracket-era
-    /// Sundays whose Pre-Open resolves, and answers the Tuesday beside one —
+    /// reason refuses the scan: the #79 quarter-hour refused the bracket-era
+    /// Sundays whose Pre-Open resolved, and answered the Tuesday beside one,
+    /// until the charter's 2026-10-04 residual convention retired it —
     /// refusing a Tuesday for a Sunday queue is precisely the
     /// coverage-error-read-as-closure failure LAW-COVERAGE exists to prevent.
     /// An unrecognized reason refuses, which is the conservative direction: a

@@ -881,9 +881,11 @@ fn the_post_close_queue_carries_the_trade_date_of_the_session_it_feeds() {
         );
     }
 
-    // What is left after the retirement is exactly the omitted
-    // 2012-05-20..2013-04-06 regime — the label declaration is gone, and with
-    // it the last incompleteness this family declared.
+    // What is left after the two retirements is nothing declared at all: the
+    // label declaration went with the 2026-10-03 convention, and the omitted
+    // 2012-05-20..2013-04-06 regime's queues now ship from the regime's own
+    // dated start under the 2026-10-04 convention, with the eight-day onset
+    // bracket disclosed as the residual the evidence file records.
     let declared: Vec<_> = calendar
         .coverage()
         .phase_gaps()
@@ -892,9 +894,9 @@ fn the_post_close_queue_carries_the_trade_date_of_the_session_it_feeds() {
         .collect();
     assert_eq!(
         declared,
-        vec![(CoverageGapReason::NormalWeekPhaseWithheld, "#259")],
-        "globex_grains declares only the omitted regime; the post-close label is the charter's \
-         convention, pinned by this fence"
+        Vec::<(CoverageGapReason, &str)>::new(),
+        "globex_grains declares nothing: the label and regime declarations retired with the \
+         2026-10-03 and 2026-10-04 conventions, pinned by this fence"
     );
 }
 

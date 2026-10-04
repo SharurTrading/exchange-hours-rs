@@ -38,39 +38,41 @@
 //! gap is not date-shaped: the operator publishes an arrangement no shipped row
 //! states exactly. `schedules/sourcing.rs` declares those
 //! per identity, and this module reports them as
-//! [`CoverageGapReason::NormalWeekPhaseWithheld`] (#79),
+//! [`CoverageGapReason::UnpublishedClosureDates`] (#157) today, with
 //! [`CoverageGapReason::SpecialSessionUnrepresentable`] (#93),
 //! [`CoverageGapReason::PostCloseQueueTradeDateLabel`] (#152) and
-//! [`CoverageGapReason::UnpublishedClosureDates`] (#157).
+//! [`CoverageGapReason::NormalWeekPhaseWithheld`] (#79, #123, #259) as the
+//! three shapes the shipped scopes have retired.
 //!
-//! Of the reasons a shipped scope still declares, one withholds something and
-//! one does not. A **phase-level** declaration withholds a phase's own answer,
-//! and a query whose answer is that phase is refused.
-//! [`CoverageGapReason::NormalWeekPhaseWithheld`] is that shape (#79, #123).
+//! One declaration stands, and it withholds nothing.
 //! [`CoverageGapReason::UnpublishedClosureDates`]
 //! withholds no phase — it states that the operator names closures it has not
 //! dated — so it is a completeness fact alone and the phase's own queries answer
-//! through it. [`CoverageGapReason::PostCloseQueueTradeDateLabel`] and
-//! [`CoverageGapReason::SpecialSessionUnrepresentable`] are the two shapes the
-//! shipped scopes have retired — the first when the charter's Post-Close
-//! trade-date convention resolved the label divergence (2026-10-03, #152), the
-//! second when every scope's merged trade dates shipped as rows — and both stay
-//! on the enum as the vocabulary a future gap of the same shape would declare,
-//! which is also why the pass-through gate arms below remain.
+//! through it. The three retired shapes each withheld something once: a
+//! phase's own answer
+//! ([`CoverageGapReason::NormalWeekPhaseWithheld`], whose declaration a query
+//! whose answer was that phase could not answer through), a session no row
+//! stated, and a trade-date label. They retired in the order their resolutions
+//! arrived — the special sessions when every scope's merged trade dates
+//! shipped as rows, the label when the charter's Post-Close trade-date
+//! convention resolved the divergence (2026-10-03, #152), and the phase-level
+//! shape when the charter's sourced-intersection residual convention resolved
+//! #79, #123 and #259 (2026-10-04): a phase whose endpoints are sourced at two
+//! values with only the changeover day undated, and whose dated-artifact hunts
+//! have closed negative, is served as the sourced intersection with the
+//! disputed remainder disclosed as a residual in the owner's evidence file,
+//! never refused as a declaration. All three stay on the enum as the
+//! vocabulary a future gap of the same shape would declare, which is also why
+//! the pass-through gate arms below remain.
 //!
 //! A declared gap applies to the dates its own declaration names, not to the
 //! whole supported domain. Three bounds narrow it: a **start bound**
 //! ([`PhaseGap::since`], the first venue-local date the withholding is live —
 //! the era the gap is a property of, never an inferred cutover), an **end
 //! bound** ([`PhaseGap::until`], the first date the profile serves the withheld
-//! arrangement — for the seven scopes withholding CME's Sunday 16:00-16:15 CT
-//! quarter-hour, the 2026-08-22 knowledge-bound row that widens the queue to
-//! 16:00-17:00 CT), and a **shape** ([`PhaseGapShape`]) — `EveryDay`, or an
+//! arrangement), and a **shape** ([`PhaseGapShape`]) — `EveryDay`, or an
 //! order-entry window whose occurrence on the identity's own calendar decides
-//! the individual dates. The #79 quarter-hour withholds one phase on one
-//! weekday, so its declaration names the served Sunday Pre-Open window: the gap
-//! applies exactly where that occurrence resolves, and a Tuesday or a
-//! holiday-removed Sunday in the same era answers from the tables. Where a
+//! the individual dates. Where a
 //! declaration is bounded or shaped, every verdict here follows it: the dates
 //! it names keep the phase-level reason, and all others fall through to the
 //! ordinary date-level facts — so [`CalendarCoverage::coverage_on`],
@@ -79,7 +81,11 @@
 //! declaration (no bounds, `EveryDay`) leaves an identity incomplete wherever
 //! its ordinary facts would otherwise answer, as does shipping no holiday table
 //! at all — most identities do, though the three whose own definition observes
-//! no holidays are complete without one.
+//! no holidays are complete without one. The #172 date-scoping this paragraph
+//! describes was exercised by the three declarations the 2026-10-04
+//! convention retired: the #79 quarter-hour was shaped to the served Sunday
+//! Pre-Open window, and the retirement moved those Sundays to the ordinary
+//! date-level facts their neighbours already answered from.
 //!
 //! Nothing here changes an existing query's signature. Inspectable metadata is
 //! not permission to return a fabricated schedule: a date this module reports as
@@ -247,38 +253,34 @@ pub enum CoverageGapReason {
     /// The calendar detached its built-in holiday table with
     /// [`without_holidays`](crate::ExchangeCalendar::without_holidays).
     NormalWeekOnly,
-    /// **Declared phase-level.** The identity's sourced normal week contains a
-    /// required phase the calendar withholds, so no date its declaration covers
-    /// is answered from a complete normal week.
+    /// **Declared phase-level — retired as a declaration, kept as vocabulary.**
+    /// The identity's sourced normal week contains a required phase the calendar
+    /// withholds, so no date its declaration covers is answered from a complete
+    /// normal week.
     ///
     /// The shape is a slice of one phase's boundary: the operator publishes the
     /// phase, the crate's scalar rules serve only the part of it that holds under
     /// every sourced state, and the remainder depends on a change this crate
-    /// cannot date (LAW-NO-FABRICATED-DATES). Seven **served** scopes are the
-    /// declared case for the same quarter-hour — CME's Sunday 16:00-16:15 CT
-    /// queue, withheld in favour of the 16:15-17:00 CT intersection the crate
-    /// carries from its 2010 floor (#79) — and the owners' evidence files record
-    /// the undated 2012 move it depends on: `cme`, `comex`, `nymex`,
-    /// `globex_energy`, `globex_equity_index`, `globex_fx` and
-    /// `globex_interest_rates`. Four **dormant** identities show the same shape
-    /// and declare nothing, their gaps recorded in their own evidence files
-    /// instead: `globex_weather`, `globex_gold_tas`, `globex_silver_tas` and
-    /// `globex_copper_tas`. Dormant coverage does not block release, and their
-    /// eras differ — `globex_weather`'s knowledge-bound row is 2026-09-05, not
-    /// 2026-08-22 — so the shared bound below is not theirs to reuse. Each
-    /// declaration is **bounded to the dated era before each module's own
-    /// knowledge-bound 2026-08-22 row**, which widens the queue to 16:00-17:00 CT
-    /// and therefore serves the quarter-hour from that day on, and **shaped to
-    /// the served Sunday Pre-Open** — the 16:15-17:00 CT window the dated eras
-    /// carry — because the withholding is live only on the Sundays whose queue
-    /// resolves: a Tuesday in the same era, and a Sunday whose evening leg a
-    /// holiday removes, answer from the tables. Before the 2012-05-28 capture the
-    /// sourced state still printed 16:15 CT, so the span starts there and no
-    /// earlier Sunday refuses.
-    /// `globex_cryptocurrency` carries a second instance of the shape, its
-    /// five-day era's undated Pre-Open onset, bounded to that era
-    /// (2017-12-17..2026-05-28) with no shape: the era's queue rows are omitted
-    /// outright, so every date of the era refuses.
+    /// cannot date (LAW-NO-FABRICATED-DATES). Three declarations of this shape
+    /// stood while no dated artifact existed: seven **served** scopes withheld
+    /// CME's Sunday 16:00-16:15 CT queue in favour of the 16:15-17:00 CT
+    /// intersection carried from the 2010 floor (#79), `globex_cryptocurrency`
+    /// withheld its five-day era's undated Pre-Open onset (#123), and
+    /// `globex_grains` withheld the 2012-05-20..2013-04-06 regime whose queue
+    /// states its captures print (#259). The charter's sourced-intersection
+    /// residual convention retired all three on 2026-10-04 (AGENTS.md,
+    /// "Modeling conventions", the 2026-10-04 decision): each was a phase whose
+    /// endpoints were sourced at two values with only the changeover day
+    /// undated, and every dated-artifact hunt had closed negative, so the dates
+    /// now answer from the served intersection — from the regime's own dated
+    /// start for #259, whose queue rows ship in `grains.rs` — while the disputed
+    /// remainders are disclosed as residuals in the owners' evidence files, each
+    /// with a named closer. No scope declares this reason any more, but the
+    /// variant stays: it is the vocabulary a future required-phase gap would
+    /// declare — one whose hunts have not closed negative, whose span no sourced
+    /// state pins, or whose served answer would be wrong under a sourced state —
+    /// and the refusing gate arms in this module and `query::gate` keep treating
+    /// it as a reason that withholds a phase.
     ///
     /// Because the withheld slice lies inside a phase on a recurring grid rather
     /// than on one trade date, this is not [`Self::WithheldDate`]: it is not a
@@ -305,12 +307,11 @@ pub enum CoverageGapReason {
     /// the name it has always had, because renaming it would break a consumer
     /// that matches on it.
     ///
-    /// `globex_cryptocurrency` is the remaining shipped case: its 24/7-era
-    /// sessions and merged trade dates are unstated. `globex_fx` carried this
-    /// reason until its rows landed — the operator rows and their evidence in
-    /// Stage 4 (#116), the merged trade dates in Stage 5 — after which every
-    /// session CME publishes for that family is stated and it declares only the
-    /// `#79` quarter-hour.
+    /// `globex_cryptocurrency` was the last shipped case: its 24/7-era merged
+    /// trade dates shipped as rows on 2026-09-26 UTC, and no scope has declared
+    /// the reason since. `globex_fx` carried it until its rows landed — the
+    /// operator rows and their evidence in Stage 4 (#116), the merged trade
+    /// dates in Stage 5.
     SpecialSessionUnrepresentable,
     /// **Declared phase-level — retired as a declaration, kept as vocabulary.**
     /// The operator prints a trade date on its post-close order-entry queue
@@ -412,9 +413,9 @@ pub enum CoverageGapReason {
 /// order-entry window narrows it to the dates whose own calendar resolves an
 /// order-entry occurrence of exactly that window — the truthful granularity for
 /// a gap that withholds one phase on one weekday (#79's Sunday Pre-Open
-/// quarter-hour) or, while it stood, on the dates that carried one queue (#152's
-/// post-close trade-date label, retired 2026-10-03), where the rest of the
-/// span's dates are fully answered by the tables.
+/// quarter-hour and #152's post-close trade-date label were the two shaped
+/// declarations before their 2026-10-03 and 2026-10-04 retirements), where the
+/// rest of the span's dates are fully answered by the tables.
 ///
 /// A shape is evaluated against the identity's own built-in layers only — its
 /// profile timeline, its holiday table, never a caller's overlay — because the
@@ -478,10 +479,11 @@ pub enum PhaseGapShape {
 /// withheld arrangement — the day a knowledge-bound revision row the module
 /// already ships begins (LAW-NO-FABRICATED-DATES: the bound restates a row,
 /// never an inference). A declaration is **shaped** when the withholding is
-/// live only on the dates a served occurrence decides ([`PhaseGapShape`]):
-/// #79's quarter-hour on the Sundays whose Pre-Open resolves — as was #152's
-/// label, before the charter retired it, on the dates that carried the
-/// post-close queue. Span and shape compose, so a
+/// live only on the dates a served occurrence decides ([`PhaseGapShape`]) —
+/// as #152's label was, before the charter retired it, on the dates that
+/// carried the post-close queue, and as #79's quarter-hour was on the Sundays
+/// whose Pre-Open resolved, until the 2026-10-04 convention retired that too.
+/// Span and shape compose, so a
 /// declaration names exactly the dates its evidence cannot answer and the
 /// identity's metadata answers every other date beside it.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -489,8 +491,8 @@ pub struct PhaseGap {
     /// Which phase-level gap the identity carries.
     reason: CoverageGapReason,
     /// The issue whose closure would discharge it, as the declaration in
-    /// `schedules/sourcing.rs` and the coverage inventory write it (`#79`,
-    /// `#93`, `#123`).
+    /// `schedules/sourcing.rs` and the coverage inventory write it (`#93`,
+    /// `#157`).
     closing_condition: &'static str,
     /// The first venue-local date on which the gap applies, or `None` when it
     /// applies from the support floor.
@@ -634,7 +636,8 @@ impl PhaseGap {
 /// one of the identity's declared gaps over one maximal span the declaration
 /// answers for: a bounded `EveryDay` declaration reports its era as one span, a
 /// date-scoped declaration reports one span per run its shape resolves — #79's
-/// quarter-hour comes back as the bracket-era Sundays, one record each — and a
+/// quarter-hour came back as the bracket-era Sundays, one record each, until
+/// its 2026-10-04 retirement — and a
 /// whole-domain declaration spans everything no earlier declaration took.
 /// [`CalendarCoverage::phase_gaps`] is the declaration list itself.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -960,9 +963,11 @@ impl CalendarCoverage {
     /// Returns whether any declaration whose span contains `date` withholds a
     /// phase **without** keying the withholding to a served occurrence — an
     /// `EveryDay` declaration whose reason refuses. An omitted-queue era
-    /// (#123's five-day grid) leaves no rule for a scan to match, so every
-    /// order-entry query inside it consults the question the crate cannot
-    /// answer and the scan gate has to fire whether or not a rule exists.
+    /// leaves no rule for a scan to match — #123's five-day grid was the
+    /// shipped case until its 2026-10-04 retirement — so every
+    /// order-entry query inside such an era consults the question the crate
+    /// cannot answer and the scan gate has to fire whether or not a rule
+    /// exists.
     pub(in crate::calendar) fn has_unscoped_refusing_phase_gap_on(self, date: NaiveDate) -> bool {
         self.phase_gaps.iter().copied().any(|gap| {
             gap.applies_on(date)
@@ -1096,8 +1101,9 @@ impl CalendarCoverage {
     /// last one may be open-ended. Every span whose reason is a declared
     /// **phase-level** gap carries that declaration
     /// ([`CoverageGap::phase_gap`]), and a shaped declaration reports one span
-    /// per maximal run its shape resolves — #79's quarter-hour is reported as
-    /// the bracket-era Sundays one day at a time, because the dates between them
+    /// per maximal run its shape resolves — #79's quarter-hour was reported as
+    /// the bracket-era Sundays one day at a time until its 2026-10-04
+    /// retirement, because the dates between them
     /// answer. A whole-domain declaration that another declaration shadows on
     /// every date has no record, because no date has it as its answer; read
     /// [`Self::phase_gaps`] for the whole declaration list. The record's reason

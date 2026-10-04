@@ -9,13 +9,13 @@
 
 ## Ledger basis (moved from docs/schedules/verification.md on 2026-09-12 UTC)
 
-**Gap: order-entry** — the trading session is sourced; what is undated is a queue or post-close phase in which no trade can print. Compatibility default for standard-size CBOT grain/oilseed futures. Current matching, morning Pre-Open, and PCP envelopes are primary-supported, and every exact matching/RTH revision is dated. The 2013-03-22 operator notice dates the Sunday 16:00-19:00 and Monday-Thursday 16:45-19:00 queues and the 14:30-16:00 PCP to 2013-04-07; only the 21-hour 2012-05-20..2013-04-06 regime's queue states remain undocumented. Mini grains are excluded.
+**Gap: order-entry** — the trading session is sourced; what is undated is a queue or post-close phase in which no trade can print. Compatibility default for standard-size CBOT grain/oilseed futures. Current matching, morning Pre-Open, and PCP envelopes are primary-supported, and every exact matching/RTH revision is dated. The 2013-03-22 operator notice dates the Sunday 16:00-19:00 and Monday-Thursday 16:45-19:00 queues and the 14:30-16:00 PCP to 2013-04-07, and the 21-hour 2012-05-20..2013-04-06 regime's queues are served from the regime's own dated start under the 2026-10-04 convention (see globex_grains.md for the residual). Mini grains are excluded.
 
 ## Revision rows
 
 - 2010-04-19 — T1 — CME Globex notice 20100405 — the afternoon PCP expands to 13:15:30–16:00 CT.
 - 2011-12-27 — T1 — CFTC filing rul120711cbot001 — the weekday morning queue moves to 08:00 CT.
-- 2012-05-20 — T1 — CME market-data advisory 20120518 — matching expands to 17:00–14:00 CT.
+- 2012-05-20 — T1 — CME market-data advisory 20120518; trading-hours captures 20120528/20120607 — matching expands to 17:00–14:00 CT, and the regime's queues are served from this dated start: Sunday Pre-Open 16:00-17:00, weekday PCP 14:30-16:00 and Monday-Thursday evening Pre-Open 16:45-17:00 CT (the advisory is T1 for the matching hours, the captures T2 for the queue states; the 2026-10-04 convention keys them here, and the onset bracket is the residual in globex_grains.md).
 - 2013-04-07 — T1 — CME SER-6617 and GCC notice 2013-03-22 — 19:00–07:45 CT electronic session around an 08:30–13:15 CT day session, with the full queue set.
 - 2013-08-18 — T1 — CME market-data advisory 20130812 — the morning Pre-Open widens from 08:15 to 08:00 CT.
 - 2015-07-05 — T1 — CME SER-7395R — the day-session close moves to 13:20 CT.

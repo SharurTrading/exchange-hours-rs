@@ -113,6 +113,29 @@ pub(crate) static CBOT_EXTENDED_2012_05_20: &[SessionRule] = &[
         close_ssm: 14 * 3600,
     },
 ];
+// The 21-hour regime's queues, as CME's own trading-hours service printed
+// them twice inside the regime (captures of 2012-05-28 and 2012-06-07):
+// Sunday Pre-Open 16:00-17:00, the weekday 14:30-16:00 PCP, and the
+// Monday-Thursday 16:45-17:00 evening Pre-Open. Keyed to the regime's own
+// dated start under the charter's 2026-10-04 convention; the onset bracket
+// is the residual docs/evidence/globex_grains.md records (#259).
+static CBOT_ORDER_ENTRY_2012_05_20: &[SessionRule] = &[
+    SessionRule {
+        days: SUN_ONLY,
+        open_ssm: 16 * 3600,
+        close_ssm: 17 * 3600,
+    },
+    SessionRule {
+        days: MON_FRI,
+        open_ssm: 14 * 3600 + 30 * 60,
+        close_ssm: 16 * 3600,
+    },
+    SessionRule {
+        days: MON_THU,
+        open_ssm: 16 * 3600 + 45 * 60,
+        close_ssm: 17 * 3600,
+    },
+];
 // Queues from the 2013-03-22 operator notice: the Sunday and Monday-Thursday
 // evening pre-opens that run up to the 19:00 electronic open, the 08:15-08:30
 // morning Pre-Open at go-live, and the 14:30-16:00 PCP. None can match a trade.
@@ -201,8 +224,11 @@ static FROM_2011_12_27: StaticHoursProfile = profile(
     CBOT_EXTENDED_AT_2010_FLOOR,
     CBOT_ORDER_ENTRY_2011_12_27,
 );
-static FROM_2012_05_20: StaticHoursProfile =
-    profile(CBOT_REGULAR_0930_1315, CBOT_EXTENDED_2012_05_20, &[]);
+static FROM_2012_05_20: StaticHoursProfile = profile(
+    CBOT_REGULAR_0930_1315,
+    CBOT_EXTENDED_2012_05_20,
+    CBOT_ORDER_ENTRY_2012_05_20,
+);
 static FROM_2013_04_07: StaticHoursProfile = profile(
     CBOT_REGULAR_0830_1315,
     CBOT_EXTENDED_CURRENT,
@@ -233,14 +259,16 @@ static REVISIONS: &[Revision] = revisions![
         &FROM_2011_12_27,
         "CFTC filing rul120711cbot001"
     ),
-    // 2012-05-20 — T1 — CME market-data advisory 20120518 — matching expands to
-    // 17:00-14:00 CT.
+    // 2012-05-20 — T1 — CME market-data advisory 20120518; trading-hours
+    // captures 20120528/20120607 — matching expands to 17:00-14:00 CT and the
+    // regime's queues ship from this dated start (charter convention,
+    // 2026-10-04; the onset bracket is the evidence file's residual, #259).
     (
         2012,
         5,
         20,
         &FROM_2012_05_20,
-        "CME market-data advisory 20120518"
+        "CME market-data advisory 20120518; trading-hours captures 20120528/20120607"
     ),
     // 2013-04-07 — T1 — CME SER-6617 and GCC notice 2013-03-22 — 19:00-07:45 CT
     // around an 08:30-13:15 CT day session, with the full queue set.

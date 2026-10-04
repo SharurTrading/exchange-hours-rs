@@ -171,6 +171,13 @@ line at all in a panel that enumerates every other country's closures. The same 
 `eurex_fixed_income` table off the German-scope rows — the operator's lines never name fixed
 income — so that dormant key's counts are unchanged. The declaration count stays ten and the
 verdict tally is unchanged: `eurex` remains **incomplete** over 2025-onward on the `tba` era.
+On 2026-10-04 UTC the five 2025 merged trade dates (2025-01-21, 2025-02-18, 2025-05-27,
+2025-06-20, 2025-09-02) shipped as `replacement blocks` rows on the ten-product captures'
+Equity Index line, whose own events print the merged trade dates, closing the #162 witness
+gap: the `globex_nikkei_225_dollar` `floor+ dates` cell moved from 227 to **232**, §4's
+"gap the API cannot state" clause left with it, and no verdict moved — the five dates were
+covered before and after, and the label their evening-before instants carry moved from the
+pre-holiday trade date to the merged date the operator prints.
 
 **Amended 2026-09-28 UTC.** The declared gaps became **date-scoped**
 (#172): `PhaseGap` carries a start bound and a shape beside its end bound, so a declaration
@@ -276,7 +283,7 @@ served `iceus` identity, while `FANG`, `SUGAR`, `COFFEE`, `COCOA`, `ORANGE_JUICE
 | `globex_interest_rates` | [interest_rates.rs](../../src/calendar/schedules/futures/us/interest_rates.rs) | 2010-11-15 … 2026-08-22 (3 rows) | 2010-01-01 | 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 265 | 4 | the Sunday 16:00-16:15 CT quarter-hour, withheld on the bracket-era Sundays 2012-05-28..2026-08-21 whose served Pre-Open resolves (#79) | **incomplete**: the quarter-hour is withheld on those bracket-era Sundays (#79); every other date answers | #79, #116 |
 | `globex_livestock` | [livestock.rs](../../src/calendar/schedules/futures/us/livestock.rs) | 2014-10-27 … 2020-05-31 (4 rows) | 2010-01-01 | 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 211 | 6 | none in 2025+; six `Unsourced` dates across 2019-2023 — the three Juneteenths (2019, 2020 and 2021) CME published no schedule for and the three 2023 dates the operator published nothing for — with closing conditions in the evidence file; the post-close queue's 14:30-16:00 CT instants are dated by the session they feed per the charter convention (AGENTS.md, "Trade dates and state", 2026-10-03, closing #152), with the T2 feed's per-event labels disclosed in the evidence file and pinned by fence | complete to 2027-12-31 in 2025+, with Post-Close queue instants dated by the session they feed per the charter convention, pinned by fence; **incomplete across 2010-2027**: 6 `Unsourced` dates across 2019-2023 | #116 |
 | `globex_cryptocurrency` | [cryptocurrency.rs](../../src/calendar/schedules/futures/us/cryptocurrency.rs) | 2017-12-17 … 2026-10-25 (13 rows) | — | 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 90 | 6 | the five-day era's Sunday and weekday Pre-Open onset is undated in the normal week, so the declaration withholds the era between its dated first day (2017-12-17, SER-8051R's launch row) and its dated last (the 2026-05-29 bridge row, CME filing 26-114) (#123); its 24/7-era merged trade dates shipped as rows on 2026-09-26 UTC | **incomplete**: the five-day era's Pre-Open onset is undated, so the era between those two sourced days is withheld (#123); the 24/7 era answers | #116, #123 |
-| `globex_nikkei_225_dollar` | [cme_nikkei.rs](../../src/calendar/schedules/futures/us/cme_nikkei.rs) | 2010-01-01 … 2015-09-20 (6 rows) | 2010-01-01 | 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 227 | 20 | none in 2025+; the 2011-2015 span was backfilled 2026-09-29 UTC from the operator's own per-holiday sheets (62 T1 rows), the post-changeover 2010 rows keyed to the notice-dated 2010-04-11 grid start, and the #225 remainder closed 2026-09-30 UTC: the old daytime-anchored grid is modelled from the operator's own equities-hours page (captures 2009-04-06 and 2010-04-02, byte-identical, both DST spellings) with rows at the floor and at the 2010-03-14 DST entry, and the 2010-01-01 venue-wide New Year closure keyed the first window to the floor, so no unaudited interval remains and 20 `Unsourced` dates remain across 2019-2024 | complete to 2027-12-31 in 2025+ and from the 2010-01-01 floor through 2018-12-31; **incomplete across 2019-2027**: 20 `Unsourced` dates across 2019-2024 | #116 |
+| `globex_nikkei_225_dollar` | [cme_nikkei.rs](../../src/calendar/schedules/futures/us/cme_nikkei.rs) | 2010-01-01 … 2015-09-20 (6 rows) | 2010-01-01 | 2010-01-01..2012-12-31, 2013-01-01..2015-12-31, 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31, 2025-01-01..2027-12-31 | 232 | 20 | none in 2025+; the 2011-2015 span was backfilled 2026-09-29 UTC from the operator's own per-holiday sheets (62 T1 rows), the post-changeover 2010 rows keyed to the notice-dated 2010-04-11 grid start, and the #225 remainder closed 2026-09-30 UTC: the old daytime-anchored grid is modelled from the operator's own equities-hours page (captures 2009-04-06 and 2010-04-02, byte-identical, both DST spellings) with rows at the floor and at the 2010-03-14 DST entry, and the 2010-01-01 venue-wide New Year closure keyed the first window to the floor, so no unaudited interval remains and 20 `Unsourced` dates remain across 2019-2024; the five 2025 merged trade dates shipped as rows 2026-10-04 UTC (#162), moving this cell from 227 to 232 | complete to 2027-12-31 in 2025+ and from the 2010-01-01 floor through 2018-12-31; **incomplete across 2019-2027**: 20 `Unsourced` dates across 2019-2024 | #116 |
 
 ## Consumer routing
 
@@ -384,7 +391,7 @@ scope.
 covered future stops 14 days before this inspection (2026-09-21). The interval after 2026-09-07 has
 no answer, and Stage 4 item 2 refreshes it.
 
-### 4. One scope reports complete to 2027-12-31 in 2025+; **incomplete across 2019-2027**: 20 `Unsourced` dates across 2019-2024, and it carries a gap the API cannot state
+### 4. One scope reports complete to 2027-12-31 in 2025+; **incomplete across 2019-2027**: 20 `Unsourced` dates across 2019-2024
 
 `globex_nikkei_225_dollar` is the only scope the coverage API reported complete to that date when
 this section was written: it has
@@ -396,15 +403,21 @@ with nothing withheld and no declared gap — and from 2026-10-03 UTC `globex_gr
 the only scope whose earlier-era incompleteness runs through 2019-2027; its own 2010-2018 span
 answered completely from
 2026-09-30 UTC, when the #225 remainder modelled the old grid from the operator's own
-equities-hours page and keyed the first holiday window to the floor.) It nonetheless carries a
-**witness gap** the API has no representation for: it ships twelve of the seventeen merged trade
-dates and none of the 2025 five (2025-01-21, 2025-02-18, 2025-05-27, 2025-06-20, 2025-09-02),
-because no `NKD`/`NIY` witness exists for those windows and the channel that would carry one returns
-an empty event list for them. Those five dates are not `Unsourced` rows — nothing the operator
-published withholds them — they are dates this crate has not worked up, so the gap is recorded in
-[`docs/evidence/globex_nikkei_225_dollar.md`](../evidence/globex_nikkei_225_dollar.md) with its
-closing condition and tracked as issue #162, and `is_complete_on` cannot yet be taught to refuse
-them. `globex_grains` and `globex_livestock` read **complete** in 2025+ since 2026-10-03 UTC:
+equities-hours page and keyed the first holiday window to the floor.) It carried a
+**witness gap** the API had no representation for until 2026-10-04 UTC: it shipped twelve of
+the seventeen merged trade dates and none of the 2025 five (2025-01-21, 2025-02-18,
+2025-05-27, 2025-06-20, 2025-09-02), because no `NKD`/`NIY` witness exists for those windows
+and the channel that would carry one returns an empty event list for them — so while every
+one of the five answered *covered*, the label each evening-before instant carried was the
+pre-holiday trade date, not the merged date the operator prints. The five now ship as
+`replacement blocks` rows on the ten-product captures the table already cites: the `ES`
+events those responses carry print the merged trade date in their own `tradingDate` field
+from the pre-holiday Sunday (Wednesday, for Juneteenth) evening through the merged day's
+`16:00 closed`, which is the operator's own T2 trade-date witness on both sides of each
+boundary, disclosed as a sibling-product step in the evidence file — no `NKD`-specific bytes
+exist, that residual risk stands, and all seventeen merged trade dates now ship (#162
+closed). The 20 `Unsourced` dates across 2019-2024 are untouched by this and still refuse
+the earlier eras. `globex_grains` and `globex_livestock` read **complete** in 2025+ since 2026-10-03 UTC:
 the charter's Post-Close trade-date convention (AGENTS.md, "Trade dates and state", closing
 #152) dates an order-entry-only queue persisting past the close by the session it feeds — the
 operator's own T1 notice (CME Globex notice 20160530) calls the queue order entry "for the next

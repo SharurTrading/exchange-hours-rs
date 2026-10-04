@@ -2520,71 +2520,124 @@ fn the_2025_thanksgiving_friday_serves_its_0700_pre_open_as_order_entry_only() {
 }
 
 // ---------------------------------------------------------------------------
-// The five 2025 merged trade dates this family cannot witness (issue #162).
+// The five 2025 merged trade dates (issue #162, closed 2026-10-04 UTC).
 // ---------------------------------------------------------------------------
 
 /// `globex_nikkei_225_dollar` models seventeen merged trade dates — the
 /// day-after-holiday dates on which CME assigns the Sunday- or
 /// Wednesday-evening-through-holiday span to the *following* business day — and
-/// ships twelve. The five 2025 dates (2025-01-21, 2025-02-18, 2025-05-27,
-/// 2025-06-20, 2025-09-02) ship no row, and this fence states that as the
-/// **witness gap** it is rather than as an accident.
+/// ships all seventeen. The five 2025 dates (2025-01-21, 2025-02-18,
+/// 2025-05-27, 2025-06-20, 2025-09-02) ship as `replacement blocks` rows read
+/// from the ten-product captures' Equity Index line: no `NKD`/`NIY` event
+/// exists for those windows (the targeted `THBP-B` responses,
+/// `raw/cme-2025-2027-repair/json/edgeB_2025-*.json`, return an empty event
+/// list for both products), but the same responses' `ES` events print the
+/// merged trade date in their own `tradingDate` field from the pre-holiday
+/// Sunday's (Wednesday's, for Juneteenth) evening open through the merged day's
+/// `16:00 closed`.
 ///
-/// The twelve that ship each have their own `NKD`(168)/`NIY`(167) witness bytes.
-/// The five that do not have no Nikkei event anywhere in the research store:
-/// five targeted `THBP-B` captures requested exactly `id=168,167` over exactly
-/// these windows and returned an empty event list for both products
-/// (`raw/cme-2025-2027-repair/json/edgeB_2025-*.json`). Inventing the rows from
-/// the sibling families' line would be a fabricated date, so the gap is recorded
-/// in the evidence file with its closing condition and tracked as issue #162.
+/// The sibling-witness step is disclosed, not passed off: each row cites the
+/// ten-product capture that actually carries it (`CME-SVC-2025-01-19` and
+/// siblings), and the evidence file records both the empties and the
+/// interpretive step. Before 2026-10-04 UTC this fence pinned the opposite —
+/// the five evenings answering the pre-holiday day — because the family then
+/// shipped no merged row for these dates.
 ///
 /// The behavioural consequence is what this fence pins: at 18:00 CT on the
-/// evening before each of the five, the four sibling families answer the
-/// *following* business day while this family still answers the holiday itself.
+/// evening before each of the five, the family answers the merged trade date —
+/// the answer the sibling families already gave — and each merged date carries
+/// a `ReplacementBlocks` row at T2.
 #[test]
-fn the_five_unwitnessed_2025_merged_dates_answer_the_holiday_not_the_next_business_day() {
-    // (evening before, the holiday this family answers, the merged date CME assigns)
-    type Case = (i32, u32, u32, (i32, u32, u32), (i32, u32, u32));
+fn the_five_2025_merged_dates_answer_the_merged_date_on_the_equity_index_witness() {
+    // (evening before, the merged date CME assigns)
+    type Case = (i32, u32, u32, (i32, u32, u32));
     let nikkei = nkd();
-    let unwitnessed: [Case; 5] = [
-        (2025, 1, 19, (2025, 1, 20), (2025, 1, 21)),
-        (2025, 2, 16, (2025, 2, 17), (2025, 2, 18)),
-        (2025, 5, 25, (2025, 5, 26), (2025, 5, 27)),
-        (2025, 6, 18, (2025, 6, 19), (2025, 6, 20)),
-        (2025, 8, 31, (2025, 9, 1), (2025, 9, 2)),
+    let merged: [Case; 5] = [
+        (2025, 1, 19, (2025, 1, 21)),
+        (2025, 2, 16, (2025, 2, 18)),
+        (2025, 5, 25, (2025, 5, 27)),
+        (2025, 6, 18, (2025, 6, 20)),
+        (2025, 8, 31, (2025, 9, 2)),
     ];
-    for (y, m, d, holiday, merged) in unwitnessed {
+    for (y, m, d, (ty, tm, td)) in merged {
         let instant = ct(y, m, d, 18, 0, 0);
-        // The family still keys the evening leg to the holiday, because it ships
-        // no merged row for the following business day.
+        // The evening leg carries the merged date, as the operator's own feed
+        // labels every event of the span.
         assert_eq!(
             nikkei
                 .trade_date(instant)
                 .expect("the coverage contract must answer a covered date"),
-            Some(day(holiday.0, holiday.1, holiday.2)),
-            "{y}-{m:02}-{d:02} 18:00 CT must still carry the holiday for this family"
+            Some(day(ty, tm, td)),
+            "{y}-{m:02}-{d:02} 18:00 CT must carry the merged trade date"
         );
-        // And it ships no row at all for the merged date.
-        assert_eq!(
-            nikkei
-                .holiday_on(day(merged.0, merged.1, merged.2))
-                .map(exchange_hours::Holiday::kind),
-            None,
-            "{}-{:02}-{:02} must ship no row: the gap is a witness gap, not a modelled date",
-            merged.0,
-            merged.1,
-            merged.2
+        // The merged date ships a replacement-blocks row at T2, citing the
+        // ten-product capture that witnessed it.
+        let row = nikkei
+            .holiday_on(day(ty, tm, td))
+            .expect("the merged date ships a row");
+        assert!(
+            matches!(row.kind(), HolidayKind::ReplacementBlocks(_)),
+            "{ty}-{tm:02}-{td:02} must ship a replacement-blocks row, not {:?}",
+            row.kind()
         );
-        // A sibling family that *does* witness its merged dates answers the next
-        // business day at the same instant. `globex_fx` is that family.
+        assert_eq!(row.tier(), EvidenceTier::T2, "{ty}-{tm:02}-{td:02}");
+        assert!(
+            row.document_id().starts_with("CME-SVC-2025-"),
+            "{ty}-{tm:02}-{td:02} must cite the ten-product capture, not {}",
+            row.document_id()
+        );
+        // The sibling family that witnesses its own merged dates answers the
+        // same instant the same way: the families no longer disagree here.
         assert_eq!(
-            exchange_hours::calendar_for_market_hours_key(MarketHoursKey::GlobexFx)
+            calendar_for_market_hours_key(MarketHoursKey::GlobexFx)
                 .trade_date(instant)
                 .expect("the coverage contract must answer a covered date"),
-            Some(day(merged.0, merged.1, merged.2)),
-            "{y}-{m:02}-{d:02} 18:00 CT must carry the merged date for globex_fx"
+            Some(day(ty, tm, td)),
+            "{y}-{m:02}-{d:02} 18:00 CT must carry the merged date for globex_fx too"
         );
     }
+
+    // The eve queue the two shapes state, fenced at its bounds. The four
+    // Monday-holiday merges run the Sunday Pre-Open at 16:00 CT; the Juneteenth
+    // merge's eve is an ordinary Wednesday, so its queue is the weekday 16:45.
+    let state = |instant| {
+        nikkei
+            .session_state(instant)
+            .expect("the coverage contract must answer a covered date")
+    };
+    assert_ne!(
+        state(ct(2025, 1, 19, 15, 59, 59)),
+        SessionState::OrderEntry,
+        "no Sunday queue runs before the 16:00 CT onset"
+    );
+    assert_eq!(
+        state(ct(2025, 1, 19, 16, 0, 0)),
+        SessionState::OrderEntry,
+        "the Sunday Pre-Open opens at 16:00 CT on the Monday-holiday merges"
+    );
+    assert_ne!(
+        state(ct(2025, 6, 18, 16, 30, 0)),
+        SessionState::OrderEntry,
+        "the Juneteenth eve is an ordinary weekday: no queue at 16:30 CT"
+    );
+    assert_eq!(
+        state(ct(2025, 6, 18, 16, 45, 0)),
+        SessionState::OrderEntry,
+        "the Juneteenth eve's weekday queue opens at 16:45 CT"
+    );
+    // Each merged day ends at the ordinary 16:00 CT close, end-exclusive.
+    assert!(
+        !nikkei
+            .is_open(ct(2025, 1, 21, 16, 0, 0))
+            .expect("the coverage contract must answer a covered date"),
+        "the merged close is end-exclusive"
+    );
+    assert!(
+        nikkei
+            .is_open(ct(2025, 6, 20, 15, 59, 59))
+            .expect("the coverage contract must answer a covered date"),
+        "the merged day session runs to its 16:00 CT close"
+    );
 }
 
 // ---------------------------------------------------------------------------
@@ -3490,6 +3543,8 @@ fn era_new_year_2015_ships_no_late_open_and_reopens_at_1700() {
 fn every_block_row_spells_the_envelope_the_regular_session_it_is() {
     let nkd = nkd();
     for (year, month, date) in [
+        (2025, 1, 21),  // MERGED_SESSION_BLOCKS (merged MLK Tuesday, #162)
+        (2025, 6, 20),  // MERGED_SESSION_WEEKDAY_EVE_BLOCKS (merged Juneteenth Friday, #162)
         (2026, 1, 20),  // MERGED_SESSION_BLOCKS (merged MLK Tuesday)
         (2026, 6, 22),  // SATURDAY_SESSION_BLOCKS (published Saturday session)
         (2025, 11, 28), // MERGED_SESSION_EARLY_CLOSE_BLOCKS_2025_11_28

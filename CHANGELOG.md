@@ -12,6 +12,20 @@ corrections (a venue's hours fixed against a primary source) go under
 ## [Unreleased]
 ### Fixed
 
+- **globex_nikkei_225_dollar: the five 2025 merged trade dates answer the
+  merged date (2026-10-04 UTC; fixes #162).** At 18:00 CT on the evening
+  before each of 2025-01-21, 2025-02-18, 2025-05-27, 2025-06-20 and
+  2025-09-02 the family answered the pre-holiday trade date while the operator
+  assigns the Sunday- or Wednesday-evening-through-holiday span to the
+  following business day. The five ship as `replacement blocks` rows on the
+  ten-product trading-hours captures the table already cites: no `NKD`/`NIY`
+  event exists for those windows (the channel returns empty schedules there),
+  but the same responses' `ES` events print the merged trade date in their own
+  `tradingDate` field from the pre-holiday evening through the merged day's
+  `16:00 closed` — a sibling-product witness disclosed in the evidence file,
+  whose row citations name those bytes; all seventeen merged trade dates the
+  family models now ship, and the four sibling families' answers are matched
+  at every one of the five instants.
 - **eurex: the dated German-scope closures of 2014-2018 encode, and #157
   narrows to the tba era (2026-10-03 UTC; narrows #157).** The operator's own
   Trading Calendar editions, re-read from the saved bytes, divide four ways:

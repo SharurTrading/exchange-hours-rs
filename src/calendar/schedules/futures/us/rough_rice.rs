@@ -11,13 +11,12 @@ use crate::calendar::schedules::timeline::{Revision, local_date, revisions, sele
 
 use super::grains::{
     CBOT_EXTENDED_2012_05_20, CBOT_EXTENDED_AT_2010_FLOOR, CBOT_EXTENDED_CURRENT,
-    CBOT_ORDER_ENTRY_2010_04_19, CBOT_ORDER_ENTRY_2011_12_27, CBOT_ORDER_ENTRY_2013_04_07,
-    CBOT_ORDER_ENTRY_AT_2010_FLOOR, CBOT_ORDER_ENTRY_CURRENT, CBOT_REGULAR_0830_1315,
-    CBOT_REGULAR_0930_1315, CBOT_REGULAR_CURRENT,
+    CBOT_ORDER_ENTRY_2011_12_27, CBOT_ORDER_ENTRY_2013_04_07, CBOT_ORDER_ENTRY_AT_2010_FLOOR,
+    CBOT_ORDER_ENTRY_CURRENT, CBOT_REGULAR_0830_1315, CBOT_REGULAR_0930_1315, CBOT_REGULAR_CURRENT,
 };
 
 // Rough Rice futures (CME Globex `ZR`) and options (`OZR`), CBOT Rulebook
-// chapters 17 and 17A, in America/Chicago. The six eras before 2018-01-21 are
+// chapters 17 and 17A, in America/Chicago. The five eras before 2018-01-21 are
 // inherited from the standard CBOT grain and oilseed grid in `grains.rs`, not
 // sourced independently for Rough Rice; from that day the family has its own
 // non-wrapping evening leg and no morning or post-close Pre-Open.
@@ -71,18 +70,15 @@ const fn profile(
     }
 }
 
-// The six pre-divergence eras. Each is Rough Rice's own named profile built
-// from the grain and oilseed tables it shared at the time; see `grains.rs` for
-// the quotations and URLs behind every value.
+// The five pre-divergence eras, each Rough Rice's own profile built from the
+// grain and oilseed tables it shared at the time (see `grains.rs` for the
+// quotations behind every value). The grain grid's 2010-04-19 PCP expansion
+// carries no row here: the span serves the sourced intersection and nothing
+// observable changes that day (the inherited residual, `globex_grains` #283).
 static AT_2010_FLOOR: StaticHoursProfile = profile(
     CBOT_REGULAR_0930_1315,
     CBOT_EXTENDED_AT_2010_FLOOR,
     CBOT_ORDER_ENTRY_AT_2010_FLOOR,
-);
-static FROM_2010_04_19: StaticHoursProfile = profile(
-    CBOT_REGULAR_0930_1315,
-    CBOT_EXTENDED_AT_2010_FLOOR,
-    CBOT_ORDER_ENTRY_2010_04_19,
 );
 static FROM_2011_12_27: StaticHoursProfile = profile(
     CBOT_REGULAR_0930_1315,
@@ -119,11 +115,10 @@ static DATED_CURRENT: StaticHoursProfile = profile(
 
 // Every revision row below is T1; each row's effective day and citation
 // literal are its own fields, and the document, quotation and URL behind each
-// are in the evidence file. The first six are the CBOT grain and oilseed chain
+// are in the evidence file. The first five are the CBOT grain and oilseed chain
 // Rough Rice shared; their full quotations sit in `grains.rs`.
 // Evidence: docs/evidence/globex_rough_rice.md
 static REVISIONS: &[Revision] = revisions![
-    (2010, 4, 19, &FROM_2010_04_19, "CME Globex notice 20100405"),
     (
         2011,
         12,

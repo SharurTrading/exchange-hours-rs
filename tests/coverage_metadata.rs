@@ -20,7 +20,7 @@ use chrono_tz::{Asia, US};
 use exchange_hours::{
     CalendarCoverage, CalendarQueryError, CalendarSource, CoverageGap, CoverageGapReason,
     DateCoverage, DateRange, Exchange, ExchangeCalendar, HolidayContract, MarketHoursKey,
-    SUPPORT_FLOOR, calendar_for_exchange, calendar_for_market_hours_key,
+    SUPPORT_FLOOR, SessionState, calendar_for_exchange, calendar_for_market_hours_key,
 };
 
 /// The last date the per-identity date-by-date cross-check walks.
@@ -1031,7 +1031,7 @@ fn the_quarter_hour_residual_serves_the_intersection_on_every_bracket_era_sunday
     );
     assert_eq!(
         fx.session_state(at(bracket_sunday, 16, 5)),
-        Ok(exchange_hours::SessionState::Closed),
+        Ok(SessionState::Closed),
         "the state names the served closed verdict the residual discloses"
     );
 }
@@ -1051,8 +1051,8 @@ fn the_queue_dates_answer_and_the_regime_serves_its_captured_queues() {
 
     // The queue days read complete: a Sunday, a mid-week queue day, the first
     // week of livestock's sourced 2016-06-06 Post-Close onset, grains' whole
-    // 2010-2012 PCP era (13:15:30-16:00 then) and the era after the regime —
-    // all answer.
+    // 2010-2012 PCP era (serving the 14:30-16:00 sourced intersection since
+    // #283 closed as a residual) and the era after the regime — all answer.
     for (coverage, day, why) in [
         (
             &grains,
@@ -1171,6 +1171,43 @@ fn the_queue_dates_answer_and_the_regime_serves_its_captured_queues() {
         grains_cal.is_accepting_orders(at(date(2012, 5, 13), 16, 5)),
         Ok(false),
         "the pre-regime Sunday onset is 16:15 CT: 16:05 is closed"
+    );
+    // The pre-regime queue set serves the sourced intersection of the two
+    // bracketing states (#283, 2026-10-04 convention): notice 20100405 dated a
+    // 13:15:30-16:00 CT PCP from 2010-04-19, the 2012-05-11 capture prints the
+    // PCP at 14:30-16:00 with a 16:45 weekday evening Pre-Open, and no dated
+    // artifact separates them — so 15:00 CT accepts under every sourced state
+    // while 13:30 (inside only the notice's state) and 17:00 (inside only the
+    // capture's evening queue) answer closed, under-reporting exactly as an
+    // omitted queue would. Probed on a weekday of each undated era: 2011-06-14
+    // (the 07:15 morning-queue era) and 2012-05-16 (the 08:00 one).
+    for (day, era) in [
+        (date(2011, 6, 14), "the 07:15-morning-queue era"),
+        (date(2012, 5, 16), "the 08:00-morning-queue era"),
+    ] {
+        assert_eq!(
+            grains_cal.is_accepting_orders(at(day, 15, 0)),
+            Ok(true),
+            "{era}: the served 14:30-16:00 CT PCP accepts at 15:00, the sourced intersection"
+        );
+        assert_eq!(
+            grains_cal.session_state(at(day, 13, 30)),
+            Ok(SessionState::Closed),
+            "{era}: 13:30 CT is inside only the notice's 13:15:30 PCP start, so the \
+             intersection answers closed"
+        );
+    }
+    assert_eq!(
+        grains_cal.session_state(at(date(2012, 5, 16), 17, 0)),
+        Ok(SessionState::Closed),
+        "the pre-regime weekday evening Pre-Open is served absent: the 16:45-18:00 CT \
+         queue is witnessed only by the capture side of the bracket, and 17:00 CT \
+         answers closed until the 18:00 electronic open"
+    );
+    assert_eq!(
+        grains_cal.is_accepting_orders(at(date(2012, 5, 16), 17, 0)),
+        Ok(false),
+        "no evening queue over-reports order acceptance on a pre-regime weekday"
     );
     // The post-close queue and both of its verdicts are answered on every date
     // that carries it, under the charter convention the fence in

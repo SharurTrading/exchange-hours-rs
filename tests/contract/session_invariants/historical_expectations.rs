@@ -295,7 +295,10 @@ pub(super) const HISTORICAL_CUTOVERS: &[(Exchange, Ymd, chrono_tz::Tz)] = &[
         (2026, 3, 30),
         chrono_tz::America::New_York,
     ),
-    (Exchange::Cbot, (2010, 4, 19), chrono_tz::US::Central),
+    // Cbot's 2010-04-19 PCP expansion carries no entry: its changeover back to
+    // 14:30 is undated (bracketed 2010-04-19..2012-05-11 by the operator's own
+    // trading-hours capture), so the pre-regime span serves the sourced
+    // intersection and nothing observable changes on that day (#283).
     (Exchange::Cbot, (2011, 12, 27), chrono_tz::US::Central),
     (Exchange::Cbot, (2012, 5, 20), chrono_tz::US::Central),
     (Exchange::Cbot, (2013, 4, 7), chrono_tz::US::Central),

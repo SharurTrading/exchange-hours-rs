@@ -761,10 +761,14 @@ This era's rows cite the ids below: CME Group's own published holiday schedules 
   keyed by the crate's own venue-local trade date — the Chicago date of the containing
   session's final close (design memo D1). On the seven dates whose noon event CME publishes
   as a `preopen` rather than a `closed`, CME assigns the whole span the *following* business
-  day's trade date, because no settlement occurs on the holiday. The crate keeps the holiday
-  as the trade date, because a final close does occur there at 12:00 CT. `is_open` agrees
-  with CME event for event on every one of those dates; only the label differs. Recorded as
-  a residual risk below.
+  day's trade date, because no settlement occurs on the holiday — and since the 2026-10-04
+  change, the five 2025 dates of that class ship CME's merged assignment as `ReplacementBlocks`
+  rows (see #162's closure below), so the label difference survives only on the two
+  closed-at-noon dates whose noon event CME has never published a sibling witness for
+  (2026-06-19 and 2027-06-18; 2025-06-20's Wednesday-eve shape is likewise witnessed). The
+  crate keeps the holiday as the trade date there, because a final close does occur at 12:00
+  CT. `is_open` agrees with CME event for event on every one of those dates; only the label
+  differs. Recorded as a residual risk below.
 - **Eve records are evidence, not rows.** `16:00 closed /TD <eve>` with no `16:45 preopen`
   and no `17:00 open` — CME's `[N6]` shape, printed on 2024-12-31, 2025-04-17 and 2025-12-31 —
   is the family's ordinary daytime close plus a missing evening leg. The neighbouring
@@ -850,10 +854,13 @@ This era's rows cite the ids below: CME Group's own published holiday schedules 
   merged trade dates additionally read the merged assignment off the sibling line's own
   `tradingDate` labels. Closing condition: an archived `THBP-B` capture of any of the eight
   windows, or a `THBP-A` capture that carries `NKD`.
-- **residual risk** — the crate's trade date differs from CME's printed trade date on every
-  `preopen`-at-noon holiday. No query the crate answers is wrong; a consumer comparing the
-  crate's `trade_date` against a CME settlement file will see the holiday where CME shows the
-  next business day.
+- **residual risk** — the crate's trade date differs from CME's printed trade date on the two
+  closed-at-noon 2026/2027 Juneteenth holidays (2026-06-19, 2027-06-18): CME has published no
+  sibling witness for either, and no row ships on inference. On the 2025 noon-holiday class the
+  2026-10-04 change ships CME's merged assignment, so the difference no longer exists there.
+  No query the crate answers is wrong; a consumer comparing the crate's `trade_date` against a
+  CME settlement file will see the holiday where CME shows the next business day on those two
+  dates.
 - **closed 2026-09-26 UTC — the normal-week Pre-Open is served.** The module stated that "CME
   publishes no normal-week pre-open or order-entry start time for NKD"; the operator's own
   channel says otherwise, and the phase now ships as `order_entry` (never a session, so it

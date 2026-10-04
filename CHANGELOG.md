@@ -10,6 +10,22 @@ corrections (a venue's hours fixed against a primary source) go under
 **Fixed**; new venues and new API surface under **Unreleased**/**Added**.
 
 ## [Unreleased]
+### Changed
+
+- **Coverage verdicts: the maintainer's horizon ruling reclassifies
+  unpublished-2027 incompleteness (2026-10-04 UTC).** 2027 coverage is not a
+  requirement — it is a nice-to-have, taken when the information is on the
+  current schedules, and unpublished 2027 never withholds a completeness
+  verdict; the ruling is recorded in the coverage inventory's completeness
+  definition. `xetra` reclassifies from incomplete to complete to 2027-12-31:
+  its 2027 closure set ships from the operator's page, and the unpublished
+  2027 trading-holiday close schedule no longer withholds the verdict. `eurex`
+  and `euronext_paris` keep their incomplete verdicts on their in-window gaps —
+  the `tba` era 2025-2026 (#157) and the two announced 2026 eves — with the
+  2027 clause removed from each incompleteness list. The inventory's verdict
+  tally moves from seventeen complete and sixteen incomplete to eighteen and
+  fifteen. No schedule, holiday or runtime data changed.
+
 ### Fixed
 
 - **globex_nikkei_225_dollar: the five 2025 merged trade dates answer the

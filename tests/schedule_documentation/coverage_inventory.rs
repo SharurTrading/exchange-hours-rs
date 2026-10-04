@@ -828,6 +828,11 @@ fn withheld(calendar: ExchangeCalendar, date: NaiveDate) -> bool {
 /// and left the group on 2026-10-03 UTC, when the 2011-12-12 year-end
 /// schedule recovered from the release series' Mondo Visione verbatim mirror
 /// closed the last span 2011-10-11..2012-01-02, making the scope complete.
+/// `xetra` carried a zero entry from its 2026-09-28 UTC activation — its
+/// incompleteness was the unpublished 2027 trading-holiday close schedule,
+/// not a withheld date — and left the group on 2026-10-04 UTC, when the
+/// maintainer's horizon ruling reclassified the scope complete to 2027-12-31:
+/// unpublished 2027 never withholds a verdict.
 fn date_level_incompleteness() -> &'static [(&'static str, usize)] {
     &[
         // 202 after the #242 profile-clock re-derivation (2026-09-30): the 59
@@ -838,7 +843,6 @@ fn date_level_incompleteness() -> &'static [(&'static str, usize)] {
         ("lse", 5),
         ("nasdaq", 4),
         ("nse_india", 14),
-        ("xetra", 0),
     ]
 }
 
@@ -979,12 +983,14 @@ fn inventory_completeness_verdicts_match_the_metadata() {
     }
     assert_eq!(
         (complete, incomplete, no_coverage),
-        (17, 16, 0),
-        "the inventory's verdict shapes: seventeen complete, sixteen incomplete, none with no 2025 \
+        (18, 15, 0),
+        "the inventory's verdict shapes: eighteen complete, fifteen incomplete, none with no 2025 \
          coverage (hkex's ten Unsourced 2012-2015 half-day eves moved it to incomplete on \
          2026-09-29 UTC and its 2026-09-30 UTC closure — the operator's own Phase-Two-era Trading \
-         Hours page states the eve session deletions — moved it back to complete; xetra's \
-         unpublished 2027 schedule keeps it incomplete; #197's b3/tadawul are \
+         Hours page states the eve session deletions — moved it back to complete; xetra \
+         reclassified complete to 2027-12-31 on 2026-10-04 UTC under the maintainer's horizon \
+         ruling — 2027 coverage is not a requirement and unpublished 2027 never withholds a \
+         verdict; #197's b3/tadawul are \
          complete; nyse is complete to 2027 and nasdaq is incomplete — four Unsourced dates across \
          2010-2026; the 2026-09-28 UTC APAC activation makes nzx and sgx_securities complete to \
          their operators' horizons, and the 2026-09-30 UTC normal-week sourcing moved asx's horizon

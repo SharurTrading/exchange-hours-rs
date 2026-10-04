@@ -32,8 +32,8 @@ use super::evidence_files::revision_blocks;
 use chrono::{Datelike as _, NaiveDate, TimeZone as _, Utc, Weekday};
 use chrono_tz::US::Central;
 use exchange_hours::{
-    CalendarQueryError, CoverageGap, CoverageGapReason, DateCoverage, Exchange, ExchangeCalendar,
-    Holiday, HolidayKind, MarketHoursKey, calendar_for_exchange, calendar_for_market_hours_key,
+    CoverageGap, CoverageGapReason, DateCoverage, Exchange, ExchangeCalendar, Holiday, HolidayKind,
+    MarketHoursKey, calendar_for_exchange, calendar_for_market_hours_key,
 };
 use std::fs;
 use std::path::Path;
@@ -802,9 +802,10 @@ fn withheld(calendar: ExchangeCalendar, date: NaiveDate) -> bool {
 /// page rather than asserted by this list. It is a fence only while the
 /// `Unsrc floor+ dates` column it is compared against is re-derived from the
 /// shipped tables — which `inventory_windows_and_date_counts_match_the_shipped_tables`
-/// does in the same file. `cme` is deliberately absent: it withholds disputed
-/// dates **and** the Sunday quarter-hour (#79), so its denial of completeness is no
-/// longer date-shaped. `iceus` is the second entry: from 2026-09-26 UTC it audits
+/// does in the same file. `cme` joined on 2026-10-04 UTC, when the charter's
+/// sourced-intersection residual convention retired its #79 declaration: its
+/// denial is now purely its 184 disputed `Unsourced` dates.
+/// `iceus` is the second entry: from 2026-09-26 UTC it audits
 /// from the floor with no phase-level gap behind its denial — the 2025-01-09
 /// National Day of Mourning row completed the date-level set, which stood at 35
 /// withheld dates when this entry was added and has grown as the September 2026
@@ -835,6 +836,9 @@ fn withheld(calendar: ExchangeCalendar, date: NaiveDate) -> bool {
 /// unpublished 2027 never withholds a verdict.
 fn date_level_incompleteness() -> &'static [(&'static str, usize)] {
     &[
+        // 184 since the 2026-10-04 #79 retirement: the quarter-hour declaration
+        // cme carried beside these dates is gone, so the denial is date-shaped.
+        ("cme", 184),
         // 202 after the #242 profile-clock re-derivation (2026-09-30): the 59
         // rows the rate leg's lone dissent had withheld are retired.
         ("cbot", 202),
@@ -851,24 +855,23 @@ fn date_level_incompleteness() -> &'static [(&'static str, usize)] {
 /// resolves, and the sample date — a Tuesday no served table withholds — is
 /// answered beside them.
 ///
-/// Since #172 the seven quarter-hour scopes withhold the Sunday 16:00-16:15 CT
-/// quarter-hour on the bracket-era Sundays whose served Pre-Open resolves and
-/// answer every other date from the tables, so their interval verdict stays
-/// `**incomplete**` while `is_complete_on` on the sample reads `true`. The
-/// direction rule below re-derives that escape non-circularly: the sample is
-/// asserted to be a weekday, and the scope's declarations are asserted to be
-/// date-scoped, so a declaration that ever became `EveryDay` again — or a sample
-/// that ever became a Sunday — fails here rather than passing by construction.
+/// Since the 2026-10-04 sourced-intersection residual convention this group is
+/// empty: the seven quarter-hour scopes that once withheld the Sunday
+/// 16:00-16:15 CT quarter-hour on the bracket-era Sundays now serve the sourced
+/// intersection as a disclosed residual and read complete in 2025+. The
+/// direction rule below re-derived the escape non-circularly while the group
+/// had members: the sample is a weekday and the scope's declarations were
+/// asserted to be date-scoped, so a declaration that ever became `EveryDay`
+/// again — or a sample that ever became a Sunday — failed here rather than
+/// passing by construction.
 fn scoped_incompleteness() -> &'static [&'static str] {
-    &[
-        "cme",
-        "comex",
-        "nymex",
-        "globex_energy",
-        "globex_equity_index",
-        "globex_fx",
-        "globex_interest_rates",
-    ]
+    // Empty since 2026-10-04 UTC: the seven quarter-hour scopes that carried
+    // date-scoped declarations retired them under the charter's
+    // sourced-intersection residual convention, so no served scope's denial is
+    // a date-scoped phase gap any more. The escape the direction rule below
+    // gives this group is retained for the day a new date-scoped declaration
+    // ships.
+    &[]
 }
 
 /// `is_complete_on(SAMPLE)` agrees with the inventory's `Complete?` cell for all
@@ -983,11 +986,17 @@ fn inventory_completeness_verdicts_match_the_metadata() {
     }
     assert_eq!(
         (complete, incomplete, no_coverage),
-        (18, 15, 0),
-        "the inventory's verdict shapes: eighteen complete, fifteen incomplete, none with no 2025 \
+        (25, 8, 0),
+        "the inventory's verdict shapes: twenty-five complete, eight incomplete, none with no 2025 \
          coverage (hkex's ten Unsourced 2012-2015 half-day eves moved it to incomplete on \
          2026-09-29 UTC and its 2026-09-30 UTC closure — the operator's own Phase-Two-era Trading \
-         Hours page states the eve session deletions — moved it back to complete; xetra \
+         Hours page states the eve session deletions — moved it back to complete; the 2026-10-04 UTC \
+         sourced-intersection residual convention retired the three `NormalWeekPhaseWithheld` \
+         declarations — the seven quarter-hour scopes, globex_cryptocurrency's five-day era and \
+         globex_grains' omitted regime — so comex, nymex, globex_equity_index, globex_energy, \
+         globex_fx, globex_interest_rates and globex_cryptocurrency join the complete group with \
+         their disputed remainders disclosed as residuals in their evidence files, and cme stays \
+         incomplete on its 184 Unsourced dates; xetra \
          reclassified complete to 2027-12-31 on 2026-10-04 UTC under the maintainer's horizon \
          ruling — 2027 coverage is not a requirement and unpublished 2027 never withholds a \
          verdict; #197's b3/tadawul are \
@@ -1046,35 +1055,16 @@ fn inventory_completeness_verdicts_match_the_metadata() {
 /// declaration was retired with the fence that pins the convention living in
 /// `tests/futures_family_boundaries/holidays_globex_livestock.rs`.
 fn declared_phase_gaps() -> Vec<(&'static str, Vec<(CoverageGapReason, &'static str)>)> {
-    let quarter_hour = (CoverageGapReason::NormalWeekPhaseWithheld, "#79");
-    let pre_open_onset = (CoverageGapReason::NormalWeekPhaseWithheld, "#123");
-    let omitted_regime = (CoverageGapReason::NormalWeekPhaseWithheld, "#259");
     let undated_closures = (CoverageGapReason::UnpublishedClosureDates, "#157");
     vec![
-        ("cme", vec![quarter_hour]),
-        ("comex", vec![quarter_hour]),
-        ("nymex", vec![quarter_hour]),
-        ("globex_energy", vec![quarter_hour]),
-        ("globex_equity_index", vec![quarter_hour]),
-        // `globex_fx` carried the #93 special-session declaration until its merged
-        // trade dates landed; every session CME publishes for it now ships as a row.
-        ("globex_fx", vec![quarter_hour]),
-        ("globex_interest_rates", vec![quarter_hour]),
-        // `globex_cryptocurrency` carried the #93 special-session declaration
-        // until its 24/7-era merged trade dates landed on 2026-09-26 UTC;
-        // every session CME publishes for it now ships as a row, and the
-        // declared Pre-Open onset is bounded to the five-day era itself.
-        ("globex_cryptocurrency", vec![pre_open_onset]),
-        // `globex_grains` carried the #152 post-close label declaration beside
-        // the regime until the charter's Post-Close trade-date convention
-        // retired it (2026-10-03): the queue dates answer, and the convention
-        // is pinned by fence in
-        // `tests/futures_family_boundaries/holidays_globex_grains.rs`.
-        ("globex_grains", vec![omitted_regime]),
-        // `globex_livestock` carried the #152 post-close label declaration
-        // until the same charter decision retired it (2026-10-03); the queue
-        // dates answer and the convention is pinned by fence in
-        // `tests/futures_family_boundaries/holidays_globex_livestock.rs`.
+        // The three `NormalWeekPhaseWithheld` declarations — the seven
+        // quarter-hour scopes' `#79`, `globex_cryptocurrency`'s five-day-era
+        // `#123` and `globex_grains`' omitted-regime `#259` — retired on
+        // 2026-10-04 UTC under the charter's sourced-intersection residual
+        // convention: each span's disputed remainder is a disclosed residual
+        // in the owner's evidence file, `globex_grains`' regime queues ship
+        // from the regime's dated start, and no served scope declares the
+        // reason any more. The scopes below declare nothing at all.
         ("globex_livestock", vec![]),
         // `eurex` withholds no *phase*: the operator declares German
         // equity/equity-index closures it has not dated, so the declaration is
@@ -1258,12 +1248,13 @@ fn the_declared_phase_level_gaps_match_the_inventory() {
     }
     assert_eq!(
         (declaring, declarations),
-        (10, 10),
-        "ten served scopes declare today, ten declarations in all: seven \
-         quarter-hour scopes, `globex_cryptocurrency`'s undated five-day-era Pre-Open \
-         onset, `eurex`'s undated closure scope, and the omitted 2012-05-20..2013-04-06 \
-         regime `globex_grains` carries — the #152 post-close label declaration the two \
-         queue scopes carried retired with the charter's 2026-10-03 trade-date convention"
+        (1, 1),
+        "one served scope declares today, one declaration in all: `eurex`'s undated \
+         closure scope — the #152 post-close label declaration retired with the charter's \
+         2026-10-03 trade-date convention, and the three `NormalWeekPhaseWithheld` \
+         declarations (the seven quarter-hour scopes' #79, `globex_cryptocurrency`'s #123 \
+         five-day era and `globex_grains`' #259 omitted regime) retired with the charter's \
+         2026-10-04 sourced-intersection residual convention"
     );
 
     // The scopes the quarter-hour probe cleared of the disputed window declare
@@ -1312,53 +1303,6 @@ fn chicago_on(date: NaiveDate) -> chrono::DateTime<Utc> {
         .with_timezone(&Utc)
 }
 
-/// Asserts the identity-backed order-acceptance answer is exactly the verdict
-/// the identity publishes for `date` (LAW-COVERAGE).
-///
-/// The served quarter-hour answers as an acceptance where the scope declares no
-/// remaining gap; a scope still withholding the date refuses with the error its
-/// own `coverage_on` names. This keeps the era fence honest without assuming
-/// that #79 is every scope's only declaration: `globex_cryptocurrency` carries an
-/// unbounded `#93` too, so the same 16:05 CT instant answers for one scope and
-/// refuses for the other, and both are correct.
-fn assert_acceptance_matches_coverage(
-    calendar: ExchangeCalendar,
-    instant: chrono::DateTime<Utc>,
-    date: NaiveDate,
-    label: &str,
-) {
-    let answer = calendar.is_accepting_orders(instant);
-    let source = calendar.source();
-    let verdict = calendar.coverage().coverage_on(date);
-    // `DateCoverage` is `#[non_exhaustive]`; a verdict this fence does not know
-    // cannot be mapped to an expected answer, so it fails here rather than
-    // letting the comparison below pass by accident.
-    assert!(
-        matches!(
-            verdict,
-            DateCoverage::Covered
-                | DateCoverage::BeforeSupportFloor
-                | DateCoverage::UnresolvedGap
-                | DateCoverage::OutsideCoveredRange
-        ),
-        "{label}: unrecognised coverage verdict {verdict:?}, got {answer:?}"
-    );
-    let expected = match verdict {
-        DateCoverage::Covered => Ok(true),
-        DateCoverage::BeforeSupportFloor => {
-            Err(CalendarQueryError::BeforeSupportFloor { source, date })
-        }
-        DateCoverage::UnresolvedGap => Err(CalendarQueryError::UnresolvedGap { source, date }),
-        DateCoverage::OutsideCoveredRange | _ => {
-            Err(CalendarQueryError::OutsideCoveredRange { source, date })
-        }
-    };
-    assert_eq!(
-        answer, expected,
-        "{label}: the query must state the verdict its identity publishes"
-    );
-}
-
 /// A venue-local date for the era probe.
 fn day(year: i32, month: u32, day: u32) -> NaiveDate {
     NaiveDate::from_ymd_opt(year, month, day).expect("the era probe uses valid dates")
@@ -1382,80 +1326,74 @@ fn sundays_between(first: NaiveDate, last: NaiveDate) -> Vec<NaiveDate> {
     sundays
 }
 
-/// The withheld Sunday quarter-hour, fenced on the shipped profiles themselves.
+/// The served Sunday quarter-hour intersection, fenced on the shipped profiles
+/// themselves (2026-10-04 convention).
 ///
-/// `is_complete_on` is derived from the declarations, so on its own it cannot
-/// tell a scope that withholds a required phase from one whose grid simply has no
-/// session at 16:05 CT. This fence observes the profiles instead: a scope that
-/// withholds the quarter-hour is closed at 16:05 CT and **accepting orders** at
-/// 16:20 CT, and exactly the served scopes that show that signature declare #79 - four dormant identities show it too and declare nothing, so the invariant is scoped to the inventory's served rows —
-/// `cme`, `comex`, `nymex`, `globex_energy`, `globex_equity_index`, `globex_fx`
-/// and `globex_interest_rates`. The four that accept at 16:05 CT are genuinely
-/// fine — the CBOT grains grid dates its own 16:00 CT Sunday onset to the
-/// 2013-04-07 notice, and `globex_nikkei_225_dollar` today carries the operator's
-/// published Sunday Pre-Open — and the five closed at both instants have a
-/// different grid rather than a withheld quarter-hour, so neither group may
-/// carry the declaration.
+/// `is_complete_on` is derived from the declarations, and since the
+/// retirement there are none on these scopes, so on its own it cannot tell a
+/// scope that serves the sourced intersection from one whose grid simply has
+/// no session at 16:05 CT. This fence observes the profiles instead: a scope
+/// that carries the disclosed #79 residual is closed at 16:05 CT and
+/// **accepting orders** at 16:20 CT — the served 16:15-17:00 CT intersection —
+/// and the identity-backed answer at 16:05 CT is `Ok(false)`, an answered
+/// verdict rather than the coverage refusal the retired declaration raised.
+/// Exactly the seven served scopes show that signature, and none of them
+/// declares anything: the four dormant identities with the same shape
+/// (`globex_weather`, `globex_gold_tas`, `globex_silver_tas`,
+/// `globex_copper_tas`) show it and declare nothing too, so the invariant is
+/// scoped to the inventory's served rows. The ones that accept at 16:05 CT are
+/// genuinely fine — the CBOT grains grid dates its own 16:00 CT Sunday onset
+/// to the 2013-04-07 notice, and `globex_nikkei_225_dollar` today carries the
+/// operator's published Sunday Pre-Open — and the five closed at both instants
+/// have a different grid, so neither group may carry a residual record.
 ///
 /// This is the independent half of the fence the defect needed: it reads the
-/// profiles rather than the prose, so a scope silently dropped from the
-/// declaration list fails here even if the inventory is edited to match.
+/// profiles rather than the prose, so a scope silently re-declaring the gap
+/// fails here even if the inventory is edited to match.
 #[test]
-fn the_sunday_quarter_hour_is_declared_exactly_where_the_profiles_withhold_it() {
+fn the_sunday_quarter_hour_intersection_is_served_where_the_residual_is_disclosed() {
     let inside = chicago(16, 5);
     let after = chicago(16, 20);
-    let mut withholding = Vec::new();
+    let mut carrying_residual = Vec::new();
     let mut accepts_inside = Vec::new();
     let mut closed_at_both = Vec::new();
     for (name, _) in inventory_rows() {
         let calendar = calendar_for(&name).expect("the inventory names a known identity");
-        let declares = calendar
-            .coverage()
-            .phase_gaps()
-            .iter()
-            .any(|gap| gap.closing_condition() == "#79");
         // The grid this fence reads is the **fixed snapshot's**, because that is
-        // the surface which still states it: the identity-backed query refuses
-        // the very quarter-hour the declaring scopes withhold (LAW-COVERAGE), so
-        // asking it here would measure the refusal rather than the profile. The
-        // snapshot carries no identity and no coverage verdict, and
-        // `ExchangeCalendar::hours_at` is documented as the identity's sourced
-        // profile at the instant.
+        // the surface which states it: the identity-backed query carries the
+        // coverage verdicts, and the two are asserted beside each other below.
         let closed_inside = !calendar.hours_at(inside).is_accepting_orders(inside);
         let open_after = calendar.hours_at(after).is_accepting_orders(after);
-        assert_eq!(
-            declares,
-            closed_inside && open_after,
-            "{name} is {} at 16:05 CT and {} at 16:20 CT on {inside} ({}), so it must {}declare the \
-             withheld Sunday quarter-hour (#79)",
-            if closed_inside {
-                "closed"
-            } else {
-                "accepting orders"
-            },
-            if open_after {
-                "accepting orders"
-            } else {
-                "closed"
-            },
-            inside.with_timezone(&Central),
-            if declares { "" } else { "not " }
-        );
-        // And the identity-backed answer is asserted for what it now says: a
-        // declaring scope refuses the withheld quarter-hour outright, so a
-        // caller can never read the withholding as a grid.
-        if declares {
+        let residual_signature = closed_inside && open_after;
+        if residual_signature {
+            // A scope carrying the disclosed residual declares no phase-level
+            // gap at all: the 2026-10-04 convention is disclosure beside a
+            // served answer, not a declaration.
+            assert!(
+                calendar.coverage().phase_gaps().is_empty(),
+                "{name} serves the #79 intersection, so it may not declare a phase-level gap"
+            );
+            // And the identity-backed answer states the served verdict: `Ok(false)`
+            // inside the disputed quarter-hour — a closed grid the caller can act
+            // on, never the coverage refusal the retired declaration raised — and
+            // acceptance after it.
             assert_eq!(
                 calendar.is_accepting_orders(inside),
-                Err(CalendarQueryError::OutsideCoveredRange {
-                    source: calendar.source(),
-                    date: inside.with_timezone(&Central).date_naive(),
-                }),
-                "{name} must refuse the withheld Sunday quarter-hour, not answer it"
+                Ok(false),
+                "{name} must answer the served intersection's closed 16:05 CT verdict, not refuse it"
             );
-        }
-        if declares {
-            withholding.push(name);
+            assert_eq!(
+                calendar.is_accepting_orders(after),
+                Ok(true),
+                "{name} accepts orders at 16:20 CT on the served intersection"
+            );
+            assert!(
+                calendar
+                    .coverage()
+                    .is_complete_on(inside.with_timezone(&Central).date_naive()),
+                "{name}'s bracket-era Sunday is complete under the residual convention"
+            );
+            carrying_residual.push(name);
         } else if !closed_inside {
             accepts_inside.push(name);
         } else {
@@ -1463,7 +1401,7 @@ fn the_sunday_quarter_hour_is_declared_exactly_where_the_profiles_withhold_it() 
         }
     }
     assert_eq!(
-        withholding,
+        carrying_residual,
         [
             "cme",
             "comex",
@@ -1473,7 +1411,8 @@ fn the_sunday_quarter_hour_is_declared_exactly_where_the_profiles_withhold_it() 
             "globex_fx",
             "globex_interest_rates"
         ],
-        "the seven scopes whose Sunday queue withholds the 16:00-16:15 CT quarter-hour"
+        "the seven scopes whose Sunday queue serves the 16:15-17:00 CT intersection with the \
+         16:00-16:15 CT slice disclosed as the #79 residual"
     );
     assert_eq!(
         accepts_inside,
@@ -1485,7 +1424,7 @@ fn the_sunday_quarter_hour_is_declared_exactly_where_the_profiles_withhold_it() 
             "globex_grains",
             "globex_nikkei_225_dollar"
         ],
-        "these accept orders inside the disputed window, so no gap is declared for them"
+        "these accept orders inside the disputed window: their grids state a 16:00 CT onset"
     );
     assert_eq!(
         closed_at_both,
@@ -1511,7 +1450,7 @@ fn the_sunday_quarter_hour_is_declared_exactly_where_the_profiles_withhold_it() 
             "globex_livestock",
             "globex_cryptocurrency"
         ],
-        "these are closed at both instants: a different grid, not a withheld quarter-hour"
+        "these are closed at both instants: a different grid, not a served intersection"
     );
 }
 
@@ -1671,48 +1610,13 @@ const QUARTER_HOUR_ERAS: [QuarterHourEra; 7] = [
 /// separate statement from the behavioural probe on purpose — a weekend date can
 /// never carry a phase reading, so the two questions are genuinely different.
 #[test]
-fn the_knowledge_bound_day_is_covered_and_the_day_before_it_is_not() {
-    let mut checked = 0_usize;
-    for era in QUARTER_HOUR_ERAS {
-        let QuarterHourEra { name, bound, .. } = era;
-        let bound = day(bound.0, bound.1, bound.2);
-        let calendar = calendar_for(name).expect("the fixture names a served scope");
-        let coverage = calendar.coverage();
-
-        assert_eq!(
-            coverage.coverage_on(bound),
-            DateCoverage::Covered,
-            "{name}: the knowledge-bound row's own day, {bound}, is inside the answered window"
-        );
-        // The declaration ends *at* the bound, so the bound is the first day the
-        // quarter-hour is served; nothing before it resolves through the
-        // declaration either, which is what makes the bound the era's edge.
-        let declaration = coverage
-            .phase_gaps()
-            .iter()
-            .find(|gap| gap.closing_condition() == "#79")
-            .unwrap_or_else(|| {
-                panic!("{name} must declare the withheld Sunday quarter-hour (#79)")
-            });
-        assert!(
-            !declaration.applies_on(bound),
-            "{name}: the #79 declaration must not apply on its own bound day, {bound}"
-        );
-        assert!(
-            declaration.applies_on(bound - chrono::Duration::days(1)),
-            "{name}: the #79 declaration applies on the day before {bound}"
-        );
-        checked += 1;
-    }
-    assert_eq!(
-        checked,
-        QUARTER_HOUR_ERAS.len(),
-        "every declaring scope must be checked"
-    );
-}
-
-#[test]
-fn the_sunday_quarter_hour_gap_ends_at_the_knowledge_bound_row() {
+fn the_knowledge_bound_row_still_bounds_the_served_quarter_hour() {
+    // The 2026-08-22 knowledge-bound row is still the era edge the profiles
+    // serve: the quarter-hour before it is served as the 16:15-17:00 CT
+    // intersection and the widened 16:00-17:00 CT queue from it. Since the
+    // 2026-10-04 retirement the declaration that used to refuse the earlier
+    // era is gone, so both sides answer `Covered` — the residual is
+    // disclosure beside the served intersection, not a refusal.
     let mut checked = 0_usize;
     for era in QUARTER_HOUR_ERAS {
         let QuarterHourEra {
@@ -1727,53 +1631,34 @@ fn the_sunday_quarter_hour_gap_ends_at_the_knowledge_bound_row() {
         let calendar = calendar_for(name).expect("the fixture names a served scope");
         let coverage = calendar.coverage();
 
-        // 1. The declaration exists, is the quarter-hour one, and carries this
-        //    bound — the day its own module's knowledge-bound row begins.
-        let declaration = coverage
-            .phase_gaps()
-            .iter()
-            .find(|gap| gap.closing_condition() == "#79")
-            .unwrap_or_else(|| {
-                panic!("{name} must declare the withheld Sunday quarter-hour (#79)")
-            });
-        assert_eq!(
-            declaration.reason(),
-            CoverageGapReason::NormalWeekPhaseWithheld,
-            "{name}'s #79 declaration"
-        );
-        assert_eq!(
-            declaration.applies_until(),
-            Some(bound),
-            "{name}'s #79 declaration must end at its own module's knowledge-bound row, {bound}"
-        );
+        // No declaration exists to consult: the retirement is complete, on
+        // every date and not only the probed ones.
         assert!(
-            declaration.applies_on(dated) && !declaration.applies_on(after),
-            "{name}: the declaration applies on {dated} and not on {after}"
+            coverage.phase_gaps().is_empty(),
+            "{name} declares no phase-level gap since the 2026-10-04 convention"
+        );
+        assert_eq!(
+            coverage.coverage_on(bound),
+            DateCoverage::Covered,
+            "{name}: the knowledge-bound row's own day, {bound}, is inside the answered window"
         );
 
-        // 2. The profiles: shut at 16:05 CT inside the dated era, open after it.
-        //
-        //    The grid comes from the fixed snapshot, which still states it; the
-        //    identity-backed answer on the dated Sunday is the coverage refusal
-        //    the withheld quarter-hour now earns, and that refusal is asserted
-        //    rather than assumed. After the bound the identity answers, and its
-        //    answer is an acceptance.
+        // The profile still switches exactly at the bound: shut at 16:05 CT on
+        // the last Sunday of the dated era, open on the first Sunday of the
+        // current one — read from the fixed snapshot, which is the surface
+        // that states the grid, with the identity's own answers asserted
+        // beside it as served verdicts rather than refusals.
         let dated_instant = chicago_on(dated);
         assert!(
             !calendar
                 .hours_at(dated_instant)
                 .is_accepting_orders(dated_instant),
-            "{name} must not accept orders at 16:05 CT on {dated}: its dated profile withholds \
-             the 16:00-16:15 CT quarter-hour"
+            "{name} serves the 16:15-17:00 CT intersection on {dated}: the disputed slice is closed"
         );
         assert_eq!(
             calendar.is_accepting_orders(dated_instant),
-            Err(CalendarQueryError::OutsideCoveredRange {
-                source: calendar.source(),
-                date: dated,
-            }),
-            "{name} withholds the quarter-hour on {dated}, so its own answer is the coverage \
-             refusal and never a closed grid"
+            Ok(false),
+            "{name} answers the dated era's closed quarter-hour as a served verdict, never a refusal"
         );
         assert!(
             calendar
@@ -1782,82 +1667,45 @@ fn the_sunday_quarter_hour_gap_ends_at_the_knowledge_bound_row() {
             "{name} accepts orders at 16:05 CT on {after}: its {bound} knowledge-bound row \
              widened the Sunday queue to 16:00-17:00 CT"
         );
-        // The identity states the widened grid only where #79 was its only
-        // declared gap; a scope carrying another declared phase gap still
-        // withholds the date, and the answer is then that refusal. The expected
-        // answer is driven from the scope's own published coverage rather than
-        // assumed, so both cases are stated exactly.
-        assert_acceptance_matches_coverage(
-            calendar,
-            chicago_on(after),
-            after,
-            &format!("{name} after its {bound} knowledge-bound row"),
+        assert_eq!(
+            calendar.is_accepting_orders(chicago_on(after)),
+            Ok(true),
+            "{name} serves the widened queue from {bound}"
         );
 
-        // 3. The metadata follows the profiles on every Sunday across the
-        //    boundary, not only at its ends. The comparison is made on Sundays
-        //    because 16:05 CT is inside the Sunday Pre-Open queue alone: on any
-        //    other weekday the CRITICAL window is long closed, so `is_accepting_orders`
-        //    would say nothing about the quarter-hour.
+        // The metadata follows the profiles on every Sunday across the
+        // boundary: served exactly from the bound on, and `Covered` on both
+        // sides — the retirement's whole effect, since these Sundays refused
+        // before it.
         for sunday in sundays_between(dated, after) {
             let instant = chicago_on(sunday);
-            // The profile's own answer, from the surface that states it.
             let served = calendar.hours_at(instant).is_accepting_orders(instant);
-            // The identity's answer, driven from its own published verdict for
-            // the date: the served quarter-hour answers (a scope with no other
-            // declared gap accepts orders; `globex_cryptocurrency`'s unbounded
-            // `#93` still withholds the date), and the withheld quarter-hour
-            // before the bound refuses. A refusal is never read as a closed
-            // grid.
-            assert_acceptance_matches_coverage(
-                calendar,
-                instant,
-                sunday,
-                &format!("{name} at 16:05 CT on {sunday}"),
-            );
-            let verdict = coverage.coverage_on(sunday);
-            // The profile must serve the quarter-hour exactly from the bound on,
-            // and the #79 declaration must be the reason the metadata withholds
-            // the date before it — never after it.
             assert_eq!(
                 served,
                 sunday >= bound,
                 "{name} on {sunday}: the profile must serve the quarter-hour exactly from {bound}"
             );
             assert_eq!(
-                declaration.applies_on(sunday),
-                !served,
-                "{name} on {sunday}: the #79 declaration must apply exactly where the profile \
-                 withholds the quarter-hour"
+                coverage.coverage_on(sunday),
+                DateCoverage::Covered,
+                "{name} on {sunday}: the bracket-era Sundays answer under the residual convention"
             );
-            if !served {
-                assert_eq!(
-                    verdict,
-                    DateCoverage::OutsideCoveredRange,
-                    "{name} on {sunday}: {verdict:?} while the quarter-hour is withheld"
-                );
-            }
+            assert_eq!(
+                calendar.is_accepting_orders(instant),
+                Ok(served),
+                "{name} on {sunday}: the identity answers the served verdict its profile states"
+            );
         }
-        assert_eq!(
-            coverage.coverage_on(dated),
-            DateCoverage::OutsideCoveredRange,
-            "{name}: {dated} is inside the era its #79 declaration covers"
-        );
-        // A scope whose *only* declaration is the quarter-hour answers the later
-        // Sunday completely; `globex_cryptocurrency` does not, because the
-        // whole-domain #93 special-session gap it also declares still applies
-        // there. Both outcomes are read off the declaration list rather than
-        // assumed.
-        assert_eq!(
-            coverage.is_complete_on(after),
-            coverage.phase_gaps().len() == 1,
-            "{name} on {after}: complete unless a second, still-applying declaration covers it"
+        assert!(
+            coverage.is_complete_on(dated),
+            "{name}: the last dated-era Sunday is complete under the residual convention"
         );
         checked += 1;
     }
     assert_eq!(
-        checked, 7,
-        "all seven scopes withholding the Sunday quarter-hour are probed on both sides of their \
-         own bound"
+        checked,
+        QUARTER_HOUR_ERAS.len(),
+        "every scope carrying the disclosed quarter-hour residual is probed on both sides of \
+         its own bound"
     );
 }

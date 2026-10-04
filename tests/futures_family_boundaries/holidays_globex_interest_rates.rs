@@ -68,11 +68,10 @@ fn assert_below_floor<T>(result: Result<T, CalendarQueryError>, date: NaiveDate)
 /// Asserts that an in-domain query refuses a date no covered range holds.
 ///
 /// Two shapes reach this: a date above the family's `2027-12-31` horizon, and
-/// an at-or-after-floor date whose query has to read the withheld Sunday
-/// quarter-hour the identity's `#79` declaration covers — `coverage()` reports
-/// `OutsideCoveredRange` for that date either way. A pre-floor date never
-/// reaches here: the floor governs the phase check first, so those probes state
-/// [`assert_below_floor`]'s error instead.
+/// an at-or-after-floor date outside every audited window — `coverage()` reports
+/// `OutsideCoveredRange` either way. A pre-floor date never reaches here: the
+/// floor governs first, so those probes state [`assert_below_floor`]'s error
+/// instead.
 /// 12:00 CT, the noon halt CME prints on the Monday and Thursday holidays.
 const NOON: u32 = 12 * 3_600;
 
@@ -3524,13 +3523,12 @@ fn a_saturday_session_row_states_the_whole_trade_date() {
 
 /// The replacement-block set the row keyed to `trade_date` declares.
 ///
-/// The queue's instants are reachable through this one public accessor only:
-/// `session_state`, `is_order_entry_only` and `is_accepting_orders` refuse the
-/// two 2026 Sunday dates with `OutsideCoveredRange`, because the declared
-/// phase-level gap for CME's Sunday quarter-hour (#79) is bounded to the era
-/// before this family's 2026-08-22 knowledge-bound row, so no policy answer
-/// reports the queue on those dates at all. `holiday_on` is not date-aware, so
-/// it states the row the module ships on every one of the three dates.
+/// The queue's instants are reachable through this one accessor on the
+/// ordinary week because the merged spans restate them as blocks: the
+/// 2026-08-22 knowledge-bound row is what serves the widened Sunday queue on
+/// the normal grid, and the quarter-hour before it is the disclosed #79
+/// residual (2026-10-04). `holiday_on` is not date-aware, so it states the row
+/// the module ships on every one of the three dates.
 #[expect(
     clippy::panic,
     reason = "a fixture row that is missing or of the wrong kind must fail loudly, \

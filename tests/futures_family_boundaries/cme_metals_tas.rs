@@ -411,9 +411,10 @@ fn the_2012_notice_restores_the_shared_queue_onsets() {
     }
 }
 
-/// The COMEX three withhold the Sunday 16:00-16:15 CT quarter-hour that CME's
-/// undated 2012 move leaves in dispute (issue #79); the platinum-group keys,
-/// which launched after that move, serve 16:00-17:00 CT with nothing withheld.
+/// The COMEX three serve the Sunday 16:15-17:00 CT intersection that CME's
+/// undated 2012 move leaves in dispute, disclosing the 16:00-16:15 CT slice as
+/// a residual (issue #79, retired 2026-10-04); the platinum-group keys, which
+/// launched after that move, serve 16:00-17:00 CT outright.
 #[test]
 fn the_sunday_quarter_hour_is_withheld_on_comex_and_served_on_the_pgm_keys() {
     // Sunday 2026-09-20 and Sunday 2027-01-10: a summer and a winter probe.

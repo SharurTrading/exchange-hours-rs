@@ -7,10 +7,12 @@
 //! (`BeforeSupportFloor`), outside the ranges it has a sourced answer for
 //! (`OutsideCoveredRange`), on a date it withholds (`UnresolvedGap`), or when a
 //! bounded search runs out on a day it cannot establish (`SearchExhausted`).
-//! `Exchange::SetThailand` and the Singapore scopes ship no holiday table, and
-//! the CME scopes withhold the Sunday 16:00-16:15 CT queue (#79), so those
-//! refusals are the answers this file has to state; where a query still answers,
-//! its original claim is kept verbatim. A caller's `DayPolicy` can only tighten
+//! `Exchange::SetThailand` and the Singapore scopes ship no holiday table, so
+//! those refusals are the answers this file has to state; where a query still
+//! answers, its original claim is kept verbatim. The CME scopes' Sunday
+//! 16:00-16:15 CT slice is served as the sourced 16:15-17:00 CT intersection
+//! with the disputed quarter-hour disclosed as a residual (#79, retired
+//! 2026-10-04), so those queries answer rather than refuse. A caller's `DayPolicy` can only tighten
 //! a day — it never licenses a date the identity does not answer.
 
 #![expect(
@@ -993,15 +995,20 @@ fn trade_dates_and_states_cover_the_globex_day() {
         Ok(SessionState::Closed),
         "the weekend state answers from the sourced grid"
     );
-    // The bracket-era Sunday's own quarter-hour is the one instant class the
-    // identity refuses: the state there states the coverage verdict rather
-    // than reading as a closed grid.
-    let globex = CalendarSource::MarketHoursKey(MarketHoursKey::GlobexEquityIndex);
-    assert_outside_coverage(
+    // The bracket-era Sunday's own quarter-hour is the residual the 2026-10-04
+    // convention discloses: the served intersection is closed there, and the
+    // identity answers that closed verdict from the tables rather than
+    // refusing the date.
+    assert_eq!(
         calendar.session_state(ct((2026, 4, 19), (16, 5, 0))),
-        globex,
-        day(2026, 4, 19),
-        "the withheld quarter-hour on its bracket-era Sunday",
+        Ok(SessionState::Closed),
+        "the served intersection's closed 16:05 CT verdict on a bracket-era Sunday"
+    );
+    assert!(
+        calendar
+            .is_accepting_orders(ct((2026, 4, 19), (16, 20, 0)))
+            .expect("the covered Sunday still answers"),
+        "the sourced 16:15-17:00 CT queue accepts orders after the disputed slice"
     );
 
     let livestock = calendar_for_market_hours_key(MarketHoursKey::GlobexLivestock);

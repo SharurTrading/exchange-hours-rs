@@ -468,6 +468,28 @@ state actual supported ranges; an unknown date is not a market closure.
   never reports the previous evening's leg running past the close in force
   when it opened; a row that changes only daytime bounds keeps its artifact's
   date.
+- **An undated changeover is a disclosed residual, not a refused day
+  (2026-10-04 decision, closing #79, #123 and #259).** "Prefer the sourced
+  intersection to omission" governs the completeness verdict as well as the
+  encoding: when a phase's endpoints are sourced at two values and only the
+  changeover day is undated, and the hunts for a dated artifact have closed
+  negative on every operator channel, the crate serves the sourced
+  intersection — the window that holds under every sourced state; for an
+  arrangement whose states are printed only by captures inside a dated
+  regime, the regime's own dated start — and records the disputed remainder
+  as a residual in the owner's evidence file: what is served, what the
+  disputed remainder is, and the named closer (a desk answer or a dated
+  artifact) that replaces the residual with exact data as a normal schedule
+  fix. Such a span never refuses dates through a declaration: a residual is
+  disclosure beside a served answer, and no answer the served window gives is
+  wrong under any sourced state — an order-entry onset that may have been
+  earlier is under-reported exactly as an omitted queue would be; an onset
+  served from a regime's dated start may over-report the first disputed day's
+  earliest slice; and no matching boundary moves in either direction. A phase-level declaration remains the honest shape
+  only while its hunts have not closed negative, or while no sourced state
+  pins one side of the span, or while the served answer would be wrong under
+  a sourced state; the retirements of 2026-10-04 were examined against each
+  of those tests before they shipped.
 - **A knowledge boundary is the first source that lists the modelled
   product**, not merely the earliest source that survives. Check the contract
   set, not just the grid, before keying a row to an edition.

@@ -23,8 +23,9 @@
 //! Sunday and not on the Tuesday beside it. Inside such a declaration's span the
 //! walk therefore merges verdicts **day by day**, which keeps every reported run
 //! faithful to [`CalendarCoverage::coverage_on`] one date at a time: #79's
-//! quarter-hour comes back as the bracket-era Sundays, one record each, with the
-//! Tuesdays between them answered. The day-merged region is bounded by the
+//! quarter-hour came back as the bracket-era Sundays, one record each, with the
+//! Tuesdays between them answered, until the charter's 2026-10-04 residual
+//! convention retired the declaration. The day-merged region is bounded by the
 //! declaration's own era and the identity's audited windows — outside both, the
 //! ordinary facts refuse every date uniformly and the static-edge walk resumes —
 //! so the walk's cost stays bounded by the identity's own tables.

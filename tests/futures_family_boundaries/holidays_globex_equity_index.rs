@@ -24,10 +24,11 @@
 //! totals — and no schedule answer for them survives, because every date they
 //! audit precedes the floor. Those cases therefore state the refusal itself, on
 //! the same dates and through the same entry points the schedule probes used,
-//! and their row assertions carry the rest of the fence. This family declares
-//! the Sunday 16:00-16:15 CT order-entry queue withheld (#79), which is why a
-//! pre-floor probe that falls outside every session is refused as
-//! `OutsideCoveredRange` rather than as the floor: see `assert_declared_refusal`.
+//! and their row assertions carry the rest of the fence. This family serves the
+//! Sunday 16:00-16:15 CT slice's sourced intersection with the disputed
+//! quarter-hour disclosed as a residual (#79, retired 2026-10-04), and the
+//! refusals that remain are the floor and the unsourced dates:
+//! see `assert_declared_refusal`.
 
 use chrono::{DateTime, Datelike as _, Days, Duration, NaiveDate, TimeZone as _, Utc, Weekday};
 use chrono_tz::US;
@@ -81,10 +82,9 @@ fn calendar_of(source: CalendarSource) -> ExchangeCalendar {
 /// refusal where it used to state an open, a session bound or a trade date, and
 /// the verdict is read from `CalendarCoverage::coverage_on` instead of being
 /// copied beside the probe: `BeforeSupportFloor` below the floor,
-/// `OutsideCoveredRange` on a date the family has no sourced answer for — every
-/// date before the knowledge-bound 2026-08-22 era is one, because this family
-/// declares the Sunday 16:00-16:15 CT order-entry queue withheld (#79) — and
-/// `UnresolvedGap` on a date the identity withholds.
+/// `OutsideCoveredRange` on a date the family has no sourced answer for, and
+/// `UnresolvedGap` on a date the identity withholds — the bracket-era Sundays
+/// answer since the #79 retirement (2026-10-04).
 ///
 /// The row, kind, tier, window and count assertions beside each probe are the
 /// part of the old claim the fixed snapshot still states.
@@ -484,14 +484,11 @@ fn the_christmas_2025_closure_removes_the_previous_evenings_wrap() {
 /// A shortened day keeps its own trade date; the leg that opens on a closed
 /// date carries the date after it.
 ///
-/// The two probes that land **outside** every session do not survive this
-/// family's declared phase-level gap. `trade_date` resolves a containing
-/// session before it consults the floor, so an instant in no session falls
-/// through to the order-entry scan, and that scan is withheld for every date
-/// before the knowledge-bound 2026-08-22 era (#79: the Sunday 16:00-16:15 CT
-/// queue this family does not serve). Both therefore state the refusal their
-/// own coverage declares rather than the `None` they used to answer. The three
-/// probes inside a session are answered normally and are unchanged.
+/// The two probes that land **outside** every session answer absence: the
+/// trade-date walk finds neither a session nor a queue on the closed day (the
+/// disputed Sunday quarter-hour is the residual the 2026-10-04 convention
+/// discloses, not a refusal), so the `None` these used to be refused for is the
+/// answer again. The three probes inside a session are unchanged.
 #[test]
 fn holiday_rows_move_the_trade_date_only_where_the_operator_does() {
     let calendar = equity_index();
@@ -1684,8 +1681,8 @@ fn era_2022_2024_closures_remove_the_trading_day_and_the_prior_evening_wrap() {
 /// answer to compare, so the "the row clips nothing" equality this helper used
 /// to fence is no longer observable. What remains is the row's own claim —
 /// kind and tier — plus the refusal at every probe the old comparison used,
-/// which is the `OutsideCoveredRange` its declared Sunday order-entry gap (#79)
-/// states wherever a probe falls outside every session.
+/// which is the `UnresolvedGap` the withheld row itself states wherever a
+/// probe's derivation reads the date.
 fn assert_unsourced_changes_nothing(date: NaiveDate, row: Holiday, tier: EvidenceTier) {
     let calendar = equity_index();
     let detached = calendar.without_holidays();
@@ -1693,10 +1690,9 @@ fn assert_unsourced_changes_nothing(date: NaiveDate, row: Holiday, tier: Evidenc
     assert_eq!(row.tier(), tier, "{date}");
     // An `Unsourced` row closes nothing: the withheld row contributes no clip,
     // and the detached grid answers the ordinary week. The attached identity
-    // refuses the date — its metadata reports the Sunday quarter-hour
-    // declaration (#79) over this era while the query's own derivation reads
-    // the withheld row and reports `UnresolvedGap` — and a refused day is
-    // never reported closed.
+    // refuses the date — the query's own derivation reads the withheld row
+    // and reports `UnresolvedGap` — and a refused day is never reported
+    // closed.
     assert!(
         detached
             .is_closed_trade_date(date, SessionKind::Both)

@@ -889,14 +889,17 @@ This era's rows cite the ids below: CME Group's own published holiday schedules 
   modelled grid rather than withholding the quarter-hour. That is a deliberate difference from
   `globex_equity_index`, `globex_energy`, `globex_fx`, `globex_interest_rates`, `cme`, `comex`
   and `nymex`, which #79 records as serving only the `16:15-17:00` intersection. The reason is
-  the engine's grain: `CoverageGapReason::NormalWeekPhaseWithheld` refuses **every** order-entry
-  query on a date the declaration covers, not only the withheld slice, so declaring here would
-  turn the twenty-one published onsets this change serves — nine of them on dates the
-  declaration would cover — into coverage errors, which is the failure LAW-COVERAGE exists to
-  prevent. Closing condition: a CME statement dating the Sunday onset at day level, after which
-  the crate serves the sourced intersection with a bounded declaration like the seven scopes
-  above; or an engine that scopes the refusal to the withheld quarter-hour. Tracked as issue
-  #79 (LAW-FOLLOW-UPS-ARE-ISSUES).
+  the engine's grain when this note was written: `CoverageGapReason::NormalWeekPhaseWithheld`
+  refused **every** order-entry query on a date the declaration covered, not only the withheld
+  slice, so declaring here would have turned the twenty-one published onsets this change
+  serves — nine of them on dates the declaration would have covered — into coverage errors,
+  which is the failure LAW-COVERAGE exists to prevent. The #172 date-scoping and then the
+  charter's 2026-10-04 sourced-intersection residual convention closed #79 by retiring the
+  seven scopes' declarations rather than by changing what any of them serve: this family
+  still serves `16:00` across the modelled grid while they serve the `16:15-17:00`
+  intersection, both shapes now standing as disclosed residuals rather than refusals.
+  Closing condition: a CME statement dating the Sunday onset at day level, after which both
+  shapes become exact data. Recorded beside #79 (resolved 2026-10-04).
 - **gap — the 2011/2012/2013 eras ship no order-entry phase.** CME's 2011-01-12 capture prints
   a Sunday Pre-Open of `16:15` and a weekday Pre-Open of `16:45` for the outgoing grid, and
   those eras' envelopes are materially different (a 15:15 or 16:30 close with a 15:15-15:30

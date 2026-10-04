@@ -31,15 +31,14 @@
 //! whole claimed interval when the declaration carries no bound, and the era
 //! before `PhaseGap::until` when the identity's own knowledge-bound row begins
 //! serving it. `CoverageGapReason::NormalWeekPhaseWithheld`
-//! is the required-phase shape (#79 and #123) and
+//! was the required-phase shape (#79, #123, #259) and
 //! `CoverageGapReason::UnpublishedClosureDates` the undated
 //! holiday-scope shape (#157), which withholds no phase at all. Each declaration
 //! carries the issue whose closure discharges it, so the
 //! metadata reports a gap with a closing condition rather than a bare verdict —
 //! LAW-COVERAGE's "a recorded gap with a closing condition", asserted by the
 //! crate rather than inferred from its data. One identity can carry several,
-//! because the shape recurs per phase rather than per scope: `globex_grains`
-//! carries the omitted 2012-05-20..2013-04-06 regime, and the list stays a
+//! because the shape recurs per phase rather than per scope, and the list stays a
 //! slice so the next phase that needs its own declaration does not need the
 //! type to change. A declaration is removed when the rows that discharge it
 //! ship, and
@@ -55,24 +54,32 @@
 //! state") resolved the label divergence the declaration recorded, so neither
 //! `globex_grains` nor `globex_livestock` declares it any more and the reason
 //! stays on the enum as the vocabulary a future labelling divergence would use.
+//! And the three `NormalWeekPhaseWithheld` declarations retired on 2026-10-04
+//! UTC under the charter's sourced-intersection residual convention (AGENTS.md,
+//! "Modeling conventions", the 2026-10-04 decision): the seven #79 quarter-hour
+//! scopes, `globex_cryptocurrency`'s #123 five-day era and `globex_grains`'
+//! #259 regime each had a phase sourced at two values with only the changeover
+//! day undated, and every dated-artifact hunt had closed negative, so their
+//! dates answer from the served intersection — from the regime's own dated
+//! start for #259, whose queue rows ship in `grains.rs` — while the disputed
+//! remainders are disclosed as residuals in the owners' evidence files. The
+//! reason stays on the enum as the vocabulary a future required-phase gap would
+//! declare: one whose hunts have not closed negative, or whose served answer
+//! would be wrong under a sourced state. Nothing declares it today.
 //!
 //! Every declaration also states the dates it applies to, so the metadata
 //! withholds exactly what the evidence withholds (#172): `PhaseGap::since` and
 //! `PhaseGap::until` bound the era on either side — each bound restating a dated
 //! row the module already ships — and a `PhaseGapShape` narrows the era to the
-//! dates a served occurrence decides, which is what lets the #79 scopes answer
-//! their Tuesdays while withholding the bracket-era Sundays. Both bounds are
-//! dated rows, never inferences: the bracket that starts #79's span is the
-//! 2012-05-28 platform-wide capture (the last state printing 16:15 CT), and a
-//! gap whose onset the evidence cannot date starts at its era's own sourced
-//! first day (#123's 2017-12-17 launch row).
+//! dates a served occurrence decides. Both bounds are
+//! dated rows, never inferences.
 //!
 //! Only an identity whose gap survives the permanent 2010 floor is declared
 //! here, because that is the interval the completeness claim covers: a scope
 //! whose withheld phase or unstateable session lies entirely before 2010 is not
-//! incomplete in the claimed interval and must not be declared. Ten identities
-//! declare today — ten declarations in all, `globex_grains` carrying one — and
-//! the fences in
+//! incomplete in the claimed interval and must not be declared. One identity
+//! declares today — one declaration in all, `eurex`'s undated closure scope —
+//! and the fences in
 //! `tests/schedule_documentation/coverage_inventory.rs` hold them to the
 //! inventory's own verdicts while `tests/coverage_metadata.rs` holds each
 //! declaration to the shipped profile's behaviour.
@@ -83,7 +90,7 @@
 use chrono::NaiveDate;
 
 use super::timeline::{effective_date, horizon};
-use crate::calendar::coverage::{CoverageGapReason, PhaseGap, PhaseGapShape};
+use crate::calendar::coverage::{CoverageGapReason, PhaseGap};
 use crate::calendar::{CalendarSource, Exchange, MarketHoursKey};
 
 /// What one identity declares about its own sourcing.
@@ -146,20 +153,6 @@ impl DeclaredSourcing {
         }
     }
 
-    /// `nothing_carried()`, plus the phase-level gaps the identity declares.
-    ///
-    /// The declarations below are the ones `docs/schedules/coverage-2025.md`
-    /// calls incomplete for a reason its date columns cannot show, so each also
-    /// carries the closing issue that page's `Closing issues` cell names for the
-    /// scope.
-    const fn nothing_carried_with(phase_gaps: &'static [PhaseGap]) -> Self {
-        Self {
-            carried_below: None,
-            observes_no_holidays: false,
-            phase_gaps,
-        }
-    }
-
     /// `carried_below(horizon)`, plus the phase-level gaps the identity declares.
     const fn carried_below_with(
         horizon: Option<NaiveDate>,
@@ -171,63 +164,6 @@ impl DeclaredSourcing {
             phase_gaps,
         }
     }
-
-    /// `carried_below(horizon)`, plus the withheld Sunday quarter-hour (#79).
-    ///
-    /// Six of the seven scopes that withhold that quarter-hour declare nothing
-    /// else, so their arm in the per-identity table stays one line of horizon
-    /// restatement.
-    const fn carried_below_with_quarter_hour(horizon: Option<NaiveDate>) -> Self {
-        Self::carried_below_with(horizon, &WITHHELD_QUARTER_HOUR)
-    }
-}
-
-/// The required-phase gap seven scopes carry: CME's Sunday 16:00-16:15 CT
-/// quarter-hour is withheld (#79) until the era that serves it.
-///
-/// `docs/schedules/coverage-2025.md` records it as "the 16:00-16:15 CT Sunday
-/// quarter-hour, withheld (#79)" and `docs/evidence/cme.md` plus each family's
-/// own module record that only the disputed quarter-hour depends on the undated
-/// 2012 move, so the crate serves the sourced 16:15-17:00 CT intersection
-/// instead. The Sunday queue moved from a 16:15 to a 16:00 CT onset in 2012
-/// without an operator-stated day, and the same grid governs every scope here:
-/// `cme`, `comex`, `nymex`, `globex_energy`, `globex_equity_index`, `globex_fx`
-/// and `globex_interest_rates`.
-///
-/// **The operative reason is narrower than "the 2012 change was never dated".** On the
-/// bytes, no sourced state has printed Sunday 16:15 CT since 2012-05-28: Globex
-/// notice 20120402 dates the old value at 2012-04-15, and notice 20121112 prints
-/// the new one. What the crate actually lacks is an admissible artifact whose own
-/// scope covers an **ordinary week inside the claimed interval** — its 2025
-/// evidence is holiday geometry, and its only ordinary-week artifact is
-/// 2026-10-18..24 — and the charter says a later observation alone does not prove
-/// the intervening period complete. The 2012 bracket is therefore a second,
-/// independent reason rather than the first.
-///
-/// **Bounded to the dated era, and shaped to the Sundays it withholds.** The
-/// four modules these seven scopes route to — `cme_group.rs`, `energy_metals.rs`,
-/// `fx.rs` and `interest_rates.rs` — each end their timelines in a knowledge-bound
-/// 2026-08-22 row whose profile widens the Sunday queue to 16:00-17:00 CT, so from
-/// that day the withheld quarter-hour *is* served and the gap no longer holds: the
-/// declaration's `until` bound is that row's day, verified per module rather than
-/// assumed. The `since` bound is 2012-05-28, the platform-wide capture that is the
-/// last state printing 16:15 CT: on every earlier Sunday the sourced value *is*
-/// 16:15, the served intersection is the truth, and the quarter-hour is affirmatively
-/// quiet — refusing those dates would withhold answers the evidence gives. The
-/// **shape** names the served Sunday Pre-Open window itself (16:15-17:00 CT): the
-/// withheld slice is the fifteen minutes before it, and the question it cannot
-/// answer exists exactly on the dates whose Sunday queue resolves — a Tuesday in
-/// the same era answers from the sourced weekday grid, and a Sunday whose evening
-/// leg a holiday removes answers closed. What remains is the bracket-to-bound span
-/// of resolving Sundays: the dates the evidence actually cannot state.
-const fn withheld_sunday_quarter_hour() -> PhaseGap {
-    PhaseGap::new(CoverageGapReason::NormalWeekPhaseWithheld, "#79")
-        .since(effective_date(2012, 5, 28))
-        .until(effective_date(2026, 8, 22))
-        .with_shape(PhaseGapShape::OrderEntryWindow {
-            open_ssm: Some(16 * 3600 + 15 * 60),
-            close_ssm: 17 * 3600,
-        })
 }
 
 // The #152 post-close label declaration both queue scopes carried is retired
@@ -237,84 +173,26 @@ const fn withheld_sunday_quarter_hour() -> PhaseGap {
 // enum as vocabulary, and the two families' evidence files disclose the T2
 // feed's divergent labels beside the fences that pin the convention.
 
-/// `globex_grains`' second gap: the 2012-05-20..2013-04-06 regime's queue
-/// states are omitted outright, so no date of that regime answers its
-/// order-entry phases.
-///
-/// The 2012-05-20 expansion's queue times are sourced as *states* — CME's own
-/// trading-hours captures of 2012-05-28 and 2012-06-07 print Sunday Pre-Open
-/// 16:00 and weekday "14:30-16:00, 16:45-17:00" against 16:15 and the
-/// 18:00-07:15 grid on 2012-05-11 — but the switch-on day is bracketed to
-/// 2012-05-11..2012-05-28 and advisory 20120518 states only the matching
-/// hours, so no queue revision is keyed inside the regime and the profile
-/// serves its matching grid with no queues at all. The bracketed start of the
-/// regime itself is the dated 2012-05-20 revision row and the dated
-/// 2013-04-07 notice ends it, so the declaration bounds itself to exactly
-/// those days rather than refusing either neighbour. The whole
-/// [`PhaseGapShape::EveryDay`] regime refuses because the omitted queues are
-/// order-entry phases the crate serves nowhere in it — there is no served
-/// window to shape the applicability onto. The sessions themselves are
-/// sourced and answered; `docs/evidence/globex_grains.md` records the states,
-/// the bracket and the closing condition — a CME document that states those
-/// queue times in session language on a day-level effective date — and the
-/// scope's inventory row names #259, the live issue that carries the gap as
-/// its closing condition (its former citation #116 closed without this
-/// data), alongside #117.
-const fn grains_omitted_regime_queues() -> PhaseGap {
-    PhaseGap::new(CoverageGapReason::NormalWeekPhaseWithheld, "#259")
-        .since(effective_date(2012, 5, 20))
-        .until(effective_date(2013, 4, 7))
-}
+// The three `NormalWeekPhaseWithheld` declarations that used to live here —
+// the seven-scope Sunday quarter-hour (#79), `globex_cryptocurrency`'s
+// five-day-era Pre-Open onset (#123) and `globex_grains`' omitted
+// 2012-05-20..2013-04-06 regime queues (#259) — retired on 2026-10-04 UTC
+// under the charter's sourced-intersection residual convention (AGENTS.md,
+// "Modeling conventions", the 2026-10-04 decision).
 
-/// The second gap `globex_cryptocurrency` carries: the five-day era's Sunday and
-/// weekday Pre-Open onset is undated, so dated history omits those queues.
-///
-/// The ledger's basis note states it, and `docs/evidence/globex_cryptocurrency.md`
-/// records the closing condition — "a CME artifact that states the Pre-Open in
-/// session language on a day-level effective date" — after the 2026-08-31
-/// review confirmed the 2017-12-14, 2017-12-22 and 2018-01-04 specification
-/// captures publish the matching grid only. That evidence file said the gap was
-/// "tracked as an issue" and named no issue number, so #123 was opened for it and
-/// is now cited here, in `docs/schedules/coverage-2025.md`'s `Closing issues` cell
-/// for this scope and in that evidence file's own gap note:
-/// LAW-FOLLOW-UPS-ARE-ISSUES is discharged rather than waived, and the issue
-/// exists rather than being promised.
-///
-/// **Bounded to the five-day era on both sides.** The gap is a property of the
-/// five-day 17:00-16:00 CT grid, whose own first day is dated at T1 — CME
-/// SER-8051R's 2017-12-17 launch row, before which the family's era is a sourced
-/// launch closure that answers without the declaration — and whose own last day
-/// is dated at T1 as well: CME filing 26-114 moves the family to the 24/7 grid on
-/// the 2026-05-29 bridge row, whose profile serves the operator's published
-/// Pre-Open for the first time (`ORDER_ENTRY_2026_05_29`, and the era's two
-/// queues from 2026-05-30). So the withheld phase is live exactly between those
-/// two sourced days, and the declaration says so rather than refusing the launch
-/// closures before the grid or denying the 24/7 era coverage its profiles serve.
-/// What the evidence never dates is the day the Pre-Open *began* inside the
-/// five-day grid — the 2017-12-14, 2017-12-22 and 2018-01-04 specification
-/// captures publish the matching grid only — and the shape stays
-/// [`PhaseGapShape::EveryDay`] because the queues are omitted from the whole
-/// era: no date of it can prove the phase it does not carry (LAW-NO-FABRICATED-DATES).
-const fn undated_five_day_pre_open() -> PhaseGap {
-    PhaseGap::new(CoverageGapReason::NormalWeekPhaseWithheld, "#123")
-        .since(effective_date(2017, 12, 17))
-        .until(effective_date(2026, 5, 29))
-}
+// Each was a phase whose endpoints were sourced at two values with only the
+// changeover day undated, and every dated-artifact hunt had closed negative,
+// so the retirement serves what the tables serve — the sourced 16:15-17:00 CT
+// intersection across the #79 span; the five-day grid with the queues absent,
+// the narrowest sourced state of the #123 era; and, for #259, the regime
+// queue rows `grains.rs` keys to the regime's own dated start.
 
-/// The one-declaration list the six quarter-hour scopes other than `globex_fx`
-/// carry.
-const WITHHELD_QUARTER_HOUR: [PhaseGap; 1] = [withheld_sunday_quarter_hour()];
-
-// `globex_livestock` carried the #152 post-close label declaration until the
-// charter's 2026-10-03 trade-date convention retired it (see the note above
-// `grains_omitted_regime_queues`); it now declares nothing and its arm states
-// only the horizon, like `globex_fx`'s after its #93 declaration was retired.
-
-/// The declaration `globex_grains` carries: the 2012-05-20..2013-04-06 regime
-/// whose queue states are omitted outright. It carried the #152 post-close
-/// label declaration beside this one until the charter's 2026-10-03
-/// trade-date convention retired that (#152; see the note above).
-const GRAINS_GAPS: [PhaseGap; 1] = [grains_omitted_regime_queues()];
+// The in-regime captures print those queue states twice (2012-05-28 and
+// 2012-06-07); the disputed remainders moved into the owners' evidence files
+// as disclosed residuals, each with the CME desk ask as its named closer, and
+// `CoverageGapReason::NormalWeekPhaseWithheld` stays on the enum as the
+// vocabulary a future required-phase gap would declare, exactly as the #152
+// and #93 reasons before it.
 
 /// The undated closure scope `eurex` declares: the `tba` era of Eurex's German
 /// equity and equity-index closures, 2025-01-01 through the last edition in
@@ -366,11 +244,6 @@ const fn undated_german_closures() -> PhaseGap {
 
 /// `eurex`'s one declaration: the operator's undated German-scope closures.
 const EUREX_UNDATED_CLOSURES: [PhaseGap; 1] = [undated_german_closures()];
-
-/// `globex_cryptocurrency` declares one gap: the five-day era's undated Pre-Open
-/// onset. Its 24/7-era merged trade dates shipped as rows on 2026-09-26 UTC, so
-/// the special-session declaration it carried until then is gone.
-const GLOBEX_CRYPTOCURRENCY_GAPS: [PhaseGap; 1] = [undated_five_day_pre_open()];
 
 /// Returns what `source` declares about its own sourcing.
 pub(crate) const fn declared(source: CalendarSource) -> DeclaredSourcing {
@@ -463,14 +336,13 @@ const fn for_exchange(exchange: Exchange) -> DeclaredSourcing {
         Exchange::BoxOptions => DeclaredSourcing::carried_below(horizon!(2010, 1, 1)),
         // `—`: closed before the operator-dated 2023-09-27 launch.
         Exchange::MemxOptions => DeclaredSourcing::nothing_carried(),
-        // The Sunday 16:00-16:15 CT quarter-hour is withheld (#79). The
-        // floor-era grid and both queues are sourced (notices 20090831/0907/0914).
-        Exchange::Cme => DeclaredSourcing::carried_below_with_quarter_hour(horizon!(2010, 1, 1)),
+        // The floor-era grid and both queues are sourced (notices
+        // 20090831/0907/0914); the Sunday quarter-hour's undated 2012 move is a
+        // disclosed residual (#79, retired 2026-10-04), not a declaration.
+        Exchange::Cme => DeclaredSourcing::carried_below(horizon!(2010, 1, 1)),
         Exchange::Cbot => DeclaredSourcing::carried_below(horizon!(2010, 3, 15)),
-        // The Sunday 16:00-16:15 CT quarter-hour is withheld (#79).
-        Exchange::Comex => DeclaredSourcing::carried_below_with_quarter_hour(horizon!(2012, 5, 11)),
-        // The Sunday 16:00-16:15 CT quarter-hour is withheld (#79).
-        Exchange::Nymex => DeclaredSourcing::carried_below_with_quarter_hour(horizon!(2012, 5, 11)),
+        Exchange::Comex => DeclaredSourcing::carried_below(horizon!(2012, 5, 11)),
+        Exchange::Nymex => DeclaredSourcing::carried_below(horizon!(2012, 5, 11)),
         Exchange::Cfe => DeclaredSourcing::carried_below(horizon!(2010, 1, 1)),
         // `—`: closed before FairX's exact 2021-06-28 08:00 CT launch.
         Exchange::CoinbaseDerivatives => DeclaredSourcing::nothing_carried(),
@@ -566,45 +438,41 @@ const fn for_exchange(exchange: Exchange) -> DeclaredSourcing {
 const fn for_market_hours_key(key: MarketHoursKey) -> DeclaredSourcing {
     match key {
         // The floor-era grid and both queues are sourced like the venue's own
-        // (notices 20090831/0907/0914); the Sunday quarter-hour is still
-        // withheld (#79).
-        MarketHoursKey::GlobexEquityIndex => {
-            DeclaredSourcing::carried_below_with_quarter_hour(horizon!(2010, 1, 1))
-        }
-        MarketHoursKey::GlobexEnergy => {
-            DeclaredSourcing::carried_below_with_quarter_hour(horizon!(2012, 5, 11))
-        }
+        // (notices 20090831/0907/0914); the Sunday quarter-hour's undated 2012
+        // move is a disclosed residual (#79, retired 2026-10-04), not a
+        // declaration.
+        MarketHoursKey::GlobexEquityIndex => DeclaredSourcing::carried_below(horizon!(2010, 1, 1)),
+        MarketHoursKey::GlobexEnergy => DeclaredSourcing::carried_below(horizon!(2012, 5, 11)),
         // The 100-oz silver family shares the energy/metals tables by
         // reference, so it carries the family's own horizon; like Rough Rice,
         // a key referencing another family's rows declares no phase gaps of
-        // its own — the family's bracketed Sunday quarter-hour (#79) is the
-        // family's, recorded beside its rows and in this key's evidence file.
+        // its own — the family's Sunday quarter-hour residual (#79, retired
+        // 2026-10-04) is the family's, recorded beside its rows and in this
+        // key's evidence file.
         MarketHoursKey::GlobexSilver100Oz => DeclaredSourcing::carried_below(horizon!(2012, 5, 11)),
-        MarketHoursKey::GlobexGrains => {
-            DeclaredSourcing::carried_below_with(horizon!(2010, 3, 15), &GRAINS_GAPS)
-        }
+        // The 2012-05-20..2013-04-06 regime's queues are served from the
+        // regime's own dated start (the #259 retirement, 2026-10-04); the
+        // eight-day onset bracket is the residual the evidence file records.
+        MarketHoursKey::GlobexGrains => DeclaredSourcing::carried_below(horizon!(2010, 3, 15)),
         MarketHoursKey::GlobexMiniGrains => DeclaredSourcing::carried_below(horizon!(2010, 4, 5)),
-        // Only the Sunday 16:00-16:15 CT quarter-hour is withheld (#79): every
-        // special session CME publishes for this family now ships as a row, so
-        // the #93 declaration it used to carry is gone. The floor-era matching
-        // grid is sourced (FX-hours page, capture 2009-05-02), but the Sunday
-        // Pre-Open has no pre-2012 statement of its own.
-        MarketHoursKey::GlobexFx => {
-            DeclaredSourcing::carried_below_with_quarter_hour(horizon!(2012, 5, 3))
-        }
+        // Every special session CME publishes for this family now ships as a
+        // row, so the #93 declaration it used to carry is gone; the floor-era
+        // matching grid is sourced (FX-hours page, capture 2009-05-02), and the
+        // Sunday quarter-hour's undated 2012 move is a disclosed residual
+        // (#79, retired 2026-10-04), not a declaration.
+        MarketHoursKey::GlobexFx => DeclaredSourcing::carried_below(horizon!(2012, 5, 3)),
         MarketHoursKey::GlobexInterestRates => {
-            DeclaredSourcing::carried_below_with_quarter_hour(horizon!(2010, 1, 1))
+            DeclaredSourcing::carried_below(horizon!(2010, 1, 1))
         }
         // The #152 post-close label declaration this arm used to carry is
         // retired by the charter's 2026-10-03 trade-date convention; the arm
         // restates the horizon alone.
         MarketHoursKey::GlobexLivestock => DeclaredSourcing::carried_below(horizon!(2010, 1, 1)),
         // `—`: closed before the exact 2017-12-17 launch grid. Both of this
-        // family's declared session shapes now ship as rows; what is left is
-        // the five-day era's Sunday and weekday Pre-Open onset (#123).
-        MarketHoursKey::GlobexCryptocurrency => {
-            DeclaredSourcing::nothing_carried_with(&GLOBEX_CRYPTOCURRENCY_GAPS)
-        }
+        // family's declared session shapes now ship as rows; the five-day
+        // era's undated Pre-Open onset is a disclosed residual (#123, retired
+        // 2026-10-04) — the era answers from the grid with the queues absent.
+        MarketHoursKey::GlobexCryptocurrency => DeclaredSourcing::nothing_carried(),
         MarketHoursKey::CfeVix => DeclaredSourcing::carried_below(horizon!(2010, 1, 1)),
         MarketHoursKey::Eurex => {
             DeclaredSourcing::carried_below_with(horizon!(2010, 1, 1), &EUREX_UNDATED_CLOSURES)

@@ -182,10 +182,9 @@ fn an_order_entry_window_is_never_reported_as_an_open_session() {
             let label = format!("{} at {instant}", key.as_str());
             // The split is the coverage line (LAW-COVERAGE): where the identity
             // answers the instant, the separation this fence is about is
-            // claimable; where it declares no answer for a day the instant needs
-            // — a scope with no holiday layer, or the withheld Sunday queue
-            // before its knowledge-bound era (#79) — the query refuses, and the
-            // refusal is asserted rather than read as a state.
+            // claimable; where it declares no answer for a day the instant
+            // needs — a scope with no holiday layer — the query refuses, and
+            // the refusal is asserted rather than read as a state.
             let state = match calendar.session_state(instant) {
                 Ok(state) => state,
                 Err(error) => {

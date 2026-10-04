@@ -819,10 +819,12 @@ fn check_metadata(calendar: ExchangeCalendar, identity: CalendarSource) {
     let gaps: Vec<CoverageGap> = coverage.gaps().collect();
     assert!(
         complete.len() < 4096,
-        "{identity:?} reports a bounded span count (1021 observed for \
-         `globex_equity_index` and 1017 for `globex_grains`: a date-scoped \
-         declaration reports one span per maximal run its shape resolves, so the \
-         bracket-era Sundays come back one record each)"
+        "{identity:?} reports a bounded span count (32 observed for \
+         `globex_equity_index` and 28 for `globex_grains`: a date-scoped \
+         declaration used to report one span per maximal run its shape resolved — \
+         the bracket-era Sundays one record each, 1021 spans for \
+         `globex_equity_index`, until the 2026-10-04 retirement collapsed the \
+         runs back into the date-level edges)"
     );
     // The walk streams every record a run at a time and stores nothing, so the
     // only bound is on the declarations themselves: the most any shipped
@@ -836,9 +838,9 @@ fn check_metadata(calendar: ExchangeCalendar, identity: CalendarSource) {
     );
     assert!(
         gaps.len() < 4096,
-        "{identity:?} reports a bounded gap count (1069 observed for \
-         `globex_grains` at the 2010 floor, one record per #152 queue run plus \
-         the date-level eras)"
+        "{identity:?} reports a bounded gap count (16 observed for \
+         `globex_grains`, the date-level eras alone since the #152, #123, #259 \
+         and #79 retirements lifted their records)"
     );
 
     // A declared phase-level gap is part of the partition, not a special case
@@ -951,137 +953,46 @@ fn a_complete_scope_answers_every_day_inside_its_span() {
     }
 }
 
-/// One expected declaration: reason, closing issue, `since`, `until`, shape.
-type DeclaredGap = (
-    CoverageGapReason,
-    &'static str,
-    Option<NaiveDate>,
-    Option<NaiveDate>,
-    exchange_hours::PhaseGapShape,
-);
-
-/// Asserts one fixture's declared phase-level gaps, the dates each applies to,
-/// and the shape each carries.
-///
-/// The expected declaration carries its bounds and its shape verbatim, so the
-/// fixture is the fence for what the declaration states — the era it names on
-/// both sides and the dates its shape resolves.
-fn check_declared_gaps(key: MarketHoursKey, expected: &[DeclaredGap]) {
-    let coverage = key_coverage(key);
-    let declared: Vec<DeclaredGap> = coverage
-        .phase_gaps()
-        .iter()
-        .map(|gap| {
-            (
-                gap.reason(),
-                gap.closing_condition(),
-                gap.applies_since(),
-                gap.applies_until(),
-                gap.shape(),
-            )
-        })
-        .collect();
-    assert_eq!(declared, expected, "{key:?}");
-    assert!(
-        !expected.is_empty() || coverage.complete_ranges().count() > 0 || {
-            // A scope with no declaration still reports no complete span when its
-            // ordinary facts answer nothing — that is the date-level walk's
-            // business, not the declarations'.
-            false
-        }
-    );
-}
-
 #[test]
-fn a_declared_phase_gap_applies_only_to_the_dates_its_shape_resolves() {
-    // #79's quarter-hour is withheld on the bracket-era Sundays whose served
-    // Pre-Open resolves — and on nothing else. A Tuesday in the same era
-    // answers from the sourced weekday grid; a Sunday before the 2012-05-28
-    // capture answers because the sourced state still printed 16:15 CT then; a
-    // Sunday whose evening leg a holiday removes answers closed; and from the
-    // 2026-08-22 knowledge-bound row the quarter-hour itself is served.
+fn the_quarter_hour_residual_serves_the_intersection_on_every_bracket_era_sunday() {
+    // #79's retirement (2026-10-04): the seven scopes' bracket-era Sundays now
+    // answer from the tables, and the disputed 16:00-16:15 CT slice is served
+    // as the closed half of the sourced 16:15-17:00 CT intersection. This
+    // fence pins that on the dates the retired declaration used to refuse: a
+    // Tuesday in the same era, a Sunday before the 2012-05-28 capture, a
+    // Sunday whose evening leg a holiday removes, and the Sundays from the
+    // 2026-08-22 knowledge-bound row on — all `Covered`, none refused.
     let sample = date(2025, 6, 10);
     let bracket_sunday = date(2015, 6, 14);
     let pre_bracket_sunday = date(2012, 5, 27);
     let first_bracket_sunday = date(2012, 6, 3);
     let holiday_sunday = date(2017, 12, 24);
     let after_the_bound = date(2026, 8, 23);
-    let quarter_hour = date(2026, 8, 22);
-    let sunday_window = exchange_hours::PhaseGapShape::OrderEntryWindow {
-        open_ssm: Some(16 * 3600 + 15 * 60),
-        close_ssm: 17 * 3600,
-    };
     for key in [MarketHoursKey::GlobexEquityIndex, MarketHoursKey::GlobexFx] {
-        check_declared_gaps(
-            key,
-            &[(
-                CoverageGapReason::NormalWeekPhaseWithheld,
-                "#79",
-                Some(date(2012, 5, 28)),
-                Some(quarter_hour),
-                sunday_window,
-            )],
-        );
         let coverage = key_coverage(key);
-        assert_eq!(
-            coverage.coverage_on(sample),
-            DateCoverage::Covered,
-            "{key:?}: a Tuesday in the bracket era answers from the sourced weekday grid"
-        );
-        assert_eq!(
-            coverage.coverage_on(bracket_sunday),
-            DateCoverage::OutsideCoveredRange,
-            "{key:?}: the bracket-era Sunday withholds the quarter-hour"
-        );
-        assert_eq!(
-            coverage.coverage_on(pre_bracket_sunday),
-            DateCoverage::Covered,
-            "{key:?}: the last 16:15-CT capture is 2012-05-28, so earlier Sundays answer"
-        );
-        assert_eq!(
-            coverage.coverage_on(first_bracket_sunday),
-            DateCoverage::OutsideCoveredRange,
-            "{key:?}: 2012-06-03 is the first Sunday whose queue onset is in doubt"
-        );
-        assert_eq!(
-            coverage.coverage_on(holiday_sunday),
-            DateCoverage::Covered,
-            "{key:?}: a Sunday whose evening leg the holiday removes answers closed"
-        );
-        assert_eq!(
-            coverage.coverage_on(after_the_bound),
-            DateCoverage::Covered,
-            "{key:?}: the knowledge-bound row serves the quarter-hour"
-        );
-        // The gap records are the bracket-era Sundays, one run each.
-        let sunday_records: Vec<DateRange> = coverage
-            .gaps()
-            .filter(|gap| gap.closing_condition() == Some("#79"))
-            .map(exchange_hours::CoverageGap::range)
-            .collect();
-        assert_eq!(
-            sunday_records.first(),
-            Some(&DateRange::new(first_bracket_sunday, first_bracket_sunday).expect("ascending")),
-            "{key:?}: the first #79 record is the first bracket-era Sunday alone"
-        );
         assert!(
-            sunday_records
-                .iter()
-                .all(|range| range.first() == range.last()
-                    && range.first().format("%A").to_string() == "Sunday"),
-            "{key:?}: every #79 record is one Sunday"
+            coverage.phase_gaps().is_empty(),
+            "{key:?}: the #79 retirement leaves no declaration"
         );
-        assert!(
-            !sunday_records
-                .iter()
-                .any(|range| range.contains(holiday_sunday)),
-            "{key:?}: the holiday-removed Sunday answers, so no record claims it"
-        );
+        for day in [
+            sample,
+            bracket_sunday,
+            pre_bracket_sunday,
+            first_bracket_sunday,
+            holiday_sunday,
+            after_the_bound,
+        ] {
+            assert_eq!(
+                coverage.coverage_on(day),
+                DateCoverage::Covered,
+                "{key:?}: {day} answers under the residual convention"
+            );
+        }
     }
 
-    // The query surface agrees per date: the withheld phase refuses where the
-    // declaration applies and answers everywhere else — a refusal is never read
-    // as a closed grid, and an answered grid is never refused.
+    // The query surface agrees per date: the disputed slice answers as the
+    // served intersection's closed verdict, the sourced queue accepts after
+    // it, and a Sunday whose evening leg a holiday removes answers closed.
     let fx = calendar_for_market_hours_key(MarketHoursKey::GlobexFx);
     let at = |day: NaiveDate, hour: u32, minute: u32| {
         US::Central
@@ -1100,61 +1011,48 @@ fn a_declared_phase_gap_applies_only_to_the_dates_its_shape_resolves() {
     );
     assert_eq!(
         fx.is_accepting_orders(at(bracket_sunday, 16, 5)),
-        Err(CalendarQueryError::OutsideCoveredRange {
-            source: fx.source(),
-            date: bracket_sunday,
-        }),
-        "the withheld quarter-hour refuses the bracket-era Sunday, not the era"
+        Ok(false),
+        "the disputed slice answers as the served intersection's closed verdict, not a refusal"
     );
     assert_eq!(
-        fx.is_accepting_orders(at(bracket_sunday, 12, 0)),
-        Err(CalendarQueryError::OutsideCoveredRange {
-            source: fx.source(),
-            date: bracket_sunday,
-        }),
-        "the queue gate is keyed to the date the scan opens on: a bracket-era \
-         Sunday whose quarter-hour is unsourced is an incomplete date, so its \
-         order-entry probes state the date's verdict rather than answering \
-         through a phase the same day leaves unsourceable"
+        fx.is_accepting_orders(at(bracket_sunday, 16, 20)),
+        Ok(true),
+        "the sourced 16:15-17:00 CT queue accepts after the disputed slice"
     );
     assert_eq!(
         fx.is_accepting_orders(at(holiday_sunday, 16, 5)),
         Ok(false),
-        "the holiday-removed Sunday answers closed instead of refusing"
+        "the holiday-removed Sunday answers closed"
     );
     assert_eq!(
         fx.is_accepting_orders(at(after_the_bound, 16, 5)),
         Ok(true),
         "after the knowledge-bound row the quarter-hour is served"
     );
+    assert_eq!(
+        fx.session_state(at(bracket_sunday, 16, 5)),
+        Ok(exchange_hours::SessionState::Closed),
+        "the state names the served closed verdict the residual discloses"
+    );
 }
 
 #[test]
-fn the_queue_dates_answer_and_only_the_omitted_regime_refuses() {
-    // The #152 label gap is retired (2026-10-03): the charter's Post-Close
-    // trade-date convention dates an order-entry queue by the session it
-    // feeds, so a queue date's `trade_date` is a convention the operator's own
-    // T1 prose states and no longer a divergence to declare. What is left is
-    // exactly the omitted 2012-05-20..2013-04-06 regime for `globex_grains`,
-    // and nothing at all for `globex_livestock`; every date that carries the
-    // queue answers, on both scopes and in every queue era.
+fn the_queue_dates_answer_and_the_regime_serves_its_captured_queues() {
+    // The #259 retirement (2026-10-04): the 2012-05-20..2013-04-06 regime's
+    // queues are served from the regime's own dated start as CME's own
+    // trading-hours captures print them twice inside the regime, and every
+    // date of the regime answers. `globex_grains` declares nothing; neither
+    // does `globex_livestock`; the queue days all read complete, in every
+    // queue era.
     let grains = key_coverage(MarketHoursKey::GlobexGrains);
     let livestock = key_coverage(MarketHoursKey::GlobexLivestock);
-    let regime_only = [(
-        CoverageGapReason::NormalWeekPhaseWithheld,
-        "#259",
-        Some(date(2012, 5, 20)),
-        Some(date(2013, 4, 7)),
-        exchange_hours::PhaseGapShape::EveryDay,
-    )];
-    check_declared_gaps(MarketHoursKey::GlobexGrains, &regime_only);
-    check_declared_gaps(MarketHoursKey::GlobexLivestock, &[]);
+    assert!(grains.phase_gaps().is_empty());
     assert!(livestock.phase_gaps().is_empty());
 
     // The queue days read complete: a Sunday, a mid-week queue day, the first
     // week of livestock's sourced 2016-06-06 Post-Close onset, grains' whole
-    // 2010-2012 PCP era (13:15:30-16:00 then) and the era after the omitted
-    // regime — all answer.
+    // 2010-2012 PCP era (13:15:30-16:00 then) and the era after the regime —
+    // all answer.
     for (coverage, day, why) in [
         (
             &grains,
@@ -1199,26 +1097,84 @@ fn the_queue_dates_answer_and_only_the_omitted_regime_refuses() {
         );
     }
 
-    // The omitted 2012-05-20..2013-04-06 regime refuses as the phase-level gap
-    // its own declaration states — the only declaration `globex_grains` has
-    // left. Without it these dates would read Covered while their queue rows
-    // are omitted; its dated neighbours answer.
-    assert_eq!(
-        grains.coverage_on(date(2012, 6, 1)),
-        DateCoverage::OutsideCoveredRange,
-        "the omitted-queue regime refuses as the phase-level gap its declaration states"
-    );
+    // The regime's own dates answer, and the queue phases they serve are the
+    // captured ones: Sunday Pre-Open 16:00-17:00 CT, the weekday 14:30-16:00
+    // PCP and the Monday-Thursday 16:45-17:00 evening Pre-Open, with the
+    // morning queue the pre-regime grid carried gone — the wrapped session
+    // runs through the morning on the 17:00-14:00 grid.
+    for day in [date(2012, 5, 20), date(2012, 6, 3), date(2013, 4, 6)] {
+        assert_eq!(
+            grains.coverage_on(day),
+            DateCoverage::Covered,
+            "{day}: the regime answers under the residual convention"
+        );
+    }
     assert_eq!(
         grains.coverage_on(date(2012, 5, 13)),
         DateCoverage::Covered,
         "the regime's dated neighbours answer: 2012-05-13 is before it and served"
     );
-
-    // The retired label gap's service tier stands: the queue and both of its
-    // verdicts are answered on every date that carries it, under the charter
-    // convention the fence in `tests/futures_family_boundaries/` pins instant
-    // by instant.
     let grains_cal = calendar_for_market_hours_key(MarketHoursKey::GlobexGrains);
+    let at = |day: NaiveDate, hour: u32, minute: u32| {
+        US::Central
+            .from_local_datetime(
+                &day.and_hms_opt(hour, minute, 0)
+                    .expect("a valid local time"),
+            )
+            .single()
+            .expect("a single local instant")
+            .with_timezone(&Utc)
+    };
+    // A regime Sunday: accepting from the captured 16:00 onset — the instant
+    // inside the onset bracket's disputed quarter-hour included, which is what
+    // the residual discloses — through 17:00, matching at 17:30.
+    assert_eq!(
+        grains_cal.is_accepting_orders(at(date(2012, 6, 3), 16, 5)),
+        Ok(true),
+        "the regime Sunday Pre-Open opens at the captured 16:00 CT onset"
+    );
+    assert_eq!(
+        grains_cal.is_accepting_orders(at(date(2012, 6, 3), 16, 30)),
+        Ok(true),
+        "the regime Sunday Pre-Open queue accepts orders, as both captures print"
+    );
+    assert_eq!(
+        grains_cal.is_open(at(date(2012, 6, 3), 17, 30)),
+        Ok(true),
+        "the regime's 17:00 CT electronic open matches"
+    );
+    // A regime weekday: the PCP accepts at 15:00, the evening Pre-Open at
+    // 16:50, and the morning — a queue on the pre-regime grid — matches,
+    // because the wrapped session runs through it.
+    assert_eq!(
+        grains_cal.is_accepting_orders(at(date(2012, 6, 6), 15, 0)),
+        Ok(true),
+        "the regime's 14:30-16:00 CT PCP accepts orders"
+    );
+    assert_eq!(
+        grains_cal.is_accepting_orders(at(date(2012, 6, 6), 16, 50)),
+        Ok(true),
+        "the regime's Monday-Thursday 16:45-17:00 CT evening Pre-Open accepts orders"
+    );
+    assert_eq!(
+        grains_cal.is_open(at(date(2012, 6, 6), 8, 15)),
+        Ok(true),
+        "the regime carries no morning queue: the wrapped session matches through it"
+    );
+    // The pre-regime grid still answers its own queues beside the regime.
+    assert_eq!(
+        grains_cal.is_accepting_orders(at(date(2012, 5, 16), 8, 15)),
+        Ok(true),
+        "the pre-regime morning queue 08:00-09:30 CT still accepts"
+    );
+    assert_eq!(
+        grains_cal.is_accepting_orders(at(date(2012, 5, 13), 16, 5)),
+        Ok(false),
+        "the pre-regime Sunday onset is 16:15 CT: 16:05 is closed"
+    );
+    // The post-close queue and both of its verdicts are answered on every date
+    // that carries it, under the charter convention the fence in
+    // `tests/futures_family_boundaries/` pins instant by instant.
     let queue_instant = US::Central
         .with_ymd_and_hms(2021, 3, 16, 15, 0, 0)
         .single()
@@ -1229,97 +1185,97 @@ fn the_queue_dates_answer_and_only_the_omitted_regime_refuses() {
         Ok(true),
         "the post-close queue answers: it is served, and its trade date is the session it feeds"
     );
-
-    // Inside the omitted regime the queue question refuses instead: the
-    // regime's declaration is operative there, and the order-entry probe — the
-    // query whose answer *is* the omitted arrangement — states that rather
-    // than reading as a sourced absence (2012-06-01 14:30-15:30 CT is closed
-    // and order-entryless in the regime grid, so the probe reaches the phase
-    // gate).
-    let regime_instant = US::Central
-        .with_ymd_and_hms(2012, 6, 1, 15, 0, 0)
-        .single()
-        .expect("a single 15:00 CT instant")
-        .with_timezone(&Utc);
-    assert_eq!(
-        grains_cal.is_accepting_orders(regime_instant),
-        Err(CalendarQueryError::OutsideCoveredRange {
-            source: CalendarSource::MarketHoursKey(MarketHoursKey::GlobexGrains),
-            date: date(2012, 6, 1),
-        }),
-        "an order-entry probe inside the omitted regime refuses: the queue question is live \
-         and unsourced there"
-    );
 }
 
 #[test]
-fn the_five_day_pre_open_gap_names_exactly_the_five_day_era() {
-    // #123 is a property of the five-day 17:00-16:00 CT grid, whose own first
-    // and last days are dated at T1: the 2017-12-17 launch row opens the era and
-    // the 2026-05-29 bridge row closes it, and the declaration names those days
-    // rather than refusing the sourced launch closures before the grid or the
-    // 24/7 era that serves the Pre-Open from its bridge day.
+fn the_five_day_era_answers_from_the_queue_absent_grid() {
+    // #123's retirement (2026-10-04): the five-day era's normal-week queues
+    // are sourced nowhere — the workbook rows that print a `Pre-opening` state
+    // holiday arrangements, not the ordinary week — so the grid with the
+    // queues absent is the narrowest state that holds under every sourced one,
+    // and the whole era answers from it with the omission disclosed as a
+    // residual in the evidence file.
     let crypto = key_coverage(MarketHoursKey::GlobexCryptocurrency);
-    let launch = date(2017, 12, 17);
-    let bridge = date(2026, 5, 29);
-    check_declared_gaps(
-        MarketHoursKey::GlobexCryptocurrency,
-        &[(
-            CoverageGapReason::NormalWeekPhaseWithheld,
-            "#123",
-            Some(launch),
-            Some(bridge),
-            exchange_hours::PhaseGapShape::EveryDay,
-        )],
+    assert!(
+        crypto.phase_gaps().is_empty(),
+        "the #123 retirement leaves no declaration"
     );
+    for day in [
+        date(2019, 6, 9),
+        date(2020, 6, 1),
+        date(2026, 5, 24),
+        date(2026, 5, 28),
+    ] {
+        assert_eq!(
+            crypto.coverage_on(day),
+            DateCoverage::Covered,
+            "{day}: the five-day era answers under the residual convention"
+        );
+    }
     assert_eq!(
-        crypto.coverage_on(date(2020, 6, 1)),
-        DateCoverage::OutsideCoveredRange,
-        "a five-day-era date withholds the Pre-Open whose onset is undated"
-    );
-    assert_eq!(
-        crypto.coverage_on(date(2026, 5, 28)),
-        DateCoverage::OutsideCoveredRange,
-        "the five-day era's own last day is the bridge row's predecessor, and it \
-         still withholds the Pre-Open"
-    );
-    assert_eq!(
-        crypto.coverage_on(bridge),
+        crypto.coverage_on(date(2026, 5, 29)),
         DateCoverage::Covered,
-        "the bridge day's own profile serves the published Pre-Open for the first \
-         time, so the declaration's era ends the day before it"
+        "the bridge day's own profile serves the published Pre-Open"
     );
     assert_eq!(
         crypto.coverage_on(date(2026, 6, 1)),
         DateCoverage::Covered,
         "the 24/7 era serves the published Pre-Open and answers"
     );
-    // Before the grid the family's era is a sourced launch closure. The
-    // declaration's `since` names the grid's first day, so those dates are the
-    // date-level walk's to answer — and in the 2010-2018 stretch the shipped
-    // holiday windows do not reach, which is the honest reason they refuse.
-    let pre_launch = crypto.coverage_on(date(2015, 1, 1));
+    // Before the grid the family's era is a sourced launch closure, and the
+    // shipped holiday windows do not reach it — the honest reason those dates
+    // refuse, unchanged by the retirement.
     assert_ne!(
         gap_reason_on(crypto, date(2015, 1, 1)),
         Some(CoverageGapReason::NormalWeekPhaseWithheld),
-        "the pre-launch era is not the Pre-Open gap's to refuse"
+        "the pre-launch era was never the Pre-Open gap's to refuse"
     );
-    assert_eq!(pre_launch, DateCoverage::OutsideCoveredRange);
-    // The declaration record is the era where the identity answers: the shipped
-    // windows open 2019-01-01, so that is where its record starts, and the
-    // era's own withheld dates split the records the walk reports.
-    let record = crypto
-        .gaps()
-        .find(|gap| gap.closing_condition() == Some("#123"))
-        .expect("the five-day era's declaration has a record inside the audited windows");
-    assert_eq!(record.range().first(), date(2019, 1, 1));
-    let last_record = crypto
-        .gaps()
-        .filter(|gap| gap.closing_condition() == Some("#123"))
-        .map(exchange_hours::CoverageGap::range)
-        .last()
-        .expect("the era's records");
-    assert_eq!(last_record.last(), date(2026, 5, 28));
+    assert_eq!(
+        crypto.coverage_on(date(2015, 1, 1)),
+        DateCoverage::OutsideCoveredRange
+    );
+    // The query surface answers from the queue-absent grid: the Sunday evening
+    // before the 17:00 CT open is closed, matching opens at 17:30, and the
+    // 24/7 era serves its published queues.
+    let cal = calendar_for_market_hours_key(MarketHoursKey::GlobexCryptocurrency);
+    let at = |day: NaiveDate, hour: u32, minute: u32| {
+        US::Central
+            .from_local_datetime(
+                &day.and_hms_opt(hour, minute, 0)
+                    .expect("a valid local time"),
+            )
+            .single()
+            .expect("a single local instant")
+            .with_timezone(&Utc)
+    };
+    assert_eq!(
+        cal.is_accepting_orders(at(date(2019, 6, 9), 16, 30)),
+        Ok(false),
+        "the era's Sunday evening answers from the queue-absent grid: no queue is served"
+    );
+    assert_eq!(
+        cal.is_open(at(date(2019, 6, 9), 17, 30)),
+        Ok(true),
+        "the era's 17:00 CT open matches"
+    );
+    assert_eq!(
+        cal.is_accepting_orders(at(date(2026, 5, 17), 16, 30)),
+        Ok(false),
+        "the era's own last ordinary Sundays answer from the same queue-absent grid"
+    );
+    // The 24/7 era serves the operator's published queues from the bridge day,
+    // and the merged spans state their own 16:00 CT queues as blocks — the
+    // residual is the ordinary week's alone.
+    assert_eq!(
+        cal.is_accepting_orders(at(date(2026, 6, 1), 16, 1)),
+        Ok(true),
+        "the 24/7 era's 16:01-16:02 CT queue accepts orders"
+    );
+    assert_eq!(
+        cal.is_accepting_orders(at(date(2026, 5, 30), 3, 50)),
+        Ok(true),
+        "the 24/7 era's Saturday 03:45-04:00 CT queue accepts orders"
+    );
 }
 
 #[test]

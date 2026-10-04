@@ -400,12 +400,16 @@ fn neither_the_event_contract_nor_the_cryptocurrency_key_can_stand_in() {
 
     let sunday_queue = ct((2024, 6, 9), (16, 30, 0));
     assert_eq!(state_at(sunday_queue), SessionState::OrderEntry);
-    // 2024 precedes the floor, so the cryptocurrency calendar refuses the
-    // instant rather than answering; the comparison the claim needs is stated
-    // by the same key's fixed snapshot.
-    assert_refused(
-        calendar_for_market_hours_key(CRYPTOCURRENCY).session_state(sunday_queue),
-        "the cryptocurrency five-day probe",
+    // The cryptocurrency key answers the instant — 2024 is inside its audited
+    // five-day era — and its answer is the queue-absent grid the 2026-10-04
+    // residual convention serves: no sourced five-day Pre-Open exists, so the
+    // era's Sunday evening answers closed rather than as an order-entry queue.
+    assert_eq!(
+        calendar_for_market_hours_key(CRYPTOCURRENCY)
+            .session_state(sunday_queue)
+            .expect("the five-day era answers under the residual convention"),
+        SessionState::Closed,
+        "the cryptocurrency key has no sourced five-day Pre-Open: the era answers closed"
     );
     assert_ne!(
         hours_for_market_hours_key(CRYPTOCURRENCY, sunday_queue).session_state(sunday_queue),

@@ -32,23 +32,6 @@ fn crypto() -> ExchangeCalendar {
     calendar_for_market_hours_key(MarketHoursKey::GlobexCryptocurrency)
 }
 
-/// Asserts a date-aware query refused with `OutsideCoveredRange`: the date's own
-/// unsourced span, its missing holiday-layer answer, or a declared phase-level
-/// gap (LAW-COVERAGE), on a date **at or above** the support floor.
-///
-/// The floor is checked first by every entry point, including the order-entry
-/// scans: a pre-floor date reports `BeforeSupportFloor` and never the phase
-/// verdict, because no range has been claimed below the floor for a phase gap to
-/// be outside of. Use `assert_before_floor` for those probes.
-fn assert_outside_range<T: core::fmt::Debug>(result: Result<T, CalendarQueryError>, claim: &str) {
-    let error = result.expect_err(claim);
-    assert!(
-        matches!(error, CalendarQueryError::OutsideCoveredRange { .. }),
-        "{claim}: the date is outside this identity's covered ranges, so the query must \
-         refuse it with OutsideCoveredRange; got {error}"
-    );
-}
-
 /// An America/Chicago wall clock, converted to the UTC the surface takes.
 fn ct(year: i32, month: u32, day: u32, hour: u32, minute: u32) -> DateTime<Utc> {
     US::Central
@@ -101,13 +84,16 @@ fn a_closed_trade_date_has_no_session_and_no_trade_date() {
                 .expect("the coverage contract must answer a covered date"),
             "2025-12-25 must be shut at {probe}"
         );
-        // The trade-date half of this test's name is no longer claimable:
-        // resolving an instant on this closed day reads an order-entry phase
-        // the family declares it cannot state (#93/#123), so the query refuses
-        // the date rather than reporting "no trade date".
-        assert_outside_range(
-            calendar.trade_date(probe),
-            "2025-12-25's trade date is refused, not stated as absent",
+        // The trade-date half of the name: no session and no queue holds a
+        // probe on the closed day — the era's order-entry phases are served
+        // nowhere in the normal week, the residual the 2026-10-04 convention
+        // discloses — so the walk answers absence rather than refusing.
+        assert_eq!(
+            calendar
+                .trade_date(probe)
+                .expect("the coverage contract must answer a covered date"),
+            None,
+            "2025-12-25's trade date is absent, not refused",
         );
     }
 
@@ -1461,17 +1447,15 @@ fn era_2022_2024_closures_keep_the_five_day_weekend_roll() {
             "{date}"
         );
         // No session holds this instant — the closure deleted the trade date —
-        // so the walk falls through to the order-entry scan, which the five-day
-        // era's undated Pre-Open declaration withholds before its 2026-05-29
-        // bridge row (#123): the refusal is the phase gap's.
-        assert!(
+        // and the five-day era serves no normal-week queue to date the probe
+        // by, so the walk answers absence. The era's omitted queues are the
+        // residual the 2026-10-04 convention discloses (#123), not a refusal.
+        assert_eq!(
             calendar
                 .trade_date(ct_on(date, 10, 0))
-                .is_err_and(|error| matches!(
-                    error,
-                    CalendarQueryError::OutsideCoveredRange { .. }
-                )),
-            "{date}: the order-entry fallthrough is withheld (#123)"
+                .expect("the coverage contract must answer a covered date"),
+            None,
+            "{date}: the trade-date walk answers absence on the closed day"
         );
 
         let reopen = era_reopen_after_closure(date);
@@ -1899,17 +1883,17 @@ fn era_2019_2021_sweeps_every_shipped_row_kind_and_instant() {
                             "{date}: the walk reads the unaudited eve"
                         );
                     } else {
-                        // The order-entry fallthrough is withheld (#123) on
-                        // every date before the 2026-05-29 bridge row, so the
-                        // no-session trade-date probe refuses on this era.
-                        assert!(
+                        // The era serves no normal-week queue for the
+                        // no-session trade-date probe to date by — the
+                        // omitted queues are the residual the 2026-10-04
+                        // convention discloses (#123) — so the walk answers
+                        // absence on this era too.
+                        assert_eq!(
                             calendar
                                 .trade_date(ct_on(date, 10, 0))
-                                .is_err_and(|error| matches!(
-                                    error,
-                                    CalendarQueryError::OutsideCoveredRange { .. }
-                                )),
-                            "{date}: the fallthrough is withheld (#123)"
+                                .expect("the coverage contract must answer a covered date"),
+                            None,
+                            "{date}: the trade-date walk answers absence"
                         );
                     }
                 }

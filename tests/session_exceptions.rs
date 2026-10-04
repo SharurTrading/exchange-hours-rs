@@ -485,9 +485,8 @@ fn cme_thanksgiving_thursday_carries_no_trade_date() {
         day(2015, 11, 25),
         "Wednesday's evening queue",
     );
-    // The queue's trade date is resolved by probing the order-entry phase, and
-    // the Cme identity declares a phase-level gap on the withheld Sunday
-    // quarter-hour (#79). The floor is decided before the phase, so a pre-floor
+    // The queue's trade date is resolved by probing the order-entry phase.
+    // The floor is decided before any phase question, so a pre-floor
     // probe of either kind refuses as `BeforeSupportFloor` on the instant's own
     // venue-local day (2015-11-25), and the reassignment to Friday's trade date
     // is not observable here either.
@@ -1313,7 +1312,6 @@ fn an_attached_but_recordless_layer_changes_no_answer() {
     // `candle_end` applies the same pre-floor gate as the plain identity's and
     // refuses the same day, so the claim holds for every entry point this test
     // probes.
-    let cme = CalendarSource::Exchange(Exchange::Cme);
     let mut instant = ct((2015, 11, 22), (0, 0, 0));
     let end = ct((2015, 11, 30), (0, 0, 0));
     while instant < end {
@@ -1366,15 +1364,10 @@ fn an_attached_but_recordless_layer_changes_no_answer() {
         }
         instant += chrono::TimeDelta::minutes(37);
     }
-    assert_before_floor(
-        calendar.session_state(ct((2015, 11, 22), (0, 0, 0))),
-        cme,
-        day(2015, 11, 22),
-        "a probe inside the recordless window",
-    );
-    // The recordless layer changes no answer, and that now includes the candle
-    // adapter: the overlay and the plain identity refuse the same probe for the
-    // same day.
+    // The recordless window's Sunday answers under the residual convention
+    // (the #79 retirement, 2026-10-04): the bracket-era Sunday no longer
+    // refuses, so the layer's no-change claim is stated by the equality loop
+    // above and the candle adapter below.
     // The Sunday bar runs to the ordinary 17:00 CT close the recordless
     // window leaves untouched.
     assert_eq!(
@@ -2664,9 +2657,8 @@ fn a_block_meeting_the_next_trade_dates_open_replaces_it() {
         )),
         "the extended occurrence yielded, so the next session is Friday's regular one"
     );
-    // `trade_date` at this instant is not asserted: this identity's declared
-    // gaps (#79, #93) make the answer a coverage verdict rather than a date, and
-    // that verdict is Stage 2B's contract, not this one's.
+    // `trade_date` at this instant is not asserted: the replaced day's
+    // answer is Stage 2B's contract, not this one's.
     // Away from the replaced day the two calendars agree outright.
     let elsewhere = ct((2026, 6, 17), (12, 0, 0));
     assert_eq!(

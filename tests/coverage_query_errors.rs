@@ -452,29 +452,25 @@ fn the_support_floor_constant_is_the_documented_date() {
     assert_eq!(SUPPORT_FLOOR, date(2010, 1, 1));
 }
 
-/// The whole-date verdict and a session query answer **different questions**,
-/// and both are right.
-///
-/// `calendar.coverage().coverage_on(day)` answers "is this date completely
-/// covered?", so it is `OutsideCoveredRange` where the declared phase-level gap
-/// applies — for the CME-family scopes that is a bracket-era **Sunday** whose
-/// served Pre-Open resolves, because the Sunday 16:00-16:15 CT queue is
-/// withheld there and the date therefore has no complete answer. A weekday of
-/// the same era answers: the declaration's shape (#172) keys the withholding to
-/// the dates its evidence cannot state, so the sourced weekday grid is
-/// complete.
+/// A served-but-disputed phase answers both the session query and the
+/// order-entry query, each from the sourced tables (the 2026-10-04 residual
+/// convention) — for the CME-family scopes that is a bracket-era **Sunday**
+/// whose served Pre-Open resolves, where the Sunday 16:00-16:15 CT slice is
+/// the disclosed remainder of the undated 2012 move and the date answers
+/// `Covered` with the served 16:15-17:00 CT intersection.
 ///
 /// A *session* query asks something narrower: what does the sourced normal week
 /// and holiday layer say about the tradeable day? That answer does not depend
-/// on the withheld queue at all, so it is given rather than refused — refusing
-/// a Tuesday for a Sunday queue is precisely the coverage-error-read-as-closure
-/// failure LAW-COVERAGE exists to prevent (see `QueryContext::require_answerable`
-/// and the order-entry-only `require_phase_coverage` beside it).
+/// on the disputed queue at all, so it is given. The order-entry query inside
+/// the disputed slice answers the served intersection's closed verdict —
+/// `Ok(false)`, a grid the caller can act on — rather than a coverage refusal,
+/// and accepts orders from the sourced 16:15 CT onset.
 ///
-/// This test exists because the distinction is easy to mistake for a bug: it was
-/// reported as one and diagnosed as a metadata/query contradiction before the
-/// phase-gap explanation was found. Pinning both halves keeps a future change
-/// from collapsing them in either direction.
+/// This test exists because the distinction was easy to mistake for a bug: it
+/// was reported as one and diagnosed as a metadata/query contradiction while
+/// the phase-gap machinery still refused the dates. Pinning both halves of the
+/// served state keeps a future change from collapsing them in either
+/// direction.
 #[test]
 fn a_withheld_phase_refuses_the_order_entry_query_but_not_the_session_query() {
     let cal = calendar_for_exchange(Exchange::Cme);
@@ -483,40 +479,35 @@ fn a_withheld_phase_refuses_the_order_entry_query_but_not_the_session_query() {
     let session_instant = ct((2026, 4, 19), (18, 0));
     assert_eq!(queue_instant.with_timezone(&cal.tz()).date_naive(), day);
 
-    // The date is not *completely* covered: the phase-level gap applies to it —
-    // the served Sunday Pre-Open resolves, so the withheld quarter-hour is live.
+    // The date is completely covered: the residual convention serves the
+    // sourced 16:15-17:00 CT intersection and discloses the disputed slice.
     assert_eq!(
         cal.coverage().coverage_on(day),
-        DateCoverage::OutsideCoveredRange,
-        "the bracket-era Sunday's withheld quarter-hour makes the date incomplete"
+        DateCoverage::Covered,
+        "the bracket-era Sunday answers under the residual convention"
     );
-    assert!(!cal.coverage().is_complete_on(day));
-    let declaration = cal
-        .coverage()
-        .phase_gap_on(day)
-        .expect("the #79 declaration applies on its bracket-era Sunday");
-    assert_eq!(declaration.closing_condition(), "#79");
+    assert!(cal.coverage().is_complete_on(day));
+    assert!(
+        cal.coverage().phase_gap_on(day).is_none(),
+        "the #79 retirement leaves no declaration on the bracket-era Sunday"
+    );
 
-    // ...yet the session query answers on the same date, because it never reads
+    // ...and the session query answers on the same date, because it never reads
     // that phase: the 17:00 CT Sunday open is sourced.
     assert!(
         cal.is_open(session_instant)
             .expect("a sourced session answers"),
         "the Sunday evening session on that date is sourced"
     );
-    // And the order-entry query at the withheld instant states the date's
-    // verdict instead of reading as a closed grid.
+    // The order-entry query inside the disputed slice answers the served
+    // intersection's closed verdict rather than refusing the date.
     assert_eq!(
         cal.is_accepting_orders(queue_instant),
-        Err(CalendarQueryError::OutsideCoveredRange {
-            source: cal.source(),
-            date: day,
-        }),
-        "the withheld quarter-hour refuses, never reads as closed"
+        Ok(false),
+        "the disputed slice answers as the served intersection's closed verdict"
     );
 
-    // The Tuesday beside it answers outright: the shape keys the withholding to
-    // the served Sunday queue, so the weekday grid is complete.
+    // The Tuesday beside it answers outright: the weekday grid is complete.
     let tuesday = date(2026, 4, 21);
     assert_eq!(cal.coverage().coverage_on(tuesday), DateCoverage::Covered);
     assert!(

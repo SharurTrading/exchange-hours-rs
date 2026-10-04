@@ -14,7 +14,8 @@
 //! `16:45 preopen` Monday-Thursday and a Sunday onset that moved from 16:15 to
 //! 16:00 CT without a day-level statement, both handing over to the 17:00 CT
 //! open. A queue is `order_entry`, so it accepts orders without reporting a
-//! session. The disputed Sunday quarter-hour is withheld and declared (#79), and
+//! session. The disputed Sunday quarter-hour's undated move is a disclosed
+//! residual beside this family's served onset (#79, retired 2026-10-04), and
 //! the 2011/2012/2013 eras ship no order-entry phase; both records are in
 //! [`docs/evidence/globex_nikkei_225_dollar.md`](../../../../../docs/evidence/globex_nikkei_225_dollar.md).
 //!

@@ -363,11 +363,9 @@ fn no_late_open_row_ships_in_the_published_window() {
 /// and the evening of a closed day carries the post-holiday date.
 ///
 /// The three answers inside a session survive. The fourth probe — Christmas Day
-/// at 10:00 CT, which no session holds — does not: `trade_date` resolves the
-/// containing session before it judges the date, and CME's Sunday 16:00-16:15 CT
-/// quarter-hour is withheld as the declared `#79` phase-level gap over the whole
-/// era before 2026-08-22, so the query is refused rather than resolved through
-/// the order-entry phase that would name the next trade date.
+/// at 10:00 CT, which no session holds — answers absence: the walk finds neither
+/// a session nor a queue on the closed day (the disputed Sunday quarter-hour is
+/// the residual the 2026-10-04 convention discloses, not a refusal).
 #[test]
 fn trade_dates_follow_the_rows_rather_than_the_civil_day() {
     let calendar = calendar();

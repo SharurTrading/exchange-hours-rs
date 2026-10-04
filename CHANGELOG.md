@@ -28,6 +28,36 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Fixed
 
+- **charter: an undated changeover is a disclosed residual, not a refused day —
+  the #79, #123 and #259 declarations retire (2026-10-04 UTC; fixes #79, fixes
+  #123, fixes #259).** The charter's "Modeling conventions" now record the
+  sourced-intersection residual convention: when a phase's endpoints are
+  sourced at two values, only the changeover day is undated, and the hunts for
+  a dated artifact have closed negative on every operator channel, the crate
+  serves the sourced intersection and records the disputed remainder as a
+  residual in the owner's evidence file, never as a day-refusing declaration.
+  Under it, the seven scopes that withheld CME's Sunday 16:00-16:15 CT
+  quarter-hour (`cme`, `comex`, `nymex`, `globex_equity_index`,
+  `globex_energy`, `globex_fx`, `globex_interest_rates`) keep serving the
+  sourced 16:15-17:00 CT intersection and now answer their bracket-era Sundays
+  (732 refused Sundays per scope, 734 for `cme` — 5,126 declaration records in
+  all); `globex_cryptocurrency`
+  answers its five-day era from the queue-absent grid — 2,680 dates `Covered` across the
+  era's 3,085, the remainder refusing on their own dated reasons — the
+  narrowest state the era's evidence supports; and `globex_grains` serves the
+  2012-05-20..2013-04-06 regime's queues (322 dates) from the regime's own
+  dated start as CME's trading-hours captures print them twice inside the
+  regime — Sunday Pre-Open 16:00-17:00, weekday PCP 14:30-16:00 and
+  Monday-Thursday evening Pre-Open 16:45-17:00 CT. 8,043 dates answer that
+  refused before; no matching boundary moved anywhere. The residuals (the
+  quarter-hour, the era's omitted queues, the regime's eight-day onset
+  bracket) are disclosed in the nine evidence files with the CME desk ask as
+  each residual's named closer, `globex_grains`' pre-regime queue divergence
+  from the 2012-05-11 capture is tracked as #283, and
+  `CoverageGapReason::NormalWeekPhaseWithheld` stays on the enum as
+  vocabulary. The coverage inventory's verdict tally moves to twenty-five
+  complete and eight incomplete, with one declaration left in the crate
+  (`eurex`'s `tba` era, #157).
 - **globex_nikkei_225_dollar: the five 2025 merged trade dates answer the
   merged date (2026-10-04 UTC; fixes #162).** At 18:00 CT on the evening
   before each of 2025-01-21, 2025-02-18, 2025-05-27, 2025-06-20 and

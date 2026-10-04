@@ -20,15 +20,15 @@ fn interest_rates_current_profile_is_the_extended_17_to_16_grid() {
     assert!(profile.is_order_entry_only(ct((2026, 4, 20), (16, 45, 0))));
     assert!(profile.is_open(ct((2026, 4, 20), (17, 0, 0))));
     assert!(!profile.is_open(ct((2026, 4, 25), (12, 0, 0))));
-    // `globex_interest_rates` declares the `#79` phase-level gap for the Sunday
-    // 16:00-16:15 CT quarter-hour, shaped to the bracket-era Sundays whose
-    // served Pre-Open resolves (#172): the identity-backed queue scan refuses
-    // exactly that Sunday instant — never a closed grid — while the Monday
-    // beside it answers from the sourced weekday grid, so the 16:00→16:45 CT
-    // maintenance gap reports as `Maintenance` rather than as a refusal or a
-    // closure. The grid itself, including that gap, stays asserted above
-    // through `session_profile`, and the queries that do not read the withheld
-    // phase answer below.
+    // `globex_interest_rates` serves the #79 quarter-hour's sourced
+    // intersection, with the disputed 16:00-16:15 CT slice disclosed as a
+    // residual on the bracket-era Sundays: the identity-backed
+    // queue scan answers the disputed Sunday instant with the served
+    // intersection's closed verdict, while the Monday beside it answers from
+    // the sourced weekday grid, so the 16:00→16:45 CT maintenance gap reports
+    // as `Maintenance` rather than as a closure. The grid itself, including
+    // that gap, stays asserted above through `session_profile`, and the
+    // queries answer below.
     assert_eq!(
         calendar.session_state(ct((2026, 4, 20), (16, 30, 0))),
         Ok(SessionState::Maintenance),
@@ -37,12 +37,9 @@ fn interest_rates_current_profile_is_the_extended_17_to_16_grid() {
     );
     assert_eq!(
         calendar.session_state(ct((2026, 4, 19), (16, 5, 0))),
-        Err(CalendarQueryError::OutsideCoveredRange {
-            source: calendar.source(),
-            date: chrono::NaiveDate::from_ymd_opt(2026, 4, 19).expect("valid fixture date"),
-        }),
-        "the withheld quarter-hour refuses the bracket-era Sunday instant it \
-         withholds, and never reads as a closed grid"
+        Ok(SessionState::Closed),
+        "the disputed quarter-hour answers as the served intersection's closed \
+         verdict (the 2026-10-04 residual convention), never as a refusal"
     );
     assert_eq!(
         calendar

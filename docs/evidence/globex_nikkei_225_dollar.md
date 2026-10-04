@@ -388,7 +388,7 @@ not any row's document (the other 2010 ids below are, since the
 the window start — first to the dated 2010-04-11 grid start with the six 2010
 rows, then, with the old grid modelled from the operator's own page, to the
 2010-01-01 floor, where the remaining #225 interval closed as audited data.**
-The table as a whole carries 227 rows
+The table as a whole carries 232 rows
 over 6 windows — 2010-01-01..2012-12-31, 2013-01-01..2015-12-31,
 2016-01-01..2018-12-31, 2019-01-01..2021-12-31, 2022-01-01..2024-12-31,
 2025-01-01..2027-12-31 — of which the 2011-2015 share is **62 rows**: 12 closures,
@@ -707,13 +707,18 @@ This era's rows cite the ids below: CME Group's own published holiday schedules 
 | 2025-01-01 | closed | `16:00 preopen /TD 2025-01-02; 17:00 open /TD 2025-01-02` — no close event on 2025-01-01 | `CME-SVC-2024-12-31` | T2 | eventDates 2024-12-31 and 2025-01-01; CME prints `16:00 closed /TD 2024-12-31` with no evening re-open, and assigns no trade date 2025-01-01 |
 | 2025-01-02 | replacement blocks | `16:00 preopen /TD 2025-01-02; 17:00 open /TD 2025-01-02` on eventDate 2025-01-01; `16:00 closed /TD 2025-01-02` on eventDate 2025-01-02 | `CME-SVC-2024-12-31` | T2 | the prior local day is a full closure, so this trade date's Pre-Open opens at the 17:00 CT session's own 16:00 CT boundary rather than at the weekday `16:45`. The `Ten-product capture` is the artifact that carries this instant: no `THBP-B` window covers it |
 | 2025-01-20 | early close | `12:00 preopen /TD 2025-01-21; 17:00 open /TD 2025-01-21` — 12:00 CT | `CME-SVC-2025-01-19` | T2 | eventDate 2025-01-20, CME trade date 2025-01-21; the Sunday-evening leg opened 2025-01-19 17:00 CT |
+| 2025-01-21 | replacement blocks | `16:00 preopen /TD 2025-01-21; 17:00 open /TD 2025-01-21` on eventDate 2025-01-19; `12:00 preopen /TD 2025-01-21; 17:00 open /TD 2025-01-21` on eventDate 2025-01-20; `16:00 closed /TD 2025-01-21` on eventDate 2025-01-21 | `CME-SVC-2025-01-19` | T2 | the holiday publishes no final close of its own, so the span from Sunday evening through 2025-01-21 16:00 CT carries this trade date. The witness is the capture's `ES` line — no `NKD`/`NIY` event exists for the window (the `edgeB` empties below) — and the step is disclosed in the interpretive notes; the family's grid is elsewhere in the crate the same CME shared grid (the #153 venue-clock decision), and the 36 product-dates where both lines publish agree event for event |
 | 2025-02-17 | early close | `12:00 preopen /TD 2025-02-18; 17:00 open /TD 2025-02-18` — 12:00 CT | `CME-SVC-2025-02-16` | T2 | eventDate 2025-02-17, CME trade date 2025-02-18 |
+| 2025-02-18 | replacement blocks | `16:00 preopen /TD 2025-02-18; 17:00 open /TD 2025-02-18` on eventDate 2025-02-16; `12:00 preopen /TD 2025-02-18; 17:00 open /TD 2025-02-18` on eventDate 2025-02-17; `16:00 closed /TD 2025-02-18` on eventDate 2025-02-18 | `CME-SVC-2025-02-16` | T2 | the holiday publishes no final close of its own, so the span from Sunday evening through 2025-02-18 16:00 CT carries this trade date; the `ES` line of the ten-product capture is the witness, as 2025-01-21 |
 | 2025-04-18 | closed | `no events published` | `CME-SVC-2025-04-17` | T2 | eventDates 2025-04-17 and 2025-04-18; CME prints `16:00 closed /TD 2025-04-17` with no evening re-open |
 | 2025-05-26 | early close | `12:00 preopen /TD 2025-05-27; 17:00 open /TD 2025-05-27` — 12:00 CT | `CME-SVC-2025-05-25` | T2 | eventDate 2025-05-26, CME trade date 2025-05-27 |
+| 2025-05-27 | replacement blocks | `16:00 preopen /TD 2025-05-27; 17:00 open /TD 2025-05-27` on eventDate 2025-05-25; `12:00 preopen /TD 2025-05-27; 17:00 open /TD 2025-05-27` on eventDate 2025-05-26; `16:00 closed /TD 2025-05-27` on eventDate 2025-05-27 | `CME-SVC-2025-05-25` | T2 | the holiday publishes no final close of its own, so the span from Sunday evening through 2025-05-27 16:00 CT carries this trade date; the `ES` line of the ten-product capture is the witness, as 2025-01-21 |
 | 2025-06-19 | early close | `12:00 preopen /TD 2025-06-20; 17:00 open /TD 2025-06-20` — 12:00 CT | `CME-SVC-2025-06-18` | T2 | eventDate 2025-06-19, CME trade date 2025-06-20 |
+| 2025-06-20 | replacement blocks | `16:00 closed /TD 2025-06-18; 16:45 preopen /TD 2025-06-20; 17:00 open /TD 2025-06-20` on eventDate 2025-06-18; `12:00 preopen /TD 2025-06-20; 17:00 open /TD 2025-06-20` on eventDate 2025-06-19; `16:00 closed /TD 2025-06-20` on eventDate 2025-06-20 | `CME-SVC-2025-06-18` | T2 | Juneteenth fell on a Thursday, so the eve is an ordinary weekday: the `16:45` CT Pre-Open queue, the holiday's own `12:00` queue, and the span through 2025-06-20 16:00 CT carrying this trade date; the `ES` line of the ten-product capture is the witness, as 2025-01-21 |
 | 2025-07-03 | early close | `12:15 closed /TD 2025-07-03; 16:45 preopen /TD 2025-07-04; 17:00 open /TD 2025-07-04` — 12:15 CT | `CME-SVC-2025-07-03` | T2 | eventDate 2025-07-03, CME trade date 2025-07-03; the evening leg runs normally |
 | 2025-07-04 | early close | `12:00 closed /TD 2025-07-04` — 12:00 CT | `CME-SVC-2025-07-03` | T2 | eventDate 2025-07-04, CME trade date 2025-07-04 |
 | 2025-09-01 | early close | `12:00 preopen /TD 2025-09-02; 17:00 open /TD 2025-09-02` — 12:00 CT | `CME-SVC-2025-08-31` | T2 | eventDate 2025-09-01, CME trade date 2025-09-02 |
+| 2025-09-02 | replacement blocks | `16:00 preopen /TD 2025-09-02; 17:00 open /TD 2025-09-02` on eventDate 2025-08-31; `12:00 preopen /TD 2025-09-02; 17:00 open /TD 2025-09-02` on eventDate 2025-09-01; `16:00 closed /TD 2025-09-02` on eventDate 2025-09-02 | `CME-SVC-2025-08-31` | T2 | the holiday publishes no final close of its own, so the span from Sunday evening through 2025-09-02 16:00 CT carries this trade date; the `ES` line of the ten-product capture is the witness, as 2025-01-21 |
 | 2025-11-27 | early close | `12:00 preopen /TD 2025-11-28; 17:00 open /TD 2025-11-28` — 12:00 CT | `CME-SVC-B-2025-11-26` | T2 | eventDate 2025-11-27, CME trade date 2025-11-28; `NKD` and `NIY` print this line themselves |
 | 2025-11-28 | replacement blocks | `16:45 preopen /TD 2025-11-28; 17:00 open /TD 2025-11-28` on eventDate 2025-11-26; `12:00 preopen /TD 2025-11-28; 17:00 open /TD 2025-11-28` on eventDate 2025-11-27; `12:15 closed /TD 2025-11-28` on eventDate 2025-11-28 | `CME-SVC-B-2025-11-26` | T2 | Thanksgiving Day publishes no final close of its own, so this trade date owns the span from Wednesday evening and ends at this family's own `12:15` CT close, not the `13:45` the CME equity and energy families use |
 | 2025-11-29 | closed | `no events published` | `CME-SVC-B-2025-11-26` | T2 | eventDate 2025-11-29; `NKD` and `NIY` publish no events, and CME's 2025 Globex table states the period as "27 - 29 November 2025" |
@@ -723,16 +728,28 @@ This era's rows cite the ids below: CME Group's own published holiday schedules 
 
 **Interpretive steps, 2025.**
 
-- **The Nikkei line is absent through Labor Day 2025, and those nine rows are taken from
+- **The Nikkei line is absent through 2025-09-02, and those rows are taken from
   the Equity Index line of the same capture.** CME's service still answers for past windows
   back to Thanksgiving 2025 but no further, so `NKD`/`NIY` return empty schedules for the
   eight windows New Year 2025 through Labor Day 2025 (`raw/cme-2025-2027-repair/live/edgeB_*.md`,
-  probed 2026-09-12). The rows for 2025-01-01, 2025-01-20, 2025-02-17, 2025-04-18,
-  2025-05-26, 2025-06-19, 2025-07-03, 2025-07-04 and 2025-09-01 are therefore the `ES` line
-  of the ten-product capture, and they ship with the `THBP-A` document id. The same line also
+  probed 2026-09-12). The rows for 2025-01-01, 2025-01-20, 2025-01-21, 2025-02-17,
+  2025-02-18, 2025-04-18, 2025-05-26, 2025-05-27, 2025-06-19, 2025-06-20, 2025-07-03,
+  2025-07-04, 2025-09-01 and 2025-09-02 are therefore the `ES` line of the ten-product
+  capture, and they ship with the `THBP-A` document id. The same line also
   states 2025-01-02's no-prior-evening-leg block row — read from the New-Year 2025 window
-  rather than from a repair probe, and shipped as `CME-SVC-2024-12-31` — which makes ten
-  `ES`-line rows in this table. The corroboration
+  rather than from a repair probe, and shipped as `CME-SVC-2024-12-31` — which makes fifteen
+  `ES`-line rows in this table. The five merged trade dates read the merged assignment off
+  that line's own event labels: on each pre-holiday Sunday (or, for Juneteenth, Wednesday)
+  evening the `ES` `open` event prints the *following* business day in its own `tradingDate`
+  field, and so does every event through the merged day's `16:00 closed`, which is the
+  operator's own trade-date witness at T2 (LAW-PRIMARY-SOURCES: the feed carries the
+  operator's own trade dates on both sides of the boundary). No `NKD` or `NIY` event exists
+  for any of the five windows — the targeted `edgeB` empties below are quoted verbatim — so
+  the rows are disclosed as sibling-product witnesses, not passed off as Nikkei-specific
+  ones; what makes the step admissible is that this family's grid is elsewhere in the crate
+  the same CME shared grid (the venue-clock decision of 2026-09-30, issue #153) and that the
+  corroboration below shows `NKD` and `NIY` matching `ES` event for event wherever both
+  lines publish. The corroboration
   is direct rather than assumed: on every one of the 36 product-dates from Thanksgiving 2025
   to 2028-01-01 where CME publishes both lines, `NKD` and `NIY` match `ES` event for event
   and trade date for trade date, including the single date on which the Equity Index line
@@ -744,10 +761,14 @@ This era's rows cite the ids below: CME Group's own published holiday schedules 
   keyed by the crate's own venue-local trade date — the Chicago date of the containing
   session's final close (design memo D1). On the seven dates whose noon event CME publishes
   as a `preopen` rather than a `closed`, CME assigns the whole span the *following* business
-  day's trade date, because no settlement occurs on the holiday. The crate keeps the holiday
-  as the trade date, because a final close does occur there at 12:00 CT. `is_open` agrees
-  with CME event for event on every one of those dates; only the label differs. Recorded as
-  a residual risk below.
+  day's trade date, because no settlement occurs on the holiday — and since the 2026-10-04
+  change, the five 2025 dates of that class ship CME's merged assignment as `ReplacementBlocks`
+  rows (see #162's closure below), so the label difference survives only on the two
+  closed-at-noon dates whose noon event CME has never published a sibling witness for
+  (2026-06-19 and 2027-06-18; 2025-06-20's Wednesday-eve shape is likewise witnessed). The
+  crate keeps the holiday as the trade date there, because a final close does occur at 12:00
+  CT. `is_open` agrees with CME event for event on every one of those dates; only the label
+  differs. Recorded as a residual risk below.
 - **Eve records are evidence, not rows.** `16:00 closed /TD <eve>` with no `16:45 preopen`
   and no `17:00 open` — CME's `[N6]` shape, printed on 2024-12-31, 2025-04-17 and 2025-12-31 —
   is the family's ordinary daytime close plus a missing evening leg. The neighbouring
@@ -767,21 +788,37 @@ This era's rows cite the ids below: CME Group's own published holiday schedules 
   whole morning was one `extended` block, so `is_open` answered `true` in the operator's
   queue. It is the only date in the whole 2025-2027 window where this shape appears for
   this family — Thanksgiving 2026 and 2027 print the 12:15 CT close alone.
-- **witness gap, executable — the five 2025 merged trade dates ship no row.** 2025-01-21,
+- **closed 2026-10-04 UTC — the five 2025 merged trade dates ship on the Equity Index
+  line's own bytes.** 2025-01-21,
   2025-02-18, 2025-05-27, 2025-06-20 and 2025-09-02 are the 2025 half of the seventeen
-  merged trade dates this family models, and this table ships **twelve** of the seventeen:
-  the twelve carry their own `NKD`/`NIY` witness bytes, these five carry none. The family
-  ships `early_close(12:00)` rows keyed to 2025-01-20, 2025-02-17, 2025-05-26, 2025-06-19
-  and 2025-09-01 instead, so at 2025-01-19 18:00 CT the four sibling families answer
-  `trade_date = 2025-01-21` while this family answers `2025-01-20`.
-  The gap is a channel limit, reproduced rather than assumed: five targeted `THBP-B`
-  captures requested exactly `id=168,167` over exactly these windows and returned an empty
-  event list for both products —
+  merged trade dates this family models. From 2026-09-26 UTC, when this bullet was
+  recorded as a witness gap, until this change the table shipped **twelve** of the
+  seventeen and answered these five from the `early_close(12:00)` rows keyed to
+  2025-01-20, 2025-02-17, 2025-05-26, 2025-06-19 and 2025-09-01, so at 2025-01-19 18:00 CT
+  the four sibling families answered `trade_date = 2025-01-21` while this family answered
+  `2025-01-20`; the defect was live on the identity-backed surface and was tracked as
+  issue #162 (LAW-FOLLOW-UPS-ARE-ISSUES). The five rows now ship as `replacement blocks`
+  on the ten-product captures this table already cites for every other 2025 row through
+  Labor Day: no `NKD`/`NIY` event exists for any of the five windows, but the `ES` events
+  the same responses carry print the merged trade date in their own `tradingDate` field on
+  every event from the pre-holiday Sunday's (Wednesday's, for Juneteenth) `16:00`/`16:45
+  preopen` through the merged day's `16:00 closed` — verbatim,
+  `{"tradingDate":"2025-01-21","eventTime":"17:00","marketEventType":"open"}` on
+  eventDate 2025-01-19, and likewise `2025-02-18` on 2025-02-16, `2025-05-27` on
+  2025-05-25, `2025-06-20` on 2025-06-18 (whose 17:00 open follows the weekday `16:45
+  preopen`) and `2025-09-02` on 2025-08-31. That is the operator's own trade-date witness
+  at T2 on both sides of each boundary (LAW-PRIMARY-SOURCES), disclosed as a
+  sibling-product step in the interpretive notes above and in each row's derivation cell —
+  the row citation names the actual bytes, and none of them is passed off as
+  Nikkei-specific. The channel-limit record that gave the gap its shape stands unchanged:
+  five targeted `THBP-B`
+  captures requested exactly `id=168,167,320,323,19,27` over exactly these windows and
+  returned an empty event list for both Nikkei products —
   `raw/cme-2025-2027-repair/json/edgeB_2025-01-19_2025-01-21.json`,
   `edgeB_2025-02-16_2025-02-18.json`, `edgeB_2025-05-25_2025-05-27.json`,
   `edgeB_2025-06-18_2025-06-20.json` and `edgeB_2025-08-31_2025-09-02.json` (each with its
-  `live/edgeB_*.md` sibling carrying the request URL). No `NKD` or `NIY` event with any of
-  those five trade dates appears anywhere in the research store. **Re-checked
+  `live/edgeB_*.md` sibling carrying the request URL) — and no `NKD` or `NIY` event with
+  any of those five trade dates appears anywhere in the research store. **Re-checked
   2026-09-30 UTC (Wave D):** the 2025 T1 channel is clearing-only — the store's CDX
   enumeration of `holiday-calendar/files/2025/` holds clearing advisories and
   settlement-times PDFs per holiday and no Globex schedule sheet (both MLK documents
@@ -805,18 +842,25 @@ This era's rows cite the ids below: CME Group's own published holiday schedules 
   2025-11-26..29 answers `hasEvents:true` with full `NKD`/`NIY` schedules, byte-identical to
   the store's `D54` capture except the order of the `products` array, so the channel and the
   service are healthy and the empties are the retention edge, not an outage; the direct channel
-  refused again (HTTP 403, one attempt, not retried). Closing condition: a
-  `THBP-B` response (`id=168,167,320,323,19,27`) that carries an `NKD` or `NIY` event on any
-  of these five trade dates. Tracked as issue #162 (LAW-FOLLOW-UPS-ARE-ISSUES).
-- **residual risk** — the nine 2025 rows through Labor Day 2025 rest on the Equity Index
-  line rather than on a published Nikkei line, because CME's channel no longer answers for
-  those windows and no archived capture of the `THBP-B` id set exists for them. Closing
-  condition: an archived `THBP-B` capture of any of the eight windows, or a `THBP-A` capture
-  that carries `NKD`.
-- **residual risk** — the crate's trade date differs from CME's printed trade date on every
-  `preopen`-at-noon holiday. No query the crate answers is wrong; a consumer comparing the
-  crate's `trade_date` against a CME settlement file will see the holiday where CME shows the
-  next business day.
+  refused again (HTTP 403, one attempt, not retried). The closing condition this gap carried —
+  a `THBP-B` response (`id=168,167,320,323,19,27`) that carries an `NKD` or `NIY` event on
+  any of these five trade dates — remains unmet and stays open as the residual risk below:
+  the rows ship on the sibling line, and an `NKD`-specific capture would still strengthen
+  them. Issue #162 closes on this change.
+- **residual risk** — the fifteen 2025 rows through 2025-09-02 (the nine scalar rows, the
+  five merged trade dates and 2025-01-02's block row) rest on the Equity Index line rather
+  than on a published Nikkei line, because CME's channel no longer answers for
+  those windows and no archived capture of the `THBP-B` id set exists for them; the five
+  merged trade dates additionally read the merged assignment off the sibling line's own
+  `tradingDate` labels. Closing condition: an archived `THBP-B` capture of any of the eight
+  windows, or a `THBP-A` capture that carries `NKD`.
+- **residual risk** — the crate's trade date differs from CME's printed trade date on the two
+  closed-at-noon 2026/2027 Juneteenth holidays (2026-06-19, 2027-06-18): CME has published no
+  sibling witness for either, and no row ships on inference. On the 2025 noon-holiday class the
+  2026-10-04 change ships CME's merged assignment, so the difference no longer exists there.
+  No query the crate answers is wrong; a consumer comparing the crate's `trade_date` against a
+  CME settlement file will see the holiday where CME shows the next business day on those two
+  dates.
 - **closed 2026-09-26 UTC — the normal-week Pre-Open is served.** The module stated that "CME
   publishes no normal-week pre-open or order-entry start time for NKD"; the operator's own
   channel says otherwise, and the phase now ships as `order_entry` (never a session, so it
@@ -1105,11 +1149,12 @@ Official origin of the trading-hours captures: <http://www.cmegroup.com/trading_
   dates to rows. The seasonal-CDT/CST encoding the earlier risk bullet asked
   for is what shipped, keyed at the DST transitions the page's own dual
   spellings name.
-- **witness gap (recorded 2026-09-26 UTC, tracked as #162)** — the family
-  ships twelve of the seventeen merged trade dates and none of the 2025 five,
+- **witness gap (recorded 2026-09-26 UTC, tracked as #162; closed 2026-10-04 UTC)** — the
+  family carried twelve of the seventeen merged trade dates and none of the 2025 five,
   because no `NKD`/`NIY` witness exists for those windows and the channel that
-  would carry one returns an empty event list; the gap is recorded in the
-  Holidays section with its closing condition.
+  would carry one returns an empty event list. The five now ship on the ten-product
+  captures' `ES` line, whose own events print the merged trade dates; the record is in the
+  Holidays section's 2025 block.
 - **corrected at the migration** — the ledger note carried into this file ended with a sentence, written for an earlier revision of the module, saying the pre-2012 grid "is now extended to the January-2010 floor". The module does not do that and must not: `nkd_profile_at` returns `NKD_CLOSED` below the timeline's first row. That sentence was removed on 2026-09-12 and an editorial marker left in its place; the surviving correction earlier in the same note is the authoritative statement.
 - **scope** — Nikkei 225 Dollar outrights only. BTIC (`NKT`) is separately scheduled on its own CME-published hours and takes its own key if a consumer maps one. The 16:00–17:00 CT daily break is a maintenance period; the Pre-Open queue the operator prints inside it is an order-entry phase and is a phase of this outright book, which is why it ships in the current profile.
 

@@ -64,26 +64,11 @@ pub(crate) static CBOT_ORDER_ENTRY_AT_2010_FLOOR: &[SessionRule] = &[
         close_ssm: 16 * 3600,
     },
 ];
-// 2010-04-19 and 2011-12-27 change only queue boundaries: PCP expands to start
-// at 13:15:30, then the morning queue starts at 08:00. The matching grid is
-// unchanged, so both revisions reuse `CBOT_EXTENDED_AT_2010_FLOOR`.
-pub(crate) static CBOT_ORDER_ENTRY_2010_04_19: &[SessionRule] = &[
-    SessionRule {
-        days: SUN_ONLY,
-        open_ssm: 16 * 3600 + 15 * 60,
-        close_ssm: 18 * 3600,
-    },
-    SessionRule {
-        days: MON_FRI,
-        open_ssm: 7 * 3600 + 15 * 60,
-        close_ssm: 9 * 3600 + 30 * 60,
-    },
-    SessionRule {
-        days: MON_FRI,
-        open_ssm: 13 * 3600 + 15 * 60 + 30,
-        close_ssm: 16 * 3600,
-    },
-];
+// 2011-12-27 — the morning queue starts at 08:00 (the matching grid is
+// unchanged, so `CBOT_EXTENDED_AT_2010_FLOOR` is reused). The PCP start stays
+// at the sourced intersection's 14:30 across the pre-regime span and the
+// weekday evening Pre-Open is served absent (#283's residual in
+// docs/evidence/globex_grains.md, charter convention 2026-10-04).
 pub(crate) static CBOT_ORDER_ENTRY_2011_12_27: &[SessionRule] = &[
     SessionRule {
         days: SUN_ONLY,
@@ -97,7 +82,7 @@ pub(crate) static CBOT_ORDER_ENTRY_2011_12_27: &[SessionRule] = &[
     },
     SessionRule {
         days: MON_FRI,
-        open_ssm: 13 * 3600 + 15 * 60 + 30,
+        open_ssm: 14 * 3600 + 30 * 60,
         close_ssm: 16 * 3600,
     },
 ];
@@ -214,11 +199,6 @@ static AT_2010_FLOOR: StaticHoursProfile = profile(
     CBOT_EXTENDED_AT_2010_FLOOR,
     CBOT_ORDER_ENTRY_AT_2010_FLOOR,
 );
-static FROM_2010_04_19: StaticHoursProfile = profile(
-    CBOT_REGULAR_0930_1315,
-    CBOT_EXTENDED_AT_2010_FLOOR,
-    CBOT_ORDER_ENTRY_2010_04_19,
-);
 static FROM_2011_12_27: StaticHoursProfile = profile(
     CBOT_REGULAR_0930_1315,
     CBOT_EXTENDED_AT_2010_FLOOR,
@@ -247,11 +227,10 @@ static DATED_CURRENT: StaticHoursProfile = profile(
 
 // Evidence: docs/evidence/cbot.md, docs/evidence/globex_grains.md
 static REVISIONS: &[Revision] = revisions![
-    // 2010-04-19 — T1 — CME Globex notice 20100405 — the afternoon PCP expands
-    // to 13:15:30-16:00 CT.
-    (2010, 4, 19, &FROM_2010_04_19, "CME Globex notice 20100405"),
     // 2011-12-27 — T1 — CFTC filing rul120711cbot001 — the weekday morning queue
-    // moves to 08:00 CT.
+    // moves to 08:00 CT; the era's PCP start (14:30) is the pre-regime span's
+    // served sourced intersection, and its disputed 13:15:30-14:30 remainder is
+    // the evidence file's residual (#283).
     (
         2011,
         12,

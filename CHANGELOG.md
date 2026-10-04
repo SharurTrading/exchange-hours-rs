@@ -28,6 +28,23 @@ corrections (a venue's hours fixed against a primary source) go under
 
 ### Fixed
 
+- **globex_grains/cbot: the pre-regime queue set serves the sourced
+  intersection of its bracketing states — the 13:15:30 PCP start no longer
+  over-reports order acceptance (2026-10-04 UTC; fixes #283).** The shipped
+  2011-12-27..2012-05-19 queue set (and, before it, the 2010-04-19..2011-12-26
+  era whose revision row retires here as a served no-op) carried the 13:15:30-16:00 CT PCP that
+  Globex notice 20100405 dated from 2010-04-19, while the operator's own
+  trading-hours capture of 2012-05-11 prints the PCP back at 14:30-16:00 with
+  a 16:45 weekday evening Pre-Open; no dated artifact states the changeover.
+  Under the 2026-10-04 convention the whole pre-regime span
+  (2010-04-19..2012-05-19) now serves the sourced intersection: PCP
+  14:30-16:00 CT — continuous with the floor table's 14:30 start and the
+  regime's own PCP — and no weekday evening Pre-Open, with the disputed
+  remainders (the 13:15:30-14:30 PCP hour and the 16:45-18:00 evening queue)
+  disclosed as a residual in the evidence file whose named closer is the CME
+  desk ask. The 2010-04-19 revision row retires from the timeline (nothing
+  observable changes that day any more), and `globex_rough_rice` inherits the
+  same encoding through the shared grain tables.
 - **charter: an undated changeover is a disclosed residual, not a refused day —
   the #79, #123 and #259 declarations retire (2026-10-04 UTC; fixes #79, fixes
   #123, fixes #259).** The charter's "Modeling conventions" now record the

@@ -302,7 +302,10 @@ fn the_overnight_leg_survives_both_dst_transitions() {
 /// (CT) ... Post-close pre-open begins at 1:45.30 CT". Chicago is UTC-5 in
 /// April, so 2010-04-18 23:59:59 CT is the last instant the floor PCP
 /// governs. The mini close itself is unchanged, and the mini PCP already
-/// differs from the standard grains' 13:15:30 re-anchor on this same day.
+/// differs from the standard grains' served PCP on this day: the standard
+/// grid's own 13:15:30 re-anchor is the disclosed residual's earlier side
+/// (#283), so those grains queue from the sourced intersection's 14:30 while
+/// the minis queue from 13:45:30.
 #[test]
 fn the_pcp_reanchors_to_134530_from_2010_04_19() {
     let earlier = hours_at((2010, 4, 18));
@@ -346,13 +349,19 @@ fn the_pcp_reanchors_to_134530_from_2010_04_19() {
         );
     }
 
-    // The family discriminator at the floor: standard grains close 13:15 and
-    // re-anchored their PCP to 13:15:30, so at 13:35 the minis are still
-    // matching while the standard grains are already queueing.
+    // The family discriminator at the floor: at 13:35 the minis are still
+    // matching while the standard grains closed at 13:15 and their served PCP
+    // (the sourced intersection's 14:30 start, #283) has not opened; at 14:00
+    // the minis queue from 13:45:30 while the standard grains do not.
     let grains = hours_for_market_hours_key(GRAINS, ct((2010, 4, 19), (12, 0, 0)));
     assert!(
-        grains.is_order_entry_only(ct((2010, 4, 19), (13, 35, 0))),
-        "standard grains close 13:15 and queue from 13:15:30"
+        !grains.is_open(ct((2010, 4, 19), (13, 35, 0))),
+        "standard grains close 13:15, end-exclusive"
+    );
+    assert!(
+        !grains.is_accepting_orders(ct((2010, 4, 19), (14, 0, 0))),
+        "the standard grains' served PCP starts at the intersection's 14:30, so \
+         14:00 accepts nothing"
     );
     assert!(
         revised.is_open(ct((2010, 4, 19), (13, 35, 0))),

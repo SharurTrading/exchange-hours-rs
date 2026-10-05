@@ -1,0 +1,8 @@
+# SPDX-License-Identifier: MIT-0
+
+# `cargo xtask <subcommand>` runs the repository tooling crate
+# (`xtask/`): the evidence-chain verifier today, other maintainer
+# tooling later if it earns the same shape. `--quiet` keeps the
+# verifier's report the command's only output once built.
+[alias]
+xtask = "run --package xtask --quiet --"

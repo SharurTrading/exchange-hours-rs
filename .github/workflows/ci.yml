@@ -37,6 +37,17 @@ jobs:
           # Do not leave the job token in .git/config for later steps to reuse.
           persist-credentials: false
 
+      # The evidence repo, beside the crate checkout. The Documents-digest
+      # fence runs inside the general test suite below, and its CI guard
+      # makes a missing store a failure rather than a silent skip (#288), so
+      # the store must resolve on every run — not only in the evidence-audit
+      # workflow, which checks this same repo out again for its own steps.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: SharurTrading/exchange-hours-evidence
+          path: exchange-hours-evidence
+          persist-credentials: false
+
       # This step only bootstraps rustup; the version is NOT pinned here on
       # purpose. rust-toolchain.toml is the single source of truth and rustup
       # honours it for every cargo invocation in the workspace, installing that
@@ -62,6 +73,12 @@ jobs:
 
       - name: tests
         run: cargo nextest run --all-targets --no-fail-fast
+        env:
+          # The store the Documents-digest fence verifies against (also
+          # reachable through the ../exchange-hours-evidence sibling
+          # convention; named explicitly so the fence's resolution order is
+          # unambiguous in the run log).
+          EXCHANGE_HOURS_RESEARCH: ${{ github.workspace }}/exchange-hours-evidence
 
       # nextest does not run doctests, and the Quick start example is one.
       - name: doctests

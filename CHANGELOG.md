@@ -10,6 +10,21 @@ corrections (a venue's hours fixed against a primary source) go under
 **Fixed**; new venues and new API surface under **Unreleased**/**Added**.
 
 ## [Unreleased]
+### Added
+
+- **`cargo xtask verify-evidence`: the evidence chain, mechanically.** The new
+  repository tooling resolves a document id across every evidence file's
+  `### Documents` table, recomputes the artifact's sha256 from the evidence
+  store — the public mirror `SharurTrading/exchange-hours-evidence`, the
+  `$EXCHANGE_HOURS_RESEARCH` env, or the working store beside the checkout,
+  in that order — prints the citation line and the quoted context, and exits
+  non-zero on any mismatch; `cargo xtask verify-evidence --all` verifies every
+  row. The new `evidence-audit` CI workflow runs the verifier's `--all` walk
+  and the Documents-digest fence non-vacuously (the fence now fails loudly
+  when the store does not resolve under CI instead of skipping) on every pull
+  request that touches `docs/evidence/`. No evidence content changed; every
+  digest verifies unchanged against the relocated store.
+
 ### Changed
 
 - **eurex: the `tba` era answers — the undated German-scope closures verified

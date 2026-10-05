@@ -16,7 +16,11 @@ removed (Stage 5's removal programme is cancelled; #117 closed and reverted by
 #185), and the 2010–2024 era's known gaps (#110, #101, #112, #89) close before
 1.0.0 instead of being deleted past. The 2026-09-30 (UTC) refresh records that
 the coverage contract is enforced, not pending: the migration status and
-LAW-COVERAGE now describe what ships (closes #154). The law names are
+LAW-COVERAGE now describe what ships (closes #154). The 2026-10-05 (UTC)
+amendment names `SharurTrading/exchange-hours-evidence` as the research
+store's public home — a byte-identical, PR-gated mirror the evidence-audit
+workflow checks out for the Documents-digest fence, and the checkout
+`cargo xtask verify-evidence` resolves (#288). The law names are
 unchanged.
 
 ## Migration status — 2026-09-30 UTC
@@ -302,9 +306,11 @@ the cost of keeping them true.
   task cannot source is recorded as a gap with what would close it, and for a
   served identity that gap becomes an issue (LAW-FOLLOW-UPS-ARE-ISSUES). A
   bounded research attempt can end with a gap; the served-scope completeness
-  claim and release gate cannot pass over it. The research store beside the
-  repository holds retrieved artifacts and working
-  notes; only the evidence file is committed.
+  claim and release gate cannot pass over it. The store's public home is the
+  `SharurTrading/exchange-hours-evidence` repository, which mirrors the
+  working store byte for byte; the working copy for capture and review work
+  is a local clone or sparse checkout of it, and only the evidence file is
+  committed to this repository.
 - **LAW-WATCH** — a served identity is reviewed on a cadence recorded in its
   ledger row: monthly for a family that has changed within the last year,
   trades on a 24/7 grid, or ships a built-in holiday table (the operator
@@ -648,7 +654,10 @@ writes the report from what the reviewer reproduced. A value invented anywhere
 — a table row, an evidence-file cell, a sentence of prose, a pull-request body
 — fails the review whatever the test status, because this crate's only product
 is the claim that its values are sourced. To run one: give the reviewer this
-section, the pull-request number and the research store path.
+section, the pull-request number and the evidence-repo path — a local checkout
+of `SharurTrading/exchange-hours-evidence`, the store's public home. Claims
+verify mechanically against that checkout with
+`cargo xtask verify-evidence <document-id>`.
 
 1. **Work in a worktree at the head commit**, never in the main checkout
    (`git worktree add --detach <path> origin/<branch>`). Run the full
@@ -661,7 +670,7 @@ section, the pull-request number and the research store path.
 3. **Retrieved rows.** For every row of a table under a hundred rows, and for
    every row of an unusual kind plus one row in five of the rest of a larger
    one, chosen by the reviewer: resolve the document id through the evidence
-   file's `### Documents` table to the research-store artifact, confirm its
+   file's `### Documents` table to the evidence-repo artifact, confirm its
    sha256 reproduces, find the verbatim in the bytes, and compare date, kind,
    instant, tier and the event-date-to-trade-date conversion. A quoted string
    that is not in the cited artifact is a defect even when the value is right.
@@ -703,7 +712,7 @@ section, the pull-request number and the research store path.
    wrong instant, date, status, count or sourcing basis block the merge;
    everything else is advisory. A fix is accepted only by re-running the
    affected checks on the pushed commit, never from its description.
-10. **Record** the review in the research store's `STATUS.md` (head hash,
+10. **Record** the review in the evidence repo's `STATUS.md` (head hash,
     verdict, defects) and post it on the pull request, which — like every other
     post an agent makes through the maintainer's account — opens by naming the
     exact model that wrote it (LAW-AGENT-ATTRIBUTION).

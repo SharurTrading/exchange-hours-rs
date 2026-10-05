@@ -1,0 +1,38 @@
+# SPDX-License-Identifier: MIT-0
+
+[package]
+name = "xtask"
+version = "0.0.0"
+edition = "2024"
+rust-version = "1.95"
+license = "MIT-0"
+description = "Repository tooling for exchange-hours; never published."
+publish = false
+
+# The laws bind the library; the tool is a different boundary. It prints by
+# design (STYLE-LOG governs library output, not its maintainer tooling) and
+# reports every failure by returning an error and exiting non-zero, so the
+# panic-family lints keep the library's severity here too: nothing panics,
+# hangs or unwraps its way through a bad input.
+[lints.rust]
+missing_docs = "deny"
+unsafe_code = "forbid"
+
+[lints.clippy]
+pedantic = { level = "warn", priority = -1 }
+unwrap_used = "deny"
+expect_used = "deny"
+panic = "deny"
+todo = "deny"
+unreachable = "deny"
+dbg_macro = "deny"
+# A verifier's purpose is output on stdout and diagnostics on stderr; the
+# library's STYLE-LOG silence does not reach this crate.
+print_stdout = "allow"
+print_stderr = "allow"
+
+[dependencies]
+# The same dependency the library's digest fence uses as a dev-dependency:
+# the verifier recomputes each artifact's sha256 from the evidence store's
+# bytes, so here it is linked for real. No new package enters the lockfile.
+sha2 = "0.11.0"

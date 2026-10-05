@@ -1206,15 +1206,32 @@ fn every_documents_row_digest_is_a_sha256_digest() {
     );
 }
 
-/// The research store's root: `$EXCHANGE_HOURS_RESEARCH` where the checkout
-/// sits elsewhere, else the sibling directory the plans name
+/// The research store's root, resolved in the order the audit chain needs:
+/// `$EXCHANGE_HOURS_RESEARCH` where the checkout sits elsewhere, then the
+/// public evidence repo's local clone (`../exchange-hours-evidence`, the
+/// clone of `SharurTrading/exchange-hours-evidence` — the store's public
+/// home), then the maintainer's working store
 /// (`../exchange-hours-research`, the convention of
-/// `docs/plans/2026-09-12-cme-trade-type-keys.md`).
-fn research_store_root() -> PathBuf {
-    std::env::var_os("EXCHANGE_HOURS_RESEARCH").map_or_else(
-        || PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../exchange-hours-research"),
-        PathBuf::from,
-    )
+/// `docs/plans/2026-09-12-cme-trade-type-keys.md`). `None` when no candidate
+/// holds a store: the caller decides whether that is a skip (a local quick
+/// build) or a failure (CI, where the store must resolve).
+fn research_store_root() -> Option<PathBuf> {
+    if let Some(root) = std::env::var_os("EXCHANGE_HOURS_RESEARCH") {
+        return Some(PathBuf::from(root));
+    }
+    let manifest = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    for name in ["exchange-hours-evidence", "exchange-hours-research"] {
+        let candidate = manifest.join("..").join(name);
+        if candidate.is_dir() {
+            return Some(candidate);
+        }
+    }
+    None
+}
+
+/// True under CI (the standard `CI` variable GitHub Actions sets to `true`).
+fn running_in_ci() -> bool {
+    std::env::var("CI").is_ok_and(|value| !value.is_empty() && value != "0")
 }
 
 /// Hashes every file under the research store, keyed by sha256.
@@ -1236,6 +1253,11 @@ fn store_digest_map(root: &Path) -> BTreeMap<String, Vec<String>> {
                 .expect("a research store entry must be readable")
                 .path();
             if path.is_dir() {
+                // A checkout of the evidence repo carries git's own object
+                // store; that is the mirror's metadata, not evidence.
+                if path.file_name().is_some_and(|name| name == ".git") {
+                    continue;
+                }
                 walk(root, &path, map);
             } else {
                 let bytes = fs::read(&path)
@@ -1272,19 +1294,32 @@ fn store_digest_map(root: &Path) -> BTreeMap<String, Vec<String>> {
 /// resolves is by construction the bytes at the paths the failure message
 /// prints, and a digest no store file produces is a defect in the row.
 ///
-/// The store lives beside the repository (`research_store_root` above).
-/// GitHub-hosted CI checks out only this repository, so there the fence
-/// returns after finding the store absent — the one documented environment
-/// exception, never a row-level one: wherever the store is present, every
-/// Documents row in every evidence file is checked, and the pins below keep
-/// the check from passing vacuously over a truncated or misplaced store.
+/// The store resolves through `research_store_root` above: the
+/// `$EXCHANGE_HOURS_RESEARCH` env, then the local clone of the public
+/// evidence repo (`../exchange-hours-evidence`, the checkout of
+/// `SharurTrading/exchange-hours-evidence`), then the maintainer's working
+/// store (`../exchange-hours-research`). A local quick build with none of the
+/// three skips — the one documented environment exception, never a row-level
+/// one. Under CI a skip is impossible: the evidence-audit workflow checks the
+/// evidence repo out beside this repository and sets the variable, so an
+/// unresolved store there is a bug and the fence fails loudly instead of
+/// passing vacuously. Wherever the store is present, every Documents row in
+/// every evidence file is checked, and the pins below keep the check from
+/// passing vacuously over a truncated or misplaced store.
 #[test]
 fn every_documents_digest_is_the_research_store_bytes() {
-    let root = research_store_root();
-    if !root.is_dir() {
-        // CI holds no store; the digest-shape fence above still ran.
+    let Some(root) = research_store_root() else {
+        assert!(
+            !running_in_ci(),
+            "the research store did not resolve under CI: the evidence-audit \
+             workflow checks SharurTrading/exchange-hours-evidence out beside \
+             this repository and sets $EXCHANGE_HOURS_RESEARCH to it, so a \
+             skip here would make this fence vacuous"
+        );
+        // A local quick build without any store; the digest-shape fence
+        // above still ran.
         return;
-    }
+    };
     let store = store_digest_map(&root);
     assert!(
         store.len() > 4_000,

@@ -84,3 +84,10 @@ harness = false
 [[test]]
 name = "session_invariants"
 path = "tests/contract/session_invariants.rs"
+
+# Repository tooling rides in the workspace so every `cargo` command CI runs
+# (`fmt`, `clippy --all-targets`, `nextest --all-targets`, `cargo deny`, the
+# MSRV check) covers it too. It is never published (`publish = false` in its
+# own manifest) and the library package above is unchanged for consumers.
+[workspace]
+members = ["xtask"]

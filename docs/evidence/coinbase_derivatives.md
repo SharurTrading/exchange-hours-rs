@@ -265,6 +265,33 @@ time and sha256 per artifact in its `INDEX.md`; the operator statements behind e
   (`pdf/Market_Notice__22-11.pdf` in the recheck directory), restates only the Christmas 2022
   schedule, so the restatement route is closed as well as the archive route. Closing condition
   unchanged.
+  A 2026-10-05 read closes the bridging route. The sibling notices' full texts in the research
+  store have been read completely for language that bridges to a default schedule or
+  cross-references 22-10 — the holiday family 21-06, 22-07, 22-08, 22-11, 23-16, 24-21, 25-37 and
+  the amendment/maintenance notices 26-27.1, 26-33.3, 26-37 — and a corpus-wide phrase scan over
+  all 56 stored text dumps (`cde-2021-2025/txt/`, 53 notices, plus the three recheck texts under
+  `holidays/raw/cde/recheck-2026-10-03/txt/`) finds no other candidate sentence. The only
+  cross-references in the corpus are amendment lineages in the operator's own house words —
+  26-27.1's `Amendment: This notice supersedes Market Notice 26-27` and 26-33.3's
+  `This notice amends Market Notice 26-33.2 and Market Notice 26-25 (published 05/20/2026).` — so
+  22-11, which carries no such sentence, witnesses nothing about 22-10's contents. No sibling
+  notice bridges to a standard or default hours document: the nearest sentences point inside the
+  same notice or at the separate 24x7 product listing — 23-16's `Please see below description of
+  Coinbase Derivatives hours of operations and settlement information.`, 24-21's `Please see the
+  table below for the detailed Coinbase Derivatives hours of operation and settlement information
+  around the holiday schedule.`, and 25-37's `Additional details on 24x7 hours can be found
+  here.` — and every holiday notice is a self-contained three-trade-date grid. The listing's
+  posted dates carry no row between 22-08 (11/10/2022) and the 12/12/2022 trio 22-07/22-10/22-11,
+  so no maintenance or product-launch notice inside the window could have carried the hours
+  instead. The shared template makes 22-10's missing section predictable in form — three trade
+  dates, `Closed for holiday` on the Thursday, and in all four observed Thanksgiving years (2021,
+  2023, 2024, 2025) the same notice also states the Friday-after early close (21-06: Equity
+  `11/26 12:15 CT`, Energy `11/26 12:45 CT`; 23-16: Equity `11/24 12:15 CT`, Crypto and Energy
+  `11/24 12:45 CT`; 24-21: all three groups `13:45 CT`; 25-37: Energy & Metal `11/28 13:45 CT`,
+  Equity `11/28 12:15 CT`) — but predictable is not evidence
+  (LAW-NO-FABRICATED-DATES), and no operator byte states either 2022 date. The desk ask sharpens
+  accordingly: a surviving 22-10 almost certainly carries a Friday 11/25 early-close cell beside
+  the Thursday closure, so both instants should be requested, not the closure alone.
 - **Trade date 2021-12-31 is carried as audited normal and ships no row.** The operator published
   no notice for it: the 2021 listing runs 21-01 to 21-07 with no gaps, and 21-07 (issued
   2021-12-21, the last 2021 notice) covers Christmas only. New Year's Day 2022 fell on a Saturday

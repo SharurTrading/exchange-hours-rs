@@ -783,6 +783,20 @@ values describe the pre-expansion 18:00–06:00 era and were superseded by the
 dated 2009-07-01 expansion. Closing condition: a CME statement of the grain
 futures' pre-open sessions in session language dated between 2009-07-01 and
 the floor.
+**The 2026-10-05 no-changes verification moved the horizon to the floor.**
+The maintainer's directive of that date asked whether the carried span
+2010-01-01..2010-03-14 was a real gap; the sweep found no declared change
+inside it, so the 2010-03-15 market-state table is the verified state from the
+floor and the `NormalWeekCarried` refusals below the old horizon retired with
+it. What was swept, the artifacts under `normal-weeks/` in the research store
+(wave-c1 the 2026-09-30 retrieval): every archived weekly Globex notice of
+2009-12..2010-03 was scanned for grain hours language — the only grain items
+are the Q1-2010 platform-enhancement schedule (functionality, no session
+times) and the market-state table itself at notice 20100315, whose options
+pre-open "matches the underlying futures' current" afternoon 14:30-16:00 CT
+window — and the 2009-07-01 dated grid (notice 20090608) leaves no matching
+change between it and the floor. The queue phases' pre-floor onset stays the
+disclosed residual above; the horizon cell reads 2010-01-01.
 
 ## Sources
 

@@ -294,9 +294,13 @@ const fn for_exchange(exchange: Exchange) -> DeclaredSourcing {
         // 20090831/0907/0914); the Sunday quarter-hour's undated 2012 move is a
         // disclosed residual (#79, retired 2026-10-04), not a declaration.
         Exchange::Cme => DeclaredSourcing::carried_below(horizon!(2010, 1, 1)),
-        Exchange::Cbot => DeclaredSourcing::carried_below(horizon!(2010, 3, 15)),
-        Exchange::Comex => DeclaredSourcing::carried_below(horizon!(2012, 5, 11)),
-        Exchange::Nymex => DeclaredSourcing::carried_below(horizon!(2012, 5, 11)),
+        // `—` at the floor since the 2026-10-05 no-changes verification
+        // (globex_grains.md carries the sweep record).
+        Exchange::Cbot => DeclaredSourcing::carried_below(horizon!(2010, 1, 1)),
+        // `—` at the floor since the 2026-10-05 no-changes verification
+        // (globex_energy.md carries the sweep record).
+        Exchange::Comex => DeclaredSourcing::carried_below(horizon!(2010, 1, 1)),
+        Exchange::Nymex => DeclaredSourcing::carried_below(horizon!(2010, 1, 1)),
         Exchange::Cfe => DeclaredSourcing::carried_below(horizon!(2010, 1, 1)),
         // `—`: closed before FairX's exact 2021-06-28 08:00 CT launch.
         Exchange::CoinbaseDerivatives => DeclaredSourcing::nothing_carried(),
@@ -398,25 +402,29 @@ const fn for_market_hours_key(key: MarketHoursKey) -> DeclaredSourcing {
         // move is a disclosed residual (#79, retired 2026-10-04), not a
         // declaration.
         MarketHoursKey::GlobexEquityIndex => DeclaredSourcing::carried_below(horizon!(2010, 1, 1)),
-        MarketHoursKey::GlobexEnergy => DeclaredSourcing::carried_below(horizon!(2012, 5, 11)),
+        // `—` at the floor since the 2026-10-05 no-changes verification, like
+        // the venue's own arm (the sweep record is in globex_energy.md).
+        MarketHoursKey::GlobexEnergy => DeclaredSourcing::carried_below(horizon!(2010, 1, 1)),
         // The 100-oz silver family shares the energy/metals tables by
         // reference, so it carries the family's own horizon; like Rough Rice,
         // a key referencing another family's rows declares no phase gaps of
         // its own — the family's Sunday quarter-hour residual (#79, retired
         // 2026-10-04) is the family's, recorded beside its rows and in this
         // key's evidence file.
-        MarketHoursKey::GlobexSilver100Oz => DeclaredSourcing::carried_below(horizon!(2012, 5, 11)),
+        MarketHoursKey::GlobexSilver100Oz => DeclaredSourcing::carried_below(horizon!(2010, 1, 1)),
         // The 2012-05-20..2013-04-06 regime's queues are served from the
-        // regime's own dated start (the #259 retirement, 2026-10-04); the
-        // eight-day onset bracket is the residual the evidence file records.
-        MarketHoursKey::GlobexGrains => DeclaredSourcing::carried_below(horizon!(2010, 3, 15)),
+        // regime's own dated start (the #259 retirement, 2026-10-04), and the
+        // 2026-10-05 no-changes sweep moved the horizon to the floor
+        // (globex_grains.md).
+        MarketHoursKey::GlobexGrains => DeclaredSourcing::carried_below(horizon!(2010, 1, 1)),
         MarketHoursKey::GlobexMiniGrains => DeclaredSourcing::carried_below(horizon!(2010, 4, 5)),
         // Every special session CME publishes for this family now ships as a
         // row, so the #93 declaration it used to carry is gone; the floor-era
-        // matching grid is sourced (FX-hours page, capture 2009-05-02), and the
-        // Sunday quarter-hour's undated 2012 move is a disclosed residual
-        // (#79, retired 2026-10-04), not a declaration.
-        MarketHoursKey::GlobexFx => DeclaredSourcing::carried_below(horizon!(2012, 5, 3)),
+        // grid is sourced (FX-hours page, capture 2009-05-02) and the
+        // 2026-10-05 no-changes sweep moved the horizon to the floor
+        // (globex_fx.md); the Sunday quarter-hour's undated 2012 move stays a
+        // disclosed residual (#79), not a declaration.
+        MarketHoursKey::GlobexFx => DeclaredSourcing::carried_below(horizon!(2010, 1, 1)),
         MarketHoursKey::GlobexInterestRates => {
             DeclaredSourcing::carried_below(horizon!(2010, 1, 1))
         }

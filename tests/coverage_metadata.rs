@@ -394,27 +394,21 @@ fn without_holidays_selects_the_normal_week_contract() {
 
     assert_eq!(detached.holiday_contract(), HolidayContract::NormalWeekOnly);
     assert_eq!(detached.complete_ranges().count(), 0);
-    // At the 2010 floor `cbot`'s 2010-03-15 horizon splits the contract into
-    // its carried era and its sourced era, and the shipped audited windows
-    // segment the rest — the walk's edges are the windows the identity ships,
-    // so a detached view reports the same segmentation the attached one does.
+    // The 2026-10-05 no-changes verification moved `cbot`'s horizon to the
+    // floor, so the detached contract carries no era split below the shipped
+    // audited windows — the walk's edges are the windows the identity ships,
+    // and a detached view reports the same segmentation the attached one does.
     let gaps: Vec<CoverageGap> = detached.gaps().collect();
-    assert_eq!(gaps.len(), 8);
+    assert_eq!(gaps.len(), 7);
     assert_eq!(
         gaps[0].range(),
-        DateRange::new(SUPPORT_FLOOR, date(2010, 3, 14)).expect("ascending")
+        DateRange::new(SUPPORT_FLOOR, date(2012, 12, 31)).expect("ascending")
     );
-    // The carried era reads `NormalWeekCarried` — the horizon is a
-    // normal-week fact the detach keeps — and every sourced era reads
-    // `NormalWeekOnly`, split at the shipped windows' edges.
-    assert_eq!(gaps[0].reason(), CoverageGapReason::NormalWeekCarried);
-    assert_eq!(
-        gaps[1].range(),
-        DateRange::new(date(2010, 3, 15), date(2012, 12, 31)).expect("ascending")
-    );
-    assert_eq!(gaps[1].reason(), CoverageGapReason::NormalWeekOnly);
+    // Every era reads `NormalWeekOnly`, split at the shipped windows' edges:
+    // no carried span survives the horizon's move to the floor.
+    assert_eq!(gaps[0].reason(), CoverageGapReason::NormalWeekOnly);
     assert!(
-        gaps[2..]
+        gaps[1..]
             .iter()
             .all(|gap| gap.reason() == CoverageGapReason::NormalWeekOnly)
     );
@@ -566,6 +560,81 @@ fn sourced_normal_week_reports_the_ledger_horizon() {
         gap_reason_on(asx, date(2025, 6, 22)),
         None,
         "the below-SR15 grid is sourced now, so no 2025 date is carried"
+    );
+}
+
+#[test]
+fn the_no_changes_sweep_retired_the_cme_side_carried_eras() {
+    // The 2026-10-05 no-changes verification (the maintainer's directive of
+    // that date) swept each family's own change channels over its carried span
+    // and found no declared hours change inside it, so the sourced horizon of
+    // every CME-side family that carried a span below it moved to the floor
+    // and the span's dates answer instead of refusing. This is the fence on
+    // that retirement: each horizon sits at the floor, and one formerly
+    // carried instant per family answers through the public surface with the
+    // baseline state the sweep verified.
+    for exchange in [Exchange::Cbot, Exchange::Comex, Exchange::Nymex] {
+        let coverage = exchange_coverage(exchange);
+        assert_eq!(
+            coverage.normal_week_sourced_from(),
+            Some(SUPPORT_FLOOR),
+            "{exchange:?}: the no-changes verification sources the week from the floor"
+        );
+        assert_ne!(
+            gap_reason_on(coverage, SUPPORT_FLOOR),
+            Some(CoverageGapReason::NormalWeekCarried),
+            "{exchange:?}: the floor must not refuse as carried"
+        );
+    }
+    for key in [
+        MarketHoursKey::GlobexEnergy,
+        MarketHoursKey::GlobexSilver100Oz,
+        MarketHoursKey::GlobexGrains,
+        MarketHoursKey::GlobexFx,
+    ] {
+        let coverage = calendar_for_market_hours_key(key).coverage();
+        assert_eq!(
+            coverage.normal_week_sourced_from(),
+            Some(SUPPORT_FLOOR),
+            "{key:?}: the no-changes verification sources the week from the floor"
+        );
+        assert_ne!(
+            gap_reason_on(coverage, SUPPORT_FLOOR),
+            Some(CoverageGapReason::NormalWeekCarried),
+            "{key:?}: the floor must not refuse as carried"
+        );
+    }
+
+    // The formerly carried instants answer with the baseline state: the
+    // energy/metals wrapped session's first floor-era Sunday open, the FX
+    // grid's, and the grains day session — each a date inside the span the
+    // 2026-10-05 sweep verified, queried through the public surface.
+    let energy = calendar_for_market_hours_key(MarketHoursKey::GlobexEnergy);
+    // 2010-01-03 23:00 CT (2010-01-04 05:00 UTC): the floor era's first Sunday
+    // evening open of the 17:00-16:15 CT wrapped grid.
+    let sunday_open =
+        DateTime::<Utc>::from_timestamp(1_262_581_200, 0).expect("a representable instant");
+    assert!(
+        energy
+            .is_open(sunday_open)
+            .expect("the sweep verified the era"),
+        "the energy grid's floor-era Sunday session answers open"
+    );
+    let fx = calendar_for_market_hours_key(MarketHoursKey::GlobexFx);
+    assert!(
+        fx.is_open(sunday_open).expect("the sweep verified the era"),
+        "the FX grid's floor-era Sunday session answers open"
+    );
+    let grains = calendar_for_market_hours_key(MarketHoursKey::GlobexGrains);
+    // 2010-01-04 10:00 CT (16:00 UTC): inside the grain day session the
+    // 2009-07-01 dated grid states, on a Monday the carried span covered.
+    let day_session =
+        DateTime::<Utc>::from_timestamp(1_262_620_800, 0).expect("a representable instant");
+    assert!(
+        grains
+            .is_open(day_session)
+            .expect("the sweep verified the era"),
+        "the grain grid's floor-era day session answers open"
     );
 }
 

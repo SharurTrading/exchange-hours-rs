@@ -43,11 +43,47 @@ corroborating statements and bounded the Sunday-queue search:
   products (notices 20090326/20090330 print the schedule table effective
   Sunday, April 5, 2009 — Sundays Pre-Open 16:15, Monday-Friday 16:50 —
   corroboration beside the already-sourced `globex_interest_rates` floor
-  grid), the TAS products, or Random Length Lumber. The horizon therefore
-  stays at the 2012-05-11 index capture, below which the Sunday queue is
-  carried at its sourced intersection, and the closing condition stays: an
-  operator statement of the energy or metals complex's Sunday Pre-Open in
-  session language dated before 2012.
+grid), the TAS products, or Random Length Lumber.
+
+**The 2026-10-05 no-changes verification moved the horizon to the floor.** The
+maintainer's directive of that date asked whether the carried span was a real
+gap; the sweep below found no declared change inside 2010-01-01..2012-05-10,
+so the 2012-05-11 capture's state is the verified state from the floor and the
+`NormalWeekCarried` refusals below the old horizon retired with it. What was
+swept, every artifact under `normal-weeks/` in the research store (wave-c1 the
+2026-09-30 retrieval, `wave-c2-2012-notices` the 2026-10-05 retrieval, digests
+beside them):
+
+- **The weekly Globex notice channel, in full, over the interval.** The 242
+  readable notices of 2010-2011 were re-scanned for energy/metals hours
+  language (this pass; the wave-c1 scan had read the same bytes for pre-open
+  statements), and 25 of the 26 weekly notices of 2012-01-02..2012-05-28 were
+  retrieved and scanned the same way. Every product-complex hit is a listing
+  rule, a symbol change, a match-algorithm change or a fee/filing item — none
+  is session language. Two notice files stay unread (zero-byte archive
+  replays, retried twice on 2026-10-05): 20100726, whose week is covered by
+  the readable 20100719 and 20100802, and 20120221, covered by 20120220.
+- **The weekday queue's floor value is stated then-live inside the interval**:
+  notice 20101018's pre-open change states CME/CBOT/KCBT/MGEX products will
+  move to "match the current schedule for NYMEX, COMEX and DME products" — the
+  16:45 CT weekday queue already in force for this complex.
+- **The Sunday queue's floor value is stated in the venue's own market-state
+  language inside the interval**: the TAS launch notices (20101025, 20101227,
+  20110110, 20110117) carry "TAS products will pre-open at their normal time,
+  16:15 CT", and notice 20120409's TAS timing change states the market pause
+  "at 16:15:00 on Sunday and 16:45:00 Monday through Thursday" effective
+  Sunday, April 15, 2012. TAS is outside the served scope, so these state the
+  platform values rather than key a row; the first capture of the complex's
+  own 16:00 CT Sunday value remains 2012-06-07, and the quarter-hour stays the
+  disclosed residual above.
+- **The matching grid is bracketed inside the interval**: notice 20090130's
+  pre-floor 17:00-16:15 CT grid through the metals-hours page capture of
+  2011-09-02 (no Pre-Open rows, same grid) to the 2012-05-01 and 2012-05-11
+  captures; the next matching-grid change is the dated 2015-09-20 close move.
+
+The closing condition for a direct statement of the complex's Sunday Pre-Open
+before 2012 remains live for the residual above, and no other carried claim
+survives: the horizon cell reads 2010-01-01.
 
 ## Sources
 

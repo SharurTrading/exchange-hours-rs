@@ -20,9 +20,13 @@
 //! Coverage stops at 2026-12-31. Eurex's 2027-2036 calendars exist only "on a
 //! preliminary and indicative basis … and are subject to change", which is not
 //! an unconditional dated future, so LAW-NO-FABRICATED-DATES keeps them out.
-//! The unresolved "to be announced" line the 2025 and 2026 editions print for
-//! additional German closures in FDAX/FDXM — the only span the operator still
-//! withholds — is declared in `schedules/sourcing.rs` and recorded in
+//! The "to be announced" line the 2025 and 2026 editions print for additional
+//! German closures in FDAX/FDXM verified to **no closures** (2026-10-05 UTC,
+//! #157): the operator's day-by-day Holiday regulations tables state what
+//! closed in both years and name no German scope anywhere in them — a grammar
+//! that printed the German clause, futures carve-out and all, in 2020 — so
+//! every date of the era answers from the all-derivatives rows below and the
+//! chain lives in
 //! [`docs/evidence/eurex.md`](../../../../../docs/evidence/eurex.md).
 //!
 //! **Two tables, split by the operator's own scope lines.** The editions print
@@ -40,7 +44,9 @@
 //! 2019-2021 editions date the same scope but print `(trading in German equity
 //! index futures takes place!)`, so nothing closes in the futures scope those
 //! years; the 2010-2013, 2015 and 2022-2024 editions print no German-scope
-//! line at all in a panel that enumerates every other country's closures.
+//! line at all in a panel that enumerates every other country's closures; and
+//! the 2025-2026 `tba` line verified to no closures on 2026-10-05 UTC, so the
+//! era answers from the all-derivatives rows alone.
 //!
 //! [`TABLE`] serves `Exchange::Eurex` and the `eurex` key; [`FIXED_INCOME`]
 //! serves the `eurex_fixed_income` key. The all-derivatives rows are the same

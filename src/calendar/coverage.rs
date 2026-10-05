@@ -37,31 +37,38 @@
 //! and [`CoverageGapReason::NormalWeekOnly`] name its five kinds. A **declared**
 //! gap is not date-shaped: the operator publishes an arrangement no shipped row
 //! states exactly. `schedules/sourcing.rs` declares those
-//! per identity, and this module reports them as
-//! [`CoverageGapReason::UnpublishedClosureDates`] (#157) today, with
+//! per identity; nothing declares one today, and the four shapes the shipped
+//! scopes have retired are
 //! [`CoverageGapReason::SpecialSessionUnrepresentable`] (#93),
-//! [`CoverageGapReason::PostCloseQueueTradeDateLabel`] (#152) and
-//! [`CoverageGapReason::NormalWeekPhaseWithheld`] (#79, #123, #259) as the
-//! three shapes the shipped scopes have retired.
+//! [`CoverageGapReason::PostCloseQueueTradeDateLabel`] (#152),
+//! [`CoverageGapReason::NormalWeekPhaseWithheld`] (#79, #123, #259) and
+//! [`CoverageGapReason::UnpublishedClosureDates`] (#157).
 //!
-//! One declaration stands, and it withholds nothing.
+//! No declaration stands.
 //! [`CoverageGapReason::UnpublishedClosureDates`]
-//! withholds no phase — it states that the operator names closures it has not
-//! dated — so it is a completeness fact alone and the phase's own queries answer
-//! through it. The three retired shapes each withheld something once: a
-//! phase's own answer
+//! withheld no phase — it stated that the operator names closures it has not
+//! dated — so it was a completeness fact alone and the phase's own queries
+//! answered through it. The four retired shapes each withheld something once:
+//! a phase's own answer
 //! ([`CoverageGapReason::NormalWeekPhaseWithheld`], whose declaration a query
 //! whose answer was that phase could not answer through), a session no row
-//! stated, and a trade-date label. They retired in the order their resolutions
+//! stated, a trade-date label, and an undated holiday scope that verified to
+//! no closures at all. They retired in the order their resolutions
 //! arrived — the special sessions when every scope's merged trade dates
 //! shipped as rows, the label when the charter's Post-Close trade-date
-//! convention resolved the divergence (2026-10-03, #152), and the phase-level
+//! convention resolved the divergence (2026-10-03, #152), the phase-level
 //! shape when the charter's sourced-intersection residual convention resolved
 //! #79, #123 and #259 (2026-10-04): a phase whose endpoints are sourced at two
 //! values with only the changeover day undated, and whose dated-artifact hunts
 //! have closed negative, is served as the sourced intersection with the
 //! disputed remainder disclosed as a residual in the owner's evidence file,
-//! never refused as a declaration. All three stay on the enum as the
+//! never refused as a declaration — and the holiday scope when the no-changes
+//! verification of 2026-10-05 established that the `tba` closures the Eurex
+//! 2025/2026 editions never dated never existed: the operator's day-by-day
+//! Holiday regulations tables state no German-scope closure on any date of
+//! either year, every candidate date has passed answering ordinary, and the
+//! regulation channel such a closure would travel is enumerated complete and
+//! empty of it (#157). All four stay on the enum as the
 //! vocabulary a future gap of the same shape would declare, which is also why
 //! the pass-through gate arms below remain.
 //!
@@ -361,22 +368,28 @@ pub enum CoverageGapReason {
     /// closes and prints `tba` where its dates belong — so no date-level row can
     /// state it and no date walk over the identity's tables can find it.
     ///
-    /// `eurex` is the shipped case. The *Eurex trading calendar 2025* prints
+    /// `eurex` was the shipped case, from the declaration's introduction until
+    /// its 2026-10-05 retirement. The *Eurex trading calendar 2025* prints
     /// `Kein Handel und keine Ausübung in deutschen Aktien- und
     /// Aktienindex-derivaten sowie in ETF- und ETC-Derivaten, die auf
-    /// Xetra@-Börsen-notierungen basieren: tba.`, and the 2026 edition carries
-    /// the same note in English and still says `to be announced`; FDAX and FDXM
+    /// Xetra@-Börsen-notierungen basieren: tba.`, and the 2026 edition carried
+    /// the same note in English still saying `to be announced`; FDAX and FDXM
     /// are German equity-index derivatives this identity serves, so both years
-    /// could carry closures no shipped row states. The withholding is the
-    /// **operator's**, not this crate's: the Holiday regulations page never
-    /// carries the note, so it cannot be closed from that page, and
-    /// LAW-PRIMARY-SOURCES forbids closing it from a T3 restatement. The closing
-    /// condition is an Eurex announcement or Trading Calendar edition that dates
-    /// the German-scope closures.
+    /// could have carried closures no shipped row stated. The verification the
+    /// maintainer set on 2026-10-05 established there were none: the operator's
+    /// day-by-day Holiday regulations tables — whose grammar printed the
+    /// German-scope clause, futures carve-out and all, in 2020 — state no
+    /// German-scope closure on any date of either year, every candidate date
+    /// has passed answering ordinary, and the circular channel that dated every
+    /// 2014-2018 German-scope closure is enumerated complete with no such item
+    /// (#157, closed). The reason stays on the enum as the vocabulary a future
+    /// undated holiday scope would declare — an operator calendar that names a
+    /// closure set it has not dated, whose no-changes verification has not been
+    /// made.
     ///
-    /// Because no phase is withheld, a declared span is *not* a phase gap: the
-    /// order-entry queue scans of `CalendarQueryContext::require_phase_coverage`
-    /// answer through it.
+    /// Because no phase is withheld, a declared span of this shape is *not* a
+    /// phase gap: the order-entry queue scans of
+    /// `CalendarQueryContext::require_phase_coverage` answer through it.
     UnpublishedClosureDates,
     /// **Date-shaped, not declared.** Answering this date completely needs a
     /// **neighbouring date the identity does not answer**: a session can open on
@@ -463,7 +476,9 @@ pub enum PhaseGapShape {
 /// same kind. A **holiday-scope** gap
 /// ([`CoverageGapReason::UnpublishedClosureDates`]) withholds no phase at all:
 /// the operator's calendar names dates it closes without publishing them, so the
-/// site is incomplete while every phase still answers.
+/// site is incomplete while every phase still answers — the shape `eurex`'s
+/// `tba` era declared until the 2026-10-05 no-changes verification retired it
+/// (#157), kept for a future undated holiday scope.
 ///
 /// Declared in `schedules/sourcing.rs` beside the identity it belongs to, never
 /// inferred from a timeline or a holiday table. LAW-COVERAGE requires complete

@@ -13,6 +13,13 @@
 **A Rust library that knows when exchanges are open — and where sessions and chart bars
 begin and end.**
 
+> **Accuracy: best effort, not a guarantee.** Schedules are built from operator
+> publications (rulebooks, notices, archived calendars) and re-verified on a review
+> cadence, but exchanges change hours without notice and sources go dark. Where
+> evidence is missing the library refuses with an explicit typed error rather than
+> guessing — but a covered answer is best-effort research, not a guarantee of the
+> venue's actual behavior. Verify against the operator before acting on it.
+
 Give it a UTC timestamp (`chrono::DateTime<Utc>`) and an exchange, and it answers three
 questions:
 

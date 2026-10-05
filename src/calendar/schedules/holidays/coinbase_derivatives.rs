@@ -33,10 +33,15 @@
 //! All of it is recorded in
 //! [`docs/evidence/coinbase_derivatives.md`](../../../../../docs/evidence/coinbase_derivatives.md).
 //!
-//! Six dates carry an early close and two are `Unsourced`:
-//! 2022-11-24 and 2022-11-25, whose notice 22-10 the operator lists but whose
-//! PDF is unreachable (issue #112), so the crate declines to claim those dates
-//! either way.
+//! Seven dates carry an early close. The 2022 Thanksgiving pair
+//! (2022-11-24 closed, 2022-11-25 early close 12:15 CT) is the
+//! flanking-intersection closure of 2026-10-05 (the maintainer's recurring-
+//! arrangement principle, #296): notice 22-10 itself is unreachable on every
+//! channel, but the operator declared the arrangement every observed year and
+//! both flanking notices (21-06, 23-16) state the same shape — Thursday
+//! closed, Friday early-closed with Equity 12:15 CT the narrowest instant.
+//! The exact 2022 Friday instant is the disclosed residual; a desk copy of
+//! 22-10 replaces the interpolation with exact data.
 //! Trade date 2025-01-09 ships no row because notice 24-27 states it "will
 //! observe a normal trading day", and notice 24-26 records an unplanned
 //! technical early close rather than a published holiday schedule.
@@ -47,11 +52,7 @@
 //! refresh, and CDE has published nothing for 2027.
 
 use super::fences::early_close;
-use super::{
-    EvidenceTier::T1,
-    HolidayKind::{Closed, Unsourced},
-    HolidayTable, holidays,
-};
+use super::{EvidenceTier::T1, HolidayKind::Closed, HolidayTable, holidays};
 
 /// The venue's built-in holiday rows and the window they were audited over.
 // Evidence: docs/evidence/coinbase_derivatives.md
@@ -82,10 +83,16 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2022, 7, 4, Closed, T1, "CDE-MN-22-07"),
         // 2022-09-05 - T1 - CDE-MN-22-08 - Labor Day
         (2022, 9, 5, Closed, T1, "CDE-MN-22-08"),
-        // 2022-11-24 - T1 - CDE-NOTICES-INDEX-2026-09-19 - Thanksgiving Day; notice 22-10 is listed but its PDF is unreachable
-        (2022, 11, 24, Unsourced, T1, "CDE-NOTICES-INDEX-2026-09-19"),
-        // 2022-11-25 - T1 - CDE-NOTICES-INDEX-2026-09-19 - Thanksgiving half day; notice 22-10 is listed but its PDF is unreachable
-        (2022, 11, 25, Unsourced, T1, "CDE-NOTICES-INDEX-2026-09-19"),
+        // 2022-11-24 - T1 - CDE-MN-23-16 - Thanksgiving Day: the flanking-intersection closure of
+        // 2026-10-05 (maintainer directive, #296) — the operator declared the recurring arrangement
+        // every observed year (21-06, 23-16, 24-21, 25-37), every channel for notice 22-10 itself is
+        // exhausted, and Thursday closed holds under every flanking year; cited to the later flank
+        // with the derivation in the evidence file
+        (2022, 11, 24, Closed, T1, "CDE-MN-23-16"),
+        // 2022-11-25 - T1 - CDE-MN-23-16 - Thanksgiving half day at the narrowest sourced Friday
+        // instant (Equity 12:15 CT in both flanking years; Energy's 12:45 is wider); the exact 2022
+        // instant is the disclosed residual the desk ask replaces
+        (2022, 11, 25, early_close(12 * 3_600 + 15 * 60), T1, "CDE-MN-23-16"),
         // 2022-12-26 - T1 - CDE-MN-22-11 - Christmas Day observed
         (2022, 12, 26, Closed, T1, "CDE-MN-22-11"),
         // 2023-01-02 - T1 - CDE-MN-23-01 - New Year's Day observed

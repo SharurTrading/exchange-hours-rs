@@ -148,6 +148,42 @@ are recorded so a future pass does not trust the ICS feed alone: the 2015 and
 print both days), and the 2020 feed predates the gazetted Polling Day of
 10 July 2020 (the in-year state page carries it).
 
+**The state channel is complete for both gap spans (2026-10-05 UTC,
+completeness pass).** In-year MOM pages now cover every gap year. The
+old-era
+`PublicHolidays<year>.aspx` page survives for 2011 (captured 2011-12-29, page
+last updated 18 August 2011) — it prints the full 2011 table, the footnote
+`Deepavali will be on 26 October 2011 as previously announced` (the almanac
+confirmation), and GE2011 Polling Day, Saturday 7 May 2011, under the
+Parliamentary Elections Act footnote, so the gazetted 2011 list is 12 dates
+closing 10 weekdays — and for 2012 (captured 2012-11-15, last updated
+11 July 2012), whose footnote confirms Deepavali 13 November 2012
+`as previously announced`; the `PublicHolidays2013.aspx` in-2013 replays are
+table-less shells, so 2013's in-year witnesses remain the 2013-01-24 and
+2013-11-03 captures already held from the earlier pass. The current
+three-tab
+`/employment-practices/public-holidays` page is captured in-year for 2021
+(2021-12-02), 2022 (2022-12-09), 2023 (2023-12-09) and 2024 (2024-12-09),
+each capture printing three year tabs so adjacent captures re-witness each
+other's years (the 2022 and 2023 tabs compare identical across captures).
+The in-year record corrects the pre-announcement feeds in two places and the
+working aid with them: 2022's Hari Raya Puasa falls on 3 May (the
+2021-04-21 feed pre-announced 2 May, which is instead the Labour Day
+in-lieu Monday), 2022 gains the Hari Raya Haji in-lieu Monday 11 July (a
+Sunday holiday shifting to Monday, absent from the feed), and 2023 gains
+Polling Day Friday 1 September (PE2023), which the 2022-05-19 feed predates;
+2020, 2021 and 2024 confirm their feeds unchanged once MOM's printed
+substitution sentences are applied. The complete per-year lists are held:
+2020 closes 10 weekdays, 2021 8, 2022 10, 2023 10, 2024 10 — no
+exchange-specific extra and no gazetted weekday left over in any of them,
+the same structure the sourced sheets show. The
+gazette-notification-number channel does not survive retrievably (SSO
+as-published probes for the GE2011 polling-day notification return
+page-not-found shells; the `egazette.com.sg` Wayback footprint for 2011-2013
+is session-gated browse pages and 404 PDFs), so MOM's channel is the state's
+surviving record. Artifacts and per-year lists: the store's
+`gazette-2026-10/` INDEX, section 5.
+
 **The capture gaps.** No capture of any SGX securities trading-hours page —
 the `wps/portal/sgxweb` securities page, its `marketplace`-portal
 predecessor, the `www2`-era pages, or the current content-API page —
@@ -156,14 +192,20 @@ survives in the Wayback index for 2010-01-01..2013-12-31 or for
 table claims nothing for the spans: the coverage windows stop at 2019-12-31,
 hold only 2020-01-01 (the one 2020 date the 2019 sheet prints), and resume at
 2025-01-01, and queries inside the gaps refuse rather than answer.
-**Closing condition:** a surviving operator artifact dated inside a span that
-either prints the spans' closures (a 2010-2013 or 2020-2024 capture or export
-of the operator's own calendar page, or an annual securities
-trading-schedule notice) or adopts the gazetted calendar in the operator's own
-words. The rulebook does not do it (verified 2026-10-05 UTC, above), and the
-state-side gazetted dates for both spans are already retrieved and validated
-against the sourced years (the store's `gazette-2026-10/` INDEX holds the
-derived weekday sets), so the operator leg alone completes the composite.
+**Closing condition (the desk ask, sharpened 2026-10-05 UTC):** the
+operator's calendar page has no archived capture inside either span (the
+2020-2024 page is a JS shell whose content-api query for the retired path
+served no content, and the current page's own captures begin 2026; the
+2010-2013 page family has no capture after May 2009), while the state side
+is complete — MOM's gazetted lists for both spans are held from the state's
+own dated bytes, corrected to the in-year record (the store's
+`gazette-2026-10/` INDEX, section 5), and the derivation reproduces every
+sourced year exactly. What closes #213 is one **operator** artifact dated
+inside a span showing the securities market adopted those dates: an export
+or capture of the securities Trading Hours & Calendar page for any span
+year, an annual SGX securities trading-schedule notice, or a member notice
+printing the year's closures or half days — with which rows key immediately
+from the store against the validated derivation.
 Tracked as
 [#213](https://github.com/SharurTrading/exchange-hours-rs/issues/213).
 
@@ -511,18 +553,21 @@ shells and key nothing.
   there; queries inside the gap refuse. The rulebook cannot supply them by
   incorporation (verified 2026-10-05 UTC: Rule 8.2.1 delegates the calendar
   to SGX-ST's own publications; see the Holidays section). **Closing
-  condition:** a surviving operator artifact dated inside the span printing
-  the closures or adopting the gazetted calendar; the state-side dates are
-  held and validated in the research store (`gazette-2026-10/`).
+  condition (the desk ask):** the state side is complete — MOM's gazetted
+  2011-2013 lists are held from the state's own dated bytes, now including
+  the in-year 2011 and 2012 pages (`gazette-2026-10/` INDEX, section 5) —
+  so the ask is a single operator artifact dated inside the span showing the
+  securities market adopted those dates.
   Tracked as [#213](https://github.com/SharurTrading/exchange-hours-rs/issues/213).
 - **the 2020-2024 capture gap** — the same for 2020-01-02..2024-12-31: the
   wps path's 2020-2024 captures are SPA shells whose bytes carry no holiday
   content, the `stock-exchange/trading` page's own captures begin in 2025,
   and no other operator calendar page was captured in the era. Only
   2020-01-01 (keyed by the 2019 sheet's 2020 table) answers. The rulebook
-  and the state-side validation are as above. **Closing condition:** a
-  surviving operator artifact dated inside the span printing the closures or
-  adopting the gazetted calendar.
+  and the state-side validation are as above; the state side is complete
+  (per-year MOM lists held and in-year corrected, INDEX section 5).
+  **Closing condition (the desk ask):** one operator artifact dated inside
+  the span showing the securities market adopted the gazetted dates.
   Tracked as [#213](https://github.com/SharurTrading/exchange-hours-rs/issues/213).
 - **the 2014-2016 half-day treatment is unstated** — the 2014, 2015 and
   2016 sheets print no `#` markers, half-day legend or half-day grid, so no

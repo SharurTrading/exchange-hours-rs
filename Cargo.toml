@@ -26,6 +26,7 @@ exclude = [
     "rust-toolchain.toml",
     "clippy.toml",
     "deny.toml",
+    "docs/plans/",
 ]
 
 [lib]

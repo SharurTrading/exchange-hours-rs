@@ -292,6 +292,40 @@ time and sha256 per artifact in its `INDEX.md`; the operator statements behind e
   (LAW-NO-FABRICATED-DATES), and no operator byte states either 2022 date. The desk ask sharpens
   accordingly: a surviving 22-10 almost certainly carries a Friday 11/25 early-close cell beside
   the Thursday closure, so both instants should be requested, not the closure alone.
+  A 2026-10-05 sweep exhausted the regulatory and standing-document channels the notice waves had
+  not tried (artifacts and `INDEX.md` under `holidays/raw/cde/cftc-2026-10-05/`), all negative.
+  The CFTC's DCM rule-filings database, queried for the exchange's organization code `COIN` over
+  receipt 2021-06-01..2023-03-31, holds no filing received between 2022-09-02 (the fee-schedule
+  weekly notification, #2022-19E) and 2022-12-13 (the LMM and broker-rebate renewals #2022-20E
+  and #2022-21E) — a gap the commission's own PDF namespace corroborates: of the 53
+  `rule*lmxdcm*.pdf` files the Wayback CDX holds under `cftc.gov/filings/orgrules/`, none is
+  dated between `rule090622lmxdcm*` and `rule121422lmxdcm*` — and market notices are not rule
+  filings: the 40.6(d) weekly notifications enumerate only that week's rule amendments. The
+  rulebook edition in force at the holiday (submission #2022-18E, received 2022-08-25, whose
+  cover letter names only the Nano Ether addition and the Rule 1106 hard-fork provision as the
+  edition's changes,
+  `rule082522lmxdcm002.pdf`, sha256 `06e0193913695a18ee45798590ab8188501b056291afd30d55a3370a5d535d88`)
+  defers by its own Rule 503 exactly as the 2020 designation exhibit does — "the Exchange shall
+  determine and publish a Notice to Participants listing the Business Days and Holidays of the
+  Exchange and the Trading Hours for each Contract" — so the rulebook routes the holiday to the
+  very channel that is lost; a text search of both editions for holiday or hours-of-operation
+  language finds only that deferral, and neither carries a holiday exhibit or per-product hours
+  table. The fee schedule in force at the holiday (filed 2022-09-06, "as of August 23, 2022") and
+  the last web-hosted edition (`media.fairx.com`, as of 2022-04-01) state fees only — the string
+  "hour" occurs in neither. The products database holds one COIN certification in the window
+  (Nano Ether, received 2022-08-25), which states recurring hours, not a holiday arrangement.
+  The standing pages are empty too: `help.coinbase.com/derivatives*` first appears in Wayback in
+  2024-09 and only as redirects, `coinbasederivatives.com` was a parked 2021 domain, and
+  `fairx.io` has been a dead 2017-2020 landing page since 2020. NFA BASIC refused twice (the
+  `basic.nfa.org` host does not resolve; the `basicnet` search endpoints return a session-gated
+  shell both times) and is a registration and disciplinary database that carries no DCM holiday
+  schedules in any case. One extra angle was closed while open: Google indexes `.docx`-titled
+  twins of notices 22-08 and 22-09 on the operator's Contentful CDN that no archive holds, but
+  three searches surfaced no 22-10 twin (the DuckDuckGo endpoint answered a challenge page and
+  Bing ignored the exact phrase — two refusals), and the notices page's own bundle embeds only
+  placeholder Contentful tokens, so the space's asset list is not enumerable. Closing condition
+  unchanged: any surviving copy of notice 22-10, or a later operator document restating the
+  outgoing 2022 Thanksgiving schedule.
 - **Trade date 2021-12-31 is carried as audited normal and ships no row.** The operator published
   no notice for it: the 2021 listing runs 21-01 to 21-07 with no gaps, and 21-07 (issued
   2021-12-21, the last 2021 notice) covers Christmas only. New Year's Day 2022 fell on a Saturday

@@ -100,6 +100,54 @@ trading close.
   2014-2016 windows are audited normal **for closures**; that the eves'
   treatment is unstated is a recorded gap below.
 
+**The rulebook/gazette derivation, attempted and closed 2026-10-05 UTC.** The
+untried derivation-by-reference path — an operator rulebook clause closing the
+market on the state's gazetted public holidays, with the state's own dated
+holiday publications supplying the dates — was swept end to end (artifacts
+under `holidays/raw/equities/sgx_securities/gazette-2026-10/` in the research
+store). The **operator leg is absent**: the SGX-ST Rules delegate the trading
+calendar to SGX-ST's own publications and never mention public holidays for
+it. Rule 8.2.1, in the live consolidated rulebook (read 2026-10-05 UTC) and
+carrying no amendment markers, states `The trading hours and the application
+of the market phases are as published by SGX-ST. SGX-ST may vary the trading
+hours and application of the market phases.`; the operator's own Practice
+Note 8.2.1 amendment PDFs dated inside the 2011-2013 gap repeat the same
+delegation verbatim (1 August 2011: `Rule 8.2.1 says the trading hours and
+the application of the market phases are as published by SGX-ST.`; the
+15 April 2013 amendment likewise); the SGX-ST Rules define `Market Day`
+circularly (`A day on which SGX-ST is open for trading in securities and/or
+futures contracts`); the word `holiday` appears exactly once in the whole
+live SGX-ST Rules, in Rule 9.1A.3, about settlement-currency holidays; and
+the seven SGX-ST Directives concern none of trading days. The derivatives
+rulebook's own `Business Day` definition (`any day other than a Saturday,
+Sunday or public holiday in Singapore`) is the SGX-DT Futures Trading Rules'
+administrative term, not a securities-market calendar clause. The one
+operator sentence that does adopt the state calendar is the current
+`/stock-exchange/trading` page's designation (`SGX follows the Singapore
+holiday calendar available on the Ministry of Manpower website`), read
+2026-09-28 UTC and later — but this file's own `SGX-ST-SCHED` precedent reads
+that designation as scoped to the sheet's printed years (the window stops at
+2026-12-31 although MOM has gazetted 2027), and a capture dates the
+observation, never the state: a 2026 sentence sources no day in 2011-2013 or
+2020-2024.
+
+The **state leg is retrieved and the derivation validated** against every
+sourced year. The gazetted lists for 2011-2024 are held in the store as MOM's
+own dated publications (per-year iCalendar feeds, the 2010 press release and
+the in-year HTML pages; see the store INDEX for capture timestamps and
+digests). Recomputing "gazetted holidays plus MOM's own Sunday-substitution
+sentences, weekdays only" against the shipped sourced closures reproduces
+them exactly: 2014 (9/9, including the HAB-corrected Deepavali 22 October and
+the Hari Raya Haji in-lieu Monday 6 October), 2015 (13/13, SG50 and Polling
+Day included), 2016 (9/9), 2017 (10/10), 2018 (10/10), 2019 (11/11,
+including the three in-lieu Mondays the ICS feed omits) and 2020-01-01. No
+sourced year carries an exchange-specific closure the gazette lacks, and no
+gazetted weekday closure is missing from a sourced sheet. Two channel defects
+are recorded so a future pass does not trust the ICS feed alone: the 2015 and
+2016 feeds carry only one Chinese New Year event each (the state's HTML pages
+print both days), and the 2020 feed predates the gazetted Polling Day of
+10 July 2020 (the in-year state page carries it).
+
 **The capture gaps.** No capture of any SGX securities trading-hours page —
 the `wps/portal/sgxweb` securities page, its `marketplace`-portal
 predecessor, the `www2`-era pages, or the current content-API page —
@@ -108,9 +156,15 @@ survives in the Wayback index for 2010-01-01..2013-12-31 or for
 table claims nothing for the spans: the coverage windows stop at 2019-12-31,
 hold only 2020-01-01 (the one 2020 date the 2019 sheet prints), and resume at
 2025-01-01, and queries inside the gaps refuse rather than answer.
-**Closing condition:** a surviving operator artifact printing the spans'
-closures (a 2010-2013 or 2020-2024 capture or export of the operator's own
-calendar page, or an annual securities trading-schedule notice). Tracked as
+**Closing condition:** a surviving operator artifact dated inside a span that
+either prints the spans' closures (a 2010-2013 or 2020-2024 capture or export
+of the operator's own calendar page, or an annual securities
+trading-schedule notice) or adopts the gazetted calendar in the operator's own
+words. The rulebook does not do it (verified 2026-10-05 UTC, above), and the
+state-side gazetted dates for both spans are already retrieved and validated
+against the sourced years (the store's `gazette-2026-10/` INDEX holds the
+derived weekday sets), so the operator leg alone completes the composite.
+Tracked as
 [#213](https://github.com/SharurTrading/exchange-hours-rs/issues/213).
 
 **The bounded searches, recorded.** Checked 2026-09-29 UTC by domain-wide
@@ -454,16 +508,21 @@ shells and key nothing.
   trading-hours page survives in the Wayback index for 2010-01-01..2013-12-31
   (checked 2026-09-29, UTC, CDX sweeps over the whole sgx.com domain), so no
   operator statement prints those closures and the table claims nothing
-  there; queries inside the gap refuse. **Closing condition:** a surviving
-  operator artifact printing the span (a capture or export of the operator's
-  own calendar page, or an annual securities trading-schedule notice).
+  there; queries inside the gap refuse. The rulebook cannot supply them by
+  incorporation (verified 2026-10-05 UTC: Rule 8.2.1 delegates the calendar
+  to SGX-ST's own publications; see the Holidays section). **Closing
+  condition:** a surviving operator artifact dated inside the span printing
+  the closures or adopting the gazetted calendar; the state-side dates are
+  held and validated in the research store (`gazette-2026-10/`).
   Tracked as [#213](https://github.com/SharurTrading/exchange-hours-rs/issues/213).
 - **the 2020-2024 capture gap** — the same for 2020-01-02..2024-12-31: the
   wps path's 2020-2024 captures are SPA shells whose bytes carry no holiday
   content, the `stock-exchange/trading` page's own captures begin in 2025,
   and no other operator calendar page was captured in the era. Only
-  2020-01-01 (keyed by the 2019 sheet's 2020 table) answers. **Closing
-  condition:** a surviving operator artifact printing the span's closures.
+  2020-01-01 (keyed by the 2019 sheet's 2020 table) answers. The rulebook
+  and the state-side validation are as above. **Closing condition:** a
+  surviving operator artifact dated inside the span printing the closures or
+  adopting the gazetted calendar.
   Tracked as [#213](https://github.com/SharurTrading/exchange-hours-rs/issues/213).
 - **the 2014-2016 half-day treatment is unstated** — the 2014, 2015 and
   2016 sheets print no `#` markers, half-day legend or half-day grid, so no

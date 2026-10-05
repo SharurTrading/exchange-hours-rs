@@ -31,13 +31,10 @@ quirks, is handled internally.
 The internal ownership and extension model is documented in
 [ARCHITECTURE.md](ARCHITECTURE.md).
 
-**Planned coverage change (amended 2026-09-27 UTC):** the
-[staged release plan](docs/plans/2026-09-12-path-to-release.md) targets complete
-calendars for served instrument scopes from the permanent 2010-01-01 floor (the
-2026-09-21 draft's 2025 floor was reversed), including special holiday sessions
-and explicit coverage errors, with the 2010-2024 era's known gaps closed as data
-before 1.0.0. This is a development target: the coverage figures below still
-describe the current implementation.
+**Coverage:** served instrument scopes carry complete
+calendars from the permanent 2010-01-01 floor, including special holiday
+sessions and explicit coverage errors; the coverage figures below describe
+the shipped implementation.
 
 - **95 source-backed market identities**, plus the synthetic `Exchange::Unknown`
   fallback (96 `Exchange` variants total) — covering US equities/options, US and
@@ -624,37 +621,6 @@ caller's `DayPolicy` is outside that guarantee. The Criterion
 `calendar_queries` benchmark records `is_open`, `session_bounds`, daily
 `candle_end`, `trade_date`, and closed-gap `session_state` costs for
 `GlobexEquityIndex`.
-
-## Upgrading from 0.2.x
-
-- The retired `intelligentcross_iqx` value has no replacement `Exchange`
-  variant. Remove persisted entries that used it, or keep an application-level
-  mapping if the IntelligentCross ATS is still required; never translate it to
-  another venue or to `Exchange::Unknown`.
-- `Exchange` and `MarketHoursKey` now serialize as canonical `snake_case`
-  strings in every Serde format. Earlier binary ordinal payloads must be decoded
-  with their original crate version and rewritten using the string form.
-- Equal `SessionRule` endpoints now encode one complete local-day session, and
-  `SessionRuleError::EmptyInterval` was removed. Omit a rule to represent no
-  session.
-- `ExchangeCalendar::exchange()` now returns `Option<Exchange>` because the
-  same calendar type can represent a `MarketHoursKey`. Existing venue callers
-  handle `Some(exchange)`; family calendars return `None`. Use `source()` when
-  both identity kinds are valid, or `market_hours_key()` for the family case.
-- `SessionState` now uses trade-date-aware gap classification with a four-hour
-  maintenance ceiling, and the former `Halt` state is gone: the crate models
-  scheduled hours only, so same-trade-date gaps (a scheduled lunch break, for
-  example) are `Closed`; a sourced gap inside a continuously traded week can
-  remain `Maintenance` within that bound. Longer inter-trade-date and
-  policy-created gaps are also `Closed`. Recheck callers that persisted or
-  matched the former state labels.
-- The raw `US_EQUITY_REGULAR`, `US_EQUITY_EXTENDED`,
-  `NYSE_TEXAS_EXTENDED`, and `BLUE_OCEAN_EXTENDED` slices are no longer public.
-  Use `hours_for_exchange` or `calendar_for_exchange` so venue and historical
-  routing cannot be bypassed.
-
-See the [1.0.0 changelog](CHANGELOG.md#100---2026-08-22) for the complete API,
-schedule, and migration record.
 
 ## Boundaries & invariants
 

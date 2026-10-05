@@ -160,7 +160,7 @@ corrections (a venue's hours fixed against a primary source) go under
   Calendar 2019 shades exactly the twelve 2019 closures the 2018 guide's
   grids print. The thirteen weekday marks key 13 `Closed` rows under the
   pages' own document ids (`SIX-TSC-2010`, `SIX-TSC-2011`); the holiday
-  tables grow from 158 rows over five windows to **171 rows** over six, the
+  tables grow from 158 rows over four windows to **171 rows** over five, the
   2010-01-01..2011-12-31 span answers from the 2010 floor, and every
   weekend-falling holiday of the era keys no weekday row on the grids' own
   convention.

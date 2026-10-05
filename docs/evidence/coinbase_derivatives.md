@@ -157,8 +157,8 @@ time and sha256 per artifact in its `INDEX.md`; the operator statements behind e
 | 2022-06-20 | closed | Equity Products `Closed for holiday` | `CDE-MN-22-06` | T1 | CDE's own Trade Date column names Monday 6/20; the venue row carries the intersection, so the whole trade date is closed, its OPEN and CLOSE cells printing the quoted text |
 | 2022-07-04 | closed | Equity Products `Closed for holiday` | `CDE-MN-22-07` | T1 | CDE's own Trade Date column names Monday 7/4; the venue row carries the intersection, so the whole trade date is closed, its OPEN and CLOSE cells printing the quoted text |
 | 2022-09-05 | closed | Crypto Products `Closed for holiday`; Equity Products `Closed for holiday` | `CDE-MN-22-08` | T1 | CDE's own Trade Date column names Monday 9/5; the venue row carries the intersection, so the whole trade date is closed, its OPEN and CLOSE cells printing the quoted text |
-| 2022-11-24 | unsourced | &mdash; no status claimed | `CDE-NOTICES-INDEX-2026-09-19` | T1 | notice `CDE-MN-22-10` ("Market Notice - Thanksgiving Holiday Schedule 2022") governs this date; the operator lists it but its PDF is unreachable, so the date is carried as not audited rather than claimed closed |
-| 2022-11-25 | unsourced | &mdash; no status claimed | `CDE-NOTICES-INDEX-2026-09-19` | T1 | notice `CDE-MN-22-10` ("Market Notice - Thanksgiving Holiday Schedule 2022") governs this date; the operator lists it but its PDF is unreachable, so the date is carried as not audited rather than claimed closed |
+| 2022-11-24 | closed | Thanksgiving Day | `CDE-MN-23-16` | T1 | the 2026-10-05 flanking-intersection closure (the maintainer's recurring-arrangement principle, issue 296): the operator declared the arrangement every observed year and both flanking notices state Thursday closed — the row serves that intersection; notice 22-10 governs the date but is unreachable on every channel, so a desk copy replaces nothing here, only sharpens it |
+| 2022-11-25 | early close | 12:15 CT (the narrowest sourced Friday instant; Energy's 12:45 is wider) | `CDE-MN-23-16` | T1 | the same closure: Equity 12:15 CT prints in both flanking years (21-06, 23-16); the exact 2022 instant is the disclosed residual a desk copy of notice 22-10 replaces |
 | 2022-12-26 | closed | Equity Products `Closed for holiday` | `CDE-MN-22-11` | T1 | CDE's own Trade Date column names Monday 12/26; the venue row carries the intersection, so the whole trade date is closed, its OPEN and CLOSE cells printing the quoted text |
 
 ### 2023
@@ -233,9 +233,19 @@ time and sha256 per artifact in its `INDEX.md`; the operator statements behind e
   product traded, so the row stands. Residual risk: a later final revision is not held. Closing
   condition: a non-draft copy of notice 24-12. Tracked as issue #112.
 
-- **Trade dates 2022-11-24 and 2022-11-25 ship `Unsourced`.** The operator's own listing carries
-  notice 22-10, "Market Notice - Thanksgiving Holiday Schedule 2022", category Holiday, posted
-  12/12/2022. Its href points at
+- **Trade dates 2022-11-24 and 2022-11-25 — CLOSED by the flanking intersection (2026-10-05
+  UTC; the maintainer's recurring-arrangement principle, #296; #112 closes).** The operator
+  declared the Thanksgiving arrangement every observed year — 21-06 (2021), 23-16 (2023),
+  24-21 (2024), 25-37 (2025) — and both flanking notices state the same shape: **Thursday
+  closed; Friday early-closed with Equity 12:15 CT and Energy 12:45 CT.** The rows ship that
+  intersection: 2022-11-24 `Closed`; 2022-11-25 `early_close(12:15 CT)` — the narrowest
+  sourced Friday instant, erring closed. The **disclosed residual** is the exact 2022 Friday
+  instant and any 2022-specific deviation; a desk copy of notice 22-10 replaces the
+  interpolation with exact data as a normal schedule fix. The underlying retrieval record
+  (why the notice itself is unreachable) follows and stands.
+
+  The operator's own listing carries notice 22-10, "Market Notice - Thanksgiving Holiday
+  Schedule 2022", category Holiday, posted 12/12/2022. Its href points at
   `info.fairx.com/coinbase-derivatives-market-notice-22-10-thanksgiving-holiday-schedule-2022`,
   where the host no longer completes a TLS handshake, and the Wayback Machine holds no capture of
   it: a CDX prefix query over `assets.ctfassets.net/k3n74unfin40*` returns 144 `Market_Notice`

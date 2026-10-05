@@ -5,10 +5,12 @@
 //!
 //! The venue profile is CDE's 23x5 grid, so every row states what the
 //! operator's Market Notice states for the product groups on that grid. Fifty
-//! rows are full closures, six are early closes where the groups on the grid
-//! printed different instants and the row carries the earliest, and two are
-//! `Unsourced`: the 2022 Thanksgiving notice is listed by the operator but its
-//! PDF is unreachable, so those dates are not audited either way.
+//! rows are full closures, seven are early closes where the groups on the grid
+//! printed different instants and the row carries the earliest. The 2022
+//! Thanksgiving pair is the flanking-intersection closure of 2026-10-05
+//! (#296): Thursday closed and Friday early-closed at the narrowest sourced
+//! instant (Equity 12:15 CT, both flanking years), with the exact 2022
+//! instant the disclosed residual a desk copy of notice 22-10 replaces.
 //!
 //! `ERA_ROWS` is the hand-checked list, in order, the whole window is swept
 //! against. The count sweep alone cannot see a row moved to another audited
@@ -21,7 +23,7 @@ use exchange_hours::{
     calendar_for_exchange,
 };
 
-use super::prelude::{CalendarQueryError, assert_refused_variant, assert_refuses_before_floor};
+use super::prelude::{assert_refused_variant, assert_refuses_before_floor};
 
 fn cde() -> ExchangeCalendar {
     calendar_for_exchange(Exchange::CoinbaseDerivatives)
@@ -62,8 +64,8 @@ const ERA_ROWS: [(i32, u32, u32, HolidayKind); 58] = [
     (2022,  6, 20, HolidayKind::Closed),
     (2022,  7,  4, HolidayKind::Closed),
     (2022,  9,  5, HolidayKind::Closed),
-    (2022, 11, 24, HolidayKind::Unsourced),
-    (2022, 11, 25, HolidayKind::Unsourced),
+    (2022, 11, 24, HolidayKind::Closed),
+    (2022, 11, 25, HolidayKind::EarlyClose { close_ssm: P_12_15 }),
     (2022, 12, 26, HolidayKind::Closed),
     (2023,  1,  2, HolidayKind::Closed),
     (2023,  1, 16, HolidayKind::Closed),
@@ -274,36 +276,47 @@ fn a_later_closing_group_does_not_widen_the_venue_row() {
 }
 
 #[test]
-fn the_two_unreadable_thanksgiving_dates_clip_nothing() {
+fn the_flank_interpolated_thanksgiving_pair_answers() {
     let calendar = cde();
 
-    for (date, instant) in [
-        (day(2022, 11, 24), ct((2022, 11, 24), (10, 0, 0))),
-        (day(2022, 11, 25), ct((2022, 11, 25), (10, 0, 0))),
-    ] {
-        let row = calendar
-            .holiday_on(date)
-            .unwrap_or_else(|| panic!("{date} must carry an Unsourced row"));
-        assert_eq!(row.kind(), HolidayKind::Unsourced, "{date}");
-        assert_eq!(row.document_id(), "CDE-NOTICES-INDEX-2026-09-19", "{date}");
-        // At the 2010 floor an `Unsourced` row still clips nothing: where a
-        // probe's derivation stays inside the sourced facts the identity
-        // answers the ordinary 23x5 week, and where it reads the withheld date
-        // it refuses as `UnresolvedGap` — never a claimed closure.
-        let answer = calendar.is_open(instant);
-        match answer {
-            Ok(open) => assert!(open, "{instant}: the ordinary week trades"),
-            Err(error) => assert!(
-                matches!(error, CalendarQueryError::UnresolvedGap { .. }),
-                "{instant}: {error} is not a coverage refusal"
-            ),
+    // The 2026-10-05 flanking-intersection closure (#296): Thursday closed
+    // (holds under every observed year), Friday early-closed at the narrowest
+    // sourced instant — Equity 12:15 CT, both flanking years (21-06, 23-16).
+    // End-exclusive: 12:15 CT itself is closed.
+    let thursday_row = calendar.holiday_on(day(2022, 11, 24)).expect("a row");
+    assert_eq!(thursday_row.kind(), HolidayKind::Closed);
+    assert_eq!(thursday_row.document_id(), "CDE-MN-23-16");
+    let friday_row = calendar.holiday_on(day(2022, 11, 25)).expect("a row");
+    assert_eq!(
+        friday_row.kind(),
+        HolidayKind::EarlyClose {
+            close_ssm: 12 * 3_600 + 15 * 60
         }
-        let detached_answer = calendar.without_holidays().is_open(instant);
-        assert!(
-            detached_answer.is_ok(),
-            "{instant}: the detached grid answers the ordinary week"
-        );
-    }
+    );
+    assert_eq!(friday_row.document_id(), "CDE-MN-23-16");
+    assert!(
+        !calendar
+            .is_open(ct((2022, 11, 24), (10, 0, 0)))
+            .expect("covered")
+    );
+    assert!(
+        calendar
+            .is_open(ct((2022, 11, 25), (10, 0, 0)))
+            .expect("covered"),
+        "the half day trades in the morning"
+    );
+    assert!(
+        !calendar
+            .is_open(ct((2022, 11, 25), (12, 15, 0)))
+            .expect("covered"),
+        "12:15 CT closes end-exclusive"
+    );
+    assert!(
+        calendar
+            .is_open(ct((2022, 11, 25), (12, 14, 59)))
+            .expect("covered"),
+        "the instant before still trades"
+    );
 }
 
 #[test]

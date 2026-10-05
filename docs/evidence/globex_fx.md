@@ -788,10 +788,44 @@ CME/CBOT interest-rate products (notices 20090326/20090330 print the schedule
 table effective Sunday, April 5, 2009 — Sundays Pre-Open 16:15, Monday-Friday
 16:50), for the excluded TAS products ("their normal time, 16:15 CT", notices
 20101025 through 20110117), and for Random Length Lumber (dated 2010-06-21).
-None names the FX complex. The horizon therefore stays at the 2012-05-03
-capture, below which the Sunday queue is carried at its sourced intersection,
-and the closing condition stays: an operator statement of the FX complex's
-Sunday Pre-Open in session language dated before 2012.
+None names the FX complex.
+
+**The 2026-10-05 no-changes verification moved the horizon to the floor.** The
+maintainer's directive of that date asked whether the carried span
+2010-01-01..2012-05-02 was a real gap; the sweep found no declared change
+inside it, so the 2012-05-03 capture's state is the verified state from the
+floor and the `NormalWeekCarried` refusals below the old horizon retired with
+it. What was swept, every artifact under `normal-weeks/` in the research store
+(wave-c1 the 2026-09-30 retrieval, `wave-c2-2012-notices` the 2026-10-05
+retrieval, digests beside them):
+
+- **The weekly Globex notice channel, in full, over the interval.** The 242
+  readable notices of 2010-2011 were re-scanned for FX-futures hours language
+  and 25 of the 26 weekly notices of 2012-01-02..2012-05-28 retrieved and
+  scanned the same way. The only hours-titled FX items are options-scoped
+  (the 2010-05-10 elimination of the 7:15 a.m.-2:00 p.m. CT halt in four FX
+  **options** markets; the January 2010 FX-options consolidation) or
+  lifecycle-scoped (BRL/USD termination-of-trading, 2011-09-30) — none is a
+  normal-week change for the standard-grid futures this family serves, whose
+  only dated queue revision (2010-11-15) is already encoded. The two zero-byte
+  replays (20100726, 20120221) are named in the store INDEX; their weeks are
+  covered by readable neighbours.
+- **The matching grid is bracketed inside the interval by the operator's own
+  page**: the fx-hours capture of 2009-05-02 (pre-floor) and of 2011-09-18
+  print the same `17:00-16:00 next day` grid, and the `FX248` 2010 product
+  guide publishes it at the audit floor.
+- **The Sunday queue's floor value is stated in the venue's own market-state
+  language inside the interval**: notice 20120409's TAS timing change states
+  the market pause "at 16:15:00 on Sunday and 16:45:00 Monday through
+  Thursday" effective Sunday, April 15, 2012, and notice 20101018 moves the
+  CME/CBOT weekday queue to 16:45 to "match the current schedule for NYMEX,
+  COMEX and DME products" — the platform values this family's dated profiles
+  serve. The first capture of the FX page's own 16:00 CT Sunday value remains
+  2012-06-07, so the quarter-hour stays the disclosed residual above.
+
+The closing condition for a direct statement of the FX complex's Sunday
+Pre-Open before 2012 remains live for the residual above; the horizon cell
+reads 2010-01-01.
 
 ## Sources
 

@@ -690,6 +690,17 @@ corroborating statements and bounded the Sunday-queue search:
   carried at its sourced intersection, and the closing condition stays: an
   operator statement of the energy or metals complex's Sunday Pre-Open in
   session language dated before 2012.
+**The 2026-10-05 no-changes verification moved the horizon to the floor.**
+The sweep record lives in [`globex_energy.md`](globex_energy.md), the family
+owner's file: the weekly Globex notice channel was scanned in full over
+2010-01-01..2012-05-10 (the 242 readable 2010-2011 notices and 25 of the 26
+weekly notices of 2012-01-02..2012-05-28; the two zero-byte replays are named
+there), the weekday 16:45 queue is stated then-live by notice 20101018, the
+Sunday 16:15 value is carried by the TAS notices and notice 20120409's market
+states, and no energy/metals hours change is declared anywhere inside the
+interval. This venue key answers from the family's tables, so its horizon
+moved with the family's and the pre-2012-05-11 `NormalWeekCarried` refusals
+retired. The Sunday quarter-hour residual is unchanged.
 
 ## Sources
 

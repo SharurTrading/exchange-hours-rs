@@ -986,9 +986,12 @@ fn inventory_completeness_verdicts_match_the_metadata() {
     }
     assert_eq!(
         (complete, incomplete, no_coverage),
-        (25, 8, 0),
-        "the inventory's verdict shapes: twenty-five complete, eight incomplete, none with no 2025 \
-         coverage (hkex's ten Unsourced 2012-2015 half-day eves moved it to incomplete on \
+        (26, 7, 0),
+        "the inventory's verdict shapes: twenty-six complete, seven incomplete, none with no 2025 \
+         coverage (eurex joined the complete group on 2026-10-05 UTC: its #157 `tba` \
+         declaration retired when the no-changes verification established that the German-scope \
+         closures the 2025 and 2026 editions never dated never existed, so the era answers from \
+         the all-derivatives rows; hkex's ten Unsourced 2012-2015 half-day eves moved it to incomplete on \
          2026-09-29 UTC and its 2026-09-30 UTC closure — the operator's own Phase-Two-era Trading \
          Hours page states the eve session deletions — moved it back to complete; the 2026-10-04 UTC \
          sourced-intersection residual convention retired the three `NormalWeekPhaseWithheld` \
@@ -1055,7 +1058,6 @@ fn inventory_completeness_verdicts_match_the_metadata() {
 /// declaration was retired with the fence that pins the convention living in
 /// `tests/futures_family_boundaries/holidays_globex_livestock.rs`.
 fn declared_phase_gaps() -> Vec<(&'static str, Vec<(CoverageGapReason, &'static str)>)> {
-    let undated_closures = (CoverageGapReason::UnpublishedClosureDates, "#157");
     vec![
         // The three `NormalWeekPhaseWithheld` declarations — the seven
         // quarter-hour scopes' `#79`, `globex_cryptocurrency`'s five-day-era
@@ -1066,15 +1068,20 @@ fn declared_phase_gaps() -> Vec<(&'static str, Vec<(CoverageGapReason, &'static 
         // from the regime's dated start, and no served scope declares the
         // reason any more. The scopes below declare nothing at all.
         ("globex_livestock", vec![]),
-        // `eurex` withholds no *phase*: the operator declares German
-        // equity/equity-index closures it has not dated, so the declaration is
-        // a completeness fact the date walk cannot find and the order-entry
-        // scans still answer through it.
-        ("eurex", vec![undated_closures]),
+        // `eurex`'s `UnpublishedClosureDates` declaration — the `tba` era of
+        // the 2025 and 2026 Trading Calendar editions' German-scope note
+        // (#157) — retired on 2026-10-05 UTC by the no-changes verification:
+        // the operator's day-by-day Holiday regulations tables state no
+        // German-scope closure on any date of either year, every candidate
+        // date has passed answering ordinary, and the regulation channel such
+        // a closure would travel is enumerated complete and empty of it. The
+        // era answers from the all-derivatives rows, and the scope declares
+        // nothing at all.
+        ("eurex", vec![]),
     ]
 }
 
-/// The ten scopes that declare a gap declare exactly the ones
+/// No served scope declares a gap; the scopes this fixture names declare exactly the ones
 /// advertised, each reportable with its own reason and closing issue, and each
 /// issue is one the scope's own row names.
 ///
@@ -1185,7 +1192,8 @@ fn the_declared_phase_level_gaps_match_the_inventory() {
         // rows shipped was that case, whose editions ended 2026-12-31 with the
         // bound the day after. A bounded span that starts inside a window
         // leaves the dates below it answering (`globex_grains`' bracketed
-        // regime, `eurex` since its 2025-01-01 `tba` bound), so the derivation
+        // regime was that case, and `eurex`'s `tba` bound ran from 2025-01-01
+        // until the #157 retirement of 2026-10-05), so the derivation
         // walks the spans across each window rather than comparing endpoints.
         // A date-scoped declaration answers the dates its shape does not
         // resolve, so a shaped scope reports complete spans beside its gap
@@ -1248,13 +1256,15 @@ fn the_declared_phase_level_gaps_match_the_inventory() {
     }
     assert_eq!(
         (declaring, declarations),
-        (1, 1),
-        "one served scope declares today, one declaration in all: `eurex`'s undated \
-         closure scope — the #152 post-close label declaration retired with the charter's \
-         2026-10-03 trade-date convention, and the three `NormalWeekPhaseWithheld` \
-         declarations (the seven quarter-hour scopes' #79, `globex_cryptocurrency`'s #123 \
-         five-day era and `globex_grains`' #259 omitted regime) retired with the charter's \
-         2026-10-04 sourced-intersection residual convention"
+        (0, 0),
+        "no served scope declares today: the #152 post-close label declaration retired \
+         with the charter's 2026-10-03 trade-date convention, the three \
+         `NormalWeekPhaseWithheld` declarations (the seven quarter-hour scopes' #79, \
+         `globex_cryptocurrency`'s #123 five-day era and `globex_grains`' #259 omitted \
+         regime) retired with the charter's 2026-10-04 sourced-intersection residual \
+         convention, and `eurex`'s #157 undated closure scope retired on 2026-10-05 UTC \
+         when the no-changes verification established the `tba` closures were never dated \
+         because none existed"
     );
 
     // The scopes the quarter-hour probe cleared of the disputed window declare

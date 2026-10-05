@@ -37,17 +37,19 @@ they are recorded here in revision-row grammar and checked against
 
 **Coverage:** 2010-01-01..2026-12-31 (inclusive trade dates). Tier: T1 throughout.
 
-**The identity is `incomplete` on the `tba` era alone (2025-01-01..2026-12-31), and the refusal
-there is deliberate.** The operator's undated German closure scope (below) is declared for this
-identity **since 2025-01-01 only**: the 2014, 2016, 2017 and 2018 editions date that scope and its
-rows ship (below and in the year tables), so `coverage_on` answers `Covered` across
-2010-01-01..2024-12-31 and reports `OutsideCoveredRange` on the `tba` era — 2025 and 2026, which
-the editions in hand declare and do not date. The sessions themselves are answered everywhere:
-`is_open` returns `Ok(true)` on an ordinary weekday of any era and `Ok(false)` on a closure,
-because the declaration states a completeness fact and withholds no phase. A consumer that
-reads `coverage_on` to decide whether to walk a range must therefore handle the error on 2025
-and 2026 dates; that is the honest reading of an operator who declares closures for the current
-years and dates none of them.
+**The `tba` era is complete since the #157 retirement (2026-10-05 UTC): the undated German
+closure scope the 2025 and 2026 Trading Calendar editions print verified to no closures at
+all.** The retirement's verification chain is recorded under "The #157 verification" below; the
+short form is that the operator's own day-by-day Holiday regulations tables state what closed
+in both years and name no German scope on any row of either year — in a grammar that printed
+the German clause, futures carve-out and all, when the 2020 arrangement existed — every
+candidate date has passed answering ordinary, and the Management-Board regulation channel such
+a closure would travel is enumerated complete and empty of it. `coverage_on` therefore answers
+`Covered` across the whole 2010-01-01..2026-12-31 window, 2026-12-31 alone excepted through
+the resolution-edge rule (#151), and no declaration remains on this identity. A later operator
+artifact dating a 2025/2026 German-scope closure after all lands as a schedule fix on the
+weekly watch; the annual Trading Calendar editions and the Holiday regulations page are the
+named watch points.
 
 Two tables serve the three Eurex identities, split by the operator's own scope lines. `TABLE` in the owner module serves `Exchange::Eurex` and the `eurex` key: the all-derivatives rows plus the dated German-scope rows the editions print for the German equity and equity-index products, which are FDAX and FDXM inside this identity's documented scope. `FIXED_INCOME` serves the `eurex_fixed_income` key and carries the all-derivatives rows alone, because the operator's German-scope notes name German equity and equity-index derivatives and the Xetra-based ETF/ETC derivatives and never fixed income — the panel's grammar prints fixed income explicitly when a closure reaches it, as the recurring Swiss line (`Eurex is closed for trading and clearing (exercise and settlement) in Swiss fixed income as well as equity and equity index derivatives`) does. The all-derivatives rows are the same in both tables because the operator states them for every product; the German rows are `TABLE`'s alone because the operator scopes them to the German equity products.
 
@@ -60,7 +62,7 @@ The 2025 rows are the same page's **§ 2025, day by day**, read in its third and
 
 All 2026 bytes, with each artifact's URL, UTC retrieval time and sha256, are in the research store under `holidays/raw/cfe-eurex-ice-cde-smfe-2026-2027/INDEX.md` and `holidays/raw/cfe-eurex-ice-cde-smfe-2026-2027-fix/INDEX.md`; the normalised result is `holidays/cfe-eurex-ice-cde-smfe-2026-2027.json`, verified `matches: true` with zero discrepancies in its round-2 adversarial verdict. The 2025 and 2027 artifacts are in `holidays/raw/eurex-2025-2027/INDEX.md`, whose table carries each file's exact URL, retrieval instant, sha256 and byte count, and whose working note `eurex-2025-holidays.md` transcribes § 2025 row by row.
 
-The 2010-2024 rows are the operator's own **Trading Calendar** editions — `Eurex Trading Calendar 2010` through `Eurex trading calendar 2024`, one edition per year — whose `Overview of holidays by countries` panel opens with the all-derivatives closures in session language. Each edition states one or two lists: `closed for trading and clearing (exercise, settlement and cash) in all derivatives: …`, and where the year also closes days for trading only, a second `Eurex is closed for trading in all derivatives: …` list beside it. Every date on those two lists ships as a `Closed` row — the trading-only dates are full trading closures with clearing open, exactly the 24/31 December shape the 2025-2026 rows carry. The German-scope notes the same editions print beside those lists are product-scoped: where an edition dates one, the date keys a `TABLE` row (the year tables below record them beside the all-derivatives rows); where it says `tba`, the withholding is the #157 declaration recorded below. The 2012-2024 editions were retrieved live from the operator's Trading Calendar archive on 2026-09-29 UTC; the 2010 and 2011 editions survive only on the predecessor `eurexchange.com` site and are read as Wayback `id_` replays of their era-original captures (2010-02-16 and 2011-01-14), so the window reaches the 2010-01-01 support floor with **no unaudited span**. All fifteen editions are resolved in `### Documents` below, and their bytes are saved under `holidays/raw/eurex-2010-2024/` with `sha256s.txt` and an `INDEX.md` in that directory that also tabulates the German-scope line, edition by edition. The German-scope lines above were re-extracted from the PDFs and all fifteen sha256s re-verified against the Documents table on 2026-10-03 UTC; every hash reproduces.
+The 2010-2024 rows are the operator's own **Trading Calendar** editions — `Eurex Trading Calendar 2010` through `Eurex trading calendar 2024`, one edition per year — whose `Overview of holidays by countries` panel opens with the all-derivatives closures in session language. Each edition states one or two lists: `closed for trading and clearing (exercise, settlement and cash) in all derivatives: …`, and where the year also closes days for trading only, a second `Eurex is closed for trading in all derivatives: …` list beside it. Every date on those two lists ships as a `Closed` row — the trading-only dates are full trading closures with clearing open, exactly the 24/31 December shape the 2025-2026 rows carry. The German-scope notes the same editions print beside those lists are product-scoped: where an edition dates one, the date keys a `TABLE` row (the year tables below record them beside the all-derivatives rows); the `tba` form the note took in the 2025 and 2026 editions verified to no closures on 2026-10-05 UTC, retiring the #157 declaration it had keyed (the verification is recorded below). The 2012-2024 editions were retrieved live from the operator's Trading Calendar archive on 2026-09-29 UTC; the 2010 and 2011 editions survive only on the predecessor `eurexchange.com` site and are read as Wayback `id_` replays of their era-original captures (2010-02-16 and 2011-01-14), so the window reaches the 2010-01-01 support floor with **no unaudited span**. All fifteen editions are resolved in `### Documents` below, and their bytes are saved under `holidays/raw/eurex-2010-2024/` with `sha256s.txt` and an `INDEX.md` in that directory that also tabulates the German-scope line, edition by edition. The German-scope lines above were re-extracted from the PDFs and all fifteen sha256s re-verified against the Documents table on 2026-10-03 UTC; every hash reproduces.
 
 **One 2015 peculiarity, stated because it is load-bearing:** the 2015 edition is the only one that also closes Whit Monday — `Eurex is closed for trading in all derivatives: 25 May, 24 December, 31 December` — and the closure is trading-only (clearing stays open). No other edition 2010-2024 lists a Whit Monday or Ascension closure in all derivatives, and the later Holiday regulations page confirms the practice stopped, so the row ships for 2015 alone rather than being generalised into a recurring rule (LAW-HOLIDAY-SCOPE: a date-bounded arrangement is date-exception data, never a normal-week revision).
 
@@ -295,9 +297,77 @@ Lineage cannot settle the conflict: both are live pages of the same operator and
 
 `EUREX-TC-2025` is the corroborating artifact rather than a row's key: it states the same eight 2025 closures in the same session language, and it is the only artifact that carries the German-scope note below, but the day-by-day page is what each row cites, exactly as the 2026 rows cite `EUREX-HOLREG-2026` rather than the 2026 PDF.
 
-**Gaps, 2025:** **The German equity and equity-index closure set is operator-declared `tba`, and 2025-2026 is the only span it withholds.** The *Eurex trading calendar 2025* PDF prints, verbatim: `Kein Handel und keine Ausübung in deutschen Aktien- und Aktienindex-derivaten sowie in ETF- und ETC-Derivaten, die auf Xetra@-Börsen-notierungen basieren: tba.` — that is, no trading and no exercise in German equity and equity-index derivatives and in the ETF and ETC derivatives based on Xetra® listings, to be announced. FDAX and FDXM are German equity-index derivatives, so 2025 could carry German closures this table does not state, and the operator has named no date for any of them; the note carries no futures carve-out, unlike the 2019-2021 editions'. The 2026 edition of the same PDF carries the note in English and still says `Eurex is closed for trading and exercise in German equity and equity index derivatives as well as ETF and ETC derivatives which are based on Xetra® listings: to be announced`, and the 2027 conflict recorded above leaves no later edition to read it from either. The declaration in `schedules/sourcing.rs` is bounded to exactly this era — `.since(2025-01-01)`, because the 2024 edition is the last without the note, to `.until(2027-01-01)`, where the editions in hand end — so `coverage_on` answers `Covered` through 2024-12-31 and refuses only the `tba` era. **This is an operator-declared withholding, not a retrieval failure**: the Holiday regulations page never carries the note at all, so it cannot be closed from that page, and it must not be closed from a T3 restatement (LAW-PRIMARY-SOURCES). Closing condition: an Eurex announcement or Trading Calendar edition that dates the German-scope closures for 2025-2026. Tracked as issue #157, which this change narrows to the `tba` era from a whole-window declaration.
+**Gaps, 2025:** none. The German equity and equity-index closure set the *Eurex trading
+calendar 2025* PDF declared `tba` — verbatim `Kein Handel und keine Ausübung in deutschen
+Aktien- und Aktienindex-derivaten sowie in ETF- und ETC-Derivaten, die auf Xetra@-Börsen-
+notierungen basieren: tba.` — was verified **not to exist** on 2026-10-05 UTC; the #157
+declaration it keyed retired with that verification (the chain is recorded below, under "The
+#157 verification"). No `Unsourced` date remains in the year and no phase is withheld.
 
-**The circulars channel is swept and negative (2026-10-04 UTC).** Eurex's circulars are the mechanism that has dated this scope before: circular 080/2014 ("Trading calendar: Holiday regulation for 3 October 2014 (“German Unification Day“)", release date 2014-04-29, retrievable from the live circular search) quotes the FWB Exchange Council's no-trading decision for Frankfurt and then states that "the Management Board of Eurex Deutschland and the Executive Board of Eurex Zürich AG likewise decided to suspend trading on this day for the following products" — German equity options, German Single Stock Futures, the DAX®-family index options and "Index Futures of the DAX® family, i.e. DAX® (FDAX), MDAX® (F2MX), TecDAX® (FTDX) and DivDAX® (FDIV)" — and that "All other products will be traded on 3 October 2014, as before." That is the shape a `tba` resolution takes, and the site's own circular database enumerates completely: the full-year listings of `query=*` with `MM/DD/yyyy` date bounds return every 2025 item (170: the numbered series `001/2025`..`119/2025` with no gap plus every Readiness Newsflash) and every 2026 item to date (100: `001/2026`..`064/2026` plus newsflashes), and no item of either year is a trading-calendar or holiday-regulation circular or a German-scope closure notice — the only "no trading" circulars of the era are KOSPI-scope (`004/2025`, `043/2025`), and the only "Trading hours at Eurex Exchange on …" circular is `105/2025`, whose subject is the 2025-12-30 year-end early closes and which states that German index futures (e.g. FDAX) are not affected. The public production newsboard carries zero holiday or reminder items over 2025-01-01..2026-10-04, against its explicit 2019-10-02 `XEUR : Holiday reminder 03.10.2019` and 2018-05-21 `XEUR : Reminder: Holiday regulation for 21st of May2018` (the operator's own spacing) items for the pre-2019 closures. Keyword sweeps (German Unity Day, Whit Monday, holiday regulation, 3 October, and the German terms, which the English-only database answers with zero), Wayback CDX of the circulars tree for 2025-2026, external web search in both languages, `/ex-de/` (HTTP 404), `deutsche-boerse.com` newsroom paths and `eurexgroup.com` (HTTP 301 to `eurex.com`) completed the sweep. Every artifact, URL, retrieval instant and sha256 is under `holidays/raw/eurex/circulars-2026-10-04/` in the research store (INDEX/SHA256SUMS beside them). The `tba` note is therefore unresolved at the operator — the announcement mechanism is intact and has simply produced nothing for 2025-2026 — and the channel remains the live watch point beside the annual editions; no row ships on this evidence.
+**The circulars channel is swept and negative (2026-10-04 UTC).** Eurex's circulars are the mechanism that has dated this scope before: circular 080/2014 ("Trading calendar: Holiday regulation for 3 October 2014 (“German Unification Day“)", release date 2014-04-29, retrievable from the live circular search) quotes the FWB Exchange Council's no-trading decision for Frankfurt and then states that "the Management Board of Eurex Deutschland and the Executive Board of Eurex Zürich AG likewise decided to suspend trading on this day for the following products" — German equity options, German Single Stock Futures, the DAX®-family index options and "Index Futures of the DAX® family, i.e. DAX® (FDAX), MDAX® (F2MX), TecDAX® (FTDX) and DivDAX® (FDIV)" — and that "All other products will be traded on 3 October 2014, as before." That is the shape a `tba` resolution takes, and the site's own circular database enumerates completely: the full-year listings of `query=*` with `MM/DD/yyyy` date bounds return every 2025 item (170: the numbered series `001/2025`..`119/2025` with no gap plus every Readiness Newsflash) and every 2026 item to date (100: `001/2026`..`064/2026` plus newsflashes), and no item of either year is a trading-calendar or holiday-regulation circular or a German-scope closure notice — the only "no trading" circulars of the era are KOSPI-scope (`004/2025`, `043/2025`), and the only "Trading hours at Eurex Exchange on …" circular is `105/2025`, whose subject is the 2025-12-30 year-end early closes and which states that German index futures (e.g. FDAX) are not affected. The public production newsboard carries no German-scope holiday or reminder item over 2025-01-01..2026-10-04 (the one item the 2026-10-05 re-check found in that window is Swiss-scope), against its explicit 2019-10-02 `XEUR : Holiday reminder 03.10.2019` and 2018-05-21 `XEUR : Reminder: Holiday regulation for 21st of May2018` (the operator's own spacing) items for the pre-2019 closures. Keyword sweeps (German Unity Day, Whit Monday, holiday regulation, 3 October, and the German terms, which the English-only database answers with zero), Wayback CDX of the circulars tree for 2025-2026, external web search in both languages, `/ex-de/` (HTTP 404), `deutsche-boerse.com` newsroom paths and `eurexgroup.com` (HTTP 301 to `eurex.com`) completed the sweep. Every artifact, URL, retrieval instant and sha256 is under `holidays/raw/eurex/circulars-2026-10-04/` in the research store (INDEX/SHA256SUMS beside them). At the time of the sweep this read as an unresolved `tba`; on 2026-10-05 UTC the maintainer's no-changes verification read the same complete-channel silence as one leg of the proof that the undated closures never existed, and #157 closed with the declaration's retirement (see "The #157 verification" below). The channel remains a live watch point beside the annual editions: a future German-scope closure would travel it.
+
+**The #157 verification — no German-scope closures in 2025 or 2026 (2026-10-05 UTC).** The
+maintainer's instruction for #157's resolution: "we need to capture all changes to trading
+hours + all holidays. If there were no changes, this could look like a gap and not actually be
+one but that needs to be verified." Four legs, each read from bytes in the research store
+(`holidays/raw/eurex/negation-2026-10-05/`, URLs, instants and sha256 in its INDEX):
+
+1. **The operator's controlling day-by-day tables name no German scope in either year —
+   affirmative evidence, not silence.** The Holiday regulations page's day-by-day section is
+   the operator's enumeration of every non-trading day, scope by scope; its grammar
+   demonstrably carries the German clause when a German arrangement exists, because the
+   Wayback capture of 2020-10-26 prints the 2020 arrangement in it verbatim: `01 June —
+   Eurex is closed for trading and exercise in German equity derivatives and equity index
+   options (trading in German equity index futures takes place!) as well as ETF and ETC
+   derivatives, which are based on Xetra® listings.` In the controlling 2025 state (capture
+   2025-09-13, `EUREX-HOLREG-2025`, 54 rows) no row of the year carries a German clause:
+   Whit Monday 09 June lists only the Swiss, Norwegian and Danish closures, and Unity Day
+   03 October has no row at all in the June and September states (its March row was the
+   KOSPI clause, withdrawn). In the live 2026 state (retrieved 2026-09-26 and 2026-10-04,
+   and text-identical again on 2026-10-05; 49 day-rows) no row of the year carries a German
+   clause: Whit Monday 25 May lists the Swiss, ETC/British, Brazilian/Canadian/U.S.,
+   USD-credit-index, Norwegian and Danish closures, and Unity Day 03 October — a Saturday —
+   has no row. Full-text scans of the live page find `German` 0, `tba` 0, `to be announced`
+   0. Every candidate date of the `tba` era has therefore passed with the operator's own
+   maintained enumeration answering the German scope open.
+2. **The announcement channel is proven complete and produced nothing** (the 2026-10-04
+   sweep, above: all 170 items of 2025 and all 100 of 2026-to-date enumerated gap-free,
+   zero German-scope items, circular 105/2025 stating FDAX unaffected on 30 December 2025).
+   Re-checked 2026-10-05T00:05 UTC for the windows around the passed candidate dates: the
+   production newsboard over 10/01/2025–12/31/2025 carries one item matching "holiday" —
+   `XEUR: Trading in Swiss Option contracts with expiration 02-January 2026 suspended`
+   (24 Nov 2025, Swiss scope) — and zero items over 01/01/2026–10/05/2026 for either
+   "holiday" or "reminder", two days after Unity Day 2026.
+3. **The standing rule makes a Board regulation the only departure, and none exists.** The
+   Conditions for Trading of Eurex Deutschland (consolidated edition effective 2026-07-27,
+   `2026_07_27_eurex_d_handelsbedingungen_en.pdf`, T1) state, Number 1.2 verbatim:
+   `Exchange Trading of Derivatives takes place on Business Days on which Eurex
+   Deutschland is open for business („Exchange Days”). The Trading Days for the respective
+   Derivatives are basically identical with the Exchange Days provided that the Management
+   Board does not make other regulations for the respective Derivatives.`; Exchange Rules
+   § 60(2) (consolidated edition effective 2026-07-07) assigns each derivative's period
+   commencement and end to the Management Board. A German-scope closure is exactly such an
+   other regulation — circular 080/2014 is a Board decision of that kind, published as a
+   circular — and the complete circular enumeration contains none for 2025/2026. No
+   rulebook clause says closures happen "only by circular"; the 1.2 baseline is what the
+   rulebook does say, and it is quoted for what it is.
+4. **The pattern is the line resolving empty before.** The 2019, 2020 and 2021 editions
+   dated the scope with the operator's own futures carve-out — `(trading in German equity
+   index futures takes place!)` over `10 June, 3 October` / `1 June` / `24 May` — and the
+   2010-2013, 2015 and 2022-2024 editions printed no German-scope line at all; re-read
+   from the hash-verified bytes on 2026-10-05 UTC. The German scope has produced no futures
+   closure since 2018-10-03, and the `tba` template line returned in 2025 for a set that
+   never materialised.
+
+Verdict: the no-changes hypothesis is verified. The `tba`/`to be announced` line never
+resolved because there was nothing to resolve; 2025-01-01..2026-12-30 answers `Covered` from
+the shipped all-derivatives rows (2026-12-31 alone refuses through the resolution-edge rule,
+#151), and the #157 `UnpublishedClosureDates` declaration is retired from
+`schedules/sourcing.rs`, the reason staying on the enum as vocabulary like the #93, #152 and
+#79/#123/#259 reasons before it. **Disclosed residual:** if a later operator artifact dates a
+2025/2026 German-scope closure after all, it lands as a schedule fix on the weekly watch —
+the annual Trading Calendar editions and the Holiday regulations page are the named watch
+points, and the circulars channel beside them.
 
 **The German-scope record, edition by edition, read from the bytes.** The fifteen editions divide
 four ways, and the store's `holidays/raw/eurex-2010-2024/INDEX.md` tabulates every line:
@@ -320,11 +390,12 @@ four ways, and the store's `holidays/raw/eurex-2010-2024/INDEX.md` tabulates eve
   (Austrian, Finnish, Greek, Irish, Italian, Norwegian, Polish, Russian, Swedish, Swiss and the
   product-scoped lines beside them). The absence is the operator's own enumeration, not silence,
   so no row ships and the German holidays of those years answer ordinary.
-- **`tba` — 2025, 2026.** The note returns with no dates, quoted in the 2025 gap record below.
-  This is the span the #157 declaration now covers, and the only one it still covers. The
-  operator's circular channel, the one mechanism that has dated this scope before, was
-  completely swept on 2026-10-04 UTC and produced no 2025/2026 item (see the gap record
-  below and the research store's `holidays/raw/eurex/circulars-2026-10-04/`).
+- **`tba` — 2025, 2026, verified to no closures.** The note returned with no dates (the 2025
+  edition in German `… : tba.`, the 2026 edition in English `… : to be announced`; both quoted
+  in the year tables and re-read from the hash-verified bytes on 2026-10-05 UTC). The operator
+  never resolved it because there was nothing to resolve: the #157 declaration the note keyed
+  was retired on 2026-10-05 UTC by the no-changes verification recorded below, and both years
+  answer from the all-derivatives rows alone.
 
 **Interpretive steps, German scope.** (1) The panel's country lines scope by the **underlying**,
 not the listing venue: the Swiss line closes "Swiss fixed income as well as equity and equity index
@@ -336,8 +407,9 @@ product. (2) The 2019-2021 parenthetical is affirmative evidence for the pre-201
 new carve-out: the operator wrote it to state that the futures trade when the options and equity
 derivatives around them do not, which is the same scope discipline applied per product, and the
 plain 2014-2018 wording — with no carve-out — closes the index derivatives including the futures.
-(3) `EUREX-TC-2025`'s German note carries no futures carve-out either, so the `tba` scope could
-close FDAX and FDXM in 2025-2026 — which is why #157 stays open for those two years.
+(3) `EUREX-TC-2025`'s German note carried no futures carve-out either, which is why the `tba`
+scope was declared rather than assumed empty — until the 2026-10-05 verification established
+that no closure existed for the scope to key (#157, retired; see below).
 
 **Interpretive steps, 2025:** None beyond the trading-only rows. Eurex states its closures as whole days and every phase the crate models runs inside one Berlin civil day, so each event date is its own trade date and each row is `Closed`. The two trading-only rows (24 and 31 December) carry the operator's own footnote, `* No trading; clearing and settlement are open if the holiday is not on a Saturday or Sunday.`; both dates fall on a Wednesday in 2025, so clearing and settlement are open on them. That does not make either a trading day: this crate answers when a *market* accepts and matches orders, and "no trading" removes every phase it models, so a closed-for-trading date is `Closed` whatever the clearing and settlement half does.
 
@@ -353,7 +425,7 @@ close FDAX and FDXM in 2025-2026 — which is why #157 stays open for those two 
 | 2026-12-25 | closed | `Eurex is closed for trading and clearing (exercise, settlement and cash) in all derivatives.` | `EUREX-HOLREG-2026` | T1 | Eurex event date 2026-12-25 (Christmas Day) |
 | 2026-12-31 | closed | `Eurex is closed for trading in all derivatives: 24 December, 31 December` — a full trading closure; clearing stays open | `EUREX-HOLREG-2026` | T1 | Eurex event date 2026-12-31 (New Year's Eve) |
 
-**Gaps, 2026:** **Eurex 2027 does not ship.** Eurex's 2027-2036 trading calendars are published “on a preliminary and indicative basis … and are subject to change”, which is not the unconditional, day-level future LAW-NO-FABRICATED-DATES requires, so the five 2027 closures the indicative CSV carries (2027-01-01, 2027-03-26, 2027-03-29, 2027-12-24, 2027-12-31) are recorded here and encoded nowhere. Closed by the Eurex “Trading Calendar 2027” PDF and the 2027 section of the Holiday regulations page. **Additional German closures are unresolved.** The Trading Calendar 2026 PDF states that Eurex “is closed for trading and exercise in German equity and equity index derivatives as well as ETF and ETC derivatives which are based on Xetra® listings: to be announced”. DAX and Mini-DAX futures are German equity index derivatives, so that line could add closures beyond the seven above for FDAX and FDXM; the day-by-day Holiday regulations page lists no German-specific 2026 closure and German Unity Day 2026-10-03 falls on a Saturday, so the practical exposure is probably nil, but the operator has not said so. Closed by a Eurex announcement resolving that line.
+**Gaps, 2026:** **Eurex 2027 does not ship.** Eurex's 2027-2036 trading calendars are published “on a preliminary and indicative basis … and are subject to change”, which is not the unconditional, day-level future LAW-NO-FABRICATED-DATES requires, so the five 2027 closures the indicative CSV carries (2027-01-01, 2027-03-26, 2027-03-29, 2027-12-24, 2027-12-31) are recorded here and encoded nowhere. Closed by the Eurex “Trading Calendar 2027” PDF and the 2027 section of the Holiday regulations page. The German-scope `to be announced` line the Trading Calendar 2026 PDF carries verified to **no closures** on 2026-10-05 UTC (#157, retired; see "The #157 verification" above): the day-by-day Holiday regulations page names no German-specific 2026 closure, German Unity Day 2026-10-03 fell on a Saturday and Whit Monday 2026-05-25 has passed answering ordinary, so no residual German exposure remains in the year.
 
 **Interpretive steps, 2026:** None. Eurex states its closures as whole days for “all derivatives”, every phase the crate models runs inside one Berlin civil day, and Eurex publishes no early close — 24 and 31 December are full trading closures with clearing open, not half days. So each event date is its own trade date and each row is `Closed`.
 

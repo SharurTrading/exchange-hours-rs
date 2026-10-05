@@ -67,6 +67,17 @@
 //! declare: one whose hunts have not closed negative, or whose served answer
 //! would be wrong under a sourced state. Nothing declares it today.
 //!
+//! The `UnpublishedClosureDates` declaration `eurex` carried for its `tba` era
+//! (2025-01-01 through the last edition in hand, #157) retired on 2026-10-05 UTC
+//! under the no-changes verification the maintainer set that day: the operator's
+//! day-by-day Holiday regulations tables — whose grammar printed the German-scope
+//! clause, futures carve-out and all, in 2020 — state no German-scope closure on
+//! any date of 2025 or 2026, every candidate date of both years has passed
+//! answering ordinary, and the Management-Board regulation channel such a closure
+//! would travel (Conditions for Trading 1.2) is enumerated complete and empty of
+//! it. `docs/evidence/eurex.md` holds the chain, and the reason stays on the enum
+//! as the vocabulary a future undated holiday scope would declare.
+//!
 //! Every declaration also states the dates it applies to, so the metadata
 //! withholds exactly what the evidence withholds (#172): `PhaseGap::since` and
 //! `PhaseGap::until` bound the era on either side — each bound restating a dated
@@ -77,9 +88,8 @@
 //! Only an identity whose gap survives the permanent 2010 floor is declared
 //! here, because that is the interval the completeness claim covers: a scope
 //! whose withheld phase or unstateable session lies entirely before 2010 is not
-//! incomplete in the claimed interval and must not be declared. One identity
-//! declares today — one declaration in all, `eurex`'s undated closure scope —
-//! and the fences in
+//! incomplete in the claimed interval and must not be declared. No identity
+//! declares today, and the fences in
 //! `tests/schedule_documentation/coverage_inventory.rs` hold them to the
 //! inventory's own verdicts while `tests/coverage_metadata.rs` holds each
 //! declaration to the shipped profile's behaviour.
@@ -89,8 +99,8 @@
 
 use chrono::NaiveDate;
 
-use super::timeline::{effective_date, horizon};
-use crate::calendar::coverage::{CoverageGapReason, PhaseGap};
+use super::timeline::horizon;
+use crate::calendar::coverage::PhaseGap;
 use crate::calendar::{CalendarSource, Exchange, MarketHoursKey};
 
 /// What one identity declares about its own sourcing.
@@ -152,18 +162,6 @@ impl DeclaredSourcing {
             phase_gaps: &[],
         }
     }
-
-    /// `carried_below(horizon)`, plus the phase-level gaps the identity declares.
-    const fn carried_below_with(
-        horizon: Option<NaiveDate>,
-        phase_gaps: &'static [PhaseGap],
-    ) -> Self {
-        Self {
-            carried_below: horizon,
-            observes_no_holidays: false,
-            phase_gaps,
-        }
-    }
 }
 
 // The #152 post-close label declaration both queue scopes carried is retired
@@ -194,56 +192,12 @@ impl DeclaredSourcing {
 // vocabulary a future required-phase gap would declare, exactly as the #152
 // and #93 reasons before it.
 
-/// The undated closure scope `eurex` declares: the `tba` era of Eurex's German
-/// equity and equity-index closures, 2025-01-01 through the last edition in
-/// hand (#157).
-///
-/// The pre-2025 editions **date** that scope, and its rows ship in the
-/// `holidays/eurex.rs` `TABLE`: the 2014, 2016,
-/// 2017 and 2018 editions print `Eurex is closed for trading and exercise in
-/// German equity and equity index derivatives as well as ETF and ETC
-/// derivatives, which are based on Xetra® listings:` with day-level dates
-/// (eight `Closed` rows, 2014-10-03 through 2018-10-03), the 2019-2021
-/// editions print the same scope with the operator's own parenthetical
-/// `(trading in German equity index futures takes place!)` — so nothing closes
-/// in the benchmark-index-futures scope those years — and the 2010-2013, 2015
-/// and 2022-2024 editions print no German-scope line at all in a panel that
-/// enumerates every other country's closures. None of those years withholds
-/// anything any more.
-///
-/// What the operator still withholds is the note's return in the 2025 and 2026
-/// editions as `tba` / `to be announced`, with no futures carve-out.
-/// `docs/schedules/coverage-2025.md` records the scope's verdict as incomplete
-/// for it and `docs/evidence/eurex.md` quotes both editions: the *Eurex trading
-/// calendar 2025* prints `Kein Handel und keine Ausübung in deutschen Aktien-
-/// und Aktienindex-derivaten sowie in ETF- und ETC-Derivaten, die auf
-/// Xetra@-Börsen-notierungen basieren: tba.`, and the 2026 edition carries the
-/// same note in English and still says `to be announced`. FDAX and FDXM are
-/// German equity-index derivatives behind this identity, so 2025 and 2026
-/// could carry closures the shipped table cannot state.
-///
-/// **Bounded by the editions that carry the note, and no phase.** The `since`
-/// bound is 2025-01-01: the 2024 edition is the last one without the note, so
-/// every date before it answers from the dated rows or from the operator's own
-/// no-line editions, and the declaration withholds nothing the evidence gives.
-/// The note is evidence in the 2025 and 2026 editions and in no later one —
-/// the 2027-2036 material is the operator's own `preliminary and indicative`
-/// publishing, and the archive's Trading Calendar list stops at 2026 — so the
-/// gap's span ends where the last edition in hand ends: 2027-01-01 is the
-/// first day the note does not establish, not a day the operator resolved it.
-/// If a 2027 edition carries the note again, extending the bound is that
-/// edition's dated change. The gap withholds no phase — Eurex serves every
-/// phase it models on an ordinary day — so the declaration is a completeness
-/// fact rather than a reason to refuse an order-entry queue, and
-/// `CalendarQueryContext::require_phase_coverage` answers through it.
-const fn undated_german_closures() -> PhaseGap {
-    PhaseGap::new(CoverageGapReason::UnpublishedClosureDates, "#157")
-        .since(effective_date(2025, 1, 1))
-        .until(effective_date(2027, 1, 1))
-}
-
-/// `eurex`'s one declaration: the operator's undated German-scope closures.
-const EUREX_UNDATED_CLOSURES: [PhaseGap; 1] = [undated_german_closures()];
+// The `UnpublishedClosureDates` declaration that used to live here — `eurex`'s
+// undated German-scope closures for the `tba` era of the 2025 and 2026 Trading
+// Calendar editions (#157) — retired on 2026-10-05 UTC, verified no-changes.
+// The four-leg chain, with every artifact's URL, retrieval instant and
+// sha256, is in `docs/evidence/eurex.md` ("The #157 verification") and the
+// research store's `holidays/raw/eurex/negation-2026-10-05/`.
 
 /// Returns what `source` declares about its own sourcing.
 pub(crate) const fn declared(source: CalendarSource) -> DeclaredSourcing {
@@ -348,9 +302,11 @@ const fn for_exchange(exchange: Exchange) -> DeclaredSourcing {
         Exchange::CoinbaseDerivatives => DeclaredSourcing::nothing_carried(),
         // `—`: closed before its own 2020-05-18 first trade date, and closed from 2025-03-24.
         Exchange::Smfe => DeclaredSourcing::nothing_carried(),
-        Exchange::Eurex => {
-            DeclaredSourcing::carried_below_with(horizon!(2010, 1, 1), &EUREX_UNDATED_CLOSURES)
-        }
+        // The floor is sourced (archived specifications through 2017, circular
+        // 088/2018's redline); the `tba` German-scope declaration this arm used
+        // to carry is retired (2026-10-05, no-changes verified — see the note
+        // above and docs/evidence/eurex.md).
+        Exchange::Eurex => DeclaredSourcing::carried_below(horizon!(2010, 1, 1)),
         // `—`: closed before the sourced 2024-03-25 launch.
         Exchange::Eex => DeclaredSourcing::nothing_carried(),
         // `—`: closed before the sourced 2017-11-07 launch-eve opening.
@@ -474,9 +430,8 @@ const fn for_market_hours_key(key: MarketHoursKey) -> DeclaredSourcing {
         // 2026-10-04) — the era answers from the grid with the queues absent.
         MarketHoursKey::GlobexCryptocurrency => DeclaredSourcing::nothing_carried(),
         MarketHoursKey::CfeVix => DeclaredSourcing::carried_below(horizon!(2010, 1, 1)),
-        MarketHoursKey::Eurex => {
-            DeclaredSourcing::carried_below_with(horizon!(2010, 1, 1), &EUREX_UNDATED_CLOSURES)
-        }
+        // Like the venue's own arm: the `tba` declaration retired 2026-10-05.
+        MarketHoursKey::Eurex => DeclaredSourcing::carried_below(horizon!(2010, 1, 1)),
         // `—`: closed before the sourced 2017-11-07 launch-eve opening.
         MarketHoursKey::IceUs => DeclaredSourcing::nothing_carried(),
         MarketHoursKey::IceUsSugar => DeclaredSourcing::carried_below(horizon!(2011, 8, 1)),

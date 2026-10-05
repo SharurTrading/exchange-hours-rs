@@ -12,6 +12,28 @@ corrections (a venue's hours fixed against a primary source) go under
 ## [Unreleased]
 ### Changed
 
+- **eurex: the `tba` era answers — the undated German-scope closures verified
+  to none, and the #157 declaration retires (2026-10-05 UTC; fixes #157).**
+  The 2025 and 2026 Eurex Trading Calendar editions print the German
+  equity / equity-index closure note (`tba` / `to be announced`) without
+  dating it, which the crate refused 2025-01-01..2026-12-30 through
+  `CoverageGapReason::UnpublishedClosureDates`. The no-changes verification
+  established the undated closures never existed: the operator's day-by-day
+  Holiday regulations tables name no German scope on any date of either year —
+  in the grammar that printed the German clause (futures carve-out and all) in
+  2020 — every candidate date (Whit Monday 2025-06-09, Unity Day 2025-10-03,
+  Whit Monday 2026-05-25, Unity Day 2026-10-03) has passed answering ordinary,
+  the circular channel that dated every 2014-2018 German-scope closure is
+  enumerated complete with no such item, and the Conditions for Trading 1.2
+  baseline makes a Management Board regulation the only departure, none
+  existing. The 729 dates the declaration refused now answer `Covered` from
+  the shipped all-derivatives rows, no served scope declares a coverage gap
+  any more, and the inventory's verdict tally moves from twenty-five complete
+  and eight incomplete to twenty-six and seven. The verification chain is
+  recorded in `docs/evidence/eurex.md`; a later-dated German-scope closure in
+  the era would land as a schedule fix on the weekly watch.
+
+
 - **Coverage verdicts: the maintainer's horizon ruling reclassifies
   unpublished-2027 incompleteness (2026-10-04 UTC).** 2027 coverage is not a
   requirement — it is a nice-to-have, taken when the information is on the

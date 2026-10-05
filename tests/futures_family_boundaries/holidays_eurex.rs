@@ -27,8 +27,11 @@
 //! names ships the all-derivatives rows alone and answers those dates open,
 //! and the 2019-2021 editions' own parenthetical — trading in German equity
 //! index futures takes place — keeps every later German holiday in the
-//! benchmark scope open too, so the `tba` note of 2025-2026 (#157) is the only
-//! span the German scope still withholds.
+//! benchmark scope open too. The 2025-2026 `tba` line of the same note
+//! verified to **no closures** (2026-10-05 UTC, #157): the operator's
+//! day-by-day Holiday regulations tables name no German scope on any date of
+//! either year, in the grammar that printed the German clause (carve-out and
+//! all) in 2020, so the whole 2010-2026 span answers from the shipped rows.
 
 use chrono::{DateTime, Datelike as _, Days, NaiveDate, TimeZone as _, Utc};
 use chrono_tz::Europe;
@@ -852,8 +855,12 @@ fn the_dated_german_scope_closures_close_the_benchmark_identities_alone() {
 /// and 2021 editions date the scope but print `(trading in German equity index
 /// futures takes place!)`, and the 2010-2013, 2015 and 2022-2024 editions
 /// print no German-scope line at all. Every Unity Day and Whit Monday outside
-/// 2014-2018 is therefore an ordinary day for all three identities — and 2025
-/// and 2026 refuse through the `tba` declaration (#157) rather than answering.
+/// 2014-2018 is therefore an ordinary day for all three identities — and the
+/// 2025-2026 `tba` era answers the same way since the #157 retirement
+/// (2026-10-05 UTC): the operator's day-by-day Holiday regulations tables name
+/// no German scope on any date of either year, so Whit Monday 2025-06-09,
+/// Unity Day 2025-10-03 and Whit Monday 2026-05-25 are ordinary days fenced
+/// here rather than refused.
 #[test]
 fn the_german_holidays_outside_the_dated_editions_answer_open() {
     let open_days = [
@@ -867,6 +874,17 @@ fn the_german_holidays_outside_the_dated_editions_answer_open() {
         day(2022, 10, 3), // Unity Day, Monday: the 2022 edition states no German line
         day(2023, 10, 3), // Unity Day, Tuesday: no German line
         day(2024, 10, 3), // Unity Day, Thursday: no German line
+        // The `tba` era's candidate dates, answered since the #157 retirement:
+        // the operator's day-by-day table lists the Swiss, Norwegian and
+        // Danish closures for 2025-06-09, states nothing at all for
+        // 2025-10-03 (its row was withdrawn with the KOSPI clauses by the
+        // controlling September state), lists the Swiss, ETC/British,
+        // Brazilian/Canadian/U.S., Norwegian and Danish closures for
+        // 2026-05-25, and carries no row for any German scope anywhere in
+        // either year.
+        day(2025, 6, 9),  // Whit Monday, Monday: no German clause in the 2025 table
+        day(2025, 10, 3), // Unity Day, Friday: no row at all in the controlling 2025 state
+        day(2026, 5, 25), // Whit Monday, Monday: no German clause in the 2026 table
     ];
     for (name, calendar) in identities() {
         for date in open_days {
@@ -888,10 +906,11 @@ fn the_german_holidays_outside_the_dated_editions_answer_open() {
         }
     }
     // The Unity Days the editions print no German line for and that fall on a
-    // Saturday (2015-10-03, 2020-10-03) carry no row either: the absence of
-    // the line is the operator's own enumeration, not silence to infer from.
+    // Saturday (2015-10-03, 2020-10-03, and 2026-10-03 of the `tba` era)
+    // carry no row either: the absence of the line is the operator's own
+    // enumeration, not silence to infer from.
     for (name, calendar) in identities() {
-        for saturday in [day(2015, 10, 3), day(2020, 10, 3)] {
+        for saturday in [day(2015, 10, 3), day(2020, 10, 3), day(2026, 10, 3)] {
             assert_eq!(
                 calendar.holiday_on(saturday),
                 None,

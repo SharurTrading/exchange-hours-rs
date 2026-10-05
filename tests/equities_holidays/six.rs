@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: MIT-0
 
-//! SIX holiday rows, 2018-2027: the operator's per-year Trading Calendar PDFs
-//! (and the 28 May 2018 guide edition's own 2018-2019 grids), closures only.
+//! SIX holiday rows, 2010-2027: the operator's per-year Trading Calendar PDFs
+//! (the 28 May 2018 guide edition's own 2018-2019 grids, and the era's
+//! Trading-and-Settlement-Calendar pages' own market-holiday marks for
+//! 2010-2011), closures only.
 
 use super::prelude::*;
 
@@ -18,25 +20,27 @@ fn calendar() -> ExchangeCalendar {
 }
 
 #[test]
-fn coverage_opens_at_the_2012_backfill_and_stops_at_the_2027_schedule() {
+fn coverage_runs_from_the_2010_floor_to_the_2027_schedule() {
     let calendar = calendar();
     let coverage = calendar
         .holiday_coverage()
         .expect("six ships a built-in table");
-    assert_eq!(coverage.first(), day(2012, 1, 1));
+    assert_eq!(coverage.first(), day(2010, 1, 1));
     assert_eq!(coverage.last(), day(2027, 12, 31));
     let windows = coverage.windows();
     assert_eq!(
         windows,
         vec![
+            (day(2010, 1, 1), day(2011, 12, 31)),
             (day(2012, 1, 1), day(2017, 12, 31)),
             (day(2018, 1, 1), day(2019, 12, 31)),
             (day(2020, 1, 1), day(2024, 12, 31)),
             (day(2025, 1, 1), day(2027, 12, 31)),
         ],
-        "four audited windows; 2010-2011 is the unaudited span (#212)"
+        "five audited windows; the 2010-2011 half of #212 closed as data on \
+         2026-10-05 UTC and no span between the floor and 2027-12-31 remains"
     );
-    // Inside the unaudited span the table has no answer at all.
+    // Weekend-falling holidays of 2010-2011 key no weekday row either.
     assert_eq!(calendar.holiday_on(day(2011, 1, 2)), None);
     assert_eq!(calendar.holiday_on(day(2010, 8, 1)), None);
     // Outside the audited history entirely: the same.
@@ -134,6 +138,113 @@ fn the_2022_grid_marks_six_weekday_holidays() {
 }
 
 #[test]
+fn every_2010_and_2011_market_holiday_mark_ships() {
+    let calendar = calendar();
+    // The 2010 grid's `SIX Swiss Exchange Market holiday` shading, resolved
+    // from the captures of 2010-01-31 and 2010-04-11: seven weekday marks.
+    assert_closed(
+        "six",
+        calendar,
+        Europe::Zurich,
+        &[
+            day(2010, 1, 1),
+            day(2010, 4, 2),
+            day(2010, 4, 5),
+            day(2010, 5, 13),
+            day(2010, 5, 24),
+            day(2010, 12, 24),
+            day(2010, 12, 31),
+        ],
+    );
+    // The 2011 grid's marks (published 15 November 2010): six weekday marks.
+    assert_closed(
+        "six",
+        calendar,
+        Europe::Zurich,
+        &[
+            day(2011, 4, 22),
+            day(2011, 4, 25),
+            day(2011, 6, 2),
+            day(2011, 6, 13),
+            day(2011, 8, 1),
+            day(2011, 12, 26),
+        ],
+    );
+    // The holiday names the operator's calendar family uses key each row to
+    // its own year's page.
+    for (date, document) in [
+        (day(2010, 1, 1), "SIX-TSC-2010"),
+        (day(2010, 12, 31), "SIX-TSC-2010"),
+        (day(2011, 8, 1), "SIX-TSC-2011"),
+        (day(2011, 12, 26), "SIX-TSC-2011"),
+    ] {
+        let holiday = calendar
+            .holiday_on(date)
+            .unwrap_or_else(|| panic!("{date} ships a row"));
+        assert_eq!(holiday.kind(), HolidayKind::Closed, "{date}");
+        assert_eq!(holiday.tier(), EvidenceTier::T1, "{date}");
+        assert_eq!(holiday.document_id(), document, "{date}");
+    }
+    // The weekend falls of 2010-2011 — St. Berchtold 2010-01-02 (Saturday),
+    // Labour Day 2010-05-01 (Saturday), Swiss National Day 2010-08-01
+    // (Sunday), Christmas 2010-12-25 and St. Stephen's 2010-12-26 (weekend),
+    // New Year 2011-01-01 and St. Berchtold 2011-01-02 (weekend), Labour Day
+    // 2011-05-01 (Sunday), Christmas Eve 2011-12-24, Christmas 2011-12-25 and
+    // New Year's Eve 2011-12-31 (weekend) — shade away and key no row, the
+    // grids' own convention.
+    for weekend_fall in [
+        (2010, 1, 2),
+        (2010, 5, 1),
+        (2010, 8, 1),
+        (2010, 12, 25),
+        (2010, 12, 26),
+        (2011, 1, 1),
+        (2011, 1, 2),
+        (2011, 5, 1),
+        (2011, 12, 24),
+        (2011, 12, 25),
+        (2011, 12, 31),
+    ] {
+        assert_eq!(
+            calendar.holiday_on(day(weekend_fall.0, weekend_fall.1, weekend_fall.2)),
+            None,
+            "{weekend_fall:?} keys no weekday row"
+        );
+    }
+    // The marks close behaviourally: Good Friday 2010 noon and Ascension 2011
+    // noon are closed, and trading resumes on the next ordinary day.
+    assert!(
+        !calendar
+            .is_open(ch((2010, 4, 2), (12, 0, 0)))
+            .expect("the coverage contract must answer a covered date"),
+        "Good Friday 2010 is a `Closed` row, not an ordinary day"
+    );
+    assert!(
+        !calendar
+            .is_open(ch((2011, 6, 2), (12, 0, 0)))
+            .expect("the coverage contract must answer a covered date"),
+        "Ascension Day 2011 is a `Closed` row, not an ordinary day"
+    );
+    // 2010-12-24 closes, the 25-26 weekend follows, the 27-30 weekdays are
+    // ordinary, and 2010-12-31 closes again.
+    let next = calendar
+        .next_session_after(ch((2010, 12, 24), (12, 0, 0)))
+        .expect("the coverage contract must answer a covered date")
+        .expect("a reopening must exist inside the bounded search");
+    assert_eq!(
+        next.0.with_timezone(&Europe::Zurich).date_naive(),
+        day(2010, 12, 27),
+        "six must reopen on Monday 27 December 2010"
+    );
+    assert!(
+        !calendar
+            .is_open(ch((2010, 12, 31), (12, 0, 0)))
+            .expect("the coverage contract must answer a covered date"),
+        "New Year's Eve 2010 is a `Closed` row"
+    );
+}
+
+#[test]
 fn every_printed_2018_and_2019_cell_of_the_may_2018_guide_ships() {
     let calendar = calendar();
     // The "Trading Calendar 2018" section of the Trading Guide of 28 May
@@ -214,21 +325,29 @@ fn every_printed_2018_and_2019_cell_of_the_may_2018_guide_ships() {
             .expect("the coverage contract must answer a covered date"),
         "Good Friday 2019 is a `Closed` row, not an ordinary day"
     );
-    // The window edge on the remaining-gap side still refuses correctly:
-    // 2011-12-30 (Friday) is inside the unaudited 2010-2011 span, while
-    // 2012-01-02, the first covered trade date, answers through its row.
-    let error = calendar
-        .is_open(ch((2011, 12, 30), (12, 0, 0)))
-        .expect_err("an unaudited-span query must refuse");
+    // The window seam between the 2011 and 2012 tables is seamless coverage:
+    // 2011-12-30 (Friday) is an ordinary day of the TSC-2011 window and
+    // answers, while 2012-01-02, the first trade date of the 2012 table,
+    // closes through its St. Berchtold row.
     assert!(
-        matches!(error, CalendarQueryError::OutsideCoveredRange { .. }),
-        "2011-12-30 must refuse with OutsideCoveredRange, got {error:?}"
+        calendar
+            .is_open(ch((2011, 12, 30), (12, 0, 0)))
+            .expect("the coverage contract must answer a covered date"),
+        "2011-12-30 is an ordinary Friday once the TSC-2011 marks ship"
     );
     assert!(
         !calendar
             .is_open(ch((2012, 1, 2), (12, 0, 0)))
             .expect("the coverage contract must answer a covered date"),
-        "the first covered trade date closes through its St. Berchtold row"
+        "the first 2012 trade date closes through its St. Berchtold row"
+    );
+    // Past the last window the refusal contract still holds.
+    let error = calendar
+        .is_open(ch((2028, 1, 3), (12, 0, 0)))
+        .expect_err("a query beyond the 2027 schedule must refuse");
+    assert!(
+        matches!(error, CalendarQueryError::OutsideCoveredRange { .. }),
+        "2028-01-03 must refuse with OutsideCoveredRange, got {error:?}"
     );
 }
 
@@ -257,7 +376,7 @@ fn every_printed_2024_cell_ships() {
 }
 
 #[test]
-fn a_pre_2025_ordinary_weekday_trades_and_the_unaudited_span_refuses() {
+fn a_pre_2025_ordinary_weekday_trades_and_the_former_gap_answers() {
     let calendar = calendar();
     // Wednesday 2015-07-08: inside the 2012-2017 window, no row, and the
     // session layer answers the ordinary day end-exclusively.
@@ -274,21 +393,25 @@ fn a_pre_2025_ordinary_weekday_trades_and_the_unaudited_span_refuses() {
             .expect("the coverage contract must answer a covered date"),
         "17:40 is the end-exclusive Trading-At-Last close"
     );
-    // The unaudited span refuses with the coverage contract: the operator's
-    // trading calendar for 2010-2011 is archived on no channel (#212). The
-    // 2018-2019 half closed as data on 2026-10-03 UTC (the 28 May 2018
-    // guide's own year grids) and answers again.
+    // The formerly unaudited 2010-2011 span answers since 2026-10-05 UTC (the
+    // era's Trading-and-Settlement-Calendar pages' own market-holiday marks):
+    // Sunday 2010-06-06 closes by the normal week, and the ordinary weekdays
+    // 2011-05-12 and 2011-12-30 trade.
+    assert!(
+        !calendar
+            .is_open(ch((2010, 6, 6), (12, 0, 0)))
+            .expect("the coverage contract must answer a covered date"),
+        "2010-06-06 is a Sunday inside the covered window"
+    );
     for (label, instant) in [
-        ("2010-06-06", ch((2010, 6, 6), (12, 0, 0))),
         ("2011-05-12", ch((2011, 5, 12), (12, 0, 0))),
         ("2011-12-30", ch((2011, 12, 30), (12, 0, 0))),
     ] {
-        let error = calendar
-            .is_open(instant)
-            .expect_err("an unaudited-span query must refuse");
         assert!(
-            matches!(error, CalendarQueryError::OutsideCoveredRange { .. }),
-            "{label} must refuse with OutsideCoveredRange, got {error:?}"
+            calendar
+                .is_open(instant)
+                .unwrap_or_else(|error| panic!("{label} must answer, got {error:?}")),
+            "{label} is an ordinary covered weekday"
         );
     }
 }
@@ -462,6 +585,8 @@ fn mutating_a_shipped_row_fails_a_test() {
     // behavioural one. This test adds the per-year document split: a row that
     // stops citing its own year's PDF fails.
     for (date, document) in [
+        (day(2010, 4, 2), "SIX-TSC-2010"),
+        (day(2011, 6, 13), "SIX-TSC-2011"),
         (day(2018, 5, 10), "SIX-TG-2018"),
         (day(2019, 12, 31), "SIX-TG-2018"),
         (day(2025, 4, 18), "SIX-TC-2025"),

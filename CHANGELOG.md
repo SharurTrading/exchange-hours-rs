@@ -149,6 +149,21 @@ corrections (a venue's hours fixed against a primary source) go under
   rows over four windows to **158 rows**, the 2018-01-01..2019-12-31 span
   answers, and the remaining 2010-2011 span keeps its refusal with the
   closing condition restated to those years.
+- **six: the 2010-2011 span closes from the era's own market-holiday marks,
+  and #212 closes (2026-10-05 UTC; fixes #212).** A re-read of the already
+  saved Trading-and-Settlement-Calendar pages separates the layer the earlier
+  reads had lumped with the settlement rows: each page's legend binds a
+  `#ccddff` swatch to `SIX Swiss Exchange Market holiday` beside the
+  per-currency `Currency holiday` flag entry, the 24 and 31 December 2010
+  marks fire with no bank flag on dates the page's own prose calls normal
+  settlement days, and the identical fill in the operator's Currency Holiday
+  Calendar 2019 shades exactly the twelve 2019 closures the 2018 guide's
+  grids print. The thirteen weekday marks key 13 `Closed` rows under the
+  pages' own document ids (`SIX-TSC-2010`, `SIX-TSC-2011`); the holiday
+  tables grow from 158 rows over five windows to **171 rows** over six, the
+  2010-01-01..2011-12-31 span answers from the 2010 floor, and every
+  weekend-falling holiday of the era keys no weekday row on the grids' own
+  convention.
 - **nzx: the 2016-04-26..2016-12-22 capture gap closes from the operator's
   own derivatives-site holiday memorandum (2026-10-03 UTC; fixes #209).** The
   series' 2015/2016 edition — *"NZX Dairy Derivatives Market Holidays –

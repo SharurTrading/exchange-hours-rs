@@ -53,6 +53,13 @@
   and `globex_fx` names each zero-byte replay's own store INDEX (#304). No
   row, window, tier or instant moves: the horizon conclusions stand on every
   2010-2011 month being covered by readable notices.
+- evidence, `sgx_securities`: restores the fourth domain-lineage pass record
+  (2026-10-06 UTC, the predecessor domains `ses.com.sg`, `info.sgx.com` and
+  `sgx.com/others/` — all negative; artifacts under
+  `holidays/raw/equities/sgx_securities/domain-lineage-2026-10-06/`) that the
+  #301 rebase dropped, and the coverage intro now dates `tadawul`'s Horizon
+  move to its 2026-10-06 domain-lineage sweep rather than the 2026-10-05
+  equities half (#306). No row, window or instant moves.
 
 ## 1.0.0 — 2026-10-05
 

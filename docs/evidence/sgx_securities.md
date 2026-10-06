@@ -284,6 +284,22 @@ CDX sweeps over sgx.com in both eras, and re-run with fresh eyes on
   unchanged: the 2012-09-10 archive.today snapshot, which only a human
   browser can read.
 
+- **Fourth pass, 2026-10-06 UTC — the predecessor domains** (artifacts under
+  `holidays/raw/equities/sgx_securities/domain-lineage-2026-10-06/` in the
+  research store). The untried names closed negative: **ses.com.sg** (the
+  pre-1999 Stock Exchange of Singapore) holds exactly three captures, all
+  year-2000 SES-era trading-information pages — pre-floor observations of a
+  predecessor market; **info.sgx.com** (8,000-urlkey enumeration) is the
+  Lotus-Notes application family, whose trading-calendar documents are
+  derivatives-scoped — the only calendar PDF it carried is the captured
+  `Trading Calendar 2009.pdf` (retrieved, "SGX Derivatives Market Trading
+  Calendar", per-product day codes — a genre witness, not a securities
+  artifact) beside the 2007 `SGXWeb_ST.nsf` `ST_Trading_Calendar` page — and
+  no calendar-named artifact exists in 2011-2013, the domain's captures
+  ending 2013-10-29; **sgx.com/others/** has zero captures. The sharpened
+  closing condition stands as #213 records it: one securities-market operator
+  artifact dated inside a span.
+
 **Tier.** The 2025-2026 rows key at T2 because the artifact behind them is
 the operator's own machine channel read as bytes (LAW-PRIMARY-SOURCES),
 which carries both the designation sentence and the half-day schedule; the

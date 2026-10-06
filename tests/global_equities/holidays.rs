@@ -1588,8 +1588,10 @@ fn borsa_istanbul_window_ordinary_weekday_and_coverage_endpoints() {
         None,
         "no answer past the window: 2027 is unpublished"
     );
-    // A 2012 probe below the window start (the floor and 2012-03-01 sit in
-    // the carried pre-baseline era) refuses.
+    // A 2012 probe below the window start (the floor and 2012-03-01 sit below
+    // the operator's first year tab) refuses as the holiday-coverage gap, not
+    // as a carried week — the 2026-10-05 no-changes verification sourced the
+    // normal week from the floor.
     let unaudited = istanbul((2012, 2, 20), (11, 0, 0));
     assert!(matches!(
         calendar.is_open(unaudited),
@@ -1687,9 +1689,12 @@ mod nzx {
         for date in [(2025, 2, 6), (2026, 4, 27), (2027, 1, 4)] {
             assert_closure(calendar, date, "nzx");
         }
-        // The ledger horizon is 2010-01-05 — the operator's own trading-hours
-        // page print (docs/evidence/nzx.md, Normal week) — so closures above it
-        // answer through the identity-backed surface, 2020-04-27 included.
+        // The ledger horizon sits at the floor since the 2026-10-05
+        // no-changes verification — the operator's own trading-hours page
+        // print (docs/evidence/nzx.md, Normal week) and the sheet's own
+        // closures answer from 2010-01-01 — so closures across the whole
+        // window answer through the identity-backed surface, 2020-04-27
+        // included.
         assert_closure(calendar, (2020, 4, 27), "nzx");
         assert_closure(calendar, (2011, 4, 25), "nzx");
         // The 2016/2017 memorandum re-joined the windows from 2016-12-23: its
@@ -2201,9 +2206,10 @@ mod asx {
                 .expect("covered"),
             "the substitute Monday is closed"
         );
-        // Pre-2025 closure rows answer through `holiday_on` even below the
-        // carried horizon: 2010-04-26 is the sheet's own observed ANZAC
-        // Monday and 2013-01-28 its observed Australia Day.
+        // Pre-2025 closure rows answer through `holiday_on` and — since the
+        // 2026-10-05 no-changes verification sourced the grid from the floor —
+        // through the session layer too: 2010-04-26 is the sheet's own observed
+        // ANZAC Monday and 2013-01-28 its observed Australia Day.
         for date in [(2010, 4, 26), (2013, 1, 28)] {
             assert_eq!(
                 calendar
@@ -2441,15 +2447,16 @@ mod asx {
         }
     }
 
-    /// Dates from 2013-09-16 (the earliest phase-timetable capture,
-    /// docs/evidence/asx.md) answer from the sourced grid: 2022-09-22 is the
-    /// National Day of Mourning the sheet gained between replays and
-    /// 2023-12-25 a Christmas Monday, so the 11:00 probe answers closed. The
-    /// dates still below the horizon — 2010-12-24 and the sheet's own one-off
-    /// Easter Tuesday 2011-04-26 — keep the carried-era refusal; their rows
-    /// still ship through `holiday_on`.
+    /// Dates from the floor-sourced grid answer from their own facts since the
+    /// 2026-10-05 no-changes verification retired the carried region
+    /// (docs/evidence/asx.md): 2022-09-22 is the National Day of Mourning the
+    /// sheet gained between replays and 2023-12-25 a Christmas Monday, so the
+    /// 11:00 probe answers closed. The formerly carried dates answer too —
+    /// 2010-12-24 trades its morning and shuts at the sheet's own 14:10 early
+    /// close, end-exclusive, and the sheet's one-off Easter Tuesday
+    /// 2011-04-26 answers as the closure its row states.
     #[test]
-    fn sourced_dates_answer_while_the_carried_region_still_refuses() {
+    fn the_retired_carried_region_answers_the_sheets_rows() {
         let calendar = asx();
         for date in [(2022, 9, 22), (2023, 12, 25)] {
             assert!(
@@ -2467,11 +2474,26 @@ mod asx {
                 calendar.holiday_on(day(date.0, date.1, date.2)).is_some(),
                 "{date:?} ships a row"
             );
-            assert!(matches!(
-                calendar.is_open(syd(date, (11, 0, 0))),
-                Err(CalendarQueryError::OutsideCoveredRange { .. })
-            ));
         }
+        // The 2010-12-24 early close: the morning trades, 14:10 shuts.
+        assert!(
+            calendar
+                .is_open(syd((2010, 12, 24), (11, 0, 0)))
+                .expect("the early-close eve answers"),
+            "the former carried eve trades its morning"
+        );
+        assert!(
+            !calendar
+                .is_open(syd((2010, 12, 24), (14, 10, 0)))
+                .expect("the early-close eve answers"),
+            "the sheet's 14:10 early close is end-exclusive"
+        );
+        assert!(
+            !calendar
+                .is_open(syd((2011, 4, 26), (11, 0, 0)))
+                .expect("the closure answers"),
+            "the sheet's Easter Tuesday closure deletes the day"
+        );
     }
 }
 
@@ -3407,9 +3429,9 @@ mod euronext_paris {
         for date in closed {
             assert_closed(calendar, date, "euronext_paris", &paris_time);
         }
-        // The 2010 rows sit below the 2010-12-24 ledger horizon, so the
-        // holiday rows answer while the session queries refuse as carried
-        // (the nzx shape).
+        // The 2010 rows sit inside the span the 2026-10-05 no-changes
+        // verification sourced from the floor, so the holiday rows and the
+        // session questions agree: each printed closure deletes the day.
         for date in [(2010, 1, 1), (2010, 4, 2), (2010, 4, 5)] {
             assert_eq!(
                 calendar
@@ -3421,20 +3443,14 @@ mod euronext_paris {
             assert!(
                 calendar
                     .is_closed_trade_date(day(date.0, date.1, date.2), SessionKind::Both)
-                    .is_err_and(|error| matches!(
-                        error,
-                        CalendarQueryError::OutsideCoveredRange { .. }
-                    )),
-                "the {date:?} session question must refuse below the horizon"
+                    .expect("the floor-sourced era answers"),
+                "the {date:?} session question answers the printed closure"
             );
             assert!(
-                calendar
+                !calendar
                     .is_open(paris_time(date, (12, 0, 0)))
-                    .is_err_and(|error| matches!(
-                        error,
-                        CalendarQueryError::OutsideCoveredRange { .. }
-                    )),
-                "the {date:?} intraday question must refuse below the horizon"
+                    .expect("the {date:?} intraday question answers"),
+                "the {date:?} intraday question answers closed"
             );
         }
         // 2025-01-01: its behind-derivation reads 2024-12-31, the appendix-
@@ -3625,13 +3641,16 @@ mod euronext_paris {
             );
         }
         // The eve's own instants answer from its sourced row: the 14:05 close
-        // is stated on 2010-12-24 itself, and no Paris session wraps, so
-        // nothing from the carried 2010-12-23 can reach the eve — the one day
-        // the horizon still carries refuses only when addressed to itself.
-        assert!(matches!(
-            calendar.is_open(paris_time((2010, 12, 23), (12, 0, 0))),
-            Err(CalendarQueryError::OutsideCoveredRange { .. })
-        ));
+        // is stated on 2010-12-24 itself, and no Paris session wraps. The
+        // formerly carried 23rd answers too since the 2026-10-05 no-changes
+        // verification sourced the legacy grid from the floor: it is an
+        // ordinary Wednesday of the 17:40 envelope.
+        assert!(
+            calendar
+                .is_open(paris_time((2010, 12, 23), (12, 0, 0)))
+                .expect("the formerly carried day answers"),
+            "paris answers 2010-12-23 from the floor-sourced legacy grid"
+        );
         assert!(
             calendar
                 .is_open(paris_time((2010, 12, 24), (14, 4, 59)))
@@ -3869,17 +3888,19 @@ mod euronext_paris {
         let coverage = calendar.holiday_coverage().expect("paris ships a table");
         assert_eq!(coverage.first(), day(2010, 1, 1));
         assert_eq!(coverage.last(), day(2026, 12, 31));
-        // 2010-01-01 is the window's first row and sits below the
-        // 2010-12-24 ledger horizon: the holiday row answers while the
-        // session probes refuse as carried (the nzx shape).
+        // 2010-01-01 is the window's first row and sits inside the span the
+        // 2026-10-05 no-changes verification sourced from the floor: the
+        // holiday row and the session probes agree that the day is closed.
         assert_eq!(
             calendar.holiday_on(day(2010, 1, 1)).map(Holiday::kind),
             Some(HolidayKind::Closed)
         );
-        assert!(matches!(
-            calendar.is_open(paris_time((2010, 1, 1), (12, 0, 0))),
-            Err(CalendarQueryError::OutsideCoveredRange { .. })
-        ));
+        assert!(
+            !calendar
+                .is_open(paris_time((2010, 1, 1), (12, 0, 0)))
+                .expect("the floor-sourced era answers"),
+            "the printed New Year closure deletes the day"
+        );
         // An ordinary day of the recovered 2012 window answers as audited
         // normal.
         assert_eq!(calendar.holiday_on(day(2012, 7, 2)), None);

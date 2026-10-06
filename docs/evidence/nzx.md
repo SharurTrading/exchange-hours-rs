@@ -30,15 +30,17 @@ same grid appears in the operator's 2010-12-29, 2011-12-19, 2012-05-04,
 2013-01-16, 2013-05-16, 2014-01-27, 2014-10-20, 2015-01-13, 2015-04-27,
 2017-06-23, 2018-08-24, 2019-03-25 and 2020-06-08 page states (all held in the
 store, each cited in the holiday `### Documents` table), and the 2020-04-06
-revision row keys the one change the era ends with. The ledger horizon is
-therefore 2010-01-05, the capture day: below it the carried region contains no
-trade date (2010-01-01 and 2010-01-04 are the sheet's own New Year closures and
-2010-01-02/03 fall at the weekend).
+revision row keys the one change the era ends with. Since the 2026-10-05
+no-changes verification (see below) the ledger horizon is the 2010-01-01
+floor: the region between the floor and the capture day contains no trade date
+(2010-01-01 and 2010-01-04 are the sheet's own New Year closures and
+2010-01-02/03 fall at the weekend), so the retirement changes no answer — it
+removes the dates' `NormalWeekCarried` refusal shape.
 
 **Corroboration across the floor.** The same page as served 2009-12-04
 (`NZX-KD-2009-12-04`) prints the identical grid, so the state attested on
-2010-01-05 did not begin there; the capture dates no 2010 day, so the horizon
-stays at the capture rather than the floor. A 2009-era capture attests the
+2010-01-05 did not begin there; the capture dates no 2010 day, which is what
+the 2026-10-05 sweep weighed it against. A 2009-era capture attests the
 state on its own day only.
 
 **What the era's sheets do not print.** The ±30-second uncross envelope (the
@@ -659,15 +661,18 @@ any row).
   dated operator statement for the 15:45-to-12:45 grid changeover, or a capture
   whose grid and holiday table agree on the December 2013 days, keys the span's
   true grid.
-- **horizon sourced from 2010-01-05** — the pre-2020 baseline is the operator's
-  own key-dates trading-hours page print of 2010-01-05, corroborated at every
-  later capture and ended by the dated 2020-04-06 revision (see the Normal week
-  section). The carried region below it — 2010-01-01..2010-01-04 — contains no
-  trade date. The 2020-06-08 capture still printing the
-  9:00am Pre-open beside the announcement's 8:30am move remains the era's
-  open question; the holiday table holds the 9:00am Pre-open on the two 2020
-  abbreviated days (the narrowest sourced value) and the conflict is recorded
-  in the coverage section.
+- **horizon at the floor since the 2026-10-05 no-changes verification** — the
+  pre-2020 baseline is the operator's own key-dates trading-hours page print of
+  2010-01-05, corroborated at every later capture and ended by the dated
+  2020-04-06 revision (see the Normal week section); the sweep recorded below
+  found the region between the floor and the capture day contains no trade date
+  and the pre-floor 2009-12-04 print states the identical grid, so the ledger
+  horizon moved from 2010-01-05 to the 2010-01-01 floor and the region's
+  `NormalWeekCarried` refusal shape retired. The 2020-06-08 capture still
+  printing the 9:00am Pre-open beside the announcement's 8:30am move remains
+  the era's open question; the holiday table holds the 9:00am Pre-open on the
+  two 2020 abbreviated days (the narrowest sourced value) and the conflict is
+  recorded in the coverage section.
 - The closing uncross is randomised within 30 seconds either side of 17:00, so
   the tradeable window runs to 17:00:30; stopping at 17:00 would drop the half
   of the randomisation in which the official closing print most often occurs.
@@ -679,6 +684,20 @@ any row).
   17:00 boundary so the randomized uncross stays inside the tradeable window.
 - Enquiry and Adjust do not accept automatically matched orders and are
   excluded from the envelope (AGENTS.md, *Cash-equity venue envelope*).
+
+**The 2026-10-05 no-changes verification moved the horizon to the floor.** The
+maintainer's directive of that date asked whether the carried region
+2010-01-01..2010-01-04 was a real gap; the sweep found the retirement vacuous
+and the negative already held, so no retrieval was needed: the region contains
+no trade date — 2010-01-01 and 2010-01-04 are the 2010-01-05 sheet's own keyed
+New Year closures and 2010-01-02/03 fall at the weekend — and the pre-floor
+2009-12-04 page print (`NZX-KD-2009-12-04`, already held) states the identical
+grid, so no operator artifact inside the region could have declared a change to
+a session that had no day in it. The memo series was checked for prior-year
+references: the 2015/2016, 2016/2017 and 2017/2018 memorandum texts held under
+`holidays/raw/equities/nzx/evidence-thread/` name no 2010 hours arrangement and
+reference no prior-year grid, so no channel contradicts the floor-sourced
+state.
 
 ## Module narrative (moved from src/calendar/schedules/equities/apac/nzx.rs on 2026-10-02 UTC)
 

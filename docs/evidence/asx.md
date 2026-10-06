@@ -38,8 +38,10 @@ the module encodes: `regular` 10:00-16:00, the opening envelope
 Pre-CSPA 16:00-16:10 `order_entry`, and the CSPA-to-16:12 tail `extended`. The
 SR15 marked amendments (already cited for the 2025-06-23 revision row) show
 that same staggered text struck through effective 2025-06-23, so the operator's
-own artifacts bracket the era at both ends and the ledger horizon is 2013-09-16,
-the first capture day; the carried region below it runs 2010-01-01..2013-09-15.
+own artifacts bracket the era at both ends and — since the 2026-10-05
+no-changes verification, whose sweep found the identical grid on the
+operator's archived market-phases pages back to 2010-01-06 (see the Gaps
+section) — the ledger horizon is the 2010-01-01 floor.
 
 **What the page settles and what it leaves.** The nominal boundaries are the
 page's own print; the ±15-second group randomisation and the CSPA's "+60 secs"
@@ -457,12 +459,41 @@ footnote text and corroborates it likewise. The store's
 
 ## Gaps and residual risks
 
-- **horizon sourced from 2013-09-16** — the pre-SR15 baseline is the operator's own phase-timetable page (2013-09-16, restated through 2016-01-20 and 2020-10-22) and the SR15 marked amendments carry the same grid to its dated 2025-06-23 removal (see the Normal week section). The carried region below the earliest capture runs 2010-01-01..2013-09-15. The #231 horizon tracking for this scope is discharged; `nasdaq`'s stands there.
+- **horizon at the floor since the 2026-10-05 no-changes verification.** The pre-SR15 baseline is the operator's own phase-timetable page (2013-09-16, restated through 2016-01-20 and 2020-10-22) and the SR15 marked amendments carry the same grid to its dated 2025-06-23 removal (see the Normal week section); the sweep recorded below found the identical grid printed inside the formerly carried region, so the ledger horizon moved from 2013-09-16 to the 2010-01-01 floor and the `NormalWeekCarried` refusals below the old horizon retired. The #231 horizon tracking for this scope is discharged; `nasdaq`'s stands there.
 - **The opening edge, stated against what the module encodes.** ASX's cash-market timetable prints *nominal* boundaries: Opening Single Price Auction 09:59:00–09:59:45, then Open (Normal Trading) 09:59:45–16:00:00. `asx.rs` does not encode 09:59:45 as the start of `regular`. `ASX_EXTENDED_CURRENT` carries one rule over the whole opening minute, 09:59:00–10:00:00, and `ASX_REGULAR` runs 10:00:00–16:00:00, so the crate reports the market open from 09:59:00 — the auction matches, so a price can print there — and defers *continuous* trading to 10:00:00, the latest instant at which it can have begun. That is the conservative envelope AGENTS.md's *Exchange-level boundaries, not per-security auction outcomes* calls for: the uncross is randomised per security around the nominal 09:59:45 handoff, so naming any second inside 09:59:45–10:00:00 as the continuous-trading start would imply ticker-level uncross timing the exchange does not publish. Nothing is under-reported as closed by this choice; only the `regular`/`extended` split inside that minute is conservative.
 - Both single-price auctions match, and in Post Close "ASX matches orders at the CSPA price", so the opening auction, the CSPA and Post Close are all tradeable `extended`: 09:59:00–10:00:00 on the open side and 16:10:00–16:21:30 on the close side, the latter merging CSPA 16:10–16:11 with Post Close 16:11–16:21:30 into one rule.
 - Pre-open is `extended`, not `order_entry`: ASX Trade does not match in it, but overnight and overseas trades report until 09:45 and other allowable trades may be reported under the Operating Rules, so a price can print.
 - The only order-entry-only window is Pre-CSPA 16:00–16:10, in which continuous matching ceases and only entry and amendment are accepted.
 - **Pre-SR15 era, same convention.** `ASX_EXTENDED_PRE_2025_06_23` spans 09:59:45–10:09:15 — Group 1's nominal 10:00 open less its ±15-second randomization, through Group 5's nominal 10:09 plus the same — while `ASX_REGULAR` is shared with the current era and still starts at 10:00:00. The envelope therefore covers every group's possible open and the `regular` edge names Group 1's nominal transition, not any group's realised one.
+
+**The 2026-10-05 no-changes verification moved the horizon to the floor.** The
+maintainer's directive of that date asked whether the carried span
+2010-01-01..2013-09-15 was a real gap; the sweep of the operator's own change
+channels found no declared hours change inside it and found the staggered grid
+itself printed there, so the 2013-09-16 phase-timetable page is the verified
+state from the floor and the `NormalWeekCarried` refusals below the old horizon
+retired. What was swept, the artifacts under `normal-weeks/asx-carry-sweep/` in
+the research store (retrieved 2026-10-05 UTC, digests in the directory's
+`SHA256SUMS.txt`): the operator's archived market-phases pages print the
+identical grid — Pre-open 7:00–10:00 am, the five symbol groups at
+10:00:00/10:02:15/10:04:30/10:06:45/10:09:00 am each ±15 secs with the
+operator's own "9:59:45 am and 10:00:15 am" gloss, Normal Trading 10:00
+am–4:00 pm, Pre-CSPA 4:00–4:10 and the CSPA to 4:12 (*Random + 60 secs) — at
+`resources/education/basics/trading_hours_asx.htm` captures 2009-02-01
+(pre-floor bracket) and 2010-01-06 (`thasx-res-2009-02-01`,
+`thasx-res-2010-01-06`; two further 2009 captures in the directory are
+page-not-found shells and are kept as negatives), and at
+`products/ASX-Trading hours-Market-phases.htm` captures 2011-03-25 and ten
+sampled captures 2011-04-10..2013-09-02, each restating "The time is randomly
+generated by ASX Trade" after the platform cutover. The operator's ASX Trade
+launch media release of 3 December 2010 (live operator URL,
+`mr-2010-12-03-asx-trade-launch.pdf`) is a technology cutover statement, silent
+on session hours. CDX sweeps of `asx.com.au`/`asxonline.com` 2009-2013 found no
+other trading-hours artifact; the `asxonline.com` notice channel's 2010-2013
+archive does not survive, a channel limit this record discloses — the annual
+trading-calendar sheets (each year's own T1 statement, keying the holiday rows
+above) and the archived market-phases pages are the era's surviving operator
+print, and no calendar sheet states a session-time change.
 
 ## Module narrative (moved from src/calendar/schedules/equities/apac/asx.rs on 2026-10-02 UTC)
 

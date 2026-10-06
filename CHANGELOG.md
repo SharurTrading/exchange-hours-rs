@@ -44,6 +44,15 @@
   the pre-floor 2009-12-04 print states the identical grid, so the horizon
   sits at the floor and the region's carried refusal shape retires; its two
   weekday closures remain the 2010-01-05 sheet's own rows.
+  byte-identical to its 2009-09-12 and 2009-11-12 captures, so the formerly
+  carried region 2010-01-01..2010-01-11 is sourced and nothing below the
+  floor is carried.
+- evidence, `comex`, `nymex`, `globex_energy` and `globex_fx`: the no-changes
+  sweep records now state the 2010-2011 notice leg's own counts — 114 held,
+  113 readable — instead of the 2008-2011 series-wide 242-readable figure,
+  and `globex_fx` names each zero-byte replay's own store INDEX (#304). No
+  row, window, tier or instant moves: the horizon conclusions stand on every
+  2010-2011 month being covered by readable notices.
 
 ## 1.0.0 — 2026-10-05
 

@@ -51,8 +51,8 @@ use super::prelude::*;
 use chrono::{Datelike as _, TimeDelta, TimeZone as _, Utc};
 use chrono_tz::{America, Asia, Australia, Europe, Pacific};
 use exchange_hours::{
-    CalendarQueryError, CalendarResolution, DateCoverage, Exchange, ExchangeCalendar, Holiday,
-    HolidayKind, SessionKind, calendar_for_exchange,
+    CalendarQueryError, CalendarResolution, CoverageGapReason, DateCoverage, Exchange,
+    ExchangeCalendar, Holiday, HolidayKind, SessionKind, calendar_for_exchange,
 };
 
 fn day(year: i32, month: u32, date: u32) -> NaiveDate {
@@ -2698,14 +2698,25 @@ mod sgx_securities {
             calendar.is_open(sgt((2009, 12, 31), (10, 0, 0))),
             Err(CalendarQueryError::BeforeSupportFloor { .. })
         ));
-        // The 2020-2024 capture gap sits between two audited windows and the
-        // identity refuses it: no operator artifact prints those closures.
+        // The 2020-2024 capture gap sits between two audited windows, so the
+        // charter's bridged residual (#296) answers the session question from
+        // the sourced normal week while the holiday layer stays honestly
+        // absent: no row, no audited normal, and the metadata reports the
+        // span as `HolidayWindowsBridged` — never a fabricated closure.
         let gap = sgt((2022, 6, 8), (10, 0, 0));
-        assert!(matches!(
+        assert_eq!(
             calendar.is_open(gap),
-            Err(CalendarQueryError::OutsideCoveredRange { .. })
-        ));
+            Ok(true),
+            "the bridged span answers its normal-week session state"
+        );
         assert_eq!(calendar.holiday_on(day(2022, 6, 8)), None);
+        assert!(matches!(
+            calendar
+                .coverage()
+                .gaps()
+                .find(|gap| gap.range().contains(day(2022, 6, 8))),
+            Some(gap) if gap.reason() == CoverageGapReason::HolidayWindowsBridged
+        ));
         // The one 2020 date the 2019 sheet prints answers as a row, and the
         // session queries answer with it: the market is closed all day.
         assert_eq!(

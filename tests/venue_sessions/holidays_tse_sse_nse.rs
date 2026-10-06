@@ -20,19 +20,31 @@
 //! Coverage horizons are the operators' own: JPX publishes the current and
 //! next year (2025-2027 audited), SSE its annual December notice (2025-2026),
 //! and NSE its annual list (2025-2026). The fences hold each table to its
-//! window: a date outside it refuses rather than answers from the normal week.
+//! window: a date outside it with only one window flank refuses, while a
+//! span **between** two windows is the charter's bridged residual (#296) —
+//! the session layer answers from the sourced normal week, the holiday layer
+//! stays absent, and the metadata reports the residual.
 
 use chrono::{Days, TimeDelta};
 use chrono_tz::Asia;
 use exchange_hours::{
-    CalendarQueryError, DateCoverage, EvidenceTier, Exchange, ExchangeCalendar, Holiday,
-    HolidayKind, SessionKind, calendar_for_exchange,
+    CalendarCoverage, CalendarQueryError, CoverageGapReason, DateCoverage, EvidenceTier, Exchange,
+    ExchangeCalendar, Holiday, HolidayKind, SessionKind, calendar_for_exchange,
 };
 
 use super::prelude::zoned;
 
 fn day(year: i32, month: u32, date: u32) -> chrono::NaiveDate {
     chrono::NaiveDate::from_ymd_opt(year, month, date).expect("fixture must be a valid date")
+}
+
+/// The reason an identity's metadata reports for `date`, taken from the
+/// reported gap spans.
+fn gap_reason_on(coverage: CalendarCoverage, date: chrono::NaiveDate) -> Option<CoverageGapReason> {
+    coverage
+        .gaps()
+        .find(|gap| gap.range().contains(date))
+        .map(exchange_hours::CoverageGap::reason)
 }
 
 /// Asserts the row `date` ships is a `Closed` row citing `document` at T1,
@@ -1315,32 +1327,80 @@ fn nse_printed_closures_2023_2024_ship_a_row_per_year() {
     }
 }
 
-/// The unrecovered 2012 and 2018 years refuse outright: no row, no audited
-/// normal, an explicit outside-covered-range verdict and refusing date-aware
-/// queries, never a silent answer from the normal week.
+/// The unrecovered 2012 and 2018 years are **bridged residuals** (issue #296;
+/// the charter's 2026-10-06 convention): both spans sit between two audited
+/// windows, so the session layer answers from the sourced normal week while
+/// the holiday layer stays honestly absent — no row, no audited normal, a
+/// metadata verdict that withholds the complete claim, and the span reported
+/// as `HolidayWindowsBridged` rather than refused. No closure is asserted
+/// that no operator statement witnesses.
 #[test]
-fn the_unrecovered_2012_and_2018_years_refuse() {
+fn the_unrecovered_2012_and_2018_years_are_bridged_residuals() {
     let nse = calendar_for_exchange(Exchange::NseIndia);
     for date in [(2012, 6, 15), (2012, 12, 24), (2018, 3, 12), (2018, 11, 20)] {
         let trade_date = day(date.0, date.1, date.2);
         assert_eq!(
             nse.holiday_on(trade_date),
             None,
-            "{trade_date} is inside no audited window"
+            "{trade_date} is inside no audited window, so the table ships no row"
         );
         assert_eq!(
             nse.coverage().coverage_on(trade_date),
             DateCoverage::OutsideCoveredRange,
-            "{trade_date} metadata verdict"
+            "{trade_date} withholds the complete-calendar claim: the holiday \
+             layer is the bridged residual, not an audited normal"
         );
-        assert!(
-            matches!(
-                nse.is_closed_trade_date(trade_date, SessionKind::Both),
-                Err(CalendarQueryError::OutsideCoveredRange { .. })
-            ),
-            "{trade_date} must refuse, never answer from the carried week"
+        assert_eq!(
+            gap_reason_on(nse.coverage(), trade_date),
+            Some(CoverageGapReason::HolidayWindowsBridged),
+            "{trade_date} reports the bridged residual, not a one-flank gap"
+        );
+        // The session layer answers from the sourced normal week — the
+        // disclosure lives in the metadata above, never in a fabricated
+        // closure or a fabricated audited normal.
+        assert_eq!(
+            nse.is_closed_trade_date(trade_date, SessionKind::Both),
+            Ok(false),
+            "{trade_date} answers its normal-week session state beside the \
+             disclosed residual"
         );
     }
+    // The residual spans are exactly the two unrecovered years, and the
+    // one-flank spans beside them are not bridged.
+    assert_eq!(
+        bridged_spans(nse.coverage()),
+        vec![
+            (day(2012, 1, 1), day(2012, 12, 31)),
+            (day(2018, 1, 1), day(2018, 12, 31)),
+        ],
+        "the bridged residual is reported over each unrecovered year"
+    );
+}
+
+/// Returns the **union** of the spans an identity's metadata reports as
+/// `HolidayWindowsBridged`, merged where records abut.
+///
+/// The walk reports the residual over maximal verdict runs, and the static
+/// boundary candidates may split one residual span into adjacent runs of the
+/// same verdict; the union is the span the charter's convention names. The
+/// per-date partition fence in `coverage_metadata.rs` holds every record to
+/// the per-date accessor, so merging equal-verdict neighbours here cannot
+/// hide a verdict change.
+fn bridged_spans(coverage: CalendarCoverage) -> Vec<(chrono::NaiveDate, chrono::NaiveDate)> {
+    let mut records: Vec<(chrono::NaiveDate, chrono::NaiveDate)> = coverage
+        .gaps()
+        .filter(|gap| gap.reason() == CoverageGapReason::HolidayWindowsBridged)
+        .map(|gap| (gap.range().first(), gap.range().last()))
+        .collect();
+    records.sort();
+    let mut merged: Vec<(chrono::NaiveDate, chrono::NaiveDate)> = Vec::new();
+    for (first, last) in records {
+        match merged.last_mut() {
+            Some((_, open_last)) if first.pred_opt() == Some(*open_last) => *open_last = last,
+            _ => merged.push((first, last)),
+        }
+    }
+    merged
 }
 
 /// Asserts every NSE closure row, per year, against the operator's printed
@@ -1818,13 +1878,22 @@ fn coverage_runs_exactly_over_each_operators_published_window() {
         "2027 is unpublished by NSE and the identity must refuse it outright"
     );
     for gap_year in [(2012, 6, 15), (2018, 6, 15)] {
-        assert!(
-            matches!(
-                nse.is_open(zoned(Asia::Kolkata, gap_year, (10, 0, 0))),
-                Err(CalendarQueryError::OutsideCoveredRange { .. })
-            ),
-            "{} is unrecovered and the identity must refuse it outright",
+        // Each unrecovered year sits between two audited windows, so the
+        // bridged residual (#296) answers the session question from the
+        // sourced normal week while the metadata reports the span as
+        // `HolidayWindowsBridged` — never an audited normal, never a
+        // fabricated closure.
+        assert_eq!(
+            nse.is_open(zoned(Asia::Kolkata, gap_year, (10, 0, 0))),
+            Ok(true),
+            "{} answers its normal-week session state beside the disclosed \
+             bridged residual",
             day(gap_year.0, gap_year.1, gap_year.2)
+        );
+        assert_eq!(
+            gap_reason_on(nse.coverage(), day(gap_year.0, gap_year.1, gap_year.2)),
+            Some(CoverageGapReason::HolidayWindowsBridged),
+            "the unrecovered year reports the bridged residual"
         );
     }
 

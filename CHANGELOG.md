@@ -4,6 +4,33 @@
 
 ## [Unreleased]
 
+### Added
+
+- The coverage engine's **bridged residual** (issue #296, Tier 1; the charter
+  amendment of 2026-10-06 UTC): a span **between two audited holiday windows**
+  whose normal week the identity sources no longer refuses whole dates — the
+  session questions answer from the sourced normal week the timeline serves,
+  the holiday layer stays honestly absent, and the metadata reports the span
+  as `CoverageGapReason::HolidayWindowsBridged` rather than complete. The
+  spans that now answer: `sgx_securities`'s 2020-01-02..2024-12-31 capture gap
+  (1,826 days) and `nse_india`'s 2012 and 2018 unrecovered years (731 days) —
+  2,557 days lifted from whole-date refusal — and eight of their neighbouring
+  window dates that previously refused as resolution edges
+  (`sgx_securities` 2019-12-31, 2020-01-01 and 2025-01-01; `nse_india`
+  2011-12-31, 2013-01-01, 2017-12-30, 2017-12-31 and 2019-01-01) are fully
+  covered again. One-flank spans (below the first window, above the last)
+  refuse unchanged, and the residuals are disclosed in the owners' evidence
+  files with their #213 and NSE-list closers.
+- **Refusal context (issue #296, Tier 3)**: every
+  `CalendarQueryError` still refuses exactly as before, and now carries the
+  sourced normal-week baseline its date sits inside —
+  `CalendarQueryError::normal_week_baseline()` returns the refused date's
+  weekday and the normal-week windows the identity's timeline serves there
+  (`NormalWeekBaseline`, with `Display` rendering "normal week Thursday: open
+  09:15-15:30, …"), and the `UnresolvedGap` display appends "the holiday
+  arrangement is unsourced". The baseline is absent below the support floor
+  and where the ledger records the week as carried.
+
 ### Fixed
 
 - `nse_india`: the five Muhurat Trading days whose instants the operator has

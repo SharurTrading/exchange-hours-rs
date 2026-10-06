@@ -8,6 +8,8 @@ use chrono::NaiveDate;
 use super::SUPPORT_FLOOR;
 use crate::calendar::exchange_calendar::CalendarSource;
 
+use super::baseline::NormalWeekBaseline;
+
 /// Why an identity-backed date-aware query cannot answer.
 ///
 /// LAW-COVERAGE requires an unsupported date to be an explicit error rather
@@ -121,6 +123,26 @@ impl CalendarQueryError {
             | Self::SearchExhausted { date, .. } => date,
         }
     }
+
+    /// Returns the sourced normal-week baseline the refused date sits inside,
+    /// or `None` when the crate states none (issue #296, Tier 3).
+    ///
+    /// This is the context a consumer needs to make its own call beside a
+    /// refusal: the weekday the refused date falls on and the normal-week
+    /// windows the identity's sourced timeline serves there — "Wednesday;
+    /// normal week open 09:30-16:30" — rendered by
+    /// [`NormalWeekBaseline`]'s `Display`. The enrichment is additive: the
+    /// refusal is unchanged, and the baseline says nothing about the holiday
+    /// arrangement the refusal withholds.
+    ///
+    /// The baseline is absent where claiming one would state a sourced fact
+    /// the ledger does not record: the date precedes the support floor, or the
+    /// identity's normal week is carried backwards below its recorded horizon
+    /// at the date.
+    #[must_use]
+    pub fn normal_week_baseline(self) -> Option<NormalWeekBaseline> {
+        super::baseline::for_error(self)
+    }
 }
 
 /// Renders an identity by its canonical `snake_case` wire name.
@@ -149,7 +171,15 @@ impl core::fmt::Display for CalendarQueryError {
                 write!(
                     f,
                     "{name}: {date} is an unresolved gap in the covered range"
-                )
+                )?;
+                // Tier 3 (issue #296): the refusal carries the normal-week
+                // baseline it sits inside, so a consumer can make its own call.
+                // The holiday arrangement stays unsourced — the baseline is
+                // context, never an answer.
+                if let Some(baseline) = self.normal_week_baseline() {
+                    write!(f, " ({baseline}; the holiday arrangement is unsourced)")?;
+                }
+                Ok(())
             }
             Self::SearchExhausted { date, bound, .. } => write!(
                 f,

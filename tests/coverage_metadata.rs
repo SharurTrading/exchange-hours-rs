@@ -16,7 +16,7 @@
 )]
 
 use chrono::{DateTime, Datelike as _, NaiveDate, TimeZone as _, Utc};
-use chrono_tz::{Asia, US};
+use chrono_tz::{Asia, Australia, Europe, Pacific, US};
 use exchange_hours::{
     CalendarCoverage, CalendarQueryError, CalendarSource, CoverageGap, CoverageGapReason,
     DateCoverage, DateRange, Exchange, ExchangeCalendar, HolidayContract, MarketHoursKey,
@@ -35,6 +35,33 @@ const CHECK_HORIZON: NaiveDate = match NaiveDate::from_ymd_opt(2028, 12, 31) {
 /// A venue-local fixture date.
 fn date(year: i32, month: u32, day: u32) -> NaiveDate {
     NaiveDate::from_ymd_opt(year, month, day).expect("fixture must be a valid date")
+}
+
+/// A Sydney fixture instant, as UTC.
+fn sydney(year: i32, month: u32, day: u32, hour: u32, min: u32, sec: u32) -> DateTime<Utc> {
+    Australia::Sydney
+        .with_ymd_and_hms(year, month, day, hour, min, sec)
+        .single()
+        .expect("fixture must be an unambiguous Sydney instant")
+        .with_timezone(&Utc)
+}
+
+/// An Auckland fixture instant, as UTC.
+fn auckland(year: i32, month: u32, day: u32, hour: u32, min: u32, sec: u32) -> DateTime<Utc> {
+    Pacific::Auckland
+        .with_ymd_and_hms(year, month, day, hour, min, sec)
+        .single()
+        .expect("fixture must be an unambiguous Auckland instant")
+        .with_timezone(&Utc)
+}
+
+/// A Paris fixture instant, as UTC.
+fn paris_time(year: i32, month: u32, day: u32, hour: u32, min: u32, sec: u32) -> DateTime<Utc> {
+    Europe::Paris
+        .with_ymd_and_hms(year, month, day, hour, min, sec)
+        .single()
+        .expect("fixture must be an unambiguous Paris instant")
+        .with_timezone(&Utc)
 }
 
 /// The open-ended span the crate uses for "no known end".
@@ -543,18 +570,15 @@ fn sourced_normal_week_reports_the_ledger_horizon() {
         Some(CoverageGapReason::NormalWeekCarried)
     );
 
-    // The SR15 row remains the dated revision; the horizon is the earliest
-    // capture of the pre-SR15 phase timetable (2013-09-16), so 2025 dates are
-    // all sourced and 2013-09-15 is the last carried day.
+    // The 2026-10-05 no-changes verification (see the equities-side retirement
+    // test below) sources the pre-SR15 staggered grid from the floor, so 2025
+    // dates are all sourced and no date refuses as carried.
     let asx = exchange_coverage(Exchange::Asx);
-    assert_eq!(asx.normal_week_sourced_from(), Some(date(2013, 9, 16)));
-    assert_eq!(
-        gap_reason_on(asx, date(2013, 9, 15)),
-        Some(CoverageGapReason::NormalWeekCarried)
-    );
+    assert_eq!(asx.normal_week_sourced_from(), Some(SUPPORT_FLOOR));
     assert_ne!(
-        gap_reason_on(asx, date(2013, 9, 16)),
-        Some(CoverageGapReason::NormalWeekCarried)
+        gap_reason_on(asx, date(2013, 9, 15)),
+        Some(CoverageGapReason::NormalWeekCarried),
+        "the formerly carried day answers since the horizon sits at the floor"
     );
     assert_eq!(
         gap_reason_on(asx, date(2025, 6, 22)),
@@ -635,6 +659,133 @@ fn the_no_changes_sweep_retired_the_cme_side_carried_eras() {
             .is_open(day_session)
             .expect("the sweep verified the era"),
         "the grain grid's floor-era day session answers open"
+    );
+}
+
+#[test]
+fn the_no_changes_sweep_retired_the_equities_side_carried_eras() {
+    // The equities half of the 2026-10-05 no-changes verification: the same
+    // directive's sweep of each operator's own change channels over its carried
+    // span — ASX's archived market-phases pages, the SGX-ST rulebook and press
+    // channels, Euronext's in-window 2010 notices, the IMKB İşlem Saatleri
+    // captures and the operator's 2010 annual report, the Tadawul Trading Times
+    // page family, and NZX's page prints — found no declared hours change
+    // inside any of the six spans, so each sourced baseline is the verified
+    // state from the floor and the `NormalWeekCarried` refusals retire. This
+    // fence pins the retirement: every horizon sits at the floor, formerly
+    // carried dates answer through the public surface where the holiday
+    // windows reach, and the residual refusals name their holiday-coverage
+    // reason instead of a carried week.
+    for exchange in [
+        Exchange::Asx,
+        Exchange::Nzx,
+        Exchange::SgxSecurities,
+        Exchange::EuronextParis,
+        Exchange::BorsaIstanbul,
+        Exchange::Tadawul,
+    ] {
+        let coverage = exchange_coverage(exchange);
+        assert_eq!(
+            coverage.normal_week_sourced_from(),
+            Some(SUPPORT_FLOOR),
+            "{exchange:?}: the no-changes verification sources the week from the floor"
+        );
+        assert_ne!(
+            gap_reason_on(coverage, SUPPORT_FLOOR),
+            Some(CoverageGapReason::NormalWeekCarried),
+            "{exchange:?}: the floor must not refuse as carried"
+        );
+    }
+
+    // The formerly carried instants answer with the baseline state the sweep
+    // verified, queried through the public surface.
+    let asx = calendar_for_exchange(Exchange::Asx);
+    // An ordinary Tuesday of the former carried region (2010-06-15): the
+    // staggered grid's 10:00-16:00 regular session answers open.
+    assert!(
+        asx.is_open(sydney(2010, 6, 15, 12, 0, 0))
+            .expect("the sweep verified the era"),
+        "asx answers an ordinary 2010 date from the floor-sourced grid"
+    );
+    // The sheet's own rows answer inside the former region: the 2010-12-24
+    // early close trades to 14:10 end-exclusive and the 2011-04-26 Easter
+    // Tuesday closure deletes the day.
+    assert!(
+        asx.is_open(sydney(2010, 12, 24, 11, 0, 0))
+            .expect("the early-close eve answers"),
+        "asx trades the 2010-12-24 morning at the sheet's own 14:10 early close"
+    );
+    assert!(
+        !asx.is_open(sydney(2010, 12, 24, 14, 10, 0))
+            .expect("the early-close eve answers"),
+        "asx closes at the 2010-12-24 14:10 sheet instant (end-exclusive)"
+    );
+    assert!(
+        !asx.is_open(sydney(2011, 4, 26, 11, 0, 0))
+            .expect("the closure answers"),
+        "asx answers the sheet's 2011-04-26 Easter Tuesday closure"
+    );
+
+    // nzx's carried region contains no trade date, but its two weekday
+    // closures are the operator's own sheet rows and they answer now.
+    let nzx = calendar_for_exchange(Exchange::Nzx);
+    assert!(
+        nzx.is_open(auckland(2010, 1, 5, 12, 0, 0))
+            .expect("sourced"),
+        "the 2010-01-05 capture day answers as an ordinary Tuesday"
+    );
+    assert!(
+        !nzx.is_open(auckland(2010, 1, 4, 12, 0, 0))
+            .expect("the sheet's closure answers"),
+        "nzx answers the sheet's own 2010-01-04 New Year closure"
+    );
+
+    // Paris: the formerly carried 2010 days answer from the legacy grid — an
+    // ordinary Tuesday, the ordinary Wednesday the 2010-12-24 eve's
+    // behind-derivation used to refuse on, and the printed New Year closure.
+    let paris = calendar_for_exchange(Exchange::EuronextParis);
+    assert!(
+        paris
+            .is_open(paris_time(2010, 6, 15, 12, 0, 0))
+            .expect("the sweep verified the era"),
+        "paris answers an ordinary 2010 date from the floor-sourced legacy grid"
+    );
+    assert!(
+        paris
+            .is_open(paris_time(2010, 12, 23, 12, 0, 0))
+            .expect("the formerly carried day answers"),
+        "paris answers 2010-12-23, the day the old horizon carried"
+    );
+    assert!(
+        !paris
+            .is_open(paris_time(2010, 1, 1, 12, 0, 0))
+            .expect("the printed closure answers"),
+        "paris answers the 2010-01-01 printed closure"
+    );
+
+    // The three families whose holiday windows open above the floor keep
+    // refusing their pre-window dates — but the refusal now names the recorded
+    // holiday-coverage gap (sgx_securities #213, the BIST window's own
+    // 2012-03-02 opening, tadawul's unaudited span), not a carried week.
+    let sgx = exchange_coverage(Exchange::SgxSecurities);
+    assert_eq!(
+        gap_reason_on(sgx, date(2010, 6, 15)),
+        Some(CoverageGapReason::NoHolidayCoverage),
+        "sgx_securities' pre-2014 refusal is the holiday capture gap (#213)"
+    );
+    let bist = exchange_coverage(Exchange::BorsaIstanbul);
+    assert_eq!(
+        gap_reason_on(bist, date(2012, 2, 20)),
+        Some(CoverageGapReason::NoHolidayCoverage),
+        "the BIST refusal below the holiday window's 2012-03-02 opening is the \
+         window, not a carried week"
+    );
+    let tadawul = exchange_coverage(Exchange::Tadawul);
+    assert_eq!(
+        gap_reason_on(tadawul, date(2020, 12, 15)),
+        Some(CoverageGapReason::NoHolidayCoverage),
+        "the tadawul unaudited-span refusal is the holiday window, not a carried \
+         week"
     );
 }
 

@@ -35,16 +35,21 @@ holidays. Trading in Equities and ETFs: 11:00 am - 03:30 pm. Trading in Sukuk
 module encodes — Saturday-Wednesday, 11:00-15:30
 continuous — and the Arabic page's capture chain brackets the era at both
 ends (the next surviving captures on the Arabic page — 2013-07-23, 2013-12-29,
-2014-05-16 — all sit after the operator's own dated 2013-06-29 change). The 2026-10-06 domain-lineage sweep is recorded in the note below: the 2010-01-12 keying capture's Wayback digest is
-shared by captures of **2009-09-12 and 2009-11-12**, and both replays are
-byte-identical at sha256 to the stored `TADAWUL-TT-2010-01-12` artifact
-(`8d5a8681…`, the digest this file already records) — the operator's own
-standing statement provably dates from 2009-09-12 and runs unchanged through
-2010-05-13, so the state in force at the 2010-01-01 support floor is the
-state this page states (the same byte-identical-capture-chain convention the
-hkex closure used across 2012-2016). The ledger horizon is therefore the
-**2010-01-01 support floor itself**: no day of the served era is carried
-rather than sourced.
+2014-05-16 — all sit after the operator's own dated 2013-06-29 change). The
+2026-10-06 domain-lineage sweep is recorded in the note below: the 2010-01-12
+keying capture's Wayback digest is shared by captures of **2009-09-12 and
+2009-11-12**, and both replays are byte-identical at sha256 to the stored
+`TADAWUL-TT-2010-01-12` artifact (`8d5a8681…`, the digest this file already
+records) — the operator's own standing statement provably dates from
+2009-09-12 and runs unchanged through 2010-05-13, so the state in force at
+the 2010-01-01 support floor is the state this page states (the same
+byte-identical-capture-chain convention the hkex closure used across
+2012-2016). The 2026-10-05 no-changes verification corroborates the floor
+horizon independently: its sweep found the identical grid on the pre-floor
+2008-11-19 English print and no declared change inside the formerly carried
+span (the Gaps section carries both sweep records). The ledger horizon is
+therefore the **2010-01-01 support floor itself**: no day of the served era
+is carried rather than sourced.
 
 **What the page settles.** The page is the operator's own standing statement of
 the session grid (T1 through the Wayback verbatim mirror), and it also states
@@ -214,10 +219,31 @@ The artifact was saved under `holidays/raw/equities/tadawul/2025-2027/` in the r
 - **Raised in review of the ledger-reshape PR (#87), 2026-09-12 — the 2013-06-29 and 2016-04-03 rows are dated by T3 artifacts.** Both revision rows carry `T3` on their own lines and rest on Saudi Press Agency releases (SPA news 7e453de27d and SPA news 1484000). Under LAW-PRIMARY-SOURCES a dated change needs an unconditional day stated by the operator, and T3 may date a change **only** when it mirrors an operator document verbatim; nothing in the record shows either release reproduces a Saudi Exchange or CMA document verbatim, so as recorded these two rows are not admissible and the bullet above understates that as a tier note rather than a defect. The reshape PR moved this text out of the owner module and changed no schedule rule, revision row, profile or routing; both rows are served exactly as before. Closing condition: retrieve the underlying Tadawul or CMA announcement behind each date, or establish that the SPA text is a verbatim reprint of it — either promotes both rows to T1. If neither holds, the rows must be withdrawn and the two grids served as an undated intersection instead. Served since this activation (monthly LAW-WATCH cadence); tracked under #116.
 - **executable, pre-2016 opening-auction window.** The pre-2016 grids carry no pre-opening phase. Today's trading-cycle table documents the 09:30–10:00 opening auction, but no dated primary source states the opening-auction order window for the 11:00-open eras; a 10:00–11:00 window would be an inference from the later auction's shape, so under LAW-PRIMARY-SOURCES it is omitted and reads closed. The 2016–2018 era likewise carries no order-entry schedule: the 09:30 queue is evidenced only by the current trading-cycle page, which states nothing about that era. Closing condition: a dated Saudi Exchange or CMA artifact stating the queue for its era. Neither old grid had any close-side phase, so their extended slices are empty too.
 - **Tier of the 2013 and 2016 rows.** Both rest on Saudi Press Agency releases. SPA is the Kingdom's state news agency and carries official announcements, but nothing in the record establishes that either release reproduces an exchange or CMA document verbatim, so they are recorded here at T3 rather than T1. Under LAW-PRIMARY-SOURCES a dated change needs an unconditional day stated by the operator, and T3 may date a change only when it mirrors an operator document verbatim. Closing condition: retrieve the underlying Tadawul or CMA announcement for each date, or confirm that the SPA text is a verbatim reprint of it. If neither holds, both rows are T4-keyed and must be rebuilt or withdrawn.
-- **Horizon at the support floor (2026-10-06 UTC domain-lineage sweep).** The pre-2013 baseline — Saturday–Wednesday, 11:00–15:30 — is the operator's own Trading Times page (Arabic capture 2010-01-12; English restatement, capture 2011-04-29), bracketed at the far end by the operator's own 2013-06-29 week change (see the Normal week section). The 2010-01-12 keying capture's Wayback digest is shared by captures of 2009-09-12 and 2009-11-12, and both `id_` replays are byte-identical at sha256 to the stored 2010-01-12 artifact (store: `holidays/raw/equities/tadawul/domain-lineage-2026-10-06/`), so the operator's standing statement provably dates from 2009-09-12 and runs unchanged across 2010-01-01: the horizon is the 2010-01-01 support floor and the formerly carried region 2010-01-01..2010-01-11 is sourced. The SPA publications-date closing condition is discharged for the baseline: the grid itself no longer rests on the SPA citation, though the 2013-06-29 and 2016-04-03 revision rows keep the T3 disclosure recorded above.
+- **Horizon at the support floor — verified by the 2026-10-05 no-changes sweep and the 2026-10-06 domain-lineage sweep.** The pre-2013 baseline — Saturday–Wednesday, 11:00–15:30 — is the operator's own Trading Times page (Arabic capture 2010-01-12; English restatement, capture 2011-04-29), bracketed at the far end by the operator's own 2013-06-29 week change (see the Normal week section). The domain-lineage sweep: the 2010-01-12 keying capture's Wayback digest is shared by captures of 2009-09-12 and 2009-11-12, and both `id_` replays are byte-identical at sha256 to the stored 2010-01-12 artifact (store: `holidays/raw/equities/tadawul/domain-lineage-2026-10-06/`), so the operator's standing statement provably dates from 2009-09-12 and runs unchanged across 2010-01-01. The no-changes sweep (recorded below) found the pre-floor 2008-11-19 English print stating the identical grid and no declared change inside the formerly carried span. Together: the ledger horizon moved from 2010-01-12 to the 2010-01-01 floor, the formerly carried region 2010-01-01..2010-01-11 is sourced, and the `NormalWeekCarried` refusals below the old horizon retired. The holiday window keeps its 2021-01-01 opening, below which dates refuse as `NoHolidayCoverage`. The SPA publications-date closing condition is discharged for the baseline: the grid itself no longer rests on the SPA citation, though the 2013-06-29 and 2016-04-03 revision rows keep the T3 disclosure recorded above.
 - **Interpretive step, order-entry classification.** The current 09:30–10:00 window is `order_entry`: it collects, amends and cancels opening-auction orders without any of them matching, and the first print is the 10:00 uncross. The closing auction and the trade-at-last tail both print — trade at last executes at the closing auction price — so both stay `extended`.
 - **Source set has no monitoring feed.** `MIDEAST-TADAWUL` records that no consolidated schedule-notice feed is indexed; review means reopening the trading cycle and times page, the `Saudi Exchange Holiday Calendar` page, and the individual reports and notices above.
 - **Service tier.** The consumer serves this venue live (it is one of the market-clock overview's venues), so the identity is **served** and the holiday-bearing calendar is reviewed monthly per LAW-WATCH. The holiday rows above are T1 throughout; the 2013-06-29 and 2016-04-03 normal-week rows below the current grid keep the T3 disclosure recorded above.
+
+**The 2026-10-05 no-changes sweep, in full.** The
+maintainer's directive of that date asked whether the carried span
+2010-01-01..2010-01-11 was a real gap; the sweep of the operator's change
+channels found no declared hours change inside it, so the Saturday–Wednesday
+11:00–15:30 grid is the verified state from the floor and the
+`NormalWeekCarried` refusals below the old horizon retired. What was swept,
+the artifact under `normal-weeks/tadawul-carry-sweep/` in the research store
+(retrieved 2026-10-05 UTC, digest in the directory's `SHA256SUMS.txt`): the
+English Trading Times page as served **2008-11-19** (`tt-en-2008-11-19.html`,
+an `id_` Wayback replay of the operator's page) — a pre-floor bracket — states
+"Trading Session : 11:00 am – 03:30 pm" and "Trading Days : Saturday through
+Wednesday except official holidays", the identical grid the 2010-01-12 Arabic
+print states; the page
+family's only surviving captures are 2007-2008 and 2011+ (the 2026-09-30 CDX
+sweep enumerated them), so the 2008 print and the 2010-01-12 print bracket the
+eleven carried days from both sides with no operator artifact between them
+declaring a change, and no Saudi press or operator statement in the era names a
+2010 trading-hours change. The dates refuse as `NoHolidayCoverage` until the
+holiday window's 2021-01-01 opening — the 2013-06-29..2020-12-31 unaudited
+holiday span above stands.
 
 ## Module narrative (moved from src/calendar/schedules/equities/africa_middle_east/tadawul.rs on 2026-10-02 UTC)
 

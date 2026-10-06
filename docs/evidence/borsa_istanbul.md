@@ -38,8 +38,10 @@ continuous 09:50-12:30 and 14:20-17:30. The 2011-07-27 capture
 (`IMKB-TH-2011-07-27`) prints the same session bounds with the auction methods
 spelled out (Piyasa Yapıcılı SM, Tek Fiyat Yöntemi), so the grid is attested at
 both ends of the carried era, and the 2012-03-02 revision row keys the era's
-one dated change (the closing auction). The ledger horizon is 2010-03-25, the
-first capture day; below it, 2010-01-01..2010-03-24 is carried.
+one dated change (the closing auction). Since the 2026-10-05 no-changes
+verification — whose sweep found the operator's own timeline dating the era's
+last hours changes to October and November 2009, both pre-floor (see the Gaps
+section) — the ledger horizon is the 2010-01-01 floor.
 
 **What the page states and what the module leaves whole.** The page's own
 sub-phases split each call: Emir Toplama (order collection) then Açılış
@@ -356,10 +358,34 @@ as each source is re-verified.
 
 ## Gaps and residual risks
 
-- **Horizon sourced from 2010-03-25.** The baseline profile below 2012-03-02 — morning opening call 09:30–09:50 and continuous 09:50–12:30, afternoon call 14:00–14:20 and continuous 14:20–17:30 — is the operator's own İşlem Saatleri page print of 2010-03-25, corroborated by the 2011-07-27 capture and ended by the operator's dated 2012-03-02 closing-auction change (see the Normal week section). The carried region below it runs 2010-01-01..2010-03-24.
+- **Horizon at the floor since the 2026-10-05 no-changes verification.** The baseline profile below 2012-03-02 — morning opening call 09:30–09:50 and continuous 09:50–12:30, afternoon call 14:00–14:20 and continuous 14:20–17:30 — is the operator's own İşlem Saatleri page print of 2010-03-25, corroborated by the 2011-07-27 capture and ended by the operator's dated 2012-03-02 closing-auction change (see the Normal week section); the sweep recorded below found the operator's own timeline dating the era's last session-hours changes to October and November 2009, both pre-floor, so the ledger horizon moved from 2010-03-25 to the 2010-01-01 floor and the `NormalWeekCarried` refusals below the old horizon retired. The holiday window keeps its operator-printed 2012-03-02 opening, below which dates refuse as `NoHolidayCoverage`.
 - **Interpretive step, order-entry classification.** From 2016-11-14 only the 09:40–09:55 Order Collection Process is `order_entry`; 09:55–10:00 carries the opening print and stays `extended`. The midday single-price call and the 18:00–18:10 closing envelope each bundle collection with a price-determination leg that prints, so both stay `extended` whole. Earlier eras carry no `order_entry` window because no source separates their collection legs.
 - **Source set has no monitoring feed.** `EU-BIST` records that no stable consolidated announcements-feed URL is indexed; review means reopening the Equity Market Procedure, the individual circulars listed above, and the `Resmi Tatil Günleri` holiday page.
 - **Service tier.** The consumer serves this venue live (it is one of the market-clock overview's venues), so the identity is **served** and the holiday-bearing calendar is reviewed monthly per LAW-WATCH; the 2027 closing condition above is the one tracked gap.
+
+**The 2026-10-05 no-changes verification moved the horizon to the floor.** The
+maintainer's directive of that date asked whether the carried span
+2010-01-01..2010-03-24 was a real gap; the sweep of the operator's own change
+channels found no declared hours change inside it, so the İşlem Saatleri grid
+is the verified state from the floor and the `NormalWeekCarried` refusals below
+the old horizon retired. What was swept, the artifacts under
+`normal-weeks/bist-carry-sweep/` in the research store (retrieved 2026-10-05
+UTC, digests in the directory's `SHA256SUMS.txt`): the operator's own 2010
+annual report (`imkb-2010-faaliyet-raporu.pdf`, live operator URL
+`borsaistanbul.com/files/IMKB_FINAL.pdf`) prints the key-dates timeline whose
+only session-hours entries before the carried region's end are **19 Ekim 2009
+— "2. seans saatinin uzatılması"** (the afternoon 17:00→17:30 extension) and
+**13 Kasım [2009] — "2. seansta da Açılış Seansı uygulaması"** (the afternoon
+opening call), both pre-floor, with 2010's single entry the 30 April
+"Seans saatleri değişikliği" that sits after the span; the pre-floor
+TransactionHours captures of 2009-08-26 and 2009-09-08 (`imkb-th-2009-*`)
+print the pre-extension 2. Seans 14:00–17:00, bracketing the 2009 changes from
+below; the 2010-03-25 and 2010-04-30 captures (`imkb-th-20100325232952`,
+`imkb-th-20100430183051`) print byte-identical equity grids, so the 30 April
+change did not move the equity envelope; and the 2010-12-12 capture
+(`imkb-th-20101212232247`) restates the same session bounds with restructured
+intra-session phases. No BIST notice or circular in the era declares an equity
+session change inside 2010-01-01..2010-03-24.
 
 ## Module narrative (moved from src/calendar/schedules/equities/europe/bist.rs on 2026-10-02 UTC)
 

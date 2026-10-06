@@ -328,14 +328,20 @@ const fn for_exchange(exchange: Exchange) -> DeclaredSourcing {
         Exchange::Sgx => DeclaredSourcing::nothing_carried(),
         // The pre-SR15 staggered-open timetable is the operator's own page
         // print from 2013-09-16 through 2020-10-22 and the SR15 amendments'
-        // struck-through old text — see docs/evidence/asx.md.
-        Exchange::Asx => DeclaredSourcing::carried_below(horizon!(2013, 9, 16)),
+        // struck-through old text; `—` at the floor since the 2026-10-05
+        // no-changes verification, whose sweep found the identical grid on the
+        // operator's own market-phases pages back to 2010-01-06 (asx.md carries
+        // the sweep record).
+        Exchange::Asx => DeclaredSourcing::carried_below(horizon!(2010, 1, 1)),
         // `—`: closed before the 2011-10-31 Chi-X Australia launch.
         Exchange::TmxAustralia => DeclaredSourcing::nothing_carried(),
         // Sourced from 2010-01-05: the operator's own key-dates trading-hours
         // page prints the pre-2020 grid, and every later capture corroborates it
-        // to the dated 2020-04-06 revision — see docs/evidence/nzx.md.
-        Exchange::Nzx => DeclaredSourcing::carried_below(horizon!(2010, 1, 5)),
+        // to the dated 2020-04-06 revision — see docs/evidence/nzx.md. `—` at
+        // the floor since the 2026-10-05 no-changes verification: the carried
+        // region contains no trade date and the pre-floor 2009-12-04 print
+        // states the identical grid (nzx.md carries the sweep record).
+        Exchange::Nzx => DeclaredSourcing::carried_below(horizon!(2010, 1, 1)),
         Exchange::Tse => DeclaredSourcing::carried_below(horizon!(2010, 1, 1)),
         Exchange::NseIndia => DeclaredSourcing::carried_below(horizon!(2010, 1, 1)),
         Exchange::BseIndia => DeclaredSourcing::carried_below(horizon!(2010, 1, 1)),
@@ -344,10 +350,13 @@ const fn for_exchange(exchange: Exchange) -> DeclaredSourcing {
         // grid and superseded at the dated 2011-03-07 change — see
         // docs/evidence/hkex.md.
         Exchange::Hkex => DeclaredSourcing::carried_below(horizon!(2010, 1, 1)),
-        Exchange::SgxSecurities => DeclaredSourcing::carried_below(horizon!(2011, 8, 1)),
-        // sgx_securities horizon unchanged: the 2009-05-14 Trading Hours page
-        // capture is pre-floor and dates no day inside the claimed interval
-        // (docs/evidence/sgx_securities.md).
+        // The outgoing pre-2011-08-01 grid is stated by the operator's own
+        // Practice Note 8.2.1 amendment (issue date 1 August 2011) and by the
+        // 2009-05-14 page print; `—` at the floor since the 2026-10-05
+        // no-changes verification, whose sweep of the era's rulebook, press and
+        // consultation channels found no declared hours change inside the
+        // carried span (sgx_securities.md carries the sweep record).
+        Exchange::SgxSecurities => DeclaredSourcing::carried_below(horizon!(2010, 1, 1)),
         Exchange::BursaMalaysia => DeclaredSourcing::carried_below(horizon!(2010, 1, 1)),
         Exchange::SetThailand => DeclaredSourcing::carried_below(horizon!(2024, 3, 25)),
         Exchange::Idx => DeclaredSourcing::carried_below(horizon!(2010, 8, 31)),
@@ -360,7 +369,12 @@ const fn for_exchange(exchange: Exchange) -> DeclaredSourcing {
         Exchange::Lse => DeclaredSourcing::carried_below(horizon!(2010, 1, 1)),
         Exchange::Xetra => DeclaredSourcing::carried_below(horizon!(2010, 1, 1)),
         Exchange::Six => DeclaredSourcing::carried_below(horizon!(2010, 1, 1)),
-        Exchange::EuronextParis => DeclaredSourcing::carried_below(horizon!(2010, 12, 24)),
+        // `—` at the floor since the 2026-10-05 no-changes verification: the
+        // operator's own PAR_20101126_06372_EUR notice restates the ordinary
+        // 07:15 pre-opening and 09:00 opening inside the span, and the sweep of
+        // the surviving 2010 channels found no declared hours change
+        // (euronext_paris.md carries the sweep record).
+        Exchange::EuronextParis => DeclaredSourcing::carried_below(horizon!(2010, 1, 1)),
         Exchange::EuronextAmsterdam => DeclaredSourcing::carried_below(horizon!(2010, 12, 24)),
         Exchange::EuronextBrussels => DeclaredSourcing::carried_below(horizon!(2010, 12, 24)),
         Exchange::EuronextLisbon => DeclaredSourcing::carried_below(horizon!(2010, 12, 24)),
@@ -373,16 +387,18 @@ const fn for_exchange(exchange: Exchange) -> DeclaredSourcing {
         Exchange::Vienna => DeclaredSourcing::carried_below(horizon!(2010, 1, 1)),
         // Sourced from 2010-03-25: the operator's own İşlem Saatleri page prints
         // the pre-2012 grid, and the 2011-07-27 capture corroborates it — see
-        // docs/evidence/borsa_istanbul.md.
-        Exchange::BorsaIstanbul => DeclaredSourcing::carried_below(horizon!(2010, 3, 25)),
+        // docs/evidence/borsa_istanbul.md. `—` at the floor since the
+        // 2026-10-05 no-changes verification: the operator's own 2010 annual
+        // report dates the era's last hours changes to October/November 2009,
+        // both pre-floor (borsa_istanbul.md carries the sweep record).
+        Exchange::BorsaIstanbul => DeclaredSourcing::carried_below(horizon!(2010, 1, 1)),
         Exchange::Tsx => DeclaredSourcing::carried_below(horizon!(2010, 1, 1)),
         Exchange::Jse => DeclaredSourcing::carried_below(horizon!(2012, 5, 25)),
-        // Sourced to the 2010-01-01 support floor: the operator's own Trading
-        // Times page (Arabic, capture 2010-01-12) states the
-        // Saturday-Wednesday 11:00-15:30 session, its bytes are provably
-        // identical at the 2009-09-12 and 2009-11-12 captures (2026-10-06
-        // domain-lineage sweep), and the 2011-04-29 English page restates it —
-        // see docs/evidence/tadawul.md.
+        // Sourced from 2010-01-12: the operator's own Trading Times page
+        // (Arabic) states the Saturday-Wednesday 11:00-15:30 session, and the
+        // 2011-04-29 English page restates it — see docs/evidence/tadawul.md.
+        // `—` at the floor since the 2026-10-05 no-changes sweep and the
+        // 2026-10-06 domain-lineage sweep (tadawul.md carries both records).
         Exchange::Tadawul => DeclaredSourcing::carried_below(horizon!(2010, 1, 1)),
         Exchange::B3 => DeclaredSourcing::carried_below(horizon!(2010, 1, 1)),
         Exchange::Bmv => DeclaredSourcing::carried_below(horizon!(2010, 2, 18)),

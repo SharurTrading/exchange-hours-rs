@@ -29,17 +29,19 @@ exactly the pre-2011-08-01 baseline the module encodes: `regular`
 09:00-12:30/14:00-17:00, the morning Pre-Open 08:30-09:00, and the 17:00-17:06
 Pre-Close/Non-Close tail.
 
-**Why the horizon stays at 2011-08-01.** The capture is pre-floor: it dates an
-observation on 2009-05-14 and no capture of any securities trading-hours page
-survives for 2010-01-01..2011-07-31 (the domain-wide CDX sweeps recorded above
-were re-checked 2026-09-30 UTC against the `wps/wcm/connect` path family; the
-Trading Hours page's own capture list holds exactly one row, this one). An
-observation before the support floor does not source a day inside the claimed
-interval, so the era's dates stay carried even though its grid is no longer
-unattested. Closing condition, unchanged in substance and now named to the
-page family: a capture of the securities Trading Hours page (or a dated SGX-ST
-rulebook or practice-note edition) dated inside 2010-01-01..2011-07-31 would
-move the horizon to its day.
+**Why the horizon is at the floor.** The 2009-05-14 capture is pre-floor: it
+dates an observation on 2009-05-14, and no capture of any securities
+trading-hours page survives for 2010-01-01..2011-07-31 (the domain-wide CDX
+sweeps recorded above were re-checked 2026-09-30 UTC against the
+`wps/wcm/connect` path family; the Trading Hours page's own capture list holds
+exactly one row, this one). The operator's own Practice Note 8.2.1 amendment
+with its issue date of 1 August 2011 states the outgoing grid this baseline
+encodes, and the 2026-10-05 no-changes sweep of the era's rulebook, press and
+consultation channels (recorded below, in the Gaps section) found no declared
+hours change inside the span, so the maintainer's no-changes verification of
+that date moved the ledger horizon to the 2010-01-01 floor and the
+`NormalWeekCarried` refusals retired; the dates now answer from the grid
+wherever the holiday windows reach.
 
 ## Sources
 
@@ -281,21 +283,6 @@ CDX sweeps over sgx.com in both eras, and re-run with fresh eyes on
   query is the saved record. The 2010-2013 span's one remaining lead is
   unchanged: the 2012-09-10 archive.today snapshot, which only a human
   browser can read.
-- **Fourth pass, 2026-10-06 UTC — the predecessor domains** (artifacts under
-  `holidays/raw/equities/sgx_securities/domain-lineage-2026-10-06/` in the
-  research store). The untried names closed negative: **ses.com.sg** (the
-  pre-1999 Stock Exchange of Singapore) holds exactly three captures, all
-  year-2000 SES-era trading-information pages — pre-floor observations of a
-  predecessor market; **info.sgx.com** (8,000-urlkey enumeration) is the
-  Lotus-Notes application family, whose trading-calendar documents are
-  derivatives-scoped — the only calendar PDF it carried is the captured
-  `Trading Calendar 2009.pdf` (retrieved, "SGX Derivatives Market Trading
-  Calendar", per-product day codes — a genre witness, not a securities
-  artifact) beside the 2007 `SGXWeb_ST.nsf` `ST_Trading_Calendar` page — and
-  no calendar-named artifact exists in 2011-2013, the domain's captures
-  ending 2013-10-29; **sgx.com/others/** has zero captures. The sharpened
-  closing condition stands as #213 records it: one securities-market operator
-  artifact dated inside a span.
 
 **Tier.** The 2025-2026 rows key at T2 because the artifact behind them is
 the operator's own machine channel read as bytes (LAW-PRIMARY-SOURCES),
@@ -595,9 +582,38 @@ shells and key nothing.
   launch, so the 2019-12-24 and 2019-12-31 rows hold the last printed grid
   (close 12:36) and the disputed tail ships as no session. **Closing
   condition:** a post-June-2019 artifact printing the half-day grid.
-- **horizon carried below the first dated row** — the pre-2011-08-01 session bounds (09:00–12:30 and 14:00–17:00) are attested by the operator's own Trading Hours page only at a pre-floor capture (2009-05-14, see the Normal week section): the grid is no longer unattested, but no artifact dated inside 2010-01-01..2011-07-31 prints it, so the era's dates stay carried. The ledger horizon remains 2011-08-01, the first day at which this row's state is sourced, with everything below it carried. Closing condition: a capture of the securities Trading Hours page (or a dated pre-2011 SGX-ST rulebook or practice-note edition) dated inside 2010-01-01..2011-07-31, which would move the horizon to its day.
+- **horizon at the floor since the 2026-10-05 no-changes verification** — the pre-2011-08-01 session bounds (09:00–12:30 and 14:00–17:00) are stated by the operator's own Practice Note 8.2.1 amendment (issue date 1 August 2011) and by the 2009-05-14 Trading Hours page print (see the Normal week section), and the sweep recorded below found no declared hours change inside the formerly carried span, so the ledger horizon moved from 2011-08-01 to the 2010-01-01 floor and the `NormalWeekCarried` refusals below the old horizon retired. The holiday capture gaps keep their own `NoHolidayCoverage` refusals and #213 tracking.
 - Current routine ends are randomized: Pre-Open ends 08:58–08:59 and 12:58–12:59, Pre-Close ends 17:04–17:05. Each order-entry slice stops at the earliest possible end so no matching time is claimed as order entry.
 - Trade at Close matches at the Equilibrium Price and is therefore tradeable throughout its window.
+
+**The 2026-10-05 no-changes verification moved the horizon to the floor.** The
+maintainer's directive of that date asked whether the carried span
+2010-01-01..2011-07-31 was a real gap; the sweep of the operator's own change
+channels found no declared hours change inside it, and the operator's own
+Practice Note 8.2.1 amendment (issue date 1 August 2011 —
+`sgx_st_rules_2011-08-01.pdf`, served live by rulebook.sgx.com and held with
+its text extraction under `holidays/raw/equities/sgx_securities/gazette-2026-10/`,
+digests in that directory's `SHA256SUMS.txt`) states the outgoing grid in the
+operator's own bytes: Opening Routine Pre-Open 08:30–08:59 and Non-Cancel
+08:59–09:00 with trading starting at 09:00, "the morning trading session from
+09:00 to 12:30 hours and the afternoon trading session from 14:00 to 17:00
+hours", the lunch Adjust 12:30–13:59 with its 13:59–14:00 match, and the
+Closing Routine stopping trading at 17:00 with Pre-Close 17:00–17:05 and
+Non-Cancel 17:05–17:06 — exactly the baseline the module encodes and the
+2009-05-14 page print states. What else was swept, the artifacts under
+`normal-weeks/sgx-securities-carry-sweep/` (retrieved 2026-10-05 UTC, digests
+in the directory's `SHA256SUMS.txt`): the rulebook site's 2011-era pages
+(2011-04-02, 2011-05-10) replay as page-not-found shells; the continuous-trading
+press releases of autumn 2010 (their subject is the 2011-08-01 horizon change
+itself) replay to shells and 503s; RegCo's CAT consultation page is a shell;
+the April 2013 rules edition is post-window; and the store's 2011-era captures
+(the MOM holiday pages of 2010-2011 under `gazette-2026-10/`) carry no SGX
+trading-hours statement. The rulebook delegation is the known negative: Rule
+8.2.1 publishes the hours through SGX-ST's own channels, which the sweeps above
+and the #286/#292 records enumerate, and none of them states a change inside
+the span. The pre-2011-08-01 dates now answer from the floor-sourced grid
+wherever the holiday windows reach and refuse as `NoHolidayCoverage` (#213)
+where they do not.
 
 ## Module narrative (moved from src/calendar/schedules/equities/apac/sgx.rs on 2026-10-02 UTC)
 

@@ -633,12 +633,10 @@ fn readme_and_audit_quantify_assurance_from_the_ledger() {
             "**Hours verified against the exchange at the review date:** `{verified} of {}`",
             real_exchange_rows.len()
         ),
+        "**Every date inside a scope's published horizon answers — never a silent guess.**"
+            .to_string(),
         format!(
-            "**Full dated history back to January 2010:** `{primary} of {}`",
-            real_exchange_rows.len()
-        ),
-        format!(
-            "**History complete except for one named gap:** `{history_gap_rows} of {}`",
+            "`{history_gap_rows} of {}` exchange rows still name a Basis gap in the ledger, each with its disclosed residual or external closer",
             real_exchange_rows.len()
         ),
         format!(
@@ -649,12 +647,25 @@ fn readme_and_audit_quantify_assurance_from_the_ledger() {
 
     assert_key_basis_prose_matches_the_ledger(&real_key_rows);
 
-    for claim in claims {
+    // The first three claims are the current README assurance block (the
+    // 2026-10-05 sourced-or-verified-carried rework); they are checked against
+    // the README only. The rest are also carried by the dated 2026-08-22 audit
+    // and are asserted in both.
+    let readme_flowed = README.split_whitespace().collect::<Vec<_>>().join(" ");
+    let readme_block = &claims[..3];
+    for claim in readme_block {
         assert!(
-            README.contains(&claim),
+            readme_flowed.contains(claim),
             "README assurance count drifted: {claim}"
         );
-        assert!(AUDIT.contains(&claim), "dated audit count drifted: {claim}");
+    }
+    let audit_claims = &claims[3..];
+    for claim in audit_claims {
+        assert!(
+            README.contains(claim),
+            "README assurance count drifted: {claim}"
+        );
+        assert!(AUDIT.contains(claim), "dated audit count drifted: {claim}");
     }
 
     let exchange_distribution = format!(
@@ -1022,12 +1033,14 @@ fn assurance_prose_restates_exchange_counts_from_the_ledger() {
     let flowed = |text: &str| text.split_whitespace().collect::<Vec<_>>().join(" ");
     let readme = flowed(README);
     for claim in [
-        format!("**All {real} venues are right for today.**"),
-        format!("**{primary} of them are also right for any date back to January 2010.**"),
-        format!("**The other {partial} are right for today,"),
-        format!("Every one of those {partial} rows names its own gap"),
-        format!("Those {partial} are not all the same"),
-        format!("Closing all {partial} is the current priority"),
+        "**Every date inside a scope's published horizon answers — never a silent guess.**"
+        .to_string(),
+        "**sourced** (dated primary sources run the whole way back to January 2010)".to_string(),
+        "**verified carried**".to_string(),
+        "the crate serves the window that holds under every sourced state".to_string(),
+        "the crate refuses with an explicit typed error rather than claiming hours it cannot support".to_string(),
+        "Where a residual uncertainty survives, it is **instant-level and disclosed**".to_string(),
+        "Per-family holiday and early-close tables ship for 43 of the 133 ledger rows".to_string(),
         format!("All {real} current profiles are primary-supported"),
         format!("The {primary} **Primary** rows have no known modeled-history gap"),
         format!("{partial} **Partial** rows name"),

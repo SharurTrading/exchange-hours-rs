@@ -377,10 +377,13 @@ const fn for_exchange(exchange: Exchange) -> DeclaredSourcing {
         Exchange::BorsaIstanbul => DeclaredSourcing::carried_below(horizon!(2010, 3, 25)),
         Exchange::Tsx => DeclaredSourcing::carried_below(horizon!(2010, 1, 1)),
         Exchange::Jse => DeclaredSourcing::carried_below(horizon!(2012, 5, 25)),
-        // Sourced from 2010-01-12: the operator's own Trading Times page
-        // (Arabic) states the Saturday-Wednesday 11:00-15:30 session, and the
-        // 2011-04-29 English page restates it — see docs/evidence/tadawul.md.
-        Exchange::Tadawul => DeclaredSourcing::carried_below(horizon!(2010, 1, 12)),
+        // Sourced to the 2010-01-01 support floor: the operator's own Trading
+        // Times page (Arabic, capture 2010-01-12) states the
+        // Saturday-Wednesday 11:00-15:30 session, its bytes are provably
+        // identical at the 2009-09-12 and 2009-11-12 captures (2026-10-06
+        // domain-lineage sweep), and the 2011-04-29 English page restates it —
+        // see docs/evidence/tadawul.md.
+        Exchange::Tadawul => DeclaredSourcing::carried_below(horizon!(2010, 1, 1)),
         Exchange::B3 => DeclaredSourcing::carried_below(horizon!(2010, 1, 1)),
         Exchange::Bmv => DeclaredSourcing::carried_below(horizon!(2010, 2, 18)),
         // `—`: closed before the archived 2019-09-13 04:00 UTC launch, then continuously open; the operator publishes 24/7 trading and no holiday closures.

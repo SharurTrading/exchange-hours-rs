@@ -813,9 +813,10 @@ fn withheld(calendar: ExchangeCalendar, date: NaiveDate) -> bool {
 /// cell, so it moves with the tables. `nasdaq` is the next entry (2026-09-28
 /// UTC): its four withheld dates are the two TBA early closes, the unrecovered
 /// Sandy confirmation and the mourning day, all date-shaped with no phase gap.
-/// `nse_india` is the next: from 2026-09-28 UTC it audits 2025-2026 and withholds
-/// the two Muhurat Trading dates (2025-10-21 and 2026-11-08), whose special-session
-/// instants the operator has not published, with no phase-level gap behind the
+/// `nse_india` is the next: from 2026-09-28 UTC it audits 2025-2026; from
+/// 2026-10-06 UTC five of its Muhurat dates ship the operator's own circulars
+/// as `ReplacementBlocks`, leaving nine withheld Muhurat dates (2010-2026,
+/// none in 2021, which names no date), with no phase-level gap behind the
 /// denial either. `hkex` was the next from 2026-09-29 UTC, and left the map on
 /// 2026-09-30 UTC: the operator's own Phase-Two-era Trading Hours page states the
 /// eve session deletions in session language, so the ten 2012-2015 half-day eves
@@ -846,7 +847,7 @@ fn date_level_incompleteness() -> &'static [(&'static str, usize)] {
         ("iceus", 41),
         ("lse", 5),
         ("nasdaq", 4),
-        ("nse_india", 14),
+        ("nse_india", 9),
     ]
 }
 

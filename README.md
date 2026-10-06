@@ -285,25 +285,17 @@ same pass and carry their own basis labels in the ledger.
 **Hours verified against the exchange at the review date:** `95 of 95` non-synthetic
 `Exchange` identities, within each row's documented normal-week scope.
 
-**Full dated history back to January 2010:** `67 of 95` non-synthetic
-`Exchange` identities.
-
-**History complete except for one named gap:** `28 of 95` non-synthetic
-`Exchange` identities.
-
-In plain terms:
-
-- **All 95 venues are right for today.** Every venue's present-day normal week
-  was compared against the operator's own published schedule, inside the scope
-  its ledger row states. None is unreviewed, and none is known to be wrong.
-- **67 of them are also right for any date back to January 2010.** Ask one of
-  these what the hours were on an arbitrary past date and every answer is
-  carried by dated primary sources the whole way back.
-- **The other 28 are right for today, and right for the past except for one
-  specific thing each.** Every one of those 28 rows names its own gap in the
-  [ledger](docs/schedules/verification.md), and the gap is bounded: where a
-  phase is sourced at both ends, the crate serves the part that is true under
-  every sourced state and withholds only the disputed remainder.
+**Every date inside a scope's published horizon answers — never a silent guess.**
+The normal-week grid is either **sourced** (dated primary sources run the whole
+way back to January 2010) or **verified carried** (the operator's own archived
+pages and notices were swept across the interval and show no change, so the
+sourced state demonstrably held — the sweep record lives in the scope's
+evidence file). Where a phase's endpoints are sourced at two values and only
+the changeover day is undated, the crate serves the window that holds under
+every sourced state and discloses the disputed margin; where a scope's evidence
+runs out entirely, the crate refuses with an explicit typed error rather than
+claiming hours it cannot support. `28 of 95` exchange rows still name a Basis
+gap in the ledger, each with its disclosed residual or external closer.
 
 **Which window a gap sits in decides what it costs you.** A gap in a phase where
 trades print — the regular or extended session — would change whether the crate
@@ -331,23 +323,13 @@ sixteen US futures product families found none of them withholding executable
 time that the current grid serves. Rows carry this distinction in the ledger, so
 check there before treating a `Partial` label as a reason to hesitate.
 
-Those 28 are not all the same, and the ledger says which kind each one is. Most
-are **knowledge-bound**: a real exchange change happened and no operator ever
-published the day, because the value was an operator system setting no filing
-ever fixed — searching harder will not close them. A few are **source-limited**:
-the document that would date them exists but is a member-only or password-locked
-publication. The remainder are **unfinished searches**, where a dated document
-should exist and simply has not been found. `cboe_edga` and `cboe_edgx` used to
-be the examples of that last kind; they are not any more. The SEC orders that
-wrote the 06:00 order-entry start into Rule 11.1(a)(1) have been identified and
-dated, and Direct Edge's own FIX and API specifications supply the earlier
-07:00 queue back to launch — leaving a knowledge-bound residue of four months
-in late 2010 and early 2011 during which the specifications move acceptance
-from 07:00 to 06:00 with no source naming the day. Closing all 28 is the current
-priority, alongside the per-family holiday and early-close tables the crate now
-carries: 43 of the 133 ledger rows ship one, each over its own audited
-trade-date window, and the rest still reach holidays only through the caller's
-`DayPolicy`.
+Where a residual uncertainty survives, it is **instant-level and disclosed**, not
+a withheld day: the ledger's Basis cell states what is uncertain (typically the
+exact day an operator system setting changed, where every other fact is sourced)
+and the crate serves the window that holds under every sourced state around it.
+Per-family holiday and early-close tables ship for 43 of the 133 ledger rows,
+each over its own audited trade-date window; scopes without a built-in table
+reach holidays through the caller's `DayPolicy`.
 
 Every non-synthetic identity was compared with its official current-hours or
 rulebook material and its notice/evidence channel. All 95 current profiles are

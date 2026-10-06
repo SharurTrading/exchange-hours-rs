@@ -799,8 +799,9 @@ it. What was swept, every artifact under `normal-weeks/` in the research store
 (wave-c1 the 2026-09-30 retrieval, `wave-c2-2012-notices` the 2026-10-05
 retrieval, digests beside them):
 
-- **The weekly Globex notice channel, in full, over the interval.** The 242
-  readable notices of 2010-2011 were re-scanned for FX-futures hours language
+- **The weekly Globex notice channel, in full, over the interval.** The 113
+  readable notices of the 2010-2011 leg (114 held; the zero-byte `20100726`
+  replay excluded) were re-scanned for FX-futures hours language
   and 25 of the 26 weekly notices of 2012-01-02..2012-05-28 retrieved and
   scanned the same way. The only hours-titled FX items are options-scoped
   (the 2010-05-10 elimination of the 7:15 a.m.-2:00 p.m. CT halt in four FX
@@ -808,8 +809,9 @@ retrieval, digests beside them):
   lifecycle-scoped (BRL/USD termination-of-trading, 2011-09-30) — none is a
   normal-week change for the standard-grid futures this family serves, whose
   only dated queue revision (2010-11-15) is already encoded. The two zero-byte
-  replays (20100726, 20120221) are named in the store INDEX; their weeks are
-  covered by readable neighbours.
+  replays are named in the store INDEXes — `20100726` in wave-c1's, `20120221`
+  in the wave-c2-2012-notices INDEX; their weeks are covered by readable
+  neighbours.
 - **The matching grid is bracketed inside the interval by the operator's own
   page**: the fx-hours capture of 2009-05-02 (pre-floor) and of 2011-09-18
   print the same `17:00-16:00 next day` grid, and the `FX248` 2010 product

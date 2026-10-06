@@ -54,8 +54,9 @@ swept, every artifact under `normal-weeks/` in the research store (wave-c1 the
 2026-09-30 retrieval, `wave-c2-2012-notices` the 2026-10-05 retrieval, digests
 beside them):
 
-- **The weekly Globex notice channel, in full, over the interval.** The 242
-  readable notices of 2010-2011 were re-scanned for energy/metals hours
+- **The weekly Globex notice channel, in full, over the interval.** The 113
+  readable notices of the 2010-2011 leg (114 held; the zero-byte `20100726`
+  replay excluded) were re-scanned for energy/metals hours
   language (this pass; the wave-c1 scan had read the same bytes for pre-open
   statements), and 25 of the 26 weekly notices of 2012-01-02..2012-05-28 were
   retrieved and scanned the same way. Every product-complex hit is a listing

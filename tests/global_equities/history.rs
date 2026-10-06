@@ -400,7 +400,10 @@ fn tadawul_pre_2013_grid_is_the_trading_times_print() {
     // capture 2011-04-29) states one Saturday-to-Wednesday session,
     // 11:00 a.m. to 3:30 p.m., and the same grid stands on the last Sat-Wed
     // trade date before the operator's dated 2013-06-29 week change
-    // (docs/evidence/tadawul.md, Normal week).
+    // (docs/evidence/tadawul.md, Normal week). The 2010-01-12 bytes are
+    // byte-identical to the page as captured 2009-09-12 and 2009-11-12, so
+    // the grid is sourced to the 2010-01-01 support floor with nothing
+    // carried below it (2026-10-06 domain-lineage sweep).
     for probe in [(2010, 1, 13), (2013, 6, 26)] {
         let h = hours_for_exchange(Exchange::Tadawul, local(Asia::Riyadh, probe, (12, 0, 0)));
         assert!(!h.is_open(local(Asia::Riyadh, probe, (10, 59, 0))));

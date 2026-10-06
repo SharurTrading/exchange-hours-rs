@@ -34,9 +34,8 @@ holidays. Trading in Equities and ETFs: 11:00 am - 03:30 pm. Trading in Sukuk
 & Bonds: 11:30 am - 03:30 pm." That is exactly the pre-2013 baseline the
 module encodes — Saturday-Wednesday, 11:00-15:30
 continuous — and the Arabic page's capture chain brackets the era at both
-ends (the next surviving capture `20140603012846` sits after the operator's
-own dated 2013-06-29 change). The 2026-10-06 domain-lineage sweep found the
-2026-10-06 note below: the 2010-01-12 keying capture's Wayback digest is
+ends (the next surviving captures on the Arabic page — 2013-07-23, 2013-12-29,
+2014-05-16 — all sit after the operator's own dated 2013-06-29 change). The 2026-10-06 domain-lineage sweep is recorded in the note below: the 2010-01-12 keying capture's Wayback digest is
 shared by captures of **2009-09-12 and 2009-11-12**, and both replays are
 byte-identical at sha256 to the stored `TADAWUL-TT-2010-01-12` artifact
 (`8d5a8681…`, the digest this file already records) — the operator's own

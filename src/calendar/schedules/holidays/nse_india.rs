@@ -24,8 +24,14 @@
 //! annual-page URL has no capture in either year, the old pages the archive
 //! does hold from those eras are query forms or other segments, and the
 //! annual circulars are uncaptured for those years), so the coverage windows
-//! stop at 2011-12-31, 2017-12-31 and resume 2019-01-01; a date in 2012 or
-//! 2018 refuses rather than answers (see the evidence file's gaps).
+//! stop at 2011-12-31, 2017-12-31 and resume 2019-01-01. Both spans sit
+//! **between two audited windows**, so the charter's bridged-residual
+//! convention (2026-10-06, AGENTS.md "Modeling conventions", #296) serves
+//! their session questions from the sourced normal week while the holiday
+//! layer stays honestly absent: the metadata reports each span as
+//! `HolidayWindowsBridged`, no closure is asserted there that no operator
+//! statement witnesses, and each span's residual is disclosed with its
+//! closer in the evidence file's gaps.
 //!
 //! Nine rows are **`Unsourced` rather than closures** (2010-11-05, 2011-10-26,
 //! 2013-11-03, 2014-10-23, 2015-11-11, 2016-10-30, 2017-10-19, 2019-10-27 and

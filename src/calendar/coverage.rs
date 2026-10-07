@@ -33,10 +33,11 @@
 //!
 //! A **date-shaped** gap is what the three facts above decide, and
 //! [`CoverageGapReason::NormalWeekCarried`], [`CoverageGapReason::NoHolidayTable`],
-//! [`CoverageGapReason::NoHolidayCoverage`], [`CoverageGapReason::WithheldDate`]
-//! and [`CoverageGapReason::NormalWeekOnly`] name its five kinds. A **declared**
-//! gap is not date-shaped: the operator publishes an arrangement no shipped row
-//! states exactly. `schedules/sourcing.rs` declares those
+//! [`CoverageGapReason::NoHolidayCoverage`], [`CoverageGapReason::WithheldDate`],
+//! [`CoverageGapReason::NormalWeekOnly`] and
+//! [`CoverageGapReason::HolidayWindowsBridged`] name its six kinds. A
+//! **declared** gap is not date-shaped: the operator publishes an arrangement
+//! no shipped row states exactly. `schedules/sourcing.rs` declares those
 //! per identity; nothing declares one today, and the four shapes the shipped
 //! scopes have retired are
 //! [`CoverageGapReason::SpecialSessionUnrepresentable`] (#93),
@@ -99,9 +100,11 @@
 //! outside the covered range has no sourced answer, and the caller's overlay is
 //! the only layer that can supply one.
 
+mod baseline;
 mod error;
 mod ranges;
 
+pub use baseline::NormalWeekBaseline;
 pub use error::CalendarQueryError;
 pub use ranges::{CompleteRanges, CoverageGaps};
 
@@ -213,13 +216,16 @@ pub enum DateCoverage {
     BeforeSupportFloor,
     /// The date is at or after the floor but outside the ranges this identity
     /// has a sourced answer for: its weekday profile is carried backwards
-    /// there, its holiday layer has no answer, a declared phase-level gap
-    /// applies on the date, or answering it completely would consult a
+    /// there, its holiday layer has no answer there, a declared phase-level gap
+    /// applies on the date, its holiday layer is the bridged residual of a
+    /// span between two audited windows
+    /// ([`CoverageGapReason::HolidayWindowsBridged`] — the session layer still
+    /// answers there), or answering it completely would consult a
     /// neighbouring date the identity does not answer
     /// ([`CoverageGapReason::ResolutionEdge`], #151). A date refused for the
-    /// last reason may still answer the questions that need only its own
-    /// facts; what the metadata withholds is the claim that *every* query on
-    /// it answers.
+    /// last reason — or for the bridged residual — may still answer the
+    /// questions that need only its own facts; what the metadata withholds is
+    /// the claim that *every* query on it answers.
     OutsideCoveredRange,
     /// The date is inside an audited window on a date the identity explicitly
     /// withholds as [`HolidayKind::Unsourced`](crate::HolidayKind::Unsourced).
@@ -260,6 +266,39 @@ pub enum CoverageGapReason {
     /// The calendar detached its built-in holiday table with
     /// [`without_holidays`](crate::ExchangeCalendar::without_holidays).
     NormalWeekOnly,
+    /// **The bridged residual (issue #296, Tier 1).** The date sits **between
+    /// two audited windows** of the identity's shipped holiday table — a window
+    /// ends before it and another begins after it — so the table's holiday
+    /// layer is honestly absent there, while the identity's sourced normal week
+    /// answers across the span.
+    ///
+    /// This is the charter's sourced-intersection convention
+    /// ("an undated changeover is a disclosed residual, not a refused day")
+    /// generalized from one undated changeover to a whole evidence span: the
+    /// maintainer's principle of 2026-10-05 is that sourced hours on both
+    /// sides of an evidence gap are not refused wholesale. The dates inside
+    /// the span therefore answer their session questions from the normal week
+    /// the timeline serves — the state that holds under every sourced state —
+    /// while the metadata withholds the complete-calendar claim and reports
+    /// this reason instead. The residual is a disclosure beside a served
+    /// answer, never a fabricated "no holiday": no closure is asserted that no
+    /// operator statement witnesses, and no open is asserted silently — the
+    /// span verdict says the holiday layer is absent, and a witnessed
+    /// arrangement (the operator declaring the same recurring closure every
+    /// observed year, the `coinbase_derivatives` 2022 Thanksgiving shape)
+    /// arrives as table data with its own audited window, which shrinks the
+    /// bridge as the family sweeps land.
+    ///
+    /// Unlike [`Self::NoHolidayCoverage`], which refuses the whole date for a
+    /// span with only one flank (below the first window or above the last),
+    /// this reason is **not a refusal**: the date-level gate answers, and the
+    /// record exists so a consumer walking [`CalendarCoverage::gaps`] sees
+    /// that the holiday layer — not the session layer — is what the span
+    /// lacks. [`DateCoverage`] reports the date as
+    /// [`DateCoverage::OutsideCoveredRange`] for exactly that reason, and the
+    /// queries' own refusals there name the neighbouring unanswerable dates
+    /// as anywhere else.
+    HolidayWindowsBridged,
     /// **Declared phase-level — retired as a declaration, kept as vocabulary.**
     /// The identity's sourced normal week contains a required phase the calendar
     /// withholds, so no date its declaration covers is answered from a complete
@@ -964,7 +1003,10 @@ impl CalendarCoverage {
         }
         match self.shipped {
             None => false,
-            Some(table) => !Self::withholds_shipped(table, date) && table.coverage().contains(date),
+            Some(table) => {
+                !Self::withholds_shipped(table, date) && table.coverage().contains(date)
+                    || Self::bridged_between_windows(self.windows(), self.carried_below, date)
+            }
         }
     }
 
@@ -1082,6 +1124,7 @@ impl CalendarCoverage {
                 CoverageGapReason::NormalWeekCarried
                 | CoverageGapReason::NoHolidayTable
                 | CoverageGapReason::NoHolidayCoverage
+                | CoverageGapReason::HolidayWindowsBridged
                 | CoverageGapReason::NormalWeekPhaseWithheld
                 | CoverageGapReason::SpecialSessionUnrepresentable
                 | CoverageGapReason::PostCloseQueueTradeDateLabel
@@ -1141,10 +1184,16 @@ impl CalendarCoverage {
     /// every declaration is listed by [`Self::phase_gaps`], and by [`Self::gaps`]
     /// where no earlier one shadows it.
     ///
-    /// A date whose own facts answer is then judged by its **resolution reach**
-    /// ([`Self::resolution_reach_answerable`]): answering every question about
-    /// every instant of the date consults neighbouring dates, and a date whose
-    /// reach crosses an unanswerable one is reported as
+    /// A date whose own facts answer is then judged, in order, by the **bridge
+    /// residual** and its **resolution reach**
+    /// ([`Self::resolution_reach_answerable`]). The bridge residual
+    /// ([`CoverageGapReason::HolidayWindowsBridged`]) is the date's own fact —
+    /// between two audited windows the holiday layer is honestly absent — while
+    /// the reach consults neighbouring dates, so the bridge is reported first
+    /// and a date that both bridges and reaches an unanswerable neighbour
+    /// reports the bridge. Answering every question about every instant of a
+    /// date consults neighbouring dates, and a date whose reach crosses an
+    /// unanswerable one is reported as
     /// [`CoverageGapReason::ResolutionEdge`] rather than called complete (#151).
     pub(super) fn gap_reason_on(self, date: NaiveDate) -> Option<CoverageGapReason> {
         if date < SUPPORT_FLOOR {
@@ -1155,6 +1204,9 @@ impl CalendarCoverage {
         }
         if let Some(reason) = self.date_level_gap_on(date) {
             return Some(reason);
+        }
+        if Self::bridged_between_windows(self.windows(), self.carried_below, date) {
+            return Some(CoverageGapReason::HolidayWindowsBridged);
         }
         if !self.resolution_reach_answerable(date) {
             return Some(CoverageGapReason::ResolutionEdge);
@@ -1262,7 +1314,9 @@ impl CalendarCoverage {
     /// in either direction.
     ///
     /// The unanswerable days are the dates below the carried-below horizon, the
-    /// dates outside every audited window, and the withheld rows. All three
+    /// dates outside every audited window — including a between-window span the
+    /// bridge now serves, whose edges only trigger the conservative full walk —
+    /// and the withheld rows. All three
     /// sources are sorted static tables, so this is three binary searches and
     /// no walk — the fast path behind
     /// [`Self::resolution_reach_answerable`].
@@ -1336,6 +1390,14 @@ impl CalendarCoverage {
     /// never reads is exactly the "coverage error read as a market closure"
     /// failure LAW-COVERAGE exists to prevent. The entry points that do probe
     /// the withheld phase ask [`Self::phase_gap_on`] themselves.
+    ///
+    /// A date **between two audited windows** whose normal week the identity
+    /// sources answers here (issue #296, Tier 1): the bridge lifts the
+    /// whole-date refusal this method used to raise for every date outside the
+    /// windows, and the holiday layer's residual is reported by
+    /// [`Self::gap_reason_on`] as
+    /// [`CoverageGapReason::HolidayWindowsBridged`] instead — a disclosure
+    /// beside the served session answers, never a fabricated normal date.
     pub(super) fn date_level_gap_on(self, date: NaiveDate) -> Option<CoverageGapReason> {
         if date < SUPPORT_FLOOR {
             return None;
@@ -1354,6 +1416,10 @@ impl CalendarCoverage {
                     Some(CoverageGapReason::WithheldDate)
                 } else if coverage.contains(date) {
                     None
+                } else if Self::bridged_between_windows(self.windows(), self.carried_below, date) {
+                    // The between-window span answers at the date level; the
+                    // residual is `gap_reason_on`'s to report.
+                    None
                 } else {
                     Some(CoverageGapReason::NoHolidayCoverage)
                 }
@@ -1369,6 +1435,62 @@ impl CalendarCoverage {
                 .holiday_on(date)
                 .is_some_and(|holiday| holiday.kind() == HolidayKind::Unsourced)
         })
+    }
+
+    /// Returns whether venue-local `date` sits **between two audited windows**
+    /// with the normal week sourced there — the bridged residual of issue #296,
+    /// Tier 1.
+    ///
+    /// Three conditions, in cost order: `date` lies outside every window the
+    /// identity ships (the callers' audited-contains checks usually settle the
+    /// opposite), a window ends before it **and** a window begins after it —
+    /// both flanks exist, which is what separates the bridge from
+    /// [`CoverageGapReason::NoHolidayCoverage`]'s one-flank spans below the
+    /// first window and above the last — and the carried-below horizon does not
+    /// swallow the date, so the normal week the timeline serves across the span
+    /// is sourced rather than carried. The windows are the build-validated
+    /// ascending set, so this is one bounded scan of a handful of static
+    /// tuples: allocation-free, total, and identical on every view of the
+    /// identity.
+    fn bridged_between_windows(
+        windows: &'static [(i32, u32, u32, i32, u32, u32)],
+        carried_below: Option<NaiveDate>,
+        date: NaiveDate,
+    ) -> bool {
+        let mut lower_last: Option<NaiveDate> = None;
+        let mut upper_first: Option<NaiveDate> = None;
+        for &(first_year, first_month, first_day, last_year, last_month, last_day) in windows {
+            let Some(first) = NaiveDate::from_ymd_opt(first_year, first_month, first_day) else {
+                continue;
+            };
+            let Some(last) = NaiveDate::from_ymd_opt(last_year, last_month, last_day) else {
+                continue;
+            };
+            if first <= date && date <= last {
+                // Inside a window: audited, not bridged.
+                return false;
+            }
+            if last < date {
+                lower_last = Some(match lower_last {
+                    Some(current) if current > last => current,
+                    _ => last,
+                });
+            }
+            if first > date {
+                upper_first = Some(match upper_first {
+                    Some(current) if current < first => current,
+                    _ => first,
+                });
+            }
+        }
+        let (Some(_), Some(_)) = (lower_last, upper_first) else {
+            return false;
+        };
+        // State compatibility: the flanking windows are audited states, and the
+        // week the timeline serves across the span between them must itself be
+        // sourced (LAW-COVERAGE) — a horizon inside the span keeps its own
+        // dates carried, and they refuse through the ordinary facts.
+        carried_below.is_none_or(|carried| date >= carried)
     }
 
     /// Returns the first venue-local date strictly after `date` at which the

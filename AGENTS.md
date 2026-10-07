@@ -20,7 +20,11 @@ LAW-COVERAGE now describe what ships (closes #154). The 2026-10-05 (UTC)
 amendment names `SharurTrading/exchange-hours-evidence` as the research
 store's public home — a byte-identical, PR-gated mirror the evidence-audit
 workflow checks out for the Documents-digest fence, and the checkout
-`cargo xtask verify-evidence` resolves (#288). The law names are
+`cargo xtask verify-evidence` resolves (#288). The 2026-10-06 (UTC) amendment
+generalizes the sourced-intersection rule from undated changeovers to whole
+evidence spans between sourced windows: the bridged residual
+(`CoverageGapReason::HolidayWindowsBridged`, issue #296) and the refusal
+context that travels beside a typed refusal. The law names are
 unchanged.
 
 ## Migration status — 2026-09-30 UTC
@@ -496,6 +500,27 @@ state actual supported ranges; an unknown date is not a market closure.
   pins one side of the span, or while the served answer would be wrong under
   a sourced state; the retirements of 2026-10-04 were examined against each
   of those tests before they shipped.
+- **A whole evidence span between sourced states is a bridged residual, not a
+  refused region (2026-10-06 decision, issue #296).** The maintainer's
+  principle of 2026-10-05: with sourced hours on both sides of an evidence
+  gap, the gap's dates are not refused wholesale. The undated-changeover rule
+  above generalizes from one changeover to a span: when a family's audited
+  holiday windows leave a gap with a window on **each** flank, and the normal
+  week itself is sourced across the gap, the span's session questions answer
+  from the normal week the timeline serves — the intersection of the
+  flanking states, the narrowest sourced value where they differ — while the
+  holiday layer is honestly absent. The absence is a typed residual reported
+  beside the served answers (`CoverageGapReason::HolidayWindowsBridged`),
+  never a fabricated "no holiday" and never a refusal of the whole date: no
+  closure is asserted that no operator statement witnesses, a witnessed
+  recurring arrangement (the operator declaring the same closure every
+  observed year, the `coinbase_derivatives` 2022 Thanksgiving shape) arrives
+  as table data with its own audited window and shrinks the bridge as the
+  family sweeps land, and a typed refusal elsewhere carries the normal-week
+  baseline it sits inside so a consumer can make its own call. A span with
+  only one flank — below the first window, above the last — is not bridged:
+  it stays the recorded gap, closed family-by-family or by a maintainer
+  ruling.
 - **A knowledge boundary is the first source that lists the modelled
   product**, not merely the earliest source that survives. Check the contract
   set, not just the grid, before keying a row to an edition.

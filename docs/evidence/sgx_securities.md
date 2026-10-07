@@ -587,6 +587,18 @@ shells and key nothing.
   **Closing condition (the desk ask):** one operator artifact dated inside
   the span showing the securities market adopted the gazetted dates.
   Tracked as [#213](https://github.com/SharurTrading/exchange-hours-rs/issues/213).
+  **Bridged residual (2026-10-06 UTC, #296):** the span sits **between two
+  audited windows**, so under the charter's bridged-residual convention
+  (AGENTS.md, "Modeling conventions") it no longer refuses whole dates: the
+  session layer answers 2020-01-02..2024-12-31 (1,826 days) from the sourced
+  normal week the timeline serves (the 2019-06-03 grid governs the whole
+  span), and the holiday layer stays honestly absent —
+  no closure is asserted that no operator statement witnesses, the metadata
+  reports the span as `HolidayWindowsBridged` rather than complete, and this
+  bullet is the residual's disclosure. What is served: the sourced normal
+  week's sessions on every span date. The disputed remainder: each span
+  date's holiday arrangement (which closures and half days the operator
+  kept), which no flank states. The named closer is the desk ask above.
 - **the 2014-2016 half-day treatment is unstated** — the 2014, 2015 and
   2016 sheets print no `#` markers, half-day legend or half-day grid, so no
   half-day rows ship for those years and the within-window no-row claim is

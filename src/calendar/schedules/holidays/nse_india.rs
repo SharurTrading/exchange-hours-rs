@@ -19,35 +19,38 @@
 //! derivation and per-row quotations are recorded in
 //! [`docs/evidence/nse_india.md`](../../../../../docs/evidence/nse_india.md).
 //!
-//! **2012 and 2018 sit outside every audited window.** No operator artifact
-//! stating either year's CM holiday list survives in the archive (the
-//! annual-page URL has no capture in either year, the old pages the archive
-//! does hold from those eras are query forms or other segments, and the
-//! annual circulars are uncaptured for those years), so the coverage windows
-//! stop at 2011-12-31, 2017-12-31 and resume 2019-01-01. Both spans sit
+//! **2018 sits outside every audited window.** No operator artifact stating
+//! the 2018 CM holiday list survives in the archive (the annual-page URL has
+//! no capture in that year and the annual circular is uncaptured), so the
+//! coverage windows run 2010-01-01..2017-12-31 and 2019-01-01..2026-12-31.
+//! 2012 was in that state until 2026-10-06 UTC, when the 2012 list's own
+//! annual circular (`NSE-CIRC-2011-66`, dated 2011-12-09) surfaced in the
+//! archive and the first window merged across the year. The 2018 span sits
 //! **between two audited windows**, so the charter's bridged-residual
-//! convention (2026-10-06, AGENTS.md "Modeling conventions", #296) serves
-//! their session questions from the sourced normal week while the holiday
-//! layer stays honestly absent: the metadata reports each span as
+//! convention (2026-10-06, AGENTS.md "Modeling conventions", #296) serves its
+//! session questions from the sourced normal week while the holiday layer
+//! stays honestly absent: the metadata reports the span as
 //! `HolidayWindowsBridged`, no closure is asserted there that no operator
-//! statement witnesses, and each span's residual is disclosed with its
-//! closer in the evidence file's gaps.
+//! statement witnesses, and the span's residual is disclosed with its closer
+//! in the evidence file's gaps.
 //!
-//! Nine rows are **`Unsourced` rather than closures** (2010-11-05, 2011-10-26,
-//! 2013-11-03, 2014-10-23, 2015-11-11, 2016-10-30, 2017-10-19, 2019-10-27 and
-//! 2026-11-08): each source that prints a Muhurat-Trading footnote ("*Muhurat
-//! Trading will be conducted", timings "shall be notified subsequently") keys
-//! it to a specific date the row set would otherwise misstate — a printed
-//! holiday a special session interrupts, or a weekend the operator announces a
-//! session on. **Five further Muhurat dates ship `ReplacementBlocks`** (2020-
-//! 11-14, 2022-10-24, 2023-11-12, 2024-11-01, 2025-10-21): the operator's own
-//! capital-market circulars recovered 2026-10-06 UTC from the Wayback archive
-//! state each day's complete special-session schedule, and the rows restate
-//! those printed schedules. 2021 is the exception in the other direction: its
-//! list prints the Muhurat footnote against no date at all, so no day is
-//! withheld and the announced-but-undated session stays a recorded residual
-//! risk. NSE publishes the next year's list each December; no 2027 list exists
-//! as of the 2026-09-29 retrieval, so the window ends 2026-12-31.
+//! **Seven rows are `Unsourced` rather than closures** (2011-10-26, 2012-11-13,
+//! 2013-11-03, 2014-10-23, 2017-10-19, 2019-10-27 and 2026-11-08 — six Muhurat
+//! dates plus the 2026 banner date): each source that prints a Muhurat-Trading
+//! footnote ("*Muhurat Trading will be conducted", timings "shall be notified
+//! subsequently") keys it to a specific date the row set would otherwise
+//! misstate — a printed holiday a special session interrupts, or a weekend the
+//! operator announces a session on. **Eight further Muhurat dates ship
+//! `ReplacementBlocks`** (2010-11-05, 2015-11-11, 2016-10-30, 2020-11-14,
+//! 2022-10-24, 2023-11-12, 2024-11-01, 2025-10-21): the operator's own
+//! capital-market circulars recovered from the Wayback archive — the 2010,
+//! 2015 and 2016 ones on 2026-10-06 UTC — state each day's complete
+//! special-session schedule, and the rows restate those printed schedules.
+//! 2021 is the exception in the other direction: its list prints the Muhurat
+//! footnote against no date at all, so no day is withheld and the
+//! announced-but-undated session stays a recorded residual risk. NSE
+//! publishes the next year's list each December; no 2027 list exists as of
+//! the 2026-09-29 retrieval, so the window ends 2026-12-31.
 
 use crate::calendar::exceptions::ExceptionBlock;
 
@@ -126,24 +129,86 @@ static MUHURAT_2025_BLOCKS: [ExceptionBlock; 5] = [
     ExceptionBlock::extended(0, 14 * 3_600 + 55 * 60, 15 * 3_600 + 5 * 60),
 ];
 
+/// The operator's printed Diwali Muhurat session of 2010-11-05, relative to
+/// that trade date.
+///
+/// Read from the operator's own capital-market circular `NSE-CIRC-2010-121`
+/// (circular 121/2010, dated 2010-10-20): Pre-open order entry 18:00-18:08
+/// "with random closure in last one minute", Normal / RDM / Odd Lot Market
+/// 18:15-19:00, and a Closing Session 19:20-19:30. No block-deal session
+/// exists in 2010. The order-entry leg stops at 18:07, the earliest second
+/// the random closure can fire, exactly as the normal-week profile splits its
+/// pre-open; the leg from the closure to the 18:15 Normal Market open is
+/// tradeable and ships `extended`.
+///
+/// Evidence: `docs/evidence/nse_india.md`.
+#[rustfmt::skip]
+static MUHURAT_2010_BLOCKS: [ExceptionBlock; 4] = [
+    ExceptionBlock::order_entry(0, 18 * 3_600, 18 * 3_600 + 7 * 60),
+    ExceptionBlock::extended(0, 18 * 3_600 + 7 * 60, 18 * 3_600 + 15 * 60),
+    ExceptionBlock::regular(0, 18 * 3_600 + 15 * 60, 19 * 3_600),
+    ExceptionBlock::extended(0, 19 * 3_600 + 20 * 60, 19 * 3_600 + 30 * 60),
+];
+
+/// The operator's printed Diwali Muhurat session of 2015-11-11, relative to
+/// that trade date.
+///
+/// Read from the operator's own capital-market circular `NSE-CIRC-2015-65`
+/// (circular 65/2015, dated 2015-10-30): Pre Open 17:30-17:38 with the random
+/// closure "in last one minute", Normal Market/LPM 17:45-18:45, Block Deal
+/// Session 17:45-18:20, Call Auction Illiquid session 17:50-18:35, and a
+/// Closing Session 18:55-19:05. The block-deal and illiquid windows run
+/// inside the Normal Market hours and state no edge the envelope lacks; the
+/// order-entry leg stops at 17:37, the earliest second the closure can fire.
+///
+/// Evidence: `docs/evidence/nse_india.md`.
+#[rustfmt::skip]
+static MUHURAT_2015_BLOCKS: [ExceptionBlock; 4] = [
+    ExceptionBlock::order_entry(0, 17 * 3_600 + 30 * 60, 17 * 3_600 + 37 * 60),
+    ExceptionBlock::extended(0, 17 * 3_600 + 37 * 60, 17 * 3_600 + 45 * 60),
+    ExceptionBlock::regular(0, 17 * 3_600 + 45 * 60, 18 * 3_600 + 45 * 60),
+    ExceptionBlock::extended(0, 18 * 3_600 + 55 * 60, 19 * 3_600 + 5 * 60),
+];
+
+/// The operator's printed Diwali Muhurat session of 2016-10-30, relative to
+/// that trade date.
+///
+/// Read from the operator's own capital-market circular `NSE-CIRC-2016-56`
+/// (circular 56/2016, dated 2016-10-17): Pre Open 18:15-18:23 with the random
+/// closure "in last one minute", Normal Market/LPM 18:30-19:30, Block Deal
+/// Session 18:30-19:05, Call Auction Illiquid session 18:35-19:20, and a
+/// Closing Session 19:40-19:50. As in 2015, the block-deal and illiquid
+/// windows run inside the Normal Market hours and state no edge the envelope
+/// lacks; the order-entry leg stops at 18:22.
+///
+/// Evidence: `docs/evidence/nse_india.md`.
+#[rustfmt::skip]
+static MUHURAT_2016_BLOCKS: [ExceptionBlock; 4] = [
+    ExceptionBlock::order_entry(0, 18 * 3_600 + 15 * 60, 18 * 3_600 + 22 * 60),
+    ExceptionBlock::extended(0, 18 * 3_600 + 22 * 60, 18 * 3_600 + 30 * 60),
+    ExceptionBlock::regular(0, 18 * 3_600 + 30 * 60, 19 * 3_600 + 30 * 60),
+    ExceptionBlock::extended(0, 19 * 3_600 + 40 * 60, 19 * 3_600 + 50 * 60),
+];
+
 /// NSE's built-in holiday rows and the windows they were audited over.
 ///
 /// Every `Closed` row is one printed date of the operator's own holiday
 /// material: `NSE-CIRC-2010-61` for 2010, `NSE-HOL-PAGE-2011` for 2011,
-/// `NSE-CIRC-2012-79` for 2013, `NSE-HOL-PAGE-2014`..`NSE-HOL-PAGE-2017` and
+/// `NSE-CIRC-2011-66` for 2012, `NSE-CIRC-2012-79` for 2013,
+/// `NSE-HOL-PAGE-2014`..`NSE-HOL-PAGE-2017` and
 /// `NSE-HOL-PAGE-2019`..`NSE-HOL-PAGE-2022` for their years, the T2
 /// `NSE-HOLMASTER-2023` and `NSE-HOLMASTER-2024` feeds for 2023-2024, then
-/// `NSE-HOL-2025` for 2025 and `NSE-HOL-2026` for 2026. The five Muhurat
-/// replacement days cite the operator's own circulars
-/// `NSE-CIRC-2020-98`, `NSE-CIRC-2022-124`, `NSE-CIRC-2023-139`,
-/// `NSE-CIRC-2024-147` and `NSE-CIRC-2025-124`. A date inside a window with
-/// no row is audited normal; the nine `Unsourced` Muhurat dates are not, and
-/// 2012 and 2018 are inside no window at all.
+/// `NSE-HOL-2025` for 2025 and `NSE-HOL-2026` for 2026. The eight Muhurat
+/// replacement days cite the operator's own circulars `NSE-CIRC-2010-121`,
+/// `NSE-CIRC-2015-65`, `NSE-CIRC-2016-56`, `NSE-CIRC-2020-98`,
+/// `NSE-CIRC-2022-124`, `NSE-CIRC-2023-139`, `NSE-CIRC-2024-147` and
+/// `NSE-CIRC-2025-124`. A date inside a window with no row is audited normal;
+/// the seven `Unsourced` withheld dates are not, and 2018 is inside no window at
+/// all.
 // Evidence: docs/evidence/nse_india.md
 pub(crate) static TABLE: &HolidayTable = holidays! {
     coverage: [
-        (2010, 1, 1) ..= (2011, 12, 31),
-        (2013, 1, 1) ..= (2017, 12, 31),
+        (2010, 1, 1) ..= (2017, 12, 31),
         (2019, 1, 1) ..= (2026, 12, 31),
     ],
     rows: [
@@ -165,11 +230,11 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2010, 4, 14, Closed, T1, "NSE-CIRC-2010-61"),
         // 2010-09-10 - T1 - NSE-CIRC-2010-61 - Ramzan ID, Friday.
         (2010, 9, 10, Closed, T1, "NSE-CIRC-2010-61"),
-        // 2010-11-05 - T1 - NSE-CIRC-2010-61 - Laxmi Puja*: the circular footnotes
-        // Muhurat Trading with timings "shall be notified subsequently", so no
-        // complete statement of the day exists and the date is withheld rather
-        // than closed.
-        (2010, 11, 5, Unsourced, T1, "NSE-CIRC-2010-61"),
+        // 2010-11-05 - T1 - NSE-CIRC-2010-121 - Diwali Muhurat Trading: the
+        // operator's circular 121/2010 (2010-10-20) states the Friday special
+        // session's complete schedule; the row restates it as one replacement
+        // day.
+        (2010, 11, 5, ReplacementBlocks(&MUHURAT_2010_BLOCKS), T1, "NSE-CIRC-2010-121"),
         // 2010-11-17 - T1 - NSE-CIRC-2010-61 - Bakri Id, Wednesday.
         (2010, 11, 17, Closed, T1, "NSE-CIRC-2010-61"),
         // 2010-12-17 - T1 - NSE-CIRC-2010-61 - Moharum, Friday.
@@ -205,6 +270,42 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2011, 11, 10, Closed, T1, "NSE-HOL-PAGE-2011"),
         // 2011-12-06 - T1 - NSE-HOL-PAGE-2011 - Moharum, Tuesday.
         (2011, 12, 6, Closed, T1, "NSE-HOL-PAGE-2011"),
+        // 2012, from the operator's circular 66/2011 dated 2011-12-09
+        // ("Trading holidays for the calendar year 2012"), recovered
+        // 2026-10-06 UTC.
+        // 2012-01-26 - T1 - NSE-CIRC-2011-66 - Republic Day, Thursday.
+        (2012, 1, 26, Closed, T1, "NSE-CIRC-2011-66"),
+        // 2012-02-20 - T1 - NSE-CIRC-2011-66 - Mahashivratri, Monday.
+        (2012, 2, 20, Closed, T1, "NSE-CIRC-2011-66"),
+        // 2012-03-08 - T1 - NSE-CIRC-2011-66 - Holi, Thursday.
+        (2012, 3, 8, Closed, T1, "NSE-CIRC-2011-66"),
+        // 2012-04-05 - T1 - NSE-CIRC-2011-66 - Mahavir Jayanti, Thursday.
+        (2012, 4, 5, Closed, T1, "NSE-CIRC-2011-66"),
+        // 2012-04-06 - T1 - NSE-CIRC-2011-66 - Good Friday.
+        (2012, 4, 6, Closed, T1, "NSE-CIRC-2011-66"),
+        // 2012-05-01 - T1 - NSE-CIRC-2011-66 - May Day, Tuesday.
+        (2012, 5, 1, Closed, T1, "NSE-CIRC-2011-66"),
+        // 2012-08-15 - T1 - NSE-CIRC-2011-66 - Independence Day, Wednesday.
+        (2012, 8, 15, Closed, T1, "NSE-CIRC-2011-66"),
+        // 2012-08-20 - T1 - NSE-CIRC-2011-66 - Ramzan ID, Monday.
+        (2012, 8, 20, Closed, T1, "NSE-CIRC-2011-66"),
+        // 2012-09-19 - T1 - NSE-CIRC-2011-66 - Ganesh Chaturthi, Wednesday.
+        (2012, 9, 19, Closed, T1, "NSE-CIRC-2011-66"),
+        // 2012-10-02 - T1 - NSE-CIRC-2011-66 - Gandhi Jayanti, Tuesday.
+        (2012, 10, 2, Closed, T1, "NSE-CIRC-2011-66"),
+        // 2012-10-24 - T1 - NSE-CIRC-2011-66 - Dasera, Wednesday.
+        (2012, 10, 24, Closed, T1, "NSE-CIRC-2011-66"),
+        // 2012-11-13 - T1 - NSE-CIRC-2011-66 - Diwali – Laxmi Puja*: the
+        // circular footnotes Muhurat Trading with timings "shall be notified
+        // subsequently", so the printed holiday's special session has no
+        // published instants and the date is withheld rather than closed.
+        (2012, 11, 13, Unsourced, T1, "NSE-CIRC-2011-66"),
+        // 2012-11-14 - T1 - NSE-CIRC-2011-66 - Diwali - Balipratipada, Wednesday.
+        (2012, 11, 14, Closed, T1, "NSE-CIRC-2011-66"),
+        // 2012-11-28 - T1 - NSE-CIRC-2011-66 - Gurunanak Jayanti, Wednesday.
+        (2012, 11, 28, Closed, T1, "NSE-CIRC-2011-66"),
+        // 2012-12-25 - T1 - NSE-CIRC-2011-66 - Christmas, Tuesday.
+        (2012, 12, 25, Closed, T1, "NSE-CIRC-2011-66"),
         // 2013, from the operator's circular 79/2012 dated 2012-12-17.
         // 2013-03-27 - T1 - NSE-CIRC-2012-79 - Holi, Wednesday.
         (2013, 3, 27, Closed, T1, "NSE-CIRC-2012-79"),
@@ -296,9 +397,11 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2015, 10, 2, Closed, T1, "NSE-HOL-PAGE-2015"),
         // 2015-10-22 - T1 - NSE-HOL-PAGE-2015 - Dussehra, Thursday.
         (2015, 10, 22, Closed, T1, "NSE-HOL-PAGE-2015"),
-        // 2015-11-11 - T1 - NSE-HOL-PAGE-2015 - Diwali-Laxmi Pujan*: Muhurat
-        // timings "shall be notified subsequently".
-        (2015, 11, 11, Unsourced, T1, "NSE-HOL-PAGE-2015"),
+        // 2015-11-11 - T1 - NSE-CIRC-2015-65 - Diwali Muhurat Trading: the
+        // operator's circular 65/2015 (2015-10-30) states the Wednesday
+        // special session's complete schedule; the row restates it as one
+        // replacement day.
+        (2015, 11, 11, ReplacementBlocks(&MUHURAT_2015_BLOCKS), T1, "NSE-CIRC-2015-65"),
         // 2015-11-12 - T1 - NSE-HOL-PAGE-2015 - Diwali-Balipratipada, Thursday.
         (2015, 11, 12, Closed, T1, "NSE-HOL-PAGE-2015"),
         // 2015-11-25 - T1 - NSE-HOL-PAGE-2015 - Gurunanak Jayanti, Wednesday.
@@ -332,10 +435,11 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2016, 10, 11, Closed, T1, "NSE-HOL-PAGE-2016"),
         // 2016-10-12 - T1 - NSE-HOL-PAGE-2016 - Moharram, Wednesday.
         (2016, 10, 12, Closed, T1, "NSE-HOL-PAGE-2016"),
-        // 2016-10-30 - T1 - NSE-HOL-PAGE-2016 - Diwali-Laxmi Pujan*: a Sunday the
-        // list footnotes Muhurat Trading with timings "shall be notified
-        // subsequently".
-        (2016, 10, 30, Unsourced, T1, "NSE-HOL-PAGE-2016"),
+        // 2016-10-30 - T1 - NSE-CIRC-2016-56 - Diwali Muhurat Trading: the
+        // operator's circular 56/2016 (2016-10-17) states the Sunday special
+        // session's complete schedule; the row restates it as one replacement
+        // day.
+        (2016, 10, 30, ReplacementBlocks(&MUHURAT_2016_BLOCKS), T1, "NSE-CIRC-2016-56"),
         // 2016-10-31 - T1 - NSE-HOL-PAGE-2016 - Diwali-Balipratipada, Monday.
         (2016, 10, 31, Closed, T1, "NSE-HOL-PAGE-2016"),
         // 2016-11-14 - T1 - NSE-HOL-PAGE-2016 - Gurunanak Jayanti, Monday.

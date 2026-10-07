@@ -815,9 +815,13 @@ fn withheld(calendar: ExchangeCalendar, date: NaiveDate) -> bool {
 /// Sandy confirmation and the mourning day, all date-shaped with no phase gap.
 /// `nse_india` is the next: from 2026-09-28 UTC it audits 2025-2026; from
 /// 2026-10-06 UTC five of its Muhurat dates ship the operator's own circulars
-/// as `ReplacementBlocks`, leaving nine withheld Muhurat dates (2010-2026,
-/// none in 2021, which names no date), with no phase-level gap behind the
-/// denial either. `hkex` was the next from 2026-09-29 UTC, and left the map on
+/// as `ReplacementBlocks`; a second pass the same UTC day recovered the 2010,
+/// 2015 and 2016 circulars the same way and the 2012 list's own annual
+/// circular, whose window merged with the year's printed Muhurat date
+/// withheld — leaving seven withheld dates (2011, 2012, 2013, 2014, 2017,
+/// 2019 and the 2026 banner date; none in 2021, which names no date), with no
+/// phase-level gap behind the denial either. `hkex` was the next from
+/// 2026-09-29 UTC, and left the map on
 /// 2026-09-30 UTC: the operator's own Phase-Two-era Trading Hours page states the
 /// eve session deletions in session language, so the ten 2012-2015 half-day eves
 /// ship sourced 12:00-noon closes and the scope reads complete (#208 closed).
@@ -847,7 +851,10 @@ fn date_level_incompleteness() -> &'static [(&'static str, usize)] {
         ("iceus", 41),
         ("lse", 5),
         ("nasdaq", 4),
-        ("nse_india", 9),
+        // 7 since the 2026-10-06 second pass: three more Muhurat circulars
+        // (2010, 2015, 2016) landed as replacement blocks and the recovered
+        // 2012 list carried that year's own withheld Muhurat date in.
+        ("nse_india", 7),
     ]
 }
 

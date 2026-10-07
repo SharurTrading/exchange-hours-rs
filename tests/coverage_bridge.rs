@@ -103,24 +103,38 @@ fn the_between_window_spans_report_the_bridged_residual_not_a_refusal() {
         vec![(date(2020, 1, 2), date(2024, 12, 31))],
         "the sgx capture gap between its audited windows is one residual span"
     );
-    // `nse_india` ships windows 2010-2011, 2013-2017 and 2019-2026; 2012 and
-    // 2018 are the bridged residuals.
+    // `nse_india` ships windows 2010-2017 and 2019-2026; 2018 is the bridged
+    // residual. 2012 sat beside it until 2026-10-06 UTC, when the 2012 list's
+    // own annual circular (`NSE-CIRC-2011-66`) surfaced and the window merged.
     let nse = calendar_for_exchange(Exchange::NseIndia).coverage();
     assert_eq!(
         bridged_union(nse),
-        vec![
-            (date(2012, 1, 1), date(2012, 12, 31)),
-            (date(2018, 1, 1), date(2018, 12, 31)),
-        ],
-        "each unrecovered NSE year is one residual span"
+        vec![(date(2018, 1, 1), date(2018, 12, 31))],
+        "the one unrecovered NSE year is one residual span"
+    );
+    // The residual spans together cover 1,826 sgx trade dates (2020-01-02 was
+    // a holiday in its own right, so the span opens on 01-02) and 365 nse
+    // trade dates: 2,191 in all.
+    let mut bridged_days = 0_usize;
+    for (first, last) in [
+        (date(2020, 1, 2), date(2024, 12, 31)),
+        (date(2018, 1, 1), date(2018, 12, 31)),
+    ] {
+        let mut day = first;
+        while day <= last {
+            bridged_days += 1;
+            day = day
+                .succ_opt()
+                .expect("the residual span stays inside the representable calendar");
+        }
+    }
+    assert_eq!(
+        bridged_days, 2_191,
+        "the bridged union is the 1,826 sgx days plus the 365 nse days"
     );
     // The residual withholds the complete-calendar claim — it is not an
     // audited normal and not `Covered`.
-    for (coverage, day) in [
-        (&sgx, date(2022, 6, 8)),
-        (&nse, date(2012, 6, 15)),
-        (&nse, date(2018, 3, 12)),
-    ] {
+    for (coverage, day) in [(&sgx, date(2022, 6, 8)), (&nse, date(2018, 3, 12))] {
         assert_eq!(
             gap_reason_on(*coverage, day),
             Some(CoverageGapReason::HolidayWindowsBridged),
@@ -184,10 +198,10 @@ fn bridged_dates_answer_their_session_questions_from_the_sourced_normal_week() {
         "the bridged Saturday answers the normal week's own weekend closure"
     );
     // `nse_india`: the trade-date closure question answers from the sourced
-    // normal week — a Friday and a Monday of the bridged years are open.
+    // normal week — a Friday and a Monday of the bridged year are open.
     let nse = calendar_for_exchange(Exchange::NseIndia);
     assert_eq!(
-        nse.is_closed_trade_date(date(2012, 6, 15), SessionKind::Both),
+        nse.is_closed_trade_date(date(2018, 6, 15), SessionKind::Both),
         Ok(false),
         "the bridged Friday answers not-closed beside the disclosed residual"
     );
@@ -197,7 +211,7 @@ fn bridged_dates_answer_their_session_questions_from_the_sourced_normal_week() {
         "the bridged Monday answers not-closed beside the disclosed residual"
     );
     assert_eq!(
-        nse.is_open(ist(2012, 6, 15, 10, 0)),
+        nse.is_open(ist(2018, 6, 15, 10, 0)),
         Ok(true),
         "the bridged NSE Friday answers its normal-week session"
     );
@@ -213,7 +227,7 @@ fn the_bridge_asserts_no_holiday_and_leaves_the_flank_rows_whole() {
         (&sgx, date(2020, 6, 15)),
         (&sgx, date(2021, 6, 14)),
         (&sgx, date(2024, 12, 30)),
-        (&nse, date(2012, 6, 15)),
+        (&nse, date(2018, 6, 15)),
         (&nse, date(2018, 3, 12)),
     ] {
         assert_eq!(

@@ -13,14 +13,36 @@
   the holiday layer stays honestly absent, and the metadata reports the span
   as `CoverageGapReason::HolidayWindowsBridged` rather than complete. The
   spans that now answer: `sgx_securities`'s 2020-01-02..2024-12-31 capture gap
-  (1,826 days) and `nse_india`'s 2012 and 2018 unrecovered years (731 days) —
-  2,557 days lifted from whole-date refusal — and eight of their neighbouring
-  window dates that previously refused as resolution edges
+  (1,826 days), `nse_india`'s 2018 unrecovered year (365 days) and `cfe`'s two
+  between-window spans 2015-01-03..2015-02-14 and 2016-01-21..2017-04-09 (488
+  days) — 2,679 days lifted from whole-date refusal — and eight of their
+  neighbouring window dates that previously refused as resolution edges
   (`sgx_securities` 2019-12-31, 2020-01-01 and 2025-01-01; `nse_india`
   2011-12-31, 2013-01-01, 2017-12-30, 2017-12-31 and 2019-01-01) are fully
   covered again. One-flank spans (below the first window, above the last)
   refuse unchanged, and the residuals are disclosed in the owners' evidence
   files with their #213 and NSE-list closers.
+- `cfe` / `cfe_vix` holiday history extended below the 2017 window: the
+  operator's own holiday press releases of 2014-2017 and the CFE information
+  circulars IC15-011, IC15-023, IC15-028 and IC15-039 (recovered 2026-10-06
+  UTC from the operator's `ir.cboe.com` news directory and the archived
+  `CFEinfocirc` series, one Wayback `id_` replay each) add the audited windows
+  2014-12-24..2015-01-02 and 2015-02-15..2016-01-20 (twenty rows) and extend
+  the 2017-2026 rows with the pre-migration next-day legs the operator's own
+  charts and notices print (seven `LateOpen` rows and the 2017-11-24 combined
+  half day). The audited row set moves from 113 to 140 over three windows,
+  with 2017-07-03 still the one `Unsourced` date.
+- `nse_india` 2012 holiday list recovered: the operator's annual circular
+  66/2011 (dated 2011-12-09, download `NSE/CMTR/19539`), which states the
+  complete 2012 capital-market trading-holiday list, surfaced in the Wayback
+  archive on 2026-10-06 UTC, so the 2012 window merges and fifteen rows ship
+  (fourteen closures plus the year's own withheld Muhurat date 2012-11-13).
+  Three more Muhurat circulars recovered the same day (121/2010, 65/2015 and
+  56/2016) turn 2010-11-05, 2015-11-11 and 2016-10-30 into `ReplacementBlocks`
+  days restating each printed special-session schedule — eight Muhurat days
+  now ship blocks, seven dates stay withheld (the Muhurat dates of 2011, 2012,
+  2013, 2014, 2017 and 2019 plus the 2026-11-08 banner date), and 2018 is the
+  one unrecovered year, the bridged residual.
 - **Refusal context (issue #296, Tier 3)**: every
   `CalendarQueryError` still refuses exactly as before, and now carries the
   sourced normal-week baseline its date sits inside —
@@ -40,7 +62,9 @@
   2020-11-14, 124/2022 for 2022-10-24, 139/2023 for 2023-11-12, 147/2024 for
   2024-11-01 and 124/2025 for 2025-10-21; one Wayback `id_` replay each). The
   withheld (`Unsourced`) Muhurat count moves from fourteen to nine; 2025-10-21
-  trades its printed 13:15-15:05 schedule instead of refusing.
+  trades its printed 13:15-15:05 schedule instead of refusing. The same day's
+  second pass (recorded in the Added entries above) extends the recovery to
+  eight shipped Muhurat days and seven withheld dates.
 - `tadawul`: the ledger horizon moves from 2010-01-12 to the 2010-01-01
   support floor — the operator's Trading Times page bytes of 2010-01-12 are
   byte-identical to its 2009-09-12 and 2009-11-12 captures, and the

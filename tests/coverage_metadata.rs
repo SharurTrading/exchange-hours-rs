@@ -311,18 +311,22 @@ fn cfe_2025_holiday_rows_report_covered() {
         assert_eq!(coverage.coverage_on(day), DateCoverage::Covered);
         assert_eq!(gap_reason_on(coverage, day), None);
         assert!(coverage.is_complete_on(day));
-        // 2017-04-10, the window's own first day, reaches back to 2017-04-09
-        // for its wrapped Sunday-evening leg and so is not complete (#151);
-        // the first complete span begins the day after it.
+        // 2017-04-10, the third window's own first day, reaches back to
+        // 2017-04-09 for its wrapped Sunday-evening leg and so is not complete
+        // (#151); the first window's own first two days refuse the same way —
+        // the 2014-12-24 early close's chain derivation reads the leg that
+        // opened 2014-12-23 — so the first complete span begins at the first
+        // window's third day, the LateOpen day whose chain stops on the
+        // closure.
         assert_eq!(
             coverage.complete_ranges().next().map(DateRange::first),
-            Some(date(2017, 4, 11))
+            Some(date(2014, 12, 26))
         );
         assert!(
             coverage
                 .holiday_contract()
                 .coverage()
-                .is_some_and(|windows| windows.first() == date(2017, 4, 10)
+                .is_some_and(|windows| windows.first() == date(2014, 12, 24)
                     && windows.last() == date(2026, 12, 31)),
             "cfe must audit from the earliest surviving operator artifact through the \
              published 2026 schedule"

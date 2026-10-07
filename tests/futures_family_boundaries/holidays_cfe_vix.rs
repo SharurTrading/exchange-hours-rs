@@ -1,20 +1,27 @@
 // SPDX-License-Identifier: MIT-0
 
-//! Built-in holiday rows for CFE (`cfe` venue, `cfe_vix` key), 2017-04-10
-//! through 2026.
+//! Built-in holiday rows for CFE (`cfe` venue, `cfe_vix` key) over three
+//! audited windows: 2014-12-24..2015-01-02, 2015-02-15..2016-01-19 and
+//! 2017-04-10 through 2026.
 //!
 //! One table serves both identities, so every case below is asserted through
 //! the key and the venue agreement is asserted once at the end.
 //!
-//! CFE has no late open in this window: every Cboe row whose regular cell reads
-//! `None` stops the overnight leg early rather than starting it late, so §4.1
-//! case 4 has nothing to exercise here and says so rather than inventing a row.
+//! CFE's pre-migration era adds one shape the post-2018 windows never exercise:
+//! on the 2014-06-22 grid the next business day's session begins 15:30 CT the
+//! previous afternoon, but every pre-migration holiday chart and notice prints
+//! the day-after column as beginning 5:00 p.m. on the holiday, so the day after
+//! each Mon-Thu holiday ships a `LateOpen` row (a `LateOpenAndEarlyClose` where
+//! the day after is itself a half day). The 2015 windows test that shape
+//! directly, and the 2017-2018 companions are asserted beside the rows they
+//! accompany.
 //!
 //! The 2025 rows are not copies of the 2026 shapes and the suite says so: Good
 //! Friday 2025-04-18 is a closure where 2026-04-03 is an early close, and
 //! 2025-01-09 is the only `ReplacementBlocks` row the table ships. The
-//! pre-2025 rows are the 2017 rules-page shapes and the per-holiday notices of
-//! 2018-2024, tested per year band below, with 2017-07-03 the window's one
+//! pre-2025 rows are the 2017 rules-page shapes, the recovered 2014-2016 press
+//! releases and information circulars, and the per-holiday notices of
+//! 2018-2024, tested per year band below, with 2017-07-03 the windows' one
 //! `Unsourced` date.
 
 use chrono::{DateTime, Days, NaiveDate, TimeDelta, TimeZone as _, Utc};
@@ -24,6 +31,8 @@ use exchange_hours::{
     Holiday, HolidayKind, MarketHoursKey, SessionKind, calendar_for_exchange,
     calendar_for_market_hours_key,
 };
+
+
 
 fn cfe() -> ExchangeCalendar {
     calendar_for_market_hours_key(MarketHoursKey::CfeVix)
@@ -174,8 +183,11 @@ fn assert_closed(cell: (i32, u32, u32), label: &str) {
         "{label}: {cell:?} is a closure"
     );
     // The closure's own wrap-opening day sits inside the audited window for
-    // every shipped row: the earliest closure is 2017-04-14, whose wrap opened
-    // 2017-04-13, four days inside the 2017-04-10 window start.
+    // every row this helper asserts: the earliest is 2017-04-14, whose wrap
+    // opened 2017-04-13, four days inside the 2017-04-10 window start. (The
+    // 2014-12-25 closure sits one window day from the edge and its queries
+    // refuse naming the out-of-window opening day; it is asserted beside its
+    // own row instead.)
     assert!(
         calendar
             .is_closed_trade_date(date, SessionKind::Both)
@@ -493,12 +505,15 @@ fn every_pre_2025_floating_holiday_stops_the_overnight_leg_at_1030_central() {
 }
 
 /// The pre-2025 half days: the Thanksgiving Fridays, the December eves and the
-/// Independence Day eves the notices state at 12:15 CT.
+/// Independence Day eves the notices state at 12:15 CT. 2017-11-24 and
+/// 2015-11-27 are absent from this list on purpose: their charts print the
+/// Friday leg beginning 5:00 p.m. CT on the holiday, so they ship
+/// `LateOpenAndEarlyClose` rows and are asserted in
+/// [`the_pre_migration_half_days_begin_1700_on_the_holiday`] below.
 #[test]
 fn every_pre_2025_half_day_closes_at_1215_central() {
-    assert_early_close_pre_migration((2017, 11, 24), 12 * 60 + 15, "2017 Thanksgiving Friday");
-    assert_pre_migration_morning((2017, 11, 24), "2017 Thanksgiving Friday");
     for cell in [
+        (2015, 12, 24),
         (2018, 11, 23),
         (2018, 12, 24),
         (2019, 7, 3),
@@ -515,6 +530,52 @@ fn every_pre_2025_half_day_closes_at_1215_central() {
         (2024, 12, 24),
     ] {
         assert_early_close(cell, 12 * 60 + 15, "pre-2025 half day");
+    }
+}
+
+/// The pre-migration half days whose charts print the Friday leg beginning
+/// 5:00 p.m. CT on the holiday: both boundaries move, so the row is
+/// `LateOpenAndEarlyClose`, and the 15:30-17:00 stretch on the holiday itself
+/// — which the standing grid would have traded — is shut.
+#[test]
+fn the_pre_migration_half_days_begin_1700_on_the_holiday() {
+    let calendar = cfe();
+    for (cell, holiday) in [((2017, 11, 24), (2017, 11, 23)), ((2015, 11, 27), (2015, 11, 26))] {
+        assert_eq!(
+            calendar.holiday_on(date_of(cell)).map(Holiday::kind),
+            Some(HolidayKind::LateOpenAndEarlyClose {
+                open_ssm: 17 * 3_600,
+                close_ssm: 12 * 3_600 + 15 * 60
+            }),
+            "{cell:?} carries the chart's own Friday column"
+        );
+        // The holiday afternoon stretch the standing grid would have traded
+        // (15:30-17:00 CT) is shut; the leg begins at 17:00.
+        assert!(
+            !calendar
+                .is_open(ct(holiday, (16, 0, 0)))
+                .expect("the coverage contract must answer a covered date"),
+            "{holiday:?} must be shut inside the 15:30-17:00 stretch"
+        );
+        assert!(
+            calendar
+                .is_open(ct(holiday, (17, 0, 0)))
+                .expect("the coverage contract must answer a covered date"),
+            "{holiday:?}'s 17:00 CT resume opens the Friday leg"
+        );
+        // The Friday still trades its shortened morning and closes 12:15.
+        assert!(
+            calendar
+                .is_open(ct(cell, (9, 0, 0)))
+                .expect("the coverage contract must answer a covered date"),
+            "{cell:?} trades its shortened morning"
+        );
+        assert!(
+            !calendar
+                .is_open(ct(cell, (12, 15, 0)))
+                .expect("the coverage contract must answer a covered date"),
+            "{cell:?} is closed at its 12:15 CT close"
+        );
     }
 }
 
@@ -652,15 +713,24 @@ fn the_2017_rules_page_rows_key_the_2017_calendar() {
         "the Sunday-evening leg into 2017-12-25 is deleted"
     );
     // The reopen is 17:00 CT on the holiday itself, which is trade date
-    // 2017-12-26's opening leg.
+    // 2017-12-26's opening leg — and the chart's day-after column states that
+    // beginning outright, so 2017-12-26's LateOpen row makes the 15:30-17:00
+    // stretch shut and 17:00 the first open.
+    assert!(
+        !calendar
+            .is_open(ct((2017, 12, 25), (16, 30, 0)))
+            .expect("the coverage contract must answer a covered date"),
+        "the 2017-12-25 afternoon stretch the standing grid would have traded is shut"
+    );
     assert!(
         calendar
             .is_open(ct((2017, 12, 25), (17, 30, 0)))
             .expect("the coverage contract must answer a covered date"),
         "the 2017-12-25 evening leg belongs to trade date 2017-12-26"
     );
-    // The Thanksgiving chart's Friday session is the only move on 2017-11-24:
-    // 8:30 to 12:15, and the day still trades its morning.
+    // The Thanksgiving chart's Friday moves 2017-11-24's close to 12:15 and
+    // its first open to 17:00 CT on the holiday; the day still trades its
+    // morning (asserted beside its own row).
     assert!(
         calendar
             .is_open(ct((2017, 11, 24), (9, 0, 0)))
@@ -688,8 +758,15 @@ fn the_withheld_2017_july_3_date_is_unsourced_not_normal() {
     ));
     // The withheld day does not leak onto its neighbours' rows: July 4 carries
     // the rules page's 10:30 early close (asserted below through its own row)
-    // and July 5 is audited normal.
-    assert_eq!(calendar.holiday_on(day(2017, 7, 5)), None);
+    // and July 5 carries the chart's own July 5 column — its leg begins 5:00
+    // p.m. CT on the holiday, so the day ships a `LateOpen` row rather than
+    // reading the standing 15:30 beginning.
+    assert_eq!(
+        calendar.holiday_on(day(2017, 7, 5)).map(Holiday::kind),
+        Some(HolidayKind::LateOpen {
+            open_ssm: 17 * 3_600
+        }),
+    );
     // And the withholding reaches one day sideways, exactly as far as the
     // sessions that opened on it: July 4's overnight leg opened 17:00 CT on
     // the withheld 2017-07-03, and a trade date's complete session set
@@ -719,13 +796,14 @@ fn the_withheld_2017_july_3_date_is_unsourced_not_normal() {
     // Wednesday regular session, which opens on the sourced 2017-07-05 and
     // answers, and 2017-07-06 — whose chain stops on sourced days — answers
     // again. The row layer answers throughout.
-    assert_eq!(calendar.holiday_on(day(2017, 7, 5)), None);
-    assert!(
-        calendar
-            .is_open(ct((2017, 7, 5), (12, 0, 0)))
-            .expect("the Wednesday regular session opens on the sourced day"),
-        "noon on 2017-07-05 answers inside its own regular session"
-    );
+    // With the July 5 LateOpen row shipped, the day's chain derivation reads
+    // the July 4 row, whose own chain reads the withheld July 3, so noon
+    // refuses there too — the row layer still answers, and the answer resumes
+    // on 2017-07-06, whose chain stops on the sourced 2017-07-05 17:00 open.
+    assert!(matches!(
+        calendar.is_open(ct((2017, 7, 5), (12, 0, 0))),
+        Err(CalendarQueryError::UnresolvedGap { date, .. }) if date == day(2017, 7, 3)
+    ));
     assert!(matches!(
         calendar.trade_date(ct((2017, 7, 5), (12, 0, 0))),
         Err(CalendarQueryError::UnresolvedGap { date, .. }) if date == day(2017, 7, 3)
@@ -736,6 +814,310 @@ fn the_withheld_2017_july_3_date_is_unsourced_not_normal() {
             .expect("2017-07-06's session chain stops on sourced days"),
         "the answer resumes on 2017-07-06"
     );
+}
+
+/// The 2014-2016 rows recovered on 2026-10-06 UTC: the CBOE Holdings press
+/// releases of 2014-2017 and the CFE information circulars IC15-011, IC15-023,
+/// IC15-028 and IC15-039. The first window (2014-12-24..2015-01-02) and the
+/// second (2015-02-16..2016-01-19) probe the pre-migration grid directly, and
+/// the shapes are the operators' own printed columns — including the day-after
+/// legs beginning 5:00 p.m. CT on the holiday, which ship as `LateOpen` rows.
+#[test]
+fn the_2014_2015_2016_rows_answer_from_the_recovered_notices() {
+    let calendar = cfe();
+
+    // ---- Window 1: 2014-12-24..2015-01-02 (the 2014-12-16 release) ----
+    // Christmas Eve 2014-12-24: the release's CFE column closes VX at 12:15
+    // p.m. CT. Morning instants sit inside the leg that opened 2014-12-23
+    // (outside the window) and refuse; the regular morning answers.
+    assert_eq!(
+        calendar
+            .holiday_on(day(2014, 12, 24))
+            .map(Holiday::kind),
+        Some(HolidayKind::EarlyClose {
+            close_ssm: 12 * 3_600 + 15 * 60
+        }),
+    );
+    // The early close's chain derivation reads the leg that opened
+    // 2014-12-23, outside the window, so every instant query on the day
+    // refuses naming it while the row layer answers.
+    for probe in [(9, 0, 0), (12, 15, 0), (13, 0, 0)] {
+        assert!(
+            matches!(
+                calendar.is_open(ct((2014, 12, 24), probe)),
+                Err(CalendarQueryError::OutsideCoveredRange { date, .. })
+                    if date == day(2014, 12, 23)
+            ),
+            "2014-12-24 at {probe:?} refuses on the out-of-window opening day"
+        );
+    }
+    // Christmas Day 2014-12-25: no session belongs to the day; the
+    // Wednesday-evening wrap is deleted with it.
+    assert_eq!(
+        calendar.holiday_on(day(2014, 12, 25)).map(Holiday::kind),
+        Some(HolidayKind::Closed)
+    );
+    // The closure's own query walks the deleted wrap, which opened
+    // 2014-12-23 outside the window, so the instant and closure queries
+    // refuse naming it; the row layer answers.
+    assert!(matches!(
+        calendar.is_closed_trade_date(day(2014, 12, 25), SessionKind::Both),
+        Err(CalendarQueryError::OutsideCoveredRange { date, .. }) if date == day(2014, 12, 23)
+    ));
+    for probe_date in [(2014, 12, 24), (2014, 12, 25)] {
+        assert!(
+            matches!(
+                calendar.is_open(ct(probe_date, (16, 0, 0))),
+                Err(CalendarQueryError::OutsideCoveredRange { date, .. })
+                    if date == day(2014, 12, 23)
+            ),
+            "{probe_date:?} at 16:00 CT refuses on the out-of-window opening day"
+        );
+    }
+    assert!(
+        calendar
+            .is_open(ct((2014, 12, 25), (17, 0, 0)))
+            .expect("the coverage contract must answer a covered date"),
+        "the printed 17:00 CT resume opens the 2014-12-26 leg"
+    );
+    assert_eq!(
+        calendar.holiday_on(day(2014, 12, 26)).map(Holiday::kind),
+        Some(HolidayKind::LateOpen {
+            open_ssm: 17 * 3_600
+        }),
+    );
+    // New Year's Day 2015-01-01: no session belongs to the day; the
+    // 2014-12-31 evening wrap is deleted with it.
+    assert_eq!(
+        calendar.holiday_on(day(2015, 1, 1)).map(Holiday::kind),
+        Some(HolidayKind::Closed)
+    );
+    assert!(
+        calendar
+            .is_closed_trade_date(day(2015, 1, 1), SessionKind::Both)
+            .expect("the coverage contract must answer a covered date")
+    );
+    assert!(
+        !calendar
+            .is_open(ct((2014, 12, 31), (16, 0, 0)))
+            .expect("the coverage contract must answer a covered date"),
+        "the release closes VX from 15:15 CT on 2014-12-31 until 17:00 CT on the holiday"
+    );
+    assert!(
+        calendar
+            .is_open(ct((2015, 1, 1), (17, 0, 0)))
+            .expect("the coverage contract must answer a covered date"),
+        "the printed 17:00 CT resume opens the 2015-01-02 leg"
+    );
+    assert_eq!(
+        calendar.holiday_on(day(2015, 1, 2)).map(Holiday::kind),
+        Some(HolidayKind::LateOpen {
+            open_ssm: 17 * 3_600
+        }),
+    );
+    assert!(
+        calendar
+            .is_open(ct((2015, 1, 2), (10, 0, 0)))
+            .expect("the coverage contract must answer a covered date"),
+        "2015-01-02 trades its regular session"
+    );
+
+    // ---- Window 2: 2015-02-16..2016-01-19 (the 2015 releases and circulars)
+    // ---- plus the 2016-01-11 MLK release.
+    // Presidents' Day 2015-02-16: the release halts VX at 10:30 a.m. CT, and
+    // the release itself names the Sunday-evening wrap (the 17:00 regular
+    // open for business day Tuesday), which is why the window opens on
+    // 2015-02-15 and the day answers like the 2017 Monday rows.
+    assert_early_close_pre_migration((2015, 2, 16), 10 * 60 + 30, "2015 Presidents' Day release");
+    assert_pre_migration_morning((2015, 2, 16), "2015 Presidents' Day release");
+    // The Tuesday leg begins 17:00 CT on the holiday (the release's own
+    // resume), so the 15:30-17:00 stretch is shut.
+    assert!(
+        !calendar
+            .is_open(ct((2015, 2, 16), (16, 0, 0)))
+            .expect("the coverage contract must answer a covered date"),
+        "the 2015-02-16 stretch before the printed 17:00 resume is shut"
+    );
+    assert!(
+        calendar
+            .is_open(ct((2015, 2, 16), (17, 0, 0)))
+            .expect("the coverage contract must answer a covered date"),
+        "the printed 17:00 CT resume opens the 2015-02-17 leg"
+    );
+    assert_eq!(
+        calendar.holiday_on(day(2015, 2, 17)).map(Holiday::kind),
+        Some(HolidayKind::LateOpen {
+            open_ssm: 17 * 3_600
+        }),
+    );
+    // Good Friday 2015-04-03: the circular's own session table runs one
+    // continuous extended session from 15:30 CT Thursday to the operator's
+    // printed 08:15 CT Friday close, with Regular `None` — so the Thursday
+    // evening trades straight through and the Friday closes at 08:15.
+    assert_eq!(
+        calendar.holiday_on(day(2015, 4, 3)).map(Holiday::kind),
+        Some(HolidayKind::EarlyClose {
+            close_ssm: 8 * 3_600 + 15 * 60
+        }),
+    );
+    for probe in [(2015, 4, 2, 16, 0), (2015, 4, 2, 23, 0), (2015, 4, 3, 7, 0)] {
+        assert!(
+            calendar
+                .is_open(ct((probe.0, probe.1, probe.2), (probe.3, probe.4, 0)))
+                .expect("the coverage contract must answer a covered date"),
+            "the holiday session runs continuously from Thursday 15:30 CT: {probe:?}"
+        );
+    }
+    assert!(
+        !calendar
+            .is_open(ct((2015, 4, 3), (8, 15, 0)))
+            .expect("the coverage contract must answer a covered date"),
+        "2015-04-03 is closed at the printed 08:15 CT close"
+    );
+    assert!(
+        !calendar
+            .is_open(ct((2015, 4, 3), (10, 0, 0)))
+            .expect("the coverage contract must answer a covered date"),
+        "no regular session runs on 2015-04-03"
+    );
+    // Independence Day observed Friday 2015-07-03: the circular states the
+    // closure, the Thursday 15:15 close, and a normal Sunday reopen.
+    assert_eq!(
+        calendar.holiday_on(day(2015, 7, 3)).map(Holiday::kind),
+        Some(HolidayKind::Closed)
+    );
+    assert!(
+        calendar
+            .is_closed_trade_date(day(2015, 7, 3), SessionKind::Both)
+            .expect("the coverage contract must answer a covered date")
+    );
+    assert!(
+        !calendar
+            .is_open(ct((2015, 7, 2), (16, 0, 0)))
+            .expect("the coverage contract must answer a covered date"),
+        "the Thursday-evening wrap is deleted with the closed Friday"
+    );
+    assert!(
+        calendar
+            .is_open(ct((2015, 7, 5), (17, 30, 0)))
+            .expect("the coverage contract must answer a covered date"),
+        "the Sunday reopen is the normal 17:00 CT"
+    );
+    // Memorial Day and Labor Day 2015: the circulars print the Monday-holiday
+    // shape (Sunday-evening leg to 10:30 a.m., Regular None) and the Tuesday
+    // column beginning 5:00 p.m. CT on the holiday.
+    for cell in [(2015, 5, 25), (2015, 9, 7)] {
+        assert_early_close_pre_migration(cell, 10 * 60 + 30, "2015 Monday-holiday circular");
+        assert_pre_migration_morning(cell, "2015 Monday-holiday circular");
+    }
+    for (cell, holiday) in [((2015, 5, 26), (2015, 5, 25)), ((2015, 9, 8), (2015, 9, 7))] {
+        assert_eq!(
+            calendar.holiday_on(date_of(cell)).map(Holiday::kind),
+            Some(HolidayKind::LateOpen {
+                open_ssm: 17 * 3_600
+            }),
+            "{cell:?} carries the circular's Tuesday column"
+        );
+        assert!(
+            !calendar
+                .is_open(ct(holiday, (16, 0, 0)))
+                .expect("the coverage contract must answer a covered date"),
+            "{holiday:?} must be shut inside the 15:30-17:00 stretch"
+        );
+        assert!(
+            calendar
+                .is_open(ct(holiday, (17, 0, 0)))
+                .expect("the coverage contract must answer a covered date"),
+            "{holiday:?}'s 17:00 CT resume opens the Tuesday leg"
+        );
+    }
+    // Thanksgiving 2015: the Thursday row is the pre-migration 10:30 shape;
+    // the Friday row is asserted with the other combined half days.
+    assert_early_close_pre_migration((2015, 11, 26), 10 * 60 + 30, "2015 Thanksgiving");
+    assert_pre_migration_morning((2015, 11, 26), "2015 Thanksgiving");
+    // Christmas Eve 2015-12-24 closes 12:15 CT; Christmas Day 2015-12-25 and
+    // New Year's Day 2016-01-01 delete their trade dates and prior-evening
+    // wraps; the Sunday reopenings are the normal 17:00 CT.
+    assert_early_close_pre_migration((2015, 12, 24), 12 * 60 + 15, "2015 Christmas Eve");
+    assert_pre_migration_morning((2015, 12, 24), "2015 Christmas Eve");
+    for (closure, wrap, resume) in [
+        ((2015, 12, 25), (2015, 12, 24), (2015, 12, 27)),
+        ((2016, 1, 1), (2015, 12, 31), (2016, 1, 3)),
+    ] {
+        assert_eq!(
+            calendar.holiday_on(date_of(closure)).map(Holiday::kind),
+            Some(HolidayKind::Closed),
+            "{closure:?} is a closure"
+        );
+        assert!(
+            calendar
+                .is_closed_trade_date(date_of(closure), SessionKind::Both)
+                .expect("the coverage contract must answer a covered date"),
+            "{closure:?} has no session in either phase"
+        );
+        assert!(
+            !calendar
+                .is_open(ct(wrap, (16, 0, 0)))
+                .expect("the coverage contract must answer a covered date"),
+            "the {wrap:?} evening stretch is deleted with the closed {closure:?}"
+        );
+        assert!(
+            calendar
+                .is_open(ct(resume, (17, 30, 0)))
+                .expect("the coverage contract must answer a covered date"),
+            "the {resume:?} Sunday reopen is the normal 17:00 CT"
+        );
+    }
+    // MLK Jr. Day 2016-01-18: the release's Monday-holiday shape, and the
+    // Tuesday column beginning 5:00 p.m. CT on the holiday.
+    assert_early_close_pre_migration((2016, 1, 18), 10 * 60 + 30, "2016 MLK release");
+    assert_pre_migration_morning((2016, 1, 18), "2016 MLK release");
+    assert_eq!(
+        calendar.holiday_on(day(2016, 1, 19)).map(Holiday::kind),
+        Some(HolidayKind::LateOpen {
+            open_ssm: 17 * 3_600
+        }),
+    );
+    assert!(
+        !calendar
+            .is_open(ct((2016, 1, 18), (16, 0, 0)))
+            .expect("the coverage contract must answer a covered date"),
+        "the 2016-01-18 stretch before the printed 17:00 resume is shut"
+    );
+    assert!(
+        calendar
+            .is_open(ct((2016, 1, 18), (17, 0, 0)))
+            .expect("the coverage contract must answer a covered date"),
+        "the printed 17:00 CT resume opens the 2016-01-19 leg"
+    );
+    // The pre-migration Monday rows already inside the 2017-04-10 window gain
+    // their chart's own Tuesday columns as LateOpen rows.
+    for (cell, holiday) in [
+        ((2017, 5, 30), (2017, 5, 29)),
+        ((2017, 9, 5), (2017, 9, 4)),
+        ((2018, 1, 16), (2018, 1, 15)),
+        ((2018, 2, 20), (2018, 2, 19)),
+    ] {
+        assert_eq!(
+            calendar.holiday_on(date_of(cell)).map(Holiday::kind),
+            Some(HolidayKind::LateOpen {
+                open_ssm: 17 * 3_600
+            }),
+            "{cell:?} carries the chart's or notice's Tuesday column"
+        );
+        assert!(
+            !calendar
+                .is_open(ct(holiday, (16, 0, 0)))
+                .expect("the coverage contract must answer a covered date"),
+            "{holiday:?} must be shut inside the 15:30-17:00 stretch"
+        );
+        assert!(
+            calendar
+                .is_open(ct(holiday, (17, 0, 0)))
+                .expect("the coverage contract must answer a covered date"),
+            "{holiday:?}'s 17:00 CT resume opens the Tuesday leg"
+        );
+    }
 }
 
 /// Juneteenth enters the observed set in 2022: the 2022 notice's 10:30 row is
@@ -912,14 +1294,23 @@ fn the_mourning_day_is_extended_only_and_ends_at_0830_central() {
 }
 
 #[test]
-fn coverage_runs_from_the_earliest_surviving_artifact_to_the_published_horizon() {
+fn coverage_runs_over_the_three_audited_windows() {
     let calendar = cfe();
     let coverage = calendar
         .holiday_coverage()
         .expect("CFE ships a built-in table");
 
-    assert_eq!(coverage.first(), day(2017, 4, 10));
+    assert_eq!(coverage.first(), day(2014, 12, 24));
     assert_eq!(coverage.last(), day(2026, 12, 31));
+    assert_eq!(
+        coverage.windows(),
+        vec![
+            (day(2014, 12, 24), day(2015, 1, 2)),
+            (day(2015, 2, 15), day(2016, 1, 20)),
+            (day(2017, 4, 10), day(2026, 12, 31)),
+        ],
+        "the three audited windows stop at each unrecovered span's edge"
+    );
     assert_eq!(
         calendar.holiday_on(
             coverage
@@ -953,18 +1344,20 @@ fn coverage_runs_from_the_earliest_surviving_artifact_to_the_published_horizon()
             .expect("2025-12-31 is inside the audited window"),
         Some(day(2025, 12, 31))
     );
-    // 2017-04-10 is the window's own first day — the capture instant that can
-    // speak for 2017 — and the day before it is outside the audited window:
-    // the identity refuses it rather than answering the normal week.
-    // A support boundary never splits a session: the 2017 grid's Sunday-evening
-    // wrap opens 17:00 CT on 2017-04-09, so the wrap's own instants on 04-10
-    // refuse naming the wrap's opening day. The day's regular session opens
-    // 08:30 CT on the window's own first day, so noon answers through
-    // `is_open` — while the trade date still refuses naming 2017-04-09,
-    // because the trading day's complete session chain includes that wrap and
-    // the day's final-close derivation reads it. The first fully answerable
-    // day is 2017-04-11, whose wrap opened on the sourced 2017-04-10.
+    // Each window's own first day reaches back before the window for its
+    // wrapped evening leg, so a morning instant inside that wrap refuses
+    // naming the wrap's opening day — 2017-04-10's and 2015-02-16's wraps
+    // opened on the Sunday (or Tuesday-holiday) before them, 2014-12-24's on
+    // 2014-12-23. 2017-04-10 itself is audited normal; the other two first
+    // days carry their own rows.
     assert_eq!(calendar.holiday_on(day(2017, 4, 10)), None);
+    for first in [(2017, 4, 10), (2014, 12, 24)] {
+        assert!(matches!(
+            calendar.is_open(ct(first, (7, 0, 0))),
+            Err(CalendarQueryError::OutsideCoveredRange { date, .. })
+                if date == date_of(first).checked_sub_days(Days::new(1)).expect("a representable date")
+        ));
+    }
     assert!(matches!(
         calendar.is_open(ct((2017, 4, 10), (7, 0, 0))),
         Err(CalendarQueryError::OutsideCoveredRange {
@@ -991,17 +1384,19 @@ fn coverage_runs_from_the_earliest_surviving_artifact_to_the_published_horizon()
             .expect("2017-04-11's wrap opened inside the window"),
         "the first fully answerable day is the window's second"
     );
-    let below = ct((2017, 4, 7), (10, 0, 0));
-    assert!(
-        matches!(
-            calendar.is_open(below),
-            Err(CalendarQueryError::OutsideCoveredRange {
-                date,
-                ..
-            }) if date == day(2017, 4, 7)
-        ),
-        "2017-04-07 is outside the audited window and must be refused"
-    );
+    // The two interior gaps refuse outright: 2015-01-03..2015-02-14 (MLK
+    // 2015-01-19 inside) and 2016-01-20..2017-04-09 (the 2016 Presidents'-on
+    // arrangements and the early-2017 rows inside).
+    for gap in [(2015, 1, 20), (2016, 6, 15), (2017, 2, 21)] {
+        assert!(
+            matches!(
+                calendar.is_open(ct(gap, (10, 0, 0))),
+                Err(CalendarQueryError::OutsideCoveredRange { date, .. }) if date == date_of(gap)
+            ),
+            "{} sits in an unaudited span and must be refused",
+            date_of(gap)
+        );
+    }
     // 2027-01-01 is a CFE holiday in fact, but Cboe has published no 2027
     // schedule, so the table must not reach past its window. The identity
     // refuses the date outright: it returns no answer where its holiday layer
@@ -1069,6 +1464,17 @@ fn the_venue_and_the_key_answer_from_the_same_table() {
 
     assert_eq!(venue.holiday_coverage(), key.holiday_coverage());
     for date in [
+        day(2014, 12, 24),
+        day(2014, 12, 25),
+        day(2014, 12, 26),
+        day(2015, 1, 1),
+        day(2015, 2, 16),
+        day(2015, 4, 3),
+        day(2015, 7, 3),
+        day(2015, 11, 27),
+        day(2015, 12, 25),
+        day(2016, 1, 18),
+        day(2017, 7, 5),
         day(2025, 1, 1),
         day(2025, 1, 9),
         day(2025, 4, 18),
@@ -1110,17 +1516,17 @@ fn the_venue_and_the_key_answer_from_the_same_table() {
     }
 }
 
-/// §4.1 case 4, as a negative over the whole window: the table ships only
-/// closures, early closes, the one replacement day and the one withheld date,
-/// and no late open.
+/// §4.1 case 4, as a negative over the whole coverage: the table ships only
+/// closures, early closes, late opens, the one replacement day and the one
+/// withheld date.
 ///
-/// The counts are per date, read back from the shipped table: 113 rows in all,
-/// twenty-six closures, sixty-two 10:30 CT early closes, twenty 12:15 CT ones,
-/// three 08:30 CT ones, the single mourning replacement and the single
-/// `Unsourced` date. No row is a `LateOpen` or a `LateOpenAndEarlyClose`,
-/// which is the negative this test exists for, and the distinct early-close
-/// instants are counted separately so a row that silently takes a neighbouring
-/// holiday's close fails here.
+/// The counts are per date, read back from the shipped table: 140 rows in all,
+/// thirty-one closures, sixty-seven 10:30 CT early closes, twenty-one 12:15 CT
+/// ones, three 08:30 CT ones, the single pre-migration 08:15 CT Good Friday,
+/// thirteen 17:00 CT late opens, two combined late-open-and-early-close half
+/// days, the single mourning replacement and the single `Unsourced` date. The
+/// distinct instants are counted separately so a row that silently takes a
+/// neighbouring holiday's close fails here.
 #[test]
 fn the_window_ships_only_closures_early_closes_and_one_replacement() {
     let calendar = cfe();
@@ -1131,6 +1537,9 @@ fn the_window_ships_only_closures_early_closes_and_one_replacement() {
     let mut early_ten_thirty = 0_usize;
     let mut early_twelve_fifteen = 0_usize;
     let mut early_eight_thirty = 0_usize;
+    let mut early_eight_fifteen = 0_usize;
+    let mut late_open = 0_usize;
+    let mut late_open_and_early_close = 0_usize;
     let mut replacements = 0_usize;
     let mut unsourced = 0_usize;
     let mut date = coverage.first();
@@ -1146,6 +1555,18 @@ fn the_window_ships_only_closures_early_closes_and_one_replacement() {
             }
             Some(HolidayKind::EarlyClose { close_ssm }) if close_ssm == 8 * 3_600 + 30 * 60 => {
                 early_eight_thirty += 1;
+            }
+            Some(HolidayKind::EarlyClose { close_ssm }) if close_ssm == 8 * 3_600 + 15 * 60 => {
+                early_eight_fifteen += 1;
+            }
+            Some(HolidayKind::LateOpen { open_ssm }) if open_ssm == 17 * 3_600 => {
+                late_open += 1;
+            }
+            Some(HolidayKind::LateOpenAndEarlyClose {
+                open_ssm,
+                close_ssm,
+            }) if open_ssm == 17 * 3_600 && close_ssm == 12 * 3_600 + 15 * 60 => {
+                late_open_and_early_close += 1;
             }
             Some(HolidayKind::ReplacementBlocks(_)) => replacements += 1,
             Some(HolidayKind::Unsourced) => unsourced += 1,
@@ -1163,11 +1584,15 @@ fn the_window_ships_only_closures_early_closes_and_one_replacement() {
             early_ten_thirty,
             early_twelve_fifteen,
             early_eight_thirty,
+            early_eight_fifteen,
+            late_open,
+            late_open_and_early_close,
             replacements,
             unsourced
         ),
-        (26, 62, 20, 3, 1, 1),
-        "closures, 10:30 CT / 12:15 CT / 08:30 CT early closes, replacement rows and the \
-         withheld 2017-07-03, 2017-04-10..2026-12-31"
+        (31, 67, 21, 3, 1, 13, 2, 1, 1),
+        "closures, 10:30/12:15/08:30/08:15 CT early closes, 17:00 late opens, combined \
+         half-day rows, the mourning replacement and the withheld 2017-07-03, across the \
+         three windows"
     );
 }

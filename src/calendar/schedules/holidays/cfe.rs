@@ -1,44 +1,65 @@
 // SPDX-License-Identifier: MIT-0
 
-//! Cboe Futures Exchange holiday rows, 2017-04-10 through 2026.
+//! Cboe Futures Exchange holiday rows over three audited windows:
+//! 2014-12-24..2015-01-02, 2015-02-15..2016-01-20 and 2017-04-10..2026.
 //!
 //! Keyed by the crate's own venue-local trade date in `US/Central` (design
-//! memo D1). CFE's trading day wraps: the session for trade date `D` opens at
-//! 17:00 CT on `D-1`, runs through the regular session and ends with the
-//! extended window on `D`. Cboe's holiday tables are keyed by civil date and
-//! print two cells per row, `Regular Trading Hours` and `Extended Trading
-//! Hours`, so a row whose regular cell reads `None` and whose extended cell
-//! still names a block is the overnight leg of that trade date stopping early
-//! — an **early close**, not a closure.
+//! memo D1). CFE's trading day wraps: the session for trade date `D` opens on
+//! `D-1` (17:00 CT Sunday for Mondays, and — on the pre-migration grid in
+//! force 2014-06-22..2018-02-24 — 15:30 CT Monday-Thursday), runs through the
+//! regular session and ends with the extended window on `D`. Cboe's holiday
+//! tables are keyed by civil date and print two cells per row, `Regular
+//! Trading Hours` and `Extended Trading Hours`, so a row whose regular cell
+//! reads `None` and whose extended cell still names a block is the overnight
+//! leg of that trade date stopping early — an **early close**, not a closure.
 //!
-//! The whole block is **T1**. Two document families key the 2017-04-10 start
-//! of the window: the operator's own `CFE Holiday Schedule` page on
-//! `cfe.cboe.com` (Wayback `id_` captures 2017-04-10 through 2019-12-15), which
-//! prints the complete 2017 holiday calendar and the per-holiday-type hours
-//! tables, and the per-holiday CFE notices under
-//! `cdn.cboe.com/resources/schedule_update/<publication year>/`, which state
-//! each 2018-2026 holiday's session instants and carry the observed-day
-//! arrangements the page's default rules only describe. Coverage stops at
-//! 2026-12-31 because Cboe has published no 2027 schedule; that and the
-//! unaudited span below the window are recorded in
+//! The whole block is **T1**. Three document families key the windows: the
+//! operator's own `CFE Holiday Schedule` page on `cfe.cboe.com` (Wayback `id_`
+//! captures 2017-04-10 through 2019-12-15), which prints the complete 2017
+//! holiday calendar and the per-holiday-type hours tables; the per-holiday CFE
+//! notices under `cdn.cboe.com/resources/schedule_update/<publication
+//! year>/`, which state each 2018-2026 holiday's session instants and carry
+//! the observed-day arrangements the page's default rules only describe; and —
+//! recovered 2026-10-06 UTC from `ir.cboe.com` and the operator's own circular
+//! series — the CBOE Holdings holiday press releases of 2014-2017 (each
+//! printing a `CBOE, C2 and CFE Trading Schedule` table) and the CFE
+//! information circulars IC15-011, IC15-023, IC15-028 and IC15-039, which
+//! state the 2014 Christmas and 2015 arrangements the same way. Coverage stops
+//! at 2026-12-31 because Cboe has published no 2027 schedule; the remaining
+//! unaudited spans (2010-01-01..2014-12-23, 2015-01-03..2015-02-14 and
+//! 2016-01-21..2017-04-09) are recorded in
 //! [`docs/evidence/cfe.md`](../../../../../docs/evidence/cfe.md) and
 //! [`docs/evidence/cfe_vix.md`](../../../../../docs/evidence/cfe_vix.md).
 //!
 //! Era shapes the per-date reader should know. The Monday/Thursday and mid-week
 //! floating holidays keep the overnight leg running to 10:30 CT with no regular
-//! session (`early close 10:30`), 2017 through 2026 alike. Good Friday is a
-//! closure in 2017-2018-2019-2020-2022-2024-2025 and an early close at the
-//! regular open in 2021-2023-2026 — each year's own notice states which.
-//! Independence Day and Christmas eves close at 12:15 CT where the operator's
-//! notice says so (2019-07-03, 2023-07-03, 2024-07-03, the December eves of
-//! 2018-2020 and 2024) and trade normally where it does not (2018-07-03, whose
-//! notice's holiday leg opens 5:00 p.m. Tuesday, and 2022-12-23, whose notice
-//! prints the normal 3:00/4:00 PM closes). New Year's Day and Christmas
-//! Monday-Thursday print no holiday-day session at all and reopen at 17:00 CT
-//! on the holiday, so the trade date is `Closed` and the prior-evening leg is
-//! deleted. 2021-12-24 (Christmas observed Friday) is a full closure with the
-//! Thursday-evening leg deleted. Juneteenth enters the set in 2022; the
-//! operator's own 2021 notice states CFE traded unadjusted hours that year.
+//! session (`early close 10:30`), 2015 and 2017 through 2026 alike. Good Friday
+//! is a closure in 2017-2018-2019-2020-2022-2024-2025 and an early close at
+//! the regular open in 2021-2023-2026 — each year's own notice states which;
+//! 2015-04-03 is the one pre-2017 early close, at the operator's own printed
+//! 08:15 CT. Independence Day and Christmas eves close at 12:15 CT where the
+//! operator's notice says so (2014-12-24, 2015-12-24, 2019-07-03, 2023-07-03,
+//! 2024-07-03, the December eves of 2018-2020 and 2024) and trade normally
+//! where it does not (2018-07-03, whose notice's holiday leg opens 5:00 p.m.
+//! Tuesday, and 2022-12-23, whose notice prints the normal 3:00/4:00 PM
+//! closes). New Year's Day and Christmas Monday-Thursday print no holiday-day
+//! session at all and reopen at 17:00 CT on the holiday, so the trade date is
+//! `Closed` and the prior-evening leg is deleted. 2021-12-24 (Christmas
+//! observed Friday) is a full closure with the Thursday-evening leg deleted.
+//! Juneteenth enters the set in 2022; the operator's own 2021 notice states
+//! CFE traded unadjusted hours that year.
+//!
+//! **The pre-migration next-day legs.** On the 2014-06-22 grid the next
+//! business day's session begins 15:30 CT the previous afternoon, but every
+//! pre-migration holiday chart and notice prints the day-after column as
+//! beginning **5:00 p.m. on the holiday** (`Tuesday: Extended 5:00 p.m.
+//! (Monday) to 8:30 a.m.`) — the holiday's own 15:30-17:00 stretch did not
+//! trade. Each such day-after trade date therefore ships a `LateOpen` (or,
+//! where the day after is itself a half day, a `LateOpenAndEarlyClose`) row
+//! keyed to the same document that keys the holiday, and without it the table
+//! would claim trading the operator's own bytes deny. After the 2018-02-25
+//! migration the native evening open is 17:00 CT, so no post-migration row
+//! needs the companion.
 //!
 //! One table serves both the `cfe` venue and the `cfe_vix` key: Cboe publishes
 //! one schedule for all CFE futures, and VIX futures are the only family the
@@ -55,7 +76,7 @@
 
 use super::EvidenceTier::T1;
 use super::HolidayKind::{Closed, ReplacementBlocks, Unsourced};
-use super::fences::early_close;
+use super::fences::{early_close, late_open, late_open_and_early_close};
 use super::{HolidayTable, holidays};
 use crate::calendar::exceptions::ExceptionBlock;
 
@@ -84,17 +105,107 @@ static MOURNING_2025_01_09_BLOCKS: [ExceptionBlock; 1] =
 
 /// CFE's built-in holiday rows and the window they were audited over.
 ///
-/// Every row is one line of a Cboe CFE holiday notice or of the operator's own
-/// `CFE Holiday Schedule` page as captured by the Wayback mirror. A date inside
-/// the window with no row is audited normal; 2017-07-03 is the window's one
+/// Every row is one line of a Cboe CFE holiday notice, of the operator's own
+/// `CFE Holiday Schedule` page as captured by the Wayback mirror, of a CBOE
+/// Holdings holiday press release, or of a CFE information circular. A date
+/// inside a window with no row is audited normal; 2017-07-03 is the one
 /// `Unsourced` date — the page's own `typically close at 12:15 p.m. on July 3`
 /// sentence leaves the day open and no controlling circular survives. The late
 /// November and Christmas-eve rows carry rows because Cboe prints them as half
 /// days, not because they are holidays.
 // Evidence: docs/evidence/cfe.md, docs/evidence/cfe_vix.md
 pub(crate) static TABLE: &HolidayTable = holidays! {
-    coverage: [(2017, 4, 10) ..= (2026, 12, 31)],
+    coverage: [
+        (2014, 12, 24) ..= (2015, 1, 2),
+        (2015, 2, 15) ..= (2016, 1, 20),
+        (2017, 4, 10) ..= (2026, 12, 31),
+    ],
     rows: [
+        // 2014-12-24 - T1 - CBOE-PR-2014-CHRISTMAS-NEW-YEAR - Christmas Eve:
+        // the release's CFE column closes VX at 12:15 p.m. CT (12:00/12:12 are
+        // the other products' rows), and VX/VXT stay closed until 17:00 CT on
+        // 12/25.
+        (2014, 12, 24, early_close(12 * 3_600 + 15 * 60), T1, "CBOE-PR-2014-CHRISTMAS-NEW-YEAR"),
+        // 2014-12-25 - T1 - CBOE-PR-2014-CHRISTMAS-NEW-YEAR - Christmas Day:
+        // no holiday-day session; trading resumed 5:00 p.m. CT on the holiday
+        // for business day Friday 12/26, so the trade date is deleted with its
+        // prior-evening wrap.
+        (2014, 12, 25, Closed, T1, "CBOE-PR-2014-CHRISTMAS-NEW-YEAR"),
+        // 2014-12-26 - T1 - CBOE-PR-2014-CHRISTMAS-NEW-YEAR - the release
+        // prints the Friday leg as `5:00 p.m. CT on Thur, 12/25 to 8:30 a.m.
+        // CT on Fri, 12/26 - Extended trading hours`, so the day's first open
+        // moves from the standing 15:30 CT to 17:00 CT on the holiday.
+        (2014, 12, 26, late_open(17 * 3_600), T1, "CBOE-PR-2014-CHRISTMAS-NEW-YEAR"),
+        // 2015-01-01 - T1 - CBOE-PR-2014-CHRISTMAS-NEW-YEAR - New Year's Day:
+        // no holiday-day session; the Thursday-evening leg belongs to trade
+        // date 1/2 and the release deletes the wrap (`closed from 3:15 p.m.
+        // CT on Wed, 12/31 until 5:00 p.m. CT on Thur, 1/1`).
+        (2015, 1, 1, Closed, T1, "CBOE-PR-2014-CHRISTMAS-NEW-YEAR"),
+        // 2015-01-02 - T1 - CBOE-PR-2014-CHRISTMAS-NEW-YEAR - the release
+        // prints the Friday leg as `5:00 p.m. CT on Thur, 1/1 to 8:30 a.m. CT
+        // on Fri, 1/2`, so the day's first open moves to 17:00 CT on the
+        // holiday.
+        (2015, 1, 2, late_open(17 * 3_600), T1, "CBOE-PR-2014-CHRISTMAS-NEW-YEAR"),
+        // 2015-02-16 - T1 - CBOE-PR-2015-PRESIDENTS - Presidents' Day: the
+        // release halts VX at 10:30 a.m. CT (Regular `None`).
+        (2015, 2, 16, early_close(10 * 3_600 + 30 * 60), T1, "CBOE-PR-2015-PRESIDENTS"),
+        // 2015-02-17 - T1 - CBOE-PR-2015-PRESIDENTS - the release prints the
+        // Tuesday leg as resuming 5:00 p.m. CT on the holiday for business day
+        // Tuesday, so the day's first open moves from 15:30 CT to 17:00 CT.
+        (2015, 2, 17, late_open(17 * 3_600), T1, "CBOE-PR-2015-PRESIDENTS"),
+        // 2015-04-03 - T1 - CFE-IC15-011 - Good Friday: the circular's own
+        // holiday-session table runs one extended session `3:30 p.m.
+        // (Thursday) to 8:15 a.m. (Friday)` with Regular `None` — the 08:15
+        // close is the operator's own printed instant (the employment-report
+        // window), not the later 08:30 shape.
+        (2015, 4, 3, early_close(8 * 3_600 + 15 * 60), T1, "CFE-IC15-011"),
+        // 2015-05-25 - T1 - CFE-IC15-023 - Memorial Day: the circular prints
+        // Extended `5:00 p.m. (Sunday) to 10:30 a.m.` / Regular `None`.
+        (2015, 5, 25, early_close(10 * 3_600 + 30 * 60), T1, "CFE-IC15-023"),
+        // 2015-05-26 - T1 - CFE-IC15-023 - the circular's Tuesday column
+        // prints Extended `5:00 p.m. (Monday) to 8:30 a.m.`, so the day's
+        // first open moves from 15:30 CT to 17:00 CT on the holiday.
+        (2015, 5, 26, late_open(17 * 3_600), T1, "CFE-IC15-023"),
+        // 2015-07-03 - T1 - CFE-IC15-028 - Independence Day observed Friday:
+        // the circular states CFE closed for trading in all products, the
+        // Thursday close 3:15 p.m., and a normal Sunday 17:00 reopen.
+        (2015, 7, 3, Closed, T1, "CFE-IC15-028"),
+        // 2015-09-07 - T1 - CFE-IC15-039 - Labor Day: the circular prints
+        // Extended `5:00 p.m. (Sunday) to 10:30 a.m.` / Regular `None`.
+        (2015, 9, 7, early_close(10 * 3_600 + 30 * 60), T1, "CFE-IC15-039"),
+        // 2015-09-08 - T1 - CFE-IC15-039 - the circular's Tuesday column
+        // prints Extended `5:00 p.m. (Monday) to 8:30 a.m.`, so the day's
+        // first open moves from 15:30 CT to 17:00 CT on the holiday.
+        (2015, 9, 8, late_open(17 * 3_600), T1, "CFE-IC15-039"),
+        // 2015-11-26 - T1 - CBOE-PR-2015-THANKSGIVING - Thanksgiving Day: the
+        // release halts VX at 10:30 a.m. CT (the leg that opened 15:30 CT
+        // Wednesday).
+        (2015, 11, 26, early_close(10 * 3_600 + 30 * 60), T1, "CBOE-PR-2015-THANKSGIVING"),
+        // 2015-11-27 - T1 - CBOE-PR-2015-THANKSGIVING - Thanksgiving half day:
+        // the release prints the Friday leg as resuming 5:00 p.m. CT on the
+        // holiday for business day Friday and closing 12:15 p.m. CT, so both
+        // boundaries move.
+        (2015, 11, 27, late_open_and_early_close(17 * 3_600, 12 * 3_600 + 15 * 60), T1, "CBOE-PR-2015-THANKSGIVING"),
+        // 2015-12-24 - T1 - CBOE-PR-2015-CHRISTMAS-NEW-YEAR - Christmas Eve:
+        // the release closes VX at 12:15 p.m. CT and holds VX/VXT closed
+        // until 5:00 p.m. CT on Sunday 12/27.
+        (2015, 12, 24, early_close(12 * 3_600 + 15 * 60), T1, "CBOE-PR-2015-CHRISTMAS-NEW-YEAR"),
+        // 2015-12-25 - T1 - CBOE-PR-2015-CHRISTMAS-NEW-YEAR - Christmas Day:
+        // no holiday-day session; trading resumed 5:00 p.m. CT on Sunday
+        // 12/27 for business day 12/28, so the trade date is deleted with its
+        // prior-evening wrap.
+        (2015, 12, 25, Closed, T1, "CBOE-PR-2015-CHRISTMAS-NEW-YEAR"),
+        // 2016-01-01 - T1 - CBOE-PR-2015-CHRISTMAS-NEW-YEAR - New Year's Day:
+        // no holiday-day session; the release deletes the wrap (`closed from
+        // 3:15 p.m. CT on Thursday, 12/31 until 5:00 p.m. CT on Sunday, 1/3`).
+        (2016, 1, 1, Closed, T1, "CBOE-PR-2015-CHRISTMAS-NEW-YEAR"),
+        // 2016-01-18 - T1 - CBOE-PR-2016-MLK - MLK Jr. Day: the release halts
+        // VX at 10:30 a.m. CT (Regular `None`).
+        (2016, 1, 18, early_close(10 * 3_600 + 30 * 60), T1, "CBOE-PR-2016-MLK"),
+        // 2016-01-19 - T1 - CBOE-PR-2016-MLK - the release prints the Tuesday
+        // leg as resuming 5:00 p.m. CT on the holiday for business day
+        // Tuesday, so the day's first open moves from 15:30 CT to 17:00 CT.
+        (2016, 1, 19, late_open(17 * 3_600), T1, "CBOE-PR-2016-MLK"),
         // 2017-04-14 - T1 - cfe-holiday-calendar @2017-04-10T21:04:29Z - Good
         // Friday: the Friday-holiday chart prints Extended `None` and Regular
         // `None`, so the day is deleted outright.
@@ -103,6 +214,11 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         // Memorial Day, 10:30 CT (the Monday-holiday chart: Regular `None`,
         // extended to 10:30 a.m.).
         (2017, 5, 29, early_close(10 * 3_600 + 30 * 60), T1, "cfe-holiday-calendar @2017-04-10T21:04:29Z"),
+        // 2017-05-30 - T1 - cfe-holiday-calendar @2017-04-10T21:04:29Z - the
+        // chart's Tuesday column prints Extended `5:00 p.m. (Monday) to 8:30
+        // a.m.`, so the day's first open moves from 15:30 CT to 17:00 CT on
+        // the holiday.
+        (2017, 5, 30, late_open(17 * 3_600), T1, "cfe-holiday-calendar @2017-04-10T21:04:29Z"),
         // 2017-07-03 - T1 - cfe-holiday-calendar @2017-06-26T00:36:49Z - the
         // page's own `typically close at 12:15 p.m. on July 3` leaves the day
         // open and no controlling circular survives; not a closure, not a
@@ -112,27 +228,58 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         // Independence Day on a Tuesday: the Tuesday-Thursday chart prints
         // Regular `None` with the July 3 evening leg to 10:30 a.m.
         (2017, 7, 4, early_close(10 * 3_600 + 30 * 60), T1, "cfe-holiday-calendar @2017-06-26T00:36:49Z"),
+        // 2017-07-05 - T1 - cfe-holiday-calendar @2017-06-26T00:36:49Z - the
+        // chart's July 5 column prints Extended `5:00 p.m. (July 4) to 8:30
+        // a.m.`, so the day's first open moves from 15:30 CT to 17:00 CT on
+        // the holiday.
+        (2017, 7, 5, late_open(17 * 3_600), T1, "cfe-holiday-calendar @2017-06-26T00:36:49Z"),
         // 2017-09-04 - T1 - cfe-holiday-calendar @2017-06-26T00:36:49Z -
         // Labor Day, 10:30 CT (the Monday-holiday chart).
         (2017, 9, 4, early_close(10 * 3_600 + 30 * 60), T1, "cfe-holiday-calendar @2017-06-26T00:36:49Z"),
+        // 2017-09-05 - T1 - cfe-holiday-calendar @2017-06-26T00:36:49Z - the
+        // chart's Tuesday column prints Extended `5:00 p.m. (Monday) to 8:30
+        // a.m.`, so the day's first open moves from 15:30 CT to 17:00 CT on
+        // the holiday.
+        (2017, 9, 5, late_open(17 * 3_600), T1, "cfe-holiday-calendar @2017-06-26T00:36:49Z"),
         // 2017-11-23 - T1 - cfe-holiday-calendar @2017-11-13T01:40:35Z -
         // Thanksgiving Day, 10:30 CT (the Thanksgiving chart).
         (2017, 11, 23, early_close(10 * 3_600 + 30 * 60), T1, "cfe-holiday-calendar @2017-11-13T01:40:35Z"),
         // 2017-11-24 - T1 - cfe-holiday-calendar @2017-11-13T01:40:35Z -
-        // Thanksgiving Friday, 12:15 CT (the chart's `8:30 a.m. to 12:15 p.m.`).
-        (2017, 11, 24, early_close(12 * 3_600 + 15 * 60), T1, "cfe-holiday-calendar @2017-11-13T01:40:35Z"),
+        // Thanksgiving half day: the chart's Friday column prints Extended
+        // `5:00 p.m. (Thursday) to 8:30 a.m.` and Regular `8:30 a.m. to 12:15
+        // p.m.`, so the first open moves to 17:00 CT on the holiday and the
+        // close to 12:15 CT.
+        (2017, 11, 24, late_open_and_early_close(17 * 3_600, 12 * 3_600 + 15 * 60), T1, "cfe-holiday-calendar @2017-11-13T01:40:35Z"),
         // 2017-12-25 - T1 - cfe-holiday-calendar @2017-11-13T01:40:35Z -
         // Christmas on a Monday: the Monday-Thursday chart prints no
         // holiday-day session and a 5:00 p.m. reopen on the holiday itself.
         (2017, 12, 25, Closed, T1, "cfe-holiday-calendar @2017-11-13T01:40:35Z"),
+        // 2017-12-26 - T1 - cfe-holiday-calendar @2017-11-13T01:40:35Z - the
+        // chart's day-after column prints Extended `5:00 p.m. (on holiday) to
+        // 8:30 a.m. (day after holiday)`, so the day's first open moves from
+        // 15:30 CT to 17:00 CT on the holiday.
+        (2017, 12, 26, late_open(17 * 3_600), T1, "cfe-holiday-calendar @2017-11-13T01:40:35Z"),
         // 2018-01-01 - T1 - cfe-holiday-calendar @2017-12-29T07:06:24Z - New
         // Year's Day on a Monday: the Monday-Thursday chart prints no
         // holiday-day session; the 2018 calendar names the date.
         (2018, 1, 1, Closed, T1, "cfe-holiday-calendar @2017-12-29T07:06:24Z"),
+        // 2018-01-02 - T1 - cfe-holiday-calendar @2017-12-29T07:06:24Z - the
+        // chart's day-after column prints Extended `5:00 p.m. (on holiday) to
+        // 8:30 a.m. (day after holiday)`, so the day's first open moves from
+        // 15:30 CT to 17:00 CT on the holiday.
+        (2018, 1, 2, late_open(17 * 3_600), T1, "cfe-holiday-calendar @2017-12-29T07:06:24Z"),
         // 2018-01-15 - T1 - CBOE-SU-2018-MLK - MLK Jr. Day, 10:30 CT.
         (2018, 1, 15, early_close(10 * 3_600 + 30 * 60), T1, "CBOE-SU-2018-MLK"),
+        // 2018-01-16 - T1 - CBOE-SU-2018-MLK - the notice's Tuesday column
+        // prints Extended `5:00 p.m. (Monday) to 8:30 a.m.`, so the day's
+        // first open moves from 15:30 CT to 17:00 CT on the holiday.
+        (2018, 1, 16, late_open(17 * 3_600), T1, "CBOE-SU-2018-MLK"),
         // 2018-02-19 - T1 - CBOE-SU-2018-PRESIDENTS - Presidents' Day, 10:30 CT.
         (2018, 2, 19, early_close(10 * 3_600 + 30 * 60), T1, "CBOE-SU-2018-PRESIDENTS"),
+        // 2018-02-20 - T1 - CBOE-SU-2018-PRESIDENTS - the notice's Tuesday
+        // column prints Extended `5:00 p.m. (Monday) to 8:30 a.m.`, so the
+        // day's first open moves from 15:30 CT to 17:00 CT on the holiday.
+        (2018, 2, 20, late_open(17 * 3_600), T1, "CBOE-SU-2018-PRESIDENTS"),
         // 2018-03-30 - T1 - CBOE-SU-2018-GOOD-FRIDAY - Good Friday: the notice
         // states trading will be closed for all CFE products.
         (2018, 3, 30, Closed, T1, "CBOE-SU-2018-GOOD-FRIDAY"),

@@ -34,9 +34,9 @@
 //! statement witnesses, and the span's residual is disclosed with its closer
 //! in the evidence file's gaps.
 //!
-//! **Six rows are `Unsourced` rather than closures** (2011-10-26, 2012-11-13,
-//! 2013-11-03, 2014-10-23, 2017-10-19, 2019-10-27 and 2026-11-08 — six dates
-//! plus the 2026 banner date): each source that prints a Muhurat-Trading
+//! **Seven rows are `Unsourced` rather than closures** (2011-10-26, 2012-11-13,
+//! 2013-11-03, 2014-10-23, 2017-10-19, 2019-10-27 and 2026-11-08 — six Muhurat
+//! dates plus the 2026 banner date): each source that prints a Muhurat-Trading
 //! footnote ("*Muhurat Trading will be conducted", timings "shall be notified
 //! subsequently") keys it to a specific date the row set would otherwise
 //! misstate — a printed holiday a special session interrupts, or a weekend the
@@ -203,7 +203,7 @@ static MUHURAT_2016_BLOCKS: [ExceptionBlock; 4] = [
 /// `NSE-CIRC-2015-65`, `NSE-CIRC-2016-56`, `NSE-CIRC-2020-98`,
 /// `NSE-CIRC-2022-124`, `NSE-CIRC-2023-139`, `NSE-CIRC-2024-147` and
 /// `NSE-CIRC-2025-124`. A date inside a window with no row is audited normal;
-/// the six `Unsourced` Muhurat dates are not, and 2018 is inside no window at
+/// the seven `Unsourced` withheld dates are not, and 2018 is inside no window at
 /// all.
 // Evidence: docs/evidence/nse_india.md
 pub(crate) static TABLE: &HolidayTable = holidays! {

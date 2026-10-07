@@ -22,20 +22,17 @@
 //! **2018 sits outside every audited window.** No operator artifact stating
 //! the 2018 CM holiday list survives in the archive (the annual-page URL has
 //! no capture in that year and the annual circular is uncaptured), so the
-//! coverage windows run 2010-01-01..2017-12-31 and 2019-01-01..2026-12-31; a
-//! date in 2018 refuses rather than answers (see the evidence file's gaps).
+//! coverage windows run 2010-01-01..2017-12-31 and 2019-01-01..2026-12-31.
 //! 2012 was in that state until 2026-10-06 UTC, when the 2012 list's own
 //! annual circular (`NSE-CIRC-2011-66`, dated 2011-12-09) surfaced in the
-//! archive and the window merged.
-//! **2018 sits outside every audited window**, so the charter's
-//! bridged-residual convention (2026-10-06, AGENTS.md "Modeling
-//! conventions", #296) serves its session questions from the sourced normal
-//! week while the holiday layer stays honestly absent: the metadata reports
-//! the span as `HolidayWindowsBridged`, no closure is asserted there that no
-//! operator statement witnesses, and the span's residual is disclosed with
-//! its closer in the evidence file's gaps.
-//!
-
+//! archive and the first window merged across the year. The 2018 span sits
+//! **between two audited windows**, so the charter's bridged-residual
+//! convention (2026-10-06, AGENTS.md "Modeling conventions", #296) serves its
+//! session questions from the sourced normal week while the holiday layer
+//! stays honestly absent: the metadata reports the span as
+//! `HolidayWindowsBridged`, no closure is asserted there that no operator
+//! statement witnesses, and the span's residual is disclosed with its closer
+//! in the evidence file's gaps.
 //!
 //! **Six rows are `Unsourced` rather than closures** (2011-10-26, 2012-11-13,
 //! 2013-11-03, 2014-10-23, 2017-10-19, 2019-10-27 and 2026-11-08 — six dates

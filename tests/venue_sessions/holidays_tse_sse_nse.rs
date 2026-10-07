@@ -1327,17 +1327,20 @@ fn nse_printed_closures_2023_2024_ship_a_row_per_year() {
     }
 }
 
-/// The unrecovered 2012 and 2018 years are **bridged residuals** (issue #296;
-/// the charter's 2026-10-06 convention): both spans sit between two audited
+/// The unrecovered 2018 year is a **bridged residual** (issue #296; the
+/// charter's 2026-10-06 convention): the span sits between two audited
 /// windows, so the session layer answers from the sourced normal week while
 /// the holiday layer stays honestly absent — no row, no audited normal, a
 /// metadata verdict that withholds the complete claim, and the span reported
 /// as `HolidayWindowsBridged` rather than refused. No closure is asserted
-/// that no operator statement witnesses.
+/// that no operator statement witnesses. 2012 sat in the same state until
+/// 2026-10-06 UTC, when the 2012 list's own annual circular
+/// (`NSE-CIRC-2011-66`, dated 2011-12-09) surfaced and the window merged:
+/// today 2012 answers inside its audited window like every sourced year.
 #[test]
-fn the_unrecovered_2012_and_2018_years_are_bridged_residuals() {
+fn the_unrecovered_2018_year_is_a_bridged_residual_and_2012_was_recovered() {
     let nse = calendar_for_exchange(Exchange::NseIndia);
-    for date in [(2012, 6, 15), (2012, 12, 24), (2018, 3, 12), (2018, 11, 20)] {
+    for date in [(2018, 3, 12), (2018, 11, 20)] {
         let trade_date = day(date.0, date.1, date.2);
         assert_eq!(
             nse.holiday_on(trade_date),
@@ -1365,15 +1368,27 @@ fn the_unrecovered_2012_and_2018_years_are_bridged_residuals() {
              disclosed residual"
         );
     }
-    // The residual spans are exactly the two unrecovered years, and the
-    // one-flank spans beside them are not bridged.
+    // The residual span is exactly the unrecovered year, and the one-flank
+    // spans beside it are not bridged.
     assert_eq!(
         bridged_spans(nse.coverage()),
-        vec![
-            (day(2012, 1, 1), day(2012, 12, 31)),
-            (day(2018, 1, 1), day(2018, 12, 31)),
-        ],
-        "the bridged residual is reported over each unrecovered year"
+        vec![(day(2018, 1, 1), day(2018, 12, 31))],
+        "the bridged residual is reported over the unrecovered year"
+    );
+    // 2012 was recovered the same day: its rows answer inside the merged
+    // window (the printed closures of the annual circular), a date with no row
+    // is audited complete there, and nothing reports a residual for it.
+    assert_eq!(
+        gap_reason_on(nse.coverage(), day(2012, 6, 15)),
+        None,
+        "recovered 2012 reports no residual"
+    );
+    assert!(nse.coverage().is_complete_on(day(2012, 6, 15)));
+    assert_closure(
+        nse,
+        (2012, 8, 15),
+        "NSE-CIRC-2011-66",
+        "NSE 2012 Independence Day",
     );
 }
 
@@ -1446,7 +1461,7 @@ fn nse_printed_closures_ship_a_row_per_year() {
 }
 
 /// The remaining Muhurat-Trading dates are withheld, not closed: the operator
-/// announces a session there whose instants it has not published. The five
+/// announces a session there whose instants it has not published. The eight
 /// dates whose circulars were recovered ship replacement blocks and are
 /// fenced by `the_published_muhurat_sessions_ship_as_replacement_blocks`
 /// below.
@@ -1456,7 +1471,10 @@ fn the_muhurat_dates_are_unsourced_neither_closed_nor_normal() {
     assert_unsourced(nse, (2026, 11, 8), "NSE-HOL-2026", "Sunday Muhurat");
     // The same withholding across the backfilled years: an asterisked holiday
     // the operator footnotes a Muhurat session onto (T1 pages and circulars).
-    assert_unsourced(nse, (2010, 11, 5), "NSE-CIRC-2010-61", "2010 Muhurat");
+    // The 2012 footnote came with the recovered 2012 list itself
+    // (`NSE-CIRC-2011-66`), so recovering that year reopened its window with
+    // its own Muhurat date withheld like its sibling years'.
+    assert_unsourced(nse, (2012, 11, 13), "NSE-CIRC-2011-66", "2012 Muhurat");
     assert_unsourced(nse, (2014, 10, 23), "NSE-HOL-PAGE-2014", "2014 Muhurat");
 
     // A probe inside the Sunday Muhurat day refuses too, rather than reading
@@ -1495,7 +1513,7 @@ fn the_muhurat_dates_are_unsourced_neither_closed_nor_normal() {
     );
 }
 
-/// The five Muhurat dates whose instants the operator published ship as
+/// The eight Muhurat dates whose instants the operator published ship as
 /// replacement-block days restating the printed schedule: the row exists, is
 /// keyed to the circular, the day trades exactly inside the printed blocks —
 /// including the 2020 Saturday special session that has no normal-week
@@ -1506,6 +1524,9 @@ fn the_published_muhurat_sessions_ship_as_replacement_blocks() {
 
     // The row itself: kind, tier and the circular it keys to.
     for (date, document) in [
+        ((2010, 11, 5), "NSE-CIRC-2010-121"),
+        ((2015, 11, 11), "NSE-CIRC-2015-65"),
+        ((2016, 10, 30), "NSE-CIRC-2016-56"),
         ((2020, 11, 14), "NSE-CIRC-2020-98"),
         ((2022, 10, 24), "NSE-CIRC-2022-124"),
         ((2023, 11, 12), "NSE-CIRC-2023-139"),
@@ -1621,6 +1642,18 @@ fn the_published_muhurat_sessions_ship_as_replacement_blocks() {
         "15:05 sharp is closed"
     );
 
+    // 2010-11-05 (a Friday): pre-open order entry 18:00-18:07 with the
+    // random-closure tail to the 18:15 open tradeable, Normal/RDM/Odd Lot
+    // 18:15-19:00, Closing Session 19:20-19:30 (no block-deal session in
+    // 2010). End-exclusive at the printed closes.
+    the_recovered_2010_muhurat_schedule_probes(nse);
+
+    // 2015-11-11 (a Wednesday): Pre Open 17:30-17:37, Normal Market/LPM
+    // 17:45-18:45, Closing Session 18:55-19:05; 2016-10-30 (a Sunday the
+    // operator announces a session on): Pre Open 18:15-18:22, Normal
+    // Market/LPM 18:30-19:30, Closing Session 19:40-19:50.
+    the_recovered_2015_and_2016_muhurat_schedule_probes(nse);
+
     // The special sessions produce no maintenance and settle their own trade
     // dates: a 2020 Saturday session means 2020-11-14 is not a closed trade
     // date even though the normal week would claim a weekend closure.
@@ -1630,9 +1663,131 @@ fn the_published_muhurat_sessions_ship_as_replacement_blocks() {
         "the Saturday special session is a session: the date does not settle closed"
     );
     assert!(
+        !nse.is_closed_trade_date(day(2016, 10, 30), SessionKind::Both)
+            .expect("the Muhurat Sunday answers"),
+        "the announced Sunday session is a session: the date does not settle closed"
+    );
+    assert!(
         !nse.is_maintenance(zoned(sat, (2020, 11, 14), (18, 30, 0)))
             .expect("the Normal Market answers its state"),
         "inside the Muhurat Normal Market is a session, not maintenance"
+    );
+}
+
+/// The 2010-11-05 printed schedule (a Friday): pre-open order entry
+/// 18:00-18:07 with the random-closure tail to the 18:15 open tradeable,
+/// Normal/RDM/Odd Lot 18:15-19:00, Closing Session 19:20-19:30 — no
+/// block-deal session exists in 2010. End-exclusive at the printed closes.
+fn the_recovered_2010_muhurat_schedule_probes(nse: ExchangeCalendar) {
+    let ist = Asia::Kolkata;
+    assert!(
+        nse.is_order_entry_only(zoned(ist, (2010, 11, 5), (18, 2, 0)))
+            .expect("the 2010 pre-open queue is order entry"),
+        "18:02 sits in the 18:00-18:07 order-entry leg"
+    );
+    assert!(
+        nse.is_open(zoned(ist, (2010, 11, 5), (18, 10, 0)))
+            .expect("the 2010 auction tail is tradeable"),
+        "18:07-18:15 is the tradeable random-closure tail"
+    );
+    assert!(
+        nse.is_open_regular(zoned(ist, (2010, 11, 5), (18, 30, 0)))
+            .expect("the 2010 Normal Market answers"),
+        "18:30 trades in the 18:15-19:00 Normal Market"
+    );
+    assert!(
+        !nse.is_open(zoned(ist, (2010, 11, 5), (19, 0, 0)))
+            .expect("the 2010 Normal Market close answers"),
+        "19:00 sharp is closed: closes are end-exclusive"
+    );
+    assert!(
+        !nse.is_open(zoned(ist, (2010, 11, 5), (19, 10, 0)))
+            .expect("the 2010 19:00-19:20 gap answers"),
+        "the gap before the Closing Session is shut"
+    );
+    assert!(
+        !nse.is_open(zoned(ist, (2010, 11, 5), (19, 30, 0)))
+            .expect("the 2010 Closing Session close is end-exclusive"),
+        "19:30 sharp is closed"
+    );
+    assert!(
+        !nse.is_open(zoned(ist, (2010, 11, 5), (13, 0, 0)))
+            .expect("the 2010 daytime answers"),
+        "the ordinary 09:15-15:30 grid is replaced: 13:00 is shut"
+    );
+}
+
+/// The 2015-11-11 printed schedule (a Wednesday): Pre Open 17:30-17:37,
+/// Normal Market/LPM 17:45-18:45, Closing Session 18:55-19:05 — and the
+/// 2016-10-30 printed schedule (a Sunday the operator announces a session
+/// on): Pre Open 18:15-18:22, Normal Market/LPM 18:30-19:30, Closing Session
+/// 19:40-19:50.
+fn the_recovered_2015_and_2016_muhurat_schedule_probes(nse: ExchangeCalendar) {
+    let ist = Asia::Kolkata;
+    assert!(
+        nse.is_order_entry_only(zoned(ist, (2015, 11, 11), (17, 33, 0)))
+            .expect("the 2015 pre-open queue is order entry"),
+        "17:33 sits in the 17:30-17:37 order-entry leg"
+    );
+    assert!(
+        nse.is_open(zoned(ist, (2015, 11, 11), (17, 40, 0)))
+            .expect("the 2015 auction tail is tradeable"),
+        "17:37-17:45 is the tradeable random-closure tail"
+    );
+    assert!(
+        nse.is_open_regular(zoned(ist, (2015, 11, 11), (18, 0, 0)))
+            .expect("the 2015 Normal Market answers"),
+        "18:00 trades in the 17:45-18:45 Normal Market"
+    );
+    assert!(
+        !nse.is_open(zoned(ist, (2015, 11, 11), (18, 45, 0)))
+            .expect("the 2015 Normal Market close is end-exclusive"),
+        "18:45 sharp is closed"
+    );
+    assert!(
+        !nse.is_open(zoned(ist, (2015, 11, 11), (18, 50, 0)))
+            .expect("the 2015 18:45-18:55 gap answers"),
+        "the gap before the Closing Session is shut"
+    );
+    assert!(
+        nse.is_open(zoned(ist, (2015, 11, 11), (19, 4, 59)))
+            .expect("the 2015 Closing Session still trades"),
+        "19:04:59 still trades inside the Closing Session"
+    );
+    assert!(
+        !nse.is_open(zoned(ist, (2015, 11, 11), (10, 0, 0)))
+            .expect("the 2015 daytime answers"),
+        "the ordinary 09:15-15:30 grid is replaced: 10:00 is shut"
+    );
+    assert!(
+        nse.is_order_entry_only(zoned(ist, (2016, 10, 30), (18, 18, 0)))
+            .expect("the 2016 pre-open queue is order entry"),
+        "18:18 sits in the 18:15-18:22 order-entry leg"
+    );
+    assert!(
+        nse.is_open(zoned(ist, (2016, 10, 30), (18, 26, 0)))
+            .expect("the 2016 auction tail is tradeable"),
+        "18:22-18:30 is the tradeable random-closure tail"
+    );
+    assert!(
+        nse.is_open_regular(zoned(ist, (2016, 10, 30), (19, 0, 0)))
+            .expect("the 2016 Normal Market answers"),
+        "19:00 trades in the 18:30-19:30 Normal Market"
+    );
+    assert!(
+        !nse.is_open(zoned(ist, (2016, 10, 30), (19, 30, 0)))
+            .expect("the 2016 Normal Market close is end-exclusive"),
+        "19:30 sharp is closed"
+    );
+    assert!(
+        nse.is_open(zoned(ist, (2016, 10, 30), (19, 45, 0)))
+            .expect("the 2016 Closing Session trades"),
+        "19:45 trades inside the 19:40-19:50 Closing Session"
+    );
+    assert!(
+        !nse.is_open(zoned(ist, (2016, 10, 30), (12, 0, 0)))
+            .expect("the 2016 daytime answers"),
+        "the ordinary weekend stays shut outside the announced session"
     );
 }
 
@@ -1640,12 +1795,13 @@ fn the_published_muhurat_sessions_ship_as_replacement_blocks() {
 /// 16+15+13+16+17+17+16+13+16+20+19+16+16+14+17 TSE closures across 2010-2024
 /// plus 18 + 19 + 17 over 2025-2027, 16+18+23+16+15+17+16+18+15+19+18+18+18+20
 /// SSE closures across 2011-2024 plus 18 + 19 over 2025-2026, and the NSE rows
-/// of 10+13+13+16+14+15+12+16+12+13+12+15+13 closures across 2010-2024 (2012
-/// and 2018 unrecovered, shipping none) plus 13 + 1 and 15 + 1 over 2025-2026
-/// (the one per year being the withheld Muhurat date). NSE's five published
-/// Muhurat days ship `ReplacementBlocks` rows — 2020, 2022, 2023, 2024 and
-/// 2025 carry one each in the last column. A row added, moved across a year or
-/// dropped breaks the count; the per-row fence above pins where.
+/// of 10+13+14+13+16+14+15+12+16+13+13+12+15+13 closures across 2010-2024
+/// except 2018 (2018 unrecovered, shipping none) plus 13 + 1 and 15 + 1 over
+/// 2025-2026 (the one per year being the withheld Muhurat date; 2012's own
+/// withheld date came with its recovered list). NSE's eight published Muhurat
+/// days ship `ReplacementBlocks` rows — 2010, 2015, 2016, 2020, 2022, 2023,
+/// 2024 and 2025 carry one each in the last column. A row added, moved across
+/// a year or dropped breaks the count; the per-row fence above pins where.
 #[test]
 fn the_window_counts_are_the_printed_lists_counts() {
     fn count_by_year(calendar: ExchangeCalendar) -> Vec<(i32, usize, usize, usize)> {
@@ -1734,19 +1890,21 @@ fn the_window_counts_are_the_printed_lists_counts() {
     assert_eq!(
         count_by_year(calendar_for_exchange(Exchange::NseIndia)),
         [
-            // 2012 and 2018 are unrecovered (no operator artifact in the
-            // archive), so they ship no rows and sit inside no window; every
-            // other year carries its list's weekday legs; the Muhurat dates
-            // whose circulars were recovered ship replacement blocks (2020,
+            // 2018 is unrecovered (no operator artifact in the archive), so it
+            // ships no rows and sits inside no window; every other year
+            // carries its list's weekday legs — 2012's from the recovered
+            // annual circular `NSE-CIRC-2011-66` (fourteen closures plus its
+            // own withheld Muhurat date); the Muhurat dates whose circulars
+            // were recovered ship replacement blocks (2010, 2015, 2016, 2020,
             // 2022, 2023, 2024 and 2025), the rest are withheld (2021's list
             // names no Muhurat date, so nothing is withheld there).
-            (2010, 10, 1, 0),
+            (2010, 10, 0, 1),
             (2011, 13, 1, 0),
-            (2012, 0, 0, 0),
+            (2012, 14, 1, 0),
             (2013, 13, 1, 0),
             (2014, 16, 1, 0),
-            (2015, 14, 1, 0),
-            (2016, 15, 1, 0),
+            (2015, 14, 0, 1),
+            (2016, 15, 0, 1),
             (2017, 12, 1, 0),
             (2018, 0, 0, 0),
             (2019, 16, 1, 0),
@@ -1854,9 +2012,11 @@ fn coverage_runs_exactly_over_each_operators_published_window() {
         "the unrecovered 2010 arrangement sits outside every audited window and must refuse"
     );
 
-    // NSE: 2010-01-01 .. 2026-12-31 over three audited windows; 2012 and
-    // 2018 are unrecovered (no operator artifact in the archive) and the 2027
-    // list is not published.
+    // NSE: 2010-01-01 .. 2026-12-31 over two audited windows; 2018 is
+    // unrecovered (no operator artifact in the archive) and the 2027 list is
+    // not published. 2012 was unrecovered until 2026-10-06 UTC, when the
+    // 2012 list's own annual circular (`NSE-CIRC-2011-66`, dated 2011-12-09)
+    // surfaced and the window merged.
     let nse = calendar_for_exchange(Exchange::NseIndia);
     let nse_coverage = nse.holiday_coverage().expect("NSE ships a table");
     assert_eq!(nse_coverage.first(), day(2010, 1, 1));
@@ -1864,11 +2024,10 @@ fn coverage_runs_exactly_over_each_operators_published_window() {
     assert_eq!(
         nse_coverage.windows(),
         vec![
-            (day(2010, 1, 1), day(2011, 12, 31)),
-            (day(2013, 1, 1), day(2017, 12, 31)),
+            (day(2010, 1, 1), day(2017, 12, 31)),
             (day(2019, 1, 1), day(2026, 12, 31)),
         ],
-        "the three audited windows stop at each unrecovered year's edge"
+        "the two audited windows stop at the unrecovered year's edges"
     );
     assert!(
         matches!(
@@ -1877,25 +2036,27 @@ fn coverage_runs_exactly_over_each_operators_published_window() {
         ),
         "2027 is unpublished by NSE and the identity must refuse it outright"
     );
-    for gap_year in [(2012, 6, 15), (2018, 6, 15)] {
-        // Each unrecovered year sits between two audited windows, so the
-        // bridged residual (#296) answers the session question from the
-        // sourced normal week while the metadata reports the span as
-        // `HolidayWindowsBridged` — never an audited normal, never a
-        // fabricated closure.
-        assert_eq!(
-            nse.is_open(zoned(Asia::Kolkata, gap_year, (10, 0, 0))),
-            Ok(true),
-            "{} answers its normal-week session state beside the disclosed \
-             bridged residual",
-            day(gap_year.0, gap_year.1, gap_year.2)
-        );
-        assert_eq!(
-            gap_reason_on(nse.coverage(), day(gap_year.0, gap_year.1, gap_year.2)),
-            Some(CoverageGapReason::HolidayWindowsBridged),
-            "the unrecovered year reports the bridged residual"
-        );
-    }
+    // The unrecovered year sits between two audited windows, so the bridged
+    // residual (#296) answers the session question from the sourced normal
+    // week while the metadata reports the span as `HolidayWindowsBridged` —
+    // never an audited normal, never a fabricated closure. The recovered 2012
+    // beside it answers inside its own window.
+    assert_eq!(
+        nse.is_open(zoned(Asia::Kolkata, (2018, 6, 15), (10, 0, 0))),
+        Ok(true),
+        "2018-06-15 answers its normal-week session state beside the disclosed \
+         bridged residual"
+    );
+    assert_eq!(
+        gap_reason_on(nse.coverage(), day(2018, 6, 15)),
+        Some(CoverageGapReason::HolidayWindowsBridged),
+        "the unrecovered year reports the bridged residual"
+    );
+    assert_eq!(
+        gap_reason_on(nse.coverage(), day(2012, 6, 15)),
+        None,
+        "the recovered 2012 reports no residual"
+    );
 
     // Pre-floor instants refuse naming their venue-local pre-2010 day, on all
     // three, whatever the window does.
@@ -1976,13 +2137,11 @@ fn detaching_the_table_restores_the_normal_week() {
 fn the_only_unsourced_rows_are_the_muhurat_dates() {
     use chrono::Datelike as _;
 
-    const MUHURAT: [(i32, u32, u32); 9] = [
-        (2010, 11, 5),
+    const MUHURAT: [(i32, u32, u32); 7] = [
         (2011, 10, 26),
+        (2012, 11, 13),
         (2013, 11, 3),
         (2014, 10, 23),
-        (2015, 11, 11),
-        (2016, 10, 30),
         (2017, 10, 19),
         (2019, 10, 27),
         (2026, 11, 8),

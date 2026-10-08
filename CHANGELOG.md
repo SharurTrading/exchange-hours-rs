@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+## 1.0.1 — 2026-10-08
+
 ### Removed
 
 - The crate archive no longer ships the repository's one-off Python

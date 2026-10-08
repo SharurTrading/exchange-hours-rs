@@ -139,11 +139,19 @@ mod prelude {
         // facts sourced, and the queries that need only them answer — which is
         // why the fixture asserts which queries answer rather than that every
         // query refuses.
+        // So does the bridged residual (#296, the 2026-10-07 ruling): a date
+        // on a bridged span — between two audited windows, or below the first
+        // window with the week sourced — answers its session questions from
+        // the sourced normal week, while its holiday classification refuses.
         let phase_shadow_here = phase_shadow_answers(calendar, local_date);
         let resolution_edge_here = calendar.coverage().gaps().any(|gap| {
             gap.reason() == CoverageGapReason::ResolutionEdge && gap.range().contains(local_date)
         });
-        if answer.is_ok() && (phase_shadow_here || resolution_edge_here) {
+        let bridged_here = calendar.coverage().gaps().any(|gap| {
+            gap.reason() == CoverageGapReason::HolidayWindowsBridged
+                && gap.range().contains(local_date)
+        });
+        if answer.is_ok() && (phase_shadow_here || resolution_edge_here || bridged_here) {
             return;
         }
         let error =

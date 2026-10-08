@@ -26,6 +26,8 @@ row's horizon is `—`.
 
 **Coverage:** 2025-01-01..2028-01-03 (inclusive trade dates). Tier: T1 throughout.
 
+Below the window, the span 2010-01-01..2024-12-31 answers its **session** questions as the one-flank bridged residual since the 2026-10-07 ruling (AGENTS.md "Modeling conventions", #296 — the metadata reports `HolidayWindowsBridged`, the complete-calendar claim stays withheld, and the dates below this family's carried horizon keep refusing) while the **holiday-table classification** (`is_closed_trade_date`) refuses a typed `UnresolvedGap` on every span date: nothing witnesses the pre-2025 holiday layer, and no closure is asserted that no operator statement witnesses.
+
 ### Documents
 
 Every artifact below is saved in the research store, and each row's own section quotes the bytes it keys.

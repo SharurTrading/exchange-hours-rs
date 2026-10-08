@@ -6,7 +6,7 @@ use chrono::{DateTime, Datelike, Duration, NaiveDate, Utc};
 use chrono_tz::Tz;
 
 use super::gate::SourceGate;
-use super::periods::{daily_close_for_trade_date, next_daily_close_after_with};
+use super::periods::next_daily_close_after_with;
 use super::schedule::QueryContext;
 use super::sessions::{
     containing_session_with, contains_in_session_on, next_session_after_with,
@@ -197,7 +197,10 @@ pub(in crate::calendar) fn is_closed_trade_date<G: SourceGate>(
     kind: SessionKind,
 ) -> Result<bool, G::Error> {
     context.require_floor(day)?;
-    Ok(daily_close_for_trade_date(context, day, kind)?.is_none())
+    // The classification, not the raw derivation: the one-flank bridged dates
+    // the session layer answers refuse here (issue #296, the 2026-10-07
+    // ruling) — see `periods::trade_date_classification`.
+    super::periods::trade_date_classification(context, day, kind)
 }
 
 pub(in crate::calendar) fn is_closed_all_day_in_calendar<G: SourceGate>(

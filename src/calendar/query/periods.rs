@@ -119,6 +119,42 @@ pub(in crate::calendar) fn daily_close_for_trade_date<G: SourceGate>(
     }
 }
 
+/// The holiday-table classification behind the `is_closed_trade_date` entry
+/// points: whether the identity's own layers leave trade date `day` without a
+/// final close of `kind`.
+///
+/// The question differs from [`daily_close_for_trade_date`], whose absence
+/// answers the session walks, in one gate: the **classification** refuses on a
+/// one-flank bridged date (issue #296, the 2026-10-07 ruling). There the
+/// identity's week is sourced and the date's session questions answer, but no
+/// audited window brackets the span from below, so nothing witnesses the
+/// holiday layer and a "not closed" answer would be fabricated from the
+/// normal week; the refusal is the enriched `CalendarQueryError::
+/// UnresolvedGap`, whose `normal_week_baseline()` names the sourced week the
+/// date sits inside. A two-flank bridged date keeps answering beside the
+/// disclosed residual — two flanks bracket the span, one does not.
+///
+/// A caller-supplied exception record answers before every gate, exactly as
+/// it does in [`daily_close_for_trade_date`]: the record states the day
+/// itself (the #107 overlay contract), so an overlaid calendar keeps its
+/// observable on a refused date too. The derivation beneath the gate is
+/// [`latest_close_for_trade_date`], whose own `require_answerable` gate keeps
+/// refusing the dates the date-level facts refuse — above the last window, a
+/// carried week, a withheld `Unsourced` row — unchanged.
+pub(in crate::calendar) fn trade_date_classification<G: SourceGate>(
+    context: &QueryContext<'_, G>,
+    day: NaiveDate,
+    kind: SessionKind,
+) -> Result<bool, G::Error> {
+    match replacement::daily_close(context, day, kind) {
+        ExceptionDailyClose::NoSession => return Ok(true),
+        ExceptionDailyClose::Close(_) => return Ok(false),
+        ExceptionDailyClose::NotGoverned => {}
+    }
+    context.require_holiday_classification(day)?;
+    Ok(latest_close_for_trade_date(context, day, kind, None)?.is_none())
+}
+
 pub(in crate::calendar) fn next_daily_close_after_with<G: SourceGate>(
     context: &QueryContext<'_, G>,
     instant: DateTime<Utc>,

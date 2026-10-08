@@ -316,10 +316,18 @@ impl<'a, G: SourceGate> QueryContext<'a, G> {
     }
 
     /// The withheld-phase gate ([`SourceGate::require_phase_coverage`]) for
-    /// the entry points whose answer *is* the arrangement a declared phase
-    /// gap withholds: the order-entry queue scans.
+    /// the entry points whose answer *is* the arrangement a declared phase gap
+    /// withholds: the order-entry queue scans.
     pub(super) fn require_phase_coverage(self, date: NaiveDate) -> Result<(), G::Error> {
         G::require_phase_coverage(self.coverage, date)
+    }
+
+    /// The holiday-classification gate
+    /// ([`SourceGate::require_holiday_classification`]): the classification
+    /// entry points refuse a one-flank bridged date where the session queries
+    /// on the same date answer (issue #296, the 2026-10-07 ruling).
+    pub(super) fn require_holiday_classification(self, date: NaiveDate) -> Result<(), G::Error> {
+        G::require_holiday_classification(self.coverage, date)
     }
 
     /// Whether the coverage metadata declares an unscoped refusing phase gap

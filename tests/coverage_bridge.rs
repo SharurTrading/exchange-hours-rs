@@ -1,17 +1,27 @@
 // SPDX-License-Identifier: MIT-0
 
-//! The bridged residual between audited holiday windows, and the refusal
+//! The bridged residual of the audited holiday windows, and the refusal
 //! context that travels beside a typed refusal (issue #296).
 //!
-//! Tier 1: a span **between** two audited windows of an identity's holiday
-//! table, whose normal week the identity sources, answers its session
-//! questions from the sourced normal week while the holiday layer stays
-//! honestly absent — the metadata reports the span as
+//! Tier 1 (2026-10-06): a span **between** two audited windows of an
+//! identity's holiday table, whose normal week the identity sources, answers
+//! its session questions from the sourced normal week while the holiday layer
+//! stays honestly absent — the metadata reports the span as
 //! [`CoverageGapReason::HolidayWindowsBridged`], the complete-calendar claim
 //! stays withheld, and no closure is asserted that no operator statement
-//! witnesses. A span with only one flank refuses as before.
+//! witnesses.
 //!
-//! Tier 3: every refusal is still a refusal; the error value now carries the
+//! Tier 2 (the 2026-10-07 ruling): the bridge extends to the one-flank span
+//! **below the first window**. On a date there whose normal week the identity
+//! sources, the session questions answer exactly as they do on a two-flank
+//! span, while the holiday-table classification refuses a typed
+//! [`CalendarQueryError::UnresolvedGap`] — a one-flank date has no bracket,
+//! nothing witnesses the holiday layer, and two flanks bracket a span where
+//! one does not. The asymmetry is the ruling's substance. A span **above the
+//! last window** is not an evidence gap — the operator's publication horizon
+//! governs there — and its dates keep refusing everywhere.
+//!
+//! Tier 3: every refusal is still a refusal; the error value carries the
 //! sourced normal-week baseline its date sits inside
 //! ([`CalendarQueryError::normal_week_baseline`]) so a consumer can make its
 //! own call. The enrichment changes no verdict.
@@ -27,10 +37,10 @@
 )]
 
 use chrono::{NaiveDate, TimeZone as _, Utc};
-use chrono_tz::Asia;
+use chrono_tz::{Asia, Europe, US};
 use exchange_hours::{
-    CalendarCoverage, CalendarQueryError, CoverageGapReason, DateCoverage, Exchange, SessionKind,
-    calendar_for_exchange,
+    CalendarCoverage, CalendarQueryError, CoverageGapReason, DateCoverage, Exchange,
+    MarketHoursKey, SessionKind, calendar_for_exchange, calendar_for_market_hours_key,
 };
 
 /// A venue-local fixture date.
@@ -53,6 +63,60 @@ fn ist(year: i32, month: u32, day: u32, hour: u32, minute: u32) -> chrono::DateT
         .with_ymd_and_hms(year, month, day, hour, minute, 0)
         .single()
         .expect("fixture must be an unambiguous Kolkata instant")
+        .with_timezone(&Utc)
+}
+
+/// A Chicago-local instant, as UTC.
+fn ct(year: i32, month: u32, day: u32, hour: u32, minute: u32) -> chrono::DateTime<Utc> {
+    US::Central
+        .with_ymd_and_hms(year, month, day, hour, minute, 0)
+        .single()
+        .expect("fixture must be an unambiguous Chicago instant")
+        .with_timezone(&Utc)
+}
+
+/// A Riyadh-local instant, as UTC.
+fn riyadh(year: i32, month: u32, day: u32, hour: u32, minute: u32) -> chrono::DateTime<Utc> {
+    Asia::Riyadh
+        .with_ymd_and_hms(year, month, day, hour, minute, 0)
+        .single()
+        .expect("fixture must be an unambiguous Riyadh instant")
+        .with_timezone(&Utc)
+}
+
+/// A Shanghai-local instant, as UTC.
+fn shanghai(year: i32, month: u32, day: u32, hour: u32, minute: u32) -> chrono::DateTime<Utc> {
+    Asia::Shanghai
+        .with_ymd_and_hms(year, month, day, hour, minute, 0)
+        .single()
+        .expect("fixture must be an unambiguous Shanghai instant")
+        .with_timezone(&Utc)
+}
+
+/// An Istanbul-local instant, as UTC.
+fn istanbul(year: i32, month: u32, day: u32, hour: u32, minute: u32) -> chrono::DateTime<Utc> {
+    Europe::Istanbul
+        .with_ymd_and_hms(year, month, day, hour, minute, 0)
+        .single()
+        .expect("fixture must be an unambiguous Istanbul instant")
+        .with_timezone(&Utc)
+}
+
+/// A Sao Paulo-local instant, as UTC.
+fn sao_paulo(year: i32, month: u32, day: u32, hour: u32, minute: u32) -> chrono::DateTime<Utc> {
+    chrono_tz::America::Sao_Paulo
+        .with_ymd_and_hms(year, month, day, hour, minute, 0)
+        .single()
+        .expect("fixture must be an unambiguous Sao Paulo instant")
+        .with_timezone(&Utc)
+}
+
+/// A New York-local instant, as UTC.
+fn ny(year: i32, month: u32, day: u32, hour: u32, minute: u32) -> chrono::DateTime<Utc> {
+    chrono_tz::America::New_York
+        .with_ymd_and_hms(year, month, day, hour, minute, 0)
+        .single()
+        .expect("fixture must be an unambiguous New York instant")
         .with_timezone(&Utc)
 }
 
@@ -100,8 +164,11 @@ fn the_between_window_spans_report_the_bridged_residual_not_a_refusal() {
     let sgx = calendar_for_exchange(Exchange::SgxSecurities).coverage();
     assert_eq!(
         bridged_union(sgx),
-        vec![(date(2020, 1, 2), date(2024, 12, 31))],
-        "the sgx capture gap between its audited windows is one residual span"
+        vec![
+            (date(2010, 1, 1), date(2013, 12, 31)),
+            (date(2020, 1, 2), date(2024, 12, 31)),
+        ],
+        "the sgx below-first span and its capture gap are both residual spans"
     );
     // `nse_india` ships windows 2010-2017 and 2019-2026; 2018 is the bridged
     // residual. 2012 sat beside it until 2026-10-06 UTC, when the 2012 list's
@@ -150,17 +217,117 @@ fn the_between_window_spans_report_the_bridged_residual_not_a_refusal() {
             "{day} is not claimed complete: the holiday layer is absent"
         );
     }
-    // The one-flank spans beside them are not bridged: below the first
-    // window and above the last, the whole date still refuses.
-    for (coverage, day, label) in [
-        (&sgx, date(2011, 6, 13), "sgx below its first window"),
-        (&sgx, date(2027, 6, 15), "sgx above its last window"),
-        (&nse, date(2027, 6, 15), "nse above its last window"),
-    ] {
+}
+
+/// One below-first span row: the identity's wire name, the span's first and
+/// last venue-local dates, and the first audited window's own first day.
+type BelowFirstSpan = (
+    &'static str,
+    (i32, u32, u32),
+    (i32, u32, u32),
+    (i32, u32, u32),
+);
+
+/// Every below-first span the shipped tables state, with the identity that
+/// carries it and the first audited window's own first day. The spans are
+/// derived from the tables' windows and the ledger horizons: a table whose
+/// first window opens above the floor leaves the floor-to-window span
+/// below-first, clipped to the carried-below horizon where the week itself is
+/// carried rather than sourced. A table opening at the floor leaves none.
+const BELOW_FIRST_SPANS: &[BelowFirstSpan] = &[
+    // (wire name, span first, span last, first window's first day)
+    ("sgx_securities", (2010, 1, 1), (2013, 12, 31), (2014, 1, 1)),
+    ("cfe", (2010, 1, 1), (2014, 12, 23), (2014, 12, 24)),
+    ("cfe_vix", (2010, 1, 1), (2014, 12, 23), (2014, 12, 24)),
+    ("sse", (2010, 1, 1), (2010, 12, 31), (2011, 1, 1)),
+    ("b3", (2010, 1, 1), (2010, 12, 31), (2011, 1, 1)),
+    ("tadawul", (2010, 1, 1), (2020, 12, 31), (2021, 1, 1)),
+    ("borsa_istanbul", (2010, 1, 1), (2012, 3, 1), (2012, 3, 2)),
+    (
+        "coinbase_derivatives",
+        (2010, 1, 1),
+        (2021, 6, 27),
+        (2021, 6, 28),
+    ),
+    (
+        "globex_cryptocurrency",
+        (2010, 1, 1),
+        (2018, 12, 31),
+        (2019, 1, 1),
+    ),
+    ("iceus", (2010, 1, 1), (2024, 12, 31), (2025, 1, 1)),
+    ("ice_us", (2010, 1, 1), (2024, 12, 31), (2025, 1, 1)),
+    // The softs' and dollar-index weeks are carried below their own horizons,
+    // so only the sourced part of the span bridges.
+    ("ice_us_sugar", (2011, 8, 1), (2024, 12, 31), (2025, 1, 1)),
+    ("ice_us_coffee", (2011, 8, 1), (2024, 12, 31), (2025, 1, 1)),
+    ("ice_us_cocoa", (2011, 8, 1), (2024, 12, 31), (2025, 1, 1)),
+    ("ice_us_cotton", (2011, 8, 1), (2024, 12, 31), (2025, 1, 1)),
+    (
+        "ice_us_orange_juice",
+        (2011, 8, 1),
+        (2024, 12, 31),
+        (2025, 1, 1),
+    ),
+    (
+        "ice_us_dollar_index",
+        (2011, 2, 7),
+        (2024, 12, 31),
+        (2025, 1, 1),
+    ),
+];
+
+/// The calendar for a wire name, whichever identity enum owns it.
+fn calendar_for(name: &str) -> exchange_hours::ExchangeCalendar {
+    if let Ok(exchange) = name.parse::<Exchange>() {
+        calendar_for_exchange(exchange)
+    } else {
+        calendar_for_market_hours_key(name.parse::<MarketHoursKey>().expect("a known wire name"))
+    }
+}
+
+#[test]
+fn every_below_first_span_reports_the_bridged_residual() {
+    for (name, first, last, window_first) in BELOW_FIRST_SPANS {
+        let calendar = calendar_for(name);
+        let coverage = calendar.coverage();
+        let (first, last, window_first) = (
+            date(first.0, first.1, first.2),
+            date(last.0, last.1, last.2),
+            date(window_first.0, window_first.1, window_first.2),
+        );
+        // The span is the first bridged run, ending the day before the first
+        // audited window opens.
+        let spans = bridged_union(coverage);
         assert_eq!(
-            gap_reason_on(*coverage, day),
-            Some(CoverageGapReason::NoHolidayCoverage),
-            "{label} keeps the one-flank refusal"
+            spans.first(),
+            Some(&(first, last)),
+            "{name}: the below-first span is the bridged residual"
+        );
+        assert_eq!(
+            window_first.pred_opt(),
+            Some(last),
+            "{name}: the span ends the day before the first audited window"
+        );
+        // The span withholds the complete-calendar claim but answers its
+        // date-level facts.
+        let probe = first;
+        assert_eq!(
+            coverage.coverage_on(probe),
+            DateCoverage::OutsideCoveredRange,
+            "{name}: {probe} withholds the complete-calendar claim"
+        );
+        assert_eq!(
+            gap_reason_on(coverage, probe),
+            Some(CoverageGapReason::HolidayWindowsBridged),
+            "{name}: {probe} reports the bridged residual"
+        );
+        // The span is excluded from the complete ranges.
+        assert!(
+            coverage
+                .complete_ranges()
+                .all(|range| !range.contains(probe)),
+            "{name}: {probe} is not claimed complete"
         );
     }
 }
@@ -217,6 +384,229 @@ fn bridged_dates_answer_their_session_questions_from_the_sourced_normal_week() {
     );
 }
 
+/// One below-first date per span, with a mid-session venue-local hour and the
+/// weekday the date falls on, so the session-answer fence can compare the
+/// date-aware answer against the detached normal week.
+const BELOW_FIRST_PROBES: &[(&str, (i32, u32, u32))] = &[
+    ("sgx_securities", (2011, 6, 15)),
+    ("cfe", (2012, 6, 13)),
+    ("cfe_vix", (2012, 6, 13)),
+    ("sse", (2010, 6, 16)),
+    ("b3", (2010, 6, 16)),
+    ("tadawul", (2015, 6, 10)),
+    ("borsa_istanbul", (2011, 6, 15)),
+    ("coinbase_derivatives", (2015, 6, 10)),
+    ("globex_cryptocurrency", (2015, 6, 10)),
+    ("iceus", (2015, 6, 10)),
+    ("ice_us", (2015, 6, 10)),
+    ("ice_us_sugar", (2015, 6, 10)),
+    ("ice_us_coffee", (2015, 6, 10)),
+    ("ice_us_cocoa", (2015, 6, 10)),
+    ("ice_us_cotton", (2015, 6, 10)),
+    ("ice_us_orange_juice", (2015, 6, 10)),
+    ("ice_us_dollar_index", (2015, 6, 10)),
+];
+
+/// The mid-session venue-local instant for a probe date, per identity zone.
+fn probe_instant(name: &str, day: (i32, u32, u32)) -> chrono::DateTime<Utc> {
+    let (year, month, d) = day;
+    match name {
+        "sgx_securities" => sgt(year, month, d, 10, 0),
+        "sse" => shanghai(year, month, d, 10, 30),
+        "tadawul" => riyadh(year, month, d, 11, 0),
+        "borsa_istanbul" => istanbul(year, month, d, 11, 0),
+        "b3" => sao_paulo(year, month, d, 11, 0),
+        // CFE, coinbase_derivatives and the ICE Futures U.S. families all
+        // state their grids in Chicago or New York civil time.
+        "cfe" | "cfe_vix" | "coinbase_derivatives" => ct(year, month, d, 12, 0),
+        _ => ny(year, month, d, 12, 0),
+    }
+}
+
+#[test]
+fn a_below_first_date_answers_its_session_questions_like_the_flanking_week() {
+    // A 2011 Wednesday answers the sourced SGX week: the pre-2011-08-01 grid
+    // (Practice Note 8.2.1) runs 09:00-12:30 and 14:00-17:00, and the
+    // date-aware calendar answers it whole.
+    let sgx = calendar_for_exchange(Exchange::SgxSecurities);
+    assert_eq!(
+        sgx.is_open(sgt(2011, 6, 15, 10, 0)),
+        Ok(true),
+        "the below-first Wednesday answers the sourced SGX week"
+    );
+    assert_eq!(
+        sgx.session_bounds(sgt(2011, 6, 15, 10, 0)),
+        Ok(Some((sgt(2011, 6, 15, 9, 0), sgt(2011, 6, 15, 12, 30)))),
+        "the containing session is the era's own morning leg"
+    );
+    assert_eq!(
+        sgx.trade_date(sgt(2011, 6, 15, 10, 0)),
+        Ok(Some(date(2011, 6, 15))),
+        "the below-first date carries its own trade date"
+    );
+    assert_eq!(
+        sgx.session_state(sgt(2011, 6, 15, 10, 0)),
+        Ok(exchange_hours::SessionState::OpenRegular),
+        "the below-first date's state reads from the normal week"
+    );
+    assert_eq!(
+        sgx.is_accepting_orders(sgt(2011, 6, 15, 10, 0)),
+        Ok(true),
+        "an open instant accepts orders"
+    );
+    // The weekend survives the one-flank bridge the same way it survives the
+    // two-flank one: a below-first Saturday answers the week's own closure.
+    assert_eq!(
+        sgx.is_open(sgt(2011, 6, 18, 10, 0)),
+        Ok(false),
+        "the below-first Saturday answers the sourced week's weekend"
+    );
+    // Every remaining span: the date-aware session answers equal the detached
+    // normal week's own answers — the same grid `hours_at` states — so the
+    // bridge lifts exactly the holiday layer and nothing beside it.
+    for (name, probe) in BELOW_FIRST_PROBES {
+        let calendar = calendar_for(name);
+        let bare = calendar.without_holidays();
+        let instant = probe_instant(name, *probe);
+        assert_eq!(
+            calendar.is_open(instant),
+            Ok(bare
+                .is_open(instant)
+                .expect("the detached week claims no coverage inside the sourced span")),
+            "{name}: the below-first date answers the normal week it sources"
+        );
+        assert_eq!(
+            calendar.is_accepting_orders(instant),
+            Ok(bare
+                .is_accepting_orders(instant)
+                .expect("the detached week claims no coverage inside the sourced span")),
+            "{name}: the below-first date's order state is the normal week's"
+        );
+        assert_eq!(
+            calendar.session_bounds(instant),
+            Ok(bare
+                .session_bounds(instant)
+                .expect("the detached week states the session")),
+            "{name}: the below-first date's bounds are the normal week's"
+        );
+        assert_eq!(
+            calendar.trade_date(instant),
+            Ok(bare
+                .trade_date(instant)
+                .expect("the detached week states the trade date")),
+            "{name}: the below-first date's trade date is the normal week's"
+        );
+    }
+}
+
+#[test]
+fn a_below_first_date_holiday_classification_refuses_with_the_baseline() {
+    // 2011-06-15 sits below sgx's first audited window: the session questions
+    // answer (the fence above), but the holiday-table classification refuses
+    // — no window brackets the date from below, so nothing witnesses the
+    // holiday layer and a "not closed" answer would be fabricated.
+    let sgx = calendar_for_exchange(Exchange::SgxSecurities);
+    assert_eq!(
+        sgx.is_open(sgt(2011, 6, 15, 10, 0)),
+        Ok(true),
+        "the session layer answers the same date"
+    );
+    let error = sgx
+        .is_closed_trade_date(date(2011, 6, 15), SessionKind::Both)
+        .expect_err("the one-flank classification refuses");
+    assert!(matches!(
+        error,
+        CalendarQueryError::UnresolvedGap { source, date: refused }
+            if source == sgx.source() && refused == date(2011, 6, 15)
+    ));
+    // The enriched refusal: the baseline names the sourced week the date sits
+    // inside — the pre-2011-08-01 grid the operator's own Practice Note 8.2.1
+    // amendment states.
+    let baseline = error
+        .normal_week_baseline()
+        .expect("the sourced week states a baseline");
+    assert_eq!(baseline.identity(), sgx.source());
+    assert_eq!(baseline.weekday(), chrono::Weekday::Wed);
+    let rendered = baseline.to_string();
+    assert!(
+        rendered.contains("normal week Wednesday")
+            && rendered.contains("open 09:00-12:30")
+            && rendered.contains("open 14:00-17:00"),
+        "the baseline renders the era's own session legs: {rendered}"
+    );
+    assert!(
+        error.to_string().contains(&rendered),
+        "the enriched refusal renders the baseline beside the verdict"
+    );
+    // The same refusal shape on every remaining span, dates of each.
+    for (name, probe) in [
+        ("cfe", (2012, 6, 13)),
+        ("cfe_vix", (2012, 6, 13)),
+        ("sse", (2010, 6, 16)),
+        ("b3", (2010, 6, 16)),
+        ("tadawul", (2015, 6, 10)),
+        ("borsa_istanbul", (2011, 6, 15)),
+        ("coinbase_derivatives", (2015, 6, 10)),
+        ("globex_cryptocurrency", (2015, 6, 10)),
+        ("iceus", (2015, 6, 10)),
+        ("ice_us", (2015, 6, 10)),
+    ] {
+        let calendar = calendar_for(name);
+        assert!(
+            matches!(
+                calendar.is_closed_trade_date(date(probe.0, probe.1, probe.2), SessionKind::Both),
+                Err(CalendarQueryError::UnresolvedGap { .. })
+            ),
+            "{name}: the below-first classification refuses typed"
+        );
+    }
+    // A carried week below a one-flank span still refuses as carried, and
+    // states no baseline: the ledger records the week as carried, not
+    // sourced.
+    let sugar = calendar_for_market_hours_key(MarketHoursKey::IceUsSugar);
+    let error = sugar
+        .is_closed_trade_date(date(2011, 6, 15), SessionKind::Both)
+        .expect_err("the carried part of the span refuses");
+    assert!(matches!(
+        error,
+        CalendarQueryError::OutsideCoveredRange { .. }
+    ));
+    assert!(
+        error.normal_week_baseline().is_none(),
+        "a carried week states no baseline"
+    );
+}
+
+#[test]
+fn the_flank_kinds_disagree_on_classification_at_the_first_window() {
+    // The ruling's asymmetry, pinned on one boundary pair: 2013-12-31 sits in
+    // sgx's one-flank below-first span and its classification refuses, while
+    // 2014-01-02 — the first audited window's second day, audited normal —
+    // answers not-closed from the table. Two flanks bracket a span; one does
+    // not.
+    let sgx = calendar_for_exchange(Exchange::SgxSecurities);
+    assert_eq!(
+        sgx.is_closed_trade_date(date(2013, 12, 31), SessionKind::Both),
+        Err(CalendarQueryError::UnresolvedGap {
+            source: sgx.source(),
+            date: date(2013, 12, 31),
+        }),
+        "the one-flank side of the boundary refuses typed"
+    );
+    assert_eq!(
+        sgx.is_closed_trade_date(date(2014, 1, 2), SessionKind::Both),
+        Ok(false),
+        "the audited-normal side of the boundary answers from the table"
+    );
+    // And the two-flank bridged span answers its classification beside the
+    // residual, exactly as the one-flank span refuses.
+    assert_eq!(
+        sgx.is_closed_trade_date(date(2022, 6, 8), SessionKind::Both),
+        Ok(false),
+        "the two-flank bridged Wednesday answers not-closed beside the residual"
+    );
+}
+
 #[test]
 fn the_bridge_asserts_no_holiday_and_leaves_the_flank_rows_whole() {
     let sgx = calendar_for_exchange(Exchange::SgxSecurities);
@@ -227,6 +617,7 @@ fn the_bridge_asserts_no_holiday_and_leaves_the_flank_rows_whole() {
         (&sgx, date(2020, 6, 15)),
         (&sgx, date(2021, 6, 14)),
         (&sgx, date(2024, 12, 30)),
+        (&sgx, date(2011, 6, 14)),
         (&nse, date(2018, 6, 15)),
         (&nse, date(2018, 3, 12)),
     ] {
@@ -282,6 +673,51 @@ fn the_flanks_answer_unchanged_and_need_no_bridge() {
         DateCoverage::OutsideCoveredRange,
         "the bridged Monday is not metadata-complete"
     );
+}
+
+#[test]
+fn above_the_last_window_still_refuses_everywhere() {
+    // Dates above the last audited window are not an evidence gap: the
+    // operator's publication horizon governs there (the 2026-10-07 ruling
+    // scopes the bridge below-first only), so the whole date refuses and the
+    // classification refuses with it — as `NoHolidayCoverage`/`OutsideCoveredRange`,
+    // never as a bridged residual.
+    for (name, probe) in [
+        ("sgx_securities", (2027, 6, 15)),
+        ("nse_india", (2027, 6, 15)),
+        ("cfe", (2027, 6, 15)),
+        ("tadawul", (2028, 6, 13)),
+        ("b3", (2027, 6, 15)),
+        ("sse", (2027, 6, 15)),
+        ("borsa_istanbul", (2027, 6, 15)),
+    ] {
+        let calendar = calendar_for(name);
+        let coverage = calendar.coverage();
+        let day = date(probe.0, probe.1, probe.2);
+        assert_eq!(
+            gap_reason_on(coverage, day),
+            Some(CoverageGapReason::NoHolidayCoverage),
+            "{name}: {day} above the last window is the recorded gap, not a bridge"
+        );
+        assert_eq!(
+            coverage.coverage_on(day),
+            DateCoverage::OutsideCoveredRange,
+            "{name}: {day} withholds the complete-calendar claim"
+        );
+        assert!(
+            calendar.is_open(probe_instant(name, probe)).is_err(),
+            "{name}: the session questions above the last window refuse"
+        );
+        assert!(
+            calendar
+                .is_closed_trade_date(day, SessionKind::Both)
+                .is_err_and(|error| matches!(
+                    error,
+                    CalendarQueryError::OutsideCoveredRange { .. }
+                )),
+            "{name}: the classification above the last window refuses as before"
+        );
+    }
 }
 
 // ------------------------------------------------- the Tier-3 refusal context
@@ -401,31 +837,5 @@ fn the_baseline_is_absent_where_the_normal_week_is_not_sourced() {
     assert!(
         error.normal_week_baseline().is_none(),
         "a carried week states no baseline"
-    );
-}
-
-#[test]
-fn a_one_flank_refusal_still_carries_its_sourced_week_baseline() {
-    let sgx = calendar_for_exchange(Exchange::SgxSecurities);
-    // 2011-06-13 sits below the first audited window and refuses — but the
-    // normal week there is sourced (the horizon sits at the floor), so the
-    // refusal carries the baseline it sits inside: the pre-2011-08-01 grid
-    // the operator's own Practice Note 8.2.1 amendment states.
-    let error = sgx
-        .is_open(sgt(2011, 6, 13, 10, 0))
-        .expect_err("the one-flank span refuses");
-    assert!(matches!(
-        error,
-        CalendarQueryError::OutsideCoveredRange { source, date: refused }
-            if source == sgx.source() && refused == date(2011, 6, 13)
-    ));
-    let baseline = error
-        .normal_week_baseline()
-        .expect("the sourced week states a baseline");
-    assert_eq!(baseline.weekday(), chrono::Weekday::Mon);
-    let rendered = baseline.to_string();
-    assert!(
-        rendered.contains("open 09:00-12:30") && rendered.contains("open 14:00-17:00"),
-        "the baseline renders the era's own session legs: {rendered}"
     );
 }

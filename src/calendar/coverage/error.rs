@@ -74,11 +74,20 @@ pub enum CalendarQueryError {
         date: NaiveDate,
     },
     /// The date is inside an audited window on a date the identity explicitly
-    /// withholds as `Unsourced`.
+    /// withholds as `Unsourced`, or the date sits on a one-flank bridged span
+    /// **below the identity's first audited window**, whose holiday-table
+    /// classification refuses (issue #296, the 2026-10-07 ruling).
     ///
-    /// The crate has no answer and will not guess one; this is the case
-    /// LAW-HOLIDAY-SCOPE means by "a date without a row is audited normal,
-    /// while `Unsourced` expressly withholds that claim".
+    /// The withheld case is the one LAW-HOLIDAY-SCOPE means by "a date without
+    /// a row is audited normal, while `Unsourced` expressly withholds that
+    /// claim". The one-flank case is the ruling's asymmetry with two-flank
+    /// bridged spans: a date whose session questions answer from the sourced
+    /// normal week still refuses `is_closed_trade_date`, because no audited
+    /// window brackets it from below and nothing witnesses the holiday layer —
+    /// two flanks bracket a span, one does not. Either way the crate has no
+    /// answer and will not guess one, and
+    /// [`Self::normal_week_baseline`] names the sourced week the refusal sits
+    /// inside.
     UnresolvedGap {
         /// The identity that cannot answer.
         source: CalendarSource,

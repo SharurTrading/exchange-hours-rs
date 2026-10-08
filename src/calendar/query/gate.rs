@@ -173,6 +173,26 @@ pub(in crate::calendar) trait SourceGate: Copy {
     fn require_phase_coverage(coverage: Self::Coverage, date: NaiveDate)
     -> Result<(), Self::Error>;
 
+    /// Fails when the source's **holiday-table classification** of `date` is
+    /// refused.
+    ///
+    /// This is the classification sibling of [`SourceGate::require_answerable`],
+    /// added by the 2026-10-07 Tier-2 ruling on the bridged residual (issue
+    /// #296): a date on a one-flank span **below the identity's first audited
+    /// window** answers its session questions from the sourced normal week —
+    /// `require_answerable` passes it — but its holiday classification refuses
+    /// a typed `UnresolvedGap`, because a one-flank date has no bracket:
+    /// nothing witnesses the holiday layer, and answering "not closed" from
+    /// the normal week would fabricate one. A two-flank date keeps answering
+    /// its classification beside the disclosed residual, and a date above the
+    /// last window keeps its whole-date refusal (the publication horizon
+    /// governs there, so this gate never fires on one). The floor is the
+    /// caller's check, as for `require_answerable`.
+    fn require_holiday_classification(
+        coverage: Self::Coverage,
+        date: NaiveDate,
+    ) -> Result<(), Self::Error>;
+
     /// Returns whether the coverage metadata declares an unscoped refusing
     /// phase gap on `day`.
     ///
@@ -241,6 +261,10 @@ impl SourceGate for FixedSnapshot {
     }
 
     fn require_phase_coverage(_coverage: (), _date: NaiveDate) -> Result<(), Infallible> {
+        Ok(())
+    }
+
+    fn require_holiday_classification(_coverage: (), _date: NaiveDate) -> Result<(), Infallible> {
         Ok(())
     }
 
@@ -395,6 +419,22 @@ impl SourceGate for Identified {
                 date,
             }),
         }
+    }
+
+    fn require_holiday_classification(
+        coverage: CalendarCoverage,
+        date: NaiveDate,
+    ) -> Result<(), CalendarQueryError> {
+        if coverage.holiday_classification_refused_on(date) {
+            // The enriched refusal (Tier 3): the baseline derives from the
+            // error itself, naming the sourced normal week the date sits
+            // inside.
+            return Err(CalendarQueryError::UnresolvedGap {
+                source: coverage.identity(),
+                date,
+            });
+        }
+        Ok(())
     }
 
     fn has_unscoped_refusing_phase_gap_on(coverage: CalendarCoverage, day: NaiveDate) -> bool {

@@ -806,13 +806,23 @@ fn b3_window_ordinary_weekdays_and_coverage_endpoints() {
         None,
         "no answer below the window: 2010 is the unaudited span"
     );
-    // 2010 sits between the support floor and the audited window: the
-    // identity refuses the date rather than claiming a normal day.
+    // 2010 sits between the support floor and the audited window: the session
+    // questions answer from the sourced normal week (the 2026-10-07
+    // bridged-residual ruling, #296) while the holiday-table classification
+    // refuses — nothing witnesses the 2010 holiday layer.
     let unaudited = sao_paulo((2010, 6, 2), (11, 0, 0));
-    assert!(matches!(
+    assert_eq!(
         calendar.is_open(unaudited),
-        Err(CalendarQueryError::OutsideCoveredRange { date, .. }) if date == day(2010, 6, 2)
-    ));
+        Ok(true),
+        "the 2010 Wednesday answers the sourced normal week beside the one-flank          bridged residual"
+    );
+    assert!(
+        matches!(
+            calendar.is_closed_trade_date(day(2010, 6, 2), SessionKind::Both),
+            Err(CalendarQueryError::UnresolvedGap { date, .. }) if date == day(2010, 6, 2)
+        ),
+        "the 2010 classification refuses: no audited window brackets the date"
+    );
     // 2027-01-05 is inside 2027 but outside the audited window: the identity
     // refuses the date rather than claiming a normal Monday.
     let outside = sao_paulo((2027, 1, 5), (11, 0, 0));
@@ -1115,13 +1125,23 @@ fn tadawul_window_ordinary_weekday_and_coverage_endpoints() {
         calendar.holiday_on(coverage.last().succ_opt().expect("representable")),
         None
     );
-    // A 2020 probe sits in the unaudited span: the identity refuses rather
-    // than answering.
+    // A 2020 probe sits in the unaudited span below the first window: the
+    // session questions answer from the sourced normal week (the 2026-10-07
+    // bridged-residual ruling, #296) while the holiday-table classification
+    // refuses — nothing witnesses the era's holiday layer.
     let unaudited = riyadh((2020, 12, 15), (11, 0, 0));
-    assert!(matches!(
+    assert_eq!(
         calendar.is_open(unaudited),
-        Err(CalendarQueryError::OutsideCoveredRange { date, .. }) if date == day(2020, 12, 15)
-    ));
+        Ok(true),
+        "the 2020-12-15 Tuesday answers the sourced normal week beside the          one-flank bridged residual"
+    );
+    assert!(
+        matches!(
+            calendar.is_closed_trade_date(day(2020, 12, 15), SessionKind::Both),
+            Err(CalendarQueryError::UnresolvedGap { date, .. }) if date == day(2020, 12, 15)
+        ),
+        "the 2020 classification refuses: no audited window brackets the date"
+    );
     // Pre-floor refusal.
     let ancient = riyadh((2009, 12, 31), (11, 0, 0));
     assert!(matches!(
@@ -1589,14 +1609,24 @@ fn borsa_istanbul_window_ordinary_weekday_and_coverage_endpoints() {
         "no answer past the window: 2027 is unpublished"
     );
     // A 2012 probe below the window start (the floor and 2012-03-01 sit below
-    // the operator's first year tab) refuses as the holiday-coverage gap, not
-    // as a carried week — the 2026-10-05 no-changes verification sourced the
-    // normal week from the floor.
+    // the operator's first year tab) answers its session questions from the
+    // sourced normal week (the 2026-10-07 bridged-residual ruling, #296; the
+    // 2026-10-05 no-changes verification sourced the week from the floor),
+    // while the holiday-table classification refuses: nothing witnesses the
+    // pre-2012 holiday layer.
     let unaudited = istanbul((2012, 2, 20), (11, 0, 0));
-    assert!(matches!(
+    assert_eq!(
         calendar.is_open(unaudited),
-        Err(CalendarQueryError::OutsideCoveredRange { date, .. }) if date == day(2012, 2, 20)
-    ));
+        Ok(true),
+        "the 2012-02-20 Monday answers the sourced normal week beside the          one-flank bridged residual"
+    );
+    assert!(
+        matches!(
+            calendar.is_closed_trade_date(day(2012, 2, 20), SessionKind::Both),
+            Err(CalendarQueryError::UnresolvedGap { date, .. }) if date == day(2012, 2, 20)
+        ),
+        "the 2012 classification refuses: no audited window brackets the date"
+    );
     // 2027-01-02 is inside 2027 and outside the audited window.
     let outside = istanbul((2027, 1, 4), (11, 0, 0));
     assert!(matches!(

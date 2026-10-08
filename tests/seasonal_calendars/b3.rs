@@ -198,65 +198,91 @@ fn b3_explicit_2010_to_2012_grids_and_cutovers_are_preserved() {
         assert_eq!(regular_window(&calendar.hours_at(midnight)), after);
     }
 
+    // The 2010 grid days sit below the first audited holiday window
+    // (2011-01-01), a one-flank bridged span since the 2026-10-07 ruling
+    // (#296): the session questions answer from the sourced normal week, so
+    // each probe answers exactly what the detached normal week states — the
+    // grid states the 10:45 pre-abertura window closed, the 11:00 regular
+    // open open, and the 2010 holiday layer nothing at all (its
+    // classification refuses typed).
+    let bare = calendar.without_holidays();
     let old_long_day = (2010, 1, 6);
-    // The 2010 long-session grid's pre-abertura window is not primary-sourced,
-    // so 10:45 reads closed rather than order entry.
-    assert!(
-        calendar
-            .is_accepting_orders(local(tz, old_long_day, (10, 45, 0)))
-            .is_err(),
-        "a dormant identity refuses the closed probe"
+    let long_instant = local(tz, old_long_day, (10, 45, 0));
+    assert_eq!(
+        calendar.is_accepting_orders(long_instant),
+        Ok(bare
+            .is_accepting_orders(long_instant)
+            .expect("the detached week answers")),
+        "the 10:45 pre-abertura probe answers the detached week's own closed state"
     );
-    assert!(
-        calendar
-            .is_open_regular(local(tz, old_long_day, (11, 0, 0)))
-            .is_err(),
-        "a dormant identity refuses this probe"
+    let long_regular = local(tz, old_long_day, (11, 0, 0));
+    assert_eq!(
+        calendar.is_open_regular(long_regular),
+        Ok(bare
+            .is_open_regular(long_regular)
+            .expect("the detached week answers")),
+        "the 11:00 regular probe answers the detached week's own state"
     );
-    assert!(
-        calendar
-            .is_open_extended(local(tz, old_long_day, (17, 55, 0)))
-            .is_err(),
-        "a dormant identity refuses this probe"
+    for at in [(17, 55, 0), (18, 30, 0)] {
+        let instant = local(tz, old_long_day, at);
+        assert_eq!(
+            calendar.is_open_extended(instant),
+            Ok(bare
+                .is_open_extended(instant)
+                .expect("the detached week answers")),
+            "the {at:?} extended probe answers the detached week's own state"
+        );
+    }
+    let long_evening = local(tz, old_long_day, (19, 30, 0));
+    assert_eq!(
+        calendar.is_open(long_evening),
+        Ok(bare
+            .is_open(long_evening)
+            .expect("the detached week answers")),
+        "the 19:30 probe answers the detached week's own state"
     );
-    assert!(
-        calendar
-            .is_open_extended(local(tz, old_long_day, (18, 30, 0)))
-            .is_err(),
-        "a dormant identity refuses this probe"
-    );
-    assert!(
-        calendar
-            .is_open(local(tz, old_long_day, (19, 30, 0)))
-            .is_err(),
-        "a dormant identity refuses the closed probe"
-    );
+    assert!(matches!(
+        calendar.is_closed_trade_date(day(old_long_day), SessionKind::Both),
+        Err(CalendarQueryError::UnresolvedGap { .. })
+    ));
 
     let old_short_day = (2010, 4, 1);
-    assert!(
-        calendar
-            .is_order_entry_only(local(tz, old_short_day, (9, 45, 0)))
-            .is_err(),
-        "a dormant identity refuses this probe"
+    let short_instant = local(tz, old_short_day, (9, 45, 0));
+    assert_eq!(
+        calendar.is_order_entry_only(short_instant),
+        Ok(bare
+            .is_order_entry_only(short_instant)
+            .expect("the detached week answers")),
+        "the 09:45 order-entry-only probe answers the detached week's own state"
     );
-    assert!(
-        calendar
-            .is_open_regular(local(tz, old_short_day, (10, 0, 0)))
-            .is_err(),
-        "a dormant identity refuses this probe"
+    let short_regular = local(tz, old_short_day, (10, 0, 0));
+    assert_eq!(
+        calendar.is_open_regular(short_regular),
+        Ok(bare
+            .is_open_regular(short_regular)
+            .expect("the detached week answers")),
+        "the 10:00 regular probe answers the detached week's own state"
     );
-    assert!(
-        calendar
-            .is_open_extended(local(tz, old_short_day, (17, 30, 0)))
-            .is_err(),
-        "a dormant identity refuses this probe"
+    let short_extended = local(tz, old_short_day, (17, 30, 0));
+    assert_eq!(
+        calendar.is_open_extended(short_extended),
+        Ok(bare
+            .is_open_extended(short_extended)
+            .expect("the detached week answers")),
+        "the 17:30 extended probe answers the detached week's own state"
     );
-    assert!(
-        calendar
-            .is_open(local(tz, old_short_day, (19, 0, 0)))
-            .is_err(),
-        "a dormant identity refuses the closed probe"
+    let short_evening = local(tz, old_short_day, (19, 0, 0));
+    assert_eq!(
+        calendar.is_open(short_evening),
+        Ok(bare
+            .is_open(short_evening)
+            .expect("the detached week answers")),
+        "the 19:00 probe answers the detached week's own state"
     );
+    assert!(matches!(
+        calendar.is_closed_trade_date(day(old_short_day), SessionKind::Both),
+        Err(CalendarQueryError::UnresolvedGap { .. })
+    ));
 
     // The interim-grid day now sits inside the audited holiday window
     // (2011-01-01..2024-12-31), so its probes answer through the date-aware

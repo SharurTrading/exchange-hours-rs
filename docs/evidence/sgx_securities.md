@@ -193,7 +193,10 @@ survives in the Wayback index for 2010-01-01..2013-12-31 or for
 2020-01-02..2024-12-31. No operator statement prints those closures, so the
 table claims nothing for the spans: the coverage windows stop at 2019-12-31,
 hold only 2020-01-01 (the one 2020 date the 2019 sheet prints), and resume at
-2025-01-01, and queries inside the gaps refuse rather than answer.
+2025-01-01. Since the 2026-10-07 bridged-residual ruling (#296) the spans
+answer their session questions from the sourced normal week while the
+holiday-table classification refuses typed on the one-flank 2010-2013 span
+and answers beside the residual on the two-flank 2020-2024 span.
 **Closing condition (the desk ask, sharpened 2026-10-05 UTC):** the
 operator's calendar page has no archived capture inside either span (the
 2020-2024 page is a JS shell whose content-api query for the retired path
@@ -568,9 +571,21 @@ shells and key nothing.
   trading-hours page survives in the Wayback index for 2010-01-01..2013-12-31
   (checked 2026-09-29, UTC, CDX sweeps over the whole sgx.com domain), so no
   operator statement prints those closures and the table claims nothing
-  there; queries inside the gap refuse. The rulebook cannot supply them by
+  there. The rulebook cannot supply them by
   incorporation (verified 2026-10-05 UTC: Rule 8.2.1 delegates the calendar
-  to SGX-ST's own publications; see the Holidays section). **Closing
+  to SGX-ST's own publications; see the Holidays section). **Bridged residual
+  (2026-10-07 UTC, #296):** the span sits **below the first audited window**
+  with the normal week sourced, so under the charter's bridged-residual
+  ruling it no longer refuses whole dates: the session layer answers
+  2010-01-01..2013-12-31 (1,461 days) from the sourced normal week the
+  timeline serves, the metadata reports the span as `HolidayWindowsBridged`
+  rather than complete, and this bullet is the residual's disclosure. What
+  is served: the sourced normal week's sessions on every span date. What is
+  withheld: each span date's holiday arrangement — and, the ruling's
+  asymmetry, the **holiday-table classification refuses a typed
+  `UnresolvedGap`** on every span date (the enriched refusal carries the
+  sourced normal-week baseline), because a one-flank date has no bracket and
+  nothing witnesses the 2010-2013 holiday layer. **Closing
   condition (the desk ask):** the state side is complete — MOM's gazetted
   2011-2013 lists are held from the state's own dated bytes, now including
   the in-year 2011 and 2012 pages (`gazette-2026-10/` INDEX, section 5) —
@@ -610,7 +625,7 @@ shells and key nothing.
   launch, so the 2019-12-24 and 2019-12-31 rows hold the last printed grid
   (close 12:36) and the disputed tail ships as no session. **Closing
   condition:** a post-June-2019 artifact printing the half-day grid.
-- **horizon at the floor since the 2026-10-05 no-changes verification** — the pre-2011-08-01 session bounds (09:00–12:30 and 14:00–17:00) are stated by the operator's own Practice Note 8.2.1 amendment (issue date 1 August 2011) and by the 2009-05-14 Trading Hours page print (see the Normal week section), and the sweep recorded below found no declared hours change inside the formerly carried span, so the ledger horizon moved from 2011-08-01 to the 2010-01-01 floor and the `NormalWeekCarried` refusals below the old horizon retired. The holiday capture gaps keep their own `NoHolidayCoverage` refusals and #213 tracking.
+- **horizon at the floor since the 2026-10-05 no-changes verification** — the pre-2011-08-01 session bounds (09:00–12:30 and 14:00–17:00) are stated by the operator's own Practice Note 8.2.1 amendment (issue date 1 August 2011) and by the 2009-05-14 Trading Hours page print (see the Normal week section), and the sweep recorded below found no declared hours change inside the formerly carried span, so the ledger horizon moved from 2011-08-01 to the 2010-01-01 floor and the `NormalWeekCarried` refusals below the old horizon retired. The holiday capture gaps keep their own #213 tracking: the 2020-2024 span (two-flank, 2026-10-06) and the 2010-2013 span (one-flank below the first window, 2026-10-07 ruling — AGENTS.md "Modeling conventions", #296) are bridged residuals whose **session** questions answer from the sourced normal week while the holiday layer stays honestly absent; on the one-flank span the **holiday-table classification** refuses a typed `UnresolvedGap`, the enriched refusal carrying the sourced normal-week baseline, because nothing witnesses the 2010-2013 holiday layer.
 - Current routine ends are randomized: Pre-Open ends 08:58–08:59 and 12:58–12:59, Pre-Close ends 17:04–17:05. Each order-entry slice stops at the earliest possible end so no matching time is claimed as order entry.
 - Trade at Close matches at the Equilibrium Price and is therefore tradeable throughout its window.
 
@@ -640,8 +655,10 @@ trading-hours statement. The rulebook delegation is the known negative: Rule
 8.2.1 publishes the hours through SGX-ST's own channels, which the sweeps above
 and the #286/#292 records enumerate, and none of them states a change inside
 the span. The pre-2011-08-01 dates now answer from the floor-sourced grid
-wherever the holiday windows reach and refuse as `NoHolidayCoverage` (#213)
-where they do not.
+wherever the holiday windows reach; below the first window the dates answer
+their session questions as the one-flank bridged residual (#213, the
+2026-10-07 ruling, #296) while their holiday-table classification refuses
+typed.
 
 ## Module narrative (moved from src/calendar/schedules/equities/apac/sgx.rs on 2026-10-02 UTC)
 

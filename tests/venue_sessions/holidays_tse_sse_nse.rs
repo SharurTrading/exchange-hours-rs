@@ -2004,12 +2004,21 @@ fn coverage_runs_exactly_over_each_operators_published_window() {
         ),
         "2027 is unpublished by SSE and the identity must refuse it outright"
     );
+    // 2010 is the unrecovered-notice gap, below the first audited window: the
+    // session questions answer from the sourced normal week (the 2026-10-07
+    // bridged-residual ruling, #296) while the holiday-table classification
+    // refuses, because nothing witnesses the 2010 holiday layer.
+    assert_eq!(
+        sse.is_open(zoned(Asia::Shanghai, (2010, 12, 31), (10, 0, 0))),
+        Ok(true),
+        "the 2010-12-31 Thursday answers the sourced normal week beside the          one-flank bridged residual"
+    );
     assert!(
         matches!(
-            sse.is_open(zoned(Asia::Shanghai, (2010, 12, 31), (10, 0, 0))),
-            Err(CalendarQueryError::OutsideCoveredRange { .. })
+            sse.is_closed_trade_date(day(2010, 12, 31), SessionKind::Both),
+            Err(CalendarQueryError::UnresolvedGap { date, .. }) if date == day(2010, 12, 31)
         ),
-        "the unrecovered 2010 arrangement sits outside every audited window and must refuse"
+        "the 2010 classification refuses: no audited window brackets the date"
     );
 
     // NSE: 2010-01-01 .. 2026-12-31 over two audited windows; 2018 is

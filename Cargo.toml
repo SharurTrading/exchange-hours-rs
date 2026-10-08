@@ -2,7 +2,7 @@
 
 [package]
 name = "exchange-hours"
-version = "1.0.0"
+version = "1.0.1"
 edition = "2024"
 # Deliberately conservative: the language floor is 1.88 (the `let`-chains this
 # crate uses) but 1.95 is what consumers are expected to be on. Verified by the
@@ -19,7 +19,9 @@ categories = ["date-and-time", "finance"]
 # linked by those documents. CI config, lint/dependency policy, and the
 # toolchain pin are repository concerns that a consumer never reads.
 # `rust-toolchain.toml` in particular would only confuse—it governs this
-# repo's own builds, not a dependent's.
+# repo's own builds, not a dependent's. The `tools/` scripts are one-off
+# research and encode helpers from the evidence waves, likewise never a
+# consumer's concern.
 exclude = [
     ".coderabbit.yaml",
     ".github/",
@@ -27,6 +29,7 @@ exclude = [
     "clippy.toml",
     "deny.toml",
     "docs/plans/",
+    "tools/",
 ]
 
 [lib]

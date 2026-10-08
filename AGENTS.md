@@ -24,8 +24,11 @@ workflow checks out for the Documents-digest fence, and the checkout
 generalizes the sourced-intersection rule from undated changeovers to whole
 evidence spans between sourced windows: the bridged residual
 (`CoverageGapReason::HolidayWindowsBridged`, issue #296) and the refusal
-context that travels beside a typed refusal. The law names are
-unchanged.
+context that travels beside a typed refusal. The 2026-10-07 (UTC) amendment
+extends the bridge to one-flank spans **below the first audited window** —
+sessions answer there, holiday classification refuses typed — while spans
+above the last window stay the publication horizon's to govern. The law names
+are unchanged.
 
 ## Migration status — 2026-09-30 UTC
 
@@ -520,7 +523,24 @@ state actual supported ranges; an unknown date is not a market closure.
   baseline it sits inside so a consumer can make its own call. A span with
   only one flank — below the first window, above the last — is not bridged:
   it stays the recorded gap, closed family-by-family or by a maintainer
-  ruling.
+  ruling. **Amended 2026-10-07 (UTC), closing the Tier-2 question of #296:**
+  the bridge extends to the one-flank span **below the first window**. On a
+  date there whose normal week the identity sources, the session questions
+  (`session_bounds`, `is_open`, `is_accepting_orders`, `is_order_entry_only`,
+  `trade_date`, `session_state`, `session_profile`) answer from the sourced
+  week exactly as they do on a two-flank span, while the holiday-table
+  classification (`is_closed_trade_date`, and any other query that reads the
+  table's classification) refuses the enriched `UnresolvedGap` — the
+  normal-week baseline travels beside it — because a one-flank date has no
+  bracket: nothing witnesses the holiday layer, and the crate's accuracy bar
+  ("nothing answered where it cannot back") forbids a "not closed" answer
+  there. That asymmetry is the ruling's substance: two flanks bracket a span,
+  one does not. No new verdict kind exists: the metadata reports these spans
+  as the same `CoverageGapReason::HolidayWindowsBridged`, `coverage_on` stays
+  `OutsideCoveredRange`, and `complete_ranges` keeps excluding them. The
+  scoping is **below-first only**: dates above the last window are not an
+  evidence gap — the operator's publication horizon governs them
+  (LAW-HOLIDAY-SCOPE) — and they keep refusing exactly as before.
 - **A knowledge boundary is the first source that lists the modelled
   product**, not merely the earliest source that survives. Check the contract
   set, not just the grid, before keying a row to an edition.

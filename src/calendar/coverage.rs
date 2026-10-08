@@ -217,10 +217,12 @@ pub enum DateCoverage {
     /// The date is at or after the floor but outside the ranges this identity
     /// has a sourced answer for: its weekday profile is carried backwards
     /// there, its holiday layer has no answer there, a declared phase-level gap
-    /// applies on the date, its holiday layer is the bridged residual of a
-    /// span between two audited windows
+    /// applies on the date, its holiday layer is the bridged residual of an
+    /// unaudited span the sourced week crosses
     /// ([`CoverageGapReason::HolidayWindowsBridged`] — the session layer still
-    /// answers there), or answering it completely would consult a
+    /// answers there, and the holiday-table classification answers beside the
+    /// residual on a two-flank span but refuses typed on a one-flank span
+    /// below the first window), or answering it completely would consult a
     /// neighbouring date the identity does not answer
     /// ([`CoverageGapReason::ResolutionEdge`], #151). A date refused for the
     /// last reason — or for the bridged residual — may still answer the
@@ -266,32 +268,53 @@ pub enum CoverageGapReason {
     /// The calendar detached its built-in holiday table with
     /// [`without_holidays`](crate::ExchangeCalendar::without_holidays).
     NormalWeekOnly,
-    /// **The bridged residual (issue #296, Tier 1).** The date sits **between
-    /// two audited windows** of the identity's shipped holiday table — a window
-    /// ends before it and another begins after it — so the table's holiday
-    /// layer is honestly absent there, while the identity's sourced normal week
-    /// answers across the span.
+    /// **The bridged residual (issue #296, Tier 1; the 2026-10-07 Tier-2
+    /// ruling extends it below the first window).** The date sits in an
+    /// **unaudited span between audited windows** of the identity's shipped
+    /// holiday table — a window ends before it and another begins after it —
+    /// or **below the identity's first audited window**, whose normal week the
+    /// identity sources; the table's holiday layer is honestly absent there,
+    /// while the identity's sourced normal week answers across the span.
     ///
     /// This is the charter's sourced-intersection convention
     /// ("an undated changeover is a disclosed residual, not a refused day")
     /// generalized from one undated changeover to a whole evidence span: the
     /// maintainer's principle of 2026-10-05 is that sourced hours on both
-    /// sides of an evidence gap are not refused wholesale. The dates inside
-    /// the span therefore answer their session questions from the normal week
-    /// the timeline serves — the state that holds under every sourced state —
-    /// while the metadata withholds the complete-calendar claim and reports
-    /// this reason instead. The residual is a disclosure beside a served
-    /// answer, never a fabricated "no holiday": no closure is asserted that no
-    /// operator statement witnesses, and no open is asserted silently — the
-    /// span verdict says the holiday layer is absent, and a witnessed
+    /// sides of an evidence gap are not refused wholesale, and the 2026-10-07
+    /// ruling extends it to a span with only one flank **below** — a date
+    /// whose window begins after it but none of whose ends before it. The
+    /// dates inside either span answer their session questions from the normal
+    /// week the timeline serves — the state that holds under every sourced
+    /// state — while the metadata withholds the complete-calendar claim and
+    /// reports this reason instead. The residual is a disclosure beside a
+    /// served answer, never a fabricated "no holiday": no closure is asserted
+    /// that no operator statement witnesses, and no open is asserted silently —
+    /// the span verdict says the holiday layer is absent, and a witnessed
     /// arrangement (the operator declaring the same recurring closure every
     /// observed year, the `coinbase_derivatives` 2022 Thanksgiving shape)
     /// arrives as table data with its own audited window, which shrinks the
     /// bridge as the family sweeps land.
     ///
-    /// Unlike [`Self::NoHolidayCoverage`], which refuses the whole date for a
-    /// span with only one flank (below the first window or above the last),
-    /// this reason is **not a refusal**: the date-level gate answers, and the
+    /// **The two span kinds differ at the holiday-table classification, and
+    /// that asymmetry is the 2026-10-07 ruling's substance.** Two flanks
+    /// bracket a span; one does not. A two-flank date's classification
+    /// (`is_closed_trade_date` and every query that reads the holiday table's
+    /// classification) answers `Ok(false)` beside the residual — on both
+    /// flanks the sourced windows witness the ordinary layer. A one-flank
+    /// date's classification refuses a typed
+    /// [`CalendarQueryError::UnresolvedGap`], enriched with the
+    /// [`NormalWeekBaseline`](crate::NormalWeekBaseline) the date sits inside,
+    /// because nothing witnesses the holiday layer there and the crate's
+    /// accuracy bar ("nothing answered where it cannot back") forbids a
+    /// "not closed" answer.
+    ///
+    /// A span **above the last window** is not this reason and never was: the
+    /// operator's publication horizon governs there (LAW-HOLIDAY-SCOPE), so
+    /// those dates are not an evidence gap and keep their whole-date refusal
+    /// as [`Self::NoHolidayCoverage`].
+    ///
+    /// Unlike [`Self::NoHolidayCoverage`], this reason is **not a refusal**
+    /// for the session layer: the date-level gate answers both kinds, and the
     /// record exists so a consumer walking [`CalendarCoverage::gaps`] sees
     /// that the holiday layer — not the session layer — is what the span
     /// lacks. [`DateCoverage`] reports the date as
@@ -810,6 +833,33 @@ impl HolidayContract {
     }
 }
 
+/// Which kind of unaudited span a date outside every audited window sits in.
+///
+/// Private to the coverage engine: the kind decides which questions the span's
+/// dates answer, never the metadata verdict they report — both kinds read as
+/// [`DateCoverage::OutsideCoveredRange`] with
+/// [`CoverageGapReason::HolidayWindowsBridged`] as the reason.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum BridgeSpanKind {
+    /// A window ends before the date and another begins after it — both
+    /// flanks exist, and the span between them is the charter's bridged
+    /// residual (2026-10-06, issue #296 Tier 1). The session questions and
+    /// the holiday-table classification both answer, the classification
+    /// beside the disclosed residual.
+    TwoFlank,
+    /// A window begins after the date and none ends before it — the date sits
+    /// **below the family's first audited window** (the 2026-10-07 Tier-2
+    /// ruling, issue #296). The session questions answer from the sourced
+    /// normal week exactly as on a two-flank span, but the holiday-table
+    /// classification refuses: a one-flank date has no bracket, nothing
+    /// witnesses the holiday layer, and the crate's accuracy bar forbids a
+    /// "not closed" answer there. A one-flank span **above** the last window
+    /// is deliberately absent from this enum — the operator's publication
+    /// horizon governs there, those dates are not an evidence gap, and they
+    /// keep their whole-date refusal.
+    OneFlankBelow,
+}
+
 /// What one identity's calendar can answer, as of the shipped data.
 ///
 /// Built by [`ExchangeCalendar::coverage`](crate::ExchangeCalendar::coverage);
@@ -1005,7 +1055,7 @@ impl CalendarCoverage {
             None => false,
             Some(table) => {
                 !Self::withholds_shipped(table, date) && table.coverage().contains(date)
-                    || Self::bridged_between_windows(self.windows(), self.carried_below, date)
+                    || Self::bridge_span_kind(self.windows(), self.carried_below, date).is_some()
             }
         }
     }
@@ -1205,7 +1255,7 @@ impl CalendarCoverage {
         if let Some(reason) = self.date_level_gap_on(date) {
             return Some(reason);
         }
-        if Self::bridged_between_windows(self.windows(), self.carried_below, date) {
+        if Self::bridge_span_kind(self.windows(), self.carried_below, date).is_some() {
             return Some(CoverageGapReason::HolidayWindowsBridged);
         }
         if !self.resolution_reach_answerable(date) {
@@ -1314,8 +1364,8 @@ impl CalendarCoverage {
     /// in either direction.
     ///
     /// The unanswerable days are the dates below the carried-below horizon, the
-    /// dates outside every audited window — including a between-window span the
-    /// bridge now serves, whose edges only trigger the conservative full walk —
+    /// dates outside every audited window — including a bridged span the bridge
+    /// now serves, whose edges only trigger the conservative full walk —
     /// and the withheld rows. All three
     /// sources are sorted static tables, so this is three binary searches and
     /// no walk — the fast path behind
@@ -1392,12 +1442,17 @@ impl CalendarCoverage {
     /// the withheld phase ask [`Self::phase_gap_on`] themselves.
     ///
     /// A date **between two audited windows** whose normal week the identity
-    /// sources answers here (issue #296, Tier 1): the bridge lifts the
-    /// whole-date refusal this method used to raise for every date outside the
-    /// windows, and the holiday layer's residual is reported by
-    /// [`Self::gap_reason_on`] as
+    /// sources answers here (issue #296, Tier 1), and so does a date **below
+    /// the first window** whose week is sourced (the 2026-10-07 Tier-2
+    /// ruling): the bridge lifts the whole-date refusal this method used to
+    /// raise for every date outside the windows, and the holiday layer's
+    /// residual is reported by [`Self::gap_reason_on`] as
     /// [`CoverageGapReason::HolidayWindowsBridged`] instead — a disclosure
-    /// beside the served session answers, never a fabricated normal date.
+    /// beside the served session answers, never a fabricated normal date. The
+    /// two span kinds differ one level up, at the holiday-table
+    /// classification ([`Self::holiday_classification_refused_on`]): a
+    /// two-flank date's classification answers beside the residual, a
+    /// one-flank-below date's refuses.
     pub(super) fn date_level_gap_on(self, date: NaiveDate) -> Option<CoverageGapReason> {
         if date < SUPPORT_FLOOR {
             return None;
@@ -1416,8 +1471,9 @@ impl CalendarCoverage {
                     Some(CoverageGapReason::WithheldDate)
                 } else if coverage.contains(date) {
                     None
-                } else if Self::bridged_between_windows(self.windows(), self.carried_below, date) {
-                    // The between-window span answers at the date level; the
+                } else if Self::bridge_span_kind(self.windows(), self.carried_below, date).is_some()
+                {
+                    // The bridged span answers at the date level; the
                     // residual is `gap_reason_on`'s to report.
                     None
                 } else {
@@ -1437,26 +1493,31 @@ impl CalendarCoverage {
         })
     }
 
-    /// Returns whether venue-local `date` sits **between two audited windows**
-    /// with the normal week sourced there — the bridged residual of issue #296,
-    /// Tier 1.
+    /// Returns which kind of unaudited span venue-local `date` sits in, with
+    /// the normal week sourced there — the bridged residual of issue #296
+    /// (Tier 1 between windows; the 2026-10-07 Tier-2 ruling below the first
+    /// window).
     ///
     /// Three conditions, in cost order: `date` lies outside every window the
     /// identity ships (the callers' audited-contains checks usually settle the
-    /// opposite), a window ends before it **and** a window begins after it —
-    /// both flanks exist, which is what separates the bridge from
-    /// [`CoverageGapReason::NoHolidayCoverage`]'s one-flank spans below the
-    /// first window and above the last — and the carried-below horizon does not
-    /// swallow the date, so the normal week the timeline serves across the span
-    /// is sourced rather than carried. The windows are the build-validated
-    /// ascending set, so this is one bounded scan of a handful of static
-    /// tuples: allocation-free, total, and identical on every view of the
-    /// identity.
-    fn bridged_between_windows(
+    /// opposite), the flanks decide the kind, and the carried-below horizon
+    /// does not swallow the date, so the normal week the timeline serves
+    /// across the span is sourced rather than carried. The windows are the
+    /// build-validated ascending set, so this is one bounded scan of a handful
+    /// of static tuples: allocation-free, total, and identical on every view
+    /// of the identity.
+    ///
+    /// The one-flank-**above** shape — a window ends before the date and none
+    /// begins after it — is deliberately not a span kind: above the last
+    /// audited window the operator's publication horizon governs
+    /// (LAW-HOLIDAY-SCOPE), so those dates are not an evidence gap and keep
+    /// their whole-date refusal ([`CoverageGapReason::NoHolidayCoverage`]).
+    /// The 2026-10-07 ruling bridges below-the-first-window spans only.
+    fn bridge_span_kind(
         windows: &'static [(i32, u32, u32, i32, u32, u32)],
         carried_below: Option<NaiveDate>,
         date: NaiveDate,
-    ) -> bool {
+    ) -> Option<BridgeSpanKind> {
         let mut lower_last: Option<NaiveDate> = None;
         let mut upper_first: Option<NaiveDate> = None;
         for &(first_year, first_month, first_day, last_year, last_month, last_day) in windows {
@@ -1468,7 +1529,7 @@ impl CalendarCoverage {
             };
             if first <= date && date <= last {
                 // Inside a window: audited, not bridged.
-                return false;
+                return None;
             }
             if last < date {
                 lower_last = Some(match lower_last {
@@ -1483,14 +1544,44 @@ impl CalendarCoverage {
                 });
             }
         }
-        let (Some(_), Some(_)) = (lower_last, upper_first) else {
-            return false;
+        let kind = match (lower_last, upper_first) {
+            (Some(_), Some(_)) => BridgeSpanKind::TwoFlank,
+            // Below the first window: one flank, and the span the 2026-10-07
+            // ruling bridges.
+            (None, Some(_)) => BridgeSpanKind::OneFlankBelow,
+            // Above the last window, or no windows at all: not bridged.
+            (_, None) => return None,
         };
         // State compatibility: the flanking windows are audited states, and the
-        // week the timeline serves across the span between them must itself be
+        // week the timeline serves across the span must itself be
         // sourced (LAW-COVERAGE) — a horizon inside the span keeps its own
         // dates carried, and they refuse through the ordinary facts.
-        carried_below.is_none_or(|carried| date >= carried)
+        carried_below
+            .is_none_or(|carried| date >= carried)
+            .then_some(kind)
+    }
+
+    /// Returns whether the **holiday-table classification** of venue-local
+    /// `date` refuses — the 2026-10-07 Tier-2 ruling on the bridged residual
+    /// (issue #296).
+    ///
+    /// A date on a one-flank span below the identity's first audited window
+    /// has no bracket: nothing witnesses the holiday layer there, so
+    /// `is_closed_trade_date` refuses a typed
+    /// [`CalendarQueryError::UnresolvedGap`] — enriched, per Tier 3, with the
+    /// [`NormalWeekBaseline`](crate::NormalWeekBaseline) the date sits inside
+    /// — instead of answering "not closed" from the normal week, while the
+    /// same date's session questions answer from that week. A two-flank date
+    /// keeps answering its classification beside the disclosed residual — two
+    /// flanks bracket the span, one does not — and a date above the last
+    /// window keeps its whole-date refusal, the publication horizon governing
+    /// there. Only an attached audited table classifies: a detached view
+    /// claims no holiday layer anywhere, so its contract is unchanged.
+    pub(in crate::calendar) fn holiday_classification_refused_on(self, date: NaiveDate) -> bool {
+        date >= SUPPORT_FLOOR
+            && matches!(self.holidays, HolidayContract::Audited { .. })
+            && Self::bridge_span_kind(self.windows(), self.carried_below, date)
+                == Some(BridgeSpanKind::OneFlankBelow)
     }
 
     /// Returns the first venue-local date strictly after `date` at which the

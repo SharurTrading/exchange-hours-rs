@@ -263,13 +263,15 @@ fn iceus_2025_holiday_rows_report_covered() {
         assert_eq!(coverage.coverage_on(day), DateCoverage::Covered);
         assert_eq!(gap_reason_on(coverage, day), None);
         assert!(coverage.is_complete_on(day));
-        // The window's own first day is not complete (#151): answering
-        // 2025-01-01 consults 2024-12-31, outside the window. The first
-        // complete span begins the day after it.
+        // The window's own first day is complete since the 2026-10-07
+        // bridged-residual ruling (#296): its backward reach reads
+        // 2024-12-31, a one-flank bridged date whose session facts answer, so
+        // the reach stays inside answered land and the span opens on the
+        // window's own first day.
         assert_eq!(
             coverage.complete_ranges().next().map(DateRange::first),
-            Some(date(2025, 1, 2)),
-            "the audited window opens at the 2025 floor, and the first complete              date is the window's second day"
+            Some(date(2025, 1, 1)),
+            "the audited window opens at the 2025 floor, and the first complete              date is the window's own first day"
         );
         assert!(
             coverage
@@ -312,15 +314,14 @@ fn cfe_2025_holiday_rows_report_covered() {
         assert_eq!(gap_reason_on(coverage, day), None);
         assert!(coverage.is_complete_on(day));
         // 2017-04-10, the third window's own first day, reaches back to
-        // 2017-04-09 for its wrapped Sunday-evening leg and so is not complete
-        // (#151); the first window's own first two days refuse the same way —
-        // the 2014-12-24 early close's chain derivation reads the leg that
-        // opened 2014-12-23 — so the first complete span begins at the first
-        // window's third day, the LateOpen day whose chain stops on the
-        // closure.
+        // 2017-04-09 for its wrapped Sunday-evening leg; since the 2026-10-07
+        // bridged-residual ruling (#296) that leg's opening day answers its
+        // session facts, and so does 2014-12-23, the leg the first window's
+        // own first days derive through — so the first complete span opens on
+        // the first window's own first day.
         assert_eq!(
             coverage.complete_ranges().next().map(DateRange::first),
-            Some(date(2014, 12, 26))
+            Some(date(2014, 12, 24))
         );
         assert!(
             coverage
@@ -767,29 +768,33 @@ fn the_no_changes_sweep_retired_the_equities_side_carried_eras() {
         "paris answers the 2010-01-01 printed closure"
     );
 
-    // The three families whose holiday windows open above the floor keep
-    // refusing their pre-window dates — but the refusal now names the recorded
-    // holiday-coverage gap (sgx_securities #213, the BIST window's own
-    // 2012-03-02 opening, tadawul's unaudited span), not a carried week.
+    // The three families whose holiday windows open above the floor report
+    // their pre-window dates as the bridged residual since the 2026-10-07
+    // ruling (#296): the span sits below the first audited window with the
+    // week sourced, so the metadata withholds the complete-calendar claim
+    // while naming the holiday layer — not a carried week — as what the span
+    // lacks (sgx_securities #213, the BIST window's own 2012-03-02 opening,
+    // tadawul's unaudited span).
     let sgx = exchange_coverage(Exchange::SgxSecurities);
     assert_eq!(
         gap_reason_on(sgx, date(2010, 6, 15)),
-        Some(CoverageGapReason::NoHolidayCoverage),
-        "sgx_securities' pre-2014 refusal is the holiday capture gap (#213)"
+        Some(CoverageGapReason::HolidayWindowsBridged),
+        "sgx_securities' pre-2014 span is the one-flank bridged residual (#213, \
+         #296)"
     );
     let bist = exchange_coverage(Exchange::BorsaIstanbul);
     assert_eq!(
         gap_reason_on(bist, date(2012, 2, 20)),
-        Some(CoverageGapReason::NoHolidayCoverage),
-        "the BIST refusal below the holiday window's 2012-03-02 opening is the \
-         window, not a carried week"
+        Some(CoverageGapReason::HolidayWindowsBridged),
+        "the BIST span below the holiday window's 2012-03-02 opening is the \
+         one-flank bridged residual, not a carried week"
     );
     let tadawul = exchange_coverage(Exchange::Tadawul);
     assert_eq!(
         gap_reason_on(tadawul, date(2020, 12, 15)),
-        Some(CoverageGapReason::NoHolidayCoverage),
-        "the tadawul unaudited-span refusal is the holiday window, not a carried \
-         week"
+        Some(CoverageGapReason::HolidayWindowsBridged),
+        "the tadawul unaudited span is the one-flank bridged residual, not a \
+         carried week"
     );
 }
 

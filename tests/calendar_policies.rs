@@ -23,9 +23,10 @@
 use chrono::{DateTime, Datelike, Duration, NaiveDate, TimeZone, Utc};
 use chrono_tz::{America, Asia, US};
 use exchange_hours::{
-    CalendarQueryError, CalendarResolution, CalendarSource, DateCoverage, DayPolicy, Exchange,
-    ExchangeCalendar, HolidayKind, MarketHoursKey, NoPolicy, SUPPORT_FLOOR, SessionKind,
-    SessionState, calendar_for_exchange, calendar_for_market_hours_key, hours_for_market_hours_key,
+    CalendarQueryError, CalendarResolution, CalendarSource, CoverageGapReason, DateCoverage,
+    DayPolicy, Exchange, ExchangeCalendar, HolidayKind, MarketHoursKey, NoPolicy, SUPPORT_FLOOR,
+    SessionKind, SessionState, calendar_for_exchange, calendar_for_market_hours_key,
+    hours_for_market_hours_key,
 };
 
 /// Asserts an identity-backed query returns exactly `expected`, the coverage
@@ -1249,6 +1250,16 @@ fn all_key_calendars_match_dated_snapshots_over_two_years() {
                                 // The audited window contains the date and no
                                 // phase gap shadows it: the date-level facts
                                 // answer.
+                                None
+                            } else if coverage.gaps().any(|gap| {
+                                gap.reason() == CoverageGapReason::HolidayWindowsBridged
+                                    && gap.range().contains(local)
+                            }) {
+                                // The bridged residual (issue #296, the
+                                // 2026-10-07 ruling): the date-level facts
+                                // answer and the session queries answer with
+                                // them; only the holiday-table classification
+                                // refuses on a one-flank span.
                                 None
                             } else {
                                 Some(DateCoverage::OutsideCoveredRange)

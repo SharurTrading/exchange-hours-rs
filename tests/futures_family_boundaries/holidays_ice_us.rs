@@ -688,12 +688,12 @@ fn the_venue_ships_only_the_dates_every_family_agrees_on() {
     // trade-date deletion answers from the date's own day, except where it
     // depends on a day the table withholds: 2025-12-25's opening day is the
     // withheld 2025-12-24.
-    // 2025-01-01's trade-date derivation reads the opening day 2024-12-31,
-    // outside every audited window, so it refuses there; the other closures'
-    // opening days are audited (2025-12-25 additionally depends on the
-    // withheld 2025-12-24).
+    // 2025-01-01's trade-date derivation reads the opening day 2024-12-31, a
+    // one-flank bridged date whose session facts answer since the 2026-10-07
+    // ruling (#296), so it answers; the other closures' opening days are
+    // audited (2025-12-25 additionally depends on the withheld 2025-12-24).
     for (date, withheld_by) in [
-        (day(2025, 1, 1), Some(DateCoverage::OutsideCoveredRange)),
+        (day(2025, 1, 1), None),
         (day(2025, 4, 18), None),
         (day(2025, 12, 25), Some(DateCoverage::UnresolvedGap)),
         (day(2026, 1, 1), None),
@@ -721,20 +721,31 @@ fn the_venue_ships_only_the_dates_every_family_agrees_on() {
             );
         }
     }
-    // Naming anything on 2025-01-01 — its trade date, even the noon probe,
-    // which rides the wrap opened that evening — reads 2024-12-31, outside
-    // every audited window, so the identity refuses it.
-    assert_declared_refusal(
-        venue.is_open(ny((2025, 1, 1), (12, 0, 0))),
-        DateCoverage::OutsideCoveredRange,
-        venue,
-        "the closure's day rides the wrap opened on the unaudited 2024-12-31",
+    // The bridged 2024-12-31 itself: its session questions answer from the
+    // sourced normal week and its classification refuses typed (the
+    // 2026-10-07 ruling, #296).
+    assert_eq!(
+        venue.is_open(ny((2024, 12, 31), (12, 0, 0))),
+        Ok(true),
+        "the 2024-12-31 Tuesday answers the sourced normal week beside the \
+         one-flank bridged residual"
     );
-    assert_declared_refusal(
+    assert!(matches!(
+        venue.is_closed_trade_date(day(2024, 12, 31), SessionKind::Both),
+        Err(CalendarQueryError::UnresolvedGap { .. })
+    ));
+    // 2025-01-01's noon probe rides the wrap opened that sourced evening and
+    // answers shut from its own Closed row.
+    assert_eq!(
+        venue.is_open(ny((2025, 1, 1), (12, 0, 0))),
+        Ok(false),
+        "the closure's day answers from its own row beside the sourced wrap"
+    );
+    assert_eq!(
         venue.trade_date(ny((2025, 1, 1), (12, 0, 0))),
-        DateCoverage::OutsideCoveredRange,
-        venue,
-        "the trade date's opening day 2024-12-31 sits outside every audited window",
+        Ok(None),
+        "the Closed row removes the wrapped leg, so noon is in no session and \
+         no queue"
     );
     // A plain 2025 weekday answers: the 2025 floor is inside the window now.
     let weekday = ny((2025, 6, 11), (12, 0, 0));
@@ -861,13 +872,22 @@ fn every_ice_table_covers_the_2025_floor_through_the_2027_calendars_last_entry()
     // snapshot.
     let sugar = key(MarketHoursKey::IceUsSugar);
     // At the 2010 floor, 2024-12-31 is no longer below the floor; it is one
-    // day below the audited window, so the verdict is the no-audited-answer
-    // one instead.
-    assert_declared_refusal(
+    // day below the audited window. Since the 2026-10-07 bridged-residual
+    // ruling (#296) its session questions answer from the sourced normal week
+    // (the horizon sits at 2011-08-01, so the week there is sourced), while
+    // the holiday-table classification refuses: no audited window brackets
+    // the date from below.
+    assert_eq!(
         sugar.is_open(ny((2024, 12, 31), (9, 0, 0))),
-        DateCoverage::OutsideCoveredRange,
-        sugar,
-        "2024-12-31 is one day below the audited window",
+        Ok(true),
+        "2024-12-31 answers the sourced normal week beside the one-flank          bridged residual"
+    );
+    assert!(
+        matches!(
+            sugar.is_closed_trade_date(day(2024, 12, 31), SessionKind::Both),
+            Err(CalendarQueryError::UnresolvedGap { .. })
+        ),
+        "the 2024-12-31 classification refuses: nothing witnesses the holiday layer"
     );
     let outside = ny((2028, 1, 18), (9, 0, 0));
     assert_eq!(sugar.holiday_on(day(2028, 1, 18)), None);
@@ -939,55 +959,39 @@ fn the_2025_softs_closures_remove_the_whole_trading_day() {
                 Some(HolidayKind::Closed),
                 "{which:?} {year}-{month:02}-{date:02}"
             );
-            // 2025-01-01 splits by family. Sugar, Coffee, Cocoa and FCOJ run
-            // one same-day executable session — no wrapping session rule — so
-            // no session from the unaudited 2024-12-31 can reach the holiday,
-            // and the closed day answers from its own row; the trade date
-            // still refuses naming 2024-12-31, because the Tuesday-evening
-            // pre-open queue that feeds the next morning opens on the
-            // unaudited day. Cotton No. 2 is the wrapping contract: its
-            // session for trade date 2025-01-01 opened 21:00 CT on the
-            // unaudited 2024-12-31, so its noon sits inside a session the
-            // identity cannot resolve and every query refuses naming that
-            // day. Every later closure's opening day is audited.
+            // 2025-01-01 answers for every family: the wrapped legs it needs
+            // opened 2024-12-31, a one-flank bridged date whose session facts
+            // answer since the 2026-10-07 ruling (#296), so the derivation
+            // completes and the closed day answers from its own row. The
+            // classification of the bridged 2024-12-31 itself still refuses.
             if (year, month, date) == (2025, 1, 1) {
                 assert!(
                     matches!(
-                        calendar.trade_date(ny((year, month, date), (12, 0, 0))),
-                        Err(CalendarQueryError::OutsideCoveredRange { .. })
+                        calendar.is_closed_trade_date(day(2024, 12, 31), SessionKind::Both),
+                        Err(CalendarQueryError::UnresolvedGap { .. })
                     ),
-                    "{which:?}: the trade date reads the leg that opened on the unaudited 2024-12-31"
+                    "{which:?}: the bridged eve's classification refuses typed"
                 );
-                if which == MarketHoursKey::IceUsCotton {
-                    assert!(
-                        matches!(
-                            calendar
-                                .is_closed_trade_date(day(year, month, date), SessionKind::Both),
-                            Err(CalendarQueryError::OutsideCoveredRange { .. })
-                        ),
-                        "{which:?}: the wrapping session opened on the unaudited 2024-12-31"
-                    );
-                    assert!(
-                        matches!(
-                            calendar.is_open(ny((year, month, date), (12, 0, 0))),
-                            Err(CalendarQueryError::OutsideCoveredRange { .. })
-                        ),
-                        "{which:?}: noon sits inside the session that opened on the unaudited 2024-12-31"
-                    );
-                } else {
-                    assert!(
-                        calendar
-                            .is_closed_trade_date(day(year, month, date), SessionKind::Both)
-                            .expect("the closed day answers from its own row"),
-                        "{which:?}: 2025-01-01 has no session in either phase"
-                    );
-                    assert!(
-                        !calendar
-                            .is_open(ny((year, month, date), (12, 0, 0)))
-                            .expect("the closed day answers from its own row"),
-                        "{which:?} must be shut at noon on 2025-01-01"
-                    );
-                }
+                assert!(
+                    calendar
+                        .is_closed_trade_date(day(year, month, date), SessionKind::Both)
+                        .expect("the closed day answers from its own row"),
+                    "{which:?}: 2025-01-01 has no session in either phase"
+                );
+                assert!(
+                    !calendar
+                        .is_open(ny((year, month, date), (12, 0, 0)))
+                        .expect("the closed day answers from its own row and the sourced wrap"),
+                    "{which:?} must be shut at noon on 2025-01-01"
+                );
+                // The Closed row removes the complete trading day, the
+                // prior-evening wrap included, so noon sits in no session and
+                // no queue for every family and the walk answers absence.
+                assert_eq!(
+                    calendar.trade_date(ny((year, month, date), (12, 0, 0))),
+                    Ok(None),
+                    "{which:?}: noon is in no session and no queue"
+                );
                 continue;
             }
             assert!(

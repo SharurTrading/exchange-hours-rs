@@ -44,6 +44,8 @@ they are recorded here in revision-row grammar and checked against
 
 **Coverage:** 2021-06-28..2026-09-07 (inclusive trade dates). Tier: T1 throughout.
 
+Below the window, the pre-launch span 2010-01-01..2021-06-27 answers its **session** questions as the one-flank bridged residual since the 2026-10-07 ruling (AGENTS.md "Modeling conventions", #296 — the metadata reports `HolidayWindowsBridged`, the complete-calendar claim stays withheld) while the **holiday-table classification** (`is_closed_trade_date`) refuses a typed `UnresolvedGap` on every span date: nothing witnesses a pre-launch holiday layer, and the sourced pre-launch grid answers the venue closed.
+
 The venue profile is CDE's recurring 23x5 futures grid, so every row is the **intersection** of
 the product groups the operator's notices list on that grid. Where any group on it closes for the
 date the row is **closed**; where none closes but any ends early the row is an **early close** at

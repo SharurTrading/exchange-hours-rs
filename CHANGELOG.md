@@ -19,9 +19,10 @@
   neighbouring window dates that previously refused as resolution edges
   (`sgx_securities` 2019-12-31, 2020-01-01 and 2025-01-01; `nse_india`
   2011-12-31, 2013-01-01, 2017-12-30, 2017-12-31 and 2019-01-01) are fully
-  covered again. One-flank spans (below the first window, above the last)
-  refuse unchanged, and the residuals are disclosed in the owners' evidence
-  files with their #213 and NSE-list closers.
+  covered again. One-flank spans refuse as whole dates until the 2026-10-07
+  ruling (below under Changed) extends the bridge to below-the-first-window
+  spans, and the residuals are disclosed in the owners' evidence files with
+  their #213 and NSE-list closers.
 - `cfe` / `cfe_vix` holiday history extended below the 2017 window: the
   operator's own holiday press releases of 2014-2017 and the CFE information
   circulars IC15-011, IC15-023, IC15-028 and IC15-039 (recovered 2026-10-06
@@ -52,6 +53,42 @@
   09:15-15:30, …"), and the `UnresolvedGap` display appends "the holiday
   arrangement is unsourced". The baseline is absent below the support floor
   and where the ledger records the week as carried.
+
+### Changed
+
+- The coverage engine's **bridged residual extends below the first audited
+  window** (issue #296, Tier 2; the maintainer's ruling of 2026-10-07 UTC,
+  amending the charter's 2026-10-06 convention): on a date in a one-flank
+  span **below the family's first audited holiday window**, whose normal week
+  the identity sources, the **session questions answer** from the sourced
+  normal week exactly as they do on a two-flank bridged span
+  (`session_bounds`, `is_open`, `is_accepting_orders`, `is_order_entry_only`,
+  `trade_date`, `session_state`, `session_profile`, and the session-derived
+  candle and next-session queries), while the **holiday-table classification
+  refuses typed** — `is_closed_trade_date` returns the enriched
+  `CalendarQueryError::UnresolvedGap`, whose `normal_week_baseline()` names
+  the sourced week the date sits inside — because a one-flank date has no
+  bracket: nothing witnesses the holiday layer, and two flanks bracket a span
+  where one does not. A caller's own exception record still answers first,
+  and dates **above the last window** are unchanged: the operator's
+  publication horizon governs there and the whole date keeps refusing. No new
+  verdict kind exists: the metadata reports these spans as the same
+  `CoverageGapReason::HolidayWindowsBridged`, `coverage_on` stays
+  `OutsideCoveredRange`, and `complete_ranges` keeps excluding them. The
+  spans that now answer their sessions — 31,759 identity-span days lifted
+  from whole-date refusal, each table's sourced part — are `sgx_securities`
+  2010-01-01..2013-12-31 (1,461 days), `cfe` and `cfe_vix`
+  2010-01-01..2014-12-23 (1,818), `sse` 2010 (365), `b3` 2010 (365),
+  `tadawul` 2010-01-01..2020-12-31 (4,018), `borsa_istanbul`
+  2010-01-01..2012-03-01 (791), `coinbase_derivatives`
+  2010-01-01..2021-06-27 (4,196), `globex_cryptocurrency`
+  2010-01-01..2018-12-31 (3,287), `iceus` and `ice_us`
+  2010-01-01..2024-12-31 (5,479), the five ICE softs keys
+  2011-08-01..2024-12-31 (4,902 each) and `ice_us_dollar_index`
+  2011-02-07..2024-12-31 (5,077). The spans stay unaudited — each cell of the
+  coverage inventory and each owner's evidence file records what is served,
+  what is withheld and the era's operator-holiday-capture closer, unchanged
+  from the refusal era.
 
 ### Fixed
 

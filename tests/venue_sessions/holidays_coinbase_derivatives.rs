@@ -19,8 +19,8 @@
 use chrono::{Days, NaiveDate, TimeZone as _, Utc};
 use chrono_tz::US;
 use exchange_hours::{
-    DateCoverage, Exchange, ExchangeCalendar, Holiday, HolidayKind, SessionKind,
-    calendar_for_exchange,
+    CalendarQueryError, DateCoverage, Exchange, ExchangeCalendar, Holiday, HolidayKind,
+    SessionKind, calendar_for_exchange,
 };
 
 use super::prelude::{assert_refused_variant, assert_refuses_before_floor};
@@ -156,8 +156,31 @@ fn coverage_runs_from_the_launch_day_to_the_last_notice() {
     // there because no earlier trade date exists to carry a holiday.
     assert_eq!(coverage.first(), day(2021, 6, 28));
     assert_eq!(coverage.last(), day(2026, 9, 7));
+    // 2021-06-27, the Sunday before the launch, sits one day below the window:
+    // since the 2026-10-07 bridged-residual ruling (#296) it is a one-flank
+    // bridged date whose session questions answer from the sourced normal
+    // week — the sourced pre-launch grid, which states the venue closed
+    // before the launch — while its holiday-table classification refuses:
+    // no audited window brackets it from below.
+    let pre_launch = ct((2021, 6, 27), (10, 0, 0));
+    assert_eq!(
+        calendar.holiday_on(day(2021, 6, 27)),
+        None,
+        "the pre-launch Sunday is outside the audited window"
+    );
+    assert_eq!(
+        calendar.is_open(pre_launch),
+        Ok(false),
+        "the sourced pre-launch grid answers the Sunday closed"
+    );
+    assert!(
+        matches!(
+            calendar.is_closed_trade_date(day(2021, 6, 27), SessionKind::Both),
+            Err(CalendarQueryError::UnresolvedGap { .. })
+        ),
+        "the pre-launch classification refuses: nothing witnesses the holiday layer"
+    );
     for (outside, instant) in [
-        (day(2021, 6, 27), ct((2021, 6, 27), (10, 0, 0))),
         (day(2026, 9, 8), ct((2026, 9, 8), (10, 0, 0))),
         // Thanksgiving 2026 is a holiday CDE will observe, but its notice had
         // not issued at retrieval, so the table must not reach it.
@@ -168,36 +191,19 @@ fn coverage_runs_from_the_launch_day_to_the_last_notice() {
             None,
             "{outside} is outside the audited window"
         );
-        // Nothing outside the audited window ships a row, so the row layer is
-        // not what answers here — the coverage contract is. All three dates
-        // refuse as `OutsideCoveredRange`: the two 2026 dates are past the
-        // table's last audited day, and 2021-06-27 is one day below the
-        // window. The detached calendar is the reference that still answers,
-        // and the neutrality claim is that it is open there.
-        if outside < exchange_hours::SUPPORT_FLOOR {
-            // 2021-06-27 sits one day below the window at the 2010 floor: the
-            // attached identity refuses it as unaudited, and the detached
-            // calendar answers the ordinary Sunday the row layer never touched.
-            assert_refused_variant(
-                &calendar.is_open(instant),
-                DateCoverage::OutsideCoveredRange,
-                &format!("{outside} is outside the audited window"),
-            );
-            assert!(
-                calendar.without_holidays().is_open(instant).is_ok(),
-                "{outside}: the detached calendar still answers the ordinary week"
-            );
-        } else {
-            assert_refused_variant(
-                &calendar.is_open(instant),
-                DateCoverage::OutsideCoveredRange,
-                &format!("{outside} is past the audited window"),
-            );
-            assert!(
-                calendar.without_holidays().is_open(instant).is_ok(),
-                "{outside}: the detached calendar still answers the ordinary week"
-            );
-        }
+        // The two 2026 dates are past the table's last audited day: the
+        // publication horizon governs there, not the bridge, so the whole
+        // date refuses as `OutsideCoveredRange`. The detached calendar is the
+        // reference that still answers.
+        assert_refused_variant(
+            &calendar.is_open(instant),
+            DateCoverage::OutsideCoveredRange,
+            &format!("{outside} is past the audited window"),
+        );
+        assert!(
+            calendar.without_holidays().is_open(instant).is_ok(),
+            "{outside}: the detached calendar still answers the ordinary week"
+        );
     }
 }
 

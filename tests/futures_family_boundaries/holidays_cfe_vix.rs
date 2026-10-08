@@ -827,48 +827,53 @@ fn the_2014_window_rows_answer_from_the_recovered_release() {
     let calendar = cfe();
 
     // Christmas Eve 2014-12-24: the release's CFE column closes VX at 12:15
-    // p.m. CT. Morning instants sit inside the leg that opened 2014-12-23
-    // (outside the window) and refuse; the regular morning answers.
+    // p.m. CT. The leg the morning instants sit inside opened 2014-12-23, one
+    // day below the window — a one-flank bridged date since the 2026-10-07
+    // ruling (#296), whose session facts answer — so the day's instant queries
+    // derive through it and answer from the row and the sourced week.
     assert_eq!(
         calendar.holiday_on(day(2014, 12, 24)).map(Holiday::kind),
         Some(HolidayKind::EarlyClose {
             close_ssm: 12 * 3_600 + 15 * 60
         }),
     );
-    // The early close's chain derivation reads the leg that opened
-    // 2014-12-23, outside the window, so every instant query on the day
-    // refuses naming it while the row layer answers.
-    for probe in [(9, 0, 0), (12, 15, 0), (13, 0, 0)] {
-        assert!(
-            matches!(
-                calendar.is_open(ct((2014, 12, 24), probe)),
-                Err(CalendarQueryError::OutsideCoveredRange { date, .. })
-                    if date == day(2014, 12, 23)
-            ),
-            "2014-12-24 at {probe:?} refuses on the out-of-window opening day"
+    for (probe, expected) in [((9, 0, 0), true), ((12, 15, 0), false), ((13, 0, 0), false)] {
+        assert_eq!(
+            calendar.is_open(ct((2014, 12, 24), probe)),
+            Ok(expected),
+            "2014-12-24 at {probe:?} answers from the sourced wrap and the row's              12:15 early close (end-exclusive)"
         );
     }
+    // The wrapped leg's own opening day 2014-12-23 is the one-flank span: its
+    // session questions answer, its holiday-table classification refuses — no
+    // audited window brackets it from below (the 2026-10-07 ruling, #296).
+    assert_eq!(
+        calendar.is_open(ct((2014, 12, 23), (9, 0, 0))),
+        Ok(true),
+        "the 2014-12-23 Monday answers the sourced pre-migration grid"
+    );
+    assert!(matches!(
+        calendar.is_closed_trade_date(day(2014, 12, 23), SessionKind::Both),
+        Err(CalendarQueryError::UnresolvedGap { date, .. }) if date == day(2014, 12, 23)
+    ));
     // Christmas Day 2014-12-25: no session belongs to the day; the
-    // Wednesday-evening wrap is deleted with it.
+    // Wednesday-evening wrap is deleted with it. The closure's own query
+    // derives through the sourced wrap (2014-12-23 answers) and reads the
+    // day's own Closed row.
     assert_eq!(
         calendar.holiday_on(day(2014, 12, 25)).map(Holiday::kind),
         Some(HolidayKind::Closed)
     );
-    // The closure's own query walks the deleted wrap, which opened
-    // 2014-12-23 outside the window, so the instant and closure queries
-    // refuse naming it; the row layer answers.
-    assert!(matches!(
+    assert_eq!(
         calendar.is_closed_trade_date(day(2014, 12, 25), SessionKind::Both),
-        Err(CalendarQueryError::OutsideCoveredRange { date, .. }) if date == day(2014, 12, 23)
-    ));
+        Ok(true),
+        "the closure answers from its own row beside the sourced derivation"
+    );
     for probe_date in [(2014, 12, 24), (2014, 12, 25)] {
-        assert!(
-            matches!(
-                calendar.is_open(ct(probe_date, (16, 0, 0))),
-                Err(CalendarQueryError::OutsideCoveredRange { date, .. })
-                    if date == day(2014, 12, 23)
-            ),
-            "{probe_date:?} at 16:00 CT refuses on the out-of-window opening day"
+        assert_eq!(
+            calendar.is_open(ct(probe_date, (16, 0, 0))),
+            Ok(false),
+            "{probe_date:?} at 16:00 CT answers closed: the eve's 12:15 early              close has passed and the day itself is deleted"
         );
     }
     assert!(
@@ -1375,10 +1380,15 @@ fn coverage_runs_over_the_three_audited_windows() {
     // itself is audited normal; 2014-12-24 and 2015-02-15 carry their own
     // rows.
     assert_eq!(calendar.holiday_on(day(2017, 4, 10)), None);
-    assert!(matches!(
+    // 2014-12-24's 07:00 probe sits inside the leg that opened 2014-12-23,
+    // one day below the window: that opening day is a one-flank bridged date
+    // whose session facts answer (the 2026-10-07 ruling, #296), so the
+    // probe derives and answers open.
+    assert_eq!(
         calendar.is_open(ct((2014, 12, 24), (7, 0, 0))),
-        Err(CalendarQueryError::OutsideCoveredRange { date, .. }) if date == day(2014, 12, 23)
-    ));
+        Ok(true),
+        "the sourced wrap answers the early window's morning"
+    );
     assert!(
         calendar
             .is_open(ct((2017, 4, 10), (7, 0, 0)))

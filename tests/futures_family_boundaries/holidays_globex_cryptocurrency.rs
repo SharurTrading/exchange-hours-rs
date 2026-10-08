@@ -1110,22 +1110,29 @@ fn the_coverage_window_has_two_hard_edges() {
     );
 
     // Christmas 2018 is a CME closure below the window and no wave has audited
-    // it. The attached identity refuses both probes (outside every audited
-    // window); the detached calendar states the pure normal-week answer, not a
-    // guess.
+    // it. Since the 2026-10-07 bridged-residual ruling (#296) the attached
+    // identity answers the probes' session questions from the sourced normal
+    // week — the same answer the detached grid states — while its
+    // holiday-table classification refuses: nothing witnesses the pre-2019
+    // holiday layer.
     let bare = calendar.without_holidays();
     for probe in [ct(2018, 12, 25, 9, 0), ct(2018, 12, 25, 18, 0)] {
-        assert!(
-            calendar.is_open(probe).is_err_and(|error| matches!(
-                error,
-                CalendarQueryError::OutsideCoveredRange { .. }
-            )),
-            "{probe} is outside every audited window"
+        assert_eq!(
+            calendar.is_open(probe),
+            Ok(bare
+                .is_open(probe)
+                .expect("the coverage contract must answer a covered date")),
+            "{probe}: the attached calendar answers the sourced normal week              beside the one-flank bridged residual"
         );
         assert!(
-            bare.is_open(probe)
-                .expect("the coverage contract must answer a covered date"),
-            "{probe}: the detached grid states the ordinary week"
+            matches!(
+                calendar.is_closed_trade_date(
+                    probe.with_timezone(&chrono_tz::US::Central).date_naive(),
+                    SessionKind::Both
+                ),
+                Err(CalendarQueryError::UnresolvedGap { .. })
+            ),
+            "the 2018 classification refuses: no audited window brackets the date"
         );
     }
     assert_eq!(calendar.holiday_on(day(2018, 12, 25)), None);
@@ -1709,21 +1716,27 @@ fn era_2022_2024_window_sits_second_and_the_pre_2019_interval_is_unaudited() {
         );
     }
     // Christmas 2018 is a real CME closure no wave audited. 2018 sits in the
-    // unaudited pre-2019 interval, so the attached identity refuses both
-    // probes while the detached calendar still states the ordinary week it
-    // claims.
+    // unaudited pre-2019 interval: since the 2026-10-07 bridged-residual
+    // ruling (#296) the attached identity answers the probes' session
+    // questions from the sourced normal week — the same answer the detached
+    // grid states — while its holiday-table classification refuses.
     for probe in [ct(2018, 12, 25, 9, 0), ct(2018, 12, 24, 18, 0)] {
-        assert!(
-            calendar.is_open(probe).is_err_and(|error| matches!(
-                error,
-                CalendarQueryError::OutsideCoveredRange { .. }
-            )),
-            "{probe} is outside every audited window"
+        assert_eq!(
+            calendar.is_open(probe),
+            Ok(bare
+                .is_open(probe)
+                .expect("the coverage contract must answer a covered date")),
+            "{probe}: the attached calendar answers the sourced normal week              beside the one-flank bridged residual"
         );
         assert!(
-            bare.is_open(probe)
-                .expect("the coverage contract must answer a covered date"),
-            "{probe}: the detached grid is the ordinary week"
+            matches!(
+                calendar.is_closed_trade_date(
+                    probe.with_timezone(&chrono_tz::US::Central).date_naive(),
+                    SessionKind::Both
+                ),
+                Err(CalendarQueryError::UnresolvedGap { .. })
+            ),
+            "the 2018 classification refuses: no audited window brackets the date"
         );
     }
 }
@@ -1820,82 +1833,48 @@ fn era_2019_2021_sweeps_every_shipped_row_kind_and_instant() {
                 }
                 HolidayKind::Closed => {
                     closures += 1;
-                    // 2019-01-01's derivations read 2018-12-31, which sits in
-                    // the unaudited pre-2019 interval, so they refuse there;
-                    // every later closure's eve is audited and answers.
-                    if date == day(2019, 1, 1) {
-                        assert!(
-                            calendar
-                                .is_closed_trade_date(date, SessionKind::Both)
-                                .is_err_and(|error| matches!(
-                                    error,
-                                    CalendarQueryError::OutsideCoveredRange { .. }
-                                )),
-                            "{date}: the eve is unaudited, so the answer is refused"
-                        );
-                    } else {
-                        assert!(
-                            calendar
-                                .is_closed_trade_date(date, SessionKind::Both)
-                                .expect("must answer"),
-                            "{date}"
-                        );
-                    }
+                    // 2019-01-01's derivations read 2018-12-31, a one-flank
+                    // bridged date whose session facts answer since the
+                    // 2026-10-07 ruling (#296), so every closure of the era
+                    // answers from its own row beside the sourced derivation.
+                    assert!(
+                        calendar
+                            .is_closed_trade_date(date, SessionKind::Both)
+                            .expect("must answer"),
+                        "{date}"
+                    );
 
                     // The evening block that would have carried this trade date
-                    // is gone, and so is the trade date's own session. On
-                    // 2019-01-01 the probes read the unaudited 2018-12-31 and
-                    // are refused; every later closure's probes answer.
-                    let unaudited_eve = date == day(2019, 1, 1);
+                    // is gone, and so is the trade date's own session. The
+                    // 2019-01-01 probes read 2018-12-31, a one-flank bridged
+                    // date whose session facts answer since the 2026-10-07
+                    // ruling (#296), so every closure's probes answer.
                     for (probe_day, hour, minute) in [
                         (day_before(date), 17, 0),
                         (day_before(date), 19, 30),
                         (date, 9, 0),
                         (date, 15, 59),
                     ] {
-                        if unaudited_eve {
-                            assert!(
-                                calendar.is_open(ct_on(probe_day, hour, minute)).is_err_and(
-                                    |error| matches!(
-                                        error,
-                                        CalendarQueryError::OutsideCoveredRange { .. }
-                                    )
-                                ),
-                                "{probe_day} {hour}:{minute}: unaudited-eve reads are refused"
-                            );
-                        } else {
-                            assert!(
-                                !calendar
-                                    .is_open(ct_on(probe_day, hour, minute))
-                                    .expect("must answer"),
-                                "{date}"
-                            );
-                        }
-                    }
-                    if unaudited_eve {
                         assert!(
-                            calendar
-                                .trade_date(ct_on(date, 10, 0))
-                                .is_err_and(|error| matches!(
-                                    error,
-                                    CalendarQueryError::OutsideCoveredRange { .. }
-                                )),
-                            "{date}: the walk reads the unaudited eve"
-                        );
-                    } else {
-                        // The era serves no normal-week queue for the
-                        // no-session trade-date probe to date by — the
-                        // omitted queues are the residual the 2026-10-04
-                        // convention discloses (#123) — so the walk answers
-                        // absence on this era too.
-                        assert_eq!(
-                            calendar
-                                .trade_date(ct_on(date, 10, 0))
-                                .expect("the coverage contract must answer a covered date"),
-                            None,
-                            "{date}: the trade-date walk answers absence"
+                            !calendar
+                                .is_open(ct_on(probe_day, hour, minute))
+                                .expect("must answer"),
+                            "{date}"
                         );
                     }
+                    // The era serves no normal-week queue for the
+                    // no-session trade-date probe to date by — the
+                    // omitted queues are the residual the 2026-10-04
+                    // convention discloses (#123) — so the walk answers
+                    // absence on this era too, 2019-01-01 included now that
+                    // its eve answers (the 2026-10-07 ruling, #296).
+                    assert_eq!(
+                        calendar
+                            .trade_date(ct_on(date, 10, 0))
+                            .expect("the coverage contract must answer a covered date"),
+                        None,
+                        "{date}: the trade-date walk answers absence"
+                    );
                 }
                 HolidayKind::Unsourced => unsourced += 1,
                 other => panic!("{date}: this era ships no {other:?}"),

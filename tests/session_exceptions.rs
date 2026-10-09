@@ -18,11 +18,14 @@
 //! the historical fixtures that bites moved with the data: the 2026-10-09
 //! clock rule re-derived `Exchange::Cme`'s holiday rows on its equity-index
 //! profile clock, so CME's 2015 Thanksgiving week is sourced and its fixtures
-//! below assert the overlay's answers again, while Nasdaq's 2011 Thanksgiving
-//! week is still withheld by the built-in table and its fixtures assert the
-//! `UnresolvedGap` refusal that the withheld rows state. The engine's runtime
-//! semantics remain exercised on covered dates by the 2026 fixtures in this
-//! file and by `tests/coverage_query_errors.rs`.
+//! below assert the overlay's answers again, and the same day's retrievals
+//! sourced Nasdaq's two TBA early closes (Equity Trader Alerts 2010-73 and
+//! 2011-54, the operator's own live Trader News pages), so the Nasdaq
+//! fixtures run on an ordinary covered Friday and assert the overlay's
+//! answers; the withheld-row refusal the fixtures used to pin there is pinned
+//! on `nse_india`'s still-withheld 2014-10-23 Muhurat row instead. The
+//! engine's runtime semantics remain exercised on covered dates by the 2026
+//! fixtures in this file and by `tests/coverage_query_errors.rs`.
 
 #![expect(
     clippy::expect_used,
@@ -72,18 +75,6 @@ fn provider_coverage(provider: &dyn SessionExceptionSource) -> Option<ExceptionC
     provider.coverage()
 }
 
-/// Asserts a query refuses `date` with exactly the verdict the identity's own
-/// coverage metadata publishes for it (LAW-COVERAGE).
-///
-/// Named for the below-floor refusal these sites carried before the 2026-09-27
-/// amendment moved the floor back to 2010: at the 2010 floor the dates these
-/// fixtures probe sit at or above the floor, so the refusal they earn is the
-/// date-level one — `OutsideCoveredRange` for a carried or unaudited day,
-/// `UnresolvedGap` for a day the built-in table withholds — and the verdict is
-/// read from the identity's metadata rather than hand-copied here. One
-/// documented shadowing: a declared phase gap hides the date-level verdict, so
-/// a withheld row reports `OutsideCoveredRange` from `coverage_on` while the
-/// query that reads it refuses `UnresolvedGap`; both are coverage refusals.
 /// Asserts a query refused because the date's built-in row is withheld as
 /// `Unsourced` — the holiday layer's own refusal, which a caller overlay never
 /// lifts (LAW-HOLIDAY-SCOPE: caller data does not improve the built-in
@@ -96,44 +87,48 @@ fn assert_withheld_shadow<T: std::fmt::Debug>(answer: Result<T, CalendarQueryErr
     );
 }
 
-fn assert_before_floor<T: std::fmt::Debug>(
-    answer: Result<T, CalendarQueryError>,
-    source: CalendarSource,
-    date: NaiveDate,
-    label: &str,
-) {
-    let error = answer.expect_err(&format!("{label}: expected a coverage refusal"));
-    // `CalendarSource` is `#[non_exhaustive]`; the two real variants are all
-    // these fixtures name.
-    let base = match source {
-        CalendarSource::Exchange(exchange) => Some(calendar_for_exchange(exchange)),
-        CalendarSource::MarketHoursKey(key) => Some(calendar_for_market_hours_key(key)),
-        _ => None,
-    };
-    let base = base.expect("these fixtures name a real identity");
-    let coverage = base.coverage();
-    let declared = declared_error(coverage, date);
-    let declared = match (&error, declared) {
-        // The withheld-row shadowing documented above.
-        (
-            CalendarQueryError::UnresolvedGap { .. },
-            Some(CalendarQueryError::OutsideCoveredRange { .. }),
-        ) if base
-            .holiday_on(date)
-            .is_some_and(|holiday| holiday.kind() == exchange_hours::HolidayKind::Unsourced) =>
-        {
-            Some(error)
-        }
-        // A query whose bounded derivation needs a *neighbouring* date the
-        // identity does not source refuses naming that neighbour: a coverage
-        // refusal about a different day is admissible on any day.
-        (e, _) if e.date() != date => Some(error),
-        (_, declared) => declared,
-    };
-    assert_eq!(
-        Some(error),
-        declared,
-        "{label}: the query must state the coverage verdict its identity publishes"
+/// A caller-owned overlay never lifts the holiday layer's own refusal on a
+/// withheld date (LAW-HOLIDAY-SCOPE: caller data does not improve the built-in
+/// ledger's completeness claim).
+///
+/// Nasdaq's two `TBA` early closes — the dates this contract was pinned on —
+/// sourced on 2026-10-09 UTC from Equity Trader Alerts 2010-73 and 2011-54,
+/// so the contract is pinned on `nse_india`'s 2014-10-23 Muhurat row instead:
+/// the operator's own 2014 list footnotes the special session without instants
+/// and no circular was recoverable, so the date still withholds. The fixture
+/// blocks are shape fixtures, not sourced instants, exactly as the Nasdaq
+/// ones above are.
+static NSE_WITHHELD_BLOCKS: [ExceptionBlock; 2] = [
+    ExceptionBlock::regular(0, 18 * 3_600 + 15 * 60, 19 * 3_600 + 15 * 60),
+    ExceptionBlock::extended(0, 19 * 3_600 + 25 * 60, 19 * 3_600 + 35 * 60),
+];
+
+#[test]
+fn a_caller_overlay_never_lifts_a_withheld_row() {
+    let records = [SessionExceptionRecord::replace_sessions(
+        day(2014, 10, 23),
+        &NSE_WITHHELD_BLOCKS,
+    )];
+    let table = StaticSessionExceptions::new(
+        CalendarSource::Exchange(Exchange::NseIndia),
+        day(2014, 10, 20),
+        day(2014, 10, 27),
+        &records,
+    )
+    .expect("the fixture records must be valid");
+    let calendar = calendar_for_exchange(Exchange::NseIndia)
+        .with_session_exceptions(&table)
+        .expect("the fixture is scoped to this calendar");
+
+    // The withheld row refuses the session surface with or without the
+    // caller's replacement, and the trade-date walk refuses with it.
+    assert_withheld_shadow(
+        calendar.is_open(et((2014, 10, 23), (10, 0, 0))),
+        "the withheld Muhurat date under a caller replacement",
+    );
+    assert_withheld_shadow(
+        calendar.trade_date(et((2014, 10, 23), (10, 0, 0))),
+        "the withheld date's trade date",
     );
 }
 
@@ -534,15 +529,20 @@ fn cme_thanksgiving_thursday_carries_no_trade_date() {
 // information, including system operating times."
 // https://web.archive.org/web/20111110145837id_/http://www.nasdaqtrader.com/trader.aspx?id=calendar
 //
-// NOT sourced. `docs/schedules/date-exceptions.md` cites Equity Trader Alert
-// ETA2011-54 for the system operating times behind that early close. That alert
-// is not in the public web archive (checked via the CDX index for
-// nasdaqtrader.com/TraderNews.aspx: 2011-51, -52, -53, -58 and -60 are held,
-// -54 is not), and nasdaqtrader.com itself serves a bot interstitial. The 13:00
-// and 17:00 ET wall clocks below are therefore fixture values chosen to
-// exercise the shape the alert is cited for — a regular close with extended
-// trading continuing past it — and are not asserted as sourced times. The
-// 07:00 ET pre-market open is the crate's own sourced Nasdaq grid for 2011.
+// Equity Trader Alert 2011-54, the alert that footnote defers to, was
+// recovered 2026-10-09 UTC from the operator's own live Trader News page
+// (https://www.nasdaqtrader.com/TraderNews.aspx?id=ETA2011-54): its Early
+// Closing Schedule prints the NASDAQ Day Session and NASDAQ Closing Cross at
+// 1:00 p.m., and the built-in table now carries that 13:00 close. The fixture
+// below stays on 2011-11-25 because the record-vocabulary tests key it after
+// the Thanksgiving row; an explicit caller `ReplaceSessions` record takes
+// precedence over the built-in arrangement (LAW-HOLIDAY-SCOPE), so the overlay
+// answers are asserted against the caller's blocks and the base calendar's
+// built-in clip is asserted beside them. The 13:00 and 17:00 ET wall clocks
+// below are fixture values chosen to exercise the shape the fence is about —
+// a regular close with extended trading continuing past it — and are not
+// asserted as sourced times. The 07:00 ET pre-market open is the crate's own
+// sourced Nasdaq grid for 2011.
 // ---------------------------------------------------------------------------
 
 const NASDAQ_THANKSGIVING: NaiveDate = day(2011, 11, 24);
@@ -600,54 +600,78 @@ fn nasdaq_regular_only_early_close_keeps_extended_trading_open() {
     );
     assert_eq!(NASDAQ_HALF_DAY_BLOCKS[2].close_ssm(), 17 * 3_600);
 
-    // Every probe below resolves the venue-local 2011-11-25, a date the built-in
-    // table withholds as `Unsourced` (the TBA early close). The withheld row
-    // refuses the whole session surface — with or without the caller's
-    // replacement, because caller data does not improve the built-in ledger's
-    // completeness claim (LAW-HOLIDAY-SCOPE) — and the candle adapters are the
-    // one seam that composes with the caller's blocks, so the three-block
-    // replacement's afternoon leg is stated there and nowhere else.
-    assert_withheld_shadow(
-        calendar.is_open_extended(et((2011, 11, 25), (8, 0, 0))),
-        "the pre-market block",
+    // Every probe below resolves the venue-local 2011-11-25. Since the
+    // 2026-10-09 recovery of Equity Trader Alert 2011-54 the built-in row is
+    // a sourced 13:00 early close, and the caller's replacement takes
+    // precedence over the built-in arrangement (LAW-HOLIDAY-SCOPE), so the
+    // session surface answers from the caller's blocks: the pre-market block,
+    // the regular block closing at 13:00 ET, and the afternoon extended
+    // block running to 17:00 ET.
+    assert!(
+        calendar
+            .is_open_extended(et((2011, 11, 25), (8, 0, 0)))
+            .expect("the coverage contract must answer a covered date"),
+        "the pre-market block is open"
     );
-    assert_withheld_shadow(
-        calendar.is_open_regular(et((2011, 11, 25), (12, 59, 59))),
-        "one second before the regular close",
+    assert!(
+        calendar
+            .is_open_regular(et((2011, 11, 25), (12, 59, 59)))
+            .expect("the coverage contract must answer a covered date"),
+        "one second before the regular close is open"
     );
-    assert_withheld_shadow(
-        calendar.is_open_regular(et((2011, 11, 25), (13, 0, 0))),
-        "the regular close itself",
+    assert!(
+        !calendar
+            .is_open_regular(et((2011, 11, 25), (13, 0, 0)))
+            .expect("the coverage contract must answer a covered date"),
+        "the regular close itself is end-exclusive"
     );
-    assert_withheld_shadow(
-        calendar.is_open_extended(et((2011, 11, 25), (13, 0, 0))),
-        "the afternoon block's open",
+    assert!(
+        calendar
+            .is_open_extended(et((2011, 11, 25), (13, 0, 0)))
+            .expect("the coverage contract must answer a covered date"),
+        "the afternoon block opens where the regular block closes"
     );
-    assert_withheld_shadow(
-        calendar.is_open(et((2011, 11, 25), (16, 59, 59))),
-        "one second before the extended close",
+    assert!(
+        calendar
+            .is_open(et((2011, 11, 25), (16, 59, 59)))
+            .expect("the coverage contract must answer a covered date"),
+        "one second before the extended close is open"
     );
-    assert_withheld_shadow(
-        calendar.is_open(et((2011, 11, 25), (17, 0, 0))),
-        "the extended close itself",
+    assert!(
+        !calendar
+            .is_open(et((2011, 11, 25), (17, 0, 0)))
+            .expect("the coverage contract must answer a covered date"),
+        "the extended close itself is end-exclusive"
     );
 
-    assert_withheld_shadow(
-        calendar.session_bounds_with(et((2011, 11, 25), (10, 0, 0)), SessionKind::Regular),
-        "the regular block's bounds",
+    assert_eq!(
+        calendar
+            .session_bounds_with(et((2011, 11, 25), (10, 0, 0)), SessionKind::Regular)
+            .expect("the coverage contract must answer a covered date"),
+        Some((
+            et((2011, 11, 25), (9, 30, 0)),
+            et((2011, 11, 25), (13, 0, 0))
+        )),
+        "the regular block's bounds"
     );
-    assert_withheld_shadow(
-        calendar.session_bounds_with(et((2011, 11, 25), (14, 0, 0)), SessionKind::Extended),
-        "the afternoon block's bounds",
+    assert_eq!(
+        calendar
+            .session_bounds_with(et((2011, 11, 25), (14, 0, 0)), SessionKind::Extended)
+            .expect("the coverage contract must answer a covered date"),
+        Some((
+            et((2011, 11, 25), (13, 0, 0)),
+            et((2011, 11, 25), (17, 0, 0))
+        )),
+        "the afternoon block's bounds"
     );
 
     // The regular and full trading days end at different instants, which is
-    // precisely what one scalar `early_close_ssm` cannot say. Both candle
-    // adapters compose with the caller's replacement even on the withheld
-    // date, so the separation between the two closes is observable there: the
-    // regular daily close is 13:00 ET and the full one is 17:00 ET. The same
-    // identity without the overlay refuses, because the built-in row the
-    // candles would otherwise read is the withheld one.
+    // precisely what one scalar `early_close_ssm` cannot say. The candle
+    // adapters compose with the caller's replacement, so the separation
+    // between the two closes is observable: the regular daily close is 13:00
+    // ET and the full one is 17:00 ET. The same identity without the overlay
+    // answers the built-in sourced clip, which ends the whole envelope at the
+    // 13:00 close and so cannot state the afternoon.
     assert_eq!(
         calendar
             .candle_end_with(
@@ -666,22 +690,38 @@ fn nasdaq_regular_only_early_close_keeps_extended_trading_open() {
         Some(et((2011, 11, 25), (17, 0, 0))),
         "the overlay's full daily close"
     );
-    assert_withheld_shadow(
-        calendar.calendar().candle_end_with(
-            et((2011, 11, 25), (10, 0, 0)),
-            CalendarResolution::Daily,
-            SessionKind::Regular,
-        ),
-        "the same identity's regular daily close without the overlay",
+    assert_eq!(
+        calendar
+            .calendar()
+            .candle_end_with(
+                et((2011, 11, 25), (10, 0, 0)),
+                CalendarResolution::Daily,
+                SessionKind::Regular,
+            )
+            .expect("the built-in early close answers"),
+        Some(et((2011, 11, 25), (13, 0, 0))),
+        "the built-in clip's regular daily close"
     );
-    assert_withheld_shadow(
-        calendar.trade_date(et((2011, 11, 25), (14, 0, 0))),
-        "the half day's trade date",
+    assert_eq!(
+        calendar
+            .calendar()
+            .candle_end(et((2011, 11, 25), (10, 0, 0)), CalendarResolution::Daily)
+            .expect("the built-in early close answers"),
+        Some(et((2011, 11, 25), (13, 0, 0))),
+        "the built-in clip ends the whole envelope at 13:00"
+    );
+    assert_eq!(
+        calendar
+            .trade_date(et((2011, 11, 25), (14, 0, 0)))
+            .expect("the coverage contract must answer a covered date"),
+        Some(day(2011, 11, 25)),
+        "the replaced day's trade date is its own local day"
     );
 
-    // What the fixed snapshot still states: nothing in the crate's own Nasdaq
-    // data makes 2011-11-25 an early close, so it remains an ordinary full
-    // Friday there. The early close is caller data.
+    // What the fixed snapshot still states: the detached accessor reads the
+    // normal week and carries no holiday data at all, so it trades through
+    // 14:00 ET — the early close is identity-backed table data, not snapshot
+    // data.
     let half_day = et((2011, 11, 25), (14, 0, 0));
     assert!(
         hours_for_exchange(Exchange::Nasdaq, half_day).is_open(half_day),
@@ -700,37 +740,40 @@ fn a_scalar_early_close_cannot_express_the_nasdaq_half_day() {
         .expect("the fixture is scoped to this calendar");
 
     // The distinction this fence names is a fact about the two caller-owned
-    // shapes, and it survives intact: the policy supplies one scalar clip, and
-    // the replacement supplies a third block whose extended leg runs on to
-    // 17:00 ET after the regular block closes at 13:00 ET.
+    // shapes, and it survives intact on the covered date: the policy supplies
+    // one scalar clip, and the replacement supplies a third block whose
+    // extended leg runs on to 17:00 ET after the regular block closes at
+    // 13:00 ET. The scalar clip closes the whole envelope at 13:00; the
+    // replacement states the afternoon the scalar cannot.
     assert_eq!(overrides.len(), 1);
     assert_eq!(NASDAQ_HALF_DAY_BLOCKS.len(), 3);
     assert_eq!(NASDAQ_HALF_DAY_BLOCKS[1].close_ssm(), 13 * 3_600);
     assert_eq!(NASDAQ_HALF_DAY_BLOCKS[2].close_ssm(), 17 * 3_600);
     assert!(NASDAQ_HALF_DAY_BLOCKS[2].open_ssm() < NASDAQ_HALF_DAY_BLOCKS[2].close_ssm());
 
-    // Both calendars refuse the venue-local 2011-11-25: the built-in row for
-    // that date is withheld as `Unsourced`, and neither caller layer — a
-    // scalar-clip policy or a session replacement — lifts the holiday layer's
-    // own refusal (LAW-HOLIDAY-SCOPE). What the two surfaces do to that date —
-    // one clipping the whole day at 13:00 ET, the other keeping the afternoon —
-    // is stated by their fixture shapes above; a coverage refusal is not a
-    // closure, and neither surface is handed an answer it did not source.
-    assert_withheld_shadow(
-        clipped.is_open_regular(et((2011, 11, 25), (13, 0, 0))),
-        "the clipped calendar's regular close",
+    assert!(
+        !clipped
+            .is_open_regular(et((2011, 11, 25), (13, 0, 0)))
+            .expect("the coverage contract must answer a covered date"),
+        "the clipped calendar's regular close is end-exclusive"
     );
-    assert_withheld_shadow(
-        replaced.is_open_regular(et((2011, 11, 25), (13, 0, 0))),
-        "the replaced calendar's regular close",
+    assert!(
+        !replaced
+            .is_open_regular(et((2011, 11, 25), (13, 0, 0)))
+            .expect("the coverage contract must answer a covered date"),
+        "the replaced calendar's regular close is end-exclusive"
     );
-    assert_withheld_shadow(
-        clipped.is_open(et((2011, 11, 25), (14, 0, 0))),
-        "the clipped calendar's afternoon",
+    assert!(
+        !clipped
+            .is_open(et((2011, 11, 25), (14, 0, 0)))
+            .expect("the coverage contract must answer a covered date"),
+        "the clipped calendar's afternoon is closed: the scalar states nothing after 13:00"
     );
-    assert_withheld_shadow(
-        replaced.is_open_extended(et((2011, 11, 25), (14, 0, 0))),
-        "the replaced calendar's afternoon",
+    assert!(
+        replaced
+            .is_open_extended(et((2011, 11, 25), (14, 0, 0)))
+            .expect("the coverage contract must answer a covered date"),
+        "the replaced calendar's afternoon keeps trading"
     );
 }
 
@@ -776,22 +819,20 @@ fn a_closed_record_removes_the_whole_trading_day() {
         "the closed trade date"
     );
     // The all-day window's determination and the forward scan both reach
-    // across the next day — the withheld TBA Friday — so they refuse naming
-    // it, the holiday layer's own refusal (LAW-HOLIDAY-SCOPE), never an
-    // invented answer.
+    // across the next day — the sourced 13:00 early close of Friday 2011-11-25
+    // (Equity Trader Alert 2011-54, recovered 2026-10-09 UTC) — so they answer
+    // instead of refusing: the whole Thursday window carries no session, and
+    // the next open after Wednesday's close is the Friday pre-market open.
     let all_day = calendar
         .is_closed_all_day_on(NASDAQ_THANKSGIVING, SessionKind::Both)
-        .expect_err("the all-day walk reaches the withheld Friday");
-    assert!(
-        matches!(all_day, CalendarQueryError::UnresolvedGap { .. }),
-        "the all-day window refuses with UnresolvedGap, got {all_day:?}"
-    );
-    let next = calendar
-        .next_session_open_after(et((2011, 11, 23), (20, 0, 0)))
-        .expect_err("the forward scan reaches the withheld Friday");
-    assert!(
-        matches!(next, CalendarQueryError::UnresolvedGap { .. }),
-        "the forward scan refuses with UnresolvedGap, got {next:?}"
+        .expect("the all-day walk stays inside sourced data");
+    assert!(all_day, "the whole all-day window carries no session");
+    assert_eq!(
+        calendar
+            .next_session_open_after(et((2011, 11, 23), (20, 0, 0)))
+            .expect("the forward scan stays inside sourced data"),
+        Some(et((2011, 11, 25), (7, 0, 0))),
+        "Thanksgiving is skipped and the early-close Friday opens the pre-market"
     );
 
     // The fixed snapshot still states the ordinary Wednesday session the record
@@ -824,35 +865,29 @@ fn a_day_policy_clips_a_replaced_trading_day() {
     assert!(calendar.has_day_policy());
     assert_eq!(overrides.len(), 1);
 
-    // The date is venue-local 2011-11-25, before the permanent 2025 support
-    // floor, so the composed surface refuses every probe (LAW-COVERAGE).
-    // Whether the 11:00 ET clip composes over the replacement blocks is no
-    // longer observable through this surface, and a coverage refusal is not a
-    // clip.
-    let nasdaq = CalendarSource::Exchange(Exchange::Nasdaq);
-    assert_before_floor(
-        calendar.is_open_regular(et((2011, 11, 25), (10, 59, 59))),
-        nasdaq,
-        NASDAQ_HALF_DAY,
-        "one second before the policy's clip",
+    // The composed surface answers the covered date: the 11:00 ET policy clip
+    // lands inside the caller's replacement, closes the day from there, and
+    // the daily bar ends at the policy's 11:00 ET close.
+    assert!(
+        calendar
+            .is_open_regular(et((2011, 11, 25), (10, 59, 59)))
+            .expect("the coverage contract must answer a covered date"),
+        "one second before the policy's clip is open"
     );
-    assert_before_floor(
-        calendar.is_open(et((2011, 11, 25), (11, 0, 0))),
-        nasdaq,
-        NASDAQ_HALF_DAY,
-        "the policy's clip itself",
+    assert!(
+        !calendar
+            .is_open(et((2011, 11, 25), (11, 0, 0)))
+            .expect("the coverage contract must answer a covered date"),
+        "the policy's clip itself is closed"
     );
-    assert_before_floor(
-        calendar.is_open(et((2011, 11, 25), (14, 0, 0))),
-        nasdaq,
-        NASDAQ_HALF_DAY,
-        "the afternoon the clip would remove",
+    assert!(
+        !calendar
+            .is_open(et((2011, 11, 25), (14, 0, 0)))
+            .expect("the coverage contract must answer a covered date"),
+        "the afternoon the clip would remove is closed"
     );
-    // The candle adapter applies the same pre-floor gate as the rest of the
-    // surface, so the composed bar close — the 11:00 ET clip over the
-    // replacement — is not observable below the floor either.
-    // The caller's policy clip is observable at the 2010 floor: the daily bar
-    // ends at the policy's 11:00 ET close.
+    // The candle adapter applies the same policy clip, so the composed bar
+    // close is the policy's 11:00 ET close over the replacement.
     assert_eq!(
         calendar
             .candle_end(et((2011, 11, 25), (10, 0, 0)), CalendarResolution::Daily)
@@ -884,27 +919,26 @@ fn a_day_policy_late_open_delays_a_replaced_trading_day() {
     assert!(calendar.has_session_exceptions());
     assert_eq!(overrides.len(), 1);
 
-    // Venue-local 2011-11-25 is before the support floor, so the composed
-    // surface refuses all three probes (LAW-COVERAGE); the delayed onset the
-    // policy produces is no longer observable.
-    let nasdaq = CalendarSource::Exchange(Exchange::Nasdaq);
-    assert_before_floor(
-        calendar.is_open(et((2011, 11, 25), (10, 59, 59))),
-        nasdaq,
-        NASDAQ_HALF_DAY,
-        "one second before the policy's late open",
+    // The composed surface answers the covered date: the policy's 11:00 ET
+    // late open delays the replacement's first open, so the morning is closed
+    // up to it and the afternoon behind the delayed open keeps trading.
+    assert!(
+        !calendar
+            .is_open(et((2011, 11, 25), (10, 59, 59)))
+            .expect("the coverage contract must answer a covered date"),
+        "one second before the policy's late open is closed"
     );
-    assert_before_floor(
-        calendar.is_open_regular(et((2011, 11, 25), (11, 0, 0))),
-        nasdaq,
-        NASDAQ_HALF_DAY,
-        "the policy's late open itself",
+    assert!(
+        calendar
+            .is_open_regular(et((2011, 11, 25), (11, 0, 0)))
+            .expect("the coverage contract must answer a covered date"),
+        "the policy's late open itself is open"
     );
-    assert_before_floor(
-        calendar.is_open_extended(et((2011, 11, 25), (14, 0, 0))),
-        nasdaq,
-        NASDAQ_HALF_DAY,
-        "the afternoon behind the delayed open",
+    assert!(
+        calendar
+            .is_open_extended(et((2011, 11, 25), (14, 0, 0)))
+            .expect("the coverage contract must answer a covered date"),
+        "the afternoon behind the delayed open keeps trading"
     );
 
     // The fixed snapshot still states the ordinary Friday morning the late open
@@ -928,8 +962,8 @@ fn a_day_policy_closure_beats_a_replacement_record() {
 
     // The closure reaches the exception layer as a record-level fact: the table
     // still carries the caller's replacement, and the policy is attached over
-    // it. Which of the two wins is decided by the date-aware engine, and that
-    // answer is no longer observable at this date.
+    // it. Which of the two wins is decided by the date-aware engine, and the
+    // covered date states it: the closure wins, so the day answers closed.
     assert_eq!(
         table.exception_on(NASDAQ_HALF_DAY),
         DateException::ReplaceSessions(&NASDAQ_HALF_DAY_BLOCKS)
@@ -937,21 +971,17 @@ fn a_day_policy_closure_beats_a_replacement_record() {
     assert!(calendar.has_day_policy());
     assert!(calendar.has_session_exceptions());
 
-    // Venue-local 2011-11-25 is before the permanent 2025 support floor, so all
-    // three probes refuse (LAW-COVERAGE): "the closure wins" cannot be stated
-    // through a surface that refuses the date.
-    let nasdaq = CalendarSource::Exchange(Exchange::Nasdaq);
-    assert_before_floor(
-        calendar.is_open(et((2011, 11, 25), (10, 0, 0))),
-        nasdaq,
-        NASDAQ_HALF_DAY,
-        "the morning the closure removes",
+    assert!(
+        !calendar
+            .is_open(et((2011, 11, 25), (10, 0, 0)))
+            .expect("the coverage contract must answer a covered date"),
+        "the morning the closure removes is closed"
     );
-    assert_before_floor(
-        calendar.is_open(et((2011, 11, 25), (14, 0, 0))),
-        nasdaq,
-        NASDAQ_HALF_DAY,
-        "the afternoon the closure removes",
+    assert!(
+        !calendar
+            .is_open(et((2011, 11, 25), (14, 0, 0)))
+            .expect("the coverage contract must answer a covered date"),
+        "the afternoon the closure removes is closed"
     );
     // The closure record beats the replacement: the day answers closed.
     assert!(
@@ -988,14 +1018,15 @@ fn attaching_a_second_provider_replaces_the_first() {
         Some(DateException::ReplaceSessions(&NASDAQ_HALF_DAY_BLOCKS))
     );
 
-    // What the surviving layer does to the date is no longer observable:
-    // venue-local 2011-11-25 precedes the permanent 2025 support floor, so the
-    // query refuses rather than evaluating either provider (LAW-COVERAGE).
-    assert_before_floor(
-        calendar.is_open_regular(et((2011, 11, 25), (10, 0, 0))),
-        CalendarSource::Exchange(Exchange::Nasdaq),
-        NASDAQ_HALF_DAY,
-        "the surviving replacement's regular block",
+    // What the surviving layer does to the date is observable on the covered
+    // date: the second provider's replacement answers, so the surviving
+    // replacement's regular block runs 09:30-13:00 ET and 10:00 ET inside it
+    // is open.
+    assert!(
+        calendar
+            .is_open_regular(et((2011, 11, 25), (10, 0, 0)))
+            .expect("the coverage contract must answer a covered date"),
+        "the surviving replacement's regular block is open at 10:00 ET"
     );
 }
 
@@ -1410,19 +1441,17 @@ fn an_empty_table_is_valid_and_asserts_an_audited_normal_window() {
         .expect("the fixture is scoped to this calendar");
     let plain = calendar_for_exchange(Exchange::Nasdaq);
     let instant = et((2011, 11, 25), (14, 0, 0));
-    // The audited-normal window is a 2011 one, so both calendars refuse the
-    // date: an empty provider still changes nothing, and the thing it does not
-    // change is the coverage refusal (LAW-COVERAGE).
+    // The audited-normal window is a 2011 one, and the built-in row for the
+    // date is the sourced 13:00 early close, so both calendars answer it
+    // identically: an empty provider still changes nothing (LAW-COVERAGE).
     assert_eq!(
         calendar.session_bounds(instant),
         plain.session_bounds(instant),
         "the empty audited-normal window changed the answer"
     );
-    assert_before_floor(
-        calendar.session_bounds(instant),
-        CalendarSource::Exchange(Exchange::Nasdaq),
-        NASDAQ_HALF_DAY,
-        "the audited-normal date",
+    assert!(
+        calendar.session_bounds(instant).is_ok(),
+        "the sourced early-close date answers"
     );
 }
 

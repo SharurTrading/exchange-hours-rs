@@ -810,9 +810,14 @@ fn withheld(calendar: ExchangeCalendar, date: NaiveDate) -> bool {
 /// National Day of Mourning row completed the date-level set, which stood at 35
 /// withheld dates when this entry was added and has grown as the September 2026
 /// notices landed; the value the map carries is compared against the derived
-/// cell, so it moves with the tables. `nasdaq` is the next entry (2026-09-28
-/// UTC): its four withheld dates are the two TBA early closes, the unrecovered
-/// Sandy confirmation and the mourning day, all date-shaped with no phase gap.
+/// cell, so it moves with the tables. `nasdaq` joined next (2026-09-28
+/// UTC), its four withheld dates the two TBA early closes, the unrecovered
+/// Sandy confirmation and the mourning day, all date-shaped with no phase
+/// gap, and left the map on 2026-10-09 UTC: the operator's own Equity Trader
+/// Alerts 2010-73 and 2011-54 (still served live) state the two TBA early
+/// closes at their printed 1:00 p.m., 2012-45 states the Sandy Tuesday
+/// closure unconditionally, and 2025-1 (a Wayback replay) states the mourning
+/// closure, so the scope reads complete to 2026-12-31.
 /// `nse_india` is the next: from 2026-09-28 UTC it audits 2025-2026; from
 /// 2026-10-06 UTC five of its Muhurat dates ship the operator's own circulars
 /// as `ReplacementBlocks`; a second pass the same UTC day recovered the 2010,
@@ -854,7 +859,6 @@ fn date_level_incompleteness() -> &'static [(&'static str, usize)] {
         ("euronext_paris", 2),
         ("iceus", 41),
         ("lse", 5),
-        ("nasdaq", 4),
         // 7 since the 2026-10-06 second pass: three more Muhurat circulars
         // (2010, 2015, 2016) landed as replacement blocks and the recovered
         // 2012 list carried that year's own withheld Muhurat date in.
@@ -998,8 +1002,8 @@ fn inventory_completeness_verdicts_match_the_metadata() {
     }
     assert_eq!(
         (complete, incomplete, no_coverage),
-        (26, 7, 0),
-        "the inventory's verdict shapes: twenty-six complete, seven incomplete, none with no 2025 \
+        (27, 6, 0),
+        "the inventory's verdict shapes: twenty-seven complete, six incomplete, none with no 2025 \
          coverage (eurex joined the complete group on 2026-10-05 UTC: its #157 `tba` \
          declaration retired when the no-changes verification established that the German-scope \
          closures the 2025 and 2026 editions never dated never existed, so the era answers from \
@@ -1015,13 +1019,16 @@ fn inventory_completeness_verdicts_match_the_metadata() {
          reclassified complete to 2027-12-31 on 2026-10-04 UTC under the maintainer's horizon \
          ruling — 2027 coverage is not a requirement and unpublished 2027 never withholds a \
          verdict; #197's b3/tadawul are \
-         complete; nyse is complete to 2027 and nasdaq is incomplete — four Unsourced dates across \
-         2010-2026; the 2026-09-28 UTC APAC activation makes nzx and sgx_securities complete to \
+         complete; nyse is complete to 2027 and nasdaq joined the complete group on 2026-10-09 \
+         UTC, when the operator's own Equity Trader Alerts 2010-73 and 2011-54 (still served \
+         live) stated the two TBA early closes at their printed 1:00 p.m., 2012-45 stated the \
+         Sandy Tuesday closure unconditionally and 2025-1 (a Wayback replay) stated the mourning \
+         closure, so its four Unsourced dates closed as data; the 2026-09-28 UTC APAC activation \
+         makes nzx and sgx_securities complete to \
          their operators' horizons, and the 2026-09-30 UTC normal-week sourcing moved asx's horizon
          to 2013-09-16 so its carried region answers and it reads complete, and nasdaq's horizon \
          to the 2010-01-01 floor the same day (the operator's own SEC filings and archived Trading \
-         Hours page — #231's last half discharged, the four Unsourced dates still withholding the \
-         verdict); tse and \
+         Hours page — #231's last half discharged); tse and \
          sse windows end at the operators' horizons, and nse_india's Muhurat dates are Unsourced; \
          the same date's European/Canadian activation makes lse carry five Unsourced 2025 dates, \
          euronext_paris two announced-but-unstated 2026 eves, the 2026-09-29/30 UTC backfills \

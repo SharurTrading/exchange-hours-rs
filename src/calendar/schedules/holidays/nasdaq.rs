@@ -21,24 +21,29 @@
 //! dates, so the whole envelope clips. The same sheets add that "Nasdaq will
 //! continue to send alerts to notify customers of days when the Market will
 //! close early ... for full information, including system operating times";
-//! no such alert was recoverable from the operator's own channels for any
-//! historical early-close date (see the evidence file's interpretive steps),
-//! so no row invents post-13:00 session topology the sheets do not print.
-//! The sheet's options columns state option-product times; they are a
-//! different market and never key a row here.
+//! the operator's own alerts are the early closes' instants where the sheet
+//! prints only `TBA` — Equity Trader Alerts 2010-73 and 2011-54 (recovered
+//! 2026-10-09 UTC from the operator's own live Trader News pages) print the
+//! "Early Closing Schedule" that closes the Nasdaq day session at 1:00 p.m.
+//! for 2010-11-26 and 2011-11-25 — and the per-date alerts for the 2012-and-
+//! later sheet dates remain unrecovered, so no row invents post-13:00 session
+//! topology no operator document prints. The sheet's options columns state
+//! option-product times; they are a different market and never key a row
+//! here.
 //!
 //! Coverage is 2010-01-01..2026-12-31. The operator has published no 2027
 //! holiday schedule (verified 2026-09-27 UTC against both live channels), so
-//! nothing past 2026-12-31 is claimed. Four dates inside the window are
-//! `Unsourced` — 2010-11-26 and 2011-11-25, whose early closes the sheets
-//! print as `TBA` whose alert text is unrecoverable; 2012-10-30, whose Sandy
-//! closure the operator's own alert calls "likely" with the confirmation
-//! unrecovered; and 2025-01-09, whose mourning closure the operator announced
-//! outside every channel this store could reach — and this table therefore
-//! ships labelled incomplete, never complete-by-omission.
+//! nothing past 2026-12-31 is claimed. Every date inside the window now ships
+//! a sourced row: the four dates this table withheld through 2026-10-08 UTC
+//! closed on 2026-10-09 UTC on the operator's own Equity Trader Alerts — the
+//! 2010-11-26 and 2011-11-25 early closes at the alerts' printed 1:00 p.m.,
+//! the 2012-10-30 Sandy closure (alert 2012-45, "NASDAQ OMX Markets Closed on
+//! Tuesday, October 30, 2012 Due to Hurricane Sandy"), and the 2025-01-09
+//! National Day of Mourning closure (alert 2025-1, served from the Wayback
+//! replay the live site's redesign no longer fronts).
 
 use super::EvidenceTier::T1;
-use super::HolidayKind::{Closed, Unsourced};
+use super::HolidayKind::Closed;
 use super::fences::early_close;
 use super::{HolidayTable, holidays};
 
@@ -53,7 +58,7 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
     coverage: [(2010, 1, 1) ..= (2026, 12, 31)],
     rows: [
         // 2010 - NQ-HOL-2010; the 11-26 early close prints as TBA on the
-        // sheet and the alert is unrecovered, so the date is withheld.
+        // sheet and its time comes from the operator's own alert.
         (2010, 1, 1, Closed, T1, "NQ-HOL-2010"),
         (2010, 1, 18, Closed, T1, "NQ-HOL-2010"),
         (2010, 2, 15, Closed, T1, "NQ-HOL-2010"),
@@ -62,9 +67,13 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2010, 7, 5, Closed, T1, "NQ-HOL-2010"),
         (2010, 9, 6, Closed, T1, "NQ-HOL-2010"),
         (2010, 11, 25, Closed, T1, "NQ-HOL-2010"),
-        (2010, 11, 26, Unsourced, T1, "NQ-HOL-2010"),
+        // 2010-11-26 - T1 - NQ-ETA-2010-73 - Thanksgiving early close: the
+        // alert's Early Closing Schedule prints the NASDAQ Day Session and
+        // Closing Cross at 1:00 p.m.
+        (2010, 11, 26, early_close(13 * 3_600), T1, "NQ-ETA-2010-73"),
         (2010, 12, 24, Closed, T1, "NQ-HOL-2010"),
-        // 2011 - NQ-HOL-2011; 11-25 early close prints as TBA.
+        // 2011 - NQ-HOL-2011; 11-25 early close prints as TBA on the sheet
+        // and its time comes from the operator's own alert.
         (2011, 1, 17, Closed, T1, "NQ-HOL-2011"),
         (2011, 2, 21, Closed, T1, "NQ-HOL-2011"),
         (2011, 4, 22, Closed, T1, "NQ-HOL-2011"),
@@ -72,10 +81,13 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2011, 7, 4, Closed, T1, "NQ-HOL-2011"),
         (2011, 9, 5, Closed, T1, "NQ-HOL-2011"),
         (2011, 11, 24, Closed, T1, "NQ-HOL-2011"),
-        (2011, 11, 25, Unsourced, T1, "NQ-HOL-2011"),
+        // 2011-11-25 - T1 - NQ-ETA-2011-54 - Thanksgiving early close: the
+        // alert's Early Closing Schedule prints the NASDAQ Day Session and
+        // Closing Cross at 1:00 p.m.
+        (2011, 11, 25, early_close(13 * 3_600), T1, "NQ-ETA-2011-54"),
         (2011, 12, 26, Closed, T1, "NQ-HOL-2011"),
-        // 2012 - NQ-HOL-2011 (2012 table) + ETA2012-44 for the Sandy
-        // closure; 10-30 stays withheld ("likely ... will confirm").
+        // 2012 - NQ-HOL-2011 (2012 table) + ETA2012-44 for the Sandy Monday
+        // closure and ETA2012-45 for the Sandy Tuesday closure.
         (2012, 1, 2, Closed, T1, "NQ-HOL-2011"),
         (2012, 1, 16, Closed, T1, "NQ-HOL-2011"),
         (2012, 2, 20, Closed, T1, "NQ-HOL-2011"),
@@ -85,7 +97,11 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2012, 7, 4, Closed, T1, "NQ-HOL-2012"),
         (2012, 9, 3, Closed, T1, "NQ-HOL-2012"),
         (2012, 10, 29, Closed, T1, "NQ-SANDY-2012"),
-        (2012, 10, 30, Unsourced, T1, "NQ-HOL-2012"),
+        // 2012-10-30 - T1 - NQ-ETA-2012-45 - Hurricane Sandy Tuesday: the
+        // operator's own alert states the closure unconditionally ("NASDAQ
+        // OMX will close all U.S. equity and derivatives exchanges ... on
+        // Tuesday, October 30th").
+        (2012, 10, 30, Closed, T1, "NQ-ETA-2012-45"),
         (2012, 11, 22, Closed, T1, "NQ-HOL-2012"),
         (2012, 11, 23, early_close(13 * 3_600), T1, "NQ-HOL-2012"),
         (2012, 12, 24, early_close(13 * 3_600), T1, "NQ-HOL-2012"),
@@ -238,11 +254,13 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2024, 11, 29, early_close(13 * 3_600), T1, "NQ-HOL-2024"),
         (2024, 12, 24, early_close(13 * 3_600), T1, "NQ-HOL-2024"),
         (2024, 12, 25, Closed, T1, "NQ-HOL-2024"),
-        // 2025 - NQ-HOL-2025 (the December-2024 capture of the 2025 page).
-        // The National Day of Mourning 2025-01-09 is not on the operator's
-        // own sheet and no notice was recoverable, so the date is withheld.
+        // 2025 - NQ-HOL-2025 (the December-2024 capture of the 2025 page),
+        // plus the operator's own mourning-day alert for 2025-01-09.
         (2025, 1, 1, Closed, T1, "NQ-HOL-2025"),
-        (2025, 1, 9, Unsourced, T1, "NQ-HOL-2025"),
+        // 2025-01-09 - T1 - NQ-ETA-2025-1 - National Day of Mourning for
+        // President Carter: the operator's own alert states "Nasdaq U.S.
+        // equities markets ... will be closed on Thursday, January 9, 2025".
+        (2025, 1, 9, Closed, T1, "NQ-ETA-2025-1"),
         (2025, 1, 20, Closed, T1, "NQ-HOL-2025"),
         (2025, 2, 17, Closed, T1, "NQ-HOL-2025"),
         (2025, 4, 18, Closed, T1, "NQ-HOL-2025"),

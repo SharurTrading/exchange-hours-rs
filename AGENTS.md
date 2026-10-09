@@ -27,8 +27,14 @@ evidence spans between sourced windows: the bridged residual
 context that travels beside a typed refusal. The 2026-10-07 (UTC) amendment
 extends the bridge to one-flank spans **below the first audited window** —
 sessions answer there, holiday classification refuses typed — while spans
-above the last window stay the publication horizon's to govern. The law names
-are unchanged.
+above the last window stay the publication horizon's to govern. The
+2026-10-09 (UTC) amendment completes the venue profile-clock rule (#153,
+#242): each CME venue's holiday table is the verbatim mirror of its clock
+family's table, so a routed family's dissent is recorded beside the served
+answer instead of withholding the venue's date, and the globex futures
+families' remaining not-worked-up markers (the three Juneteenth dates, and
+Presidents' Day and Good Friday 2023 for five families) closed as data. The
+law names are unchanged.
 
 ## Migration status — 2026-09-30 UTC
 
@@ -271,21 +277,23 @@ the cost of keeping them true.
   in for a served instrument's complete family/scope calendar.
 
   **The venue speaks for its profile clock (2026-09-30 decision, issue
-  #153).** Each venue `Exchange` serves one session clock — `cbot`'s is the
-  grain grid, `cme`'s the equity-index grid, `comex`'s and `nymex`'s the
-  energy grid — and the intersection rule exists so the venue never states a
-  holiday instant two routed operators print differently. A family whose clock
-  the venue does **not** serve stating the only row on a date, while the
-  venue's own clock family audits the date normal, is not that case: the
-  venue's clock is boundary-normal in the operator's own bytes, the dissenting
-  arrangement lives in its own family table where the consumer's exact-family
-  routing (#118) reads it, and the venue answers the date from its clock
-  instead of withholding it. Genuine disagreement — two routed families
-  printing different instants, or a clock-family holiday against another
-  family's normal — stays `Unsourced`. The re-derivation this decision needs
-  landed as data on 2026-09-30 UTC (#242): the venue tables retire the rows
-  the earlier rule produced and answer those dates from their clocks, and the
-  venue identities remain labelled partial either way.
+  #153; completed by the 2026-10-09 amendment).** Each venue `Exchange`
+  serves one session clock — `cbot`'s is the grain grid, `cme`'s the
+  equity-index grid, `comex`'s and `nymex`'s the energy grid. The venue's
+  holiday table is the **verbatim mirror** of its clock family's table:
+  wherever the clock states a row the venue ships that row — kind, tier and
+  document id unchanged — wherever the clock audits the date normal the venue
+  ships no row, and wherever the clock itself withholds the venue inherits
+  the `Unsourced` marker. A routed family that prints a different arrangement
+  on a date the clock answers keeps its sourced row in its own family table,
+  where the consumer's exact-family routing (#118) reads it; the venue's
+  evidence file names the disagreements per era, so the dissent is
+  disclosure, never a refusal of the whole date. The 2026-09-30 decision
+  began this rule for clock-normal dates (issue #153; the data move #242);
+  before the 2026-10-09 amendment a clock-family row another routed family
+  did not match shipped `Unsourced` while the dissent was resolved beside it
+  — that residue is retired, and a venue withholds only what its own clock
+  withholds.
 
   An explicit caller `Closed` or `ReplaceSessions` record takes precedence over
   the built-in date arrangement; the caller's `DayPolicy` then clips the result.

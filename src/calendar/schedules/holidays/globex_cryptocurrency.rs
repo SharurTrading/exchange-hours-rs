@@ -38,15 +38,18 @@
 //!   [`MERGED_24X7_AFTER_THURSDAY_HOLIDAY_BLOCKS`] for a Thursday one.
 //!
 //! **2022-2024.** The era sits inside the five-day 17:00-16:00 CT era, so each
-//! of its `Closed` rows deletes a complete trading day. Fourteen rows: seven
-//! closures, four early closes at 12:45 CT — on 2022-11-25, 2023-11-24,
-//! 2024-11-29 and 2024-12-24 — and three `Unsourced` rows. The 2022 rows
+//! of its `Closed` rows deletes a complete trading day. Thirteen rows: seven
+//! closures, five early closes — 12:45 CT on 2022-11-25, 2023-11-24,
+//! 2024-11-29 and 2024-12-24, and 10:15 CT on 2023-04-07 — and one `Unsourced`
+//! row; on 2023-02-20 the operator's own summary sheet
+//! (`files/presidents-day.pdf`) prints the family's ordinary Monday close, so
+//! that date is audited normal and ships no row. The 2022 rows
 //! and the 2023 rows CME published a holiday schedule for are **T1**; the
-//! three 2023 dates it published nothing for and all of 2024 are **T2**. The
-//! three `Unsourced` dates — 2023-01-16, 2023-02-20 and 2023-04-07 — mean the
+//! one 2023 date it published nothing for and all of 2024 are **T2**. The
+//! `Unsourced` date — 2023-01-16 — means the
 //! operator published nothing this crate could read, not that no holiday fell
-//! on them; an operator document stating each date in session language would
-//! close them.
+//! on it; an operator document stating the date in session language would
+//! close it.
 //!
 //! The 2025-2027 block is **T2**: CME's own trading-hours service, the channel
 //! the operator's trading-hours page calls to render its per-asset-class holiday
@@ -248,8 +251,6 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2019, 4, 19, Closed, T1, "2019-holiday-calendars.zip#globex-trading-schedules/2019-good-friday-holiday-compact.xls @2021-01-26T09:48:37Z"),
         // 2019-05-27 - T1 - 2019-holiday-calendars.zip#globex-trading-schedules/2019-memorial-day-holiday-schedule-compact.xls @2021-01-26T09:48:37Z - the printed final close 12:00 CT is earlier than the ordinary 16:00 CT close.
         (2019, 5, 27, early_close(12 * 3_600), T1, "2019-holiday-calendars.zip#globex-trading-schedules/2019-memorial-day-holiday-schedule-compact.xls @2021-01-26T09:48:37Z"),
-        // 2019-06-19 - T1 - 2019-holiday-calendars.zip @2021-01-26T09:48:37Z - .
-        (2019, 6, 19, Unsourced, T1, "2019-holiday-calendars.zip @2021-01-26T09:48:37Z"),
         // 2019-07-03 - T1 - 2019-holiday-calendars.zip#globex-trading-schedules/2019-4th-of-july-holiday-schedule-compact.xls @2021-01-26T09:48:37Z - the printed final close 12:15 CT is earlier than the ordinary 16:00 CT close.
         (2019, 7, 3, early_close(12 * 3_600 + 15 * 60), T1, "2019-holiday-calendars.zip#globex-trading-schedules/2019-4th-of-july-holiday-schedule-compact.xls @2021-01-26T09:48:37Z"),
         // 2019-07-04 - T1 - 2019-holiday-calendars.zip#globex-trading-schedules/2019-4th-of-july-holiday-schedule-compact.xls @2021-01-26T09:48:37Z - the printed final close 12:00 CT is earlier than the ordinary 16:00 CT close.
@@ -274,8 +275,6 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2020, 4, 10, Closed, T1, "2020-holiday-calendars.zip#2020-good-friday-holiday-compact.xls @2026-07-30T11:18:34Z"),
         // 2020-05-25 - T1 - 2020-holiday-calendars.zip#2020-memorial-day-holiday-schedule-compact.xls @2026-07-30T11:18:34Z - the printed final close 12:00 CT is earlier than the ordinary 16:00 CT close.
         (2020, 5, 25, early_close(12 * 3_600), T1, "2020-holiday-calendars.zip#2020-memorial-day-holiday-schedule-compact.xls @2026-07-30T11:18:34Z"),
-        // 2020-06-19 - T1 - 2020-holiday-calendars.zip @2026-07-30T11:18:34Z - .
-        (2020, 6, 19, Unsourced, T1, "2020-holiday-calendars.zip @2026-07-30T11:18:34Z"),
         // 2020-07-03 - T1 - 2020-holiday-calendars.zip#2020-4th-of-july-holiday-schedule-compact.xls @2026-07-30T11:18:34Z - the printed final close 12:00 CT is earlier than the ordinary 16:00 CT close.
         (2020, 7, 3, early_close(12 * 3_600), T1, "2020-holiday-calendars.zip#2020-4th-of-july-holiday-schedule-compact.xls @2026-07-30T11:18:34Z"),
         // 2020-09-07 - T1 - 2020-holiday-calendars.zip#2020-labor-day-holiday-schedule-compact.xls @2026-07-30T11:18:34Z - the printed final close 12:00 CT is earlier than the ordinary 16:00 CT close.
@@ -298,8 +297,6 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2021, 4, 2, early_close(8 * 3_600 + 15 * 60), T1, "2021-holiday-calendars.zip#2021-good-friday-holiday-schedule-compact.xls @2026-08-30T10:03:27Z"),
         // 2021-05-31 - T1 - 2021-holiday-calendars.zip#2021-memorial-day-holiday-schedule-compact.xls @2026-08-30T10:03:27Z - the printed final close 12:00 CT is earlier than the ordinary 16:00 CT close.
         (2021, 5, 31, early_close(12 * 3_600), T1, "2021-holiday-calendars.zip#2021-memorial-day-holiday-schedule-compact.xls @2026-08-30T10:03:27Z"),
-        // 2021-06-19 - T1 - 2021-holiday-calendars.zip @2026-08-30T10:03:27Z - .
-        (2021, 6, 19, Unsourced, T1, "2021-holiday-calendars.zip @2026-08-30T10:03:27Z"),
         // 2021-07-05 - T1 - 2021-holiday-calendars.zip#2021-independence-day-holiday-schedule-compact.xls @2026-08-30T10:03:27Z - the printed final close 12:00 CT is earlier than the ordinary 16:00 CT close.
         (2021, 7, 5, early_close(12 * 3_600), T1, "2021-holiday-calendars.zip#2021-independence-day-holiday-schedule-compact.xls @2026-08-30T10:03:27Z"),
         // 2021-09-06 - T1 - 2021-holiday-calendars.zip#2021-labor-day-holiday-schedule-compact.xls @2026-08-30T10:03:27Z - the printed final close 12:00 CT is earlier than the ordinary 16:00 CT close.
@@ -320,10 +317,8 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2023, 1, 2, Closed, T1, "2023-new-years-holiday-schedule.xls @2022-07-04T06:55:01Z"),
         // 2023-01-16 - T2 - CME-SVC-2023-01-15 - unsourced: no operator document covers this date.
         (2023, 1, 16, Unsourced, T2, "CME-SVC-2023-01-15"),
-        // 2023-02-20 - T2 - CME-SVC-2023-02-19 - unsourced: no operator document covers this date.
-        (2023, 2, 20, Unsourced, T2, "CME-SVC-2023-02-19"),
-        // 2023-04-07 - T2 - CME-SVC-2023-04-06 - unsourced: no operator document covers this date.
-        (2023, 4, 7, Unsourced, T2, "CME-SVC-2023-04-06"),
+        // 2023, 4, 7 - T1 - files/good-friday.pdf @2024-07-08T16:00:09Z - the printed Friday final close 10:15 CT is earlier than the ordinary 16:00 CT close.
+        (2023, 4, 7, early_close(10 * 3_600 + 15 * 60), T1, "files/good-friday.pdf @2024-07-08T16:00:09Z"),
         // 2023-11-24 - T1 - thanksgiving-day-2023.pdf @2023-12-03T20:59:29Z - early close 12:45 CT.
         (2023, 11, 24, early_close(12 * 3_600 + 45 * 60), T1, "thanksgiving-day-2023.pdf @2023-12-03T20:59:29Z"),
         // 2023-12-25 - T1 - christmas-day-2023.pdf @2026-07-19T09:52:48Z - closed: no trade date.

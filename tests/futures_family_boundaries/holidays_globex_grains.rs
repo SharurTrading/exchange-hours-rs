@@ -2160,10 +2160,10 @@ fn era_2019_2021_sweeps_every_shipped_row_kind_and_instant() {
         }
         date = date.succ_opt().expect("the era ends well before the bound");
     }
-    assert_eq!(rows, 42, "the era's rows");
+    assert_eq!(rows, 39, "the era's rows");
     assert_eq!(
         (late_opens, combined, early_closes, closures, unsourced),
-        (5, 3, 4, 27, 3),
+        (5, 3, 4, 27, 0),
         "the era's shape"
     );
 }
@@ -2389,7 +2389,10 @@ fn era_2019_2021_day_after_closure_shapes_are_the_derived_dates() {
 /// Every `Unsourced` row the era ships changes no answer — or would, if the
 /// date were answerable: the row states that the date was audited, makes no
 /// scheduling claim, and clips nothing, but no query about it has an answer to
-/// compare (see `assert_unsourced_changes_nothing`).
+/// compare (see `assert_unsourced_changes_nothing`). The era ships none now —
+/// the Juneteenth dates the 2019-2021 wave used to withhold are audited normal
+/// and ship no row at all — so the walk fences their absence and the three
+/// dates are asserted rowless directly.
 #[test]
 fn era_2019_2021_unsourced_rows_change_no_answer() {
     let calendar = calendar_for_market_hours_key(ZC);
@@ -2404,7 +2407,14 @@ fn era_2019_2021_unsourced_rows_change_no_answer() {
         }
         date = date.succ_opt().expect("the era ends well before the bound");
     }
-    assert_eq!(checked, 3, "the era's `Unsourced` rows");
+    assert_eq!(checked, 0, "the era's `Unsourced` rows");
+    for date in [(2019, 6, 19), (2020, 6, 19), (2021, 6, 19)] {
+        assert_eq!(
+            calendar.holiday_on(day(date)),
+            None,
+            "{date:?} is audited normal and ships no row"
+        );
+    }
 }
 
 /// The era is its own declared window: 2019-01-01 and 2021-12-31 are inside
@@ -2483,7 +2493,7 @@ fn era_2019_2021_window_is_declared_in_order_and_bounds_every_row() {
         }
         date = date.succ_opt().expect("the era ends well before the bound");
     }
-    assert_eq!(rows, 42, "the era's rows");
+    assert_eq!(rows, 39, "the era's rows");
     for probe in [day((2018, 12, 31)), day((2022, 1, 1))] {
         assert_eq!(calendar.holiday_on(probe), None, "{probe}");
     }
@@ -2507,7 +2517,6 @@ const ERA_2019_2021_ROWS: &[((i32, u32, u32), HolidayKind, EvidenceTier)] = &[
     ((2019, 2, 18), HolidayKind::Closed, EvidenceTier::T1),
     ((2019, 4, 19), HolidayKind::Closed, EvidenceTier::T1),
     ((2019, 5, 27), HolidayKind::Closed, EvidenceTier::T1),
-    ((2019, 6, 19), HolidayKind::Unsourced, EvidenceTier::T1),
     (
         (2019, 7, 3),
         HolidayKind::EarlyClose {
@@ -2560,7 +2569,6 @@ const ERA_2019_2021_ROWS: &[((i32, u32, u32), HolidayKind, EvidenceTier)] = &[
     ((2020, 2, 17), HolidayKind::Closed, EvidenceTier::T1),
     ((2020, 4, 10), HolidayKind::Closed, EvidenceTier::T1),
     ((2020, 5, 25), HolidayKind::Closed, EvidenceTier::T1),
-    ((2020, 6, 19), HolidayKind::Unsourced, EvidenceTier::T1),
     (
         (2020, 7, 2),
         HolidayKind::EarlyClose {
@@ -2592,7 +2600,6 @@ const ERA_2019_2021_ROWS: &[((i32, u32, u32), HolidayKind, EvidenceTier)] = &[
     ((2021, 2, 15), HolidayKind::Closed, EvidenceTier::T1),
     ((2021, 4, 2), HolidayKind::Closed, EvidenceTier::T1),
     ((2021, 5, 31), HolidayKind::Closed, EvidenceTier::T1),
-    ((2021, 6, 19), HolidayKind::Unsourced, EvidenceTier::T1),
     ((2021, 7, 5), HolidayKind::Closed, EvidenceTier::T1),
     (
         (2021, 7, 6),

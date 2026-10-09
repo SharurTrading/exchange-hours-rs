@@ -1,596 +1,634 @@
-//! The `Exchange::Cme` table holiday rows — the intersection of the six CME families.
-//!
-//! Derived, not retrieved: the rows are the intersection of the families that
-//! route to this venue, by the rule and routing recorded in
-//! [`super`](index.html). The venue speaks for its profile clock — the
-//! equity-index grid (AGENTS.md, LAW-HOLIDAY-SCOPE, the 2026-09-30 decision
-//! on issue #153): a row ships where the clock states one and every other
-//! non-abstaining routed family states the same; a date the clock audits
-//! normal ships no row, because a family whose clock this venue does not
-//! serve cannot withhold it; and a clock-family row that another routed
-//! family does not match ships [`HolidayKind::Unsourced`], which clips
-//! nothing and tells the caller the date is special without inventing an
-//! instant.
-//!
-//! The profile-clock rule retired this table's pre-2025 artefact rows on
-//! 2026-09-30 (issue #242): eighty-five `Unsourced` rows on which only
-//! families other than the clock stated anything — the rate leg's pre-holiday
-//! 15:15 and 12:00 CT closes and merged-Monday replacement sets against grain
-//! and equity tables auditing the date normal, the livestock-only 13:55 CT
-//! Good-Friday-eve closes, the grains-only 08:30 CT day-after-closure late
-//! opens and their 2025-2027 replacement-block sets, and the handful of dates
-//! where two or more non-clock families disagreed with each other while the
-//! clock audited normal (2010-12-31, 2012-07-05, 2015-07-02, 2016-12-23,
-//! 2017-12-22 and 2020-07-02). Each retired date is audited normal here and
-//! still carries its sourced row in the family table that states it.
-//!
-//! Coverage is 6 audited eras: 2010-2012 and 2013-2015, whose rows are T1
-//! (CME's own holiday-calendar PDFs and .xls workbooks); 2016-2018, 2019-2021
-//! and 2022-2024, whose rows are
-//! the D17 intersection of the routed families' T1 rows from CME's own
-//! published Globex holiday schedules — all of 2019-2021 at T1, and 2022-2024
-//! except for the agreed 2023-01-16 marker, the two 2023 dates the
-//! unsuffixed holiday sheets state as disputes, and the 2024 dates the
-//! trading-hours service answers; and 2025-2027, whose rows are T2 (that
-//! service).
-//!
-//! On the 2016-2018 era's thirty-six dates this table states nine `Closed`
-//! rows — the dates every routed family shut, `globex_livestock` included —
-//! and withholds the other twenty-five as [`HolidayKind::Unsourced`].
-//! Eighteen are the Monday and Thursday holidays, where the four financial
-//! families halt at 12:00 CT while `globex_grains` and `globex_livestock` are
-//! shut outright; four are the three Thanksgiving Fridays and 2018-12-24,
-//! where grains closes at 12:05 CT, energy at 12:45 CT, and equity, FX, rates
-//! and livestock at 12:15 CT, with grains reopening at 08:30 CT on the Fridays;
-//! and three are dates on which the stated rows do not agree — 2017-07-03 and
-//! 2018-07-03, where equity and livestock close at 12:15 CT and grains at
-//! 12:05 CT while the other three families audited the date normal, and
-//! 2018-12-26, where equity reopens at 15:30 CT and grains at 08:30 CT while
-//! livestock audited the date normal. (2016-12-23 and 2017-12-22, where
-//! grains closed at 12:05 CT and livestock at 12:15 CT while the clock
-//! audited the date normal, were disputes under the earlier rule and are
-//! retired now.) All six routed families cover the era, so none abstains.
-//!
-//! On the 2019-2021 era's **forty-two dates** this table states eight `Closed`
-//! rows — the dates every routed family shut — and withholds the other
-//! twenty-eight as [`HolidayKind::Unsourced`]. Eighteen are the Monday and
-//! Thursday holidays, where the four financial families halt at 12:00 CT while
-//! `globex_grains` and `globex_livestock` are shut outright; seven are the
-//! dates whose families state different rows — the three Thanksgiving Fridays
-//! and the two Christmas Eves, where grains closes at 12:05 CT, energy at
-//! 12:45 CT, livestock at 12:15 CT in 2019 and 12:05 CT after, and equity, FX
-//! and rates at 12:15 CT, with grains reopening at 08:30 CT on the Thanksgiving
-//! Fridays; 2019-07-03, where equity and livestock close at 12:15 CT and
-//! grains at 12:05 CT while FX, rates and energy audited the date normal; and
-//! 2021-04-02, the one date of the seven that is not an instant disagreement
-//! at all — equity closes at 08:15 CT and FX and rates at 10:15 CT, while
-//! energy, grains and livestock are shut all day;
-//! and three are 2019-06-19, 2020-06-19 and 2021-06-19, where every routed
-//! family states `Unsourced` — the wave did not work those dates up — so the
-//! venue ships the families' own marker rather than a dispute. (The five
-//! grains-only day-after-closure late opens the earlier rule withheld —
-//! 2019-01-02, 2019-07-05, 2019-12-26, 2020-01-02 and 2021-07-06 — and
-//! 2020-07-02, where grains' 12:05 CT and livestock's 12:15 CT were the only
-//! rows stated, are retired under the clock rule.) All six routed families
-//! cover the era, so none abstains.
-//!
-//! On the 2022-2024 era's **forty-one dates** this table states seven `Closed`
-//! rows and withholds the other twenty-eight as [`HolidayKind::Unsourced`].
-//! Nineteen are the Monday and Thursday holidays, where the equity-index and
-//! interest-rate families halt at 12:00 CT, energy and metals at 13:30 CT,
-//! `globex_grains` and `globex_livestock` are shut outright, and `globex_fx`
-//! states nothing because its halt falls at its ordinary 16:00 CT close; four
-//! are the three Thanksgiving Fridays and 2024-12-24, where the families' closes
-//! run from 12:05 CT to 13:45 CT; two are `globex_equity_index`'s 12:15 CT
-//! closes of 2023-07-03 and 2024-07-03, rows the other five families audited
-//! normal; and one is 2023-01-16, where every routed family states `Unsourced`
-//! — the wave did not work that date up — so the venue ships the families' own
-//! marker rather than a dispute; the last two, 2023-02-20 and 2023-04-07, were
-//! that shape until the #224 census worked `globex_grains` and
-//! `globex_interest_rates` up from the operator's unsuffixed sheets, and are
-//! disputes now. (The six grains-only late opens the earlier rule withheld —
-//! 2022-07-05, 2023-07-05, 2023-12-26, 2024-01-02, 2024-07-05 and 2024-12-26 —
-//! are retired under the clock rule.)
-//!
-//! The derivation, the instant disagreements and every dropped date are in the
-//! venue's own evidence file, and the per-family rows are in the family files.
-//!
-//! **What changed on 2026-09-13:** this module was one file holding four tables.
-//! It is now one file per venue, because the 2010-2012 rows took the combined
-//! file past the 500-line reviewability guard. No row moved between venues.
+// SPDX-License-Identifier: MIT-0
 
+//! The `Exchange::Cme` table holiday rows — the clock family `globex_equity_index`, carried verbatim.
+//!
+//! Derived, not retrieved. The 2026-10-09 amendment completes the
+//! profile-clock rule (AGENTS.md, LAW-HOLIDAY-SCOPE; the 2026-09-30 decision
+//! on issue #153, retired artefacts by #242): the venue speaks for its profile
+//! clock — the equity-index grid — so wherever the clock states a row the venue ships that
+//! row verbatim (kind, tier and document id), wherever the clock audits the
+//! date normal the venue ships no row, and wherever the clock itself withholds
+//! the venue inherits the marker. A routed family that prints a different
+//! arrangement on a date the clock answers keeps its own sourced row in its
+//! own family table, where the consumer's exact-family routing (#118) reads
+//! it; the venue's evidence file names those disagreements.
+//!
+//! Coverage is 208 rows over the six audited eras: 2010-2012 34, 2013-2015 38, 2016-2018 34, 2019-2021 33, 2022-2024 35 and 2025-2027 34. The table carries **1 `Unsourced` row** — the clock family's own not-worked-up markers, inherited because the venue answers every date its clock answers and withholds every date its clock withholds; each marker's closing condition is recorded beside the family's row and in the family's evidence file.
+//!
+//! Evidence: docs/evidence/cme.md, and the family's evidence file for
+//! every retrieved row.
 use super::super::{
     EvidenceTier::{T1, T2},
-    HolidayKind::Closed,
-    HolidayKind::Unsourced,
-    HolidayTable, holidays,
+    HolidayKind::{Closed, ReplacementBlocks, Unsourced},
+    HolidayTable,
+    fences::{early_close, late_open},
+    globex_equity_index::{
+        MERGED_SESSION_AFTER_WEEKDAY_BLOCKS, MERGED_SESSION_BLOCKS,
+        MERGED_SESSION_EARLY_CLOSE_BLOCKS, MERGED_SESSION_EARLY_CLOSE_BLOCKS_2025_11_28,
+        SATURDAY_SESSION_BLOCKS,
+    },
+    holidays,
 };
 
-/// The `Exchange::Cme` table: the intersection of the six CME families.
+/// The `Exchange::Cme` table: the `globex_equity_index` rows, carried verbatim.
 ///
-/// Two hundred and thirty-one rows over six audited eras. Forty-seven state a
-/// status — the Globex full closures — and 184 are `Unsourced`: 28 in
-/// 2010-2012, 30 in 2013-2015, 25 in 2016-2018, 28 in 2019-2021, 28 in
-/// 2022-2024 and 45 in 2025-2027; counts re-derived on 2026-09-30 under the
-/// profile-clock rule (#153, #242), eighty-five earlier `Unsourced` rows
-/// having been retired because the only rows stated on those dates came from
-/// families other than this venue's clock. The six eras are declared as six
-/// coverage windows, and outside them the table reports no answer rather than
-/// a normal one.
+/// Every row below is the profile clock's own row on that trade date —
+/// kind, tier and document id unchanged — because the venue answers from
+/// its clock. The clock's evidence file cites every artifact.
 // Evidence: docs/evidence/cme.md
 pub(crate) static CME: &HolidayTable = holidays! {
     coverage: [(2010, 1, 1) ..= (2012, 12, 31), (2013, 1, 1) ..= (2015, 12, 31), (2016, 1, 1) ..= (2018, 12, 31), (2019, 1, 1) ..= (2021, 12, 31), (2022, 1, 1) ..= (2024, 12, 31), (2025, 1, 1) ..= (2027, 12, 31)],
     rows: [
-        // 2010-01-01 - T1 - 2010-new-years.pdf - closed.
+        // 2010-01-01 - T1 - 2010-new-years.pdf - closed: new year's day 2010.
         (2010, 1, 1, Closed, T1, "2010-new-years.pdf @2010-02-15T05:16:52Z"),
-        // 2010-01-18 - T1 - 2010-martin-luther-king.pdf - disagreement: equity index early close 10:30 CT; interest rates early close 12:00 CT; FX early close 12:00 CT; energy and metals early close 12:15 CT; grains no row; livestock no row.
-        (2010, 1, 18, Unsourced, T1, "2010-martin-luther-king.pdf @2010-03-31T06:42:26Z"),
-        // 2010-02-15 - T1 - 2010-presidents-day.pdf - disagreement: equity index early close 10:30 CT; interest rates early close 12:00 CT; FX early close 12:00 CT; energy and metals early close 12:15 CT; grains no row; livestock no row.
-        (2010, 2, 15, Unsourced, T1, "2010-presidents-day.pdf @2010-02-15T06:46:41Z"),
-        // 2010-04-02 - T1 - 2010-good-friday.pdf - disagreement: equity index early close 08:15 CT; interest rates early close 10:15 CT; FX early close 10:15 CT; energy and metals closed; grains closed; livestock closed.
-        (2010, 4, 2, Unsourced, T1, "2010-good-friday.pdf @2010-06-01T11:19:16Z"),
-        // 2010-05-31 - T1 - 2010-memorial-day.pdf - disagreement: equity index early close 10:30 CT; interest rates early close 12:00 CT; FX early close 12:00 CT; energy and metals early close 12:15 CT; grains no row; livestock no row.
-        (2010, 5, 31, Unsourced, T1, "2010-memorial-day.pdf @2010-06-01T09:42:25Z"),
-        // 2010-07-05 - T1 - 2010-4th-of-july.pdf - disagreement: equity index early close 10:30 CT; interest rates early close 12:00 CT; FX early close 12:00 CT; energy and metals early close 12:15 CT; grains no row; livestock no row.
-        (2010, 7, 5, Unsourced, T1, "2010-4th-of-july.pdf @2010-06-02T00:56:37Z"),
-        // 2010-09-06 - T1 - 2010-labor-day.pdf - disagreement: equity index early close 10:30 CT; interest rates early close 12:00 CT; FX early close 12:00 CT; energy and metals early close 12:15 CT; grains no row; livestock no row.
-        (2010, 9, 6, Unsourced, T1, "2010-labor-day.pdf @2010-06-02T00:56:41Z"),
-        // 2010-11-25 - T1 - 2010-thanksgiving.pdf - disagreement: equity index early close 10:30 CT; interest rates early close 12:00 CT; FX early close 12:00 CT; energy and metals early close 12:15 CT; grains no row; livestock no row.
-        (2010, 11, 25, Unsourced, T1, "2010-thanksgiving.pdf @2010-11-22T09:40:12Z"),
-        // 2010-11-26 - T1 - 2010-thanksgiving.pdf - disagreement: equity index early close 12:15 CT; interest rates states the merged trade date; FX early close 12:15 CT; energy and metals early close 12:45 CT; grains early close 12:00 CT; livestock early close 12:00 CT.
-        (2010, 11, 26, Unsourced, T1, "2010-thanksgiving.pdf @2010-11-22T09:40:12Z"),
-        // 2010-12-24 - T1 - 2010-christmas.pdf - closed.
+        (2010, 1, 18, early_close(10 * 3_600 + 30 * 60), T1, "2010-martin-luther-king.pdf @2010-03-31T06:42:26Z"),
+        (2010, 2, 15, early_close(10 * 3_600 + 30 * 60), T1, "2010-presidents-day.pdf @2010-02-15T06:46:41Z"),
+        (2010, 4, 2, early_close(8 * 3_600 + 15 * 60), T1, "2010-good-friday.pdf @2010-06-01T11:19:16Z"),
+        (2010, 5, 31, early_close(10 * 3_600 + 30 * 60), T1, "2010-memorial-day.pdf @2010-06-01T09:42:25Z"),
+        (2010, 7, 5, early_close(10 * 3_600 + 30 * 60), T1, "2010-4th-of-july.pdf @2010-06-02T00:56:37Z"),
+        (2010, 9, 6, early_close(10 * 3_600 + 30 * 60), T1, "2010-labor-day.pdf @2010-06-02T00:56:41Z"),
+        (2010, 11, 25, early_close(10 * 3_600 + 30 * 60), T1, "2010-thanksgiving.pdf @2010-11-22T09:40:12Z"),
+        (2010, 11, 26, early_close(12 * 3_600 + 15 * 60), T1, "2010-thanksgiving.pdf @2010-11-22T09:40:12Z"),
+        // 2010-12-24 - T1 - 2010-christmas.pdf - closed: christmas day 2010 observed.
         (2010, 12, 24, Closed, T1, "2010-christmas.pdf @2010-12-14T06:12:38Z"),
-        // 2011-01-17 - T1 - 2011-martin-luther-king.pdf - disagreement: equity index early close 10:30 CT; interest rates early close 12:00 CT; FX early close 12:00 CT; energy and metals early close 12:15 CT; grains no row; livestock no row.
-        (2011, 1, 17, Unsourced, T1, "2011-martin-luther-king.pdf @2011-10-28T02:34:29Z"),
-        // 2011-02-21 - T1 - 2011-presidents-day.pdf - disagreement: equity index early close 10:30 CT; interest rates early close 12:00 CT; FX early close 12:00 CT; energy and metals early close 12:15 CT; grains no row; livestock no row.
-        (2011, 2, 21, Unsourced, T1, "2011-presidents-day.pdf @2011-10-28T02:35:16Z"),
-        // 2011-04-22 - T1 - 2011-good-friday.pdf - closed.
+        (2011, 1, 17, early_close(10 * 3_600 + 30 * 60), T1, "2011-martin-luther-king.pdf @2011-10-28T02:34:29Z"),
+        (2011, 2, 21, early_close(10 * 3_600 + 30 * 60), T1, "2011-presidents-day.pdf @2011-10-28T02:35:16Z"),
+        // 2011-04-22 - T1 - 2011-good-friday.pdf - closed: good friday 2011.
         (2011, 4, 22, Closed, T1, "2011-good-friday.pdf @2011-10-28T02:37:07Z"),
-        // 2011-05-30 - T1 - 2011-memorial-day.pdf - disagreement: equity index early close 10:30 CT; interest rates early close 12:00 CT; FX early close 12:00 CT; energy and metals early close 12:15 CT; grains no row; livestock closed.
-        (2011, 5, 30, Unsourced, T1, "2011-memorial-day.pdf @2013-09-30T10:56:52Z"),
-        // 2011-07-04 - T1 - 2011-4th-of-july.pdf - disagreement: equity index early close 10:30 CT; interest rates early close 12:00 CT; FX early close 12:00 CT; energy and metals early close 12:15 CT; grains no row; livestock closed.
-        (2011, 7, 4, Unsourced, T1, "2011-4th-of-july.pdf @2011-11-01T14:40:54Z"),
-        // 2011-09-05 - T1 - 2011-labor-day.pdf - disagreement: equity index early close 10:30 CT; interest rates early close 12:00 CT; FX early close 12:00 CT; energy and metals early close 12:15 CT; grains no row; livestock closed.
-        (2011, 9, 5, Unsourced, T1, "2011-labor-day.pdf @2011-11-01T14:43:45Z"),
-        // 2011-11-24 - T1 - 2011-thanksgiving.pdf - disagreement: equity index early close 10:30 CT; interest rates early close 12:00 CT; FX early close 12:00 CT; energy and metals early close 12:15 CT; grains no row; livestock no row.
-        (2011, 11, 24, Unsourced, T1, "2011-thanksgiving.pdf @2011-11-24T18:52:46Z"),
-        // 2011-11-25 - T1 - 2011-thanksgiving.pdf - disagreement: equity index early close 12:15 CT; interest rates states the merged trade date; FX early close 12:15 CT; energy and metals early close 12:45 CT; grains early close 12:00 CT; livestock early close 12:15 CT.
-        (2011, 11, 25, Unsourced, T1, "2011-thanksgiving.pdf @2011-11-24T18:52:46Z"),
-        // 2011-12-26 - T1 - 2011-christmas.pdf - closed.
+        (2011, 5, 30, early_close(10 * 3_600 + 30 * 60), T1, "2011-memorial-day.pdf @2013-09-30T10:56:52Z"),
+        (2011, 7, 4, early_close(10 * 3_600 + 30 * 60), T1, "2011-4th-of-july.pdf @2011-11-01T14:40:54Z"),
+        (2011, 9, 5, early_close(10 * 3_600 + 30 * 60), T1, "2011-labor-day.pdf @2011-11-01T14:43:45Z"),
+        (2011, 11, 24, early_close(10 * 3_600 + 30 * 60), T1, "2011-thanksgiving.pdf @2011-11-24T18:52:46Z"),
+        (2011, 11, 25, early_close(12 * 3_600 + 15 * 60), T1, "2011-thanksgiving.pdf @2011-11-24T18:52:46Z"),
+        // 2011-12-26 - T1 - 2011-christmas.pdf - closed: christmas day 2011 observed.
         (2011, 12, 26, Closed, T1, "2011-christmas.pdf @2012-01-25T02:05:48Z"),
-        // 2011-12-27 - T1 - 2011-christmas.pdf - disagreement: equity index late open 05:00 CT; interest rates late open 05:00 CT; FX late open 05:00 CT; energy and metals no row; grains late open 09:30 CT; livestock late open 09:05 CT.
-        (2011, 12, 27, Unsourced, T1, "2011-christmas.pdf @2012-01-25T02:05:48Z"),
-        // 2012-01-02 - T1 - 2012-new-years.pdf - closed.
+        (2011, 12, 27, late_open(5 * 3_600), T1, "2011-christmas.pdf @2012-01-25T02:05:48Z"),
+        // 2012-01-02 - T1 - 2012-new-years.pdf - closed: new year's day 2012 observed.
         (2012, 1, 2, Closed, T1, "2012-new-years.pdf @2012-01-25T02:54:30Z"),
-        // 2012-01-03 - T1 - 2012-new-years.pdf - disagreement: equity index late open 05:00 CT; interest rates late open 05:00 CT; FX late open 05:00 CT; energy and metals no row; grains late open 09:30 CT; livestock late open 09:05 CT.
-        (2012, 1, 3, Unsourced, T1, "2012-new-years.pdf @2012-01-25T02:54:30Z"),
-        // 2012-01-16 - T1 - 2012-martin-luther-king.pdf - disagreement: equity index early close 10:30 CT; interest rates early close 12:00 CT; FX early close 12:00 CT; energy and metals early close 12:15 CT; grains no row; livestock closed.
-        (2012, 1, 16, Unsourced, T1, "2012-martin-luther-king.pdf @2012-05-05T16:15:26Z"),
-        // 2012-02-20 - T1 - 2012-presidents-day.pdf - disagreement: equity index early close 10:30 CT; interest rates early close 12:00 CT; FX early close 12:00 CT; energy and metals early close 12:15 CT; grains no row; livestock closed.
-        (2012, 2, 20, Unsourced, T1, "2012-presidents-day.pdf @2012-05-05T16:15:39Z"),
-        // 2012-04-06 - T1 - 2012-good-friday.pdf - disagreement: equity index early close 08:15 CT; interest rates early close 10:15 CT; FX early close 10:15 CT; energy and metals closed; grains closed; livestock closed.
-        (2012, 4, 6, Unsourced, T1, "2012-good-friday.pdf @2012-04-17T00:42:47Z"),
-        // 2012-05-28 - T1 - 2012-memorial-day.pdf - disagreement: equity index early close 10:30 CT; interest rates early close 12:00 CT; FX early close 12:00 CT; energy and metals early close 12:15 CT; grains late open 19:00 CT; livestock closed.
-        (2012, 5, 28, Unsourced, T1, "2012-memorial-day.pdf @2012-09-15T00:37:14Z"),
-        // 2012-07-03 - T1 - 2012-4th-of-july.pdf - disagreement: equity index early close 12:15 CT; interest rates no row; FX no row; energy and metals no row; grains early close 12:00 CT; livestock no row.
-        (2012, 7, 3, Unsourced, T1, "2012-4th-of-july.pdf @2012-09-15T00:39:23Z"),
-        // 2012-07-04 - T1 - 2012-4th-of-july.pdf - disagreement: equity index early close 10:30 CT; interest rates early close 12:00 CT; FX early close 12:00 CT; energy and metals early close 12:15 CT; grains closed; livestock closed.
-        (2012, 7, 4, Unsourced, T1, "2012-4th-of-july.pdf @2012-09-15T00:39:23Z"),
-        // 2012-09-03 - T1 - 2012-labor-day.pdf - disagreement: equity index early close 10:30 CT; interest rates early close 12:00 CT; FX early close 12:00 CT; energy and metals early close 12:15 CT; grains late open 19:00 CT; livestock closed.
-        (2012, 9, 3, Unsourced, T1, "2012-labor-day.pdf @2012-09-15T00:34:37Z"),
-        // 2012-11-22 - T1 - 2012-thanksgiving.pdf - disagreement: equity index early close 10:30 CT; interest rates early close 12:00 CT; FX early close 12:00 CT; energy and metals early close 12:15 CT; grains closed; livestock no row.
-        (2012, 11, 22, Unsourced, T1, "2012-thanksgiving.pdf @2013-01-27T22:39:01Z"),
-        // 2012-11-23 - T1 - 2012-thanksgiving.pdf - disagreement: equity index early close 12:15 CT; interest rates states the merged trade date; FX early close 12:15 CT; energy and metals early close 12:45 CT; grains late open 09:30 CT and early close 12:00 CT; livestock early close 12:15 CT.
-        (2012, 11, 23, Unsourced, T1, "2012-thanksgiving.pdf @2013-01-27T22:39:01Z"),
-        // 2012-12-24 - T1 - 2012-christmas.pdf - disagreement: equity index early close 12:15 CT; interest rates states the merged trade date; FX early close 12:15 CT; energy and metals early close 12:45 CT; grains early close 12:00 CT; livestock early close 12:15 CT.
-        (2012, 12, 24, Unsourced, T1, "2012-christmas.pdf @2013-04-14T19:40:27Z"),
-        // 2012-12-25 - T1 - 2012-christmas.pdf - closed.
+        (2012, 1, 3, late_open(5 * 3_600), T1, "2012-new-years.pdf @2012-01-25T02:54:30Z"),
+        (2012, 1, 16, early_close(10 * 3_600 + 30 * 60), T1, "2012-martin-luther-king.pdf @2012-05-05T16:15:26Z"),
+        (2012, 2, 20, early_close(10 * 3_600 + 30 * 60), T1, "2012-presidents-day.pdf @2012-05-05T16:15:39Z"),
+        (2012, 4, 6, early_close(8 * 3_600 + 15 * 60), T1, "2012-good-friday.pdf @2012-04-17T00:42:47Z"),
+        (2012, 5, 28, early_close(10 * 3_600 + 30 * 60), T1, "2012-memorial-day.pdf @2012-09-15T00:37:14Z"),
+        (2012, 7, 3, early_close(12 * 3_600 + 15 * 60), T1, "2012-4th-of-july.pdf @2012-09-15T00:39:23Z"),
+        (2012, 7, 4, early_close(10 * 3_600 + 30 * 60), T1, "2012-4th-of-july.pdf @2012-09-15T00:39:23Z"),
+        (2012, 9, 3, early_close(10 * 3_600 + 30 * 60), T1, "2012-labor-day.pdf @2012-09-15T00:34:37Z"),
+        (2012, 11, 22, early_close(10 * 3_600 + 30 * 60), T1, "2012-thanksgiving.pdf @2013-01-27T22:39:01Z"),
+        (2012, 11, 23, early_close(12 * 3_600 + 15 * 60), T1, "2012-thanksgiving.pdf @2013-01-27T22:39:01Z"),
+        (2012, 12, 24, early_close(12 * 3_600 + 15 * 60), T1, "2012-christmas.pdf @2013-04-14T19:40:27Z"),
+        // 2012-12-25 - T1 - 2012-christmas.pdf - closed: christmas day 2012.
         (2012, 12, 25, Closed, T1, "2012-christmas.pdf @2013-04-14T19:40:27Z"),
-        // 2012-12-26 - T1 - 2012-christmas.pdf - disagreement: equity index late open 05:00 CT; interest rates late open 05:00 CT; FX late open 05:00 CT; energy and metals no row; grains late open 09:30 CT; livestock late open 09:05 CT.
-        (2012, 12, 26, Unsourced, T1, "2012-christmas.pdf @2013-04-14T19:40:27Z"),
-        // 2013-01-01 - T1 - 2013-new-years.pdf @2013-04-14T19:41:46Z - closed: no trade date.
+        (2012, 12, 26, late_open(5 * 3_600), T1, "2012-christmas.pdf @2013-04-14T19:40:27Z"),
+        // 2013-01-01 - T1 - 2013-new-years.pdf @2013-04-14T19:41:46Z - CME prints no session running through this date.
         (2013, 1, 1, Closed, T1, "2013-new-years.pdf @2013-04-14T19:41:46Z"),
-        // 2013-01-02 - T1 - 2013-new-years.pdf @2013-04-14T19:41:46Z - disagreement: equity index late open 05:00 CT; energy and metals no row; FX late open 05:00 CT; grains late open 09:30 CT; interest rates late open 05:00 CT; livestock late open 09:05 CT.
-        (2013, 1, 2, Unsourced, T1, "2013-new-years.pdf @2013-04-14T19:41:46Z"),
-        // 2013-01-21 - T1 - 2013-martin-luther-king.pdf @2012-11-19T00:16:09Z - disagreement: equity index early close 10:30 CT; energy and metals early close 12:15 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed.
-        (2013, 1, 21, Unsourced, T1, "2013-martin-luther-king.pdf @2012-11-19T00:16:09Z"),
-        // 2013-02-18 - T1 - 2013-presidents-day.pdf @2013-03-09T11:53:37Z - disagreement: equity index early close 10:30 CT; energy and metals early close 12:15 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed.
-        (2013, 2, 18, Unsourced, T1, "2013-presidents-day.pdf @2013-03-09T11:53:37Z"),
+        // 2013-01-02 - T1 - 2013-new-years.pdf @2013-04-14T19:41:46Z - the trade date's first open is 5:00 CT: the evening leg that would have opened earlier did not run.
+        (2013, 1, 2, late_open(5 * 3_600), T1, "2013-new-years.pdf @2013-04-14T19:41:46Z"),
+        // 2013-01-21 - T1 - 2013-martin-luther-king.pdf @2012-11-19T00:16:09Z - the printed final close 10:30 CT is earlier than the family's ordinary 16:15 CT.
+        (2013, 1, 21, early_close(10 * 3_600 + 30 * 60), T1, "2013-martin-luther-king.pdf @2012-11-19T00:16:09Z"),
+        // 2013-02-18 - T1 - 2013-presidents-day.pdf @2013-03-09T11:53:37Z - the printed final close 10:30 CT is earlier than the family's ordinary 16:15 CT.
+        (2013, 2, 18, early_close(10 * 3_600 + 30 * 60), T1, "2013-presidents-day.pdf @2013-03-09T11:53:37Z"),
+        // 2013-03-29 - T1 - 2013-good-friday.pdf @2013-06-23T19:59:25Z - CME prints no session running through this date.
         (2013, 3, 29, Closed, T1, "2013-good-friday.pdf @2013-06-23T19:59:25Z"),
-        // 2013-05-27 - T1 - 2013-memorial-day.pdf @2013-06-23T20:36:04Z - disagreement: equity index early close 10:30 CT; energy and metals early close 12:15 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed.
-        (2013, 5, 27, Unsourced, T1, "2013-memorial-day.pdf @2013-06-23T20:36:04Z"),
-        // 2013-07-03 - T1 - 2013-4th-of-july.pdf @2013-06-23T20:58:25Z - disagreement: equity index early close 12:15 CT; energy and metals no row; FX no row; grains early close 12:00 CT; interest rates no row; livestock early close 12:15 CT.
-        (2013, 7, 3, Unsourced, T1, "2013-4th-of-july.pdf @2013-06-23T20:58:25Z"),
-        // 2013-07-04 - T1 - 2013-4th-of-july.pdf @2013-06-23T20:58:25Z - disagreement: equity index early close 10:30 CT; energy and metals early close 12:15 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed.
-        (2013, 7, 4, Unsourced, T1, "2013-4th-of-july.pdf @2013-06-23T20:58:25Z"),
-        // 2013-09-02 - T1 - 2013-labor-day.pdf @2013-09-02T17:08:41Z - disagreement: equity index early close 10:30 CT; energy and metals early close 12:15 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed.
-        (2013, 9, 2, Unsourced, T1, "2013-labor-day.pdf @2013-09-02T17:08:41Z"),
-        // 2013-11-28 - T1 - 2013-thanksgiving.pdf @2014-02-14T06:28:36Z - disagreement: equity index early close 10:30 CT; energy and metals early close 12:15 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed.
-        (2013, 11, 28, Unsourced, T1, "2013-thanksgiving.pdf @2014-02-14T06:28:36Z"),
-        // 2013-11-29 - T1 - 2013-thanksgiving.pdf @2014-02-14T06:28:36Z - disagreement: equity index early close 12:15 CT; energy and metals early close 12:45 CT; FX early close 12:15 CT; grains late open 08:30 CT and early close 12:00 CT; interest rates early close 12:15 CT; livestock late open 09:05 CT and early close 12:15 CT.
-        (2013, 11, 29, Unsourced, T1, "2013-thanksgiving.pdf @2014-02-14T06:28:36Z"),
-        // 2013-12-24 - T1 - 2013-christmas.pdf @2014-04-12T06:24:28Z - disagreement: equity index early close 12:15 CT; energy and metals early close 12:45 CT; FX early close 12:15 CT; grains early close 12:00 CT; interest rates early close 12:15 CT; livestock early close 12:15 CT.
-        (2013, 12, 24, Unsourced, T1, "2013-christmas.pdf @2014-04-12T06:24:28Z"),
-        // 2013-12-25 - T1 - 2013-christmas.pdf @2014-04-12T06:24:28Z - closed: no trade date.
+        // 2013-05-27 - T1 - 2013-memorial-day.pdf @2013-06-23T20:36:04Z - the printed final close 10:30 CT is earlier than the family's ordinary 16:15 CT.
+        (2013, 5, 27, early_close(10 * 3_600 + 30 * 60), T1, "2013-memorial-day.pdf @2013-06-23T20:36:04Z"),
+        // 2013-07-03 - T1 - 2013-4th-of-july.pdf @2013-06-23T20:58:25Z - the printed final close 12:15 CT is earlier than the family's ordinary 16:15 CT.
+        (2013, 7, 3, early_close(12 * 3_600 + 15 * 60), T1, "2013-4th-of-july.pdf @2013-06-23T20:58:25Z"),
+        // 2013-07-04 - T1 - 2013-4th-of-july.pdf @2013-06-23T20:58:25Z - the printed final close 10:30 CT is earlier than the family's ordinary 16:15 CT.
+        (2013, 7, 4, early_close(10 * 3_600 + 30 * 60), T1, "2013-4th-of-july.pdf @2013-06-23T20:58:25Z"),
+        // 2013-09-02 - T1 - 2013-labor-day.pdf @2013-09-02T17:08:41Z - the printed final close 10:30 CT is earlier than the family's ordinary 16:15 CT.
+        (2013, 9, 2, early_close(10 * 3_600 + 30 * 60), T1, "2013-labor-day.pdf @2013-09-02T17:08:41Z"),
+        // 2013-11-28 - T1 - 2013-thanksgiving.pdf @2014-02-14T06:28:36Z - the printed final close 10:30 CT is earlier than the family's ordinary 16:15 CT.
+        (2013, 11, 28, early_close(10 * 3_600 + 30 * 60), T1, "2013-thanksgiving.pdf @2014-02-14T06:28:36Z"),
+        // 2013-11-29 - T1 - 2013-thanksgiving.pdf @2014-02-14T06:28:36Z - the printed final close 12:15 CT is earlier than the family's ordinary 16:15 CT.
+        (2013, 11, 29, early_close(12 * 3_600 + 15 * 60), T1, "2013-thanksgiving.pdf @2014-02-14T06:28:36Z"),
+        // 2013-12-24 - T1 - 2013-christmas.pdf @2014-04-12T06:24:28Z - the printed final close 12:15 CT is earlier than the family's ordinary 16:15 CT.
+        (2013, 12, 24, early_close(12 * 3_600 + 15 * 60), T1, "2013-christmas.pdf @2014-04-12T06:24:28Z"),
+        // 2013-12-25 - T1 - 2013-christmas.pdf @2014-04-12T06:24:28Z - CME prints no session running through this date.
         (2013, 12, 25, Closed, T1, "2013-christmas.pdf @2014-04-12T06:24:28Z"),
-        // 2013-12-26 - T1 - 2013-christmas.pdf @2014-04-12T06:24:28Z - disagreement: equity index late open 05:00 CT; energy and metals no row; FX late open 05:00 CT; grains late open 08:30 CT; interest rates late open 05:00 CT; livestock late open 09:05 CT.
-        (2013, 12, 26, Unsourced, T1, "2013-christmas.pdf @2014-04-12T06:24:28Z"),
-        // 2014-01-01 - T1 - 2014-new-years.pdf @2013-10-07T20:58:00Z - closed: no trade date.
+        // 2013-12-26 - T1 - 2013-christmas.pdf @2014-04-12T06:24:28Z - the trade date's first open is 5:00 CT: the evening leg that would have opened earlier did not run.
+        (2013, 12, 26, late_open(5 * 3_600), T1, "2013-christmas.pdf @2014-04-12T06:24:28Z"),
+        // 2014-01-01 - T1 - 2014-new-years.pdf @2013-10-07T20:58:00Z - CME prints no session running through this date.
         (2014, 1, 1, Closed, T1, "2014-new-years.pdf @2013-10-07T20:58:00Z"),
-        // 2014-01-02 - T1 - 2014-new-years.pdf @2013-10-07T20:58:00Z - disagreement: equity index late open 05:00 CT; energy and metals no row; FX late open 05:00 CT; grains late open 08:30 CT; interest rates late open 05:00 CT; livestock late open 09:05 CT.
-        (2014, 1, 2, Unsourced, T1, "2014-new-years.pdf @2013-10-07T20:58:00Z"),
-        // 2014-01-20 - T1 - 2014-martin-luther-king-holiday-schedule.pdf @2014-03-26T16:02:15Z - disagreement: equity index early close 10:30 CT; energy and metals early close 12:15 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed.
-        (2014, 1, 20, Unsourced, T1, "2014-martin-luther-king-holiday-schedule.pdf @2014-03-26T16:02:15Z"),
-        // 2014-02-17 - T1 - 2014-presidents-day-holiday-schedule.pdf @2014-02-14T19:23:32Z - disagreement: equity index early close 10:30 CT; energy and metals early close 12:15 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed.
-        (2014, 2, 17, Unsourced, T1, "2014-presidents-day-holiday-schedule.pdf @2014-02-14T19:23:32Z"),
+        // 2014-01-02 - T1 - 2014-new-years.pdf @2013-10-07T20:58:00Z - the trade date's first open is 5:00 CT: the evening leg that would have opened earlier did not run.
+        (2014, 1, 2, late_open(5 * 3_600), T1, "2014-new-years.pdf @2013-10-07T20:58:00Z"),
+        // 2014-01-20 - T1 - 2014-martin-luther-king-holiday-schedule.pdf @2014-03-26T16:02:15Z - the printed final close 10:30 CT is earlier than the family's ordinary 16:15 CT.
+        (2014, 1, 20, early_close(10 * 3_600 + 30 * 60), T1, "2014-martin-luther-king-holiday-schedule.pdf @2014-03-26T16:02:15Z"),
+        // 2014-02-17 - T1 - 2014-presidents-day-holiday-schedule.pdf @2014-02-14T19:23:32Z - the printed final close 10:30 CT is earlier than the family's ordinary 16:15 CT.
+        (2014, 2, 17, early_close(10 * 3_600 + 30 * 60), T1, "2014-presidents-day-holiday-schedule.pdf @2014-02-14T19:23:32Z"),
+        // 2014-04-18 - T1 - 2014-good-friday-holiday-schedule.pdf @2014-03-26T15:27:35Z - CME prints no session running through this date.
         (2014, 4, 18, Closed, T1, "2014-good-friday-holiday-schedule.pdf @2014-03-26T15:27:35Z"),
-        // 2014-05-26 - T1 - 2014-memorial-day-holiday-schedule.pdf @2014-07-08T02:01:55Z - disagreement: equity index early close 12:00 CT; energy and metals early close 12:00 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed.
-        (2014, 5, 26, Unsourced, T1, "2014-memorial-day-holiday-schedule.pdf @2014-07-08T02:01:55Z"),
-        // 2014-07-03 - T1 - 2014-4th-of-july-holiday-schedule.pdf @2014-07-08T01:57:36Z - disagreement: equity index early close 12:15 CT; energy and metals no row; FX no row; grains early close 12:00 CT; interest rates no row; livestock early close 12:15 CT.
-        (2014, 7, 3, Unsourced, T1, "2014-4th-of-july-holiday-schedule.pdf @2014-07-08T01:57:36Z"),
-        // 2014-07-04 - T1 - 2014-4th-of-july-holiday-schedule.pdf @2014-07-08T01:57:36Z - disagreement: equity index early close 12:00 CT; energy and metals early close 12:00 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed.
-        (2014, 7, 4, Unsourced, T1, "2014-4th-of-july-holiday-schedule.pdf @2014-07-08T01:57:36Z"),
-        // 2014-09-01 - T1 - 2014-labor-day-holiday-schedule.pdf @2014-09-12T07:16:08Z - disagreement: equity index early close 12:00 CT; energy and metals early close 12:00 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed.
-        (2014, 9, 1, Unsourced, T1, "2014-labor-day-holiday-schedule.pdf @2014-09-12T07:16:08Z"),
-        // 2014-11-27 - T1 - 2014-thanksgiving-holiday-schedule.pdf @2015-01-21T14:54:56Z - disagreement: equity index early close 12:00 CT; energy and metals early close 12:00 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed.
-        (2014, 11, 27, Unsourced, T1, "2014-thanksgiving-holiday-schedule.pdf @2015-01-21T14:54:56Z"),
-        // 2014-11-28 - T1 - 2014-thanksgiving-holiday-schedule.pdf @2015-01-21T14:54:56Z - disagreement: equity index early close 12:15 CT; energy and metals early close 12:45 CT; FX early close 12:15 CT; grains late open 08:30 CT and early close 12:00 CT; interest rates early close 12:15 CT; livestock early close 12:15 CT.
-        (2014, 11, 28, Unsourced, T1, "2014-thanksgiving-holiday-schedule.pdf @2015-01-21T14:54:56Z"),
-        // 2014-12-24 - T1 - 2014-christmas-holiday-schedule.pdf @2015-01-21T14:10:00Z - disagreement: equity index early close 12:15 CT; energy and metals early close 12:45 CT; FX early close 12:15 CT; grains early close 12:00 CT; interest rates early close 12:15 CT; livestock early close 12:15 CT.
-        (2014, 12, 24, Unsourced, T1, "2014-christmas-holiday-schedule.pdf @2015-01-21T14:10:00Z"),
-        // 2014-12-25 - T1 - 2014-christmas-holiday-schedule.pdf @2015-01-21T14:10:00Z - closed: no trade date.
+        // 2014-05-26 - T1 - 2014-memorial-day-holiday-schedule.pdf @2014-07-08T02:01:55Z - the printed final close 12:00 CT is earlier than the family's ordinary 16:15 CT.
+        (2014, 5, 26, early_close(12 * 3_600), T1, "2014-memorial-day-holiday-schedule.pdf @2014-07-08T02:01:55Z"),
+        // 2014-07-03 - T1 - 2014-4th-of-july-holiday-schedule.pdf @2014-07-08T01:57:36Z - the printed final close 12:15 CT is earlier than the family's ordinary 16:15 CT.
+        (2014, 7, 3, early_close(12 * 3_600 + 15 * 60), T1, "2014-4th-of-july-holiday-schedule.pdf @2014-07-08T01:57:36Z"),
+        // 2014-07-04 - T1 - 2014-4th-of-july-holiday-schedule.pdf @2014-07-08T01:57:36Z - the printed final close 12:00 CT is earlier than the family's ordinary 16:15 CT.
+        (2014, 7, 4, early_close(12 * 3_600), T1, "2014-4th-of-july-holiday-schedule.pdf @2014-07-08T01:57:36Z"),
+        // 2014-09-01 - T1 - 2014-labor-day-holiday-schedule.pdf @2014-09-12T07:16:08Z - the printed final close 12:00 CT is earlier than the family's ordinary 16:15 CT.
+        (2014, 9, 1, early_close(12 * 3_600), T1, "2014-labor-day-holiday-schedule.pdf @2014-09-12T07:16:08Z"),
+        // 2014-11-27 - T1 - 2014-thanksgiving-holiday-schedule.pdf @2015-01-21T14:54:56Z - the printed final close 12:00 CT is earlier than the family's ordinary 16:15 CT.
+        (2014, 11, 27, early_close(12 * 3_600), T1, "2014-thanksgiving-holiday-schedule.pdf @2015-01-21T14:54:56Z"),
+        // 2014-11-28 - T1 - 2014-thanksgiving-holiday-schedule.pdf @2015-01-21T14:54:56Z - the printed final close 12:15 CT is earlier than the family's ordinary 16:15 CT.
+        (2014, 11, 28, early_close(12 * 3_600 + 15 * 60), T1, "2014-thanksgiving-holiday-schedule.pdf @2015-01-21T14:54:56Z"),
+        // 2014-12-24 - T1 - 2014-christmas-holiday-schedule.pdf @2015-01-21T14:10:00Z - the printed final close 12:15 CT is earlier than the family's ordinary 16:15 CT.
+        (2014, 12, 24, early_close(12 * 3_600 + 15 * 60), T1, "2014-christmas-holiday-schedule.pdf @2015-01-21T14:10:00Z"),
+        // 2014-12-25 - T1 - 2014-christmas-holiday-schedule.pdf @2015-01-21T14:10:00Z - CME prints no session running through this date.
         (2014, 12, 25, Closed, T1, "2014-christmas-holiday-schedule.pdf @2015-01-21T14:10:00Z"),
-        // 2015-01-01 - T1 - 2015-new-years-holiday-schedule.pdf @2015-01-21T14:10:43Z - closed: no trade date.
+        // 2015-01-01 - T1 - 2015-new-years-holiday-schedule.pdf @2015-01-21T14:10:43Z - CME prints no session running through this date.
         (2015, 1, 1, Closed, T1, "2015-new-years-holiday-schedule.pdf @2015-01-21T14:10:43Z"),
-        // 2015-01-19 - T1 - 2015-martin-luther-king-holiday-schedule.pdf @2015-01-21T14:10:12Z - disagreement: equity index early close 12:00 CT; energy and metals early close 12:00 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed.
-        (2015, 1, 19, Unsourced, T1, "2015-martin-luther-king-holiday-schedule.pdf @2015-01-21T14:10:12Z"),
-        // 2015-02-16 - T1 - 2015-presidents-day-holiday-schedule.pdf @2015-01-21T19:24:01Z - disagreement: equity index early close 12:00 CT; energy and metals early close 12:00 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed.
-        (2015, 2, 16, Unsourced, T1, "2015-presidents-day-holiday-schedule.pdf @2015-01-21T19:24:01Z"),
-        // 2015-04-03 - T1 - 2015-good-friday-holiday-schedule.pdf @2015-09-05T22:32:30Z - disagreement: equity index early close 08:15 CT; energy and metals closed; FX early close 10:15 CT; grains closed; interest rates early close 10:15 CT; livestock closed.
-        (2015, 4, 3, Unsourced, T1, "2015-good-friday-holiday-schedule.pdf @2015-09-05T22:32:30Z"),
-        // 2015-05-25 - T1 - 2015-memorial-day-holiday-schedule.pdf @2015-03-26T11:39:38Z - disagreement: equity index early close 12:00 CT; energy and metals early close 12:00 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed.
-        (2015, 5, 25, Unsourced, T1, "2015-memorial-day-holiday-schedule.pdf @2015-03-26T11:39:38Z"),
-        // 2015-07-03 - T1 - 2015-4th-of-july-holiday-schedule.pdf @2015-09-05T22:27:33Z - disagreement: equity index early close 12:00 CT; energy and metals early close 12:00 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed.
-        (2015, 7, 3, Unsourced, T1, "2015-4th-of-july-holiday-schedule.pdf @2015-09-05T22:27:33Z"),
-        // 2015-09-07 - T1 - 2015-labor-day-holiday-schedule.pdf @2015-08-24T02:30:39Z - disagreement: equity index early close 12:00 CT; energy and metals early close 12:00 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed.
-        (2015, 9, 7, Unsourced, T1, "2015-labor-day-holiday-schedule.pdf @2015-08-24T02:30:39Z"),
-        // 2015-11-26 - T1 - 2015-thanksgiving-holiday-schedule.pdf @2016-02-05T16:25:19Z - disagreement: equity index early close 12:00 CT; energy and metals early close 12:00 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed.
-        (2015, 11, 26, Unsourced, T1, "2015-thanksgiving-holiday-schedule.pdf @2016-02-05T16:25:19Z"),
-        // 2015-11-27 - T1 - 2015-thanksgiving-holiday-schedule.pdf @2016-02-05T16:25:19Z - disagreement: equity index early close 12:15 CT; energy and metals early close 12:45 CT; FX early close 12:15 CT; grains late open 08:30 CT and early close 12:05 CT; interest rates early close 12:15 CT; livestock early close 12:15 CT.
-        (2015, 11, 27, Unsourced, T1, "2015-thanksgiving-holiday-schedule.pdf @2016-02-05T16:25:19Z"),
-        // 2015-12-24 - T1 - 2015-christmas-holiday-schedule.pdf @2015-11-23T06:15:20Z - disagreement: equity index early close 12:15 CT; energy and metals early close 12:45 CT; FX early close 12:15 CT; grains early close 12:05 CT; interest rates early close 12:15 CT; livestock early close 12:15 CT.
-        (2015, 12, 24, Unsourced, T1, "2015-christmas-holiday-schedule.pdf @2015-11-23T06:15:20Z"),
-        // 2015-12-25 - T1 - 2015-christmas-holiday-schedule.pdf @2015-11-23T06:15:20Z - closed: no trade date.
+        // 2015-01-19 - T1 - 2015-martin-luther-king-holiday-schedule.pdf @2015-01-21T14:10:12Z - the printed final close 12:00 CT is earlier than the family's ordinary 16:15 CT.
+        (2015, 1, 19, early_close(12 * 3_600), T1, "2015-martin-luther-king-holiday-schedule.pdf @2015-01-21T14:10:12Z"),
+        // 2015-02-16 - T1 - 2015-presidents-day-holiday-schedule.pdf @2015-01-21T19:24:01Z - the printed final close 12:00 CT is earlier than the family's ordinary 16:15 CT.
+        (2015, 2, 16, early_close(12 * 3_600), T1, "2015-presidents-day-holiday-schedule.pdf @2015-01-21T19:24:01Z"),
+        // 2015-04-03 - T1 - 2015-good-friday-holiday-schedule.pdf @2015-09-05T22:32:30Z - the printed final close 8:15 CT is earlier than the family's ordinary 16:15 CT.
+        (2015, 4, 3, early_close(8 * 3_600 + 15 * 60), T1, "2015-good-friday-holiday-schedule.pdf @2015-09-05T22:32:30Z"),
+        // 2015-05-25 - T1 - 2015-memorial-day-holiday-schedule.pdf @2015-03-26T11:39:38Z - the printed final close 12:00 CT is earlier than the family's ordinary 16:15 CT.
+        (2015, 5, 25, early_close(12 * 3_600), T1, "2015-memorial-day-holiday-schedule.pdf @2015-03-26T11:39:38Z"),
+        // 2015-07-03 - T1 - 2015-4th-of-july-holiday-schedule.pdf @2015-09-05T22:27:33Z - the printed final close 12:00 CT is earlier than the family's ordinary 16:15 CT.
+        (2015, 7, 3, early_close(12 * 3_600), T1, "2015-4th-of-july-holiday-schedule.pdf @2015-09-05T22:27:33Z"),
+        // 2015-09-07 - T1 - 2015-labor-day-holiday-schedule.pdf @2015-08-24T02:30:39Z - the printed final close 12:00 CT is earlier than the family's ordinary 16:15 CT.
+        (2015, 9, 7, early_close(12 * 3_600), T1, "2015-labor-day-holiday-schedule.pdf @2015-08-24T02:30:39Z"),
+        // 2015-11-26 - T1 - 2015-thanksgiving-holiday-schedule.pdf @2016-02-05T16:25:19Z - the printed final close 12:00 CT is earlier than the family's ordinary 16:00 CT.
+        (2015, 11, 26, early_close(12 * 3_600), T1, "2015-thanksgiving-holiday-schedule.pdf @2016-02-05T16:25:19Z"),
+        // 2015-11-27 - T1 - 2015-thanksgiving-holiday-schedule.pdf @2016-02-05T16:25:19Z - the printed final close 12:15 CT is earlier than the family's ordinary 16:00 CT.
+        (2015, 11, 27, early_close(12 * 3_600 + 15 * 60), T1, "2015-thanksgiving-holiday-schedule.pdf @2016-02-05T16:25:19Z"),
+        // 2015-12-24 - T1 - 2015-christmas-holiday-schedule.pdf @2015-11-23T06:15:20Z - the printed final close 12:15 CT is earlier than the family's ordinary 16:00 CT.
+        (2015, 12, 24, early_close(12 * 3_600 + 15 * 60), T1, "2015-christmas-holiday-schedule.pdf @2015-11-23T06:15:20Z"),
+        // 2015-12-25 - T1 - 2015-christmas-holiday-schedule.pdf @2015-11-23T06:15:20Z - CME prints no session running through this date.
         (2015, 12, 25, Closed, T1, "2015-christmas-holiday-schedule.pdf @2015-11-23T06:15:20Z"),
         // 2016-01-01 - T1 - 2016-new-years-holiday-schedule.pdf @2016-01-08 - closed: no trade date.
         (2016, 1, 1, Closed, T1, "2016-new-years-holiday-schedule.pdf @2016-01-08"),
-        // 2016-01-18 - T1 - 2016-holiday-calendars.zip#2016-martin-luther-king-holiday-schedule.pdf @2017-06-28 - disagreement: equity index early close 12:00 CT; energy and metals early close 12:00 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed.
-        (2016, 1, 18, Unsourced, T1, "2016-holiday-calendars.zip#2016-martin-luther-king-holiday-schedule.pdf @2017-06-28"),
-        // 2016-02-15 - T1 - 2016-holiday-calendars.zip#2016-presidents-day-holiday-schedule.pdf @2017-06-28 - disagreement: equity index early close 12:00 CT; energy and metals early close 12:00 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed.
-        (2016, 2, 15, Unsourced, T1, "2016-holiday-calendars.zip#2016-presidents-day-holiday-schedule.pdf @2017-06-28"),
+        // 2016-01-18 - T1 - 2016-holiday-calendars.zip#2016-martin-luther-king-holiday-schedule.pdf @2017-06-28 - early close 12:00 CT.
+        (2016, 1, 18, early_close(12 * 3_600), T1, "2016-holiday-calendars.zip#2016-martin-luther-king-holiday-schedule.pdf @2017-06-28"),
+        // 2016-02-15 - T1 - 2016-holiday-calendars.zip#2016-presidents-day-holiday-schedule.pdf @2017-06-28 - early close 12:00 CT.
+        (2016, 2, 15, early_close(12 * 3_600), T1, "2016-holiday-calendars.zip#2016-presidents-day-holiday-schedule.pdf @2017-06-28"),
         // 2016-03-25 - T1 - 2016-holiday-calendars.zip#2016-good-friday-holiday-schedule.pdf @2017-06-28 - closed: no trade date.
         (2016, 3, 25, Closed, T1, "2016-holiday-calendars.zip#2016-good-friday-holiday-schedule.pdf @2017-06-28"),
-        // 2016-05-30 - T1 - 2016-holiday-calendars.zip#2016-memorial-day-holiday-schedule.pdf @2017-06-28 - disagreement: equity index early close 12:00 CT; energy and metals early close 12:00 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed.
-        (2016, 5, 30, Unsourced, T1, "2016-holiday-calendars.zip#2016-memorial-day-holiday-schedule.pdf @2017-06-28"),
-        // 2016-07-04 - T1 - 2016-holiday-calendars.zip#2016-4th-of-july-holiday-schedule.pdf @2017-06-28 - disagreement: equity index early close 12:00 CT; energy and metals early close 12:00 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed.
-        (2016, 7, 4, Unsourced, T1, "2016-holiday-calendars.zip#2016-4th-of-july-holiday-schedule.pdf @2017-06-28"),
-        // 2016-09-05 - T1 - 2016-holiday-calendars.zip#2016-labor-day-holiday-schedule.pdf @2017-06-28 - disagreement: equity index early close 12:00 CT; energy and metals early close 12:00 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed.
-        (2016, 9, 5, Unsourced, T1, "2016-holiday-calendars.zip#2016-labor-day-holiday-schedule.pdf @2017-06-28"),
-        // 2016-11-24 - T1 - 2016-holiday-calendars.zip#2016-thanksgiving-holiday-schedule.pdf @2017-06-28 - disagreement: equity index early close 12:00 CT; energy and metals early close 12:00 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed.
-        (2016, 11, 24, Unsourced, T1, "2016-holiday-calendars.zip#2016-thanksgiving-holiday-schedule.pdf @2017-06-28"),
-        // 2016-11-25 - T1 - 2016-holiday-calendars.zip#2016-thanksgiving-holiday-schedule.pdf @2017-06-28 - disagreement: equity index early close 12:15 CT; energy and metals early close 12:45 CT; FX early close 12:15 CT; grains late open and early close 12:05 CT; interest rates early close 12:15 CT; livestock early close 12:15 CT.
-        (2016, 11, 25, Unsourced, T1, "2016-holiday-calendars.zip#2016-thanksgiving-holiday-schedule.pdf @2017-06-28"),
+        // 2016-05-30 - T1 - 2016-holiday-calendars.zip#2016-memorial-day-holiday-schedule.pdf @2017-06-28 - early close 12:00 CT.
+        (2016, 5, 30, early_close(12 * 3_600), T1, "2016-holiday-calendars.zip#2016-memorial-day-holiday-schedule.pdf @2017-06-28"),
+        // 2016-07-04 - T1 - 2016-holiday-calendars.zip#2016-4th-of-july-holiday-schedule.pdf @2017-06-28 - early close 12:00 CT.
+        (2016, 7, 4, early_close(12 * 3_600), T1, "2016-holiday-calendars.zip#2016-4th-of-july-holiday-schedule.pdf @2017-06-28"),
+        // 2016-09-05 - T1 - 2016-holiday-calendars.zip#2016-labor-day-holiday-schedule.pdf @2017-06-28 - early close 12:00 CT.
+        (2016, 9, 5, early_close(12 * 3_600), T1, "2016-holiday-calendars.zip#2016-labor-day-holiday-schedule.pdf @2017-06-28"),
+        // 2016-11-24 - T1 - 2016-holiday-calendars.zip#2016-thanksgiving-holiday-schedule.pdf @2017-06-28 - early close 12:00 CT.
+        (2016, 11, 24, early_close(12 * 3_600), T1, "2016-holiday-calendars.zip#2016-thanksgiving-holiday-schedule.pdf @2017-06-28"),
+        // 2016-11-25 - T1 - 2016-holiday-calendars.zip#2016-thanksgiving-holiday-schedule.pdf @2017-06-28 - early close 12:15 CT.
+        (2016, 11, 25, early_close(12 * 3_600 + 15 * 60), T1, "2016-holiday-calendars.zip#2016-thanksgiving-holiday-schedule.pdf @2017-06-28"),
         // 2016-12-26 - T1 - 2016-holiday-calendars.zip#2016-christmas-holiday-schedule.pdf @2017-06-28 - closed: no trade date.
         (2016, 12, 26, Closed, T1, "2016-holiday-calendars.zip#2016-christmas-holiday-schedule.pdf @2017-06-28"),
         // 2017-01-02 - T1 - 2016-holiday-calendars.zip#2017-new-years-holiday-schedule.pdf @2017-06-28 - closed: no trade date.
         (2017, 1, 2, Closed, T1, "2016-holiday-calendars.zip#2017-new-years-holiday-schedule.pdf @2017-06-28"),
-        // 2017-01-16 - T1 - 2017-martin-luther-king-holiday-schedule.xls @2017-06-28 - disagreement: equity index early close 12:00 CT; energy and metals early close 12:00 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed.
-        (2017, 1, 16, Unsourced, T1, "2017-martin-luther-king-holiday-schedule.xls @2017-06-28"),
-        // 2017-02-20 - T1 - 2017-presidents-day-holiday-schedule.xls @2017-06-28 - disagreement: equity index early close 12:00 CT; energy and metals early close 12:00 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed.
-        (2017, 2, 20, Unsourced, T1, "2017-presidents-day-holiday-schedule.xls @2017-06-28"),
+        // 2017-01-16 - T1 - 2017-martin-luther-king-holiday-schedule.xls @2017-06-28 - early close 12:00 CT.
+        (2017, 1, 16, early_close(12 * 3_600), T1, "2017-martin-luther-king-holiday-schedule.xls @2017-06-28"),
+        // 2017-02-20 - T1 - 2017-presidents-day-holiday-schedule.xls @2017-06-28 - early close 12:00 CT.
+        (2017, 2, 20, early_close(12 * 3_600), T1, "2017-presidents-day-holiday-schedule.xls @2017-06-28"),
         // 2017-04-14 - T1 - 2017-good-friday-holiday-schedule.xls @2017-05-05 - closed: no trade date.
         (2017, 4, 14, Closed, T1, "2017-good-friday-holiday-schedule.xls @2017-05-05"),
-        // 2017-05-29 - T1 - 2017-memorial-day-holiday-schedule.xls @2017-10-25 - disagreement: equity index early close 12:00 CT; energy and metals early close 12:00 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed.
-        (2017, 5, 29, Unsourced, T1, "2017-memorial-day-holiday-schedule.xls @2017-10-25"),
-        // 2017-07-03 - T1 - 2017-4th-of-july-holiday-schedule.xls @2017-10-25 - disagreement: equity index early close 12:15 CT; energy and metals no row; FX no row; grains early close 12:05 CT; interest rates no row; livestock early close 12:15 CT.
-        (2017, 7, 3, Unsourced, T1, "2017-4th-of-july-holiday-schedule.xls @2017-10-25"),
-        // 2017-07-04 - T1 - 2017-4th-of-july-holiday-schedule.xls @2017-10-25 - disagreement: equity index early close 12:00 CT; energy and metals early close 12:00 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed.
-        (2017, 7, 4, Unsourced, T1, "2017-4th-of-july-holiday-schedule.xls @2017-10-25"),
-        // 2017-09-04 - T1 - 2017-labor-day-holiday-schedule.xls @2017-10-25 - disagreement: equity index early close 12:00 CT; energy and metals early close 12:00 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed.
-        (2017, 9, 4, Unsourced, T1, "2017-labor-day-holiday-schedule.xls @2017-10-25"),
-        // 2017-11-23 - T1 - 2017-holiday-calendars.zip#2017-thanksgiving-holiday-schedule.xls @2021-01-26 - disagreement: equity index early close 12:00 CT; energy and metals early close 12:00 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed.
-        (2017, 11, 23, Unsourced, T1, "2017-holiday-calendars.zip#2017-thanksgiving-holiday-schedule.xls @2021-01-26"),
-        // 2017-11-24 - T1 - 2017-holiday-calendars.zip#2017-thanksgiving-holiday-schedule.xls @2021-01-26 - disagreement: equity index early close 12:15 CT; energy and metals early close 12:45 CT; FX early close 12:15 CT; grains late open and early close 12:05 CT; interest rates early close 12:15 CT; livestock early close 12:15 CT.
-        (2017, 11, 24, Unsourced, T1, "2017-holiday-calendars.zip#2017-thanksgiving-holiday-schedule.xls @2021-01-26"),
+        // 2017-05-29 - T1 - 2017-memorial-day-holiday-schedule.xls @2017-10-25 - early close 12:00 CT.
+        (2017, 5, 29, early_close(12 * 3_600), T1, "2017-memorial-day-holiday-schedule.xls @2017-10-25"),
+        // 2017-07-03 - T1 - 2017-4th-of-july-holiday-schedule.xls @2017-10-25 - early close 12:15 CT.
+        (2017, 7, 3, early_close(12 * 3_600 + 15 * 60), T1, "2017-4th-of-july-holiday-schedule.xls @2017-10-25"),
+        // 2017-07-04 - T1 - 2017-4th-of-july-holiday-schedule.xls @2017-10-25 - early close 12:00 CT.
+        (2017, 7, 4, early_close(12 * 3_600), T1, "2017-4th-of-july-holiday-schedule.xls @2017-10-25"),
+        // 2017-09-04 - T1 - 2017-labor-day-holiday-schedule.xls @2017-10-25 - early close 12:00 CT.
+        (2017, 9, 4, early_close(12 * 3_600), T1, "2017-labor-day-holiday-schedule.xls @2017-10-25"),
+        // 2017-11-23 - T1 - 2017-holiday-calendars.zip#2017-thanksgiving-holiday-schedule.xls @2021-01-26 - early close 12:00 CT.
+        (2017, 11, 23, early_close(12 * 3_600), T1, "2017-holiday-calendars.zip#2017-thanksgiving-holiday-schedule.xls @2021-01-26"),
+        // 2017-11-24 - T1 - 2017-holiday-calendars.zip#2017-thanksgiving-holiday-schedule.xls @2021-01-26 - early close 12:15 CT.
+        (2017, 11, 24, early_close(12 * 3_600 + 15 * 60), T1, "2017-holiday-calendars.zip#2017-thanksgiving-holiday-schedule.xls @2021-01-26"),
         // 2017-12-25 - T1 - 2017-holiday-calendars.zip#2017-christmas-holiday-schedule.xls @2021-01-26 - closed: no trade date.
         (2017, 12, 25, Closed, T1, "2017-holiday-calendars.zip#2017-christmas-holiday-schedule.xls @2021-01-26"),
         // 2018-01-01 - T1 - 2018-new-years-holiday-schedule.xls @2018-01-06 - closed: no trade date.
         (2018, 1, 1, Closed, T1, "2018-new-years-holiday-schedule.xls @2018-01-06"),
-        // 2018-01-15 - T1 - 2018-martin-luther-king-holiday-schedule.xls @2018-05-08 - disagreement: equity index early close 12:00 CT; energy and metals early close 12:00 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed.
-        (2018, 1, 15, Unsourced, T1, "2018-martin-luther-king-holiday-schedule.xls @2018-05-08"),
-        // 2018-02-19 - T1 - 2018-presidents-day-holiday-schedule.xls @2018-05-08 - disagreement: equity index early close 12:00 CT; energy and metals early close 12:00 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed.
-        (2018, 2, 19, Unsourced, T1, "2018-presidents-day-holiday-schedule.xls @2018-05-08"),
+        // 2018-01-15 - T1 - 2018-martin-luther-king-holiday-schedule.xls @2018-05-08 - early close 12:00 CT.
+        (2018, 1, 15, early_close(12 * 3_600), T1, "2018-martin-luther-king-holiday-schedule.xls @2018-05-08"),
+        // 2018-02-19 - T1 - 2018-presidents-day-holiday-schedule.xls @2018-05-08 - early close 12:00 CT.
+        (2018, 2, 19, early_close(12 * 3_600), T1, "2018-presidents-day-holiday-schedule.xls @2018-05-08"),
         // 2018-03-30 - T1 - 2018-holiday-calendars.zip#2018-good-friday-holiday-schedule.xls @2026-08-30 - closed: no trade date.
         (2018, 3, 30, Closed, T1, "2018-holiday-calendars.zip#2018-good-friday-holiday-schedule.xls @2026-08-30"),
-        // 2018-05-28 - T1 - 2018-holiday-calendars.zip#2018-memorial-day-holiday-schedule.xls @2026-08-30 - disagreement: equity index early close 12:00 CT; energy and metals early close 12:00 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed.
-        (2018, 5, 28, Unsourced, T1, "2018-holiday-calendars.zip#2018-memorial-day-holiday-schedule.xls @2026-08-30"),
-        // 2018-07-03 - T1 - 2018-holiday-calendars.zip#2018-4th-of-july-holiday-schedule.xls @2026-08-30 - disagreement: equity index early close 12:15 CT; energy and metals no row; FX no row; grains early close 12:05 CT; interest rates no row; livestock early close 12:15 CT.
-        (2018, 7, 3, Unsourced, T1, "2018-holiday-calendars.zip#2018-4th-of-july-holiday-schedule.xls @2026-08-30"),
-        // 2018-07-04 - T1 - 2018-holiday-calendars.zip#2018-4th-of-july-holiday-schedule.xls @2026-08-30 - disagreement: equity index early close 12:00 CT; energy and metals early close 12:00 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed.
-        (2018, 7, 4, Unsourced, T1, "2018-holiday-calendars.zip#2018-4th-of-july-holiday-schedule.xls @2026-08-30"),
-        // 2018-09-03 - T1 - 2018-holiday-calendars.zip#2018-labor-day-holiday-schedule.xls @2026-08-30 - disagreement: equity index early close 12:00 CT; energy and metals early close 12:00 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed.
-        (2018, 9, 3, Unsourced, T1, "2018-holiday-calendars.zip#2018-labor-day-holiday-schedule.xls @2026-08-30"),
-        // 2018-11-22 - T1 - 2018-holiday-calendars.zip#2018-thanksgiving-holiday-schedule.xls @2026-08-30 - disagreement: equity index early close 12:00 CT; energy and metals early close 12:00 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed.
-        (2018, 11, 22, Unsourced, T1, "2018-holiday-calendars.zip#2018-thanksgiving-holiday-schedule.xls @2026-08-30"),
-        // 2018-11-23 - T1 - 2018-holiday-calendars.zip#2018-thanksgiving-holiday-schedule.xls @2026-08-30 - disagreement: equity index early close 12:15 CT; energy and metals early close 12:45 CT; FX early close 12:15 CT; grains late open and early close 12:05 CT; interest rates early close 12:15 CT; livestock early close 12:15 CT.
-        (2018, 11, 23, Unsourced, T1, "2018-holiday-calendars.zip#2018-thanksgiving-holiday-schedule.xls @2026-08-30"),
-        // 2018-12-24 - T1 - 2018-holiday-calendars.zip#2018-christmas-holiday-schedule.xls @2026-08-30 - disagreement: equity index early close 12:15 CT; energy and metals early close 12:45 CT; FX early close 12:15 CT; grains early close 12:05 CT; interest rates early close 12:15 CT; livestock early close 12:15 CT.
-        (2018, 12, 24, Unsourced, T1, "2018-holiday-calendars.zip#2018-christmas-holiday-schedule.xls @2026-08-30"),
+        // 2018-05-28 - T1 - 2018-holiday-calendars.zip#2018-memorial-day-holiday-schedule.xls @2026-08-30 - early close 12:00 CT.
+        (2018, 5, 28, early_close(12 * 3_600), T1, "2018-holiday-calendars.zip#2018-memorial-day-holiday-schedule.xls @2026-08-30"),
+        // 2018-07-03 - T1 - 2018-holiday-calendars.zip#2018-4th-of-july-holiday-schedule.xls @2026-08-30 - early close 12:15 CT.
+        (2018, 7, 3, early_close(12 * 3_600 + 15 * 60), T1, "2018-holiday-calendars.zip#2018-4th-of-july-holiday-schedule.xls @2026-08-30"),
+        // 2018-07-04 - T1 - 2018-holiday-calendars.zip#2018-4th-of-july-holiday-schedule.xls @2026-08-30 - early close 12:00 CT.
+        (2018, 7, 4, early_close(12 * 3_600), T1, "2018-holiday-calendars.zip#2018-4th-of-july-holiday-schedule.xls @2026-08-30"),
+        // 2018-09-03 - T1 - 2018-holiday-calendars.zip#2018-labor-day-holiday-schedule.xls @2026-08-30 - early close 12:00 CT.
+        (2018, 9, 3, early_close(12 * 3_600), T1, "2018-holiday-calendars.zip#2018-labor-day-holiday-schedule.xls @2026-08-30"),
+        // 2018-11-22 - T1 - 2018-holiday-calendars.zip#2018-thanksgiving-holiday-schedule.xls @2026-08-30 - early close 12:00 CT.
+        (2018, 11, 22, early_close(12 * 3_600), T1, "2018-holiday-calendars.zip#2018-thanksgiving-holiday-schedule.xls @2026-08-30"),
+        // 2018-11-23 - T1 - 2018-holiday-calendars.zip#2018-thanksgiving-holiday-schedule.xls @2026-08-30 - early close 12:15 CT.
+        (2018, 11, 23, early_close(12 * 3_600 + 15 * 60), T1, "2018-holiday-calendars.zip#2018-thanksgiving-holiday-schedule.xls @2026-08-30"),
+        // 2018-12-24 - T1 - 2018-holiday-calendars.zip#2018-christmas-holiday-schedule.xls @2026-08-30 - early close 12:15 CT.
+        (2018, 12, 24, early_close(12 * 3_600 + 15 * 60), T1, "2018-holiday-calendars.zip#2018-christmas-holiday-schedule.xls @2026-08-30"),
         // 2018-12-25 - T1 - 2018-holiday-calendars.zip#2018-christmas-holiday-schedule.xls @2026-08-30 - closed: no trade date.
         (2018, 12, 25, Closed, T1, "2018-holiday-calendars.zip#2018-christmas-holiday-schedule.xls @2026-08-30"),
-        // 2018-12-26 - T1 - 2018-holiday-calendars.zip#2018-christmas-holiday-schedule.xls @2026-08-30 - disagreement: equity index late open 15:30 CT; energy and metals no row; FX no row; grains late open 08:30 CT; interest rates no row; livestock no row (audited normal).
-        (2018, 12, 26, Unsourced, T1, "2018-holiday-calendars.zip#2018-christmas-holiday-schedule.xls @2026-08-30"),
-        // 2019-01-01 - T1 - 2019-new-years-holiday-schedule-compact.xls @2018-01-07T04:13:43Z - closed: no trade date.
+        // 2018-12-26 - T1 - 2018-holiday-calendars.zip#2018-christmas-holiday-schedule.xls @2026-08-30 - late open 15:30 CT: no prior-evening leg.
+        (2018, 12, 26, late_open(15 * 3_600 + 30 * 60), T1, "2018-holiday-calendars.zip#2018-christmas-holiday-schedule.xls @2026-08-30"),
+        // 2019-01-01 - T1 - 2019-new-years-holiday-schedule-compact.xls @2018-01-07T04:13:43Z - CME prints no session running through this date.
         (2019, 1, 1, Closed, T1, "2019-new-years-holiday-schedule-compact.xls @2018-01-07T04:13:43Z"),
-        // 2019-01-21 - T1 - 2019-holiday-calendars.zip#globex-trading-schedules/2019-martin-luther-king-holiday-schedule-compact.xls @2021-01-26T09:48:37Z - disagreement: equity index early close 12:00 CT; energy and metals early close 12:00 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed.
-        (2019, 1, 21, Unsourced, T1, "2019-holiday-calendars.zip#globex-trading-schedules/2019-martin-luther-king-holiday-schedule-compact.xls @2021-01-26T09:48:37Z"),
-        // 2019-02-18 - T1 - 2019-holiday-calendars.zip#globex-trading-schedules/2019-presidents-day-holiday-schedule-compact.xls @2021-01-26T09:48:37Z - disagreement: equity index early close 12:00 CT; energy and metals early close 12:00 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed.
-        (2019, 2, 18, Unsourced, T1, "2019-holiday-calendars.zip#globex-trading-schedules/2019-presidents-day-holiday-schedule-compact.xls @2021-01-26T09:48:37Z"),
-        // 2019-04-19 - T1 - 2019-holiday-calendars.zip#globex-trading-schedules/2019-good-friday-holiday-compact.xls @2021-01-26T09:48:37Z - closed: no trade date.
+        // 2019-01-21 - T1 - 2019-holiday-calendars.zip#globex-trading-schedules/2019-martin-luther-king-holiday-schedule-compact.xls @2021-01-26T09:48:37Z - the printed final close 12:00 CT is earlier than the ordinary 16:00 CT close.
+        (2019, 1, 21, early_close(12 * 3_600), T1, "2019-holiday-calendars.zip#globex-trading-schedules/2019-martin-luther-king-holiday-schedule-compact.xls @2021-01-26T09:48:37Z"),
+        // 2019-02-18 - T1 - 2019-holiday-calendars.zip#globex-trading-schedules/2019-presidents-day-holiday-schedule-compact.xls @2021-01-26T09:48:37Z - the printed final close 12:00 CT is earlier than the ordinary 16:00 CT close.
+        (2019, 2, 18, early_close(12 * 3_600), T1, "2019-holiday-calendars.zip#globex-trading-schedules/2019-presidents-day-holiday-schedule-compact.xls @2021-01-26T09:48:37Z"),
+        // 2019-04-19 - T1 - 2019-holiday-calendars.zip#globex-trading-schedules/2019-good-friday-holiday-compact.xls @2021-01-26T09:48:37Z - CME prints no session running through this date.
         (2019, 4, 19, Closed, T1, "2019-holiday-calendars.zip#globex-trading-schedules/2019-good-friday-holiday-compact.xls @2021-01-26T09:48:37Z"),
-        // 2019-05-27 - T1 - 2019-holiday-calendars.zip#globex-trading-schedules/2019-memorial-day-holiday-schedule-compact.xls @2021-01-26T09:48:37Z - disagreement: equity index early close 12:00 CT; energy and metals early close 12:00 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed.
-        (2019, 5, 27, Unsourced, T1, "2019-holiday-calendars.zip#globex-trading-schedules/2019-memorial-day-holiday-schedule-compact.xls @2021-01-26T09:48:37Z"),
-        // 2019-06-19 - T1 - 2019-holiday-calendars.zip @2021-01-26T09:48:37Z - unsourced: the routed families state the date is not worked up.
-        (2019, 6, 19, Unsourced, T1, "2019-holiday-calendars.zip @2021-01-26T09:48:37Z"),
-        // 2019-07-03 - T1 - 2019-holiday-calendars.zip#globex-trading-schedules/2019-4th-of-july-holiday-schedule-compact.xls @2021-01-26T09:48:37Z - disagreement: equity index early close 12:15 CT; energy and metals no row; FX no row; grains early close 12:05 CT; interest rates no row; livestock early close 12:15 CT.
-        (2019, 7, 3, Unsourced, T1, "2019-holiday-calendars.zip#globex-trading-schedules/2019-4th-of-july-holiday-schedule-compact.xls @2021-01-26T09:48:37Z"),
-        // 2019-07-04 - T1 - 2019-holiday-calendars.zip#globex-trading-schedules/2019-4th-of-july-holiday-schedule-compact.xls @2021-01-26T09:48:37Z - disagreement: equity index early close 12:00 CT; energy and metals early close 12:00 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed.
-        (2019, 7, 4, Unsourced, T1, "2019-holiday-calendars.zip#globex-trading-schedules/2019-4th-of-july-holiday-schedule-compact.xls @2021-01-26T09:48:37Z"),
-        // 2019-09-02 - T1 - 2019-holiday-calendars.zip#globex-trading-schedules/2019-labor-day-holiday-schedule-compact.xls @2021-01-26T09:48:37Z - disagreement: equity index early close 12:00 CT; energy and metals early close 12:00 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed.
-        (2019, 9, 2, Unsourced, T1, "2019-holiday-calendars.zip#globex-trading-schedules/2019-labor-day-holiday-schedule-compact.xls @2021-01-26T09:48:37Z"),
-        // 2019-11-28 - T1 - 2019-holiday-calendars.zip#globex-trading-schedules/2019-thanksgiving-holiday-schedule-compact.xls @2021-01-26T09:48:37Z - disagreement: equity index early close 12:00 CT; energy and metals early close 12:00 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed.
-        (2019, 11, 28, Unsourced, T1, "2019-holiday-calendars.zip#globex-trading-schedules/2019-thanksgiving-holiday-schedule-compact.xls @2021-01-26T09:48:37Z"),
-        // 2019-11-29 - T1 - 2019-holiday-calendars.zip#globex-trading-schedules/2019-thanksgiving-holiday-schedule-compact.xls @2021-01-26T09:48:37Z - disagreement: equity index early close 12:15 CT; energy and metals early close 12:45 CT; FX early close 12:15 CT; grains late open 08:30 CT and early close 12:05 CT; interest rates early close 12:15 CT; livestock early close 12:15 CT.
-        (2019, 11, 29, Unsourced, T1, "2019-holiday-calendars.zip#globex-trading-schedules/2019-thanksgiving-holiday-schedule-compact.xls @2021-01-26T09:48:37Z"),
-        // 2019-12-24 - T1 - 2019-holiday-calendars.zip#globex-trading-schedules/2019-christmas-holiday-schedule-compact.xls @2021-01-26T09:48:37Z - disagreement: equity index early close 12:15 CT; energy and metals early close 12:45 CT; FX early close 12:15 CT; grains early close 12:05 CT; interest rates early close 12:15 CT; livestock early close 12:15 CT.
-        (2019, 12, 24, Unsourced, T1, "2019-holiday-calendars.zip#globex-trading-schedules/2019-christmas-holiday-schedule-compact.xls @2021-01-26T09:48:37Z"),
-        // 2019-12-25 - T1 - 2019-holiday-calendars.zip#globex-trading-schedules/2019-christmas-holiday-schedule-compact.xls @2021-01-26T09:48:37Z - closed: no trade date.
+        // 2019-05-27 - T1 - 2019-holiday-calendars.zip#globex-trading-schedules/2019-memorial-day-holiday-schedule-compact.xls @2021-01-26T09:48:37Z - the printed final close 12:00 CT is earlier than the ordinary 16:00 CT close.
+        (2019, 5, 27, early_close(12 * 3_600), T1, "2019-holiday-calendars.zip#globex-trading-schedules/2019-memorial-day-holiday-schedule-compact.xls @2021-01-26T09:48:37Z"),
+        // 2019-07-03 - T1 - 2019-holiday-calendars.zip#globex-trading-schedules/2019-4th-of-july-holiday-schedule-compact.xls @2021-01-26T09:48:37Z - the printed final close 12:15 CT is earlier than the ordinary 16:00 CT close.
+        (2019, 7, 3, early_close(12 * 3_600 + 15 * 60), T1, "2019-holiday-calendars.zip#globex-trading-schedules/2019-4th-of-july-holiday-schedule-compact.xls @2021-01-26T09:48:37Z"),
+        // 2019-07-04 - T1 - 2019-holiday-calendars.zip#globex-trading-schedules/2019-4th-of-july-holiday-schedule-compact.xls @2021-01-26T09:48:37Z - the printed final close 12:00 CT is earlier than the ordinary 16:00 CT close.
+        (2019, 7, 4, early_close(12 * 3_600), T1, "2019-holiday-calendars.zip#globex-trading-schedules/2019-4th-of-july-holiday-schedule-compact.xls @2021-01-26T09:48:37Z"),
+        // 2019-09-02 - T1 - 2019-holiday-calendars.zip#globex-trading-schedules/2019-labor-day-holiday-schedule-compact.xls @2021-01-26T09:48:37Z - the printed final close 12:00 CT is earlier than the ordinary 16:00 CT close.
+        (2019, 9, 2, early_close(12 * 3_600), T1, "2019-holiday-calendars.zip#globex-trading-schedules/2019-labor-day-holiday-schedule-compact.xls @2021-01-26T09:48:37Z"),
+        // 2019-11-28 - T1 - 2019-holiday-calendars.zip#globex-trading-schedules/2019-thanksgiving-holiday-schedule-compact.xls @2021-01-26T09:48:37Z - the printed final close 12:00 CT is earlier than the ordinary 16:00 CT close.
+        (2019, 11, 28, early_close(12 * 3_600), T1, "2019-holiday-calendars.zip#globex-trading-schedules/2019-thanksgiving-holiday-schedule-compact.xls @2021-01-26T09:48:37Z"),
+        // 2019-11-29 - T1 - 2019-holiday-calendars.zip#globex-trading-schedules/2019-thanksgiving-holiday-schedule-compact.xls @2021-01-26T09:48:37Z - the printed final close 12:15 CT is earlier than the ordinary 16:00 CT close.
+        (2019, 11, 29, early_close(12 * 3_600 + 15 * 60), T1, "2019-holiday-calendars.zip#globex-trading-schedules/2019-thanksgiving-holiday-schedule-compact.xls @2021-01-26T09:48:37Z"),
+        // 2019-12-24 - T1 - 2019-holiday-calendars.zip#globex-trading-schedules/2019-christmas-holiday-schedule-compact.xls @2021-01-26T09:48:37Z - the printed final close 12:15 CT is earlier than the ordinary 16:00 CT close.
+        (2019, 12, 24, early_close(12 * 3_600 + 15 * 60), T1, "2019-holiday-calendars.zip#globex-trading-schedules/2019-christmas-holiday-schedule-compact.xls @2021-01-26T09:48:37Z"),
+        // 2019-12-25 - T1 - 2019-holiday-calendars.zip#globex-trading-schedules/2019-christmas-holiday-schedule-compact.xls @2021-01-26T09:48:37Z - CME prints no session running through this date.
         (2019, 12, 25, Closed, T1, "2019-holiday-calendars.zip#globex-trading-schedules/2019-christmas-holiday-schedule-compact.xls @2021-01-26T09:48:37Z"),
-        // 2020-01-01 - T1 - 2019-holiday-calendars.zip#globex-trading-schedules/2019-new-years-holiday-schedule-compact.xls @2021-01-26T09:48:37Z - closed: no trade date.
+        // 2020-01-01 - T1 - 2019-holiday-calendars.zip#globex-trading-schedules/2019-new-years-holiday-schedule-compact.xls @2021-01-26T09:48:37Z - CME prints no session running through this date.
         (2020, 1, 1, Closed, T1, "2019-holiday-calendars.zip#globex-trading-schedules/2019-new-years-holiday-schedule-compact.xls @2021-01-26T09:48:37Z"),
-        // 2020-01-20 - T1 - 2020-holiday-calendars.zip#2020-martin-luther-king-holiday-schedule-compact.xls @2026-07-30T11:18:34Z - disagreement: equity index early close 12:00 CT; energy and metals early close 12:00 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed.
-        (2020, 1, 20, Unsourced, T1, "2020-holiday-calendars.zip#2020-martin-luther-king-holiday-schedule-compact.xls @2026-07-30T11:18:34Z"),
-        // 2020-02-17 - T1 - 2020-holiday-calendars.zip#2020-presidents-day-holiday-schedule-compact.xls @2026-07-30T11:18:34Z - disagreement: equity index early close 12:00 CT; energy and metals early close 12:00 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed.
-        (2020, 2, 17, Unsourced, T1, "2020-holiday-calendars.zip#2020-presidents-day-holiday-schedule-compact.xls @2026-07-30T11:18:34Z"),
-        // 2020-04-10 - T1 - 2020-holiday-calendars.zip#2020-good-friday-holiday-compact.xls @2026-07-30T11:18:34Z - closed: no trade date.
+        // 2020-01-20 - T1 - 2020-holiday-calendars.zip#2020-martin-luther-king-holiday-schedule-compact.xls @2026-07-30T11:18:34Z - the printed final close 12:00 CT is earlier than the ordinary 16:00 CT close.
+        (2020, 1, 20, early_close(12 * 3_600), T1, "2020-holiday-calendars.zip#2020-martin-luther-king-holiday-schedule-compact.xls @2026-07-30T11:18:34Z"),
+        // 2020-02-17 - T1 - 2020-holiday-calendars.zip#2020-presidents-day-holiday-schedule-compact.xls @2026-07-30T11:18:34Z - the printed final close 12:00 CT is earlier than the ordinary 16:00 CT close.
+        (2020, 2, 17, early_close(12 * 3_600), T1, "2020-holiday-calendars.zip#2020-presidents-day-holiday-schedule-compact.xls @2026-07-30T11:18:34Z"),
+        // 2020-04-10 - T1 - 2020-holiday-calendars.zip#2020-good-friday-holiday-compact.xls @2026-07-30T11:18:34Z - CME prints no session running through this date.
         (2020, 4, 10, Closed, T1, "2020-holiday-calendars.zip#2020-good-friday-holiday-compact.xls @2026-07-30T11:18:34Z"),
-        // 2020-05-25 - T1 - 2020-holiday-calendars.zip#2020-memorial-day-holiday-schedule-compact.xls @2026-07-30T11:18:34Z - disagreement: equity index early close 12:00 CT; energy and metals early close 12:00 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed.
-        (2020, 5, 25, Unsourced, T1, "2020-holiday-calendars.zip#2020-memorial-day-holiday-schedule-compact.xls @2026-07-30T11:18:34Z"),
-        // 2020-06-19 - T1 - 2020-holiday-calendars.zip @2026-07-30T11:18:34Z - unsourced: the routed families state the date is not worked up.
-        (2020, 6, 19, Unsourced, T1, "2020-holiday-calendars.zip @2026-07-30T11:18:34Z"),
-        // 2020-07-03 - T1 - 2020-holiday-calendars.zip#2020-4th-of-july-holiday-schedule-compact.xls @2026-07-30T11:18:34Z - disagreement: equity index early close 12:00 CT; energy and metals early close 12:00 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed.
-        (2020, 7, 3, Unsourced, T1, "2020-holiday-calendars.zip#2020-4th-of-july-holiday-schedule-compact.xls @2026-07-30T11:18:34Z"),
-        // 2020-09-07 - T1 - 2020-holiday-calendars.zip#2020-labor-day-holiday-schedule-compact.xls @2026-07-30T11:18:34Z - disagreement: equity index early close 12:00 CT; energy and metals early close 12:00 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed.
-        (2020, 9, 7, Unsourced, T1, "2020-holiday-calendars.zip#2020-labor-day-holiday-schedule-compact.xls @2026-07-30T11:18:34Z"),
-        // 2020-11-26 - T1 - 2020-holiday-calendars.zip#2020-thanksgiving-holiday-schedule-compact.xls @2026-07-30T11:18:34Z - disagreement: equity index early close 12:00 CT; energy and metals early close 12:00 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed.
-        (2020, 11, 26, Unsourced, T1, "2020-holiday-calendars.zip#2020-thanksgiving-holiday-schedule-compact.xls @2026-07-30T11:18:34Z"),
-        // 2020-11-27 - T1 - 2020-holiday-calendars.zip#2020-thanksgiving-holiday-schedule-compact.xls @2026-07-30T11:18:34Z - disagreement: equity index early close 12:15 CT; energy and metals early close 12:45 CT; FX early close 12:15 CT; grains late open 08:30 CT and early close 12:05 CT; interest rates early close 12:15 CT; livestock early close 12:05 CT.
-        (2020, 11, 27, Unsourced, T1, "2020-holiday-calendars.zip#2020-thanksgiving-holiday-schedule-compact.xls @2026-07-30T11:18:34Z"),
-        // 2020-12-24 - T1 - 2020-holiday-calendars.zip#2020-christmas-holiday-schedule-compact.xls @2026-07-30T11:18:34Z - disagreement: equity index early close 12:15 CT; energy and metals early close 12:45 CT; FX early close 12:15 CT; grains early close 12:05 CT; interest rates early close 12:15 CT; livestock early close 12:05 CT.
-        (2020, 12, 24, Unsourced, T1, "2020-holiday-calendars.zip#2020-christmas-holiday-schedule-compact.xls @2026-07-30T11:18:34Z"),
-        // 2020-12-25 - T1 - 2020-holiday-calendars.zip#2020-christmas-holiday-schedule-compact.xls @2026-07-30T11:18:34Z - closed: no trade date.
+        // 2020-05-25 - T1 - 2020-holiday-calendars.zip#2020-memorial-day-holiday-schedule-compact.xls @2026-07-30T11:18:34Z - the printed final close 12:00 CT is earlier than the ordinary 16:00 CT close.
+        (2020, 5, 25, early_close(12 * 3_600), T1, "2020-holiday-calendars.zip#2020-memorial-day-holiday-schedule-compact.xls @2026-07-30T11:18:34Z"),
+        // 2020-07-03 - T1 - 2020-holiday-calendars.zip#2020-4th-of-july-holiday-schedule-compact.xls @2026-07-30T11:18:34Z - the printed final close 12:00 CT is earlier than the ordinary 16:00 CT close.
+        (2020, 7, 3, early_close(12 * 3_600), T1, "2020-holiday-calendars.zip#2020-4th-of-july-holiday-schedule-compact.xls @2026-07-30T11:18:34Z"),
+        // 2020-09-07 - T1 - 2020-holiday-calendars.zip#2020-labor-day-holiday-schedule-compact.xls @2026-07-30T11:18:34Z - the printed final close 12:00 CT is earlier than the ordinary 16:00 CT close.
+        (2020, 9, 7, early_close(12 * 3_600), T1, "2020-holiday-calendars.zip#2020-labor-day-holiday-schedule-compact.xls @2026-07-30T11:18:34Z"),
+        // 2020-11-26 - T1 - 2020-holiday-calendars.zip#2020-thanksgiving-holiday-schedule-compact.xls @2026-07-30T11:18:34Z - the printed final close 12:00 CT is earlier than the ordinary 16:00 CT close.
+        (2020, 11, 26, early_close(12 * 3_600), T1, "2020-holiday-calendars.zip#2020-thanksgiving-holiday-schedule-compact.xls @2026-07-30T11:18:34Z"),
+        // 2020-11-27 - T1 - 2020-holiday-calendars.zip#2020-thanksgiving-holiday-schedule-compact.xls @2026-07-30T11:18:34Z - the printed final close 12:15 CT is earlier than the ordinary 16:00 CT close.
+        (2020, 11, 27, early_close(12 * 3_600 + 15 * 60), T1, "2020-holiday-calendars.zip#2020-thanksgiving-holiday-schedule-compact.xls @2026-07-30T11:18:34Z"),
+        // 2020-12-24 - T1 - 2020-holiday-calendars.zip#2020-christmas-holiday-schedule-compact.xls @2026-07-30T11:18:34Z - the printed final close 12:15 CT is earlier than the ordinary 16:00 CT close.
+        (2020, 12, 24, early_close(12 * 3_600 + 15 * 60), T1, "2020-holiday-calendars.zip#2020-christmas-holiday-schedule-compact.xls @2026-07-30T11:18:34Z"),
+        // 2020-12-25 - T1 - 2020-holiday-calendars.zip#2020-christmas-holiday-schedule-compact.xls @2026-07-30T11:18:34Z - CME prints no session running through this date.
         (2020, 12, 25, Closed, T1, "2020-holiday-calendars.zip#2020-christmas-holiday-schedule-compact.xls @2026-07-30T11:18:34Z"),
-        // 2021-01-01 - T1 - 2020-holiday-calendars.zip#2021-new-years-holiday-schedule-compact.xls @2026-07-30T11:18:34Z - closed: no trade date.
+        // 2021-01-01 - T1 - 2020-holiday-calendars.zip#2021-new-years-holiday-schedule-compact.xls @2026-07-30T11:18:34Z - CME prints no session running through this date.
         (2021, 1, 1, Closed, T1, "2020-holiday-calendars.zip#2021-new-years-holiday-schedule-compact.xls @2026-07-30T11:18:34Z"),
-        // 2021-01-18 - T1 - 2021-holiday-calendars.zip#2021-mlk-day-schedule-compact.xls @2026-08-30T10:03:27Z - disagreement: equity index early close 12:00 CT; energy and metals early close 12:00 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed.
-        (2021, 1, 18, Unsourced, T1, "2021-holiday-calendars.zip#2021-mlk-day-schedule-compact.xls @2026-08-30T10:03:27Z"),
-        // 2021-02-15 - T1 - 2021-holiday-calendars.zip#2021-presidents-day-holiday-schedule-compact.xls @2026-08-30T10:03:27Z - disagreement: equity index early close 12:00 CT; energy and metals early close 12:00 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed.
-        (2021, 2, 15, Unsourced, T1, "2021-holiday-calendars.zip#2021-presidents-day-holiday-schedule-compact.xls @2026-08-30T10:03:27Z"),
-        // 2021-04-02 - T1 - 2021-holiday-calendars.zip#2021-good-friday-holiday-schedule-compact.xls @2026-08-30T10:03:27Z - disagreement: equity index early close 08:15 CT; energy and metals closed; FX early close 10:15 CT; grains closed; interest rates early close 10:15 CT; livestock closed.
-        (2021, 4, 2, Unsourced, T1, "2021-holiday-calendars.zip#2021-good-friday-holiday-schedule-compact.xls @2026-08-30T10:03:27Z"),
-        // 2021-05-31 - T1 - 2021-holiday-calendars.zip#2021-memorial-day-holiday-schedule-compact.xls @2026-08-30T10:03:27Z - disagreement: equity index early close 12:00 CT; energy and metals early close 12:00 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed.
-        (2021, 5, 31, Unsourced, T1, "2021-holiday-calendars.zip#2021-memorial-day-holiday-schedule-compact.xls @2026-08-30T10:03:27Z"),
-        // 2021-06-19 - T1 - 2021-holiday-calendars.zip @2026-08-30T10:03:27Z - unsourced: the routed families state the date is not worked up.
-        (2021, 6, 19, Unsourced, T1, "2021-holiday-calendars.zip @2026-08-30T10:03:27Z"),
-        // 2021-07-05 - T1 - 2021-holiday-calendars.zip#2021-independence-day-holiday-schedule-compact.xls @2026-08-30T10:03:27Z - disagreement: equity index early close 12:00 CT; energy and metals early close 12:00 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed.
-        (2021, 7, 5, Unsourced, T1, "2021-holiday-calendars.zip#2021-independence-day-holiday-schedule-compact.xls @2026-08-30T10:03:27Z"),
-        // 2021-09-06 - T1 - 2021-holiday-calendars.zip#2021-labor-day-holiday-schedule-compact.xls @2026-08-30T10:03:27Z - disagreement: equity index early close 12:00 CT; energy and metals early close 12:00 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed.
-        (2021, 9, 6, Unsourced, T1, "2021-holiday-calendars.zip#2021-labor-day-holiday-schedule-compact.xls @2026-08-30T10:03:27Z"),
-        // 2021-11-25 - T1 - 2021-holiday-calendars.zip#2021-thanksgiving-holiday-schedule-compact.xls @2026-08-30T10:03:27Z - disagreement: equity index early close 12:00 CT; energy and metals early close 12:00 CT; FX early close 12:00 CT; grains closed; interest rates early close 12:00 CT; livestock closed.
-        (2021, 11, 25, Unsourced, T1, "2021-holiday-calendars.zip#2021-thanksgiving-holiday-schedule-compact.xls @2026-08-30T10:03:27Z"),
-        // 2021-11-26 - T1 - 2021-holiday-calendars.zip#2021-thanksgiving-holiday-schedule-compact.xls @2026-08-30T10:03:27Z - disagreement: equity index early close 12:15 CT; energy and metals early close 12:45 CT; FX early close 12:15 CT; grains late open 08:30 CT and early close 12:05 CT; interest rates early close 12:15 CT; livestock early close 12:05 CT.
-        (2021, 11, 26, Unsourced, T1, "2021-holiday-calendars.zip#2021-thanksgiving-holiday-schedule-compact.xls @2026-08-30T10:03:27Z"),
-        // 2021-12-24 - T1 - 2021-holiday-calendars.zip#2021-christmas-holiday-schedule-compact.xls @2026-08-30T10:03:27Z - closed: no trade date.
+        // 2021-01-18 - T1 - 2021-holiday-calendars.zip#2021-mlk-day-schedule-compact.xls @2026-08-30T10:03:27Z - the printed final close 12:00 CT is earlier than the ordinary 16:00 CT close.
+        (2021, 1, 18, early_close(12 * 3_600), T1, "2021-holiday-calendars.zip#2021-mlk-day-schedule-compact.xls @2026-08-30T10:03:27Z"),
+        // 2021-02-15 - T1 - 2021-holiday-calendars.zip#2021-presidents-day-holiday-schedule-compact.xls @2026-08-30T10:03:27Z - the printed final close 12:00 CT is earlier than the ordinary 16:00 CT close.
+        (2021, 2, 15, early_close(12 * 3_600), T1, "2021-holiday-calendars.zip#2021-presidents-day-holiday-schedule-compact.xls @2026-08-30T10:03:27Z"),
+        // 2021-04-02 - T1 - 2021-holiday-calendars.zip#2021-good-friday-holiday-schedule-compact.xls @2026-08-30T10:03:27Z - the printed final close 08:15 CT is earlier than the ordinary 16:00 CT close.
+        (2021, 4, 2, early_close(8 * 3_600 + 15 * 60), T1, "2021-holiday-calendars.zip#2021-good-friday-holiday-schedule-compact.xls @2026-08-30T10:03:27Z"),
+        // 2021-05-31 - T1 - 2021-holiday-calendars.zip#2021-memorial-day-holiday-schedule-compact.xls @2026-08-30T10:03:27Z - the printed final close 12:00 CT is earlier than the ordinary 16:00 CT close.
+        (2021, 5, 31, early_close(12 * 3_600), T1, "2021-holiday-calendars.zip#2021-memorial-day-holiday-schedule-compact.xls @2026-08-30T10:03:27Z"),
+        // 2021-07-05 - T1 - 2021-holiday-calendars.zip#2021-independence-day-holiday-schedule-compact.xls @2026-08-30T10:03:27Z - the printed final close 12:00 CT is earlier than the ordinary 16:00 CT close.
+        (2021, 7, 5, early_close(12 * 3_600), T1, "2021-holiday-calendars.zip#2021-independence-day-holiday-schedule-compact.xls @2026-08-30T10:03:27Z"),
+        // 2021-09-06 - T1 - 2021-holiday-calendars.zip#2021-labor-day-holiday-schedule-compact.xls @2026-08-30T10:03:27Z - the printed final close 12:00 CT is earlier than the ordinary 16:00 CT close.
+        (2021, 9, 6, early_close(12 * 3_600), T1, "2021-holiday-calendars.zip#2021-labor-day-holiday-schedule-compact.xls @2026-08-30T10:03:27Z"),
+        // 2021-11-25 - T1 - 2021-holiday-calendars.zip#2021-thanksgiving-holiday-schedule-compact.xls @2026-08-30T10:03:27Z - the printed final close 12:00 CT is earlier than the ordinary 16:00 CT close.
+        (2021, 11, 25, early_close(12 * 3_600), T1, "2021-holiday-calendars.zip#2021-thanksgiving-holiday-schedule-compact.xls @2026-08-30T10:03:27Z"),
+        // 2021-11-26 - T1 - 2021-holiday-calendars.zip#2021-thanksgiving-holiday-schedule-compact.xls @2026-08-30T10:03:27Z - the printed final close 12:15 CT is earlier than the ordinary 16:00 CT close.
+        (2021, 11, 26, early_close(12 * 3_600 + 15 * 60), T1, "2021-holiday-calendars.zip#2021-thanksgiving-holiday-schedule-compact.xls @2026-08-30T10:03:27Z"),
+        // 2021-12-24 - T1 - 2021-holiday-calendars.zip#2021-christmas-holiday-schedule-compact.xls @2026-08-30T10:03:27Z - CME prints no session running through this date.
         (2021, 12, 24, Closed, T1, "2021-holiday-calendars.zip#2021-christmas-holiday-schedule-compact.xls @2026-08-30T10:03:27Z"),
-        // 2022-01-17 - T1 - 2022-mlk-day-holiday-schedule.xls @2022-01-17T21:22:30Z - disagreement: equity index early close 12:00 CT; energy and metals early close 13:30 CT; FX no row; grains closed; interest rates early close 12:00 CT; livestock closed.
-        (2022, 1, 17, Unsourced, T1, "2022-mlk-day-holiday-schedule.xls @2022-01-17T21:22:30Z"),
-        // 2022-02-21 - T1 - 2022-presidents-day-holiday-schedule.xls @2022-07-04T07:38:10Z - disagreement: equity index early close 12:00 CT; energy and metals early close 13:30 CT; FX no row; grains closed; interest rates early close 12:00 CT; livestock closed.
-        (2022, 2, 21, Unsourced, T1, "2022-presidents-day-holiday-schedule.xls @2022-07-04T07:38:10Z"),
+        // 2022-01-17 - T1 - 2022-mlk-day-holiday-schedule.xls @2022-01-17T21:22:30Z - early close 12:00 CT.
+        (2022, 1, 17, early_close(12 * 3_600), T1, "2022-mlk-day-holiday-schedule.xls @2022-01-17T21:22:30Z"),
+        // 2022-02-21 - T1 - 2022-presidents-day-holiday-schedule.xls @2022-07-04T07:38:10Z - early close 12:00 CT.
+        (2022, 2, 21, early_close(12 * 3_600), T1, "2022-presidents-day-holiday-schedule.xls @2022-07-04T07:38:10Z"),
         // 2022-04-15 - T1 - 2022-good-friday-holiday-schedule.xls @2022-07-04T06:55:01Z - closed: no trade date.
         (2022, 4, 15, Closed, T1, "2022-good-friday-holiday-schedule.xls @2022-07-04T06:55:01Z"),
-        // 2022-05-30 - T1 - 2022-memorial-day-holiday-schedule.xls @2022-07-04T06:54:38Z - disagreement: equity index early close 12:00 CT; energy and metals early close 13:30 CT; FX no row; grains closed; interest rates early close 12:00 CT; livestock closed.
-        (2022, 5, 30, Unsourced, T1, "2022-memorial-day-holiday-schedule.xls @2022-07-04T06:54:38Z"),
-        // 2022-06-20 - T1 - 2022-juneteenth-holiday-schedule.xls @2022-06-20T20:02:10Z - disagreement: equity index early close 12:00 CT; energy and metals early close 13:30 CT; FX no row; grains closed; interest rates early close 12:00 CT; livestock closed.
-        (2022, 6, 20, Unsourced, T1, "2022-juneteenth-holiday-schedule.xls @2022-06-20T20:02:10Z"),
-        // 2022-07-04 - T1 - 2022-independence-day-holiday-schedule.xls @2022-07-04T06:54:50Z - disagreement: equity index early close 12:00 CT; energy and metals early close 13:30 CT; FX no row; grains closed; interest rates early close 12:00 CT; livestock closed.
-        (2022, 7, 4, Unsourced, T1, "2022-independence-day-holiday-schedule.xls @2022-07-04T06:54:50Z"),
-        // 2022-09-05 - T1 - 2022-labor-day-holiday-schedule.xls @2022-07-04T06:54:41Z - disagreement: equity index early close 12:00 CT; energy and metals early close 13:30 CT; FX no row; grains closed; interest rates early close 12:00 CT; livestock closed.
-        (2022, 9, 5, Unsourced, T1, "2022-labor-day-holiday-schedule.xls @2022-07-04T06:54:41Z"),
-        // 2022-11-24 - T1 - 2022-thanksgiving-holiday-schedule.FINAL-20221122.xls @2022-11-22T06:08:01Z - disagreement: equity index early close 12:00 CT; energy and metals early close 13:30 CT; FX no row; grains closed; interest rates early close 12:00 CT; livestock closed.
-        (2022, 11, 24, Unsourced, T1, "2022-thanksgiving-holiday-schedule.FINAL-20221122.xls @2022-11-22T06:08:01Z"),
-        // 2022-11-25 - T1 - 2022-thanksgiving-holiday-schedule.FINAL-20221122.xls @2022-11-22T06:08:01Z - disagreement: equity index early close 12:15 CT; energy and metals early close 12:45 CT; FX early close 12:15 CT; grains late open 08:30 CT and early close 12:05 CT; interest rates early close 12:15 CT; livestock early close 12:05 CT.
-        (2022, 11, 25, Unsourced, T1, "2022-thanksgiving-holiday-schedule.FINAL-20221122.xls @2022-11-22T06:08:01Z"),
+        // 2022-05-30 - T1 - 2022-memorial-day-holiday-schedule.xls @2022-07-04T06:54:38Z - early close 12:00 CT.
+        (2022, 5, 30, early_close(12 * 3_600), T1, "2022-memorial-day-holiday-schedule.xls @2022-07-04T06:54:38Z"),
+        // 2022-06-20 - T1 - 2022-juneteenth-holiday-schedule.xls @2022-06-20T20:02:10Z - early close 12:00 CT.
+        (2022, 6, 20, early_close(12 * 3_600), T1, "2022-juneteenth-holiday-schedule.xls @2022-06-20T20:02:10Z"),
+        // 2022-07-04 - T1 - 2022-independence-day-holiday-schedule.xls @2022-07-04T06:54:50Z - early close 12:00 CT.
+        (2022, 7, 4, early_close(12 * 3_600), T1, "2022-independence-day-holiday-schedule.xls @2022-07-04T06:54:50Z"),
+        // 2022-09-05 - T1 - 2022-labor-day-holiday-schedule.xls @2022-07-04T06:54:41Z - early close 12:00 CT.
+        (2022, 9, 5, early_close(12 * 3_600), T1, "2022-labor-day-holiday-schedule.xls @2022-07-04T06:54:41Z"),
+        // 2022-11-24 - T1 - 2022-thanksgiving-holiday-schedule.FINAL-20221122.xls @2022-11-22T06:08:01Z - early close 12:00 CT.
+        (2022, 11, 24, early_close(12 * 3_600), T1, "2022-thanksgiving-holiday-schedule.FINAL-20221122.xls @2022-11-22T06:08:01Z"),
+        // 2022-11-25 - T1 - 2022-thanksgiving-holiday-schedule.FINAL-20221122.xls @2022-11-22T06:08:01Z - early close 12:15 CT.
+        (2022, 11, 25, early_close(12 * 3_600 + 15 * 60), T1, "2022-thanksgiving-holiday-schedule.FINAL-20221122.xls @2022-11-22T06:08:01Z"),
         // 2022-12-26 - T1 - 2022-christmas-holiday-schedule.xls @2022-07-04T06:54:30Z - closed: no trade date.
         (2022, 12, 26, Closed, T1, "2022-christmas-holiday-schedule.xls @2022-07-04T06:54:30Z"),
         // 2023-01-02 - T1 - 2023-new-years-holiday-schedule.xls @2022-07-04T06:55:01Z - closed: no trade date.
         (2023, 1, 2, Closed, T1, "2023-new-years-holiday-schedule.xls @2022-07-04T06:55:01Z"),
-        // 2023-01-16 - T2 - CME-SVC-2023-01-15 - unsourced: the routed families state the date is not worked up.
+        // 2023-01-16 - T2 - CME-SVC-2023-01-15 - unsourced: no operator document covers this date.
         (2023, 1, 16, Unsourced, T2, "CME-SVC-2023-01-15"),
-        // 2023-02-20 - T2 - CME-SVC-2023-02-19 - disagreement: equity index unsourced; energy and metals unsourced; FX unsourced; grains closed; interest rates early close 12:00 CT; livestock unsourced.
-        (2023, 2, 20, Unsourced, T2, "CME-SVC-2023-02-19"),
-        // 2023-04-07 - T2 - CME-SVC-2023-04-06 - disagreement: equity index unsourced; energy and metals unsourced; FX unsourced; grains closed; interest rates early close 10:15 CT; livestock unsourced.
-        (2023, 4, 7, Unsourced, T2, "CME-SVC-2023-04-06"),
-        // 2023-05-29 - T1 - memorial-day-2023.pdf @2023-04-20T22:40:18Z - disagreement: equity index early close 12:00 CT; energy and metals early close 13:30 CT; FX no row; grains closed; interest rates early close 12:00 CT; livestock closed.
-        (2023, 5, 29, Unsourced, T1, "memorial-day-2023.pdf @2023-04-20T22:40:18Z"),
-        // 2023-06-19 - T1 - juneteenth-2023.pdf @2023-06-13T18:59:49Z - disagreement: equity index early close 12:00 CT; energy and metals early close 13:30 CT; FX no row; grains closed; interest rates early close 12:00 CT; livestock closed.
-        (2023, 6, 19, Unsourced, T1, "juneteenth-2023.pdf @2023-06-13T18:59:49Z"),
-        // 2023-07-03 - T1 - 4th-of-july-2023.pdf @2023-06-27T12:50:57Z - disagreement: equity index early close 12:15 CT; energy and metals no row; FX no row; grains no row; interest rates no row; livestock no row.
-        (2023, 7, 3, Unsourced, T1, "4th-of-july-2023.pdf @2023-06-27T12:50:57Z"),
-        // 2023-07-04 - T1 - 4th-of-july-2023.pdf @2023-06-27T12:50:57Z - disagreement: equity index early close 12:00 CT; energy and metals early close 13:30 CT; FX no row; grains closed; interest rates early close 12:00 CT; livestock closed.
-        (2023, 7, 4, Unsourced, T1, "4th-of-july-2023.pdf @2023-06-27T12:50:57Z"),
-        // 2023-09-04 - T1 - labor-day-2023.pdf @2023-08-02T19:24:46Z - disagreement: equity index early close 12:00 CT; energy and metals early close 13:30 CT; FX no row; grains closed; interest rates early close 12:00 CT; livestock closed.
-        (2023, 9, 4, Unsourced, T1, "labor-day-2023.pdf @2023-08-02T19:24:46Z"),
-        // 2023-11-23 - T1 - thanksgiving-day-2023.pdf @2023-12-03T20:59:29Z - disagreement: equity index early close 12:00 CT; energy and metals early close 13:30 CT; FX no row; grains closed; interest rates early close 12:00 CT; livestock closed.
-        (2023, 11, 23, Unsourced, T1, "thanksgiving-day-2023.pdf @2023-12-03T20:59:29Z"),
-        // 2023-11-24 - T1 - thanksgiving-day-2023.pdf @2023-12-03T20:59:29Z - disagreement: equity index early close 12:15 CT; energy and metals early close 12:45 CT; FX early close 12:15 CT; grains late open 08:30 CT and early close 12:05 CT; interest rates early close 12:15 CT; livestock early close 12:05 CT.
-        (2023, 11, 24, Unsourced, T1, "thanksgiving-day-2023.pdf @2023-12-03T20:59:29Z"),
+        // 2023, 2, 20 - T1 - files/presidents-day.pdf @2023-03-29T11:57:47Z - the printed Monday final close 12:00 CT is earlier than the ordinary 16:00 CT close.
+        (2023, 2, 20, early_close(12 * 3_600), T1, "files/presidents-day.pdf @2023-03-29T11:57:47Z"),
+        // 2023, 4, 7 - T1 - files/good-friday.pdf @2024-07-08T16:00:09Z - the printed Friday final close 08:15 CT is earlier than the ordinary 16:00 CT close.
+        (2023, 4, 7, early_close(8 * 3_600 + 15 * 60), T1, "files/good-friday.pdf @2024-07-08T16:00:09Z"),
+        // 2023-05-29 - T1 - memorial-day-2023.pdf @2023-04-20T22:40:18Z - early close 12:00 CT.
+        (2023, 5, 29, early_close(12 * 3_600), T1, "memorial-day-2023.pdf @2023-04-20T22:40:18Z"),
+        // 2023-06-19 - T1 - juneteenth-2023.pdf @2023-06-13T18:59:49Z - early close 12:00 CT.
+        (2023, 6, 19, early_close(12 * 3_600), T1, "juneteenth-2023.pdf @2023-06-13T18:59:49Z"),
+        // 2023-07-03 - T1 - 4th-of-july-2023.pdf @2023-06-27T12:50:57Z - early close 12:15 CT.
+        (2023, 7, 3, early_close(12 * 3_600 + 15 * 60), T1, "4th-of-july-2023.pdf @2023-06-27T12:50:57Z"),
+        // 2023-07-04 - T1 - 4th-of-july-2023.pdf @2023-06-27T12:50:57Z - early close 12:00 CT.
+        (2023, 7, 4, early_close(12 * 3_600), T1, "4th-of-july-2023.pdf @2023-06-27T12:50:57Z"),
+        // 2023-09-04 - T1 - labor-day-2023.pdf @2023-08-02T19:24:46Z - early close 12:00 CT.
+        (2023, 9, 4, early_close(12 * 3_600), T1, "labor-day-2023.pdf @2023-08-02T19:24:46Z"),
+        // 2023-11-23 - T1 - thanksgiving-day-2023.pdf @2023-12-03T20:59:29Z - early close 12:00 CT.
+        (2023, 11, 23, early_close(12 * 3_600), T1, "thanksgiving-day-2023.pdf @2023-12-03T20:59:29Z"),
+        // 2023-11-24 - T1 - thanksgiving-day-2023.pdf @2023-12-03T20:59:29Z - early close 12:15 CT.
+        (2023, 11, 24, early_close(12 * 3_600 + 15 * 60), T1, "thanksgiving-day-2023.pdf @2023-12-03T20:59:29Z"),
         // 2023-12-25 - T1 - christmas-day-2023.pdf @2026-07-19T09:52:48Z - closed: no trade date.
         (2023, 12, 25, Closed, T1, "christmas-day-2023.pdf @2026-07-19T09:52:48Z"),
         // 2024-01-01 - T1 - new-years-day-2024.pdf @2026-08-11T16:57:16Z - closed: no trade date.
         (2024, 1, 1, Closed, T1, "new-years-day-2024.pdf @2026-08-11T16:57:16Z"),
-        // 2024-01-15 - T2 - CME-SVC-2024-01-14 - disagreement: equity index early close 12:00 CT; energy and metals early close 13:30 CT; FX no row; grains closed; interest rates early close 12:00 CT; livestock closed.
-        (2024, 1, 15, Unsourced, T2, "CME-SVC-2024-01-14"),
-        // 2024-02-19 - T2 - CME-SVC-2024-02-18 - disagreement: equity index early close 12:00 CT; energy and metals early close 13:30 CT; FX no row; grains closed; interest rates early close 12:00 CT; livestock closed.
-        (2024, 2, 19, Unsourced, T2, "CME-SVC-2024-02-18"),
+        // 2024-01-15 - T2 - CME-SVC-2024-01-14 - early close 12:00 CT.
+        (2024, 1, 15, early_close(12 * 3_600), T2, "CME-SVC-2024-01-14"),
+        // 2024-02-19 - T2 - CME-SVC-2024-02-18 - early close 12:00 CT.
+        (2024, 2, 19, early_close(12 * 3_600), T2, "CME-SVC-2024-02-18"),
         // 2024-03-29 - T2 - CME-SVC-2024-03-28 - closed: no trade date.
         (2024, 3, 29, Closed, T2, "CME-SVC-2024-03-28"),
-        // 2024-05-27 - T2 - CME-SVC-2024-05-26 - disagreement: equity index early close 12:00 CT; energy and metals early close 13:30 CT; FX no row; grains closed; interest rates early close 12:00 CT; livestock closed.
-        (2024, 5, 27, Unsourced, T2, "CME-SVC-2024-05-26"),
-        // 2024-06-19 - T2 - CME-SVC-2024-06-18 - disagreement: equity index early close 12:00 CT; energy and metals early close 13:30 CT; FX no row; grains closed; interest rates early close 12:00 CT; livestock closed.
-        (2024, 6, 19, Unsourced, T2, "CME-SVC-2024-06-18"),
-        // 2024-07-03 - T2 - CME-SVC-2024-07-03 - disagreement: equity index early close 12:15 CT; energy and metals no row; FX no row; grains no row; interest rates no row; livestock no row.
-        (2024, 7, 3, Unsourced, T2, "CME-SVC-2024-07-03"),
-        // 2024-07-04 - T2 - CME-SVC-2024-07-03 - disagreement: equity index early close 12:00 CT; energy and metals early close 13:30 CT; FX no row; grains closed; interest rates early close 12:00 CT; livestock closed.
-        (2024, 7, 4, Unsourced, T2, "CME-SVC-2024-07-03"),
-        // 2024-09-02 - T2 - CME-SVC-2024-09-01 - disagreement: equity index early close 12:00 CT; energy and metals early close 13:30 CT; FX no row; grains closed; interest rates early close 12:00 CT; livestock closed.
-        (2024, 9, 2, Unsourced, T2, "CME-SVC-2024-09-01"),
-        // 2024-11-28 - T2 - CME-SVC-2024-11-27 - disagreement: equity index early close 12:00 CT; energy and metals early close 13:30 CT; FX no row; grains closed; interest rates early close 12:00 CT; livestock closed.
-        (2024, 11, 28, Unsourced, T2, "CME-SVC-2024-11-27"),
-        // 2024-11-29 - T2 - CME-SVC-2024-11-27 - disagreement: equity index early close 12:15 CT; energy and metals early close 13:45 CT; FX early close 12:15 CT; grains late open 08:30 CT and early close 12:05 CT; interest rates early close 12:15 CT; livestock early close 12:05 CT.
-        (2024, 11, 29, Unsourced, T2, "CME-SVC-2024-11-27"),
-        // 2024-12-24 - T2 - CME-SVC-2024-12-24 - disagreement: equity index early close 12:15 CT; energy and metals early close 12:45 CT; FX early close 12:45 CT; grains early close 12:05 CT; interest rates early close 12:15 CT; livestock early close 12:15 CT.
-        (2024, 12, 24, Unsourced, T2, "CME-SVC-2024-12-24"),
+        // 2024-05-27 - T2 - CME-SVC-2024-05-26 - early close 12:00 CT.
+        (2024, 5, 27, early_close(12 * 3_600), T2, "CME-SVC-2024-05-26"),
+        // 2024-06-19 - T2 - CME-SVC-2024-06-18 - early close 12:00 CT.
+        (2024, 6, 19, early_close(12 * 3_600), T2, "CME-SVC-2024-06-18"),
+        // 2024-07-03 - T2 - CME-SVC-2024-07-03 - early close 12:15 CT.
+        (2024, 7, 3, early_close(12 * 3_600 + 15 * 60), T2, "CME-SVC-2024-07-03"),
+        // 2024-07-04 - T2 - CME-SVC-2024-07-03 - early close 12:00 CT.
+        (2024, 7, 4, early_close(12 * 3_600), T2, "CME-SVC-2024-07-03"),
+        // 2024-09-02 - T2 - CME-SVC-2024-09-01 - early close 12:00 CT.
+        (2024, 9, 2, early_close(12 * 3_600), T2, "CME-SVC-2024-09-01"),
+        // 2024-11-28 - T2 - CME-SVC-2024-11-27 - early close 12:00 CT.
+        (2024, 11, 28, early_close(12 * 3_600), T2, "CME-SVC-2024-11-27"),
+        // 2024-11-29 - T2 - CME-SVC-2024-11-27 - early close 12:15 CT.
+        (2024, 11, 29, early_close(12 * 3_600 + 15 * 60), T2, "CME-SVC-2024-11-27"),
+        // 2024-12-24 - T2 - CME-SVC-2024-12-24 - early close 12:15 CT.
+        (2024, 12, 24, early_close(12 * 3_600 + 15 * 60), T2, "CME-SVC-2024-12-24"),
         // 2024-12-25 - T2 - CME-SVC-2024-12-24 - closed: no trade date.
         (2024, 12, 25, Closed, T2, "CME-SVC-2024-12-24"),
-        // 2025-01-01 - T2 - CME-SVC-2024-12-31 - closed: no trade date.
         (2025, 1, 1, Closed, T2, "CME-SVC-2024-12-31"),
-        // 2025-01-20 - T2 - CME-SVC-2025-01-19 - equity index and interest
-        // rates early close 12:00 CT, energy 13:30 CT, grains and livestock
-        // closed, no row in FX.
-        (2025, 1, 20, Unsourced, T2, "CME-SVC-2025-01-19"),
-        // 2025-01-21 - T2 - CME-SVC-2025-01-19 - the merged trade date: equity
-        // index, energy, interest rates and FX each state a replacement-block
-        // set for it and the four sets differ; the holiday halts at 12:00,
-        // 13:30, 12:00 and 16:00 CT respectively, while grains states its five-block
-        // merged-eve set and livestock states no row.
-        (2025, 1, 21, Unsourced, T2, "CME-SVC-2025-01-19"),
-        // 2025-02-17 - T2 - CME-SVC-2025-02-16 - as 2025-01-20.
-        (2025, 2, 17, Unsourced, T2, "CME-SVC-2025-02-16"),
-        // 2025-02-18 - T2 - CME-SVC-2025-02-16 - as 2025-01-21.
-        (2025, 2, 18, Unsourced, T2, "CME-SVC-2025-02-16"),
+        // 2025-01-20 — T2 — CME-SVC-2025-01-19 — Martin Luther King Jr. Day:
+        // matching stops 12:00 CT, published as a preopen.
+        (2025, 1, 20, early_close(12 * 3_600), T2, "CME-SVC-2025-01-19"),
+        // 2025-01-21 - T2 - CME-SVC-2025-01-19 - MLK Day; the holiday publishes no final close, so the span from Sunday evening carries this trade date, and it still ends at the holiday's 12:00 CT close.
+        (
+            2025,
+            1,
+            21,
+            ReplacementBlocks(&MERGED_SESSION_BLOCKS),
+            T2,
+            "CME-SVC-2025-01-19"
+        ),
+        // 2025-02-17 — T2 — CME-SVC-2025-02-16 — Presidents' Day: 12:00 CT.
+        (2025, 2, 17, early_close(12 * 3_600), T2, "CME-SVC-2025-02-16"),
+        // 2025-02-18 - T2 - CME-SVC-2025-02-16 - Presidents Day; as 2025-01-21.
+        (
+            2025,
+            2,
+            18,
+            ReplacementBlocks(&MERGED_SESSION_BLOCKS),
+            T2,
+            "CME-SVC-2025-02-16"
+        ),
+        // 2025-04-18 — T2 — CME-SVC-2025-04-17 — Good Friday: full Globex
+        // closure, no events published for any family.
         (2025, 4, 18, Closed, T2, "CME-SVC-2025-04-17"),
-        // 2025-05-26 - T2 - CME-SVC-2025-05-25 - as 2025-01-20.
-        (2025, 5, 26, Unsourced, T2, "CME-SVC-2025-05-25"),
-        // 2025-05-27 - T2 - CME-SVC-2025-05-25 - as 2025-01-21.
-        (2025, 5, 27, Unsourced, T2, "CME-SVC-2025-05-25"),
-        (2025, 6, 19, Unsourced, T2, "CME-SVC-2025-06-18"),
-        // 2025-06-20 - T2 - CME-SVC-2025-06-18 - as 2025-01-21.
-        (2025, 6, 20, Unsourced, T2, "CME-SVC-2025-06-18"),
-        // 2025-07-03 - T2 - CME-SVC-2025-07-03 - equity index early close
-        // 12:15 CT; no row in any of the other five families.
-        (2025, 7, 3, Unsourced, T2, "CME-SVC-2025-07-03"),
-        // 2025-07-04 - T2 - CME-SVC-2025-07-03 - equity index, energy, FX and
-        // interest rates early close 12:00 CT, grains and livestock closed.
-        (2025, 7, 4, Unsourced, T2, "CME-SVC-2025-07-03"),
-        // 2025-09-01 - T2 - CME-SVC-2025-08-31 - as 2025-01-20.
-        (2025, 9, 1, Unsourced, T2, "CME-SVC-2025-08-31"),
-        // 2025-09-02 - T2 - CME-SVC-2025-08-31 - as 2025-01-21.
-        (2025, 9, 2, Unsourced, T2, "CME-SVC-2025-08-31"),
-        (2025, 11, 27, Unsourced, T2, "CME-SVC-2025-11-26-SAT"),
-        // 2025-11-28 - T2 - CME-SVC-2025-11-26 - equity index, interest rates
-        // and livestock early close 12:05-12:15 CT, energy and FX 13:45 CT,
-        // grains a 08:30 CT late open into a 12:05 CT close.
-        (2025, 11, 28, Unsourced, T2, "CME-SVC-2025-11-26"),
-        // 2025-11-29 - T2 - CME-SVC-2025-11-26-SAT - all six families closed.
+        // 2025-05-26 — T2 — CME-SVC-2025-05-25 — Memorial Day: 12:00 CT.
+        (2025, 5, 26, early_close(12 * 3_600), T2, "CME-SVC-2025-05-25"),
+        // 2025-05-27 - T2 - CME-SVC-2025-05-25 - Memorial Day; as 2025-01-21.
+        (
+            2025,
+            5,
+            27,
+            ReplacementBlocks(&MERGED_SESSION_BLOCKS),
+            T2,
+            "CME-SVC-2025-05-25"
+        ),
+        // 2025-06-19 — T2 — CME-SVC-2025-06-18 — Juneteenth: 12:00 CT.
+        (2025, 6, 19, early_close(12 * 3_600), T2, "CME-SVC-2025-06-18"),
+        // 2025-06-20 - T2 - CME-SVC-2025-06-18 - Juneteenth falls on the Thursday, so the span opens Wednesday evening and its -2 queue is the weekday 16:45.
+        (
+            2025,
+            6,
+            20,
+            ReplacementBlocks(&MERGED_SESSION_AFTER_WEEKDAY_BLOCKS),
+            T2,
+            "CME-SVC-2025-06-18"
+        ),
+        // 2025-07-03 — T2 — CME-SVC-2025-07-03 — Independence Day eve: equity
+        // index alone closes 12:15 CT; the evening leg then runs normally.
+        (2025, 7, 3, early_close(12 * 3_600 + 15 * 60), T2, "CME-SVC-2025-07-03"),
+        // 2025-07-04 — T2 — CME-SVC-2025-07-03 — Independence Day: 12:00 CT.
+        (2025, 7, 4, early_close(12 * 3_600), T2, "CME-SVC-2025-07-03"),
+        // 2025-09-01 — T2 — CME-SVC-2025-08-31 — Labor Day: 12:00 CT.
+        (2025, 9, 1, early_close(12 * 3_600), T2, "CME-SVC-2025-08-31"),
+        // 2025-09-02 - T2 - CME-SVC-2025-08-31 - Labor Day; as 2025-01-21.
+        (
+            2025,
+            9,
+            2,
+            ReplacementBlocks(&MERGED_SESSION_BLOCKS),
+            T2,
+            "CME-SVC-2025-08-31"
+        ),
+        // 2025-11-27 — T2 — CME-SVC-2025-11-26 — Thanksgiving: 12:00 CT.
+        (2025, 11, 27, early_close(12 * 3_600), T2, "CME-SVC-2025-11-26"),
+        // 2025-11-28 — T2 — CME-SVC-2025-11-26 — day after Thanksgiving:
+        // 2025-11-28 - T2 - CME-SVC-2025-11-26 - day after Thanksgiving; the Thursday holiday publishes no final close, so this trade date owns the span from Wednesday evening and its own session is cut at 12:15 CT.
+        (
+            2025,
+            11,
+            28,
+            ReplacementBlocks(&MERGED_SESSION_EARLY_CLOSE_BLOCKS_2025_11_28),
+            T2,
+            "CME-SVC-2025-11-26"
+        ),
+        // 2025-11-29 — T2 — CME-SVC-2025-11-26-SAT — Thanksgiving Saturday: the
+        // service publishes an empty schedule for all ten products, and CME's
+        // 2025 Globex table states the period as "27 - 29 November 2025".
         (2025, 11, 29, Closed, T2, "CME-SVC-2025-11-26-SAT"),
-        // 2025-12-24 - T2 - CME-SVC-2025-12-24 - early closes at 12:05 CT for
-        // grains, 12:15 CT for equity index, interest rates and livestock, and
-        // 12:45 CT for energy and FX.
-        (2025, 12, 24, Unsourced, T2, "CME-SVC-2025-12-24"),
-        // 2025-12-25 - T2 - CME-SVC-2025-12-24 - all six families closed.
+        // 2025-12-24 — T2 — CME-SVC-2025-12-24 — Christmas Eve: 12:15 CT, and
+        // no evening re-open because 2025-12-25 is closed.
+        (
+            2025,
+            12,
+            24,
+            early_close(12 * 3_600 + 15 * 60),
+            T2,
+            "CME-SVC-2025-12-24"
+        ),
+        // 2025-12-25 — T2 — CME-SVC-2025-12-24 — Christmas Day: no trading day
+        // of its own; 16:00 preopen and 17:00 open carry trade date 2025-12-26.
         (2025, 12, 25, Closed, T2, "CME-SVC-2025-12-24"),
+        // 2026-01-01 — T2 — CME-SVC-2025-12-31 — New Year's Day: no trading day
+        // of its own; 16:00 preopen and 17:00 open carry trade date 2026-01-02.
         (2026, 1, 1, Closed, T2, "CME-SVC-2025-12-31"),
-        // 2026-01-19 - T2 - CME-SVC-2026-01-18 - as 2025-01-20.
-        (2026, 1, 19, Unsourced, T2, "CME-SVC-2026-01-18"),
-        // 2026-01-20 - T2 - CME-SVC-2026-01-18 - the merged trade date; as
-        // 2025-01-21: equity index, energy, interest rates and FX state four
-        // different replacement-block sets, grains states its five-block
-        // merged-eve set, and livestock states none.
-        (2026, 1, 20, Unsourced, T2, "CME-SVC-2026-01-18"),
-        // 2026-02-16 - T2 - CME-SVC-2026-02-15 - as 2025-01-20.
-        (2026, 2, 16, Unsourced, T2, "CME-SVC-2026-02-15"),
-        // 2026-02-17 - T2 - CME-SVC-2026-02-15 - as 2026-01-20.
-        (2026, 2, 17, Unsourced, T2, "CME-SVC-2026-02-15"),
-        (2026, 4, 3, Unsourced, T2, "CME-SVC-2026-04-01"),
-        // 2026-05-25 - T2 - CME-SVC-2026-05-24 - as 2025-01-20.
-        (2026, 5, 25, Unsourced, T2, "CME-SVC-2026-05-24"),
-        // 2026-05-26 - T2 - CME-SVC-2026-05-24 - as 2026-01-20.
-        (2026, 5, 26, Unsourced, T2, "CME-SVC-2026-05-24"),
-        (2026, 6, 19, Unsourced, T2, "CME-SVC-2026-06-18"),
-        // 2026-06-22 - T2 - CME-SVC-2026-06-18 - energy, equity index, interest
-        // rates and FX state a Saturday-session replacement; grains and livestock
-        // state no row for the date, so the whole venue withholds it.
-        (2026, 6, 22, Unsourced, T2, "CME-SVC-2026-06-18"),
-        (2026, 7, 3, Unsourced, T2, "CME-SVC-2026-07-03"),
-        // 2026-07-06 - T2 - CME-SVC-2026-07-03 - as 2026-06-22.
-        (2026, 7, 6, Unsourced, T2, "CME-SVC-2026-07-03"),
-        // 2026-09-07 - T2 - CME-SVC-2026-09-06 - as 2025-01-20.
-        (2026, 9, 7, Unsourced, T2, "CME-SVC-2026-09-06"),
-        // 2026-09-08 - T2 - CME-SVC-2026-09-06 - as 2026-01-20.
-        (2026, 9, 8, Unsourced, T2, "CME-SVC-2026-09-06"),
-        (2026, 11, 26, Unsourced, T2, "CME-SVC-2026-11-25"),
-        // 2026-11-27 - T2 - CME-SVC-2026-11-25 - as 2025-11-28.
-        (2026, 11, 27, Unsourced, T2, "CME-SVC-2026-11-25"),
-        // 2026-12-24 - T2 - CME-SVC-2026-12-22 - as 2025-12-24, except that
-        // livestock closes at 12:05 CT with grains.
-        (2026, 12, 24, Unsourced, T2, "CME-SVC-2026-12-22"),
-        // 2026-12-25 - T2 - CME-SVC-2026-12-24 - all six families closed.
+        // 2026-01-19 — T2 — CME-SVC-2026-01-18 — Martin Luther King Jr. Day:
+        // 12:00 CT.
+        (2026, 1, 19, early_close(12 * 3_600), T2, "CME-SVC-2026-01-18"),
+        // 2026-01-20 - T2 - CME-SVC-2026-01-18 - MLK Day; as 2025-01-21.
+        (
+            2026,
+            1,
+            20,
+            ReplacementBlocks(&MERGED_SESSION_BLOCKS),
+            T2,
+            "CME-SVC-2026-01-18"
+        ),
+        // 2026-02-16 — T2 — CME-SVC-2026-02-15 — Presidents' Day: 12:00 CT.
+        (2026, 2, 16, early_close(12 * 3_600), T2, "CME-SVC-2026-02-15"),
+        // 2026-02-17 - T2 - CME-SVC-2026-02-15 - Presidents Day; as 2025-01-21.
+        (
+            2026,
+            2,
+            17,
+            ReplacementBlocks(&MERGED_SESSION_BLOCKS),
+            T2,
+            "CME-SVC-2026-02-15"
+        ),
+        // 2026-04-03 — T2 — CME-SVC-2026-04-01 — Good Friday: the exception CME
+        // itself flags for the employment release; equity index closes 08:15 CT.
+        (
+            2026,
+            4,
+            3,
+            early_close(8 * 3_600 + 15 * 60),
+            T2,
+            "CME-SVC-2026-04-01"
+        ),
+        // 2026-05-25 — T2 — CME-SVC-2026-05-24 — Memorial Day: 12:00 CT.
+        (2026, 5, 25, early_close(12 * 3_600), T2, "CME-SVC-2026-05-24"),
+        // 2026-05-26 - T2 - CME-SVC-2026-05-24 - Memorial Day; as 2025-01-21.
+        (
+            2026,
+            5,
+            26,
+            ReplacementBlocks(&MERGED_SESSION_BLOCKS),
+            T2,
+            "CME-SVC-2026-05-24"
+        ),
+        // 2026-06-19 — T2 — CME-SVC-2026-06-18 — Juneteenth: 12:00 CT.
+        (2026, 6, 19, early_close(12 * 3_600), T2, "CME-SVC-2026-06-18"),
+        // 2026-06-22 — T2 — CME-SVC-2026-06-18 — Saturday session 05:00-17:00 CT
+        // carrying this trade date; the complete trading day is stated.
+        (2026, 6, 22, ReplacementBlocks(&SATURDAY_SESSION_BLOCKS), T2, "CME-SVC-2026-06-18"),
+        // 2026-07-03 — T2 — CME-SVC-2026-07-03 — Independence Day observed:
+        // 12:00 CT.
+        (2026, 7, 3, early_close(12 * 3_600), T2, "CME-SVC-2026-07-03"),
+        // 2026-07-06 — T2 — CME-SVC-2026-07-03 — Saturday session 05:00-17:00 CT
+        // carrying this trade date; the complete trading day is stated.
+        (2026, 7, 6, ReplacementBlocks(&SATURDAY_SESSION_BLOCKS), T2, "CME-SVC-2026-07-03"),
+        // 2026-09-07 — T2 — CME-SVC-2026-09-06 — Labor Day: 12:00 CT.
+        (2026, 9, 7, early_close(12 * 3_600), T2, "CME-SVC-2026-09-06"),
+        // 2026-09-08 - T2 - CME-SVC-2026-09-06 - Labor Day; as 2025-01-21.
+        (
+            2026,
+            9,
+            8,
+            ReplacementBlocks(&MERGED_SESSION_BLOCKS),
+            T2,
+            "CME-SVC-2026-09-06"
+        ),
+        // 2026-11-26 — T2 — CME-SVC-2026-11-25 — Thanksgiving: 12:00 CT.
+        (2026, 11, 26, early_close(12 * 3_600), T2, "CME-SVC-2026-11-25"),
+        // 2026-11-27 — T2 — CME-SVC-2026-11-25 — day after Thanksgiving:
+        // 2026-11-27 - T2 - CME-SVC-2026-11-25 - day after Thanksgiving; as 2025-11-28.
+        (
+            2026,
+            11,
+            27,
+            ReplacementBlocks(&MERGED_SESSION_EARLY_CLOSE_BLOCKS),
+            T2,
+            "CME-SVC-2026-11-25"
+        ),
+        // 2026-12-24 — T2 — CME-SVC-2026-12-22 — Christmas Eve: 12:15 CT, and
+        // no evening re-open because 2026-12-25 is closed.
+        (
+            2026,
+            12,
+            24,
+            early_close(12 * 3_600 + 15 * 60),
+            T2,
+            "CME-SVC-2026-12-22"
+        ),
+        // 2026-12-25 — T2 — CME-SVC-2026-12-24 — Christmas Day: full Globex
+        // closure, no events published.
         (2026, 12, 25, Closed, T2, "CME-SVC-2026-12-24"),
+        // 2027-01-01 — T2 — CME-SVC-2026-12-31 — New Year's Day: full Globex
+        // closure, no events published.
         (2027, 1, 1, Closed, T2, "CME-SVC-2026-12-31"),
-        // 2027-01-18 - T2 - CME-SVC-2027-01-17 - as 2025-01-20.
-        (2027, 1, 18, Unsourced, T2, "CME-SVC-2027-01-17"),
-        // 2027-01-19 - T2 - CME-SVC-2027-01-17 - as 2026-01-20.
-        (2027, 1, 19, Unsourced, T2, "CME-SVC-2027-01-17"),
-        // 2027-02-15 - T2 - CME-SVC-2027-02-14 - as 2025-01-20.
-        (2027, 2, 15, Unsourced, T2, "CME-SVC-2027-02-14"),
-        // 2027-02-16 - T2 - CME-SVC-2027-02-14 - as 2026-01-20.
-        (2027, 2, 16, Unsourced, T2, "CME-SVC-2027-02-14"),
+        // 2027-01-18 — T2 — CME-SVC-2027-01-17 — Martin Luther King Jr. Day:
+        // 12:00 CT.
+        (2027, 1, 18, early_close(12 * 3_600), T2, "CME-SVC-2027-01-17"),
+        // 2027-01-19 - T2 - CME-SVC-2027-01-17 - MLK Day; as 2025-01-21.
+        (
+            2027,
+            1,
+            19,
+            ReplacementBlocks(&MERGED_SESSION_BLOCKS),
+            T2,
+            "CME-SVC-2027-01-17"
+        ),
+        // 2027-02-15 — T2 — CME-SVC-2027-02-14 — Presidents' Day: 12:00 CT.
+        (2027, 2, 15, early_close(12 * 3_600), T2, "CME-SVC-2027-02-14"),
+        // 2027-02-16 - T2 - CME-SVC-2027-02-14 - Presidents Day; as 2025-01-21.
+        (
+            2027,
+            2,
+            16,
+            ReplacementBlocks(&MERGED_SESSION_BLOCKS),
+            T2,
+            "CME-SVC-2027-02-14"
+        ),
+        // 2027-03-26 — T2 — CME-SVC-2027-03-25 — Good Friday: full Globex
+        // closure, no events published.
         (2027, 3, 26, Closed, T2, "CME-SVC-2027-03-25"),
-        // 2027-05-31 - T2 - CME-SVC-2027-05-30 - as 2025-01-20.
-        (2027, 5, 31, Unsourced, T2, "CME-SVC-2027-05-30"),
-        // 2027-06-01 - T2 - CME-SVC-2027-05-30 - as 2026-01-20.
-        (2027, 6, 1, Unsourced, T2, "CME-SVC-2027-05-30"),
-        (2027, 6, 18, Unsourced, T2, "CME-SVC-2027-06-17"),
-        // 2027-06-21 - T2 - CME-SVC-2027-06-17 - as 2026-06-22.
-        (2027, 6, 21, Unsourced, T2, "CME-SVC-2027-06-17"),
-        // 2027-07-05 - T2 - CME-SVC-2027-07-04 - equity index 12:00 CT,
-        // energy and interest rates 13:30 CT early close, grains and livestock
-        // closed, no row in FX.
-        (2027, 7, 5, Unsourced, T2, "CME-SVC-2027-07-04"),
-        // 2027-07-06 - T2 - CME-SVC-2027-07-04 - grains late open 08:30 CT, and
-        // equity index, energy, interest rates and FX each state a different
-        // replacement-block set for the merged trade date; the holiday halts at
-        // 12:00, 13:30, 13:30 and 16:00 CT respectively, and livestock states
-        // no row.
-        (2027, 7, 6, Unsourced, T2, "CME-SVC-2027-07-04"),
-        // 2027-09-06 - T2 - CME-SVC-2027-09-05 - as 2025-01-20.
-        (2027, 9, 6, Unsourced, T2, "CME-SVC-2027-09-05"),
-        // 2027-09-07 - T2 - CME-SVC-2027-09-05 - as 2026-01-20.
-        (2027, 9, 7, Unsourced, T2, "CME-SVC-2027-09-05"),
-        (2027, 11, 25, Unsourced, T2, "CME-SVC-2027-11-24"),
-        // 2027-11-26 - T2 - CME-SVC-2027-11-24 - as 2025-11-28.
-        (2027, 11, 26, Unsourced, T2, "CME-SVC-2027-11-24"),
+        // 2027-05-31 — T2 — CME-SVC-2027-05-30 — Memorial Day: 12:00 CT.
+        (2027, 5, 31, early_close(12 * 3_600), T2, "CME-SVC-2027-05-30"),
+        // 2027-06-01 - T2 - CME-SVC-2027-05-30 - Memorial Day; as 2025-01-21.
+        (
+            2027,
+            6,
+            1,
+            ReplacementBlocks(&MERGED_SESSION_BLOCKS),
+            T2,
+            "CME-SVC-2027-05-30"
+        ),
+        // 2027-06-18 — T2 — CME-SVC-2027-06-17 — Juneteenth observed: 12:00 CT.
+        (2027, 6, 18, early_close(12 * 3_600), T2, "CME-SVC-2027-06-17"),
+        // 2027-06-21 — T2 — CME-SVC-2027-06-17 — Saturday session 05:00-17:00 CT
+        // carrying this trade date; the complete trading day is stated.
+        (2027, 6, 21, ReplacementBlocks(&SATURDAY_SESSION_BLOCKS), T2, "CME-SVC-2027-06-17"),
+        // 2027-07-05 — T2 — CME-SVC-2027-07-04 — Independence Day observed:
+        // 12:00 CT.
+        (2027, 7, 5, early_close(12 * 3_600), T2, "CME-SVC-2027-07-04"),
+        // 2027-07-06 - T2 - CME-SVC-2027-07-04 - Independence Day observed; as 2025-01-21.
+        (
+            2027,
+            7,
+            6,
+            ReplacementBlocks(&MERGED_SESSION_BLOCKS),
+            T2,
+            "CME-SVC-2027-07-04"
+        ),
+        // 2027-09-06 — T2 — CME-SVC-2027-09-05 — Labor Day: 12:00 CT.
+        (2027, 9, 6, early_close(12 * 3_600), T2, "CME-SVC-2027-09-05"),
+        // 2027-09-07 - T2 - CME-SVC-2027-09-05 - Labor Day; as 2025-01-21.
+        (
+            2027,
+            9,
+            7,
+            ReplacementBlocks(&MERGED_SESSION_BLOCKS),
+            T2,
+            "CME-SVC-2027-09-05"
+        ),
+        // 2027-11-25 — T2 — CME-SVC-2027-11-24 — Thanksgiving: 12:00 CT.
+        (2027, 11, 25, early_close(12 * 3_600), T2, "CME-SVC-2027-11-24"),
+        // 2027-11-26 — T2 — CME-SVC-2027-11-24 — day after Thanksgiving:
+        // 2027-11-26 - T2 - CME-SVC-2027-11-24 - day after Thanksgiving; as 2025-11-28.
+        (
+            2027,
+            11,
+            26,
+            ReplacementBlocks(&MERGED_SESSION_EARLY_CLOSE_BLOCKS),
+            T2,
+            "CME-SVC-2027-11-24"
+        ),
+        // 2027-12-24 — T2 — CME-SVC-2027-12-22 — Christmas 2027, which CME keys
+        // to Thursday 2027-12-23: full Globex closure on the Friday.
         (2027, 12, 24, Closed, T2, "CME-SVC-2027-12-22"),
     ],
 };

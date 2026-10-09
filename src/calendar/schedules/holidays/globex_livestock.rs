@@ -45,15 +45,18 @@
 //!
 //! **2022-2024.** This family's flat grid keeps every trade date on its own
 //! civil date, so each row below is stated on the occurrence's own date.
-//! Thirty-three rows: twenty-six closures, four
+//! Thirty-three rows: twenty-eight closures, four
 //! early closes — 12:05 CT on 2022-11-25, 2023-11-24 and 2024-11-29, and
-//! 12:15 CT on 2024-12-24 — and three `Unsourced` rows. The 2022 rows and the
-//! 2023 rows CME published a holiday schedule for are **T1**; the three 2023
-//! dates it published nothing for and all of 2024 are **T2**. The three
-//! `Unsourced` dates — 2023-01-16, 2023-02-20 and 2023-04-07 — mean the
+//! 12:15 CT on 2024-12-24 — and one `Unsourced` row; 2023-02-20 and 2023-04-07
+//! are read from the operator's own summary sheets `files/presidents-day.pdf`
+//! and `files/good-friday.pdf`, neither of which prints the family a session
+//! on the date. The 2022 rows and the
+//! 2023 rows CME published a holiday schedule for are **T1**; the one 2023
+//! date it published nothing for and all of 2024 are **T2**. The `Unsourced`
+//! date — 2023-01-16 — means the
 //! operator published nothing this crate could read, not that no holiday fell
-//! on them; an operator document stating each date in session language would
-//! close them.
+//! on it; an operator document stating the date in session language would
+//! close it.
 //!
 //! The 2025-2027 rows come from CME's trading-hours service — the endpoint
 //! `cmegroup.com/trading-hours.html` itself calls — read as bytes and saved,
@@ -299,8 +302,6 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2019, 4, 19, Closed, T1, "2019-holiday-calendars.zip#globex-trading-schedules/2019-good-friday-holiday-compact.xls @2021-01-26T09:48:37Z"),
         // 2019-05-27 - T1 - 2019-holiday-calendars.zip#globex-trading-schedules/2019-memorial-day-holiday-schedule-compact.xls @2021-01-26T09:48:37Z - CME prints no session running through this date.
         (2019, 5, 27, Closed, T1, "2019-holiday-calendars.zip#globex-trading-schedules/2019-memorial-day-holiday-schedule-compact.xls @2021-01-26T09:48:37Z"),
-        // 2019-06-19 - T1 - 2019-holiday-calendars.zip @2021-01-26T09:48:37Z - .
-        (2019, 6, 19, Unsourced, T1, "2019-holiday-calendars.zip @2021-01-26T09:48:37Z"),
         // 2019-07-03 - T1 - 2019-holiday-calendars.zip#globex-trading-schedules/2019-4th-of-july-holiday-schedule-compact.xls @2021-01-26T09:48:37Z - the printed final close 12:15 CT is earlier than the ordinary 13:05 CT close.
         (2019, 7, 3, early_close(12 * 3_600 + 15 * 60), T1, "2019-holiday-calendars.zip#globex-trading-schedules/2019-4th-of-july-holiday-schedule-compact.xls @2021-01-26T09:48:37Z"),
         // 2019-07-04 - T1 - 2019-holiday-calendars.zip#globex-trading-schedules/2019-4th-of-july-holiday-schedule-compact.xls @2021-01-26T09:48:37Z - CME prints no session running through this date.
@@ -325,8 +326,6 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2020, 4, 10, Closed, T1, "2020-holiday-calendars.zip#2020-good-friday-holiday-compact.xls @2026-07-30T11:18:34Z"),
         // 2020-05-25 - T1 - 2020-holiday-calendars.zip#2020-memorial-day-holiday-schedule-compact.xls @2026-07-30T11:18:34Z - CME prints no session running through this date.
         (2020, 5, 25, Closed, T1, "2020-holiday-calendars.zip#2020-memorial-day-holiday-schedule-compact.xls @2026-07-30T11:18:34Z"),
-        // 2020-06-19 - T1 - 2020-holiday-calendars.zip @2026-07-30T11:18:34Z - .
-        (2020, 6, 19, Unsourced, T1, "2020-holiday-calendars.zip @2026-07-30T11:18:34Z"),
         // 2020-07-02 - T1 - 2020-holiday-calendars.zip#2020-4th-of-july-holiday-schedule-compact.xls @2026-07-30T11:18:34Z - the printed final close 12:15 CT is earlier than the ordinary 13:05 CT close.
         (2020, 7, 2, early_close(12 * 3_600 + 15 * 60), T1, "2020-holiday-calendars.zip#2020-4th-of-july-holiday-schedule-compact.xls @2026-07-30T11:18:34Z"),
         // 2020-07-03 - T1 - 2020-holiday-calendars.zip#2020-4th-of-july-holiday-schedule-compact.xls @2026-07-30T11:18:34Z - CME prints no session running through this date.
@@ -351,8 +350,6 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2021, 4, 2, Closed, T1, "2021-holiday-calendars.zip#2021-good-friday-holiday-schedule-compact.xls @2026-08-30T10:03:27Z"),
         // 2021-05-31 - T1 - 2021-holiday-calendars.zip#2021-memorial-day-holiday-schedule-compact.xls @2026-08-30T10:03:27Z - CME prints no session running through this date.
         (2021, 5, 31, Closed, T1, "2021-holiday-calendars.zip#2021-memorial-day-holiday-schedule-compact.xls @2026-08-30T10:03:27Z"),
-        // 2021-06-19 - T1 - 2021-holiday-calendars.zip @2026-08-30T10:03:27Z - .
-        (2021, 6, 19, Unsourced, T1, "2021-holiday-calendars.zip @2026-08-30T10:03:27Z"),
         // 2021-07-05 - T1 - 2021-holiday-calendars.zip#2021-independence-day-holiday-schedule-compact.xls @2026-08-30T10:03:27Z - CME prints no session running through this date.
         (2021, 7, 5, Closed, T1, "2021-holiday-calendars.zip#2021-independence-day-holiday-schedule-compact.xls @2026-08-30T10:03:27Z"),
         // 2021-09-06 - T1 - 2021-holiday-calendars.zip#2021-labor-day-holiday-schedule-compact.xls @2026-08-30T10:03:27Z - CME prints no session running through this date.
@@ -387,10 +384,10 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2023, 1, 2, Closed, T1, "2023-new-years-holiday-schedule.xls @2022-07-04T06:55:01Z"),
         // 2023-01-16 - T2 - CME-SVC-2023-01-15 - unsourced: no operator document covers this date.
         (2023, 1, 16, Unsourced, T2, "CME-SVC-2023-01-15"),
-        // 2023-02-20 - T2 - CME-SVC-2023-02-19 - unsourced: no operator document covers this date.
-        (2023, 2, 20, Unsourced, T2, "CME-SVC-2023-02-19"),
-        // 2023-04-07 - T2 - CME-SVC-2023-04-06 - unsourced: no operator document covers this date.
-        (2023, 4, 7, Unsourced, T2, "CME-SVC-2023-04-06"),
+        // 2023, 2, 20 - T1 - files/presidents-day.pdf @2023-03-29T11:57:47Z - the sheet prints no Monday column: no session belongs to the trade date.
+        (2023, 2, 20, Closed, T1, "files/presidents-day.pdf @2023-03-29T11:57:47Z"),
+        // 2023, 4, 7 - T1 - files/good-friday.pdf @2024-07-08T16:00:09Z - the sheet prints no Friday leg: no session belongs to the trade date.
+        (2023, 4, 7, Closed, T1, "files/good-friday.pdf @2024-07-08T16:00:09Z"),
         // 2023-05-29 - T1 - memorial-day-2023.pdf @2023-04-20T22:40:18Z - closed: no trade date.
         (2023, 5, 29, Closed, T1, "memorial-day-2023.pdf @2023-04-20T22:40:18Z"),
         // 2023-06-19 - T1 - juneteenth-2023.pdf @2023-06-13T18:59:49Z - closed: no trade date.

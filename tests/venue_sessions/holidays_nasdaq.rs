@@ -4,10 +4,12 @@
 //!
 //! Every case runs through `calendar_for_exchange`. The table's scalars are
 //! `Closed` and `EarlyClose{13:00}` — the sheet prints "Early Close - U.S.
-//! 1:00 p.m." and nothing after it — and four dates ship `Unsourced`, so the
-//! suite pins the scalar kinds, the unsourced refusal semantics, the Sandy
-//! alert closure, and the window's end at 2026-12-31 (the operator has
-//! published no 2027 schedule).
+//! 1:00 p.m." and nothing after it — and the suite pins the scalar kinds, the
+//! two TBA early closes at their alerts' printed time, both Sandy closures,
+//! the mourning day, and the window's end at 2026-12-31 (the operator has
+//! published no 2027 schedule). The four dates the table withheld through
+//! 2026-10-08 UTC closed on 2026-10-09 UTC on the operator's own Equity
+//! Trader Alerts, so no date in the window refuses any more.
 
 use chrono::{Days, NaiveDate, TimeZone as _};
 use chrono_tz::America;
@@ -52,17 +54,12 @@ fn assert_closed(cell: (i32, u32, u32), label: &str) {
             .expect("a covered closure date answers"),
         "{label}: {cell:?} is closed mid-morning"
     );
-    // The trade-date walk may reach across an adjacent `Unsourced` date (the
-    // Sandy Monday's walk reaches the withheld Tuesday), so only a closure
-    // whose walk stays inside sourced data asserts the closed trade date.
-    if cell != (2012, 10, 29) {
-        assert!(
-            calendar
-                .is_closed_trade_date(date, SessionKind::Both)
-                .expect("the closure date is inside the audited window"),
-            "{label}: {cell:?} is a closed trade date"
-        );
-    }
+    assert!(
+        calendar
+            .is_closed_trade_date(date, SessionKind::Both)
+            .expect("the closure date is inside the audited window"),
+        "{label}: {cell:?} is a closed trade date"
+    );
 }
 
 fn assert_early_close(cell: (i32, u32, u32), label: &str) {
@@ -103,42 +100,6 @@ fn assert_early_close(cell: (i32, u32, u32), label: &str) {
     );
 }
 
-fn assert_unsourced(cell: (i32, u32, u32), label: &str) {
-    let calendar = nasdaq();
-    let date = day(cell);
-    assert_eq!(
-        row_of(cell),
-        Some(HolidayKind::Unsourced),
-        "{label}: {cell:?} is withheld as Unsourced"
-    );
-    assert!(
-        calendar
-            .holiday_coverage()
-            .expect("nasdaq ships a table")
-            .contains(date),
-        "{label}: the withheld date stays inside the audited window"
-    );
-    // The coverage contract refuses the date instead of claiming it normal or
-    // closed: an unsourced arrangement is not an answer. Below the old
-    // 2013-03-18 horizon the horizon refusal used to precede this; since the
-    // 2026-09-30 floor sourcing the holiday layer's own withholding is what
-    // refuses.
-    let error = calendar
-        .is_open(et(cell, (10, 0, 0)))
-        .expect_err("an Unsourced date must not answer as open or closed");
-    assert!(
-        matches!(error, CalendarQueryError::UnresolvedGap { .. }),
-        "the withheld date refuses with UnresolvedGap, got {error:?}"
-    );
-    let trade = calendar
-        .trade_date(et(cell, (10, 0, 0)))
-        .expect_err("an Unsourced date must not place a trade date");
-    assert!(
-        matches!(trade, CalendarQueryError::UnresolvedGap { .. }),
-        "the trade-date walk refuses too, got {trade:?}"
-    );
-}
-
 #[test]
 fn the_2012_era_scalar_rows() {
     // The first year the sheet prints the cash market's early close times.
@@ -150,23 +111,22 @@ fn the_2012_era_scalar_rows() {
 }
 
 #[test]
-fn the_two_tba_early_closes_are_withheld() {
-    assert_unsourced((2010, 11, 26), "2010 TBA early close");
-    assert_unsourced((2011, 11, 25), "2011 TBA early close");
+fn the_two_tba_early_closes_carry_their_alerts_time() {
+    // The sheets print `TBA` and defer to the alerts; the alerts are the
+    // operator's own Equity Trader Alerts 2010-73 and 2011-54, whose Early
+    // Closing Schedule prints the NASDAQ day session and closing cross at
+    // 1:00 p.m. (recovered 2026-10-09 UTC from the operator's live pages).
+    assert_early_close((2010, 11, 26), "2010 day after Thanksgiving");
+    assert_early_close((2011, 11, 25), "2011 day after Thanksgiving");
 }
 
 #[test]
-fn the_sandy_monday_is_sourced_and_the_tuesday_is_withheld() {
+fn both_sandy_closures_are_sourced() {
     assert_closed((2012, 10, 29), "2012 Sandy Monday (ETA2012-44)");
-    assert_unsourced(
-        (2012, 10, 30),
-        "2012 Sandy Tuesday (confirmation unrecovered)",
-    );
+    assert_closed((2012, 10, 30), "2012 Sandy Tuesday (ETA2012-45)");
     // The markets reopened Wednesday; the row fence answers and, since the
-    // 2026-09-30 floor sourcing, so do the 2012 date-aware queries. The
-    // Monday's closed-trade-date settlement still refuses: it walks across
-    // the withheld Tuesday (UnresolvedGap), the holiday layer's own refusal,
-    // and the instant itself sits in no session, so the trade date is None.
+    // 2026-09-30 floor sourcing, so do the 2012 date-aware queries. Each
+    // closure day places no trade date.
     assert_eq!(row_of((2012, 10, 31)), None, "2012-10-31 is audited normal");
     assert!(
         nasdaq()
@@ -175,12 +135,24 @@ fn the_sandy_monday_is_sourced_and_the_tuesday_is_withheld() {
             .is_none(),
         "a fully closed day places no trade date"
     );
-    let closed = nasdaq()
-        .is_closed_trade_date(day((2012, 10, 29)), SessionKind::Both)
-        .expect_err("the settlement walk reaches the withheld Tuesday");
     assert!(
-        matches!(closed, CalendarQueryError::UnresolvedGap { .. }),
-        "the Sandy Monday's trade-date settlement refuses with UnresolvedGap, got {closed:?}"
+        nasdaq()
+            .trade_date(et((2012, 10, 30), (10, 0, 0)))
+            .expect("the instant is inside the audited window")
+            .is_none(),
+        "the Sandy Tuesday places no trade date either"
+    );
+    assert!(
+        nasdaq()
+            .is_closed_trade_date(day((2012, 10, 29)), SessionKind::Both)
+            .expect("the settlement walk stays inside sourced data"),
+        "the Sandy Monday is a closed trade date"
+    );
+    assert!(
+        nasdaq()
+            .is_closed_trade_date(day((2012, 10, 30)), SessionKind::Both)
+            .expect("the settlement walk stays inside sourced data"),
+        "the Sandy Tuesday is a closed trade date"
     );
 }
 
@@ -216,10 +188,12 @@ fn the_2025_2026_rows() {
 }
 
 #[test]
-fn the_mourning_day_is_withheld_not_claimed_normal() {
-    // The operator's own 2025 sheet omits 2025-01-09 and no notice was
-    // recoverable; the row refuses the date instead of calling it normal.
-    assert_unsourced((2025, 1, 9), "2025 National Day of Mourning");
+fn the_mourning_day_is_sourced_from_the_operators_own_alert() {
+    // The operator's own 2025 sheet omits 2025-01-09; Equity Trader Alert
+    // 2025-1 (the Wayback replay of capture 20250122151135, retrieved
+    // 2026-10-09 UTC) states the closure in the operator's own session
+    // language, so the row is a sourced closure.
+    assert_closed((2025, 1, 9), "2025 National Day of Mourning");
     assert_eq!(
         row_of((2025, 1, 20)),
         Some(HolidayKind::Closed),
@@ -255,7 +229,7 @@ fn every_scalar_early_close_is_the_printed_one_oclock() {
             .expect("the walk stays representable");
     }
     assert_eq!(closed + early + unsourced, 194, "the table ships 194 rows");
-    assert_eq!(unsourced, 4, "exactly the four recorded withholdings");
+    assert_eq!(unsourced, 0, "no date in the window is withheld any more");
 }
 
 #[test]

@@ -20,6 +20,25 @@
 
 ### Fixed
 
+- The `nasdaq` venue's four withheld holiday dates closed as data on the
+  operator's own Equity Trader Alerts (retrieved 2026-10-09 UTC): 2010-11-26
+  and 2011-11-25 now ship `early close 13:00` keyed to alerts 2010-73 and
+  2011-54, whose Early Closing Schedules print the Nasdaq day session and
+  closing cross at 1:00 p.m. (both alerts still serve live from the
+  operator's Trader News pages); 2012-10-30 ships `closed` keyed to alert
+  2012-45, which states the Hurricane Sandy Tuesday closure unconditionally;
+  and 2025-01-09 ships `closed` keyed to alert 2025-1 (Wayback replay of
+  capture 20250122151135), which states the National Day of Mourning closure.
+  No date inside the `nasdaq` audited window is withheld any more, so the
+  identity reads complete to 2026-12-31.
+- The `nse_india` Muhurat hunt's 2026-10-09 UTC re-check is recorded:
+  completed apex-host Wayback CDX sweeps (the prior pass's two apex files
+  were error pages), the per-year issuance windows 2011/2012-2014/2017/2019
+  negative again, the `/content/cmtr/` path family empty, and the operator's
+  own live circulars channel listing 414 CM circulars 2026-09-22..2026-10-09
+  with no Muhurat item — the seven withheld Muhurat dates stay withheld and
+  the 2026-11-08 watch is re-dated. Ledger rows re-reviewed 2026-10-09.
+
 - The globex futures families' remaining not-worked-up holiday markers are
   resolved where the operator's own documents state the arrangement: the
   three Juneteenth `Unsourced` markers (2019, 2020 and 2021) are deleted in

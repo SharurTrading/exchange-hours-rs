@@ -1219,8 +1219,11 @@ fn without_holidays_restores_the_normal_week_answer() {
 // The 2022-2024 rows, all inside the five-day era.
 // ---------------------------------------------------------------------------
 
-/// 12:45 CT, every early close this era ships.
+/// 12:45 CT, the Thanksgiving Friday and Christmas Eve early closes.
 const ERA_TWELVE_FORTY_FIVE: u32 = 12 * 3_600 + 45 * 60;
+/// 10:15 CT, the Good Friday early close read from the operator's own summary
+/// sheet.
+const ERA_TEN_FIFTEEN: u32 = 10 * 3_600 + 15 * 60;
 
 /// Every row the 2022-2024 window ships, in table order: the venue-local trade
 /// date, the kind with the instant the module's own `early_close(..)` payload
@@ -1242,8 +1245,13 @@ const ERA_ROWS: &[((i32, u32, u32), HolidayKind, EvidenceTier)] = &[
     ((2022, 12, 26), HolidayKind::Closed, EvidenceTier::T1),
     ((2023, 1, 2), HolidayKind::Closed, EvidenceTier::T1),
     ((2023, 1, 16), HolidayKind::Unsourced, EvidenceTier::T2),
-    ((2023, 2, 20), HolidayKind::Unsourced, EvidenceTier::T2),
-    ((2023, 4, 7), HolidayKind::Unsourced, EvidenceTier::T2),
+    (
+        (2023, 4, 7),
+        HolidayKind::EarlyClose {
+            close_ssm: 10 * 3_600 + 15 * 60,
+        },
+        EvidenceTier::T1,
+    ),
     (
         (2023, 11, 24),
         HolidayKind::EarlyClose {
@@ -1312,7 +1320,8 @@ fn day_after(date: NaiveDate) -> NaiveDate {
 fn era_2022_2024_sweeps_every_row_kind_tier_and_instant() {
     let calendar = crypto();
     let mut index = 0_usize;
-    let (mut twelve_forty_five, mut closures, mut unsourced) = (0_usize, 0_usize, 0_usize);
+    let (mut twelve_forty_five, mut ten_fifteen, mut closures, mut unsourced) =
+        (0_usize, 0_usize, 0_usize, 0_usize);
     let mut date = day(2022, 1, 1);
     while date <= day(2024, 12, 31) {
         if let Some(row) = calendar.holiday_on(date) {
@@ -1326,9 +1335,12 @@ fn era_2022_2024_sweeps_every_row_kind_tier_and_instant() {
             assert_eq!(row.tier(), tier, "{date}");
             match kind {
                 HolidayKind::EarlyClose { close_ssm } => {
-                    assert_eq!(close_ssm, ERA_TWELVE_FORTY_FIVE, "{date}");
-                    twelve_forty_five += 1;
-                    let cutoff = ct_on(date, 12, 45);
+                    match close_ssm {
+                        ERA_TWELVE_FORTY_FIVE => twelve_forty_five += 1,
+                        ERA_TEN_FIFTEEN => ten_fifteen += 1,
+                        other => panic!("{date}: the era ships no {other} CT close"),
+                    }
+                    let cutoff = ct_on(date, close_ssm / 3_600, (close_ssm % 3_600) / 60);
                     // The wrap that opened this trade date is clipped, not
                     // deleted, and it still carries the trade date.
                     assert!(
@@ -1396,8 +1408,8 @@ fn era_2022_2024_sweeps_every_row_kind_tier_and_instant() {
     }
     assert_eq!(index, ERA_ROWS.len(), "every planned row ships");
     assert_eq!(
-        (twelve_forty_five, closures, unsourced),
-        (4, 7, 3),
+        (twelve_forty_five, ten_fifteen, closures, unsourced),
+        (4, 1, 7, 1),
         "the era's shape"
     );
 }
@@ -1667,13 +1679,12 @@ fn assert_unsourced_changes_nothing(date: NaiveDate, row: Holiday, tier: Evidenc
 #[test]
 fn era_2022_2024_unsourced_rows_change_no_answer() {
     let calendar = crypto();
-    for date in [(2023, 1, 16), (2023, 2, 20), (2023, 4, 7)] {
-        let date = day(date.0, date.1, date.2);
-        let row = calendar
-            .holiday_on(date)
-            .unwrap_or_else(|| panic!("{date} ships a row"));
-        assert_unsourced_changes_nothing(date, row, EvidenceTier::T2);
-    }
+    // 2023-01-16 is the era's one remaining `Unsourced` row.
+    let date = day(2023, 1, 16);
+    let row = calendar
+        .holiday_on(date)
+        .unwrap_or_else(|| panic!("{date} ships a row"));
+    assert_unsourced_changes_nothing(date, row, EvidenceTier::T2);
 }
 
 /// The 2022-2024 span is the second of the three declared windows, and the
@@ -1883,20 +1894,23 @@ fn era_2019_2021_sweeps_every_shipped_row_kind_and_instant() {
         }
         date = date.succ_opt().expect("the era ends well before the bound");
     }
-    assert_eq!(rows, 36, "the era's rows");
+    assert_eq!(rows, 33, "the era's rows");
     assert_eq!(
         (early_closes, closures, unsourced),
-        (25, 8, 3),
+        (25, 8, 0),
         "the era's shape"
     );
 }
 
 /// Every `Unsourced` row the era ships: the row states that the date was
-/// audited, makes no scheduling claim, and clips nothing.
+/// audited, makes no scheduling claim, and clips nothing. The era ships none
+/// now — the Juneteenth dates the 2019-2021 wave used to withhold are audited
+/// normal and ship no row at all — so the walk fences their absence and the
+/// three dates are asserted rowless directly.
 ///
-/// Its dates precede the 2025 floor, so the queries that used to demonstrate
-/// that neutrality now refuse them instead; `assert_unsourced_changes_nothing`
-/// states what survives and why.
+/// Any row that did ship would precede the 2025 floor, so the queries that used
+/// to demonstrate neutrality would refuse it instead;
+/// `assert_unsourced_changes_nothing` states what survives and why.
 #[test]
 fn era_2019_2021_unsourced_rows_change_no_answer() {
     let calendar = crypto();
@@ -1911,7 +1925,14 @@ fn era_2019_2021_unsourced_rows_change_no_answer() {
         }
         date = date.succ_opt().expect("the era ends well before the bound");
     }
-    assert_eq!(checked, 3, "the era's `Unsourced` rows");
+    assert_eq!(checked, 0, "the era's `Unsourced` rows");
+    for date in [(2019, 6, 19), (2020, 6, 19), (2021, 6, 19)] {
+        assert_eq!(
+            calendar.holiday_on(day(date.0, date.1, date.2)),
+            None,
+            "{date:?} is audited normal and ships no row"
+        );
+    }
 }
 
 /// The era is its own declared window: 2019-01-01 and 2021-12-31 are inside
@@ -1992,7 +2013,7 @@ fn era_2019_2021_window_is_declared_in_order_and_bounds_every_row() {
         }
         date = date.succ_opt().expect("the era ends well before the bound");
     }
-    assert_eq!(rows, 36, "the era's rows");
+    assert_eq!(rows, 33, "the era's rows");
     for probe in [day(2018, 12, 31), day(2022, 1, 1)] {
         assert_eq!(calendar.holiday_on(probe), None, "{probe}");
     }
@@ -2027,7 +2048,6 @@ const ERA_2019_2021_ROWS: &[((i32, u32, u32), HolidayKind, EvidenceTier)] = &[
         },
         EvidenceTier::T1,
     ),
-    ((2019, 6, 19), HolidayKind::Unsourced, EvidenceTier::T1),
     (
         (2019, 7, 3),
         HolidayKind::EarlyClose {
@@ -2094,7 +2114,6 @@ const ERA_2019_2021_ROWS: &[((i32, u32, u32), HolidayKind, EvidenceTier)] = &[
         },
         EvidenceTier::T1,
     ),
-    ((2020, 6, 19), HolidayKind::Unsourced, EvidenceTier::T1),
     (
         (2020, 7, 3),
         HolidayKind::EarlyClose {
@@ -2160,7 +2179,6 @@ const ERA_2019_2021_ROWS: &[((i32, u32, u32), HolidayKind, EvidenceTier)] = &[
         },
         EvidenceTier::T1,
     ),
-    ((2021, 6, 19), HolidayKind::Unsourced, EvidenceTier::T1),
     (
         (2021, 7, 5),
         HolidayKind::EarlyClose {

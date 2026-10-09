@@ -163,10 +163,9 @@ fn a_complete_scope_reports_one_complete_span_and_a_trailing_gap() {
          1-3 dates reach across (#151); the sourced old grid answers from January 4"
     );
     assert!(
-        gaps.iter()
-            .any(|gap| gap.range().contains(date(2019, 6, 19))
-                && gap.reason() == CoverageGapReason::WithheldDate),
-        "the Juneteenth marker's WithheldDate gap survives between the sourced eras"
+        coverage.is_complete_on(date(2019, 6, 19)),
+        "the 2026-10-09 work-up deleted the Juneteenth markers, so the date is \
+         audited normal again and the span answers completely"
     );
     assert_eq!(
         gaps.last().map(|gap| (gap.range().first(), gap.reason())),
@@ -361,15 +360,18 @@ fn withheld_dates_are_unresolved_gaps_inside_an_audited_window() {
     // query on it reaches the withheld day, so its verdict is
     // `OutsideCoveredRange` with the `ResolutionEdge` reason, and the first
     // complete date after the withheld one is the day past the zone. Cbot's
-    // Saturday sits between the two and its Sunday session survives, so its
-    // zone ends on the Saturday; iceus trades the whole span and its zone ends
-    // two days out.
+    // zone around the withheld Monday 2023-01-16 ends on the Tuesday (the
+    // Tuesday session opens Monday evening), so Wednesday is complete again;
+    // iceus trades the whole span and its zone ends two days out. Cbot's one
+    // withheld date is the clock family's own 2023-01-16 marker, inherited by
+    // the 2026-10-09 clock rule; its former 2025-01-02 fixture now answers
+    // from `globex_grains`' replacement row.
     let fixtures = [
         (
             Exchange::Cbot,
-            date(2025, 1, 2),
-            date(2025, 1, 3),
-            date(2025, 1, 5),
+            date(2023, 1, 16),
+            date(2023, 1, 17),
+            date(2023, 1, 18),
         ),
         (
             Exchange::Iceus,

@@ -841,12 +841,16 @@ fn withheld(calendar: ExchangeCalendar, date: NaiveDate) -> bool {
 /// unpublished 2027 never withholds a verdict.
 fn date_level_incompleteness() -> &'static [(&'static str, usize)] {
     &[
-        // 184 since the 2026-10-04 #79 retirement: the quarter-hour declaration
-        // cme carried beside these dates is gone, so the denial is date-shaped.
-        ("cme", 184),
-        // 202 after the #242 profile-clock re-derivation (2026-09-30): the 59
-        // rows the rate leg's lone dissent had withheld are retired.
-        ("cbot", 202),
+        // 1 since the 2026-10-09 clock-rule amendment: the venue ships its
+        // profile clock's rows verbatim, so the only withheld date left is the
+        // clock family's own 2023-01-16 not-worked-up marker (184 at HEAD:
+        // the quarter-hour declaration had retired 2026-10-04 under #79).
+        ("cme", 1),
+        // 1 since the 2026-10-09 clock-rule amendment (202 at HEAD after the
+        // #242 profile-clock re-derivation): the venue answers from the grain
+        // clock, so every cross-family dispute retired and the single
+        // remaining withheld date is the family's own 2023-01-16 marker.
+        ("cbot", 1),
         ("euronext_paris", 2),
         ("iceus", 41),
         ("lse", 5),

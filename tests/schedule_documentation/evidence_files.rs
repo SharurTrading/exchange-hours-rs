@@ -2116,6 +2116,20 @@ const VENUE_FAMILIES: [VenueFamilies; 4] = [
     ("nymex.md", &[("globex_energy", "globex_energy.md")]),
 ];
 
+/// Each venue's **profile clock** (AGENTS.md, LAW-HOLIDAY-SCOPE; the
+/// 2026-10-09 amendment): the family whose table the venue's own table
+/// mirrors verbatim. A venue row whose summary cell is byte-identical to its
+/// clock family's row for the same trade date is the family's own summary,
+/// carried verbatim, so the instant claims in it are the family file's claims
+/// — fenced there by the row-level evidence fences — and the summary check
+/// below does not re-judge them as venue claims.
+const VENUE_CLOCKS: [(&str, &str); 4] = [
+    ("cme.md", "globex_equity_index.md"),
+    ("cbot.md", "globex_grains.md"),
+    ("comex.md", "globex_energy.md"),
+    ("nymex.md", "globex_energy.md"),
+];
+
 /// Splits a summary into the claims it makes and the evidence behind them.
 ///
 /// A summary states its row, then the operator record behind it. The two are
@@ -2246,6 +2260,15 @@ fn every_instant_a_venue_summary_cites_is_one_its_families_state() {
         );
         let holidays = section(text, "## Holidays")
             .unwrap_or_else(|| panic!("{file} must carry a `## Holidays` section"));
+        let clock_text = files
+            .get(
+                VENUE_CLOCKS
+                    .iter()
+                    .find(|(venue, _)| *venue == file)
+                    .map(|(_, clock)| *clock)
+                    .expect("every venue here has a profile clock"),
+            )
+            .expect("the clock family's evidence file must exist");
         for line in holidays.lines().filter(|line| line.starts_with("| 2")) {
             let cells = line
                 .trim_start_matches('|')
@@ -2256,6 +2279,13 @@ fn every_instant_a_venue_summary_cites_is_one_its_families_state() {
                 continue;
             }
             let (day, summary) = (cells[0], cells[5]);
+            // A row the clock family also states verbatim is the family's own
+            // summary, not a venue claim (the 2026-10-09 clock rule).
+            if clock_text.lines().any(|family_line| {
+                family_line.starts_with(&format!("| {day} |")) && family_line.contains(summary)
+            }) {
+                continue;
+            }
             let named = summary_days(summary, day);
             let covered = named
                 .iter()

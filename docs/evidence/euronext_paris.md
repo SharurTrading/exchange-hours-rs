@@ -100,7 +100,7 @@ year appendix" sentence stands, and the only appendix the page links is the 2025
 (`/media/14656/download`, "2025 end of year - appendix to Euronext Instructions 4-01 4-03
 Trading Manuals"); the earlier "2026 end of year Trading hours: To be announced" phrasing no
 longer appears on the page, which announces the same withholding in different words. Fresh
-read saved under `holidays/raw/equities/euronext_paris/forward-2027/`.
+read saved under `holidays/raw/equities/euronext_paris/forward-2027/`. Re-checked again 2026-10-09 (UTC): the live page still links only the 2025 edition (`/media/14656/download`); no 2026 end-of-year appendix has published, so the two rows stand.
 
 **2027 is not published.** The live page's newest calendar is the 2026 one and no 2027 edition
 exists on live.euronext.com (sitemap grep over `holiday|calendar|trading-hours`, queried

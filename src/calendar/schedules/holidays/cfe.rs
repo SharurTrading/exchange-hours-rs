@@ -75,7 +75,7 @@
 //! `ReplacementBlocks` row.
 
 use super::EvidenceTier::T1;
-use super::HolidayKind::{Closed, ReplacementBlocks, Unsourced};
+use super::HolidayKind::{Closed, ReplacementBlocks};
 use super::fences::{early_close, late_open, late_open_and_early_close};
 use super::{HolidayTable, holidays};
 use crate::calendar::exceptions::ExceptionBlock;
@@ -108,11 +108,12 @@ static MOURNING_2025_01_09_BLOCKS: [ExceptionBlock; 1] =
 /// Every row is one line of a Cboe CFE holiday notice, of the operator's own
 /// `CFE Holiday Schedule` page as captured by the Wayback mirror, of a CBOE
 /// Holdings holiday press release, or of a CFE information circular. A date
-/// inside a window with no row is audited normal; 2017-07-03 is the one
-/// `Unsourced` date — the page's own `typically close at 12:15 p.m. on July 3`
-/// sentence leaves the day open and no controlling circular survives. The late
-/// November and Christmas-eve rows carry rows because Cboe prints them as half
-/// days, not because they are holidays.
+/// inside a window with no row is audited normal. 2017-07-03 was the one
+/// `Unsourced` date until 2026-10-10 UTC, when the controlling circular
+/// CFEIC17-022 (recovered from Common Crawl CC-MAIN-2017-34) stated the
+/// 12:15 p.m. CT eve close in session language; the late November and
+/// Christmas-eve rows carry rows because Cboe prints them as half days, not
+/// because they are holidays.
 // Evidence: docs/evidence/cfe.md, docs/evidence/cfe_vix.md
 pub(crate) static TABLE: &HolidayTable = holidays! {
     coverage: [
@@ -219,11 +220,12 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         // a.m.`, so the day's first open moves from 15:30 CT to 17:00 CT on
         // the holiday.
         (2017, 5, 30, late_open(17 * 3_600), T1, "cfe-holiday-calendar @2017-04-10T21:04:29Z"),
-        // 2017-07-03 - T1 - cfe-holiday-calendar @2017-06-26T00:36:49Z - the
-        // page's own `typically close at 12:15 p.m. on July 3` leaves the day
-        // open and no controlling circular survives; not a closure, not a
-        // proven normal day.
-        (2017, 7, 3, Unsourced, T1, "cfe-holiday-calendar @2017-06-26T00:36:49Z"),
+        // 2017-07-03 - T1 - CFE-IC17-022 - Independence Day eve: `Trading in
+        // all CFE products will close at 12:15 p.m. on Monday, July 3, 2017`
+        // (recovered 2026-10-10 UTC from Common Crawl CC-MAIN-2017-34; the
+        // rules page's `typically close at 12:15` default is this year's
+        // controlling statement).
+        (2017, 7, 3, early_close(12 * 3_600 + 15 * 60), T1, "CFE-IC17-022"),
         // 2017-07-04 - T1 - cfe-holiday-calendar @2017-06-26T00:36:49Z -
         // Independence Day on a Tuesday: the Tuesday-Thursday chart prints
         // Regular `None` with the July 3 evening leg to 10:30 a.m.

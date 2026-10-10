@@ -857,7 +857,11 @@ fn date_level_incompleteness() -> &'static [(&'static str, usize)] {
         // remaining withheld date is the family's own 2023-01-16 marker.
         ("cbot", 1),
         ("euronext_paris", 2),
-        ("iceus", 41),
+        // 42 since the 2026-10-09 notices-service sweep (41 at HEAD): the four
+        // notices it yielded moved eight family-level dates onto stated rows,
+        // and the Independence Day notice's Cotton 2025-07-07 late open added
+        // one new disagreement date to the venue intersection.
+        ("iceus", 42),
         ("lse", 5),
         // 7 since the 2026-10-06 second pass: three more Muhurat circulars
         // (2010, 2015, 2016) landed as replacement blocks and the recovered

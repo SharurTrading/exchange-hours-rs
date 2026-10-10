@@ -332,19 +332,18 @@ fn cfe_2025_holiday_rows_report_covered() {
              published 2026 schedule"
         );
     }
-    // The one date the venue withholds inside that window: 2017-07-03 is
-    // `Unsourced` because the rules page states the eve close only as a
-    // default and no controlling circular survives, and it is the reason the
-    // first complete range breaks where it does.
+    // No date inside the window is withheld any more: 2017-07-03 — the one
+    // date the venue used to withhold, because the rules page stated the eve
+    // close only as a default and no controlling circular survived — answers
+    // since 2026-10-10 UTC, when circular CFEIC17-022 (recovered from Common
+    // Crawl CC-MAIN-2017-34) stated the 12:15 p.m. CT close in session
+    // language.
     let coverage = exchange_coverage(Exchange::Cfe);
     assert_eq!(
         coverage.coverage_on(date(2017, 7, 3)),
-        DateCoverage::UnresolvedGap
+        DateCoverage::Covered
     );
-    assert_eq!(
-        gap_reason_on(coverage, date(2017, 7, 3)),
-        Some(CoverageGapReason::WithheldDate)
-    );
+    assert_eq!(gap_reason_on(coverage, date(2017, 7, 3)), None);
 }
 
 #[test]

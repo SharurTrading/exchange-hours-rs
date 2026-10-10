@@ -10,9 +10,8 @@
 //! late open at or after a family's own first open, so the preceding-local-date
 //! branch has nothing to exercise and this block says so rather than inventing
 //! a row. The 2025 rows include two London-bank-holiday late opens the annual
-//! calendar does not list, and four dates the two unretrieved 2025 notices leave
-//! `Unsourced` — asserted as refusals rather than as answers, because a withheld
-//! date has no session to check.
+//! calendar does not list, and the eve and holiday instants the Independence
+//! Day and Christmas notices state.
 
 use chrono::{DateTime, Days, NaiveDate, TimeDelta, TimeZone as _, Utc};
 use chrono_tz::America;
@@ -1343,54 +1342,262 @@ fn the_2025_thanksgiving_friday_states_each_softs_family_separately() {
     }
 }
 
+/// The 2025 Independence Day and Christmas notices were retrieved live on
+/// 2026-10-09 UTC through the operator's own notices listing service, and they
+/// state the eve and holiday instants the tables used to withhold: the index
+/// families' rows now carry those instants, and the dates the notices print
+/// `Regular Hours` for carry no row.
 #[test]
-fn the_two_unretrieved_2025_notices_are_withheld_not_answered() {
-    // The Independence Day and Christmas / Boxing Day notices were not
-    // retrieved, so the index families' `open1` cells and the customary eve
-    // early closes have no source. Those four dates ship `Unsourced` — the
-    // third thing the vocabulary can say — rather than an invented instant or
-    // the silence that would claim the date was audited normal.
-    for which in [MarketHoursKey::IceUs, MarketHoursKey::IceUsDollarIndex] {
-        let calendar = key(which);
-        for date in [(2025, 7, 3), (2025, 7, 4), (2025, 12, 24), (2025, 12, 26)] {
-            let holiday = day(date.0, date.1, date.2);
-            assert_eq!(
-                calendar.holiday_on(holiday).map(Holiday::kind),
-                Some(HolidayKind::Unsourced),
-                "{which:?} {holiday}"
-            );
-            assert_declared_refusal(
-                calendar.is_open(ny(date, (12, 0, 0))),
-                DateCoverage::UnresolvedGap,
-                calendar,
-                "an `Unsourced` date is withheld by every date-aware query",
-            );
-        }
-        // Christmas Day itself is `closed` on the calendar's own column, so it
-        // ships as a closure.
+fn the_retrieved_2025_notices_state_the_eve_instants() {
+    let fang = key(MarketHoursKey::IceUs);
+    let usdx = key(MarketHoursKey::IceUsDollarIndex);
+
+    // Independence Day 2025: FANG+ closes at 13:15 on the eve in its own named
+    // bullet and at 13:00 on the holiday; the dollar index trades regular
+    // Thursday and closes at 13:00 Friday.
+    let cutoff = ny((2025, 7, 3), (13, 15, 0));
+    assert_eq!(
+        fang.holiday_on(day(2025, 7, 3)).map(Holiday::kind),
+        Some(HolidayKind::EarlyClose {
+            close_ssm: 13 * 3_600 + 15 * 60
+        })
+    );
+    assert_eq!(
+        fang.holiday_on(day(2025, 7, 3)).map(Holiday::document_id),
+        Some("IFUS-NOTICE-2025-INDEPENDENCE")
+    );
+    assert!(
+        fang.is_open(cutoff - TimeDelta::nanoseconds(1))
+            .expect("the coverage contract must answer a covered date")
+    );
+    assert!(
+        !fang
+            .is_open(cutoff)
+            .expect("the coverage contract must answer a covered date")
+    );
+    assert_eq!(usdx.holiday_on(day(2025, 7, 3)), None);
+    assert!(
+        usdx.is_open(ny((2025, 7, 3), (14, 0, 0)))
+            .expect("the coverage contract must answer a covered date")
+    );
+    let cutoff = ny((2025, 7, 4), (13, 0, 0));
+    for (name, calendar) in [("FANG+", fang), ("dollar index", usdx)] {
         assert_eq!(
-            calendar.holiday_on(day(2025, 12, 25)).map(Holiday::kind),
-            Some(HolidayKind::Closed),
-            "{which:?}"
+            calendar.holiday_on(day(2025, 7, 4)).map(Holiday::kind),
+            Some(HolidayKind::EarlyClose {
+                close_ssm: 13 * 3_600
+            }),
+            "{name}"
+        );
+        assert!(
+            calendar
+                .is_open(cutoff - TimeDelta::nanoseconds(1))
+                .expect("the coverage contract must answer a covered date"),
+            "{name}"
+        );
+        assert!(
+            !calendar
+                .is_open(cutoff)
+                .expect("the coverage contract must answer a covered date"),
+            "{name}"
         );
     }
-    // The softs columns are the calendar's own day-level answer: `closed` on
-    // Independence Day and Christmas, plain `open` on Boxing Day, so those rows
-    // ship and the ordinary week trades.
-    let sugar = key(MarketHoursKey::IceUsSugar);
+
+    // Christmas 2025: FANG+ closes at 13:15 on the eve, the dollar index at
+    // 13:45; both bullets print `Regular Hours` for Boxing Day, so the date is
+    // audited normal and carries no row for either family.
+    let cutoff = ny((2025, 12, 24), (13, 15, 0));
     assert_eq!(
-        sugar.holiday_on(day(2025, 7, 4)).map(Holiday::kind),
-        Some(HolidayKind::Closed)
+        fang.holiday_on(day(2025, 12, 24)).map(Holiday::kind),
+        Some(HolidayKind::EarlyClose {
+            close_ssm: 13 * 3_600 + 15 * 60
+        })
     );
     assert_eq!(
-        sugar.holiday_on(day(2025, 12, 25)).map(Holiday::kind),
-        Some(HolidayKind::Closed)
+        fang.holiday_on(day(2025, 12, 24)).map(Holiday::document_id),
+        Some("IFUS-NOTICE-2025-CHRISTMAS")
     );
-    assert_eq!(sugar.holiday_on(day(2025, 12, 26)), None);
     assert!(
-        sugar
-            .is_open(ny((2025, 12, 26), (12, 0, 0)))
+        fang.is_open(cutoff - TimeDelta::nanoseconds(1))
             .expect("the coverage contract must answer a covered date")
+    );
+    assert!(
+        !fang
+            .is_open(cutoff)
+            .expect("the coverage contract must answer a covered date")
+    );
+    let cutoff = ny((2025, 12, 24), (13, 45, 0));
+    assert_eq!(
+        usdx.holiday_on(day(2025, 12, 24)).map(Holiday::kind),
+        Some(HolidayKind::EarlyClose {
+            close_ssm: 13 * 3_600 + 45 * 60
+        })
+    );
+    assert!(
+        usdx.is_open(cutoff - TimeDelta::nanoseconds(1))
+            .expect("the coverage contract must answer a covered date")
+    );
+    assert!(
+        !usdx
+            .is_open(cutoff)
+            .expect("the coverage contract must answer a covered date")
+    );
+    for (name, calendar) in [("FANG+", fang), ("dollar index", usdx)] {
+        assert_eq!(
+            calendar.holiday_on(day(2025, 12, 26)),
+            None,
+            "{name}: the notice prints `Regular Hours` for Boxing Day"
+        );
+        assert!(
+            calendar
+                .is_open(ny((2025, 12, 26), (12, 0, 0)))
+                .expect("the coverage contract must answer a covered date"),
+            "{name}"
+        );
+    }
+}
+
+/// MLK and Presidents Day 2026: the notices the earlier record called
+/// nonexistent give FANG+ the index bullet's 13:00 early close and print
+/// `Regular Hours, TAS trading will not be held` for the dollar index, so
+/// the family carries no row on either date. The Christmas notice's softs
+/// cells become Cotton, Coffee, Cocoa and FCOJ rows, and the Independence
+/// Day notice adds Cotton's own Monday late open. 2026-12-28 stays
+/// `Unsourced`: no 2026 Christmas notice had issued at the 2026-10-09
+/// re-check.
+#[test]
+fn the_2026_mlk_and_presidents_notices_give_fang_the_index_close() {
+    let fang = key(MarketHoursKey::IceUs);
+    let usdx = key(MarketHoursKey::IceUsDollarIndex);
+
+    // MLK and Presidents Day 2026: the notices the earlier record called
+    // nonexistent give FANG+ the index bullet's 13:00 early close and print
+    // `Regular Hours, TAS trading will not be held` for the dollar index, so
+    // the family carries no row on either date.
+    for date in [(2026, 1, 19), (2026, 2, 16)] {
+        let cutoff = ny(date, (13, 0, 0));
+        assert_eq!(
+            fang.holiday_on(day(date.0, date.1, date.2))
+                .map(Holiday::kind),
+            Some(HolidayKind::EarlyClose {
+                close_ssm: 13 * 3_600
+            }),
+            "{date:?}"
+        );
+        assert!(
+            fang.is_open(cutoff - TimeDelta::nanoseconds(1))
+                .expect("the coverage contract must answer a covered date"),
+            "{date:?}"
+        );
+        assert!(
+            !fang
+                .is_open(cutoff)
+                .expect("the coverage contract must answer a covered date"),
+            "{date:?}"
+        );
+        assert_eq!(
+            usdx.holiday_on(day(date.0, date.1, date.2)),
+            None,
+            "{date:?}"
+        );
+        assert!(
+            usdx.is_open(ny(date, (16, 0, 0)))
+                .expect("the coverage contract must answer a covered date"),
+            "{date:?}"
+        );
+    }
+
+    // The softs rows the Christmas notice adds: Cotton, Coffee, Cocoa and FCOJ
+    // close at 13:05 on the eve and Cotton, Coffee, Cocoa and Sugar 11 open
+    // late at 07:30 on Boxing Day.
+    let cutoff = ny((2025, 12, 24), (13, 5, 0));
+    for (name, which) in [
+        ("cotton", MarketHoursKey::IceUsCotton),
+        ("coffee", MarketHoursKey::IceUsCoffee),
+        ("cocoa", MarketHoursKey::IceUsCocoa),
+        ("FCOJ", MarketHoursKey::IceUsOrangeJuice),
+    ] {
+        let calendar = key(which);
+        assert_eq!(
+            calendar.holiday_on(day(2025, 12, 24)).map(Holiday::kind),
+            Some(HolidayKind::EarlyClose {
+                close_ssm: 13 * 3_600 + 5 * 60
+            }),
+            "{name}"
+        );
+        assert!(
+            calendar
+                .is_open(cutoff - TimeDelta::nanoseconds(1))
+                .expect("the coverage contract must answer a covered date"),
+            "{name}"
+        );
+        assert!(
+            !calendar
+                .is_open(cutoff)
+                .expect("the coverage contract must answer a covered date"),
+            "{name}"
+        );
+    }
+    assert_eq!(
+        key(MarketHoursKey::IceUsSugar).holiday_on(day(2025, 12, 24)),
+        None,
+        "Sugar 11 and 16 keep their regular close on the eve"
+    );
+    let open = ny((2025, 12, 26), (7, 30, 0));
+    for (name, which) in [
+        ("sugar", MarketHoursKey::IceUsSugar),
+        ("coffee", MarketHoursKey::IceUsCoffee),
+        ("cocoa", MarketHoursKey::IceUsCocoa),
+        ("cotton", MarketHoursKey::IceUsCotton),
+    ] {
+        let calendar = key(which);
+        assert_eq!(
+            calendar.holiday_on(day(2025, 12, 26)).map(Holiday::kind),
+            Some(HolidayKind::LateOpen {
+                open_ssm: 7 * 3_600 + 30 * 60
+            }),
+            "{name}"
+        );
+        assert!(
+            !calendar
+                .is_open(open - TimeDelta::nanoseconds(1))
+                .expect("the coverage contract must answer a covered date"),
+            "{name}"
+        );
+        assert!(
+            calendar
+                .is_open(open)
+                .expect("the coverage contract must answer a covered date"),
+            "{name}"
+        );
+    }
+    assert_eq!(
+        key(MarketHoursKey::IceUsOrangeJuice).holiday_on(day(2025, 12, 26)),
+        None,
+        "FCOJ opens regular on Boxing Day"
+    );
+
+    // The Independence Day notice also gives Cotton its own Monday late open.
+    assert_eq!(
+        key(MarketHoursKey::IceUsCotton)
+            .holiday_on(day(2025, 7, 7))
+            .map(Holiday::kind),
+        Some(HolidayKind::LateOpen {
+            open_ssm: 8 * 3_600
+        })
+    );
+
+    // 2026-12-28 stays withheld: no 2026 Christmas notice had issued at the
+    // 2026-10-09 re-check of the operator's notices listing.
+    assert_eq!(
+        fang.holiday_on(day(2026, 12, 28)).map(Holiday::kind),
+        Some(HolidayKind::Unsourced)
+    );
+    assert_declared_refusal(
+        fang.is_open(ny((2026, 12, 28), (12, 0, 0))),
+        DateCoverage::UnresolvedGap,
+        fang,
+        "2026-12-28 is still withheld: the notice has not issued",
     );
 }
 

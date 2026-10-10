@@ -740,80 +740,80 @@ fn the_2017_rules_page_rows_key_the_2017_calendar() {
     );
 }
 
-/// 2017-07-03 is the window's one `Unsourced` date: the rules page states the
-/// eve close only as a default and no controlling circular survives, so the
-/// day is withheld — not claimed normal and not claimed closed — and the
-/// identity-backed query refuses it (LAW-COVERAGE).
+/// 2017-07-03 was the window's one `Unsourced` date until 2026-10-10 UTC,
+/// when the controlling circular CFEIC17-022 (June 16, 2017; recovered from
+/// Common Crawl CC-MAIN-2017-34) stated the arrangement in session language:
+/// `Trading in all CFE products will close at 12:15 p.m. on Monday, July 3,
+/// 2017`. The day now answers as the 12:15 CT early close it is, and the
+/// withholding's sideways reach is gone — every neighbouring query answers
+/// from sourced days.
 #[test]
-fn the_withheld_2017_july_3_date_is_unsourced_not_normal() {
+fn the_2017_july_3_eve_closes_at_1215_central_per_circular_ic17_022() {
     let calendar = cfe();
 
     assert_eq!(
         calendar.holiday_on(day(2017, 7, 3)).map(Holiday::kind),
-        Some(HolidayKind::Unsourced),
-        "2017-07-03 withholds its answer"
-    );
-    assert!(matches!(
-        calendar.is_open(ct((2017, 7, 3), (10, 0, 0))),
-        Err(CalendarQueryError::UnresolvedGap { date, .. }) if date == day(2017, 7, 3)
-    ));
-    // The withheld day does not leak onto its neighbours' rows: July 4 carries
-    // the rules page's 10:30 early close (asserted below through its own row)
-    // and July 5 carries the chart's own July 5 column — its leg begins 5:00
-    // p.m. CT on the holiday, so the day ships a `LateOpen` row rather than
-    // reading the standing 15:30 beginning.
-    assert_eq!(
-        calendar.holiday_on(day(2017, 7, 5)).map(Holiday::kind),
-        Some(HolidayKind::LateOpen {
-            open_ssm: 17 * 3_600
+        Some(HolidayKind::EarlyClose {
+            close_ssm: 12 * 3_600 + 15 * 60
         }),
+        "2017-07-03 states CFEIC17-022's own 12:15 p.m. CT close"
     );
-    // And the withholding reaches one day sideways, exactly as far as the
-    // sessions that opened on it: July 4's overnight leg opened 17:00 CT on
-    // the withheld 2017-07-03, and a trade date's complete session set
-    // includes that leg, so **every** instant query on 2017-07-04 — mid-leg,
-    // one nanosecond before the row's own 10:30 close, and in the afternoon
-    // tail — refuses naming the withheld day. The crate never reads the
-    // withholding as an open or closed grid, and the row layer itself still
-    // answers.
+    assert_eq!(
+        calendar
+            .holiday_on(day(2017, 7, 3))
+            .map(Holiday::document_id),
+        Some("CFE-IC17-022")
+    );
+    // The eve's session chain is fully sourced, so the day answers: the
+    // Monday session opened 17:00 CT on Sunday July 2, trades through the
+    // morning and stops at the end-exclusive 12:15 close.
+    assert!(
+        calendar
+            .is_open(ct((2017, 7, 2), (17, 0, 0)))
+            .expect("the Sunday-evening leg of trade date 2017-07-03 is sourced"),
+        "the July 3 session opens 17:00 CT on July 2"
+    );
+    assert!(
+        calendar
+            .is_open(ct((2017, 7, 3), (12, 14, 59)))
+            .expect("the coverage contract must answer a covered date")
+    );
+    assert!(
+        !calendar
+            .is_open(ct((2017, 7, 3), (12, 15, 0)))
+            .expect("the coverage contract must answer a covered date"),
+        "the 12:15 close is end-exclusive"
+    );
+    // The July 4 and July 5 rows stand beside it from the same circular's
+    // chart: the holiday's extended leg runs to 10:30 a.m. with no regular
+    // session, and July 5 opens 5:00 p.m. on the holiday.
     assert_eq!(
         calendar.holiday_on(day(2017, 7, 4)).map(Holiday::kind),
         Some(HolidayKind::EarlyClose {
             close_ssm: 10 * 3_600 + 30 * 60
         }),
     );
-    for probe in [(9, 0, 0), (10, 29, 59), (15, 45, 0)] {
-        assert!(
-            matches!(
-                calendar.is_open(ct((2017, 7, 4), probe)),
-                Err(CalendarQueryError::UnresolvedGap { date, .. }) if date == day(2017, 7, 3)
-            ),
-            "2017-07-04 at {probe:?} must refuse on the withheld opening day"
-        );
+    assert_eq!(
+        calendar.holiday_on(day(2017, 7, 5)).map(Holiday::kind),
+        Some(HolidayKind::LateOpen {
+            open_ssm: 17 * 3_600
+        }),
+    );
+    // With the eve sourced, the whole span answers — the withholding that used
+    // to refuse 2017-07-04 (whose overnight leg opened on it), 2017-07-05 noon
+    // and the July 5 trade date is gone.
+    for (date, probe) in [
+        ((2017, 7, 3), (11, 0, 0)),
+        ((2017, 7, 4), (9, 0, 0)),
+        ((2017, 7, 5), (12, 0, 0)),
+    ] {
+        assert!(calendar.is_open(ct(date, probe)).is_ok(), "{date:?}");
     }
-    // The reach is exactly two days: 2017-07-05's trading day still includes
-    // the overnight leg that opened on the withheld 2017-07-03, so its trade
-    // date refuses naming the withheld day — while noon itself sits inside the
-    // Wednesday regular session, which opens on the sourced 2017-07-05 and
-    // answers, and 2017-07-06 — whose chain stops on sourced days — answers
-    // again. The row layer answers throughout.
-    // With the July 5 LateOpen row shipped, the day's chain derivation reads
-    // the July 4 row, whose own chain reads the withheld July 3, so noon
-    // refuses there too — the row layer still answers, and the answer resumes
-    // on 2017-07-06, whose chain stops on the sourced 2017-07-05 17:00 open.
-    assert!(matches!(
-        calendar.is_open(ct((2017, 7, 5), (12, 0, 0))),
-        Err(CalendarQueryError::UnresolvedGap { date, .. }) if date == day(2017, 7, 3)
-    ));
-    assert!(matches!(
-        calendar.trade_date(ct((2017, 7, 5), (12, 0, 0))),
-        Err(CalendarQueryError::UnresolvedGap { date, .. }) if date == day(2017, 7, 3)
-    ));
-    assert!(
+    assert_eq!(
         calendar
-            .is_open(ct((2017, 7, 6), (12, 0, 0)))
-            .expect("2017-07-06's session chain stops on sourced days"),
-        "the answer resumes on 2017-07-06"
+            .trade_date(ct((2017, 7, 5), (12, 0, 0)))
+            .expect("the trade-date chain is fully sourced"),
+        Some(day(2017, 7, 5))
     );
 }
 
@@ -1635,9 +1635,9 @@ fn the_window_ships_only_closures_early_closes_and_one_replacement() {
             replacements,
             unsourced
         ),
-        (31, 67, 21, 3, 1, 13, 2, 1, 1),
+        (31, 67, 22, 3, 1, 13, 2, 1, 0),
         "closures, 10:30/12:15/08:30/08:15 CT early closes, 17:00 late opens, combined \
-         half-day rows, the mourning replacement and the withheld 2017-07-03, across the \
-         three windows"
+         half-day rows, the mourning replacement and zero withheld dates (2017-07-03 is \
+         CFEIC17-022's own 12:15 row since 2026-10-10 UTC), across the three windows"
     );
 }

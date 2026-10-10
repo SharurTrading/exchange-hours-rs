@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+## [1.0.2] - 2026-10-10
+
 ### Changed
 
 - The four CME venue holiday tables (`cme`, `cbot`, `comex`, `nymex`) now

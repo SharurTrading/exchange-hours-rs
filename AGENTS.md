@@ -772,6 +772,18 @@ verify mechanically against that checkout with
 
 - **PROC_REVIEW_AGENTS** — If you are reviewing an open github PR, leave inline and outside diff comments (and a summary if needed), the type of comment should depend on if it is possible or suitable to do inline. On each comment attribute your model name in line with PROC-ATTRIB.
 - **PROC-POST_REVIEW** Assess all inline and outside diff comments + summaries. You have final say on what is valid but all comments must be resolved before we can merge due to rulesets.
+- **PROC-ISSUE-CLAIM** — When the operator directs an agent to find and solve an issue itself —
+  "take an open issue and implement a full fix, then open a PR and stop until reviewed", possibly
+  narrowed by a difficulty label — and not when the operator names a specific issue, the agent
+  claims the issue before any work begins. Read every comment on the issue — all of them, not
+  just the latest — and confirm it is free: no other agent or session has claimed it, and no open
+  PR already addresses it. Another agent's claim is never dismissed or worked around; a claim
+  stands until its PR merges or the operator releases it. If the issue is free, immediately
+  comment on it that it is taken, naming the exact model identifier per PROC-ATTRIB; then
+  implement the complete fix and open a PR referencing the issue, and STOP — the turn ends when
+  the PR is open. Wait for operator review: do not poll CI or act on its result — a green run is
+  not permission to continue — do not merge, and do not start another issue. If the issue is not
+  free, choose a different matching issue; if none is free, say so and stop.
 
 ## Housekeeping
 

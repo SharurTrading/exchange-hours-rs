@@ -51,7 +51,8 @@ arrangement on every date they print (Christmas Eve `close at 13:14`,
 Christmas Day `open at 18:01`, New Year's Eve `close at 16:59`), so the
 family ships together. Indices and bonds now have separate keys (2026-10-11 UTC). Good Friday
 2026 closes indices at 09:14 ET and bonds at 11:14 ET. Carter's Day
-2025-01-09 withholds only the index key; the bond close is explicit 13:15 ET.
+2025-01-09 closes indices at 09:30 ET, derived from the dated section's
+24-hour context and ordered 18:00 reopening; the bond close is explicit 13:15 ET.
 
 ### 2025
 
@@ -59,7 +60,8 @@ family ships together. Indices and bonds now have separate keys (2026-10-11 UTC)
 |---|---|---|---|---|---|
 | 2025-01-01 | closed | `US indices open late 18:04`, `US bonds open late 18:04` | `OANDA-UK-HOLIDAYS` | T1 | New Year's Day: the holiday trade date is closed; the following trade date opens at the explicitly stated 18:04 |
 | 2025-01-02 | late open | `18:04` | `OANDA-UK-HOLIDAYS` | T1 | 2025-01-01 evening reopen is keyed to 2025-01-02, whose opening day is the holiday. |
-| 2025-01-09 | unsourced | `close early at 9:30` (no meridiem) | `OANDA-UK-HOLIDAYS` | T1 | Carter's Day of Mourning: the instant is ambiguous (`9:30` AM or PM unmatched by any other row; bonds print 13:15); withheld until a desk answer or a clearer capture |
+| 2025-01-09 | early close | `US index close early at 9:30 and reopen at 18:00` | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | The section's 24-hour context and close-before-reopen sequence select 09:30 ET; see the contextual derivation below. |
+| 2025-01-10 | replacement blocks | `reopen at 18:00` | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | The January 9 evening reopen belongs to the following trade date; its ordinary final close is 16:59 ET. |
 | 2025-01-20 | early close | `13:00` | `OANDA-UK-HOLIDAYS` | T1 | MLK Day group early close, previously omitted. |
 | 2025-01-21 | replacement blocks | `18:00; 16:59` | `OANDA-UK-HOLIDAYS` | T1 | Complete replacement: previous holiday's literal reopen plus this trade date's printed or normal close. |
 | 2025-02-17 | early close | `close early at 1 pm and reopen at 6 pm` | `OANDA-UK-HOLIDAYS` | T1 | Presidents Day |
@@ -117,8 +119,12 @@ the 2024 witness is carried, not served.
 | `OANDA-UK-HOLIDAYS` | 2025-01-01 .. 2026-10-30 | <https://www.oanda.com/uk-en/trading/holiday-trading-hours> | captured 2026-10-10 22:44 | T1 | `c7137ce3da4cc19d0431955feedc10fb6b9731214ad3cfc7966160e72f8559da` |
 | `OANDA-UK-HOURS-2024-WAYBACK` | 2024-02-21 | <https://web.archive.org/web/20240221005503id_/https://www.oanda.com/uk-en/trading/hours-of-operation/> | Wayback `id_` replay of capture `20240221005503`, retrieved 2026-10-10 UTC | T1 | `aab9b3032c1d53e6155009fce6a5156983c2d21a2f0bd768f1860f465b8b6a63` |
 | `OANDA-UK-HOURS-2022-WAYBACK` | 2022-05-18 | <https://web.archive.org/web/20220518092953id_/https://www.oanda.com/uk-en/trading/hours-of-operation/> | Wayback `id_` replay of capture `20220518092953`, retrieved 2026-10-10 UTC | T1 | `8dd71db7accc2a40faeb531f0c5c29db0eb289c9ef45a69bc14b75148257cbea` |
+| `OANDA-UK-CARTER-2025-WAYBACK` | 2025-01-09 | <https://web.archive.org/web/20250326184653id_/https://www.oanda.com/uk-en/trading/holiday-trading-hours/> | Wayback `id_` replay of capture `20250326184653`, retrieved 2026-10-11 UTC | T1 | `467313685d4d64a4b95e5112a58d0fa04583f0abe988b1478d41fddf8b04cf1c` |
+| `OANDA-UK-CARTER-2026-WAYBACK` | 2025-01-09 | <https://web.archive.org/web/20260217213704id_/https://www.oanda.com/uk-en/trading/holiday-trading-hours/> | Wayback `id_` replay of capture `20260217213704`, retrieved 2026-10-11 UTC | T1 | `33988f4e6cd9603250923da1660ce71dc3ee1e1a66610b7734b1ad0cbfbaa0c9` |
 
-Store paths: see [`oanda_fx.md`](oanda_fx.md).
+Store paths: see [`oanda_fx.md`](oanda_fx.md). The additional Carter replays are
+`normal-weeks/oanda-uk-wayback-audit-2026-10-11/holiday-captures/20250326184653.html`
+and `20260217213704.html` in that directory.
 
 ## Gaps and residual risks
 
@@ -128,8 +134,6 @@ Store paths: see [`oanda_fx.md`](oanda_fx.md).
   changeovers are undated and the span refuses on the date-aware surface.
   Closing condition: dated operator artifacts, or hunts closed negative
   (then the 2026-10-04 intersection rule applies).
-- The 2025-01-09 withholding closes with an OANDA desk answer or a clearer
-  capture (AM/PM ambiguity is a page-edit question).
 - Bonds route to `oanda_us_bond_cfd`; no intersection is used as their exact calendar.
 - US Share CFD and ETF arrangements (`Closed` on US holidays) are
   caller-side listings of equities and stay out of this book.
@@ -149,3 +153,18 @@ The 2026-05-25 section's incomplete `18:0` reopen does not justify an
 remains sourced at 12:59; 2026-05-26 is `Unsourced` because its prior-evening
 opening is unknown. Other OANDA legal entities' 18:01 statements may
 corroborate a possible correction but do not establish this UK scope (#332).
+
+## Carter context derivation — 2026-10-11 UTC
+
+The March 2025 and February 2026 UK holiday replays both carry the
+Eastern-Time header and the dated 2025-01-09 Carter section. The exact
+index statement is `US index close early at 9:30 and reopen at 18:00`.
+Adjacent bond and commodity statements use `13:15` closes and `18:00`/`20:00`
+reopens. This local 24-hour context and the stated close-then-reopen sequence
+select 09:30 ET: 21:30 would fall after that dated 18:00 reopening. The
+ordinary 16:59 close corroborates this reading, but the word `early` alone
+is not the derivation. The operator prints `9:30`, not `09:30` or `AM`;
+09:30 is the contextual interpretation recorded here. The following trade
+date retains the literal 18:00 opening through a complete replacement block.
+The earlier meridiem withholding was overly conservative; Memorial's
+missing-minute withholding and the historical/scope gaps in #332 remain.

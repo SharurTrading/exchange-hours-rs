@@ -209,6 +209,21 @@ fn bonds_do_not_inherit_the_index_only_independence_eve_arrangement() {
 }
 
 #[test]
+fn carters_close_and_reopen_follow_the_dated_twenty_four_hour_context() {
+    let calendar = cal(K::OandaUsIndexCfd);
+    let close = utc("2025-01-09T14:30:00Z");
+    assert_eq!(calendar.is_open(close - Duration::seconds(1)), Ok(true));
+    assert_eq!(calendar.is_open(close), Ok(false));
+    let reopen = utc("2025-01-09T23:00:00Z");
+    assert_eq!(calendar.is_open(reopen - Duration::seconds(1)), Ok(false));
+    assert_eq!(calendar.is_open(reopen), Ok(true));
+    assert_eq!(
+        calendar.session_bounds(utc("2025-01-10T12:00:00Z")),
+        Ok(Some((reopen, utc("2025-01-10T21:59:00Z"))))
+    );
+}
+
+#[test]
 fn an_incomplete_memorial_reopen_refuses_the_following_trade_date() {
     let date = NaiveDate::from_ymd_opt(2026, 5, 26).unwrap();
     for key in [K::OandaUsIndexCfd, K::OandaUsBondCfd] {

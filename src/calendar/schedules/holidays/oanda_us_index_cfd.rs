@@ -33,9 +33,10 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2025, 1, 1, Closed, T1, "OANDA-UK-HOLIDAYS"),
         // 2025-01-02 - T1 - OANDA-UK-HOLIDAYS - New Year's Day evening reopen belongs to the following trade date
         (2025, 1, 2, late_open(18 * 3_600 + 4 * 60), T1, "OANDA-UK-HOLIDAYS"),
-        // 2025-01-09 - T1 - OANDA-UK-HOLIDAYS - Carter's Day of Mourning: "US index close early at 9:30" prints no
-        // meridiem and matches no other printed instant; the bonds' 13:15 close is recorded in the evidence file
-        (2025, 1, 9, Unsourced, T1, "OANDA-UK-HOLIDAYS"),
+        // 2025-01-09 - T1 - OANDA-UK-CARTER-2025-WAYBACK - Carter's 9:30 close precedes the stated 18:00 reopen; 24-hour context selects 09:30 ET
+        (2025, 1, 9, early_close(9 * 3_600 + 30 * 60), T1, "OANDA-UK-CARTER-2025-WAYBACK"),
+        // 2025-01-10 - T1 - OANDA-UK-CARTER-2025-WAYBACK - Previous dated holiday reopens at 18:00 ET
+        (2025, 1, 10, ReplacementBlocks(&GROUP_1800_REOPEN), T1, "OANDA-UK-CARTER-2025-WAYBACK"),
         // 2025-01-20 - T1 - OANDA-UK-HOLIDAYS - MLK Day: printed group close
         (2025, 1, 20, early_close(13 * 3_600), T1, "OANDA-UK-HOLIDAYS"),
         // 2025-01-21 - T1 - OANDA-UK-HOLIDAYS - Previous holiday reopens 18:00 ET

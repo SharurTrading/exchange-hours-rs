@@ -49,6 +49,10 @@
 
 ### Fixed
 
+- Carter's Day 2025 index close resolves to 09:30 ET from the UK page's
+  dated 24-hour context and stated 18:00 reopening. The following trade
+  date preserves that literal 18:00 open; Memorial's incomplete minute
+  and the remaining historical/scope gaps stay withheld (#332).
 - OANDA holiday instants now preserve the operator's exact minutes: the
   missing MLK 2025 closes, New Year 18:04 reopens, 2025 US 18:00 and Brent
   20:00 ET reopens, and Holy Thursday's 17:00 ET close (#330).

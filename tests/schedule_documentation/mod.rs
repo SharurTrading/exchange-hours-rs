@@ -25,7 +25,7 @@ const DATE_EXCEPTIONS: &str = include_str!("../../docs/schedules/date-exceptions
 const UNSUPPORTED_FAMILIES: &str = include_str!("../../docs/schedules/unsupported-families.md");
 const DATABENTO_VENUES: &str = include_str!("../../docs/schedules/databento-venues.md");
 
-const EXPECTED_MARKET_HOURS_KEY_NAMES: [&str; 37] = [
+const EXPECTED_MARKET_HOURS_KEY_NAMES: [&str; 39] = [
     "globex_equity_index",
     "globex_energy",
     "globex_silver_100oz",
@@ -61,6 +61,8 @@ const EXPECTED_MARKET_HOURS_KEY_NAMES: [&str; 37] = [
     "globex_copper_tas",
     "globex_platinum_tas",
     "globex_palladium_tas",
+    "oanda_fx",
+    "oanda_try_fx",
     "sgx",
     "always_open",
 ];
@@ -1040,7 +1042,7 @@ fn assurance_prose_restates_exchange_counts_from_the_ledger() {
         "the crate serves the window that holds under every sourced state".to_string(),
         "the crate refuses with an explicit typed error rather than claiming hours it cannot support".to_string(),
         "Where a residual uncertainty survives, it is **instant-level and disclosed**".to_string(),
-        "Per-family holiday and early-close tables ship for 43 of the 133 ledger rows".to_string(),
+        "Per-family holiday and early-close tables ship for 45 of the 136 ledger rows".to_string(),
         format!("All {real} current profiles are primary-supported"),
         format!("The {primary} **Primary** rows have no known modeled-history gap"),
         format!("{partial} **Partial** rows name"),

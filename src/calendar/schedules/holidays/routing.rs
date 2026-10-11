@@ -139,6 +139,9 @@ const fn for_exchange(exchange: Exchange) -> Option<&'static HolidayTable> {
         Exchange::B3 => Some(super::b3::TABLE),
         Exchange::Bmv => None,
         Exchange::BinanceFutures => None,
+        // The venue's clock is the FX (ex-TRY) grid, so its table mirrors the
+        // oanda_fx family table verbatim (the venue profile-clock rule).
+        Exchange::Oanda => Some(super::oanda_fx::TABLE),
     }
 }
 
@@ -196,6 +199,12 @@ const fn for_market_hours_key(key: MarketHoursKey) -> Option<&'static HolidayTab
         MarketHoursKey::GlobexCopperTas => None,
         MarketHoursKey::GlobexPlatinumTas => None,
         MarketHoursKey::GlobexPalladiumTas => None,
+        MarketHoursKey::OandaFx => Some(super::oanda_fx::TABLE),
+        // No built-in holiday table: the operator's holiday page states no
+        // TRY-specific arrangement, and whether its `Forex` rows reach the TRY
+        // book is unworked up. The evidence file records the question and its
+        // closing condition.
+        MarketHoursKey::OandaTryFx => None,
         MarketHoursKey::Sgx => None,
         MarketHoursKey::AlwaysOpen => None,
     }

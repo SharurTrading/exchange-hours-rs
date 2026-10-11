@@ -404,6 +404,13 @@ const fn for_exchange(exchange: Exchange) -> DeclaredSourcing {
         Exchange::Bmv => DeclaredSourcing::carried_below(horizon!(2010, 2, 18)),
         // `—`: closed before the archived 2019-09-13 04:00 UTC launch, then continuously open; the operator publishes 24/7 trading and no holiday closures.
         Exchange::BinanceFutures => DeclaredSourcing::no_holidays(),
+        // The book's current grid is witnessed by the operator's own archived
+        // page print of 2024-02-21 (`Sun-Fri: 17:05 - 16:59` with the six-minute
+        // break) and corroborated by the 2026-10-10 capture; the dated holiday
+        // sections 2025-01-01..2026-10-30 sit inside that span. Below the 2024
+        // witness the grid is carried — the 2022-05-18 capture prints an earlier
+        // 17:03-16:58 grid with an undated changeover (docs/evidence/oanda_fx.md).
+        Exchange::Oanda => DeclaredSourcing::carried_below(horizon!(2024, 2, 21)),
     }
 }
 
@@ -511,6 +518,15 @@ const fn for_market_hours_key(key: MarketHoursKey) -> DeclaredSourcing {
         MarketHoursKey::GlobexPlatinumTas => DeclaredSourcing::nothing_carried(),
         // `—`: the pre-launch era is a sourced closure on the specification captures.
         MarketHoursKey::GlobexPalladiumTas => DeclaredSourcing::nothing_carried(),
+        // Witnessed from the operator's own archived 2024-02-21 page print of
+        // the current 17:05-16:59 grid; the 2022-05-18 capture's earlier
+        // 17:03-16:58 grid and its undated changeover are the recorded gap below
+        // (docs/evidence/oanda_fx.md).
+        MarketHoursKey::OandaFx => DeclaredSourcing::carried_below(horizon!(2024, 2, 21)),
+        // The TRY grid's only witness is the living hours page captured
+        // 2026-10-10; every earlier day is carried, and the holiday page
+        // states no TRY arrangement either way (docs/evidence/oanda_try_fx.md).
+        MarketHoursKey::OandaTryFx => DeclaredSourcing::carried_below(horizon!(2026, 10, 10)),
         // `—`: closed before the sourced 2024-07-29 launch.
         MarketHoursKey::Sgx => DeclaredSourcing::nothing_carried(),
         // `—`: synthetic 24×7 fallback: library policy, not a venue, and no holiday closures.

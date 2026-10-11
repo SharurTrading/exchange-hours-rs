@@ -68,6 +68,8 @@ const EXPECTED_MARKET_HOURS_KEYS: &[(MarketHoursKey, &str)] = &[
     (MarketHoursKey::GlobexCopperTas, "globex_copper_tas"),
     (MarketHoursKey::GlobexPlatinumTas, "globex_platinum_tas"),
     (MarketHoursKey::GlobexPalladiumTas, "globex_palladium_tas"),
+    (MarketHoursKey::OandaFx, "oanda_fx"),
+    (MarketHoursKey::OandaTryFx, "oanda_try_fx"),
     (MarketHoursKey::Sgx, "sgx"),
     (MarketHoursKey::AlwaysOpen, "always_open"),
 ];

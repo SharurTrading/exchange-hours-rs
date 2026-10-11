@@ -4,6 +4,20 @@
 
 ## [Unreleased]
 
+### Added
+
+- `Exchange::Oanda` and the first two OANDA-book keys, `oanda_fx` (all FX
+  products except TRY pairs: Sunday 17:05 to Friday 16:59 New York time with
+  the six-minute 16:59–17:05 daily break) and `oanda_try_fx` (a daily
+  Monday–Friday 08:00–17:00 Central European session with an overnight gap).
+  The books trade straight through the daily maintenance halts of the futures
+  clocks they hedge on, so they are book keys, not futures mappings. The
+  `oanda_fx` holiday table ships the operator's three stated trade-date
+  closures (2025-01-01, 2025-12-25, 2026-01-01) over its
+  2025-01-01..2026-10-30 audited window, and the venue's table mirrors it —
+  the first wave of the OANDA-listed market coverage programme
+  (SharurPlatform#1046, oanda-rs#30).
+
 ## [1.0.2] - 2026-10-10
 
 ### Changed

@@ -98,6 +98,7 @@ pub fn hours_for_exchange(exch: Exchange, as_of: DateTime<Utc>) -> MarketHours {
         Exchange::IceCanada => international::ice_canada_profile_at(as_of),
         Exchange::Sgx => international::sgx_profile_at(as_of),
         Exchange::BinanceFutures => international::binance_profile_at(as_of),
+        Exchange::Oanda => international::oanda_fx_profile_at(as_of),
         Exchange::Asx => apac::asx::profile_at(as_of),
         Exchange::TmxAustralia => apac::tmx_australia::profile_at(as_of),
         Exchange::Nzx => apac::nzx::profile_at(as_of),

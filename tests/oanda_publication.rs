@@ -10,7 +10,8 @@
 use chrono::{DateTime, Duration, NaiveDate, Utc};
 use exchange_hours::{
     CalendarQueryError, DateCoverage, ExceptionBlock, ExchangeCalendar, HolidayKind,
-    MarketHoursKey as K, SessionExceptionRecord, SessionState, StaticSessionExceptions,
+    MarketHoursKey as K, SessionExceptionRecord, SessionKind, SessionState,
+    StaticSessionExceptions,
 };
 
 fn utc(s: &str) -> DateTime<Utc> {
@@ -308,4 +309,114 @@ fn spot_metals_holiday_reopens_use_the_literal_group_and_gold_silver_exception()
     let close = utc("2025-11-28T19:45:00Z");
     assert_eq!(calendar.is_open(close - Duration::seconds(1)), Ok(true));
     assert_eq!(calendar.is_open(close), Ok(false));
+}
+
+#[test]
+fn archived_2024_us_holidays_preserve_literal_reopens_and_friday_close() {
+    for key in [K::OandaUsIndexCfd, K::OandaUsBondCfd] {
+        let calendar = cal(key);
+        for (close, reopen, end) in [
+            (
+                "2024-05-27T17:00:00Z",
+                "2024-05-27T22:00:00Z",
+                "2024-05-28T20:59:00Z",
+            ),
+            (
+                "2024-06-19T17:00:00Z",
+                "2024-06-19T22:00:00Z",
+                "2024-06-20T20:59:00Z",
+            ),
+            (
+                "2024-09-02T17:00:00Z",
+                "2024-09-02T22:00:00Z",
+                "2024-09-03T20:59:00Z",
+            ),
+            (
+                "2024-11-28T18:00:00Z",
+                "2024-11-28T23:00:00Z",
+                "2024-11-29T18:15:00Z",
+            ),
+        ] {
+            let close = utc(close);
+            let reopen = utc(reopen);
+            assert_eq!(calendar.is_open(close - Duration::seconds(1)), Ok(true));
+            assert_eq!(calendar.is_open(close), Ok(false));
+            assert_eq!(calendar.is_open(reopen - Duration::seconds(1)), Ok(false));
+            assert_eq!(calendar.is_open(reopen), Ok(true));
+            assert_eq!(
+                calendar.session_bounds(reopen),
+                Ok(Some((reopen, utc(end))))
+            );
+            assert_eq!(calendar.is_open(utc(end)), Ok(false));
+        }
+        assert_eq!(
+            calendar.is_closed_trade_date(
+                NaiveDate::from_ymd_opt(2024, 3, 29).unwrap(),
+                SessionKind::Both
+            ),
+            Ok(true)
+        );
+        let december = NaiveDate::from_ymd_opt(2023, 12, 25).unwrap();
+        assert!(calendar.holiday_on(december).is_none());
+    }
+}
+
+#[test]
+fn archived_2024_independence_eve_names_indices_without_changing_bonds() {
+    let index = cal(K::OandaUsIndexCfd);
+    let bonds = cal(K::OandaUsBondCfd);
+    let close = utc("2024-07-03T17:15:00Z");
+    assert_eq!(index.is_open(close - Duration::seconds(1)), Ok(true));
+    assert_eq!(index.is_open(close), Ok(false));
+    assert_eq!(bonds.is_open(close), Ok(true));
+    for (calendar, open) in [
+        (index, "2024-07-03T22:00:00Z"),
+        (bonds, "2024-07-03T22:01:00Z"),
+    ] {
+        let open = utc(open);
+        assert_eq!(calendar.is_open(open - Duration::seconds(1)), Ok(false));
+        assert_eq!(calendar.is_open(open), Ok(true));
+        assert_eq!(
+            calendar.session_bounds(open),
+            Ok(Some((open, utc("2024-07-04T17:00:00Z"))))
+        );
+        let reopen = utc("2024-07-04T22:00:00Z");
+        assert_eq!(calendar.is_open(reopen - Duration::seconds(1)), Ok(false));
+        assert_eq!(calendar.is_open(reopen), Ok(true));
+        assert_eq!(
+            calendar.session_bounds(reopen),
+            Ok(Some((reopen, utc("2024-07-05T20:59:00Z"))))
+        );
+    }
+}
+
+#[test]
+fn archived_2024_christmas_keeps_1804_reopens_and_the_missing_bond_close_explicit() {
+    let index = cal(K::OandaUsIndexCfd);
+    let close = utc("2024-12-24T18:14:00Z");
+    assert_eq!(index.is_open(close - Duration::seconds(1)), Ok(true));
+    assert_eq!(index.is_open(close), Ok(false));
+    let open = utc("2024-12-25T23:04:00Z");
+    assert_eq!(index.is_open(open - Duration::seconds(1)), Ok(false));
+    assert_eq!(index.is_open(open), Ok(true));
+    assert_eq!(
+        index.session_bounds(open),
+        Ok(Some((open, utc("2024-12-26T21:59:00Z"))))
+    );
+    let bonds = cal(K::OandaUsBondCfd);
+    let date = NaiveDate::from_ymd_opt(2024, 12, 24).unwrap();
+    assert_eq!(
+        bonds.holiday_on(date).unwrap().kind(),
+        HolidayKind::Unsourced
+    );
+    assert!(
+        matches!(bonds.is_open(close), Err(CalendarQueryError::UnresolvedGap { date: withheld, .. }) if withheld == date)
+    );
+    let date = NaiveDate::from_ymd_opt(2024, 12, 26).unwrap();
+    assert_eq!(
+        bonds.holiday_on(date).unwrap().kind(),
+        HolidayKind::LateOpen {
+            open_ssm: 18 * 3_600 + 4 * 60
+        }
+    );
 }

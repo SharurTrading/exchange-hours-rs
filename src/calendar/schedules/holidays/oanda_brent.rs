@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT-0
 
-//! OANDA holiday data, 2025-01-01..2026-10-30. Evidence: `docs/evidence/oanda_brent.md`.
+//! OANDA holiday data, 2024-02-21..2026-10-30. Evidence: `docs/evidence/oanda_brent.md`.
 
 use super::fences::early_close;
 use crate::calendar::ExceptionBlock;
@@ -27,8 +27,42 @@ static THANKSGIVING_REOPEN: [ExceptionBlock; 1] = [ExceptionBlock::regular(0, 3_
 /// The book's built-in holiday rows and the window they were audited over.
 // Evidence: docs/evidence/oanda_brent.md
 pub(crate) static TABLE: &HolidayTable = holidays! {
-    coverage: [(2025, 1, 1) ..= (2026, 10, 30)],
+    coverage: [(2024, 2, 21) ..= (2026, 10, 30)],
     rows: [
+        // 2024-03-29 - T1 - OANDA-UK-CARTER-2025-WAYBACK - Good Friday
+        (2024, 3, 29, Closed, T1, "OANDA-UK-CARTER-2025-WAYBACK"),
+        // 2024-04-01 - T1 - OANDA-UK-CARTER-2025-WAYBACK - Easter Monday UK section names other books; Brent arrangement unstated (#332)
+        (2024, 4, 1, Unsourced, T1, "OANDA-UK-CARTER-2025-WAYBACK"),
+        // 2024-05-27 - T1 - OANDA-UK-CARTER-2025-WAYBACK - Memorial Day 13:30 ET close
+        (2024, 5, 27, early_close(18 * 3_600 + 30 * 60), T1, "OANDA-UK-CARTER-2025-WAYBACK"),
+        // 2024-05-28 - T1 - OANDA-UK-CARTER-2025-WAYBACK - Memorial Day Brent reopen unprinted; separate Commodities wording ambiguous (#332)
+        (2024, 5, 28, Unsourced, T1, "OANDA-UK-CARTER-2025-WAYBACK"),
+        // 2024-06-19 - T1 - OANDA-UK-CARTER-2025-WAYBACK - Juneteenth 13:30 ET close
+        (2024, 6, 19, early_close(18 * 3_600 + 30 * 60), T1, "OANDA-UK-CARTER-2025-WAYBACK"),
+        // 2024-06-20 - T1 - OANDA-UK-CARTER-2025-WAYBACK - Juneteenth Brent reopen unprinted; separate Commodities wording ambiguous (#332)
+        (2024, 6, 20, Unsourced, T1, "OANDA-UK-CARTER-2025-WAYBACK"),
+        // 2024-07-03 - T1 - OANDA-UK-CARTER-2025-WAYBACK - Independence eve section names only indices; Brent silent (#332)
+        (2024, 7, 3, Unsourced, T1, "OANDA-UK-CARTER-2025-WAYBACK"),
+        // 2024-07-04 - T1 - OANDA-UK-CARTER-2025-WAYBACK - Independence Day 13:30 ET close
+        (2024, 7, 4, early_close(18 * 3_600 + 30 * 60), T1, "OANDA-UK-CARTER-2025-WAYBACK"),
+        // 2024-07-05 - T1 - OANDA-UK-CARTER-2025-WAYBACK - Independence Day Brent reopen unprinted (#332)
+        (2024, 7, 5, Unsourced, T1, "OANDA-UK-CARTER-2025-WAYBACK"),
+        // 2024-08-26 - T1 - OANDA-UK-CARTER-2025-WAYBACK - UK Summer Bank Holiday section names other books; Brent silent (#332)
+        (2024, 8, 26, Unsourced, T1, "OANDA-UK-CARTER-2025-WAYBACK"),
+        // 2024-09-02 - T1 - OANDA-UK-CARTER-2025-WAYBACK - Labor Day 13:30 ET close
+        (2024, 9, 2, early_close(18 * 3_600 + 30 * 60), T1, "OANDA-UK-CARTER-2025-WAYBACK"),
+        // 2024-09-03 - T1 - OANDA-UK-CARTER-2025-WAYBACK - Labor Day Brent reopen unprinted; separate Commodities wording ambiguous (#332)
+        (2024, 9, 3, Unsourced, T1, "OANDA-UK-CARTER-2025-WAYBACK"),
+        // 2024-11-28 - T1 - OANDA-UK-CARTER-2025-WAYBACK - Thanksgiving 13:30 ET close
+        (2024, 11, 28, early_close(18 * 3_600 + 30 * 60), T1, "OANDA-UK-CARTER-2025-WAYBACK"),
+        // 2024-11-29 - T1 - OANDA-UK-CARTER-2025-WAYBACK - Thanksgiving 20:00 ET reopen and 15:00 ET Friday close
+        (2024, 11, 29, ReplacementBlocks(&THANKSGIVING_REOPEN), T1, "OANDA-UK-CARTER-2025-WAYBACK"),
+        // 2024-12-24 - T1 - OANDA-UK-CARTER-2025-WAYBACK - Christmas Eve 13:59 ET close
+        (2024, 12, 24, early_close(18 * 3_600 + 59 * 60), T1, "OANDA-UK-CARTER-2025-WAYBACK"),
+        // 2024-12-25 - T1 - OANDA-UK-CARTER-2025-WAYBACK - Christmas Day
+        (2024, 12, 25, Closed, T1, "OANDA-UK-CARTER-2025-WAYBACK"),
+        // 2024-12-31 - T1 - OANDA-UK-CARTER-2025-WAYBACK - New Years Eve 14:59 ET close
+        (2024, 12, 31, early_close(19 * 3_600 + 59 * 60), T1, "OANDA-UK-CARTER-2025-WAYBACK"),
         // 2025-01-01 - T1 - OANDA-UK-HOLIDAYS - New Year's Day: Brent Crude Oil is closed
         (2025, 1, 1, Closed, T1, "OANDA-UK-HOLIDAYS"),
         // 2025-01-09 - T1 - OANDA-UK-HOLIDAYS - Carter's Day of Mourning: the section prints US index/bonds and

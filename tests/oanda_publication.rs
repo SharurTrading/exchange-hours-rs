@@ -451,3 +451,79 @@ fn archived_2024_pre_witness_reopens_do_not_invent_final_closes() {
         }
     }
 }
+
+#[test]
+fn archived_2024_us_commodities_keep_their_own_opening_and_literal_holidays() {
+    let calendar = cal(K::OandaUsCommodityCfd);
+    for (open, close) in [
+        ("2024-05-27T22:00:00Z", "2024-05-28T20:59:00Z"),
+        ("2024-06-19T22:00:00Z", "2024-06-20T20:59:00Z"),
+        ("2024-07-04T22:00:00Z", "2024-07-05T20:59:00Z"),
+        ("2024-09-02T22:00:00Z", "2024-09-03T20:59:00Z"),
+        ("2024-11-28T23:00:00Z", "2024-11-29T19:45:00Z"),
+        ("2024-12-25T23:04:00Z", "2024-12-26T21:59:00Z"),
+    ] {
+        let open = utc(open);
+        let close = utc(close);
+        assert_eq!(calendar.is_open(open - Duration::seconds(1)), Ok(false));
+        assert_eq!(calendar.is_open(open), Ok(true));
+        assert_eq!(calendar.session_bounds(open), Ok(Some((open, close))));
+        assert_eq!(calendar.is_open(close), Ok(false));
+    }
+    let close = utc("2024-12-24T18:44:00Z");
+    assert_eq!(calendar.is_open(close - Duration::seconds(1)), Ok(true));
+    assert_eq!(calendar.is_open(close), Ok(false));
+    let normal = utc("2024-07-03T22:01:00Z");
+    assert_eq!(calendar.is_open(normal), Ok(true));
+    let date = NaiveDate::from_ymd_opt(2024, 12, 26).unwrap();
+    assert_eq!(
+        calendar.holiday_on(date).unwrap().kind(),
+        HolidayKind::LateOpen {
+            open_ssm: 18 * 3_600 + 4 * 60
+        }
+    );
+}
+
+#[test]
+fn archived_2024_brent_preserves_explicit_thanksgiving_and_missing_reopens() {
+    let calendar = cal(K::OandaBrent);
+    let open = utc("2024-11-29T01:00:00Z");
+    let close = utc("2024-11-29T20:00:00Z");
+    assert_eq!(calendar.is_open(open - Duration::seconds(1)), Ok(false));
+    assert_eq!(calendar.is_open(open), Ok(true));
+    assert_eq!(calendar.session_bounds(open), Ok(Some((open, close))));
+    assert_eq!(calendar.is_open(close), Ok(false));
+    for (month, day) in [(4, 1), (5, 28), (6, 20), (7, 3), (7, 5), (8, 26), (9, 3)] {
+        let date = NaiveDate::from_ymd_opt(2024, month, day).unwrap();
+        assert_eq!(
+            calendar.holiday_on(date).unwrap().kind(),
+            HolidayKind::Unsourced
+        );
+        assert!(
+            calendar
+                .is_closed_trade_date(date, SessionKind::Both)
+                .is_err()
+        );
+    }
+    for (month, day) in [(5, 27), (6, 19), (7, 4), (9, 2)] {
+        let date = NaiveDate::from_ymd_opt(2024, month, day).unwrap();
+        assert_eq!(
+            calendar.holiday_on(date).unwrap().kind(),
+            HolidayKind::EarlyClose {
+                close_ssm: 18 * 3_600 + 30 * 60
+            }
+        );
+    }
+    for (month, day) in [(5, 1), (5, 6)] {
+        let date = NaiveDate::from_ymd_opt(2024, month, day).unwrap();
+        assert_eq!(calendar.holiday_on(date), None);
+        assert_eq!(
+            calendar.is_open(utc(if day == 1 {
+                "2024-05-01T12:00:00Z"
+            } else {
+                "2024-05-06T12:00:00Z"
+            })),
+            Ok(true)
+        );
+    }
+}

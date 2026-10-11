@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT-0
 
-//! OANDA holiday data, 2025-01-01..2026-10-30. Evidence: `docs/evidence/oanda_us_index_cfd.md`.
+//! OANDA holiday data, 2024-01-01..2024-12-31 and 2025-01-01..2026-10-30. Evidence: `docs/evidence/oanda_us_index_cfd.md`.
 
 use super::fences::{early_close, late_open};
 use crate::calendar::ExceptionBlock;
@@ -27,8 +27,50 @@ static THANKSGIVING_REOPEN: [ExceptionBlock; 1] = [ExceptionBlock::regular(-1, 1
 /// The book's built-in holiday rows and the window they were audited over.
 // Evidence: docs/evidence/oanda_us_index_cfd.md
 pub(crate) static TABLE: &HolidayTable = holidays! {
-    coverage: [(2025, 1, 1) ..= (2026, 10, 30)],
+    coverage: [(2024, 1, 1) ..= (2024, 12, 31), (2025, 1, 1) ..= (2026, 10, 30)],
     rows: [
+        // 2024-01-01 - T1 - OANDA-UK-CARTER-2025-WAYBACK - New Year: the holiday closes before the evening reopen
+        (2024, 1, 1, Closed, T1, "OANDA-UK-CARTER-2025-WAYBACK"),
+        // 2024-01-02 - T1 - OANDA-UK-CARTER-2025-WAYBACK - New Year 18:00 ET reopen known; pre-witness final close unknown (#332)
+        (2024, 1, 2, Unsourced, T1, "OANDA-UK-CARTER-2025-WAYBACK"),
+        // 2024-01-15 - T1 - OANDA-UK-CARTER-2025-WAYBACK - MLK Day closes 13:00 ET
+        (2024, 1, 15, early_close(13 * 3_600), T1, "OANDA-UK-CARTER-2025-WAYBACK"),
+        // 2024-01-16 - T1 - OANDA-UK-CARTER-2025-WAYBACK - MLK 18:00 ET reopen known; pre-witness final close unknown (#332)
+        (2024, 1, 16, Unsourced, T1, "OANDA-UK-CARTER-2025-WAYBACK"),
+        // 2024-02-19 - T1 - OANDA-UK-CARTER-2025-WAYBACK - Presidents Day closes 13:00 ET
+        (2024, 2, 19, early_close(13 * 3_600), T1, "OANDA-UK-CARTER-2025-WAYBACK"),
+        // 2024-02-20 - T1 - OANDA-UK-CARTER-2025-WAYBACK - Presidents Day 18:00 ET reopen known; pre-witness final close unknown (#332)
+        (2024, 2, 20, Unsourced, T1, "OANDA-UK-CARTER-2025-WAYBACK"),
+        // 2024-03-29 - T1 - OANDA-UK-CARTER-2025-WAYBACK - Good Friday: US indices and US bonds closed
+        (2024, 3, 29, Closed, T1, "OANDA-UK-CARTER-2025-WAYBACK"),
+        // 2024-05-27 - T1 - OANDA-UK-CARTER-2025-WAYBACK - Memorial Day closes 13:00 ET
+        (2024, 5, 27, early_close(13 * 3_600), T1, "OANDA-UK-CARTER-2025-WAYBACK"),
+        // 2024-05-28 - T1 - OANDA-UK-CARTER-2025-WAYBACK - Memorial evening reopen is literal 18:00 ET
+        (2024, 5, 28, ReplacementBlocks(&GROUP_1800_REOPEN), T1, "OANDA-UK-CARTER-2025-WAYBACK"),
+        // 2024-06-19 - T1 - OANDA-UK-CARTER-2025-WAYBACK - Juneteenth closes 13:00 ET
+        (2024, 6, 19, early_close(13 * 3_600), T1, "OANDA-UK-CARTER-2025-WAYBACK"),
+        // 2024-06-20 - T1 - OANDA-UK-CARTER-2025-WAYBACK - Juneteenth evening reopen is literal 18:00 ET
+        (2024, 6, 20, ReplacementBlocks(&GROUP_1800_REOPEN), T1, "OANDA-UK-CARTER-2025-WAYBACK"),
+        // 2024-07-03 - T1 - OANDA-UK-CARTER-2025-WAYBACK - Independence eve: only US index futures close 13:15 ET
+        (2024, 7, 3, early_close(13 * 3_600 + 15 * 60), T1, "OANDA-UK-CARTER-2025-WAYBACK"),
+        // 2024-07-04 - T1 - OANDA-UK-CARTER-2025-WAYBACK - Independence Day: retain prior 18:00 reopen and printed 13:00 close
+        (2024, 7, 4, ReplacementBlocks(&INDEPENDENCE_REOPEN), T1, "OANDA-UK-CARTER-2025-WAYBACK"),
+        // 2024-07-05 - T1 - OANDA-UK-CARTER-2025-WAYBACK - Independence evening reopen is literal 18:00 ET
+        (2024, 7, 5, ReplacementBlocks(&GROUP_1800_REOPEN), T1, "OANDA-UK-CARTER-2025-WAYBACK"),
+        // 2024-09-02 - T1 - OANDA-UK-CARTER-2025-WAYBACK - Labor Day closes 13:00 ET
+        (2024, 9, 2, early_close(13 * 3_600), T1, "OANDA-UK-CARTER-2025-WAYBACK"),
+        // 2024-09-03 - T1 - OANDA-UK-CARTER-2025-WAYBACK - Labor Day evening reopen is literal 18:00 ET
+        (2024, 9, 3, ReplacementBlocks(&GROUP_1800_REOPEN), T1, "OANDA-UK-CARTER-2025-WAYBACK"),
+        // 2024-11-28 - T1 - OANDA-UK-CARTER-2025-WAYBACK - Thanksgiving Thursday closes 13:00 ET
+        (2024, 11, 28, early_close(13 * 3_600), T1, "OANDA-UK-CARTER-2025-WAYBACK"),
+        // 2024-11-29 - T1 - OANDA-UK-CARTER-2025-WAYBACK - Thanksgiving Friday retains prior 18:00 reopen and printed 13:15 close
+        (2024, 11, 29, ReplacementBlocks(&THANKSGIVING_REOPEN), T1, "OANDA-UK-CARTER-2025-WAYBACK"),
+        // 2024-12-24 - T1 - OANDA-UK-CARTER-2025-WAYBACK - Christmas Eve: indices close 13:14 ET
+        (2024, 12, 24, early_close(13 * 3_600 + 14 * 60), T1, "OANDA-UK-CARTER-2025-WAYBACK"),
+        // 2024-12-25 - T1 - OANDA-UK-CARTER-2025-WAYBACK - Christmas: holiday closed before evening 18:04 ET reopen
+        (2024, 12, 25, Closed, T1, "OANDA-UK-CARTER-2025-WAYBACK"),
+        // 2024-12-26 - T1 - OANDA-UK-CARTER-2025-WAYBACK - Previous holiday reopens 18:04 ET
+        (2024, 12, 26, late_open(18 * 3_600 + 4 * 60), T1, "OANDA-UK-CARTER-2025-WAYBACK"),
         // 2025-01-01 - T1 - OANDA-UK-HOLIDAYS - New Year's Day: US indices and US bonds open late 18:04
         (2025, 1, 1, Closed, T1, "OANDA-UK-HOLIDAYS"),
         // 2025-01-02 - T1 - OANDA-UK-HOLIDAYS - New Year's Day evening reopen belongs to the following trade date

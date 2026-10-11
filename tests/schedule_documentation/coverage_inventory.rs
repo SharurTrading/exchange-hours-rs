@@ -865,7 +865,6 @@ fn date_level_incompleteness() -> &'static [(&'static str, usize)] {
         // and the Independence Day notice's Cotton 2025-07-07 late open added
         // one new disagreement date to the venue intersection.
         ("iceus", 42),
-        ("lse", 5),
         // 7 since the 2026-10-06 second pass: three more Muhurat circulars
         // (2010, 2015, 2016) landed as replacement blocks and the recovered
         // 2012 list carried that year's own withheld Muhurat date in.
@@ -1009,8 +1008,8 @@ fn inventory_completeness_verdicts_match_the_metadata() {
     }
     assert_eq!(
         (complete, incomplete, no_coverage),
-        (30, 6, 0),
-        "the inventory's verdict shapes: thirty complete, six incomplete, none with no 2025 \
+        (31, 5, 0),
+        "the inventory's verdict shapes: thirty-one complete, five incomplete, none with no 2025 \
          coverage (eurex joined the complete group on 2026-10-05 UTC: its #157 `tba` \
          declaration retired when the no-changes verification established that the German-scope \
          closures the 2025 and 2026 editions never dated never existed, so the era answers from \
@@ -1037,7 +1036,7 @@ fn inventory_completeness_verdicts_match_the_metadata() {
          to the 2010-01-01 floor the same day (the operator's own SEC filings and archived Trading \
          Hours page — #231's last half discharged); tse and \
          sse windows end at the operators' horizons, and nse_india's Muhurat dates are Unsourced; \
-         the same date's European/Canadian activation makes lse carry five Unsourced 2025 dates, \
+         the LSE public mirror closes its five 2025 withheld dates on 2026-10-11 UTC, \
          euronext_paris two announced-but-unstated 2026 eves, the 2026-09-29/30 UTC backfills \
          recovered tsx's 2010-2014 releases, and the 2026-10-02 UTC wire-mirror and page \
          recoveries closed tsx's 2013-08-19..2014-01-01 and 2014-07-02..2016-12-31 spans, \

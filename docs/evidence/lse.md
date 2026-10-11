@@ -62,16 +62,24 @@ close from 12:30 London time onwards` — naming the dates in the sentence; the 
 generations carry the same statement per row. LSE runs no overnight session, so an event date
 and its trade date are one civil day and the conversion is the identity.
 
-**Five 2025 dates are not audited.** The rolling table had already moved past 2025-04-18,
-2025-04-21, 2025-05-05, 2025-05-26 and 2025-08-25 when the first 2025-era capture was taken
-(the 2025-12-18 table starts at 2025-12-24), the Wayback CDX index holds exactly four captures
-of the API URL (2024-02-07, 2024-03-08, 2025-12-18, 2026-06-17 — queried 2026-09-28 ~01:25 UTC),
-and archive.today holds no snapshot, so no surviving T1 or T2 artifact states those five dates.
-T3 restatements exist on the open web (mrtopstep.com, ebc.com, apricotcapital.am) and cannot
-key rows (LAW-PRIMARY-SOURCES). The five dates ship as `Unsourced` rather than as silence,
-because a date inside the window without a row would claim "audited normal", which nothing
-here can support. **Closing condition:** a capture of the business-days API dated inside the
-2025-01-02..2025-12-17 gap, or the operator's re-publication of a 2025 table.
+**Five 2025 closures recovered 2026-10-11 UTC.** PDF page 14 of the
+University of Rijeka Ekoninfochecker report preserves a screenshot of the
+operator's English Business Days table, with its source URL printed beneath
+it. This is the operator table itself, rather than the surrounding author's
+Croatian interpretation. Its header `On Exchange Trading Services`, row
+labels, `NON-trading day.` wording and EUI settlement note match the
+operator's captured Business Days tables. The nine visible rows run from
+18 April through 31 December 2025; the last four independently agree with
+`LSE-BUSDAYS-2025-12-18`, including both 12:30 half days. The screenshot
+states all five formerly withheld spring/summer dates as `NON-trading day.`.
+Under LAW-PRIMARY-SOURCES and LAW-PUBLIC-SOURCES, that verbatim public mirror
+is T1. PDF metadata reports creation on 2025-07-02; the dated rows establish
+the event year themselves, and the metadata is not an exchange effective day.
+The original PDF is saved at
+`holidays/raw/lse-public-mirror-2026-10-11/Karla-Mijic-1.pdf` in the evidence
+store. Text extraction omits the screenshot: verify its page pixels.
+The archived-channel negative searches remain history below; this additional
+channel closes their five date-level gaps.
 
 ### 2010
 
@@ -306,11 +314,11 @@ here can support. **Closing condition:** a capture of the business-days API date
 | Trade date | Kind | Instant as printed | Document | Tier | Derived from |
 |---|---|---|---|---|---|
 | 2025-01-01 | closed | `New Year Day` — `Wednesday 1 January 2025` — `NON-trading day.` | `LSE-BUSDAYS-2024-02-07` | T1 | the operator's own event date; no overnight session, so the trade date is the same civil day |
-| 2025-04-18 | unsourced | — (the rolling table had rolled past the date before any surviving capture) | `LSE-BUSDAYS-2025-12-18` | T1 | no surviving artifact states the date; no status claimed |
-| 2025-04-21 | unsourced | — (same rolling-table gap) | `LSE-BUSDAYS-2025-12-18` | T1 | no surviving artifact states the date; no status claimed |
-| 2025-05-05 | unsourced | — (same rolling-table gap) | `LSE-BUSDAYS-2025-12-18` | T1 | no surviving artifact states the date; no status claimed |
-| 2025-05-26 | unsourced | — (same rolling-table gap) | `LSE-BUSDAYS-2025-12-18` | T1 | no surviving artifact states the date; no status claimed |
-| 2025-08-25 | unsourced | — (same rolling-table gap) | `LSE-BUSDAYS-2025-12-18` | T1 | no surviving artifact states the date; no status claimed |
+| 2025-04-18 | closed | `Friday 18 April 2025` — `NON-trading day.` | `LSE-BUSDAYS-2025-PUBLIC-MIRROR` | T1 | operator table screenshot, PDF page 14; event date equals trade date |
+| 2025-04-21 | closed | `Monday 21 April 2025` — `NON-trading day.` | `LSE-BUSDAYS-2025-PUBLIC-MIRROR` | T1 | operator table screenshot, PDF page 14; event date equals trade date |
+| 2025-05-05 | closed | `Monday 5 May 2025` — `NON-trading day.` | `LSE-BUSDAYS-2025-PUBLIC-MIRROR` | T1 | operator table screenshot, PDF page 14; event date equals trade date |
+| 2025-05-26 | closed | `Monday 26 May 2025` — `NON-trading day.` | `LSE-BUSDAYS-2025-PUBLIC-MIRROR` | T1 | operator table screenshot, PDF page 14; event date equals trade date |
+| 2025-08-25 | closed | `Monday 25 August 2025` — `NON-trading day.` | `LSE-BUSDAYS-2025-PUBLIC-MIRROR` | T1 | operator table screenshot, PDF page 14; event date equals trade date |
 | 2025-12-24 | early close | `Christmas Holiday half day` — `Markets closing process commences from 12:30 London time.` | `LSE-BUSDAYS-2025-12-18` | T1 | the printed event date 24 December 2025; the day's final close is the printed 12:30 London time |
 | 2025-12-25 | closed | `Christmas Day` — `Thursday 25 December 2025` — `NON-trading day.` | `LSE-BUSDAYS-2025-12-18` | T1 | the operator's own event date; trade date is the same civil day |
 | 2025-12-26 | closed | `Boxing Day` — `Friday 26 December 2025` — `NON-trading day.` | `LSE-BUSDAYS-2025-12-18` | T1 | the operator's own event date; trade date is the same civil day |
@@ -391,6 +399,7 @@ no other half days are printed in any audited year.
 | `LSE-BUSDAYS-API-2023-04-10` | 2023-04-07 .. 2024-01-01 | <https://web.archive.org/web/20230410163738id_/https://api.londonstockexchange.com/api/v1/pages?path=securities-trading%2Ftrading-access%2Fbusiness-days&parameters=> | Wayback `id_` replay of capture `20230410163738`, retrieved 2026-09-29 05:36 UTC | T1 | `e4db7c06f9263f60ededc8fea5fecd6b58269d38928a0567b5e6950292f856e5` |
 | `LSE-BUSDAYS-2024-02-07` | 2024-03-29 .. 2025-01-01 | <https://web.archive.org/web/20240207115235id_/https://api.londonstockexchange.com/api/v1/pages?path=equities-trading/business-days&parameters=> | Wayback `id_` replay of capture `20240207115235`, retrieved 2026-09-28 01:28 UTC | T1 | `4730c509be75be779d106ccad036eae4f515bc6524613951126b33491b40a90b` |
 | `LSE-BUSDAYS-2024-03-08` | 2024-03-29 .. 2025-01-01 | <https://web.archive.org/web/20240308200156id_/https://api.londonstockexchange.com/api/v1/pages?path=equities-trading/business-days&parameters=> | Wayback `id_` replay of capture `20240308200156`, retrieved 2026-09-28 01:36 UTC | T1 | `dbcdccd7ef5bae333856d86819ad9f1908df3b5bab4fa6354e891d3ce99300db` |
+| `LSE-BUSDAYS-2025-PUBLIC-MIRROR` | 2025-04-18 .. 2025-12-31 | <https://ekoninfochecker.efri.uniri.hr/wp-content/uploads/2025/07/Karla-Mijic-1.pdf> | Verbatim screenshot of operator Business Days table, PDF page 14; retrieved 2026-10-11 UTC | T1 | `f1b0cb2dd0280e0c6e7c69f201558cc337c6aa6b12a93fb7a695abce5709434f` |
 | `LSE-BUSDAYS-2025-12-18` | 2025-12-24 .. 2027-12-31 | <https://web.archive.org/web/20251218172240id_/https://api.londonstockexchange.com/api/v1/pages?path=equities-trading/business-days&parameters=> | Wayback `id_` replay of capture `20251218172240`, retrieved 2026-09-28 01:30 UTC | T1 | `e7d81b189bd75137b2e51136b2d6979d780dd3d50b95c111ef5acbdd38d49a11` |
 | `LSE-BUSDAYS-2026-06-17` | 2026-05-04 .. 2029-01-01 | <https://web.archive.org/web/20260617134453id_/https://api.londonstockexchange.com/api/v1/pages?path=equities-trading/business-days&parameters=> | Wayback `id_` replay of capture `20260617134453`, retrieved 2026-09-28 01:30 UTC | T1 | `1759a375014f079d7725ac0c08293073d9d27c8d9a28e1999d7f611d7145270a` |
 | `LSE-BUSDAYS-LIVE-2026-09-28` | 2026-08-31 .. 2029-01-01 | <https://api.londonstockexchange.com/api/v1/pages?path=equities-trading/business-days> | retrieved 2026-09-28 01:16 | T1 | `4f9f6f3aef9ab02874112c05c0c07ac4529e6c38e7ad74d0aa41735853a87a7f` |
@@ -420,8 +429,8 @@ directory's `INDEX.md`).
 
 - **Interpretive step, order-entry classification.** Pre-trading 07:00–07:50 is modelled `order_entry` on MIT201 section 4.4, which lists it as a scheduled trading session distinct from the executable phases of the order-book day. No on-book execution can occur before the opening auction uncrosses. Closing condition: none needed; a later MIT201 edition that reclassifies the phase would move it.
 - **Interpretive step, randomized uncrosses.** The opening uncross, the intraday auction uncross and the closing uncross are each randomized. The deterministic profile holds the auction classification through the latest possible edge (08:00:30, 12:02:30, 16:35:30), so the calendar never reports continuous trading while an auction can still run. This is the crate's conservative-envelope convention, not an operator statement about any individual security.
-- **Holiday coverage, five 2025 dates.** 2025-04-18, 2025-04-21, 2025-05-05, 2025-05-26 and 2025-08-25 are inside the audited window with `Unsourced` rows: the operator's rolling business-days table had moved past them before any surviving capture, and no archived or live artifact states them (checked 2026-09-28). The dates are Good Friday, Easter Monday and the three bank-holiday Mondays, so the crate claims nothing about them rather than an unaudited closure. Closing condition: a capture of the business-days API dated inside the 2025-01-02..2025-12-17 gap. Re-checked 2026-10-09 (UTC): the CDX query for the API URL across 2025-03..2025-12 returns exactly one capture, the 2025-12-18 one this file already reads, so no earlier 2025 capture exists to close the gap from the API side. The 2026-10-09 (UTC) Common Crawl sweep closed the second archive: the API has zero captures in the 2025 collections (store `holidays/raw/cc-sweeps-2026-10-09.txt`). A third channel closed negative on 2026-10-10 (UTC): the old `lseg.com` Business days page that tiled 2013-2020 answers **301** from 2021 onward, and its redirect target (`londonstockexchange.com/securities-trading/trading-access/business-days`) has exactly two 200 captures inside 2024-2025 — 2024-05-19 and 2025-08-07 — and both are client-side application shells whose bytes state no holiday and no date; the table loads from a runtime API the archive never captured, so no archived byte of the page lists any 2025 holiday (store `holidays/raw/lse-business-days-2024-2025-negatives/`).
-- **Holiday coverage gap 2015-01-02..2019-12-31 and 2020-01-01..2020-05-25 — CLOSED as data (2026-10-02 UTC; [#218](https://github.com/SharurTrading/exchange-hours-rs/issues/218)).** The gap existed because the `.htm` Business days page died in February 2014 and the 2020 SPA page's first Wayback capture is 2020-07-31. The 2026-09-29 search covered both `.htm` URL forms, the `/trade/` prefix, `docs.londonstockexchange.com`, the business-days API URL and a domain-wide `lseg.com` sweep (5 000 collapsed url keys — a CDX truncation, as it turned out: the sweep's cap hid the exchange's own page on the group site). The close came through the operator's own pointer: the December 2015 service announcement `live001-03122015` (capture `20170916002832` — a class the earlier holiday/business-day URL-name greps could not see) cites `www.lseg.com/businessdays` for "Full details of London Stock Exchange trading and EUI settlement days"; that URL 301s (capture `20160423171007`) to `lseg.com/areas-expertise/our-markets/london-stock-exchange/equities-markets/trading-services/business-days`, whose the URL's 155 CDX rows (2013-10-04..2020-07-23) comprise 89 HTTP-200 captures — running continuously from 2013-10-04 to 2020-06-14 — plus 37 redirects and 29 revisits. Seventeen `id_` replays (sha256s in the store's `evidence-thread/SHA256SUMS-lseg-2026-10-02.txt`) tile both former gaps: the 2015-01-03 capture prints all 2015 rows, the 2015-12-21 capture all 2016 rows, the 2016-11-22 capture all 2017 rows, the 2017-12-02 capture all 2018 rows and 2019-01-01, the 2018-10-01 and 2019-03-26 captures the rest of 2019, the 2019-06-14 capture the moved 2020-05-08 VE Day holiday, and the 2019-12-19 capture the whole 2020 year — while the 2020-03-17 capture is dated inside 2020-01-01..2020-05-25 and prints 2020-04-10..2020-12-31, meeting the issue's second closing condition by the letter. The rows and their citations are above; the coverage verdict over 2015-2020 is now audited normal/closed exactly as printed. The five 2025 rolling-table dates below remain the only unaudited dates in the window.
+- **Holiday coverage, five 2025 dates — closed as data 2026-10-11 UTC.** The public mirror described above closes this former gap; the following paragraph records the earlier searches. 2025-04-18, 2025-04-21, 2025-05-05, 2025-05-26 and 2025-08-25 are inside the audited window with `Unsourced` rows: the operator's rolling business-days table had moved past them before any surviving capture, and no archived or live artifact states them (checked 2026-09-28). The dates are Good Friday, Easter Monday and the three bank-holiday Mondays, so the crate claims nothing about them rather than an unaudited closure. Closing condition: a capture of the business-days API dated inside the 2025-01-02..2025-12-17 gap. Re-checked 2026-10-09 (UTC): the CDX query for the API URL across 2025-03..2025-12 returns exactly one capture, the 2025-12-18 one this file already reads, so no earlier 2025 capture exists to close the gap from the API side. The 2026-10-09 (UTC) Common Crawl sweep closed the second archive: the API has zero captures in the 2025 collections (store `holidays/raw/cc-sweeps-2026-10-09.txt`). A third channel closed negative on 2026-10-10 (UTC): the old `lseg.com` Business days page that tiled 2013-2020 answers **301** from 2021 onward, and its redirect target (`londonstockexchange.com/securities-trading/trading-access/business-days`) has exactly two 200 captures inside 2024-2025 — 2024-05-19 and 2025-08-07 — and both are client-side application shells whose bytes state no holiday and no date; the table loads from a runtime API the archive never captured, so no archived byte of the page lists any 2025 holiday (store `holidays/raw/lse-business-days-2024-2025-negatives/`).
+- **Holiday coverage gap 2015-01-02..2019-12-31 and 2020-01-01..2020-05-25 — CLOSED as data (2026-10-02 UTC; [#218](https://github.com/SharurTrading/exchange-hours-rs/issues/218)).** The gap existed because the `.htm` Business days page died in February 2014 and the 2020 SPA page's first Wayback capture is 2020-07-31. The 2026-09-29 search covered both `.htm` URL forms, the `/trade/` prefix, `docs.londonstockexchange.com`, the business-days API URL and a domain-wide `lseg.com` sweep (5 000 collapsed url keys — a CDX truncation, as it turned out: the sweep's cap hid the exchange's own page on the group site). The close came through the operator's own pointer: the December 2015 service announcement `live001-03122015` (capture `20170916002832` — a class the earlier holiday/business-day URL-name greps could not see) cites `www.lseg.com/businessdays` for "Full details of London Stock Exchange trading and EUI settlement days"; that URL 301s (capture `20160423171007`) to `lseg.com/areas-expertise/our-markets/london-stock-exchange/equities-markets/trading-services/business-days`, whose the URL's 155 CDX rows (2013-10-04..2020-07-23) comprise 89 HTTP-200 captures — running continuously from 2013-10-04 to 2020-06-14 — plus 37 redirects and 29 revisits. Seventeen `id_` replays (sha256s in the store's `evidence-thread/SHA256SUMS-lseg-2026-10-02.txt`) tile both former gaps: the 2015-01-03 capture prints all 2015 rows, the 2015-12-21 capture all 2016 rows, the 2016-11-22 capture all 2017 rows, the 2017-12-02 capture all 2018 rows and 2019-01-01, the 2018-10-01 and 2019-03-26 captures the rest of 2019, the 2019-06-14 capture the moved 2020-05-08 VE Day holiday, and the 2019-12-19 capture the whole 2020 year — while the 2020-03-17 capture is dated inside 2020-01-01..2020-05-25 and prints 2020-04-10..2020-12-31, meeting the issue's second closing condition by the letter. The rows and their citations are above; the coverage verdict over 2015-2020 is now audited normal/closed exactly as printed. The five 2025 rolling-table dates were the remaining unaudited dates until the public mirror recovered them on 2026-10-11 UTC.
 - **Holiday coverage gap, 2020-01-01..2020-08-30 (tracked as [#218](https://github.com/SharurTrading/exchange-hours-rs/issues/218)).** The first capture of the `/trade/trading-access/business-days` page is 2020-07-31 and its table starts at 2020-08-31, so New Year 2020, the Easter dates, the VE-Day-moved Early May holiday and Spring 2020 are stated by no surviving artifact (CDX checked 2026-09-29 UTC, including `?lang=` and `?mod=` variants). **Retried 2026-09-29 UTC with the CDX service back up:** the URL's full capture list (26 entries, 2020-07-31 through 2026-03-15) still opens at 2020-07-31, the `?lang=en` and `?mod=article_inline` variants are captured only from 2020-09-19 and 2020-12-21, and a Memento TimeTravel timemap query over both Business-days URLs returned no additional archive. Queries inside the span refuse. Closing condition: a capture dated 2020-01-01..2020-05-25.
 
 ## Module narrative (moved from src/calendar/schedules/equities/europe/lse.rs on 2026-10-02 UTC)
@@ -434,3 +443,53 @@ https://docs.londonstockexchange.com/sites/default/files/documents/n1512_attach1
 https://docs.londonstockexchange.com/sites/default/files/documents/mit501.pdf
 https://docs.londonstockexchange.com/sites/default/files/documents/servicetechnicaldescriptionintroductionofnewtradingcurrencies.pdf
 https://docs.londonstockexchange.com/sites/default/files/documents/mit201-guide-to-the-trading-system-15-6-20240429.pdf
+
+## Holiday module narrative moved 2026-10-11 UTC
+
+London Stock Exchange (SETS) holiday rows, 2010-2027 in one audited
+window.
+
+Keyed by the crate's own venue-local trade date in `Europe/London`. LSE runs
+no overnight session, so an event date and its trade date are one civil day
+and the conversion is the identity.
+
+The whole block is **T1**: the operator's own holiday table. It has run on
+four generations of the operator's own channels — "The Public and Bank
+Holidays in England & Wales" on the `.htm` Business days page of 2010-2014;
+the same page on the operator group's own site
+(`lseg.com/areas-expertise/our-markets/london-stock-exchange/.../business-days`,
+to which `lseg.com/businessdays` redirects and which the operator's own
+service announcements cite, captured continuously 2013-10..2020-07 — the
+operator's December 2015 announcement `live001-03122015` names it as the
+place where "Full details of London Stock Exchange trading and EUI
+settlement days can be found"); then the server-rendered "Bank holidays and
+their impact on our trading services" table of the 2020 SPA page; then the
+same table delivered by the content API behind `londonstockexchange.com`.
+The table is **rolling** — it lists business days from the present forward
+to the next New Year — so every audited year is pinned by captures taken
+inside it or just before it; the thirty-six archived states are listed in
+the evidence file's `### Documents` table. The 2015-2019 and January-August
+2020 spans that the `.htm` captures miss are printed by the `lseg.com`
+channel's captures (found 2026-10-02 UTC; the closing capture of the
+2020-05-25 window is `20200317072237`), so coverage is one continuous
+window.
+
+Half days are **early closes at the operator's own instant**: the sheet
+states `Markets closing process commences from 12:30 London time.` for the
+Christmas-period half days (2010-2012 in the words `all Exchange markets
+will close from 12:30 London time onwards`), so the day's final close is
+12:30 and the closing-auction phase that would follow disappears rather
+than being invented. The half days are not always 24/31 December: 2011's
+fell on Friday 23 and Friday 30 December, 2016's on Friday 23 and Friday
+30, 2017's on Friday 22 and Friday 29 and 2022's on Friday 23 and Friday
+30 December, as printed. No other date carries an early close in any
+audited year.
+
+Five 2025 dates — 2025-04-18, 2025-04-21, 2025-05-05, 2025-05-26 and
+2025-08-25 — are inside the second window but **not audited**: the rolling
+table had already moved past them when the first 2025-era capture was taken
+(2025-12-18 starts at 2025-12-24) and the Wayback index holds no capture of
+the gap, so the rows ship as `Unsourced` and claim no closure.
+
+
+The final paragraph above records the former gap; the public mirror closes it.

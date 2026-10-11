@@ -40,7 +40,7 @@ Christmas sections name this book.
 
 ## Holidays
 
-**Coverage:** 2025-01-01..2026-10-30 (inclusive trade dates; the operator's
+**Coverage:** 2024-02-21..2026-10-30 (inclusive trade dates; the operator's
 own holiday page's dated sections, all times Eastern). Tier: T1 throughout.
 
 The group is the page's `US energies and metals` (2026 sections, `US
@@ -50,6 +50,25 @@ on the holidays themselves and `open late 18:04` on New Year's Day 2025,
 late against this book's own 18:01 open. Where a
 section splits energy from metals (Christmas Eve 2025: both `13:44`) the
 rows agree.
+
+### 2024
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2024-03-29 | closed | `— (closed)` | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | The dated UK section states US energies and metals; this key owns the five US commodity-CFD listings. Literal reopens combine with the normal close from OANDA-UK-HOURS-2024-WAYBACK after its witness; no spot-metals 18:05 opening is borrowed. |
+| 2024-05-27 | early close | `14:30 ET` | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | The dated UK section states US energies and metals; this key owns the five US commodity-CFD listings. Literal reopens combine with the normal close from OANDA-UK-HOURS-2024-WAYBACK after its witness; no spot-metals 18:05 opening is borrowed. |
+| 2024-05-28 | replacement blocks | `18:00 ET reopen; normal 16:59 ET close` | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | The dated UK section states US energies and metals; this key owns the five US commodity-CFD listings. Literal reopens combine with the normal close from OANDA-UK-HOURS-2024-WAYBACK after its witness; no spot-metals 18:05 opening is borrowed. |
+| 2024-06-19 | early close | `14:30 ET` | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | The dated UK section states US energies and metals; this key owns the five US commodity-CFD listings. Literal reopens combine with the normal close from OANDA-UK-HOURS-2024-WAYBACK after its witness; no spot-metals 18:05 opening is borrowed. |
+| 2024-06-20 | replacement blocks | `18:00 ET reopen; normal 16:59 ET close` | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | The dated UK section states US energies and metals; this key owns the five US commodity-CFD listings. Literal reopens combine with the normal close from OANDA-UK-HOURS-2024-WAYBACK after its witness; no spot-metals 18:05 opening is borrowed. |
+| 2024-07-04 | early close | `14:30 ET` | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | The dated UK section states US energies and metals; this key owns the five US commodity-CFD listings. Literal reopens combine with the normal close from OANDA-UK-HOURS-2024-WAYBACK after its witness; no spot-metals 18:05 opening is borrowed. |
+| 2024-07-05 | replacement blocks | `18:00 ET reopen; normal 16:59 ET close` | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | The dated UK section states US energies and metals; this key owns the five US commodity-CFD listings. Literal reopens combine with the normal close from OANDA-UK-HOURS-2024-WAYBACK after its witness; no spot-metals 18:05 opening is borrowed. |
+| 2024-09-02 | early close | `14:30 ET` | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | The dated UK section states US energies and metals; this key owns the five US commodity-CFD listings. Literal reopens combine with the normal close from OANDA-UK-HOURS-2024-WAYBACK after its witness; no spot-metals 18:05 opening is borrowed. |
+| 2024-09-03 | replacement blocks | `18:00 ET reopen; normal 16:59 ET close` | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | The dated UK section states US energies and metals; this key owns the five US commodity-CFD listings. Literal reopens combine with the normal close from OANDA-UK-HOURS-2024-WAYBACK after its witness; no spot-metals 18:05 opening is borrowed. |
+| 2024-11-28 | early close | `14:30 ET` | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | The dated UK section states US energies and metals; this key owns the five US commodity-CFD listings. Literal reopens combine with the normal close from OANDA-UK-HOURS-2024-WAYBACK after its witness; no spot-metals 18:05 opening is borrowed. |
+| 2024-11-29 | replacement blocks | `18:00 ET reopen; 14:45 ET close` | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | The dated UK section states US energies and metals; this key owns the five US commodity-CFD listings. Literal reopens combine with the normal close from OANDA-UK-HOURS-2024-WAYBACK after its witness; no spot-metals 18:05 opening is borrowed. |
+| 2024-12-24 | early close | `13:44 ET` | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | The dated UK section states US energies and metals; this key owns the five US commodity-CFD listings. Literal reopens combine with the normal close from OANDA-UK-HOURS-2024-WAYBACK after its witness; no spot-metals 18:05 opening is borrowed. |
+| 2024-12-25 | closed | `— (closed)` | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | The dated UK section states US energies and metals; this key owns the five US commodity-CFD listings. Literal reopens combine with the normal close from OANDA-UK-HOURS-2024-WAYBACK after its witness; no spot-metals 18:05 opening is borrowed. |
+| 2024-12-26 | late open | `18:04 ET` | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | The dated UK section states US energies and metals; this key owns the five US commodity-CFD listings. Literal reopens combine with the normal close from OANDA-UK-HOURS-2024-WAYBACK after its witness; no spot-metals 18:05 opening is borrowed. |
 
 ### 2025
 
@@ -109,7 +128,10 @@ the span below the 2024 witness is carried, not served.
 The Documents table governing this row is
 [`oanda_fx.md`](oanda_fx.md)'s, which cites the hours page (PDF and HTML),
 the holiday page, and the 2024 and 2022 Wayback captures; the digests there
-govern here too.
+govern here too. The archived 2024 rows additionally resolve
+`OANDA-UK-CARTER-2025-WAYBACK` through
+[`oanda_us_index_cfd.md`](oanda_us_index_cfd.md)'s Documents table,
+sha256 `467313685d4d64a4b95e5112a58d0fa04583f0abe988b1478d41fddf8b04cf1c`.
 
 ## Gaps and residual risks
 
@@ -134,3 +156,7 @@ trading day, including any next-day early close and Brent's late segment.
 
 Pending-order storage outside the printed trading windows is a broker facility,
 not a timed session phase; see [the shared scope decision](oanda_fx.md#pending-orders-and-session-scope--2026-10-11-utc) (#333).
+
+## Archived 2024 scope — 2026-10-11 UTC
+
+The March 2025 UK archive retains every dated 2024 holiday section through New Year's Eve. Fourteen US-energy/commodity-metals arrangements ship from the 2024-02-21 normal-grid witness; earlier dates are not audited by this window. The listed US energies and metals use the 18:01–16:59 ET normal grid, distinct from spot metals. The four 18:00 ET reopens that lead to a normal final close require complete replacements; a fifth 18:00 ET reopen on Thanksgiving also preserves Friday's 14:45 ET close. Christmas's 18:04 ET reopen is later than this key's 18:01 normal opening, so it is a late open. The 2024-07-03 section names only index futures; under this US-energy book's rows-only vocabulary no commodity exception is published there. The 2024-12-31 16:59 ET close is normal and creates no row. All fourteen rows cite the byte-identical Carter artifact through oanda_us_index_cfd.md's Documents table.

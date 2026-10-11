@@ -339,7 +339,7 @@ Where a residual uncertainty survives, it is **instant-level and disclosed**, no
 a withheld day: the ledger's Basis cell states what is uncertain (typically the
 exact day an operator system setting changed, where every other fact is sourced)
 and the crate serves the window that holds under every sourced state around it.
-Per-family holiday and early-close tables ship for 50 of the 141 ledger rows,
+Per-family holiday and early-close tables ship for 52 of the 141 ledger rows,
 each over its own audited trade-date window; scopes without a built-in table
 reach holidays through the caller's `DayPolicy`.
 
@@ -382,7 +382,7 @@ will remain unchanged after the review date. They cover recurring weekday
 phases, time zones, lunch and maintenance gaps, and weekend boundaries. They
 exclude holidays, half-days, one-off closures or halts, severe-weather
 exceptions, and product-specific variations outside a row's stated scope:
-per-family holiday and early-close tables ship for 50 of the 141 ledger rows,
+per-family holiday and early-close tables ship for 52 of the 141 ledger rows,
 each over the trade-date window its Holidays cell names, and none of that data
 is included in the counts above, which are about normal weeks. A change confined to a
 single trade date — an early final close, a late first open, or a full

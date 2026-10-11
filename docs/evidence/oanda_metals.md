@@ -40,7 +40,7 @@ grid.
 
 ## Holidays
 
-**Coverage:** 2025-01-01..2026-10-30 (inclusive trade dates; the operator's
+**Coverage:** 2024-02-21..2026-10-30 (inclusive trade dates; the operator's
 own holiday page's dated sections, all times Eastern). Tier: T1 throughout.
 
 The page's `US energies and metals` group covers this book as well as the
@@ -53,6 +53,37 @@ and the Holy Thursday 17:00 close are encoded numerically, even though the
 page calls them "late" and "early" against today's normal 18:05/16:59 grid.
 No rounding or retrospective extension of the 2026-05-25 parenthetical is
 used. Evening reopens belong to the following trade date.
+
+### 2024
+
+`OANDA-UK-CARTER-2025-WAYBACK` gives these literal Eastern-time
+arrangements. Evening reopens attach to the following trade date; normal
+closes remain 16:59 except Thanksgiving Friday's explicit 14:45.
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2024-03-29 | closed | — | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | Good Friday: US energies and metals closed |
+| 2024-05-27 | early close | 14:30 | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | Memorial Day group close |
+| 2024-05-28 | replacement blocks | prior day 18:00..16:59 | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | Memorial Day group reopen |
+| 2024-06-19 | early close | 14:30 | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | Juneteenth group close |
+| 2024-06-20 | replacement blocks | prior day 18:00..16:59 | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | Juneteenth group reopen |
+| 2024-07-04 | early close | 14:30 | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | Independence Day group close |
+| 2024-07-05 | replacement blocks | prior day 18:00..16:59 | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | Independence Day group reopen |
+| 2024-09-02 | early close | 14:30 | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | Labor Day group close |
+| 2024-09-03 | replacement blocks | prior day 18:00..16:59 | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | Labor Day group reopen |
+| 2024-11-28 | early close | 14:30 | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | Thanksgiving Thursday group close |
+| 2024-11-29 | replacement blocks | prior day 18:00..14:45 | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | Thanksgiving Thursday reopen and Friday close |
+| 2024-12-24 | early close | 13:44 | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | Christmas Eve: Metals close early 13:44 |
+| 2024-12-25 | closed | — | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | Christmas Day until 18:04 evening reopen |
+| 2024-12-26 | replacement blocks | prior day 18:04..16:59 | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | Christmas Day: Metals open late 18:04 |
+
+These fourteen T1 rows extend coverage to 2024-02-21, the current normal
+week's sourced boundary, and increase this table from 32 to 46 rows. The
+archive prints January and February 2024 arrangements too, but their
+normal-week history remains unresolved, so this extension starts at the
+existing normal-week knowledge boundary. The operator's changes-only page
+supplies audited normal days where it states no change to this metals book.
+Artifact: `normal-weeks/oanda-history-audit-2026-10-11/oanda-uk-holidays-20250326184653.html`.
 
 ### 2025
 
@@ -121,6 +152,7 @@ witness is carried, not served.
 | `OANDA-UK-HOLIDAYS` | 2025-01-01 .. 2026-10-30 | <https://www.oanda.com/uk-en/trading/holiday-trading-hours> | captured 2026-10-10 22:44 | T1 | `c7137ce3da4cc19d0431955feedc10fb6b9731214ad3cfc7966160e72f8559da` |
 | `OANDA-UK-HOURS-2024-WAYBACK` | 2024-02-21 | <https://web.archive.org/web/20240221005503id_/https://www.oanda.com/uk-en/trading/hours-of-operation/> | Wayback `id_` replay of capture `20240221005503`, retrieved 2026-10-10 UTC | T1 | `aab9b3032c1d53e6155009fce6a5156983c2d21a2f0bd768f1860f465b8b6a63` |
 | `OANDA-UK-HOURS-2022-WAYBACK` | 2022-05-18 | <https://web.archive.org/web/20220518092953id_/https://www.oanda.com/uk-en/trading/hours-of-operation/> | Wayback `id_` replay of capture `20220518092953`, retrieved 2026-10-10 UTC | T1 | `8dd71db7accc2a40faeb531f0c5c29db0eb289c9ef45a69bc14b75148257cbea` |
+| `OANDA-UK-CARTER-2025-WAYBACK` | 2025-01-09 | <https://web.archive.org/web/20250326184653id_/https://www.oanda.com/uk-en/trading/holiday-trading-hours/> | capture 2025-03-26; retrieved 2026-10-11 UTC | T1 | `467313685d4d64a4b95e5112a58d0fa04583f0abe988b1478d41fddf8b04cf1c` |
 
 Store paths: see [`oanda_fx.md`](oanda_fx.md).
 

@@ -3221,12 +3221,9 @@ mod lse {
     }
 
     #[test]
-    fn the_rolling_table_gap_dates_claim_nothing() {
+    fn public_operator_table_mirror_closes_the_five_2025_dates() {
         let calendar = lse();
-        // The operator's table is rolling and the Wayback index holds no
-        // capture of the 2025-01-02..2025-12-17 gap, so these five dates ship
-        // `Unsourced` and every derivation that reads them refuses rather
-        // than claims.
+        // Read independently from the operator table screenshot on PDF page 14.
         for date in [
             (2025, 4, 18),
             (2025, 4, 21),
@@ -3234,24 +3231,13 @@ mod lse {
             (2025, 5, 26),
             (2025, 8, 25),
         ] {
+            let holiday = calendar.holiday_on(day(date.0, date.1, date.2)).unwrap();
+            assert_eq!(holiday.kind(), HolidayKind::Closed);
+            assert_eq!(holiday.document_id(), "LSE-BUSDAYS-2025-PUBLIC-MIRROR");
+            assert_closure(calendar, date, "lse");
             assert_eq!(
-                calendar
-                    .holiday_on(day(date.0, date.1, date.2))
-                    .map(Holiday::kind),
-                Some(HolidayKind::Unsourced),
-                "lse {date:?} must ship an Unsourced row, not a claimed closure"
-            );
-            assert!(
-                calendar
-                    .is_open(london(date, (12, 0, 0)))
-                    .is_err_and(|error| matches!(error, CalendarQueryError::UnresolvedGap { .. })),
-                "lse {date:?}: is_open must refuse rather than claim"
-            );
-            assert!(
-                calendar
-                    .is_closed_trade_date(day(date.0, date.1, date.2), SessionKind::Both)
-                    .is_err_and(|error| matches!(error, CalendarQueryError::UnresolvedGap { .. })),
-                "lse {date:?}: the trade-date closure question must refuse"
+                calendar.is_closed_trade_date(day(date.0, date.1, date.2), SessionKind::Both),
+                Ok(true)
             );
         }
     }
@@ -3319,7 +3305,7 @@ mod lse {
         assert_eq!(
             rows.len(),
             184,
-            "143 closures, 36 half days, five rolling-table gaps — one audited window, 2010-2027"
+            "148 closures, 36 half days, no withheld dates — one audited window, 2010-2027"
         );
         let expected: [(i32, (usize, usize, usize, usize)); 18] = [
             (2010, (8, 2, 0, 0)),
@@ -3337,7 +3323,7 @@ mod lse {
             (2022, (9, 2, 0, 0)),
             (2023, (9, 2, 0, 0)),
             (2024, (8, 2, 0, 0)),
-            (2025, (3, 2, 0, 5)),
+            (2025, (8, 2, 0, 0)),
             (2026, (8, 2, 0, 0)),
             (2027, (8, 2, 0, 0)),
         ];

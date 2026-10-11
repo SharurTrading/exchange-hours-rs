@@ -41,10 +41,12 @@
 
 mod asx;
 mod b3;
+mod bme;
 mod borsa_istanbul;
 mod cfe;
 mod coinbase_derivatives;
 mod eurex;
+mod euronext_amsterdam;
 mod euronext_paris;
 pub(crate) mod fences;
 mod globex_cryptocurrency;

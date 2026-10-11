@@ -44,7 +44,7 @@ indices or Japan 225.
 
 ## Holidays
 
-**Coverage:** 2025-01-01..2026-10-30 (inclusive trade dates; the operator's
+**Coverage:** 2024-01-01..2024-12-31, 2025-01-01..2026-10-30 (inclusive trade dates; the operator's
 own holiday page's dated sections, all times Eastern). Tier: T1 throughout.
 
 The group is the page's `US indices and bonds`, including its split `US
@@ -53,7 +53,34 @@ the 2025 archive. Explicit bond rows govern this key; shared rows apply
 where the operator groups indices and bonds. The keys were separated on
 2026-10-11 UTC. Good Friday
 2026 closes indices at 09:14 ET and bonds at 11:14 ET. Carter's Day
-2025-01-09 withholds only the index key; the bond close is explicit 13:15 ET.
+2025-01-09 closes indices at 09:30 ET from the UK archive's dated 24-hour
+context (`OANDA-UK-CARTER-2025-WAYBACK`), while bonds explicitly close at
+13:15 ET.
+
+### 2024
+
+| Trade date | Kind | Instant as printed | Document | Tier | Derived from |
+|---|---|---|---|---|---|
+| 2024-01-01 | closed | `closed` | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | Archived UK dated section; exact book scope retained. |
+| 2024-01-02 | unsourced | `18:00` ET reopen known; final close unstated | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | The previous dated UK holiday section states the reopen. The normal-week final close for this pre-2024-02-21 trade date is unresolved; no complete replacement is claimed (#332). |
+| 2024-01-15 | early close | `13:00` | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | Archived UK dated section; exact book scope retained. |
+| 2024-01-16 | unsourced | `18:00` ET reopen known; final close unstated | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | The previous dated UK holiday section states the reopen. The normal-week final close for this pre-2024-02-21 trade date is unresolved; no complete replacement is claimed (#332). |
+| 2024-02-19 | early close | `13:00` | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | Archived UK dated section; exact book scope retained. |
+| 2024-02-20 | unsourced | `18:00` ET reopen known; final close unstated | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | The previous dated UK holiday section states the reopen. The normal-week final close for this pre-2024-02-21 trade date is unresolved; no complete replacement is claimed (#332). |
+| 2024-03-29 | closed | `closed` | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | Archived UK dated section; exact book scope retained. |
+| 2024-05-27 | early close | `13:00` | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | Archived UK dated section; exact book scope retained. |
+| 2024-05-28 | replacement blocks | `18:00; 16:59` | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | Literal 18:00 ET holiday reopen from the previous dated UK section, combined with the sourced normal-week 16:59 ET close from OANDA-UK-HOURS-2024-WAYBACK; exact book scope retained. |
+| 2024-06-19 | early close | `13:00` | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | Archived UK dated section; exact book scope retained. |
+| 2024-06-20 | replacement blocks | `18:00; 16:59` | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | Literal 18:00 ET holiday reopen from the previous dated UK section, combined with the sourced normal-week 16:59 ET close from OANDA-UK-HOURS-2024-WAYBACK; exact book scope retained. |
+| 2024-07-04 | early close | `13:00` | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | Archived UK dated section; exact book scope retained. |
+| 2024-07-05 | replacement blocks | `18:00; 16:59` | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | Literal 18:00 ET holiday reopen from the previous dated UK section, combined with the sourced normal-week 16:59 ET close from OANDA-UK-HOURS-2024-WAYBACK; exact book scope retained. |
+| 2024-09-02 | early close | `13:00` | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | Archived UK dated section; exact book scope retained. |
+| 2024-09-03 | replacement blocks | `18:00; 16:59` | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | Literal 18:00 ET holiday reopen from the previous dated UK section, combined with the sourced normal-week 16:59 ET close from OANDA-UK-HOURS-2024-WAYBACK; exact book scope retained. |
+| 2024-11-28 | early close | `13:00` | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | Archived UK dated section; exact book scope retained. |
+| 2024-11-29 | replacement blocks | `18:00; 13:15` | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | Previous dated UK holiday section supplies the literal 18:00 ET reopen; this trade date supplies its printed holiday close. Exact book scope retained. |
+| 2024-12-24 | unsourced | `—` | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | Archived UK dated section; exact book scope retained. |
+| 2024-12-25 | closed | `closed` | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | Archived UK dated section; exact book scope retained. |
+| 2024-12-26 | late open | `18:04` | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | Archived UK dated section; exact book scope retained. |
 
 ### 2025
 
@@ -153,3 +180,74 @@ The 2025-07-03 section names only US index futures. Its 13:15 close
 and 18:00 reopen do not apply to this bond key. July 3 is audited normal
 under the page's rows-only bond vocabulary; July 4 retains the stated
 bond close at 13:00 and the normal prior-evening opening at 18:01.
+
+## Archived 2024 holiday window — 2026-10-11 UTC
+
+The UK operator page captured on 2025-03-26 retains its dated 2024 holiday
+changes from New Year's Day through New Year's Eve. Its page-wide
+Eastern-Time instruction governs every printed instant. The audited window
+is 2024-01-01..2024-12-31; December coverage rests on its expressly dated
+2024 Christmas and New Year sections. The existing normal-week coverage gate still applies
+before its 2024-02-21 witness. Earlier holiday history remains activation
+work tracked in #332.
+
+The archive states `US indices open late 6 pm` and `US bonds open late 6 pm`
+for 2024-01-01. The holiday trade date is closed and the literal 18:00 ET
+reopen belongs to 2024-01-02, not a rounded 18:01 opening. The final closes
+of 2024-01-02, 2024-01-16 and 2024-02-20 are not stated in the holiday
+sections; the 2024-02-21 normal-hours witness cannot source those earlier
+closes. Each date therefore remains `Unsourced`, preserving its known
+18:00 ET reopen in this evidence record. Closing condition: a UK-scoped
+operator artifact stating the normal final close in force on those trade
+dates (#332). The archive prints 13:00 ET
+closes and 18:00 ET reopens for MLK Day, Presidents Day, Memorial Day,
+Juneteenth, Independence Day and Labor Day; Good Friday is closed.
+
+| Trade date | Arrangement | Following trade date | Arrangement |
+|---|---|---|---|
+| 2024-01-01 | Closed | 2024-01-02 | Unsourced: 18:00 ET reopen known; pre-witness final close unknown |
+| 2024-01-15 | Close 13:00 ET | 2024-01-16 | Unsourced: 18:00 ET reopen known; pre-witness final close unknown |
+| 2024-02-19 | Close 13:00 ET | 2024-02-20 | Unsourced: 18:00 ET reopen known; pre-witness final close unknown |
+| 2024-03-29 | Closed | — | — |
+| 2024-05-27 | Close 13:00 ET | 2024-05-28 | 18:00 ET previous evening to normal 16:59 ET close |
+| 2024-06-19 | Close 13:00 ET | 2024-06-20 | 18:00 ET previous evening to normal 16:59 ET close |
+| 2024-07-04 | Close 13:00 ET | 2024-07-05 | 18:00 ET previous evening to normal 16:59 ET close |
+| 2024-09-02 | Close 13:00 ET | 2024-09-03 | 18:00 ET previous evening to normal 16:59 ET close |
+| 2024-11-28 | Close 13:00 ET | 2024-11-29 | 18:00 ET previous evening to printed 13:15 ET close |
+
+The Thanksgiving section's outer heading names Friday 29 November; its
+inner headings separately state Thursday 28 November and Friday 29 November.
+The Thursday reopen therefore governs Friday's complete replacement block.
+The 2024-07-03 section names only US index futures: indices close at 13:15 ET
+and reopen at 18:00 ET, while bonds retain the normal prior-evening 18:01 ET
+opening for July 4. The July 4 index replacement preserves its 13:00 ET close.
+These product distinctions are retained instead of treating the books as one
+holiday family.
+
+
+Christmas Eve 2024 prints indices closing at 13:14 ET, but names no US-bond
+arrangement. The index row is exact; the bond row remains `Unsourced`, rather
+than borrowing indices' close or certifying a normal bond session on this
+holiday (#332). The 2024-12-25 section explicitly prints both books reopening
+at 18:04 ET; each holiday trade date is closed and 2024-12-26 opens at 18:04
+on the preceding evening. The 2024-12-31 close at 16:59 ET is already the
+normal close and needs no exception row.
+
+All new rows cite `OANDA-UK-CARTER-2025-WAYBACK`, T1. The existing document
+id is retained because the archive is byte-identical to the Carter-day
+witness; that artifact also records these 2024 sections. The archive also prints
+other products' exceptions, which do not key these two US scopes.
+
+### Documents
+
+| Document | Window | Replay or service URL | Capture or retrieval, UTC | Tier | sha256 |
+|---|---|---|---|---|---|
+| `OANDA-UK-CARTER-2025-WAYBACK` | 2025-01-09 | <https://web.archive.org/web/20250326184653id_/https://www.oanda.com/uk-en/trading/holiday-trading-hours/> | Wayback `id_` replay of capture `20250326184653`, retrieved 2026-10-11 UTC | T1 | `467313685d4d64a4b95e5112a58d0fa04583f0abe988b1478d41fddf8b04cf1c` |
+
+## Incomplete 2026 reopen recheck — 2026-10-11 UTC
+
+A fresh UK-page retrieval at 22:54 UTC still prints the literal incomplete
+Memorial Day reopen `18:0`; both the rendered HTML and embedded structured
+text agree. Canada's corresponding page prints 18:01, but its different
+legal-entity scope does not establish the UK minute. This recheck changes
+no runtime row and keeps the 2026-05-26 refusal tracked in #332.

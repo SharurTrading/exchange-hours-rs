@@ -10,7 +10,8 @@
 ## Ledger basis (moved from docs/schedules/verification.md on 2026-10-10 UTC)
 
 OANDA's US-anchored index book: US SPX 500, US Nas 100, US Russ
-2000, US Wall St 30, Japan 225 (USD and JPY) on one Sunday-to-Friday clock, Chicago 17:01-15:59 — the same
+2000 and US Wall St 30 on one Sunday-to-Friday clock, Chicago
+17:01-15:59 — the same
 instants as New York 18:01-16:59 — with the printed 16:59-18:01 daily gap
 and no other maintenance.
 
@@ -34,25 +35,30 @@ instants the New-York-quoted energy rows print — so the whole US-anchored
 family sits on one absolute clock and the pair implies the daily 16:59-18:01
 gap. The instants sit one minute inside the futures grid's 17:00-16:00 CT,
 which is the hedge-desk relationship: the book opens and closes just inside
-the hedge market's own day. Japan 225 rides this book rather than a CME
-Nikkei mapping because its holiday rows are the US indices' own (below), and
-the 2022 capture shows it printed the CME maintenance structure then — a
-different, earlier regime the horizon excludes.
+the hedge market's own day. Japan 225 (USD and JPY) shares this normal clock in the current hours table,
+but that equality does not establish its inclusion in every generic
+US-index holiday statement. The 2022 capture prints an earlier Japan 225
+maintenance structure; its changeover is undated. These observations are
+context, not exact holiday routing permission (#332).
 
 ## Holidays
 
 **Coverage:** 2025-01-01..2026-10-30 (inclusive trade dates; the operator's
 own holiday page's dated sections, all times Eastern). Tier: T1 throughout.
 
-The group is the page's `US indices and bonds`, including its split `US
-Indices` / `US Bonds` rows and the `US index futures` / `US bonds` wording of
-the 2025 archive. The standalone `JP225:` rows state the US indices' own
-arrangement on every date they print (Christmas Eve `close at 13:14`,
-Christmas Day `open at 18:01`, New Year's Eve `close at 16:59`), so the
-family ships together. Indices and bonds now have separate keys (2026-10-11 UTC). Good Friday
-2026 closes indices at 09:14 ET and bonds at 11:14 ET. Carter's Day
-2025-01-09 closes indices at 09:30 ET, derived from the dated section's
-24-hour context and ordered 18:00 reopening; the bond close is explicit 13:15 ET.
+The key's exact scope is the four named US indices, not Treasury CFDs or
+Japan 225. The holiday page's `US indices and bonds`, split `US Indices` /
+`US Bonds`, and archived `US index futures` / `US bonds` statements apply
+through those separate index and bond keys. Good Friday 2026 closes indices
+at 09:14 ET and bonds at 11:14 ET. Carter's Day 2025-01-09 closes the named
+US indices at 09:30 ET, derived from the dated section's 24-hour context and
+ordered 18:00 reopening; the bond close is explicit 13:15 ET.
+
+Standalone `JP225:` rows match the US-index arrangements on the specific
+Christmas/New Year dates where they print. That does not prove inclusion in
+other generic US-index rows, including Carter's Day. Japan 225's exact holiday
+scope requires an operator definition or its own sourced calendar before
+consumer routing can claim it is native/exact (#332).
 
 ### 2025
 
@@ -135,6 +141,11 @@ and `20260217213704.html` in that directory.
   Closing condition: dated operator artifacts, or hunts closed negative
   (then the 2026-10-04 intersection rule applies).
 - Bonds route to `oanda_us_bond_cfd`; no intersection is used as their exact calendar.
+- **Japan 225 holiday scope is unresolved.** Its two listings share the normal
+  Chicago grid, but the source separately names JP225 on only some dates.
+  Closing condition: an operator definition proving the generic US-index
+  holiday scope includes both listings, or a separate exact sourced calendar.
+  The consumer must gate that scope until then (#332).
 - US Share CFD and ETF arrangements (`Closed` on US holidays) are
   caller-side listings of equities and stay out of this book.
 

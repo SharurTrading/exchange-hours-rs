@@ -32,10 +32,10 @@
 - Four additional OANDA-book keys for the UK hours page's spot metals,
   US-anchored CFDs and Brent listings:
   `oanda_metals` (XAU/XAG and crosses, Sunday 18:05 to Friday 16:59 New York
-  time), `oanda_us_index_cfd` and `oanda_us_commodity_cfd` (the eleven
-  US-anchored listings on one continuous clock — Chicago 17:01 to 15:59, the
-  same instants as New York 18:01 to 16:59 — split into two keys because the
-  operator's holiday page gives the two groups different early closes), and
+  time), `oanda_us_index_cfd` and `oanda_us_commodity_cfd` (four US indices and five
+  US energy/commodity-metals listings on one continuous clock — Chicago
+  17:01 to 15:59, the same instants as New York 18:01 to 16:59 — split into
+  two keys because the operator's holiday page gives different early closes), and
   `oanda_brent` (London-anchored by the page's own dagger note, Sunday 23:01
   to Friday 21:59 with its two stated breaks). Holiday tables ship each
   group's printed rows from the operator's 2025-01-01..2026-10-30 dated
@@ -49,6 +49,9 @@
 
 ### Fixed
 
+- The US-index key's exact holiday scope is restricted to its four US
+  indices. Japan 225's two listings share the normal clock but require
+  independent holiday-scope evidence before exact consumer routing (#332).
 - The current OANDA `***` instruction follows each row's named local zone:
   Sydney for Australia 200's marked close and Frankfurt for the German,
   Euro 50 and Bund marked openings. The older guide's US-season Australian

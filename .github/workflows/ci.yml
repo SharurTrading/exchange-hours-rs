@@ -59,8 +59,7 @@ jobs:
         with:
           components: rustfmt, clippy
 
-      - name: Set up Kache
-        uses: ./.github/actions/setup-kache
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2
 
       - uses: taiki-e/install-action@4cef1412cce204788f482e778a0b9187f9626a29 # v2
         with:
@@ -109,8 +108,9 @@ jobs:
         with:
           toolchain: ${{ matrix.rust }}
 
-      - name: Set up Kache
-        uses: ./.github/actions/setup-kache
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2
+        with:
+          key: msrv-${{ matrix.rust }}
 
       - name: check
         run: cargo +${{ matrix.rust }} check --all-targets

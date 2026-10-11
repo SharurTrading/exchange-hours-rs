@@ -733,8 +733,9 @@ cargo +1.95 check --all-targets
 
 ## Contributor build cache
 
-Kache is optional for local builds and enabled for Rust CI. Use the same version
-as CI, **1.0.0**. Start with the official
+Kache is optional for local builds. Use the pinned version **1.0.0**.
+GitHub-hosted CI uses the repository's Rust cache setup without Kache.
+Start with the official
 [Kache quick start](https://ninja.kunobi.com/docs/kache/getting-started/quick-start),
 [configuration reference](https://ninja.kunobi.com/docs/kache/getting-started/configuration)
 and [CI guide](https://ninja.kunobi.com/docs/kache/remote-cache/ci).
@@ -788,18 +789,12 @@ changes before `kache init` applies them. Environment variables take precedence
 over the repository file; retain the policy above and restart any existing daemon
 when changing its environment, as described in the configuration reference.
 
-### CI cache layout
+### CI build cache
 
-[The repository setup action](.github/actions/setup-kache/action.yml) installs
-Kache 1.0.0 through the official action pinned to a full commit SHA. It selects
-`<target-root>/kache-prepass-v1` for Cargo outputs and
-`<target-root>/.kache-cache/prepass-v1` for the store, on the same filesystem.
-The target root comes from the runner's `CARGO_TARGET_DIR`, or defaults to
-`$GITHUB_WORKSPACE/target`. Both namespaces isolate older outputs and cache entries.
-Existing quality gates and runner selections remain in place.
-
-GitHub-hosted runners persist the local store through GitHub Actions cache.
-Kache remote backends and the planner remain disabled.
+GitHub-hosted Rust jobs use `Swatinem/rust-cache` to persist Cargo build outputs
+and downloaded dependencies. Kache is used only when a contributor opts into
+local builds with the setup above. CI retains its existing quality gates and
+runner selections.
 
 ## License
 

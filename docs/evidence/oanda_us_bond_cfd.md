@@ -53,29 +53,31 @@ the 2025 archive. Explicit bond rows govern this key; shared rows apply
 where the operator groups indices and bonds. The keys were separated on
 2026-10-11 UTC. Good Friday
 2026 closes indices at 09:14 ET and bonds at 11:14 ET. Carter's Day
-2025-01-09 withholds only the index key; the bond close is explicit 13:15 ET.
+2025-01-09 closes indices at 09:30 ET from the UK archive's dated 24-hour
+context (`OANDA-UK-CARTER-2025-WAYBACK`), while bonds explicitly close at
+13:15 ET.
 
 ### 2024
 
 | Trade date | Kind | Instant as printed | Document | Tier | Derived from |
 |---|---|---|---|---|---|
 | 2024-01-01 | closed | `closed` | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | Archived UK dated section; exact book scope retained. |
-| 2024-01-02 | replacement blocks | `18:00; 16:59` | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | Archived UK dated section; exact book scope retained. |
+| 2024-01-02 | replacement blocks | `18:00; 16:59` | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | Literal 18:00 ET holiday reopen from the previous dated UK section, combined with the sourced normal-week 16:59 ET close from OANDA-UK-HOURS-2024-WAYBACK; exact book scope retained. |
 | 2024-01-15 | early close | `13:00` | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | Archived UK dated section; exact book scope retained. |
-| 2024-01-16 | replacement blocks | `18:00; 16:59` | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | Archived UK dated section; exact book scope retained. |
+| 2024-01-16 | replacement blocks | `18:00; 16:59` | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | Literal 18:00 ET holiday reopen from the previous dated UK section, combined with the sourced normal-week 16:59 ET close from OANDA-UK-HOURS-2024-WAYBACK; exact book scope retained. |
 | 2024-02-19 | early close | `13:00` | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | Archived UK dated section; exact book scope retained. |
-| 2024-02-20 | replacement blocks | `18:00; 16:59` | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | Archived UK dated section; exact book scope retained. |
+| 2024-02-20 | replacement blocks | `18:00; 16:59` | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | Literal 18:00 ET holiday reopen from the previous dated UK section, combined with the sourced normal-week 16:59 ET close from OANDA-UK-HOURS-2024-WAYBACK; exact book scope retained. |
 | 2024-03-29 | closed | `closed` | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | Archived UK dated section; exact book scope retained. |
 | 2024-05-27 | early close | `13:00` | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | Archived UK dated section; exact book scope retained. |
-| 2024-05-28 | replacement blocks | `18:00; 16:59` | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | Archived UK dated section; exact book scope retained. |
+| 2024-05-28 | replacement blocks | `18:00; 16:59` | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | Literal 18:00 ET holiday reopen from the previous dated UK section, combined with the sourced normal-week 16:59 ET close from OANDA-UK-HOURS-2024-WAYBACK; exact book scope retained. |
 | 2024-06-19 | early close | `13:00` | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | Archived UK dated section; exact book scope retained. |
-| 2024-06-20 | replacement blocks | `18:00; 16:59` | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | Archived UK dated section; exact book scope retained. |
+| 2024-06-20 | replacement blocks | `18:00; 16:59` | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | Literal 18:00 ET holiday reopen from the previous dated UK section, combined with the sourced normal-week 16:59 ET close from OANDA-UK-HOURS-2024-WAYBACK; exact book scope retained. |
 | 2024-07-04 | early close | `13:00` | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | Archived UK dated section; exact book scope retained. |
-| 2024-07-05 | replacement blocks | `18:00; 16:59` | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | Archived UK dated section; exact book scope retained. |
+| 2024-07-05 | replacement blocks | `18:00; 16:59` | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | Literal 18:00 ET holiday reopen from the previous dated UK section, combined with the sourced normal-week 16:59 ET close from OANDA-UK-HOURS-2024-WAYBACK; exact book scope retained. |
 | 2024-09-02 | early close | `13:00` | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | Archived UK dated section; exact book scope retained. |
-| 2024-09-03 | replacement blocks | `18:00; 16:59` | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | Archived UK dated section; exact book scope retained. |
+| 2024-09-03 | replacement blocks | `18:00; 16:59` | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | Literal 18:00 ET holiday reopen from the previous dated UK section, combined with the sourced normal-week 16:59 ET close from OANDA-UK-HOURS-2024-WAYBACK; exact book scope retained. |
 | 2024-11-28 | early close | `13:00` | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | Archived UK dated section; exact book scope retained. |
-| 2024-11-29 | replacement blocks | `18:00; 13:15` | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | Archived UK dated section; exact book scope retained. |
+| 2024-11-29 | replacement blocks | `18:00; 13:15` | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | Previous dated UK holiday section supplies the literal 18:00 ET reopen; this trade date supplies its printed holiday close. Exact book scope retained. |
 | 2024-12-24 | unsourced | `—` | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | Archived UK dated section; exact book scope retained. |
 | 2024-12-25 | closed | `closed` | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | Archived UK dated section; exact book scope retained. |
 | 2024-12-26 | late open | `18:04` | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | Archived UK dated section; exact book scope retained. |

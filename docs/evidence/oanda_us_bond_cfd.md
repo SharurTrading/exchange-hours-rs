@@ -3,8 +3,9 @@
 # `oanda_us_bond_cfd` — evidence
 
 Established 2026-10-11 UTC. This key covers only the four US Treasury CFD listings;
-indices and Japan 225 use `oanda_us_index_cfd`. The shared normal-week clock
-does not merge their distinct holiday arrangements.
+the four US indices use `oanda_us_index_cfd`. Japan 225's exact holiday scope
+remains unresolved (#332). A shared normal-week clock does not merge distinct
+or unproved holiday arrangements.
 
 - **Kind:** `MarketHoursKey`
 - **Owner module:** [`oanda.rs`](../../src/calendar/schedules/futures/international/oanda.rs)

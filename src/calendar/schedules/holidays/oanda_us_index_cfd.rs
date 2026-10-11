@@ -33,9 +33,10 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2025, 1, 1, Closed, T1, "OANDA-UK-HOLIDAYS"),
         // 2025-01-02 - T1 - OANDA-UK-HOLIDAYS - New Year's Day evening reopen belongs to the following trade date
         (2025, 1, 2, late_open(18 * 3_600 + 4 * 60), T1, "OANDA-UK-HOLIDAYS"),
-        // 2025-01-09 - T1 - OANDA-UK-HOLIDAYS - Carter's Day of Mourning: "US index close early at 9:30" prints no
-        // meridiem and matches no other printed instant; the bonds' 13:15 close is recorded in the evidence file
-        (2025, 1, 9, Unsourced, T1, "OANDA-UK-HOLIDAYS"),
+        // 2025-01-09 - T1 - OANDA-UK-CARTER-2025-WAYBACK - Carter's 9:30 close precedes the stated 18:00 reopen; 24-hour context selects 09:30 ET
+        (2025, 1, 9, early_close(9 * 3_600 + 30 * 60), T1, "OANDA-UK-CARTER-2025-WAYBACK"),
+        // 2025-01-10 - T1 - OANDA-UK-CARTER-2025-WAYBACK - Previous dated holiday reopens at 18:00 ET
+        (2025, 1, 10, ReplacementBlocks(&GROUP_1800_REOPEN), T1, "OANDA-UK-CARTER-2025-WAYBACK"),
         // 2025-01-20 - T1 - OANDA-UK-HOLIDAYS - MLK Day: printed group close
         (2025, 1, 20, early_close(13 * 3_600), T1, "OANDA-UK-HOLIDAYS"),
         // 2025-01-21 - T1 - OANDA-UK-HOLIDAYS - Previous holiday reopens 18:00 ET
@@ -78,8 +79,7 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2026, 1, 19, early_close(12 * 3_600 + 59 * 60), T1, "OANDA-UK-HOLIDAYS"),
         // 2026-02-16 - T1 - OANDA-UK-HOLIDAYS - Presidents Day: closes 12:59, reopens 18:01
         (2026, 2, 16, early_close(12 * 3_600 + 59 * 60), T1, "OANDA-UK-HOLIDAYS"),
-        // 2026-04-03 - T1 - OANDA-UK-HOLIDAYS - Good Friday: US Indices close 9:14, US Bonds close 11:14 — the
-        // group ships the narrowest sourced window and the evidence file records the bonds' later close
+        // 2026-04-03 - T1 - OANDA-UK-HOLIDAYS - Good Friday: US indices close 09:14 ET
         (2026, 4, 3, early_close(9 * 3_600 + 14 * 60), T1, "OANDA-UK-HOLIDAYS"),
         // 2026-05-25 - T1 - OANDA-UK-HOLIDAYS - Memorial Day: closes 12:59; source prints incomplete reopen 18:0 (evidence records the residual)
         (2026, 5, 25, early_close(12 * 3_600 + 59 * 60), T1, "OANDA-UK-HOLIDAYS"),

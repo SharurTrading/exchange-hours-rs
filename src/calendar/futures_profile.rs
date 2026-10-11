@@ -457,7 +457,7 @@ market_hours_keys! {
         /// data: no rule in this grid states it.
         OandaMetals => "oanda_metals",
         /// OANDA's US-anchored index book — US SPX 500, US Nas 100,
-        /// US Russ 2000, US Wall St 30 and Japan 225 (USD and JPY) —
+        /// US Russ 2000 and US Wall St 30 —
         /// on one continuous Sunday-to-Friday clock:
         /// Chicago 17:01 to 15:59, the same instants as New York 18:01 to
         /// 16:59, with the printed 16:59-18:01 daily gap and no other

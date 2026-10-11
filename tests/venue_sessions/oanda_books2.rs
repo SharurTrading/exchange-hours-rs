@@ -158,17 +158,6 @@ fn oanda_us_index_cfd_group_closes_at_the_printed_instants() {
 }
 
 #[test]
-fn oanda_us_index_cfd_withholds_the_ambiguous_carter_instant() {
-    let calendar = calendar_for_market_hours_key(MarketHoursKey::OandaUsIndexCfd);
-    let day = chrono::NaiveDate::from_ymd_opt(2025, 1, 9).expect("valid date");
-    assert_refused_variant(
-        &calendar.is_closed_trade_date(day, SessionKind::Both),
-        DateCoverage::UnresolvedGap,
-        "the 2025-01-09 Carter instant is unsourced, never a guess",
-    );
-}
-
-#[test]
 fn oanda_us_commodity_cfd_group_closes_at_the_printed_instants() {
     let calendar = calendar_for_market_hours_key(MarketHoursKey::OandaUsCommodityCfd);
     for (day, ssm) in [

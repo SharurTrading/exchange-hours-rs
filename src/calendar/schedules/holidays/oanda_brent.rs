@@ -1,33 +1,28 @@
 // SPDX-License-Identifier: MIT-0
 
-//! OANDA Brent-book holiday rows, from the operator's UK holiday page's
-//! dated sections 2025-01-01 through 2026-10-30.
-//!
-//! Keyed by the crate's own venue-local trade date in `Europe/London`
-//! (design memo D1). The page prints every instant in Eastern Time and this
-//! book keeps London time, so each printed instant is converted at the
-//! ET-to-London offset in force on its own date — five hours on every row
-//! here, verified date by date: none of these holidays falls inside the
-//! two-three-week windows where `America/New_York` and `Europe/London` disagree
-//! (which in 2025-2026 run roughly March 9-29 and October 26-November 2).
-//! Four dates ship `Unsourced` rather than a guess: the page prints other
-//! groups' arrangements on them but is silent on Brent — and unlike the FX
-//! and US groups, this page has an explicit "Brent Crude Oil: Regular
-//! trading hours" vocabulary it uses when the book runs normal, so its
-//! silence there withholds rather than affirms (MLK and Presidents Day
-//! 2025/2026 print that regular-hours row and ship no row). Early closes
-//! ship at the converted instant; the stated reopens are the book's own
-//! normal 01:01 evening open.
-//!
-//! Every row is **T1**, the operator's own holiday page. All of it is
-//! recorded in [`docs/evidence/oanda_brent.md`](../../../../../docs/evidence/oanda_brent.md).
+//! OANDA holiday data, 2025-01-01..2026-10-30. Evidence: `docs/evidence/oanda_brent.md`.
 
 use super::fences::early_close;
+use crate::calendar::ExceptionBlock;
+
 use super::{
     EvidenceTier::T1,
-    HolidayKind::{Closed, Unsourced},
+    HolidayKind::{Closed, ReplacementBlocks, Unsourced},
     HolidayTable, holidays,
 };
+
+// Evidence: docs/evidence/oanda_brent.md
+#[rustfmt::skip]
+static WEEKDAY_REOPEN: [ExceptionBlock; 2] = [
+    ExceptionBlock::regular(0, 3_600, 21 * 3_600 + 59 * 60),
+    ExceptionBlock::regular(0, 22 * 3_600 + 5 * 60, 22 * 3_600 + 59 * 60),
+];
+
+#[rustfmt::skip]
+static FRIDAY_REOPEN: [ExceptionBlock; 1] = [ExceptionBlock::regular(0, 3_600, 21 * 3_600 + 59 * 60)];
+
+#[rustfmt::skip]
+static THANKSGIVING_REOPEN: [ExceptionBlock; 1] = [ExceptionBlock::regular(0, 3_600, 20 * 3_600)];
 
 /// The book's built-in holiday rows and the window they were audited over.
 // Evidence: docs/evidence/oanda_brent.md
@@ -45,8 +40,12 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2025, 4, 18, Closed, T1, "OANDA-UK-HOLIDAYS"),
         // 2025-05-26 - T1 - OANDA-UK-HOLIDAYS - Memorial Day: closes 1:30 PM ET (18:30 London), reopens 8:00 PM ET
         (2025, 5, 26, early_close(18 * 3_600 + 30 * 60), T1, "OANDA-UK-HOLIDAYS"),
+        // 2025-05-27 - T1 - OANDA-UK-HOLIDAYS - Previous holiday reopens 20:00 ET = 01:00 London
+        (2025, 5, 27, ReplacementBlocks(&WEEKDAY_REOPEN), T1, "OANDA-UK-HOLIDAYS"),
         // 2025-06-19 - T1 - OANDA-UK-HOLIDAYS - Juneteenth: closes 1:30 PM ET, reopens 8:00 PM ET
         (2025, 6, 19, early_close(18 * 3_600 + 30 * 60), T1, "OANDA-UK-HOLIDAYS"),
+        // 2025-06-20 - T1 - OANDA-UK-HOLIDAYS - Previous holiday reopens 20:00 ET = 01:00 London
+        (2025, 6, 20, ReplacementBlocks(&FRIDAY_REOPEN), T1, "OANDA-UK-HOLIDAYS"),
         // 2025-07-03 - T1 - OANDA-UK-HOLIDAYS - Independence Day eve: the section prints US index and Commodities
         // rows and nothing for Brent
         (2025, 7, 3, Unsourced, T1, "OANDA-UK-HOLIDAYS"),
@@ -54,12 +53,14 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2025, 7, 4, early_close(18 * 3_600 + 30 * 60), T1, "OANDA-UK-HOLIDAYS"),
         // 2025-09-01 - T1 - OANDA-UK-HOLIDAYS - Labor Day: closes 1:30 PM ET, reopens 8:00 PM ET
         (2025, 9, 1, early_close(18 * 3_600 + 30 * 60), T1, "OANDA-UK-HOLIDAYS"),
+        // 2025-09-02 - T1 - OANDA-UK-HOLIDAYS - Previous holiday reopens 20:00 ET = 01:00 London
+        (2025, 9, 2, ReplacementBlocks(&WEEKDAY_REOPEN), T1, "OANDA-UK-HOLIDAYS"),
         // 2025-11-26 - T1 - OANDA-UK-HOLIDAYS - Thanksgiving eve: the section prints one Agricultural row, Brent silent
         (2025, 11, 26, Unsourced, T1, "OANDA-UK-HOLIDAYS"),
         // 2025-11-27 - T1 - OANDA-UK-HOLIDAYS - Thanksgiving: closes 1:30 PM ET, reopens 8:00 PM ET
         (2025, 11, 27, early_close(18 * 3_600 + 30 * 60), T1, "OANDA-UK-HOLIDAYS"),
-        // 2025-11-28 - T1 - OANDA-UK-HOLIDAYS - Thanksgiving Friday: closes 3:00 PM ET (20:00 London)
-        (2025, 11, 28, early_close(20 * 3_600), T1, "OANDA-UK-HOLIDAYS"),
+        // 2025-11-28 - T1 - OANDA-UK-HOLIDAYS - Previous holiday reopens 20:00 ET = 01:00 London; printed Friday close retained
+        (2025, 11, 28, ReplacementBlocks(&THANKSGIVING_REOPEN), T1, "OANDA-UK-HOLIDAYS"),
         // 2025-12-24 - T1 - OANDA-UK-HOLIDAYS - Christmas Eve: closes 13:59 ET (18:59 London)
         (2025, 12, 24, early_close(18 * 3_600 + 59 * 60), T1, "OANDA-UK-HOLIDAYS"),
         // 2025-12-25 - T1 - OANDA-UK-HOLIDAYS - Christmas Day: closed

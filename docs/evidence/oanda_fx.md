@@ -16,7 +16,6 @@ every futures clock an FX hedge might route to (CME FX futures halt 16:00–17:0
 CT daily), which is why this is a book key rather than a futures mapping — the
 maintainer's 2026-10-10 decision recorded in SharurPlatform#1046.
 
-
 ## Revision rows
 
 None. The module carries one sourced grid and no `revisions!` block; there is
@@ -25,7 +24,7 @@ schedule rather than a worked-up history (LAW-BOUNDED-WORK).
 
 ## The normal week
 
-The hours-of-operation page (UK entity, OANDA Europe Limited, FCA 542572)
+The hours-of-operation page (UK entity, OANDA Europe Limited, FCA 542574)
 prints one row for the whole group:
 
 > `All FX products (except TRY Pairs) | New York | 100,000 | Sun-Fri: 17:05 - 16:59*`
@@ -169,3 +168,17 @@ Store paths (research store, wave-1 capture):
 - Intraday-quote holidays for specific FX pairs beyond the page's rows (for
   example reduced liquidity on US holidays) are not closures and ship no
   row; the page states none.
+
+## Pending orders and session scope — 2026-10-11 UTC
+
+Page 2 of `OANDA-UK-HOURS-PDF`, reproduced in the operator HTML, distinguishes
+closed-market position execution from placement and modification of pending
+entry, protective and contingent instructions. Page 3 explains that those
+instructions may trigger when trading resumes. This proves a broker-held
+pending-order facility, not a separately timed executable or session-queue
+phase; the source gives it no session boundaries or trade-date assignment.
+The book keys model the printed trading windows. `is_accepting_orders` asks
+about those executable and published order-entry phases, not whether OANDA's
+order-placement API or account instruction store is available. Off-hours
+pending instructions therefore do not become fabricated 24/7 session rules.
+This scope applies to the venue default and all seven OANDA keys (#333).

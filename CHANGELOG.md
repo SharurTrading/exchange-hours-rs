@@ -29,9 +29,10 @@
   2025-01-01..2026-10-30 audited window, and the venue's table mirrors it —
   the first wave of the OANDA-listed market coverage programme
   (SharurPlatform#1046, oanda-rs#30).
-- Four more OANDA-book keys, completing the UK hours page's book listings:
+- Four additional OANDA-book keys for the UK hours page's spot metals,
+  US-anchored CFDs and Brent listings:
   `oanda_metals` (XAU/XAG and crosses, Sunday 18:05 to Friday 16:59 New York
-  time), `oanda_us_index_cfd` and `oanda_us_commodity_cfd` (the fourteen
+  time), `oanda_us_index_cfd` and `oanda_us_commodity_cfd` (the eleven
   US-anchored listings on one continuous clock — Chicago 17:01 to 15:59, the
   same instants as New York 18:01 to 16:59 — split into two keys because the
   operator's holiday page gives the two groups different early closes), and
@@ -40,6 +41,23 @@
   group's printed rows from the operator's 2025-01-01..2026-10-30 dated
   sections, including typed withholdings where the page's own
   regular-hours vocabulary makes its silence a gap.
+
+- `oanda_us_bond_cfd` separates the four Treasury listings from the index
+  book. Good Friday 2026 closes bonds at 11:14 ET and indices at 09:14 ET;
+  Carter's Day 2025 closes bonds at 13:15 ET. This does not activate any
+  incomplete OANDA scope or certify the remaining product programme (#332).
+
+### Fixed
+
+- OANDA holiday instants now preserve the operator's exact minutes: the
+  missing MLK 2025 closes, New Year 18:04 reopens, 2025 US 18:00 and Brent
+  20:00 ET reopens, and Holy Thursday's 17:00 ET close (#330).
+- Brent's Monday session bounds include the Sunday 23:01 London opening
+  (#331). Replacement-session searches select the nearest chronological
+  occurrence across normal rules and replacement blocks (#329).
+
+- The OANDA order-acceptance scope is explicit: off-hours pending-order
+  storage is a broker facility outside the published session phases (#333).
 
 ## [1.0.2] - 2026-10-10
 

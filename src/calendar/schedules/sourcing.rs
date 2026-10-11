@@ -535,6 +535,7 @@ const fn for_market_hours_key(key: MarketHoursKey) -> DeclaredSourcing {
         // oanda_us_commodity_cfd.md, oanda_brent.md).
         MarketHoursKey::OandaMetals => DeclaredSourcing::carried_below(horizon!(2024, 2, 21)),
         MarketHoursKey::OandaUsIndexCfd => DeclaredSourcing::carried_below(horizon!(2024, 2, 21)),
+        MarketHoursKey::OandaUsBondCfd => DeclaredSourcing::carried_below(horizon!(2024, 2, 21)),
         MarketHoursKey::OandaUsCommodityCfd => {
             DeclaredSourcing::carried_below(horizon!(2024, 2, 21))
         }

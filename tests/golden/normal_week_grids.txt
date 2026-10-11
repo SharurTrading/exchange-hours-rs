@@ -731,13 +731,17 @@ oanda_us_index_cfd | tz America/New_York | week_open_seconds 413400
 oanda_us_index_cfd | regular  | MoTuWeTh----Su | 18:01:00-16:59:00 +1d
 oanda_us_index_cfd | extended | (none)
 oanda_us_index_cfd | order-en | (none)
+oanda_us_bond_cfd | tz America/New_York | week_open_seconds 413400
+oanda_us_bond_cfd | regular  | MoTuWeTh----Su | 18:01:00-16:59:00 +1d
+oanda_us_bond_cfd | extended | (none)
+oanda_us_bond_cfd | order-en | (none)
 oanda_us_commodity_cfd | tz America/New_York | week_open_seconds 413400
 oanda_us_commodity_cfd | regular  | MoTuWeTh----Su | 18:01:00-16:59:00 +1d
 oanda_us_commodity_cfd | extended | (none)
 oanda_us_commodity_cfd | order-en | (none)
 oanda_brent | tz Europe/London | week_open_seconds 397560
 oanda_brent | regular  | ------------Su | 23:01:00-21:59:00 +1d
-oanda_brent | regular  | MoTuWeThFr---- | 01:01:00-21:59:00
+oanda_brent | regular  | --TuWeThFr---- | 01:01:00-21:59:00
 oanda_brent | regular  | MoTuWeTh------ | 22:05:00-22:59:00
 oanda_brent | extended | (none)
 oanda_brent | order-en | (none)

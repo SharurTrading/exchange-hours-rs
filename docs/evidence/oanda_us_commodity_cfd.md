@@ -55,16 +55,23 @@ rows agree.
 
 | Trade date | Kind | Instant as printed | Document | Tier | Derived from |
 |---|---|---|---|---|---|
-| 2025-01-01 | closed | `US energies open late 18:04`, `Metals open late 18:04` | `OANDA-UK-HOLIDAYS` | T1 | New Year's Day: the reopen instants sit at this book's own evening open (18:04 against 18:01, page-rounded), so the trade date's session does not trade |
+| 2025-01-01 | closed | `US energies open late 18:04`, `Metals open late 18:04` | `OANDA-UK-HOLIDAYS` | T1 | New Year's Day: the holiday trade date is closed; the following trade date opens at the explicitly stated 18:04 |
+| 2025-01-02 | late open | `18:04` | `OANDA-UK-HOLIDAYS` | T1 | 2025-01-01 evening reopen is keyed to 2025-01-02, whose opening day is the holiday. |
+| 2025-01-20 | early close | `14:30` | `OANDA-UK-HOLIDAYS` | T1 | MLK Day group early close, previously omitted. |
+| 2025-01-21 | replacement blocks | `18:00; 16:59` | `OANDA-UK-HOLIDAYS` | T1 | Complete replacement: previous holiday's literal reopen plus this trade date's printed or normal close. |
 | 2025-02-17 | early close | `close early at 2.30 pm and reopen at 6 pm` | `OANDA-UK-HOLIDAYS` | T1 | Presidents Day |
-| 2025-04-17 | early close | `close early at 17:00 ET` | `OANDA-UK-HOLIDAYS` | T1 | Holy Thursday |
+| 2025-02-18 | replacement blocks | `18:00; 16:59` | `OANDA-UK-HOLIDAYS` | T1 | Complete replacement: previous holiday's literal reopen plus this trade date's printed or normal close. |
+| 2025-04-17 | replacement blocks | `18:01; 17:00` | `OANDA-UK-HOLIDAYS` | T1 | Holy Thursday explicitly closes 17:00 ET, one minute later than the normal close; clipping cannot express this. |
 | 2025-04-18 | closed | `are closed` | `OANDA-UK-HOLIDAYS` | T1 | Good Friday |
 | 2025-05-26 | early close | `close early at 2:30 PM and reopen at 6:00 PM` | `OANDA-UK-HOLIDAYS` | T1 | Memorial Day |
+| 2025-05-27 | replacement blocks | `18:00; 16:59` | `OANDA-UK-HOLIDAYS` | T1 | Complete replacement: previous holiday's literal reopen plus this trade date's printed or normal close. |
 | 2025-06-19 | early close | `close early at 2:30 PM and reopen at 6:00 PM` | `OANDA-UK-HOLIDAYS` | T1 | Juneteenth |
+| 2025-06-20 | replacement blocks | `18:00; 16:59` | `OANDA-UK-HOLIDAYS` | T1 | Complete replacement: previous holiday's literal reopen plus this trade date's printed or normal close. |
 | 2025-07-04 | early close | `close early at 1 pm` | `OANDA-UK-HOLIDAYS` | T1 | Independence Day |
 | 2025-09-01 | early close | `Close early at 2:30 PM, reopen at 6:00 PM` | `OANDA-UK-HOLIDAYS` | T1 | Labor Day |
+| 2025-09-02 | replacement blocks | `18:00; 16:59` | `OANDA-UK-HOLIDAYS` | T1 | Complete replacement: previous holiday's literal reopen plus this trade date's printed or normal close. |
 | 2025-11-27 | early close | `Close early at 2:30 PM, reopen at 6:00 PM` | `OANDA-UK-HOLIDAYS` | T1 | Thanksgiving Day |
-| 2025-11-28 | early close | `Close early at 2:45 PM` | `OANDA-UK-HOLIDAYS` | T1 | Thanksgiving Friday |
+| 2025-11-28 | replacement blocks | `18:00; 14:45` | `OANDA-UK-HOLIDAYS` | T1 | Complete replacement: previous holiday's literal reopen plus this trade date's printed or normal close. |
 | 2025-12-24 | early close | `US energies: close at 13:44`, `Metals: close at 13:44` | `OANDA-UK-HOLIDAYS` | T1 | Christmas Eve, the page's own split rows agreeing |
 | 2025-12-25 | closed | `US energies: open at 18:01`, `Metals: open at 18:01` | `OANDA-UK-HOLIDAYS` | T1 | Christmas Day: the reopens are the book's own evening open |
 
@@ -117,3 +124,13 @@ govern here too.
 - US Agricultural arrangements (`Corn, Wheat and Soybeans`, `Sugar`,
   `Commodities` in the 2025 sections) belong to `globex_grains` and
   `ice_us_sugar`, not this book.
+
+## Publication audit — 2026-10-11 UTC
+
+The source's minute values are literal. The 2025 18:00 ET US reopens and
+20:00 ET Brent reopens are not rounded to 18:01 or 20:01. Evening opens
+attach to the following trade date. Replacement blocks retain the entire
+trading day, including any next-day early close and Brent's late segment.
+
+Pending-order storage outside the printed trading windows is a broker facility,
+not a timed session phase; see [the shared scope decision](oanda_fx.md#pending-orders-and-session-scope--2026-10-11-utc) (#333).

@@ -489,7 +489,7 @@ pub fn session_profile(key: MarketHoursKey) -> &'static FuturesSessionProfile {
         MarketHoursKey::OandaFx => &FUTURES_OANDA_FX,
         MarketHoursKey::OandaTryFx => &FUTURES_OANDA_TRY_FX,
         MarketHoursKey::OandaMetals => &FUTURES_OANDA_METALS,
-        MarketHoursKey::OandaUsIndexCfd => &FUTURES_OANDA_US_INDEX,
+        MarketHoursKey::OandaUsIndexCfd | MarketHoursKey::OandaUsBondCfd => &FUTURES_OANDA_US_INDEX,
         MarketHoursKey::OandaUsCommodityCfd => &FUTURES_OANDA_US_COMMODITY,
         MarketHoursKey::OandaBrent => &FUTURES_OANDA_BRENT,
         MarketHoursKey::Sgx => &FUTURES_SGX,

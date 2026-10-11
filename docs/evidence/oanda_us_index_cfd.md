@@ -65,11 +65,11 @@ consumer routing can claim it is native/exact (#332).
 | Trade date | Kind | Instant as printed | Document | Tier | Derived from |
 |---|---|---|---|---|---|
 | 2024-01-01 | closed | `closed` | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | Archived UK dated section; exact book scope retained. |
-| 2024-01-02 | replacement blocks | `18:00; 16:59` | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | Literal 18:00 ET holiday reopen from the previous dated UK section, combined with the sourced normal-week 16:59 ET close from OANDA-UK-HOURS-2024-WAYBACK; exact book scope retained. |
+| 2024-01-02 | unsourced | `18:00` ET reopen known; final close unstated | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | The previous dated UK holiday section states the reopen. The normal-week final close for this pre-2024-02-21 trade date is unresolved; no complete replacement is claimed (#332). |
 | 2024-01-15 | early close | `13:00` | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | Archived UK dated section; exact book scope retained. |
-| 2024-01-16 | replacement blocks | `18:00; 16:59` | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | Literal 18:00 ET holiday reopen from the previous dated UK section, combined with the sourced normal-week 16:59 ET close from OANDA-UK-HOURS-2024-WAYBACK; exact book scope retained. |
+| 2024-01-16 | unsourced | `18:00` ET reopen known; final close unstated | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | The previous dated UK holiday section states the reopen. The normal-week final close for this pre-2024-02-21 trade date is unresolved; no complete replacement is claimed (#332). |
 | 2024-02-19 | early close | `13:00` | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | Archived UK dated section; exact book scope retained. |
-| 2024-02-20 | replacement blocks | `18:00; 16:59` | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | Literal 18:00 ET holiday reopen from the previous dated UK section, combined with the sourced normal-week 16:59 ET close from OANDA-UK-HOURS-2024-WAYBACK; exact book scope retained. |
+| 2024-02-20 | unsourced | `18:00` ET reopen known; final close unstated | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | The previous dated UK holiday section states the reopen. The normal-week final close for this pre-2024-02-21 trade date is unresolved; no complete replacement is claimed (#332). |
 | 2024-03-29 | closed | `closed` | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | Archived UK dated section; exact book scope retained. |
 | 2024-05-27 | early close | `13:00` | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | Archived UK dated section; exact book scope retained. |
 | 2024-05-28 | replacement blocks | `18:00; 16:59` | `OANDA-UK-CARTER-2025-WAYBACK` | T1 | Literal 18:00 ET holiday reopen from the previous dated UK section, combined with the sourced normal-week 16:59 ET close from OANDA-UK-HOURS-2024-WAYBACK; exact book scope retained. |
@@ -218,15 +218,21 @@ work tracked in #332.
 
 The archive states `US indices open late 6 pm` and `US bonds open late 6 pm`
 for 2024-01-01. The holiday trade date is closed and the literal 18:00 ET
-reopen belongs to 2024-01-02, not a rounded 18:01 opening. It prints 13:00 ET
+reopen belongs to 2024-01-02, not a rounded 18:01 opening. The final closes
+of 2024-01-02, 2024-01-16 and 2024-02-20 are not stated in the holiday
+sections; the 2024-02-21 normal-hours witness cannot source those earlier
+closes. Each date therefore remains `Unsourced`, preserving its known
+18:00 ET reopen in this evidence record. Closing condition: a UK-scoped
+operator artifact stating the normal final close in force on those trade
+dates (#332). The archive prints 13:00 ET
 closes and 18:00 ET reopens for MLK Day, Presidents Day, Memorial Day,
 Juneteenth, Independence Day and Labor Day; Good Friday is closed.
 
 | Trade date | Arrangement | Following trade date | Arrangement |
 |---|---|---|---|
-| 2024-01-01 | Closed | 2024-01-02 | 18:00 ET previous evening to normal 16:59 ET close |
-| 2024-01-15 | Close 13:00 ET | 2024-01-16 | 18:00 ET previous evening to normal 16:59 ET close |
-| 2024-02-19 | Close 13:00 ET | 2024-02-20 | 18:00 ET previous evening to normal 16:59 ET close |
+| 2024-01-01 | Closed | 2024-01-02 | Unsourced: 18:00 ET reopen known; pre-witness final close unknown |
+| 2024-01-15 | Close 13:00 ET | 2024-01-16 | Unsourced: 18:00 ET reopen known; pre-witness final close unknown |
+| 2024-02-19 | Close 13:00 ET | 2024-02-20 | Unsourced: 18:00 ET reopen known; pre-witness final close unknown |
 | 2024-03-29 | Closed | — | — |
 | 2024-05-27 | Close 13:00 ET | 2024-05-28 | 18:00 ET previous evening to normal 16:59 ET close |
 | 2024-06-19 | Close 13:00 ET | 2024-06-20 | 18:00 ET previous evening to normal 16:59 ET close |

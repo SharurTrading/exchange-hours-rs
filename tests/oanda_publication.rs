@@ -420,3 +420,34 @@ fn archived_2024_christmas_keeps_1804_reopens_and_the_missing_bond_close_explici
         }
     );
 }
+
+#[test]
+fn archived_2024_pre_witness_reopens_do_not_invent_final_closes() {
+    for key in [K::OandaUsIndexCfd, K::OandaUsBondCfd] {
+        let calendar = cal(key);
+        // The UK holiday sections give 18:00 reopens, but no final close.
+        // The first normal-grid witness is later, on 2024-02-21.
+        for (month, day) in [(1, 2), (1, 16), (2, 20)] {
+            let date = NaiveDate::from_ymd_opt(2024, month, day).unwrap();
+            assert_eq!(
+                calendar.holiday_on(date).unwrap().kind(),
+                HolidayKind::Unsourced
+            );
+            assert!(
+                calendar
+                    .is_closed_trade_date(date, SessionKind::Both)
+                    .is_err()
+            );
+        }
+        // Printed holiday scalar closes remain known independently of that gap.
+        for (month, day) in [(1, 15), (2, 19)] {
+            let date = NaiveDate::from_ymd_opt(2024, month, day).unwrap();
+            assert_eq!(
+                calendar.holiday_on(date).unwrap().kind(),
+                HolidayKind::EarlyClose {
+                    close_ssm: 13 * 3_600
+                }
+            );
+        }
+    }
+}

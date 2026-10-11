@@ -31,16 +31,16 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
     rows: [
         // 2024-01-01 - T1 - OANDA-UK-CARTER-2025-WAYBACK - New Year: the holiday closes before the evening reopen
         (2024, 1, 1, Closed, T1, "OANDA-UK-CARTER-2025-WAYBACK"),
-        // 2024-01-02 - T1 - OANDA-UK-CARTER-2025-WAYBACK - New Year evening reopen is literal 18:00 ET
-        (2024, 1, 2, ReplacementBlocks(&GROUP_1800_REOPEN), T1, "OANDA-UK-CARTER-2025-WAYBACK"),
+        // 2024-01-02 - T1 - OANDA-UK-CARTER-2025-WAYBACK - New Year 18:00 ET reopen known; pre-witness final close unknown (#332)
+        (2024, 1, 2, Unsourced, T1, "OANDA-UK-CARTER-2025-WAYBACK"),
         // 2024-01-15 - T1 - OANDA-UK-CARTER-2025-WAYBACK - MLK Day closes 13:00 ET
         (2024, 1, 15, early_close(13 * 3_600), T1, "OANDA-UK-CARTER-2025-WAYBACK"),
-        // 2024-01-16 - T1 - OANDA-UK-CARTER-2025-WAYBACK - MLK evening reopen is literal 18:00 ET
-        (2024, 1, 16, ReplacementBlocks(&GROUP_1800_REOPEN), T1, "OANDA-UK-CARTER-2025-WAYBACK"),
+        // 2024-01-16 - T1 - OANDA-UK-CARTER-2025-WAYBACK - MLK 18:00 ET reopen known; pre-witness final close unknown (#332)
+        (2024, 1, 16, Unsourced, T1, "OANDA-UK-CARTER-2025-WAYBACK"),
         // 2024-02-19 - T1 - OANDA-UK-CARTER-2025-WAYBACK - Presidents Day closes 13:00 ET
         (2024, 2, 19, early_close(13 * 3_600), T1, "OANDA-UK-CARTER-2025-WAYBACK"),
-        // 2024-02-20 - T1 - OANDA-UK-CARTER-2025-WAYBACK - Presidents Day evening reopen is literal 18:00 ET
-        (2024, 2, 20, ReplacementBlocks(&GROUP_1800_REOPEN), T1, "OANDA-UK-CARTER-2025-WAYBACK"),
+        // 2024-02-20 - T1 - OANDA-UK-CARTER-2025-WAYBACK - Presidents Day 18:00 ET reopen known; pre-witness final close unknown (#332)
+        (2024, 2, 20, Unsourced, T1, "OANDA-UK-CARTER-2025-WAYBACK"),
         // 2024-03-29 - T1 - OANDA-UK-CARTER-2025-WAYBACK - Good Friday: US indices and US bonds closed
         (2024, 3, 29, Closed, T1, "OANDA-UK-CARTER-2025-WAYBACK"),
         // 2024-05-27 - T1 - OANDA-UK-CARTER-2025-WAYBACK - Memorial Day closes 13:00 ET

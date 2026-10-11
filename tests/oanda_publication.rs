@@ -527,3 +527,26 @@ fn archived_2024_brent_preserves_explicit_thanksgiving_and_missing_reopens() {
         );
     }
 }
+
+#[test]
+fn brent_uk_holiday_silence_preserves_typed_refusals_in_each_year() {
+    let calendar = cal(K::OandaBrent);
+    for (year, month, day) in [
+        (2025, 4, 21),
+        (2025, 8, 25),
+        (2026, 4, 6),
+        (2026, 5, 1),
+        (2026, 5, 4),
+        (2026, 8, 31),
+    ] {
+        let date = NaiveDate::from_ymd_opt(year, month, day).unwrap();
+        assert_eq!(
+            calendar.holiday_on(date).unwrap().kind(),
+            HolidayKind::Unsourced
+        );
+        assert!(matches!(
+            calendar.is_closed_trade_date(date, SessionKind::Both),
+            Err(CalendarQueryError::UnresolvedGap { .. })
+        ));
+    }
+}

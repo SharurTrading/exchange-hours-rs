@@ -55,8 +55,8 @@ cluster on 2025-05-26, 06-19, 07-04, 09-01, 11-27/28, 12-24/25/31 and their
 2026 counterparts, all five-offset dates). The page has an explicit
 `Regular trading hours` / `has regular hours` vocabulary for this book (MLK
 and Presidents Day 2025 and 2026 print it), so a section that prints other
-groups' rows and nothing for Brent **withholds** rather than affirms — four
-2025 dates ship `Unsourced` on that rule; the 2024 audit below retains seven additional withholdings.
+groups' rows and nothing for Brent **withholds** rather than affirms — six
+2025 dates and four 2026 dates ship `Unsourced` on that rule; the 2024 audit below retains seven additional withholdings.
 
 ### 2024
 
@@ -88,12 +88,14 @@ groups' rows and nothing for Brent **withholds** rather than affirms — four
 | 2025-01-09 | unsourced | — | `OANDA-UK-HOLIDAYS` | T1 | Carter's Day of Mourning: the section prints US index/bonds and Commodities rows, nothing for Brent; the book's regular-hours vocabulary makes silence a withholding |
 | 2025-04-17 | unsourced | — | `OANDA-UK-HOLIDAYS` | T1 | Holy Thursday: same rule |
 | 2025-04-18 | closed | `BCO is closed` | `OANDA-UK-HOLIDAYS` | T1 | Good Friday |
+| 2025-04-21 | unsourced | — | `OANDA-UK-HOLIDAYS` | T1 | Easter Monday: section names other books but no Brent arrangement; regular-hours vocabulary makes silence a withholding (#332) |
 | 2025-05-26 | early close | `closes early at 1:30 PM and reopen at 8:00 PM` | `OANDA-UK-HOLIDAYS` | T1 | Memorial Day, 1:30 PM ET = 18:30 London |
 | 2025-05-27 | replacement blocks | `01:00; 21:59; 22:05; 22:59` | `OANDA-UK-HOLIDAYS` | T1 | Complete replacement: previous holiday's literal reopen plus this trade date's printed or normal close. |
 | 2025-06-19 | early close | `closes early at 1:30 PM and reopens at 8:00 PM` | `OANDA-UK-HOLIDAYS` | T1 | Juneteenth, 18:30 London |
 | 2025-06-20 | replacement blocks | `01:00; 21:59` | `OANDA-UK-HOLIDAYS` | T1 | Complete replacement: previous holiday's literal reopen plus this trade date's printed or normal close. |
 | 2025-07-03 | unsourced | — | `OANDA-UK-HOLIDAYS` | T1 | Independence Day eve: the section prints US index and Commodities rows, nothing for Brent |
 | 2025-07-04 | early close | `close early at 1:30 pm` | `OANDA-UK-HOLIDAYS` | T1 | Independence Day, 18:30 London |
+| 2025-08-25 | unsourced | — | `OANDA-UK-HOLIDAYS` | T1 | UK Summer Bank Holiday: section names other books but no Brent arrangement; regular-hours vocabulary makes silence a withholding (#332) |
 | 2025-09-01 | early close | `Close early at 1:30 PM, reopen at 8:00 PM` | `OANDA-UK-HOLIDAYS` | T1 | Labor Day, 18:30 London |
 | 2025-09-02 | replacement blocks | `01:00; 21:59; 22:05; 22:59` | `OANDA-UK-HOLIDAYS` | T1 | Complete replacement: previous holiday's literal reopen plus this trade date's printed or normal close. |
 | 2025-11-26 | unsourced | — | `OANDA-UK-HOLIDAYS` | T1 | Thanksgiving eve: the section prints one Agricultural row, Brent silent |
@@ -109,10 +111,14 @@ groups' rows and nothing for Brent **withholds** rather than affirms — four
 |---|---|---|---|---|---|
 | 2026-01-01 | closed | `Brent Crude Oil: closed` | `OANDA-UK-HOLIDAYS` | T1 | New Year's Day |
 | 2026-04-03 | closed | `Brent Crude Oil: Closed` | `OANDA-UK-HOLIDAYS` | T1 | Good Friday |
+| 2026-04-06 | unsourced | — | `OANDA-UK-HOLIDAYS` | T1 | Easter Monday: section names other books but no Brent arrangement; regular-hours vocabulary makes silence a withholding (#332) |
+| 2026-05-01 | unsourced | — | `OANDA-UK-HOLIDAYS` | T1 | Labour Day: section names other books but no Brent arrangement; regular-hours vocabulary makes silence a withholding (#332) |
+| 2026-05-04 | unsourced | — | `OANDA-UK-HOLIDAYS` | T1 | Early May Bank Holiday: section names other books but no Brent arrangement; regular-hours vocabulary makes silence a withholding (#332) |
 | 2026-05-25 | early close | `Early close at 13:29; reopen at 20:01` | `OANDA-UK-HOLIDAYS` | T1 | Memorial Day, 13:29 ET = 18:29 London; the reopen 20:01 ET = 01:01 London next day, this book's own evening open |
 | 2026-06-19 | early close | `Early close at 13:29` | `OANDA-UK-HOLIDAYS` | T1 | Juneteenth, 18:29 London |
 | 2026-07-03 | early close | `Early close at 13:29` | `OANDA-UK-HOLIDAYS` | T1 | Independence Day, 18:29 London |
-| 2026-09-07 | early close | `Early close at 13:29; reopen at 20:01` | `OANDA-UK-HOLIDAYS` | T1 | Labor Day, 18:29 London |
+| 2026-08-31 | unsourced | — | `OANDA-UK-HOLIDAYS` | T1 | UK Summer Bank Holiday: section names other books but no Brent arrangement; regular-hours vocabulary makes silence a withholding (#332) |
+| 2026-09-07 | early close | `Early close at 13:29` | `OANDA-UK-HOLIDAYS` | T1 | Labor Day, 18:29 London |
 
 ## Dated selectors
 
@@ -148,9 +154,9 @@ sha256 `467313685d4d64a4b95e5112a58d0fa04583f0abe988b1478d41fddf8b04cf1c`.
   is undated; the span refuses on the date-aware surface. Closing condition:
   dated operator artifacts, or hunts closed negative (then the 2026-10-04
   intersection rule applies).
-- The four `Unsourced` dates close with an OANDA desk answer or a capture
-  printing the book's arrangement (the page's own regular-hours vocabulary
-  is the affirmative form to look for).
+- The seventeen `Unsourced` dates close with UK-scoped operator artifacts
+  printing the book's arrangements (#332); the page's own regular-hours
+  vocabulary is the affirmative form to look for.
 - The ET-to-London conversion rests on every row being a five-offset date;
   a future holiday landing inside a DST-disagreement window needs its own
   offset check before conversion.
@@ -171,4 +177,8 @@ not a timed session phase; see [the shared scope decision](oanda_fx.md#pending-o
 
 ## Archived 2024 scope — 2026-10-11 UTC
 
-The March 2025 UK archive explicitly names Brent/BCO in the 2024 Good Friday, Memorial, Juneteenth, Independence, Labor, Thanksgiving and Christmas/New Year sections. Its 2024-05-01 and 2024-05-06 BCO/USD `is open` statements affirm ordinary trading. The book's regular-hours vocabulary makes the 2024-04-01 Easter, 2024-07-03 Independence eve and 2024-08-26 UK bank-holiday sections' Brent silence a withholding. Four additional following dates (2024-05-28, 2024-06-20, 2024-07-05, 2024-09-03) withhold exact sessions: the preceding sections specify Brent's early close but no Brent reopen; separate `Commodities` late-open wording does not establish this book's interval. Closing condition: UK-scoped operator statements fixing these seven arrangements (#332). Thanksgiving alone explicitly prints Brent's 20:00 ET reopen and Friday 15:00 ET close, producing the 01:00–20:00 London replacement. All seven converted early-close instants fall on five-hour ET-to-London dates; Good Friday's closure needs no scalar conversion inside the March DST mismatch. Earlier dates are outside the 2024-02-21 holiday window; no pre-witness close is derived. The table has 41 rows, including eleven withheld dates. All seventeen new rows cite the byte-identical Carter archive through oanda_us_index_cfd.md's Documents table.
+The March 2025 UK archive explicitly names Brent/BCO in the 2024 Good Friday, Memorial, Juneteenth, Independence, Labor, Thanksgiving and Christmas/New Year sections. Its 2024-05-01 and 2024-05-06 BCO/USD `is open` statements affirm ordinary trading. The book's regular-hours vocabulary makes the 2024-04-01 Easter, 2024-07-03 Independence eve and 2024-08-26 UK bank-holiday sections' Brent silence a withholding. Four additional following dates (2024-05-28, 2024-06-20, 2024-07-05, 2024-09-03) withhold exact sessions: the preceding sections specify Brent's early close but no Brent reopen; separate `Commodities` late-open wording does not establish this book's interval. Closing condition: UK-scoped operator statements fixing these seven arrangements (#332). Thanksgiving alone explicitly prints Brent's 20:00 ET reopen and Friday 15:00 ET close, producing the 01:00–20:00 London replacement. All seven converted early-close instants fall on five-hour ET-to-London dates; Good Friday's closure needs no scalar conversion inside the March DST mismatch. Earlier dates are outside the 2024-02-21 holiday window; no pre-witness close is derived. The table has 47 rows, including seventeen withheld dates. All seventeen new rows cite the byte-identical Carter archive through oanda_us_index_cfd.md's Documents table.
+
+## Consistent UK holiday scope — 2026-10-11 UTC
+
+The same silence rule applies to Easter Monday 2025-04-21 and 2026-04-06, UK Summer Bank Holiday 2025-08-25 and 2026-08-31, Labour Day 2026-05-01 and Early May Bank Holiday 2026-05-04. These six sections name other books but do not affirm Brent trading. The corresponding May 2024 and May 2025 sections explicitly name BCO/USD as open, so those dates remain audited normal. The 2026-09-07 Brent statement prints only the 13:29 ET close; the section's 20:01 reopen is Agricultural wording and does not provide this book's reopening. No Brent reopen is attributed to that statement. Seven 2024, six 2025 and four 2026 dates are withheld; UK-scoped operator arrangements close those gaps (#332).

@@ -72,6 +72,8 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2025, 4, 17, Unsourced, T1, "OANDA-UK-HOLIDAYS"),
         // 2025-04-18 - T1 - OANDA-UK-HOLIDAYS - Good Friday: BCO is closed
         (2025, 4, 18, Closed, T1, "OANDA-UK-HOLIDAYS"),
+        // 2025-04-21 - T1 - OANDA-UK-HOLIDAYS - Easter Monday: other books named; Brent arrangement unstated (#332)
+        (2025, 4, 21, Unsourced, T1, "OANDA-UK-HOLIDAYS"),
         // 2025-05-26 - T1 - OANDA-UK-HOLIDAYS - Memorial Day: closes 1:30 PM ET (18:30 London), reopens 8:00 PM ET
         (2025, 5, 26, early_close(18 * 3_600 + 30 * 60), T1, "OANDA-UK-HOLIDAYS"),
         // 2025-05-27 - T1 - OANDA-UK-HOLIDAYS - Previous holiday reopens 20:00 ET = 01:00 London
@@ -85,6 +87,8 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2025, 7, 3, Unsourced, T1, "OANDA-UK-HOLIDAYS"),
         // 2025-07-04 - T1 - OANDA-UK-HOLIDAYS - Independence Day: closes 1:30 pm ET
         (2025, 7, 4, early_close(18 * 3_600 + 30 * 60), T1, "OANDA-UK-HOLIDAYS"),
+        // 2025-08-25 - T1 - OANDA-UK-HOLIDAYS - UK Summer Bank Holiday: other books named; Brent arrangement unstated (#332)
+        (2025, 8, 25, Unsourced, T1, "OANDA-UK-HOLIDAYS"),
         // 2025-09-01 - T1 - OANDA-UK-HOLIDAYS - Labor Day: closes 1:30 PM ET, reopens 8:00 PM ET
         (2025, 9, 1, early_close(18 * 3_600 + 30 * 60), T1, "OANDA-UK-HOLIDAYS"),
         // 2025-09-02 - T1 - OANDA-UK-HOLIDAYS - Previous holiday reopens 20:00 ET = 01:00 London
@@ -105,13 +109,21 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2026, 1, 1, Closed, T1, "OANDA-UK-HOLIDAYS"),
         // 2026-04-03 - T1 - OANDA-UK-HOLIDAYS - Good Friday: Brent Crude Oil Closed
         (2026, 4, 3, Closed, T1, "OANDA-UK-HOLIDAYS"),
+        // 2026-04-06 - T1 - OANDA-UK-HOLIDAYS - Easter Monday: other books named; Brent arrangement unstated (#332)
+        (2026, 4, 6, Unsourced, T1, "OANDA-UK-HOLIDAYS"),
+        // 2026-05-01 - T1 - OANDA-UK-HOLIDAYS - Labour Day: other books named; Brent arrangement unstated (#332)
+        (2026, 5, 1, Unsourced, T1, "OANDA-UK-HOLIDAYS"),
+        // 2026-05-04 - T1 - OANDA-UK-HOLIDAYS - Early May Bank Holiday: other books named; Brent arrangement unstated (#332)
+        (2026, 5, 4, Unsourced, T1, "OANDA-UK-HOLIDAYS"),
         // 2026-05-25 - T1 - OANDA-UK-HOLIDAYS - Memorial Day: closes 13:29 ET (18:29 London), reopens 20:01 ET
         (2026, 5, 25, early_close(18 * 3_600 + 29 * 60), T1, "OANDA-UK-HOLIDAYS"),
         // 2026-06-19 - T1 - OANDA-UK-HOLIDAYS - Juneteenth: closes 13:29 ET
         (2026, 6, 19, early_close(18 * 3_600 + 29 * 60), T1, "OANDA-UK-HOLIDAYS"),
         // 2026-07-03 - T1 - OANDA-UK-HOLIDAYS - Independence Day: closes 13:29 ET
         (2026, 7, 3, early_close(18 * 3_600 + 29 * 60), T1, "OANDA-UK-HOLIDAYS"),
-        // 2026-09-07 - T1 - OANDA-UK-HOLIDAYS - Labor Day: closes 13:29 ET, reopens 20:01 ET
+        // 2026-08-31 - T1 - OANDA-UK-HOLIDAYS - UK Summer Bank Holiday: other books named; Brent arrangement unstated (#332)
+        (2026, 8, 31, Unsourced, T1, "OANDA-UK-HOLIDAYS"),
+        // 2026-09-07 - T1 - OANDA-UK-HOLIDAYS - Labor Day: closes 13:29 ET
         (2026, 9, 7, early_close(18 * 3_600 + 29 * 60), T1, "OANDA-UK-HOLIDAYS"),
     ],
 };

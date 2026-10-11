@@ -6,7 +6,7 @@
 
 ### Fixed
 
-- BME opening and closing auction calls now accept orders without reporting the market open, on normal days and half days. Only the sourced uncross windows and Trading-at-Last execute.
+- BME opening and closing auction calls now accept orders without reporting the market open, on normal days and half days. The sourced uncross windows and Trading-at-Last remain executable.
 
 ### Added
 

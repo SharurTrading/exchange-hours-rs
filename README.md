@@ -346,9 +346,9 @@ primary evidence cannot date. The basis vocabulary is closed at four values —
 defect to fix, not a weaker label to wear. `Exchange::Unknown` is synthetic and
 is not one of the 96 source-backed identities.
 
-Every row also states its **service tier** (LAW-SERVICE-TIERS): 33 of the 140
+Every row also states its **service tier** (LAW-SERVICE-TIERS): 36 of the 140
 rows are `served` — a consumer instrument can reach them, so they owe dated
-history to the January-2010 floor and a monthly or quarterly review — and 107
+history to the January-2010 floor and a monthly or quarterly review — and 104
 are `dormant`, kept correct as of their last review and re-reviewed on demand.
 Each row carries its evidence tier, the horizon below which its grid is carried
 rather than sourced, its review cadence, and a link to the evidence file holding

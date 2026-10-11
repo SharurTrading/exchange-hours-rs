@@ -4,6 +4,16 @@
 
 ## [Unreleased]
 
+### Changed
+
+- Three identities turned **served** under the OANDA programme's consumer
+  admission (SharurPlatform#1046): the `eurex` and `eurex_fixed_income` keys —
+  Germany 40 / Euro 50 and Germany 10Y Bund — whose tables the Eurex venue's
+  calendar work already ships at the same audited depth, and `ice_us_sugar`,
+  whose table the IFUS notices waves had already built. Review cadence moves
+  to monthly for all three; the served-scope inventory gains their rows and
+  the verdict tally moves to thirty complete and six incomplete.
+
 ### Added
 
 - `Exchange::Oanda` and the first two OANDA-book keys, `oanda_fx` (all FX

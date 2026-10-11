@@ -132,6 +132,7 @@ The spans, and what each rests on:
 
 | Document | Window | Replay or service URL | Capture or retrieval, UTC | Tier | sha256 |
 |---|---|---|---|---|---|
+| `OANDA-STATIC-HOURS-252` | undated earlier grids; no effective day asserted | <https://www.oanda.com/assets/documents/252/Hours_of_Operation.pdf> | retrieved 2026-10-11 UTC | T1 | `778ea39e0f71005015a111963061cd86f8d7fce7b589af0279316992239244ba` |
 | `OANDA-UK-HOURS-PDF` | current | <https://www.oanda.com/uk-en/trading/hours-of-operation/> | rendered 2026-10-10 (maintainer-saved page-to-PDF) | T1 | `d8a853cd621313feec96eb1ee0f45b81b7674dea2e0e6cb50b175e78347153d7` |
 | `OANDA-UK-HOURS-HTML` | current | <https://www.oanda.com/uk-en/trading/hours-of-operation/> | captured 2026-10-10 22:36 | T1 | `60f6143dd5d678b1a34a9937aa938d2884380a33bf3542a4c72f8f03fa3607b7` |
 | `OANDA-UK-HOLIDAYS` | 2025-01-01 .. 2026-10-30 | <https://www.oanda.com/uk-en/trading/holiday-trading-hours> | captured 2026-10-10 22:44 | T1 | `c7137ce3da4cc19d0431955feedc10fb6b9731214ad3cfc7966160e72f8559da` |
@@ -182,3 +183,25 @@ about those executable and published order-entry phases, not whether OANDA's
 order-placement API or account instruction store is available. Off-hours
 pending instructions therefore do not become fabricated 24/7 session rules.
 This scope applies to the venue default and all seven OANDA keys (#333).
+
+## Starred seasonal selectors — 2026-10-11 UTC
+
+The current UK page marks Australia 200's close and the German/Euro/Bund
+opening with `***`, stating a one-hour local-bound shift during daylight
+saving without expressly identifying the selector's zone. The undated
+operator guide `OANDA-STATIC-HOURS-252` prints Australia 200's earlier
+17:10–07:00 Sydney night during US DST and 17:10–08:00 otherwise. This
+is evidence that the broker itself has used a US-season selector; it does
+not date a transition to the current one-minute-inset grid or establish
+that the current generic footnote switched to Sydney DST.
+
+A universal fixed-UTC interpretation, and a Sydney-only interpretation for
+Australia 200, therefore remain unproved. The six absent derivatives
+families and the consumer's exact starred CFD selectors remain under #332.
+The underlying ASX operator's explicit US-season schedule is its own source,
+not permission to fabricate a broker cutover. The operator must identify the
+current selector, or the consumer must refuse the disputed scope; passing a
+test of one interpretation does not settle this source question.
+
+Captured bytes: `normal-weeks/oanda-star-selector-audit-2026-10-11/oanda-static-hours-252.pdf`
+in the research store. No date or new runtime row is keyed from this artifact.

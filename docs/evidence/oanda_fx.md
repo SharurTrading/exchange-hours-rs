@@ -47,7 +47,10 @@ Interpretation, each step from the operator's own words:
 - The encoding is Sunday–Thursday 17:05 wrapping to the next local day 16:59
   (end-exclusive), Friday with no rule, `has_daily_close`/`has_weekend_close`
   both true. The six-minute gap between the close and the next 17:05 open is
-  the stated break; it is a same-trade-date `Closed` gap, not maintenance.
+  the stated break. Consecutive sessions have different trade dates; the
+  crate classifies the six-minute inter-trade-date gap as `Maintenance`
+  under its four-hour/ISO-week policy. That classification does not add
+  an operator-published maintenance halt.
 - The NZD-pair break (06:59–07:05 `Pacific/Auckland`) is stated **per
   instrument** (`XAU/NZD`, `XAG/NZD` and NZD FX pairs), not for the book: it
   is caller catalog data, and no rule in the grid states it.

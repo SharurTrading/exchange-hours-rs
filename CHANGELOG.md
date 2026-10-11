@@ -52,6 +52,9 @@
 - OANDA holiday instants now preserve the operator's exact minutes: the
   missing MLK 2025 closes, New Year 18:04 reopens, 2025 US 18:00 and Brent
   20:00 ET reopens, and Holy Thursday's 17:00 ET close (#330).
+- Bond CFDs retain ordinary trading on the index-only Independence Eve
+  notice. The incomplete Memorial Day 2026 reopen refuses the following
+  index/bond trade date until the operator clarifies it (#332).
 - Brent's Monday session bounds include the Sunday 23:01 London opening
   (#331). Replacement-session searches select the nearest chronological
   occurrence across normal rules and replacement blocks (#329).

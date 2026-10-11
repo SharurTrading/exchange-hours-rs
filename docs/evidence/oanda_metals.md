@@ -13,10 +13,8 @@ OANDA's spot-metals book, the XAU and XAG instrument families and their
 crosses: Sunday 18:05 through Friday 16:59 New York time, with the printed
 16:59-18:05 daily gap and no other maintenance. The printed pair implies the
 daily gap exactly as the FX row's footnote states its own six-minute one.
-The same hedge-desk mechanics explain the holiday closes below: each early
-close sits one minute inside the underlying futures' early close (12:59
-against 13:00, 14:29 against 14:30, 13:44 against 13:45), because the book
-has to be flat before the hedge market stops.
+Holiday boundaries below are the operator's literal dated statements,
+including 2025 closes at 13:00 and 14:30; no uniform futures inset is assumed.
 
 ## Revision rows
 
@@ -78,14 +76,14 @@ used. Evening reopens belong to the following trade date.
 | 2025-11-27 | early close | `Close early at 2:30 PM, reopen at 6:00 PM` | `OANDA-UK-HOLIDAYS` | T1 | Thanksgiving Day |
 | 2025-11-28 | replacement blocks | `18:00; 14:45` | `OANDA-UK-HOLIDAYS` | T1 | Previous holiday's stated group reopen; this trade date's printed or normal close retained. |
 | 2025-12-24 | early close | `Metals: close at 13:44` | `OANDA-UK-HOLIDAYS` | T1 | Christmas Eve, the page's own split row |
-| 2025-12-25 | closed | `Forex: open at 17:05` era reopen | `OANDA-UK-HOLIDAYS` | T1 | Christmas Day: the US groups reopen at the evening open (`US energies open 18:01`), the gold/silver book at the stated 18:01, so the trade date's session does not trade |
+| 2025-12-25 | closed | `Metals: open at 18:01` | `OANDA-UK-HOLIDAYS` | T1 | Christmas Day: the stated metals evening reopen is keyed to the following trade date, so this trade date's session does not trade |
 
 | 2025-12-26 | replacement blocks | `18:01; 16:59` | `OANDA-UK-HOLIDAYS` | T1 | Previous holiday's stated group reopen; this trade date's printed or normal close retained. |
 ### 2026
 
 | Trade date | Kind | Instant as printed | Document | Tier | Derived from |
 |---|---|---|---|---|---|
-| 2026-01-01 | closed | `Forex: open at 17:05` era reopen | `OANDA-UK-HOLIDAYS` | T1 | New Year's Day: same derivation as Christmas Day |
+| 2026-01-01 | closed | `Metals: open at 18:01` | `OANDA-UK-HOLIDAYS` | T1 | New Year's Day: same derivation as Christmas Day |
 | 2026-01-02 | replacement blocks | `18:01; 16:59` | `OANDA-UK-HOLIDAYS` | T1 | Previous holiday's stated group reopen; this trade date's printed or normal close retained. |
 | 2026-01-19 | early close | `Early close at 14:29 and reopening at 18:01` | `OANDA-UK-HOLIDAYS` | T1 | MLK Day, the group's instant |
 | 2026-01-20 | replacement blocks | `18:01; 16:59` | `OANDA-UK-HOLIDAYS` | T1 | Previous holiday's stated group reopen; this trade date's printed or normal close retained. |

@@ -135,10 +135,9 @@ fn oanda_us_books_print_one_absolute_clock_in_two_zones() {
 #[test]
 fn oanda_us_index_cfd_group_closes_at_the_printed_instants() {
     let calendar = calendar_for_market_hours_key(MarketHoursKey::OandaUsIndexCfd);
-    // Memorial Day 2026: the group closes 12:59 (the narrowest sourced
-    // window); Good Friday 2026 ships the indices' 9:14 close.
+    // Good Friday 2026 ships the indices' 9:14 close. Memorial Day
+    // queries refuse the adjacent incomplete reopen; see oanda_publication.
     for (day, ssm) in [
-        ((2026, 5, 25), 12 * 3_600 + 59 * 60),
         ((2026, 4, 3), 9 * 3_600 + 14 * 60),
         ((2025, 12, 24), 13 * 3_600 + 14 * 60),
         ((2025, 7, 3), 13 * 3_600 + 15 * 60),

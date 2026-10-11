@@ -87,7 +87,8 @@ family ships together. Indices and bonds now have separate keys (2026-10-11 UTC)
 | 2026-01-19 | early close | `Early close at 12:59 and reopening at 18:01` | `OANDA-UK-HOLIDAYS` | T1 | MLK Day |
 | 2026-02-16 | early close | `Early close at 12:59 and reopening at 18:01` | `OANDA-UK-HOLIDAYS` | T1 | Presidents Day |
 | 2026-04-03 | early close | `US Indices: Early close at 9:14`, `US Bonds: Early close at 11:14` | `OANDA-UK-HOLIDAYS` | T1 | Good Friday: indices close at 09:14; bonds use their separate key at 11:14 |
-| 2026-05-25 | early close | `Early close at 12:59; reopen at 18:0` (source typo; the normal 18:01 grid remains the common sourced interval) | `OANDA-UK-HOLIDAYS` | T1 | Memorial Day |
+| 2026-05-25 | early close | `Early close at 12:59; reopen at 18:0` (incomplete source time; the following trade date is withheld) | `OANDA-UK-HOLIDAYS` | T1 | Memorial Day |
+| 2026-05-26 | unsourced | `reopen at 18:0` | `OANDA-UK-HOLIDAYS` | T1 | The previous evening's missing minute digit does not establish exact session bounds. The following trade date refuses until the UK operator clarifies it (#332). |
 | 2026-06-19 | early close | `Early close at 12:59` | `OANDA-UK-HOLIDAYS` | T1 | Juneteenth |
 | 2026-07-03 | early close | `Early close at 12:59` | `OANDA-UK-HOLIDAYS` | T1 | Independence Day |
 | 2026-09-07 | early close | `Early close at 12:59 and reopening at 18:01` | `OANDA-UK-HOLIDAYS` | T1 | Labor Day |
@@ -142,3 +143,9 @@ trading day, including any next-day early close and Brent's late segment.
 
 Pending-order storage outside the printed trading windows is a broker facility,
 not a timed session phase; see [the shared scope decision](oanda_fx.md#pending-orders-and-session-scope--2026-10-11-utc) (#333).
+
+The 2026-05-25 section's incomplete `18:0` reopen does not justify an
+18:01 opening or any exact intersection boundary. The 2026-05-25 close
+remains sourced at 12:59; 2026-05-26 is `Unsourced` because its prior-evening
+opening is unknown. Other OANDA legal entities' 18:01 statements may
+corroborate a possible correction but do not establish this UK scope (#332).

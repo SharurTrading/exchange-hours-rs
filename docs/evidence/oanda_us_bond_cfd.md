@@ -72,8 +72,7 @@ where the operator groups indices and bonds. The keys were separated on
 | 2025-05-27 | replacement blocks | `18:00; 16:59` | `OANDA-UK-HOLIDAYS` | T1 | Complete replacement: previous holiday's literal reopen plus this trade date's printed or normal close. |
 | 2025-06-19 | early close | `close early at 1:00 PM and reopen at 6:00 PM` | `OANDA-UK-HOLIDAYS` | T1 | Juneteenth |
 | 2025-06-20 | replacement blocks | `18:00; 16:59` | `OANDA-UK-HOLIDAYS` | T1 | Complete replacement: previous holiday's literal reopen plus this trade date's printed or normal close. |
-| 2025-07-03 | early close | `close early at 1:15 pm and reopen at 6 pm` | `OANDA-UK-HOLIDAYS` | T1 | Independence Day eve |
-| 2025-07-04 | replacement blocks | `18:00; 13:00` | `OANDA-UK-HOLIDAYS` | T1 | Complete replacement: previous holiday's literal reopen plus this trade date's printed or normal close. |
+| 2025-07-04 | early close | `US bonds close early at 1 pm` | `OANDA-UK-HOLIDAYS` | T1 | Independence Day: the bond close is explicit; the previous day names only indices, so bonds retain their normal 18:01 opening. |
 | 2025-09-01 | early close | `Close early at 1:00 PM, reopen at 6:00 PM` | `OANDA-UK-HOLIDAYS` | T1 | Labor Day |
 | 2025-09-02 | replacement blocks | `18:00; 16:59` | `OANDA-UK-HOLIDAYS` | T1 | Complete replacement: previous holiday's literal reopen plus this trade date's printed or normal close. |
 | 2025-11-27 | early close | `Close early at 1:00 PM, reopen at 6:00 PM` | `OANDA-UK-HOLIDAYS` | T1 | Thanksgiving Day |
@@ -89,7 +88,8 @@ where the operator groups indices and bonds. The keys were separated on
 | 2026-01-19 | early close | `Early close at 12:59 and reopening at 18:01` | `OANDA-UK-HOLIDAYS` | T1 | MLK Day |
 | 2026-02-16 | early close | `Early close at 12:59 and reopening at 18:01` | `OANDA-UK-HOLIDAYS` | T1 | Presidents Day |
 | 2026-04-03 | early close | `US Indices: Early close at 9:14`, `US Bonds: Early close at 11:14` | `OANDA-UK-HOLIDAYS` | T1 | Good Friday: this bond key closes at 11:14 ET |
-| 2026-05-25 | early close | `Early close at 12:59; reopen at 18:0` (source typo; the normal 18:01 grid remains the common sourced interval) | `OANDA-UK-HOLIDAYS` | T1 | Memorial Day |
+| 2026-05-25 | early close | `Early close at 12:59; reopen at 18:0` (incomplete source time; the following trade date is withheld) | `OANDA-UK-HOLIDAYS` | T1 | Memorial Day |
+| 2026-05-26 | unsourced | `reopen at 18:0` | `OANDA-UK-HOLIDAYS` | T1 | The previous evening's missing minute digit does not establish exact session bounds. The following trade date refuses until the UK operator clarifies it (#332). |
 | 2026-06-19 | early close | `Early close at 12:59` | `OANDA-UK-HOLIDAYS` | T1 | Juneteenth |
 | 2026-07-03 | early close | `Early close at 12:59` | `OANDA-UK-HOLIDAYS` | T1 | Independence Day |
 | 2026-09-07 | early close | `Early close at 12:59 and reopening at 18:01` | `OANDA-UK-HOLIDAYS` | T1 | Labor Day |
@@ -141,3 +141,14 @@ trading day, including any next-day early close and Brent's late segment.
 
 Pending-order storage outside the printed trading windows is a broker facility,
 not a timed session phase; see [the shared scope decision](oanda_fx.md#pending-orders-and-session-scope--2026-10-11-utc) (#333).
+
+The 2026-05-25 section's incomplete `18:0` reopen does not justify an
+18:01 opening or any exact intersection boundary. The 2026-05-25 close
+remains sourced at 12:59; 2026-05-26 is `Unsourced` because its prior-evening
+opening is unknown. Other OANDA legal entities' 18:01 statements may
+corroborate a possible correction but do not establish this UK scope (#332).
+
+The 2025-07-03 section names only US index futures. Its 13:15 close
+and 18:00 reopen do not apply to this bond key. July 3 is audited normal
+under the page's rows-only bond vocabulary; July 4 retains the stated
+bond close at 13:00 and the normal prior-evening opening at 18:01.

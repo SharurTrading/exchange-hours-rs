@@ -7,7 +7,7 @@ use crate::calendar::ExceptionBlock;
 
 use super::{
     EvidenceTier::T1,
-    HolidayKind::{Closed, ReplacementBlocks},
+    HolidayKind::{Closed, ReplacementBlocks, Unsourced},
     HolidayTable, holidays,
 };
 
@@ -17,9 +17,6 @@ static GROUP_1800_REOPEN: [ExceptionBlock; 1] = [ExceptionBlock::regular(-1, 18 
 
 #[rustfmt::skip]
 static HOLY_THURSDAY: [ExceptionBlock; 1] = [ExceptionBlock::regular(-1, 18 * 3_600 + 60, 17 * 3_600)];
-
-#[rustfmt::skip]
-static INDEPENDENCE_REOPEN: [ExceptionBlock; 1] = [ExceptionBlock::regular(-1, 18 * 3_600, 13 * 3_600)];
 
 #[rustfmt::skip]
 static THANKSGIVING_REOPEN: [ExceptionBlock; 1] = [ExceptionBlock::regular(-1, 18 * 3_600, 13 * 3_600 + 15 * 60)];
@@ -57,10 +54,8 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2025, 6, 19, early_close(13 * 3_600), T1, "OANDA-UK-HOLIDAYS"),
         // 2025-06-20 - T1 - OANDA-UK-HOLIDAYS - Previous holiday reopens 18:00 ET
         (2025, 6, 20, ReplacementBlocks(&GROUP_1800_REOPEN), T1, "OANDA-UK-HOLIDAYS"),
-        // 2025-07-03 - T1 - OANDA-UK-HOLIDAYS - Independence Day eve: closes 1:15 pm, reopens 6 pm
-        (2025, 7, 3, early_close(13 * 3_600 + 15 * 60), T1, "OANDA-UK-HOLIDAYS"),
-        // 2025-07-04 - T1 - OANDA-UK-HOLIDAYS - Previous holiday reopens 18:00 ET; retain this trade date's printed close
-        (2025, 7, 4, ReplacementBlocks(&INDEPENDENCE_REOPEN), T1, "OANDA-UK-HOLIDAYS"),
+        // 2025-07-04 - T1 - OANDA-UK-HOLIDAYS - Independence Day: bonds close 1 pm; July 3 states only an index arrangement
+        (2025, 7, 4, early_close(13 * 3_600), T1, "OANDA-UK-HOLIDAYS"),
         // 2025-09-01 - T1 - OANDA-UK-HOLIDAYS - Labor Day: closes 1:00 PM, reopens 6:00 PM
         (2025, 9, 1, early_close(13 * 3_600), T1, "OANDA-UK-HOLIDAYS"),
         // 2025-09-02 - T1 - OANDA-UK-HOLIDAYS - Previous holiday reopens 18:00 ET
@@ -83,6 +78,8 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2026, 4, 3, early_close(11 * 3_600 + 14 * 60), T1, "OANDA-UK-HOLIDAYS"),
         // 2026-05-25 - T1 - OANDA-UK-HOLIDAYS - Memorial Day: closes 12:59; source prints incomplete reopen 18:0 (evidence records the residual)
         (2026, 5, 25, early_close(12 * 3_600 + 59 * 60), T1, "OANDA-UK-HOLIDAYS"),
+        // 2026-05-26 - T1 - OANDA-UK-HOLIDAYS - Previous evening reopen is incomplete (18:0); exact session withheld (#332)
+        (2026, 5, 26, Unsourced, T1, "OANDA-UK-HOLIDAYS"),
         // 2026-06-19 - T1 - OANDA-UK-HOLIDAYS - Juneteenth: closes 12:59
         (2026, 6, 19, early_close(12 * 3_600 + 59 * 60), T1, "OANDA-UK-HOLIDAYS"),
         // 2026-07-03 - T1 - OANDA-UK-HOLIDAYS - Independence Day: closes 12:59

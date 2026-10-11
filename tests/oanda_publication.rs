@@ -9,8 +9,8 @@
 
 use chrono::{DateTime, Duration, NaiveDate, Utc};
 use exchange_hours::{
-    ExceptionBlock, ExchangeCalendar, MarketHoursKey as K, SessionExceptionRecord, SessionState,
-    StaticSessionExceptions,
+    CalendarQueryError, DateCoverage, ExceptionBlock, ExchangeCalendar, HolidayKind,
+    MarketHoursKey as K, SessionExceptionRecord, SessionState, StaticSessionExceptions,
 };
 
 fn utc(s: &str) -> DateTime<Utc> {
@@ -183,6 +183,61 @@ fn bonds_have_their_own_good_friday_and_carter_day_closes() {
         Ok(Some((reopen, utc("2025-01-10T21:59:00Z"))))
     );
     assert_eq!(K::OandaUsBondCfd.as_str().parse(), Ok(K::OandaUsBondCfd));
+}
+
+#[test]
+fn bonds_do_not_inherit_the_index_only_independence_eve_arrangement() {
+    let bonds = cal(K::OandaUsBondCfd);
+    let indices = cal(K::OandaUsIndexCfd);
+    let index_close = utc("2025-07-03T17:15:00Z");
+    assert_eq!(indices.is_open(index_close), Ok(false));
+    assert_eq!(bonds.is_open(index_close), Ok(true));
+    assert_eq!(
+        bonds.session_bounds(index_close),
+        Ok(Some((
+            utc("2025-07-02T22:01:00Z"),
+            utc("2025-07-03T20:59:00Z")
+        )))
+    );
+    let reopen = utc("2025-07-03T22:01:00Z");
+    assert_eq!(bonds.is_open(reopen - Duration::seconds(1)), Ok(false));
+    assert_eq!(bonds.is_open(reopen), Ok(true));
+    assert_eq!(
+        bonds.session_bounds(reopen),
+        Ok(Some((reopen, utc("2025-07-04T17:00:00Z"))))
+    );
+}
+
+#[test]
+fn an_incomplete_memorial_reopen_refuses_the_following_trade_date() {
+    let date = NaiveDate::from_ymd_opt(2026, 5, 26).unwrap();
+    for key in [K::OandaUsIndexCfd, K::OandaUsBondCfd] {
+        let calendar = cal(key);
+        assert_eq!(
+            calendar.coverage().coverage_on(date),
+            DateCoverage::UnresolvedGap
+        );
+        let memorial_day = NaiveDate::from_ymd_opt(2026, 5, 25).unwrap();
+        assert_eq!(
+            calendar.holiday_on(memorial_day).unwrap().kind(),
+            HolidayKind::EarlyClose {
+                close_ssm: 12 * 3_600 + 59 * 60
+            }
+        );
+        for instant in [
+            "2026-05-25T16:58:59Z",
+            "2026-05-25T22:01:00Z",
+            "2026-05-26T12:00:00Z",
+        ] {
+            let instant = utc(instant);
+            assert!(matches!(calendar.is_open(instant),
+                Err(CalendarQueryError::UnresolvedGap { date: withheld, .. }) if withheld == date
+            ));
+            assert!(matches!(calendar.session_bounds(instant),
+                Err(CalendarQueryError::UnresolvedGap { date: withheld, .. }) if withheld == date
+            ));
+        }
+    }
 }
 
 #[test]

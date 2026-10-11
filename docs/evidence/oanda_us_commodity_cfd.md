@@ -31,8 +31,8 @@ The page prints the identical pair across the group:
 
 The instants sit one minute inside the futures grid's 17:00-16:00 CT — the
 hedge-desk relationship: the book opens and closes just inside the hedge
-market's own day, and its holiday early closes below follow the same one-
-minute inset (12:59 against 13:00, 14:29 against 14:30). A separate key from
+market's own day, and its holiday early closes below use each dated operator statement,
+including the 2025 14:30 close and 2026 14:29 close. A separate key from
 the index book exists because the operator's own holiday page gives this
 group its own instants (`US energies and metals` at 14:29 while indices sit
 at 12:59), and because the standalone `US energies`/`Metals` rows on the
@@ -46,8 +46,8 @@ own holiday page's dated sections, all times Eastern). Tier: T1 throughout.
 The group is the page's `US energies and metals` (2026 sections, `US
 energies and metals` 2025), including the standalone `US energies:` and
 `Metals:` rows the Christmas and New Year sections print — `open at 18:01`
-on the holidays themselves and `open late 18:04` on New Year's Day 2025 and
-Christmas Eve 2025, both late against this book's own 18:01 open. Where a
+on the holidays themselves and `open late 18:04` on New Year's Day 2025,
+late against this book's own 18:01 open. Where a
 section splits energy from metals (Christmas Eve 2025: both `13:44`) the
 rows agree.
 

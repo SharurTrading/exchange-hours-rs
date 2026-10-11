@@ -20,6 +20,7 @@ mod intraday_and_monthly_candles;
 mod kind_aware_candles;
 mod named_profiles;
 mod nasdaq;
+mod oanda_book;
 mod sgx_cfe;
 mod sunday_wraps;
 mod us_equity_history;

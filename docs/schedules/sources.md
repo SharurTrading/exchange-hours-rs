@@ -267,6 +267,15 @@ per-record review before any exception can drive runtime.
 - **Notices/evidence:** monitor [Binance support announcements](https://www.binance.com/en/support/announcement); retain the [archived official launch article](https://arquivo.pt/noFrame/replay/20200608065459id_/https://www.binance.com/en/support/articles/360033314152) and Binance's [official announcement-channel link](https://t.me/binance_announcements/799).
 - **Status:** Primary for the USDⓈ-M perpetual platform's normal availability: closed before 2019-09-13 04:00 UTC, then 24×7. Ad-hoc maintenance, incidents, and individual contract listing/delisting windows are excluded.
 
+<a id="cfd-oanda"></a>
+
+### `CFD-OANDA`
+
+- **Official current/rulebook:** [OANDA Europe hours of operation](https://www.oanda.com/uk-en/trading/hours-of-operation/) — the operator's own statement of its UK book's normal week, per instrument group, each printed in its listing's local exchange time. Where a row carries `***`, the printed time is pinned at a fixed UTC instant rather than tracking the printed zone's daylight saving — anchor evidence, never a served value.
+- **Holiday calendar:** [OANDA UK holiday trading hours](https://www.oanda.com/uk-en/trading/holiday-trading-hours) — dated sections in Eastern Time stating closures, early closes, late opens and reopens per instrument group; the entry point for every `oanda_*` book's date-exception rows.
+- **Notices/evidence:** the per-entity news channel (for example OANDA EU's [Christmas and New Year trading hours](https://www.oanda.com/eu-en/news/trading-hours-during-christmas-and-new-year)) and the hours page's holiday FAQ.
+- **Status:** Primary for the `oanda_*` book keys (the FX ex-TRY grid, the TRY grid, and the metals and US-anchored continuous books that follow): the operator is the book's own operator, so its pages are T1. The exchange-anchored listings on the same page (grains, sugar, the European and APAC index CFDs whose breaks match their hedge clocks) corroborate at T3 only and key nothing here.
+
 ## Asia-Pacific cash equities
 
 <a id="apac-asx"></a>

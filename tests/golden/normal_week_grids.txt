@@ -514,6 +514,10 @@ binance_futures | tz UTC | week_open_seconds 604800
 binance_futures | regular  | MoTuWeThFrSaSu | 00:00:00-24:00:00
 binance_futures | extended | (none)
 binance_futures | order-en | (none)
+oanda | tz America/New_York | week_open_seconds 430200
+oanda | regular  | MoTuWeTh----Su | 17:05:00-16:59:00 +1d
+oanda | extended | (none)
+oanda | order-en | (none)
 
 ## MarketHoursKey (current profiles)
 globex_equity_index | tz US/Central | week_open_seconds 414000
@@ -711,6 +715,14 @@ globex_palladium_tas | regular  | (none)
 globex_palladium_tas | extended | MoTuWeTh----Su | 17:00:00-12:00:00 +1d
 globex_palladium_tas | order-en | ------------Su | 16:00:00-17:00:00
 globex_palladium_tas | order-en | MoTuWeTh------ | 16:45:00-17:00:00
+oanda_fx | tz America/New_York | week_open_seconds 430200
+oanda_fx | regular  | MoTuWeTh----Su | 17:05:00-16:59:00 +1d
+oanda_fx | extended | (none)
+oanda_fx | order-en | (none)
+oanda_try_fx | tz Europe/Berlin | week_open_seconds 162000
+oanda_try_fx | regular  | MoTuWeThFr---- | 08:00:00-17:00:00
+oanda_try_fx | extended | (none)
+oanda_try_fx | order-en | (none)
 sgx | tz Asia/Singapore | week_open_seconds 388500
 sgx | regular  | MoTuWeThFr---- | 07:25:00-17:55:00
 sgx | regular  | MoTuWeThFr---- | 18:15:00-05:15:00 +1d

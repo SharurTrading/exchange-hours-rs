@@ -280,5 +280,9 @@ exchanges! {
         // separate from futures venues with daily and weekend boundaries.
         /// Binance USDⓈ-M perpetual futures normal 24×7 availability.
         BinanceFutures => "binance_futures",
+        // Operator books
+        /// OANDA's own FX and CFD book; the venue default is the FX (ex-TRY)
+        /// grid, Sunday 17:05 to Friday 16:59 New York time.
+        Oanda => "oanda",
     }
 }

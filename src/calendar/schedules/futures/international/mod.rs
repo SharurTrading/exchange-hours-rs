@@ -12,6 +12,7 @@ mod ice_abu_dhabi;
 mod ice_canada;
 mod ice_endex;
 mod ice_europe;
+mod oanda;
 mod sgx;
 
 mod eurex_fixed_income;
@@ -35,6 +36,9 @@ pub(crate) use ice_canada::ice_canada_profile_at;
 pub(crate) use ice_endex::profile_at as ice_endex_profile_at;
 pub(crate) use ice_europe::{
     ice_europe_commodities_profile_at, ice_europe_financials_profile_at, iceeu_profile_at,
+};
+pub(crate) use oanda::{
+    OANDA_FX_REGULAR, OANDA_TRY_FX_REGULAR, oanda_fx_profile_at, oanda_try_fx_profile_at,
 };
 pub(crate) use sgx::SGX_CURRENT_ORDER_ENTRY;
 pub(crate) use sgx::{SGX_CURRENT_EXTENDED, SGX_CURRENT_REGULAR, sgx_profile_at};

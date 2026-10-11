@@ -12,7 +12,7 @@ use super::prelude::*;
 /// generated `ALL`, so a row accidentally dropped from (or mis-ordered in)
 /// the library's table fails here instead of silently shrinking the grids.
 /// A new venue bumps this count and adds one entry below.
-pub(super) const EXCHANGE_VARIANT_COUNT: usize = 96;
+pub(super) const EXCHANGE_VARIANT_COUNT: usize = 97;
 
 /// Every [`Exchange`] variant, maintained by hand and on purpose
 /// independently of the generated `Exchange::ALL`: this list is the test's
@@ -115,4 +115,5 @@ pub(super) const ALL_EXCHANGES: &[Exchange] = &[
     Exchange::B3,
     Exchange::Bmv,
     Exchange::BinanceFutures,
+    Exchange::Oanda,
 ];

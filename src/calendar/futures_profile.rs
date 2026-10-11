@@ -29,9 +29,10 @@ use super::exchange_calendar::CalendarSource;
 use super::schedules::ALWAYS_OPEN_PROFILE;
 use super::schedules::from_profile;
 use super::schedules::futures::international::{
-    eurex_fixed_income_profile_at, eurex_profile_at, sgx_equity_index_china_profile_at,
-    sgx_equity_index_japan_profile_at, sgx_equity_index_ntr_usd_profile_at,
-    sgx_equity_index_singapore_profile_at, sgx_equity_index_taiwan_profile_at, sgx_profile_at,
+    eurex_fixed_income_profile_at, eurex_profile_at, oanda_fx_profile_at, oanda_try_fx_profile_at,
+    sgx_equity_index_china_profile_at, sgx_equity_index_japan_profile_at,
+    sgx_equity_index_ntr_usd_profile_at, sgx_equity_index_singapore_profile_at,
+    sgx_equity_index_taiwan_profile_at, sgx_profile_at,
 };
 use super::schedules::futures::us::{
     bitcoin_event_contracts_profile_at, cbot_profile_at, cfe_profile_at, cme_profile_at,
@@ -434,6 +435,20 @@ market_hours_keys! {
         /// — and CME deleted it in 2020 while leaving the instants unchanged.
         GlobexPalladiumTas => "globex_palladium_tas",
 
+        /// OANDA's own FX book, all FX products except TRY pairs: Sunday
+        /// 17:05 to Friday 16:59 New York time with the six-minute
+        /// 16:59-17:05 daily break and no other maintenance — the book
+        /// trades straight through the daily halts of every futures clock
+        /// an FX hedge might route to. TRY pairs have their own
+        /// [`OandaTryFx`](Self::OandaTryFx) grid. NZD pairs carry an
+        /// additional 06:59-07:05 Auckland break that is caller catalog
+        /// data: no rule in this grid states it.
+        OandaFx => "oanda_fx",
+        /// OANDA's own TRY-pair book, a daily Monday-Friday 08:00-17:00
+        /// Central European session with an overnight gap and no stated
+        /// maintenance.
+        OandaTryFx => "oanda_try_fx",
+
         /// SGX Three-Month SORA Futures current profile.
         Sgx => "sgx",
         /// Continuous 24x7 UTC profile.
@@ -511,6 +526,8 @@ pub fn hours_for_market_hours_key(key: MarketHoursKey, as_of: DateTime<Utc>) -> 
         MarketHoursKey::GlobexCopperTas => copper_tas_profile_at(as_of),
         MarketHoursKey::GlobexPlatinumTas => platinum_tas_profile_at(as_of),
         MarketHoursKey::GlobexPalladiumTas => palladium_tas_profile_at(as_of),
+        MarketHoursKey::OandaFx => oanda_fx_profile_at(as_of),
+        MarketHoursKey::OandaTryFx => oanda_try_fx_profile_at(as_of),
         MarketHoursKey::Sgx => sgx_profile_at(as_of),
         MarketHoursKey::AlwaysOpen => &ALWAYS_OPEN_PROFILE,
     };

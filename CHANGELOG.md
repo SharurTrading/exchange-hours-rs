@@ -6,7 +6,11 @@
 
 ### Fixed
 
-- BME opening and closing auction calls now accept orders without reporting the market open, on normal days and half days. The sourced uncross windows and Trading-at-Last remain executable.
+- BME opening and closing auction calls now accept orders without reporting
+  the market open, on normal days and half days. The sourced uncross windows
+  and Trading-at-Last remain executable.
+- LSE's five withheld 2025 spring/summer holiday dates now answer as sourced
+  closures, recovered from a verbatim public mirror of the operator table.
 
 ### Added
 
@@ -17,16 +21,14 @@
 - Archived OANDA UK US-index and Treasury-CFD holiday arrangements for 2024,
   preserving literal reopens and retaining the omitted Treasury Christmas Eve
   arrangement as a typed gap.
+- Archived OANDA UK commodity and Brent holiday arrangements from
+  2024-02-21 through 2024-12-31, preserving the separate group scopes and
+  retaining unpublished Brent reopenings and special-day hours as typed gaps.
 - Euronext Amsterdam's own 2010-2026 holiday table: 108 rows, with the
   two 2026 December half-day instants explicitly withheld until publication.
 - BME principal-share cash holidays from 2010 through 2026, with complete
   half-day phase replacements and typed gaps for unpublished 2026 year-end
   timetables.
-
-### Fixed
-
-- LSE's five withheld 2025 spring/summer holiday dates now answer as sourced
-  closures, recovered from a verbatim public mirror of the operator table.
 
 ## [1.1.0] - 2026-10-11
 

@@ -87,13 +87,13 @@ inside the audited window rather than a shortened publication horizon.
 | 2010-01-01 | closed | `Friday 1 January 2010 (New Year's Day)` | ``EURONEXT-PR-2010`` | T1 | the operator's own printed date on the European cash markets' closure list; trade date is the same civil day |
 | 2010-04-02 | closed | `Friday 2 April 2010 (Good Friday)` | ``EURONEXT-PR-2010`` | T1 | the operator's own printed date |
 | 2010-04-05 | closed | `Monday 5 April 2010 (Easter Monday)` | ``EURONEXT-PR-2010`` | T1 | the operator's own printed date |
-| 2010-12-24 | early close | `On Friday 24 December 2010 ... cash markets will close at 1.00 pm GMT (2.00 pm CET)`; the appendix grid prints Trading `09:00 - 13:55`, CA `14:00`, TAL `14:00 - 14:05` for every Amsterdam equity group | ``EURONEXT-EOY-2010`` | T1 | the printed event date plus the appendix's own Paris schedule; the envelope close is the printed TAL end, 14:05 CET — see the interpretive step |
+| 2010-12-24 | early close | `On Friday 24 December 2010 ... cash markets will close at 1.00 pm GMT (2.00 pm CET)`; the appendix grid prints Trading `09:00 - 13:55`, CA `14:00`, TAL `14:00 - 14:05` for every Amsterdam equity group | ``EURONEXT-EOY-2010`` | T1 | the printed event date plus the appendix's own Dutch Amsterdam schedule; the envelope close is the printed TAL end, 14:05 CET — see the interpretive step |
 | 2010-12-31 | early close | the same appendix grid for `Friday 31 Decembre 2010` | ``EURONEXT-EOY-2010`` | T1 | same reading as 2010-12-24 |
 
 The press release lists no other weekday closure: 1 May, 25 and 26 December 2010 fell at
 the weekend, and the UK bank holidays it names (3 May, 31 May, 30 August, 27-28 December)
 are expressly `NYSE Liffe's sterling-based products and UK-based commodity products`, not
-the cash markets — no Paris row for them.
+the cash markets — no Amsterdam row for them.
 
 ### 2011
 
@@ -114,7 +114,7 @@ exists.
 
 | Trade date | Kind | Instant as printed | Document | Tier | Derived from |
 |---|---|---|---|---|---|
-| 2012-04-06 | closed | `Friday 6 April 2012 ... Good Friday` | ``EURONEXT-TC-2012`` | T1 | the operator's own printed date on the Paris cash-market notice's closure list |
+| 2012-04-06 | closed | `Friday 6 April 2012 ... Good Friday` | ``EURONEXT-TC-2012`` | T1 | the operator's own printed date on the European cash-market notice's closure list |
 | 2012-04-09 | closed | `Monday 9 April 2012 ... Easter Monday` | ``EURONEXT-TC-2012`` | T1 | the operator's own printed date |
 | 2012-05-01 | closed | `Tuesday 1 May 2012 ... Labour Day` | ``EURONEXT-TC-2012`` | T1 | the operator's own printed date |
 | 2012-12-24 | early close | `On Christmas Eve, Monday 24 December 2012 ... the markets will close at 14:00 CET` | ``EURONEXT-TC-2012`` | T1 | the printed event date; the envelope close is the printed 14:00 CET |
@@ -200,7 +200,7 @@ exists.
 | 2019-04-19 | closed | `Friday 19 April 2019 (Good Friday)` | ``EURONEXT-HH-2019-03-25`` | T1 | the operator's own printed date |
 | 2019-04-22 | closed | `Monday 22 April 2019 (Easter Monday)` | ``EURONEXT-HH-2019-03-25`` | T1 | the operator's own printed date |
 | 2019-05-01 | closed | `Wednesday 1 May 2019 (Labour Day)` | ``EURONEXT-HH-2019-03-25`` | T1 | the operator's own printed date |
-| 2019-12-24 | early close | `Tuesday 24 December 2019 (Christmas Eve)` — trading on `the Cash Markets, including Euronext Dublin`, all instruments `closing by 14:05 CET` | ``EURONEXT-HH-2019-03-25`` | T1 | the printed event date; Paris is inside the sentence's cash-market scope and the 14:05 CET close is the envelope close |
+| 2019-12-24 | early close | `Tuesday 24 December 2019 (Christmas Eve)` — trading on `the Cash Markets, including Euronext Dublin`, all instruments `closing by 14:05 CET` | ``EURONEXT-HH-2019-03-25`` | T1 | the printed event date; Amsterdam is inside the sentence's cash-market scope and the 14:05 CET close is the envelope close |
 | 2019-12-25 | closed | `Wednesday 25 December 2019 (Christmas Day)` | ``EURONEXT-HH-2019-03-25`` | T1 | the operator's own printed date |
 | 2019-12-26 | closed | `Thursday 26 December 2019 (Boxing Day)` | ``EURONEXT-HH-2019-03-25`` | T1 | the operator's own printed date |
 | 2019-12-31 | early close | `Tuesday 31 December 2019 (New Year's Eve)` — the same 14:05 CET sentence | ``EURONEXT-HH-2019-03-25`` | T1 | the printed event date |
@@ -213,15 +213,15 @@ exists.
 | 2020-04-10 | closed | `Friday 10 April 2020 (Good Friday)` | ``EURONEXT-HH-2019-12-10`` | T1 | the operator's own printed date |
 | 2020-04-13 | closed | `Monday 13 April 2020 (Easter Monday)` | ``EURONEXT-HH-2019-12-10`` | T1 | the operator's own printed date |
 | 2020-05-01 | closed | `Friday 1 May 2020 (Labour Day)` | ``EURONEXT-HH-2019-12-10`` | T1 | the operator's own printed date |
-| 2020-12-24 | early close | `Thursday 24 December 2020` — `On the Euronext Amsterdam, Brussels, Lisbon and Paris Cash Markets, all instruments will close by 14:05 CET` | ``EURONEXT-HH-2019-12-10`` | T1 | the printed event date; the Paris half of the sentence is the envelope close; restated by the 2020-12-05 capture |
+| 2020-12-24 | early close | `Thursday 24 December 2020` — `On the Euronext Amsterdam, Brussels, Lisbon and Paris Cash Markets, all instruments will close by 14:05 CET` | ``EURONEXT-HH-2019-12-10`` | T1 | the printed event date; the Amsterdam part of the sentence is the envelope close; restated by the 2020-12-05 capture |
 | 2020-12-25 | closed | `Friday 25 December 2020 (Christmas Day)` | ``EURONEXT-HH-2019-12-10`` | T1 | the operator's own printed date |
-| 2020-12-31 | early close | `Thursday 31 December 2020` — the same 14:05 CET sentence | ``EURONEXT-HH-2019-12-10`` | T1 | the printed event date; 2020-12-28 is the Dublin substitute only and prints no Paris row |
+| 2020-12-31 | early close | `Thursday 31 December 2020` — the same 14:05 CET sentence | ``EURONEXT-HH-2019-12-10`` | T1 | the printed event date; 2020-12-28 is the Dublin substitute only and prints no Amsterdam row |
 
 ### 2021
 
 | Trade date | Kind | Instant as printed | Document | Tier | Derived from |
 |---|---|---|---|---|---|
-| 2021-01-01 | closed | `Friday 1 January 2021 (New Year's Day)` | ``EURONEXT-HH-2020-12-05`` | T1 | the operator's own Amsterdam cell; the Dublin and Oslo rows print `Full Day Trading` for Paris |
+| 2021-01-01 | closed | `Friday 1 January 2021 (New Year's Day)` | ``EURONEXT-HH-2020-12-05`` | T1 | the operator's own Amsterdam cell; Dublin- and Oslo-only holidays elsewhere in the table print `Full Day Trading` in the Amsterdam column |
 | 2021-04-02 | closed | `Friday 2 April 2021 (Good Friday)` | ``EURONEXT-HH-2020-12-05`` | T1 | the operator's own Amsterdam cell; corroborated by the 2021-01-16 capture |
 | 2021-04-05 | closed | `Monday 5 April 2021 (Easter Monday)` | ``EURONEXT-HH-2020-12-05`` | T1 | the operator's own Amsterdam cell |
 | 2021-12-24 | early close | `Friday 24 December 2021 (Christmas Eve)` — the Amsterdam, Brussels, Lisbon and Paris cash markets `will close by 14:05 CET` | ``EURONEXT-HH-2020-12-05`` | T1 | the printed event date; restated by the 2021-01-16 and 2022-05-23 captures |
@@ -231,56 +231,56 @@ exists.
 
 | Trade date | Kind | Instant as printed | Document | Tier | Derived from |
 |---|---|---|---|---|---|
-| 2022-04-15 | closed | `Friday 15 April 2022 (Good Friday)` — Paris `Closed` | ``EURONEXT-HH-2022-05-23`` | T1 | the operator's own Amsterdam cell; corroborated by the 2023-01-27 capture |
-| 2022-04-18 | closed | `Monday 18 April 2022 (Easter Monday)` — Paris `Closed` | ``EURONEXT-HH-2022-05-23`` | T1 | the operator's own Amsterdam cell |
-| 2022-12-26 | closed | `Monday 26 December 2022 (Stephen's Day/Boxing Day)` — Paris `Closed` | ``EURONEXT-HH-2022-05-23`` | T1 | the operator's own Amsterdam cell; 01-03, 12-23, 12-27 and 12-30 print `Full Day Trading` for Paris, the substitutes being Dublin's |
+| 2022-04-15 | closed | `Friday 15 April 2022 (Good Friday)` — Amsterdam `Closed` | ``EURONEXT-HH-2022-05-23`` | T1 | the operator's own Amsterdam cell; corroborated by the 2023-01-27 capture |
+| 2022-04-18 | closed | `Monday 18 April 2022 (Easter Monday)` — Amsterdam `Closed` | ``EURONEXT-HH-2022-05-23`` | T1 | the operator's own Amsterdam cell |
+| 2022-12-26 | closed | `Monday 26 December 2022 (Stephen's Day/Boxing Day)` — Amsterdam `Closed` | ``EURONEXT-HH-2022-05-23`` | T1 | the operator's own Amsterdam cell; 01-03, 12-23, 12-27 and 12-30 print `Full Day Trading` for Amsterdam, the substitutes being Dublin's |
 
 ### 2023
 
 | Trade date | Kind | Instant as printed | Document | Tier | Derived from |
 |---|---|---|---|---|---|
-| 2023-04-07 | closed | `Friday 7 April 2023 (Good Friday)` — Paris `Closed` | ``EURONEXT-HH-2023-11-27`` | T1 | the operator's own Amsterdam cell; corroborated by the 2024-02-09 capture |
-| 2023-04-10 | closed | `Monday 10 April 2023 (Easter Monday)` — Paris `Closed` | ``EURONEXT-HH-2023-11-27`` | T1 | the operator's own Amsterdam cell |
-| 2023-05-01 | closed | `Monday 1 May 2023 (May Day)` — Paris `Closed` | ``EURONEXT-HH-2023-11-27`` | T1 | the operator's own Amsterdam cell |
-| 2023-12-25 | closed | `Monday 25 December 2023 (Christmas)` — Paris `Closed` | ``EURONEXT-HH-2023-11-27`` | T1 | the operator's own Amsterdam cell |
-| 2023-12-26 | closed | `Tuesday 26 December 2023 (St Stephens Day / Boxing Day)` — Paris `Closed` | ``EURONEXT-HH-2023-11-27`` | T1 | the operator's own Amsterdam cell; 01-02, 12-22 and 12-29 print `Full Day Trading` for Paris (Dublin's substitutes) |
+| 2023-04-07 | closed | `Friday 7 April 2023 (Good Friday)` — Amsterdam `Closed` | ``EURONEXT-HH-2023-11-27`` | T1 | the operator's own Amsterdam cell; corroborated by the 2024-02-09 capture |
+| 2023-04-10 | closed | `Monday 10 April 2023 (Easter Monday)` — Amsterdam `Closed` | ``EURONEXT-HH-2023-11-27`` | T1 | the operator's own Amsterdam cell |
+| 2023-05-01 | closed | `Monday 1 May 2023 (May Day)` — Amsterdam `Closed` | ``EURONEXT-HH-2023-11-27`` | T1 | the operator's own Amsterdam cell |
+| 2023-12-25 | closed | `Monday 25 December 2023 (Christmas)` — Amsterdam `Closed` | ``EURONEXT-HH-2023-11-27`` | T1 | the operator's own Amsterdam cell |
+| 2023-12-26 | closed | `Tuesday 26 December 2023 (St Stephens Day / Boxing Day)` — Amsterdam `Closed` | ``EURONEXT-HH-2023-11-27`` | T1 | the operator's own Amsterdam cell; 01-02, 12-22 and 12-29 print `Full Day Trading` for Amsterdam (Dublin's substitutes) |
 
 ### 2024
 
 | Trade date | Kind | Instant as printed | Document | Tier | Derived from |
 |---|---|---|---|---|---|
-| 2024-01-01 | closed | `Monday 1 January (New Year's Day)` — Paris `Closed` | ``EURONEXT-HH-2023-11-27`` | T1 | the operator's own Amsterdam cell; corroborated by the 2024-02-09 capture |
-| 2024-03-29 | closed | `Friday 29 March 2024 (Good Friday)` — Paris `Closed` | ``EURONEXT-HH-2023-11-27`` | T1 | the operator's own Amsterdam cell; the 27/28 March half days are Oslo's and print `Full Day Trading` for Paris |
-| 2024-04-01 | closed | `Monday 1 April 2024 (Easter Monday)` — Paris `Closed` | ``EURONEXT-HH-2023-11-27`` | T1 | the operator's own Amsterdam cell |
-| 2024-05-01 | closed | `Wednesday 1 May 2024 (Labour Day)` — Paris `Closed` | ``EURONEXT-HH-2023-11-27`` | T1 | the operator's own Amsterdam cell |
-| 2024-12-24 | early close | `Tuesday 24 December 2024` — Paris `**Half Trading Day`; the operator's 2024 end-of-year appendix prints the Amsterdam equity segments' TAL `14:00 - 14:05` | ``EURONEXT-EOY-2024`` | T1 | the printed event date plus the appendix's own Paris schedule; the envelope close is the printed TAL end, 14:05 CET. The appendix is a live retrieval (2026-09-29) whose identity as the 2024 edition is witnessed by the 2025-01-02 page capture that links it by name — see the Documents note |
-| 2024-12-25 | closed | `Wednesday 25 December 2024 (Christmas)` — Paris `Closed` | ``EURONEXT-HH-2023-11-27`` | T1 | the operator's own Amsterdam cell |
-| 2024-12-26 | closed | `Thursday 26 December 2024 (St Stephens Day / Boxing Day)` — Paris `Closed` | ``EURONEXT-HH-2023-11-27`` | T1 | the operator's own Amsterdam cell |
-| 2024-12-31 | early close | `Tuesday 31 December 2024` — Paris `**Half Trading Day`; the same appendix grid, TAL `14:00 - 14:05` | ``EURONEXT-EOY-2024`` | T1 | same reading as 2024-12-24 |
+| 2024-01-01 | closed | `Monday 1 January (New Year's Day)` — Amsterdam `Closed` | ``EURONEXT-HH-2023-11-27`` | T1 | the operator's own Amsterdam cell; corroborated by the 2024-02-09 capture |
+| 2024-03-29 | closed | `Friday 29 March 2024 (Good Friday)` — Amsterdam `Closed` | ``EURONEXT-HH-2023-11-27`` | T1 | the operator's own Amsterdam cell; the 27/28 March half days are Oslo's and print `Full Day Trading` for Amsterdam |
+| 2024-04-01 | closed | `Monday 1 April 2024 (Easter Monday)` — Amsterdam `Closed` | ``EURONEXT-HH-2023-11-27`` | T1 | the operator's own Amsterdam cell |
+| 2024-05-01 | closed | `Wednesday 1 May 2024 (Labour Day)` — Amsterdam `Closed` | ``EURONEXT-HH-2023-11-27`` | T1 | the operator's own Amsterdam cell |
+| 2024-12-24 | early close | `Tuesday 24 December 2024` — Amsterdam `**Half Trading Day`; the operator's 2024 end-of-year appendix prints the Amsterdam equity segments' TAL `14:00 - 14:05` | ``EURONEXT-EOY-2024`` | T1 | the printed event date plus the appendix's own Dutch Amsterdam schedule; the envelope close is the printed TAL end, 14:05 CET. The appendix is a live retrieval (2026-09-29) whose identity as the 2024 edition is witnessed by the 2025-01-02 page capture that links it by name — see the Documents note |
+| 2024-12-25 | closed | `Wednesday 25 December 2024 (Christmas)` — Amsterdam `Closed` | ``EURONEXT-HH-2023-11-27`` | T1 | the operator's own Amsterdam cell |
+| 2024-12-26 | closed | `Thursday 26 December 2024 (St Stephens Day / Boxing Day)` — Amsterdam `Closed` | ``EURONEXT-HH-2023-11-27`` | T1 | the operator's own Amsterdam cell |
+| 2024-12-31 | early close | `Tuesday 31 December 2024` — Amsterdam `**Half Trading Day`; the same appendix grid, TAL `14:00 - 14:05` | ``EURONEXT-EOY-2024`` | T1 | same reading as 2024-12-24 |
 ### 2025
 
 | Trade date | Kind | Instant as printed | Document | Tier | Derived from |
 |---|---|---|---|---|---|
-| 2025-01-01 | closed | `Wednesday 1 January (New Year's Day)` — Paris `Closed` | `EURONEXT-HH-2025-12-06` | T1 | the operator's own Amsterdam cell; trade date is the same civil day |
-| 2025-04-18 | closed | `Friday 18 April 2025 (Good Friday)` — Paris `Closed` | `EURONEXT-HH-2025-12-06` | T1 | the operator's own Amsterdam cell; trade date is the same civil day |
-| 2025-04-21 | closed | `Monday 21 April 2025 (Easter Monday)` — Paris `Closed` | `EURONEXT-HH-2025-12-06` | T1 | the operator's own Amsterdam cell; trade date is the same civil day |
-| 2025-05-01 | closed | `Thursday 1 May 2025 (Labour Day)` — Paris `Closed` | `EURONEXT-HH-2025-12-06` | T1 | the operator's own Amsterdam cell; trade date is the same civil day |
-| 2025-12-24 | early close | `Wednesday 24 December 2025` — Paris `**Half Trading Day`; the appendix prints the closing uncross `14:00 Random` and TAL `14:00 - 14:05` for the Amsterdam equity segments | `EURONEXT-EOY-2025` | T1 | the printed event date plus the appendix's own Paris schedule; the envelope close is the printed TAL end, 14:05 CET |
-| 2025-12-25 | closed | `Thursday 25 December 2025 (Christmas)` — Paris `Closed` | `EURONEXT-HH-2025-12-06` | T1 | the operator's own Amsterdam cell; trade date is the same civil day |
-| 2025-12-26 | closed | `Friday 26 December 2025 (St Stephens Day / Boxing Day)` — Paris `Closed` | `EURONEXT-HH-2025-12-06` | T1 | the operator's own Amsterdam cell; trade date is the same civil day |
-| 2025-12-31 | early close | `Wednesday 31 December 2025` — Paris `**Half Trading Day`; the appendix prints the same `14:00 Random` uncross and `14:00 - 14:05` TAL | `EURONEXT-EOY-2025` | T1 | the printed event date plus the appendix's own Paris schedule; the envelope close is the printed TAL end, 14:05 CET |
+| 2025-01-01 | closed | `Wednesday 1 January (New Year's Day)` — Amsterdam `Closed` | `EURONEXT-HH-2025-12-06` | T1 | the operator's own Amsterdam cell; trade date is the same civil day |
+| 2025-04-18 | closed | `Friday 18 April 2025 (Good Friday)` — Amsterdam `Closed` | `EURONEXT-HH-2025-12-06` | T1 | the operator's own Amsterdam cell; trade date is the same civil day |
+| 2025-04-21 | closed | `Monday 21 April 2025 (Easter Monday)` — Amsterdam `Closed` | `EURONEXT-HH-2025-12-06` | T1 | the operator's own Amsterdam cell; trade date is the same civil day |
+| 2025-05-01 | closed | `Thursday 1 May 2025 (Labour Day)` — Amsterdam `Closed` | `EURONEXT-HH-2025-12-06` | T1 | the operator's own Amsterdam cell; trade date is the same civil day |
+| 2025-12-24 | early close | `Wednesday 24 December 2025` — Amsterdam `**Half Trading Day`; the appendix prints the closing uncross `14:00 Random` and TAL `14:00 - 14:05` for the Amsterdam equity segments | `EURONEXT-EOY-2025` | T1 | the printed event date plus the appendix's own Dutch Amsterdam schedule; the envelope close is the printed TAL end, 14:05 CET |
+| 2025-12-25 | closed | `Thursday 25 December 2025 (Christmas)` — Amsterdam `Closed` | `EURONEXT-HH-2025-12-06` | T1 | the operator's own Amsterdam cell; trade date is the same civil day |
+| 2025-12-26 | closed | `Friday 26 December 2025 (St Stephens Day / Boxing Day)` — Amsterdam `Closed` | `EURONEXT-HH-2025-12-06` | T1 | the operator's own Amsterdam cell; trade date is the same civil day |
+| 2025-12-31 | early close | `Wednesday 31 December 2025` — Amsterdam `**Half Trading Day`; the appendix prints the same `14:00 Random` uncross and `14:00 - 14:05` TAL | `EURONEXT-EOY-2025` | T1 | the printed event date plus the appendix's own Dutch Amsterdam schedule; the envelope close is the printed TAL end, 14:05 CET |
 
 ### 2026
 
 | Trade date | Kind | Instant as printed | Document | Tier | Derived from |
 |---|---|---|---|---|---|
-| 2026-01-01 | closed | `Thursday 1 January 2026 (New Year's Day)` — Paris `Closed` | `EURONEXT-IF-2026` | T1 | the INFO-FLASH Amsterdam cell, printed identically on the live page; trade date is the same civil day |
-| 2026-04-03 | closed | `Friday 3 April 2026 (Good Friday)` — Paris `Closed` | `EURONEXT-IF-2026` | T1 | the INFO-FLASH Amsterdam cell, printed identically on the live page; trade date is the same civil day |
-| 2026-04-06 | closed | `Monday 6 April 2026 (Easter Monday)` — Paris `Closed` | `EURONEXT-IF-2026` | T1 | the INFO-FLASH Amsterdam cell, printed identically on the live page; trade date is the same civil day |
-| 2026-05-01 | closed | `Friday 1 May 2026 (Labour Day)` — Paris `Closed` | `EURONEXT-IF-2026` | T1 | the INFO-FLASH Amsterdam cell, printed identically on the live page; trade date is the same civil day |
-| 2026-12-24 | unsourced | `Thursday 24 December 2026` — Paris `**Half Trading Day`, hours "To be announced" | `EURONEXT-IF-2026` | T1 | the half day is announced by the operator but its instants are unpublished; no status claimed for the hours |
-| 2026-12-25 | closed | `Friday 25 December 2026 (Christmas)` — Paris `Closed` | `EURONEXT-IF-2026` | T1 | the INFO-FLASH Amsterdam cell, printed identically on the live page; trade date is the same civil day |
-| 2026-12-31 | unsourced | `Thursday 31 December 2026` — Paris `**Half Trading Day`, hours "To be announced" | `EURONEXT-IF-2026` | T1 | the half day is announced by the operator but its instants are unpublished; no status claimed for the hours |
+| 2026-01-01 | closed | `Thursday 1 January 2026 (New Year's Day)` — Amsterdam `Closed` | `EURONEXT-IF-2026` | T1 | the INFO-FLASH Amsterdam cell, printed identically on the live page; trade date is the same civil day |
+| 2026-04-03 | closed | `Friday 3 April 2026 (Good Friday)` — Amsterdam `Closed` | `EURONEXT-IF-2026` | T1 | the INFO-FLASH Amsterdam cell, printed identically on the live page; trade date is the same civil day |
+| 2026-04-06 | closed | `Monday 6 April 2026 (Easter Monday)` — Amsterdam `Closed` | `EURONEXT-IF-2026` | T1 | the INFO-FLASH Amsterdam cell, printed identically on the live page; trade date is the same civil day |
+| 2026-05-01 | closed | `Friday 1 May 2026 (Labour Day)` — Amsterdam `Closed` | `EURONEXT-IF-2026` | T1 | the INFO-FLASH Amsterdam cell, printed identically on the live page; trade date is the same civil day |
+| 2026-12-24 | unsourced | `Thursday 24 December 2026` — Amsterdam `**Half Trading Day`, hours "To be announced" | `EURONEXT-IF-2026` | T1 | the half day is announced by the operator but its instants are unpublished; no status claimed for the hours |
+| 2026-12-25 | closed | `Friday 25 December 2026 (Christmas)` — Amsterdam `Closed` | `EURONEXT-IF-2026` | T1 | the INFO-FLASH Amsterdam cell, printed identically on the live page; trade date is the same civil day |
+| 2026-12-31 | unsourced | `Thursday 31 December 2026` — Amsterdam `**Half Trading Day`, hours "To be announced" | `EURONEXT-IF-2026` | T1 | the half day is announced by the operator but its instants are unpublished; no status claimed for the hours |
 
 ### Documents
 

@@ -617,6 +617,9 @@ fn multi_block_bindings() -> &'static [(&'static str, &'static str)] {
         ("nasdaq", "NASDAQ_REVISIONS"),
         ("nyse", "NYSE_REVISIONS"),
         ("euronext_paris", "PARIS_REVISIONS"),
+        // The fixed-income module carries the family's dated revisions and the
+        // two seasonal selectors' own revision lists beside them.
+        ("eurex_fixed_income", "EUREX_FIXED_INCOME_REVISIONS"),
     ]
 }
 
@@ -1006,8 +1009,8 @@ fn inventory_completeness_verdicts_match_the_metadata() {
     }
     assert_eq!(
         (complete, incomplete, no_coverage),
-        (27, 6, 0),
-        "the inventory's verdict shapes: twenty-seven complete, six incomplete, none with no 2025 \
+        (30, 6, 0),
+        "the inventory's verdict shapes: thirty complete, six incomplete, none with no 2025 \
          coverage (eurex joined the complete group on 2026-10-05 UTC: its #157 `tba` \
          declaration retired when the no-changes verification established that the German-scope \
          closures the 2025 and 2026 editions never dated never existed, so the era answers from \
@@ -1481,7 +1484,10 @@ fn the_sunday_quarter_hour_intersection_is_served_where_the_residual_is_disclose
             "tadawul",
             "b3",
             "globex_livestock",
-            "globex_cryptocurrency"
+            "globex_cryptocurrency",
+            "eurex",
+            "ice_us_sugar",
+            "eurex_fixed_income"
         ],
         "these are closed at both instants: a different grid, not a served intersection"
     );
@@ -1524,8 +1530,8 @@ fn inventory_sample_date_is_inside_every_scopes_audit() {
         checked += 1;
     }
     assert_eq!(
-        checked, 33,
-        "the inventory carries one row per served scope, and all thirty-three are checked"
+        checked, 36,
+        "the inventory carries one row per served scope, and all thirty-six are checked"
     );
 }
 

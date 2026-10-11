@@ -81,7 +81,7 @@ pub(crate) static TABLE: &HolidayTable = holidays! {
         (2026, 2, 16, early_close(12 * 3_600 + 59 * 60), T1, "OANDA-UK-HOLIDAYS"),
         // 2026-04-03 - T1 - OANDA-UK-HOLIDAYS - Good Friday: bonds close 11:14 ET
         (2026, 4, 3, early_close(11 * 3_600 + 14 * 60), T1, "OANDA-UK-HOLIDAYS"),
-        // 2026-05-25 - T1 - OANDA-UK-HOLIDAYS - Memorial Day: closes 12:59, reopens 18:01
+        // 2026-05-25 - T1 - OANDA-UK-HOLIDAYS - Memorial Day: closes 12:59; source prints incomplete reopen 18:0 (evidence records the residual)
         (2026, 5, 25, early_close(12 * 3_600 + 59 * 60), T1, "OANDA-UK-HOLIDAYS"),
         // 2026-06-19 - T1 - OANDA-UK-HOLIDAYS - Juneteenth: closes 12:59
         (2026, 6, 19, early_close(12 * 3_600 + 59 * 60), T1, "OANDA-UK-HOLIDAYS"),

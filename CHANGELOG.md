@@ -18,6 +18,8 @@
 - Euronext Amsterdam's own 2010-2026 holiday table: 108 rows, with the
   two 2026 December half-day instants explicitly withheld until publication.
 
+- BME principal-share cash holidays from 2010 through 2026, with complete half-day phase replacements and typed gaps for unpublished 2026 year-end timetables.
+
 ### Fixed
 
 - LSE's five withheld 2025 spring/summer holiday dates now answer as sourced

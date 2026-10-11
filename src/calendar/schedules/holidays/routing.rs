@@ -127,7 +127,7 @@ const fn for_exchange(exchange: Exchange) -> Option<&'static HolidayTable> {
         Exchange::EuronextLisbon => None,
         Exchange::EuronextDublin => None,
         Exchange::EuronextMilan => None,
-        Exchange::Bme => None,
+        Exchange::Bme => Some(super::bme::TABLE),
         Exchange::NasdaqStockholm => None,
         Exchange::NasdaqHelsinki => None,
         Exchange::NasdaqCopenhagen => None,

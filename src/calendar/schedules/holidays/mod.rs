@@ -41,6 +41,7 @@
 
 mod asx;
 mod b3;
+mod bme;
 mod borsa_istanbul;
 mod cfe;
 mod coinbase_derivatives;

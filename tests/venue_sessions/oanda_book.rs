@@ -119,8 +119,8 @@ fn oanda_fx_holiday_rows_close_their_trade_dates() {
             "{date} is the operator's stated FX closure",
         );
     }
-    // Dates with no row inside the window are audited normal: Christmas Eve
-    // 2025 carries no FX arrangement on the operator's page.
+    // Dates whose only FX statement is the normal daily close carry no
+    // holiday row: Christmas Eve 2025's `close at 16:59` is the no-reopen.
     assert!(
         !calendar
             .is_closed_trade_date(

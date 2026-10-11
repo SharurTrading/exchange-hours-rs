@@ -60,7 +60,8 @@ Interpretation, each step from the operator's own words:
 **Coverage:** 2025-01-01..2026-10-30 (inclusive trade dates; the operator's
 own holiday page's dated sections, all times Eastern). Tier: T1 throughout.
 
-The page prints the FX group on exactly three dates:
+The page prints the FX group on five dated sections — three reopen
+statements and two no-reopen statements:
 
 ### 2025
 
@@ -78,24 +79,21 @@ The page prints the FX group on exactly three dates:
 The raw quotations, in the page's own layout:
 
 > `Wednesday 1st January 2025` — `FX open late 17:05`
+> `Wednesday, 24 December 2025 - Christmas Eve` — `Forex: close at 16:59`
 > `Thursday, 25 December 2025 - Christmas Day` — `Forex: open at 17:05`
-> `Thursday, 1 January 2026 - New Year’s Day` — `Forex: open at 17:05`
-
-with New Year's Eve stated as:
-
 > `Wednesday, 31 December 2025 - New Year’s Eve` — `Forex: close at 16:59`
+> `Thursday, 1 January 2026 - New Year’s Day` — `Forex: open at 17:05`
 
 Interpretation: "open at 17:05" on the holiday names the reopen instant,
 which is the **next** session's normal open — the holiday trade date's own
 session (normally the prior evening 17:05 to that day's 16:59) does not
-trade, so each of the three dates ships a `Closed` row. The 2025-12-31 cell
-states the matching no-reopen at the normal daily close instant and needs no
-row of its own. Every other date in the window carries no FX row, which on a
-page titled "the changes in trading hours for upcoming holidays" is the
-operator's statement that the book runs its normal grid — Christmas Eve
-2025, US holidays, Thanksgiving and all APAC/European holidays included
-(each of those dates prints rows for other instrument groups and none for
-FX, so the silence is against a page that speaks when something changes).
+trade, so each of the three open dates ships a `Closed` row. The two
+close-at-16:59 statements name the normal daily close — the no-reopen — and
+need no row of their own. Every other date in the window carries no FX row:
+the five stated rows establish the page's FX voice, and its silence
+elsewhere — US holidays, Thanksgiving and all APAC/European holidays
+included — is the operator's no-change on a page titled "the changes in
+trading hours for upcoming holidays".
 
 ## Dated selectors
 
@@ -107,14 +105,13 @@ grid with the six-minute break, corroborated by the 2026-10-10 capture.
 The spans, and what each rests on:
 
 - **From 2024-02-21**: the 2024 Wayback capture prints the current grid, and
-  the 2026-10-10 capture corroborates it; the dated holiday sections
-  2025-01-01..2026-10-30 sit inside this span, so every shipped holiday row
-  answers.
-- **2024-02-21 back to the first audited holiday window's start (2025-01-01
-  is inside the span above; the residual is the carried edge immediately
-  below 2024-02-21 down to nothing)**: no residual — the bridge applies below
-  the *holiday window*, not below the horizon, and the window lies wholly
-  inside the sourced span.
+  the 2026-10-10 capture corroborates it.
+- **2024-02-21 to the first audited holiday window's start (2025-01-01)**:
+  the holiday layer is honestly absent there — the one-flank bridged
+  residual of the 2026-10-07 ruling (#296). Dates in that span answer their
+  session questions from the sourced week while `is_closed_trade_date`
+  refuses typed; `tests/venue_sessions/oanda_book.rs` exercises 2024-12-31
+  exactly so.
 - **Below 2024-02-21**: carried. The 2022-05-18 capture prints the earlier
   `Sun-Fri: 17:03 - 16:58` grid (five-minute 16:58-17:03 break, NZD break
   from 06:58 Auckland), so the changeover to the current grid is undated and
@@ -146,6 +143,9 @@ The spans, and what each rests on:
 Store paths (research store, wave-1 capture):
 `normal-weeks/oanda-uk-hours-2026-10-10/oanda-uk-hours-of-operation.pdf`,
 `normal-weeks/oanda-uk-hours-2026-10-10/oanda-uk-hours-of-operation.html`,
+`normal-weeks/oanda-uk-hours-2026-10-10/oanda-uk-hours-of-operation@2024-02-21-wayback.html`,
+`normal-weeks/oanda-uk-hours-2026-10-10/oanda-uk-hours-of-operation@2022-05-18-wayback.html`,
+`normal-weeks/oanda-uk-hours-2026-10-10/oanda-uk-hours-of-operation@2021-03-03-wayback.html`,
 `holidays/raw/oanda-uk-holiday-hours-2026-10-10/oanda-uk-holiday-trading-hours.html`.
 
 ## Gaps and residual risks

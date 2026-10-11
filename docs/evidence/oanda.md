@@ -54,5 +54,6 @@ This row cites the operator's own pages through [`oanda_fx.md`](oanda_fx.md)'s
 
 ## Gaps and residual risks
 
-See [`oanda_fx.md`](oanda_fx.md): the carried pre-2025-01-01 normal week and
-the holiday window's edges are the family's gaps and stay the family's.
+See [`oanda_fx.md`](oanda_fx.md): the carried pre-2024-02-21 normal week,
+the 2024-02-21..2025-01-01 bridged residual, and the holiday window's edges
+are the family's gaps and stay the family's.

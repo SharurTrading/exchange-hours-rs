@@ -40,7 +40,9 @@ Interpretation, each step from the operator's own words:
 
 None ship. The operator's UK holiday page prints no TRY-specific
 arrangement on any dated section 2025-01-01..2026-10-30, and whether its
-`Forex` rows (Christmas Day and New Year's Day only) reach the TRY book is
+`Forex` rows (the three reopen statements on New Year's Day 2025, Christmas
+Day and New Year's Day 2026, plus the two close-at-16:59 no-reopen
+statements on Christmas Eve and New Year's Eve 2025) reach the TRY book is
 unworked up. Closing condition: an OANDA support answer naming the TRY
 book's Christmas and New Year arrangement; until then the key carries no
 holiday layer and the caller's `DayPolicy` is the only layer.

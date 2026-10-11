@@ -295,7 +295,7 @@ evidence file). Where a phase's endpoints are sourced at two values and only
 the changeover day is undated, the crate serves the window that holds under
 every sourced state and discloses the disputed margin; where a scope's evidence
 runs out entirely, the crate refuses with an explicit typed error rather than
-claiming hours it cannot support. `28 of 96` exchange rows still name a Basis
+claiming hours it cannot support. `29 of 96` exchange rows still name a Basis
 gap in the ledger, each with its disclosed residual or external closer.
 
 **Which window a gap sits in decides what it costs you.** A gap in a phase where
@@ -304,9 +304,9 @@ reports a market as tradeable. A gap in an order-entry window only changes
 whether orders could be *queued* ahead of an open that is itself modelled
 correctly; no trade can print in one of those windows on any venue in this crate.
 Every `Partial` row states which kind it is in its Basis cell, and the split is
-**36 order-entry to 21 executable** across the 57 rows in the ledger. The order-entry majority is
+**36 order-entry to 24 executable** across the 60 rows in the ledger. The order-entry majority is
 the exact *day* an older queue or post-close phase started, with the trading
-session itself sourced. The executable twenty-one — the ICE Futures U.S. keys,
+session itself sourced. The executable twenty-four — the ICE Futures U.S. keys,
 the SGX equity-index keys, `nyse` and `nyse_american`,
 whose January-2010 off-hours crossing phase was reclassified from order-entry on
 2026-09-02, `globex_event_contracts`, whose daily close is carried back to its
@@ -317,7 +317,9 @@ intersection of two CME statements that disagree by an hour,
 `globex_silver_tas` and `globex_copper_tas`, whose closes are carried across the
 2015–2019 exhaustion of CME's metals hours page, and `globex_platinum_tas` and
 `globex_palladium_tas`, whose windows rest on one archived capture each between
-2021 and 2026 — are each served
+2021 and 2026 — plus the three OANDA book rows `oanda`, `oanda_fx` and
+`oanda_try_fx`, whose pre-2024 history carries an earlier grid with an
+undated changeover — are each served
 conservatively, erring toward closed rather than
 claiming hours they cannot support. A recent executable-only audit of all
 sixteen US futures product families found none of them withholding executable
@@ -334,8 +336,8 @@ reach holidays through the caller's `DayPolicy`.
 
 Every non-synthetic identity was compared with its official current-hours or
 rulebook material and its notice/evidence channel. All 96 current profiles are
-primary-supported within their stated scope. The 68 **Primary** rows have no
-known modeled-history gap since January 2010 or their sourced launch; 28
+primary-supported within their stated scope. The 67 **Primary** rows have no
+known modeled-history gap since January 2010 or their sourced launch; 29
 **Partial** rows name an older queue, PCP phase, or exact onset that available
 primary evidence cannot date. The basis vocabulary is closed at four values —
 **Primary**, **Partial / executable**, **Partial / order-entry** and
@@ -354,8 +356,8 @@ the quotations and URLs behind it.
 The key surface was audited separately:
 **Hours verified at the review date for each product family:** `38 of 38` operator-derived
 `MarketHoursKey` values. The key API provides fixed-current snapshots, an
-`as_of` selector, and a date-aware calendar for sourced histories. Nine key
-rows are **Primary** and twenty-nine are **Partial**, because a named historical
+`as_of` selector, and a date-aware calendar for sourced histories. Seven key
+rows are **Primary** and thirty-one are **Partial**, because a named historical
 queue, PCP amendment day, or undated venue transition cannot be dated from a
 primary source.
 

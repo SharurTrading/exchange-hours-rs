@@ -1,0 +1,13 @@
+# SPDX-FileCopyrightText: 2026 Kevin Monaghan
+# SPDX-License-Identifier: MIT-0
+
+[cache]
+# Keep compiler artifacts out of remote caches and planners.
+local_only = true
+# Discover and hash inputs before compilation on a cold miss.
+deferred_discovery = false
+# Reject retention when discovered inputs are newer than the build start.
+modified_input_guard = true
+# Isolate entries produced under this input-discovery policy.
+key_salt = "sharurtrading-kache-prepass-2026-10-11"
+gc_max_age_hours = 48

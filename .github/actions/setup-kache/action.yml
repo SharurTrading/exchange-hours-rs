@@ -1,0 +1,38 @@
+# SPDX-FileCopyrightText: 2026 Kevin Monaghan
+# SPDX-License-Identifier: MIT-0
+
+name: Set up Kache
+description: Install the pinned compiler cache with repository input policy
+runs:
+  using: composite
+  steps:
+    - name: Select cache and Cargo output namespaces
+      id: paths
+      shell: bash
+      run: |
+        set -euo pipefail
+        target_root="${CARGO_TARGET_DIR:-$GITHUB_WORKSPACE/target}"
+        mkdir -p "$target_root"
+        target_root="$(cd "$target_root" && pwd -P)"
+        {
+          printf 'CARGO_TARGET_DIR=%s/kache-prepass-v1\n' "$target_root"
+          printf 'CARGO_INCREMENTAL=0\n'
+          printf 'KACHE_CONFIG=%s/.kache.toml\n' "$GITHUB_WORKSPACE"
+          printf 'KACHE_LOCAL_ONLY=1\n'
+          printf 'KACHE_MODIFIED_INPUT_GUARD=1\n'
+          printf 'KACHE_DEFERRED_DISCOVERY=0\n'
+          printf 'KACHE_KEY_SALT=sharurtrading-kache-prepass-2026-10-11\n'
+          printf 'KACHE_VERIFY_RESTORES=always\n'
+        } >> "$GITHUB_ENV"
+        printf 'cache_dir=%s/.kache-cache/prepass-v1\n' "$target_root" >> "$GITHUB_OUTPUT"
+
+    - name: Install Kache
+      uses: kunobi-ninja/kache-action@ad7317540dcdd71c904f7a60a87b620a0c0e67ed # v1
+      with:
+        version: "1.0.0"
+        cache-dir: ${{ steps.paths.outputs.cache_dir }}
+        cache-key-prefix: kache-prepass-v1
+        cache-executables: true
+        github-cache: true
+        save-cache: true
+        pr-comment: false

@@ -731,6 +731,76 @@ The MSRV job needs a second toolchain, so it is a separate command:
 cargo +1.95 check --all-targets
 ```
 
+## Contributor build cache
+
+Kache is optional for local builds and enabled for Rust CI. Use the same version
+as CI, **1.0.0**. Start with the official
+[Kache quick start](https://ninja.kunobi.com/docs/kache/getting-started/quick-start),
+[configuration reference](https://ninja.kunobi.com/docs/kache/getting-started/configuration)
+and [CI guide](https://ninja.kunobi.com/docs/kache/remote-cache/ci).
+
+```sh
+cargo install kache --version 1.0.0 --locked
+kache --version
+```
+
+From the repository root, enable it for the current shell:
+
+```sh
+export RUSTC_WRAPPER=kache
+export KACHE_CONFIG="$PWD/.kache.toml"
+export KACHE_LOCAL_ONLY=1
+export KACHE_DEFERRED_DISCOVERY=0
+export KACHE_MODIFIED_INPUT_GUARD=1
+export KACHE_KEY_SALT=sharurtrading-kache-prepass-2026-10-11
+export KACHE_VERIFY_RESTORES=always
+export CARGO_INCREMENTAL=0
+export CARGO_TARGET_DIR="$PWD/target/kache-prepass-v1"
+export KACHE_CACHE_DIR="$PWD/target/.kache-cache/prepass-v1"
+```
+
+Run the repository's usual Cargo quality commands after this setup.
+[.kache.toml](.kache.toml) defines the reviewed policy:
+
+| Setting | Behavior |
+| --- | --- |
+| `local_only = true` | Disable Kache remote backends and the planner |
+| `deferred_discovery = false` | Hash discovered inputs before compilation |
+| `modified_input_guard = true` | Reject inputs newer than the build start |
+| `key_salt` | Isolate entries under this discovery policy |
+| `gc_max_age_hours = 48` | Use Kache GC for age retention |
+| `KACHE_VERIFY_RESTORES=always` | Verify restored blob checksums |
+
+> [!IMPORTANT]
+> Keep source files unchanged while a build runs; use a separate checkout for
+> concurrent edits. The input guard and checksum verification do not establish
+> cache-key correctness for arbitrary edits during compilation. Cargo can reuse
+> already-fresh outputs without calling Kache, so investigate a suspect result in
+> a fresh target directory with the wrapper disabled:
+>
+> ```sh
+> CARGO_TARGET_DIR="$(mktemp -d)" RUSTC_WRAPPER= cargo check --locked
+> ```
+
+Inspect reuse with `kache stats --last-build`, `kache explain` and `kache doctor`.
+For persistent local setup, `kache init --check` previews Cargo configuration
+changes before `kache init` applies them. Environment variables take precedence
+over the repository file; retain the policy above and restart any existing daemon
+when changing its environment, as described in the configuration reference.
+
+### CI cache layout
+
+[The repository setup action](.github/actions/setup-kache/action.yml) installs
+Kache 1.0.0 through the official action pinned to a full commit SHA. It selects
+`<target-root>/kache-prepass-v1` for Cargo outputs and
+`<target-root>/.kache-cache/prepass-v1` for the store, on the same filesystem.
+The target root comes from the runner's `CARGO_TARGET_DIR`, or defaults to
+`$GITHUB_WORKSPACE/target`. Both namespaces isolate older outputs and cache entries.
+Existing quality gates and runner selections remain in place.
+
+GitHub-hosted runners persist the local store through GitHub Actions cache.
+Kache remote backends and the planner remain disabled.
+
 ## License
 
 [MIT-0](LICENSE) (MIT No Attribution): use, copy, modify, and redistribute freely,

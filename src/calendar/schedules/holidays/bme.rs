@@ -9,18 +9,22 @@ use crate::calendar::exceptions::ExceptionBlock;
 
 // Evidence: docs/evidence/bme.md
 #[rustfmt::skip]
-static HALF_DAY_PRE_TAL: [ExceptionBlock; 3] = [
-    ExceptionBlock::extended(0, 8 * 3_600 + 30 * 60, 9 * 3_600 + 30),
+static HALF_DAY_PRE_TAL: [ExceptionBlock; 5] = [
+    ExceptionBlock::order_entry(0, 8 * 3_600 + 30 * 60, 9 * 3_600),
+    ExceptionBlock::extended(0, 9 * 3_600, 9 * 3_600 + 30),
     ExceptionBlock::regular(0, 9 * 3_600 + 30, 13 * 3_600 + 55 * 60),
-    ExceptionBlock::extended(0, 13 * 3_600 + 55 * 60, 14 * 3_600 + 30),
+    ExceptionBlock::order_entry(0, 13 * 3_600 + 55 * 60, 14 * 3_600),
+    ExceptionBlock::extended(0, 14 * 3_600, 14 * 3_600 + 30),
 ];
 
 // Evidence: docs/evidence/bme.md
 #[rustfmt::skip]
-static HALF_DAY_TAL: [ExceptionBlock; 3] = [
-    ExceptionBlock::extended(0, 8 * 3_600 + 30 * 60, 9 * 3_600 + 30),
+static HALF_DAY_TAL: [ExceptionBlock; 5] = [
+    ExceptionBlock::order_entry(0, 8 * 3_600 + 30 * 60, 9 * 3_600),
+    ExceptionBlock::extended(0, 9 * 3_600, 9 * 3_600 + 30),
     ExceptionBlock::regular(0, 9 * 3_600 + 30, 13 * 3_600 + 55 * 60),
-    ExceptionBlock::extended(0, 13 * 3_600 + 55 * 60, 14 * 3_600 + 10 * 60),
+    ExceptionBlock::order_entry(0, 13 * 3_600 + 55 * 60, 14 * 3_600),
+    ExceptionBlock::extended(0, 14 * 3_600, 14 * 3_600 + 10 * 60),
 ];
 
 // Evidence: docs/evidence/bme.md

@@ -4,6 +4,10 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- BME opening and closing auction calls now accept orders without reporting the market open, on normal days and half days. Only the sourced uncross windows and Trading-at-Last execute.
+
 ### Added
 
 - Archived OANDA UK FX and spot-metals holidays from 2024-02-21 through

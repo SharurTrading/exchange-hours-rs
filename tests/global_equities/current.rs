@@ -124,25 +124,27 @@ fn bme_current_auction_and_trading_at_last_envelope() {
     let date = (2026, 8, 19);
 
     assert!(!h.is_open(local(tz, date, (8, 29, 59))));
-    assert!(h.is_open_extended(local(tz, date, (8, 30, 0))));
+    assert!(!h.is_open(local(tz, date, (8, 30, 0))));
+    assert!(h.is_order_entry_only(local(tz, date, (8, 30, 0))));
     assert!(h.is_open_extended(local(tz, date, (9, 0, 29))));
     assert!(!h.is_open_regular(local(tz, date, (9, 0, 29))));
     assert!(h.is_open_regular(local(tz, date, (9, 0, 30))));
-    assert!(h.is_open_extended(local(tz, date, (17, 30, 0))));
+    assert!(!h.is_open(local(tz, date, (17, 30, 0))));
+    assert!(h.is_order_entry_only(local(tz, date, (17, 30, 0))));
     let (_, closing_auction_end) = exchange_hours::session_bounds_with(
         &h,
         local(tz, date, (17, 35, 29)),
         exchange_hours::SessionKind::Extended,
     )
-    .expect("BME closing auction");
-    assert_eq!(closing_auction_end, local(tz, date, (17, 35, 30)));
+    .expect("BME closing uncross and Trading-at-Last union");
+    assert_eq!(closing_auction_end, local(tz, date, (17, 45, 0)));
     let (tal_start, tal_end) = exchange_hours::session_bounds_with(
         &h,
         local(tz, date, (17, 35, 30)),
         exchange_hours::SessionKind::Extended,
     )
     .expect("BME Trading-at-Last");
-    assert_eq!(tal_start, local(tz, date, (17, 35, 30)));
+    assert_eq!(tal_start, local(tz, date, (17, 35, 0)));
     assert_eq!(tal_end, local(tz, date, (17, 45, 0)));
     assert!(h.is_open_extended(local(tz, date, (17, 44, 59))));
     assert!(!h.is_open(local(tz, date, (17, 45, 0))));

@@ -34,7 +34,7 @@ as each source is re-verified.
 ## Gaps and residual risks
 
 - **Scope.** The profile represents the general trading segment for principal shares. The separate Fixing system, which Operating Instruction 47/2023 excludes from the Trading-at-Last phase, is not modelled.
-- **Interpretive step, empty order-entry slice.** Every non-regular phase modelled here is tradeable, so `order_entry` stays empty: the opening and closing windows are the SIBE auctions themselves, each ending in an allocation that prints trades at the auction price, and Trading-at-Last executes at the closing price. The operator publishes no separate pre-open or post-close order-entry phase for the general trading segment.
+- **Interpretive step, auction calls and uncrosses (corrected 2026-10-11 UTC).** Circular 1/2001 sections 3.2.1.1 and 3.2.1.4 expressly state that orders can be entered, modified and cancelled but no trades can be made during the 08:30–09:00 opening call and 17:30–17:35 closing call. Those calls are `order_entry`; they accept orders and `is_open` is false. The operator's randomized uncross can print during 09:00–09:00:30 and 17:35–17:35:30, so those conservative venue-level windows are `extended`. Regular trading starts at 09:00:30 and ends at 17:30; Circular 1/2023 section 3.2.1.5 states TAL lasts ten minutes until 17:45 after the closing auction (eight minutes for securities with an extended auction). The nominal 17:35–17:45 TAL and randomized uncross therefore share one executable extended union; no artificial 17:35:30 TAL start is asserted.
 - **Interpretive step, randomized auction edge.** The deterministic profile uses the latest possible opening edge, 09:00:30, so it never reports continuous trading while the opening auction can still run; the closing auction likewise runs through 17:35:30.
 - **Dormant identity.** Reviewed on demand; gaps are recorded here rather than as issues.
 
@@ -49,11 +49,10 @@ seconds. The deterministic profile uses the latest possible opening edge so
 it never reports continuous trading while the opening auction can still run.
 https://www.bolsasymercados.es/es/sala-de-comunicacion/noticias/2023/las-subastas-en-la-bolsa-parte-2.html
 
-Every non-regular phase modeled here is tradeable, so `order_entry` stays
-empty. The opening and closing windows are the SIBE auctions themselves:
-each ends in an allocation that prints trades at the auction price, and the
-operator publishes no separate pre-open or post-close order-entry phase for
-the general trading segment. Trading-at-Last executes at the closing price.
+The former module narrative's empty-order-entry interpretation was corrected on
+2026-10-11 UTC from the explicit no-trades wording of Circular 1/2001. Auction
+calls are required order-entry phases; only their randomized uncross windows
+and Trading-at-Last are executable extended phases.
 
 ## Holidays — reviewed 2026-10-11 UTC
 
@@ -75,8 +74,10 @@ date-specific timetables. In the `ACCIONES (EQ)` column of instructions 116/2012
 116/2013, 142/2014, 162/2015, 80/2018, 84/2019 and 63/2020, the general continuous
 session ends at 13:55 into a closing auction, whose nominal end is 14:00; they
 also print the security-dependent auction extension to 14:02. The replacement
-keeps the normal profile's published auction convention: 08:30–09:00:30 opening
-auction, 09:00:30–13:55 regular trading, 13:55–14:00:30 closing auction. Circular
+keeps the normal profile's published auction convention: 08:30–09:00 opening
+call as order entry, 09:00–09:00:30 uncross as extended, 09:00:30–13:55
+regular trading, 13:55–14:00 closing call as order entry, and 14:00–14:00:30
+uncross as extended. Circular
 1/2001 section 3.2.1.4 states the random period of at most 30 seconds after the
 nominal closing instant, and conditions the two-minute extension on special
 cases in section 6.2.4.4. Those per-security conditional outcomes do not change
@@ -94,7 +95,7 @@ or dates. No runtime boundary is inferred from those erroneous references.
 
 Instructions 47/2024 and 64/2025 explicitly print `CONTINUO: Fin fase TAL` at
 14:10. Those dates have the same 13:55 end of continuous trading but retain the
-auction and Trading-at-Last executable envelope until 14:10. The later detailed
+14:00 uncross and Trading-at-Last executable union until 14:10. The later detailed
 timetables govern over the annual summaries' 14:00 shorthand. Replacement
 blocks retain the real regular/extended handoff; a scalar early close would
 wrongly label the half-day closing auction as regular trading.
@@ -360,3 +361,5 @@ each exact URL, retrieval timestamp and digest; text extractions are only aids.
 | `BME-EVES-2025` | 2025-12-24 and 2025-12-31 | <https://www.bolsasymercados.es/dam/descargas/regulacion/renta-variable/sociedad-de-bolsas/instrucciones-operativas/2025/2025-64-io-horarios-24-y-31.pdf> | 2026-10-11 23:08:07 UTC | T1 | `f1f9f5e22c1aaed4da98a27e299cd062cce2af24aeba72bdc2df5569086ff609` |
 | `BME-CAL-2026` | 2026-01-01..2026-12-31 | <https://www.bolsasymercados.es/dam/descargas/regulacion/renta-variable/sociedad-de-bolsas/instrucciones-operativas/2025/2025-65-io-calendario-de-sesiones-2026.pdf> | 2026-10-11 23:08:07 UTC | T1 | `9067c20484938b1c5c3be7a29c7e72f065eec97ddc2bbba22619c492ba91a401` |
 | `BME-REGULATION-INDEX-2026-10-11` | public discovery index | <https://www.bolsasymercados.es/es/bme-exchange/regulacion/renta-variable/_jcr_content/root/containers/container/assetstaxonomyfilter.results.json> | 2026-10-11 UTC | T1 | `cee89745ab76da14b5507f1b9b0f2246d5e766f27a4ac4ff71d63b278ec2c925` |
+
+| `BME-TAL-RULES-2023` | nominal post-auction TAL phase | <https://www.bolsasymercados.es/dam/descargas/regulacion/renta-variable/sociedad-de-bolsas/circular/2023/circular-1-23-english.pdf> | 2026-10-11 23:22:29 UTC | T1 | `bb91f0bf4edfdb67e3a39c2e940f183d3db89363b44fcff6c4923a1d23511fc9` |

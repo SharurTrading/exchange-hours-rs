@@ -77,7 +77,27 @@ fn detailed_half_days_replace_regular_and_auction_phases() {
                 HolidayKind::ReplacementBlocks(_)
             ));
             assert_eq!(calendar.is_open(at(year, 12, day, 8, 29, 59)), Ok(false));
-            assert_eq!(calendar.is_open(at(year, 12, day, 8, 30, 0)), Ok(true));
+            assert_eq!(calendar.is_open(at(year, 12, day, 8, 30, 0)), Ok(false));
+            assert_eq!(
+                calendar.is_order_entry_only(at(year, 12, day, 8, 30, 0)),
+                Ok(true)
+            );
+            assert_eq!(
+                calendar.is_accepting_orders(at(year, 12, day, 8, 30, 0)),
+                Ok(true)
+            );
+            assert_eq!(
+                calendar.is_order_entry_only(at(year, 12, day, 8, 59, 59)),
+                Ok(true)
+            );
+            assert_eq!(
+                calendar.is_open_extended(at(year, 12, day, 9, 0, 0)),
+                Ok(true)
+            );
+            assert_eq!(
+                calendar.is_order_entry_only(at(year, 12, day, 9, 0, 0)),
+                Ok(false)
+            );
             assert_eq!(
                 calendar.is_open_regular(at(year, 12, day, 13, 54, 59)),
                 Ok(true)
@@ -88,7 +108,24 @@ fn detailed_half_days_replace_regular_and_auction_phases() {
             );
             assert_eq!(
                 calendar.is_open_extended(at(year, 12, day, 13, 55, 0)),
+                Ok(false)
+            );
+            assert_eq!(
+                calendar.is_order_entry_only(at(year, 12, day, 13, 55, 0)),
                 Ok(true)
+            );
+            assert_eq!(
+                calendar.is_accepting_orders(at(year, 12, day, 13, 55, 0)),
+                Ok(true)
+            );
+            assert_eq!(calendar.is_open(at(year, 12, day, 13, 59, 59)), Ok(false));
+            assert_eq!(
+                calendar.is_open_extended(at(year, 12, day, 14, 0, 0)),
+                Ok(true)
+            );
+            assert_eq!(
+                calendar.is_order_entry_only(at(year, 12, day, 14, 0, 0)),
+                Ok(false)
             );
             let close = if year >= 2024 {
                 at(year, 12, day, 14, 10, 0)
@@ -139,4 +176,32 @@ fn cash_calendar_has_no_invented_substitutes_and_keeps_2026_unknown() {
         calendar.is_open(at(2027, 1, 4, 12, 0, 0)),
         Err(CalendarQueryError::OutsideCoveredRange { .. })
     ));
+}
+
+#[test]
+fn normal_auction_calls_accept_orders_without_trading_in_both_eras() {
+    let calendar = calendar_for_exchange(Exchange::Bme);
+    for (year, month, day) in [(2010, 1, 4), (2023, 12, 1), (2023, 12, 4), (2026, 4, 20)] {
+        for (hour, minute, second) in [(8, 30, 0), (8, 59, 59), (17, 30, 0), (17, 34, 59)] {
+            let instant = at(year, month, day, hour, minute, second);
+            assert_eq!(calendar.is_open(instant), Ok(false));
+            assert_eq!(calendar.is_order_entry_only(instant), Ok(true));
+            assert_eq!(calendar.is_accepting_orders(instant), Ok(true));
+        }
+        for (hour, minute, second) in [(9, 0, 0), (9, 0, 29), (17, 35, 0), (17, 35, 29)] {
+            let instant = at(year, month, day, hour, minute, second);
+            assert_eq!(calendar.is_open_extended(instant), Ok(true));
+            assert_eq!(calendar.is_order_entry_only(instant), Ok(false));
+        }
+        assert_eq!(
+            calendar.is_open_regular(at(year, month, day, 9, 0, 30)),
+            Ok(true)
+        );
+        let has_tal = (year, month, day) >= (2023, 12, 4);
+        assert_eq!(
+            calendar.is_open(at(year, month, day, 17, 35, 30)),
+            Ok(has_tal)
+        );
+        assert_eq!(calendar.is_open(at(year, month, day, 17, 45, 0)), Ok(false));
+    }
 }

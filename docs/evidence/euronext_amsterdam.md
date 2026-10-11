@@ -87,7 +87,7 @@ inside the audited window rather than a shortened publication horizon.
 | 2010-01-01 | closed | `Friday 1 January 2010 (New Year's Day)` | ``EURONEXT-PR-2010`` | T1 | the operator's own printed date on the European cash markets' closure list; trade date is the same civil day |
 | 2010-04-02 | closed | `Friday 2 April 2010 (Good Friday)` | ``EURONEXT-PR-2010`` | T1 | the operator's own printed date |
 | 2010-04-05 | closed | `Monday 5 April 2010 (Easter Monday)` | ``EURONEXT-PR-2010`` | T1 | the operator's own printed date |
-| 2010-12-24 | early close | `On Friday 24 December 2010 ... cash markets will close at 1.00 pm GMT (2.00 pm CET)`; the appendix grid prints Trading `09:00 - 13:55`, CA `14:00`, TAL `14:00 - 14:05` for every Amsterdam equity group | ``EURONEXT-EOY-2010`` | T1 | the printed event date plus the appendix's own Dutch Amsterdam schedule; the envelope close is the printed TAL end, 14:05 CET — see the interpretive step |
+| 2010-12-24 | early close | `On Friday 24 December 2010 ... cash markets will close at 1.00 pm GMT (2.00 pm CET)`; the appendix grid prints Trading `09:00 - 13:55`, CA `14:00`, TAL `14:00 - 14:05` for Dutch J0 AEX and J1 continuously traded equity groups | ``EURONEXT-EOY-2010`` | T1 | the printed event date plus the appendix's own Dutch Amsterdam schedule; the envelope close is the printed TAL end, 14:05 CET — see the interpretive step |
 | 2010-12-31 | early close | the same appendix grid for `Friday 31 Decembre 2010` | ``EURONEXT-EOY-2010`` | T1 | same reading as 2010-12-24 |
 
 The press release lists no other weekday closure: 1 May, 25 and 26 December 2010 fell at

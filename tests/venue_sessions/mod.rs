@@ -21,6 +21,7 @@ mod kind_aware_candles;
 mod named_profiles;
 mod nasdaq;
 mod oanda_book;
+mod oanda_books2;
 mod sgx_cfe;
 mod sunday_wraps;
 mod us_equity_history;

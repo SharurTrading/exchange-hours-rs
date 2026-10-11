@@ -4,6 +4,12 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- LSE's five withheld 2025 spring/summer holiday dates now answer as sourced
+  closures, recovered from a verbatim public mirror of the operator table.
+
+
 ## [1.1.0] - 2026-10-11
 
 ### Changed

@@ -189,22 +189,39 @@ This scope applies to the venue default and all seven OANDA keys (#333).
 
 ## Starred seasonal selectors — 2026-10-11 UTC
 
-The current UK page marks Australia 200's close and the German/Euro/Bund
-opening with `***`, stating a one-hour local-bound shift during daylight
-saving without expressly identifying the selector's zone. The undated
-operator guide `OANDA-STATIC-HOURS-252` prints Australia 200's earlier
-17:10–07:00 Sydney night during US DST and 17:10–08:00 otherwise. This
-is evidence that the broker itself has used a US-season selector; it does
-not date a transition to the current one-minute-inset grid or establish
-that the current generic footnote switched to Sydney DST.
+The current UK PDF `OANDA-UK-HOURS-PDF` labels the columns
+`Timezone of exchange` and `Trading hours (local exchange time)`. Its `***`
+footnote states that the marked opening or closing time moves forward by one
+hour during daylight saving. Read that instruction in each row's named local
+zone; the current table states no US-season override for the Sydney row.
+This contextual reading establishes the current selectors:
 
-A universal fixed-UTC interpretation, and a Sydney-only interpretation for
-Australia 200, therefore remain unproved. The six absent derivatives
-families and the consumer's exact starred CFD selectors remain under #332.
-The underlying ASX operator's explicit US-season schedule is its own source,
-not permission to fabricate a broker cutover. The operator must identify the
-current selector, or the consumer must refuse the disputed scope; passing a
-test of one interpretation does not settle this source question.
+- Australia 200 names Sydney. Its marked night close is 06:59 in Sydney
+  standard time and 07:59 in Sydney daylight time, selected by
+  `Australia/Sydney`. Its unmarked 09:51–16:29 day session and 17:11 night
+  opening retain those local times.
+- Euro 50, Germany 40 and Germany 10Y Bund name Frankfurt. Their marked
+  opening is 01:16 in standard time and 02:16 in daylight time, selected by
+  `Europe/Berlin`. Their unmarked 21:59 close retains that local time.
 
-Captured bytes: `normal-weeks/oanda-star-selector-audit-2026-10-11/oanda-static-hours-252.pdf`
-in the research store. No date or new runtime row is keyed from this artifact.
+Every local endpoint also receives its named zone's ordinary conversion to
+UTC. The extra one-hour local-bound shift applies only to the `***`-marked
+endpoint. FX's single `*` describes its six-minute break; metals' `**`
+describes the Auckland break. The Shares/ETF prose says their times *may*
+move, which does not establish an unconditional extra one-hour shift of both
+endpoints. Neither the ordinary zone conversion nor the marked-bound rule
+adds an underlying futures maintenance halt.
+
+The undated operator guide `OANDA-STATIC-HOURS-252` prints a different,
+earlier Australia 200 grid: 17:10–07:00 Sydney during US DST and
+17:10–08:00 otherwise. That explicit historical US-season selector belongs
+to that older grid. It does not override the current row-scoped instruction.
+The effective day of the older/current grid and selector transition is still
+unsourced; historical exactness, the six absent derivatives families and exact
+broker holiday scopes remain under #332. Captures are observations, not
+fabricated operator cutovers.
+
+Captured guide bytes:
+`normal-weeks/oanda-star-selector-audit-2026-10-11/oanda-static-hours-252.pdf`
+in the research store. No date or new library runtime row is keyed from this
+artifact; exact CFD overlays remain the consumer's responsibility.

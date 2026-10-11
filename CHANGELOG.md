@@ -49,6 +49,11 @@
 
 ### Fixed
 
+- The current OANDA `***` instruction follows each row's named local zone:
+  Sydney for Australia 200's marked close and Frankfurt for the German,
+  Euro 50 and Bund marked openings. The older guide's US-season Australian
+  selector belongs to its older grid; its historical change date stays
+  unsourced (#332).
 - Carter's Day 2025 index close resolves to 09:30 ET from the UK page's
   dated 24-hour context and stated 18:00 reopening. The following trade
   date preserves that literal 18:00 open; Memorial's incomplete minute

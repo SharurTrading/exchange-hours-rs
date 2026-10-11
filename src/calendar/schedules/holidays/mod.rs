@@ -16,7 +16,8 @@
 //! **Tables ship for the served CME families and the 2026 venue block.**
 //! `table_for` answers with a table for the eight CME product families, for
 //! CFE, Eurex, ICE Futures U.S., Coinbase Derivatives and the two US
-//! cash-equity venues `nyse` and `nasdaq`, for the OANDA FX book, and `None`
+//! cash-equity venues `nyse` and `nasdaq`, for the OANDA FX, metals, US
+//! index/bond, US commodity and Brent books, and `None`
 //! for every other identity; where it answers `None` the caller's `DayPolicy`
 //! overlay remains the only holiday layer. Each table declares the trade-date
 //! window it audited, so a date outside that window is "no answer", not
@@ -61,7 +62,11 @@ mod nasdaq;
 mod nse_india;
 mod nyse;
 mod nzx;
+mod oanda_brent;
 mod oanda_fx;
+mod oanda_metals;
+mod oanda_us_commodity_cfd;
+mod oanda_us_index_cfd;
 mod routing;
 mod sgx_securities;
 mod six;

@@ -29,10 +29,11 @@ use super::exchange_calendar::CalendarSource;
 use super::schedules::ALWAYS_OPEN_PROFILE;
 use super::schedules::from_profile;
 use super::schedules::futures::international::{
-    eurex_fixed_income_profile_at, eurex_profile_at, oanda_fx_profile_at, oanda_try_fx_profile_at,
-    sgx_equity_index_china_profile_at, sgx_equity_index_japan_profile_at,
-    sgx_equity_index_ntr_usd_profile_at, sgx_equity_index_singapore_profile_at,
-    sgx_equity_index_taiwan_profile_at, sgx_profile_at,
+    eurex_fixed_income_profile_at, eurex_profile_at, oanda_brent_profile_at, oanda_fx_profile_at,
+    oanda_metals_profile_at, oanda_try_fx_profile_at, oanda_us_commodity_profile_at,
+    oanda_us_index_profile_at, sgx_equity_index_china_profile_at,
+    sgx_equity_index_japan_profile_at, sgx_equity_index_ntr_usd_profile_at,
+    sgx_equity_index_singapore_profile_at, sgx_equity_index_taiwan_profile_at, sgx_profile_at,
 };
 use super::schedules::futures::us::{
     bitcoin_event_contracts_profile_at, cbot_profile_at, cfe_profile_at, cme_profile_at,
@@ -448,6 +449,38 @@ market_hours_keys! {
         /// Central European session with an overnight gap and no stated
         /// maintenance.
         OandaTryFx => "oanda_try_fx",
+        /// OANDA's own spot-metals book (`XAU`/`XAG` and their crosses):
+        /// Sunday 18:05 to Friday 16:59 New York time, with the printed
+        /// 16:59-18:05 daily gap and no other maintenance. NZD pairs carry
+        /// an additional 06:59-07:05 Auckland break that is caller catalog
+        /// data: no rule in this grid states it.
+        OandaMetals => "oanda_metals",
+        /// OANDA's US-anchored index and bond book — US SPX 500, US Nas 100,
+        /// US Russ 2000, US Wall St 30, Japan 225 (USD and JPY) and the four
+        /// US Treasury listings — on one continuous Sunday-to-Friday clock:
+        /// Chicago 17:01 to 15:59, the same instants as New York 18:01 to
+        /// 16:59, with the printed 16:59-18:01 daily gap and no other
+        /// maintenance. The operator's holiday page treats this as the "US
+        /// indices and bonds" group, distinct from
+        /// [`OandaUsCommodityCfd`](Self::OandaUsCommodityCfd); Japan 225 is
+        /// included because every dated section that prints it separately
+        /// gives it the US indices' own arrangement.
+        OandaUsIndexCfd => "oanda_us_index_cfd",
+        /// OANDA's US-anchored energy and commodity-metals book — Natural
+        /// Gas, West Texas Oil, Platinum, Palladium and Copper — on the same
+        /// continuous clock as [`OandaUsIndexCfd`](Self::OandaUsIndexCfd):
+        /// New York 18:01 to 16:59 Sunday-to-Friday, with the printed
+        /// 16:59-18:01 daily gap and no other maintenance. A separate key
+        /// because the operator's holiday page gives this group its own
+        /// early-close instants ("US energies and metals").
+        OandaUsCommodityCfd => "oanda_us_commodity_cfd",
+        /// OANDA's own Brent book, anchored to London by the page's own
+        /// dagger note: opens Sunday 23:01 and closes Friday 21:59 London
+        /// time, with the six-minute 21:59-22:05 break and the two-hour
+        /// 22:59-01:01 break Monday-Thursday. The page's timezone column
+        /// names New York, but the note states the London clock and the
+        /// evidence file records that reading.
+        OandaBrent => "oanda_brent",
 
         /// SGX Three-Month SORA Futures current profile.
         Sgx => "sgx",
@@ -528,6 +561,10 @@ pub fn hours_for_market_hours_key(key: MarketHoursKey, as_of: DateTime<Utc>) -> 
         MarketHoursKey::GlobexPalladiumTas => palladium_tas_profile_at(as_of),
         MarketHoursKey::OandaFx => oanda_fx_profile_at(as_of),
         MarketHoursKey::OandaTryFx => oanda_try_fx_profile_at(as_of),
+        MarketHoursKey::OandaMetals => oanda_metals_profile_at(as_of),
+        MarketHoursKey::OandaUsIndexCfd => oanda_us_index_profile_at(as_of),
+        MarketHoursKey::OandaUsCommodityCfd => oanda_us_commodity_profile_at(as_of),
+        MarketHoursKey::OandaBrent => oanda_brent_profile_at(as_of),
         MarketHoursKey::Sgx => sgx_profile_at(as_of),
         MarketHoursKey::AlwaysOpen => &ALWAYS_OPEN_PROFILE,
     };

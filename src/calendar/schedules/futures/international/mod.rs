@@ -38,7 +38,10 @@ pub(crate) use ice_europe::{
     ice_europe_commodities_profile_at, ice_europe_financials_profile_at, iceeu_profile_at,
 };
 pub(crate) use oanda::{
-    OANDA_FX_REGULAR, OANDA_TRY_FX_REGULAR, oanda_fx_profile_at, oanda_try_fx_profile_at,
+    OANDA_BRENT_REGULAR, OANDA_FX_REGULAR, OANDA_METALS_REGULAR, OANDA_TRY_FX_REGULAR,
+    OANDA_US_CONTINUOUS_REGULAR, oanda_brent_profile_at, oanda_fx_profile_at,
+    oanda_metals_profile_at, oanda_try_fx_profile_at, oanda_us_commodity_profile_at,
+    oanda_us_index_profile_at,
 };
 pub(crate) use sgx::SGX_CURRENT_ORDER_ENTRY;
 pub(crate) use sgx::{SGX_CURRENT_EXTENDED, SGX_CURRENT_REGULAR, sgx_profile_at};

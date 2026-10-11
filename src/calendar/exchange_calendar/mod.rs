@@ -319,6 +319,10 @@ impl ExchangeCalendar {
     /// trade can print. Resolved through the same date-aware profile selection
     /// as [`Self::is_open`], so a revision reselects per candidate opening day
     /// and a caller's [`DayPolicy`](super::DayPolicy) overlay applies here too.
+    /// Broker-side storage or modification of pending instructions outside a
+    /// published session phase is outside this query's scope. For example,
+    /// OANDA permits pending orders while its markets are closed; this method
+    /// does not report the availability of OANDA's order-placement API.
     ///
     /// # Errors
     ///

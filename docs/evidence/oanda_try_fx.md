@@ -13,7 +13,6 @@ OANDA's TRY-pair book, carved out of the FX row by name: a daily Monday–Friday
 08:00–17:00 Central European session with an overnight gap and no stated
 maintenance.
 
-
 ## Revision rows
 
 None. The module carries one sourced grid and no `revisions!` block; there is
@@ -82,3 +81,6 @@ Store paths: see [`oanda_fx.md`](oanda_fx.md).
 - The TRY carve-out exists because of the pair set's restricted schedule;
   if OANDA widens or narrows the TRY pair list the grid may change, and the
   page is the watch entry point.
+
+Pending-order storage outside the printed trading windows is a broker facility,
+not a timed session phase; see [the shared scope decision](oanda_fx.md#pending-orders-and-session-scope--2026-10-11-utc) (#333).

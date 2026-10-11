@@ -67,13 +67,16 @@ dates ship `Unsourced` on that rule.
 | 2025-04-17 | unsourced | — | `OANDA-UK-HOLIDAYS` | T1 | Holy Thursday: same rule |
 | 2025-04-18 | closed | `BCO is closed` | `OANDA-UK-HOLIDAYS` | T1 | Good Friday |
 | 2025-05-26 | early close | `closes early at 1:30 PM and reopen at 8:00 PM` | `OANDA-UK-HOLIDAYS` | T1 | Memorial Day, 1:30 PM ET = 18:30 London |
+| 2025-05-27 | replacement blocks | `01:00; 21:59; 22:05; 22:59` | `OANDA-UK-HOLIDAYS` | T1 | Complete replacement: previous holiday's literal reopen plus this trade date's printed or normal close. |
 | 2025-06-19 | early close | `closes early at 1:30 PM and reopens at 8:00 PM` | `OANDA-UK-HOLIDAYS` | T1 | Juneteenth, 18:30 London |
+| 2025-06-20 | replacement blocks | `01:00; 21:59` | `OANDA-UK-HOLIDAYS` | T1 | Complete replacement: previous holiday's literal reopen plus this trade date's printed or normal close. |
 | 2025-07-03 | unsourced | — | `OANDA-UK-HOLIDAYS` | T1 | Independence Day eve: the section prints US index and Commodities rows, nothing for Brent |
 | 2025-07-04 | early close | `close early at 1:30 pm` | `OANDA-UK-HOLIDAYS` | T1 | Independence Day, 18:30 London |
 | 2025-09-01 | early close | `Close early at 1:30 PM, reopen at 8:00 PM` | `OANDA-UK-HOLIDAYS` | T1 | Labor Day, 18:30 London |
+| 2025-09-02 | replacement blocks | `01:00; 21:59; 22:05; 22:59` | `OANDA-UK-HOLIDAYS` | T1 | Complete replacement: previous holiday's literal reopen plus this trade date's printed or normal close. |
 | 2025-11-26 | unsourced | — | `OANDA-UK-HOLIDAYS` | T1 | Thanksgiving eve: the section prints one Agricultural row, Brent silent |
 | 2025-11-27 | early close | `Close early at 1:30 PM, reopen at 8:00 PM` | `OANDA-UK-HOLIDAYS` | T1 | Thanksgiving, 18:30 London |
-| 2025-11-28 | early close | `Close early at 3:00 PM` | `OANDA-UK-HOLIDAYS` | T1 | Thanksgiving Friday, 3:00 PM ET = 20:00 London |
+| 2025-11-28 | replacement blocks | `01:00; 20:00` | `OANDA-UK-HOLIDAYS` | T1 | Complete replacement: previous holiday's literal reopen plus this trade date's printed or normal close. |
 | 2025-12-24 | early close | `Brent Crude Oil: close at 13:59` | `OANDA-UK-HOLIDAYS` | T1 | Christmas Eve, 13:59 ET = 18:59 London |
 | 2025-12-25 | closed | `Brent Crude Oil: closed` | `OANDA-UK-HOLIDAYS` | T1 | Christmas Day |
 | 2025-12-31 | early close | `Brent Crude Oil: close at 14:59` | `OANDA-UK-HOLIDAYS` | T1 | New Year's Eve, 14:59 ET = 19:59 London |
@@ -126,3 +129,17 @@ govern here too.
 - The ET-to-London conversion rests on every row being a five-offset date;
   a future holiday landing inside a DST-disagreement window needs its own
   offset check before conversion.
+
+## Publication audit — 2026-10-11 UTC
+
+The source's minute values are literal. The 2025 18:00 ET US reopens and
+20:00 ET Brent reopens are not rounded to 18:01 or 20:01. Evening opens
+attach to the following trade date. Replacement blocks retain the entire
+trading day, including any next-day early close and Brent's late segment.
+
+Monday's daytime session begins on Sunday at 23:01 London; there is no
+additional Monday 01:01 opening. The 01:01 rule applies Tuesday–Friday.
+The Monday 22:05–22:59 segment remains separate.
+
+Pending-order storage outside the printed trading windows is a broker facility,
+not a timed session phase; see [the shared scope decision](oanda_fx.md#pending-orders-and-session-scope--2026-10-11-utc) (#333).

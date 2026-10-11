@@ -87,7 +87,8 @@ impl FuturesSessionProfile {
             .is_order_entry_only(t)
     }
 
-    /// True when orders may be entered, amended or cancelled at `t`.
+    /// True during a tradeable session or a published order-entry phase at `t`.
+    /// Broker-side pending-order storage outside those phases is not modelled.
     #[must_use]
     pub fn is_accepting_orders(&self, t: DateTime<Utc>) -> bool {
         self.to_market_hours(CalendarSource::Exchange(Exchange::Unknown))
@@ -455,17 +456,18 @@ market_hours_keys! {
         /// an additional 06:59-07:05 Auckland break that is caller catalog
         /// data: no rule in this grid states it.
         OandaMetals => "oanda_metals",
-        /// OANDA's US-anchored index and bond book — US SPX 500, US Nas 100,
-        /// US Russ 2000, US Wall St 30, Japan 225 (USD and JPY) and the four
-        /// US Treasury listings — on one continuous Sunday-to-Friday clock:
+        /// OANDA's US-anchored index book — US SPX 500, US Nas 100,
+        /// US Russ 2000, US Wall St 30 and Japan 225 (USD and JPY) —
+        /// on one continuous Sunday-to-Friday clock:
         /// Chicago 17:01 to 15:59, the same instants as New York 18:01 to
         /// 16:59, with the printed 16:59-18:01 daily gap and no other
-        /// maintenance. The operator's holiday page treats this as the "US
-        /// indices and bonds" group, distinct from
-        /// [`OandaUsCommodityCfd`](Self::OandaUsCommodityCfd); Japan 225 is
-        /// included because every dated section that prints it separately
-        /// gives it the US indices' own arrangement.
+        /// maintenance. US Treasury CFDs use
+        /// [`OandaUsBondCfd`](Self::OandaUsBondCfd), whose holidays can differ.
         OandaUsIndexCfd => "oanda_us_index_cfd",
+        /// OANDA's four US Treasury CFD listings on the same normal-week
+        /// clock as [`OandaUsIndexCfd`](Self::OandaUsIndexCfd), with their
+        /// own holiday closes (including Good Friday 2026 at 11:14 ET).
+        OandaUsBondCfd => "oanda_us_bond_cfd",
         /// OANDA's US-anchored energy and commodity-metals book — Natural
         /// Gas, West Texas Oil, Platinum, Palladium and Copper — on the same
         /// continuous clock as [`OandaUsIndexCfd`](Self::OandaUsIndexCfd):
@@ -562,7 +564,9 @@ pub fn hours_for_market_hours_key(key: MarketHoursKey, as_of: DateTime<Utc>) -> 
         MarketHoursKey::OandaFx => oanda_fx_profile_at(as_of),
         MarketHoursKey::OandaTryFx => oanda_try_fx_profile_at(as_of),
         MarketHoursKey::OandaMetals => oanda_metals_profile_at(as_of),
-        MarketHoursKey::OandaUsIndexCfd => oanda_us_index_profile_at(as_of),
+        MarketHoursKey::OandaUsIndexCfd | MarketHoursKey::OandaUsBondCfd => {
+            oanda_us_index_profile_at(as_of)
+        }
         MarketHoursKey::OandaUsCommodityCfd => oanda_us_commodity_profile_at(as_of),
         MarketHoursKey::OandaBrent => oanda_brent_profile_at(as_of),
         MarketHoursKey::Sgx => sgx_profile_at(as_of),

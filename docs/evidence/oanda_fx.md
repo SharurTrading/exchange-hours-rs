@@ -16,7 +16,6 @@ every futures clock an FX hedge might route to (CME FX futures halt 16:00–17:0
 CT daily), which is why this is a book key rather than a futures mapping — the
 maintainer's 2026-10-10 decision recorded in SharurPlatform#1046.
 
-
 ## Revision rows
 
 None. The module carries one sourced grid and no `revisions!` block; there is
@@ -25,7 +24,7 @@ schedule rather than a worked-up history (LAW-BOUNDED-WORK).
 
 ## The normal week
 
-The hours-of-operation page (UK entity, OANDA Europe Limited, FCA 542572)
+The hours-of-operation page (UK entity, OANDA Europe Limited, FCA 542574)
 prints one row for the whole group:
 
 > `All FX products (except TRY Pairs) | New York | 100,000 | Sun-Fri: 17:05 - 16:59*`
@@ -48,7 +47,10 @@ Interpretation, each step from the operator's own words:
 - The encoding is Sunday–Thursday 17:05 wrapping to the next local day 16:59
   (end-exclusive), Friday with no rule, `has_daily_close`/`has_weekend_close`
   both true. The six-minute gap between the close and the next 17:05 open is
-  the stated break; it is a same-trade-date `Closed` gap, not maintenance.
+  the stated break. Consecutive sessions have different trade dates; the
+  crate classifies the six-minute inter-trade-date gap as `Maintenance`
+  under its four-hour/ISO-week policy. That classification does not add
+  an operator-published maintenance halt.
 - The NZD-pair break (06:59–07:05 `Pacific/Auckland`) is stated **per
   instrument** (`XAU/NZD`, `XAG/NZD` and NZD FX pairs), not for the book: it
   is caller catalog data, and no rule in the grid states it.
@@ -133,6 +135,7 @@ The spans, and what each rests on:
 
 | Document | Window | Replay or service URL | Capture or retrieval, UTC | Tier | sha256 |
 |---|---|---|---|---|---|
+| `OANDA-STATIC-HOURS-252` | undated earlier grids; no effective day asserted | <https://www.oanda.com/assets/documents/252/Hours_of_Operation.pdf> | retrieved 2026-10-11 UTC | T1 | `778ea39e0f71005015a111963061cd86f8d7fce7b589af0279316992239244ba` |
 | `OANDA-UK-HOURS-PDF` | current | <https://www.oanda.com/uk-en/trading/hours-of-operation/> | rendered 2026-10-10 (maintainer-saved page-to-PDF) | T1 | `d8a853cd621313feec96eb1ee0f45b81b7674dea2e0e6cb50b175e78347153d7` |
 | `OANDA-UK-HOURS-HTML` | current | <https://www.oanda.com/uk-en/trading/hours-of-operation/> | captured 2026-10-10 22:36 | T1 | `60f6143dd5d678b1a34a9937aa938d2884380a33bf3542a4c72f8f03fa3607b7` |
 | `OANDA-UK-HOLIDAYS` | 2025-01-01 .. 2026-10-30 | <https://www.oanda.com/uk-en/trading/holiday-trading-hours> | captured 2026-10-10 22:44 | T1 | `c7137ce3da4cc19d0431955feedc10fb6b9731214ad3cfc7966160e72f8559da` |
@@ -169,3 +172,39 @@ Store paths (research store, wave-1 capture):
 - Intraday-quote holidays for specific FX pairs beyond the page's rows (for
   example reduced liquidity on US holidays) are not closures and ship no
   row; the page states none.
+
+## Pending orders and session scope — 2026-10-11 UTC
+
+Page 2 of `OANDA-UK-HOURS-PDF`, reproduced in the operator HTML, distinguishes
+closed-market position execution from placement and modification of pending
+entry, protective and contingent instructions. Page 3 explains that those
+instructions may trigger when trading resumes. This proves a broker-held
+pending-order facility, not a separately timed executable or session-queue
+phase; the source gives it no session boundaries or trade-date assignment.
+The book keys model the printed trading windows. `is_accepting_orders` asks
+about those executable and published order-entry phases, not whether OANDA's
+order-placement API or account instruction store is available. Off-hours
+pending instructions therefore do not become fabricated 24/7 session rules.
+This scope applies to the venue default and all seven OANDA keys (#333).
+
+## Starred seasonal selectors — 2026-10-11 UTC
+
+The current UK page marks Australia 200's close and the German/Euro/Bund
+opening with `***`, stating a one-hour local-bound shift during daylight
+saving without expressly identifying the selector's zone. The undated
+operator guide `OANDA-STATIC-HOURS-252` prints Australia 200's earlier
+17:10–07:00 Sydney night during US DST and 17:10–08:00 otherwise. This
+is evidence that the broker itself has used a US-season selector; it does
+not date a transition to the current one-minute-inset grid or establish
+that the current generic footnote switched to Sydney DST.
+
+A universal fixed-UTC interpretation, and a Sydney-only interpretation for
+Australia 200, therefore remain unproved. The six absent derivatives
+families and the consumer's exact starred CFD selectors remain under #332.
+The underlying ASX operator's explicit US-season schedule is its own source,
+not permission to fabricate a broker cutover. The operator must identify the
+current selector, or the consumer must refuse the disputed scope; passing a
+test of one interpretation does not settle this source question.
+
+Captured bytes: `normal-weeks/oanda-star-selector-audit-2026-10-11/oanda-static-hours-252.pdf`
+in the research store. No date or new runtime row is keyed from this artifact.

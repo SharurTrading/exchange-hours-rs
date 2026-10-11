@@ -65,6 +65,7 @@ mod nzx;
 mod oanda_brent;
 mod oanda_fx;
 mod oanda_metals;
+mod oanda_us_bond_cfd;
 mod oanda_us_commodity_cfd;
 mod oanda_us_index_cfd;
 mod routing;

@@ -188,30 +188,40 @@ pub(in crate::calendar) fn containing_session_with<G: SourceGate>(
     }
 }
 
-/// Collects the first occurrence opening after `instant` on one opening day.
-///
-/// The coalescing fold runs **outside** the probe: the probe's own signature is
-/// `Option`-valued, so a coverage error raised while coalescing could only be
-/// swallowed there, and plan section 6 forbids exactly that. Returning the raw
-/// bounds and coalescing here keeps `?` available.
+/// Selects the earliest occurrence opening after `instant` on one opening day.
+/// Normal rules and replacement offsets are not visited in chronological order.
 fn next_occurrence_after_on_day<G: SourceGate>(
     context: &QueryContext<'_, G>,
     day: chrono::NaiveDate,
     instant: DateTime<Utc>,
     kind: SessionKind,
 ) -> Result<Option<SessionBounds>, G::Error> {
-    let raw = find_occurrence(
+    let mut best = None;
+    let error = find_occurrence(
         context,
         day,
         RuleSet::Sessions(kind),
         false,
-        |open, close| (open > instant).then_some((open, close)),
+        |open, close| {
+            if open > instant {
+                match coalesce_same_kind(context, (open, close), kind) {
+                    Ok(merged) => {
+                        if merged.0 > instant
+                            && best.is_none_or(|current: SessionBounds| merged.0 < current.0)
+                        {
+                            best = Some(merged);
+                        }
+                    }
+                    Err(error) => return Some(error),
+                }
+            }
+            None
+        },
     )?;
-    let Some(raw) = raw else {
-        return Ok(None);
-    };
-    let merged = coalesce_same_kind(context, raw, kind)?;
-    Ok((merged.0 > instant).then_some(merged))
+    match error {
+        Some(error) => Err(error),
+        None => Ok(best),
+    }
 }
 
 fn consider_next_on_day<G: SourceGate>(
@@ -264,26 +274,39 @@ pub(in crate::calendar) fn next_session_after_with<G: SourceGate>(
 
 /// Collects the last occurrence closing at or before `instant` on one day.
 ///
-/// Coalescing runs outside the probe for the same reason as
-/// [`next_occurrence_after_on_day`].
+/// A coalescing error stops the scan and propagates through the result.
 fn previous_occurrence_before_on_day<G: SourceGate>(
     context: &QueryContext<'_, G>,
     day: chrono::NaiveDate,
     instant: DateTime<Utc>,
     kind: SessionKind,
 ) -> Result<Option<SessionBounds>, G::Error> {
-    let raw = find_occurrence(
+    let mut best = None;
+    let error = find_occurrence(
         context,
         day,
         RuleSet::Sessions(kind),
         false,
-        |open, close| (close <= instant).then_some((open, close)),
+        |open, close| {
+            if close <= instant {
+                match coalesce_same_kind(context, (open, close), kind) {
+                    Ok(merged) => {
+                        if merged.1 <= instant
+                            && best.is_none_or(|current: SessionBounds| merged.1 > current.1)
+                        {
+                            best = Some(merged);
+                        }
+                    }
+                    Err(error) => return Some(error),
+                }
+            }
+            None
+        },
     )?;
-    let Some(raw) = raw else {
-        return Ok(None);
-    };
-    let merged = coalesce_same_kind(context, raw, kind)?;
-    Ok((merged.1 <= instant).then_some(merged))
+    match error {
+        Some(error) => Err(error),
+        None => Ok(best),
+    }
 }
 
 fn consider_previous_on_day<G: SourceGate>(

@@ -86,10 +86,15 @@ fn oanda_fx_session_has_no_order_entry_or_extended_phases() {
     assert!(h.extended.is_empty(), "the book states no extended phase");
     assert!(
         h.order_entry.is_empty(),
-        "the book states no order-entry-only phase"
+        "the hours page states no timed session queue; off-hours pending orders are broker-side storage"
     );
     assert!(!h.is_order_entry_only(et((2026, 6, 10), (9, 0, 0))));
     assert!(h.is_accepting_orders(et((2026, 6, 10), (9, 0, 0))));
+    let weekend = et((2026, 6, 13), (9, 0, 0));
+    let calendar = calendar_for_market_hours_key(MarketHoursKey::OandaFx);
+    assert_eq!(calendar.is_open(weekend), Ok(false));
+    assert_eq!(calendar.is_order_entry_only(weekend), Ok(false));
+    assert_eq!(calendar.is_accepting_orders(weekend), Ok(false));
 }
 
 #[test]

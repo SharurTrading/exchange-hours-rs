@@ -72,6 +72,7 @@ const EXPECTED_MARKET_HOURS_KEYS: &[(MarketHoursKey, &str)] = &[
     (MarketHoursKey::OandaTryFx, "oanda_try_fx"),
     (MarketHoursKey::OandaMetals, "oanda_metals"),
     (MarketHoursKey::OandaUsIndexCfd, "oanda_us_index_cfd"),
+    (MarketHoursKey::OandaUsBondCfd, "oanda_us_bond_cfd"),
     (
         MarketHoursKey::OandaUsCommodityCfd,
         "oanda_us_commodity_cfd",

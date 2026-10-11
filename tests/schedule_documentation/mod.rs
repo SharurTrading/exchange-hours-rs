@@ -1047,7 +1047,7 @@ fn assurance_prose_restates_exchange_counts_from_the_ledger() {
         "the crate serves the window that holds under every sourced state".to_string(),
         "the crate refuses with an explicit typed error rather than claiming hours it cannot support".to_string(),
         "Where a residual uncertainty survives, it is **instant-level and disclosed**".to_string(),
-        "Per-family holiday and early-close tables ship for 50 of the 141 ledger rows".to_string(),
+        "Per-family holiday and early-close tables ship for 51 of the 141 ledger rows".to_string(),
         format!("All {real} current profiles are primary-supported"),
         format!("The {primary} **Primary** rows have no known modeled-history gap"),
         format!("{partial} **Partial** rows name"),

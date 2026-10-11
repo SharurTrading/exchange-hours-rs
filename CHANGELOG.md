@@ -15,6 +15,9 @@
   preserving literal reopens and retaining the omitted Treasury Christmas Eve
   arrangement as a typed gap.
 
+- Euronext Amsterdam's own 2010-2026 holiday table: 108 rows, with the
+  two 2026 December half-day instants explicitly withheld until publication.
+
 ### Fixed
 
 - LSE's five withheld 2025 spring/summer holiday dates now answer as sourced

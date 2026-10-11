@@ -10,21 +10,19 @@
   2024-12-31: Christmas FX closure and fourteen literal metals arrangements,
   including Thanksgiving and Christmas reopens. Earlier normal-week history
   remains unresolved under #332.
-
 - Archived OANDA UK US-index and Treasury-CFD holiday arrangements for 2024,
   preserving literal reopens and retaining the omitted Treasury Christmas Eve
   arrangement as a typed gap.
-
 - Euronext Amsterdam's own 2010-2026 holiday table: 108 rows, with the
   two 2026 December half-day instants explicitly withheld until publication.
-
-- BME principal-share cash holidays from 2010 through 2026, with complete half-day phase replacements and typed gaps for unpublished 2026 year-end timetables.
+- BME principal-share cash holidays from 2010 through 2026, with complete
+  half-day phase replacements and typed gaps for unpublished 2026 year-end
+  timetables.
 
 ### Fixed
 
 - LSE's five withheld 2025 spring/summer holiday dates now answer as sourced
   closures, recovered from a verbatim public mirror of the operator table.
-
 
 ## [1.1.0] - 2026-10-11
 
